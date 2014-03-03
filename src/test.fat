@@ -1,0 +1,31 @@
+import "io";
+
+public class Test
+{
+	private int fieldVar;
+	
+	public String publicVariable;
+	
+	public void main(String args[])
+	{
+		boolean localVar1 = true;
+		
+		printf("Hello, world");
+		
+		boolean localVar2 = false;
+		
+		return;
+	}
+
+	public int test()
+	{
+		int newVar = 43;
+		
+		return newVar;
+	}
+	
+	public String generateJavaSourceOutput()
+	{
+		return getName() + '(' + getArgumentListNode().generateJavaSourceOutput() + ");\n";
+	}
+}

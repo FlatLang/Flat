@@ -1,0 +1,1 @@
+Make arguments and parameters more strict.
