@@ -16,11 +16,24 @@ import net.fathomsoft.fathom.util.Regex;
  */
 public class ImportNode extends TreeNode
 {
+	private boolean	cSource;
+	
 	private String	importLocation;
 	
 	public ImportNode()
 	{
 		
+	}
+	
+	/**
+	 * Get whether or not the imported file is a C Source file, or a
+	 * Fathom file.
+	 * 
+	 * @return Whether or not the imported file is a C Source file.
+	 */
+	public boolean isCSource()
+	{
+		return cSource;
 	}
 	
 	public String getImportLocation()
@@ -32,7 +45,7 @@ public class ImportNode extends TreeNode
 	{
 		this.importLocation = location;
 	}
-
+	
 	/**
 	 * @see net.fathomsoft.fathom.tree.TreeNode#generateJavaSourceOutput()
 	 */
@@ -88,6 +101,24 @@ public class ImportNode extends TreeNode
 				}
 				
 				statement = statement.substring(importStartIndex + 1, endIndex);
+				
+				int extensionIndex = statement.lastIndexOf('.');
+				
+				if (extensionIndex > 0)
+				{
+					String extension = statement.substring(extensionIndex + 1);
+					
+					if (extension.equals("h"))
+					{
+						n.cSource = true;
+						
+						statement = statement.substring(0, extensionIndex);
+					}
+					else
+					{
+						SyntaxError.outputNewError("Import location ends with unknown extension", location);
+					}
+				}
 				
 				n.setImportLocation(statement);
 			}
