@@ -1,0 +1,8 @@
+package corndog;
+
+public interface Number
+{
+	private int value;
+	
+	
+}

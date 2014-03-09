@@ -1,0 +1,16 @@
+import "stdio.h";
+
+public class IO
+{
+	public void println(String text)
+	{
+		print(text + '\n');
+	}
+	
+	public void print(String text)
+	{
+		char cText[] = text.toCharArray();
+		
+		stdio.printf(cText);
+	}
+}
