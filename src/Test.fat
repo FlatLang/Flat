@@ -1,4 +1,4 @@
-import "io";
+import "IO";
 
 public class Test
 {
@@ -10,13 +10,11 @@ public class Test
 	{
 		boolean localVar1 = true;
 		
-		printf("Hello, world");
+		IO.println("Hello, world");
 		
 		boolean localVar2 = false;
-		
-		return;
 	}
-
+	
 	public int test()
 	{
 		int newVar = 43;
