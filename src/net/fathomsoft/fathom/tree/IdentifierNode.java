@@ -27,7 +27,7 @@ public class IdentifierNode extends TreeNode
 	{
 		this.name = name;
 	}
-
+	
 	/**
 	 * @see net.fathomsoft.fathom.tree.TreeNode#generateJavaSourceOutput()
 	 */

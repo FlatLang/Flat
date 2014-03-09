@@ -17,7 +17,7 @@ import java.util.Iterator;
  */
 public class TierPattern
 {
-	private int											mode;
+	private int											mode, brokeAt;
 	
 	private ArrayList<ArrayList<CollectionCase>>		testCollections;
 	
@@ -38,17 +38,21 @@ public class TierPattern
 		
 		collections = new HashMap<String, Collection<?>>();
 
-		insertCollection("~",        new Character[]  {  }, true);
-		insertCollection(".",        new Character[]  { '\n', '\r' }, true);
-		insertCollection("`s",        new Character[]  { '\n', '\t', ' ',  '\r' });
-		insertCollection("`S",        new Collection[] { collections.get("`s") }, true);
-		insertCollection("a-z",      new Character[]  { 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z' });
-		insertCollection("A-Z",      new Character[]  { 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z' });
-		insertCollection("0-9",      new Character[]  { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9' });
-		insertCollection("`alph",     new Collection[] { collections.get("a-z"), collections.get("A-Z") });
-		insertCollection("`ALPH",     new Collection[] { collections.get("`alph") }, true);
-		insertCollection("`alphanum", new Collection[] { collections.get("`alph"), collections.get("0-9") });
-		insertCollection("`ALPHANUM", new Collection[] { collections.get("`alphanum") }, true);
+		insertCollection("`~",          new Character[]  {  }, true);
+		insertCollection("`.",          new Character[]  { '\n', '\r' }, true);
+		insertCollection("`s",          new Character[]  { '\n', '\t', ' ',  '\r' });
+		insertCollection("`S",          new Collection[] { collections.get("`s") }, true);
+		insertCollection("a-z",         new Character[]  { 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z' });
+		insertCollection("A-Z",         new Character[]  { 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z' });
+		insertCollection("0-9",         new Character[]  { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9' });
+		insertCollection("`alph",       new Collection[] { collections.get("a-z"), collections.get("A-Z") });
+		insertCollection("`ALPH",       new Collection[] { collections.get("`alph") }, true);
+		insertCollection("`alphanum",   new Collection[] { collections.get("`alph"), collections.get("0-9") });
+		insertCollection("`ALPHANUM",   new Collection[] { collections.get("`alphanum") }, true);
+		insertCollection("`identifier", new Collection[] { collections.get("`alphanum"), createCollection("", new Character[] { '_', '*', '&' }, false) });
+		insertCollection("`2startps",   new String[]     { "((" });
+		insertCollection("`2endps",     new String[]     { "))" });
+		
 		
 		keys = collections.keySet().toArray(new String[0]);
 	}
@@ -118,6 +122,8 @@ public class TierPattern
 	 */
 	public TierPattern(String pattern)
 	{
+		brokeAt         = -1;
+		
 		testCollections = new ArrayList<ArrayList<CollectionCase>>();
 		
 		String modes[]  = divideModes(pattern);
@@ -128,6 +134,21 @@ public class TierPattern
 		{
 			testCollections.add(compile(mode));
 		}
+		
+//		for (int i = 0; i < testCollections.size(); i++)
+//		{
+//			for (int j = 0; j < testCollections.get(i).size(); j++)
+//			{
+//				CollectionCase col = testCollections.get(i).get(j);
+//				
+//				System.out.println(col.key + " " + col.bounds);
+//				
+//				for (int k = 0; k < col.getNumChildren(); k++)
+//				{
+//					System.out.println("\t" + col.getChild(k).key + " " + col.getChild(k).getBounds());
+//				}
+//			}
+//		}
 	}
 	
 	/**
@@ -332,14 +353,35 @@ public class TierPattern
 				{
 					CollectionCase testCase = testCollections.get(modeIndex).get(caseIndex);
 					
-					int value = matchLength(data, index, testCase);
+					ArrayList<CollectionCase> nextCase = new ArrayList<CollectionCase>();
 					
-					if (value >= 0)
+					if (caseIndex + 1 < testCollections.get(modeIndex).size())
 					{
-						index += value;
+						for (int j = caseIndex + 1; j < testCollections.get(modeIndex).size(); j++)
+						{
+							CollectionCase c = testCollections.get(modeIndex).get(j);
+							
+							nextCase.add(c);
+							
+							if (c.getBounds().getStart() != 0)
+							{
+								break;
+							}
+						}
 					}
 					else
 					{
+						//TODO: Make it get the next modeIndex stuff.
+					}
+					
+					int value = matchLength(data, index, testCase, nextCase);
+					
+					if (value >= 0)
+					{//if (data.substring(index, index + value).equals("__attribute__"))System.out.println("ASdf");
+						index += value;
+					}
+					else
+					{//System.out.println(data.charAt(index) + " " + testCase.key);
 						index      = startIndex + 1;
 						
 						startIndex = -1;
@@ -359,7 +401,6 @@ public class TierPattern
 				}
 			}
 			
-//			System.out.println("end -- " + startIndex);
 			if (startIndex >= 0)
 			{
 				Bounds bounds = new Bounds();
@@ -383,15 +424,14 @@ public class TierPattern
 	 * @param offset The offset in the String to search at.
 	 * @param test The CollectionCase used to test the data at the
 	 * 		offset of the source.
+	 * @param breakFor The CollectionCases to break the search for if the
+	 * 		main CollectionCase's bounds are endless.
 	 * @return The length of the match at the specified offset. If a
 	 * 		match is not present then -1 is returned.
 	 */
-	private int matchLength(String src, int offset, CollectionCase test)
+	private int matchLength(String src, int offset, CollectionCase test, ArrayList<CollectionCase> breakFor)
 	{
-		int     value   = 0;
-		boolean success = test.collections.size() <= 0;
-		
-		if (!success)
+		if (test.collections.size() > 0)
 		{
 			Iterator<Collection<?>> iterator = test.iterator();
 			
@@ -399,34 +439,88 @@ public class TierPattern
 			{
 				Collection<?> col = iterator.next();
 				
-				int length = matchLength(src, offset, col, test.getBounds());
+				int length = matchLength(src, offset, col, test.getBounds(), breakFor, col.isOpposite());
+				
+				if (brokeAt >= 0)
+				{
+					return length;
+				}
 				
 				if (length >= 0)
 				{
-					value  += length;
-					
-					success = true;
+					return length;
 				}
 			}
-		}
-		
-		if (!success)
-		{
+			
+			//TODO: fix for multi-type CollectionCases.
 			return -1;
 		}
 		
-		for (int i = 0; i < test.getNumChildren(); i++)
+		int value = 0;
+		
+		for (int k = 0; k < test.getBounds().end || test.getBounds().isEndless(); k++)
 		{
-			CollectionCase child = test.getChild(i);
-			
-			int length = matchLength(src, offset + value, child);
-			
-			if (length < 0)
+			for (int i = 0; i < test.getNumChildren(); i++)
 			{
-				return -1;
+				CollectionCase child = test.getChild(i);
+				
+				ArrayList<CollectionCase> next = new ArrayList<CollectionCase>();
+				
+				if (i + 1 < test.getNumChildren())
+				{
+					boolean finished = false;
+					
+					for (int j = i + 1; j < test.getNumChildren(); j++)
+					{
+						CollectionCase c = test.getChild(j);
+						
+						next.add(c);
+						
+						if (c.getBounds().getStart() != 0)
+						{
+							finished = true;
+							
+							break;
+						}
+					}
+					
+					if (!finished)
+					{
+						next.addAll(breakFor);
+					}
+				}
+				else
+				{
+					next = breakFor;
+				}
+				
+				int length = matchLength(src, offset + value, child, next);
+				
+				//TODO: Check for if it has passed the minimum bounds.
+				if (brokeAt >= 0)
+				{//System.out.println("Broke at " + src.substring(offset + length + value, offset + length + value + 7) + " " + (offset + length + value) + " " + child.key);
+					CollectionCase broke = next.get(brokeAt);
+					
+					brokeAt = -1;
+					
+					for (int j = 0; j < breakFor.size(); j++)
+					{
+						CollectionCase current = breakFor.get(j);
+						
+						if (current == broke)
+						{
+							return value + length;
+						}
+					}
+				}
+				
+				if (length < 0)
+				{
+					return -1;
+				}
+				
+				value += length;
 			}
-			
-			value += length;
 		}
 		
 		return value;
@@ -442,14 +536,14 @@ public class TierPattern
 	 * @param collection The Collection used to test the data at the
 	 * 		offset of the source.
 	 * @param bounds The Bounds in which the Collection must be within.
-	 * @param cumulative Whether or not the combined Collections are
-	 * 		cumulative.
+	 * @param opposite Whether or not to test for, or against the
+	 * 		Collection.
 	 * @return The length of the match at the specified offset. If a
 	 * 		match is not present then -1 is returned.
 	 */
-	private int matchLength(String src, int offset, Collection<?> collection, Bounds bounds)
+	private int matchLength(String src, int offset, Collection<?> collection, Bounds bounds, boolean opposite)
 	{
-		return matchLength(src, offset, collection, bounds, collection.isOpposite());
+		return matchLength(src, offset, collection, bounds, null, opposite);
 	}
 	
 	/**
@@ -462,15 +556,17 @@ public class TierPattern
 	 * @param collection The Collection used to test the data at the
 	 * 		offset of the source.
 	 * @param bounds The Bounds in which the Collection must be within.
-	 * @param cumulative Whether or not the combined Collections are
-	 * 		cumulative.
+	 * @param breakFor The CollectionCases to break the search for if the
+	 * 		main collection's bounds are endless.
 	 * @param opposite Whether or not to test for, or against the
 	 * 		Collection.
 	 * @return The length of the match at the specified offset. If a
 	 * 		match is not present then -1 is returned.
 	 */
-	private int matchLength(String src, int offset, Collection<?> collection, Bounds bounds, boolean opposite)
+	private int matchLength(String src, int offset, Collection<?> collection, Bounds bounds, ArrayList<CollectionCase> breakFor, boolean opposite)
 	{
+		brokeAt = -1;
+		
 		int x = bounds.getStart();
 		int y = bounds.getEnd();
 		
@@ -485,6 +581,30 @@ public class TierPattern
 				if (collection.isMatch(c, opposite))
 				{
 					count++;
+					
+					if (bounds.isEndless() && count + offset < src.length())
+					{
+						char newC = src.charAt(offset + count);
+						
+						for (int i = 0; i < breakFor.size(); i++)
+						{
+							CollectionCase colCase = breakFor.get(i);
+							
+							if (colCase.isMatch(newC))
+							{
+								brokeAt = i;
+							}
+						}
+						
+						if (brokeAt >= 0 && breakFor.get(brokeAt).getBounds().start != 0)
+						{
+							return count;
+						}
+						else
+						{
+							brokeAt = -1;
+						}
+					}
 				}
 				else
 				{
@@ -565,7 +685,14 @@ public class TierPattern
 			{
 				Collection<?> col = (Collection<?>)iterator.next();
 				
-				int size = matchLength(src, offset, col, bounds, false);
+				boolean opp = col.isOpposite();
+				
+				if (opposite)
+				{
+					opp = !opp;
+				}
+				
+				int size = matchLength(src, offset, col, bounds, breakFor, opp);
 				
 				if (size >= 0)// && !cumulative)
 				{
@@ -976,6 +1103,29 @@ public class TierPattern
 		public int getEnd()
 		{
 			return end;
+		}
+		
+		/**
+		 * Get whether or not the bounds are endless.
+		 * 
+		 * @return Whether or not the bounds will search endlessly.
+		 */
+		public boolean isEndless()
+		{
+			return end < 0;
+		}
+		
+		/**
+		 * Generate a String representation of the Bounds Object
+		 * containing the start and end position of the Bounds.
+		 * 
+		 * @see java.lang.Object#toString()
+		 * 
+		 * @return A String representation of the Bounds Object.
+		 */
+		public String toString()
+		{
+			return "[" + start + ", " + end + "]";
 		}
 	}
 	
