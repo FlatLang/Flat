@@ -1,6 +1,5 @@
 package net.fathomsoft.fathom.util;
 
-import java.awt.TextComponent;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;

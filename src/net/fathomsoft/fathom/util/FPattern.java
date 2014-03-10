@@ -20,7 +20,16 @@ public class FPattern
 	 */
 	public FPattern(String pattern)
 	{
-		compile(pattern);
+		String modes[] = divideModes(pattern);
+		
+		start = compile(modes[0]);
+		
+		CollectionCase current = start;
+		
+		for (int i = 1; i < modes.length; i++)
+		{
+			current.setNext(compile(modes[i]));
+		}
 	}
 	
 	/**
@@ -31,7 +40,339 @@ public class FPattern
 	 */
 	private CollectionCase compile(String pattern)
 	{
-		return null;
+		CollectionCase prev    = null;
+		CollectionCase current = new CollectionCase();
+
+		int index = 0;
+
+		while (index < pattern.length())
+		{
+			int startIndex = index;
+
+			char c = pattern.charAt(index);
+
+			if (c == '`' || c == '"' || c == '[' || c == '(')
+			{
+				current = getCollectionCase(index, pattern);
+
+				index += current.getKey().length();
+
+				boolean condensed = false;
+
+				if (prev != null)
+				{
+					if (prev.getKey().equals(current.getKey()))
+					{
+						if (prev.bounds.end >= 0)
+						{
+							prev.bounds.start++;
+							prev.bounds.end++;
+							//prev.condensed = true;
+
+							condensed = true;
+							
+							current   = prev;
+						}
+					}
+				}
+
+				if (!condensed)
+				{
+					prev.setNext(current);
+				}
+			}
+			else if (prev != null)
+			{
+				if (c == '*')
+				{
+					prev.setBounds(0, -1);
+				}
+				else if (c == '+')
+				{
+					prev.bounds.end = -1;
+				}
+				else if (c == '?')
+				{
+					prev.setBounds(0, 1);
+				}
+				else if (containsChar(c, SPECIAL_CHARS))
+				{
+
+				}
+
+				index++;
+			}
+
+			if (index == startIndex)
+			{
+				for (int i = 0; i < keys.length; i++)
+				{
+					String key = c + "";
+
+					if (keys[i].equals(key))
+					{
+						CollectionCase colCase = createCollectionCase(collections.get(key));
+						colCase.setKey(key);
+
+						cases.add(colCase);
+
+						index += colCase.getKey().length();
+
+						break;
+					}
+				}
+			}
+
+			if (index == startIndex)
+			{
+				throw new TierExpressionException("Unexpected character type of '" + c + "' at offset: " + index);
+			}
+		}
+
+		return cases;
+	}
+	
+	/**
+	 * Get the CollectionCase that is described at the specified index
+	 * in the pattern. Creates the CollectionCase if necessary.
+	 * 
+	 * @param index The index to start the search at.
+	 * @param pattern The pattern String to search in.
+	 * @return The next CollectionCase at the specified index.
+	 */
+	private CollectionCase getCollectionCase(int index, String pattern)
+	{
+		int  startIndex = index;
+
+		char c          = pattern.charAt(index++);
+
+		/* If the pattern is starting to describe a pre-defined
+		 * Collection.
+		 */
+		if (c == '`')
+		{
+			if (index < pattern.length())
+			{
+				c = pattern.charAt(index++);
+
+				while (!containsChar(c, SPECIAL_CHARS))
+				{
+					if (index >= pattern.length())
+					{
+						index = pattern.length() + 1;
+
+						break;
+					}
+
+					c = pattern.charAt(index++);
+				}
+
+				String key = pattern.substring(startIndex, index - 1);
+
+				CollectionCase colCase = createCollectionCase(collections.get(key));
+				colCase.setKey(key);
+
+				return colCase;
+			}
+			else
+			{
+				throw new TierExpressionException("Gravemark cannot end the statement; at offset: " + index);
+			}
+		}
+		/* If A String literal is being used as a Collection.
+		 */
+		else if (c == '"')
+		{
+			if (index < pattern.length())
+			{
+				c = pattern.charAt(index++);
+
+				while (true)
+				{
+					if (c == '"')
+					{
+						if (index > 0)
+						{
+							int count = 1;
+
+							while (pattern.charAt(index - count - 1) == '\\')
+							{
+								count++;
+							}
+
+							// If it is the ending quotation.
+							if (count % 2 == 1)
+							{
+								break;
+							}
+						}
+					}
+
+					if (index >= pattern.length())
+					{
+						throw new TierExpressionException("Missing end of starting quotation at offset " + startIndex);
+					}
+
+					c = pattern.charAt(index++);
+				}
+
+				String key   = pattern.substring(startIndex, index);
+				String value = key.substring(1, key.length() - 1);
+
+				if (value.length() > 0)
+				{
+					String data[] = new String[] { value };
+
+					Collection<String> collection = createCollection(key, data, false);
+
+					CollectionCase colCase = createCollectionCase(collection);
+					colCase.setKey(key);
+					colCase.setCumulative(false);
+
+					return colCase;
+				}
+			}
+			else
+			{
+				throw new TierExpressionException("Quotation cannot end the statement; at offset: " + index);
+			}
+		}
+		else if (c == '(')
+		{
+			if (index < pattern.length())
+			{
+				index = findEndingMatch(pattern, index - 1, '(', ')', '\\') + 1;
+
+				if (index <= 0)
+				{
+					throw new TierExpressionException("Missing end of starting parenthesis at offset " + startIndex);
+				}
+
+				String key   = pattern.substring(startIndex, index);
+				String value = key.substring(1, key.length() - 1);
+
+				CollectionCase colCase = new CollectionCase();
+				colCase.setKey(key);
+				colCase.setCumulative(true);
+				colCase.addChildren(compile(value));
+
+				return colCase;
+			}
+			else
+			{
+				throw new TierExpressionException("Starting parenthesis cannot end the statement; at offset: " + index);
+			}
+		}
+		/* If a character matcher is being used as a Collection.
+		 */
+		else if (c == '[')
+		{
+			if (index < pattern.length())
+			{
+				index = findEndingMatch(pattern, index - 1, '[', ']', '\\') + 1;
+
+				if (index <= 0)
+				{
+					throw new TierExpressionException("Missing end of starting bracket at offset " + startIndex);
+				}
+
+				String key   = pattern.substring(startIndex, index);
+				String value = key.substring(1, key.length() - 1);
+
+				if (value.length() > 0)
+				{
+					CollectionCase colCase = new CollectionCase();
+					colCase.setKey(key);
+					colCase.setCumulative(false);
+
+					ArrayList<Character> chars = new ArrayList<Character>();
+
+					int     i   = 0;
+
+					while (i < value.length())
+					{
+						char current = value.charAt(i);
+
+						chars.add(current);
+
+						if (current == '-')
+						{
+							if (i > 0 && i < value.length() - 1)
+							{
+								Collection<?> alph = collections.get("`alphanum");
+
+								char prev = value.charAt(i - 1);
+								char next = value.charAt(i + 1);
+
+								if (alph.isMatch(prev) && alph.isMatch(next))
+								{
+									chars.remove(chars.size() - 1);
+									chars.remove(chars.size() - 1);
+
+									if (!colCase.containsCollection(alph))
+									{
+										colCase.addCollection(alph);
+									}
+
+									i++;
+								}
+							}
+						}
+						else if (current == '\\')
+						{
+							if (i < value.length() - 1)
+							{
+								char next = value.charAt(i + 1);
+
+								if (containsChar(next, SPECIAL_CHARS))
+								{
+									chars.remove(chars.size() - 1);
+								}
+							}
+						}
+
+						i++;
+					}
+
+					Character data[] = chars.toArray(new Character[0]);
+
+					Collection<Character> collection = createCollection(key, data, false);
+
+					colCase.addCollection(collection);
+
+					return colCase;
+				}
+			}
+			else
+			{
+				throw new TierExpressionException("Bracket statement cannot end the statement; at offset: " + index);
+			}
+		}
+
+		throw new TierExpressionException("Unknown symbol at offset: " + (index - 1));
+	}
+	
+	/**
+	* Search the specified arrays for the given char.
+	* 
+	* @param c The char to search through the arrays for.
+	* @param arrays The list of arrays to search for a match in.
+	* @return Whether or not the arrays contain the char.
+	*/
+	private static boolean containsChar(char c, char[] ... arrays)
+	{
+		for (int i = 0; i < arrays.length; i++)
+		{
+			for (int j = 0; j < arrays[i].length; j++)
+			{
+				if (arrays[i][j] == c)
+				{
+					return true;
+				}
+			}
+		}
+
+		return false;
 	}
 	
 	/**
@@ -209,12 +550,13 @@ public class FPattern
 	 */
 	private static class CollectionCase
 	{
-		private boolean						condensed;
 		private boolean						cumulative;
 		
 		private String						key;
 		
 		private Bounds						bounds;
+		
+		private CollectionCase				next;
 		
 		private ArrayList<CollectionCase>	children;
 		
@@ -234,6 +576,27 @@ public class FPattern
 			
 			setCumulative(false);
 			setBounds(1, 1);
+		}
+		
+		/**
+		 * Get the CollectionCase instance that is next in the pattern
+		 * after this one.
+		 * 
+		 * @return The next CollectionCase tested after this one.
+		 */
+		public CollectionCase getNext()
+		{
+			return next;
+		}
+		
+		/**
+		 * Set the next CollectionCase to be tested after this one.
+		 * 
+		 * @param next The next CollectionCase to be tested after this one.
+		 */
+		public void setNext(CollectionCase next)
+		{
+			this.next = next;
 		}
 		
 		/**

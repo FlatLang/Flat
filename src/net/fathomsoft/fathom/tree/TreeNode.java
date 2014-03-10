@@ -113,7 +113,7 @@ public abstract class TreeNode
 	 */
 	public TreeNode getAncestorOfType(Class<?> type, boolean inclusive)
 	{
-		boolean  checkSuper = false;
+		boolean  checkSuper = true;//false;
 		
 		TreeNode node       = null;
 		
@@ -121,7 +121,7 @@ public abstract class TreeNode
 		{
 			node = this;
 			
-			if (node.getClass().getSimpleName().length() <= 0)
+			if (node.getClass().getSimpleName().length() <= 0 || true)
 			{
 				checkSuper = true;
 			}
@@ -131,13 +131,13 @@ public abstract class TreeNode
 			node = parent;
 		}
 		
-		while (node != null && ((checkSuper && !node.getClass().getSuperclass().equals(type)) || !checkSuper && !node.getClass().equals(type)))
+		while (node != null && ((!checkSuper || !node.getClass().getSuperclass().equals(type)) && !node.getClass().equals(type)))
 		{
 			checkSuper = false;
 			
 			node = node.getParent();
 			
-			if (node != null && node.getClass().getSimpleName().length() <= 0)
+			if (node != null && node.getClass().getSimpleName().length() <= 0 || true)
 			{
 				checkSuper = true;
 			}

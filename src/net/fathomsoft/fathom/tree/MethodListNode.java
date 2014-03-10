@@ -45,7 +45,7 @@ public class MethodListNode extends TreeNode
 	{
 		StringBuilder builder = new StringBuilder();
 		
-		ClassNode classNode = (ClassNode)getAncestorOfType(ClassNode.class, true);
+		ClassNode classNode = (ClassNode)getAncestorOfType(ClassNode.class, false);
 		
 		if (getChildren().size() > 0 && classNode.getFieldListNode().getPublicFieldListNode().getChildren().size() <= 0)
 		{

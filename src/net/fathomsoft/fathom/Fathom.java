@@ -34,7 +34,7 @@ public class Fathom
 	{
 		args = new String[] { "src/test.fat" };
 		
-		File file = new File("IO.fat");
+		File file = new File("/mnt/sdcard/AppProjects/Fathom/IO.fat");
 		
 		SyntaxTree tree = null;
 		
