@@ -614,12 +614,48 @@ public class FPattern
 		return bounds;
 	}
 	
-	public int matchLength(String data, int index, CollectionCase current)
+	public int matchLength(String data, int index, CollectionCase test)
 	{
+		if (test.getCollections().size() > 0)
+		{
+			Iterator<Collection<?>> i = test.iterator();
+			
+			while (i.hasNext())
+			{
+				Collection<?> col = i.next();
+				
+				int length = matchLength(data, index, col, test.isOpposite());
+				
+				if (length >= 0)
+				{
+					return length;
+				}
+			}
+			
+			return -1;
+		}
 		
+		int value = 0;
+
+		for (int k = 0; k < test.getBounds().end || test.getBounds().isEndless(); k++)
+		{
+			CollectionCase child = test.getChild();
+			
+			int length = matchLength(data, index, child);
+			
+			if (length < 0)
+			{
+				return -1;
+			}
+			
+			value += length;
+			index += length;
+		}
+		
+		return value;
 	}
 	
-	public int matchLength(String data, int index, Collection<?> current)
+	public int matchLength(String data, int index, Collection<?> current, boolean opposite)
 	{
 		
 	}
