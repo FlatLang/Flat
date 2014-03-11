@@ -28,13 +28,26 @@ import net.fathomsoft.fathom.util.TierPattern;
  */
 public class Fathom
 {
+	public static final boolean	ANDROID_DEBUG = false;
+	
 	public static final String	LANGUAGE_NAME = "Fathom";
 	
 	public static void main(String args[]) throws IOException
 	{
 		args = new String[] { "src/test.fat" };
 		
-		File file = new File("/mnt/sdcard/AppProjects/Fathom/IO.fat");
+		String directory = null;
+		
+		if (ANDROID_DEBUG)
+		{
+			directory = "/mnt/sdcard/AppProjects/Fathom/";
+		}
+		else
+		{
+			directory = System.getProperty("user.dir").replace('\\', '/') + "/";
+		}
+		
+		File file = new File(directory + "IO.fat");
 		
 		SyntaxTree tree = null;
 		
@@ -61,10 +74,10 @@ public class Fathom
 		System.out.println(header);
 		System.out.println(source);
 		
-		File headerFile = FileUtils.writeFile("test.h", header);
-		File sourceFile = FileUtils.writeFile("test.c", source);
+		File workingDir = new File(directory);
 		
-		File workingDir = new File(System.getProperty("user.dir"));
+		File headerFile = FileUtils.writeFile("test.h", workingDir, header);
+		File sourceFile = FileUtils.writeFile("test.c", workingDir, source);
 		
 		headerFile.deleteOnExit();
 		sourceFile.deleteOnExit();
