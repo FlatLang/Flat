@@ -1,11 +1,6 @@
 package net.fathomsoft.fathom;
 
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 import net.fathomsoft.fathom.util.FPattern;
-import net.fathomsoft.fathom.util.TierMatcher;
-import net.fathomsoft.fathom.util.TierPattern;
 
 public class Test
 {
