@@ -1,16 +1,116 @@
 package net.fathomsoft.fathom.util;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 
+/**
+ * Class used to parse data with a compiled pattern.
+ * 
+ * @author	Braden Steffaniak
+ * @since	Mar 10, 2014 at 8:20:09 PM
+ * @since	v0.1
+ * @version	Mar 10, 2014 at 8:20:09 PM
+ * @version	v0.1
+ */
 public class FPattern
 {
-	private int					mode;
+	private int											mode;
 	
-	private CollectionCase		start, brokeAt;
+	private CollectionCase								start, brokeAt;
+
+	private static final HashMap<String, Collection<?>>	collections;
 	
-	private static final int	PRE_MODE = 0, MAIN_MODE = 1, POST_MODE = 2;
+	private static final char							SPECIAL_CHARS[];
+	
+	private static final int							PRE_MODE = 0, MAIN_MODE = 1, POST_MODE = 2;
+	
+	private static final String							keys[];
+	
+	/**
+	 * Initialize the static data.
+	 */
+	static
+	{
+		SPECIAL_CHARS = new char[] { '`', '*', '+', '?', '"', '|', '-', '(', ')', '[', ']' };
+		
+		collections = new HashMap<String, Collection<?>>();
+
+		insertCollection("`~",          new Character[]  {  }, true);
+		insertCollection("`.",          new Character[]  { '\n', '\r' }, true);
+		insertCollection("`s",          new Character[]  { '\n', '\t', ' ',  '\r' });
+		insertCollection("`S",          new Collection[] { collections.get("`s") }, true);
+		insertCollection("a-z",         new Character[]  { 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z' });
+		insertCollection("A-Z",         new Character[]  { 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z' });
+		insertCollection("0-9",         new Character[]  { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9' });
+		insertCollection("`alph",       new Collection[] { collections.get("a-z"), collections.get("A-Z") });
+		insertCollection("`ALPH",       new Collection[] { collections.get("`alph") }, true);
+		insertCollection("`alphanum",   new Collection[] { collections.get("`alph"), collections.get("0-9") });
+		insertCollection("`ALPHANUM",   new Collection[] { collections.get("`alphanum") }, true);
+		insertCollection("`identifier", new Collection[] { collections.get("`alphanum"), createCollection("", new Character[] { '_', '*', '&' }, false) });
+		insertCollection("`2startps",   new String[]     { "((" });
+		insertCollection("`2endps",     new String[]     { "))" });
+		
+		keys = collections.keySet().toArray(new String[0]);
+	}
+	
+	/**
+	 * Insert a collection into the standard collections used for all
+	 * of the patterns.
+	 * 
+	 * @param key The key used to access the collection.
+	 * @param array The array of data that the collection encompasses.
+	 */
+	private static <E> void insertCollection(String key, E array[])
+	{
+		insertCollection(key, array, false);
+	}
+	
+	/**
+	 * Insert a collection into the standard collections used for all
+	 * of the patterns.
+	 * 
+	 * @param key The key used to access the collection.
+	 * @param array The array of data that the collection encompasses.
+	 * @param opposite Whether or not the pattern should be tested for or
+	 * 		against the data in the array.
+	 */
+	private static <E> void insertCollection(String key, E array[], boolean opposite)
+	{
+		Collection<?> collection = createCollection(key, array, opposite);
+		
+		collections.put(key, collection);
+	}
+	
+	/**
+	 * Create a collection with the specified key and data.
+	 * 
+	 * @param key The key used to access the Collection.
+	 * @param array The array holding the data that the Collection
+	 * 		will hold.
+	 * @param opposite Whether or not the pattern should be tested for or
+	 * 		against the data in the array.
+	 * @return The new Collection that was created based on the given
+	 * 		data.
+	 */
+	private static <E> Collection<E> createCollection(String key, E array[], boolean opposite)
+	{
+		Class<?> type = array.getClass().getComponentType();
+		
+		Collection<E> collection = new Collection<E>(type, key, opposite);
+		
+		HashSet<E> set = new HashSet<E>();
+		
+		for (int i = 0; i < array.length; i++)
+		{
+			set.add(array[i]);
+		}
+		
+		collection.setSet(set);
+		
+		return collection;
+	}
 	
 	/**
 	 * Create a TierPattern instance from the given pattern.
@@ -22,26 +122,57 @@ public class FPattern
 	{
 		String modes[] = divideModes(pattern);
 		
-		start = compile(modes[0]);
+		start = compile(modes[0], PRE_MODE);
 		
 		CollectionCase current = start;
 		
 		for (int i = 1; i < modes.length; i++)
 		{
-			current.setNext(compile(modes[i]));
+			CollectionCase newCase = compile(modes[i], PRE_MODE + i);
+			
+			current.getLast(true).setNext(newCase);
+			
+			current = newCase;
 		}
+		
+//		current = start;
+//		
+//		while (current != null)
+//		{
+//			System.out.println(current.key + " " + current.bounds + " " + current.getMode());
+//			
+//			CollectionCase inner = current.getChild();
+//			
+//			while (inner != null)
+//			{
+//				System.out.println("\t" + inner.getKey() + " " + inner.getBounds() + " " + inner.getMode());
+//				
+//				inner = inner.getNext();
+//			}
+//			
+//			current = current.getNext();
+//		}
 	}
 	
 	/**
-	 * Compile the pattern for quick searching.
+	 * Compile the pattern for quick searching.<br>
+	 * <br>
+	 * The modes include:<br>
+	 * <ul>
+	 * 	<li><b>PRE_MODE:</b> The Patterns pre-condition data.</li>
+	 * 	<li><b>MAIN_MODE:</b> The Patterns main data.</li>
+	 * 	<li><b>POST_MODE:</b> The Patterns post-condition data.</li>
+	 * </ul>
 	 * 
 	 * @param pattern The pattern to compile into usable data.
+	 * @param mode The mode that is compiling.
 	 * @return The first CollectionCase in the pattern.
 	 */
-	private CollectionCase compile(String pattern)
+	private CollectionCase compile(String pattern, int mode)
 	{
+		CollectionCase start   = null;
+		CollectionCase current = null;
 		CollectionCase prev    = null;
-		CollectionCase current = new CollectionCase();
 
 		int index = 0;
 
@@ -53,8 +184,8 @@ public class FPattern
 
 			if (c == '`' || c == '"' || c == '[' || c == '(')
 			{
-				current = getCollectionCase(index, pattern);
-
+				current = getCollectionCase(index, pattern, mode);
+				
 				index += current.getKey().length();
 
 				boolean condensed = false;
@@ -70,15 +201,18 @@ public class FPattern
 							//prev.condensed = true;
 
 							condensed = true;
-							
-							current   = prev;
 						}
 					}
 				}
-
+				
 				if (!condensed)
 				{
-					prev.setNext(current);
+					if (prev != null)
+					{
+						prev.setNext(current);
+					}
+				
+					prev = current;
 				}
 			}
 			else if (prev != null)
@@ -111,16 +245,26 @@ public class FPattern
 
 					if (keys[i].equals(key))
 					{
-						CollectionCase colCase = createCollectionCase(collections.get(key));
-						colCase.setKey(key);
+						current = createCollectionCase(collections.get(key), mode);
+						current.setKey(key);
 
-						cases.add(colCase);
-
-						index += colCase.getKey().length();
-
+						index += current.getKey().length();
+						
+						if (prev != null)
+						{
+							prev.setNext(current);
+						}
+						
+						prev = current;
+						
 						break;
 					}
 				}
+			}
+			
+			if (start == null && current != null)
+			{
+				start = current;
 			}
 
 			if (index == startIndex)
@@ -129,18 +273,51 @@ public class FPattern
 			}
 		}
 
-		return cases;
+		return start;
+	}
+	
+	/**
+	 * Create a CollectionCase instance from the given Collection
+	 * instance.<br>
+	 * <br>
+	 * The modes include:<br>
+	 * <ul>
+	 * 	<li><b>PRE_MODE:</b> The Patterns pre-condition data.</li>
+	 * 	<li><b>MAIN_MODE:</b> The Patterns main data.</li>
+	 * 	<li><b>POST_MODE:</b> The Patterns post-condition data.</li>
+	 * </ul>
+	 * 
+	 * @param collection The Collection instance to create the
+	 * 		CollectionCase from.
+	 * @param mode The mode that is compiling.
+	 * @return The new CollectionCase instance.
+	 */
+	private CollectionCase createCollectionCase(Collection<?> collection, int mode)
+	{
+		CollectionCase colCase = new CollectionCase(mode);
+		
+		colCase.addCollection(collection);
+		
+		return colCase;
 	}
 	
 	/**
 	 * Get the CollectionCase that is described at the specified index
-	 * in the pattern. Creates the CollectionCase if necessary.
+	 * in the pattern. Creates the CollectionCase if necessary.<br>
+	 * <br>
+	 * The modes include:<br>
+	 * <ul>
+	 * 	<li><b>PRE_MODE:</b> The Patterns pre-condition data.</li>
+	 * 	<li><b>MAIN_MODE:</b> The Patterns main data.</li>
+	 * 	<li><b>POST_MODE:</b> The Patterns post-condition data.</li>
+	 * </ul>
 	 * 
 	 * @param index The index to start the search at.
 	 * @param pattern The pattern String to search in.
+	 * @param mode The mode that is compiling.
 	 * @return The next CollectionCase at the specified index.
 	 */
-	private CollectionCase getCollectionCase(int index, String pattern)
+	private CollectionCase getCollectionCase(int index, String pattern, int mode)
 	{
 		int  startIndex = index;
 
@@ -169,7 +346,7 @@ public class FPattern
 
 				String key = pattern.substring(startIndex, index - 1);
 
-				CollectionCase colCase = createCollectionCase(collections.get(key));
+				CollectionCase colCase = createCollectionCase(collections.get(key), mode);
 				colCase.setKey(key);
 
 				return colCase;
@@ -225,7 +402,7 @@ public class FPattern
 
 					Collection<String> collection = createCollection(key, data, false);
 
-					CollectionCase colCase = createCollectionCase(collection);
+					CollectionCase colCase = createCollectionCase(collection, mode);
 					colCase.setKey(key);
 					colCase.setCumulative(false);
 
@@ -251,10 +428,10 @@ public class FPattern
 				String key   = pattern.substring(startIndex, index);
 				String value = key.substring(1, key.length() - 1);
 
-				CollectionCase colCase = new CollectionCase();
+				CollectionCase colCase = new CollectionCase(mode);
 				colCase.setKey(key);
 				colCase.setCumulative(true);
-				colCase.addChildren(compile(value));
+				colCase.setChild(compile(value, mode));
 
 				return colCase;
 			}
@@ -281,7 +458,7 @@ public class FPattern
 
 				if (value.length() > 0)
 				{
-					CollectionCase colCase = new CollectionCase();
+					CollectionCase colCase = new CollectionCase(mode);
 					colCase.setKey(key);
 					colCase.setCumulative(false);
 
@@ -350,6 +527,86 @@ public class FPattern
 		}
 
 		throw new TierExpressionException("Unknown symbol at offset: " + (index - 1));
+	}
+	
+	/**
+	 * Get the index of the first String that matches the pattern.
+	 * 
+	 * @param data The data to search for the pattern in.
+	 * @return The index of the start of the match that was found.
+	 */
+	public int indexOf(String data)
+	{
+		return indexOf(data, 0);
+	}
+	
+	/**
+	 * Get the index of the String that matches the pattern after the
+	 * given index.
+	 * 
+	 * @param data The data to search for the pattern in.
+	 * @param index The index to start the search at.
+	 * @return The index of the start of the match that was found.
+	 */
+	public int indexOf(String data, int index)
+	{
+		Bounds bounds = boundsOf(data, index);
+		
+		if (bounds == null)
+		{
+			return -1;
+		}
+		
+		return bounds.start;
+	}
+	
+	/**
+	 * Get the bounds of the first String that matches the pattern.
+	 * 
+	 * @param data The data to search for the pattern in.
+	 * @return A Bounds instance containing the start and end points
+	 * 		of the match that was found.
+	 */
+	public Bounds boundsOf(String data)
+	{
+		return boundsOf(data, 0);
+	}
+	
+	/**
+	 * Get the bounds of the String that matches the pattern after the
+	 * given index.
+	 * 
+	 * @param data The data to search for the pattern in.
+	 * @param index The index to start the search at.
+	 * @return A Bounds instance containing the start and end points
+	 * 		of the match that was found.
+	 */
+	public Bounds boundsOf(String data, int index)
+	{
+		Bounds bounds = new Bounds();
+		
+		bounds.start = -1;
+		bounds.end   = -1;
+		
+		CollectionCase current = start;
+		
+		while (current != null)
+		{
+			if (current.getMode() == MAIN_MODE && bounds.start < 0)
+			{
+				bounds.start = index;
+			}
+			else if (current.getMode() == POST_MODE && bounds.end < 0)
+			{
+				bounds.end = index;
+			}
+			
+			
+			
+			current = current.getNext();
+		}
+		
+		return bounds;
 	}
 	
 	/**
@@ -552,13 +809,15 @@ public class FPattern
 	{
 		private boolean						cumulative;
 		
+		private int							mode;
+		
 		private String						key;
 		
 		private Bounds						bounds;
 		
 		private CollectionCase				next;
 		
-		private ArrayList<CollectionCase>	children;
+		private CollectionCase				child;
 		
 //		private Class<?>					type;
 		
@@ -566,16 +825,59 @@ public class FPattern
 		
 		/**
 		 * Create the collection case and initialize the data to the
-		 * default values.
+		 * default values.<br>
+		 * <br>
+		 * The modes include:<br>
+		 * <ul>
+		 * 	<li><b>PRE_MODE:</b> The Patterns pre-condition data.</li>
+		 * 	<li><b>MAIN_MODE:</b> The Patterns main data.</li>
+		 * 	<li><b>POST_MODE:</b> The Patterns post-condition data.</li>
+		 * </ul>
+		 * 
+		 * @param mode The mode that is compiling.
 		 */
-		public CollectionCase()
+		public CollectionCase(int mode)
 		{
 			this.bounds      = new Bounds();
 			this.collections = new ArrayList<Collection<?>>();
-			this.children    = new ArrayList<CollectionCase>();
 			
 			setCumulative(false);
 			setBounds(1, 1);
+			setMode(mode);
+		}
+		
+		/**
+		 * Get the mode in which the CollectionCase is testing within.<br>
+		 * <br>
+		 * The modes include:<br>
+		 * <ul>
+		 * 	<li><b>PRE_MODE:</b> The Patterns pre-condition data.</li>
+		 * 	<li><b>MAIN_MODE:</b> The Patterns main data.</li>
+		 * 	<li><b>POST_MODE:</b> The Patterns post-condition data.</li>
+		 * </ul>
+		 * 
+		 * @return The mode in which the CollectionCase is testing within.
+		 */
+		public int getMode()
+		{
+			return mode;
+		}
+		
+		/**
+		 * Set the mode that the CollectionCase is testing within.<br>
+		 * <br>
+		 * The modes include:<br>
+		 * <ul>
+		 * 	<li><b>PRE_MODE:</b> The Patterns pre-condition data.</li>
+		 * 	<li><b>MAIN_MODE:</b> The Patterns main data.</li>
+		 * 	<li><b>POST_MODE:</b> The Patterns post-condition data.</li>
+		 * </ul>
+		 * 
+		 * @param mode The mode the CollectionCase is testing within.
+		 */
+		public void setMode(int mode)
+		{
+			this.mode = mode;
 		}
 		
 		/**
@@ -600,44 +902,66 @@ public class FPattern
 		}
 		
 		/**
-		 * Get the number of children that the CollectionCase has.
+		 * Get the last CollectionCase in the list of cases.
 		 * 
-		 * @return The number of children the CollectionCase has.
+		 * @return The reference to the last CollectionCase in the current
+		 * 		pattern.
 		 */
-		public int getNumChildren()
+		public CollectionCase getLast()
 		{
-			return children.size();
+			return getLast(false);
+		}
+		
+		/**
+		 * Get the last CollectionCase in the list of cases.
+		 * 
+		 * @return inclusive Whether or not to return this CollectionCase
+		 * 		if it is the last.
+		 * @return The reference to the last CollectionCase in the current
+		 * 		pattern.
+		 */
+		public CollectionCase getLast(boolean inclusive)
+		{
+			CollectionCase current = this;
+			
+			if (!inclusive)
+			{
+				current = current.getNext();
+			}
+			
+			while (current != null)
+			{
+				CollectionCase next = current.getNext();
+				
+				if (next == null)
+				{
+					return current;
+				}
+				
+				current = next;
+			}
+			
+			return null;
 		}
 		
 		/**
 		 * Get the child CollectionCase of this Case, if it exists.
 		 * 
-		 * @param index The index to get the child from.
 		 * @return The child CollectionCase instance.
 		 */
-		public CollectionCase getChild(int index)
+		public CollectionCase getChild()
 		{
-			return children.get(index);
+			return child;
 		}
 		
 		/**
-		 * Add a child CollectionCase to this Case.
+		 * Set the child CollectionCase to this Case.
 		 * 
-		 * @param child The new child to add to the CollectionCase.
+		 * @param child The new child to set fpr the CollectionCase.
 		 */
-		public void addChild(CollectionCase child)
+		public void setChild(CollectionCase child)
 		{
-			children.add(child);
-		}
-		
-		/**
-		 * Add a bunch of children CollectionCases to this Case.
-		 * 
-		 * @param children The new children to add to the CollectionCase.
-		 */
-		public void addChildren(ArrayList<CollectionCase> children)
-		{
-			this.children.addAll(children);
+			this.child = child;
 		}
 		
 		/**
@@ -809,15 +1133,15 @@ public class FPattern
 		
 		private HashSet<E>	data;
 		
-		/**
-		 * Create a Collection with the specified Class type.
-		 * 
-		 * @param type The Class type of the data stored.
-		 */
-		public Collection(Class<?> type)
-		{
-			this.type = type;
-		}
+//		/**
+//		 * Create a Collection with the specified Class type.
+//		 * 
+//		 * @param type The Class type of the data stored.
+//		 */
+//		public Collection(Class<?> type)
+//		{
+//			this.type = type;
+//		}
 		
 		/**
 		 * Create a Collection with the specified Class type that is
@@ -836,16 +1160,16 @@ public class FPattern
 			setKey(key);
 		}
 		
-		/**
-		 * Get the type of data that the Collection tests for, or
-		 * against.
-		 * 
-		 * @return The Class instance that represents the data type.
-		 */
-		public Class<?> getType()
-		{
-			return type;
-		}
+//		/**
+//		 * Get the type of data that the Collection tests for, or
+//		 * against.
+//		 * 
+//		 * @return The Class instance that represents the data type.
+//		 */
+//		public Class<?> getType()
+//		{
+//			return type;
+//		}
 		
 		/**
 		 * Get the key String value; the short String that describes the
@@ -886,6 +1210,13 @@ public class FPattern
 		 */
 		public void setSet(HashSet<E> data)
 		{
+//			Iterator i = data.iterator();
+//			
+//			if (i.hasNext())
+//			{
+//				type = i.next().getClass();
+//			}
+			
 			this.data = data;
 		}
 		
