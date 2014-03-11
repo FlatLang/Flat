@@ -1,14 +1,10 @@
 package net.fathomsoft.fathom.tree;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.IOException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import net.fathomsoft.fathom.error.SyntaxError;
 import net.fathomsoft.fathom.util.FileUtils;
 import net.fathomsoft.fathom.util.Location;
 import net.fathomsoft.fathom.util.Patterns;

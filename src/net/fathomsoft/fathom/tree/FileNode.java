@@ -1,7 +1,5 @@
 package net.fathomsoft.fathom.tree;
 
-import java.util.ArrayList;
-
 import net.fathomsoft.fathom.Fathom;
 import net.fathomsoft.fathom.error.SyntaxError;
 

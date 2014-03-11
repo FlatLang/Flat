@@ -1,7 +1,5 @@
 package net.fathomsoft.fathom.tree;
 
-import java.util.regex.Matcher;
-
 import net.fathomsoft.fathom.error.SyntaxError;
 import net.fathomsoft.fathom.util.Location;
 import net.fathomsoft.fathom.util.Patterns;
