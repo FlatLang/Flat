@@ -601,12 +601,27 @@ public class FPattern
 				bounds.end = index;
 			}
 			
+			int length = matchLength(data, index, current);
 			
+			if (length >= 0)
+			{
+				index += length;
+			}
 			
 			current = current.getNext();
 		}
 		
 		return bounds;
+	}
+	
+	public int matchLength(String data, int index, CollectionCase current)
+	{
+		
+	}
+	
+	public int matchLength(String data, int index, Collection<?> current)
+	{
+		
 	}
 	
 	/**
@@ -1160,16 +1175,16 @@ public class FPattern
 			setKey(key);
 		}
 		
-//		/**
-//		 * Get the type of data that the Collection tests for, or
-//		 * against.
-//		 * 
-//		 * @return The Class instance that represents the data type.
-//		 */
-//		public Class<?> getType()
-//		{
-//			return type;
-//		}
+		/**
+		 * Get the type of data that the Collection tests for, or
+		 * against.
+		 * 
+		 * @return The Class instance that represents the data type.
+		 */
+		public Class<?> getType()
+		{
+			return type;
+		}
 		
 		/**
 		 * Get the key String value; the short String that describes the
@@ -1268,6 +1283,24 @@ public class FPattern
 		 */
 		public boolean isMatch(Object test, boolean opposite)
 		{
+			return matchLength(test, opposite) >= 0;
+		}
+		
+		/**
+		 * Get the length of the match between the test Object and the
+		 * Collection data.
+		 * 
+		 * @param test The Object to test for, or against, the Collection.
+		 * @param opposite An explicit value for whether to check for, or
+		 * 		against the data. Overrides whatever value is in the
+		 * 		Collection.opposite.
+		 * @return The length of the match between the test Object and
+		 * 		the Collection data.
+		 */
+		public int matchLength(Object test, boolean opposite)
+		{
+			boolean matched = false;
+			
 			if (type == Collection.class)
 			{
 				Iterator<E> i = data.iterator();
@@ -1278,14 +1311,29 @@ public class FPattern
 					
 					if (collection.isMatch(test) != opposite)
 					{
-						return true;
+						matched = true;
 					}
 				}
-				
-				return false;
 			}
 			
-			return data.contains(test) != opposite;
+			if (!matched && data.contains(test) != opposite)
+			{
+				matched = true;
+			}
+			
+			if (matched)
+			{
+				if (test instanceof String)
+				{
+					return ((String)test).length();
+				}
+				else if (test instanceof Character)
+				{
+					return 1;
+				}
+			}
+			
+			return -1;
 		}
 	}
 }
