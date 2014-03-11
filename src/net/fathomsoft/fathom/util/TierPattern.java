@@ -52,7 +52,6 @@ public class TierPattern
 		insertCollection("`2startps",   new String[]     { "((" });
 		insertCollection("`2endps",     new String[]     { "))" });
 		
-		
 		keys = collections.keySet().toArray(new String[0]);
 	}
 	
