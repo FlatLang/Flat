@@ -616,7 +616,7 @@ public class FPattern
 	
 	public int matchLength(String data, int index, CollectionCase test)
 	{
-		if (test.getCollections().size() > 0)
+		if (test.getNumCollections() > 0)
 		{
 			Iterator<Collection<?>> i = test.iterator();
 			
@@ -624,7 +624,7 @@ public class FPattern
 			{
 				Collection<?> col = i.next();
 				
-				int length = matchLength(data, index, col, test.isOpposite());
+				int length = matchLength(data, index, col, col.isOpposite());
 				
 				if (length >= 0)
 				{
@@ -657,7 +657,146 @@ public class FPattern
 	
 	public int matchLength(String data, int index, Collection<?> current, boolean opposite)
 	{
-		
+		if (collection.getType() == Character.class)
+		{
+			int count = 0;
+
+			while ((count < y || y == -1) && count + offset < src.length())
+			{
+				char c = src.charAt(offset + count);
+
+				if (collection.isMatch(c, opposite))
+				{
+					count++;
+
+					if (bounds.isEndless() && count + offset < src.length())
+					{
+						char newC = src.charAt(offset + count);
+
+						for (int i = 0; i < breakFor.size(); i++)
+						{
+							CollectionCase colCase = breakFor.get(i);
+
+							if (colCase.isMatch(newC))
+							{
+								brokeAt = i;
+							}
+						}
+
+						if (brokeAt >= 0 && breakFor.get(brokeAt).getBounds().start != 0)
+						{
+							return count;
+						}
+						else
+						{
+							brokeAt = -1;
+						}
+					}
+				}
+				else
+				{
+					break;
+				}
+			}
+
+			if (count >= x && (count <= y || y == -1))
+			{
+				return count;
+			}
+		}
+		else if (collection.getType() == String.class)
+		{
+			int count = 0;
+			int times = 0;
+
+			while (times <= y || y == -1)
+			{
+				Iterator<?> iterator = collection.getSet().iterator();
+
+				while (iterator.hasNext())
+				{
+					String  str   = (String)iterator.next();
+
+					boolean found = !opposite;
+
+					for (int i = 0; i < str.length() && found; i++)
+					{
+						if (str.charAt(i) != src.charAt(offset + i))
+						{
+							found = opposite;
+
+							break;
+						}
+
+						count++;
+					}
+
+					if (found)
+					{
+						times++;
+
+						if (times >= y && y >= 0)
+						{
+							break;
+						}
+
+						if (opposite)
+						{
+							if (count > 0)
+							{
+								offset += count; // + 1?
+							}
+							else
+							{
+								offset++;
+							}
+						}
+					}
+				}
+
+				if (times >= x)
+				{
+					return count;
+				}
+				else if (times <= 0)
+				{
+					return -1;
+				}
+			}
+		}
+		else if (collection.getType() == Collection.class)
+		{
+			Iterator<?> iterator = collection.getSet().iterator();
+
+			while (iterator.hasNext())
+			{
+				Collection<?> col = (Collection<?>)iterator.next();
+
+				boolean opp = col.isOpposite();
+
+				if (opposite)
+				{
+					opp = !opp;
+				}
+
+				int size = matchLength(src, offset, col, bounds, breakFor, opp);
+
+				if (size >= 0)// && !cumulative)
+				{
+					return size;
+				}
+//				else if (size < 0 && cumulative)
+//				{
+//					return -1;
+//				}
+			}
+		}
+		else
+		{
+			throw new TierExpressionException("Unexpected condition type of '" + collection.getType().getSimpleName() + "'");
+		}
+
+		return -1;
 	}
 	
 	/**
@@ -1058,6 +1197,16 @@ public class FPattern
 		public void setKey(String key)
 		{
 			this.key = key;
+		}
+		
+		/**
+		 * Get the number of Collections that are tested in the case.
+		 * 
+		 * @return The number of Collections that are tested in the case.
+		 */
+		public int getNumCollections()
+		{
+			return collections.size();
 		}
 		
 		/**
