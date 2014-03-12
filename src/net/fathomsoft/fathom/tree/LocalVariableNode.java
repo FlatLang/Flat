@@ -50,44 +50,23 @@ public class LocalVariableNode extends VariableNode
 	
 	public static LocalVariableNode decodeStatement(TreeNode parentNode, String statement, Location location)
 	{
-		LocalVariableNode n = new LocalVariableNode();
-		
-		// Pattern used to find word boundaries. 
-		Matcher matcher = Patterns.WORD_BOUNDARIES.matcher(statement);
-		
-		/* Keep track of the type. The type is always specified before the identifier,
-		   therefore proving that the type is the second to last word before the end
-		   of the declaration. */
-		String oldWord  = null;
-		
-		int		argNum  = 0;
-		int     index   = 0;
-		
-		boolean end     = false;
-		
-		while (matcher.find())
+		LocalVariableNode n = new LocalVariableNode()
 		{
-			if (end)
+			String oldWord;
+			
+			@Override
+			public void interactWord(String word, int wordNumber)
 			{
-				String str = statement.substring(index, matcher.start());
+				setAttribute(word, wordNumber);
 				
-				n.setAttribute(str, argNum);
+				setName(word);
+				setType(oldWord);
 				
-				n.setName(str);
-				n.setType(oldWord);
-				
-				oldWord = str;
-				
-				argNum++;
-				end = false;
+				oldWord = word;
 			}
-			else
-			{
-				index = matcher.start();
-				
-				end = true;
-			}
-		}
+		};
+		
+		n.iterateWords(statement);
 		
 		if (n.getType() == null)
 		{
