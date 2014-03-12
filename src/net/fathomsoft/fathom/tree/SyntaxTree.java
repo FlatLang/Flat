@@ -121,6 +121,38 @@ public class SyntaxTree
 			
 			currentNode = getNextStatement();
 		}
+		
+		checkForErrors();
+	}
+	
+	/**
+	 * 
+	 */
+	private void checkForErrors()
+	{
+		checkForErrors(root);
+	}
+	
+	/**
+	 * 
+	 * 
+	 * @param root
+	 */
+	private void checkForErrors(TreeNode root)
+	{
+		if (root instanceof MethodCallNode)
+		{
+			FileNode fileNode = (FileNode)root.getAncestorOfType(FileNode.class);
+			
+//			if (fileNode.getImportListNode().contains)
+		}
+		
+		for (int i = 0; i < root.getChildren().size(); i++)
+		{
+			TreeNode child = root.getChild(i);
+			
+			checkForErrors(child);
+		}
 	}
 	
 	/**
