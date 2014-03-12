@@ -142,17 +142,19 @@ public class SyntaxTree
 	{
 		if (root instanceof MethodCallNode)
 		{
+			MethodCallNode node = (MethodCallNode)root;
+			
 			FileNode fileNode = (FileNode)root.getAncestorOfType(FileNode.class);
 			
-			int dot = root.getName().indexOf('.');
+			int dot = node.getName().indexOf('.');
 			
 			if (dot > 0)
 			{
-				String cFile = root.getName().substring(0, dot);
+				String cFile = node.getName().substring(0, dot);
 				
 				if (fileNode.getImportListNode().contains(cFile))
 				{
-					root.setName(root.getName().substring(dot + 1));
+					node.setName(node.getName().substring(dot + 1));
 				}
 			}
 		}
