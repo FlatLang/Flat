@@ -11,7 +11,7 @@ public class ImportListNode extends TreeNode
 	{
 		for (int i = 0; i < getChildren().size(); i++)
 		{
-			ImportNode child = getChild(i);
+			ImportNode child = (ImportNode)getChild(i);
 			
 			if (importLocation.equals(child.getImportLocation()))
 			{
