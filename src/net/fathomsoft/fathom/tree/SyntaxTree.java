@@ -144,7 +144,17 @@ public class SyntaxTree
 		{
 			FileNode fileNode = (FileNode)root.getAncestorOfType(FileNode.class);
 			
-//			if (fileNode.getImportListNode().contains)
+			int dot = root.getName().indexOf('.');
+			
+			if (dot > 0)
+			{
+				String cFile = root.getName().substring(0, dot);
+				
+				if (fileNode.getImportListNode().contains(cFile))
+				{
+					root.setName(root.getName().substring(dot + 1));
+				}
+			}
 		}
 		
 		for (int i = 0; i < root.getChildren().size(); i++)
