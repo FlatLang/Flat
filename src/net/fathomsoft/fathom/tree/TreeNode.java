@@ -146,6 +146,77 @@ public abstract class TreeNode
 		return node;
 	}
 	
+//	/**
+//	 * Get the nearest ancestor TreeNode to the specific TreeNode with
+//	 * the given Class type.
+//	 * 
+//	 * @param type The Class type of the Ancestor to search for.
+//	 * @return The nearest ancestor TreeNode to the specific TreeNode.
+//	 */
+//	public TreeNode getChildOfType(Class<?> type)
+//	{
+//		return getChildOfType(type, false);
+//	}
+//	
+//	/**
+//	 * Get the nearest ancestor TreeNode to the specific TreeNode with
+//	 * the given Class type.
+//	 * 
+//	 * @param type The Class type of the Ancestor to search for.
+//	 * @param inclusive Whether or not to check the current TreeNode.
+//	 * @return The nearest ancestor TreeNode to the specific TreeNode.
+//	 */
+//	public TreeNode getChildOfType(Class<?> type, boolean inclusive)
+//	{
+//		boolean  checkSuper = true;//false;
+//		
+//		TreeNode parent     = this;
+//		
+//		if (inclusive)
+//		{
+//			if (parent.getClass().getSimpleName().length() <= 0 || true)
+//			{
+//				checkSuper = true;
+//			}
+//			
+//			if (parent.getClass().equals(type))
+//			{
+//				return parent;
+//			}
+//		}
+//		
+//		for (int i = 0; parent != null && i < parent.getChildren().size(); i++)
+//		{
+//			TreeNode node = parent.getChild(i);
+//			
+//			if (((!checkSuper || !node.getClass().getSuperclass().equals(type)) && !node.getClass().equals(type)))
+//			{
+//				return node;
+//			}
+//			
+//			checkSuper = false;
+//			
+//			if (node != null && node.getClass().getSimpleName().length() <= 0 || true)
+//			{
+//				checkSuper = true;
+//			}
+//		}
+//		
+//		for (int i = 0; parent != null && i < parent.getChildren().size(); i++)
+//		{
+//			TreeNode node  = parent.getChild(i);
+//			
+//			TreeNode child = node.getChildOfType(type, inclusive);
+//			
+//			if (child != null)
+//			{
+//				return child;
+//			}
+//		}
+//		
+//		return null;
+//	}
+	
 	/**
 	 * Get an ArrayList with all of the children TreeNodes to the specific
 	 * TreeNode.
