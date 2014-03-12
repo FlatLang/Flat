@@ -3,6 +3,26 @@ package net.fathomsoft.fathom.tree;
 public class ImportListNode extends TreeNode
 {
 	/**
+	 * Get whether or not the given location has been imported.
+	 * 
+	 * @return Whether or not the given location has been imported.
+	 */
+	public boolean contains(String importLocation)
+	{
+		for (int i = 0; i < getChildren().size(); i++)
+		{
+			ImportNode child = getChild(i);
+			
+			if (importLocation.equals(child.getImportLocation()))
+			{
+				return true;
+			}
+		}
+		
+		return false;
+	}
+	
+	/**
 	 * @see net.fathomsoft.fathom.tree.TreeNode#generateJavaSourceOutput()
 	 */
 	@Override
