@@ -48,9 +48,9 @@ public class FPattern
 		insertCollection("`ALPH",       new Collection[] { collections.get("`alph") }, true);
 		insertCollection("`alphanum",   new Collection[] { collections.get("`alph"), collections.get("0-9") });
 		insertCollection("`ALPHANUM",   new Collection[] { collections.get("`alphanum") }, true);
-		insertCollection("`identifier", new Collection[] { collections.get("`alphanum"), createCollection("", new Character[] { '_', '*', '&' }, false) });
 		insertCollection("`2startps",   new String[]     { "((" });
 		insertCollection("`2endps",     new String[]     { "))" });
+		insertCollection("`identifier", new Collection[] { collections.get("`alphanum"), createCollection("", new Character[] { '_', '*', '&' }, false) });
 		
 		keys = collections.keySet().toArray(new String[0]);
 	}
@@ -122,36 +122,37 @@ public class FPattern
 	{
 		String modes[] = divideModes(pattern);
 		
-		start = compile(modes[0], PRE_MODE);
-		
 		CollectionCase current = start;
 		
-		for (int i = 1; i < modes.length; i++)
+		for (int i = 0; i < modes.length; i++)
 		{
 			CollectionCase newCase = compile(modes[i], PRE_MODE + i);
 			
-			current.getLast(true).setNext(newCase);
+			if (current == null)
+			{
+				start = newCase;
+			}
+			else
+			{
+				current.getLast(true).setNext(newCase);
+			}
 			
 			current = newCase;
 		}
 		
-//		current = start;
-//		
-//		while (current != null)
-//		{
-//			System.out.println(current.key + " " + current.bounds + " " + current.getMode());
-//			
-//			CollectionCase inner = current.getChild();
-//			
-//			while (inner != null)
-//			{
-//				System.out.println("\t" + inner.getKey() + " " + inner.getBounds() + " " + inner.getMode());
-//				
-//				inner = inner.getNext();
-//			}
-//			
-//			current = current.getNext();
-//		}
+		current = start;
+		
+		while (current != null)
+		{
+			CollectionCase inner = current.getChild();
+			
+			while (inner != null)
+			{
+				inner = inner.getNext();
+			}
+			
+			current = current.getNext();
+		}
 	}
 	
 	/**
@@ -170,6 +171,26 @@ public class FPattern
 	 */
 	private CollectionCase compile(String pattern, int mode)
 	{
+		return compile(null, pattern, mode);
+	}
+	
+	/**
+	 * Compile the pattern for quick searching.<br>
+	 * <br>
+	 * The modes include:<br>
+	 * <ul>
+	 * 	<li><b>PRE_MODE:</b> The Patterns pre-condition data.</li>
+	 * 	<li><b>MAIN_MODE:</b> The Patterns main data.</li>
+	 * 	<li><b>POST_MODE:</b> The Patterns post-condition data.</li>
+	 * </ul>
+	 * 
+	 * @param parent The parent CollectionCase of this pattern.
+	 * @param pattern The pattern to compile into usable data.
+	 * @param mode The mode that is compiling.
+	 * @return The first CollectionCase in the pattern.
+	 */
+	private CollectionCase compile(CollectionCase parent, String pattern, int mode)
+	{
 		CollectionCase start   = null;
 		CollectionCase current = null;
 		CollectionCase prev    = null;
@@ -184,7 +205,7 @@ public class FPattern
 
 			if (c == '`' || c == '"' || c == '[' || c == '(')
 			{
-				current = getCollectionCase(index, pattern, mode);
+				current = getCollectionCase(index, parent, pattern, mode);
 				
 				index += current.getKey().length();
 
@@ -245,7 +266,7 @@ public class FPattern
 
 					if (keys[i].equals(key))
 					{
-						current = createCollectionCase(collections.get(key), mode);
+						current = createCollectionCase(parent, collections.get(key), mode);
 						current.setKey(key);
 
 						index += current.getKey().length();
@@ -287,15 +308,16 @@ public class FPattern
 	 * 	<li><b>POST_MODE:</b> The Patterns post-condition data.</li>
 	 * </ul>
 	 * 
+	 * @param parent The parent CollectionCase of this pattern.
 	 * @param collection The Collection instance to create the
 	 * 		CollectionCase from.
 	 * @param mode The mode that is compiling.
 	 * @return The new CollectionCase instance.
 	 */
-	private CollectionCase createCollectionCase(Collection<?> collection, int mode)
+	private CollectionCase createCollectionCase(CollectionCase parent, Collection<?> collection, int mode)
 	{
 		CollectionCase colCase = new CollectionCase(mode);
-		
+		colCase.setParent(parent);
 		colCase.addCollection(collection);
 		
 		return colCase;
@@ -313,11 +335,12 @@ public class FPattern
 	 * </ul>
 	 * 
 	 * @param index The index to start the search at.
+	 * @param parent The parent CollectionCase of this pattern.
 	 * @param pattern The pattern String to search in.
 	 * @param mode The mode that is compiling.
 	 * @return The next CollectionCase at the specified index.
 	 */
-	private CollectionCase getCollectionCase(int index, String pattern, int mode)
+	private CollectionCase getCollectionCase(int index, CollectionCase parent, String pattern, int mode)
 	{
 		int  startIndex = index;
 
@@ -346,7 +369,7 @@ public class FPattern
 
 				String key = pattern.substring(startIndex, index - 1);
 
-				CollectionCase colCase = createCollectionCase(collections.get(key), mode);
+				CollectionCase colCase = createCollectionCase(parent, collections.get(key), mode);
 				colCase.setKey(key);
 
 				return colCase;
@@ -402,7 +425,7 @@ public class FPattern
 
 					Collection<String> collection = createCollection(key, data, false);
 
-					CollectionCase colCase = createCollectionCase(collection, mode);
+					CollectionCase colCase = createCollectionCase(parent, collection, mode);
 					colCase.setKey(key);
 					colCase.setCumulative(false);
 
@@ -429,9 +452,10 @@ public class FPattern
 				String value = key.substring(1, key.length() - 1);
 
 				CollectionCase colCase = new CollectionCase(mode);
+				colCase.setParent(parent);
 				colCase.setKey(key);
 				colCase.setCumulative(true);
-				colCase.setChild(compile(value, mode));
+				colCase.setChild(compile(colCase, value, mode));
 
 				return colCase;
 			}
@@ -585,111 +609,195 @@ public class FPattern
 	{
 		Bounds bounds = new Bounds();
 		
-		bounds.start = -1;
-		bounds.end   = -1;
-		
-		CollectionCase current = start;
-		
-		while (current != null)
+		while (index < data.length())
 		{
-			if (current.getMode() == MAIN_MODE && bounds.start < 0)
+			bounds.start = -1;
+			bounds.end   = -1;
+			
+			CollectionCase current = start;
+			
+			int startIndex = index;
+			
+			while (current != null)
 			{
-				bounds.start = index;
-			}
-			else if (current.getMode() == POST_MODE && bounds.end < 0)
-			{
-				bounds.end = index;
+				if (brokeAt == null || current == brokeAt)
+				{
+					if (current.getMode() >= MAIN_MODE && bounds.getStart() < 0)
+					{
+						bounds.start = index;
+					}
+					
+					int length = matchLength(data, index, current);
+					
+					if (length >= 0)
+					{
+						index += length;
+					}
+					else
+					{
+						index = startIndex + 1;
+						
+						// Needed.
+						bounds.start = -1;
+						bounds.end   = -1;
+						
+						break;
+					}
+					
+					CollectionCase next = current.getNext();
+					
+					if ((next == null || next.getMode() == POST_MODE && current.getMode() < POST_MODE) && bounds.getEnd() < 0)
+					{
+						bounds.end = index;
+					}
+				}
+				
+				current = current.getNext();
 			}
 			
-			int length = matchLength(data, index, current);
-			
-			if (length >= 0)
+			if (bounds.getStart() >= 0 && bounds.getEnd() >= bounds.getStart())
 			{
-				index += length;
+				return bounds;
 			}
-			
-			current = current.getNext();
 		}
 		
-		return bounds;
+		return null;
+	}
+	
+	private int matchCollections(String data, int index, CollectionCase test)
+	{
+		return matchCollections(data, index, test, null);
+	}
+	
+	private int matchCollections(String data, int index, CollectionCase test, Collection<?> exclude)
+	{
+		Iterator<Collection<?>> i = test.iterator();
+		
+		while (i.hasNext())
+		{
+			Collection<?> col = i.next();
+//			if (index >= 318 && index < 360)System.out.println(col.key);
+			
+//			if (col == exclude)
+//			{
+//				continue;
+//			}
+			
+			int length = matchLength(data, index, test, col, col.isOpposite());
+			
+			if (brokeAt != null)
+			{
+				return length;
+			}
+			else if (length > 0)
+			{
+				int next = matchCollections(data, index + length, test, col);
+				
+				if (next < 0)
+				{
+					next = 0;
+				}
+				
+				return length + next;
+			}
+		}
+		
+		return -1;
 	}
 	
 	public int matchLength(String data, int index, CollectionCase test)
 	{
 		if (test.getNumCollections() > 0)
 		{
-			Iterator<Collection<?>> i = test.iterator();
+			int length = matchCollections(data, index, test);
 			
-			while (i.hasNext())
+			if (length < 0 && test.getBounds().isOptional())
 			{
-				Collection<?> col = i.next();
-				
-				int length = matchLength(data, index, col, col.isOpposite());
-				
-				if (length >= 0)
-				{
-					return length;
-				}
+				return 0;
 			}
 			
-			return -1;
+			return length;
 		}
 		
 		int value = 0;
-
-		for (int k = 0; k < test.getBounds().end || test.getBounds().isEndless(); k++)
+		
+		for (int i = 0; i < test.getBounds().getEnd() || test.getBounds().isEndless(); i++)
 		{
 			CollectionCase child = test.getChild();
 			
-			int length = matchLength(data, index, child);
-			
-			if (length < 0)
+			while (child != null)
 			{
-				return -1;
+				int length = matchLength(data, index, child);
+				
+				value += length;
+				index += length;
+//				if(value > 0)System.out.println(data.substring(index - value, index));
+				if (brokeAt != null)
+				{
+					if (isWithinList(brokeAt, child))
+					{
+						child = brokeAt;
+						
+						length = matchLength(data, index, brokeAt);
+						
+						value += length;
+						index += length;
+					}
+					else
+					{
+						return value;
+					}
+				}
+				
+				if (length < 0)
+				{
+					if (value < 0)
+					{
+						return -1;
+					}
+					
+					return value + 1;
+				}
+	//			else if (length == 0)
+	//			{
+	//				return 0;
+	//			}
+				
+				child = child.getNext();
 			}
-			
-			value += length;
-			index += length;
 		}
 		
 		return value;
 	}
 	
-	public int matchLength(String data, int index, Collection<?> current, boolean opposite)
+	public int matchLength(String data, int index, CollectionCase parent, Collection<?> collection, boolean opposite)
 	{
+		brokeAt = null;
+		
+		Bounds bounds = parent.getBounds();
+		
+		int x = bounds.getStart();
+		int y = bounds.getEnd();
+		
 		if (collection.getType() == Character.class)
 		{
 			int count = 0;
 
-			while ((count < y || y == -1) && count + offset < src.length())
+			while ((count < y || bounds.isEndless()) && count + index < data.length())
 			{
-				char c = src.charAt(offset + count);
+				char c = data.charAt(index + count);
 
 				if (collection.isMatch(c, opposite))
 				{
 					count++;
 
-					if (bounds.isEndless() && count + offset < src.length())
+					if (count >= bounds.getStart() && bounds.isOptional() && count + index < data.length())
 					{
-						char newC = src.charAt(offset + count);
-
-						for (int i = 0; i < breakFor.size(); i++)
-						{
-							CollectionCase colCase = breakFor.get(i);
-
-							if (colCase.isMatch(newC))
-							{
-								brokeAt = i;
-							}
-						}
-
-						if (brokeAt >= 0 && breakFor.get(brokeAt).getBounds().start != 0)
+						brokeAt = checkForBreak(data, index + count, parent);
+						
+						if (brokeAt != null)
 						{
 							return count;
-						}
-						else
-						{
-							brokeAt = -1;
 						}
 					}
 				}
@@ -699,7 +807,7 @@ public class FPattern
 				}
 			}
 
-			if (count >= x && (count <= y || y == -1))
+			if (count >= x && (count <= y || bounds.isEndless()))
 			{
 				return count;
 			}
@@ -709,60 +817,85 @@ public class FPattern
 			int count = 0;
 			int times = 0;
 
-			while (times <= y || y == -1)
+			while (times <= y || bounds.isEndless())
 			{
 				Iterator<?> iterator = collection.getSet().iterator();
-
+				
 				while (iterator.hasNext())
 				{
 					String  str   = (String)iterator.next();
-
+					
 					boolean found = !opposite;
-
-					for (int i = 0; i < str.length() && found; i++)
+					
+					for (int i = 0; i < str.length() && index + i < data.length() && found; i++)
 					{
-						if (str.charAt(i) != src.charAt(offset + i))
+						if (str.charAt(i) != data.charAt(index + i))
 						{
 							found = opposite;
-
+							
 							break;
 						}
-
+						
 						count++;
 					}
-
+//					if (index >= 318 && index < 322)
+//						{
+//						index = index;
+//						System.out.println(data.substring(index, index + 10));
+//						}
 					if (found)
 					{
 						times++;
-
-						if (times >= y && y >= 0)
-						{
-							break;
-						}
-
+						
+//						if (times >= y && !bounds.isEndless())
+//						{
+//							break;
+//						}
+						
 						if (opposite)
 						{
 							if (count > 0)
 							{
-								offset += count; // + 1?
+								index += count; // + 1?
 							}
 							else
 							{
-								offset++;
+								index++;
 							}
 						}
+						else
+						{
+							index += count;
+						}
+					}
+					else if (times < x)
+					{
+						return -1;
+					}
+					
+					if (times >= bounds.getStart() && bounds.isOptional() && count + index < data.length())
+					{
+						brokeAt = checkForBreak(data, index + count, parent);
+						
+						if (brokeAt != null)
+						{
+							return count;
+						}
+					}
+					
+					if (!found)
+					{
+						return count;
 					}
 				}
-
-				if (times >= x)
-				{
-					return count;
-				}
-				else if (times <= 0)
-				{
-					return -1;
-				}
 			}
+			
+			if (times >= x)
+			{
+				return count;
+			}
+			
+			return -1;
 		}
 		else if (collection.getType() == Collection.class)
 		{
@@ -779,7 +912,7 @@ public class FPattern
 					opp = !opp;
 				}
 
-				int size = matchLength(src, offset, col, bounds, breakFor, opp);
+				int size = matchLength(data, index, parent, col, opp);
 
 				if (size >= 0)// && !cumulative)
 				{
@@ -797,6 +930,57 @@ public class FPattern
 		}
 
 		return -1;
+	}
+	
+	private static CollectionCase checkForBreak(String data, int index, CollectionCase test)
+	{
+		char newC = data.charAt(index);
+		
+		CollectionCase current = test.getNext();
+		
+		while (current != null)
+		{
+			if (!current.getBounds().isOptional() && current.isMatch(newC))
+			{
+				return current;
+			}
+			
+			if (!current.getBounds().isOptional())
+			{
+				break;
+			}
+			
+			CollectionCase next = current.getNext();
+			
+			if (next == null)
+			{
+				if (current.getParent() != null)
+				{
+					next = current.getParent().getNext();
+				}
+			}
+			
+			current = next;
+		}
+		
+		return null;
+	}
+	
+	private static boolean isWithinList(CollectionCase needle, CollectionCase haystack)
+	{
+		CollectionCase current = haystack;
+		
+		while (current != null)
+		{
+			if (current == needle)
+			{
+				return true;
+			}
+			
+			current = current.getNext();
+		}
+		
+		return false;
 	}
 	
 	/**
@@ -972,6 +1156,16 @@ public class FPattern
 		}
 		
 		/**
+		 * Get whether or not the bounds are optional.
+		 * 
+		 * @return Whether or not the bounds will search optionally.
+		 */
+		public boolean isOptional()
+		{
+			return start == 0;
+		}
+		
+		/**
 		 * Generate a String representation of the Bounds Object
 		 * containing the start and end position of the Bounds.
 		 * 
@@ -1006,8 +1200,7 @@ public class FPattern
 		private Bounds						bounds;
 		
 		private CollectionCase				next;
-		
-		private CollectionCase				child;
+		private CollectionCase				parent, child;
 		
 //		private Class<?>					type;
 		
@@ -1089,6 +1282,27 @@ public class FPattern
 		public void setNext(CollectionCase next)
 		{
 			this.next = next;
+		}
+		
+		/**
+		 * Get the CollectionCase instance that is the parent of the
+		 * specified CollectionCase.
+		 * 
+		 * @return The parent CollectionCase of this one.
+		 */
+		public CollectionCase getParent()
+		{
+			return parent;
+		}
+		
+		/**
+		 * Set the parent CollectionCase of this one.
+		 * 
+		 * @param next The parent CollectionCase of this one.
+		 */
+		public void setParent(CollectionCase parent)
+		{
+			this.parent = parent;
 		}
 		
 		/**
