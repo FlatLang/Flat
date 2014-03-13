@@ -155,11 +155,11 @@ public class BinaryOperatorNode extends TreeNode
 		}
 		else if (matcher.hitEnd())
 		{
-			IdentifierNode node       = TreeNode.getExistingNode(parentNode, statement);
-			
 			MethodNode     methodNode = (MethodNode)parentNode.getAncestorOfType(MethodNode.class, true);
 			
-			LiteralNode literal = new LiteralNode();
+			IdentifierNode node       = TreeNode.getExistingNode(parentNode, statement);
+			
+			LiteralNode    literal    = new LiteralNode();
 			
 			if (node != null)
 			{
