@@ -1,7 +1,9 @@
 package net.fathomsoft.fathom.tree;
 
 import net.fathomsoft.fathom.error.SyntaxError;
+import net.fathomsoft.fathom.util.Bounds;
 import net.fathomsoft.fathom.util.Location;
+import net.fathomsoft.fathom.util.Patterns;
 import net.fathomsoft.fathom.util.Regex;
 
 /**
@@ -17,7 +19,7 @@ public class MethodNode extends DeclarationNode
 {
 	public MethodNode()
 	{
-		ParameterListNode parameterList     = new ParameterListNode();
+		ParameterListNode     parameterList = new ParameterListNode();
 		LocalVariableListNode variablesNode = new LocalVariableListNode();
 		
 		super.addChild(parameterList);
@@ -48,6 +50,18 @@ public class MethodNode extends DeclarationNode
 		{
 			super.addChild(child);
 		}
+	}
+	
+	/**
+	 * Get the name of the identifier for the Object reference that
+	 * the method is using.
+	 * 
+	 * @return The name of the identifier for the Object reference that
+	 * 		the method is using.
+	 */
+	public String getObjectReferenceIdentifier()
+	{
+		return ParameterListNode.OBJECT_REFERENCE_IDENTIFIER;
 	}
 
 	/**
@@ -120,12 +134,12 @@ public class MethodNode extends DeclarationNode
 				return "";
 			}
 		}
-		if (isStatic())
-		{
-			SyntaxError.outputNewError("Static methods are not supported in the C implementation yet", getLocationIn());
-			
-			return null;
-		}
+//		if (isStatic())
+//		{
+//			SyntaxError.outputNewError("Static methods are not supported in the C implementation yet", getLocationIn());
+//			
+//			return null;
+//		}
 		if (isConst())
 		{
 			SyntaxError.outputNewError("Const methods are not supported in the C implementation yet", getLocationIn());
@@ -195,7 +209,7 @@ public class MethodNode extends DeclarationNode
 	{
 		StringBuilder builder = new StringBuilder();
 		
-		if (!isStatic())
+		if (!isStatic() && this instanceof ConstructorNode == false)
 		{
 			builder.append("static ");
 		}
@@ -204,15 +218,26 @@ public class MethodNode extends DeclarationNode
 			builder.append(getConstText()).append(' ');
 		}
 		
-		builder.append(getType()).append(' ');
+		builder.append(getType());
 		
 		if (isReference())
 		{
-			builder.append(getReferenceText()).append(' ');
+			builder.append(getReferenceText());
 		}
 		else if (isPointer())
 		{
-			builder.append(getPointerText()).append(' ');
+			builder.append(getPointerText());
+		}
+		else if (isArray())
+		{
+			builder.append(getArrayText());
+		}
+		
+		builder.append(' ');
+		
+		if (this instanceof ConstructorNode)
+		{
+			builder.append("new_");
 		}
 		
 		builder.append(getName()).append('(');
@@ -246,11 +271,13 @@ public class MethodNode extends DeclarationNode
 			
 			statement = statement.substring(0, firstParenthIndex);
 			
+			final String statement2 = statement;
+			
 			MethodNode n = new MethodNode()
 			{
 				private String returnType = null;
 				
-				public void interactWord(String word, int argNum)
+				public void interactWord(String word, int argNum, Bounds bounds, int numWords)
 				{
 					setAttribute(word, argNum);
 					
@@ -258,6 +285,15 @@ public class MethodNode extends DeclarationNode
 					setName(word);
 					
 					returnType = word;
+					
+					if (argNum == numWords - 2)
+					{
+						// If it is an array declaration.
+						if (Regex.matches(statement2, bounds.getEnd(), Patterns.ARRAY_BRACKETS))
+						{
+							setArray(true);
+						}
+					}
 				}
 			};
 			
@@ -280,7 +316,23 @@ public class MethodNode extends DeclarationNode
 				}
 			}
 			
-			n.iterateWords(statement);
+			n.iterateWords(statement, Patterns.IDENTIFIER_BOUNDARIES);
+			
+			// If it is the main method.
+			if (n.getName().equals("main") && n.isStatic() && n.getType().equals("void") && n.getVisibility() == FieldNode.PUBLIC)
+			{
+				ParameterListNode params = (ParameterListNode)n.getParameterListNode();
+				
+				if (params.getChildren().size() == 1)
+				{
+					ParameterNode param = (ParameterNode)params.getChild(0);
+					
+					if (param.getType().equals("String") && param.isArray())
+					{
+						
+					}
+				}
+			}
 			
 			return n;
 		}
