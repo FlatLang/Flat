@@ -1,7 +1,10 @@
 package net.fathomsoft.fathom.tree;
 
 import net.fathomsoft.fathom.error.SyntaxError;
+import net.fathomsoft.fathom.util.Bounds;
 import net.fathomsoft.fathom.util.Location;
+import net.fathomsoft.fathom.util.Patterns;
+import net.fathomsoft.fathom.util.Regex;
 
 /**
  * 
@@ -88,23 +91,29 @@ public class FieldNode extends DeclarationNode
 			builder.append(getConstText()).append(' ');
 		}
 		
-		builder.append(getType()).append(' ');
+		builder.append(getType());
 		
 		if (isReference())
 		{
-			builder.append(getReferenceText()).append(' ');
+			builder.append(getReferenceText());
 		}
 		else if (isPointer())
 		{
-			builder.append(getPointerText()).append(' ');
+			builder.append(getPointerText());
+		}
+		else if (isArray())
+		{
+			builder.append(getArrayText());
 		}
 		
-		builder.append(getName()).append(';').append('\n');
+		builder.append(' ').append(getName());
+		
+		builder.append(';').append('\n');
 		
 		return builder.toString();
 	}
 	
-	public static FieldNode decodeStatement(TreeNode parentNode, String statement, Location location)
+	public static FieldNode decodeStatement(TreeNode parentNode, final String statement, Location location)
 	{
 		FieldNode n = new FieldNode()
 		{
@@ -115,7 +124,7 @@ public class FieldNode extends DeclarationNode
 			   of the declaration. */
 			private String	oldWord = null;
 			
-			public void interactWord(String word, int argNum)
+			public void interactWord(String word, int argNum, Bounds bounds, int numWords)
 			{
 				if (word.equals("{"))
 				{
@@ -134,10 +143,20 @@ public class FieldNode extends DeclarationNode
 				setType(oldWord);
 				
 				oldWord = word;
+				
+				if (argNum == numWords - 1)
+				{
+					// If it is an array declaration.
+					if (Regex.matches(statement, bounds.getEnd(), Patterns.ARRAY_BRACKETS))
+					{
+						setArray(true);
+					}
+				}
 			}
 		};
 		
-		n.iterateWords(statement);
+		n.iterateWords(statement, Patterns.IDENTIFIER_BOUNDARIES);
+		
 		
 		if (n.getType() == null)
 		{
