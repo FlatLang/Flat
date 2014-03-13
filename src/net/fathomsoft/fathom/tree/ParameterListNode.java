@@ -11,6 +11,8 @@ package net.fathomsoft.fathom.tree;
  */
 public class ParameterListNode extends TreeNode
 {
+	public static final String OBJECT_REFERENCE_IDENTIFIER = "__o__";
+	
 	public ParameterListNode()
 	{
 		
@@ -45,13 +47,16 @@ public class ParameterListNode extends TreeNode
 	{
 		StringBuilder builder = new StringBuilder();
 		
-		ClassNode classNode = (ClassNode)getParent().getParent().getParent();
+		ClassNode classNode = (ClassNode)getAncestorOfType(ClassNode.class);
 		
-		builder.append(classNode.getName()).append("* o");
-		
-		if (getChildren().size() > 0)
+		if (getParent() instanceof ConstructorNode == false)
 		{
-			builder.append(", ");
+			builder.append(classNode.getName()).append("* ").append(OBJECT_REFERENCE_IDENTIFIER);
+			
+			if (getChildren().size() > 0)
+			{
+				builder.append(", ");
+			}
 		}
 		
 		builder.append(generateJavaSourceOutput());
@@ -67,13 +72,16 @@ public class ParameterListNode extends TreeNode
 	{
 		StringBuilder builder = new StringBuilder();
 		
-		ClassNode classNode = (ClassNode)getAncestorOfType(ClassNode.class, true);
+		ClassNode classNode = (ClassNode)getAncestorOfType(ClassNode.class);
 		
-		builder.append(classNode.getName()).append("* o");
-		
-		if (getChildren().size() > 0)
+		if (getParent() instanceof ConstructorNode == false)
 		{
-			builder.append(", ");
+			builder.append(classNode.getName()).append("* ").append(OBJECT_REFERENCE_IDENTIFIER);
+			
+			if (getChildren().size() > 0)
+			{
+				builder.append(", ");
+			}
 		}
 		
 		builder.append(generateJavaSourceOutput());
