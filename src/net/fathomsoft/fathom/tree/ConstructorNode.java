@@ -1,6 +1,7 @@
 package net.fathomsoft.fathom.tree;
 
 import net.fathomsoft.fathom.error.SyntaxError;
+import net.fathomsoft.fathom.util.Bounds;
 import net.fathomsoft.fathom.util.Location;
 import net.fathomsoft.fathom.util.Regex;
 
@@ -17,7 +18,8 @@ public class ConstructorNode extends MethodNode
 {
 	public ConstructorNode()
 	{
-		
+		setStatic(true);
+		setPointer(true);
 	}
 
 	/**
@@ -96,12 +98,12 @@ public class ConstructorNode extends MethodNode
 				return "";
 			}
 		}
-		if (isStatic())
-		{
-			SyntaxError.outputNewError("Constructor cannot be static", getLocationIn());
-			
-			return null;
-		}
+//		if (isStatic())
+//		{
+//			SyntaxError.outputNewError("Constructor cannot be static", getLocationIn());
+//			
+//			return null;
+//		}
 		if (isConst())
 		{
 			SyntaxError.outputNewError("Constructor cannot be const", getLocationIn());
@@ -115,12 +117,12 @@ public class ConstructorNode extends MethodNode
 			
 			return null;
 		}
-		else if (isPointer())
-		{
-			SyntaxError.outputNewError("Constructor cannot return a pointer", getLocationIn());
-			
-			return null;
-		}
+//		else if (isPointer())
+//		{
+//			SyntaxError.outputNewError("Constructor cannot return a pointer", getLocationIn());
+//			
+//			return null;
+//		}
 		
 		ClassNode classNode = (ClassNode)getAncestorOfType(ClassNode.class, true);
 		
@@ -128,7 +130,7 @@ public class ConstructorNode extends MethodNode
 		
 		builder.append(classNode.getName()).append("*").append(", ");
 		
-		builder.append(getName()).append(", ");
+		builder.append("new_").append(getName()).append(", ");
 		
 		builder.append(getParameterListNode().generateCHeaderOutput());
 		
@@ -143,7 +145,31 @@ public class ConstructorNode extends MethodNode
 	@Override
 	public String generateCSourceOutput()
 	{
-		return null;
+		StringBuilder builder = new StringBuilder();
+		
+		builder.append(getName()).append('*').append(" new_").append(getName()).append('(');
+		
+		builder.append(getParameterListNode().generateCSourceOutput());
+		
+		builder.append(')').append('\n').append('{').append('\n');
+		
+		builder.append("NEW(").append(getName()).append(", ").append(ParameterListNode.OBJECT_REFERENCE_IDENTIFIER).append(");").append('\n').append('\n');
+		
+		for (int i = 0; i < getChildren().size(); i++)
+		{
+			TreeNode child = getChild(i);
+			
+			if (child != getParameterListNode())
+			{
+				builder.append(child.generateCSourceOutput());
+			}
+		}
+		
+		builder.append('\n').append("return ").append(ParameterListNode.OBJECT_REFERENCE_IDENTIFIER).append(';').append('\n');
+		
+		builder.append('}').append('\n');
+		
+		return builder.toString();
 	}
 	
 	public static ConstructorNode decodeStatement(TreeNode parentNode, String statement, Location location)
@@ -170,7 +196,7 @@ public class ConstructorNode extends MethodNode
 			
 			ConstructorNode n = new ConstructorNode()
 			{
-				public void interactWord(String word, int argNum)
+				public void interactWord(String word, int argNum, Bounds bounds, int numWords)
 				{
 					setAttribute(word, argNum);
 					
@@ -201,6 +227,9 @@ public class ConstructorNode extends MethodNode
 			
 			if (classNode.getName().equals(n.getName()))
 			{
+				n.setLocationIn(location);
+				n.setType(n.getName());
+				
 				return n;
 			}
 		}
