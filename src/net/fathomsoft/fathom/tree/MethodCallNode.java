@@ -1,6 +1,7 @@
 package net.fathomsoft.fathom.tree;
 
 import net.fathomsoft.fathom.error.SyntaxError;
+import net.fathomsoft.fathom.util.Bounds;
 import net.fathomsoft.fathom.util.Location;
 import net.fathomsoft.fathom.util.Regex;
 
@@ -70,13 +71,20 @@ public class MethodCallNode extends IdentifierNode
 		return builder.toString();
 	}
 	
-	public static MethodCallNode decodeStatement(TreeNode parentNode, String statement, Location location)
+	public static boolean isMethodCall(String statement)
 	{
 		int whitespaceIndex   = Regex.indexOf(statement, "\\s");
 		int firstParenthIndex = Regex.indexOf(statement, '(');
+		
+		return firstParenthIndex > 0 && (whitespaceIndex > firstParenthIndex || whitespaceIndex < 0);
+	}
+	
+	public static MethodCallNode decodeStatement(TreeNode parentNode, String statement, Location location)
+	{
+		int firstParenthIndex = Regex.indexOf(statement, '(');
 		int lastParenthIndex  = Regex.lastIndexOf(statement, ')');
 		
-		if (firstParenthIndex > 0 && (whitespaceIndex > firstParenthIndex || whitespaceIndex < 0))
+		if (isMethodCall(statement))
 		{
 			// TODO: make better check for last parenth. Take a count of each of the starting parenthesis and
 			// subtract the ending ones from the number.
@@ -99,7 +107,7 @@ public class MethodCallNode extends IdentifierNode
 			
 			MethodCallNode n = new MethodCallNode()
 			{
-				public void interactWord(String word, int argNum)
+				public void interactWord(String word, int argNum, Bounds bounds, int numWords)
 				{
 					setName(word);
 				}
@@ -131,7 +139,12 @@ public class MethodCallNode extends IdentifierNode
 					}
 				}
 				
-				TreeNode arg = TreeNode.decodeStatement(this, argument, location);
+				TreeNode arg = TreeNode.getExistingNode(parent, argument);
+				
+				if (arg == null)
+				{
+					arg = TreeNode.decodeStatement(this, argument, location);
+				}
 				
 				if (arg == null)
 				{
