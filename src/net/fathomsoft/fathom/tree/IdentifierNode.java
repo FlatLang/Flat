@@ -1,5 +1,9 @@
 package net.fathomsoft.fathom.tree;
 
+import net.fathomsoft.fathom.util.Bounds;
+import net.fathomsoft.fathom.util.Patterns;
+import net.fathomsoft.fathom.util.Regex;
+
 /**
  * 
  * 
@@ -53,5 +57,12 @@ public class IdentifierNode extends TreeNode
 	public String generateCSourceOutput()
 	{
 		return name;
+	}
+	
+	public static boolean isValid(String value)
+	{
+		Bounds bounds = Regex.boundsOf(value, Patterns.IDENTIFIER);
+		
+		return bounds.getStart() == 0 && bounds.getEnd() == value.length();
 	}
 }
