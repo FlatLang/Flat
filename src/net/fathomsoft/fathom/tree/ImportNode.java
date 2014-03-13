@@ -63,7 +63,7 @@ public class ImportNode extends TreeNode
 	{
 		StringBuilder builder = new StringBuilder();
 		
-		builder.append("include ").append('"').append(importLocation).append(".h").append('"').append('\n');
+		builder.append("#include ").append('"').append(importLocation).append(".h").append('"').append('\n');
 		
 		return builder.toString();
 	}
@@ -76,7 +76,7 @@ public class ImportNode extends TreeNode
 	{
 		StringBuilder builder = new StringBuilder();
 		
-		builder.append("include ").append('"').append(importLocation).append(".h").append('"').append('\n');
+		builder.append("#include ").append('"').append(importLocation).append(".h").append('"').append('\n');
 		
 		return builder.toString();
 	}
