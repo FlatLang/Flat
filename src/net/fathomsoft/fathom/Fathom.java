@@ -2,6 +2,7 @@ package net.fathomsoft.fathom;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -26,9 +27,11 @@ public class Fathom
 	
 	private long				startTime, endTime;
 	
+	private ArrayList<File>		inputFiles, cSourceFiles, cHeaderFiles;
+	
 	private List<File>			lingeringFiles;
 	
-	public static final boolean	ANDROID_DEBUG = true;
+	public static final boolean	ANDROID_DEBUG = false;
 	
 	public static final boolean	DEBUG         = true;
 	
@@ -59,6 +62,9 @@ public class Fathom
 	private Fathom(String args[])
 	{
 		lingeringFiles = new LinkedList<File>();
+		inputFiles     = new ArrayList<File>();
+		cSourceFiles   = new ArrayList<File>();
+		cHeaderFiles   = new ArrayList<File>();
 		
 		compile(args);
 	}
@@ -71,76 +77,86 @@ public class Fathom
 	 */
 	private void compile(String args[])
 	{
+		startTimer();
+		
 		String directory = getWorkingDirectoryPath();
 		
 		if (DEBUG)
 		{
-			args = new String[] { directory + "IO.fat", "-csource", "-v" };
+			args = new String[] { directory + "Test.fat", directory + "IO.fat", directory + "String.fat", "-csource", "-v" };
 		}
 		
 		parseArguments(args);
 		
-		File file = new File(args[0]);
-		
 		SyntaxTree tree = null;
 		
-		startTimer();
-		
-		log("Generating syntax tree for the file...");
-		
-		// Try to create a Syntax Tree for the given file.
-		try
-		{
-			tree = new SyntaxTree(file);
-		}
-		catch (IOException e1)
-		{
-			error("Could not generate the syntax tree for the file.");
-			
-			e1.printStackTrace();
-			
-			completed();
-		}
-		
-		log("Generating the output c header code from the input file...");
-		String header = tree.getRoot().generateCHeaderOutput();
-		
-		log("Generating the output c source code from the input file...");
-		String source = tree.getRoot().generateCSourceOutput();
-		
-		if (isFlagSet(CSOURCE))
-		{
-			log("Formatting the output c header code...");
-			header = tree.formatText(header);
-			log("Formatting the output c source code...");
-			source = tree.formatText(source);
-		
-			log(header);
-			log(source);
-		}
+		File cClass     = new File("CClass.h");
 		
 		File workingDir = new File(directory);
 		
-		File headerFile = null;
-		File sourceFile = null;
-		
-		try
+		for (File file : inputFiles)
 		{
-			headerFile = FileUtils.writeFile("test.h", workingDir, header);
-			sourceFile = FileUtils.writeFile("test.c", workingDir, source);
-		}
-		catch (IOException e1)
-		{
-			e1.printStackTrace();
+			log("Generating syntax tree for the file '" + file.getName() + "'...");
 			
-			completed();
+			// Try to create a Syntax Tree for the given file.
+			try
+			{
+				tree = new SyntaxTree(file);
+			}
+			catch (IOException e1)
+			{
+				error("Could not generate the syntax tree for the file '" + file.getName() + "'.");
+				
+				e1.printStackTrace();
+				
+				completed();
+			}
+			
+			log("Generating the output c header code from the input file '" + file.getName() + "'...");
+			String header = tree.getRoot().generateCHeaderOutput();
+			
+			log("Generating the output c source code from the input file '" + file.getName() + "'...");
+			String source = tree.getRoot().generateCSourceOutput();
+			
+			if (isFlagSet(CSOURCE))
+			{
+				log("Formatting the output c header code...");
+				header = tree.formatText(header);
+				log("Formatting the output c source code...");
+				source = tree.formatText(source);
+			
+				log(header);
+				log(source);
+			}
+			
+			String fileName = file.getName();
+			fileName        = fileName.substring(0, fileName.lastIndexOf('.'));
+			
+			try
+			{
+				File headerFile = FileUtils.writeFile(fileName + ".h", workingDir, header);
+				File sourceFile = FileUtils.writeFile(fileName + ".c", workingDir, source);
+				
+				cHeaderFiles.add(headerFile);
+				cSourceFiles.add(sourceFile);
+				
+				lingeringFiles.add(headerFile);
+				lingeringFiles.add(sourceFile);
+			}
+			catch (IOException e1)
+			{
+				e1.printStackTrace();
+				
+				completed();
+			}
 		}
 		
-		lingeringFiles.add(headerFile);
-		lingeringFiles.add(sourceFile);
-		
-		completed();
-		
+//		completed();
+		compileC(workingDir, cClass);
+	}
+	
+	private void compileC(File workingDir, File cClass)
+	{
 		StringBuilder cmd = new StringBuilder();
 		
 //		cmd.append("gcc/bin/gcc.exe ").append("-E -P ").append('"').append(stdioFile.getAbsolutePath()).append('"').append("");
@@ -149,7 +165,15 @@ public class Fathom
 		
 		cmd = new StringBuilder();
 		
-		cmd.append("gcc/bin/gcc.exe ").append('"').append(sourceFile.getAbsolutePath()).append('"').append("");
+		cmd.append("gcc/bin/gcc.exe ");
+		cmd.append('"').append(cClass.getAbsolutePath()).append('"').append(' ');
+		
+		for (File sourceFile : cSourceFiles)
+		{
+			cmd.append('"').append(sourceFile.getAbsolutePath()).append('"').append("").append(' ');
+		}
+		
+		cmd.append("-o Executable.exe");
 		
 		final Command command = new Command(cmd.toString(), workingDir);
 		
@@ -162,15 +186,15 @@ public class Fathom
 //			{
 //				if (result == 0)
 //				{
-//					System.out.println(output);
-//					String prototypes[] = PrototypeFinder.findPrototypes(output.toString());
-//					
-//					System.out.println("Prototypes:");
-//					
-//					for (int i = 0; i < prototypes.length; i++)
-//					{
-//						System.out.println(prototypes[i]);
-//					}
+////					System.out.println(output);
+////					String prototypes[] = PrototypeFinder.findPrototypes(output.toString());
+////					
+////					System.out.println("Prototypes:");
+////					
+////					for (int i = 0; i < prototypes.length; i++)
+////					{
+////						System.out.println(prototypes[i]);
+////					}
 //					
 //					try
 //					{
@@ -209,14 +233,14 @@ public class Fathom
 //			}
 //		});
 		
-//		try
-//		{
-//			command.execute();
-//		}
-//		catch (IOException e)
-//		{
-//			e.printStackTrace();
-//		}
+		try
+		{
+			command.execute();
+		}
+		catch (IOException e)
+		{
+			e.printStackTrace();
+		}
 		
 		command.addCommandListener(new CommandListener()
 		{
@@ -286,6 +310,8 @@ public class Fathom
 	 */
 	private void parseArguments(String args[])
 	{
+		int lastInput = -1;
+		
 		for (int i = 0; i < args.length; i++)
 		{
 			String arg = args[i].toLowerCase();
@@ -294,9 +320,17 @@ public class Fathom
 			{
 				setFlag(CSOURCE);
 			}
-			else if (arg.equals("-verbos") || arg.equals("-v"))
+			else if (arg.equals("-verbose") || arg.equals("-v"))
 			{
 				setFlag(VERBOSE);
+			}
+			else if (lastInput == i - 1)
+			{
+				File file = new File(args[i]);
+				
+				inputFiles.add(file);
+				
+				lastInput = i;
 			}
 		}
 	}
