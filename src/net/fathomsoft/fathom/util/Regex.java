@@ -15,6 +15,18 @@ import java.util.regex.Pattern;
  */
 public class Regex
 {
+	public static boolean matches(String src, int index, Pattern pattern)
+	{
+		Matcher matcher = pattern.matcher(src);
+		
+		if (!matcher.find(index))
+		{
+			return false;
+		}
+		
+		return matcher.start() == index;
+	}
+	
 	public static int indexOf(String src, String regex)
 	{
 		return indexOf(src, 0, regex);
@@ -211,6 +223,205 @@ public class Regex
 	
 	public static int indexOf(String src, int start, char cs[], char excludePrefixes[], char excludePostfixes[], char excludeBinary[], boolean excludePrefixBackslash[], boolean excludePostfixBackslash[], boolean excludeBinaryBackslash[], int direction)
 	{
+		return boundsOf(src, start, cs, excludePrefixes, excludePostfixes, excludeBinary, excludePrefixBackslash, excludePostfixBackslash, excludeBinaryBackslash, direction).getStart();
+	}
+	
+	public static Bounds boundsOf(String src, String regex)
+	{
+		return boundsOf(src, 0, regex);
+	}
+	
+	public static Bounds boundsOf(String src, Matcher matcher)
+	{
+		return boundsOf(src, 0, matcher);
+	}
+	
+	public static Bounds boundsOf(String src, Pattern pattern)
+	{
+		return boundsOf(src, 0, pattern);
+	}
+	
+	public static Bounds boundsOf(String src, int start, String regex)
+	{
+		Pattern pattern = Pattern.compile(regex);
+		
+		return boundsOf(src, start, pattern);
+	}
+
+	public static Bounds boundsOf(String src, int start, Pattern pattern)
+	{
+		Matcher matcher = pattern.matcher(src);
+		
+		return boundsOf(src, start, matcher);
+	}
+	
+	public static Bounds boundsOf(String src, int start, Matcher matcher)
+	{
+		if (matcher.find(start))
+		{
+			return new Bounds(matcher.start(), matcher.end());
+		}
+		
+		return null;
+	}
+	
+	public static Bounds boundsOf(String src, char c)
+	{
+		return boundsOf(src, 0, c);
+	}
+	
+	public static Bounds boundsOf(String src, int start, char c)
+	{
+		return boundsOf(src, start, c, null, null, 1);
+	}
+	
+	public static Bounds boundsOf(String src, char c, char excludePrefixes[], char excludePostfixes[])
+	{
+		return boundsOf(src, 0, c, excludePrefixes, excludePostfixes, 1);
+	}
+	
+	public static Bounds lastBoundsOf(String src, char c)
+	{
+		return lastBoundsOf(src, src.length() - 1, c);
+	}
+	
+	public static Bounds lastBoundsOf(String src, int start, char c)
+	{
+		return boundsOf(src, start, c, null, null, -1);
+	}
+	
+	public static Bounds lastBoundsOf(String src, char c, char excludePrefixes[], char excludePostfixes[])
+	{
+		return boundsOf(src, src.length() - 1, c, excludePrefixes, excludePostfixes, -1);
+	}
+	
+	public static Bounds boundsOf(String src, int start, char c, int direction)
+	{
+		return boundsOf(src, start, c, null, null, direction);
+	}
+	
+	public static Bounds boundsOf(String src, char c, char excludePrefixes[], char excludePostfixes[], int direction)
+	{
+		return boundsOf(src, 0, c, excludePrefixes, excludePostfixes, direction);
+	}
+	
+	public static Bounds boundsOf(String src, int start, char c, char excludePrefixes[], char excludePostfixes[], int direction)
+	{
+		return boundsOf(src, start, c, excludePrefixes, excludePostfixes, null, null, null, null, direction);
+	}
+	
+	public static Bounds lastBoundsOf(String src, char c, char excludePrefixes[], char excludePostfixes[], char excludeBinary[], boolean excludePrefixBackslash[], boolean excludePostfixBackslash[], boolean excludeBinaryBackslash[])
+	{
+		return boundsOf(src, src.length() - 1, c, excludePrefixes, excludePostfixes, excludeBinary, excludePrefixBackslash, excludePostfixBackslash, excludeBinaryBackslash, -1);
+	}
+	
+	public static Bounds boundsOf(String src, char c, char excludePrefixes[], char excludePostfixes[], char excludeBinary[], boolean excludePrefixBackslash[], boolean excludePostfixBackslash[], boolean excludeBinaryBackslash[])
+	{
+		return boundsOf(src, 0, c, excludePrefixes, excludePostfixes, excludeBinary, excludePrefixBackslash, excludePostfixBackslash, excludeBinaryBackslash, 1);
+	}
+	
+	public static Bounds boundsOf(String src, char c, char excludePrefixes[], char excludePostfixes[], char excludeBinary[], boolean excludePrefixBackslash[], boolean excludePostfixBackslash[], boolean excludeBinaryBackslash[], int direction)
+	{
+		return boundsOf(src, 0, c, excludePrefixes, excludePostfixes, excludeBinary, excludePrefixBackslash, excludePostfixBackslash, excludeBinaryBackslash, direction);
+	}
+
+	public static Bounds boundsOf(String src, int start, char c, char excludePrefixes[], char excludePostfixes[], char excludeBinary[], boolean excludePrefixBackslash[], boolean excludePostfixBackslash[], boolean excludeBinaryBackslash[])
+	{
+		return boundsOf(src, start, c, excludePrefixes, excludePostfixes, excludeBinary, excludePrefixBackslash, excludePostfixBackslash, excludeBinaryBackslash, 1);
+	}
+	
+	public static Bounds boundsOfExcludeText(String src, int start, char c)
+	{
+		return boundsOf(src, start, c, new char[] { }, new char[] {}, new char[] { '"' }, new boolean[] {}, new boolean[] {}, new boolean[] { true });
+	}
+	
+	public static Bounds boundsOfExcludeTextAndParenthesis(String src, int start, char c)
+	{
+		return boundsOf(src, start, c, new char[] { '(' }, new char[] { ')' }, new char[] { '"' }, new boolean[] { false }, new boolean[] { false }, new boolean[] { true });
+	}
+	
+	public static Bounds boundsOfExcludeText(String src, char c)
+	{
+		return boundsOf(src, 0, c, new char[] { }, new char[] {}, new char[] { '"' }, new boolean[] {}, new boolean[] {}, new boolean[] { true });
+	}
+	
+	public static Bounds boundsOfExcludeTextAndParenthesis(String src, char c)
+	{
+		return boundsOf(src, 0, c, new char[] { '(' }, new char[] { ')' }, new char[] { '"' }, new boolean[] { false }, new boolean[] { false }, new boolean[] { true });
+	}
+	
+	public static Bounds boundsOfExcludeText(String src, int start, char cs[])
+	{
+		return boundsOf(src, start, cs, new char[] { }, new char[] {}, new char[] { '"' }, new boolean[] {}, new boolean[] {}, new boolean[] { true });
+	}
+	
+	public static Bounds boundsOfExcludeTextAndParenthesis(String src, int start, char cs[])
+	{
+		return boundsOf(src, start, cs, new char[] { '(' }, new char[] { ')' }, new char[] { '"' }, new boolean[] { false }, new boolean[] { false }, new boolean[] { true });
+	}
+	
+	public static Bounds boundsOfExcludeText(String src, char cs[])
+	{
+		return boundsOf(src, 0, cs, new char[] { }, new char[] {}, new char[] { '"' }, new boolean[] {}, new boolean[] {}, new boolean[] { true });
+	}
+	
+	public static Bounds boundsOfExcludeTextAndParenthesis(String src, char cs[])
+	{
+		return boundsOf(src, 0, cs, new char[] { '(' }, new char[] { ')' }, new char[] { '"' }, new boolean[] { false }, new boolean[] { false }, new boolean[] { true });
+	}
+	
+	public static Bounds lastBoundsOfExcludeText(String src, int start, char c)
+	{
+		return boundsOf(src, start, c, new char[] { }, new char[] {}, new char[] { '"' }, new boolean[] {}, new boolean[] {}, new boolean[] { true }, -1);
+	}
+	
+	public static Bounds lastBoundsOfExcludeTextAndParenthesis(String src, int start, char c)
+	{
+		return boundsOf(src, start, c, new char[] { '(' }, new char[] { ')' }, new char[] { '"' }, new boolean[] { false }, new boolean[] { false }, new boolean[] { true }, -1);
+	}
+	
+	public static Bounds lastBoundsOfExcludeText(String src, char c)
+	{
+		return boundsOf(src, src.length() - 1, c, new char[] { }, new char[] {}, new char[] { '"' }, new boolean[] {}, new boolean[] {}, new boolean[] { true });
+	}
+	
+	public static Bounds lastBoundsOfExcludeTextAndParenthesis(String src, char c)
+	{
+		return boundsOf(src, src.length() - 1, c, new char[] { '(' }, new char[] { ')' }, new char[] { '"' }, new boolean[] { false }, new boolean[] { false }, new boolean[] { true }, -1);
+	}
+	
+	public static Bounds lastBoundsOfExcludeText(String src, int start, char cs[])
+	{
+		return boundsOf(src, start, cs, new char[] { }, new char[] {}, new char[] { '"' }, new boolean[] {}, new boolean[] {}, new boolean[] { true }, -1);
+	}
+	
+	public static Bounds lastBoundsOfExcludeTextAndParenthesis(String src, int start, char cs[])
+	{
+		return boundsOf(src, start, cs, new char[] { '(' }, new char[] { ')' }, new char[] { '"' }, new boolean[] { false }, new boolean[] { false }, new boolean[] { true }, -1);
+	}
+	
+	public static Bounds lastBoundsOfExcludeText(String src, char cs[])
+	{
+		return boundsOf(src, src.length() - 1, cs, new char[] { }, new char[] {}, new char[] { '"' }, new boolean[] {}, new boolean[] {}, new boolean[] { true }, -1);
+	}
+	
+	public static Bounds lastBoundsOfExcludeTextAndParenthesis(String src, char cs[])
+	{
+		return boundsOf(src, src.length() - 1, cs, new char[] { '(' }, new char[] { ')' }, new char[] { '"' }, new boolean[] { false }, new boolean[] { false }, new boolean[] { true }, -1);
+	}
+
+	public static Bounds boundsOf(String src, int start, char c, char excludePrefixes[], char excludePostfixes[], char excludeBinary[], boolean excludePrefixBackslash[], boolean excludePostfixBackslash[], boolean excludeBinaryBackslash[], int direction)
+	{
+		return boundsOf(src, start, new char[] { c }, excludePrefixes, excludePostfixes, excludeBinary, excludePrefixBackslash, excludePostfixBackslash, excludeBinaryBackslash, direction);
+	}
+
+	public static Bounds boundsOf(String src, int start, char cs[], char excludePrefixes[], char excludePostfixes[], char excludeBinary[], boolean excludePrefixBackslash[], boolean excludePostfixBackslash[], boolean excludeBinaryBackslash[])
+	{
+		return boundsOf(src, start, cs, excludePrefixes, excludePostfixes, excludeBinary, excludePrefixBackslash, excludePostfixBackslash, excludeBinaryBackslash, 1);
+	}
+	
+	public static Bounds boundsOf(String src, int start, char cs[], char excludePrefixes[], char excludePostfixes[], char excludeBinary[], boolean excludePrefixBackslash[], boolean excludePostfixBackslash[], boolean excludeBinaryBackslash[], int direction)
+	{
 		if (excludePrefixes == null)
 		{
 			excludePrefixes = new char[0];
@@ -284,11 +495,11 @@ public class Regex
 			}
 			else if (containsChar(cs, c) && excluding == 0 && i >= start && binaryExclude.isEmpty())
 			{
-				return i;
+				return new Bounds(i, i);
 			}
 		}
 		
-		return -1;
+		return new Bounds(-1, -1);
 	}
 	
 	public static String[] findAll(String input, Pattern pattern)
