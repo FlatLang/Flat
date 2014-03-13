@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.regex.Pattern;
 
 import net.fathomsoft.fathom.error.SyntaxError;
+import net.fathomsoft.fathom.util.Bounds;
 import net.fathomsoft.fathom.util.Location;
 
 /**
@@ -323,7 +324,7 @@ public class ClassNode extends DeclarationNode
 				
 				private String	prevWord		= "";
 				
-				public void interactWord(String word, int argNum)
+				public void interactWord(String word, int wordNumber, Bounds bounds, int numWords)
 				{
 					if (extending)
 					{
@@ -359,7 +360,7 @@ public class ClassNode extends DeclarationNode
 						}
 						else
 						{
-							setAttribute(word, argNum);
+							setAttribute(word, wordNumber);
 							
 							if (prevWord.equals("class"))
 							{
