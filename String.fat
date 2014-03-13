@@ -1,0 +1,14 @@
+public class String
+{
+	private char data[];
+	
+	public String()
+	{
+		
+	}
+	
+	public char[] toCharArray()
+	{
+		return data;
+	}
+}
