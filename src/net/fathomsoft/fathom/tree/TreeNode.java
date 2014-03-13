@@ -2,10 +2,13 @@ package net.fathomsoft.fathom.tree;
 
 import java.util.ArrayList;
 import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import net.fathomsoft.fathom.error.SyntaxError;
+import net.fathomsoft.fathom.util.Bounds;
 import net.fathomsoft.fathom.util.Location;
 import net.fathomsoft.fathom.util.Patterns;
+import net.fathomsoft.fathom.util.Regex;
 
 /**
  * Class that is the parent of all Nodes on the Tree. Keeps the basic
@@ -269,23 +272,29 @@ public abstract class TreeNode
 	 */
 	public void iterateWords(String statement)
 	{
+		iterateWords(statement, Patterns.WORD_BOUNDARIES);
+	}
+	
+	public void iterateWords(String statement, Pattern pattern)
+	{
 		// Pattern used to find word boundaries.
-		Matcher matcher = Patterns.WORD_BOUNDARIES.matcher(statement);
+		Matcher matcher = pattern.matcher(statement);
 		
 		int		argNum  = 0;
 		int     index   = 0;
 		
 		boolean end     = false;
 		
+		ArrayList<Bounds> bounds = new ArrayList<Bounds>();
+		ArrayList<String> words  = new ArrayList<String>();
+		
 		while (matcher.find())
 		{
 			if (end)
 			{
-				String str = statement.substring(index, matcher.start());
+				bounds.add(new Bounds(index, matcher.start()));
 				
-				interactWord(str, argNum);
-				
-				argNum++;
+				words.add(statement.substring(index, matcher.start()));
 				
 				end = false;
 			}
@@ -296,6 +305,14 @@ public abstract class TreeNode
 				end   = true;
 			}
 		}
+		
+		for (int i = 0; i < bounds.size(); i++)
+		{
+			String word  = words.get(i);
+			Bounds bound = bounds.get(i);
+			
+			interactWord(word, i, bound, bounds.size());
+		}
 	}
 	
 	/**
@@ -305,8 +322,10 @@ public abstract class TreeNode
 	 * 
 	 * @param word The word that was found.
 	 * @param wordNumber The index of the word on a word-by-word basis.
+	 * @param bounds The bounds of the word that was found.
+	 * @param numWords The number of words that were parsed.
 	 */
-	public void interactWord(String word, int wordNumber)
+	public void interactWord(String word, int wordNumber, Bounds bounds, int numWords)
 	{
 		
 	}
@@ -411,8 +430,119 @@ public abstract class TreeNode
 			}
 		}
 		
-		SyntaxError.outputNewError("Unknown statement", location);
+//		SyntaxError.outputNewError("Unknown statement", location);
 		
 		return null;
+	}
+	
+	public static IdentifierNode getExistingNode(TreeNode node, String statement)
+	{
+//		TreeNode root = node.getAncestorOfType(FileNode.class, true);
+		
+		if (MethodCallNode.isMethodCall(statement))
+		{
+			int dot = containsBefore(statement, '.', '(');
+			
+			if (dot >= 0)
+			{
+				String identifier = statement.substring(0, dot);
+				
+				return getExistingNode(node, identifier);
+			}
+			
+			Bounds    bounds       = Regex.boundsOf(statement, Patterns.METHOD_NAME);
+			
+			String    methodName   = statement.substring(bounds.getStart(), bounds.getEnd());
+			
+			ClassNode classNode    = (ClassNode)node.getAncestorOfType(ClassNode.class, true);
+			
+			MethodListNode methods = classNode.getMethodListNode();
+			
+			for (int i = 0; i < methods.getChildren().size(); i++)
+			{
+				MethodNode method = (MethodNode)methods.getChild(i);
+				
+				if (method.getName().equals(methodName))
+				{
+					return method;
+				}
+			}
+		}
+		else if (LiteralNode.isNumber(statement))
+		{
+			return null;
+		}
+		else if (LiteralNode.isString(statement))
+		{
+			return null;
+		}
+		else if (IdentifierNode.isValid(statement))
+		{
+			TreeNode n = node.getAncestorOfType(MethodNode.class, true);
+			
+			if (n != null)
+			{
+				MethodNode methodNode = (MethodNode)n;
+				
+				LocalVariableListNode variables = methodNode.getLocalVariableListNode();
+				
+				for (int i = 0; i < variables.getChildren().size(); i++)
+				{
+					VariableNode variable = (VariableNode)variables.getChild(i);
+					
+					if (variable.getName().equals(statement))
+					{
+						return variable;
+					}
+				}
+			}
+			
+			ClassNode classNode = (ClassNode)node.getAncestorOfType(ClassNode.class, true);
+			System.out.println(node);
+			PrivateFieldListNode variables = classNode.getFieldListNode().getPrivateFieldListNode();
+			
+			for (int i = 0; i < variables.getChildren().size(); i++)
+			{
+				VariableNode variable = (VariableNode)variables.getChild(i);
+				
+				if (variable.getName().equals(statement))
+				{
+					return variable;
+				}
+			}
+			
+			PublicFieldListNode fields = classNode.getFieldListNode().getPublicFieldListNode();
+			
+			for (int i = 0; i < fields.getChildren().size(); i++)
+			{
+				VariableNode variable = (VariableNode)fields.getChild(i);
+				
+				if (variable.getName().equals(statement))
+				{
+					return variable;
+				}
+			}
+		}
+		
+		return null;
+	}
+	
+	private static int containsBefore(String text, char before, char after)
+	{
+		for (int i = 0; i < text.length(); i++)
+		{
+			char c = text.charAt(i);
+			
+			if (c == before)
+			{
+				return i;
+			}
+			else if (c == after)
+			{
+				return -1;
+			}
+		}
+		
+		return -1;
 	}
 }
