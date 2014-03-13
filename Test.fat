@@ -1,0 +1,26 @@
+import "IO";
+import "String";
+
+public class Test
+{
+	private int fieldVar;
+	
+	public String publicVariable;
+	
+	public static void main(String args[])
+	{
+		IO.print("Hello, world");
+	}
+	
+	public int test()
+	{
+		int newVar = 43;
+		
+		return newVar;
+	}
+	
+	public int test2()
+	{
+		return test();
+	}
+}
