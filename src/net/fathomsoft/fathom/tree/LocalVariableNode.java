@@ -2,8 +2,10 @@ package net.fathomsoft.fathom.tree;
 
 import java.util.regex.Matcher;
 
+import net.fathomsoft.fathom.util.Bounds;
 import net.fathomsoft.fathom.util.Location;
 import net.fathomsoft.fathom.util.Patterns;
+import net.fathomsoft.fathom.util.Regex;
 
 /**
  * 
@@ -48,14 +50,14 @@ public class LocalVariableNode extends VariableNode
 		return super.generateCSourceOutput() + ";";
 	}
 	
-	public static LocalVariableNode decodeStatement(TreeNode parentNode, String statement, Location location)
+	public static LocalVariableNode decodeStatement(TreeNode parentNode, final String statement, Location location)
 	{
 		LocalVariableNode n = new LocalVariableNode()
 		{
-			String oldWord;
+			private String oldWord;
 			
 			@Override
-			public void interactWord(String word, int wordNumber)
+			public void interactWord(String word, int wordNumber, Bounds bounds, int numWords)
 			{
 				setAttribute(word, wordNumber);
 				
@@ -63,10 +65,19 @@ public class LocalVariableNode extends VariableNode
 				setType(oldWord);
 				
 				oldWord = word;
+				
+				if (wordNumber == numWords - 1)
+				{
+					// If it is an array declaration.
+					if (Regex.matches(statement, bounds.getEnd(), Patterns.ARRAY_BRACKETS))
+					{
+						setArray(true);
+					}
+				}
 			}
 		};
 		
-		n.iterateWords(statement);
+		n.iterateWords(statement, Patterns.IDENTIFIER_BOUNDARIES);
 		
 		if (n.getType() == null)
 		{
