@@ -1,6 +1,7 @@
 package net.fathomsoft.fathom.tree;
 
 import net.fathomsoft.fathom.error.SyntaxError;
+import net.fathomsoft.fathom.util.Bounds;
 import net.fathomsoft.fathom.util.Location;
 
 /**
@@ -12,7 +13,7 @@ import net.fathomsoft.fathom.util.Location;
  * @version	Jan 5, 2014 at 9:52:01 PM
  * @version	v
  */
-public class ParameterNode extends IdentifierNode
+public class ParameterNode extends LocalVariableNode
 {
 	private String	type;
 	private String	defaultValue;
@@ -73,7 +74,7 @@ public class ParameterNode extends IdentifierNode
 	{
 		ParameterNode n = new ParameterNode()
 		{
-			public void interactWord(String word, int argNum)
+			public void interactWord(String word, int argNum, Bounds bounds, int numWords)
 			{
 				if (argNum == 0)
 				{
