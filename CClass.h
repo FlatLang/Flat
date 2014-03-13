@@ -51,8 +51,8 @@
 	{\
 		_BODY_\
 	} _NAME_;\
-	\
-	DECLARE_METHODS(_NAME_, _METHOD_PREFIX_)
+	//\
+	//DECLARE_METHODS(_NAME_, _METHOD_PREFIX_)
 
 #define CLASS_EXT(_NAME_, _EXTENDS_, _BODY_) CLASS2_EXT(_NAME_, _EXTENDS_, _BODY_,);
 
@@ -62,7 +62,6 @@
 
 #define CLASS_DEF(_NAME_, _BODY_)\
 	typedef struct _NAME_ _NAME_;\
-	\
 	struct _NAME_\
 	{\
 		_BODY_\
@@ -83,7 +82,6 @@
 
 #define PRIVATE_EXT(_CLASS_, _EXTENDS_, ...)\
 	PRIVATE(__VA_ARGS__ _EXTENDS_* parent;)\
-	\
 	static _EXTENDS_* getParent(_CLASS_* o)\
 	{\
 		return o->prv->parent;\
