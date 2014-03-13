@@ -12,6 +12,7 @@ package net.fathomsoft.fathom.tree;
 public class VariableNode extends ModifierNode
 {
 	private boolean	constVal;
+	private boolean arrayVal;
 	
 	private String	type;
 	
@@ -33,6 +34,21 @@ public class VariableNode extends ModifierNode
 	public void setConst(boolean constVal)
 	{
 		this.constVal = constVal;
+	}
+	
+	public boolean isArray()
+	{
+		return arrayVal;
+	}
+	
+	public String getArrayText()
+	{
+		return "*";
+	}
+	
+	public void setArray(boolean arrayVal)
+	{
+		this.arrayVal = arrayVal;
 	}
 	
 	public String getType()
@@ -118,6 +134,10 @@ public class VariableNode extends ModifierNode
 		else if (isPointer())
 		{
 			builder.append(getPointerText()).append(' ');
+		}
+		else if (isArray())
+		{
+			builder.append(getArrayText());
 		}
 		
 		builder.append(getName());
