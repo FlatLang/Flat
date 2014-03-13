@@ -110,25 +110,25 @@ public class BinaryOperatorNode extends TreeNode
 	public static TreeNode decodeStatement(TreeNode parentNode, String statement, Location location)
 	{
 		// Pattern used to find word boundaries. 
-		Matcher matcher  = Patterns.OPERATORS.matcher(statement);
+		Matcher matcher = Patterns.BINARY_ARITH_OPERATORS.matcher(statement);
 		
-		return decodeStatement(statement, matcher);
+		return decodeStatement(parentNode, statement, matcher, location);
 	}
 	
-	private static TreeNode decodeStatement(String value, Matcher matcher)
+	private static TreeNode decodeStatement(TreeNode parentNode, String statement, Matcher matcher, Location location)
 	{
-		return decodeStatement(value, 0, matcher);
+		return decodeStatement(parentNode, statement, 0, matcher, location);
 	}
 	
-	private static TreeNode decodeStatement(String value, int offset, Matcher matcher)
+	private static TreeNode decodeStatement(TreeNode parentNode, String statement, int offset, Matcher matcher, Location location)
 	{
 		if (matcher.find())
 		{
 			BinaryOperatorNode node = new BinaryOperatorNode();
 			
 			// Decode the value on the left.
-			int    endIndex = Regex.indexOf(value, Patterns.PRE_OPERATORS);
-			String lhv      = value.substring(0, endIndex);
+			int    endIndex = Regex.indexOf(statement, Patterns.PRE_OPERATORS);
+			String lhv      = statement.substring(0, endIndex);
 			
 			LiteralNode literal = new LiteralNode();
 			literal.setValue(lhv);
@@ -136,8 +136,8 @@ public class BinaryOperatorNode extends TreeNode
 			node.addChild(literal);
 			
 			// Decode the operator.
-			endIndex              = Regex.indexOf(value, matcher.start() - offset, Patterns.WHITESPACE);
-			String operatorVal    = value.substring(matcher.start() - offset, endIndex);
+			endIndex              = Regex.indexOf(statement, matcher.start() - offset, Patterns.WHITESPACE);
+			String operatorVal    = statement.substring(matcher.start() - offset, endIndex);
 			
 			OperatorNode operator = new OperatorNode();
 			operator.setOperator(operatorVal);
@@ -145,20 +145,55 @@ public class BinaryOperatorNode extends TreeNode
 			node.addChild(operator);
 			
 			// Decode the value on the right.
-			endIndex = Regex.indexOf(value, endIndex, Patterns.NON_WHITESPACE);
+			endIndex = Regex.indexOf(statement, endIndex, Patterns.NON_WHITESPACE);
 			offset  += endIndex;
-			value    = value.substring(endIndex);
+			statement    = statement.substring(endIndex);
 			
-			node.addChild(decodeStatement(value, offset, matcher));
+			node.addChild(decodeStatement(parentNode, statement, offset, matcher, location));
 			
 			return node;
 		}
 		else if (matcher.hitEnd())
 		{
-			LiteralNode literal = new LiteralNode();
-			literal.setValue(value);
+			IdentifierNode node       = TreeNode.getExistingNode(parentNode, statement);
 			
+			MethodNode     methodNode = (MethodNode)parentNode.getAncestorOfType(MethodNode.class, true);
+			
+			LiteralNode literal = new LiteralNode();
+			
+			if (node != null)
+			{
+				String visibility = "";
+				
+				if (node instanceof FieldNode)
+				{
+					FieldNode field = (FieldNode)node;
+					
+					if (field.getVisibility() == FieldNode.PRIVATE)
+					{
+						visibility = methodNode.getObjectReferenceIdentifier() + "->" + "prv->";
+					}
+				}
+				
+				literal.setValue(visibility + statement);
+			}
+			else
+			{
+				literal.setValue(statement);
+			}
+				
 			return literal;
+			
+//			ClassNode thisClass  = (ClassNode)parentNode.getAncestorOfType(ClassNode.class, true);
+//			ClassNode nodesClass = (ClassNode)node.getAncestorOfType(ClassNode.class, true);
+//			
+//			if (node instanceof VariableNode)
+//			{
+//				if (thisClass == nodesClass)
+//				{
+//					
+//				}
+//			}
 		}
 		
 		return null;
