@@ -1113,7 +1113,7 @@ public class FPattern
 	}
 	
 	/**
-	 * Class used to store data about two start and end locations.
+	 * Class used to store data about a start and end location.
 	 * 
 	 * @author	Braden Steffaniak
 	 * @since	Feb 9, 2014 at 9:53:05 PM
