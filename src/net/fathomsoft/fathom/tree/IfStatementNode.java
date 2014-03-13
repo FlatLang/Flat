@@ -4,6 +4,7 @@ import net.fathomsoft.fathom.util.Bounds;
 import net.fathomsoft.fathom.util.Location;
 import net.fathomsoft.fathom.util.Patterns;
 import net.fathomsoft.fathom.util.Regex;
+import net.fathomsoft.fathom.error.*;
 
 /**
  * 
@@ -56,19 +57,23 @@ public class IfStatementNode extends TreeNode
 			
 			Bounds bounds = Regex.boundsOf(statement, Patterns.POST_IF);
 			
-			String contents = statement.substring(bounds.getStart(), bounds.getEnd());
-			
-			if (returnStartIndex >= 0)
+			if (bounds.getStart() >= 0)
 			{
-				statement = statement.substring(returnStartIndex);
+				String contents = statement.substring(bounds.getStart(), bounds.getEnd());
 				
 				Location newLoc = new Location();
 				newLoc.setLineNumber(location.getLineNumber());
-				newLoc.setOffset(location.getOffset() + returnStartIndex);
+				newLoc.setOffset(location.getOffset() + bounds.getStart());
 				
-				TreeNode child = BinaryOperatorNode.decodeStatement(parent, statement, newLoc);
+				TreeNode child = BinaryOperatorNode.decodeStatement(parent, contents, newLoc);
 				
 				n.addChild(child);
+				
+				return n;
+			}
+			else
+			{
+				SyntaxError.outputNewError("If statement missing condition", location);
 			}
 		}
 		
