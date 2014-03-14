@@ -1,6 +1,6 @@
 package net.fathomsoft.fathom.tree;
 
-import net.fathomsoft.fathom.error.SyntaxError;
+import net.fathomsoft.fathom.error.SyntaxMessage;
 import net.fathomsoft.fathom.util.Bounds;
 import net.fathomsoft.fathom.util.Location;
 
@@ -86,7 +86,7 @@ public class ParameterNode extends LocalVariableNode
 				}
 				else
 				{
-					SyntaxError.outputNewError("Incorrect parameter definition", location);
+					SyntaxMessage.error("Incorrect parameter definition", location);
 				}
 			}
 		};
