@@ -1,9 +1,11 @@
 package net.fathomsoft.fathom.tree;
 
-import net.fathomsoft.fathom.error.SyntaxError;
+import net.fathomsoft.fathom.error.SyntaxMessage;
 import net.fathomsoft.fathom.util.Bounds;
 import net.fathomsoft.fathom.util.Location;
+import net.fathomsoft.fathom.util.Patterns;
 import net.fathomsoft.fathom.util.Regex;
+import net.fathomsoft.fathom.util.StringUtils;
 
 /**
  * 
@@ -73,37 +75,51 @@ public class MethodCallNode extends IdentifierNode
 	
 	public static boolean isMethodCall(String statement)
 	{
-		int whitespaceIndex   = Regex.indexOf(statement, "\\s");
-		int firstParenthIndex = Regex.indexOf(statement, '(');
+		Bounds bounds = Regex.boundsOf(statement, Patterns.PRE_METHOD_CALL);
 		
-		return firstParenthIndex > 0 && (whitespaceIndex > firstParenthIndex || whitespaceIndex < 0);
+		return bounds.getStart() == 0;
 	}
 	
 	public static MethodCallNode decodeStatement(TreeNode parentNode, String statement, Location location)
 	{
-		int firstParenthIndex = Regex.indexOf(statement, '(');
-		int lastParenthIndex  = Regex.lastIndexOf(statement, ')');
-		
 		if (isMethodCall(statement))
 		{
+			Bounds bounds  = new Bounds(0, 0);//Regex.boundsOf(statement, Patterns.POST_METHOD_CALL);
+			
+			int    start   = statement.indexOf('(');
+			
+			int    nameEnd = StringUtils.findNextNonWhitespaceIndex(statement, start - 1, -1) + 1;
+			
+			int    end     = StringUtils.findEndingMatch(statement, start, '(', ')');
+			
+			if (end >= 0)
+			{
+				end = StringUtils.findNextNonWhitespaceIndex(statement, end - 1, -1) + 1;
+			}
+			
+			start = StringUtils.findNextNonWhitespaceIndex(statement, start + 1);
+			
+			bounds.setStart(start);
+			bounds.setEnd(end);
+			
 			// TODO: make better check for last parenth. Take a count of each of the starting parenthesis and
 			// subtract the ending ones from the number.
-			if (lastParenthIndex < 0)
+			if (bounds.getEnd() < 0)
 			{
-				SyntaxError.outputNewError("Expected a ')' ending parenthesis", location);
+				SyntaxMessage.error("Expected a ')' ending parenthesis", location);
 				
 				return null;
 			}
 			
 			Location argsLocation = new Location();
 			argsLocation.setLineNumber(location.getLineNumber());
-			argsLocation.setOffset(firstParenthIndex + 1);
+			argsLocation.setOffset(bounds.getStart());
 			
-			String argumentList = statement.substring(firstParenthIndex + 1, lastParenthIndex);
+			String argumentList = statement.substring(bounds.getStart(), bounds.getEnd());
 			
 			String arguments[]  = Regex.splitCommas(argumentList);
 			
-			statement = statement.substring(0, firstParenthIndex);
+			statement = statement.substring(0, nameEnd);
 			
 			MethodCallNode n = new MethodCallNode()
 			{
@@ -148,7 +164,7 @@ public class MethodCallNode extends IdentifierNode
 				
 				if (arg == null)
 				{
-					SyntaxError.outputNewError("Incorrect argument definition", location);
+					SyntaxMessage.error("Incorrect argument definition", location);
 					
 					return false;
 				}
