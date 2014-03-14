@@ -1,6 +1,6 @@
 package net.fathomsoft.fathom.tree;
 
-import net.fathomsoft.fathom.error.SyntaxError;
+import net.fathomsoft.fathom.error.SyntaxMessage;
 
 /**
  * 
@@ -22,7 +22,7 @@ public class UnaryOperatorNode extends TreeNode
 	{
 		if (getChildren().size() <= 0)
 		{
-			SyntaxError.outputNewError("Missing operator", getLocationIn());
+			SyntaxMessage.error("Missing operator", getLocationIn());
 			
 			return false;
 		}
@@ -40,7 +40,7 @@ public class UnaryOperatorNode extends TreeNode
 		}
 		else
 		{
-			SyntaxError.outputNewError("Missing operator", getLocationIn());
+			SyntaxMessage.error("Missing operator", getLocationIn());
 			
 			return false;
 		}
