@@ -21,9 +21,13 @@ public class Patterns
 	public static final Pattern PRE_RETURN				= Pattern.compile("return\\s*");
 	public static final Pattern POST_RETURN     	    = Pattern.compile("(?<=return\\s{0,9})(\\S+)");
 	public static final Pattern PRE_IF					= Pattern.compile("if\\s*\\(");
-	public static final Pattern POST_IF	     	    	= Pattern.compile("(?<=if\\s{0,9}\\()(\\S+\\))");
+	public static final Pattern POST_IF	     	    	= Pattern.compile("(?<=if\\s{0,9}\\(\\s{0,9})(\\S+\\))");
 	public static final Pattern PRE_IMPORT          	= Pattern.compile("import\\s*");
 	public static final Pattern POST_IMPORT				= Pattern.compile("(?<=import\\s{0,9})(\\S+)");
+	public static final Pattern PRE_INSTANTIATION		= Pattern.compile("new\\s*");
+	public static final Pattern POST_INSTANTIATION		= Pattern.compile("(?<=new\\s{0,9})(\\S+)");
+	public static final Pattern PRE_METHOD_CALL			= Pattern.compile("\\S+\\s*\\(");
+//	public static final Pattern POST_METHOD_CALL		= Pattern.compile("(?<=\\S+\\s{0,9}\\(\\s{0,9})(\\S+\\))");
 	public static final Pattern DEFINE_PATTERN			= Pattern.compile("(?<=#\\s{0,9}define\\s{1,9})\\S");
 	public static final Pattern	ALPHANUMERIC			= Pattern.compile("[a-zA-Z0-9_]");
 	public static final Pattern	NON_ALPHANUMERIC		= Pattern.compile("[^a-zA-Z0-9_]");
