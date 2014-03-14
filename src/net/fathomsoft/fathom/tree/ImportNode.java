@@ -1,6 +1,6 @@
 package net.fathomsoft.fathom.tree;
 
-import net.fathomsoft.fathom.error.SyntaxError;
+import net.fathomsoft.fathom.error.SyntaxMessage;
 import net.fathomsoft.fathom.util.Location;
 import net.fathomsoft.fathom.util.Patterns;
 import net.fathomsoft.fathom.util.Regex;
@@ -116,7 +116,7 @@ public class ImportNode extends TreeNode
 					}
 					else
 					{
-						SyntaxError.outputNewError("Import location ends with unknown extension", location);
+						SyntaxMessage.error("Import location ends with unknown extension", location);
 					}
 				}
 				
@@ -124,7 +124,7 @@ public class ImportNode extends TreeNode
 			}
 			else
 			{
-				SyntaxError.outputNewError("Import statement must specify the location of the file", location);
+				SyntaxMessage.error("Import statement must specify the location of the file", location);
 			}
 		}
 		
