@@ -262,7 +262,7 @@ public class Regex
 			return new Bounds(matcher.start(), matcher.end());
 		}
 		
-		return null;
+		return new Bounds(-1, -1);
 	}
 	
 	public static Bounds boundsOf(String src, char c)
