@@ -1,6 +1,6 @@
 package net.fathomsoft.fathom.tree;
 
-import net.fathomsoft.fathom.error.SyntaxError;
+import net.fathomsoft.fathom.error.SyntaxMessage;
 import net.fathomsoft.fathom.util.Bounds;
 import net.fathomsoft.fathom.util.Location;
 import net.fathomsoft.fathom.util.Patterns;
@@ -160,7 +160,7 @@ public class FieldNode extends DeclarationNode
 		
 		if (n.getType() == null)
 		{
-			SyntaxError.outputNewError("A type for the field must be declared", n);
+			SyntaxMessage.error("A type for the field must be declared", n);
 		}
 		
 		return n;
