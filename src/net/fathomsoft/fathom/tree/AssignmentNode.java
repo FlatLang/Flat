@@ -1,6 +1,6 @@
 package net.fathomsoft.fathom.tree;
 
-import net.fathomsoft.fathom.error.SyntaxError;
+import net.fathomsoft.fathom.error.SyntaxMessage;
 import net.fathomsoft.fathom.util.Location;
 import net.fathomsoft.fathom.util.Patterns;
 import net.fathomsoft.fathom.util.Regex;
@@ -27,7 +27,7 @@ public class AssignmentNode extends TreeNode
 		{
 			Location location = getLocationIn();
 			
-			SyntaxError.outputNewError("Variable missing on left side of assignment", location);
+			SyntaxMessage.error("Variable missing on left side of assignment", location);
 			
 			return null;
 		}
@@ -42,7 +42,7 @@ public class AssignmentNode extends TreeNode
 		{
 			Location location = getLocationIn();
 			
-			SyntaxError.outputNewError("Variable or identifier missing on left side of assignment", location);
+			SyntaxMessage.error("Variable or identifier missing on left side of assignment", location);
 		
 			return null;
 		}
