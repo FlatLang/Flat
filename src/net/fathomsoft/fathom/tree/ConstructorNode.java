@@ -1,6 +1,6 @@
 package net.fathomsoft.fathom.tree;
 
-import net.fathomsoft.fathom.error.SyntaxError;
+import net.fathomsoft.fathom.error.SyntaxMessage;
 import net.fathomsoft.fathom.util.Bounds;
 import net.fathomsoft.fathom.util.Location;
 import net.fathomsoft.fathom.util.Regex;
@@ -36,26 +36,26 @@ public class ConstructorNode extends MethodNode
 		}
 		if (isStatic())
 		{
-			SyntaxError.outputNewError("Constructor cannot be static", getLocationIn());
+			SyntaxMessage.error("Constructor cannot be static", getLocationIn());
 			
 			return null;
 		}
 		if (isConst())
 		{
-			SyntaxError.outputNewError("Constructor cannot be const", getLocationIn());
+			SyntaxMessage.error("Constructor cannot be const", getLocationIn());
 			
 			return null;
 		}
 		
 		if (isReference())
 		{
-			SyntaxError.outputNewError("Constructor cannot return a reference", getLocationIn());
+			SyntaxMessage.error("Constructor cannot return a reference", getLocationIn());
 			
 			return null;
 		}
 		else if (isPointer())
 		{
-			SyntaxError.outputNewError("Constructor cannot return a pointer", getLocationIn());
+			SyntaxMessage.error("Constructor cannot return a pointer", getLocationIn());
 			
 			return null;
 		}
@@ -106,14 +106,14 @@ public class ConstructorNode extends MethodNode
 //		}
 		if (isConst())
 		{
-			SyntaxError.outputNewError("Constructor cannot be const", getLocationIn());
+			SyntaxMessage.error("Constructor cannot be const", getLocationIn());
 			
 			return null;
 		}
 		
 		if (isReference())
 		{
-			SyntaxError.outputNewError("Constructor cannot return a reference", getLocationIn());
+			SyntaxMessage.error("Constructor cannot return a reference", getLocationIn());
 			
 			return null;
 		}
@@ -183,7 +183,7 @@ public class ConstructorNode extends MethodNode
 			// subtract the ending ones from the number.
 			if (lastParenthIndex < 0)
 			{
-				SyntaxError.outputNewError("Expected a ')' ending parenthesis", location);
+				SyntaxMessage.error("Expected a ')' ending parenthesis", location);
 				
 				return null;
 			}
@@ -212,7 +212,7 @@ public class ConstructorNode extends MethodNode
 					
 					if (param == null)
 					{
-						SyntaxError.outputNewError("Incorrect parameter definition", location);
+						SyntaxMessage.error("Incorrect parameter definition", location);
 						
 						return null;
 					}
