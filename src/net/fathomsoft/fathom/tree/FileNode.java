@@ -1,7 +1,7 @@
 package net.fathomsoft.fathom.tree;
 
 import net.fathomsoft.fathom.Fathom;
-import net.fathomsoft.fathom.error.SyntaxError;
+import net.fathomsoft.fathom.error.SyntaxMessage;
 
 /**
  * Class used to organize the Files that are fed to the compiler.
@@ -55,7 +55,7 @@ public class FileNode extends IdentifierNode
 		}
 		else
 		{
-			SyntaxError.outputNewError("Unexpected statement", child.getLocationIn());
+			SyntaxMessage.error("Unexpected statement", child.getLocationIn());
 			
 			//super.addChild(child);
 		}
