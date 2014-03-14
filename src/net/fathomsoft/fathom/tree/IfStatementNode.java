@@ -4,7 +4,7 @@ import net.fathomsoft.fathom.util.Bounds;
 import net.fathomsoft.fathom.util.Location;
 import net.fathomsoft.fathom.util.Patterns;
 import net.fathomsoft.fathom.util.Regex;
-import net.fathomsoft.fathom.error.*;
+import net.fathomsoft.fathom.error.SyntaxMessage;
 
 /**
  * 
@@ -73,7 +73,7 @@ public class IfStatementNode extends TreeNode
 			}
 			else
 			{
-				SyntaxError.outputNewError("If statement missing condition", location);
+				SyntaxMessage.error("If statement missing condition", location);
 			}
 		}
 		
