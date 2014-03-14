@@ -502,7 +502,7 @@ public abstract class TreeNode
 			}
 			
 			ClassNode classNode = (ClassNode)node.getAncestorOfType(ClassNode.class, true);
-			System.out.println(node);
+			
 			PrivateFieldListNode variables = classNode.getFieldListNode().getPrivateFieldListNode();
 			
 			for (int i = 0; i < variables.getChildren().size(); i++)
