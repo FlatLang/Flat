@@ -441,7 +441,7 @@ public class FPattern
 		{
 			if (index < pattern.length())
 			{
-				index = findEndingMatch(pattern, index - 1, '(', ')', '\\') + 1;
+				index = StringUtils.findEndingMatch(pattern, index - 1, '(', ')', '\\') + 1;
 
 				if (index <= 0)
 				{
@@ -470,7 +470,7 @@ public class FPattern
 		{
 			if (index < pattern.length())
 			{
-				index = findEndingMatch(pattern, index - 1, '[', ']', '\\') + 1;
+				index = StringUtils.findEndingMatch(pattern, index - 1, '[', ']', '\\') + 1;
 
 				if (index <= 0)
 				{
@@ -1027,7 +1027,7 @@ public class FPattern
 		int lastI = 0;
 		int mode  = 0;
 
-		index = findEndingMatch(pattern, index, '(', ')', '\\');
+		index = StringUtils.findEndingMatch(pattern, index, '(', ')', '\\');
 		
 		while (index >= 0)
 		{
@@ -1035,7 +1035,7 @@ public class FPattern
 			
 			lastI = index + 1;
 			
-			index = findEndingMatch(pattern, index + 1, '(', ')', '\\');
+			index = StringUtils.findEndingMatch(pattern, index + 1, '(', ')', '\\');
 		}
 		
 		if (modes[2] == null && modes[1] == null)
@@ -1054,62 +1054,6 @@ public class FPattern
 		}
 		
 		return modes;
-	}
-	
-	/**
-	 * Find the index of the ending char for the match. For instance, to
-	 * search for an ending parenthesis, starting from the opening
-	 * parenthesis, you would pass findEndingMatch(str, 0, '(', ')', '\\');
-	 * <i>(The backslash would act to escape any parentheses. eg: \\(
-	 * would not be counted.)</i> The method call would return the index
-	 * of the ending parenthesis that is paired with the index of 0.
-	 * 
-	 * @param str The String to search for the pair to the start char.
-	 * @param index The index of the start char in the pair.
-	 * @param startChar The char that starts off the pair. eg. '('
-	 * @param endChar The char that ends the pair. eg: ')'
-	 * @param escapeChar The char that escapes a start or end char.
-	 * @return The index of the pair to the starting char, if no pair is
-	 * 		found then -1 is returned.
-	 */
-	private int findEndingMatch(String str, int index, char startChar, char endChar, char escapeChar)
-	{
-		int scope = 0;
-		
-		while (index < str.length())
-		{
-			char c = str.charAt(index);
-			
-			if (c == escapeChar)
-			{
-				if (index < str.length() - 1)
-				{
-					char next = str.charAt(index + 1);
-					
-					if (next == startChar || next == endChar)
-					{
-						index++;
-					}
-				}
-			}
-			else if (c == startChar)
-			{
-				scope++;
-			}
-			else if (c == endChar)
-			{
-				scope--;
-				
-				if (scope == 0)
-				{
-					return index;
-				}
-			}
-			
-			index++;
-		}
-		
-		return -1;
 	}
 	
 	/**
