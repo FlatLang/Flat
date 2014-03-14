@@ -140,7 +140,20 @@ public class SyntaxTree
 	 */
 	private void checkForErrors(TreeNode root)
 	{
-		if (root instanceof MethodCallNode)
+		if (root instanceof ClassNode)
+		{
+			ClassNode node = (ClassNode)root;
+			
+			if (!node.containsConstructor())
+			{
+				ConstructorNode defaultConstructor = new ConstructorNode();
+				defaultConstructor.setName(node.getName());
+				defaultConstructor.setType(node.getName());
+				
+				node.addChild(defaultConstructor);
+			}
+		}
+		else if (root instanceof MethodCallNode)
 		{
 			MethodCallNode node = (MethodCallNode)root;
 			
