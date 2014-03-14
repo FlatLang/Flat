@@ -3,7 +3,7 @@ package net.fathomsoft.fathom.tree;
 import java.util.ArrayList;
 import java.util.regex.Pattern;
 
-import net.fathomsoft.fathom.error.SyntaxError;
+import net.fathomsoft.fathom.error.SyntaxMessage;
 import net.fathomsoft.fathom.util.Bounds;
 import net.fathomsoft.fathom.util.Location;
 
@@ -96,7 +96,7 @@ public class ClassNode extends DeclarationNode
 		}
 		else
 		{
-			SyntaxError.outputNewError("Unexpected statement", child.getLocationIn());
+			SyntaxMessage.error("Unexpected statement", child.getLocationIn());
 			
 			//super.addChild(child);
 		}
@@ -127,13 +127,13 @@ public class ClassNode extends DeclarationNode
 		
 		if (isReference())
 		{
-			SyntaxError.outputNewError("A class cannot be of a reference type", getLocationIn());
+			SyntaxMessage.error("A class cannot be of a reference type", getLocationIn());
 			
 			return null;
 		}
 		else if (isPointer())
 		{
-			SyntaxError.outputNewError("A class cannot be of a pointer type", getLocationIn());
+			SyntaxMessage.error("A class cannot be of a pointer type", getLocationIn());
 			
 			return null;
 		}
@@ -186,22 +186,22 @@ public class ClassNode extends DeclarationNode
 		
 		if (isStatic())
 		{
-			SyntaxError.outputNewError("Static classes are not implemented in C yet.", this);
+			SyntaxMessage.error("Static classes are not implemented in C yet.", this);
 		}
 		if (isConst())
 		{
-			SyntaxError.outputNewError("Const classes are not implemented in C yet.", this);
+			SyntaxMessage.error("Const classes are not implemented in C yet.", this);
 		}
 		
 		if (isReference())
 		{
-			SyntaxError.outputNewError("A class cannot be of a reference type", getLocationIn());
+			SyntaxMessage.error("A class cannot be of a reference type", getLocationIn());
 			
 			return null;
 		}
 		else if (isPointer())
 		{
-			SyntaxError.outputNewError("A class cannot be of a pointer type", getLocationIn());
+			SyntaxMessage.error("A class cannot be of a pointer type", getLocationIn());
 			
 			return null;
 		}
@@ -260,6 +260,11 @@ public class ClassNode extends DeclarationNode
 		
 		builder.append(')').append('\n').append('\n');
 		
+		if (containsStaticData())
+		{
+			builder.append("extern ").append(getName()).append("* ").append("__static__").append(getName()).append(';').append('\n').append('\n');
+		}
+		
 		return builder.toString();
 	}
 
@@ -269,7 +274,12 @@ public class ClassNode extends DeclarationNode
 	@Override
 	public String generateCSourceOutput()
 	{
-		StringBuilder builder = new StringBuilder();
+		StringBuilder  builder = new StringBuilder();
+		
+		if (containsStaticData())
+		{
+			builder.append(getName()).append("* ").append("__static__").append(getName()).append(';').append('\n').append('\n');
+		}
 		
 		MethodListNode methods = getMethodListNode();
 		
@@ -379,5 +389,106 @@ public class ClassNode extends DeclarationNode
 		}
 		
 		return null;
+	}
+	
+	/**
+	 * Get whether or not the Fathom class contains static data. i.e
+	 * static variables, methods, etc.
+	 * 
+	 * @return Whether or not the class contains static data.
+	 */
+	public boolean containsStaticData()
+	{
+		return containsStaticData(this);
+	}
+	
+	/**
+	 * Get whether or not the Fathom class contains static data. i.e
+	 * static variables, methods, etc.
+	 * 
+	 * @param root The root TreeNode to search for the static modifier
+	 * 		from.
+	 * @return Whether or not the class contains static data.
+	 */
+	public boolean containsStaticData(TreeNode root)
+	{
+		for (int i = 0; i < root.getChildren().size(); i++)
+		{
+			TreeNode child = root.getChild(i);
+			
+			if (child instanceof DeclarationNode && child instanceof ConstructorNode == false)
+			{
+				DeclarationNode declaration = (DeclarationNode)child;
+				
+				if (declaration.isStatic())
+				{
+					return true;
+				}
+			}
+			else if (containsStaticData(child))
+			{
+				return true;
+			}
+		}
+		
+		return false;
+	}
+	
+	public boolean containsConstructor()
+	{
+		return containsMethod(getName(), true, getName());
+	}
+	
+//	public boolean containsDestructor()
+//	{
+//		return containsMethod(getName(), true, null);
+//	}
+	
+	/**
+	 * Get whether or not the Fathom class contains a method with the
+	 * given specifications.
+	 * 
+	 * @param methodName The name of the method to search for.
+	 * @param staticVal Whether or not the method is static.
+	 * @param type The return type of the method.
+	 * @return Whether or not the class contains the method.
+	 */
+	public boolean containsMethod(String methodName, boolean staticVal, String type)
+	{
+		return containsMethod(this, methodName, staticVal, type);
+	}
+	
+	/**
+	 * Get whether or not the Fathom class contains a method with the
+	 * given specifications.
+	 * 
+	 * @param root The root TreeNode to search for the method from.
+	 * @param methodName The name of the method to search for.
+	 * @param staticVal Whether or not the method is static.
+	 * @param type The return type of the method.
+	 * @return Whether or not the class contains the method.
+	 */
+	public boolean containsMethod(TreeNode root, String methodName, boolean staticVal, String type)
+	{
+		for (int i = 0; i < root.getChildren().size(); i++)
+		{
+			TreeNode child = root.getChild(i);
+			
+			if (child instanceof MethodNode)
+			{
+				MethodNode method = (MethodNode)child;
+				
+				if (method.isStatic() == staticVal && method.getName().equals(methodName) && method.getType().equals(type))
+				{
+					return true;
+				}
+			}
+			else if (containsMethod(child, methodName, staticVal, type))
+			{
+				return true;
+			}
+		}
+		
+		return false;
 	}
 }
