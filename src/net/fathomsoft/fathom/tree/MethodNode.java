@@ -1,6 +1,6 @@
 package net.fathomsoft.fathom.tree;
 
-import net.fathomsoft.fathom.error.SyntaxError;
+import net.fathomsoft.fathom.error.SyntaxMessage;
 import net.fathomsoft.fathom.util.Bounds;
 import net.fathomsoft.fathom.util.Location;
 import net.fathomsoft.fathom.util.Patterns;
@@ -142,7 +142,7 @@ public class MethodNode extends DeclarationNode
 //		}
 		if (isConst())
 		{
-			SyntaxError.outputNewError("Const methods are not supported in the C implementation yet", getLocationIn());
+			SyntaxMessage.error("Const methods are not supported in the C implementation yet", getLocationIn());
 			
 			return null;
 		}
@@ -260,7 +260,7 @@ public class MethodNode extends DeclarationNode
 			// subtract the ending ones from the number.
 			if (lastParenthIndex < 0)
 			{
-				SyntaxError.outputNewError("Expected a ')' ending parenthesis", location);
+				SyntaxMessage.error("Expected a ')' ending parenthesis", location);
 				
 				return null;
 			}
@@ -307,7 +307,7 @@ public class MethodNode extends DeclarationNode
 					
 					if (param == null)
 					{
-						SyntaxError.outputNewError("Incorrect parameter definition", location);
+						SyntaxMessage.error("Incorrect parameter definition", location);
 						
 						return null;
 					}
