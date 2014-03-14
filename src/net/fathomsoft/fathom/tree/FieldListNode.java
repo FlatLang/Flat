@@ -1,6 +1,6 @@
 package net.fathomsoft.fathom.tree;
 
-import net.fathomsoft.fathom.error.SyntaxError;
+import net.fathomsoft.fathom.error.SyntaxMessage;
 
 /**
  * 
@@ -52,7 +52,7 @@ public class FieldListNode extends TreeNode
 			}
 			else
 			{
-				SyntaxError.outputNewError("Missing visibility declaration", field);
+				SyntaxMessage.error("Missing visibility declaration", field);
 			}
 		}
 		else
