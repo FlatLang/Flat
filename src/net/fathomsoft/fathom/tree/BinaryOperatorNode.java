@@ -6,6 +6,7 @@ import net.fathomsoft.fathom.error.SyntaxMessage;
 import net.fathomsoft.fathom.util.Location;
 import net.fathomsoft.fathom.util.Patterns;
 import net.fathomsoft.fathom.util.Regex;
+import net.fathomsoft.fathom.util.SyntaxUtils;
 
 /**
  * 
@@ -128,12 +129,14 @@ public class BinaryOperatorNode extends TreeNode
 			
 			// Decode the value on the left.
 			int    endIndex = Regex.indexOf(statement, Patterns.PRE_OPERATORS);
+			
+			// The left-hand value.
 			String lhv      = statement.substring(0, endIndex);
 			
-			LiteralNode literal = new LiteralNode();
-			literal.setValue(lhv);
+			// The left-hand node.
+			TreeNode lhn    = getNode(parentNode, lhv, location);
 			
-			node.addChild(literal);
+			node.addChild(lhn);
 			
 			// Decode the operator.
 			endIndex              = Regex.indexOf(statement, matcher.start() - offset, Patterns.WHITESPACE);
@@ -145,9 +148,9 @@ public class BinaryOperatorNode extends TreeNode
 			node.addChild(operator);
 			
 			// Decode the value on the right.
-			endIndex = Regex.indexOf(statement, endIndex, Patterns.NON_WHITESPACE);
-			offset  += endIndex;
-			statement    = statement.substring(endIndex);
+			endIndex  = Regex.indexOf(statement, endIndex, Patterns.NON_WHITESPACE);
+			offset   += endIndex;
+			statement = statement.substring(endIndex);
 			
 			node.addChild(decodeStatement(parentNode, statement, offset, matcher, location));
 			
@@ -155,34 +158,7 @@ public class BinaryOperatorNode extends TreeNode
 		}
 		else if (matcher.hitEnd())
 		{
-			MethodNode     methodNode = (MethodNode)parentNode.getAncestorOfType(MethodNode.class, true);
-			
-			IdentifierNode node       = TreeNode.getExistingNode(parentNode, statement);
-			
-			LiteralNode    literal    = new LiteralNode();
-			
-			if (node != null)
-			{
-				String visibility = "";
-				
-				if (node instanceof FieldNode)
-				{
-					FieldNode field = (FieldNode)node;
-					
-					if (field.getVisibility() == FieldNode.PRIVATE)
-					{
-						visibility = methodNode.getObjectReferenceIdentifier() + "->" + "prv->";
-					}
-				}
-				
-				literal.setValue(visibility + statement);
-			}
-			else
-			{
-				literal.setValue(statement);
-			}
-				
-			return literal;
+			return getNode(parentNode, statement, location);
 			
 //			ClassNode thisClass  = (ClassNode)parentNode.getAncestorOfType(ClassNode.class, true);
 //			ClassNode nodesClass = (ClassNode)node.getAncestorOfType(ClassNode.class, true);
@@ -197,5 +173,91 @@ public class BinaryOperatorNode extends TreeNode
 		}
 		
 		return null;
+	}
+	
+	/**
+	 * Create a LiteralNode describing what is in the statement.
+	 * 
+	 * @param parentNode The parent node of the current location.
+	 * @param statement The statement to generate a Literal node after.
+	 * @param location The location of the statement.
+	 * @return The generated LiteralNode.
+	 */
+	private static TreeNode getNode(TreeNode parentNode, String statement, Location location)
+	{
+//		IdentifierNode node = TreeNode.getExistingNode(parentNode, statement);
+//		
+//		if (node != null)
+//		{
+//			node = node.clone();
+//			
+//			String visibility = "";
+//			
+//			if (node instanceof FieldNode)
+//			{
+//				FieldNode field = (FieldNode)node;
+//				
+//				if (field.getVisibility() == FieldNode.PRIVATE)
+//				{
+//					visibility = MethodNode.getObjectReferenceIdentifier() + "->" + "prv->";
+//				}
+//			}
+//			
+//			return node;
+//		}
+		
+		if (SyntaxUtils.isLiteral(statement))
+		{
+			LiteralNode literal = new LiteralNode();
+			
+			literal.setValue(statement);
+			
+			return literal;
+		}
+		else if (SyntaxUtils.isInstantiation(statement))
+		{
+			InstantiationNode node = InstantiationNode.decodeStatement(parentNode, statement, location);
+			
+			return node;
+		}
+		else if (SyntaxUtils.isMethodCall(statement))
+		{
+			MethodCallNode node = MethodCallNode.decodeStatement(parentNode, statement, location);
+			
+			return node;
+		}
+		else if (SyntaxUtils.isValidIdentifier(statement))
+		{
+			IdentifierNode node = TreeNode.getExistingNode(parentNode, statement);
+			
+			if (node != null)
+			{
+				node = node.clone();
+				
+				return node;
+			}
+		}
+		
+		SyntaxMessage.error("Could not parse operation", location);
+		
+		return null;
+	}
+	
+	/**
+	 * @see net.fathomsoft.fathom.tree.TreeNode#clone()
+	 */
+	@Override
+	public BinaryOperatorNode clone()
+	{
+		BinaryOperatorNode clone = new BinaryOperatorNode();
+		
+		for (int i = 0; i < getChildren().size(); i++)
+		{
+			TreeNode child = getChild(i);
+			
+			clone.addChild(child.clone());
+		}
+		
+		return clone;
 	}
 }
