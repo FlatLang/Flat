@@ -7,7 +7,11 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
+import net.fathomsoft.fathom.tree.ClassNode;
+import net.fathomsoft.fathom.tree.FileNode;
+import net.fathomsoft.fathom.tree.MethodNode;
 import net.fathomsoft.fathom.tree.SyntaxTree;
+import net.fathomsoft.fathom.tree.TreeNode;
 import net.fathomsoft.fathom.util.Command;
 import net.fathomsoft.fathom.util.CommandListener;
 import net.fathomsoft.fathom.util.FileUtils;
@@ -88,7 +92,9 @@ public class Fathom
 		
 		parseArguments(args);
 		
-		SyntaxTree tree = null;
+		ArrayList<SyntaxTree> trees   = new ArrayList<SyntaxTree>();
+		ArrayList<String>     headers = new ArrayList<String>();
+		ArrayList<String>     sources = new ArrayList<String>();
 		
 		File cClass     = new File("CClass.h");
 		
@@ -98,10 +104,14 @@ public class Fathom
 		{
 			log("Generating syntax tree for the file '" + file.getName() + "'...");
 			
+			SyntaxTree tree = null;
+			
 			// Try to create a Syntax Tree for the given file.
 			try
 			{
 				tree = new SyntaxTree(file);
+				
+				trees.add(tree);
 			}
 			catch (IOException e1)
 			{
@@ -113,10 +123,74 @@ public class Fathom
 			}
 			
 			log("Generating the output c header code from the input file '" + file.getName() + "'...");
-			String header = tree.getRoot().generateCHeaderOutput();
+			String header = tree.getHeaderOutput();
 			
 			log("Generating the output c source code from the input file '" + file.getName() + "'...");
-			String source = tree.getRoot().generateCSourceOutput();
+			String source = tree.getSourceOutput();
+			
+			headers.add(header);
+			sources.add(source);
+		}
+		
+		for (int i = 0; i < trees.size(); i++)
+		{
+			SyntaxTree tree = trees.get(i);
+			
+			MethodNode mainMethod = tree.getMainMethod();
+			
+			if (mainMethod != null)
+			{
+				ClassNode classNode = (ClassNode)mainMethod.getAncestorOfType(ClassNode.class);
+				
+				String source = sources.get(i);
+				
+				StringBuilder mainMethodText = new StringBuilder();
+				
+				mainMethodText.append('\n').append('\n');
+				mainMethodText.append("int main(int argc, char** argvs)").append('\n');
+				mainMethodText.append("{").append('\n');
+				mainMethodText.append("String** args = (String**)malloc(argc * sizeof(String));").append('\n');
+				mainMethodText.append("int      i;").append('\n').append('\n');
+				
+				for (SyntaxTree t : trees)
+				{
+					FileNode fileNode = (FileNode)t.getRoot();
+					
+					for (int j = 0; j < fileNode.getChildren().size(); j++)
+					{
+						TreeNode child = fileNode.getChild(j);
+						
+						if (child instanceof ClassNode)
+						{
+							ClassNode c = (ClassNode)child;
+							
+							if (c.containsStaticData())
+							{
+								mainMethodText.append("__static__").append(c.getName()).append(" = ").append("new_").append(c.getName()).append("();").append('\n');
+							}
+						}
+					}
+				}
+				
+				mainMethodText.append('\n');
+				mainMethodText.append("for (i = 0; i < argc; i++)").append('\n');
+				mainMethodText.append("{").append('\n');
+				mainMethodText.append("args[i] = new_String(argvs[i]);").append('\n');
+				mainMethodText.append("}").append('\n');
+				mainMethodText.append('\n');
+				mainMethodText.append("__static__").append(classNode.getName()).append("->__").append(LANGUAGE_NAME.toUpperCase()).append("__main(__static__").append(classNode.getName()).append(", args);").append('\n');
+				mainMethodText.append("}");
+				
+				String newSource = source + mainMethodText.toString();
+				
+				newSource = tree.formatText(newSource);
+				
+				sources.set(i, newSource);
+			}
+			
+
+			String header = headers.get(i);
+			String source = sources.get(i);
 			
 			if (isFlagSet(CSOURCE))
 			{
@@ -128,6 +202,13 @@ public class Fathom
 				log(header);
 				log(source);
 			}
+		}
+		
+		for (int i = 0; i < inputFiles.size(); i++)
+		{
+			File   file   = inputFiles.get(i);
+			String header = headers.get(i);
+			String source = sources.get(i);
 			
 			String fileName = file.getName();
 			fileName        = fileName.substring(0, fileName.lastIndexOf('.'));
@@ -166,7 +247,7 @@ public class Fathom
 		cmd = new StringBuilder();
 		
 		cmd.append("gcc/bin/gcc.exe ");
-		cmd.append('"').append(cClass.getAbsolutePath()).append('"').append(' ');
+//		cmd.append('"').append(cClass.getAbsolutePath()).append('"').append(' ');
 		
 		for (File sourceFile : cSourceFiles)
 		{
