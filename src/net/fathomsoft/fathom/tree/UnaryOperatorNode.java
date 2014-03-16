@@ -86,4 +86,22 @@ public class UnaryOperatorNode extends TreeNode
 	{
 		return null;
 	}
+
+	/**
+	 * @see net.fathomsoft.fathom.tree.TreeNode#clone()
+	 */
+	@Override
+	public UnaryOperatorNode clone()
+	{
+		UnaryOperatorNode clone = new UnaryOperatorNode();
+		
+		for (int i = 0; i < getChildren().size(); i++)
+		{
+			TreeNode child = getChild(i);
+			
+			clone.addChild(child.clone());
+		}
+		
+		return clone;
+	}
 }
