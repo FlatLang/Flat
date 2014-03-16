@@ -9,7 +9,10 @@ public class Test
 	
 	public static void main(String args[])
 	{
-		IO.print("Hello, world");
+		IO.print("Hello, world\n\n");
+		IO.print("Command line arg #1 is\n");
+		IO.print(args[0]);
+		IO.waitForEnter();
 	}
 	
 	public int test()
