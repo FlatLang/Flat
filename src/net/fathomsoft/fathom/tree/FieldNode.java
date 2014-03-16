@@ -5,6 +5,7 @@ import net.fathomsoft.fathom.util.Bounds;
 import net.fathomsoft.fathom.util.Location;
 import net.fathomsoft.fathom.util.Patterns;
 import net.fathomsoft.fathom.util.Regex;
+import net.fathomsoft.fathom.util.SyntaxUtils;
 
 /**
  * 
@@ -149,7 +150,9 @@ public class FieldNode extends DeclarationNode
 					// If it is an array declaration.
 					if (Regex.matches(statement, bounds.getEnd(), Patterns.ARRAY_BRACKETS))
 					{
-						setArray(true);
+						int dimensions = SyntaxUtils.getArrayDimensions(statement);
+						
+						setArrayDimensions(dimensions);
 					}
 				}
 			}
@@ -164,5 +167,31 @@ public class FieldNode extends DeclarationNode
 		}
 		
 		return n;
+	}
+	
+	/**
+	 * @see net.fathomsoft.fathom.tree.TreeNode#clone()
+	 */
+	@Override
+	public FieldNode clone()
+	{
+		FieldNode clone = new FieldNode();
+		clone.setStatic(isStatic());
+		clone.setVisibility(getVisibility());
+		clone.setConst(isConst());
+		clone.setName(getName());
+		clone.setArrayDimensions(getArrayDimensions());
+		clone.setType(getType());
+		clone.setReference(isReference());
+		clone.setPointer(isPointer());
+		
+		for (int i = 0; i < getChildren().size(); i++)
+		{
+			TreeNode child = getChild(i);
+			
+			clone.addChild(child.clone());
+		}
+		
+		return clone;
 	}
 }
