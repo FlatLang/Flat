@@ -45,23 +45,7 @@ public class ParameterListNode extends TreeNode
 	@Override
 	public String generateCHeaderOutput()
 	{
-		StringBuilder builder = new StringBuilder();
-		
-		ClassNode classNode = (ClassNode)getAncestorOfType(ClassNode.class);
-		
-		if (getParent() instanceof ConstructorNode == false)
-		{
-			builder.append(classNode.getName()).append("* ").append(OBJECT_REFERENCE_IDENTIFIER);
-			
-			if (getChildren().size() > 0)
-			{
-				builder.append(", ");
-			}
-		}
-		
-		builder.append(generateJavaSourceOutput());
-		
-		return builder.toString();
+		return generateCSourceOutput();
 	}
 
 	/**
@@ -77,15 +61,38 @@ public class ParameterListNode extends TreeNode
 		if (getParent() instanceof ConstructorNode == false)
 		{
 			builder.append(classNode.getName()).append("* ").append(OBJECT_REFERENCE_IDENTIFIER);
+		}
+		
+		for (int i = 0; i < getChildren().size(); i++)
+		{
+			TreeNode child = getChild(i);
 			
-			if (getChildren().size() > 0)
+			if (i != 0 || getParent() instanceof ConstructorNode == false)
 			{
 				builder.append(", ");
 			}
+			
+			builder.append(child.generateCHeaderOutput());
 		}
 		
-		builder.append(generateJavaSourceOutput());
-		
 		return builder.toString();
+	}
+
+	/**
+	 * @see net.fathomsoft.fathom.tree.TreeNode#clone()
+	 */
+	@Override
+	public ParameterListNode clone()
+	{
+		ParameterListNode clone = new ParameterListNode();
+		
+		for (int i = 0; i < getChildren().size(); i++)
+		{
+			TreeNode child = getChild(i);
+			
+			clone.addChild(child.clone());
+		}
+		
+		return clone;
 	}
 }
