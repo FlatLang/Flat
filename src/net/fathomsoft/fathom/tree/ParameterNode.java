@@ -3,6 +3,7 @@ package net.fathomsoft.fathom.tree;
 import net.fathomsoft.fathom.error.SyntaxMessage;
 import net.fathomsoft.fathom.util.Bounds;
 import net.fathomsoft.fathom.util.Location;
+import net.fathomsoft.fathom.util.SyntaxUtils;
 
 /**
  * 
@@ -15,7 +16,7 @@ import net.fathomsoft.fathom.util.Location;
  */
 public class ParameterNode extends LocalVariableNode
 {
-	private String	type;
+//	private String	type;
 	private String	defaultValue;
 	
 	public ParameterNode()
@@ -23,15 +24,15 @@ public class ParameterNode extends LocalVariableNode
 		
 	}
 	
-	public String getType()
-	{
-		return type;
-	}
-	
-	public void setType(String type)
-	{
-		this.type = type;
-	}
+//	public String getType()
+//	{
+//		return type;
+//	}
+//	
+//	public void setType(String type)
+//	{
+//		this.type = type;
+//	}
 	
 	public String getDefaultValue()
 	{
@@ -49,7 +50,7 @@ public class ParameterNode extends LocalVariableNode
 	@Override
 	public String generateJavaSourceOutput()
 	{
-		return type + " " + getName();
+		return getType() + " " + getName();
 	}
 
 	/**
@@ -58,7 +59,7 @@ public class ParameterNode extends LocalVariableNode
 	@Override
 	public String generateCHeaderOutput()
 	{
-		return type + " " + getName();
+		return generateCSourceOutput();
 	}
 
 	/**
@@ -67,32 +68,59 @@ public class ParameterNode extends LocalVariableNode
 	@Override
 	public String generateCSourceOutput()
 	{
-		return type + " " + getName();
+		StringBuilder builder = new StringBuilder();
+		
+		builder.append(getType());
+		
+		if (isArray())
+		{
+			builder.append(getArrayText());
+		}
+		
+		if (!SyntaxUtils.isPrimitiveType(getType()))
+		{
+			builder.append(getPointerText());
+		}
+		
+		builder.append(' ').append(getName());
+		
+		return builder.toString();
 	}
 	
 	public static ParameterNode decodeStatement(TreeNode parentNode, String statement, final Location location)
 	{
-		ParameterNode n = new ParameterNode()
-		{
-			public void interactWord(String word, int argNum, Bounds bounds, int numWords)
-			{
-				if (argNum == 0)
-				{
-					setType(word);
-				}
-				else if (argNum == 1)
-				{
-					setName(word);
-				}
-				else
-				{
-					SyntaxMessage.error("Incorrect parameter definition", location);
-				}
-			}
-		};
+		LocalVariableNode node = LocalVariableNode.decodeStatement(parentNode, statement, location);
 		
-		n.iterateWords(statement);
+		ParameterNode n = new ParameterNode();
+		n.setArrayDimensions(node.getArrayDimensions());
+		n.setName(node.getName());
+		n.setType(node.getType());
 		
 		return n;
+	}
+	
+	/**
+	 * @see net.fathomsoft.fathom.tree.TreeNode#clone()
+	 */
+	@Override
+	public ParameterNode clone()
+	{
+		ParameterNode clone = new ParameterNode();
+		clone.setName(getName());
+		clone.setConst(isConst());
+		clone.setArrayDimensions(getArrayDimensions());
+		clone.setType(getType());
+		clone.setReference(isReference());
+		clone.setPointer(isPointer());
+		clone.setDefaultValue(getDefaultValue());
+		
+		for (int i = 0; i < getChildren().size(); i++)
+		{
+			TreeNode child = getChild(i);
+			
+			clone.addChild(child.clone());
+		}
+		
+		return clone;
 	}
 }
