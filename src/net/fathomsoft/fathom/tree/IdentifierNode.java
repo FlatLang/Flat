@@ -58,11 +58,23 @@ public class IdentifierNode extends TreeNode
 	{
 		return name;
 	}
-	
-	public static boolean isValid(String value)
+
+	/**
+	 * @see net.fathomsoft.fathom.tree.TreeNode#clone()
+	 */
+	@Override
+	public IdentifierNode clone()
 	{
-		Bounds bounds = Regex.boundsOf(value, Patterns.IDENTIFIER);
+		IdentifierNode clone = new IdentifierNode();
+		clone.setName(getName());
 		
-		return bounds.getStart() == 0 && bounds.getEnd() == value.length();
+		for (int i = 0; i < getChildren().size(); i++)
+		{
+			TreeNode child = getChild(i);
+			
+			clone.addChild(child.clone());
+		}
+		
+		return clone;
 	}
 }
