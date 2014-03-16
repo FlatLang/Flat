@@ -130,4 +130,24 @@ public class ImportNode extends TreeNode
 		
 		return n;
 	}
+
+	/**
+	 * @see net.fathomsoft.fathom.tree.TreeNode#clone()
+	 */
+	@Override
+	public ImportNode clone()
+	{
+		ImportNode clone = new ImportNode();
+		clone.setImportLocation(getImportLocation());
+		clone.cSource = isCSource();
+		
+		for (int i = 0; i < getChildren().size(); i++)
+		{
+			TreeNode child = getChild(i);
+			
+			clone.addChild(child.clone());
+		}
+		
+		return clone;
+	}
 }
