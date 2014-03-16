@@ -23,6 +23,26 @@ public class ImportListNode extends TreeNode
 	}
 	
 	/**
+	 * Get whether or not the given location is an external C import.
+	 * 
+	 * @return Whether or not the given location is an external C import.
+	 */
+	public boolean isExternal(String importLocation)
+	{
+		for (int i = 0; i < getChildren().size(); i++)
+		{
+			ImportNode child = (ImportNode)getChild(i);
+			
+			if (importLocation.equals(child.getImportLocation()) && child.isCSource())
+			{
+				return true;
+			}
+		}
+		
+		return false;
+	}
+	
+	/**
 	 * @see net.fathomsoft.fathom.tree.TreeNode#generateJavaSourceOutput()
 	 */
 	@Override
@@ -71,5 +91,23 @@ public class ImportListNode extends TreeNode
 		}
 		
 		return builder.toString();
+	}
+
+	/**
+	 * @see net.fathomsoft.fathom.tree.TreeNode#clone()
+	 */
+	@Override
+	public ImportListNode clone()
+	{
+		ImportListNode clone = new ImportListNode();
+		
+		for (int i = 0; i < getChildren().size(); i++)
+		{
+			TreeNode child = getChild(i);
+			
+			clone.addChild(child.clone());
+		}
+		
+		return clone;
 	}
 }
