@@ -42,4 +42,22 @@ public class ForLoopNode extends LoopNode
 	{
 		return null;
 	}
+	
+	/**
+	 * @see net.fathomsoft.fathom.tree.TreeNode#clone()
+	 */
+	@Override
+	public ForLoopNode clone()
+	{
+		ForLoopNode clone = new ForLoopNode();
+		
+		for (int i = 0; i < getChildren().size(); i++)
+		{
+			TreeNode child = getChild(i);
+			
+			clone.addChild(child.clone());
+		}
+		
+		return clone;
+	}
 }
