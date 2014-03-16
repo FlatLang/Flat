@@ -1,10 +1,12 @@
 package net.fathomsoft.fathom.tree;
 
+import net.fathomsoft.fathom.Fathom;
 import net.fathomsoft.fathom.error.SyntaxMessage;
 import net.fathomsoft.fathom.util.Bounds;
 import net.fathomsoft.fathom.util.Location;
 import net.fathomsoft.fathom.util.Patterns;
 import net.fathomsoft.fathom.util.Regex;
+import net.fathomsoft.fathom.util.SyntaxUtils;
 
 /**
  * 
@@ -59,7 +61,7 @@ public class MethodNode extends DeclarationNode
 	 * @return The name of the identifier for the Object reference that
 	 * 		the method is using.
 	 */
-	public String getObjectReferenceIdentifier()
+	public static String getObjectReferenceIdentifier()
 	{
 		return ParameterListNode.OBJECT_REFERENCE_IDENTIFIER;
 	}
@@ -85,18 +87,23 @@ public class MethodNode extends DeclarationNode
 			builder.append(getConstText()).append(' ');
 		}
 		
+		builder.append(getType());
+		
 		if (isReference())
 		{
-			builder.append(getReferenceText()).append(' ');
+			builder.append(getReferenceText());
 		}
 		else if (isPointer())
 		{
-			builder.append(getPointerText()).append(' ');
+			builder.append(getPointerText());
 		}
 		
-		builder.append(getType()).append(' ');
+		if (isArray())
+		{
+			builder.append(getArrayText());
+		}
 		
-		builder.append(getName()).append('(');
+		builder.append(' ').append(getName()).append('(');
 
 		ParameterListNode parameterList = getParameterListNode();
 		
@@ -151,13 +158,9 @@ public class MethodNode extends DeclarationNode
 		
 		builder.append(getType());
 		
-		if (isReference())
+		if (isArray())
 		{
-			builder.append(getReferenceText()).append(' ');
-		}
-		else if (isPointer())
-		{
-			builder.append(getPointerText()).append(' ');
+			builder.append(getArrayText());
 		}
 		
 		builder.append(", ");
@@ -192,6 +195,11 @@ public class MethodNode extends DeclarationNode
 			if (child != parameterList)
 			{
 				builder.append(child.generateCSourceOutput());
+				
+				if (child instanceof MethodCallNode)
+				{
+					builder.append(';').append('\n');
+				}
 			}
 		}
 		
@@ -209,7 +217,7 @@ public class MethodNode extends DeclarationNode
 	{
 		StringBuilder builder = new StringBuilder();
 		
-		if (!isStatic() && this instanceof ConstructorNode == false)
+		if (this instanceof ConstructorNode == false)
 		{
 			builder.append("static ");
 		}
@@ -291,7 +299,9 @@ public class MethodNode extends DeclarationNode
 						// If it is an array declaration.
 						if (Regex.matches(statement2, bounds.getEnd(), Patterns.ARRAY_BRACKETS))
 						{
-							setArray(true);
+							int dimensions = SyntaxUtils.getArrayDimensions(statement2);
+							
+							setArrayDimensions(dimensions);
 						}
 					}
 				}
@@ -318,25 +328,39 @@ public class MethodNode extends DeclarationNode
 			
 			n.iterateWords(statement, Patterns.IDENTIFIER_BOUNDARIES);
 			
-			// If it is the main method.
-			if (n.getName().equals("main") && n.isStatic() && n.getType().equals("void") && n.getVisibility() == FieldNode.PUBLIC)
+			if (SyntaxUtils.isMainMethod(n))
 			{
-				ParameterListNode params = (ParameterListNode)n.getParameterListNode();
-				
-				if (params.getChildren().size() == 1)
-				{
-					ParameterNode param = (ParameterNode)params.getChild(0);
-					
-					if (param.getType().equals("String") && param.isArray())
-					{
-						
-					}
-				}
+				n.setName("__" + Fathom.LANGUAGE_NAME.toUpperCase() + "__main");
 			}
 			
 			return n;
 		}
 		
 		return null;
+	}
+	
+	/**
+	 * @see net.fathomsoft.fathom.tree.TreeNode#clone()
+	 */
+	@Override
+	public MethodNode clone()
+	{
+		MethodNode clone = new MethodNode();
+		clone.setStatic(isStatic());
+		clone.setVisibility(getVisibility());
+		clone.setConst(isConst());
+		clone.setArrayDimensions(getArrayDimensions());
+		clone.setType(getType());
+		clone.setReference(isReference());
+		clone.setPointer(isPointer());
+		
+		for (int i = 0; i < getChildren().size(); i++)
+		{
+			TreeNode child = getChild(i);
+			
+			clone.addChild(child.clone());
+		}
+		
+		return clone;
 	}
 }
