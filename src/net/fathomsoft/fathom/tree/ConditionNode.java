@@ -42,4 +42,22 @@ public class ConditionNode extends TreeNode
 	{
 		return null;
 	}
+
+	/**
+	 * @see net.fathomsoft.fathom.tree.TreeNode#clone()
+	 */
+	@Override
+	public ConditionNode clone()
+	{
+		ConditionNode clone = new ConditionNode();
+		
+		for (int i = 0; i < getChildren().size(); i++)
+		{
+			TreeNode child = getChild(i);
+			
+			clone.addChild(child.clone());
+		}
+		
+		return clone;
+	}
 }
