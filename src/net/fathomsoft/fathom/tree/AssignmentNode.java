@@ -1,9 +1,12 @@
 package net.fathomsoft.fathom.tree;
 
 import net.fathomsoft.fathom.error.SyntaxMessage;
+import net.fathomsoft.fathom.util.Bounds;
 import net.fathomsoft.fathom.util.Location;
 import net.fathomsoft.fathom.util.Patterns;
 import net.fathomsoft.fathom.util.Regex;
+import net.fathomsoft.fathom.util.StringUtils;
+import net.fathomsoft.fathom.util.SyntaxUtils;
 
 /**
  * 
@@ -21,7 +24,7 @@ public class AssignmentNode extends TreeNode
 		
 	}
 	
-	public IdentifierNode getIdentifierNode()
+	public VariableNode getVariableNode()
 	{
 		if (getChildren().size() <= 0)
 		{
@@ -34,15 +37,15 @@ public class AssignmentNode extends TreeNode
 		
 		TreeNode node = getChild(0);
 		
-		if (node instanceof IdentifierNode)
+		if (node instanceof VariableNode)
 		{
-			return (IdentifierNode)node;
+			return (VariableNode)node;
 		}
 		else
 		{
 			Location location = getLocationIn();
 			
-			SyntaxMessage.error("Variable or identifier missing on left side of assignment", location);
+			SyntaxMessage.error("Variable missing on left side of assignment", location);
 		
 			return null;
 		}
@@ -85,11 +88,22 @@ public class AssignmentNode extends TreeNode
 	{
 		StringBuilder builder = new StringBuilder();
 		
-		builder.append(getChild(0).generateCSourceOutput()).append(" = ");
+		builder.append(getVariableNode().generateVariableUseOutput());
+		
+		builder.append(" = ");
 		
 		for (int i = 1; i < getChildren().size(); i++)
 		{
-			builder.append(getChild(i).generateCSourceOutput());
+			TreeNode child = getChild(i);
+			
+			if (child instanceof VariableNode)
+			{
+				builder.append(((VariableNode) child).generateVariableUseOutput());
+			}
+			else
+			{
+				builder.append(child.generateCSourceOutput());
+			}
 		}
 		
 		builder.append(';').append('\n');
@@ -101,40 +115,51 @@ public class AssignmentNode extends TreeNode
 	{
 		AssignmentNode n  = new AssignmentNode();
 		
-		int equalIndex    = Regex.indexOf(statement, Patterns.PRE_EQUALS_SIGN);
-		
-		if (equalIndex < 0)
+		if (!SyntaxUtils.isVariableAssignment(statement))
 		{
 			return null;
 		}
 		
-		String variable   = statement.substring(0, equalIndex);
+		Bounds bounds   = Regex.boundsOf(statement, Patterns.PRE_EQUALS_SIGN);
 		
-		IdentifierNode identifier = LocalVariableNode.decodeStatement(parentNode, variable, location);
+		int equalsIndex = bounds.getEnd() - 1;
 		
-		if (identifier != null)
+		int endIndex    = StringUtils.findNextNonWhitespaceIndex(statement, equalsIndex - 1, -1) + 1;
+		
+		String variable = statement.substring(0, endIndex);
+		
+		VariableNode varNode = null;
+		
+		if (SyntaxUtils.isValidIdentifier(variable))
 		{
-			if (parentNode instanceof MethodNode)
-			{
-				MethodNode methodNode = (MethodNode)parentNode;
-				
-				methodNode.getLocalVariableListNode().addChild(identifier);
-			}
+			varNode = (VariableNode)TreeNode.getExistingNode(parentNode, variable);
+			
+			varNode = varNode.clone();
 		}
 		else
 		{
-			identifier = new IdentifierNode();
+			varNode = LocalVariableNode.decodeStatement(parentNode, variable, location);
 			
-			identifier.setName(variable);
+			if (varNode != null)
+			{
+				MethodNode methodNode = (MethodNode)parentNode.getAncestorOfType(MethodNode.class, true);
+				
+				if (methodNode != null)
+				{
+					methodNode.getLocalVariableListNode().addChild(varNode.clone());
+				}
+			}
+			else
+			{
+				varNode = new VariableNode();
+				
+				varNode.setName(variable);
+			}
 		}
 		
-		// Create a new Identifier node because the tree does not allow duplicate entries.
-		IdentifierNode i = new IdentifierNode();
-		i.setName(identifier.getName());
+		n.addChild(varNode);
 		
-		n.addChild(i);
-		
-		int      rhsIndex = Regex.indexOf(statement, Patterns.POST_EQUALS_SIGN);
+		int      rhsIndex = StringUtils.findNextNonWhitespaceIndex(statement, equalsIndex + 1);
 		
 		// Right-hand side of the equation.
 		String   rhs      = statement.substring(rhsIndex);
@@ -144,5 +169,23 @@ public class AssignmentNode extends TreeNode
 		n.addChild(value);
 		
 		return n;
+	}
+
+	/**
+	 * @see net.fathomsoft.fathom.tree.TreeNode#clone()
+	 */
+	@Override
+	public AssignmentNode clone()
+	{
+		AssignmentNode clone = new AssignmentNode();
+		
+		for (int i = 0; i < getChildren().size(); i++)
+		{
+			TreeNode child = getChild(i);
+			
+			clone.addChild(child.clone());
+		}
+		
+		return clone;
 	}
 }
