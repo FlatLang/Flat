@@ -54,4 +54,23 @@ public class OperatorNode extends TreeNode
 	{
 		return operator;
 	}
+
+	/**
+	 * @see net.fathomsoft.fathom.tree.TreeNode#clone()
+	 */
+	@Override
+	public OperatorNode clone()
+	{
+		OperatorNode clone = new OperatorNode();
+		clone.setOperator(getOperator());
+		
+		for (int i = 0; i < getChildren().size(); i++)
+		{
+			TreeNode child = getChild(i);
+			
+			clone.addChild(child.clone());
+		}
+		
+		return clone;
+	}
 }
