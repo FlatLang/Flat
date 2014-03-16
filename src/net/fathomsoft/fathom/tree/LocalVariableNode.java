@@ -6,6 +6,8 @@ import net.fathomsoft.fathom.util.Bounds;
 import net.fathomsoft.fathom.util.Location;
 import net.fathomsoft.fathom.util.Patterns;
 import net.fathomsoft.fathom.util.Regex;
+import net.fathomsoft.fathom.util.StringUtils;
+import net.fathomsoft.fathom.util.SyntaxUtils;
 
 /**
  * 
@@ -29,7 +31,7 @@ public class LocalVariableNode extends VariableNode
 	@Override
 	public String generateJavaSourceOutput()
 	{
-		return super.generateJavaSourceOutput() + ";";
+		return super.generateJavaSourceOutput();
 	}
 
 	/**
@@ -47,31 +49,59 @@ public class LocalVariableNode extends VariableNode
 	@Override
 	public String generateCSourceOutput()
 	{
-		return super.generateCSourceOutput() + ";";
+		return super.generateCSourceOutput();
 	}
 	
 	public static LocalVariableNode decodeStatement(TreeNode parentNode, final String statement, Location location)
 	{
+		if (SyntaxUtils.isLiteral(statement))
+		{
+			return null;
+		}
+		
 		LocalVariableNode n = new LocalVariableNode()
 		{
-			private String oldWord;
+			private boolean	done;
+			
+			private String	oldWord;
 			
 			@Override
 			public void interactWord(String word, int wordNumber, Bounds bounds, int numWords)
 			{
-				setAttribute(word, wordNumber);
+				if (!done)
+				{
+					setAttribute(word, wordNumber);
+					
+					setName(word);
+					setType(oldWord);
+					
+					oldWord = word;
+				}
+				else
+				{
+					setArrayDimensions(1);
+				}
 				
-				setName(word);
-				setType(oldWord);
+				int firstBracketIndex = StringUtils.findNextNonWhitespaceIndex(statement, bounds.getEnd());
 				
-				oldWord = word;
+				if (firstBracketIndex >= 0)
+				{
+					char c = statement.charAt(firstBracketIndex);
+					
+					if (c == '[' && wordNumber == numWords - 2)
+					{
+						done = true;
+					}
+				}
 				
 				if (wordNumber == numWords - 1)
 				{
 					// If it is an array declaration.
 					if (Regex.matches(statement, bounds.getEnd(), Patterns.ARRAY_BRACKETS))
 					{
-						setArray(true);
+						int dimensions = SyntaxUtils.getArrayDimensions(statement);
+						
+						setArrayDimensions(dimensions);
 					}
 				}
 			}
@@ -85,5 +115,29 @@ public class LocalVariableNode extends VariableNode
 		}
 		
 		return n;
+	}
+	
+	/**
+	 * @see net.fathomsoft.fathom.tree.TreeNode#clone()
+	 */
+	@Override
+	public LocalVariableNode clone()
+	{
+		LocalVariableNode clone = new LocalVariableNode();
+		clone.setName(getName());
+		clone.setConst(isConst());
+		clone.setArrayDimensions(getArrayDimensions());
+		clone.setType(getType());
+		clone.setReference(isReference());
+		clone.setPointer(isPointer());
+		
+		for (int i = 0; i < getChildren().size(); i++)
+		{
+			TreeNode child = getChild(i);
+			
+			clone.addChild(child.clone());
+		}
+		
+		return clone;
 	}
 }
