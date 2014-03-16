@@ -151,7 +151,7 @@ public class ConstructorNode extends MethodNode
 		
 		builder.append("NEW(").append(getName()).append(", ").append(ParameterListNode.OBJECT_REFERENCE_IDENTIFIER).append(");").append('\n').append('\n');
 		
-		builder.append(getMethodAssignments()).append('\n');
+		builder.append(generateMethodAssignments()).append('\n');
 		
 		for (int i = 0; i < getChildren().size(); i++)
 		{
@@ -170,7 +170,7 @@ public class ConstructorNode extends MethodNode
 		return builder.toString();
 	}
 	
-	private String getMethodAssignments()
+	private String generateMethodAssignments()
 	{
 		StringBuilder builder = new StringBuilder();
 		
