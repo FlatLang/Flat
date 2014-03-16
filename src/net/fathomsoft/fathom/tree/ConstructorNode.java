@@ -89,8 +89,6 @@ public class ConstructorNode extends MethodNode
 	{
 		StringBuilder builder = new StringBuilder();
 		
-		builder.append('\n');
-		
 		if (isVisibilityValid())
 		{
 			if (getVisibility() == DeclarationNode.PRIVATE)
@@ -126,11 +124,9 @@ public class ConstructorNode extends MethodNode
 		
 		ClassNode classNode = (ClassNode)getAncestorOfType(ClassNode.class, true);
 		
-		builder.append("FUNC(");
+		builder.append(classNode.getName()).append('*').append(' ');
 		
-		builder.append(classNode.getName()).append("*").append(", ");
-		
-		builder.append("new_").append(getName()).append(", ");
+		builder.append("new_").append(getName()).append('(');
 		
 		builder.append(getParameterListNode().generateCHeaderOutput());
 		
@@ -155,6 +151,8 @@ public class ConstructorNode extends MethodNode
 		
 		builder.append("NEW(").append(getName()).append(", ").append(ParameterListNode.OBJECT_REFERENCE_IDENTIFIER).append(");").append('\n').append('\n');
 		
+		builder.append(getMethodAssignments()).append('\n');
+		
 		for (int i = 0; i < getChildren().size(); i++)
 		{
 			TreeNode child = getChild(i);
@@ -168,6 +166,24 @@ public class ConstructorNode extends MethodNode
 		builder.append('\n').append("return ").append(ParameterListNode.OBJECT_REFERENCE_IDENTIFIER).append(';').append('\n');
 		
 		builder.append('}').append('\n');
+		
+		return builder.toString();
+	}
+	
+	private String getMethodAssignments()
+	{
+		StringBuilder builder = new StringBuilder();
+		
+		ClassNode classNode = (ClassNode)getAncestorOfType(ClassNode.class);
+		
+		MethodListNode methods = classNode.getMethodListNode();
+		
+		for (int i = 0; i < methods.getChildren().size(); i++)
+		{
+			MethodNode method = (MethodNode)methods.getChild(i);
+			
+			builder.append(MethodNode.getObjectReferenceIdentifier()).append("->").append(method.getName()).append(" = ").append(method.getName()).append(';').append('\n');
+		}
 		
 		return builder.toString();
 	}
@@ -235,5 +251,31 @@ public class ConstructorNode extends MethodNode
 		}
 		
 		return null;
+	}
+	
+	/**
+	 * @see net.fathomsoft.fathom.tree.TreeNode#clone()
+	 */
+	@Override
+	public ConstructorNode clone()
+	{
+		ConstructorNode clone = new ConstructorNode();
+		clone.setStatic(isStatic());
+		clone.setVisibility(getVisibility());
+		clone.setConst(isConst());
+		clone.setArrayDimensions(getArrayDimensions());
+		clone.setType(getType());
+		clone.setReference(isReference());
+		clone.setPointer(isPointer());
+		clone.setName(getName());
+		
+		for (int i = 0; i < getChildren().size(); i++)
+		{
+			TreeNode child = getChild(i);
+			
+			clone.addChild(child.clone());
+		}
+		
+		return clone;
 	}
 }
