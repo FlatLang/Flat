@@ -9,6 +9,7 @@ import net.fathomsoft.fathom.util.Bounds;
 import net.fathomsoft.fathom.util.Location;
 import net.fathomsoft.fathom.util.Patterns;
 import net.fathomsoft.fathom.util.Regex;
+import net.fathomsoft.fathom.util.SyntaxUtils;
 
 /**
  * Class that is the parent of all Nodes on the Tree. Keeps the basic
@@ -134,7 +135,7 @@ public abstract class TreeNode
 			node = parent;
 		}
 		
-		while (node != null && ((!checkSuper || !node.getClass().getSuperclass().equals(type)) && !node.getClass().equals(type)))
+		while (node != null && ((!checkSuper || !instanceOf(node, type)) && !node.getClass().equals(type)))
 		{
 			checkSuper = false;
 			
@@ -147,6 +148,23 @@ public abstract class TreeNode
 		}
 		
 		return node;
+	}
+	
+	public boolean instanceOf(Object o, Class<?> clazz)
+	{
+		Class<?> current = o.getClass();
+		
+		while (current != null)
+		{
+			if (current.equals(clazz))
+			{
+				return true;
+			}
+			
+			current = current.getSuperclass();
+		}
+		
+		return false;
 	}
 	
 //	/**
@@ -280,7 +298,6 @@ public abstract class TreeNode
 		// Pattern used to find word boundaries.
 		Matcher matcher = pattern.matcher(statement);
 		
-		int		argNum  = 0;
 		int     index   = 0;
 		
 		boolean end     = false;
@@ -439,55 +456,65 @@ public abstract class TreeNode
 		return null;
 	}
 	
+//	public static MethodNode getMethodNode(TreeNode node, String objectContaining, String methodName)
+//	{
+//		ClassNode classNode = (ClassNode)node.getAncestorOfType(ClassNode.class, true);
+//		
+//		String objects[] = objectContaining.split(".");
+//		
+//		
+//		
+//		MethodListNode methods = classNode.getMethodListNode();
+//		
+//		
+//	}
+	
 	public static IdentifierNode getExistingNode(TreeNode node, String statement)
 	{
-//		TreeNode root = node.getAncestorOfType(FileNode.class, true);
+		if (SyntaxUtils.isLiteral(statement))
+		{
+			return null;
+		}
 		
-		if (MethodCallNode.isMethodCall(statement))
+		if (SyntaxUtils.isMethodCall(statement))
 		{
-			int dot = containsBefore(statement, '.', '(');
+//			int dot = containsBefore(statement, '.', '(');
+//			
+//			IdentifierNode identifier = null;
+//			
+//			if (dot > 0)
+//			{
+//				String identifierName = statement.substring(0, dot);
+//				
+//				identifier = getExistingNode(node, identifierName);
+//			}
+//			
+//			Bounds         bounds     = Regex.boundsOf(statement, Patterns.METHOD_NAME);
+//			
+//			String         methodName = statement.substring(bounds.getStart(), bounds.getEnd());
+//			
+//			ClassNode      classNode  = (ClassNode)node.getAncestorOfType(ClassNode.class, true);
+//			
+//			MethodListNode methods    = classNode.getMethodListNode();
+//			
+//			for (int i = 0; i < methods.getChildren().size(); i++)
+//			{
+//				MethodNode method = (MethodNode)methods.getChild(i);
+//				
+//				if (method.getName().equals(methodName))
+//				{
+//					return method;
+//				}
+//			}
 			
-			if (dot >= 0)
-			{
-				String identifier = statement.substring(0, dot);
-				
-				return getExistingNode(node, identifier);
-			}
-			
-			Bounds    bounds       = Regex.boundsOf(statement, Patterns.METHOD_NAME);
-			
-			String    methodName   = statement.substring(bounds.getStart(), bounds.getEnd());
-			
-			ClassNode classNode    = (ClassNode)node.getAncestorOfType(ClassNode.class, true);
-			
-			MethodListNode methods = classNode.getMethodListNode();
-			
-			for (int i = 0; i < methods.getChildren().size(); i++)
-			{
-				MethodNode method = (MethodNode)methods.getChild(i);
-				
-				if (method.getName().equals(methodName))
-				{
-					return method;
-				}
-			}
-		}
-		else if (LiteralNode.isNumber(statement))
-		{
 			return null;
 		}
-		else if (LiteralNode.isString(statement))
+		else if (SyntaxUtils.isValidIdentifier(statement))
 		{
-			return null;
-		}
-		else if (IdentifierNode.isValid(statement))
-		{
-			TreeNode n = node.getAncestorOfType(MethodNode.class, true);
+			MethodNode methodNode = (MethodNode)node.getAncestorOfType(MethodNode.class, true);
 			
-			if (n != null)
+			if (methodNode != null)
 			{
-				MethodNode methodNode = (MethodNode)n;
-				
 				LocalVariableListNode variables = methodNode.getLocalVariableListNode();
 				
 				for (int i = 0; i < variables.getChildren().size(); i++)
@@ -497,6 +524,18 @@ public abstract class TreeNode
 					if (variable.getName().equals(statement))
 					{
 						return variable;
+					}
+				}
+				
+				ParameterListNode parameters = methodNode.getParameterListNode();
+				
+				for (int i = 0; i < parameters.getChildren().size(); i++)
+				{
+					ParameterNode parameter = (ParameterNode)parameters.getChild(i);
+					
+					if (parameter.getName().equals(statement))
+					{
+						return parameter;
 					}
 				}
 			}
@@ -549,4 +588,6 @@ public abstract class TreeNode
 		
 		return -1;
 	}
+	
+	public abstract TreeNode clone();
 }
