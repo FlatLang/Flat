@@ -42,4 +42,22 @@ public class LoopConditionNode extends TreeNode
 	{
 		return null;
 	}
+
+	/**
+	 * @see net.fathomsoft.fathom.tree.TreeNode#clone()
+	 */
+	@Override
+	public LoopConditionNode clone()
+	{
+		LoopConditionNode clone = new LoopConditionNode();
+		
+		for (int i = 0; i < getChildren().size(); i++)
+		{
+			TreeNode child = getChild(i);
+			
+			clone.addChild(child.clone());
+		}
+		
+		return clone;
+	}
 }
