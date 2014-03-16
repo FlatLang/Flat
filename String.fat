@@ -2,9 +2,9 @@ public class String
 {
 	private char data[];
 	
-	public String()
+	public String(char d[])
 	{
-		
+		data = d;
 	}
 	
 	public char[] toCharArray()
