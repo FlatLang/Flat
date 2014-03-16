@@ -10,6 +10,7 @@ import net.fathomsoft.fathom.util.Location;
 import net.fathomsoft.fathom.util.Patterns;
 import net.fathomsoft.fathom.util.Regex;
 import net.fathomsoft.fathom.util.Stack;
+import net.fathomsoft.fathom.util.SyntaxUtils;
 
 /**
  * Class that deconstructs a source code file and builds a Tree out of
@@ -77,6 +78,8 @@ public class SyntaxTree
 	 */
 	private void init(String filename, String source)
 	{
+		source                = removeComments(source);
+		
 		this.source           = source;
 		
 		parentStack           = new Stack<TreeNode>();
@@ -125,6 +128,33 @@ public class SyntaxTree
 		checkForErrors();
 	}
 	
+	public MethodNode getMainMethod()
+	{
+		for (int i = 0; i < root.getChildren().size(); i++)
+		{
+			TreeNode child = root.getChild(i);
+			
+			if (child instanceof ClassNode)
+			{
+				ClassNode classNode = (ClassNode)child;
+				
+				MethodListNode methods = classNode.getMethodListNode();
+				
+				for (int j = 0; j < methods.getChildren().size(); j++)
+				{
+					MethodNode method = (MethodNode)methods.getChild(j);
+					
+					if (SyntaxUtils.isMainMethod(method))
+					{
+						return method;
+					}
+				}
+			}
+		}
+		
+		return null;
+	}
+	
 	/**
 	 * 
 	 */
@@ -149,6 +179,7 @@ public class SyntaxTree
 				ConstructorNode defaultConstructor = new ConstructorNode();
 				defaultConstructor.setName(node.getName());
 				defaultConstructor.setType(node.getName());
+				defaultConstructor.setVisibility(FieldNode.PUBLIC);
 				
 				node.addChild(defaultConstructor);
 			}
@@ -178,6 +209,26 @@ public class SyntaxTree
 			
 			checkForErrors(child);
 		}
+	}
+	
+	private String removeComments(String source)
+	{
+		Pattern p = Patterns.SINGLE_LINE_COMMENT;
+		
+		Matcher m = p.matcher(source);
+		
+		StringBuilder builder = new StringBuilder(source);
+		
+		int offset = 0;
+		
+		while (m.find())
+		{
+			builder.delete(m.start() - offset, m.end() - offset);
+			
+			offset += m.end() - m.start();
+		}
+		
+		return builder.toString();
 	}
 	
 	/**
@@ -435,13 +486,23 @@ public class SyntaxTree
 	}
 	
 	/**
-	 * Get the output text (destination text) from the Syntax tree.
+	 * Get the header output text (destination text) from the Syntax tree.
 	 * 
-	 * @return The output text after compilation.
+	 * @return The header output text after compilation.
 	 */
-	public String getOutput()
+	public String getHeaderOutput()
 	{
-		return output;
+		return root.generateCHeaderOutput();
+	}
+	
+	/**
+	 * Get the source output text (destination text) from the Syntax tree.
+	 * 
+	 * @return The source output text after compilation.
+	 */
+	public String getSourceOutput()
+	{
+		return root.generateCSourceOutput();
 	}
 	
 	/**
