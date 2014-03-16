@@ -28,10 +28,12 @@ public class ClassNode extends DeclarationNode
 		
 		setType("class");
 		
-		FieldListNode  fields  = new FieldListNode();
-		MethodListNode methods = new MethodListNode();
+		FieldListNode  fields       = new FieldListNode();
+		MethodListNode constructors = new MethodListNode();
+		MethodListNode methods      = new MethodListNode();
 		
 		super.addChild(fields);
+		super.addChild(constructors);
 		super.addChild(methods);
 	}
 	
@@ -40,9 +42,14 @@ public class ClassNode extends DeclarationNode
 		return (FieldListNode)getChild(0);
 	}
 	
-	public MethodListNode getMethodListNode()
+	public MethodListNode getConstructorListNode()
 	{
 		return (MethodListNode)getChild(1);
+	}
+	
+	public MethodListNode getMethodListNode()
+	{
+		return (MethodListNode)getChild(2);
 	}
 	
 	public String getExtendedClass()
@@ -88,7 +95,14 @@ public class ClassNode extends DeclarationNode
 	{
 		if (child instanceof MethodNode)
 		{
-			getMethodListNode().addChild(child);
+			if (child instanceof ConstructorNode)
+			{
+				getConstructorListNode().addChild(child);
+			}
+			else
+			{
+				getMethodListNode().addChild(child);
+			}
 		}
 		else if (child instanceof FieldNode)
 		{
@@ -252,13 +266,23 @@ public class ClassNode extends DeclarationNode
 		{
 			TreeNode child = getChild(i);
 			
-			if (child != fields)
+			if (child != getConstructorListNode())
 			{
-				builder.append(child.generateCHeaderOutput());
+				if (child != fields)
+				{
+					builder.append(child.generateCHeaderOutput());
+				}
 			}
 		}
 		
 		builder.append(')').append('\n').append('\n');
+		
+		MethodListNode constructors = getConstructorListNode();
+		
+		if (constructors.getChildren().size() > 0)
+		{
+			builder.append(constructors.generateCHeaderOutput()).append('\n');
+		}
 		
 		if (containsStaticData())
 		{
@@ -286,9 +310,11 @@ public class ClassNode extends DeclarationNode
 		if (methods.getChildren().size() > 0)
 		{
 			builder.append(methods.generateCSourcePrototypes());
-			
-			builder.append('\n');
 		}
+		
+		MethodListNode constructors = getConstructorListNode();
+		
+		builder.append(constructors.generateCSourcePrototypes()).append('\n');
 		
 		FieldListNode fields = getFieldListNode();
 		
@@ -490,5 +516,38 @@ public class ClassNode extends DeclarationNode
 		}
 		
 		return false;
+	}
+	
+	/**
+	 * @see net.fathomsoft.fathom.tree.TreeNode#clone()
+	 */
+	@Override
+	public ClassNode clone()
+	{
+		ClassNode clone = new ClassNode();
+		clone.setArrayDimensions(getArrayDimensions());
+		clone.setConst(isConst());
+		clone.setVisibility(getVisibility());
+		clone.setType(getType());
+		clone.setReference(isReference());
+		clone.setPointer(isPointer());
+		clone.setName(getName());
+		clone.extendedClass = extendedClass;
+		
+		for (int i = 0; i < implementedClasses.size(); i++)
+		{
+			String implementedClass = implementedClasses.get(i);
+			
+			clone.addImplementedClass(implementedClass);
+		}
+		
+		for (int i = 0; i < getChildren().size(); i++)
+		{
+			TreeNode child = getChild(i);
+			
+			clone.addChild(child.clone());
+		}
+		
+		return clone;
 	}
 }
