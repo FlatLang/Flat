@@ -70,7 +70,14 @@ public class ReturnNode extends TreeNode
 		{
 			TreeNode child = getChild(i);
 			
-			builder.append(child.generateCSourceOutput());
+			if (child instanceof VariableNode)
+			{
+				builder.append(((VariableNode) child).generateVariableUseOutput());
+			}
+			else
+			{
+				builder.append(child.generateCSourceOutput());
+			}
 		}
 		
 		builder.append(';').append('\n');
@@ -103,5 +110,23 @@ public class ReturnNode extends TreeNode
 		}
 		
 		return n;
+	}
+
+	/**
+	 * @see net.fathomsoft.fathom.tree.TreeNode#clone()
+	 */
+	@Override
+	public ReturnNode clone()
+	{
+		ReturnNode clone = new ReturnNode();
+		
+		for (int i = 0; i < getChildren().size(); i++)
+		{
+			TreeNode child = getChild(i);
+			
+			clone.addChild(child.clone());
+		}
+		
+		return clone;
 	}
 }
