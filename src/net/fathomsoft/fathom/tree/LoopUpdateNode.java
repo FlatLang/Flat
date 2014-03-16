@@ -42,4 +42,22 @@ public class LoopUpdateNode extends TreeNode
 	{
 		return null;
 	}
+
+	/**
+	 * @see net.fathomsoft.fathom.tree.TreeNode#clone()
+	 */
+	@Override
+	public LoopUpdateNode clone()
+	{
+		LoopUpdateNode clone = new LoopUpdateNode();
+		
+		for (int i = 0; i < getChildren().size(); i++)
+		{
+			TreeNode child = getChild(i);
+			
+			clone.addChild(child.clone());
+		}
+		
+		return clone;
+	}
 }
