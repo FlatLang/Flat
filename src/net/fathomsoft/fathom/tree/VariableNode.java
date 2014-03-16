@@ -12,7 +12,8 @@ package net.fathomsoft.fathom.tree;
 public class VariableNode extends ModifierNode
 {
 	private boolean	constVal;
-	private boolean arrayVal;
+	
+	private int		arrayDimensions;
 	
 	private String	type;
 	
@@ -38,7 +39,12 @@ public class VariableNode extends ModifierNode
 	
 	public boolean isArray()
 	{
-		return arrayVal;
+		return arrayDimensions > 0;
+	}
+	
+	public int getArrayDimensions()
+	{
+		return arrayDimensions;
 	}
 	
 	public String getArrayText()
@@ -46,9 +52,9 @@ public class VariableNode extends ModifierNode
 		return "*";
 	}
 	
-	public void setArray(boolean arrayVal)
+	public void setArrayDimensions(int arrayDimensions)
 	{
-		this.arrayVal = arrayVal;
+		this.arrayDimensions = arrayDimensions;
 	}
 	
 	public String getType()
@@ -98,18 +104,41 @@ public class VariableNode extends ModifierNode
 			builder.append(getPointerText()).append(' ');
 		}
 		
-		builder.append(getName());
+		builder.append(getName()).append(';');
 		
 		return builder.toString();
 	}
-
+	
+	public String generateVariableUseOutput()
+	{
+		StringBuilder builder = new StringBuilder();
+		
+		String visibility = "";
+		
+		if (this instanceof FieldNode)
+		{
+			FieldNode field = (FieldNode)this;
+			
+			visibility = MethodNode.getObjectReferenceIdentifier() + "->";
+			
+			if (field.getVisibility() == FieldNode.PRIVATE)
+			{
+				visibility += "prv->";
+			}
+		}
+		
+		builder.append(visibility).append(getName());
+		
+		return builder.toString();
+	}
+	
 	/**
 	 * @see net.fathomsoft.fathom.tree.TreeNode#generateCHeaderOutput()
 	 */
 	@Override
 	public String generateCHeaderOutput()
 	{
-		return null;
+		return generateCSourceOutput();
 	}
 
 	/**
@@ -125,23 +154,47 @@ public class VariableNode extends ModifierNode
 			builder.append(getConstText()).append(' ');
 		}
 		
-		builder.append(getType()).append(' ');
+		builder.append(getType());
 		
 		if (isReference())
 		{
-			builder.append(getReferenceText()).append(' ');
+			builder.append(getReferenceText());
 		}
 		else if (isPointer())
 		{
-			builder.append(getPointerText()).append(' ');
+			builder.append(getPointerText());
 		}
 		else if (isArray())
 		{
 			builder.append(getArrayText());
 		}
 		
-		builder.append(getName());
+		builder.append(' ').append(getName()).append(';');
 		
 		return builder.toString();
+	}
+	
+	/**
+	 * @see net.fathomsoft.fathom.tree.TreeNode#clone()
+	 */
+	@Override
+	public VariableNode clone()
+	{
+		VariableNode clone = new VariableNode();
+		clone.setName(getName());
+		clone.setConst(isConst());
+		clone.setArrayDimensions(getArrayDimensions());
+		clone.setType(getType());
+		clone.setReference(isReference());
+		clone.setPointer(isPointer());
+		
+		for (int i = 0; i < getChildren().size(); i++)
+		{
+			TreeNode child = getChild(i);
+			
+			clone.addChild(child.clone());
+		}
+		
+		return clone;
 	}
 }
