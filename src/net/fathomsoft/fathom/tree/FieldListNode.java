@@ -135,4 +135,22 @@ public class FieldListNode extends TreeNode
 		
 		return builder.toString();
 	}
+
+	/**
+	 * @see net.fathomsoft.fathom.tree.TreeNode#clone()
+	 */
+	@Override
+	public FieldListNode clone()
+	{
+		FieldListNode clone = new FieldListNode();
+		
+		for (int i = 0; i < getChildren().size(); i++)
+		{
+			TreeNode child = getChild(i);
+			
+			clone.addChild(child.clone());
+		}
+		
+		return clone;
+	}
 }
