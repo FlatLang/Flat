@@ -565,7 +565,7 @@ public class Regex
 	{
 		ArrayList<String> strs = new ArrayList<String>();
 		
-		int oldIndex = 0;
+		int oldIndex =  0;
 		int index    = -1;
 		
 		StringBuilder builder = new StringBuilder();
