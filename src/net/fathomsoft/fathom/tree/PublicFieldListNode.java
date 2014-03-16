@@ -90,4 +90,22 @@ public class PublicFieldListNode extends TreeNode
 		
 		return builder.toString();
 	}
+
+	/**
+	 * @see net.fathomsoft.fathom.tree.TreeNode#clone()
+	 */
+	@Override
+	public PublicFieldListNode clone()
+	{
+		PublicFieldListNode clone = new PublicFieldListNode();
+		
+		for (int i = 0; i < getChildren().size(); i++)
+		{
+			TreeNode child = getChild(i);
+			
+			clone.addChild(child.clone());
+		}
+		
+		return clone;
+	}
 }
