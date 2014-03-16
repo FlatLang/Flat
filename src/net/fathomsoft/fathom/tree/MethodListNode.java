@@ -51,7 +51,7 @@ public class MethodListNode extends TreeNode
 		{
 			builder.append('\n');
 		}
-			
+		
 		for (int i = 0; i < getChildren().size(); i++)
 		{
 			builder.append(getChild(i).generateCHeaderOutput());
@@ -98,5 +98,23 @@ public class MethodListNode extends TreeNode
 		}
 		
 		return builder.toString();
+	}
+
+	/**
+	 * @see net.fathomsoft.fathom.tree.TreeNode#clone()
+	 */
+	@Override
+	public MethodListNode clone()
+	{
+		MethodListNode clone = new MethodListNode();
+		
+		for (int i = 0; i < getChildren().size(); i++)
+		{
+			TreeNode child = getChild(i);
+			
+			clone.addChild(child.clone());
+		}
+		
+		return clone;
 	}
 }
