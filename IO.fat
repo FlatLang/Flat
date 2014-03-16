@@ -14,4 +14,25 @@ public class IO
 		
 		stdio.printf(cText);
 	}
+	
+//	public static String getLine()
+//	{
+//		char line[] = new char[256];
+//		int  i;
+//		
+//		if (fgets(line, sizeof(line), stdin))
+//		{
+//			if (1 == sscanf(line, "%d", &i))
+//			{
+//				/* i can be safely used */
+//			}
+//		}
+//	}
+	
+	public static void waitForEnter()
+	{
+		char c[] = new char[2];
+		
+		stdio.fgets(c, 2, stdin);
+	}
 }
