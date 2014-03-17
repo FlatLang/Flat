@@ -143,14 +143,8 @@ public class Fathom
 				ClassNode classNode = (ClassNode)mainMethod.getAncestorOfType(ClassNode.class);
 				
 				String source = sources.get(i);
-				
-				StringBuilder mainMethodText = new StringBuilder();
-				
-				mainMethodText.append('\n').append('\n');
-				mainMethodText.append("int main(int argc, char** argvs)").append('\n');
-				mainMethodText.append("{").append('\n');
-				mainMethodText.append("String** args = (String**)malloc(argc * sizeof(String));").append('\n');
-				mainMethodText.append("int      i;").append('\n').append('\n');
+
+				StringBuilder staticClassText = new StringBuilder();
 				
 				for (SyntaxTree t : trees)
 				{
@@ -166,12 +160,20 @@ public class Fathom
 							
 							if (c.containsStaticData())
 							{
-								mainMethodText.append("__static__").append(c.getName()).append(" = ").append("new_").append(c.getName()).append("();").append('\n');
+								staticClassText.append("__static__").append(c.getName()).append(" = ").append("new_").append(c.getName()).append("();").append('\n');
 							}
 						}
 					}
 				}
 				
+				StringBuilder mainMethodText = new StringBuilder();
+				
+				mainMethodText.append('\n').append('\n');
+				mainMethodText.append("int main(int argc, char** argvs)").append('\n');
+				mainMethodText.append("{").append('\n');
+				mainMethodText.append("String** args = (String**)malloc(argc * sizeof(String));").append('\n');
+				mainMethodText.append("int      i;").append('\n').append('\n');
+				mainMethodText.append(staticClassText);
 				mainMethodText.append('\n');
 				mainMethodText.append("for (i = 0; i < argc; i++)").append('\n');
 				mainMethodText.append("{").append('\n');
