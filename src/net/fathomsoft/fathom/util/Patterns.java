@@ -10,7 +10,7 @@ public class Patterns
 	public static final Pattern	STATEMENT_START			= Pattern.compile("(?=[^\\}])(?=\\S)");
 	public static final Pattern	STATEMENT_END			= Pattern.compile("\\s*[\\{\\;]");
 	public static final Pattern	NEXT_TEXT_LINE			= Pattern.compile("(.)", Pattern.MULTILINE);
-	public static final Pattern FORMATTER_PATTERN		= Pattern.compile("[\\}\\{\\n]");
+	public static final Pattern FORMATTER_PATTERN		= Pattern.compile("[\\}\\{\\)\\(\\n]");
 	public static final Pattern PRE_EQUALS_SIGN			= Pattern.compile("(\\S+\\s*)+=");
 	public static final Pattern POST_EQUALS_SIGN		= Pattern.compile("(?<=(=\\s{0,999}))(?=\\S+)");
 	public static final Pattern BINARY_ARITH_OPERATORS	= Pattern.compile("[\\*\\+\\/\\-=]");
