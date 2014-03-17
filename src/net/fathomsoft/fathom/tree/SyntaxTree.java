@@ -312,7 +312,7 @@ public class SyntaxTree
 		Matcher       formatMatcher = Patterns.FORMATTER_PATTERN.matcher(text);
 		
 		int           lastIndex     = 0;
-		int           queue         = 0;
+		boolean       sameLine      = false;
 		
 		while (formatMatcher.find())
 		{
@@ -320,8 +320,9 @@ public class SyntaxTree
 			
 			if (c == '{' || c == '(')
 			{
-//				queue++;
 				tabs.append('\t');
+				
+				sameLine = true;
 			}
 			else if (c == '}' || c == ')')
 			{
@@ -329,26 +330,21 @@ public class SyntaxTree
 				{
 					tabs.deleteCharAt(0);
 				}
-				if (builder.length() > 0)
+				
+				if (builder.length() > 0 && !sameLine)
 				{
 					builder.deleteCharAt(builder.length() - 1);
 				}
-				
-//				queue--;
 			}
 			else if (c == '\n')
 			{
 				String substring = text.substring(lastIndex, formatMatcher.start());
 				
-				builder.append(substring).append('\n');
+				builder.append(substring).append('\n').append(tabs);
 				
 				lastIndex = formatMatcher.start() + 1;
 				
-//				for (int i = queue - 1; i >= 0; i--)
-				{
-//					tabs.append('\t');
-					builder.append(tabs);
-				}
+				sameLine = false;
 			}
 		}
 		
