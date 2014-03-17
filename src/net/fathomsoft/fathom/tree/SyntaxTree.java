@@ -312,51 +312,42 @@ public class SyntaxTree
 		Matcher       formatMatcher = Patterns.FORMATTER_PATTERN.matcher(text);
 		
 		int           lastIndex     = 0;
+		int           queue         = 0;
 		
 		while (formatMatcher.find())
 		{
-			char nextc = 0;
-			char c     = text.charAt(formatMatcher.start());
+			char c = text.charAt(formatMatcher.start());
 			
-			if (formatMatcher.start() < text.length() - 1)
+			if (c == '{' || c == '(')
 			{
-				nextc = text.charAt(formatMatcher.start() + 1);
-			}
-			
-			if (c == '{')
-			{
+//				queue++;
 				tabs.append('\t');
 			}
-			else if (c == '}')
+			else if (c == '}' || c == ')')
 			{
 				if (tabs.length() > 0)
 				{
 					tabs.deleteCharAt(0);
 				}
+				if (builder.length() > 0)
+				{
+					builder.deleteCharAt(builder.length() - 1);
+				}
+				
+//				queue--;
 			}
 			else if (c == '\n')
 			{
 				String substring = text.substring(lastIndex, formatMatcher.start());
 				
-				builder.append(tabs).append(substring).append('\n');
-				
-				if (substring.startsWith("{") || substring.startsWith("("))
-				{
-					builder.deleteCharAt(builder.length() - substring.length() - 2);
-				}
+				builder.append(substring).append('\n');
 				
 				lastIndex = formatMatcher.start() + 1;
 				
-				if (nextc == '(')
+//				for (int i = queue - 1; i >= 0; i--)
 				{
-					tabs.append('\t');
-				}
-				else if (nextc == ')')
-				{
-					if (tabs.length() > 0)
-					{
-						tabs.deleteCharAt(0);
-					}
+//					tabs.append('\t');
+					builder.append(tabs);
 				}
 			}
 		}
