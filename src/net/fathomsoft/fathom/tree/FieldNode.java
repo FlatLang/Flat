@@ -119,12 +119,21 @@ public class FieldNode extends DeclarationNode
 		{
 			builder.append(getPointerText());
 		}
-		else if (isArray())
+		if (isArray())
 		{
 			builder.append(getArrayText());
 		}
+		if (!isPrimitiveType())
+		{
+			builder.append('*');
+		}
 		
 		builder.append(' ').append(getName());
+		
+		if (!isPrimitiveType())
+		{
+			builder.append(" = 0");
+		}
 		
 		builder.append(';').append('\n');
 		
