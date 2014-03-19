@@ -7,9 +7,14 @@ public class Test
 	
 	public String publicVariable;
 	
+	public Test()
+	{
+		//publicVariable = "hello";
+	}
+	
 	public static void main(String args[])
 	{
-		IO.print("Hello, world\n\n");
+		IO.print("Hello, world. Freeing memory!!!111!!! ... asdfasdf ...\n\n");
 		IO.print("Command line arg #1 is\n");
 		IO.print(args[0]);
 		IO.waitForEnter();
