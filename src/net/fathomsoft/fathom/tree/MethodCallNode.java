@@ -91,7 +91,7 @@ public class MethodCallNode extends IdentifierNode
 		
 		builder.append(getObjectInstance()).append(getName()).append('(');
 		
-		builder.append(getArgumentListNode().generateJavaSourceOutput());
+		builder.append(getArgumentListNode().generateCSourceOutput());
 		
 		builder.append(')');
 		
