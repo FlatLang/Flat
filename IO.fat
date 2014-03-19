@@ -15,19 +15,19 @@ public class IO
 		stdio.printf(cText);
 	}
 	
-//	public static String getLine()
-//	{
-//		char line[] = new char[256];
-//		int  i;
-//		
-//		if (fgets(line, sizeof(line), stdin))
-//		{
-//			if (1 == sscanf(line, "%d", &i))
-//			{
-//				/* i can be safely used */
-//			}
-//		}
-//	}
+	public static String getLine()
+	{
+		char line[] = new char[256];
+		int  i;
+		
+		/*if (stdio.fgets(line, stdio.sizeof(line), stdin))
+		{
+			if (1 == stdio.sscanf(line, "%d", &i))
+			{
+				// i can be safely used
+			}
+		}*/
+	}
 	
 	public static void waitForEnter()
 	{
