@@ -77,7 +77,7 @@ public class ParameterListNode extends TreeNode
 		
 		if (getParent() instanceof ConstructorNode == false)
 		{
-			builder.append(classNode.getName()).append("* ").append(OBJECT_REFERENCE_IDENTIFIER);
+			builder.append(classNode.getName()).append("* ").append(MethodNode.getObjectReferenceIdentifier());
 		}
 		
 		for (int i = 0; i < getChildren().size(); i++)
