@@ -170,6 +170,8 @@ public class ConstructorNode extends MethodNode
 		
 		builder.append(generateMethodAssignments()).append('\n');
 		
+		builder.append(generateFieldDefaultAssignments());
+		
 		for (int i = 0; i < getChildren().size(); i++)
 		{
 			TreeNode child = getChild(i);
@@ -183,6 +185,24 @@ public class ConstructorNode extends MethodNode
 		builder.append('\n').append("return ").append(ParameterListNode.OBJECT_REFERENCE_IDENTIFIER).append(';').append('\n');
 		
 		builder.append('}').append('\n');
+		
+		return builder.toString();
+	}
+	
+	private String generateFieldDefaultAssignments()
+	{
+		StringBuilder builder = new StringBuilder();
+		
+		ClassNode classNode = (ClassNode)getAncestorOfType(ClassNode.class);
+		
+		PublicFieldListNode fields = classNode.getFieldListNode().getPublicFieldListNode();
+		
+		for (int i = 0; i < fields.getChildren().size(); i++)
+		{
+			VariableNode child = (VariableNode)fields.getChild(i);
+			
+			builder.append(child.generateVariableUseOutput()).append(" = ").append(VariableNode.getNullText()).append(';').append('\n');
+		}
 		
 		return builder.toString();
 	}
@@ -201,6 +221,33 @@ public class ConstructorNode extends MethodNode
 			
 			builder.append(MethodNode.getObjectReferenceIdentifier()).append("->").append(method.getName()).append(" = ").append(method.getName()).append(';').append('\n');
 		}
+		
+		return builder.toString();
+	}
+	
+	public String generateCSourcePrototype()
+	{
+		return generateCSourceSignature().concat(";");
+	}
+	
+	public String generateCSourceSignature()
+	{
+		StringBuilder builder = new StringBuilder();
+
+		ClassNode classNode = (ClassNode)getAncestorOfType(ClassNode.class);
+		
+		if (isConst())
+		{
+			builder.append(getConstText()).append(' ');
+		}
+		
+		builder.append(getType()).append('*');
+		
+		builder.append(' ');
+		
+		builder.append("new_");
+		
+		builder.append(classNode.getName()).append("()");
 		
 		return builder.toString();
 	}
