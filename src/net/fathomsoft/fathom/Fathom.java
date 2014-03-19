@@ -57,7 +57,10 @@ public class Fathom
 	public static final boolean	DEBUG         = true;
 	
 	public static final int		CSOURCE       = 0x1;
-	public static final int		VERBOSE       = 0x2;
+	public static final int		VERBOSE       = 0x10;
+	public static final int		GCC           = 0x100;
+	public static final int		TCC           = 0x1000;
+	public static final int		DRY_RUN       = 0x10000;
 	
 	public static final String	LANGUAGE_NAME = "Fathom";
 	
@@ -102,12 +105,19 @@ public class Fathom
 		
 		String directory = getWorkingDirectoryPath();
 		
+		enableFlag(GCC);
+		
 		if (DEBUG)
 		{
-			args = new String[] { directory + "Test.fat", directory + "IO.fat", directory + "String.fat", "-csource", "-v" };
+			args = new String[] { directory + "Test.fat", directory + "IO.fat", directory + "String.fat", "-csource", "-v", "-tcc" };
 		}
 		
 		parseArguments(args);
+		
+		log("Fathom  Copyright (C) 2014  Braden Steffaniak <BradenSteffaniak@gmail.com>\n" +
+				"This program comes with ABSOLUTELY NO WARRANTY\n" + //; for details type show w." +
+				"This is free software, and you are welcome to redistribute it\n" +
+				"under certain conditions");//; type show c for details.");
 		
 		ArrayList<SyntaxTree> trees   = new ArrayList<SyntaxTree>();
 		ArrayList<String>     headers = new ArrayList<String>();
@@ -161,7 +171,8 @@ public class Fathom
 				
 				String source = sources.get(i);
 
-				StringBuilder staticClassText = new StringBuilder();
+				StringBuilder staticClassInit = new StringBuilder();
+				StringBuilder staticClassFree = new StringBuilder();
 				
 				for (SyntaxTree t : trees)
 				{
@@ -177,7 +188,8 @@ public class Fathom
 							
 							if (c.containsStaticData())
 							{
-								staticClassText.append("__static__").append(c.getName()).append(" = ").append("new_").append(c.getName()).append("();").append('\n');
+								staticClassInit.append("__static__").append(c.getName()).append(" = ").append("new_").append(c.getName()).append("();").append('\n');
+								staticClassFree.append("del_").append(c.getName()).append("(__static__").append(c.getName()).append(");").append('\n');
 							}
 						}
 					}
@@ -190,7 +202,7 @@ public class Fathom
 				mainMethodText.append("{").append('\n');
 				mainMethodText.append("String** args = (String**)malloc(argc * sizeof(String));").append('\n');
 				mainMethodText.append("int      i;").append('\n').append('\n');
-				mainMethodText.append(staticClassText);
+				mainMethodText.append(staticClassInit);
 				mainMethodText.append('\n');
 				mainMethodText.append("for (i = 0; i < argc; i++)").append('\n');
 				mainMethodText.append("{").append('\n');
@@ -198,6 +210,9 @@ public class Fathom
 				mainMethodText.append("}").append('\n');
 				mainMethodText.append('\n');
 				mainMethodText.append("__static__").append(classNode.getName()).append("->__").append(LANGUAGE_NAME.toUpperCase()).append("__main(__static__").append(classNode.getName()).append(", args);").append('\n');
+				mainMethodText.append('\n');
+				mainMethodText.append(staticClassFree);
+				mainMethodText.append("free(args);").append('\n');
 				mainMethodText.append("}");
 				
 				String newSource = source + mainMethodText.toString();
@@ -211,7 +226,7 @@ public class Fathom
 			String header = headers.get(i);
 			String source = sources.get(i);
 			
-			if (isFlagSet(CSOURCE))
+			if (isFlagEnabled(CSOURCE))
 			{
 				log("Formatting the output c header code...");
 				header = tree.formatText(header);
@@ -252,7 +267,14 @@ public class Fathom
 		}
 		
 //		completed();
-		compileC(workingDir, cClass);
+		if (!isFlagEnabled(DRY_RUN))
+		{
+			compileC(workingDir, cClass);
+		}
+		else
+		{
+			completed();
+		}
 	}
 	
 	private void compileC(File workingDir, File cClass)
@@ -265,7 +287,14 @@ public class Fathom
 		
 		cmd = new StringBuilder();
 		
-		cmd.append("gcc/bin/gcc.exe ");
+		if (isFlagEnabled(GCC))
+		{
+			cmd.append("gcc/bin/gcc.exe ");
+		}
+		else if (isFlagEnabled(TCC))
+		{
+			cmd.append("tcc/tcc.exe ");
+		}
 //		cmd.append('"').append(cClass.getAbsolutePath()).append('"').append(' ');
 		
 		for (File sourceFile : cSourceFiles)
@@ -348,7 +377,10 @@ public class Fathom
 			@Override
 			public void resultReceived(int result)
 			{
-				System.out.println(result);
+				if (result != 0)
+				{
+					System.err.println("Compilation failed.");
+				}
 			}
 			
 			@Override
@@ -387,7 +419,7 @@ public class Fathom
 	 */
 	private void log(String message)
 	{
-		if (isFlagSet(VERBOSE))
+		if (isFlagEnabled(VERBOSE))
 		{
 			System.out.println(message);
 		}
@@ -418,11 +450,25 @@ public class Fathom
 			
 			if (arg.equals("-csource"))
 			{
-				setFlag(CSOURCE);
+				enableFlag(CSOURCE);
 			}
 			else if (arg.equals("-verbose") || arg.equals("-v"))
 			{
-				setFlag(VERBOSE);
+				enableFlag(VERBOSE);
+			}
+			else if (arg.equals("-gcc"))
+			{
+				disableFlag(TCC);
+				enableFlag(GCC);
+			}
+			else if (arg.equals("-tcc"))
+			{
+				disableFlag(GCC);
+				enableFlag(TCC);
+			}
+			else if (arg.equals("-dry"))
+			{
+				enableFlag(DRY_RUN);
 			}
 			else if (lastInput == i - 1)
 			{
@@ -436,22 +482,32 @@ public class Fathom
 	}
 	
 	/**
-	 * Set the specified flag as on.
+	 * Enable the specified flag.
 	 * 
-	 * @param flag The flag to set as on.
+	 * @param flag The flag to set enable.
 	 */
-	private void setFlag(int flag)
+	private void enableFlag(int flag)
 	{
 		flags |= flag;
 	}
 	
 	/**
-	 * Check if the specific flag is set for the compiler.
+	 * Disable the specified flag.
 	 * 
-	 * @param flag The flag to check if is set.
-	 * @return Whether or not the flag is set.
+	 * @param flag The flag to disable.
 	 */
-	private boolean isFlagSet(int flag)
+	private void disableFlag(int flag)
+	{
+		flags = flags & (~flag);
+	}
+	
+	/**
+	 * Check if the specific flag is enabled for the compiler.
+	 * 
+	 * @param flag The flag to check if is enabled.
+	 * @return Whether or not the flag is enabled.
+	 */
+	private boolean isFlagEnabled(int flag)
 	{
 		return (flags & flag) != 0;
 	}
