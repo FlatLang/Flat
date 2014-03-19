@@ -234,10 +234,8 @@ public class MethodNode extends DeclarationNode
 	{
 		StringBuilder builder = new StringBuilder();
 		
-		if (this instanceof ConstructorNode == false)
-		{
-			builder.append("static ");
-		}
+		builder.append("static ");
+		
 		if (isConst())
 		{
 			builder.append(getConstText()).append(' ');
@@ -259,11 +257,6 @@ public class MethodNode extends DeclarationNode
 		}
 		
 		builder.append(' ');
-		
-		if (this instanceof ConstructorNode)
-		{
-			builder.append("new_");
-		}
 		
 		builder.append(getName()).append('(');
 		
@@ -300,19 +293,18 @@ public class MethodNode extends DeclarationNode
 			
 			MethodNode n = new MethodNode()
 			{
-				private String returnType = null;
-				
-				public void interactWord(String word, int argNum, Bounds bounds, int numWords)
+				public void interactWord(String word, int wordNumber, Bounds bounds, int numWords)
 				{
-					setAttribute(word, argNum);
+					setAttribute(word, wordNumber);
 					
-					setType(returnType);
-					setName(word);
-					
-					returnType = word;
-					
-					if (argNum == numWords - 2)
+					if (wordNumber == numWords - 1)
 					{
+						setName(word);
+					}
+					else if (wordNumber == numWords - 2)
+					{
+						setType(word);
+						
 						// If it is an array declaration.
 						if (Regex.matches(statement2, bounds.getEnd(), Patterns.ARRAY_BRACKETS))
 						{
