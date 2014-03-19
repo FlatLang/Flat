@@ -22,5 +22,10 @@ An Example command to compile a source:<br>
 Optional arguments to the Compiler Include:
   * `-csource` Output the compiled c source files during compilation.
   * `-verbose` or `-v` Output debugging messages during compilation.
+  * `-dry` Perform a dry-run of the compilation. Do not compile into an executable.
+  * `-gcc` Compile the c code with the GCC (GNU Compiler Collection) compiler.
+  * `-tcc` Compile the c code with the TCC (Tiny C Compiler) compiler.
+
+The default c compiler is GCC because of its wide support.
 
 © 2014 Fathomsoft
