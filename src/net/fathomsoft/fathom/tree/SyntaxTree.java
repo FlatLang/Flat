@@ -200,6 +200,15 @@ public class SyntaxTree
 				
 				node.addChild(defaultConstructor);
 			}
+			if (!node.containsDestructor())
+			{
+				DestructorNode defaultDestructor = new DestructorNode();
+				defaultDestructor.setName("~" + node.getName());
+				defaultDestructor.setType("void");
+				defaultDestructor.setVisibility(FieldNode.PUBLIC);
+				
+				node.addChild(defaultDestructor);
+			}
 		}
 		else if (root instanceof MethodCallNode)
 		{
@@ -230,7 +239,7 @@ public class SyntaxTree
 	
 	private String removeComments(String source)
 	{
-		Pattern p = Patterns.SINGLE_LINE_COMMENT;
+		Pattern p = Patterns.COMMENT;
 		
 		Matcher m = p.matcher(source);
 		
