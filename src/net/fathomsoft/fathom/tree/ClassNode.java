@@ -47,10 +47,12 @@ public class ClassNode extends DeclarationNode
 		
 		FieldListNode  fields       = new FieldListNode();
 		MethodListNode constructors = new MethodListNode();
+		MethodListNode destructors  = new MethodListNode();
 		MethodListNode methods      = new MethodListNode();
 		
 		super.addChild(fields);
 		super.addChild(constructors);
+		super.addChild(destructors);
 		super.addChild(methods);
 	}
 	
@@ -63,10 +65,15 @@ public class ClassNode extends DeclarationNode
 	{
 		return (MethodListNode)getChild(1);
 	}
+
+	public MethodListNode getDestructorListNode()
+	{
+		return (MethodListNode)getChild(2);
+	}
 	
 	public MethodListNode getMethodListNode()
 	{
-		return (MethodListNode)getChild(2);
+		return (MethodListNode)getChild(3);
 	}
 	
 	public String getExtendedClass()
@@ -115,6 +122,10 @@ public class ClassNode extends DeclarationNode
 			if (child instanceof ConstructorNode)
 			{
 				getConstructorListNode().addChild(child);
+			}
+			else if (child instanceof DestructorNode)
+			{
+				getDestructorListNode().addChild(child);
 			}
 			else
 			{
@@ -266,7 +277,7 @@ public class ClassNode extends DeclarationNode
 //			}
 //		}
 		
-		builder.append('\n');
+		builder.append('\n').append('\n');
 
 		FieldListNode fields = getFieldListNode();
 		
@@ -274,16 +285,14 @@ public class ClassNode extends DeclarationNode
 		
 		if (publicFields.getChildren().size() > 0)
 		{
-			builder.append('\n');
-			
-			builder.append(publicFields.generateCSourceOutput());
+			builder.append(publicFields.generateCHeaderOutput()).append('\n');
 		}
 		
 		for (int i = 0; i < getChildren().size(); i++)
 		{
 			TreeNode child = getChild(i);
 			
-			if (child != getConstructorListNode())
+			if (child != getConstructorListNode() && child != getDestructorListNode())
 			{
 				if (child != fields)
 				{
@@ -295,11 +304,10 @@ public class ClassNode extends DeclarationNode
 		builder.append(')').append('\n').append('\n');
 		
 		MethodListNode constructors = getConstructorListNode();
+		builder.append(constructors.generateCHeaderOutput());
 		
-		if (constructors.getChildren().size() > 0)
-		{
-			builder.append(constructors.generateCHeaderOutput()).append('\n');
-		}
+		MethodListNode destructors = getDestructorListNode();
+		builder.append(destructors.generateCHeaderOutput());
 		
 		if (containsStaticData())
 		{
@@ -322,6 +330,12 @@ public class ClassNode extends DeclarationNode
 			builder.append(getName()).append("* ").append("__static__").append(getName()).append(';').append('\n').append('\n');
 		}
 		
+		MethodListNode constructors = getConstructorListNode();
+		builder.append(constructors.generateCSourcePrototypes());
+
+		MethodListNode destructors = getDestructorListNode();
+		builder.append(destructors.generateCSourcePrototypes());
+		
 		MethodListNode methods = getMethodListNode();
 		
 		if (methods.getChildren().size() > 0)
@@ -329,9 +343,7 @@ public class ClassNode extends DeclarationNode
 			builder.append(methods.generateCSourcePrototypes());
 		}
 		
-		MethodListNode constructors = getConstructorListNode();
-		
-		builder.append(constructors.generateCSourcePrototypes()).append('\n');
+		builder.append('\n');
 		
 		FieldListNode fields = getFieldListNode();
 		
@@ -482,10 +494,10 @@ public class ClassNode extends DeclarationNode
 		return containsMethod(getName(), true, getName());
 	}
 	
-//	public boolean containsDestructor()
-//	{
-//		return containsMethod(getName(), true, null);
-//	}
+	public boolean containsDestructor()
+	{
+		return containsMethod("~" + getName(), true, null);
+	}
 	
 	/**
 	 * Get whether or not the Fathom class contains a method with the
