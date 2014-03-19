@@ -17,6 +17,8 @@
  */
 package net.fathomsoft.fathom.tree;
 
+import net.fathomsoft.fathom.util.SyntaxUtils;
+
 /**
  * 
  * 
@@ -34,9 +36,21 @@ public class VariableNode extends ModifierNode
 	
 	private String	type;
 	
+	private static final String	NULL_TEXT = "0";
+	
 	public VariableNode()
 	{
 		
+	}
+	
+	public boolean isPrimitive()
+	{
+		return isPrimitiveType() && !isArray();
+	}
+	
+	public boolean isPrimitiveType()
+	{
+		return SyntaxUtils.isPrimitiveType(getType());
 	}
 	
 	public boolean isConst()
@@ -95,6 +109,11 @@ public class VariableNode extends ModifierNode
 		{
 			setConst(true);
 		}
+	}
+	
+	public static String getNullText()
+	{
+		return NULL_TEXT;
 	}
 	
 	/**
