@@ -420,7 +420,11 @@ public abstract class TreeNode
 		}
 		else if (parent instanceof ClassNode)
 		{
-			if ((node = ConstructorNode.decodeStatement(parent, statement, location)) != null)
+			if ((node = DestructorNode.decodeStatement(parent, statement, location)) != null)
+			{
+				return node;
+			}
+			else if ((node = ConstructorNode.decodeStatement(parent, statement, location)) != null)
 			{
 				return node;
 			}
@@ -440,6 +444,10 @@ public abstract class TreeNode
 				return node;
 			}
 			else if ((node = InstantiationNode.decodeStatement(parent, statement, location)) != null)
+			{
+				return node;
+			}
+			else if ((node = IfStatementNode.decodeStatement(parent, statement, location)) != null)
 			{
 				return node;
 			}
