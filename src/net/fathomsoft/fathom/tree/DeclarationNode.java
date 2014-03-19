@@ -167,36 +167,51 @@ public class DeclarationNode extends VariableNode
 	{
 		StringBuilder builder = new StringBuilder();
 		
-		if (isVisibilityValid())
-		{
-			if (getVisibility() == PRIVATE)
-			{
-				return "";
-			}
-			
-			builder.append(getVisibilityText()).append(' ');
-		}
-		if (isStatic())
-		{
-			builder.append(getStaticText()).append(' ');
-		}
-		if (isConst())
-		{
-			builder.append(getConstText()).append(' ');
-		}
+//		if (isVisibilityValid())
+//		{
+//			if (getVisibility() == PRIVATE)
+//			{
+//				return "";
+//			}
+//			
+//			builder.append(getVisibilityText()).append(' ');
+//		}
+//		if (isStatic())
+//		{
+//			builder.append(getStaticText()).append(' ');
+//		}
+//		if (isConst())
+//		{
+//			builder.append(getConstText()).append(' ');
+//		}
 		
-		builder.append(getType()).append(' ');
+		builder.append(getType());
 		
 		if (isReference())
 		{
-			builder.append(getReferenceText()).append(' ');
+			builder.append(getReferenceText());
 		}
 		else if (isPointer())
 		{
-			builder.append(getPointerText()).append(' ');
+			builder.append(getPointerText());
+		}
+		if (isArray())
+		{
+			builder.append(getArrayText());
+		}
+		if (!isPrimitiveType())
+		{
+			builder.append('*');
 		}
 		
-		builder.append(getName()).append(';').append('\n');
+		builder.append(' ').append(getName());
+		
+//		if (!isPrimitiveType())
+//		{
+//			builder.append(" = 0;");
+//		}
+		
+		builder.append(';').append('\n');
 		
 		return builder.toString();
 	}
