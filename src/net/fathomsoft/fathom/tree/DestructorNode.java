@@ -17,6 +17,11 @@
  */
 package net.fathomsoft.fathom.tree;
 
+import net.fathomsoft.fathom.error.SyntaxMessage;
+import net.fathomsoft.fathom.util.Bounds;
+import net.fathomsoft.fathom.util.Location;
+import net.fathomsoft.fathom.util.Regex;
+
 /**
  * 
  * 
@@ -48,7 +53,35 @@ public class DestructorNode extends MethodNode
 	@Override
 	public String generateCHeaderOutput()
 	{
-		return null;
+		StringBuilder builder = new StringBuilder();
+		
+		if (isVisibilityValid())
+		{
+			if (getVisibility() == DeclarationNode.PRIVATE)
+			{
+				SyntaxMessage.error("Destructor must be public", getLocationIn());
+				
+				return null;
+			}
+		}
+		
+		if (isConst())
+		{
+			SyntaxMessage.error("Destructor cannot be const", getLocationIn());
+			
+			return null;
+		}
+		
+		if (isReference())
+		{
+			SyntaxMessage.error("Destructor cannot return a reference", getLocationIn());
+			
+			return null;
+		}
+		
+		builder.append(generateCSourcePrototype()).append('\n');
+		
+		return builder.toString();
 	}
 
 	/**
@@ -57,6 +90,209 @@ public class DestructorNode extends MethodNode
 	@Override
 	public String generateCSourceOutput()
 	{
+		StringBuilder builder = new StringBuilder();
+		
+		builder.append(generateCSourceSignature()).append('\n').append('{').append('\n');
+		
+		builder.append(nullChecker()).append('\n');
+		
+		builder.append(deleteData()).append('\n');
+		
+		for (int i = 0; i < getChildren().size(); i++)
+		{
+			TreeNode child = getChild(i);
+			
+			if (child != getParameterListNode())
+			{
+				builder.append(child.generateCSourceOutput());
+			}
+		}
+		
+		builder.append("free(").append(MethodNode.getObjectReferenceIdentifier()).append(");").append('\n');
+		
+		builder.append('}').append('\n');
+		
+		return builder.toString();
+	}
+	
+	private String nullChecker()
+	{
+		StringBuilder builder = new StringBuilder();
+		
+		builder.append("if (!").append(MethodNode.getObjectReferenceIdentifier()).append(')').append('\n');
+		builder.append('{').append('\n');
+		builder.append("return;").append('\n');
+		builder.append('}').append('\n');
+		
+		return builder.toString();
+	}
+	
+	private String deleteData()
+	{
+		StringBuilder builder  = new StringBuilder();
+		
+		ClassNode classNode    = (ClassNode)getAncestorOfType(ClassNode.class);
+		
+//		MethodListNode methods = classNode.getMethodListNode();
+//		
+//		for (int i = 0; i < methods.getChildren().size(); i++)
+//		{
+//			MethodNode method = (MethodNode)methods.getChild(i);
+//
+//			builder.append(generateFreeMethodSource(method.getName())).append('\n');
+//		}
+		
+		PrivateFieldListNode privateFields = classNode.getFieldListNode().getPrivateFieldListNode();
+		
+		for (int i = 0; i < privateFields.getChildren().size(); i++)
+		{
+			FieldNode field = (FieldNode)privateFields.getChild(i);
+
+			if (!field.isPrimitive())
+			{
+				builder.append(generateFreeFieldSource(field)).append('\n');
+			}
+		}
+		
+		if (privateFields.getChildren().size() > 0)
+		{
+			builder.append(generateFreeMemberSource("prv")).append('\n');
+		}
+		
+		PublicFieldListNode publicFields = classNode.getFieldListNode().getPublicFieldListNode();
+		
+		for (int i = 0; i < publicFields.getChildren().size(); i++)
+		{
+			FieldNode field = (FieldNode)publicFields.getChild(i);
+			
+			if (!field.isPrimitive())
+			{
+				builder.append(generateFreeFieldSource(field)).append('\n');
+			}
+		}
+		
+		return builder.toString();
+	}
+	
+	private String generateFreeFieldSource(FieldNode field)
+	{
+		StringBuilder builder = new StringBuilder();
+		
+		if (field.isPrimitiveType())
+		{
+			if (!field.isPrimitive())
+			{
+				builder.append("free(").append(field.generateVariableUseOutput()).append(");");
+			}
+		}
+		else
+		{
+			builder.append("del_").append(field.getType()).append('(').append(field.generateVariableUseOutput()).append(");");
+		}
+		
+		return builder.toString();
+	}
+	
+	private String generateFreeMemberSource(String name)
+	{
+		StringBuilder builder = new StringBuilder();
+		
+		builder.append("free(").append(MethodNode.getObjectReferenceIdentifier()).append("->").append(name).append(");");
+		
+		return builder.toString();
+	}
+	
+	public String generateCSourcePrototype()
+	{
+		return generateCSourceSignature().concat(";");
+	}
+	
+	public String generateCSourceSignature()
+	{
+		StringBuilder builder = new StringBuilder();
+
+		ClassNode classNode = (ClassNode)getAncestorOfType(ClassNode.class);
+		
+		if (isConst())
+		{
+			builder.append(getConstText()).append(' ');
+		}
+		
+		builder.append(getType());
+		builder.append(' ');
+		builder.append("del_");
+		builder.append(classNode.getName()).append('(');
+		
+		builder.append(classNode.getName()).append('*').append(' ').append(MethodNode.getObjectReferenceIdentifier());
+		
+		builder.append(')');
+		
+		return builder.toString();
+	}
+	
+	public static DestructorNode decodeStatement(TreeNode parentNode, String statement, Location location)
+	{
+		int firstParenthIndex = statement.indexOf('(');
+		int lastParenthIndex  = statement.lastIndexOf(')');
+		
+		if (firstParenthIndex >= 0)
+		{
+			// TODO: make better check for last parenth. Take a count of each of the starting parenthesis and
+			// subtract the ending ones from the number.
+			if (lastParenthIndex < 0)
+			{
+				SyntaxMessage.error("Expected a ')' ending parenthesis", location);
+				
+				return null;
+			}
+			
+			String parameterList = statement.substring(firstParenthIndex + 1, lastParenthIndex);
+			
+			String parameters[]  = Regex.splitCommas(parameterList);
+			
+			final String signature = statement.substring(0, firstParenthIndex);
+			
+			DestructorNode n = new DestructorNode()
+			{
+				public void interactWord(String word, int wordNumber, Bounds bounds, int numWords)
+				{
+					setAttribute(word, wordNumber);
+					
+					if (wordNumber == numWords - 1)
+					{
+						if (signature.charAt(bounds.getStart() - 1) == '~')
+						{
+							setName(word);
+						}
+					}
+				}
+			};
+			
+			n.iterateWords(signature);
+			
+			ClassNode classNode = (ClassNode)parentNode.getAncestorOfType(ClassNode.class, true);
+			
+			if (classNode.getName().equals(n.getName()))
+			{
+				if (n.getName() == null)
+				{
+					return null;
+				}
+				
+				if (parameters.length > 0)
+				{
+					SyntaxMessage.error("Destructors cannot have any parameters", location);
+					
+					return null;
+				}
+				
+				n.setLocationIn(location);
+				n.setType("void");
+				
+				return n;
+			}
+		}
+		
 		return null;
 	}
 	
