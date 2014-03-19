@@ -66,7 +66,19 @@ public class ArgumentListNode extends TreeNode
 	@Override
 	public String generateCSourceOutput()
 	{
-		return null;
+		StringBuilder builder = new StringBuilder();
+		
+		for (int i = 0; i < getChildren().size(); i++)
+		{
+			builder.append(getChild(i).generateCSourceOutput());
+			
+			if (i < getChildren().size() - 1)
+			{
+				builder.append(", ");
+			}
+		}
+		
+		return builder.toString();
 	}
 
 	/**
