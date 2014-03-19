@@ -63,7 +63,20 @@ public class IfStatementNode extends TreeNode
 	@Override
 	public String generateCSourceOutput()
 	{
-		return null;
+		StringBuilder builder = new StringBuilder();
+		
+		builder.append("if (");
+		
+		for (int i = 0; i < getChildren().size(); i++)
+		{
+			TreeNode child = getChild(i);
+			
+			builder.append(child.generateCSourceOutput());
+		}
+		
+		builder.append(')').append('\n');
+		
+		return builder.toString();
 	}
 	
 	public static IfStatementNode decodeStatement(TreeNode parent, String statement, Location location)
