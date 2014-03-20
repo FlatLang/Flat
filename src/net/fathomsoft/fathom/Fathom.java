@@ -297,11 +297,11 @@ public class Fathom
 		
 		if (isFlagEnabled(GCC))
 		{
-			cmd.append("gcc/bin/gcc.exe ");
+			cmd.append("compiler/gcc/bin/gcc.exe ");
 		}
 		else if (isFlagEnabled(TCC))
 		{
-			cmd.append("tcc/tcc.exe ");
+			cmd.append("compiler/tcc/tcc.exe ");
 		}
 		
 		for (int i = 0; i < includeDirectories.size(); i++)
