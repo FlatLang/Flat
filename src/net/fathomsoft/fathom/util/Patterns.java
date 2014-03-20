@@ -43,7 +43,7 @@ public class Patterns
 	public static final Pattern POST_IMPORT				= Pattern.compile("(?<=import\\s{0,9})(\\S+)");
 	public static final Pattern PRE_INSTANTIATION		= Pattern.compile("new\\s+\\S+");
 	public static final Pattern POST_INSTANTIATION		= Pattern.compile("(?<=new\\s{1,9})(\\S+)");
-	public static final Pattern PRE_METHOD_CALL			= Pattern.compile("\\S+\\s*\\(");
+	public static final Pattern PRE_METHOD_CALL			= Pattern.compile("\\S+(?=\\s*\\()");
 //	public static final Pattern POST_METHOD_CALL		= Pattern.compile("(?<=\\S+\\s{0,999}\\(\\s{0,999})(\\S+\\))");
 	public static final Pattern ARRAY_INIT				= Pattern.compile("\\S+\\s*(\\[\\S+\\])+");
 	public static final Pattern DEFINE_PATTERN			= Pattern.compile("(?<=#\\s{0,9}define\\s{1,9})\\S");
