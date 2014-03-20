@@ -179,6 +179,10 @@ public class MethodNode extends DeclarationNode
 		{
 			builder.append(getArrayText());
 		}
+		if (!isPrimitiveType())
+		{
+			builder.append('*');
+		}
 		
 		builder.append(", ");
 		
@@ -254,6 +258,10 @@ public class MethodNode extends DeclarationNode
 		else if (isArray())
 		{
 			builder.append(getArrayText());
+		}
+		if (!isPrimitiveType())
+		{
+			builder.append('*');
 		}
 		
 		builder.append(' ');
