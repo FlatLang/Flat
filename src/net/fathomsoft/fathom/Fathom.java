@@ -48,6 +48,10 @@ public class Fathom
 	
 	private long				startTime, endTime;
 	
+	private File				outputFile;
+	
+	private ArrayList<String>	includeDirectories;
+	
 	private ArrayList<File>		inputFiles, cSourceFiles, cHeaderFiles;
 	
 	private List<File>			lingeringFiles;
@@ -85,10 +89,11 @@ public class Fathom
 	 */
 	private Fathom(String args[])
 	{
-		lingeringFiles = new LinkedList<File>();
-		inputFiles     = new ArrayList<File>();
-		cSourceFiles   = new ArrayList<File>();
-		cHeaderFiles   = new ArrayList<File>();
+		lingeringFiles     = new LinkedList<File>();
+		inputFiles         = new ArrayList<File>();
+		cSourceFiles       = new ArrayList<File>();
+		cHeaderFiles       = new ArrayList<File>();
+		includeDirectories = new ArrayList<String>();
 		
 		compile(args);
 	}
@@ -103,13 +108,13 @@ public class Fathom
 	{
 		startTimer();
 		
-		String directory = getWorkingDirectoryPath();
+		String directory = getWorkingDirectoryPath() + "example/";
 		
 		enableFlag(GCC);
 		
 		if (DEBUG)
 		{
-			args = new String[] { directory + "Test.fat", directory + "IO.fat", directory + "String.fat", "-csource", "-v", "-tcc" };
+			args = new String[] { directory + "Test.fat", directory + "IO.fat", directory + "String.fat", "-o", directory + "/bin/Executable.exe", "-dir", "../include", "-csource", "-v", "-tcc" };
 		}
 		
 		parseArguments(args);
@@ -188,6 +193,7 @@ public class Fathom
 							
 							if (c.containsStaticData())
 							{
+//								staticClassInit.append("SET_INSTANCE(").append(c.getName()).append(", __static__").append(c.getName()).append(')').append(';').append('\n');
 								staticClassInit.append("__static__").append(c.getName()).append(" = ").append("new_").append(c.getName()).append("();").append('\n');
 								staticClassFree.append("del_").append(c.getName()).append("(__static__").append(c.getName()).append(");").append('\n');
 							}
@@ -198,6 +204,8 @@ public class Fathom
 				StringBuilder mainMethodText = new StringBuilder();
 				
 				mainMethodText.append('\n').append('\n');
+				mainMethodText.append("#include \"Fathom.h\"");
+				mainMethodText.append('\n');
 				mainMethodText.append("int main(int argc, char** argvs)").append('\n');
 				mainMethodText.append("{").append('\n');
 				mainMethodText.append("String** args = (String**)malloc(argc * sizeof(String));").append('\n');
@@ -295,6 +303,14 @@ public class Fathom
 		{
 			cmd.append("tcc/tcc.exe ");
 		}
+		
+		for (int i = 0; i < includeDirectories.size(); i++)
+		{
+			String dir = includeDirectories.get(i);
+			
+			cmd.append("-I").append(dir).append(' ');
+		}
+		
 //		cmd.append('"').append(cClass.getAbsolutePath()).append('"').append(' ');
 		
 		for (File sourceFile : cSourceFiles)
@@ -302,7 +318,7 @@ public class Fathom
 			cmd.append('"').append(sourceFile.getAbsolutePath()).append('"').append("").append(' ');
 		}
 		
-		cmd.append("-o Executable.exe");
+		cmd.append("-o ").append('"').append(outputFile.getAbsolutePath()).append('"');
 		
 		final Command command = new Command(cmd.toString(), workingDir);
 		
@@ -442,13 +458,36 @@ public class Fathom
 	 */
 	private void parseArguments(String args[])
 	{
-		int lastInput = -1;
+		int     lastInput = -1;
+		
+		boolean expectingOutputFile       = false;
+		boolean expectingIncludeDirectory = false;
 		
 		for (int i = 0; i < args.length; i++)
 		{
 			String arg = args[i].toLowerCase();
 			
-			if (arg.equals("-csource"))
+			if (expectingOutputFile)
+			{
+				outputFile = new File(args[i]);
+				
+				expectingOutputFile = false;
+			}
+			else if (expectingIncludeDirectory)
+			{
+				includeDirectories.add(args[i]);
+				
+				expectingIncludeDirectory = false;
+			}
+			else if (arg.equals("-o"))
+			{
+				expectingOutputFile = true;
+			}
+			else if (arg.equals("-dir"))
+			{
+				expectingIncludeDirectory = true;
+			}
+			else if (arg.equals("-csource"))
 			{
 				enableFlag(CSOURCE);
 			}
