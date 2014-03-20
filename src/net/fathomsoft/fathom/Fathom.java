@@ -289,12 +289,6 @@ public class Fathom
 	{
 		StringBuilder cmd = new StringBuilder();
 		
-//		cmd.append("gcc/bin/gcc.exe ").append("-E -P ").append('"').append(stdioFile.getAbsolutePath()).append('"').append("");
-//		
-//		final Command command2 = new Command(cmd.toString(), workingDir);
-		
-		cmd = new StringBuilder();
-		
 		if (isFlagEnabled(GCC))
 		{
 			cmd.append("compiler/gcc/bin/gcc.exe ");
@@ -311,8 +305,6 @@ public class Fathom
 			cmd.append("-I").append(dir).append(' ');
 		}
 		
-//		cmd.append('"').append(cClass.getAbsolutePath()).append('"').append(' ');
-		
 		for (File sourceFile : cSourceFiles)
 		{
 			cmd.append('"').append(sourceFile.getAbsolutePath()).append('"').append("").append(' ');
@@ -321,62 +313,6 @@ public class Fathom
 		cmd.append("-o ").append('"').append(outputFile.getAbsolutePath()).append('"');
 		
 		final Command command = new Command(cmd.toString(), workingDir);
-		
-//		command2.addCommandListener(new CommandListener()
-//		{
-//			private StringBuilder output = new StringBuilder();
-//			
-//			@Override
-//			public void resultReceived(int result)
-//			{
-//				if (result == 0)
-//				{
-////					System.out.println(output);
-////					String prototypes[] = PrototypeFinder.findPrototypes(output.toString());
-////					
-////					System.out.println("Prototypes:");
-////					
-////					for (int i = 0; i < prototypes.length; i++)
-////					{
-////						System.out.println(prototypes[i]);
-////					}
-//					
-//					try
-//					{
-//						System.out.println("Done");
-//						
-//						command2.terminate();
-//						command.execute();
-//					}
-//					catch (InterruptedException e)
-//					{
-//						e.printStackTrace();
-//					}
-//					catch (IOException e)
-//					{
-//						e.printStackTrace();
-//					}
-//				}
-//			}
-//			
-//			@Override
-//			public void messageReceived(String message)
-//			{
-//				output.append(message);//.append('\n');
-//			}
-//			
-//			@Override
-//			public void errorReceived(String message)
-//			{
-//				System.err.println(message);
-//			}
-//			
-//			@Override
-//			public void commandExecuted()
-//			{
-//				
-//			}
-//		});
 		
 		try
 		{
