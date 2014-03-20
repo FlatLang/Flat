@@ -18,6 +18,7 @@
 package net.fathomsoft.fathom.tree;
 
 import net.fathomsoft.fathom.error.SyntaxMessage;
+import net.fathomsoft.fathom.util.Bounds;
 import net.fathomsoft.fathom.util.Location;
 import net.fathomsoft.fathom.util.Patterns;
 import net.fathomsoft.fathom.util.Regex;
@@ -69,7 +70,7 @@ public class InstantiationNode extends TreeNode
 			
 			int startIndex = Regex.indexOf(statement, Patterns.POST_INSTANTIATION);
 			
-			statement = statement.substring(startIndex);
+			String action = statement.substring(startIndex);
 			
 			Location newLoc = new Location();
 			newLoc.setLineNumber(location.getLineNumber());
@@ -77,13 +78,25 @@ public class InstantiationNode extends TreeNode
 			
 			TreeNode child = null;
 			
-			if (SyntaxUtils.isMethodCall(statement))
+			if (SyntaxUtils.isMethodCall(action))
 			{
-				child = MethodCallNode.decodeStatement(parent, statement, newLoc);
+//				Bounds bounds = Regex.boundsOf(action, Patterns.PRE_METHOD_CALL);
+//				
+//				String type = action.substring(0, bounds.getEnd());
+				
+				child = MethodCallNode.decodeStatement(parent, action, newLoc, false);
+				
+				MethodCallNode methodCall = (MethodCallNode)child;
+				methodCall.setName("new_" + methodCall.getName());
+				
+//				LiteralNode literalNode = new LiteralNode();
+//				literalNode.setValue(value);
+//				
+//				child = literalNode;
 			}
-			else if (SyntaxUtils.isArrayInitialization(statement))
+			else if (SyntaxUtils.isArrayInitialization(action))
 			{
-				child = ArrayNode.decodeStatement(parent, statement, newLoc);
+				child = ArrayNode.decodeStatement(parent, action, newLoc);
 			}
 			else
 			{
