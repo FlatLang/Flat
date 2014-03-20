@@ -166,7 +166,7 @@ public class ConstructorNode extends MethodNode
 		
 		builder.append(')').append('\n').append('{').append('\n');
 		
-		builder.append("NEW(").append(getName()).append(", ").append(ParameterListNode.OBJECT_REFERENCE_IDENTIFIER).append(");").append('\n').append('\n');
+		builder.append("NEW(").append(getName()).append(", ").append(MethodNode.getObjectReferenceIdentifier()).append(");").append('\n').append('\n');
 		
 		builder.append(generateMethodAssignments()).append('\n');
 		
@@ -182,7 +182,7 @@ public class ConstructorNode extends MethodNode
 			}
 		}
 		
-		builder.append('\n').append("return ").append(ParameterListNode.OBJECT_REFERENCE_IDENTIFIER).append(';').append('\n');
+		builder.append('\n').append("return ").append(MethodNode.getObjectReferenceIdentifier()).append(';').append('\n');
 		
 		builder.append('}').append('\n');
 		
@@ -247,7 +247,11 @@ public class ConstructorNode extends MethodNode
 		
 		builder.append("new_");
 		
-		builder.append(classNode.getName()).append("()");
+		builder.append(classNode.getName()).append('(');
+		
+		builder.append(getParameterListNode().generateCSourceOutput());
+		
+		builder.append(')');
 		
 		return builder.toString();
 	}
