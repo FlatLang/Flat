@@ -97,8 +97,13 @@ public class MethodCallNode extends IdentifierNode
 		
 		return builder.toString();
 	}
-	
+
 	public static MethodCallNode decodeStatement(TreeNode parentNode, String statement, Location location)
+	{
+		return decodeStatement(parentNode, statement, location, true);
+	}
+	
+	public static MethodCallNode decodeStatement(TreeNode parentNode, String statement, Location location, boolean needsReference)
 	{
 		if (SyntaxUtils.isMethodCall(statement))
 		{
@@ -139,26 +144,29 @@ public class MethodCallNode extends IdentifierNode
 			
 			String argumentList = statement.substring(bounds.getStart(), bounds.getEnd());
 			
-			String objectRef    = null;
-			
-			int    dotIndex     = methodCall.lastIndexOf(".");
-			
-			if (dotIndex > 0)
+			if (needsReference)
 			{
-				objectRef = methodCall.substring(0, dotIndex);
+				String objectRef = null;
 				
-				objectRef.replace(".", "->");
+				int    dotIndex  = methodCall.lastIndexOf(".");
 				
-				if (!fileNode.getImportListNode().isExternal(objectRef))
+				if (dotIndex > 0)
 				{
+					objectRef = methodCall.substring(0, dotIndex);
+					
+					objectRef.replace(".", "->");
+					
+					if (!fileNode.getImportListNode().isExternal(objectRef))
+					{
+						argumentList = objectRef + ", " + argumentList;
+					}
+				}
+				else
+				{
+					objectRef    = MethodNode.getObjectReferenceIdentifier();
+					
 					argumentList = objectRef + ", " + argumentList;
 				}
-			}
-			else
-			{
-				objectRef    = MethodNode.getObjectReferenceIdentifier();
-				
-				argumentList = objectRef + ", " + argumentList;
 			}
 			
 			String arguments[] = Regex.splitCommas(argumentList);
