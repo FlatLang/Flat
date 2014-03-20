@@ -200,9 +200,13 @@ public class VariableNode extends ModifierNode
 		{
 			builder.append(getPointerText());
 		}
-		else if (isArray())
+		if (isArray())
 		{
 			builder.append(getArrayText());
+		}
+		if (!isPrimitiveType())
+		{
+			builder.append('*');
 		}
 		
 		builder.append(' ').append(getName()).append(';');
