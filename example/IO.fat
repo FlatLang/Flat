@@ -20,13 +20,13 @@ public class IO
 		char line[] = new char[256];
 		int  i;
 		
-		/*if (stdio.fgets(line, stdio.sizeof(line), stdin))
+		if (stdio.fgets(line, stdio.sizeof(line), stdin))
 		{
 			if (1 == stdio.sscanf(line, "%d", &i))
 			{
 				// i can be safely used
 			}
-		}*/
+		}
 	}
 	
 	public static void waitForEnter()
