@@ -17,6 +17,12 @@
  */
 package net.fathomsoft.fathom.tree;
 
+import net.fathomsoft.fathom.error.SyntaxMessage;
+import net.fathomsoft.fathom.util.Bounds;
+import net.fathomsoft.fathom.util.Location;
+import net.fathomsoft.fathom.util.Patterns;
+import net.fathomsoft.fathom.util.Regex;
+
 /**
  * 
  * 
@@ -57,6 +63,22 @@ public class LoopNode extends TreeNode
 	@Override
 	public String generateCSourceOutput()
 	{
+		return null;
+	}
+	
+	public static LoopNode decodeStatement(TreeNode parent, String statement, Location location)
+	{
+		LoopNode node = null;
+		
+		if ((node = ForLoopNode.decodeStatement(parent, statement, location)) != null)
+		{
+			return node;
+		}
+		else if ((node = WhileLoopNode.decodeStatement(parent, statement, location)) != null)
+		{
+			return node;
+		}
+		
 		return null;
 	}
 
