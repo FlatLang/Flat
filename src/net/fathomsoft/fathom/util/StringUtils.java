@@ -145,4 +145,45 @@ public class StringUtils
 		
 		return -1;
 	}
+	
+	/**
+	 * Get the next possible index in the String that is a whitespace
+	 * character.
+	 * 
+	 * @param str The String to search through.
+	 * @param index The index to start the search at.
+	 * @return The next possible index in the String that is
+	 * 		whitespace.
+	 */
+	public static int findNextWhitespaceIndex(String str, int index)
+	{
+		return findNextWhitespaceIndex(str, index, 1);
+	}
+	
+	/**
+	 * Get the next possible index in the String that is a whitespace
+	 * character, while moving in the specified direction.
+	 * 
+	 * @param str The String to search through.
+	 * @param index The index to start the search at.
+	 * @param direction The direction in which to increment the index.
+	 * @return The next possible index in the String that is
+	 * 		whitespace.
+	 */
+	public static int findNextWhitespaceIndex(String str, int index, int direction)
+	{
+		while (index >= 0 && index < str.length())
+		{
+			char c = str.charAt(index);
+			
+			if (c == ' ' || c == '\n' || c == '\t' || c == '\r')
+			{
+				return index;
+			}
+			
+			index += direction;
+		}
+		
+		return -1;
+	}
 }
