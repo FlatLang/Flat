@@ -17,6 +17,12 @@
  */
 package net.fathomsoft.fathom.tree;
 
+import net.fathomsoft.fathom.error.SyntaxMessage;
+import net.fathomsoft.fathom.util.Bounds;
+import net.fathomsoft.fathom.util.Location;
+import net.fathomsoft.fathom.util.Patterns;
+import net.fathomsoft.fathom.util.Regex;
+
 /**
  * 
  * 
@@ -30,9 +36,46 @@ public class ForLoopNode extends LoopNode
 {
 	public ForLoopNode()
 	{
+		ArgumentListNode argumentsNode = new ArgumentListNode();
 		
+		addChild(argumentsNode);
 	}
-
+	
+	public ArgumentListNode getArgumentListNode()
+	{
+		return (ArgumentListNode)getChild(0);
+	}
+	
+	public AssignmentNode getInitializationNode()
+	{
+		if (getArgumentListNode().getChildren().size() <= 0)
+		{
+			return null;
+		}
+		
+		return (AssignmentNode)getArgumentListNode().getChild(0);
+	}
+	
+	public TreeNode getConditionNode()
+	{
+		if (getArgumentListNode().getChildren().size() <= 1)
+		{
+			return null;
+		}
+		
+		return getArgumentListNode().getChild(1);
+	}
+	
+	public AssignmentNode getUpdateNode()
+	{
+		if (getArgumentListNode().getChildren().size() <= 2)
+		{
+			return null;
+		}
+		
+		return (AssignmentNode)getArgumentListNode().getChild(2);
+	}
+	
 	/**
 	 * @see net.fathomsoft.fathom.tree.TreeNode#generateJavaSourceOutput()
 	 */
@@ -57,6 +100,114 @@ public class ForLoopNode extends LoopNode
 	@Override
 	public String generateCSourceOutput()
 	{
+		StringBuilder builder = new StringBuilder();
+		
+		AssignmentNode initialization = getInitializationNode();
+		TreeNode       condition      = getConditionNode();
+		AssignmentNode update         = getUpdateNode();
+		
+		builder.append('{').append('\n');
+		
+//		if (initialization != null)
+//		{
+//			if (initialization.isDeclared())
+//			{
+//				builder.append(initialization.generateDeclaration()).append('\n');
+//			}
+//		}
+		
+		builder.append("for (");
+		
+		if (initialization != null)
+		{
+			builder.append(initialization.generateCSourceFragment());
+		}
+		
+		builder.append(';').append(' ');
+		
+		if (condition != null)
+		{
+			builder.append(condition.generateCSourceOutput());
+		}
+		
+		builder.append(';').append(' ');
+		
+		if (update != null)
+		{
+			builder.append(update.generateCSourceFragment());
+		}
+		
+		builder.append(')').append('\n');
+		builder.append('{').append('\n');
+		
+		for (int i = 0; i < getChildren().size(); i++)
+		{
+			TreeNode child = getChild(i);
+			
+			if (child != getArgumentListNode())
+			{
+				builder.append(child.generateCSourceOutput());
+				
+				if (child instanceof MethodCallNode)
+				{
+					builder.append(';').append('\n');
+				}
+			}
+		}
+		
+		builder.append('}').append('\n');
+		builder.append('}').append('\n');
+		
+		return builder.toString();
+	}
+	
+	public static ForLoopNode decodeStatement(TreeNode parent, String statement, Location location)
+	{
+		if (Regex.matches(statement, 0, Patterns.PRE_FOR))
+		{
+			ForLoopNode n = new ForLoopNode();
+			
+			Bounds bounds = Regex.boundsOf(statement, Patterns.POST_FOR);
+			
+			if (bounds.getStart() >= 0)
+			{
+				Location newLoc    = new Location();
+				newLoc.setLineNumber(location.getLineNumber());
+				newLoc.setOffset(location.getOffset() + bounds.getStart());
+				
+				String contents    = statement.substring(bounds.getStart(), bounds.getEnd());
+				
+				String arguments[] = contents.split("\\s*;\\s*");
+				
+				AssignmentNode initialization = AssignmentNode.decodeStatement(parent, arguments[0], newLoc);
+				
+				if (initialization != null)
+				{
+					n.getArgumentListNode().addChild(initialization);
+				}
+				
+				TreeNode condition = BinaryOperatorNode.decodeStatement(parent, arguments[1], newLoc);
+				
+				if (condition != null)
+				{
+					n.getArgumentListNode().addChild(condition);
+				}
+				
+				AssignmentNode update = AssignmentNode.decodeStatement(parent, arguments[2], newLoc);
+				
+				if (update != null)
+				{
+					n.getArgumentListNode().addChild(update);
+				}
+				
+				return n;
+			}
+			else
+			{
+				SyntaxMessage.error("For loop missing arguments", location);
+			}
+		}
+		
 		return null;
 	}
 	
