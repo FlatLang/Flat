@@ -42,9 +42,9 @@ public class LiteralNode extends TreeNode
 		return value;
 	}
 	
-	public void setValue(String value)
+	public void setValue(String value, boolean external)
 	{
-		if (SyntaxUtils.isStringLiteral(value))
+		if (!external && SyntaxUtils.isStringLiteral(value))
 		{
 			value = "new_String(" + value + ")";
 		}
@@ -86,7 +86,7 @@ public class LiteralNode extends TreeNode
 	public LiteralNode clone()
 	{
 		LiteralNode clone = new LiteralNode();
-		clone.setValue(getValue());
+		clone.setValue(getValue(), true);
 		
 		for (int i = 0; i < getChildren().size(); i++)
 		{
