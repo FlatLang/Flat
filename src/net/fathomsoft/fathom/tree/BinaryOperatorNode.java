@@ -20,9 +20,11 @@ package net.fathomsoft.fathom.tree;
 import java.util.regex.Matcher;
 
 import net.fathomsoft.fathom.error.SyntaxMessage;
+import net.fathomsoft.fathom.util.Bounds;
 import net.fathomsoft.fathom.util.Location;
 import net.fathomsoft.fathom.util.Patterns;
 import net.fathomsoft.fathom.util.Regex;
+import net.fathomsoft.fathom.util.StringUtils;
 import net.fathomsoft.fathom.util.SyntaxUtils;
 
 /**
@@ -43,7 +45,7 @@ public class BinaryOperatorNode extends TreeNode
 	
 	public boolean checkOperator()
 	{
-		if (getChildren().size() <= 0)
+		if (getChildren().size() <= 1)
 		{
 			SyntaxMessage.error("Missing operator", getLocationIn());
 			
@@ -114,7 +116,18 @@ public class BinaryOperatorNode extends TreeNode
 		
 		for (int i = 0; i < getChildren().size(); i++)
 		{
-			builder.append(getChild(i).generateCSourceOutput());
+			TreeNode child = getChild(i);
+			
+			if (child instanceof VariableNode)
+			{
+				VariableNode variable = (VariableNode)child;
+				
+				builder.append(variable.generateVariableUseOutput());
+			}
+			else
+			{
+				builder.append(child.generateCSourceOutput());
+			}
 			
 			if (i < getChildren().size() - 1)
 			{
@@ -128,7 +141,7 @@ public class BinaryOperatorNode extends TreeNode
 	public static TreeNode decodeStatement(TreeNode parentNode, String statement, Location location)
 	{
 		// Pattern used to find word boundaries. 
-		Matcher matcher = Patterns.BINARY_ARITH_OPERATORS.matcher(statement);
+		Matcher matcher = Patterns.PRE_OPERATORS.matcher(statement);
 		
 		return decodeStatement(parentNode, statement, matcher, location);
 	}
@@ -143,31 +156,35 @@ public class BinaryOperatorNode extends TreeNode
 		if (matcher.find())
 		{
 			BinaryOperatorNode node = new BinaryOperatorNode();
+			node.setLocationIn(location);
 			
 			// Decode the value on the left.
-			int    endIndex = Regex.indexOf(statement, Patterns.PRE_OPERATORS);
+			Bounds   bounds  = Regex.boundsOf(statement, Patterns.PRE_OPERATORS);
+			Bounds 	 bounds2 = Regex.boundsOf(statement, Patterns.POST_OPERATORS);
+			
+			bounds.setEnd(StringUtils.findNextNonWhitespaceIndex(statement, bounds.getEnd() - 1, -1) + 1);
 			
 			// The left-hand value.
-			String lhv      = statement.substring(0, endIndex);
+			String   lhv     = statement.substring(bounds.getStart(), bounds.getEnd());
 			
 			// The left-hand node.
-			TreeNode lhn    = getNode(parentNode, lhv, location);
+			TreeNode lhn     = getNode(parentNode, lhv, location);
 			
 			node.addChild(lhn);
 			
 			// Decode the operator.
-			endIndex              = Regex.indexOf(statement, matcher.start() - offset, Patterns.WHITESPACE);
-			String operatorVal    = statement.substring(matcher.start() - offset, endIndex);
+			Bounds opBounds = new Bounds(0, 0);
+			opBounds.setStart(StringUtils.findNextNonWhitespaceIndex(statement, bounds.getEnd()));
+			opBounds.setEnd(StringUtils.findNextNonWhitespaceIndex(statement, bounds2.getStart() - 1, -1) + 1);
+			
+			String operatorVal    = statement.substring(opBounds.getStart(), opBounds.getEnd());
 			
 			OperatorNode operator = new OperatorNode();
 			operator.setOperator(operatorVal);
-			
 			node.addChild(operator);
 			
 			// Decode the value on the right.
-			endIndex  = Regex.indexOf(statement, endIndex, Patterns.NON_WHITESPACE);
-			offset   += endIndex;
-			statement = statement.substring(endIndex);
+			statement = statement.substring(bounds2.getStart());
 			
 			node.addChild(decodeStatement(parentNode, statement, offset, matcher, location));
 			
@@ -227,7 +244,7 @@ public class BinaryOperatorNode extends TreeNode
 		{
 			LiteralNode literal = new LiteralNode();
 			
-			literal.setValue(statement);
+			literal.setValue(statement, parentNode.isExternal());
 			
 			return literal;
 		}
