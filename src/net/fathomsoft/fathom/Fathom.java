@@ -110,11 +110,21 @@ public class Fathom
 		
 		String directory = getWorkingDirectoryPath() + "example/";
 		
-		enableFlag(GCC);
+		enableFlag(TCC);
 		
 		if (DEBUG)
 		{
-			args = new String[] { directory + "Test.fat", directory + "IO.fat", directory + "String.fat", "-o", directory + "/bin/Executable.exe", "-dir", "../include", "-csource", "-v", "-tcc" };
+			args = new String[]
+			{
+				directory + "Test.fat",
+				directory + "IO.fat",
+				directory + "String.fat",
+				"-o", directory + "bin/Executable.exe",
+				"-dir", "../include",
+				"-csource",
+				"-v",
+				"-tcc"
+			};
 		}
 		
 		parseArguments(args);
@@ -229,7 +239,6 @@ public class Fathom
 				
 				sources.set(i, newSource);
 			}
-			
 
 			String header = headers.get(i);
 			String source = sources.get(i);
@@ -274,7 +283,6 @@ public class Fathom
 			}
 		}
 		
-//		completed();
 		if (!isFlagEnabled(DRY_RUN))
 		{
 			compileC(workingDir, cClass);
@@ -394,15 +402,26 @@ public class Fathom
 	 */
 	private void parseArguments(String args[])
 	{
+		// Start off the lastInput index to -1 because it will start
+		// checking for (index - 1).
+		// (index starts at 0, therefore 0 - 1 = -1)
 		int     lastInput = -1;
 		
+		// Declare and initialize two booleans used to keep track of
+		// whether or not the argument parser is expecting a certain
+		// type of input at the current argument.
 		boolean expectingOutputFile       = false;
 		boolean expectingIncludeDirectory = false;
 		
+		// Iterate through all of the arguments.
 		for (int i = 0; i < args.length; i++)
 		{
+			// Lowercase the argument for easier non-case-sensitive String
+			// matching.
 			String arg = args[i].toLowerCase();
 			
+			// Check if we are still dealing with any  ongoing arguments
+			// still.
 			if (expectingOutputFile)
 			{
 				outputFile = new File(args[i]);
@@ -412,46 +431,75 @@ public class Fathom
 			else if (expectingIncludeDirectory)
 			{
 				includeDirectories.add(args[i]);
-				
-				expectingIncludeDirectory = false;
 			}
-			else if (arg.equals("-o"))
+			
+			// Create temporary variables holding the current values.
+			boolean expectingIncludeDirectoryTemp = expectingIncludeDirectory;
+			
+			// Set the variables to false in the expectation of a
+			// different type of argument.
+			expectingIncludeDirectory = false;
+			
+			// Check all other types of arguments.
+			
+			// If the user is trying to set the output location.
+			if (arg.equals("-o"))
 			{
 				expectingOutputFile = true;
 			}
+			// If the user is trying to set the source include directory.
 			else if (arg.equals("-dir"))
 			{
 				expectingIncludeDirectory = true;
 			}
+			// If the user wants to view the c source output.
 			else if (arg.equals("-csource"))
 			{
 				enableFlag(CSOURCE);
 			}
+			// If the user wants a more verbose compilation output,
+			// explaining each step.
 			else if (arg.equals("-verbose") || arg.equals("-v"))
 			{
 				enableFlag(VERBOSE);
 			}
+			// If the user wants to use the GCC c compiler.
 			else if (arg.equals("-gcc"))
 			{
 				disableFlag(TCC);
 				enableFlag(GCC);
 			}
+			// If the user wants to use the TCC c compiler.
 			else if (arg.equals("-tcc"))
 			{
 				disableFlag(GCC);
 				enableFlag(TCC);
 			}
+			// If the user wants to perform a dry run of the compilation
+			// process.
 			else if (arg.equals("-dry"))
 			{
 				enableFlag(DRY_RUN);
 			}
-			else if (lastInput == i - 1)
+			// If none of the arguments were matched, check these:
+			else
 			{
-				File file = new File(args[i]);
-				
-				inputFiles.add(file);
-				
-				lastInput = i;
+				// If the argument is one of the first arguments passed
+				// (If it is one of the sources to compile)
+				if (lastInput == i - 1)
+				{
+					File file = new File(args[i]);
+					
+					inputFiles.add(file);
+					
+					lastInput = i;
+				}
+				// If none of the cases were matched, revert the
+				// previously reset variables and try again.
+				else
+				{
+					expectingIncludeDirectory = expectingIncludeDirectoryTemp;
+				}
 			}
 		}
 	}
