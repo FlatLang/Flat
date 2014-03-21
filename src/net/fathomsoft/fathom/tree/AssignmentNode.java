@@ -105,6 +105,17 @@ public class AssignmentNode extends TreeNode
 	{
 		StringBuilder builder = new StringBuilder();
 		
+		builder.append(generateCSourceFragment());
+		
+		builder.append(';').append('\n');
+		
+		return builder.toString();
+	}
+	
+	public String generateCSourceFragment()
+	{
+		StringBuilder builder = new StringBuilder();
+		
 		builder.append(getVariableNode().generateVariableUseOutput());
 		
 		builder.append(" = ");
@@ -123,8 +134,6 @@ public class AssignmentNode extends TreeNode
 			}
 		}
 		
-		builder.append(';').append('\n');
-		
 		return builder.toString();
 	}
 	
@@ -139,7 +148,7 @@ public class AssignmentNode extends TreeNode
 		
 		Bounds bounds   = Regex.boundsOf(statement, Patterns.PRE_EQUALS_SIGN);
 		
-		int equalsIndex = bounds.getEnd() - 1;
+		int equalsIndex = StringUtils.findNextNonWhitespaceIndex(statement, bounds.getEnd());
 		
 		int endIndex    = StringUtils.findNextNonWhitespaceIndex(statement, equalsIndex - 1, -1) + 1;
 		
