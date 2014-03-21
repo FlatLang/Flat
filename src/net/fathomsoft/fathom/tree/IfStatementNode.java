@@ -36,9 +36,16 @@ public class IfStatementNode extends TreeNode
 {
 	public IfStatementNode()
 	{
+		ArgumentListNode condition = new ArgumentListNode();
 		
+		addChild(condition);
 	}
-
+	
+	public ArgumentListNode getCondition()
+	{
+		return (ArgumentListNode)getChild(0);
+	}
+	
 	/**
 	 * @see net.fathomsoft.fathom.tree.TreeNode#generateJavaSourceOutput()
 	 */
@@ -67,14 +74,29 @@ public class IfStatementNode extends TreeNode
 		
 		builder.append("if (");
 		
-		for (int i = 0; i < getChildren().size(); i++)
+		ArgumentListNode condition = getCondition();
+		
+		for (int i = 0; i < condition.getChildren().size(); i++)
 		{
-			TreeNode child = getChild(i);
+			TreeNode child = condition.getChild(i);
 			
 			builder.append(child.generateCSourceOutput());
 		}
 		
 		builder.append(')').append('\n');
+		builder.append('{').append('\n');
+		
+		for (int i = 0; i < getChildren().size(); i++)
+		{
+			TreeNode child = getChild(i);
+			
+			if (child != getCondition())
+			{
+				builder.append(child.generateCSourceOutput());
+			}
+		}
+		
+		builder.append('}').append('\n');
 		
 		return builder.toString();
 	}
@@ -97,7 +119,7 @@ public class IfStatementNode extends TreeNode
 				
 				TreeNode child = BinaryOperatorNode.decodeStatement(parent, contents, newLoc);
 				
-				n.addChild(child);
+				n.getCondition().addChild(child);
 				
 				return n;
 			}
