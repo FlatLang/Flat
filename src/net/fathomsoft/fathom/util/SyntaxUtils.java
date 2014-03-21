@@ -44,7 +44,7 @@ public class SyntaxUtils
 	
 	public static boolean isCharLiteral(String value)
 	{
-		if (value.length() == 3)
+		if (value.length() != 3)
 		{
 			return false;
 		}
