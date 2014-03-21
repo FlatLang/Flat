@@ -365,6 +365,40 @@ public abstract class TreeNode
 	}
 	
 	/**
+	 * Get whether or not the specified TreeNode is used within an
+	 * external context.
+	 * 
+	 * @return Whether or not the specified TreeNode is used within an
+	 * 		external context.
+	 */
+	public boolean isExternal()
+	{
+		if (this instanceof MethodCallNode)
+		{
+			MethodCallNode thisNode = (MethodCallNode)this;
+			
+			if (thisNode.isExternalCall())
+			{
+				return true;
+			}
+		}
+		
+		MethodCallNode current = (MethodCallNode)getAncestorOfType(MethodCallNode.class);
+		
+		while (current != null)
+		{
+			if (current.isExternal())
+			{
+				return true;
+			}
+			
+			current = (MethodCallNode)current.getAncestorOfType(MethodCallNode.class);
+		}
+		
+		return false;
+	}
+	
+	/**
 	 * Method that each Node overrides. Returns a String that translates
 	 * the data that is stored in the TreeNode to the Java programming
 	 * language syntax.
@@ -437,7 +471,7 @@ public abstract class TreeNode
 				return node;
 			}
 		}
-		else if (parent instanceof MethodNode)
+		else if (parent instanceof MethodNode || parent instanceof IfStatementNode || parent instanceof LoopNode)
 		{
 			if ((node = ReturnNode.decodeStatement(parent, statement, location)) != null)
 			{
@@ -448,6 +482,10 @@ public abstract class TreeNode
 				return node;
 			}
 			else if ((node = IfStatementNode.decodeStatement(parent, statement, location)) != null)
+			{
+				return node;
+			}
+			else if ((node = LoopNode.decodeStatement(parent, statement, location)) != null)
 			{
 				return node;
 			}
