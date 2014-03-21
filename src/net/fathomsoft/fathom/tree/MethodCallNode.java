@@ -36,7 +36,9 @@ import net.fathomsoft.fathom.util.SyntaxUtils;
  */
 public class MethodCallNode extends IdentifierNode
 {
-	private String objectInstance;
+	private boolean	externalCall;
+	
+	private String	objectInstance;
 	
 	public MethodCallNode()
 	{
@@ -48,6 +50,11 @@ public class MethodCallNode extends IdentifierNode
 	public ArgumentListNode getArgumentListNode()
 	{
 		return (ArgumentListNode)getChild(0);
+	}
+	
+	public boolean isExternalCall()
+	{
+		return externalCall;
 	}
 	
 	public String getObjectInstance()
@@ -140,9 +147,11 @@ public class MethodCallNode extends IdentifierNode
 			argsLocation.setLineNumber(location.getLineNumber());
 			argsLocation.setOffset(bounds.getStart());
 			
-			String methodCall   = statement.substring(0, nameEnd);
+			String  methodCall   = statement.substring(0, nameEnd);
 			
-			String argumentList = statement.substring(bounds.getStart(), bounds.getEnd());
+			String  argumentList = statement.substring(bounds.getStart(), bounds.getEnd());
+			
+			boolean externalCall = false;
 			
 			if (needsReference)
 			{
@@ -154,11 +163,18 @@ public class MethodCallNode extends IdentifierNode
 				{
 					objectRef = methodCall.substring(0, dotIndex);
 					
-					objectRef.replace(".", "->");
-					
-					if (!fileNode.getImportListNode().isExternal(objectRef))
+					if (fileNode.getImportListNode().isExternal(objectRef))
 					{
-						argumentList = objectRef + ", " + argumentList;
+						externalCall = true;
+					}
+					else
+					{
+						objectRef.replace(".", "->");
+						
+						if (!fileNode.getImportListNode().isExternal(objectRef))
+						{
+							argumentList = objectRef + ", " + argumentList;
+						}
 					}
 				}
 				else
@@ -189,6 +205,7 @@ public class MethodCallNode extends IdentifierNode
 			};
 			
 			n.objectInstance = "";
+			n.externalCall   = externalCall;
 			
 			n.iterateWords(methodCall, Patterns.IDENTIFIER_BOUNDARIES);
 			
@@ -253,7 +270,7 @@ public class MethodCallNode extends IdentifierNode
 //						var.setType(n.getType());
 						
 						LiteralNode var = new LiteralNode();
-						var.setValue(n.getName());
+						var.setValue(n.getName(), isExternal());
 						
 						arg = var;
 					}
@@ -277,7 +294,7 @@ public class MethodCallNode extends IdentifierNode
 				{
 					LiteralNode literal = new LiteralNode();
 					
-					literal.setValue(argument);
+					literal.setValue(argument, isExternal());
 					
 					arg = literal;
 				}
