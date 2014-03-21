@@ -116,7 +116,7 @@ public class ArrayNode extends TreeNode
 				if (SyntaxUtils.isNumber(length))
 				{
 					LiteralNode node = new LiteralNode();
-					node.setValue(length);
+					node.setValue(length, parent.isExternal());
 					
 					n.addChild(node);
 				}
