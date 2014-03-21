@@ -17,6 +17,12 @@
  */
 package net.fathomsoft.fathom.tree;
 
+import net.fathomsoft.fathom.error.SyntaxMessage;
+import net.fathomsoft.fathom.util.Bounds;
+import net.fathomsoft.fathom.util.Location;
+import net.fathomsoft.fathom.util.Patterns;
+import net.fathomsoft.fathom.util.Regex;
+
 /**
  * 
  * 
@@ -31,6 +37,11 @@ public class WhileLoopNode extends LoopNode
 	public WhileLoopNode()
 	{
 		
+	}
+	
+	public TreeNode getConditionNode()
+	{
+		return getChild(0);
 	}
 
 	/**
@@ -50,13 +61,68 @@ public class WhileLoopNode extends LoopNode
 	{
 		return null;
 	}
-
+	
 	/**
 	 * @see net.fathomsoft.fathom.tree.TreeNode#generateCSourceOutput()
 	 */
 	@Override
 	public String generateCSourceOutput()
 	{
+		StringBuilder builder = new StringBuilder();
+		
+		TreeNode condition    = getConditionNode();
+		
+		builder.append("while (").append(condition.generateCSourceOutput()).append(')').append('\n');
+		builder.append('{').append('\n');
+		
+		for (int i = 0; i < getChildren().size(); i++)
+		{
+			TreeNode child = getChild(i);
+			
+			if (child != getConditionNode())
+			{
+				builder.append(child.generateCSourceOutput());
+				
+				if (child instanceof MethodCallNode)
+				{
+					builder.append(';').append('\n');
+				}
+			}
+		}
+		
+		builder.append('}').append('\n');
+		
+		return builder.toString();
+	}
+	
+	public static WhileLoopNode decodeStatement(TreeNode parent, String statement, Location location)
+	{
+		if (Regex.matches(statement, 0, Patterns.PRE_WHILE))
+		{
+			WhileLoopNode n = new WhileLoopNode();
+			
+			Bounds bounds = Regex.boundsOf(statement, Patterns.POST_WHILE);
+			
+			if (bounds.getStart() >= 0)
+			{
+				Location newLoc    = new Location();
+				newLoc.setLineNumber(location.getLineNumber());
+				newLoc.setOffset(location.getOffset() + bounds.getStart());
+				
+				String   contents  = statement.substring(bounds.getStart(), bounds.getEnd());
+				
+				TreeNode condition = BinaryOperatorNode.decodeStatement(parent, contents, newLoc);
+				
+				n.addChild(condition);
+					
+				return n;
+			}
+			else
+			{
+				SyntaxMessage.error("While loop missing condition", location);
+			}
+		}
+		
 		return null;
 	}
 	
