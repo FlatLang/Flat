@@ -9,7 +9,7 @@ public class Test
 	
 	public Test()
 	{
-		//publicVariable = "hello";
+		publicVariable = "hello";
 	}
 	
 	public static void main(String args[])
@@ -17,7 +17,20 @@ public class Test
 		IO.print("Hello, world\n\n");
 		IO.print("Command line arg #1 is\n");
 		IO.print(args[0]);
-		IO.waitForEnter();
+		
+		for (int i = 0; i < 5; i = i + 1)
+		{
+			IO.waitForEnter();
+		}
+		
+		i = 0;
+		
+		while (i < 7)
+		{
+			IO.waitForEnter();
+			
+			i = i + 1;
+		}
 	}
 	
 	public int test()
