@@ -56,7 +56,7 @@ public class Fathom
 	
 	private List<File>			lingeringFiles;
 	
-	public static final boolean	ANDROID_DEBUG = false;
+	public static final boolean	ANDROID_DEBUG = true;
 	
 	public static final boolean	DEBUG         = true;
 	
@@ -125,6 +125,10 @@ public class Fathom
 				"-v",
 				"-tcc"
 			};
+		}
+		if (ANDROID_DEBUG)
+		{
+			enableFlag(DRY_RUN);
 		}
 		
 		parseArguments(args);
