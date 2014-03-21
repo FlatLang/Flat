@@ -18,7 +18,7 @@ __Aim__
 __Pre-requisites__
   * The early version of the compiler uses Java 1.6 or later.
   * Currently any Windows 95 (x86) machine or later.
-  * An open mind. (There may be bugs)
+  * Patience. (There will be bugs)
 
 <br>
 __Instructions of Use__
@@ -38,10 +38,11 @@ __An Example command to compile a source__<br>
 __Optional arguments to the Compiler Include__
   * `-csource` Output the compiled c source files during compilation.
   * `-verbose` or `-v` Output debugging messages during compilation.
+  * `-dir` Used to specify the directory in which to include in the compilation.
   * `-dry` Perform a dry-run of the compilation. Do not compile into an executable.
   * `-gcc` Compile the c code with the GCC (GNU Compiler Collection) compiler.
   * `-tcc` Compile the c code with the TCC (Tiny C Compiler) compiler.
 
-The default c compiler is GCC because of its wide support.
+The default c compiler is TCC because it is more stable at the moment.
 
 © 2014 Fathomsoft
