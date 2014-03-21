@@ -210,24 +210,24 @@ public class SyntaxTree
 				node.addChild(defaultDestructor);
 			}
 		}
-		else if (root instanceof MethodCallNode)
-		{
-			MethodCallNode node = (MethodCallNode)root;
-			
-			FileNode fileNode = (FileNode)root.getAncestorOfType(FileNode.class);
-			
-			int dot = node.getName().indexOf('.');
-			
-			if (dot > 0)
-			{
-				String cFile = node.getName().substring(0, dot);
-				
-				if (fileNode.getImportListNode().contains(cFile))
-				{
-					node.setName(node.getName().substring(dot + 1));
-				}
-			}
-		}
+//		else if (root instanceof MethodCallNode)
+//		{
+//			MethodCallNode node = (MethodCallNode)root;
+//			
+//			FileNode fileNode = (FileNode)root.getAncestorOfType(FileNode.class);
+//			
+//			int dot = node.getName().indexOf('.');
+//			
+//			if (dot > 0)
+//			{
+//				String cFile = node.getName().substring(0, dot);
+//				
+//				if (fileNode.getImportListNode().contains(cFile))
+//				{
+//					node.setName(node.getName().substring(dot + 1));
+//				}
+//			}
+//		}
 		
 		for (int i = 0; i < root.getChildren().size(); i++)
 		{
@@ -444,7 +444,7 @@ public class SyntaxTree
 	 */
 	private TreeNode getNextStatement()
 	{
-		if ((statementEndIndex = Regex.indexOfExcludeText(source, statementStartIndex, STATEMENT_END_CHARS)) >= 0 && !statementStartMatcher.hitEnd())
+		if ((statementEndIndex = Regex.indexOfExcludeTextAndParenthesis(source, statementStartIndex, STATEMENT_END_CHARS)) >= 0 && !statementStartMatcher.hitEnd())
 		{
 			statementEndIndex = nextNonWhitespaceIndexOnTheLeft(statementEndIndex - 1) + 1;
 			
