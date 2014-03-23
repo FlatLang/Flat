@@ -39,11 +39,11 @@ public class Patterns
 	public static final Pattern PRE_RETURN				= Pattern.compile("return\\s*");
 	public static final Pattern POST_RETURN     	    = Pattern.compile("(?<=return\\s{0,9})(\\S+)");
 	public static final Pattern PRE_IF					= Pattern.compile("if(?=\\s*\\()");
-	public static final Pattern POST_IF	     	    	= Pattern.compile("(?<=if\\s{0,9}\\(\\s{0,9})(.+)(?=\\s*\\))");
+	public static final Pattern POST_IF					= Pattern.compile("(?<=if\\s{0,9}\\(\\s{0,9})([\\S\\s]+)(?=\\s*\\))");
 	public static final Pattern PRE_WHILE				= Pattern.compile("while(?=\\s*\\()");
-	public static final Pattern POST_WHILE     	    	= Pattern.compile("(?<=while\\s{0,9}\\(\\s{0,9})(.+)(?=\\s*\\))");
+	public static final Pattern POST_WHILE     	    	= Pattern.compile("(?<=while\\s{0,9}\\(\\s{0,9})([\\S\\s]+)(?=\\s*\\))");
 	public static final Pattern PRE_FOR					= Pattern.compile("for(?=\\s*\\()");
-	public static final Pattern POST_FOR     	    	= Pattern.compile("(?<=for\\s{0,9}\\(\\s{0,9})(.+)(?=\\s*\\))");
+	public static final Pattern POST_FOR     	    	= Pattern.compile("(?<=for\\s{0,9}\\(\\s{0,9})([\\S\\s]+)(?=\\s*\\))");
 	public static final Pattern PRE_IMPORT          	= Pattern.compile("import\\s*");
 	public static final Pattern POST_IMPORT				= Pattern.compile("(?<=import\\s{0,9})(\\S+)");
 	public static final Pattern PRE_INSTANTIATION		= Pattern.compile("new\\s+\\S+");
@@ -60,4 +60,10 @@ public class Patterns
 	public static final Pattern SINGLE_LINE_COMMENT	    = Pattern.compile("//.*");
 	public static final Pattern MULTI_LINE_COMMENT	    = Pattern.compile("/\\*(.|[\r\n])*?\\*/");
 	public static final Pattern COMMENT					= Pattern.compile("(//.*)|(/\\*(.|[\r\n])*?\\*/)");
+	public static final Pattern TRY						= Pattern.compile("try");
+	public static final Pattern PRE_CATCH				= Pattern.compile("catch(?=\\s*\\()");
+	public static final Pattern POST_CATCH				= Pattern.compile("(?<=catch\\s{0,9}\\(\\s{0,9})([\\S\\s]+)(?=\\s*\\))");
+	public static final Pattern FINALLY					= Pattern.compile("finally");
+	public static final Pattern PRE_THROW				= Pattern.compile("throw(?=\\s)");
+	public static final Pattern POST_THROW				= Pattern.compile("(?<=throw\\s{1,9})((\\S+\\s*)+)");
 }
