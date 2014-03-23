@@ -44,7 +44,7 @@ import net.fathomsoft.fathom.util.FileUtils;
  */
 public class Fathom
 {
-	private int					flags;
+	private long				flags;
 	
 	private long				startTime, endTime;
 	
@@ -56,15 +56,17 @@ public class Fathom
 	
 	private List<File>			lingeringFiles;
 	
-	public static final boolean	ANDROID_DEBUG = true;
+	public static final boolean	ANDROID_DEBUG = false;
 	
 	public static final boolean	DEBUG         = true;
 	
-	public static final int		CSOURCE       = 0x1;
-	public static final int		VERBOSE       = 0x10;
-	public static final int		GCC           = 0x100;
-	public static final int		TCC           = 0x1000;
-	public static final int		DRY_RUN       = 0x10000;
+	public static final long	CSOURCE       = 0x1;
+	public static final long	VERBOSE       = 0x10;
+	public static final long	GCC           = 0x100;
+	public static final long	TCC           = 0x1000;
+	public static final long	DRY_RUN       = 0x10000;
+	public static final long	KEEP_C        = 0x100000;
+	public static final long	C_ARGS        = 0x1000000;
 	
 	public static final String	LANGUAGE_NAME = "Fathom";
 	
@@ -120,10 +122,12 @@ public class Fathom
 				directory + "IO.fat",
 				directory + "String.fat",
 				"-o", directory + "bin/Executable.exe",
-				"-dir", "../include",
+				"-dir", '"' + directory + "../include\"",
 				"-csource",
 				"-v",
-				"-tcc"
+				"-tcc",
+				"-cargs",
+				"-keepc"
 			};
 		}
 		if (ANDROID_DEBUG)
@@ -251,6 +255,7 @@ public class Fathom
 			{
 				log("Formatting the output c header code...");
 				header = tree.formatText(header);
+				
 				log("Formatting the output c source code...");
 				source = tree.formatText(source);
 			
@@ -276,8 +281,11 @@ public class Fathom
 				cHeaderFiles.add(headerFile);
 				cSourceFiles.add(sourceFile);
 				
-				lingeringFiles.add(headerFile);
-				lingeringFiles.add(sourceFile);
+				if (!isFlagEnabled(KEEP_C))
+				{
+					lingeringFiles.add(headerFile);
+					lingeringFiles.add(sourceFile);
+				}
 			}
 			catch (IOException e1)
 			{
@@ -319,10 +327,16 @@ public class Fathom
 		
 		for (File sourceFile : cSourceFiles)
 		{
-			cmd.append('"').append(sourceFile.getAbsolutePath()).append('"').append("").append(' ');
+			cmd.append('"').append(sourceFile.getAbsolutePath()).append('"').append(' ');
 		}
 		
 		cmd.append("-o ").append('"').append(outputFile.getAbsolutePath()).append('"');
+		
+		
+		if (isFlagEnabled(C_ARGS))
+		{
+			System.out.println(cmd);
+		}
 		
 		final Command command = new Command(cmd.toString(), workingDir);
 		
@@ -424,19 +438,6 @@ public class Fathom
 			// matching.
 			String arg = args[i].toLowerCase();
 			
-			// Check if we are still dealing with any  ongoing arguments
-			// still.
-			if (expectingOutputFile)
-			{
-				outputFile = new File(args[i]);
-				
-				expectingOutputFile = false;
-			}
-			else if (expectingIncludeDirectory)
-			{
-				includeDirectories.add(args[i]);
-			}
-			
 			// Create temporary variables holding the current values.
 			boolean expectingIncludeDirectoryTemp = expectingIncludeDirectory;
 			
@@ -485,9 +486,21 @@ public class Fathom
 			{
 				enableFlag(DRY_RUN);
 			}
+			// If the user wants to keep the files that hold the c output.
+			else if (arg.equals("-keepc"))
+			{
+				enableFlag(KEEP_C);
+			}
+			// If the user wants to obtain the c compiler arguments.
+			else if (arg.equals("-cargs"))
+			{
+				enableFlag(C_ARGS);
+			}
 			// If none of the arguments were matched, check these:
 			else
 			{
+				expectingIncludeDirectory = expectingIncludeDirectoryTemp;
+				
 				// If the argument is one of the first arguments passed
 				// (If it is one of the sources to compile)
 				if (lastInput == i - 1)
@@ -498,11 +511,17 @@ public class Fathom
 					
 					lastInput = i;
 				}
-				// If none of the cases were matched, revert the
-				// previously reset variables and try again.
-				else
+				// Check if we are still dealing with any  ongoing arguments
+				// still.
+				else if (expectingOutputFile)
 				{
-					expectingIncludeDirectory = expectingIncludeDirectoryTemp;
+					outputFile = new File(args[i]);
+					
+					expectingOutputFile = false;
+				}
+				else if (expectingIncludeDirectory)
+				{
+					includeDirectories.add(args[i]);
 				}
 			}
 		}
@@ -513,7 +532,7 @@ public class Fathom
 	 * 
 	 * @param flag The flag to set enable.
 	 */
-	private void enableFlag(int flag)
+	private void enableFlag(long flag)
 	{
 		flags |= flag;
 	}
@@ -523,7 +542,7 @@ public class Fathom
 	 * 
 	 * @param flag The flag to disable.
 	 */
-	private void disableFlag(int flag)
+	private void disableFlag(long flag)
 	{
 		flags = flags & (~flag);
 	}
@@ -534,7 +553,7 @@ public class Fathom
 	 * @param flag The flag to check if is enabled.
 	 * @return Whether or not the flag is enabled.
 	 */
-	private boolean isFlagEnabled(int flag)
+	private boolean isFlagEnabled(long flag)
 	{
 		return (flags & flag) != 0;
 	}
@@ -581,14 +600,10 @@ public class Fathom
 	}
 	
 	/**
-	 * Method called whenever the compilation sequence has completed.
+	 * Delete the files that are left over from the compilation process.
 	 */
-	private void completed()
+	private void deleteLingeringFiles()
 	{
-		stopTimer();
-		
-		log("Compile time: " + getCompileTime());
-		
 		Iterator<File> files = lingeringFiles.iterator();
 		
 		while (files.hasNext())
@@ -600,6 +615,18 @@ public class Fathom
 				System.err.println("Error: Was not able to delete file: " + file.getAbsolutePath());
 			}
 		}
+	}
+	
+	/**
+	 * Method called whenever the compilation sequence has completed.
+	 */
+	private void completed()
+	{
+		stopTimer();
+		
+		log("Compile time: " + getCompileTime());
+		
+		deleteLingeringFiles();
 		
 		if (!ANDROID_DEBUG)
 		{
