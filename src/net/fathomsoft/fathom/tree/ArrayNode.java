@@ -32,16 +32,11 @@ import net.fathomsoft.fathom.util.SyntaxUtils;
  * @version	Mar 16, 2014 at 1:13:49 AM
  * @version	v0.1
  */
-public class ArrayNode extends TreeNode
+public class ArrayNode extends IdentifierNode
 {
 	public ArrayNode()
 	{
 		
-	}
-	
-	public IdentifierNode getIdentifierNode()
-	{
-		return (IdentifierNode)getChild(0);
 	}
 	
 	/**
@@ -70,25 +65,31 @@ public class ArrayNode extends TreeNode
 	{
 		StringBuilder builder = new StringBuilder();
 		
-		IdentifierNode identifier = getIdentifierNode();
+//		IdentifierNode identifier = getIdentifierNode();
 		
-		builder.append('(').append(identifier.getName()).append('*').append(')');
+		builder.append('(').append(getName()).append('*').append(')');
 		
-		builder.append("malloc(sizeof(").append(identifier.getName()).append(')');
+		builder.append("malloc(sizeof(").append(getName()).append(')');
 		
 		for (int i = 0; i < getChildren().size(); i++)
 		{
 			TreeNode child = getChild(i);
 			
-			if (child != identifier)
-			{
-				builder.append(" * ").append(child.generateCSourceOutput());
-			}
+			builder.append(" * ").append(child.generateCSourceOutput());
 		}
 		
 		builder.append(')');
 		
 		return builder.toString();
+	}
+	
+	/**
+	 * @see net.fathomsoft.fathom.tree.TreeNode#generateCSourceFragment()
+	 */
+	@Override
+	public String generateCSourceFragment()
+	{
+		return generateCSourceOutput();
 	}
 	
 	public static ArrayNode decodeStatement(TreeNode parent, String statement, Location location)
@@ -103,9 +104,7 @@ public class ArrayNode extends TreeNode
 			
 			String idValue = statement.substring(bounds.getStart(), bounds.getEnd());
 			
-			IdentifierNode id = new IdentifierNode();
-			id.setName(idValue);
-			n.addChild(id);
+			n.setName(idValue);
 			
 			while (index > 1)
 			{
@@ -122,7 +121,7 @@ public class ArrayNode extends TreeNode
 				}
 				else
 				{
-					IdentifierNode node = TreeNode.getExistingNode(parent, length);
+					IdentifierNode node = TreeNode.getExistingNode(parent, length).clone();
 					
 					n.addChild(node);
 				}
