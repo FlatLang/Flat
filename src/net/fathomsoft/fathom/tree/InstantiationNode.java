@@ -24,7 +24,7 @@ import net.fathomsoft.fathom.util.Patterns;
 import net.fathomsoft.fathom.util.Regex;
 import net.fathomsoft.fathom.util.SyntaxUtils;
 
-public class InstantiationNode extends TreeNode
+public class InstantiationNode extends IdentifierNode
 {
 	/**
 	 * @see net.fathomsoft.fathom.tree.TreeNode#generateJavaSourceOutput()
@@ -54,10 +54,19 @@ public class InstantiationNode extends TreeNode
 		
 		for (int i = 0; i < getChildren().size(); i++)
 		{
-			builder.append(getChild(i).generateCSourceOutput());
+			builder.append(getChild(i).generateCSourceFragment());
 		}
 		
 		return builder.toString();
+	}
+	
+	/**
+	 * @see net.fathomsoft.fathom.tree.TreeNode#generateCSourceFragment()
+	 */
+	@Override
+	public String generateCSourceFragment()
+	{
+		return generateCSourceOutput();
 	}
 	
 	public static InstantiationNode decodeStatement(TreeNode parent, String statement, Location location)
@@ -76,7 +85,7 @@ public class InstantiationNode extends TreeNode
 			newLoc.setLineNumber(location.getLineNumber());
 			newLoc.setOffset(location.getOffset() + startIndex);
 			
-			TreeNode child = null;
+			IdentifierNode child = null;
 			
 			if (SyntaxUtils.isMethodCall(action))
 			{
@@ -87,6 +96,7 @@ public class InstantiationNode extends TreeNode
 				child = MethodCallNode.decodeStatement(parent, action, newLoc, false);
 				
 				MethodCallNode methodCall = (MethodCallNode)child;
+				n.setName(methodCall.getName());
 				methodCall.setName("new_" + methodCall.getName());
 				
 //				LiteralNode literalNode = new LiteralNode();
@@ -97,6 +107,7 @@ public class InstantiationNode extends TreeNode
 			else if (SyntaxUtils.isArrayInitialization(action))
 			{
 				child = ArrayNode.decodeStatement(parent, action, newLoc);
+				n.setName(child.getName());
 			}
 			else
 			{
@@ -118,6 +129,7 @@ public class InstantiationNode extends TreeNode
 	public InstantiationNode clone()
 	{
 		InstantiationNode clone = new InstantiationNode();
+		clone.setName(getName());
 		
 		for (int i = 0; i < getChildren().size(); i++)
 		{
