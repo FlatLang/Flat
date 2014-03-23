@@ -17,6 +17,8 @@
  */
 package net.fathomsoft.fathom.tree;
 
+import net.fathomsoft.fathom.tree.variables.VariableNode;
+
 /**
  * 
  * 
@@ -158,12 +160,26 @@ public class DeclarationNode extends VariableNode
 		
 		return builder.toString();
 	}
-
+	
 	/**
 	 * @see net.fathomsoft.fathom.tree.TreeNode#generateCHeaderOutput()
 	 */
 	@Override
 	public String generateCHeaderOutput()
+	{
+		StringBuilder builder = new StringBuilder();
+		
+		builder.append(generateCHeaderFragment());
+		builder.append(';').append('\n');
+		
+		return builder.toString();
+	}
+	
+	/**
+	 * @see net.fathomsoft.fathom.tree.TreeNode#generateCHeaderFragment()
+	 */
+	@Override
+	public String generateCHeaderFragment()
 	{
 		StringBuilder builder = new StringBuilder();
 		
@@ -211,10 +227,26 @@ public class DeclarationNode extends VariableNode
 //			builder.append(" = 0;");
 //		}
 		
-		builder.append(';').append('\n');
-		
 		return builder.toString();
 	}
+	
+//	/**
+//	 * @see net.fathomsoft.fathom.tree.TreeNode#generateCSourceOutput()
+//	 */
+//	@Override
+//	public String generateCSourceOutput()
+//	{
+//		return null;
+//	}
+//	
+//	/**
+//	 * @see net.fathomsoft.fathom.tree.TreeNode#generateCSourceFragment()
+//	 */
+//	@Override
+//	public String generateCSourceFragment()
+//	{
+//		return null;
+//	}
 	
 	/**
 	 * @see net.fathomsoft.fathom.tree.TreeNode#clone()
