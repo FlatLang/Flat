@@ -93,8 +93,11 @@ public class FileNode extends IdentifierNode
 		
 		ImportNode cclassImport = new ImportNode();
 		cclassImport.setImportLocation("CClass");
-		
 		builder.append(cclassImport.generateCHeaderOutput());
+		
+		ImportNode exceptionImport = new ImportNode();
+		exceptionImport.setImportLocation("ExceptionHandler");
+		builder.append(exceptionImport.generateCHeaderOutput());
 		
 		if (getImportListNode().getChildren().size() <= 0)
 		{
@@ -143,6 +146,15 @@ public class FileNode extends IdentifierNode
 		}
 		
 		return builder.toString();
+	}
+	
+	/**
+	 * @see net.fathomsoft.fathom.tree.TreeNode#generateCSourceFragment()
+	 */
+	@Override
+	public String generateCSourceFragment()
+	{
+		return null;
 	}
 	
 	/**
