@@ -18,13 +18,13 @@
 package net.fathomsoft.fathom.util;
 
 import net.fathomsoft.fathom.Fathom;
-import net.fathomsoft.fathom.tree.FieldNode;
 import net.fathomsoft.fathom.tree.IdentifierNode;
 import net.fathomsoft.fathom.tree.LiteralNode;
 import net.fathomsoft.fathom.tree.MethodNode;
 import net.fathomsoft.fathom.tree.ParameterListNode;
 import net.fathomsoft.fathom.tree.ParameterNode;
 import net.fathomsoft.fathom.tree.TreeNode;
+import net.fathomsoft.fathom.tree.variables.FieldNode;
 
 /**
  * Class used for getting information about the Syntax of Fathom.
