@@ -21,6 +21,10 @@ import java.util.ArrayList;
 import java.util.regex.Pattern;
 
 import net.fathomsoft.fathom.error.SyntaxMessage;
+import net.fathomsoft.fathom.tree.variables.FieldListNode;
+import net.fathomsoft.fathom.tree.variables.FieldNode;
+import net.fathomsoft.fathom.tree.variables.PrivateFieldListNode;
+import net.fathomsoft.fathom.tree.variables.PublicFieldListNode;
 import net.fathomsoft.fathom.util.Bounds;
 import net.fathomsoft.fathom.util.Location;
 
@@ -316,7 +320,16 @@ public class ClassNode extends DeclarationNode
 		
 		return builder.toString();
 	}
-
+	
+	/**
+	 * @see net.fathomsoft.fathom.tree.TreeNode#generateCHeaderFragment()
+	 */
+	@Override
+	public String generateCHeaderFragment()
+	{
+		return null;
+	}
+	
 	/**
 	 * @see net.fathomsoft.fathom.tree.TreeNode#generateCSourceOutput()
 	 */
@@ -375,6 +388,15 @@ public class ClassNode extends DeclarationNode
 		}
 		
 		return builder.toString();
+	}
+	
+	/**
+	 * @see net.fathomsoft.fathom.tree.TreeNode#generateCSourceFragment()
+	 */
+	@Override
+	public String generateCSourceFragment()
+	{
+		return null;
 	}
 	
 	public static ClassNode decodeStatement(TreeNode parentNode, String statement, Location location)
