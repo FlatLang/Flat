@@ -18,19 +18,36 @@ public class Test
 		IO.print("Command line arg #1 is\n");
 		IO.print(args[0]);
 		
-		for (int i = 0; i < 5; i = i + 1)
+		int i;
+		
+		try
 		{
-			IO.waitForEnter();
+			divide(5, 0);
 		}
-		
-		i = 0;
-		
-		while (i < 7)
+		catch (DivideByZeroException e)
 		{
-			IO.waitForEnter();
 			
-			i = i + 1;
 		}
+		finally
+		{
+			
+		}
+		
+		String s = IO.getLine();
+		
+		IO.print(s);
+		
+		IO.waitForEnter();
+	}
+	
+	public int divide(int numerator, int denominator)
+	{
+		if (denominator == 0)
+		{
+			throw new DivideByZeroException();
+		}
+		
+		return numerator / denominator;
 	}
 	
 	public int test()
