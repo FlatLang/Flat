@@ -42,6 +42,8 @@ __Optional arguments to the Compiler Include__
   * `-dry` Perform a dry-run of the compilation. Do not compile into an executable.
   * `-gcc` Compile the c code with the GCC (GNU Compiler Collection) compiler.
   * `-tcc` Compile the c code with the TCC (Tiny C Compiler) compiler.
+  * `-keepc` Keep the c output files that were generated during the compilation process.
+  * `-cargs` Display the arguments that were passed to the c compiler.
 
 The default c compiler is TCC because it is more stable at the moment.
 
