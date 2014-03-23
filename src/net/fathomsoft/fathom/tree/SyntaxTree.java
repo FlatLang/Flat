@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import net.fathomsoft.fathom.tree.variables.FieldNode;
 import net.fathomsoft.fathom.util.FileUtils;
 import net.fathomsoft.fathom.util.Location;
 import net.fathomsoft.fathom.util.Patterns;
@@ -117,7 +118,7 @@ public class SyntaxTree
 		
 		parentStack.push(root);
 		
-		currentNode           = getNextStatement();
+		currentNode = getNextStatement();
 		root.addChild(currentNode);
 		
 		// Decode all of the statements in the source text.
@@ -237,6 +238,12 @@ public class SyntaxTree
 		}
 	}
 	
+	/**
+	 * Remove the comments from the specified source String.
+	 * 
+	 * @param source The source String to remove the comments from.
+	 * @return A new String without any comments.
+	 */
 	private String removeComments(String source)
 	{
 		Pattern p = Patterns.COMMENT;
