@@ -18,6 +18,8 @@
 package net.fathomsoft.fathom.tree;
 
 import net.fathomsoft.fathom.error.SyntaxMessage;
+import net.fathomsoft.fathom.tree.variables.LocalVariableNode;
+import net.fathomsoft.fathom.tree.variables.VariableNode;
 import net.fathomsoft.fathom.util.Bounds;
 import net.fathomsoft.fathom.util.Location;
 import net.fathomsoft.fathom.util.Patterns;
@@ -96,7 +98,16 @@ public class AssignmentNode extends TreeNode
 	{
 		return null;
 	}
-
+	
+	/**
+	 * @see net.fathomsoft.fathom.tree.TreeNode#generateCHeaderFragment()
+	 */
+	@Override
+	public String generateCHeaderFragment()
+	{
+		return null;
+	}
+	
 	/**
 	 * @see net.fathomsoft.fathom.tree.TreeNode#generateCSourceOutput()
 	 */
@@ -112,6 +123,10 @@ public class AssignmentNode extends TreeNode
 		return builder.toString();
 	}
 	
+	/**
+	 * @see net.fathomsoft.fathom.tree.TreeNode#generateCSourceFragment()
+	 */
+	@Override
 	public String generateCSourceFragment()
 	{
 		StringBuilder builder = new StringBuilder();
@@ -124,14 +139,7 @@ public class AssignmentNode extends TreeNode
 		{
 			TreeNode child = getChild(i);
 			
-			if (child instanceof VariableNode)
-			{
-				builder.append(((VariableNode) child).generateVariableUseOutput());
-			}
-			else
-			{
-				builder.append(child.generateCSourceOutput());
-			}
+			builder.append(child.generateCSourceFragment());
 		}
 		
 		return builder.toString();
