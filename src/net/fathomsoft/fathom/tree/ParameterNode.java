@@ -18,6 +18,7 @@
 package net.fathomsoft.fathom.tree;
 
 import net.fathomsoft.fathom.error.SyntaxMessage;
+import net.fathomsoft.fathom.tree.variables.LocalVariableNode;
 import net.fathomsoft.fathom.util.Bounds;
 import net.fathomsoft.fathom.util.Location;
 import net.fathomsoft.fathom.util.SyntaxUtils;
@@ -102,6 +103,15 @@ public class ParameterNode extends LocalVariableNode
 		builder.append(' ').append(getName());
 		
 		return builder.toString();
+	}
+	
+	/**
+	 * @see net.fathomsoft.fathom.tree.TreeNode#generateCSourceFragment()
+	 */
+	@Override
+	public String generateCSourceFragment()
+	{
+		return generateVariableUseOutput();
 	}
 	
 	public static ParameterNode decodeStatement(TreeNode parentNode, String statement, final Location location)

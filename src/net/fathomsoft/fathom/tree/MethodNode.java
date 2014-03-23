@@ -19,6 +19,8 @@ package net.fathomsoft.fathom.tree;
 
 import net.fathomsoft.fathom.Fathom;
 import net.fathomsoft.fathom.error.SyntaxMessage;
+import net.fathomsoft.fathom.tree.variables.LocalVariableListNode;
+import net.fathomsoft.fathom.tree.variables.LocalVariableNode;
 import net.fathomsoft.fathom.util.Bounds;
 import net.fathomsoft.fathom.util.Location;
 import net.fathomsoft.fathom.util.Patterns;
@@ -216,17 +218,21 @@ public class MethodNode extends DeclarationNode
 			if (child != parameterList)
 			{
 				builder.append(child.generateCSourceOutput());
-				
-				if (child instanceof MethodCallNode)
-				{
-					builder.append(';').append('\n');
-				}
 			}
 		}
 		
 		builder.append('}').append('\n');
 		
 		return builder.toString();
+	}
+	
+	/**
+	 * @see net.fathomsoft.fathom.tree.TreeNode#generateCSourceFragment()
+	 */
+	@Override
+	public String generateCSourceFragment()
+	{
+		return null;
 	}
 	
 	public String generateCSourcePrototype()

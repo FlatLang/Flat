@@ -103,6 +103,15 @@ public class MethodListNode extends TreeNode
 		return builder.toString();
 	}
 	
+	/**
+	 * @see net.fathomsoft.fathom.tree.TreeNode#generateCSourceFragment()
+	 */
+	@Override
+	public String generateCSourceFragment()
+	{
+		return null;
+	}
+	
 	public String generateCSourcePrototypes()
 	{
 		StringBuilder builder = new StringBuilder();

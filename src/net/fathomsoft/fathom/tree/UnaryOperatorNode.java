@@ -103,6 +103,15 @@ public class UnaryOperatorNode extends TreeNode
 	{
 		return null;
 	}
+	
+	/**
+	 * @see net.fathomsoft.fathom.tree.TreeNode#generateCSourceFragment()
+	 */
+	@Override
+	public String generateCSourceFragment()
+	{
+		return null;
+	}
 
 	/**
 	 * @see net.fathomsoft.fathom.tree.TreeNode#clone()

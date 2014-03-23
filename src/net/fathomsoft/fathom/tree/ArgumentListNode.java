@@ -80,6 +80,15 @@ public class ArgumentListNode extends TreeNode
 		
 		return builder.toString();
 	}
+	
+	/**
+	 * @see net.fathomsoft.fathom.tree.TreeNode#generateCSourceFragment()
+	 */
+	@Override
+	public String generateCSourceFragment()
+	{
+		return null;
+	}
 
 	/**
 	 * @see net.fathomsoft.fathom.tree.TreeNode#clone()

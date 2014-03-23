@@ -20,6 +20,7 @@ package net.fathomsoft.fathom.tree;
 import java.util.regex.Matcher;
 
 import net.fathomsoft.fathom.error.SyntaxMessage;
+import net.fathomsoft.fathom.tree.variables.VariableNode;
 import net.fathomsoft.fathom.util.Bounds;
 import net.fathomsoft.fathom.util.Location;
 import net.fathomsoft.fathom.util.Patterns;
@@ -136,6 +137,15 @@ public class BinaryOperatorNode extends TreeNode
 		}
 		
 		return builder.toString();
+	}
+	
+	/**
+	 * @see net.fathomsoft.fathom.tree.TreeNode#generateCSourceFragment()
+	 */
+	@Override
+	public String generateCSourceFragment()
+	{
+		return generateCSourceOutput();
 	}
 	
 	public static TreeNode decodeStatement(TreeNode parentNode, String statement, Location location)

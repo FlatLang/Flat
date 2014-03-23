@@ -66,6 +66,15 @@ public class LoopNode extends TreeNode
 		return null;
 	}
 	
+	/**
+	 * @see net.fathomsoft.fathom.tree.TreeNode#generateCSourceFragment()
+	 */
+	@Override
+	public String generateCSourceFragment()
+	{
+		return null;
+	}
+	
 	public static LoopNode decodeStatement(TreeNode parent, String statement, Location location)
 	{
 		LoopNode node = null;

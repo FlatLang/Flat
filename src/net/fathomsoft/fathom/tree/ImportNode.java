@@ -98,6 +98,15 @@ public class ImportNode extends TreeNode
 		return builder.toString();
 	}
 	
+	/**
+	 * @see net.fathomsoft.fathom.tree.TreeNode#generateCSourceFragment()
+	 */
+	@Override
+	public String generateCSourceFragment()
+	{
+		return null;
+	}
+	
 	public static ImportNode decodeStatement(TreeNode parent, String statement, Location location)
 	{
 		ImportNode n = null;

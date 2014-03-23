@@ -95,6 +95,15 @@ public class WhileLoopNode extends LoopNode
 		return builder.toString();
 	}
 	
+	/**
+	 * @see net.fathomsoft.fathom.tree.TreeNode#generateCSourceFragment()
+	 */
+	@Override
+	public String generateCSourceFragment()
+	{
+		return null;
+	}
+	
 	public static WhileLoopNode decodeStatement(TreeNode parent, String statement, Location location)
 	{
 		if (Regex.matches(statement, 0, Patterns.PRE_WHILE))

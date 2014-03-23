@@ -101,6 +101,15 @@ public class IfStatementNode extends TreeNode
 		return builder.toString();
 	}
 	
+	/**
+	 * @see net.fathomsoft.fathom.tree.TreeNode#generateCSourceFragment()
+	 */
+	@Override
+	public String generateCSourceFragment()
+	{
+		return null;
+	}
+	
 	public static IfStatementNode decodeStatement(TreeNode parent, String statement, Location location)
 	{
 		if (Regex.matches(statement, 0, Patterns.PRE_IF))

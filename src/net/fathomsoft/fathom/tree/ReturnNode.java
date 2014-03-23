@@ -17,6 +17,7 @@
  */
 package net.fathomsoft.fathom.tree;
 
+import net.fathomsoft.fathom.tree.variables.VariableNode;
 import net.fathomsoft.fathom.util.Location;
 import net.fathomsoft.fathom.util.Patterns;
 import net.fathomsoft.fathom.util.Regex;
@@ -76,6 +77,20 @@ public class ReturnNode extends TreeNode
 	{
 		StringBuilder builder = new StringBuilder();
 		
+		builder.append(generateCSourceFragment());
+		builder.append(';').append('\n');
+		
+		return builder.toString();
+	}
+	
+	/**
+	 * @see net.fathomsoft.fathom.tree.TreeNode#generateCSourceFragment()
+	 */
+	@Override
+	public String generateCSourceFragment()
+	{
+		StringBuilder builder = new StringBuilder();
+		
 		builder.append("return");
 		
 		if (getChildren().size() > 0)
@@ -87,17 +102,8 @@ public class ReturnNode extends TreeNode
 		{
 			TreeNode child = getChild(i);
 			
-			if (child instanceof VariableNode)
-			{
-				builder.append(((VariableNode) child).generateVariableUseOutput());
-			}
-			else
-			{
-				builder.append(child.generateCSourceOutput());
-			}
+			builder.append(child.generateCSourceFragment());
 		}
-		
-		builder.append(';').append('\n');
 		
 		return builder.toString();
 	}

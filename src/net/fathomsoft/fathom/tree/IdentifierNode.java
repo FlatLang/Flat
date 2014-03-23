@@ -57,7 +57,7 @@ public class IdentifierNode extends TreeNode
 	{
 		return name;
 	}
-
+	
 	/**
 	 * @see net.fathomsoft.fathom.tree.TreeNode#generateCHeaderOutput()
 	 */
@@ -66,7 +66,7 @@ public class IdentifierNode extends TreeNode
 	{
 		return null;
 	}
-
+	
 	/**
 	 * @see net.fathomsoft.fathom.tree.TreeNode#generateCSourceOutput()
 	 */
@@ -75,7 +75,16 @@ public class IdentifierNode extends TreeNode
 	{
 		return name;
 	}
-
+	
+	/**
+	 * @see net.fathomsoft.fathom.tree.TreeNode#generateCSourceFragment()
+	 */
+	@Override
+	public String generateCSourceFragment()
+	{
+		return name;
+	}
+	
 	/**
 	 * @see net.fathomsoft.fathom.tree.TreeNode#clone()
 	 */

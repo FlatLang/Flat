@@ -78,6 +78,15 @@ public class LiteralNode extends TreeNode
 	{
 		return value;
 	}
+	
+	/**
+	 * @see net.fathomsoft.fathom.tree.TreeNode#generateCSourceFragment()
+	 */
+	@Override
+	public String generateCSourceFragment()
+	{
+		return value;
+	}
 
 	/**
 	 * @see net.fathomsoft.fathom.tree.TreeNode#clone()

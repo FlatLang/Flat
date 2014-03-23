@@ -18,6 +18,9 @@
 package net.fathomsoft.fathom.tree;
 
 import net.fathomsoft.fathom.error.SyntaxMessage;
+import net.fathomsoft.fathom.tree.variables.FieldNode;
+import net.fathomsoft.fathom.tree.variables.PrivateFieldListNode;
+import net.fathomsoft.fathom.tree.variables.PublicFieldListNode;
 import net.fathomsoft.fathom.util.Bounds;
 import net.fathomsoft.fathom.util.Location;
 import net.fathomsoft.fathom.util.Regex;
@@ -113,6 +116,15 @@ public class DestructorNode extends MethodNode
 		builder.append('}').append('\n');
 		
 		return builder.toString();
+	}
+	
+	/**
+	 * @see net.fathomsoft.fathom.tree.TreeNode#generateCSourceFragment()
+	 */
+	@Override
+	public String generateCSourceFragment()
+	{
+		return null;
 	}
 	
 	private String nullChecker()

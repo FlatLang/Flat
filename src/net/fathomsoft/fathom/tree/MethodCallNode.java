@@ -18,6 +18,7 @@
 package net.fathomsoft.fathom.tree;
 
 import net.fathomsoft.fathom.error.SyntaxMessage;
+import net.fathomsoft.fathom.tree.variables.VariableNode;
 import net.fathomsoft.fathom.util.Bounds;
 import net.fathomsoft.fathom.util.Location;
 import net.fathomsoft.fathom.util.Patterns;
@@ -93,6 +94,19 @@ public class MethodCallNode extends IdentifierNode
 	 */
 	@Override
 	public String generateCSourceOutput()
+	{
+		StringBuilder builder = new StringBuilder();
+		
+		builder.append(generateCSourceFragment()).append(';').append('\n');
+		
+		return builder.toString();
+	}
+	
+	/**
+	 * @see net.fathomsoft.fathom.tree.TreeNode#generateCSourceFragment()
+	 */
+	@Override
+	public String generateCSourceFragment()
 	{
 		StringBuilder builder = new StringBuilder();
 		
