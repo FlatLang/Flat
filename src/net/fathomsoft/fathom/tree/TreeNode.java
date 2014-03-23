@@ -22,6 +22,13 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import net.fathomsoft.fathom.error.SyntaxMessage;
+import net.fathomsoft.fathom.tree.exceptionhandling.ExceptionHandlingNode;
+import net.fathomsoft.fathom.tree.variables.FieldNode;
+import net.fathomsoft.fathom.tree.variables.LocalVariableListNode;
+import net.fathomsoft.fathom.tree.variables.LocalVariableNode;
+import net.fathomsoft.fathom.tree.variables.PrivateFieldListNode;
+import net.fathomsoft.fathom.tree.variables.PublicFieldListNode;
+import net.fathomsoft.fathom.tree.variables.VariableNode;
 import net.fathomsoft.fathom.util.Bounds;
 import net.fathomsoft.fathom.util.Location;
 import net.fathomsoft.fathom.util.Patterns;
@@ -426,6 +433,17 @@ public abstract class TreeNode
 	public abstract String generateCSourceOutput();
 	
 	/**
+	 * Method that each Node overrides. Returns a String that translates
+	 * the data that is stored in the TreeNode to the C programming
+	 * language source file 'fragment' syntax.
+	 * 
+	 * @return The C source syntax representation of the TreeNode.
+	 */
+	public abstract String generateCSourceFragment();
+	
+	public String generateCHeaderFragment(){return null;}
+	
+	/**
 	 * Decode the specific statement into its correct TreeNode value. If
 	 * the statement does not translate into a TreeNode, a syntax error
 	 * has occurred. 
@@ -471,9 +489,13 @@ public abstract class TreeNode
 				return node;
 			}
 		}
-		else if (parent instanceof MethodNode || parent instanceof IfStatementNode || parent instanceof LoopNode)
+		else if (parent instanceof MethodNode || parent instanceof IfStatementNode || parent instanceof LoopNode || parent instanceof ExceptionHandlingNode)
 		{
-			if ((node = ReturnNode.decodeStatement(parent, statement, location)) != null)
+			if ((node = ExceptionHandlingNode.decodeStatement(parent, statement, location)) != null)
+			{
+				return node;
+			}
+			else if ((node = ReturnNode.decodeStatement(parent, statement, location)) != null)
 			{
 				return node;
 			}
