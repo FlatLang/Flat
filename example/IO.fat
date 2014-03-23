@@ -1,5 +1,6 @@
 import "stdio.h";
 import "String";
+import "Fathom.h";
 
 public class IO
 {
@@ -15,18 +16,32 @@ public class IO
 		stdio.printf(cText);
 	}
 	
+	public static int getInt()
+	{
+		
+	}
+	
 	public static String getLine()
 	{
-		char line[] = new char[256];
-		int  i;
+		char line[] = Fathom.ufgets(stdin);//new char[256];
+		//int  i;
+		String s;
 		
-		if (stdio.fgets(line, stdio.sizeof(line), stdin))
+		/*if (stdio.fgets(line, 256, stdin) != NULL)
 		{
-			if (1 == stdio.sscanf(line, "%d", &i))
-			{
-				// i can be safely used
-			}
-		}
+			//if (stdio.sscanf(line, "%d", &i) == 1)
+			//{
+				s = new String(line);
+				
+				return s;
+			//}
+		}*/
+		
+		//s = "Did not find";
+		
+		s = new String(line);
+		
+		return s;
 	}
 	
 	public static void waitForEnter()
