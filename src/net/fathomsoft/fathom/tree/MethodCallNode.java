@@ -167,6 +167,9 @@ public class MethodCallNode extends IdentifierNode
 			
 			boolean externalCall = false;
 			
+			//if ()
+			argumentList = argumentList;
+			
 			if (needsReference)
 			{
 				String objectRef = null;
