@@ -7,9 +7,9 @@
 #define TRY \
 	do\
 	{\
-		jmp_buf ex_buf__;\
+		jmp_buf __FATHOM__jmp_buf;\
 		\
-		switch(setjmp(ex_buf__))\
+		switch(setjmp(__FATHOM__jmp_buf))\
 		{\
 			case 0:\
 				while(1)\
@@ -29,6 +29,6 @@
 	}\
 	while(0)
 
-#define THROW(x) longjmp(ex_buf__, x)
+#define THROW(x) longjmp(__FATHOM__jmp_buf, x)
 
 #endif
