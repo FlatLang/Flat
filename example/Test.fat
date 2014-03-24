@@ -26,16 +26,16 @@ public class Test
 		}
 		catch (DivideByZeroException e)
 		{
-			
+			IO.print("Caught error...");
 		}
 		finally
 		{
-			
+			IO.print("After error...");
 		}
 		
-		String s = IO.getLine();
+		int num = IO.getInt();
 		
-		IO.print(s);
+		IO.printi(num);
 		
 		IO.waitForEnter();
 	}
