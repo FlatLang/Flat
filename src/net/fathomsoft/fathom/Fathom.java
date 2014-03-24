@@ -325,6 +325,8 @@ public class Fathom
 			cmd.append("-I").append(dir).append(' ');
 		}
 		
+		cmd.append("-L").append('"').append(workingDir.getAbsolutePath()).append("/../lib").append('"').append(" -lFathom ");
+		
 		for (File sourceFile : cSourceFiles)
 		{
 			cmd.append('"').append(sourceFile.getAbsolutePath()).append('"').append(' ');
