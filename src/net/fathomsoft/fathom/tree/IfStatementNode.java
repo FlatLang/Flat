@@ -80,7 +80,7 @@ public class IfStatementNode extends TreeNode
 		{
 			TreeNode child = condition.getChild(i);
 			
-			builder.append(child.generateCSourceOutput());
+			builder.append(child.generateCSourceFragment());
 		}
 		
 		builder.append(')').append('\n');
