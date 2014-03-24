@@ -17,6 +17,8 @@
  */
 package net.fathomsoft.fathom.tree;
 
+import net.fathomsoft.fathom.Fathom;
+
 /**
  * 
  * 
@@ -77,8 +79,10 @@ public class ParameterListNode extends TreeNode
 		
 		if (getParent() instanceof ConstructorNode == false)
 		{
-			builder.append(classNode.getName()).append("* ").append(MethodNode.getObjectReferenceIdentifier());
+			builder.append(classNode.getName()).append("* ").append(MethodNode.getObjectReferenceIdentifier()).append(", ");
 		}
+		
+		builder.append("jmp_buf __").append(Fathom.LANGUAGE_NAME).append("__jmp_buf");
 		
 		for (int i = 0; i < getChildren().size(); i++)
 		{
