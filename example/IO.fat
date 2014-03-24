@@ -1,4 +1,5 @@
 import "stdio.h";
+import "stdlib.h";
 import "String";
 import "Fathom.h";
 
@@ -16,30 +17,27 @@ public class IO
 		stdio.printf(cText);
 	}
 	
+	public static void printi(int j)
+	{
+		stdio.printf("%d", j);
+	}
+	
 	public static int getInt()
 	{
+		String s = getLine();
 		
+		char data[] = s.toCharArray();
+		
+		int num = stdlib.atoi(data);
+		
+		return num;
 	}
 	
 	public static String getLine()
 	{
-		char line[] = Fathom.ufgets(stdin);//new char[256];
-		//int  i;
-		String s;
+		char line[] = Fathom.ufgets(stdin);
 		
-		/*if (stdio.fgets(line, 256, stdin) != NULL)
-		{
-			//if (stdio.sscanf(line, "%d", &i) == 1)
-			//{
-				s = new String(line);
-				
-				return s;
-			//}
-		}*/
-		
-		//s = "Did not find";
-		
-		s = new String(line);
+		String s = new String(line);
 		
 		return s;
 	}
