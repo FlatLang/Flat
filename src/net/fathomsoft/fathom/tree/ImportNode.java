@@ -78,11 +78,7 @@ public class ImportNode extends TreeNode
 	@Override
 	public String generateCHeaderOutput()
 	{
-		StringBuilder builder = new StringBuilder();
-		
-		builder.append("#include ").append('"').append(importLocation).append(".h").append('"').append('\n');
-		
-		return builder.toString();
+		return generateCSourceOutput();
 	}
 
 	/**
@@ -93,7 +89,18 @@ public class ImportNode extends TreeNode
 	{
 		StringBuilder builder = new StringBuilder();
 		
-		builder.append("#include ").append('"').append(importLocation).append(".h").append('"').append('\n');
+		builder.append("#include ");
+		
+		if (isCSource())
+		{
+			builder.append('<').append(importLocation).append(".h").append('>');
+		}
+		else
+		{
+			builder.append('"').append(importLocation).append(".h").append('"');
+		}
+		
+		builder.append('\n');
 		
 		return builder.toString();
 	}
