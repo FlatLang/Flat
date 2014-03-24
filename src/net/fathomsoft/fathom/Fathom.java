@@ -224,6 +224,8 @@ public class Fathom
 				mainMethodText.append('\n').append('\n');
 				mainMethodText.append("#include \"Fathom.h\"");
 				mainMethodText.append('\n');
+				mainMethodText.append("jmp_buf __FATHOM__jmp_buf;").append('\n');
+				mainMethodText.append('\n');
 				mainMethodText.append("int main(int argc, char** argvs)").append('\n');
 				mainMethodText.append("{").append('\n');
 				mainMethodText.append("String** args = (String**)malloc(argc * sizeof(String));").append('\n');
