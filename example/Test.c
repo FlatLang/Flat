@@ -48,7 +48,7 @@ void del_Test(Test* __o__)
 static void* __FATHOM__main(Test* __o__, String** args)
 {
 	int i;
-	String* s;
+	int num;
 	
 	__static__IO->print(__static__IO, new_String("Hello, world\n\n"));
 	__static__IO->print(__static__IO, new_String("Command line arg #1 is\n"));
@@ -59,13 +59,15 @@ static void* __FATHOM__main(Test* __o__, String** args)
 	}
 	CATCH (1)
 	{
+		__static__IO->print(__static__IO, new_String("Caught error..."));
 	}
 	FINALLY
 	{
+		__static__IO->print(__static__IO, new_String("After error..."));
 	}
 	END_TRY;
-	s = __static__IO->getLine(__static__IO);
-	__static__IO->print(__static__IO, s);
+	num = __static__IO->getInt(__static__IO);
+	__static__IO->printi(__static__IO, num);
 	__static__IO->waitForEnter(__static__IO);
 }
 
@@ -93,6 +95,8 @@ static int test2(Test* __o__)
 
 
 #include "Fathom.h"
+jmp_buf __FATHOM__jmp_buf;
+
 int main(int argc, char** argvs)
 {
 	String** args = (String**)malloc(argc * sizeof(String));

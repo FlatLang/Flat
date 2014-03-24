@@ -3,9 +3,10 @@
 
 #include "CClass.h"
 #include "ExceptionHandler.h"
-#include "stdio.h"
+#include <stdio.h>
+#include <stdlib.h>
 #include "String.h"
-#include "Fathom.h"
+#include <Fathom.h>
 
 CLASS
 (
@@ -13,6 +14,7 @@ IO,
 
 FUNC(void*, println, IO* __o__, String* text);
 FUNC(void*, print, IO* __o__, String* text);
+FUNC(void*, printi, IO* __o__, int j);
 FUNC(int, getInt, IO* __o__);
 FUNC(String*, getLine, IO* __o__);
 FUNC(void*, waitForEnter, IO* __o__);

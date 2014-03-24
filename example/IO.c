@@ -1,8 +1,9 @@
 #include "CClass.h"
 #include "IO.h"
-#include "stdio.h"
+#include <stdio.h>
+#include <stdlib.h>
 #include "String.h"
-#include "Fathom.h"
+#include <Fathom.h>
 
 IO* __static__IO;
 
@@ -10,6 +11,7 @@ IO* new_IO();
 void del_IO(IO* __o__);
 static void* println(IO* __o__, String* text);
 static void* print(IO* __o__, String* text);
+static void* printi(IO* __o__, int j);
 static int getInt(IO* __o__);
 static String* getLine(IO* __o__);
 static void* waitForEnter(IO* __o__);
@@ -22,6 +24,7 @@ NEW(IO, __o__);
 
 __o__->println = println;
 __o__->print = print;
+__o__->printi = printi;
 __o__->getInt = getInt;
 __o__->getLine = getLine;
 __o__->waitForEnter = waitForEnter;
@@ -53,8 +56,21 @@ cText = text->toCharArray(text);
 printf(cText);
 }
 
+static void* printi(IO* __o__, int j)
+{
+printf("%d", j);
+}
+
 static int getInt(IO* __o__)
 {
+String* s;
+char* data;
+int num;
+
+s = getLine(__o__);
+data = s->toCharArray(s);
+num = atoi(data);
+return num;
 }
 
 static String* getLine(IO* __o__)
