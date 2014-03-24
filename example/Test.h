@@ -12,13 +12,13 @@ Test,
 
 String* publicVariable;
 
-FUNC(void*, __FATHOM__main, Test* __o__, String** args);
-FUNC(int, divide, Test* __o__, int numerator, int denominator);
-FUNC(int, test, Test* __o__);
-FUNC(int, test2, Test* __o__);
+FUNC(void*, __FATHOM__main, Test* __o__, jmp_buf __Fathom__jmp_buf, String** args);
+FUNC(int, divide, Test* __o__, jmp_buf __Fathom__jmp_buf, int numerator, int denominator);
+FUNC(int, test, Test* __o__, jmp_buf __Fathom__jmp_buf);
+FUNC(int, test2, Test* __o__, jmp_buf __Fathom__jmp_buf);
 )
 
-Test* new_Test();
+Test* new_Test(jmp_buf __Fathom__jmp_buf);
 void del_Test(Test* __o__);
 extern Test* __static__Test;
 

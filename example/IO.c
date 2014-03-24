@@ -7,18 +7,18 @@
 
 IO* __static__IO;
 
-IO* new_IO();
+IO* new_IO(jmp_buf __Fathom__jmp_buf);
 void del_IO(IO* __o__);
-static void* println(IO* __o__, String* text);
-static void* print(IO* __o__, String* text);
-static void* printi(IO* __o__, int j);
-static int getInt(IO* __o__);
-static String* getLine(IO* __o__);
-static void* waitForEnter(IO* __o__);
+static void* println(IO* __o__, jmp_buf __Fathom__jmp_buf, String* text);
+static void* print(IO* __o__, jmp_buf __Fathom__jmp_buf, String* text);
+static void* printi(IO* __o__, jmp_buf __Fathom__jmp_buf, int j);
+static int getInt(IO* __o__, jmp_buf __Fathom__jmp_buf);
+static String* getLine(IO* __o__, jmp_buf __Fathom__jmp_buf);
+static void* waitForEnter(IO* __o__, jmp_buf __Fathom__jmp_buf);
 
 NO_PRIVATE
 
-IO* new_IO()
+IO* new_IO(jmp_buf __Fathom__jmp_buf)
 {
 NEW(IO, __o__);
 
@@ -44,11 +44,11 @@ return;
 free(__o__);
 }
 
-static void* println(IO* __o__, String* text)
+static void* println(IO* __o__, jmp_buf __Fathom__jmp_buf, String* text)
 {
 }
 
-static void* print(IO* __o__, String* text)
+static void* print(IO* __o__, jmp_buf __Fathom__jmp_buf, String* text)
 {
 char* cText;
 
@@ -56,12 +56,12 @@ cText = text->toCharArray(text);
 printf(cText);
 }
 
-static void* printi(IO* __o__, int j)
+static void* printi(IO* __o__, jmp_buf __Fathom__jmp_buf, int j)
 {
 printf("%d", j);
 }
 
-static int getInt(IO* __o__)
+static int getInt(IO* __o__, jmp_buf __Fathom__jmp_buf)
 {
 String* s;
 char* data;
@@ -73,7 +73,7 @@ num = atoi(data);
 return num;
 }
 
-static String* getLine(IO* __o__)
+static String* getLine(IO* __o__, jmp_buf __Fathom__jmp_buf)
 {
 char* line;
 String* s;
@@ -83,7 +83,7 @@ s = new_String(line);
 return s;
 }
 
-static void* waitForEnter(IO* __o__)
+static void* waitForEnter(IO* __o__, jmp_buf __Fathom__jmp_buf)
 {
 char* c;
 

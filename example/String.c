@@ -1,16 +1,16 @@
 #include "CClass.h"
 #include "String.h"
 
-String* new_String(char* d);
+String* new_String(jmp_buf __Fathom__jmp_bufchar* d);
 void del_String(String* __o__);
-static char* toCharArray(String* __o__);
+static char* toCharArray(String* __o__, jmp_buf __Fathom__jmp_buf);
 
 PRIVATE
 (
 char* data;
 )
 
-String* new_String(char* d)
+String* new_String(jmp_buf __Fathom__jmp_bufchar* d)
 {
 NEW(String, __o__);
 
@@ -34,7 +34,7 @@ free(__o__->prv);
 free(__o__);
 }
 
-static char* toCharArray(String* __o__)
+static char* toCharArray(String* __o__, jmp_buf __Fathom__jmp_buf)
 {
 return __o__->prv->data;
 }

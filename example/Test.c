@@ -5,19 +5,19 @@
 
 Test* __static__Test;
 
-Test* new_Test();
+Test* new_Test(jmp_buf __Fathom__jmp_buf);
 void del_Test(Test* __o__);
-static void* __FATHOM__main(Test* __o__, String** args);
-static int divide(Test* __o__, int numerator, int denominator);
-static int test(Test* __o__);
-static int test2(Test* __o__);
+static void* __FATHOM__main(Test* __o__, jmp_buf __Fathom__jmp_buf, String** args);
+static int divide(Test* __o__, jmp_buf __Fathom__jmp_buf, int numerator, int denominator);
+static int test(Test* __o__, jmp_buf __Fathom__jmp_buf);
+static int test2(Test* __o__, jmp_buf __Fathom__jmp_buf);
 
 PRIVATE
 (
 	int fieldVar;
 )
 
-Test* new_Test()
+Test* new_Test(jmp_buf __Fathom__jmp_buf)
 {
 	NEW(Test, __o__);
 	
@@ -45,7 +45,7 @@ void del_Test(Test* __o__)
 	free(__o__);
 }
 
-static void* __FATHOM__main(Test* __o__, String** args)
+static void* __FATHOM__main(Test* __o__, jmp_buf __Fathom__jmp_buf, String** args)
 {
 	int i;
 	int num;
@@ -71,7 +71,7 @@ static void* __FATHOM__main(Test* __o__, String** args)
 	__static__IO->waitForEnter(__static__IO);
 }
 
-static int divide(Test* __o__, int numerator, int denominator)
+static int divide(Test* __o__, jmp_buf __Fathom__jmp_buf, int numerator, int denominator)
 {
 	if (denominator == 0)
 	{
@@ -80,7 +80,7 @@ static int divide(Test* __o__, int numerator, int denominator)
 	return numerator / denominator;
 }
 
-static int test(Test* __o__)
+static int test(Test* __o__, jmp_buf __Fathom__jmp_buf)
 {
 	int newVar;
 	
@@ -88,7 +88,7 @@ static int test(Test* __o__)
 	return newVar;
 }
 
-static int test2(Test* __o__)
+static int test2(Test* __o__, jmp_buf __Fathom__jmp_buf)
 {
 	return test(__o__);
 }
