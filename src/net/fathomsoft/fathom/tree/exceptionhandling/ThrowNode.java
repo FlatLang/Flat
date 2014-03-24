@@ -26,6 +26,11 @@ public class ThrowNode extends ExceptionHandlingNode
 		return (ExceptionNode)getChild(0);
 	}
 	
+	public ExceptionNode getExceptionInstance()
+	{
+		return (ExceptionNode)getChild(0);
+	}
+	
 	/**
 	 * @see net.fathomsoft.fathom.tree.TreeNode#generateJavaSourceOutput()
 	 */
@@ -93,7 +98,7 @@ public class ThrowNode extends ExceptionHandlingNode
 					
 					return n;
 				}
-
+				
 				SyntaxMessage.error("Incorrect form of exception thrown", newLoc);
 				
 				return null;
