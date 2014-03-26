@@ -17,6 +17,7 @@
  */
 package net.fathomsoft.fathom.tree;
 
+import net.fathomsoft.fathom.Fathom;
 import net.fathomsoft.fathom.error.SyntaxMessage;
 import net.fathomsoft.fathom.tree.variables.VariableNode;
 import net.fathomsoft.fathom.util.Bounds;
@@ -53,7 +54,7 @@ public class MethodCallNode extends IdentifierNode
 		return (ArgumentListNode)getChild(0);
 	}
 	
-	public boolean isExternalCall()
+	public boolean isExternal()
 	{
 		return externalCall;
 	}
@@ -167,14 +168,19 @@ public class MethodCallNode extends IdentifierNode
 			
 			boolean externalCall = false;
 			
-			//if ()
-			argumentList = argumentList;
+//			if (parentNode.isWithinTry())
+//			{
+//				argumentList = "__" + Fathom.LANGUAGE_NAME.toUpperCase() + "__exception_data, " + argumentList;
+//			}
+//			else
+//			{
+//				argumentList = ", " + argumentList;
+//			}
+			String objectRef = null;
 			
 			if (needsReference)
 			{
-				String objectRef = null;
-				
-				int    dotIndex  = methodCall.lastIndexOf(".");
+				int dotIndex = methodCall.lastIndexOf(".");
 				
 				if (dotIndex > 0)
 				{
@@ -188,16 +194,24 @@ public class MethodCallNode extends IdentifierNode
 					{
 						objectRef.replace(".", "->");
 						
-						if (!fileNode.getImportListNode().isExternal(objectRef))
+						if (fileNode.getImportListNode().isExternal(objectRef))
 						{
-							argumentList = objectRef + ", " + argumentList;
+							objectRef = null;
 						}
 					}
 				}
 				else
 				{
 					objectRef    = MethodNode.getObjectReferenceIdentifier();
-					
+				}
+			}
+			
+			if (!externalCall)
+			{
+				argumentList = "__" + Fathom.LANGUAGE_NAME.toUpperCase() + "__exception_data, " + argumentList;
+				
+				if (objectRef != null)
+				{
 					argumentList = objectRef + ", " + argumentList;
 				}
 			}
@@ -278,7 +292,7 @@ public class MethodCallNode extends IdentifierNode
 				{
 					if (arg instanceof VariableNode)
 					{
-						VariableNode n   = (VariableNode)arg;
+						VariableNode n = (VariableNode)arg;
 						
 //						VariableNode var = new VariableNode();
 //						var.setArray(n.isArray());
@@ -287,7 +301,7 @@ public class MethodCallNode extends IdentifierNode
 //						var.setType(n.getType());
 						
 						LiteralNode var = new LiteralNode();
-						var.setValue(n.getName(), isExternal());
+						var.setValue(n.getName(), isWithinExternalContext());
 						
 						arg = var;
 					}
@@ -311,7 +325,7 @@ public class MethodCallNode extends IdentifierNode
 				{
 					LiteralNode literal = new LiteralNode();
 					
-					literal.setValue(argument, isExternal());
+					literal.setValue(argument, isWithinExternalContext());
 					
 					arg = literal;
 				}
