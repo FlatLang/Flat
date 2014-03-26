@@ -50,7 +50,7 @@ public class ImportListNode extends TreeNode
 		{
 			ImportNode child = (ImportNode)getChild(i);
 			
-			if (importLocation.equals(child.getImportLocation()) && child.isCSource())
+			if (importLocation.equals(child.getImportLocation()) && child.isExternal())
 			{
 				return true;
 			}
