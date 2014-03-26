@@ -24,6 +24,7 @@ import net.fathomsoft.fathom.util.Bounds;
 import net.fathomsoft.fathom.util.Location;
 import net.fathomsoft.fathom.util.Patterns;
 import net.fathomsoft.fathom.util.Regex;
+import net.fathomsoft.fathom.util.StringUtils;
 import net.fathomsoft.fathom.util.SyntaxUtils;
 
 /**
@@ -132,10 +133,10 @@ public class FieldNode extends DeclarationNode
 		
 		builder.append(' ').append(getName());
 		
-		if (!isPrimitiveType())
-		{
-			builder.append(" = 0");
-		}
+//		if (!isPrimitiveType())
+//		{
+//			builder.append(" = 0");
+//		}
 		
 		builder.append(';').append('\n');
 		
@@ -157,11 +158,6 @@ public class FieldNode extends DeclarationNode
 		{
 			private boolean	methods = false;
 			
-			/* Keep track of the type. The type is always specified before the identifier,
-			   therefore proving that the type is the second to last word before the end
-			   of the declaration. */
-			private String	oldWord = null;
-			
 			public void interactWord(String word, int argNum, Bounds bounds, int numWords)
 			{
 				if (word.equals("{"))
@@ -175,21 +171,33 @@ public class FieldNode extends DeclarationNode
 					return;
 				}
 				
-				setAttribute(word, argNum);
-				
-				setName(word);
-				setType(oldWord);
-				
-				oldWord = word;
-				
 				if (argNum == numWords - 1)
 				{
+					setName(word);
+					
 					// If it is an array declaration.
-					if (Regex.matches(statement, bounds.getEnd(), Patterns.ARRAY_BRACKETS))
+					if (Regex.matches(statement, bounds.getEnd(), Patterns.EMPTY_ARRAY_BRACKETS))
 					{
 						int dimensions = SyntaxUtils.getArrayDimensions(statement);
 						
 						setArrayDimensions(dimensions);
+					}
+				}
+				else if (argNum == numWords - 2)
+				{
+					setType(word);
+				}
+				else
+				{
+					setAttribute(word, argNum);
+					
+					int  index = StringUtils.findNextNonWhitespaceIndex(statement, bounds.getEnd());
+					
+					char c     = statement.charAt(index);
+					
+					if (c == '.')
+					{
+						setExternal(true);
 					}
 				}
 			}
