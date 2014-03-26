@@ -115,7 +115,7 @@ public class ArrayNode extends IdentifierNode
 				if (SyntaxUtils.isNumber(length))
 				{
 					LiteralNode node = new LiteralNode();
-					node.setValue(length, parent.isExternal());
+					node.setValue(length, parent.isWithinExternalContext());
 					
 					n.addChild(node);
 				}
