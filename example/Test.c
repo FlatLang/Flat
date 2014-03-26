@@ -113,13 +113,14 @@ static int test2(Test* __o__, ExceptionData* __FATHOM__exception_data)
 
 
 #include "Fathom.h"
-jmp_buf __FATHOM__jmp_buf;
+#include <stdio.h>
 
 int main(int argc, char** argvs)
 {
 	String** args = (String**)malloc(argc * sizeof(String));
 	int      i;
 	
+	ExceptionData* __FATHOM__exception_data = 0;
 	__static__Test = new_Test(0);
 	__static__IO = new_IO(0);
 	
@@ -128,9 +129,21 @@ int main(int argc, char** argvs)
 		args[i] = new_String(0, argvs[i]);
 	}
 	
-	__static__Test->__FATHOM__main(__static__Test, 0, args);
-	
+	TRY
+	{
+		__static__Test->__FATHOM__main(__static__Test, __FATHOM__exception_data, args);
+	}
+	CATCH (1)
+	{
+		printf("You broke it.");
+	}
+	FINALLY
+	{
+		
+	}
+	END_TRY;
 	del_Test(__static__Test, 0);
 	del_IO(__static__IO, 0);
 	free(args);
+	return 0;
 }
