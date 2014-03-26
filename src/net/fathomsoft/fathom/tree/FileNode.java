@@ -35,6 +35,18 @@ public class FileNode extends IdentifierNode
 {
 	//TODO: package name here?
 	
+	private static final String defaultImports[];
+	
+	static
+	{
+		defaultImports = new String[]
+		{
+			"CClass.h",
+			"ExceptionHandler.h",
+			"ExceptionData"
+		};
+	}
+	
 	public FileNode()
 	{
 		ImportListNode imports = new ImportListNode();
@@ -91,13 +103,7 @@ public class FileNode extends IdentifierNode
 		builder.append("#ifndef ").append(definitionName).append('\n');
 		builder.append("#define ").append(definitionName).append("\n\n");
 		
-		ImportNode cclassImport = new ImportNode();
-		cclassImport.setImportLocation("CClass");
-		builder.append(cclassImport.generateCHeaderOutput());
-		
-		ImportNode exceptionImport = new ImportNode();
-		exceptionImport.setImportLocation("ExceptionHandler");
-		builder.append(exceptionImport.generateCHeaderOutput());
+		builder.append(generateDefaultImports());
 		
 		if (getImportListNode().getChildren().size() <= 0)
 		{
@@ -124,13 +130,9 @@ public class FileNode extends IdentifierNode
 	{
 		StringBuilder builder = new StringBuilder();
 		
-		ImportNode cclassImport = new ImportNode();
-		cclassImport.setImportLocation("CClass");
-		
 		ImportNode thisImport = new ImportNode();
 		thisImport.setImportLocation(getName());
 		
-		builder.append(cclassImport.generateCHeaderOutput());
 		builder.append(thisImport.generateCSourceOutput());
 		
 		if (getImportListNode().getChildren().size() <= 0)
@@ -155,6 +157,28 @@ public class FileNode extends IdentifierNode
 	public String generateCSourceFragment()
 	{
 		return null;
+	}
+	
+	private String generateDefaultImports()
+	{
+		StringBuilder builder = new StringBuilder();
+		
+		for (String importLoc : defaultImports)
+		{
+			ImportNode importNode = new ImportNode();
+			
+			if (importLoc.endsWith(".h"))
+			{
+				importLoc = importLoc.substring(0, importLoc.length() - 2);
+				
+				importNode.setExternal(true);
+			}
+			
+			importNode.setImportLocation(importLoc);
+			builder.append(importNode.generateCHeaderOutput());
+		}
+		
+		return builder.toString();
 	}
 	
 	/**
