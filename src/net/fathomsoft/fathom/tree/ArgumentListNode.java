@@ -70,7 +70,7 @@ public class ArgumentListNode extends TreeNode
 		
 		for (int i = 0; i < getChildren().size(); i++)
 		{
-			builder.append(getChild(i).generateCSourceOutput());
+			builder.append(getChild(i).generateCSourceFragment());
 			
 			if (i < getChildren().size() - 1)
 			{
