@@ -56,7 +56,7 @@ public class Fathom
 	
 	private List<File>			lingeringFiles;
 	
-	public static final boolean	ANDROID_DEBUG = true;
+	public static final boolean	ANDROID_DEBUG = false;
 	
 	public static final boolean	DEBUG         = true;
 	
@@ -121,6 +121,7 @@ public class Fathom
 				directory + "Test.fat",
 				directory + "IO.fat",
 				directory + "String.fat",
+				directory + "ExceptionData.fat",
 				"-o", directory + "bin/Executable.exe",
 				"-dir", '"' + directory + "../include\"",
 				"-csource",
@@ -212,8 +213,8 @@ public class Fathom
 							if (c.containsStaticData())
 							{
 //								staticClassInit.append("SET_INSTANCE(").append(c.getName()).append(", __static__").append(c.getName()).append(')').append(';').append('\n');
-								staticClassInit.append("__static__").append(c.getName()).append(" = ").append("new_").append(c.getName()).append("();").append('\n');
-								staticClassFree.append("del_").append(c.getName()).append("(__static__").append(c.getName()).append(");").append('\n');
+								staticClassInit.append("__static__").append(c.getName()).append(" = ").append("new_").append(c.getName()).append("(0);").append('\n');
+								staticClassFree.append("del_").append(c.getName()).append("(__static__").append(c.getName()).append(", 0);").append('\n');
 							}
 						}
 					}
@@ -234,10 +235,10 @@ public class Fathom
 				mainMethodText.append('\n');
 				mainMethodText.append("for (i = 0; i < argc; i++)").append('\n');
 				mainMethodText.append("{").append('\n');
-				mainMethodText.append("args[i] = new_String(argvs[i]);").append('\n');
+				mainMethodText.append("args[i] = new_String(0, argvs[i]);").append('\n');
 				mainMethodText.append("}").append('\n');
 				mainMethodText.append('\n');
-				mainMethodText.append("__static__").append(classNode.getName()).append("->__").append(LANGUAGE_NAME.toUpperCase()).append("__main(__static__").append(classNode.getName()).append(", args);").append('\n');
+				mainMethodText.append("__static__").append(classNode.getName()).append("->__").append(LANGUAGE_NAME.toUpperCase()).append("__main(__static__").append(classNode.getName()).append(", 0, args);").append('\n');
 				mainMethodText.append('\n');
 				mainMethodText.append(staticClassFree);
 				mainMethodText.append("free(args);").append('\n');
@@ -249,6 +250,10 @@ public class Fathom
 				
 				sources.set(i, newSource);
 			}
+			
+			long time = System.currentTimeMillis() - startTime;
+			
+			log("Fathom compile time: " + time + "ms");
 
 			String header = headers.get(i);
 			String source = sources.get(i);
@@ -628,7 +633,7 @@ public class Fathom
 	{
 		stopTimer();
 		
-		log("Compile time: " + getCompileTime());
+		log("Compile time: " + getCompileTime() + "ms");
 		
 		deleteLingeringFiles();
 		
