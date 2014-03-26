@@ -1,0 +1,67 @@
+import "setjmp.h";
+
+public class ExceptionData
+{
+	private setjmp.jmp_buf	buffer;
+	
+	private ExceptionData	parent;
+	
+	private int				numCodes;
+	private int				exceptionCodes[];
+	
+	public ExceptionData(setjmp.jmp_buf buf, int codes[], int num)
+	{
+		buffer         = buf;
+		exceptionCodes = codes;
+		numCodes       = num;
+	}
+	
+	public setjmp.jmp_buf getBuffer()
+	{
+		return buffer;
+	}
+	
+	public setjmp.jmp_buf getCorrectBuffer(int code)
+	{
+		ExceptionData data = this;
+		
+		int i = 0;
+		
+		while (data != 0)
+		{
+			int codes[] = data.getExceptionCodes();
+			
+			for (int i = 0; i < data.getNumCodes(); i = i + 1)
+			{
+				if (codes[i] == code)
+				{
+					return data.getBuffer();
+				}
+			}
+			
+			data = data.getParent();
+		}
+		
+		return buffer;
+	}
+	
+	public int getNumCodes()
+	{
+		return numCodes;
+	}
+	
+	public int[] getExceptionCodes()
+	{
+		return exceptionCodes;
+	}
+	
+	public ExceptionData getParent()
+	{
+		return parent;
+	}
+	
+	public void setParent(ExceptionData p)
+	{
+		parent = p;
+	}
+}
