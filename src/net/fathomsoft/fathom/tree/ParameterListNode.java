@@ -82,13 +82,13 @@ public class ParameterListNode extends TreeNode
 			builder.append(classNode.getName()).append("* ").append(MethodNode.getObjectReferenceIdentifier()).append(", ");
 		}
 		
-		builder.append("jmp_buf __").append(Fathom.LANGUAGE_NAME).append("__jmp_buf");
+		builder.append("ExceptionData* __").append(Fathom.LANGUAGE_NAME.toUpperCase()).append("__exception_data");
 		
 		for (int i = 0; i < getChildren().size(); i++)
 		{
 			TreeNode child = getChild(i);
 			
-			if (i != 0 || getParent() instanceof ConstructorNode == false)
+//			if (getParent() instanceof ConstructorNode == false)
 			{
 				builder.append(", ");
 			}
