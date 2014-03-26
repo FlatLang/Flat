@@ -17,6 +17,7 @@
  */
 package net.fathomsoft.fathom.tree;
 
+import net.fathomsoft.fathom.Fathom;
 import net.fathomsoft.fathom.error.SyntaxMessage;
 import net.fathomsoft.fathom.tree.variables.FieldNode;
 import net.fathomsoft.fathom.tree.variables.PrivateFieldListNode;
@@ -190,7 +191,7 @@ public class DestructorNode extends MethodNode
 	{
 		StringBuilder builder = new StringBuilder();
 		
-		if (field.isPrimitiveType())
+		if (field.isPrimitiveType() || field.isExternal())
 		{
 			if (!field.isPrimitive())
 			{
@@ -199,7 +200,7 @@ public class DestructorNode extends MethodNode
 		}
 		else
 		{
-			builder.append("del_").append(field.getType()).append('(').append(field.generateVariableUseOutput()).append(");");
+			builder.append("del_").append(field.getType()).append('(').append(field.generateVariableUseOutput()).append(", __").append(Fathom.LANGUAGE_NAME.toUpperCase()).append("__exception_data").append(");");
 		}
 		
 		return builder.toString();
@@ -235,7 +236,9 @@ public class DestructorNode extends MethodNode
 		builder.append("del_");
 		builder.append(classNode.getName()).append('(');
 		
-		builder.append(classNode.getName()).append('*').append(' ').append(MethodNode.getObjectReferenceIdentifier());
+		//builder.append(classNode.getName()).append('*').append(' ').append(MethodNode.getObjectReferenceIdentifier());
+
+		builder.append(getParameterListNode().generateCSourceOutput());
 		
 		builder.append(')');
 		
