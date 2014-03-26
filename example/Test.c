@@ -78,8 +78,6 @@ static void __FATHOM__main(Test* __o__, ExceptionData* __FATHOM__exception_data,
 	}
 	END_TRY;
 	__static__IO->waitForEnter(__static__IO, __FATHOM__exception_data);
-	__static__IO->print(__static__IO, __FATHOM__exception_data, new_String(__FATHOM__exception_data, "Worked"));
-	__static__IO->waitForEnter(__static__IO, __FATHOM__exception_data);
 }
 
 static int divide(Test* __o__, ExceptionData* __FATHOM__exception_data, int numerator, int denominator)
