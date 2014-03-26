@@ -320,7 +320,7 @@ public class MethodNode extends DeclarationNode
 						setType(word);
 						
 						// If it is an array declaration.
-						if (Regex.matches(statement2, bounds.getEnd(), Patterns.ARRAY_BRACKETS))
+						if (Regex.matches(statement2, bounds.getEnd(), Patterns.EMPTY_ARRAY_BRACKETS))
 						{
 							int dimensions = SyntaxUtils.getArrayDimensions(statement2);
 							
