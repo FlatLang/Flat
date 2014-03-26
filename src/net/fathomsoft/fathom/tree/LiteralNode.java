@@ -17,6 +17,7 @@
  */
 package net.fathomsoft.fathom.tree;
 
+import net.fathomsoft.fathom.Fathom;
 import net.fathomsoft.fathom.util.SyntaxUtils;
 
 /**
@@ -46,7 +47,7 @@ public class LiteralNode extends TreeNode
 	{
 		if (!external && SyntaxUtils.isStringLiteral(value))
 		{
-			value = "new_String(" + value + ")";
+			value = "new_String(__" + Fathom.LANGUAGE_NAME.toUpperCase() + "__exception_data, " + value + ")";
 		}
 		
 		this.value = value;
