@@ -95,9 +95,9 @@ public class ParameterNode extends LocalVariableNode
 			builder.append(getArrayText());
 		}
 		
-		if (!SyntaxUtils.isPrimitiveType(getType()))
+		if (!SyntaxUtils.isPrimitiveType(getType()))// && !isExternal())
 		{
-			builder.append(getPointerText());
+			builder.append('*');
 		}
 		
 		builder.append(' ').append(getName());
