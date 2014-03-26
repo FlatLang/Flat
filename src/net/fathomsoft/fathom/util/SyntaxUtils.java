@@ -123,7 +123,7 @@ public class SyntaxUtils
 	
 	public static boolean isPrimitiveType(String type)
 	{
-		return type.equals("int") || type.equals("char") || type.equals("long") || type.equals("bool") || type.equals("short") || type.equals("float") || type.equals("double");
+		return type.equals("int") || type.equals("char") || type.equals("long") || type.equals("bool") || type.equals("short") || type.equals("float") || type.equals("double") || type.equals("void");
 	}
 	
 	public static boolean isVariableAssignment(String statement)
@@ -134,6 +134,13 @@ public class SyntaxUtils
 	public static boolean isValidIdentifier(String value)
 	{
 		Bounds bounds = Regex.boundsOf(value, Patterns.IDENTIFIER);
+		
+		return bounds.getStart() == 0 && bounds.getEnd() == value.length();
+	}
+	
+	public static boolean isValidArrayAccess(String value)
+	{
+		Bounds bounds = Regex.boundsOf(value, Patterns.ARRAY_ACCESS);
 		
 		return bounds.getStart() == 0 && bounds.getEnd() == value.length();
 	}
