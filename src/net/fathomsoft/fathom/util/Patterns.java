@@ -61,7 +61,7 @@ public class Patterns
 	/**
 	 * Pattern that searches for 
 	 */
-	public static final Pattern PRE_EQUALS_SIGN			= Pattern.compile("([A-Za-z0-9_\\[\\]]+\\s*)+(?=[=])");
+	public static final Pattern PRE_EQUALS_SIGN			= Pattern.compile("[\\S\\s]+(?=[=])");
 
 	/**
 	 * Pattern that searches for 
@@ -71,22 +71,22 @@ public class Patterns
 	/**
 	 * Pattern that searches for 
 	 */
-	public static final Pattern BINARY_ARITH_OPERATORS	= Pattern.compile("([\\*\\+\\/\\-=])");
+	public static final Pattern BINARY_ARITH_OPERATORS	= Pattern.compile("([\\*\\+\\/\\-=%])");
 
 	/**
 	 * Pattern that searches for 
 	 */
-	public static final Pattern BINARY_LOGIC_OPERATORS	= Pattern.compile("==|>=|<=|[\\|\\&\\<\\>]");
+	public static final Pattern BINARY_LOGIC_OPERATORS	= Pattern.compile("!=|==|>=|<=|[\\|\\&\\<\\>]");
 
 	/**
 	 * Pattern that searches for 
 	 */
-	public static final Pattern PRE_OPERATORS			= Pattern.compile("([A-Za-z0-9_]+\\s*)+(?=(==|>=|<=|[\\*\\+\\/\\-=\\<\\>]))");
+	public static final Pattern PRE_OPERATORS			= Pattern.compile("([A-Za-z0-9_\\[\\]]+\\s*)+(?=((!|>|<|=)=|[\\*\\+\\/\\-=\\<\\>%]))");
 
 	/**
 	 * Pattern that searches for 
 	 */
-	public static final Pattern POST_OPERATORS			= Pattern.compile("(?<=(([\\<\\>=]{1,2})|[\\*\\+\\/\\-])\\s{0,9})[A-Za-z0-9_]\\s*(\\S+\\s*)*");
+	public static final Pattern POST_OPERATORS			= Pattern.compile("(?<=(([!\\<\\>=]{1,2})|[\\*\\+\\/\\-])\\s{0,9})[A-Za-z0-9_]\\s*(\\S+\\s*)*");
 
 	/**
 	 * Pattern that searches for 
@@ -171,7 +171,12 @@ public class Patterns
 	/**
 	 * Pattern that searches for 
 	 */
-	public static final Pattern ARRAY_INIT				= Pattern.compile("\\S+\\s*(\\[\\S+\\])+");
+	public static final Pattern ARRAY_INIT				= Pattern.compile("[A-Za-z0-9_]+\\s*(\\[\\S+\\])+");
+
+	/**
+	 * Pattern that searches for 
+	 */
+	public static final Pattern ARRAY_ACCESS			= Pattern.compile("[A-Za-z0-9_]+\\s*(\\[\\S+\\])+");
 
 	/**
 	 * Pattern that searches for 
@@ -196,7 +201,17 @@ public class Patterns
 	/**
 	 * Pattern that searches for 
 	 */
-	public static final Pattern ARRAY_BRACKETS     	    = Pattern.compile("\\s*\\[\\s*\\]");
+	public static final Pattern ARRAY_BRACKETS			= Pattern.compile("(?<=\\s{0,9})\\[\\s*\\S+\\s*\\]");
+
+	/**
+	 * Pattern that searches for 
+	 */
+	public static final Pattern ARRAY_BRACKETS_DATA		= Pattern.compile("(?<=\\s{0,9}\\[\\s{0,9})\\S+(?=\\s*\\])");
+
+	/**
+	 * Pattern that searches for 
+	 */
+	public static final Pattern EMPTY_ARRAY_BRACKETS	= Pattern.compile("\\s*\\[\\s*\\]");
 
 	/**
 	 * Pattern that searches for 
