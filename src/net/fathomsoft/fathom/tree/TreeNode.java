@@ -23,6 +23,7 @@ import java.util.regex.Pattern;
 
 import net.fathomsoft.fathom.error.SyntaxMessage;
 import net.fathomsoft.fathom.tree.exceptionhandling.ExceptionHandlingNode;
+import net.fathomsoft.fathom.tree.exceptionhandling.TryNode;
 import net.fathomsoft.fathom.tree.variables.FieldNode;
 import net.fathomsoft.fathom.tree.variables.LocalVariableListNode;
 import net.fathomsoft.fathom.tree.variables.LocalVariableNode;
@@ -378,13 +379,13 @@ public abstract class TreeNode
 	 * @return Whether or not the specified TreeNode is used within an
 	 * 		external context.
 	 */
-	public boolean isExternal()
+	public boolean isWithinExternalContext()
 	{
 		if (this instanceof MethodCallNode)
 		{
 			MethodCallNode thisNode = (MethodCallNode)this;
 			
-			if (thisNode.isExternalCall())
+			if (thisNode.isExternal())
 			{
 				return true;
 			}
@@ -394,7 +395,7 @@ public abstract class TreeNode
 		
 		while (current != null)
 		{
-			if (current.isExternal())
+			if (current.isWithinExternalContext())
 			{
 				return true;
 			}
@@ -442,6 +443,30 @@ public abstract class TreeNode
 	public abstract String generateCSourceFragment();
 	
 	public String generateCHeaderFragment(){return null;}
+
+	
+	/**
+	 * If the specified node is within an try block, return the node for
+	 * the try block.
+	 * 
+	 * @return The parent TryNode, if there is one.
+	 */
+	public TryNode getParentTry()
+	{
+		TryNode node = (TryNode)getAncestorOfType(TryNode.class, true);
+		
+		return node;
+	}
+	
+	/**
+	 * Get whether or not the specified node is within an try block.
+	 * 
+	 * @return Whether or not the specified node is within a try block.
+	 */
+	public boolean isWithinTry()
+	{
+		return getParentTry() != null;
+	}
 	
 	/**
 	 * Decode the specific statement into its correct TreeNode value. If
@@ -496,6 +521,10 @@ public abstract class TreeNode
 				return node;
 			}
 			else if ((node = ReturnNode.decodeStatement(parent, statement, location)) != null)
+			{
+				return node;
+			}
+			else if ((node = ArrayAccessNode.decodeStatement(parent, statement, location)) != null)
 			{
 				return node;
 			}
