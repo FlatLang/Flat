@@ -9,7 +9,7 @@ public class ExceptionNode extends LocalVariableNode
 {
 	private int	id;
 	
-	private static int	exceptionId	= 1;
+	private static int	exceptionId	= 2;
 	
 	private static HashMap<String, Integer>	ids;
 	
