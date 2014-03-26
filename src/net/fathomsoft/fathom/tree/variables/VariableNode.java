@@ -33,7 +33,7 @@ import net.fathomsoft.fathom.util.SyntaxUtils;
  */
 public class VariableNode extends ModifierNode
 {
-	private boolean	constVal;
+	private boolean	constVal, external;
 	
 	private int		arrayDimensions;
 	
@@ -44,6 +44,16 @@ public class VariableNode extends ModifierNode
 	public VariableNode()
 	{
 		
+	}
+	
+	public boolean isExternal()
+	{
+		return external;
+	}
+	
+	public void setExternal(boolean external)
+	{
+		this.external = external;
 	}
 	
 	public boolean isPrimitive()
