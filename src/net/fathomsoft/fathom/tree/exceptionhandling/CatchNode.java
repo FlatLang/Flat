@@ -26,9 +26,14 @@ public class CatchNode extends ExceptionHandlingNode
 		
 	}
 	
-	public LocalVariableNode getException()
+	public LocalVariableNode getExceptionInstance()
 	{
 		return (LocalVariableNode)getChild(0);
+	}
+	
+	public ExceptionNode getException()
+	{
+		return (ExceptionNode)getChild(1);
 	}
 	
 	/**
@@ -57,15 +62,17 @@ public class CatchNode extends ExceptionHandlingNode
 	{
 		StringBuilder builder = new StringBuilder();
 		
-		builder.append("CATCH ").append('(').append("1").append(')').append('\n');
+		builder.append("CATCH ").append('(').append(getException().getID()).append(')').append('\n');
 		builder.append('{').append('\n');
 		
 		for (int i = 0; i < getChildren().size(); i++)
 		{
 			TreeNode child = getChild(i);
 			
-			if (child != getException())
-			builder.append(child.generateCSourceOutput());
+			if (child != getExceptionInstance() && child != getException())
+			{
+				builder.append(child.generateCSourceOutput());
+			}
 		}
 		
 		builder.append('}').append('\n');
@@ -98,13 +105,23 @@ public class CatchNode extends ExceptionHandlingNode
 				newLoc.setLineNumber(location.getLineNumber());
 				newLoc.setOffset(location.getOffset() + bounds.getStart());
 				
-				LocalVariableNode exception = LocalVariableNode.decodeStatement(parent, contents, newLoc);
+				LocalVariableNode exceptionInstance = LocalVariableNode.decodeStatement(parent, contents, newLoc);
 				
-				if (exception != null)
+				if (exceptionInstance != null)
 				{
-					n.addChild(exception);
+					n.addChild(exceptionInstance);
 					
-					return n;
+					ExceptionNode exception = new ExceptionNode();
+					exception.setType(exceptionInstance.getType());
+					
+					if (exception.getID() > 0)
+					{
+						n.addChild(exception);
+						
+						return n;
+					}
+					
+					SyntaxMessage.error("Unknown exception type", newLoc);
 				}
 				
 				SyntaxMessage.error("Incorrect Exception declaration", newLoc);
