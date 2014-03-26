@@ -127,7 +127,7 @@ public class ForLoopNode extends LoopNode
 		
 		if (condition != null)
 		{
-			builder.append(condition.generateCSourceOutput());
+			builder.append(condition.generateCSourceFragment());
 		}
 		
 		builder.append(';').append(' ');
@@ -147,11 +147,6 @@ public class ForLoopNode extends LoopNode
 			if (child != getArgumentListNode())
 			{
 				builder.append(child.generateCSourceOutput());
-				
-				if (child instanceof MethodCallNode)
-				{
-					builder.append(';').append('\n');
-				}
 			}
 		}
 		
