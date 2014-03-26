@@ -78,7 +78,7 @@ public class OperatorNode extends TreeNode
 	@Override
 	public String generateCSourceFragment()
 	{
-		return null;
+		return operator;
 	}
 
 	/**
