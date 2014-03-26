@@ -22,32 +22,41 @@ public class Test
 		
 		try
 		{
-			divide(5, 0);
+			int j = 23 / 0;
+			
+			int even = IO.getInt();
+			
+			getEvenNumber(even);
 		}
 		catch (DivideByZeroException e)
 		{
-			IO.print("Caught error...");
+			IO.print("You cant divide by zero idiot.");
+		}
+		catch (NotEvenNumberException e)
+		{
+			IO.print("You didnt pass a fricken even number...");
 		}
 		finally
 		{
-			IO.print("After error...");
+			
 		}
-		
-		int num = IO.getInt();
-		
-		IO.printi(num);
 		
 		IO.waitForEnter();
 	}
 	
 	public int divide(int numerator, int denominator)
 	{
-		if (denominator == 0)
+		return numerator / denominator;
+	}
+	
+	public int getEvenNumber(int num)
+	{
+		if (num % 2 != 0)
 		{
-			throw new DivideByZeroException();
+			throw new NotEvenNumberException();
 		}
 		
-		return numerator / denominator;
+		return num;
 	}
 	
 	public int test()
