@@ -20,6 +20,7 @@ package net.fathomsoft.fathom.tree;
 import java.util.regex.Matcher;
 
 import net.fathomsoft.fathom.error.SyntaxMessage;
+import net.fathomsoft.fathom.tree.exceptionhandling.ThrowNode;
 import net.fathomsoft.fathom.tree.variables.VariableNode;
 import net.fathomsoft.fathom.util.Bounds;
 import net.fathomsoft.fathom.util.Location;
@@ -119,16 +120,7 @@ public class BinaryOperatorNode extends TreeNode
 		{
 			TreeNode child = getChild(i);
 			
-			if (child instanceof VariableNode)
-			{
-				VariableNode variable = (VariableNode)child;
-				
-				builder.append(variable.generateVariableUseOutput());
-			}
-			else
-			{
-				builder.append(child.generateCSourceOutput());
-			}
+			builder.append(child.generateCSourceFragment());
 			
 			if (i < getChildren().size() - 1)
 			{
@@ -146,6 +138,17 @@ public class BinaryOperatorNode extends TreeNode
 	public String generateCSourceFragment()
 	{
 		return generateCSourceOutput();
+	}
+	
+	private static IfStatementNode generateDivideByZeroCheck(TreeNode parent, String denominator, Location location)
+	{
+		IfStatementNode ifStatement = IfStatementNode.decodeStatement(parent, "if (" + denominator + " == 0)", location);
+		parent.addChild(ifStatement);
+		
+		ThrowNode throwNode = ThrowNode.decodeStatement(ifStatement, "throw new DivideByZeroException()", location);
+		ifStatement.addChild(throwNode);
+		
+		return ifStatement;
 	}
 	
 	public static TreeNode decodeStatement(TreeNode parentNode, String statement, Location location)
@@ -175,10 +178,10 @@ public class BinaryOperatorNode extends TreeNode
 			bounds.setEnd(StringUtils.findNextNonWhitespaceIndex(statement, bounds.getEnd() - 1, -1) + 1);
 			
 			// The left-hand value.
-			String   lhv     = statement.substring(bounds.getStart(), bounds.getEnd());
+			String   lhv = statement.substring(bounds.getStart(), bounds.getEnd());
 			
 			// The left-hand node.
-			TreeNode lhn     = getNode(parentNode, lhv, location);
+			TreeNode lhn = getNode(parentNode, lhv, location);
 			
 			node.addChild(lhn);
 			
@@ -196,7 +199,17 @@ public class BinaryOperatorNode extends TreeNode
 			// Decode the value on the right.
 			statement = statement.substring(bounds2.getStart());
 			
-			node.addChild(decodeStatement(parentNode, statement, offset, matcher, location));
+			matcher.reset(statement);
+			TreeNode rhn = decodeStatement(parentNode, statement, offset, matcher, location);
+			
+			node.addChild(rhn);
+			
+			if (operatorVal.equals("/"))
+			{
+				IfStatementNode divideByZeroCheck = generateDivideByZeroCheck(parentNode, rhn.generateCSourceFragment(), location);
+				
+				parentNode.addChild(divideByZeroCheck);
+			}
 			
 			return node;
 		}
@@ -254,7 +267,7 @@ public class BinaryOperatorNode extends TreeNode
 		{
 			LiteralNode literal = new LiteralNode();
 			
-			literal.setValue(statement, parentNode.isExternal());
+			literal.setValue(statement, parentNode.isWithinExternalContext());
 			
 			return literal;
 		}
@@ -280,6 +293,20 @@ public class BinaryOperatorNode extends TreeNode
 				
 				return node;
 			}
+			if (statement.equals("this"))
+			{
+				LiteralNode literal = new LiteralNode();
+				
+				literal.setValue(MethodNode.getObjectReferenceIdentifier(), parentNode.isWithinExternalContext());
+				
+				return literal;
+			}
+		}
+		else if (SyntaxUtils.isValidArrayAccess(statement))
+		{
+			ArrayAccessNode node = ArrayAccessNode.decodeStatement(parentNode, statement, location);
+			
+			return node;
 		}
 		
 		SyntaxMessage.error("Could not parse operation", location);
