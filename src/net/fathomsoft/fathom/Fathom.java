@@ -223,14 +223,15 @@ public class Fathom
 				StringBuilder mainMethodText = new StringBuilder();
 				
 				mainMethodText.append('\n').append('\n');
-				mainMethodText.append("#include \"Fathom.h\"");
-				mainMethodText.append('\n');
-				mainMethodText.append("jmp_buf __FATHOM__jmp_buf;").append('\n');
+				mainMethodText.append("#include \"Fathom.h\"").append('\n');
+				mainMethodText.append("#include <stdio.h>").append('\n');
+				//mainMethodText.append("jmp_buf __FATHOM__jmp_buf;").append('\n');
 				mainMethodText.append('\n');
 				mainMethodText.append("int main(int argc, char** argvs)").append('\n');
 				mainMethodText.append("{").append('\n');
 				mainMethodText.append("String** args = (String**)malloc(argc * sizeof(String));").append('\n');
 				mainMethodText.append("int      i;").append('\n').append('\n');
+				mainMethodText.append("ExceptionData* __FATHOM__exception_data = 0;").append('\n');
 				mainMethodText.append(staticClassInit);
 				mainMethodText.append('\n');
 				mainMethodText.append("for (i = 0; i < argc; i++)").append('\n');
@@ -238,10 +239,22 @@ public class Fathom
 				mainMethodText.append("args[i] = new_String(0, argvs[i]);").append('\n');
 				mainMethodText.append("}").append('\n');
 				mainMethodText.append('\n');
-				mainMethodText.append("__static__").append(classNode.getName()).append("->__").append(LANGUAGE_NAME.toUpperCase()).append("__main(__static__").append(classNode.getName()).append(", 0, args);").append('\n');
+				mainMethodText.append("TRY").append('\n');
+				mainMethodText.append('{').append('\n');
+				mainMethodText.append("__static__").append(classNode.getName()).append("->__").append(LANGUAGE_NAME.toUpperCase()).append("__main(__static__").append(classNode.getName()).append(", __FATHOM__exception_data, args);").append('\n');
+				mainMethodText.append('}').append('\n');
+				mainMethodText.append("CATCH (1)").append('\n');
+				mainMethodText.append('{').append('\n');
+				mainMethodText.append("printf(\"You broke it.\");").append('\n');
+				mainMethodText.append('}').append('\n');
+				mainMethodText.append("FINALLY").append('\n');
+				mainMethodText.append('{').append('\n');
 				mainMethodText.append('\n');
+				mainMethodText.append('}').append('\n');
+				mainMethodText.append("END_TRY;").append('\n');
 				mainMethodText.append(staticClassFree);
 				mainMethodText.append("free(args);").append('\n');
+				mainMethodText.append("return 0;").append('\n');
 				mainMethodText.append("}");
 				
 				String newSource = source + mainMethodText.toString();
