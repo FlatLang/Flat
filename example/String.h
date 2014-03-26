@@ -1,16 +1,17 @@
 #ifndef FILE_String_FATHOM
 #define FILE_String_FATHOM
 
-#include "CClass.h"
-#include "ExceptionHandler.h"
+#include <CClass.h>
+#include <ExceptionHandler.h>
+#include "ExceptionData.h"
 
 CLASS
 (
 String, 
 
-FUNC(char*, toCharArray, String* __o__, jmp_buf __Fathom__jmp_buf);
+FUNC(char*, toCharArray, String* __o__, ExceptionData* __FATHOM__exception_data);
 )
 
-String* new_String(jmp_buf __Fathom__jmp_bufchar* d);
-void del_String(String* __o__);
+String* new_String(ExceptionData* __FATHOM__exception_data, char* d);
+void del_String(String* __o__, ExceptionData* __FATHOM__exception_data);
 #endif

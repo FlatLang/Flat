@@ -1,8 +1,9 @@
 #ifndef FILE_Test_FATHOM
 #define FILE_Test_FATHOM
 
-#include "CClass.h"
-#include "ExceptionHandler.h"
+#include <CClass.h>
+#include <ExceptionHandler.h>
+#include "ExceptionData.h"
 #include "IO.h"
 #include "String.h"
 
@@ -12,14 +13,15 @@ Test,
 
 String* publicVariable;
 
-FUNC(void*, __FATHOM__main, Test* __o__, jmp_buf __Fathom__jmp_buf, String** args);
-FUNC(int, divide, Test* __o__, jmp_buf __Fathom__jmp_buf, int numerator, int denominator);
-FUNC(int, test, Test* __o__, jmp_buf __Fathom__jmp_buf);
-FUNC(int, test2, Test* __o__, jmp_buf __Fathom__jmp_buf);
+FUNC(void, __FATHOM__main, Test* __o__, ExceptionData* __FATHOM__exception_data, String** args);
+FUNC(int, divide, Test* __o__, ExceptionData* __FATHOM__exception_data, int numerator, int denominator);
+FUNC(int, getEvenNumber, Test* __o__, ExceptionData* __FATHOM__exception_data, int num);
+FUNC(int, test, Test* __o__, ExceptionData* __FATHOM__exception_data);
+FUNC(int, test2, Test* __o__, ExceptionData* __FATHOM__exception_data);
 )
 
-Test* new_Test(jmp_buf __Fathom__jmp_buf);
-void del_Test(Test* __o__);
+Test* new_Test(ExceptionData* __FATHOM__exception_data);
+void del_Test(Test* __o__, ExceptionData* __FATHOM__exception_data);
 extern Test* __static__Test;
 
 #endif

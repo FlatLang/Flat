@@ -1,4 +1,3 @@
-#include "CClass.h"
 #include "IO.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -7,18 +6,18 @@
 
 IO* __static__IO;
 
-IO* new_IO(jmp_buf __Fathom__jmp_buf);
-void del_IO(IO* __o__);
-static void* println(IO* __o__, jmp_buf __Fathom__jmp_buf, String* text);
-static void* print(IO* __o__, jmp_buf __Fathom__jmp_buf, String* text);
-static void* printi(IO* __o__, jmp_buf __Fathom__jmp_buf, int j);
-static int getInt(IO* __o__, jmp_buf __Fathom__jmp_buf);
-static String* getLine(IO* __o__, jmp_buf __Fathom__jmp_buf);
-static void* waitForEnter(IO* __o__, jmp_buf __Fathom__jmp_buf);
+IO* new_IO(ExceptionData* __FATHOM__exception_data);
+void del_IO(IO* __o__, ExceptionData* __FATHOM__exception_data);
+static void println(IO* __o__, ExceptionData* __FATHOM__exception_data, String* text);
+static void print(IO* __o__, ExceptionData* __FATHOM__exception_data, String* text);
+static void printi(IO* __o__, ExceptionData* __FATHOM__exception_data, int j);
+static int getInt(IO* __o__, ExceptionData* __FATHOM__exception_data);
+static String* getLine(IO* __o__, ExceptionData* __FATHOM__exception_data);
+static void waitForEnter(IO* __o__, ExceptionData* __FATHOM__exception_data);
 
 NO_PRIVATE
 
-IO* new_IO(jmp_buf __Fathom__jmp_buf)
+IO* new_IO(ExceptionData* __FATHOM__exception_data)
 {
 NEW(IO, __o__);
 
@@ -33,7 +32,7 @@ __o__->waitForEnter = waitForEnter;
 return __o__;
 }
 
-void del_IO(IO* __o__)
+void del_IO(IO* __o__, ExceptionData* __FATHOM__exception_data)
 {
 if (!__o__)
 {
@@ -44,46 +43,46 @@ return;
 free(__o__);
 }
 
-static void* println(IO* __o__, jmp_buf __Fathom__jmp_buf, String* text)
+static void println(IO* __o__, ExceptionData* __FATHOM__exception_data, String* text)
 {
 }
 
-static void* print(IO* __o__, jmp_buf __Fathom__jmp_buf, String* text)
+static void print(IO* __o__, ExceptionData* __FATHOM__exception_data, String* text)
 {
 char* cText;
 
-cText = text->toCharArray(text);
+cText = text->toCharArray(text, __FATHOM__exception_data);
 printf(cText);
 }
 
-static void* printi(IO* __o__, jmp_buf __Fathom__jmp_buf, int j)
+static void printi(IO* __o__, ExceptionData* __FATHOM__exception_data, int j)
 {
 printf("%d", j);
 }
 
-static int getInt(IO* __o__, jmp_buf __Fathom__jmp_buf)
+static int getInt(IO* __o__, ExceptionData* __FATHOM__exception_data)
 {
 String* s;
 char* data;
 int num;
 
-s = getLine(__o__);
-data = s->toCharArray(s);
+s = getLine(__o__, __FATHOM__exception_data);
+data = s->toCharArray(s, __FATHOM__exception_data);
 num = atoi(data);
 return num;
 }
 
-static String* getLine(IO* __o__, jmp_buf __Fathom__jmp_buf)
+static String* getLine(IO* __o__, ExceptionData* __FATHOM__exception_data)
 {
 char* line;
 String* s;
 
 line = ufgets(stdin);
-s = new_String(line);
+s = new_String(__FATHOM__exception_data, line);
 return s;
 }
 
-static void* waitForEnter(IO* __o__, jmp_buf __Fathom__jmp_buf)
+static void waitForEnter(IO* __o__, ExceptionData* __FATHOM__exception_data)
 {
 char* c;
 

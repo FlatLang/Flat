@@ -1,38 +1,39 @@
-#include "CClass.h"
 #include "Test.h"
 #include "IO.h"
 #include "String.h"
 
 Test* __static__Test;
 
-Test* new_Test(jmp_buf __Fathom__jmp_buf);
-void del_Test(Test* __o__);
-static void* __FATHOM__main(Test* __o__, jmp_buf __Fathom__jmp_buf, String** args);
-static int divide(Test* __o__, jmp_buf __Fathom__jmp_buf, int numerator, int denominator);
-static int test(Test* __o__, jmp_buf __Fathom__jmp_buf);
-static int test2(Test* __o__, jmp_buf __Fathom__jmp_buf);
+Test* new_Test(ExceptionData* __FATHOM__exception_data);
+void del_Test(Test* __o__, ExceptionData* __FATHOM__exception_data);
+static void __FATHOM__main(Test* __o__, ExceptionData* __FATHOM__exception_data, String** args);
+static int divide(Test* __o__, ExceptionData* __FATHOM__exception_data, int numerator, int denominator);
+static int getEvenNumber(Test* __o__, ExceptionData* __FATHOM__exception_data, int num);
+static int test(Test* __o__, ExceptionData* __FATHOM__exception_data);
+static int test2(Test* __o__, ExceptionData* __FATHOM__exception_data);
 
 PRIVATE
 (
 	int fieldVar;
 )
 
-Test* new_Test(jmp_buf __Fathom__jmp_buf)
+Test* new_Test(ExceptionData* __FATHOM__exception_data)
 {
 	NEW(Test, __o__);
 	
 	__o__->__FATHOM__main = __FATHOM__main;
 	__o__->divide = divide;
+	__o__->getEvenNumber = getEvenNumber;
 	__o__->test = test;
 	__o__->test2 = test2;
 	
 	__o__->publicVariable = 0;
-	__o__->publicVariable = new_String("hello");
+	__o__->publicVariable = new_String(__FATHOM__exception_data, "hello");
 	
 	return __o__;
 }
 
-void del_Test(Test* __o__)
+void del_Test(Test* __o__, ExceptionData* __FATHOM__exception_data)
 {
 	if (!__o__)
 	{
@@ -40,38 +41,48 @@ void del_Test(Test* __o__)
 	}
 	
 	free(__o__->prv);
-	del_String(__o__->publicVariable);
+	del_String(__o__->publicVariable, __FATHOM__exception_data);
 	
 	free(__o__);
 }
 
-static void* __FATHOM__main(Test* __o__, jmp_buf __Fathom__jmp_buf, String** args)
+static void __FATHOM__main(Test* __o__, ExceptionData* __FATHOM__exception_data, String** args)
 {
 	int i;
-	int num;
+	int j;
+	int even;
 	
-	__static__IO->print(__static__IO, new_String("Hello, world\n\n"));
-	__static__IO->print(__static__IO, new_String("Command line arg #1 is\n"));
-	__static__IO->print(__static__IO, args[0]);
+	__static__IO->print(__static__IO, __FATHOM__exception_data, new_String(__FATHOM__exception_data, "Hello, world\n\n"));
+	__static__IO->print(__static__IO, __FATHOM__exception_data, new_String(__FATHOM__exception_data, "Command line arg #1 is\n"));
+	__static__IO->print(__static__IO, __FATHOM__exception_data, args[0]);
 	TRY
 	{
-		divide(__o__, 5, 0);
+		if (0 == 0)
+		{
+			THROW(1);
+		}
+		j = 23 / 0;
+		even = __static__IO->getInt(__static__IO, __FATHOM__exception_data);
+		getEvenNumber(__o__, __FATHOM__exception_data, even);
 	}
 	CATCH (1)
 	{
-		__static__IO->print(__static__IO, new_String("Caught error..."));
+		__static__IO->print(__static__IO, __FATHOM__exception_data, new_String(__FATHOM__exception_data, "You cant divide by zero idiot."));
+	}
+	CATCH (2)
+	{
+		__static__IO->print(__static__IO, __FATHOM__exception_data, new_String(__FATHOM__exception_data, "You didnt pass a fricken even number..."));
 	}
 	FINALLY
 	{
-		__static__IO->print(__static__IO, new_String("After error..."));
 	}
 	END_TRY;
-	num = __static__IO->getInt(__static__IO);
-	__static__IO->printi(__static__IO, num);
-	__static__IO->waitForEnter(__static__IO);
+	__static__IO->waitForEnter(__static__IO, __FATHOM__exception_data);
+	__static__IO->print(__static__IO, __FATHOM__exception_data, new_String(__FATHOM__exception_data, "Worked"));
+	__static__IO->waitForEnter(__static__IO, __FATHOM__exception_data);
 }
 
-static int divide(Test* __o__, jmp_buf __Fathom__jmp_buf, int numerator, int denominator)
+static int divide(Test* __o__, ExceptionData* __FATHOM__exception_data, int numerator, int denominator)
 {
 	if (denominator == 0)
 	{
@@ -80,7 +91,16 @@ static int divide(Test* __o__, jmp_buf __Fathom__jmp_buf, int numerator, int den
 	return numerator / denominator;
 }
 
-static int test(Test* __o__, jmp_buf __Fathom__jmp_buf)
+static int getEvenNumber(Test* __o__, ExceptionData* __FATHOM__exception_data, int num)
+{
+	if (num % 2 != 0)
+	{
+		THROW(2);
+	}
+	return num;
+}
+
+static int test(Test* __o__, ExceptionData* __FATHOM__exception_data)
 {
 	int newVar;
 	
@@ -88,9 +108,9 @@ static int test(Test* __o__, jmp_buf __Fathom__jmp_buf)
 	return newVar;
 }
 
-static int test2(Test* __o__, jmp_buf __Fathom__jmp_buf)
+static int test2(Test* __o__, ExceptionData* __FATHOM__exception_data)
 {
-	return test(__o__);
+	return test(__o__, __FATHOM__exception_data);
 }
 
 
@@ -102,17 +122,17 @@ int main(int argc, char** argvs)
 	String** args = (String**)malloc(argc * sizeof(String));
 	int      i;
 	
-	__static__Test = new_Test();
-	__static__IO = new_IO();
+	__static__Test = new_Test(0);
+	__static__IO = new_IO(0);
 	
 	for (i = 0; i < argc; i++)
 	{
-		args[i] = new_String(argvs[i]);
+		args[i] = new_String(0, argvs[i]);
 	}
 	
-	__static__Test->__FATHOM__main(__static__Test, args);
+	__static__Test->__FATHOM__main(__static__Test, 0, args);
 	
-	del_Test(__static__Test);
-	del_IO(__static__IO);
+	del_Test(__static__Test, 0);
+	del_IO(__static__IO, 0);
 	free(args);
 }
