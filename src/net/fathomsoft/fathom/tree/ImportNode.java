@@ -33,7 +33,7 @@ import net.fathomsoft.fathom.util.Regex;
  */
 public class ImportNode extends TreeNode
 {
-	private boolean	cSource;
+	private boolean	external;
 	
 	private String	importLocation;
 	
@@ -48,9 +48,20 @@ public class ImportNode extends TreeNode
 	 * 
 	 * @return Whether or not the imported file is a C Source file.
 	 */
-	public boolean isCSource()
+	public boolean isExternal()
 	{
-		return cSource;
+		return external;
+	}
+	
+	/**
+	 * Set whether or not the imported file is a C Source file, or a
+	 * Fathom file.
+	 * 
+	 * @param external Whether or not the imported file is a C Source file.
+	 */
+	public void setExternal(boolean external)
+	{
+		this.external = external;
 	}
 	
 	public String getImportLocation()
@@ -91,7 +102,7 @@ public class ImportNode extends TreeNode
 		
 		builder.append("#include ");
 		
-		if (isCSource())
+		if (isExternal())
 		{
 			builder.append('<').append(importLocation).append(".h").append('>');
 		}
@@ -143,7 +154,7 @@ public class ImportNode extends TreeNode
 					
 					if (extension.equals("h"))
 					{
-						n.cSource = true;
+						n.setExternal(true);
 						
 						statement = statement.substring(0, extensionIndex);
 					}
@@ -172,7 +183,7 @@ public class ImportNode extends TreeNode
 	{
 		ImportNode clone = new ImportNode();
 		clone.setImportLocation(getImportLocation());
-		clone.cSource = isCSource();
+		clone.external = isExternal();
 		
 		for (int i = 0; i < getChildren().size(); i++)
 		{
