@@ -9,7 +9,7 @@
 	{\
 		jmp_buf __FATHOM__jmp_buf;\
 		\
-		ExceptionData* newData = new_ExceptionData(__FATHOM__exception_data, &__FATHOM__jmp_buf, 0, 0);\
+		ExceptionData* newData = new_ExceptionData(__FATHOM__exception_data, &__FATHOM__jmp_buf);\
 		\
 		if (__FATHOM__exception_data)\
 		{\
@@ -38,6 +38,6 @@
 	}\
 	while(0)
 
-#define THROW(x) longjmp(*__FATHOM__exception_data->getBuffer(__FATHOM__exception_data, 0), x)
+#define THROW(x) __FATHOM__exception_data->jumpToBuffer(__FATHOM__exception_data, 0, x);//longjmp(*__FATHOM__exception_data->getCorrectBuffer(__FATHOM__exception_data, 0, x), x)
 
 #endif
