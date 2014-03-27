@@ -40,8 +40,6 @@ public class MethodCallNode extends IdentifierNode
 {
 	private boolean	externalCall;
 	
-	private String	objectInstance;
-	
 	public MethodCallNode()
 	{
 		ArgumentListNode arguments = new ArgumentListNode();
@@ -59,9 +57,14 @@ public class MethodCallNode extends IdentifierNode
 		return externalCall;
 	}
 	
-	public String getObjectInstance()
+	public boolean hasVariableNode()
 	{
-		return objectInstance;
+		return getChildren().size() >= 2;
+	}
+	
+	public TreeNode getVariableNode()
+	{
+		return getChild(1);
 	}
 	
 	/**
@@ -111,7 +114,12 @@ public class MethodCallNode extends IdentifierNode
 	{
 		StringBuilder builder = new StringBuilder();
 		
-		builder.append(getObjectInstance()).append(getName()).append('(');
+		if (hasVariableNode())
+		{
+			builder.append(getVariableNode().generateCSourceFragment()).append("->");
+		}
+		
+		builder.append(getName()).append('(');
 		
 		builder.append(getArgumentListNode().generateCSourceOutput());
 		
@@ -166,8 +174,6 @@ public class MethodCallNode extends IdentifierNode
 			
 			String  argumentList = statement.substring(bounds.getStart(), bounds.getEnd());
 			
-			boolean externalCall = false;
-			
 //			if (parentNode.isWithinTry())
 //			{
 //				argumentList = "__" + Fathom.LANGUAGE_NAME.toUpperCase() + "__exception_data, " + argumentList;
@@ -176,47 +182,37 @@ public class MethodCallNode extends IdentifierNode
 //			{
 //				argumentList = ", " + argumentList;
 //			}
-			String objectRef = null;
+//			TreeNode variableNode = null;
+//			
+//			String objectRef = null;
 			
-			if (needsReference)
-			{
-				int dotIndex = methodCall.lastIndexOf(".");
-				
-				if (dotIndex > 0)
-				{
-					objectRef = methodCall.substring(0, dotIndex);
-					
-					if (fileNode.getImportListNode().isExternal(objectRef))
-					{
-						externalCall = true;
-					}
-					else
-					{
-						objectRef.replace(".", "->");
-						
-						if (fileNode.getImportListNode().isExternal(objectRef))
-						{
-							objectRef = null;
-						}
-					}
-				}
-				else
-				{
-					objectRef    = MethodNode.getObjectReferenceIdentifier();
-				}
-			}
-			
-			if (!externalCall)
-			{
-				argumentList = "__" + Fathom.LANGUAGE_NAME.toUpperCase() + "__exception_data, " + argumentList;
-				
-				if (objectRef != null)
-				{
-					argumentList = objectRef + ", " + argumentList;
-				}
-			}
-			
-			String arguments[] = Regex.splitCommas(argumentList);
+//			if (needsReference)
+//			{
+//				int dotIndex = methodCall.lastIndexOf(".");
+//				
+//				if (dotIndex > 0)
+//				{
+//					objectRef = methodCall.substring(0, dotIndex);
+//					
+//					if (fileNode.getImportListNode().isExternal(objectRef))
+//					{
+//						externalCall = true;
+//					}
+//					else
+//					{
+//						objectRef.replace(".", "->");
+//						
+//						if (fileNode.getImportListNode().isExternal(objectRef))
+//						{
+//							objectRef = null;
+//						}
+//					}
+//				}
+//				else
+//				{
+//					objectRef = MethodNode.getObjectReferenceIdentifier();
+//				}
+//			}
 			
 			final StringBuilder objectInstance = new StringBuilder();
 			
@@ -235,34 +231,93 @@ public class MethodCallNode extends IdentifierNode
 				}
 			};
 			
-			n.objectInstance = "";
-			n.externalCall   = externalCall;
-			
 			n.iterateWords(methodCall, Patterns.IDENTIFIER_BOUNDARIES);
 			
-			n.addArguments(parentNode, arguments, argsLocation);
-			
-			// If only referenced through one variable. (if only one "->")
-			if (objectInstance.length() > 0 && objectInstance.lastIndexOf("->") == objectInstance.indexOf("->"))
+			if (objectInstance.length() > 0)
 			{
-				String varName     = objectInstance.substring(0, objectInstance.length() - 2);
-				
-				IdentifierNode var = TreeNode.getExistingNode(parentNode, varName);
-				
-				if (var == null)
+				objectInstance.delete(objectInstance.length() - 2, objectInstance.length());
+			}
+			
+			if (needsReference)
+			{
+				if (objectInstance.length() > 0)
 				{
-					if (fileNode.getImportListNode().contains(varName) && !fileNode.getImportListNode().isExternal(varName))
+					if (fileNode.getImportListNode().isExternal(objectInstance.toString()))
 					{
-						objectInstance.insert(0, "__static__");
-					}
-					else
-					{
-						objectInstance.delete(0, objectInstance.length());
+						n.externalCall = true;
 					}
 				}
 			}
 			
-			n.objectInstance = objectInstance.toString();
+			if (!n.isExternal())
+			{
+				boolean staticCall = false;
+				
+				argumentList = "__" + Fathom.LANGUAGE_NAME.toUpperCase() + "__exception_data, " + argumentList;
+				
+				if (objectInstance.length() > 0)
+				{
+					// If only referenced through one variable.
+					if (objectInstance.indexOf("->") < 0)
+					{
+						String varName     = objectInstance.toString();
+						
+						IdentifierNode var = TreeNode.getExistingNode(parentNode, varName);
+						
+						if (var == null)
+						{
+							if (fileNode.getImportListNode().contains(varName) && !fileNode.getImportListNode().isExternal(varName))
+							{
+								objectInstance.insert(0, "__static__");
+								
+								staticCall = true;
+							}
+							else
+							{
+								objectInstance.delete(0, objectInstance.length());
+							}
+						}
+					}
+					
+					argumentList = objectInstance + ", " + argumentList;
+					
+					if (!staticCall)
+					{
+						String caller = objectInstance.toString();
+						
+						TreeNode variableNode = TreeNode.getExistingNode(parentNode, caller);
+						
+						if (variableNode != null)
+						{
+							variableNode = variableNode.clone();
+						}
+						else
+						{
+							variableNode = TreeNode.decodeStatement(parentNode, caller, location);
+						}
+						
+						n.addChild(variableNode);
+					}
+					else
+					{
+						IdentifierNode variableNode = new IdentifierNode();
+						variableNode.setName(objectInstance.toString());
+						
+						n.addChild(variableNode);
+					}
+				}
+				else
+				{
+					if (needsReference)
+					{
+						argumentList = MethodNode.getObjectReferenceIdentifier() + ", " + argumentList;
+					}
+				}
+			}
+
+			String arguments[] = Regex.splitCommas(argumentList);
+			
+			n.addArguments(parentNode, arguments, argsLocation);
 			
 			return n;
 		}
@@ -300,16 +355,23 @@ public class MethodCallNode extends IdentifierNode
 //						var.setName(n.getName());
 //						var.setType(n.getType());
 						
-						LiteralNode var = new LiteralNode();
-						var.setValue(n.getName(), isWithinExternalContext());
+//						LiteralNode var = new LiteralNode();
+//						var.setValue(n.getName(), isWithinExternalContext());
 						
-						arg = var;
+						arg = n.clone();
 					}
 				}
 				
-				if (arg == null)
+				if (!SyntaxUtils.isLiteral(argument))
 				{
-					arg = TreeNode.decodeStatement(parent, argument, location);
+					if (arg == null)
+					{
+						arg = BinaryOperatorNode.decodeStatement(parent, argument, location);
+					}
+					if (arg == null)
+					{
+						arg = TreeNode.decodeStatement(parent, argument, location);
+					}
 				}
 				
 				if (arg == null && SyntaxUtils.isValidIdentifier(argument))
@@ -352,7 +414,6 @@ public class MethodCallNode extends IdentifierNode
 	{
 		MethodCallNode clone = new MethodCallNode();
 		clone.setName(getName());
-		clone.objectInstance = objectInstance;
 		
 		for (int i = 0; i < getChildren().size(); i++)
 		{
