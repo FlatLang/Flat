@@ -9,13 +9,15 @@ public class ExceptionNode extends LocalVariableNode
 {
 	private int	id;
 	
-	private static int	exceptionId	= 2;
+	private static int	exceptionId	= 1;
 	
 	private static HashMap<String, Integer>	ids;
 	
 	static
 	{
 		ids = new HashMap<String, Integer>();
+		
+		ids.put("Exception", exceptionId++);
 	}
 	
 	public ExceptionNode()
