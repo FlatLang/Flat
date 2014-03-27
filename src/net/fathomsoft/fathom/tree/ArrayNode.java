@@ -75,7 +75,7 @@ public class ArrayNode extends IdentifierNode
 		{
 			TreeNode child = getChild(i);
 			
-			builder.append(" * ").append(child.generateCSourceOutput());
+			builder.append(" * ").append(child.generateCSourceFragment());
 		}
 		
 		builder.append(')');
