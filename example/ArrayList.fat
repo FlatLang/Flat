@@ -1,0 +1,50 @@
+import "stdlib.h";
+import "Fathom.h";
+
+public class ArrayList
+{
+	private int	count;
+	private int	size;
+	
+	private int data[];
+	
+	public ArrayList()
+	{
+		increaseSize();
+	}
+	
+	public void add(int var)
+	{
+		if (count + 1 >= size)
+		{
+			increaseSize();
+		}
+		
+		data[count] = var;
+		
+		count = count + 1;
+		
+	}
+	
+	public void increaseSize()
+	{
+		size = size + 3;
+		
+		int tmp[] = new int[size];//stdlib.malloc(stdlib.sizeof(int) * size);
+		
+		Fathom.arrayCopy(tmp, 0, data, 0, count, size, stdlib.sizeof(int));
+		stdlib.free(data);
+		
+		data = tmp;
+	}
+	
+	public int getSize()
+	{
+		return count;
+	}
+	
+	public int get(int index)
+	{
+		return data[index];
+	}
+}
