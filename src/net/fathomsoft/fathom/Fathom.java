@@ -122,11 +122,12 @@ public class Fathom
 				directory + "IO.fat",
 				directory + "String.fat",
 				directory + "ExceptionData.fat",
+				directory + "ArrayList.fat",
 				"-o", directory + "bin/Executable.exe",
 				"-dir", '"' + directory + "../include\"",
 				"-csource",
 				"-v",
-				"-tcc",
+				"-gcc",
 				"-cargs",
 				"-keepc"
 			};
@@ -246,6 +247,7 @@ public class Fathom
 				mainMethodText.append("CATCH (1)").append('\n');
 				mainMethodText.append('{').append('\n');
 				mainMethodText.append("printf(\"You broke it.\");").append('\n');
+				mainMethodText.append("__static__IO->waitForEnter(__static__IO, 0);").append('\n');
 				mainMethodText.append('}').append('\n');
 				mainMethodText.append("FINALLY").append('\n');
 				mainMethodText.append('{').append('\n');
@@ -331,7 +333,7 @@ public class Fathom
 		
 		if (isFlagEnabled(GCC))
 		{
-			cmd.append("compiler/gcc/bin/gcc.exe ");
+			cmd.append("gcc ");//("compiler/gcc/bin/gcc.exe ");
 		}
 		else if (isFlagEnabled(TCC))
 		{
