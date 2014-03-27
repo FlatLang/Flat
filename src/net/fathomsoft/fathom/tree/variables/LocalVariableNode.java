@@ -90,25 +90,21 @@ public class LocalVariableNode extends VariableNode
 		{
 			private boolean	done;
 			
+			private String	oldWord;
+			
 			@Override
 			public void interactWord(String word, int wordNumber, Bounds bounds, int numWords)
 			{
 				if (!done)
 				{
-					if (wordNumber == numWords - 1)
+					setName(word);
+					setType(oldWord);
+					setAttribute(word, wordNumber);
+					
+					int  index = StringUtils.findNextNonWhitespaceIndex(statement, bounds.getEnd());
+					
+					if (index > 0)
 					{
-						setName(word);
-					}
-					else if (wordNumber == numWords - 2)
-					{
-						setType(word);
-					}
-					else
-					{
-						setAttribute(word, wordNumber);
-						
-						int  index = StringUtils.findNextNonWhitespaceIndex(statement, bounds.getEnd());
-						
 						char c     = statement.charAt(index);
 						
 						if (c == '.')
@@ -116,6 +112,8 @@ public class LocalVariableNode extends VariableNode
 							
 						}
 					}
+					
+					oldWord = word;
 				}
 				else
 				{
