@@ -81,7 +81,7 @@ public class Patterns
 	/**
 	 * Pattern that searches for 
 	 */
-	public static final Pattern PRE_OPERATORS			= Pattern.compile("([A-Za-z0-9_\\[\\]]+\\s*)+(?=((!|>|<|=)=|[\\*\\+\\/\\-=\\<\\>%]))");
+	public static final Pattern PRE_OPERATORS			= Pattern.compile("[\\S\\s]+?(?=((!|>|<|=)=|[\\*\\+\\/\\-\\<\\>%]))");
 
 	/**
 	 * Pattern that searches for 
@@ -161,7 +161,7 @@ public class Patterns
 	/**
 	 * Pattern that searches for 
 	 */
-	public static final Pattern PRE_METHOD_CALL			= Pattern.compile("\\S+(?=\\s*\\()");
+	public static final Pattern PRE_METHOD_CALL			= Pattern.compile("\\S+?(?=\\s*\\()");
 
 //	/**
 //	 * Pattern that searches for 
