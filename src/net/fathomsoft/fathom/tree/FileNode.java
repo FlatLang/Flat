@@ -52,6 +52,8 @@ public class FileNode extends IdentifierNode
 		ImportListNode imports = new ImportListNode();
 		
 		super.addChild(imports);
+		
+		addDefaultImportNodes();
 	}
 	
 	/**
@@ -103,18 +105,20 @@ public class FileNode extends IdentifierNode
 		builder.append("#ifndef ").append(definitionName).append('\n');
 		builder.append("#define ").append(definitionName).append("\n\n");
 		
-		builder.append(generateDefaultImports());
+		ImportListNode imports = getImportListNode();
 		
-		if (getImportListNode().getChildren().size() <= 0)
-		{
-			builder.append('\n');
-		}
+		builder.append(imports.generateCHeaderOutput());
+		
+		builder.append(generateDummyTypes()).append('\n');
 		
 		for (int i = 0; i < getChildren().size(); i++)
 		{
 			TreeNode child = getChild(i);
 			
-			builder.append(child.generateCHeaderOutput());
+			if (child != imports)
+			{
+				builder.append(child.generateCHeaderOutput());
+			}
 		}
 		
 		builder.append("#endif");
@@ -159,10 +163,8 @@ public class FileNode extends IdentifierNode
 		return null;
 	}
 	
-	private String generateDefaultImports()
+	private void addDefaultImportNodes()
 	{
-		StringBuilder builder = new StringBuilder();
-		
 		for (String importLoc : defaultImports)
 		{
 			ImportNode importNode = new ImportNode();
@@ -175,7 +177,25 @@ public class FileNode extends IdentifierNode
 			}
 			
 			importNode.setImportLocation(importLoc);
-			builder.append(importNode.generateCHeaderOutput());
+			
+			addChild(importNode);
+		}
+	}
+	
+	private String generateDummyTypes()
+	{
+		StringBuilder builder = new StringBuilder();
+		
+		ImportListNode imports = getImportListNode();
+		
+		for (int i = 0; i < imports.getChildren().size(); i++)
+		{
+			ImportNode child = (ImportNode)imports.getChild(i);
+			
+			if (!child.isExternal())
+			{
+				builder.append("typedef struct ").append(child.getImportLocation()).append(' ').append(child.getImportLocation()).append(';').append('\n');
+			}
 		}
 		
 		return builder.toString();
