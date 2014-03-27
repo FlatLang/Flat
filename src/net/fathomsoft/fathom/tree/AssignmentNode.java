@@ -43,31 +43,9 @@ public class AssignmentNode extends TreeNode
 		
 	}
 	
-	public VariableNode getVariableNode()
+	public TreeNode getVariableNode()
 	{
-		if (getChildren().size() <= 0)
-		{
-			Location location = getLocationIn();
-			
-			SyntaxMessage.error("Variable missing on left side of assignment", location);
-			
-			return null;
-		}
-		
-		TreeNode node = getChild(0);
-		
-		if (node instanceof VariableNode)
-		{
-			return (VariableNode)node;
-		}
-		else
-		{
-			Location location = getLocationIn();
-			
-			SyntaxMessage.error("Variable missing on left side of assignment", location);
-		
-			return null;
-		}
+		return getChild(0);
 	}
 
 	/**
@@ -131,7 +109,7 @@ public class AssignmentNode extends TreeNode
 	{
 		StringBuilder builder = new StringBuilder();
 		
-		builder.append(getVariableNode().generateVariableUseOutput());
+		builder.append(getVariableNode().generateCSourceFragment());
 		
 		builder.append(" = ");
 		
@@ -145,7 +123,7 @@ public class AssignmentNode extends TreeNode
 		return builder.toString();
 	}
 	
-	public static AssignmentNode decodeStatement(TreeNode parentNode, String statement, Location location)
+	public static AssignmentNode decodeStatement(TreeNode parent, String statement, Location location)
 	{
 		AssignmentNode n  = new AssignmentNode();
 		
@@ -162,21 +140,21 @@ public class AssignmentNode extends TreeNode
 		
 		String variable = statement.substring(0, endIndex);
 		
-		VariableNode varNode = null;
+		TreeNode varNode = null;
 		
 		if (SyntaxUtils.isValidIdentifier(variable))
 		{
-			varNode = (VariableNode)TreeNode.getExistingNode(parentNode, variable);
+			varNode = (VariableNode)TreeNode.getExistingNode(parent, variable);
 			
 			varNode = varNode.clone();
 		}
 		else
 		{
-			varNode = LocalVariableNode.decodeStatement(parentNode, variable, location);
+			varNode = LocalVariableNode.decodeStatement(parent, variable, location);
 			
 			if (varNode != null)
 			{
-				MethodNode methodNode = (MethodNode)parentNode.getAncestorOfType(MethodNode.class, true);
+				MethodNode methodNode = (MethodNode)parent.getAncestorOfType(MethodNode.class, true);
 				
 				if (methodNode != null)
 				{
@@ -185,9 +163,21 @@ public class AssignmentNode extends TreeNode
 			}
 			else
 			{
-				varNode = new VariableNode();
+				varNode = TreeNode.decodeStatement(parent, variable, location);
 				
-				varNode.setName(variable);
+				if (varNode == null)
+				{
+					VariableNode vNode = new VariableNode();
+					vNode.setName(variable);
+					
+					varNode = vNode;
+				}
+				else if (varNode instanceof ArrayAccessNode == false)
+				{
+					SyntaxMessage.error("Undefined variable '" + variable + "'", location);
+					
+					return null;
+				}
 			}
 		}
 		
@@ -198,9 +188,34 @@ public class AssignmentNode extends TreeNode
 		// Right-hand side of the equation.
 		String   rhs      = statement.substring(rhsIndex);
 		
-		TreeNode value    = BinaryOperatorNode.decodeStatement(parentNode, rhs, location);
+		TreeNode child    = MethodCallNode.decodeStatement(parent, rhs, location);
+
+		if (child == null)
+		{
+			child = TreeNode.getExistingNode(parent, rhs);
+			
+			if (child != null)
+			{
+				child = child.clone();
+			}
+		}
+		if (child == null)
+		{
+			child = BinaryOperatorNode.decodeStatement(parent, rhs, location);
+		}
+		if (child == null)
+		{
+			child = TreeNode.decodeStatement(parent, rhs, location);
+		}
+		if (child == null)
+		{
+			LiteralNode node = new LiteralNode();
+			node.setValue(rhs, parent.isWithinExternalContext());
+			
+			child = node;
+		}
 		
-		n.addChild(value);
+		n.addChild(child);
 		
 		return n;
 	}
