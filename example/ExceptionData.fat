@@ -1,4 +1,5 @@
 import "setjmp.h";
+import "ArrayList";
 
 public class ExceptionData
 {
@@ -6,14 +7,22 @@ public class ExceptionData
 	
 	private ExceptionData	parent;
 	
-	private int				numCodes;
-	private int				exceptionCodes[];
+	private ArrayList		codes;
 	
-	public ExceptionData(setjmp.jmp_buf buf, int codes[], int num)
+	public ExceptionData(setjmp.jmp_buf buf)
 	{
-		buffer         = buf;
-		exceptionCodes = codes;
-		numCodes       = num;
+		buffer = buf;
+		codes  = new ArrayList();
+	}
+	
+	public ArrayList getCodes()
+	{
+		return codes;
+	}
+	
+	public void addCode(int code)
+	{
+		codes.add(code);
 	}
 	
 	public setjmp.jmp_buf getBuffer()
@@ -21,38 +30,57 @@ public class ExceptionData
 		return buffer;
 	}
 	
-	public setjmp.jmp_buf getCorrectBuffer(int code)
+	public ExceptionData getCorrectData(int code)
 	{
 		ExceptionData data = this;
 		
-		int i = 0;
-		
 		while (data != 0)
 		{
-			int codes[] = data.getExceptionCodes();
+			ArrayList list = data.getCodes();
 			
-			for (int i = 0; i < data.getNumCodes(); i = i + 1)
+			for (int i = 0; i < list.getSize(); i = i + 1)
 			{
-				if (codes[i] == code)
+				if (list.get(i) == code)
 				{
-					return data.getBuffer();
+					return data;
 				}
+			}
+			
+			if (data.getParent() == 0)
+			{
+				return data;
 			}
 			
 			data = data.getParent();
 		}
 		
-		return buffer;
+		return 0;
 	}
 	
-	public int getNumCodes()
+	public setjmp.jmp_buf getCorrectBuffer(int code)
 	{
-		return numCodes;
+		ExceptionData data = getCorrectData(code);
+		
+		if (data == 0)
+		{
+			return 0;
+		}
+		
+		return data.getBuffer();
 	}
 	
-	public int[] getExceptionCodes()
+	public void jumpToBuffer(int code)
 	{
-		return exceptionCodes;
+		ExceptionData data = getCorrectData(code);
+		
+		if (data.getParent() == 0)
+		{
+			code = 1;
+		}
+		
+		setjmp.jmp_buf buf = data.getBuffer();
+		
+		setjmp.longjmp(*buf, code);
 	}
 	
 	public ExceptionData getParent()
