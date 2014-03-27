@@ -127,7 +127,7 @@ public class Fathom
 				"-dir", '"' + directory + "../include\"",
 				"-csource",
 				"-v",
-				"-gcc",
+				"-tcc",
 				"-cargs",
 				"-keepc"
 			};
@@ -354,8 +354,9 @@ public class Fathom
 			cmd.append('"').append(sourceFile.getAbsolutePath()).append('"').append(' ');
 		}
 		
-		cmd.append("-o ").append('"').append(outputFile.getAbsolutePath()).append('"');
+		cmd.append("-o ").append('"').append(outputFile.getAbsolutePath()).append('"').append(' ');
 		
+		cmd.append("-s");
 		
 		if (isFlagEnabled(C_ARGS))
 		{
