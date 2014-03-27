@@ -2,6 +2,7 @@ package net.fathomsoft.fathom.tree;
 
 import net.fathomsoft.fathom.error.SyntaxMessage;
 import net.fathomsoft.fathom.tree.variables.LocalVariableNode;
+import net.fathomsoft.fathom.tree.variables.VariableNode;
 import net.fathomsoft.fathom.util.Bounds;
 import net.fathomsoft.fathom.util.Location;
 import net.fathomsoft.fathom.util.Patterns;
@@ -17,8 +18,13 @@ import net.fathomsoft.fathom.util.SyntaxUtils;
  * @version	Mar 24, 2014 at 10:45:29 PM
  * @version	v
  */
-public class ArrayAccessNode extends IdentifierNode
+public class ArrayAccessNode extends TreeNode
 {
+	public VariableNode getVariableNode()
+	{
+		return (VariableNode)getChild(0);
+	}
+	
 	/**
 	 * @see net.fathomsoft.fathom.tree.TreeNode#generateJavaSourceOutput()
 	 */
@@ -59,13 +65,18 @@ public class ArrayAccessNode extends IdentifierNode
 	{
 		StringBuilder builder = new StringBuilder();
 		
-		builder.append(getName());
+		VariableNode varNode = getVariableNode();
+		
+		builder.append(varNode.generateCSourceFragment());
 		
 		for (int i = 0; i < getChildren().size(); i++)
 		{
 			TreeNode child = getChild(i);
 			
-			builder.append('[').append(child.generateCSourceFragment()).append(']');
+			if (child != varNode)
+			{
+				builder.append('[').append(child.generateCSourceFragment()).append(']');
+			}
 		}
 		
 		return builder.toString();
@@ -84,8 +95,17 @@ public class ArrayAccessNode extends IdentifierNode
 			
 			int current = indexBounds.getEnd() + 1;
 			
+			VariableNode var = (VariableNode)getExistingNode(parentNode, identifier);
+			
+			if (var == null)
+			{
+				SyntaxMessage.error("Undeclared variable '" + identifier + "'", location);
+			}
+			
+			var = var.clone();
+			
 			ArrayAccessNode node = new ArrayAccessNode();
-			node.setName(identifier);
+			node.addChild(var);
 			
 			while (current > 0)
 			{
@@ -108,6 +128,8 @@ public class ArrayAccessNode extends IdentifierNode
 					
 					if (existing != null)
 					{
+						existing = existing.clone();
+						
 						node.addChild(existing);
 					}
 					else
@@ -140,7 +162,6 @@ public class ArrayAccessNode extends IdentifierNode
 	public ArrayAccessNode clone()
 	{
 		ArrayAccessNode clone = new ArrayAccessNode();
-		clone.setName(getName());
 		
 		for (int i = 0; i < getChildren().size(); i++)
 		{
