@@ -19,8 +19,10 @@ package net.fathomsoft.fathom.tree;
 
 import java.util.regex.Matcher;
 
+import net.fathomsoft.fathom.Fathom;
 import net.fathomsoft.fathom.error.SyntaxMessage;
 import net.fathomsoft.fathom.tree.exceptionhandling.ThrowNode;
+import net.fathomsoft.fathom.tree.variables.LocalVariableNode;
 import net.fathomsoft.fathom.tree.variables.VariableNode;
 import net.fathomsoft.fathom.util.Bounds;
 import net.fathomsoft.fathom.util.Location;
@@ -40,6 +42,8 @@ import net.fathomsoft.fathom.util.SyntaxUtils;
  */
 public class BinaryOperatorNode extends TreeNode
 {
+	private static int checkId;
+	
 	public BinaryOperatorNode()
 	{
 		
@@ -142,6 +146,11 @@ public class BinaryOperatorNode extends TreeNode
 	
 	private static IfStatementNode generateDivideByZeroCheck(TreeNode parent, String denominator, Location location)
 	{
+//		String denominatorVar = "__" + Fathom.LANGUAGE_NAME.toUpperCase() + "__zero_check" + checkId++;
+//		
+//		LocalVariableNode declaration = LocalVariableNode.decodeStatement(parent, "int " + denominatorVar + " = " + denominator, location);
+//		parent.addChild(declaration);
+		
 		IfStatementNode ifStatement = IfStatementNode.decodeStatement(parent, "if (" + denominator + " == 0)", location);
 		parent.addChild(ifStatement);
 		
@@ -153,6 +162,11 @@ public class BinaryOperatorNode extends TreeNode
 	
 	public static TreeNode decodeStatement(TreeNode parentNode, String statement, Location location)
 	{
+		if (!Regex.matches(statement, 0, Patterns.PRE_OPERATORS))
+		{
+			return null;
+		}
+		
 		// Pattern used to find word boundaries. 
 		Matcher matcher = Patterns.PRE_OPERATORS.matcher(statement);
 		
@@ -172,8 +186,8 @@ public class BinaryOperatorNode extends TreeNode
 			node.setLocationIn(location);
 			
 			// Decode the value on the left.
-			Bounds   bounds  = Regex.boundsOf(statement, Patterns.PRE_OPERATORS);
-			Bounds 	 bounds2 = Regex.boundsOf(statement, Patterns.POST_OPERATORS);
+			Bounds bounds  = Regex.boundsOf(statement, Patterns.PRE_OPERATORS);
+			Bounds bounds2 = Regex.boundsOf(statement, Patterns.POST_OPERATORS);
 			
 			bounds.setEnd(StringUtils.findNextNonWhitespaceIndex(statement, bounds.getEnd() - 1, -1) + 1);
 			
@@ -309,7 +323,7 @@ public class BinaryOperatorNode extends TreeNode
 			return node;
 		}
 		
-		SyntaxMessage.error("Could not parse operation", location);
+		SyntaxMessage.error("Could not parse operation '" + statement + "'", location);
 		
 		return null;
 	}
