@@ -18,6 +18,7 @@
 package net.fathomsoft.fathom.tree;
 
 import net.fathomsoft.fathom.error.SyntaxMessage;
+import net.fathomsoft.fathom.tree.variables.PrivateFieldListNode;
 import net.fathomsoft.fathom.tree.variables.PublicFieldListNode;
 import net.fathomsoft.fathom.tree.variables.VariableNode;
 import net.fathomsoft.fathom.util.Bounds;
@@ -215,6 +216,15 @@ public class ConstructorNode extends MethodNode
 			builder.append(child.generateVariableUseOutput()).append(" = ").append(VariableNode.getNullText()).append(';').append('\n');
 		}
 		
+		PrivateFieldListNode privateFields = classNode.getFieldListNode().getPrivateFieldListNode();
+		
+		for (int i = 0; i < privateFields.getChildren().size(); i++)
+		{
+			VariableNode child = (VariableNode)privateFields.getChild(i);
+			
+			builder.append(child.generateVariableUseOutput()).append(" = ").append(VariableNode.getNullText()).append(';').append('\n');
+		}
+		
 		return builder.toString();
 	}
 	
@@ -291,9 +301,9 @@ public class ConstructorNode extends MethodNode
 			
 			ConstructorNode n = new ConstructorNode()
 			{
-				public void interactWord(String word, int argNum, Bounds bounds, int numWords)
+				public void interactWord(String word, int wordNumber, Bounds bounds, int numWords)
 				{
-					setAttribute(word, argNum);
+					setAttribute(word, wordNumber);
 					
 					setName(word);
 				}
