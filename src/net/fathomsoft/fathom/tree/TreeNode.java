@@ -625,6 +625,14 @@ public abstract class TreeNode
 		}
 		else if (SyntaxUtils.isValidIdentifier(statement))
 		{
+			if (statement.equals("this"))
+			{
+				IdentifierNode id = new IdentifierNode();
+				id.setName(MethodNode.getObjectReferenceIdentifier());
+				
+				return id;
+			}
+			
 			MethodNode methodNode = (MethodNode)node.getAncestorOfType(MethodNode.class, true);
 			
 			if (methodNode != null)
