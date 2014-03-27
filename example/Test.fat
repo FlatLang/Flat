@@ -1,5 +1,6 @@
 import "IO";
 import "String";
+import "ArrayList";
 
 public class Test
 {
@@ -17,30 +18,52 @@ public class Test
 		IO.print("Hello, world\n\n");
 		IO.print("Command line arg #1 is\n");
 		IO.print(args[0]);
+		IO.print("\n");
 		
 		int i;
 		
 		try
 		{
-			int j = 23 / 0;
+			int den = 0;
 			
-			int even = IO.getInt();
+			int num = 23 / den;
 			
-			getEvenNumber(even);
+			//int even = IO.getInt();
+			
+			//getEvenNumber(even);
+			
+			ArrayList list = new ArrayList();
+			
+			list.add(5);
+			list.add(6);
+			list.add(7);
+			list.add(8);
+			list.add(9);
+			
+			for (int j = 0; j < list.getSize(); j = j + 1)
+			{
+				IO.printi(list.get(j));
+				IO.print(", ");
+			}
+			
+			IO.print("\n");
 		}
 		catch (DivideByZeroException e)
 		{
 			IO.print("You cant divide by zero idiot.");
+			IO.print("\n");
 		}
 		catch (NotEvenNumberException e)
 		{
 			IO.print("You didnt pass a fricken even number...");
+			IO.print("\n");
 		}
 		finally
 		{
 			
 		}
 		
+		IO.print("Done\n");
 		IO.waitForEnter();
 	}
 	
