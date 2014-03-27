@@ -82,11 +82,6 @@ public class WhileLoopNode extends LoopNode
 			if (child != getConditionNode())
 			{
 				builder.append(child.generateCSourceOutput());
-				
-				if (child instanceof MethodCallNode)
-				{
-					builder.append(';').append('\n');
-				}
 			}
 		}
 		
@@ -121,6 +116,14 @@ public class WhileLoopNode extends LoopNode
 				String   contents  = statement.substring(bounds.getStart(), bounds.getEnd());
 				
 				TreeNode condition = BinaryOperatorNode.decodeStatement(parent, contents, newLoc);
+				
+				if (condition == null && SyntaxUtils.isLiteral(contents))
+				{
+					LiteralNode literal = new LiteralNode();
+					literal.setValue(contents, parent.isWithinExternalContext());
+					
+					condition = literal;
+				}
 				
 				n.addChild(condition);
 					
