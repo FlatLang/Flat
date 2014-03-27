@@ -89,6 +89,25 @@ public class CatchNode extends ExceptionHandlingNode
 		return null;
 	}
 	
+	private static TryNode getCurrentTry(TreeNode parent, CatchNode current)
+	{
+		for (int i = parent.getChildren().size() - 1; i >= 0; i--)
+		{
+			TreeNode child = parent.getChild(i);
+			
+			if (child instanceof TryNode)
+			{
+				return (TryNode)child;
+			}
+			else if (child instanceof CatchNode == false)
+			{
+				return null;
+			}
+		}
+		
+		return null;
+	}
+	
 	public static CatchNode decodeStatement(TreeNode parent, String statement, Location location)
 	{
 		if (Regex.matches(statement, 0, Patterns.PRE_CATCH))
@@ -117,6 +136,8 @@ public class CatchNode extends ExceptionHandlingNode
 					if (exception.getID() > 0)
 					{
 						n.addChild(exception);
+						
+						getCurrentTry(parent, n).addExceptionCode(exception.getID());
 						
 						return n;
 					}
