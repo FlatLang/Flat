@@ -128,6 +128,27 @@ public class ReturnNode extends TreeNode
 				
 				TreeNode child = BinaryOperatorNode.decodeStatement(parent, statement, newLoc);
 				
+				if (child == null)
+				{
+					child = TreeNode.getExistingNode(parent, statement);
+					
+					if (child != null)
+					{
+						child = child.clone();
+					}
+				}
+				if (child == null)
+				{
+					child = TreeNode.decodeStatement(parent, statement, location);
+				}
+				if (child == null)
+				{
+					LiteralNode node = new LiteralNode();
+					node.setValue(statement, parent.isWithinExternalContext());
+					
+					child = node;
+				}
+				
 				n.addChild(child);
 			}
 		}
