@@ -1,5 +1,8 @@
 package net.fathomsoft.fathom.tree.exceptionhandling;
 
+import java.util.ArrayList;
+
+import net.fathomsoft.fathom.Fathom;
 import net.fathomsoft.fathom.error.SyntaxMessage;
 import net.fathomsoft.fathom.tree.BinaryOperatorNode;
 import net.fathomsoft.fathom.tree.IfStatementNode;
@@ -20,7 +23,18 @@ import net.fathomsoft.fathom.util.Regex;
  */
 public class TryNode extends ExceptionHandlingNode
 {
-
+	private ArrayList<Integer>	codes;
+	
+	public TryNode()
+	{
+		codes = new ArrayList<Integer>();
+	}
+	
+	public void addExceptionCode(int code)
+	{
+		codes.add(code);
+	}
+	
 	/**
 	 * @see net.fathomsoft.fathom.tree.TreeNode#generateJavaSourceOutput()
 	 */
@@ -49,6 +63,7 @@ public class TryNode extends ExceptionHandlingNode
 		
 		builder.append("TRY").append('\n');
 		builder.append('{').append('\n');
+		builder.append(generateExceptionCodes()).append('\n');
 		
 		for (int i = 0; i < getChildren().size(); i++)
 		{
@@ -81,6 +96,22 @@ public class TryNode extends ExceptionHandlingNode
 		}
 		
 		return null;
+	}
+	
+	private String generateExceptionCodes()
+	{
+		StringBuilder builder = new StringBuilder();
+			
+		String variableName = "__" + Fathom.LANGUAGE_NAME.toUpperCase() + "__exception_data";
+		
+		for (int i = 0; i < codes.size(); i++)
+		{
+			int code = codes.get(i);
+			
+			builder.append(variableName).append("->addCode(").append(variableName).append(", ").append(variableName).append(", ").append(code).append(");").append('\n');
+		}
+		
+		return builder.toString();
 	}
 	
 	/**
