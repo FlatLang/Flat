@@ -5,6 +5,8 @@
 #include <ExceptionHandler.h>
 #include "ExceptionData.h"
 
+typedef struct ExceptionData ExceptionData;
+
 CLASS
 (
 String, 

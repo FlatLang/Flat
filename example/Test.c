@@ -1,6 +1,10 @@
 #include "Test.h"
+#include <CClass.h>
+#include <ExceptionHandler.h>
+#include "ExceptionData.h"
 #include "IO.h"
 #include "String.h"
+#include "ArrayList.h"
 
 Test* __static__Test;
 
@@ -28,6 +32,7 @@ Test* new_Test(ExceptionData* __FATHOM__exception_data)
 	__o__->test2 = test2;
 	
 	__o__->publicVariable = 0;
+	__o__->prv->fieldVar = 0;
 	__o__->publicVariable = new_String(__FATHOM__exception_data, "hello");
 	
 	return __o__;
@@ -49,34 +54,56 @@ void del_Test(Test* __o__, ExceptionData* __FATHOM__exception_data)
 static void __FATHOM__main(Test* __o__, ExceptionData* __FATHOM__exception_data, String** args)
 {
 	int i;
+	int den;
+	int num;
+	ArrayList* list;
 	int j;
-	int even;
 	
 	__static__IO->print(__static__IO, __FATHOM__exception_data, new_String(__FATHOM__exception_data, "Hello, world\n\n"));
 	__static__IO->print(__static__IO, __FATHOM__exception_data, new_String(__FATHOM__exception_data, "Command line arg #1 is\n"));
 	__static__IO->print(__static__IO, __FATHOM__exception_data, args[0]);
+	__static__IO->print(__static__IO, __FATHOM__exception_data, new_String(__FATHOM__exception_data, "\n"));
 	TRY
 	{
-		if (0 == 0)
+		__FATHOM__exception_data->addCode(__FATHOM__exception_data, __FATHOM__exception_data, 2);
+		__FATHOM__exception_data->addCode(__FATHOM__exception_data, __FATHOM__exception_data, 3);
+		
+		den = 0;
+		if (den == 0)
 		{
-			THROW(1);
+			THROW(2);
 		}
-		j = 23 / 0;
-		even = __static__IO->getInt(__static__IO, __FATHOM__exception_data);
-		getEvenNumber(__o__, __FATHOM__exception_data, even);
-	}
-	CATCH (1)
-	{
-		__static__IO->print(__static__IO, __FATHOM__exception_data, new_String(__FATHOM__exception_data, "You cant divide by zero idiot."));
+		num = 23 / den;
+		list = new_ArrayList(__FATHOM__exception_data);
+		list->add(list, __FATHOM__exception_data, 5);
+		list->add(list, __FATHOM__exception_data, 6);
+		list->add(list, __FATHOM__exception_data, 7);
+		list->add(list, __FATHOM__exception_data, 8);
+		list->add(list, __FATHOM__exception_data, 9);
+		{
+			for (j = 0; j < list->getSize(list, __FATHOM__exception_data); j = j + 1)
+			{
+				__static__IO->printi(__static__IO, __FATHOM__exception_data, list->get(list, __FATHOM__exception_data, j));
+				__static__IO->print(__static__IO, __FATHOM__exception_data, new_String(__FATHOM__exception_data, ", "));
+			}
+		}
+		__static__IO->print(__static__IO, __FATHOM__exception_data, new_String(__FATHOM__exception_data, "\n"));
 	}
 	CATCH (2)
 	{
+		__static__IO->print(__static__IO, __FATHOM__exception_data, new_String(__FATHOM__exception_data, "You cant divide by zero idiot."));
+		__static__IO->print(__static__IO, __FATHOM__exception_data, new_String(__FATHOM__exception_data, "\n"));
+	}
+	CATCH (3)
+	{
 		__static__IO->print(__static__IO, __FATHOM__exception_data, new_String(__FATHOM__exception_data, "You didnt pass a fricken even number..."));
+		__static__IO->print(__static__IO, __FATHOM__exception_data, new_String(__FATHOM__exception_data, "\n"));
 	}
 	FINALLY
 	{
 	}
 	END_TRY;
+	__static__IO->print(__static__IO, __FATHOM__exception_data, new_String(__FATHOM__exception_data, "Done\n"));
 	__static__IO->waitForEnter(__static__IO, __FATHOM__exception_data);
 }
 
@@ -84,7 +111,7 @@ static int divide(Test* __o__, ExceptionData* __FATHOM__exception_data, int nume
 {
 	if (denominator == 0)
 	{
-		THROW(1);
+		THROW(2);
 	}
 	return numerator / denominator;
 }
@@ -93,7 +120,7 @@ static int getEvenNumber(Test* __o__, ExceptionData* __FATHOM__exception_data, i
 {
 	if (num % 2 != 0)
 	{
-		THROW(2);
+		THROW(3);
 	}
 	return num;
 }
@@ -136,6 +163,7 @@ int main(int argc, char** argvs)
 	CATCH (1)
 	{
 		printf("You broke it.");
+		__static__IO->waitForEnter(__static__IO, 0);
 	}
 	FINALLY
 	{

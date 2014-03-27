@@ -5,19 +5,25 @@
 #include <ExceptionHandler.h>
 #include "ExceptionData.h"
 #include <setjmp.h>
+#include "ArrayList.h"
+
+typedef struct ExceptionData ExceptionData;
+typedef struct ArrayList ArrayList;
 
 CLASS
 (
 ExceptionData, 
 
+FUNC(ArrayList*, getCodes, ExceptionData* __o__, ExceptionData* __FATHOM__exception_data);
+FUNC(void, addCode, ExceptionData* __o__, ExceptionData* __FATHOM__exception_data, int code);
 FUNC(jmp_buf*, getBuffer, ExceptionData* __o__, ExceptionData* __FATHOM__exception_data);
+FUNC(ExceptionData*, getCorrectData, ExceptionData* __o__, ExceptionData* __FATHOM__exception_data, int code);
 FUNC(jmp_buf*, getCorrectBuffer, ExceptionData* __o__, ExceptionData* __FATHOM__exception_data, int code);
-FUNC(int, getNumCodes, ExceptionData* __o__, ExceptionData* __FATHOM__exception_data);
-FUNC(int*, getExceptionCodes, ExceptionData* __o__, ExceptionData* __FATHOM__exception_data);
+FUNC(void, jumpToBuffer, ExceptionData* __o__, ExceptionData* __FATHOM__exception_data, int code);
 FUNC(ExceptionData*, getParent, ExceptionData* __o__, ExceptionData* __FATHOM__exception_data);
 FUNC(void, setParent, ExceptionData* __o__, ExceptionData* __FATHOM__exception_data, ExceptionData* p);
 )
 
-ExceptionData* new_ExceptionData(ExceptionData* __FATHOM__exception_data, jmp_buf* buf, int* codes, int num);
+ExceptionData* new_ExceptionData(ExceptionData* __FATHOM__exception_data, jmp_buf* buf);
 void del_ExceptionData(ExceptionData* __o__, ExceptionData* __FATHOM__exception_data);
 #endif

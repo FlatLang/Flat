@@ -1,4 +1,7 @@
 #include "IO.h"
+#include <CClass.h>
+#include <ExceptionHandler.h>
+#include "ExceptionData.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include "String.h"

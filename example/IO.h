@@ -9,6 +9,9 @@
 #include "String.h"
 #include <Fathom.h>
 
+typedef struct ExceptionData ExceptionData;
+typedef struct String String;
+
 CLASS
 (
 IO, 

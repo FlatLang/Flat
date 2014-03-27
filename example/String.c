@@ -1,4 +1,7 @@
 #include "String.h"
+#include <CClass.h>
+#include <ExceptionHandler.h>
+#include "ExceptionData.h"
 
 String* new_String(ExceptionData* __FATHOM__exception_data, char* d);
 void del_String(String* __o__, ExceptionData* __FATHOM__exception_data);
@@ -15,6 +18,7 @@ NEW(String, __o__);
 
 __o__->toCharArray = toCharArray;
 
+__o__->prv->data = 0;
 __o__->prv->data = d;
 
 return __o__;

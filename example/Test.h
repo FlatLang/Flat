@@ -6,6 +6,12 @@
 #include "ExceptionData.h"
 #include "IO.h"
 #include "String.h"
+#include "ArrayList.h"
+
+typedef struct ExceptionData ExceptionData;
+typedef struct IO IO;
+typedef struct String String;
+typedef struct ArrayList ArrayList;
 
 CLASS
 (
