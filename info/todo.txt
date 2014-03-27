@@ -9,3 +9,9 @@ In-depth compiler error checking:
 
 Test cases:
 	char c[] = new String[52];
+	
+Things to fix:
+	Return node
+	Assignment node
+	
+	Make better clone method
