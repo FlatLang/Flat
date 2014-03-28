@@ -56,8 +56,7 @@ static void __FATHOM__main(Test* __o__, ExceptionData* __FATHOM__exception_data,
 	int i;
 	int den;
 	int num;
-	ArrayList* list;
-	int j;
+	int even;
 	
 	__static__IO->print(__static__IO, __FATHOM__exception_data, new_String(__FATHOM__exception_data, "Hello, world\n\n"));
 	__static__IO->print(__static__IO, __FATHOM__exception_data, new_String(__FATHOM__exception_data, "Command line arg #1 is\n"));
@@ -66,37 +65,33 @@ static void __FATHOM__main(Test* __o__, ExceptionData* __FATHOM__exception_data,
 	TRY
 	{
 		__FATHOM__exception_data->addCode(__FATHOM__exception_data, __FATHOM__exception_data, 2);
-		__FATHOM__exception_data->addCode(__FATHOM__exception_data, __FATHOM__exception_data, 3);
 		
-		den = 0;
+		den = 1;
 		if (den == 0)
 		{
 			THROW(2);
 		}
 		num = 23 / den;
-		list = new_ArrayList(__FATHOM__exception_data);
-		list->add(list, __FATHOM__exception_data, 5);
-		list->add(list, __FATHOM__exception_data, 6);
-		list->add(list, __FATHOM__exception_data, 7);
-		list->add(list, __FATHOM__exception_data, 8);
-		list->add(list, __FATHOM__exception_data, 9);
+		TRY
 		{
-			for (j = 0; j < list->getSize(list, __FATHOM__exception_data); j = j + 1)
-			{
-				__static__IO->printi(__static__IO, __FATHOM__exception_data, list->get(list, __FATHOM__exception_data, j));
-				__static__IO->print(__static__IO, __FATHOM__exception_data, new_String(__FATHOM__exception_data, ", "));
-			}
+			__FATHOM__exception_data->addCode(__FATHOM__exception_data, __FATHOM__exception_data, 3);
+			
+			even = __static__IO->getInt(__static__IO, __FATHOM__exception_data);
+			getEvenNumber(__o__, __FATHOM__exception_data, even);
 		}
-		__static__IO->print(__static__IO, __FATHOM__exception_data, new_String(__FATHOM__exception_data, "\n"));
+		CATCH (3)
+		{
+			__static__IO->print(__static__IO, __FATHOM__exception_data, new_String(__FATHOM__exception_data, "You didnt pass a fricken even number..."));
+			__static__IO->print(__static__IO, __FATHOM__exception_data, new_String(__FATHOM__exception_data, "\n"));
+		}
+		FINALLY
+		{
+		}
+		END_TRY;
 	}
 	CATCH (2)
 	{
 		__static__IO->print(__static__IO, __FATHOM__exception_data, new_String(__FATHOM__exception_data, "You cant divide by zero idiot."));
-		__static__IO->print(__static__IO, __FATHOM__exception_data, new_String(__FATHOM__exception_data, "\n"));
-	}
-	CATCH (3)
-	{
-		__static__IO->print(__static__IO, __FATHOM__exception_data, new_String(__FATHOM__exception_data, "You didnt pass a fricken even number..."));
 		__static__IO->print(__static__IO, __FATHOM__exception_data, new_String(__FATHOM__exception_data, "\n"));
 	}
 	FINALLY
