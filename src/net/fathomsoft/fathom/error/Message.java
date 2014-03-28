@@ -21,7 +21,8 @@ import net.fathomsoft.fathom.tree.TreeNode;
 import net.fathomsoft.fathom.util.Location;
 
 /**
- * 
+ * Class that holds the information for a message that will be
+ * output from the compiler.
  * 
  * @author	Braden Steffaniak
  * @since	Jan 5, 2014 at 9:28:08 PM
@@ -37,11 +38,26 @@ public class Message
 	
 	public static final int	MESSAGE = 1, WARNING = 2, ERROR = 3;
 	
+	/**
+	 * Create a new message instance with the given message that
+	 * is representing the given node.
+	 * 
+	 * @param message The message that describes what happened.
+	 * @param node The node that the message is talking about.
+	 */
 	public Message(String message, TreeNode node)
 	{
 		this(message, node.getLocationIn());
 	}
 	
+	/**
+	 * Create a new message instance with the given message that
+	 * is representing the given location.
+	 * 
+	 * @param message The message that describes what happened.
+	 * @param location The location i the source file that the
+	 * 		message is talking about.
+	 */
 	public Message(String message, Location location)
 	{
 		this.location = location;
@@ -49,6 +65,11 @@ public class Message
 		this.message  = message;
 	}
 	
+	/**
+	 * Output a message from the compiler.
+	 * 
+	 * @param type The type of message that is being output.
+	 */
 	public void outputMessage(int type)
 	{
 		if (type == MESSAGE)
