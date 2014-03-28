@@ -39,7 +39,7 @@ import net.fathomsoft.fathom.util.FileUtils;
  * @author	Braden Steffaniak
  * @since	Jan 5, 2014 at 9:00:04 PM
  * @since	v0.1
- * @version	Jan 5, 2014 at 9:00:04 PM
+ * @version	Mar 28, 2014 at 6:15:04 PM
  * @version	v0.1
  */
 public class Fathom
@@ -147,8 +147,6 @@ public class Fathom
 		ArrayList<SyntaxTree> trees   = new ArrayList<SyntaxTree>();
 		ArrayList<String>     headers = new ArrayList<String>();
 		ArrayList<String>     sources = new ArrayList<String>();
-		
-		File cClass     = new File("CClass.h");
 		
 		File workingDir = new File(directory);
 		
@@ -319,7 +317,7 @@ public class Fathom
 		
 		if (!isFlagEnabled(DRY_RUN))
 		{
-			compileC(workingDir, cClass);
+			compileC(workingDir);
 		}
 		else
 		{
@@ -327,7 +325,12 @@ public class Fathom
 		}
 	}
 	
-	private void compileC(File workingDir, File cClass)
+	/**
+	 * Compile the generated c code into an executable file.
+	 * 
+	 * @param workingDir The working directory of the compiler.
+	 */
+	private void compileC(File workingDir)
 	{
 		StringBuilder cmd = new StringBuilder();
 		
