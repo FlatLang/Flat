@@ -24,43 +24,26 @@ public class Test
 		
 		try
 		{
-			int den = 0;
+			int den = 1;
 			
 			int num = 23 / den;
 			
-			//int even = IO.getInt();
-			
-			//getEvenNumber(even);
-			
-			ArrayList list = new ArrayList();
-			
-			list.add(5);
-			list.add(6);
-			list.add(7);
-			list.add(8);
-			list.add(9);
-			
-			for (int j = 0; j < list.getSize(); j = j + 1)
+			try
 			{
-				IO.printi(list.get(j));
-				IO.print(", ");
+				int even = IO.getInt();
+				
+				getEvenNumber(even);
 			}
-			
-			IO.print("\n");
+			catch (NotEvenNumberException e)
+			{
+				IO.print("You didnt pass a fricken even number...");
+				IO.print("\n");
+			}
 		}
 		catch (DivideByZeroException e)
 		{
 			IO.print("You cant divide by zero idiot.");
 			IO.print("\n");
-		}
-		catch (NotEvenNumberException e)
-		{
-			IO.print("You didnt pass a fricken even number...");
-			IO.print("\n");
-		}
-		finally
-		{
-			
 		}
 		
 		IO.print("Done\n");
