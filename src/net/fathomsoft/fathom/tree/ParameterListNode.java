@@ -114,15 +114,20 @@ public class ParameterListNode extends TreeNode
 	@Override
 	public ParameterListNode clone()
 	{
-		ParameterListNode clone = new ParameterListNode();
+		ParameterListNode node = new ParameterListNode();
 		
+		return clone(node);
+	}
+	
+	public ParameterListNode clone(ParameterListNode node)
+	{
 		for (int i = 0; i < getChildren().size(); i++)
 		{
 			TreeNode child = getChild(i);
 			
-			clone.addChild(child.clone());
+			node.addChild(child.clone());
 		}
 		
-		return clone;
+		return node;
 	}
 }

@@ -145,15 +145,20 @@ public class WhileLoopNode extends LoopNode
 	@Override
 	public WhileLoopNode clone()
 	{
-		WhileLoopNode clone = new WhileLoopNode();
+		WhileLoopNode node = new WhileLoopNode();
 		
+		return clone(node);
+	}
+	
+	public WhileLoopNode clone(WhileLoopNode node)
+	{
 		for (int i = 0; i < getChildren().size(); i++)
 		{
 			TreeNode child = getChild(i);
 			
-			clone.addChild(child.clone());
+			node.addChild(child.clone());
 		}
 		
-		return clone;
+		return node;
 	}
 }

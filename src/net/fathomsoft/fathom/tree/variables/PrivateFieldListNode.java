@@ -121,15 +121,20 @@ public class PrivateFieldListNode extends TreeNode
 	@Override
 	public PrivateFieldListNode clone()
 	{
-		PrivateFieldListNode clone = new PrivateFieldListNode();
+		PrivateFieldListNode node = new PrivateFieldListNode();
 		
+		return clone(node);
+	}
+	
+	public PrivateFieldListNode clone(PrivateFieldListNode node)
+	{
 		for (int i = 0; i < getChildren().size(); i++)
 		{
 			TreeNode child = getChild(i);
 			
-			clone.addChild(child.clone());
+			node.addChild(child.clone());
 		}
 		
-		return clone;
+		return node;
 	}
 }

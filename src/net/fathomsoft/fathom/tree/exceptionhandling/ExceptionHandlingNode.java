@@ -88,15 +88,20 @@ public class ExceptionHandlingNode extends TreeNode
 	@Override
 	public ExceptionHandlingNode clone()
 	{
-		ExceptionHandlingNode clone = new ExceptionHandlingNode();
+		ExceptionHandlingNode node = new ExceptionHandlingNode();
 		
+		return clone(node);
+	}
+	
+	public ExceptionHandlingNode clone(ExceptionHandlingNode node)
+	{
 		for (int i = 0; i < getChildren().size(); i++)
 		{
 			TreeNode child = getChild(i);
 			
-			clone.addChild(child.clone());
+			node.addChild(child.clone());
 		}
 		
-		return clone;
+		return node;
 	}
 }

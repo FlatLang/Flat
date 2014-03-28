@@ -412,16 +412,22 @@ public class MethodCallNode extends IdentifierNode
 	@Override
 	public MethodCallNode clone()
 	{
-		MethodCallNode clone = new MethodCallNode();
-		clone.setName(getName());
+		MethodCallNode node = new MethodCallNode();
+		
+		return clone(node);
+	}
+	
+	public MethodCallNode clone(MethodCallNode node)
+	{
+		node.setName(getName());
 		
 		for (int i = 0; i < getChildren().size(); i++)
 		{
 			TreeNode child = getChild(i);
 			
-			clone.addChild(child.clone());
+			node.addChild(child.clone());
 		}
 		
-		return clone;
+		return node;
 	}
 }

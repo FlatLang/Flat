@@ -348,23 +348,29 @@ public class ConstructorNode extends MethodNode
 	@Override
 	public ConstructorNode clone()
 	{
-		ConstructorNode clone = new ConstructorNode();
-		clone.setStatic(isStatic());
-		clone.setVisibility(getVisibility());
-		clone.setConst(isConst());
-		clone.setArrayDimensions(getArrayDimensions());
-		clone.setType(getType());
-		clone.setReference(isReference());
-		clone.setPointer(isPointer());
-		clone.setName(getName());
+		ConstructorNode node = new ConstructorNode();
+		
+		return clone(node);
+	}
+	
+	public ConstructorNode clone(ConstructorNode node)
+	{
+		node.setStatic(isStatic());
+		node.setVisibility(getVisibility());
+		node.setConst(isConst());
+		node.setArrayDimensions(getArrayDimensions());
+		node.setType(getType());
+		node.setReference(isReference());
+		node.setPointer(isPointer());
+		node.setName(getName());
 		
 		for (int i = 0; i < getChildren().size(); i++)
 		{
 			TreeNode child = getChild(i);
 			
-			clone.addChild(child.clone());
+			node.addChild(child.clone());
 		}
 		
-		return clone;
+		return node;
 	}
 }

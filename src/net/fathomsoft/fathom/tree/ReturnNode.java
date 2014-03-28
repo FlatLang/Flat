@@ -162,15 +162,20 @@ public class ReturnNode extends TreeNode
 	@Override
 	public ReturnNode clone()
 	{
-		ReturnNode clone = new ReturnNode();
+		ReturnNode node = new ReturnNode();
 		
+		return clone(node);
+	}
+	
+	public ReturnNode clone(ReturnNode node)
+	{
 		for (int i = 0; i < getChildren().size(); i++)
 		{
 			TreeNode child = getChild(i);
 			
-			clone.addChild(child.clone());
+			node.addChild(child.clone());
 		}
 		
-		return clone;
+		return node;
 	}
 }

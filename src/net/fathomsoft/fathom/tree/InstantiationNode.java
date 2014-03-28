@@ -128,16 +128,22 @@ public class InstantiationNode extends IdentifierNode
 	@Override
 	public InstantiationNode clone()
 	{
-		InstantiationNode clone = new InstantiationNode();
-		clone.setName(getName());
+		InstantiationNode node = new InstantiationNode();
+		
+		return clone(node);
+	}
+	
+	public InstantiationNode clone(InstantiationNode node)
+	{
+		node.setName(getName());
 		
 		for (int i = 0; i < getChildren().size(); i++)
 		{
 			TreeNode child = getChild(i);
 			
-			clone.addChild(child.clone());
+			node.addChild(child.clone());
 		}
 		
-		return clone;
+		return node;
 	}
 }

@@ -126,15 +126,20 @@ public class PublicFieldListNode extends TreeNode
 	@Override
 	public PublicFieldListNode clone()
 	{
-		PublicFieldListNode clone = new PublicFieldListNode();
+		PublicFieldListNode node = new PublicFieldListNode();
 		
+		return clone(node);
+	}
+	
+	public PublicFieldListNode clone(PublicFieldListNode node)
+	{
 		for (int i = 0; i < getChildren().size(); i++)
 		{
 			TreeNode child = getChild(i);
 			
-			clone.addChild(child.clone());
+			node.addChild(child.clone());
 		}
 		
-		return clone;
+		return node;
 	}
 }

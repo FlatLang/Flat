@@ -134,23 +134,27 @@ public class ArrayNode extends IdentifierNode
 		
 		return null;
 	}
-	
+
 	/**
 	 * @see net.fathomsoft.fathom.tree.TreeNode#clone()
 	 */
 	@Override
 	public ArrayNode clone()
 	{
-		ArrayNode clone = new ArrayNode();
+		ArrayNode node = new ArrayNode();
 		
+		return clone(node);
+	}
+	
+	public ArrayNode clone(ArrayNode node)
+	{
 		for (int i = 0; i < getChildren().size(); i++)
 		{
 			TreeNode child = getChild(i);
 			
-			clone.addChild(child.clone());
+			node.addChild(child.clone());
 		}
 		
-		return clone;
+		return node;
 	}
-	
 }

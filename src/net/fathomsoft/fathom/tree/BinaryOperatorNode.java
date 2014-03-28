@@ -334,15 +334,20 @@ public class BinaryOperatorNode extends TreeNode
 	@Override
 	public BinaryOperatorNode clone()
 	{
-		BinaryOperatorNode clone = new BinaryOperatorNode();
+		BinaryOperatorNode node = new BinaryOperatorNode();
 		
+		return clone(node);
+	}
+	
+	public BinaryOperatorNode clone(BinaryOperatorNode node)
+	{
 		for (int i = 0; i < getChildren().size(); i++)
 		{
 			TreeNode child = getChild(i);
 			
-			clone.addChild(child.clone());
+			node.addChild(child.clone());
 		}
 		
-		return clone;
+		return node;
 	}
 }

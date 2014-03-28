@@ -317,23 +317,29 @@ public class DestructorNode extends MethodNode
 	@Override
 	public DestructorNode clone()
 	{
-		DestructorNode clone = new DestructorNode();
-		clone.setStatic(isStatic());
-		clone.setVisibility(getVisibility());
-		clone.setConst(isConst());
-		clone.setArrayDimensions(getArrayDimensions());
-		clone.setType(getType());
-		clone.setReference(isReference());
-		clone.setPointer(isPointer());
-		clone.setName(getName());
+		DestructorNode node = new DestructorNode();
+		
+		return clone(node);
+	}
+	
+	public DestructorNode clone(DestructorNode node)
+	{
+		node.setStatic(isStatic());
+		node.setVisibility(getVisibility());
+		node.setConst(isConst());
+		node.setArrayDimensions(getArrayDimensions());
+		node.setType(getType());
+		node.setReference(isReference());
+		node.setPointer(isPointer());
+		node.setName(getName());
 		
 		for (int i = 0; i < getChildren().size(); i++)
 		{
 			TreeNode child = getChild(i);
 			
-			clone.addChild(child.clone());
+			node.addChild(child.clone());
 		}
 		
-		return clone;
+		return node;
 	}
 }

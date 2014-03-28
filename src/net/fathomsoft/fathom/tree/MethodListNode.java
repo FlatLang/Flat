@@ -132,15 +132,20 @@ public class MethodListNode extends TreeNode
 	@Override
 	public MethodListNode clone()
 	{
-		MethodListNode clone = new MethodListNode();
+		MethodListNode node = new MethodListNode();
 		
+		return clone(node);
+	}
+	
+	public MethodListNode clone(MethodListNode node)
+	{
 		for (int i = 0; i < getChildren().size(); i++)
 		{
 			TreeNode child = getChild(i);
 			
-			clone.addChild(child.clone());
+			node.addChild(child.clone());
 		}
 		
-		return clone;
+		return node;
 	}
 }

@@ -161,21 +161,27 @@ public class LocalVariableNode extends VariableNode
 	@Override
 	public LocalVariableNode clone()
 	{
-		LocalVariableNode clone = new LocalVariableNode();
-		clone.setName(getName());
-		clone.setConst(isConst());
-		clone.setArrayDimensions(getArrayDimensions());
-		clone.setType(getType());
-		clone.setReference(isReference());
-		clone.setPointer(isPointer());
+		LocalVariableNode node = new LocalVariableNode();
+		
+		return clone(node);
+	}
+	
+	public LocalVariableNode clone(LocalVariableNode node)
+	{
+		node.setName(getName());
+		node.setConst(isConst());
+		node.setArrayDimensions(getArrayDimensions());
+		node.setType(getType());
+		node.setReference(isReference());
+		node.setPointer(isPointer());
 		
 		for (int i = 0; i < getChildren().size(); i++)
 		{
 			TreeNode child = getChild(i);
 			
-			clone.addChild(child.clone());
+			node.addChild(child.clone());
 		}
 		
-		return clone;
+		return node;
 	}
 }

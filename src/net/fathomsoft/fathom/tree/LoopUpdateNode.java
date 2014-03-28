@@ -75,15 +75,20 @@ public class LoopUpdateNode extends TreeNode
 	@Override
 	public LoopUpdateNode clone()
 	{
-		LoopUpdateNode clone = new LoopUpdateNode();
+		LoopUpdateNode node = new LoopUpdateNode();
 		
+		return clone(node);
+	}
+	
+	public LoopUpdateNode clone(LoopUpdateNode node)
+	{
 		for (int i = 0; i < getChildren().size(); i++)
 		{
 			TreeNode child = getChild(i);
 			
-			clone.addChild(child.clone());
+			node.addChild(child.clone());
 		}
 		
-		return clone;
+		return node;
 	}
 }

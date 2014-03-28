@@ -221,15 +221,20 @@ public class ForLoopNode extends LoopNode
 	@Override
 	public ForLoopNode clone()
 	{
-		ForLoopNode clone = new ForLoopNode();
+		ForLoopNode node = new ForLoopNode();
 		
+		return clone(node);
+	}
+	
+	public ForLoopNode clone(ForLoopNode node)
+	{
 		for (int i = 0; i < getChildren().size(); i++)
 		{
 			TreeNode child = getChild(i);
 			
-			clone.addChild(child.clone());
+			node.addChild(child.clone());
 		}
 		
-		return clone;
+		return node;
 	}
 }

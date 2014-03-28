@@ -91,20 +91,25 @@ public class ArgumentListNode extends TreeNode
 	}
 
 	/**
-	 * @see net.fathomsoft.fathom.tree.TreeNode#clone()
+	 * @see net.fathomsoft.fathom.tree.TreeNode#clone(net.fathomsoft.fathom.tree.TreeNode)
 	 */
 	@Override
-	public ArgumentListNode clone()
+	public TreeNode clone()
 	{
-		ArgumentListNode clone = new ArgumentListNode();
+		ArgumentListNode node = new ArgumentListNode();
 		
+		return clone(node);
+	}
+	
+	public ArgumentListNode clone(ArgumentListNode node)
+	{
 		for (int i = 0; i < getChildren().size(); i++)
 		{
 			TreeNode child = getChild(i);
 			
-			clone.addChild(child.clone());
+			node.addChild(child.clone());
 		}
 		
-		return clone;
+		return node;
 	}
 }

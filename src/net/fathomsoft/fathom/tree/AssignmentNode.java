@@ -226,15 +226,20 @@ public class AssignmentNode extends TreeNode
 	@Override
 	public AssignmentNode clone()
 	{
-		AssignmentNode clone = new AssignmentNode();
+		AssignmentNode node = new AssignmentNode();
 		
+		return clone(node);
+	}
+	
+	public AssignmentNode clone(AssignmentNode node)
+	{
 		for (int i = 0; i < getChildren().size(); i++)
 		{
 			TreeNode child = getChild(i);
 			
-			clone.addChild(child.clone());
+			node.addChild(child.clone());
 		}
 		
-		return clone;
+		return node;
 	}
 }

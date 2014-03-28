@@ -293,7 +293,18 @@ public abstract class TreeNode
 	 */
 	public void addChild(TreeNode node)
 	{
-		children.add(node);
+		addChild(children.size(), node);
+	}
+	
+	/**
+	 * Add the specific TreeNode under the current TreeNode as a child.
+	 * 
+	 * @param index The index to add the node at.
+	 * @param node The node to set as the child node.
+	 */
+	public void addChild(int index, TreeNode node)
+	{
+		children.add(index, node);
 		
 		// If the node already belongs to a parent, remove it from its old parent.
 		if (node.parent != null)
@@ -710,6 +721,6 @@ public abstract class TreeNode
 		
 		return -1;
 	}
-	
+
 	public abstract TreeNode clone();
 }

@@ -116,15 +116,20 @@ public class ThrowNode extends ExceptionHandlingNode
 	@Override
 	public ThrowNode clone()
 	{
-		ThrowNode clone = new ThrowNode();
+		ThrowNode node = new ThrowNode();
 		
+		return clone(node);
+	}
+	
+	public ThrowNode clone(ThrowNode node)
+	{
 		for (int i = 0; i < getChildren().size(); i++)
 		{
 			TreeNode child = getChild(i);
 			
-			clone.addChild(child.clone());
+			node.addChild(child.clone());
 		}
 		
-		return clone;
+		return node;
 	}
 }

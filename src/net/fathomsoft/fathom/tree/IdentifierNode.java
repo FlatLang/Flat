@@ -91,16 +91,22 @@ public class IdentifierNode extends TreeNode
 	@Override
 	public IdentifierNode clone()
 	{
-		IdentifierNode clone = new IdentifierNode();
-		clone.setName(getName());
+		IdentifierNode node = new IdentifierNode();
+		
+		return clone(node);
+	}
+	
+	public IdentifierNode clone(IdentifierNode node)
+	{
+		node.setName(getName());
 		
 		for (int i = 0; i < getChildren().size(); i++)
 		{
 			TreeNode child = getChild(i);
 			
-			clone.addChild(child.clone());
+			node.addChild(child.clone());
 		}
 		
-		return clone;
+		return node;
 	}
 }

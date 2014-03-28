@@ -162,15 +162,20 @@ public class CatchNode extends ExceptionHandlingNode
 	@Override
 	public CatchNode clone()
 	{
-		CatchNode clone = new CatchNode();
+		CatchNode node = new CatchNode();
 		
+		return clone(node);
+	}
+	
+	public CatchNode clone(CatchNode node)
+	{
 		for (int i = 0; i < getChildren().size(); i++)
 		{
 			TreeNode child = getChild(i);
 			
-			clone.addChild(child.clone());
+			node.addChild(child.clone());
 		}
 		
-		return clone;
+		return node;
 	}
 }

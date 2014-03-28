@@ -207,16 +207,22 @@ public class FileNode extends IdentifierNode
 	@Override
 	public FileNode clone()
 	{
-		FileNode clone = new FileNode();
-		clone.setName(getName());
+		FileNode node = new FileNode();
+		
+		return clone(node);
+	}
+	
+	public FileNode clone(FileNode node)
+	{
+		node.setName(getName());
 		
 		for (int i = 0; i < getChildren().size(); i++)
 		{
 			TreeNode child = getChild(i);
 			
-			clone.addChild(child.clone());
+			node.addChild(child.clone());
 		}
 		
-		return clone;
+		return node;
 	}
 }

@@ -132,22 +132,28 @@ public class ParameterNode extends LocalVariableNode
 	@Override
 	public ParameterNode clone()
 	{
-		ParameterNode clone = new ParameterNode();
-		clone.setName(getName());
-		clone.setConst(isConst());
-		clone.setArrayDimensions(getArrayDimensions());
-		clone.setType(getType());
-		clone.setReference(isReference());
-		clone.setPointer(isPointer());
-		clone.setDefaultValue(getDefaultValue());
+		ParameterNode node = new ParameterNode();
+		
+		return clone(node);
+	}
+	
+	public ParameterNode clone(ParameterNode node)
+	{
+		node.setName(getName());
+		node.setConst(isConst());
+		node.setArrayDimensions(getArrayDimensions());
+		node.setType(getType());
+		node.setReference(isReference());
+		node.setPointer(isPointer());
+		node.setDefaultValue(getDefaultValue());
 		
 		for (int i = 0; i < getChildren().size(); i++)
 		{
 			TreeNode child = getChild(i);
 			
-			clone.addChild(child.clone());
+			node.addChild(child.clone());
 		}
 		
-		return clone;
+		return node;
 	}
 }

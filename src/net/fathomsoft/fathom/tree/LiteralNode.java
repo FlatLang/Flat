@@ -95,16 +95,22 @@ public class LiteralNode extends TreeNode
 	@Override
 	public LiteralNode clone()
 	{
-		LiteralNode clone = new LiteralNode();
-		clone.setValue(getValue(), true);
+		LiteralNode node = new LiteralNode();
+		
+		return clone(node);
+	}
+	
+	public LiteralNode clone(LiteralNode node)
+	{
+		node.setValue(getValue(), true);
 		
 		for (int i = 0; i < getChildren().size(); i++)
 		{
 			TreeNode child = getChild(i);
 			
-			clone.addChild(child.clone());
+			node.addChild(child.clone());
 		}
 		
-		return clone;
+		return node;
 	}
 }

@@ -161,15 +161,20 @@ public class ArrayAccessNode extends TreeNode
 	@Override
 	public ArrayAccessNode clone()
 	{
-		ArrayAccessNode clone = new ArrayAccessNode();
+		ArrayAccessNode node = new ArrayAccessNode();
 		
+		return clone(node);
+	}
+	
+	public ArrayAccessNode clone(ArrayAccessNode node)
+	{
 		for (int i = 0; i < getChildren().size(); i++)
 		{
 			TreeNode child = getChild(i);
 			
-			clone.addChild(child.clone());
+			node.addChild(child.clone());
 		}
 		
-		return clone;
+		return node;
 	}
 }

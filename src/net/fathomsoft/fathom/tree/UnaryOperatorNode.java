@@ -119,15 +119,20 @@ public class UnaryOperatorNode extends TreeNode
 	@Override
 	public UnaryOperatorNode clone()
 	{
-		UnaryOperatorNode clone = new UnaryOperatorNode();
+		UnaryOperatorNode node = new UnaryOperatorNode();
 		
+		return clone(node);
+	}
+	
+	public UnaryOperatorNode clone(UnaryOperatorNode node)
+	{
 		for (int i = 0; i < getChildren().size(); i++)
 		{
 			TreeNode child = getChild(i);
 			
-			clone.addChild(child.clone());
+			node.addChild(child.clone());
 		}
 		
-		return clone;
+		return node;
 	}
 }

@@ -94,22 +94,28 @@ public class ExceptionNode extends LocalVariableNode
 	@Override
 	public ExceptionNode clone()
 	{
-		ExceptionNode clone = new ExceptionNode();
-		clone.setName(getName());
-		clone.setConst(isConst());
-		clone.setArrayDimensions(getArrayDimensions());
-		clone.setType(getType());
-		clone.setReference(isReference());
-		clone.setPointer(isPointer());
-		clone.id = id;
+		ExceptionNode node = new ExceptionNode();
+		
+		return clone(node);
+	}
+	
+	public ExceptionNode clone(ExceptionNode node)
+	{
+		node.setName(getName());
+		node.setConst(isConst());
+		node.setArrayDimensions(getArrayDimensions());
+		node.setType(getType());
+		node.setReference(isReference());
+		node.setPointer(isPointer());
+		node.id = id;
 		
 		for (int i = 0; i < getChildren().size(); i++)
 		{
 			TreeNode child = getChild(i);
 			
-			clone.addChild(child.clone());
+			node.addChild(child.clone());
 		}
 		
-		return clone;
+		return node;
 	}
 }

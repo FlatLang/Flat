@@ -22,6 +22,9 @@ import java.io.IOException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import net.fathomsoft.fathom.tree.exceptionhandling.CatchNode;
+import net.fathomsoft.fathom.tree.exceptionhandling.FinallyNode;
+import net.fathomsoft.fathom.tree.exceptionhandling.TryNode;
 import net.fathomsoft.fathom.tree.variables.FieldNode;
 import net.fathomsoft.fathom.util.FileUtils;
 import net.fathomsoft.fathom.util.Location;
@@ -209,6 +212,58 @@ public class SyntaxTree
 				defaultDestructor.setVisibility(FieldNode.PUBLIC);
 				
 				node.addChild(defaultDestructor);
+			}
+		}
+		else if (root instanceof TryNode)
+		{
+			TreeNode parent = root.getParent();
+			
+			FinallyNode finallyNode = null;
+			
+			for (int i = 0; i < parent.getChildren().size() && finallyNode == null; i++)
+			{
+				TreeNode child = parent.getChild(i);
+				
+				if (child == root)
+				{
+					i++;
+					
+					int     insertIndex = -1;
+					
+					while (i < parent.getChildren().size() && insertIndex == -1)
+					{
+						child = parent.getChild(i);
+						
+						// If the current child is a catch node.
+						if (child instanceof CatchNode == false)
+						{
+							// If there already is a finally node.
+							if (child instanceof FinallyNode)
+							{
+								insertIndex = -2;
+							}
+							// If there was not finally node.
+							else
+							{
+								insertIndex = i;
+							}
+						}
+						
+						i++;
+					}
+					
+					// If there does not already exist a finally node.
+					if (insertIndex != -2)
+					{
+						if (insertIndex < 0)
+						{
+							insertIndex = i;
+						}
+						
+						finallyNode = new FinallyNode();
+						parent.addChild(insertIndex, finallyNode);
+					}
+				}
 			}
 		}
 //		else if (root instanceof MethodCallNode)

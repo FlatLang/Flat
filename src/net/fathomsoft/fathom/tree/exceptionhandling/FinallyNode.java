@@ -85,15 +85,20 @@ public class FinallyNode extends ExceptionHandlingNode
 	@Override
 	public FinallyNode clone()
 	{
-		FinallyNode clone = new FinallyNode();
+		FinallyNode node = new FinallyNode();
 		
+		return clone(node);
+	}
+	
+	public FinallyNode clone(FinallyNode node)
+	{
 		for (int i = 0; i < getChildren().size(); i++)
 		{
 			TreeNode child = getChild(i);
 			
-			clone.addChild(child.clone());
+			node.addChild(child.clone());
 		}
 		
-		return clone;
+		return node;
 	}
 }

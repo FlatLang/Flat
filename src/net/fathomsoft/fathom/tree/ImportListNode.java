@@ -125,15 +125,20 @@ public class ImportListNode extends TreeNode
 	@Override
 	public ImportListNode clone()
 	{
-		ImportListNode clone = new ImportListNode();
+		ImportListNode node = new ImportListNode();
 		
+		return clone(node);
+	}
+	
+	public ImportListNode clone(ImportListNode node)
+	{
 		for (int i = 0; i < getChildren().size(); i++)
 		{
 			TreeNode child = getChild(i);
 			
-			clone.addChild(child.clone());
+			node.addChild(child.clone());
 		}
 		
-		return clone;
+		return node;
 	}
 }

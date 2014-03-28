@@ -108,18 +108,24 @@ public class ModifierNode extends IdentifierNode
 	@Override
 	public ModifierNode clone()
 	{
-		ModifierNode clone = new ModifierNode();
-		clone.setName(getName());
-		clone.setReference(isReference());
-		clone.setPointer(isPointer());
+		ModifierNode node = new ModifierNode();
+		
+		return clone(node);
+	}
+	
+	public ModifierNode clone(ModifierNode node)
+	{
+		node.setName(getName());
+		node.setReference(isReference());
+		node.setPointer(isPointer());
 		
 		for (int i = 0; i < getChildren().size(); i++)
 		{
 			TreeNode child = getChild(i);
 			
-			clone.addChild(child.clone());
+			node.addChild(child.clone());
 		}
 		
-		return clone;
+		return node;
 	}
 }

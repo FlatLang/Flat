@@ -575,30 +575,36 @@ public class ClassNode extends DeclarationNode
 	@Override
 	public ClassNode clone()
 	{
-		ClassNode clone = new ClassNode();
-		clone.setArrayDimensions(getArrayDimensions());
-		clone.setConst(isConst());
-		clone.setVisibility(getVisibility());
-		clone.setType(getType());
-		clone.setReference(isReference());
-		clone.setPointer(isPointer());
-		clone.setName(getName());
-		clone.extendedClass = extendedClass;
+		ClassNode node = new ClassNode();
+		
+		return clone(node);
+	}
+	
+	public ClassNode clone(ClassNode node)
+	{
+		node.setArrayDimensions(getArrayDimensions());
+		node.setConst(isConst());
+		node.setVisibility(getVisibility());
+		node.setType(getType());
+		node.setReference(isReference());
+		node.setPointer(isPointer());
+		node.setName(getName());
+		node.extendedClass = extendedClass;
 		
 		for (int i = 0; i < implementedClasses.size(); i++)
 		{
 			String implementedClass = implementedClasses.get(i);
 			
-			clone.addImplementedClass(implementedClass);
+			node.addImplementedClass(implementedClass);
 		}
 		
 		for (int i = 0; i < getChildren().size(); i++)
 		{
 			TreeNode child = getChild(i);
 			
-			clone.addChild(child.clone());
+			node.addChild(child.clone());
 		}
 		
-		return clone;
+		return node;
 	}
 }

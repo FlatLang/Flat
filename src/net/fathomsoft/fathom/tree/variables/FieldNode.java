@@ -220,23 +220,29 @@ public class FieldNode extends DeclarationNode
 	@Override
 	public FieldNode clone()
 	{
-		FieldNode clone = new FieldNode();
-		clone.setStatic(isStatic());
-		clone.setVisibility(getVisibility());
-		clone.setConst(isConst());
-		clone.setName(getName());
-		clone.setArrayDimensions(getArrayDimensions());
-		clone.setType(getType());
-		clone.setReference(isReference());
-		clone.setPointer(isPointer());
+		FieldNode node = new FieldNode();
+		
+		return clone(node);
+	}
+	
+	public FieldNode clone(FieldNode node)
+	{
+		node.setStatic(isStatic());
+		node.setVisibility(getVisibility());
+		node.setConst(isConst());
+		node.setName(getName());
+		node.setArrayDimensions(getArrayDimensions());
+		node.setType(getType());
+		node.setReference(isReference());
+		node.setPointer(isPointer());
 		
 		for (int i = 0; i < getChildren().size(); i++)
 		{
 			TreeNode child = getChild(i);
 			
-			clone.addChild(child.clone());
+			node.addChild(child.clone());
 		}
 		
-		return clone;
+		return node;
 	}
 }

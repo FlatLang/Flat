@@ -242,21 +242,27 @@ public class VariableNode extends ModifierNode
 	@Override
 	public VariableNode clone()
 	{
-		VariableNode clone = new VariableNode();
-		clone.setName(getName());
-		clone.setConst(isConst());
-		clone.setArrayDimensions(getArrayDimensions());
-		clone.setType(getType());
-		clone.setReference(isReference());
-		clone.setPointer(isPointer());
+		VariableNode node = new VariableNode();
+		
+		return clone(node);
+	}
+	
+	public VariableNode clone(VariableNode node)
+	{
+		node.setName(getName());
+		node.setConst(isConst());
+		node.setArrayDimensions(getArrayDimensions());
+		node.setType(getType());
+		node.setReference(isReference());
+		node.setPointer(isPointer());
 		
 		for (int i = 0; i < getChildren().size(); i++)
 		{
 			TreeNode child = getChild(i);
 			
-			clone.addChild(child.clone());
+			node.addChild(child.clone());
 		}
 		
-		return clone;
+		return node;
 	}
 }

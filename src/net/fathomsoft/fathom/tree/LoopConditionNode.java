@@ -75,15 +75,20 @@ public class LoopConditionNode extends TreeNode
 	@Override
 	public LoopConditionNode clone()
 	{
-		LoopConditionNode clone = new LoopConditionNode();
+		LoopConditionNode node = new LoopConditionNode();
 		
+		return clone(node);
+	}
+	
+	public LoopConditionNode clone(LoopConditionNode node)
+	{
 		for (int i = 0; i < getChildren().size(); i++)
 		{
 			TreeNode child = getChild(i);
 			
-			clone.addChild(child.clone());
+			node.addChild(child.clone());
 		}
 		
-		return clone;
+		return node;
 	}
 }

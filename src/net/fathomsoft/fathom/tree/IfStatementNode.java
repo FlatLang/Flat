@@ -147,15 +147,20 @@ public class IfStatementNode extends TreeNode
 	@Override
 	public IfStatementNode clone()
 	{
-		IfStatementNode clone = new IfStatementNode();
+		IfStatementNode node = new IfStatementNode();
 		
+		return clone(node);
+	}
+	
+	public IfStatementNode clone(IfStatementNode node)
+	{
 		for (int i = 0; i < getChildren().size(); i++)
 		{
 			TreeNode child = getChild(i);
 			
-			clone.addChild(child.clone());
+			node.addChild(child.clone());
 		}
 		
-		return clone;
+		return node;
 	}
 }

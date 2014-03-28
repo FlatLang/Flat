@@ -87,16 +87,22 @@ public class OperatorNode extends TreeNode
 	@Override
 	public OperatorNode clone()
 	{
-		OperatorNode clone = new OperatorNode();
-		clone.setOperator(getOperator());
+		OperatorNode node = new OperatorNode();
+		
+		return clone(node);
+	}
+	
+	public OperatorNode clone(OperatorNode node)
+	{
+		node.setOperator(getOperator());
 		
 		for (int i = 0; i < getChildren().size(); i++)
 		{
 			TreeNode child = getChild(i);
 			
-			clone.addChild(child.clone());
+			node.addChild(child.clone());
 		}
 		
-		return clone;
+		return node;
 	}
 }

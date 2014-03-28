@@ -120,15 +120,20 @@ public class TryNode extends ExceptionHandlingNode
 	@Override
 	public TryNode clone()
 	{
-		TryNode clone = new TryNode();
+		TryNode node = new TryNode();
 		
+		return clone(node);
+	}
+	
+	public TryNode clone(TryNode node)
+	{
 		for (int i = 0; i < getChildren().size(); i++)
 		{
 			TreeNode child = getChild(i);
 			
-			clone.addChild(child.clone());
+			node.addChild(child.clone());
 		}
 		
-		return clone;
+		return node;
 	}
 }
