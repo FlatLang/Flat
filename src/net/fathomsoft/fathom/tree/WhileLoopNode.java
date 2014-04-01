@@ -42,7 +42,23 @@ public class WhileLoopNode extends LoopNode
 	
 	public TreeNode getConditionNode()
 	{
-		return getChild(0);
+		return getChild(1);
+	}
+	
+	/**
+	 * @see net.fathomsoft.fathom.tree.TreeNode#addChild(TreeNode)
+	 */
+	@Override
+	public void addChild(TreeNode child)
+	{
+		if (getChildren().size() <= 1)
+		{
+			getChildren().add(child);
+		}
+		else
+		{
+			super.addChild(child);
+		}
 	}
 
 	/**
@@ -74,7 +90,6 @@ public class WhileLoopNode extends LoopNode
 		TreeNode condition    = getConditionNode();
 		
 		builder.append("while (").append(condition.generateCSourceOutput()).append(')').append('\n');
-		builder.append('{').append('\n');
 		
 		for (int i = 0; i < getChildren().size(); i++)
 		{
@@ -85,8 +100,6 @@ public class WhileLoopNode extends LoopNode
 				builder.append(child.generateCSourceOutput());
 			}
 		}
-		
-		builder.append('}').append('\n');
 		
 		return builder.toString();
 	}

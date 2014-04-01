@@ -18,6 +18,7 @@
 package net.fathomsoft.fathom.tree;
 
 import net.fathomsoft.fathom.error.SyntaxMessage;
+import net.fathomsoft.fathom.tree.variables.LocalVariableNode;
 import net.fathomsoft.fathom.util.Bounds;
 import net.fathomsoft.fathom.util.Location;
 import net.fathomsoft.fathom.util.Patterns;
@@ -34,46 +35,33 @@ import net.fathomsoft.fathom.util.Regex;
  */
 public class ForLoopNode extends LoopNode
 {
+	private LocalVariableNode declarationNode;
+	
 	public ForLoopNode()
 	{
 		ArgumentListNode argumentsNode = new ArgumentListNode();
 		
-		addChild(argumentsNode);
+		getChildren().add(argumentsNode);
 	}
 	
 	public ArgumentListNode getArgumentListNode()
 	{
-		return (ArgumentListNode)getChild(0);
+		return (ArgumentListNode)getChild(1);
 	}
 	
 	public AssignmentNode getInitializationNode()
 	{
-		if (getArgumentListNode().getChildren().size() <= 0)
-		{
-			return null;
-		}
-		
 		return (AssignmentNode)getArgumentListNode().getChild(0);
 	}
 	
 	public TreeNode getConditionNode()
 	{
-		if (getArgumentListNode().getChildren().size() <= 1)
-		{
-			return null;
-		}
-		
 		return getArgumentListNode().getChild(1);
 	}
 	
-	public AssignmentNode getUpdateNode()
+	public TreeNode getUpdateNode()
 	{
-		if (getArgumentListNode().getChildren().size() <= 2)
-		{
-			return null;
-		}
-		
-		return (AssignmentNode)getArgumentListNode().getChild(2);
+		return getArgumentListNode().getChild(2);
 	}
 	
 	/**
@@ -100,20 +88,17 @@ public class ForLoopNode extends LoopNode
 	@Override
 	public String generateCSourceOutput()
 	{
-		StringBuilder builder = new StringBuilder();
+		StringBuilder  builder = new StringBuilder();
 		
 		AssignmentNode initialization = getInitializationNode();
 		TreeNode       condition      = getConditionNode();
-		AssignmentNode update         = getUpdateNode();
+		TreeNode       update         = getUpdateNode();
 		
-		builder.append('{').append('\n');
-		
-//		if (initialization != null)
+//		builder.append('{').append('\n');
+//		
+//		if (declarationNode != null)
 //		{
-//			if (initialization.isDeclared())
-//			{
-//				builder.append(initialization.generateDeclaration()).append('\n');
-//			}
+//			builder.append(declarationNode.generateCSourceOutput()).append('\n');
 //		}
 		
 		builder.append("for (");
@@ -138,7 +123,6 @@ public class ForLoopNode extends LoopNode
 		}
 		
 		builder.append(')').append('\n');
-		builder.append('{').append('\n');
 		
 		for (int i = 0; i < getChildren().size(); i++)
 		{
@@ -150,8 +134,7 @@ public class ForLoopNode extends LoopNode
 			}
 		}
 		
-		builder.append('}').append('\n');
-		builder.append('}').append('\n');
+//		builder.append('}').append('\n');
 		
 		return builder.toString();
 	}
@@ -183,25 +166,35 @@ public class ForLoopNode extends LoopNode
 				
 				String arguments[] = contents.split("\\s*;\\s*");
 				
-				AssignmentNode initialization = AssignmentNode.decodeStatement(parent, arguments[0], newLoc);
+				AssignmentNode initialization = AssignmentNode.decodeStatement(parent, arguments[0], newLoc, false);
+				n.getArgumentListNode().addChild(initialization);
 				
-				if (initialization != null)
+				if (initialization.getVariableNode() instanceof LocalVariableNode)
 				{
-					n.getArgumentListNode().addChild(initialization);
+					LocalVariableNode var = (LocalVariableNode)initialization.getVariableNode().clone();
+//					n.declarationNode = var;
+					parent.addToNearestScope(var);
 				}
 				
 				TreeNode condition = BinaryOperatorNode.decodeStatement(parent, arguments[1], newLoc);
+				n.getArgumentListNode().addChild(condition);
 				
-				if (condition != null)
+				UnaryOperatorNode unaryUpdate = UnaryOperatorNode.decodeStatement(parent, arguments[2], newLoc);
+				
+				if (unaryUpdate != null)
 				{
-					n.getArgumentListNode().addChild(condition);
+					n.getArgumentListNode().addChild(unaryUpdate);
+				}
+				else
+				{
+					AssignmentNode update = AssignmentNode.decodeStatement(parent, arguments[2], newLoc);
+					
+					n.getArgumentListNode().addChild(update);
 				}
 				
-				AssignmentNode update = AssignmentNode.decodeStatement(parent, arguments[2], newLoc);
-				
-				if (update != null)
+				if (n.declarationNode != null)
 				{
-					n.getArgumentListNode().addChild(update);
+					n.declarationNode.detach();
 				}
 				
 				return n;
