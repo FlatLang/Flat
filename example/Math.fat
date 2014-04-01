@@ -1,0 +1,59 @@
+import "math.h";
+
+public class Math
+{
+	public static double sqrt(double number)
+	{
+		return math.sqrt(number);
+	}
+	
+	public static double pow(double base, double power)
+	{
+		return math.pow(base, power);
+	}
+	
+	public static double sin(double number)
+	{
+		return math.sin(number);
+	}
+	
+	public static double cos(double number)
+	{
+		return math.cos(number);
+	}
+	
+	public static double tan(double number)
+	{
+		return math.tan(number);
+	}
+	
+	public static double asin(double number)
+	{
+		return math.asin(number);
+	}
+	
+	public static double acos(double number)
+	{
+		return math.acos(number);
+	}
+	
+	public static double atan(double number)
+	{
+		return math.atan(number);
+	}
+	
+	/*public static int round(double number)
+	{
+		return math.lround(number);
+	}*/
+	
+	public static int floor(double number)
+	{
+		return math.floor(number);
+	}
+	
+	public static int ceil(double number)
+	{
+		return math.ceil(number);
+	}
+}
