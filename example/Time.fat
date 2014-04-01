@@ -1,0 +1,9 @@
+import "Fathom.h";
+
+public class Time
+{
+	public static long currentTimeMillis()
+	{
+		return Fathom.currentTimeMillis();
+	}
+}
