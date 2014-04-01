@@ -18,6 +18,11 @@
 package net.fathomsoft.fathom.tree;
 
 import net.fathomsoft.fathom.error.SyntaxMessage;
+import net.fathomsoft.fathom.tree.variables.VariableNode;
+import net.fathomsoft.fathom.util.Bounds;
+import net.fathomsoft.fathom.util.Location;
+import net.fathomsoft.fathom.util.Patterns;
+import net.fathomsoft.fathom.util.Regex;
 
 /**
  * 
@@ -35,45 +40,25 @@ public class UnaryOperatorNode extends TreeNode
 		
 	}
 	
-	public boolean checkOperator()
+	public TreeNode getVariableNode()
 	{
-		if (getChildren().size() <= 0)
+		for (int i = 0; i < getChildren().size(); i++)
 		{
-			SyntaxMessage.error("Missing operator", getLocationIn());
-			
-			return false;
+			if (getChild(i) instanceof OperatorNode == false)
+			{
+				return getChild(i);
+			}
 		}
 		
-		TreeNode node = null;
-		
-		for (int i = 0; i < getChildren().size() && node instanceof OperatorNode == false; i++)
-		{
-			node = getChild(i);
-		}
-		
-		if (node instanceof OperatorNode)
-		{
-			return true;
-		}
-		else
-		{
-			SyntaxMessage.error("Missing operator", getLocationIn());
-			
-			return false;
-		}
+		return null;
 	}
-
+	
 	/**
 	 * @see net.fathomsoft.fathom.tree.TreeNode#generateJavaSourceOutput()
 	 */
 	@Override
 	public String generateJavaSourceOutput()
 	{
-		if (!checkOperator())
-		{
-			return null;
-		}
-		
 		StringBuilder builder = new StringBuilder();
 		
 		for (int i = 0; i < getChildren().size(); i++)
@@ -101,7 +86,7 @@ public class UnaryOperatorNode extends TreeNode
 	@Override
 	public String generateCSourceOutput()
 	{
-		return null;
+		return generateCSourceFragment() + ";\n";
 	}
 	
 	/**
@@ -110,9 +95,71 @@ public class UnaryOperatorNode extends TreeNode
 	@Override
 	public String generateCSourceFragment()
 	{
+		StringBuilder builder = new StringBuilder();
+		
+		for (int i = 0; i < getChildren().size(); i++)
+		{
+			TreeNode child = getChild(i);
+			
+			builder.append(child.generateCSourceFragment());
+		}
+		
+		return builder.toString();
+	}
+	
+	public static UnaryOperatorNode decodeStatement(TreeNode parent, String statement, Location location)
+	{
+		Bounds bounds = Regex.boundsOf(statement, Patterns.UNARY_ARITH_OPERATORS);
+		
+		if (bounds.getStart() >= 0)
+		{
+			UnaryOperatorNode n = new UnaryOperatorNode();
+				
+			String operatorVal = statement.substring(bounds.getStart(), bounds.getEnd());
+			
+			OperatorNode operator = new OperatorNode();
+			operator.setOperator(operatorVal);
+			
+			int varStart = 0;
+			int varEnd   = 0;
+			
+			if (bounds.getStart() == 0)
+			{
+				varStart = bounds.getEnd();
+				varEnd   = statement.length();
+				
+				n.addChild(operator);
+			}
+			else
+			{
+				varStart = 0;
+				varEnd   = bounds.getStart();
+			}
+			
+			String variableName = statement.substring(varStart, varEnd);
+			
+			IdentifierNode variable = TreeNode.getExistingNode(parent, variableName);
+			
+			if (variable != null)
+			{
+				variable = variable.clone();
+				
+				n.addChild(variable);
+				
+				if (bounds.getStart() > 0)
+				{
+					n.addChild(operator);
+				}
+				
+				return n;
+			}
+			
+			SyntaxMessage.error("Undefined variable '" + variable + "'", location);
+		}
+		
 		return null;
 	}
-
+	
 	/**
 	 * @see net.fathomsoft.fathom.tree.TreeNode#clone()
 	 */
