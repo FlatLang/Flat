@@ -1,6 +1,8 @@
 import "IO";
 import "String";
 import "ArrayList";
+import "Math";
+import "Time";
 
 public class Test
 {
@@ -15,10 +17,27 @@ public class Test
 	
 	public static void main(String args[])
 	{
-		IO.print("Hello, world\n\n");
-		IO.print("Command line arg #1 is\n");
-		IO.print(args[0]);
-		IO.print("\n");
+		IO.println("Hello, world\n");
+		IO.println("Command line arg #1 is");
+		IO.println(args[0]);
+		
+		long start = Time.currentTimeMillis();
+		
+		for (int q = 99999999; q >= 0; --q)
+		{
+			try
+			{
+				Math.sin(q);
+			}
+			catch (SomethingStupid e)
+			{
+			
+			}
+		}
+		
+		long end = Time.currentTimeMillis();
+		
+		IO.printl(end - start);
 		
 		int i;
 		
@@ -34,16 +53,18 @@ public class Test
 				
 				getEvenNumber(even);
 			}
-			catch (NotEvenNumberException e)
+			finally
 			{
-				IO.print("You didnt pass a fricken even number...");
-				IO.print("\n");
+				IO.println("An error has occurred!!!");
 			}
+		}
+		catch (NotEvenNumberException e)
+		{
+			IO.println("Caught even num exception");
 		}
 		catch (DivideByZeroException e)
 		{
-			IO.print("You cant divide by zero idiot.");
-			IO.print("\n");
+			IO.println("You cant divide by zero idiot.");
 		}
 		
 		IO.print("Done\n");

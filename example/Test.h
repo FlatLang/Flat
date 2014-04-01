@@ -7,11 +7,15 @@
 #include "IO.h"
 #include "String.h"
 #include "ArrayList.h"
+#include "Math.h"
+#include "Time.h"
 
 typedef struct ExceptionData ExceptionData;
 typedef struct IO IO;
 typedef struct String String;
 typedef struct ArrayList ArrayList;
+typedef struct Math Math;
+typedef struct Time Time;
 
 CLASS
 (
@@ -19,7 +23,7 @@ Test,
 
 String* publicVariable;
 
-FUNC(void, __FATHOM__main, Test* __o__, ExceptionData* __FATHOM__exception_data, String** args);
+FUNC(void, main, Test* __o__, ExceptionData* __FATHOM__exception_data, String** args);
 FUNC(int, divide, Test* __o__, ExceptionData* __FATHOM__exception_data, int numerator, int denominator);
 FUNC(int, getEvenNumber, Test* __o__, ExceptionData* __FATHOM__exception_data, int num);
 FUNC(int, test, Test* __o__, ExceptionData* __FATHOM__exception_data);
