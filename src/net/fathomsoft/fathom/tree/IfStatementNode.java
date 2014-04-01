@@ -17,6 +17,8 @@
  */
 package net.fathomsoft.fathom.tree;
 
+import net.fathomsoft.fathom.tree.variables.LocalVariableNode;
+import net.fathomsoft.fathom.tree.variables.VariableNode;
 import net.fathomsoft.fathom.util.Bounds;
 import net.fathomsoft.fathom.util.Location;
 import net.fathomsoft.fathom.util.Patterns;
@@ -37,13 +39,40 @@ public class IfStatementNode extends TreeNode
 	public IfStatementNode()
 	{
 		ArgumentListNode condition = new ArgumentListNode();
+		ScopeNode        scopeNode = new ScopeNode();
 		
 		addChild(condition);
+		addChild(scopeNode);
 	}
 	
 	public ArgumentListNode getCondition()
 	{
 		return (ArgumentListNode)getChild(0);
+	}
+	
+	/**
+	 * @see net.fathomsoft.fathom.tree.TreeNode#getScopeNode()
+	 */
+	@Override
+	public ScopeNode getScopeNode()
+	{
+		return (ScopeNode)getChild(1);
+	}
+
+	/**
+	 * @see net.fathomsoft.fathom.tree.TreeNode#addChild(TreeNode)
+	 */
+	@Override
+	public void addChild(TreeNode child)
+	{
+		if (child instanceof ScopeNode || child instanceof ArgumentListNode)
+		{
+			super.addChild(child);
+		}
+		else
+		{
+			getScopeNode().addChild(child);
+		}
 	}
 	
 	/**
@@ -63,7 +92,7 @@ public class IfStatementNode extends TreeNode
 	{
 		return null;
 	}
-
+	
 	/**
 	 * @see net.fathomsoft.fathom.tree.TreeNode#generateCSourceOutput()
 	 */
@@ -84,19 +113,20 @@ public class IfStatementNode extends TreeNode
 		}
 		
 		builder.append(')').append('\n');
-		builder.append('{').append('\n');
-		
-		for (int i = 0; i < getChildren().size(); i++)
-		{
-			TreeNode child = getChild(i);
-			
-			if (child != getCondition())
-			{
-				builder.append(child.generateCSourceOutput());
-			}
-		}
-		
-		builder.append('}').append('\n');
+//		builder.append('{').append('\n');
+//		
+//		for (int i = 0; i < getChildren().size(); i++)
+//		{
+//			TreeNode child = getChild(i);
+//			
+//			if (child != getCondition())
+//			{
+//				builder.append(child.generateCSourceOutput());
+//			}
+//		}
+//		
+//		builder.append('}').append('\n');
+		builder.append(getScopeNode().generateCSourceOutput());
 		
 		return builder.toString();
 	}
