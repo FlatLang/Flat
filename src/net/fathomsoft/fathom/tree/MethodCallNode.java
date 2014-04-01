@@ -119,6 +119,11 @@ public class MethodCallNode extends IdentifierNode
 			builder.append(getVariableNode().generateCSourceFragment()).append("->");
 		}
 		
+//		if (!isExternal())
+//		{
+//			builder.append("__").append(Fathom.LANGUAGE_NAME.toUpperCase()).append("__");
+//		}
+		
 		builder.append(getName()).append('(');
 		
 		builder.append(getArgumentListNode().generateCSourceOutput());
@@ -174,49 +179,9 @@ public class MethodCallNode extends IdentifierNode
 			
 			String  argumentList = statement.substring(bounds.getStart(), bounds.getEnd());
 			
-//			if (parentNode.isWithinTry())
-//			{
-//				argumentList = "__" + Fathom.LANGUAGE_NAME.toUpperCase() + "__exception_data, " + argumentList;
-//			}
-//			else
-//			{
-//				argumentList = ", " + argumentList;
-//			}
-//			TreeNode variableNode = null;
-//			
-//			String objectRef = null;
-			
-//			if (needsReference)
-//			{
-//				int dotIndex = methodCall.lastIndexOf(".");
-//				
-//				if (dotIndex > 0)
-//				{
-//					objectRef = methodCall.substring(0, dotIndex);
-//					
-//					if (fileNode.getImportListNode().isExternal(objectRef))
-//					{
-//						externalCall = true;
-//					}
-//					else
-//					{
-//						objectRef.replace(".", "->");
-//						
-//						if (fileNode.getImportListNode().isExternal(objectRef))
-//						{
-//							objectRef = null;
-//						}
-//					}
-//				}
-//				else
-//				{
-//					objectRef = MethodNode.getObjectReferenceIdentifier();
-//				}
-//			}
-			
 			final StringBuilder objectInstance = new StringBuilder();
 			
-			MethodCallNode n   = new MethodCallNode()
+			MethodCallNode n = new MethodCallNode()
 			{
 				public void interactWord(String word, int wordNumber, Bounds bounds, int numWords)
 				{
@@ -247,6 +212,10 @@ public class MethodCallNode extends IdentifierNode
 						n.externalCall = true;
 					}
 				}
+				else
+				{
+					objectInstance.append("this");
+				}
 			}
 			
 			if (!n.isExternal())
@@ -274,7 +243,7 @@ public class MethodCallNode extends IdentifierNode
 							}
 							else
 							{
-								objectInstance.delete(0, objectInstance.length());
+//								objectInstance.delete(0, objectInstance.length());
 							}
 						}
 					}
@@ -296,7 +265,16 @@ public class MethodCallNode extends IdentifierNode
 							variableNode = TreeNode.decodeStatement(parentNode, caller, location);
 						}
 						
-						n.addChild(variableNode);
+						if (variableNode != null)
+						{
+							n.addChild(variableNode);
+						}
+						else
+						{
+							SyntaxMessage.error("Undefined variable '" + caller + "'", argsLocation);
+							
+							return null;
+						}
 					}
 					else
 					{
