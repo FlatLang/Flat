@@ -34,6 +34,21 @@
 	default:
 
 #define END_TRY \
+			{\
+				ExceptionData* oldData = __FATHOM__exception_data;\
+				ExceptionData* newData = __FATHOM__exception_data->getParent(__FATHOM__exception_data, 0);\
+				if (newData != 0)\
+				{\
+					__FATHOM__exception_data = newData;\
+				}\
+				/*printf("Bef%p\n", oldData);*/\
+				if (oldData != 0)\
+				{\
+					free(oldData);\
+					/*del_ExceptionData(oldData, oldData);*/\
+				}\
+				/*printf("Aft%p\n", oldData);*/\
+			}\
 		}\
 	}\
 	while(0)
