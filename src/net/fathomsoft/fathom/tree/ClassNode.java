@@ -23,10 +23,14 @@ import java.util.regex.Pattern;
 import net.fathomsoft.fathom.error.SyntaxMessage;
 import net.fathomsoft.fathom.tree.variables.FieldListNode;
 import net.fathomsoft.fathom.tree.variables.FieldNode;
+import net.fathomsoft.fathom.tree.variables.LocalVariableNode;
 import net.fathomsoft.fathom.tree.variables.PrivateFieldListNode;
 import net.fathomsoft.fathom.tree.variables.PublicFieldListNode;
+import net.fathomsoft.fathom.tree.variables.VariableNode;
 import net.fathomsoft.fathom.util.Bounds;
 import net.fathomsoft.fathom.util.Location;
+import net.fathomsoft.fathom.util.Patterns;
+import net.fathomsoft.fathom.util.Regex;
 
 /**
  * 
@@ -402,7 +406,7 @@ public class ClassNode extends DeclarationNode
 	public static ClassNode decodeStatement(TreeNode parentNode, String statement, Location location)
 	{
 		// If contains 'class' in the statement.
-		if (Pattern.compile("class\\s+").matcher(statement).find())
+		if (Regex.indexOf(statement, Patterns.PRE_CLASS) >= 0)
 		{
 			ClassNode n = new ClassNode()
 			{
