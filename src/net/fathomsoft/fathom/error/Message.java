@@ -26,9 +26,9 @@ import net.fathomsoft.fathom.util.Location;
  * 
  * @author	Braden Steffaniak
  * @since	Jan 5, 2014 at 9:28:08 PM
- * @since	v
- * @version	Jan 5, 2014 at 9:28:08 PM
- * @version	v
+ * @since	v0.1
+ * @version	Mar 28, 2014 at 5:26:08 PM
+ * @version	v0.2
  */
 public class Message
 {
