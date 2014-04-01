@@ -65,12 +65,7 @@ public class TryNode extends ExceptionHandlingNode
 		builder.append('{').append('\n');
 		builder.append(generateExceptionCodes()).append('\n');
 		
-		for (int i = 0; i < getChildren().size(); i++)
-		{
-			TreeNode child = getChild(i);
-			
-			builder.append(child.generateCSourceOutput());
-		}
+		builder.append(getScopeNode().generateCSourceOutput());
 		
 		builder.append('}').append('\n');
 		

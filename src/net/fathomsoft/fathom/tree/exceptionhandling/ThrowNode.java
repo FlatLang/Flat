@@ -3,6 +3,7 @@ package net.fathomsoft.fathom.tree.exceptionhandling;
 import net.fathomsoft.fathom.error.SyntaxMessage;
 import net.fathomsoft.fathom.tree.IdentifierNode;
 import net.fathomsoft.fathom.tree.InstantiationNode;
+import net.fathomsoft.fathom.tree.ScopeNode;
 import net.fathomsoft.fathom.tree.TreeNode;
 import net.fathomsoft.fathom.tree.variables.LocalVariableNode;
 import net.fathomsoft.fathom.util.Bounds;
@@ -23,12 +24,28 @@ public class ThrowNode extends ExceptionHandlingNode
 {
 	public ExceptionNode getException()
 	{
-		return (ExceptionNode)getChild(0);
+		return (ExceptionNode)getChild(1);
 	}
 	
-	public ExceptionNode getExceptionInstance()
+//	public ExceptionNode getExceptionInstance()
+//	{
+//		return (ExceptionNode)getChild(1);
+//	}
+	
+	/**
+	 * @see net.fathomsoft.fathom.tree.TreeNode#addChild(TreeNode)
+	 */
+	@Override
+	public void addChild(TreeNode child)
 	{
-		return (ExceptionNode)getChild(0);
+		if (child instanceof ExceptionNode)
+		{
+			getChildren().add(child);
+		}
+		else
+		{
+			super.addChild(child);
+		}
 	}
 	
 	/**

@@ -4,8 +4,11 @@ import net.fathomsoft.fathom.error.SyntaxMessage;
 import net.fathomsoft.fathom.tree.BinaryOperatorNode;
 import net.fathomsoft.fathom.tree.ForLoopNode;
 import net.fathomsoft.fathom.tree.LoopNode;
+import net.fathomsoft.fathom.tree.ScopeNode;
 import net.fathomsoft.fathom.tree.TreeNode;
 import net.fathomsoft.fathom.tree.WhileLoopNode;
+import net.fathomsoft.fathom.tree.variables.LocalVariableNode;
+import net.fathomsoft.fathom.tree.variables.VariableNode;
 import net.fathomsoft.fathom.util.Bounds;
 import net.fathomsoft.fathom.util.Location;
 import net.fathomsoft.fathom.util.Patterns;
@@ -22,6 +25,34 @@ import net.fathomsoft.fathom.util.Regex;
  */
 public class ExceptionHandlingNode extends TreeNode
 {
+	public ExceptionHandlingNode()
+	{
+		ScopeNode scopeNode = new ScopeNode();
+		
+		addChild(scopeNode);
+	}
+	
+	public ScopeNode getScopeNode()
+	{
+		return (ScopeNode)getChild(0);
+	}
+	
+	/**
+	 * @see net.fathomsoft.fathom.tree.TreeNode#addChild(TreeNode)
+	 */
+	@Override
+	public void addChild(TreeNode child)
+	{
+		if (child instanceof ScopeNode)
+		{
+			super.addChild(child);
+		}
+		else
+		{
+			getScopeNode().addChild(child);
+		}
+	}
+	
 	/**
 	 * @see net.fathomsoft.fathom.tree.TreeNode#generateJavaSourceOutput()
 	 */

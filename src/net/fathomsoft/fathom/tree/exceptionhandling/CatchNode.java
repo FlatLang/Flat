@@ -3,6 +3,7 @@ package net.fathomsoft.fathom.tree.exceptionhandling;
 import net.fathomsoft.fathom.error.SyntaxMessage;
 import net.fathomsoft.fathom.tree.BinaryOperatorNode;
 import net.fathomsoft.fathom.tree.IfStatementNode;
+import net.fathomsoft.fathom.tree.ScopeNode;
 import net.fathomsoft.fathom.tree.TreeNode;
 import net.fathomsoft.fathom.tree.variables.LocalVariableNode;
 import net.fathomsoft.fathom.util.Bounds;
@@ -28,12 +29,28 @@ public class CatchNode extends ExceptionHandlingNode
 	
 	public LocalVariableNode getExceptionInstance()
 	{
-		return (LocalVariableNode)getChild(0);
+		return (LocalVariableNode)getChild(1);
 	}
 	
 	public ExceptionNode getException()
 	{
-		return (ExceptionNode)getChild(1);
+		return (ExceptionNode)getChild(2);
+	}
+	
+	/**
+	 * @see net.fathomsoft.fathom.tree.TreeNode#addChild(TreeNode)
+	 */
+	@Override
+	public void addChild(TreeNode child)
+	{
+		if (child instanceof ExceptionNode || getChildren().size() <= 1)
+		{
+			getChildren().add(child);
+		}
+		else
+		{
+			super.addChild(child);
+		}
 	}
 	
 	/**
@@ -91,6 +108,11 @@ public class CatchNode extends ExceptionHandlingNode
 	
 	private static TryNode getCurrentTry(TreeNode parent, CatchNode current)
 	{
+		if (parent.containsScope())
+		{
+			parent = parent.getScopeNode();
+		}
+		
 		for (int i = parent.getChildren().size() - 1; i >= 0; i--)
 		{
 			TreeNode child = parent.getChild(i);
