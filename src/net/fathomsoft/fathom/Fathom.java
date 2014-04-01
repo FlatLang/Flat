@@ -40,7 +40,7 @@ import net.fathomsoft.fathom.util.FileUtils;
  * @since	Jan 5, 2014 at 9:00:04 PM
  * @since	v0.1
  * @version	Mar 28, 2014 at 6:15:04 PM
- * @version	v0.1
+ * @version	v0.2
  */
 public class Fathom
 {
@@ -48,7 +48,7 @@ public class Fathom
 	
 	private long				startTime, endTime;
 	
-	private File				outputFile;
+	private File				outputFile, workingDir;
 	
 	private ArrayList<String>	includeDirectories;
 	
@@ -67,6 +67,7 @@ public class Fathom
 	public static final long	DRY_RUN       = 0x10000;
 	public static final long	KEEP_C        = 0x100000;
 	public static final long	C_ARGS        = 0x1000000;
+	public static final long	RUNTIME       = 0x10000000;
 	
 	public static final String	LANGUAGE_NAME = "Fathom";
 	
@@ -123,7 +124,10 @@ public class Fathom
 				directory + "String.fat",
 				directory + "ExceptionData.fat",
 				directory + "ArrayList.fat",
+				directory + "Math.fat",
+				directory + "Time.fat",
 				"-o", directory + "bin/Executable.exe",
+				"-run",
 				"-dir", '"' + directory + "../include\"",
 				"-csource",
 				"-v",
@@ -148,7 +152,7 @@ public class Fathom
 		ArrayList<String>     headers = new ArrayList<String>();
 		ArrayList<String>     sources = new ArrayList<String>();
 		
-		File workingDir = new File(directory);
+		workingDir = new File(directory);
 		
 		for (File file : inputFiles)
 		{
@@ -240,7 +244,7 @@ public class Fathom
 				mainMethodText.append('\n');
 				mainMethodText.append("TRY").append('\n');
 				mainMethodText.append('{').append('\n');
-				mainMethodText.append("__static__").append(classNode.getName()).append("->__").append(LANGUAGE_NAME.toUpperCase()).append("__main(__static__").append(classNode.getName()).append(", __FATHOM__exception_data, args);").append('\n');
+				mainMethodText.append("__static__").append(classNode.getName()).append("->main(__static__").append(classNode.getName()).append(", __FATHOM__exception_data, args);").append('\n');
 				mainMethodText.append('}').append('\n');
 				mainMethodText.append("CATCH (1)").append('\n');
 				mainMethodText.append('{').append('\n');
@@ -317,7 +321,7 @@ public class Fathom
 		
 		if (!isFlagEnabled(DRY_RUN))
 		{
-			compileC(workingDir);
+			compileC();
 		}
 		else
 		{
@@ -327,10 +331,8 @@ public class Fathom
 	
 	/**
 	 * Compile the generated c code into an executable file.
-	 * 
-	 * @param workingDir The working directory of the compiler.
 	 */
-	private void compileC(File workingDir)
+	private void compileC()
 	{
 		StringBuilder cmd = new StringBuilder();
 		
@@ -359,7 +361,8 @@ public class Fathom
 		
 		cmd.append("-o ").append('"').append(outputFile.getAbsolutePath()).append('"').append(' ');
 		
-		cmd.append("-s");
+		cmd.append("-O2");
+//		cmd.append("-s");
 		
 		if (isFlagEnabled(C_ARGS))
 		{
@@ -485,6 +488,11 @@ public class Fathom
 			{
 				expectingIncludeDirectory = true;
 			}
+			// If the user wants to run the application after compilation.
+			else if (arg.equals("-run"))
+			{
+				enableFlag(RUNTIME);
+			}
 			// If the user wants to view the c source output.
 			else if (arg.equals("-csource"))
 			{
@@ -553,6 +561,13 @@ public class Fathom
 				}
 			}
 		}
+		
+//		if (outputFile == null)
+//		{
+//			enableFlag(RUNTIME);
+//			
+//			outputFile = new File(workingDir, "bin/Executa.exe");
+//		}
 	}
 	
 	/**
@@ -655,6 +670,57 @@ public class Fathom
 		log("Compile time: " + getCompileTime() + "ms");
 		
 		deleteLingeringFiles();
+		
+		if (isFlagEnabled(RUNTIME))
+		{
+//			final Command c = new Command("start bin/Executa.exe", workingDir);
+//			
+//			c.addCommandListener(new CommandListener()
+//			{
+//				
+//				@Override
+//				public void resultReceived(int result)
+//				{
+//					if (result != 0)
+//					{
+//						System.err.println("error.");
+//					}
+//				}
+//				
+//				@Override
+//				public void messageReceived(String message)
+//				{
+//					System.out.println(message);
+//				}
+//				
+//				@Override
+//				public void errorReceived(String message)
+//				{
+//					System.err.println(message);
+//				}
+//				
+//				@Override
+//				public void commandExecuted()
+//				{
+//					try
+//					{
+//						c.terminate();
+//					}
+//					catch (InterruptedException e)
+//					{
+//						e.printStackTrace();
+//					}
+//				}
+//			});
+//			try
+//			{
+//				c.execute();
+//			}
+//			catch (IOException e)
+//			{
+//				e.printStackTrace();
+//			}
+		}
 		
 		if (!ANDROID_DEBUG)
 		{
