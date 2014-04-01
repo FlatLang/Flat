@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdint.h>
+#include <sys/timeb.h>
 #include "Fathom.h"
  
 /**
@@ -78,4 +79,20 @@ void arrayCopy(void* dest, int dIndex, const void* src, int sIndex, int len, int
 			return;
 		}
 	}
+}
+
+long_long currentTimeMillis()
+{
+	struct timeb tmb;
+	unsigned_long_long value;
+ 
+	ftime(&tmb);
+	/*printf("tmb.time     = %ld (seconds)\n", tmb.time);
+	printf("tmb.millitm  = %d (mlliseconds)\n", tmb.millitm);*/
+
+	value  = tmb.time;
+	value *= 1000;
+	value += tmb.millitm;
+
+	return value;
 }
