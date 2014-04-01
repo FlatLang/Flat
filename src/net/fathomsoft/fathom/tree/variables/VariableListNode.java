@@ -28,9 +28,9 @@ import net.fathomsoft.fathom.tree.TreeNode;
  * @version	Jan 9, 2014 at 4:19:57 PM
  * @version	v0.1
  */
-public class LocalVariableListNode extends TreeNode
+public class VariableListNode extends TreeNode
 {
-	public LocalVariableListNode()
+	public VariableListNode()
 	{
 		
 	}
@@ -45,7 +45,7 @@ public class LocalVariableListNode extends TreeNode
 		
 		for (int i = 0; i < getChildren().size(); i++)
 		{
-			builder.append(getChild(i).generateJavaSourceOutput()).append('\n');
+			builder.append(getChild(i).generateJavaSourceOutput());
 		}
 		
 		if (getChildren().size() > 0)
@@ -75,7 +75,7 @@ public class LocalVariableListNode extends TreeNode
 		
 		for (int i = 0; i < getChildren().size(); i++)
 		{
-			builder.append(getChild(i).generateCSourceOutput()).append('\n');
+			builder.append(getChild(i).generateCSourceOutput());
 		}
 		
 		if (getChildren().size() > 0)
@@ -99,14 +99,14 @@ public class LocalVariableListNode extends TreeNode
 	 * @see net.fathomsoft.fathom.tree.TreeNode#clone()
 	 */
 	@Override
-	public LocalVariableListNode clone()
+	public VariableListNode clone()
 	{
-		LocalVariableListNode node = new LocalVariableListNode();
+		VariableListNode node = new VariableListNode();
 		
 		return clone(node);
 	}
 	
-	public LocalVariableListNode clone(LocalVariableListNode node)
+	public VariableListNode clone(VariableListNode node)
 	{
 		for (int i = 0; i < getChildren().size(); i++)
 		{
