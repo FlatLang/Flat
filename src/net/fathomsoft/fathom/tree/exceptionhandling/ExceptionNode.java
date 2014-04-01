@@ -5,7 +5,7 @@ import java.util.HashMap;
 import net.fathomsoft.fathom.tree.TreeNode;
 import net.fathomsoft.fathom.tree.variables.LocalVariableNode;
 
-public class ExceptionNode extends LocalVariableNode
+public class ExceptionNode extends TreeNode
 {
 	private int	id;
 	
@@ -38,8 +38,6 @@ public class ExceptionNode extends LocalVariableNode
 	
 	public void setType(String type)
 	{
-		super.setType(type);
-		
 		if (ids.containsKey(type))
 		{
 			id = ids.get(type);
@@ -101,12 +99,6 @@ public class ExceptionNode extends LocalVariableNode
 	
 	public ExceptionNode clone(ExceptionNode node)
 	{
-		node.setName(getName());
-		node.setConst(isConst());
-		node.setArrayDimensions(getArrayDimensions());
-		node.setType(getType());
-		node.setReference(isReference());
-		node.setPointer(isPointer());
 		node.id = id;
 		
 		for (int i = 0; i < getChildren().size(); i++)
