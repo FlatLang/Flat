@@ -19,8 +19,9 @@ package net.fathomsoft.fathom.tree;
 
 import net.fathomsoft.fathom.Fathom;
 import net.fathomsoft.fathom.error.SyntaxMessage;
-import net.fathomsoft.fathom.tree.variables.LocalVariableListNode;
+import net.fathomsoft.fathom.tree.variables.VariableListNode;
 import net.fathomsoft.fathom.tree.variables.LocalVariableNode;
+import net.fathomsoft.fathom.tree.variables.VariableNode;
 import net.fathomsoft.fathom.util.Bounds;
 import net.fathomsoft.fathom.util.Location;
 import net.fathomsoft.fathom.util.Patterns;
@@ -40,11 +41,11 @@ public class MethodNode extends DeclarationNode
 {
 	public MethodNode()
 	{
-		ParameterListNode     parameterList = new ParameterListNode();
-		LocalVariableListNode variablesNode = new LocalVariableListNode();
+		ParameterListNode parameterList = new ParameterListNode();
+		ScopeNode         scopeNode     = new ScopeNode();
 		
 		super.addChild(parameterList);
-		super.addChild(variablesNode);
+		super.addChild(scopeNode);
 	}
 	
 	public ParameterListNode getParameterListNode()
@@ -52,9 +53,13 @@ public class MethodNode extends DeclarationNode
 		return (ParameterListNode)getChild(0);
 	}
 	
-	public LocalVariableListNode getLocalVariableListNode()
+	/**
+	 * @see net.fathomsoft.fathom.tree.TreeNode#getScopeNode()
+	 */
+	@Override
+	public ScopeNode getScopeNode()
 	{
-		return (LocalVariableListNode)getChild(1);
+		return (ScopeNode)getChild(1);
 	}
 
 	/**
@@ -63,14 +68,15 @@ public class MethodNode extends DeclarationNode
 	@Override
 	public void addChild(TreeNode child)
 	{
-		if (child instanceof LocalVariableNode)
-		{
-			getLocalVariableListNode().addChild(child);
-		}
-		else
-		{
-			super.addChild(child);
-		}
+//		if (child instanceof LocalVariableNode)
+//		{
+//			getLocalVariableListNode().addChild(child);
+//		}
+//		else
+//		{
+//			super.addChild(child);
+//		}
+		getScopeNode().addChild(child);
 	}
 	
 	/**
@@ -84,7 +90,7 @@ public class MethodNode extends DeclarationNode
 	{
 		return ParameterListNode.OBJECT_REFERENCE_IDENTIFIER;
 	}
-
+	
 	/**
 	 * @see net.fathomsoft.fathom.tree.TreeNode#generateJavaSourceOutput()
 	 */
@@ -207,21 +213,24 @@ public class MethodNode extends DeclarationNode
 	{
 		StringBuilder builder = new StringBuilder();
 		
-		builder.append(generateCSourceSignature()).append('\n').append('{').append('\n');
+		builder.append(generateCSourceSignature()).append('\n');
 		
-		ParameterListNode parameterList = getParameterListNode();
+		builder.append(getScopeNode().generateCSourceOutput());
+//		builder.append('{').append('\n');
 		
-		for (int i = 0; i < getChildren().size(); i++)
-		{
-			TreeNode child = getChild(i);
-			
-			if (child != parameterList)
-			{
-				builder.append(child.generateCSourceOutput());
-			}
-		}
-		
-		builder.append('}').append('\n');
+//		ParameterListNode parameterList = getParameterListNode();
+//		
+//		for (int i = 0; i < getChildren().size(); i++)
+//		{
+//			TreeNode child = getChild(i);
+//			
+//			if (child != parameterList)
+//			{
+//				builder.append(child.generateCSourceOutput());
+//			}
+//		}
+//		
+//		builder.append('}').append('\n');
 		
 		return builder.toString();
 	}
@@ -272,13 +281,28 @@ public class MethodNode extends DeclarationNode
 		
 		builder.append(' ');
 		
-		builder.append(getName()).append('(');
+		builder.append(generateMethodName()).append('(');
 		
 		builder.append(getParameterListNode().generateCSourceOutput());
 		
 		builder.append(')');
 		
 		return builder.toString();
+	}
+	
+	public String generateMethodName()
+	{
+		return generateMethodName(false);
+	}
+	
+	public String generateMethodName(boolean header)
+	{
+		if (header)
+		{
+			return getName();
+		}
+		
+		return "__" + Fathom.LANGUAGE_NAME.toUpperCase() + "__" + getName();
 	}
 	
 	public static MethodNode decodeStatement(TreeNode parentNode, String statement, Location location)
@@ -351,10 +375,10 @@ public class MethodNode extends DeclarationNode
 			
 			n.iterateWords(statement, Patterns.IDENTIFIER_BOUNDARIES);
 			
-			if (SyntaxUtils.isMainMethod(n))
-			{
-				n.setName("__" + Fathom.LANGUAGE_NAME.toUpperCase() + "__main");
-			}
+//			if (SyntaxUtils.isMainMethod(n))
+//			{
+//				n.setName("__" + Fathom.LANGUAGE_NAME.toUpperCase() + "__main");
+//			}
 			
 			return n;
 		}
