@@ -28,21 +28,29 @@ import net.fathomsoft.fathom.util.StringUtils;
 import net.fathomsoft.fathom.util.SyntaxUtils;
 
 /**
- * 
+ * TreeNode extension that contains information describing a variable
+ * assignment.
  * 
  * @author	Braden Steffaniak
  * @since	Jan 5, 2014 at 9:19:44 PM
- * @since	v
- * @version	Jan 5, 2014 at 9:19:44 PM
- * @version	v
+ * @since	v0.1
+ * @version	March 28, 2014 at 9:19:44 PM
+ * @version	v0.2
  */
 public class AssignmentNode extends TreeNode
 {
-	public AssignmentNode()
-	{
-		
-	}
-	
+	/**
+	 * Get the node that stores the variable that is having its value
+	 * assigned. In other words, the left hand value of the equation.
+	 * For instance, in the statement: "int j = 35" int j is the left
+	 * hand value of the equation.<br>
+	 * <br>
+	 * This does not return a VariableNode type because an ArrayAccessNode
+	 * is also a valid left hand value to an equation.
+	 * 
+	 * @return The TreeNode that holds the value of the variable that
+	 * 		is to be assigned.
+	 */
 	public TreeNode getVariableNode()
 	{
 		return getChild(0);
@@ -123,24 +131,70 @@ public class AssignmentNode extends TreeNode
 		return builder.toString();
 	}
 	
+	/**
+	 * Decode the given statement into an AssignmentNode if possible. If
+	 * it is not possible, then null is returned.<br>
+	 * <br>
+	 * Example inputs include:<br>
+	 * <ul>
+	 * 	<li>int variableName = 45</li>
+	 * 	<li>personsName = "Bob"</li>
+	 * 	<li>Person myPeep = new Person(54)</li>
+	 * 	<li>area = width * height / 2</li>
+	 * 	<li>int newSize = array.getSize() + 5</li>
+	 * </ul>
+	 * 
+	 * @param parent The parent of the current statement.
+	 * @param statement The statement to decode into an AssignmentNode.
+	 * @param location The location of the statement in the source code.
+	 * @return The new AssignmentNode if it decodes properly. If not,
+	 * 		it returns null.
+	 */
 	public static AssignmentNode decodeStatement(TreeNode parent, String statement, Location location)
 	{
-		AssignmentNode n  = new AssignmentNode();
-		
+		return decodeStatement(parent, statement, location, true);
+	}
+	
+	/**
+	 * Decode the given statement into an AssignmentNode if possible. If
+	 * it is not possible, then null is returned.<br>
+	 * <br>
+	 * Example inputs include:<br>
+	 * <ul>
+	 * 	<li>int variableName = 45</li>
+	 * 	<li>personsName = "Bob"</li>
+	 * 	<li>Person myPeep = new Person(54)</li>
+	 * 	<li>area = width * height / 2</li>
+	 * 	<li>int newSize = array.getSize() + 5</li>
+	 * </ul>
+	 * 
+	 * @param parent The parent of the current statement.
+	 * @param statement The statement to decode into an AssignmentNode.
+	 * @param location The location of the statement in the source code.
+	 * @param addDeclaration Whether or not to add the declaration to the
+	 * 		nearest scope, if the left hand value of the equation is a
+	 * 		variable declaration.
+	 * @return The new AssignmentNode if it decodes properly. If not,
+	 * 		it returns null.
+	 */
+	public static AssignmentNode decodeStatement(TreeNode parent, String statement, Location location, boolean addDeclaration)
+	{
 		if (!SyntaxUtils.isVariableAssignment(statement))
 		{
 			return null;
 		}
 		
-		Bounds bounds   = Regex.boundsOf(statement, Patterns.PRE_EQUALS_SIGN);
+		AssignmentNode n  = new AssignmentNode();
 		
-		int equalsIndex = StringUtils.findNextNonWhitespaceIndex(statement, bounds.getEnd());
+		Bounds bounds     = Regex.boundsOf(statement, Patterns.PRE_EQUALS_SIGN);
 		
-		int endIndex    = StringUtils.findNextNonWhitespaceIndex(statement, equalsIndex - 1, -1) + 1;
+		int equalsIndex   = StringUtils.findNextNonWhitespaceIndex(statement, bounds.getEnd());
 		
-		String variable = statement.substring(0, endIndex);
+		int endIndex      = StringUtils.findNextNonWhitespaceIndex(statement, equalsIndex - 1, -1) + 1;
 		
-		TreeNode varNode = null;
+		String variable   = statement.substring(0, endIndex);
+		
+		TreeNode varNode  = null;
 		
 		if (SyntaxUtils.isValidIdentifier(variable))
 		{
@@ -150,34 +204,46 @@ public class AssignmentNode extends TreeNode
 		}
 		else
 		{
-			varNode = LocalVariableNode.decodeStatement(parent, variable, location);
+			LocalVariableNode var = LocalVariableNode.decodeStatement(parent, variable, location);
 			
-			if (varNode != null)
+			if (addDeclaration)
 			{
-				MethodNode methodNode = (MethodNode)parent.getAncestorOfType(MethodNode.class, true);
-				
-				if (methodNode != null)
+				if (var != null)
 				{
-					methodNode.getLocalVariableListNode().addChild(varNode.clone());
+					TreeNode scope = getAncestorWithScope(parent);
+					
+					if (scope != null)
+					{
+						scope.addChild(var.clone());
+					}
+					
+					varNode = var;
+				}
+				else
+				{
+					varNode = TreeNode.decodeStatement(parent, variable, location);
+					
+					if (varNode == null)
+					{
+						VariableNode vNode = new VariableNode();
+						vNode.setName(variable);
+						
+						varNode = vNode;
+					}
+					else if (varNode instanceof ArrayAccessNode == false)
+					{
+						SyntaxMessage.error("Undefined variable '" + variable + "'", location);
+						
+						return null;
+					}
 				}
 			}
 			else
 			{
-				varNode = TreeNode.decodeStatement(parent, variable, location);
+//				IdentifierNode id = new IdentifierNode();
+//				id.setName(var.getName());
 				
-				if (varNode == null)
-				{
-					VariableNode vNode = new VariableNode();
-					vNode.setName(variable);
-					
-					varNode = vNode;
-				}
-				else if (varNode instanceof ArrayAccessNode == false)
-				{
-					SyntaxMessage.error("Undefined variable '" + variable + "'", location);
-					
-					return null;
-				}
+				varNode = var;
 			}
 		}
 		
@@ -231,6 +297,13 @@ public class AssignmentNode extends TreeNode
 		return clone(node);
 	}
 	
+	/**
+	 * Fill the given AssignmentNode with the data that is in the
+	 * specified node.
+	 * 
+	 * @param node The node to copy the data into.
+	 * @return The cloned node.
+	 */
 	public AssignmentNode clone(AssignmentNode node)
 	{
 		for (int i = 0; i < getChildren().size(); i++)

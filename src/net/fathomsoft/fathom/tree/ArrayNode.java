@@ -24,21 +24,26 @@ import net.fathomsoft.fathom.util.Regex;
 import net.fathomsoft.fathom.util.SyntaxUtils;
 
 /**
- * 
+ * IdentifierNode extension that contains the information describing
+ * an array instantiation. The getName() method contains the data type
+ * of the array. The children that the node embodies list the sizes of
+ * each of the dimensions of the array that is being created. For
+ * instance, consider the following scenario:<br>
+ * <br>
+ * The ArrayNode encompasses two children. The first child is a
+ * LiteralNode that contains the value 56. This means that the first
+ * dimension of the array will have the size of 56. The second child
+ * is a LocalVariableNode containing the data for an integer variable
+ * that was declared within the method that the array was declared in.
  * 
  * @author	Braden Steffaniak
  * @since	Mar 16, 2014 at 1:13:49 AM
  * @since	v0.1
- * @version	Mar 16, 2014 at 1:13:49 AM
- * @version	v0.1
+ * @version	Mar 28, 2014 at 6:30:49 PM
+ * @version	v0.2
  */
 public class ArrayNode extends IdentifierNode
 {
-	public ArrayNode()
-	{
-		
-	}
-	
 	/**
 	 * @see net.fathomsoft.fathom.tree.TreeNode#generateJavaSourceOutput()
 	 */
@@ -92,6 +97,31 @@ public class ArrayNode extends IdentifierNode
 		return generateCSourceOutput();
 	}
 	
+	/**
+	 * Decode the given statement into an ArrayNode instance. If the
+	 * given statement cannot be decoded into an ArrayNode, then null is
+	 * returned.<br>
+	 * <br>
+	 * An example input would be: "char[length]" <i>(Where as 'length' is
+	 * a number variable)</i> or any other class name followed by square
+	 * brackets that enclose a size variable or literal.<br>
+	 * <br>
+	 * Other example inputs:<br>
+	 * <ul>
+	 * 	<li>String[5][size] <i>(Where as 'size' is a number variable)</i></li>
+	 * 	<li>int[names.getSize()]</li>
+	 *  <li>TreeNode[elements.getSize() * (4 + 3) / 2]</li>
+	 * </ul>
+	 * <br>
+	 * Array initializer statements are to be implemented in the future.
+	 * Such syntax would consist of the following: "int[] { 1, 6, 3, 1 }"
+	 * 
+	 * @param parent The parent of the current statement.
+	 * @param statement The statement to decode into an ArrayNode instance.
+	 * @param location The location of the statement in the source code.
+	 * @return The new ArrayNode instance if it was able to decode the
+	 * 		statement. If not, it will return null.
+	 */
 	public static ArrayNode decodeStatement(TreeNode parent, String statement, Location location)
 	{
 		if (SyntaxUtils.isArrayInitialization(statement))
@@ -146,6 +176,13 @@ public class ArrayNode extends IdentifierNode
 		return clone(node);
 	}
 	
+	/**
+	 * Fill the given ArrayNode with the data that is in the
+	 * specified node.
+	 * 
+	 * @param node The node to copy the data into.
+	 * @return The cloned node.
+	 */
 	public ArrayNode clone(ArrayNode node)
 	{
 		for (int i = 0; i < getChildren().size(); i++)

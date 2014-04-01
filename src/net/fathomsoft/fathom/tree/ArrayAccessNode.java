@@ -10,16 +10,24 @@ import net.fathomsoft.fathom.util.Regex;
 import net.fathomsoft.fathom.util.SyntaxUtils;
 
 /**
- * 
+ * TreeNode extension that keeps track of any time an array is being
+ * accessed. For example, the statement: "args[34]" is an array access.
+ * Obviously the previous code segment does nothing, however these nodes
+ * will be intertwined with method calls, assignments, if statements, etc.
  * 
  * @author	Braden Steffaniak
  * @since	Mar 24, 2014 at 10:45:29 PM
- * @since	v
- * @version	Mar 24, 2014 at 10:45:29 PM
- * @version	v
+ * @since	v0.1
+ * @version	Mar 28, 2014 at 5:54:29 PM
+ * @version	v0.2
  */
 public class ArrayAccessNode extends TreeNode
 {
+	/**
+	 * Get the VariableNode that corresponds to the array identifier.
+	 * 
+	 * @return The VariableNode instance.
+	 */
 	public VariableNode getVariableNode()
 	{
 		return (VariableNode)getChild(0);
@@ -81,7 +89,18 @@ public class ArrayAccessNode extends TreeNode
 		
 		return builder.toString();
 	}
-	
+
+	/**
+	 * Decode the given statement into an ArrayAccessNode if possible.
+	 * If it is not possible, the method will return null.<br>
+	 * <br>
+	 * An example input would be: "args[34]"
+	 * 
+	 * @param parentNode The parent of the current statement.
+	 * @param statement The statement to decode into an ArrayAccessNode.
+	 * @param location The location of the statement.
+	 * @return The ArrayAccessNode if it was created, null if not.
+	 */
 	public static ArrayAccessNode decodeStatement(TreeNode parentNode, String statement, Location location)
 	{
 		if (SyntaxUtils.isValidArrayAccess(statement))
@@ -166,6 +185,13 @@ public class ArrayAccessNode extends TreeNode
 		return clone(node);
 	}
 	
+	/**
+	 * Fill the given ArrayAccessNode with the data that is in the
+	 * specified node.
+	 * 
+	 * @param node The node to copy the data into.
+	 * @return The cloned node.
+	 */
 	public ArrayAccessNode clone(ArrayAccessNode node)
 	{
 		for (int i = 0; i < getChildren().size(); i++)

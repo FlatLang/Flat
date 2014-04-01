@@ -18,18 +18,19 @@
 package net.fathomsoft.fathom.tree;
 
 /**
- * 
+ * TreeNode extension that keeps track of all of the arguments that
+ * are passed during a method call. The children of this node are
+ * all ArgumentNode instances. They are stored in the order that
+ * they will be passed to the method call.
  * 
  * @author	Braden Steffaniak
  * @since	Jan 10, 2014 at 3:12:54 AM
- * @since	v
- * @version	Jan 10, 2014 at 3:12:54 AM
- * @version	v
+ * @since	v0.1
+ * @version	Mar 28, 2014 at 5:35:54 PM
+ * @version	v0.2
  */
 public class ArgumentListNode extends TreeNode
 {
-	
-	
 	/**
 	 * @see net.fathomsoft.fathom.tree.TreeNode#generateJavaSourceOutput()
 	 */
@@ -101,6 +102,13 @@ public class ArgumentListNode extends TreeNode
 		return clone(node);
 	}
 	
+	/**
+	 * Fill the given ArgumentListNode with the data that is in the
+	 * specified node.
+	 * 
+	 * @param node The node to copy the data into.
+	 * @return The cloned node.
+	 */
 	public ArgumentListNode clone(ArgumentListNode node)
 	{
 		for (int i = 0; i < getChildren().size(); i++)

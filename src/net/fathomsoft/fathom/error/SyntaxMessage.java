@@ -21,21 +21,33 @@ import net.fathomsoft.fathom.tree.TreeNode;
 import net.fathomsoft.fathom.util.Location;
 
 /**
- * 
+ * Class that outputs an error of a specific type.
  * 
  * @author	Braden Steffaniak
  * @since	Jan 5, 2014 at 9:28:12 PM
- * @since	v
- * @version	Jan 5, 2014 at 9:28:12 PM
- * @version	v
+ * @since	v0.1
+ * @version	Mar 28, 2014 at 5:34:12 PM
+ * @version	v0.2
  */
 public class SyntaxMessage
 {
+	/**
+	 * Output an error message from the compiler.
+	 * 
+	 * @param message The message describing the error.
+	 * @param node The node that the error occurred from.
+	 */
 	public static void error(String message, TreeNode node)
 	{
 		error(message, node.getLocationIn());
 	}
 	
+	/**
+	 * Output an error message from the compiler.
+	 * 
+	 * @param message The message describing the error.
+	 * @param location The location that the error occurred at.
+	 */
 	public static void error(String message, Location location)
 	{
 		Message error = new Message(message, location);
@@ -43,11 +55,23 @@ public class SyntaxMessage
 		error.outputMessage(Message.ERROR);
 	}
 	
+	/**
+	 * Output a warning message from the compiler.
+	 * 
+	 * @param message The message describing the warning.
+	 * @param node The node that the warning occurred from.
+	 */
 	public static void warning(String message, TreeNode node)
 	{
 		warning(message, node.getLocationIn());
 	}
 	
+	/**
+	 * Output a warning message from the compiler.
+	 * 
+	 * @param message The message describing the warning.
+	 * @param location The location that the warning occurred at.
+	 */
 	public static void warning(String message, Location location)
 	{
 		Message warning = new Message(message, location);
