@@ -19,6 +19,7 @@ IO,
 FUNC(void, println, IO* __o__, ExceptionData* __FATHOM__exception_data, String* text);
 FUNC(void, print, IO* __o__, ExceptionData* __FATHOM__exception_data, String* text);
 FUNC(void, printi, IO* __o__, ExceptionData* __FATHOM__exception_data, int j);
+FUNC(void, printl, IO* __o__, ExceptionData* __FATHOM__exception_data, long_long j);
 FUNC(int, getInt, IO* __o__, ExceptionData* __FATHOM__exception_data);
 FUNC(String*, getLine, IO* __o__, ExceptionData* __FATHOM__exception_data);
 FUNC(void, waitForEnter, IO* __o__, ExceptionData* __FATHOM__exception_data);

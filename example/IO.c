@@ -11,12 +11,13 @@ IO* __static__IO;
 
 IO* new_IO(ExceptionData* __FATHOM__exception_data);
 void del_IO(IO* __o__, ExceptionData* __FATHOM__exception_data);
-static void println(IO* __o__, ExceptionData* __FATHOM__exception_data, String* text);
-static void print(IO* __o__, ExceptionData* __FATHOM__exception_data, String* text);
-static void printi(IO* __o__, ExceptionData* __FATHOM__exception_data, int j);
-static int getInt(IO* __o__, ExceptionData* __FATHOM__exception_data);
-static String* getLine(IO* __o__, ExceptionData* __FATHOM__exception_data);
-static void waitForEnter(IO* __o__, ExceptionData* __FATHOM__exception_data);
+static void __FATHOM__println(IO* __o__, ExceptionData* __FATHOM__exception_data, String* text);
+static void __FATHOM__print(IO* __o__, ExceptionData* __FATHOM__exception_data, String* text);
+static void __FATHOM__printi(IO* __o__, ExceptionData* __FATHOM__exception_data, int j);
+static void __FATHOM__printl(IO* __o__, ExceptionData* __FATHOM__exception_data, long_long j);
+static int __FATHOM__getInt(IO* __o__, ExceptionData* __FATHOM__exception_data);
+static String* __FATHOM__getLine(IO* __o__, ExceptionData* __FATHOM__exception_data);
+static void __FATHOM__waitForEnter(IO* __o__, ExceptionData* __FATHOM__exception_data);
 
 NO_PRIVATE
 
@@ -24,13 +25,16 @@ IO* new_IO(ExceptionData* __FATHOM__exception_data)
 {
 NEW(IO, __o__);
 
-__o__->println = println;
-__o__->print = print;
-__o__->printi = printi;
-__o__->getInt = getInt;
-__o__->getLine = getLine;
-__o__->waitForEnter = waitForEnter;
+__o__->println = __FATHOM__println;
+__o__->print = __FATHOM__print;
+__o__->printi = __FATHOM__printi;
+__o__->printl = __FATHOM__printl;
+__o__->getInt = __FATHOM__getInt;
+__o__->getLine = __FATHOM__getLine;
+__o__->waitForEnter = __FATHOM__waitForEnter;
 
+{
+}
 
 return __o__;
 }
@@ -43,14 +47,16 @@ return;
 }
 
 
+{
+}
 free(__o__);
 }
 
-static void println(IO* __o__, ExceptionData* __FATHOM__exception_data, String* text)
+static void __FATHOM__println(IO* __o__, ExceptionData* __FATHOM__exception_data, String* text)
 {
 }
 
-static void print(IO* __o__, ExceptionData* __FATHOM__exception_data, String* text)
+static void __FATHOM__print(IO* __o__, ExceptionData* __FATHOM__exception_data, String* text)
 {
 char* cText;
 
@@ -58,24 +64,29 @@ cText = text->toCharArray(text, __FATHOM__exception_data);
 printf(cText);
 }
 
-static void printi(IO* __o__, ExceptionData* __FATHOM__exception_data, int j)
+static void __FATHOM__printi(IO* __o__, ExceptionData* __FATHOM__exception_data, int j)
 {
 printf("%d", j);
 }
 
-static int getInt(IO* __o__, ExceptionData* __FATHOM__exception_data)
+static void __FATHOM__printl(IO* __o__, ExceptionData* __FATHOM__exception_data, long_long j)
+{
+printf("%llu", j);
+}
+
+static int __FATHOM__getInt(IO* __o__, ExceptionData* __FATHOM__exception_data)
 {
 String* s;
 char* data;
 int num;
 
-s = getLine(__o__, __FATHOM__exception_data);
+s = __o__->getLine(__o__, __FATHOM__exception_data);
 data = s->toCharArray(s, __FATHOM__exception_data);
 num = atoi(data);
 return num;
 }
 
-static String* getLine(IO* __o__, ExceptionData* __FATHOM__exception_data)
+static String* __FATHOM__getLine(IO* __o__, ExceptionData* __FATHOM__exception_data)
 {
 char* line;
 String* s;
@@ -85,7 +96,7 @@ s = new_String(__FATHOM__exception_data, line);
 return s;
 }
 
-static void waitForEnter(IO* __o__, ExceptionData* __FATHOM__exception_data)
+static void __FATHOM__waitForEnter(IO* __o__, ExceptionData* __FATHOM__exception_data)
 {
 char* c;
 

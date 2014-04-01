@@ -7,7 +7,8 @@ public class IO
 {
 	public static void println(String text)
 	{
-		
+		//print(text);
+		//print("\n");
 	}
 	
 	public static void print(String text)
@@ -20,6 +21,11 @@ public class IO
 	public static void printi(int j)
 	{
 		stdio.printf("%d", j);
+	}
+	
+	public static void printl(long j)
+	{
+		stdio.printf("%llu", j);
 	}
 	
 	public static int getInt()
