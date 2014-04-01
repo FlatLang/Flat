@@ -30,47 +30,22 @@ import net.fathomsoft.fathom.util.Patterns;
 import net.fathomsoft.fathom.util.Regex;
 import net.fathomsoft.fathom.util.StringUtils;
 import net.fathomsoft.fathom.util.SyntaxUtils;
-
+ 
 /**
- * 
+ * TreeNode extension that represents the use of a binary operator.
+ * For example: "153 + 4 / 2" represents two binary operator nodes.
+ * The first node consists of the "153" as the left hand value, and
+ * the binary node "4 / 2"
  * 
  * @author	Braden Steffaniak
  * @since	Jan 5, 2014 at 9:20:35 PM
- * @since	v
- * @version	Jan 5, 2014 at 9:20:35 PM
- * @version	v
+ * @since	v0.1
+ * @version	Mar 30, 2014 at 2:40:35 PM
+ * @version	v0.2
  */
 public class BinaryOperatorNode extends TreeNode
 {
 	private static int checkId;
-	
-	public BinaryOperatorNode()
-	{
-		
-	}
-	
-	public boolean checkOperator()
-	{
-		if (getChildren().size() <= 1)
-		{
-			SyntaxMessage.error("Missing operator", getLocationIn());
-			
-			return false;
-		}
-		
-		TreeNode node = getChild(1);
-		
-		if (node instanceof OperatorNode)
-		{
-			return true;
-		}
-		else
-		{
-			SyntaxMessage.error("Missing operator", getLocationIn());
-		
-			return false;
-		}
-	}
 
 	/**
 	 * @see net.fathomsoft.fathom.tree.TreeNode#generateJavaSourceOutput()
@@ -78,11 +53,6 @@ public class BinaryOperatorNode extends TreeNode
 	@Override
 	public String generateJavaSourceOutput()
 	{
-		if (!checkOperator())
-		{
-			return null;
-		}
-		
 		StringBuilder builder = new StringBuilder();
 		
 		for (int i = 0; i < getChildren().size(); i++)
@@ -113,11 +83,6 @@ public class BinaryOperatorNode extends TreeNode
 	@Override
 	public String generateCSourceOutput()
 	{
-		if (!checkOperator())
-		{
-			return null;
-		}
-		
 		StringBuilder builder = new StringBuilder();
 		
 		for (int i = 0; i < getChildren().size(); i++)
@@ -144,8 +109,48 @@ public class BinaryOperatorNode extends TreeNode
 		return generateCSourceOutput();
 	}
 	
-	private static IfStatementNode generateDivideByZeroCheck(TreeNode parent, String denominator, Location location)
+	/**
+	 * Method used to generate a divide by zero check before any division.
+	 * This ensures that there never is a division by zero without an
+	 * exception being thrown.
+	 * 
+	 * @param parent The parent of the node to create.
+	 * @param denominator The denominator that is being divided.
+	 * @param location The location of the division in the source code.
+	 * @return The node to check the exception.
+	 */
+	private static TreeNode generateDivideByZeroCheck(TreeNode parent, String denominator, Location location)
 	{
+		if (SyntaxUtils.isNumber(denominator))
+		{
+			try
+			{
+				int num = Integer.parseInt(denominator);
+				
+				if (num != 0)
+				{
+					return null;
+				}
+				else
+				{
+					return generateDivideByZeroThrow(parent, location);
+				}
+			}
+			catch (NumberFormatException e)
+			{
+				double num = Double.parseDouble(denominator);
+				
+				if (num != 0)
+				{
+					return null;
+				}
+				else
+				{
+					return generateDivideByZeroThrow(parent, location);
+				}
+			}
+		}
+		
 //		String denominatorVar = "__" + Fathom.LANGUAGE_NAME.toUpperCase() + "__zero_check" + checkId++;
 //		
 //		LocalVariableNode declaration = LocalVariableNode.decodeStatement(parent, "int " + denominatorVar + " = " + denominator, location);
@@ -154,12 +159,34 @@ public class BinaryOperatorNode extends TreeNode
 		IfStatementNode ifStatement = IfStatementNode.decodeStatement(parent, "if (" + denominator + " == 0)", location);
 		parent.addChild(ifStatement);
 		
-		ThrowNode throwNode = ThrowNode.decodeStatement(ifStatement, "throw new DivideByZeroException()", location);
+		ThrowNode throwNode = generateDivideByZeroThrow(parent, location);
 		ifStatement.addChild(throwNode);
 		
 		return ifStatement;
 	}
 	
+	/**
+	 * Generate an exception throw node for a DivideByZeroException.
+	 * 
+	 * @param parent The parent of the node to create.
+	 * @param location The location of the division.
+	 * @return The ThrowNode for the DivideByZeroException.
+	 */
+	private static ThrowNode generateDivideByZeroThrow(TreeNode parent, Location location)
+	{
+		ThrowNode throwNode = ThrowNode.decodeStatement(parent, "throw new DivideByZeroException()", location);
+		
+		return throwNode;
+	}
+	
+	/**
+	 * 
+	 * 
+	 * @param parentNode
+	 * @param statement
+	 * @param location
+	 * @return
+	 */
 	public static TreeNode decodeStatement(TreeNode parentNode, String statement, Location location)
 	{
 		if (!Regex.matches(statement, 0, Patterns.PRE_OPERATORS))
@@ -173,11 +200,30 @@ public class BinaryOperatorNode extends TreeNode
 		return decodeStatement(parentNode, statement, matcher, location);
 	}
 	
+	/**
+	 * 
+	 * 
+	 * @param parentNode
+	 * @param statement
+	 * @param matcher
+	 * @param location
+	 * @return
+	 */
 	private static TreeNode decodeStatement(TreeNode parentNode, String statement, Matcher matcher, Location location)
 	{
 		return decodeStatement(parentNode, statement, 0, matcher, location);
 	}
 	
+	/**
+	 * 
+	 * 
+	 * @param parentNode
+	 * @param statement
+	 * @param offset
+	 * @param matcher
+	 * @param location
+	 * @return
+	 */
 	private static TreeNode decodeStatement(TreeNode parentNode, String statement, int offset, Matcher matcher, Location location)
 	{
 		if (matcher.find())
@@ -195,7 +241,7 @@ public class BinaryOperatorNode extends TreeNode
 			String   lhv = statement.substring(bounds.getStart(), bounds.getEnd());
 			
 			// The left-hand node.
-			TreeNode lhn = getNode(parentNode, lhv, location);
+			TreeNode lhn = createNode(parentNode, lhv, location);
 			
 			node.addChild(lhn);
 			
@@ -220,7 +266,7 @@ public class BinaryOperatorNode extends TreeNode
 			
 			if (operatorVal.equals("/"))
 			{
-				IfStatementNode divideByZeroCheck = generateDivideByZeroCheck(parentNode, rhn.generateCSourceFragment(), location);
+				TreeNode divideByZeroCheck = generateDivideByZeroCheck(parentNode, rhn.generateCSourceFragment(), location);
 				
 				parentNode.addChild(divideByZeroCheck);
 			}
@@ -229,7 +275,7 @@ public class BinaryOperatorNode extends TreeNode
 		}
 		else if (matcher.hitEnd())
 		{
-			return getNode(parentNode, statement, location);
+			return createNode(parentNode, statement, location);
 			
 //			ClassNode thisClass  = (ClassNode)parentNode.getAncestorOfType(ClassNode.class, true);
 //			ClassNode nodesClass = (ClassNode)node.getAncestorOfType(ClassNode.class, true);
@@ -247,14 +293,14 @@ public class BinaryOperatorNode extends TreeNode
 	}
 	
 	/**
-	 * Create a LiteralNode describing what is in the statement.
 	 * 
-	 * @param parentNode The parent node of the current location.
-	 * @param statement The statement to generate a Literal node after.
-	 * @param location The location of the statement.
-	 * @return The generated LiteralNode.
+	 * 
+	 * @param parentNode
+	 * @param statement
+	 * @param location
+	 * @return
 	 */
-	private static TreeNode getNode(TreeNode parentNode, String statement, Location location)
+	private static TreeNode createNode(TreeNode parentNode, String statement, Location location)
 	{
 //		IdentifierNode node = TreeNode.getExistingNode(parentNode, statement);
 //		
@@ -339,6 +385,13 @@ public class BinaryOperatorNode extends TreeNode
 		return clone(node);
 	}
 	
+	/**
+	 * Fill the given BinaryOperatorNode with the data that is in the
+	 * specified node.
+	 * 
+	 * @param node The node to copy the data into.
+	 * @return The cloned node.
+	 */
 	public BinaryOperatorNode clone(BinaryOperatorNode node)
 	{
 		for (int i = 0; i < getChildren().size(); i++)
