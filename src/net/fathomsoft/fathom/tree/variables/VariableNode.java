@@ -108,6 +108,11 @@ public class VariableNode extends ModifierNode
 	
 	public void setType(String type)
 	{
+		if (type != null && type.equals("long"))
+		{
+			type = "long_long";
+		}
+		
 		this.type = type;
 	}
 	
@@ -153,7 +158,7 @@ public class VariableNode extends ModifierNode
 			builder.append(getPointerText()).append(' ');
 		}
 		
-		builder.append(getName()).append(';');
+		builder.append(getName()).append(';').append('\n');
 		
 		return builder.toString();
 	}
@@ -222,7 +227,7 @@ public class VariableNode extends ModifierNode
 			builder.append('*');
 		}
 		
-		builder.append(' ').append(getName()).append(';');
+		builder.append(' ').append(getName()).append(';').append('\n');
 		
 		return builder.toString();
 	}
