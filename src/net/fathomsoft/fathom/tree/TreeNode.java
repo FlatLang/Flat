@@ -25,7 +25,7 @@ import net.fathomsoft.fathom.error.SyntaxMessage;
 import net.fathomsoft.fathom.tree.exceptionhandling.ExceptionHandlingNode;
 import net.fathomsoft.fathom.tree.exceptionhandling.TryNode;
 import net.fathomsoft.fathom.tree.variables.FieldNode;
-import net.fathomsoft.fathom.tree.variables.LocalVariableListNode;
+import net.fathomsoft.fathom.tree.variables.VariableListNode;
 import net.fathomsoft.fathom.tree.variables.LocalVariableNode;
 import net.fathomsoft.fathom.tree.variables.PrivateFieldListNode;
 import net.fathomsoft.fathom.tree.variables.PublicFieldListNode;
@@ -186,6 +186,16 @@ public abstract class TreeNode
 				return true;
 			}
 			
+			Class<?>[] interfaces = current.getInterfaces();
+			
+			for (Class<?> iface : interfaces)
+			{
+				if (iface.equals(clazz))
+				{
+					return true;
+				}
+			}
+			
 			current = current.getSuperclass();
 		}
 		
@@ -264,6 +274,59 @@ public abstract class TreeNode
 //	}
 	
 	/**
+	 * Get the ScopeNode instance of this TreeNode if it even has
+	 * a scope. If the TreeNode does not have a ScopeNode then this
+	 * method call will return null.
+	 * 
+	 * @return The ScopeNode instance, if it exists.
+	 */
+	public ScopeNode getScopeNode()
+	{
+		return null;
+	}
+	
+	/**
+	 * Get whether or not the current node type has a scope.
+	 * 
+	 * @return Whether or not the current node type has a scope.
+	 */
+	public boolean containsScope()
+	{
+		return getScopeNode() != null;
+	}
+	
+	/**
+	 * Add the given LocalVariableNode to the nearest scope.
+	 * 
+	 * @param node The LocalVariableNode to add.
+	 */
+	public void addToNearestScope(LocalVariableNode node)
+	{
+		getAncestorWithScope(this).addChild(node);
+	}
+	
+	/**
+	 * Get the nearest ancestor that contains a scope.
+	 * 
+	 * @param node The node to start the search at.
+	 * @return The nearest ancestor to the given node that has a scope.
+	 */
+	public static TreeNode getAncestorWithScope(TreeNode node)
+	{
+		while (node != null)
+		{
+			if (node.containsScope())
+			{
+				return node;
+			}
+			
+			node = node.getParent();
+		}
+		
+		return null;
+	}
+	
+	/**
 	 * Get an ArrayList with all of the children TreeNodes to the specific
 	 * TreeNode.
 	 * 
@@ -314,6 +377,19 @@ public abstract class TreeNode
 		
 		// Set this instance as the new parent.
 		node.parent = this;
+	}
+	
+	/**
+	 * Detach the specified node from its parent.
+	 */
+	public void detach()
+	{
+		if (parent == null)
+		{
+			return;
+		}
+
+		parent.getChildren().remove(this);
 	}
 	
 	/**
@@ -551,6 +627,10 @@ public abstract class TreeNode
 			{
 				return node;
 			}
+			else if ((node = UnaryOperatorNode.decodeStatement(parent, statement, location)) != null)
+			{
+				return node;
+			}
 			else if ((node = MethodCallNode.decodeStatement(parent, statement, location)) != null)
 			{
 				return node;
@@ -644,33 +724,42 @@ public abstract class TreeNode
 				return id;
 			}
 			
-			MethodNode methodNode = (MethodNode)node.getAncestorOfType(MethodNode.class, true);
+			TreeNode scopeNode = getAncestorWithScope(node);
 			
-			if (methodNode != null)
+			while (scopeNode != null)
 			{
-				LocalVariableListNode variables = methodNode.getLocalVariableListNode();
-				
-				for (int i = 0; i < variables.getChildren().size(); i++)
+				if (scopeNode != null)
 				{
-					VariableNode variable = (VariableNode)variables.getChild(i);
+					VariableListNode variables = scopeNode.getScopeNode().getVariableListNode();
 					
-					if (variable.getName().equals(statement))
+					for (int i = 0; i < variables.getChildren().size(); i++)
 					{
-						return variable;
+						VariableNode variable = (VariableNode)variables.getChild(i);
+						
+						if (variable.getName().equals(statement))
+						{
+							return variable;
+						}
+					}
+					
+					if (scopeNode instanceof MethodNode)
+					{
+						MethodNode        methodNode = (MethodNode)scopeNode;
+						ParameterListNode parameters = methodNode.getParameterListNode();
+						
+						for (int i = 0; i < parameters.getChildren().size(); i++)
+						{
+							ParameterNode parameter = (ParameterNode)parameters.getChild(i);
+							
+							if (parameter.getName().equals(statement))
+							{
+								return parameter;
+							}
+						}
 					}
 				}
 				
-				ParameterListNode parameters = methodNode.getParameterListNode();
-				
-				for (int i = 0; i < parameters.getChildren().size(); i++)
-				{
-					ParameterNode parameter = (ParameterNode)parameters.getChild(i);
-					
-					if (parameter.getName().equals(statement))
-					{
-						return parameter;
-					}
-				}
+				scopeNode = getAncestorWithScope(scopeNode.getParent());
 			}
 			
 			ClassNode classNode = (ClassNode)node.getAncestorOfType(ClassNode.class, true);
