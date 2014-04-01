@@ -41,7 +41,7 @@ public class ConstructorNode extends MethodNode
 		setStatic(true);
 		setPointer(true);
 	}
-
+	
 	/**
 	 * @see net.fathomsoft.fathom.tree.TreeNode#generateJavaSourceOutput()
 	 */
@@ -240,7 +240,7 @@ public class ConstructorNode extends MethodNode
 		{
 			MethodNode method = (MethodNode)methods.getChild(i);
 			
-			builder.append(MethodNode.getObjectReferenceIdentifier()).append("->").append(method.getName()).append(" = ").append(method.getName()).append(';').append('\n');
+			builder.append(MethodNode.getObjectReferenceIdentifier()).append("->").append(method.getName()).append(" = ").append(method.generateMethodName()).append(';').append('\n');
 		}
 		
 		return builder.toString();
