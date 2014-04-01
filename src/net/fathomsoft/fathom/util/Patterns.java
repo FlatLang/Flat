@@ -67,6 +67,11 @@ public class Patterns
 	 * Pattern that searches for 
 	 */
 	public static final Pattern POST_EQUALS_SIGN		= Pattern.compile("(?<=(=\\s{0,9}))(?=\\S+)");
+	
+	/**
+	 * Pattern that searches for 
+	 */
+	public static final Pattern UNARY_ARITH_OPERATORS	= Pattern.compile("(?<=\\s*)([\\+]{2}|[-]{2})(?=\\s*)");
 
 	/**
 	 * Pattern that searches for 
@@ -262,4 +267,9 @@ public class Patterns
 	 * Pattern that searches for 
 	 */
 	public static final Pattern POST_THROW				= Pattern.compile("(?<=throw\\s{1,9})((\\S+\\s*)+)");
+
+	/**
+	 * Pattern that searches for 
+	 */
+	public static final Pattern PRE_CLASS				= Pattern.compile("class\\s+");
 }
