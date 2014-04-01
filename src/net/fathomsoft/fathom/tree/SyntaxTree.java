@@ -138,6 +138,11 @@ public class SyntaxTree
 			
 			if (/*!statementEndMatcher.hitEnd()*/statementEndIndex >= 0 && nextChar(statementEndIndex) == '{')
 			{
+//				if (currentNode.containsScope())
+//				{
+//					currentNode = currentNode.getScopeNode();
+//				}
+				
 				parentStack.push(currentNode);
 			}
 			
