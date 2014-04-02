@@ -403,6 +403,14 @@ public class ClassNode extends DeclarationNode
 		return null;
 	}
 	
+	/**
+	 * 
+	 * 
+	 * @param parentNode
+	 * @param statement
+	 * @param location
+	 * @return
+	 */
 	public static ClassNode decodeStatement(TreeNode parentNode, String statement, Location location)
 	{
 		// If contains 'class' in the statement.
@@ -515,11 +523,25 @@ public class ClassNode extends DeclarationNode
 		return false;
 	}
 	
+	/**
+	 * Get whether or not the class contains a constructor implementation
+	 * or not.
+	 * 
+	 * @return Whether or not the class contains a constructor
+	 * 		implementation or not.
+	 */
 	public boolean containsConstructor()
 	{
 		return containsMethod(getName(), true, getName());
 	}
 	
+	/**
+	 * Get whether or not the class contains a destructor implementation
+	 * or not.
+	 * 
+	 * @return Whether or not the class contains a destructor
+	 * 		implementation or not.
+	 */
 	public boolean containsDestructor()
 	{
 		return containsMethod("~" + getName(), true, null);
@@ -584,15 +606,17 @@ public class ClassNode extends DeclarationNode
 		return clone(node);
 	}
 	
+	/**
+	 * Fill the given ClassNode with the data that is in the
+	 * specified node.
+	 * 
+	 * @param node The node to copy the data into.
+	 * @return The cloned node.
+	 */
 	public ClassNode clone(ClassNode node)
 	{
-		node.setArrayDimensions(getArrayDimensions());
-		node.setConst(isConst());
-		node.setVisibility(getVisibility());
-		node.setType(getType());
-		node.setReference(isReference());
-		node.setPointer(isPointer());
-		node.setName(getName());
+		super.clone(node);
+		
 		node.extendedClass = extendedClass;
 		
 		for (int i = 0; i < implementedClasses.size(); i++)
