@@ -180,14 +180,29 @@ public class BinaryOperatorNode extends TreeNode
 	}
 	
 	/**
+	 * Decode the given statement into a BinaryOperatorNode if possible.
+	 * If it is not possible, the method will return null. The requirements
+	 * of a BinaryOperatorNode include: Contains an operator such as '!=',
+	 * '>=', '<=', '>', '<', '*', '/', '+', '-', and '%' surrounded by two
+	 * comparable values.<br>
+	 * <br>
+	 * Example inputs include:<br>
+	 * <ul>
+	 * 	<li>5 / 2</li>
+	 * 	<li>(a.getWidth() + b.getHeight) / array.getSize()</li>
+	 * 	<li>variableName % 2 == 0</li>
+	 * </ul>
 	 * 
+	 * The last two examples contain two BinaryOperatorNodes.
 	 * 
-	 * @param parentNode
-	 * @param statement
-	 * @param location
-	 * @return
+	 * @param parent The parent of the current statement.
+	 * @param statement The statement to translate into a BinaryOperatorNode
+	 * 		if possible.
+	 * @param location The location of the statement in the source code.
+	 * @return The generated TreeNode, if it was possible to translated it
+	 * 		into a BinaryOperatorNode.
 	 */
-	public static TreeNode decodeStatement(TreeNode parentNode, String statement, Location location)
+	public static TreeNode decodeStatement(TreeNode parent, String statement, Location location)
 	{
 		if (!Regex.matches(statement, 0, Patterns.PRE_OPERATORS))
 		{
@@ -197,34 +212,34 @@ public class BinaryOperatorNode extends TreeNode
 		// Pattern used to find word boundaries. 
 		Matcher matcher = Patterns.PRE_OPERATORS.matcher(statement);
 		
-		return decodeStatement(parentNode, statement, matcher, location);
+		return decodeStatement(parent, statement, matcher, location);
 	}
 	
 	/**
+	 * Decode the given statement into a BinaryOperatorNode if possible.
+	 * If it is not possible, the method will return null. The requirements
+	 * of a BinaryOperatorNode include: Contains an operator such as '!=',
+	 * '>=', '<=', '>', '<', '*', '/', '+', '-', and '%' surrounded by two
+	 * comparable values.<br>
+	 * <br>
+	 * Example inputs include:<br>
+	 * <ul>
+	 * 	<li>5 / 2</li>
+	 * 	<li>(a.getWidth() + b.getHeight) / array.getSize()</li>
+	 * 	<li>variableName % 2 == 0</li>
+	 * </ul>
 	 * 
+	 * The last two examples contain two BinaryOperatorNodes.
 	 * 
-	 * @param parentNode
-	 * @param statement
-	 * @param matcher
-	 * @param location
-	 * @return
+	 * @param parent The parent of the current statement.
+	 * @param statement The statement to translate into a BinaryOperatorNode
+	 * 		if possible.
+	 * @param matcher The matcher for the statement.
+	 * @param location The location of the statement in the source code.
+	 * @return The generated TreeNode, if it was possible to translated it
+	 * 		into a BinaryOperatorNode.
 	 */
 	private static TreeNode decodeStatement(TreeNode parentNode, String statement, Matcher matcher, Location location)
-	{
-		return decodeStatement(parentNode, statement, 0, matcher, location);
-	}
-	
-	/**
-	 * 
-	 * 
-	 * @param parentNode
-	 * @param statement
-	 * @param offset
-	 * @param matcher
-	 * @param location
-	 * @return
-	 */
-	private static TreeNode decodeStatement(TreeNode parentNode, String statement, int offset, Matcher matcher, Location location)
 	{
 		if (matcher.find())
 		{
@@ -260,7 +275,7 @@ public class BinaryOperatorNode extends TreeNode
 			statement = statement.substring(bounds2.getStart());
 			
 			matcher.reset(statement);
-			TreeNode rhn = decodeStatement(parentNode, statement, offset, matcher, location);
+			TreeNode rhn = decodeStatement(parentNode, statement, matcher, location);
 			
 			node.addChild(rhn);
 			
@@ -293,14 +308,14 @@ public class BinaryOperatorNode extends TreeNode
 	}
 	
 	/**
+	 * Get the node that represents value for the statement.
 	 * 
-	 * 
-	 * @param parentNode
-	 * @param statement
-	 * @param location
-	 * @return
+	 * @param parent The parent of the statement.
+	 * @param statement The statement containing the value.
+	 * @param location The location of the statement in the source code.
+	 * @return The generated TreeNode instance.
 	 */
-	private static TreeNode createNode(TreeNode parentNode, String statement, Location location)
+	private static TreeNode createNode(TreeNode parent, String statement, Location location)
 	{
 //		IdentifierNode node = TreeNode.getExistingNode(parentNode, statement);
 //		
@@ -327,25 +342,25 @@ public class BinaryOperatorNode extends TreeNode
 		{
 			LiteralNode literal = new LiteralNode();
 			
-			literal.setValue(statement, parentNode.isWithinExternalContext());
+			literal.setValue(statement, parent.isWithinExternalContext());
 			
 			return literal;
 		}
 		else if (SyntaxUtils.isInstantiation(statement))
 		{
-			InstantiationNode node = InstantiationNode.decodeStatement(parentNode, statement, location);
+			InstantiationNode node = InstantiationNode.decodeStatement(parent, statement, location);
 			
 			return node;
 		}
 		else if (SyntaxUtils.isMethodCall(statement))
 		{
-			MethodCallNode node = MethodCallNode.decodeStatement(parentNode, statement, location);
+			MethodCallNode node = MethodCallNode.decodeStatement(parent, statement, location);
 			
 			return node;
 		}
 		else if (SyntaxUtils.isValidIdentifier(statement))
 		{
-			IdentifierNode node = TreeNode.getExistingNode(parentNode, statement);
+			IdentifierNode node = TreeNode.getExistingNode(parent, statement);
 			
 			if (node != null)
 			{
@@ -357,14 +372,14 @@ public class BinaryOperatorNode extends TreeNode
 			{
 				LiteralNode literal = new LiteralNode();
 				
-				literal.setValue(MethodNode.getObjectReferenceIdentifier(), parentNode.isWithinExternalContext());
+				literal.setValue(MethodNode.getObjectReferenceIdentifier(), parent.isWithinExternalContext());
 				
 				return literal;
 			}
 		}
 		else if (SyntaxUtils.isValidArrayAccess(statement))
 		{
-			ArrayAccessNode node = ArrayAccessNode.decodeStatement(parentNode, statement, location);
+			ArrayAccessNode node = ArrayAccessNode.decodeStatement(parent, statement, location);
 			
 			return node;
 		}
