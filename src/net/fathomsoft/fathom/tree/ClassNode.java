@@ -33,13 +33,15 @@ import net.fathomsoft.fathom.util.Patterns;
 import net.fathomsoft.fathom.util.Regex;
 
 /**
- * 
+ * DeclarationNode extension that represents the declaration of a class
+ * node type. See {@link net.fathomsoft.fathom.tree.ClassNode#decodeStatement(net.fathomsoft.fathom.tree.TreeNode, java.lang.String, net.fathomsoft.fathom.util.Location) decodeStatement}
+ * for more details on what correct inputs look like.
  * 
  * @author	Braden Steffaniak
  * @since	Jan 5, 2014 at 9:15:51 PM
- * @since	v
- * @version	Jan 5, 2014 at 9:15:51 PM
- * @version	v
+ * @since	v0.1
+ * @version	Apr 2, 2014 at 4:39:13 PM
+ * @version	v0.2
  */
 public class ClassNode extends DeclarationNode
 {
@@ -47,6 +49,9 @@ public class ClassNode extends DeclarationNode
 	
 	private	ArrayList<String>	implementedClasses;
 	
+	/**
+	 * Instantiate and initialize default values for a class node.
+	 */
 	public ClassNode()
 	{
 		implementedClasses = new ArrayList<String>();
@@ -64,51 +69,117 @@ public class ClassNode extends DeclarationNode
 		super.addChild(methods);
 	}
 	
+	/**
+	 * Get the FieldListNode instance that contains the list of fields
+	 * that this class node contains.
+	 * 
+	 * @return The FieldListNode for this class node.
+	 */
 	public FieldListNode getFieldListNode()
 	{
 		return (FieldListNode)getChild(0);
 	}
 	
+	/**
+	 * Get the MethodListNode instance that contains the list of
+	 * constructors that this class node contains.
+	 * 
+	 * @return The MethodListNode for constructors of this class node.
+	 */
 	public MethodListNode getConstructorListNode()
 	{
 		return (MethodListNode)getChild(1);
 	}
-
+	
+	/**
+	 * Get the MethodListNode instance that contains the list of
+	 * destructors that this class node contains.
+	 * 
+	 * @return The MethodListNode for destructors of this class node.
+	 */
 	public MethodListNode getDestructorListNode()
 	{
 		return (MethodListNode)getChild(2);
 	}
 	
+	/**
+	 * Get the MethodListNode instance that contains the list of methods
+	 * that this class node contains.
+	 * 
+	 * @return The MethodListNode for this class node.
+	 */
 	public MethodListNode getMethodListNode()
 	{
 		return (MethodListNode)getChild(3);
 	}
 	
+	/**
+	 * Get the name of the class that this node extends.
+	 * 
+	 * @return The name of the class that this node extends.
+	 */
 	public String getExtendedClass()
 	{
 		return extendedClass;
 	}
 	
+	/**
+	 * Set the class that this class node will extend.<br>
+	 * <br>
+	 * For instance: "public class ClassName extends SuperClass"
+	 * The "SuperClass" is a class that is extended by the "ClassName"
+	 * class.<br>
+	 * <br>
+	 * A class node can only extend one class.
+	 * 
+	 * @param extendedClass The name of the class that is to be
+	 * 		extended.
+	 */
 	public void setExtendedClass(String extendedClass)
 	{
 		this.extendedClass = extendedClass;
 	}
 	
+	/**
+	 * Get an ArrayList instance that contains all of the interfaces
+	 * that are implemented by this class node.
+	 * 
+	 * @return An ArrayList instance that contains the interface names.
+	 */
 	public ArrayList<String> getImplementedClasses()
 	{
 		return implementedClasses;
 	}
 	
+	/**
+	 * Add a class to the list of implemented classes of this class
+	 * instance.<br>
+	 * <br>
+	 * For instance: "public class ClassName implements InterfaceName"
+	 * The "InterfaceName" is an interface that is implemented by
+	 * the "ClassName" class.<br>
+	 * <br>
+	 * A class node can implement as many interfaces as it needs to.
+	 * 
+	 * @param implementedClass The name of the class that is to be
+	 * 		implemented.
+	 */
 	public void addImplementedClass(String implementedClass)
 	{
 		this.implementedClasses.add(implementedClass);
 	}
 	
+	/**
+	 * @see net.fathomsoft.fathom.tree.DeclarationNode#setAttribute(java.lang.String)
+	 */
 	public void setAttribute(String attribute)
 	{
 		setAttribute(attribute, -1);
 	}
 	
+	/**
+	 * @see net.fathomsoft.fathom.tree.DeclarationNode#setAttribute(java.lang.String, int)
+	 */
 	public void setAttribute(String attribute, int argNum)
 	{
 		super.setAttribute(attribute, argNum);
@@ -404,14 +475,24 @@ public class ClassNode extends DeclarationNode
 	}
 	
 	/**
+	 * Decode the given statement into a ClassNode, if possible. If it is
+	 * not possible, this method returns null.<br>
+	 * <br>
+	 * Example inputs include:<br>
+	 * <ul>
+	 * 	<li>public class ClassName</li>
+	 * 	<li>private static class ClassName</li>
+	 * 	<li>public abstract class ClassName</li>
+	 * </ul>
 	 * 
-	 * 
-	 * @param parentNode
-	 * @param statement
-	 * @param location
-	 * @return
+	 * @param parent The parent of the current statement.
+	 * @param statement The statement to translate into a ClassNode
+	 * 		if possible.
+	 * @param location The location of the statement in the source code.
+	 * @return The generated node, if it was possible to translated it
+	 * 		into a ClassNode.
 	 */
-	public static ClassNode decodeStatement(TreeNode parentNode, String statement, Location location)
+	public static ClassNode decodeStatement(TreeNode parent, String statement, Location location)
 	{
 		// If contains 'class' in the statement.
 		if (Regex.indexOf(statement, Patterns.PRE_CLASS) >= 0)

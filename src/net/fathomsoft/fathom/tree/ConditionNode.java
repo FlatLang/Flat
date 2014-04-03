@@ -18,21 +18,15 @@
 package net.fathomsoft.fathom.tree;
 
 /**
- * 
+ * TreeNode extension that represents a condition. Conditions can be
+ * found in if/else if statements, for/while loops, etc.
  * 
  * @author	Braden Steffaniak
- * @since	Jan 5, 2014 at 9:57:40 PM
- * @since	v
- * @version	Jan 5, 2014 at 9:57:40 PM
- * @version	v
+ * @since	v0.1 Jan 5, 2014 at 9:57:40 PM
+ * @version	v0.2 Apr 2, 2014 at 4:49:47 PM
  */
 public class ConditionNode extends TreeNode
 {
-	public ConditionNode()
-	{
-		
-	}
-
 	/**
 	 * @see net.fathomsoft.fathom.tree.TreeNode#generateJavaSourceOutput()
 	 */
@@ -80,6 +74,13 @@ public class ConditionNode extends TreeNode
 		return clone(node);
 	}
 	
+	/**
+	 * Fill the given ConditionNode with the data that is in the
+	 * specified node.
+	 * 
+	 * @param node The node to copy the data into.
+	 * @return The cloned node.
+	 */
 	public ConditionNode clone(ConditionNode node)
 	{
 		for (int i = 0; i < getChildren().size(); i++)

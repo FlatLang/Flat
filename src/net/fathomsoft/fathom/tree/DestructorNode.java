@@ -27,21 +27,16 @@ import net.fathomsoft.fathom.util.Location;
 import net.fathomsoft.fathom.util.Regex;
 
 /**
- * 
+ * MethodNode extension that represents the declaration of a Destructor
+ * node type. See {@link net.fathomsoft.fathom.tree.DestructorNode#decodeStatement(net.fathomsoft.fathom.tree.TreeNode, java.lang.String, net.fathomsoft.fathom.util.Location) decodeStatement}
+ * for more details on what correct inputs look like.
  * 
  * @author	Braden Steffaniak
- * @since	Jan 5, 2014 at 9:50:43 PM
- * @since	v
- * @version	Jan 5, 2014 at 9:50:43 PM
- * @version	v
+ * @since	v0.1 Jan 5, 2014 at 9:50:43 PM
+ * @version	v0.2 Apr 2, 2014 at 7:21:49 PM
  */
 public class DestructorNode extends MethodNode
 {
-	public DestructorNode()
-	{
-		
-	}
-
 	/**
 	 * @see net.fathomsoft.fathom.tree.TreeNode#generateJavaSourceOutput()
 	 */
@@ -128,6 +123,12 @@ public class DestructorNode extends MethodNode
 		return null;
 	}
 	
+	/**
+	 * Generate the code needed to check if a variable is null before
+	 * trying to free its members.
+	 * 
+	 * @return The code needed to check whether a variable is null or not.
+	 */
 	private String nullChecker()
 	{
 		StringBuilder builder = new StringBuilder();
@@ -140,6 +141,11 @@ public class DestructorNode extends MethodNode
 		return builder.toString();
 	}
 	
+	/**
+	 * Generate the code needed to delete each member of the class.
+	 * 
+	 * @return The code needed to delete each member of the class.
+	 */
 	private String deleteData()
 	{
 		StringBuilder builder  = new StringBuilder();
@@ -187,6 +193,13 @@ public class DestructorNode extends MethodNode
 		return builder.toString();
 	}
 	
+	/**
+	 * Generate a String for the code used to free memory of an allocated
+	 * field variable located within the current class.
+	 * 
+	 * @param field The node that contains the information of the field.
+	 * @return The generated String for the code.
+	 */
 	private String generateFreeFieldSource(FieldNode field)
 	{
 		StringBuilder builder = new StringBuilder();
@@ -206,6 +219,13 @@ public class DestructorNode extends MethodNode
 		return builder.toString();
 	}
 	
+	/**
+	 * Generate a String for the code used to free memory of an allocated
+	 * member variable with the given name.
+	 * 
+	 * @param name The name of the variable to delete.
+	 * @return The generated String for the code.
+	 */
 	private String generateFreeMemberSource(String name)
 	{
 		StringBuilder builder = new StringBuilder();
@@ -215,11 +235,17 @@ public class DestructorNode extends MethodNode
 		return builder.toString();
 	}
 	
+	/**
+	 * @see net.fathomsoft.fathom.tree.MethodNode#generateCSourcePrototype()
+	 */
 	public String generateCSourcePrototype()
 	{
 		return generateCSourceSignature().concat(";");
 	}
 	
+	/**
+	 * @see net.fathomsoft.fathom.tree.MethodNode#generateCSourceSignature()
+	 */
 	public String generateCSourceSignature()
 	{
 		StringBuilder builder = new StringBuilder();
@@ -245,7 +271,25 @@ public class DestructorNode extends MethodNode
 		return builder.toString();
 	}
 	
-	public static DestructorNode decodeStatement(TreeNode parentNode, String statement, Location location)
+	/**
+	 * Decode the given statement into a DestructorNode instance, if
+	 * possible. If it is not possible, this method returns null. A
+	 * destructor must have the same name as the class that it is
+	 * within preceded by a tilde (A tilde is a '~' located above the tab
+	 * key). Destructors also do not have a return value and are always
+	 * private. They never accept parameters, because they are never
+	 * called programmatically.<br>
+	 * <br>
+	 * The only acceptable syntax input includes: "private ~ClassName()"
+	 * 
+	 * @param parent The parent node of the statement.
+	 * @param statement The statement to try to decode into a
+	 * 		DestructorNode instance.
+	 * @param location The location of the statement in the source code.
+	 * @return The generated node, if it was possible to translated it
+	 * 		into a DestructorNode.
+	 */
+	public static DestructorNode decodeStatement(TreeNode parent, String statement, Location location)
 	{
 		int firstParenthIndex = statement.indexOf('(');
 		int lastParenthIndex  = statement.lastIndexOf(')');
@@ -285,7 +329,7 @@ public class DestructorNode extends MethodNode
 			
 			n.iterateWords(signature);
 			
-			ClassNode classNode = (ClassNode)parentNode.getAncestorOfType(ClassNode.class, true);
+			ClassNode classNode = (ClassNode)parent.getAncestorOfType(ClassNode.class, true);
 			
 			if (classNode.getName().equals(n.getName()))
 			{
@@ -322,16 +366,16 @@ public class DestructorNode extends MethodNode
 		return clone(node);
 	}
 	
+	/**
+	 * Fill the given DestructorNode with the data that is in the
+	 * specified node.
+	 * 
+	 * @param node The node to copy the data into.
+	 * @return The cloned node.
+	 */
 	public DestructorNode clone(DestructorNode node)
 	{
-		node.setStatic(isStatic());
-		node.setVisibility(getVisibility());
-		node.setConst(isConst());
-		node.setArrayDimensions(getArrayDimensions());
-		node.setType(getType());
-		node.setReference(isReference());
-		node.setPointer(isPointer());
-		node.setName(getName());
+		super.clone(node);
 		
 		for (int i = 0; i < getChildren().size(); i++)
 		{

@@ -26,20 +26,24 @@ import net.fathomsoft.fathom.error.SyntaxMessage;
  * of this class.
  * 
  * @author	Braden Steffaniak
- * @since	Feb 18, 2014 at 8:57:00 PM
- * @since	v0.1
- * @version	Feb 18, 2014 at 8:57:00 PM
- * @version	v0.1
+ * @since	v0.1 Feb 18, 2014 at 8:57:00 PM
+ * @version	v0.2 Apr 2, 2014 at 7:26:44 PM
  */
 public class FileNode extends IdentifierNode
 {
 	//TODO: package name here?
 	
-	private static final String defaultImports[];
+	/**
+	 * The default imports that each file uses.
+	 */
+	private static final String DEFAULT_IMPORTS[];
 	
+	/**
+	 * Initialize the defaultImports constant.
+	 */
 	static
 	{
-		defaultImports = new String[]
+		DEFAULT_IMPORTS = new String[]
 		{
 			"CClass.h",
 			"ExceptionHandler.h",
@@ -47,6 +51,9 @@ public class FileNode extends IdentifierNode
 		};
 	}
 	
+	/**
+	 * Instantiate and initialize the default values.
+	 */
 	public FileNode()
 	{
 		ImportListNode imports = new ImportListNode();
@@ -57,17 +64,23 @@ public class FileNode extends IdentifierNode
 	}
 	
 	/**
+	 * Get the ImportListNode that contains all of the imports used within
+	 * the file.
+	 * 
+	 * @return The ImportListNode instance.
+	 */
+	public ImportListNode getImportListNode()
+	{
+		return (ImportListNode)getChild(0);
+	}
+	
+	/**
 	 * @see net.fathomsoft.fathom.tree.IdentifierNode#generateJavaSourceOutput()
 	 */
 	@Override
 	public String generateJavaSourceOutput()
 	{
 		return "";
-	}
-	
-	public ImportListNode getImportListNode()
-	{
-		return (ImportListNode)getChild(0);
 	}
 	
 	/**
@@ -163,9 +176,14 @@ public class FileNode extends IdentifierNode
 		return null;
 	}
 	
+	/**
+	 * Add all of the default imports that each file must include. The
+	 * default imports are included within the {@link #DEFAULT_IMPORTS}
+	 * array.
+	 */
 	private void addDefaultImportNodes()
 	{
-		for (String importLoc : defaultImports)
+		for (String importLoc : DEFAULT_IMPORTS)
 		{
 			ImportNode importNode = new ImportNode();
 			
@@ -182,6 +200,15 @@ public class FileNode extends IdentifierNode
 		}
 	}
 	
+	/**
+	 * Generate dummy class declarations for each of the imported files.
+	 * This is needed in a situation when a class imports a class that
+	 * in returns needs to import the respective one. In other words,
+	 * the chicken vs egg scenario.
+	 * 
+	 * @return The generated code used for generating the dummy class
+	 * 		types.
+	 */
 	private String generateDummyTypes()
 	{
 		StringBuilder builder = new StringBuilder();
@@ -212,9 +239,16 @@ public class FileNode extends IdentifierNode
 		return clone(node);
 	}
 	
+	/**
+	 * Fill the given FileNde with the data that is in the
+	 * specified node.
+	 * 
+	 * @param node The node to copy the data into.
+	 * @return The cloned node.
+	 */
 	public FileNode clone(FileNode node)
 	{
-		node.setName(getName());
+		super.clone(node);
 		
 		for (int i = 0; i < getChildren().size(); i++)
 		{

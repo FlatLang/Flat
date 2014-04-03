@@ -26,16 +26,19 @@ import net.fathomsoft.fathom.util.Location;
 import net.fathomsoft.fathom.util.Regex;
 
 /**
- * 
+ * MethodNode extension that represents the declaration of a Constructor
+ * node type. See {@link net.fathomsoft.fathom.tree.ConstructorNode#decodeStatement(net.fathomsoft.fathom.tree.TreeNode, java.lang.String, net.fathomsoft.fathom.util.Location) decodeStatement}
+ * for more details on what correct inputs look like.
  * 
  * @author	Braden Steffaniak
- * @since	Jan 5, 2014 at 9:50:47 PM
- * @since	v
- * @version	Jan 5, 2014 at 9:50:47 PM
- * @version	v
+ * @since	v0.1 Jan 5, 2014 at 9:50:47 PM
+ * @version	v0.2 Apr 2, 2014 at 6:17:05 PM
  */
 public class ConstructorNode extends MethodNode
 {
+	/**
+	 * Create a ConstructorNode and initialize default values.
+	 */
 	public ConstructorNode()
 	{
 		setStatic(true);
@@ -201,6 +204,14 @@ public class ConstructorNode extends MethodNode
 		return null;
 	}
 	
+	/**
+	 * This method returns a String that contains the code needed to
+	 * assign the default null value to each uninitialized/uninstantiated
+	 * field variables.
+	 * 
+	 * @return A String containing the code needed to assign default values
+	 * 		to each uninitialized/uninstantiated field.
+	 */
 	private String generateFieldDefaultAssignments()
 	{
 		StringBuilder builder = new StringBuilder();
@@ -228,6 +239,13 @@ public class ConstructorNode extends MethodNode
 		return builder.toString();
 	}
 	
+	/**
+	 * This method returns a String that contains the code needed to
+	 * assign the c method pointers to the respective methods in the
+	 * class.
+	 * 
+	 * @return A String containing the code needed to assign the methods.
+	 */
 	private String generateMethodAssignments()
 	{
 		StringBuilder builder = new StringBuilder();
@@ -246,11 +264,17 @@ public class ConstructorNode extends MethodNode
 		return builder.toString();
 	}
 	
+	/**
+	 * @see net.fathomsoft.fathom.tree.MethodNode#generateCSourcePrototype()
+	 */
 	public String generateCSourcePrototype()
 	{
 		return generateCSourceSignature().concat(";");
 	}
 	
+	/**
+	 * @see net.fathomsoft.fathom.tree.MethodNode#generateCSourceSignature()
+	 */
 	public String generateCSourceSignature()
 	{
 		StringBuilder builder = new StringBuilder();
@@ -277,7 +301,27 @@ public class ConstructorNode extends MethodNode
 		return builder.toString();
 	}
 	
-	public static ConstructorNode decodeStatement(TreeNode parentNode, String statement, Location location)
+	/**
+	 * Decode the given statement into a ConstructorNode instance, if
+	 * possible. If it is not possible, this method returns null. A
+	 * constructor must have the same name as the class that it is
+	 * within. Constructors also do not have a return value.<br>
+	 * <br>
+	 * Example inputs include:<br>
+	 * <ul>
+	 * 	<li>public ClassName()</li>
+	 * 	<li>private ClassName(int numChildren, String name)</li>
+	 * 	<li>public ClassName(TreeNode parent, Location location)</li>
+	 * </ul>
+	 * 
+	 * @param parent The parent node of the statement.
+	 * @param statement The statement to try to decode into a
+	 * 		ConstructorNode instance.
+	 * @param location The location of the statement in the source code.
+	 * @return The generated node, if it was possible to translated it
+	 * 		into a ConstructorNode.
+	 */
+	public static ConstructorNode decodeStatement(TreeNode parent, String statement, Location location)
 	{
 		int firstParenthIndex = statement.indexOf('(');
 		int lastParenthIndex  = statement.lastIndexOf(')');
@@ -313,7 +357,7 @@ public class ConstructorNode extends MethodNode
 			{
 				if (parameters[i].length() > 0)
 				{
-					ParameterNode param = ParameterNode.decodeStatement(parentNode, parameters[i], location);
+					ParameterNode param = ParameterNode.decodeStatement(parent, parameters[i], location);
 					
 					if (param == null)
 					{
@@ -328,7 +372,7 @@ public class ConstructorNode extends MethodNode
 			
 			n.iterateWords(statement);
 			
-			ClassNode classNode = (ClassNode)parentNode.getAncestorOfType(ClassNode.class, true);
+			ClassNode classNode = (ClassNode)parent.getAncestorOfType(ClassNode.class, true);
 			
 			if (classNode.getName().equals(n.getName()))
 			{
@@ -353,16 +397,16 @@ public class ConstructorNode extends MethodNode
 		return clone(node);
 	}
 	
+	/**
+	 * Fill the given ConstructorNode with the data that is in the
+	 * specified node.
+	 * 
+	 * @param node The node to copy the data into.
+	 * @return The cloned node.
+	 */
 	public ConstructorNode clone(ConstructorNode node)
 	{
-		node.setStatic(isStatic());
-		node.setVisibility(getVisibility());
-		node.setConst(isConst());
-		node.setArrayDimensions(getArrayDimensions());
-		node.setType(getType());
-		node.setReference(isReference());
-		node.setPointer(isPointer());
-		node.setName(getName());
+		super.clone(node);
 		
 		for (int i = 0; i < getChildren().size(); i++)
 		{

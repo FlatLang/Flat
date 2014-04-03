@@ -17,6 +17,14 @@
  */
 package net.fathomsoft.fathom.tree;
 
+/**
+ * TreeNode extension that contains children of the type ImportNode.
+ * Contains all of a files imports.
+ * 
+ * @author	Braden Steffaniak
+ * @since	v0.1 Apr 2, 2014 at 8:49:52 PM
+ * @version	v0.2 Apr 2, 2014 at 8:49:52 PM
+ */
 public class ImportListNode extends TreeNode
 {
 	/**
@@ -130,6 +138,13 @@ public class ImportListNode extends TreeNode
 		return clone(node);
 	}
 	
+	/**
+	 * Fill the given ImportListNode with the data that is in the
+	 * specified node.
+	 * 
+	 * @param node The node to copy the data into.
+	 * @return The cloned node.
+	 */
 	public ImportListNode clone(ImportListNode node)
 	{
 		for (int i = 0; i < getChildren().size(); i++)

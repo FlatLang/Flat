@@ -17,35 +17,62 @@
  */
 package net.fathomsoft.fathom.tree;
 
-import net.fathomsoft.fathom.util.Bounds;
-import net.fathomsoft.fathom.util.Patterns;
-import net.fathomsoft.fathom.util.Regex;
+import net.fathomsoft.fathom.error.SyntaxMessage;
+import net.fathomsoft.fathom.util.SyntaxUtils;
 
 /**
- * 
+ * TreeNode extension that represents an Identifier. For the rules on
+ * what can and cannot be an Identifier, refer to
+ * {@link net.fathomsoft.fathom.tree.IdentifierNode#setName(java.lang.String) setName}
  * 
  * @author	Braden Steffaniak
- * @since	Jan 5, 2014 at 9:00:19 PM
- * @since	v
- * @version	Jan 5, 2014 at 9:00:19 PM
- * @version	v
+ * @since	v0.1 Jan 5, 2014 at 9:00:19 PM
+ * @version	v0.2 Apr 2, 2014 at 8:35:16 PM
  */
 public class IdentifierNode extends TreeNode
 {
 	private String	name;
 	
-	public IdentifierNode()
-	{
-		
-	}
-	
+	/**
+	 * Get the name of the Identifier. For the rules on what can and
+	 * cannot be an Identifier, refer to {@link net.fathomsoft.fathom.tree.IdentifierNode#setName(java.lang.String) setName}
+	 * 
+	 * @return The name of the Identifier.
+	 */
 	public String getName()
 	{
 		return name;
 	}
 	
+	/**
+	 * Set the name of the Identifier. Identifier names consist of the
+	 * following character types: [A-Z, a-z, 0-9, _]. However, cannot
+	 * start with a number.<br>
+	 * <br>
+	 * Example inputs include:<br>
+	 * <ul>
+	 * 	<li>correctGrammar</li>
+	 * 	<li>INCORrect_grammaR_but_123123STILL_workz</li>
+	 * 	<li>identifierName4</li>
+	 * </ul>
+	 * <br>
+	 * Incorrect inputs include:<br>
+	 * <ul>
+	 * 	<li>24JeffGordon <i>(Cannot start an identifier with a number)</i></li>
+	 * 	<li>This.Doesnt_work <i>(Cannot contain a period (or any other punctuation))</i></li>
+	 * 	<li>#omgProgramin <i>(This is not Twitter)</i></li>
+	 * </ul>
+	 * 
+	 * @param name The String containing the name to set as the
+	 * 		identifier.
+	 */
 	public void setName(String name)
 	{
+		if (!SyntaxUtils.isValidIdentifier(name))
+		{
+			SyntaxMessage.error("'" + name + "' is not a valid identifier", this);
+		}
+		
 		this.name = name;
 	}
 	
@@ -96,6 +123,13 @@ public class IdentifierNode extends TreeNode
 		return clone(node);
 	}
 	
+	/**
+	 * Fill the given IdentifierNode with the data that is in the
+	 * specified node.
+	 * 
+	 * @param node The node to copy the data into.
+	 * @return The cloned node.
+	 */
 	public IdentifierNode clone(IdentifierNode node)
 	{
 		node.setName(getName());

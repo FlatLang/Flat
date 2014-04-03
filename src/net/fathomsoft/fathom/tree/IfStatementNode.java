@@ -17,8 +17,6 @@
  */
 package net.fathomsoft.fathom.tree;
 
-import net.fathomsoft.fathom.tree.variables.LocalVariableNode;
-import net.fathomsoft.fathom.tree.variables.VariableNode;
 import net.fathomsoft.fathom.util.Bounds;
 import net.fathomsoft.fathom.util.Location;
 import net.fathomsoft.fathom.util.Patterns;
@@ -26,16 +24,20 @@ import net.fathomsoft.fathom.util.Regex;
 import net.fathomsoft.fathom.error.SyntaxMessage;
 
 /**
- * 
+ * TreeNode extension that represents the declaration of an "if statement"
+ * node type. See {@link net.fathomsoft.fathom.tree.IfStatementNode#decodeStatement(net.fathomsoft.fathom.tree.TreeNode, java.lang.String, net.fathomsoft.fathom.util.Location) decodeStatement}
+ * for more details on what correct inputs look like.
  * 
  * @author	Braden Steffaniak
- * @since	Jan 5, 2014 at 9:57:13 PM
- * @since	v
- * @version	Jan 5, 2014 at 9:57:13 PM
- * @version	v
+ * @since	v0.1 Jan 5, 2014 at 9:57:13 PM
+ * @version	v0.2 Apr 2, 2014 at 8:45:24 PM
  */
 public class IfStatementNode extends TreeNode
 {
+	/**
+	 * Instantiate a new IfStatementNode and initialize the default
+	 * values.
+	 */
 	public IfStatementNode()
 	{
 		ArgumentListNode condition = new ArgumentListNode();
@@ -45,6 +47,12 @@ public class IfStatementNode extends TreeNode
 		addChild(scopeNode);
 	}
 	
+	/**
+	 * Get the ArgumentListNode that contains the condition for the if
+	 * statement.
+	 * 
+	 * @return The ArgumentListNode instance.
+	 */
 	public ArgumentListNode getCondition()
 	{
 		return (ArgumentListNode)getChild(0);
@@ -140,6 +148,25 @@ public class IfStatementNode extends TreeNode
 		return null;
 	}
 	
+	/**
+	 * Decode the given statement into a IfStatementNode instance, if
+	 * possible. If it is not possible, this method returns null.<br>
+	 * <br>
+	 * Example inputs include:<br>
+	 * <ul>
+	 * 	<li>if (index >= array.size())</li>
+	 * 	<li>if (getParent().isAlive())</li>
+	 * 	<li>if (!person.canWalk() && !person.isVegetable())</li>
+	 * 	<li>if ((age + 2 >= 21 && gender == "male") || gender == "female")</li>
+	 * </ul>
+	 * 
+	 * @param parent The parent node of the statement.
+	 * @param statement The statement to try to decode into a
+	 * 		IfStatementNode instance.
+	 * @param location The location of the statement in the source code.
+	 * @return The generated node, if it was possible to translated it
+	 * 		into a IfStatementNode.
+	 */
 	public static IfStatementNode decodeStatement(TreeNode parent, String statement, Location location)
 	{
 		if (Regex.matches(statement, 0, Patterns.PRE_IF))
@@ -182,6 +209,13 @@ public class IfStatementNode extends TreeNode
 		return clone(node);
 	}
 	
+	/**
+	 * Fill the given IfStatementNode with the data that is in the
+	 * specified node.
+	 * 
+	 * @param node The node to copy the data into.
+	 * @return The cloned node.
+	 */
 	public IfStatementNode clone(IfStatementNode node)
 	{
 		for (int i = 0; i < getChildren().size(); i++)
