@@ -16,10 +16,8 @@ import net.fathomsoft.fathom.util.SyntaxUtils;
  * will be intertwined with method calls, assignments, if statements, etc.
  * 
  * @author	Braden Steffaniak
- * @since	Mar 24, 2014 at 10:45:29 PM
- * @since	v0.1
- * @version	Mar 28, 2014 at 5:54:29 PM
- * @version	v0.2
+ * @since	v0.2 Mar 24, 2014 at 10:45:29 PM
+ * @version	v0.2 Mar 28, 2014 at 5:54:29 PM
  */
 public class ArrayAccessNode extends TreeNode
 {

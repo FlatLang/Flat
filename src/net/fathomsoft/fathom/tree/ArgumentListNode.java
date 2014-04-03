@@ -24,10 +24,8 @@ package net.fathomsoft.fathom.tree;
  * they will be passed to the method call.
  * 
  * @author	Braden Steffaniak
- * @since	Jan 10, 2014 at 3:12:54 AM
- * @since	v0.1
- * @version	Mar 28, 2014 at 5:35:54 PM
- * @version	v0.2
+ * @since	v0.1 Jan 10, 2014 at 3:12:54 AM
+ * @version	v0.2 Mar 28, 2014 at 5:35:54 PM
  */
 public class ArgumentListNode extends TreeNode
 {

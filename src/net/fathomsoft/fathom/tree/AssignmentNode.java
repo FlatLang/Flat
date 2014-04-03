@@ -32,10 +32,8 @@ import net.fathomsoft.fathom.util.SyntaxUtils;
  * assignment.
  * 
  * @author	Braden Steffaniak
- * @since	Jan 5, 2014 at 9:19:44 PM
- * @since	v0.1
- * @version	March 28, 2014 at 9:19:44 PM
- * @version	v0.2
+ * @since	v0.1 Jan 5, 2014 at 9:19:44 PM
+ * @version	v0.2 March 28, 2014 at 9:19:44 PM
  */
 public class AssignmentNode extends TreeNode
 {

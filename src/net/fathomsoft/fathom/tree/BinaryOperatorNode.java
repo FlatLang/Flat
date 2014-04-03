@@ -38,10 +38,8 @@ import net.fathomsoft.fathom.util.SyntaxUtils;
  * the binary node "4 / 2"
  * 
  * @author	Braden Steffaniak
- * @since	Jan 5, 2014 at 9:20:35 PM
- * @since	v0.1
- * @version	Mar 30, 2014 at 2:40:35 PM
- * @version	v0.2
+ * @since	v0.1 Jan 5, 2014 at 9:20:35 PM
+ * @version	v0.2 Mar 30, 2014 at 2:40:35 PM
  */
 public class BinaryOperatorNode extends TreeNode
 {

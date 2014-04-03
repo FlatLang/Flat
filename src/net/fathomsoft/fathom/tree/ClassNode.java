@@ -38,10 +38,8 @@ import net.fathomsoft.fathom.util.Regex;
  * for more details on what correct inputs look like.
  * 
  * @author	Braden Steffaniak
- * @since	Jan 5, 2014 at 9:15:51 PM
- * @since	v0.1
- * @version	Apr 2, 2014 at 4:39:13 PM
- * @version	v0.2
+ * @since	v0.1 Jan 5, 2014 at 9:15:51 PM
+ * @version	v0.2 Apr 2, 2014 at 4:39:13 PM
  */
 public class ClassNode extends DeclarationNode
 {

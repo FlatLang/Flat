@@ -37,10 +37,8 @@ import net.fathomsoft.fathom.util.SyntaxUtils;
  * that was declared within the method that the array was declared in.
  * 
  * @author	Braden Steffaniak
- * @since	Mar 16, 2014 at 1:13:49 AM
- * @since	v0.1
- * @version	Mar 28, 2014 at 6:30:49 PM
- * @version	v0.2
+ * @since	v0.1 Mar 16, 2014 at 1:13:49 AM
+ * @version	v0.2 Mar 28, 2014 at 6:30:49 PM
  */
 public class ArrayNode extends IdentifierNode
 {
