@@ -13,5 +13,10 @@ Test cases:
 Things to fix:
 	Return node
 	Assignment node
-	
+	DivideByZeroException checker
 X	Make better clone method
+
+
+Default Exceptions to Implement:
+	ClassCastException
+	
