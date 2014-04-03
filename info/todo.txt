@@ -14,4 +14,4 @@ Things to fix:
 	Return node
 	Assignment node
 	
-	Make better clone method
+X	Make better clone method
