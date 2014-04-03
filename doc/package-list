@@ -1,4 +1,6 @@
 net.fathomsoft.fathom
 net.fathomsoft.fathom.error
 net.fathomsoft.fathom.tree
+net.fathomsoft.fathom.tree.exceptionhandling
+net.fathomsoft.fathom.tree.variables
 net.fathomsoft.fathom.util
