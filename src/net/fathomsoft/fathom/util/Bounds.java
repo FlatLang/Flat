@@ -56,7 +56,7 @@ public class Bounds
 	/**
 	 * Set the start position of the Bounds.
 	 * 
-	 * @param end The new start position of the Bounds.
+	 * @param start The new start position of the Bounds.
 	 */
 	public void setStart(int start)
 	{

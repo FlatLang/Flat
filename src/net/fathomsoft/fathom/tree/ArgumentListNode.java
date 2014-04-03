@@ -92,7 +92,7 @@ public class ArgumentListNode extends TreeNode
 	}
 
 	/**
-	 * @see net.fathomsoft.fathom.tree.TreeNode#clone(net.fathomsoft.fathom.tree.TreeNode)
+	 * @see net.fathomsoft.fathom.tree.TreeNode#clone()
 	 */
 	@Override
 	public TreeNode clone()

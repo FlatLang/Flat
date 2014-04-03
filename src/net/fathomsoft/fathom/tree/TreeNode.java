@@ -102,7 +102,7 @@ public abstract class TreeNode
 	 * Set the location that the data in the TreeNode is in the destination
 	 * file/text.
 	 * 
-	 * @param locationIn The Location instance holding the information.
+	 * @param locationOut The Location instance holding the information.
 	 */
 	public void setLocationOut(Location locationOut)
 	{
