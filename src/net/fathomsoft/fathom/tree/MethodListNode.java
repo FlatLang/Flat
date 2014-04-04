@@ -18,21 +18,15 @@
 package net.fathomsoft.fathom.tree;
 
 /**
- * 
+ * TreeNode extension that represents all of the Methods within
+ * a class.
  * 
  * @author	Braden Steffaniak
- * @since	Jan 5, 2014 at 10:29:22 PM
- * @since	v
- * @version	Jan 5, 2014 at 10:29:22 PM
- * @version	v
+ * @since	v0.1 Jan 5, 2014 at 10:29:22 PM
+ * @version	v0.2 Apr 4, 2014 at 6:13:24 AM
  */
 public class MethodListNode extends TreeNode
 {
-	public MethodListNode()
-	{
-		
-	}
-	
 	/**
 	 * @see net.fathomsoft.fathom.tree.TreeNode#generateJavaSourceOutput()
 	 */
@@ -112,6 +106,14 @@ public class MethodListNode extends TreeNode
 		return null;
 	}
 	
+	/**
+	 * Generate a String containing all of the prototypes for each method
+	 * contained within this node. A method prototype follows the
+	 * following syntax: "static returnType methodName(arguments);"
+	 * 
+	 * @return A String containing all of the prototypes for the methods
+	 * 		contained within this node.
+	 */
 	public String generateCSourcePrototypes()
 	{
 		StringBuilder builder = new StringBuilder();
@@ -137,6 +139,13 @@ public class MethodListNode extends TreeNode
 		return clone(node);
 	}
 	
+	/**
+	 * Fill the given MethodListNode with the data that is in the
+	 * specified node.
+	 * 
+	 * @param node The node to copy the data into.
+	 * @return The cloned node.
+	 */
 	public MethodListNode clone(MethodListNode node)
 	{
 		for (int i = 0; i < getChildren().size(); i++)
