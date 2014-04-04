@@ -68,10 +68,10 @@ public class IdentifierNode extends TreeNode
 	 */
 	public void setName(String name)
 	{
-		if (!SyntaxUtils.isValidIdentifier(name))
-		{
-			SyntaxMessage.error("'" + name + "' is not a valid identifier", this);
-		}
+//		if (!SyntaxUtils.isValidIdentifier(name))
+//		{
+//			SyntaxMessage.error("'" + name + "' is not a valid identifier", this);
+//		}
 		
 		this.name = name;
 	}

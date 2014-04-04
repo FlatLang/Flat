@@ -18,12 +18,20 @@
 package net.fathomsoft.fathom.tree;
 
 import net.fathomsoft.fathom.error.SyntaxMessage;
-import net.fathomsoft.fathom.util.Bounds;
 import net.fathomsoft.fathom.util.Location;
 import net.fathomsoft.fathom.util.Patterns;
 import net.fathomsoft.fathom.util.Regex;
 import net.fathomsoft.fathom.util.SyntaxUtils;
 
+/**
+ * IdentifierNode extension that represents the declaration of an
+ * instantiation node type. See {@link net.fathomsoft.fathom.tree.InstantiationNode#decodeStatement(net.fathomsoft.fathom.tree.TreeNode, java.lang.String, net.fathomsoft.fathom.util.Location) decodeStatement}
+ * for more details on what correct inputs look like.
+ * 
+ * @author	Braden Steffaniak
+ * @since	v0.1 Apr 3, 2014 at 7:53:35 PM
+ * @version	v0.2 Apr 3, 2014 at 7:53:35 PM
+ */
 public class InstantiationNode extends IdentifierNode
 {
 	/**
@@ -69,6 +77,25 @@ public class InstantiationNode extends IdentifierNode
 		return generateCSourceOutput();
 	}
 	
+	/**
+	 * Decode the given statement into an InstantiationNode instance, if
+	 * possible. If it is not possible, this method returns null.<br>
+	 * Instantiations always begin with the 'new' keyword.
+	 * <br>
+	 * Example inputs include:<br>
+	 * <ul>
+	 * 	<li>new Person("Joe")</li>
+	 * 	<li>new Armadillo()</li>
+	 * 	<li>new String("asdf")</li>
+	 * </ul>
+	 * 
+	 * @param parent The parent node of the statement.
+	 * @param statement The statement to try to decode into a
+	 * 		InstantiationNode instance.
+	 * @param location The location of the statement in the source code.
+	 * @return The generated node, if it was possible to translated it
+	 * 		into a InstantiationNode.
+	 */
 	public static InstantiationNode decodeStatement(TreeNode parent, String statement, Location location)
 	{
 		InstantiationNode n = null;
@@ -133,9 +160,16 @@ public class InstantiationNode extends IdentifierNode
 		return clone(node);
 	}
 	
+	/**
+	 * Fill the given InstantiationNode with the data that is in the
+	 * specified node.
+	 * 
+	 * @param node The node to copy the data into.
+	 * @return The cloned node.
+	 */
 	public InstantiationNode clone(InstantiationNode node)
 	{
-		node.setName(getName());
+		super.clone(node);
 		
 		for (int i = 0; i < getChildren().size(); i++)
 		{

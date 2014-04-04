@@ -28,18 +28,21 @@ import net.fathomsoft.fathom.util.StringUtils;
 import net.fathomsoft.fathom.util.SyntaxUtils;
 
 /**
- * 
+ * IdentifierNode extension that represents the declaration of a method
+ * call node type. See {@link net.fathomsoft.fathom.tree.MethodCallNode#decodeStatement(net.fathomsoft.fathom.tree.TreeNode, java.lang.String, net.fathomsoft.fathom.util.Location) decodeStatement}
+ * for more details on what correct inputs look like.
  * 
  * @author	Braden Steffaniak
- * @since	Jan 5, 2014 at 10:04:31 PM
- * @since	v
- * @version	Jan 5, 2014 at 10:04:31 PM
- * @version	v
+ * @since	v0.1 Jan 5, 2014 at 10:04:31 PM
+ * @version	v0.2 Apr 3, 2014 at 10:51:56 PM
  */
 public class MethodCallNode extends IdentifierNode
 {
 	private boolean	externalCall;
 	
+	/**
+	 * Instantiate a new MethodCallNode and initialize the default values.
+	 */
 	public MethodCallNode()
 	{
 		ArgumentListNode arguments = new ArgumentListNode();
@@ -47,21 +50,73 @@ public class MethodCallNode extends IdentifierNode
 		addChild(arguments);
 	}
 	
+	/**
+	 * The the TreeNode that represents the arguments to the method call.
+	 * For example:<br>
+	 * <blockquote><pre>
+	 * methodName(5, "Arg2", 3 * n);</pre></blockquote>
+	 * In the previous statement, the data within the parenthesis are the
+	 * arguments passed to the method. The ArgumentNode returned by this
+	 * method would contain a node for each of the arguments passed, in
+	 * the correct order from left to right.
+	 * 
+	 * @return The TreeNode that represents the arguments to the method
+	 * 		call.
+	 */
 	public ArgumentListNode getArgumentListNode()
 	{
 		return (ArgumentListNode)getChild(0);
 	}
 	
+	/**
+	 * Get whether or not the method is called externally.
+	 * A method is external if it begins with an externally imported
+	 * C file's name. For example:<br>
+	 * <blockquote><pre>
+	 * import "externalFile.h";
+	 * 
+	 * ...
+	 * 
+	 * public static void main(String args[])
+	 * {
+	 *	// This is the external method call.
+	 * 	externalFile.cFunctionName();
+	 * }</pre></blockquote>
+	 * In this example, 'externalFile' is the C header file that is
+	 * imported. 'cFunctionName()' is the name of a function that
+	 * is contained within the imported header file.<br>
+	 * 
+	 * @return Whether or not the method is called externally.
+	 */
 	public boolean isExternal()
 	{
 		return externalCall;
 	}
 	
+	/**
+	 * Get whether or not the method is called using a variable.
+	 * See {@link net.fathomsoft.fathom.tree.MethodCallNode#getVariableNode() getVariableNode}
+	 * for more details on what a variable node looks like.
+	 * 
+	 * @return Whether or not the method is called using a variable.
+	 */
 	public boolean hasVariableNode()
 	{
 		return getChildren().size() >= 2;
 	}
 	
+	/**
+	 * Get the TreeNode that represents the variable that contains
+	 * the method. For example:<br>
+	 * <blockquote><pre>
+	 * ClassName obj = new ClassName();
+	 * 
+	 * obj.methodName();</pre></blockquote>
+	 * In the previous statements, 'obj' is the variable and the method
+	 * 'methodName()' is being called through the 'obj' variable.
+	 * 
+	 * @return The TreeNode that represents the calling variable.
+	 */
 	public TreeNode getVariableNode()
 	{
 		return getChild(1);
@@ -132,13 +187,57 @@ public class MethodCallNode extends IdentifierNode
 		
 		return builder.toString();
 	}
-
-	public static MethodCallNode decodeStatement(TreeNode parentNode, String statement, Location location)
+	
+	/**
+	 * Decode the given statement into a MethodCallNode instance, if
+	 * possible. If it is not possible, this method returns null.<br>
+	 * To determine whether or not a method is called externally,
+	 * refer to {@link net.fathomsoft.fathom.tree.MethodCallNode#isExternal() isExternal}
+	 * for more details on what an external call looks like.
+	 * <br>
+	 * Example inputs include:<br>
+	 * <ul>
+	 * 	<li>methodName(5, varName, methodThatReturnsAValue(), "arg1")</li>
+	 * 	<li>externalFile.cFunctionName()</li>
+	 * 	<li>methodName('q', 5 * (2 / 3))</li>
+	 * </ul>
+	 * 
+	 * @param parent The parent node of the statement.
+	 * @param statement The statement to try to decode into a
+	 * 		MethodCallNode instance.
+	 * @param location The location of the statement in the source code.
+	 * @return The generated node, if it was possible to translated it
+	 * 		into a MethodCallNode.
+	 */
+	public static MethodCallNode decodeStatement(TreeNode parent, String statement, Location location)
 	{
-		return decodeStatement(parentNode, statement, location, true);
+		return decodeStatement(parent, statement, location, true);
 	}
 	
-	public static MethodCallNode decodeStatement(TreeNode parentNode, String statement, Location location, boolean needsReference)
+	/**
+	 * Decode the given statement into a MethodCallNode instance, if
+	 * possible. If it is not possible, this method returns null.<br>
+	 * To determine whether or not a method is called externally,
+	 * refer to {@link net.fathomsoft.fathom.tree.MethodCallNode#isExternal() isExternal}
+	 * for more details on what an external call looks like.
+	 * <br>
+	 * Example inputs include:<br>
+	 * <ul>
+	 * 	<li>methodName(5, varName, methodThatReturnsAValue(), "arg1")</li>
+	 * 	<li>externalFile.cFunctionName()</li>
+	 * 	<li>methodName('q', 5 * (2 / 3))</li>
+	 * </ul>
+	 * 
+	 * @param parent The parent node of the statement.
+	 * @param statement The statement to try to decode into a
+	 * 		MethodCallNode instance.
+	 * @param location The location of the statement in the source code.
+	 * @param needsReference Whether or not the method needs an object
+	 * 		to reference where the method is located.
+	 * @return The generated node, if it was possible to translated it
+	 * 		into a MethodCallNode.
+	 */
+	public static MethodCallNode decodeStatement(TreeNode parent, String statement, Location location, boolean needsReference)
 	{
 		if (SyntaxUtils.isMethodCall(statement))
 		{
@@ -169,7 +268,7 @@ public class MethodCallNode extends IdentifierNode
 				return null;
 			}
 			
-			FileNode fileNode = (FileNode)parentNode.getAncestorOfType(FileNode.class, true);
+			FileNode fileNode = (FileNode)parent.getAncestorOfType(FileNode.class, true);
 			
 			Location argsLocation = new Location();
 			argsLocation.setLineNumber(location.getLineNumber());
@@ -231,7 +330,7 @@ public class MethodCallNode extends IdentifierNode
 					{
 						String varName     = objectInstance.toString();
 						
-						IdentifierNode var = TreeNode.getExistingNode(parentNode, varName);
+						IdentifierNode var = TreeNode.getExistingNode(parent, varName);
 						
 						if (var == null)
 						{
@@ -254,7 +353,7 @@ public class MethodCallNode extends IdentifierNode
 					{
 						String caller = objectInstance.toString();
 						
-						TreeNode variableNode = TreeNode.getExistingNode(parentNode, caller);
+						TreeNode variableNode = TreeNode.getExistingNode(parent, caller);
 						
 						if (variableNode != null)
 						{
@@ -262,7 +361,7 @@ public class MethodCallNode extends IdentifierNode
 						}
 						else
 						{
-							variableNode = TreeNode.decodeStatement(parentNode, caller, location);
+							variableNode = TreeNode.decodeStatement(parent, caller, location);
 						}
 						
 						if (variableNode != null)
@@ -295,7 +394,7 @@ public class MethodCallNode extends IdentifierNode
 
 			String arguments[] = Regex.splitCommas(argumentList);
 			
-			n.addArguments(parentNode, arguments, argsLocation);
+			n.addArguments(parent, arguments, argsLocation);
 			
 			return n;
 		}
@@ -303,7 +402,15 @@ public class MethodCallNode extends IdentifierNode
 		return null;
 	}
 	
-	private boolean addArguments(TreeNode parent, String arguments[], Location location)
+	/**
+	 * Decode the arguments given within the array into TreeNodes that
+	 * are translatable into C.
+	 * 
+	 * @param parent The parent of the current method call.
+	 * @param arguments The arguments to decode.
+	 * @param location The location of the method call in the source code.
+	 */
+	private void addArguments(TreeNode parent, String arguments[], Location location)
 	{
 		for (int i = 0; i < arguments.length; i++)
 		{
@@ -380,8 +487,6 @@ public class MethodCallNode extends IdentifierNode
 				getArgumentListNode().addChild(arg);
 			}
 		}
-		
-		return true;
 	}
 	
 	/**
@@ -395,9 +500,17 @@ public class MethodCallNode extends IdentifierNode
 		return clone(node);
 	}
 	
+	/**
+	 * Fill the given MethodCallNode with the data that is in the
+	 * specified node.
+	 * 
+	 * @param node The node to copy the data into.
+	 * @return The cloned node.
+	 */
 	public MethodCallNode clone(MethodCallNode node)
 	{
-		node.setName(getName());
+		super.clone(node);
+		node.externalCall = externalCall;
 		
 		for (int i = 0; i < getChildren().size(); i++)
 		{

@@ -17,25 +17,22 @@
  */
 package net.fathomsoft.fathom.tree;
 
-import net.fathomsoft.fathom.error.SyntaxMessage;
-import net.fathomsoft.fathom.tree.variables.LocalVariableNode;
-import net.fathomsoft.fathom.tree.variables.VariableNode;
-import net.fathomsoft.fathom.util.Bounds;
 import net.fathomsoft.fathom.util.Location;
-import net.fathomsoft.fathom.util.Patterns;
-import net.fathomsoft.fathom.util.Regex;
 
 /**
- * 
+ * TreeNode extension that represents the declaration of a LoopNode
+ * node type. See {@link net.fathomsoft.fathom.tree.LoopNode#decodeStatement(net.fathomsoft.fathom.tree.TreeNode, java.lang.String, net.fathomsoft.fathom.util.Location) decodeStatement}
+ * for more details on what correct inputs look like.
  * 
  * @author	Braden Steffaniak
- * @since	Jan 5, 2014 at 9:55:18 PM
- * @since	v
- * @version	Jan 5, 2014 at 9:55:18 PM
- * @version	v
+ * @since	v0.1 Jan 5, 2014 at 9:55:18 PM
+ * @version	v0.2 Apr 3, 2014 at 8:13:29 PM
  */
 public class LoopNode extends TreeNode
 {
+	/**
+	 * Instantiate a new LoopNode and initialize the default values.
+	 */
 	public LoopNode()
 	{
 		ScopeNode scopeNode = new ScopeNode();
@@ -97,6 +94,27 @@ public class LoopNode extends TreeNode
 		return null;
 	}
 	
+	/**
+	 * Decode the given statement into a LoopNode instance, if
+	 * possible. If it is not possible, this method returns null.<br>
+	 * The statement can be either a while loop or a for loop.
+	 * <br>
+	 * Example inputs include:<br>
+	 * <ul>
+	 * 	<li>for (int i = 0; i < 100; i++)</li>
+	 * 	<li>for (int i = 0; array != null && i < array.getSize(); i = num * 3 * i)</li>
+	 * 	<li>while (currentNode != null)</li>
+	 * 	<li>while (true)</li>
+	 * 	<li>while (number.isEven())</li>
+	 * </ul>
+	 * 
+	 * @param parent The parent node of the statement.
+	 * @param statement The statement to try to decode into a
+	 * 		LoopNode instance.
+	 * @param location The location of the statement in the source code.
+	 * @return The generated node, if it was possible to translated it
+	 * 		into a LoopNode.
+	 */
 	public static LoopNode decodeStatement(TreeNode parent, String statement, Location location)
 	{
 		LoopNode node = null;
@@ -124,6 +142,13 @@ public class LoopNode extends TreeNode
 		return clone(node);
 	}
 	
+	/**
+	 * Fill the given LoopNode with the data that is in the
+	 * specified node.
+	 * 
+	 * @param node The node to copy the data into.
+	 * @return The cloned node.
+	 */
 	public LoopNode clone(LoopNode node)
 	{
 		for (int i = 0; i < getChildren().size(); i++)

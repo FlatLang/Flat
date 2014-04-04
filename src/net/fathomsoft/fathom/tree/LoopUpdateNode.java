@@ -18,21 +18,16 @@
 package net.fathomsoft.fathom.tree;
 
 /**
- * 
+ * TreeNode extension that represents the update section of the for loop.
+ * For instance: "for (int i = 0; i < 10; i++)" the last section
+ * containing "i++" is the update section.
  * 
  * @author	Braden Steffaniak
- * @since	Jan 5, 2014 at 10:03:37 PM
- * @since	v
- * @version	Jan 5, 2014 at 10:03:37 PM
- * @version	v
+ * @since	v0.1 Jan 5, 2014 at 10:03:37 PM
+ * @version	v0.2 Apr 3, 2014 at 9:22:39 PM
  */
 public class LoopUpdateNode extends TreeNode
 {
-	public LoopUpdateNode()
-	{
-		
-	}
-
 	/**
 	 * @see net.fathomsoft.fathom.tree.TreeNode#generateJavaSourceOutput()
 	 */
@@ -80,6 +75,13 @@ public class LoopUpdateNode extends TreeNode
 		return clone(node);
 	}
 	
+	/**
+	 * Fill the given LoopUpdateNode with the data that is in the
+	 * specified node.
+	 * 
+	 * @param node The node to copy the data into.
+	 * @return The cloned node.
+	 */
 	public LoopUpdateNode clone(LoopUpdateNode node)
 	{
 		for (int i = 0; i < getChildren().size(); i++)

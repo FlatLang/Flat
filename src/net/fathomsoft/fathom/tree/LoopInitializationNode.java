@@ -18,21 +18,16 @@
 package net.fathomsoft.fathom.tree;
 
 /**
- * 
+ * TreeNode extension that represents the initialization section of the
+ * for loop. For instance: "for (int i = 0; i < 10; i++)" the first
+ * section containing "int i = 0" is the initialization section.
  * 
  * @author	Braden Steffaniak
- * @since	Jan 5, 2014 at 10:01:46 PM
- * @since	v
- * @version	Jan 5, 2014 at 10:01:46 PM
- * @version	v
+ * @since	v0.1 Jan 5, 2014 at 10:01:46 PM
+ * @version	v0.2 Apr 3, 2014 at 8:11:40 PM
  */
 public class LoopInitializationNode extends TreeNode
 {
-	public LoopInitializationNode()
-	{
-		
-	}
-
 	/**
 	 * @see net.fathomsoft.fathom.tree.TreeNode#generateJavaSourceOutput()
 	 */
@@ -41,7 +36,7 @@ public class LoopInitializationNode extends TreeNode
 	{
 		return null;
 	}
-
+	
 	/**
 	 * @see net.fathomsoft.fathom.tree.TreeNode#generateCHeaderOutput()
 	 */
@@ -50,7 +45,7 @@ public class LoopInitializationNode extends TreeNode
 	{
 		return null;
 	}
-
+	
 	/**
 	 * @see net.fathomsoft.fathom.tree.TreeNode#generateCSourceOutput()
 	 */
@@ -80,6 +75,13 @@ public class LoopInitializationNode extends TreeNode
 		return clone(node);
 	}
 	
+	/**
+	 * Fill the given LoopInitializationNode with the data that is in the
+	 * specified node.
+	 * 
+	 * @param node The node to copy the data into.
+	 * @return The cloned node.
+	 */
 	public LoopInitializationNode clone(LoopInitializationNode node)
 	{
 		for (int i = 0; i < getChildren().size(); i++)

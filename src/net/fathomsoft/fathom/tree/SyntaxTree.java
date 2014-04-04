@@ -212,7 +212,7 @@ public class SyntaxTree
 			if (!node.containsDestructor())
 			{
 				DestructorNode defaultDestructor = new DestructorNode();
-				defaultDestructor.setName("~" + node.getName());
+				defaultDestructor.setName(node.getName());
 				defaultDestructor.setType("void");
 				defaultDestructor.setVisibility(FieldNode.PUBLIC);
 				

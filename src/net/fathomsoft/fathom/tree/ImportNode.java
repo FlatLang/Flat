@@ -135,7 +135,7 @@ public class ImportNode extends TreeNode
 	}
 	
 	/**
-	 * Decode the given statement into a ImportNode instance, if
+	 * Decode the given statement into an ImportNode instance, if
 	 * possible. If it is not possible, this method returns null.<br>
 	 * ImportNodes can either contain periods or slashes (backslashes or
 	 * forward slashes) however, cannot contain both in the same import
