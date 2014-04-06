@@ -17,8 +17,6 @@
  */
 package net.fathomsoft.fathom.tree.variables;
 
-import java.util.regex.Matcher;
-
 import net.fathomsoft.fathom.tree.TreeNode;
 import net.fathomsoft.fathom.util.Bounds;
 import net.fathomsoft.fathom.util.Location;
@@ -38,11 +36,6 @@ import net.fathomsoft.fathom.util.SyntaxUtils;
  */
 public class LocalVariableNode extends VariableNode
 {
-	public LocalVariableNode()
-	{
-		
-	}
-
 	/**
 	 * @see net.fathomsoft.fathom.tree.TreeNode#generateJavaSourceOutput()
 	 */
@@ -166,14 +159,16 @@ public class LocalVariableNode extends VariableNode
 		return clone(node);
 	}
 	
+	/**
+	 * Fill the given LocalVariableNode with the data that is in the
+	 * specified node.
+	 * 
+	 * @param node The node to copy the data into.
+	 * @return The cloned node.
+	 */
 	public LocalVariableNode clone(LocalVariableNode node)
 	{
-		node.setName(getName());
-		node.setConst(isConst());
-		node.setArrayDimensions(getArrayDimensions());
-		node.setType(getType());
-		node.setReference(isReference());
-		node.setPointer(isPointer());
+		super.clone(node);
 		
 		for (int i = 0; i < getChildren().size(); i++)
 		{

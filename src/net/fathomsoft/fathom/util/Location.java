@@ -18,44 +18,79 @@
 package net.fathomsoft.fathom.util;
 
 /**
- * 
+ * Class that contains information for a line number and character offset.
+ * Used in the compilation process, in the event that there is an error
+ * or warning, for knowing where exactly it occurred in the source code.
  * 
  * @author	Braden Steffaniak
- * @since	Jan 7, 2014 at 10:11:40 AM
- * @since	v
- * @version	Jan 7, 2014 at 10:11:40 AM
- * @version	v
+ * @since	v0.1 Jan 7, 2014 at 10:11:40 AM
+ * @version	v0.2 Apr 5, 2014 at 3:34:59 PM
  */
 public class Location
 {
 	private int	lineNumber, offset;
 	
+	/**
+	 * Default constructor.
+	 */
 	public Location()
 	{
 		
 	}
 	
+	/**
+	 * Constructor that initializes the lineNumber and offset to the
+	 * given values.
+	 * 
+	 * @param lineNumber The lineNumber that the Location represents.
+	 * @param offset The character offset that the Location represents
+	 * 		on the specified line.
+	 */
 	public Location(int lineNumber, int offset)
 	{
 		setLineNumber(lineNumber);
 		setOffset(offset);
 	}
 	
+	/**
+	 * Get the line number that the Location represents.
+	 * 
+	 * @return The line number that the Location represents.
+	 */
 	public int getLineNumber()
 	{
 		return lineNumber;
 	}
 	
+	/**
+	 * Set the line number that the Location represents.
+	 * 
+	 * @param lineNumber The line number that the Location represents.
+	 */
 	public void setLineNumber(int lineNumber)
 	{
 		this.lineNumber = lineNumber;
 	}
-
+	
+	/**
+	 * Get character offset that the Location represents on the
+	 * specified line number.
+	 * 
+	 * @return The character offset that the Location represents on the
+	 * 		specified line number.
+	 */
 	public int getOffset()
 	{
 		return offset;
 	}
 	
+	/**
+	 * Set character offset that the Location represents on the
+	 * specified line number.
+	 * 
+	 * @param offset The character offset that the Location represents
+	 * 		on the specified line.
+	 */
 	public void setOffset(int offset)
 	{
 		this.offset = offset;

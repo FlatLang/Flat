@@ -15,18 +15,10 @@ import net.fathomsoft.fathom.util.Regex;
  * 
  * 
  * @author	Braden Steffaniak
- * @since	Mar 22, 2014 at 4:01:44 PM
- * @since	v
- * @version	Mar 22, 2014 at 4:01:44 PM
- * @version	v
+ * @since	v0.1 Mar 22, 2014 at 4:01:44 PM
  */
 public class CatchNode extends ExceptionHandlingNode
 {
-	public CatchNode()
-	{
-		
-	}
-	
 	public LocalVariableNode getExceptionInstance()
 	{
 		return (LocalVariableNode)getChild(1);
@@ -189,8 +181,17 @@ public class CatchNode extends ExceptionHandlingNode
 		return clone(node);
 	}
 	
+	/**
+	 * Fill the given CatchNode with the data that is in the
+	 * specified node.
+	 * 
+	 * @param node The node to copy the data into.
+	 * @return The cloned node.
+	 */
 	public CatchNode clone(CatchNode node)
 	{
+		super.clone(node);
+		
 		for (int i = 0; i < getChildren().size(); i++)
 		{
 			TreeNode child = getChild(i);

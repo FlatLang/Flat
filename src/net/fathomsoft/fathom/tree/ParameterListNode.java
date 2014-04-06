@@ -20,23 +20,33 @@ package net.fathomsoft.fathom.tree;
 import net.fathomsoft.fathom.Fathom;
 
 /**
- * 
+ * TreeNode extension that represents a list of parameters for a method.
  * 
  * @author	Braden Steffaniak
- * @since	Jan 5, 2014 at 9:56:34 PM
- * @since	v
- * @version	Jan 5, 2014 at 9:56:34 PM
- * @version	v
+ * @since	v0.1 Jan 5, 2014 at 9:56:34 PM
+ * @version	v0.2 Apr 5, 2014 at 10:17:44 PM
  */
 public class ParameterListNode extends TreeNode
 {
+	/**
+	 * Identifier for the calling object of a method call.<br>
+	 * <br>
+	 * For example:
+	 * <blockquote><pre>
+	 * person.getName();</pre></blockquote>
+	 * "person" is the calling object, so this translates to the
+	 * following in C:
+	 * <blockquote><pre>
+	 * person->getName(person);</pre></blockquote>
+	 * And this means that the method header in C must include a Person
+	 * type as the first parameter for the getName() method. Therefore,
+	 * the method header looks like this:
+	 * <blockquote><pre>
+	 * static String getName(Person __o__);</pre></blockquote>
+	 * And "__o__" is the chosen OBJECT_REFERENCE_IDENTIFIER.
+	 */
 	public static final String OBJECT_REFERENCE_IDENTIFIER = "__o__";
 	
-	public ParameterListNode()
-	{
-		
-	}
-
 	/**
 	 * @see net.fathomsoft.fathom.tree.TreeNode#generateJavaSourceOutput()
 	 */
@@ -119,6 +129,13 @@ public class ParameterListNode extends TreeNode
 		return clone(node);
 	}
 	
+	/**
+	 * Fill the given ParameterListNode with the data that is in the
+	 * specified node.
+	 * 
+	 * @param node The node to copy the data into.
+	 * @return The cloned node.
+	 */
 	public ParameterListNode clone(ParameterListNode node)
 	{
 		for (int i = 0; i < getChildren().size(); i++)

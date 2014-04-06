@@ -17,47 +17,43 @@
  */
 package net.fathomsoft.fathom.tree;
 
-import net.fathomsoft.fathom.error.SyntaxMessage;
 import net.fathomsoft.fathom.tree.variables.LocalVariableNode;
-import net.fathomsoft.fathom.util.Bounds;
 import net.fathomsoft.fathom.util.Location;
 import net.fathomsoft.fathom.util.SyntaxUtils;
 
 /**
- * 
+ * LocalVariableNode extension that represents a Parameter of a method.
+ * See {@link #decodeStatement(TreeNode, String, Location)} for more
+ * details on what correct inputs look like.
  * 
  * @author	Braden Steffaniak
- * @since	Jan 5, 2014 at 9:52:01 PM
- * @since	v
- * @version	Jan 5, 2014 at 9:52:01 PM
- * @version	v
+ * @since	v0.1 Jan 5, 2014 at 9:52:01 PM
+ * @version	v0.2 Apr 5, 2014 at 10:40:57 PM
  */
 public class ParameterNode extends LocalVariableNode
 {
-//	private String	type;
-	private String	defaultValue;
+	private TreeNode	defaultValue;
 	
-	public ParameterNode()
-	{
-		
-	}
-	
-//	public String getType()
-//	{
-//		return type;
-//	}
-//	
-//	public void setType(String type)
-//	{
-//		this.type = type;
-//	}
-	
-	public String getDefaultValue()
+	/**
+	 * Get the default value of the parameter, if no value is passed to
+	 * the method.
+	 * 
+	 * @return The value that the parameter will be set to, if no value is
+	 * 		passed to a method.
+	 */
+	public TreeNode getDefaultValue()
 	{
 		return defaultValue;
 	}
 	
-	public void setDefaultValue(String defaultValue)
+	/**
+	 * Set the default value of the parameter, if no value is passed to
+	 * the method.
+	 * 
+	 * @param defaultValue The value that the parameter will be set to,
+	 * 		if no value is passed to a method.
+	 */
+	public void setDefaultValue(TreeNode defaultValue)
 	{
 		this.defaultValue = defaultValue;
 	}
@@ -114,14 +110,32 @@ public class ParameterNode extends LocalVariableNode
 		return generateVariableUseOutput();
 	}
 	
-	public static ParameterNode decodeStatement(TreeNode parentNode, String statement, final Location location)
+	/**
+	 * Decode the given statement into a ParameterNode instance, if
+	 * possible. If it is not possible, this method returns null.
+	 * A parameter node is essentially a variable declaration, but in
+	 * the context of a method declaration.<br>
+	 * <br>
+	 * Example inputs include:<br>
+	 * <ul>
+	 * 	<li>String name</li>
+	 * 	<li>int age</li>
+	 * 	<li>TreeNode parent</li>
+	 * </ul>
+	 * 
+	 * @param parent The parent node of the statement.
+	 * @param statement The statement to try to decode into a
+	 * 		ParameterNode instance.
+	 * @param location The location of the statement in the source code.
+	 * @return The generated node, if it was possible to translated it
+	 * 		into a ParameterNode.
+	 */
+	public static ParameterNode decodeStatement(TreeNode parent, String statement, final Location location)
 	{
-		LocalVariableNode node = LocalVariableNode.decodeStatement(parentNode, statement, location);
+		LocalVariableNode node = LocalVariableNode.decodeStatement(parent, statement, location);
 		
 		ParameterNode n = new ParameterNode();
-		n.setArrayDimensions(node.getArrayDimensions());
-		n.setName(node.getName());
-		n.setType(node.getType());
+		n.clone(node);
 		
 		return n;
 	}
@@ -137,14 +151,17 @@ public class ParameterNode extends LocalVariableNode
 		return clone(node);
 	}
 	
+	/**
+	 * Fill the given ParameterNode with the data that is in the
+	 * specified node.
+	 * 
+	 * @param node The node to copy the data into.
+	 * @return The cloned node.
+	 */
 	public ParameterNode clone(ParameterNode node)
 	{
-		node.setName(getName());
-		node.setConst(isConst());
-		node.setArrayDimensions(getArrayDimensions());
-		node.setType(getType());
-		node.setReference(isReference());
-		node.setPointer(isPointer());
+		super.clone(node);
+		
 		node.setDefaultValue(getDefaultValue());
 		
 		for (int i = 0; i < getChildren().size(); i++)

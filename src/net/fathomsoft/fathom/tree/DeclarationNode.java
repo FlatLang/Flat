@@ -244,11 +244,11 @@ public class DeclarationNode extends VariableNode
 		
 		if (isReference())
 		{
-			builder.append(getReferenceText()).append(' ');
+			builder.append('&').append(' ');
 		}
 		else if (isPointer())
 		{
-			builder.append(getPointerText()).append(' ');
+			builder.append('*').append(' ');
 		}
 		
 		builder.append(getName()).append(';').append('\n');
@@ -300,11 +300,11 @@ public class DeclarationNode extends VariableNode
 		
 		if (isReference())
 		{
-			builder.append(getReferenceText());
+			builder.append('&');
 		}
 		else if (isPointer())
 		{
-			builder.append(getPointerText());
+			builder.append('*');
 		}
 		if (isArray())
 		{

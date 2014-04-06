@@ -116,11 +116,11 @@ public class FieldNode extends DeclarationNode
 		
 		if (isReference())
 		{
-			builder.append(getReferenceText());
+			builder.append('&');
 		}
 		else if (isPointer())
 		{
-			builder.append(getPointerText());
+			builder.append('*');
 		}
 		if (isArray())
 		{
@@ -225,16 +225,16 @@ public class FieldNode extends DeclarationNode
 		return clone(node);
 	}
 	
+	/**
+	 * Fill the given FieldNode with the data that is in the
+	 * specified node.
+	 * 
+	 * @param node The node to copy the data into.
+	 * @return The cloned node.
+	 */
 	public FieldNode clone(FieldNode node)
 	{
-		node.setStatic(isStatic());
-		node.setVisibility(getVisibility());
-		node.setConst(isConst());
-		node.setName(getName());
-		node.setArrayDimensions(getArrayDimensions());
-		node.setType(getType());
-		node.setReference(isReference());
-		node.setPointer(isPointer());
+		super.clone(node);
 		
 		for (int i = 0; i < getChildren().size(); i++)
 		{

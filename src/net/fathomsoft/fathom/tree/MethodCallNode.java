@@ -29,7 +29,7 @@ import net.fathomsoft.fathom.util.SyntaxUtils;
 
 /**
  * IdentifierNode extension that represents the declaration of a method
- * call node type. See {@link net.fathomsoft.fathom.tree.MethodCallNode#decodeStatement(net.fathomsoft.fathom.tree.TreeNode, java.lang.String, net.fathomsoft.fathom.util.Location) decodeStatement}
+ * call node type. See {@link #decodeStatement(TreeNode, String, Location)}
  * for more details on what correct inputs look like.
  * 
  * @author	Braden Steffaniak
@@ -95,8 +95,8 @@ public class MethodCallNode extends IdentifierNode
 	
 	/**
 	 * Get whether or not the method is called using a variable.
-	 * See {@link net.fathomsoft.fathom.tree.MethodCallNode#getVariableNode() getVariableNode}
-	 * for more details on what a variable node looks like.
+	 * See {@link #getVariableNode()} for more details on
+	 * what a variable node looks like.
 	 * 
 	 * @return Whether or not the method is called using a variable.
 	 */
@@ -192,8 +192,8 @@ public class MethodCallNode extends IdentifierNode
 	 * Decode the given statement into a MethodCallNode instance, if
 	 * possible. If it is not possible, this method returns null.<br>
 	 * To determine whether or not a method is called externally,
-	 * refer to {@link net.fathomsoft.fathom.tree.MethodCallNode#isExternal() isExternal}
-	 * for more details on what an external call looks like.
+	 * refer to {@link #isExternal()} for more details on what an
+	 * external call looks like.
 	 * <br>
 	 * Example inputs include:<br>
 	 * <ul>
@@ -218,8 +218,8 @@ public class MethodCallNode extends IdentifierNode
 	 * Decode the given statement into a MethodCallNode instance, if
 	 * possible. If it is not possible, this method returns null.<br>
 	 * To determine whether or not a method is called externally,
-	 * refer to {@link net.fathomsoft.fathom.tree.MethodCallNode#isExternal() isExternal}
-	 * for more details on what an external call looks like.
+	 * refer to {@link #isExternal()} for more details on what an
+	 * external call looks like.
 	 * <br>
 	 * Example inputs include:<br>
 	 * <ul>

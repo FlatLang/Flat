@@ -19,9 +19,6 @@ package net.fathomsoft.fathom.tree;
 
 import net.fathomsoft.fathom.Fathom;
 import net.fathomsoft.fathom.error.SyntaxMessage;
-import net.fathomsoft.fathom.tree.variables.VariableListNode;
-import net.fathomsoft.fathom.tree.variables.LocalVariableNode;
-import net.fathomsoft.fathom.tree.variables.VariableNode;
 import net.fathomsoft.fathom.util.Bounds;
 import net.fathomsoft.fathom.util.Location;
 import net.fathomsoft.fathom.util.Patterns;
@@ -29,16 +26,19 @@ import net.fathomsoft.fathom.util.Regex;
 import net.fathomsoft.fathom.util.SyntaxUtils;
 
 /**
- * 
+ * DeclarationNode extension that represents the declaration of a method
+ * node type. See {@link #decodeStatement(TreeNode, String, Location)}
+ * for more details on what correct inputs look like.
  * 
  * @author	Braden Steffaniak
- * @since	Jan 5, 2014 at 9:10:53 PM
- * @since	v
- * @version	Jan 5, 2014 at 9:10:53 PM
- * @version	v
+ * @since	v0.1 Jan 5, 2014 at 9:10:53 PM
+ * @version	v0.2 Apr 5, 2014 at 2:54:32 PM
  */
 public class MethodNode extends DeclarationNode
 {
+	/**
+	 * Instantiate and initialize default data.
+	 */
 	public MethodNode()
 	{
 		ParameterListNode parameterList = new ParameterListNode();
@@ -48,6 +48,20 @@ public class MethodNode extends DeclarationNode
 		super.addChild(scopeNode);
 	}
 	
+	/**
+	 * The the ParameterListNode that represents the parameters of the
+	 * method.<br>
+	 * For example:<br>
+	 * <blockquote><pre>
+	 * public void methodName(int age, String name);</pre></blockquote>
+	 * In the previous statement, the data within the parenthesis are the
+	 * parameters of the method. The ParameterListNode returned by this
+	 * method would contain a node for each of the parameter specified, in
+	 * the correct order from left to right.
+	 * 
+	 * @return The ParameterListNode that represents the parameters of the
+	 * 		method.
+	 */
 	public ParameterListNode getParameterListNode()
 	{
 		return (ParameterListNode)getChild(0);
@@ -116,11 +130,11 @@ public class MethodNode extends DeclarationNode
 		
 		if (isReference())
 		{
-			builder.append(getReferenceText());
+			builder.append('&');
 		}
 		else if (isPointer())
 		{
-			builder.append(getPointerText());
+			builder.append('*');
 		}
 		
 		if (isArray())
@@ -244,11 +258,41 @@ public class MethodNode extends DeclarationNode
 		return null;
 	}
 	
+	/**
+	 * Generate the C prototype for the method header.<br>
+	 * <br>
+	 * For example:
+	 * <blockquote><pre>
+	 * public void test()
+	 * {
+	 * 	...
+	 * }</pre></blockquote>
+	 * will output as "<code>static void test();</code>"<br>
+	 * <br>
+	 * In essence, this method is just {@link #generateCSourceSignature()}
+	 * with a semi-colon attached to the end.
+	 * 
+	 * @return The C prototype for the method header.
+	 */
 	public String generateCSourcePrototype()
 	{
-		return generateCSourceSignature().concat(";");
+		return generateCSourceSignature() + ";";
 	}
 	
+	/**
+	 * Generate the method signature that will appear in the c source
+	 * output.<br>
+	 * <br>
+	 * For example:
+	 * <blockquote><pre>
+	 * public void test()
+	 * {
+	 * 	...
+	 * }</pre></blockquote>
+	 * will output as "<code>static void test()</code>"
+	 * 
+	 * @return The method signature in the C language.
+	 */
 	public String generateCSourceSignature()
 	{
 		StringBuilder builder = new StringBuilder();
@@ -264,11 +308,11 @@ public class MethodNode extends DeclarationNode
 		
 		if (isReference())
 		{
-			builder.append(getReferenceText());
+			builder.append('&');
 		}
 		else if (isPointer())
 		{
-			builder.append(getPointerText());
+			builder.append('*');
 		}
 		else if (isArray())
 		{
@@ -290,11 +334,23 @@ public class MethodNode extends DeclarationNode
 		return builder.toString();
 	}
 	
+	/**
+	 * Generate the C Source output for a method name.
+	 * 
+	 * @return The C output for a method name.
+	 */
 	public String generateMethodName()
 	{
 		return generateMethodName(false);
 	}
 	
+	/**
+	 * Generate the C Source output for a method name.
+	 * 
+	 * @param header Whether or not the output is being created for a
+	 * 		header file.
+	 * @return The C output for a method name.
+	 */
 	public String generateMethodName(boolean header)
 	{
 		if (header)
@@ -305,7 +361,25 @@ public class MethodNode extends DeclarationNode
 		return "__" + Fathom.LANGUAGE_NAME.toUpperCase() + "__" + getName();
 	}
 	
-	public static MethodNode decodeStatement(TreeNode parentNode, String statement, Location location)
+	/**
+	 * Decode the given statement into a MethodNode instance, if
+	 * possible. If it is not possible, this method returns null.
+	 * <br>
+	 * Example inputs include:<br>
+	 * <ul>
+	 * 	<li>public Person findPerson(String name, int age)</li>
+	 * 	<li>private int calculateArea(int width, int height)</li>
+	 * 	<li>public void doNothing()</li>
+	 * </ul>
+	 * 
+	 * @param parent The parent node of the statement.
+	 * @param statement The statement to try to decode into a
+	 * 		MethodNode instance.
+	 * @param location The location of the statement in the source code.
+	 * @return The generated node, if it was possible to translated it
+	 * 		into a MethodNode.
+	 */
+	public static MethodNode decodeStatement(TreeNode parent, String statement, Location location)
 	{
 		int firstParenthIndex = Regex.indexOf(statement, '(', new char[] { }, new char[] {}, new char[] { '"' }, new boolean[] {}, new boolean[] {}, new boolean[] { true });
 		int lastParenthIndex  = Regex.lastIndexOf(statement, ')', new char[] { }, new char[] {}, new char[] { '"' }, new boolean[] {}, new boolean[] {}, new boolean[] { true });
@@ -360,7 +434,7 @@ public class MethodNode extends DeclarationNode
 			{
 				if (parameters[i].length() > 0)
 				{
-					ParameterNode param = ParameterNode.decodeStatement(parentNode, parameters[i], location);
+					ParameterNode param = ParameterNode.decodeStatement(parent, parameters[i], location);
 					
 					if (param == null)
 					{
@@ -397,15 +471,16 @@ public class MethodNode extends DeclarationNode
 		return clone(node);
 	}
 	
+	/**
+	 * Fill the given MethodNode with the data that is in the
+	 * specified node.
+	 * 
+	 * @param node The node to copy the data into.
+	 * @return The cloned node.
+	 */
 	public MethodNode clone(MethodNode node)
 	{
-		node.setStatic(isStatic());
-		node.setVisibility(getVisibility());
-		node.setConst(isConst());
-		node.setArrayDimensions(getArrayDimensions());
-		node.setType(getType());
-		node.setReference(isReference());
-		node.setPointer(isPointer());
+		super.clone(node);
 		
 		for (int i = 0; i < getChildren().size(); i++)
 		{

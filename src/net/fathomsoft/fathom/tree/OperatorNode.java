@@ -18,28 +18,31 @@
 package net.fathomsoft.fathom.tree;
 
 /**
- * 
+ * TreeNode extension that represents an operator in an operation.
  * 
  * @author	Braden Steffaniak
- * @since	Jan 5, 2014 at 9:19:40 PM
- * @since	v
- * @version	Jan 5, 2014 at 9:19:40 PM
- * @version	v
+ * @since	v0.1 Jan 5, 2014 at 9:19:40 PM
+ * @version	v0.2 Apr 5, 2014 at 10:14:38 PM
  */
 public class OperatorNode extends TreeNode
 {
 	private String	operator;
 	
-	public OperatorNode()
-	{
-		
-	}
-	
+	/**
+	 * Get the value of the operator. For example: '+', '*', '&&', etc.
+	 * 
+	 * @return The value of the operator.
+	 */
 	public String getOperator()
 	{
 		return operator;
 	}
 	
+	/**
+	 * Set the operator value. For example: '+', '*', '&&', etc.
+	 * 
+	 * @param operator The new value of the operator.
+	 */
 	public void setOperator(String operator)
 	{
 		this.operator = operator;
@@ -92,6 +95,13 @@ public class OperatorNode extends TreeNode
 		return clone(node);
 	}
 	
+	/**
+	 * Fill the given OperatorNode with the data that is in the
+	 * specified node.
+	 * 
+	 * @param node The node to copy the data into.
+	 * @return The cloned node.
+	 */
 	public OperatorNode clone(OperatorNode node)
 	{
 		node.setOperator(getOperator());

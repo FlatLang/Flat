@@ -17,27 +17,21 @@
  */
 package net.fathomsoft.fathom.tree;
 
-import net.fathomsoft.fathom.tree.variables.VariableNode;
 import net.fathomsoft.fathom.util.Location;
 import net.fathomsoft.fathom.util.Patterns;
 import net.fathomsoft.fathom.util.Regex;
 
 /**
- * 
+ * TreeNode extension that represents a return statement node type.
+ * See {@link #decodeStatement(TreeNode, String, Location)} for more
+ * details on what correct inputs look like.
  * 
  * @author	Braden Steffaniak
- * @since	Jan 5, 2014 at 9:58:29 PM
- * @since	v
- * @version	Jan 5, 2014 at 9:58:29 PM
- * @version	v
+ * @since	v0.1 Jan 5, 2014 at 9:58:29 PM
+ * @version	v0.2 Apr 5, 2014 at 10:43:26 PM
  */
 public class ReturnNode extends TreeNode
 {
-	public ReturnNode()
-	{
-		
-	}
-
 	/**
 	 * @see net.fathomsoft.fathom.tree.TreeNode#generateJavaSourceOutput()
 	 */
@@ -108,6 +102,26 @@ public class ReturnNode extends TreeNode
 		return builder.toString();
 	}
 	
+	/**
+	 * Decode the given statement into a ReturnNode instance, if
+	 * possible. If it is not possible, this method returns null.<br>
+	 * <br>
+	 * Example inputs include:<br>
+	 * <ul>
+	 * 	<li>return</li>
+	 * 	<li>return node</li>
+	 * 	<li>return 0</li>
+	 * 	<li>return getAge()</li>
+	 * 	<li>return age + 32</li>
+	 * </ul>
+	 * 
+	 * @param parent The parent node of the statement.
+	 * @param statement The statement to try to decode into a
+	 * 		ReturnNode instance.
+	 * @param location The location of the statement in the source code.
+	 * @return The generated node, if it was possible to translated it
+	 * 		into a ReturnNode.
+	 */
 	public static ReturnNode decodeStatement(TreeNode parent, String statement, Location location)
 	{
 		ReturnNode n = null;
@@ -167,6 +181,13 @@ public class ReturnNode extends TreeNode
 		return clone(node);
 	}
 	
+	/**
+	 * Fill the given ReturnNode with the data that is in the
+	 * specified node.
+	 * 
+	 * @param node The node to copy the data into.
+	 * @return The cloned node.
+	 */
 	public ReturnNode clone(ReturnNode node)
 	{
 		for (int i = 0; i < getChildren().size(); i++)

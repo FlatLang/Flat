@@ -18,28 +18,31 @@
 package net.fathomsoft.fathom.tree;
 
 import net.fathomsoft.fathom.error.SyntaxMessage;
-import net.fathomsoft.fathom.tree.variables.VariableNode;
 import net.fathomsoft.fathom.util.Bounds;
 import net.fathomsoft.fathom.util.Location;
 import net.fathomsoft.fathom.util.Patterns;
 import net.fathomsoft.fathom.util.Regex;
 
 /**
- * 
+ * TreeNode extension that represents a unary operator node type.
+ * See {@link #decodeStatement(TreeNode, String, Location)} for more
+ * details on what correct inputs look like.
  * 
  * @author	Braden Steffaniak
- * @since	Jan 5, 2014 at 10:00:11 PM
- * @since	v
- * @version	Jan 5, 2014 at 10:00:11 PM
- * @version	v
+ * @since	v0.1 Jan 5, 2014 at 10:00:11 PM
+ * @version	v0.2 Apr 6, 2014 at 2:46:52 PM
  */
 public class UnaryOperatorNode extends TreeNode
 {
-	public UnaryOperatorNode()
-	{
-		
-	}
-	
+	/**
+	 * The the TreeNode that represents the variable in the operation.<br>
+	 * For example:<br>
+	 * <blockquote><pre>
+	 * var++;</pre></blockquote>
+	 * In the previous statement, 'var' is the variable.
+	 * 
+	 * @return The TreeNode that represents the parameters of the method.
+	 */
 	public TreeNode getVariableNode()
 	{
 		for (int i = 0; i < getChildren().size(); i++)
@@ -107,6 +110,33 @@ public class UnaryOperatorNode extends TreeNode
 		return builder.toString();
 	}
 	
+	/**
+	 * Decode the given statement into a UnaryOperatorNode instance, if
+	 * possible. If it is not possible, this method returns null.<br>
+	 * <br>
+	 * Example inputs include:<br>
+	 * <ul>
+	 * 	<li>asdf.var++</li>
+	 * 	<li>++asdf.var</li>
+	 * 	<li>asdf.var--</li>
+	 * 	<li>--asdf.var</li>
+	 * 	<li>var--</li>
+	 * 	<li>--var</li>
+	 * 	<li>var++</li>
+	 * 	<li>++var</li>
+	 * 	<li>++array[5]</li>
+	 * 	<li>array[5]--</li>
+	 * 	<li>!asdf.var</li>
+	 * 	<li>!var</li>
+	 * </ul>
+	 * 
+	 * @param parent The parent node of the statement.
+	 * @param statement The statement to try to decode into a
+	 * 		UnaryOperatorNode instance.
+	 * @param location The location of the statement in the source code.
+	 * @return The generated node, if it was possible to translated it
+	 * 		into a UnaryOperatorNode.
+	 */
 	public static UnaryOperatorNode decodeStatement(TreeNode parent, String statement, Location location)
 	{
 		Bounds bounds = Regex.boundsOf(statement, Patterns.UNARY_ARITH_OPERATORS);
@@ -171,6 +201,13 @@ public class UnaryOperatorNode extends TreeNode
 		return clone(node);
 	}
 	
+	/**
+	 * Fill the given UnaryOperatorNode with the data that is in the
+	 * specified node.
+	 * 
+	 * @param node The node to copy the data into.
+	 * @return The cloned node.
+	 */
 	public UnaryOperatorNode clone(UnaryOperatorNode node)
 	{
 		for (int i = 0; i < getChildren().size(); i++)

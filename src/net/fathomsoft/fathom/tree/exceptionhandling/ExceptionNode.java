@@ -97,6 +97,13 @@ public class ExceptionNode extends TreeNode
 		return clone(node);
 	}
 	
+	/**
+	 * Fill the given ExceptionNode with the data that is in the
+	 * specified node.
+	 * 
+	 * @param node The node to copy the data into.
+	 * @return The cloned node.
+	 */
 	public ExceptionNode clone(ExceptionNode node)
 	{
 		node.id = id;

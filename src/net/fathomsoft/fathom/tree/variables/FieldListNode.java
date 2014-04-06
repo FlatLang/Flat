@@ -176,6 +176,13 @@ public class FieldListNode extends TreeNode
 		return clone(node);
 	}
 	
+	/**
+	 * Fill the given FieldListNode with the data that is in the
+	 * specified node.
+	 * 
+	 * @param node The node to copy the data into.
+	 * @return The cloned node.
+	 */
 	public FieldListNode clone(FieldListNode node)
 	{
 		for (int i = 0; i < getChildren().size(); i++)

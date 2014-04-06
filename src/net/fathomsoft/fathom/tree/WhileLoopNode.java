@@ -25,21 +25,24 @@ import net.fathomsoft.fathom.util.Regex;
 import net.fathomsoft.fathom.util.SyntaxUtils;
 
 /**
- * 
+ * LoopNode extension that represents the declaration of a "while loop"
+ * node type. See {@link #decodeStatement(TreeNode, String, Location)}
+ * for more details on what correct inputs look like.
  * 
  * @author	Braden Steffaniak
- * @since	Jan 5, 2014 at 9:55:59 PM
- * @since	v
- * @version	Jan 5, 2014 at 9:55:59 PM
- * @version	v
+ * @since	v0.1 Jan 5, 2014 at 9:55:59 PM
+ * @version	v0.2 Apr 6, 2014 at 5:06:44 PM
  */
 public class WhileLoopNode extends LoopNode
 {
-	public WhileLoopNode()
-	{
-		
-	}
-	
+	/**
+	 * Get the TreeNode that describes the condition section of the while
+	 * loop. For instance: "while (i < 10)" the contents between the
+	 * parenthesis is the condition.
+	 * 
+	 * @return The TreeNode instance that describes the condition section
+	 * 		of the while loop.
+	 */
 	public TreeNode getConditionNode()
 	{
 		return getChild(1);
@@ -113,13 +116,31 @@ public class WhileLoopNode extends LoopNode
 		return null;
 	}
 	
+	/**
+	 * Decode the given statement into a WhileLoopNode instance, if
+	 * possible. If it is not possible, this method returns null.<br>
+	 * <br>
+	 * Example inputs include:<br>
+	 * <ul>
+	 * 	<li>while (currentNode != null)</li>
+	 * 	<li>while (true)</li>
+	 * 	<li>while (number.isEven())</li>
+	 * </ul>
+	 * 
+	 * @param parent The parent node of the statement.
+	 * @param statement The statement to try to decode into a
+	 * 		WhileLoopNode instance.
+	 * @param location The location of the statement in the source code.
+	 * @return The generated node, if it was possible to translated it
+	 * 		into a WhileLoopNode.
+	 */
 	public static WhileLoopNode decodeStatement(TreeNode parent, String statement, Location location)
 	{
 		if (Regex.matches(statement, 0, Patterns.PRE_WHILE))
 		{
 			WhileLoopNode n = new WhileLoopNode();
 			
-			Bounds bounds = Regex.boundsOf(statement, Patterns.POST_WHILE);
+			Bounds bounds = Regex.boundsOf(statement, Patterns.WHILE_CONTENTS);
 			
 			if (bounds.getStart() >= 0)
 			{
@@ -163,6 +184,13 @@ public class WhileLoopNode extends LoopNode
 		return clone(node);
 	}
 	
+	/**
+	 * Fill the given WhileLoopNode with the data that is in the
+	 * specified node.
+	 * 
+	 * @param node The node to copy the data into.
+	 * @return The cloned node.
+	 */
 	public WhileLoopNode clone(WhileLoopNode node)
 	{
 		for (int i = 0; i < getChildren().size(); i++)

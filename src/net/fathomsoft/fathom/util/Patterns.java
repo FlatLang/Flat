@@ -19,6 +19,14 @@ package net.fathomsoft.fathom.util;
 
 import java.util.regex.Pattern;
 
+/**
+ * Utility class that contains a multitude of pre-compiled patterns used
+ * for searching through text for specific events.
+ * 
+ * @author	Braden Steffaniak
+ * @since	v0.1 Apr 5, 2014 at 3:53:04 PM
+ * @version	v0.2 Apr 5, 2014 at 3:53:04 PM
+ */
 public class Patterns
 {
 	/**
@@ -39,6 +47,11 @@ public class Patterns
 	public static final Pattern IDENTIFIER				= Pattern.compile("[A-Za-z0-9_]+");
 
 	/**
+	 * Pattern that searches for non-identifier character.
+	 */
+	public static final Pattern	NON_IDENTIFIER			= Pattern.compile("[^a-zA-Z0-9_]");
+
+	/**
 	 * Pattern that searches for the start of a statement.
 	 */
 	public static final Pattern	STATEMENT_START			= Pattern.compile("(?=[^\\}])(?=\\S)");
@@ -54,117 +67,178 @@ public class Patterns
 	public static final Pattern	NEXT_TEXT_LINE			= Pattern.compile("(.)", Pattern.MULTILINE);
 
 	/**
-	 * Pattern that searches for 
+	 * Pattern that searches for specific characters that trigger events
+	 * for the source code formatter.
 	 */
 	public static final Pattern FORMATTER_PATTERN		= Pattern.compile("[\\}\\{\\)\\(\\n]");
 
 	/**
-	 * Pattern that searches for 
+	 * Pattern that searches for the left hand value of an
+	 * equation/assignment.<br>
+	 * <br>
+	 * For example: In the case of "int number = 25 + 42" the left hand
+	 * value is the "int number" part of the equation/assignment.
 	 */
 	public static final Pattern PRE_EQUALS_SIGN			= Pattern.compile("[\\S\\s]+(?=[=])");
 
 	/**
-	 * Pattern that searches for 
+	 * Pattern that searches for the right hand value of an
+	 * equation/assignment.<br>
+	 * <br>
+	 * For example: In the case of "int number = 25 + 42" the right hand
+	 * value is the "25 + 42" part of the equation/assignment.
 	 */
 	public static final Pattern POST_EQUALS_SIGN		= Pattern.compile("(?<=(=\\s{0,9}))(?=\\S+)");
 	
 	/**
-	 * Pattern that searches for 
+	 * Pattern that searches for unary arithmetic operators. The operators
+	 * include ++, --.
 	 */
 	public static final Pattern UNARY_ARITH_OPERATORS	= Pattern.compile("(?<=\\s*)([\\+]{2}|[-]{2})(?=\\s*)");
 
 	/**
-	 * Pattern that searches for 
+	 * Pattern that searches for binary arithmetic operators. The operators
+	 * include *, /, +, -, =, %.
 	 */
 	public static final Pattern BINARY_ARITH_OPERATORS	= Pattern.compile("([\\*\\+\\/\\-=%])");
 
 	/**
-	 * Pattern that searches for 
+	 * Pattern that searches for binary logical operators. The operators
+	 * include !=, ==, >=, <=, |, &, <, >
 	 */
 	public static final Pattern BINARY_LOGIC_OPERATORS	= Pattern.compile("!=|==|>=|<=|[\\|\\&\\<\\>]");
 
 	/**
-	 * Pattern that searches for 
+	 * Pattern that searches for the data before an operator.<br>
+	 * <br>
+	 * For example: In the case of "45 * 6" the data before the '*'
+	 * operator is returned as "45 "
 	 */
 	public static final Pattern PRE_OPERATORS			= Pattern.compile("[\\S\\s]+?(?=((!|>|<|=)=|[\\*\\+\\/\\-\\<\\>%]))");
 
 	/**
-	 * Pattern that searches for 
+	 * Pattern that searches for the data after an operator.<br>
+	 * <br>
+	 * For example: In the case of "45 * 6" the data after the '*'
+	 * operator is returned as " 6"
 	 */
 	public static final Pattern POST_OPERATORS			= Pattern.compile("(?<=(([!\\<\\>=]{1,2})|[\\*\\+\\/\\-])\\s{0,9})[A-Za-z0-9_]\\s*(\\S+\\s*)*");
 
 	/**
-	 * Pattern that searches for 
+	 * Pattern that searches for a whitespace character.
 	 */
 	public static final Pattern WHITESPACE				= Pattern.compile("\\s");
 
 	/**
-	 * Pattern that searches for 
+	 * Pattern that searches for a non-whitespace character.
 	 */
 	public static final Pattern NON_WHITESPACE			= Pattern.compile("\\S");
 
 	/**
-	 * Pattern that searches for 
+	 * Pattern that searches for the word "return" followed by the
+	 * possibility of whitespace.<br>
+	 * <br>
+	 * For example, both of the following are correct:
+	 * "return   	" and "return"
 	 */
 	public static final Pattern PRE_RETURN				= Pattern.compile("return\\s*");
 
 	/**
-	 * Pattern that searches for 
+	 * Pattern that searches for the data after a return statement.<br>
+	 * <br>
+	 * For example: "return 43" would return the output of "43"
 	 */
 	public static final Pattern POST_RETURN     	    = Pattern.compile("(?<=return\\s{0,9})(\\S+)");
 
 	/**
-	 * Pattern that searches for 
+	 * Pattern that searches for the word "if" followed by an
+	 * opening parenthesis.<br>
+	 * <br>
+	 * For example, both of the following are correct:
+	 * "if   	(" and "if("
 	 */
 	public static final Pattern PRE_IF					= Pattern.compile("if(?=\\s*\\()");
 
 	/**
-	 * Pattern that searches for 
+	 * Pattern that searches for the contents of an if statement.<br>
+	 * <br>
+	 * For example:<br>
+	 * "if (getSize() > 4)" will return "getSize() > 4"
 	 */
-	public static final Pattern POST_IF					= Pattern.compile("(?<=if\\s{0,9}\\(\\s{0,9})([\\S\\s]+)(?=\\s*\\))");
+	public static final Pattern IF_CONTENTS				= Pattern.compile("(?<=if\\s{0,9}\\(\\s{0,9})([\\S\\s]+)(?=\\s*\\))");
 
 	/**
-	 * Pattern that searches for 
+	 * Pattern that searches for the word "while" followed by an
+	 * opening parenthesis.<br>
+	 * <br>
+	 * For example, both of the following are correct:
+	 * "while   	(" and "while("
 	 */
 	public static final Pattern PRE_WHILE				= Pattern.compile("while(?=\\s*\\()");
 
 	/**
-	 * Pattern that searches for 
+	 * Pattern that searches for the contents of a while statement.<br>
+	 * <br>
+	 * For example:<br>
+	 * "while (!thing.isEmpty())" will return "!thing.isEmpty()"
 	 */
-	public static final Pattern POST_WHILE     	    	= Pattern.compile("(?<=while\\s{0,9}\\(\\s{0,9})([\\S\\s]+)(?=\\s*\\))");
+	public static final Pattern WHILE_CONTENTS     	    = Pattern.compile("(?<=while\\s{0,9}\\(\\s{0,9})([\\S\\s]+)(?=\\s*\\))");
 
 	/**
-	 * Pattern that searches for 
+	 * Pattern that searches for the word "for" followed by an
+	 * opening parenthesis.<br>
+	 * <br>
+	 * For example, both of the following are correct:
+	 * "for   	(" and "for("
 	 */
 	public static final Pattern PRE_FOR					= Pattern.compile("for(?=\\s*\\()");
 
 	/**
-	 * Pattern that searches for 
+	 * Pattern that searches for the contents of a for statement.<br>
+	 * <br>
+	 * For example:<br>
+	 * "for (int i = 0; i < 10; i++)" will return "int i = 0; i < 10; i++"
 	 */
-	public static final Pattern POST_FOR     	    	= Pattern.compile("(?<=for\\s{0,9}\\(\\s{0,9})([\\S\\s]+)(?=\\s*\\))");
+	public static final Pattern FOR_CONTENTS     	    = Pattern.compile("(?<=for\\s{0,9}\\(\\s{0,9})([\\S\\s]+)(?=\\s*\\))");
 
 	/**
-	 * Pattern that searches for 
+	 * Pattern that searches for the word "import" followed by the
+	 * possibility of whitespace.<br>
+	 * <br>
+	 * For example, both of the following are correct:
+	 * "import   	" and "import"
 	 */
 	public static final Pattern PRE_IMPORT          	= Pattern.compile("import\\s*");
 
 	/**
-	 * Pattern that searches for 
+	 * Pattern that searches for the data after an import statement.<br>
+	 * <br>
+	 * For example:<br>
+	 * <u><i>import "String"</i></u> would return the output of <u><i>"String"</i></u>
 	 */
 	public static final Pattern POST_IMPORT				= Pattern.compile("(?<=import\\s{0,9})(\\S+)");
 
 	/**
-	 * Pattern that searches for 
+	 * Pattern that searches for the word "new" followed by whitespace
+	 * and and then not whitespace<br>
+	 * <br>
+	 * For example, both of the following are correct:
+	 * "new   	Test" and "new Test"
 	 */
-	public static final Pattern PRE_INSTANTIATION		= Pattern.compile("new\\s+\\S+");
+	public static final Pattern PRE_INSTANTIATION		= Pattern.compile("new\\s+\\S");
 
 	/**
-	 * Pattern that searches for 
+	 * Pattern that searches for the data after an instantiation.<br>
+	 * <br>
+	 * For example: "new Test" would return "Test"
 	 */
 	public static final Pattern POST_INSTANTIATION		= Pattern.compile("(?<=new\\s{1,9})(\\S+)");
 
 	/**
-	 * Pattern that searches for 
+	 * Pattern that searches for the data before a method call.<br>
+	 * <br>
+	 * For example:<br>
+	 * "person.getAge()" would return the output of "person.getAge"
 	 */
 	public static final Pattern PRE_METHOD_CALL			= Pattern.compile("\\S+?(?=\\s*\\()");
 
@@ -174,32 +248,38 @@ public class Patterns
 //	public static final Pattern POST_METHOD_CALL		= Pattern.compile("(?<=\\S+\\s{0,999}\\(\\s{0,999})(\\S+\\))");
 
 	/**
-	 * Pattern that searches for 
+	 * Pattern that searches for an array initialization.<br>
+	 * <br>
+	 * For example:<br>
+	 * "array = new int[423]" would return "int[423]"
 	 */
-	public static final Pattern ARRAY_INIT				= Pattern.compile("[A-Za-z0-9_]+\\s*(\\[\\S+\\])+");
+	public static final Pattern ARRAY_INIT				= Pattern.compile("[A-Za-z0-9_]+(\\s*\\[\\s*\\S+\\s*\\])+");
 
 	/**
-	 * Pattern that searches for 
+	 * Pattern that searches for an array access.<br>
+	 * <br>
+	 * For example:<br>
+	 * "array[423]"
 	 */
-	public static final Pattern ARRAY_ACCESS			= Pattern.compile("[A-Za-z0-9_]+\\s*(\\[\\S+\\])+");
+	public static final Pattern ARRAY_ACCESS			= Pattern.compile("[A-Za-z0-9_]+(\\s*\\[\\s*\\S+\\s*\\])+");
 
 	/**
-	 * Pattern that searches for 
+	 * Pattern that searches for a #define declaration.
 	 */
 	public static final Pattern DEFINE_PATTERN			= Pattern.compile("(?<=#\\s{0,9}define\\s{1,9})\\S");
 
 	/**
-	 * Pattern that searches for 
+	 * Pattern that searches for any alphanumeric character.
 	 */
-	public static final Pattern	ALPHANUMERIC			= Pattern.compile("[a-zA-Z0-9_]");
+	public static final Pattern	ALPHANUMERIC			= Pattern.compile("[a-zA-Z0-9]");
 
 	/**
-	 * Pattern that searches for 
+	 * Pattern that searches for non-alphanumeric character.
 	 */
-	public static final Pattern	NON_ALPHANUMERIC		= Pattern.compile("[^a-zA-Z0-9_]");
+	public static final Pattern	NON_ALPHANUMERIC		= Pattern.compile("[^a-zA-Z0-9]");
 
 	/**
-	 * Pattern that searches for 
+	 * Pattern that searches for the definition of a function prototype.
 	 */
 	public static final Pattern FUNCTION_PROTOTYPE		= Pattern.compile("(?<=([\\n;} \\t\\r]\\s?))(([a-zA-Z0-9_\\*\\&]+\\s*)+(\\([\\s\\S]*?\\);))");
 

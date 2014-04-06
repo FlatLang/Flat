@@ -30,11 +30,6 @@ import net.fathomsoft.fathom.tree.TreeNode;
  */
 public class VariableListNode extends TreeNode
 {
-	public VariableListNode()
-	{
-		
-	}
-	
 	/**
 	 * @see net.fathomsoft.fathom.tree.TreeNode#generateJavaSourceOutput()
 	 */
@@ -106,6 +101,13 @@ public class VariableListNode extends TreeNode
 		return clone(node);
 	}
 	
+	/**
+	 * Fill the given VariableListNode with the data that is in the
+	 * specified node.
+	 * 
+	 * @param node The node to copy the data into.
+	 * @return The cloned node.
+	 */
 	public VariableListNode clone(VariableListNode node)
 	{
 		for (int i = 0; i < getChildren().size(); i++)

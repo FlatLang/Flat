@@ -1,18 +1,8 @@
 package net.fathomsoft.fathom.tree.exceptionhandling;
 
-import net.fathomsoft.fathom.error.SyntaxMessage;
-import net.fathomsoft.fathom.tree.BinaryOperatorNode;
-import net.fathomsoft.fathom.tree.ForLoopNode;
-import net.fathomsoft.fathom.tree.LoopNode;
 import net.fathomsoft.fathom.tree.ScopeNode;
 import net.fathomsoft.fathom.tree.TreeNode;
-import net.fathomsoft.fathom.tree.WhileLoopNode;
-import net.fathomsoft.fathom.tree.variables.LocalVariableNode;
-import net.fathomsoft.fathom.tree.variables.VariableNode;
-import net.fathomsoft.fathom.util.Bounds;
 import net.fathomsoft.fathom.util.Location;
-import net.fathomsoft.fathom.util.Patterns;
-import net.fathomsoft.fathom.util.Regex;
 
 /**
  * 
@@ -124,6 +114,13 @@ public class ExceptionHandlingNode extends TreeNode
 		return clone(node);
 	}
 	
+	/**
+	 * Fill the given ExceptionHandlingNode with the data that is in the
+	 * specified node.
+	 * 
+	 * @param node The node to copy the data into.
+	 * @return The cloned node.
+	 */
 	public ExceptionHandlingNode clone(ExceptionHandlingNode node)
 	{
 		for (int i = 0; i < getChildren().size(); i++)

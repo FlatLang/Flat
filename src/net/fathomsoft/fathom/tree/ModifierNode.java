@@ -18,49 +18,53 @@
 package net.fathomsoft.fathom.tree;
 
 /**
- * 
+ * IdentifierNode extension that represents an identifier that can
+ * be a reference or pointer.
  * 
  * @author	Braden Steffaniak
- * @since	Jan 5, 2014 at 9:00:23 PM
- * @since	v
- * @version	Jan 5, 2014 at 9:00:23 PM
- * @version	v
+ * @since	v0.1 Jan 5, 2014 at 9:00:23 PM
+ * @version	v0.2 Apr 5, 2014 at 10:13:13 PM
  */
 public class ModifierNode extends IdentifierNode
 {
 	private boolean	referenceVal;
 	private boolean	pointerVal;
 	
-	public ModifierNode()
-	{
-		
-	}
-	
+	/**
+	 * Get whether or not the identifier is a reference.
+	 * 
+	 * @return Whether or not the identifier is a reference.
+	 */
 	public boolean isReference()
 	{
 		return referenceVal;
 	}
 	
-	public String getReferenceText()
-	{
-		return "&";
-	}
-	
+	/**
+	 * Set whether or not the identifier is a reference.
+	 * 
+	 * @param referenceVal Whether or not the identifier is a reference.
+	 */
 	public void setReference(boolean referenceVal)
 	{
 		this.referenceVal = referenceVal;
 	}
 	
+	/**
+	 * Get whether or not the identifier is a pointer.
+	 * 
+	 * @return Whether or not the identifier is a pointer.
+	 */
 	public boolean isPointer()
 	{
 		return pointerVal;
 	}
 	
-	public String getPointerText()
-	{
-		return "*";
-	}
-	
+	/**
+	 * Set whether or not the identifier is a pointer.
+	 * 
+	 * @param pointerVal Whether or not the identifier is a pointer.
+	 */
 	public void setPointer(boolean pointerVal)
 	{
 		this.pointerVal = pointerVal;
@@ -113,9 +117,17 @@ public class ModifierNode extends IdentifierNode
 		return clone(node);
 	}
 	
+	/**
+	 * Fill the given ModiferNode with the data that is in the
+	 * specified node.
+	 * 
+	 * @param node The node to copy the data into.
+	 * @return The cloned node.
+	 */
 	public ModifierNode clone(ModifierNode node)
 	{
-		node.setName(getName());
+		super.clone(node);
+		
 		node.setReference(isReference());
 		node.setPointer(isPointer());
 		

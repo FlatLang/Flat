@@ -21,10 +21,8 @@ package net.fathomsoft.fathom.util;
  * Class used to store data about a start and end location.
  * 
  * @author	Braden Steffaniak
- * @since	Mar 12, 2014 at 4:08:41 PM
- * @since	v0.1
- * @version	Mar 12, 2014 at 4:08:41 PM
- * @version	v0.1
+ * @since	v0.1 Mar 12, 2014 at 4:08:41 PM
+ * @version	v0.1 Mar 12, 2014 at 4:08:41 PM
  */
 public class Bounds
 {

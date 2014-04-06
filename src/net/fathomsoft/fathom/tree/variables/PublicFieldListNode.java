@@ -31,11 +31,6 @@ import net.fathomsoft.fathom.tree.TreeNode;
  */
 public class PublicFieldListNode extends TreeNode
 {
-	public PublicFieldListNode()
-	{
-		
-	}
-
 	/**
 	 * @see net.fathomsoft.fathom.tree.TreeNode#generateJavaSourceOutput()
 	 */
@@ -131,6 +126,13 @@ public class PublicFieldListNode extends TreeNode
 		return clone(node);
 	}
 	
+	/**
+	 * Fill the given PublicFieldListNode with the data that is in the
+	 * specified node.
+	 * 
+	 * @param node The node to copy the data into.
+	 * @return The cloned node.
+	 */
 	public PublicFieldListNode clone(PublicFieldListNode node)
 	{
 		for (int i = 0; i < getChildren().size(); i++)

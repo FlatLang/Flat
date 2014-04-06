@@ -154,6 +154,17 @@ public class SyntaxTree
 		checkForErrors();
 	}
 	
+	/**
+	 * Search for the main method, if one exists, in the compiling
+	 * program. The main method has the method header as the following:
+	 * <blockquote><pre>
+	 * public static void main(String args[])
+	 * {
+	 * 	...
+	 * }</pre></blockquote>
+	 * 
+	 * @return The MethodNode representation of the main method.
+	 */
 	public MethodNode getMainMethod()
 	{
 		for (int i = 0; i < root.getChildren().size(); i++)
@@ -182,7 +193,8 @@ public class SyntaxTree
 	}
 	
 	/**
-	 * 
+	 * After the SyntaxTree has been created, further check the the tree
+	 * for inconsistencies and errors/warnings.
 	 */
 	private void checkForErrors()
 	{
@@ -190,9 +202,10 @@ public class SyntaxTree
 	}
 	
 	/**
+	 * After the SyntaxTree has been created, further check the the tree
+	 * for inconsistencies and errors/warnings.
 	 * 
-	 * 
-	 * @param root
+	 * @param root The node to start the search for errors at.
 	 */
 	private void checkForErrors(TreeNode root)
 	{

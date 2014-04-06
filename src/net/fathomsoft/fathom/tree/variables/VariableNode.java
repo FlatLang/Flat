@@ -41,11 +41,6 @@ public class VariableNode extends ModifierNode
 	
 	private static final String	NULL_TEXT = "0";
 	
-	public VariableNode()
-	{
-		
-	}
-	
 	public boolean isExternal()
 	{
 		return external;
@@ -147,18 +142,18 @@ public class VariableNode extends ModifierNode
 			builder.append(getConstText()).append(' ');
 		}
 		
-		builder.append(getType()).append(' ');
-		
+		builder.append(getType());
+
 		if (isReference())
 		{
-			builder.append(getReferenceText()).append(' ');
+			builder.append('&');
 		}
 		else if (isPointer())
 		{
-			builder.append(getPointerText()).append(' ');
+			builder.append('*');
 		}
 		
-		builder.append(getName()).append(';').append('\n');
+		builder.append(' ').append(getName()).append(';').append('\n');
 		
 		return builder.toString();
 	}
@@ -209,14 +204,14 @@ public class VariableNode extends ModifierNode
 		}
 		
 		builder.append(getType());
-		
+
 		if (isReference())
 		{
-			builder.append(getReferenceText());
+			builder.append('&');
 		}
 		else if (isPointer())
 		{
-			builder.append(getPointerText());
+			builder.append('*');
 		}
 		if (isArray())
 		{
@@ -252,14 +247,21 @@ public class VariableNode extends ModifierNode
 		return clone(node);
 	}
 	
+	/**
+	 * Fill the given VariableNode with the data that is in the
+	 * specified node.
+	 * 
+	 * @param node The node to copy the data into.
+	 * @return The cloned node.
+	 */
 	public VariableNode clone(VariableNode node)
 	{
-		node.setName(getName());
+		super.clone(node);
+		
 		node.setConst(isConst());
 		node.setArrayDimensions(getArrayDimensions());
 		node.setType(getType());
-		node.setReference(isReference());
-		node.setPointer(isPointer());
+		node.setExternal(isExternal());
 		
 		for (int i = 0; i < getChildren().size(); i++)
 		{

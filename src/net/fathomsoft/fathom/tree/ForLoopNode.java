@@ -26,7 +26,7 @@ import net.fathomsoft.fathom.util.Regex;
 
 /**
  * LoopNode extension that represents the declaration of a "for loop"
- * node type. See {@link net.fathomsoft.fathom.tree.ForLoopNode#decodeStatement(net.fathomsoft.fathom.tree.TreeNode, java.lang.String, net.fathomsoft.fathom.util.Location) decodeStatement}
+ * node type. See {@link #decodeStatement(TreeNode, String, Location)}
  * for more details on what correct inputs look like.
  * 
  * @author	Braden Steffaniak
@@ -74,8 +74,8 @@ public class ForLoopNode extends LoopNode
 	
 	/**
 	 * Get the TreeNode that describes the condition section of the for
-	 * loop. For instance: "for (int i = 0; i < 10; i++)" the last section
-	 * containing "i < 10" is the condition section.
+	 * loop. For instance: "for (int i = 0; i < 10; i++)" the middle
+	 * section containing "i < 10" is the condition section.
 	 * 
 	 * @return The TreeNode instance that describes the condition section
 	 * 		of the for loop.
@@ -206,7 +206,7 @@ public class ForLoopNode extends LoopNode
 		{
 			ForLoopNode n = new ForLoopNode();
 			
-			Bounds bounds = Regex.boundsOf(statement, Patterns.POST_FOR);
+			Bounds bounds = Regex.boundsOf(statement, Patterns.FOR_CONTENTS);
 			
 			if (bounds.getStart() >= 0)
 			{

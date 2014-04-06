@@ -173,7 +173,7 @@ public class IfStatementNode extends TreeNode
 		{
 			IfStatementNode n = new IfStatementNode();
 			
-			Bounds bounds = Regex.boundsOf(statement, Patterns.POST_IF);
+			Bounds bounds = Regex.boundsOf(statement, Patterns.IF_CONTENTS);
 			
 			if (bounds.getStart() >= 0)
 			{

@@ -33,9 +33,7 @@ import java.util.regex.Pattern;
  * 
  * @author	Braden Steffaniak
  * @since	Nov 23, 2013 at 5:32:00 PM
- * @since	v0.7.5
  * @version Nov 23, 2013 at 5:32:00 PM
- * @version	v0.7.6
  */
 public class Command
 {

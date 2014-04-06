@@ -90,8 +90,17 @@ public class FinallyNode extends ExceptionHandlingNode
 		return clone(node);
 	}
 	
+	/**
+	 * Fill the given FinallyNode with the data that is in the
+	 * specified node.
+	 * 
+	 * @param node The node to copy the data into.
+	 * @return The cloned node.
+	 */
 	public FinallyNode clone(FinallyNode node)
 	{
+		super.clone(node);
+		
 		for (int i = 0; i < getChildren().size(); i++)
 		{
 			TreeNode child = getChild(i);

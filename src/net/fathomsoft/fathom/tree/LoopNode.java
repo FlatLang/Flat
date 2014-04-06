@@ -21,7 +21,7 @@ import net.fathomsoft.fathom.util.Location;
 
 /**
  * TreeNode extension that represents the declaration of a LoopNode
- * node type. See {@link net.fathomsoft.fathom.tree.LoopNode#decodeStatement(net.fathomsoft.fathom.tree.TreeNode, java.lang.String, net.fathomsoft.fathom.util.Location) decodeStatement}
+ * node type. See {@link #decodeStatement(TreeNode, String, Location)}
  * for more details on what correct inputs look like.
  * 
  * @author	Braden Steffaniak
