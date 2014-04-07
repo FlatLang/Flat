@@ -26,14 +26,11 @@ import net.fathomsoft.fathom.util.SyntaxUtils;
  * 
  * 
  * @author	Braden Steffaniak
- * @since	Jan 5, 2014 at 9:02:42 PM
- * @since	v
- * @version	Jan 5, 2014 at 9:02:42 PM
- * @version	v
+ * @since	v0.1 Jan 5, 2014 at 9:02:42 PM
  */
 public class VariableNode extends ModifierNode
 {
-	private boolean	constVal, external;
+	private boolean	constantVal, external;
 	
 	private int		arrayDimensions;
 	
@@ -61,9 +58,9 @@ public class VariableNode extends ModifierNode
 		return SyntaxUtils.isPrimitiveType(getType());
 	}
 	
-	public boolean isConst()
+	public boolean isConstant()
 	{
-		return constVal;
+		return constantVal;
 	}
 	
 	public String getConstText()
@@ -71,9 +68,9 @@ public class VariableNode extends ModifierNode
 		return "const";
 	}
 	
-	public void setConst(boolean constVal)
+	public void setConstant(boolean constVal)
 	{
-		this.constVal = constVal;
+		this.constantVal = constVal;
 	}
 	
 	public boolean isArray()
@@ -120,7 +117,7 @@ public class VariableNode extends ModifierNode
 	{
 		if (attribute.equals("const"))
 		{
-			setConst(true);
+			setConstant(true);
 		}
 	}
 	
@@ -137,7 +134,7 @@ public class VariableNode extends ModifierNode
 	{
 		StringBuilder builder = new StringBuilder();
 		
-		if (isConst())
+		if (isConstant())
 		{
 			builder.append(getConstText()).append(' ');
 		}
@@ -198,7 +195,7 @@ public class VariableNode extends ModifierNode
 	{
 		StringBuilder builder = new StringBuilder();
 		
-		if (isConst())
+		if (isConstant())
 		{
 			builder.append(getConstText()).append(' ');
 		}
@@ -258,7 +255,7 @@ public class VariableNode extends ModifierNode
 	{
 		super.clone(node);
 		
-		node.setConst(isConst());
+		node.setConstant(isConstant());
 		node.setArrayDimensions(getArrayDimensions());
 		node.setType(getType());
 		node.setExternal(isExternal());

@@ -26,13 +26,12 @@ import net.fathomsoft.fathom.util.StringUtils;
 import net.fathomsoft.fathom.util.SyntaxUtils;
 
 /**
- * 
+ * VariableNode extension that represents the declaration of a local variable
+ * node type. See {@link #decodeStatement(TreeNode, String, Location)}
+ * for more details on what correct inputs look like.
  * 
  * @author	Braden Steffaniak
- * @since	Jan 5, 2014 at 9:12:00 PM
- * @since	v
- * @version	Jan 5, 2014 at 9:12:00 PM
- * @version	v
+ * @since	v0.1 Jan 5, 2014 at 9:12:00 PM
  */
 public class LocalVariableNode extends VariableNode
 {
@@ -72,6 +71,24 @@ public class LocalVariableNode extends VariableNode
 		return super.generateCSourceFragment();
 	}
 	
+	/**
+	 * Decode the given statement into a LocalVariableNode instance, if
+	 * possible. If it is not possible, this method returns null.
+	 * <br>
+	 * Example inputs include:<br>
+	 * <ul>
+	 * 	<li>int index</li>
+	 * 	<li>constant char c</li>
+	 * 	<li>String name</li>
+	 * </ul>
+	 * 
+	 * @param parent The parent node of the statement.
+	 * @param statement The statement to try to decode into a
+	 * 		LocalVariableNode instance.
+	 * @param location The location of the statement in the source code.
+	 * @return The generated node, if it was possible to translated it
+	 * 		into a LocalVariableNode.
+	 */
 	public static LocalVariableNode decodeStatement(TreeNode parentNode, final String statement, Location location)
 	{
 		if (SyntaxUtils.isLiteral(statement))

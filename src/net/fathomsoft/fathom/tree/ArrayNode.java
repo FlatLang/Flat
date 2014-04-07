@@ -183,6 +183,8 @@ public class ArrayNode extends IdentifierNode
 	 */
 	public ArrayNode clone(ArrayNode node)
 	{
+		super.clone(node);
+		
 		for (int i = 0; i < getChildren().size(); i++)
 		{
 			TreeNode child = getChild(i);

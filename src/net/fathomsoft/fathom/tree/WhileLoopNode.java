@@ -193,6 +193,8 @@ public class WhileLoopNode extends LoopNode
 	 */
 	public WhileLoopNode clone(WhileLoopNode node)
 	{
+		super.clone(node);
+		
 		for (int i = 0; i < getChildren().size(); i++)
 		{
 			TreeNode child = getChild(i);

@@ -23,10 +23,7 @@ import net.fathomsoft.fathom.tree.TreeNode;
  * Node that holds the LocalVariableNodes that a method contains.
  * 
  * @author	Braden Steffaniak
- * @since	Jan 9, 2014 at 4:19:57 PM
- * @since	v0.1
- * @version	Jan 9, 2014 at 4:19:57 PM
- * @version	v0.1
+ * @since	v0.1 Jan 9, 2014 at 4:19:57 PM
  */
 public class VariableListNode extends TreeNode
 {

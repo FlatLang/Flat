@@ -64,7 +64,7 @@ public class DestructorNode extends MethodNode
 			}
 		}
 		
-		if (isConst())
+		if (isConstant())
 		{
 			SyntaxMessage.error("Destructor cannot be const", getLocationIn());
 			
@@ -252,7 +252,7 @@ public class DestructorNode extends MethodNode
 
 		ClassNode classNode = (ClassNode)getAncestorOfType(ClassNode.class);
 		
-		if (isConst())
+		if (isConstant())
 		{
 			builder.append(getConstText()).append(' ');
 		}

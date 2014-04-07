@@ -12,13 +12,12 @@ import net.fathomsoft.fathom.util.Patterns;
 import net.fathomsoft.fathom.util.Regex;
 
 /**
- * 
+ * ExceptionHandlingNode extension that represents the declaration of a
+ * throw node type. See {@link #decodeStatement(TreeNode, String, Location)}
+ * for more details on what correct inputs look like.
  * 
  * @author	Braden Steffaniak
- * @since	Mar 22, 2014 at 11:02:52 PM
- * @since	v
- * @version	Mar 22, 2014 at 11:02:52 PM
- * @version	v
+ * @since	v0.1 Mar 22, 2014 at 11:02:52 PM
  */
 public class ThrowNode extends ExceptionHandlingNode
 {
@@ -88,6 +87,24 @@ public class ThrowNode extends ExceptionHandlingNode
 		return null;
 	}
 	
+	/**
+	 * Decode the given statement into a ThrowNode instance, if
+	 * possible. If it is not possible, this method returns null.
+	 * <br>
+	 * Example inputs include:<br>
+	 * <ul>
+	 * 	<li>throw new IOException()</li>
+	 * 	<li>throw exceptionInstance;</li>
+	 * 	<li>throw new IllegalArgumentException()</li>
+	 * </ul>
+	 * 
+	 * @param parent The parent node of the statement.
+	 * @param statement The statement to try to decode into a
+	 * 		ThrowNode instance.
+	 * @param location The location of the statement in the source code.
+	 * @return The generated node, if it was possible to translated it
+	 * 		into a ThrowNode.
+	 */
 	public static ThrowNode decodeStatement(TreeNode parent, String statement, Location location)
 	{
 		if (Regex.matches(statement, 0, Patterns.PRE_THROW))

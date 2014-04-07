@@ -13,13 +13,12 @@ import net.fathomsoft.fathom.util.Patterns;
 import net.fathomsoft.fathom.util.Regex;
 
 /**
- * 
+ * ExceptionHandlingNode extension that represents the declaration of a
+ * try node type. See {@link #decodeStatement(TreeNode, String, Location)}
+ * for more details on what correct inputs look like.
  * 
  * @author	Braden Steffaniak
- * @since	Mar 22, 2014 at 4:01:38 PM
- * @since	v
- * @version	Mar 22, 2014 at 4:01:38 PM
- * @version	v
+ * @since	v0.1 Mar 22, 2014 at 4:01:38 PM
  */
 public class TryNode extends ExceptionHandlingNode
 {
@@ -81,6 +80,19 @@ public class TryNode extends ExceptionHandlingNode
 		return null;
 	}
 	
+	/**
+	 * Decode the given statement into a TryNode instance, if
+	 * possible. If it is not possible, this method returns null.
+	 * <br>
+	 * The only correct input is "try"
+	 * 
+	 * @param parent The parent node of the statement.
+	 * @param statement The statement to try to decode into a
+	 * 		TryNode instance.
+	 * @param location The location of the statement in the source code.
+	 * @return The generated node, if it was possible to translated it
+	 * 		into a TryNode.
+	 */
 	public static TryNode decodeStatement(TreeNode parent, String statement, Location location)
 	{
 		if (Regex.matches(statement, 0, Patterns.TRY))

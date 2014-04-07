@@ -27,7 +27,7 @@ import net.fathomsoft.fathom.util.Regex;
 
 /**
  * MethodNode extension that represents the declaration of a Constructor
- * node type. See {@link net.fathomsoft.fathom.tree.ConstructorNode#decodeStatement(net.fathomsoft.fathom.tree.TreeNode, java.lang.String, net.fathomsoft.fathom.util.Location) decodeStatement}
+ * node type. See {@link #decodeStatement(TreeNode, String, Location)}
  * for more details on what correct inputs look like.
  * 
  * @author	Braden Steffaniak
@@ -63,7 +63,7 @@ public class ConstructorNode extends MethodNode
 			
 			return null;
 		}
-		if (isConst())
+		if (isConstant())
 		{
 			SyntaxMessage.error("Constructor cannot be const", getLocationIn());
 			
@@ -125,7 +125,7 @@ public class ConstructorNode extends MethodNode
 //			
 //			return null;
 //		}
-		if (isConst())
+		if (isConstant())
 		{
 			SyntaxMessage.error("Constructor cannot be const", getLocationIn());
 			
@@ -281,7 +281,7 @@ public class ConstructorNode extends MethodNode
 
 		ClassNode classNode = (ClassNode)getAncestorOfType(ClassNode.class);
 		
-		if (isConst())
+		if (isConstant())
 		{
 			builder.append(getConstText()).append(' ');
 		}

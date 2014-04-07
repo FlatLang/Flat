@@ -280,6 +280,8 @@ public class ForLoopNode extends LoopNode
 	 */
 	public ForLoopNode clone(ForLoopNode node)
 	{
+		super.clone(node);
+		
 		for (int i = 0; i < getChildren().size(); i++)
 		{
 			TreeNode child = getChild(i);

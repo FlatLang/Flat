@@ -5,24 +5,28 @@ import java.util.HashMap;
 import net.fathomsoft.fathom.tree.TreeNode;
 import net.fathomsoft.fathom.tree.variables.LocalVariableNode;
 
+/**
+ * 
+ * 
+ * @author	Braden Steffaniak
+ * @since	v0.1 Apr 6, 2014 at 8:44:35 PM
+ */
 public class ExceptionNode extends TreeNode
 {
 	private int	id;
 	
 	private static int	exceptionId	= 1;
 	
-	private static HashMap<String, Integer>	ids;
+	private static final HashMap<String, Integer>	ids;
 	
+	/**
+	 * Initialize static data.
+	 */
 	static
 	{
 		ids = new HashMap<String, Integer>();
 		
 		ids.put("Exception", exceptionId++);
-	}
-	
-	public ExceptionNode()
-	{
-		
 	}
 	
 	/**

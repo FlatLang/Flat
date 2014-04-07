@@ -1,9 +1,6 @@
 package net.fathomsoft.fathom.tree.exceptionhandling;
 
 import net.fathomsoft.fathom.error.SyntaxMessage;
-import net.fathomsoft.fathom.tree.BinaryOperatorNode;
-import net.fathomsoft.fathom.tree.IfStatementNode;
-import net.fathomsoft.fathom.tree.ScopeNode;
 import net.fathomsoft.fathom.tree.TreeNode;
 import net.fathomsoft.fathom.tree.variables.LocalVariableNode;
 import net.fathomsoft.fathom.util.Bounds;
@@ -12,7 +9,9 @@ import net.fathomsoft.fathom.util.Patterns;
 import net.fathomsoft.fathom.util.Regex;
 
 /**
- * 
+ * ExceptionHandlingNode extension that represents the declaration of a
+ * catch node type. See {@link #decodeStatement(TreeNode, String, Location)}
+ * for more details on what correct inputs look like.
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Mar 22, 2014 at 4:01:44 PM
@@ -122,6 +121,24 @@ public class CatchNode extends ExceptionHandlingNode
 		return null;
 	}
 	
+	/**
+	 * Decode the given statement into a CatchNode instance, if
+	 * possible. If it is not possible, this method returns null.
+	 * <br>
+	 * Example inputs include:<br>
+	 * <ul>
+	 * 	<li>catch (Exception e)</li>
+	 * 	<li>catch (DivideByZeroException e)</li>
+	 * 	<li>catch (IOException e)</li>
+	 * </ul>
+	 * 
+	 * @param parent The parent node of the statement.
+	 * @param statement The statement to try to decode into a
+	 * 		CatchNode instance.
+	 * @param location The location of the statement in the source code.
+	 * @return The generated node, if it was possible to translated it
+	 * 		into a CatchNode.
+	 */
 	public static CatchNode decodeStatement(TreeNode parent, String statement, Location location)
 	{
 		if (Regex.matches(statement, 0, Patterns.PRE_CATCH))

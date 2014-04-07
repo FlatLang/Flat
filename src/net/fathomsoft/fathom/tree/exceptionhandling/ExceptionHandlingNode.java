@@ -5,13 +5,12 @@ import net.fathomsoft.fathom.tree.TreeNode;
 import net.fathomsoft.fathom.util.Location;
 
 /**
- * 
+ * TreeNode extension that represents the declaration of an exception
+ * handling node type. See {@link #decodeStatement(TreeNode, String, Location)}
+ * for more details on what correct inputs look like.
  * 
  * @author	Braden Steffaniak
- * @since	Mar 21, 2014 at 10:50:26 PM
- * @since	v
- * @version	Mar 21, 2014 at 10:50:26 PM
- * @version	v
+ * @since	v0.1 Mar 21, 2014 at 10:50:26 PM
  */
 public class ExceptionHandlingNode extends TreeNode
 {
@@ -79,6 +78,25 @@ public class ExceptionHandlingNode extends TreeNode
 		return null;
 	}
 	
+	/**
+	 * Decode the given statement into a ExceptionHandlingNode instance,
+	 * if possible. If it is not possible, this method returns null.
+	 * <br>
+	 * Example inputs include:<br>
+	 * <ul>
+	 * 	<li>try</li>
+	 * 	<li>catch (Exception e)</li>
+	 * 	<li>finally</li>
+	 * 	<li>throw new IOException()</li>
+	 * </ul>
+	 * 
+	 * @param parent The parent node of the statement.
+	 * @param statement The statement to try to decode into a
+	 * 		ExceptionHandlingNode instance.
+	 * @param location The location of the statement in the source code.
+	 * @return The generated node, if it was possible to translated it
+	 * 		into a ExceptionHandlingNode.
+	 */
 	public static ExceptionHandlingNode decodeStatement(TreeNode parent, String statement, Location location)
 	{
 		ExceptionHandlingNode node = null;

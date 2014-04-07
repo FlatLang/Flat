@@ -117,7 +117,7 @@ public class LiteralNode extends TreeNode
 	 */
 	public LiteralNode clone(LiteralNode node)
 	{
-		node.setValue(getValue(), true);
+		node.value = value;
 		
 		for (int i = 0; i < getChildren().size(); i++)
 		{

@@ -121,7 +121,7 @@ public class MethodNode extends DeclarationNode
 		{
 			builder.append(getStaticText()).append(' ');
 		}
-		if (isConst())
+		if (isConstant())
 		{
 			builder.append(getConstText()).append(' ');
 		}
@@ -186,7 +186,7 @@ public class MethodNode extends DeclarationNode
 //			
 //			return null;
 //		}
-		if (isConst())
+		if (isConstant())
 		{
 			SyntaxMessage.error("Const methods are not supported in the C implementation yet", getLocationIn());
 			
@@ -299,7 +299,7 @@ public class MethodNode extends DeclarationNode
 		
 		builder.append("static ");
 		
-		if (isConst())
+		if (isConstant())
 		{
 			builder.append(getConstText()).append(' ');
 		}

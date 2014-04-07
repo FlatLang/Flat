@@ -235,7 +235,7 @@ public class DeclarationNode extends VariableNode
 		{
 			builder.append(getStaticText()).append(' ');
 		}
-		if (isConst())
+		if (isConstant())
 		{
 			builder.append(getConstText()).append(' ');
 		}
@@ -363,13 +363,10 @@ public class DeclarationNode extends VariableNode
 	 */
 	public DeclarationNode clone(DeclarationNode node)
 	{
+		super.clone(node);
+		
 		node.setStatic(isStatic());
 		node.setVisibility(getVisibility());
-		node.setConst(isConst());
-		node.setArrayDimensions(getArrayDimensions());
-		node.setType(getType());
-		node.setReference(isReference());
-		node.setPointer(isPointer());
 		
 		for (int i = 0; i < getChildren().size(); i++)
 		{

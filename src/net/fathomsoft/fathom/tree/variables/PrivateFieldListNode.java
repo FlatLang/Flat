@@ -24,10 +24,7 @@ import net.fathomsoft.fathom.tree.TreeNode;
  * 
  * 
  * @author	Braden Steffaniak
- * @since	Jan 5, 2014 at 10:00:50 PM
- * @since	v
- * @version	Jan 5, 2014 at 10:00:50 PM
- * @version	v
+ * @since	v0.1 Jan 5, 2014 at 10:00:50 PM
  */
 public class PrivateFieldListNode extends TreeNode
 {

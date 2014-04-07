@@ -510,6 +510,7 @@ public class MethodCallNode extends IdentifierNode
 	public MethodCallNode clone(MethodCallNode node)
 	{
 		super.clone(node);
+		
 		node.externalCall = externalCall;
 		
 		for (int i = 0; i < getChildren().size(); i++)

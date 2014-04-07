@@ -28,22 +28,16 @@ import net.fathomsoft.fathom.util.StringUtils;
 import net.fathomsoft.fathom.util.SyntaxUtils;
 
 /**
- * 
+ * DeclarationNode extension that represents the declaration of a field
+ * node type. See {@link #decodeStatement(TreeNode, String, Location)}
+ * for more details on what correct inputs look like.
  * 
  * @author	Braden Steffaniak
- * @since	Jan 5, 2014 at 9:12:04 PM
- * @since	v
- * @version	Jan 5, 2014 at 9:12:04 PM
- * @version	v
+ * @since	v0.1 Jan 5, 2014 at 9:12:04 PM
  */
 public class FieldNode extends DeclarationNode
 {
 	public static final int	VISIBLE	= 4;
-	
-	public FieldNode()
-	{
-		
-	}
 	
 	public boolean isVisibilityValid()
 	{
@@ -107,7 +101,7 @@ public class FieldNode extends DeclarationNode
 		{
 			builder.append(getStaticText()).append(' ');
 		}
-		if (isConst())
+		if (isConstant())
 		{
 			builder.append(getConstText()).append(' ');
 		}
@@ -152,6 +146,24 @@ public class FieldNode extends DeclarationNode
 		return generateVariableUseOutput();
 	}
 	
+	/**
+	 * Decode the given statement into a FieldNode instance, if
+	 * possible. If it is not possible, this method returns null.
+	 * <br>
+	 * Example inputs include:<br>
+	 * <ul>
+	 * 	<li>public static constant int uuid</li>
+	 * 	<li>private Person p</li>
+	 * 	<li>private String name</li>
+	 * </ul>
+	 * 
+	 * @param parent The parent node of the statement.
+	 * @param statement The statement to try to decode into a
+	 * 		FieldNode instance.
+	 * @param location The location of the statement in the source code.
+	 * @return The generated node, if it was possible to translated it
+	 * 		into a FieldNode.
+	 */
 	public static FieldNode decodeStatement(TreeNode parentNode, final String statement, Location location)
 	{
 		FieldNode n = new FieldNode()
@@ -204,7 +216,6 @@ public class FieldNode extends DeclarationNode
 		};
 		
 		n.iterateWords(statement, Patterns.IDENTIFIER_BOUNDARIES);
-		
 		
 		if (n.getType() == null)
 		{

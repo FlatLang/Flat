@@ -237,7 +237,7 @@ public class ClassNode extends DeclarationNode
 		{
 			builder.append(getStaticText()).append(' ');
 		}
-		if (isConst())
+		if (isConstant())
 		{
 			builder.append(getConstText()).append(' ');
 		}
@@ -307,7 +307,7 @@ public class ClassNode extends DeclarationNode
 		{
 			SyntaxMessage.error("Static classes are not implemented in C yet.", this);
 		}
-		if (isConst())
+		if (isConstant())
 		{
 			SyntaxMessage.error("Const classes are not implemented in C yet.", this);
 		}

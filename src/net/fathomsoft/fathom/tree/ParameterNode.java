@@ -135,7 +135,7 @@ public class ParameterNode extends LocalVariableNode
 		LocalVariableNode node = LocalVariableNode.decodeStatement(parent, statement, location);
 		
 		ParameterNode n = new ParameterNode();
-		n.clone(node);
+		node.clone(n);
 		
 		return n;
 	}
