@@ -30,74 +30,154 @@ import net.fathomsoft.fathom.util.SyntaxUtils;
  */
 public class VariableNode extends ModifierNode
 {
-	private boolean	constantVal, external;
+	private boolean				constantVal, external;
 	
-	private int		arrayDimensions;
+	private int					arrayDimensions;
 	
-	private String	type;
+	private String				type;
 	
-	private static final String	NULL_TEXT = "0";
+	private static final String	NULL_TEXT	= "0";
 	
+	/**
+	 * 
+	 * 
+	 * @return
+	 */
 	public boolean isExternal()
 	{
 		return external;
 	}
 	
+	/**
+	 * 
+	 * 
+	 * @param external
+	 */
 	public void setExternal(boolean external)
 	{
 		this.external = external;
 	}
 	
+	/**
+	 * 
+	 * 
+	 * @return
+	 */
 	public boolean isPrimitive()
 	{
 		return isPrimitiveType() && !isArray();
 	}
 	
+	/**
+	 * 
+	 * 
+	 * @return
+	 */
 	public boolean isPrimitiveType()
 	{
 		return SyntaxUtils.isPrimitiveType(getType());
 	}
 	
+	/**
+	 * 
+	 * 
+	 * @return
+	 */
 	public boolean isConstant()
 	{
 		return constantVal;
 	}
 	
+	/**
+	 * 
+	 * 
+	 * @return
+	 */
 	public String getConstText()
 	{
 		return "const";
 	}
 	
+	/**
+	 * 
+	 * 
+	 * @param constVal
+	 */
 	public void setConstant(boolean constVal)
 	{
 		this.constantVal = constVal;
 	}
 	
+	/**
+	 * Get whether or not the variable is an array. A variable is an
+	 * array if it has an array dimension of 1 or greater.
+	 * 
+	 * @return Whether or not the variable is an array.
+	 */
 	public boolean isArray()
 	{
-		return arrayDimensions > 0;
+		return getArrayDimensions() > 0;
 	}
 	
+	/**
+	 * Get the amount of dimensions that the array has, if any. For an
+	 * example of what a array declarations and dimensions look like
+	 * {@link #setArrayDimensions(int)}
+	 * 
+	 * @return The amount of dimensions that the array has, if any.
+	 */
 	public int getArrayDimensions()
 	{
 		return arrayDimensions;
 	}
 	
+	/**
+	 * The text that represents an array in the C language.
+	 * 
+	 * @return The text that represents an array in the C language.
+	 */
 	public String getArrayText()
 	{
 		return "*";
 	}
 	
+	/**
+	 * Set the amount of dimensions that the array has, if any.<br>
+	 * <br>
+	 * For example:
+	 * <blockquote><pre>
+	 * int array[][][];</pre></blockquote>
+	 * In the previous example, the variable "array" has three dimensions.
+	 * 
+	 * @param arrayDimensions The amount of dimensions that the array has,
+	 * 		if any.
+	 */
 	public void setArrayDimensions(int arrayDimensions)
 	{
 		this.arrayDimensions = arrayDimensions;
 	}
 	
+	/**
+	 * Get the type that the variable is. For an example of what a
+	 * variable type looks like, see {@link #setType(String)}
+	 * 
+	 * @return The type that the variable is.
+	 */
 	public String getType()
 	{
 		return type;
 	}
 	
+	/**
+	 * Set the type that this variable is.<br>
+	 * <br>
+	 * For example:
+	 * <blockquote><pre>
+	 * private static int index;</pre></blockquote>
+	 * The type of the variable above is "int"
+	 * 
+	 * @param type The type that this variable is.
+	 */
 	public void setType(String type)
 	{
 		if (type != null && type.equals("long"))
@@ -108,11 +188,37 @@ public class VariableNode extends ModifierNode
 		this.type = type;
 	}
 	
+	/**
+	 * Set a specified attribute to true.<br>
+	 * <br>
+	 * For example:
+	 * <blockquote><pre>
+	 * private static int index;</pre></blockquote>
+	 * <u><code>private</code></u> sets the visibility of the declaration
+	 * to private. <u><code>static</code></u> sets the variable as static.
+	 * 
+	 * @param attribute The attribute to set true.
+	 */
 	public void setAttribute(String attribute)
 	{
 		setAttribute(attribute, -1);
 	}
 	
+	/**
+	 * Set a specified attribute to true.<br>
+	 * <br>
+	 * For example:
+	 * <blockquote><pre>
+	 * private static int index;</pre></blockquote>
+	 * <u><code>private</code></u> is the first attribute (index: 0) that
+	 * sets the visibility of the declaration to private.
+	 * <u><code>static</code></u> is the second attribute (index: 1) that
+	 * sets the variable as static.
+	 * 
+	 * @param attribute The attribute to set true.
+	 * @param argNum The index of the attribute in the order that it
+	 * 		came in.
+	 */
 	public void setAttribute(String attribute, int argNum)
 	{
 		if (attribute.equals("const"))
@@ -121,6 +227,11 @@ public class VariableNode extends ModifierNode
 		}
 	}
 	
+	/**
+	 * Get the text that represents the java 'null' in the C language.
+	 * 
+	 * @return
+	 */
 	public static String getNullText()
 	{
 		return NULL_TEXT;
@@ -155,25 +266,39 @@ public class VariableNode extends ModifierNode
 		return builder.toString();
 	}
 	
+	/**
+	 * Generate the representation of when the variable is being used, in
+	 * action, rather than being declared.<br>
+	 * <br>
+	 * For example:<br>
+	 * <blockquote><pre>
+	 * Person p;
+	 * p.getName();</pre></blockquote>
+	 * The first line shows the declaration of the Variable. The second
+	 * line demonstrates a "variable use" for the "p" variable.
+	 * Essentially, the "variable use" output is exactly what it says,
+	 * what the variable looks like when it is being used to do something.
+	 * 
+	 * @return What the variable looks like when it is being used to do
+	 * 		something.
+	 */
 	public String generateVariableUseOutput()
 	{
 		StringBuilder builder = new StringBuilder();
-		
-		String visibility = "";
 		
 		if (this instanceof FieldNode)
 		{
 			FieldNode field = (FieldNode)this;
 			
-			visibility = MethodNode.getObjectReferenceIdentifier() + "->";
+			builder.append(MethodNode.getObjectReferenceIdentifier()).append("->");
 			
 			if (field.getVisibility() == FieldNode.PRIVATE)
 			{
-				visibility += "prv->";
+				builder.append("prv->");
 			}
 		}
 		
-		builder.append(visibility).append(getName());
+		builder.append(getName());
 		
 		return builder.toString();
 	}
