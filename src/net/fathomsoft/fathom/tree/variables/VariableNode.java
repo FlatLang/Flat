@@ -79,9 +79,10 @@ public class VariableNode extends ModifierNode
 	}
 	
 	/**
+	 * Get whether or not the variable's value is constant. To
+	 * see more detail, look at {@link #setConstant(boolean)}.
 	 * 
-	 * 
-	 * @return
+	 * @return Whether or not the variable's value is constant.
 	 */
 	public boolean isConstant()
 	{
@@ -89,19 +90,25 @@ public class VariableNode extends ModifierNode
 	}
 	
 	/**
+	 * Get the C equivalent of the 'constant' keyword.
 	 * 
-	 * 
-	 * @return
+	 * @return The C equivalent of the 'constant' keyword.
 	 */
-	public String getConstText()
+	public String getConstantText()
 	{
 		return "const";
 	}
 	
 	/**
+	 * Set whether or not the variable's value is constant.<br>
+	 * <br>
+	 * For example:
+	 * <blockquote><pre>
+	 * private constant int MAX_PEOPLE = 10;</pre></blockquote>
+	 * This variable is constant, as defined by the 'constant' keyword.
 	 * 
-	 * 
-	 * @param constVal
+	 * @param constVal Whether or not the variable's value
+	 * 		is constant.
 	 */
 	public void setConstant(boolean constVal)
 	{
@@ -247,7 +254,7 @@ public class VariableNode extends ModifierNode
 		
 		if (isConstant())
 		{
-			builder.append(getConstText()).append(' ');
+			builder.append(getConstantText()).append(' ');
 		}
 		
 		builder.append(getType());
@@ -322,7 +329,7 @@ public class VariableNode extends ModifierNode
 		
 		if (isConstant())
 		{
-			builder.append(getConstText()).append(' ');
+			builder.append(getConstantText()).append(' ');
 		}
 		
 		builder.append(getType());
