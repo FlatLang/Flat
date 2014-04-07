@@ -254,7 +254,7 @@ public class DestructorNode extends MethodNode
 		
 		if (isConstant())
 		{
-			builder.append(getConstText()).append(' ');
+			builder.append(getConstantText()).append(' ');
 		}
 		
 		builder.append(getType());

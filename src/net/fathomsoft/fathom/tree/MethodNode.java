@@ -123,7 +123,7 @@ public class MethodNode extends DeclarationNode
 		}
 		if (isConstant())
 		{
-			builder.append(getConstText()).append(' ');
+			builder.append(getConstantText()).append(' ');
 		}
 		
 		builder.append(getType());
@@ -301,7 +301,7 @@ public class MethodNode extends DeclarationNode
 		
 		if (isConstant())
 		{
-			builder.append(getConstText()).append(' ');
+			builder.append(getConstantText()).append(' ');
 		}
 		
 		builder.append(getType());

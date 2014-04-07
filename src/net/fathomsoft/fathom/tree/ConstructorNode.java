@@ -283,7 +283,7 @@ public class ConstructorNode extends MethodNode
 		
 		if (isConstant())
 		{
-			builder.append(getConstText()).append(' ');
+			builder.append(getConstantText()).append(' ');
 		}
 		
 		builder.append(getType()).append('*');

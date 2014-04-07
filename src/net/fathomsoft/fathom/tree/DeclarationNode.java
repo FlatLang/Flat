@@ -237,7 +237,7 @@ public class DeclarationNode extends VariableNode
 		}
 		if (isConstant())
 		{
-			builder.append(getConstText()).append(' ');
+			builder.append(getConstantText()).append(' ');
 		}
 		
 		builder.append(getType()).append(' ');
