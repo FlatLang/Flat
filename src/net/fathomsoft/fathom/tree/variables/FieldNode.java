@@ -34,11 +34,20 @@ import net.fathomsoft.fathom.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:12:04 PM
+ * @version	v0.2 Apr 7, 2014 at 7:46:26 PM
  */
 public class FieldNode extends DeclarationNode
 {
+	/**
+	 * Declares that a variable can be viewed from anywhere, but not
+	 * modified.
+	 */
 	public static final int	VISIBLE	= 4;
 	
+	/**
+	 * @see net.fathomsoft.fathom.tree.DeclarationNode#isVisibilityValid()
+	 */
+	@Override
 	public boolean isVisibilityValid()
 	{
 		int visibility = getVisibility();
@@ -46,6 +55,10 @@ public class FieldNode extends DeclarationNode
 		return super.isVisibilityValid() || visibility == VISIBLE;
 	}
 	
+	/**
+	 * @see net.fathomsoft.fathom.tree.DeclarationNode#getVisibilityText()
+	 */
+	@Override
 	public String getVisibilityText()
 	{
 		int visibility = getVisibility();
@@ -58,6 +71,10 @@ public class FieldNode extends DeclarationNode
 		return super.getVisibilityText();
 	}
 	
+	/**
+	 * @see net.fathomsoft.fathom.tree.DeclarationNode#setAttribute(java.lang.String, int)
+	 */
+	@Override
 	public void setAttribute(String attribute, int argNum)
 	{
 		super.setAttribute(attribute, argNum);
@@ -164,7 +181,7 @@ public class FieldNode extends DeclarationNode
 	 * @return The generated node, if it was possible to translated it
 	 * 		into a FieldNode.
 	 */
-	public static FieldNode decodeStatement(TreeNode parentNode, final String statement, Location location)
+	public static FieldNode decodeStatement(TreeNode parent, final String statement, Location location)
 	{
 		FieldNode n = new FieldNode()
 		{

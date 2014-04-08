@@ -1,3 +1,20 @@
+/**
+ * The Fathom Programming Language. Write Unbelievable Code.
+ *  Copyright (C) 2014  Braden Steffaniak <BradenSteffaniak@gmail.com>
+ *
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
 package net.fathomsoft.fathom.tree.exceptionhandling;
 
 import net.fathomsoft.fathom.tree.TreeNode;
@@ -12,6 +29,7 @@ import net.fathomsoft.fathom.util.Regex;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Mar 22, 2014 at 4:02:21 PM
+ * @version	v0.2 Apr 7, 2014 at 7:58:42 PM
  */
 public class FinallyNode extends ExceptionHandlingNode
 {

@@ -23,10 +23,8 @@ import java.util.ArrayList;
  * Class that emulates the actions of a Stack.
  * 
  * @author	Braden Steffaniak
- * @since	Jun 7, 2013 at 9:03:38 PM
- * @since	v0.1
- * @version	Jan 9, 2014 at 3:00:00 PM
- * @version	v0.1
+ * @since	v0.1 Jun 7, 2013 at 9:03:38 PM
+ * @version	v0.1 Jan 9, 2014 at 3:00:00 PM
  */
 public class Stack<E>
 {
@@ -159,6 +157,7 @@ public class Stack<E>
 	 * 
 	 * @return  A String representation of this Stack instance.
 	 */
+	@Override
 	public String toString()
 	{
 		StringBuilder builder = new StringBuilder();

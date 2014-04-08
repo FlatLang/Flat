@@ -1,11 +1,25 @@
+/**
+ * The Fathom Programming Language. Write Unbelievable Code.
+ *  Copyright (C) 2014  Braden Steffaniak <BradenSteffaniak@gmail.com>
+ *
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
 package net.fathomsoft.fathom.tree.exceptionhandling;
 
 import net.fathomsoft.fathom.error.SyntaxMessage;
 import net.fathomsoft.fathom.tree.IdentifierNode;
-import net.fathomsoft.fathom.tree.InstantiationNode;
-import net.fathomsoft.fathom.tree.ScopeNode;
 import net.fathomsoft.fathom.tree.TreeNode;
-import net.fathomsoft.fathom.tree.variables.LocalVariableNode;
 import net.fathomsoft.fathom.util.Bounds;
 import net.fathomsoft.fathom.util.Location;
 import net.fathomsoft.fathom.util.Patterns;
@@ -18,18 +32,21 @@ import net.fathomsoft.fathom.util.Regex;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Mar 22, 2014 at 11:02:52 PM
+ * @version	v0.2 Apr 7, 2014 at 7:57:36 PM
  */
 public class ThrowNode extends ExceptionHandlingNode
 {
+	/**
+	 * Get the ExceptionNode that contains the information about the type
+	 * of exception that was thrown.
+	 * 
+	 * @return The ExceptionNode instance that contains the information
+	 * 		about the exception type.
+	 */
 	public ExceptionNode getException()
 	{
 		return (ExceptionNode)getChild(1);
 	}
-	
-//	public ExceptionNode getExceptionInstance()
-//	{
-//		return (ExceptionNode)getChild(1);
-//	}
 	
 	/**
 	 * @see net.fathomsoft.fathom.tree.TreeNode#addChild(TreeNode)

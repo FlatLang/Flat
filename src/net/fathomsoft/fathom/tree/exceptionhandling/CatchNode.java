@@ -15,14 +15,25 @@ import net.fathomsoft.fathom.util.Regex;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Mar 22, 2014 at 4:01:44 PM
+ * @version	v0.2 Apr 7, 2014 at 8:23:51 PM
  */
 public class CatchNode extends ExceptionHandlingNode
 {
+	/**
+	 * Get the instance of the Exception variable that is being caught.
+	 * 
+	 * @return The Exception variable instance that is being caught.
+	 */
 	public LocalVariableNode getExceptionInstance()
 	{
 		return (LocalVariableNode)getChild(1);
 	}
 	
+	/**
+	 * Get the ExceptionNode that is being caught by this node.
+	 * 
+	 * @return The ExceptionNode instance.
+	 */
 	public ExceptionNode getException()
 	{
 		return (ExceptionNode)getChild(2);
@@ -97,7 +108,13 @@ public class CatchNode extends ExceptionHandlingNode
 		return null;
 	}
 	
-	private static TryNode getCurrentTry(TreeNode parent, CatchNode current)
+	/**
+	 * Get the TryNode that this CatchNode is referring to.
+	 * 
+	 * @param parent The parent node of this CatchNode.
+	 * @return The TryNode instance that this CatchNode is referring to.
+	 */
+	private TryNode getCurrentTry(TreeNode parent)
 	{
 		if (parent.containsScope())
 		{
@@ -168,7 +185,7 @@ public class CatchNode extends ExceptionHandlingNode
 					{
 						n.addChild(exception);
 						
-						getCurrentTry(parent, n).addExceptionCode(exception.getID());
+						n.getCurrentTry(parent).addExceptionCode(exception.getID());
 						
 						return n;
 					}

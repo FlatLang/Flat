@@ -23,10 +23,13 @@ import net.fathomsoft.fathom.tree.TreeNode;
 import net.fathomsoft.fathom.util.SyntaxUtils;
 
 /**
- * 
+ * ModifierNode extension that represents the declaration of a variable
+ * node type. Harnesses the needed information of each variable, such as
+ * whether or not it is constant, external, or an array, and its type.
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:02:42 PM
+ * @version	v0.2 Apr 7, 2014 at 7:40:28 PM
  */
 public class VariableNode extends ModifierNode
 {
@@ -39,9 +42,10 @@ public class VariableNode extends ModifierNode
 	private static final String	NULL_TEXT	= "0";
 	
 	/**
+	 * Get whether or not the variable is external. For more information
+	 * on external variables, see {@link #setExternal(boolean)}.
 	 * 
-	 * 
-	 * @return
+	 * @return Whether or not the variable is external.
 	 */
 	public boolean isExternal()
 	{
@@ -49,9 +53,30 @@ public class VariableNode extends ModifierNode
 	}
 	
 	/**
+	 * Set whether or not the variable is external. A variable is external
+	 * if it is referenced from a language outside of Fathom. For example,
+	 * a variable from the C language. Furthermore, a variable is external
+	 * if it begins with an externally imported C file's name.<br>
+	 * <br>
+	 * For example:
+	 * <blockquote><pre>
+	 * import "externalFile.h";
 	 * 
+	 * ...
 	 * 
-	 * @param external
+	 * public static void main(String args[])
+	 * {
+	 *	// This is the external variable declaration.
+	 * 	externalFile.externalType varName;
+	 * 	
+	 * 	// This is the external variable assignment.
+	 * 	varName = externalFile.variableInstance;
+	 * }</pre></blockquote>
+	 * In this example, 'externalFile' is the C header file that is
+	 * imported. 'variableInstance' is the name of a variable that
+	 * is contained within the imported header file.<br>
+	 * 
+	 * @param external Whether or not the variable will be external.
 	 */
 	public void setExternal(boolean external)
 	{
@@ -59,9 +84,14 @@ public class VariableNode extends ModifierNode
 	}
 	
 	/**
+	 * Get whether a variable is primitive or not. A variable is primitive
+	 * if it has a primitive type AND is NOT an array. Arrays are NOT a
+	 * primitive type.<br>
+	 * <br>
+	 * For the list of primitive values, see
+	 * {@link net.fathomsoft.fathom.util.SyntaxUtils#isPrimitiveType(String)}.
 	 * 
-	 * 
-	 * @return
+	 * @return Whether a variable is primitive or not.
 	 */
 	public boolean isPrimitive()
 	{
@@ -69,9 +99,12 @@ public class VariableNode extends ModifierNode
 	}
 	
 	/**
+	 * Get whether a variable's type is a primitive type or not.<br>
+	 * <br>
+	 * For the list of primitive values, see
+	 * {@link net.fathomsoft.fathom.util.SyntaxUtils#isPrimitiveType(String)}
 	 * 
-	 * 
-	 * @return
+	 * @return Whether a variable's type is a primitive type or not.
 	 */
 	public boolean isPrimitiveType()
 	{
@@ -237,7 +270,7 @@ public class VariableNode extends ModifierNode
 	/**
 	 * Get the text that represents the java 'null' in the C language.
 	 * 
-	 * @return
+	 * @return The text that represents the java 'null' in the C language.
 	 */
 	public static String getNullText()
 	{

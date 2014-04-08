@@ -11,9 +11,13 @@ import net.fathomsoft.fathom.util.Location;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Mar 21, 2014 at 10:50:26 PM
+ * @version	v0.2 Apr 7, 2014 at 8:08:51 PM
  */
 public class ExceptionHandlingNode extends TreeNode
 {
+	/**
+	 * Instantiate and initialize default values.
+	 */
 	public ExceptionHandlingNode()
 	{
 		ScopeNode scopeNode = new ScopeNode();
@@ -21,6 +25,10 @@ public class ExceptionHandlingNode extends TreeNode
 		addChild(scopeNode);
 	}
 	
+	/**
+	 * @see net.fathomsoft.fathom.tree.TreeNode#getScopeNode()
+	 */
+	@Override
 	public ScopeNode getScopeNode()
 	{
 		return (ScopeNode)getChild(0);

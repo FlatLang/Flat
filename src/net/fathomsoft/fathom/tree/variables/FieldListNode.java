@@ -23,13 +23,17 @@ import net.fathomsoft.fathom.tree.DeclarationNode;
 import net.fathomsoft.fathom.tree.TreeNode;
 
 /**
- * 
+ * TreeNode extension that contains all of the FieldNodes for a ClassNode.
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 10:00:50 PM
+ * @version	v0.2 Apr 7, 2014 at 7:50:32 PM
  */
 public class FieldListNode extends TreeNode
 {
+	/**
+	 * Instantiate and initialize default data.
+	 */
 	public FieldListNode()
 	{
 		PrivateFieldListNode privateFields = new PrivateFieldListNode();
@@ -39,11 +43,23 @@ public class FieldListNode extends TreeNode
 		addChild(publicFields);
 	}
 	
+	/**
+	 * Get the PrivateFieldListNode that contains all of the private
+	 * FieldNodes for its parent ClassNode.
+	 * 
+	 * @return The PrivateFieldListNode instance.
+	 */
 	public PrivateFieldListNode getPrivateFieldListNode()
 	{
 		return (PrivateFieldListNode)getChild(0);
 	}
 	
+	/**
+	 * Get the PublicFieldListNode that contains all of the public
+	 * FieldNodes for its parent ClassNode.
+	 * 
+	 * @return The PublicFieldListNode instance.
+	 */
 	public PublicFieldListNode getPublicFieldListNode()
 	{
 		return (PublicFieldListNode)getChild(1);

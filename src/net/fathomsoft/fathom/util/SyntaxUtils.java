@@ -18,12 +18,9 @@
 package net.fathomsoft.fathom.util;
 
 import net.fathomsoft.fathom.Fathom;
-import net.fathomsoft.fathom.tree.IdentifierNode;
-import net.fathomsoft.fathom.tree.LiteralNode;
 import net.fathomsoft.fathom.tree.MethodNode;
 import net.fathomsoft.fathom.tree.ParameterListNode;
 import net.fathomsoft.fathom.tree.ParameterNode;
-import net.fathomsoft.fathom.tree.TreeNode;
 import net.fathomsoft.fathom.tree.variables.FieldNode;
 
 /**
@@ -31,9 +28,6 @@ import net.fathomsoft.fathom.tree.variables.FieldNode;
  * 
  * @author	Braden Steffaniak
  * @since	Mar 15, 2014 at 7:55:00 PM
- * @since	v0.1
- * @version	Mar 15, 2014 at 7:55:00 PM
- * @version	v0.1
  */
 public class SyntaxUtils
 {
@@ -52,6 +46,22 @@ public class SyntaxUtils
 		return value.charAt(0) == '\'' && value.charAt(value.length() - 1) == '\'';
 	}
 	
+	/**
+	 * Get whether or not the given String value represents a String
+	 * literal. A String literal consists of a collection of characters
+	 * surrounded by double parenthesis.<br>
+	 * <br>
+	 * Possible inputs:
+	 * <ul>
+	 * 	<li>"This is + asdf-523$#$%#4 a String input"</li>
+	 * 	<li>"123123123"</li>
+	 * 	<li>"More string inputs"</li>
+	 * 	<li>"\"Fake quotes around it.\""</li>
+	 * </ul>
+	 * 
+	 * @param value The String of text to validate.
+	 * @return Whether or not the String represents a String literal.
+	 */
 	public static boolean isStringLiteral(String value)
 	{
 		if (value.length() < 2)
@@ -62,6 +72,20 @@ public class SyntaxUtils
 		return value.charAt(0) == '"' && value.charAt(value.length() - 1) == '"';
 	}
 	
+	/**
+	 * Get whether or not the given String value represents a number.<br>
+	 * <br>
+	 * Possible inputs:
+	 * <ul>
+	 * 	<li>-1231412</li>
+	 * 	<li>1231412</li>
+	 * 	<li>4141.12312</li>
+	 * 	<li>-4141.12312</li>
+	 * </ul>
+	 * 
+	 * @param value The String of text to validate.
+	 * @return Whether or not the String represents a number.
+	 */
 	public static boolean isNumber(String value)
 	{        
 	    boolean seenDot     = false;
@@ -76,6 +100,7 @@ public class SyntaxUtils
 	        if (c >= '0' && c <= '9')
 	        {
 	            seenDigit = true;
+	            
 	            continue;
 	        }
 	        
@@ -121,16 +146,62 @@ public class SyntaxUtils
 	    }
 	}
 	
+	/**
+	 * Get whether the specified type is primitive.<br>
+	 * <br>
+	 * Primitive types include:
+	 * <ul>
+	 * 	<li>int</li>
+	 * 	<li>char</li>
+	 * 	<li>long_long (aka long)</li>
+	 * 	<li>boolean</li>
+	 * 	<li>short</li>
+	 * 	<li>float</li>
+	 * 	<li>double</li>
+	 * 	<li>void (lightly)</li>
+	 * </ul>
+	 * 
+	 * @param type The type to check.
+	 * @return Whether or not the type is primitive.
+	 */
 	public static boolean isPrimitiveType(String type)
 	{
-		return type.equals("int") || type.equals("char") || type.equals("long_long") || type.equals("bool") || type.equals("short") || type.equals("float") || type.equals("double") || type.equals("void");
+		return type.equals("int") || type.equals("char") || type.equals("long_long") || type.equals("boolean") || type.equals("short") || type.equals("float") || type.equals("double") || type.equals("void");
 	}
 	
+	/**
+	 * Get whether or not the given String is a valid variable assignment.
+	 * Assignments contain an identifier or array access on the left
+	 * hand side of the assignment, and anything that returns a value on
+	 * the right hand side.<br>
+	 * <br>
+	 * For example:
+	 * <blockqoute><pre>
+	 * variable_NAME1 = (getSize() + 5) / array[index]</pre></blockquote>
+	 * 
+	 * @param statement The String of text to validate.
+	 * @return Whether or not the given String is a valid variable
+	 * 		assignment.
+	 */
 	public static boolean isVariableAssignment(String statement)
 	{
 		return Regex.indexOf(statement, Patterns.PRE_EQUALS_SIGN) == 0;
 	}
 	
+	/**
+	 * Get whether or not the given String is a valid identifier.
+	 * Identifiers can contain characters of the following types:
+	 * <ul>
+	 * 	<li>A-Z</li>
+	 * 	<li>a-z</li>
+	 * 	<li>0-9</li>
+	 * 	<li>The '_' character (underscore)</li>
+	 * </ul>
+	 * It should also be noted that numbers cannot start an identifier.
+	 * 
+	 * @param method The String of text to validate.
+	 * @return Whether or not the given String is a valid identifier.
+	 */
 	public static boolean isValidIdentifier(String value)
 	{
 		Bounds bounds = Regex.boundsOf(value, Patterns.IDENTIFIER);
@@ -138,6 +209,16 @@ public class SyntaxUtils
 		return bounds.getStart() == 0 && bounds.getEnd() == value.length();
 	}
 	
+	/**
+	 * Get whether or not the given statement is an array access.<br>
+	 * <br>
+	 * For example:
+	 * <blockquote><pre>
+	 * variableName[index]</pre></blockquote>
+	 * 
+	 * @param statement The statement to test.
+	 * @return Whether or not the given statement is an array access.
+	 */
 	public static boolean isValidArrayAccess(String value)
 	{
 		Bounds bounds = Regex.boundsOf(value, Patterns.ARRAY_ACCESS);
@@ -145,6 +226,16 @@ public class SyntaxUtils
 		return bounds.getStart() == 0 && bounds.getEnd() == value.length();
 	}
 	
+	/**
+	 * Get whether or not the given statement is a method call.<br>
+	 * <br>
+	 * For example:
+	 * <blockquote><pre>
+	 * containingInstance.methodName(arguments, arguments, ..., arguments)</pre></blockquote>
+	 * 
+	 * @param statement The statement to test.
+	 * @return Whether or not the given statement is a method call.
+	 */
 	public static boolean isMethodCall(String statement)
 	{
 		Bounds bounds = Regex.boundsOf(statement, Patterns.PRE_METHOD_CALL);
@@ -152,6 +243,18 @@ public class SyntaxUtils
 		return bounds.getStart() == 0;
 	}
 	
+	/**
+	 * Get whether or not the given statement is an array
+	 * initialization.<br>
+	 * <br>
+	 * For example:
+	 * <blockquote><pre>
+	 * new dataType[size]...[size]</pre></blockquote>
+	 * 
+	 * @param statement The statement to test.
+	 * @return Whether or not the given statement is an array
+	 * 		initialization.
+	 */
 	public static boolean isArrayInitialization(String statement)
 	{
 		Bounds bounds = Regex.boundsOf(statement, Patterns.ARRAY_INIT);
@@ -159,6 +262,24 @@ public class SyntaxUtils
 		return bounds.getStart() == 0 && bounds.getEnd() == statement.length();
 	}
 	
+	/**
+	 * Get the number of dimensions that the given array has, if any.<br>
+	 * <br>
+	 * For example:
+	 * <blockquote><pre>
+	 * int array[][][] = new int[5][6][7];</pre></blockquote>
+	 * The above array declaration has three dimensions. In essence, the
+	 * number of dimensions is the amount of brackets that the array
+	 * variable declaration contains.<br>
+	 * <br>
+	 * However, you need to pass only one part of the above code example.
+	 * Either pass the declaration, or the instantiation, or else the
+	 * number of dimensions will be counted twice.
+	 * 
+	 * @param statement The statement to find the number of dimensions
+	 * 		from.
+	 * @return The number of dimensions that the given array has, if any.
+	 */
 	public static int getArrayDimensions(String statement)
 	{
 		int num   = 0;
@@ -176,6 +297,18 @@ public class SyntaxUtils
 		return num;
 	}
 	
+	/**
+	 * Get whether or not the given MethodNode is a valid main method.
+	 * The main method has the method header as the following:
+	 * <blockquote><pre>
+	 * public static void main(String args[])
+	 * {
+	 * 	...
+	 * }</pre></blockquote>
+	 * 
+	 * @param method The MethodNode instance to validate.
+	 * @return Whether or not the given MethodNode is a valid main method.
+	 */
 	public static boolean isMainMethod(MethodNode method)
 	{
 		if ((method.getName().equals("main") || method.getName().equals("__" + Fathom.LANGUAGE_NAME.toUpperCase() + "__main")) && method.isStatic() && method.getType().equals("void") && method.getVisibility() == FieldNode.PUBLIC)
@@ -196,6 +329,14 @@ public class SyntaxUtils
 		return false;
 	}
 	
+	/**
+	 * Get whether or not the given statement is an instantiation. For
+	 * more details on what an instantiation consists of see
+	 * {@link net.fathomsoft.fathom.tree.InstantiationNode#decodeStatement(TreeNode, String, Location)}.
+	 * 
+	 * @param statement The statement to test.
+	 * @return Whether or not the given statement is an instantiation.
+	 */
 	public static boolean isInstantiation(String statement)
 	{
 		return Regex.indexOf(statement, Patterns.PRE_INSTANTIATION) == 0;

@@ -24,6 +24,7 @@ import net.fathomsoft.fathom.tree.TreeNode;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 9, 2014 at 4:19:57 PM
+ * @version	v0.2 Apr 7, 2014 at 7:42:17 PM
  */
 public class VariableListNode extends TreeNode
 {

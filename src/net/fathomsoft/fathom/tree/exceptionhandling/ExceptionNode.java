@@ -1,19 +1,47 @@
+/**
+ * The Fathom Programming Language. Write Unbelievable Code.
+ *  Copyright (C) 2014  Braden Steffaniak <BradenSteffaniak@gmail.com>
+ *
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
 package net.fathomsoft.fathom.tree.exceptionhandling;
 
 import java.util.HashMap;
 
 import net.fathomsoft.fathom.tree.TreeNode;
-import net.fathomsoft.fathom.tree.variables.LocalVariableNode;
+import net.fathomsoft.fathom.util.Location;
 
 /**
+ * TreeNode extension that represents an Exception instance that is to
+ * be thrown within a ThrowNode statement.
+ * <blockquote><pre>
+ * // Instantiate a new Exception type.
+ * ExceptionName varName = new ExceptionName(... optional arguments ...);
  * 
+ * // Throw the generated Exception type.
+ * throw varName;</pre></blockquote>
+ * For more information on what
+ * it looks like to throw an ExceptionNode, see
+ * {@link ThrowNode#decodeStatement(TreeNode, String, Location)}.
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Apr 6, 2014 at 8:44:35 PM
+ * @version	v0.2 Apr 7, 2014 at 8:07:35 PM
  */
 public class ExceptionNode extends TreeNode
 {
-	private int	id;
+	private int			id;
 	
 	private static int	exceptionId	= 1;
 	
@@ -40,6 +68,16 @@ public class ExceptionNode extends TreeNode
 		return id;
 	}
 	
+	/**
+	 * Set the type of Exception that is being generated. If the type
+	 * is unique to anything created prior to this, the id of the
+	 * generated ExceptionNode will also be unique. If the Exception
+	 * type has already been used before, it will use the already
+	 * generated id that belongs to the ExceptionNode.
+	 * 
+	 * @param type The name (type) of the Exception that is being
+	 * 		generated.
+	 */
 	public void setType(String type)
 	{
 		if (ids.containsKey(type))

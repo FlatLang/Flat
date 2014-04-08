@@ -156,12 +156,8 @@ public class SyntaxTree
 	
 	/**
 	 * Search for the main method, if one exists, in the compiling
-	 * program. The main method has the method header as the following:
-	 * <blockquote><pre>
-	 * public static void main(String args[])
-	 * {
-	 * 	...
-	 * }</pre></blockquote>
+	 * program. For more details on what the main method looks like, see
+	 * {@link net.fathomsoft.fathom.util.SyntaxUtils#isMainMethod(MethodNode)}.
 	 * 
 	 * @return The MethodNode representation of the main method.
 	 */

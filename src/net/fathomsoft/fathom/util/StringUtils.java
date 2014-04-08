@@ -22,10 +22,8 @@ package net.fathomsoft.fathom.util;
  * a String.
  * 
  * @author	Braden Steffaniak
- * @since	Mar 13, 2014 at 9:38:42 PM
- * @since	v0.1
- * @version	Mar 13, 2014 at 9:38:42 PM
- * @version	v0.1
+ * @since	v0.1 Mar 13, 2014 at 9:38:42 PM
+ * @version	v0.2 Mar 13, 2014 at 9:38:42 PM
  */
 public class StringUtils
 {
