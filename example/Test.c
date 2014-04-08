@@ -80,6 +80,7 @@ static void __FATHOM__main(Test* __o__, ExceptionData* __FATHOM__exception_data,
 		}
 		CATCH (2)
 		{
+			SomethingStupid* e;
 		}
 		FINALLY
 		{
@@ -127,12 +128,14 @@ static void __FATHOM__main(Test* __o__, ExceptionData* __FATHOM__exception_data,
 		{
 			__static__IO->println(__static__IO, __FATHOM__exception_data, new_String(__FATHOM__exception_data, "Caught even num exception"));
 		}
+		NotEvenNumberException* e;
 	}
 	CATCH (3)
 	{
 		{
 			__static__IO->println(__static__IO, __FATHOM__exception_data, new_String(__FATHOM__exception_data, "You cant divide by zero idiot."));
 		}
+		DivideByZeroException* e;
 	}
 	FINALLY
 	{
