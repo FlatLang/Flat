@@ -27,15 +27,44 @@ import net.fathomsoft.fathom.tree.variables.FieldNode;
  * Class used for getting information about the Syntax of Fathom.
  * 
  * @author	Braden Steffaniak
- * @since	Mar 15, 2014 at 7:55:00 PM
+ * @since	v0.1 Mar 15, 2014 at 7:55:00 PM
+ * @version	v0.2 Apr 8, 2014 at 6:08:56 PM
  */
 public class SyntaxUtils
 {
+	/**
+	 * Get whether or not the given String value represents one of the
+	 * following:
+	 * <ul>
+	 * 	<li>{@link #isStringLiteral(String) String literal}</li>
+	 * 	<li>{@link #isCharLiteral(String) Character literal}</li>
+	 * 	<li>{@link #isNumber(String) Number literal}</li>
+	 * </ul>
+	 * 
+	 * @param value The String of text to validate.
+	 * @return Whether or not the given String value represents a literal.
+	 */
 	public static boolean isLiteral(String value)
 	{
 		return isCharLiteral(value) || isStringLiteral(value) || isNumber(value);
 	}
 	
+	/**
+	 * Get whether or not the given String value represents a character
+	 * literal. A character literal consists of a a single character
+	 * surrounded by single quotes.<br>
+	 * <br>
+	 * Possible inputs:
+	 * <ul>
+	 * 	<li>'a'</li>
+	 * 	<li>'2'</li>
+	 * 	<li>'%'</li>
+	 * 	<li>'/'</li>
+	 * </ul>
+	 * 
+	 * @param value The String of text to validate.
+	 * @return Whether or not the String represents a character literal.
+	 */
 	public static boolean isCharLiteral(String value)
 	{
 		if (value.length() != 3)
@@ -49,7 +78,7 @@ public class SyntaxUtils
 	/**
 	 * Get whether or not the given String value represents a String
 	 * literal. A String literal consists of a collection of characters
-	 * surrounded by double parenthesis.<br>
+	 * surrounded by double quotes.<br>
 	 * <br>
 	 * Possible inputs:
 	 * <ul>
@@ -199,7 +228,7 @@ public class SyntaxUtils
 	 * </ul>
 	 * It should also be noted that numbers cannot start an identifier.
 	 * 
-	 * @param method The String of text to validate.
+	 * @param value The String of text to validate.
 	 * @return Whether or not the given String is a valid identifier.
 	 */
 	public static boolean isValidIdentifier(String value)
@@ -216,7 +245,7 @@ public class SyntaxUtils
 	 * <blockquote><pre>
 	 * variableName[index]</pre></blockquote>
 	 * 
-	 * @param statement The statement to test.
+	 * @param value The statement to test.
 	 * @return Whether or not the given statement is an array access.
 	 */
 	public static boolean isValidArrayAccess(String value)

@@ -520,7 +520,7 @@ public class SyntaxTree
 	 */
 	private TreeNode getNextStatement()
 	{
-		if ((statementEndIndex = Regex.indexOfExcludeTextAndParenthesis(source, statementStartIndex, STATEMENT_END_CHARS)) >= 0 && !statementStartMatcher.hitEnd())
+		if ((statementEndIndex = Regex.indexOfExcludeTextAndParentheses(source, statementStartIndex, STATEMENT_END_CHARS)) >= 0 && !statementStartMatcher.hitEnd())
 		{
 			statementEndIndex = nextNonWhitespaceIndexOnTheLeft(statementEndIndex - 1) + 1;
 			

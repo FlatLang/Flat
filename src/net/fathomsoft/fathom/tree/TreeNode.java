@@ -21,7 +21,6 @@ import java.util.ArrayList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import net.fathomsoft.fathom.error.SyntaxMessage;
 import net.fathomsoft.fathom.tree.exceptionhandling.ExceptionHandlingNode;
 import net.fathomsoft.fathom.tree.exceptionhandling.TryNode;
 import net.fathomsoft.fathom.tree.variables.FieldNode;
@@ -33,7 +32,6 @@ import net.fathomsoft.fathom.tree.variables.VariableNode;
 import net.fathomsoft.fathom.util.Bounds;
 import net.fathomsoft.fathom.util.Location;
 import net.fathomsoft.fathom.util.Patterns;
-import net.fathomsoft.fathom.util.Regex;
 import net.fathomsoft.fathom.util.SyntaxUtils;
 
 /**
@@ -44,10 +42,8 @@ import net.fathomsoft.fathom.util.SyntaxUtils;
  * children at the start.
  * 
  * @author	Braden Steffaniak
- * @since	Jan 5, 2014 at 9:00:11 PM
- * @since	v0.1
- * @version	Feb 24, 2014 at 4:25:30 PM
- * @version	v0.1
+ * @since	v0.1 Jan 5, 2014 at 9:00:11 PM
+ * @version	v0.2 Apr 8, 2014 at 6:36:14 PM
  */
 public abstract class TreeNode
 {
@@ -175,6 +171,15 @@ public abstract class TreeNode
 		return node;
 	}
 	
+	/**
+	 * Get whether or not the given Object is an instance of the given
+	 * Class.
+	 * 
+	 * @param o The Object to test the ancestry of.
+	 * @param clazz The Class to check the Object against.
+	 * @return Whether or not the given Object is an instance of the given
+	 * 		Class.
+	 */
 	public boolean instanceOf(Object o, Class<?> clazz)
 	{
 		Class<?> current = o.getClass();
@@ -405,6 +410,14 @@ public abstract class TreeNode
 		iterateWords(statement, Patterns.WORD_BOUNDARIES);
 	}
 	
+	/**
+	 * Iterate through each of the groupings of the given Pattern on the
+	 * statement. In the default case, it will search for the boundaries
+	 * of words and iterate through all of them.
+	 * 
+	 * @param statement The statement to search through.
+	 * @param pattern The Pattern to search with.
+	 */
 	public void iterateWords(String statement, Pattern pattern)
 	{
 		// Pattern used to find word boundaries.
@@ -674,6 +687,14 @@ public abstract class TreeNode
 //		
 //	}
 	
+	/**
+	 * Try to find an existing node from the given statement. This method
+	 * searches through fields and local variables.
+	 * 
+	 * @param node The parent TreeNode to use as our context.
+	 * @param statement The statement to check for an existing node from.
+	 * @return The IdentifierNode that is found, if any.
+	 */
 	public static IdentifierNode getExistingNode(TreeNode node, String statement)
 	{
 		if (SyntaxUtils.isLiteral(statement))
@@ -792,6 +813,19 @@ public abstract class TreeNode
 		return null;
 	}
 	
+	/**
+	 * Get whether or not the String contains the given 'before' char
+	 * before the 'after' char is reached. The search is started at index
+	 * 0 of the 'text' String input.
+	 * 
+	 * @param text The text to search.
+	 * @param before The char that should appear before the 'after'
+	 * 		variable.
+	 * @param after The char that should appear after the 'before'
+	 * 		variable.
+	 * @return The index in which the 'before' char appeared at. If it did
+	 * 		not appear before the 'after' char then -1 is returned.
+	 */
 	private static int containsBefore(String text, char before, char after)
 	{
 		for (int i = 0; i < text.length(); i++)
@@ -810,6 +844,10 @@ public abstract class TreeNode
 		
 		return -1;
 	}
-
+	
+	/**
+	 * Return a new TreeNode containing a copy of the values of the
+	 * specified node, including clones of the children.
+	 */
 	public abstract TreeNode clone();
 }

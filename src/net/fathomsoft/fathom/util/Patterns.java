@@ -25,7 +25,7 @@ import java.util.regex.Pattern;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Apr 5, 2014 at 3:53:04 PM
- * @version	v0.2 Apr 5, 2014 at 3:53:04 PM
+ * @version	v0.2 Apr 8, 2014 at 6:44:27 PM
  */
 public class Patterns
 {
@@ -284,72 +284,114 @@ public class Patterns
 	public static final Pattern FUNCTION_PROTOTYPE		= Pattern.compile("(?<=([\\n;} \\t\\r]\\s?))(([a-zA-Z0-9_\\*\\&]+\\s*)+(\\([\\s\\S]*?\\);))");
 
 	/**
-	 * Pattern that searches for 
+	 * Pattern that searches for a pair of brackets that contain
+	 * something other than whitespace.<br>
+	 * <br>
+	 * For example:<br>
+	 * "array = new int[423]" would return "[423]"
 	 */
 	public static final Pattern ARRAY_BRACKETS			= Pattern.compile("(?<=\\s{0,9})\\[\\s*\\S+\\s*\\]");
 
 	/**
-	 * Pattern that searches for 
+	 * Pattern that searches for the data within a pair of brackets.<br>
+	 * <br>
+	 * For example:<br>
+	 * "array = new int[423]" would return "423"
 	 */
 	public static final Pattern ARRAY_BRACKETS_DATA		= Pattern.compile("(?<=\\s{0,9}\\[\\s{0,9})\\S+(?=\\s*\\])");
 
 	/**
-	 * Pattern that searches for 
+	 * Pattern that searches for an empty pair of brackets. An empty
+	 * pair of brackets can only contain whitespace between the brackets.
 	 */
 	public static final Pattern EMPTY_ARRAY_BRACKETS	= Pattern.compile("\\s*\\[\\s*\\]");
 
 	/**
-	 * Pattern that searches for 
+	 * Pattern that searches for the name of a method.<br>
+	 * <br>
+	 * For example:<br>
+	 * "public int calculateArea()" would return "calculateArea"
 	 */
 	public static final Pattern METHOD_NAME     	    = Pattern.compile("\\S+(?=\\s*\\()");
 
 	/**
-	 * Pattern that searches for 
+	 * Pattern that searches for a single line comment.<br>
+	 * <br>
+	 * For example:<br>
+	 * <blockquote><pre>
+	 * // This is a single line comment, and this whole line would be returned.</pre></blockquote>
 	 */
 	public static final Pattern SINGLE_LINE_COMMENT	    = Pattern.compile("//.*");
 
 	/**
-	 * Pattern that searches for 
+	 * Pattern that searches for a multi-line comment.<br>
+	 * <br>
+	 * For example:<br>
+	 * <blockquote><pre>
+	 * /* This is a multi-line comment...
+	 *  * This is a continuation on the next line...
+	 *  * until the end of the comment... <code>*</code>/</pre></blockquote>
 	 */
 	public static final Pattern MULTI_LINE_COMMENT	    = Pattern.compile("/\\*(.|[\r\n])*?\\*/");
 
 	/**
-	 * Pattern that searches for 
+	 * Pattern that searches for any of the following:
+	 * <ul>
+	 * 	<li>{@link #SINGLE_LINE_COMMENT Single-line Comment}</li>
+	 * 	<li>{@link #MULTI_LINE_COMMENT Multi-line Comment}</li>
+	 * </ul>
 	 */
 	public static final Pattern COMMENT					= Pattern.compile("(//.*)|(/\\*(.|[\r\n])*?\\*/)");
 
 	/**
-	 * Pattern that searches for 
+	 * Pattern that searches for the word "try"
 	 */
 	public static final Pattern TRY						= Pattern.compile("try");
 
 	/**
-	 * Pattern that searches for 
+	 * Pattern that searches for a catch declaration and returns the
+	 * first part of it.<br>
+	 * <br>
+	 * For example:<br>
+	 * <blockquote><pre>catch (ExceptionName varName)</pre></blockquote>
+	 * returns "catch"
 	 */
 	public static final Pattern PRE_CATCH				= Pattern.compile("catch(?=\\s*\\()");
 
 	/**
-	 * Pattern that searches for 
+	 * Pattern that searches for a catch declaration and returns the
+	 * last part of it.<br>
+	 * <br>
+	 * For example:<br>
+	 * <blockquote><pre>catch (ExceptionName varName)</pre></blockquote>
+	 * returns "ExceptionNode varName"
 	 */
 	public static final Pattern POST_CATCH				= Pattern.compile("(?<=catch\\s{0,9}\\(\\s{0,9})([\\S\\s]+)(?=\\s*\\))");
 
 	/**
-	 * Pattern that searches for 
+	 * Pattern that searches for the word "finally"
 	 */
 	public static final Pattern FINALLY					= Pattern.compile("finally");
 
 	/**
-	 * Pattern that searches for 
+	 * Pattern that searches for the word "throw" followed by a whitespace
+	 * character.
 	 */
 	public static final Pattern PRE_THROW				= Pattern.compile("throw(?=\\s)");
 
 	/**
-	 * Pattern that searches for 
+	 * Pattern that searches for a throw declaration and returns the
+	 * last part of it.<br>
+	 * <br>
+	 * For example:<br>
+	 * <blockquote><pre>throw new ExceptionName()</pre></blockquote>
+	 * returns "new ExceptionName()"
 	 */
 	public static final Pattern POST_THROW				= Pattern.compile("(?<=throw\\s{1,9})((\\S+\\s*)+)");
 
 	/**
-	 * Pattern that searches for 
+	 * Pattern that searches for the word "class" followed by a whitespace
+	 * character.
 	 */
-	public static final Pattern PRE_CLASS				= Pattern.compile("class\\s+");
+	public static final Pattern PRE_CLASS				= Pattern.compile("class\\s");
 }
