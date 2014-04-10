@@ -204,7 +204,7 @@ public class StringUtils
 		{
 			output.insert(index, "\\");
 			
-			index = output.indexOf(" ", index + 1);
+			index = output.indexOf(" ", index + 2);
 		}
 		
 		return output.toString();
