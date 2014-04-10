@@ -61,7 +61,7 @@
 	//DECLARE_METHODS(_NAME_, _METHOD_PREFIX_)
 
 #define CLASS_DEF(_NAME_, _BODY_)\
-	typedef struct _NAME_ _NAME_;\
+	/*typedef struct _NAME_ _NAME_;*/\
 	struct _NAME_\
 	{\
 		_BODY_\
