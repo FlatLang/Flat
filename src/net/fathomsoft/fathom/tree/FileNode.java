@@ -118,11 +118,11 @@ public class FileNode extends IdentifierNode
 		builder.append("#ifndef ").append(definitionName).append('\n');
 		builder.append("#define ").append(definitionName).append("\n\n");
 		
+		builder.append(generateDummyTypes()).append('\n');
+		
 		ImportListNode imports = getImportListNode();
 		
 		builder.append(imports.generateCHeaderOutput());
-		
-		builder.append(generateDummyTypes()).append('\n');
 		
 		for (int i = 0; i < getChildren().size(); i++)
 		{
@@ -213,15 +213,15 @@ public class FileNode extends IdentifierNode
 	{
 		StringBuilder builder = new StringBuilder();
 		
-		ImportListNode imports = getImportListNode();
-		
-		for (int i = 0; i < imports.getChildren().size(); i++)
+		for (int i = 0; i < getChildren().size(); i++)
 		{
-			ImportNode child = (ImportNode)imports.getChild(i);
+			TreeNode child = getChild(i);
 			
-			if (!child.isExternal())
+			if (child instanceof ClassNode)
 			{
-				builder.append("typedef struct ").append(child.getImportLocation()).append(' ').append(child.getImportLocation()).append(';').append('\n');
+				ClassNode clazz = (ClassNode)child;
+				
+				builder.append("typedef struct ").append(clazz.getName()).append(' ').append(clazz.getName()).append(';').append('\n');
 			}
 		}
 		
