@@ -184,4 +184,29 @@ public class StringUtils
 		
 		return -1;
 	}
+	
+	/**
+	 * Escape the spaces in an input String.<br>
+	 * <br>
+	 * For example: An input of "this is a test" would return
+	 * "this\ is\ a\ test"
+	 * 
+	 * @param input The String to escape the spaces from.
+	 * @return The input String with escaped spaces.
+	 */
+	public static String escapeSpaces(String input)
+	{
+		StringBuilder output = new StringBuilder(input);
+		
+		int           index  = output.indexOf(" ");
+		
+		while (index >= 0)
+		{
+			output.insert(index, "\\");
+			
+			index = output.indexOf(" ", index + 1);
+		}
+		
+		return output.toString();
+	}
 }
