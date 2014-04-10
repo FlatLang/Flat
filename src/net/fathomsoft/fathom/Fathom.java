@@ -57,6 +57,8 @@ public class Fathom
 	
 	private List<File>			lingeringFiles;
 	
+	private static int			os;
+	
 	public static final boolean	ANDROID_DEBUG = false;
 	
 	public static final boolean	DEBUG         = true;
@@ -71,7 +73,32 @@ public class Fathom
 	public static final long	C_ARGS        = 0x10000000l;
 	public static final long	RUNTIME       = 0x100000000l;
 	
+	public static final int		WINDOWS       = 1;
+	public static final int		MACOSX        = 2;
+	public static final int		LINUX         = 3;
+	
 	public static final String	LANGUAGE_NAME = "Fathom";
+	
+	/**
+	 * Find out which operating system the compiler is running on.
+	 */
+	static
+	{
+		String osName = System.getProperty("os.name").toLowerCase();
+		
+		if (osName.startsWith("win"))
+		{
+			os = WINDOWS;
+		}
+		else if (osName.startsWith("mac"))
+		{
+			os = MACOSX;
+		}
+		else if (osName.startsWith("lin"))
+		{
+			os = LINUX;
+		}
+	}
 	
 	/**
 	 * Method called whenever the compiler is invoked. Supplies the
@@ -115,7 +142,14 @@ public class Fathom
 		
 		String directory = getWorkingDirectoryPath() + "example/";
 		
-		enableFlag(TCC);
+		if (os == WINDOWS)
+		{
+			enableFlag(TCC);
+		}
+		else
+		{
+			enableFlag(CLANG);
+		}
 		
 		if (DEBUG)
 		{
@@ -128,12 +162,11 @@ public class Fathom
 				directory + "ArrayList.fat",
 				directory + "Math.fat",
 				directory + "Time.fat",
-				"-o", directory + "bin/Executable",
+				"-o", directory + "bin/Executable.exe",
 				"-run",
 				"-dir", '"' + directory + "../include\"",
 				"-csource",
 				"-v",
-				"-clang",
 				"-cargs",
 				"-keepc"
 			};
@@ -433,6 +466,18 @@ public class Fathom
 		});
 	}
 	
+	private String formatPath(String path)
+	{
+		if (os == WINDOWS)
+		{
+			return '"' + path + '"';
+		}
+		else
+		{
+			return StringUtils.escapeSpaces(path);
+		}
+	}
+	
 	/**
 	 * Get the directory that holds the Fathom library.
 	 * 
@@ -440,7 +485,7 @@ public class Fathom
 	 */
 	private String getLibraryDir()
 	{
-		return StringUtils.escapeSpaces(workingDir + "/../lib");
+		return formatPath(workingDir + "/../lib");
 	}
 	
 	/**
@@ -593,7 +638,7 @@ public class Fathom
 						args[i] = args[i].substring(1, args[i].length() - 1);
 					}
 					
-					includeDirectories.add(StringUtils.escapeSpaces(args[i]));
+					includeDirectories.add(formatPath(args[i]));
 				}
 			}
 		}
