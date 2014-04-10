@@ -13,7 +13,7 @@ public class IO
 	
 	public static void print(String text)
 	{
-		char cText[] = text.toCharArray();
+		constant char cText[] = text.toCharArray();
 		
 		stdio.printf(cText);
 	}
