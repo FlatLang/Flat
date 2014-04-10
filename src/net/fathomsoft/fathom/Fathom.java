@@ -466,6 +466,12 @@ public class Fathom
 		});
 	}
 	
+	/**
+	 * Format a path according to how the specified OS needs it.
+	 * 
+	 * @param path The path to format for the OS standards.
+	 * @return The formatted path.
+	 */
 	private String formatPath(String path)
 	{
 		if (os == WINDOWS)
