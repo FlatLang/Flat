@@ -58,7 +58,7 @@ static void __FATHOM__println(IO* __o__, ExceptionData* __FATHOM__exception_data
 
 static void __FATHOM__print(IO* __o__, ExceptionData* __FATHOM__exception_data, String* text)
 {
-char* cText;
+const char* cText;
 
 cText = text->toCharArray(text, __FATHOM__exception_data);
 printf(cText);

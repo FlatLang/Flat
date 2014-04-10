@@ -70,29 +70,14 @@ static void __FATHOM__main(Test* __o__, ExceptionData* __FATHOM__exception_data,
 	start = __static__Time->currentTimeMillis(__static__Time, __FATHOM__exception_data);
 	for (q = 99999999; q >= 0; --q)
 	{
-		TRY
-		{
-			__FATHOM__exception_data->addCode(__FATHOM__exception_data, __FATHOM__exception_data, 2);
-			
-			{
-				__static__Math->sin(__static__Math, __FATHOM__exception_data, q);
-			}
-		}
-		CATCH (2)
-		{
-			SomethingStupid* e;
-		}
-		FINALLY
-		{
-		}
-		END_TRY;
+		__static__Math->sin(__static__Math, __FATHOM__exception_data, q);
 	}
 	end = __static__Time->currentTimeMillis(__static__Time, __FATHOM__exception_data);
 	__static__IO->printl(__static__IO, __FATHOM__exception_data, end - start);
 	TRY
 	{
-		__FATHOM__exception_data->addCode(__FATHOM__exception_data, __FATHOM__exception_data, 4);
 		__FATHOM__exception_data->addCode(__FATHOM__exception_data, __FATHOM__exception_data, 3);
+		__FATHOM__exception_data->addCode(__FATHOM__exception_data, __FATHOM__exception_data, 2);
 		
 		{
 			int den;
@@ -101,7 +86,7 @@ static void __FATHOM__main(Test* __o__, ExceptionData* __FATHOM__exception_data,
 			den = 1;
 			if (den == 0)
 			{
-				THROW(3);
+				THROW(2);
 			}
 			num = 23 / den;
 			TRY
@@ -123,25 +108,23 @@ static void __FATHOM__main(Test* __o__, ExceptionData* __FATHOM__exception_data,
 			END_TRY;
 		}
 	}
-	CATCH (4)
+	CATCH (3)
 	{
 		{
 			__static__IO->println(__static__IO, __FATHOM__exception_data, new_String(__FATHOM__exception_data, "Caught even num exception"));
 		}
-		NotEvenNumberException* e;
 	}
-	CATCH (3)
+	CATCH (2)
 	{
 		{
 			__static__IO->println(__static__IO, __FATHOM__exception_data, new_String(__FATHOM__exception_data, "You cant divide by zero idiot."));
 		}
-		DivideByZeroException* e;
 	}
 	FINALLY
 	{
 	}
 	END_TRY;
-	__static__IO->print(__static__IO, __FATHOM__exception_data, new_String(__FATHOM__exception_data, "Done\n"));
+	__static__IO->print(__static__IO, __FATHOM__exception_data, new_String(__FATHOM__exception_data, "Done!\n"));
 	__static__IO->waitForEnter(__static__IO, __FATHOM__exception_data);
 }
 
@@ -149,7 +132,7 @@ static int __FATHOM__divide(Test* __o__, ExceptionData* __FATHOM__exception_data
 {
 	if (denominator == 0)
 	{
-		THROW(3);
+		THROW(2);
 	}
 	return numerator / denominator;
 }
@@ -158,7 +141,7 @@ static int __FATHOM__getEvenNumber(Test* __o__, ExceptionData* __FATHOM__excepti
 {
 	if (num % 2 != 0)
 	{
-		THROW(4);
+		THROW(3);
 	}
 	return num;
 }

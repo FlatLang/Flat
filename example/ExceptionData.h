@@ -1,14 +1,13 @@
 #ifndef FILE_ExceptionData_FATHOM
 #define FILE_ExceptionData_FATHOM
 
+typedef struct ExceptionData ExceptionData;
+
 #include <CClass.h>
 #include <ExceptionHandler.h>
 #include "ExceptionData.h"
 #include <setjmp.h>
 #include "ArrayList.h"
-
-typedef struct ExceptionData ExceptionData;
-typedef struct ArrayList ArrayList;
 
 CLASS
 (

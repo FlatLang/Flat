@@ -1,6 +1,8 @@
 #ifndef FILE_IO_FATHOM
 #define FILE_IO_FATHOM
 
+typedef struct IO IO;
+
 #include <CClass.h>
 #include <ExceptionHandler.h>
 #include "ExceptionData.h"
@@ -8,9 +10,6 @@
 #include <stdlib.h>
 #include "String.h"
 #include <Fathom.h>
-
-typedef struct ExceptionData ExceptionData;
-typedef struct String String;
 
 CLASS
 (

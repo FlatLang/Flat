@@ -1,13 +1,13 @@
 #ifndef FILE_ArrayList_FATHOM
 #define FILE_ArrayList_FATHOM
 
+typedef struct ArrayList ArrayList;
+
 #include <CClass.h>
 #include <ExceptionHandler.h>
 #include "ExceptionData.h"
 #include <stdlib.h>
 #include <Fathom.h>
-
-typedef struct ExceptionData ExceptionData;
 
 CLASS
 (

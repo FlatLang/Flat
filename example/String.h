@@ -1,11 +1,11 @@
 #ifndef FILE_String_FATHOM
 #define FILE_String_FATHOM
 
+typedef struct String String;
+
 #include <CClass.h>
 #include <ExceptionHandler.h>
 #include "ExceptionData.h"
-
-typedef struct ExceptionData ExceptionData;
 
 CLASS
 (

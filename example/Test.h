@@ -1,6 +1,8 @@
 #ifndef FILE_Test_FATHOM
 #define FILE_Test_FATHOM
 
+typedef struct Test Test;
+
 #include <CClass.h>
 #include <ExceptionHandler.h>
 #include "ExceptionData.h"
@@ -9,13 +11,6 @@
 #include "ArrayList.h"
 #include "Math.h"
 #include "Time.h"
-
-typedef struct ExceptionData ExceptionData;
-typedef struct IO IO;
-typedef struct String String;
-typedef struct ArrayList ArrayList;
-typedef struct Math Math;
-typedef struct Time Time;
 
 CLASS
 (

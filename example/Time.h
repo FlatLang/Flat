@@ -1,12 +1,12 @@
 #ifndef FILE_Time_FATHOM
 #define FILE_Time_FATHOM
 
+typedef struct Time Time;
+
 #include <CClass.h>
 #include <ExceptionHandler.h>
 #include "ExceptionData.h"
 #include <Fathom.h>
-
-typedef struct ExceptionData ExceptionData;
 
 CLASS
 (

@@ -1,12 +1,12 @@
 #ifndef FILE_Math_FATHOM
 #define FILE_Math_FATHOM
 
+typedef struct Math Math;
+
 #include <CClass.h>
 #include <ExceptionHandler.h>
 #include "ExceptionData.h"
 #include <math.h>
-
-typedef struct ExceptionData ExceptionData;
 
 CLASS
 (
