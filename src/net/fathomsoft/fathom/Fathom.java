@@ -32,6 +32,7 @@ import net.fathomsoft.fathom.tree.TreeNode;
 import net.fathomsoft.fathom.util.Command;
 import net.fathomsoft.fathom.util.CommandListener;
 import net.fathomsoft.fathom.util.FileUtils;
+import net.fathomsoft.fathom.util.StringUtils;
 
 /**
  * File used for the compilation process.
@@ -60,14 +61,15 @@ public class Fathom
 	
 	public static final boolean	DEBUG         = true;
 	
-	public static final long	CSOURCE       = 0x1;
-	public static final long	VERBOSE       = 0x10;
-	public static final long	GCC           = 0x100;
-	public static final long	TCC           = 0x1000;
-	public static final long	DRY_RUN       = 0x10000;
-	public static final long	KEEP_C        = 0x100000;
-	public static final long	C_ARGS        = 0x1000000;
-	public static final long	RUNTIME       = 0x10000000;
+	public static final long	CSOURCE       = 0x1l;
+	public static final long	VERBOSE       = 0x10l;
+	public static final long	GCC           = 0x100l;
+	public static final long	TCC           = 0x1000l;
+	public static final long	CLANG         = 0x10000l;
+	public static final long	DRY_RUN       = 0x100000l;
+	public static final long	KEEP_C        = 0x1000000l;
+	public static final long	C_ARGS        = 0x10000000l;
+	public static final long	RUNTIME       = 0x100000000l;
 	
 	public static final String	LANGUAGE_NAME = "Fathom";
 	
@@ -126,12 +128,12 @@ public class Fathom
 				directory + "ArrayList.fat",
 				directory + "Math.fat",
 				directory + "Time.fat",
-				"-o", directory + "bin/Executable.exe",
+				"-o", directory + "bin/Executable",
 				"-run",
 				"-dir", '"' + directory + "../include\"",
 				"-csource",
 				"-v",
-				"-tcc",
+				"-clang",
 				"-cargs",
 				"-keepc"
 			};
@@ -344,6 +346,10 @@ public class Fathom
 		{
 			cmd.append("compiler/tcc/tcc.exe ");
 		}
+		else if (isFlagEnabled(CLANG))
+		{
+			cmd.append("clang -Wno-all ");
+		}
 		
 		for (int i = 0; i < includeDirectories.size(); i++)
 		{
@@ -352,7 +358,9 @@ public class Fathom
 			cmd.append("-I").append(dir).append(' ');
 		}
 		
-		cmd.append("-L").append('"').append(workingDir.getAbsolutePath()).append("/../lib").append('"').append(" -lFathom ");
+		String libDir = getLibraryDir();
+		
+		cmd.append("-L").append(libDir).append(" -lFathom ");
 		
 		for (File sourceFile : cSourceFiles)
 		{
@@ -386,7 +394,11 @@ public class Fathom
 			@Override
 			public void resultReceived(int result)
 			{
-				if (result != 0)
+				if (result == 0)
+				{
+					log("Compilation succeeded.");
+				}
+				else
 				{
 					System.err.println("Compilation failed.");
 				}
@@ -419,6 +431,16 @@ public class Fathom
 				}
 			}
 		});
+	}
+	
+	/**
+	 * Get the directory that holds the Fathom library.
+	 * 
+	 * @return The location of the directory that holds the library.
+	 */
+	private String getLibraryDir()
+	{
+		return StringUtils.escapeSpaces(workingDir + "/../lib");
 	}
 	
 	/**
@@ -508,13 +530,22 @@ public class Fathom
 			else if (arg.equals("-gcc"))
 			{
 				disableFlag(TCC);
+				disableFlag(CLANG);
 				enableFlag(GCC);
 			}
 			// If the user wants to use the TCC c compiler.
 			else if (arg.equals("-tcc"))
 			{
 				disableFlag(GCC);
+				disableFlag(CLANG);
 				enableFlag(TCC);
+			}
+			// If the user wants to use the CLANG LLVM compiler.
+			else if (arg.equals("-clang"))
+			{
+				disableFlag(GCC);
+				disableFlag(TCC);
+				enableFlag(CLANG);
 			}
 			// If the user wants to perform a dry run of the compilation
 			// process.
@@ -557,7 +588,12 @@ public class Fathom
 				}
 				else if (expectingIncludeDirectory)
 				{
-					includeDirectories.add(args[i]);
+					if (args[i].startsWith("\""))
+					{
+						args[i] = args[i].substring(1, args[i].length() - 1);
+					}
+					
+					includeDirectories.add(StringUtils.escapeSpaces(args[i]));
 				}
 			}
 		}
