@@ -261,7 +261,7 @@ public class VariableNode extends ModifierNode
 	 */
 	public void setAttribute(String attribute, int argNum)
 	{
-		if (attribute.equals("const"))
+		if (attribute.equals("constant"))
 		{
 			setConstant(true);
 		}
