@@ -25,14 +25,14 @@ public class Test
 		
 		for (int q = 99999999; q >= 0; --q)
 		{
-			try
-			{
+			//try
+			//{
 				Math.sin(q);
-			}
-			catch (SomethingStupid e)
-			{
-			
-			}
+			//}
+			//catch (SomethingStupid e)
+			//{
+			//
+			//}
 		}
 		
 		long end = Time.currentTimeMillis();
@@ -67,7 +67,7 @@ public class Test
 			IO.println("You cant divide by zero idiot.");
 		}
 		
-		IO.print("Done\n");
+		IO.print("Done!\n");
 		IO.waitForEnter();
 	}
 	
