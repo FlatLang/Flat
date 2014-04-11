@@ -9,9 +9,9 @@ typedef struct String String;
 
 CLASS
 (
-String, 
-
-FUNC(char*, toCharArray, String* __o__, ExceptionData* __FATHOM__exception_data);
+	String, 
+	
+	FUNC(char*, toCharArray, String* __o__, ExceptionData* __FATHOM__exception_data);
 )
 
 String* new_String(ExceptionData* __FATHOM__exception_data, char* d);
