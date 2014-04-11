@@ -146,9 +146,13 @@ public class Fathom
 		{
 			enableFlag(TCC);
 		}
-		else
+		else if (os == MACOSX)
 		{
 			enableFlag(CLANG);
+		}
+		else if (os == LINUX)
+		{
+			enableFlag(GCC);
 		}
 		
 		if (DEBUG)
@@ -162,7 +166,7 @@ public class Fathom
 				directory + "ArrayList.fat",
 				directory + "Math.fat",
 				directory + "Time.fat",
-				"-o", directory + "bin/Executable.exe",
+				"-o", directory + "bin/Executable",
 				"-run",
 				"-dir", '"' + directory + "../include\"",
 				"-csource",
@@ -320,6 +324,9 @@ public class Fathom
 			
 				log(header);
 				log(source);
+				
+				headers.set(i, header);
+				sources.set(i, source);
 			}
 		}
 		
@@ -402,8 +409,11 @@ public class Fathom
 		
 		cmd.append("-o ").append('"').append(outputFile.getAbsolutePath()).append('"').append(' ');
 		
-		cmd.append("-O2");
-//		cmd.append("-s");
+		cmd.append("-O2 ");
+//		cmd.append("-s ");
+		
+		// Needed for linux compilation.
+		cmd.append("-lm ");
 		
 		if (isFlagEnabled(C_ARGS))
 		{
