@@ -136,7 +136,7 @@ public class SyntaxTree
 				parentNode.addChild(currentNode);
 			}
 			
-			if (/*!statementEndMatcher.hitEnd()*/statementEndIndex >= 0 && nextChar(statementEndIndex) == '{')
+			if (statementEndIndex >= 0 && nextChar(statementEndIndex) == '{')
 			{
 //				if (currentNode.containsScope())
 //				{
