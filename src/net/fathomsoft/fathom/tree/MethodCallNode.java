@@ -123,6 +123,22 @@ public class MethodCallNode extends IdentifierNode
 	}
 	
 	/**
+	 * Get the MethodNode instance that this MethodCallNode is calling.
+	 * 
+	 * @return The MethodNode instance that this MethodCallNode is
+	 * 		calling.
+	 */
+	public MethodNode getMethodNode()
+	{
+		if (isExternal())
+		{
+			return null;
+		}
+		
+		return null;
+	}
+	
+	/**
 	 * @see net.fathomsoft.fathom.tree.TreeNode#generateJavaSourceOutput()
 	 */
 	@Override
