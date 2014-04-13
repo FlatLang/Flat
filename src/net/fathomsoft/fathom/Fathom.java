@@ -45,8 +45,9 @@ import net.fathomsoft.fathom.util.StringUtils;
  */
 public class Fathom
 {
-	private long				flags;
+	private int					compiler;
 	
+	private long				flags;
 	private long				startTime, endTime;
 	
 	private File				outputFile, workingDir;
@@ -57,21 +58,22 @@ public class Fathom
 	
 	private List<File>			lingeringFiles;
 	
-	private static int			os;
-	
 	public static final boolean	ANDROID_DEBUG = false;
 	
 	public static final boolean	DEBUG         = true;
 	
+	private static final int	os;
+	
 	public static final long	CSOURCE       = 0x1l;
 	public static final long	VERBOSE       = 0x10l;
-	public static final long	GCC           = 0x100l;
-	public static final long	TCC           = 0x1000l;
-	public static final long	CLANG         = 0x10000l;
-	public static final long	DRY_RUN       = 0x100000l;
-	public static final long	KEEP_C        = 0x1000000l;
-	public static final long	C_ARGS        = 0x10000000l;
-	public static final long	RUNTIME       = 0x100000000l;
+	public static final long	DRY_RUN       = 0x100l;
+	public static final long	KEEP_C        = 0x1000l;
+	public static final long	C_ARGS        = 0x10000l;
+	public static final long	RUNTIME       = 0x100000l;
+	
+	public static final int		GCC           = 1;
+	public static final int		TCC           = 2;
+	public static final int		CLANG         = 3;
 	
 	public static final int		WINDOWS       = 1;
 	public static final int		MACOSX        = 2;
@@ -97,6 +99,10 @@ public class Fathom
 		else if (osName.startsWith("lin"))
 		{
 			os = LINUX;
+		}
+		else
+		{
+			os = 0;
 		}
 	}
 	
@@ -144,11 +150,11 @@ public class Fathom
 		
 		if (os == WINDOWS)
 		{
-			enableFlag(TCC);
+			compiler = TCC;
 		}
 		else
 		{
-			enableFlag(CLANG);
+			compiler = CLANG;
 		}
 		
 		if (DEBUG)
@@ -371,15 +377,15 @@ public class Fathom
 	{
 		StringBuilder cmd = new StringBuilder();
 		
-		if (isFlagEnabled(GCC))
+		if (compiler == GCC)
 		{
 			cmd.append("gcc ");//("compiler/gcc/bin/gcc.exe ");
 		}
-		else if (isFlagEnabled(TCC))
+		else if (compiler == TCC)
 		{
 			cmd.append("compiler/tcc/tcc.exe ");
 		}
-		else if (isFlagEnabled(CLANG))
+		else if (compiler == CLANG)
 		{
 			cmd.append("clang -Wno-all ");
 		}
@@ -580,23 +586,17 @@ public class Fathom
 			// If the user wants to use the GCC c compiler.
 			else if (arg.equals("-gcc"))
 			{
-				disableFlag(TCC);
-				disableFlag(CLANG);
-				enableFlag(GCC);
+				compiler = GCC;
 			}
 			// If the user wants to use the TCC c compiler.
 			else if (arg.equals("-tcc"))
 			{
-				disableFlag(GCC);
-				disableFlag(CLANG);
-				enableFlag(TCC);
+				compiler = TCC;
 			}
 			// If the user wants to use the CLANG LLVM compiler.
 			else if (arg.equals("-clang"))
 			{
-				disableFlag(GCC);
-				disableFlag(TCC);
-				enableFlag(CLANG);
+				compiler = CLANG;
 			}
 			// If the user wants to perform a dry run of the compilation
 			// process.
