@@ -27,12 +27,14 @@ import java.util.List;
 import net.fathomsoft.fathom.tree.ClassNode;
 import net.fathomsoft.fathom.tree.FileNode;
 import net.fathomsoft.fathom.tree.MethodNode;
+import net.fathomsoft.fathom.tree.ProgramNode;
 import net.fathomsoft.fathom.tree.SyntaxTree;
 import net.fathomsoft.fathom.tree.TreeNode;
 import net.fathomsoft.fathom.util.Command;
 import net.fathomsoft.fathom.util.CommandListener;
 import net.fathomsoft.fathom.util.FileUtils;
 import net.fathomsoft.fathom.util.StringUtils;
+import net.fathomsoft.fathom.util.SyntaxUtils;
 
 /**
  * File used for the compilation process.
@@ -51,6 +53,8 @@ public class Fathom
 	private long				startTime, endTime;
 	
 	private File				outputFile, workingDir;
+	
+	private SyntaxTree			tree;
 	
 	private ArrayList<String>	includeDirectories;
 	
@@ -189,151 +193,59 @@ public class Fathom
 				"This is free software, and you are welcome to redistribute it\n" +
 				"under certain conditions");//; type show c for details.");
 		
-		ArrayList<SyntaxTree> trees   = new ArrayList<SyntaxTree>();
-		ArrayList<String>     headers = new ArrayList<String>();
-		ArrayList<String>     sources = new ArrayList<String>();
-		
 		workingDir = new File(directory);
 		
-		for (File file : inputFiles)
+		// Try to create a Syntax Tree for the given file.
+		try
 		{
-			log("Generating syntax tree for the file '" + file.getName() + "'...");
+			tree = new SyntaxTree(inputFiles.toArray(new File[0]), flags);
 			
-			SyntaxTree tree = null;
+			tree.generateCOutput();
+		}
+		catch (IOException e1)
+		{
+			error("Could not generate the syntax tree for the file '");// + file.getName() + "'.");
 			
-			// Try to create a Syntax Tree for the given file.
-			try
-			{
-				tree = new SyntaxTree(file);
-				
-				trees.add(tree);
-			}
-			catch (IOException e1)
-			{
-				error("Could not generate the syntax tree for the file '" + file.getName() + "'.");
-				
-				e1.printStackTrace();
-				
-				completed();
-			}
+			e1.printStackTrace();
 			
-			log("Generating the output c header code from the input file '" + file.getName() + "'...");
-			String header = tree.getHeaderOutput();
-			
-			log("Generating the output c source code from the input file '" + file.getName() + "'...");
-			String source = tree.getSourceOutput();
-			
-			headers.add(header);
-			sources.add(source);
+			completed();
 		}
 		
-		for (int i = 0; i < trees.size(); i++)
+//		log("Generating the output c header code from the input file '" + file.getName() + "'...");
+//		String headers[] = tree.getHeaderOutput();
+//		
+//		log("Generating the output c source code from the input file '" + file.getName() + "'...");
+//		String sources[] = tree.getSourceOutput();
+		
+		insertMainMethod();
+		
+		long time = System.currentTimeMillis() - startTime;
+		
+		log("Fathom compile time: " + time + "ms");
+		
+		if (isFlagEnabled(CSOURCE))
 		{
-			SyntaxTree tree = trees.get(i);
-			
-			MethodNode mainMethod = tree.getMainMethod();
-			
-			if (mainMethod != null)
+			log("Formatting the output c output code...");
+			tree.formatCOutput();
+		}
+		
+		String headers[] = tree.getCHeaderOutput();
+		String sources[] = tree.getCSourceOutput();
+		
+		if (isFlagEnabled(CSOURCE))
+		{
+			for (int i = 0; i < headers.length; i++)
 			{
-				ClassNode classNode = (ClassNode)mainMethod.getAncestorOfType(ClassNode.class);
-				
-				String source = sources.get(i);
-
-				StringBuilder staticClassInit = new StringBuilder();
-				StringBuilder staticClassFree = new StringBuilder();
-				
-				for (SyntaxTree t : trees)
-				{
-					FileNode fileNode = (FileNode)t.getRoot();
-					
-					for (int j = 0; j < fileNode.getChildren().size(); j++)
-					{
-						TreeNode child = fileNode.getChild(j);
-						
-						if (child instanceof ClassNode)
-						{
-							ClassNode c = (ClassNode)child;
-							
-							if (c.containsStaticData())
-							{
-//								staticClassInit.append("SET_INSTANCE(").append(c.getName()).append(", __static__").append(c.getName()).append(')').append(';').append('\n');
-								staticClassInit.append("__static__").append(c.getName()).append(" = ").append("new_").append(c.getName()).append("(0);").append('\n');
-								staticClassFree.append("del_").append(c.getName()).append("(__static__").append(c.getName()).append(", 0);").append('\n');
-							}
-						}
-					}
-				}
-				
-				StringBuilder mainMethodText = new StringBuilder();
-				
-				mainMethodText.append('\n').append('\n');
-				mainMethodText.append("#include \"Fathom.h\"").append('\n');
-				mainMethodText.append("#include <stdio.h>").append('\n');
-				//mainMethodText.append("jmp_buf __FATHOM__jmp_buf;").append('\n');
-				mainMethodText.append('\n');
-				mainMethodText.append("int main(int argc, char** argvs)").append('\n');
-				mainMethodText.append("{").append('\n');
-				mainMethodText.append("String** args = (String**)malloc(argc * sizeof(String));").append('\n');
-				mainMethodText.append("int      i;").append('\n').append('\n');
-				mainMethodText.append("ExceptionData* __FATHOM__exception_data = 0;").append('\n');
-				mainMethodText.append(staticClassInit);
-				mainMethodText.append('\n');
-				mainMethodText.append("for (i = 0; i < argc; i++)").append('\n');
-				mainMethodText.append("{").append('\n');
-				mainMethodText.append("args[i] = new_String(0, argvs[i]);").append('\n');
-				mainMethodText.append("}").append('\n');
-				mainMethodText.append('\n');
-				mainMethodText.append("TRY").append('\n');
-				mainMethodText.append('{').append('\n');
-				mainMethodText.append("__static__").append(classNode.getName()).append("->main(__static__").append(classNode.getName()).append(", __FATHOM__exception_data, args);").append('\n');
-				mainMethodText.append('}').append('\n');
-				mainMethodText.append("CATCH (1)").append('\n');
-				mainMethodText.append('{').append('\n');
-				mainMethodText.append("printf(\"You broke it.\");").append('\n');
-				mainMethodText.append("__static__IO->waitForEnter(__static__IO, 0);").append('\n');
-				mainMethodText.append('}').append('\n');
-				mainMethodText.append("FINALLY").append('\n');
-				mainMethodText.append('{').append('\n');
-				mainMethodText.append('\n');
-				mainMethodText.append('}').append('\n');
-				mainMethodText.append("END_TRY;").append('\n');
-				mainMethodText.append(staticClassFree);
-				mainMethodText.append("free(args);").append('\n');
-				mainMethodText.append("return 0;").append('\n');
-				mainMethodText.append("}");
-				
-				String newSource = source + mainMethodText.toString();
-				
-				newSource = tree.formatText(newSource);
-				
-				sources.set(i, newSource);
-			}
-			
-			long time = System.currentTimeMillis() - startTime;
-			
-			log("Fathom compile time: " + time + "ms");
-
-			String header = headers.get(i);
-			String source = sources.get(i);
-			
-			if (isFlagEnabled(CSOURCE))
-			{
-				log("Formatting the output c header code...");
-				header = tree.formatText(header);
-				
-				log("Formatting the output c source code...");
-				source = tree.formatText(source);
-			
-				log(header);
-				log(source);
+				log(headers[i]);
+				log(sources[i]);
 			}
 		}
 		
 		for (int i = 0; i < inputFiles.size(); i++)
 		{
 			File   file   = inputFiles.get(i);
-			String header = headers.get(i);
-			String source = sources.get(i);
+			String header = headers[i];
+			String source = sources[i];
 			
 			String fileName = file.getName();
 			fileName        = fileName.substring(0, fileName.lastIndexOf('.'));
@@ -367,6 +279,97 @@ public class Fathom
 		else
 		{
 			completed();
+		}
+	}
+	
+	/**
+	 * Insert the main method into the correct file. Also set up the
+	 * initialization for the program within the main method.
+	 */
+	private void insertMainMethod()
+	{
+		MethodNode mainMethod = tree.getMainMethod();
+		FileNode   fileNode   = (FileNode)mainMethod.getAncestorOfType(FileNode.class);
+		
+		if (mainMethod != null)
+		{
+			ClassNode classNode = (ClassNode)mainMethod.getAncestorOfType(ClassNode.class);
+
+			StringBuilder staticClassInit = new StringBuilder();
+			StringBuilder staticClassFree = new StringBuilder();
+			
+			ProgramNode root = tree.getRoot();
+			
+			for (int i = 0; i < root.getChildren().size(); i++)
+			{
+				TreeNode child = root.getChild(i);
+				
+				if (child instanceof FileNode)
+				{
+					FileNode f = (FileNode)child;
+						
+					for (int j = 0; j < f.getChildren().size(); j++)
+					{
+						TreeNode child2 = f.getChild(j);
+						
+						if (child2 instanceof ClassNode)
+						{
+							ClassNode c = (ClassNode)child2;
+							
+							if (c.containsStaticData())
+							{
+//								staticClassInit.append("SET_INSTANCE(").append(c.getName()).append(", __static__").append(c.getName()).append(')').append(';').append('\n');
+								staticClassInit.append("__static__").append(c.getName()).append(" = ").append("new_").append(c.getName()).append("(0);").append('\n');
+								staticClassFree.append("del_").append(c.getName()).append("(__static__").append(c.getName()).append(", 0);").append('\n');
+							}
+						}
+					}
+				}
+			}
+			
+			StringBuilder mainMethodText = new StringBuilder();
+			
+			mainMethodText.append('\n').append('\n');
+			mainMethodText.append("#include \"Fathom.h\"").append('\n');
+			mainMethodText.append("#include <stdio.h>").append('\n');
+			//mainMethodText.append("jmp_buf __FATHOM__jmp_buf;").append('\n');
+			mainMethodText.append('\n');
+			mainMethodText.append("int main(int argc, char** argvs)").append('\n');
+			mainMethodText.append("{").append('\n');
+			mainMethodText.append("String** args = (String**)malloc(argc * sizeof(String));").append('\n');
+			mainMethodText.append("int      i;").append('\n').append('\n');
+			mainMethodText.append("ExceptionData* __FATHOM__exception_data = 0;").append('\n');
+			mainMethodText.append(staticClassInit);
+			mainMethodText.append('\n');
+			mainMethodText.append("for (i = 0; i < argc; i++)").append('\n');
+			mainMethodText.append("{").append('\n');
+			mainMethodText.append("args[i] = new_String(0, argvs[i]);").append('\n');
+			mainMethodText.append("}").append('\n');
+			mainMethodText.append('\n');
+			mainMethodText.append("TRY").append('\n');
+			mainMethodText.append('{').append('\n');
+			mainMethodText.append("__static__").append(classNode.getName()).append("->main(__static__").append(classNode.getName()).append(", __FATHOM__exception_data, args);").append('\n');
+			mainMethodText.append('}').append('\n');
+			mainMethodText.append("CATCH (1)").append('\n');
+			mainMethodText.append('{').append('\n');
+			mainMethodText.append("printf(\"You broke it.\");").append('\n');
+			mainMethodText.append("__static__IO->waitForEnter(__static__IO, 0);").append('\n');
+			mainMethodText.append('}').append('\n');
+			mainMethodText.append("FINALLY").append('\n');
+			mainMethodText.append('{').append('\n');
+			mainMethodText.append('\n');
+			mainMethodText.append('}').append('\n');
+			mainMethodText.append("END_TRY;").append('\n');
+			mainMethodText.append(staticClassFree);
+			mainMethodText.append("free(args);").append('\n');
+			mainMethodText.append("return 0;").append('\n');
+			mainMethodText.append("}");
+			
+			String newSource = fileNode.generateCSourceOutput() + mainMethodText.toString();
+			
+			newSource = SyntaxUtils.formatText(newSource);
+			
+			fileNode.setSource(newSource);
 		}
 	}
 	
@@ -507,7 +510,18 @@ public class Fathom
 	 */
 	private void log(String message)
 	{
-		if (isFlagEnabled(VERBOSE))
+		log(flags, message);
+	}
+	
+	/**
+	 * Output the log message from the compiler.
+	 * 
+	 * @param flags The flags that verify whether the compiler is verbose.
+	 * @param message The message describing what happened.
+	 */
+	public static void log(long flags, String message)
+	{
+		if (isFlagEnabled(flags, VERBOSE))
 		{
 			System.out.println(message);
 		}
@@ -518,7 +532,7 @@ public class Fathom
 	 * 
 	 * @param message The message describing the error.
 	 */
-	private static void error(String message)
+	public static void error(String message)
 	{
 		System.err.println(message);
 	}
@@ -684,6 +698,18 @@ public class Fathom
 	 * @return Whether or not the flag is enabled.
 	 */
 	private boolean isFlagEnabled(long flag)
+	{
+		return isFlagEnabled(flags, flag);
+	}
+	
+	/**
+	 * Check if the specific flag is enabled for the given set of flags.
+	 * 
+	 * @param The flags to verify the flag with.
+	 * @param flag The flag to check if is enabled.
+	 * @return Whether or not the flag is enabled.
+	 */
+	public static boolean isFlagEnabled(long flags, long flag)
 	{
 		return (flags & flag) != 0;
 	}
