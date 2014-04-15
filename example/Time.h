@@ -10,9 +10,9 @@ typedef struct Time Time;
 
 CLASS
 (
-Time, 
-
-FUNC(long_long, currentTimeMillis, Time* __o__, ExceptionData* __FATHOM__exception_data);
+	Time, 
+	
+	FUNC(long_long, currentTimeMillis, Time* __o__, ExceptionData* __FATHOM__exception_data);
 )
 
 Time* new_Time(ExceptionData* __FATHOM__exception_data);

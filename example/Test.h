@@ -14,15 +14,15 @@ typedef struct Test Test;
 
 CLASS
 (
-Test, 
-
-String* publicVariable;
-
-FUNC(void, main, Test* __o__, ExceptionData* __FATHOM__exception_data, String** args);
-FUNC(int, divide, Test* __o__, ExceptionData* __FATHOM__exception_data, int numerator, int denominator);
-FUNC(int, getEvenNumber, Test* __o__, ExceptionData* __FATHOM__exception_data, int num);
-FUNC(int, test, Test* __o__, ExceptionData* __FATHOM__exception_data);
-FUNC(int, test2, Test* __o__, ExceptionData* __FATHOM__exception_data);
+	Test, 
+	
+	String* publicVariable;
+	
+	FUNC(void, main, Test* __o__, ExceptionData* __FATHOM__exception_data, String** args);
+	FUNC(int, divide, Test* __o__, ExceptionData* __FATHOM__exception_data, int numerator, int denominator);
+	FUNC(int, getEvenNumber, Test* __o__, ExceptionData* __FATHOM__exception_data, int num);
+	FUNC(int, test, Test* __o__, ExceptionData* __FATHOM__exception_data);
+	FUNC(int, test2, Test* __o__, ExceptionData* __FATHOM__exception_data);
 )
 
 Test* new_Test(ExceptionData* __FATHOM__exception_data);
