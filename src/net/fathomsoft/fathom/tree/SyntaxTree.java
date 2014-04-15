@@ -19,9 +19,11 @@ package net.fathomsoft.fathom.tree;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import net.fathomsoft.fathom.Fathom;
 import net.fathomsoft.fathom.tree.exceptionhandling.CatchNode;
 import net.fathomsoft.fathom.tree.exceptionhandling.FinallyNode;
 import net.fathomsoft.fathom.tree.exceptionhandling.TryNode;
@@ -31,6 +33,7 @@ import net.fathomsoft.fathom.util.Location;
 import net.fathomsoft.fathom.util.Patterns;
 import net.fathomsoft.fathom.util.Regex;
 import net.fathomsoft.fathom.util.Stack;
+import net.fathomsoft.fathom.util.StringUtils;
 import net.fathomsoft.fathom.util.SyntaxUtils;
 
 /**
@@ -48,14 +51,16 @@ public class SyntaxTree
 	private int					statementStartIndex, statementEndIndex, oldStatementStartIndex;
 	private int					lineNumber;
 	
-	private String				source, output;
+	private long				flags;
+	
+	private String				source;
 	
 	private Matcher				statementStartMatcher, lineBeginningMatcher;
 	
 	private Pattern				statementStartPattern, lineBeginningPattern;
 	
 	private TreeNode			currentNode;
-	private FileNode			root;
+	private ProgramNode			root;
 	
 	private Stack<TreeNode>		parentStack;
 	
@@ -65,39 +70,69 @@ public class SyntaxTree
 	 * Create a SyntaxTree instance from the source code in the specified
 	 * File.
 	 * 
-	 * @param file The file containing the Foxy source code.
+	 * @param files The files containing the Foxy source code.
+	 * @param flags The compiler's flags.
 	 * @throws IOException Thrown if there was an error finding the
-	 * 		file or reading from it.
+	 * 		files or reading from it.
 	 */
-	public SyntaxTree(File file) throws IOException
+	public SyntaxTree(File files[], long flags) throws IOException
 	{
-		String filename = file.getName();
+		String filenames[] = new String[files.length];
+		String sources[]   = new String[files.length];
 		
-		String source = FileUtils.readFile(file);
+		for (int i = 0; i < files.length; i++)
+		{
+			filenames[i] = files[i].getName();
+			sources[i]   = FileUtils.readFile(files[i]);
+		}
 		
-		init(filename, source);
+		init(filenames, sources, flags);
 	}
 	
 	/**
 	 * Generate a SyntaxTree instance given the name of the file and the
 	 * source within it.
 	 * 
-	 * @param filename The name of the file containing the source.
-	 * @param source The source code inside the file.
+	 * @param filenames The names of the files containing the source.
+	 * @param sources The source codes inside the files.
+	 * @param flags The compiler's flags.
 	 */
-	public SyntaxTree(String filename, String source)
+	public SyntaxTree(String filenames[], String sources[], long flags)
 	{
-		init(filename, source);
+		init(filenames, sources, flags);
 	}
 	
 	/**
 	 * Generate the SyntaxTree given the name of the file and the
 	 * source within it.
 	 * 
-	 * @param filename The name of the file containing the source.
-	 * @param source The source code inside the file.
+	 * @param filenames The names of the files containing the source.
+	 * @param sources The source codes inside the files.
+	 * @param flags The compiler's flags.
 	 */
-	private void init(String filename, String source)
+	private void init(String filenames[], String sources[], long flags)
+	{
+		this.flags = flags;
+		
+		root = new ProgramNode();
+		
+		for (int i = 0; i < filenames.length; i++)
+		{
+			FileNode fileNode = create(filenames[i], sources[i]);
+			
+			root.addChild(fileNode);
+		}
+	}
+	
+	/**
+	 * Create the Syntax Tree for the specified source with the specified
+	 * file name.
+	 * 
+	 * @param filename The file name of the file containing the code.
+	 * @param source The code to create a syntax tree of.
+	 * @return The root node of the generated Syntax Tree.
+	 */
+	private FileNode create(String filename, String source)
 	{
 		source                = removeComments(source);
 		
@@ -116,7 +151,11 @@ public class SyntaxTree
 		statementStartIndex   = 0;
 		lineNumber            = 1;
 		
-		root                  = new FileNode();
+		ArrayList<MethodNode> methodNodes = new ArrayList<MethodNode>();
+		
+		Fathom.log(flags, "Generating syntax tree for the file '" + filename + "'...");
+		
+		FileNode root = new FileNode();
 		root.setName(FileUtils.removeFileExtension(filename));
 		
 		parentStack.push(root);
@@ -149,9 +188,26 @@ public class SyntaxTree
 			updateParents(oldStatementStartIndex, statementStartIndex);
 			
 			currentNode = getNextStatement();
+			
+			if (currentNode instanceof MethodNode)
+			{
+				int startingIndex = StringUtils.findNextNonWhitespaceIndex(source, statementEndIndex);
+				int endingIndex   = StringUtils.findEndingMatch(source, startingIndex, '{', '}');
+				
+				int contentStart  = StringUtils.findNextNonWhitespaceIndex(source, startingIndex + 1);
+				int contentEnd    = StringUtils.findNextNonWhitespaceIndex(source, endingIndex - 1, -1) + 1;
+				
+				if (contentStart < contentEnd)
+				{
+					methodNodes.add((MethodNode)currentNode);
+				}
+				
+			}
 		}
 		
-		checkForErrors();
+		checkForErrors(root);
+		
+		return root;
 	}
 	
 	/**
@@ -167,19 +223,24 @@ public class SyntaxTree
 		{
 			TreeNode child = root.getChild(i);
 			
-			if (child instanceof ClassNode)
+			for (int j = 0; j < child.getChildren().size(); j++)
 			{
-				ClassNode classNode = (ClassNode)child;
+				TreeNode child2 = child.getChild(j);
 				
-				MethodListNode methods = classNode.getMethodListNode();
-				
-				for (int j = 0; j < methods.getChildren().size(); j++)
+				if (child2 instanceof ClassNode)
 				{
-					MethodNode method = (MethodNode)methods.getChild(j);
+					ClassNode classNode = (ClassNode)child2;
 					
-					if (SyntaxUtils.isMainMethod(method))
+					MethodListNode methods = classNode.getMethodListNode();
+					
+					for (int k = 0; k < methods.getChildren().size(); k++)
 					{
-						return method;
+						MethodNode method = (MethodNode)methods.getChild(k);
+						
+						if (SyntaxUtils.isMainMethod(method))
+						{
+							return method;
+						}
 					}
 				}
 			}
@@ -332,6 +393,59 @@ public class SyntaxTree
 		
 		return builder.toString();
 	}
+
+	/**
+	 * Generate the C Header output from the data contained within the
+	 * syntax tree.
+	 */
+	public void generateCHeaderOutput()
+	{
+		root.generateCHeaderOutput();
+	}
+	
+	/**
+	 * Generate the C Source output from the data contained within the
+	 * syntax tree.
+	 */
+	public void generateCSourceOutput()
+	{
+		root.generateCSourceOutput();
+	}
+	
+	/**
+	 * Generate the C Source and Header output from the data contained
+	 * within the syntax tree.
+	 */
+	public void generateCOutput()
+	{
+		generateCHeaderOutput();
+		generateCSourceOutput();
+	}
+
+	/**
+	 * Format the C Header output to follow syntactical rules.
+	 */
+	public void formatCHeaderOutput()
+	{
+		root.formatCHeaderOutput();
+	}
+	
+	/**
+	 * Format the C Source output to follow syntactical rules.
+	 */
+	public void formatCSourceOutput()
+	{
+		root.formatCSourceOutput();
+	}
+	
+	/**
+	 * Format the C Header and Source output to follow syntactical rules.
+	 */
+	public void formatCOutput()
+	{
+		formatCHeaderOutput();
+		formatCSourceOutput();
+	}
 	
 	/**
 	 * Get the next non-whitespace character on the right.
@@ -397,62 +511,6 @@ public class SyntaxTree
 		}
 		
 		return -1;
-	}
-	
-	/**
-	 * Format the text to follow syntactical rules.
-	 * 
-	 * @param text The String to format.
-	 * @return The formatted version of the String.
-	 */
-	public String formatText(String text)
-	{
-		StringBuilder builder       = new StringBuilder();
-		
-		StringBuilder tabs          = new StringBuilder();
-		
-		Matcher       formatMatcher = Patterns.FORMATTER_PATTERN.matcher(text);
-		
-		int           lastIndex     = 0;
-		boolean       sameLine      = false;
-		
-		while (formatMatcher.find())
-		{
-			char c = text.charAt(formatMatcher.start());
-			
-			if (c == '{' || c == '(')
-			{
-				tabs.append('\t');
-				
-				sameLine = true;
-			}
-			else if (c == '}' || c == ')')
-			{
-				if (tabs.length() > 0)
-				{
-					tabs.deleteCharAt(0);
-				}
-				
-				if (builder.length() > 0 && !sameLine)
-				{
-					builder.deleteCharAt(builder.length() - 1);
-				}
-			}
-			else if (c == '\n')
-			{
-				String substring = text.substring(lastIndex, formatMatcher.start());
-				
-				builder.append(substring).append('\n').append(tabs);
-				
-				lastIndex = formatMatcher.start() + 1;
-				
-				sameLine = false;
-			}
-		}
-		
-		builder.append(tabs).append(text.substring(lastIndex, text.length()));
-		
-		return builder.toString();
 	}
 	
 	/**
@@ -575,32 +633,52 @@ public class SyntaxTree
 	}
 	
 	/**
-	 * Get the header output text (destination text) from the Syntax tree.
+	 * Get the C Header output text (destination text) from the Syntax
+	 * tree.
 	 * 
-	 * @return The header output text after compilation.
+	 * @return The C Header output text after compilation.
 	 */
-	public String getHeaderOutput()
+	public String[] getCHeaderOutput()
 	{
-		return root.generateCHeaderOutput();
+		String headers[] = new String[root.getChildren().size()];
+		
+		for (int i = 0; i < headers.length; i++)
+		{
+			TreeNode child = root.getChild(i);
+			
+			headers[i] = child.generateCHeaderOutput();
+		}
+		
+		return headers;
 	}
 	
 	/**
-	 * Get the source output text (destination text) from the Syntax tree.
+	 * Get the C Source output text (destination text) from the Syntax
+	 * tree.
 	 * 
-	 * @return The source output text after compilation.
+	 * @return The C Source output text after compilation.
 	 */
-	public String getSourceOutput()
+	public String[] getCSourceOutput()
 	{
-		return root.generateCSourceOutput();
+		String sources[] = new String[root.getChildren().size()];
+		
+		for (int i = 0; i < sources.length; i++)
+		{
+			TreeNode child = root.getChild(i);
+			
+			sources[i] = child.generateCSourceOutput();
+		}
+		
+		return sources;
 	}
 	
 	/**
-	 * Get the root TreeNode of the tree. The root of the Syntax tree
-	 * will be a FileNode, or FileListNode instance.
+	 * Get the root ProgramNode of the tree. The root of the Syntax tree
+	 * will be a ProgramNode.
 	 * 
-	 * @return The root TreeNode instance.
+	 * @return The root ProgramNode instance.
 	 */
-	public TreeNode getRoot()
+	public ProgramNode getRoot()
 	{
 		return root;
 	}
