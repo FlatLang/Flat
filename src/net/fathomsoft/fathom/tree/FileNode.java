@@ -19,6 +19,7 @@ package net.fathomsoft.fathom.tree;
 
 import net.fathomsoft.fathom.Fathom;
 import net.fathomsoft.fathom.error.SyntaxMessage;
+import net.fathomsoft.fathom.util.SyntaxUtils;
 
 /**
  * Class used to organize the Files that are fed to the compiler.
@@ -32,6 +33,7 @@ import net.fathomsoft.fathom.error.SyntaxMessage;
 public class FileNode extends IdentifierNode
 {
 	//TODO: package name here?
+	private String	header, source;
 	
 	/**
 	 * The default imports that each file uses.
@@ -111,32 +113,37 @@ public class FileNode extends IdentifierNode
 	@Override
 	public String generateCHeaderOutput()
 	{
-		StringBuilder builder = new StringBuilder();
-		
-		String definitionName = "FILE_" + getName() + "_" + Fathom.LANGUAGE_NAME.toUpperCase();
-		
-		builder.append("#ifndef ").append(definitionName).append('\n');
-		builder.append("#define ").append(definitionName).append("\n\n");
-		
-		builder.append(generateDummyTypes()).append('\n');
-		
-		ImportListNode imports = getImportListNode();
-		
-		builder.append(imports.generateCHeaderOutput());
-		
-		for (int i = 0; i < getChildren().size(); i++)
+		if (header == null)
 		{
-			TreeNode child = getChild(i);
+			StringBuilder builder = new StringBuilder();
 			
-			if (child != imports)
+			String definitionName = "FILE_" + getName() + "_" + Fathom.LANGUAGE_NAME.toUpperCase();
+			
+			builder.append("#ifndef ").append(definitionName).append('\n');
+			builder.append("#define ").append(definitionName).append("\n\n");
+			
+			builder.append(generateDummyTypes()).append('\n');
+			
+			ImportListNode imports = getImportListNode();
+			
+			builder.append(imports.generateCHeaderOutput());
+			
+			for (int i = 0; i < getChildren().size(); i++)
 			{
-				builder.append(child.generateCHeaderOutput());
+				TreeNode child = getChild(i);
+				
+				if (child != imports)
+				{
+					builder.append(child.generateCHeaderOutput());
+				}
 			}
+			
+			builder.append("#endif");
+			
+			header = builder.toString();
 		}
 		
-		builder.append("#endif");
-		
-		return builder.toString();
+		return header;
 	}
 
 	/**
@@ -145,26 +152,31 @@ public class FileNode extends IdentifierNode
 	@Override
 	public String generateCSourceOutput()
 	{
-		StringBuilder builder = new StringBuilder();
-		
-		ImportNode thisImport = new ImportNode();
-		thisImport.setImportLocation(getName());
-		
-		builder.append(thisImport.generateCSourceOutput());
-		
-		if (getImportListNode().getChildren().size() <= 0)
+		if (source == null)
 		{
-			builder.append('\n');
-		}
-		
-		for (int i = 0; i < getChildren().size(); i++)
-		{
-			TreeNode child = getChild(i);
+			StringBuilder builder = new StringBuilder();
 			
-			builder.append(child.generateCSourceOutput());
+			ImportNode thisImport = new ImportNode();
+			thisImport.setImportLocation(getName());
+			
+			builder.append(thisImport.generateCSourceOutput());
+			
+			if (getImportListNode().getChildren().size() <= 0)
+			{
+				builder.append('\n');
+			}
+			
+			for (int i = 0; i < getChildren().size(); i++)
+			{
+				TreeNode child = getChild(i);
+				
+				builder.append(child.generateCSourceOutput());
+			}
+			
+			source = builder.toString();
 		}
 		
-		return builder.toString();
+		return source;
 	}
 	
 	/**
@@ -174,6 +186,26 @@ public class FileNode extends IdentifierNode
 	public String generateCSourceFragment()
 	{
 		return null;
+	}
+	
+	/**
+	 * Set the header output String for the File.
+	 * 
+	 * @param header The header output String.
+	 */
+	public void setHeader(String header)
+	{
+		this.header = header;
+	}
+	
+	/**
+	 * Set the source output String for the File.
+	 * 
+	 * @param source The source output String.
+	 */
+	public void setSource(String source)
+	{
+		this.source = source;
 	}
 	
 	/**
@@ -226,6 +258,32 @@ public class FileNode extends IdentifierNode
 		}
 		
 		return builder.toString();
+	}
+	
+	/**
+	 * Format the C Header output, if the output has been generated.
+	 */
+	public void formatCHeaderOutput()
+	{
+		if (header == null)
+		{
+			return;
+		}
+		
+		setHeader(SyntaxUtils.formatText(header));
+	}
+	
+	/**
+	 * Format the C Source output, if the output has been generated.
+	 */
+	public void formatCSourceOutput()
+	{
+		if (source == null)
+		{
+			return;
+		}
+		
+		setSource(SyntaxUtils.formatText(source));
 	}
 	
 	/**
