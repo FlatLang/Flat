@@ -449,11 +449,6 @@ public class MethodNode extends DeclarationNode
 			
 			n.iterateWords(statement, Patterns.IDENTIFIER_BOUNDARIES);
 			
-//			if (SyntaxUtils.isMainMethod(n))
-//			{
-//				n.setName("__" + Fathom.LANGUAGE_NAME.toUpperCase() + "__main");
-//			}
-			
 			return n;
 		}
 		
