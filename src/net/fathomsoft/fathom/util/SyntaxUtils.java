@@ -17,6 +17,8 @@
  */
 package net.fathomsoft.fathom.util;
 
+import java.util.regex.Matcher;
+
 import net.fathomsoft.fathom.Fathom;
 import net.fathomsoft.fathom.tree.MethodNode;
 import net.fathomsoft.fathom.tree.ParameterListNode;
@@ -369,5 +371,61 @@ public class SyntaxUtils
 	public static boolean isInstantiation(String statement)
 	{
 		return Regex.indexOf(statement, Patterns.PRE_INSTANTIATION) == 0;
+	}
+	
+	/**
+	 * Format the text to follow syntactical rules.
+	 * 
+	 * @param text The String to format.
+	 * @return The formatted version of the String.
+	 */
+	public static String formatText(String text)
+	{
+		StringBuilder builder       = new StringBuilder();
+		
+		StringBuilder tabs          = new StringBuilder();
+		
+		Matcher       formatMatcher = Patterns.FORMATTER_PATTERN.matcher(text);
+		
+		int           lastIndex     = 0;
+		boolean       sameLine      = false;
+		
+		while (formatMatcher.find())
+		{
+			char c = text.charAt(formatMatcher.start());
+			
+			if (c == '{' || c == '(')
+			{
+				tabs.append('\t');
+				
+				sameLine = true;
+			}
+			else if (c == '}' || c == ')')
+			{
+				if (tabs.length() > 0)
+				{
+					tabs.deleteCharAt(0);
+				}
+				
+				if (builder.length() > 0 && !sameLine)
+				{
+					builder.deleteCharAt(builder.length() - 1);
+				}
+			}
+			else if (c == '\n')
+			{
+				String substring = text.substring(lastIndex, formatMatcher.start());
+				
+				builder.append(substring).append('\n').append(tabs);
+				
+				lastIndex = formatMatcher.start() + 1;
+				
+				sameLine = false;
+			}
+		}
+		
+		builder.append(tabs).append(text.substring(lastIndex, text.length()));
+		
+		return builder.toString();
 	}
 }
