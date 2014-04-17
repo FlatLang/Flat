@@ -17,11 +17,11 @@
  */
 package net.fathomsoft.fathom.tree;
 
+import net.fathomsoft.fathom.error.SyntaxMessage;
 import net.fathomsoft.fathom.util.Bounds;
 import net.fathomsoft.fathom.util.Location;
 import net.fathomsoft.fathom.util.Patterns;
 import net.fathomsoft.fathom.util.Regex;
-import net.fathomsoft.fathom.error.SyntaxMessage;
 
 /**
  * TreeNode extension that represents the declaration of an "if statement"

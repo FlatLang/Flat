@@ -19,11 +19,8 @@ package net.fathomsoft.fathom.tree;
 
 import java.util.regex.Matcher;
 
-import net.fathomsoft.fathom.Fathom;
 import net.fathomsoft.fathom.error.SyntaxMessage;
 import net.fathomsoft.fathom.tree.exceptionhandling.ThrowNode;
-import net.fathomsoft.fathom.tree.variables.LocalVariableNode;
-import net.fathomsoft.fathom.tree.variables.VariableNode;
 import net.fathomsoft.fathom.util.Bounds;
 import net.fathomsoft.fathom.util.Location;
 import net.fathomsoft.fathom.util.Patterns;

@@ -241,6 +241,35 @@ public class SyntaxUtils
 	}
 	
 	/**
+	 * Get whether or not the given String is a valid identifier access.
+	 * 
+	 * <ul>
+	 * 	<li>A-Z</li>
+	 * 	<li>a-z</li>
+	 * 	<li>0-9</li>
+	 * 	<li>The '_' character (underscore)</li>
+	 * </ul>
+	 * It should also be noted that numbers cannot start an identifier.
+	 * 
+	 * @param value The String of text to validate.
+	 * @return Whether or not the given String is a valid identifier.
+	 */
+	public static boolean isValidIdentifierAccess(String value)
+	{
+		String values[] = value.split("[.]");
+		
+		for (int i = 0; i < values.length; i++)
+		{
+			if (!isValidIdentifier(values[i]))
+			{
+				return false;
+			}
+		}
+		
+		return true;
+	}
+	
+	/**
 	 * Get whether or not the given statement is an array access.<br>
 	 * <br>
 	 * For example:

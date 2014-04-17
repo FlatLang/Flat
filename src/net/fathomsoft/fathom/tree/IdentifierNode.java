@@ -17,8 +17,6 @@
  */
 package net.fathomsoft.fathom.tree;
 
-import net.fathomsoft.fathom.error.SyntaxMessage;
-import net.fathomsoft.fathom.util.SyntaxUtils;
 
 /**
  * TreeNode extension that represents an Identifier. For the rules on

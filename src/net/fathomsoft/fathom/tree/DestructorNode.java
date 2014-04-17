@@ -38,19 +38,6 @@ import net.fathomsoft.fathom.util.Regex;
 public class DestructorNode extends MethodNode
 {
 	/**
-	 * Instantiate and initialize default data.
-	 */
-	public DestructorNode()
-	{
-		ParameterListNode parameters = getParameterListNode();
-		
-//		ParameterNode param = (ParameterNode)parameters.getChild(parameters.getChildren().size() - 1);
-//		
-//		param.setPointer(true);
-		System.out.println(parameters.getChildren().size());
-	}
-	
-	/**
 	 * @see net.fathomsoft.fathom.tree.TreeNode#generateJavaSourceOutput()
 	 */
 	@Override

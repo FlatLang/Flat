@@ -194,7 +194,7 @@ public class AssignmentNode extends TreeNode
 		
 		TreeNode varNode  = null;
 		
-		if (SyntaxUtils.isValidIdentifier(variable))
+		if (SyntaxUtils.isValidIdentifierAccess(variable))
 		{
 			varNode = (VariableNode)TreeNode.getExistingNode(parent, variable);
 			
