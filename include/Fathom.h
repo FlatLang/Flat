@@ -28,4 +28,6 @@ void arrayCopy(void* dest, int dIndex, const void* src, int sIndex, int len, int
 
 long_long currentTimeMillis();
 
+void copy_string(char* target, char* source);
+
 #endif

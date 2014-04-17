@@ -96,3 +96,17 @@ long_long currentTimeMillis()
 
 	return value;
 }
+
+void copy_string(char* target, char* source)
+{
+	int length = strlen(source);
+	
+	int i;
+	
+	for (i = 0; i < length; i++)
+	{
+		target[i] = source[i];
+	}
+	
+	target[i] = '\0';
+}
