@@ -84,6 +84,11 @@ public class ParameterNode extends LocalVariableNode
 	{
 		StringBuilder builder = new StringBuilder();
 		
+		if (isConstant())
+		{
+			builder.append(getConstantText()).append(' ');
+		}
+		
 		builder.append(getType());
 		
 		if (isArray())
