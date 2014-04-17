@@ -191,6 +191,7 @@ public class MethodNode extends DeclarationNode
 			SyntaxMessage.error("Const methods are not supported in the C implementation yet", getLocationIn());
 			
 			return null;
+//			builder.append(getConstantText()).append(' ');
 		}
 		
 		builder.append("FUNC(");
