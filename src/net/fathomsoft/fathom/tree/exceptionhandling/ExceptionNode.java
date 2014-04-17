@@ -154,14 +154,9 @@ public class ExceptionNode extends TreeNode
 	 */
 	public ExceptionNode clone(ExceptionNode node)
 	{
-		node.id = id;
+		super.clone(node);
 		
-		for (int i = 0; i < getChildren().size(); i++)
-		{
-			TreeNode child = getChild(i);
-			
-			node.addChild(child.clone());
-		}
+		node.id = id;
 		
 		return node;
 	}

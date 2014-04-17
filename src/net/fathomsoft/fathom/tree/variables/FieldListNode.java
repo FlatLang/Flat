@@ -95,6 +95,67 @@ public class FieldListNode extends TreeNode
 	}
 	
 	/**
+	 * Get whether or not the FieldListNode contains the FieldNode with
+	 * the specified name.<br>
+	 * <br>
+	 * For example:
+	 * <blockquote><pre>
+	 * public class Person
+	 * {
+	 * 	private int age;
+	 * 	private String name;
+	 * 	
+	 * 	...
+	 * 	
+	 * }</pre></blockquote>
+	 * <br>
+	 * A call like: "<code>containsField("age")</code>" would return true.
+	 * 
+	 * @param fieldName The name of the field to search for.
+	 * @return Whether or not the FieldListNode contains the FieldNode
+	 * 		with the specified name.
+	 */
+	public boolean containsField(String fieldName)
+	{
+		return getField(fieldName) != null;
+	}
+	
+	/**
+	 * Get the FieldListNode's FieldNode with the specified name.<br>
+	 * <br>
+	 * For example:
+	 * <blockquote><pre>
+	 * public class Person
+	 * {
+	 * 	private int age;
+	 * 	private String name;
+	 * 	
+	 * 	...
+	 * 	
+	 * }</pre></blockquote>
+	 * <br>
+	 * A call like: "<code>getField("age")</code>" would return the
+	 * FieldNode for the "<code>age</code>" int field.
+	 * 
+	 * @param fieldName The name of the field to search for.
+	 * @return The FieldNode for the field, if it exists.
+	 */
+	public FieldNode getField(String fieldName)
+	{
+		for (int i = 0; i < getChildren().size(); i++)
+		{
+			FieldNode variable = (FieldNode)getChild(i);
+			
+			if (variable.getName().equals(fieldName))
+			{
+				return variable;
+			}
+		}
+		
+		return null;
+	}
+	
+	/**
 	 * @see net.fathomsoft.fathom.tree.TreeNode#generateJavaSourceOutput()
 	 */
 	@Override
@@ -198,12 +259,7 @@ public class FieldListNode extends TreeNode
 	 */
 	public FieldListNode clone(FieldListNode node)
 	{
-		for (int i = 0; i < getChildren().size(); i++)
-		{
-			TreeNode child = getChild(i);
-			
-			node.addChild(child.clone());
-		}
+		super.clone(node);
 		
 		return node;
 	}

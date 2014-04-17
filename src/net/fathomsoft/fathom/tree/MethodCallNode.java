@@ -529,13 +529,6 @@ public class MethodCallNode extends IdentifierNode
 		
 		node.externalCall = externalCall;
 		
-		for (int i = 0; i < getChildren().size(); i++)
-		{
-			TreeNode child = getChild(i);
-			
-			node.addChild(child.clone());
-		}
-		
 		return node;
 	}
 }

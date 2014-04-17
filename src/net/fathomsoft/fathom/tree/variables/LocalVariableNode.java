@@ -116,11 +116,14 @@ public class LocalVariableNode extends VariableNode
 					
 					if (index > 0)
 					{
-						char c     = statement.charAt(index);
+						char c = statement.charAt(index);
 						
 						if (c == '.')
 						{
-							
+							if (word.equals("this"))
+							{
+								
+							}
 						}
 					}
 					
@@ -187,13 +190,6 @@ public class LocalVariableNode extends VariableNode
 	public LocalVariableNode clone(LocalVariableNode node)
 	{
 		super.clone(node);
-		
-		for (int i = 0; i < getChildren().size(); i++)
-		{
-			TreeNode child = getChild(i);
-			
-			node.addChild(child.clone());
-		}
 		
 		return node;
 	}

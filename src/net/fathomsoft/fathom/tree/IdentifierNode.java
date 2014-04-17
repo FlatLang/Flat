@@ -130,14 +130,7 @@ public class IdentifierNode extends TreeNode
 	 */
 	public IdentifierNode clone(IdentifierNode node)
 	{
-		node.setName(getName());
-		
-		for (int i = 0; i < getChildren().size(); i++)
-		{
-			TreeNode child = getChild(i);
-			
-			node.addChild(child.clone());
-		}
+		super.clone(node);
 		
 		return node;
 	}

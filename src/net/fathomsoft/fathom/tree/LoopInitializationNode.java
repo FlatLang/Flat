@@ -84,12 +84,7 @@ public class LoopInitializationNode extends TreeNode
 	 */
 	public LoopInitializationNode clone(LoopInitializationNode node)
 	{
-		for (int i = 0; i < getChildren().size(); i++)
-		{
-			TreeNode child = getChild(i);
-			
-			node.addChild(child.clone());
-		}
+		super.clone(node);
 		
 		return node;
 	}

@@ -149,12 +149,7 @@ public class ExceptionHandlingNode extends TreeNode
 	 */
 	public ExceptionHandlingNode clone(ExceptionHandlingNode node)
 	{
-		for (int i = 0; i < getChildren().size(); i++)
-		{
-			TreeNode child = getChild(i);
-			
-			node.addChild(child.clone());
-		}
+		super.clone(node);
 		
 		return node;
 	}

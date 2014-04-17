@@ -18,12 +18,10 @@
 package net.fathomsoft.fathom.tree;
 
 import java.util.ArrayList;
-import java.util.regex.Pattern;
 
 import net.fathomsoft.fathom.error.SyntaxMessage;
 import net.fathomsoft.fathom.tree.variables.FieldListNode;
 import net.fathomsoft.fathom.tree.variables.FieldNode;
-import net.fathomsoft.fathom.tree.variables.LocalVariableNode;
 import net.fathomsoft.fathom.tree.variables.PrivateFieldListNode;
 import net.fathomsoft.fathom.tree.variables.PublicFieldListNode;
 import net.fathomsoft.fathom.tree.variables.VariableNode;
@@ -165,6 +163,77 @@ public class ClassNode extends DeclarationNode
 	public void addImplementedClass(String implementedClass)
 	{
 		this.implementedClasses.add(implementedClass);
+	}
+	
+	/**
+	 * Get whether or not the ClassNode contains the FieldNode with the
+	 * specified name.<br>
+	 * <br>
+	 * For example:
+	 * <blockquote><pre>
+	 * public class Person
+	 * {
+	 * 	private int age;
+	 * 	private String name;
+	 * 	
+	 * 	...
+	 * 	
+	 * }</pre></blockquote>
+	 * <br>
+	 * A call like: "<code>containsField("age")</code>" would return true.
+	 * 
+	 * @param fieldName The name of the field to search for.
+	 * @return Whether or not the ClassNode contains the FieldNode with
+	 * 		the specified name.
+	 */
+	public boolean containsField(String fieldName)
+	{
+		return getField(fieldName) != null;
+	}
+	
+	/**
+	 * Get the ClassNode's FieldNode with the specified name.<br>
+	 * <br>
+	 * For example:
+	 * <blockquote><pre>
+	 * public class Person
+	 * {
+	 * 	private int age;
+	 * 	private String name;
+	 * 	
+	 * 	...
+	 * 	
+	 * }</pre></blockquote>
+	 * <br>
+	 * A call like: "<code>getField("age")</code>" would return the
+	 * FieldNode for the "<code>age</code>" int field.
+	 * 
+	 * @param fieldName The name of the field to search for.
+	 * @return The FieldNode for the field, if it exists.
+	 */
+	public FieldNode getField(String fieldName)
+	{
+		FieldNode node = null;
+		
+		PrivateFieldListNode variables = getFieldListNode().getPrivateFieldListNode();
+		
+		node = variables.getf
+		
+		if ()
+		
+		PublicFieldListNode fields = getFieldListNode().getPublicFieldListNode();
+		
+		for (int i = 0; i < fields.getChildren().size(); i++)
+		{
+			FieldNode variable = (FieldNode)fields.getChild(i);
+			
+			if (variable.getName().equals(fieldName))
+			{
+				return variable;
+			}
+		}
+		
+		return null;
 	}
 	
 	/**
@@ -703,13 +772,6 @@ public class ClassNode extends DeclarationNode
 			String implementedClass = implementedClasses.get(i);
 			
 			node.addImplementedClass(implementedClass);
-		}
-		
-		for (int i = 0; i < getChildren().size(); i++)
-		{
-			TreeNode child = getChild(i);
-			
-			node.addChild(child.clone());
 		}
 		
 		return node;

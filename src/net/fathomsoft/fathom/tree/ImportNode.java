@@ -225,15 +225,10 @@ public class ImportNode extends TreeNode
 	 */
 	public ImportNode clone(ImportNode node)
 	{
+		super.clone(node);
+		
 		node.setImportLocation(getImportLocation());
 		node.external = isExternal();
-		
-		for (int i = 0; i < getChildren().size(); i++)
-		{
-			TreeNode child = getChild(i);
-			
-			node.addChild(child.clone());
-		}
 		
 		return node;
 	}

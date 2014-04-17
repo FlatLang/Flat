@@ -29,6 +29,41 @@ import net.fathomsoft.fathom.tree.TreeNode;
 public class VariableListNode extends TreeNode
 {
 	/**
+	 * Get whether or not there is a VaraibleNode within the list with
+	 * the given name.
+	 * 
+	 * @param variableName The name of the variable to search for.
+	 * @return Whether or not there is a VaraibleNode within the list with
+	 * 		the given name.
+	 */
+	public boolean containsVariable(String variableName)
+	{
+		return getVariable(variableName) != null;
+	}
+	
+	/**
+	 * Get the VariableNode from the list with the given name, if it
+	 * exists.
+	 * 
+	 * @param variableName The name of the variable to get.
+	 * @return The VariableNode with the given name.
+	 */
+	public VariableNode getVariable(String variableName)
+	{
+		for (int i = 0; i < getChildren().size(); i++)
+		{
+			VariableNode variable = (VariableNode)getChild(i);
+			
+			if (variable.getName().equals(variableName))
+			{
+				return variable;
+			}
+		}
+		
+		return null;
+	}
+	
+	/**
 	 * @see net.fathomsoft.fathom.tree.TreeNode#generateJavaSourceOutput()
 	 */
 	@Override
@@ -108,12 +143,7 @@ public class VariableListNode extends TreeNode
 	 */
 	public VariableListNode clone(VariableListNode node)
 	{
-		for (int i = 0; i < getChildren().size(); i++)
-		{
-			TreeNode child = getChild(i);
-			
-			node.addChild(child.clone());
-		}
+		super.clone(node);
 		
 		return node;
 	}

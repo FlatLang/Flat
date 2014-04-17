@@ -24,10 +24,10 @@ import java.util.regex.Pattern;
 import net.fathomsoft.fathom.tree.exceptionhandling.ExceptionHandlingNode;
 import net.fathomsoft.fathom.tree.exceptionhandling.TryNode;
 import net.fathomsoft.fathom.tree.variables.FieldNode;
-import net.fathomsoft.fathom.tree.variables.VariableListNode;
 import net.fathomsoft.fathom.tree.variables.LocalVariableNode;
 import net.fathomsoft.fathom.tree.variables.PrivateFieldListNode;
 import net.fathomsoft.fathom.tree.variables.PublicFieldListNode;
+import net.fathomsoft.fathom.tree.variables.VariableListNode;
 import net.fathomsoft.fathom.tree.variables.VariableNode;
 import net.fathomsoft.fathom.util.Bounds;
 import net.fathomsoft.fathom.util.Location;
@@ -753,15 +753,7 @@ public abstract class TreeNode
 				{
 					VariableListNode variables = scopeNode.getScopeNode().getVariableListNode();
 					
-					for (int i = 0; i < variables.getChildren().size(); i++)
-					{
-						VariableNode variable = (VariableNode)variables.getChild(i);
-						
-						if (variable.getName().equals(statement))
-						{
-							return variable;
-						}
-					}
+					variables.getVariable(statement);
 					
 					if (scopeNode instanceof MethodNode)
 					{
@@ -785,29 +777,7 @@ public abstract class TreeNode
 			
 			ClassNode classNode = (ClassNode)node.getAncestorOfType(ClassNode.class, true);
 			
-			PrivateFieldListNode variables = classNode.getFieldListNode().getPrivateFieldListNode();
-			
-			for (int i = 0; i < variables.getChildren().size(); i++)
-			{
-				VariableNode variable = (VariableNode)variables.getChild(i);
-				
-				if (variable.getName().equals(statement))
-				{
-					return variable;
-				}
-			}
-			
-			PublicFieldListNode fields = classNode.getFieldListNode().getPublicFieldListNode();
-			
-			for (int i = 0; i < fields.getChildren().size(); i++)
-			{
-				VariableNode variable = (VariableNode)fields.getChild(i);
-				
-				if (variable.getName().equals(statement))
-				{
-					return variable;
-				}
-			}
+			return classNode.getField(statement);
 		}
 		
 		return null;
@@ -850,4 +820,23 @@ public abstract class TreeNode
 	 * specified node, including clones of the children.
 	 */
 	public abstract TreeNode clone();
+	
+	/**
+	 * Fill the given TreeNode with the data that is in the
+	 * specified node.
+	 * 
+	 * @param node The node to copy the data into.
+	 * @return The cloned node.
+	 */
+	public TreeNode clone(TreeNode node)
+	{
+		for (int i = 0; i < children.size(); i++)
+		{
+			TreeNode child = children.get(i);
+			
+			node.addChild(child.clone());
+		}
+		
+		return node;
+	}
 }

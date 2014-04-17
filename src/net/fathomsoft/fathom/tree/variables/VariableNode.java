@@ -460,13 +460,6 @@ public class VariableNode extends ModifierNode
 		node.setType(getType());
 		node.setExternal(isExternal());
 		
-		for (int i = 0; i < getChildren().size(); i++)
-		{
-			TreeNode child = getChild(i);
-			
-			node.addChild(child.clone());
-		}
-		
 		return node;
 	}
 }

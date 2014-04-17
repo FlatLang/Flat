@@ -134,12 +134,7 @@ public class ProgramNode extends TreeNode
 	 */
 	public ProgramNode clone(ProgramNode node)
 	{
-		for (int i = 0; i < getChildren().size(); i++)
-		{
-			TreeNode child = getChild(i);
-			
-			node.addChild(child.clone());
-		}
+		super.clone(node);
 		
 		return node;
 	}

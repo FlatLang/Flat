@@ -17,7 +17,6 @@
  */
 package net.fathomsoft.fathom.tree;
 
-import net.fathomsoft.fathom.Fathom;
 import net.fathomsoft.fathom.tree.exceptionhandling.ExceptionNode;
 
 /**
@@ -29,19 +28,6 @@ import net.fathomsoft.fathom.tree.exceptionhandling.ExceptionNode;
  */
 public class ParameterListNode extends TreeNode
 {
-	/**
-	 * Instantiate and initialize default data. Generates the
-	 * two default parameters for every method: Exception data.
-	 */
-	public ParameterListNode()
-	{
-		ParameterNode exceptionData = new ParameterNode();
-		exceptionData.setName(ExceptionNode.EXCEPTION_DATA_IDENTIFIER);
-		exceptionData.setType("ExceptionData");
-		
-		addChild(exceptionData);
-	}
-	
 	/**
 	 * Identifier for the calling object of a method call.<br>
 	 * <br>
@@ -60,6 +46,40 @@ public class ParameterListNode extends TreeNode
 	 * And "__o__" is the chosen OBJECT_REFERENCE_IDENTIFIER.
 	 */
 	public static final String OBJECT_REFERENCE_IDENTIFIER = "__o__";
+	
+	/**
+	 * Instantiate and initialize default data. Generates the
+	 * two default parameters for every method: Exception data.
+	 */
+	public ParameterListNode()
+	{
+		ParameterNode exceptionData = new ParameterNode();
+		exceptionData.setName(ExceptionNode.EXCEPTION_DATA_IDENTIFIER);
+		exceptionData.setType("ExceptionData");
+		
+		addChild(exceptionData);
+	}
+	
+	/**
+	 * 
+	 * 
+	 * @param parameterName
+	 * @return
+	 */
+	public ParameterNode getParameter(String parameterName)
+	{
+		for (int i = 0; i < getChildren().size(); i++)
+		{
+			ParameterNode parameter = (ParameterNode)getChild(i);
+			
+			if (parameter.getName().equals(parameterName))
+			{
+				return parameter;
+			}
+		}
+		
+		return null;
+	}
 	
 	/**
 	 * @see net.fathomsoft.fathom.tree.TreeNode#generateJavaSourceOutput()
@@ -159,12 +179,7 @@ public class ParameterListNode extends TreeNode
 	 */
 	public ParameterListNode clone(ParameterListNode node)
 	{
-		for (int i = 0; i < getChildren().size(); i++)
-		{
-			TreeNode child = getChild(i);
-			
-			node.addChild(child.clone());
-		}
+		super.clone(node);
 		
 		return node;
 	}

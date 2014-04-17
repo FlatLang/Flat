@@ -28,7 +28,7 @@ import net.fathomsoft.fathom.tree.TreeNode;
  * @since	v0.1 Jan 5, 2014 at 10:00:50 PM
  * @version	v0.2 Apr 7, 2014 at 7:45:22 PM
  */
-public class PrivateFieldListNode extends TreeNode
+public class PrivateFieldListNode extends FieldListNode
 {
 	/**
 	 * @see net.fathomsoft.fathom.tree.TreeNode#generateJavaSourceOutput()
@@ -129,12 +129,7 @@ public class PrivateFieldListNode extends TreeNode
 	 */
 	public PrivateFieldListNode clone(PrivateFieldListNode node)
 	{
-		for (int i = 0; i < getChildren().size(); i++)
-		{
-			TreeNode child = getChild(i);
-			
-			node.addChild(child.clone());
-		}
+		super.clone(node);
 		
 		return node;
 	}

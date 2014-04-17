@@ -304,12 +304,7 @@ public class AssignmentNode extends TreeNode
 	 */
 	public AssignmentNode clone(AssignmentNode node)
 	{
-		for (int i = 0; i < getChildren().size(); i++)
-		{
-			TreeNode child = getChild(i);
-			
-			node.addChild(child.clone());
-		}
+		super.clone(node);
 		
 		return node;
 	}

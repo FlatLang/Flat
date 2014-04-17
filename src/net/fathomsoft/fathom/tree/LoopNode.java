@@ -151,12 +151,7 @@ public class LoopNode extends TreeNode
 	 */
 	public LoopNode clone(LoopNode node)
 	{
-		for (int i = 0; i < getChildren().size(); i++)
-		{
-			TreeNode child = getChild(i);
-			
-			node.addChild(child.clone());
-		}
+		super.clone(node);
 		
 		return node;
 	}

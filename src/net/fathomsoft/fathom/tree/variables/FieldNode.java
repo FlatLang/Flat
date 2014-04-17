@@ -264,13 +264,6 @@ public class FieldNode extends DeclarationNode
 	{
 		super.clone(node);
 		
-		for (int i = 0; i < getChildren().size(); i++)
-		{
-			TreeNode child = getChild(i);
-			
-			node.addChild(child.clone());
-		}
-		
 		return node;
 	}
 }
