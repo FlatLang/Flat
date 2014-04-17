@@ -7,8 +7,8 @@ public class IO
 {
 	public static void println(String text)
 	{
-		//print(text);
-		//print("\n");
+		print(text);
+		print("\n");
 	}
 	
 	public static void print(String text)
