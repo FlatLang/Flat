@@ -38,6 +38,19 @@ import net.fathomsoft.fathom.util.Regex;
 public class DestructorNode extends MethodNode
 {
 	/**
+	 * Instantiate and initialize default data.
+	 */
+	public DestructorNode()
+	{
+		ParameterListNode parameters = getParameterListNode();
+		
+//		ParameterNode param = (ParameterNode)parameters.getChild(parameters.getChildren().size() - 1);
+//		
+//		param.setPointer(true);
+		System.out.println(parameters.getChildren().size());
+	}
+	
+	/**
 	 * @see net.fathomsoft.fathom.tree.TreeNode#generateJavaSourceOutput()
 	 */
 	@Override
@@ -92,7 +105,7 @@ public class DestructorNode extends MethodNode
 		StringBuilder builder = new StringBuilder();
 		
 		builder.append(generateCSourceSignature()).append('\n').append('{').append('\n');
-		
+
 		builder.append(nullChecker()).append('\n');
 		
 		builder.append(deleteData()).append('\n');
@@ -107,7 +120,7 @@ public class DestructorNode extends MethodNode
 			}
 		}
 		
-		builder.append("free(").append(MethodNode.getObjectReferenceIdentifier()).append(");").append('\n');
+		builder.append("free(").append('*').append(MethodNode.getObjectReferenceIdentifier()).append(");").append('\n');
 		
 		builder.append('}').append('\n');
 		
@@ -133,7 +146,7 @@ public class DestructorNode extends MethodNode
 	{
 		StringBuilder builder = new StringBuilder();
 		
-		builder.append("if (!").append(MethodNode.getObjectReferenceIdentifier()).append(')').append('\n');
+		builder.append("if (!*").append(MethodNode.getObjectReferenceIdentifier()).append(')').append('\n');
 		builder.append('{').append('\n');
 		builder.append("return;").append('\n');
 		builder.append('}').append('\n');
@@ -148,18 +161,9 @@ public class DestructorNode extends MethodNode
 	 */
 	private String deleteData()
 	{
-		StringBuilder builder  = new StringBuilder();
+		StringBuilder builder   = new StringBuilder();
 		
-		ClassNode classNode    = (ClassNode)getAncestorOfType(ClassNode.class);
-		
-//		MethodListNode methods = classNode.getMethodListNode();
-//		
-//		for (int i = 0; i < methods.getChildren().size(); i++)
-//		{
-//			MethodNode method = (MethodNode)methods.getChild(i);
-//
-//			builder.append(generateFreeMethodSource(method.getName())).append('\n');
-//		}
+		ClassNode     classNode = (ClassNode)getAncestorOfType(ClassNode.class);
 		
 		PrivateFieldListNode privateFields = classNode.getFieldListNode().getPrivateFieldListNode();
 		
@@ -207,13 +211,13 @@ public class DestructorNode extends MethodNode
 		if (field.isPrimitiveType() || field.isExternal())
 		{
 			if (!field.isPrimitive())
-			{
-				builder.append("free(").append(field.generateVariableUseOutput()).append(");");
+			{//builder.append("printf(\"Before. " + field.generateVariableUseOutput(true) + ": %p\", " + field.generateVariableUseOutput(true) + ");");
+				//builder.append("free(").append(field.generateVariableUseOutput(true)).append(");");builder.append("printf(\"Aft2.\");");
 			}
 		}
 		else
 		{
-			builder.append("del_").append(field.getType()).append('(').append(field.generateVariableUseOutput()).append(", __").append(Fathom.LANGUAGE_NAME.toUpperCase()).append("__exception_data").append(");");
+			builder.append("del_").append(field.getType()).append('(').append('&').append(field.generateVariableUseOutput(true)).append(", __").append(Fathom.LANGUAGE_NAME.toUpperCase()).append("__exception_data").append(");");
 		}
 		
 		return builder.toString();
@@ -230,7 +234,7 @@ public class DestructorNode extends MethodNode
 	{
 		StringBuilder builder = new StringBuilder();
 		
-		builder.append("free(").append(MethodNode.getObjectReferenceIdentifier()).append("->").append(name).append(");");
+		builder.append("free((*").append(MethodNode.getObjectReferenceIdentifier()).append(")->").append(name).append(");");
 		
 		return builder.toString();
 	}
