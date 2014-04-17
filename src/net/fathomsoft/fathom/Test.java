@@ -40,6 +40,25 @@ public class Test
 //	
 	public static void main(String args[])
 	{
+		try
+		{
+			try
+			{
+				throw new RuntimeException();
+			}
+			catch (IllegalArgumentException e)
+			{
+				System.out.println("illegal arg");
+			}
+			finally
+			{
+				System.out.println("in finally...");
+			}
+		}
+		catch (RuntimeException e)
+		{
+			System.out.println("cauht runtime excep");
+		}
 //		long start = System.currentTimeMillis();
 //		for (int i = 0; i < 99999999; i++)
 //		{
