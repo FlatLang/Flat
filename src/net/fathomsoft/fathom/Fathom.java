@@ -320,7 +320,7 @@ public class Fathom
 							{
 //								staticClassInit.append("SET_INSTANCE(").append(c.getName()).append(", __static__").append(c.getName()).append(')').append(';').append('\n');
 								staticClassInit.append("__static__").append(c.getName()).append(" = ").append("new_").append(c.getName()).append("(0);").append('\n');
-								staticClassFree.append("del_").append(c.getName()).append("(__static__").append(c.getName()).append(", 0);").append('\n');
+								staticClassFree.append("del_").append(c.getName()).append("(&__static__").append(c.getName()).append(", 0);").append('\n');
 							}
 						}
 					}
@@ -332,37 +332,41 @@ public class Fathom
 			mainMethodText.append('\n').append('\n');
 			mainMethodText.append("#include \"Fathom.h\"").append('\n');
 			mainMethodText.append("#include <stdio.h>").append('\n');
-			//mainMethodText.append("jmp_buf __FATHOM__jmp_buf;").append('\n');
+			mainMethodText.append("#include <string.h>").append('\n');
+			//mainMethodText.append("jmp_buf __").append(LANGUAGE_NAME.toUpperCase()).append("__jmp_buf;").append('\n');
 			mainMethodText.append('\n');
 			mainMethodText.append("int main(int argc, char** argvs)").append('\n');
 			mainMethodText.append("{").append('\n');
-			mainMethodText.append("String** args = (String**)malloc(argc * sizeof(String));").append('\n');
-			mainMethodText.append("int      i;").append('\n').append('\n');
-			mainMethodText.append("ExceptionData* __FATHOM__exception_data = 0;").append('\n');
-			mainMethodText.append(staticClassInit);
-			mainMethodText.append('\n');
-			mainMethodText.append("for (i = 0; i < argc; i++)").append('\n');
-			mainMethodText.append("{").append('\n');
-			mainMethodText.append("args[i] = new_String(0, argvs[i]);").append('\n');
-			mainMethodText.append("}").append('\n');
-			mainMethodText.append('\n');
-			mainMethodText.append("TRY").append('\n');
-			mainMethodText.append('{').append('\n');
-			mainMethodText.append("__static__").append(classNode.getName()).append("->main(__static__").append(classNode.getName()).append(", __FATHOM__exception_data, args);").append('\n');
-			mainMethodText.append('}').append('\n');
-			mainMethodText.append("CATCH (1)").append('\n');
-			mainMethodText.append('{').append('\n');
-			mainMethodText.append("printf(\"You broke it.\");").append('\n');
-			mainMethodText.append("__static__IO->waitForEnter(__static__IO, 0);").append('\n');
-			mainMethodText.append('}').append('\n');
-			mainMethodText.append("FINALLY").append('\n');
-			mainMethodText.append('{').append('\n');
-			mainMethodText.append('\n');
-			mainMethodText.append('}').append('\n');
-			mainMethodText.append("END_TRY;").append('\n');
-			mainMethodText.append(staticClassFree);
-			mainMethodText.append("free(args);").append('\n');
-			mainMethodText.append("return 0;").append('\n');
+			mainMethodText.append	("String** args = (String**)malloc(argc * sizeof(String));").append('\n');
+			mainMethodText.append	("int      i;").append('\n').append('\n');
+			mainMethodText.append	("ExceptionData* __").append(LANGUAGE_NAME.toUpperCase()).append("__exception_data = 0;").append('\n');
+			mainMethodText.append	(staticClassInit);
+			mainMethodText.append	('\n');
+			mainMethodText.append	("for (i = 0; i < argc; i++)").append('\n');
+			mainMethodText.append	("{").append('\n');
+			mainMethodText.append		("char* str = (char*)malloc(sizeof(char) * strlen(argvs[i]) + 1);").append('\n');
+			mainMethodText.append		("copy_string(str, argvs[i]);").append('\n');
+			mainMethodText.append		("args[i] = new_String(0, str);").append('\n');
+			mainMethodText.append	("}").append('\n');
+			mainMethodText.append	('\n');
+			mainMethodText.append	("TRY").append('\n');
+			mainMethodText.append	('{').append('\n');
+			mainMethodText.append		("__static__").append(classNode.getName()).append("->main(__static__").append(classNode.getName()).append(", __").append(LANGUAGE_NAME.toUpperCase()).append("__exception_data, args);").append('\n');
+			mainMethodText.append	('}').append('\n');
+			mainMethodText.append	("CATCH (1)").append('\n');
+			mainMethodText.append	('{').append('\n');
+			mainMethodText.append		("printf(\"You broke it.\");").append('\n');
+			mainMethodText.append		("__static__IO->waitForEnter(__static__IO, 0);").append('\n');
+			mainMethodText.append	('}').append('\n');
+			mainMethodText.append	("FINALLY").append('\n');
+			mainMethodText.append	('{').append('\n');
+			mainMethodText.append		('\n');
+			mainMethodText.append	('}').append('\n');
+			mainMethodText.append	("END_TRY;").append('\n');
+			mainMethodText.append	(staticClassFree);
+			mainMethodText.append	("free(args);").append('\n');
+			mainMethodText.append	('\n');
+			mainMethodText.append	("return 0;").append('\n');
 			mainMethodText.append("}");
 			
 			String newSource = fileNode.generateCSourceOutput() + mainMethodText.toString();
