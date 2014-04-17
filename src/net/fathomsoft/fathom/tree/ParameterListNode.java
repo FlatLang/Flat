@@ -18,6 +18,7 @@
 package net.fathomsoft.fathom.tree;
 
 import net.fathomsoft.fathom.Fathom;
+import net.fathomsoft.fathom.tree.exceptionhandling.ExceptionNode;
 
 /**
  * TreeNode extension that represents a list of parameters for a method.
@@ -28,6 +29,19 @@ import net.fathomsoft.fathom.Fathom;
  */
 public class ParameterListNode extends TreeNode
 {
+	/**
+	 * Instantiate and initialize default data. Generates the
+	 * two default parameters for every method: Exception data.
+	 */
+	public ParameterListNode()
+	{
+		ParameterNode exceptionData = new ParameterNode();
+		exceptionData.setName(ExceptionNode.EXCEPTION_DATA_IDENTIFIER);
+		exceptionData.setType("ExceptionData");
+		
+		addChild(exceptionData);
+	}
+	
 	/**
 	 * Identifier for the calling object of a method call.<br>
 	 * <br>
@@ -89,16 +103,23 @@ public class ParameterListNode extends TreeNode
 		
 		if (getParent() instanceof ConstructorNode == false)
 		{
-			builder.append(classNode.getName()).append("* ").append(MethodNode.getObjectReferenceIdentifier()).append(", ");
+			builder.append(classNode.getName());
+			
+			if (getParent() instanceof DestructorNode)
+			{
+				builder.append('*');
+			}
+			
+			builder.append("* ").append(MethodNode.getObjectReferenceIdentifier());
 		}
 		
-		builder.append("ExceptionData* __").append(Fathom.LANGUAGE_NAME.toUpperCase()).append("__exception_data");
+		//builder.append("ExceptionData* __").append(Fathom.LANGUAGE_NAME.toUpperCase()).append("__exception_data");
 		
 		for (int i = 0; i < getChildren().size(); i++)
 		{
 			TreeNode child = getChild(i);
 			
-//			if (getParent() instanceof ConstructorNode == false)
+			if (i > 0 || getParent() instanceof ConstructorNode == false)
 			{
 				builder.append(", ");
 			}
