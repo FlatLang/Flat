@@ -324,17 +324,52 @@ public class VariableNode extends ModifierNode
 	 */
 	public String generateVariableUseOutput()
 	{
+		return generateVariableUseOutput(false);
+	}
+	
+	/**
+	 * Generate the representation of when the variable is being used, in
+	 * action, rather than being declared.<br>
+	 * <br>
+	 * For example:<br>
+	 * <blockquote><pre>
+	 * Person p;
+	 * p.getName();</pre></blockquote>
+	 * The first line shows the declaration of the Variable. The second
+	 * line demonstrates a "variable use" for the "p" variable.
+	 * Essentially, the "variable use" output is exactly what it says,
+	 * what the variable looks like when it is being used to do something.
+	 * 
+	 * @param pointer Whether or not the variable is to be accessed by a
+	 * 		pointer.
+	 * @return What the variable looks like when it is being used to do
+	 * 		something.
+	 */
+	public String generateVariableUseOutput(boolean pointer)
+	{
 		StringBuilder builder = new StringBuilder();
 		
 		if (this instanceof FieldNode)
 		{
 			FieldNode field = (FieldNode)this;
+		
+			if (pointer)
+			{
+				builder.append('(').append('*');
+			}
 			
-			builder.append(MethodNode.getObjectReferenceIdentifier()).append("->");
+			builder.append(MethodNode.getObjectReferenceIdentifier());
+			
+			if (pointer)
+			{
+				builder.append(')');
+			}
+			
+			builder.append("->");
 			
 			if (field.getVisibility() == FieldNode.PRIVATE)
 			{
-				builder.append("prv->");
+				builder.append("prv").append("->");
 			}
 		}
 		
