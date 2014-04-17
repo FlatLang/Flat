@@ -18,41 +18,35 @@
 		\
 		__FATHOM__exception_data = newData;\
 		\
-		switch(setjmp(__FATHOM__jmp_buf))\
-		{\
-			case 0:\
-				while(1)\
-				{
+		int __FATHOM__exception_code = setjmp(__FATHOM__jmp_buf);\
+		\
+		if (__FATHOM__exception_code == 0)
 
 #define CATCH(x) \
-	break;\
-	case x:
+	else if (__FATHOM__exception_code == x)
 
 #define FINALLY	\
-		break;\
-	}\
-	default:
+	
 
 #define END_TRY \
+		{\
+			ExceptionData* oldData = __FATHOM__exception_data;\
+			ExceptionData* newData = __FATHOM__exception_data->getParent(__FATHOM__exception_data, 0);\
+			if (newData != 0)\
 			{\
-				ExceptionData* oldData = __FATHOM__exception_data;\
-				ExceptionData* newData = __FATHOM__exception_data->getParent(__FATHOM__exception_data, 0);\
-				if (newData != 0)\
-				{\
-					__FATHOM__exception_data = newData;\
-				}\
-				/*printf("Bef%p\n", oldData);*/\
-				if (oldData != 0)\
-				{\
-					free(oldData);\
-					/*del_ExceptionData(oldData, oldData);*/\
-				}\
-				/*printf("Aft%p\n", oldData);*/\
+				__FATHOM__exception_data = newData;\
 			}\
+			/*printf("Bef%p\n", oldData);*/\
+			if (oldData != 0)\
+			{\
+				free(oldData);\
+				/*del_ExceptionData(oldData, oldData);*/\
+			}\
+			/*printf("Aft%p\n", oldData);*/\
 		}\
 	}\
 	while(0)
 
-#define THROW(x) __FATHOM__exception_data->jumpToBuffer(__FATHOM__exception_data, 0, x);//longjmp(*__FATHOM__exception_data->getCorrectBuffer(__FATHOM__exception_data, 0, x), x)
+#define THROW(x) __FATHOM__exception_data->jumpToBuffer(__FATHOM__exception_data, 0, x);
 
 #endif
