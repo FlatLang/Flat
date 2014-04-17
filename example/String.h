@@ -6,6 +6,7 @@ typedef struct String String;
 #include <CClass.h>
 #include <ExceptionHandler.h>
 #include "ExceptionData.h"
+#include <stdio.h>
 
 CLASS
 (
@@ -15,5 +16,5 @@ CLASS
 )
 
 String* new_String(ExceptionData* __FATHOM__exception_data, char* d);
-void del_String(String* __o__, ExceptionData* __FATHOM__exception_data);
+void del_String(String** __o__, ExceptionData* __FATHOM__exception_data);
 #endif

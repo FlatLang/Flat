@@ -7,6 +7,7 @@ typedef struct IO IO;
 #include <ExceptionHandler.h>
 #include "ExceptionData.h"
 #include <stdio.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include "String.h"
 #include <Fathom.h>
@@ -25,7 +26,7 @@ CLASS
 )
 
 IO* new_IO(ExceptionData* __FATHOM__exception_data);
-void del_IO(IO* __o__, ExceptionData* __FATHOM__exception_data);
+void del_IO(IO** __o__, ExceptionData* __FATHOM__exception_data);
 extern IO* __static__IO;
 
 #endif

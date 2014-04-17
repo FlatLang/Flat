@@ -3,6 +3,7 @@
 #include <ExceptionHandler.h>
 #include "ExceptionData.h"
 #include <stdio.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include "String.h"
 #include <Fathom.h>
@@ -10,7 +11,7 @@
 IO* __static__IO;
 
 IO* new_IO(ExceptionData* __FATHOM__exception_data);
-void del_IO(IO* __o__, ExceptionData* __FATHOM__exception_data);
+void del_IO(IO** __o__, ExceptionData* __FATHOM__exception_data);
 static void __FATHOM__println(IO* __o__, ExceptionData* __FATHOM__exception_data, String* text);
 static void __FATHOM__print(IO* __o__, ExceptionData* __FATHOM__exception_data, String* text);
 static void __FATHOM__printi(IO* __o__, ExceptionData* __FATHOM__exception_data, int j);
@@ -39,9 +40,9 @@ IO* new_IO(ExceptionData* __FATHOM__exception_data)
 	return __o__;
 }
 
-void del_IO(IO* __o__, ExceptionData* __FATHOM__exception_data)
+void del_IO(IO** __o__, ExceptionData* __FATHOM__exception_data)
 {
-	if (!__o__)
+	if (!*__o__)
 	{
 		return;
 	}
@@ -49,11 +50,13 @@ void del_IO(IO* __o__, ExceptionData* __FATHOM__exception_data)
 	
 	{
 	}
-	free(__o__);
+	free(*__o__);
 }
 
 static void __FATHOM__println(IO* __o__, ExceptionData* __FATHOM__exception_data, String* text)
 {
+	__o__->print(__o__, __FATHOM__exception_data, text);
+	__o__->print(__o__, __FATHOM__exception_data, new_String(__FATHOM__exception_data, "\n"));
 }
 
 static void __FATHOM__print(IO* __o__, ExceptionData* __FATHOM__exception_data, String* text)

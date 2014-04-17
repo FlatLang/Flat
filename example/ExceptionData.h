@@ -6,6 +6,7 @@ typedef struct ExceptionData ExceptionData;
 #include <CClass.h>
 #include <ExceptionHandler.h>
 #include "ExceptionData.h"
+#include <stdio.h>
 #include <setjmp.h>
 #include "ArrayList.h"
 
@@ -24,5 +25,5 @@ CLASS
 )
 
 ExceptionData* new_ExceptionData(ExceptionData* __FATHOM__exception_data, jmp_buf* buf);
-void del_ExceptionData(ExceptionData* __o__, ExceptionData* __FATHOM__exception_data);
+void del_ExceptionData(ExceptionData** __o__, ExceptionData* __FATHOM__exception_data);
 #endif

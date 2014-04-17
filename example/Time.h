@@ -6,6 +6,7 @@ typedef struct Time Time;
 #include <CClass.h>
 #include <ExceptionHandler.h>
 #include "ExceptionData.h"
+#include <stdio.h>
 #include <Fathom.h>
 
 CLASS
@@ -16,7 +17,7 @@ CLASS
 )
 
 Time* new_Time(ExceptionData* __FATHOM__exception_data);
-void del_Time(Time* __o__, ExceptionData* __FATHOM__exception_data);
+void del_Time(Time** __o__, ExceptionData* __FATHOM__exception_data);
 extern Time* __static__Time;
 
 #endif

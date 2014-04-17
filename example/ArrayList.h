@@ -6,6 +6,7 @@ typedef struct ArrayList ArrayList;
 #include <CClass.h>
 #include <ExceptionHandler.h>
 #include "ExceptionData.h"
+#include <stdio.h>
 #include <stdlib.h>
 #include <Fathom.h>
 
@@ -20,5 +21,5 @@ CLASS
 )
 
 ArrayList* new_ArrayList(ExceptionData* __FATHOM__exception_data);
-void del_ArrayList(ArrayList* __o__, ExceptionData* __FATHOM__exception_data);
+void del_ArrayList(ArrayList** __o__, ExceptionData* __FATHOM__exception_data);
 #endif

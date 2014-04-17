@@ -6,6 +6,7 @@ typedef struct Test Test;
 #include <CClass.h>
 #include <ExceptionHandler.h>
 #include "ExceptionData.h"
+#include <stdio.h>
 #include "IO.h"
 #include "String.h"
 #include "ArrayList.h"
@@ -16,8 +17,6 @@ CLASS
 (
 	Test, 
 	
-	String* publicVariable;
-	
 	FUNC(void, main, Test* __o__, ExceptionData* __FATHOM__exception_data, String** args);
 	FUNC(int, divide, Test* __o__, ExceptionData* __FATHOM__exception_data, int numerator, int denominator);
 	FUNC(int, getEvenNumber, Test* __o__, ExceptionData* __FATHOM__exception_data, int num);
@@ -26,7 +25,7 @@ CLASS
 )
 
 Test* new_Test(ExceptionData* __FATHOM__exception_data);
-void del_Test(Test* __o__, ExceptionData* __FATHOM__exception_data);
+void del_Test(Test** __o__, ExceptionData* __FATHOM__exception_data);
 extern Test* __static__Test;
 
 #endif

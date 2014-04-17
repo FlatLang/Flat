@@ -2,11 +2,12 @@
 #include <CClass.h>
 #include <ExceptionHandler.h>
 #include "ExceptionData.h"
+#include <stdio.h>
 #include <setjmp.h>
 #include "ArrayList.h"
 
 ExceptionData* new_ExceptionData(ExceptionData* __FATHOM__exception_data, jmp_buf* buf);
-void del_ExceptionData(ExceptionData* __o__, ExceptionData* __FATHOM__exception_data);
+void del_ExceptionData(ExceptionData** __o__, ExceptionData* __FATHOM__exception_data);
 static ArrayList* __FATHOM__getCodes(ExceptionData* __o__, ExceptionData* __FATHOM__exception_data);
 static void __FATHOM__addCode(ExceptionData* __o__, ExceptionData* __FATHOM__exception_data, int code);
 static jmp_buf* __FATHOM__getBuffer(ExceptionData* __o__, ExceptionData* __FATHOM__exception_data);
@@ -47,21 +48,21 @@ ExceptionData* new_ExceptionData(ExceptionData* __FATHOM__exception_data, jmp_bu
 	return __o__;
 }
 
-void del_ExceptionData(ExceptionData* __o__, ExceptionData* __FATHOM__exception_data)
+void del_ExceptionData(ExceptionData** __o__, ExceptionData* __FATHOM__exception_data)
 {
-	if (!__o__)
+	if (!*__o__)
 	{
 		return;
 	}
 	
-	free(__o__->prv->buffer);
-	del_ExceptionData(__o__->prv->parent, __FATHOM__exception_data);
-	del_ArrayList(__o__->prv->codes, __FATHOM__exception_data);
-	free(__o__->prv);
+	
+	del_ExceptionData(&(*__o__)->prv->parent, __FATHOM__exception_data);
+	del_ArrayList(&(*__o__)->prv->codes, __FATHOM__exception_data);
+	free((*__o__)->prv);
 	
 	{
 	}
-	free(__o__);
+	free(*__o__);
 }
 
 static ArrayList* __FATHOM__getCodes(ExceptionData* __o__, ExceptionData* __FATHOM__exception_data)

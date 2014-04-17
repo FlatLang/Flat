@@ -2,11 +2,12 @@
 #include <CClass.h>
 #include <ExceptionHandler.h>
 #include "ExceptionData.h"
+#include <stdio.h>
 #include <stdlib.h>
 #include <Fathom.h>
 
 ArrayList* new_ArrayList(ExceptionData* __FATHOM__exception_data);
-void del_ArrayList(ArrayList* __o__, ExceptionData* __FATHOM__exception_data);
+void del_ArrayList(ArrayList** __o__, ExceptionData* __FATHOM__exception_data);
 static void __FATHOM__add(ArrayList* __o__, ExceptionData* __FATHOM__exception_data, int var);
 static void __FATHOM__increaseSize(ArrayList* __o__, ExceptionData* __FATHOM__exception_data);
 static int __FATHOM__getSize(ArrayList* __o__, ExceptionData* __FATHOM__exception_data);
@@ -38,19 +39,19 @@ ArrayList* new_ArrayList(ExceptionData* __FATHOM__exception_data)
 	return __o__;
 }
 
-void del_ArrayList(ArrayList* __o__, ExceptionData* __FATHOM__exception_data)
+void del_ArrayList(ArrayList** __o__, ExceptionData* __FATHOM__exception_data)
 {
-	if (!__o__)
+	if (!*__o__)
 	{
 		return;
 	}
 	
-	free(__o__->prv->data);
-	free(__o__->prv);
+	
+	free((*__o__)->prv);
 	
 	{
 	}
-	free(__o__);
+	free(*__o__);
 }
 
 static void __FATHOM__add(ArrayList* __o__, ExceptionData* __FATHOM__exception_data, int var)

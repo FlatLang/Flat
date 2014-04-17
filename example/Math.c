@@ -2,12 +2,13 @@
 #include <CClass.h>
 #include <ExceptionHandler.h>
 #include "ExceptionData.h"
+#include <stdio.h>
 #include <math.h>
 
 Math* __static__Math;
 
 Math* new_Math(ExceptionData* __FATHOM__exception_data);
-void del_Math(Math* __o__, ExceptionData* __FATHOM__exception_data);
+void del_Math(Math** __o__, ExceptionData* __FATHOM__exception_data);
 static double __FATHOM__sqrt(Math* __o__, ExceptionData* __FATHOM__exception_data, double number);
 static double __FATHOM__pow(Math* __o__, ExceptionData* __FATHOM__exception_data, double base, double power);
 static double __FATHOM__sin(Math* __o__, ExceptionData* __FATHOM__exception_data, double number);
@@ -42,9 +43,9 @@ Math* new_Math(ExceptionData* __FATHOM__exception_data)
 	return __o__;
 }
 
-void del_Math(Math* __o__, ExceptionData* __FATHOM__exception_data)
+void del_Math(Math** __o__, ExceptionData* __FATHOM__exception_data)
 {
-	if (!__o__)
+	if (!*__o__)
 	{
 		return;
 	}
@@ -52,7 +53,7 @@ void del_Math(Math* __o__, ExceptionData* __FATHOM__exception_data)
 	
 	{
 	}
-	free(__o__);
+	free(*__o__);
 }
 
 static double __FATHOM__sqrt(Math* __o__, ExceptionData* __FATHOM__exception_data, double number)

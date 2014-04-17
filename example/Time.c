@@ -2,12 +2,13 @@
 #include <CClass.h>
 #include <ExceptionHandler.h>
 #include "ExceptionData.h"
+#include <stdio.h>
 #include <Fathom.h>
 
 Time* __static__Time;
 
 Time* new_Time(ExceptionData* __FATHOM__exception_data);
-void del_Time(Time* __o__, ExceptionData* __FATHOM__exception_data);
+void del_Time(Time** __o__, ExceptionData* __FATHOM__exception_data);
 static long_long __FATHOM__currentTimeMillis(Time* __o__, ExceptionData* __FATHOM__exception_data);
 
 NO_PRIVATE
@@ -24,9 +25,9 @@ Time* new_Time(ExceptionData* __FATHOM__exception_data)
 	return __o__;
 }
 
-void del_Time(Time* __o__, ExceptionData* __FATHOM__exception_data)
+void del_Time(Time** __o__, ExceptionData* __FATHOM__exception_data)
 {
-	if (!__o__)
+	if (!*__o__)
 	{
 		return;
 	}
@@ -34,7 +35,7 @@ void del_Time(Time* __o__, ExceptionData* __FATHOM__exception_data)
 	
 	{
 	}
-	free(__o__);
+	free(*__o__);
 }
 
 static long_long __FATHOM__currentTimeMillis(Time* __o__, ExceptionData* __FATHOM__exception_data)

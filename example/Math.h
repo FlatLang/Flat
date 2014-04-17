@@ -6,6 +6,7 @@ typedef struct Math Math;
 #include <CClass.h>
 #include <ExceptionHandler.h>
 #include "ExceptionData.h"
+#include <stdio.h>
 #include <math.h>
 
 CLASS
@@ -25,7 +26,7 @@ CLASS
 )
 
 Math* new_Math(ExceptionData* __FATHOM__exception_data);
-void del_Math(Math* __o__, ExceptionData* __FATHOM__exception_data);
+void del_Math(Math** __o__, ExceptionData* __FATHOM__exception_data);
 extern Math* __static__Math;
 
 #endif
