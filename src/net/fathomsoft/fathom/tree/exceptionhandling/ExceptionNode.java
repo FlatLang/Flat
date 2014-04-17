@@ -19,6 +19,7 @@ package net.fathomsoft.fathom.tree.exceptionhandling;
 
 import java.util.HashMap;
 
+import net.fathomsoft.fathom.Fathom;
 import net.fathomsoft.fathom.tree.TreeNode;
 import net.fathomsoft.fathom.util.Location;
 
@@ -46,6 +47,11 @@ public class ExceptionNode extends TreeNode
 	private static int	exceptionId	= 1;
 	
 	private static final HashMap<String, Integer>	ids;
+	
+	/**
+	 * Identifier for the exception data passed to a method.
+	 */
+	public static final String	EXCEPTION_DATA_IDENTIFIER = "__" + Fathom.LANGUAGE_NAME.toUpperCase() + "__exception_data";
 	
 	/**
 	 * Initialize static data.
