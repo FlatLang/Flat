@@ -346,9 +346,9 @@ public class SyntaxUtils
 		{
 			ParameterListNode params = (ParameterListNode)method.getParameterListNode();
 			
-			if (params.getChildren().size() == 1)
+			if (params.getChildren().size() == 2)
 			{
-				ParameterNode param = (ParameterNode)params.getChild(0);
+				ParameterNode param = (ParameterNode)params.getChild(1);
 				
 				if (param.getType().equals("String") && param.isArray())
 				{
