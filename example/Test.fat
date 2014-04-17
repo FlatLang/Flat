@@ -8,7 +8,7 @@ public class Test
 {
 	private int fieldVar;
 	
-	public String publicVariable;
+	private String publicVariable;
 	
 	public Test()
 	{
@@ -17,8 +17,8 @@ public class Test
 	
 	public static void main(String args[])
 	{
-		IO.println("Hello, world\n");
-		IO.println("Command line arg #1 is");
+		IO.println("Hello, world");
+		IO.println("Command line arg #1 is:");
 		IO.println(args[0]);
 		
 		long start = Time.currentTimeMillis();
@@ -55,7 +55,7 @@ public class Test
 			}
 			finally
 			{
-				IO.println("An error has occurred!!!");
+				IO.println("In finally.");
 			}
 		}
 		catch (NotEvenNumberException e)
@@ -66,8 +66,12 @@ public class Test
 		{
 			IO.println("You cant divide by zero idiot.");
 		}
+		catch (Exception e)
+		{
+			IO.println("Default exception caught.");
+		}
 		
-		IO.print("Done!\n");
+		IO.print("Done!");
 		IO.waitForEnter();
 	}
 	
