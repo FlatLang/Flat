@@ -1,0 +1,47 @@
+import "ListNode";
+
+public class List
+{
+	private ListNode	start;
+	private ListNode	current;
+	
+	public void add(Object data)
+	{
+		ListNode node = new ListNode(data);
+		
+		if (start == 0)
+		{
+			start   = node;
+			current = node;
+		}
+		else
+		{
+			current.setNext(node);
+		}
+		
+		current = node;
+	}
+	
+	public void remove(Object data)
+	{
+		if (start.getData() == data)
+		{
+			start = start.getNext();
+		}
+		
+		ListNode prev = start;
+		ListNode cur  = start.getNext();
+		
+		while (cur != 0)
+		{
+			Object d = cur.getData();
+			
+			if (d == data)
+			{
+				prev.setNext(cur.getNext());
+			}
+			
+			cur = cur.getNext();
+		}
+	}
+}
