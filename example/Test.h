@@ -6,12 +6,13 @@ typedef struct Test Test;
 #include <CClass.h>
 #include <ExceptionHandler.h>
 #include "ExceptionData.h"
-#include <stdio.h>
+#include "String.h"
 #include "IO.h"
 #include "String.h"
 #include "ArrayList.h"
 #include "Math.h"
 #include "Time.h"
+#include "Person.h"
 
 CLASS
 (

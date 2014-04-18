@@ -2,7 +2,7 @@
 #include <CClass.h>
 #include <ExceptionHandler.h>
 #include "ExceptionData.h"
-#include <stdio.h>
+#include "String.h"
 #include <math.h>
 
 Math* __static__Math;

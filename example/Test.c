@@ -2,12 +2,13 @@
 #include <CClass.h>
 #include <ExceptionHandler.h>
 #include "ExceptionData.h"
-#include <stdio.h>
+#include "String.h"
 #include "IO.h"
 #include "String.h"
 #include "ArrayList.h"
 #include "Math.h"
 #include "Time.h"
+#include "Person.h"
 
 Test* __static__Test;
 
@@ -19,11 +20,7 @@ static int __FATHOM__getEvenNumber(Test* __o__, ExceptionData* __FATHOM__excepti
 static int __FATHOM__test(Test* __o__, ExceptionData* __FATHOM__exception_data);
 static int __FATHOM__test2(Test* __o__, ExceptionData* __FATHOM__exception_data);
 
-PRIVATE
-(
-		int fieldVar;
-		String* publicVariable;
-)
+NO_PRIVATE
 
 Test* new_Test(ExceptionData* __FATHOM__exception_data)
 {
@@ -35,10 +32,7 @@ Test* new_Test(ExceptionData* __FATHOM__exception_data)
 		__o__->test = __FATHOM__test;
 		__o__->test2 = __FATHOM__test2;
 		
-		__o__->prv->fieldVar = 0;
-		__o__->prv->publicVariable = 0;
 		{
-				__o__->prv->publicVariable = new_String(__FATHOM__exception_data, "hello");
 		}
 		
 		return __o__;
@@ -51,8 +45,6 @@ void del_Test(Test** __o__, ExceptionData* __FATHOM__exception_data)
 				return;
 		}
 		
-		del_String(&(*__o__)->prv->publicVariable, __FATHOM__exception_data);
-		free((*__o__)->prv);
 		
 		{
 		}
@@ -61,6 +53,7 @@ void del_Test(Test** __o__, ExceptionData* __FATHOM__exception_data)
 
 static void __FATHOM__main(Test* __o__, ExceptionData* __FATHOM__exception_data, String** args)
 {
+		Person* p;
 		long_long start;
 		int q;
 		long_long end;
@@ -69,6 +62,11 @@ static void __FATHOM__main(Test* __o__, ExceptionData* __FATHOM__exception_data,
 		__static__IO->println(__static__IO, __FATHOM__exception_data, new_String(__FATHOM__exception_data, "Hello, world"));
 		__static__IO->println(__static__IO, __FATHOM__exception_data, new_String(__FATHOM__exception_data, "Command line arg #1 is:"));
 		__static__IO->println(__static__IO, __FATHOM__exception_data, args[0]);
+		p = new_Person(__FATHOM__exception_data, new_String(__FATHOM__exception_data, "Joe"), 19);
+		__static__IO->print(__static__IO, __FATHOM__exception_data, p->getName(p, __FATHOM__exception_data));
+		__static__IO->print(__static__IO, __FATHOM__exception_data, new_String(__FATHOM__exception_data, " is "));
+		__static__IO->printi(__static__IO, __FATHOM__exception_data, p->getAge(p, __FATHOM__exception_data));
+		__static__IO->println(__static__IO, __FATHOM__exception_data, new_String(__FATHOM__exception_data, ""));
 		start = __static__Time->currentTimeMillis(__static__Time, __FATHOM__exception_data);
 		for (q = 99999999; q >= 0; --q)
 		{

@@ -6,7 +6,7 @@ typedef struct Time Time;
 #include <CClass.h>
 #include <ExceptionHandler.h>
 #include "ExceptionData.h"
-#include <stdio.h>
+#include "String.h"
 #include <Fathom.h>
 
 CLASS

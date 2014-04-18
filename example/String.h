@@ -6,7 +6,8 @@ typedef struct String String;
 #include <CClass.h>
 #include <ExceptionHandler.h>
 #include "ExceptionData.h"
-#include <stdio.h>
+#include "Object.h"
+#include "String.h"
 
 CLASS
 (
