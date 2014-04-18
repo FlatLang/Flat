@@ -119,8 +119,6 @@ public class SyntaxTree
 		for (int i = 0; i < filenames.length; i++)
 		{
 			FileNode fileNode = create(filenames[i], sources[i]);
-			
-			root.addChild(fileNode);
 		}
 	}
 	
@@ -157,6 +155,8 @@ public class SyntaxTree
 		
 		FileNode root = new FileNode();
 		root.setName(FileUtils.removeFileExtension(filename));
+		
+		this.root.addChild(root);
 		
 		parentStack.push(root);
 		
