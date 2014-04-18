@@ -25,14 +25,11 @@ import net.fathomsoft.fathom.tree.exceptionhandling.ExceptionHandlingNode;
 import net.fathomsoft.fathom.tree.exceptionhandling.TryNode;
 import net.fathomsoft.fathom.tree.variables.FieldNode;
 import net.fathomsoft.fathom.tree.variables.LocalVariableNode;
-import net.fathomsoft.fathom.tree.variables.PrivateFieldListNode;
-import net.fathomsoft.fathom.tree.variables.PublicFieldListNode;
 import net.fathomsoft.fathom.tree.variables.VariableListNode;
 import net.fathomsoft.fathom.tree.variables.VariableNode;
 import net.fathomsoft.fathom.util.Bounds;
 import net.fathomsoft.fathom.util.Location;
 import net.fathomsoft.fathom.util.Patterns;
-import net.fathomsoft.fathom.util.StringUtils;
 import net.fathomsoft.fathom.util.SyntaxUtils;
 
 /**

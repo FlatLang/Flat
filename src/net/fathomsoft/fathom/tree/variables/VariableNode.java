@@ -19,7 +19,6 @@ package net.fathomsoft.fathom.tree.variables;
 
 import net.fathomsoft.fathom.tree.MethodNode;
 import net.fathomsoft.fathom.tree.ModifierNode;
-import net.fathomsoft.fathom.tree.TreeNode;
 import net.fathomsoft.fathom.util.SyntaxUtils;
 
 /**

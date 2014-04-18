@@ -19,9 +19,6 @@ package net.fathomsoft.fathom.tree;
 
 import net.fathomsoft.fathom.Fathom;
 import net.fathomsoft.fathom.error.SyntaxMessage;
-import net.fathomsoft.fathom.tree.variables.FieldNode;
-import net.fathomsoft.fathom.tree.variables.PrivateFieldListNode;
-import net.fathomsoft.fathom.tree.variables.PublicFieldListNode;
 import net.fathomsoft.fathom.util.SyntaxUtils;
 
 /**

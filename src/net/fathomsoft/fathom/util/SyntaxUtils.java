@@ -28,7 +28,6 @@ import net.fathomsoft.fathom.tree.ParameterListNode;
 import net.fathomsoft.fathom.tree.ParameterNode;
 import net.fathomsoft.fathom.tree.TreeNode;
 import net.fathomsoft.fathom.tree.variables.FieldNode;
-import net.fathomsoft.fathom.tree.variables.VariableNode;
 
 /**
  * Class used for getting information about the Syntax of Fathom.

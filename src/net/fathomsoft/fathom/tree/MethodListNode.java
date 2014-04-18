@@ -17,8 +17,6 @@
  */
 package net.fathomsoft.fathom.tree;
 
-import net.fathomsoft.fathom.tree.variables.FieldNode;
-import net.fathomsoft.fathom.tree.variables.PublicFieldListNode;
 
 /**
  * TreeNode extension that represents all of the Methods within
