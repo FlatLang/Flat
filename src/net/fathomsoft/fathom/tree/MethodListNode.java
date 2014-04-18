@@ -17,6 +17,9 @@
  */
 package net.fathomsoft.fathom.tree;
 
+import net.fathomsoft.fathom.tree.variables.FieldNode;
+import net.fathomsoft.fathom.tree.variables.PublicFieldListNode;
+
 /**
  * TreeNode extension that represents all of the Methods within
  * a class.
@@ -27,6 +30,66 @@ package net.fathomsoft.fathom.tree;
  */
 public class MethodListNode extends TreeNode
 {
+	/**
+	 * Get whether or not the ClassNode contains the MethodNode with the
+	 * specified name.<br>
+	 * <br>
+	 * For example:
+	 * <blockquote><pre>
+	 * public class ClassName
+	 * {
+	 * 	public void doSomething()
+	 * 	{
+	 * 		...
+	 * 	}
+	 * }</pre></blockquote>
+	 * <br>
+	 * A call like: "<code>containsMethod("doSomething")</code>" would
+	 * return true.
+	 * 
+	 * @param methodName The name of the method to search for.
+	 * @return Whether or not the ClassNode contains the MethodNode with
+	 * 		the specified name.
+	 */
+	public boolean containsMethod(String methodName)
+	{
+		return getMethod(methodName) != null;
+	}
+	
+	/**
+	 * Get the ClassNode's MethodNode with the specified name.<br>
+	 * <br>
+	 * For example:
+	 * <blockquote><pre>
+	 * public class ClassName
+	 * {
+	 * 	public void doSomething()
+	 * 	{
+	 * 		...
+	 * 	}
+	 * }</pre></blockquote>
+	 * <br>
+	 * A call like: "<code>getMethod("doSomething")</code>" would
+	 * return the MethodNode for the "<code>doSomething</code>" method.
+	 * 
+	 * @param methodName The name of the method to search for.
+	 * @return The MethodNode for the method, if it exists.
+	 */
+	public MethodNode getMethod(String methodName)
+	{
+		for (int i = 0; i < getChildren().size(); i++)
+		{
+			MethodNode variable = (MethodNode)getChild(i);
+			
+			if (variable.getName().equals(methodName))
+			{
+				return variable;
+			}
+		}
+		
+		return null;
+	}
+	
 	/**
 	 * @see net.fathomsoft.fathom.tree.TreeNode#generateJavaSourceOutput()
 	 */
