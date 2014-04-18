@@ -132,6 +132,8 @@ public class IdentifierNode extends TreeNode
 	{
 		super.clone(node);
 		
+		node.setName(name);
+		
 		return node;
 	}
 }
