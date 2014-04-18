@@ -20,10 +20,15 @@ package net.fathomsoft.fathom.util;
 import java.util.regex.Matcher;
 
 import net.fathomsoft.fathom.Fathom;
+import net.fathomsoft.fathom.error.SyntaxMessage;
+import net.fathomsoft.fathom.tree.ClassNode;
+import net.fathomsoft.fathom.tree.DeclarationNode;
 import net.fathomsoft.fathom.tree.MethodNode;
 import net.fathomsoft.fathom.tree.ParameterListNode;
 import net.fathomsoft.fathom.tree.ParameterNode;
+import net.fathomsoft.fathom.tree.TreeNode;
 import net.fathomsoft.fathom.tree.variables.FieldNode;
+import net.fathomsoft.fathom.tree.variables.VariableNode;
 
 /**
  * Class used for getting information about the Syntax of Fathom.
@@ -241,26 +246,33 @@ public class SyntaxUtils
 	}
 	
 	/**
-	 * Get whether or not the given String is a valid identifier access.
-	 * 
-	 * <ul>
-	 * 	<li>A-Z</li>
-	 * 	<li>a-z</li>
-	 * 	<li>0-9</li>
-	 * 	<li>The '_' character (underscore)</li>
-	 * </ul>
-	 * It should also be noted that numbers cannot start an identifier.
+	 * Get whether or not the given String is a valid identifier access.<br>
+	 * <br>
+	 * For example: "<code>getName().publicVarName.methodName().var[72]</code>"
 	 * 
 	 * @param value The String of text to validate.
-	 * @return Whether or not the given String is a valid identifier.
+	 * @return Whether or not the given String is a valid identifier
+	 * 		access.
 	 */
 	public static boolean isValidIdentifierAccess(String value)
 	{
-		String values[] = value.split("[.]");
+		if (value.length() <= 0)
+		{
+			return false;
+		}
+		
+		String values[] = value.split("\\s*\\.\\s*");
+		
+		if (values.length <= 0)
+		{
+			return false;
+		}
 		
 		for (int i = 0; i < values.length; i++)
 		{
-			if (!isValidIdentifier(values[i]))
+			String v = values[i];
+			
+			if (!isValidIdentifier(v) && !isMethodCall(v) && !isValidArrayAccess(v))
 			{
 				return false;
 			}
@@ -400,6 +412,135 @@ public class SyntaxUtils
 	public static boolean isInstantiation(String statement)
 	{
 		return Regex.indexOf(statement, Patterns.PRE_INSTANTIATION) == 0;
+	}
+	
+	/**
+	 * Get whether or not the given DeclarationNode is able to be accessed
+	 * from the given ClassNode context.
+	 * 
+	 * @param accessedFrom The ClassNode context that the DeclarationNode
+	 * 		was accessed from.
+	 * @param declaration The DeclarationNode that was accessed from the
+	 * 		given ClassNode context.
+	 * @return Whether or not the given DeclarationNode is able to be
+	 * 		accessed from the given ClassNode context.
+	 */
+	private static boolean isAccessableFrom(ClassNode accessedFrom, DeclarationNode declaration)
+	{
+		if (accessedFrom.isAncestorOf(declaration))
+		{
+			return true;
+		}
+		
+		int visibility = declaration.getVisibility();
+		
+		return visibility == DeclarationNode.PUBLIC || visibility == FieldNode.VISIBLE;
+	}
+	
+	/**
+	 * Get the ClassNode that contains the accessed identifier. For more
+	 * information on what an identifierAccess looks like, see
+	 * {@link #isValidIdentifierAccess(String)}.
+	 * 
+	 * @param reference The ClassNode context that the identifier was
+	 * 		accessed from.
+	 * @param identifierAccess The trace of the identifier that was
+	 * 		accessed.
+	 * @return The ClassNode that contains the accessed identifier.
+	 */
+	public static ClassNode getClassType(ClassNode reference, String identifierAccess)
+	{
+		if (!isValidIdentifierAccess(identifierAccess))
+		{
+			return null;
+		}
+		
+		String values[] = identifierAccess.split("\\s*\\.\\s*");
+		String output[] = new String[values.length - 1];
+		
+		System.arraycopy(values, 1, output, 0, output.length);
+		
+		return getClassType(reference, output);
+	}
+	
+	/**
+	 * Get the ClassNode that contains the accessed identifier.
+	 * 
+	 * @param reference The ClassNode context that the identifier was
+	 * 		accessed from.
+	 * @param identifiers A list of identifiers leading up to the
+	 * 		identifier that is being accessed.
+	 * @return The ClassNode that contains the accessed identifier.
+	 */
+	private static ClassNode getClassType(ClassNode reference, String identifiers[])
+	{
+		if (identifiers.length < 2)
+		{
+			return reference;
+		}
+		
+		String identifier = identifiers[0];
+		
+		ClassNode current = null;
+		
+		if (!identifier.equals("this"))
+		{
+			identifier = getIdentifierName(identifier);
+			
+			DeclarationNode dec = reference.getDeclaration(identifier);
+			
+			if (!isAccessableFrom(reference, dec))
+			{
+				SyntaxMessage.error("Variable '" + dec.getName() + "' is not visible");
+			}
+			
+			current = dec.getProgramNode().getClass(dec.getType());
+			
+			if (identifiers.length <= 2)
+			{
+				return current;
+			}
+		}
+		
+		String output[] = new String[identifiers.length - 1];
+		
+		System.arraycopy(identifiers, 1, output, 0, output.length);
+		
+		return getClassType(current, output);
+	}
+	
+	/**
+	 * Get the identifier name that is represented by the given access
+	 * String variable.<br>
+	 * <br>
+	 * For example:
+	 * <ul>
+	 * 	<li><code>testName()</code> <i>returns</i> <code>testName</code></li>
+	 * 	<li><code>arrayAccess[54]</code> <i>returns</i> <code>arrayAccess</code></li>
+	 * 	<li><code>idName32</code> <i>returns</i> <code>idName32</code></li>
+	 * 	<li><code>methodCall (String name, int args)</code> <i>returns</i> <code>methodCall</code></li>
+	 * </ul>
+	 * 
+	 * @param access The identifier access to get the identifier name
+	 * 		from.
+	 * @return The name of the identifier from given access String.
+	 */
+	public static String getIdentifierName(String access)
+	{
+		if (isMethodCall(access))
+		{
+			int endIndex = StringUtils.findNextNonWhitespaceIndex(access, access.indexOf('(') - 1, -1) + 1;
+			
+			access       = access.substring(0, endIndex);
+		}
+		else if (isValidArrayAccess(access))
+		{
+			int endIndex = StringUtils.findNextNonWhitespaceIndex(access, access.indexOf('[') - 1, -1) + 1;
+			
+			access       = access.substring(0, endIndex);
+		}
+		
+		return access;
 	}
 	
 	/**
