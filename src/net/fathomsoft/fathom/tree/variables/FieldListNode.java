@@ -142,9 +142,22 @@ public class FieldListNode extends TreeNode
 	 */
 	public FieldNode getField(String fieldName)
 	{
-		for (int i = 0; i < getChildren().size(); i++)
+		PrivateFieldListNode privateFields = getPrivateFieldListNode();
+		PublicFieldListNode  publicFields  = getPublicFieldListNode();
+		
+		for (int i = 0; i < privateFields.getChildren().size(); i++)
 		{
-			FieldNode variable = (FieldNode)getChild(i);
+			FieldNode variable = (FieldNode)privateFields.getChild(i);
+			
+			if (variable.getName().equals(fieldName))
+			{
+				return variable;
+			}
+		}
+		
+		for (int i = 0; i < publicFields.getChildren().size(); i++)
+		{
+			FieldNode variable = (FieldNode)publicFields.getChild(i);
 			
 			if (variable.getName().equals(fieldName))
 			{
