@@ -350,7 +350,7 @@ public class MethodCallNode extends IdentifierNode
 						
 						if (var == null)
 						{
-							if (fileNode.getImportListNode().contains(varName) && !fileNode.getImportListNode().isExternal(varName))
+							if (!fileNode.getImportListNode().isExternal(varName) && (fileNode.getImportListNode().containsImport(varName) || fileNode.containsClass(varName)))
 							{
 								objectInstance.insert(0, "__static__");
 								
@@ -479,7 +479,7 @@ public class MethodCallNode extends IdentifierNode
 				{
 					FileNode fileNode = (FileNode)parent.getAncestorOfType(FileNode.class, true);
 					
-					if (fileNode.getImportListNode().contains(argument) && !fileNode.getImportListNode().isExternal(argument))
+					if (fileNode.getImportListNode().containsImport(argument) && !fileNode.getImportListNode().isExternal(argument))
 					{
 						argument = "__static__" + argument;
 					}
