@@ -32,6 +32,7 @@ import net.fathomsoft.fathom.tree.variables.VariableNode;
 import net.fathomsoft.fathom.util.Bounds;
 import net.fathomsoft.fathom.util.Location;
 import net.fathomsoft.fathom.util.Patterns;
+import net.fathomsoft.fathom.util.StringUtils;
 import net.fathomsoft.fathom.util.SyntaxUtils;
 
 /**
@@ -332,6 +333,49 @@ public abstract class TreeNode
 	}
 	
 	/**
+	 * Get whether or not the specified node is an ancestor of the given
+	 * node.
+	 * 
+	 * @param node The node to search for the ancestor of.
+	 * @return Whether or not the specified node is an ancestor of the
+	 * 		given node.
+	 */
+	public boolean isAncestorOf(TreeNode node)
+	{
+		return isAncestorOf(node, false);
+	}
+	
+	/**
+	 * Get whether or not the specified node is an ancestor of the given
+	 * node.
+	 * 
+	 * @param node The node to search for the ancestor of.
+	 * @param inclusive Whether or not to check if the node itself is a
+	 * 		match.
+	 * @return Whether or not the specified node is an ancestor of the
+	 * 		given node.
+	 */
+	public boolean isAncestorOf(TreeNode node, boolean inclusive)
+	{
+		TreeNode current = node;
+		
+		if (!inclusive)
+		{
+			current = node.parent;
+		}
+		
+		while (current != null)
+		{
+			if (current == this)
+			{
+				return true;
+			}
+		}
+		
+		return false;
+	}
+	
+	/**
 	 * Get an ArrayList with all of the children TreeNodes to the specific
 	 * TreeNode.
 	 * 
@@ -377,6 +421,7 @@ public abstract class TreeNode
 		// If the node already belongs to a parent, remove it from its old parent.
 		if (node.parent != null)
 		{
+//			System.err.println(this + " " + node);
 			node.parent.children.remove(node);
 		}
 		
@@ -614,7 +659,7 @@ public abstract class TreeNode
 				return node;
 			}
 		}
-		else if (parent instanceof MethodNode || parent instanceof IfStatementNode || parent instanceof LoopNode || parent instanceof ExceptionHandlingNode)
+		else if (parent instanceof MethodNode || parent instanceof IfStatementNode || parent instanceof ElseStatementNode || parent instanceof LoopNode || parent instanceof ExceptionHandlingNode)
 		{
 			if ((node = ExceptionHandlingNode.decodeStatement(parent, statement, location)) != null)
 			{
@@ -629,6 +674,10 @@ public abstract class TreeNode
 				return node;
 			}
 			else if ((node = InstantiationNode.decodeStatement(parent, statement, location)) != null)
+			{
+				return node;
+			}
+			else if ((node = ElseStatementNode.decodeStatement(parent, statement, location)) != null)
 			{
 				return node;
 			}
@@ -753,7 +802,12 @@ public abstract class TreeNode
 				{
 					VariableListNode variables = scopeNode.getScopeNode().getVariableListNode();
 					
-					variables.getVariable(statement);
+					VariableNode     variable  = variables.getVariable(statement);
+					
+					if (variable != null)
+					{
+						return variable;
+					}
 					
 					if (scopeNode instanceof MethodNode)
 					{
@@ -778,6 +832,21 @@ public abstract class TreeNode
 			ClassNode classNode = (ClassNode)node.getAncestorOfType(ClassNode.class, true);
 			
 			return classNode.getField(statement);
+		}
+		else if (SyntaxUtils.isValidIdentifierAccess(statement))
+		{
+			if (statement.indexOf('.') >= 0)
+			{
+				ClassNode    reference = (ClassNode)node.getAncestorOfType(ClassNode.class);
+				
+				ClassNode    type      = SyntaxUtils.getClassType(reference, statement);
+				
+				String       var       = statement.substring(statement.lastIndexOf('.') + 1);
+				
+				VariableNode n         = type.getDeclaration(SyntaxUtils.getIdentifierName(var));
+				
+				return n;
+			}
 		}
 		
 		return null;
@@ -813,6 +882,21 @@ public abstract class TreeNode
 		}
 		
 		return -1;
+	}
+	
+	/**
+	 * Get the ProgramNode (The oldest parent) of this TreeNode.
+	 * 
+	 * @return The ProgramNode of this TreeNode.
+	 */
+	public ProgramNode getProgramNode()
+	{
+		if (parent != null)
+		{
+			return parent.getProgramNode();
+		}
+		
+		return (ProgramNode)this;
 	}
 	
 	/**
