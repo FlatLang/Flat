@@ -19,6 +19,9 @@ package net.fathomsoft.fathom.tree;
 
 import net.fathomsoft.fathom.Fathom;
 import net.fathomsoft.fathom.error.SyntaxMessage;
+import net.fathomsoft.fathom.tree.variables.FieldNode;
+import net.fathomsoft.fathom.tree.variables.PrivateFieldListNode;
+import net.fathomsoft.fathom.tree.variables.PublicFieldListNode;
 import net.fathomsoft.fathom.util.SyntaxUtils;
 
 /**
@@ -33,6 +36,7 @@ import net.fathomsoft.fathom.util.SyntaxUtils;
 public class FileNode extends IdentifierNode
 {
 	//TODO: package name here?
+	
 	private String	header, source;
 	
 	/**
@@ -49,7 +53,9 @@ public class FileNode extends IdentifierNode
 		{
 			"CClass.h",
 			"ExceptionHandler.h",
-			"ExceptionData"
+			"ExceptionData",
+			"Object",
+			"String"
 		};
 	}
 	
@@ -63,6 +69,69 @@ public class FileNode extends IdentifierNode
 		super.addChild(imports);
 		
 		addDefaultImportNodes();
+	}
+	
+	/**
+	 * Get whether or not the FileNode contains the ClassNode with
+	 * the specified name.<br>
+	 * <br>
+	 * For example:
+	 * <blockquote><pre>
+	 * public class Person
+	 * {
+	 * 	
+	 * 	...
+	 * 	
+	 * }</pre></blockquote>
+	 * <br>
+	 * A call like: "<code>containsClass("Person")</code>" would return
+	 * true.
+	 * 
+	 * @param className The name of the class to search for.
+	 * @return Whether or not the FileNode contains the ClassNode
+	 * 		with the specified name.
+	 */
+	public boolean containsClass(String className)
+	{
+		return getClass(className) != null;
+	}
+	
+	/**
+	 * Get the FileNode's ClassNode with the specified name.<br>
+	 * <br>
+	 * For example:
+	 * <blockquote><pre>
+	 * public class Person
+	 * {
+	 * 	
+	 * 	...
+	 * 	
+	 * }</pre></blockquote>
+	 * <br>
+	 * A call like: "<code>getClass("Person")</code>" would return the
+	 * ClassNode for the "<code>age</code>" int field.
+	 * 
+	 * @param className The name of the class to search for.
+	 * @return The ClassNode for the class, if it exists.
+	 */
+	public ClassNode getClass(String className)
+	{
+		for (int i = 0; i < getChildren().size(); i++)
+		{
+			TreeNode child = getChild(i);
+			
+			if (child != getImportListNode())
+			{
+				ClassNode clazz = (ClassNode)child;
+				
+				if (clazz.getName().equals(className))
+				{
+					return clazz;
+				}
+			}
+		}
+		
+		return null;
 	}
 	
 	/**
