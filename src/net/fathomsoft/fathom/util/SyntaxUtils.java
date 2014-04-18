@@ -425,7 +425,7 @@ public class SyntaxUtils
 	 * @return Whether or not the given DeclarationNode is able to be
 	 * 		accessed from the given ClassNode context.
 	 */
-	private static boolean isAccessableFrom(ClassNode accessedFrom, DeclarationNode declaration)
+	private static boolean isAccessibleFrom(ClassNode accessedFrom, DeclarationNode declaration)
 	{
 		if (accessedFrom.isAncestorOf(declaration))
 		{
@@ -489,7 +489,7 @@ public class SyntaxUtils
 			
 			DeclarationNode dec = reference.getDeclaration(identifier);
 			
-			if (!isAccessableFrom(reference, dec))
+			if (!isAccessibleFrom(reference, dec))
 			{
 				SyntaxMessage.error("Variable '" + dec.getName() + "' is not visible");
 			}
