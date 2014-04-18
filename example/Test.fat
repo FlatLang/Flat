@@ -3,23 +3,23 @@ import "String";
 import "ArrayList";
 import "Math";
 import "Time";
+import "Person";
 
 public class Test
 {
-	private int fieldVar;
-	
-	private String publicVariable;
-	
-	public Test()
-	{
-		publicVariable = "hello";
-	}
-	
 	public static void main(String args[])
 	{
 		IO.println("Hello, world");
 		IO.println("Command line arg #1 is:");
 		IO.println(args[0]);
+		
+		Person p = new Person("Joe", 19);
+		
+		IO.print(p.getName());
+		IO.print(" is ");
+		
+		IO.printi(p.getAge());
+		IO.println("");
 		
 		long start = Time.currentTimeMillis();
 		
