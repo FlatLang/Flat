@@ -39,6 +39,16 @@ public class Message
 	public static final int	MESSAGE = 1, WARNING = 2, ERROR = 3;
 	
 	/**
+	 * Create a new message instance with the given message.
+	 * 
+	 * @param message The message that describes what happened.
+	 */
+	public Message(String message)
+	{
+		this.message = message;
+	}
+	
+	/**
 	 * Create a new message instance with the given message that
 	 * is representing the given node.
 	 * 
@@ -72,19 +82,28 @@ public class Message
 	 */
 	public void outputMessage(int type)
 	{
+		String info = "Unkown: ";
+		
 		if (type == MESSAGE)
 		{
-			System.out.print("Message: ");
+			info = "Message: ";
 		}
 		else if (type == WARNING)
 		{
-			System.err.print("Warning: ");
+			info = "Warning: ";
 		}
 		else if (type == ERROR)
 		{
-			System.err.print("Error: ");
+			info = "Error: ";
 		}
 		
-		System.err.println(message + " on line number " + location.getLineNumber() + " at offset " + location.getOffset());
+		info += message;
+		
+		if (location != null)
+		{
+			info += " on line number " + location.getLineNumber() + " at offset " + location.getOffset();
+		}
+		
+		System.err.println(info);
 	}
 }
