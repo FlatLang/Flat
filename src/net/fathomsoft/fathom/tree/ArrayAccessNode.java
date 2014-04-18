@@ -93,12 +93,12 @@ public class ArrayAccessNode extends TreeNode
 	 * <br>
 	 * An example input would be: "args[34]"
 	 * 
-	 * @param parentNode The parent of the current statement.
+	 * @param parent The parent of the current statement.
 	 * @param statement The statement to decode into an ArrayAccessNode.
 	 * @param location The location of the statement.
 	 * @return The ArrayAccessNode if it was created, null if not.
 	 */
-	public static ArrayAccessNode decodeStatement(TreeNode parentNode, String statement, Location location)
+	public static ArrayAccessNode decodeStatement(TreeNode parent, String statement, Location location)
 	{
 		if (SyntaxUtils.isValidArrayAccess(statement))
 		{
@@ -111,7 +111,7 @@ public class ArrayAccessNode extends TreeNode
 			
 			int current = indexBounds.getEnd() + 1;
 			
-			VariableNode var = (VariableNode)getExistingNode(parentNode, identifier);
+			VariableNode var = (VariableNode)getExistingNode(parent, identifier);
 			
 			if (var == null)
 			{
@@ -140,7 +140,7 @@ public class ArrayAccessNode extends TreeNode
 				}
 				else
 				{
-					IdentifierNode existing = TreeNode.getExistingNode(parentNode, data);
+					IdentifierNode existing = TreeNode.getExistingNode(parent, data);
 					
 					if (existing != null)
 					{
@@ -150,7 +150,7 @@ public class ArrayAccessNode extends TreeNode
 					}
 					else
 					{
-						TreeNode created = TreeNode.decodeStatement(parentNode, data, newLoc);
+						TreeNode created = TreeNode.decodeStatement(parent, data, newLoc);
 						
 						if (created == null)
 						{
