@@ -24,6 +24,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
+import net.fathomsoft.fathom.error.SyntaxMessage;
 import net.fathomsoft.fathom.tree.ClassNode;
 import net.fathomsoft.fathom.tree.FileNode;
 import net.fathomsoft.fathom.tree.MethodNode;
@@ -61,12 +62,13 @@ public class Fathom
 	private ArrayList<File>		inputFiles, cSourceFiles, cHeaderFiles;
 	
 	private List<File>			lingeringFiles;
+
+	private static final int	os;
+
+	private static final String	OUTPUT_EXTENSION;
 	
 	public static final boolean	ANDROID_DEBUG = false;
-	
 	public static final boolean	DEBUG         = true;
-	
-	private static final int	os;
 	
 	public static final long	CSOURCE       = 0x1l;
 	public static final long	VERBOSE       = 0x10l;
@@ -74,6 +76,7 @@ public class Fathom
 	public static final long	KEEP_C        = 0x1000l;
 	public static final long	C_ARGS        = 0x10000l;
 	public static final long	RUNTIME       = 0x100000l;
+	public static final long	LIBRARY       = 0x1000000l;
 	
 	public static final int		GCC           = 1;
 	public static final int		TCC           = 2;
@@ -95,18 +98,22 @@ public class Fathom
 		if (osName.startsWith("win"))
 		{
 			os = WINDOWS;
+			OUTPUT_EXTENSION = ".exe";
 		}
 		else if (osName.startsWith("mac"))
 		{
 			os = MACOSX;
+			OUTPUT_EXTENSION = "";
 		}
 		else if (osName.startsWith("lin"))
 		{
 			os = LINUX;
+			OUTPUT_EXTENSION = "";
 		}
 		else
 		{
 			os = 0;
+			OUTPUT_EXTENSION = "";
 		}
 	}
 	
@@ -165,20 +172,26 @@ public class Fathom
 		{
 			args = new String[]
 			{
-				directory + "Test.fat",
-				directory + "IO.fat",
+//				directory + "Test.fat",
+//				directory + "IO.fat",
 				directory + "String.fat",
-				directory + "ExceptionData.fat",
-				directory + "ArrayList.fat",
-				directory + "Math.fat",
-				directory + "Time.fat",
-				"-o", directory + "bin/Executable.exe",
+//				directory + "ExceptionData.fat",
+//				directory + "ArrayList.fat",
+//				directory + "Math.fat",
+//				directory + "Time.fat",
+//				directory + "Person.fat",
+				directory + "Fathom.fat",
+				directory + "Object.fat",
+				directory + "List.fat",
+				directory + "ListNode.fat",
+				"-o", directory + "bin/Executable" + OUTPUT_EXTENSION,
+				"-dir", '"' + directory + "../include" + '"',
 				"-run",
-				"-dir", '"' + directory + "../include\"",
 				"-csource",
 				"-v",
 				"-cargs",
-				"-keepc"
+				"-keepc",
+				"-library"
 			};
 		}
 		if (ANDROID_DEBUG)
@@ -289,6 +302,19 @@ public class Fathom
 	private void insertMainMethod()
 	{
 		MethodNode mainMethod = tree.getMainMethod();
+		
+		if (mainMethod == null)
+		{
+			if (!isFlagEnabled(LIBRARY))
+			{
+				SyntaxMessage.error("No main method found in program");
+				
+				completed();
+			}
+			
+			return;
+		}
+		
 		FileNode   fileNode   = (FileNode)mainMethod.getAncestorOfType(FileNode.class);
 		
 		if (mainMethod != null)
@@ -632,6 +658,12 @@ public class Fathom
 			{
 				enableFlag(C_ARGS);
 			}
+			// If the user wants to output a library instead of an
+			// executable.
+			else if (arg.equals("-library"))
+			{
+				enableFlag(LIBRARY);
+			}
 			// If none of the arguments were matched, check these:
 			else
 			{
@@ -709,7 +741,7 @@ public class Fathom
 	/**
 	 * Check if the specific flag is enabled for the given set of flags.
 	 * 
-	 * @param The flags to verify the flag with.
+	 * @param flags The flags to verify the flag with.
 	 * @param flag The flag to check if is enabled.
 	 * @return Whether or not the flag is enabled.
 	 */
