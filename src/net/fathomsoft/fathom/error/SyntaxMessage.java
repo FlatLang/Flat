@@ -35,6 +35,30 @@ public class SyntaxMessage
 	 * Output an error message from the compiler.
 	 * 
 	 * @param message The message describing the error.
+	 */
+	public static void error(String message)
+	{
+		Message error = new Message(message);
+		
+		error.outputMessage(Message.ERROR);
+	}
+	
+	/**
+	 * Output a warning message from the compiler.
+	 * 
+	 * @param message The message describing the warning.
+	 */
+	public static void warning(String message)
+	{
+		Message error = new Message(message);
+		
+		error.outputMessage(Message.WARNING);
+	}
+	
+	/**
+	 * Output an error message from the compiler.
+	 * 
+	 * @param message The message describing the error.
 	 * @param node The node that the error occurred from.
 	 */
 	public static void error(String message, TreeNode node)
