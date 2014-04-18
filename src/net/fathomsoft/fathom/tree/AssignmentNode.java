@@ -182,23 +182,37 @@ public class AssignmentNode extends TreeNode
 			return null;
 		}
 		
-		AssignmentNode n  = new AssignmentNode();
+		AssignmentNode n = new AssignmentNode();
 		
-		Bounds bounds     = Regex.boundsOf(statement, Patterns.PRE_EQUALS_SIGN);
+		Bounds bounds    = Regex.boundsOf(statement, Patterns.PRE_EQUALS_SIGN);
 		
-		int equalsIndex   = StringUtils.findNextNonWhitespaceIndex(statement, bounds.getEnd());
+		int equalsIndex  = StringUtils.findNextNonWhitespaceIndex(statement, bounds.getEnd());
 		
-		int endIndex      = StringUtils.findNextNonWhitespaceIndex(statement, equalsIndex - 1, -1) + 1;
+		int endIndex     = StringUtils.findNextNonWhitespaceIndex(statement, equalsIndex - 1, -1) + 1;
 		
-		String variable   = statement.substring(0, endIndex);
+		String variable  = statement.substring(0, endIndex);
 		
-		TreeNode varNode  = null;
+		TreeNode varNode = null;
 		
 		if (SyntaxUtils.isValidIdentifierAccess(variable))
 		{
-			varNode = (VariableNode)TreeNode.getExistingNode(parent, variable);
-			
-			varNode = varNode.clone();
+			if (SyntaxUtils.isValidArrayAccess(variable))
+			{
+				varNode = ArrayAccessNode.decodeStatement(parent, variable, location);
+			}
+			else
+			{
+				varNode = (VariableNode)TreeNode.getExistingNode(parent, variable);
+				
+				if (varNode == null)
+				{
+					SyntaxMessage.error("Variable '" + variable + "' was not declared", location);
+					
+					return null;
+				}
+				
+				varNode = varNode.clone();
+			}
 		}
 		else
 		{
@@ -252,6 +266,37 @@ public class AssignmentNode extends TreeNode
 		// Right-hand side of the equation.
 		String   rhs      = statement.substring(rhsIndex);
 		
+		Location newLoc   = new Location(location.getLineNumber(), location.getOffset() + rhsIndex);
+		
+		TreeNode child    = decodeRightHandSide(parent, rhs, newLoc);
+		
+		n.addChild(child);
+		
+		return n;
+	}
+	
+	/**
+	 * Decode the right hand side of an assignment into an TreeNode if
+	 * possible. If it is not possible, then null is returned. The right
+	 * hand side of an assignment must represent a value.<br>
+	 * <br>
+	 * Example inputs include:<br>
+	 * <ul>
+	 * 	<li>45</li>
+	 * 	<li>"Bob"</li>
+	 * 	<li>new Person(54)</li>
+	 * 	<li>width * height / 2</li>
+	 * 	<li>array.getSize() + 5</li>
+	 * </ul>
+	 * 
+	 * @param parent The parent of the current statement.
+	 * @param rhs The right hand side to decode into an AssignmentNode.
+	 * @param location The location of the statement in the source code.
+	 * @return The new TreeNode if it decodes properly. If not,
+	 * 		it returns null.
+	 */
+	public static TreeNode decodeRightHandSide(TreeNode parent, String rhs, Location location)
+	{
 		TreeNode child    = MethodCallNode.decodeStatement(parent, rhs, location);
 
 		if (child == null)
@@ -279,9 +324,7 @@ public class AssignmentNode extends TreeNode
 			child = node;
 		}
 		
-		n.addChild(child);
-		
-		return n;
+		return child;
 	}
 
 	/**
