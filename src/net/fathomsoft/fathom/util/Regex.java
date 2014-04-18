@@ -32,11 +32,25 @@ public class Regex
 {
 	/**
 	 * Check whether or not the given src String matches the given Pattern
+	 * at the start of the src.
+	 * 
+	 * @param src The source to check with the Pattern.
+	 * @param pattern The Pattern to test the source against.
+	 * @return Whether or not the given src String matches the given
+	 * 		Pattern at the start.
+	 */
+	public static boolean startsWith(String src, Pattern pattern)
+	{
+		return matches(src, 0, pattern);
+	}
+	
+	/**
+	 * Check whether or not the given src String matches the given Pattern
 	 * at the specified index.
 	 * 
 	 * @param src The source to check with the Pattern.
 	 * @param index The index to see if it matches at.
-	 * @param pattern The Pattern to test teh source against.
+	 * @param pattern The Pattern to test the source against.
 	 * @return Whether or not the given src String matches the given
 	 * 		Pattern at the specified index.
 	 */
