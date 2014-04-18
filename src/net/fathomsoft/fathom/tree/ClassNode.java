@@ -213,27 +213,83 @@ public class ClassNode extends DeclarationNode
 	 */
 	public FieldNode getField(String fieldName)
 	{
-		FieldNode node = null;
+		FieldListNode fields = getFieldListNode();
 		
-		PrivateFieldListNode variables = getFieldListNode().getPrivateFieldListNode();
+		return fields.getField(fieldName);
+	}
+	
+	/**
+	 * Get whether or not the ClassNode contains the MethodNode with the
+	 * specified name.<br>
+	 * <br>
+	 * For example:
+	 * <blockquote><pre>
+	 * public class ClassName
+	 * {
+	 * 	public void doSomething()
+	 * 	{
+	 * 		...
+	 * 	}
+	 * }</pre></blockquote>
+	 * <br>
+	 * A call like: "<code>containsMethod("doSomething")</code>" would
+	 * return true.
+	 * 
+	 * @param methodName The name of the method to search for.
+	 * @return Whether or not the ClassNode contains the MethodNode with
+	 * 		the specified name.
+	 */
+	public boolean containsMethod(String methodName)
+	{
+		return getMethod(methodName) != null;
+	}
+	
+	/**
+	 * Get the ClassNode's MethodNode with the specified name.<br>
+	 * <br>
+	 * For example:
+	 * <blockquote><pre>
+	 * public class ClassName
+	 * {
+	 * 	public void doSomething()
+	 * 	{
+	 * 		...
+	 * 	}
+	 * }</pre></blockquote>
+	 * <br>
+	 * A call like: "<code>getMethod("doSomething")</code>" would
+	 * return the MethodNode for the "<code>doSomething</code>" method.
+	 * 
+	 * @param methodName The name of the method to search for.
+	 * @return The MethodNode for the method, if it exists.
+	 */
+	public MethodNode getMethod(String methodName)
+	{
+		MethodListNode methods = getMethodListNode();
 		
-		node = variables.getf
+		return methods.getMethod(methodName);
+	}
+	
+	/**
+	 * Get the DeclarationNode child of the specified ClassNode that has
+	 * the given name. The DeclarationNode can either be a field or
+	 * method.
+	 * 
+	 * @param name The name of the declaration node to search for.
+	 * @return The DeclarationNode instance that was found, if any.
+	 */
+	public DeclarationNode getDeclaration(String name)
+	{
+		FieldNode field = getField(name);
 		
-		if ()
-		
-		PublicFieldListNode fields = getFieldListNode().getPublicFieldListNode();
-		
-		for (int i = 0; i < fields.getChildren().size(); i++)
+		if (field != null)
 		{
-			FieldNode variable = (FieldNode)fields.getChild(i);
-			
-			if (variable.getName().equals(fieldName))
-			{
-				return variable;
-			}
+			return field;
 		}
+
+		MethodNode method = getMethod(name);
 		
-		return null;
+		return method;
 	}
 	
 	/**
