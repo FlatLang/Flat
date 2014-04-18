@@ -13,6 +13,41 @@ package net.fathomsoft.fathom.tree;
 public class ProgramNode extends TreeNode
 {
 	/**
+	 * Get the ProgramNode's ClassNode with the specified name.<br>
+	 * <br>
+	 * For example:
+	 * <blockquote><pre>
+	 * public class Person
+	 * {
+	 * 	
+	 * 	...
+	 * 	
+	 * }</pre></blockquote>
+	 * <br>
+	 * A call like: "<code>getClass("Person")</code>" would return the
+	 * ClassNode for the "<code>age</code>" int field.
+	 * 
+	 * @param className The name of the class to search for.
+	 * @return The ClassNode for the class, if it exists.
+	 */
+	public ClassNode getClass(String className)
+	{
+		for (int i = 0; i < getChildren().size(); i++)
+		{
+			FileNode  node  = (FileNode)getChild(i);
+			
+			ClassNode clazz = node.getClass(className);
+			
+			if (clazz != null)
+			{
+				return clazz;
+			}
+		}
+		
+		return null;
+	}
+	
+	/**
 	 * @see net.fathomsoft.fathom.tree.TreeNode#generateJavaSourceOutput()
 	 */
 	@Override
