@@ -61,10 +61,16 @@ public class ParameterListNode extends TreeNode
 	}
 	
 	/**
+	 * Get the ParameterNode with the given name.<br>
+	 * <br>
+	 * For example:
+	 * <blockquote><pre>
+	 * public Person getPerson(String name, int age)</pre></blockquote>
+	 * Calling getParameter("name") on the Parameter list above would
+	 * return the 'String name' ParameterNode.
 	 * 
-	 * 
-	 * @param parameterName
-	 * @return
+	 * @param parameterName The name of the parameter to find.
+	 * @return The ParameterNode with the given name.
 	 */
 	public ParameterNode getParameter(String parameterName)
 	{
