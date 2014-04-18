@@ -30,9 +30,22 @@ public class ImportListNode extends TreeNode
 	/**
 	 * Get whether or not the given location has been imported.
 	 * 
+	 * @param importLocation The location of the import.
 	 * @return Whether or not the given location has been imported.
 	 */
-	public boolean contains(String importLocation)
+	public boolean containsImport(String importLocation)
+	{
+		return getImport(importLocation) != null;
+	}
+	
+	/**
+	 * Get the Import node with the given import location, if it exists.
+	 * 
+	 * @param importLocation The location of the import.
+	 * @return The ImportNode with the specified import location, if it
+	 * 		exists.
+	 */
+	public ImportNode getImport(String importLocation)
 	{
 		for (int i = 0; i < getChildren().size(); i++)
 		{
@@ -40,11 +53,11 @@ public class ImportListNode extends TreeNode
 			
 			if (importLocation.equals(child.getImportLocation()))
 			{
-				return true;
+				return child;
 			}
 		}
 		
-		return false;
+		return null;
 	}
 	
 	/**
