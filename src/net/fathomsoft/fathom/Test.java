@@ -20,16 +20,7 @@ package net.fathomsoft.fathom;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import net.fathomsoft.fathom.tree.ArrayAccessNode;
-import net.fathomsoft.fathom.tree.IdentifierNode;
-import net.fathomsoft.fathom.util.FMatcher;
-import net.fathomsoft.fathom.util.FPattern;
-import net.fathomsoft.fathom.util.Location;
 import net.fathomsoft.fathom.util.Patterns;
-import net.fathomsoft.fathom.util.SyntaxUtils;
-import net.fathomsoft.fathom.util.TierMatcher;
-import net.fathomsoft.fathom.util.TierPattern;
-import static java.lang.Math.sin;
 
 public class Test
 {
@@ -59,6 +50,24 @@ public class Test
 		{
 			System.out.println("cauht runtime excep");
 		}
+		
+		int f[] = new int[] {45, 12 , 22 , 4};
+		
+		int f2[] = new int[f.length - 1];
+		
+		System.arraycopy(f, 1, f2, 1, f2.length - 1);
+		
+		for (int a : f)
+		{
+			System.out.print(a + ", ");
+		}
+		System.out.println();
+		for (int a : f2)
+		{
+			System.out.print(a + ", ");
+		}
+		System.out.println();
+		
 //		long start = System.currentTimeMillis();
 //		for (int i = 0; i < 99999999; i++)
 //		{
