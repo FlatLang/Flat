@@ -168,6 +168,15 @@ public class Patterns
 	public static final Pattern IF_CONTENTS				= Pattern.compile("(?<=if\\s{0,9}\\(\\s{0,9})([\\S\\s]+)(?=\\s*\\))");
 
 	/**
+	 * Pattern that searches for the word "else" followed by any
+	 * whitespace.<br>
+	 * <br>
+	 * For example, both of the following are correct:
+	 * "else  	 " and "else"
+	 */
+	public static final Pattern ELSE					= Pattern.compile("else\\s*");
+
+	/**
 	 * Pattern that searches for the word "while" followed by an
 	 * opening parenthesis.<br>
 	 * <br>
