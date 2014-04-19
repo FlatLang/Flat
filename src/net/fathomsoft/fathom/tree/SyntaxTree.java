@@ -62,11 +62,23 @@ public class SyntaxTree
 	
 	private Stack<TreeNode>			parentStack;
 	
-	private static final char		STATEMENT_END_CHARS[] = new char[] { '{', ';' };
+	private static final char		EITHER_STATEMENT_END_CHARS[] = new char[] { '{', ';' };
+	private static final char		SINGLE_STATEMENT_END_CHARS[] = new char[] { ';' };
+	private static final char		SCOPE_STATEMENT_END_CHARS[] = new char[] { '{', };
 	
-	private static final Class<?>	PASSES[][] = new Class[][]
+	private static final Class<?>	FIRST_PASS_CLASSES[] = new Class<?>[]
 	{
-		{ FileNode.class }, { ClassNode.class }
+		ImportNode.class, ClassNode.class
+	};
+	
+	private static final Class<?>	SECOND_PASS_CLASSES[] = new Class<?>[]
+	{
+		DestructorNode.class, ConstructorNode.class, MethodNode.class, FieldNode.class
+	};
+	
+	private static final Class<?>	THIRD_PASS_CLASSES[] = new Class<?>[]
+	{
+		
 	};
 	
 	/**
@@ -119,74 +131,199 @@ public class SyntaxTree
 		
 		root = new ProgramNode();
 		
+		Fathom.log(flags, "Generating syntax tree...");
+		
+		for (int i = 0; i < sources.length; i++)
+		{
+			sources[i] = removeComments(sources[i]);
+		}
+		
 		for (int i = 0; i < filenames.length; i++)
 		{
-			FileNode fileNode = create(filenames[i], sources[i]);
+			firstPass(filenames[i], sources[i]);
+		}
+		for (int i = 0; i < filenames.length; i++)
+		{
+			secondPass(filenames[i], sources[i]);
+		}
+		for (int i = 0; i < filenames.length; i++)
+		{
+			thirdPass(filenames[i], sources[i]);
 		}
 	}
 	
 	/**
-	 * Create the Syntax Tree for the specified source with the specified
-	 * file name.
+	 * Initialize the Syntax Tree for the specified source with the
+	 * specified file name.
 	 * 
-	 * @param filename The file name of the file containing the code.
-	 * @param source The code to create a syntax tree of.
-	 * @return The root node of the generated Syntax Tree.
+	 * @param source The code that is going to generate a syntax tree.
 	 */
-	private FileNode create(String filename, String source)
+	private void init(String source)
 	{
-		source                = removeComments(source);
+		statementStartPattern  = Patterns.STATEMENT_START;
+//		statementEndPattern    = Patterns.STATEMENT_END;
+		lineBeginningPattern   = Patterns.NEXT_TEXT_LINE;
 		
-		parentStack           = new Stack<TreeNode>();
+		statementStartMatcher  = statementStartPattern.matcher(source);
+//		statementEndMatcher    = statementEndPattern.matcher(source);
+		lineBeginningMatcher   = lineBeginningPattern.matcher(source);
 		
-		statementStartPattern = Patterns.STATEMENT_START;
-//		statementEndPattern   = Patterns.STATEMENT_END;
-		lineBeginningPattern  = Patterns.NEXT_TEXT_LINE;
-		
-		statementStartMatcher = statementStartPattern.matcher(source);
-//		statementEndMatcher   = statementEndPattern.matcher(source);
-		lineBeginningMatcher  = lineBeginningPattern.matcher(source);
-		
-		statementStartIndex   = 0;
-		lineNumber            = 1;
-		
-		Fathom.log(flags, "Generating syntax tree for the file '" + filename + "'...");
-		
-		
-		FileNode fileNode = firstPass(filename, source);
-		
-		return fileNode;
+		statementStartIndex    = 0;
+		statementEndIndex      = 0;
+		oldStatementStartIndex = 0;
+		lineNumber             = 1;
 	}
 	
-	private FileNode firstPass(String filename, String source)
+	private void firstPass(String filename, String source)
 	{
+		filename = FileUtils.removeFileExtension(filename);
+		
 		Fathom.log(flags, "First pass for '" + filename + "'...");
 		
-		ArrayList<MethodNode> methodNodes = new ArrayList<MethodNode>();
-		
 		FileNode fileNode = new FileNode();
-		fileNode.setName(FileUtils.removeFileExtension(filename));
+		fileNode.setName(filename);
 		
 		root.addChild(fileNode);
 		
-		parentStack.push(fileNode);
+		traverseCode(fileNode, source, 0, EITHER_STATEMENT_END_CHARS, FIRST_PASS_CLASSES, true);
+	}
+	
+	private void secondPass(String filename, String source)
+	{
+		filename = FileUtils.removeFileExtension(filename);
+
+		Fathom.log(flags, "Second pass for '" + filename + "'...");
 		
-		currentNode = getNextStatement(source);
-		fileNode.addChild(currentNode);
+		FileNode fileNode = root.getFile(filename);
+		
+		for (int i = 0; i < fileNode.getChildren().size(); i++)
+		{
+			TreeNode child = fileNode.getChild(i);
+			
+			if (child instanceof ClassNode)
+			{
+				ClassNode node    = (ClassNode)child;
+				
+				int startingIndex = StringUtils.findNextNonWhitespaceIndex(source, node.getLocationIn().getBounds().getEnd());
+				int endingIndex   = StringUtils.findEndingMatch(source, startingIndex, '{', '}');
+				
+				int contentStart  = StringUtils.findNextNonWhitespaceIndex(source, startingIndex + 1);
+				int contentEnd    = StringUtils.findNextNonWhitespaceIndex(source, endingIndex - 1, -1) + 1;
+				
+				String subSource  = source.substring(contentStart, contentEnd);
+				
+				traverseCode(node, subSource, contentStart, EITHER_STATEMENT_END_CHARS, SECOND_PASS_CLASSES, true);
+			}
+		}
+	}
+	
+	private void thirdPass(String filename, String source)
+	{
+		filename = FileUtils.removeFileExtension(filename);
+
+		Fathom.log(flags, "Third pass for '" + filename + "'...");
+		
+		FileNode fileNode = root.getFile(filename);
+		
+		for (int i = 0; i < fileNode.getChildren().size(); i++)
+		{
+			TreeNode child = fileNode.getChild(i);
+			
+			if (child instanceof ClassNode)
+			{
+				ClassNode classNode = (ClassNode)child;
+				
+				MethodListNode methods = classNode.getMethodListNode();
+				decodeMethodContents(methods, source);
+				
+				MethodListNode constructors = classNode.getConstructorListNode();
+				decodeMethodContents(constructors, source);
+				
+				MethodListNode destructors = classNode.getDestructorListNode();
+				decodeMethodContents(destructors, source);
+			}
+		}
+		
+		checkForErrors(fileNode);
+	}
+	
+	private void decodeMethodContents(MethodListNode methods, String source)
+	{
+		for (TreeNode child : methods.getChildren())
+		{
+			MethodNode node   = (MethodNode)child;
+			
+			int startingIndex = StringUtils.findNextNonWhitespaceIndex(source, node.getLocationIn().getBounds().getEnd());
+			int endingIndex   = StringUtils.findEndingMatch(source, startingIndex, '{', '}');
+			
+			int contentStart  = StringUtils.findNextNonWhitespaceIndex(source, startingIndex + 1);
+			int contentEnd    = StringUtils.findNextNonWhitespaceIndex(source, endingIndex - 1, -1) + 1;
+			
+			if (contentStart < contentEnd)
+			{
+				String subSource  = source.substring(contentStart, contentEnd);
+				
+				traverseCode(node, subSource, contentStart, EITHER_STATEMENT_END_CHARS, THIRD_PASS_CLASSES, false);
+			}
+		}
+	}
+	
+	/**
+	 * 
+	 * 
+	 * @param parent 
+	 * @param source 
+	 * @param offset 
+	 * @param statementType The character array to use that determines what
+	 * 		type of statements are searched for. Possible options include:
+	 * 		<ul>
+	 * 			<li>{@link #EITHER_STATEMENT_END_CHARS}</li>
+	 * 			<li>{@link #SINGLE_STATEMENT_END_CHARS}</li>
+	 * 			<li>{@link #SCOPE_STATEMENT_END_CHARS}</li>
+	 * 		</ul>
+	 * @param searchTypes The type of TreeNodes to try to decode.
+	 * @param skipScopes 
+	 */
+	private void traverseCode(TreeNode parent, String source, int offset, char statementType[], Class<?> searchTypes[], boolean skipScopes)
+	{
+		init(source);
+		
+		parentStack = new Stack<TreeNode>();
+		
+		parentStack.push(parent);
+		
+		currentNode = getNextStatement(source, offset, statementType, searchTypes);
 		
 		// Decode all of the statements in the source text.
 		while (currentNode != null)
 		{
-			TreeNode parentNode = null;
+			if (skipScopes && (currentNode.containsScope() || currentNode instanceof ClassNode))
+			{
+				int startingIndex = StringUtils.findNextNonWhitespaceIndex(source, statementEndIndex);
+				int endingIndex   = StringUtils.findEndingMatch(source, startingIndex, '{', '}');
+				
+//				int contentStart  = StringUtils.findNextNonWhitespaceIndex(source, startingIndex + 1);
+//				int contentEnd    = StringUtils.findNextNonWhitespaceIndex(source, endingIndex - 1, -1) + 1;
+//				
+//				if (contentStart >= contentEnd)
+//				{
+//					System.err.println("Something went wrong...");
+//					
+//					System.exit(1);
+//				}
+				
+				statementStartIndex    = endingIndex;
+				oldStatementStartIndex = statementStartIndex;
+			}
 			
 			if (!parentStack.isEmpty())
 			{
-				parentNode = parentStack.peek();
+				TreeNode parentNode = parentStack.peek();
 				
 				parentNode.addChild(currentNode);
 			}
 			
-			if (statementEndIndex >= 0 && nextChar(statementEndIndex, source) == '{')
+			if (statementEndIndex >= 0 && !skipScopes && nextChar(statementEndIndex, source) == '{')
 			{
 //				if (currentNode.containsScope())
 //				{
@@ -198,34 +335,8 @@ public class SyntaxTree
 			
 			updateParents(oldStatementStartIndex, statementStartIndex, source);
 			
-			currentNode = getNextStatement(source);
-			
-			if (currentNode instanceof MethodNode)
-			{
-				int startingIndex = StringUtils.findNextNonWhitespaceIndex(source, statementEndIndex);
-				int endingIndex   = StringUtils.findEndingMatch(source, startingIndex, '{', '}');
-				
-				int contentStart  = StringUtils.findNextNonWhitespaceIndex(source, startingIndex + 1);
-				int contentEnd    = StringUtils.findNextNonWhitespaceIndex(source, endingIndex - 1, -1) + 1;
-				
-				if (contentStart < contentEnd)
-				{
-					methodNodes.add((MethodNode)currentNode);
-				}
-			}
+			currentNode = getNextStatement(source, offset, statementType, searchTypes);
 		}
-		
-		return fileNode;
-	}
-	
-	private void secondPass()
-	{
-		
-	}
-	
-	private void thirdPass()
-	{
-		
 	}
 	
 	/**
@@ -599,12 +710,21 @@ public class SyntaxTree
 	 * it in a TreeNode format, if not return null.
 	 * 
 	 * @param source The source String to search in.
+	 * @param offset 
+	 * @param statementType The character array to use that determines what
+	 * 		type of statements are searched for. Possible options include:
+	 * 		<ul>
+	 * 			<li>{@link #EITHER_STATEMENT_END_CHARS}</li>
+	 * 			<li>{@link #SINGLE_STATEMENT_END_CHARS}</li>
+	 * 			<li>{@link #SCOPE_STATEMENT_END_CHARS}</li>
+	 * 		</ul>
+	 * @param searchTypes The type of TreeNodes to try to decode.
 	 * @return The TreeNode containing the information, or null if it is
 	 * 		not found.
 	 */
-	private TreeNode getNextStatement(String source)
+	private TreeNode getNextStatement(String source, int offset, char statementType[], Class<?> searchTypes[])
 	{
-		if ((statementEndIndex = Regex.indexOfExcludeTextAndParentheses(source, statementStartIndex, STATEMENT_END_CHARS)) >= 0 && !statementStartMatcher.hitEnd())
+		if ((statementEndIndex = Regex.indexOfExcludeTextAndParentheses(source, statementStartIndex, statementType)) >= 0 && !statementStartMatcher.hitEnd())
 		{
 			statementEndIndex = nextNonWhitespaceIndexOnTheLeft(statementEndIndex - 1, source) + 1;
 			
@@ -616,13 +736,13 @@ public class SyntaxTree
 				newStatementStartIndex = statementStartMatcher.start();
 			}
 				
-			int      offset    = calculateOffset(statementStartIndex, source);
+			int      offset2   = statementStartIndex;//calculateOffset(statementStartIndex, source);
 			
 			String   statement = source.substring(statementStartIndex, statementEndIndex);
 			
-			Location location  = new Location(lineNumber, offset, offset + statement.length());
+			Location location  = new Location(lineNumber, offset2 + offset, offset2 + statement.length() + offset);
 			
-			TreeNode node      = decodeStatement(statement, location);
+			TreeNode node      = decodeStatement(statement, location, searchTypes);
 			
 			updateLineNumber(statementStartIndex, newStatementStartIndex, source);
 				
@@ -642,9 +762,10 @@ public class SyntaxTree
 	 * 
 	 * @param statement The statement String to decode into a TreeNode.
 	 * @param location The location of the statement in the source text.
+	 * @param searchTypes The type of TreeNodes to try to decode.
 	 * @return The result TreeNode of decoding the statement String.
 	 */
-	private TreeNode decodeStatement(String statement, Location location)
+	private TreeNode decodeStatement(String statement, Location location, Class<?> searchTypes[])
 	{
 		TreeNode parent = null;
 		
@@ -653,9 +774,14 @@ public class SyntaxTree
 			parent = parentStack.peek();
 		}
 		
-		TreeNode node = TreeNode.decodeStatement(parent, statement, location);
-		
-		return node;
+		if (searchTypes.length > 0)
+		{
+			return TreeNode.decodeStatement(parent, statement, location, searchTypes);
+		}
+		else
+		{
+			return TreeNode.decodeStatement(parent, statement, location);
+		}
 	}
 	
 	/**
