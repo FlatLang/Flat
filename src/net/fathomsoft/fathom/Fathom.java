@@ -172,15 +172,15 @@ public class Fathom
 		{
 			args = new String[]
 			{
-//				directory + "Test.fat",
-//				directory + "IO.fat",
+				directory + "Test.fat",
+				directory + "IO.fat",
 				directory + "String.fat",
-//				directory + "ExceptionData.fat",
-//				directory + "ArrayList.fat",
-//				directory + "Math.fat",
-//				directory + "Time.fat",
-//				directory + "Person.fat",
-				directory + "Fathom.fat",
+				directory + "ExceptionData.fat",
+				directory + "ArrayList.fat",
+				directory + "Math.fat",
+				directory + "Time.fat",
+				directory + "Person.fat",
+//				directory + "Fathom.fat",
 				directory + "Object.fat",
 				directory + "List.fat",
 				directory + "ListNode.fat",
