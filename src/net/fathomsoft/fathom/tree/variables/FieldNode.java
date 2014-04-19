@@ -236,7 +236,9 @@ public class FieldNode extends DeclarationNode
 		
 		if (n.getType() == null)
 		{
-			SyntaxMessage.error("A type for the field must be declared", n);
+//			SyntaxMessage.error("A type for the field must be declared", location);
+			
+			return null;
 		}
 		
 		return n;
