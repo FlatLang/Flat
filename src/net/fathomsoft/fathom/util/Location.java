@@ -28,14 +28,16 @@ package net.fathomsoft.fathom.util;
  */
 public class Location
 {
-	private int	lineNumber, offset;
+	private int		lineNumber;
+	
+	private Bounds	bounds;
 	
 	/**
 	 * Default constructor.
 	 */
 	public Location()
 	{
-		
+		bounds = new Bounds(0, 0);
 	}
 	
 	/**
@@ -43,13 +45,18 @@ public class Location
 	 * given values.
 	 * 
 	 * @param lineNumber The lineNumber that the Location represents.
-	 * @param offset The character offset that the Location represents
-	 * 		on the specified line.
+	 * @param start The character offset that the Location represents as
+	 * 		the start on the specified line.
+	 * @param end The character offset that the Location represents as
+	 * 		the end on the specified line.
 	 */
-	public Location(int lineNumber, int offset)
+	public Location(int lineNumber, int start, int end)
 	{
+		// Initialize default data.
+		this();
+		
 		setLineNumber(lineNumber);
-		setOffset(offset);
+		setBounds(start, end);
 	}
 	
 	/**
@@ -81,18 +88,21 @@ public class Location
 	 */
 	public int getOffset()
 	{
-		return offset;
+		return bounds.getStart();
 	}
 	
 	/**
-	 * Set character offset that the Location represents on the
-	 * specified line number.
+	 * Set the character bound offsets on the specified Location's line
+	 * number.
 	 * 
-	 * @param offset The character offset that the Location represents
-	 * 		on the specified line.
+	 * @param start The character offset that the Location represents as
+	 * 		the start on the specified line.
+	 * @param end The character offset that the Location represents as
+	 * 		the end on the specified line.
 	 */
-	public void setOffset(int offset)
+	public void setBounds(int start, int end)
 	{
-		this.offset = offset;
+		bounds.setStart(start);
+		bounds.setEnd(end);
 	}
 }

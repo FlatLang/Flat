@@ -266,7 +266,7 @@ public class AssignmentNode extends TreeNode
 		// Right-hand side of the equation.
 		String   rhs      = statement.substring(rhsIndex);
 		
-		Location newLoc   = new Location(location.getLineNumber(), location.getOffset() + rhsIndex);
+		Location newLoc   = new Location(location.getLineNumber(), location.getOffset() + rhsIndex, location.getOffset() + statement.length());
 		
 		TreeNode child    = decodeRightHandSide(parent, rhs, newLoc);
 		

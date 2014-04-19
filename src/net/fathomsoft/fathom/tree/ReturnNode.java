@@ -138,7 +138,7 @@ public class ReturnNode extends TreeNode
 				
 				Location newLoc = new Location();
 				newLoc.setLineNumber(location.getLineNumber());
-				newLoc.setOffset(location.getOffset() + returnStartIndex);
+				newLoc.setBounds(location.getOffset() + returnStartIndex, location.getOffset() + statement.length());
 				
 				TreeNode child = BinaryOperatorNode.decodeStatement(parent, statement, newLoc);
 				

@@ -110,7 +110,7 @@ public class InstantiationNode extends IdentifierNode
 			
 			Location newLoc = new Location();
 			newLoc.setLineNumber(location.getLineNumber());
-			newLoc.setOffset(location.getOffset() + startIndex);
+			newLoc.setBounds(location.getOffset() + startIndex, location.getOffset() + statement.length());
 			
 			IdentifierNode child = null;
 			

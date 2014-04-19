@@ -212,7 +212,7 @@ public class ForLoopNode extends LoopNode
 			{
 				Location newLoc    = new Location();
 				newLoc.setLineNumber(location.getLineNumber());
-				newLoc.setOffset(location.getOffset() + bounds.getStart());
+				newLoc.setBounds(location.getOffset() + bounds.getStart(), location.getOffset() + bounds.getEnd());
 				
 				String contents    = statement.substring(bounds.getStart(), bounds.getEnd());
 				

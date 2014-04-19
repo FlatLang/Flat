@@ -132,7 +132,7 @@ public class ThrowNode extends ExceptionHandlingNode
 			{
 				ThrowNode n          = new ThrowNode();
 				
-				Location  newLoc     = new Location(location.getLineNumber(), location.getOffset() + bounds.getStart());
+				Location  newLoc     = new Location(location.getLineNumber(), location.getOffset() + bounds.getStart(), location.getOffset() + bounds.getEnd());
 				
 				String    thrown     = statement.substring(bounds.getStart(), bounds.getEnd());
 				

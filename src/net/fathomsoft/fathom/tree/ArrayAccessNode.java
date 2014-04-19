@@ -129,7 +129,7 @@ public class ArrayAccessNode extends TreeNode
 				
 				Location newLoc = new Location();
 				newLoc.setLineNumber(location.getLineNumber());
-				newLoc.setOffset(identifier.length() + indexBounds.getStart());
+				newLoc.setBounds(identifier.length() + indexBounds.getStart(), identifier.length() + indexBounds.getEnd());
 				
 				if (SyntaxUtils.isLiteral(data))
 				{

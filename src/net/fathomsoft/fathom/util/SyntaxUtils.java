@@ -23,6 +23,7 @@ import net.fathomsoft.fathom.Fathom;
 import net.fathomsoft.fathom.error.SyntaxMessage;
 import net.fathomsoft.fathom.tree.ClassNode;
 import net.fathomsoft.fathom.tree.DeclarationNode;
+import net.fathomsoft.fathom.tree.FileNode;
 import net.fathomsoft.fathom.tree.MethodNode;
 import net.fathomsoft.fathom.tree.ParameterListNode;
 import net.fathomsoft.fathom.tree.ParameterNode;
@@ -485,6 +486,13 @@ public class SyntaxUtils
 		if (!identifier.equals("this"))
 		{
 			identifier = getIdentifierName(identifier);
+			
+			FileNode f = (FileNode)reference.getAncestorOfType(FileNode.class);
+			
+			if (f.getImportListNode().containsImport(identifier))
+			{
+				return f.getProgramNode().getClass(identifier);
+			}
 			
 			DeclarationNode dec = reference.getDeclaration(identifier);
 			

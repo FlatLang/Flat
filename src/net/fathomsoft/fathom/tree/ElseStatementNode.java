@@ -169,7 +169,7 @@ public class ElseStatementNode extends TreeNode
 			
 			String   ending      = statement.substring(bounds.getEnd());
 			
-			Location newLocation = new Location(location.getLineNumber(), location.getOffset() + bounds.getEnd());
+			Location newLocation = new Location(location.getLineNumber(), location.getOffset() + bounds.getEnd(), location.getOffset() + statement.length());
 			
 			TreeNode contents    = TreeNode.decodeStatement(parent, ending, newLocation);
 			

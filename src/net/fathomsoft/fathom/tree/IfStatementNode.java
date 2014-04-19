@@ -181,7 +181,7 @@ public class IfStatementNode extends TreeNode
 				
 				Location newLoc = new Location();
 				newLoc.setLineNumber(location.getLineNumber());
-				newLoc.setOffset(location.getOffset() + bounds.getStart());
+				newLoc.setBounds(location.getOffset() + bounds.getStart(), location.getOffset() + bounds.getEnd());
 				
 				TreeNode child = BinaryOperatorNode.decodeStatement(parent, contents, newLoc);
 				

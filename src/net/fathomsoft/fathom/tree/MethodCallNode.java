@@ -117,9 +117,9 @@ public class MethodCallNode extends IdentifierNode
 	 * 
 	 * @return The TreeNode that represents the calling variable.
 	 */
-	public TreeNode getVariableNode()
+	public VariableNode getVariableNode()
 	{
-		return getChild(1);
+		return (VariableNode)getChild(1);
 	}
 	
 	/**
@@ -128,14 +128,21 @@ public class MethodCallNode extends IdentifierNode
 	 * @return The MethodNode instance that this MethodCallNode is
 	 * 		calling.
 	 */
-	public MethodNode getMethodNode()
+	public MethodNode getMethodNode(TreeNode p)
 	{
 		if (isExternal())
 		{
 			return null;
 		}
 		
-		return null;
+		VariableNode var    = getVariableNode();
+		ProgramNode  pNode  = p.getProgramNode();
+		
+		ClassNode    clazz  = pNode.getClass(var.getType());
+		System.out.println(var.getType());
+		MethodNode   method = clazz.getMethod(getName());
+		
+		return method;
 	}
 	
 	/**
@@ -288,7 +295,7 @@ public class MethodCallNode extends IdentifierNode
 			
 			Location argsLocation = new Location();
 			argsLocation.setLineNumber(location.getLineNumber());
-			argsLocation.setOffset(bounds.getStart());
+			argsLocation.setBounds(location.getOffset() + bounds.getStart(), location.getOffset() + bounds.getEnd());
 			
 			String  methodCall   = statement.substring(0, nameEnd);
 			
@@ -369,7 +376,7 @@ public class MethodCallNode extends IdentifierNode
 					{
 						String caller = objectInstance.toString();
 						
-						TreeNode variableNode = TreeNode.getExistingNode(parent, caller);
+						VariableNode variableNode = (VariableNode)TreeNode.getExistingNode(parent, caller);
 						
 						if (variableNode != null)
 						{
@@ -377,11 +384,36 @@ public class MethodCallNode extends IdentifierNode
 						}
 						else
 						{
-							variableNode = TreeNode.decodeStatement(parent, caller, location);
+							variableNode = (VariableNode)TreeNode.decodeStatement(parent, caller, location);
 						}
 						
 						if (variableNode != null)
 						{
+							if (variableNode instanceof VariableNode == false)
+							{
+								SyntaxMessage.error("The method must be referenced from a variable type", location);
+								
+								return null;
+							}
+							
+							int endI = caller.indexOf("->");
+							
+							if (endI < 0)
+							{
+								// Make up for the offset of the '->' (which is 2 characters long)
+								endI = 0 - 2;
+							}
+							
+							String ending = caller.substring(endI + 2);
+
+							ClassNode curClass = (ClassNode)parent.getAncestorOfType(ClassNode.class, true);
+							
+							ClassNode clazz = SyntaxUtils.getClassType(curClass, objectInstance.toString().replace("->", "."));
+							
+							DeclarationNode node = clazz.getDeclaration(ending);
+							
+							variableNode.setType(node.getType());
+							
 							n.addChild(variableNode);
 						}
 						else
@@ -391,13 +423,6 @@ public class MethodCallNode extends IdentifierNode
 							return null;
 						}
 					}
-					else
-					{
-						IdentifierNode variableNode = new IdentifierNode();
-						variableNode.setName(objectInstance.toString());
-						
-						n.addChild(variableNode);
-					}
 				}
 				else
 				{
@@ -406,11 +431,36 @@ public class MethodCallNode extends IdentifierNode
 						argumentList = MethodNode.getObjectReferenceIdentifier() + ", " + argumentList;
 					}
 				}
+				
+				if (objectInstance.length() <= 0 || staticCall)
+				{
+					ClassNode clazz = null;
+					
+					if (objectInstance.length() <= 0)
+					{
+						clazz = (ClassNode)parent.getAncestorOfType(ClassNode.class, true);
+					}
+					else
+					{
+						ClassNode curClass = (ClassNode)parent.getAncestorOfType(ClassNode.class, true);
+						
+						clazz = SyntaxUtils.getClassType(curClass, objectInstance.toString().replace("->", "."));
+					}
+					
+					VariableNode variableNode = new VariableNode();
+					variableNode.setName(objectInstance.toString());
+					variableNode.setType(clazz.getName());
+					
+					n.addChild(variableNode);
+				}
 			}
 
 			String arguments[] = Regex.splitCommas(argumentList);
 			
 			n.addArguments(parent, arguments, argsLocation);
+			
+			if (!n.isExternal())
+			System.out.println(n.getMethodNode(parent));
 			
 			return n;
 		}

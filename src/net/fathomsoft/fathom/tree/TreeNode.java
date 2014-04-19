@@ -154,7 +154,7 @@ public abstract class TreeNode
 			node = parent;
 		}
 		
-		while (node != null && ((!checkSuper || !instanceOf(node, type)) && !node.getClass().equals(type)))
+		while (node != null && ((!checkSuper || !node.instanceOf(type)) && !node.getClass().equals(type)))
 		{
 			checkSuper = false;
 			
@@ -170,17 +170,37 @@ public abstract class TreeNode
 	}
 	
 	/**
+	 * Get whether or not the given Object is an instance of any of the
+	 * given Classes.
+	 * 
+	 * @param classes The Classes to check the Object against.
+	 * @return Whether or not the given Object is an instance of the given
+	 * 		Class.
+	 */
+	public boolean instanceOf(Class<?> classes[])
+	{
+		for (Class<?> c : classes)
+		{
+			if (instanceOf(c))
+			{
+				return true;
+			}
+		}
+		
+		return false;
+	}
+	
+	/**
 	 * Get whether or not the given Object is an instance of the given
 	 * Class.
 	 * 
-	 * @param o The Object to test the ancestry of.
 	 * @param clazz The Class to check the Object against.
 	 * @return Whether or not the given Object is an instance of the given
 	 * 		Class.
 	 */
-	public boolean instanceOf(Object o, Class<?> clazz)
+	public boolean instanceOf(Class<?> clazz)
 	{
-		Class<?> current = o.getClass();
+		Class<?> current = getClass();
 		
 		while (current != null)
 		{
