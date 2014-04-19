@@ -429,8 +429,6 @@ public class MethodNode extends DeclarationNode
 				}
 			};
 			
-			n.setLocationIn(location);
-			
 			for (int i = 0; i < parameters.length; i++)
 			{
 				if (parameters[i].length() > 0)
