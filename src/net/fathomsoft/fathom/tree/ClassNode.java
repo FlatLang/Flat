@@ -264,9 +264,31 @@ public class ClassNode extends DeclarationNode
 	 */
 	public MethodNode getMethod(String methodName)
 	{
+		MethodNode method = null;
+		
 		MethodListNode methods = getMethodListNode();
 		
-		return methods.getMethod(methodName);
+		method = methods.getMethod(methodName);
+		
+		if (method != null)
+		{
+			return method;
+		}
+		
+		methods = getConstructorListNode();
+		
+		method = methods.getMethod(methodName);
+		
+		if (method != null)
+		{
+			return method;
+		}
+		
+		methods = getDestructorListNode();
+		
+		method = methods.getMethod(methodName);
+		
+		return method;
 	}
 	
 	/**
