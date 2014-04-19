@@ -2,6 +2,7 @@
 #include <CClass.h>
 #include <ExceptionHandler.h>
 #include "ExceptionData.h"
+#include "Object.h"
 #include "String.h"
 #include <stdio.h>
 #include <stdlib.h>

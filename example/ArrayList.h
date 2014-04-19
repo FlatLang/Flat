@@ -6,6 +6,7 @@ typedef struct ArrayList ArrayList;
 #include <CClass.h>
 #include <ExceptionHandler.h>
 #include "ExceptionData.h"
+#include "Object.h"
 #include "String.h"
 #include <stdlib.h>
 #include <Fathom.h>

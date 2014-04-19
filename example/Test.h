@@ -6,6 +6,7 @@ typedef struct Test Test;
 #include <CClass.h>
 #include <ExceptionHandler.h>
 #include "ExceptionData.h"
+#include "Object.h"
 #include "String.h"
 #include "IO.h"
 #include "String.h"

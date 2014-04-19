@@ -2,6 +2,7 @@
 #include <CClass.h>
 #include <ExceptionHandler.h>
 #include "ExceptionData.h"
+#include "Object.h"
 #include "String.h"
 
 Person* new_Person(ExceptionData* __FATHOM__exception_data, String* name, int age);

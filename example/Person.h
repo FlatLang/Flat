@@ -6,6 +6,7 @@ typedef struct Person Person;
 #include <CClass.h>
 #include <ExceptionHandler.h>
 #include "ExceptionData.h"
+#include "Object.h"
 #include "String.h"
 
 CLASS

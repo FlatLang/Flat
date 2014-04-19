@@ -52,7 +52,7 @@ static void __FATHOM__add(List* __o__, ExceptionData* __FATHOM__exception_data, 
 {
 	ListNode* node;
 	
-	node = ->new_ListNode(__FATHOM__exception_data, data);
+	node = new_ListNode(__FATHOM__exception_data, data);
 	if (__o__->prv->start == 0)
 	{
 		__o__->prv->start = node;

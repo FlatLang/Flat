@@ -16,6 +16,6 @@ CLASS
 	FUNC(char*, toCharArray, String* __o__, ExceptionData* __FATHOM__exception_data);
 )
 
-String* new_String(ExceptionData* __FATHOM__exception_data, char* d);
+String* new_String(ExceptionData* __FATHOM__exception_data, char* data);
 void del_String(String** __o__, ExceptionData* __FATHOM__exception_data);
 #endif

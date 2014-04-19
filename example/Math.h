@@ -6,6 +6,7 @@ typedef struct Math Math;
 #include <CClass.h>
 #include <ExceptionHandler.h>
 #include "ExceptionData.h"
+#include "Object.h"
 #include "String.h"
 #include <math.h>
 

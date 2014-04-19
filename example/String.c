@@ -5,7 +5,7 @@
 #include "Object.h"
 #include "String.h"
 
-String* new_String(ExceptionData* __FATHOM__exception_data, char* d);
+String* new_String(ExceptionData* __FATHOM__exception_data, char* data);
 void del_String(String** __o__, ExceptionData* __FATHOM__exception_data);
 static char* __FATHOM__toCharArray(String* __o__, ExceptionData* __FATHOM__exception_data);
 
@@ -14,7 +14,7 @@ PRIVATE
 	char* data;
 )
 
-String* new_String(ExceptionData* __FATHOM__exception_data, char* d)
+String* new_String(ExceptionData* __FATHOM__exception_data, char* data)
 {
 	NEW(String, __o__);
 	
@@ -22,7 +22,7 @@ String* new_String(ExceptionData* __FATHOM__exception_data, char* d)
 	
 	__o__->prv->data = 0;
 	{
-		__o__->prv->data = d;
+		__o__->prv->data = data;
 	}
 	
 	return __o__;

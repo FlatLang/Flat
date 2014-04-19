@@ -2,6 +2,7 @@
 #include <CClass.h>
 #include <ExceptionHandler.h>
 #include "ExceptionData.h"
+#include "Object.h"
 #include "String.h"
 #include <setjmp.h>
 #include "ArrayList.h"

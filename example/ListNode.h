@@ -14,6 +14,7 @@ CLASS
 	ListNode, 
 	
 	FUNC(Object*, getData, ListNode* __o__, ExceptionData* __FATHOM__exception_data);
+	FUNC(ListNode*, getNext, ListNode* __o__, ExceptionData* __FATHOM__exception_data);
 	FUNC(void, setNext, ListNode* __o__, ExceptionData* __FATHOM__exception_data, ListNode* next);
 )
 
