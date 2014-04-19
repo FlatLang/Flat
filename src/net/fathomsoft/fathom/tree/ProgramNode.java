@@ -48,6 +48,27 @@ public class ProgramNode extends TreeNode
 	}
 	
 	/**
+	 * Get the ProgramNode's FileNode with the specified name.
+	 * 
+	 * @param filename The name of the file to search for.
+	 * @return The FileNode for the file, if it exists.
+	 */
+	public FileNode getFile(String filename)
+	{
+		for (int i = 0; i < getChildren().size(); i++)
+		{
+			FileNode node = (FileNode)getChild(i);
+			
+			if (node.getName().equals(filename))
+			{
+				return node;
+			}
+		}
+		
+		return null;
+	}
+	
+	/**
 	 * @see net.fathomsoft.fathom.tree.TreeNode#generateJavaSourceOutput()
 	 */
 	@Override
