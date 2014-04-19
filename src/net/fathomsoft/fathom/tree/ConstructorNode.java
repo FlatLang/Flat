@@ -376,7 +376,6 @@ public class ConstructorNode extends MethodNode
 			
 			if (classNode.getName().equals(n.getName()))
 			{
-				n.setLocationIn(location);
 				n.setType(n.getName());
 				
 				return n;
