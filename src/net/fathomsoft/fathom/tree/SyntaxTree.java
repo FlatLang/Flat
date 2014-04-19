@@ -48,23 +48,26 @@ import net.fathomsoft.fathom.util.SyntaxUtils;
  */
 public class SyntaxTree
 {
-	private int					statementStartIndex, statementEndIndex, oldStatementStartIndex;
-	private int					lineNumber;
+	private int						statementStartIndex, statementEndIndex, oldStatementStartIndex;
+	private int						lineNumber;
 	
-	private long				flags;
+	private long					flags;
 	
-	private String				source;
+	private Matcher					statementStartMatcher, lineBeginningMatcher;
 	
-	private Matcher				statementStartMatcher, lineBeginningMatcher;
+	private Pattern					statementStartPattern, lineBeginningPattern;
 	
-	private Pattern				statementStartPattern, lineBeginningPattern;
+	private TreeNode				currentNode;
+	private ProgramNode				root;
 	
-	private TreeNode			currentNode;
-	private ProgramNode			root;
+	private Stack<TreeNode>			parentStack;
 	
-	private Stack<TreeNode>		parentStack;
+	private static final char		STATEMENT_END_CHARS[] = new char[] { '{', ';' };
 	
-	private static final char	STATEMENT_END_CHARS[] = new char[] { '{', ';' };
+	private static final Class<?>	PASSES[][] = new Class[][]
+	{
+		{ FileNode.class }, { ClassNode.class }
+	};
 	
 	/**
 	 * Create a SyntaxTree instance from the source code in the specified
@@ -134,8 +137,6 @@ public class SyntaxTree
 	{
 		source                = removeComments(source);
 		
-		this.source           = source;
-		
 		parentStack           = new Stack<TreeNode>();
 		
 		statementStartPattern = Patterns.STATEMENT_START;
@@ -149,19 +150,29 @@ public class SyntaxTree
 		statementStartIndex   = 0;
 		lineNumber            = 1;
 		
-		ArrayList<MethodNode> methodNodes = new ArrayList<MethodNode>();
-		
 		Fathom.log(flags, "Generating syntax tree for the file '" + filename + "'...");
 		
-		FileNode root = new FileNode();
-		root.setName(FileUtils.removeFileExtension(filename));
 		
-		this.root.addChild(root);
+		FileNode fileNode = firstPass(filename, source);
 		
-		parentStack.push(root);
+		return fileNode;
+	}
+	
+	private FileNode firstPass(String filename, String source)
+	{
+		Fathom.log(flags, "First pass for '" + filename + "'...");
 		
-		currentNode = getNextStatement();
-		root.addChild(currentNode);
+		ArrayList<MethodNode> methodNodes = new ArrayList<MethodNode>();
+		
+		FileNode fileNode = new FileNode();
+		fileNode.setName(FileUtils.removeFileExtension(filename));
+		
+		root.addChild(fileNode);
+		
+		parentStack.push(fileNode);
+		
+		currentNode = getNextStatement(source);
+		fileNode.addChild(currentNode);
 		
 		// Decode all of the statements in the source text.
 		while (currentNode != null)
@@ -175,7 +186,7 @@ public class SyntaxTree
 				parentNode.addChild(currentNode);
 			}
 			
-			if (statementEndIndex >= 0 && nextChar(statementEndIndex) == '{')
+			if (statementEndIndex >= 0 && nextChar(statementEndIndex, source) == '{')
 			{
 //				if (currentNode.containsScope())
 //				{
@@ -185,9 +196,9 @@ public class SyntaxTree
 				parentStack.push(currentNode);
 			}
 			
-			updateParents(oldStatementStartIndex, statementStartIndex);
+			updateParents(oldStatementStartIndex, statementStartIndex, source);
 			
-			currentNode = getNextStatement();
+			currentNode = getNextStatement(source);
 			
 			if (currentNode instanceof MethodNode)
 			{
@@ -201,13 +212,20 @@ public class SyntaxTree
 				{
 					methodNodes.add((MethodNode)currentNode);
 				}
-				
 			}
 		}
 		
-		checkForErrors(root);
+		return fileNode;
+	}
+	
+	private void secondPass()
+	{
 		
-		return root;
+	}
+	
+	private void thirdPass()
+	{
+		
 	}
 	
 	/**
@@ -451,12 +469,13 @@ public class SyntaxTree
 	 * Get the next non-whitespace character on the right.
 	 * 
 	 * @param index The index to start the search at.
+	 * @param source The source String to search in.
 	 * @return The index of the first non-whitespace character after the
 	 * 		index.
 	 */
-	private char nextChar(int index)
+	private char nextChar(int index, String source)
 	{
-		int i = nextCharIndex(index);
+		int i = nextCharIndex(index, source);
 		
 		if (i < 0)
 		{
@@ -470,35 +489,38 @@ public class SyntaxTree
 	 * Get the next non-whitespace character on the right.
 	 * 
 	 * @param index The index to start the search at.
+	 * @param source The source String to search in.
 	 * @return The index of the first non-whitespace character after the
 	 * 		index.
 	 */
-	private int nextNonWhitespaceIndexOnTheLeft(int index)
+	private int nextNonWhitespaceIndexOnTheLeft(int index, String source)
 	{
-		return nextCharIndex(index, -1);
+		return nextCharIndex(index, source, -1);
 	}
 	
 	/**
 	 * Get the next non-whitespace character on the right.
 	 * 
 	 * @param index The index to start the search at.
+	 * @param source The source String to search in.
 	 * @return The index of the first non-whitespace character after the
 	 * 		index.
 	 */
-	private int nextCharIndex(int index)
+	private int nextCharIndex(int index, String source)
 	{
-		return nextCharIndex(index, 1);
+		return nextCharIndex(index, source, 1);
 	}
 	
 	/**
 	 * Get the next non-whitespace character in the specified direction.
 	 * 
 	 * @param index The index to start the search at.
+	 * @param source The source String to search in.
 	 * @param direction The direction to move the index in.
 	 * @return The index of the first non-whitespace character after the
 	 * 		index.
 	 */
-	private int nextCharIndex(int index, int direction)
+	private int nextCharIndex(int index, String source, int direction)
 	{
 		for (int i = index; i < source.length(); i += direction)
 		{
@@ -518,9 +540,10 @@ public class SyntaxTree
 	 * 
 	 * @param statementStart The index of the first character of the
 	 * 		statement within the source code.
+	 * @param source The source String to search in.
 	 * @return The horizontal offset of the statement.
 	 */
-	private int calculateOffset(int statementStart)
+	private int calculateOffset(int statementStart, String source)
 	{
 		for (int i = statementStart - 1; i >= 0; i--)
 		{
@@ -539,8 +562,9 @@ public class SyntaxTree
 	 * 
 	 * @param start The index to start the search at.
 	 * @param statementStart The index to end the search at.
+	 * @param source The source String to search in.
 	 */
-	private void updateLineNumber(int start, int statementStart)
+	private void updateLineNumber(int start, int statementStart, String source)
 	{
 		for (int i = start; i < statementStart; i++)
 		{
@@ -557,8 +581,9 @@ public class SyntaxTree
 	 * 
 	 * @param start The index to start the search at.
 	 * @param statementStart The index to end the search at.
+	 * @param source The source String to search in.
 	 */
-	private void updateParents(int start, int statementStart)
+	private void updateParents(int start, int statementStart, String source)
 	{
 		for (int i = start; i < statementStart; i++)
 		{
@@ -573,32 +598,33 @@ public class SyntaxTree
 	 * Search for the next statement. If a statement is found, return
 	 * it in a TreeNode format, if not return null.
 	 * 
+	 * @param source The source String to search in.
 	 * @return The TreeNode containing the information, or null if it is
 	 * 		not found.
 	 */
-	private TreeNode getNextStatement()
+	private TreeNode getNextStatement(String source)
 	{
 		if ((statementEndIndex = Regex.indexOfExcludeTextAndParentheses(source, statementStartIndex, STATEMENT_END_CHARS)) >= 0 && !statementStartMatcher.hitEnd())
 		{
-			statementEndIndex = nextNonWhitespaceIndexOnTheLeft(statementEndIndex - 1) + 1;
+			statementEndIndex = nextNonWhitespaceIndexOnTheLeft(statementEndIndex - 1, source) + 1;
 			
 			int newStatementStartIndex = 0;
 			
 			// TODO: Remember the first statementEndIndex for the find method call.
-			if (statementStartMatcher.find(nextCharIndex(statementEndIndex) + 1))
+			if (statementStartMatcher.find(nextCharIndex(statementEndIndex, source) + 1))
 			{
 				newStatementStartIndex = statementStartMatcher.start();
 			}
 				
-			int      offset    = calculateOffset(statementStartIndex);
-			
-			Location location  = new Location(lineNumber, offset);
+			int      offset    = calculateOffset(statementStartIndex, source);
 			
 			String   statement = source.substring(statementStartIndex, statementEndIndex);
 			
+			Location location  = new Location(lineNumber, offset, offset + statement.length());
+			
 			TreeNode node      = decodeStatement(statement, location);
 			
-			updateLineNumber(statementStartIndex, newStatementStartIndex);
+			updateLineNumber(statementStartIndex, newStatementStartIndex, source);
 				
 			oldStatementStartIndex = statementStartIndex;
 			
