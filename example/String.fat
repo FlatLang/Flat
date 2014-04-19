@@ -2,9 +2,9 @@ public class String
 {
 	private char data[];
 	
-	public String(char d[])
+	public String(char data[])
 	{
-		data = d;
+		this.data = data;
 	}
 	
 	/*public static String getStr()
