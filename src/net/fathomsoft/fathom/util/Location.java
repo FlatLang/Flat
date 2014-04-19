@@ -92,6 +92,18 @@ public class Location
 	}
 	
 	/**
+	 * Get the Bounds of the Location's offset. The starting and ending
+	 * offsets.
+	 * 
+	 * @return The Bounds instance containing the starting and ending
+	 * 		offsets.
+	 */
+	public Bounds getBounds()
+	{
+		return bounds;
+	}
+	
+	/**
 	 * Set the character bound offsets on the specified Location's line
 	 * number.
 	 * 
