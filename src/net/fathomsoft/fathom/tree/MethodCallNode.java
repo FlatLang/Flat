@@ -139,7 +139,18 @@ public class MethodCallNode extends IdentifierNode
 		ProgramNode  pNode  = p.getProgramNode();
 		
 		ClassNode    clazz  = pNode.getClass(var.getType());
-		System.out.println(var.getType());
+		
+		FileNode     fNode  = (FileNode)clazz.getAncestorOfType(FileNode.class);
+		
+		if (fNode.getImportListNode().containsImport(getName()))
+		{
+			clazz = pNode.getClass(getName());
+			
+			MethodNode method = clazz.getMethod(getName());
+			
+			return method;
+		}
+		
 		MethodNode   method = clazz.getMethod(getName());
 		
 		return method;
@@ -194,7 +205,12 @@ public class MethodCallNode extends IdentifierNode
 		
 		if (hasVariableNode())
 		{
-			builder.append(getVariableNode().generateCSourceFragment()).append("->");
+			builder.append(getVariableNode().generateCSourceFragment());
+			
+			if (builder.length() > 0)
+			{
+				builder.append("->");
+			}
 		}
 		
 //		if (!isExternal())
@@ -339,6 +355,10 @@ public class MethodCallNode extends IdentifierNode
 					objectInstance.append("this");
 				}
 			}
+			else
+			{
+				objectInstance.delete(0, objectInstance.length());
+			}
 			
 			if (!n.isExternal())
 			{
@@ -396,23 +416,23 @@ public class MethodCallNode extends IdentifierNode
 								return null;
 							}
 							
-							int endI = caller.indexOf("->");
-							
-							if (endI < 0)
-							{
-								// Make up for the offset of the '->' (which is 2 characters long)
-								endI = 0 - 2;
-							}
-							
-							String ending = caller.substring(endI + 2);
-
-							ClassNode curClass = (ClassNode)parent.getAncestorOfType(ClassNode.class, true);
-							
-							ClassNode clazz = SyntaxUtils.getClassType(curClass, objectInstance.toString().replace("->", "."));
-							
-							DeclarationNode node = clazz.getDeclaration(ending);
-							
-							variableNode.setType(node.getType());
+//							int endI = caller.indexOf("->");
+//							
+//							if (endI < 0)
+//							{
+//								// Make up for the offset of the '->' (which is 2 characters long)
+//								endI = 0 - 2;
+//							}
+//							
+//							String ending = caller.substring(endI + 2);
+//							
+//							ClassNode curClass = (ClassNode)parent.getAncestorOfType(ClassNode.class, true);
+//							
+//							ClassNode clazz = SyntaxUtils.getClassType(curClass, objectInstance.toString().replace("->", "."));
+//							
+//							DeclarationNode node = clazz.getDeclaration(ending);
+//							
+//							variableNode.setType(node.getType());
 							
 							n.addChild(variableNode);
 						}
@@ -454,13 +474,10 @@ public class MethodCallNode extends IdentifierNode
 					n.addChild(variableNode);
 				}
 			}
-
+			
 			String arguments[] = Regex.splitCommas(argumentList);
 			
 			n.addArguments(parent, arguments, argsLocation);
-			
-			if (!n.isExternal())
-			System.out.println(n.getMethodNode(parent));
 			
 			return n;
 		}
