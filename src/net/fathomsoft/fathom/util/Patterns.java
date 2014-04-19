@@ -239,9 +239,10 @@ public class Patterns
 	/**
 	 * Pattern that searches for the data after an instantiation.<br>
 	 * <br>
-	 * For example: "new Test" would return "Test"
+	 * For example: "new Test(these, are, arguments)" would return
+	 * "Test(these, are, arguments)"
 	 */
-	public static final Pattern POST_INSTANTIATION		= Pattern.compile("(?<=new\\s{1,9})(\\S+)");
+	public static final Pattern POST_INSTANTIATION		= Pattern.compile("(?<=new\\s{1,9})([\\S\\s]+)");
 
 	/**
 	 * Pattern that searches for the data before a method call.<br>
