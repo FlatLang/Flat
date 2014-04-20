@@ -165,7 +165,7 @@ public class Fathom
 		}
 		else
 		{
-			compiler = CLANG;
+			compiler = GCC;
 		}
 		
 		if (DEBUG)
@@ -441,8 +441,13 @@ public class Fathom
 		
 		cmd.append("-o ").append('"').append(outputFile.getAbsolutePath()).append('"').append(' ');
 		
-		cmd.append("-O2");
+		cmd.append("-O2 ");
 //		cmd.append("-s");
+		
+		if (os == LINUX)
+		{
+			cmd.append("-lm ");
+		}
 		
 		if (isFlagEnabled(C_ARGS))
 		{
