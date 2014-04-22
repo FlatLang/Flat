@@ -67,6 +67,27 @@ public class Regex
 	}
 	
 	/**
+	 * Check whether or not the given src String matches the given Pattern
+	 * exactly.
+	 * 
+	 * @param src The source to check with the Pattern.
+	 * @param pattern The Pattern to test the source against.
+	 * @return Whether or not the given src String matches the given
+	 * 		Pattern exactly..
+	 */
+	public static boolean matches(String src, Pattern pattern)
+	{
+		Matcher matcher = pattern.matcher(src);
+		
+		if (!matcher.find(0))
+		{
+			return false;
+		}
+		
+		return matcher.start() == 0 && matcher.end() == src.length();
+	}
+	
+	/**
 	 * Search for the next occurrence of the Pattern within the
 	 * src String and return the start index of the finding.
 	 * 
@@ -1425,7 +1446,7 @@ public class Regex
 					}
 				}
 			}
-			else if (containsChar(cs, c) && excluding == 0 && i >= start && binaryExclude.isEmpty())
+			else if (excluding == 0 && i >= start && binaryExclude.isEmpty() && containsChar(cs, c))
 			{
 				return new Bounds(i, i);
 			}
@@ -1520,7 +1541,7 @@ public class Regex
 	 */
 	private static int searchChar(char array[], char c)
 	{
-		for (int i = 0; i < array.length; i++)
+		for (int i = array.length - 1; i >= 0; i--)
 		{
 			if (array[i] == c)
 			{
@@ -1529,59 +1550,5 @@ public class Regex
 		}
 		
 		return -1;
-	}
-	
-	/**
-	 * Split the src by the commas. Makes sure not to split commas that
-	 * are within parentheses and quotes.
-	 * 
-	 * @param src The String to split the commas from.
-	 * @return An array of Strings containing the Strings that were split.
-	 */
-	public static String[] splitCommas(String src)
-	{
-		ArrayList<String> strs = new ArrayList<String>();
-		
-		int oldIndex =  0;
-		int index    = -1;
-		
-		StringBuilder builder = new StringBuilder();
-		
-		while ((index = indexOf(src, index + 1, ',', new char[] { '(' }, new char[] { ')' }, new char[] { '"' }, new boolean[] { false }, new boolean[] { false }, new boolean[] { true })) > 0)
-		{
-			builder = new StringBuilder(src.substring(oldIndex, index));
-			
-			trimSurroundingWhitespace(builder);
-
-			strs.add(builder.toString());
-			
-			oldIndex = index + 1;
-		}
-		
-		builder = new StringBuilder(src.substring(oldIndex, src.length()));
-		
-		trimSurroundingWhitespace(builder);
-		
-		strs.add(builder.toString());
-		
-		return strs.toArray(new String[0]);
-	}
-	
-	/**
-	 * Trim the surrounding whitespace off of the StringBuilder's ends.
-	 * 
-	 * @param builder The builder to trim the whitespace from.
-	 */
-	private static void trimSurroundingWhitespace(StringBuilder builder)
-	{
-		while (builder.length() > 0 && (builder.charAt(0) == ' ' || builder.charAt(0) == '\n' || builder.charAt(0) == '\t'))
-		{
-			builder.deleteCharAt(0);
-		}
-		
-		while (builder.length() > 0 && (builder.charAt(builder.length() - 1) == ' ' || builder.charAt(builder.length() - 1) == '\n' || builder.charAt(builder.length() - 1) == '\t'))
-		{
-			builder.deleteCharAt(builder.length() - 1);
-		}
 	}
 }
