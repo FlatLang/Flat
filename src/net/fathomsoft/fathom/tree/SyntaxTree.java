@@ -177,11 +177,19 @@ public class SyntaxTree
 		lineNumber             = 1;
 	}
 	
+	/**
+	 * Generate the syntax tree nodes for all of the class nodes and
+	 * import nodes.
+	 * 
+	 * @param filename The name of the file that is generating the syntax
+	 * 		tree.
+	 * @param source The source text within the file.
+	 */
 	private void phase1(String filename, String source)
 	{
 		filename = FileUtils.removeFileExtension(filename);
 		
-		controller.log("First pass for '" + filename + "'...");
+		controller.log("Phase one for '" + filename + "'...");
 		
 		FileNode fileNode = new FileNode();
 		fileNode.setName(filename);
@@ -191,11 +199,19 @@ public class SyntaxTree
 		traverseCode(fileNode, source, 0, EITHER_STATEMENT_END_CHARS, FIRST_PASS_CLASSES, true);
 	}
 	
+	/**
+	 * Generate the syntax tree nodes for all of the field nodes and
+	 * method nodes.
+	 * 
+	 * @param filename The name of the file that is generating the syntax
+	 * 		tree.
+	 * @param source The source text within the file.
+	 */
 	private void phase2(String filename, String source)
 	{
 		filename = FileUtils.removeFileExtension(filename);
 
-		controller.log("Second pass for '" + filename + "'...");
+		controller.log("Phase two for '" + filename + "'...");
 		
 		FileNode fileNode = root.getFile(filename);
 		
@@ -220,11 +236,18 @@ public class SyntaxTree
 		}
 	}
 	
+	/**
+	 * Generate the syntax tree nodes for all of the method contents.
+	 * 
+	 * @param filename The name of the file that is generating the syntax
+	 * 		tree.
+	 * @param source The source text within the file.
+	 */
 	private void phase3(String filename, String source)
 	{
 		filename = FileUtils.removeFileExtension(filename);
 
-		controller.log("Third pass for '" + filename + "'...");
+		controller.log("Phase three for '" + filename + "'...");
 		
 		FileNode fileNode = root.getFile(filename);
 		
@@ -250,6 +273,12 @@ public class SyntaxTree
 		checkForErrors(fileNode);
 	}
 	
+	/**
+	 * Decode all of the method contents.
+	 * 
+	 * @param methods The list of methods to decode.
+	 * @param source The source text to decode.
+	 */
 	private void decodeMethodContents(MethodListNode methods, String source)
 	{
 		for (TreeNode child : methods.getChildren())
@@ -272,11 +301,14 @@ public class SyntaxTree
 	}
 	
 	/**
+	 * Traverse the given source code and generate the tree along with the
+	 * data and parameters that are given.
 	 * 
-	 * 
-	 * @param parent 
-	 * @param source 
-	 * @param offset 
+	 * @param parent The TreeNode to stem all of the following decoded
+	 * 		data from.
+	 * @param source The text to decode.
+	 * @param offset The character offset within the file's source text
+	 * 		overall.
 	 * @param statementType The character array to use that determines what
 	 * 		type of statements are searched for. Possible options include:
 	 * 		<ul>
@@ -285,7 +317,8 @@ public class SyntaxTree
 	 * 			<li>{@link #SCOPE_STATEMENT_END_CHARS}</li>
 	 * 		</ul>
 	 * @param searchTypes The type of TreeNodes to try to decode.
-	 * @param skipScopes 
+	 * @param skipScopes Whether or not to skip the scopes of anything
+	 * 		that contains a scope. If true, only decode the header.
 	 */
 	private void traverseCode(TreeNode parent, String source, int offset, char statementType[], Class<?> searchTypes[], boolean skipScopes)
 	{
@@ -312,13 +345,6 @@ public class SyntaxTree
 				
 //				int contentStart  = StringUtils.findNextNonWhitespaceIndex(source, startingIndex + 1);
 //				int contentEnd    = StringUtils.findNextNonWhitespaceIndex(source, endingIndex - 1, -1) + 1;
-//				
-//				if (contentStart >= contentEnd)
-//				{
-//					System.err.println("Something went wrong...");
-//					
-//					System.exit(1);
-//				}
 				
 				statementStartIndex    = endingIndex;
 				oldStatementStartIndex = statementStartIndex;
@@ -333,11 +359,6 @@ public class SyntaxTree
 			
 			if (statementEndIndex >= 0 && !skipScopes && nextChar(statementEndIndex, source) == '{')
 			{
-//				if (currentNode.containsScope())
-//				{
-//					currentNode = currentNode.getScopeNode();
-//				}
-				
 				parentStack.push(currentNode);
 			}
 			
