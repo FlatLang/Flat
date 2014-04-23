@@ -18,7 +18,6 @@
 package net.fathomsoft.fathom.util;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -31,31 +30,6 @@ import java.util.regex.Pattern;
  */
 public class Regex
 {
-	public static final HashSet<Character>	EMPTY_CHAR_SET, STARTING_PARENTHESIS, ENDING_PARENTHESIS, DOUBLE_QUOTE, SINGLE_QUOTE;
-	public static final HashSet<Boolean>	EMPTY_BOOLEAN_SET, FALSE, TRUE;
-	
-	static
-	{
-		EMPTY_CHAR_SET       = new HashSet<Character>();
-		EMPTY_BOOLEAN_SET    = new HashSet<Boolean>();
-
-		TRUE                 = new HashSet<Boolean>();
-		FALSE                = new HashSet<Boolean>();
-
-		STARTING_PARENTHESIS = new HashSet<Character>();
-		ENDING_PARENTHESIS   = new HashSet<Character>();
-		DOUBLE_QUOTE         = new HashSet<Character>();
-		SINGLE_QUOTE         = new HashSet<Character>();
-		
-		TRUE.add(true);
-		FALSE.add(false);
-		
-		STARTING_PARENTHESIS.add('(');
-		ENDING_PARENTHESIS.add(')');
-		DOUBLE_QUOTE.add('"');
-		SINGLE_QUOTE.add('\'');
-	}
-	
 	/**
 	 * Check whether or not the given src String matches the given Pattern
 	 * at the start of the src.
@@ -243,7 +217,7 @@ public class Regex
 	 * 		e.g. ')'
 	 * @return The start index of the next possible occurrence, if any.
 	 */
-	public static int indexOf(String src, char c, HashSet<Character> excludePrefixes, HashSet<Character> excludePostfixes)
+	public static int indexOf(String src, char c, char excludePrefixes[], char excludePostfixes[])
 	{
 		return indexOf(src, 0, c, excludePrefixes, excludePostfixes, 1);
 	}
@@ -287,7 +261,7 @@ public class Regex
 	 * 		e.g. ')'
 	 * @return The start index of the last possible occurrence, if any.
 	 */
-	public static int lastIndexOf(String src, char c, HashSet<Character> excludePrefixes, HashSet<Character> excludePostfixes)
+	public static int lastIndexOf(String src, char c, char excludePrefixes[], char excludePostfixes[])
 	{
 		return indexOf(src, src.length() - 1, c, excludePrefixes, excludePostfixes, -1);
 	}
@@ -320,7 +294,7 @@ public class Regex
 	 * @param direction The direction to search for the match in.
 	 * @return The start index of the next possible occurrence, if any.
 	 */
-	public static int indexOf(String src, char c, HashSet<Character> excludePrefixes, HashSet<Character> excludePostfixes, int direction)
+	public static int indexOf(String src, char c, char excludePrefixes[], char excludePostfixes[], int direction)
 	{
 		return indexOf(src, 0, c, excludePrefixes, excludePostfixes, direction);
 	}
@@ -339,7 +313,7 @@ public class Regex
 	 * @param direction The direction to search for the match in.
 	 * @return The start index of the next possible occurrence, if any.
 	 */
-	public static int indexOf(String src, int start, char c, HashSet<Character> excludePrefixes, HashSet<Character> excludePostfixes, int direction)
+	public static int indexOf(String src, int start, char c, char excludePrefixes[], char excludePostfixes[], int direction)
 	{
 		return indexOf(src, start, c, excludePrefixes, excludePostfixes, null, null, null, null, direction);
 	}
@@ -364,7 +338,7 @@ public class Regex
 	 * 		excluding. e.g. '"' and "\"" would be skipped over.
 	 * @return The start index of the next possible occurrence, if any.
 	 */
-	public static int lastIndexOf(String src, char c, HashSet<Character> excludePrefixes, HashSet<Character> excludePostfixes, HashSet<Character> excludeBinary, HashSet<Boolean> excludePrefixBackslash, HashSet<Boolean> excludePostfixBackslash, HashSet<Boolean> excludeBinaryBackslash)
+	public static int lastIndexOf(String src, char c, char excludePrefixes[], char excludePostfixes[], char excludeBinary[], boolean excludePrefixBackslash[], boolean excludePostfixBackslash[], boolean excludeBinaryBackslash[])
 	{
 		return indexOf(src, src.length() - 1, c, excludePrefixes, excludePostfixes, excludeBinary, excludePrefixBackslash, excludePostfixBackslash, excludeBinaryBackslash, -1);
 	}
@@ -389,7 +363,7 @@ public class Regex
 	 * 		excluding. e.g. '"' and "\"" would be skipped over.
 	 * @return The start index of the next possible occurrence, if any.
 	 */
-	public static int indexOf(String src, char c, HashSet<Character> excludePrefixes, HashSet<Character> excludePostfixes, HashSet<Character> excludeBinary, HashSet<Boolean> excludePrefixBackslash, HashSet<Boolean> excludePostfixBackslash, HashSet<Boolean> excludeBinaryBackslash)
+	public static int indexOf(String src, char c, char excludePrefixes[], char excludePostfixes[], char excludeBinary[], boolean excludePrefixBackslash[], boolean excludePostfixBackslash[], boolean excludeBinaryBackslash[])
 	{
 		return indexOf(src, 0, c, excludePrefixes, excludePostfixes, excludeBinary, excludePrefixBackslash, excludePostfixBackslash, excludeBinaryBackslash, 1);
 	}
@@ -415,7 +389,7 @@ public class Regex
 	 * @param direction The direction to search for the match in.
 	 * @return The start index of the next possible occurrence, if any.
 	 */
-	public static int indexOf(String src, char c, HashSet<Character> excludePrefixes, HashSet<Character> excludePostfixes, HashSet<Character> excludeBinary, HashSet<Boolean> excludePrefixBackslash, HashSet<Boolean> excludePostfixBackslash, HashSet<Boolean> excludeBinaryBackslash, int direction)
+	public static int indexOf(String src, char c, char excludePrefixes[], char excludePostfixes[], char excludeBinary[], boolean excludePrefixBackslash[], boolean excludePostfixBackslash[], boolean excludeBinaryBackslash[], int direction)
 	{
 		return indexOf(src, 0, c, excludePrefixes, excludePostfixes, excludeBinary, excludePrefixBackslash, excludePostfixBackslash, excludeBinaryBackslash, direction);
 	}
@@ -441,7 +415,7 @@ public class Regex
 	 * 		excluding. e.g. '"' and "\"" would be skipped over.
 	 * @return The start index of the next possible occurrence, if any.
 	 */
-	public static int indexOf(String src, int start, char c, HashSet<Character> excludePrefixes, HashSet<Character> excludePostfixes, HashSet<Character> excludeBinary, HashSet<Boolean> excludePrefixBackslash, HashSet<Boolean> excludePostfixBackslash, HashSet<Boolean> excludeBinaryBackslash)
+	public static int indexOf(String src, int start, char c, char excludePrefixes[], char excludePostfixes[], char excludeBinary[], boolean excludePrefixBackslash[], boolean excludePostfixBackslash[], boolean excludeBinaryBackslash[])
 	{
 		return indexOf(src, start, c, excludePrefixes, excludePostfixes, excludeBinary, excludePrefixBackslash, excludePostfixBackslash, excludeBinaryBackslash, 1);
 	}
@@ -458,7 +432,7 @@ public class Regex
 	 */
 	public static int indexOfExcludeText(String src, int start, char c)
 	{
-		return indexOf(src, start, c, EMPTY_CHAR_SET, EMPTY_CHAR_SET, DOUBLE_QUOTE, EMPTY_BOOLEAN_SET, EMPTY_BOOLEAN_SET, TRUE);
+		return indexOf(src, start, c, new char[] { }, new char[] {}, new char[] { '"' }, new boolean[] {}, new boolean[] {}, new boolean[] { true });
 	}
 	
 	/**
@@ -473,7 +447,7 @@ public class Regex
 	 */
 	public static int indexOfExcludeTextAndParentheses(String src, int start, char c)
 	{
-		return indexOf(src, start, c, STARTING_PARENTHESIS, ENDING_PARENTHESIS, DOUBLE_QUOTE, FALSE, FALSE, TRUE);
+		return indexOf(src, start, c, new char[] { '(' }, new char[] { ')' }, new char[] { '"' }, new boolean[] { false }, new boolean[] { false }, new boolean[] { true });
 	}
 	
 	/**
@@ -487,7 +461,7 @@ public class Regex
 	 */
 	public static int indexOfExcludeText(String src, char c)
 	{
-		return indexOf(src, 0, c, EMPTY_CHAR_SET, EMPTY_CHAR_SET, DOUBLE_QUOTE, EMPTY_BOOLEAN_SET, EMPTY_BOOLEAN_SET, TRUE);
+		return indexOf(src, 0, c, new char[] { }, new char[] {}, new char[] { '"' }, new boolean[] {}, new boolean[] {}, new boolean[] { true });
 	}
 	
 	/**
@@ -501,7 +475,7 @@ public class Regex
 	 */
 	public static int indexOfExcludeTextAndParentheses(String src, char c)
 	{
-		return indexOf(src, 0, c, STARTING_PARENTHESIS, ENDING_PARENTHESIS, DOUBLE_QUOTE, FALSE, FALSE, TRUE);
+		return indexOf(src, 0, c, new char[] { '(' }, new char[] { ')' }, new char[] { '"' }, new boolean[] { false }, new boolean[] { false }, new boolean[] { true });
 	}
 	
 	/**
@@ -516,7 +490,7 @@ public class Regex
 	 */
 	public static int indexOfExcludeText(String src, int start, char cs[])
 	{
-		return indexOf(src, start, cs, EMPTY_CHAR_SET, EMPTY_CHAR_SET, DOUBLE_QUOTE, EMPTY_BOOLEAN_SET, EMPTY_BOOLEAN_SET, TRUE);
+		return indexOf(src, start, cs, new char[] { }, new char[] {}, new char[] { '"' }, new boolean[] {}, new boolean[] {}, new boolean[] { true });
 	}
 	
 	/**
@@ -531,7 +505,7 @@ public class Regex
 	 */
 	public static int indexOfExcludeTextAndParentheses(String src, int start, char cs[])
 	{
-		return indexOf(src, start, cs, STARTING_PARENTHESIS, ENDING_PARENTHESIS, DOUBLE_QUOTE, FALSE, FALSE, TRUE);
+		return indexOf(src, start, cs, new char[] { '(' }, new char[] { ')' }, new char[] { '"' }, new boolean[] { false }, new boolean[] { false }, new boolean[] { true });
 	}
 	
 	/**
@@ -545,7 +519,7 @@ public class Regex
 	 */
 	public static int indexOfExcludeText(String src, char cs[])
 	{
-		return indexOf(src, 0, cs, EMPTY_CHAR_SET, EMPTY_CHAR_SET, DOUBLE_QUOTE, EMPTY_BOOLEAN_SET, EMPTY_BOOLEAN_SET, TRUE);
+		return indexOf(src, 0, cs, new char[] { }, new char[] {}, new char[] { '"' }, new boolean[] {}, new boolean[] {}, new boolean[] { true });
 	}
 	
 	/**
@@ -559,7 +533,7 @@ public class Regex
 	 */
 	public static int indexOfExcludeTextAndParentheses(String src, char cs[])
 	{
-		return indexOf(src, 0, cs, STARTING_PARENTHESIS, ENDING_PARENTHESIS, DOUBLE_QUOTE, FALSE, FALSE, TRUE);
+		return indexOf(src, 0, cs, new char[] { '(' }, new char[] { ')' }, new char[] { '"' }, new boolean[] { false }, new boolean[] { false }, new boolean[] { true });
 	}
 	
 	/**
@@ -574,7 +548,7 @@ public class Regex
 	 */
 	public static int lastIndexOfExcludeText(String src, int start, char c)
 	{
-		return indexOf(src, start, c, EMPTY_CHAR_SET, EMPTY_CHAR_SET, DOUBLE_QUOTE, EMPTY_BOOLEAN_SET, EMPTY_BOOLEAN_SET, TRUE, -1);
+		return indexOf(src, start, c, new char[] { }, new char[] {}, new char[] { '"' }, new boolean[] {}, new boolean[] {}, new boolean[] { true }, -1);
 	}
 	
 	/**
@@ -589,7 +563,7 @@ public class Regex
 	 */
 	public static int lastIndexOfExcludeTextAndParentheses(String src, int start, char c)
 	{
-		return indexOf(src, start, c, STARTING_PARENTHESIS, ENDING_PARENTHESIS, DOUBLE_QUOTE, FALSE, FALSE, TRUE, -1);
+		return indexOf(src, start, c, new char[] { '(' }, new char[] { ')' }, new char[] { '"' }, new boolean[] { false }, new boolean[] { false }, new boolean[] { true }, -1);
 	}
 	
 	/**
@@ -603,7 +577,7 @@ public class Regex
 	 */
 	public static int lastIndexOfExcludeText(String src, char c)
 	{
-		return indexOf(src, src.length() - 1, c, EMPTY_CHAR_SET, EMPTY_CHAR_SET, DOUBLE_QUOTE, EMPTY_BOOLEAN_SET, EMPTY_BOOLEAN_SET, TRUE);
+		return indexOf(src, src.length() - 1, c, new char[] { }, new char[] {}, new char[] { '"' }, new boolean[] {}, new boolean[] {}, new boolean[] { true });
 	}
 	
 	/**
@@ -617,7 +591,7 @@ public class Regex
 	 */
 	public static int lastIndexOfExcludeTextAndParentheses(String src, char c)
 	{
-		return indexOf(src, src.length() - 1, c, STARTING_PARENTHESIS, ENDING_PARENTHESIS, DOUBLE_QUOTE, FALSE, FALSE, TRUE, -1);
+		return indexOf(src, src.length() - 1, c, new char[] { '(' }, new char[] { ')' }, new char[] { '"' }, new boolean[] { false }, new boolean[] { false }, new boolean[] { true }, -1);
 	}
 	
 	/**
@@ -632,7 +606,7 @@ public class Regex
 	 */
 	public static int lastIndexOfExcludeText(String src, int start, char cs[])
 	{
-		return indexOf(src, start, cs, EMPTY_CHAR_SET, EMPTY_CHAR_SET, DOUBLE_QUOTE, EMPTY_BOOLEAN_SET, EMPTY_BOOLEAN_SET, TRUE, -1);
+		return indexOf(src, start, cs, new char[] { }, new char[] {}, new char[] { '"' }, new boolean[] {}, new boolean[] {}, new boolean[] { true }, -1);
 	}
 	
 	/**
@@ -647,7 +621,7 @@ public class Regex
 	 */
 	public static int lastIndexOfExcludeTextAndParentheses(String src, int start, char cs[])
 	{
-		return indexOf(src, start, cs, STARTING_PARENTHESIS, ENDING_PARENTHESIS, DOUBLE_QUOTE, FALSE, FALSE, TRUE, -1);
+		return indexOf(src, start, cs, new char[] { '(' }, new char[] { ')' }, new char[] { '"' }, new boolean[] { false }, new boolean[] { false }, new boolean[] { true }, -1);
 	}
 	
 	/**
@@ -661,7 +635,7 @@ public class Regex
 	 */
 	public static int lastIndexOfExcludeText(String src, char cs[])
 	{
-		return indexOf(src, src.length() - 1, cs, EMPTY_CHAR_SET, EMPTY_CHAR_SET, DOUBLE_QUOTE, EMPTY_BOOLEAN_SET, EMPTY_BOOLEAN_SET, TRUE, -1);
+		return indexOf(src, src.length() - 1, cs, new char[] { }, new char[] {}, new char[] { '"' }, new boolean[] {}, new boolean[] {}, new boolean[] { true }, -1);
 	}
 	
 	/**
@@ -675,7 +649,7 @@ public class Regex
 	 */
 	public static int lastIndexOfExcludeTextAndParentheses(String src, char cs[])
 	{
-		return indexOf(src, src.length() - 1, cs, STARTING_PARENTHESIS, ENDING_PARENTHESIS, DOUBLE_QUOTE, FALSE, FALSE, TRUE, -1);
+		return indexOf(src, src.length() - 1, cs, new char[] { '(' }, new char[] { ')' }, new char[] { '"' }, new boolean[] { false }, new boolean[] { false }, new boolean[] { true }, -1);
 	}
 	
 	/**
@@ -700,7 +674,7 @@ public class Regex
 	 * @param direction The direction to search for the match in.
 	 * @return The start index of the next possible occurrence, if any.
 	 */
-	public static int indexOf(String src, int start, char c, HashSet<Character> excludePrefixes, HashSet<Character> excludePostfixes, HashSet<Character> excludeBinary, HashSet<Boolean> excludePrefixBackslash, HashSet<Boolean> excludePostfixBackslash, HashSet<Boolean> excludeBinaryBackslash, int direction)
+	public static int indexOf(String src, int start, char c, char excludePrefixes[], char excludePostfixes[], char excludeBinary[], boolean excludePrefixBackslash[], boolean excludePostfixBackslash[], boolean excludeBinaryBackslash[], int direction)
 	{
 		return indexOf(src, start, new char[] { c }, excludePrefixes, excludePostfixes, excludeBinary, excludePrefixBackslash, excludePostfixBackslash, excludeBinaryBackslash, direction);
 	}
@@ -726,7 +700,7 @@ public class Regex
 	 * 		excluding. e.g. '"' and "\"" would be skipped over.
 	 * @return The start index of the next possible occurrence, if any.
 	 */
-	public static int indexOf(String src, int start, char cs[], HashSet<Character> excludePrefixes, HashSet<Character> excludePostfixes, HashSet<Character> excludeBinary, HashSet<Boolean> excludePrefixBackslash, HashSet<Boolean> excludePostfixBackslash, HashSet<Boolean> excludeBinaryBackslash)
+	public static int indexOf(String src, int start, char cs[], char excludePrefixes[], char excludePostfixes[], char excludeBinary[], boolean excludePrefixBackslash[], boolean excludePostfixBackslash[], boolean excludeBinaryBackslash[])
 	{
 		return indexOf(src, start, cs, excludePrefixes, excludePostfixes, excludeBinary, excludePrefixBackslash, excludePostfixBackslash, excludeBinaryBackslash, 1);
 	}
@@ -753,7 +727,7 @@ public class Regex
 	 * @param direction The direction to search for the match in.
 	 * @return The start index of the next possible occurrence, if any.
 	 */
-	public static int indexOf(String src, int start, char cs[], HashSet<Character> excludePrefixes, HashSet<Character> excludePostfixes, HashSet<Character> excludeBinary, HashSet<Boolean> excludePrefixBackslash, HashSet<Boolean> excludePostfixBackslash, HashSet<Boolean> excludeBinaryBackslash, int direction)
+	public static int indexOf(String src, int start, char cs[], char excludePrefixes[], char excludePostfixes[], char excludeBinary[], boolean excludePrefixBackslash[], boolean excludePostfixBackslash[], boolean excludeBinaryBackslash[], int direction)
 	{
 		return boundsOf(src, start, cs, excludePrefixes, excludePostfixes, excludeBinary, excludePrefixBackslash, excludePostfixBackslash, excludeBinaryBackslash, direction).getStart();
 	}
@@ -889,7 +863,7 @@ public class Regex
 	 * 		e.g. ')'
 	 * @return The Bounds of the next possible occurrence, if any.
 	 */
-	public static Bounds boundsOf(String src, char c, HashSet<Character> excludePrefixes, HashSet<Character> excludePostfixes)
+	public static Bounds boundsOf(String src, char c, char excludePrefixes[], char excludePostfixes[])
 	{
 		return boundsOf(src, 0, c, excludePrefixes, excludePostfixes, 1);
 	}
@@ -933,7 +907,7 @@ public class Regex
 	 * 		e.g. ')'
 	 * @return The Bounds of the last possible occurrence, if any.
 	 */
-	public static Bounds lastBoundsOf(String src, char c, HashSet<Character> excludePrefixes, HashSet<Character> excludePostfixes)
+	public static Bounds lastBoundsOf(String src, char c, char excludePrefixes[], char excludePostfixes[])
 	{
 		return boundsOf(src, src.length() - 1, c, excludePrefixes, excludePostfixes, -1);
 	}
@@ -966,7 +940,7 @@ public class Regex
 	 * @param direction The direction to search for the match in.
 	 * @return The Bounds of the next possible occurrence, if any.
 	 */
-	public static Bounds boundsOf(String src, char c, HashSet<Character> excludePrefixes, HashSet<Character> excludePostfixes, int direction)
+	public static Bounds boundsOf(String src, char c, char excludePrefixes[], char excludePostfixes[], int direction)
 	{
 		return boundsOf(src, 0, c, excludePrefixes, excludePostfixes, direction);
 	}
@@ -985,7 +959,7 @@ public class Regex
 	 * @param direction The direction to search for the match in.
 	 * @return The Bounds of the next possible occurrence, if any.
 	 */
-	public static Bounds boundsOf(String src, int start, char c, HashSet<Character> excludePrefixes, HashSet<Character> excludePostfixes, int direction)
+	public static Bounds boundsOf(String src, int start, char c, char excludePrefixes[], char excludePostfixes[], int direction)
 	{
 		return boundsOf(src, start, c, excludePrefixes, excludePostfixes, null, null, null, null, direction);
 	}
@@ -1010,7 +984,7 @@ public class Regex
 	 * 		excluding. e.g. '"' and "\"" would be skipped over.
 	 * @return The Bounds of the next possible occurrence, if any.
 	 */
-	public static Bounds lastBoundsOf(String src, char c, HashSet<Character> excludePrefixes, HashSet<Character> excludePostfixes, HashSet<Character> excludeBinary, HashSet<Boolean> excludePrefixBackslash, HashSet<Boolean> excludePostfixBackslash, HashSet<Boolean> excludeBinaryBackslash)
+	public static Bounds lastBoundsOf(String src, char c, char excludePrefixes[], char excludePostfixes[], char excludeBinary[], boolean excludePrefixBackslash[], boolean excludePostfixBackslash[], boolean excludeBinaryBackslash[])
 	{
 		return boundsOf(src, src.length() - 1, c, excludePrefixes, excludePostfixes, excludeBinary, excludePrefixBackslash, excludePostfixBackslash, excludeBinaryBackslash, -1);
 	}
@@ -1035,7 +1009,7 @@ public class Regex
 	 * 		excluding. e.g. '"' and "\"" would be skipped over.
 	 * @return The Bounds of the next possible occurrence, if any.
 	 */
-	public static Bounds boundsOf(String src, char c, HashSet<Character> excludePrefixes, HashSet<Character> excludePostfixes, HashSet<Character> excludeBinary, HashSet<Boolean> excludePrefixBackslash, HashSet<Boolean> excludePostfixBackslash, HashSet<Boolean> excludeBinaryBackslash)
+	public static Bounds boundsOf(String src, char c, char excludePrefixes[], char excludePostfixes[], char excludeBinary[], boolean excludePrefixBackslash[], boolean excludePostfixBackslash[], boolean excludeBinaryBackslash[])
 	{
 		return boundsOf(src, 0, c, excludePrefixes, excludePostfixes, excludeBinary, excludePrefixBackslash, excludePostfixBackslash, excludeBinaryBackslash, 1);
 	}
@@ -1061,7 +1035,7 @@ public class Regex
 	 * @param direction The direction to search for the match in.
 	 * @return The Bounds of the next possible occurrence, if any.
 	 */
-	public static Bounds boundsOf(String src, char c, HashSet<Character> excludePrefixes, HashSet<Character> excludePostfixes, HashSet<Character> excludeBinary, HashSet<Boolean> excludePrefixBackslash, HashSet<Boolean> excludePostfixBackslash, HashSet<Boolean> excludeBinaryBackslash, int direction)
+	public static Bounds boundsOf(String src, char c, char excludePrefixes[], char excludePostfixes[], char excludeBinary[], boolean excludePrefixBackslash[], boolean excludePostfixBackslash[], boolean excludeBinaryBackslash[], int direction)
 	{
 		return boundsOf(src, 0, c, excludePrefixes, excludePostfixes, excludeBinary, excludePrefixBackslash, excludePostfixBackslash, excludeBinaryBackslash, direction);
 	}
@@ -1087,7 +1061,7 @@ public class Regex
 	 * 		excluding. e.g. '"' and "\"" would be skipped over.
 	 * @return The Bounds of the next possible occurrence, if any.
 	 */
-	public static Bounds boundsOf(String src, int start, char c, HashSet<Character> excludePrefixes, HashSet<Character> excludePostfixes, HashSet<Character> excludeBinary, HashSet<Boolean> excludePrefixBackslash, HashSet<Boolean> excludePostfixBackslash, HashSet<Boolean> excludeBinaryBackslash)
+	public static Bounds boundsOf(String src, int start, char c, char excludePrefixes[], char excludePostfixes[], char excludeBinary[], boolean excludePrefixBackslash[], boolean excludePostfixBackslash[], boolean excludeBinaryBackslash[])
 	{
 		return boundsOf(src, start, c, excludePrefixes, excludePostfixes, excludeBinary, excludePrefixBackslash, excludePostfixBackslash, excludeBinaryBackslash, 1);
 	}
@@ -1104,7 +1078,7 @@ public class Regex
 	 */
 	public static Bounds boundsOfExcludeText(String src, int start, char c)
 	{
-		return boundsOf(src, start, c, EMPTY_CHAR_SET, EMPTY_CHAR_SET, DOUBLE_QUOTE, EMPTY_BOOLEAN_SET, EMPTY_BOOLEAN_SET, TRUE);
+		return boundsOf(src, start, c, new char[] { }, new char[] {}, new char[] { '"' }, new boolean[] {}, new boolean[] {}, new boolean[] { true });
 	}
 	
 	/**
@@ -1119,7 +1093,7 @@ public class Regex
 	 */
 	public static Bounds boundsOfExcludeTextAndParentheses(String src, int start, char c)
 	{
-		return boundsOf(src, start, c, STARTING_PARENTHESIS, ENDING_PARENTHESIS, DOUBLE_QUOTE, FALSE, FALSE, TRUE);
+		return boundsOf(src, start, c, new char[] { '(' }, new char[] { ')' }, new char[] { '"' }, new boolean[] { false }, new boolean[] { false }, new boolean[] { true });
 	}
 	
 	/**
@@ -1133,7 +1107,7 @@ public class Regex
 	 */
 	public static Bounds boundsOfExcludeText(String src, char c)
 	{
-		return boundsOf(src, 0, c, EMPTY_CHAR_SET, EMPTY_CHAR_SET, DOUBLE_QUOTE, EMPTY_BOOLEAN_SET, EMPTY_BOOLEAN_SET, TRUE);
+		return boundsOf(src, 0, c, new char[] { }, new char[] {}, new char[] { '"' }, new boolean[] {}, new boolean[] {}, new boolean[] { true });
 	}
 	
 	/**
@@ -1147,7 +1121,7 @@ public class Regex
 	 */
 	public static Bounds boundsOfExcludeTextAndParentheses(String src, char c)
 	{
-		return boundsOf(src, 0, c, STARTING_PARENTHESIS, ENDING_PARENTHESIS, DOUBLE_QUOTE, FALSE, FALSE, TRUE);
+		return boundsOf(src, 0, c, new char[] { '(' }, new char[] { ')' }, new char[] { '"' }, new boolean[] { false }, new boolean[] { false }, new boolean[] { true });
 	}
 	
 	/**
@@ -1162,7 +1136,7 @@ public class Regex
 	 */
 	public static Bounds boundsOfExcludeText(String src, int start, char cs[])
 	{
-		return boundsOf(src, start, cs, EMPTY_CHAR_SET, EMPTY_CHAR_SET, DOUBLE_QUOTE, EMPTY_BOOLEAN_SET, EMPTY_BOOLEAN_SET, TRUE);
+		return boundsOf(src, start, cs, new char[] { }, new char[] {}, new char[] { '"' }, new boolean[] {}, new boolean[] {}, new boolean[] { true });
 	}
 	
 	/**
@@ -1177,7 +1151,7 @@ public class Regex
 	 */
 	public static Bounds boundsOfExcludeTextAndParentheses(String src, int start, char cs[])
 	{
-		return boundsOf(src, start, cs, STARTING_PARENTHESIS, ENDING_PARENTHESIS, DOUBLE_QUOTE, FALSE, FALSE, TRUE);
+		return boundsOf(src, start, cs, new char[] { '(' }, new char[] { ')' }, new char[] { '"' }, new boolean[] { false }, new boolean[] { false }, new boolean[] { true });
 	}
 	
 	/**
@@ -1191,7 +1165,7 @@ public class Regex
 	 */
 	public static Bounds boundsOfExcludeText(String src, char cs[])
 	{
-		return boundsOf(src, 0, cs, EMPTY_CHAR_SET, EMPTY_CHAR_SET, DOUBLE_QUOTE, EMPTY_BOOLEAN_SET, EMPTY_BOOLEAN_SET, TRUE);
+		return boundsOf(src, 0, cs, new char[] { }, new char[] {}, new char[] { '"' }, new boolean[] {}, new boolean[] {}, new boolean[] { true });
 	}
 	
 	/**
@@ -1205,7 +1179,7 @@ public class Regex
 	 */
 	public static Bounds boundsOfExcludeTextAndParentheses(String src, char cs[])
 	{
-		return boundsOf(src, 0, cs, STARTING_PARENTHESIS, ENDING_PARENTHESIS, DOUBLE_QUOTE, FALSE, FALSE, TRUE);
+		return boundsOf(src, 0, cs, new char[] { '(' }, new char[] { ')' }, new char[] { '"' }, new boolean[] { false }, new boolean[] { false }, new boolean[] { true });
 	}
 	
 	/**
@@ -1220,7 +1194,7 @@ public class Regex
 	 */
 	public static Bounds lastBoundsOfExcludeText(String src, int start, char c)
 	{
-		return boundsOf(src, start, c, EMPTY_CHAR_SET, EMPTY_CHAR_SET, DOUBLE_QUOTE, EMPTY_BOOLEAN_SET, EMPTY_BOOLEAN_SET, TRUE, -1);
+		return boundsOf(src, start, c, new char[] { }, new char[] {}, new char[] { '"' }, new boolean[] {}, new boolean[] {}, new boolean[] { true }, -1);
 	}
 	
 	/**
@@ -1235,7 +1209,7 @@ public class Regex
 	 */
 	public static Bounds lastBoundsOfExcludeTextAnd(String src, int start, char c)
 	{
-		return boundsOf(src, start, c, STARTING_PARENTHESIS, ENDING_PARENTHESIS, DOUBLE_QUOTE, FALSE, FALSE, TRUE, -1);
+		return boundsOf(src, start, c, new char[] { '(' }, new char[] { ')' }, new char[] { '"' }, new boolean[] { false }, new boolean[] { false }, new boolean[] { true }, -1);
 	}
 	
 	/**
@@ -1249,7 +1223,7 @@ public class Regex
 	 */
 	public static Bounds lastBoundsOfExcludeText(String src, char c)
 	{
-		return boundsOf(src, src.length() - 1, c, EMPTY_CHAR_SET, EMPTY_CHAR_SET, DOUBLE_QUOTE, EMPTY_BOOLEAN_SET, EMPTY_BOOLEAN_SET, TRUE);
+		return boundsOf(src, src.length() - 1, c, new char[] { }, new char[] {}, new char[] { '"' }, new boolean[] {}, new boolean[] {}, new boolean[] { true });
 	}
 	
 	/**
@@ -1263,7 +1237,7 @@ public class Regex
 	 */
 	public static Bounds lastBoundsOfExcludeTextAndParentheses(String src, char c)
 	{
-		return boundsOf(src, src.length() - 1, c, STARTING_PARENTHESIS, ENDING_PARENTHESIS, DOUBLE_QUOTE, FALSE, FALSE, TRUE, -1);
+		return boundsOf(src, src.length() - 1, c, new char[] { '(' }, new char[] { ')' }, new char[] { '"' }, new boolean[] { false }, new boolean[] { false }, new boolean[] { true }, -1);
 	}
 	
 	/**
@@ -1278,7 +1252,7 @@ public class Regex
 	 */
 	public static Bounds lastBoundsOfExcludeText(String src, int start, char cs[])
 	{
-		return boundsOf(src, start, cs, EMPTY_CHAR_SET, EMPTY_CHAR_SET, DOUBLE_QUOTE, EMPTY_BOOLEAN_SET, EMPTY_BOOLEAN_SET, TRUE, -1);
+		return boundsOf(src, start, cs, new char[] { }, new char[] {}, new char[] { '"' }, new boolean[] {}, new boolean[] {}, new boolean[] { true }, -1);
 	}
 	
 	/**
@@ -1293,7 +1267,7 @@ public class Regex
 	 */
 	public static Bounds lastBoundsOfExcludeTextAndParentheses(String src, int start, char cs[])
 	{
-		return boundsOf(src, start, cs, STARTING_PARENTHESIS, ENDING_PARENTHESIS, DOUBLE_QUOTE, FALSE, FALSE, TRUE, -1);
+		return boundsOf(src, start, cs, new char[] { '(' }, new char[] { ')' }, new char[] { '"' }, new boolean[] { false }, new boolean[] { false }, new boolean[] { true }, -1);
 	}
 	
 	/**
@@ -1307,7 +1281,7 @@ public class Regex
 	 */
 	public static Bounds lastBoundsOfExcludeText(String src, char cs[])
 	{
-		return boundsOf(src, src.length() - 1, cs, EMPTY_CHAR_SET, EMPTY_CHAR_SET, DOUBLE_QUOTE, EMPTY_BOOLEAN_SET, EMPTY_BOOLEAN_SET, TRUE, -1);
+		return boundsOf(src, src.length() - 1, cs, new char[] { }, new char[] {}, new char[] { '"' }, new boolean[] {}, new boolean[] {}, new boolean[] { true }, -1);
 	}
 	
 	/**
@@ -1321,7 +1295,7 @@ public class Regex
 	 */
 	public static Bounds lastBoundsOfExcludeTextAndParentheses(String src, char cs[])
 	{
-		return boundsOf(src, src.length() - 1, cs, STARTING_PARENTHESIS, ENDING_PARENTHESIS, DOUBLE_QUOTE, FALSE, FALSE, TRUE, -1);
+		return boundsOf(src, src.length() - 1, cs, new char[] { '(' }, new char[] { ')' }, new char[] { '"' }, new boolean[] { false }, new boolean[] { false }, new boolean[] { true }, -1);
 	}
 	
 	/**
@@ -1346,7 +1320,7 @@ public class Regex
 	 * @param direction The direction to search for the match in.
 	 * @return The Bounds of the next possible occurrence, if any.
 	 */
-	public static Bounds boundsOf(String src, int start, char c, HashSet<Character> excludePrefixes, HashSet<Character> excludePostfixes, HashSet<Character> excludeBinary, HashSet<Boolean> excludePrefixBackslash, HashSet<Boolean> excludePostfixBackslash, HashSet<Boolean> excludeBinaryBackslash, int direction)
+	public static Bounds boundsOf(String src, int start, char c, char excludePrefixes[], char excludePostfixes[], char excludeBinary[], boolean excludePrefixBackslash[], boolean excludePostfixBackslash[], boolean excludeBinaryBackslash[], int direction)
 	{
 		return boundsOf(src, start, new char[] { c }, excludePrefixes, excludePostfixes, excludeBinary, excludePrefixBackslash, excludePostfixBackslash, excludeBinaryBackslash, direction);
 	}
@@ -1372,7 +1346,7 @@ public class Regex
 	 * 		excluding. e.g. '"' and "\"" would be skipped over.
 	 * @return The Bounds of the next possible occurrence, if any.
 	 */
-	public static Bounds boundsOf(String src, int start, char cs[], HashSet<Character> excludePrefixes, HashSet<Character> excludePostfixes, HashSet<Character> excludeBinary, HashSet<Boolean> excludePrefixBackslash, HashSet<Boolean> excludePostfixBackslash, HashSet<Boolean> excludeBinaryBackslash)
+	public static Bounds boundsOf(String src, int start, char cs[], char excludePrefixes[], char excludePostfixes[], char excludeBinary[], boolean excludePrefixBackslash[], boolean excludePostfixBackslash[], boolean excludeBinaryBackslash[])
 	{
 		return boundsOf(src, start, cs, excludePrefixes, excludePostfixes, excludeBinary, excludePrefixBackslash, excludePostfixBackslash, excludeBinaryBackslash, 1);
 	}
@@ -1399,32 +1373,32 @@ public class Regex
 	 * @param direction The direction to search for the match in.
 	 * @return The Bounds of the next possible occurrence, if any.
 	 */
-	public static Bounds boundsOf(String src, int start, char cs[], HashSet<Character> excludePrefixes, HashSet<Character> excludePostfixes, HashSet<Character> excludeBinary, HashSet<Boolean> excludePrefixBackslash, HashSet<Boolean> excludePostfixBackslash, HashSet<Boolean> excludeBinaryBackslash, int direction)
+	public static Bounds boundsOf(String src, int start, char cs[], char excludePrefixes[], char excludePostfixes[], char excludeBinary[], boolean excludePrefixBackslash[], boolean excludePostfixBackslash[], boolean excludeBinaryBackslash[], int direction)
 	{
 		if (excludePrefixes == null)
 		{
-			excludePrefixes = EMPTY_CHAR_SET;//new char[0];
+			excludePrefixes = new char[0];
 		}
 		if (excludePostfixes == null)
 		{
-			excludePostfixes = EMPTY_CHAR_SET;//new char[0];
+			excludePostfixes = new char[0];
 		}
 		if (excludeBinary == null)
 		{
-			excludeBinary = EMPTY_CHAR_SET;//new char[0];
+			excludeBinary = new char[0];
 		}
 		if (excludePrefixBackslash == null)
 		{
-			excludePrefixBackslash = EMPTY_BOOLEAN_SET;//new boolean[excludePrefixes.length];
+			excludePrefixBackslash = new boolean[excludePrefixes.length];
 		}
 		if (excludePostfixBackslash == null)
 		{
-			excludePostfixBackslash = EMPTY_BOOLEAN_SET;//new boolean[excludePostfixes.length];
+			excludePostfixBackslash = new boolean[excludePostfixes.length];
 		}
 		
 		int first = start;
 		
-		if (excludePrefixes.size() > 0 || excludeBinary.size() > 0)
+		if (excludePrefixes.length > 0 || excludeBinary.length > 0)
 		{
 			if (sign(direction) == -1)
 			{
@@ -1446,17 +1420,17 @@ public class Regex
 			
 //			int cIndex = 0;
 			
-			if (excludePrefixes.contains(c))
+			if (searchChar(excludePrefixes, c) >= 0)
 			{
 				excluding += sign(direction);
 			}
-			else if (excludePostfixes.contains(c))
+			else if (searchChar(excludePostfixes, c) >= 0)
 			{
 				excluding -= sign(direction);
 			}
-			else if (excludeBinary.contains(c))
+			else if (searchChar(excludeBinary, c) >= 0)
 			{
-				if (excludeBinaryBackslash.contains(c) && i > 0 && src.charAt(i - 1) == '\\')
+				if (excludeBinaryBackslash[0] && i > 0 && src.charAt(i - 1) == '\\')
 				{
 					// Skip because it starts with a backslash...
 				}
