@@ -5,55 +5,47 @@
 #include "Object.h"
 #include "String.h"
 
-Person* new_Person(ExceptionData* __FATHOM__exception_data, String* name, int age);
-void del_Person(Person** __o__, ExceptionData* __FATHOM__exception_data);
-static int __FATHOM__getAge(Person* __o__, ExceptionData* __FATHOM__exception_data);
-static String* __FATHOM__getName(Person* __o__, ExceptionData* __FATHOM__exception_data);
-
 PRIVATE
 (
-	int age;
-	String* name;
+	int fathom_age;
+	String* fathom_name;
 )
 
-Person* new_Person(ExceptionData* __FATHOM__exception_data, String* name, int age)
+Person* fathom_Person_Person(ExceptionData* exceptionData, String* fathom_name_134, int fathom_age_134)
 {
-	NEW(Person, __o__);
+	NEW(Person, reference);
 	
-	__o__->getAge = __FATHOM__getAge;
-	__o__->getName = __FATHOM__getName;
-	
-	__o__->prv->age = 0;
-	__o__->prv->name = 0;
+	reference->prv->fathom_age = 0;
+	reference->prv->fathom_name = 0;
 	{
-		__o__->prv->name = name;
-		__o__->prv->age = age;
+		reference->prv->fathom_name = fathom_name_134;
+		reference->prv->fathom_age = fathom_age_134;
 	}
 	
-	return __o__;
+	return reference;
 }
 
-void del_Person(Person** __o__, ExceptionData* __FATHOM__exception_data)
+void fathom_del_Person(Person** reference, ExceptionData* exceptionData)
 {
-	if (!*__o__)
+	if (!*reference)
 	{
 		return;
 	}
 	
-	del_String(&(*__o__)->prv->name, __FATHOM__exception_data);
-	free((*__o__)->prv);
+	fathom_del_String(&(*reference)->prv->fathom_name, exceptionData);
+	free((*reference)->prv);
 	
 	{
 	}
-	free(*__o__);
+	free(*reference);
 }
 
-static int __FATHOM__getAge(Person* __o__, ExceptionData* __FATHOM__exception_data)
+int fathom_Person_getAge(Person* reference, ExceptionData* exceptionData)
 {
-	return __o__->prv->age;
+	return reference->prv->fathom_age;
 }
 
-static String* __FATHOM__getName(Person* __o__, ExceptionData* __FATHOM__exception_data)
+String* fathom_Person_getName(Person* reference, ExceptionData* exceptionData)
 {
-	return __o__->prv->name;
+	return reference->prv->fathom_name;
 }

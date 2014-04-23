@@ -14,11 +14,12 @@ CLASS
 (
 	Time, 
 	
-	FUNC(long_long, currentTimeMillis, Time* __o__, ExceptionData* __FATHOM__exception_data);
+	, struct Private* prv;
 )
 
-Time* new_Time(ExceptionData* __FATHOM__exception_data);
-void del_Time(Time** __o__, ExceptionData* __FATHOM__exception_data);
+Time* fathom_Time_Time(ExceptionData* exceptionData);
+void fathom_del_Time(Time** reference, ExceptionData* exceptionData);
+long_long fathom_Time_currentTimeMillis(Time* reference, ExceptionData* exceptionData);
 extern Time* __static__Time;
 
 #endif

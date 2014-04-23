@@ -14,10 +14,12 @@ CLASS
 (
 	List, 
 	
-	FUNC(void, add, List* __o__, ExceptionData* __FATHOM__exception_data, Object* data);
-	FUNC(void, remove, List* __o__, ExceptionData* __FATHOM__exception_data, Object* data);
+	, struct Private* prv;
 )
 
-List* new_List(ExceptionData* __FATHOM__exception_data);
-void del_List(List** __o__, ExceptionData* __FATHOM__exception_data);
+List* fathom_List_List(ExceptionData* exceptionData);
+void fathom_del_List(List** reference, ExceptionData* exceptionData);
+ListNode* fathom_List_getFirst(List* reference, ExceptionData* exceptionData);
+void fathom_List_add(List* reference, ExceptionData* exceptionData, Object* fathom_data_149);
+void fathom_List_remove(List* reference, ExceptionData* exceptionData, Object* fathom_data_152);
 #endif

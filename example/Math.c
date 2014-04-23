@@ -8,45 +8,21 @@
 
 Math* __static__Math;
 
-Math* new_Math(ExceptionData* __FATHOM__exception_data);
-void del_Math(Math** __o__, ExceptionData* __FATHOM__exception_data);
-static double __FATHOM__sqrt(Math* __o__, ExceptionData* __FATHOM__exception_data, double number);
-static double __FATHOM__pow(Math* __o__, ExceptionData* __FATHOM__exception_data, double base, double power);
-static double __FATHOM__sin(Math* __o__, ExceptionData* __FATHOM__exception_data, double number);
-static double __FATHOM__cos(Math* __o__, ExceptionData* __FATHOM__exception_data, double number);
-static double __FATHOM__tan(Math* __o__, ExceptionData* __FATHOM__exception_data, double number);
-static double __FATHOM__asin(Math* __o__, ExceptionData* __FATHOM__exception_data, double number);
-static double __FATHOM__acos(Math* __o__, ExceptionData* __FATHOM__exception_data, double number);
-static double __FATHOM__atan(Math* __o__, ExceptionData* __FATHOM__exception_data, double number);
-static int __FATHOM__floor(Math* __o__, ExceptionData* __FATHOM__exception_data, double number);
-static int __FATHOM__ceil(Math* __o__, ExceptionData* __FATHOM__exception_data, double number);
 
-NO_PRIVATE
 
-Math* new_Math(ExceptionData* __FATHOM__exception_data)
+Math* fathom_Math_Math(ExceptionData* exceptionData)
 {
-	NEW(Math, __o__);
-	
-	__o__->sqrt = __FATHOM__sqrt;
-	__o__->pow = __FATHOM__pow;
-	__o__->sin = __FATHOM__sin;
-	__o__->cos = __FATHOM__cos;
-	__o__->tan = __FATHOM__tan;
-	__o__->asin = __FATHOM__asin;
-	__o__->acos = __FATHOM__acos;
-	__o__->atan = __FATHOM__atan;
-	__o__->floor = __FATHOM__floor;
-	__o__->ceil = __FATHOM__ceil;
+	NEW(Math, reference,);
 	
 	{
 	}
 	
-	return __o__;
+	return reference;
 }
 
-void del_Math(Math** __o__, ExceptionData* __FATHOM__exception_data)
+void fathom_del_Math(Math** reference, ExceptionData* exceptionData)
 {
-	if (!*__o__)
+	if (!*reference)
 	{
 		return;
 	}
@@ -54,55 +30,55 @@ void del_Math(Math** __o__, ExceptionData* __FATHOM__exception_data)
 	
 	{
 	}
-	free(*__o__);
+	free(*reference);
 }
 
-static double __FATHOM__sqrt(Math* __o__, ExceptionData* __FATHOM__exception_data, double number)
+double fathom_Math_sqrt(Math* reference, ExceptionData* exceptionData, double fathom_number_102)
 {
-	return sqrt(number);
+	return sqrt(fathom_number_102);
 }
 
-static double __FATHOM__pow(Math* __o__, ExceptionData* __FATHOM__exception_data, double base, double power)
+double fathom_Math_pow(Math* reference, ExceptionData* exceptionData, double fathom_base_105, double fathom_power_105)
 {
-	return pow(base, power);
+	return pow(fathom_base_105, fathom_power_105);
 }
 
-static double __FATHOM__sin(Math* __o__, ExceptionData* __FATHOM__exception_data, double number)
+double fathom_Math_sin(Math* reference, ExceptionData* exceptionData, double fathom_number_108)
 {
-	return sin(number);
+	return sin(fathom_number_108);
 }
 
-static double __FATHOM__cos(Math* __o__, ExceptionData* __FATHOM__exception_data, double number)
+double fathom_Math_cos(Math* reference, ExceptionData* exceptionData, double fathom_number_111)
 {
-	return cos(number);
+	return cos(fathom_number_111);
 }
 
-static double __FATHOM__tan(Math* __o__, ExceptionData* __FATHOM__exception_data, double number)
+double fathom_Math_tan(Math* reference, ExceptionData* exceptionData, double fathom_number_114)
 {
-	return tan(number);
+	return tan(fathom_number_114);
 }
 
-static double __FATHOM__asin(Math* __o__, ExceptionData* __FATHOM__exception_data, double number)
+double fathom_Math_asin(Math* reference, ExceptionData* exceptionData, double fathom_number_117)
 {
-	return asin(number);
+	return asin(fathom_number_117);
 }
 
-static double __FATHOM__acos(Math* __o__, ExceptionData* __FATHOM__exception_data, double number)
+double fathom_Math_acos(Math* reference, ExceptionData* exceptionData, double fathom_number_120)
 {
-	return acos(number);
+	return acos(fathom_number_120);
 }
 
-static double __FATHOM__atan(Math* __o__, ExceptionData* __FATHOM__exception_data, double number)
+double fathom_Math_atan(Math* reference, ExceptionData* exceptionData, double fathom_number_123)
 {
-	return atan(number);
+	return atan(fathom_number_123);
 }
 
-static int __FATHOM__floor(Math* __o__, ExceptionData* __FATHOM__exception_data, double number)
+int fathom_Math_floor(Math* reference, ExceptionData* exceptionData, double fathom_number_126)
 {
-	return floor(number);
+	return floor(fathom_number_126);
 }
 
-static int __FATHOM__ceil(Math* __o__, ExceptionData* __FATHOM__exception_data, double number)
+int fathom_Math_ceil(Math* reference, ExceptionData* exceptionData, double fathom_number_129)
 {
-	return ceil(number);
+	return ceil(fathom_number_129);
 }

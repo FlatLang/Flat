@@ -5,45 +5,63 @@
 #include "Object.h"
 #include "String.h"
 
-String* new_String(ExceptionData* __FATHOM__exception_data, char* data);
-void del_String(String** __o__, ExceptionData* __FATHOM__exception_data);
-static char* __FATHOM__toCharArray(String* __o__, ExceptionData* __FATHOM__exception_data);
-
 PRIVATE
 (
-	char* data;
+	char* fathom_data;
 )
 
-String* new_String(ExceptionData* __FATHOM__exception_data, char* data)
+String* fathom_String_String(ExceptionData* exceptionData, char* fathom_data_38)
 {
-	NEW(String, __o__);
+	NEW(String, reference);
 	
-	__o__->toCharArray = __FATHOM__toCharArray;
-	
-	__o__->prv->data = 0;
+	reference->prv->fathom_data = 0;
 	{
-		__o__->prv->data = data;
+		reference->prv->fathom_data = fathom_data_38;
 	}
 	
-	return __o__;
+	return reference;
 }
 
-void del_String(String** __o__, ExceptionData* __FATHOM__exception_data)
+void fathom_del_String(String** reference, ExceptionData* exceptionData)
 {
-	if (!*__o__)
+	if (!*reference)
 	{
 		return;
 	}
 	
 	
-	free((*__o__)->prv);
+	free((*reference)->prv);
 	
 	{
 	}
-	free(*__o__);
+	free(*reference);
 }
 
-static char* __FATHOM__toCharArray(String* __o__, ExceptionData* __FATHOM__exception_data)
+char* fathom_String_toCharArray(String* reference, ExceptionData* exceptionData)
 {
-	return __o__->prv->data;
+	return reference->prv->fathom_data;
+}
+
+void fathom_String_do1(String* reference, ExceptionData* exceptionData)
+{
+}
+
+void fathom_String_do2(String* reference, ExceptionData* exceptionData)
+{
+}
+
+void fathom_String_do3(String* reference, ExceptionData* exceptionData)
+{
+}
+
+void fathom_String_do4(String* reference, ExceptionData* exceptionData)
+{
+}
+
+void fathom_String_do5(String* reference, ExceptionData* exceptionData)
+{
+}
+
+void fathom_String_do6(String* reference, ExceptionData* exceptionData)
+{
 }

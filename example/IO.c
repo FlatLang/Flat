@@ -11,39 +11,21 @@
 
 IO* __static__IO;
 
-IO* new_IO(ExceptionData* __FATHOM__exception_data);
-void del_IO(IO** __o__, ExceptionData* __FATHOM__exception_data);
-static void __FATHOM__println(IO* __o__, ExceptionData* __FATHOM__exception_data, String* text);
-static void __FATHOM__print(IO* __o__, ExceptionData* __FATHOM__exception_data, String* text);
-static void __FATHOM__printi(IO* __o__, ExceptionData* __FATHOM__exception_data, int j);
-static void __FATHOM__printl(IO* __o__, ExceptionData* __FATHOM__exception_data, long_long j);
-static int __FATHOM__getInt(IO* __o__, ExceptionData* __FATHOM__exception_data);
-static String* __FATHOM__getLine(IO* __o__, ExceptionData* __FATHOM__exception_data);
-static void __FATHOM__waitForEnter(IO* __o__, ExceptionData* __FATHOM__exception_data);
 
-NO_PRIVATE
 
-IO* new_IO(ExceptionData* __FATHOM__exception_data)
+IO* fathom_IO_IO(ExceptionData* exceptionData)
 {
-	NEW(IO, __o__);
-	
-	__o__->println = __FATHOM__println;
-	__o__->print = __FATHOM__print;
-	__o__->printi = __FATHOM__printi;
-	__o__->printl = __FATHOM__printl;
-	__o__->getInt = __FATHOM__getInt;
-	__o__->getLine = __FATHOM__getLine;
-	__o__->waitForEnter = __FATHOM__waitForEnter;
+	NEW(IO, reference,);
 	
 	{
 	}
 	
-	return __o__;
+	return reference;
 }
 
-void del_IO(IO** __o__, ExceptionData* __FATHOM__exception_data)
+void fathom_del_IO(IO** reference, ExceptionData* exceptionData)
 {
-	if (!*__o__)
+	if (!*reference)
 	{
 		return;
 	}
@@ -51,59 +33,59 @@ void del_IO(IO** __o__, ExceptionData* __FATHOM__exception_data)
 	
 	{
 	}
-	free(*__o__);
+	free(*reference);
 }
 
-static void __FATHOM__println(IO* __o__, ExceptionData* __FATHOM__exception_data, String* text)
+void fathom_IO_println(IO* reference, ExceptionData* exceptionData, String* fathom_text_18)
 {
-	__o__->print(__o__, __FATHOM__exception_data, text);
-	__o__->print(__o__, __FATHOM__exception_data, new_String(__FATHOM__exception_data, "\n"));
+	fathom_IO_print(reference, exceptionData, fathom_text_18);
+	fathom_IO_print(reference, exceptionData, fathom_String_String(exceptionData, "\n"));
 }
 
-static void __FATHOM__print(IO* __o__, ExceptionData* __FATHOM__exception_data, String* text)
+void fathom_IO_print(IO* reference, ExceptionData* exceptionData, String* fathom_text_21)
 {
-	const char* cText;
+	const char* fathom_cText_21;
 	
-	cText = text->toCharArray(text, __FATHOM__exception_data);
-	printf(cText);
+	fathom_cText_21 = fathom_String_toCharArray(fathom_text_21, exceptionData);
+	printf(fathom_cText_21);
 }
 
-static void __FATHOM__printi(IO* __o__, ExceptionData* __FATHOM__exception_data, int j)
+void fathom_IO_printi(IO* reference, ExceptionData* exceptionData, int fathom_j_24)
 {
-	printf("%d", j);
+	printf("%d", fathom_j_24);
 }
 
-static void __FATHOM__printl(IO* __o__, ExceptionData* __FATHOM__exception_data, long_long j)
+void fathom_IO_printl(IO* reference, ExceptionData* exceptionData, long_long fathom_j_27)
 {
-	printf("%llu", j);
+	printf("%llu", fathom_j_27);
 }
 
-static int __FATHOM__getInt(IO* __o__, ExceptionData* __FATHOM__exception_data)
+int fathom_IO_getInt(IO* reference, ExceptionData* exceptionData)
 {
-	String* s;
-	char* data;
-	int num;
+	String* fathom_s_30;
+	char* fathom_data_30;
+	int fathom_num_30;
 	
-	s = __o__->getLine(__o__, __FATHOM__exception_data);
-	data = s->toCharArray(s, __FATHOM__exception_data);
-	num = atoi(data);
-	return num;
+	fathom_s_30 = fathom_IO_getLine(reference, exceptionData);
+	fathom_data_30 = fathom_String_toCharArray(fathom_s_30, exceptionData);
+	fathom_num_30 = atoi(fathom_data_30);
+	return fathom_num_30;
 }
 
-static String* __FATHOM__getLine(IO* __o__, ExceptionData* __FATHOM__exception_data)
+String* fathom_IO_getLine(IO* reference, ExceptionData* exceptionData)
 {
-	char* line;
-	String* s;
+	char* fathom_line_33;
+	String* fathom_s_33;
 	
-	line = ufgets(stdin);
-	s = new_String(__FATHOM__exception_data, line);
-	return s;
+	fathom_line_33 = ufgets(stdin);
+	fathom_s_33 = fathom_String_String(exceptionData, fathom_line_33);
+	return fathom_s_33;
 }
 
-static void __FATHOM__waitForEnter(IO* __o__, ExceptionData* __FATHOM__exception_data)
+void fathom_IO_waitForEnter(IO* reference, ExceptionData* exceptionData)
 {
-	char* c;
+	char* fathom_c_36;
 	
-	c = (char*)malloc(sizeof(char) * 2);
-	fgets(c, 2, stdin);
+	fathom_c_36 = (char*)malloc(sizeof(char) * 2);
+	fgets(fathom_c_36, 2, stdin);
 }

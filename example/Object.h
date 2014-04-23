@@ -13,9 +13,10 @@ CLASS
 (
 	Object, 
 	
-	FUNC(String*, toString, Object* __o__, ExceptionData* __FATHOM__exception_data);
+	, struct Private* prv;
 )
 
-Object* new_Object(ExceptionData* __FATHOM__exception_data);
-void del_Object(Object** __o__, ExceptionData* __FATHOM__exception_data);
+Object* fathom_Object_Object(ExceptionData* exceptionData);
+void fathom_del_Object(Object** reference, ExceptionData* exceptionData);
+String* fathom_Object_toString(Object* reference, ExceptionData* exceptionData);
 #endif

@@ -13,10 +13,11 @@ CLASS
 (
 	Person, 
 	
-	FUNC(int, getAge, Person* __o__, ExceptionData* __FATHOM__exception_data);
-	FUNC(String*, getName, Person* __o__, ExceptionData* __FATHOM__exception_data);
+	, struct Private* prv;
 )
 
-Person* new_Person(ExceptionData* __FATHOM__exception_data, String* name, int age);
-void del_Person(Person** __o__, ExceptionData* __FATHOM__exception_data);
+Person* fathom_Person_Person(ExceptionData* exceptionData, String* fathom_name_134, int fathom_age_134);
+void fathom_del_Person(Person** reference, ExceptionData* exceptionData);
+int fathom_Person_getAge(Person* reference, ExceptionData* exceptionData);
+String* fathom_Person_getName(Person* reference, ExceptionData* exceptionData);
 #endif

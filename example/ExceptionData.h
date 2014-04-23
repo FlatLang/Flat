@@ -15,16 +15,17 @@ CLASS
 (
 	ExceptionData, 
 	
-	FUNC(ArrayList*, getCodes, ExceptionData* __o__, ExceptionData* __FATHOM__exception_data);
-	FUNC(void, addCode, ExceptionData* __o__, ExceptionData* __FATHOM__exception_data, int code);
-	FUNC(jmp_buf*, getBuffer, ExceptionData* __o__, ExceptionData* __FATHOM__exception_data);
-	FUNC(ExceptionData*, getCorrectData, ExceptionData* __o__, ExceptionData* __FATHOM__exception_data, int code);
-	FUNC(jmp_buf*, getCorrectBuffer, ExceptionData* __o__, ExceptionData* __FATHOM__exception_data, int code);
-	FUNC(void, jumpToBuffer, ExceptionData* __o__, ExceptionData* __FATHOM__exception_data, int code);
-	FUNC(ExceptionData*, getParent, ExceptionData* __o__, ExceptionData* __FATHOM__exception_data);
-	FUNC(void, setParent, ExceptionData* __o__, ExceptionData* __FATHOM__exception_data, ExceptionData* p);
+	, struct Private* prv;
 )
 
-ExceptionData* new_ExceptionData(ExceptionData* __FATHOM__exception_data, jmp_buf* buf);
-void del_ExceptionData(ExceptionData** __o__, ExceptionData* __FATHOM__exception_data);
+ExceptionData* fathom_ExceptionData_ExceptionData(ExceptionData* exceptionData, jmp_buf* fathom_buf_61);
+void fathom_del_ExceptionData(ExceptionData** reference, ExceptionData* exceptionData);
+ArrayList* fathom_ExceptionData_getCodes(ExceptionData* reference, ExceptionData* exceptionData);
+void fathom_ExceptionData_addCode(ExceptionData* reference, ExceptionData* exceptionData, int fathom_code_67);
+jmp_buf* fathom_ExceptionData_getBuffer(ExceptionData* reference, ExceptionData* exceptionData);
+ExceptionData* fathom_ExceptionData_getCorrectData(ExceptionData* reference, ExceptionData* exceptionData, int fathom_code_73);
+jmp_buf* fathom_ExceptionData_getCorrectBuffer(ExceptionData* reference, ExceptionData* exceptionData, int fathom_code_76);
+void fathom_ExceptionData_jumpToBuffer(ExceptionData* reference, ExceptionData* exceptionData, int fathom_code_79);
+ExceptionData* fathom_ExceptionData_getParent(ExceptionData* reference, ExceptionData* exceptionData);
+void fathom_ExceptionData_setParent(ExceptionData* reference, ExceptionData* exceptionData, ExceptionData* fathom_p_85);
 #endif

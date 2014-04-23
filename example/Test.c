@@ -10,38 +10,25 @@
 #include "Math.h"
 #include "Time.h"
 #include "Person.h"
+#include "List.h"
 
 Test* __static__Test;
 
-Test* new_Test(ExceptionData* __FATHOM__exception_data);
-void del_Test(Test** __o__, ExceptionData* __FATHOM__exception_data);
-static void __FATHOM__main(Test* __o__, ExceptionData* __FATHOM__exception_data, String** args);
-static int __FATHOM__divide(Test* __o__, ExceptionData* __FATHOM__exception_data, int numerator, int denominator);
-static int __FATHOM__getEvenNumber(Test* __o__, ExceptionData* __FATHOM__exception_data, int num);
-static int __FATHOM__test(Test* __o__, ExceptionData* __FATHOM__exception_data);
-static int __FATHOM__test2(Test* __o__, ExceptionData* __FATHOM__exception_data);
 
-NO_PRIVATE
 
-Test* new_Test(ExceptionData* __FATHOM__exception_data)
+Test* fathom_Test_Test(ExceptionData* exceptionData)
 {
-		NEW(Test, __o__);
-		
-		__o__->main = __FATHOM__main;
-		__o__->divide = __FATHOM__divide;
-		__o__->getEvenNumber = __FATHOM__getEvenNumber;
-		__o__->test = __FATHOM__test;
-		__o__->test2 = __FATHOM__test2;
+		NEW(Test, reference,);
 		
 		{
 		}
 		
-		return __o__;
+		return reference;
 }
 
-void del_Test(Test** __o__, ExceptionData* __FATHOM__exception_data)
+void fathom_del_Test(Test** reference, ExceptionData* exceptionData)
 {
-		if (!*__o__)
+		if (!*reference)
 		{
 				return;
 		}
@@ -49,122 +36,63 @@ void del_Test(Test** __o__, ExceptionData* __FATHOM__exception_data)
 		
 		{
 		}
-		free(*__o__);
+		free(*reference);
 }
 
-static void __FATHOM__main(Test* __o__, ExceptionData* __FATHOM__exception_data, String** args)
+void fathom_Test_main(Test* reference, ExceptionData* exceptionData, String** fathom_args_3)
 {
-		Person* p;
-		long_long start;
-		int q;
-		long_long end;
-		int i;
+		List* fathom_list_3;
+		ListNode* fathom_current_3;
+		long_long fathom_start_3;
+		int fathom_q_3;
+		long_long fathom_end_3;
 		
-		__static__IO->println(__static__IO, __FATHOM__exception_data, new_String(__FATHOM__exception_data, "Hello, world"));
-		__static__IO->println(__static__IO, __FATHOM__exception_data, new_String(__FATHOM__exception_data, "Command line arg #1 is:"));
-		__static__IO->println(__static__IO, __FATHOM__exception_data, args[0]);
-		p = new_Person(__FATHOM__exception_data, new_String(__FATHOM__exception_data, "Joe"), 19);
-		__static__IO->print(__static__IO, __FATHOM__exception_data, p->getName(p, __FATHOM__exception_data));
-		__static__IO->print(__static__IO, __FATHOM__exception_data, new_String(__FATHOM__exception_data, " is "));
-		__static__IO->printi(__static__IO, __FATHOM__exception_data, p->getAge(p, __FATHOM__exception_data));
-		__static__IO->println(__static__IO, __FATHOM__exception_data, new_String(__FATHOM__exception_data, ""));
-		start = __static__Time->currentTimeMillis(__static__Time, __FATHOM__exception_data);
-		for (q = 99999999; q >= 0; --q)
+		fathom_list_3 = fathom_List_List(exceptionData);
+		fathom_current_3 = fathom_List_getFirst(fathom_list_3, exceptionData);
+		while (fathom_current_3 != 0)
 		{
-				__static__Math->sin(__static__Math, __FATHOM__exception_data, q);
+				fathom_ListNode_getData(fathom_current_3, exceptionData);
+				fathom_current_3 = fathom_ListNode_getNext(fathom_current_3, exceptionData);
 		}
-		end = __static__Time->currentTimeMillis(__static__Time, __FATHOM__exception_data);
-		__static__IO->printl(__static__IO, __FATHOM__exception_data, end - start);
-		TRY
+		fathom_start_3 = fathom_Time_currentTimeMillis(__static__Time, exceptionData);
+		for (fathom_q_3 = 99999999; fathom_q_3 >= 0; --fathom_q_3)
 		{
-				__FATHOM__exception_data->addCode(__FATHOM__exception_data, __FATHOM__exception_data, 3);
-				__FATHOM__exception_data->addCode(__FATHOM__exception_data, __FATHOM__exception_data, 2);
-				__FATHOM__exception_data->addCode(__FATHOM__exception_data, __FATHOM__exception_data, 1);
-				
-				{
-						int den;
-						int num;
-						
-						den = 1;
-						if (den == 0)
-						{
-								THROW(2);
-						}
-						num = 23 / den;
-						TRY
-						{
-								
-								{
-										int even;
-										
-										even = __static__IO->getInt(__static__IO, __FATHOM__exception_data);
-										__o__->getEvenNumber(__o__, __FATHOM__exception_data, even);
-								}
-						}
-						FINALLY
-						{
-								{
-										__static__IO->println(__static__IO, __FATHOM__exception_data, new_String(__FATHOM__exception_data, "In finally."));
-								}
-						}
-						END_TRY;
-				}
+				fathom_Math_sin(__static__Math, exceptionData, fathom_q_3);
 		}
-		CATCH (3)
-		{
-				{
-						__static__IO->println(__static__IO, __FATHOM__exception_data, new_String(__FATHOM__exception_data, "Caught even num exception"));
-				}
-		}
-		CATCH (2)
-		{
-				{
-						__static__IO->println(__static__IO, __FATHOM__exception_data, new_String(__FATHOM__exception_data, "You cant divide by zero idiot."));
-				}
-		}
-		CATCH (1)
-		{
-				{
-						__static__IO->println(__static__IO, __FATHOM__exception_data, new_String(__FATHOM__exception_data, "Default exception caught."));
-				}
-		}
-		FINALLY
-		{
-		}
-		END_TRY;
-		__static__IO->print(__static__IO, __FATHOM__exception_data, new_String(__FATHOM__exception_data, "Done!"));
-		__static__IO->waitForEnter(__static__IO, __FATHOM__exception_data);
+		fathom_end_3 = fathom_Time_currentTimeMillis(__static__Time, exceptionData);
+		fathom_IO_printl(__static__IO, exceptionData, fathom_end_3 - fathom_start_3);
+		fathom_IO_waitForEnter(__static__IO, exceptionData);
 }
 
-static int __FATHOM__divide(Test* __o__, ExceptionData* __FATHOM__exception_data, int numerator, int denominator)
+int fathom_Test_divide(Test* reference, ExceptionData* exceptionData, int fathom_numerator_6, int fathom_denominator_6)
 {
-		if (denominator == 0)
+		if (fathom_denominator_6 == 0)
 		{
 				THROW(2);
 		}
-		return numerator / denominator;
+		return fathom_numerator_6 / fathom_denominator_6;
 }
 
-static int __FATHOM__getEvenNumber(Test* __o__, ExceptionData* __FATHOM__exception_data, int num)
+int fathom_Test_getEvenNumber(Test* reference, ExceptionData* exceptionData, int fathom_num_9)
 {
-		if (num % 2 != 0)
+		if (fathom_num_9 % 2 != 0)
 		{
 				THROW(3);
 		}
-		return num;
+		return fathom_num_9;
 }
 
-static int __FATHOM__test(Test* __o__, ExceptionData* __FATHOM__exception_data)
+int fathom_Test_test(Test* reference, ExceptionData* exceptionData)
 {
-		int newVar;
+		int fathom_newVar_12;
 		
-		newVar = 43;
-		return newVar;
+		fathom_newVar_12 = 43;
+		return fathom_newVar_12;
 }
 
-static int __FATHOM__test2(Test* __o__, ExceptionData* __FATHOM__exception_data)
+int fathom_Test_test2(Test* reference, ExceptionData* exceptionData)
 {
-		return __o__->test(__o__, __FATHOM__exception_data);
+		return fathom_Test_test(reference, exceptionData);
 }
 
 
@@ -177,37 +105,37 @@ int main(int argc, char** argvs)
 		String** args = (String**)malloc(argc * sizeof(String));
 		int      i;
 		
-		ExceptionData* __FATHOM__exception_data = 0;
-		__static__Test = new_Test(0);
-		__static__IO = new_IO(0);
-		__static__Math = new_Math(0);
-		__static__Time = new_Time(0);
+		ExceptionData* exceptionData = 0;
+		__static__Test = fathom_Test_Test(0);
+		__static__IO = fathom_IO_IO(0);
+		__static__Math = fathom_Math_Math(0);
+		__static__Time = fathom_Time_Time(0);
 		
 		for (i = 0; i < argc; i++)
 		{
 				char* str = (char*)malloc(sizeof(char) * strlen(argvs[i]) + 1);
 				copy_string(str, argvs[i]);
-				args[i] = new_String(0, str);
+				args[i] = fathom_String_String(0, str);
 		}
 		
 		TRY
 		{
-				__static__Test->main(__static__Test, __FATHOM__exception_data, args);
+				fathom_Test_main(__static__Test, exceptionData, args);
 		}
 		CATCH (1)
 		{
 				printf("You broke it.");
-				__static__IO->waitForEnter(__static__IO, 0);
+				fathom_IO_waitForEnter(__static__IO, 0);
 		}
 		FINALLY
 		{
 				
 		}
 		END_TRY;
-		del_Test(&__static__Test, 0);
-		del_IO(&__static__IO, 0);
-		del_Math(&__static__Math, 0);
-		del_Time(&__static__Time, 0);
+		fathom_del_Test(&__static__Test, 0);
+		fathom_del_IO(&__static__IO, 0);
+		fathom_del_Math(&__static__Math, 0);
+		fathom_del_Time(&__static__Time, 0);
 		free(args);
 		
 		return 0;

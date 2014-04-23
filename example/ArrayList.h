@@ -15,12 +15,13 @@ CLASS
 (
 	ArrayList, 
 	
-	FUNC(void, add, ArrayList* __o__, ExceptionData* __FATHOM__exception_data, int var);
-	FUNC(void, increaseSize, ArrayList* __o__, ExceptionData* __FATHOM__exception_data);
-	FUNC(int, getSize, ArrayList* __o__, ExceptionData* __FATHOM__exception_data);
-	FUNC(int, get, ArrayList* __o__, ExceptionData* __FATHOM__exception_data, int index);
+	, struct Private* prv;
 )
 
-ArrayList* new_ArrayList(ExceptionData* __FATHOM__exception_data);
-void del_ArrayList(ArrayList** __o__, ExceptionData* __FATHOM__exception_data);
+ArrayList* fathom_ArrayList_ArrayList(ExceptionData* exceptionData);
+void fathom_del_ArrayList(ArrayList** reference, ExceptionData* exceptionData);
+void fathom_ArrayList_add(ArrayList* reference, ExceptionData* exceptionData, int fathom_var_90);
+void fathom_ArrayList_increaseSize(ArrayList* reference, ExceptionData* exceptionData);
+int fathom_ArrayList_getSize(ArrayList* reference, ExceptionData* exceptionData);
+int fathom_ArrayList_get(ArrayList* reference, ExceptionData* exceptionData, int fathom_index_99);
 #endif

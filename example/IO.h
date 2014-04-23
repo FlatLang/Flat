@@ -17,17 +17,18 @@ CLASS
 (
 	IO, 
 	
-	FUNC(void, println, IO* __o__, ExceptionData* __FATHOM__exception_data, String* text);
-	FUNC(void, print, IO* __o__, ExceptionData* __FATHOM__exception_data, String* text);
-	FUNC(void, printi, IO* __o__, ExceptionData* __FATHOM__exception_data, int j);
-	FUNC(void, printl, IO* __o__, ExceptionData* __FATHOM__exception_data, long_long j);
-	FUNC(int, getInt, IO* __o__, ExceptionData* __FATHOM__exception_data);
-	FUNC(String*, getLine, IO* __o__, ExceptionData* __FATHOM__exception_data);
-	FUNC(void, waitForEnter, IO* __o__, ExceptionData* __FATHOM__exception_data);
+	, struct Private* prv;
 )
 
-IO* new_IO(ExceptionData* __FATHOM__exception_data);
-void del_IO(IO** __o__, ExceptionData* __FATHOM__exception_data);
+IO* fathom_IO_IO(ExceptionData* exceptionData);
+void fathom_del_IO(IO** reference, ExceptionData* exceptionData);
+void fathom_IO_println(IO* reference, ExceptionData* exceptionData, String* fathom_text_18);
+void fathom_IO_print(IO* reference, ExceptionData* exceptionData, String* fathom_text_21);
+void fathom_IO_printi(IO* reference, ExceptionData* exceptionData, int fathom_j_24);
+void fathom_IO_printl(IO* reference, ExceptionData* exceptionData, long_long fathom_j_27);
+int fathom_IO_getInt(IO* reference, ExceptionData* exceptionData);
+String* fathom_IO_getLine(IO* reference, ExceptionData* exceptionData);
+void fathom_IO_waitForEnter(IO* reference, ExceptionData* exceptionData);
 extern IO* __static__IO;
 
 #endif

@@ -14,20 +14,22 @@ typedef struct Test Test;
 #include "Math.h"
 #include "Time.h"
 #include "Person.h"
+#include "List.h"
 
 CLASS
 (
 	Test, 
 	
-	FUNC(void, main, Test* __o__, ExceptionData* __FATHOM__exception_data, String** args);
-	FUNC(int, divide, Test* __o__, ExceptionData* __FATHOM__exception_data, int numerator, int denominator);
-	FUNC(int, getEvenNumber, Test* __o__, ExceptionData* __FATHOM__exception_data, int num);
-	FUNC(int, test, Test* __o__, ExceptionData* __FATHOM__exception_data);
-	FUNC(int, test2, Test* __o__, ExceptionData* __FATHOM__exception_data);
+	, struct Private* prv;
 )
 
-Test* new_Test(ExceptionData* __FATHOM__exception_data);
-void del_Test(Test** __o__, ExceptionData* __FATHOM__exception_data);
+Test* fathom_Test_Test(ExceptionData* exceptionData);
+void fathom_del_Test(Test** reference, ExceptionData* exceptionData);
+void fathom_Test_main(Test* reference, ExceptionData* exceptionData, String** fathom_args_3);
+int fathom_Test_divide(Test* reference, ExceptionData* exceptionData, int fathom_numerator_6, int fathom_denominator_6);
+int fathom_Test_getEvenNumber(Test* reference, ExceptionData* exceptionData, int fathom_num_9);
+int fathom_Test_test(Test* reference, ExceptionData* exceptionData);
+int fathom_Test_test2(Test* reference, ExceptionData* exceptionData);
 extern Test* __static__Test;
 
 #endif

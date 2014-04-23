@@ -7,81 +7,69 @@
 #include <stdlib.h>
 #include <Fathom.h>
 
-ArrayList* new_ArrayList(ExceptionData* __FATHOM__exception_data);
-void del_ArrayList(ArrayList** __o__, ExceptionData* __FATHOM__exception_data);
-static void __FATHOM__add(ArrayList* __o__, ExceptionData* __FATHOM__exception_data, int var);
-static void __FATHOM__increaseSize(ArrayList* __o__, ExceptionData* __FATHOM__exception_data);
-static int __FATHOM__getSize(ArrayList* __o__, ExceptionData* __FATHOM__exception_data);
-static int __FATHOM__get(ArrayList* __o__, ExceptionData* __FATHOM__exception_data, int index);
-
 PRIVATE
 (
-	int count;
-	int size;
-	int* data;
+	int fathom_count;
+	int fathom_size;
+	int* fathom_data;
 )
 
-ArrayList* new_ArrayList(ExceptionData* __FATHOM__exception_data)
+ArrayList* fathom_ArrayList_ArrayList(ExceptionData* exceptionData)
 {
-	NEW(ArrayList, __o__);
+	NEW(ArrayList, reference);
 	
-	__o__->add = __FATHOM__add;
-	__o__->increaseSize = __FATHOM__increaseSize;
-	__o__->getSize = __FATHOM__getSize;
-	__o__->get = __FATHOM__get;
-	
-	__o__->prv->count = 0;
-	__o__->prv->size = 0;
-	__o__->prv->data = 0;
+	reference->prv->fathom_count = 0;
+	reference->prv->fathom_size = 0;
+	reference->prv->fathom_data = 0;
 	{
-		__o__->increaseSize(__o__, __FATHOM__exception_data);
+		fathom_ArrayList_increaseSize(reference, exceptionData);
 	}
 	
-	return __o__;
+	return reference;
 }
 
-void del_ArrayList(ArrayList** __o__, ExceptionData* __FATHOM__exception_data)
+void fathom_del_ArrayList(ArrayList** reference, ExceptionData* exceptionData)
 {
-	if (!*__o__)
+	if (!*reference)
 	{
 		return;
 	}
 	
 	
-	free((*__o__)->prv);
+	free((*reference)->prv);
 	
 	{
 	}
-	free(*__o__);
+	free(*reference);
 }
 
-static void __FATHOM__add(ArrayList* __o__, ExceptionData* __FATHOM__exception_data, int var)
+void fathom_ArrayList_add(ArrayList* reference, ExceptionData* exceptionData, int fathom_var_90)
 {
-	if (__o__->prv->count + 1 >= __o__->prv->size)
+	if (reference->prv->fathom_count + 1 >= reference->prv->fathom_size)
 	{
-		__o__->increaseSize(__o__, __FATHOM__exception_data);
+		fathom_ArrayList_increaseSize(reference, exceptionData);
 	}
-	__o__->prv->data[__o__->prv->count] = var;
-	__o__->prv->count = __o__->prv->count + 1;
+	reference->prv->fathom_data[reference->prv->fathom_count] = fathom_var_90;
+	reference->prv->fathom_count = reference->prv->fathom_count + 1;
 }
 
-static void __FATHOM__increaseSize(ArrayList* __o__, ExceptionData* __FATHOM__exception_data)
+void fathom_ArrayList_increaseSize(ArrayList* reference, ExceptionData* exceptionData)
 {
-	int* tmp;
+	int* fathom_tmp_93;
 	
-	__o__->prv->size = __o__->prv->size + 3;
-	tmp = (int*)malloc(sizeof(int) * __o__->prv->size);
-	arrayCopy(tmp, 0, __o__->prv->data, 0, __o__->prv->count, __o__->prv->size, sizeof(int));
-	free(__o__->prv->data);
-	__o__->prv->data = tmp;
+	reference->prv->fathom_size = reference->prv->fathom_size + 3;
+	fathom_tmp_93 = (int*)malloc(sizeof(int) * reference->prv->fathom_size);
+	arrayCopy(fathom_tmp_93, 0, reference->prv->fathom_data, 0, reference->prv->fathom_count, reference->prv->fathom_size, sizeof(int));
+	free(reference->prv->fathom_data);
+	reference->prv->fathom_data = fathom_tmp_93;
 }
 
-static int __FATHOM__getSize(ArrayList* __o__, ExceptionData* __FATHOM__exception_data)
+int fathom_ArrayList_getSize(ArrayList* reference, ExceptionData* exceptionData)
 {
-	return __o__->prv->count;
+	return reference->prv->fathom_count;
 }
 
-static int __FATHOM__get(ArrayList* __o__, ExceptionData* __FATHOM__exception_data, int index)
+int fathom_ArrayList_get(ArrayList* reference, ExceptionData* exceptionData, int fathom_index_99)
 {
-	return __o__->prv->data[index];
+	return reference->prv->fathom_data[fathom_index_99];
 }

@@ -7,139 +7,119 @@
 #include <setjmp.h>
 #include "ArrayList.h"
 
-ExceptionData* new_ExceptionData(ExceptionData* __FATHOM__exception_data, jmp_buf* buf);
-void del_ExceptionData(ExceptionData** __o__, ExceptionData* __FATHOM__exception_data);
-static ArrayList* __FATHOM__getCodes(ExceptionData* __o__, ExceptionData* __FATHOM__exception_data);
-static void __FATHOM__addCode(ExceptionData* __o__, ExceptionData* __FATHOM__exception_data, int code);
-static jmp_buf* __FATHOM__getBuffer(ExceptionData* __o__, ExceptionData* __FATHOM__exception_data);
-static ExceptionData* __FATHOM__getCorrectData(ExceptionData* __o__, ExceptionData* __FATHOM__exception_data, int code);
-static jmp_buf* __FATHOM__getCorrectBuffer(ExceptionData* __o__, ExceptionData* __FATHOM__exception_data, int code);
-static void __FATHOM__jumpToBuffer(ExceptionData* __o__, ExceptionData* __FATHOM__exception_data, int code);
-static ExceptionData* __FATHOM__getParent(ExceptionData* __o__, ExceptionData* __FATHOM__exception_data);
-static void __FATHOM__setParent(ExceptionData* __o__, ExceptionData* __FATHOM__exception_data, ExceptionData* p);
-
 PRIVATE
 (
-	jmp_buf* buffer;
-	ExceptionData* parent;
-	ArrayList* codes;
+	jmp_buf* fathom_buffer;
+	ExceptionData* fathom_parent;
+	ArrayList* fathom_codes;
 )
 
-ExceptionData* new_ExceptionData(ExceptionData* __FATHOM__exception_data, jmp_buf* buf)
+ExceptionData* fathom_ExceptionData_ExceptionData(ExceptionData* exceptionData, jmp_buf* fathom_buf_61)
 {
-	NEW(ExceptionData, __o__);
+	NEW(ExceptionData, reference);
 	
-	__o__->getCodes = __FATHOM__getCodes;
-	__o__->addCode = __FATHOM__addCode;
-	__o__->getBuffer = __FATHOM__getBuffer;
-	__o__->getCorrectData = __FATHOM__getCorrectData;
-	__o__->getCorrectBuffer = __FATHOM__getCorrectBuffer;
-	__o__->jumpToBuffer = __FATHOM__jumpToBuffer;
-	__o__->getParent = __FATHOM__getParent;
-	__o__->setParent = __FATHOM__setParent;
-	
-	__o__->prv->buffer = 0;
-	__o__->prv->parent = 0;
-	__o__->prv->codes = 0;
+	reference->prv->fathom_buffer = 0;
+	reference->prv->fathom_parent = 0;
+	reference->prv->fathom_codes = 0;
 	{
-		__o__->prv->buffer = buf;
-		__o__->prv->codes = new_ArrayList(__FATHOM__exception_data);
+		reference->prv->fathom_buffer = fathom_buf_61;
+		reference->prv->fathom_codes = fathom_ArrayList_ArrayList(exceptionData);
 	}
 	
-	return __o__;
+	return reference;
 }
 
-void del_ExceptionData(ExceptionData** __o__, ExceptionData* __FATHOM__exception_data)
+void fathom_del_ExceptionData(ExceptionData** reference, ExceptionData* exceptionData)
 {
-	if (!*__o__)
+	if (!*reference)
 	{
 		return;
 	}
 	
 	
-	del_ExceptionData(&(*__o__)->prv->parent, __FATHOM__exception_data);
-	del_ArrayList(&(*__o__)->prv->codes, __FATHOM__exception_data);
-	free((*__o__)->prv);
+	fathom_del_ExceptionData(&(*reference)->prv->fathom_parent, exceptionData);
+	fathom_del_ArrayList(&(*reference)->prv->fathom_codes, exceptionData);
+	free((*reference)->prv);
 	
 	{
 	}
-	free(*__o__);
+	free(*reference);
 }
 
-static ArrayList* __FATHOM__getCodes(ExceptionData* __o__, ExceptionData* __FATHOM__exception_data)
+ArrayList* fathom_ExceptionData_getCodes(ExceptionData* reference, ExceptionData* exceptionData)
 {
-	return __o__->prv->codes;
+	return reference->prv->fathom_codes;
 }
 
-static void __FATHOM__addCode(ExceptionData* __o__, ExceptionData* __FATHOM__exception_data, int code)
+void fathom_ExceptionData_addCode(ExceptionData* reference, ExceptionData* exceptionData, int fathom_code_67)
 {
-	__o__->prv->codes->add(__o__->prv->codes, __FATHOM__exception_data, code);
+	fathom_ArrayList_add(reference->prv->fathom_codes, exceptionData, fathom_code_67);
 }
 
-static jmp_buf* __FATHOM__getBuffer(ExceptionData* __o__, ExceptionData* __FATHOM__exception_data)
+jmp_buf* fathom_ExceptionData_getBuffer(ExceptionData* reference, ExceptionData* exceptionData)
 {
-	return __o__->prv->buffer;
+	return reference->prv->fathom_buffer;
 }
 
-static ExceptionData* __FATHOM__getCorrectData(ExceptionData* __o__, ExceptionData* __FATHOM__exception_data, int code)
+ExceptionData* fathom_ExceptionData_getCorrectData(ExceptionData* reference, ExceptionData* exceptionData, int fathom_code_73)
 {
-	ExceptionData* data;
+	ExceptionData* fathom_data_73;
 	
-	data = __o__;
-	while (data != 0)
+	fathom_data_73 = reference;
+	while (fathom_data_73 != 0)
 	{
-		ArrayList* list;
-		int i;
+		ArrayList* fathom_list_175;
+		int fathom_i_175;
 		
-		list = data->getCodes(data, __FATHOM__exception_data);
-		for (i = 0; i < list->getSize(list, __FATHOM__exception_data); i++)
+		fathom_list_175 = fathom_ExceptionData_getCodes(fathom_data_73, exceptionData);
+		for (fathom_i_175 = 0; fathom_i_175 < fathom_ArrayList_getSize(fathom_list_175, exceptionData); fathom_i_175++)
 		{
-			if (list->get(list, __FATHOM__exception_data, i) == code)
+			if (fathom_ArrayList_get(fathom_list_175, exceptionData, fathom_i_175) == fathom_code_73)
 			{
-				return data;
+				return fathom_data_73;
 			}
 		}
-		if (data->getParent(data, __FATHOM__exception_data) == 0)
+		if (fathom_ExceptionData_getParent(fathom_data_73, exceptionData) == 0)
 		{
-			return data;
+			return fathom_data_73;
 		}
-		data = data->getParent(data, __FATHOM__exception_data);
+		fathom_data_73 = fathom_ExceptionData_getParent(fathom_data_73, exceptionData);
 	}
 	return 0;
 }
 
-static jmp_buf* __FATHOM__getCorrectBuffer(ExceptionData* __o__, ExceptionData* __FATHOM__exception_data, int code)
+jmp_buf* fathom_ExceptionData_getCorrectBuffer(ExceptionData* reference, ExceptionData* exceptionData, int fathom_code_76)
 {
-	ExceptionData* data;
+	ExceptionData* fathom_data_76;
 	
-	data = __o__->getCorrectData(__o__, __FATHOM__exception_data, code);
-	if (data == 0)
+	fathom_data_76 = fathom_ExceptionData_getCorrectData(reference, exceptionData, fathom_code_76);
+	if (fathom_data_76 == 0)
 	{
 		return 0;
 	}
-	return data->getBuffer(data, __FATHOM__exception_data);
+	return fathom_ExceptionData_getBuffer(fathom_data_76, exceptionData);
 }
 
-static void __FATHOM__jumpToBuffer(ExceptionData* __o__, ExceptionData* __FATHOM__exception_data, int code)
+void fathom_ExceptionData_jumpToBuffer(ExceptionData* reference, ExceptionData* exceptionData, int fathom_code_79)
 {
-	ExceptionData* data;
-	jmp_buf* buf;
+	ExceptionData* fathom_data_79;
+	jmp_buf* fathom_buf_79;
 	
-	data = __o__->getCorrectData(__o__, __FATHOM__exception_data, code);
-	if (data->getParent(data, __FATHOM__exception_data) == 0)
+	fathom_data_79 = fathom_ExceptionData_getCorrectData(reference, exceptionData, fathom_code_79);
+	if (fathom_ExceptionData_getParent(fathom_data_79, exceptionData) == 0)
 	{
-		code = 1;
+		fathom_code_79 = 1;
 	}
-	buf = data->getBuffer(data, __FATHOM__exception_data);
-	longjmp(*buf, code);
+	fathom_buf_79 = fathom_ExceptionData_getBuffer(fathom_data_79, exceptionData);
+	longjmp(*fathom_buf_79, fathom_code_79);
 }
 
-static ExceptionData* __FATHOM__getParent(ExceptionData* __o__, ExceptionData* __FATHOM__exception_data)
+ExceptionData* fathom_ExceptionData_getParent(ExceptionData* reference, ExceptionData* exceptionData)
 {
-	return __o__->prv->parent;
+	return reference->prv->fathom_parent;
 }
 
-static void __FATHOM__setParent(ExceptionData* __o__, ExceptionData* __FATHOM__exception_data, ExceptionData* p)
+void fathom_ExceptionData_setParent(ExceptionData* reference, ExceptionData* exceptionData, ExceptionData* fathom_p_85)
 {
-	__o__->prv->parent = p;
+	reference->prv->fathom_parent = fathom_p_85;
 }

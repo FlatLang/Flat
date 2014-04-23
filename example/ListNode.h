@@ -13,11 +13,12 @@ CLASS
 (
 	ListNode, 
 	
-	FUNC(Object*, getData, ListNode* __o__, ExceptionData* __FATHOM__exception_data);
-	FUNC(ListNode*, getNext, ListNode* __o__, ExceptionData* __FATHOM__exception_data);
-	FUNC(void, setNext, ListNode* __o__, ExceptionData* __FATHOM__exception_data, ListNode* next);
+	, struct Private* prv;
 )
 
-ListNode* new_ListNode(ExceptionData* __FATHOM__exception_data, Object* data);
-void del_ListNode(ListNode** __o__, ExceptionData* __FATHOM__exception_data);
+ListNode* fathom_ListNode_ListNode(ExceptionData* exceptionData, Object* fathom_data_154);
+void fathom_del_ListNode(ListNode** reference, ExceptionData* exceptionData);
+Object* fathom_ListNode_getData(ListNode* reference, ExceptionData* exceptionData);
+ListNode* fathom_ListNode_getNext(ListNode* reference, ExceptionData* exceptionData);
+void fathom_ListNode_setNext(ListNode* reference, ExceptionData* exceptionData, ListNode* fathom_next_163);
 #endif

@@ -13,9 +13,16 @@ CLASS
 (
 	String, 
 	
-	FUNC(char*, toCharArray, String* __o__, ExceptionData* __FATHOM__exception_data);
+	, struct Private* prv;
 )
 
-String* new_String(ExceptionData* __FATHOM__exception_data, char* data);
-void del_String(String** __o__, ExceptionData* __FATHOM__exception_data);
+String* fathom_String_String(ExceptionData* exceptionData, char* fathom_data_38);
+void fathom_del_String(String** reference, ExceptionData* exceptionData);
+char* fathom_String_toCharArray(String* reference, ExceptionData* exceptionData);
+void fathom_String_do1(String* reference, ExceptionData* exceptionData);
+void fathom_String_do2(String* reference, ExceptionData* exceptionData);
+void fathom_String_do3(String* reference, ExceptionData* exceptionData);
+void fathom_String_do4(String* reference, ExceptionData* exceptionData);
+void fathom_String_do5(String* reference, ExceptionData* exceptionData);
+void fathom_String_do6(String* reference, ExceptionData* exceptionData);
 #endif

@@ -5,27 +5,21 @@
 #include "Object.h"
 #include "String.h"
 
-Object* new_Object(ExceptionData* __FATHOM__exception_data);
-void del_Object(Object** __o__, ExceptionData* __FATHOM__exception_data);
-static String* __FATHOM__toString(Object* __o__, ExceptionData* __FATHOM__exception_data);
 
-NO_PRIVATE
 
-Object* new_Object(ExceptionData* __FATHOM__exception_data)
+Object* fathom_Object_Object(ExceptionData* exceptionData)
 {
-	NEW(Object, __o__);
-	
-	__o__->toString = __FATHOM__toString;
+	NEW(Object, reference,);
 	
 	{
 	}
 	
-	return __o__;
+	return reference;
 }
 
-void del_Object(Object** __o__, ExceptionData* __FATHOM__exception_data)
+void fathom_del_Object(Object** reference, ExceptionData* exceptionData)
 {
-	if (!*__o__)
+	if (!*reference)
 	{
 		return;
 	}
@@ -33,10 +27,10 @@ void del_Object(Object** __o__, ExceptionData* __FATHOM__exception_data)
 	
 	{
 	}
-	free(*__o__);
+	free(*reference);
 }
 
-static String* __FATHOM__toString(Object* __o__, ExceptionData* __FATHOM__exception_data)
+String* fathom_Object_toString(Object* reference, ExceptionData* exceptionData)
 {
-	return new_String(__FATHOM__exception_data, "Nothing");
+	return fathom_String_String(exceptionData, "Nothing");
 }

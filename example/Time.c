@@ -8,27 +8,21 @@
 
 Time* __static__Time;
 
-Time* new_Time(ExceptionData* __FATHOM__exception_data);
-void del_Time(Time** __o__, ExceptionData* __FATHOM__exception_data);
-static long_long __FATHOM__currentTimeMillis(Time* __o__, ExceptionData* __FATHOM__exception_data);
 
-NO_PRIVATE
 
-Time* new_Time(ExceptionData* __FATHOM__exception_data)
+Time* fathom_Time_Time(ExceptionData* exceptionData)
 {
-	NEW(Time, __o__);
-	
-	__o__->currentTimeMillis = __FATHOM__currentTimeMillis;
+	NEW(Time, reference,);
 	
 	{
 	}
 	
-	return __o__;
+	return reference;
 }
 
-void del_Time(Time** __o__, ExceptionData* __FATHOM__exception_data)
+void fathom_del_Time(Time** reference, ExceptionData* exceptionData)
 {
-	if (!*__o__)
+	if (!*reference)
 	{
 		return;
 	}
@@ -36,10 +30,10 @@ void del_Time(Time** __o__, ExceptionData* __FATHOM__exception_data)
 	
 	{
 	}
-	free(*__o__);
+	free(*reference);
 }
 
-static long_long __FATHOM__currentTimeMillis(Time* __o__, ExceptionData* __FATHOM__exception_data)
+long_long fathom_Time_currentTimeMillis(Time* reference, ExceptionData* exceptionData)
 {
 	return currentTimeMillis();
 }

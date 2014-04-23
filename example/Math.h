@@ -14,20 +14,21 @@ CLASS
 (
 	Math, 
 	
-	FUNC(double, sqrt, Math* __o__, ExceptionData* __FATHOM__exception_data, double number);
-	FUNC(double, pow, Math* __o__, ExceptionData* __FATHOM__exception_data, double base, double power);
-	FUNC(double, sin, Math* __o__, ExceptionData* __FATHOM__exception_data, double number);
-	FUNC(double, cos, Math* __o__, ExceptionData* __FATHOM__exception_data, double number);
-	FUNC(double, tan, Math* __o__, ExceptionData* __FATHOM__exception_data, double number);
-	FUNC(double, asin, Math* __o__, ExceptionData* __FATHOM__exception_data, double number);
-	FUNC(double, acos, Math* __o__, ExceptionData* __FATHOM__exception_data, double number);
-	FUNC(double, atan, Math* __o__, ExceptionData* __FATHOM__exception_data, double number);
-	FUNC(int, floor, Math* __o__, ExceptionData* __FATHOM__exception_data, double number);
-	FUNC(int, ceil, Math* __o__, ExceptionData* __FATHOM__exception_data, double number);
+	, struct Private* prv;
 )
 
-Math* new_Math(ExceptionData* __FATHOM__exception_data);
-void del_Math(Math** __o__, ExceptionData* __FATHOM__exception_data);
+Math* fathom_Math_Math(ExceptionData* exceptionData);
+void fathom_del_Math(Math** reference, ExceptionData* exceptionData);
+double fathom_Math_sqrt(Math* reference, ExceptionData* exceptionData, double fathom_number_102);
+double fathom_Math_pow(Math* reference, ExceptionData* exceptionData, double fathom_base_105, double fathom_power_105);
+double fathom_Math_sin(Math* reference, ExceptionData* exceptionData, double fathom_number_108);
+double fathom_Math_cos(Math* reference, ExceptionData* exceptionData, double fathom_number_111);
+double fathom_Math_tan(Math* reference, ExceptionData* exceptionData, double fathom_number_114);
+double fathom_Math_asin(Math* reference, ExceptionData* exceptionData, double fathom_number_117);
+double fathom_Math_acos(Math* reference, ExceptionData* exceptionData, double fathom_number_120);
+double fathom_Math_atan(Math* reference, ExceptionData* exceptionData, double fathom_number_123);
+int fathom_Math_floor(Math* reference, ExceptionData* exceptionData, double fathom_number_126);
+int fathom_Math_ceil(Math* reference, ExceptionData* exceptionData, double fathom_number_129);
 extern Math* __static__Math;
 
 #endif

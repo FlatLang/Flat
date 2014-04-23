@@ -6,85 +6,82 @@
 #include "String.h"
 #include "ListNode.h"
 
-List* new_List(ExceptionData* __FATHOM__exception_data);
-void del_List(List** __o__, ExceptionData* __FATHOM__exception_data);
-static void __FATHOM__add(List* __o__, ExceptionData* __FATHOM__exception_data, Object* data);
-static void __FATHOM__remove(List* __o__, ExceptionData* __FATHOM__exception_data, Object* data);
-
 PRIVATE
 (
-	ListNode* start;
-	ListNode* current;
+	ListNode* fathom_start;
+	ListNode* fathom_current;
 )
 
-List* new_List(ExceptionData* __FATHOM__exception_data)
+List* fathom_List_List(ExceptionData* exceptionData)
 {
-	NEW(List, __o__);
+	NEW(List, reference);
 	
-	__o__->add = __FATHOM__add;
-	__o__->remove = __FATHOM__remove;
-	
-	__o__->prv->start = 0;
-	__o__->prv->current = 0;
+	reference->prv->fathom_start = 0;
+	reference->prv->fathom_current = 0;
 	{
 	}
 	
-	return __o__;
+	return reference;
 }
 
-void del_List(List** __o__, ExceptionData* __FATHOM__exception_data)
+void fathom_del_List(List** reference, ExceptionData* exceptionData)
 {
-	if (!*__o__)
+	if (!*reference)
 	{
 		return;
 	}
 	
-	del_ListNode(&(*__o__)->prv->start, __FATHOM__exception_data);
-	del_ListNode(&(*__o__)->prv->current, __FATHOM__exception_data);
-	free((*__o__)->prv);
+	fathom_del_ListNode(&(*reference)->prv->fathom_start, exceptionData);
+	fathom_del_ListNode(&(*reference)->prv->fathom_current, exceptionData);
+	free((*reference)->prv);
 	
 	{
 	}
-	free(*__o__);
+	free(*reference);
 }
 
-static void __FATHOM__add(List* __o__, ExceptionData* __FATHOM__exception_data, Object* data)
+ListNode* fathom_List_getFirst(List* reference, ExceptionData* exceptionData)
 {
-	ListNode* node;
+	return reference->prv->fathom_start;
+}
+
+void fathom_List_add(List* reference, ExceptionData* exceptionData, Object* fathom_data_149)
+{
+	ListNode* fathom_node_149;
 	
-	node = new_ListNode(__FATHOM__exception_data, data);
-	if (__o__->prv->start == 0)
+	fathom_node_149 = fathom_ListNode_ListNode(exceptionData, fathom_data_149);
+	if (reference->prv->fathom_start == 0)
 	{
-		__o__->prv->start = node;
-		__o__->prv->current = node;
+		reference->prv->fathom_start = fathom_node_149;
+		reference->prv->fathom_current = fathom_node_149;
 	}
 	else
 	{
-		__o__->prv->current->setNext(__o__->prv->current, __FATHOM__exception_data, node);
+		fathom_ListNode_setNext(reference->prv->fathom_current, exceptionData, fathom_node_149);
 	}
-	__o__->prv->current = node;
+	reference->prv->fathom_current = fathom_node_149;
 }
 
-static void __FATHOM__remove(List* __o__, ExceptionData* __FATHOM__exception_data, Object* data)
+void fathom_List_remove(List* reference, ExceptionData* exceptionData, Object* fathom_data_152)
 {
-	ListNode* prev;
-	ListNode* cur;
+	ListNode* fathom_prev_152;
+	ListNode* fathom_cur_152;
 	
-	if (__o__->prv->start->getData(__o__->prv->start, __FATHOM__exception_data) == data)
+	if (fathom_ListNode_getData(reference->prv->fathom_start, exceptionData) == fathom_data_152)
 	{
-		__o__->prv->start = __o__->prv->start->getNext(__o__->prv->start, __FATHOM__exception_data);
+		reference->prv->fathom_start = fathom_ListNode_getNext(reference->prv->fathom_start, exceptionData);
 	}
-	prev = __o__->prv->start;
-	cur = __o__->prv->start->getNext(__o__->prv->start, __FATHOM__exception_data);
-	while (cur != 0)
+	fathom_prev_152 = reference->prv->fathom_start;
+	fathom_cur_152 = fathom_ListNode_getNext(reference->prv->fathom_start, exceptionData);
+	while (fathom_cur_152 != 0)
 	{
-		Object* d;
+		Object* fathom_d_194;
 		
-		d = cur->getData(cur, __FATHOM__exception_data);
-		if (d == data)
+		fathom_d_194 = fathom_ListNode_getData(fathom_cur_152, exceptionData);
+		if (fathom_d_194 == fathom_data_152)
 		{
-			prev->setNext(prev, __FATHOM__exception_data, cur->getNext(cur, __FATHOM__exception_data));
+			fathom_ListNode_setNext(fathom_prev_152, exceptionData, fathom_ListNode_getNext(fathom_cur_152, exceptionData));
 		}
-		cur = cur->getNext(cur, __FATHOM__exception_data);
+		fathom_cur_152 = fathom_ListNode_getNext(fathom_cur_152, exceptionData);
 	}
 }
