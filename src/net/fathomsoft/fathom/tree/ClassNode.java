@@ -113,7 +113,7 @@ public class ClassNode extends DeclarationNode
 	 * 
 	 * @return The name of the class that this node extends.
 	 */
-	public String getExtendedClass()
+	public String getExtendedClassName()
 	{
 		return extendedClass;
 	}
@@ -314,6 +314,49 @@ public class ClassNode extends DeclarationNode
 	}
 	
 	/**
+	 * Get the class that this class node extends.<br>
+	 * <br>
+	 * For instance: "public class ClassName extends SuperClass"
+	 * The "SuperClass" is a name of the class that the "ClassName" class
+	 * extends.<br>
+	 * <br>
+	 * A class node can only extend one class.
+	 * 
+	 * @return The ClassNode instance of the class that is extended.
+	 */
+	public ClassNode getExtendedClass()
+	{
+		ClassNode extendedClass = getProgramNode().getClass(getExtendedClassName());
+		
+		return extendedClass;
+	}
+	
+	/**
+	 * Get the prefix that is used for the methods that are contained
+	 * within the specified class.<br>
+	 * <br>
+	 * For example:
+	 * <blockquote><pre>
+	 * package "this/is/my/package";
+	 * 
+	 * public class Test
+	 * {
+	 * 	...
+	 * }</pre></blockquote>
+	 * The method prefix would look like:
+	 * "<code>this_is_my_package_Test</code>"
+	 * 
+	 * @return The prefix that is used for the methods contained within
+	 * 		the class.
+	 */
+	public String generateMethodPrefixOutput()
+	{
+		String str = getName();
+		
+		return str;
+	}
+	
+	/**
 	 * @see net.fathomsoft.fathom.tree.DeclarationNode#setAttribute(java.lang.String)
 	 */
 	public void setAttribute(String attribute)
@@ -361,17 +404,17 @@ public class ClassNode extends DeclarationNode
 		}
 		else
 		{
-			SyntaxMessage.error("Unexpected statement", child.getLocationIn());
+			SyntaxMessage.error("Unexpected statement", child.getLocationIn(), getController());
 			
 			//super.addChild(child);
 		}
 	}
 	
 	/**
-	 * @see net.fathomsoft.fathom.tree.TreeNode#generateJavaSourceOutput()
+	 * @see net.fathomsoft.fathom.tree.TreeNode#generateJavaSource()
 	 */
 	@Override
-	public String generateJavaSourceOutput()
+	public String generateJavaSource()
 	{
 		StringBuilder builder = new StringBuilder();
 		
@@ -392,22 +435,22 @@ public class ClassNode extends DeclarationNode
 		
 		if (isReference())
 		{
-			SyntaxMessage.error("A class cannot be of a reference type", getLocationIn());
+			SyntaxMessage.error("A class cannot be of a reference type", getLocationIn(), getController());
 			
 			return null;
 		}
 		else if (isPointer())
 		{
-			SyntaxMessage.error("A class cannot be of a pointer type", getLocationIn());
+			SyntaxMessage.error("A class cannot be of a pointer type", getLocationIn(), getController());
 			
 			return null;
 		}
 		
 		builder.append(getName());
 		
-		if (getExtendedClass() != null)
+		if (getExtendedClassName() != null)
 		{
-			builder.append(" extends ").append(getExtendedClass());
+			builder.append(" extends ").append(getExtendedClassName());
 		}
 		
 		if (getImplementedClasses().size() > 0)
@@ -429,7 +472,7 @@ public class ClassNode extends DeclarationNode
 		
 		for (int i = 0; i < getChildren().size(); i++)
 		{
-			builder.append(getChild(i).generateJavaSourceOutput());
+			builder.append(getChild(i).generateJavaSource());
 		}
 		
 		builder.append('}').append('\n').append('\n');
@@ -438,10 +481,10 @@ public class ClassNode extends DeclarationNode
 	}
 
 	/**
-	 * @see net.fathomsoft.fathom.tree.TreeNode#generateCHeaderOutput()
+	 * @see net.fathomsoft.fathom.tree.TreeNode#generateCHeader()
 	 */
 	@Override
-	public String generateCHeaderOutput()
+	public String generateCHeader()
 	{
 		StringBuilder builder = new StringBuilder();
 		
@@ -460,30 +503,20 @@ public class ClassNode extends DeclarationNode
 		
 		if (isReference())
 		{
-			SyntaxMessage.error("A class cannot be of a reference type", getLocationIn());
+			SyntaxMessage.error("A class cannot be of a reference type", getLocationIn(), getController());
 			
 			return null;
 		}
 		else if (isPointer())
 		{
-			SyntaxMessage.error("A class cannot be of a pointer type", getLocationIn());
+			SyntaxMessage.error("A class cannot be of a pointer type", getLocationIn(), getController());
 			
 			return null;
-		}
-		
-		if (getExtendedClass() != null)
-		{
-			builder.append("_EXT");
 		}
 		
 		builder.append('\n').append('(').append('\n');
 		
 		builder.append(getName()).append(", ");
-
-		if (getExtendedClass() != null)
-		{
-			builder.append(getExtendedClass()).append(", ");
-		}
 		
 //		if (getImplementedClasses().size() > 0)
 //		{
@@ -508,29 +541,21 @@ public class ClassNode extends DeclarationNode
 		
 		if (publicFields.getChildren().size() > 0)
 		{
-			builder.append(publicFields.generateCHeaderOutput()).append('\n');
+			builder.append(publicFields.generateCHeader()).append('\n');
 		}
 		
-		for (int i = 0; i < getChildren().size(); i++)
-		{
-			TreeNode child = getChild(i);
-			
-			if (child != getConstructorListNode() && child != getDestructorListNode())
-			{
-				if (child != fields)
-				{
-					builder.append(child.generateCHeaderOutput());
-				}
-			}
-		}
+		builder.append(", struct Private* prv;").append('\n');
 		
 		builder.append(')').append('\n').append('\n');
 		
 		MethodListNode constructors = getConstructorListNode();
-		builder.append(constructors.generateCHeaderOutput());
+		builder.append(constructors.generateCHeader());
 		
 		MethodListNode destructors = getDestructorListNode();
-		builder.append(destructors.generateCHeaderOutput());
+		builder.append(destructors.generateCHeader());
+		
+		MethodListNode methods = getMethodListNode();
+		builder.append(methods.generateCHeader());
 		
 		if (containsStaticData())
 		{
@@ -541,19 +566,10 @@ public class ClassNode extends DeclarationNode
 	}
 	
 	/**
-	 * @see net.fathomsoft.fathom.tree.TreeNode#generateCHeaderFragment()
+	 * @see net.fathomsoft.fathom.tree.TreeNode#generateCSource()
 	 */
 	@Override
-	public String generateCHeaderFragment()
-	{
-		return null;
-	}
-	
-	/**
-	 * @see net.fathomsoft.fathom.tree.TreeNode#generateCSourceOutput()
-	 */
-	@Override
-	public String generateCSourceOutput()
+	public String generateCSource()
 	{
 		StringBuilder  builder = new StringBuilder();
 		
@@ -562,20 +578,20 @@ public class ClassNode extends DeclarationNode
 			builder.append(getName()).append("* ").append("__static__").append(getName()).append(';').append('\n').append('\n');
 		}
 		
-		MethodListNode constructors = getConstructorListNode();
-		builder.append(constructors.generateCSourcePrototypes());
-
-		MethodListNode destructors = getDestructorListNode();
-		builder.append(destructors.generateCSourcePrototypes());
-		
-		MethodListNode methods = getMethodListNode();
-		
-		if (methods.getChildren().size() > 0)
-		{
-			builder.append(methods.generateCSourcePrototypes());
-		}
-		
-		builder.append('\n');
+//		MethodListNode constructors = getConstructorListNode();
+//		builder.append(constructors.generateCSourcePrototypes());
+//
+//		MethodListNode destructors = getDestructorListNode();
+//		builder.append(destructors.generateCSourcePrototypes());
+//		
+//		MethodListNode methods = getMethodListNode();
+//		
+//		if (methods.getChildren().size() > 0)
+//		{
+//			builder.append(methods.generateCSourcePrototypes());
+//		}
+//		
+//		builder.append('\n');
 		
 		FieldListNode fields = getFieldListNode();
 		
@@ -585,13 +601,9 @@ public class ClassNode extends DeclarationNode
 		{
 			builder.append("PRIVATE").append('\n').append('(').append('\n');
 			
-			builder.append(privateFields.generateCSourceOutput());
+			builder.append(privateFields.generateCSource());
 			
 			builder.append(')');
-		}
-		else
-		{
-			builder.append("NO_PRIVATE");
 		}
 		
 		builder.append('\n');
@@ -602,7 +614,7 @@ public class ClassNode extends DeclarationNode
 			
 			if (child != fields)
 			{
-				builder.append(child.generateCSourceOutput());
+				builder.append(child.generateCSource());
 			}
 		}
 		
@@ -662,7 +674,7 @@ public class ClassNode extends DeclarationNode
 						{
 							word = word.substring(1);
 						}
-						else if (word.endsWith(","))
+						if (word.endsWith(","))
 						{
 							word = word.substring(0, word.length() - 1);
 						}
@@ -703,6 +715,64 @@ public class ClassNode extends DeclarationNode
 		}
 		
 		return null;
+	}
+	
+	/**
+	 * Make sure that the Class is a valid declaration.
+	 */
+	public void validate()
+	{
+		validateExtension();
+		validateImplementations();
+	}
+	
+	/**
+	 * Validate that the extended class has been declared and that it
+	 * is valid to extend.
+	 */
+	public void validateExtension()
+	{
+		if (extendedClass == null)
+		{
+			return;
+		}
+		
+		ProgramNode program = getProgramNode();
+		
+		ClassNode   clazz   = program.getClass(extendedClass);
+		
+		if (clazz == null)
+		{
+			SyntaxMessage.error("Class '" + extendedClass + "' not declared", getController());
+		}
+		else
+		{
+			if (clazz.isConstant())
+			{
+				SyntaxMessage.error("Class '" + extendedClass + "' not is constant and cannot be extended", getController());
+			}
+		}
+		
+		
+	}
+	
+	/**
+	 * Validate that all of the implemented classes have been declared
+	 * and that they are valid interfaces.
+	 */
+	public void validateImplementations()
+	{
+		ProgramNode program = getProgramNode();
+		
+		for (String implementedClass : implementedClasses)
+		{
+			ClassNode clazz = program.getClass(implementedClass);
+			
+			if (clazz == null)
+			{
+				SyntaxMessage.error("Class '" + implementedClass + "' not declared", getController());
+			}
+		}
 	}
 	
 	/**
