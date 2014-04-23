@@ -23,6 +23,7 @@ import net.fathomsoft.fathom.util.Bounds;
 import net.fathomsoft.fathom.util.Location;
 import net.fathomsoft.fathom.util.Patterns;
 import net.fathomsoft.fathom.util.Regex;
+import net.fathomsoft.fathom.util.StringUtils;
 import net.fathomsoft.fathom.util.SyntaxUtils;
 
 /**
@@ -67,6 +68,11 @@ public class MethodNode extends DeclarationNode
 		return (ParameterListNode)getChild(0);
 	}
 	
+	public boolean needsReference()
+	{
+		return this instanceof ConstructorNode == false;
+	}
+	
 	/**
 	 * @see net.fathomsoft.fathom.tree.TreeNode#getScopeNode()
 	 */
@@ -106,10 +112,10 @@ public class MethodNode extends DeclarationNode
 	}
 	
 	/**
-	 * @see net.fathomsoft.fathom.tree.TreeNode#generateJavaSourceOutput()
+	 * @see net.fathomsoft.fathom.tree.TreeNode#generateJavaSource()
 	 */
 	@Override
-	public String generateJavaSourceOutput()
+	public String generateJavaSource()
 	{
 		StringBuilder builder = new StringBuilder();
 		
@@ -146,7 +152,7 @@ public class MethodNode extends DeclarationNode
 
 		ParameterListNode parameterList = getParameterListNode();
 		
-		builder.append(parameterList.generateJavaSourceOutput());
+		builder.append(parameterList.generateJavaSource());
 		
 		builder.append(')').append('\n').append('{').append('\n');
 		
@@ -156,7 +162,7 @@ public class MethodNode extends DeclarationNode
 			
 			if (child != parameterList)
 			{
-				builder.append(child.generateJavaSourceOutput());
+				builder.append(child.generateJavaSource());
 			}
 		}
 		
@@ -166,10 +172,10 @@ public class MethodNode extends DeclarationNode
 	}
 
 	/**
-	 * @see net.fathomsoft.fathom.tree.TreeNode#generateCHeaderOutput()
+	 * @see net.fathomsoft.fathom.tree.TreeNode#generateCHeader()
 	 */
 	@Override
-	public String generateCHeaderOutput()
+	public String generateCHeader()
 	{
 		StringBuilder builder = new StringBuilder();
 		
@@ -188,13 +194,13 @@ public class MethodNode extends DeclarationNode
 //		}
 		if (isConstant())
 		{
-			SyntaxMessage.error("Const methods are not supported in the C implementation yet", getLocationIn());
+			SyntaxMessage.error("Const methods are not supported in the C implementation yet", getLocationIn(), getController());
 			
 			return null;
 //			builder.append(getConstantText()).append(' ');
 		}
 		
-		builder.append("FUNC(");
+		/*builder.append("FUNC(");
 		
 		builder.append(getType());
 		
@@ -215,22 +221,24 @@ public class MethodNode extends DeclarationNode
 		
 		builder.append(parameterList.generateCHeaderOutput());
 		
-		builder.append(");").append('\n');
+		builder.append(");").append('\n');*/
+		
+		builder.append(generateCSourcePrototype()).append('\n');
 		
 		return builder.toString();
 	}
 
 	/**
-	 * @see net.fathomsoft.fathom.tree.TreeNode#generateCSourceOutput()
+	 * @see net.fathomsoft.fathom.tree.TreeNode#generateCSource()
 	 */
 	@Override
-	public String generateCSourceOutput()
+	public String generateCSource()
 	{
 		StringBuilder builder = new StringBuilder();
 		
 		builder.append(generateCSourceSignature()).append('\n');
 		
-		builder.append(getScopeNode().generateCSourceOutput());
+		builder.append(getScopeNode().generateCSource());
 //		builder.append('{').append('\n');
 		
 //		ParameterListNode parameterList = getParameterListNode();
@@ -298,7 +306,7 @@ public class MethodNode extends DeclarationNode
 	{
 		StringBuilder builder = new StringBuilder();
 		
-		builder.append("static ");
+//		builder.append("static ");
 		
 		if (isConstant())
 		{
@@ -328,7 +336,7 @@ public class MethodNode extends DeclarationNode
 		
 		builder.append(generateMethodName()).append('(');
 		
-		builder.append(getParameterListNode().generateCSourceOutput());
+		builder.append(getParameterListNode().generateCSource());
 		
 		builder.append(')');
 		
@@ -342,24 +350,33 @@ public class MethodNode extends DeclarationNode
 	 */
 	public String generateMethodName()
 	{
-		return generateMethodName(false);
+		return generateCSourceNameOutput();
 	}
 	
 	/**
-	 * Generate the C Source output for a method name.
+	 * Get the name of the method that is output to the C source file.<br>
+	 * <br>
+	 * For example:
+	 * <blockquote><pre>
+	 * package "this/is/my/package";
 	 * 
-	 * @param header Whether or not the output is being created for a
-	 * 		header file.
-	 * @return The C output for a method name.
+	 * public class Test
+	 * {
+	 * 	public void methodName()
+	 * 	{
+	 * 		...
+	 * 	}
+	 * }</pre></blockquote>
+	 * The output for "<code>methodName()</code>" would look like:
+	 * "<code>this_is_my_package_Test_methodName()</code>"
+	 * 
+	 * @return The name of the method that is output to the C source file.
 	 */
-	public String generateMethodName(boolean header)
+	public String generateCSourceNameOutput()
 	{
-		if (header)
-		{
-			return getName();
-		}
+		ClassNode clazz = (ClassNode)getAncestorOfType(ClassNode.class);
 		
-		return "__" + Fathom.LANGUAGE_NAME.toUpperCase() + "__" + getName();
+		return Fathom.LANGUAGE_NAME.toLowerCase() + "_" + clazz.generateMethodPrefixOutput() + "_" + getName();
 	}
 	
 	/**
@@ -391,14 +408,14 @@ public class MethodNode extends DeclarationNode
 			// subtract the ending ones from the number.
 			if (lastParenthIndex < 0)
 			{
-				SyntaxMessage.error("Expected a ')' ending parenthesis", location);
+				SyntaxMessage.error("Expected a ')' ending parenthesis", location, parent.getController());
 				
 				return null;
 			}
 			
 			String parameterList = statement.substring(firstParenthIndex + 1, lastParenthIndex);
 			
-			String parameters[]  = Regex.splitCommas(parameterList);
+			String parameters[]  = StringUtils.splitCommas(parameterList);
 			
 			statement = statement.substring(0, firstParenthIndex);
 			
@@ -437,7 +454,7 @@ public class MethodNode extends DeclarationNode
 					
 					if (param == null)
 					{
-						SyntaxMessage.error("Incorrect parameter definition", location);
+						SyntaxMessage.error("Incorrect parameter definition", location, parent.getController());
 						
 						return null;
 					}
