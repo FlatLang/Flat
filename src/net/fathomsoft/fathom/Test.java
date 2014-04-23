@@ -22,13 +22,15 @@ import java.util.regex.Pattern;
 
 import net.fathomsoft.fathom.util.Patterns;
 
+import static java.lang.Math.sin;
+
 public class Test
 {
-//	private static double sin2(double d)
-//	{
-//		return sin(d);
-//	}
-//	
+	private static double sin2(double d)
+	{
+		return sin(d);
+	}
+	
 	public static void main(String args[])
 	{
 		try
@@ -68,14 +70,14 @@ public class Test
 		}
 		System.out.println();
 		
-//		long start = System.currentTimeMillis();
-//		for (int i = 0; i < 99999999; i++)
-//		{
-//			sin2(i);
-//		}
-//		long end = System.currentTimeMillis();
-//		
-//		System.out.println(end - start);
+		long start = System.currentTimeMillis();
+		for (int i = 0; i < 99999999; i++)
+		{
+			sin2(i);
+		}
+		long end = System.currentTimeMillis();
+		
+		System.out.println(end - start);
 		
 //		FPattern pattern = new FPattern("([;} \n\r]`s*)((`2startps?`identifier+`2endps?`s*)+[*&]*`s*[\\(]`~*[\\)]`s*[;])()");
 //		FMatcher matcher = new FMatcher("/*This is comment stuff*/ \n public void test \tis a test(these, are, parameters);", pattern);
