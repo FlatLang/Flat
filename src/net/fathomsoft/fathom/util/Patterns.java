@@ -41,6 +41,13 @@ public class Patterns
 	public static final Pattern IDENTIFIER_BOUNDARIES	= Pattern.compile("\\b");
 
 	/**
+	 * Pattern that searches for an identifier declaration. An identifier
+	 * declaration consists of letters, numbers, underscores, brackets,
+	 * and spaces.
+	 */
+	public static final Pattern IDENTIFIER_DECLARATION	= Pattern.compile("[A-Za-z0-9_ \\[\\].]+");
+
+	/**
 	 * Pattern that searches for an identifier. An identifier consists of
 	 * letters, numbers, and underscores.
 	 */
