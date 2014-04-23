@@ -50,6 +50,11 @@ public class ScopeNode extends TreeNode
 		return (VariableListNode)getChild(0);
 	}
 	
+	/**
+	 * Get the id of the scope used for variable name differentiation.
+	 * 
+	 * @return The id of the scope instance.
+	 */
 	public int getID()
 	{
 		return id;
