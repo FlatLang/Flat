@@ -56,7 +56,7 @@ public class ThrowNode extends ExceptionHandlingNode
 	{
 		if (child instanceof ExceptionNode)
 		{
-			getChildren().add(child);
+			addChild(1, child);
 		}
 		else
 		{
@@ -65,28 +65,28 @@ public class ThrowNode extends ExceptionHandlingNode
 	}
 	
 	/**
-	 * @see net.fathomsoft.fathom.tree.TreeNode#generateJavaSourceOutput()
+	 * @see net.fathomsoft.fathom.tree.TreeNode#generateJavaSource()
 	 */
 	@Override
-	public String generateJavaSourceOutput()
+	public String generateJavaSource()
 	{
 		return null;
 	}
 	
 	/**
-	 * @see net.fathomsoft.fathom.tree.TreeNode#generateCHeaderOutput()
+	 * @see net.fathomsoft.fathom.tree.TreeNode#generateCHeader()
 	 */
 	@Override
-	public String generateCHeaderOutput()
+	public String generateCHeader()
 	{
 		return null;
 	}
 	
 	/**
-	 * @see net.fathomsoft.fathom.tree.TreeNode#generateCSourceOutput()
+	 * @see net.fathomsoft.fathom.tree.TreeNode#generateCSource()
 	 */
 	@Override
-	public String generateCSourceOutput()
+	public String generateCSource()
 	{
 		StringBuilder builder = new StringBuilder();
 		
@@ -132,7 +132,8 @@ public class ThrowNode extends ExceptionHandlingNode
 			{
 				ThrowNode n          = new ThrowNode();
 				
-				Location  newLoc     = new Location(location.getLineNumber(), location.getOffset() + bounds.getStart(), location.getOffset() + bounds.getEnd());
+				Location  newLoc     = new Location(location);
+				newLoc.setBounds(location.getStart() + bounds.getStart(), location.getStart() + bounds.getEnd());
 				
 				String    thrown     = statement.substring(bounds.getStart(), bounds.getEnd());
 				
@@ -150,12 +151,12 @@ public class ThrowNode extends ExceptionHandlingNode
 					return n;
 				}
 				
-				SyntaxMessage.error("Incorrect form of exception thrown", newLoc);
+				SyntaxMessage.error("Incorrect form of exception thrown", newLoc, parent.getController());
 				
 				return null;
 			}
 			
-			SyntaxMessage.error("Throw statement missing exception type", location);
+			SyntaxMessage.error("Throw statement missing exception type", location, parent.getController());
 		}
 		
 		return null;

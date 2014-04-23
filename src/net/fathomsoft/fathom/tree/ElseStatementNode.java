@@ -70,28 +70,28 @@ public class ElseStatementNode extends TreeNode
 	}
 	
 	/**
-	 * @see net.fathomsoft.fathom.tree.TreeNode#generateJavaSourceOutput()
+	 * @see net.fathomsoft.fathom.tree.TreeNode#generateJavaSource()
 	 */
 	@Override
-	public String generateJavaSourceOutput()
+	public String generateJavaSource()
 	{
 		return null;
 	}
 
 	/**
-	 * @see net.fathomsoft.fathom.tree.TreeNode#generateCHeaderOutput()
+	 * @see net.fathomsoft.fathom.tree.TreeNode#generateCHeader()
 	 */
 	@Override
-	public String generateCHeaderOutput()
+	public String generateCHeader()
 	{
 		return null;
 	}
 	
 	/**
-	 * @see net.fathomsoft.fathom.tree.TreeNode#generateCSourceOutput()
+	 * @see net.fathomsoft.fathom.tree.TreeNode#generateCSource()
 	 */
 	@Override
-	public String generateCSourceOutput()
+	public String generateCSource()
 	{
 		StringBuilder builder = new StringBuilder();
 		
@@ -103,7 +103,7 @@ public class ElseStatementNode extends TreeNode
 			
 			if (child instanceof IfStatementNode)
 			{
-				builder.append(' ').append(child.generateCSourceOutput());
+				builder.append(' ').append(child.generateCSource());
 				
 				// Delete the new line at the end.
 				builder.deleteCharAt(builder.length() - 1);
@@ -112,7 +112,7 @@ public class ElseStatementNode extends TreeNode
 		
 		builder.append('\n');
 	
-		builder.append(getScopeNode().generateCSourceOutput());
+		builder.append(getScopeNode().generateCSource());
 		
 //		builder.append('{').append('\n');
 //		
@@ -169,7 +169,8 @@ public class ElseStatementNode extends TreeNode
 			
 			String   ending      = statement.substring(bounds.getEnd());
 			
-			Location newLocation = new Location(location.getLineNumber(), location.getOffset() + bounds.getEnd(), location.getOffset() + statement.length());
+			Location newLocation = new Location(location);
+			newLocation.setBounds(location.getStart() + bounds.getEnd(), location.getStart() + statement.length());
 			
 			TreeNode contents    = TreeNode.decodeStatement(parent, ending, newLocation);
 			

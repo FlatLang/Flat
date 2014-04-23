@@ -84,28 +84,28 @@ public class IfStatementNode extends TreeNode
 	}
 	
 	/**
-	 * @see net.fathomsoft.fathom.tree.TreeNode#generateJavaSourceOutput()
+	 * @see net.fathomsoft.fathom.tree.TreeNode#generateJavaSource()
 	 */
 	@Override
-	public String generateJavaSourceOutput()
+	public String generateJavaSource()
 	{
 		return null;
 	}
 
 	/**
-	 * @see net.fathomsoft.fathom.tree.TreeNode#generateCHeaderOutput()
+	 * @see net.fathomsoft.fathom.tree.TreeNode#generateCHeader()
 	 */
 	@Override
-	public String generateCHeaderOutput()
+	public String generateCHeader()
 	{
 		return null;
 	}
 	
 	/**
-	 * @see net.fathomsoft.fathom.tree.TreeNode#generateCSourceOutput()
+	 * @see net.fathomsoft.fathom.tree.TreeNode#generateCSource()
 	 */
 	@Override
-	public String generateCSourceOutput()
+	public String generateCSource()
 	{
 		StringBuilder builder = new StringBuilder();
 		
@@ -134,7 +134,7 @@ public class IfStatementNode extends TreeNode
 //		}
 //		
 //		builder.append('}').append('\n');
-		builder.append(getScopeNode().generateCSourceOutput());
+		builder.append(getScopeNode().generateCSource());
 		
 		return builder.toString();
 	}
@@ -181,7 +181,7 @@ public class IfStatementNode extends TreeNode
 				
 				Location newLoc = new Location();
 				newLoc.setLineNumber(location.getLineNumber());
-				newLoc.setBounds(location.getOffset() + bounds.getStart(), location.getOffset() + bounds.getEnd());
+				newLoc.setBounds(location.getStart() + bounds.getStart(), location.getStart() + bounds.getEnd());
 				
 				TreeNode child = BinaryOperatorNode.decodeStatement(parent, contents, newLoc);
 				
@@ -191,7 +191,7 @@ public class IfStatementNode extends TreeNode
 			}
 			else
 			{
-				SyntaxMessage.error("If statement missing condition", location);
+				SyntaxMessage.error("If statement missing condition", location, parent.getController());
 			}
 		}
 		

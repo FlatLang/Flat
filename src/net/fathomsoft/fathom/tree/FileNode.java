@@ -132,6 +132,24 @@ public class FileNode extends IdentifierNode
 	}
 	
 	/**
+	 * Make sure that the Class declarations are valid.
+	 */
+	public void validateClasses()
+	{
+		for (int i = 0; i < getChildren().size(); i++)
+		{
+			TreeNode child = getChild(i);
+			
+			if (child != getImportListNode())
+			{
+				ClassNode clazz = (ClassNode)child;
+				
+				clazz.validate();
+			}
+		}
+	}
+	
+	/**
 	 * Get the ImportListNode that contains all of the imports used within
 	 * the file.
 	 * 
@@ -143,10 +161,10 @@ public class FileNode extends IdentifierNode
 	}
 	
 	/**
-	 * @see net.fathomsoft.fathom.tree.IdentifierNode#generateJavaSourceOutput()
+	 * @see net.fathomsoft.fathom.tree.IdentifierNode#generateJavaSource()
 	 */
 	@Override
-	public String generateJavaSourceOutput()
+	public String generateJavaSource()
 	{
 		return "";
 	}
@@ -167,17 +185,17 @@ public class FileNode extends IdentifierNode
 		}
 		else
 		{
-			SyntaxMessage.error("Unexpected statement", child.getLocationIn());
+			SyntaxMessage.error("Unexpected statement", child.getLocationIn(), getController());
 			
 			//super.addChild(child);
 		}
 	}
 
 	/**
-	 * @see net.fathomsoft.fathom.tree.IdentifierNode#generateCHeaderOutput()
+	 * @see net.fathomsoft.fathom.tree.IdentifierNode#generateCHeader()
 	 */
 	@Override
-	public String generateCHeaderOutput()
+	public String generateCHeader()
 	{
 		if (header == null)
 		{
@@ -192,7 +210,7 @@ public class FileNode extends IdentifierNode
 			
 			ImportListNode imports = getImportListNode();
 			
-			builder.append(imports.generateCHeaderOutput());
+			builder.append(imports.generateCHeader());
 			
 			for (int i = 0; i < getChildren().size(); i++)
 			{
@@ -200,7 +218,7 @@ public class FileNode extends IdentifierNode
 				
 				if (child != imports)
 				{
-					builder.append(child.generateCHeaderOutput());
+					builder.append(child.generateCHeader());
 				}
 			}
 			
@@ -213,10 +231,10 @@ public class FileNode extends IdentifierNode
 	}
 
 	/**
-	 * @see net.fathomsoft.fathom.tree.IdentifierNode#generateCSourceOutput()
+	 * @see net.fathomsoft.fathom.tree.IdentifierNode#generateCSource()
 	 */
 	@Override
-	public String generateCSourceOutput()
+	public String generateCSource()
 	{
 		if (source == null)
 		{
@@ -225,7 +243,7 @@ public class FileNode extends IdentifierNode
 			ImportNode thisImport = new ImportNode();
 			thisImport.setImportLocation(getName());
 			
-			builder.append(thisImport.generateCSourceOutput());
+			builder.append(thisImport.generateCSource());
 			
 			if (getImportListNode().getChildren().size() <= 0)
 			{
@@ -236,7 +254,7 @@ public class FileNode extends IdentifierNode
 			{
 				TreeNode child = getChild(i);
 				
-				builder.append(child.generateCSourceOutput());
+				builder.append(child.generateCSource());
 			}
 			
 			source = builder.toString();

@@ -84,28 +84,28 @@ public class ImportNode extends TreeNode
 	}
 	
 	/**
-	 * @see net.fathomsoft.fathom.tree.TreeNode#generateJavaSourceOutput()
+	 * @see net.fathomsoft.fathom.tree.TreeNode#generateJavaSource()
 	 */
 	@Override
-	public String generateJavaSourceOutput()
+	public String generateJavaSource()
 	{
 		return null;
 	}
 
 	/**
-	 * @see net.fathomsoft.fathom.tree.TreeNode#generateCHeaderOutput()
+	 * @see net.fathomsoft.fathom.tree.TreeNode#generateCHeader()
 	 */
 	@Override
-	public String generateCHeaderOutput()
+	public String generateCHeader()
 	{
-		return generateCSourceOutput();
+		return generateCSource();
 	}
 
 	/**
-	 * @see net.fathomsoft.fathom.tree.TreeNode#generateCSourceOutput()
+	 * @see net.fathomsoft.fathom.tree.TreeNode#generateCSource()
 	 */
 	@Override
-	public String generateCSourceOutput()
+	public String generateCSource()
 	{
 		StringBuilder builder = new StringBuilder();
 		
@@ -190,7 +190,7 @@ public class ImportNode extends TreeNode
 					}
 					else
 					{
-						SyntaxMessage.error("Import location ends with unknown extension", location);
+						SyntaxMessage.error("Import location ends with unknown extension", location, parent.getController());
 					}
 				}
 				
@@ -198,7 +198,7 @@ public class ImportNode extends TreeNode
 			}
 			else
 			{
-				SyntaxMessage.error("Import statement must specify the location of the file", location);
+				SyntaxMessage.error("Import statement must specify the location of the file", location, parent.getController());
 			}
 		}
 		

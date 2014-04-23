@@ -19,7 +19,9 @@ package net.fathomsoft.fathom.tree.variables;
 
 import net.fathomsoft.fathom.error.SyntaxMessage;
 import net.fathomsoft.fathom.tree.DeclarationNode;
+import net.fathomsoft.fathom.tree.ParameterListNode;
 import net.fathomsoft.fathom.tree.TreeNode;
+import net.fathomsoft.fathom.tree.exceptionhandling.ExceptionNode;
 import net.fathomsoft.fathom.util.Bounds;
 import net.fathomsoft.fathom.util.Location;
 import net.fathomsoft.fathom.util.Patterns;
@@ -89,28 +91,28 @@ public class FieldNode extends DeclarationNode
 	}
 
 	/**
-	 * @see net.fathomsoft.fathom.tree.TreeNode#generateJavaSourceOutput()
+	 * @see net.fathomsoft.fathom.tree.TreeNode#generateJavaSource()
 	 */
 	@Override
-	public String generateJavaSourceOutput()
+	public String generateJavaSource()
 	{
-		return super.generateJavaSourceOutput();
+		return super.generateJavaSource();
 	}
 
 	/**
-	 * @see net.fathomsoft.fathom.tree.TreeNode#generateCHeaderOutput()
+	 * @see net.fathomsoft.fathom.tree.TreeNode#generateCHeader()
 	 */
 	@Override
-	public String generateCHeaderOutput()
+	public String generateCHeader()
 	{
-		return super.generateCHeaderOutput();
+		return super.generateCHeader();
 	}
 
 	/**
-	 * @see net.fathomsoft.fathom.tree.TreeNode#generateCSourceOutput()
+	 * @see net.fathomsoft.fathom.tree.TreeNode#generateCSource()
 	 */
 	@Override
-	public String generateCSourceOutput()
+	public String generateCSource()
 	{
 		StringBuilder builder = new StringBuilder();
 		
@@ -142,7 +144,7 @@ public class FieldNode extends DeclarationNode
 			builder.append('*');
 		}
 		
-		builder.append(' ').append(getName());
+		builder.append(' ').append(generateCSourceNameOutput());
 		
 //		if (!isPrimitiveType())
 //		{

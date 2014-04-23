@@ -56,7 +56,7 @@ public class WhileLoopNode extends LoopNode
 	{
 		if (getChildren().size() <= 1)
 		{
-			getChildren().add(child);
+			addChild(1, child);
 		}
 		else
 		{
@@ -65,34 +65,34 @@ public class WhileLoopNode extends LoopNode
 	}
 
 	/**
-	 * @see net.fathomsoft.fathom.tree.TreeNode#generateJavaSourceOutput()
+	 * @see net.fathomsoft.fathom.tree.TreeNode#generateJavaSource()
 	 */
 	@Override
-	public String generateJavaSourceOutput()
+	public String generateJavaSource()
 	{
 		return null;
 	}
 
 	/**
-	 * @see net.fathomsoft.fathom.tree.TreeNode#generateCHeaderOutput()
+	 * @see net.fathomsoft.fathom.tree.TreeNode#generateCHeader()
 	 */
 	@Override
-	public String generateCHeaderOutput()
+	public String generateCHeader()
 	{
 		return null;
 	}
 	
 	/**
-	 * @see net.fathomsoft.fathom.tree.TreeNode#generateCSourceOutput()
+	 * @see net.fathomsoft.fathom.tree.TreeNode#generateCSource()
 	 */
 	@Override
-	public String generateCSourceOutput()
+	public String generateCSource()
 	{
 		StringBuilder builder = new StringBuilder();
 		
 		TreeNode condition    = getConditionNode();
 		
-		builder.append("while (").append(condition.generateCSourceOutput()).append(')').append('\n');
+		builder.append("while (").append(condition.generateCSource()).append(')').append('\n');
 		
 		for (int i = 0; i < getChildren().size(); i++)
 		{
@@ -100,7 +100,7 @@ public class WhileLoopNode extends LoopNode
 			
 			if (child != getConditionNode())
 			{
-				builder.append(child.generateCSourceOutput());
+				builder.append(child.generateCSource());
 			}
 		}
 		
@@ -146,7 +146,7 @@ public class WhileLoopNode extends LoopNode
 			{
 				Location newLoc    = new Location();
 				newLoc.setLineNumber(location.getLineNumber());
-				newLoc.setBounds(location.getOffset() + bounds.getStart(), location.getOffset() + bounds.getEnd());
+				newLoc.setBounds(location.getStart() + bounds.getStart(), location.getStart() + bounds.getEnd());
 				
 				String   contents  = statement.substring(bounds.getStart(), bounds.getEnd());
 				
@@ -166,7 +166,7 @@ public class WhileLoopNode extends LoopNode
 			}
 			else
 			{
-				SyntaxMessage.error("While loop missing condition", location);
+				SyntaxMessage.error("While loop missing condition", location, parent.getController());
 			}
 		}
 		

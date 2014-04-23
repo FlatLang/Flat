@@ -33,10 +33,10 @@ import net.fathomsoft.fathom.util.Regex;
 public class ReturnNode extends TreeNode
 {
 	/**
-	 * @see net.fathomsoft.fathom.tree.TreeNode#generateJavaSourceOutput()
+	 * @see net.fathomsoft.fathom.tree.TreeNode#generateJavaSource()
 	 */
 	@Override
-	public String generateJavaSourceOutput()
+	public String generateJavaSource()
 	{
 		StringBuilder builder = new StringBuilder();
 		
@@ -46,7 +46,7 @@ public class ReturnNode extends TreeNode
 		{
 			TreeNode child = getChild(i);
 			
-			builder.append(child.generateJavaSourceOutput());
+			builder.append(child.generateJavaSource());
 		}
 		
 		builder.append(';').append('\n');
@@ -55,19 +55,19 @@ public class ReturnNode extends TreeNode
 	}
 
 	/**
-	 * @see net.fathomsoft.fathom.tree.TreeNode#generateCHeaderOutput()
+	 * @see net.fathomsoft.fathom.tree.TreeNode#generateCHeader()
 	 */
 	@Override
-	public String generateCHeaderOutput()
+	public String generateCHeader()
 	{
 		return null;
 	}
 
 	/**
-	 * @see net.fathomsoft.fathom.tree.TreeNode#generateCSourceOutput()
+	 * @see net.fathomsoft.fathom.tree.TreeNode#generateCSource()
 	 */
 	@Override
-	public String generateCSourceOutput()
+	public String generateCSource()
 	{
 		StringBuilder builder = new StringBuilder();
 		
@@ -138,7 +138,7 @@ public class ReturnNode extends TreeNode
 				
 				Location newLoc = new Location();
 				newLoc.setLineNumber(location.getLineNumber());
-				newLoc.setBounds(location.getOffset() + returnStartIndex, location.getOffset() + statement.length());
+				newLoc.setBounds(location.getStart() + returnStartIndex, location.getStart() + statement.length());
 				
 				TreeNode child = BinaryOperatorNode.decodeStatement(parent, statement, newLoc);
 				

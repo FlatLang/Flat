@@ -43,16 +43,16 @@ public class BinaryOperatorNode extends TreeNode
 	private static int checkId;
 
 	/**
-	 * @see net.fathomsoft.fathom.tree.TreeNode#generateJavaSourceOutput()
+	 * @see net.fathomsoft.fathom.tree.TreeNode#generateJavaSource()
 	 */
 	@Override
-	public String generateJavaSourceOutput()
+	public String generateJavaSource()
 	{
 		StringBuilder builder = new StringBuilder();
 		
 		for (int i = 0; i < getChildren().size(); i++)
 		{
-			builder.append(getChild(i).generateJavaSourceOutput());
+			builder.append(getChild(i).generateJavaSource());
 			
 			if (i < getChildren().size() - 1)
 			{
@@ -64,19 +64,19 @@ public class BinaryOperatorNode extends TreeNode
 	}
 
 	/**
-	 * @see net.fathomsoft.fathom.tree.TreeNode#generateCHeaderOutput()
+	 * @see net.fathomsoft.fathom.tree.TreeNode#generateCHeader()
 	 */
 	@Override
-	public String generateCHeaderOutput()
+	public String generateCHeader()
 	{
 		return null;
 	}
 
 	/**
-	 * @see net.fathomsoft.fathom.tree.TreeNode#generateCSourceOutput()
+	 * @see net.fathomsoft.fathom.tree.TreeNode#generateCSource()
 	 */
 	@Override
-	public String generateCSourceOutput()
+	public String generateCSource()
 	{
 		StringBuilder builder = new StringBuilder();
 		
@@ -101,7 +101,7 @@ public class BinaryOperatorNode extends TreeNode
 	@Override
 	public String generateCSourceFragment()
 	{
-		return generateCSourceOutput();
+		return generateCSource();
 	}
 	
 	/**
@@ -276,7 +276,9 @@ public class BinaryOperatorNode extends TreeNode
 			
 			if (operatorVal.equals("/"))
 			{
-				TreeNode divideByZeroCheck = generateDivideByZeroCheck(parentNode, rhn.generateCSourceFragment(), location);
+				IdentifierNode id = (IdentifierNode)rhn;
+				
+				TreeNode divideByZeroCheck = generateDivideByZeroCheck(parentNode, id.getName(), location);
 				
 				parentNode.addChild(divideByZeroCheck);
 			}
@@ -379,7 +381,7 @@ public class BinaryOperatorNode extends TreeNode
 			return node;
 		}
 		
-		SyntaxMessage.error("Could not parse operation '" + statement + "'", location);
+		SyntaxMessage.error("Could not parse operation '" + statement + "'", location, parent.getController());
 		
 		return null;
 	}

@@ -26,7 +26,7 @@ public class CatchNode extends ExceptionHandlingNode
 	 */
 	public LocalVariableNode getExceptionInstance()
 	{
-		return (LocalVariableNode)getChild(1);
+		return (LocalVariableNode)getChild(2);
 	}
 	
 	/**
@@ -36,7 +36,7 @@ public class CatchNode extends ExceptionHandlingNode
 	 */
 	public ExceptionNode getException()
 	{
-		return (ExceptionNode)getChild(2);
+		return (ExceptionNode)getChild(1);
 	}
 	
 	/**
@@ -45,9 +45,9 @@ public class CatchNode extends ExceptionHandlingNode
 	@Override
 	public void addChild(TreeNode child)
 	{
-		if (child instanceof ExceptionNode || getChildren().size() <= 1)
+		if (getChildren().size() == 1 || getChildren().size() == 2)
 		{
-			getChildren().add(child);
+			addChild(1, child);
 		}
 		else
 		{
@@ -56,28 +56,28 @@ public class CatchNode extends ExceptionHandlingNode
 	}
 	
 	/**
-	 * @see net.fathomsoft.fathom.tree.TreeNode#generateJavaSourceOutput()
+	 * @see net.fathomsoft.fathom.tree.TreeNode#generateJavaSource()
 	 */
 	@Override
-	public String generateJavaSourceOutput()
+	public String generateJavaSource()
 	{
 		return null;
 	}
 	
 	/**
-	 * @see net.fathomsoft.fathom.tree.TreeNode#generateCHeaderOutput()
+	 * @see net.fathomsoft.fathom.tree.TreeNode#generateCHeader()
 	 */
 	@Override
-	public String generateCHeaderOutput()
+	public String generateCHeader()
 	{
 		return null;
 	}
 	
 	/**
-	 * @see net.fathomsoft.fathom.tree.TreeNode#generateCSourceOutput()
+	 * @see net.fathomsoft.fathom.tree.TreeNode#generateCSource()
 	 */
 	@Override
-	public String generateCSourceOutput()
+	public String generateCSource()
 	{
 		StringBuilder builder = new StringBuilder();
 		
@@ -90,7 +90,7 @@ public class CatchNode extends ExceptionHandlingNode
 			
 			if (child != getExceptionInstance() && child != getException())
 			{
-				builder.append(child.generateCSourceOutput());
+				builder.append(child.generateCSource());
 			}
 		}
 		
@@ -170,7 +170,7 @@ public class CatchNode extends ExceptionHandlingNode
 				
 				Location newLoc = new Location();
 				newLoc.setLineNumber(location.getLineNumber());
-				newLoc.setBounds(location.getOffset() + bounds.getStart(), location.getOffset() + bounds.getEnd());
+				newLoc.setBounds(location.getStart() + bounds.getStart(), location.getStart() + bounds.getEnd());
 				
 				LocalVariableNode exceptionInstance = LocalVariableNode.decodeStatement(parent, contents, newLoc);
 				
@@ -190,14 +190,14 @@ public class CatchNode extends ExceptionHandlingNode
 						return n;
 					}
 					
-					SyntaxMessage.error("Unknown exception type", newLoc);
+					SyntaxMessage.error("Unknown exception type", newLoc, parent.getController());
 				}
 				
-				SyntaxMessage.error("Incorrect Exception declaration", newLoc);
+				SyntaxMessage.error("Incorrect Exception declaration", newLoc, parent.getController());
 			}
 			else
 			{
-				SyntaxMessage.error("Catch declaration missing Exception type", location);
+				SyntaxMessage.error("Catch declaration missing Exception type", location, parent.getController());
 			}
 		}
 		

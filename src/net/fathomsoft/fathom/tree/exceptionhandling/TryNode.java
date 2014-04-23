@@ -58,28 +58,28 @@ public class TryNode extends ExceptionHandlingNode
 	}
 	
 	/**
-	 * @see net.fathomsoft.fathom.tree.TreeNode#generateJavaSourceOutput()
+	 * @see net.fathomsoft.fathom.tree.TreeNode#generateJavaSource()
 	 */
 	@Override
-	public String generateJavaSourceOutput()
+	public String generateJavaSource()
 	{
 		return null;
 	}
 
 	/**
-	 * @see net.fathomsoft.fathom.tree.TreeNode#generateCHeaderOutput()
+	 * @see net.fathomsoft.fathom.tree.TreeNode#generateCHeader()
 	 */
 	@Override
-	public String generateCHeaderOutput()
+	public String generateCHeader()
 	{
 		return null;
 	}
 
 	/**
-	 * @see net.fathomsoft.fathom.tree.TreeNode#generateCSourceOutput()
+	 * @see net.fathomsoft.fathom.tree.TreeNode#generateCSource()
 	 */
 	@Override
-	public String generateCSourceOutput()
+	public String generateCSource()
 	{
 		StringBuilder builder = new StringBuilder();
 		
@@ -87,7 +87,7 @@ public class TryNode extends ExceptionHandlingNode
 		builder.append('{').append('\n');
 		builder.append(generateExceptionCodes()).append('\n');
 		
-		builder.append(getScopeNode().generateCSourceOutput());
+		builder.append(getScopeNode().generateCSource());
 		
 		builder.append('}').append('\n');
 		
@@ -138,13 +138,13 @@ public class TryNode extends ExceptionHandlingNode
 	{
 		StringBuilder builder = new StringBuilder();
 			
-		String variableName = "__" + Fathom.LANGUAGE_NAME.toUpperCase() + "__exception_data";
+		String variableName = ExceptionNode.EXCEPTION_DATA_IDENTIFIER;
 		
 		for (int i = 0; i < codes.size(); i++)
 		{
 			int code = codes.get(i);
 			
-			builder.append(variableName).append("->addCode(").append(variableName).append(", ").append(variableName).append(", ").append(code).append(");").append('\n');
+			builder.append("fathom_ExceptionData_addCode(").append(variableName).append(", ").append(variableName).append(", ").append(code).append(");").append('\n');
 		}
 		
 		return builder.toString();

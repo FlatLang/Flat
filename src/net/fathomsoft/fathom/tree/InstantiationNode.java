@@ -35,28 +35,28 @@ import net.fathomsoft.fathom.util.SyntaxUtils;
 public class InstantiationNode extends IdentifierNode
 {
 	/**
-	 * @see net.fathomsoft.fathom.tree.TreeNode#generateJavaSourceOutput()
+	 * @see net.fathomsoft.fathom.tree.TreeNode#generateJavaSource()
 	 */
 	@Override
-	public String generateJavaSourceOutput()
+	public String generateJavaSource()
 	{
 		return null;
 	}
 
 	/**
-	 * @see net.fathomsoft.fathom.tree.TreeNode#generateCHeaderOutput()
+	 * @see net.fathomsoft.fathom.tree.TreeNode#generateCHeader()
 	 */
 	@Override
-	public String generateCHeaderOutput()
+	public String generateCHeader()
 	{
 		return null;
 	}
 
 	/**
-	 * @see net.fathomsoft.fathom.tree.TreeNode#generateCSourceOutput()
+	 * @see net.fathomsoft.fathom.tree.TreeNode#generateCSource()
 	 */
 	@Override
-	public String generateCSourceOutput()
+	public String generateCSource()
 	{
 		StringBuilder builder = new StringBuilder();
 		
@@ -74,7 +74,7 @@ public class InstantiationNode extends IdentifierNode
 	@Override
 	public String generateCSourceFragment()
 	{
-		return generateCSourceOutput();
+		return generateCSource();
 	}
 	
 	/**
@@ -110,7 +110,7 @@ public class InstantiationNode extends IdentifierNode
 			
 			Location newLoc = new Location();
 			newLoc.setLineNumber(location.getLineNumber());
-			newLoc.setBounds(location.getOffset() + startIndex, location.getOffset() + statement.length());
+			newLoc.setBounds(location.getStart() + startIndex, location.getStart() + statement.length());
 			
 			IdentifierNode child = null;
 			
@@ -120,11 +120,12 @@ public class InstantiationNode extends IdentifierNode
 //				
 //				String type = action.substring(0, bounds.getEnd());
 				
-				child = MethodCallNode.decodeStatement(parent, action, newLoc, false);
+				MethodCallNode methodCall = MethodCallNode.decodeStatement(parent, action, newLoc, false);
 				
-				MethodCallNode methodCall = (MethodCallNode)child;
 				n.setName(methodCall.getName());
-				methodCall.setName("new_" + methodCall.getName());
+				
+				child = methodCall;
+//				methodCall.setName("new_" + methodCall.getName());
 				
 //				LiteralNode literalNode = new LiteralNode();
 //				literalNode.setValue(value);
@@ -134,11 +135,12 @@ public class InstantiationNode extends IdentifierNode
 			else if (SyntaxUtils.isArrayInitialization(action))
 			{
 				child = ArrayNode.decodeStatement(parent, action, newLoc);
+				
 				n.setName(child.getName());
 			}
 			else
 			{
-				SyntaxMessage.error("Unable to parse instantiation", newLoc);
+				SyntaxMessage.error("Unable to parse instantiation", newLoc, parent.getController());
 				
 				return null;
 			}
