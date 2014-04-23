@@ -349,7 +349,7 @@ public class ClassNode extends DeclarationNode
 	 * @return The prefix that is used for the methods contained within
 	 * 		the class.
 	 */
-	public String generateMethodPrefixOutput()
+	public String generateMethodPrefix()
 	{
 		String str = getName();
 		
