@@ -383,7 +383,7 @@ public class SyntaxUtils
 	 */
 	public static boolean isMainMethod(MethodNode method)
 	{
-		if ((method.getName().equals("main") || method.getName().equals("__" + Fathom.LANGUAGE_NAME.toUpperCase() + "__main")) && method.isStatic() && method.getType().equals("void") && method.getVisibility() == FieldNode.PUBLIC)
+		if (method.getName().equals("main") && method.isStatic() && method.getType().equals("void") && method.getVisibility() == FieldNode.PUBLIC)
 		{
 			ParameterListNode params = (ParameterListNode)method.getParameterListNode();
 			
@@ -498,7 +498,7 @@ public class SyntaxUtils
 			
 			if (!isAccessibleFrom(reference, dec))
 			{
-				SyntaxMessage.error("Variable '" + dec.getName() + "' is not visible");
+				SyntaxMessage.error("Variable '" + dec.getName() + "' is not visible", reference.getController());
 			}
 			
 			current = dec.getProgramNode().getClass(dec.getType());
