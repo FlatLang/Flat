@@ -28,7 +28,7 @@ package net.fathomsoft.fathom.util;
  */
 public class Location
 {
-	private int		lineNumber;
+	private int		lineNumber, offset;
 	
 	private Bounds	bounds;
 	
@@ -41,20 +41,33 @@ public class Location
 	}
 	
 	/**
+	 * Copy the location data from the given Location variable into
+	 * a newly instantiated Location instance.
+	 * 
+	 * @param loc The location to copy the data from.
+	 */
+	public Location(Location loc)
+	{
+		this(loc.lineNumber, loc.offset, loc.bounds.getStart(), loc.bounds.getEnd());
+	}
+	
+	/**
 	 * Constructor that initializes the lineNumber and offset to the
 	 * given values.
 	 * 
 	 * @param lineNumber The lineNumber that the Location represents.
+	 * @param offset The character offset horizontally on the current line.
 	 * @param start The character offset that the Location represents as
-	 * 		the start on the specified line.
+	 * 		the start throughout the whole source text.
 	 * @param end The character offset that the Location represents as
-	 * 		the end on the specified line.
+	 * 		the end throughout the whole source text.
 	 */
-	public Location(int lineNumber, int start, int end)
+	public Location(int lineNumber, int offset, int start, int end)
 	{
 		// Initialize default data.
 		this();
 		
+		this.offset = offset;
 		setLineNumber(lineNumber);
 		setBounds(start, end);
 	}
@@ -80,6 +93,30 @@ public class Location
 	}
 	
 	/**
+	 * Get the character offset that the Location represents as the start
+	 * throughout the whole source text.
+	 * 
+	 * @return The character offset that the Location represents as the
+	 * 		start throughout the whole source text.
+	 */
+	public int getStart()
+	{
+		return bounds.getStart();
+	}
+	
+	/**
+	 * Get the character offset that the Location represents as the end
+	 * throughout the whole source text.
+	 * 
+	 * @return The character offset that the Location represents as the end
+	 * 		throughout the whole source text.
+	 */
+	public int getEnd()
+	{
+		return bounds.getEnd();
+	}
+	
+	/**
 	 * Get character offset that the Location represents on the
 	 * specified line number.
 	 * 
@@ -88,7 +125,7 @@ public class Location
 	 */
 	public int getOffset()
 	{
-		return bounds.getStart();
+		return offset;
 	}
 	
 	/**
