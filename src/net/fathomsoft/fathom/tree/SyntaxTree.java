@@ -51,7 +51,7 @@ public class SyntaxTree
 	private int						statementStartIndex, statementEndIndex, oldStatementStartIndex;
 	private int						lineNumber;
 	
-	private long					flags;
+	private Fathom					controller;
 	
 	private Matcher					statementStartMatcher, lineBeginningMatcher;
 	
@@ -86,11 +86,11 @@ public class SyntaxTree
 	 * File.
 	 * 
 	 * @param files The files containing the Foxy source code.
-	 * @param flags The compiler's flags.
+	 * @param controller The controller of the compiling program.
 	 * @throws IOException Thrown if there was an error finding the
 	 * 		files or reading from it.
 	 */
-	public SyntaxTree(File files[], long flags) throws IOException
+	public SyntaxTree(File files[], Fathom controller) throws IOException
 	{
 		String filenames[] = new String[files.length];
 		String sources[]   = new String[files.length];
@@ -101,7 +101,7 @@ public class SyntaxTree
 			sources[i]   = FileUtils.readFile(files[i]);
 		}
 		
-		init(filenames, sources, flags);
+		init(filenames, sources, controller);
 	}
 	
 	/**
@@ -110,11 +110,11 @@ public class SyntaxTree
 	 * 
 	 * @param filenames The names of the files containing the source.
 	 * @param sources The source codes inside the files.
-	 * @param flags The compiler's flags.
+	 * @param controller The controller of the compiling program.
 	 */
-	public SyntaxTree(String filenames[], String sources[], long flags)
+	public SyntaxTree(String filenames[], String sources[], Fathom controller)
 	{
-		init(filenames, sources, flags);
+		init(filenames, sources, controller);
 	}
 	
 	/**
@@ -123,15 +123,15 @@ public class SyntaxTree
 	 * 
 	 * @param filenames The names of the files containing the source.
 	 * @param sources The source codes inside the files.
-	 * @param flags The compiler's flags.
+	 * @param controller The controller of the compiling program.
 	 */
-	private void init(String filenames[], String sources[], long flags)
+	private void init(String filenames[], String sources[], Fathom controller)
 	{
-		this.flags = flags;
+		this.controller = controller;
 		
-		root = new ProgramNode();
+		root = new ProgramNode(controller);
 		
-		Fathom.log(flags, "Generating syntax tree...");
+		controller.log("Generating syntax tree...");
 		
 		for (int i = 0; i < sources.length; i++)
 		{
@@ -140,15 +140,18 @@ public class SyntaxTree
 		
 		for (int i = 0; i < filenames.length; i++)
 		{
-			firstPass(filenames[i], sources[i]);
+			phase1(filenames[i], sources[i]);
+		}
+		
+		root.validateClasses();
+		
+		for (int i = 0; i < filenames.length; i++)
+		{
+			phase2(filenames[i], sources[i]);
 		}
 		for (int i = 0; i < filenames.length; i++)
 		{
-			secondPass(filenames[i], sources[i]);
-		}
-		for (int i = 0; i < filenames.length; i++)
-		{
-			thirdPass(filenames[i], sources[i]);
+			phase3(filenames[i], sources[i]);
 		}
 	}
 	
@@ -174,11 +177,11 @@ public class SyntaxTree
 		lineNumber             = 1;
 	}
 	
-	private void firstPass(String filename, String source)
+	private void phase1(String filename, String source)
 	{
 		filename = FileUtils.removeFileExtension(filename);
 		
-		Fathom.log(flags, "First pass for '" + filename + "'...");
+		controller.log("First pass for '" + filename + "'...");
 		
 		FileNode fileNode = new FileNode();
 		fileNode.setName(filename);
@@ -188,11 +191,11 @@ public class SyntaxTree
 		traverseCode(fileNode, source, 0, EITHER_STATEMENT_END_CHARS, FIRST_PASS_CLASSES, true);
 	}
 	
-	private void secondPass(String filename, String source)
+	private void phase2(String filename, String source)
 	{
 		filename = FileUtils.removeFileExtension(filename);
 
-		Fathom.log(flags, "Second pass for '" + filename + "'...");
+		controller.log("Second pass for '" + filename + "'...");
 		
 		FileNode fileNode = root.getFile(filename);
 		
@@ -204,7 +207,7 @@ public class SyntaxTree
 			{
 				ClassNode node    = (ClassNode)child;
 				
-				int startingIndex = StringUtils.findNextNonWhitespaceIndex(source, node.getLocationIn().getBounds().getEnd());
+				int startingIndex = StringUtils.findNextNonWhitespaceIndex(source, node.getLocationIn().getEnd());
 				int endingIndex   = StringUtils.findEndingMatch(source, startingIndex, '{', '}');
 				
 				int contentStart  = StringUtils.findNextNonWhitespaceIndex(source, startingIndex + 1);
@@ -217,11 +220,11 @@ public class SyntaxTree
 		}
 	}
 	
-	private void thirdPass(String filename, String source)
+	private void phase3(String filename, String source)
 	{
 		filename = FileUtils.removeFileExtension(filename);
 
-		Fathom.log(flags, "Third pass for '" + filename + "'...");
+		controller.log("Third pass for '" + filename + "'...");
 		
 		FileNode fileNode = root.getFile(filename);
 		
@@ -253,7 +256,7 @@ public class SyntaxTree
 		{
 			MethodNode node   = (MethodNode)child;
 			
-			int startingIndex = StringUtils.findNextNonWhitespaceIndex(source, node.getLocationIn().getBounds().getEnd());
+			int startingIndex = StringUtils.findNextNonWhitespaceIndex(source, node.getLocationIn().getEnd());
 			int endingIndex   = StringUtils.findEndingMatch(source, startingIndex, '{', '}');
 			
 			int contentStart  = StringUtils.findNextNonWhitespaceIndex(source, startingIndex + 1);
@@ -287,6 +290,11 @@ public class SyntaxTree
 	private void traverseCode(TreeNode parent, String source, int offset, char statementType[], Class<?> searchTypes[], boolean skipScopes)
 	{
 		init(source);
+		
+		if (parent.getLocationIn() != null)
+		{
+			lineNumber = parent.getLineNumber();
+		}
 		
 		parentStack = new Stack<TreeNode>();
 		
@@ -529,7 +537,7 @@ public class SyntaxTree
 	 */
 	public void generateCHeaderOutput()
 	{
-		root.generateCHeaderOutput();
+		root.generateCHeader();
 	}
 	
 	/**
@@ -538,7 +546,7 @@ public class SyntaxTree
 	 */
 	public void generateCSourceOutput()
 	{
-		root.generateCSourceOutput();
+		root.generateCSource();
 	}
 	
 	/**
@@ -736,11 +744,12 @@ public class SyntaxTree
 				newStatementStartIndex = statementStartMatcher.start();
 			}
 				
-			int      offset2   = statementStartIndex;//calculateOffset(statementStartIndex, source);
+			int        offset2 = statementStartIndex;
+			int     lineOffset = calculateOffset(statementStartIndex, source);
 			
 			String   statement = source.substring(statementStartIndex, statementEndIndex);
 			
-			Location location  = new Location(lineNumber, offset2 + offset, offset2 + statement.length() + offset);
+			Location location  = new Location(lineNumber, lineOffset, offset2 + offset, offset2 + statement.length() + offset);
 			
 			TreeNode node      = decodeStatement(statement, location, searchTypes);
 			
@@ -798,7 +807,7 @@ public class SyntaxTree
 		{
 			TreeNode child = root.getChild(i);
 			
-			headers[i] = child.generateCHeaderOutput();
+			headers[i] = child.generateCHeader();
 		}
 		
 		return headers;
@@ -818,7 +827,7 @@ public class SyntaxTree
 		{
 			TreeNode child = root.getChild(i);
 			
-			sources[i] = child.generateCSourceOutput();
+			sources[i] = child.generateCSource();
 		}
 		
 		return sources;
