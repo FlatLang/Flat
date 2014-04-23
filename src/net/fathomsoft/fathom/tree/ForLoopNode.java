@@ -35,8 +35,6 @@ import net.fathomsoft.fathom.util.Regex;
  */
 public class ForLoopNode extends LoopNode
 {
-	private LocalVariableNode declarationNode;
-	
 	/**
 	 * Instantiate a new ForLoopNode and initialize its default values.
 	 */
@@ -44,7 +42,7 @@ public class ForLoopNode extends LoopNode
 	{
 		ArgumentListNode argumentsNode = new ArgumentListNode();
 		
-		getChildren().add(argumentsNode);
+		addChild(1, argumentsNode);
 	}
 	
 	/**
@@ -99,28 +97,28 @@ public class ForLoopNode extends LoopNode
 	}
 	
 	/**
-	 * @see net.fathomsoft.fathom.tree.TreeNode#generateJavaSourceOutput()
+	 * @see net.fathomsoft.fathom.tree.TreeNode#generateJavaSource()
 	 */
 	@Override
-	public String generateJavaSourceOutput()
+	public String generateJavaSource()
 	{
 		return null;
 	}
 
 	/**
-	 * @see net.fathomsoft.fathom.tree.TreeNode#generateCHeaderOutput()
+	 * @see net.fathomsoft.fathom.tree.TreeNode#generateCHeader()
 	 */
 	@Override
-	public String generateCHeaderOutput()
+	public String generateCHeader()
 	{
 		return null;
 	}
 
 	/**
-	 * @see net.fathomsoft.fathom.tree.TreeNode#generateCSourceOutput()
+	 * @see net.fathomsoft.fathom.tree.TreeNode#generateCSource()
 	 */
 	@Override
-	public String generateCSourceOutput()
+	public String generateCSource()
 	{
 		StringBuilder  builder = new StringBuilder();
 		
@@ -164,7 +162,7 @@ public class ForLoopNode extends LoopNode
 			
 			if (child != getArgumentListNode())
 			{
-				builder.append(child.generateCSourceOutput());
+				builder.append(child.generateCSource());
 			}
 		}
 		
@@ -212,7 +210,7 @@ public class ForLoopNode extends LoopNode
 			{
 				Location newLoc    = new Location();
 				newLoc.setLineNumber(location.getLineNumber());
-				newLoc.setBounds(location.getOffset() + bounds.getStart(), location.getOffset() + bounds.getEnd());
+				newLoc.setBounds(location.getStart() + bounds.getStart(), location.getStart() + bounds.getEnd());
 				
 				String contents    = statement.substring(bounds.getStart(), bounds.getEnd());
 				
@@ -224,7 +222,7 @@ public class ForLoopNode extends LoopNode
 				if (initialization.getVariableNode() instanceof LocalVariableNode)
 				{
 					LocalVariableNode var = (LocalVariableNode)initialization.getVariableNode().clone();
-//					n.declarationNode = var;
+					
 					parent.addToNearestScope(var);
 				}
 				
@@ -244,16 +242,11 @@ public class ForLoopNode extends LoopNode
 					n.getArgumentListNode().addChild(update);
 				}
 				
-				if (n.declarationNode != null)
-				{
-					n.declarationNode.detach();
-				}
-				
 				return n;
 			}
 			else
 			{
-				SyntaxMessage.error("For loop missing arguments", location);
+				SyntaxMessage.error("For loop missing arguments", location, parent.getController());
 			}
 		}
 		
