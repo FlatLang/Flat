@@ -21,6 +21,8 @@ import java.util.ArrayList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import net.fathomsoft.fathom.Fathom;
+import net.fathomsoft.fathom.error.SyntaxMessage;
 import net.fathomsoft.fathom.tree.exceptionhandling.CatchNode;
 import net.fathomsoft.fathom.tree.exceptionhandling.ExceptionHandlingNode;
 import net.fathomsoft.fathom.tree.exceptionhandling.ExceptionNode;
@@ -48,7 +50,7 @@ import net.fathomsoft.fathom.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:00:11 PM
- * @version	v0.2 Apr 8, 2014 at 6:36:14 PM
+ * @version	v0.2 Apr 22, 2014 at 5:36:14 AM
  */
 public abstract class TreeNode
 {
@@ -86,6 +88,30 @@ public abstract class TreeNode
 	public TreeNode()
 	{
 		children = new ArrayList<TreeNode>();
+	}
+	
+	/**
+	 * Get the line number in which the TreeNode was decoded at.
+	 * 
+	 * @return The line number in which the TreeNode was decoded at.
+	 */
+	public int getLineNumber()
+	{
+		int lineNumber = 0;
+		
+		if (parent instanceof FileNode == false)
+		{
+			lineNumber += parent.getLineNumber();
+		}
+		
+		Location loc = getLocationIn();
+		
+		if (loc != null)
+		{
+			lineNumber += loc.getLineNumber();
+		}
+		
+		return lineNumber - 1;
 	}
 	
 	/**
@@ -415,6 +441,8 @@ public abstract class TreeNode
 		}
 
 		parent.getChildren().remove(this);
+		
+		parent = null;
 	}
 	
 	/**
@@ -533,7 +561,10 @@ public abstract class TreeNode
 	 * 
 	 * @return The Java syntax representation of the TreeNode.
 	 */
-	public abstract String generateJavaSourceOutput();
+	public String generateJavaSource()
+	{
+		return null;
+	}
 	
 	/**
 	 * Method that each Node overrides. Returns a String that translates
@@ -542,7 +573,10 @@ public abstract class TreeNode
 	 * 
 	 * @return The C header file syntax representation of the TreeNode.
 	 */
-	public abstract String generateCHeaderOutput();
+	public String generateCHeader()
+	{
+		return null;
+	}
 	
 	/**
 	 * Method that each Node overrides. Returns a String that translates
@@ -551,7 +585,10 @@ public abstract class TreeNode
 	 * 
 	 * @return The C source syntax representation of the TreeNode.
 	 */
-	public abstract String generateCSourceOutput();
+	public String generateCSource()
+	{
+		return null;
+	}
 	
 	/**
 	 * Method that each Node overrides. Returns a String that translates
@@ -560,7 +597,10 @@ public abstract class TreeNode
 	 * 
 	 * @return The C source syntax representation of the TreeNode.
 	 */
-	public abstract String generateCSourceFragment();
+	public String generateCSourceFragment()
+	{
+		return null;
+	}
 	
 	/**
 	 * Method that each Node can override. Returns a String that
@@ -598,6 +638,20 @@ public abstract class TreeNode
 		return getParentTry() != null;
 	}
 	
+	/**
+	 * Decode the specific statement into its correct TreeNode value. If
+	 * the statement does not translate into a TreeNode, a syntax error
+	 * has occurred. 
+	 * 
+	 * @param parent The Parent TreeNode of the current statement to be
+	 * 		decoded.
+	 * @param statement The statement to be decoded into a TreeNode.
+	 * @param location The Location in the source text where the statement
+	 * 		is located at.
+	 * @param types The types of TreeNodes to try to decode, in the given
+	 * 		order.
+	 * @return The TreeNode constructed from the statement, if any.
+	 */
 	public static TreeNode decodeStatement(TreeNode parent, String statement, Location location, Class<?> types[])
 	{
 		TreeNode node = null;
@@ -660,6 +714,8 @@ public abstract class TreeNode
 			}
 		}
 		
+//		SyntaxMessage.error("Unknown statement", location, parent.getController());
+		
 		return null;
 	}
 	
@@ -673,12 +729,10 @@ public abstract class TreeNode
 	 * @param statement The statement to be decoded into a TreeNode.
 	 * @param location The Location in the source text where the statement
 	 * 		is located at.
-	 * @return The TreeNode constructed from the statement.
+	 * @return The TreeNode constructed from the statement, if any.
 	 */
 	public static TreeNode decodeStatement(TreeNode parent, String statement, Location location)
 	{
-		TreeNode node = null;
-		
 		if (parent instanceof FileNode)
 		{
 			return decodeStatement(parent, statement, location, FILE_CHILD_DECODE);
@@ -687,7 +741,7 @@ public abstract class TreeNode
 		{
 			return decodeStatement(parent, statement, location, CLASS_CHILD_DECODE);
 		}
-		else if (parent instanceof MethodNode || parent instanceof IfStatementNode || parent instanceof ElseStatementNode || parent instanceof LoopNode || parent instanceof ExceptionHandlingNode)
+		else if (parent instanceof MethodNode || parent instanceof IfStatementNode || parent instanceof ElseStatementNode || parent instanceof LoopNode || parent instanceof ExceptionHandlingNode || parent instanceof ScopeNode)
 		{
 			return decodeStatement(parent, statement, location, SCOPE_CHILD_DECODE);
 		}
@@ -722,7 +776,7 @@ public abstract class TreeNode
 	 * @param statement The statement to check for an existing node from.
 	 * @return The IdentifierNode that is found, if any.
 	 */
-	public static IdentifierNode getExistingNode(TreeNode node, String statement)
+	public static VariableNode getExistingNode(TreeNode node, String statement)
 	{
 		if (SyntaxUtils.isLiteral(statement))
 		{
@@ -769,7 +823,7 @@ public abstract class TreeNode
 				ClassNode clazz = (ClassNode)node.getAncestorOfType(ClassNode.class, true);
 				
 				VariableNode var = new VariableNode();
-				var.setName(MethodNode.getObjectReferenceIdentifier());
+				var.setName(MethodNode.getObjectReferenceIdentifier(), true);
 				var.setType(clazz.getName());
 				
 				return var;
@@ -881,6 +935,17 @@ public abstract class TreeNode
 	}
 	
 	/**
+	 * Get the compiler's controller. The controller is used for
+	 * logging, error output, and other compiler options.
+	 * 
+	 * @return The compiler's controller instance.
+	 */
+	public Fathom getController()
+	{
+		return getProgramNode().getController();
+	}
+	
+	/**
 	 * Return a new TreeNode containing a copy of the values of the
 	 * specified node, including clones of the children.
 	 */
@@ -895,6 +960,18 @@ public abstract class TreeNode
 	 */
 	public TreeNode clone(TreeNode node)
 	{
+		if (locationIn != null)
+		{
+			Location locIn  = new Location(locationIn);
+			node.setLocationIn(locIn);
+		}
+		
+		if (locationOut != null)
+		{
+			Location locOut = new Location(locationOut);
+			node.setLocationOut(locOut);
+		}
+		
 		for (int i = 0; i < children.size(); i++)
 		{
 			TreeNode child = children.get(i);
