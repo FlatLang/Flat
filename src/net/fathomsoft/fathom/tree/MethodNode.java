@@ -373,7 +373,7 @@ public class MethodNode extends DeclarationNode
 	{
 		ClassNode clazz = (ClassNode)getAncestorOfType(ClassNode.class);
 		
-		return Fathom.LANGUAGE_NAME.toLowerCase() + "_" + clazz.generateMethodPrefixOutput() + "_" + getName();
+		return Fathom.LANGUAGE_NAME.toLowerCase() + "_" + clazz.generateMethodPrefix() + "_" + getName();
 	}
 	
 	/**
