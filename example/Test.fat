@@ -4,22 +4,22 @@ import "ArrayList";
 import "Math";
 import "Time";
 import "Person";
+import "List";
 
-public class Test
+public class Test extends Object
 {
 	public static void main(String args[])
 	{
-		IO.println("Hello, world");
-		IO.println("Command line arg #1 is:");
-		IO.println(args[0]);
+		List list = new List();
 		
-		Person p = new Person("Joe", 19);
+		ListNode current = list.getFirst();
 		
-		IO.print(p.getName());
-		IO.print(" is ");
-		
-		IO.printi(p.getAge());
-		IO.println("");
+		while (current != 0)
+		{
+			current.getData();
+			
+			current = current.getNext();
+		}
 		
 		long start = Time.currentTimeMillis();
 		
@@ -39,39 +39,6 @@ public class Test
 		
 		IO.printl(end - start);
 		
-		int i;
-		
-		try
-		{
-			int den = 1;
-			
-			int num = 23 / den;
-			
-			try
-			{
-				int even = IO.getInt();
-				
-				getEvenNumber(even);
-			}
-			finally
-			{
-				IO.println("In finally.");
-			}
-		}
-		catch (NotEvenNumberException e)
-		{
-			IO.println("Caught even num exception");
-		}
-		catch (DivideByZeroException e)
-		{
-			IO.println("You cant divide by zero idiot.");
-		}
-		catch (Exception e)
-		{
-			IO.println("Default exception caught.");
-		}
-		
-		IO.print("Done!");
 		IO.waitForEnter();
 	}
 	
