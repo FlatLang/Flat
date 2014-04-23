@@ -19,6 +19,7 @@ package net.fathomsoft.fathom.tree;
 
 import net.fathomsoft.fathom.Fathom;
 import net.fathomsoft.fathom.error.SyntaxMessage;
+import net.fathomsoft.fathom.tree.exceptionhandling.ExceptionNode;
 import net.fathomsoft.fathom.tree.variables.VariableNode;
 import net.fathomsoft.fathom.util.Bounds;
 import net.fathomsoft.fathom.util.Location;
@@ -128,19 +129,19 @@ public class MethodCallNode extends IdentifierNode
 	 * @return The MethodNode instance that this MethodCallNode is
 	 * 		calling.
 	 */
-	public MethodNode getMethodNode(TreeNode p)
+	public MethodNode getMethodNode()
 	{
 		if (isExternal())
 		{
 			return null;
 		}
 		
-		VariableNode var    = getVariableNode();
-		ProgramNode  pNode  = p.getProgramNode();
+		VariableNode var   = getVariableNode();
+		ProgramNode  pNode = getProgramNode();
 		
-		ClassNode    clazz  = pNode.getClass(var.getType());
+		ClassNode    clazz = pNode.getClass(var.getType());
 		
-		FileNode     fNode  = (FileNode)clazz.getAncestorOfType(FileNode.class);
+		FileNode     fNode = (FileNode)getAncestorOfType(FileNode.class);
 		
 		if (fNode.getImportListNode().containsImport(getName()))
 		{
@@ -151,22 +152,22 @@ public class MethodCallNode extends IdentifierNode
 			return method;
 		}
 		
-		MethodNode   method = clazz.getMethod(getName());
+		MethodNode method = clazz.getMethod(getName());
 		
 		return method;
 	}
 	
 	/**
-	 * @see net.fathomsoft.fathom.tree.TreeNode#generateJavaSourceOutput()
+	 * @see net.fathomsoft.fathom.tree.TreeNode#generateJavaSource()
 	 */
 	@Override
-	public String generateJavaSourceOutput()
+	public String generateJavaSource()
 	{
 		StringBuilder builder = new StringBuilder();
 		
 		builder.append(getName()).append('(');
 		
-		builder.append(getArgumentListNode().generateJavaSourceOutput());
+		builder.append(getArgumentListNode().generateJavaSource());
 		
 		builder.append(");").append('\n');
 		
@@ -174,19 +175,19 @@ public class MethodCallNode extends IdentifierNode
 	}
 
 	/**
-	 * @see net.fathomsoft.fathom.tree.TreeNode#generateCHeaderOutput()
+	 * @see net.fathomsoft.fathom.tree.TreeNode#generateCHeader()
 	 */
 	@Override
-	public String generateCHeaderOutput()
+	public String generateCHeader()
 	{
 		return null;
 	}
 	
 	/**
-	 * @see net.fathomsoft.fathom.tree.TreeNode#generateCSourceOutput()
+	 * @see net.fathomsoft.fathom.tree.TreeNode#generateCSource()
 	 */
 	@Override
-	public String generateCSourceOutput()
+	public String generateCSource()
 	{
 		StringBuilder builder = new StringBuilder();
 		
@@ -203,24 +204,35 @@ public class MethodCallNode extends IdentifierNode
 	{
 		StringBuilder builder = new StringBuilder();
 		
-		if (hasVariableNode())
-		{
-			builder.append(getVariableNode().generateCSourceFragment());
-			
-			if (builder.length() > 0)
-			{
-				builder.append("->");
-			}
-		}
+//		if (hasVariableNode())
+//		{
+//			builder.append(getVariableNode().generateCSourceFragment());
+//			
+//			if (builder.length() > 0)
+//			{
+//				builder.append("->");
+//			}
+//		}
 		
 //		if (!isExternal())
 //		{
 //			builder.append("__").append(Fathom.LANGUAGE_NAME.toUpperCase()).append("__");
 //		}
 		
-		builder.append(getName()).append('(');
+		MethodNode method = getMethodNode();
 		
-		builder.append(getArgumentListNode().generateCSourceOutput());
+		if (method != null)
+		{
+			builder.append(method.generateCSourceNameOutput());
+		}
+		else
+		{
+			builder.append(getName());
+		}
+		
+		builder.append('(');
+		
+		builder.append(getArgumentListNode().generateCSource());
 		
 		builder.append(')');
 		
@@ -302,7 +314,7 @@ public class MethodCallNode extends IdentifierNode
 			// subtract the ending ones from the number.
 			if (bounds.getEnd() < 0)
 			{
-				SyntaxMessage.error("Expected a ')' ending parenthesis", location);
+				SyntaxMessage.error("Expected a ')' ending parenthesis", location, parent.getController());
 				
 				return null;
 			}
@@ -311,7 +323,7 @@ public class MethodCallNode extends IdentifierNode
 			
 			Location argsLocation = new Location();
 			argsLocation.setLineNumber(location.getLineNumber());
-			argsLocation.setBounds(location.getOffset() + bounds.getStart(), location.getOffset() + bounds.getEnd());
+			argsLocation.setBounds(location.getStart() + bounds.getStart(), location.getStart() + bounds.getEnd());
 			
 			String  methodCall   = statement.substring(0, nameEnd);
 			
@@ -364,14 +376,12 @@ public class MethodCallNode extends IdentifierNode
 			{
 				boolean staticCall = false;
 				
-				argumentList = "__" + Fathom.LANGUAGE_NAME.toUpperCase() + "__exception_data, " + argumentList;
-				
 				if (objectInstance.length() > 0)
 				{
 					// If only referenced through one variable.
 					if (objectInstance.indexOf("->") < 0)
 					{
-						String varName     = objectInstance.toString();
+						String     varName = objectInstance.toString();
 						
 						IdentifierNode var = TreeNode.getExistingNode(parent, varName);
 						
@@ -383,18 +393,12 @@ public class MethodCallNode extends IdentifierNode
 								
 								staticCall = true;
 							}
-							else
-							{
-//								objectInstance.delete(0, objectInstance.length());
-							}
 						}
 					}
 					
-					argumentList = objectInstance + ", " + argumentList;
-					
 					if (!staticCall)
 					{
-						String caller = objectInstance.toString();
+						String       caller       = objectInstance.toString();
 						
 						VariableNode variableNode = (VariableNode)TreeNode.getExistingNode(parent, caller);
 						
@@ -411,44 +415,19 @@ public class MethodCallNode extends IdentifierNode
 						{
 							if (variableNode instanceof VariableNode == false)
 							{
-								SyntaxMessage.error("The method must be referenced from a variable type", location);
+								SyntaxMessage.error("The method must be referenced from a variable type", location, parent.getController());
 								
 								return null;
 							}
-							
-//							int endI = caller.indexOf("->");
-//							
-//							if (endI < 0)
-//							{
-//								// Make up for the offset of the '->' (which is 2 characters long)
-//								endI = 0 - 2;
-//							}
-//							
-//							String ending = caller.substring(endI + 2);
-//							
-//							ClassNode curClass = (ClassNode)parent.getAncestorOfType(ClassNode.class, true);
-//							
-//							ClassNode clazz = SyntaxUtils.getClassType(curClass, objectInstance.toString().replace("->", "."));
-//							
-//							DeclarationNode node = clazz.getDeclaration(ending);
-//							
-//							variableNode.setType(node.getType());
 							
 							n.addChild(variableNode);
 						}
 						else
 						{
-							SyntaxMessage.error("Undefined variable '" + caller + "'", argsLocation);
+							SyntaxMessage.error("Undefined variable '" + caller + "'", argsLocation, parent.getController());
 							
 							return null;
 						}
-					}
-				}
-				else
-				{
-					if (needsReference)
-					{
-						argumentList = MethodNode.getObjectReferenceIdentifier() + ", " + argumentList;
 					}
 				}
 				
@@ -462,20 +441,24 @@ public class MethodCallNode extends IdentifierNode
 					}
 					else
 					{
-						ClassNode curClass = (ClassNode)parent.getAncestorOfType(ClassNode.class, true);
+						ProgramNode    p = parent.getProgramNode();
 						
-						clazz = SyntaxUtils.getClassType(curClass, objectInstance.toString().replace("->", "."));
+						String    prefix = "__static__";
+						
+						String className = objectInstance.substring(prefix.length());
+						
+						clazz = p.getClass(className);
 					}
 					
 					VariableNode variableNode = new VariableNode();
-					variableNode.setName(objectInstance.toString());
+					variableNode.setName(objectInstance.toString(), true);
 					variableNode.setType(clazz.getName());
 					
 					n.addChild(variableNode);
 				}
 			}
 			
-			String arguments[] = Regex.splitCommas(argumentList);
+			String arguments[] = StringUtils.splitCommas(argumentList);
 			
 			n.addArguments(parent, arguments, argsLocation);
 			
@@ -501,13 +484,14 @@ public class MethodCallNode extends IdentifierNode
 			
 			if (argument.length() > 0)
 			{
-//				if (argument.indexOf('(') >= 0)
-//				{
-//					if (argument.indexOf('(') == 0)
-//					{
-//						argument = argument.substring(1, argument.length() - 1);
-//					}
-//				}
+				char prefix = '\0';
+				
+				if (argument.startsWith("*") || argument.startsWith("&"))
+				{
+					prefix   = argument.substring(0, 1).charAt(0);
+					
+					argument = StringUtils.trimSurroundingWhitespace(argument.substring(1));
+				}
 				
 				TreeNode arg = TreeNode.getExistingNode(parent, argument);
 				
@@ -515,18 +499,21 @@ public class MethodCallNode extends IdentifierNode
 				{
 					if (arg instanceof VariableNode)
 					{
-						VariableNode n = (VariableNode)arg;
+						VariableNode var = (VariableNode)arg.clone();
 						
-//						VariableNode var = new VariableNode();
-//						var.setArray(n.isArray());
-//						var.setConst(n.isConst());
-//						var.setName(n.getName());
-//						var.setType(n.getType());
+						if (prefix != '\0')
+						{
+							if (prefix == '*')
+							{
+								var.setPointer(true);
+							}
+							else if (prefix == '&')
+							{
+								var.setReference(true);
+							}
+						}
 						
-//						LiteralNode var = new LiteralNode();
-//						var.setValue(n.getName(), isWithinExternalContext());
-						
-						arg = n.clone();
+						arg = var;
 					}
 				}
 				
@@ -551,11 +538,18 @@ public class MethodCallNode extends IdentifierNode
 						argument = "__static__" + argument;
 					}
 				}
-				if (arg == null)
+				if (arg == null)// || prefix != '\0')
 				{
 					LiteralNode literal = new LiteralNode();
 					
-					literal.setValue(argument, isWithinExternalContext());
+//					if (prefix != '\0')
+//					{
+//						literal.setValue(prefix + arg.generateCSourceFragment(), isWithinExternalContext());
+//					}
+//					else
+//					{
+						literal.setValue(argument, isWithinExternalContext());
+//					}
 					
 					arg = literal;
 				}
