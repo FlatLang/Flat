@@ -24,9 +24,15 @@
 		\
 	}
 
-#define NEW(_CLASS_, _OBJ_)\
+#define GET_MACRO3P(_1_, _2_, _3_, NAME, ...) NAME
+
+#define NEW(...) GET_MACRO3P(__VA_ARGS__, NEW4, NEW3)(__VA_ARGS__)
+
+#define NEW3(_CLASS_, _OBJ_) NEW4(_CLASS_, _OBJ_, _OBJ_->prv = new_Private())
+
+#define NEW4(_CLASS_, _OBJ_, _PRIVATE_)\
 	_CLASS_* _OBJ_ = NEW2(_CLASS_);\
-	_OBJ_->prv = new_Private()
+	_PRIVATE_
 
 #define NEW2(_CLASS_) (_CLASS_*)malloc(sizeof(_CLASS_))
 
@@ -40,10 +46,10 @@
 
 #define FUNC(_TYPE_, _NAME_, ...) _TYPE_ (*_NAME_)(__VA_ARGS__)
 
-#define CLASS(_NAME_, _BODY_) CLASS2(_NAME_, _BODY_,);
+#define CLASS(_NAME_, _BODY_, _PRIVATE_) CLASS2(_NAME_, _BODY_, _PRIVATE_);
 
-#define CLASS2(_NAME_, _BODY_, _METHOD_PREFIX_)\
-	CLASS_DEF(_NAME_, _BODY_)\
+#define CLASS2(_NAME_, _BODY_, _PRIVATE_)\
+	CLASS_DEF(_NAME_, _BODY_, _PRIVATE_)\
 	//DECLARE_METHODS(_NAME_, _METHOD_PREFIX_)
 
 #define CLASS3(_NAME_, _BODY_, _METHOD_PREFIX_)\
@@ -60,12 +66,12 @@
 	CLASS_EXT_DEF(_NAME_, _EXTENDS_, _BODY_)\
 	//DECLARE_METHODS(_NAME_, _METHOD_PREFIX_)
 
-#define CLASS_DEF(_NAME_, _BODY_)\
+#define CLASS_DEF(_NAME_, _BODY_, _PRIVATE_)\
 	/*typedef struct _NAME_ _NAME_;*/\
 	struct _NAME_\
 	{\
 		_BODY_\
-		struct Private* prv;\
+		_PRIVATE_\
 	};
 
 #define CLASS_EXT_DEF(_NAME_, _EXTENDS_, _BODY_)\
