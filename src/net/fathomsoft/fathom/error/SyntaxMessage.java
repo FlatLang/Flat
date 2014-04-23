@@ -17,6 +17,7 @@
  */
 package net.fathomsoft.fathom.error;
 
+import net.fathomsoft.fathom.Fathom;
 import net.fathomsoft.fathom.tree.TreeNode;
 import net.fathomsoft.fathom.util.Location;
 
@@ -35,10 +36,11 @@ public class SyntaxMessage
 	 * Output an error message from the compiler.
 	 * 
 	 * @param message The message describing the error.
+	 * @param controller The controller of the compiling program.
 	 */
-	public static void error(String message)
+	public static void error(String message, Fathom controller)
 	{
-		Message error = new Message(message);
+		Message error = new Message(message, controller);
 		
 		error.outputMessage(Message.ERROR);
 	}
@@ -47,10 +49,11 @@ public class SyntaxMessage
 	 * Output a warning message from the compiler.
 	 * 
 	 * @param message The message describing the warning.
+	 * @param controller The controller of the compiling program.
 	 */
-	public static void warning(String message)
+	public static void warning(String message, Fathom controller)
 	{
-		Message error = new Message(message);
+		Message error = new Message(message, controller);
 		
 		error.outputMessage(Message.WARNING);
 	}
@@ -63,7 +66,7 @@ public class SyntaxMessage
 	 */
 	public static void error(String message, TreeNode node)
 	{
-		error(message, node.getLocationIn());
+		error(message, node.getLocationIn(), node.getController());
 	}
 	
 	/**
@@ -71,10 +74,11 @@ public class SyntaxMessage
 	 * 
 	 * @param message The message describing the error.
 	 * @param location The location that the error occurred at.
+	 * @param controller The controller of the compiling program.
 	 */
-	public static void error(String message, Location location)
+	public static void error(String message, Location location, Fathom controller)
 	{
-		Message error = new Message(message, location);
+		Message error = new Message(message, location, controller);
 		
 		error.outputMessage(Message.ERROR);
 	}
@@ -87,7 +91,7 @@ public class SyntaxMessage
 	 */
 	public static void warning(String message, TreeNode node)
 	{
-		warning(message, node.getLocationIn());
+		warning(message, node.getLocationIn(), node.getController());
 	}
 	
 	/**
@@ -95,10 +99,11 @@ public class SyntaxMessage
 	 * 
 	 * @param message The message describing the warning.
 	 * @param location The location that the warning occurred at.
+	 * @param controller The controller of the compiling program.
 	 */
-	public static void warning(String message, Location location)
+	public static void warning(String message, Location location, Fathom controller)
 	{
-		Message warning = new Message(message, location);
+		Message warning = new Message(message, location, controller);
 		
 		warning.outputMessage(Message.WARNING);
 	}
