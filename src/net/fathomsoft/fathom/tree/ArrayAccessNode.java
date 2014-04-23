@@ -31,28 +31,28 @@ public class ArrayAccessNode extends TreeNode
 	}
 	
 	/**
-	 * @see net.fathomsoft.fathom.tree.TreeNode#generateJavaSourceOutput()
+	 * @see net.fathomsoft.fathom.tree.TreeNode#generateJavaSource()
 	 */
 	@Override
-	public String generateJavaSourceOutput()
+	public String generateJavaSource()
 	{
 		return null;
 	}
 	
 	/**
-	 * @see net.fathomsoft.fathom.tree.TreeNode#generateCHeaderOutput()
+	 * @see net.fathomsoft.fathom.tree.TreeNode#generateCHeader()
 	 */
 	@Override
-	public String generateCHeaderOutput()
+	public String generateCHeader()
 	{
 		return null;
 	}
 	
 	/**
-	 * @see net.fathomsoft.fathom.tree.TreeNode#generateCSourceOutput()
+	 * @see net.fathomsoft.fathom.tree.TreeNode#generateCSource()
 	 */
 	@Override
-	public String generateCSourceOutput()
+	public String generateCSource()
 	{
 		StringBuilder builder = new StringBuilder();
 		
@@ -115,7 +115,7 @@ public class ArrayAccessNode extends TreeNode
 			
 			if (var == null)
 			{
-				SyntaxMessage.error("Undeclared variable '" + identifier + "'", location);
+				SyntaxMessage.error("Undeclared variable '" + identifier + "'", location, parent.getController());
 			}
 			
 			var = var.clone();
@@ -154,7 +154,7 @@ public class ArrayAccessNode extends TreeNode
 						
 						if (created == null)
 						{
-							SyntaxMessage.error("Unknown array access index", newLoc);
+							SyntaxMessage.error("Unknown array access index", newLoc, parent.getController());
 						}
 						
 						node.addChild(created);
