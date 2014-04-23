@@ -51,7 +51,7 @@ public class ExceptionNode extends TreeNode
 	/**
 	 * Identifier for the exception data passed to a method.
 	 */
-	public static final String	EXCEPTION_DATA_IDENTIFIER = "__" + Fathom.LANGUAGE_NAME.toUpperCase() + "__exception_data";
+	public static final String	EXCEPTION_DATA_IDENTIFIER = "exceptionData";
 	
 	/**
 	 * Initialize static data.
@@ -99,28 +99,28 @@ public class ExceptionNode extends TreeNode
 	}
 	
 	/**
-	 * @see net.fathomsoft.fathom.tree.TreeNode#generateJavaSourceOutput()
+	 * @see net.fathomsoft.fathom.tree.TreeNode#generateJavaSource()
 	 */
 	@Override
-	public String generateJavaSourceOutput()
+	public String generateJavaSource()
 	{
 		return null;
 	}
 	
 	/**
-	 * @see net.fathomsoft.fathom.tree.TreeNode#generateCHeaderOutput()
+	 * @see net.fathomsoft.fathom.tree.TreeNode#generateCHeader()
 	 */
 	@Override
-	public String generateCHeaderOutput()
+	public String generateCHeader()
 	{
 		return null;
 	}
 	
 	/**
-	 * @see net.fathomsoft.fathom.tree.TreeNode#generateCSourceOutput()
+	 * @see net.fathomsoft.fathom.tree.TreeNode#generateCSource()
 	 */
 	@Override
-	public String generateCSourceOutput()
+	public String generateCSource()
 	{
 		return null;
 	}
