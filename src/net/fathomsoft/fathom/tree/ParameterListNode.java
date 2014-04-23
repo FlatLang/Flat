@@ -45,7 +45,7 @@ public class ParameterListNode extends TreeNode
 	 * static String getName(Person __o__);</pre></blockquote>
 	 * And "__o__" is the chosen OBJECT_REFERENCE_IDENTIFIER.
 	 */
-	public static final String OBJECT_REFERENCE_IDENTIFIER = "__o__";
+	public static final String OBJECT_REFERENCE_IDENTIFIER = "reference";
 	
 	/**
 	 * Instantiate and initialize default data. Generates the
@@ -54,7 +54,7 @@ public class ParameterListNode extends TreeNode
 	public ParameterListNode()
 	{
 		ParameterNode exceptionData = new ParameterNode();
-		exceptionData.setName(ExceptionNode.EXCEPTION_DATA_IDENTIFIER);
+		exceptionData.setName(ExceptionNode.EXCEPTION_DATA_IDENTIFIER, true);
 		exceptionData.setType("ExceptionData");
 		
 		addChild(exceptionData);
@@ -88,16 +88,16 @@ public class ParameterListNode extends TreeNode
 	}
 	
 	/**
-	 * @see net.fathomsoft.fathom.tree.TreeNode#generateJavaSourceOutput()
+	 * @see net.fathomsoft.fathom.tree.TreeNode#generateJavaSource()
 	 */
 	@Override
-	public String generateJavaSourceOutput()
+	public String generateJavaSource()
 	{
 		StringBuilder builder = new StringBuilder();
 		
 		for (int i = 0; i < getChildren().size(); i++)
 		{
-			builder.append(getChild(i).generateJavaSourceOutput());
+			builder.append(getChild(i).generateJavaSource());
 			
 			if (i < getChildren().size() - 1)
 			{
@@ -109,23 +109,23 @@ public class ParameterListNode extends TreeNode
 	}
 
 	/**
-	 * @see net.fathomsoft.fathom.tree.TreeNode#generateCHeaderOutput()
+	 * @see net.fathomsoft.fathom.tree.TreeNode#generateCHeader()
 	 */
 	@Override
-	public String generateCHeaderOutput()
+	public String generateCHeader()
 	{
-		return generateCSourceOutput();
+		return generateCSource();
 	}
 
 	/**
-	 * @see net.fathomsoft.fathom.tree.TreeNode#generateCSourceOutput()
+	 * @see net.fathomsoft.fathom.tree.TreeNode#generateCSource()
 	 */
 	@Override
-	public String generateCSourceOutput()
+	public String generateCSource()
 	{
 		StringBuilder builder = new StringBuilder();
 		
-		ClassNode classNode = (ClassNode)getAncestorOfType(ClassNode.class);
+		ClassNode   classNode = (ClassNode)getAncestorOfType(ClassNode.class);
 		
 		if (getParent() instanceof ConstructorNode == false)
 		{
@@ -139,7 +139,7 @@ public class ParameterListNode extends TreeNode
 			builder.append("* ").append(MethodNode.getObjectReferenceIdentifier());
 		}
 		
-		//builder.append("ExceptionData* __").append(Fathom.LANGUAGE_NAME.toUpperCase()).append("__exception_data");
+//		builder.append("ExceptionData* ").append(ExceptionNode.EXCEPTION_DATA_IDENTIFIER);
 		
 		for (int i = 0; i < getChildren().size(); i++)
 		{
@@ -150,7 +150,7 @@ public class ParameterListNode extends TreeNode
 				builder.append(", ");
 			}
 			
-			builder.append(child.generateCHeaderOutput());
+			builder.append(child.generateCHeader());
 		}
 		
 		return builder.toString();
