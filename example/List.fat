@@ -5,6 +5,11 @@ public class List
 	private ListNode	start;
 	private ListNode	current;
 	
+	public ListNode getFirst()
+	{
+		return start;
+	}
+	
 	public void add(Object data)
 	{
 		ListNode node = new ListNode(data);
