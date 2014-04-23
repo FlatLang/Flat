@@ -68,6 +68,12 @@ public class MethodNode extends DeclarationNode
 		return (ParameterListNode)getChild(0);
 	}
 	
+	/**
+	 * Get whether or not a call to the method would need to pass a
+	 * reference to itself to the method as an argument.
+	 * 
+	 * @return Whether or not a method call needs to pass a reference.
+	 */
 	public boolean needsReference()
 	{
 		return this instanceof ConstructorNode == false;
@@ -259,15 +265,6 @@ public class MethodNode extends DeclarationNode
 	}
 	
 	/**
-	 * @see net.fathomsoft.fathom.tree.TreeNode#generateCSourceFragment()
-	 */
-	@Override
-	public String generateCSourceFragment()
-	{
-		return null;
-	}
-	
-	/**
 	 * Generate the C prototype for the method header.<br>
 	 * <br>
 	 * For example:
@@ -350,7 +347,7 @@ public class MethodNode extends DeclarationNode
 	 */
 	public String generateMethodName()
 	{
-		return generateCSourceNameOutput();
+		return generateCSourceName();
 	}
 	
 	/**
@@ -372,7 +369,7 @@ public class MethodNode extends DeclarationNode
 	 * 
 	 * @return The name of the method that is output to the C source file.
 	 */
-	public String generateCSourceNameOutput()
+	public String generateCSourceName()
 	{
 		ClassNode clazz = (ClassNode)getAncestorOfType(ClassNode.class);
 		
