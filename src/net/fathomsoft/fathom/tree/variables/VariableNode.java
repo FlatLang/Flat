@@ -17,8 +17,15 @@
  */
 package net.fathomsoft.fathom.tree.variables;
 
+import net.fathomsoft.fathom.Fathom;
+import net.fathomsoft.fathom.tree.ClassNode;
 import net.fathomsoft.fathom.tree.MethodNode;
 import net.fathomsoft.fathom.tree.ModifierNode;
+import net.fathomsoft.fathom.tree.ParameterListNode;
+import net.fathomsoft.fathom.tree.ParameterNode;
+import net.fathomsoft.fathom.tree.ScopeNode;
+import net.fathomsoft.fathom.tree.TreeNode;
+import net.fathomsoft.fathom.tree.exceptionhandling.ExceptionNode;
 import net.fathomsoft.fathom.util.SyntaxUtils;
 
 /**
@@ -32,7 +39,7 @@ import net.fathomsoft.fathom.util.SyntaxUtils;
  */
 public class VariableNode extends ModifierNode
 {
-	private boolean				constantVal, external;
+	private boolean				constantVal, external, forceOriginal;
 	
 	private int					arrayDimensions;
 	
@@ -197,6 +204,34 @@ public class VariableNode extends ModifierNode
 	}
 	
 	/**
+	 * Set the name of the Variable.
+	 * 
+	 * @see net.fathomsoft.fathom.tree.IdentifierNode#setName(java.lang.String)
+	 * 
+	 * @param name The String to set as the new name.
+	 */
+	public void setName(String name)
+	{
+		setName(name, false);
+	}
+	
+	/**
+	 * Set the name of the Variable. You specify whether or not you want
+	 * the output in the C language to be the original to the given name,
+	 * or if it will differentiate it. 
+	 * 
+	 * @param name The String to set as the new name.
+	 * @param forceOriginal Whether or not the name will be output in the
+	 * 		c code verbatim.
+	 */
+	public void setName(String name, boolean forceOriginal)
+	{
+		this.forceOriginal = forceOriginal;
+		
+		super.setName(name);
+	}
+	
+	/**
 	 * Get the type that the variable is. For an example of what a
 	 * variable type looks like, see {@link #setType(String)}
 	 * 
@@ -277,10 +312,10 @@ public class VariableNode extends ModifierNode
 	}
 	
 	/**
-	 * @see net.fathomsoft.fathom.tree.TreeNode#generateJavaSourceOutput()
+	 * @see net.fathomsoft.fathom.tree.TreeNode#generateJavaSource()
 	 */
 	@Override
-	public String generateJavaSourceOutput()
+	public String generateJavaSource()
 	{
 		StringBuilder builder = new StringBuilder();
 		
@@ -348,6 +383,11 @@ public class VariableNode extends ModifierNode
 	{
 		StringBuilder builder = new StringBuilder();
 		
+		if (isPointer())
+		{
+			builder.append('*');
+		}
+		
 		if (this instanceof FieldNode)
 		{
 			FieldNode field = (FieldNode)this;
@@ -372,25 +412,25 @@ public class VariableNode extends ModifierNode
 			}
 		}
 		
-		builder.append(getName());
+		builder.append(generateCSourceNameOutput());
 		
 		return builder.toString();
 	}
 	
 	/**
-	 * @see net.fathomsoft.fathom.tree.TreeNode#generateCHeaderOutput()
+	 * @see net.fathomsoft.fathom.tree.TreeNode#generateCHeader()
 	 */
 	@Override
-	public String generateCHeaderOutput()
+	public String generateCHeader()
 	{
-		return generateCSourceOutput();
+		return generateCSource();
 	}
 
 	/**
-	 * @see net.fathomsoft.fathom.tree.TreeNode#generateCSourceOutput()
+	 * @see net.fathomsoft.fathom.tree.TreeNode#generateCSource()
 	 */
 	@Override
-	public String generateCSourceOutput()
+	public String generateCSource()
 	{
 		StringBuilder builder = new StringBuilder();
 		
@@ -418,7 +458,7 @@ public class VariableNode extends ModifierNode
 			builder.append('*');
 		}
 		
-		builder.append(' ').append(getName()).append(';').append('\n');
+		builder.append(' ').append(generateCSourceNameOutput()).append(';').append('\n');
 		
 		return builder.toString();
 	}
@@ -430,6 +470,29 @@ public class VariableNode extends ModifierNode
 	public String generateCSourceFragment()
 	{
 		return generateVariableUseOutput();
+	}
+	
+	public String generateCSourceNameOutput()
+	{
+		String name = getName();
+		
+		if (forceOriginal)
+		{
+			return name;
+		}
+		
+		VariableNode existing = getExistingNode(getParent(), name);
+		
+		String str = Fathom.LANGUAGE_NAME.toLowerCase() + "_" + name;
+		
+		if (this instanceof FieldNode == false && existing instanceof LocalVariableNode)
+		{
+			ScopeNode scopeNode = TreeNode.getAncestorWithScope(existing.getParent()).getScopeNode();
+			
+			str += "_" + scopeNode.getID();
+		}
+		
+		return str;
 	}
 	
 	/**
@@ -458,6 +521,7 @@ public class VariableNode extends ModifierNode
 		node.setArrayDimensions(getArrayDimensions());
 		node.setType(getType());
 		node.setExternal(isExternal());
+		node.forceOriginal = forceOriginal;
 		
 		return node;
 	}
