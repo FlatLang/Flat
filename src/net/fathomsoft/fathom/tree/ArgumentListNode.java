@@ -17,6 +17,8 @@
  */
 package net.fathomsoft.fathom.tree;
 
+import net.fathomsoft.fathom.tree.exceptionhandling.ExceptionNode;
+
 /**
  * TreeNode extension that keeps track of all of the arguments that
  * are passed during a method call. The children of this node are
@@ -30,16 +32,16 @@ package net.fathomsoft.fathom.tree;
 public class ArgumentListNode extends TreeNode
 {
 	/**
-	 * @see net.fathomsoft.fathom.tree.TreeNode#generateJavaSourceOutput()
+	 * @see net.fathomsoft.fathom.tree.TreeNode#generateJavaSource()
 	 */
 	@Override
-	public String generateJavaSourceOutput()
+	public String generateJavaSource()
 	{
 		StringBuilder builder = new StringBuilder();
 		
 		for (int i = 0; i < getChildren().size(); i++)
 		{
-			builder.append(getChild(i).generateJavaSourceOutput());
+			builder.append(getChild(i).generateJavaSource());
 			
 			if (i < getChildren().size() - 1)
 			{
@@ -51,21 +53,45 @@ public class ArgumentListNode extends TreeNode
 	}
 
 	/**
-	 * @see net.fathomsoft.fathom.tree.TreeNode#generateCHeaderOutput()
+	 * @see net.fathomsoft.fathom.tree.TreeNode#generateCHeader()
 	 */
 	@Override
-	public String generateCHeaderOutput()
+	public String generateCHeader()
 	{
 		return null;
 	}
 
 	/**
-	 * @see net.fathomsoft.fathom.tree.TreeNode#generateCSourceOutput()
+	 * @see net.fathomsoft.fathom.tree.TreeNode#generateCSource()
 	 */
 	@Override
-	public String generateCSourceOutput()
+	public String generateCSource()
 	{
 		StringBuilder builder = new StringBuilder();
+		
+		MethodCallNode caller = (MethodCallNode)getParent();
+		
+		MethodNode     method = caller.getMethodNode();
+		
+		if (!caller.isExternal())
+		{
+			if (method.needsReference())
+			{
+				if (method instanceof DestructorNode)
+				{
+					builder.append('&');
+				}
+				
+				builder.append(caller.getVariableNode().generateVariableUseOutput()).append(", ");
+			}
+			
+			builder.append(ExceptionNode.EXCEPTION_DATA_IDENTIFIER);
+			
+			if (getChildren().size() > 0)
+			{
+				builder.append(", ");
+			}
+		}
 		
 		for (int i = 0; i < getChildren().size(); i++)
 		{
