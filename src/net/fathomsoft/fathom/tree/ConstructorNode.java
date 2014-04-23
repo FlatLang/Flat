@@ -196,6 +196,12 @@ public class ConstructorNode extends MethodNode
 		return builder.toString();
 	}
 	
+	/**
+	 * Get whether or not the class that this constructor is within
+	 * contains any private data.
+	 * 
+	 * @return Whether or not the containing class contains private data.
+	 */
 	public boolean containsPrivateData()
 	{
 		ClassNode clazz = (ClassNode)getAncestorOfType(ClassNode.class);
