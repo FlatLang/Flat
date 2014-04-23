@@ -23,6 +23,10 @@ import net.fathomsoft.fathom.tree.variables.VariableNode;
  */
 public class ScopeNode extends TreeNode
 {
+	private int			id;
+	
+	private static int	currentId = 1;
+	
 	/**
 	 * Instantiate and initialize the default values.
 	 */
@@ -31,6 +35,8 @@ public class ScopeNode extends TreeNode
 		VariableListNode variablesNode = new VariableListNode();
 		
 		super.addChild(variablesNode);
+		
+		id = currentId++;
 	}
 	
 	/**
@@ -42,6 +48,11 @@ public class ScopeNode extends TreeNode
 	public VariableListNode getVariableListNode()
 	{
 		return (VariableListNode)getChild(0);
+	}
+	
+	public int getID()
+	{
+		return id;
 	}
 	
 	/**
@@ -61,28 +72,28 @@ public class ScopeNode extends TreeNode
 	}
 	
 	/**
-	 * @see net.fathomsoft.fathom.tree.TreeNode#generateJavaSourceOutput()
+	 * @see net.fathomsoft.fathom.tree.TreeNode#generateJavaSource()
 	 */
 	@Override
-	public String generateJavaSourceOutput()
+	public String generateJavaSource()
 	{
 		return null;
 	}
 	
 	/**
-	 * @see net.fathomsoft.fathom.tree.TreeNode#generateCHeaderOutput()
+	 * @see net.fathomsoft.fathom.tree.TreeNode#generateCHeader()
 	 */
 	@Override
-	public String generateCHeaderOutput()
+	public String generateCHeader()
 	{
 		return null;
 	}
 	
 	/**
-	 * @see net.fathomsoft.fathom.tree.TreeNode#generateCSourceOutput()
+	 * @see net.fathomsoft.fathom.tree.TreeNode#generateCSource()
 	 */
 	@Override
-	public String generateCSourceOutput()
+	public String generateCSource()
 	{
 		if (getChildren().size() <= 1 && getParent() instanceof MethodNode == false)
 		{
@@ -95,7 +106,7 @@ public class ScopeNode extends TreeNode
 		
 		for (int i = 0; i < getChildren().size(); i++)
 		{
-			builder.append(getChild(i).generateCSourceOutput());
+			builder.append(getChild(i).generateCSource());
 		}
 		
 		builder.append('}').append('\n');
