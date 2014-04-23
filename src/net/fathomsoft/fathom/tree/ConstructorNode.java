@@ -17,6 +17,7 @@
  */
 package net.fathomsoft.fathom.tree;
 
+import net.fathomsoft.fathom.Fathom;
 import net.fathomsoft.fathom.error.SyntaxMessage;
 import net.fathomsoft.fathom.tree.variables.PrivateFieldListNode;
 import net.fathomsoft.fathom.tree.variables.PublicFieldListNode;
@@ -24,6 +25,7 @@ import net.fathomsoft.fathom.tree.variables.VariableNode;
 import net.fathomsoft.fathom.util.Bounds;
 import net.fathomsoft.fathom.util.Location;
 import net.fathomsoft.fathom.util.Regex;
+import net.fathomsoft.fathom.util.StringUtils;
 
 /**
  * MethodNode extension that represents the declaration of a Constructor
@@ -46,10 +48,10 @@ public class ConstructorNode extends MethodNode
 	}
 	
 	/**
-	 * @see net.fathomsoft.fathom.tree.TreeNode#generateJavaSourceOutput()
+	 * @see net.fathomsoft.fathom.tree.TreeNode#generateJavaSource()
 	 */
 	@Override
-	public String generateJavaSourceOutput()
+	public String generateJavaSource()
 	{
 		StringBuilder builder = new StringBuilder();
 		
@@ -59,33 +61,33 @@ public class ConstructorNode extends MethodNode
 		}
 		if (isStatic())
 		{
-			SyntaxMessage.error("Constructor cannot be static", getLocationIn());
+			SyntaxMessage.error("Constructor cannot be static", getLocationIn(), getController());
 			
 			return null;
 		}
 		if (isConstant())
 		{
-			SyntaxMessage.error("Constructor cannot be const", getLocationIn());
+			SyntaxMessage.error("Constructor cannot be const", getLocationIn(), getController());
 			
 			return null;
 		}
 		
 		if (isReference())
 		{
-			SyntaxMessage.error("Constructor cannot return a reference", getLocationIn());
+			SyntaxMessage.error("Constructor cannot return a reference", getLocationIn(), getController());
 			
 			return null;
 		}
 		else if (isPointer())
 		{
-			SyntaxMessage.error("Constructor cannot return a pointer", getLocationIn());
+			SyntaxMessage.error("Constructor cannot return a pointer", getLocationIn(), getController());
 			
 			return null;
 		}
 		
 		builder.append(getName()).append('(');
 		
-		builder.append(getParameterListNode().generateJavaSourceOutput());
+		builder.append(getParameterListNode().generateJavaSource());
 		
 		builder.append(')').append('\n').append('{').append('\n');
 		
@@ -95,7 +97,7 @@ public class ConstructorNode extends MethodNode
 			
 			if (child instanceof ParameterListNode == false)
 			{
-				builder.append(child.generateJavaSourceOutput());
+				builder.append(child.generateJavaSource());
 			}
 		}
 		
@@ -105,10 +107,10 @@ public class ConstructorNode extends MethodNode
 	}
 
 	/**
-	 * @see net.fathomsoft.fathom.tree.TreeNode#generateCHeaderOutput()
+	 * @see net.fathomsoft.fathom.tree.TreeNode#generateCHeader()
 	 */
 	@Override
-	public String generateCHeaderOutput()
+	public String generateCHeader()
 	{
 		StringBuilder builder = new StringBuilder();
 		
@@ -127,14 +129,14 @@ public class ConstructorNode extends MethodNode
 //		}
 		if (isConstant())
 		{
-			SyntaxMessage.error("Constructor cannot be const", getLocationIn());
+			SyntaxMessage.error("Constructor cannot be const", getLocationIn(), getController());
 			
 			return null;
 		}
 		
 		if (isReference())
 		{
-			SyntaxMessage.error("Constructor cannot return a reference", getLocationIn());
+			SyntaxMessage.error("Constructor cannot return a reference", getLocationIn(), getController());
 			
 			return null;
 		}
@@ -147,34 +149,33 @@ public class ConstructorNode extends MethodNode
 		
 		ClassNode classNode = (ClassNode)getAncestorOfType(ClassNode.class, true);
 		
-		builder.append(classNode.getName()).append('*').append(' ');
-		
-		builder.append("new_").append(getName()).append('(');
-		
-		builder.append(getParameterListNode().generateCHeaderOutput());
-		
-		builder.append(");").append('\n');
+		builder.append(generateCSourcePrototype()).append('\n');
 		
 		return builder.toString();
 	}
 
 	/**
-	 * @see net.fathomsoft.fathom.tree.TreeNode#generateCSourceOutput()
+	 * @see net.fathomsoft.fathom.tree.TreeNode#generateCSource()
 	 */
 	@Override
-	public String generateCSourceOutput()
+	public String generateCSource()
 	{
 		StringBuilder builder = new StringBuilder();
 		
-		builder.append(getName()).append('*').append(" new_").append(getName()).append('(');
+		builder.append(generateCSourceSignature()).append('\n');
 		
-		builder.append(getParameterListNode().generateCSourceOutput());
+		builder.append('{').append('\n');
 		
-		builder.append(')').append('\n').append('{').append('\n');
+		builder.append("NEW(").append(getName()).append(", ").append(MethodNode.getObjectReferenceIdentifier());
 		
-		builder.append("NEW(").append(getName()).append(", ").append(MethodNode.getObjectReferenceIdentifier()).append(");").append('\n').append('\n');
+		if (!containsPrivateData())
+		{
+			builder.append(",");
+		}
 		
-		builder.append(generateMethodAssignments()).append('\n');
+		builder.append(");").append('\n').append('\n');
+		
+//		builder.append(generateMethodAssignments()).append('\n');
 		
 		builder.append(generateFieldDefaultAssignments());
 		
@@ -184,7 +185,7 @@ public class ConstructorNode extends MethodNode
 			
 			if (child != getParameterListNode())
 			{
-				builder.append(child.generateCSourceOutput());
+				builder.append(child.generateCSource());
 			}
 		}
 		
@@ -195,13 +196,13 @@ public class ConstructorNode extends MethodNode
 		return builder.toString();
 	}
 	
-	/**
-	 * @see net.fathomsoft.fathom.tree.TreeNode#generateCSourceFragment()
-	 */
-	@Override
-	public String generateCSourceFragment()
+	public boolean containsPrivateData()
 	{
-		return null;
+		ClassNode clazz = (ClassNode)getAncestorOfType(ClassNode.class);
+		
+		PrivateFieldListNode privateFields = clazz.getFieldListNode().getPrivateFieldListNode();
+		
+		return privateFields.getChildren().size() > 0;
 	}
 	
 	/**
@@ -290,11 +291,11 @@ public class ConstructorNode extends MethodNode
 		
 		builder.append(' ');
 		
-		builder.append("new_");
+		builder.append(Fathom.LANGUAGE_NAME.toLowerCase()).append('_').append(classNode.getName()).append('_');
 		
 		builder.append(classNode.getName()).append('(');
 		
-		builder.append(getParameterListNode().generateCSourceOutput());
+		builder.append(getParameterListNode().generateCSource());
 		
 		builder.append(')');
 		
@@ -332,14 +333,14 @@ public class ConstructorNode extends MethodNode
 			// subtract the ending ones from the number.
 			if (lastParenthIndex < 0)
 			{
-				SyntaxMessage.error("Expected a ')' ending parenthesis", location);
+				SyntaxMessage.error("Expected a ')' ending parenthesis", location, parent.getController());
 				
 				return null;
 			}
 			
 			String parameterList = statement.substring(firstParenthIndex + 1, lastParenthIndex);
 			
-			String parameters[]  = Regex.splitCommas(parameterList);
+			String parameters[]  = StringUtils.splitCommas(parameterList);
 			
 			statement = statement.substring(0, firstParenthIndex);
 			
@@ -361,7 +362,7 @@ public class ConstructorNode extends MethodNode
 					
 					if (param == null)
 					{
-						SyntaxMessage.error("Incorrect parameter definition", location);
+						SyntaxMessage.error("Incorrect parameter definition", location, parent.getController());
 						
 						return null;
 					}
