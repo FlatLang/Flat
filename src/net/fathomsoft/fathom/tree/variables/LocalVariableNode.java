@@ -17,7 +17,11 @@
  */
 package net.fathomsoft.fathom.tree.variables;
 
+import net.fathomsoft.fathom.error.SyntaxMessage;
+import net.fathomsoft.fathom.tree.ParameterListNode;
+import net.fathomsoft.fathom.tree.ScopeNode;
 import net.fathomsoft.fathom.tree.TreeNode;
+import net.fathomsoft.fathom.tree.exceptionhandling.ExceptionNode;
 import net.fathomsoft.fathom.util.Bounds;
 import net.fathomsoft.fathom.util.Location;
 import net.fathomsoft.fathom.util.Patterns;
@@ -37,30 +41,30 @@ import net.fathomsoft.fathom.util.SyntaxUtils;
 public class LocalVariableNode extends VariableNode
 {
 	/**
-	 * @see net.fathomsoft.fathom.tree.TreeNode#generateJavaSourceOutput()
+	 * @see net.fathomsoft.fathom.tree.TreeNode#generateJavaSource()
 	 */
 	@Override
-	public String generateJavaSourceOutput()
+	public String generateJavaSource()
 	{
-		return super.generateJavaSourceOutput();
+		return super.generateJavaSource();
 	}
 
 	/**
-	 * @see net.fathomsoft.fathom.tree.TreeNode#generateCHeaderOutput()
+	 * @see net.fathomsoft.fathom.tree.TreeNode#generateCHeader()
 	 */
 	@Override
-	public String generateCHeaderOutput()
+	public String generateCHeader()
 	{
 		return null;
 	}
 
 	/**
-	 * @see net.fathomsoft.fathom.tree.TreeNode#generateCSourceOutput()
+	 * @see net.fathomsoft.fathom.tree.TreeNode#generateCSource()
 	 */
 	@Override
-	public String generateCSourceOutput()
+	public String generateCSource()
 	{
-		return super.generateCSourceOutput();
+		return super.generateCSource();
 	}
 	
 	/**
@@ -93,6 +97,10 @@ public class LocalVariableNode extends VariableNode
 	public static LocalVariableNode decodeStatement(TreeNode parent, final String statement, Location location)
 	{
 		if (SyntaxUtils.isLiteral(statement))
+		{
+			return null;
+		}
+		if (!Regex.matches(statement, Patterns.IDENTIFIER_DECLARATION))
 		{
 			return null;
 		}
@@ -163,6 +171,16 @@ public class LocalVariableNode extends VariableNode
 		
 		if (n.getType() == null)
 		{
+			return null;
+		}
+		
+		VariableNode node = TreeNode.getExistingNode(parent, n.getName());
+		
+		if (node instanceof LocalVariableNode)
+		{
+			SyntaxMessage.error("Local variable '" + n.getName() + "' has already been declared", node);
+			SyntaxMessage.error("Local variable '" + n.getName() + "' has already been declared", location, parent.getController());
+			
 			return null;
 		}
 		
