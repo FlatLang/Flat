@@ -17,6 +17,7 @@
  */
 package net.fathomsoft.fathom.error;
 
+import net.fathomsoft.fathom.Fathom;
 import net.fathomsoft.fathom.tree.TreeNode;
 import net.fathomsoft.fathom.util.Location;
 
@@ -36,16 +37,19 @@ public class Message
 	
 	private String		message;
 	
+	private Fathom		controller;
+	
 	public static final int	MESSAGE = 1, WARNING = 2, ERROR = 3;
 	
 	/**
 	 * Create a new message instance with the given message.
 	 * 
 	 * @param message The message that describes what happened.
+	 * @param controller The controller of the compiling program.
 	 */
-	public Message(String message)
+	public Message(String message, Fathom controller)
 	{
-		this.message = message;
+		this(message, null, controller);
 	}
 	
 	/**
@@ -57,7 +61,7 @@ public class Message
 	 */
 	public Message(String message, TreeNode node)
 	{
-		this(message, node.getLocationIn());
+		this(message, node.getLocationIn(), node.getController());
 	}
 	
 	/**
@@ -67,12 +71,13 @@ public class Message
 	 * @param message The message that describes what happened.
 	 * @param location The location i the source file that the
 	 * 		message is talking about.
+	 * @param controller The controller of the compiling program.
 	 */
-	public Message(String message, Location location)
+	public Message(String message, Location location, Fathom controller)
 	{
-		this.location = location;
-		
-		this.message  = message;
+		this.location   = location;
+		this.message    = message;
+		this.controller = controller;
 	}
 	
 	/**
@@ -82,28 +87,24 @@ public class Message
 	 */
 	public void outputMessage(int type)
 	{
-		String info = "Unkown: ";
-		
-		if (type == MESSAGE)
-		{
-			info = "Message: ";
-		}
-		else if (type == WARNING)
-		{
-			info = "Warning: ";
-		}
-		else if (type == ERROR)
-		{
-			info = "Error: ";
-		}
-		
-		info += message;
+		String info = message;
 		
 		if (location != null)
 		{
 			info += " on line number " + location.getLineNumber() + " at offset " + location.getOffset();
 		}
-		
-		System.err.println(info);
+
+		if (type == MESSAGE)
+		{
+			controller.log(info);
+		}
+		else if (type == WARNING)
+		{
+			controller.warning(info);
+		}
+		else if (type == ERROR)
+		{
+			controller.error(info);
+		}
 	}
 }
