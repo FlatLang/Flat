@@ -31,6 +31,7 @@ import net.fathomsoft.fathom.tree.MethodNode;
 import net.fathomsoft.fathom.tree.ProgramNode;
 import net.fathomsoft.fathom.tree.SyntaxTree;
 import net.fathomsoft.fathom.tree.TreeNode;
+import net.fathomsoft.fathom.tree.exceptionhandling.ExceptionNode;
 import net.fathomsoft.fathom.util.Command;
 import net.fathomsoft.fathom.util.CommandListener;
 import net.fathomsoft.fathom.util.FileUtils;
@@ -57,7 +58,7 @@ public class Fathom
 	
 	private SyntaxTree			tree;
 	
-	private ArrayList<String>	includeDirectories;
+	private ArrayList<String>	includeDirectories, errors, messages;
 	
 	private ArrayList<File>		inputFiles, cSourceFiles, cHeaderFiles;
 	
@@ -69,6 +70,8 @@ public class Fathom
 	
 	public static final boolean	ANDROID_DEBUG = false;
 	public static final boolean	DEBUG         = true;
+	
+	public static final int		BENCHMARK     = 1;
 	
 	public static final long	CSOURCE       = 0x1l;
 	public static final long	VERBOSE       = 0x10l;
@@ -138,11 +141,29 @@ public class Fathom
 	 */
 	private Fathom(String args[])
 	{
+		if (BENCHMARK > 1)
+		{
+			try
+			{
+				System.out.println("Preparing Benchmark...");
+				
+				Thread.sleep(2500);
+				
+				System.out.println("Starting...");
+			}
+			catch (InterruptedException e)
+			{
+				e.printStackTrace();
+			}
+		}
+		
 		lingeringFiles     = new LinkedList<File>();
 		inputFiles         = new ArrayList<File>();
 		cSourceFiles       = new ArrayList<File>();
 		cHeaderFiles       = new ArrayList<File>();
 		includeDirectories = new ArrayList<String>();
+		errors             = new ArrayList<String>();
+		messages           = new ArrayList<String>();
 		
 		compile(args);
 	}
@@ -155,8 +176,6 @@ public class Fathom
 	 */
 	private void compile(String args[])
 	{
-		startTimer();
-		
 		String directory = getWorkingDirectoryPath() + "example/";
 		
 		if (os == WINDOWS)
@@ -189,9 +208,9 @@ public class Fathom
 				"-run",
 				"-csource",
 				"-v",
-				"-cargs",
+//				"-cargs",
 				"-keepc",
-				"-library"
+//				"-library",
 			};
 		}
 		if (ANDROID_DEBUG)
@@ -208,10 +227,15 @@ public class Fathom
 		
 		workingDir = new File(directory);
 		
+		startTimer();
+		
 		// Try to create a Syntax Tree for the given file.
 		try
 		{
-			tree = new SyntaxTree(inputFiles.toArray(new File[0]), flags);
+			for (int i = 0; i < BENCHMARK; i++)
+			{
+				tree = new SyntaxTree(inputFiles.toArray(new File[0]), this);
+			}
 			
 			tree.generateCOutput();
 		}
@@ -307,7 +331,7 @@ public class Fathom
 		{
 			if (!isFlagEnabled(LIBRARY))
 			{
-				SyntaxMessage.error("No main method found in program");
+				SyntaxMessage.error("No main method found in program", this);
 				
 				completed();
 			}
@@ -345,8 +369,8 @@ public class Fathom
 							if (c.containsStaticData())
 							{
 //								staticClassInit.append("SET_INSTANCE(").append(c.getName()).append(", __static__").append(c.getName()).append(')').append(';').append('\n');
-								staticClassInit.append("__static__").append(c.getName()).append(" = ").append("new_").append(c.getName()).append("(0);").append('\n');
-								staticClassFree.append("del_").append(c.getName()).append("(&__static__").append(c.getName()).append(", 0);").append('\n');
+								staticClassInit.append("__static__").append(c.getName()).append(" = ").append(LANGUAGE_NAME.toLowerCase()).append('_').append(c.getName()).append('_').append(c.getName()).append("(0);").append('\n');
+								staticClassFree.append(LANGUAGE_NAME.toLowerCase()).append("_del_").append(c.getName()).append("(&__static__").append(c.getName()).append(", 0);").append('\n');
 							}
 						}
 					}
@@ -365,24 +389,24 @@ public class Fathom
 			mainMethodText.append("{").append('\n');
 			mainMethodText.append	("String** args = (String**)malloc(argc * sizeof(String));").append('\n');
 			mainMethodText.append	("int      i;").append('\n').append('\n');
-			mainMethodText.append	("ExceptionData* __").append(LANGUAGE_NAME.toUpperCase()).append("__exception_data = 0;").append('\n');
+			mainMethodText.append	("ExceptionData* ").append(ExceptionNode.EXCEPTION_DATA_IDENTIFIER).append(" = 0;").append('\n');
 			mainMethodText.append	(staticClassInit);
 			mainMethodText.append	('\n');
 			mainMethodText.append	("for (i = 0; i < argc; i++)").append('\n');
 			mainMethodText.append	("{").append('\n');
 			mainMethodText.append		("char* str = (char*)malloc(sizeof(char) * strlen(argvs[i]) + 1);").append('\n');
 			mainMethodText.append		("copy_string(str, argvs[i]);").append('\n');
-			mainMethodText.append		("args[i] = new_String(0, str);").append('\n');
+			mainMethodText.append		("args[i] = ").append(LANGUAGE_NAME.toLowerCase()).append("_String_String(0, str);").append('\n');
 			mainMethodText.append	("}").append('\n');
 			mainMethodText.append	('\n');
 			mainMethodText.append	("TRY").append('\n');
 			mainMethodText.append	('{').append('\n');
-			mainMethodText.append		("__static__").append(classNode.getName()).append("->main(__static__").append(classNode.getName()).append(", __").append(LANGUAGE_NAME.toUpperCase()).append("__exception_data, args);").append('\n');
+			mainMethodText.append		(mainMethod.generateCSourceNameOutput()).append("(__static__").append(classNode.getName()).append(", ").append(ExceptionNode.EXCEPTION_DATA_IDENTIFIER).append(", args);").append('\n');
 			mainMethodText.append	('}').append('\n');
 			mainMethodText.append	("CATCH (1)").append('\n');
 			mainMethodText.append	('{').append('\n');
 			mainMethodText.append		("printf(\"You broke it.\");").append('\n');
-			mainMethodText.append		("__static__IO->waitForEnter(__static__IO, 0);").append('\n');
+			mainMethodText.append		(LANGUAGE_NAME.toLowerCase()).append("_IO_waitForEnter(__static__IO, 0);").append('\n');
 			mainMethodText.append	('}').append('\n');
 			mainMethodText.append	("FINALLY").append('\n');
 			mainMethodText.append	('{').append('\n');
@@ -395,7 +419,7 @@ public class Fathom
 			mainMethodText.append	("return 0;").append('\n');
 			mainMethodText.append("}");
 			
-			String newSource = fileNode.generateCSourceOutput() + mainMethodText.toString();
+			String newSource = fileNode.generateCSource() + mainMethodText.toString();
 			
 			newSource = SyntaxUtils.formatText(newSource);
 			
@@ -543,7 +567,7 @@ public class Fathom
 	 * 
 	 * @param message The message describing what happened.
 	 */
-	private void log(String message)
+	public void log(String message)
 	{
 		log(flags, message);
 	}
@@ -563,13 +587,30 @@ public class Fathom
 	}
 	
 	/**
+	 * Output a warning message from the compiler.
+	 * 
+	 * @param message The message describing the warning.
+	 */
+	public void warning(String message)
+	{
+		errors.add("Warning: " + message);
+	}
+	
+	/**
 	 * Output an error message from the compiler.
 	 * 
 	 * @param message The message describing the error.
 	 */
-	public static void error(String message)
+	public void error(String message)
 	{
-		System.err.println(message);
+		if (!isFlagEnabled(DRY_RUN))
+		{
+			enableFlag(DRY_RUN);
+			
+			errors.add("Compilation failed.");
+		}
+		
+		errors.add("Error: " + message);
 	}
 	
 	/**
@@ -815,15 +856,44 @@ public class Fathom
 	}
 	
 	/**
+	 * Output all of the stored errors, warnings, and other messages.
+	 */
+	private void outputMessages()
+	{
+		for (String s : messages)
+		{
+			System.out.println(s);
+		}
+		
+		for (String s : errors)
+		{
+			System.err.println(s);
+		}
+	}
+	
+	/**
 	 * Method called whenever the compilation sequence has completed.
 	 */
-	private void completed()
+	public void completed()
 	{
 		stopTimer();
 		
-		log("Compile time: " + getCompileTime() + "ms");
+		String str = "Compile time: " + getCompileTime() + "ms";
+		
+		if (BENCHMARK > 1)
+		{
+			str += " (Average of " + Math.round(getCompileTime() / (float)BENCHMARK) + "ms)";
+			
+			System.out.println(str);
+		}
+		else
+		{
+			log(str);
+		}
 		
 		deleteLingeringFiles();
+		
+		outputMessages();
 		
 		if (isFlagEnabled(RUNTIME))
 		{
@@ -878,7 +948,7 @@ public class Fathom
 		
 		if (!ANDROID_DEBUG)
 		{
-			System.exit(0);
+//			System.exit(0);
 		}
 	}
 }
