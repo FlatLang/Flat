@@ -7,34 +7,34 @@
 #define TRY \
 	do\
 	{\
-		jmp_buf __FATHOM__jmp_buf;\
+		jmp_buf jmp_buf;\
 		\
-		ExceptionData* newData = new_ExceptionData(__FATHOM__exception_data, &__FATHOM__jmp_buf);\
+		ExceptionData* newData = fathom_ExceptionData_ExceptionData(exceptionData, &jmp_buf);\
 		\
-		if (__FATHOM__exception_data)\
+		if (exceptionData)\
 		{\
-			newData->setParent(newData, __FATHOM__exception_data, __FATHOM__exception_data);\
+			fathom_ExceptionData_setParent(newData, exceptionData, exceptionData);\
 		}\
 		\
-		__FATHOM__exception_data = newData;\
+		exceptionData = newData;\
 		\
-		int __FATHOM__exception_code = setjmp(__FATHOM__jmp_buf);\
+		int exception_code = setjmp(jmp_buf);\
 		\
-		if (__FATHOM__exception_code == 0)
+		if (exception_code == 0)
 
 #define CATCH(x) \
-	else if (__FATHOM__exception_code == x)
+	else if (exception_code == x)
 
 #define FINALLY	\
 	
 
 #define END_TRY \
 		{\
-			ExceptionData* oldData = __FATHOM__exception_data;\
-			ExceptionData* newData = __FATHOM__exception_data->getParent(__FATHOM__exception_data, 0);\
+			ExceptionData* oldData = exceptionData;\
+			ExceptionData* newData = fathom_ExceptionData_getParent(exceptionData, 0);\
 			if (newData != 0)\
 			{\
-				__FATHOM__exception_data = newData;\
+				exceptionData = newData;\
 			}\
 			/*printf("Bef%p\n", oldData);*/\
 			if (oldData != 0)\
@@ -47,6 +47,6 @@
 	}\
 	while(0)
 
-#define THROW(x) __FATHOM__exception_data->jumpToBuffer(__FATHOM__exception_data, 0, x);
+#define THROW(x) fathom_ExceptionData_jumpToBuffer(exceptionData, 0, x);
 
 #endif
