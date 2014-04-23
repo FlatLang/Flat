@@ -144,7 +144,7 @@ public class FieldNode extends DeclarationNode
 			builder.append('*');
 		}
 		
-		builder.append(' ').append(generateCSourceNameOutput());
+		builder.append(' ').append(generateCSourceName());
 		
 //		if (!isPrimitiveType())
 //		{

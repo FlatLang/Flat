@@ -223,7 +223,7 @@ public class MethodCallNode extends IdentifierNode
 		
 		if (method != null)
 		{
-			builder.append(method.generateCSourceNameOutput());
+			builder.append(method.generateCSourceName());
 		}
 		else
 		{

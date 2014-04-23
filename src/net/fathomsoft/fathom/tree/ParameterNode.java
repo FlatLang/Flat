@@ -101,7 +101,7 @@ public class ParameterNode extends LocalVariableNode
 			builder.append('*');
 		}
 		
-		builder.append(' ').append(generateCSourceNameOutput());
+		builder.append(' ').append(generateCSourceName());
 		
 		return builder.toString();
 	}

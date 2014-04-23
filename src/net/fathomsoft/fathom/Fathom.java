@@ -401,7 +401,7 @@ public class Fathom
 			mainMethodText.append	('\n');
 			mainMethodText.append	("TRY").append('\n');
 			mainMethodText.append	('{').append('\n');
-			mainMethodText.append		(mainMethod.generateCSourceNameOutput()).append("(__static__").append(classNode.getName()).append(", ").append(ExceptionNode.EXCEPTION_DATA_IDENTIFIER).append(", args);").append('\n');
+			mainMethodText.append		(mainMethod.generateCSourceName()).append("(__static__").append(classNode.getName()).append(", ").append(ExceptionNode.EXCEPTION_DATA_IDENTIFIER).append(", args);").append('\n');
 			mainMethodText.append	('}').append('\n');
 			mainMethodText.append	("CATCH (1)").append('\n');
 			mainMethodText.append	('{').append('\n');

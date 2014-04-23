@@ -412,7 +412,7 @@ public class VariableNode extends ModifierNode
 			}
 		}
 		
-		builder.append(generateCSourceNameOutput());
+		builder.append(generateCSourceName());
 		
 		return builder.toString();
 	}
@@ -458,7 +458,7 @@ public class VariableNode extends ModifierNode
 			builder.append('*');
 		}
 		
-		builder.append(' ').append(generateCSourceNameOutput()).append(';').append('\n');
+		builder.append(' ').append(generateCSourceName()).append(';').append('\n');
 		
 		return builder.toString();
 	}
@@ -472,7 +472,7 @@ public class VariableNode extends ModifierNode
 		return generateVariableUseOutput();
 	}
 	
-	public String generateCSourceNameOutput()
+	public String generateCSourceName()
 	{
 		String name = getName();
 		
