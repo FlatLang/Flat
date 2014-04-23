@@ -18,4 +18,34 @@ public class String
 	{
 		return data;
 	}
+	
+	public void do1()
+	{
+	
+	}
+	
+	public void do2()
+	{
+	
+	}
+	
+	public void do3()
+	{
+	
+	}
+	
+	public void do4()
+	{
+	
+	}
+	
+	public void do5()
+	{
+	
+	}
+	
+	public void do6()
+	{
+	
+	}
 }
