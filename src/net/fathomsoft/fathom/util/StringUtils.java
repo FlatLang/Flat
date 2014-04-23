@@ -17,6 +17,8 @@
  */
 package net.fathomsoft.fathom.util;
 
+import java.util.ArrayList;
+
 /**
  * Class that contains methods used for finding data about
  * a String.
@@ -208,5 +210,73 @@ public class StringUtils
 		}
 		
 		return output.toString();
+	}
+	
+	/**
+	 * Split the src by the commas. Makes sure not to split commas that
+	 * are within parentheses and quotes.
+	 * 
+	 * @param src The String to split the commas from.
+	 * @return An array of Strings containing the Strings that were split.
+	 */
+	public static String[] splitCommas(String src)
+	{
+		ArrayList<String> strs = new ArrayList<String>();
+		
+		int oldIndex =  0;
+		int index    = -1;
+		
+		StringBuilder builder = new StringBuilder();
+		
+		while ((index = Regex.indexOf(src, index + 1, ',', new char[] { '(' }, new char[] { ')' }, new char[] { '"' }, new boolean[] { false }, new boolean[] { false }, new boolean[] { true })) > 0)
+		{
+			builder = new StringBuilder(src.substring(oldIndex, index));
+			
+			trimSurroundingWhitespace(builder);
+
+			strs.add(builder.toString());
+			
+			oldIndex = index + 1;
+		}
+		
+		builder = new StringBuilder(src.substring(oldIndex, src.length()));
+		
+		trimSurroundingWhitespace(builder);
+		
+		strs.add(builder.toString());
+		
+		return strs.toArray(new String[0]);
+	}
+	
+	/**
+	 * Trim the surrounding whitespace off of the String's ends.
+	 * 
+	 * @param str The String to trim the whitespace from.
+	 */
+	public static String trimSurroundingWhitespace(String str)
+	{
+		StringBuilder builder = new StringBuilder(str);
+		
+		trimSurroundingWhitespace(builder);
+		
+		return builder.toString();
+	}
+	
+	/**
+	 * Trim the surrounding whitespace off of the StringBuilder's ends.
+	 * 
+	 * @param builder The builder to trim the whitespace from.
+	 */
+	public static void trimSurroundingWhitespace(StringBuilder builder)
+	{
+		while (builder.length() > 0 && (builder.charAt(0) == ' ' || builder.charAt(0) == '\n' || builder.charAt(0) == '\t'))
+		{
+			builder.deleteCharAt(0);
+		}
+		
+		while (builder.length() > 0 && (builder.charAt(builder.length() - 1) == ' ' || builder.charAt(builder.length() - 1) == '\n' || builder.charAt(builder.length() - 1) == '\t'))
+		{
+			builder.deleteCharAt(builder.length() - 1);
+		}
 	}
 }
