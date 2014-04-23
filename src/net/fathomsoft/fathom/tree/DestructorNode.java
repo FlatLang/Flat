@@ -19,12 +19,14 @@ package net.fathomsoft.fathom.tree;
 
 import net.fathomsoft.fathom.Fathom;
 import net.fathomsoft.fathom.error.SyntaxMessage;
+import net.fathomsoft.fathom.tree.exceptionhandling.ExceptionNode;
 import net.fathomsoft.fathom.tree.variables.FieldNode;
 import net.fathomsoft.fathom.tree.variables.PrivateFieldListNode;
 import net.fathomsoft.fathom.tree.variables.PublicFieldListNode;
 import net.fathomsoft.fathom.util.Bounds;
 import net.fathomsoft.fathom.util.Location;
 import net.fathomsoft.fathom.util.Regex;
+import net.fathomsoft.fathom.util.StringUtils;
 
 /**
  * MethodNode extension that represents the declaration of a Destructor
@@ -38,19 +40,19 @@ import net.fathomsoft.fathom.util.Regex;
 public class DestructorNode extends MethodNode
 {
 	/**
-	 * @see net.fathomsoft.fathom.tree.TreeNode#generateJavaSourceOutput()
+	 * @see net.fathomsoft.fathom.tree.TreeNode#generateJavaSource()
 	 */
 	@Override
-	public String generateJavaSourceOutput()
+	public String generateJavaSource()
 	{
 		return null;
 	}
 
 	/**
-	 * @see net.fathomsoft.fathom.tree.TreeNode#generateCHeaderOutput()
+	 * @see net.fathomsoft.fathom.tree.TreeNode#generateCHeader()
 	 */
 	@Override
-	public String generateCHeaderOutput()
+	public String generateCHeader()
 	{
 		StringBuilder builder = new StringBuilder();
 		
@@ -58,7 +60,7 @@ public class DestructorNode extends MethodNode
 		{
 			if (getVisibility() == DeclarationNode.PRIVATE)
 			{
-				SyntaxMessage.error("Destructor must be public", getLocationIn());
+				SyntaxMessage.error("Destructor must be public", getLocationIn(), getController());
 				
 				return null;
 			}
@@ -66,14 +68,14 @@ public class DestructorNode extends MethodNode
 		
 		if (isConstant())
 		{
-			SyntaxMessage.error("Destructor cannot be const", getLocationIn());
+			SyntaxMessage.error("Destructor cannot be const", getLocationIn(), getController());
 			
 			return null;
 		}
 		
 		if (isReference())
 		{
-			SyntaxMessage.error("Destructor cannot return a reference", getLocationIn());
+			SyntaxMessage.error("Destructor cannot return a reference", getLocationIn(), getController());
 			
 			return null;
 		}
@@ -84,10 +86,10 @@ public class DestructorNode extends MethodNode
 	}
 
 	/**
-	 * @see net.fathomsoft.fathom.tree.TreeNode#generateCSourceOutput()
+	 * @see net.fathomsoft.fathom.tree.TreeNode#generateCSource()
 	 */
 	@Override
-	public String generateCSourceOutput()
+	public String generateCSource()
 	{
 		StringBuilder builder = new StringBuilder();
 		
@@ -103,7 +105,7 @@ public class DestructorNode extends MethodNode
 			
 			if (child != getParameterListNode())
 			{
-				builder.append(child.generateCSourceOutput());
+				builder.append(child.generateCSource());
 			}
 		}
 		
@@ -204,7 +206,7 @@ public class DestructorNode extends MethodNode
 		}
 		else
 		{
-			builder.append("del_").append(field.getType()).append('(').append('&').append(field.generateVariableUseOutput(true)).append(", __").append(Fathom.LANGUAGE_NAME.toUpperCase()).append("__exception_data").append(");");
+			builder.append(Fathom.LANGUAGE_NAME.toLowerCase()).append("_del_").append(field.getType()).append('(').append('&').append(field.generateVariableUseOutput(true)).append(", ").append(ExceptionNode.EXCEPTION_DATA_IDENTIFIER).append(");");
 		}
 		
 		return builder.toString();
@@ -250,12 +252,12 @@ public class DestructorNode extends MethodNode
 		
 		builder.append(getType());
 		builder.append(' ');
-		builder.append("del_");
+		builder.append(Fathom.LANGUAGE_NAME.toLowerCase()).append("_del_");
 		builder.append(classNode.getName()).append('(');
 		
 		//builder.append(classNode.getName()).append('*').append(' ').append(MethodNode.getObjectReferenceIdentifier());
 
-		builder.append(getParameterListNode().generateCSourceOutput());
+		builder.append(getParameterListNode().generateCSource());
 		
 		builder.append(')');
 		
@@ -291,14 +293,14 @@ public class DestructorNode extends MethodNode
 			// subtract the ending ones from the number.
 			if (lastParenthIndex < 0)
 			{
-				SyntaxMessage.error("Expected a ')' ending parenthesis", location);
+				SyntaxMessage.error("Expected a ')' ending parenthesis", location, parent.getController());
 				
 				return null;
 			}
 			
 			String parameterList = statement.substring(firstParenthIndex + 1, lastParenthIndex);
 			
-			String parameters[]  = Regex.splitCommas(parameterList);
+			String parameters[]  = StringUtils.splitCommas(parameterList);
 			
 			final String signature = statement.substring(0, firstParenthIndex);
 			
@@ -331,7 +333,7 @@ public class DestructorNode extends MethodNode
 				
 				if (parameters.length > 0)
 				{
-					SyntaxMessage.error("Destructors cannot have any parameters", location);
+					SyntaxMessage.error("Destructors cannot have any parameters", location, parent.getController());
 					
 					return null;
 				}
