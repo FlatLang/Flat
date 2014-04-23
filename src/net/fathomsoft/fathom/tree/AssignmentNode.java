@@ -55,18 +55,18 @@ public class AssignmentNode extends TreeNode
 	}
 
 	/**
-	 * @see net.fathomsoft.fathom.tree.TreeNode#generateJavaSourceOutput()
+	 * @see net.fathomsoft.fathom.tree.TreeNode#generateJavaSource()
 	 */
 	@Override
-	public String generateJavaSourceOutput()
+	public String generateJavaSource()
 	{
 		StringBuilder builder = new StringBuilder();
 		
-		builder.append(getChild(0).generateJavaSourceOutput()).append(" = ");
+		builder.append(getChild(0).generateJavaSource()).append(" = ");
 		
 		for (int i = 1; i < getChildren().size(); i++)
 		{
-			builder.append(getChild(i).generateJavaSourceOutput());
+			builder.append(getChild(i).generateJavaSource());
 		}
 		
 		builder.append(';').append('\n');
@@ -75,10 +75,10 @@ public class AssignmentNode extends TreeNode
 	}
 
 	/**
-	 * @see net.fathomsoft.fathom.tree.TreeNode#generateCHeaderOutput()
+	 * @see net.fathomsoft.fathom.tree.TreeNode#generateCHeader()
 	 */
 	@Override
-	public String generateCHeaderOutput()
+	public String generateCHeader()
 	{
 		return null;
 	}
@@ -93,10 +93,10 @@ public class AssignmentNode extends TreeNode
 	}
 	
 	/**
-	 * @see net.fathomsoft.fathom.tree.TreeNode#generateCSourceOutput()
+	 * @see net.fathomsoft.fathom.tree.TreeNode#generateCSource()
 	 */
 	@Override
-	public String generateCSourceOutput()
+	public String generateCSource()
 	{
 		StringBuilder builder = new StringBuilder();
 		
@@ -192,6 +192,9 @@ public class AssignmentNode extends TreeNode
 		
 		String variable  = statement.substring(0, endIndex);
 		
+		Location varLoc = new Location(location);
+		varLoc.getBounds().setEnd(varLoc.getStart() + endIndex);
+		
 		TreeNode varNode = null;
 		
 		if (SyntaxUtils.isValidIdentifierAccess(variable))
@@ -206,7 +209,7 @@ public class AssignmentNode extends TreeNode
 				
 				if (varNode == null)
 				{
-					SyntaxMessage.error("Variable '" + variable + "' was not declared", location);
+					SyntaxMessage.error("Variable '" + variable + "' was not declared", location, parent.getController());
 					
 					return null;
 				}
@@ -226,28 +229,34 @@ public class AssignmentNode extends TreeNode
 					
 					if (scope != null)
 					{
-						scope.addChild(var.clone());
+						LocalVariableNode clone = var.clone();
+						clone.setLocationIn(varLoc);
+						
+						scope.addChild(clone);
 					}
 					
 					varNode = var;
 				}
 				else
 				{
-					varNode = TreeNode.decodeStatement(parent, variable, location);
+//					SyntaxMessage.error("Missing variable on left side of assignment", location, parent.getController());
 					
-					if (varNode == null)
-					{
-						VariableNode vNode = new VariableNode();
-						vNode.setName(variable);
-						
-						varNode = vNode;
-					}
-					else if (varNode instanceof ArrayAccessNode == false)
-					{
-						SyntaxMessage.error("Undefined variable '" + variable + "'", location);
-						
-						return null;
-					}
+					return null;
+//					varNode = TreeNode.decodeStatement(parent, variable, location);
+//					
+//					if (varNode == null)
+//					{
+//						VariableNode vNode = new VariableNode();
+//						vNode.setName(variable);
+//						
+//						varNode = vNode;
+//					}
+//					else if (varNode instanceof ArrayAccessNode == false)
+//					{
+//						SyntaxMessage.error("Undefined variable '" + variable + "'", location);
+//						
+//						return null;
+//					}
 				}
 			}
 			else
@@ -259,16 +268,19 @@ public class AssignmentNode extends TreeNode
 			}
 		}
 		
+		varNode.setLocationIn(varLoc);
+		
 		n.addChild(varNode);
 		
-		int      rhsIndex = StringUtils.findNextNonWhitespaceIndex(statement, equalsIndex + 1);
+		int    rhsIndex = StringUtils.findNextNonWhitespaceIndex(statement, equalsIndex + 1);
 		
 		// Right-hand side of the equation.
-		String   rhs      = statement.substring(rhsIndex);
+		String      rhs = statement.substring(rhsIndex);
 		
-		Location newLoc   = new Location(location.getLineNumber(), location.getOffset() + rhsIndex, location.getOffset() + statement.length());
+		Location newLoc = new Location(location);
+		newLoc.setBounds(location.getStart() + rhsIndex, location.getStart() + statement.length());
 		
-		TreeNode child    = decodeRightHandSide(parent, rhs, newLoc);
+		TreeNode  child = decodeRightHandSide(parent, rhs, newLoc);
 		
 		n.addChild(child);
 		
