@@ -1,5 +1,7 @@
 package net.fathomsoft.fathom.tree;
 
+import net.fathomsoft.fathom.Fathom;
+
 /**
  * TreeNode extension that represents a whole Fathom program. The
  * purpose of this Node is to keep track of each FileNode within
@@ -12,6 +14,43 @@ package net.fathomsoft.fathom.tree;
  */
 public class ProgramNode extends TreeNode
 {
+	private Fathom	controller;
+	
+	/**
+	 * Instantiate and initialize a ProgramNode that contains a reference
+	 * to the compiler's controller.
+	 * 
+	 * @param controller The controller of the compiler.
+	 */
+	public ProgramNode(Fathom controller)
+	{
+		this.controller = controller;
+	}
+	
+	/**
+	 * Get the compiler's controller. The controller is used for
+	 * logging, error output, and other compiler options.
+	 * 
+	 * @return The compiler's controller instance.
+	 */
+	public Fathom getController()
+	{
+		return controller;
+	}
+	
+	/**
+	 * Make sure that the Class declarations are valid.
+	 */
+	public void validateClasses()
+	{
+		for (int i = 0; i < getChildren().size(); i++)
+		{
+			FileNode node = (FileNode)getChild(i);
+			
+			node.validateClasses();
+		}
+	}
+	
 	/**
 	 * Get the ProgramNode's ClassNode with the specified name.<br>
 	 * <br>
@@ -69,48 +108,48 @@ public class ProgramNode extends TreeNode
 	}
 	
 	/**
-	 * @see net.fathomsoft.fathom.tree.TreeNode#generateJavaSourceOutput()
+	 * @see net.fathomsoft.fathom.tree.TreeNode#generateJavaSource()
 	 */
 	@Override
-	public String generateJavaSourceOutput()
+	public String generateJavaSource()
 	{
 		StringBuilder builder = new StringBuilder();
 		
 		for (int i = 0; i < getChildren().size(); i++)
 		{
-			builder.append(getChild(i).generateJavaSourceOutput());
+			builder.append(getChild(i).generateJavaSource());
 		}
 		
 		return builder.toString();
 	}
 	
 	/**
-	 * @see net.fathomsoft.fathom.tree.TreeNode#generateCHeaderOutput()
+	 * @see net.fathomsoft.fathom.tree.TreeNode#generateCHeader()
 	 */
 	@Override
-	public String generateCHeaderOutput()
+	public String generateCHeader()
 	{
 		StringBuilder builder = new StringBuilder();
 		
 		for (int i = 0; i < getChildren().size(); i++)
 		{
-			builder.append(getChild(i).generateCHeaderOutput());
+			builder.append(getChild(i).generateCHeader());
 		}
 		
 		return builder.toString();
 	}
 	
 	/**
-	 * @see net.fathomsoft.fathom.tree.TreeNode#generateCSourceOutput()
+	 * @see net.fathomsoft.fathom.tree.TreeNode#generateCSource()
 	 */
 	@Override
-	public String generateCSourceOutput()
+	public String generateCSource()
 	{
 		StringBuilder builder = new StringBuilder();
 		
 		for (int i = 0; i < getChildren().size(); i++)
 		{
-			builder.append(getChild(i).generateCSourceOutput());
+			builder.append(getChild(i).generateCSource());
 		}
 		
 		return builder.toString();
@@ -176,7 +215,7 @@ public class ProgramNode extends TreeNode
 	@Override
 	public ProgramNode clone()
 	{
-		ProgramNode node = new ProgramNode();
+		ProgramNode node = new ProgramNode(controller);
 		
 		return clone(node);
 	}
@@ -191,6 +230,8 @@ public class ProgramNode extends TreeNode
 	public ProgramNode clone(ProgramNode node)
 	{
 		super.clone(node);
+		
+		node.controller = controller;
 		
 		return node;
 	}
