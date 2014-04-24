@@ -123,11 +123,6 @@ public class ImportListNode extends TreeNode
 			builder.append(getChild(i).generateCSource());
 		}
 		
-		if (getChildren().size() > 0)
-		{
-			builder.append('\n');
-		}
-		
 		return builder.toString();
 	}
 	
