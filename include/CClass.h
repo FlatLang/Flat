@@ -24,7 +24,10 @@
 		\
 	}
 
+#define GET_MACRO2P(_1_, _2_, NAME, ...) NAME
 #define GET_MACRO3P(_1_, _2_, _3_, NAME, ...) NAME
+#define GET_MACRO4P(_1_, _2_, _3_, _4_, NAME, ...) NAME
+#define GET_MACRO5P(_1_, _2_, _3_, _4_, _5_, NAME, ...) NAME
 
 #define NEW(...) GET_MACRO3P(__VA_ARGS__, NEW4, NEW3)(__VA_ARGS__)
 
@@ -40,19 +43,19 @@
 
 #define DEL(_OBJ_) DELETE(_OBJ_->prv); DELETE(_OBJ_)
 
-#define DEL_EXT(_EXTENDS_, _OBJ_) del_##_EXTENDS_(_OBJ_->prv->parent); DEL(_OBJ_)
-
 #define DELETE(_OBJ_) free(_OBJ_)
 
 #define FUNC(_TYPE_, _NAME_, ...) _TYPE_ (*_NAME_)(__VA_ARGS__)
 
-#define CLASS(_NAME_, _BODY_, _PRIVATE_) CLASS2(_NAME_, _BODY_, _PRIVATE_);
+#define CLASS(...) GET_MACRO3P(__VA_ARGS__, CLASS3, CLASS2, CLASS1)(__VA_ARGS__);
 
-#define CLASS2(_NAME_, _BODY_, _PRIVATE_)\
-	CLASS_DEF(_NAME_, _BODY_, _PRIVATE_)\
+#define CLASS1(_NAME_) CLASS2(_NAME_,)
+
+#define CLASS2(_NAME_, _BODY_)\
+	CLASS_DEF(_NAME_, _BODY_)\
 	//DECLARE_METHODS(_NAME_, _METHOD_PREFIX_)
 
-#define CLASS3(_NAME_, _BODY_, _METHOD_PREFIX_)\
+#define CLASS4(_NAME_, _BODY_, _METHOD_PREFIX_)\
 	typedef struct _NAME_\
 	{\
 		_BODY_\
@@ -60,41 +63,19 @@
 	//\
 	//DECLARE_METHODS(_NAME_, _METHOD_PREFIX_)
 
-#define CLASS_EXT(_NAME_, _EXTENDS_, _BODY_) CLASS2_EXT(_NAME_, _EXTENDS_, _BODY_,);
-
-#define CLASS2_EXT(_NAME_, _EXTENDS_, _BODY_, _METHOD_PREFIX_)\
-	CLASS_EXT_DEF(_NAME_, _EXTENDS_, _BODY_)\
-	//DECLARE_METHODS(_NAME_, _METHOD_PREFIX_)
-
-#define CLASS_DEF(_NAME_, _BODY_, _PRIVATE_)\
+#define CLASS_DEF(_NAME_, _BODY_)\
 	/*typedef struct _NAME_ _NAME_;*/\
 	struct _NAME_\
 	{\
 		_BODY_\
-		_PRIVATE_\
 	};
-
-#define CLASS_EXT_DEF(_NAME_, _EXTENDS_, _BODY_)\
-	typedef struct _NAME_\
-	{\
-		_BODY_\
-		struct Private* prv;\
-		FUNC(_EXTENDS_*, getParent, struct _NAME_*);\
-	} _NAME_;
 
 #define DECLARE_METHODS(_CLASS_, _METHOD_PREFIX_)\
 	_METHOD_PREFIX_ _CLASS_* new_##_CLASS_();\
 	_METHOD_PREFIX_ void del_##_CLASS_(_CLASS_* obj)
 
-#define PRIVATE_EXT(_CLASS_, _EXTENDS_, ...)\
-	PRIVATE(__VA_ARGS__ _EXTENDS_* parent;)\
-	static _EXTENDS_* getParent(_CLASS_* o)\
-	{\
-		return o->prv->parent;\
-	}
-
 #define PRIVATE(_PRIVATE_VARIABLES_)\
-	CLASS3(Private, _PRIVATE_VARIABLES_, static);\
+	CLASS4(Private, _PRIVATE_VARIABLES_, static);\
 	\
 	static Private* new_Private()\
 	{\
