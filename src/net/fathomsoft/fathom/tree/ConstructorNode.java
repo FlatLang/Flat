@@ -167,8 +167,10 @@ public class ConstructorNode extends MethodNode
 		builder.append('{').append('\n');
 		
 		builder.append("NEW(").append(getName()).append(", ").append(MethodNode.getObjectReferenceIdentifier());
+
+		ClassNode classNode = (ClassNode)getAncestorOfType(ClassNode.class, true);
 		
-		if (!containsPrivateData())
+		if (!classNode.containsPrivateData())
 		{
 			builder.append(",");
 		}
@@ -194,21 +196,6 @@ public class ConstructorNode extends MethodNode
 		builder.append('}').append('\n');
 		
 		return builder.toString();
-	}
-	
-	/**
-	 * Get whether or not the class that this constructor is within
-	 * contains any private data.
-	 * 
-	 * @return Whether or not the containing class contains private data.
-	 */
-	public boolean containsPrivateData()
-	{
-		ClassNode clazz = (ClassNode)getAncestorOfType(ClassNode.class);
-		
-		PrivateFieldListNode privateFields = clazz.getFieldListNode().getPrivateFieldListNode();
-		
-		return privateFields.getChildren().size() > 0;
 	}
 	
 	/**
