@@ -105,7 +105,7 @@ public class FieldNode extends DeclarationNode
 	@Override
 	public String generateCHeader()
 	{
-		return super.generateCHeader();
+		return generateCSource();
 	}
 
 	/**
