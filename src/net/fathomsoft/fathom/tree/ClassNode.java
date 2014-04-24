@@ -411,6 +411,30 @@ public class ClassNode extends DeclarationNode
 	}
 	
 	/**
+	 * Get whether or not the class contains any private fields.
+	 * 
+	 * @return Whether or not the class contains private data.
+	 */
+	public boolean containsPrivateData()
+	{
+		PrivateFieldListNode privateFields = getFieldListNode().getPrivateFieldListNode();
+		
+		return privateFields.getChildren().size() > 0;
+	}
+	
+	/**
+	 * Get whether or not the class contains any fields.
+	 * 
+	 * @return Whether or not the class contains data.
+	 */
+	public boolean containsData()
+	{
+		PublicFieldListNode fields = getFieldListNode().getPublicFieldListNode();
+		
+		return fields.getChildren().size() > 0 || containsPrivateData();
+	}
+	
+	/**
 	 * @see net.fathomsoft.fathom.tree.TreeNode#generateJavaSource()
 	 */
 	@Override
@@ -489,7 +513,7 @@ public class ClassNode extends DeclarationNode
 		StringBuilder builder = new StringBuilder();
 		
 		// TODO: make use of the modifiers for the c implementation.
-		
+		builder.append('\n');
 		builder.append("CLASS");
 		
 		if (isStatic())
@@ -516,35 +540,41 @@ public class ClassNode extends DeclarationNode
 		
 		builder.append('\n').append('(').append('\n');
 		
-		builder.append(getName()).append(", ");
+		builder.append(getName());
 		
-//		if (getImplementedClasses().size() > 0)
-//		{
-//			builder.append(" implements ");
-//			
-//			for (int i = 0; i < getImplementedClasses().size(); i++)
-//			{
-//				builder.append(getImplementedClasses().get(i));
-//				
-//				if (i < getImplementedClasses().size() - 1)
-//				{
-//					builder.append(", ");
-//				}
-//			}
-//		}
-		
-		builder.append('\n').append('\n');
-
-		FieldListNode fields = getFieldListNode();
-		
-		PublicFieldListNode publicFields = fields.getPublicFieldListNode();
-		
-		if (publicFields.getChildren().size() > 0)
+		if (containsData())
 		{
-			builder.append(publicFields.generateCHeader()).append('\n');
-		}
+			builder.append(", ");
 		
-		builder.append(", struct Private* prv;").append('\n');
+			builder.append('\n').append('\n');
+			
+			FieldListNode fields = getFieldListNode();
+			
+			PublicFieldListNode publicFields = fields.getPublicFieldListNode();
+			
+			if (publicFields.getChildren().size() > 0)
+			{
+				builder.append(publicFields.generateCHeader());
+				
+				if (containsPrivateData())
+				{
+					builder.append('\n');
+				}
+			}
+			
+			if (containsPrivateData())
+			{
+				builder.append("struct Private* prv;").append('\n');
+			}
+			else if (publicFields.getChildren().size() <= 0)
+			{
+				builder.append('\n');
+			}
+		}
+		else
+		{
+			builder.append('\n');
+		}
 		
 		builder.append(')').append('\n').append('\n');
 		
@@ -573,40 +603,27 @@ public class ClassNode extends DeclarationNode
 	{
 		StringBuilder  builder = new StringBuilder();
 		
-		if (containsStaticData())
-		{
-			builder.append(getName()).append("* ").append("__static__").append(getName()).append(';').append('\n').append('\n');
-		}
-		
-//		MethodListNode constructors = getConstructorListNode();
-//		builder.append(constructors.generateCSourcePrototypes());
-//
-//		MethodListNode destructors = getDestructorListNode();
-//		builder.append(destructors.generateCSourcePrototypes());
-//		
-//		MethodListNode methods = getMethodListNode();
-//		
-//		if (methods.getChildren().size() > 0)
-//		{
-//			builder.append(methods.generateCSourcePrototypes());
-//		}
-//		
-//		builder.append('\n');
-		
 		FieldListNode fields = getFieldListNode();
 		
 		PrivateFieldListNode privateFields = fields.getPrivateFieldListNode();
 		
-		if (privateFields.getChildren().size() > 0)
+		if (containsStaticData())
 		{
-			builder.append("PRIVATE").append('\n').append('(').append('\n');
-			
-			builder.append(privateFields.generateCSource());
-			
-			builder.append(')');
+			builder.append('\n');
+			builder.append(getName()).append("* ").append("__static__").append(getName()).append(';').append('\n');
 		}
 		
-		builder.append('\n');
+		if (containsPrivateData())
+		{
+			if (!containsStaticData())
+			{
+				builder.append('\n');
+			}
+			
+			builder.append("PRIVATE").append('\n').append('(').append('\n');
+			builder.append(privateFields.generateCSource());
+			builder.append(')').append('\n');
+		}
 		
 		for (int i = 0; i < getChildren().size(); i++)
 		{
@@ -619,15 +636,6 @@ public class ClassNode extends DeclarationNode
 		}
 		
 		return builder.toString();
-	}
-	
-	/**
-	 * @see net.fathomsoft.fathom.tree.TreeNode#generateCSourceFragment()
-	 */
-	@Override
-	public String generateCSourceFragment()
-	{
-		return null;
 	}
 	
 	/**
