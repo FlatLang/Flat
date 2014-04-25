@@ -35,7 +35,7 @@ import net.fathomsoft.fathom.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 10:04:31 PM
- * @version	v0.2 Apr 3, 2014 at 10:51:56 PM
+ * @version	v0.2.1 Apr 24, 2014 at 4:52:56 PM
  */
 public class MethodCallNode extends IdentifierNode
 {
@@ -131,21 +131,32 @@ public class MethodCallNode extends IdentifierNode
 	 */
 	public MethodNode getMethodNode()
 	{
+		return getMethodNode(getFileNode());
+	}
+	
+	/**
+	 * Get the MethodNode instance that this MethodCallNode is calling.
+	 * 
+	 * @param program The FileNode instance that contains the method.
+	 * @return The MethodNode instance that this MethodCallNode is
+	 * 		calling.
+	 */
+	public MethodNode getMethodNode(FileNode file)
+	{
 		if (isExternal())
 		{
 			return null;
 		}
 		
-		VariableNode var   = getVariableNode();
-		ProgramNode  pNode = getProgramNode();
+		VariableNode var     = getVariableNode();
 		
-		ClassNode    clazz = pNode.getClass(var.getType());
+		ProgramNode  program = file.getProgramNode();
 		
-		FileNode     fNode = (FileNode)getAncestorOfType(FileNode.class);
+		ClassNode    clazz   = program.getClass(var.getType());
 		
-		if (fNode.getImportListNode().containsImport(getName()))
+		if (file.getImportListNode().containsImport(getName()))
 		{
-			clazz = pNode.getClass(getName());
+			clazz = program.getClass(getName());
 			
 			MethodNode method = clazz.getMethod(getName());
 			
@@ -155,6 +166,41 @@ public class MethodCallNode extends IdentifierNode
 		MethodNode method = clazz.getMethod(getName());
 		
 		return method;
+	}
+	
+	/**
+	 * Get the name of the object reference identifier for the given
+	 * MethodCallNode's method node. Static methods return
+	 * "__static__ClassName" and non-static methods return "this".
+	 * The call cannot be that of an external method.
+	 * 
+	 * @return The name of the object reference identifier.
+	 */
+	public String getObjectReferenceIdentifier()
+	{
+		return getObjectReferenceIdentifier(getMethodNode());
+	}
+	
+	/**
+	 * Get the name of the object reference identifier for the given
+	 * Method node. Static methods return "__static__ClassName" and
+	 * non-static methods return "this". The given method cannot be
+	 * external.
+	 * 
+	 * @param method The method to get the object reference identifier
+	 * 		name from.
+	 * @return The name of the object reference identifier.
+	 */
+	public String getObjectReferenceIdentifier(MethodNode method)
+	{
+		if (!method.isStatic())
+		{
+			return ParameterListNode.OBJECT_REFERENCE_IDENTIFIER;
+		}
+		
+		ClassNode clazz = (ClassNode)method.getAncestorOfType(ClassNode.class);
+		
+		return "__static__" + clazz.getName();
 	}
 	
 	/**
@@ -239,31 +285,31 @@ public class MethodCallNode extends IdentifierNode
 		return builder.toString();
 	}
 	
-	/**
-	 * Decode the given statement into a MethodCallNode instance, if
-	 * possible. If it is not possible, this method returns null.<br>
-	 * To determine whether or not a method is called externally,
-	 * refer to {@link #isExternal()} for more details on what an
-	 * external call looks like.
-	 * <br>
-	 * Example inputs include:<br>
-	 * <ul>
-	 * 	<li>methodName(5, varName, methodThatReturnsAValue(), "arg1")</li>
-	 * 	<li>externalFile.cFunctionName()</li>
-	 * 	<li>methodName('q', 5 * (2 / 3))</li>
-	 * </ul>
-	 * 
-	 * @param parent The parent node of the statement.
-	 * @param statement The statement to try to decode into a
-	 * 		MethodCallNode instance.
-	 * @param location The location of the statement in the source code.
-	 * @return The generated node, if it was possible to translated it
-	 * 		into a MethodCallNode.
-	 */
-	public static MethodCallNode decodeStatement(TreeNode parent, String statement, Location location)
-	{
-		return decodeStatement(parent, statement, location, true);
-	}
+//	/**
+//	 * Decode the given statement into a MethodCallNode instance, if
+//	 * possible. If it is not possible, this method returns null.<br>
+//	 * To determine whether or not a method is called externally,
+//	 * refer to {@link #isExternal()} for more details on what an
+//	 * external call looks like.
+//	 * <br>
+//	 * Example inputs include:<br>
+//	 * <ul>
+//	 * 	<li>methodName(5, varName, methodThatReturnsAValue(), "arg1")</li>
+//	 * 	<li>externalFile.cFunctionName()</li>
+//	 * 	<li>methodName('q', 5 * (2 / 3))</li>
+//	 * </ul>
+//	 * 
+//	 * @param parent The parent node of the statement.
+//	 * @param statement The statement to try to decode into a
+//	 * 		MethodCallNode instance.
+//	 * @param location The location of the statement in the source code.
+//	 * @return The generated node, if it was possible to translated it
+//	 * 		into a MethodCallNode.
+//	 */
+//	public static MethodCallNode decodeStatement(TreeNode parent, String statement, Location location)
+//	{
+//		return decodeStatement(parent, statement, location, true);
+//	}
 	
 	/**
 	 * Decode the given statement into a MethodCallNode instance, if
@@ -288,7 +334,7 @@ public class MethodCallNode extends IdentifierNode
 	 * @return The generated node, if it was possible to translated it
 	 * 		into a MethodCallNode.
 	 */
-	public static MethodCallNode decodeStatement(TreeNode parent, String statement, Location location, boolean needsReference)
+	public static MethodCallNode decodeStatement(TreeNode parent, String statement, Location location)//, boolean needsReference)
 	{
 		if (SyntaxUtils.isMethodCall(statement))
 		{
@@ -314,7 +360,7 @@ public class MethodCallNode extends IdentifierNode
 			// subtract the ending ones from the number.
 			if (bounds.getEnd() < 0)
 			{
-				SyntaxMessage.error("Expected a ')' ending parenthesis", location, parent.getController());
+				SyntaxMessage.error("Expected a ')' ending parenthesis", parent.getFileNode(), location, parent.getController());
 				
 				return null;
 			}
@@ -353,8 +399,8 @@ public class MethodCallNode extends IdentifierNode
 				objectInstance.delete(objectInstance.length() - 2, objectInstance.length());
 			}
 			
-			if (needsReference)
-			{
+//			if (needsReference)
+//			{
 				if (objectInstance.length() > 0)
 				{
 					if (fileNode.getImportListNode().isExternal(objectInstance.toString()))
@@ -362,15 +408,11 @@ public class MethodCallNode extends IdentifierNode
 						n.externalCall = true;
 					}
 				}
-				else
-				{
-					objectInstance.append("this");
-				}
-			}
-			else
-			{
-				objectInstance.delete(0, objectInstance.length());
-			}
+//			}
+//			else
+//			{
+//				objectInstance.delete(0, objectInstance.length());
+//			}
 			
 			if (!n.isExternal())
 			{
@@ -393,6 +435,14 @@ public class MethodCallNode extends IdentifierNode
 								
 								staticCall = true;
 							}
+							else
+							{
+								String syntax = objectInstance.toString().replace("->", ".");
+								
+								SyntaxMessage.error("Undeclared identifier '" + syntax + "'", parent.getFileNode(), location, parent.getController());
+								
+								return null;
+							}
 						}
 					}
 					
@@ -400,22 +450,22 @@ public class MethodCallNode extends IdentifierNode
 					{
 						String       caller       = objectInstance.toString();
 						
-						VariableNode variableNode = (VariableNode)TreeNode.getExistingNode(parent, caller);
+						VariableNode variableNode = TreeNode.getExistingNode(parent, caller);
 						
 						if (variableNode != null)
 						{
 							variableNode = variableNode.clone();
 						}
-						else
-						{
-							variableNode = (VariableNode)TreeNode.decodeStatement(parent, caller, location);
-						}
+//						else
+//						{
+//							variableNode = (VariableNode)TreeNode.decodeStatement(parent, caller, location);
+//						}
 						
 						if (variableNode != null)
 						{
 							if (variableNode instanceof VariableNode == false)
 							{
-								SyntaxMessage.error("The method must be referenced from a variable type", location, parent.getController());
+								SyntaxMessage.error("The method must be referenced from a variable type", parent.getFileNode(), location, parent.getController());
 								
 								return null;
 							}
@@ -424,7 +474,7 @@ public class MethodCallNode extends IdentifierNode
 						}
 						else
 						{
-							SyntaxMessage.error("Undefined variable '" + caller + "'", argsLocation, parent.getController());
+							SyntaxMessage.error("Undeclared variable '" + caller + "'", parent.getFileNode(), argsLocation, parent.getController());
 							
 							return null;
 						}
@@ -451,11 +501,26 @@ public class MethodCallNode extends IdentifierNode
 					}
 					
 					VariableNode variableNode = new VariableNode();
-					variableNode.setName(objectInstance.toString(), true);
 					variableNode.setType(clazz.getName());
-					
 					n.addChild(variableNode);
 				}
+			}
+			
+			if (!n.externalCall && objectInstance.length() <= 0)
+			{
+				VariableNode varNode = n.getVariableNode();
+				MethodNode   method  = n.getMethodNode(parent.getFileNode());
+				
+				if (method == null)
+				{
+					SyntaxMessage.error("Undeclared method '" + varNode.getName() + "'", parent.getFileNode(), location, parent.getController());
+					
+					return null;
+				}
+				
+				String reference = n.getObjectReferenceIdentifier(method);
+				
+				varNode.setName(reference, true);
 			}
 			
 			String arguments[] = StringUtils.splitCommas(argumentList);
