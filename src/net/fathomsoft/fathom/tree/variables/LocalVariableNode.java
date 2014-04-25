@@ -36,7 +36,7 @@ import net.fathomsoft.fathom.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:12:00 PM
- * @version	v0.2 Apr 7, 2014 at 7:45:47 PM
+ * @version	v0.2.1 Apr 24, 2014 at 4:58:47 PM
  */
 public class LocalVariableNode extends VariableNode
 {
@@ -179,7 +179,7 @@ public class LocalVariableNode extends VariableNode
 		if (node instanceof LocalVariableNode)
 		{
 			SyntaxMessage.error("Local variable '" + n.getName() + "' has already been declared", node);
-			SyntaxMessage.error("Local variable '" + n.getName() + "' has already been declared", location, parent.getController());
+			SyntaxMessage.error("Local variable '" + n.getName() + "' has already been declared", parent.getFileNode(), location, parent.getController());
 			
 			return null;
 		}
