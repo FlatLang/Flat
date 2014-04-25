@@ -50,7 +50,7 @@ import net.fathomsoft.fathom.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:00:11 PM
- * @version	v0.2 Apr 22, 2014 at 5:36:14 AM
+ * @version	v0.2.1 Apr 24, 2014 at 4:56:14 PM
  */
 public abstract class TreeNode
 {
@@ -99,14 +99,14 @@ public abstract class TreeNode
 	{
 		int lineNumber = 0;
 		
-		if (parent instanceof FileNode == false)
+		if (parent != null && parent instanceof FileNode == false)
 		{
 			lineNumber += parent.getLineNumber();
 		}
 		
 		Location loc = getLocationIn();
 		
-		if (loc != null)
+		if (loc != null && loc.isValid())
 		{
 			lineNumber += loc.getLineNumber();
 		}
@@ -818,46 +818,28 @@ public abstract class TreeNode
 		}
 		else if (SyntaxUtils.isValidIdentifier(statement))
 		{
-			if (statement.equals("this"))
-			{
-				ClassNode clazz = (ClassNode)node.getAncestorOfType(ClassNode.class, true);
-				
-				VariableNode var = new VariableNode();
-				var.setName(MethodNode.getObjectReferenceIdentifier(), true);
-				var.setType(clazz.getName());
-				
-				return var;
-			}
-			
 			TreeNode scopeNode = getAncestorWithScope(node);
 			
 			while (scopeNode != null)
 			{
-				if (scopeNode != null)
+				VariableListNode variables = scopeNode.getScopeNode().getVariableListNode();
+				
+				VariableNode     variable  = variables.getVariable(statement);
+				
+				if (variable != null)
 				{
-					VariableListNode variables = scopeNode.getScopeNode().getVariableListNode();
+					return variable;
+				}
+				
+				if (scopeNode instanceof MethodNode)
+				{
+					MethodNode        methodNode = (MethodNode)scopeNode;
+					ParameterListNode parameters = methodNode.getParameterListNode();
+					ParameterNode     parameter  = parameters.getParameter(statement);
 					
-					VariableNode     variable  = variables.getVariable(statement);
-					
-					if (variable != null)
+					if (parameter != null)
 					{
-						return variable;
-					}
-					
-					if (scopeNode instanceof MethodNode)
-					{
-						MethodNode        methodNode = (MethodNode)scopeNode;
-						ParameterListNode parameters = methodNode.getParameterListNode();
-						
-						for (int i = 0; i < parameters.getChildren().size(); i++)
-						{
-							ParameterNode parameter = (ParameterNode)parameters.getChild(i);
-							
-							if (parameter.getName().equals(statement))
-							{
-								return parameter;
-							}
-						}
+						return parameter;
 					}
 				}
 				
@@ -932,6 +914,28 @@ public abstract class TreeNode
 		}
 		
 		return (ProgramNode)this;
+	}
+	
+	/**
+	 * Get the FileNode of this TreeNode, if it exists.
+	 * 
+	 * @return The FileNode of this TreeNode.
+	 */
+	public FileNode getFileNode()
+	{
+		TreeNode current = this;
+		
+		while (current != null)
+		{
+			if (current instanceof FileNode)
+			{
+				return (FileNode)current;
+			}
+			
+			current = current.parent;
+		}
+		
+		return null;
 	}
 	
 	/**
