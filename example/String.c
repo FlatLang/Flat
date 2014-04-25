@@ -11,13 +11,13 @@ PRIVATE
 char* fathom_data;
 )
 
-String* fathom_String_String(ExceptionData* exceptionData, char* fathom_data_18)
+String* fathom_String_String(ExceptionData* exceptionData, char* fathom_data_67)
 {
 NEW(String, this);
 
 this->prv->fathom_data = 0;
 {
-this->prv->fathom_data = fathom_data_18;
+this->prv->fathom_data = fathom_data_67;
 }
 
 return this;

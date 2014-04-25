@@ -46,43 +46,43 @@ ListNode* fathom_List_getFirst(List* this, ExceptionData* exceptionData)
 return this->prv->fathom_start;
 }
 
-void fathom_List_add(List* this, ExceptionData* exceptionData, Object* fathom_data_22)
+void fathom_List_add(List* this, ExceptionData* exceptionData, Object* fathom_data_98)
 {
-ListNode* fathom_node_22;
+ListNode* fathom_node_98;
 
-fathom_node_22 = fathom_ListNode_ListNode(exceptionData, fathom_data_22);
+fathom_node_98 = fathom_ListNode_ListNode(exceptionData, fathom_data_98);
 if (this->prv->fathom_start == 0)
 {
-this->prv->fathom_start = fathom_node_22;
-this->prv->fathom_current = fathom_node_22;
+this->prv->fathom_start = fathom_node_98;
+this->prv->fathom_current = fathom_node_98;
 }
 else
 {
-fathom_ListNode_setNext(this->prv->fathom_current, exceptionData, fathom_node_22);
+fathom_ListNode_setNext(this->prv->fathom_current, exceptionData, fathom_node_98);
 }
-this->prv->fathom_current = fathom_node_22;
+this->prv->fathom_current = fathom_node_98;
 }
 
-void fathom_List_remove(List* this, ExceptionData* exceptionData, Object* fathom_data_57)
+void fathom_List_remove(List* this, ExceptionData* exceptionData, Object* fathom_data_116)
 {
-ListNode* fathom_prev_57;
-ListNode* fathom_cur_57;
+ListNode* fathom_prev_116;
+ListNode* fathom_cur_116;
 
-if (fathom_ListNode_getData(this->prv->fathom_start, exceptionData) == fathom_data_57)
+if (fathom_ListNode_getData(this->prv->fathom_start, exceptionData) == fathom_data_116)
 {
 this->prv->fathom_start = fathom_ListNode_getNext(this->prv->fathom_start, exceptionData);
 }
-fathom_prev_57 = this->prv->fathom_start;
-fathom_cur_57 = fathom_ListNode_getNext(this->prv->fathom_start, exceptionData);
-while (fathom_cur_57 != 0)
+fathom_prev_116 = this->prv->fathom_start;
+fathom_cur_116 = fathom_ListNode_getNext(this->prv->fathom_start, exceptionData);
+while (fathom_cur_116 != 0)
 {
-Object* fathom_d_196;
+Object* fathom_d_200;
 
-fathom_d_196 = fathom_ListNode_getData(fathom_cur_57, exceptionData);
-if (fathom_d_196 == fathom_data_57)
+fathom_d_200 = fathom_ListNode_getData(fathom_cur_116, exceptionData);
+if (fathom_d_200 == fathom_data_116)
 {
-fathom_ListNode_setNext(fathom_prev_57, exceptionData, fathom_ListNode_getNext(fathom_cur_57, exceptionData));
+fathom_ListNode_setNext(fathom_prev_116, exceptionData, fathom_ListNode_getNext(fathom_cur_116, exceptionData));
 }
-fathom_cur_57 = fathom_ListNode_getNext(fathom_cur_57, exceptionData);
+fathom_cur_116 = fathom_ListNode_getNext(fathom_cur_116, exceptionData);
 }
 }

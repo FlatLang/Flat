@@ -21,6 +21,6 @@ struct Private* prv;
 List* fathom_List_List(ExceptionData* exceptionData);
 void fathom_del_List(List** this, ExceptionData* exceptionData);
 ListNode* fathom_List_getFirst(List* this, ExceptionData* exceptionData);
-void fathom_List_add(List* this, ExceptionData* exceptionData, Object* fathom_data_22);
-void fathom_List_remove(List* this, ExceptionData* exceptionData, Object* fathom_data_57);
+void fathom_List_add(List* this, ExceptionData* exceptionData, Object* fathom_data_98);
+void fathom_List_remove(List* this, ExceptionData* exceptionData, Object* fathom_data_116);
 #endif

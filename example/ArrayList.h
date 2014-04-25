@@ -21,8 +21,8 @@ struct Private* prv;
 
 ArrayList* fathom_ArrayList_ArrayList(ExceptionData* exceptionData);
 void fathom_del_ArrayList(ArrayList** this, ExceptionData* exceptionData);
-void fathom_ArrayList_add(ArrayList* this, ExceptionData* exceptionData, int fathom_var_29);
+void fathom_ArrayList_add(ArrayList* this, ExceptionData* exceptionData, int fathom_var_135);
 void fathom_ArrayList_increaseSize(ArrayList* this, ExceptionData* exceptionData);
 int fathom_ArrayList_getSize(ArrayList* this, ExceptionData* exceptionData);
-int fathom_ArrayList_get(ArrayList* this, ExceptionData* exceptionData, int fathom_index_49);
+int fathom_ArrayList_get(ArrayList* this, ExceptionData* exceptionData, int fathom_index_149);
 #endif

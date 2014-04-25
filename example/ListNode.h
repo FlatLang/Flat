@@ -17,9 +17,9 @@ ListNode,
 struct Private* prv;
 )
 
-ListNode* fathom_ListNode_ListNode(ExceptionData* exceptionData, Object* fathom_data_89);
+ListNode* fathom_ListNode_ListNode(ExceptionData* exceptionData, Object* fathom_data_15);
 void fathom_del_ListNode(ListNode** this, ExceptionData* exceptionData);
 Object* fathom_ListNode_getData(ListNode* this, ExceptionData* exceptionData);
 ListNode* fathom_ListNode_getNext(ListNode* this, ExceptionData* exceptionData);
-void fathom_ListNode_setNext(ListNode* this, ExceptionData* exceptionData, ListNode* fathom_next_130);
+void fathom_ListNode_setNext(ListNode* this, ExceptionData* exceptionData, ListNode* fathom_next_137);
 #endif

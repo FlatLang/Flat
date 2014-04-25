@@ -12,15 +12,15 @@ int fathom_age;
 String* fathom_name;
 )
 
-Person* fathom_Person_Person(ExceptionData* exceptionData, String* fathom_name_13, int fathom_age_13)
+Person* fathom_Person_Person(ExceptionData* exceptionData, String* fathom_name_18, int fathom_age_18)
 {
 NEW(Person, this);
 
 this->prv->fathom_age = 0;
 this->prv->fathom_name = 0;
 {
-this->prv->fathom_name = fathom_name_13;
-this->prv->fathom_age = fathom_age_13;
+this->prv->fathom_name = fathom_name_18;
+this->prv->fathom_age = fathom_age_18;
 }
 
 return this;

@@ -25,9 +25,9 @@ Test
 
 Test* fathom_Test_Test(ExceptionData* exceptionData);
 void fathom_del_Test(Test** this, ExceptionData* exceptionData);
-void fathom_Test_main(ExceptionData* exceptionData, String** fathom_args_61);
-int fathom_Test_divide(Test* this, ExceptionData* exceptionData, int fathom_numerator_67, int fathom_denominator_67);
-int fathom_Test_getEvenNumber(Test* this, ExceptionData* exceptionData, int fathom_num_75);
+void fathom_Test_main(ExceptionData* exceptionData, String** fathom_args_85);
+int fathom_Test_divide(Test* this, ExceptionData* exceptionData, int fathom_numerator_96, int fathom_denominator_96);
+int fathom_Test_getEvenNumber(Test* this, ExceptionData* exceptionData, int fathom_num_108);
 int fathom_Test_test(Test* this, ExceptionData* exceptionData);
 int fathom_Test_test2(Test* this, ExceptionData* exceptionData);
 extern Test* __static__Test;

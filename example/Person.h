@@ -17,7 +17,7 @@ Person,
 struct Private* prv;
 )
 
-Person* fathom_Person_Person(ExceptionData* exceptionData, String* fathom_name_13, int fathom_age_13);
+Person* fathom_Person_Person(ExceptionData* exceptionData, String* fathom_name_18, int fathom_age_18);
 void fathom_del_Person(Person** this, ExceptionData* exceptionData);
 int fathom_Person_getAge(Person* this, ExceptionData* exceptionData);
 String* fathom_Person_getName(Person* this, ExceptionData* exceptionData);
