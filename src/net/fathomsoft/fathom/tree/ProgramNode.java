@@ -10,7 +10,7 @@ import net.fathomsoft.fathom.Fathom;
  * 
  * @author	Braden Steffaniak
  * @since	v0.2 Apr 14, 2014 at 11:52:33 PM
- * @version	v0.2 Apr 14, 2014 at 11:52:33 PM
+ * @version	v0.2.1 Apr 24, 2014 at 4:53:33 PM
  */
 public class ProgramNode extends TreeNode
 {
@@ -25,6 +25,19 @@ public class ProgramNode extends TreeNode
 	public ProgramNode(Fathom controller)
 	{
 		this.controller = controller;
+	}
+	
+	/**
+	 * Override addChild(TreeNode) method to make it synchronized. Needs
+	 * to be synchronized so that the threads dont try to write their
+	 * file nodes to the ProgramNode at the same time and end up creating
+	 * empty spaces in the tree.
+	 * 
+	 * @see net.fathomsoft.fathom.tree.TreeNode#addChild(net.fathomsoft.fathom.tree.TreeNode)
+	 */
+	public synchronized void addChild(TreeNode child)
+	{
+		super.addChild(child);
 	}
 	
 	/**
@@ -48,6 +61,32 @@ public class ProgramNode extends TreeNode
 			FileNode node = (FileNode)getChild(i);
 			
 			node.validateClasses();
+		}
+	}
+	
+	/**
+	 * Make sure that the Field declarations are valid.
+	 */
+	public void validateFields()
+	{
+		for (int i = 0; i < getChildren().size(); i++)
+		{
+			FileNode node = (FileNode)getChild(i);
+			
+			node.validateFields();
+		}
+	}
+	
+	/**
+	 * Make sure that the Method declarations are valid.
+	 */
+	public void validateMethods()
+	{
+		for (int i = 0; i < getChildren().size(); i++)
+		{
+			FileNode node = (FileNode)getChild(i);
+			
+			node.validateMethods();
 		}
 	}
 	
