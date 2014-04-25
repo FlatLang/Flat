@@ -28,7 +28,7 @@ import net.fathomsoft.fathom.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Feb 18, 2014 at 8:57:00 PM
- * @version	v0.2 Apr 2, 2014 at 7:26:44 PM
+ * @version	v0.2.1 Apr 24, 2014 at 4:50:44 PM
  */
 public class FileNode extends IdentifierNode
 {
@@ -52,7 +52,8 @@ public class FileNode extends IdentifierNode
 			"ExceptionHandler.h",
 			"ExceptionData",
 			"Object",
-			"String"
+			"String",
+			"DivideByZeroException"
 		};
 	}
 	
@@ -144,7 +145,43 @@ public class FileNode extends IdentifierNode
 			{
 				ClassNode clazz = (ClassNode)child;
 				
-				clazz.validate();
+				clazz.validateDeclaration();
+			}
+		}
+	}
+	
+	/**
+	 * Make sure that the Field declarations are valid.
+	 */
+	public void validateFields()
+	{
+		for (int i = 0; i < getChildren().size(); i++)
+		{
+			TreeNode child = getChild(i);
+			
+			if (child != getImportListNode())
+			{
+				ClassNode clazz = (ClassNode)child;
+				
+				clazz.validateFields();
+			}
+		}
+	}
+	
+	/**
+	 * Make sure that the Method declarations are valid.
+	 */
+	public void validateMethods()
+	{
+		for (int i = 0; i < getChildren().size(); i++)
+		{
+			TreeNode child = getChild(i);
+			
+			if (child != getImportListNode())
+			{
+				ClassNode clazz = (ClassNode)child;
+				
+				clazz.validateMethods();
 			}
 		}
 	}
@@ -185,7 +222,7 @@ public class FileNode extends IdentifierNode
 		}
 		else
 		{
-			SyntaxMessage.error("Unexpected statement", child.getLocationIn(), getController());
+			SyntaxMessage.error("Unexpected statement", getFileNode(), child.getLocationIn(), getController());
 			
 			//super.addChild(child);
 		}
