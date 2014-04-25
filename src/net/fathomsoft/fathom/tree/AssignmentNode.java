@@ -33,7 +33,7 @@ import net.fathomsoft.fathom.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:19:44 PM
- * @version	v0.2 March 28, 2014 at 9:19:44 PM
+ * @version	v0.2.1 Apr 24, 2014 at 4:49:44 PM
  */
 public class AssignmentNode extends TreeNode
 {
@@ -184,15 +184,14 @@ public class AssignmentNode extends TreeNode
 		
 		AssignmentNode n = new AssignmentNode();
 		
-		Bounds bounds    = Regex.boundsOf(statement, Patterns.PRE_EQUALS_SIGN);
+		Bounds    bounds = Regex.boundsOf(statement, Patterns.PRE_EQUALS_SIGN);
 		
-		int equalsIndex  = StringUtils.findNextNonWhitespaceIndex(statement, bounds.getEnd());
+		int  equalsIndex = StringUtils.findNextNonWhitespaceIndex(statement, bounds.getEnd());
+		int     endIndex = StringUtils.findNextNonWhitespaceIndex(statement, equalsIndex - 1, -1) + 1;
 		
-		int endIndex     = StringUtils.findNextNonWhitespaceIndex(statement, equalsIndex - 1, -1) + 1;
+		String  variable = statement.substring(0, endIndex);
 		
-		String variable  = statement.substring(0, endIndex);
-		
-		Location varLoc = new Location(location);
+		Location  varLoc = new Location(location);
 		varLoc.getBounds().setEnd(varLoc.getStart() + endIndex);
 		
 		TreeNode varNode = null;
@@ -205,11 +204,11 @@ public class AssignmentNode extends TreeNode
 			}
 			else
 			{
-				varNode = (VariableNode)TreeNode.getExistingNode(parent, variable);
+				varNode = TreeNode.getExistingNode(parent, variable);
 				
 				if (varNode == null)
 				{
-					SyntaxMessage.error("Variable '" + variable + "' was not declared", location, parent.getController());
+					SyntaxMessage.error("Undeclared variable '" + variable + "'", parent.getFileNode(), location, parent.getController());
 					
 					return null;
 				}
@@ -253,7 +252,7 @@ public class AssignmentNode extends TreeNode
 //					}
 //					else if (varNode instanceof ArrayAccessNode == false)
 //					{
-//						SyntaxMessage.error("Undefined variable '" + variable + "'", location);
+//						SyntaxMessage.error("Undeclared variable '" + variable + "'", location);
 //						
 //						return null;
 //					}
