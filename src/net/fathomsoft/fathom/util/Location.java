@@ -24,7 +24,7 @@ package net.fathomsoft.fathom.util;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 7, 2014 at 10:11:40 AM
- * @version	v0.2 Apr 5, 2014 at 3:34:59 PM
+ * @version	v0.2.1 Apr 24, 2014 at 4:59:59 PM
  */
 public class Location
 {
@@ -153,5 +153,16 @@ public class Location
 	{
 		bounds.setStart(start);
 		bounds.setEnd(end);
+	}
+	
+	/**
+	 * Get whether the line number is a valid location in a source
+	 * file, or just generated.
+	 * 
+	 * @return Whether or not the Location is valid in the source file.
+	 */
+	public boolean isValid()
+	{
+		return lineNumber > 0;
 	}
 }
