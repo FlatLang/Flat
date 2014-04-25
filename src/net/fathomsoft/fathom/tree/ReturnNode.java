@@ -28,7 +28,7 @@ import net.fathomsoft.fathom.util.Regex;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:58:29 PM
- * @version	v0.2 Apr 5, 2014 at 10:43:26 PM
+ * @version	v0.2.1 Apr 24, 2014 at 4:54:26 PM
  */
 public class ReturnNode extends TreeNode
 {
@@ -153,7 +153,7 @@ public class ReturnNode extends TreeNode
 				}
 				if (child == null)
 				{
-					child = TreeNode.decodeStatement(parent, statement, location);
+					child = TreeNode.decodeStatement(parent, statement, newLoc);
 				}
 				if (child == null)
 				{
