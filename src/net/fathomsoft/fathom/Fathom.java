@@ -42,10 +42,8 @@ import net.fathomsoft.fathom.util.SyntaxUtils;
  * File used for the compilation process.
  * 
  * @author	Braden Steffaniak
- * @since	Jan 5, 2014 at 9:00:04 PM
- * @since	v0.1
- * @version	Mar 28, 2014 at 6:15:04 PM
- * @version	v0.2
+ * @since	v0.1 Jan 5, 2014 at 9:00:04 PM
+ * @version	v0.2.1 Apr 24, 2014 at 4:47:04 PM
  */
 public class Fathom
 {
@@ -63,7 +61,7 @@ public class Fathom
 	private ArrayList<File>		inputFiles, cSourceFiles, cHeaderFiles;
 	
 	private List<File>			lingeringFiles;
-
+	
 	private static final int	os;
 
 	private static final String	OUTPUT_EXTENSION;
@@ -71,7 +69,7 @@ public class Fathom
 	public static final boolean	ANDROID_DEBUG = false;
 	public static final boolean	DEBUG         = true;
 	
-	public static final int		BENCHMARK     = 1;
+	public static final int		BENCHMARK     = 0;
 	
 	public static final long	CSOURCE       = 0x1l;
 	public static final long	VERBOSE       = 0x10l;
@@ -90,6 +88,7 @@ public class Fathom
 	public static final int		LINUX         = 3;
 	
 	public static final String	LANGUAGE_NAME = "Fathom";
+	public static final String	VERSION       = "v0.2.1";
 	
 	/**
 	 * Find out which operating system the compiler is running on.
@@ -141,13 +140,13 @@ public class Fathom
 	 */
 	private Fathom(String args[])
 	{
-		if (BENCHMARK > 1)
+		if (BENCHMARK > 0)
 		{
 			try
 			{
 				System.out.println("Preparing Benchmark...");
 				
-				Thread.sleep(2500);
+				Thread.sleep(1000);
 				
 				System.out.println("Starting...");
 			}
@@ -199,6 +198,8 @@ public class Fathom
 				directory + "Math.fat",
 				directory + "Time.fat",
 				directory + "Person.fat",
+				directory + "DivideByZeroException.fat",
+				directory + "NotEvenNumberException.fat",
 //				directory + "Fathom.fat",
 				directory + "Object.fat",
 				directory + "List.fat",
@@ -206,8 +207,9 @@ public class Fathom
 				"-o", directory + "bin/Executable" + OUTPUT_EXTENSION,
 				"-dir", '"' + directory + "../include" + '"',
 				"-run",
-				"-csource",
+//				"-csource",
 				"-v",
+				"-tcc",
 //				"-cargs",
 				"-keepc",
 //				"-library",
@@ -220,7 +222,7 @@ public class Fathom
 		
 		parseArguments(args);
 		
-		log("Fathom  Copyright (C) 2014  Braden Steffaniak <BradenSteffaniak@gmail.com>\n" +
+		log("Fathom " + VERSION + " Copyright (C) 2014  Braden Steffaniak <BradenSteffaniak@gmail.com>\n" +
 				"This program comes with ABSOLUTELY NO WARRANTY\n" + //; for details type show w." +
 				"This is free software, and you are welcome to redistribute it\n" +
 				"under certain conditions");//; type show c for details.");
@@ -232,7 +234,14 @@ public class Fathom
 		// Try to create a Syntax Tree for the given file.
 		try
 		{
-			for (int i = 0; i < BENCHMARK; i++)
+			int times = 1;
+			
+			if (BENCHMARK > 0)
+			{
+				times = BENCHMARK;
+			}
+			
+			for (int i = 0; i < times; i++)
 			{
 				tree = new SyntaxTree(inputFiles.toArray(new File[0]), this);
 			}
@@ -248,17 +257,25 @@ public class Fathom
 			completed();
 		}
 		
-//		log("Generating the output c header code from the input file '" + file.getName() + "'...");
-//		String headers[] = tree.getHeaderOutput();
-//		
-//		log("Generating the output c source code from the input file '" + file.getName() + "'...");
-//		String sources[] = tree.getSourceOutput();
-		
 		insertMainMethod();
 		
 		long time = System.currentTimeMillis() - startTime;
 		
-		log("Fathom compile time: " + time + "ms");
+		String str = "Fathom compile time: " + time + "ms";
+		
+		if (BENCHMARK > 0)
+		{
+			if (BENCHMARK > 1)
+			{
+				str += " (Average of " + Math.round(time / (float)BENCHMARK) + "ms)";
+			}
+			
+			System.out.println(str);
+		}
+		else
+		{
+			log(str);
+		}
 		
 		if (isFlagEnabled(CSOURCE))
 		{
@@ -266,8 +283,9 @@ public class Fathom
 			tree.formatCOutput();
 		}
 		
-		String headers[] = tree.getCHeaderOutput();
-		String sources[] = tree.getCSourceOutput();
+		String headers[]   = tree.getCHeaderOutput();
+		String sources[]   = tree.getCSourceOutput();
+		String filenames[] = tree.getFilenames();
 		
 		if (isFlagEnabled(CSOURCE))
 		{
@@ -280,12 +298,9 @@ public class Fathom
 		
 		for (int i = 0; i < inputFiles.size(); i++)
 		{
-			File   file   = inputFiles.get(i);
-			String header = headers[i];
-			String source = sources[i];
-			
-			String fileName = file.getName();
-			fileName        = fileName.substring(0, fileName.lastIndexOf('.'));
+			String header   = headers[i];
+			String source   = sources[i];
+			String fileName = filenames[i];
 			
 			try
 			{
@@ -401,12 +416,12 @@ public class Fathom
 			mainMethodText.append	('\n');
 			mainMethodText.append	("TRY").append('\n');
 			mainMethodText.append	('{').append('\n');
-			mainMethodText.append		(mainMethod.generateCSourceName()).append("(__static__").append(classNode.getName()).append(", ").append(ExceptionNode.EXCEPTION_DATA_IDENTIFIER).append(", args);").append('\n');
+			mainMethodText.append		(mainMethod.generateCSourceName()).append('(').append(ExceptionNode.EXCEPTION_DATA_IDENTIFIER).append(", args);").append('\n');
 			mainMethodText.append	('}').append('\n');
 			mainMethodText.append	("CATCH (1)").append('\n');
 			mainMethodText.append	('{').append('\n');
 			mainMethodText.append		("printf(\"You broke it.\");").append('\n');
-			mainMethodText.append		(LANGUAGE_NAME.toLowerCase()).append("_IO_waitForEnter(__static__IO, 0);").append('\n');
+			mainMethodText.append		(LANGUAGE_NAME.toLowerCase()).append("_IO_waitForEnter(0);").append('\n');
 			mainMethodText.append	('}').append('\n');
 			mainMethodText.append	("FINALLY").append('\n');
 			mainMethodText.append	('{').append('\n');
@@ -465,8 +480,8 @@ public class Fathom
 		
 		cmd.append("-o ").append('"').append(outputFile.getAbsolutePath()).append('"').append(' ');
 		
-		cmd.append("-O2 ");
-//		cmd.append("-s");
+//		cmd.append("-O2 ");
+//		cmd.append("-s ");
 		
 		if (os == LINUX)
 		{
@@ -491,7 +506,6 @@ public class Fathom
 		
 		command.addCommandListener(new CommandListener()
 		{
-			
 			@Override
 			public void resultReceived(int result)
 			{
@@ -878,18 +892,7 @@ public class Fathom
 	{
 		stopTimer();
 		
-		String str = "Compile time: " + getCompileTime() + "ms";
-		
-		if (BENCHMARK > 1)
-		{
-			str += " (Average of " + Math.round(getCompileTime() / (float)BENCHMARK) + "ms)";
-			
-			System.out.println(str);
-		}
-		else
-		{
-			log(str);
-		}
+		log("Compile time: " + getCompileTime() + "ms");
 		
 		deleteLingeringFiles();
 		
