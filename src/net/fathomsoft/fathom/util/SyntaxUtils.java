@@ -35,7 +35,7 @@ import net.fathomsoft.fathom.tree.variables.FieldNode;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Mar 15, 2014 at 7:55:00 PM
- * @version	v0.2 Apr 8, 2014 at 6:08:56 PM
+ * @version	v0.2.1 Apr 24, 2014 at 5:00:56 PM
  */
 public class SyntaxUtils
 {
@@ -240,9 +240,12 @@ public class SyntaxUtils
 	 */
 	public static boolean isValidIdentifier(String value)
 	{
-		Bounds bounds = Regex.boundsOf(value, Patterns.IDENTIFIER);
+		if (Regex.matches(value, Patterns.IDENTIFIER))
+		{
+			return !SyntaxUtils.isNumber(value.charAt(0) + "");
+		}
 		
-		return bounds.getStart() == 0 && bounds.getEnd() == value.length();
+		return false;
 	}
 	
 	/**
