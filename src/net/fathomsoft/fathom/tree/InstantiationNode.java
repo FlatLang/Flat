@@ -104,9 +104,9 @@ public class InstantiationNode extends IdentifierNode
 		{
 			n = new InstantiationNode();
 			
-			int startIndex = Regex.indexOf(statement, Patterns.POST_INSTANTIATION);
+			int startIndex  = Regex.indexOf(statement, Patterns.POST_INSTANTIATION);
 			
-			String action = statement.substring(startIndex);
+			String action   = statement.substring(startIndex);
 			
 			Location newLoc = new Location();
 			newLoc.setLineNumber(location.getLineNumber());
