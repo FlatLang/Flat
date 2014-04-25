@@ -19,7 +19,7 @@ import net.fathomsoft.fathom.tree.variables.VariableNode;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Apr 5, 2014 at 10:54:20 PM
- * @version	v0.2 Apr 5, 2014 at 10:54:20 PM
+ * @version	v0.2.1 Apr 24, 2014 at 4:54:20 PM
  */
 public class ScopeNode extends TreeNode
 {
@@ -111,7 +111,9 @@ public class ScopeNode extends TreeNode
 		
 		for (int i = 0; i < getChildren().size(); i++)
 		{
-			builder.append(getChild(i).generateCSource());
+			TreeNode child = getChild(i);
+			
+			builder.append(child.generateCSource());
 		}
 		
 		builder.append('}').append('\n');
