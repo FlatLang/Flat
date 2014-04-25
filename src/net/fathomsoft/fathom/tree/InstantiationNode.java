@@ -30,7 +30,7 @@ import net.fathomsoft.fathom.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Apr 3, 2014 at 7:53:35 PM
- * @version	v0.2 Apr 3, 2014 at 7:53:35 PM
+ * @version	v0.2.1 Apr 24, 2014 at 4:52:35 PM
  */
 public class InstantiationNode extends IdentifierNode
 {
@@ -120,7 +120,12 @@ public class InstantiationNode extends IdentifierNode
 //				
 //				String type = action.substring(0, bounds.getEnd());
 				
-				MethodCallNode methodCall = MethodCallNode.decodeStatement(parent, action, newLoc, false);
+				MethodCallNode methodCall = MethodCallNode.decodeStatement(parent, action, newLoc);//, false);
+				
+				if (methodCall == null)
+				{
+					return null;
+				}
 				
 				n.setName(methodCall.getName());
 				
@@ -140,7 +145,7 @@ public class InstantiationNode extends IdentifierNode
 			}
 			else
 			{
-				SyntaxMessage.error("Unable to parse instantiation", newLoc, parent.getController());
+				SyntaxMessage.error("Unable to parse instantiation", parent.getFileNode(), newLoc, parent.getController());
 				
 				return null;
 			}
