@@ -33,7 +33,7 @@ import net.fathomsoft.fathom.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:10:53 PM
- * @version	v0.2 Apr 5, 2014 at 2:54:32 PM
+ * @version	v0.2.1 Apr 24, 2014 at 4:53:32 PM
  */
 public class MethodNode extends DeclarationNode
 {
@@ -76,7 +76,7 @@ public class MethodNode extends DeclarationNode
 	 */
 	public boolean needsReference()
 	{
-		return this instanceof ConstructorNode == false;
+		return this instanceof ConstructorNode == false && !isStatic();
 	}
 	
 	/**
@@ -115,6 +115,14 @@ public class MethodNode extends DeclarationNode
 	public static String getObjectReferenceIdentifier()
 	{
 		return ParameterListNode.OBJECT_REFERENCE_IDENTIFIER;
+	}
+	
+	/**
+	 * Validate the parameters of the method header.
+	 */
+	public void validate()
+	{
+		getParameterListNode().validate();
 	}
 	
 	/**
@@ -200,7 +208,7 @@ public class MethodNode extends DeclarationNode
 //		}
 		if (isConstant())
 		{
-			SyntaxMessage.error("Const methods are not supported in the C implementation yet", getLocationIn(), getController());
+			SyntaxMessage.error("Const methods are not supported in the C implementation yet", getFileNode(), getLocationIn(), getController());
 			
 			return null;
 //			builder.append(getConstantText()).append(' ');
@@ -405,7 +413,7 @@ public class MethodNode extends DeclarationNode
 			// subtract the ending ones from the number.
 			if (lastParenthIndex < 0)
 			{
-				SyntaxMessage.error("Expected a ')' ending parenthesis", location, parent.getController());
+				SyntaxMessage.error("Expected a ')' ending parenthesis", parent.getFileNode(), location, parent.getController());
 				
 				return null;
 			}
@@ -451,7 +459,7 @@ public class MethodNode extends DeclarationNode
 					
 					if (param == null)
 					{
-						SyntaxMessage.error("Incorrect parameter definition", location, parent.getController());
+						SyntaxMessage.error("Incorrect parameter definition", parent.getFileNode(), location, parent.getController());
 						
 						return null;
 					}
