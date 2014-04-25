@@ -21,7 +21,7 @@ __Aim__
 __Pre-requisites__
 
   * The early version of the compiler uses Java 1.6 or later.
-  * Currently any Windows 95 (x86) machine or later.
+  * Any Windows 95 (x86) machine or later. (Or any machine that contains GCC/Clang)
   * Patience. (There will be bugs)
 
 
@@ -56,5 +56,7 @@ __Optional arguments to the Compiler Include__
   * `-cargs` Display the arguments that were passed to the c compiler.
 
 The default c compiler is TCC because it is more stable at the moment.
+
+
 
 © 2014 Fathomsoft
