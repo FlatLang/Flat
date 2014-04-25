@@ -34,7 +34,8 @@ __Instructions of Use__
 
 
 
-__An Example command to compile a source__<br>
+__An Example command to compile a source__
+
 `java -jar Fathom.jar SourceFile1.fat SourceFile2.fat -o OutputExecutable.exe`
 
   * The `java -jar Fathom.jar` component of the command is needed to run the compiler program.
@@ -56,4 +57,4 @@ __Optional arguments to the Compiler Include__
 
 The default c compiler is TCC because it is more stable at the moment.
 
-© 2014 Fathomsoft
+Â© 2014 Fathomsoft
