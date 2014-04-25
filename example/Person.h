@@ -8,16 +8,17 @@ typedef struct Person Person;
 #include "ExceptionData.h"
 #include "Object.h"
 #include "String.h"
+#include "DivideByZeroException.h"
 
 CLASS
 (
-	Person, 
-	
-	, struct Private* prv;
+Person, 
+
+struct Private* prv;
 )
 
-Person* fathom_Person_Person(ExceptionData* exceptionData, String* fathom_name_134, int fathom_age_134);
-void fathom_del_Person(Person** reference, ExceptionData* exceptionData);
-int fathom_Person_getAge(Person* reference, ExceptionData* exceptionData);
-String* fathom_Person_getName(Person* reference, ExceptionData* exceptionData);
+Person* fathom_Person_Person(ExceptionData* exceptionData, String* fathom_name_13, int fathom_age_13);
+void fathom_del_Person(Person** this, ExceptionData* exceptionData);
+int fathom_Person_getAge(Person* this, ExceptionData* exceptionData);
+String* fathom_Person_getName(Person* this, ExceptionData* exceptionData);
 #endif

@@ -8,18 +8,17 @@ typedef struct Time Time;
 #include "ExceptionData.h"
 #include "Object.h"
 #include "String.h"
+#include "DivideByZeroException.h"
 #include <Fathom.h>
 
 CLASS
 (
-	Time, 
-	
-	, struct Private* prv;
+Time
 )
 
 Time* fathom_Time_Time(ExceptionData* exceptionData);
-void fathom_del_Time(Time** reference, ExceptionData* exceptionData);
-long_long fathom_Time_currentTimeMillis(Time* reference, ExceptionData* exceptionData);
+void fathom_del_Time(Time** this, ExceptionData* exceptionData);
+long_long fathom_Time_currentTimeMillis(ExceptionData* exceptionData);
 extern Time* __static__Time;
 
 #endif

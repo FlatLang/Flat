@@ -8,6 +8,7 @@ typedef struct IO IO;
 #include "ExceptionData.h"
 #include "Object.h"
 #include "String.h"
+#include "DivideByZeroException.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include "String.h"
@@ -15,20 +16,18 @@ typedef struct IO IO;
 
 CLASS
 (
-	IO, 
-	
-	, struct Private* prv;
+IO
 )
 
 IO* fathom_IO_IO(ExceptionData* exceptionData);
-void fathom_del_IO(IO** reference, ExceptionData* exceptionData);
-void fathom_IO_println(IO* reference, ExceptionData* exceptionData, String* fathom_text_18);
-void fathom_IO_print(IO* reference, ExceptionData* exceptionData, String* fathom_text_21);
-void fathom_IO_printi(IO* reference, ExceptionData* exceptionData, int fathom_j_24);
-void fathom_IO_printl(IO* reference, ExceptionData* exceptionData, long_long fathom_j_27);
-int fathom_IO_getInt(IO* reference, ExceptionData* exceptionData);
-String* fathom_IO_getLine(IO* reference, ExceptionData* exceptionData);
-void fathom_IO_waitForEnter(IO* reference, ExceptionData* exceptionData);
+void fathom_del_IO(IO** this, ExceptionData* exceptionData);
+void fathom_IO_println(ExceptionData* exceptionData, String* fathom_text_93);
+void fathom_IO_print(ExceptionData* exceptionData, String* fathom_text_120);
+void fathom_IO_printi(ExceptionData* exceptionData, int fathom_j_127);
+void fathom_IO_printl(ExceptionData* exceptionData, long_long fathom_j_132);
+int fathom_IO_getInt(ExceptionData* exceptionData);
+String* fathom_IO_getLine(ExceptionData* exceptionData);
+void fathom_IO_waitForEnter(ExceptionData* exceptionData);
 extern IO* __static__IO;
 
 #endif

@@ -4,6 +4,7 @@
 #include "ExceptionData.h"
 #include "Object.h"
 #include "String.h"
+#include "DivideByZeroException.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include "String.h"
@@ -11,81 +12,79 @@
 
 IO* __static__IO;
 
-
-
 IO* fathom_IO_IO(ExceptionData* exceptionData)
 {
-	NEW(IO, reference,);
-	
-	{
-	}
-	
-	return reference;
+NEW(IO, this,);
+
+{
 }
 
-void fathom_del_IO(IO** reference, ExceptionData* exceptionData)
-{
-	if (!*reference)
-	{
-		return;
-	}
-	
-	
-	{
-	}
-	free(*reference);
+return this;
 }
 
-void fathom_IO_println(IO* reference, ExceptionData* exceptionData, String* fathom_text_18)
+void fathom_del_IO(IO** this, ExceptionData* exceptionData)
 {
-	fathom_IO_print(reference, exceptionData, fathom_text_18);
-	fathom_IO_print(reference, exceptionData, fathom_String_String(exceptionData, "\n"));
+if (!*this)
+{
+return;
 }
 
-void fathom_IO_print(IO* reference, ExceptionData* exceptionData, String* fathom_text_21)
+
 {
-	const char* fathom_cText_21;
-	
-	fathom_cText_21 = fathom_String_toCharArray(fathom_text_21, exceptionData);
-	printf(fathom_cText_21);
+}
+free(*this);
 }
 
-void fathom_IO_printi(IO* reference, ExceptionData* exceptionData, int fathom_j_24)
+void fathom_IO_println(ExceptionData* exceptionData, String* fathom_text_93)
 {
-	printf("%d", fathom_j_24);
+fathom_IO_print(exceptionData, fathom_text_93);
+fathom_IO_print(exceptionData, fathom_String_String(exceptionData, "\n"));
 }
 
-void fathom_IO_printl(IO* reference, ExceptionData* exceptionData, long_long fathom_j_27)
+void fathom_IO_print(ExceptionData* exceptionData, String* fathom_text_120)
 {
-	printf("%llu", fathom_j_27);
+const char* fathom_cText_120;
+
+fathom_cText_120 = fathom_String_toCharArray(fathom_text_120, exceptionData);
+printf(fathom_cText_120);
 }
 
-int fathom_IO_getInt(IO* reference, ExceptionData* exceptionData)
+void fathom_IO_printi(ExceptionData* exceptionData, int fathom_j_127)
 {
-	String* fathom_s_30;
-	char* fathom_data_30;
-	int fathom_num_30;
-	
-	fathom_s_30 = fathom_IO_getLine(reference, exceptionData);
-	fathom_data_30 = fathom_String_toCharArray(fathom_s_30, exceptionData);
-	fathom_num_30 = atoi(fathom_data_30);
-	return fathom_num_30;
+printf("%d", fathom_j_127);
 }
 
-String* fathom_IO_getLine(IO* reference, ExceptionData* exceptionData)
+void fathom_IO_printl(ExceptionData* exceptionData, long_long fathom_j_132)
 {
-	char* fathom_line_33;
-	String* fathom_s_33;
-	
-	fathom_line_33 = ufgets(stdin);
-	fathom_s_33 = fathom_String_String(exceptionData, fathom_line_33);
-	return fathom_s_33;
+printf("%llu", fathom_j_132);
 }
 
-void fathom_IO_waitForEnter(IO* reference, ExceptionData* exceptionData)
+int fathom_IO_getInt(ExceptionData* exceptionData)
 {
-	char* fathom_c_36;
-	
-	fathom_c_36 = (char*)malloc(sizeof(char) * 2);
-	fgets(fathom_c_36, 2, stdin);
+String* fathom_s_138;
+char* fathom_data_138;
+int fathom_num_138;
+
+fathom_s_138 = fathom_IO_getLine(exceptionData);
+fathom_data_138 = fathom_String_toCharArray(fathom_s_138, exceptionData);
+fathom_num_138 = atoi(fathom_data_138);
+return fathom_num_138;
+}
+
+String* fathom_IO_getLine(ExceptionData* exceptionData)
+{
+char* fathom_line_144;
+String* fathom_s_144;
+
+fathom_line_144 = ufgets(stdin);
+fathom_s_144 = fathom_String_String(exceptionData, fathom_line_144);
+return fathom_s_144;
+}
+
+void fathom_IO_waitForEnter(ExceptionData* exceptionData)
+{
+char* fathom_c_150;
+
+fathom_c_150 = (char*)malloc(sizeof(char) * 2);
+fgets(fathom_c_150, 2, stdin);
 }

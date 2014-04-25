@@ -8,6 +8,7 @@ typedef struct Test Test;
 #include "ExceptionData.h"
 #include "Object.h"
 #include "String.h"
+#include "DivideByZeroException.h"
 #include "IO.h"
 #include "String.h"
 #include "ArrayList.h"
@@ -15,21 +16,20 @@ typedef struct Test Test;
 #include "Time.h"
 #include "Person.h"
 #include "List.h"
+#include "NotEvenNumberException.h"
 
 CLASS
 (
-	Test, 
-	
-	, struct Private* prv;
+Test
 )
 
 Test* fathom_Test_Test(ExceptionData* exceptionData);
-void fathom_del_Test(Test** reference, ExceptionData* exceptionData);
-void fathom_Test_main(Test* reference, ExceptionData* exceptionData, String** fathom_args_3);
-int fathom_Test_divide(Test* reference, ExceptionData* exceptionData, int fathom_numerator_6, int fathom_denominator_6);
-int fathom_Test_getEvenNumber(Test* reference, ExceptionData* exceptionData, int fathom_num_9);
-int fathom_Test_test(Test* reference, ExceptionData* exceptionData);
-int fathom_Test_test2(Test* reference, ExceptionData* exceptionData);
+void fathom_del_Test(Test** this, ExceptionData* exceptionData);
+void fathom_Test_main(ExceptionData* exceptionData, String** fathom_args_61);
+int fathom_Test_divide(Test* this, ExceptionData* exceptionData, int fathom_numerator_67, int fathom_denominator_67);
+int fathom_Test_getEvenNumber(Test* this, ExceptionData* exceptionData, int fathom_num_75);
+int fathom_Test_test(Test* this, ExceptionData* exceptionData);
+int fathom_Test_test2(Test* this, ExceptionData* exceptionData);
 extern Test* __static__Test;
 
 #endif

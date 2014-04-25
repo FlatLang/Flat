@@ -8,15 +8,14 @@ typedef struct Object Object;
 #include "ExceptionData.h"
 #include "Object.h"
 #include "String.h"
+#include "DivideByZeroException.h"
 
 CLASS
 (
-	Object, 
-	
-	, struct Private* prv;
+Object
 )
 
 Object* fathom_Object_Object(ExceptionData* exceptionData);
-void fathom_del_Object(Object** reference, ExceptionData* exceptionData);
-String* fathom_Object_toString(Object* reference, ExceptionData* exceptionData);
+void fathom_del_Object(Object** this, ExceptionData* exceptionData);
+String* fathom_Object_toString(Object* this, ExceptionData* exceptionData);
 #endif
