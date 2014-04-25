@@ -5,6 +5,7 @@ import "Math";
 import "Time";
 import "Person";
 import "List";
+import "NotEvenNumberException";
 
 public class Test extends Object
 {
@@ -20,6 +21,8 @@ public class Test extends Object
 			
 			current = current.getNext();
 		}
+		
+		IO.println("Starting benchmark...");
 		
 		long start = Time.currentTimeMillis();
 		
@@ -38,6 +41,8 @@ public class Test extends Object
 		long end = Time.currentTimeMillis();
 		
 		IO.printl(end - start);
+		IO.println("");
+		IO.print("Press enter to exit...");
 		
 		IO.waitForEnter();
 	}
