@@ -56,4 +56,4 @@ __Optional arguments to the Compiler Include__
 
 The default c compiler is TCC because it is more stable at the moment.
 
-© 2014 Fathomsoft
+Â© 2014 Fathomsoft
