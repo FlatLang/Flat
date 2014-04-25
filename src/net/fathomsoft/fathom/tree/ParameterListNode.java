@@ -24,7 +24,7 @@ import net.fathomsoft.fathom.tree.exceptionhandling.ExceptionNode;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:56:34 PM
- * @version	v0.2 Apr 5, 2014 at 10:17:44 PM
+ * @version	v0.2.1 Apr 24, 2014 at 4:53:44 PM
  */
 public class ParameterListNode extends TreeNode
 {
@@ -45,7 +45,7 @@ public class ParameterListNode extends TreeNode
 	 * static String getName(Person __o__);</pre></blockquote>
 	 * And "__o__" is the chosen OBJECT_REFERENCE_IDENTIFIER.
 	 */
-	public static final String OBJECT_REFERENCE_IDENTIFIER = "reference";
+	public static final String OBJECT_REFERENCE_IDENTIFIER = "this";
 	
 	/**
 	 * Instantiate and initialize default data. Generates the
@@ -88,6 +88,36 @@ public class ParameterListNode extends TreeNode
 	}
 	
 	/**
+	 * Validate the parameters that are used for the specified parent
+	 * MethodNode. Checks to make sure that if it needs an object
+	 * reference as the first parameter that it gives it one.
+	 */
+	public void validate()
+	{
+		MethodNode method = (MethodNode)getAncestorOfType(MethodNode.class);
+		
+		if (method.isStatic())
+		{
+			return;
+		}
+		
+		ClassNode     classNode = (ClassNode)method.getAncestorOfType(ClassNode.class);
+		
+		ParameterNode reference = new ParameterNode();
+		
+		reference.setType(classNode.getName());
+		
+		if (method instanceof DestructorNode)
+		{
+			reference.setPointer(true);
+		}
+		
+		reference.setName(MethodNode.getObjectReferenceIdentifier(), true);
+		
+		addChild(0, reference);
+	}
+	
+	/**
 	 * @see net.fathomsoft.fathom.tree.TreeNode#generateJavaSource()
 	 */
 	@Override
@@ -125,32 +155,25 @@ public class ParameterListNode extends TreeNode
 	{
 		StringBuilder builder = new StringBuilder();
 		
-		ClassNode   classNode = (ClassNode)getAncestorOfType(ClassNode.class);
-		
-		if (getParent() instanceof ConstructorNode == false)
-		{
-			builder.append(classNode.getName());
-			
-			if (getParent() instanceof DestructorNode)
-			{
-				builder.append('*');
-			}
-			
-			builder.append("* ").append(MethodNode.getObjectReferenceIdentifier());
-		}
-		
 //		builder.append("ExceptionData* ").append(ExceptionNode.EXCEPTION_DATA_IDENTIFIER);
 		
-		for (int i = 0; i < getChildren().size(); i++)
+		int start = 0;
+		
+		if (getParent() instanceof ConstructorNode)
+		{
+			start = 1;
+		}
+		
+		for (int i = start; i < getChildren().size(); i++)
 		{
 			TreeNode child = getChild(i);
 			
-			if (i > 0 || getParent() instanceof ConstructorNode == false)
+			builder.append(child.generateCHeader());
+			
+			if (i < getChildren().size() - 1)
 			{
 				builder.append(", ");
 			}
-			
-			builder.append(child.generateCHeader());
 		}
 		
 		return builder.toString();
