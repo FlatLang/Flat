@@ -24,7 +24,7 @@ package net.fathomsoft.fathom.tree;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 10:29:22 PM
- * @version	v0.2 Apr 4, 2014 at 6:13:24 AM
+ * @version	v0.2.1 Apr 24, 2014 at 4:52:24 PM
  */
 public class MethodListNode extends TreeNode
 {
@@ -77,15 +77,56 @@ public class MethodListNode extends TreeNode
 	{
 		for (int i = 0; i < getChildren().size(); i++)
 		{
-			MethodNode variable = (MethodNode)getChild(i);
+			MethodNode method = (MethodNode)getChild(i);
 			
-			if (variable.getName().equals(methodName))
+			if (method.getName().equals(methodName))
 			{
-				return variable;
+				return method;
+			}
+		}
+		
+		ClassNode classNode = (ClassNode)getAncestorOfType(ClassNode.class);
+		ClassNode extended  = classNode.getExtendedClass();
+		
+		if (extended != null)
+		{
+			MethodNode method = extended.getMethod(methodName);
+			
+			if (method != null)
+			{
+				return method;
+			}
+		}
+		
+		ClassNode implemented[] = classNode.getImplementedClasses();
+		
+		for (ClassNode clazz : implemented)
+		{
+			MethodNode method = clazz.getMethod(methodName);
+			
+			if (method != null)
+			{
+				return method;
 			}
 		}
 		
 		return null;
+	}
+	
+	/**
+	 * Make sure that the Class is a valid declaration.
+	 */
+	public void validate()
+	{
+		for (int i = 0; i < getChildren().size(); i++)
+		{
+			MethodNode method = (MethodNode)getChild(i);
+			
+			if (method != null)
+			{
+				method.validate();
+			}
+		}
 	}
 	
 	/**
