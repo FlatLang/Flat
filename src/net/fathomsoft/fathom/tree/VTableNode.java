@@ -42,7 +42,7 @@ import net.fathomsoft.fathom.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Mar 16, 2014 at 1:13:49 AM
- * @version	v0.2 Mar 28, 2014 at 6:30:49 PM
+ * @version	v0.2.1 Apr 24, 2014 at 4:57:49 PM
  */
 public class VTableNode extends ClassNode
 {
@@ -69,13 +69,13 @@ public class VTableNode extends ClassNode
 		
 		if (isReference())
 		{
-			SyntaxMessage.error("A class cannot be of a reference type", getLocationIn(), getController());
+			SyntaxMessage.error("A class cannot be of a reference type", getFileNode(), getLocationIn(), getController());
 			
 			return null;
 		}
 		else if (isPointer())
 		{
-			SyntaxMessage.error("A class cannot be of a pointer type", getLocationIn(), getController());
+			SyntaxMessage.error("A class cannot be of a pointer type", getFileNode(), getLocationIn(), getController());
 			
 			return null;
 		}

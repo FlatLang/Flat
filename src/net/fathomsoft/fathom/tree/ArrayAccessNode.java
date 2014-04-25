@@ -16,7 +16,7 @@ import net.fathomsoft.fathom.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.2 Mar 24, 2014 at 10:45:29 PM
- * @version	v0.2 Mar 28, 2014 at 5:54:29 PM
+ * @version	v0.2.1 Apr 24, 2014 at 4:48:29 PM
  */
 public class ArrayAccessNode extends TreeNode
 {
@@ -111,11 +111,11 @@ public class ArrayAccessNode extends TreeNode
 			
 			int current = indexBounds.getEnd() + 1;
 			
-			VariableNode var = (VariableNode)getExistingNode(parent, identifier);
+			VariableNode var = getExistingNode(parent, identifier);
 			
 			if (var == null)
 			{
-				SyntaxMessage.error("Undeclared variable '" + identifier + "'", location, parent.getController());
+				SyntaxMessage.error("Undeclared variable '" + identifier + "'", parent.getFileNode(), location, parent.getController());
 			}
 			
 			var = var.clone();
@@ -154,7 +154,7 @@ public class ArrayAccessNode extends TreeNode
 						
 						if (created == null)
 						{
-							SyntaxMessage.error("Unknown array access index", newLoc, parent.getController());
+							SyntaxMessage.error("Unknown array access index", parent.getFileNode(), newLoc, parent.getController());
 						}
 						
 						node.addChild(created);

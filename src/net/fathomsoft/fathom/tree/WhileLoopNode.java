@@ -31,7 +31,7 @@ import net.fathomsoft.fathom.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:55:59 PM
- * @version	v0.2 Apr 6, 2014 at 5:06:44 PM
+ * @version	v0.2.1 Apr 24, 2014 at 4:57:44 PM
  */
 public class WhileLoopNode extends LoopNode
 {
@@ -166,7 +166,7 @@ public class WhileLoopNode extends LoopNode
 			}
 			else
 			{
-				SyntaxMessage.error("While loop missing condition", location, parent.getController());
+				SyntaxMessage.error("While loop missing condition", parent.getFileNode(), location, parent.getController());
 			}
 		}
 		

@@ -18,6 +18,7 @@
 package net.fathomsoft.fathom.error;
 
 import net.fathomsoft.fathom.Fathom;
+import net.fathomsoft.fathom.tree.FileNode;
 import net.fathomsoft.fathom.tree.TreeNode;
 import net.fathomsoft.fathom.util.Location;
 
@@ -26,14 +27,14 @@ import net.fathomsoft.fathom.util.Location;
  * output from the compiler.
  * 
  * @author	Braden Steffaniak
- * @since	Jan 5, 2014 at 9:28:08 PM
- * @since	v0.1
- * @version	Mar 28, 2014 at 5:26:08 PM
- * @version	v0.2
+ * @since	v0.1 Jan 5, 2014 at 9:28:08 PM
+ * @version	v0.2.1 Apr 24, 2014 at 4:46:08 PM
  */
 public class Message
 {
 	private Location	location;
+	
+	private FileNode	file;
 	
 	private String		message;
 	
@@ -49,7 +50,7 @@ public class Message
 	 */
 	public Message(String message, Fathom controller)
 	{
-		this(message, null, controller);
+		this(message, null, null, controller);
 	}
 	
 	/**
@@ -61,7 +62,7 @@ public class Message
 	 */
 	public Message(String message, TreeNode node)
 	{
-		this(message, node.getLocationIn(), node.getController());
+		this(message, node.getFileNode(), node.getLocationIn(), node.getController());
 	}
 	
 	/**
@@ -69,12 +70,14 @@ public class Message
 	 * is representing the given location.
 	 * 
 	 * @param message The message that describes what happened.
+	 * @param file The FileNode that the error occurred in.
 	 * @param location The location i the source file that the
 	 * 		message is talking about.
 	 * @param controller The controller of the compiling program.
 	 */
-	public Message(String message, Location location, Fathom controller)
+	public Message(String message, FileNode file, Location location, Fathom controller)
 	{
+		this.file       = file;
 		this.location   = location;
 		this.message    = message;
 		this.controller = controller;
@@ -89,6 +92,10 @@ public class Message
 	{
 		String info = message;
 		
+		if (file != null)
+		{
+			info += " in file " + file.getName();
+		}
 		if (location != null)
 		{
 			info += " on line number " + location.getLineNumber() + " at offset " + location.getOffset();

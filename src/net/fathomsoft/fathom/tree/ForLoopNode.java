@@ -31,7 +31,7 @@ import net.fathomsoft.fathom.util.Regex;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:55:15 PM
- * @version	v0.2 Apr 2, 2014 at 8:15:18 PM
+ * @version	v0.2.1 Apr 24, 2014 at 4:50:18 PM
  */
 public class ForLoopNode extends LoopNode
 {
@@ -246,7 +246,7 @@ public class ForLoopNode extends LoopNode
 			}
 			else
 			{
-				SyntaxMessage.error("For loop missing arguments", location, parent.getController());
+				SyntaxMessage.error("For loop missing arguments", parent.getFileNode(), location, parent.getController());
 			}
 		}
 		

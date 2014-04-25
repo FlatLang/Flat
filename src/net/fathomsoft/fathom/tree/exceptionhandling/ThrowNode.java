@@ -32,7 +32,7 @@ import net.fathomsoft.fathom.util.Regex;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Mar 22, 2014 at 11:02:52 PM
- * @version	v0.2 Apr 7, 2014 at 7:57:36 PM
+ * @version	v0.2.1 Apr 24, 2014 at 4:58:36 PM
  */
 public class ThrowNode extends ExceptionHandlingNode
 {
@@ -151,12 +151,12 @@ public class ThrowNode extends ExceptionHandlingNode
 					return n;
 				}
 				
-				SyntaxMessage.error("Incorrect form of exception thrown", newLoc, parent.getController());
+				SyntaxMessage.error("Incorrect form of exception thrown", parent.getFileNode(), newLoc, parent.getController());
 				
 				return null;
 			}
 			
-			SyntaxMessage.error("Throw statement missing exception type", location, parent.getController());
+			SyntaxMessage.error("Throw statement missing exception type", parent.getFileNode(), location, parent.getController());
 		}
 		
 		return null;

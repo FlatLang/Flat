@@ -29,7 +29,7 @@ import net.fathomsoft.fathom.util.Regex;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 13, 2014 at 7:56:24 PM
- * @version	v0.2 Apr 2, 2014 at 9:02:32 PM
+ * @version	v0.2.1 Apr 24, 2014 at 4:51:32 PM
  */
 public class ImportNode extends TreeNode
 {
@@ -190,7 +190,7 @@ public class ImportNode extends TreeNode
 					}
 					else
 					{
-						SyntaxMessage.error("Import location ends with unknown extension", location, parent.getController());
+						SyntaxMessage.error("Import location ends with unknown extension", parent.getFileNode(), location, parent.getController());
 					}
 				}
 				
@@ -198,7 +198,7 @@ public class ImportNode extends TreeNode
 			}
 			else
 			{
-				SyntaxMessage.error("Import statement must specify the location of the file", location, parent.getController());
+				SyntaxMessage.error("Import statement must specify the location of the file", parent.getFileNode(), location, parent.getController());
 			}
 		}
 		

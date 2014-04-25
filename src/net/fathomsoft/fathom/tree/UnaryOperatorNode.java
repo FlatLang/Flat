@@ -30,7 +30,7 @@ import net.fathomsoft.fathom.util.Regex;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 10:00:11 PM
- * @version	v0.2 Apr 6, 2014 at 2:46:52 PM
+ * @version	v0.2.1 Apr 24, 2014 at 4:56:52 PM
  */
 public class UnaryOperatorNode extends TreeNode
 {
@@ -184,7 +184,7 @@ public class UnaryOperatorNode extends TreeNode
 				return n;
 			}
 			
-			SyntaxMessage.error("Undefined variable '" + variable + "'", location, parent.getController());
+			SyntaxMessage.error("Undeclared variable '" + variable + "'", parent.getFileNode(), location, parent.getController());
 		}
 		
 		return null;

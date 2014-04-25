@@ -15,7 +15,7 @@ import net.fathomsoft.fathom.util.Regex;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Mar 22, 2014 at 4:01:44 PM
- * @version	v0.2 Apr 7, 2014 at 8:23:51 PM
+ * @version	v0.2.1 Apr 24, 2014 at 4:58:51 PM
  */
 public class CatchNode extends ExceptionHandlingNode
 {
@@ -190,14 +190,14 @@ public class CatchNode extends ExceptionHandlingNode
 						return n;
 					}
 					
-					SyntaxMessage.error("Unknown exception type", newLoc, parent.getController());
+					SyntaxMessage.error("Unknown exception type", parent.getFileNode(), newLoc, parent.getController());
 				}
 				
-				SyntaxMessage.error("Incorrect Exception declaration", newLoc, parent.getController());
+				SyntaxMessage.error("Incorrect Exception declaration", parent.getFileNode(), newLoc, parent.getController());
 			}
 			else
 			{
-				SyntaxMessage.error("Catch declaration missing Exception type", location, parent.getController());
+				SyntaxMessage.error("Catch declaration missing Exception type", parent.getFileNode(), location, parent.getController());
 			}
 		}
 		

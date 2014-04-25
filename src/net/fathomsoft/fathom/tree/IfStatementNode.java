@@ -30,7 +30,7 @@ import net.fathomsoft.fathom.util.Regex;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:57:13 PM
- * @version	v0.2 Apr 2, 2014 at 8:45:24 PM
+ * @version	v0.2.1 Apr 24, 2014 at 4:51:24 PM
  */
 public class IfStatementNode extends TreeNode
 {
@@ -191,7 +191,7 @@ public class IfStatementNode extends TreeNode
 			}
 			else
 			{
-				SyntaxMessage.error("If statement missing condition", location, parent.getController());
+				SyntaxMessage.error("If statement missing condition", parent.getFileNode(), location, parent.getController());
 			}
 		}
 		

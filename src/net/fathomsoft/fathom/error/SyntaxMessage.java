@@ -18,6 +18,7 @@
 package net.fathomsoft.fathom.error;
 
 import net.fathomsoft.fathom.Fathom;
+import net.fathomsoft.fathom.tree.FileNode;
 import net.fathomsoft.fathom.tree.TreeNode;
 import net.fathomsoft.fathom.util.Location;
 
@@ -25,10 +26,8 @@ import net.fathomsoft.fathom.util.Location;
  * Class that outputs an error of a specific type.
  * 
  * @author	Braden Steffaniak
- * @since	Jan 5, 2014 at 9:28:12 PM
- * @since	v0.1
- * @version	Mar 28, 2014 at 5:34:12 PM
- * @version	v0.2
+ * @since	v0.1 Jan 5, 2014 at 9:28:12 PM
+ * @version	v0.2.1 Apr 24, 2014 at 4:47:12 PM
  */
 public class SyntaxMessage
 {
@@ -66,19 +65,20 @@ public class SyntaxMessage
 	 */
 	public static void error(String message, TreeNode node)
 	{
-		error(message, node.getLocationIn(), node.getController());
+		error(message, node.getFileNode(), node.getLocationIn(), node.getController());
 	}
 	
 	/**
 	 * Output an error message from the compiler.
 	 * 
 	 * @param message The message describing the error.
+	 * @param file The FileNode that the error occurred in.
 	 * @param location The location that the error occurred at.
 	 * @param controller The controller of the compiling program.
 	 */
-	public static void error(String message, Location location, Fathom controller)
+	public static void error(String message, FileNode file, Location location, Fathom controller)
 	{
-		Message error = new Message(message, location, controller);
+		Message error = new Message(message, file, location, controller);
 		
 		error.outputMessage(Message.ERROR);
 	}
@@ -91,19 +91,20 @@ public class SyntaxMessage
 	 */
 	public static void warning(String message, TreeNode node)
 	{
-		warning(message, node.getLocationIn(), node.getController());
+		warning(message, node.getFileNode(), node.getLocationIn(), node.getController());
 	}
 	
 	/**
 	 * Output a warning message from the compiler.
 	 * 
 	 * @param message The message describing the warning.
+	 * @param file The FileNode that the warning occurred in.
 	 * @param location The location that the warning occurred at.
 	 * @param controller The controller of the compiling program.
 	 */
-	public static void warning(String message, Location location, Fathom controller)
+	public static void warning(String message, FileNode file, Location location, Fathom controller)
 	{
-		Message warning = new Message(message, location, controller);
+		Message warning = new Message(message, file, location, controller);
 		
 		warning.outputMessage(Message.WARNING);
 	}

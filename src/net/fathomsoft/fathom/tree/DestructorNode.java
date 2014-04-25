@@ -35,7 +35,7 @@ import net.fathomsoft.fathom.util.StringUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:50:43 PM
- * @version	v0.2 Apr 2, 2014 at 7:21:49 PM
+ * @version	v0.2.1 Apr 24, 2014 at 4:50:49 PM
  */
 public class DestructorNode extends MethodNode
 {
@@ -60,7 +60,7 @@ public class DestructorNode extends MethodNode
 		{
 			if (getVisibility() == DeclarationNode.PRIVATE)
 			{
-				SyntaxMessage.error("Destructor must be public", getLocationIn(), getController());
+				SyntaxMessage.error("Destructor must be public", getFileNode(), getLocationIn(), getController());
 				
 				return null;
 			}
@@ -68,14 +68,14 @@ public class DestructorNode extends MethodNode
 		
 		if (isConstant())
 		{
-			SyntaxMessage.error("Destructor cannot be const", getLocationIn(), getController());
+			SyntaxMessage.error("Destructor cannot be const", getFileNode(), getLocationIn(), getController());
 			
 			return null;
 		}
 		
 		if (isReference())
 		{
-			SyntaxMessage.error("Destructor cannot return a reference", getLocationIn(), getController());
+			SyntaxMessage.error("Destructor cannot return a reference", getFileNode(), getLocationIn(), getController());
 			
 			return null;
 		}
@@ -256,7 +256,6 @@ public class DestructorNode extends MethodNode
 		builder.append(classNode.getName()).append('(');
 		
 		//builder.append(classNode.getName()).append('*').append(' ').append(MethodNode.getObjectReferenceIdentifier());
-
 		builder.append(getParameterListNode().generateCSource());
 		
 		builder.append(')');
@@ -293,7 +292,7 @@ public class DestructorNode extends MethodNode
 			// subtract the ending ones from the number.
 			if (lastParenthIndex < 0)
 			{
-				SyntaxMessage.error("Expected a ')' ending parenthesis", location, parent.getController());
+				SyntaxMessage.error("Expected a ')' ending parenthesis", parent.getFileNode(), location, parent.getController());
 				
 				return null;
 			}
@@ -333,7 +332,7 @@ public class DestructorNode extends MethodNode
 				
 				if (parameters.length > 0)
 				{
-					SyntaxMessage.error("Destructors cannot have any parameters", location, parent.getController());
+					SyntaxMessage.error("Destructors cannot have any parameters", parent.getFileNode(), location, parent.getController());
 					
 					return null;
 				}

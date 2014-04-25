@@ -36,7 +36,7 @@ import net.fathomsoft.fathom.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:20:35 PM
- * @version	v0.2 Mar 30, 2014 at 2:40:35 PM
+ * @version	v0.2.1 Apr 24, 2014 at 4:49:35 PM
  */
 public class BinaryOperatorNode extends TreeNode
 {
@@ -381,7 +381,7 @@ public class BinaryOperatorNode extends TreeNode
 			return node;
 		}
 		
-		SyntaxMessage.error("Could not parse operation '" + statement + "'", location, parent.getController());
+		SyntaxMessage.error("Could not parse operation '" + statement + "'", parent.getFileNode(), location, parent.getController());
 		
 		return null;
 	}

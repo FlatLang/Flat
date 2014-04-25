@@ -34,7 +34,7 @@ import net.fathomsoft.fathom.util.StringUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:50:47 PM
- * @version	v0.2 Apr 2, 2014 at 6:17:05 PM
+ * @version	v0.2.1 Apr 24, 2014 at 4:50:05 PM
  */
 public class ConstructorNode extends MethodNode
 {
@@ -43,7 +43,6 @@ public class ConstructorNode extends MethodNode
 	 */
 	public ConstructorNode()
 	{
-		setStatic(true);
 		setPointer(true);
 	}
 	
@@ -61,26 +60,26 @@ public class ConstructorNode extends MethodNode
 		}
 		if (isStatic())
 		{
-			SyntaxMessage.error("Constructor cannot be static", getLocationIn(), getController());
+			SyntaxMessage.error("Constructor cannot be static", getFileNode(), getLocationIn(), getController());
 			
 			return null;
 		}
 		if (isConstant())
 		{
-			SyntaxMessage.error("Constructor cannot be const", getLocationIn(), getController());
+			SyntaxMessage.error("Constructor cannot be const", getFileNode(), getLocationIn(), getController());
 			
 			return null;
 		}
 		
 		if (isReference())
 		{
-			SyntaxMessage.error("Constructor cannot return a reference", getLocationIn(), getController());
+			SyntaxMessage.error("Constructor cannot return a reference", getFileNode(), getLocationIn(), getController());
 			
 			return null;
 		}
 		else if (isPointer())
 		{
-			SyntaxMessage.error("Constructor cannot return a pointer", getLocationIn(), getController());
+			SyntaxMessage.error("Constructor cannot return a pointer", getFileNode(), getLocationIn(), getController());
 			
 			return null;
 		}
@@ -129,14 +128,14 @@ public class ConstructorNode extends MethodNode
 //		}
 		if (isConstant())
 		{
-			SyntaxMessage.error("Constructor cannot be const", getLocationIn(), getController());
+			SyntaxMessage.error("Constructor cannot be const", getFileNode(), getLocationIn(), getController());
 			
 			return null;
 		}
 		
 		if (isReference())
 		{
-			SyntaxMessage.error("Constructor cannot return a reference", getLocationIn(), getController());
+			SyntaxMessage.error("Constructor cannot return a reference", getFileNode(), getLocationIn(), getController());
 			
 			return null;
 		}
@@ -326,7 +325,7 @@ public class ConstructorNode extends MethodNode
 			// subtract the ending ones from the number.
 			if (lastParenthIndex < 0)
 			{
-				SyntaxMessage.error("Expected a ')' ending parenthesis", location, parent.getController());
+				SyntaxMessage.error("Expected a ')' ending parenthesis", parent.getFileNode(), location, parent.getController());
 				
 				return null;
 			}
@@ -355,7 +354,7 @@ public class ConstructorNode extends MethodNode
 					
 					if (param == null)
 					{
-						SyntaxMessage.error("Incorrect parameter definition", location, parent.getController());
+						SyntaxMessage.error("Incorrect parameter definition", parent.getFileNode(), location, parent.getController());
 						
 						return null;
 					}
