@@ -28,7 +28,7 @@ import net.fathomsoft.fathom.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:52:01 PM
- * @version	v0.2 Apr 5, 2014 at 10:40:57 PM
+ * @version	v0.2.1 Apr 24, 2014 at 4:53:57 PM
  */
 public class ParameterNode extends LocalVariableNode
 {
@@ -94,6 +94,15 @@ public class ParameterNode extends LocalVariableNode
 		if (isArray())
 		{
 			builder.append(getArrayText());
+		}
+		
+		if (isPointer())
+		{
+			builder.append('*');
+		}
+		else if (isReference())
+		{
+			builder.append('&');
 		}
 		
 		if (!SyntaxUtils.isPrimitiveType(getType()))// && !isExternal())
