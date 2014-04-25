@@ -34,8 +34,7 @@ __Instructions of Use__
 
 
 
-__An Example command to compile a source__
-
+__An Example command to compile a source__<br>
 `java -jar Fathom.jar SourceFile1.fat SourceFile2.fat -o OutputExecutable.exe`
 
   * The `java -jar Fathom.jar` component of the command is needed to run the compiler program.
