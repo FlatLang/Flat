@@ -41,26 +41,18 @@ import net.fathomsoft.fathom.util.SyntaxUtils;
  * the statements.
  * 
  * @author	Braden Steffaniak
- * @since	Jan 5, 2014 at 9:00:15 PM
- * @since	v0.1
- * @version	Jan 5, 2014 at 9:00:15 PM
- * @version	v0.1
+ * @since	v0.1 Jan 5, 2014 at 9:00:15 PM
+ * @version	v0.2.1 Apr 24, 2014 at 4:54:15 PM
  */
 public class SyntaxTree
 {
-	private int						statementStartIndex, statementEndIndex, oldStatementStartIndex;
-	private int						lineNumber;
+	private int						phase;
 	
 	private Fathom					controller;
 	
-	private Matcher					statementStartMatcher, lineBeginningMatcher;
-	
-	private Pattern					statementStartPattern, lineBeginningPattern;
-	
-	private TreeNode				currentNode;
 	private ProgramNode				root;
 	
-	private Stack<TreeNode>			parentStack;
+	private TreeGenerator			generators[];
 	
 	private static final char		EITHER_STATEMENT_END_CHARS[] = new char[] { '{', ';' };
 	private static final char		SINGLE_STATEMENT_END_CHARS[] = new char[] { ';' };
@@ -101,7 +93,7 @@ public class SyntaxTree
 			sources[i]   = FileUtils.readFile(files[i]);
 		}
 		
-		init(filenames, sources, controller);
+		generate(filenames, sources, controller);
 	}
 	
 	/**
@@ -114,7 +106,7 @@ public class SyntaxTree
 	 */
 	public SyntaxTree(String filenames[], String sources[], Fathom controller)
 	{
-		init(filenames, sources, controller);
+		generate(filenames, sources, controller);
 	}
 	
 	/**
@@ -125,7 +117,7 @@ public class SyntaxTree
 	 * @param sources The source codes inside the files.
 	 * @param controller The controller of the compiling program.
 	 */
-	private void init(String filenames[], String sources[], Fathom controller)
+	private void generate(String filenames[], String sources[], Fathom controller)
 	{
 		this.controller = controller;
 		
@@ -138,233 +130,60 @@ public class SyntaxTree
 			sources[i] = removeComments(sources[i]);
 		}
 		
-		for (int i = 0; i < filenames.length; i++)
+		initThreads(filenames, sources);
+		
+		try
 		{
-			phase1(filenames[i], sources[i]);
-		}
-		
-		root.validateClasses();
-		
-		for (int i = 0; i < filenames.length; i++)
-		{
-			phase2(filenames[i], sources[i]);
-		}
-		for (int i = 0; i < filenames.length; i++)
-		{
-			phase3(filenames[i], sources[i]);
-		}
-	}
-	
-	/**
-	 * Initialize the Syntax Tree for the specified source with the
-	 * specified file name.
-	 * 
-	 * @param source The code that is going to generate a syntax tree.
-	 */
-	private void init(String source)
-	{
-		statementStartPattern  = Patterns.STATEMENT_START;
-//		statementEndPattern    = Patterns.STATEMENT_END;
-		lineBeginningPattern   = Patterns.NEXT_TEXT_LINE;
-		
-		statementStartMatcher  = statementStartPattern.matcher(source);
-//		statementEndMatcher    = statementEndPattern.matcher(source);
-		lineBeginningMatcher   = lineBeginningPattern.matcher(source);
-		
-		statementStartIndex    = 0;
-		statementEndIndex      = 0;
-		oldStatementStartIndex = 0;
-		lineNumber             = 1;
-	}
-	
-	/**
-	 * Generate the syntax tree nodes for all of the class nodes and
-	 * import nodes.
-	 * 
-	 * @param filename The name of the file that is generating the syntax
-	 * 		tree.
-	 * @param source The source text within the file.
-	 */
-	private void phase1(String filename, String source)
-	{
-		filename = FileUtils.removeFileExtension(filename);
-		
-		controller.log("Phase one for '" + filename + "'...");
-		
-		FileNode fileNode = new FileNode();
-		fileNode.setName(filename);
-		
-		root.addChild(fileNode);
-		
-		traverseCode(fileNode, source, 0, EITHER_STATEMENT_END_CHARS, FIRST_PASS_CLASSES, true);
-	}
-	
-	/**
-	 * Generate the syntax tree nodes for all of the field nodes and
-	 * method nodes.
-	 * 
-	 * @param filename The name of the file that is generating the syntax
-	 * 		tree.
-	 * @param source The source text within the file.
-	 */
-	private void phase2(String filename, String source)
-	{
-		filename = FileUtils.removeFileExtension(filename);
-
-		controller.log("Phase two for '" + filename + "'...");
-		
-		FileNode fileNode = root.getFile(filename);
-		
-		for (int i = 0; i < fileNode.getChildren().size(); i++)
-		{
-			TreeNode child = fileNode.getChild(i);
+			phase(1);
 			
-			if (child instanceof ClassNode)
-			{
-				ClassNode node    = (ClassNode)child;
-				
-				int startingIndex = StringUtils.findNextNonWhitespaceIndex(source, node.getLocationIn().getEnd());
-				int endingIndex   = StringUtils.findEndingMatch(source, startingIndex, '{', '}');
-				
-				int contentStart  = StringUtils.findNextNonWhitespaceIndex(source, startingIndex + 1);
-				int contentEnd    = StringUtils.findNextNonWhitespaceIndex(source, endingIndex - 1, -1) + 1;
-				
-				String subSource  = source.substring(contentStart, contentEnd);
-				
-				traverseCode(node, subSource, contentStart, EITHER_STATEMENT_END_CHARS, SECOND_PASS_CLASSES, true);
-			}
+			root.validateClasses();
+			
+			phase(2);
+			
+			root.validateFields();
+			root.validateMethods();
+			
+			phase(3);
+		}
+		catch (InterruptedException e)
+		{
+			e.printStackTrace();
 		}
 	}
 	
-	/**
-	 * Generate the syntax tree nodes for all of the method contents.
-	 * 
-	 * @param filename The name of the file that is generating the syntax
-	 * 		tree.
-	 * @param source The source text within the file.
-	 */
-	private void phase3(String filename, String source)
+	private void initThreads(String filenames[], String sources[])
 	{
-		filename = FileUtils.removeFileExtension(filename);
-
-		controller.log("Phase three for '" + filename + "'...");
+		generators = new TreeGenerator[filenames.length];
 		
-		FileNode fileNode = root.getFile(filename);
-		
-		for (int i = 0; i < fileNode.getChildren().size(); i++)
+		for (int i = 0; i < generators.length; i++)
 		{
-			TreeNode child = fileNode.getChild(i);
+			TreeGenerator thread = new TreeGenerator(filenames[i], sources[i]);
 			
-			if (child instanceof ClassNode)
-			{
-				ClassNode classNode = (ClassNode)child;
-				
-				MethodListNode methods = classNode.getMethodListNode();
-				decodeMethodContents(methods, source);
-				
-				MethodListNode constructors = classNode.getConstructorListNode();
-				decodeMethodContents(constructors, source);
-				
-				MethodListNode destructors = classNode.getDestructorListNode();
-				decodeMethodContents(destructors, source);
-			}
-		}
-		
-		checkForErrors(fileNode);
-	}
-	
-	/**
-	 * Decode all of the method contents.
-	 * 
-	 * @param methods The list of methods to decode.
-	 * @param source The source text to decode.
-	 */
-	private void decodeMethodContents(MethodListNode methods, String source)
-	{
-		for (TreeNode child : methods.getChildren())
-		{
-			MethodNode node   = (MethodNode)child;
-			
-			int startingIndex = StringUtils.findNextNonWhitespaceIndex(source, node.getLocationIn().getEnd());
-			int endingIndex   = StringUtils.findEndingMatch(source, startingIndex, '{', '}');
-			
-			int contentStart  = StringUtils.findNextNonWhitespaceIndex(source, startingIndex + 1);
-			int contentEnd    = StringUtils.findNextNonWhitespaceIndex(source, endingIndex - 1, -1) + 1;
-			
-			if (contentStart < contentEnd)
-			{
-				String subSource  = source.substring(contentStart, contentEnd);
-				
-				traverseCode(node, subSource, contentStart, EITHER_STATEMENT_END_CHARS, THIRD_PASS_CLASSES, false);
-			}
+			generators[i] = thread;
 		}
 	}
 	
-	/**
-	 * Traverse the given source code and generate the tree along with the
-	 * data and parameters that are given.
-	 * 
-	 * @param parent The TreeNode to stem all of the following decoded
-	 * 		data from.
-	 * @param source The text to decode.
-	 * @param offset The character offset within the file's source text
-	 * 		overall.
-	 * @param statementType The character array to use that determines what
-	 * 		type of statements are searched for. Possible options include:
-	 * 		<ul>
-	 * 			<li>{@link #EITHER_STATEMENT_END_CHARS}</li>
-	 * 			<li>{@link #SINGLE_STATEMENT_END_CHARS}</li>
-	 * 			<li>{@link #SCOPE_STATEMENT_END_CHARS}</li>
-	 * 		</ul>
-	 * @param searchTypes The type of TreeNodes to try to decode.
-	 * @param skipScopes Whether or not to skip the scopes of anything
-	 * 		that contains a scope. If true, only decode the header.
-	 */
-	private void traverseCode(TreeNode parent, String source, int offset, char statementType[], Class<?> searchTypes[], boolean skipScopes)
+	private void phase(int phase) throws InterruptedException
 	{
-		init(source);
+		this.phase       = phase;
 		
-		if (parent.getLocationIn() != null)
+		Thread threads[] = new Thread[generators.length];
+		
+		for (int i = 0; i < generators.length; i++)
 		{
-			lineNumber = parent.getLineNumber();
+			Thread generator = new Thread(generators[i]);
+			generator.setName(generators[i].filename + " Generator");
+			
+			generator.start();
+			
+			threads[i] = generator;
 		}
 		
-		parentStack = new Stack<TreeNode>();
-		
-		parentStack.push(parent);
-		
-		currentNode = getNextStatement(source, offset, statementType, searchTypes);
-		
-		// Decode all of the statements in the source text.
-		while (currentNode != null)
+		for (int i = 0; i < generators.length; i++)
 		{
-			if (skipScopes && (currentNode.containsScope() || currentNode instanceof ClassNode))
-			{
-				int startingIndex = StringUtils.findNextNonWhitespaceIndex(source, statementEndIndex);
-				int endingIndex   = StringUtils.findEndingMatch(source, startingIndex, '{', '}');
-				
-//				int contentStart  = StringUtils.findNextNonWhitespaceIndex(source, startingIndex + 1);
-//				int contentEnd    = StringUtils.findNextNonWhitespaceIndex(source, endingIndex - 1, -1) + 1;
-				
-				statementStartIndex    = endingIndex;
-				oldStatementStartIndex = statementStartIndex;
-			}
+			Thread generator = threads[i];
 			
-			if (!parentStack.isEmpty())
-			{
-				TreeNode parentNode = parentStack.peek();
-				
-				parentNode.addChild(currentNode);
-			}
-			
-			if (statementEndIndex >= 0 && !skipScopes && nextChar(statementEndIndex, source) == '{')
-			{
-				parentStack.push(currentNode);
-			}
-			
-			updateParents(oldStatementStartIndex, statementStartIndex, source);
-			
-			currentNode = getNextStatement(source, offset, statementType, searchTypes);
+			generator.join();
 		}
 	}
 	
@@ -424,30 +243,30 @@ public class SyntaxTree
 	 */
 	private void checkForErrors(TreeNode root)
 	{
-		if (root instanceof ClassNode)
-		{
-			ClassNode node = (ClassNode)root;
-			
-			if (!node.containsConstructor())
-			{
-				ConstructorNode defaultConstructor = new ConstructorNode();
-				defaultConstructor.setName(node.getName());
-				defaultConstructor.setType(node.getName());
-				defaultConstructor.setVisibility(FieldNode.PUBLIC);
-				
-				node.addChild(defaultConstructor);
-			}
-			if (!node.containsDestructor())
-			{
-				DestructorNode defaultDestructor = new DestructorNode();
-				defaultDestructor.setName(node.getName());
-				defaultDestructor.setType("void");
-				defaultDestructor.setVisibility(FieldNode.PUBLIC);
-				
-				node.addChild(defaultDestructor);
-			}
-		}
-		else if (root instanceof TryNode)
+//		if (root instanceof ClassNode)
+//		{
+//			ClassNode node = (ClassNode)root;
+//			
+//			if (!node.containsConstructor())
+//			{
+//				ConstructorNode defaultConstructor = new ConstructorNode();
+//				defaultConstructor.setName(node.getName());
+//				defaultConstructor.setType(node.getName());
+//				defaultConstructor.setVisibility(FieldNode.PUBLIC);
+//				
+//				node.addChild(defaultConstructor);
+//			}
+//			if (!node.containsDestructor())
+//			{
+//				DestructorNode defaultDestructor = new DestructorNode();
+//				defaultDestructor.setName(node.getName());
+//				defaultDestructor.setType("void");
+//				defaultDestructor.setVisibility(FieldNode.PUBLIC);
+//				
+//				node.addChild(defaultDestructor);
+//			}
+//		}
+		/*else */if (root instanceof TryNode)
 		{
 			TreeNode parent = root.getParent();
 			
@@ -697,124 +516,6 @@ public class SyntaxTree
 	}
 	
 	/**
-	 * Check to see if the character is a new-line character. If so,
-	 * increment the line-number variable.
-	 * 
-	 * @param start The index to start the search at.
-	 * @param statementStart The index to end the search at.
-	 * @param source The source String to search in.
-	 */
-	private void updateLineNumber(int start, int statementStart, String source)
-	{
-		for (int i = start; i < statementStart; i++)
-		{
-			if (source.charAt(i) == '\n')
-			{
-				lineNumber++;
-			}
-		}
-	}
-	
-	/**
-	 * Check to see if an ending curly brace has been parsed. If so,
-	 * pop the last parent off the stack.
-	 * 
-	 * @param start The index to start the search at.
-	 * @param statementStart The index to end the search at.
-	 * @param source The source String to search in.
-	 */
-	private void updateParents(int start, int statementStart, String source)
-	{
-		for (int i = start; i < statementStart; i++)
-		{
-			if (source.charAt(i) == '}')
-			{
-				parentStack.pop();
-			}
-		}
-	}
-	
-	/**
-	 * Search for the next statement. If a statement is found, return
-	 * it in a TreeNode format, if not return null.
-	 * 
-	 * @param source The source String to search in.
-	 * @param offset 
-	 * @param statementType The character array to use that determines what
-	 * 		type of statements are searched for. Possible options include:
-	 * 		<ul>
-	 * 			<li>{@link #EITHER_STATEMENT_END_CHARS}</li>
-	 * 			<li>{@link #SINGLE_STATEMENT_END_CHARS}</li>
-	 * 			<li>{@link #SCOPE_STATEMENT_END_CHARS}</li>
-	 * 		</ul>
-	 * @param searchTypes The type of TreeNodes to try to decode.
-	 * @return The TreeNode containing the information, or null if it is
-	 * 		not found.
-	 */
-	private TreeNode getNextStatement(String source, int offset, char statementType[], Class<?> searchTypes[])
-	{
-		if ((statementEndIndex = Regex.indexOfExcludeTextAndParentheses(source, statementStartIndex, statementType)) >= 0 && !statementStartMatcher.hitEnd())
-		{
-			statementEndIndex = nextNonWhitespaceIndexOnTheLeft(statementEndIndex - 1, source) + 1;
-			
-			int newStatementStartIndex = 0;
-			
-			// TODO: Remember the first statementEndIndex for the find method call.
-			if (statementStartMatcher.find(nextCharIndex(statementEndIndex, source) + 1))
-			{
-				newStatementStartIndex = statementStartMatcher.start();
-			}
-				
-			int        offset2 = statementStartIndex;
-			int     lineOffset = calculateOffset(statementStartIndex, source);
-			
-			String   statement = source.substring(statementStartIndex, statementEndIndex);
-			
-			Location location  = new Location(lineNumber, lineOffset, offset2 + offset, offset2 + statement.length() + offset);
-			
-			TreeNode node      = decodeStatement(statement, location, searchTypes);
-			
-			updateLineNumber(statementStartIndex, newStatementStartIndex, source);
-				
-			oldStatementStartIndex = statementStartIndex;
-			
-			statementStartIndex    = newStatementStartIndex;
-			
-			return node;
-		}
-		
-		return null;
-	}
-	
-	/**
-	 * Decode the specified statement String at the given Location into a
-	 * TreeNode instance.
-	 * 
-	 * @param statement The statement String to decode into a TreeNode.
-	 * @param location The location of the statement in the source text.
-	 * @param searchTypes The type of TreeNodes to try to decode.
-	 * @return The result TreeNode of decoding the statement String.
-	 */
-	private TreeNode decodeStatement(String statement, Location location, Class<?> searchTypes[])
-	{
-		TreeNode parent = null;
-		
-		if (!parentStack.isEmpty())
-		{
-			parent = parentStack.peek();
-		}
-		
-		if (searchTypes.length > 0)
-		{
-			return TreeNode.decodeStatement(parent, statement, location, searchTypes);
-		}
-		else
-		{
-			return TreeNode.decodeStatement(parent, statement, location);
-		}
-	}
-	
-	/**
 	 * Get the C Header output text (destination text) from the Syntax
 	 * tree.
 	 * 
@@ -855,6 +556,27 @@ public class SyntaxTree
 	}
 	
 	/**
+	 * Get the filenames of all the files, in order of the way they
+	 * are in the tree structure
+	 * 
+	 * @return The filenames of all the files, in order of the way they
+	 * 		are in the tree structure.
+	 */
+	public String[] getFilenames()
+	{
+		String sources[] = new String[root.getChildren().size()];
+		
+		for (int i = 0; i < sources.length; i++)
+		{
+			FileNode child = root.getChild(i).getFileNode();
+			
+			sources[i] = child.getName();
+		}
+		
+		return sources;
+	}
+	
+	/**
 	 * Get the root ProgramNode of the tree. The root of the Syntax tree
 	 * will be a ProgramNode.
 	 * 
@@ -863,5 +585,372 @@ public class SyntaxTree
 	public ProgramNode getRoot()
 	{
 		return root;
+	}
+	
+	private class TreeGenerator implements Runnable
+	{
+		private int				statementStartIndex, statementEndIndex, oldStatementStartIndex;
+		private int				lineNumber;
+		
+		private Matcher			statementStartMatcher;
+		
+		private String			filename, source;
+		
+		private TreeNode		currentNode;
+		
+		private Stack<TreeNode>	parentStack;
+		
+		public TreeGenerator(String filename, String source)
+		{
+			this.filename = filename;
+			this.source   = source;
+			
+			init(source);
+		}
+		
+		private void init(String source)
+		{
+			statementStartMatcher  = Patterns.STATEMENT_START.matcher(source);
+			
+			statementStartIndex    = 0;
+			statementEndIndex      = 0;
+			oldStatementStartIndex = 0;
+			lineNumber             = 1;
+		}
+		
+		public void run()
+		{
+			if (phase == 1)
+			{
+				phase1(filename, source);
+			}
+			else if (phase == 2)
+			{
+				phase2(filename, source);
+			}
+			else if (phase == 3)
+			{
+				phase3(filename, source);
+			}
+		}
+		
+		/**
+		 * Search for the next statement. If a statement is found, return
+		 * it in a TreeNode format, if not return null.
+		 * 
+		 * @param source The source String to search in.
+		 * @param offset 
+		 * @param statementType The character array to use that determines what
+		 * 		type of statements are searched for. Possible options include:
+		 * 		<ul>
+		 * 			<li>{@link #EITHER_STATEMENT_END_CHARS}</li>
+		 * 			<li>{@link #SINGLE_STATEMENT_END_CHARS}</li>
+		 * 			<li>{@link #SCOPE_STATEMENT_END_CHARS}</li>
+		 * 		</ul>
+		 * @param searchTypes The type of TreeNodes to try to decode.
+		 * @return The TreeNode containing the information, or null if it is
+		 * 		not found.
+		 */
+		private TreeNode getNextStatement(String source, int offset, char statementType[], Class<?> searchTypes[])
+		{
+			if ((statementEndIndex = Regex.indexOfExcludeTextAndParentheses(source, statementStartIndex, statementType)) >= 0 && !statementStartMatcher.hitEnd())
+			{
+				statementEndIndex = nextNonWhitespaceIndexOnTheLeft(statementEndIndex - 1, source) + 1;
+				
+				int newStatementStartIndex = 0;
+				
+				if (statementStartMatcher.find(nextCharIndex(statementEndIndex, source) + 1))
+				{
+					newStatementStartIndex = statementStartMatcher.start();
+				}
+				
+				int        offset2 = statementStartIndex;
+				int     lineOffset = calculateOffset(statementStartIndex, source);
+				
+				String   statement = source.substring(statementStartIndex, statementEndIndex);
+				
+				Location location  = new Location(lineNumber, lineOffset, offset2 + offset, offset2 + statement.length() + offset);
+				
+				TreeNode node      = decodeStatement(statement, location, searchTypes);
+				
+				updateLineNumber(statementStartIndex, newStatementStartIndex, source);
+					
+				oldStatementStartIndex = statementStartIndex;
+				
+				statementStartIndex    = newStatementStartIndex;
+				
+				return node;
+			}
+			
+			return null;
+		}
+		
+		/**
+		 * Check to see if the character is a new-line character. If so,
+		 * increment the line-number variable.
+		 * 
+		 * @param start The index to start the search at.
+		 * @param statementStart The index to end the search at.
+		 * @param source The source String to search in.
+		 */
+		private void updateLineNumber(int start, int statementStart, String source) throws StringIndexOutOfBoundsException
+		{
+			for (int i = start; i < statementStart; i++)
+			{
+				if (source.charAt(i) == '\n')
+				{
+					lineNumber++;
+				}
+			}
+		}
+		
+		/**
+		 * Generate the syntax tree nodes for all of the class nodes and
+		 * import nodes.
+		 * 
+		 * @param filename The name of the file that is generating the syntax
+		 * 		tree.
+		 * @param source The source text within the file.
+		 */
+		private void phase1(String filename, String source)
+		{
+			filename = FileUtils.removeFileExtension(filename);
+			
+			controller.log("Phase one for '" + filename + "'...");
+			
+			FileNode fileNode = new FileNode();
+			fileNode.setName(filename);
+			
+			root.addChild(fileNode);
+			
+			traverseCode(fileNode, source, 0, EITHER_STATEMENT_END_CHARS, FIRST_PASS_CLASSES, true);
+		}
+		
+		/**
+		 * Generate the syntax tree nodes for all of the field nodes and
+		 * method nodes.
+		 * 
+		 * @param filename The name of the file that is generating the syntax
+		 * 		tree.
+		 * @param source The source text within the file.
+		 */
+		private void phase2(String filename, String source)
+		{
+			filename = FileUtils.removeFileExtension(filename);
+
+			controller.log("Phase two for '" + filename + "'...");
+			
+			FileNode fileNode = root.getFile(filename);
+			
+			for (int i = 0; i < fileNode.getChildren().size(); i++)
+			{
+				TreeNode child = fileNode.getChild(i);
+				
+				if (child instanceof ClassNode)
+				{
+					ClassNode node    = (ClassNode)child;
+					
+					int startingIndex = StringUtils.findNextNonWhitespaceIndex(source, node.getLocationIn().getEnd());
+					int endingIndex   = StringUtils.findEndingMatch(source, startingIndex, '{', '}');
+					
+					int contentStart  = StringUtils.findNextNonWhitespaceIndex(source, startingIndex + 1);
+					int contentEnd    = StringUtils.findNextNonWhitespaceIndex(source, endingIndex - 1, -1) + 1;
+					
+					// If there is no content to decode.
+					if (contentStart >= contentEnd)
+					{
+						continue;
+					}
+					
+					String subSource  = source.substring(contentStart, contentEnd);
+					
+					traverseCode(node, subSource, contentStart, EITHER_STATEMENT_END_CHARS, SECOND_PASS_CLASSES, true);
+				}
+			}
+		}
+		
+		/**
+		 * Generate the syntax tree nodes for all of the method contents.
+		 * 
+		 * @param filename The name of the file that is generating the syntax
+		 * 		tree.
+		 * @param source The source text within the file.
+		 */
+		private void phase3(String filename, String source)
+		{
+			filename = FileUtils.removeFileExtension(filename);
+
+			controller.log("Phase three for '" + filename + "'...");
+			
+			FileNode fileNode = root.getFile(filename);
+			
+			for (int i = 0; i < fileNode.getChildren().size(); i++)
+			{
+				TreeNode child = fileNode.getChild(i);
+				
+				if (child instanceof ClassNode)
+				{
+					ClassNode classNode = (ClassNode)child;
+					
+					MethodListNode methods = classNode.getMethodListNode();
+					decodeMethodContents(methods, source);
+					
+					MethodListNode constructors = classNode.getConstructorListNode();
+					decodeMethodContents(constructors, source);
+					
+					MethodListNode destructors = classNode.getDestructorListNode();
+					decodeMethodContents(destructors, source);
+				}
+			}
+			
+			checkForErrors(fileNode);
+		}
+		
+		/**
+		 * Decode all of the method contents.
+		 * 
+		 * @param methods The list of methods to decode.
+		 * @param source The source text to decode.
+		 */
+		private void decodeMethodContents(MethodListNode methods, String source)
+		{
+			for (TreeNode child : methods.getChildren())
+			{
+				if (!child.getLocationIn().isValid())
+				{
+					continue;
+				}
+				
+				MethodNode node   = (MethodNode)child;
+				
+				int startingIndex = StringUtils.findNextNonWhitespaceIndex(source, node.getLocationIn().getEnd());
+				int endingIndex   = StringUtils.findEndingMatch(source, startingIndex, '{', '}');
+				
+				int contentStart  = StringUtils.findNextNonWhitespaceIndex(source, startingIndex + 1);
+				int contentEnd    = StringUtils.findNextNonWhitespaceIndex(source, endingIndex - 1, -1) + 1;
+				
+				if (contentStart < contentEnd)
+				{
+					String subSource  = source.substring(contentStart, contentEnd);
+					
+					traverseCode(node, subSource, contentStart, EITHER_STATEMENT_END_CHARS, THIRD_PASS_CLASSES, false);
+				}
+			}
+		}
+		
+		/**
+		 * Traverse the given source code and generate the tree along with the
+		 * data and parameters that are given.
+		 * 
+		 * @param parent The TreeNode to stem all of the following decoded
+		 * 		data from.
+		 * @param source The text to decode.
+		 * @param offset The character offset within the file's source text
+		 * 		overall.
+		 * @param statementType The character array to use that determines what
+		 * 		type of statements are searched for. Possible options include:
+		 * 		<ul>
+		 * 			<li>{@link #EITHER_STATEMENT_END_CHARS}</li>
+		 * 			<li>{@link #SINGLE_STATEMENT_END_CHARS}</li>
+		 * 			<li>{@link #SCOPE_STATEMENT_END_CHARS}</li>
+		 * 		</ul>
+		 * @param searchTypes The type of TreeNodes to try to decode.
+		 * @param skipScopes Whether or not to skip the scopes of anything
+		 * 		that contains a scope. If true, only decode the header.
+		 */
+		private void traverseCode(TreeNode parent, String source, int offset, char statementType[], Class<?> searchTypes[], boolean skipScopes)
+		{
+			init(source);
+			
+			if (parent.getLocationIn() != null)
+			{
+				lineNumber = parent.getLineNumber();
+			}
+			
+			parentStack = new Stack<TreeNode>();
+			
+			parentStack.push(parent);
+			
+			currentNode = getNextStatement(source, offset, statementType, searchTypes);
+			
+			// Decode all of the statements in the source text.
+			while (currentNode != null)
+			{
+				if (skipScopes && (currentNode.containsScope() || currentNode instanceof ClassNode))
+				{
+					int startingIndex = StringUtils.findNextNonWhitespaceIndex(source, statementEndIndex);
+					int endingIndex   = StringUtils.findEndingMatch(source, startingIndex, '{', '}');
+					
+//					int contentStart  = StringUtils.findNextNonWhitespaceIndex(source, startingIndex + 1);
+//					int contentEnd    = StringUtils.findNextNonWhitespaceIndex(source, endingIndex - 1, -1) + 1;
+					
+					statementStartIndex    = endingIndex;
+					oldStatementStartIndex = statementStartIndex;
+				}
+				
+				if (!parentStack.isEmpty())
+				{
+					TreeNode parentNode = parentStack.peek();
+					
+					parentNode.addChild(currentNode);
+				}
+				
+				if (statementEndIndex >= 0 && !skipScopes && nextChar(statementEndIndex, source) == '{')
+				{
+					parentStack.push(currentNode);
+				}
+				
+				updateParents(oldStatementStartIndex, statementStartIndex, source);
+				
+				currentNode = getNextStatement(source, offset, statementType, searchTypes);
+			}
+		}
+		
+		/**
+		 * Check to see if an ending curly brace has been parsed. If so,
+		 * pop the last parent off the stack.
+		 * 
+		 * @param start The index to start the search at.
+		 * @param statementStart The index to end the search at.
+		 * @param source The source String to search in.
+		 */
+		private void updateParents(int start, int statementStart, String source)
+		{
+			for (int i = start; i < statementStart; i++)
+			{
+				if (source.charAt(i) == '}')
+				{
+					parentStack.pop();
+				}
+			}
+		}
+		
+		/**
+		 * Decode the specified statement String at the given Location into a
+		 * TreeNode instance.
+		 * 
+		 * @param statement The statement String to decode into a TreeNode.
+		 * @param location The location of the statement in the source text.
+		 * @param searchTypes The type of TreeNodes to try to decode.
+		 * @return The result TreeNode of decoding the statement String.
+		 */
+		private TreeNode decodeStatement(String statement, Location location, Class<?> searchTypes[])
+		{
+			TreeNode parent = null;
+			
+			if (!parentStack.isEmpty())
+			{
+				parent = parentStack.peek();
+			}
+			
+			if (searchTypes.length > 0)
+			{
+				return TreeNode.decodeStatement(parent, statement, location, searchTypes);
+			}
+			else
+			{
+				return TreeNode.decodeStatement(parent, statement, location);
+			}
+		}
 	}
 }
