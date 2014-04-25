@@ -36,20 +36,20 @@ import net.fathomsoft.fathom.util.Regex;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:15:51 PM
- * @version	v0.2 Apr 2, 2014 at 4:39:13 PM
+ * @version	v0.2.1 Apr 24, 2014 at 4:50:13 PM
  */
 public class ClassNode extends DeclarationNode
 {
-	private String				extendedClass;
+	private String	extendedClass;
 	
-	private	ArrayList<String>	implementedClasses;
+	private	String	implementedClasses[];
 	
 	/**
 	 * Instantiate and initialize default values for a class node.
 	 */
 	public ClassNode()
 	{
-		implementedClasses = new ArrayList<String>();
+		implementedClasses = new String[0];
 		
 		setType("class");
 		
@@ -109,6 +109,24 @@ public class ClassNode extends DeclarationNode
 	}
 	
 	/**
+	 * Get the class that this class node extends.<br>
+	 * <br>
+	 * For instance: "public class ClassName extends SuperClass"
+	 * The "SuperClass" is a name of the class that the "ClassName" class
+	 * extends.<br>
+	 * <br>
+	 * A class node can only extend one class.
+	 * 
+	 * @return The ClassNode instance of the class that is extended.
+	 */
+	public ClassNode getExtendedClass()
+	{
+		ClassNode extendedClass = getProgramNode().getClass(getExtendedClassName());
+		
+		return extendedClass;
+	}
+	
+	/**
 	 * Get the name of the class that this node extends.
 	 * 
 	 * @return The name of the class that this node extends.
@@ -136,12 +154,37 @@ public class ClassNode extends DeclarationNode
 	}
 	
 	/**
+	 * Get the class that this class node extends.<br>
+	 * <br>
+	 * For instance: "public class ClassName extends SuperClass"
+	 * The "SuperClass" is a name of the class that the "ClassName" class
+	 * extends.<br>
+	 * <br>
+	 * A class node can only extend one class.
+	 * 
+	 * @return The ClassNode instance of the class that is extended.
+	 */
+	public ClassNode[] getImplementedClasses()
+	{
+		ProgramNode program = getProgramNode();
+		
+		ClassNode classes[] = new ClassNode[implementedClasses.length];
+		
+		for (int i = 0; i < classes.length; i++)
+		{
+			classes[i] = program.getClass(implementedClasses[i]);
+		}
+		
+		return classes;
+	}
+	
+	/**
 	 * Get an ArrayList instance that contains all of the interfaces
 	 * that are implemented by this class node.
 	 * 
 	 * @return An ArrayList instance that contains the interface names.
 	 */
-	public ArrayList<String> getImplementedClasses()
+	public String[] getImplementedClassNames()
 	{
 		return implementedClasses;
 	}
@@ -161,7 +204,15 @@ public class ClassNode extends DeclarationNode
 	 */
 	public void addImplementedClass(String implementedClass)
 	{
-		this.implementedClasses.add(implementedClass);
+		int size = implementedClasses.length + 1;
+		
+		String temp[] = implementedClasses;
+		
+		implementedClasses = new String[size];
+		
+		System.arraycopy(temp, 0, implementedClasses, 0, temp.length);
+		
+		implementedClasses[size - 1] = implementedClass;
 	}
 	
 	/**
@@ -314,24 +365,6 @@ public class ClassNode extends DeclarationNode
 	}
 	
 	/**
-	 * Get the class that this class node extends.<br>
-	 * <br>
-	 * For instance: "public class ClassName extends SuperClass"
-	 * The "SuperClass" is a name of the class that the "ClassName" class
-	 * extends.<br>
-	 * <br>
-	 * A class node can only extend one class.
-	 * 
-	 * @return The ClassNode instance of the class that is extended.
-	 */
-	public ClassNode getExtendedClass()
-	{
-		ClassNode extendedClass = getProgramNode().getClass(getExtendedClassName());
-		
-		return extendedClass;
-	}
-	
-	/**
 	 * Get the prefix that is used for the methods that are contained
 	 * within the specified class.<br>
 	 * <br>
@@ -404,7 +437,7 @@ public class ClassNode extends DeclarationNode
 		}
 		else
 		{
-			SyntaxMessage.error("Unexpected statement", child.getLocationIn(), getController());
+			SyntaxMessage.error("Unexpected statement", getFileNode(), child.getLocationIn(), getController());
 			
 			//super.addChild(child);
 		}
@@ -459,13 +492,13 @@ public class ClassNode extends DeclarationNode
 		
 		if (isReference())
 		{
-			SyntaxMessage.error("A class cannot be of a reference type", getLocationIn(), getController());
+			SyntaxMessage.error("A class cannot be of a reference type", getFileNode(), getLocationIn(), getController());
 			
 			return null;
 		}
 		else if (isPointer())
 		{
-			SyntaxMessage.error("A class cannot be of a pointer type", getLocationIn(), getController());
+			SyntaxMessage.error("A class cannot be of a pointer type", getFileNode(), getLocationIn(), getController());
 			
 			return null;
 		}
@@ -477,15 +510,15 @@ public class ClassNode extends DeclarationNode
 			builder.append(" extends ").append(getExtendedClassName());
 		}
 		
-		if (getImplementedClasses().size() > 0)
+		if (getImplementedClassNames().length > 0)
 		{
 			builder.append(" implements ");
 			
-			for (int i = 0; i < getImplementedClasses().size(); i++)
+			for (int i = 0; i < getImplementedClassNames().length; i++)
 			{
-				builder.append(getImplementedClasses().get(i));
+				builder.append(getImplementedClassNames()[i]);
 				
-				if (i < getImplementedClasses().size() - 1)
+				if (i < getImplementedClassNames().length - 1)
 				{
 					builder.append(", ");
 				}
@@ -527,13 +560,13 @@ public class ClassNode extends DeclarationNode
 		
 		if (isReference())
 		{
-			SyntaxMessage.error("A class cannot be of a reference type", getLocationIn(), getController());
+			SyntaxMessage.error("A class cannot be of a reference type", getFileNode(), getLocationIn(), getController());
 			
 			return null;
 		}
 		else if (isPointer())
 		{
-			SyntaxMessage.error("A class cannot be of a pointer type", getLocationIn(), getController());
+			SyntaxMessage.error("A class cannot be of a pointer type", getFileNode(), getLocationIn(), getController());
 			
 			return null;
 		}
@@ -728,10 +761,53 @@ public class ClassNode extends DeclarationNode
 	/**
 	 * Make sure that the Class is a valid declaration.
 	 */
-	public void validate()
+	public void validateDeclaration()
 	{
 		validateExtension();
 		validateImplementations();
+	}
+	
+	/**
+	 * Make sure that the fields are all valid.
+	 */
+	public void validateFields()
+	{
+		
+	}
+	
+	/**
+	 * Make sure that the methods are all valid
+	 */
+	public void validateMethods()
+	{
+		if (!containsConstructor())
+		{
+			Location loc = new Location();
+			
+			ConstructorNode defaultConstructor = new ConstructorNode();
+			defaultConstructor.setName(getName());
+			defaultConstructor.setType(getName());
+			defaultConstructor.setVisibility(FieldNode.PUBLIC);
+			defaultConstructor.setLocationIn(loc);
+			addChild(defaultConstructor);
+		}
+		
+		if (!containsDestructor())
+		{
+			Location loc = new Location();
+			
+			DestructorNode defaultDestructor = new DestructorNode();
+			defaultDestructor.setName(getName());
+			defaultDestructor.setType("void");
+			defaultDestructor.setVisibility(FieldNode.PUBLIC);
+			defaultDestructor.setLocationIn(loc);
+			
+			addChild(defaultDestructor);
+		}
+		
+		getMethodListNode().validate();
+		getConstructorListNode().validate();
+		getDestructorListNode().validate();
 	}
 	
 	/**
@@ -835,7 +911,7 @@ public class ClassNode extends DeclarationNode
 	 */
 	public boolean containsConstructor()
 	{
-		return containsMethod(getName(), true, getName());
+		return containsMethod(getName(), false, getName());
 	}
 	
 	/**
@@ -847,7 +923,7 @@ public class ClassNode extends DeclarationNode
 	 */
 	public boolean containsDestructor()
 	{
-		return containsMethod("~" + getName(), true, null);
+		return containsMethod("~" + getName(), false, null);
 	}
 	
 	/**
@@ -922,9 +998,9 @@ public class ClassNode extends DeclarationNode
 		
 		node.extendedClass = extendedClass;
 		
-		for (int i = 0; i < implementedClasses.size(); i++)
+		for (int i = 0; i < implementedClasses.length; i++)
 		{
-			String implementedClass = implementedClasses.get(i);
+			String implementedClass = implementedClasses[i];
 			
 			node.addImplementedClass(implementedClass);
 		}
