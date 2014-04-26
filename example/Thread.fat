@@ -1,0 +1,16 @@
+import "thread.h";
+
+public class Thread
+{
+	thread.FATHOM_THREAD_HANDLE handle;
+	
+	public void start()
+	{
+		
+	}
+	
+	public void run()
+	{
+		
+	}
+}
