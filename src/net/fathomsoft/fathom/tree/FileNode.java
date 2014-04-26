@@ -50,6 +50,7 @@ public class FileNode extends IdentifierNode
 		{
 			"CClass.h",
 			"ExceptionHandler.h",
+			"windows.h",
 			"ExceptionData",
 			"Object",
 			"String",
