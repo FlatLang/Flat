@@ -1,4 +1,4 @@
-public class DivideByZeroException
+public class DivideByZeroException extends Exception
 {
 	
 }
