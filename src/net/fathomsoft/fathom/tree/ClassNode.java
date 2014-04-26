@@ -547,7 +547,7 @@ public class ClassNode extends DeclarationNode
 		
 		// TODO: make use of the modifiers for the c implementation.
 		builder.append('\n');
-		builder.append("CLASS");
+		builder.append("CCLASS_CLASS");
 		
 		if (isStatic())
 		{
@@ -653,7 +653,7 @@ public class ClassNode extends DeclarationNode
 				builder.append('\n');
 			}
 			
-			builder.append("PRIVATE").append('\n').append('(').append('\n');
+			builder.append("CCLASS_PRIVATE").append('\n').append('(').append('\n');
 			builder.append(privateFields.generateCSource());
 			builder.append(')').append('\n');
 		}

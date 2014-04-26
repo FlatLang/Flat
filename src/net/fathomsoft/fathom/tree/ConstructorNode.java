@@ -165,7 +165,7 @@ public class ConstructorNode extends MethodNode
 		
 		builder.append('{').append('\n');
 		
-		builder.append("NEW(").append(getName()).append(", ").append(MethodNode.getObjectReferenceIdentifier());
+		builder.append("CCLASS_NEW(").append(getName()).append(", ").append(MethodNode.getObjectReferenceIdentifier());
 
 		ClassNode classNode = (ClassNode)getAncestorOfType(ClassNode.class, true);
 		
