@@ -1,25 +1,26 @@
 #include "ListNode.h"
 #include <CClass.h>
 #include <ExceptionHandler.h>
+#include <windows.h>
 #include "ExceptionData.h"
 #include "Object.h"
 #include "String.h"
 #include "DivideByZeroException.h"
 
-PRIVATE
+CCLASS_PRIVATE
 (
 Object* fathom_data;
 ListNode* fathom_next;
 )
 
-ListNode* fathom_ListNode_ListNode(ExceptionData* exceptionData, Object* fathom_data_15)
+ListNode* fathom_ListNode_ListNode(ExceptionData* exceptionData, Object* fathom_data_56)
 {
-NEW(ListNode, this);
+CCLASS_NEW(ListNode, this);
 
 this->prv->fathom_data = 0;
 this->prv->fathom_next = 0;
 {
-this->prv->fathom_data = fathom_data_15;
+this->prv->fathom_data = fathom_data_56;
 }
 
 return this;
@@ -51,7 +52,7 @@ ListNode* fathom_ListNode_getNext(ListNode* this, ExceptionData* exceptionData)
 return this->prv->fathom_next;
 }
 
-void fathom_ListNode_setNext(ListNode* this, ExceptionData* exceptionData, ListNode* fathom_next_137)
+void fathom_ListNode_setNext(ListNode* this, ExceptionData* exceptionData, ListNode* fathom_next_70)
 {
-this->prv->fathom_next = fathom_next_137;
+this->prv->fathom_next = fathom_next_70;
 }

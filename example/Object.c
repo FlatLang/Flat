@@ -1,6 +1,7 @@
 #include "Object.h"
 #include <CClass.h>
 #include <ExceptionHandler.h>
+#include <windows.h>
 #include "ExceptionData.h"
 #include "Object.h"
 #include "String.h"
@@ -8,7 +9,7 @@
 
 Object* fathom_Object_Object(ExceptionData* exceptionData)
 {
-NEW(Object, this,);
+CCLASS_NEW(Object, this,);
 
 {
 }

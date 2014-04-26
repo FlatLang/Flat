@@ -1,6 +1,7 @@
 #include "NotEvenNumberException.h"
 #include <CClass.h>
 #include <ExceptionHandler.h>
+#include <windows.h>
 #include "ExceptionData.h"
 #include "Object.h"
 #include "String.h"
@@ -8,7 +9,7 @@
 
 NotEvenNumberException* fathom_NotEvenNumberException_NotEvenNumberException(ExceptionData* exceptionData)
 {
-NEW(NotEvenNumberException, this,);
+CCLASS_NEW(NotEvenNumberException, this,);
 
 {
 }

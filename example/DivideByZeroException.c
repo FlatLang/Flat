@@ -1,6 +1,7 @@
 #include "DivideByZeroException.h"
 #include <CClass.h>
 #include <ExceptionHandler.h>
+#include <windows.h>
 #include "ExceptionData.h"
 #include "Object.h"
 #include "String.h"
@@ -8,7 +9,7 @@
 
 DivideByZeroException* fathom_DivideByZeroException_DivideByZeroException(ExceptionData* exceptionData)
 {
-NEW(DivideByZeroException, this,);
+CCLASS_NEW(DivideByZeroException, this,);
 
 {
 }

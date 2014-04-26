@@ -1,23 +1,24 @@
 #include "String.h"
 #include <CClass.h>
 #include <ExceptionHandler.h>
+#include <windows.h>
 #include "ExceptionData.h"
 #include "Object.h"
 #include "String.h"
 #include "DivideByZeroException.h"
 
-PRIVATE
+CCLASS_PRIVATE
 (
 char* fathom_data;
 )
 
-String* fathom_String_String(ExceptionData* exceptionData, char* fathom_data_67)
+String* fathom_String_String(ExceptionData* exceptionData, char* fathom_data_140)
 {
-NEW(String, this);
+CCLASS_NEW(String, this);
 
 this->prv->fathom_data = 0;
 {
-this->prv->fathom_data = fathom_data_67;
+this->prv->fathom_data = fathom_data_140;
 }
 
 return this;

@@ -1,6 +1,7 @@
 #include "ArrayList.h"
 #include <CClass.h>
 #include <ExceptionHandler.h>
+#include <windows.h>
 #include "ExceptionData.h"
 #include "Object.h"
 #include "String.h"
@@ -8,7 +9,7 @@
 #include <stdlib.h>
 #include <Fathom.h>
 
-PRIVATE
+CCLASS_PRIVATE
 (
 int fathom_count;
 int fathom_size;
@@ -17,7 +18,7 @@ int* fathom_data;
 
 ArrayList* fathom_ArrayList_ArrayList(ExceptionData* exceptionData)
 {
-NEW(ArrayList, this);
+CCLASS_NEW(ArrayList, this);
 
 this->prv->fathom_count = 0;
 this->prv->fathom_size = 0;
@@ -44,25 +45,25 @@ free((*this)->prv);
 free(*this);
 }
 
-void fathom_ArrayList_add(ArrayList* this, ExceptionData* exceptionData, int fathom_var_135)
+void fathom_ArrayList_add(ArrayList* this, ExceptionData* exceptionData, int fathom_var_34)
 {
 if (this->prv->fathom_count + 1 >= this->prv->fathom_size)
 {
 fathom_ArrayList_increaseSize(this, exceptionData);
 }
-this->prv->fathom_data[this->prv->fathom_count] = fathom_var_135;
+this->prv->fathom_data[this->prv->fathom_count] = fathom_var_34;
 this->prv->fathom_count = this->prv->fathom_count + 1;
 }
 
 void fathom_ArrayList_increaseSize(ArrayList* this, ExceptionData* exceptionData)
 {
-int* fathom_tmp_140;
+int* fathom_tmp_40;
 
 this->prv->fathom_size = this->prv->fathom_size + 3;
-fathom_tmp_140 = (int*)malloc(sizeof(int) * this->prv->fathom_size);
-arrayCopy(fathom_tmp_140, 0, this->prv->fathom_data, 0, this->prv->fathom_count, this->prv->fathom_size, sizeof(int));
+fathom_tmp_40 = (int*)malloc(sizeof(int) * this->prv->fathom_size);
+arrayCopy(fathom_tmp_40, 0, this->prv->fathom_data, 0, this->prv->fathom_count, this->prv->fathom_size, sizeof(int));
 free(this->prv->fathom_data);
-this->prv->fathom_data = fathom_tmp_140;
+this->prv->fathom_data = fathom_tmp_40;
 }
 
 int fathom_ArrayList_getSize(ArrayList* this, ExceptionData* exceptionData)
@@ -70,7 +71,7 @@ int fathom_ArrayList_getSize(ArrayList* this, ExceptionData* exceptionData)
 return this->prv->fathom_count;
 }
 
-int fathom_ArrayList_get(ArrayList* this, ExceptionData* exceptionData, int fathom_index_149)
+int fathom_ArrayList_get(ArrayList* this, ExceptionData* exceptionData, int fathom_index_51)
 {
-return this->prv->fathom_data[fathom_index_149];
+return this->prv->fathom_data[fathom_index_51];
 }

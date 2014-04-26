@@ -1,6 +1,7 @@
 #include "Time.h"
 #include <CClass.h>
 #include <ExceptionHandler.h>
+#include <windows.h>
 #include "ExceptionData.h"
 #include "Object.h"
 #include "String.h"
@@ -11,7 +12,7 @@ Time* __static__Time;
 
 Time* fathom_Time_Time(ExceptionData* exceptionData)
 {
-NEW(Time, this,);
+CCLASS_NEW(Time, this,);
 
 {
 }

@@ -1,6 +1,7 @@
 #include "ExceptionData.h"
 #include <CClass.h>
 #include <ExceptionHandler.h>
+#include <windows.h>
 #include "ExceptionData.h"
 #include "Object.h"
 #include "String.h"
@@ -8,22 +9,22 @@
 #include <setjmp.h>
 #include "ArrayList.h"
 
-PRIVATE
+CCLASS_PRIVATE
 (
 jmp_buf* fathom_buffer;
 ExceptionData* fathom_parent;
 ArrayList* fathom_codes;
 )
 
-ExceptionData* fathom_ExceptionData_ExceptionData(ExceptionData* exceptionData, jmp_buf* fathom_buf_16)
+ExceptionData* fathom_ExceptionData_ExceptionData(ExceptionData* exceptionData, jmp_buf* fathom_buf_26)
 {
-NEW(ExceptionData, this);
+CCLASS_NEW(ExceptionData, this);
 
 this->prv->fathom_buffer = 0;
 this->prv->fathom_parent = 0;
 this->prv->fathom_codes = 0;
 {
-this->prv->fathom_buffer = fathom_buf_16;
+this->prv->fathom_buffer = fathom_buf_26;
 this->prv->fathom_codes = fathom_ArrayList_ArrayList(exceptionData);
 }
 
@@ -52,9 +53,9 @@ ArrayList* fathom_ExceptionData_getCodes(ExceptionData* this, ExceptionData* exc
 return this->prv->fathom_codes;
 }
 
-void fathom_ExceptionData_addCode(ExceptionData* this, ExceptionData* exceptionData, int fathom_code_129)
+void fathom_ExceptionData_addCode(ExceptionData* this, ExceptionData* exceptionData, int fathom_code_39)
 {
-fathom_ArrayList_add(this->prv->fathom_codes, exceptionData, fathom_code_129);
+fathom_ArrayList_add(this->prv->fathom_codes, exceptionData, fathom_code_39);
 }
 
 jmp_buf* fathom_ExceptionData_getBuffer(ExceptionData* this, ExceptionData* exceptionData)
@@ -62,57 +63,57 @@ jmp_buf* fathom_ExceptionData_getBuffer(ExceptionData* this, ExceptionData* exce
 return this->prv->fathom_buffer;
 }
 
-ExceptionData* fathom_ExceptionData_getCorrectData(ExceptionData* this, ExceptionData* exceptionData, int fathom_code_151)
+ExceptionData* fathom_ExceptionData_getCorrectData(ExceptionData* this, ExceptionData* exceptionData, int fathom_code_52)
 {
-ExceptionData* fathom_data_151;
+ExceptionData* fathom_data_52;
 
-fathom_data_151 = this;
-while (fathom_data_151 != 0)
+fathom_data_52 = this;
+while (fathom_data_52 != 0)
 {
-ArrayList* fathom_list_192;
-int fathom_i_192;
+ArrayList* fathom_list_196;
+int fathom_i_196;
 
-fathom_list_192 = fathom_ExceptionData_getCodes(fathom_data_151, exceptionData);
-for (fathom_i_192 = 0; fathom_i_192 < fathom_ArrayList_getSize(fathom_list_192, exceptionData); fathom_i_192++)
+fathom_list_196 = fathom_ExceptionData_getCodes(fathom_data_52, exceptionData);
+for (fathom_i_196 = 0; fathom_i_196 < fathom_ArrayList_getSize(fathom_list_196, exceptionData); fathom_i_196++)
 {
-if (fathom_ArrayList_get(fathom_list_192, exceptionData, fathom_i_192) == fathom_code_151)
+if (fathom_ArrayList_get(fathom_list_196, exceptionData, fathom_i_196) == fathom_code_52)
 {
-return fathom_data_151;
+return fathom_data_52;
 }
 }
-if (fathom_ExceptionData_getParent(fathom_data_151, exceptionData) == 0)
+if (fathom_ExceptionData_getParent(fathom_data_52, exceptionData) == 0)
 {
-return fathom_data_151;
+return fathom_data_52;
 }
-fathom_data_151 = fathom_ExceptionData_getParent(fathom_data_151, exceptionData);
+fathom_data_52 = fathom_ExceptionData_getParent(fathom_data_52, exceptionData);
 }
 return 0;
 }
 
-jmp_buf* fathom_ExceptionData_getCorrectBuffer(ExceptionData* this, ExceptionData* exceptionData, int fathom_code_154)
+jmp_buf* fathom_ExceptionData_getCorrectBuffer(ExceptionData* this, ExceptionData* exceptionData, int fathom_code_58)
 {
-ExceptionData* fathom_data_154;
+ExceptionData* fathom_data_58;
 
-fathom_data_154 = fathom_ExceptionData_getCorrectData(this, exceptionData, fathom_code_154);
-if (fathom_data_154 == 0)
+fathom_data_58 = fathom_ExceptionData_getCorrectData(this, exceptionData, fathom_code_58);
+if (fathom_data_58 == 0)
 {
 return 0;
 }
-return fathom_ExceptionData_getBuffer(fathom_data_154, exceptionData);
+return fathom_ExceptionData_getBuffer(fathom_data_58, exceptionData);
 }
 
-void fathom_ExceptionData_jumpToBuffer(ExceptionData* this, ExceptionData* exceptionData, int fathom_code_157)
+void fathom_ExceptionData_jumpToBuffer(ExceptionData* this, ExceptionData* exceptionData, int fathom_code_66)
 {
-ExceptionData* fathom_data_157;
-jmp_buf* fathom_buf_157;
+ExceptionData* fathom_data_66;
+jmp_buf* fathom_buf_66;
 
-fathom_data_157 = fathom_ExceptionData_getCorrectData(this, exceptionData, fathom_code_157);
-if (fathom_ExceptionData_getParent(fathom_data_157, exceptionData) == 0)
+fathom_data_66 = fathom_ExceptionData_getCorrectData(this, exceptionData, fathom_code_66);
+if (fathom_ExceptionData_getParent(fathom_data_66, exceptionData) == 0)
 {
-fathom_code_157 = 1;
+fathom_code_66 = 1;
 }
-fathom_buf_157 = fathom_ExceptionData_getBuffer(fathom_data_157, exceptionData);
-longjmp(*fathom_buf_157, fathom_code_157);
+fathom_buf_66 = fathom_ExceptionData_getBuffer(fathom_data_66, exceptionData);
+longjmp(*fathom_buf_66, fathom_code_66);
 }
 
 ExceptionData* fathom_ExceptionData_getParent(ExceptionData* this, ExceptionData* exceptionData)
@@ -120,7 +121,7 @@ ExceptionData* fathom_ExceptionData_getParent(ExceptionData* this, ExceptionData
 return this->prv->fathom_parent;
 }
 
-void fathom_ExceptionData_setParent(ExceptionData* this, ExceptionData* exceptionData, ExceptionData* fathom_p_163)
+void fathom_ExceptionData_setParent(ExceptionData* this, ExceptionData* exceptionData, ExceptionData* fathom_p_75)
 {
-this->prv->fathom_parent = fathom_p_163;
+this->prv->fathom_parent = fathom_p_75;
 }
