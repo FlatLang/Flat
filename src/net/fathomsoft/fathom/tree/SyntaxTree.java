@@ -130,7 +130,7 @@ public class SyntaxTree
 			sources[i] = removeComments(sources[i]);
 		}
 		
-		initThreads(filenames, sources);
+		initTreeGenerators(filenames, sources);
 		
 		try
 		{
@@ -151,7 +151,14 @@ public class SyntaxTree
 		}
 	}
 	
-	private void initThreads(String filenames[], String sources[])
+	/**
+	 * Initialize the TreeGenerator objects that will be used to generate
+	 * the trees concurrently.
+	 * 
+	 * @param filenames
+	 * @param sources
+	 */
+	private void initTreeGenerators(String filenames[], String sources[])
 	{
 		generators = new TreeGenerator[filenames.length];
 		
