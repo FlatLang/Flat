@@ -204,6 +204,8 @@ public class Fathom
 				directory + "Object.fat",
 				directory + "List.fat",
 				directory + "ListNode.fat",
+				directory + "Thread.fat",
+				directory + "Exception.fat",
 				"-o", directory + "bin/Executable" + OUTPUT_EXTENSION,
 				"-dir", '"' + directory + "../include" + '"',
 				"-run",
@@ -471,7 +473,7 @@ public class Fathom
 		
 		String libDir = getLibraryDir();
 		
-		cmd.append("-L").append(libDir).append(" -lFathom ");
+		cmd.append("-L").append(libDir).append(" -lFathom -lThread ");
 		
 		for (File sourceFile : cSourceFiles)
 		{
