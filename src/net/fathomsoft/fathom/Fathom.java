@@ -211,7 +211,7 @@ public class Fathom
 				"-run",
 //				"-csource",
 				"-v",
-				"-tcc",
+				"-clang",
 //				"-cargs",
 				"-keepc",
 //				"-library",
