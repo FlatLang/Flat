@@ -15,13 +15,14 @@
 	
 #elif defined(__APPLE__) || defined(__linux__)
 	#include <pthread.h>
+	#include <unistd.h>
 	
 	#define FATHOM_THREAD_FUNC void*
 	#define FATHOM_THREAD_FUNC_TYPE void*
 	#define FATHOM_THREAD_FUNC_ARG void*
 	#define FATHOM_THREAD_HANDLE pthread_t
 	#define lib_fathom_thread_join(_HANDLE_) pthread_join(_HANDLE_, NULL)
-	#define lib_fathom_thread_sleep(_MILLIS_) sleep(_MILLIS_)
+	#define lib_fathom_thread_sleep(_MILLIS_) usleep(_MILLIS_ * 1000)
 #endif
 
 void lib_fathom_thread_create(FATHOM_THREAD_HANDLE* handle, FATHOM_THREAD_FUNC_TYPE func);
