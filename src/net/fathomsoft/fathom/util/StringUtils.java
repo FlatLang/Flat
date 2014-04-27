@@ -279,4 +279,75 @@ public class StringUtils
 			builder.deleteCharAt(builder.length() - 1);
 		}
 	}
+	
+	/**
+	 * Find the String value of the data that is in between the last
+	 * two words in the array.<br>
+	 * <br>
+	 * For example: A call of <code>findLastMissingString([this, is, a, test],
+	 * "this.is->a==test")</code> would return "=="
+	 * 
+	 * @param words The list of words that lead of up the desired value.
+	 * @param statement The String to search the words with.
+	 * @return The data that was found.
+	 */
+	public static String findLastMissingString(ArrayList<String> words, String statement)
+	{
+		int index = 0;
+		
+		for (int i = 0; i < words.size() - 1; i++)
+		{
+			String word = words.get(i);
+			
+			index  = statement.indexOf(word, index);
+			
+			index += word.length();
+		}
+		
+		String lastWord = words.get(words.size() - 1);
+		
+		String value    = statement.substring(index, statement.indexOf(lastWord, index));
+		
+		return value;
+	}
+	
+	public static int reverseIndexOf(String haystack, String needle, int start)
+	{
+		while (start >= needle.length() - 1)
+		{
+			if (reverseMatches(haystack, needle, start))
+			{
+				return start - needle.length() + 1;
+			}
+			
+			start--;
+		}
+		
+		return -1;
+	}
+	
+	/**
+	 * Get whether or not the needle matches the haystack at the given
+	 * index.<br>
+	 * <br>
+	 * For example: A call of <code>reverseMatches("this will work",
+	 * "will", 8)</code> would return true.
+	 * 
+	 * @param haystack The String to search for the needle in.
+	 * @param needle The String to search in the haystack for.
+	 * @param index The index to search for the match at.
+	 * @return Whether or not there is a match at the given index.
+	 */
+	public static boolean reverseMatches(String haystack, String needle, int index)
+	{
+		for (int i = 0; i < needle.length(); i++)
+		{
+			if (haystack.charAt(index - i) != needle.charAt(needle.length() - i - 1))
+			{
+				return false;
+			}
+		}
+		
+		return true;
+	}
 }
