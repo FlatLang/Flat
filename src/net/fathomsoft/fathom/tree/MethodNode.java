@@ -17,6 +17,8 @@
  */
 package net.fathomsoft.fathom.tree;
 
+import java.util.ArrayList;
+
 import net.fathomsoft.fathom.Fathom;
 import net.fathomsoft.fathom.error.SyntaxMessage;
 import net.fathomsoft.fathom.util.Bounds;
@@ -426,11 +428,14 @@ public class MethodNode extends DeclarationNode
 			
 			final String statement2 = statement;
 			
+			final boolean externalType[]  = new boolean[1];
+			final ArrayList<String> words = new ArrayList<String>();
+			
 			MethodNode n = new MethodNode()
 			{
 				public void interactWord(String word, int wordNumber, Bounds bounds, int numWords)
 				{
-					setAttribute(word, wordNumber);
+					words.add(word);
 					
 					if (wordNumber == numWords - 1)
 					{
@@ -447,6 +452,17 @@ public class MethodNode extends DeclarationNode
 							
 							setArrayDimensions(dimensions);
 						}
+					}
+					else if (!setAttribute(word, wordNumber))
+					{
+						if (externalType[0])
+						{
+							String missing = StringUtils.findLastMissingString(words, statement2);
+							
+							setType(missing + getType());
+						}
+						
+						externalType[0] = statement2.charAt(bounds.getStart()) == '.';
 					}
 				}
 			};
