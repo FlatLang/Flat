@@ -1,7 +1,6 @@
 #include "Thread.h"
 #include <CClass.h>
 #include <ExceptionHandler.h>
-#include <windows.h>
 #include "ExceptionData.h"
 #include "Object.h"
 #include "String.h"
@@ -41,8 +40,9 @@ free(*this);
 
 void fathom_Thread_start(Thread* this, ExceptionData* exceptionData)
 {
+lib_fathom_thread_join(this->prv->fathom_handle, run);
 }
 
-void fathom_Thread_run(Thread* this, ExceptionData* exceptionData)
+FATHOM_THREAD_FUNC_TYPE* fathom_Thread_run(Thread* this, ExceptionData* exceptionData)
 {
 }

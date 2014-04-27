@@ -5,7 +5,6 @@ typedef struct Time Time;
 
 #include <CClass.h>
 #include <ExceptionHandler.h>
-#include <windows.h>
 #include "ExceptionData.h"
 #include "Object.h"
 #include "String.h"

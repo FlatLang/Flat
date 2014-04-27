@@ -5,7 +5,6 @@ typedef struct String String;
 
 #include <CClass.h>
 #include <ExceptionHandler.h>
-#include <windows.h>
 #include "ExceptionData.h"
 #include "Object.h"
 #include "String.h"
@@ -18,7 +17,7 @@ String,
 struct Private* prv;
 )
 
-String* fathom_String_String(ExceptionData* exceptionData, char* fathom_data_140);
+String* fathom_String_String(ExceptionData* exceptionData, char* fathom_data_12);
 void fathom_del_String(String** this, ExceptionData* exceptionData);
 char* fathom_String_toCharArray(String* this, ExceptionData* exceptionData);
 void fathom_String_do1(String* this, ExceptionData* exceptionData);

@@ -5,7 +5,6 @@ typedef struct Thread Thread;
 
 #include <CClass.h>
 #include <ExceptionHandler.h>
-#include <windows.h>
 #include "ExceptionData.h"
 #include "Object.h"
 #include "String.h"
@@ -22,5 +21,5 @@ struct Private* prv;
 Thread* fathom_Thread_Thread(ExceptionData* exceptionData);
 void fathom_del_Thread(Thread** this, ExceptionData* exceptionData);
 void fathom_Thread_start(Thread* this, ExceptionData* exceptionData);
-void fathom_Thread_run(Thread* this, ExceptionData* exceptionData);
+FATHOM_THREAD_FUNC_TYPE* fathom_Thread_run(Thread* this, ExceptionData* exceptionData);
 #endif

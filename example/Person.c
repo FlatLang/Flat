@@ -1,7 +1,6 @@
 #include "Person.h"
 #include <CClass.h>
 #include <ExceptionHandler.h>
-#include <windows.h>
 #include "ExceptionData.h"
 #include "Object.h"
 #include "String.h"
@@ -13,15 +12,15 @@ int fathom_age;
 String* fathom_name;
 )
 
-Person* fathom_Person_Person(ExceptionData* exceptionData, String* fathom_name_163, int fathom_age_163)
+Person* fathom_Person_Person(ExceptionData* exceptionData, String* fathom_name_116, int fathom_age_116)
 {
 CCLASS_NEW(Person, this);
 
 this->prv->fathom_age = 0;
 this->prv->fathom_name = 0;
 {
-this->prv->fathom_name = fathom_name_163;
-this->prv->fathom_age = fathom_age_163;
+this->prv->fathom_name = fathom_name_116;
+this->prv->fathom_age = fathom_age_116;
 }
 
 return this;
