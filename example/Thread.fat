@@ -6,10 +6,10 @@ public class Thread
 	
 	public void start()
 	{
-		
+		thread.lib_fathom_thread_join(handle, run);
 	}
 	
-	public void run()
+	public thread.FATHOM_THREAD_FUNC_TYPE run()
 	{
 		
 	}
