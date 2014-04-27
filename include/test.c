@@ -11,15 +11,19 @@ FATHOM_THREAD_FUNC func(FATHOM_THREAD_FUNC_ARG arg)
 		
 		lib_fathom_thread_sleep(100);
 	}
+
+	return 0;
 }
 
 int main()
 {
-	FATHOM_THREAD_HANDLE handle;
+	FATHOM_THREAD_HANDLE handle, handle2;
 	
 	lib_fathom_thread_create(&handle, func);
+	lib_fathom_thread_create(&handle2, func);
 	
 	lib_fathom_thread_join(handle);
+	lib_fathom_thread_join(handle2);
 	
 	return 0;
 }
