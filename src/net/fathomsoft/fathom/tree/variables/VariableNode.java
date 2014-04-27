@@ -293,12 +293,18 @@ public class VariableNode extends ModifierNode
 	 * @param argNum The index of the attribute in the order that it
 	 * 		came in.
 	 */
-	public void setAttribute(String attribute, int argNum)
+	public boolean setAttribute(String attribute, int argNum)
 	{
 		if (attribute.equals("constant"))
 		{
 			setConstant(true);
 		}
+		else
+		{
+			return false;
+		}
+		
+		return true;
 	}
 	
 	/**

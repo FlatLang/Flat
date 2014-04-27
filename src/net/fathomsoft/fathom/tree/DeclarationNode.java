@@ -193,9 +193,12 @@ public class DeclarationNode extends VariableNode
 	/**
 	 * @see net.fathomsoft.fathom.tree.variables.VariableNode#setAttribute(java.lang.String, int)
 	 */
-	public void setAttribute(String attribute, int argNum)
+	public boolean setAttribute(String attribute, int argNum)
 	{
-		super.setAttribute(attribute, argNum);
+		if (super.setAttribute(attribute, argNum))
+		{
+			return true;
+		}
 		
 		if (attribute.equals("static"))
 		{
@@ -217,6 +220,12 @@ public class DeclarationNode extends VariableNode
 				setVisibility(PUBLIC);
 			}
 		}
+		else
+		{
+			return false;
+		}
+		
+		return true;
 	}
 
 	/**

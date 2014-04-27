@@ -77,9 +77,12 @@ public class FieldNode extends DeclarationNode
 	 * @see net.fathomsoft.fathom.tree.DeclarationNode#setAttribute(java.lang.String, int)
 	 */
 	@Override
-	public void setAttribute(String attribute, int argNum)
+	public boolean setAttribute(String attribute, int argNum)
 	{
-		super.setAttribute(attribute, argNum);
+		if (super.setAttribute(attribute, argNum))
+		{
+			return true;
+		}
 		
 		if (argNum == 0)
 		{
@@ -87,7 +90,17 @@ public class FieldNode extends DeclarationNode
 			{
 				setVisibility(VISIBLE);
 			}
+			else
+			{
+				return false;
+			}
 		}
+		else
+		{
+			return false;
+		}
+		
+		return true;
 	}
 
 	/**
