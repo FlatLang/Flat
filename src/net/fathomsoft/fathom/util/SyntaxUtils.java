@@ -313,9 +313,7 @@ public class SyntaxUtils
 	 */
 	public static boolean isMethodCall(String statement)
 	{
-		Bounds bounds = Regex.boundsOf(statement, Patterns.PRE_METHOD_CALL);
-		
-		return bounds.getStart() == 0;
+		return Regex.startsWith(statement, Patterns.PRE_METHOD_CALL);
 	}
 	
 	/**
@@ -332,13 +330,12 @@ public class SyntaxUtils
 	 */
 	public static boolean isArrayInitialization(String statement)
 	{
-		Bounds bounds = Regex.boundsOf(statement, Patterns.ARRAY_INIT);
-		
-		return bounds.getStart() == 0 && bounds.getEnd() == statement.length();
+		return Regex.matches(statement, Patterns.ARRAY_INIT);
 	}
 	
 	/**
-	 * Get the number of dimensions that the given array has, if any.<br>
+	 * Calculate the number of dimensions that the given array has, if
+	 * any.<br>
 	 * <br>
 	 * For example:
 	 * <blockquote><pre>
@@ -353,16 +350,30 @@ public class SyntaxUtils
 	 * 
 	 * @param statement The statement to find the number of dimensions
 	 * 		from.
+	 * @param contentPossible Whether or not content is allowed to exist
+	 * 		within the set of brackets.
 	 * @return The number of dimensions that the given array has, if any.
 	 */
-	public static int getArrayDimensions(String statement)
+	public static int calculateArrayDimensions(String statement, boolean contentPossible)
 	{
 		int num   = 0;
 		int index = statement.indexOf('[') + 1;
 		
-		while (index > 1)
+		while (index > 0)
 		{
 			int endIndex = statement.indexOf(']', index);
+			
+			if (endIndex < 0)
+			{
+				return -1;
+			}
+			
+			String brackets = statement.substring(index - 1, endIndex + 1);
+			
+			if (!Regex.matches(brackets, Patterns.EMPTY_ARRAY_BRACKETS) && !(contentPossible && Regex.matches(brackets, Patterns.ARRAY_BRACKETS)))
+			{
+				return -1;
+			}
 			
 			num++;
 			
@@ -460,6 +471,13 @@ public class SyntaxUtils
 		
 		String values[] = identifierAccess.split("\\s*\\.\\s*");
 		String output[] = new String[values.length - 1];
+		
+		FileNode file = reference.getFileNode();
+		
+		if (file.isExternalImport(values[0]))
+		{
+			return null;
+		}
 		
 		System.arraycopy(values, 1, output, 0, output.length);
 		
@@ -607,5 +625,41 @@ public class SyntaxUtils
 		builder.append(tabs).append(text.substring(lastIndex, text.length()));
 		
 		return builder.toString();
+	}
+	
+	/**
+	 * Get whether or not the given type String is a representation of
+	 * an external type in the FileNode. Consider the following:
+	 * <blockquote><pre>
+	 * import "externalFile.h";
+	 * 
+	 * public class Example
+	 * {
+	 * 	public void exampleMethod()
+	 * 	{
+	 * 		externalFile.functionCall();
+	 * 	}
+	 * }</pre></blockquote>
+	 * The <code>externalFile.functionCall()</code> is an external type
+	 * because the "<code>externalFile</code>" is imported as an external
+	 * header file at the top of the file.
+	 * 
+	 * @param file The FileNode that contains the possible external
+	 * 		statement.
+	 * @param statement The statement that is possibly an external type.
+	 * @return Whether or not the statement is an external type.
+	 */
+	public static boolean isExternal(FileNode file, String statement)
+	{
+		int index = statement.indexOf('.');
+		
+		if (index < 0)
+		{
+			return false;
+		}
+		
+		String externalName = statement.substring(0, index);
+		
+		return file.getImportListNode().isExternal(externalName);
 	}
 }
