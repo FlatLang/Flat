@@ -18,6 +18,7 @@
 package net.fathomsoft.fathom.util;
 
 import java.util.ArrayList;
+import java.util.regex.Matcher;
 
 /**
  * Class that contains methods used for finding data about
@@ -281,6 +282,125 @@ public class StringUtils
 	}
 	
 	/**
+	 * Trim the given statement to strictly an identifier.<br>
+	 * <br>
+	 * For example: A call of "<code>trimToIdentifier("**identifer322&+")<code>"
+	 * would return "<code>identifier322</code>"
+	 * 
+	 * @param statement The statement to trim down.
+	 * @return The trimmed down identifier.
+	 */
+	public static String trimToIdentifier(String statement)
+	{
+		Matcher matcher = Patterns.IDENTIFIER_BOUNDARIES.matcher(statement);
+		
+		matcher.find();
+		
+		int start = matcher.start();
+		
+		matcher.find();
+		
+		int end = matcher.start();
+		
+		return statement.substring(start, end);
+	}
+	
+	/**
+	 * Get whether the given String only contains chars of the
+	 * type in the given needles array.
+	 * 
+	 * @param haystack The String to test.
+	 * @param needles The chars that the String can contain.
+	 * @return Whether or not the String passes the test.
+	 */
+	public static boolean containsOnly(String haystack, char needles[])
+	{
+		for (int i = 0; i < haystack.length(); i++)
+		{
+			char c = haystack.charAt(i);
+			
+			if (!containsChar(needles, c))
+			{
+				return false;
+			}
+		}
+		
+		return true;
+	}
+	
+	/**
+	 * Search for the given char 'c' in the given array.
+	 * 
+	 * @param array The array to search for 'c' in.
+	 * @param c The char to search for.
+	 * @return Whether or not the array contains the 'c' char.
+	 */
+	public static boolean containsChar(char array[], char c)
+	{
+		return searchChar(array, c) >= 0;
+	}
+	
+	/**
+	 * Search for the given char 'c' in the given array, if it is found,
+	 * return the index at which it was found.
+	 * 
+	 * @param array The array to search for 'c' in.
+	 * @param c The char to search for.
+	 * @return The index in the array of the occurrence of char 'c', if
+	 * 		it was found in the array.
+	 */
+	public static int searchChar(char array[], char c)
+	{
+		for (int i = array.length - 1; i >= 0; i--)
+		{
+			if (array[i] == c)
+			{
+				return i;
+			}
+		}
+		
+		return -1;
+	}
+	
+//	public String joinIdentifiers(String statement)
+//	{
+//		String data[][] = splitIdentifiers(statement);
+//		
+//		
+//	}
+	
+//	public static String[][] splitIdentifiers(String statement)
+//	{
+//		ArrayList<String> identifiers = new ArrayList<String>();
+//		ArrayList<String> delimiters  = new ArrayList<String>();
+//		
+//		Matcher matcher = Patterns.IDENTIFIER.matcher(statement);
+//		
+//		int prev = 0;
+//		
+//		while (matcher.find())
+//		{
+//			String text = matcher.group();
+//			
+//			if (SyntaxUtils.isValidIdentifier(text))
+//			{
+//				identifiers.add(text);
+//			}
+//			else if (prev)
+//			{
+//				delimiters.add(text);
+//			}
+//		}
+//		
+//		String returnData[][] = new String[2][];
+//		
+//		returnData[0] = identifiers.toArray(new String[0]);
+//		returnData[1] = delimiters.toArray(new String[0]);
+//		
+//		return returnData;
+//	}
+	
+	/**
 	 * Find the String value of the data that is in between the last
 	 * two words in the array.<br>
 	 * <br>
@@ -349,5 +469,42 @@ public class StringUtils
 		}
 		
 		return true;
+	}
+	
+	/**
+	 * Generate a modified version of the given String in which for every
+	 * character after the "after" char type that is the same type as the
+	 * given "removeType" char type will be removed from the String.<br>
+	 * <br>
+	 * For example: Calling "<code>removeTypeAfterChar("this is an example", 's', ' ')</code>"
+	 * would return a String "thisisan example"
+	 * 
+	 * @param str The String to generate a modified version of.
+	 * @param after The char type to search for the remove type directly
+	 * 		after.
+	 * @param removeType The type of char to remove.
+	 * @return The newly formatted String.
+	 */
+	public static String removeTypeAfterChar(String str, char after, char removeType)
+	{
+		StringBuilder builder = new StringBuilder(str);
+		
+		int index = builder.indexOf(after + "");
+		
+		while (index >= 0)
+		{
+			char c = builder.charAt(++index);
+			
+			while (c == removeType)
+			{
+				builder.deleteCharAt(index);
+				
+				c = builder.charAt(index);
+			}
+			
+			index = builder.indexOf(after + "", index);
+		}
+		
+		return builder.toString();
 	}
 }
