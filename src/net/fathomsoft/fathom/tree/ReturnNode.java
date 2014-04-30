@@ -17,6 +17,7 @@
  */
 package net.fathomsoft.fathom.tree;
 
+import net.fathomsoft.fathom.error.SyntaxMessage;
 import net.fathomsoft.fathom.util.Location;
 import net.fathomsoft.fathom.util.Patterns;
 import net.fathomsoft.fathom.util.Regex;
@@ -28,7 +29,7 @@ import net.fathomsoft.fathom.util.Regex;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:58:29 PM
- * @version	v0.2.1 Apr 24, 2014 at 4:54:26 PM
+ * @version	v0.2.3 Apr 30, 2014 at 6:18:00 AM
  */
 public class ReturnNode extends TreeNode
 {
@@ -124,11 +125,9 @@ public class ReturnNode extends TreeNode
 	 */
 	public static ReturnNode decodeStatement(TreeNode parent, String statement, Location location)
 	{
-		ReturnNode n = null;
-		
-		if (Regex.indexOf(statement, Patterns.PRE_RETURN) == 0)
+		if (Regex.startsWith(statement, Patterns.PRE_RETURN))
 		{
-			n = new ReturnNode();
+			ReturnNode n = new ReturnNode();
 			
 			int returnStartIndex = Regex.indexOf(statement, Patterns.POST_RETURN);
 			
@@ -165,9 +164,22 @@ public class ReturnNode extends TreeNode
 				
 				n.addChild(child);
 			}
+			else
+			{
+				MethodNode parentMethod = (MethodNode)parent.getAncestorOfType(MethodNode.class);
+				
+				if (parentMethod.getType() != null)
+				{
+					SyntaxMessage.error("Method '" + parentMethod.getName() + "' must return a type of '" + parentMethod.getType() + "'", parent.getFileNode(), location, parent.getController());
+					
+					return null;
+				}
+			}
+			
+			return n;
 		}
 		
-		return n;
+		return null;
 	}
 
 	/**
