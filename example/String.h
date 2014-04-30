@@ -19,7 +19,7 @@ CCLASS_CLASS
 )
 
 
-String* fathom_String_String(ExceptionData* exceptionData, char* fathom_data_35);
+String* fathom_String_String(ExceptionData* exceptionData, char* fathom_data_90);
 void fathom_del_String(String** this, ExceptionData* exceptionData);
 char* fathom_String_toCharArray(String* this, ExceptionData* exceptionData);
 void fathom_String_do1(String* this, ExceptionData* exceptionData);

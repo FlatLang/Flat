@@ -33,52 +33,52 @@ void fathom_del_Math(Math** this, ExceptionData* exceptionData)
 	free(*this);
 }
 
-double fathom_Math_sqrt(ExceptionData* exceptionData, double fathom_number_6)
+double fathom_Math_sqrt(ExceptionData* exceptionData, double fathom_number_81)
 {
-	return sqrt(fathom_number_6);
+	return sqrt(fathom_number_81);
 }
 
-double fathom_Math_pow(ExceptionData* exceptionData, double fathom_base_14, double fathom_power_14)
+double fathom_Math_pow(ExceptionData* exceptionData, double fathom_base_87, double fathom_power_87)
 {
-	return pow(fathom_base_14, fathom_power_14);
+	return pow(fathom_base_87, fathom_power_87);
 }
 
-double fathom_Math_sin(ExceptionData* exceptionData, double fathom_number_19)
+double fathom_Math_sin(ExceptionData* exceptionData, double fathom_number_117)
 {
-	return sin(fathom_number_19);
+	return sin(fathom_number_117);
 }
 
-double fathom_Math_cos(ExceptionData* exceptionData, double fathom_number_22)
+double fathom_Math_cos(ExceptionData* exceptionData, double fathom_number_126)
 {
-	return cos(fathom_number_22);
+	return cos(fathom_number_126);
 }
 
-double fathom_Math_tan(ExceptionData* exceptionData, double fathom_number_25)
+double fathom_Math_tan(ExceptionData* exceptionData, double fathom_number_138)
 {
-	return tan(fathom_number_25);
+	return tan(fathom_number_138);
 }
 
-double fathom_Math_asin(ExceptionData* exceptionData, double fathom_number_93)
+double fathom_Math_asin(ExceptionData* exceptionData, double fathom_number_141)
 {
-	return asin(fathom_number_93);
+	return asin(fathom_number_141);
 }
 
-double fathom_Math_acos(ExceptionData* exceptionData, double fathom_number_97)
+double fathom_Math_acos(ExceptionData* exceptionData, double fathom_number_144)
 {
-	return acos(fathom_number_97);
+	return acos(fathom_number_144);
 }
 
-double fathom_Math_atan(ExceptionData* exceptionData, double fathom_number_100)
+double fathom_Math_atan(ExceptionData* exceptionData, double fathom_number_147)
 {
-	return atan(fathom_number_100);
+	return atan(fathom_number_147);
 }
 
-int fathom_Math_floor(ExceptionData* exceptionData, double fathom_number_103)
+int fathom_Math_floor(ExceptionData* exceptionData, double fathom_number_150)
 {
-	return floor(fathom_number_103);
+	return floor(fathom_number_150);
 }
 
-int fathom_Math_ceil(ExceptionData* exceptionData, double fathom_number_106)
+int fathom_Math_ceil(ExceptionData* exceptionData, double fathom_number_153)
 {
-	return ceil(fathom_number_106);
+	return ceil(fathom_number_153);
 }

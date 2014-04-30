@@ -23,15 +23,15 @@ struct DataStruct
 	Thread* instance;
 };
 
-Thread* fathom_Thread_Thread(ExceptionData* exceptionData, long_long fathom_millis_61, String* fathom_word_61)
+Thread* fathom_Thread_Thread(ExceptionData* exceptionData, long_long fathom_millis_31, String* fathom_word_31)
 {
 	CCLASS_NEW(Thread, this);
 	
 	this->prv->fathom_millis = 0;
 	this->prv->fathom_word = 0;
 	{
-		this->prv->fathom_millis = fathom_millis_61;
-		this->prv->fathom_word = fathom_word_61;
+		this->prv->fathom_millis = fathom_millis_31;
+		this->prv->fathom_word = fathom_word_31;
 	}
 	
 	return this;
@@ -67,18 +67,18 @@ void fathom_Thread_join(Thread* this, ExceptionData* exceptionData)
 	lib_fathom_thread_join(this->prv->handle);
 }
 
-void fathom_Thread_sleep(Thread* this, ExceptionData* exceptionData, long_long fathom_millis_78)
+void fathom_Thread_sleep(Thread* this, ExceptionData* exceptionData, long_long fathom_millis_48)
 {
-	lib_fathom_thread_sleep(fathom_millis_78);
+	lib_fathom_thread_sleep(fathom_millis_48);
 }
 
 void fathom_Thread_run(Thread* this, ExceptionData* exceptionData)
 {
-	int fathom_i_82;
+	int fathom_i_94;
 	
-	for (fathom_i_82 = 0; fathom_i_82 < 10; fathom_i_82++)
+	for (fathom_i_94 = 0; fathom_i_94 < 10; fathom_i_94++)
 	{
-		if (fathom_i_82 % 2 == 0)
+		if (fathom_i_94 % 2 == 0)
 		{
 			fathom_IO_println(exceptionData, fathom_String_String(exceptionData, "Tick"));
 		}

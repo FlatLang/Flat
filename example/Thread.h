@@ -21,11 +21,11 @@ CCLASS_CLASS
 )
 
 
-Thread* fathom_Thread_Thread(ExceptionData* exceptionData, long_long fathom_millis_61, String* fathom_word_61);
+Thread* fathom_Thread_Thread(ExceptionData* exceptionData, long_long fathom_millis_31, String* fathom_word_31);
 void fathom_del_Thread(Thread** this, ExceptionData* exceptionData);
 void fathom_Thread_start(Thread* this, ExceptionData* exceptionData);
 void fathom_Thread_join(Thread* this, ExceptionData* exceptionData);
-void fathom_Thread_sleep(Thread* this, ExceptionData* exceptionData, long_long fathom_millis_78);
+void fathom_Thread_sleep(Thread* this, ExceptionData* exceptionData, long_long fathom_millis_48);
 void fathom_Thread_run(Thread* this, ExceptionData* exceptionData);
 FATHOM_THREAD_FUNC lib_fathom_thread_run(FATHOM_THREAD_FUNC_ARG arg);
 #endif

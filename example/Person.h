@@ -19,7 +19,7 @@ CCLASS_CLASS
 )
 
 
-Person* fathom_Person_Person(ExceptionData* exceptionData, String* fathom_name_7, int fathom_age_7);
+Person* fathom_Person_Person(ExceptionData* exceptionData, String* fathom_name_89, int fathom_age_89);
 void fathom_del_Person(Person** this, ExceptionData* exceptionData);
 int fathom_Person_getAge(Person* this, ExceptionData* exceptionData);
 String* fathom_Person_getName(Person* this, ExceptionData* exceptionData);

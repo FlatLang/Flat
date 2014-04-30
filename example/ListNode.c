@@ -13,14 +13,14 @@ CCLASS_PRIVATE
 	ListNode* fathom_next;
 )
 
-ListNode* fathom_ListNode_ListNode(ExceptionData* exceptionData, Object* fathom_data_112)
+ListNode* fathom_ListNode_ListNode(ExceptionData* exceptionData, Object* fathom_data_83)
 {
 	CCLASS_NEW(ListNode, this);
 	
 	this->prv->fathom_data = 0;
 	this->prv->fathom_next = 0;
 	{
-		this->prv->fathom_data = fathom_data_112;
+		this->prv->fathom_data = fathom_data_83;
 	}
 	
 	return this;
@@ -52,7 +52,7 @@ ListNode* fathom_ListNode_getNext(ListNode* this, ExceptionData* exceptionData)
 	return this->prv->fathom_next;
 }
 
-void fathom_ListNode_setNext(ListNode* this, ExceptionData* exceptionData, ListNode* fathom_next_121)
+void fathom_ListNode_setNext(ListNode* this, ExceptionData* exceptionData, ListNode* fathom_next_180)
 {
-	this->prv->fathom_next = fathom_next_121;
+	this->prv->fathom_next = fathom_next_180;
 }
