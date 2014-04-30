@@ -35,7 +35,7 @@ import net.fathomsoft.fathom.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:10:53 PM
- * @version	v0.2.2 Apr 29, 2014 at 7:16:32 PM
+ * @version	v0.2.3 Apr 30, 2014 at 6:18:00 AM
  */
 public class MethodNode extends DeclarationNode
 {
@@ -522,7 +522,7 @@ public class MethodNode extends DeclarationNode
 	 * @return The generated node, if it was possible to translated it
 	 * 		into a MethodNode.
 	 */
-	public static MethodNode decodeStatement(TreeNode parent, String statement, Location location)
+	public static MethodNode decodeStatement(final TreeNode parent, String statement, final Location location)
 	{
 		int firstParenthIndex = Regex.indexOf(statement, '(', new char[] { }, new char[] {}, new char[] { '"' }, new boolean[] {}, new boolean[] {}, new boolean[] { true });
 		int lastParenthIndex  = Regex.lastIndexOf(statement, ')', new char[] { }, new char[] {}, new char[] { '"' }, new boolean[] {}, new boolean[] {}, new boolean[] { true });
@@ -544,8 +544,11 @@ public class MethodNode extends DeclarationNode
 			
 			statement = statement.substring(0, firstParenthIndex);
 			
-			final String statement2 = statement;
+			final FileNode fileNode   = parent.getFileNode();
 			
+			final String   statement2 = statement;
+			
+			final boolean error[]         = new boolean[1];
 			final boolean externalType[]  = new boolean[1];
 			final ArrayList<String> words = new ArrayList<String>();
 			
@@ -553,6 +556,11 @@ public class MethodNode extends DeclarationNode
 			{
 				public void interactWord(String word, int wordNumber, Bounds bounds, int numWords)
 				{
+					if (error[0])
+					{
+						return;
+					}
+					
 					words.add(word);
 					
 					if (wordNumber == numWords - 1)
@@ -577,10 +585,26 @@ public class MethodNode extends DeclarationNode
 						{
 							String missing = StringUtils.findLastMissingString(words, statement2);
 							
+							if (!missing.equals(".") && !missing.equals("->"))
+							{
+								SyntaxMessage.error("Incorrect parameter definition", parent.getFileNode(), location, parent.getController());
+								
+								error[0] = true;
+							}
+							
 							setType(missing + getType());
 						}
+						else if (fileNode.isExternalImport(word))
+						{
+							externalType[0] = statement2.charAt(bounds.getEnd()) == '.';
+						}
 						
-						externalType[0] = statement2.charAt(bounds.getStart()) == '.';
+						if (!externalType[0])
+						{
+							SyntaxMessage.error("Unknown method definition", parent.getFileNode(), location, parent.getController());
+							
+							error[0] = true;
+						}
 					}
 				}
 			};
@@ -603,6 +627,11 @@ public class MethodNode extends DeclarationNode
 			}
 			
 			n.iterateWords(statement, Patterns.IDENTIFIER_BOUNDARIES);
+			
+			if (error[0])
+			{
+				return null;
+			}
 			
 			return n;
 		}
