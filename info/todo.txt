@@ -1,11 +1,11 @@
 Make arguments and parameters more strict.
 Make BlockNode for the parent of all Method-based blocks in order to declare local variables.
 Use RAII variable initialization when possible.
+Hide private static fields.
 
 In-depth compiler error checking:
 - Make sure that the static class's methods/variables are called rightfully.
 - Include the caller of a method and variable and such.
-
 
 Test cases:
 	char c[] = new String[52];
@@ -18,5 +18,5 @@ X	Make better clone method
 
 
 Default Exceptions to Implement:
-	ClassCastException
-	
+	CastException
+	ArrayAccessException
