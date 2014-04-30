@@ -36,12 +36,10 @@ import net.fathomsoft.fathom.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:20:35 PM
- * @version	v0.2.1 Apr 24, 2014 at 4:49:35 PM
+ * @version	v0.2.3 Apr 30, 2014 at 6:15:00 AM
  */
 public class BinaryOperatorNode extends TreeNode
 {
-	private static int checkId;
-
 	/**
 	 * @see net.fathomsoft.fathom.tree.TreeNode#generateJavaSource()
 	 */
@@ -234,7 +232,7 @@ public class BinaryOperatorNode extends TreeNode
 	 * @return The generated TreeNode, if it was possible to translated it
 	 * 		into a BinaryOperatorNode.
 	 */
-	private static TreeNode decodeStatement(TreeNode parentNode, String statement, Matcher matcher, Location location)
+	private static TreeNode decodeStatement(TreeNode parent, String statement, Matcher matcher, Location location)
 	{
 		if (matcher.find())
 		{
@@ -251,7 +249,7 @@ public class BinaryOperatorNode extends TreeNode
 			String   lhv = statement.substring(bounds.getStart(), bounds.getEnd());
 			
 			// The left-hand node.
-			TreeNode lhn = createNode(parentNode, lhv, location);
+			TreeNode lhn = createNode(parent, lhv, location);
 			
 			node.addChild(lhn);
 			
@@ -270,7 +268,14 @@ public class BinaryOperatorNode extends TreeNode
 			statement = statement.substring(bounds2.getStart());
 			
 			matcher.reset(statement);
-			TreeNode rhn = decodeStatement(parentNode, statement, matcher, location);
+			TreeNode rhn = decodeStatement(parent, statement, matcher, location);
+			
+			if (rhn == null)
+			{
+				SyntaxMessage.error("Cannot decode binary operation", parent.getFileNode(), location, parent.getController());
+				
+				return null;
+			}
 			
 			node.addChild(rhn);
 			
@@ -278,16 +283,16 @@ public class BinaryOperatorNode extends TreeNode
 			{
 				IdentifierNode id = (IdentifierNode)rhn;
 				
-				TreeNode divideByZeroCheck = generateDivideByZeroCheck(parentNode, id.getName(), location);
+				TreeNode divideByZeroCheck = generateDivideByZeroCheck(parent, id.getName(), location);
 				
-				parentNode.addChild(divideByZeroCheck);
+				parent.addChild(divideByZeroCheck);
 			}
 			
 			return node;
 		}
 		else if (matcher.hitEnd())
 		{
-			return createNode(parentNode, statement, location);
+			return createNode(parent, statement, location);
 			
 //			ClassNode thisClass  = (ClassNode)parentNode.getAncestorOfType(ClassNode.class, true);
 //			ClassNode nodesClass = (ClassNode)node.getAncestorOfType(ClassNode.class, true);
