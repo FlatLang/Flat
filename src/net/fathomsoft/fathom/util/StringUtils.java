@@ -26,7 +26,7 @@ import java.util.regex.Matcher;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Mar 13, 2014 at 9:38:42 PM
- * @version	v0.2 Mar 13, 2014 at 9:38:42 PM
+ * @version	v0.2.2 Apr 29, 2014 at 7:02:42 PM
  */
 public class StringUtils
 {
