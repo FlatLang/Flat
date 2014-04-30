@@ -41,55 +41,56 @@ void fathom_del_Test(Test** this, ExceptionData* exceptionData)
 		free(*this);
 }
 
-void fathom_Test_main(ExceptionData* exceptionData, String** fathom_args_26)
+void fathom_Test_main(ExceptionData* exceptionData, String** fathom_args_3)
 {
-		List* fathom_list_26;
-		ListNode* fathom_current_26;
-		Thread* fathom_thread_26;
-		Thread* fathom_thread2_26;
+		List* fathom_list_3;
+		ListNode* fathom_current_3;
+		Thread* fathom_thread_3;
+		Thread* fathom_thread2_3;
 		
-		fathom_list_26 = fathom_List_List(exceptionData);
-		fathom_current_26 = fathom_List_getFirst(fathom_list_26, exceptionData);
-		while (fathom_current_26 != 0)
+		fathom_list_3 = fathom_List_List(exceptionData);
+		fathom_current_3 = fathom_List_getFirst(fathom_list_3, exceptionData);
+		while (fathom_current_3 != 0)
 		{
-				fathom_ListNode_getData(fathom_current_26, exceptionData);
-				fathom_current_26 = fathom_ListNode_getNext(fathom_current_26, exceptionData);
+				fathom_ListNode_getData(fathom_current_3, exceptionData);
+				fathom_current_3 = fathom_ListNode_getNext(fathom_current_3, exceptionData);
 		}
-		fathom_thread_26 = fathom_Thread_Thread(exceptionData, 1000, fathom_String_String(exceptionData, "Turkey"));
-		fathom_thread2_26 = fathom_Thread_Thread(exceptionData, 1000, fathom_String_String(exceptionData, "Poop"));
-		fathom_Thread_start(fathom_thread_26, exceptionData);
+		fathom_thread_3 = fathom_Thread_Thread(exceptionData, 300, fathom_String_String(exceptionData, "Turkey"));
+		fathom_thread2_3 = fathom_Thread_Thread(exceptionData, 1000, fathom_String_String(exceptionData, "Poop"));
+		fathom_Thread_start(fathom_thread_3, exceptionData);
 		fathom_IO_println(exceptionData, fathom_String_String(exceptionData, "Waiting for thread to end..."));
-		fathom_Thread_join(fathom_thread_26, exceptionData);
+		fathom_Thread_join(fathom_thread_3, exceptionData);
 		fathom_IO_println(exceptionData, fathom_String_String(exceptionData, "Thread has ended"));
-		fathom_Thread_start(fathom_thread2_26, exceptionData);
+		fathom_Thread_start(fathom_thread2_3, exceptionData);
+		fathom_Thread_join(fathom_thread2_3, exceptionData);
 		fathom_IO_print(exceptionData, fathom_String_String(exceptionData, "Press enter to exit..."));
 		fathom_IO_waitForEnter(exceptionData);
 }
 
-int fathom_Test_divide(Test* this, ExceptionData* exceptionData, int fathom_numerator_29, int fathom_denominator_29)
+int fathom_Test_divide(Test* this, ExceptionData* exceptionData, int fathom_numerator_50, int fathom_denominator_50)
 {
-		if (fathom_denominator_29 == 0)
+		if (fathom_denominator_50 == 0)
 		{
 				THROW(2);
 		}
-		return fathom_numerator_29 / fathom_denominator_29;
+		return fathom_numerator_50 / fathom_denominator_50;
 }
 
-int fathom_Test_getEvenNumber(Test* this, ExceptionData* exceptionData, int fathom_num_37)
+int fathom_Test_getEvenNumber(Test* this, ExceptionData* exceptionData, int fathom_num_53)
 {
-		if (fathom_num_37 % 2 != 0)
+		if (fathom_num_53 % 2 != 0)
 		{
 				THROW(3);
 		}
-		return fathom_num_37;
+		return fathom_num_53;
 }
 
 int fathom_Test_test(Test* this, ExceptionData* exceptionData)
 {
-		int fathom_newVar_44;
+		int fathom_newVar_56;
 		
-		fathom_newVar_44 = 43;
-		return fathom_newVar_44;
+		fathom_newVar_56 = 43;
+		return fathom_newVar_56;
 }
 
 int fathom_Test_test2(Test* this, ExceptionData* exceptionData)
@@ -108,10 +109,10 @@ int main(int argc, char** argvs)
 		int      i;
 		
 		ExceptionData* exceptionData = 0;
-		__static__Time = fathom_Time_Time(0);
 		__static__Test = fathom_Test_Test(0);
 		__static__IO = fathom_IO_IO(0);
 		__static__Math = fathom_Math_Math(0);
+		__static__Time = fathom_Time_Time(0);
 		
 		for (i = 0; i < argc; i++)
 		{
@@ -134,10 +135,10 @@ int main(int argc, char** argvs)
 				
 		}
 		END_TRY;
-		fathom_del_Time(&__static__Time, 0);
 		fathom_del_Test(&__static__Test, 0);
 		fathom_del_IO(&__static__IO, 0);
 		fathom_del_Math(&__static__Math, 0);
+		fathom_del_Time(&__static__Time, 0);
 		free(args);
 		
 		return 0;

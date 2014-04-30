@@ -23,6 +23,6 @@ CCLASS_CLASS
 List* fathom_List_List(ExceptionData* exceptionData);
 void fathom_del_List(List** this, ExceptionData* exceptionData);
 ListNode* fathom_List_getFirst(List* this, ExceptionData* exceptionData);
-void fathom_List_add(List* this, ExceptionData* exceptionData, Object* fathom_data_129);
-void fathom_List_remove(List* this, ExceptionData* exceptionData, Object* fathom_data_136);
+void fathom_List_add(List* this, ExceptionData* exceptionData, Object* fathom_data_149);
+void fathom_List_remove(List* this, ExceptionData* exceptionData, Object* fathom_data_152);
 #endif

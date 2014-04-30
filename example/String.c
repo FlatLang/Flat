@@ -12,13 +12,13 @@ CCLASS_PRIVATE
 	char* fathom_data;
 )
 
-String* fathom_String_String(ExceptionData* exceptionData, char* fathom_data_90)
+String* fathom_String_String(ExceptionData* exceptionData, char* fathom_data_5)
 {
 	CCLASS_NEW(String, this);
 	
 	this->prv->fathom_data = 0;
 	{
-		this->prv->fathom_data = fathom_data_90;
+		this->prv->fathom_data = fathom_data_5;
 	}
 	
 	return this;

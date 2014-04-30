@@ -20,16 +20,16 @@ CCLASS_CLASS
 
 Math* fathom_Math_Math(ExceptionData* exceptionData);
 void fathom_del_Math(Math** this, ExceptionData* exceptionData);
-double fathom_Math_sqrt(ExceptionData* exceptionData, double fathom_number_81);
-double fathom_Math_pow(ExceptionData* exceptionData, double fathom_base_87, double fathom_power_87);
-double fathom_Math_sin(ExceptionData* exceptionData, double fathom_number_117);
-double fathom_Math_cos(ExceptionData* exceptionData, double fathom_number_126);
-double fathom_Math_tan(ExceptionData* exceptionData, double fathom_number_138);
-double fathom_Math_asin(ExceptionData* exceptionData, double fathom_number_141);
-double fathom_Math_acos(ExceptionData* exceptionData, double fathom_number_144);
-double fathom_Math_atan(ExceptionData* exceptionData, double fathom_number_147);
-int fathom_Math_floor(ExceptionData* exceptionData, double fathom_number_150);
-int fathom_Math_ceil(ExceptionData* exceptionData, double fathom_number_153);
+double fathom_Math_sqrt(ExceptionData* exceptionData, double fathom_number_95);
+double fathom_Math_pow(ExceptionData* exceptionData, double fathom_base_103, double fathom_power_103);
+double fathom_Math_sin(ExceptionData* exceptionData, double fathom_number_108);
+double fathom_Math_cos(ExceptionData* exceptionData, double fathom_number_111);
+double fathom_Math_tan(ExceptionData* exceptionData, double fathom_number_114);
+double fathom_Math_asin(ExceptionData* exceptionData, double fathom_number_117);
+double fathom_Math_acos(ExceptionData* exceptionData, double fathom_number_120);
+double fathom_Math_atan(ExceptionData* exceptionData, double fathom_number_123);
+int fathom_Math_floor(ExceptionData* exceptionData, double fathom_number_126);
+int fathom_Math_ceil(ExceptionData* exceptionData, double fathom_number_129);
 extern Math* __static__Math;
 
 #endif

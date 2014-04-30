@@ -32,4 +32,5 @@ void fathom_del_Object(Object** this, ExceptionData* exceptionData)
 
 String* fathom_Object_toString(Object* this, ExceptionData* exceptionData)
 {
+	return fathom_String_String(exceptionData, "Nothing");
 }
