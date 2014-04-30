@@ -43,7 +43,7 @@ import net.fathomsoft.fathom.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:00:04 PM
- * @version	v0.2.1 Apr 24, 2014 at 4:47:04 PM
+ * @version	v0.2.2 Apr 29, 2014 at 7:03:04 PM
  */
 public class Fathom
 {
@@ -72,12 +72,13 @@ public class Fathom
 	public static final int		BENCHMARK     = 0;
 	
 	public static final long	CSOURCE       = 0x1l;
-	public static final long	VERBOSE       = 0x10l;
-	public static final long	DRY_RUN       = 0x100l;
-	public static final long	KEEP_C        = 0x1000l;
-	public static final long	C_ARGS        = 0x10000l;
-	public static final long	RUNTIME       = 0x100000l;
-	public static final long	LIBRARY       = 0x1000000l;
+	public static final long	FORMATC       = 0x10l;
+	public static final long	VERBOSE       = 0x100l;
+	public static final long	DRY_RUN       = 0x1000l;
+	public static final long	KEEP_C        = 0x10000l;
+	public static final long	C_ARGS        = 0x100000l;
+	public static final long	RUNTIME       = 0x1000000l;
+	public static final long	LIBRARY       = 0x10000000l;
 	
 	public static final int		GCC           = 1;
 	public static final int		TCC           = 2;
@@ -88,7 +89,7 @@ public class Fathom
 	public static final int		LINUX         = 3;
 	
 	public static final String	LANGUAGE_NAME = "Fathom";
-	public static final String	VERSION       = "v0.2.1";
+	public static final String	VERSION       = "v0.2.2";
 	
 	/**
 	 * Find out which operating system the compiler is running on.
@@ -210,9 +211,9 @@ public class Fathom
 				"-dir", '"' + directory + "../include" + '"',
 				"-run",
 //				"-csource",
+				"-formatc",
 				"-v",
-				"-clang",
-//				"-cargs",
+				"-cargs",
 				"-keepc",
 //				"-library",
 			};
@@ -279,7 +280,7 @@ public class Fathom
 			log(str);
 		}
 		
-		if (isFlagEnabled(CSOURCE))
+		if (isFlagEnabled(FORMATC))
 		{
 			log("Formatting the output c output code...");
 			tree.formatCOutput();
@@ -683,11 +684,19 @@ public class Fathom
 			{
 				enableFlag(CSOURCE);
 			}
+			// If the user wants to format the c source output.
+			else if (arg.equals("-formatc"))
+			{
+				enableFlag(FORMATC);
+			}
 			// If the user wants a more verbose compilation output,
 			// explaining each step.
 			else if (arg.equals("-verbose") || arg.equals("-v"))
 			{
-				enableFlag(VERBOSE);
+				if (BENCHMARK <= 0)
+				{
+					enableFlag(VERBOSE);
+				}
 			}
 			// If the user wants to use the GCC c compiler.
 			else if (arg.equals("-gcc"))
