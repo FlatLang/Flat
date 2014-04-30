@@ -17,12 +17,12 @@
  */
 package net.fathomsoft.fathom;
 
+import static java.lang.Math.sin;
+
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import net.fathomsoft.fathom.util.Patterns;
-
-import static java.lang.Math.sin;
 
 public class Test
 {

@@ -19,7 +19,6 @@ package net.fathomsoft.fathom.tree.exceptionhandling;
 
 import java.util.HashMap;
 
-import net.fathomsoft.fathom.Fathom;
 import net.fathomsoft.fathom.tree.TreeNode;
 import net.fathomsoft.fathom.util.Location;
 

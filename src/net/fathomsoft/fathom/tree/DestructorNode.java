@@ -25,7 +25,6 @@ import net.fathomsoft.fathom.tree.variables.PrivateFieldListNode;
 import net.fathomsoft.fathom.tree.variables.PublicFieldListNode;
 import net.fathomsoft.fathom.util.Bounds;
 import net.fathomsoft.fathom.util.Location;
-import net.fathomsoft.fathom.util.Regex;
 import net.fathomsoft.fathom.util.StringUtils;
 
 /**

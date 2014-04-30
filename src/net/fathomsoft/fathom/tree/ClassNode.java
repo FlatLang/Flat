@@ -17,8 +17,6 @@
  */
 package net.fathomsoft.fathom.tree;
 
-import java.util.ArrayList;
-
 import net.fathomsoft.fathom.error.SyntaxMessage;
 import net.fathomsoft.fathom.tree.variables.FieldListNode;
 import net.fathomsoft.fathom.tree.variables.FieldNode;

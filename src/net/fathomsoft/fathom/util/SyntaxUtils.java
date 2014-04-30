@@ -19,7 +19,6 @@ package net.fathomsoft.fathom.util;
 
 import java.util.regex.Matcher;
 
-import net.fathomsoft.fathom.Fathom;
 import net.fathomsoft.fathom.error.SyntaxMessage;
 import net.fathomsoft.fathom.tree.ClassNode;
 import net.fathomsoft.fathom.tree.DeclarationNode;

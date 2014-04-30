@@ -17,14 +17,11 @@
  */
 package net.fathomsoft.fathom.tree;
 
-import net.fathomsoft.fathom.Fathom;
 import net.fathomsoft.fathom.error.SyntaxMessage;
-import net.fathomsoft.fathom.tree.exceptionhandling.ExceptionNode;
 import net.fathomsoft.fathom.tree.variables.VariableNode;
 import net.fathomsoft.fathom.util.Bounds;
 import net.fathomsoft.fathom.util.Location;
 import net.fathomsoft.fathom.util.Patterns;
-import net.fathomsoft.fathom.util.Regex;
 import net.fathomsoft.fathom.util.StringUtils;
 import net.fathomsoft.fathom.util.SyntaxUtils;
 

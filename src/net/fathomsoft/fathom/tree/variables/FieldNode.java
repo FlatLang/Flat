@@ -17,17 +17,11 @@
  */
 package net.fathomsoft.fathom.tree.variables;
 
-import net.fathomsoft.fathom.error.SyntaxMessage;
 import net.fathomsoft.fathom.tree.DeclarationNode;
-import net.fathomsoft.fathom.tree.ParameterListNode;
 import net.fathomsoft.fathom.tree.TreeNode;
-import net.fathomsoft.fathom.tree.exceptionhandling.ExceptionNode;
 import net.fathomsoft.fathom.util.Bounds;
 import net.fathomsoft.fathom.util.Location;
 import net.fathomsoft.fathom.util.Patterns;
-import net.fathomsoft.fathom.util.Regex;
-import net.fathomsoft.fathom.util.StringUtils;
-import net.fathomsoft.fathom.util.SyntaxUtils;
 
 /**
  * DeclarationNode extension that represents the declaration of a field

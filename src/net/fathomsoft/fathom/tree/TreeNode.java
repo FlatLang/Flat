@@ -22,7 +22,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import net.fathomsoft.fathom.Fathom;
-import net.fathomsoft.fathom.error.SyntaxMessage;
 import net.fathomsoft.fathom.tree.exceptionhandling.CatchNode;
 import net.fathomsoft.fathom.tree.exceptionhandling.ExceptionHandlingNode;
 import net.fathomsoft.fathom.tree.exceptionhandling.ExceptionNode;

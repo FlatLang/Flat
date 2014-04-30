@@ -18,10 +18,7 @@
 package net.fathomsoft.fathom.tree.variables;
 
 import net.fathomsoft.fathom.error.SyntaxMessage;
-import net.fathomsoft.fathom.tree.ParameterListNode;
-import net.fathomsoft.fathom.tree.ScopeNode;
 import net.fathomsoft.fathom.tree.TreeNode;
-import net.fathomsoft.fathom.tree.exceptionhandling.ExceptionNode;
 import net.fathomsoft.fathom.util.Bounds;
 import net.fathomsoft.fathom.util.Location;
 import net.fathomsoft.fathom.util.Patterns;

@@ -18,16 +18,12 @@
 package net.fathomsoft.fathom.tree.variables;
 
 import net.fathomsoft.fathom.Fathom;
-import net.fathomsoft.fathom.tree.AssignmentNode;
 import net.fathomsoft.fathom.tree.ClassNode;
 import net.fathomsoft.fathom.tree.DeclarationNode;
 import net.fathomsoft.fathom.tree.MethodNode;
 import net.fathomsoft.fathom.tree.ModifierNode;
-import net.fathomsoft.fathom.tree.ParameterListNode;
-import net.fathomsoft.fathom.tree.ParameterNode;
 import net.fathomsoft.fathom.tree.ScopeNode;
 import net.fathomsoft.fathom.tree.TreeNode;
-import net.fathomsoft.fathom.tree.exceptionhandling.ExceptionNode;
 import net.fathomsoft.fathom.util.SyntaxUtils;
 
 /**
