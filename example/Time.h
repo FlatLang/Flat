@@ -3,6 +3,7 @@
 
 typedef struct Time Time;
 
+#include <stdlib.h>
 #include <CClass.h>
 #include <ExceptionHandler.h>
 #include "ExceptionData.h"
@@ -13,8 +14,9 @@ typedef struct Time Time;
 
 CCLASS_CLASS
 (
-Time
+	Time
 )
+
 
 Time* fathom_Time_Time(ExceptionData* exceptionData);
 void fathom_del_Time(Time** this, ExceptionData* exceptionData);

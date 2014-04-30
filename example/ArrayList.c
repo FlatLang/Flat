@@ -1,4 +1,5 @@
 #include "ArrayList.h"
+#include <stdlib.h>
 #include <CClass.h>
 #include <ExceptionHandler.h>
 #include "ExceptionData.h"
@@ -10,67 +11,67 @@
 
 CCLASS_PRIVATE
 (
-int fathom_count;
-int fathom_size;
-int* fathom_data;
+	int fathom_count;
+	int fathom_size;
+	int* fathom_data;
 )
 
 ArrayList* fathom_ArrayList_ArrayList(ExceptionData* exceptionData)
 {
-CCLASS_NEW(ArrayList, this);
-
-this->prv->fathom_count = 0;
-this->prv->fathom_size = 0;
-this->prv->fathom_data = 0;
-{
-fathom_ArrayList_increaseSize(this, exceptionData);
-}
-
-return this;
+	CCLASS_NEW(ArrayList, this);
+	
+	this->prv->fathom_count = 0;
+	this->prv->fathom_size = 0;
+	this->prv->fathom_data = 0;
+	{
+		fathom_ArrayList_increaseSize(this, exceptionData);
+	}
+	
+	return this;
 }
 
 void fathom_del_ArrayList(ArrayList** this, ExceptionData* exceptionData)
 {
-if (!*this)
-{
-return;
+	if (!*this)
+	{
+		return;
+	}
+	
+	
+	free((*this)->prv);
+	
+	{
+	}
+	free(*this);
 }
 
-
-free((*this)->prv);
-
+void fathom_ArrayList_add(ArrayList* this, ExceptionData* exceptionData, int fathom_var_135)
 {
-}
-free(*this);
-}
-
-void fathom_ArrayList_add(ArrayList* this, ExceptionData* exceptionData, int fathom_var_97)
-{
-if (this->prv->fathom_count + 1 >= this->prv->fathom_size)
-{
-fathom_ArrayList_increaseSize(this, exceptionData);
-}
-this->prv->fathom_data[this->prv->fathom_count] = fathom_var_97;
-this->prv->fathom_count = this->prv->fathom_count + 1;
+	if (this->prv->fathom_count + 1 >= this->prv->fathom_size)
+	{
+		fathom_ArrayList_increaseSize(this, exceptionData);
+	}
+	this->prv->fathom_data[this->prv->fathom_count] = fathom_var_135;
+	this->prv->fathom_count = this->prv->fathom_count + 1;
 }
 
 void fathom_ArrayList_increaseSize(ArrayList* this, ExceptionData* exceptionData)
 {
-int* fathom_tmp_100;
-
-this->prv->fathom_size = this->prv->fathom_size + 3;
-fathom_tmp_100 = (int*)malloc(sizeof(int) * this->prv->fathom_size);
-arrayCopy(fathom_tmp_100, 0, this->prv->fathom_data, 0, this->prv->fathom_count, this->prv->fathom_size, sizeof(int));
-free(this->prv->fathom_data);
-this->prv->fathom_data = fathom_tmp_100;
+	int* fathom_tmp_167;
+	
+	this->prv->fathom_size = this->prv->fathom_size + 3;
+	fathom_tmp_167 = (int*)malloc(sizeof(int) * this->prv->fathom_size);
+	arrayCopy(fathom_tmp_167, 0, this->prv->fathom_data, 0, this->prv->fathom_count, this->prv->fathom_size, sizeof(int));
+	free(this->prv->fathom_data);
+	this->prv->fathom_data = fathom_tmp_167;
 }
 
 int fathom_ArrayList_getSize(ArrayList* this, ExceptionData* exceptionData)
 {
-return this->prv->fathom_count;
+	return this->prv->fathom_count;
 }
 
-int fathom_ArrayList_get(ArrayList* this, ExceptionData* exceptionData, int fathom_index_106)
+int fathom_ArrayList_get(ArrayList* this, ExceptionData* exceptionData, int fathom_index_173)
 {
-return this->prv->fathom_data[fathom_index_106];
+	return this->prv->fathom_data[fathom_index_173];
 }

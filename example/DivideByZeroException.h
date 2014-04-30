@@ -3,6 +3,7 @@
 
 typedef struct DivideByZeroException DivideByZeroException;
 
+#include <stdlib.h>
 #include <CClass.h>
 #include <ExceptionHandler.h>
 #include "ExceptionData.h"
@@ -12,8 +13,9 @@ typedef struct DivideByZeroException DivideByZeroException;
 
 CCLASS_CLASS
 (
-DivideByZeroException
+	DivideByZeroException
 )
+
 
 DivideByZeroException* fathom_DivideByZeroException_DivideByZeroException(ExceptionData* exceptionData);
 void fathom_del_DivideByZeroException(DivideByZeroException** this, ExceptionData* exceptionData);

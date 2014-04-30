@@ -3,6 +3,7 @@
 
 typedef struct NotEvenNumberException NotEvenNumberException;
 
+#include <stdlib.h>
 #include <CClass.h>
 #include <ExceptionHandler.h>
 #include "ExceptionData.h"
@@ -12,8 +13,9 @@ typedef struct NotEvenNumberException NotEvenNumberException;
 
 CCLASS_CLASS
 (
-NotEvenNumberException
+	NotEvenNumberException
 )
+
 
 NotEvenNumberException* fathom_NotEvenNumberException_NotEvenNumberException(ExceptionData* exceptionData);
 void fathom_del_NotEvenNumberException(NotEvenNumberException** this, ExceptionData* exceptionData);

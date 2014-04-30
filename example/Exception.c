@@ -1,4 +1,5 @@
 #include "Exception.h"
+#include <stdlib.h>
 #include <CClass.h>
 #include <ExceptionHandler.h>
 #include "ExceptionData.h"
@@ -8,23 +9,23 @@
 
 Exception* fathom_Exception_Exception(ExceptionData* exceptionData)
 {
-CCLASS_NEW(Exception, this,);
-
-{
-}
-
-return this;
+	CCLASS_NEW(Exception, this,);
+	
+	{
+	}
+	
+	return this;
 }
 
 void fathom_del_Exception(Exception** this, ExceptionData* exceptionData)
 {
-if (!*this)
-{
-return;
-}
-
-
-{
-}
-free(*this);
+	if (!*this)
+	{
+		return;
+	}
+	
+	
+	{
+	}
+	free(*this);
 }

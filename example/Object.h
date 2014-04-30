@@ -3,6 +3,7 @@
 
 typedef struct Object Object;
 
+#include <stdlib.h>
 #include <CClass.h>
 #include <ExceptionHandler.h>
 #include "ExceptionData.h"
@@ -12,8 +13,9 @@ typedef struct Object Object;
 
 CCLASS_CLASS
 (
-Object
+	Object
 )
+
 
 Object* fathom_Object_Object(ExceptionData* exceptionData);
 void fathom_del_Object(Object** this, ExceptionData* exceptionData);

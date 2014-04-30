@@ -3,6 +3,7 @@
 
 typedef struct String String;
 
+#include <stdlib.h>
 #include <CClass.h>
 #include <ExceptionHandler.h>
 #include "ExceptionData.h"
@@ -12,12 +13,13 @@ typedef struct String String;
 
 CCLASS_CLASS
 (
-String, 
-
-struct Private* prv;
+	String, 
+	
+	struct Private* prv;
 )
 
-String* fathom_String_String(ExceptionData* exceptionData, char* fathom_data_12);
+
+String* fathom_String_String(ExceptionData* exceptionData, char* fathom_data_35);
 void fathom_del_String(String** this, ExceptionData* exceptionData);
 char* fathom_String_toCharArray(String* this, ExceptionData* exceptionData);
 void fathom_String_do1(String* this, ExceptionData* exceptionData);

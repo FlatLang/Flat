@@ -1,4 +1,5 @@
 #include "ListNode.h"
+#include <stdlib.h>
 #include <CClass.h>
 #include <ExceptionHandler.h>
 #include "ExceptionData.h"
@@ -8,50 +9,50 @@
 
 CCLASS_PRIVATE
 (
-Object* fathom_data;
-ListNode* fathom_next;
+	Object* fathom_data;
+	ListNode* fathom_next;
 )
 
-ListNode* fathom_ListNode_ListNode(ExceptionData* exceptionData, Object* fathom_data_154)
+ListNode* fathom_ListNode_ListNode(ExceptionData* exceptionData, Object* fathom_data_112)
 {
-CCLASS_NEW(ListNode, this);
-
-this->prv->fathom_data = 0;
-this->prv->fathom_next = 0;
-{
-this->prv->fathom_data = fathom_data_154;
-}
-
-return this;
+	CCLASS_NEW(ListNode, this);
+	
+	this->prv->fathom_data = 0;
+	this->prv->fathom_next = 0;
+	{
+		this->prv->fathom_data = fathom_data_112;
+	}
+	
+	return this;
 }
 
 void fathom_del_ListNode(ListNode** this, ExceptionData* exceptionData)
 {
-if (!*this)
-{
-return;
-}
-
-fathom_del_Object(&(*this)->prv->fathom_data, exceptionData);
-fathom_del_ListNode(&(*this)->prv->fathom_next, exceptionData);
-free((*this)->prv);
-
-{
-}
-free(*this);
+	if (!*this)
+	{
+		return;
+	}
+	
+	fathom_del_Object(&(*this)->prv->fathom_data, exceptionData);
+	fathom_del_ListNode(&(*this)->prv->fathom_next, exceptionData);
+	free((*this)->prv);
+	
+	{
+	}
+	free(*this);
 }
 
 Object* fathom_ListNode_getData(ListNode* this, ExceptionData* exceptionData)
 {
-return this->prv->fathom_data;
+	return this->prv->fathom_data;
 }
 
 ListNode* fathom_ListNode_getNext(ListNode* this, ExceptionData* exceptionData)
 {
-return this->prv->fathom_next;
+	return this->prv->fathom_next;
 }
 
-void fathom_ListNode_setNext(ListNode* this, ExceptionData* exceptionData, ListNode* fathom_next_163)
+void fathom_ListNode_setNext(ListNode* this, ExceptionData* exceptionData, ListNode* fathom_next_121)
 {
-this->prv->fathom_next = fathom_next_163;
+	this->prv->fathom_next = fathom_next_121;
 }

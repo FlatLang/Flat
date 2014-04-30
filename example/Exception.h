@@ -3,6 +3,7 @@
 
 typedef struct Exception Exception;
 
+#include <stdlib.h>
 #include <CClass.h>
 #include <ExceptionHandler.h>
 #include "ExceptionData.h"
@@ -12,8 +13,9 @@ typedef struct Exception Exception;
 
 CCLASS_CLASS
 (
-Exception
+	Exception
 )
+
 
 Exception* fathom_Exception_Exception(ExceptionData* exceptionData);
 void fathom_del_Exception(Exception** this, ExceptionData* exceptionData);

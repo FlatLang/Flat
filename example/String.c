@@ -1,4 +1,5 @@
 #include "String.h"
+#include <stdlib.h>
 #include <CClass.h>
 #include <ExceptionHandler.h>
 #include "ExceptionData.h"
@@ -8,39 +9,39 @@
 
 CCLASS_PRIVATE
 (
-char* fathom_data;
+	char* fathom_data;
 )
 
-String* fathom_String_String(ExceptionData* exceptionData, char* fathom_data_12)
+String* fathom_String_String(ExceptionData* exceptionData, char* fathom_data_35)
 {
-CCLASS_NEW(String, this);
-
-this->prv->fathom_data = 0;
-{
-this->prv->fathom_data = fathom_data_12;
-}
-
-return this;
+	CCLASS_NEW(String, this);
+	
+	this->prv->fathom_data = 0;
+	{
+		this->prv->fathom_data = fathom_data_35;
+	}
+	
+	return this;
 }
 
 void fathom_del_String(String** this, ExceptionData* exceptionData)
 {
-if (!*this)
-{
-return;
-}
-
-
-free((*this)->prv);
-
-{
-}
-free(*this);
+	if (!*this)
+	{
+		return;
+	}
+	
+	
+	free((*this)->prv);
+	
+	{
+	}
+	free(*this);
 }
 
 char* fathom_String_toCharArray(String* this, ExceptionData* exceptionData)
 {
-return this->prv->fathom_data;
+	return this->prv->fathom_data;
 }
 
 void fathom_String_do1(String* this, ExceptionData* exceptionData)

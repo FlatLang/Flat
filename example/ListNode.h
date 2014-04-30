@@ -3,6 +3,7 @@
 
 typedef struct ListNode ListNode;
 
+#include <stdlib.h>
 #include <CClass.h>
 #include <ExceptionHandler.h>
 #include "ExceptionData.h"
@@ -12,14 +13,15 @@ typedef struct ListNode ListNode;
 
 CCLASS_CLASS
 (
-ListNode, 
-
-struct Private* prv;
+	ListNode, 
+	
+	struct Private* prv;
 )
 
-ListNode* fathom_ListNode_ListNode(ExceptionData* exceptionData, Object* fathom_data_154);
+
+ListNode* fathom_ListNode_ListNode(ExceptionData* exceptionData, Object* fathom_data_112);
 void fathom_del_ListNode(ListNode** this, ExceptionData* exceptionData);
 Object* fathom_ListNode_getData(ListNode* this, ExceptionData* exceptionData);
 ListNode* fathom_ListNode_getNext(ListNode* this, ExceptionData* exceptionData);
-void fathom_ListNode_setNext(ListNode* this, ExceptionData* exceptionData, ListNode* fathom_next_163);
+void fathom_ListNode_setNext(ListNode* this, ExceptionData* exceptionData, ListNode* fathom_next_121);
 #endif
