@@ -1,16 +1,93 @@
-import "thread.h";
+import "Thread.h";
+import "IO";
 
 public class Thread
 {
-	thread.FATHOM_THREAD_HANDLE handle;
+	external FATHOM_THREAD_HANDLE	handle;
+	
+	long	millis;
+	
+	String	word;
+	
+	external
+	{
+		typedef struct DataStruct DataStruct;
+		
+		struct DataStruct
+		{
+			Thread* instance;
+		};
+	}
+	
+	public Thread(long millis, String word)
+	{
+		this.millis = millis;
+		this.word   = word;
+	}
 	
 	public void start()
 	{
-		thread.lib_fathom_thread_join(handle, run);
+		external
+		{
+			DataStruct* data = (DataStruct*)malloc(sizeof(DataStruct));
+			
+			data->instance   = this;
+			
+			lib_fathom_thread_create(&this->prv->handle, lib_fathom_thread_run, (FATHOM_THREAD_FUNC_ARG)data);
+		}
 	}
 	
-	public thread.FATHOM_THREAD_FUNC_TYPE run()
+	public void join()
 	{
+		Thread.lib_fathom_thread_join(handle);
+	}
+	
+	public void sleep(long millis)
+	{
+		Thread.lib_fathom_thread_sleep(millis);
+	}
+	
+	public void run()
+	{
+		for (int i = 0; i < 10; i++)
+		{
+			if (i % 2 == 0)
+			{
+				IO.println("Tick");
+			}
+			else
+			{
+				IO.println(word);
+			}
+			
+			sleep(millis);
+			
+			throw new DivideByZeroException();
+		}
+	}
+	
+	external FATHOM_THREAD_FUNC lib_fathom_thread_run(external FATHOM_THREAD_FUNC_ARG arg)
+	{
+		external
+		{
+			DataStruct* data = (DataStruct*)arg;
+			
+			Thread* this = data->instance;
+			ExceptionData* exceptionData = 0;
+		}
 		
+		try
+		{
+			run();
+		}
+		catch (Exception e)
+		{
+			IO.println("An error has occurred...");
+		}
+		
+		external
+		{
+			free(data);
+		}
 	}
 }
