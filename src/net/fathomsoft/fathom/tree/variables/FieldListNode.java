@@ -27,7 +27,7 @@ import net.fathomsoft.fathom.tree.TreeNode;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 10:00:50 PM
- * @version	v0.2 Apr 7, 2014 at 7:50:32 PM
+ * @version	v0.2.2 Apr 29, 2014 at 7:10:32 PM
  */
 public class FieldListNode extends TreeNode
 {
@@ -36,11 +36,15 @@ public class FieldListNode extends TreeNode
 	 */
 	public FieldListNode()
 	{
-		PrivateFieldListNode privateFields = new PrivateFieldListNode();
-		PublicFieldListNode  publicFields  = new PublicFieldListNode();
+		PrivateFieldListNode privateFields       = new PrivateFieldListNode();
+		PublicFieldListNode  publicFields        = new PublicFieldListNode();
+		PrivateFieldListNode privateStaticFields = new PrivateFieldListNode();
+		PublicFieldListNode  publicStaticFields  = new PublicFieldListNode();
 		
 		addChild(privateFields);
 		addChild(publicFields);
+		addChild(privateStaticFields);
+		addChild(publicStaticFields);
 	}
 	
 	/**
@@ -66,6 +70,28 @@ public class FieldListNode extends TreeNode
 	}
 	
 	/**
+	 * Get the PrivateFieldListNode that contains all of the private
+	 * FieldNodes for its parent ClassNode.
+	 * 
+	 * @return The PrivateFieldListNode instance.
+	 */
+	public PrivateFieldListNode getPrivateStaticFieldListNode()
+	{
+		return (PrivateFieldListNode)getChild(2);
+	}
+	
+	/**
+	 * Get the PublicFieldListNode that contains all of the public
+	 * FieldNodes for its parent ClassNode.
+	 * 
+	 * @return The PublicFieldListNode instance.
+	 */
+	public PublicFieldListNode getPublicStaticFieldListNode()
+	{
+		return (PublicFieldListNode)getChild(3);
+	}
+	
+	/**
 	 * @see net.fathomsoft.fathom.tree.TreeNode#addChild(TreeNode node)
 	 */
 	@Override
@@ -77,11 +103,25 @@ public class FieldListNode extends TreeNode
 			
 			if (field.getVisibility() == DeclarationNode.PRIVATE)
 			{
-				getPrivateFieldListNode().addChild(field);
+				if (field.isStatic())
+				{
+					getPrivateStaticFieldListNode().addChild(field);
+				}
+				else
+				{
+					getPrivateFieldListNode().addChild(field);
+				}
 			}
 			else if (field.getVisibility() == DeclarationNode.PUBLIC)
 			{
-				getPublicFieldListNode().addChild(field);
+				if (field.isStatic())
+				{
+					getPublicStaticFieldListNode().addChild(field);
+				}
+				else
+				{
+					getPublicFieldListNode().addChild(field);
+				}
 			}
 			else
 			{
@@ -142,22 +182,34 @@ public class FieldListNode extends TreeNode
 	 */
 	public FieldNode getField(String fieldName)
 	{
-		PrivateFieldListNode privateFields = getPrivateFieldListNode();
-		PublicFieldListNode  publicFields  = getPublicFieldListNode();
+		TreeNode nodes[] = new TreeNode[] { getPrivateFieldListNode(), getPrivateStaticFieldListNode(), getPublicFieldListNode(), getPublicStaticFieldListNode() };
 		
-		for (int i = 0; i < privateFields.getChildren().size(); i++)
+		for (TreeNode node : nodes)
 		{
-			FieldNode variable = (FieldNode)privateFields.getChild(i);
+			FieldNode field = searchFieldList(node, fieldName);
 			
-			if (variable.getName().equals(fieldName))
+			if (field != null)
 			{
-				return variable;
+				return field;
 			}
 		}
 		
-		for (int i = 0; i < publicFields.getChildren().size(); i++)
+		return null;
+	}
+	
+	/**
+	 * Search the given TreeNode (which should only contain FieldNode
+	 * children) for a FieldNode with the given name.
+	 * 
+	 * @param fieldList The list of fields to search through.
+	 * @param fieldName The name of the field to search for.
+	 * @return The FieldNode instance with the given name, if found.
+	 */
+	private FieldNode searchFieldList(TreeNode fieldList, String fieldName)
+	{
+		for (int i = 0; i < fieldList.getChildren().size(); i++)
 		{
-			FieldNode variable = (FieldNode)publicFields.getChild(i);
+			FieldNode variable = (FieldNode)fieldList.getChild(i);
 			
 			if (variable.getName().equals(fieldName))
 			{
@@ -193,52 +245,33 @@ public class FieldListNode extends TreeNode
 		
 		return builder.toString();
 	}
-
+	
 	/**
-	 * @see net.fathomsoft.fathom.tree.TreeNode#generateCHeader()
+	 * Generate the C Header output for the all of the non-static
+	 * variables.
+	 * 
+	 * @return The C Header file output.
 	 */
-	@Override
-	public String generateCHeader()
+	public String generateNonStaticCHeader()
 	{
 		StringBuilder builder = new StringBuilder();
 		
-		for (int i = 0; i < getChildren().size(); i++)
-		{
-			builder.append(getChild(i).generateCHeader());
-		}
+		builder.append(getPublicFieldListNode().generateCHeader());
 		
 		return builder.toString();
 	}
-
+	
 	/**
-	 * @see net.fathomsoft.fathom.tree.TreeNode#generateCSource()
+	 * Generate the C Header output for the all of the static variables.
+	 * 
+	 * @return The C Header file output.
 	 */
-	@Override
-	public String generateCSource()
+	public String generateStaticCHeader()
 	{
 		StringBuilder builder = new StringBuilder();
 		
-		boolean hasMethods    = false;
-		
-		if (getChildren().size() > 0)
-		{
-			ClassNode parent = (ClassNode)getAncestorOfType(ClassNode.class, true);
-			
-			if (parent.getMethodListNode().getChildren().size() > 0)
-			{
-				hasMethods = true;
-			}
-		}
-		
-		for (int i = 0; i < getChildren().size(); i++)
-		{
-			builder.append(getChild(i).generateCSource());
-		}
-		
-		if (hasMethods)
-		{
-			builder.append('\n');
-		}
+		builder.append(getPrivateStaticFieldListNode().generateCHeader());
+		builder.append(getPublicStaticFieldListNode().generateCHeader());
 		
 		return builder.toString();
 	}
