@@ -34,7 +34,7 @@ import net.fathomsoft.fathom.util.StringUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:50:47 PM
- * @version	v0.2.1 Apr 24, 2014 at 4:50:05 PM
+ * @version	v0.2.2 Apr 29, 2014 at 7:32:05 PM
  */
 public class ConstructorNode extends MethodNode
 {
@@ -217,7 +217,10 @@ public class ConstructorNode extends MethodNode
 		{
 			VariableNode child = (VariableNode)fields.getChild(i);
 			
-			builder.append(child.generateVariableUseOutput()).append(" = ").append(VariableNode.getNullText()).append(';').append('\n');
+			if (!child.isExternal())
+			{
+				builder.append(child.generateVariableUseOutput()).append(" = ").append(VariableNode.getNullText()).append(';').append('\n');
+			}
 		}
 		
 		PrivateFieldListNode privateFields = classNode.getFieldListNode().getPrivateFieldListNode();
@@ -226,7 +229,10 @@ public class ConstructorNode extends MethodNode
 		{
 			VariableNode child = (VariableNode)privateFields.getChild(i);
 			
-			builder.append(child.generateVariableUseOutput()).append(" = ").append(VariableNode.getNullText()).append(';').append('\n');
+			if (!child.isExternal())
+			{
+				builder.append(child.generateVariableUseOutput()).append(" = ").append(VariableNode.getNullText()).append(';').append('\n');
+			}
 		}
 		
 		return builder.toString();
