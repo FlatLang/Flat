@@ -39,6 +39,7 @@ import net.fathomsoft.fathom.tree.variables.VariableNode;
 import net.fathomsoft.fathom.util.Bounds;
 import net.fathomsoft.fathom.util.Location;
 import net.fathomsoft.fathom.util.Patterns;
+import net.fathomsoft.fathom.util.StringUtils;
 import net.fathomsoft.fathom.util.SyntaxUtils;
 
 /**
@@ -50,7 +51,7 @@ import net.fathomsoft.fathom.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:00:11 PM
- * @version	v0.2.1 Apr 24, 2014 at 4:56:14 PM
+ * @version	v0.2.2 Apr 29, 2014 at 7:14:14 PM
  */
 public abstract class TreeNode
 {
@@ -72,9 +73,9 @@ public abstract class TreeNode
 	
 	private static final Class<?>	SCOPE_CHILD_DECODE[] = new Class<?>[]
 	{
-		ExceptionHandlingNode.class, ReturnNode.class, ArrayAccessNode.class, InstantiationNode.class,
-		ElseStatementNode.class, IfStatementNode.class, LoopNode.class, UnaryOperatorNode.class,
-		MethodCallNode.class, AssignmentNode.class, LocalVariableNode.class
+		ReturnNode.class, ExceptionHandlingNode.class, ArrayAccessNode.class,
+		InstantiationNode.class, ElseStatementNode.class, IfStatementNode.class, LoopNode.class,
+		UnaryOperatorNode.class, MethodCallNode.class, AssignmentNode.class, LocalVariableNode.class
 	};
 	
 	private static final Class<?>	METHOD_CALL_CHILD_DECODE[] = new Class<?>[]
@@ -410,6 +411,28 @@ public abstract class TreeNode
 	}
 	
 	/**
+	 * Remove the specific TreeNode from the current TreeNode as a child.
+	 * 
+	 * @param index The index to remove the node from.
+	 */
+	public void removeChild(int index)
+	{
+		TreeNode node = children.get(index);
+		
+		node.detach();
+	}
+	
+	/**
+	 * Remove the specific TreeNode from the current TreeNode as a child.
+	 * 
+	 * @param node The node to remove as the child node.
+	 */
+	public void removeChild(TreeNode node)
+	{
+		removeChild(children.indexOf(node));
+	}
+	
+	/**
 	 * Add the specific TreeNode under the current TreeNode as a child.
 	 * 
 	 * @param index The index to add the node at.
@@ -469,20 +492,30 @@ public abstract class TreeNode
 	public void iterateWords(String statement, Pattern pattern)
 	{
 		// Pattern used to find word boundaries.
-		Matcher matcher = pattern.matcher(statement);
+		Matcher matcher  = pattern.matcher(statement);
 		
-		int     index   = 0;
+		int     index    = 0;
+		int     oldIndex = 0;
 		
-		boolean end     = false;
+		boolean end      = false;
 		
 		ArrayList<Bounds> bounds = new ArrayList<Bounds>();
 		ArrayList<String> words  = new ArrayList<String>();
+		ArrayList<String> delims = new ArrayList<String>();
 		
 		while (matcher.find())
 		{
 			if (end)
 			{
 				bounds.add(new Bounds(index, matcher.start()));
+				
+				String delim = statement.substring(oldIndex, index);
+				
+				delim = StringUtils.trimSurroundingWhitespace(delim);
+				
+				delims.add(delim);
+				
+				oldIndex = matcher.start();
 				
 				words.add(statement.substring(index, matcher.start()));
 				
@@ -495,13 +528,15 @@ public abstract class TreeNode
 				end   = true;
 			}
 		}
+
+		delims.add(statement.substring(oldIndex, statement.length()));
 		
 		for (int i = 0; i < bounds.size(); i++)
 		{
 			String word  = words.get(i);
 			Bounds bound = bounds.get(i);
 			
-			interactWord(word, i, bound, bounds.size());
+			interactWord(word, i, bound, bounds.size(), delims.get(i), delims.get(i + 1));
 		}
 	}
 	
@@ -518,6 +553,25 @@ public abstract class TreeNode
 	public void interactWord(String word, int wordNumber, Bounds bounds, int numWords)
 	{
 		
+	}
+	
+	/**
+	 * Method that is to be overridden. Whenever the iterateWords(String)
+	 * method is called, this method will be called with the specific word
+	 * and the number (order) the word came in the statement.
+	 * 
+	 * @param word The word that was found.
+	 * @param wordNumber The index of the word on a word-by-word basis.
+	 * @param bounds The bounds of the word that was found.
+	 * @param numWords The number of words that were parsed.
+	 * @param leftDelimiter The text that is between the previous word and
+	 * 		the current word.
+	 * @param rightDelimiter The text that is between the current word and
+	 * 		the next word.
+	 */
+	public void interactWord(String word, int wordNumber, Bounds bounds, int numWords, String leftDelimiter, String rightDelimiter)
+	{
+		interactWord(word, wordNumber, bounds, numWords);
 	}
 	
 	/**
@@ -706,6 +760,11 @@ public abstract class TreeNode
 			else if (type == ThrowNode.class) node = ThrowNode.decodeStatement(parent, statement, location);
 			else if (type == TryNode.class) node = TryNode.decodeStatement(parent, statement, location);
 			
+			if (node == null)
+			{
+				node = ExternalStatementNode.decodeStatement(parent, statement, location);
+			}
+			
 			if (node != null)
 			{
 				node.setLocationIn(location);
@@ -860,7 +919,19 @@ public abstract class TreeNode
 				
 				String       var       = statement.substring(statement.lastIndexOf('.') + 1);
 				
-				VariableNode n         = type.getDeclaration(SyntaxUtils.getIdentifierName(var));
+				if (type == null)
+				{
+					FieldNode field = reference.getField(var);
+					
+					if (field != null && field.isExternal())
+					{
+						return field;
+					}
+					
+					return null;
+				}
+				
+				VariableNode n = type.getDeclaration(SyntaxUtils.getIdentifierName(var));
 				
 				return n;
 			}
