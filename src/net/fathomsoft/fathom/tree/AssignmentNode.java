@@ -33,7 +33,7 @@ import net.fathomsoft.fathom.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:19:44 PM
- * @version	v0.2.1 Apr 24, 2014 at 4:49:44 PM
+ * @version	v0.2.2 Apr 29, 2014 at 7:36:44 PM
  */
 public class AssignmentNode extends TreeNode
 {
@@ -329,6 +329,11 @@ public class AssignmentNode extends TreeNode
 		}
 		if (child == null)
 		{
+			if (SyntaxUtils.isExternal(parent.getFileNode(), rhs))
+			{
+				rhs = rhs.substring(rhs.indexOf('.') + 1);
+			}
+			
 			LiteralNode node = new LiteralNode();
 			node.setValue(rhs, parent.isWithinExternalContext());
 			
