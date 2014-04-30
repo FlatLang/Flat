@@ -11,6 +11,6 @@ void lib_fathom_thread_create(FATHOM_THREAD_HANDLE* handle, FATHOM_THREAD_FUNC_T
 	
 	*handle = CreateThread(NULL, 0, *func, arg, 0, &id);
 #elif defined(__APPLE__)
-	pthread_create(handle, NULL, func, "processing");
+	pthread_create(handle, NULL, func, arg);
 #endif
 }
