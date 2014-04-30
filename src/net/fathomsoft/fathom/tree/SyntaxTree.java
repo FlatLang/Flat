@@ -24,6 +24,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import net.fathomsoft.fathom.Fathom;
+import net.fathomsoft.fathom.error.SyntaxMessage;
 import net.fathomsoft.fathom.tree.exceptionhandling.CatchNode;
 import net.fathomsoft.fathom.tree.exceptionhandling.FinallyNode;
 import net.fathomsoft.fathom.tree.exceptionhandling.TryNode;
@@ -42,7 +43,7 @@ import net.fathomsoft.fathom.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:00:15 PM
- * @version	v0.2.1 Apr 24, 2014 at 4:54:15 PM
+ * @version	v0.2.2 Apr 29, 2014 at 7:14:15 PM
  */
 public class SyntaxTree
 {
@@ -54,9 +55,11 @@ public class SyntaxTree
 	
 	private TreeGenerator			generators[];
 	
+	private static final boolean	USE_THREADS = true;
+	
 	private static final char		EITHER_STATEMENT_END_CHARS[] = new char[] { '{', ';' };
 	private static final char		SINGLE_STATEMENT_END_CHARS[] = new char[] { ';' };
-	private static final char		SCOPE_STATEMENT_END_CHARS[] = new char[] { '{', };
+	private static final char		SCOPE_STATEMENT_END_CHARS[]  = new char[] { '{', };
 	
 	private static final Class<?>	FIRST_PASS_CLASSES[] = new Class<?>[]
 	{
@@ -153,10 +156,11 @@ public class SyntaxTree
 	
 	/**
 	 * Initialize the TreeGenerator objects that will be used to generate
-	 * the trees concurrently.
+	 * the trees concurrently (if threads are used).
 	 * 
-	 * @param filenames
-	 * @param sources
+	 * @param filenames The names of the files to generate trees for.
+	 * @param sources The sources within the files to generate the trees
+	 * 		for.
 	 */
 	private void initTreeGenerators(String filenames[], String sources[])
 	{
@@ -164,33 +168,50 @@ public class SyntaxTree
 		
 		for (int i = 0; i < generators.length; i++)
 		{
-			TreeGenerator thread = new TreeGenerator(filenames[i], sources[i]);
+			TreeGenerator generator = new TreeGenerator(filenames[i], sources[i]);
 			
-			generators[i] = thread;
+			generators[i] = generator;
 		}
 	}
 	
+	/**
+	 * Generate the SyntaxTree data for the specified phase.
+	 * 
+	 * @param phase The phase to start generating.
+	 */
 	private void phase(int phase) throws InterruptedException
 	{
 		this.phase       = phase;
 		
-		Thread threads[] = new Thread[generators.length];
-		
-		for (int i = 0; i < generators.length; i++)
+		if (USE_THREADS)
 		{
-			Thread generator = new Thread(generators[i]);
-			generator.setName(generators[i].filename + " Generator");
+			Thread threads[] = new Thread[generators.length];
 			
-			generator.start();
+			for (int i = 0; i < generators.length; i++)
+			{
+				Thread generator = new Thread(generators[i]);
+				generator.setName(generators[i].filename + " Generator");
+				
+				generator.start();
+				
+				threads[i] = generator;
+			}
 			
-			threads[i] = generator;
+			for (int i = 0; i < generators.length; i++)
+			{
+				Thread generator = threads[i];
+				
+				generator.join();
+			}
 		}
-		
-		for (int i = 0; i < generators.length; i++)
+		else
 		{
-			Thread generator = threads[i];
-			
-			generator.join();
+			for (int i = 0; i < generators.length; i++)
+			{
+				TreeGenerator generator = generators[i];
+				
+				generator.run();
+			}
 		}
 	}
 	
@@ -594,6 +615,14 @@ public class SyntaxTree
 		return root;
 	}
 	
+	/**
+	 * Class that is used to generate syntax tree data for a given file
+	 * and source data.
+	 * 
+	 * @author	Braden Steffaniak
+	 * @since	v0.2.1 Apr 29, 2014 at 8:04:48 PM
+	 * @version	v0.2.2 Apr 29, 2014 at 8:04:48 PM
+	 */
 	private class TreeGenerator implements Runnable
 	{
 		private int				statementStartIndex, statementEndIndex, oldStatementStartIndex;
@@ -607,6 +636,14 @@ public class SyntaxTree
 		
 		private Stack<TreeNode>	parentStack;
 		
+		/**
+		 * Create a tree generator instance with the given filename and
+		 * source data.
+		 * 
+		 * @param filename The name of the file to generate the tree for.
+		 * @param source The source within the file to generate the tree
+		 * 		for.
+		 */
 		public TreeGenerator(String filename, String source)
 		{
 			this.filename = filename;
@@ -615,6 +652,12 @@ public class SyntaxTree
 			init(source);
 		}
 		
+		/**
+		 * Initialize the data back to default values before any
+		 * traversing of the code is done.
+		 * 
+		 * @param source The source that is about to be traversed.
+		 */
 		private void init(String source)
 		{
 			statementStartMatcher  = Patterns.STATEMENT_START.matcher(source);
@@ -625,6 +668,10 @@ public class SyntaxTree
 			lineNumber             = 1;
 		}
 		
+		/**
+		 * The method that is used to actually do the act of generating
+		 * the tree data.
+		 */
 		public void run()
 		{
 			if (phase == 1)
@@ -668,7 +715,7 @@ public class SyntaxTree
 				
 				if (statementStartMatcher.find(nextCharIndex(statementEndIndex, source) + 1))
 				{
-					newStatementStartIndex = statementStartMatcher.start();
+					newStatementStartIndex = StringUtils.findNextNonWhitespaceIndex(source, statementStartMatcher.start() + 1) - 1;
 				}
 				
 				int        offset2 = statementStartIndex;
@@ -680,11 +727,56 @@ public class SyntaxTree
 				
 				TreeNode node      = decodeStatement(statement, location, searchTypes);
 				
+				if (node instanceof ExternalStatementNode)
+				{
+					int  index    = StringUtils.findNextNonWhitespaceIndex(source, statementEndIndex);
+					int  endIndex = 0;
+					
+					char c        = source.charAt(index);
+					
+					if (c == '{')
+					{
+						endIndex = StringUtils.findEndingMatch(source, index, '{', '}');
+						index    = StringUtils.findNextNonWhitespaceIndex(source, index + 1);
+					}
+					else
+					{
+						endIndex = source.indexOf(';', index);
+					}
+					
+					endIndex = StringUtils.findNextNonWhitespaceIndex(source, endIndex - 1, -1) + 1;
+					
+					if (endIndex <= 0)
+					{
+						SyntaxMessage.error("External statement missing closing curly brace or semi-colon", controller);
+						
+						return null;
+					}
+					
+					ExternalStatementNode external = (ExternalStatementNode)node;
+					
+					if (index < endIndex)
+					{
+						String data = source.substring(index, endIndex);
+						
+						external.setData(data);
+					}
+					else
+					{
+						external.setData("");
+					}
+					
+					skipScope(source);
+				}
+				
 				updateLineNumber(statementStartIndex, newStatementStartIndex, source);
 					
 				oldStatementStartIndex = statementStartIndex;
 				
-				statementStartIndex    = newStatementStartIndex;
+				if (node instanceof ExternalStatementNode == false)
+				{
+					statementStartIndex = newStatementStartIndex;
+				}
 				
 				return node;
 			}
@@ -885,14 +977,7 @@ public class SyntaxTree
 			{
 				if (skipScopes && (currentNode.containsScope() || currentNode instanceof ClassNode))
 				{
-					int startingIndex = StringUtils.findNextNonWhitespaceIndex(source, statementEndIndex);
-					int endingIndex   = StringUtils.findEndingMatch(source, startingIndex, '{', '}');
-					
-//					int contentStart  = StringUtils.findNextNonWhitespaceIndex(source, startingIndex + 1);
-//					int contentEnd    = StringUtils.findNextNonWhitespaceIndex(source, endingIndex - 1, -1) + 1;
-					
-					statementStartIndex    = endingIndex;
-					oldStatementStartIndex = statementStartIndex;
+					skipScope(source);
 				}
 				
 				if (!parentStack.isEmpty())
@@ -911,6 +996,28 @@ public class SyntaxTree
 				
 				currentNode = getNextStatement(source, offset, statementType, searchTypes);
 			}
+		}
+		
+		/**
+		 * Skip the current scope that the source has encountered.
+		 */
+		private void skipScope(String source)
+		{
+			int startingIndex = StringUtils.findNextNonWhitespaceIndex(source, statementEndIndex);
+			int endingIndex   = StringUtils.findEndingMatch(source, startingIndex, '{', '}');
+			
+//			int contentStart  = StringUtils.findNextNonWhitespaceIndex(source, startingIndex + 1);
+//			int contentEnd    = StringUtils.findNextNonWhitespaceIndex(source, endingIndex - 1, -1) + 1;
+			
+			statementStartIndex = StringUtils.findNextNonWhitespaceIndex(source, endingIndex + 1);
+			
+			if (statementStartIndex < 0)
+			{
+				statementStartIndex = source.length();
+			}
+			
+			oldStatementStartIndex = statementStartIndex;
+			statementEndIndex      = statementStartIndex;
 		}
 		
 		/**
