@@ -18,7 +18,9 @@
 package net.fathomsoft.fathom.tree.variables;
 
 import net.fathomsoft.fathom.Fathom;
+import net.fathomsoft.fathom.tree.AssignmentNode;
 import net.fathomsoft.fathom.tree.ClassNode;
+import net.fathomsoft.fathom.tree.DeclarationNode;
 import net.fathomsoft.fathom.tree.MethodNode;
 import net.fathomsoft.fathom.tree.ModifierNode;
 import net.fathomsoft.fathom.tree.ParameterListNode;
@@ -35,7 +37,7 @@ import net.fathomsoft.fathom.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:02:42 PM
- * @version	v0.2 Apr 7, 2014 at 7:40:28 PM
+ * @version	v0.2.2 Apr 29, 2014 at 7:08:28 PM
  */
 public class VariableNode extends ModifierNode
 {
@@ -46,6 +48,16 @@ public class VariableNode extends ModifierNode
 	private String				type;
 	
 	private static final String	NULL_TEXT	= "0";
+	
+	/**
+	 * Get the ClassNode parent instance of the VariableNode.
+	 * 
+	 * @return The nearest ClassNode instance that contains this variable.
+	 */
+	public ClassNode getClassNode()
+	{
+		return (ClassNode)getAncestorOfType(ClassNode.class);
+	}
 	
 	/**
 	 * Get whether or not the variable is external. For more information
@@ -87,6 +99,8 @@ public class VariableNode extends ModifierNode
 	public void setExternal(boolean external)
 	{
 		this.external = external;
+		
+		forceOriginal = true;
 	}
 	
 	/**
@@ -299,6 +313,10 @@ public class VariableNode extends ModifierNode
 		{
 			setConstant(true);
 		}
+		else if (attribute.equals("external"))
+		{
+			setExternal(true);
+		}
 		else
 		{
 			return false;
@@ -393,28 +411,35 @@ public class VariableNode extends ModifierNode
 		{
 			builder.append('*');
 		}
+		else if (isReference())
+		{
+			builder.append('&');
+		}
 		
 		if (this instanceof FieldNode)
 		{
 			FieldNode field = (FieldNode)this;
-		
-			if (pointer)
+			
+			if (!field.isStatic())
 			{
-				builder.append('(').append('*');
-			}
+				if (pointer)
+				{
+					builder.append('(').append('*');
+				}
+				
+				builder.append(MethodNode.getObjectReferenceIdentifier());
+				
+				if (pointer)
+				{
+					builder.append(')');
+				}
+				
+				builder.append("->");
 			
-			builder.append(MethodNode.getObjectReferenceIdentifier());
-			
-			if (pointer)
-			{
-				builder.append(')');
-			}
-			
-			builder.append("->");
-			
-			if (field.getVisibility() == FieldNode.PRIVATE)
-			{
-				builder.append("prv").append("->");
+				if (field.getVisibility() == FieldNode.PRIVATE)
+				{
+					builder.append("prv").append("->");
+				}
 			}
 		}
 		
@@ -459,7 +484,7 @@ public class VariableNode extends ModifierNode
 		{
 			builder.append(getArrayText());
 		}
-		if (!isPrimitiveType())
+		if (!isPrimitiveType() && !isExternal())
 		{
 			builder.append('*');
 		}
@@ -478,13 +503,32 @@ public class VariableNode extends ModifierNode
 		return generateVariableUseOutput();
 	}
 	
+	/**
+	 * Generate a variable name that will be used to keep the variables
+	 * in their own "namespace" per-say.
+	 * 
+	 * @return The name of the variable that will be output to the C
+	 * 		source output.
+	 */
 	public String generateCSourceName()
 	{
 		String name = getName();
 		
-		if (forceOriginal)
+		if (forceOriginal || isExternal())
 		{
 			return name;
+		}
+		
+		if (this instanceof DeclarationNode)
+		{
+			DeclarationNode node = (DeclarationNode)this;
+			
+			if (node.isStatic())
+			{
+				ClassNode clazz = (ClassNode)getAncestorOfType(ClassNode.class);
+				
+				return "static_" + Fathom.LANGUAGE_NAME.toLowerCase() + "_" + clazz.generateUniquePrefix() + "_" + name;
+			}
 		}
 		
 		VariableNode existing = getExistingNode(getParent(), name);
