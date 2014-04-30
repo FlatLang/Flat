@@ -35,7 +35,7 @@ import net.fathomsoft.fathom.tree.variables.FieldNode;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Mar 15, 2014 at 7:55:00 PM
- * @version	v0.2.1 Apr 24, 2014 at 5:00:56 PM
+ * @version	v0.2.2 Apr 29, 2014 at 7:00:56 PM
  */
 public class SyntaxUtils
 {
