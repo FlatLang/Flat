@@ -25,6 +25,6 @@
 	#define lib_fathom_thread_sleep(_MILLIS_) usleep(_MILLIS_ * 1000)
 #endif
 
-void lib_fathom_thread_create(FATHOM_THREAD_HANDLE* handle, FATHOM_THREAD_FUNC_TYPE func);
+void lib_fathom_thread_create(FATHOM_THREAD_HANDLE* handle, FATHOM_THREAD_FUNC_TYPE func, FATHOM_THREAD_FUNC_ARG arg);
 
 #endif

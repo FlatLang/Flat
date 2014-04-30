@@ -1,11 +1,11 @@
 #include "Thread.h"
 
-void lib_fathom_thread_create(FATHOM_THREAD_HANDLE* handle, FATHOM_THREAD_FUNC_TYPE func)
+void lib_fathom_thread_create(FATHOM_THREAD_HANDLE* handle, FATHOM_THREAD_FUNC_TYPE func, FATHOM_THREAD_FUNC_ARG arg)
 {
 #if defined(_WIN32)
-	int* arg;
+	/*int* arg;
 	arg = (int*)malloc(sizeof(int));
-	*arg = 0;
+	*arg = 0;*/
 	
 	DWORD id;
 	
