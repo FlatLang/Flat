@@ -36,7 +36,7 @@ import net.fathomsoft.fathom.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:12:04 PM
- * @version	v0.2 Apr 7, 2014 at 7:46:26 PM
+ * @version	v0.2.2 Apr 29, 2014 at 7:09:26 PM
  */
 public class FieldNode extends DeclarationNode
 {
@@ -129,10 +129,10 @@ public class FieldNode extends DeclarationNode
 	{
 		StringBuilder builder = new StringBuilder();
 		
-		if (isStatic())
-		{
-			builder.append(getStaticText()).append(' ');
-		}
+//		if (isStatic())
+//		{
+//			builder.append(getStaticText()).append(' ');
+//		}
 		if (isConstant())
 		{
 			builder.append(getConstantText()).append(' ');
@@ -152,7 +152,7 @@ public class FieldNode extends DeclarationNode
 		{
 			builder.append(getArrayText());
 		}
-		if (!isPrimitiveType())
+		if (!isPrimitiveType() && !isExternal())
 		{
 			builder.append('*');
 		}
@@ -198,50 +198,22 @@ public class FieldNode extends DeclarationNode
 	 */
 	public static FieldNode decodeStatement(TreeNode parent, final String statement, Location location)
 	{
+		// The field declaration without the field specific modifiers.
+		final Bounds localDeclaration = new Bounds(-1, -1);
+		
 		FieldNode n = new FieldNode()
 		{
-			private boolean	methods = false;
-			
-			public void interactWord(String word, int argNum, Bounds bounds, int numWords)
+			public void interactWord(String word, int wordNumber, Bounds bounds, int numWords)
 			{
-				if (word.equals("{"))
+				if (!setAttribute(word, wordNumber))
 				{
-					methods = true;
-					
-					return;
-				}
-				else if (methods && word.equals("}"))
-				{
-					return;
-				}
-				
-				if (argNum == numWords - 1)
-				{
-					setName(word);
-					
-					// If it is an array declaration.
-					if (Regex.matches(statement, bounds.getEnd(), Patterns.EMPTY_ARRAY_BRACKETS))
+					if (localDeclaration.getStart() == -1)
 					{
-						int dimensions = SyntaxUtils.getArrayDimensions(statement);
-						
-						setArrayDimensions(dimensions);
+						localDeclaration.setStart(bounds.getStart());
 					}
-				}
-				else if (argNum == numWords - 2)
-				{
-					setType(word);
-				}
-				else
-				{
-					setAttribute(word, argNum);
-					
-					int  index = StringUtils.findNextNonWhitespaceIndex(statement, bounds.getEnd());
-					
-					char c     = statement.charAt(index);
-					
-					if (c == '.')
+					if (wordNumber == numWords - 1)
 					{
-						setExternal(true);
+						localDeclaration.setEnd(statement.length());
 					}
 				}
 			}
@@ -249,12 +221,24 @@ public class FieldNode extends DeclarationNode
 		
 		n.iterateWords(statement, Patterns.IDENTIFIER_BOUNDARIES);
 		
-		if (n.getType() == null)
+		if (localDeclaration.getStart() < 0)
 		{
-//			SyntaxMessage.error("A type for the field must be declared", location);
-			
 			return null;
 		}
+		
+		String preStatement   = statement.substring(0, localDeclaration.getStart());
+		String localStatement = statement.substring(localDeclaration.getStart(), localDeclaration.getEnd());
+		
+		LocalVariableNode var = LocalVariableNode.decodeStatement(parent, localStatement, location);
+		
+		if (var == null)
+		{
+			return null;
+		}
+		
+		var.clone(n);
+		
+		n.iterateWords(preStatement);
 		
 		return n;
 	}
