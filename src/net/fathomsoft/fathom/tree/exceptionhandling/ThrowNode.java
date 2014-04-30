@@ -32,7 +32,7 @@ import net.fathomsoft.fathom.util.Regex;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Mar 22, 2014 at 11:02:52 PM
- * @version	v0.2.1 Apr 24, 2014 at 4:58:36 PM
+ * @version	v0.2.2 Apr 29, 2014 at 7:10:36 PM
  */
 public class ThrowNode extends ExceptionHandlingNode
 {
@@ -124,7 +124,7 @@ public class ThrowNode extends ExceptionHandlingNode
 	 */
 	public static ThrowNode decodeStatement(TreeNode parent, String statement, Location location)
 	{
-		if (Regex.matches(statement, 0, Patterns.PRE_THROW))
+		if (Regex.startsWith(statement, Patterns.PRE_THROW))
 		{
 			Bounds bounds = Regex.boundsOf(statement, Patterns.POST_THROW);
 			
