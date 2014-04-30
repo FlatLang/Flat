@@ -3,13 +3,13 @@ import "ArrayList";
 
 public class ExceptionData
 {
-	private setjmp.jmp_buf	buffer;
+	external jmp_buf*	buffer;
 	
-	private ExceptionData	parent;
+	ExceptionData	parent;
 	
-	private ArrayList		codes;
+	ArrayList		codes;
 	
-	public ExceptionData(setjmp.jmp_buf buf)
+	public ExceptionData(external jmp_buf* buf)
 	{
 		buffer = buf;
 		codes  = new ArrayList();
@@ -78,7 +78,7 @@ public class ExceptionData
 			code = 1;
 		}
 		
-		setjmp.jmp_buf buf = data.getBuffer();
+		setjmp.jmp_buf* buf = data.getBuffer();
 		
 		setjmp.longjmp(*buf, code);
 	}
