@@ -36,7 +36,7 @@ import net.fathomsoft.fathom.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:12:00 PM
- * @version	v0.2.1 Apr 24, 2014 at 4:58:47 PM
+ * @version	v0.2.2 Apr 29, 2014 at 7:09:47 PM
  */
 public class LocalVariableNode extends VariableNode
 {
@@ -94,7 +94,7 @@ public class LocalVariableNode extends VariableNode
 	 * @return The generated node, if it was possible to translated it
 	 * 		into a LocalVariableNode.
 	 */
-	public static LocalVariableNode decodeStatement(TreeNode parent, final String statement, Location location)
+	public static LocalVariableNode decodeStatement(final TreeNode parent, final String statement, final Location location)
 	{
 		if (SyntaxUtils.isLiteral(statement))
 		{
@@ -105,61 +105,88 @@ public class LocalVariableNode extends VariableNode
 			return null;
 		}
 		
+		final boolean decodingArray[] = new boolean[1];
+		final boolean error[]         = new boolean[1];
+		final boolean setExternal[]   = new boolean[1];
+		final String  oldWord[]       = new String[1];
+			
 		LocalVariableNode n = new LocalVariableNode()
 		{
-			private boolean	done;
-			
-			private String	oldWord;
-			
 			@Override
-			public void interactWord(String word, int wordNumber, Bounds bounds, int numWords)
+			public void interactWord(String word, int wordNumber, Bounds bounds, int numWords, String leftDelimiter, String rightDelimiter)
 			{
-				if (!done)
+				if (!decodingArray[0])
 				{
-					setName(word);
-					setType(oldWord);
-					setAttribute(word, wordNumber);
-					
-					int  index = StringUtils.findNextNonWhitespaceIndex(statement, bounds.getEnd());
-					
-					if (index > 0)
+					if (wordNumber == numWords - 1 && (leftDelimiter.length() == 0 || StringUtils.containsOnly(leftDelimiter, new char[] { '*', '&' })))
 					{
-						char c = statement.charAt(index);
+						setName(word);
 						
-						if (c == '.')
+						if (setExternal[0])
 						{
-							if (word.equals("this"))
+							for (int i = 0; i < leftDelimiter.length(); i++)
 							{
+								char c = leftDelimiter.charAt(i);
 								
+								if (c == '*')
+								{
+//									setPointer(true);
+								}
+								else if (c == '&')
+								{
+//									setReference(true);
+								}
+//								else
+//								{
+//									SyntaxMessage.error("Could not decode type '" + getType() + str + "', '" + getName() + "'", parent.getFileNode(), location, parent.getController());
+//									
+//									error[0] = true;
+//								}
 							}
+						}
+						
+						setType(getType() + leftDelimiter);
+					}
+					else if (!setAttribute(word, wordNumber))
+					{
+						String type = getType();
+						
+						if (type != null)
+						{
+							if (!isExternal() && leftDelimiter.equals(".") && parent.getFileNode().isExternalImport(type))
+							{
+								setExternal(true);
+								
+								setExternal[0] = true;
+								
+								setType(word);
+							}
+							else
+							{
+								setType(type + leftDelimiter + word);
+							}
+						}
+						else
+						{
+							setType(leftDelimiter + word);
 						}
 					}
 					
-					oldWord = word;
-				}
-				else
-				{
-					setArrayDimensions(1);
+					oldWord[0] = word;
 				}
 				
 				int firstBracketIndex = StringUtils.findNextNonWhitespaceIndex(statement, bounds.getEnd());
 				
-				if (firstBracketIndex >= 0)
+				if (firstBracketIndex > 0)
 				{
 					char c = statement.charAt(firstBracketIndex);
 					
-					if (c == '[' && wordNumber == numWords - 2)
+					if (c == '[')
 					{
-						done = true;
-					}
-				}
-				
-				if (wordNumber == numWords - 1)
-				{
-					// If it is an array declaration.
-					if (Regex.matches(statement, bounds.getEnd(), Patterns.EMPTY_ARRAY_BRACKETS))
-					{
-						int dimensions = SyntaxUtils.getArrayDimensions(statement);
+						decodingArray[0] = true;
+						
+						String brackets  = statement.substring(bounds.getEnd());
+						
+						int dimensions   = SyntaxUtils.calculateArrayDimensions(brackets, false);
 						
 						setArrayDimensions(dimensions);
 					}
@@ -169,7 +196,7 @@ public class LocalVariableNode extends VariableNode
 		
 		n.iterateWords(statement, Patterns.IDENTIFIER_BOUNDARIES);
 		
-		if (n.getType() == null)
+		if (n.getType() == null || n.getName() == null || error[0])
 		{
 			return null;
 		}
@@ -179,7 +206,7 @@ public class LocalVariableNode extends VariableNode
 		if (node instanceof LocalVariableNode)
 		{
 			SyntaxMessage.error("Local variable '" + n.getName() + "' has already been declared", node);
-			SyntaxMessage.error("Local variable '" + n.getName() + "' has already been declared", parent.getFileNode(), location, parent.getController());
+//			SyntaxMessage.error("Local variable '" + n.getName() + "' has already been declared", parent.getFileNode(), location, parent.getController());
 			
 			return null;
 		}
