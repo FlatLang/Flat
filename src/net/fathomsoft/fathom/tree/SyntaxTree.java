@@ -42,7 +42,7 @@ import net.fathomsoft.fathom.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:00:15 PM
- * @version	v0.2.2 Apr 29, 2014 at 7:14:15 PM
+ * @version	v0.2.3 Apr 30, 2014 at 6:15:00 AM
  */
 public class SyntaxTree
 {
@@ -508,7 +508,7 @@ public class SyntaxTree
 	 */
 	private int nextCharIndex(int index, String source, int direction)
 	{
-		for (int i = index; i < source.length(); i += direction)
+		for (int i = index; i < source.length() && i >= 0; i += direction)
 		{
 			char c = source.charAt(i);
 			
@@ -706,7 +706,7 @@ public class SyntaxTree
 		 */
 		private TreeNode getNextStatement(String source, int offset, char statementType[], Class<?> searchTypes[])
 		{
-			if ((statementEndIndex = Regex.indexOfExcludeTextAndParentheses(source, statementStartIndex, statementType)) >= 0 && !statementStartMatcher.hitEnd())
+			while ((statementEndIndex = Regex.indexOfExcludeTextAndParentheses(source, statementStartIndex, statementType)) >= 0 && !statementStartMatcher.hitEnd())
 			{
 				statementEndIndex = nextNonWhitespaceIndexOnTheLeft(statementEndIndex - 1, source) + 1;
 				
@@ -717,14 +717,16 @@ public class SyntaxTree
 					newStatementStartIndex = StringUtils.findNextNonWhitespaceIndex(source, statementStartMatcher.start() + 1) - 1;
 				}
 				
-				int        offset2 = statementStartIndex;
-				int     lineOffset = calculateOffset(statementStartIndex, source);
+				int      offset2    = statementStartIndex;
+				int      lineOffset = calculateOffset(statementStartIndex, source);
 				
-				String   statement = source.substring(statementStartIndex, statementEndIndex);
+				String   statement  = source.substring(statementStartIndex, statementEndIndex);
 				
-				Location location  = new Location(lineNumber, lineOffset, offset2 + offset, offset2 + statement.length() + offset);
+				Location location   = new Location(lineNumber, lineOffset, offset2 + offset, offset2 + statement.length() + offset);
 				
-				TreeNode node      = decodeStatement(statement, location, searchTypes);
+				TreeNode node       = decodeStatement(statement, location, searchTypes);
+
+				updateLineNumber(statementStartIndex, newStatementStartIndex, source);
 				
 				if (node instanceof ExternalStatementNode)
 				{
@@ -768,8 +770,6 @@ public class SyntaxTree
 					skipScope(source);
 				}
 				
-				updateLineNumber(statementStartIndex, newStatementStartIndex, source);
-					
 				oldStatementStartIndex = statementStartIndex;
 				
 				if (node instanceof ExternalStatementNode == false)
@@ -777,7 +777,10 @@ public class SyntaxTree
 					statementStartIndex = newStatementStartIndex;
 				}
 				
-				return node;
+				if (node != null)
+				{
+					return node;
+				}
 			}
 			
 			return null;
@@ -1004,6 +1007,8 @@ public class SyntaxTree
 		{
 			int startingIndex = StringUtils.findNextNonWhitespaceIndex(source, statementEndIndex);
 			int endingIndex   = StringUtils.findEndingMatch(source, startingIndex, '{', '}');
+
+			updateLineNumber(statementEndIndex, endingIndex, source);
 			
 //			int contentStart  = StringUtils.findNextNonWhitespaceIndex(source, startingIndex + 1);
 //			int contentEnd    = StringUtils.findNextNonWhitespaceIndex(source, endingIndex - 1, -1) + 1;
