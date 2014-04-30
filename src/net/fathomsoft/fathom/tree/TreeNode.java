@@ -50,7 +50,7 @@ import net.fathomsoft.fathom.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:00:11 PM
- * @version	v0.2.2 Apr 29, 2014 at 7:14:14 PM
+ * @version	v0.2.3 Apr 30, 2014 at 6:20:00 AM
  */
 public abstract class TreeNode
 {
@@ -99,7 +99,11 @@ public abstract class TreeNode
 	{
 		int lineNumber = 0;
 		
-		if (parent != null && parent instanceof FileNode == false)
+		if (parent == null || parent.getLocationIn() == null || !parent.getLocationIn().isValid())
+		{
+			lineNumber = 1;
+		}
+		else
 		{
 			lineNumber += parent.getLineNumber();
 		}
@@ -111,7 +115,7 @@ public abstract class TreeNode
 			lineNumber += loc.getLineNumber();
 		}
 		
-		return lineNumber - 1;
+		return lineNumber + 1;
 	}
 	
 	/**
