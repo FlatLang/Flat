@@ -6,6 +6,7 @@ import "Time";
 import "Person";
 import "List";
 import "NotEvenNumberException";
+import "Thread";
 
 public class Test extends Object
 {
@@ -22,7 +23,17 @@ public class Test extends Object
 			current = current.getNext();
 		}
 		
-		IO.println("Starting benchmark...");
+		Thread thread = new Thread(1000, "Turkey");
+		Thread thread2 = new Thread(1000, "Poop");
+		
+		thread.start();
+		
+		IO.println("Waiting for thread to end...");
+		thread.join();
+		IO.println("Thread has ended");
+		thread2.start();
+		
+		/*IO.println("Starting benchmark...");
 		
 		long start = Time.currentTimeMillis();
 		
@@ -41,7 +52,7 @@ public class Test extends Object
 		long end = Time.currentTimeMillis();
 		
 		IO.printl(end - start);
-		IO.println("");
+		IO.println("");*/
 		IO.print("Press enter to exit...");
 		
 		IO.waitForEnter();
