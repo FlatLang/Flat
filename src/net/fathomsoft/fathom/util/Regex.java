@@ -26,7 +26,7 @@ import java.util.regex.Pattern;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 10, 2014 at 3:12:48 AM
- * @version	v0.2 Apr 8, 2014 at 8:21:43 PM
+ * @version	v0.2.2 Apr 29, 2014 at 7:06:43 PM
  */
 public class Regex
 {
@@ -1420,15 +1420,15 @@ public class Regex
 			
 //			int cIndex = 0;
 			
-			if (searchChar(excludePrefixes, c) >= 0)
+			if (StringUtils.searchChar(excludePrefixes, c) >= 0)
 			{
 				excluding += sign(direction);
 			}
-			else if (searchChar(excludePostfixes, c) >= 0)
+			else if (StringUtils.searchChar(excludePostfixes, c) >= 0)
 			{
 				excluding -= sign(direction);
 			}
-			else if (searchChar(excludeBinary, c) >= 0)
+			else if (StringUtils.searchChar(excludeBinary, c) >= 0)
 			{
 				if (excludeBinaryBackslash[0] && i > 0 && src.charAt(i - 1) == '\\')
 				{
@@ -1446,7 +1446,7 @@ public class Regex
 					}
 				}
 			}
-			else if (excluding == 0 && i >= start && binaryExclude.isEmpty() && containsChar(cs, c))
+			else if (excluding == 0 && i >= start && binaryExclude.isEmpty() && StringUtils.containsChar(cs, c))
 			{
 				return new Bounds(i, i);
 			}
@@ -1516,39 +1516,5 @@ public class Regex
 		}
 		
 		return num;
-	}
-	
-	/**
-	 * Search for the given char 'c' in the given array.
-	 * 
-	 * @param array The array to search for 'c' in.
-	 * @param c The char to search for.
-	 * @return Whether or not the array contains the 'c' char.
-	 */
-	private static boolean containsChar(char array[], char c)
-	{
-		return searchChar(array, c) >= 0;
-	}
-	
-	/**
-	 * Search for the given char 'c' in the given array, if it is found,
-	 * return the index at which it was found.
-	 * 
-	 * @param array The array to search for 'c' in.
-	 * @param c The char to search for.
-	 * @return The index in the array of the occurrence of char 'c', if
-	 * 		it was found in the array.
-	 */
-	private static int searchChar(char array[], char c)
-	{
-		for (int i = array.length - 1; i >= 0; i--)
-		{
-			if (array[i] == c)
-			{
-				return i;
-			}
-		}
-		
-		return -1;
 	}
 }
