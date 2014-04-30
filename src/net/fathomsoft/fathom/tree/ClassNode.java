@@ -36,7 +36,7 @@ import net.fathomsoft.fathom.util.Regex;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:15:51 PM
- * @version	v0.2.1 Apr 24, 2014 at 4:50:13 PM
+ * @version	v0.2.2 Apr 29, 2014 at 7:33:13 PM
  */
 public class ClassNode extends DeclarationNode
 {
@@ -106,6 +106,18 @@ public class ClassNode extends DeclarationNode
 	public MethodListNode getMethodListNode()
 	{
 		return (MethodListNode)getChild(3);
+	}
+	
+	/**
+	 * Get the VTableNode instance that contains the list of pointers
+	 * to the virtual methods of a class, if any virtual methods, or
+	 * any methods of the class are overridden..
+	 * 
+	 * @return The VTableNode for this class node.
+	 */
+	public VTableNode getVTableNode()
+	{
+		return (VTableNode)getChild(4);
 	}
 	
 	/**
@@ -365,7 +377,7 @@ public class ClassNode extends DeclarationNode
 	}
 	
 	/**
-	 * Get the prefix that is used for the methods that are contained
+	 * Get the prefix that is used for the data that is contained
 	 * within the specified class.<br>
 	 * <br>
 	 * For example:
@@ -379,10 +391,10 @@ public class ClassNode extends DeclarationNode
 	 * The method prefix would look like:
 	 * "<code>this_is_my_package_Test</code>"
 	 * 
-	 * @return The prefix that is used for the methods contained within
+	 * @return The prefix that is used for the data contained within
 	 * 		the class.
 	 */
-	public String generateMethodPrefix()
+	public String generateUniquePrefix()
 	{
 		String str = getName();
 		
@@ -425,7 +437,7 @@ public class ClassNode extends DeclarationNode
 	@Override
 	public void addChild(TreeNode child)
 	{
-		if (child instanceof MethodNode)
+		if (child instanceof MethodNode || child instanceof ExternalStatementNode)
 		{
 			if (child instanceof ConstructorNode)
 			{
@@ -435,9 +447,13 @@ public class ClassNode extends DeclarationNode
 			{
 				getDestructorListNode().addChild(child);
 			}
-			else
+			else if (child instanceof MethodNode)
 			{
 				getMethodListNode().addChild(child);
+			}
+			else
+			{
+				super.addChild(child);
 			}
 		}
 		else if (child instanceof FieldNode)
@@ -446,7 +462,7 @@ public class ClassNode extends DeclarationNode
 		}
 		else
 		{
-			SyntaxMessage.error("Unexpected statement", getFileNode(), child.getLocationIn(), getController());
+			SyntaxMessage.error("Unexpected statement within class " + getName(), getFileNode(), child.getLocationIn(), getController());
 			
 			//super.addChild(child);
 		}
@@ -459,9 +475,7 @@ public class ClassNode extends DeclarationNode
 	 */
 	public boolean containsPrivateData()
 	{
-		PrivateFieldListNode privateFields = getFieldListNode().getPrivateFieldListNode();
-		
-		return privateFields.getChildren().size() > 0;
+		return containsStaticPrivateData() || containsNonStaticPrivateData();
 	}
 	
 	/**
@@ -471,9 +485,92 @@ public class ClassNode extends DeclarationNode
 	 */
 	public boolean containsData()
 	{
+		return containsStaticData() || containsNonStaticData() || containsPrivateData();
+	}
+	
+	/**
+	 * Get whether or not the class contains any private static fields.
+	 * 
+	 * @return Whether or not the class contains private static data.
+	 */
+	public boolean containsStaticPrivateData()
+	{
+		PrivateFieldListNode staticPrivateFields = getFieldListNode().getPrivateStaticFieldListNode();
+		
+		if (staticPrivateFields.getChildren().size() > 0)
+		{
+			return true;
+		}
+		
+		ClassNode extended = getExtendedClass();
+		
+		if (extended != null)
+		{
+			return extended.containsStaticPrivateData();
+		}
+		
+		return false;
+	}
+	
+//	/**
+//	 * Get whether or not the class contains any fields.
+//	 * 
+//	 * @return Whether or not the class contains data.
+//	 */
+//	public boolean containsStaticData()
+//	{
+//		PublicFieldListNode staticFields = getFieldListNode().getPublicStaticFieldListNode();
+//		
+//		return staticFields.getChildren().size() > 0 || containsStaticPrivateData();
+//	}
+	
+	/**
+	 * Get whether or not the class contains any private non-static
+	 * fields.
+	 * 
+	 * @return Whether or not the class contains private non-static data.
+	 */
+	public boolean containsNonStaticPrivateData()
+	{
+		PrivateFieldListNode privateFields = getFieldListNode().getPrivateFieldListNode();
+		
+		if (privateFields.getChildren().size() > 0)
+		{
+			return true;
+		}
+		
+		ClassNode extended = getExtendedClass();
+		
+		if (extended != null)
+		{
+			return extended.containsNonStaticPrivateData();
+		}
+		
+		return false;
+	}
+	
+	/**
+	 * Get whether or not the class contains any non-static fields.
+	 * 
+	 * @return Whether or not the class contains non-static data.
+	 */
+	public boolean containsNonStaticData()
+	{
 		PublicFieldListNode fields = getFieldListNode().getPublicFieldListNode();
 		
-		return fields.getChildren().size() > 0 || containsPrivateData();
+		if (fields.getChildren().size() > 0 || containsNonStaticPrivateData())
+		{
+			return true;
+		}
+		
+		ClassNode extended = getExtendedClass();
+		
+		if (extended != null)
+		{
+			return extended.containsNonStaticData();
+		}
+		
+		return false;
 	}
 	
 	/**
@@ -584,33 +681,19 @@ public class ClassNode extends DeclarationNode
 		
 		builder.append(getName());
 		
-		if (containsData())
+		FieldListNode fields = getFieldListNode();
+			
+		if (containsNonStaticData())
 		{
 			builder.append(", ");
 		
 			builder.append('\n').append('\n');
 			
-			FieldListNode fields = getFieldListNode();
-			
-			PublicFieldListNode publicFields = fields.getPublicFieldListNode();
-			
-			if (publicFields.getChildren().size() > 0)
-			{
-				builder.append(publicFields.generateCHeader());
-				
-				if (containsPrivateData())
-				{
-					builder.append('\n');
-				}
-			}
+			builder.append(fields.generateNonStaticCHeader());
 			
 			if (containsPrivateData())
 			{
 				builder.append("struct Private* prv;").append('\n');
-			}
-			else if (publicFields.getChildren().size() <= 0)
-			{
-				builder.append('\n');
 			}
 		}
 		else
@@ -619,6 +702,8 @@ public class ClassNode extends DeclarationNode
 		}
 		
 		builder.append(')').append('\n').append('\n');
+		
+		builder.append(fields.generateStaticCHeader()).append('\n');
 		
 		MethodListNode constructors = getConstructorListNode();
 		builder.append(constructors.generateCHeader());
@@ -643,9 +728,9 @@ public class ClassNode extends DeclarationNode
 	@Override
 	public String generateCSource()
 	{
-		StringBuilder  builder = new StringBuilder();
+		StringBuilder builder = new StringBuilder();
 		
-		FieldListNode fields = getFieldListNode();
+		FieldListNode fields  = getFieldListNode();
 		
 		PrivateFieldListNode privateFields = fields.getPrivateFieldListNode();
 		
@@ -667,15 +752,16 @@ public class ClassNode extends DeclarationNode
 			builder.append(')').append('\n');
 		}
 		
-		for (int i = 0; i < getChildren().size(); i++)
+		for (int i = 4; i < getChildren().size(); i++)
 		{
 			TreeNode child = getChild(i);
 			
-			if (child != fields)
-			{
-				builder.append(child.generateCSource());
-			}
+			builder.append('\n').append(child.generateCSource());
 		}
+		
+		builder.append(getConstructorListNode().generateCSource());
+		builder.append(getDestructorListNode().generateCSource());
+		builder.append(getMethodListNode().generateCSource());
 		
 		return builder.toString();
 	}
@@ -845,8 +931,6 @@ public class ClassNode extends DeclarationNode
 				SyntaxMessage.error("Class '" + extendedClass + "' not is constant and cannot be extended", getController());
 			}
 		}
-		
-		
 	}
 	
 	/**
@@ -893,11 +977,11 @@ public class ClassNode extends DeclarationNode
 		{
 			TreeNode child = root.getChild(i);
 			
-			if (child instanceof DeclarationNode && child instanceof ConstructorNode == false)
+			if (child instanceof DeclarationNode)
 			{
 				DeclarationNode declaration = (DeclarationNode)child;
 				
-				if (declaration.isStatic())
+				if (declaration.isStatic() && !declaration.isExternal())
 				{
 					return true;
 				}
