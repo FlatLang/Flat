@@ -24,7 +24,7 @@ import net.fathomsoft.fathom.tree.exceptionhandling.ExceptionNode;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:56:34 PM
- * @version	v0.2.1 Apr 24, 2014 at 4:53:44 PM
+ * @version	v0.2.2 Apr 29, 2014 at 7:15:44 PM
  */
 public class ParameterListNode extends TreeNode
 {
@@ -96,7 +96,13 @@ public class ParameterListNode extends TreeNode
 	{
 		MethodNode method = (MethodNode)getAncestorOfType(MethodNode.class);
 		
-		if (method.isStatic())
+		if (method.isExternal())
+		{
+			removeChild(0);
+			
+			return;
+		}
+		else if (method.isStatic())
 		{
 			return;
 		}
@@ -153,13 +159,15 @@ public class ParameterListNode extends TreeNode
 	@Override
 	public String generateCSource()
 	{
+		MethodNode methodNode = (MethodNode)getAncestorOfType(MethodNode.class);
+		
 		StringBuilder builder = new StringBuilder();
 		
 //		builder.append("ExceptionData* ").append(ExceptionNode.EXCEPTION_DATA_IDENTIFIER);
 		
 		int start = 0;
 		
-		if (getParent() instanceof ConstructorNode)
+		if (methodNode instanceof ConstructorNode)
 		{
 			start = 1;
 		}
@@ -179,15 +187,6 @@ public class ParameterListNode extends TreeNode
 		return builder.toString();
 	}
 	
-	/**
-	 * @see net.fathomsoft.fathom.tree.TreeNode#generateCSourceFragment()
-	 */
-	@Override
-	public String generateCSourceFragment()
-	{
-		return null;
-	}
-
 	/**
 	 * @see net.fathomsoft.fathom.tree.TreeNode#clone()
 	 */
