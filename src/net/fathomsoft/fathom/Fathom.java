@@ -43,7 +43,7 @@ import net.fathomsoft.fathom.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:00:04 PM
- * @version	v0.2.2 Apr 29, 2014 at 7:03:04 PM
+ * @version	v0.2.3 Apr 30, 2014 at 6:14:04 AM
  */
 public class Fathom
 {
@@ -62,7 +62,7 @@ public class Fathom
 	
 	private List<File>			lingeringFiles;
 	
-	private static final int	os;
+	private static final int	OS;
 
 	private static final String	OUTPUT_EXTENSION;
 	
@@ -100,22 +100,22 @@ public class Fathom
 		
 		if (osName.startsWith("win"))
 		{
-			os = WINDOWS;
+			OS = WINDOWS;
 			OUTPUT_EXTENSION = ".exe";
 		}
 		else if (osName.startsWith("mac"))
 		{
-			os = MACOSX;
+			OS = MACOSX;
 			OUTPUT_EXTENSION = "";
 		}
 		else if (osName.startsWith("lin"))
 		{
-			os = LINUX;
+			OS = LINUX;
 			OUTPUT_EXTENSION = "";
 		}
 		else
 		{
-			os = 0;
+			OS = 0;
 			OUTPUT_EXTENSION = "";
 		}
 	}
@@ -178,7 +178,7 @@ public class Fathom
 	{
 		String directory = getWorkingDirectoryPath() + "example/";
 		
-		if (os == WINDOWS)
+		if (OS == WINDOWS)
 		{
 			compiler = TCC;
 		}
@@ -462,7 +462,12 @@ public class Fathom
 		}
 		else if (compiler == CLANG)
 		{
-			cmd.append("clang -Wno-all ");
+			cmd.append("clang ");
+		}
+		
+		if (OS == MACOSX)
+		{
+			cmd.append("-Wno-all ");
 		}
 		
 		for (int i = 0; i < includeDirectories.size(); i++)
@@ -486,7 +491,7 @@ public class Fathom
 //		cmd.append("-O2 ");
 //		cmd.append("-s ");
 		
-		if (os == LINUX)
+		if (OS == LINUX)
 		{
 			cmd.append("-lm ");
 		}
@@ -559,7 +564,7 @@ public class Fathom
 	 */
 	private String formatPath(String path)
 	{
-		if (os == WINDOWS)
+		if (OS == WINDOWS)
 		{
 			return '"' + path + '"';
 		}
