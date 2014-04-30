@@ -62,7 +62,7 @@ public class Thread
 			
 			sleep(millis);
 			
-			throw new DivideByZeroException();
+			//throw new DivideByZeroException();
 		}
 	}
 	
@@ -89,5 +89,7 @@ public class Thread
 		{
 			free(data);
 		}
+		
+		return 0;
 	}
 }
