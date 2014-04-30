@@ -26,7 +26,7 @@ import net.fathomsoft.fathom.tree.variables.VariableNode;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:10:49 PM
- * @version	v0.2 Apr 2, 2014 at 6:53:41 PM
+ * @version	v0.2.2 Apr 29, 2014 at 7:24:41 PM
  */
 public class DeclarationNode extends VariableNode
 {
@@ -204,7 +204,6 @@ public class DeclarationNode extends VariableNode
 		{
 			setStatic(true);
 		}
-		// Put new stuff between here...
 		else if (argNum == 0)
 		{
 			if (attribute.equals("private"))
@@ -218,6 +217,10 @@ public class DeclarationNode extends VariableNode
 			else if (attribute.equals("public"))
 			{
 				setVisibility(PUBLIC);
+			}
+			else
+			{
+				return false;
 			}
 		}
 		else
