@@ -25,7 +25,7 @@ import java.util.regex.Pattern;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Apr 5, 2014 at 3:53:04 PM
- * @version	v0.2 Apr 8, 2014 at 6:44:27 PM
+ * @version	v0.2.2 Apr 29, 2014 at 7:08:27 PM
  */
 public class Patterns
 {
@@ -45,7 +45,7 @@ public class Patterns
 	 * declaration consists of letters, numbers, underscores, brackets,
 	 * and spaces.
 	 */
-	public static final Pattern IDENTIFIER_DECLARATION	= Pattern.compile("[A-Za-z0-9_ \\[\\].]+");
+	public static final Pattern IDENTIFIER_DECLARATION	= Pattern.compile("[A-Za-z0-9_ \\n\\t\\[\\].\\*\\&]+");
 
 	/**
 	 * Pattern that searches for an identifier. An identifier consists of
@@ -394,7 +394,7 @@ public class Patterns
 	 * Pattern that searches for the word "throw" followed by a whitespace
 	 * character.
 	 */
-	public static final Pattern PRE_THROW				= Pattern.compile("throw(?=\\s)");
+	public static final Pattern PRE_THROW				= Pattern.compile("throw(?=\\s+\\S)");
 
 	/**
 	 * Pattern that searches for a throw declaration and returns the
@@ -411,4 +411,9 @@ public class Patterns
 	 * character.
 	 */
 	public static final Pattern PRE_CLASS				= Pattern.compile("class\\s");
+	
+	/**
+	 * Pattern that searches for the word "external"
+	 */
+	public static final Pattern EXTERNAL				= Pattern.compile("external");
 }
