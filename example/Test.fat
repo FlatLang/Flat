@@ -23,7 +23,7 @@ public class Test extends Object
 			current = current.getNext();
 		}
 		
-		Thread thread = new Thread(1000, "Turkey");
+		Thread thread = new Thread(300, "Turkey");
 		Thread thread2 = new Thread(1000, "Poop");
 		
 		thread.start();
@@ -32,6 +32,7 @@ public class Test extends Object
 		thread.join();
 		IO.println("Thread has ended");
 		thread2.start();
+		thread2.join();
 		
 		/*IO.println("Starting benchmark...");
 		
