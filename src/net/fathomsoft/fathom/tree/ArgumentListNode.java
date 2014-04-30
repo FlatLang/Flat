@@ -27,7 +27,7 @@ import net.fathomsoft.fathom.tree.exceptionhandling.ExceptionNode;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 10, 2014 at 3:12:54 AM
- * @version	v0.2 Mar 28, 2014 at 5:35:54 PM
+ * @version	v0.2.2 Apr 29, 2014 at 7:36:54 PM
  */
 public class ArgumentListNode extends TreeNode
 {
@@ -51,7 +51,18 @@ public class ArgumentListNode extends TreeNode
 		
 		return builder.toString();
 	}
-
+	
+	/**
+	 * Get the MethodCallNode instance that contains the specified
+	 * arguments.
+	 * 
+	 * @return The parent MethodCallNode instance.
+	 */
+	public MethodCallNode getMethodCall()
+	{
+		return (MethodCallNode)getParent();
+	}
+	
 	/**
 	 * @see net.fathomsoft.fathom.tree.TreeNode#generateCHeader()
 	 */
@@ -67,11 +78,11 @@ public class ArgumentListNode extends TreeNode
 	@Override
 	public String generateCSource()
 	{
-		StringBuilder builder = new StringBuilder();
+		StringBuilder  builder = new StringBuilder();
 		
-		MethodCallNode caller = (MethodCallNode)getParent();
+		MethodCallNode caller  = getMethodCall();
 		
-		MethodNode     method = caller.getMethodNode();
+		MethodNode     method  = caller.getMethodNode();
 		
 		if (!caller.isExternal())
 		{
