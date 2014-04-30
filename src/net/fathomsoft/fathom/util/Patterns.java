@@ -25,7 +25,7 @@ import java.util.regex.Pattern;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Apr 5, 2014 at 3:53:04 PM
- * @version	v0.2.2 Apr 29, 2014 at 7:08:27 PM
+ * @version	v0.2.3 Apr 30, 2014 at 6:21:00 AM
  */
 public class Patterns
 {
@@ -155,7 +155,7 @@ public class Patterns
 	 * <br>
 	 * For example: "return 43" would return the output of "43"
 	 */
-	public static final Pattern POST_RETURN     	    = Pattern.compile("(?<=return\\s{0,9})(\\S+)");
+	public static final Pattern POST_RETURN     	    = Pattern.compile("(?<=return\\s{0,9})(\\S)");
 
 	/**
 	 * Pattern that searches for the word "if" followed by an
