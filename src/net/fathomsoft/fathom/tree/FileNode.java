@@ -28,7 +28,7 @@ import net.fathomsoft.fathom.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Feb 18, 2014 at 8:57:00 PM
- * @version	v0.2.1 Apr 24, 2014 at 4:50:44 PM
+ * @version	v0.2.2 Apr 29, 2014 at 7:17:44 PM
  */
 public class FileNode extends IdentifierNode
 {
@@ -48,6 +48,7 @@ public class FileNode extends IdentifierNode
 	{
 		DEFAULT_IMPORTS = new String[]
 		{
+			"stdlib.h",
 			"CClass.h",
 			"ExceptionHandler.h",
 			"ExceptionData",
@@ -67,6 +68,39 @@ public class FileNode extends IdentifierNode
 		super.addChild(imports);
 		
 		addDefaultImportNodes();
+	}
+	
+	/**
+	 * Get whether or not the given location has been imported.
+	 * 
+	 * @param importLocation The location of the import.
+	 * @return Whether or not the given location has been imported.
+	 */
+	public boolean containsImport(String importLocation)
+	{
+		return getImport(importLocation) != null;
+	}
+	
+	/**
+	 * Get the Import node with the given import location, if it exists.
+	 * 
+	 * @param importLocation The location of the import.
+	 * @return The ImportNode with the specified import location, if it
+	 * 		exists.
+	 */
+	public ImportNode getImport(String importLocation)
+	{
+		return getImportListNode().getImport(importLocation);
+	}
+	
+	/**
+	 * Get whether or not the given location is an external C import.
+	 * 
+	 * @return Whether or not the given location is an external C import.
+	 */
+	public boolean isExternalImport(String importLocation)
+	{
+		return getImportListNode().isExternal(importLocation);
 	}
 	
 	/**
