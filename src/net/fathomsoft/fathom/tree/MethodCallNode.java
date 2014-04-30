@@ -32,7 +32,7 @@ import net.fathomsoft.fathom.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 10:04:31 PM
- * @version	v0.2.2 Apr 29, 2014 at 7:16:56 PM
+ * @version	v0.2.3 Apr 30, 2014 at 6:17:00 AM
  */
 public class MethodCallNode extends IdentifierNode
 {
@@ -635,7 +635,7 @@ public class MethodCallNode extends IdentifierNode
 						argument = argument.substring(argument.indexOf('.') + 1);
 					}
 				}
-				if (arg == null)// || prefix != '\0')
+				if (((isExternal() || isWithinExternalContext()) && arg == null) || SyntaxUtils.isLiteral(argument))// || prefix != '\0')
 				{
 					LiteralNode literal = new LiteralNode();
 					
@@ -651,14 +651,16 @@ public class MethodCallNode extends IdentifierNode
 					arg = literal;
 				}
 				
-//				if (arg == null)
-//				{
-//					SyntaxMessage.error("Incorrect argument definition", location);
-//					
-//					return false;
-//				}
-				
-				getArgumentListNode().addChild(arg);
+				if (arg == null)
+				{
+					SyntaxMessage.error("Incorrect argument definition", parent.getFileNode(), location, parent.getController());
+					
+					return;
+				}
+				else
+				{
+					getArgumentListNode().addChild(arg);
+				}
 			}
 		}
 	}
