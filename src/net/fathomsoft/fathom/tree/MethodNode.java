@@ -35,15 +35,19 @@ import net.fathomsoft.fathom.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:10:53 PM
- * @version	v0.2.1 Apr 24, 2014 at 4:53:32 PM
+ * @version	v0.2.2 Apr 29, 2014 at 7:16:32 PM
  */
 public class MethodNode extends DeclarationNode
 {
+	private ArrayList<MethodNode> overridingMethods;
+	
 	/**
 	 * Instantiate and initialize default data.
 	 */
 	public MethodNode()
 	{
+		overridingMethods = new ArrayList<MethodNode>();
+		
 		ParameterListNode parameterList = new ParameterListNode();
 		ScopeNode         scopeNode     = new ScopeNode();
 		
@@ -80,6 +84,18 @@ public class MethodNode extends DeclarationNode
 	{
 		return this instanceof ConstructorNode == false && !isStatic();
 	}
+
+	/**
+	 * @see net.fathomsoft.fathom.tree.variables.VariableNode#setExternal(boolean)
+	 */
+	@Override
+	public void setExternal(boolean external)
+	{
+		super.setExternal(external);
+		
+		setStatic(true);
+		setVisibility(PUBLIC);
+	}
 	
 	/**
 	 * @see net.fathomsoft.fathom.tree.TreeNode#getScopeNode()
@@ -108,6 +124,76 @@ public class MethodNode extends DeclarationNode
 	}
 	
 	/**
+	 * Get whether or not the specified MethodNode has overridden a method
+	 * from a super class
+	 * 
+	 * @return Whether or not the specified MethodNode has overridden a
+	 * 		method from a super class.
+	 */
+	public boolean hasOverridden()
+	{
+		return getOverriddenMethod() != null;
+	}
+	
+	/**
+	 * Get the MethodNode instance that this MethodNode overrides, if one
+	 * exists.
+	 * 
+	 * @return The MethodNode instance that this MethodNode overrides, if
+	 * 		one exists.
+	 */
+	public MethodNode getOverriddenMethod()
+	{
+		ClassNode clazz     = getClassNode();
+		
+		ClassNode extension = clazz.getExtendedClass();
+		
+		if (extension != null)
+		{
+			MethodNode method = extension.getMethod(getName());
+			
+			return method;
+		}
+		
+		return null;
+	}
+	
+	/**
+	 * Get whether or not the specified MethodNode has been overridden by
+	 * a sub class.
+	 * 
+	 * @return Whether or not the specified MethodNode has been
+	 * 		overridden.
+	 */
+	public boolean isOverridden()
+	{
+		return overridingMethods.size() > 0;
+	}
+	
+	/**
+	 * Get the MethodNode instance that overrides this MethodNode, if
+	 * any exists.
+	 * 
+	 * @return The MethodNode instance that overrides this MethodNode, if
+	 * 		any exists.
+	 */
+	public MethodNode[] getOverridingMethods()
+	{
+		return overridingMethods.toArray(new MethodNode[0]);
+	}
+	
+	/**
+	 * Add a MethodNode instance that overrides this MethodNode.
+	 * 
+	 * @param overridingMethod The MethodNode instance that overrides
+	 * 		this MethodNode.
+	 */
+	private void addOverridingMethod(MethodNode overridingMethod)
+	{
+		overridingMethods.add(overridingMethod);
+	}
+	
+	/**
 	 * Get the name of the identifier for the Object reference that
 	 * the method is using.
 	 * 
@@ -124,6 +210,13 @@ public class MethodNode extends DeclarationNode
 	 */
 	public void validate()
 	{
+		MethodNode method = getOverriddenMethod();
+		
+		if (method != null)
+		{
+			method.addOverridingMethod(this);
+		}
+		
 		getParameterListNode().validate();
 	}
 	
@@ -334,7 +427,7 @@ public class MethodNode extends DeclarationNode
 		{
 			builder.append(getArrayText());
 		}
-		if (!isPrimitiveType())
+		if (!isPrimitiveType() && !isExternal())
 		{
 			builder.append('*');
 		}
@@ -381,10 +474,35 @@ public class MethodNode extends DeclarationNode
 	 */
 	public String generateCSourceName()
 	{
+		if (isExternal())
+		{
+			return getName();
+		}
+		
 		ClassNode clazz = (ClassNode)getAncestorOfType(ClassNode.class);
 		
-		return Fathom.LANGUAGE_NAME.toLowerCase() + "_" + clazz.generateMethodPrefix() + "_" + getName();
+		return Fathom.LANGUAGE_NAME.toLowerCase() + "_" + clazz.generateUniquePrefix() + "_" + getName();
 	}
+	
+//	/**
+//	 * @see net.fathomsoft.fathom.tree.DeclarationNode#setAttribute(java.lang.String, int)
+//	 */
+//	public boolean setAttribute(String attribute, int argNum)
+//	{
+//		if (super.setAttribute(attribute, argNum))
+//		{
+//			return true;
+//		}
+//		
+//		if (attribute.equals("external"))
+//		{
+//			setExternal(true);
+//			
+//			return true;
+//		}
+//		
+//		return false;
+//	}
 	
 	/**
 	 * Decode the given statement into a MethodNode instance, if
@@ -448,7 +566,7 @@ public class MethodNode extends DeclarationNode
 						// If it is an array declaration.
 						if (Regex.matches(statement2, bounds.getEnd(), Patterns.EMPTY_ARRAY_BRACKETS))
 						{
-							int dimensions = SyntaxUtils.getArrayDimensions(statement2);
+							int dimensions = SyntaxUtils.calculateArrayDimensions(statement2, false);
 							
 							setArrayDimensions(dimensions);
 						}
@@ -513,6 +631,11 @@ public class MethodNode extends DeclarationNode
 	public MethodNode clone(MethodNode node)
 	{
 		super.clone(node);
+		
+		for (MethodNode child : overridingMethods)
+		{
+			node.overridingMethods.add(child.clone());
+		}
 		
 		return node;
 	}
