@@ -1,51 +1,45 @@
+import "string.h";
+
 public class String
 {
-	private char data[];
+	visible int	length;
+	
+	char		data[];
 	
 	public String(char data[])
 	{
 		this.data = data;
+		
+		calculateLength();
 	}
 	
-	/*public static String getStr()
+	void calculateLength()
 	{
-		String s = new String("ASDFAASDF");
-		
-		return s;
-	}*/
+		length = string.strlen(data);
+	}
+	
+	public int getLength()
+	{
+		return length;
+	}
 	
 	public char[] toCharArray()
 	{
 		return data;
 	}
 	
-	public void do1()
+	public String concat(String str)
 	{
-	
-	}
-	
-	public void do2()
-	{
-	
-	}
-	
-	public void do3()
-	{
-	
-	}
-	
-	public void do4()
-	{
-	
-	}
-	
-	public void do5()
-	{
-	
-	}
-	
-	public void do6()
-	{
-	
+		char newData[] = new char[str.getLength() + length + 1];
+		
+		string.strcpy(newData, data);
+		
+		char chars[] = str.toCharArray();
+		
+		string.strcat(newData, chars);
+		
+		String newStr = new String(newData);
+		
+		return newStr;
 	}
 }
