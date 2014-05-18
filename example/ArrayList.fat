@@ -3,13 +3,14 @@ import "Fathom.h";
 
 public class ArrayList
 {
-	private int	count;
-	private int	size;
+	int	count;
+	int	size;
 	
-	private int data[];
+	int data[];
 	
 	public ArrayList()
 	{
+		size = 0;
 		increaseSize();
 	}
 	
@@ -23,7 +24,6 @@ public class ArrayList
 		data[count] = var;
 		
 		count = count + 1;
-		
 	}
 	
 	public void increaseSize()
