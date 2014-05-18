@@ -19,6 +19,7 @@ package net.fathomsoft.fathom.tree;
 
 import net.fathomsoft.fathom.error.SyntaxMessage;
 import net.fathomsoft.fathom.tree.variables.LocalVariableNode;
+import net.fathomsoft.fathom.tree.variables.VariableNode;
 import net.fathomsoft.fathom.util.Bounds;
 import net.fathomsoft.fathom.util.Location;
 import net.fathomsoft.fathom.util.Patterns;
@@ -32,7 +33,7 @@ import net.fathomsoft.fathom.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:19:44 PM
- * @version	v0.2.2 Apr 29, 2014 at 7:36:44 PM
+ * @version	v0.2.4 May 17, 2014 at 9:55:04 PM
  */
 public class AssignmentNode extends TreeNode
 {
@@ -71,24 +72,6 @@ public class AssignmentNode extends TreeNode
 		builder.append(';').append('\n');
 		
 		return builder.toString();
-	}
-
-	/**
-	 * @see net.fathomsoft.fathom.tree.TreeNode#generateCHeader()
-	 */
-	@Override
-	public String generateCHeader()
-	{
-		return null;
-	}
-	
-	/**
-	 * @see net.fathomsoft.fathom.tree.TreeNode#generateCHeaderFragment()
-	 */
-	@Override
-	public String generateCHeaderFragment()
-	{
-		return null;
 	}
 	
 	/**
@@ -181,11 +164,7 @@ public class AssignmentNode extends TreeNode
 			return null;
 		}
 		
-		AssignmentNode n = new AssignmentNode();
-		
-		Bounds    bounds = Regex.boundsOf(statement, Patterns.PRE_EQUALS_SIGN);
-		
-		int  equalsIndex = StringUtils.findNextNonWhitespaceIndex(statement, bounds.getEnd());
+		int  equalsIndex = SyntaxUtils.findCharInBaseScope(statement, '=');
 		int     endIndex = StringUtils.findNextNonWhitespaceIndex(statement, equalsIndex - 1, -1) + 1;
 		
 		String  variable = statement.substring(0, endIndex);
@@ -193,80 +172,38 @@ public class AssignmentNode extends TreeNode
 		Location  varLoc = new Location(location);
 		varLoc.getBounds().setEnd(varLoc.getStart() + endIndex);
 		
-		TreeNode varNode = null;
+		TreeNode varNode = decodeScopeContents(parent, variable, location);
 		
-		if (SyntaxUtils.isValidIdentifierAccess(variable))
+		if (varNode == null)
 		{
-			if (SyntaxUtils.isValidArrayAccess(variable))
-			{
-				varNode = ArrayAccessNode.decodeStatement(parent, variable, location);
-			}
-			else
-			{
-				varNode = TreeNode.getExistingNode(parent, variable);
-				
-				if (varNode == null)
-				{
-					SyntaxMessage.error("Undeclared variable '" + variable + "'", parent.getFileNode(), location, parent.getController());
-					
-					return null;
-				}
-				
-				varNode = varNode.clone();
-			}
-		}
-		else
-		{
-			LocalVariableNode var = LocalVariableNode.decodeStatement(parent, variable, location);
+			SyntaxMessage.error("Undeclared variable '" + variable + "'", parent.getFileNode(), location, parent.getController());
 			
-			if (addDeclaration)
+			return null;
+		}
+		
+		varNode.setLocationIn(varLoc);
+		
+		if (addDeclaration)
+		{
+			if (varNode instanceof VariableNode)
 			{
-				if (var != null)
+				VariableNode var = (VariableNode)varNode;
+				
+				if (var.isDeclaration())
 				{
 					TreeNode scope = getAncestorWithScope(parent);
 					
 					if (scope != null)
 					{
-						LocalVariableNode clone = var.clone();
-						clone.setLocationIn(varLoc);
+						scope.addChild(varNode);
 						
-						scope.addChild(clone);
+						varNode = var.clone();
 					}
-					
-					varNode = var;
 				}
-				else
-				{
-//					SyntaxMessage.error("Missing variable on left side of assignment", location, parent.getController());
-					
-					return null;
-//					varNode = TreeNode.decodeStatement(parent, variable, location);
-//					
-//					if (varNode == null)
-//					{
-//						VariableNode vNode = new VariableNode();
-//						vNode.setName(variable);
-//						
-//						varNode = vNode;
-//					}
-//					else if (varNode instanceof ArrayAccessNode == false)
-//					{
-//						SyntaxMessage.error("Undeclared variable '" + variable + "'", location);
-//						
-//						return null;
-//					}
-				}
-			}
-			else
-			{
-//				IdentifierNode id = new IdentifierNode();
-//				id.setName(var.getName());
-				
-				varNode = var;
 			}
 		}
 		
-		varNode.setLocationIn(varLoc);
+		AssignmentNode n = new AssignmentNode();
 		
 		n.addChild(varNode);
 		
@@ -307,25 +244,29 @@ public class AssignmentNode extends TreeNode
 	 */
 	public static TreeNode decodeRightHandSide(TreeNode parent, String rhs, Location location)
 	{
-		TreeNode child    = MethodCallNode.decodeStatement(parent, rhs, location);
-
-		if (child == null)
-		{
-			child = TreeNode.getExistingNode(parent, rhs);
-			
-			if (child != null)
-			{
-				child = child.clone();
-			}
-		}
+		TreeNode child = decodeScopeContents(parent, rhs, location);//MethodCallNode.decodeStatement(parent, rhs, location);
+		
+//		if (child == null)
+//		{
+//			child = InstantiationNode.decodeStatement(parent, rhs, location);
+//		}
+//		if (child == null)
+//		{
+//			child = TreeNode.getExistingNode(parent, rhs);
+//			
+//			if (child != null)
+//			{
+//				child = child.clone();
+//			}
+//		}
 		if (child == null)
 		{
 			child = BinaryOperatorNode.decodeStatement(parent, rhs, location);
 		}
-		if (child == null)
-		{
-			child = TreeNode.decodeStatement(parent, rhs, location);
-		}
+//		if (child == null)
+//		{
+//			child = TreeNode.decodeStatement(parent, rhs, location);
+//		}
 		if (child == null)
 		{
 			if (SyntaxUtils.isExternal(parent.getFileNode(), rhs))
