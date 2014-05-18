@@ -6,14 +6,15 @@ typedef struct IO IO;
 #include <stdlib.h>
 #include <CClass.h>
 #include <ExceptionHandler.h>
+#include <Fathom.h>
 #include "ExceptionData.h"
 #include "Object.h"
 #include "String.h"
+#include "Math.h"
 #include "DivideByZeroException.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include "String.h"
-#include <Fathom.h>
 
 CCLASS_CLASS
 (
@@ -23,13 +24,12 @@ CCLASS_CLASS
 
 IO* fathom_IO_IO(ExceptionData* exceptionData);
 void fathom_del_IO(IO** this, ExceptionData* exceptionData);
-void fathom_IO_println(ExceptionData* exceptionData, String* fathom_text_29);
-void fathom_IO_print(ExceptionData* exceptionData, String* fathom_text_32);
-void fathom_IO_printi(ExceptionData* exceptionData, int fathom_j_35);
-void fathom_IO_printl(ExceptionData* exceptionData, long_long fathom_j_38);
+void fathom_IO_println(ExceptionData* exceptionData, String* fathom_text_6);
+void fathom_IO_print(ExceptionData* exceptionData, String* fathom_text_11);
+void fathom_IO_printi(ExceptionData* exceptionData, int fathom_j_14);
+void fathom_IO_printl(ExceptionData* exceptionData, long_long fathom_j_17);
 int fathom_IO_getInt(ExceptionData* exceptionData);
+char fathom_IO_getChar(ExceptionData* exceptionData);
 String* fathom_IO_getLine(ExceptionData* exceptionData);
 void fathom_IO_waitForEnter(ExceptionData* exceptionData);
-extern IO* __static__IO;
-
 #endif

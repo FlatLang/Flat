@@ -6,26 +6,26 @@ typedef struct String String;
 #include <stdlib.h>
 #include <CClass.h>
 #include <ExceptionHandler.h>
+#include <Fathom.h>
 #include "ExceptionData.h"
 #include "Object.h"
 #include "String.h"
+#include "Math.h"
 #include "DivideByZeroException.h"
+#include <string.h>
 
 CCLASS_CLASS
 (
 	String, 
 	
+	int fathom_length;
 	struct Private* prv;
 )
 
 
-String* fathom_String_String(ExceptionData* exceptionData, char* fathom_data_5);
+String* fathom_String_String(ExceptionData* exceptionData, char* fathom_data_59);
 void fathom_del_String(String** this, ExceptionData* exceptionData);
+int fathom_String_getLength(String* this, ExceptionData* exceptionData);
 char* fathom_String_toCharArray(String* this, ExceptionData* exceptionData);
-void fathom_String_do1(String* this, ExceptionData* exceptionData);
-void fathom_String_do2(String* this, ExceptionData* exceptionData);
-void fathom_String_do3(String* this, ExceptionData* exceptionData);
-void fathom_String_do4(String* this, ExceptionData* exceptionData);
-void fathom_String_do5(String* this, ExceptionData* exceptionData);
-void fathom_String_do6(String* this, ExceptionData* exceptionData);
+String* fathom_String_concat(String* this, ExceptionData* exceptionData, String* fathom_str_78);
 #endif

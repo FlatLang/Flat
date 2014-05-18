@@ -2,9 +2,11 @@
 #include <stdlib.h>
 #include <CClass.h>
 #include <ExceptionHandler.h>
+#include <Fathom.h>
 #include "ExceptionData.h"
 #include "Object.h"
 #include "String.h"
+#include "Math.h"
 #include "DivideByZeroException.h"
 
 Object* fathom_Object_Object(ExceptionData* exceptionData)

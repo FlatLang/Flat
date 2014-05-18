@@ -2,9 +2,11 @@
 #include <stdlib.h>
 #include <CClass.h>
 #include <ExceptionHandler.h>
+#include <Fathom.h>
 #include "ExceptionData.h"
 #include "Object.h"
 #include "String.h"
+#include "Math.h"
 #include "DivideByZeroException.h"
 #include <Thread.h>
 #include "IO.h"
@@ -23,15 +25,15 @@ struct DataStruct
 	Thread* instance;
 };
 
-Thread* fathom_Thread_Thread(ExceptionData* exceptionData, long_long fathom_millis_165, String* fathom_word_165)
+Thread* fathom_Thread_Thread(ExceptionData* exceptionData, long_long fathom_millis_125, String* fathom_word_125)
 {
 	CCLASS_NEW(Thread, this);
 	
 	this->prv->fathom_millis = 0;
 	this->prv->fathom_word = 0;
 	{
-		this->prv->fathom_millis = fathom_millis_165;
-		this->prv->fathom_word = fathom_word_165;
+		this->prv->fathom_millis = fathom_millis_125;
+		this->prv->fathom_word = fathom_word_125;
 	}
 	
 	return this;
@@ -43,6 +45,7 @@ void fathom_del_Thread(Thread** this, ExceptionData* exceptionData)
 	{
 		return;
 	}
+	
 	
 	
 	fathom_del_String(&(*this)->prv->fathom_word, exceptionData);
@@ -67,26 +70,21 @@ void fathom_Thread_join(Thread* this, ExceptionData* exceptionData)
 	lib_fathom_thread_join(this->prv->handle);
 }
 
-void fathom_Thread_sleep(Thread* this, ExceptionData* exceptionData, long_long fathom_millis_174)
+void fathom_Thread_sleep(ExceptionData* exceptionData, long_long fathom_millis_146)
 {
-	lib_fathom_thread_sleep(fathom_millis_174);
+	lib_fathom_thread_sleep(fathom_millis_146);
 }
 
 void fathom_Thread_run(Thread* this, ExceptionData* exceptionData)
 {
-	int fathom_i_177;
+	int fathom_i_149;
 	
-	for (fathom_i_177 = 0; fathom_i_177 < 10; fathom_i_177++)
+	fathom_i_149 = 0;
+	
+	for (; fathom_i_149 < 10; fathom_i_149++)
 	{
-		if (fathom_i_177 % 2 == 0)
-		{
-			fathom_IO_println(exceptionData, fathom_String_String(exceptionData, "Tick"));
-		}
-		else
-		{
-			fathom_IO_println(exceptionData, this->prv->fathom_word);
-		}
-		fathom_Thread_sleep(this, exceptionData, this->prv->fathom_millis);
+		fathom_IO_println(exceptionData, this->prv->fathom_word);
+		fathom_Thread_sleep(exceptionData, this->prv->fathom_millis);
 	}
 }
 
