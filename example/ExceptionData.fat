@@ -78,7 +78,7 @@ public class ExceptionData
 			code = 1;
 		}
 		
-		setjmp.jmp_buf* buf = data.getBuffer();
+		external jmp_buf* buf = data.getBuffer();
 		
 		setjmp.longjmp(*buf, code);
 	}
