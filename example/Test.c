@@ -35,30 +35,30 @@ void fathom_del_Test(Test** this, ExceptionData* exceptionData)
 		free(*this);
 }
 
-void fathom_Test_main(ExceptionData* exceptionData, String** fathom_args_168)
+void fathom_Test_main(ExceptionData* exceptionData, String** fathom_args_51)
 {
-		char fathom_c_168;
+		char fathom_c_51;
 		
-		fathom_c_168 = 'y';
-		while (fathom_c_168 == 'y' || fathom_c_168 == 'Y')
+		fathom_c_51 = 'y';
+		while (fathom_c_51 == 'y' || fathom_c_51 == 'Y')
 		{
-				Thread* fathom_thread_191;
-				Thread* fathom_thread2_191;
-				long_long fathom_start_191;
-				long_long fathom_end_191;
+				Thread* fathom_thread_205;
+				Thread* fathom_thread2_205;
+				long_long fathom_start_205;
+				long_long fathom_end_205;
 				
-				fathom_thread_191 = fathom_Thread_Thread(exceptionData, 100, fathom_String_String(exceptionData, "Thread1"));
-				fathom_thread2_191 = fathom_Thread_Thread(exceptionData, 100, fathom_String_String(exceptionData, "Thread2"));
-				fathom_start_191 = fathom_Time_currentTimeMillis(exceptionData);
-				fathom_Thread_start(fathom_thread_191, exceptionData);
-				fathom_Thread_start(fathom_thread2_191, exceptionData);
-				fathom_Thread_join(fathom_thread_191, exceptionData);
-				fathom_Thread_join(fathom_thread2_191, exceptionData);
-				fathom_end_191 = fathom_Time_currentTimeMillis(exceptionData);
-				fathom_IO_printl(exceptionData, fathom_end_191 - fathom_start_191);
+				fathom_thread_205 = fathom_Thread_Thread(exceptionData, 100, fathom_String_String(exceptionData, "Thread1"));
+				fathom_thread2_205 = fathom_Thread_Thread(exceptionData, 100, fathom_String_String(exceptionData, "Thread2"));
+				fathom_start_205 = fathom_Time_currentTimeMillis(exceptionData);
+				fathom_Thread_start(fathom_thread_205, exceptionData);
+				fathom_Thread_start(fathom_thread2_205, exceptionData);
+				fathom_Thread_join(fathom_thread_205, exceptionData);
+				fathom_Thread_join(fathom_thread2_205, exceptionData);
+				fathom_end_205 = fathom_Time_currentTimeMillis(exceptionData);
+				fathom_IO_printl(exceptionData, fathom_end_205 - fathom_start_205);
 				fathom_IO_println(exceptionData, fathom_String_String(exceptionData, ""));
 				fathom_IO_print(exceptionData, fathom_String_String(exceptionData, "Run again? (Y/N)"));
-				fathom_c_168 = fathom_IO_getChar(exceptionData);
+				fathom_c_51 = fathom_IO_getChar(exceptionData);
 		}
 		fathom_IO_println(exceptionData, fathom_String_String(exceptionData, ""));
 		fathom_IO_println(exceptionData, fathom_String_String(exceptionData, "Finished"));

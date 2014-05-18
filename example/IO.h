@@ -24,10 +24,10 @@ CCLASS_CLASS
 
 IO* fathom_IO_IO(ExceptionData* exceptionData);
 void fathom_del_IO(IO** this, ExceptionData* exceptionData);
-void fathom_IO_println(ExceptionData* exceptionData, String* fathom_text_6);
-void fathom_IO_print(ExceptionData* exceptionData, String* fathom_text_11);
-void fathom_IO_printi(ExceptionData* exceptionData, int fathom_j_14);
-void fathom_IO_printl(ExceptionData* exceptionData, long_long fathom_j_17);
+void fathom_IO_println(ExceptionData* exceptionData, String* fathom_text_23);
+void fathom_IO_print(ExceptionData* exceptionData, String* fathom_text_30);
+void fathom_IO_printi(ExceptionData* exceptionData, int fathom_j_35);
+void fathom_IO_printl(ExceptionData* exceptionData, long_long fathom_j_42);
 int fathom_IO_getInt(ExceptionData* exceptionData);
 char fathom_IO_getChar(ExceptionData* exceptionData);
 String* fathom_IO_getLine(ExceptionData* exceptionData);
