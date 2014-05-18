@@ -9,16 +9,16 @@ import net.fathomsoft.fathom.util.Regex;
 import net.fathomsoft.fathom.util.SyntaxUtils;
 
 /**
- * TreeNode extension that keeps track of any time an array is being
+ * ValueNode extension that keeps track of any time an array is being
  * accessed. For example, the statement: "args[34]" is an array access.
  * Obviously the previous code segment does nothing, however these nodes
  * will be intertwined with method calls, assignments, if statements, etc.
  * 
  * @author	Braden Steffaniak
  * @since	v0.2 Mar 24, 2014 at 10:45:29 PM
- * @version	v0.2.1 Apr 24, 2014 at 4:48:29 PM
+ * @version	v0.2.4 May 17, 2014 at 9:55:04 PM
  */
-public class ArrayAccessNode extends TreeNode
+public class ArrayAccessNode extends IdentifierNode
 {
 	/**
 	 * Get the VariableNode that corresponds to the array identifier.
@@ -28,24 +28,6 @@ public class ArrayAccessNode extends TreeNode
 	public VariableNode getVariableNode()
 	{
 		return (VariableNode)getChild(0);
-	}
-	
-	/**
-	 * @see net.fathomsoft.fathom.tree.TreeNode#generateJavaSource()
-	 */
-	@Override
-	public String generateJavaSource()
-	{
-		return null;
-	}
-	
-	/**
-	 * @see net.fathomsoft.fathom.tree.TreeNode#generateCHeader()
-	 */
-	@Override
-	public String generateCHeader()
-	{
-		return null;
 	}
 	
 	/**
@@ -122,6 +104,8 @@ public class ArrayAccessNode extends TreeNode
 			
 			ArrayAccessNode node = new ArrayAccessNode();
 			node.addChild(var);
+			node.setName(var.getName());
+			node.setType(var.getType());
 			
 			while (current > 0)
 			{
