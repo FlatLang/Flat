@@ -43,7 +43,7 @@ import net.fathomsoft.fathom.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:00:04 PM
- * @version	v0.2.3 Apr 30, 2014 at 6:14:04 AM
+ * @version	v0.2.4 May 17, 2014 at 9:55:04 PM
  */
 public class Fathom
 {
@@ -89,7 +89,7 @@ public class Fathom
 	public static final int		LINUX         = 3;
 	
 	public static final String	LANGUAGE_NAME = "Fathom";
-	public static final String	VERSION       = "v0.2.2";
+	public static final String	VERSION       = "v0.2.4";
 	
 	/**
 	 * Find out which operating system the compiler is running on.
@@ -200,7 +200,6 @@ public class Fathom
 				directory + "Time.fat",
 				directory + "Person.fat",
 				directory + "DivideByZeroException.fat",
-				directory + "NotEvenNumberException.fat",
 //				directory + "Fathom.fat",
 				directory + "Object.fat",
 				directory + "List.fat",
@@ -213,6 +212,7 @@ public class Fathom
 //				"-csource",
 				"-formatc",
 				"-v",
+//				"-gcc",
 				"-cargs",
 				"-keepc",
 //				"-library",
@@ -363,8 +363,9 @@ public class Fathom
 		{
 			ClassNode classNode = (ClassNode)mainMethod.getAncestorOfType(ClassNode.class);
 
-			StringBuilder staticClassInit = new StringBuilder();
-			StringBuilder staticClassFree = new StringBuilder();
+//			StringBuilder staticClassImport = new StringBuilder();
+//			StringBuilder staticClassInit   = new StringBuilder();
+//			StringBuilder staticClassFree   = new StringBuilder();
 			
 			ProgramNode root = tree.getRoot();
 			
@@ -386,9 +387,9 @@ public class Fathom
 							
 							if (c.containsStaticData())
 							{
-//								staticClassInit.append("SET_INSTANCE(").append(c.getName()).append(", __static__").append(c.getName()).append(')').append(';').append('\n');
-								staticClassInit.append("__static__").append(c.getName()).append(" = ").append(LANGUAGE_NAME.toLowerCase()).append('_').append(c.getName()).append('_').append(c.getName()).append("(0);").append('\n');
-								staticClassFree.append(LANGUAGE_NAME.toLowerCase()).append("_del_").append(c.getName()).append("(&__static__").append(c.getName()).append(", 0);").append('\n');
+//								staticClassImport.append("#include \"" + c.getName() + ".h\"").append('\n');
+//								staticClassInit.append("__static__").append(c.getName()).append(" = ").append(LANGUAGE_NAME.toLowerCase()).append('_').append(c.getName()).append('_').append(c.getName()).append("(0);").append('\n');
+//								staticClassFree.append(LANGUAGE_NAME.toLowerCase()).append("_del_").append(c.getName()).append("(&__static__").append(c.getName()).append(", 0);").append('\n');
 							}
 						}
 					}
@@ -401,6 +402,7 @@ public class Fathom
 			mainMethodText.append("#include \"Fathom.h\"").append('\n');
 			mainMethodText.append("#include <stdio.h>").append('\n');
 			mainMethodText.append("#include <string.h>").append('\n');
+//			mainMethodText.append(staticClassImport);
 			//mainMethodText.append("jmp_buf __").append(LANGUAGE_NAME.toUpperCase()).append("__jmp_buf;").append('\n');
 			mainMethodText.append('\n');
 			mainMethodText.append("int main(int argc, char** argvs)").append('\n');
@@ -408,7 +410,7 @@ public class Fathom
 			mainMethodText.append	("String** args = (String**)malloc(argc * sizeof(String));").append('\n');
 			mainMethodText.append	("int      i;").append('\n').append('\n');
 			mainMethodText.append	("ExceptionData* ").append(ExceptionNode.EXCEPTION_DATA_IDENTIFIER).append(" = 0;").append('\n');
-			mainMethodText.append	(staticClassInit);
+//			mainMethodText.append	(staticClassInit);
 			mainMethodText.append	('\n');
 			mainMethodText.append	("for (i = 0; i < argc; i++)").append('\n');
 			mainMethodText.append	("{").append('\n');
@@ -431,7 +433,7 @@ public class Fathom
 			mainMethodText.append		('\n');
 			mainMethodText.append	('}').append('\n');
 			mainMethodText.append	("END_TRY;").append('\n');
-			mainMethodText.append	(staticClassFree);
+//			mainMethodText.append	(staticClassFree);
 			mainMethodText.append	("free(args);").append('\n');
 			mainMethodText.append	('\n');
 			mainMethodText.append	("return 0;").append('\n');
@@ -775,12 +777,54 @@ public class Fathom
 			}
 		}
 		
+		validateInputFiles();
+		
 //		if (outputFile == null)
 //		{
 //			enableFlag(RUNTIME);
 //			
 //			outputFile = new File(workingDir, "bin/Executa.exe");
 //		}
+	}
+	
+	/**
+	 * Validate that the input files end with .fat. If any of them
+	 * do not, an error will be output. Also outputs an error if the
+	 * input file does not exist or is a directory.
+	 */
+	private void validateInputFiles()
+	{
+		boolean working = true;
+		
+		for (File f : inputFiles)
+		{
+			if (!f.getName().toLowerCase().endsWith(".fat"))
+			{
+				working = false;
+				
+				error("Input file '" + f.getName() + "' must have an extension of .fat");
+			}
+			else if (!f.exists())
+			{
+				working = false;
+				
+				error("Input file '" + f.getAbsolutePath() + "' does not exist.");
+			}
+			else if (!f.isFile())
+			{
+				working = false;
+				
+				error("Input file '" + f.getAbsolutePath() + "' is not a file.");
+			}
+		}
+		
+		if (!working)
+		{
+			startTimer();
+			stopTimer();
+			
+			completed();
+		}
 	}
 	
 	/**
@@ -967,7 +1011,7 @@ public class Fathom
 		
 		if (!ANDROID_DEBUG)
 		{
-//			System.exit(0);
+			System.exit(0);
 		}
 	}
 }
