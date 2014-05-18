@@ -34,9 +34,9 @@ import net.fathomsoft.fathom.util.Regex;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:15:51 PM
- * @version	v0.2.2 Apr 29, 2014 at 7:33:13 PM
+ * @version	v0.2.4 May 17, 2014 at 9:55:04 PM
  */
-public class ClassNode extends DeclarationNode
+public class ClassNode extends InstanceDeclarationNode
 {
 	private String	extendedClass;
 	
@@ -360,7 +360,7 @@ public class ClassNode extends DeclarationNode
 	 * @param name The name of the declaration node to search for.
 	 * @return The DeclarationNode instance that was found, if any.
 	 */
-	public DeclarationNode getDeclaration(String name)
+	public InstanceDeclarationNode getDeclaration(String name)
 	{
 		FieldNode field = getField(name);
 		
@@ -400,7 +400,7 @@ public class ClassNode extends DeclarationNode
 	}
 	
 	/**
-	 * @see net.fathomsoft.fathom.tree.DeclarationNode#setAttribute(java.lang.String)
+	 * @see net.fathomsoft.fathom.tree.InstanceDeclarationNode#setAttribute(java.lang.String)
 	 */
 	public void setAttribute(String attribute)
 	{
@@ -408,7 +408,7 @@ public class ClassNode extends DeclarationNode
 	}
 	
 	/**
-	 * @see net.fathomsoft.fathom.tree.DeclarationNode#setAttribute(java.lang.String, int)
+	 * @see net.fathomsoft.fathom.tree.InstanceDeclarationNode#setAttribute(java.lang.String, int)
 	 */
 	public boolean setAttribute(String attribute, int argNum)
 	{
@@ -435,7 +435,7 @@ public class ClassNode extends DeclarationNode
 	@Override
 	public void addChild(TreeNode child)
 	{
-		if (child instanceof MethodNode || child instanceof ExternalStatementNode)
+		if (child instanceof MethodNode)
 		{
 			if (child instanceof ConstructorNode)
 			{
@@ -449,10 +449,10 @@ public class ClassNode extends DeclarationNode
 			{
 				getMethodListNode().addChild(child);
 			}
-			else
-			{
-				super.addChild(child);
-			}
+		}
+		else if (child instanceof ExternalStatementNode)
+		{
+			super.addChild(child);
 		}
 		else if (child instanceof FieldNode)
 		{
@@ -689,7 +689,7 @@ public class ClassNode extends DeclarationNode
 			
 			builder.append(fields.generateNonStaticCHeader());
 			
-			if (containsPrivateData())
+			if (containsNonStaticPrivateData())
 			{
 				builder.append("struct Private* prv;").append('\n');
 			}
@@ -712,10 +712,10 @@ public class ClassNode extends DeclarationNode
 		MethodListNode methods = getMethodListNode();
 		builder.append(methods.generateCHeader());
 		
-		if (containsStaticData())
-		{
-			builder.append("extern ").append(getName()).append("* ").append("__static__").append(getName()).append(';').append('\n').append('\n');
-		}
+//		if (containsStaticData())
+//		{
+//			builder.append("extern ").append(getName()).append("* ").append("__static__").append(getName()).append(';').append('\n').append('\n');
+//		}
 		
 		return builder.toString();
 	}
@@ -732,18 +732,18 @@ public class ClassNode extends DeclarationNode
 		
 		PrivateFieldListNode privateFields = fields.getPrivateFieldListNode();
 		
-		if (containsStaticData())
-		{
-			builder.append('\n');
-			builder.append(getName()).append("* ").append("__static__").append(getName()).append(';').append('\n');
-		}
+//		if (containsStaticData())
+//		{
+//			builder.append('\n');
+//			builder.append(getName()).append("* ").append("__static__").append(getName()).append(';').append('\n');
+//		}
 		
-		if (containsPrivateData())
+		if (containsNonStaticPrivateData())
 		{
-			if (!containsStaticData())
-			{
+//			if (!containsStaticData())
+//			{
 				builder.append('\n');
-			}
+//			}
 			
 			builder.append("CCLASS_PRIVATE").append('\n').append('(').append('\n');
 			builder.append(privateFields.generateCSource());
@@ -756,6 +756,9 @@ public class ClassNode extends DeclarationNode
 			
 			builder.append('\n').append(child.generateCSource());
 		}
+		
+		builder.append(generatePrivateMethodPrototypes());
+		builder.append(fields.generateCSource());
 		
 		builder.append(getConstructorListNode().generateCSource());
 		builder.append(getDestructorListNode().generateCSource());
@@ -787,22 +790,21 @@ public class ClassNode extends DeclarationNode
 		// If contains 'class' in the statement.
 		if (Regex.indexOf(statement, Patterns.PRE_CLASS) >= 0)
 		{
+			final boolean extending[]    = new boolean[1];
+			final boolean implementing[] = new boolean[1];
+			final String  prevWord[]     = new String[] { "" };
+			
 			ClassNode n = new ClassNode()
 			{
-				private boolean	extending		= false;
-				private boolean	implementing	= false;
-				
-				private String	prevWord		= "";
-				
 				public void interactWord(String word, int wordNumber, Bounds bounds, int numWords)
 				{
-					if (extending)
+					if (extending[0])
 					{
 						setExtendedClass(word);
 						
-						extending = false;
+						extending[0] = false;
 					}
-					else if (implementing)
+					else if (implementing[0])
 					{
 						if (word.startsWith(","))
 						{
@@ -822,22 +824,23 @@ public class ClassNode extends DeclarationNode
 					{
 						if (word.equals("extends"))
 						{
-							extending = true;
+							extending[0] = true;
 						}
 						else if (word.equals("implements"))
 						{
-							implementing = true;
+							implementing[0] = true;
 						}
 						else
 						{
 							setAttribute(word, wordNumber);
 							
-							if (prevWord.equals("class"))
+							if (prevWord[0].equals("class"))
 							{
 								setName(word);
+								setType(word);
 							}
 							
-							prevWord = word;
+							prevWord[0] = word;
 						}
 					}
 				}
@@ -849,6 +852,30 @@ public class ClassNode extends DeclarationNode
 		}
 		
 		return null;
+	}
+	
+	/**
+	 * Generate the prototypes for specifically the private methods.
+	 * 
+	 * @return A String containing the prototype definitions.
+	 */
+	private String generatePrivateMethodPrototypes()
+	{
+		StringBuilder  builder = new StringBuilder();
+		
+		MethodListNode methods = getMethodListNode();
+		
+		for (int i = 0; i < methods.getChildren().size(); i++)
+		{
+			MethodNode method = (MethodNode)methods.getChild(i);
+			
+			if (method.getVisibility() == InstanceDeclarationNode.PRIVATE)
+			{
+				builder.append(method.generateCSourcePrototype()).append('\n');
+			}
+		}
+		
+		return builder.toString();
 	}
 	
 	/**
@@ -975,9 +1002,9 @@ public class ClassNode extends DeclarationNode
 		{
 			TreeNode child = root.getChild(i);
 			
-			if (child instanceof DeclarationNode)
+			if (child instanceof InstanceDeclarationNode)
 			{
-				DeclarationNode declaration = (DeclarationNode)child;
+				InstanceDeclarationNode declaration = (InstanceDeclarationNode)child;
 				
 				if (declaration.isStatic() && !declaration.isExternal())
 				{
@@ -1003,6 +1030,30 @@ public class ClassNode extends DeclarationNode
 	public boolean containsConstructor()
 	{
 		return containsMethod(getName(), false, getName());
+	}
+	
+	/**
+	 * Get whether or not the class contains a default constructor
+	 * implementation or not.
+	 * 
+	 * @return Whether or not the class contains a default constructor
+	 * 		implementation or not.
+	 */
+	public boolean containsDefaultConstructor()
+	{
+		MethodListNode constructors = getConstructorListNode();
+		
+		for (TreeNode node : constructors.getChildren())
+		{
+			ConstructorNode method = (ConstructorNode)node;
+			
+			if (method.getParameterListNode().getChildren().size() == 1)
+			{
+				return true;
+			}
+		}
+		
+		return false;
 	}
 	
 	/**
