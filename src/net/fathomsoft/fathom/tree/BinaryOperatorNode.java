@@ -19,8 +19,11 @@ package net.fathomsoft.fathom.tree;
 
 import java.util.regex.Matcher;
 
+import net.fathomsoft.fathom.Fathom;
 import net.fathomsoft.fathom.error.SyntaxMessage;
 import net.fathomsoft.fathom.tree.exceptionhandling.ThrowNode;
+import net.fathomsoft.fathom.tree.variables.LocalVariableNode;
+import net.fathomsoft.fathom.tree.variables.VariableNode;
 import net.fathomsoft.fathom.util.Bounds;
 import net.fathomsoft.fathom.util.Location;
 import net.fathomsoft.fathom.util.Patterns;
@@ -36,7 +39,7 @@ import net.fathomsoft.fathom.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:20:35 PM
- * @version	v0.2.3 Apr 30, 2014 at 6:15:00 AM
+ * @version	v0.2.4 May 17, 2014 at 9:55:04 PM
  */
 public class BinaryOperatorNode extends TreeNode
 {
@@ -60,21 +63,21 @@ public class BinaryOperatorNode extends TreeNode
 		
 		return builder.toString();
 	}
-
-	/**
-	 * @see net.fathomsoft.fathom.tree.TreeNode#generateCHeader()
-	 */
-	@Override
-	public String generateCHeader()
-	{
-		return null;
-	}
-
+	
 	/**
 	 * @see net.fathomsoft.fathom.tree.TreeNode#generateCSource()
 	 */
 	@Override
 	public String generateCSource()
+	{
+		return generateCSourceFragment();
+	}
+	
+	/**
+	 * @see net.fathomsoft.fathom.tree.TreeNode#generateCSourceFragment()
+	 */
+	@Override
+	public String generateCSourceFragment()
 	{
 		StringBuilder builder = new StringBuilder();
 		
@@ -91,15 +94,6 @@ public class BinaryOperatorNode extends TreeNode
 		}
 		
 		return builder.toString();
-	}
-	
-	/**
-	 * @see net.fathomsoft.fathom.tree.TreeNode#generateCSourceFragment()
-	 */
-	@Override
-	public String generateCSourceFragment()
-	{
-		return generateCSource();
 	}
 	
 	/**
@@ -197,6 +191,10 @@ public class BinaryOperatorNode extends TreeNode
 	 */
 	public static TreeNode decodeStatement(TreeNode parent, String statement, Location location)
 	{
+		if (SyntaxUtils.isMethodCall(statement))
+		{
+			return null;
+		}
 		if (!Regex.matches(statement, 0, Patterns.PRE_OPERATORS))
 		{
 			return null;
@@ -205,7 +203,14 @@ public class BinaryOperatorNode extends TreeNode
 		// Pattern used to find word boundaries. 
 		Matcher matcher = Patterns.PRE_OPERATORS.matcher(statement);
 		
-		return decodeStatement(parent, statement, matcher, location);
+		TreeNode node   = decodeStatement(parent, statement, matcher, location);
+		
+		if (node == null)
+		{
+			SyntaxMessage.error("Cannot decode binary operation '" + statement + "'", parent.getFileNode(), location, parent.getController());
+		}
+		
+		return node;
 	}
 	
 	/**
@@ -234,48 +239,71 @@ public class BinaryOperatorNode extends TreeNode
 	 */
 	private static TreeNode decodeStatement(TreeNode parent, String statement, Matcher matcher, Location location)
 	{
-		if (matcher.find())
+		Bounds operatorLoc = StringUtils.findStrings(statement, StringUtils.BINARY_OPERATORS);
+		
+		if (operatorLoc.getStart() >= 0)
 		{
 			BinaryOperatorNode node = new BinaryOperatorNode();
 			node.setLocationIn(location);
 			
-			// Decode the value on the left.
-			Bounds bounds  = Regex.boundsOf(statement, Patterns.PRE_OPERATORS);
-			Bounds bounds2 = Regex.boundsOf(statement, Patterns.POST_OPERATORS);
+			Bounds lhb = new Bounds(0, StringUtils.findNextNonWhitespaceIndex(statement, operatorLoc.getStart() - 1, -1) + 1);
 			
-			bounds.setEnd(StringUtils.findNextNonWhitespaceIndex(statement, bounds.getEnd() - 1, -1) + 1);
+			// Decode the value on the left.
+//			Bounds bounds  = Regex.boundsOf(statement, Patterns.PRE_OPERATORS);
+//			Bounds bounds2 = Regex.boundsOf(statement, Patterns.POST_OPERATORS);
+			
+//			bounds.setEnd(StringUtils.findNextNonWhitespaceIndex(statement, bounds.getEnd() - 1, -1) + 1);
 			
 			// The left-hand value.
-			String   lhv = statement.substring(bounds.getStart(), bounds.getEnd());
+			String   lhv = statement.substring(lhb.getStart(), lhb.getEnd());
 			
 			// The left-hand node.
 			TreeNode lhn = createNode(parent, lhv, location);
 			
+			if (lhn == null)
+			{
+				if (SyntaxUtils.isValidIdentifier(lhv))
+				{
+					SyntaxMessage.error("Unknown identifier '" + lhv + "'", parent.getFileNode(), location, parent.getController());
+				}
+				else
+				{
+					SyntaxMessage.error("Unknown value of '" + lhv + "'", parent.getFileNode(), location, parent.getController());
+				}
+				
+				return null;
+			}
+			
+			Location leftLoc = new Location(location);
+			leftLoc.setBounds(lhb.getStart(), lhb.getEnd());
+			lhn.setLocationIn(leftLoc);
+			
 			node.addChild(lhn);
 			
-			// Decode the operator.
-			Bounds opBounds = new Bounds(0, 0);
-			opBounds.setStart(StringUtils.findNextNonWhitespaceIndex(statement, bounds.getEnd()));
-			opBounds.setEnd(StringUtils.findNextNonWhitespaceIndex(statement, bounds2.getStart() - 1, -1) + 1);
-			
-			String operatorVal    = statement.substring(opBounds.getStart(), opBounds.getEnd());
+			String operatorVal = statement.substring(operatorLoc.getStart(), operatorLoc.getEnd());
 			
 			OperatorNode operator = new OperatorNode();
 			operator.setOperator(operatorVal);
 			node.addChild(operator);
 			
+			int rhIndex = StringUtils.findNextNonWhitespaceIndex(statement, operatorLoc.getEnd());
+			
 			// Decode the value on the right.
-			statement = statement.substring(bounds2.getStart());
+			statement = statement.substring(rhIndex);
 			
 			matcher.reset(statement);
 			TreeNode rhn = decodeStatement(parent, statement, matcher, location);
 			
 			if (rhn == null)
 			{
-				SyntaxMessage.error("Cannot decode binary operation", parent.getFileNode(), location, parent.getController());
+//				SyntaxMessage.error("Cannot decode binary operation '" + statement + "'", parent.getFileNode(), location, parent.getController());
 				
 				return null;
 			}
+
+			Location rightLoc = new Location(location);
+			leftLoc.setBounds(rhIndex, statement.length());
+			rhn.setLocationIn(rightLoc);
 			
 			node.addChild(rhn);
 			
@@ -290,7 +318,7 @@ public class BinaryOperatorNode extends TreeNode
 			
 			return node;
 		}
-		else if (matcher.hitEnd())
+		else
 		{
 			return createNode(parent, statement, location);
 			
@@ -305,8 +333,6 @@ public class BinaryOperatorNode extends TreeNode
 //				}
 //			}
 		}
-		
-		return null;
 	}
 	
 	/**
@@ -319,27 +345,6 @@ public class BinaryOperatorNode extends TreeNode
 	 */
 	private static TreeNode createNode(TreeNode parent, String statement, Location location)
 	{
-//		IdentifierNode node = TreeNode.getExistingNode(parentNode, statement);
-//		
-//		if (node != null)
-//		{
-//			node = node.clone();
-//			
-//			String visibility = "";
-//			
-//			if (node instanceof FieldNode)
-//			{
-//				FieldNode field = (FieldNode)node;
-//				
-//				if (field.getVisibility() == FieldNode.PRIVATE)
-//				{
-//					visibility = MethodNode.getObjectReferenceIdentifier() + "->" + "prv->";
-//				}
-//			}
-//			
-//			return node;
-//		}
-		
 		if (SyntaxUtils.isLiteral(statement))
 		{
 			LiteralNode literal = new LiteralNode();
@@ -348,47 +353,84 @@ public class BinaryOperatorNode extends TreeNode
 			
 			return literal;
 		}
-		else if (SyntaxUtils.isInstantiation(statement))
+//		else if (SyntaxUtils.isInstantiation(statement))
+//		{
+//			InstantiationNode node = InstantiationNode.decodeStatement(parent, statement, location);
+//			
+//			return node;
+//		}
+//		else if (SyntaxUtils.isMethodCall(statement))
+//		{
+//			MethodCallNode node = MethodCallNode.decodeStatement(parent, statement, location);
+//			
+//			return node;
+//		}
+//		else if (SyntaxUtils.isValidIdentifier(statement))
+//		{
+//			VariableNode node = TreeNode.getExistingNode(parent, statement);
+//			
+//			if (node != null)
+//			{
+//				node = node.clone();
+//				
+//				return node;
+//			}
+//		}
+		else if (SyntaxUtils.isExternal(parent.getFileNode(), statement))
 		{
-			InstantiationNode node = InstantiationNode.decodeStatement(parent, statement, location);
+			String value = statement.substring(statement.indexOf('.') + 1);
+		
+			LiteralNode node = new LiteralNode();
+			node.setValue(value, parent.isWithinExternalContext());
 			
 			return node;
 		}
-		else if (SyntaxUtils.isMethodCall(statement))
+//		else if (SyntaxUtils.isValidArrayAccess(statement))
+//		{
+//			ArrayAccessNode node = ArrayAccessNode.decodeStatement(parent, statement, location);
+//			
+//			return node;
+//		}
+		
+		return decodeScopeContents(parent, statement, location);
+	}
+	
+	public void validate()
+	{
+		validate(getParent(), true);
+	}
+	
+	private void validate(TreeNode parent, boolean checkParent)
+	{
+		if (checkParent && parent instanceof BinaryOperatorNode)
 		{
-			MethodCallNode node = MethodCallNode.decodeStatement(parent, statement, location);
-			
-			return node;
-		}
-		else if (SyntaxUtils.isValidIdentifier(statement))
-		{
-			IdentifierNode node = TreeNode.getExistingNode(parent, statement);
-			
-			if (node != null)
-			{
-				node = node.clone();
-				
-				return node;
-			}
-			if (statement.equals("this"))
-			{
-				LiteralNode literal = new LiteralNode();
-				
-				literal.setValue(MethodNode.getObjectReferenceIdentifier(), parent.isWithinExternalContext());
-				
-				return literal;
-			}
-		}
-		else if (SyntaxUtils.isValidArrayAccess(statement))
-		{
-			ArrayAccessNode node = ArrayAccessNode.decodeStatement(parent, statement, location);
-			
-			return node;
+			return;
 		}
 		
-		SyntaxMessage.error("Could not parse operation '" + statement + "'", parent.getFileNode(), location, parent.getController());
+		TreeNode left         = getChild(0);
+		OperatorNode operator = (OperatorNode)getChild(0 + 1);
+		TreeNode right        = getChild(0 + 2);
 		
-		return null;
+		if (right instanceof BinaryOperatorNode)
+		{
+			BinaryOperatorNode bin = (BinaryOperatorNode)right;
+			
+			bin.validate(this, false);
+			
+			right = getChild(0 + 2);
+		}
+		
+		if (operator.getOperator().equals("+"))
+		{
+			if (SyntaxUtils.isString(left) && SyntaxUtils.isString(right) && !getParent().isWithinExternalContext())
+			{
+				String   statement = left.generateFathomInput() + ".concat(" + right.generateFathomInput() + ")";
+				
+				TreeNode strConcat = decodeScopeContents(parent, statement, left.getLocationIn());
+				
+				parent.replace(this, strConcat);
+			}
+		}
 	}
 	
 	/**
