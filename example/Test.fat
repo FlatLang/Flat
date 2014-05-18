@@ -1,88 +1,38 @@
 import "IO";
-import "String";
-import "ArrayList";
-import "Math";
 import "Time";
-import "Person";
-import "List";
-import "NotEvenNumberException";
 import "Thread";
 
-public class Test extends Object
+public class Test
 {
 	public static void main(String args[])
 	{
-		List list = new List();
+		char c = 'y';
 		
-		ListNode current = list.getFirst();
-		
-		while (current != 0)
+		while (c == 'y' || c == 'Y')
 		{
-			current.getData();
+			Thread thread  = new Thread(100, "Thread1");
+			Thread thread2 = new Thread(100, "Thread2");
 			
-			current = current.getNext();
+			long start = Time.currentTimeMillis();
+			
+			thread.start();
+			thread2.start();
+			
+			thread.join();
+			thread2.join();
+			
+			long end = Time.currentTimeMillis();
+			
+			IO.printl(end - start);
+			IO.println("");
+			
+			IO.print("Run again? (Y/N)");
+			
+			c = IO.getChar();
 		}
 		
-		Thread thread = new Thread(300, "Turkey");
-		Thread thread2 = new Thread(1000, "Poop");
-		
-		thread.start();
-		
-		IO.println("Waiting for thread to end...");
-		thread.join();
-		IO.println("Thread has ended");
-		thread2.start();
-		thread2.join();
-		
-		/*IO.println("Starting benchmark...");
-		
-		long start = Time.currentTimeMillis();
-		
-		for (int q = 99999999; q >= 0; --q)
-		{
-			//try
-			//{
-				Math.sin(q);
-			//}
-			//catch (SomethingStupid e)
-			//{
-			//
-			//}
-		}
-		
-		long end = Time.currentTimeMillis();
-		
-		IO.printl(end - start);
-		IO.println("");*/
-		IO.print("Press enter to exit...");
-		
+		IO.println("");
+		IO.println("Finished");
 		IO.waitForEnter();
-	}
-	
-	public int divide(int numerator, int denominator)
-	{
-		return numerator / denominator;
-	}
-	
-	public int getEvenNumber(int num)
-	{
-		if (num % 2 != 0)
-		{
-			throw new NotEvenNumberException();
-		}
-		
-		return num;
-	}
-	
-	public int test()
-	{
-		int newVar = 43;
-		
-		return newVar;
-	}
-	
-	public int test2()
-	{
-		return test();
 	}
 }
