@@ -33,7 +33,7 @@ import net.fathomsoft.fathom.util.StringUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:50:47 PM
- * @version	v0.2.2 Apr 29, 2014 at 7:32:05 PM
+ * @version	v0.2.4 May 17, 2014 at 9:55:04 PM
  */
 public class ConstructorNode extends MethodNode
 {
@@ -114,7 +114,7 @@ public class ConstructorNode extends MethodNode
 		
 		if (isVisibilityValid())
 		{
-			if (getVisibility() == DeclarationNode.PRIVATE)
+			if (getVisibility() == InstanceDeclarationNode.PRIVATE)
 			{
 				return "";
 			}
@@ -168,7 +168,7 @@ public class ConstructorNode extends MethodNode
 
 		ClassNode classNode = (ClassNode)getAncestorOfType(ClassNode.class, true);
 		
-		if (!classNode.containsPrivateData())
+		if (!classNode.containsNonStaticPrivateData())
 		{
 			builder.append(",");
 		}
@@ -218,7 +218,7 @@ public class ConstructorNode extends MethodNode
 			
 			if (!child.isExternal())
 			{
-				builder.append(child.generateVariableUseOutput()).append(" = ").append(VariableNode.getNullText()).append(';').append('\n');
+				builder.append(child.generateUseOutput()).append(" = ").append(VariableNode.getNullText()).append(';').append('\n');
 			}
 		}
 		
@@ -230,7 +230,7 @@ public class ConstructorNode extends MethodNode
 			
 			if (!child.isExternal())
 			{
-				builder.append(child.generateVariableUseOutput()).append(" = ").append(VariableNode.getNullText()).append(';').append('\n');
+				builder.append(child.generateUseOutput()).append(" = ").append(VariableNode.getNullText()).append(';').append('\n');
 			}
 		}
 		
