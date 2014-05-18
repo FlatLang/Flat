@@ -17,6 +17,8 @@
  */
 package net.fathomsoft.fathom.tree;
 
+import net.fathomsoft.fathom.error.SyntaxMessage;
+import net.fathomsoft.fathom.tree.variables.VariableNode;
 import net.fathomsoft.fathom.util.Bounds;
 import net.fathomsoft.fathom.util.Location;
 import net.fathomsoft.fathom.util.Patterns;
@@ -38,28 +40,10 @@ import net.fathomsoft.fathom.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Mar 16, 2014 at 1:13:49 AM
- * @version	v0.2 Mar 28, 2014 at 6:30:49 PM
+ * @version	v0.2.4 May 17, 2014 at 9:55:04 PM
  */
-public class ArrayNode extends IdentifierNode
+public class ArrayNode extends VariableNode
 {
-	/**
-	 * @see net.fathomsoft.fathom.tree.TreeNode#generateJavaSource()
-	 */
-	@Override
-	public String generateJavaSource()
-	{
-		return null;
-	}
-	
-	/**
-	 * @see net.fathomsoft.fathom.tree.TreeNode#generateCHeader()
-	 */
-	@Override
-	public String generateCHeader()
-	{
-		return null;
-	}
-
 	/**
 	 * @see net.fathomsoft.fathom.tree.TreeNode#generateCSource()
 	 */
@@ -72,16 +56,16 @@ public class ArrayNode extends IdentifierNode
 		
 		builder.append('(').append(getName()).append('*').append(')');
 		
-		builder.append("malloc(sizeof(").append(getName()).append(')');
+		builder.append("malloc(sizeof(").append(getName()).append(')').append(" * (");
 		
 		for (int i = 0; i < getChildren().size(); i++)
 		{
 			TreeNode child = getChild(i);
 			
-			builder.append(" * ").append(child.generateCSourceFragment());
+			builder.append(child.generateCSourceFragment());
 		}
 		
-		builder.append(')');
+		builder.append(')').append(')');
 		
 		return builder.toString();
 	}
@@ -128,11 +112,15 @@ public class ArrayNode extends IdentifierNode
 			
 			int index = statement.indexOf('[') + 1;
 			
+			Location newLoc = new Location(location);
+			newLoc.setBounds(location.getStart() + index, location.getEnd());
+			
 			Bounds bounds = Regex.boundsOf(statement, Patterns.IDENTIFIER);
 			
 			String idValue = statement.substring(bounds.getStart(), bounds.getEnd());
 			
 			n.setName(idValue);
+			n.setType(idValue);
 			
 			while (index > 1)
 			{
@@ -149,7 +137,25 @@ public class ArrayNode extends IdentifierNode
 				}
 				else
 				{
-					IdentifierNode node = TreeNode.getExistingNode(parent, length).clone();
+					TreeNode node = TreeNode.getExistingNode(parent, length);
+					
+					if (node == null)
+					{
+						TreeNode binary = BinaryOperatorNode.decodeStatement(parent, length, newLoc);
+						
+						if (binary == null)
+						{
+							SyntaxMessage.error("Could not parse length '" + length + "' for array initialization", parent.getFileNode(), newLoc, parent.getController());
+							
+							return null;
+						}
+						
+						node = binary;
+					}
+					else
+					{
+						node = node.clone();
+					}
 					
 					n.addChild(node);
 				}
