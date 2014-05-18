@@ -42,17 +42,17 @@ public class Math
 		return math.atan(number);
 	}
 	
-	/*public static int round(double number)
+	public static long round(double number)
 	{
-		return math.lround(number);
-	}*/
+		return floor(number + 0.5);
+	}
 	
-	public static int floor(double number)
+	public static long floor(double number)
 	{
 		return math.floor(number);
 	}
 	
-	public static int ceil(double number)
+	public static long ceil(double number)
 	{
 		return math.ceil(number);
 	}
