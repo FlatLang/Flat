@@ -42,7 +42,7 @@ public class Thread
 		Thread.lib_fathom_thread_join(handle);
 	}
 	
-	public void sleep(long millis)
+	public static void sleep(long millis)
 	{
 		Thread.lib_fathom_thread_sleep(millis);
 	}
@@ -51,18 +51,9 @@ public class Thread
 	{
 		for (int i = 0; i < 10; i++)
 		{
-			if (i % 2 == 0)
-			{
-				IO.println("Tick");
-			}
-			else
-			{
-				IO.println(word);
-			}
+			IO.println(word);
 			
 			sleep(millis);
-			
-			//throw new DivideByZeroException();
 		}
 	}
 	
@@ -78,7 +69,7 @@ public class Thread
 		
 		try
 		{
-			run();
+			Thread.fathom_Thread_run(this, exceptionData);
 		}
 		catch (Exception e)
 		{
