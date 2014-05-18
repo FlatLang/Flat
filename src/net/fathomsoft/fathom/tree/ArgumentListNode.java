@@ -27,7 +27,7 @@ import net.fathomsoft.fathom.tree.exceptionhandling.ExceptionNode;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 10, 2014 at 3:12:54 AM
- * @version	v0.2.2 Apr 29, 2014 at 7:36:54 PM
+ * @version	v0.2.4 May 17, 2014 at 9:55:04 PM
  */
 public class ArgumentListNode extends TreeNode
 {
@@ -64,12 +64,34 @@ public class ArgumentListNode extends TreeNode
 	}
 	
 	/**
-	 * @see net.fathomsoft.fathom.tree.TreeNode#generateCHeader()
+	 * @see net.fathomsoft.fathom.tree.TreeNode#generateFathomInput()
 	 */
 	@Override
-	public String generateCHeader()
+	public String generateFathomInput()
 	{
-		return null;
+		StringBuilder builder = new StringBuilder();
+		
+		MethodNode    method  = getMethodCall().getMethodNode();
+		
+		int start = 0;
+		
+		if (method.isStatic())
+		{
+			start = 1;
+		}
+		if (method.isExternal())
+		{
+			start = 0;
+		}
+		
+		for (int i = start; i < getChildren().size(); i++)
+		{
+			TreeNode child = getChild(i);
+			
+			builder.append(child.generateFathomInput());
+		}
+		
+		return builder.toString();
 	}
 
 	/**
@@ -93,7 +115,7 @@ public class ArgumentListNode extends TreeNode
 					builder.append('&');
 				}
 				
-				builder.append(caller.getVariableNode().generateVariableUseOutput()).append(", ");
+				builder.append(caller.getValueNode().generateUseOutput()).append(", ");
 			}
 			
 			builder.append(ExceptionNode.EXCEPTION_DATA_IDENTIFIER);
@@ -115,15 +137,6 @@ public class ArgumentListNode extends TreeNode
 		}
 		
 		return builder.toString();
-	}
-	
-	/**
-	 * @see net.fathomsoft.fathom.tree.TreeNode#generateCSourceFragment()
-	 */
-	@Override
-	public String generateCSourceFragment()
-	{
-		return null;
 	}
 
 	/**
