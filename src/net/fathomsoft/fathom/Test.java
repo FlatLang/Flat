@@ -22,7 +22,9 @@ import static java.lang.Math.sin;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import net.fathomsoft.fathom.util.Bounds;
 import net.fathomsoft.fathom.util.Patterns;
+import net.fathomsoft.fathom.util.Regex;
 
 public class Test
 {
@@ -33,6 +35,13 @@ public class Test
 	
 	public static void main(String args[])
 	{
+		String str = "asdfasdfasdf[this + asdf - asdf]";
+		
+		Bounds b = Regex.boundsOf(str, Patterns.ARRAY_BRACKETS_DATA);
+		
+		System.out.println(str.substring(b.getStart(), b.getEnd()));
+		
+		System.exit(0);
 		try
 		{
 			try
