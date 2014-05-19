@@ -35,9 +35,9 @@ import net.fathomsoft.fathom.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:10:53 PM
- * @version	v0.2.3 Apr 30, 2014 at 6:18:00 AM
+ * @version	v0.2.4 May 17, 2014 at 9:55:04 PM
  */
-public class MethodNode extends DeclarationNode
+public class MethodNode extends InstanceDeclarationNode
 {
 	private ArrayList<MethodNode> overridingMethods;
 	
@@ -290,7 +290,7 @@ public class MethodNode extends DeclarationNode
 		
 		if (isVisibilityValid())
 		{
-			if (getVisibility() == DeclarationNode.PRIVATE)
+			if (getVisibility() == InstanceDeclarationNode.PRIVATE)
 			{
 				return "";
 			}
