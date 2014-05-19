@@ -50,7 +50,7 @@ import net.fathomsoft.fathom.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:00:11 PM
- * @version	v0.2.3 Apr 30, 2014 at 6:20:00 AM
+ * @version	v0.2.4 May 17, 2014 at 9:55:04 PM
  */
 public abstract class TreeNode
 {
@@ -70,11 +70,16 @@ public abstract class TreeNode
 		DestructorNode.class, ConstructorNode.class, MethodNode.class, FieldNode.class
 	};
 	
+	private static final Class<?>	PRE_VALUE_DECODE[] = new Class<?>[]
+	{
+		ReturnNode.class, AssignmentNode.class,
+	};
+	
 	private static final Class<?>	SCOPE_CHILD_DECODE[] = new Class<?>[]
 	{
-		ReturnNode.class, ExceptionHandlingNode.class, ArrayAccessNode.class,
-		InstantiationNode.class, ElseStatementNode.class, IfStatementNode.class, LoopNode.class,
-		UnaryOperatorNode.class, MethodCallNode.class, AssignmentNode.class, LocalVariableNode.class
+		ExceptionHandlingNode.class, AssignmentNode.class, InstantiationNode.class,
+		ElseStatementNode.class, IfStatementNode.class, LoopNode.class, ExternalTypeNode.class,
+		ArrayAccessNode.class, UnaryOperatorNode.class, MethodCallNode.class, LocalDeclarationNode.class
 	};
 	
 	private static final Class<?>	METHOD_CALL_CHILD_DECODE[] = new Class<?>[]
@@ -375,6 +380,8 @@ public abstract class TreeNode
 			{
 				return true;
 			}
+			
+			current = current.parent;
 		}
 		
 		return false;
@@ -469,6 +476,40 @@ public abstract class TreeNode
 		parent.getChildren().remove(this);
 		
 		parent = null;
+	}
+	
+	/**
+	 * Replace the given old node with the specified replacement.
+	 * 
+	 * @param old The node to replace.
+	 * @param replacement The replacement node.
+	 */
+	public void replace(TreeNode old, TreeNode replacement)
+	{
+		int index = children.indexOf(old);
+		
+		old.detach();
+		replacement.detach();
+		
+		addChild(index, replacement);
+	}
+	
+	/**
+	 * Give the specified node the given nodes children. This removes the
+	 * children from the given oldParent node.
+	 */
+	public void inheritChildren(TreeNode oldParent)
+	{
+		int index = children.size();
+		
+		for (int i = oldParent.children.size() - 1; i >= 0; i--)
+		{
+			TreeNode child = oldParent.getChild(i);
+			
+			child.detach();
+			
+			addChild(index, child);
+		}
 	}
 	
 	/**
@@ -670,7 +711,26 @@ public abstract class TreeNode
 	{
 		return null;
 	}
-
+	
+	/**
+	 * Generate the Fathom syntax String that represents the TreeNode.
+	 * Essentially, this is the String that is decoded into the node.
+	 * It is the input value from the .fat source file.
+	 * 
+	 * @return A String that represents the input String in Fathom syntax.
+	 */
+	public String generateFathomInput()
+	{
+		return null;
+	}
+	
+	/**
+	 * Validate the node to make last minute changes or error checking.
+	 */
+	public void validate()
+	{
+		
+	}
 	
 	/**
 	 * If the specified node is within an try block, return the node for
@@ -715,7 +775,8 @@ public abstract class TreeNode
 		
 		for (Class<?> type : types)
 		{
-			if      (type == LocalVariableNode.class) node = LocalVariableNode.decodeStatement(parent, statement, location);
+			if      (type == LocalDeclarationNode.class) node = LocalDeclarationNode.decodeStatement(parent, statement, location);
+			else if (type == LocalVariableNode.class) node = LocalVariableNode.decodeStatement(parent, statement, location);
 			else if (type == IfStatementNode.class) node = IfStatementNode.decodeStatement(parent, statement, location);
 			else if (type == ElseStatementNode.class) node = ElseStatementNode.decodeStatement(parent, statement, location);
 			else if (type == ArgumentListNode.class) node = ArgumentListNode.decodeStatement(parent, statement, location);
@@ -726,8 +787,9 @@ public abstract class TreeNode
 			else if (type == ClassNode.class) node = ClassNode.decodeStatement(parent, statement, location);
 			else if (type == ConditionNode.class) node = ConditionNode.decodeStatement(parent, statement, location);
 			else if (type == ConstructorNode.class) node = ConstructorNode.decodeStatement(parent, statement, location);
-			else if (type == DeclarationNode.class) node = DeclarationNode.decodeStatement(parent, statement, location);
+			else if (type == InstanceDeclarationNode.class) node = InstanceDeclarationNode.decodeStatement(parent, statement, location);
 			else if (type == DestructorNode.class) node = DestructorNode.decodeStatement(parent, statement, location);
+			else if (type == ExternalTypeNode.class) node = ExternalTypeNode.decodeStatement(parent, statement, location);
 			else if (type == FileNode.class) node = FileNode.decodeStatement(parent, statement, location);
 			else if (type == ForLoopNode.class) node = ForLoopNode.decodeStatement(parent, statement, location);
 			else if (type == IdentifierNode.class) node = IdentifierNode.decodeStatement(parent, statement, location);
@@ -742,7 +804,6 @@ public abstract class TreeNode
 			else if (type == MethodCallNode.class) node = MethodCallNode.decodeStatement(parent, statement, location);
 			else if (type == MethodListNode.class) node = MethodListNode.decodeStatement(parent, statement, location);
 			else if (type == MethodNode.class) node = MethodNode.decodeStatement(parent, statement, location);
-			else if (type == ModifierNode.class) node = ModifierNode.decodeStatement(parent, statement, location);
 			else if (type == OperatorNode.class) node = OperatorNode.decodeStatement(parent, statement, location);
 			else if (type == ParameterListNode.class) node = ParameterListNode.decodeStatement(parent, statement, location);
 			else if (type == ProgramNode.class) node = ProgramNode.decodeStatement(parent, statement, location);
@@ -805,7 +866,7 @@ public abstract class TreeNode
 		}
 		else if (parent instanceof MethodNode || parent instanceof IfStatementNode || parent instanceof ElseStatementNode || parent instanceof LoopNode || parent instanceof ExceptionHandlingNode || parent instanceof ScopeNode)
 		{
-			return decodeStatement(parent, statement, location, SCOPE_CHILD_DECODE);
+			return decodeScopeContents(parent, statement, location);
 		}
 		else if (parent instanceof MethodCallNode)
 		{
@@ -815,6 +876,128 @@ public abstract class TreeNode
 //		SyntaxError.outputNewError("Unknown statement", location);
 		
 		return null;
+	}
+	
+	/**
+	 * Decode a String that was found within a scope. That is, a method
+	 * or scopes within a method: for loops, while loops, if statements,
+	 * etc.
+	 * 
+	 * @param parent The parent node of the current statement to decode.
+	 * @param statement The statement to decode.
+	 * @param location The location of the statement.
+	 * @return The TreeNode representation of the given statement.
+	 */
+	public static TreeNode decodeScopeContents(TreeNode parent, String statement, Location location)
+	{
+		TreeNode root = null;
+		TreeNode node = decodeStatement(parent, statement, location, PRE_VALUE_DECODE);
+		
+		if (node != null)
+		{
+			return node;
+		}
+		
+		int      offset   = 0;
+		int      oldIndex = -1;
+		int      index    = SyntaxUtils.findDotOperator(statement);
+		
+		String   current  = statement;
+		
+		while (index >= 0)
+		{
+			current  = statement.substring(offset, index);
+			node     = decodeValue(parent, current, location);
+			
+//			if (node != null)
+//			{
+				parent.addChild(node);
+//			}
+			
+//			if (root != null)
+//			{
+//				parent.addChild(node);
+//			}
+			
+			offset  += index;
+			
+			oldIndex = index;
+			index    = SyntaxUtils.findDotOperator(current);
+			
+			parent   = node;
+			
+			if (root == null)
+			{
+				root = node;
+			}
+		}
+		
+		if (oldIndex >= 0)
+		{
+			current = statement.substring(oldIndex + 1, statement.length());
+		}
+		
+		node = decodeStatement(parent, current, location, SCOPE_CHILD_DECODE);
+		
+		if (node == null)
+		{
+			node = decodeValue(parent, current, location);
+		}
+		
+		if (root != null)
+		{
+			root.detach();
+			
+			parent.addChild(node);
+			
+			return root;
+		}
+		
+		return node;
+	}
+	
+	/**
+	 * Decode the value of the given statement. Can be nodes such as
+	 * VariableNodes, ExternalTypesNodes, FieldNodes, etc. May also
+	 * be just a plain old ValueNode describing the return type of the
+	 * statement. For example: a static class's method call.
+	 * <code>Math.sin(number)</code> in this instance, Math will be the
+	 * ValueNode returned. In most other instances a VariableNode
+	 * variation will be returned.
+	 * 
+	 * @param parent The parent node of the current statement to decode.
+	 * @param statement The statement to decode.
+	 * @param location The location of the statement.
+	 * @return The TreeNode representation of the given statement.
+	 */
+	private static ValueNode decodeValue(TreeNode parent, String statement, Location location)
+	{
+		ValueNode node = (ValueNode)decodeStatement(parent, statement, location, SCOPE_CHILD_DECODE);
+		
+		if (node == null)
+		{
+			node = getExistingNode(parent, statement);
+			
+			if (node != null)
+			{
+				node = node.clone();
+			}
+			else if (parent instanceof ExternalTypeNode)
+			{
+				ExternalTypeNode type = (ExternalTypeNode)parent;
+				
+				type.setType(statement);
+			}
+			else if (parent.getFileNode().containsImport(statement))
+			{
+				ClassNode clazz = parent.getProgramNode().getClass(statement);
+				
+				node = new ValueNode();
+				node.setType(clazz.getName());
+			}
+		}
+		
+		return node;
 	}
 	
 //	public static MethodNode getMethodNode(TreeNode node, String objectContaining, String methodName)
@@ -834,53 +1017,23 @@ public abstract class TreeNode
 	 * Try to find an existing node from the given statement. This method
 	 * searches through fields and local variables.
 	 * 
-	 * @param node The parent TreeNode to use as our context.
+	 * @param parent The parent TreeNode to use as our context.
 	 * @param statement The statement to check for an existing node from.
 	 * @return The IdentifierNode that is found, if any.
 	 */
-	public static VariableNode getExistingNode(TreeNode node, String statement)
+	public static VariableNode getExistingNode(TreeNode parent, String statement)
 	{
 		if (SyntaxUtils.isLiteral(statement))
 		{
 			return null;
 		}
-		
-		if (SyntaxUtils.isMethodCall(statement))
+		else if (SyntaxUtils.isMethodCall(statement))
 		{
-//			int dot = containsBefore(statement, '.', '(');
-//			
-//			IdentifierNode identifier = null;
-//			
-//			if (dot > 0)
-//			{
-//				String identifierName = statement.substring(0, dot);
-//				
-//				identifier = getExistingNode(node, identifierName);
-//			}
-//			
-//			Bounds         bounds     = Regex.boundsOf(statement, Patterns.METHOD_NAME);
-//			
-//			String         methodName = statement.substring(bounds.getStart(), bounds.getEnd());
-//			
-//			ClassNode      classNode  = (ClassNode)node.getAncestorOfType(ClassNode.class, true);
-//			
-//			MethodListNode methods    = classNode.getMethodListNode();
-//			
-//			for (int i = 0; i < methods.getChildren().size(); i++)
-//			{
-//				MethodNode method = (MethodNode)methods.getChild(i);
-//				
-//				if (method.getName().equals(methodName))
-//				{
-//					return method;
-//				}
-//			}
-			
 			return null;
 		}
 		else if (SyntaxUtils.isValidIdentifier(statement))
 		{
-			TreeNode scopeNode = getAncestorWithScope(node);
+			TreeNode scopeNode = getAncestorWithScope(parent);
 			
 			while (scopeNode != null)
 			{
@@ -908,15 +1061,24 @@ public abstract class TreeNode
 				scopeNode = getAncestorWithScope(scopeNode.getParent());
 			}
 			
-			ClassNode classNode = (ClassNode)node.getAncestorOfType(ClassNode.class, true);
+			ClassNode classNode = (ClassNode)parent.getAncestorOfType(ClassNode.class, true);
 			
-			return classNode.getField(statement);
+			if (classNode != null)
+			{
+				FieldNode field = classNode.getField(statement);
+//				System.out.println("Tried for '" + statement + "' but found " + classNode.getFieldListNode().getPrivateFieldListNode() + " " + classNode.getName() + "  " + classNode.getFieldListNode().getPrivateFieldListNode().getChildren().size());
+				
+				if (field != null)
+				{
+					return field;
+				}
+			}
 		}
 		else if (SyntaxUtils.isValidIdentifierAccess(statement))
 		{
 			if (statement.indexOf('.') >= 0)
 			{
-				ClassNode    reference = (ClassNode)node.getAncestorOfType(ClassNode.class);
+				ClassNode    reference = (ClassNode)parent.getAncestorOfType(ClassNode.class);
 				
 				ClassNode    type      = SyntaxUtils.getClassType(reference, statement);
 				
