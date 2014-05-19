@@ -24,5 +24,5 @@ CCLASS_CLASS
 
 Test* fathom_Test_Test(ExceptionData* exceptionData);
 void fathom_del_Test(Test** this, ExceptionData* exceptionData);
-void fathom_Test_main(ExceptionData* exceptionData, String** fathom_args_51);
+void fathom_Test_main(ExceptionData* exceptionData, String** fathom_args_156);
 #endif

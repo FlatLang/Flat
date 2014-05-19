@@ -16,14 +16,14 @@ CCLASS_PRIVATE
 )
 void fathom_String_calculateLength(String* this, ExceptionData* exceptionData);
 
-String* fathom_String_String(ExceptionData* exceptionData, char* fathom_data_79)
+String* fathom_String_String(ExceptionData* exceptionData, char* fathom_data_135)
 {
 	CCLASS_NEW(String, this);
 	
 	this->fathom_length = 0;
 	this->prv->fathom_data = 0;
 	{
-		this->prv->fathom_data = fathom_data_79;
+		this->prv->fathom_data = fathom_data_135;
 		fathom_String_calculateLength(this, exceptionData);
 	}
 	
@@ -60,16 +60,16 @@ char* fathom_String_toCharArray(String* this, ExceptionData* exceptionData)
 	return this->prv->fathom_data;
 }
 
-String* fathom_String_concat(String* this, ExceptionData* exceptionData, String* fathom_str_100)
+String* fathom_String_concat(String* this, ExceptionData* exceptionData, String* fathom_str_155)
 {
-	char* fathom_newData_100;
-	char* fathom_chars_100;
-	String* fathom_newStr_100;
+	char* fathom_newData_155;
+	char* fathom_chars_155;
+	String* fathom_newStr_155;
 	
-	fathom_newData_100 = (char*)malloc(sizeof(char) * (fathom_String_getLength(fathom_str_100, exceptionData) + this->fathom_length + 1));
-	strcpy(fathom_newData_100, this->prv->fathom_data);
-	fathom_chars_100 = fathom_String_toCharArray(fathom_str_100, exceptionData);
-	strcat(fathom_newData_100, fathom_chars_100);
-	fathom_newStr_100 = fathom_String_String(exceptionData, fathom_newData_100);
-	return fathom_newStr_100;
+	fathom_newData_155 = (char*)malloc(sizeof(char) * (fathom_String_getLength(fathom_str_155, exceptionData) + this->fathom_length + 1));
+	strcpy(fathom_newData_155, this->prv->fathom_data);
+	fathom_chars_155 = fathom_String_toCharArray(fathom_str_155, exceptionData);
+	strcat(fathom_newData_155, fathom_chars_155);
+	fathom_newStr_155 = fathom_String_String(exceptionData, fathom_newData_155);
+	return fathom_newStr_155;
 }

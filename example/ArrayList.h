@@ -25,8 +25,8 @@ CCLASS_CLASS
 
 ArrayList* fathom_ArrayList_ArrayList(ExceptionData* exceptionData);
 void fathom_del_ArrayList(ArrayList** this, ExceptionData* exceptionData);
-void fathom_ArrayList_add(ArrayList* this, ExceptionData* exceptionData, int fathom_var_65);
+void fathom_ArrayList_add(ArrayList* this, ExceptionData* exceptionData, int fathom_var_118);
 void fathom_ArrayList_increaseSize(ArrayList* this, ExceptionData* exceptionData);
 int fathom_ArrayList_getSize(ArrayList* this, ExceptionData* exceptionData);
-int fathom_ArrayList_get(ArrayList* this, ExceptionData* exceptionData, int fathom_index_82);
+int fathom_ArrayList_get(ArrayList* this, ExceptionData* exceptionData, int fathom_index_157);
 #endif

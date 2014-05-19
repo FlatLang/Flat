@@ -21,9 +21,9 @@ CCLASS_CLASS
 )
 
 
-ListNode* fathom_ListNode_ListNode(ExceptionData* exceptionData, Object* fathom_data_93);
+ListNode* fathom_ListNode_ListNode(ExceptionData* exceptionData, Object* fathom_data_159);
 void fathom_del_ListNode(ListNode** this, ExceptionData* exceptionData);
 Object* fathom_ListNode_getData(ListNode* this, ExceptionData* exceptionData);
 ListNode* fathom_ListNode_getNext(ListNode* this, ExceptionData* exceptionData);
-void fathom_ListNode_setNext(ListNode* this, ExceptionData* exceptionData, ListNode* fathom_next_110);
+void fathom_ListNode_setNext(ListNode* this, ExceptionData* exceptionData, ListNode* fathom_next_168);
 #endif

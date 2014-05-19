@@ -15,15 +15,15 @@ CCLASS_PRIVATE
 	String* fathom_name;
 )
 
-Person* fathom_Person_Person(ExceptionData* exceptionData, String* fathom_name_112, int fathom_age_112)
+Person* fathom_Person_Person(ExceptionData* exceptionData, String* fathom_name_101, int fathom_age_101)
 {
 	CCLASS_NEW(Person, this);
 	
 	this->prv->fathom_age = 0;
 	this->prv->fathom_name = 0;
 	{
-		this->prv->fathom_name = fathom_name_112;
-		this->prv->fathom_age = fathom_age_112;
+		this->prv->fathom_name = fathom_name_101;
+		this->prv->fathom_age = fathom_age_101;
 	}
 	
 	return this;

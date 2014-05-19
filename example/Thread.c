@@ -25,15 +25,15 @@ struct DataStruct
 	Thread* instance;
 };
 
-Thread* fathom_Thread_Thread(ExceptionData* exceptionData, long_long fathom_millis_18, String* fathom_word_18)
+Thread* fathom_Thread_Thread(ExceptionData* exceptionData, long_long fathom_millis_116, String* fathom_word_116)
 {
 	CCLASS_NEW(Thread, this);
 	
 	this->prv->fathom_millis = 0;
 	this->prv->fathom_word = 0;
 	{
-		this->prv->fathom_millis = fathom_millis_18;
-		this->prv->fathom_word = fathom_word_18;
+		this->prv->fathom_millis = fathom_millis_116;
+		this->prv->fathom_word = fathom_word_116;
 	}
 	
 	return this;
@@ -70,18 +70,18 @@ void fathom_Thread_join(Thread* this, ExceptionData* exceptionData)
 	lib_fathom_thread_join(this->prv->handle);
 }
 
-void fathom_Thread_sleep(ExceptionData* exceptionData, long_long fathom_millis_33)
+void fathom_Thread_sleep(ExceptionData* exceptionData, long_long fathom_millis_138)
 {
-	lib_fathom_thread_sleep(fathom_millis_33);
+	lib_fathom_thread_sleep(fathom_millis_138);
 }
 
 void fathom_Thread_run(Thread* this, ExceptionData* exceptionData)
 {
-	int fathom_i_39;
+	int fathom_i_145;
 	
-	fathom_i_39 = 0;
+	fathom_i_145 = 0;
 	
-	for (; fathom_i_39 < 10; fathom_i_39++)
+	for (; fathom_i_145 < 10; fathom_i_145++)
 	{
 		fathom_IO_println(exceptionData, this->prv->fathom_word);
 		fathom_Thread_sleep(exceptionData, this->prv->fathom_millis);
