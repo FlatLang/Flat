@@ -21,23 +21,110 @@ import java.util.regex.Matcher;
 
 import net.fathomsoft.fathom.error.SyntaxMessage;
 import net.fathomsoft.fathom.tree.ClassNode;
-import net.fathomsoft.fathom.tree.DeclarationNode;
+import net.fathomsoft.fathom.tree.InstanceDeclarationNode;
 import net.fathomsoft.fathom.tree.FileNode;
+import net.fathomsoft.fathom.tree.LiteralNode;
 import net.fathomsoft.fathom.tree.MethodNode;
 import net.fathomsoft.fathom.tree.ParameterListNode;
 import net.fathomsoft.fathom.tree.ParameterNode;
 import net.fathomsoft.fathom.tree.TreeNode;
+import net.fathomsoft.fathom.tree.ValueNode;
 import net.fathomsoft.fathom.tree.variables.FieldNode;
+import net.fathomsoft.fathom.tree.variables.VariableNode;
 
 /**
  * Class used for getting information about the Syntax of Fathom.
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Mar 15, 2014 at 7:55:00 PM
- * @version	v0.2.2 Apr 29, 2014 at 7:00:56 PM
+ * @version	v0.2.4 May 17, 2014 at 9:55:04 PM
  */
 public class SyntaxUtils
 {
+	/**
+	 * Find the next available dot operator index within the given String.
+	 * 
+	 * @param str The String to find the dot operator within.
+	 * @return The index of the dot operator. If a dot operator is not
+	 * 		found, then -1 is returned instead.
+	 */
+	public static int findDotOperator(String str)
+	{
+		return findCharInBaseScope(str, '.');
+	}
+	
+	/**
+	 * Find the next available instance of the given character in the
+	 * base scope of the given haystack String. The base scope means
+	 * outside of any quotes, parenthesis, and/or brackets.
+	 * 
+	 * @param haystack The String to find the character within.
+	 * @param needle The character to search for in the String.
+	 * @return The index of the character. If the character is not
+	 * 		found, then -1 is returned instead.
+	 */
+	public static int findCharInBaseScope(String haystack, char needle)
+	{
+		int i = 0;
+		
+		while (i < haystack.length())
+		{
+			char c = haystack.charAt(i);
+			
+			if (c == needle)
+			{
+				return i;
+			}
+			else if (c == '"')
+			{
+				i = StringUtils.findEndingQuote(haystack, i) + 1;
+			}
+			else if (c == '(')
+			{
+				i = StringUtils.findEndingMatch(haystack, i, '(', ')') + 1;
+			}
+			else if (c == '[')
+			{
+				i = StringUtils.findEndingMatch(haystack, i, '[', ']') + 1;
+			}
+			else if (c == '=')
+			{
+				return -1;
+			}
+			else
+			{
+				i++;
+			}
+		}
+		
+		return -1;
+	}
+	
+	/**
+	 * Get whether or not the given node is a String literal,
+	 * or variable.
+	 * 
+	 * @return Whether or not the given node is a String literal,
+	 * 		or variable.
+	 */
+	public static boolean isString(TreeNode node)
+	{
+		if (node instanceof LiteralNode)
+		{
+			LiteralNode literal = (LiteralNode)node;
+			
+			return isStringLiteral(literal.getValue());
+		}
+		else if (node instanceof ValueNode)
+		{
+			ValueNode value = (ValueNode)node;
+			
+			return value.getType().equals("String");
+		}
+		
+		return false;
+	}
+	
 	/**
 	 * Get whether or not the given String value represents one of the
 	 * following:
@@ -73,12 +160,16 @@ public class SyntaxUtils
 	 */
 	public static boolean isCharLiteral(String value)
 	{
-		if (value.length() != 3)
+		if (value.length() == 3)
 		{
-			return false;
+			return value.charAt(0) == '\'' && value.charAt(value.length() - 1) == '\'';
+		}
+		if (value.length() == 4)
+		{
+			return value.charAt(0) == '\'' && value.charAt(1) == '\\' && value.charAt(value.length() - 1) == '\'';
 		}
 		
-		return value.charAt(0) == '\'' && value.charAt(value.length() - 1) == '\'';
+		return false;
 	}
 	
 	/**
@@ -104,7 +195,14 @@ public class SyntaxUtils
 			return false;
 		}
 		
-		return value.charAt(0) == '"' && value.charAt(value.length() - 1) == '"';
+		if (value.charAt(0) == '"')
+		{
+			int matching = StringUtils.findEndingQuote(value, 0);
+			
+			return matching == value.length() - 1;
+		}
+		
+		return false;
 	}
 	
 	/**
@@ -220,7 +318,7 @@ public class SyntaxUtils
 	 */
 	public static boolean isVariableAssignment(String statement)
 	{
-		return Regex.indexOf(statement, Patterns.PRE_EQUALS_SIGN) == 0;
+		return findCharInBaseScope(statement, '=') > 0;//Regex.indexOf(statement, Patterns.PRE_EQUALS_SIGN) == 0;
 	}
 	
 	/**
@@ -312,7 +410,14 @@ public class SyntaxUtils
 	 */
 	public static boolean isMethodCall(String statement)
 	{
-		return Regex.startsWith(statement, Patterns.PRE_METHOD_CALL);
+		Bounds bounds = Regex.boundsOf(statement, Patterns.PRE_METHOD_CALL);
+		
+		if (bounds.getStart() == 0)
+		{
+			return StringUtils.findEndingMatch(statement, bounds.getEnd() - 1, '(', ')') == statement.length() - 1;
+		}
+		
+		return false;
 	}
 	
 	/**
@@ -438,7 +543,7 @@ public class SyntaxUtils
 	 * @return Whether or not the given DeclarationNode is able to be
 	 * 		accessed from the given ClassNode context.
 	 */
-	private static boolean isAccessibleFrom(ClassNode accessedFrom, DeclarationNode declaration)
+	private static boolean isAccessibleFrom(ClassNode accessedFrom, InstanceDeclarationNode declaration)
 	{
 		if (accessedFrom.isAncestorOf(declaration))
 		{
@@ -447,7 +552,7 @@ public class SyntaxUtils
 		
 		int visibility = declaration.getVisibility();
 		
-		return visibility == DeclarationNode.PUBLIC || visibility == FieldNode.VISIBLE;
+		return visibility == InstanceDeclarationNode.PUBLIC || visibility == FieldNode.VISIBLE;
 	}
 	
 	/**
@@ -514,7 +619,7 @@ public class SyntaxUtils
 				return f.getProgramNode().getClass(identifier);
 			}
 			
-			DeclarationNode dec = reference.getDeclaration(identifier);
+			InstanceDeclarationNode dec = reference.getDeclaration(identifier);
 			
 			if (!isAccessibleFrom(reference, dec))
 			{
@@ -660,5 +765,30 @@ public class SyntaxUtils
 		String externalName = statement.substring(0, index);
 		
 		return file.getImportListNode().isExternal(externalName);
+	}
+	
+	/**
+	 * Get whether or not the declaration is accessible from the
+	 * given accessor context.
+	 * 
+	 * @return Whether or not the declaration is accessible from the
+	 * 		given accessor context.
+	 */
+	public static boolean isVisible(VariableNode accessor, InstanceDeclarationNode declaration)
+	{
+		if (declaration.getVisibility() == InstanceDeclarationNode.PRIVATE)
+		{
+			ClassNode clazz1 = declaration.getProgramNode().getClass(accessor.getType());
+			ClassNode clazz2 = declaration.getClassNode();
+			
+			if (clazz1.isAncestorOf(clazz2, true) || clazz2.isAncestorOf(clazz1))
+			{
+				return true;
+			}
+			
+			return false;
+		}
+		
+		return true;
 	}
 }
