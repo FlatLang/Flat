@@ -24,7 +24,7 @@ import net.fathomsoft.fathom.tree.TreeNode;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 9, 2014 at 4:19:57 PM
- * @version	v0.2.1 Apr 24, 2014 at 4:58:17 PM
+ * @version	v0.2.4 May 17, 2014 at 9:55:04 PM
  */
 public class VariableListNode extends TreeNode
 {
@@ -61,6 +61,26 @@ public class VariableListNode extends TreeNode
 		}
 		
 		return null;
+	}
+	
+	/**
+	 * Generate the output needed to free the variables after they are
+	 * finished with.
+	 * 
+	 * @return The String output of the variables being freed.
+	 */
+	public String generateFreeVariablesOutput()
+	{
+		StringBuilder builder = new StringBuilder();
+		
+		for (int i = 0; i < getChildren().size(); i++)
+		{
+			VariableNode variable = (VariableNode)getChild(i);
+			
+			builder.append(variable.generateFreeOutput());
+		}
+		
+		return builder.toString();
 	}
 	
 	/**
@@ -114,15 +134,6 @@ public class VariableListNode extends TreeNode
 		}
 		
 		return builder.toString();
-	}
-	
-	/**
-	 * @see net.fathomsoft.fathom.tree.TreeNode#generateCSourceFragment()
-	 */
-	@Override
-	public String generateCSourceFragment()
-	{
-		return null;
 	}
 	
 	/**
