@@ -19,7 +19,7 @@ package net.fathomsoft.fathom.tree.variables;
 
 import net.fathomsoft.fathom.error.SyntaxMessage;
 import net.fathomsoft.fathom.tree.ClassNode;
-import net.fathomsoft.fathom.tree.DeclarationNode;
+import net.fathomsoft.fathom.tree.InstanceDeclarationNode;
 import net.fathomsoft.fathom.tree.TreeNode;
 
 /**
@@ -27,7 +27,7 @@ import net.fathomsoft.fathom.tree.TreeNode;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 10:00:50 PM
- * @version	v0.2.2 Apr 29, 2014 at 7:10:32 PM
+ * @version	v0.2.4 May 17, 2014 at 9:55:04 PM
  */
 public class FieldListNode extends TreeNode
 {
@@ -41,10 +41,10 @@ public class FieldListNode extends TreeNode
 		PrivateFieldListNode privateStaticFields = new PrivateFieldListNode();
 		PublicFieldListNode  publicStaticFields  = new PublicFieldListNode();
 		
-		addChild(privateFields);
-		addChild(publicFields);
-		addChild(privateStaticFields);
-		addChild(publicStaticFields);
+		super.addChild(privateFields);
+		super.addChild(publicFields);
+		super.addChild(privateStaticFields);
+		super.addChild(publicStaticFields);
 	}
 	
 	/**
@@ -101,7 +101,7 @@ public class FieldListNode extends TreeNode
 		{
 			FieldNode field = (FieldNode)node;
 			
-			if (field.getVisibility() == DeclarationNode.PRIVATE)
+			if (field.getVisibility() == InstanceDeclarationNode.PRIVATE)
 			{
 				if (field.isStatic())
 				{
@@ -112,7 +112,7 @@ public class FieldListNode extends TreeNode
 					getPrivateFieldListNode().addChild(field);
 				}
 			}
-			else if (field.getVisibility() == DeclarationNode.PUBLIC)
+			else if (field.getVisibility() == InstanceDeclarationNode.PUBLIC || field.getVisibility() == FieldNode.VISIBLE)
 			{
 				if (field.isStatic())
 				{
@@ -125,12 +125,12 @@ public class FieldListNode extends TreeNode
 			}
 			else
 			{
-				SyntaxMessage.error("Missing visibility declaration", field);
+				SyntaxMessage.error("Missing visibility declaration", getFileNode(), getLocationIn(), getController());
 			}
 		}
 		else
 		{
-			super.addChild(node);
+			SyntaxMessage.error("Unknown node being added", getFileNode(), getLocationIn(), getController());
 		}
 	}
 	
@@ -262,7 +262,8 @@ public class FieldListNode extends TreeNode
 	}
 	
 	/**
-	 * Generate the C Header output for the all of the static variables.
+	 * Generate the C Header output for the all of the public static
+	 * variables.
 	 * 
 	 * @return The C Header file output.
 	 */
@@ -270,19 +271,22 @@ public class FieldListNode extends TreeNode
 	{
 		StringBuilder builder = new StringBuilder();
 		
-		builder.append(getPrivateStaticFieldListNode().generateCHeader());
 		builder.append(getPublicStaticFieldListNode().generateCHeader());
 		
 		return builder.toString();
 	}
 	
 	/**
-	 * @see net.fathomsoft.fathom.tree.TreeNode#generateCSourceFragment()
+	 * @see net.fathomsoft.fathom.tree.TreeNode#generateCSource()
 	 */
 	@Override
-	public String generateCSourceFragment()
+	public String generateCSource()
 	{
-		return null;
+		StringBuilder builder = new StringBuilder();
+		
+		builder.append(getPrivateStaticFieldListNode().generateCHeader());
+		
+		return builder.toString();
 	}
 	
 	/**
