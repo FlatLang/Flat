@@ -17,8 +17,12 @@
  */
 package net.fathomsoft.fathom.tree.variables;
 
-import net.fathomsoft.fathom.tree.DeclarationNode;
+import net.fathomsoft.fathom.Fathom;
+import net.fathomsoft.fathom.tree.InstanceDeclarationNode;
+import net.fathomsoft.fathom.tree.LocalDeclarationNode;
+import net.fathomsoft.fathom.tree.ParameterNode;
 import net.fathomsoft.fathom.tree.TreeNode;
+import net.fathomsoft.fathom.tree.exceptionhandling.ExceptionNode;
 import net.fathomsoft.fathom.util.Bounds;
 import net.fathomsoft.fathom.util.Location;
 import net.fathomsoft.fathom.util.Patterns;
@@ -30,9 +34,9 @@ import net.fathomsoft.fathom.util.Patterns;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:12:04 PM
- * @version	v0.2.2 Apr 29, 2014 at 7:09:26 PM
+ * @version	v0.2.4 May 17, 2014 at 9:55:04 PM
  */
-public class FieldNode extends DeclarationNode
+public class FieldNode extends InstanceDeclarationNode
 {
 	/**
 	 * Declares that a variable can be viewed from anywhere, but not
@@ -41,7 +45,7 @@ public class FieldNode extends DeclarationNode
 	public static final int	VISIBLE	= 4;
 	
 	/**
-	 * @see net.fathomsoft.fathom.tree.DeclarationNode#isVisibilityValid()
+	 * @see net.fathomsoft.fathom.tree.InstanceDeclarationNode#isVisibilityValid()
 	 */
 	@Override
 	public boolean isVisibilityValid()
@@ -52,7 +56,7 @@ public class FieldNode extends DeclarationNode
 	}
 	
 	/**
-	 * @see net.fathomsoft.fathom.tree.DeclarationNode#getVisibilityText()
+	 * @see net.fathomsoft.fathom.tree.InstanceDeclarationNode#getVisibilityText()
 	 */
 	@Override
 	public String getVisibilityText()
@@ -68,7 +72,7 @@ public class FieldNode extends DeclarationNode
 	}
 	
 	/**
-	 * @see net.fathomsoft.fathom.tree.DeclarationNode#setAttribute(java.lang.String, int)
+	 * @see net.fathomsoft.fathom.tree.InstanceDeclarationNode#setAttribute(java.lang.String, int)
 	 */
 	@Override
 	public boolean setAttribute(String attribute, int argNum)
@@ -80,7 +84,7 @@ public class FieldNode extends DeclarationNode
 		
 		if (argNum == 0)
 		{
-			if (attribute.equals("visibility"))
+			if (attribute.equals("visible"))
 			{
 				setVisibility(VISIBLE);
 			}
@@ -169,7 +173,12 @@ public class FieldNode extends DeclarationNode
 	@Override
 	public String generateCSourceFragment()
 	{
-		return generateVariableUseOutput();
+		if (isSpecialFragment())
+		{
+			return generateSpecialFragment();
+		}
+		
+		return generateUseOutput() + generateChildrenCSourceFragment();
 	}
 	
 	/**
@@ -220,10 +229,10 @@ public class FieldNode extends DeclarationNode
 			return null;
 		}
 		
-		String preStatement   = statement.substring(0, localDeclaration.getStart());
-		String localStatement = statement.substring(localDeclaration.getStart(), localDeclaration.getEnd());
+		String preStatement      = statement.substring(0, localDeclaration.getStart());
+		String localStatement    = statement.substring(localDeclaration.getStart(), localDeclaration.getEnd());
 		
-		LocalVariableNode var = LocalVariableNode.decodeStatement(parent, localStatement, location);
+		LocalDeclarationNode var = LocalDeclarationNode.decodeStatement(parent, localStatement, location);
 		
 		if (var == null)
 		{
@@ -236,6 +245,25 @@ public class FieldNode extends DeclarationNode
 		
 		return n;
 	}
+
+//	/**
+//	 * @see net.fathomsoft.fathom.tree.TreeNode#validate()
+//	 */
+//	@Override
+//	public void validate()
+//	{
+//		TreeNode parent = getParent();
+//		
+//		if (parent instanceof ParameterNode)
+//		{
+//			ParameterNode param = (ParameterNode)parent;
+//			
+//			if (param.getName().equals("this"))
+//			{
+//				param.getParent().replace(param, this);
+//			}
+//		}
+//	}
 	
 	/**
 	 * @see net.fathomsoft.fathom.tree.TreeNode#clone()
