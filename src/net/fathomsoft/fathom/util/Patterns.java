@@ -25,7 +25,7 @@ import java.util.regex.Pattern;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Apr 5, 2014 at 3:53:04 PM
- * @version	v0.2.3 Apr 30, 2014 at 6:21:00 AM
+ * @version	v0.2.4 May 17, 2014 at 9:55:04 PM
  */
 public class Patterns
 {
@@ -121,7 +121,7 @@ public class Patterns
 	 * For example: In the case of "45 * 6" the data before the '*'
 	 * operator is returned as "45 "
 	 */
-	public static final Pattern PRE_OPERATORS			= Pattern.compile("[\\S\\s]+?(?=((!|>|<|=)=|[\\*\\+\\/\\-\\<\\>%]))");
+	public static final Pattern PRE_OPERATORS			= Pattern.compile("[\\S\\s]+?(?=([!<>=]=?|&{1,2}|\\|{1,2}|[\\*\\+\\/\\-%])[^=|&])");
 
 	/**
 	 * Pattern that searches for the data after an operator.<br>
@@ -129,7 +129,7 @@ public class Patterns
 	 * For example: In the case of "45 * 6" the data after the '*'
 	 * operator is returned as " 6"
 	 */
-	public static final Pattern POST_OPERATORS			= Pattern.compile("(?<=(([!\\<\\>=]{1,2})|[\\*\\+\\/\\-])\\s{0,9})[A-Za-z0-9_]\\s*(\\S+\\s*)*");
+	public static final Pattern POST_OPERATORS			= Pattern.compile("(?<=([!<>=]=?|&{1,2}|\\|{1,2}|[\\*\\+\\/\\-%])[^=|&]\\s{0,9})(\\S+\\s*)+");
 
 	/**
 	 * Pattern that searches for a whitespace character.
@@ -257,7 +257,7 @@ public class Patterns
 	 * For example:<br>
 	 * "person.getAge()" would return the output of "person.getAge"
 	 */
-	public static final Pattern PRE_METHOD_CALL			= Pattern.compile("\\S+?(?=\\s*\\()");
+	public static final Pattern PRE_METHOD_CALL			= Pattern.compile("\\S+?\\s*\\(");
 
 //	/**
 //	 * Pattern that searches for 
@@ -270,7 +270,7 @@ public class Patterns
 	 * For example:<br>
 	 * "array = new int[423]" would return "int[423]"
 	 */
-	public static final Pattern ARRAY_INIT				= Pattern.compile("[A-Za-z0-9_]+(\\s*\\[\\s*\\S+\\s*\\])+");
+	public static final Pattern ARRAY_INIT				= Pattern.compile("[A-Za-z0-9_]+(\\s*\\[\\s*[^\\]]+?\\s*\\])+");
 
 	/**
 	 * Pattern that searches for an array access.<br>
@@ -278,7 +278,7 @@ public class Patterns
 	 * For example:<br>
 	 * "array[423]"
 	 */
-	public static final Pattern ARRAY_ACCESS			= Pattern.compile("[A-Za-z0-9_]+(\\s*\\[\\s*\\S+\\s*\\])+");
+	public static final Pattern ARRAY_ACCESS			= Pattern.compile("[A-Za-z0-9_]+(\\s*\\[\\s*[^\\]]+?\\s*\\])+");
 
 	/**
 	 * Pattern that searches for a #define declaration.
@@ -307,7 +307,7 @@ public class Patterns
 	 * For example:<br>
 	 * "array = new int[423]" would return "[423]"
 	 */
-	public static final Pattern ARRAY_BRACKETS			= Pattern.compile("(?<=\\s{0,9})\\[\\s*\\S+\\s*\\]");
+	public static final Pattern ARRAY_BRACKETS			= Pattern.compile("(?<=\\s{0,9})\\[\\s*[^\\]]+?\\s*\\]");
 
 	/**
 	 * Pattern that searches for the data within a pair of brackets.<br>
@@ -315,7 +315,7 @@ public class Patterns
 	 * For example:<br>
 	 * "array = new int[423]" would return "423"
 	 */
-	public static final Pattern ARRAY_BRACKETS_DATA		= Pattern.compile("(?<=\\s{0,9}\\[\\s{0,9})\\S+(?=\\s*\\])");
+	public static final Pattern ARRAY_BRACKETS_DATA		= Pattern.compile("(?<=\\s{0,9}\\[\\s{0,9})[^\\]]+?(?=\\s*\\])");
 
 	/**
 	 * Pattern that searches for an empty pair of brackets. An empty
