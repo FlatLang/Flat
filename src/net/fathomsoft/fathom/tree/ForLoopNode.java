@@ -31,7 +31,7 @@ import net.fathomsoft.fathom.util.Regex;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:55:15 PM
- * @version	v0.2.1 Apr 24, 2014 at 4:50:18 PM
+ * @version	v0.2.4 May 17, 2014 at 9:55:04 PM
  */
 public class ForLoopNode extends LoopNode
 {
@@ -95,24 +95,6 @@ public class ForLoopNode extends LoopNode
 	{
 		return getArgumentListNode().getChild(2);
 	}
-	
-	/**
-	 * @see net.fathomsoft.fathom.tree.TreeNode#generateJavaSource()
-	 */
-	@Override
-	public String generateJavaSource()
-	{
-		return null;
-	}
-
-	/**
-	 * @see net.fathomsoft.fathom.tree.TreeNode#generateCHeader()
-	 */
-	@Override
-	public String generateCHeader()
-	{
-		return null;
-	}
 
 	/**
 	 * @see net.fathomsoft.fathom.tree.TreeNode#generateCSource()
@@ -133,12 +115,12 @@ public class ForLoopNode extends LoopNode
 //			builder.append(declarationNode.generateCSourceOutput()).append('\n');
 //		}
 		
-		builder.append("for (");
-		
 		if (initialization != null)
 		{
-			builder.append(initialization.generateCSourceFragment());
+			builder.append(initialization.generateCSource()).append('\n');
 		}
+		
+		builder.append("for (");
 		
 		builder.append(';').append(' ');
 		
@@ -169,15 +151,6 @@ public class ForLoopNode extends LoopNode
 //		builder.append('}').append('\n');
 		
 		return builder.toString();
-	}
-	
-	/**
-	 * @see net.fathomsoft.fathom.tree.TreeNode#generateCSourceFragment()
-	 */
-	@Override
-	public String generateCSourceFragment()
-	{
-		return null;
 	}
 	
 	/**
@@ -216,17 +189,25 @@ public class ForLoopNode extends LoopNode
 				
 				String arguments[] = contents.split("\\s*;\\s*");
 				
-				AssignmentNode initialization = AssignmentNode.decodeStatement(parent, arguments[0], newLoc, false);
+				AssignmentNode initialization = AssignmentNode.decodeStatement(parent, arguments[0], newLoc);
 				n.getArgumentListNode().addChild(initialization);
 				
-				if (initialization.getVariableNode() instanceof LocalVariableNode)
-				{
-					LocalVariableNode var = (LocalVariableNode)initialization.getVariableNode().clone();
-					
-					parent.addToNearestScope(var);
-				}
+//				if (initialization.getVariableNode() instanceof LocalVariableNode)
+//				{
+//					LocalVariableNode var = (LocalVariableNode)initialization.getVariableNode().clone();
+//					
+//					parent.addToNearestScope(var);
+//				}
 				
 				TreeNode condition = BinaryOperatorNode.decodeStatement(parent, arguments[1], newLoc);
+				
+				if (condition == null)
+				{
+//					SyntaxMessage.error("Could not decode condition", parent.getFileNode(), newLoc, parent.getController());
+					
+					return null;
+				}
+				
 				n.getArgumentListNode().addChild(condition);
 				
 				UnaryOperatorNode unaryUpdate = UnaryOperatorNode.decodeStatement(parent, arguments[2], newLoc);
