@@ -19,7 +19,7 @@ import net.fathomsoft.fathom.tree.variables.VariableNode;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Apr 5, 2014 at 10:54:20 PM
- * @version	v0.2.1 Apr 24, 2014 at 4:54:20 PM
+ * @version	v0.2.4 May 17, 2014 at 9:55:04 PM
  */
 public class ScopeNode extends TreeNode
 {
@@ -68,30 +68,23 @@ public class ScopeNode extends TreeNode
 	{
 		if (child instanceof VariableNode)
 		{
-			getVariableListNode().addChild(child);
+			VariableNode var = (VariableNode)child;
+			
+			if (var.isDeclaration())
+			{
+				getVariableListNode().addChild(child);
+				
+				return;
+			}
 		}
-		else
-		{
-			super.addChild(child);
-		}
-	}
-	
-	/**
-	 * @see net.fathomsoft.fathom.tree.TreeNode#generateJavaSource()
-	 */
-	@Override
-	public String generateJavaSource()
-	{
-		return null;
-	}
-	
-	/**
-	 * @see net.fathomsoft.fathom.tree.TreeNode#generateCHeader()
-	 */
-	@Override
-	public String generateCHeader()
-	{
-		return null;
+//		else if (child instanceof ExternalTypeNode)
+//		{
+////			getVariableListNode().addChild(child.getChild(0).clone());
+//			
+//			return;
+//		}
+		
+		super.addChild(child);
 	}
 	
 	/**
@@ -100,9 +93,17 @@ public class ScopeNode extends TreeNode
 	@Override
 	public String generateCSource()
 	{
-		if (getChildren().size() <= 1 && getParent() instanceof MethodNode == false)
+		if (getChildren().size() <= 1)
 		{
-			return "";
+			if (getParent() instanceof MethodNode == false)
+			{
+				if (getParent() instanceof LoopNode)
+				{
+					return ";";
+				}
+				
+				return "";
+			}
 		}
 		
 		StringBuilder builder = new StringBuilder();
@@ -116,18 +117,13 @@ public class ScopeNode extends TreeNode
 			builder.append(child.generateCSource());
 		}
 		
+//		VariableListNode variables = getVariableListNode();
+//		
+//		builder.append(variables.generateFreeVariablesOutput());
+		
 		builder.append('}').append('\n');
 		
 		return builder.toString();
-	}
-	
-	/**
-	 * @see net.fathomsoft.fathom.tree.TreeNode#generateCSourceFragment()
-	 */
-	@Override
-	public String generateCSourceFragment()
-	{
-		return null;
 	}
 	
 	/**
