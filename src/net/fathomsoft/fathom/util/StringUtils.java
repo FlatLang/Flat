@@ -26,10 +26,12 @@ import java.util.regex.Matcher;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Mar 13, 2014 at 9:38:42 PM
- * @version	v0.2.2 Apr 29, 2014 at 7:02:42 PM
+ * @version	v0.2.4 May 17, 2014 at 9:55:04 PM
  */
 public class StringUtils
 {
+	public static final String	BINARY_OPERATORS[] = new String[] { "+", "-", "/", "*", "==", "!=", "&&", "||", "<=", ">=", "<", ">", "%" };
+	
 	/**
 	 * Find the index of the ending char for the match. For instance, to
 	 * search for an ending parenthesis, starting from the opening
@@ -104,6 +106,89 @@ public class StringUtils
 		}
 		
 		return -1;
+	}
+	
+	/**
+	 * Find the index of the ending quote, given the index of the start
+	 * quote.
+	 * 
+	 * @param value The String to search within.
+	 * @param start The index of the starting quote.
+	 * @return The index of the ending quote. If an end is not found, -1
+	 * 		is returned instead.
+	 */
+	public static int findEndingQuote(String value, int start)
+	{
+		while (++start < value.length())
+		{
+			if (value.charAt(start) == '"')
+			{
+				if (start > 0 && value.charAt(start - 1) != '\\')
+				{
+					return start;
+				}
+			}
+		}
+		
+		return -1;
+	}
+	
+	/**
+	 * Search through the given value for any match within the strings
+	 * array.
+	 * 
+	 * @param value The String to search through.
+	 * @param strings The array to search through.
+	 */
+	public static Bounds findStrings(String value, String strings[])
+	{
+		return findStrings(value, 0, strings);
+	}
+	
+	/**
+	 * Search through the given value for any match within the strings
+	 * array.
+	 * 
+	 * @param value The String to search through.
+	 * @param start The index to start the search at.
+	 * @param strings The array to search through.
+	 */
+	public static Bounds findStrings(String value, int start, String strings[])
+	{
+		Bounds bounds = new Bounds(-1, -1);
+		
+		while (start < value.length())
+		{
+			if (value.charAt(start) == '"')
+			{
+				start = findEndingQuote(value, start) + 1;
+				
+				continue;
+			}
+			
+			for (String str : strings)
+			{
+				for (int i = 0; i < str.length() && start + i < value.length(); i++)
+				{
+					if (value.charAt(start + i) != str.charAt(i))
+					{
+						break;
+					}
+					
+					if (i == str.length() - 1)
+					{
+						bounds.setStart(start);
+						bounds.setEnd(start + str.length());
+						
+						return bounds;
+					}
+				}
+			}
+			
+			start++;
+		}
+		
+		return bounds;
 	}
 	
 	/**
