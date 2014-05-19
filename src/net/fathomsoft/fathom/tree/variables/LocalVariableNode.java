@@ -17,14 +17,9 @@
  */
 package net.fathomsoft.fathom.tree.variables;
 
-import net.fathomsoft.fathom.error.SyntaxMessage;
+import net.fathomsoft.fathom.tree.MethodNode;
 import net.fathomsoft.fathom.tree.TreeNode;
-import net.fathomsoft.fathom.util.Bounds;
 import net.fathomsoft.fathom.util.Location;
-import net.fathomsoft.fathom.util.Patterns;
-import net.fathomsoft.fathom.util.Regex;
-import net.fathomsoft.fathom.util.StringUtils;
-import net.fathomsoft.fathom.util.SyntaxUtils;
 
 /**
  * VariableNode extension that represents the declaration of a local variable
@@ -33,7 +28,7 @@ import net.fathomsoft.fathom.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:12:00 PM
- * @version	v0.2.2 Apr 29, 2014 at 7:09:47 PM
+ * @version	v0.2.4 May 17, 2014 at 9:55:04 PM
  */
 public class LocalVariableNode extends VariableNode
 {
@@ -44,15 +39,6 @@ public class LocalVariableNode extends VariableNode
 	public String generateJavaSource()
 	{
 		return super.generateJavaSource();
-	}
-
-	/**
-	 * @see net.fathomsoft.fathom.tree.TreeNode#generateCHeader()
-	 */
-	@Override
-	public String generateCHeader()
-	{
-		return null;
 	}
 
 	/**
@@ -74,141 +60,34 @@ public class LocalVariableNode extends VariableNode
 	}
 	
 	/**
-	 * Decode the given statement into a LocalVariableNode instance, if
-	 * possible. If it is not possible, this method returns null.
-	 * <br>
-	 * Example inputs include:<br>
-	 * <ul>
-	 * 	<li>int index</li>
-	 * 	<li>constant char c</li>
-	 * 	<li>String name</li>
-	 * </ul>
-	 * 
-	 * @param parent The parent node of the statement.
-	 * @param statement The statement to try to decode into a
-	 * 		LocalVariableNode instance.
-	 * @param location The location of the statement in the source code.
-	 * @return The generated node, if it was possible to translated it
-	 * 		into a LocalVariableNode.
+	 * @see net.fathomsoft.fathom.tree.TreeNode#validate()
 	 */
-	public static LocalVariableNode decodeStatement(final TreeNode parent, final String statement, final Location location)
+	@Override
+	public void validate()
 	{
-		if (SyntaxUtils.isLiteral(statement))
+		// If possibly accessing a shadowed field.
+		if (getName().equals(MethodNode.getObjectReferenceIdentifier()) && getChildren().size() > 0)
 		{
-			return null;
-		}
-		if (!Regex.matches(statement, Patterns.IDENTIFIER_DECLARATION))
-		{
-			return null;
-		}
-		
-		final boolean decodingArray[] = new boolean[1];
-		final boolean error[]         = new boolean[1];
-		final boolean setExternal[]   = new boolean[1];
-		final String  oldWord[]       = new String[1];
+			TreeNode child = getChild(0);
 			
-		LocalVariableNode n = new LocalVariableNode()
-		{
-			@Override
-			public void interactWord(String word, int wordNumber, Bounds bounds, int numWords, String leftDelimiter, String rightDelimiter)
+			if (child instanceof VariableNode)
 			{
-				if (!decodingArray[0])
-				{
-					if (wordNumber == numWords - 1 && (leftDelimiter.length() == 0 || StringUtils.containsOnly(leftDelimiter, new char[] { '*', '&' })))
-					{
-						setName(word);
-						
-						if (setExternal[0])
-						{
-							for (int i = 0; i < leftDelimiter.length(); i++)
-							{
-								char c = leftDelimiter.charAt(i);
-								
-								if (c == '*')
-								{
-//									setPointer(true);
-								}
-								else if (c == '&')
-								{
-//									setReference(true);
-								}
-//								else
-//								{
-//									SyntaxMessage.error("Could not decode type '" + getType() + str + "', '" + getName() + "'", parent.getFileNode(), location, parent.getController());
-//									
-//									error[0] = true;
-//								}
-							}
-						}
-						
-						setType(getType() + leftDelimiter);
-					}
-					else if (!setAttribute(word, wordNumber))
-					{
-						String type = getType();
-						
-						if (type != null)
-						{
-							if (!isExternal() && leftDelimiter.equals(".") && parent.getFileNode().isExternalImport(type))
-							{
-								setExternal(true);
-								
-								setExternal[0] = true;
-								
-								setType(word);
-							}
-							else
-							{
-								setType(type + leftDelimiter + word);
-							}
-						}
-						else
-						{
-							setType(leftDelimiter + word);
-						}
-					}
-					
-					oldWord[0] = word;
-				}
+				TreeNode     parent = getParent();
+			
+				VariableNode var    = (VariableNode)child;
 				
-				int firstBracketIndex = StringUtils.findNextNonWhitespaceIndex(statement, bounds.getEnd());
+				VariableNode node   = getExistingNode(var.getClassNode(), var.getName());
 				
-				if (firstBracketIndex > 0)
+				if (node instanceof FieldNode)
 				{
-					char c = statement.charAt(firstBracketIndex);
+					node = node.clone();
 					
-					if (c == '[')
-					{
-						decodingArray[0] = true;
-						
-						String brackets  = statement.substring(bounds.getEnd());
-						
-						int dimensions   = SyntaxUtils.calculateArrayDimensions(brackets, false);
-						
-						setArrayDimensions(dimensions);
-					}
+					node.inheritChildren(var);
+					
+					parent.replace(this, node);
 				}
 			}
-		};
-		
-		n.iterateWords(statement, Patterns.IDENTIFIER_BOUNDARIES);
-		
-		if (n.getType() == null || n.getName() == null || error[0])
-		{
-			return null;
 		}
-		
-		VariableNode node = TreeNode.getExistingNode(parent, n.getName());
-		
-		if (node instanceof LocalVariableNode)
-		{
-			SyntaxMessage.error("Local variable '" + n.getName() + "' has already been declared", node);
-//			SyntaxMessage.error("Local variable '" + n.getName() + "' has already been declared", parent.getFileNode(), location, parent.getController());
-			
-			return null;
-		}
-		
-		return n;
 	}
 	
 	/**
