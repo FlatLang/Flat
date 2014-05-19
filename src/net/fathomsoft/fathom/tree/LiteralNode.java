@@ -27,7 +27,7 @@ import net.fathomsoft.fathom.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 10:34:30 PM
- * @version	v0.2 Apr 3, 2014 at 8:00:50 PM
+ * @version	v0.2.4 May 17, 2014 at 9:55:04 PM
  */
 public class LiteralNode extends TreeNode
 {
@@ -54,12 +54,53 @@ public class LiteralNode extends TreeNode
 	 */
 	public void setValue(String value, boolean external)
 	{
-		if (!external && SyntaxUtils.isStringLiteral(value))
-		{
-			value = Fathom.LANGUAGE_NAME.toLowerCase() + "_String_String(" + ExceptionNode.EXCEPTION_DATA_IDENTIFIER + ", " + value + ")";
-		}
+//		if (!external && SyntaxUtils.isStringLiteral(value))
+//		{
+//			value = Fathom.LANGUAGE_NAME.toLowerCase() + "_String_String(" + ExceptionNode.EXCEPTION_DATA_IDENTIFIER + ", " + value + ")";
+//		}
 		
 		this.value = value;
+	}
+	
+	/**
+	 * @see net.fathomsoft.fathom.tree.TreeNode#generateFathomInput()
+	 */
+	@Override
+	public String generateFathomInput()
+	{
+		if (isStringInstantiation())
+		{
+			return "new String(" + value + ")";
+		}
+		
+		return value;
+	}
+	
+	/**
+	 * Get whether or not the value of the literal is an
+	 * instantiation of a String from a String constructor.
+	 * 
+	 * @return Whether or not the value of the literal is an
+	 * 		instantiation of a String from a String constructor.
+	 */
+	private boolean isStringInstantiation()
+	{
+		if (SyntaxUtils.isStringLiteral(value))
+		{
+			if (getParent() instanceof ArgumentListNode)
+			{
+				MethodCallNode node = (MethodCallNode)getParent().getParent();
+				
+				if (node.getName().equals("String"))
+				{
+					return false;
+				}
+			}
+			
+			return true;
+		}
+		
+		return false;
 	}
 	
 	/**
@@ -77,7 +118,7 @@ public class LiteralNode extends TreeNode
 	@Override
 	public String generateCHeader()
 	{
-		return value;
+		return generateCSource();
 	}
 
 	/**
@@ -86,7 +127,7 @@ public class LiteralNode extends TreeNode
 	@Override
 	public String generateCSource()
 	{
-		return value;
+		return generateCSourceFragment();
 	}
 	
 	/**
@@ -95,6 +136,11 @@ public class LiteralNode extends TreeNode
 	@Override
 	public String generateCSourceFragment()
 	{
+		if (!isWithinExternalContext() && isStringInstantiation())
+		{
+			return Fathom.LANGUAGE_NAME.toLowerCase() + "_String_String(" + ExceptionNode.EXCEPTION_DATA_IDENTIFIER + ", " + value + ")";
+		}
+		
 		return value;
 	}
 
