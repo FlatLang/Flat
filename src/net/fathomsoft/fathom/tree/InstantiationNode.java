@@ -24,39 +24,35 @@ import net.fathomsoft.fathom.util.Regex;
 import net.fathomsoft.fathom.util.SyntaxUtils;
 
 /**
- * IdentifierNode extension that represents the declaration of an
- * instantiation node type. See {@link net.fathomsoft.fathom.tree.InstantiationNode#decodeStatement(net.fathomsoft.fathom.tree.TreeNode, java.lang.String, net.fathomsoft.fathom.util.Location) decodeStatement}
+ * ValueNode extension that represents the declaration of an
+ * instantiation node type. See {@link #decodeStatement(TreeNode, String, Location)}
  * for more details on what correct inputs look like.
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Apr 3, 2014 at 7:53:35 PM
- * @version	v0.2.1 Apr 24, 2014 at 4:52:35 PM
+ * @version	v0.2.4 May 17, 2014 at 9:55:04 PM
  */
 public class InstantiationNode extends IdentifierNode
 {
-	/**
-	 * @see net.fathomsoft.fathom.tree.TreeNode#generateJavaSource()
-	 */
-	@Override
-	public String generateJavaSource()
+	public IdentifierNode getIdentifierNode()
 	{
-		return null;
+		return (IdentifierNode)getChild(0);
 	}
-
-	/**
-	 * @see net.fathomsoft.fathom.tree.TreeNode#generateCHeader()
-	 */
-	@Override
-	public String generateCHeader()
-	{
-		return null;
-	}
-
+	
 	/**
 	 * @see net.fathomsoft.fathom.tree.TreeNode#generateCSource()
 	 */
 	@Override
 	public String generateCSource()
+	{
+		return generateCSourceFragment();
+	}
+	
+	/**
+	 * @see net.fathomsoft.fathom.tree.TreeNode#generateCSourceFragment()
+	 */
+	@Override
+	public String generateCSourceFragment()
 	{
 		StringBuilder builder = new StringBuilder();
 		
@@ -66,15 +62,6 @@ public class InstantiationNode extends IdentifierNode
 		}
 		
 		return builder.toString();
-	}
-	
-	/**
-	 * @see net.fathomsoft.fathom.tree.TreeNode#generateCSourceFragment()
-	 */
-	@Override
-	public String generateCSourceFragment()
-	{
-		return generateCSource();
 	}
 	
 	/**
@@ -98,11 +85,9 @@ public class InstantiationNode extends IdentifierNode
 	 */
 	public static InstantiationNode decodeStatement(TreeNode parent, String statement, Location location)
 	{
-		InstantiationNode n = null;
-		
 		if (SyntaxUtils.isInstantiation(statement))
 		{
-			n = new InstantiationNode();
+			InstantiationNode n = new InstantiationNode();
 			
 			int startIndex  = Regex.indexOf(statement, Patterns.POST_INSTANTIATION);
 			
@@ -116,10 +101,6 @@ public class InstantiationNode extends IdentifierNode
 			
 			if (SyntaxUtils.isMethodCall(action))
 			{
-//				Bounds bounds = Regex.boundsOf(action, Patterns.PRE_METHOD_CALL);
-//				
-//				String type = action.substring(0, bounds.getEnd());
-				
 				MethodCallNode methodCall = MethodCallNode.decodeStatement(parent, action, newLoc);//, false);
 				
 				if (methodCall == null)
@@ -127,33 +108,43 @@ public class InstantiationNode extends IdentifierNode
 					return null;
 				}
 				
-				n.setName(methodCall.getName());
-				
 				child = methodCall;
-//				methodCall.setName("new_" + methodCall.getName());
-				
-//				LiteralNode literalNode = new LiteralNode();
-//				literalNode.setValue(value);
-//				
-//				child = literalNode;
 			}
 			else if (SyntaxUtils.isArrayInitialization(action))
 			{
 				child = ArrayNode.decodeStatement(parent, action, newLoc);
-				
-				n.setName(child.getName());
 			}
-			else
+			
+			if (child == null)
 			{
-				SyntaxMessage.error("Unable to parse instantiation", parent.getFileNode(), newLoc, parent.getController());
+				SyntaxMessage.error("Unable to parse instantiation of '" + action + "'", parent.getFileNode(), newLoc, parent.getController());
 				
 				return null;
 			}
 			
+			n.setName(child.getName());
+			n.setType(child.getType());
 			n.addChild(child);
+			
+			return n;
+			
+//			return child;
 		}
 		
-		return n;
+		return null;
+	}
+	
+	/**
+	 * @see net.fathomsoft.fathom.tree.TreeNode#generateFathomInput()
+	 */
+	@Override
+	public String generateFathomInput()
+	{
+		StringBuilder builder = new StringBuilder();
+		
+		builder.append("new ").append(getIdentifierNode().generateFathomInput());
+		
+		return builder.toString();
 	}
 
 	/**
