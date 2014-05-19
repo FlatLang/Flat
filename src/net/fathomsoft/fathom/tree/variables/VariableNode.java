@@ -18,12 +18,16 @@
 package net.fathomsoft.fathom.tree.variables;
 
 import net.fathomsoft.fathom.Fathom;
+import net.fathomsoft.fathom.tree.AssignmentNode;
 import net.fathomsoft.fathom.tree.ClassNode;
-import net.fathomsoft.fathom.tree.DeclarationNode;
+import net.fathomsoft.fathom.tree.InstanceDeclarationNode;
+import net.fathomsoft.fathom.tree.IdentifierNode;
+import net.fathomsoft.fathom.tree.LocalDeclarationNode;
 import net.fathomsoft.fathom.tree.MethodNode;
-import net.fathomsoft.fathom.tree.ModifierNode;
 import net.fathomsoft.fathom.tree.ScopeNode;
 import net.fathomsoft.fathom.tree.TreeNode;
+import net.fathomsoft.fathom.tree.ValueNode;
+import net.fathomsoft.fathom.tree.exceptionhandling.ExceptionNode;
 import net.fathomsoft.fathom.util.SyntaxUtils;
 
 /**
@@ -33,17 +37,58 @@ import net.fathomsoft.fathom.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:02:42 PM
- * @version	v0.2.2 Apr 29, 2014 at 7:08:28 PM
+ * @version	v0.2.4 May 17, 2014 at 9:55:04 PM
  */
-public class VariableNode extends ModifierNode
+public class VariableNode extends IdentifierNode
 {
+	private boolean				referenceVal;
+	private boolean				pointerVal;
 	private boolean				constantVal, external, forceOriginal;
 	
 	private int					arrayDimensions;
 	
-	private String				type;
-	
 	private static final String	NULL_TEXT	= "0";
+	
+	/**
+	 * Get whether or not the identifier is a reference.
+	 * 
+	 * @return Whether or not the identifier is a reference.
+	 */
+	public boolean isReference()
+	{
+		return referenceVal;
+	}
+	
+	/**
+	 * Set whether or not the identifier is a reference.
+	 * 
+	 * @param referenceVal Whether or not the identifier is a reference.
+	 */
+	public void setReference(boolean referenceVal)
+	{
+		this.referenceVal = referenceVal;
+	}
+	
+	/**
+	 * Get whether or not the identifier is a pointer.
+	 * 
+	 * @return Whether or not the identifier is a pointer.
+	 */
+	public boolean isPointer()
+	{
+		return pointerVal;
+	}
+	
+	/**
+	 * Set whether or not the identifier is a pointer.
+	 * 
+	 * @param pointerVal Whether or not the identifier is a pointer.
+	 */
+	public void setPointer(boolean pointerVal)
+	{
+		this.pointerVal = pointerVal;
+	}
+
 	
 	/**
 	 * Get the ClassNode parent instance of the VariableNode.
@@ -112,19 +157,6 @@ public class VariableNode extends ModifierNode
 	public boolean isPrimitive()
 	{
 		return isPrimitiveType() && !isArray();
-	}
-	
-	/**
-	 * Get whether a variable's type is a primitive type or not.<br>
-	 * <br>
-	 * For the list of primitive values, see
-	 * {@link net.fathomsoft.fathom.util.SyntaxUtils#isPrimitiveType(String)}
-	 * 
-	 * @return Whether a variable's type is a primitive type or not.
-	 */
-	public boolean isPrimitiveType()
-	{
-		return SyntaxUtils.isPrimitiveType(getType());
 	}
 	
 	/**
@@ -242,37 +274,6 @@ public class VariableNode extends ModifierNode
 	}
 	
 	/**
-	 * Get the type that the variable is. For an example of what a
-	 * variable type looks like, see {@link #setType(String)}
-	 * 
-	 * @return The type that the variable is.
-	 */
-	public String getType()
-	{
-		return type;
-	}
-	
-	/**
-	 * Set the type that this variable is.<br>
-	 * <br>
-	 * For example:
-	 * <blockquote><pre>
-	 * private static int index;</pre></blockquote>
-	 * The type of the variable above is "int"
-	 * 
-	 * @param type The type that this variable is.
-	 */
-	public void setType(String type)
-	{
-		if (type != null && type.equals("long"))
-		{
-			type = "long_long";
-		}
-		
-		this.type = type;
-	}
-	
-	/**
 	 * Set a specified attribute to true.<br>
 	 * <br>
 	 * For example:
@@ -376,9 +377,9 @@ public class VariableNode extends ModifierNode
 	 * @return What the variable looks like when it is being used to do
 	 * 		something.
 	 */
-	public String generateVariableUseOutput()
+	public String generateUseOutput()
 	{
-		return generateVariableUseOutput(false);
+		return generateUseOutput(false);
 	}
 	
 	/**
@@ -399,7 +400,7 @@ public class VariableNode extends ModifierNode
 	 * @return What the variable looks like when it is being used to do
 	 * 		something.
 	 */
-	public String generateVariableUseOutput(boolean pointer)
+	public String generateUseOutput(boolean pointer)
 	{
 		StringBuilder builder = new StringBuilder();
 		
@@ -459,6 +460,11 @@ public class VariableNode extends ModifierNode
 	@Override
 	public String generateCSource()
 	{
+		if (!isDeclaration())
+		{
+			return generateCSourceFragment() + ";\n";
+		}
+		
 		StringBuilder builder = new StringBuilder();
 		
 		if (isConstant())
@@ -485,7 +491,9 @@ public class VariableNode extends ModifierNode
 			builder.append('*');
 		}
 		
-		builder.append(' ').append(generateCSourceName()).append(';').append('\n');
+		builder.append(' ').append(generateCSourceFragment());
+		
+		builder.append(';').append('\n');
 		
 		return builder.toString();
 	}
@@ -496,7 +504,12 @@ public class VariableNode extends ModifierNode
 	@Override
 	public String generateCSourceFragment()
 	{
-		return generateVariableUseOutput();
+		if (isSpecialFragment())
+		{
+			return generateSpecialFragment();
+		}
+		
+		return generateUseOutput() + generateChildrenCSourceFragment();
 	}
 	
 	/**
@@ -515,9 +528,9 @@ public class VariableNode extends ModifierNode
 			return name;
 		}
 		
-		if (this instanceof DeclarationNode)
+		if (this instanceof InstanceDeclarationNode)
 		{
-			DeclarationNode node = (DeclarationNode)this;
+			InstanceDeclarationNode node = (InstanceDeclarationNode)this;
 			
 			if (node.isStatic())
 			{
@@ -542,6 +555,61 @@ public class VariableNode extends ModifierNode
 	}
 	
 	/**
+	 * @see net.fathomsoft.fathom.tree.TreeNode#generateFathomInput()
+	 */
+	@Override
+	public String generateFathomInput()
+	{
+		StringBuilder builder = new StringBuilder();
+		
+		builder.append(getName());
+		
+		return builder.toString();
+	}
+	
+	/**
+	 * Generate a String for the code used to free memory of the
+	 * specified variable.
+	 * 
+	 * @return The generated String for the code.
+	 */
+	public String generateFreeOutput()
+	{
+		if (isConstant())
+		{
+			return "";
+		}
+		
+		StringBuilder builder = new StringBuilder();
+		
+		if (isPrimitiveType() || isExternal())
+		{
+			if (!isPrimitive())
+			{
+				builder.append("free(").append(generateUseOutput(true)).append(");\n");
+			}
+		}
+		else
+		{
+			builder.append(Fathom.LANGUAGE_NAME.toLowerCase()).append("_del_").append(getType()).append('(').append('&').append(generateUseOutput(true)).append(", ").append(ExceptionNode.EXCEPTION_DATA_IDENTIFIER).append(");\n");
+		}
+		
+		return builder.toString();
+	}
+	
+	/**
+	 * Get whether or not the VariableNode instance represents a
+	 * declaration of a local variable.
+	 * 
+	 * @return Whether or not the instance represents a local variable
+	 * 		declaration.
+	 */
+	public boolean isDeclaration()
+	{
+		return this instanceof LocalDeclarationNode;
+	}
+	
+	/**
 	 * @see net.fathomsoft.fathom.tree.TreeNode#clone()
 	 */
 	@Override
@@ -563,11 +631,12 @@ public class VariableNode extends ModifierNode
 	{
 		super.clone(node);
 		
-		node.setConstant(isConstant());
-		node.setArrayDimensions(getArrayDimensions());
-		node.setType(getType());
-		node.setExternal(isExternal());
-		node.forceOriginal = forceOriginal;
+		node.constantVal     = constantVal;
+		node.arrayDimensions = arrayDimensions;
+		node.external        = external;
+		node.referenceVal    = referenceVal;
+		node.pointerVal      = pointerVal;
+		node.forceOriginal   = forceOriginal;
 		
 		return node;
 	}
