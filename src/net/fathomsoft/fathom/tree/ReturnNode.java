@@ -23,15 +23,15 @@ import net.fathomsoft.fathom.util.Patterns;
 import net.fathomsoft.fathom.util.Regex;
 
 /**
- * TreeNode extension that represents a return statement node type.
+ * ValueNode extension that represents a return statement node type.
  * See {@link #decodeStatement(TreeNode, String, Location)} for more
  * details on what correct inputs look like.
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:58:29 PM
- * @version	v0.2.3 Apr 30, 2014 at 6:18:00 AM
+ * @version	v0.2.4 May 17, 2014 at 9:55:04 PM
  */
-public class ReturnNode extends TreeNode
+public class ReturnNode extends ValueNode
 {
 	/**
 	 * @see net.fathomsoft.fathom.tree.TreeNode#generateJavaSource()
@@ -53,15 +53,6 @@ public class ReturnNode extends TreeNode
 		builder.append(';').append('\n');
 		
 		return builder.toString();
-	}
-
-	/**
-	 * @see net.fathomsoft.fathom.tree.TreeNode#generateCHeader()
-	 */
-	@Override
-	public String generateCHeader()
-	{
-		return null;
 	}
 
 	/**
@@ -129,6 +120,9 @@ public class ReturnNode extends TreeNode
 		{
 			ReturnNode n = new ReturnNode();
 			
+			MethodNode method = (MethodNode)parent.getAncestorOfType(MethodNode.class, true);
+			n.setType(method.getType());
+			
 			int returnStartIndex = Regex.indexOf(statement, Patterns.POST_RETURN);
 			
 			if (returnStartIndex >= 0)
@@ -139,21 +133,8 @@ public class ReturnNode extends TreeNode
 				newLoc.setLineNumber(location.getLineNumber());
 				newLoc.setBounds(location.getStart() + returnStartIndex, location.getStart() + statement.length());
 				
-				TreeNode child = BinaryOperatorNode.decodeStatement(parent, statement, newLoc);
+				TreeNode child = TreeNode.decodeScopeContents(parent, statement, newLoc);
 				
-				if (child == null)
-				{
-					child = TreeNode.getExistingNode(parent, statement);
-					
-					if (child != null)
-					{
-						child = child.clone();
-					}
-				}
-				if (child == null)
-				{
-					child = TreeNode.decodeStatement(parent, statement, newLoc);
-				}
 				if (child == null)
 				{
 					LiteralNode node = new LiteralNode();
