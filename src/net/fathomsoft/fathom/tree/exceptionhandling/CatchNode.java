@@ -1,8 +1,8 @@
 package net.fathomsoft.fathom.tree.exceptionhandling;
 
 import net.fathomsoft.fathom.error.SyntaxMessage;
+import net.fathomsoft.fathom.tree.LocalDeclarationNode;
 import net.fathomsoft.fathom.tree.TreeNode;
-import net.fathomsoft.fathom.tree.variables.LocalVariableNode;
 import net.fathomsoft.fathom.util.Bounds;
 import net.fathomsoft.fathom.util.Location;
 import net.fathomsoft.fathom.util.Patterns;
@@ -15,7 +15,7 @@ import net.fathomsoft.fathom.util.Regex;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Mar 22, 2014 at 4:01:44 PM
- * @version	v0.2.1 Apr 24, 2014 at 4:58:51 PM
+ * @version	v0.2.4 May 17, 2014 at 9:55:04 PM
  */
 public class CatchNode extends ExceptionHandlingNode
 {
@@ -24,9 +24,9 @@ public class CatchNode extends ExceptionHandlingNode
 	 * 
 	 * @return The Exception variable instance that is being caught.
 	 */
-	public LocalVariableNode getExceptionInstance()
+	public LocalDeclarationNode getExceptionInstance()
 	{
-		return (LocalVariableNode)getChild(2);
+		return (LocalDeclarationNode)getChild(2);
 	}
 	
 	/**
@@ -56,24 +56,6 @@ public class CatchNode extends ExceptionHandlingNode
 	}
 	
 	/**
-	 * @see net.fathomsoft.fathom.tree.TreeNode#generateJavaSource()
-	 */
-	@Override
-	public String generateJavaSource()
-	{
-		return null;
-	}
-	
-	/**
-	 * @see net.fathomsoft.fathom.tree.TreeNode#generateCHeader()
-	 */
-	@Override
-	public String generateCHeader()
-	{
-		return null;
-	}
-	
-	/**
 	 * @see net.fathomsoft.fathom.tree.TreeNode#generateCSource()
 	 */
 	@Override
@@ -97,15 +79,6 @@ public class CatchNode extends ExceptionHandlingNode
 		builder.append('}').append('\n');
 		
 		return builder.toString();
-	}
-	
-	/**
-	 * @see net.fathomsoft.fathom.tree.TreeNode#generateCSourceFragment()
-	 */
-	@Override
-	public String generateCSourceFragment()
-	{
-		return null;
 	}
 	
 	/**
@@ -172,7 +145,7 @@ public class CatchNode extends ExceptionHandlingNode
 				newLoc.setLineNumber(location.getLineNumber());
 				newLoc.setBounds(location.getStart() + bounds.getStart(), location.getStart() + bounds.getEnd());
 				
-				LocalVariableNode exceptionInstance = LocalVariableNode.decodeStatement(parent, contents, newLoc);
+				LocalDeclarationNode exceptionInstance = LocalDeclarationNode.decodeStatement(parent, contents, newLoc);
 				
 				if (exceptionInstance != null)
 				{
@@ -185,7 +158,16 @@ public class CatchNode extends ExceptionHandlingNode
 					{
 						n.addChild(exception);
 						
-						n.getCurrentTry(parent).addExceptionCode(exception.getID());
+						TryNode tryNode = n.getCurrentTry(parent);
+						
+						if (tryNode == null)
+						{
+							SyntaxMessage.error("Parent try block not found", parent.getFileNode(), newLoc, parent.getController());
+							
+							return null;
+						}
+						
+						tryNode.addExceptionCode(exception.getID());
 						
 						return n;
 					}
