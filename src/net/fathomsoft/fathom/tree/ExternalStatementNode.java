@@ -27,7 +27,7 @@ import net.fathomsoft.fathom.util.StringUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.2.1 Apr 27, 2014 at 11:14:20 PM
- * @version	v0.2.2 Apr 29, 2014 at 7:23:20 PM
+ * @version	v0.2.4 May 17, 2014 at 9:55:04 PM
  */
 public class ExternalStatementNode extends TreeNode
 {
@@ -129,7 +129,7 @@ public class ExternalStatementNode extends TreeNode
 	}
 	
 	/**
-	 * Fill the given UnaryOperatorNode with the data that is in the
+	 * Fill the given ExternalStatementNode with the data that is in the
 	 * specified node.
 	 * 
 	 * @param node The node to copy the data into.
