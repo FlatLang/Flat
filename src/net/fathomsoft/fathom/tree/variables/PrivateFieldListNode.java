@@ -26,7 +26,7 @@ import net.fathomsoft.fathom.tree.TreeNode;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 10:00:50 PM
- * @version	v0.2 Apr 7, 2014 at 7:45:22 PM
+ * @version	v0.2.4 May 17, 2014 at 9:55:04 PM
  */
 public class PrivateFieldListNode extends TreeNode
 {
@@ -98,15 +98,6 @@ public class PrivateFieldListNode extends TreeNode
 		}
 		
 		return builder.toString();
-	}
-	
-	/**
-	 * @see net.fathomsoft.fathom.tree.TreeNode#generateCSourceFragment()
-	 */
-	@Override
-	public String generateCSourceFragment()
-	{
-		return null;
 	}
 	
 	/**
