@@ -31,7 +31,7 @@ import net.fathomsoft.fathom.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:55:59 PM
- * @version	v0.2.1 Apr 24, 2014 at 4:57:44 PM
+ * @version	v0.2.4 May 17, 2014 at 9:55:04 PM
  */
 public class WhileLoopNode extends LoopNode
 {
@@ -63,24 +63,6 @@ public class WhileLoopNode extends LoopNode
 			super.addChild(child);
 		}
 	}
-
-	/**
-	 * @see net.fathomsoft.fathom.tree.TreeNode#generateJavaSource()
-	 */
-	@Override
-	public String generateJavaSource()
-	{
-		return null;
-	}
-
-	/**
-	 * @see net.fathomsoft.fathom.tree.TreeNode#generateCHeader()
-	 */
-	@Override
-	public String generateCHeader()
-	{
-		return null;
-	}
 	
 	/**
 	 * @see net.fathomsoft.fathom.tree.TreeNode#generateCSource()
@@ -105,15 +87,6 @@ public class WhileLoopNode extends LoopNode
 		}
 		
 		return builder.toString();
-	}
-	
-	/**
-	 * @see net.fathomsoft.fathom.tree.TreeNode#generateCSourceFragment()
-	 */
-	@Override
-	public String generateCSourceFragment()
-	{
-		return null;
 	}
 	
 	/**
@@ -152,12 +125,21 @@ public class WhileLoopNode extends LoopNode
 				
 				TreeNode condition = BinaryOperatorNode.decodeStatement(parent, contents, newLoc);
 				
-				if (condition == null && SyntaxUtils.isLiteral(contents))
+				if (condition == null)
 				{
-					LiteralNode literal = new LiteralNode();
-					literal.setValue(contents, parent.isWithinExternalContext());
-					
-					condition = literal;
+					if (SyntaxUtils.isLiteral(contents))
+					{
+						LiteralNode literal = new LiteralNode();
+						literal.setValue(contents, parent.isWithinExternalContext());
+						
+						condition = literal;
+					}
+					else
+					{
+//						SyntaxMessage.error("Could not decode conditional statement '" + condition + "'", parent.getFileNode(), newLoc, parent.getController());
+						
+						return null;
+					}
 				}
 				
 				n.addChild(condition);
