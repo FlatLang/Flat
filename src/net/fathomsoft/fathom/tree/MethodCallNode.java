@@ -22,17 +22,18 @@ import net.fathomsoft.fathom.tree.variables.VariableNode;
 import net.fathomsoft.fathom.util.Bounds;
 import net.fathomsoft.fathom.util.Location;
 import net.fathomsoft.fathom.util.Patterns;
+import net.fathomsoft.fathom.util.Regex;
 import net.fathomsoft.fathom.util.StringUtils;
 import net.fathomsoft.fathom.util.SyntaxUtils;
 
 /**
- * IdentifierNode extension that represents the declaration of a method
+ * ValueNode extension that represents the declaration of a method
  * call node type. See {@link #decodeStatement(TreeNode, String, Location)}
  * for more details on what correct inputs look like.
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 10:04:31 PM
- * @version	v0.2.3 Apr 30, 2014 at 6:17:00 AM
+ * @version	v0.2.4 May 17, 2014 at 9:55:04 PM
  */
 public class MethodCallNode extends IdentifierNode
 {
@@ -92,15 +93,20 @@ public class MethodCallNode extends IdentifierNode
 	}
 	
 	/**
-	 * Get whether or not the method is called using a variable.
-	 * See {@link #getVariableNode()} for more details on
-	 * what a variable node looks like.
+	 * Get the TreeNode that represents the variable that contains
+	 * the method. For example:<br>
+	 * <blockquote><pre>
+	 * ClassName obj = new ClassName();
 	 * 
-	 * @return Whether or not the method is called using a variable.
+	 * obj.methodName();</pre></blockquote>
+	 * In the previous statements, 'obj' is the variable and the method
+	 * 'methodName()' is being called through the 'obj' variable.
+	 * 
+	 * @return The TreeNode that represents the calling variable.
 	 */
-	public boolean hasVariableNode()
+	public ValueNode getValueNode()
 	{
-		return getChildren().size() >= 2;
+		return getValueNode(getParent());
 	}
 	
 	/**
@@ -113,16 +119,54 @@ public class MethodCallNode extends IdentifierNode
 	 * In the previous statements, 'obj' is the variable and the method
 	 * 'methodName()' is being called through the 'obj' variable.
 	 * 
+	 * @param parent The parent of the MethodCallNode.
 	 * @return The TreeNode that represents the calling variable.
 	 */
-	public VariableNode getVariableNode()
+	private ValueNode getValueNode(TreeNode parent)
 	{
-		if (getChildren().size() <= 1)
+		if (parent instanceof ReturnNode)
 		{
-			return null;
+			parent = parent.getParent();
+		}
+		if (parent instanceof ValueNode == false)
+		{
+			TreeNode value = parent.getAncestorOfType(MethodNode.class);
+			
+			if (value == null)
+			{
+				value = parent.getAncestorOfType(ClassNode.class);
+				
+				//return null;
+			}
+			
+			parent = value;
+		}
+		if (parent instanceof MethodNode)
+		{
+//			MethodNode method = parent.getFileNode().getClass(getName());
+//			
+//			if (method.getFileNode().containsImport(getName()))
+//			{
+//				
+//			}
+			
+			TreeNode value = getObjectReferenceValue((MethodNode)parent);
+			
+			if (value == null)
+			{
+				value = parent.getAncestorOfType(ClassNode.class);
+				
+				//return null;
+			}
+			
+			parent = value;
+		}
+		if (parent instanceof ClassNode)
+		{
+			return (ClassNode)parent;
 		}
 		
-		return (VariableNode)getChild(1);
+		return (ValueNode)parent;
 	}
 	
 	/**
@@ -133,41 +177,44 @@ public class MethodCallNode extends IdentifierNode
 	 */
 	public MethodNode getMethodNode()
 	{
-		return getMethodNode(getFileNode());
+		return getMethodNode(getParent());
 	}
 	
 	/**
 	 * Get the MethodNode instance that this MethodCallNode is calling.
 	 * 
-	 * @param file The FileNode instance that contains the method.
+	 * @param parent The parent node of the Method call node.
 	 * @return The MethodNode instance that this MethodCallNode is
 	 * 		calling.
 	 */
-	public MethodNode getMethodNode(FileNode file)
+	public MethodNode getMethodNode(TreeNode parent)
 	{
 		if (isExternal())
 		{
 			return null;
 		}
 		
-		VariableNode var     = getVariableNode();
-		String       type    = StringUtils.trimToIdentifier(var.getType());
+		FileNode    file    = parent.getFileNode();
 		
-		ProgramNode  program = file.getProgramNode();
-		
-		ClassNode    clazz   = program.getClass(type);
+		ProgramNode program = file.getProgramNode();
 		
 		if (file.containsImport(getName()))
 		{
-			clazz = program.getClass(getName());
+			ClassNode  clazz  = program.getClass(getName());
 			
 			MethodNode method = clazz.getMethod(getName());
 			
 			return method;
 		}
 		
-		MethodNode method = clazz.getMethod(getName());
+		ValueNode  val    = getValueNode(parent);
 		
+		String     type   = StringUtils.trimToIdentifier(val.getType());
+		
+		ClassNode  clazz  = program.getClass(type);
+		
+		MethodNode method = clazz.getMethod(getName());
+			
 		return method;
 	}
 	
@@ -207,6 +254,45 @@ public class MethodCallNode extends IdentifierNode
 	}
 	
 	/**
+	 * Get the ValueNode that the method was called with for the given
+	 * MethodCallNode's method node, if it was not called with a specific
+	 * object. Static methods return "__static__ClassName" and non-static
+	 * methods return "this". The call cannot be that of an external
+	 * method.
+	 * 
+	 * @return The ValueNode that the method was called with.
+	 */
+	public ValueNode getObjectReferenceValue()
+	{
+		return getObjectReferenceValue(getMethodNode());
+	}
+	
+	/**
+	 * Get the ValueNode that the method was called with for the given
+	 * MethodCallNode's method node, if it was not called with a specific
+	 * object. Static methods return "__static__ClassName" and non-static
+	 * methods return "this". The call cannot be that of an external
+	 * method.
+	 * 
+	 * 
+	 * @param method The method to get the ValueNode from.
+	 * @return The ValueNode that the method was called with.
+	 */
+	public ValueNode getObjectReferenceValue(MethodNode method)
+	{
+		String identifier = getObjectReferenceIdentifier(method);
+		
+		ValueNode val = (ValueNode)getExistingNode(method, identifier);
+		
+		if (val != null)
+		{
+			return val.clone();
+		}
+		
+		return null;
+	}
+	
+	/**
 	 * @see net.fathomsoft.fathom.tree.TreeNode#generateJavaSource()
 	 */
 	@Override
@@ -221,15 +307,6 @@ public class MethodCallNode extends IdentifierNode
 		builder.append(");").append('\n');
 		
 		return builder.toString();
-	}
-
-	/**
-	 * @see net.fathomsoft.fathom.tree.TreeNode#generateCHeader()
-	 */
-	@Override
-	public String generateCHeader()
-	{
-		return null;
 	}
 	
 	/**
@@ -251,24 +328,22 @@ public class MethodCallNode extends IdentifierNode
 	@Override
 	public String generateCSourceFragment()
 	{
+		return generateCSourceFragment(true);
+	}
+	
+	/**
+	 * @see net.fathomsoft.fathom.tree.TreeNode#generateCSourceFragment()
+	 */
+	public String generateCSourceFragment(boolean checkSpecial)
+	{
+		if (checkSpecial && isSpecialFragment())
+		{
+			return generateSpecialFragment();
+		}
+		
 		StringBuilder builder = new StringBuilder();
 		
-//		if (hasVariableNode())
-//		{
-//			builder.append(getVariableNode().generateCSourceFragment());
-//			
-//			if (builder.length() > 0)
-//			{
-//				builder.append("->");
-//			}
-//		}
-		
-//		if (!isExternal())
-//		{
-//			builder.append("__").append(Fathom.LANGUAGE_NAME.toUpperCase()).append("__");
-//		}
-		
-		MethodNode method = getMethodNode();
+		MethodNode    method  = getMethodNode();
 		
 		if (method != null)
 		{
@@ -285,7 +360,35 @@ public class MethodCallNode extends IdentifierNode
 		
 		builder.append(')');
 		
+//		builder.append(generateChildrenCSourceFragment());
+		
 		return builder.toString();
+	}
+	
+	/**
+	 * Generate a String representing the output of the children of the
+	 * MethodCallNode.
+	 * 
+	 * @return A String representing the output of the children of the
+	 * 		MethodCallNode.
+	 */
+	public String generateChildrenCSourceFragment()
+	{
+		StringBuilder builder = new StringBuilder();
+		
+		for (int i = 1; i < getChildren().size(); i++)
+		{
+			TreeNode child = getChild(i);
+			
+			builder.append("->").append(child.generateCSourceFragment());
+		}
+		
+		return builder.toString();
+	}
+	
+	public String generateUseOutput()
+	{
+		return generateCSourceFragment(false);
 	}
 	
 //	/**
@@ -401,6 +504,8 @@ public class MethodCallNode extends IdentifierNode
 				}
 			};
 			
+			n.externalCall = checkExternal(parent);
+			
 			n.iterateWords(methodCall, Patterns.IDENTIFIER_BOUNDARIES);
 			
 			if (error[0])
@@ -413,136 +518,24 @@ public class MethodCallNode extends IdentifierNode
 				objectInstance.delete(objectInstance.length() - 2, objectInstance.length());
 			}
 			
-//			if (needsReference)
-//			{
-				if (objectInstance.length() > 0)
-				{
-					if (fileNode.getImportListNode().isExternal(objectInstance.toString()))
-					{
-						n.externalCall = true;
-					}
-				}
-//			}
-//			else
-//			{
-//				objectInstance.delete(0, objectInstance.length());
-//			}
-			
-			if (!n.isExternal())
+			if (objectInstance.length() > 0)
 			{
-				boolean staticCall = false;
-				
-				if (objectInstance.length() > 0)
+				if (fileNode.isExternalImport(objectInstance.toString()))
 				{
-					// If only referenced through one variable.
-					if (objectInstance.indexOf("->") < 0)
-					{
-						String     varName = objectInstance.toString();
-						
-						IdentifierNode var = TreeNode.getExistingNode(parent, varName);
-						
-						if (var == null)
-						{
-							if (!fileNode.getImportListNode().isExternal(varName) && (fileNode.getImportListNode().containsImport(varName) || fileNode.containsClass(varName)))
-							{
-								objectInstance.insert(0, "__static__");
-								
-								staticCall = true;
-							}
-							else
-							{
-								String syntax = objectInstance.toString().replace("->", ".");
-								
-								SyntaxMessage.error("Undeclared identifier '" + syntax + "'", parent.getFileNode(), location, parent.getController());
-								
-								return null;
-							}
-						}
-					}
-					
-					if (!staticCall)
-					{
-						String       caller       = objectInstance.toString();
-						
-						VariableNode variableNode = TreeNode.getExistingNode(parent, caller);
-						
-						if (variableNode != null)
-						{
-							variableNode = variableNode.clone();
-						}
-//						else
-//						{
-//							variableNode = (VariableNode)TreeNode.decodeStatement(parent, caller, location);
-//						}
-						
-						if (variableNode != null)
-						{
-							if (variableNode instanceof VariableNode == false)
-							{
-								SyntaxMessage.error("The method must be referenced from a variable type", parent.getFileNode(), location, parent.getController());
-								
-								return null;
-							}
-							
-							n.addChild(variableNode);
-						}
-						else
-						{
-							SyntaxMessage.error("Undeclared variable '" + caller + "'", parent.getFileNode(), argsLocation, parent.getController());
-							
-							return null;
-						}
-					}
-				}
-				
-				if (objectInstance.length() <= 0 || staticCall)
-				{
-					ClassNode clazz = null;
-					
-					if (objectInstance.length() <= 0)
-					{
-						clazz = (ClassNode)parent.getAncestorOfType(ClassNode.class, true);
-					}
-					else
-					{
-						ProgramNode    p = parent.getProgramNode();
-						
-						String    prefix = "__static__";
-						
-						String className = objectInstance.substring(prefix.length());
-						
-						clazz = p.getClass(className);
-					}
-					
-					VariableNode variableNode = new VariableNode();
-					variableNode.setType(clazz.getName());
-					n.addChild(variableNode);
+					n.externalCall = true;
 				}
 			}
 			
-			FileNode   file   = parent.getFileNode();
-			MethodNode method = null;
+			FileNode     file     = parent.getFileNode();
+			MethodNode   method   = n.getMethodNode(parent);
+			MethodNode   context  = (MethodNode)parent.getAncestorOfType(MethodNode.class, true);
+			VariableNode accessor = context.getClassNode();
 			
-			if (n.getVariableNode() != null)
+			if (method != null && !SyntaxUtils.isVisible(accessor, method))
 			{
-				method = n.getMethodNode(file);
-			}
-			
-			if (!n.externalCall && objectInstance.length() <= 0 && !file.containsImport(n.getName()))
-			{
-				VariableNode varNode = n.getVariableNode();
-				method = n.getMethodNode(file);
+				SyntaxMessage.error("Method '" + method.getName() + "' is not visible", file, argsLocation, file.getController());
 				
-				if (method == null)
-				{
-					SyntaxMessage.error("Undeclared method '" + varNode.getName() + "'", parent.getFileNode(), location, parent.getController());
-					
-					return null;
-				}
-				
-				String reference = n.getObjectReferenceIdentifier(method);
-				
-				varNode.setName(reference, true);
+				return null;
 			}
 			
 			if (method == null && !n.isExternal())
@@ -550,6 +543,11 @@ public class MethodCallNode extends IdentifierNode
 				SyntaxMessage.error("Undeclared method '" + n.getName() + "'", parent.getFileNode(), location, parent.getController());
 				
 				return null;
+			}
+			
+			if (method != null)
+			{
+				n.setType(method.getType());
 			}
 			
 			String arguments[] = StringUtils.splitCommas(argumentList);
@@ -560,6 +558,28 @@ public class MethodCallNode extends IdentifierNode
 		}
 		
 		return null;
+	}
+	
+	/**
+	 * Get whether or not the method call is external.
+	 * 
+	 * @return Whether or not the method call is external.
+	 */
+	private static boolean checkExternal(TreeNode parent)
+	{
+		TreeNode current = parent;
+		
+		while (current instanceof ValueNode)
+		{
+			if (current instanceof ExternalTypeNode)
+			{
+				return true;
+			}
+			
+			current = current.getParent();
+		}
+		
+		return false;
 	}
 	
 	/**
@@ -591,6 +611,22 @@ public class MethodCallNode extends IdentifierNode
 				
 				if (arg != null)
 				{
+					arg = arg.clone();
+					
+					VariableNode var = (VariableNode)arg;
+					
+					if (prefix == '*')
+					{
+						var.setPointer(true);
+					}
+					else if (prefix == '&')
+					{
+						var.setReference(true);
+					}
+				}
+				
+				/*if (arg != null)
+				{
 					if (arg instanceof VariableNode)
 					{
 						VariableNode var = (VariableNode)arg.clone();
@@ -611,6 +647,10 @@ public class MethodCallNode extends IdentifierNode
 					}
 				}
 				
+				if (Regex.startsWith(argument, Patterns.PRE_INSTANTIATION))
+				{
+					arg = InstantiationNode.decodeStatement(parent, argument, location);
+				}
 				if (arg == null && !SyntaxUtils.isLiteral(argument))
 				{
 					arg = BinaryOperatorNode.decodeStatement(parent, argument, location);
@@ -658,11 +698,70 @@ public class MethodCallNode extends IdentifierNode
 					return;
 				}
 				else
+				{*/
+				
+				if (SyntaxUtils.isLiteral(argument))
 				{
-					getArgumentListNode().addChild(arg);
+					LiteralNode literal = new LiteralNode();
+					literal.setValue(argument, isWithinExternalContext());
+					
+					arg = literal;
 				}
+				if (arg == null)
+				{
+					arg = BinaryOperatorNode.decodeStatement(parent, argument, location);
+				}
+				if (arg == null)
+				{
+					arg = TreeNode.decodeScopeContents(parent, argument, location);
+				}
+				if (arg == null && isWithinExternalContext())
+				{
+					LiteralNode literal = new LiteralNode();
+					literal.setValue(argument, isWithinExternalContext());
+					
+					arg = literal;
+				}
+				
+				getArgumentListNode().addChild(arg);
+//				}
 			}
 		}
+	}
+	
+	/**
+	 * Get the Fathom input representation of this Method Call node.
+	 * That is, the String that the decoder method decoded to attain
+	 * this node.
+	 * 
+	 * @return The String representing the method call in Fathom syntax.
+	 */
+	public String generateFathomInput()
+	{
+		StringBuilder builder = new StringBuilder();
+		
+		ValueNode value = getValueNode();
+		
+		if (value instanceof VariableNode)
+		{
+			MethodNode method = getMethodNode();
+			
+			if (method instanceof ConstructorNode == false)
+			{
+				builder.append(value.generateFathomInput()).append('.');
+			}
+		}
+		
+		builder.append(getName()).append('(').append(getArgumentListNode().generateFathomInput()).append(')');
+		
+		for (int i = 1; i < getChildren().size(); i++)
+		{
+			TreeNode child = getChild(i);
+			
+			builder.append('.').append(child.generateFathomInput());
+		}
+		
+		return builder.toString();
 	}
 	
 	/**
