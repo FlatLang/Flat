@@ -28,7 +28,7 @@ import net.fathomsoft.fathom.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Feb 18, 2014 at 8:57:00 PM
- * @version	v0.2.2 Apr 29, 2014 at 7:17:44 PM
+ * @version	v0.2.4 May 17, 2014 at 9:55:04 PM
  */
 public class FileNode extends IdentifierNode
 {
@@ -51,9 +51,11 @@ public class FileNode extends IdentifierNode
 			"stdlib.h",
 			"CClass.h",
 			"ExceptionHandler.h",
+			"Fathom.h",
 			"ExceptionData",
 			"Object",
 			"String",
+			"Math",
 			"DivideByZeroException"
 		};
 	}
