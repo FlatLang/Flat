@@ -17,7 +17,8 @@
  */
 package net.fathomsoft.fathom.tree;
 
-import net.fathomsoft.fathom.tree.variables.LocalVariableNode;
+import net.fathomsoft.fathom.tree.variables.FieldNode;
+import net.fathomsoft.fathom.tree.variables.VariableNode;
 import net.fathomsoft.fathom.util.Location;
 import net.fathomsoft.fathom.util.SyntaxUtils;
 
@@ -28,9 +29,9 @@ import net.fathomsoft.fathom.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:52:01 PM
- * @version	v0.2.2 Apr 29, 2014 at 7:15:57 PM
+ * @version	v0.2.4 May 17, 2014 at 9:55:04 PM
  */
-public class ParameterNode extends LocalVariableNode
+public class ParameterNode extends LocalDeclarationNode
 {
 	private TreeNode	defaultValue;
 	
@@ -115,14 +116,14 @@ public class ParameterNode extends LocalVariableNode
 		return builder.toString();
 	}
 	
-	/**
-	 * @see net.fathomsoft.fathom.tree.TreeNode#generateCSourceFragment()
-	 */
-	@Override
-	public String generateCSourceFragment()
-	{
-		return generateVariableUseOutput();
-	}
+//	/**
+//	 * @see net.fathomsoft.fathom.tree.TreeNode#generateCSourceFragment()
+//	 */
+//	@Override
+//	public String generateCSourceFragment()
+//	{
+//		return generateUseOutput() + generateChildrenCSourceFragment();
+//	}
 	
 	/**
 	 * Decode the given statement into a ParameterNode instance, if
@@ -146,7 +147,7 @@ public class ParameterNode extends LocalVariableNode
 	 */
 	public static ParameterNode decodeStatement(TreeNode parent, String statement, final Location location)
 	{
-		LocalVariableNode node = LocalVariableNode.decodeStatement(parent, statement, location);
+		LocalDeclarationNode node = LocalDeclarationNode.decodeStatement(parent, statement, location);
 		
 		ParameterNode n = new ParameterNode();
 		node.clone(n);
@@ -154,30 +155,30 @@ public class ParameterNode extends LocalVariableNode
 		return n;
 	}
 	
-	/**
-	 * @see net.fathomsoft.fathom.tree.TreeNode#clone()
-	 */
-	@Override
-	public ParameterNode clone()
-	{
-		ParameterNode node = new ParameterNode();
-		
-		return clone(node);
-	}
-	
-	/**
-	 * Fill the given ParameterNode with the data that is in the
-	 * specified node.
-	 * 
-	 * @param node The node to copy the data into.
-	 * @return The cloned node.
-	 */
-	public ParameterNode clone(ParameterNode node)
-	{
-		super.clone(node);
-		
-		node.setDefaultValue(getDefaultValue());
-		
-		return node;
-	}
+//	/**
+//	 * @see net.fathomsoft.fathom.tree.TreeNode#clone()
+//	 */
+//	@Override
+//	public ParameterNode clone()
+//	{
+//		ParameterNode node = new ParameterNode();
+//		
+//		return clone(node);
+//	}
+//	
+//	/**
+//	 * Fill the given ParameterNode with the data that is in the
+//	 * specified node.
+//	 * 
+//	 * @param node The node to copy the data into.
+//	 * @return The cloned node.
+//	 */
+//	public ParameterNode clone(ParameterNode node)
+//	{
+//		super.clone(node);
+//		
+//		node.setDefaultValue(getDefaultValue());
+//		
+//		return node;
+//	}
 }
