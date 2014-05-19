@@ -17,8 +17,6 @@
  */
 package net.fathomsoft.fathom.tree;
 
-import net.fathomsoft.fathom.tree.variables.FieldNode;
-import net.fathomsoft.fathom.tree.variables.VariableNode;
 import net.fathomsoft.fathom.util.Location;
 import net.fathomsoft.fathom.util.SyntaxUtils;
 

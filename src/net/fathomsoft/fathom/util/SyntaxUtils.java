@@ -21,8 +21,8 @@ import java.util.regex.Matcher;
 
 import net.fathomsoft.fathom.error.SyntaxMessage;
 import net.fathomsoft.fathom.tree.ClassNode;
-import net.fathomsoft.fathom.tree.InstanceDeclarationNode;
 import net.fathomsoft.fathom.tree.FileNode;
+import net.fathomsoft.fathom.tree.InstanceDeclarationNode;
 import net.fathomsoft.fathom.tree.LiteralNode;
 import net.fathomsoft.fathom.tree.MethodNode;
 import net.fathomsoft.fathom.tree.ParameterListNode;

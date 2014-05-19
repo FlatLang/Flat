@@ -17,12 +17,9 @@
  */
 package net.fathomsoft.fathom.tree.variables;
 
-import net.fathomsoft.fathom.Fathom;
 import net.fathomsoft.fathom.tree.InstanceDeclarationNode;
 import net.fathomsoft.fathom.tree.LocalDeclarationNode;
-import net.fathomsoft.fathom.tree.ParameterNode;
 import net.fathomsoft.fathom.tree.TreeNode;
-import net.fathomsoft.fathom.tree.exceptionhandling.ExceptionNode;
 import net.fathomsoft.fathom.util.Bounds;
 import net.fathomsoft.fathom.util.Location;
 import net.fathomsoft.fathom.util.Patterns;

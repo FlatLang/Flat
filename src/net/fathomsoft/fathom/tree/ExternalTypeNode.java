@@ -18,9 +18,6 @@
 package net.fathomsoft.fathom.tree;
 
 import net.fathomsoft.fathom.util.Location;
-import net.fathomsoft.fathom.util.Patterns;
-import net.fathomsoft.fathom.util.Regex;
-import net.fathomsoft.fathom.util.StringUtils;
 
 /**
  * TreeNode extension that represents an external type of variable or

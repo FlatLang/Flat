@@ -18,17 +18,14 @@
 package net.fathomsoft.fathom.tree.variables;
 
 import net.fathomsoft.fathom.Fathom;
-import net.fathomsoft.fathom.tree.AssignmentNode;
 import net.fathomsoft.fathom.tree.ClassNode;
-import net.fathomsoft.fathom.tree.InstanceDeclarationNode;
 import net.fathomsoft.fathom.tree.IdentifierNode;
+import net.fathomsoft.fathom.tree.InstanceDeclarationNode;
 import net.fathomsoft.fathom.tree.LocalDeclarationNode;
 import net.fathomsoft.fathom.tree.MethodNode;
 import net.fathomsoft.fathom.tree.ScopeNode;
 import net.fathomsoft.fathom.tree.TreeNode;
-import net.fathomsoft.fathom.tree.ValueNode;
 import net.fathomsoft.fathom.tree.exceptionhandling.ExceptionNode;
-import net.fathomsoft.fathom.util.SyntaxUtils;
 
 /**
  * ModifierNode extension that represents the declaration of a variable
