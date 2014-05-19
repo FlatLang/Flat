@@ -28,6 +28,7 @@ import net.fathomsoft.fathom.tree.exceptionhandling.CatchNode;
 import net.fathomsoft.fathom.tree.exceptionhandling.FinallyNode;
 import net.fathomsoft.fathom.tree.exceptionhandling.TryNode;
 import net.fathomsoft.fathom.tree.variables.FieldNode;
+import net.fathomsoft.fathom.tree.variables.LocalVariableNode;
 import net.fathomsoft.fathom.util.FileUtils;
 import net.fathomsoft.fathom.util.Location;
 import net.fathomsoft.fathom.util.Patterns;
@@ -42,7 +43,7 @@ import net.fathomsoft.fathom.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:00:15 PM
- * @version	v0.2.3 Apr 30, 2014 at 6:15:00 AM
+ * @version	v0.2.4 May 17, 2014 at 9:55:04 PM
  */
 public class SyntaxTree
 {
@@ -149,7 +150,7 @@ public class SyntaxTree
 		}
 		catch (InterruptedException e)
 		{
-			e.printStackTrace();
+			throw new RuntimeException(e);
 		}
 	}
 	
@@ -345,6 +346,28 @@ public class SyntaxTree
 				}
 			}
 		}
+		else if (root.containsScope())
+		{
+			if (root instanceof LoopNode || root instanceof IfStatementNode || root instanceof ElseStatementNode)
+			{
+				ScopeNode scope = root.getScopeNode();
+				
+				if (scope.getChildren().size() <= 1)
+				{
+					root.detach();
+					
+					return;
+				}
+			}
+		}
+		else if (root instanceof BinaryOperatorNode)
+		{
+			root.validate();
+		}
+		else if (root instanceof LocalVariableNode)
+		{
+			root.validate();
+		}
 //		else if (root instanceof MethodCallNode)
 //		{
 //			MethodCallNode node = (MethodCallNode)root;
@@ -512,7 +535,7 @@ public class SyntaxTree
 		{
 			char c = source.charAt(i);
 			
-			if (c != ' ' && c != '\t' && c != '\n')
+			if (c != ' ' && c != '\t' && c != '\n' && c != '\r')
 			{
 				return i;
 			}
@@ -712,9 +735,9 @@ public class SyntaxTree
 				
 				int newStatementStartIndex = 0;
 				
-				if (statementStartMatcher.find(nextCharIndex(statementEndIndex, source) + 1))
+				if (statementStartMatcher.find(StringUtils.findNextNonWhitespaceIndex(source, statementEndIndex) + 1))
 				{
-					newStatementStartIndex = StringUtils.findNextNonWhitespaceIndex(source, statementStartMatcher.start() + 1) - 1;
+					newStatementStartIndex = StringUtils.findNextNonWhitespaceIndex(source, statementStartMatcher.start());
 				}
 				
 				int      offset2    = statementStartIndex;
