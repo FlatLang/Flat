@@ -30,7 +30,7 @@ import net.fathomsoft.fathom.util.Regex;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:57:13 PM
- * @version	v0.2.1 Apr 24, 2014 at 4:51:24 PM
+ * @version	v0.2.4 May 17, 2014 at 9:55:04 PM
  */
 public class IfStatementNode extends TreeNode
 {
@@ -184,6 +184,13 @@ public class IfStatementNode extends TreeNode
 				newLoc.setBounds(location.getStart() + bounds.getStart(), location.getStart() + bounds.getEnd());
 				
 				TreeNode child = BinaryOperatorNode.decodeStatement(parent, contents, newLoc);
+				
+				if (child == null)
+				{
+//					SyntaxMessage.error("Could not decode condition", parent.getFileNode(), newLoc, parent.getController());
+					
+					return null;
+				}
 				
 				n.getCondition().addChild(child);
 				
