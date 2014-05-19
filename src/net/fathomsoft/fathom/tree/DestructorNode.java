@@ -34,19 +34,10 @@ import net.fathomsoft.fathom.util.StringUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:50:43 PM
- * @version	v0.2.1 Apr 24, 2014 at 4:50:49 PM
+ * @version	v0.2.4 May 17, 2014 at 9:55:04 PM
  */
 public class DestructorNode extends MethodNode
 {
-	/**
-	 * @see net.fathomsoft.fathom.tree.TreeNode#generateJavaSource()
-	 */
-	@Override
-	public String generateJavaSource()
-	{
-		return null;
-	}
-
 	/**
 	 * @see net.fathomsoft.fathom.tree.TreeNode#generateCHeader()
 	 */
@@ -57,7 +48,7 @@ public class DestructorNode extends MethodNode
 		
 		if (isVisibilityValid())
 		{
-			if (getVisibility() == DeclarationNode.PRIVATE)
+			if (getVisibility() == InstanceDeclarationNode.PRIVATE)
 			{
 				SyntaxMessage.error("Destructor must be public", getFileNode(), getLocationIn(), getController());
 				
@@ -116,15 +107,6 @@ public class DestructorNode extends MethodNode
 	}
 	
 	/**
-	 * @see net.fathomsoft.fathom.tree.TreeNode#generateCSourceFragment()
-	 */
-	@Override
-	public String generateCSourceFragment()
-	{
-		return null;
-	}
-	
-	/**
 	 * Generate the code needed to check if a variable is null before
 	 * trying to free its members.
 	 * 
@@ -159,13 +141,10 @@ public class DestructorNode extends MethodNode
 		{
 			FieldNode field = (FieldNode)privateFields.getChild(i);
 
-			if (!field.isPrimitive())
-			{
-				builder.append(generateFreeFieldSource(field)).append('\n');
-			}
+			builder.append(generateFreeFieldSource(field)).append('\n');
 		}
 		
-		if (privateFields.getChildren().size() > 0)
+		if (classNode.containsNonStaticPrivateData())
 		{
 			builder.append(generateFreeMemberSource("prv")).append('\n');
 		}
@@ -176,10 +155,7 @@ public class DestructorNode extends MethodNode
 		{
 			FieldNode field = (FieldNode)publicFields.getChild(i);
 			
-			if (!field.isPrimitive())
-			{
-				builder.append(generateFreeFieldSource(field)).append('\n');
-			}
+			builder.append(field.generateFreeOutput());
 		}
 		
 		return builder.toString();
@@ -205,7 +181,7 @@ public class DestructorNode extends MethodNode
 		}
 		else
 		{
-			builder.append(Fathom.LANGUAGE_NAME.toLowerCase()).append("_del_").append(field.getType()).append('(').append('&').append(field.generateVariableUseOutput(true)).append(", ").append(ExceptionNode.EXCEPTION_DATA_IDENTIFIER).append(");");
+			builder.append(Fathom.LANGUAGE_NAME.toLowerCase()).append("_del_").append(field.getType()).append('(').append('&').append(field.generateUseOutput(true)).append(", ").append(ExceptionNode.EXCEPTION_DATA_IDENTIFIER).append(");");
 		}
 		
 		return builder.toString();
