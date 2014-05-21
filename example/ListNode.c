@@ -11,32 +11,32 @@
 
 CCLASS_PRIVATE
 (
-	Object* fathom_data;
-	ListNode* fathom_next;
+	Object* nova_data;
+	ListNode* nova_next;
 )
 
-ListNode* fathom_ListNode_ListNode(ExceptionData* exceptionData, Object* fathom_data_159)
+ListNode* nova_ListNode_ListNode(ExceptionData* exceptionData, Object* nova_data_93)
 {
 	CCLASS_NEW(ListNode, this);
 	
-	this->prv->fathom_data = 0;
-	this->prv->fathom_next = 0;
+	this->prv->nova_data = 0;
+	this->prv->nova_next = 0;
 	{
-		this->prv->fathom_data = fathom_data_159;
+		this->prv->nova_data = nova_data_93;
 	}
 	
 	return this;
 }
 
-void fathom_del_ListNode(ListNode** this, ExceptionData* exceptionData)
+void nova_del_ListNode(ListNode** this, ExceptionData* exceptionData)
 {
 	if (!*this)
 	{
 		return;
 	}
 	
-	fathom_del_Object(&(*this)->prv->fathom_data, exceptionData);
-	fathom_del_ListNode(&(*this)->prv->fathom_next, exceptionData);
+	nova_del_Object(&(*this)->prv->nova_data, exceptionData);
+	nova_del_ListNode(&(*this)->prv->nova_next, exceptionData);
 	free((*this)->prv);
 	
 	{
@@ -44,17 +44,17 @@ void fathom_del_ListNode(ListNode** this, ExceptionData* exceptionData)
 	free(*this);
 }
 
-Object* fathom_ListNode_getData(ListNode* this, ExceptionData* exceptionData)
+Object* nova_ListNode_getData(ListNode* this, ExceptionData* exceptionData)
 {
-	return this->prv->fathom_data;
+	return this->prv->nova_data;
 }
 
-ListNode* fathom_ListNode_getNext(ListNode* this, ExceptionData* exceptionData)
+ListNode* nova_ListNode_getNext(ListNode* this, ExceptionData* exceptionData)
 {
-	return this->prv->fathom_next;
+	return this->prv->nova_next;
 }
 
-void fathom_ListNode_setNext(ListNode* this, ExceptionData* exceptionData, ListNode* fathom_next_168)
+void nova_ListNode_setNext(ListNode* this, ExceptionData* exceptionData, ListNode* nova_next_128)
 {
-	this->prv->fathom_next = fathom_next_168;
+	this->prv->nova_next = nova_next_128;
 }

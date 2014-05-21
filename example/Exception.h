@@ -1,5 +1,5 @@
-#ifndef FILE_Exception_FATHOM
-#define FILE_Exception_FATHOM
+#ifndef FILE_Exception_NOVA
+#define FILE_Exception_NOVA
 
 typedef struct Exception Exception;
 
@@ -19,6 +19,6 @@ CCLASS_CLASS
 )
 
 
-Exception* fathom_Exception_Exception(ExceptionData* exceptionData);
-void fathom_del_Exception(Exception** this, ExceptionData* exceptionData);
+Exception* nova_Exception_Exception(ExceptionData* exceptionData);
+void nova_del_Exception(Exception** this, ExceptionData* exceptionData);
 #endif

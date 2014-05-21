@@ -1,5 +1,5 @@
-#ifndef FILE_DivideByZeroException_FATHOM
-#define FILE_DivideByZeroException_FATHOM
+#ifndef FILE_DivideByZeroException_NOVA
+#define FILE_DivideByZeroException_NOVA
 
 typedef struct DivideByZeroException DivideByZeroException;
 
@@ -19,6 +19,6 @@ CCLASS_CLASS
 )
 
 
-DivideByZeroException* fathom_DivideByZeroException_DivideByZeroException(ExceptionData* exceptionData);
-void fathom_del_DivideByZeroException(DivideByZeroException** this, ExceptionData* exceptionData);
+DivideByZeroException* nova_DivideByZeroException_DivideByZeroException(ExceptionData* exceptionData);
+void nova_del_DivideByZeroException(DivideByZeroException** this, ExceptionData* exceptionData);
 #endif

@@ -12,31 +12,31 @@
 
 CCLASS_PRIVATE
 (
-	ListNode* fathom_start;
-	ListNode* fathom_current;
+	ListNode* nova_start;
+	ListNode* nova_current;
 )
 
-List* fathom_List_List(ExceptionData* exceptionData)
+List* nova_List_List(ExceptionData* exceptionData)
 {
 	CCLASS_NEW(List, this);
 	
-	this->prv->fathom_start = 0;
-	this->prv->fathom_current = 0;
+	this->prv->nova_start = 0;
+	this->prv->nova_current = 0;
 	{
 	}
 	
 	return this;
 }
 
-void fathom_del_List(List** this, ExceptionData* exceptionData)
+void nova_del_List(List** this, ExceptionData* exceptionData)
 {
 	if (!*this)
 	{
 		return;
 	}
 	
-	fathom_del_ListNode(&(*this)->prv->fathom_start, exceptionData);
-	fathom_del_ListNode(&(*this)->prv->fathom_current, exceptionData);
+	nova_del_ListNode(&(*this)->prv->nova_start, exceptionData);
+	nova_del_ListNode(&(*this)->prv->nova_current, exceptionData);
 	free((*this)->prv);
 	
 	{
@@ -44,48 +44,48 @@ void fathom_del_List(List** this, ExceptionData* exceptionData)
 	free(*this);
 }
 
-ListNode* fathom_List_getFirst(List* this, ExceptionData* exceptionData)
+ListNode* nova_List_getFirst(List* this, ExceptionData* exceptionData)
 {
-	return this->prv->fathom_start;
+	return this->prv->nova_start;
 }
 
-void fathom_List_add(List* this, ExceptionData* exceptionData, Object* fathom_data_90)
+void nova_List_add(List* this, ExceptionData* exceptionData, Object* nova_data_118)
 {
-	ListNode* fathom_node_90;
+	ListNode* nova_node_118;
 	
-	fathom_node_90 = fathom_ListNode_ListNode(exceptionData, fathom_data_90);
-	if (this->prv->fathom_start == 0)
+	nova_node_118 = nova_ListNode_ListNode(exceptionData, nova_data_118);
+	if (this->prv->nova_start == 0)
 	{
-		this->prv->fathom_start = fathom_node_90;
-		this->prv->fathom_current = fathom_node_90;
+		this->prv->nova_start = nova_node_118;
+		this->prv->nova_current = nova_node_118;
 	}
 	else
 	{
-		ListNode* fathom_current;
+		ListNode* nova_current;
 	}
-	this->prv->fathom_current = fathom_node_90;
+	this->prv->nova_current = nova_node_118;
 }
 
-void fathom_List_remove(List* this, ExceptionData* exceptionData, Object* fathom_data_96)
+void nova_List_remove(List* this, ExceptionData* exceptionData, Object* nova_data_121)
 {
-	ListNode* fathom_prev_96;
-	ListNode* fathom_cur_96;
+	ListNode* nova_prev_121;
+	ListNode* nova_cur_121;
 	
-	if (fathom_ListNode_getData(this->prv->fathom_start, exceptionData) == fathom_data_96)
+	if (nova_ListNode_getData(this->prv->nova_start, exceptionData) == nova_data_121)
 	{
-		this->prv->fathom_start = fathom_ListNode_getNext(this->prv->fathom_start, exceptionData);
+		this->prv->nova_start = nova_ListNode_getNext(this->prv->nova_start, exceptionData);
 	}
-	fathom_prev_96 = this->prv->fathom_start;
-	fathom_cur_96 = fathom_ListNode_getNext(this->prv->fathom_start, exceptionData);
-	while (fathom_cur_96 != 0)
+	nova_prev_121 = this->prv->nova_start;
+	nova_cur_121 = nova_ListNode_getNext(this->prv->nova_start, exceptionData);
+	while (nova_cur_121 != 0)
 	{
-		Object* fathom_d_198;
+		Object* nova_d_200;
 		
-		fathom_d_198 = fathom_ListNode_getData(fathom_cur_96, exceptionData);
-		if (fathom_d_198 == fathom_data_96)
+		nova_d_200 = nova_ListNode_getData(nova_cur_121, exceptionData);
+		if (nova_d_200 == nova_data_121)
 		{
-			fathom_ListNode_setNext(fathom_prev_96, exceptionData, fathom_ListNode_getNext(fathom_cur_96, exceptionData));
+			nova_ListNode_setNext(nova_prev_121, exceptionData, nova_ListNode_getNext(nova_cur_121, exceptionData));
 		}
-		fathom_cur_96 = fathom_ListNode_getNext(fathom_cur_96, exceptionData);
+		nova_cur_121 = nova_ListNode_getNext(nova_cur_121, exceptionData);
 	}
 }

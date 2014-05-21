@@ -13,27 +13,27 @@
 
 CCLASS_PRIVATE
 (
-	int fathom_count;
-	int fathom_size;
-	int* fathom_data;
+	int nova_count;
+	int nova_size;
+	int* nova_data;
 )
 
-ArrayList* fathom_ArrayList_ArrayList(ExceptionData* exceptionData)
+ArrayList* nova_ArrayList_ArrayList(ExceptionData* exceptionData)
 {
 	CCLASS_NEW(ArrayList, this);
 	
-	this->prv->fathom_count = 0;
-	this->prv->fathom_size = 0;
-	this->prv->fathom_data = 0;
+	this->prv->nova_count = 0;
+	this->prv->nova_size = 0;
+	this->prv->nova_data = 0;
 	{
-		this->prv->fathom_size = 0;
-		fathom_ArrayList_increaseSize(this, exceptionData);
+		this->prv->nova_size = 0;
+		nova_ArrayList_increaseSize(this, exceptionData);
 	}
 	
 	return this;
 }
 
-void fathom_del_ArrayList(ArrayList** this, ExceptionData* exceptionData)
+void nova_del_ArrayList(ArrayList** this, ExceptionData* exceptionData)
 {
 	if (!*this)
 	{
@@ -50,33 +50,33 @@ void fathom_del_ArrayList(ArrayList** this, ExceptionData* exceptionData)
 	free(*this);
 }
 
-void fathom_ArrayList_add(ArrayList* this, ExceptionData* exceptionData, int fathom_var_118)
+void nova_ArrayList_add(ArrayList* this, ExceptionData* exceptionData, int nova_var_159)
 {
-	if (this->prv->fathom_count + 1 >= this->prv->fathom_size)
+	if (this->prv->nova_count + 1 >= this->prv->nova_size)
 	{
-		fathom_ArrayList_increaseSize(this, exceptionData);
+		nova_ArrayList_increaseSize(this, exceptionData);
 	}
-	this->prv->fathom_data[this->prv->fathom_count] = fathom_var_118;
-	this->prv->fathom_count = this->prv->fathom_count + 1;
+	nova_data[this->prv->nova_count] = nova_var_159;
+	this->prv->nova_count = this->prv->nova_count + 1;
 }
 
-void fathom_ArrayList_increaseSize(ArrayList* this, ExceptionData* exceptionData)
+void nova_ArrayList_increaseSize(ArrayList* this, ExceptionData* exceptionData)
 {
-	int* fathom_tmp_125;
+	int* nova_tmp_162;
 	
-	this->prv->fathom_size = this->prv->fathom_size + 3;
-	fathom_tmp_125 = (int*)malloc(sizeof(int) * (this->prv->fathom_size));
-	arrayCopy(fathom_tmp_125, 0, this->prv->fathom_data, 0, this->prv->fathom_count, this->prv->fathom_size, sizeof(int));
-	free(this->prv->fathom_data);
-	this->prv->fathom_data = fathom_tmp_125;
+	this->prv->nova_size = this->prv->nova_size + 3;
+	nova_tmp_162 = (int*)malloc(sizeof(int) * (nova_size));
+	arrayCopy(nova_tmp_162, 0, this->prv->nova_data, 0, this->prv->nova_count, this->prv->nova_size, sizeof(int));
+	free(this->prv->nova_data);
+	this->prv->nova_data = nova_tmp_162;
 }
 
-int fathom_ArrayList_getSize(ArrayList* this, ExceptionData* exceptionData)
+int nova_ArrayList_getSize(ArrayList* this, ExceptionData* exceptionData)
 {
-	return this->prv->fathom_count;
+	return this->prv->nova_count;
 }
 
-int fathom_ArrayList_get(ArrayList* this, ExceptionData* exceptionData, int fathom_index_157)
+int nova_ArrayList_get(ArrayList* this, ExceptionData* exceptionData, int nova_index_168)
 {
-	return this->prv->fathom_data[fathom_index_157];
+	return nova_data[nova_index_168];
 }

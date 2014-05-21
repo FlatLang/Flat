@@ -8,9 +8,8 @@
 #include "String.h"
 #include "Math.h"
 #include "DivideByZeroException.h"
-#include <Fathom.h>
 
-Time* fathom_Time_Time(ExceptionData* exceptionData)
+Time* nova_Time_Time(ExceptionData* exceptionData)
 {
 	CCLASS_NEW(Time, this,);
 	
@@ -20,7 +19,7 @@ Time* fathom_Time_Time(ExceptionData* exceptionData)
 	return this;
 }
 
-void fathom_del_Time(Time** this, ExceptionData* exceptionData)
+void nova_del_Time(Time** this, ExceptionData* exceptionData)
 {
 	if (!*this)
 	{
@@ -33,7 +32,7 @@ void fathom_del_Time(Time** this, ExceptionData* exceptionData)
 	free(*this);
 }
 
-long_long fathom_Time_currentTimeMillis(ExceptionData* exceptionData)
+long_long nova_Time_currentTimeMillis(ExceptionData* exceptionData)
 {
 	return currentTimeMillis();
 }

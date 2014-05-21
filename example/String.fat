@@ -30,7 +30,7 @@ public class String
 	
 	public String concat(String str)
 	{
-		char newData[] = new char[str.getLength() + length + 1];
+		char newData[] = new char[str.length + length + 1];
 		
 		string.strcpy(newData, data);
 		

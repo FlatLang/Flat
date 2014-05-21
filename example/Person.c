@@ -11,25 +11,25 @@
 
 CCLASS_PRIVATE
 (
-	int fathom_age;
-	String* fathom_name;
+	int nova_age;
+	String* nova_name;
 )
 
-Person* fathom_Person_Person(ExceptionData* exceptionData, String* fathom_name_101, int fathom_age_101)
+Person* nova_Person_Person(ExceptionData* exceptionData, String* nova_name_73, int nova_age_73)
 {
 	CCLASS_NEW(Person, this);
 	
-	this->prv->fathom_age = 0;
-	this->prv->fathom_name = 0;
+	this->prv->nova_age = 0;
+	this->prv->nova_name = 0;
 	{
-		this->prv->fathom_name = fathom_name_101;
-		this->prv->fathom_age = fathom_age_101;
+		this->prv->nova_name = nova_name_73;
+		this->prv->nova_age = nova_age_73;
 	}
 	
 	return this;
 }
 
-void fathom_del_Person(Person** this, ExceptionData* exceptionData)
+void nova_del_Person(Person** this, ExceptionData* exceptionData)
 {
 	if (!*this)
 	{
@@ -37,7 +37,7 @@ void fathom_del_Person(Person** this, ExceptionData* exceptionData)
 	}
 	
 	
-	fathom_del_String(&(*this)->prv->fathom_name, exceptionData);
+	nova_del_String(&(*this)->prv->nova_name, exceptionData);
 	free((*this)->prv);
 	
 	{
@@ -45,12 +45,12 @@ void fathom_del_Person(Person** this, ExceptionData* exceptionData)
 	free(*this);
 }
 
-int fathom_Person_getAge(Person* this, ExceptionData* exceptionData)
+int nova_Person_getAge(Person* this, ExceptionData* exceptionData)
 {
-	return this->prv->fathom_age;
+	return this->prv->nova_age;
 }
 
-String* fathom_Person_getName(Person* this, ExceptionData* exceptionData)
+String* nova_Person_getName(Person* this, ExceptionData* exceptionData)
 {
-	return this->prv->fathom_name;
+	return this->prv->nova_name;
 }

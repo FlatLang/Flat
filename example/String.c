@@ -12,25 +12,25 @@
 
 CCLASS_PRIVATE
 (
-	char* fathom_data;
+	char* nova_data;
 )
-void fathom_String_calculateLength(String* this, ExceptionData* exceptionData);
+void nova_String_calculateLength(String* this, ExceptionData* exceptionData);
 
-String* fathom_String_String(ExceptionData* exceptionData, char* fathom_data_135)
+String* nova_String_String(ExceptionData* exceptionData, char* nova_data_74)
 {
 	CCLASS_NEW(String, this);
 	
-	this->fathom_length = 0;
-	this->prv->fathom_data = 0;
+	this->nova_length = 0;
+	this->prv->nova_data = 0;
 	{
-		this->prv->fathom_data = fathom_data_135;
-		fathom_String_calculateLength(this, exceptionData);
+		this->prv->nova_data = nova_data_74;
+		nova_String_calculateLength(this, exceptionData);
 	}
 	
 	return this;
 }
 
-void fathom_del_String(String** this, ExceptionData* exceptionData)
+void nova_del_String(String** this, ExceptionData* exceptionData)
 {
 	if (!*this)
 	{
@@ -45,31 +45,31 @@ void fathom_del_String(String** this, ExceptionData* exceptionData)
 	free(*this);
 }
 
-void fathom_String_calculateLength(String* this, ExceptionData* exceptionData)
+void nova_String_calculateLength(String* this, ExceptionData* exceptionData)
 {
-	this->fathom_length = strlen(this->prv->fathom_data);
+	this->nova_length = strlen(this->prv->nova_data);
 }
 
-int fathom_String_getLength(String* this, ExceptionData* exceptionData)
+int nova_String_getLength(String* this, ExceptionData* exceptionData)
 {
-	return this->fathom_length;
+	return this->nova_length;
 }
 
-char* fathom_String_toCharArray(String* this, ExceptionData* exceptionData)
+char* nova_String_toCharArray(String* this, ExceptionData* exceptionData)
 {
-	return this->prv->fathom_data;
+	return this->prv->nova_data;
 }
 
-String* fathom_String_concat(String* this, ExceptionData* exceptionData, String* fathom_str_155)
+String* nova_String_concat(String* this, ExceptionData* exceptionData, String* nova_str_103)
 {
-	char* fathom_newData_155;
-	char* fathom_chars_155;
-	String* fathom_newStr_155;
+	char* nova_newData_103;
+	char* nova_chars_103;
+	String* nova_newStr_103;
 	
-	fathom_newData_155 = (char*)malloc(sizeof(char) * (fathom_String_getLength(fathom_str_155, exceptionData) + this->fathom_length + 1));
-	strcpy(fathom_newData_155, this->prv->fathom_data);
-	fathom_chars_155 = fathom_String_toCharArray(fathom_str_155, exceptionData);
-	strcat(fathom_newData_155, fathom_chars_155);
-	fathom_newStr_155 = fathom_String_String(exceptionData, fathom_newData_155);
-	return fathom_newStr_155;
+	nova_newData_103 = (char*)malloc(sizeof(char) * (nova_str_103->nova_length + this->nova_length + 1));
+	strcpy(nova_newData_103, this->prv->nova_data);
+	nova_chars_103 = nova_String_toCharArray(nova_str_103, exceptionData);
+	strcat(nova_newData_103, nova_chars_103);
+	nova_newStr_103 = nova_String_String(exceptionData, nova_newData_103);
+	return nova_newStr_103;
 }

@@ -10,7 +10,7 @@
 #include "DivideByZeroException.h"
 #include <math.h>
 
-Math* fathom_Math_Math(ExceptionData* exceptionData)
+Math* nova_Math_Math(ExceptionData* exceptionData)
 {
 	CCLASS_NEW(Math, this,);
 	
@@ -20,7 +20,7 @@ Math* fathom_Math_Math(ExceptionData* exceptionData)
 	return this;
 }
 
-void fathom_del_Math(Math** this, ExceptionData* exceptionData)
+void nova_del_Math(Math** this, ExceptionData* exceptionData)
 {
 	if (!*this)
 	{
@@ -33,57 +33,57 @@ void fathom_del_Math(Math** this, ExceptionData* exceptionData)
 	free(*this);
 }
 
-double fathom_Math_sqrt(ExceptionData* exceptionData, double fathom_number_14)
+double nova_Math_sqrt(ExceptionData* exceptionData, double nova_number_53)
 {
-	return sqrt(fathom_number_14);
+	return sqrt(nova_number_53);
 }
 
-double fathom_Math_pow(ExceptionData* exceptionData, double fathom_base_20, double fathom_power_20)
+double nova_Math_pow(ExceptionData* exceptionData, double nova_base_56, double nova_power_56)
 {
-	return pow(fathom_base_20, fathom_power_20);
+	return pow(nova_base_56, nova_power_56);
 }
 
-double fathom_Math_sin(ExceptionData* exceptionData, double fathom_number_27)
+double nova_Math_sin(ExceptionData* exceptionData, double nova_number_59)
 {
-	return sin(fathom_number_27);
+	return sin(nova_number_59);
 }
 
-double fathom_Math_cos(ExceptionData* exceptionData, double fathom_number_34)
+double nova_Math_cos(ExceptionData* exceptionData, double nova_number_62)
 {
-	return cos(fathom_number_34);
+	return cos(nova_number_62);
 }
 
-double fathom_Math_tan(ExceptionData* exceptionData, double fathom_number_41)
+double nova_Math_tan(ExceptionData* exceptionData, double nova_number_65)
 {
-	return tan(fathom_number_41);
+	return tan(nova_number_65);
 }
 
-double fathom_Math_asin(ExceptionData* exceptionData, double fathom_number_79)
+double nova_Math_asin(ExceptionData* exceptionData, double nova_number_68)
 {
-	return asin(fathom_number_79);
+	return asin(nova_number_68);
 }
 
-double fathom_Math_acos(ExceptionData* exceptionData, double fathom_number_83)
+double nova_Math_acos(ExceptionData* exceptionData, double nova_number_75)
 {
-	return acos(fathom_number_83);
+	return acos(nova_number_75);
 }
 
-double fathom_Math_atan(ExceptionData* exceptionData, double fathom_number_91)
+double nova_Math_atan(ExceptionData* exceptionData, double nova_number_87)
 {
-	return atan(fathom_number_91);
+	return atan(nova_number_87);
 }
 
-long_long fathom_Math_round(ExceptionData* exceptionData, double fathom_number_97)
+long_long nova_Math_round(ExceptionData* exceptionData, double nova_number_98)
 {
-	return fathom_Math_floor(exceptionData, fathom_number_97 + 0.5);
+	return nova_Math_floor(exceptionData, nova_number_98 + 0.5);
 }
 
-long_long fathom_Math_floor(ExceptionData* exceptionData, double fathom_number_102)
+long_long nova_Math_floor(ExceptionData* exceptionData, double nova_number_106)
 {
-	return floor(fathom_number_102);
+	return floor(nova_number_106);
 }
 
-long_long fathom_Math_ceil(ExceptionData* exceptionData, double fathom_number_110)
+long_long nova_Math_ceil(ExceptionData* exceptionData, double nova_number_109)
 {
-	return ceil(fathom_number_110);
+	return ceil(nova_number_109);
 }

@@ -11,9 +11,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "String.h"
-void fathom_IO_flush(ExceptionData* exceptionData);
+void nova_IO_flush(ExceptionData* exceptionData);
 
-IO* fathom_IO_IO(ExceptionData* exceptionData)
+IO* nova_IO_IO(ExceptionData* exceptionData)
 {
 	CCLASS_NEW(IO, this,);
 	
@@ -23,7 +23,7 @@ IO* fathom_IO_IO(ExceptionData* exceptionData)
 	return this;
 }
 
-void fathom_del_IO(IO** this, ExceptionData* exceptionData)
+void nova_del_IO(IO** this, ExceptionData* exceptionData)
 {
 	if (!*this)
 	{
@@ -36,70 +36,70 @@ void fathom_del_IO(IO** this, ExceptionData* exceptionData)
 	free(*this);
 }
 
-void fathom_IO_println(ExceptionData* exceptionData, String* fathom_text_13)
+void nova_IO_println(ExceptionData* exceptionData, String* nova_text_26)
 {
-	fathom_IO_print(exceptionData, fathom_String_concat(fathom_text_13, exceptionData, fathom_String_String(exceptionData, "\n")));
+	nova_IO_print(exceptionData, nova_String_concat(nova_text_26, exceptionData, nova_String_String(exceptionData, "\n")));
 }
 
-void fathom_IO_print(ExceptionData* exceptionData, String* fathom_text_42)
+void nova_IO_print(ExceptionData* exceptionData, String* nova_text_29)
 {
-	const char* fathom_cText_42;
+	const char* nova_cText_29;
 	
-	fathom_cText_42 = fathom_String_toCharArray(fathom_text_42, exceptionData);
-	fputs(fathom_cText_42, stdout);
+	nova_cText_29 = nova_String_toCharArray(nova_text_29, exceptionData);
+	fputs(nova_cText_29, stdout);
 }
 
-void fathom_IO_printi(ExceptionData* exceptionData, int fathom_j_48)
+void nova_IO_printi(ExceptionData* exceptionData, int nova_j_32)
 {
-	printf("%d", fathom_j_48);
+	printf("%d", nova_j_32);
 }
 
-void fathom_IO_printl(ExceptionData* exceptionData, long_long fathom_j_52)
+void nova_IO_printl(ExceptionData* exceptionData, long_long nova_j_35)
 {
-	printf("%llu", fathom_j_52);
+	printf("%llu", nova_j_35);
 }
 
-int fathom_IO_getInt(ExceptionData* exceptionData)
+int nova_IO_getInt(ExceptionData* exceptionData)
 {
-	String* fathom_s_58;
-	char* fathom_data_58;
-	int fathom_num_58;
+	String* nova_s_38;
+	char* nova_data_38;
+	int nova_num_38;
 	
-	fathom_s_58 = fathom_IO_getLine(exceptionData);
-	fathom_data_58 = fathom_String_toCharArray(fathom_s_58, exceptionData);
-	fathom_num_58 = atoi(fathom_data_58);
-	return fathom_num_58;
+	nova_s_38 = nova_IO_getLine(exceptionData);
+	nova_data_38 = nova_String_toCharArray(nova_s_38, exceptionData);
+	nova_num_38 = atoi(nova_data_38);
+	return nova_num_38;
 }
 
-char fathom_IO_getChar(ExceptionData* exceptionData)
+char nova_IO_getChar(ExceptionData* exceptionData)
 {
-	char fathom_c_64;
+	char nova_c_41;
 	
-	fathom_c_64 = getchar();
-	fathom_IO_flush(exceptionData);
-	return fathom_c_64;
+	nova_c_41 = getchar();
+	nova_IO_flush(exceptionData);
+	return nova_c_41;
 }
 
-void fathom_IO_flush(ExceptionData* exceptionData)
+void nova_IO_flush(ExceptionData* exceptionData)
 {
 	fseek(stdin, 0, SEEK_END);
 }
 
-String* fathom_IO_getLine(ExceptionData* exceptionData)
+String* nova_IO_getLine(ExceptionData* exceptionData)
 {
-	char* fathom_line_73;
-	String* fathom_s_73;
+	char* nova_line_47;
+	String* nova_s_47;
 	
-	fathom_line_73 = ufgets(stdin);
-	fathom_s_73 = fathom_String_String(exceptionData, fathom_line_73);
-	return fathom_s_73;
+	nova_line_47 = ufgets(stdin);
+	nova_s_47 = nova_String_String(exceptionData, nova_line_47);
+	return nova_s_47;
 }
 
-void fathom_IO_waitForEnter(ExceptionData* exceptionData)
+void nova_IO_waitForEnter(ExceptionData* exceptionData)
 {
-	char* fathom_c_78;
+	char* nova_c_50;
 	
-	fathom_IO_flush(exceptionData);
-	fathom_c_78 = (char*)malloc(sizeof(char) * (2));
-	fgets(fathom_c_78, 2, stdin);
+	nova_IO_flush(exceptionData);
+	nova_c_50 = (char*)malloc(sizeof(char) * (2));
+	fgets(nova_c_50, 2, stdin);
 }

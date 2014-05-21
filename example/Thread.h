@@ -1,5 +1,5 @@
-#ifndef FILE_Thread_FATHOM
-#define FILE_Thread_FATHOM
+#ifndef FILE_Thread_NOVA
+#define FILE_Thread_NOVA
 
 typedef struct Thread Thread;
 
@@ -23,11 +23,11 @@ CCLASS_CLASS
 )
 
 
-Thread* fathom_Thread_Thread(ExceptionData* exceptionData, long_long fathom_millis_116, String* fathom_word_116);
-void fathom_del_Thread(Thread** this, ExceptionData* exceptionData);
-void fathom_Thread_start(Thread* this, ExceptionData* exceptionData);
-void fathom_Thread_join(Thread* this, ExceptionData* exceptionData);
-void fathom_Thread_sleep(ExceptionData* exceptionData, long_long fathom_millis_138);
-void fathom_Thread_run(Thread* this, ExceptionData* exceptionData);
+Thread* nova_Thread_Thread(ExceptionData* exceptionData, long_long nova_millis_8, String* nova_word_8);
+void nova_del_Thread(Thread** this, ExceptionData* exceptionData);
+void nova_Thread_start(Thread* this, ExceptionData* exceptionData);
+void nova_Thread_join(Thread* this, ExceptionData* exceptionData);
+void nova_Thread_sleep(ExceptionData* exceptionData, long_long nova_millis_17);
+void nova_Thread_run(Thread* this, ExceptionData* exceptionData);
 FATHOM_THREAD_FUNC lib_fathom_thread_run(FATHOM_THREAD_FUNC_ARG arg);
 #endif

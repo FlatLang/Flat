@@ -1,5 +1,5 @@
-#ifndef FILE_Math_FATHOM
-#define FILE_Math_FATHOM
+#ifndef FILE_Math_NOVA
+#define FILE_Math_NOVA
 
 typedef struct Math Math;
 
@@ -20,17 +20,17 @@ CCLASS_CLASS
 )
 
 
-Math* fathom_Math_Math(ExceptionData* exceptionData);
-void fathom_del_Math(Math** this, ExceptionData* exceptionData);
-double fathom_Math_sqrt(ExceptionData* exceptionData, double fathom_number_14);
-double fathom_Math_pow(ExceptionData* exceptionData, double fathom_base_20, double fathom_power_20);
-double fathom_Math_sin(ExceptionData* exceptionData, double fathom_number_27);
-double fathom_Math_cos(ExceptionData* exceptionData, double fathom_number_34);
-double fathom_Math_tan(ExceptionData* exceptionData, double fathom_number_41);
-double fathom_Math_asin(ExceptionData* exceptionData, double fathom_number_79);
-double fathom_Math_acos(ExceptionData* exceptionData, double fathom_number_83);
-double fathom_Math_atan(ExceptionData* exceptionData, double fathom_number_91);
-long_long fathom_Math_round(ExceptionData* exceptionData, double fathom_number_97);
-long_long fathom_Math_floor(ExceptionData* exceptionData, double fathom_number_102);
-long_long fathom_Math_ceil(ExceptionData* exceptionData, double fathom_number_110);
+Math* nova_Math_Math(ExceptionData* exceptionData);
+void nova_del_Math(Math** this, ExceptionData* exceptionData);
+double nova_Math_sqrt(ExceptionData* exceptionData, double nova_number_53);
+double nova_Math_pow(ExceptionData* exceptionData, double nova_base_56, double nova_power_56);
+double nova_Math_sin(ExceptionData* exceptionData, double nova_number_59);
+double nova_Math_cos(ExceptionData* exceptionData, double nova_number_62);
+double nova_Math_tan(ExceptionData* exceptionData, double nova_number_65);
+double nova_Math_asin(ExceptionData* exceptionData, double nova_number_68);
+double nova_Math_acos(ExceptionData* exceptionData, double nova_number_75);
+double nova_Math_atan(ExceptionData* exceptionData, double nova_number_87);
+long_long nova_Math_round(ExceptionData* exceptionData, double nova_number_98);
+long_long nova_Math_floor(ExceptionData* exceptionData, double nova_number_106);
+long_long nova_Math_ceil(ExceptionData* exceptionData, double nova_number_109);
 #endif

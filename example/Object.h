@@ -1,5 +1,5 @@
-#ifndef FILE_Object_FATHOM
-#define FILE_Object_FATHOM
+#ifndef FILE_Object_NOVA
+#define FILE_Object_NOVA
 
 typedef struct Object Object;
 
@@ -19,7 +19,7 @@ CCLASS_CLASS
 )
 
 
-Object* fathom_Object_Object(ExceptionData* exceptionData);
-void fathom_del_Object(Object** this, ExceptionData* exceptionData);
-String* fathom_Object_toString(Object* this, ExceptionData* exceptionData);
+Object* nova_Object_Object(ExceptionData* exceptionData);
+void nova_del_Object(Object** this, ExceptionData* exceptionData);
+String* nova_Object_toString(Object* this, ExceptionData* exceptionData);
 #endif

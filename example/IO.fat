@@ -6,7 +6,7 @@ public class IO
 {
 	public static void println(String text)
 	{
-		print(text + "\n");
+		IO.print(text + "\n");
 	}
 	
 	public static void print(String text)

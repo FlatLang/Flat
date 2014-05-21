@@ -14,8 +14,8 @@
 CCLASS_PRIVATE
 (
 	FATHOM_THREAD_HANDLE handle;
-	long_long fathom_millis;
-	String* fathom_word;
+	long_long nova_millis;
+	String* nova_word;
 )
 
 typedef struct DataStruct DataStruct;
@@ -25,21 +25,21 @@ struct DataStruct
 	Thread* instance;
 };
 
-Thread* fathom_Thread_Thread(ExceptionData* exceptionData, long_long fathom_millis_116, String* fathom_word_116)
+Thread* nova_Thread_Thread(ExceptionData* exceptionData, long_long nova_millis_8, String* nova_word_8)
 {
 	CCLASS_NEW(Thread, this);
 	
-	this->prv->fathom_millis = 0;
-	this->prv->fathom_word = 0;
+	this->prv->nova_millis = 0;
+	this->prv->nova_word = 0;
 	{
-		this->prv->fathom_millis = fathom_millis_116;
-		this->prv->fathom_word = fathom_word_116;
+		this->prv->nova_millis = nova_millis_8;
+		this->prv->nova_word = nova_word_8;
 	}
 	
 	return this;
 }
 
-void fathom_del_Thread(Thread** this, ExceptionData* exceptionData)
+void nova_del_Thread(Thread** this, ExceptionData* exceptionData)
 {
 	if (!*this)
 	{
@@ -48,7 +48,7 @@ void fathom_del_Thread(Thread** this, ExceptionData* exceptionData)
 	
 	
 	
-	fathom_del_String(&(*this)->prv->fathom_word, exceptionData);
+	nova_del_String(&(*this)->prv->nova_word, exceptionData);
 	free((*this)->prv);
 	
 	{
@@ -56,7 +56,7 @@ void fathom_del_Thread(Thread** this, ExceptionData* exceptionData)
 	free(*this);
 }
 
-void fathom_Thread_start(Thread* this, ExceptionData* exceptionData)
+void nova_Thread_start(Thread* this, ExceptionData* exceptionData)
 {
 	DataStruct* data = (DataStruct*)malloc(sizeof(DataStruct));
 	
@@ -65,26 +65,26 @@ void fathom_Thread_start(Thread* this, ExceptionData* exceptionData)
 	lib_fathom_thread_create(&this->prv->handle, lib_fathom_thread_run, (FATHOM_THREAD_FUNC_ARG)data);
 }
 
-void fathom_Thread_join(Thread* this, ExceptionData* exceptionData)
+void nova_Thread_join(Thread* this, ExceptionData* exceptionData)
 {
 	lib_fathom_thread_join(this->prv->handle);
 }
 
-void fathom_Thread_sleep(ExceptionData* exceptionData, long_long fathom_millis_138)
+void nova_Thread_sleep(ExceptionData* exceptionData, long_long nova_millis_17)
 {
-	lib_fathom_thread_sleep(fathom_millis_138);
+	lib_fathom_thread_sleep(nova_millis_17);
 }
 
-void fathom_Thread_run(Thread* this, ExceptionData* exceptionData)
+void nova_Thread_run(Thread* this, ExceptionData* exceptionData)
 {
-	int fathom_i_145;
+	int nova_i_20;
 	
-	fathom_i_145 = 0;
+	nova_i_20 = 0;
 	
-	for (; fathom_i_145 < 10; fathom_i_145++)
+	for (; nova_i_20 < 10; nova_i_20++)
 	{
-		fathom_IO_println(exceptionData, this->prv->fathom_word);
-		fathom_Thread_sleep(exceptionData, this->prv->fathom_millis);
+		nova_IO_println(exceptionData, this->prv->nova_word);
+		nova_Thread_sleep(exceptionData, this->prv->nova_millis);
 	}
 }
 
@@ -96,7 +96,7 @@ FATHOM_THREAD_FUNC lib_fathom_thread_run(FATHOM_THREAD_FUNC_ARG arg)
 	ExceptionData* exceptionData = 0;
 	TRY
 	{
-		fathom_ExceptionData_addCode(exceptionData, exceptionData, 1);
+		nova_ExceptionData_addCode(exceptionData, exceptionData, 1);
 		
 		{
 			fathom_Thread_run(this, exceptionData);
@@ -105,7 +105,7 @@ FATHOM_THREAD_FUNC lib_fathom_thread_run(FATHOM_THREAD_FUNC_ARG arg)
 	CATCH (1)
 	{
 		{
-			fathom_IO_println(exceptionData, fathom_String_String(exceptionData, "An error has occurred..."));
+			nova_IO_println(exceptionData, nova_String_String(exceptionData, "An error has occurred..."));
 		}
 	}
 	FINALLY

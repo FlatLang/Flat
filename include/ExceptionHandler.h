@@ -9,11 +9,11 @@
 	{\
 		jmp_buf jmp_buf;\
 		\
-		ExceptionData* newData = fathom_ExceptionData_ExceptionData(exceptionData, &jmp_buf);\
+		ExceptionData* newData = nova_ExceptionData_ExceptionData(exceptionData, &jmp_buf);\
 		\
 		if (exceptionData)\
 		{\
-			fathom_ExceptionData_setParent(newData, exceptionData, exceptionData);\
+			nova_ExceptionData_setParent(newData, exceptionData, exceptionData);\
 		}\
 		\
 		exceptionData = newData;\
@@ -31,7 +31,7 @@
 #define END_TRY \
 		{\
 			ExceptionData* oldData = exceptionData;\
-			ExceptionData* newData = fathom_ExceptionData_getParent(exceptionData, 0);\
+			ExceptionData* newData = nova_ExceptionData_getParent(exceptionData, 0);\
 			if (newData != 0)\
 			{\
 				exceptionData = newData;\
@@ -47,6 +47,6 @@
 	}\
 	while(0)
 
-#define THROW(x) fathom_ExceptionData_jumpToBuffer(exceptionData, 0, x);
+#define THROW(x) nova_ExceptionData_jumpToBuffer(exceptionData, 0, x);
 
 #endif

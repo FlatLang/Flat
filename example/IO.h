@@ -1,5 +1,5 @@
-#ifndef FILE_IO_FATHOM
-#define FILE_IO_FATHOM
+#ifndef FILE_IO_NOVA
+#define FILE_IO_NOVA
 
 typedef struct IO IO;
 
@@ -22,14 +22,14 @@ CCLASS_CLASS
 )
 
 
-IO* fathom_IO_IO(ExceptionData* exceptionData);
-void fathom_del_IO(IO** this, ExceptionData* exceptionData);
-void fathom_IO_println(ExceptionData* exceptionData, String* fathom_text_13);
-void fathom_IO_print(ExceptionData* exceptionData, String* fathom_text_42);
-void fathom_IO_printi(ExceptionData* exceptionData, int fathom_j_48);
-void fathom_IO_printl(ExceptionData* exceptionData, long_long fathom_j_52);
-int fathom_IO_getInt(ExceptionData* exceptionData);
-char fathom_IO_getChar(ExceptionData* exceptionData);
-String* fathom_IO_getLine(ExceptionData* exceptionData);
-void fathom_IO_waitForEnter(ExceptionData* exceptionData);
+IO* nova_IO_IO(ExceptionData* exceptionData);
+void nova_del_IO(IO** this, ExceptionData* exceptionData);
+void nova_IO_println(ExceptionData* exceptionData, String* nova_text_26);
+void nova_IO_print(ExceptionData* exceptionData, String* nova_text_29);
+void nova_IO_printi(ExceptionData* exceptionData, int nova_j_32);
+void nova_IO_printl(ExceptionData* exceptionData, long_long nova_j_35);
+int nova_IO_getInt(ExceptionData* exceptionData);
+char nova_IO_getChar(ExceptionData* exceptionData);
+String* nova_IO_getLine(ExceptionData* exceptionData);
+void nova_IO_waitForEnter(ExceptionData* exceptionData);
 #endif

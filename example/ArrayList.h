@@ -1,5 +1,5 @@
-#ifndef FILE_ArrayList_FATHOM
-#define FILE_ArrayList_FATHOM
+#ifndef FILE_ArrayList_NOVA
+#define FILE_ArrayList_NOVA
 
 typedef struct ArrayList ArrayList;
 
@@ -23,10 +23,10 @@ CCLASS_CLASS
 )
 
 
-ArrayList* fathom_ArrayList_ArrayList(ExceptionData* exceptionData);
-void fathom_del_ArrayList(ArrayList** this, ExceptionData* exceptionData);
-void fathom_ArrayList_add(ArrayList* this, ExceptionData* exceptionData, int fathom_var_118);
-void fathom_ArrayList_increaseSize(ArrayList* this, ExceptionData* exceptionData);
-int fathom_ArrayList_getSize(ArrayList* this, ExceptionData* exceptionData);
-int fathom_ArrayList_get(ArrayList* this, ExceptionData* exceptionData, int fathom_index_157);
+ArrayList* nova_ArrayList_ArrayList(ExceptionData* exceptionData);
+void nova_del_ArrayList(ArrayList** this, ExceptionData* exceptionData);
+void nova_ArrayList_add(ArrayList* this, ExceptionData* exceptionData, int nova_var_159);
+void nova_ArrayList_increaseSize(ArrayList* this, ExceptionData* exceptionData);
+int nova_ArrayList_getSize(ArrayList* this, ExceptionData* exceptionData);
+int nova_ArrayList_get(ArrayList* this, ExceptionData* exceptionData, int nova_index_168);
 #endif

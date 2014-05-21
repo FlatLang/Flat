@@ -1,5 +1,5 @@
-#ifndef FILE_Time_FATHOM
-#define FILE_Time_FATHOM
+#ifndef FILE_Time_NOVA
+#define FILE_Time_NOVA
 
 typedef struct Time Time;
 
@@ -12,7 +12,6 @@ typedef struct Time Time;
 #include "String.h"
 #include "Math.h"
 #include "DivideByZeroException.h"
-#include <Fathom.h>
 
 CCLASS_CLASS
 (
@@ -20,7 +19,7 @@ CCLASS_CLASS
 )
 
 
-Time* fathom_Time_Time(ExceptionData* exceptionData);
-void fathom_del_Time(Time** this, ExceptionData* exceptionData);
-long_long fathom_Time_currentTimeMillis(ExceptionData* exceptionData);
+Time* nova_Time_Time(ExceptionData* exceptionData);
+void nova_del_Time(Time** this, ExceptionData* exceptionData);
+long_long nova_Time_currentTimeMillis(ExceptionData* exceptionData);
 #endif

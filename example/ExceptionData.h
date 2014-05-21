@@ -1,5 +1,5 @@
-#ifndef FILE_ExceptionData_FATHOM
-#define FILE_ExceptionData_FATHOM
+#ifndef FILE_ExceptionData_NOVA
+#define FILE_ExceptionData_NOVA
 
 typedef struct ExceptionData ExceptionData;
 
@@ -23,14 +23,14 @@ CCLASS_CLASS
 )
 
 
-ExceptionData* fathom_ExceptionData_ExceptionData(ExceptionData* exceptionData, jmp_buf* buf);
-void fathom_del_ExceptionData(ExceptionData** this, ExceptionData* exceptionData);
-ArrayList* fathom_ExceptionData_getCodes(ExceptionData* this, ExceptionData* exceptionData);
-void fathom_ExceptionData_addCode(ExceptionData* this, ExceptionData* exceptionData, int fathom_code_32);
-jmp_buf* fathom_ExceptionData_getBuffer(ExceptionData* this, ExceptionData* exceptionData);
-ExceptionData* fathom_ExceptionData_getCorrectData(ExceptionData* this, ExceptionData* exceptionData, int fathom_code_43);
-jmp_buf* fathom_ExceptionData_getCorrectBuffer(ExceptionData* this, ExceptionData* exceptionData, int fathom_code_50);
-void fathom_ExceptionData_jumpToBuffer(ExceptionData* this, ExceptionData* exceptionData, int fathom_code_56);
-ExceptionData* fathom_ExceptionData_getParent(ExceptionData* this, ExceptionData* exceptionData);
-void fathom_ExceptionData_setParent(ExceptionData* this, ExceptionData* exceptionData, ExceptionData* fathom_p_70);
+ExceptionData* nova_ExceptionData_ExceptionData(ExceptionData* exceptionData, jmp_buf* buf);
+void nova_del_ExceptionData(ExceptionData** this, ExceptionData* exceptionData);
+ArrayList* nova_ExceptionData_getCodes(ExceptionData* this, ExceptionData* exceptionData);
+void nova_ExceptionData_addCode(ExceptionData* this, ExceptionData* exceptionData, int nova_code_136);
+jmp_buf* nova_ExceptionData_getBuffer(ExceptionData* this, ExceptionData* exceptionData);
+ExceptionData* nova_ExceptionData_getCorrectData(ExceptionData* this, ExceptionData* exceptionData, int nova_code_142);
+jmp_buf* nova_ExceptionData_getCorrectBuffer(ExceptionData* this, ExceptionData* exceptionData, int nova_code_145);
+void nova_ExceptionData_jumpToBuffer(ExceptionData* this, ExceptionData* exceptionData, int nova_code_148);
+ExceptionData* nova_ExceptionData_getParent(ExceptionData* this, ExceptionData* exceptionData);
+void nova_ExceptionData_setParent(ExceptionData* this, ExceptionData* exceptionData, ExceptionData* nova_p_154);
 #endif

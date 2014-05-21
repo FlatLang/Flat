@@ -1,5 +1,5 @@
-#ifndef FILE_ListNode_FATHOM
-#define FILE_ListNode_FATHOM
+#ifndef FILE_ListNode_NOVA
+#define FILE_ListNode_NOVA
 
 typedef struct ListNode ListNode;
 
@@ -21,9 +21,9 @@ CCLASS_CLASS
 )
 
 
-ListNode* fathom_ListNode_ListNode(ExceptionData* exceptionData, Object* fathom_data_159);
-void fathom_del_ListNode(ListNode** this, ExceptionData* exceptionData);
-Object* fathom_ListNode_getData(ListNode* this, ExceptionData* exceptionData);
-ListNode* fathom_ListNode_getNext(ListNode* this, ExceptionData* exceptionData);
-void fathom_ListNode_setNext(ListNode* this, ExceptionData* exceptionData, ListNode* fathom_next_168);
+ListNode* nova_ListNode_ListNode(ExceptionData* exceptionData, Object* nova_data_93);
+void nova_del_ListNode(ListNode** this, ExceptionData* exceptionData);
+Object* nova_ListNode_getData(ListNode* this, ExceptionData* exceptionData);
+ListNode* nova_ListNode_getNext(ListNode* this, ExceptionData* exceptionData);
+void nova_ListNode_setNext(ListNode* this, ExceptionData* exceptionData, ListNode* nova_next_128);
 #endif

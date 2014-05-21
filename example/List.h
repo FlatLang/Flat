@@ -1,5 +1,5 @@
-#ifndef FILE_List_FATHOM
-#define FILE_List_FATHOM
+#ifndef FILE_List_NOVA
+#define FILE_List_NOVA
 
 typedef struct List List;
 
@@ -22,9 +22,9 @@ CCLASS_CLASS
 )
 
 
-List* fathom_List_List(ExceptionData* exceptionData);
-void fathom_del_List(List** this, ExceptionData* exceptionData);
-ListNode* fathom_List_getFirst(List* this, ExceptionData* exceptionData);
-void fathom_List_add(List* this, ExceptionData* exceptionData, Object* fathom_data_90);
-void fathom_List_remove(List* this, ExceptionData* exceptionData, Object* fathom_data_96);
+List* nova_List_List(ExceptionData* exceptionData);
+void nova_del_List(List** this, ExceptionData* exceptionData);
+ListNode* nova_List_getFirst(List* this, ExceptionData* exceptionData);
+void nova_List_add(List* this, ExceptionData* exceptionData, Object* nova_data_118);
+void nova_List_remove(List* this, ExceptionData* exceptionData, Object* nova_data_121);
 #endif

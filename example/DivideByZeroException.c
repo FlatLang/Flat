@@ -9,7 +9,7 @@
 #include "Math.h"
 #include "DivideByZeroException.h"
 
-DivideByZeroException* fathom_DivideByZeroException_DivideByZeroException(ExceptionData* exceptionData)
+DivideByZeroException* nova_DivideByZeroException_DivideByZeroException(ExceptionData* exceptionData)
 {
 	CCLASS_NEW(DivideByZeroException, this,);
 	
@@ -19,7 +19,7 @@ DivideByZeroException* fathom_DivideByZeroException_DivideByZeroException(Except
 	return this;
 }
 
-void fathom_del_DivideByZeroException(DivideByZeroException** this, ExceptionData* exceptionData)
+void nova_del_DivideByZeroException(DivideByZeroException** this, ExceptionData* exceptionData)
 {
 	if (!*this)
 	{

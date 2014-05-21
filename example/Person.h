@@ -1,5 +1,5 @@
-#ifndef FILE_Person_FATHOM
-#define FILE_Person_FATHOM
+#ifndef FILE_Person_NOVA
+#define FILE_Person_NOVA
 
 typedef struct Person Person;
 
@@ -21,8 +21,8 @@ CCLASS_CLASS
 )
 
 
-Person* fathom_Person_Person(ExceptionData* exceptionData, String* fathom_name_101, int fathom_age_101);
-void fathom_del_Person(Person** this, ExceptionData* exceptionData);
-int fathom_Person_getAge(Person* this, ExceptionData* exceptionData);
-String* fathom_Person_getName(Person* this, ExceptionData* exceptionData);
+Person* nova_Person_Person(ExceptionData* exceptionData, String* nova_name_73, int nova_age_73);
+void nova_del_Person(Person** this, ExceptionData* exceptionData);
+int nova_Person_getAge(Person* this, ExceptionData* exceptionData);
+String* nova_Person_getName(Person* this, ExceptionData* exceptionData);
 #endif

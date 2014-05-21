@@ -9,7 +9,7 @@
 #include "Math.h"
 #include "DivideByZeroException.h"
 
-Object* fathom_Object_Object(ExceptionData* exceptionData)
+Object* nova_Object_Object(ExceptionData* exceptionData)
 {
 	CCLASS_NEW(Object, this,);
 	
@@ -19,7 +19,7 @@ Object* fathom_Object_Object(ExceptionData* exceptionData)
 	return this;
 }
 
-void fathom_del_Object(Object** this, ExceptionData* exceptionData)
+void nova_del_Object(Object** this, ExceptionData* exceptionData)
 {
 	if (!*this)
 	{
@@ -32,7 +32,7 @@ void fathom_del_Object(Object** this, ExceptionData* exceptionData)
 	free(*this);
 }
 
-String* fathom_Object_toString(Object* this, ExceptionData* exceptionData)
+String* nova_Object_toString(Object* this, ExceptionData* exceptionData)
 {
-	return fathom_String_String(exceptionData, "Nothing");
+	return nova_String_String(exceptionData, "Nothing");
 }

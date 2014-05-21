@@ -14,25 +14,25 @@
 CCLASS_PRIVATE
 (
 	jmp_buf* buffer;
-	ExceptionData* fathom_parent;
-	ArrayList* fathom_codes;
+	ExceptionData* nova_parent;
+	ArrayList* nova_codes;
 )
 
-ExceptionData* fathom_ExceptionData_ExceptionData(ExceptionData* exceptionData, jmp_buf* buf)
+ExceptionData* nova_ExceptionData_ExceptionData(ExceptionData* exceptionData, jmp_buf* buf)
 {
 	CCLASS_NEW(ExceptionData, this);
 	
-	this->prv->fathom_parent = 0;
-	this->prv->fathom_codes = 0;
+	this->prv->nova_parent = 0;
+	this->prv->nova_codes = 0;
 	{
 		this->prv->buffer = buf;
-		this->prv->fathom_codes = fathom_ArrayList_ArrayList(exceptionData);
+		this->prv->nova_codes = nova_ArrayList_ArrayList(exceptionData);
 	}
 	
 	return this;
 }
 
-void fathom_del_ExceptionData(ExceptionData** this, ExceptionData* exceptionData)
+void nova_del_ExceptionData(ExceptionData** this, ExceptionData* exceptionData)
 {
 	if (!*this)
 	{
@@ -40,8 +40,8 @@ void fathom_del_ExceptionData(ExceptionData** this, ExceptionData* exceptionData
 	}
 	
 	
-	fathom_del_ExceptionData(&(*this)->prv->fathom_parent, exceptionData);
-	fathom_del_ArrayList(&(*this)->prv->fathom_codes, exceptionData);
+	nova_del_ExceptionData(&(*this)->prv->nova_parent, exceptionData);
+	nova_del_ArrayList(&(*this)->prv->nova_codes, exceptionData);
 	free((*this)->prv);
 	
 	{
@@ -49,82 +49,82 @@ void fathom_del_ExceptionData(ExceptionData** this, ExceptionData* exceptionData
 	free(*this);
 }
 
-ArrayList* fathom_ExceptionData_getCodes(ExceptionData* this, ExceptionData* exceptionData)
+ArrayList* nova_ExceptionData_getCodes(ExceptionData* this, ExceptionData* exceptionData)
 {
-	return this->prv->fathom_codes;
+	return this->prv->nova_codes;
 }
 
-void fathom_ExceptionData_addCode(ExceptionData* this, ExceptionData* exceptionData, int fathom_code_32)
+void nova_ExceptionData_addCode(ExceptionData* this, ExceptionData* exceptionData, int nova_code_136)
 {
-	ArrayList* fathom_codes;
+	ArrayList* nova_codes;
 }
 
-jmp_buf* fathom_ExceptionData_getBuffer(ExceptionData* this, ExceptionData* exceptionData)
+jmp_buf* nova_ExceptionData_getBuffer(ExceptionData* this, ExceptionData* exceptionData)
 {
 	return this->prv->buffer;
 }
 
-ExceptionData* fathom_ExceptionData_getCorrectData(ExceptionData* this, ExceptionData* exceptionData, int fathom_code_43)
+ExceptionData* nova_ExceptionData_getCorrectData(ExceptionData* this, ExceptionData* exceptionData, int nova_code_142)
 {
-	ExceptionData* fathom_data_43;
+	ExceptionData* nova_data_142;
 	
-	fathom_data_43 = this;
-	while (fathom_data_43 != 0)
+	nova_data_142 = this;
+	while (nova_data_142 != 0)
 	{
-		ArrayList* fathom_list_193;
-		int fathom_i_193;
+		ArrayList* nova_list_192;
+		int nova_i_192;
 		
-		fathom_list_193 = fathom_ExceptionData_getCodes(fathom_data_43, exceptionData);
-		fathom_i_193 = 0;
+		nova_list_192 = nova_ExceptionData_getCodes(nova_data_142, exceptionData);
+		nova_i_192 = 0;
 		
-		for (; fathom_i_193 < fathom_ArrayList_getSize(fathom_list_193, exceptionData); fathom_i_193++)
+		for (; nova_i_192 < nova_ArrayList_getSize(nova_list_192, exceptionData); nova_i_192++)
 		{
-			if (fathom_ArrayList_get(fathom_list_193, exceptionData, fathom_i_193) == fathom_code_43)
+			if (nova_ArrayList_get(nova_list_192, exceptionData, nova_i_192) == nova_code_142)
 			{
-				return fathom_data_43;
+				return nova_data_142;
 			}
 		}
-		if (fathom_ExceptionData_getParent(fathom_data_43, exceptionData) == 0)
+		if (nova_ExceptionData_getParent(nova_data_142, exceptionData) == 0)
 		{
-			return fathom_data_43;
+			return nova_data_142;
 		}
-		fathom_data_43 = fathom_ExceptionData_getParent(fathom_data_43, exceptionData);
+		nova_data_142 = nova_ExceptionData_getParent(nova_data_142, exceptionData);
 	}
 	return 0;
 }
 
-jmp_buf* fathom_ExceptionData_getCorrectBuffer(ExceptionData* this, ExceptionData* exceptionData, int fathom_code_50)
+jmp_buf* nova_ExceptionData_getCorrectBuffer(ExceptionData* this, ExceptionData* exceptionData, int nova_code_145)
 {
-	ExceptionData* fathom_data_50;
+	ExceptionData* nova_data_145;
 	
-	fathom_data_50 = fathom_ExceptionData_getCorrectData(this, exceptionData, fathom_code_50);
-	if (fathom_data_50 == 0)
+	nova_data_145 = nova_ExceptionData_getCorrectData(this, exceptionData, nova_code_145);
+	if (nova_data_145 == 0)
 	{
 		return 0;
 	}
-	return fathom_ExceptionData_getBuffer(fathom_data_50, exceptionData);
+	return nova_ExceptionData_getBuffer(nova_data_145, exceptionData);
 }
 
-void fathom_ExceptionData_jumpToBuffer(ExceptionData* this, ExceptionData* exceptionData, int fathom_code_56)
+void nova_ExceptionData_jumpToBuffer(ExceptionData* this, ExceptionData* exceptionData, int nova_code_148)
 {
-	ExceptionData* fathom_data_56;
+	ExceptionData* nova_data_148;
 	jmp_buf* buf;
 	
-	fathom_data_56 = fathom_ExceptionData_getCorrectData(this, exceptionData, fathom_code_56);
-	if (fathom_ExceptionData_getParent(fathom_data_56, exceptionData) == 0)
+	nova_data_148 = nova_ExceptionData_getCorrectData(this, exceptionData, nova_code_148);
+	if (nova_ExceptionData_getParent(nova_data_148, exceptionData) == 0)
 	{
-		fathom_code_56 = 1;
+		nova_code_148 = 1;
 	}
-	buf = fathom_ExceptionData_getBuffer(fathom_data_56, exceptionData);
-	longjmp(*buf, fathom_code_56);
+	buf = nova_ExceptionData_getBuffer(nova_data_148, exceptionData);
+	longjmp(*buf, nova_code_148);
 }
 
-ExceptionData* fathom_ExceptionData_getParent(ExceptionData* this, ExceptionData* exceptionData)
+ExceptionData* nova_ExceptionData_getParent(ExceptionData* this, ExceptionData* exceptionData)
 {
-	return this->prv->fathom_parent;
+	return this->prv->nova_parent;
 }
 
-void fathom_ExceptionData_setParent(ExceptionData* this, ExceptionData* exceptionData, ExceptionData* fathom_p_70)
+void nova_ExceptionData_setParent(ExceptionData* this, ExceptionData* exceptionData, ExceptionData* nova_p_154)
 {
-	this->prv->fathom_parent = fathom_p_70;
+	this->prv->nova_parent = nova_p_154;
 }

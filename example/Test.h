@@ -1,5 +1,5 @@
-#ifndef FILE_Test_FATHOM
-#define FILE_Test_FATHOM
+#ifndef FILE_Test_NOVA
+#define FILE_Test_NOVA
 
 typedef struct Test Test;
 
@@ -22,7 +22,7 @@ CCLASS_CLASS
 )
 
 
-Test* fathom_Test_Test(ExceptionData* exceptionData);
-void fathom_del_Test(Test** this, ExceptionData* exceptionData);
-void fathom_Test_main(ExceptionData* exceptionData, String** fathom_args_156);
+Test* nova_Test_Test(ExceptionData* exceptionData);
+void nova_del_Test(Test** this, ExceptionData* exceptionData);
+void nova_Test_main(ExceptionData* exceptionData, String** nova_args_6);
 #endif

@@ -1,5 +1,5 @@
-#ifndef FILE_String_FATHOM
-#define FILE_String_FATHOM
+#ifndef FILE_String_NOVA
+#define FILE_String_NOVA
 
 typedef struct String String;
 
@@ -18,14 +18,14 @@ CCLASS_CLASS
 (
 	String, 
 	
-	int fathom_length;
+	int nova_length;
 	struct Private* prv;
 )
 
 
-String* fathom_String_String(ExceptionData* exceptionData, char* fathom_data_135);
-void fathom_del_String(String** this, ExceptionData* exceptionData);
-int fathom_String_getLength(String* this, ExceptionData* exceptionData);
-char* fathom_String_toCharArray(String* this, ExceptionData* exceptionData);
-String* fathom_String_concat(String* this, ExceptionData* exceptionData, String* fathom_str_155);
+String* nova_String_String(ExceptionData* exceptionData, char* nova_data_74);
+void nova_del_String(String** this, ExceptionData* exceptionData);
+int nova_String_getLength(String* this, ExceptionData* exceptionData);
+char* nova_String_toCharArray(String* this, ExceptionData* exceptionData);
+String* nova_String_concat(String* this, ExceptionData* exceptionData, String* nova_str_103);
 #endif
