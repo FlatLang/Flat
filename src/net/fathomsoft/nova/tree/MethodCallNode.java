@@ -32,7 +32,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 10:04:31 PM
- * @version	v0.2.4 May 17, 2014 at 9:55:04 PM
+ * @version	v0.2.5 May 22, 2014 at 2:56:28 PM
  */
 public class MethodCallNode extends IdentifierNode
 {
@@ -489,25 +489,9 @@ public class MethodCallNode extends IdentifierNode
 					argument = StringUtils.trimSurroundingWhitespace(argument.substring(1));
 				}
 				
-				TreeNode arg = TreeNode.getExistingNode(parent, argument);
+				TreeNode arg = BinaryOperatorNode.decodeStatement(parent, argument, location);
 				
-				if (arg != null)
-				{
-					arg = arg.clone();
-					
-					VariableNode var = (VariableNode)arg;
-					
-					if (prefix == '*')
-					{
-						var.setPointer(true);
-					}
-					else if (prefix == '&')
-					{
-						var.setReference(true);
-					}
-				}
-				
-				if (SyntaxUtils.isLiteral(argument))
+				if (arg == null && SyntaxUtils.isLiteral(argument))
 				{
 					LiteralNode literal = new LiteralNode();
 					literal.setValue(argument, isWithinExternalContext());
@@ -516,11 +500,21 @@ public class MethodCallNode extends IdentifierNode
 				}
 				if (arg == null)
 				{
-					arg = BinaryOperatorNode.decodeStatement(parent, argument, location);
-				}
-				if (arg == null)
-				{
-					arg = TreeNode.decodeScopeContents(parent, argument, location);
+					arg = TreeNode.decodeScopeContents(parent, argument, location);//TreeNode.getExistingNode(parent, argument);
+					
+					if (arg != null && (prefix == '*' || prefix == '&'))
+					{
+						VariableNode var = (VariableNode)arg;
+						
+						if (prefix == '*')
+						{
+							var.setPointer(true);
+						}
+						else if (prefix == '&')
+						{
+							var.setReference(true);
+						}
+					}
 				}
 				if (arg == null && isWithinExternalContext())
 				{
