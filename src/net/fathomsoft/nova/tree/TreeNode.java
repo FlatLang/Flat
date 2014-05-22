@@ -53,7 +53,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:00:11 PM
- * @version	v0.2.4 May 17, 2014 at 9:55:04 PM
+ * @version	v0.2.5 May 22, 2014 at 2:56:28 PM
  */
 public abstract class TreeNode
 {
@@ -736,6 +736,32 @@ public abstract class TreeNode
 	}
 	
 	/**
+	 * Generate a String containing information of where the TreeNode is
+	 * located in reference to the source input files.
+	 * 
+	 * @return A String containing information of where the TreeNode is
+	 * 		located in reference to the source input files.
+	 */
+	public String getLocationInfo()
+	{
+		FileNode file = getFileNode();
+		Location loc  = getLocationIn();
+		
+		String   info = "";
+		
+		if (file != null)
+		{
+			info += " in file " + file.getName();
+		}
+		if (loc != null)
+		{
+			info += " on line number " + loc.getLineNumber() + " at offset " + loc.getOffset();
+		}
+		
+		return info;
+	}
+	
+	/**
 	 * If the specified node is within an try block, return the node for
 	 * the try block.
 	 * 
@@ -893,6 +919,14 @@ public abstract class TreeNode
 	 */
 	public static TreeNode decodeScopeContents(TreeNode parent, String statement, Location location)
 	{
+		if (SyntaxUtils.isLiteral(statement))
+		{
+			LiteralNode literal = new LiteralNode();
+			literal.setValue(statement, parent.isWithinExternalContext());
+			
+			return literal;
+		}
+		
 		TreeNode root = null;
 		TreeNode node = decodeStatement(parent, statement, location, PRE_VALUE_DECODE);
 		
@@ -956,13 +990,26 @@ public abstract class TreeNode
 			node = decodeValue(parent, current, location);
 		}
 		
-		if (root != null)
+		if (root != null && node != null)
 		{
 			root.detach();
-			if(node==null)System.err.println(current + " : " + statement + " " + ((VariableNode)parent).getName());
+			
 			parent.addChild(node);
 			
 			return root;
+		}
+		else if (node == null)
+		{
+			if (parent instanceof VariableNode)
+			{
+//				throw new RuntimeException(statement + parent.getLocationInfo());
+//				System.err.println(current + " : " + statement + " " + ((VariableNode)parent).getName());
+			}
+			else
+			{
+//				throw new RuntimeException("sumthin gone rong wit " + statement + parent.getLocationInfo());
+//				System.err.println("sumthin gone rong wit " + statement + parent.getLocationInfo());
+			}
 		}
 		
 		return node;
@@ -1032,17 +1079,33 @@ public abstract class TreeNode
 		}
 		else if (SyntaxUtils.isValidIdentifier(statement))
 		{
+			ClassNode clazz = null;
+			
 			if (parent instanceof LocalVariableNode || parent instanceof FieldNode)
 			{
 				VariableNode var = (VariableNode)parent;
 				
-				ClassNode clazz  = var.getProgramNode().getClass(var.getType());
+				clazz  = var.getProgramNode().getClass(var.getType());
+			}
+			
+			if (clazz != null)
+			{
+				VariableNode var   = (VariableNode)parent;
 				
-				FieldNode field  = clazz.getField(statement);
+				FieldNode    field = clazz.getField(statement);
 				
-				if (field != null && SyntaxUtils.isVisible(var, field))
+				if (field != null)
 				{
-					return field;
+					if (SyntaxUtils.isVisible(var, field))
+					{
+						return field;
+					}
+					else
+					{
+						SyntaxMessage.error("Field '" + field.getName() + "' is not accessible", parent.getFileNode(), parent.getLocationIn(), parent.getController());
+						
+						return null;
+					}
 				}
 			}
 			
@@ -1074,11 +1137,11 @@ public abstract class TreeNode
 				scopeNode = getAncestorWithScope(scopeNode.getParent());
 			}
 			
-			ClassNode classNode = (ClassNode)parent.getAncestorOfType(ClassNode.class, true);
+			clazz = (ClassNode)parent.getAncestorOfType(ClassNode.class, true);
 			
-			if (classNode != null)
+			if (clazz != null)
 			{
-				FieldNode field = classNode.getField(statement);
+				FieldNode field = clazz.getField(statement);
 				
 				if (field != null)
 				{
@@ -1086,33 +1149,33 @@ public abstract class TreeNode
 				}
 			}
 		}
-		else if (SyntaxUtils.isValidIdentifierAccess(statement))
-		{
-			if (statement.indexOf('.') >= 0)
-			{
-				ClassNode    reference = (ClassNode)parent.getAncestorOfType(ClassNode.class);
-				
-				ClassNode    type      = SyntaxUtils.getClassType(reference, statement);
-				
-				String       var       = statement.substring(statement.lastIndexOf('.') + 1);
-				
-				if (type == null)
-				{
-					FieldNode field = reference.getField(var);
-					
-					if (field != null && field.isExternal())
-					{
-						return field;
-					}
-					
-					return null;
-				}
-				
-				VariableNode n = type.getDeclaration(SyntaxUtils.getIdentifierName(var));
-				
-				return n;
-			}
-		}
+//		else if (SyntaxUtils.isValidIdentifierAccess(statement))
+//		{
+//			if (statement.indexOf('.') >= 0)
+//			{
+//				ClassNode    reference = (ClassNode)parent.getAncestorOfType(ClassNode.class);
+//				
+//				ClassNode    type      = SyntaxUtils.getClassType(reference, statement);
+//				
+//				String       var       = statement.substring(statement.lastIndexOf('.') + 1);
+//				
+//				if (type == null)
+//				{
+//					FieldNode field = reference.getField(var);
+//					
+//					if (field != null && field.isExternal())
+//					{
+//						return field;
+//					}
+//					
+//					return null;
+//				}
+//				
+//				VariableNode n = type.getDeclaration(SyntaxUtils.getIdentifierName(var));
+//				
+//				return n;
+//			}
+//		}
 		
 		return null;
 	}
