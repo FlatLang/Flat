@@ -53,7 +53,7 @@ public class DimensionsNode extends TreeNode
 	{
 		DimensionsNode node = new DimensionsNode();
 		
-		return clone(node);
+		return cloneTo(node);
 	}
 	
 	/**
@@ -63,9 +63,9 @@ public class DimensionsNode extends TreeNode
 	 * @param node The node to copy the data into.
 	 * @return The cloned node.
 	 */
-	public DimensionsNode clone(DimensionsNode node)
+	public DimensionsNode cloneTo(DimensionsNode node)
 	{
-		super.clone(node);
+		super.cloneTo(node);
 		
 		return node;
 	}

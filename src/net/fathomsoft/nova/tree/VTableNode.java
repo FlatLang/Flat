@@ -235,7 +235,7 @@ public class VTableNode extends ClassNode
 	{
 		VTableNode node = new VTableNode();
 		
-		return clone(node);
+		return cloneTo(node);
 	}
 	
 	/**
@@ -245,9 +245,9 @@ public class VTableNode extends ClassNode
 	 * @param node The node to copy the data into.
 	 * @return The cloned node.
 	 */
-	public VTableNode clone(VTableNode node)
+	public VTableNode cloneTo(VTableNode node)
 	{
-		super.clone(node);
+		super.cloneTo(node);
 		
 		return node;
 	}

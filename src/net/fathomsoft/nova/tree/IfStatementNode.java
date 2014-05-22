@@ -213,7 +213,7 @@ public class IfStatementNode extends TreeNode
 	{
 		IfStatementNode node = new IfStatementNode();
 		
-		return clone(node);
+		return cloneTo(node);
 	}
 	
 	/**
@@ -223,9 +223,9 @@ public class IfStatementNode extends TreeNode
 	 * @param node The node to copy the data into.
 	 * @return The cloned node.
 	 */
-	public IfStatementNode clone(IfStatementNode node)
+	public IfStatementNode cloneTo(IfStatementNode node)
 	{
-		super.clone(node);
+		super.cloneTo(node);
 		
 		return node;
 	}

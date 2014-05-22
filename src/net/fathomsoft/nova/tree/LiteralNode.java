@@ -152,7 +152,7 @@ public class LiteralNode extends TreeNode
 	{
 		LiteralNode node = new LiteralNode();
 		
-		return clone(node);
+		return cloneTo(node);
 	}
 	
 	/**
@@ -162,9 +162,9 @@ public class LiteralNode extends TreeNode
 	 * @param node The node to copy the data into.
 	 * @return The cloned node.
 	 */
-	public LiteralNode clone(LiteralNode node)
+	public LiteralNode cloneTo(LiteralNode node)
 	{
-		super.clone(node);
+		super.cloneTo(node);
 		
 		node.value = value;
 		

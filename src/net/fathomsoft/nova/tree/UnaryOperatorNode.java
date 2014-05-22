@@ -198,7 +198,7 @@ public class UnaryOperatorNode extends TreeNode
 	{
 		UnaryOperatorNode node = new UnaryOperatorNode();
 		
-		return clone(node);
+		return cloneTo(node);
 	}
 	
 	/**
@@ -208,9 +208,9 @@ public class UnaryOperatorNode extends TreeNode
 	 * @param node The node to copy the data into.
 	 * @return The cloned node.
 	 */
-	public UnaryOperatorNode clone(UnaryOperatorNode node)
+	public UnaryOperatorNode cloneTo(UnaryOperatorNode node)
 	{
-		super.clone(node);
+		super.cloneTo(node);
 		
 		return node;
 	}

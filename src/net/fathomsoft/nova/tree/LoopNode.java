@@ -139,7 +139,7 @@ public class LoopNode extends TreeNode
 	{
 		LoopNode node = new LoopNode();
 		
-		return clone(node);
+		return cloneTo(node);
 	}
 	
 	/**
@@ -149,9 +149,9 @@ public class LoopNode extends TreeNode
 	 * @param node The node to copy the data into.
 	 * @return The cloned node.
 	 */
-	public LoopNode clone(LoopNode node)
+	public LoopNode cloneTo(LoopNode node)
 	{
-		super.clone(node);
+		super.cloneTo(node);
 		
 		return node;
 	}

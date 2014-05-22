@@ -330,7 +330,7 @@ public class DestructorNode extends MethodNode
 	{
 		DestructorNode node = new DestructorNode();
 		
-		return clone(node);
+		return cloneTo(node);
 	}
 	
 	/**
@@ -340,9 +340,9 @@ public class DestructorNode extends MethodNode
 	 * @param node The node to copy the data into.
 	 * @return The cloned node.
 	 */
-	public DestructorNode clone(DestructorNode node)
+	public DestructorNode cloneTo(DestructorNode node)
 	{
-		super.clone(node);
+		super.cloneTo(node);
 		
 		return node;
 	}

@@ -18,6 +18,7 @@
 package net.fathomsoft.nova.tree;
 
 import net.fathomsoft.nova.error.SyntaxMessage;
+import net.fathomsoft.nova.tree.variables.ArrayNode;
 import net.fathomsoft.nova.util.Location;
 import net.fathomsoft.nova.util.Patterns;
 import net.fathomsoft.nova.util.Regex;
@@ -177,7 +178,7 @@ public class InstantiationNode extends IdentifierNode
 	{
 		InstantiationNode node = new InstantiationNode();
 		
-		return clone(node);
+		return cloneTo(node);
 	}
 	
 	/**
@@ -187,9 +188,9 @@ public class InstantiationNode extends IdentifierNode
 	 * @param node The node to copy the data into.
 	 * @return The cloned node.
 	 */
-	public InstantiationNode clone(InstantiationNode node)
+	public InstantiationNode cloneTo(InstantiationNode node)
 	{
-		super.clone(node);
+		super.cloneTo(node);
 		
 		return node;
 	}

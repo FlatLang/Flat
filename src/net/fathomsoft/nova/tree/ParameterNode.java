@@ -148,7 +148,7 @@ public class ParameterNode extends LocalDeclarationNode
 		LocalDeclarationNode node = LocalDeclarationNode.decodeStatement(parent, statement, location);
 		
 		ParameterNode n = new ParameterNode();
-		node.clone(n);
+		node.cloneTo(n);
 		
 		return n;
 	}
@@ -161,7 +161,7 @@ public class ParameterNode extends LocalDeclarationNode
 //	{
 //		ParameterNode node = new ParameterNode();
 //		
-//		return clone(node);
+//		return cloneTo(node);
 //	}
 //	
 //	/**
@@ -171,9 +171,9 @@ public class ParameterNode extends LocalDeclarationNode
 //	 * @param node The node to copy the data into.
 //	 * @return The cloned node.
 //	 */
-//	public ParameterNode clone(ParameterNode node)
+//	public ParameterNode cloneTo(ParameterNode node)
 //	{
-//		super.clone(node);
+//		super.cloneTo(node);
 //		
 //		node.setDefaultValue(getDefaultValue());
 //		

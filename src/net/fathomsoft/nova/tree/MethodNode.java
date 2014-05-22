@@ -647,7 +647,7 @@ public class MethodNode extends InstanceDeclarationNode
 	{
 		MethodNode node = new MethodNode();
 		
-		return clone(node);
+		return cloneTo(node);
 	}
 	
 	/**
@@ -657,9 +657,9 @@ public class MethodNode extends InstanceDeclarationNode
 	 * @param node The node to copy the data into.
 	 * @return The cloned node.
 	 */
-	public MethodNode clone(MethodNode node)
+	public MethodNode cloneTo(MethodNode node)
 	{
-		super.clone(node);
+		super.cloneTo(node);
 		
 		for (MethodNode child : overridingMethods)
 		{

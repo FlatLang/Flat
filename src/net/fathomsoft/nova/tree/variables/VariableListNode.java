@@ -144,7 +144,7 @@ public class VariableListNode extends TreeNode
 	{
 		VariableListNode node = new VariableListNode();
 		
-		return clone(node);
+		return cloneTo(node);
 	}
 	
 	/**
@@ -154,9 +154,9 @@ public class VariableListNode extends TreeNode
 	 * @param node The node to copy the data into.
 	 * @return The cloned node.
 	 */
-	public VariableListNode clone(VariableListNode node)
+	public VariableListNode cloneTo(VariableListNode node)
 	{
-		super.clone(node);
+		super.cloneTo(node);
 		
 		return node;
 	}

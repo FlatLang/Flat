@@ -157,7 +157,7 @@ public class TryNode extends ExceptionHandlingNode
 	{
 		TryNode node = new TryNode();
 		
-		return clone(node);
+		return cloneTo(node);
 	}
 	
 	/**
@@ -167,9 +167,9 @@ public class TryNode extends ExceptionHandlingNode
 	 * @param node The node to copy the data into.
 	 * @return The cloned node.
 	 */
-	public TryNode clone(TryNode node)
+	public TryNode cloneTo(TryNode node)
 	{
-		super.clone(node);
+		super.cloneTo(node);
 		
 		return node;
 	}

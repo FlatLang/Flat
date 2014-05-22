@@ -137,7 +137,7 @@ public class ExceptionHandlingNode extends TreeNode
 	{
 		ExceptionHandlingNode node = new ExceptionHandlingNode();
 		
-		return clone(node);
+		return cloneTo(node);
 	}
 	
 	/**
@@ -147,9 +147,9 @@ public class ExceptionHandlingNode extends TreeNode
 	 * @param node The node to copy the data into.
 	 * @return The cloned node.
 	 */
-	public ExceptionHandlingNode clone(ExceptionHandlingNode node)
+	public ExceptionHandlingNode cloneTo(ExceptionHandlingNode node)
 	{
-		super.clone(node);
+		super.cloneTo(node);
 		
 		return node;
 	}

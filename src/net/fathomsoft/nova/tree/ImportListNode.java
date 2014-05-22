@@ -143,7 +143,7 @@ public class ImportListNode extends TreeNode
 	{
 		ImportListNode node = new ImportListNode();
 		
-		return clone(node);
+		return cloneTo(node);
 	}
 	
 	/**
@@ -153,9 +153,9 @@ public class ImportListNode extends TreeNode
 	 * @param node The node to copy the data into.
 	 * @return The cloned node.
 	 */
-	public ImportListNode clone(ImportListNode node)
+	public ImportListNode cloneTo(ImportListNode node)
 	{
-		super.clone(node);
+		super.cloneTo(node);
 		
 		return node;
 	}

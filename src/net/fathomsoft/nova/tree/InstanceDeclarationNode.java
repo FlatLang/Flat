@@ -345,7 +345,7 @@ public class InstanceDeclarationNode extends VariableNode
 	{
 		InstanceDeclarationNode node = new InstanceDeclarationNode();
 		
-		return clone(node);
+		return cloneTo(node);
 	}
 	
 	/**
@@ -355,9 +355,9 @@ public class InstanceDeclarationNode extends VariableNode
 	 * @param node The node to copy the data into.
 	 * @return The cloned node.
 	 */
-	public InstanceDeclarationNode clone(InstanceDeclarationNode node)
+	public InstanceDeclarationNode cloneTo(InstanceDeclarationNode node)
 	{
-		super.clone(node);
+		super.cloneTo(node);
 		
 		node.staticVal  = staticVal;
 		node.visibility = visibility;

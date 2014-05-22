@@ -178,7 +178,7 @@ public class LocalDeclarationNode extends LocalVariableNode
 //	{
 //		LocalDeclarationNode node = new LocalDeclarationNode();
 //		
-//		return clone(node);
+//		return cloneTo(node);
 //	}
 //	
 //	/**
@@ -188,9 +188,9 @@ public class LocalDeclarationNode extends LocalVariableNode
 //	 * @param node The node to copy the data into.
 //	 * @return The cloned node.
 //	 */
-//	public LocalDeclarationNode clone(LocalDeclarationNode node)
+//	public LocalDeclarationNode cloneTo(LocalDeclarationNode node)
 //	{
-//		super.clone(node);
+//		super.cloneTo(node);
 //		
 //		return node;
 //	}

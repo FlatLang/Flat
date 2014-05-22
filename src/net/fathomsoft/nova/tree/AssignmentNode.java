@@ -287,7 +287,7 @@ public class AssignmentNode extends TreeNode
 	{
 		AssignmentNode node = new AssignmentNode();
 		
-		return clone(node);
+		return cloneTo(node);
 	}
 	
 	/**
@@ -297,9 +297,9 @@ public class AssignmentNode extends TreeNode
 	 * @param node The node to copy the data into.
 	 * @return The cloned node.
 	 */
-	public AssignmentNode clone(AssignmentNode node)
+	public AssignmentNode cloneTo(AssignmentNode node)
 	{
-		super.clone(node);
+		super.cloneTo(node);
 		
 		return node;
 	}

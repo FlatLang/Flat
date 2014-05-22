@@ -108,7 +108,7 @@ public class PrivateFieldListNode extends TreeNode
 	{
 		PrivateFieldListNode node = new PrivateFieldListNode();
 		
-		return clone(node);
+		return cloneTo(node);
 	}
 	
 	/**
@@ -118,9 +118,9 @@ public class PrivateFieldListNode extends TreeNode
 	 * @param node The node to copy the data into.
 	 * @return The cloned node.
 	 */
-	public PrivateFieldListNode clone(PrivateFieldListNode node)
+	public PrivateFieldListNode cloneTo(PrivateFieldListNode node)
 	{
-		super.clone(node);
+		super.cloneTo(node);
 		
 		return node;
 	}

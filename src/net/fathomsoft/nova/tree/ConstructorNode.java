@@ -389,7 +389,7 @@ public class ConstructorNode extends MethodNode
 	{
 		ConstructorNode node = new ConstructorNode();
 		
-		return clone(node);
+		return cloneTo(node);
 	}
 	
 	/**
@@ -399,9 +399,9 @@ public class ConstructorNode extends MethodNode
 	 * @param node The node to copy the data into.
 	 * @return The cloned node.
 	 */
-	public ConstructorNode clone(ConstructorNode node)
+	public ConstructorNode cloneTo(ConstructorNode node)
 	{
-		super.clone(node);
+		super.cloneTo(node);
 		
 		return node;
 	}

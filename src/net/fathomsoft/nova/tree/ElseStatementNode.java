@@ -193,7 +193,7 @@ public class ElseStatementNode extends TreeNode
 	{
 		ElseStatementNode node = new ElseStatementNode();
 		
-		return clone(node);
+		return cloneTo(node);
 	}
 	
 	/**
@@ -203,9 +203,9 @@ public class ElseStatementNode extends TreeNode
 	 * @param node The node to copy the data into.
 	 * @return The cloned node.
 	 */
-	public ElseStatementNode clone(ElseStatementNode node)
+	public ElseStatementNode cloneTo(ElseStatementNode node)
 	{
-		super.clone(node);
+		super.cloneTo(node);
 		
 		return node;
 	}

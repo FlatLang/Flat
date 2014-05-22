@@ -170,7 +170,7 @@ public class ThrowNode extends ExceptionHandlingNode
 	{
 		ThrowNode node = new ThrowNode();
 		
-		return clone(node);
+		return cloneTo(node);
 	}
 	
 	/**
@@ -180,9 +180,9 @@ public class ThrowNode extends ExceptionHandlingNode
 	 * @param node The node to copy the data into.
 	 * @return The cloned node.
 	 */
-	public ThrowNode clone(ThrowNode node)
+	public ThrowNode cloneTo(ThrowNode node)
 	{
-		super.clone(node);
+		super.cloneTo(node);
 		
 		return node;
 	}

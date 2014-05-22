@@ -241,7 +241,7 @@ public class ForLoopNode extends LoopNode
 	{
 		ForLoopNode node = new ForLoopNode();
 		
-		return clone(node);
+		return cloneTo(node);
 	}
 	
 	/**
@@ -251,9 +251,9 @@ public class ForLoopNode extends LoopNode
 	 * @param node The node to copy the data into.
 	 * @return The cloned node.
 	 */
-	public ForLoopNode clone(ForLoopNode node)
+	public ForLoopNode cloneTo(ForLoopNode node)
 	{
-		super.clone(node);
+		super.cloneTo(node);
 		
 		return node;
 	}

@@ -87,7 +87,7 @@ public class ExternalTypeNode extends IdentifierNode
 	{
 		ExternalTypeNode node = new ExternalTypeNode();
 		
-		return clone(node);
+		return cloneTo(node);
 	}
 	
 	/**
@@ -97,9 +97,9 @@ public class ExternalTypeNode extends IdentifierNode
 	 * @param node The node to copy the data into.
 	 * @return The cloned node.
 	 */
-	public ExternalTypeNode clone(ExternalTypeNode node)
+	public ExternalTypeNode cloneTo(ExternalTypeNode node)
 	{
-		super.clone(node);
+		super.cloneTo(node);
 		
 		return node;
 	}

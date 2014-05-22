@@ -113,7 +113,7 @@ public class PublicFieldListNode extends TreeNode
 	{
 		PublicFieldListNode node = new PublicFieldListNode();
 		
-		return clone(node);
+		return cloneTo(node);
 	}
 	
 	/**
@@ -123,9 +123,9 @@ public class PublicFieldListNode extends TreeNode
 	 * @param node The node to copy the data into.
 	 * @return The cloned node.
 	 */
-	public PublicFieldListNode clone(PublicFieldListNode node)
+	public PublicFieldListNode cloneTo(PublicFieldListNode node)
 	{
-		super.clone(node);
+		super.cloneTo(node);
 		
 		return node;
 	}

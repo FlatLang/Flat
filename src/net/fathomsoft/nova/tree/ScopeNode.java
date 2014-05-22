@@ -134,7 +134,7 @@ public class ScopeNode extends TreeNode
 	{
 		ScopeNode node = new ScopeNode();
 		
-		return clone(node);
+		return cloneTo(node);
 	}
 	
 	/**
@@ -144,9 +144,9 @@ public class ScopeNode extends TreeNode
 	 * @param node The node to copy the data into.
 	 * @return The cloned node.
 	 */
-	public ScopeNode clone(ScopeNode node)
+	public ScopeNode cloneTo(ScopeNode node)
 	{
-		super.clone(node);
+		super.cloneTo(node);
 		
 		return node;
 	}

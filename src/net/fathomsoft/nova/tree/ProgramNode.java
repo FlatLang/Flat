@@ -256,7 +256,7 @@ public class ProgramNode extends TreeNode
 	{
 		ProgramNode node = new ProgramNode(controller);
 		
-		return clone(node);
+		return cloneTo(node);
 	}
 	
 	/**
@@ -266,9 +266,9 @@ public class ProgramNode extends TreeNode
 	 * @param node The node to copy the data into.
 	 * @return The cloned node.
 	 */
-	public ProgramNode clone(ProgramNode node)
+	public ProgramNode cloneTo(ProgramNode node)
 	{
-		super.clone(node);
+		super.cloneTo(node);
 		
 		node.controller = controller;
 		

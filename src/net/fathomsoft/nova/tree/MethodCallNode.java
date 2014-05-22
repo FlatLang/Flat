@@ -579,7 +579,7 @@ public class MethodCallNode extends IdentifierNode
 	{
 		MethodCallNode node = new MethodCallNode();
 		
-		return clone(node);
+		return cloneTo(node);
 	}
 	
 	/**
@@ -589,9 +589,9 @@ public class MethodCallNode extends IdentifierNode
 	 * @param node The node to copy the data into.
 	 * @return The cloned node.
 	 */
-	public MethodCallNode clone(MethodCallNode node)
+	public MethodCallNode cloneTo(MethodCallNode node)
 	{
-		super.clone(node);
+		super.cloneTo(node);
 		
 		node.externalCall = externalCall;
 		

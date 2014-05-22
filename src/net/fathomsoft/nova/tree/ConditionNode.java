@@ -28,42 +28,6 @@ package net.fathomsoft.nova.tree;
 public class ConditionNode extends TreeNode
 {
 	/**
-	 * @see net.fathomsoft.nova.tree.TreeNode#generateJavaSource()
-	 */
-	@Override
-	public String generateJavaSource()
-	{
-		return null;
-	}
-
-	/**
-	 * @see net.fathomsoft.nova.tree.TreeNode#generateCHeader()
-	 */
-	@Override
-	public String generateCHeader()
-	{
-		return null;
-	}
-
-	/**
-	 * @see net.fathomsoft.nova.tree.TreeNode#generateCSource()
-	 */
-	@Override
-	public String generateCSource()
-	{
-		return null;
-	}
-	
-	/**
-	 * @see net.fathomsoft.nova.tree.TreeNode#generateCSourceFragment()
-	 */
-	@Override
-	public String generateCSourceFragment()
-	{
-		return null;
-	}
-	
-	/**
 	 * @see net.fathomsoft.nova.tree.TreeNode#clone()
 	 */
 	@Override
@@ -71,7 +35,7 @@ public class ConditionNode extends TreeNode
 	{
 		ConditionNode node = new ConditionNode();
 		
-		return clone(node);
+		return cloneTo(node);
 	}
 	
 	/**
@@ -81,9 +45,9 @@ public class ConditionNode extends TreeNode
 	 * @param node The node to copy the data into.
 	 * @return The cloned node.
 	 */
-	public ConditionNode clone(ConditionNode node)
+	public ConditionNode cloneTo(ConditionNode node)
 	{
-		super.clone(node);
+		super.cloneTo(node);
 		
 		return node;
 	}

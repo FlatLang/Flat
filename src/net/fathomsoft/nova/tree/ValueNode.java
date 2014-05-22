@@ -328,7 +328,7 @@ public class ValueNode extends TreeNode
 	{
 		ValueNode node = new ValueNode();
 		
-		return clone(node);
+		return cloneTo(node);
 	}
 	
 	/**
@@ -338,9 +338,9 @@ public class ValueNode extends TreeNode
 	 * @param node The node to copy the data into.
 	 * @return The cloned node.
 	 */
-	public ValueNode clone(ValueNode node)
+	public ValueNode cloneTo(ValueNode node)
 	{
-		super.clone(node);
+		super.cloneTo(node);
 		
 		node.type = type;
 		

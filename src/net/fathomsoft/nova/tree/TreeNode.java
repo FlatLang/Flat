@@ -29,6 +29,8 @@ import net.fathomsoft.nova.tree.exceptionhandling.ExceptionNode;
 import net.fathomsoft.nova.tree.exceptionhandling.FinallyNode;
 import net.fathomsoft.nova.tree.exceptionhandling.ThrowNode;
 import net.fathomsoft.nova.tree.exceptionhandling.TryNode;
+import net.fathomsoft.nova.tree.variables.LocalArrayAccessNode;
+import net.fathomsoft.nova.tree.variables.ArrayNode;
 import net.fathomsoft.nova.tree.variables.FieldListNode;
 import net.fathomsoft.nova.tree.variables.FieldNode;
 import net.fathomsoft.nova.tree.variables.LocalVariableNode;
@@ -80,7 +82,7 @@ public abstract class TreeNode
 	{
 		ExceptionHandlingNode.class, AssignmentNode.class, InstantiationNode.class,
 		ElseStatementNode.class, IfStatementNode.class, LoopNode.class, ExternalTypeNode.class,
-		ArrayAccessNode.class, UnaryOperatorNode.class, MethodCallNode.class, LocalDeclarationNode.class
+		LocalArrayAccessNode.class, UnaryOperatorNode.class, MethodCallNode.class, LocalDeclarationNode.class
 	};
 	
 	private static final Class<?>	METHOD_CALL_CHILD_DECODE[] = new Class<?>[]
@@ -781,7 +783,7 @@ public abstract class TreeNode
 			else if (type == IfStatementNode.class) node = IfStatementNode.decodeStatement(parent, statement, location);
 			else if (type == ElseStatementNode.class) node = ElseStatementNode.decodeStatement(parent, statement, location);
 			else if (type == ArgumentListNode.class) node = ArgumentListNode.decodeStatement(parent, statement, location);
-			else if (type == ArrayAccessNode.class) node = ArrayAccessNode.decodeStatement(parent, statement, location);
+			else if (type == LocalArrayAccessNode.class) node = LocalArrayAccessNode.decodeStatement(parent, statement, location);
 			else if (type == AssignmentNode.class) node = AssignmentNode.decodeStatement(parent, statement, location);
 			else if (type == ArrayNode.class) node = ArrayNode.decodeStatement(parent, statement, location);
 			else if (type == BinaryOperatorNode.class) node = BinaryOperatorNode.decodeStatement(parent, statement, location);
@@ -912,7 +914,10 @@ public abstract class TreeNode
 			
 			if (node == null)
 			{
-				SyntaxMessage.error("Could not decode syntax '" + current + "'", parent.getFileNode(), location, parent.getController());
+				Location currentLoc = new Location(location);
+				currentLoc.setBounds(offset, index);
+				
+				SyntaxMessage.error("Could not decode syntax '" + current + "'", parent.getFileNode(), currentLoc, parent.getController());
 				
 				return null;
 			}
@@ -1192,7 +1197,7 @@ public abstract class TreeNode
 	 * @param node The node to copy the data into.
 	 * @return The cloned node.
 	 */
-	public TreeNode clone(TreeNode node)
+	public TreeNode cloneTo(TreeNode node)
 	{
 		if (locationIn != null)
 		{

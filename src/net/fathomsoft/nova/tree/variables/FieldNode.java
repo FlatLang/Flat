@@ -236,7 +236,7 @@ public class FieldNode extends InstanceDeclarationNode
 			return null;
 		}
 		
-		var.clone(n);
+		var.cloneTo(n);
 		
 		n.iterateWords(preStatement);
 		
@@ -270,7 +270,7 @@ public class FieldNode extends InstanceDeclarationNode
 	{
 		FieldNode node = new FieldNode();
 		
-		return clone(node);
+		return cloneTo(node);
 	}
 	
 	/**
@@ -280,9 +280,9 @@ public class FieldNode extends InstanceDeclarationNode
 	 * @param node The node to copy the data into.
 	 * @return The cloned node.
 	 */
-	public FieldNode clone(FieldNode node)
+	public FieldNode cloneTo(FieldNode node)
 	{
-		super.clone(node);
+		super.cloneTo(node);
 		
 		return node;
 	}

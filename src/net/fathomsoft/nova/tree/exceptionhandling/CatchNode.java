@@ -194,7 +194,7 @@ public class CatchNode extends ExceptionHandlingNode
 	{
 		CatchNode node = new CatchNode();
 		
-		return clone(node);
+		return cloneTo(node);
 	}
 	
 	/**
@@ -204,9 +204,9 @@ public class CatchNode extends ExceptionHandlingNode
 	 * @param node The node to copy the data into.
 	 * @return The cloned node.
 	 */
-	public CatchNode clone(CatchNode node)
+	public CatchNode cloneTo(CatchNode node)
 	{
-		super.clone(node);
+		super.cloneTo(node);
 		
 		return node;
 	}

@@ -29,42 +29,6 @@ package net.fathomsoft.nova.tree;
 public class LoopUpdateNode extends TreeNode
 {
 	/**
-	 * @see net.fathomsoft.nova.tree.TreeNode#generateJavaSource()
-	 */
-	@Override
-	public String generateJavaSource()
-	{
-		return null;
-	}
-
-	/**
-	 * @see net.fathomsoft.nova.tree.TreeNode#generateCHeader()
-	 */
-	@Override
-	public String generateCHeader()
-	{
-		return null;
-	}
-
-	/**
-	 * @see net.fathomsoft.nova.tree.TreeNode#generateCSource()
-	 */
-	@Override
-	public String generateCSource()
-	{
-		return null;
-	}
-	
-	/**
-	 * @see net.fathomsoft.nova.tree.TreeNode#generateCSourceFragment()
-	 */
-	@Override
-	public String generateCSourceFragment()
-	{
-		return null;
-	}
-
-	/**
 	 * @see net.fathomsoft.nova.tree.TreeNode#clone()
 	 */
 	@Override
@@ -72,7 +36,7 @@ public class LoopUpdateNode extends TreeNode
 	{
 		LoopUpdateNode node = new LoopUpdateNode();
 		
-		return clone(node);
+		return cloneTo(node);
 	}
 	
 	/**
@@ -82,9 +46,9 @@ public class LoopUpdateNode extends TreeNode
 	 * @param node The node to copy the data into.
 	 * @return The cloned node.
 	 */
-	public LoopUpdateNode clone(LoopUpdateNode node)
+	public LoopUpdateNode cloneTo(LoopUpdateNode node)
 	{
-		super.clone(node);
+		super.cloneTo(node);
 		
 		return node;
 	}

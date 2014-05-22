@@ -1124,7 +1124,7 @@ public class ClassNode extends InstanceDeclarationNode
 	{
 		ClassNode node = new ClassNode();
 		
-		return clone(node);
+		return cloneTo(node);
 	}
 	
 	/**
@@ -1134,9 +1134,9 @@ public class ClassNode extends InstanceDeclarationNode
 	 * @param node The node to copy the data into.
 	 * @return The cloned node.
 	 */
-	public ClassNode clone(ClassNode node)
+	public ClassNode cloneTo(ClassNode node)
 	{
-		super.clone(node);
+		super.cloneTo(node);
 		
 		node.extendedClass = extendedClass;
 		

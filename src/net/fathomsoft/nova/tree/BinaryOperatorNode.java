@@ -449,7 +449,7 @@ public class BinaryOperatorNode extends TreeNode
 	{
 		BinaryOperatorNode node = new BinaryOperatorNode();
 		
-		return clone(node);
+		return cloneTo(node);
 	}
 	
 	/**
@@ -459,9 +459,9 @@ public class BinaryOperatorNode extends TreeNode
 	 * @param node The node to copy the data into.
 	 * @return The cloned node.
 	 */
-	public BinaryOperatorNode clone(BinaryOperatorNode node)
+	public BinaryOperatorNode cloneTo(BinaryOperatorNode node)
 	{
-		super.clone(node);
+		super.cloneTo(node);
 		
 		return node;
 	}

@@ -231,7 +231,7 @@ public class MethodListNode extends TreeNode
 	{
 		MethodListNode node = new MethodListNode();
 		
-		return clone(node);
+		return cloneTo(node);
 	}
 	
 	/**
@@ -241,9 +241,9 @@ public class MethodListNode extends TreeNode
 	 * @param node The node to copy the data into.
 	 * @return The cloned node.
 	 */
-	public MethodListNode clone(MethodListNode node)
+	public MethodListNode cloneTo(MethodListNode node)
 	{
-		super.clone(node);
+		super.cloneTo(node);
 		
 		return node;
 	}

@@ -297,7 +297,7 @@ public class FieldListNode extends TreeNode
 	{
 		FieldListNode node = new FieldListNode();
 		
-		return clone(node);
+		return cloneTo(node);
 	}
 	
 	/**
@@ -307,9 +307,9 @@ public class FieldListNode extends TreeNode
 	 * @param node The node to copy the data into.
 	 * @return The cloned node.
 	 */
-	public FieldListNode clone(FieldListNode node)
+	public FieldListNode cloneTo(FieldListNode node)
 	{
-		super.clone(node);
+		super.cloneTo(node);
 		
 		return node;
 	}

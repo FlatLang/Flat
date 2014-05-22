@@ -213,7 +213,7 @@ public class ImportNode extends TreeNode
 	{
 		ImportNode node = new ImportNode();
 		
-		return clone(node);
+		return cloneTo(node);
 	}
 	
 	/**
@@ -223,9 +223,9 @@ public class ImportNode extends TreeNode
 	 * @param node The node to copy the data into.
 	 * @return The cloned node.
 	 */
-	public ImportNode clone(ImportNode node)
+	public ImportNode cloneTo(ImportNode node)
 	{
-		super.clone(node);
+		super.cloneTo(node);
 		
 		node.setImportLocation(getImportLocation());
 		node.external = isExternal();

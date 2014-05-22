@@ -195,7 +195,7 @@ public class ParameterListNode extends TreeNode
 	{
 		ParameterListNode node = new ParameterListNode();
 		
-		return clone(node);
+		return cloneTo(node);
 	}
 	
 	/**
@@ -205,9 +205,9 @@ public class ParameterListNode extends TreeNode
 	 * @param node The node to copy the data into.
 	 * @return The cloned node.
 	 */
-	public ParameterListNode clone(ParameterListNode node)
+	public ParameterListNode cloneTo(ParameterListNode node)
 	{
-		super.clone(node);
+		super.cloneTo(node);
 		
 		return node;
 	}

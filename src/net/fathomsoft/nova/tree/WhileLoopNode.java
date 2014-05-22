@@ -163,7 +163,7 @@ public class WhileLoopNode extends LoopNode
 	{
 		WhileLoopNode node = new WhileLoopNode();
 		
-		return clone(node);
+		return cloneTo(node);
 	}
 	
 	/**
@@ -173,9 +173,9 @@ public class WhileLoopNode extends LoopNode
 	 * @param node The node to copy the data into.
 	 * @return The cloned node.
 	 */
-	public WhileLoopNode clone(WhileLoopNode node)
+	public WhileLoopNode cloneTo(WhileLoopNode node)
 	{
-		super.clone(node);
+		super.cloneTo(node);
 		
 		return node;
 	}

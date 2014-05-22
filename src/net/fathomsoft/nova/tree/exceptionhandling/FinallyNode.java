@@ -117,7 +117,7 @@ public class FinallyNode extends ExceptionHandlingNode
 	{
 		FinallyNode node = new FinallyNode();
 		
-		return clone(node);
+		return cloneTo(node);
 	}
 	
 	/**
@@ -127,9 +127,9 @@ public class FinallyNode extends ExceptionHandlingNode
 	 * @param node The node to copy the data into.
 	 * @return The cloned node.
 	 */
-	public FinallyNode clone(FinallyNode node)
+	public FinallyNode cloneTo(FinallyNode node)
 	{
-		super.clone(node);
+		super.cloneTo(node);
 		
 		return node;
 	}

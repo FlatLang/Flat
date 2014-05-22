@@ -92,7 +92,7 @@ public class OperatorNode extends TreeNode
 	{
 		OperatorNode node = new OperatorNode();
 		
-		return clone(node);
+		return cloneTo(node);
 	}
 	
 	/**
@@ -102,9 +102,9 @@ public class OperatorNode extends TreeNode
 	 * @param node The node to copy the data into.
 	 * @return The cloned node.
 	 */
-	public OperatorNode clone(OperatorNode node)
+	public OperatorNode cloneTo(OperatorNode node)
 	{
-		super.clone(node);
+		super.cloneTo(node);
 		
 		node.setOperator(getOperator());
 		

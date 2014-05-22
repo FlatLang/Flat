@@ -451,7 +451,7 @@ public class FileNode extends IdentifierNode
 	{
 		FileNode node = new FileNode();
 		
-		return clone(node);
+		return cloneTo(node);
 	}
 	
 	/**
@@ -461,9 +461,9 @@ public class FileNode extends IdentifierNode
 	 * @param node The node to copy the data into.
 	 * @return The cloned node.
 	 */
-	public FileNode clone(FileNode node)
+	public FileNode cloneTo(FileNode node)
 	{
-		super.clone(node);
+		super.cloneTo(node);
 		
 		return node;
 	}

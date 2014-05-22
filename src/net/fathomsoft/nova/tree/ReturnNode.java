@@ -171,7 +171,7 @@ public class ReturnNode extends ValueNode
 	{
 		ReturnNode node = new ReturnNode();
 		
-		return clone(node);
+		return cloneTo(node);
 	}
 	
 	/**
@@ -181,9 +181,9 @@ public class ReturnNode extends ValueNode
 	 * @param node The node to copy the data into.
 	 * @return The cloned node.
 	 */
-	public ReturnNode clone(ReturnNode node)
+	public ReturnNode cloneTo(ReturnNode node)
 	{
-		super.clone(node);
+		super.cloneTo(node);
 		
 		return node;
 	}

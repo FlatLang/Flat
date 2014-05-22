@@ -147,7 +147,7 @@ public class ArgumentListNode extends TreeNode
 	{
 		ArgumentListNode node = new ArgumentListNode();
 		
-		return clone(node);
+		return cloneTo(node);
 	}
 	
 	/**
@@ -157,9 +157,9 @@ public class ArgumentListNode extends TreeNode
 	 * @param node The node to copy the data into.
 	 * @return The cloned node.
 	 */
-	public ArgumentListNode clone(ArgumentListNode node)
+	public ArgumentListNode cloneTo(ArgumentListNode node)
 	{
-		super.clone(node);
+		super.cloneTo(node);
 		
 		return node;
 	}

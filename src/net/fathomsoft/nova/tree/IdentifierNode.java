@@ -123,7 +123,7 @@ public class IdentifierNode extends ValueNode
 	{
 		IdentifierNode node = new IdentifierNode();
 		
-		return clone(node);
+		return cloneTo(node);
 	}
 	
 	/**
@@ -133,9 +133,9 @@ public class IdentifierNode extends ValueNode
 	 * @param node The node to copy the data into.
 	 * @return The cloned node.
 	 */
-	public IdentifierNode clone(IdentifierNode node)
+	public IdentifierNode cloneTo(IdentifierNode node)
 	{
-		super.clone(node);
+		super.cloneTo(node);
 		
 		node.name = name;
 		

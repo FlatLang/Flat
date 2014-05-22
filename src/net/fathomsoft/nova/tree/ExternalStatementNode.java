@@ -125,7 +125,7 @@ public class ExternalStatementNode extends TreeNode
 	{
 		ExternalStatementNode node = new ExternalStatementNode();
 		
-		return clone(node);
+		return cloneTo(node);
 	}
 	
 	/**
@@ -135,9 +135,9 @@ public class ExternalStatementNode extends TreeNode
 	 * @param node The node to copy the data into.
 	 * @return The cloned node.
 	 */
-	public ExternalStatementNode clone(ExternalStatementNode node)
+	public ExternalStatementNode cloneTo(ExternalStatementNode node)
 	{
-		super.clone(node);
+		super.cloneTo(node);
 		
 		node.data = data;
 		
