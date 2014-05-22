@@ -25,7 +25,7 @@ import java.util.regex.Pattern;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Apr 5, 2014 at 3:53:04 PM
- * @version	v0.2.4 May 17, 2014 at 9:55:04 PM
+ * @version	v0.2.5 May 22, 2014 at 2:56:28 PM
  */
 public class Patterns
 {
@@ -101,8 +101,8 @@ public class Patterns
 	 * Pattern that searches for unary arithmetic operators. The operators
 	 * include ++, --.
 	 */
-	public static final Pattern UNARY_ARITH_OPERATORS	= Pattern.compile("(?<=\\s*)([\\+]{2}|[-]{2})(?=\\s*)");
-
+	public static final Pattern UNARY_ARITH_OPERATORS	= Pattern.compile("(?<=\\s{0,9})([\\+]{2}|[-]{2})(?=\\s*)");
+	
 	/**
 	 * Pattern that searches for binary arithmetic operators. The operators
 	 * include *, /, +, -, =, %.
