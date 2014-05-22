@@ -69,7 +69,7 @@ public class Thread
 		
 		try
 		{
-			Thread.fathom_Thread_run(this, exceptionData);
+			Thread.nova_Thread_run(this, exceptionData);
 		}
 		catch (Exception e)
 		{
