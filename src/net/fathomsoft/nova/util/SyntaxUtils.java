@@ -37,7 +37,7 @@ import net.fathomsoft.nova.tree.variables.VariableNode;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Mar 15, 2014 at 7:55:00 PM
- * @version	v0.2.4 May 17, 2014 at 9:55:04 PM
+ * @version	v0.2.5 May 22, 2014 at 2:56:28 PM
  */
 public class SyntaxUtils
 {
@@ -82,10 +82,20 @@ public class SyntaxUtils
 			else if (c == '(')
 			{
 				i = StringUtils.findEndingMatch(haystack, i, '(', ')') + 1;
+				
+				if (i == 0)
+				{
+					return -1;
+				}
 			}
 			else if (c == '[')
 			{
 				i = StringUtils.findEndingMatch(haystack, i, '[', ']') + 1;
+				
+				if (i == 0)
+				{
+					return -1;
+				}
 			}
 			else if (c == '=')
 			{
@@ -319,7 +329,21 @@ public class SyntaxUtils
 	 */
 	public static boolean isVariableAssignment(String statement)
 	{
-		return findCharInBaseScope(statement, '=') > 0;//Regex.indexOf(statement, Patterns.PRE_EQUALS_SIGN) == 0;
+		int index = findCharInBaseScope(statement, '=');
+		
+		if (index <= 0)
+		{
+			return false;
+		}
+		
+		int binary = StringUtils.findStrings(statement, index - 1, StringUtils.BINARY_OPERATORS).getStart();
+		
+		if (binary - 1 == index || binary == index)
+		{
+			return false;
+		}
+		
+		return true;
 	}
 	
 	/**
@@ -779,8 +803,8 @@ public class SyntaxUtils
 	{
 		if (declaration.getVisibility() == InstanceDeclarationNode.PRIVATE)
 		{
-			ClassNode clazz1 = declaration.getProgramNode().getClass(accessor.getType());
-			ClassNode clazz2 = declaration.getClassNode();
+			ClassNode clazz1 = accessor.getClassNode();
+			ClassNode clazz2 = declaration.getDeclaringClassNode();
 			
 			if (clazz1.isAncestorOf(clazz2, true) || clazz2.isAncestorOf(clazz1))
 			{
