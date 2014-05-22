@@ -25,15 +25,15 @@ struct DataStruct
 	Thread* instance;
 };
 
-Thread* nova_Thread_Thread(ExceptionData* exceptionData, long_long nova_Thread_millis_53, String* nova_Thread_word_53)
+Thread* nova_Thread_Thread(ExceptionData* exceptionData, long_long nova_Thread_millis_17, String* nova_Thread_word_17)
 {
 	CCLASS_NEW(Thread, this);
 	
 	this->prv->nova_Thread_millis = 0;
 	this->prv->nova_Thread_word = 0;
 	{
-		this->prv->nova_Thread_millis = nova_Thread_millis_53;
-		this->prv->nova_Thread_word = nova_Thread_word_53;
+		this->prv->nova_Thread_millis = nova_Thread_millis_17;
+		this->prv->nova_Thread_word = nova_Thread_word_17;
 	}
 	
 	return this;
@@ -70,18 +70,18 @@ void nova_Thread_join(Thread* this, ExceptionData* exceptionData)
 	lib_fathom_thread_join(this->prv->handle);
 }
 
-void nova_Thread_sleep(ExceptionData* exceptionData, long_long nova_Thread_millis_69)
+void nova_Thread_sleep(ExceptionData* exceptionData, long_long nova_Thread_millis_157)
 {
-	lib_fathom_thread_sleep(nova_Thread_millis_69);
+	lib_fathom_thread_sleep(nova_Thread_millis_157);
 }
 
 void nova_Thread_run(Thread* this, ExceptionData* exceptionData)
 {
-	int nova_Thread_i_75;
+	int nova_Thread_i_160;
 	
-	nova_Thread_i_75 = 0;
+	nova_Thread_i_160 = 0;
 	
-	for (; nova_Thread_i_75 < 10; nova_Thread_i_75++)
+	for (; nova_Thread_i_160 < 10; nova_Thread_i_160++)
 	{
 		nova_IO_println(exceptionData, this->prv->nova_Thread_word);
 		nova_Thread_sleep(exceptionData, this->prv->nova_Thread_millis);

@@ -21,9 +21,9 @@ CCLASS_CLASS
 )
 
 
-ListNode* nova_ListNode_ListNode(ExceptionData* exceptionData, Object* nova_ListNode_data_16);
+ListNode* nova_ListNode_ListNode(ExceptionData* exceptionData, Object* nova_ListNode_data_123);
 void nova_del_ListNode(ListNode** this, ExceptionData* exceptionData);
 Object* nova_ListNode_getData(ListNode* this, ExceptionData* exceptionData);
 ListNode* nova_ListNode_getNext(ListNode* this, ExceptionData* exceptionData);
-void nova_ListNode_setNext(ListNode* this, ExceptionData* exceptionData, ListNode* nova_ListNode_next_131);
+void nova_ListNode_setNext(ListNode* this, ExceptionData* exceptionData, ListNode* nova_ListNode_next_155);
 #endif

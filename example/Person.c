@@ -15,15 +15,15 @@ CCLASS_PRIVATE
 	String* nova_Person_name;
 )
 
-Person* nova_Person_Person(ExceptionData* exceptionData, String* nova_Person_name_13, int nova_Person_age_13)
+Person* nova_Person_Person(ExceptionData* exceptionData, String* nova_Person_name_136, int nova_Person_age_136)
 {
 	CCLASS_NEW(Person, this);
 	
 	this->prv->nova_Person_age = 0;
 	this->prv->nova_Person_name = 0;
 	{
-		this->prv->nova_Person_name = nova_Person_name_13;
-		this->prv->nova_Person_age = nova_Person_age_13;
+		this->prv->nova_Person_name = nova_Person_name_136;
+		this->prv->nova_Person_age = nova_Person_age_136;
 	}
 	
 	return this;

@@ -21,7 +21,7 @@ CCLASS_CLASS
 )
 
 
-Person* nova_Person_Person(ExceptionData* exceptionData, String* nova_Person_name_13, int nova_Person_age_13);
+Person* nova_Person_Person(ExceptionData* exceptionData, String* nova_Person_name_136, int nova_Person_age_136);
 void nova_del_Person(Person** this, ExceptionData* exceptionData);
 int nova_Person_getAge(Person* this, ExceptionData* exceptionData);
 String* nova_Person_getName(Person* this, ExceptionData* exceptionData);

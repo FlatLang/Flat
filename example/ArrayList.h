@@ -25,8 +25,8 @@ CCLASS_CLASS
 
 ArrayList* nova_ArrayList_ArrayList(ExceptionData* exceptionData);
 void nova_del_ArrayList(ArrayList** this, ExceptionData* exceptionData);
-void nova_ArrayList_add(ArrayList* this, ExceptionData* exceptionData, int nova_ArrayList_var_36);
+void nova_ArrayList_add(ArrayList* this, ExceptionData* exceptionData, int nova_ArrayList_var_119);
 void nova_ArrayList_increaseSize(ArrayList* this, ExceptionData* exceptionData);
 int nova_ArrayList_getSize(ArrayList* this, ExceptionData* exceptionData);
-int nova_ArrayList_get(ArrayList* this, ExceptionData* exceptionData, int nova_ArrayList_index_90);
+int nova_ArrayList_get(ArrayList* this, ExceptionData* exceptionData, int nova_ArrayList_index_138);
 #endif

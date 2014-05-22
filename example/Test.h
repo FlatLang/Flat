@@ -15,6 +15,7 @@ typedef struct Test Test;
 #include "IO.h"
 #include "Time.h"
 #include "Thread.h"
+#include <stdio.h>
 
 CCLASS_CLASS
 (
@@ -24,5 +25,5 @@ CCLASS_CLASS
 
 Test* nova_Test_Test(ExceptionData* exceptionData);
 void nova_del_Test(Test** this, ExceptionData* exceptionData);
-void nova_Test_main(ExceptionData* exceptionData, String** nova_Test_args_83);
+void nova_Test_main(ExceptionData* exceptionData, String** nova_Test_args_110);
 #endif
