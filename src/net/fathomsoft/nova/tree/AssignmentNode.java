@@ -240,7 +240,12 @@ public class AssignmentNode extends TreeNode
 	 */
 	public static TreeNode decodeRightHandSide(TreeNode parent, String rhs, Location location)
 	{
-		TreeNode child = decodeScopeContents(parent, rhs, location);//MethodCallNode.decodeStatement(parent, rhs, location);
+		TreeNode child = BinaryOperatorNode.decodeStatement(parent, rhs, location);
+		
+		if (child == null)
+		{
+			child = decodeScopeContents(parent, rhs, location);//MethodCallNode.decodeStatement(parent, rhs, location);
+		}
 		
 //		if (child == null)
 //		{
@@ -255,10 +260,6 @@ public class AssignmentNode extends TreeNode
 //				child = child.clone();
 //			}
 //		}
-		if (child == null)
-		{
-			child = BinaryOperatorNode.decodeStatement(parent, rhs, location);
-		}
 //		if (child == null)
 //		{
 //			child = TreeNode.decodeStatement(parent, rhs, location);
