@@ -30,7 +30,7 @@ import net.fathomsoft.nova.util.Regex;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:57:13 PM
- * @version	v0.2.4 May 17, 2014 at 9:55:04 PM
+ * @version	v0.2.5 May 22, 2014 at 2:56:28 PM
  */
 public class IfStatementNode extends TreeNode
 {
@@ -173,7 +173,7 @@ public class IfStatementNode extends TreeNode
 		{
 			IfStatementNode n = new IfStatementNode();
 			
-			Bounds bounds = Regex.boundsOf(statement, Patterns.IF_CONTENTS);
+			Bounds bounds     = Regex.boundsOf(statement, Patterns.IF_CONTENTS);
 			
 			if (bounds.getStart() >= 0)
 			{
