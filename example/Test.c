@@ -35,30 +35,33 @@ void nova_del_Test(Test** this, ExceptionData* exceptionData)
 		free(*this);
 }
 
-void nova_Test_main(ExceptionData* exceptionData, String** nova_args_6)
+void nova_Test_main(ExceptionData* exceptionData, String** nova_Test_args_83)
 {
-		char nova_c_6;
+		char nova_Test_c_83;
 		
-		nova_c_6 = 'y';
-		while (nova_c_6 == 'y' || nova_c_6 == 'Y')
+		nova_Test_c_83 = 'y';
+		while (nova_Test_c_83 == 'y' || nova_Test_c_83 == 'Y')
 		{
-				Thread* nova_thread_191;
-				Thread* nova_thread2_191;
-				long_long nova_start_191;
-				long_long nova_end_191;
+				Thread* nova_Test_thread_192;
+				Thread* nova_Test_thread2_192;
+				long_long nova_Test_start_192;
+				long_long nova_Test_end_192;
 				
-				nova_thread_191 = nova_Thread_Thread(exceptionData, 100, nova_String_String(exceptionData, "Thread1"));
-				nova_thread2_191 = nova_Thread_Thread(exceptionData, 100, nova_String_String(exceptionData, "Thread2"));
-				nova_start_191 = nova_Time_currentTimeMillis(exceptionData);
-				nova_Thread_start(nova_thread_191, exceptionData);
-				nova_Thread_start(nova_thread2_191, exceptionData);
-				nova_Thread_join(nova_thread_191, exceptionData);
-				nova_Thread_join(nova_thread2_191, exceptionData);
-				nova_end_191 = nova_Time_currentTimeMillis(exceptionData);
-				nova_IO_printl(exceptionData, nova_end_191 - nova_start_191);
+				nova_Test_thread_192 = nova_Thread_Thread(exceptionData, 100, nova_String_String(exceptionData, "Thread1"));
+				nova_Test_thread2_192 = nova_Thread_Thread(exceptionData, 100, nova_String_String(exceptionData, "Thread2"));
+				nova_IO_printi(exceptionData);
+				nova_IO_println(exceptionData, nova_String_String(exceptionData, ""));
+				nova_IO_println(exceptionData);
+				nova_Test_start_192 = nova_Time_currentTimeMillis(exceptionData);
+				nova_Thread_start(nova_Test_thread_192, exceptionData);
+				nova_Thread_start(nova_Test_thread2_192, exceptionData);
+				nova_Thread_join(nova_Test_thread_192, exceptionData);
+				nova_Thread_join(nova_Test_thread2_192, exceptionData);
+				nova_Test_end_192 = nova_Time_currentTimeMillis(exceptionData);
+				nova_IO_printl(exceptionData, nova_Test_end_192 - nova_Test_start_192);
 				nova_IO_println(exceptionData, nova_String_String(exceptionData, ""));
 				nova_IO_print(exceptionData, nova_String_String(exceptionData, "Run again? (Y/N)"));
-				nova_c_6 = nova_IO_getChar(exceptionData);
+				nova_Test_c_83 = nova_IO_getChar(exceptionData);
 		}
 		nova_IO_println(exceptionData, nova_String_String(exceptionData, ""));
 		nova_IO_println(exceptionData, nova_String_String(exceptionData, "Finished"));

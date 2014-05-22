@@ -18,14 +18,13 @@ CCLASS_CLASS
 (
 	String, 
 	
-	int nova_length;
+	int nova_String_length;
 	struct Private* prv;
 )
 
 
-String* nova_String_String(ExceptionData* exceptionData, char* nova_data_74);
+String* nova_String_String(ExceptionData* exceptionData, char* nova_String_data_133);
 void nova_del_String(String** this, ExceptionData* exceptionData);
-int nova_String_getLength(String* this, ExceptionData* exceptionData);
 char* nova_String_toCharArray(String* this, ExceptionData* exceptionData);
-String* nova_String_concat(String* this, ExceptionData* exceptionData, String* nova_str_103);
+String* nova_String_concat(String* this, ExceptionData* exceptionData, String* nova_String_str_156);
 #endif

@@ -12,18 +12,18 @@
 
 CCLASS_PRIVATE
 (
-	char* nova_data;
+	char* nova_String_data;
 )
 void nova_String_calculateLength(String* this, ExceptionData* exceptionData);
 
-String* nova_String_String(ExceptionData* exceptionData, char* nova_data_74)
+String* nova_String_String(ExceptionData* exceptionData, char* nova_String_data_133)
 {
 	CCLASS_NEW(String, this);
 	
-	this->nova_length = 0;
-	this->prv->nova_data = 0;
+	this->nova_String_length = 0;
+	this->prv->nova_String_data = 0;
 	{
-		this->prv->nova_data = nova_data_74;
+		this->prv->nova_String_data = nova_String_data_133;
 		nova_String_calculateLength(this, exceptionData);
 	}
 	
@@ -47,29 +47,24 @@ void nova_del_String(String** this, ExceptionData* exceptionData)
 
 void nova_String_calculateLength(String* this, ExceptionData* exceptionData)
 {
-	this->nova_length = strlen(this->prv->nova_data);
-}
-
-int nova_String_getLength(String* this, ExceptionData* exceptionData)
-{
-	return this->nova_length;
+	this->nova_String_length = strlen(this->prv->nova_String_data);
 }
 
 char* nova_String_toCharArray(String* this, ExceptionData* exceptionData)
 {
-	return this->prv->nova_data;
+	return this->prv->nova_String_data;
 }
 
-String* nova_String_concat(String* this, ExceptionData* exceptionData, String* nova_str_103)
+String* nova_String_concat(String* this, ExceptionData* exceptionData, String* nova_String_str_156)
 {
-	char* nova_newData_103;
-	char* nova_chars_103;
-	String* nova_newStr_103;
+	char* nova_String_newData_156;
+	char* nova_String_chars_156;
+	String* nova_String_newStr_156;
 	
-	nova_newData_103 = (char*)malloc(sizeof(char) * (nova_str_103->nova_length + this->nova_length + 1));
-	strcpy(nova_newData_103, this->prv->nova_data);
-	nova_chars_103 = nova_String_toCharArray(nova_str_103, exceptionData);
-	strcat(nova_newData_103, nova_chars_103);
-	nova_newStr_103 = nova_String_String(exceptionData, nova_newData_103);
-	return nova_newStr_103;
+	nova_String_newData_156 = (char*)malloc(sizeof(char) * (nova_String_str_156->nova_String_length + this->nova_String_length + 1));
+	strcpy(nova_String_newData_156, this->prv->nova_String_data);
+	nova_String_chars_156 = nova_String_toCharArray(nova_String_str_156, exceptionData);
+	strcat(nova_String_newData_156, nova_String_chars_156);
+	nova_String_newStr_156 = nova_String_String(exceptionData, nova_String_newData_156);
+	return nova_String_newStr_156;
 }

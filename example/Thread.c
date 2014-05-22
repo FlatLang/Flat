@@ -14,8 +14,8 @@
 CCLASS_PRIVATE
 (
 	FATHOM_THREAD_HANDLE handle;
-	long_long nova_millis;
-	String* nova_word;
+	long_long nova_Thread_millis;
+	String* nova_Thread_word;
 )
 
 typedef struct DataStruct DataStruct;
@@ -25,15 +25,15 @@ struct DataStruct
 	Thread* instance;
 };
 
-Thread* nova_Thread_Thread(ExceptionData* exceptionData, long_long nova_millis_8, String* nova_word_8)
+Thread* nova_Thread_Thread(ExceptionData* exceptionData, long_long nova_Thread_millis_53, String* nova_Thread_word_53)
 {
 	CCLASS_NEW(Thread, this);
 	
-	this->prv->nova_millis = 0;
-	this->prv->nova_word = 0;
+	this->prv->nova_Thread_millis = 0;
+	this->prv->nova_Thread_word = 0;
 	{
-		this->prv->nova_millis = nova_millis_8;
-		this->prv->nova_word = nova_word_8;
+		this->prv->nova_Thread_millis = nova_Thread_millis_53;
+		this->prv->nova_Thread_word = nova_Thread_word_53;
 	}
 	
 	return this;
@@ -48,7 +48,7 @@ void nova_del_Thread(Thread** this, ExceptionData* exceptionData)
 	
 	
 	
-	nova_del_String(&(*this)->prv->nova_word, exceptionData);
+	nova_del_String(&(*this)->prv->nova_Thread_word, exceptionData);
 	free((*this)->prv);
 	
 	{
@@ -70,21 +70,21 @@ void nova_Thread_join(Thread* this, ExceptionData* exceptionData)
 	lib_fathom_thread_join(this->prv->handle);
 }
 
-void nova_Thread_sleep(ExceptionData* exceptionData, long_long nova_millis_17)
+void nova_Thread_sleep(ExceptionData* exceptionData, long_long nova_Thread_millis_69)
 {
-	lib_fathom_thread_sleep(nova_millis_17);
+	lib_fathom_thread_sleep(nova_Thread_millis_69);
 }
 
 void nova_Thread_run(Thread* this, ExceptionData* exceptionData)
 {
-	int nova_i_20;
+	int nova_Thread_i_75;
 	
-	nova_i_20 = 0;
+	nova_Thread_i_75 = 0;
 	
-	for (; nova_i_20 < 10; nova_i_20++)
+	for (; nova_Thread_i_75 < 10; nova_Thread_i_75++)
 	{
-		nova_IO_println(exceptionData, this->prv->nova_word);
-		nova_Thread_sleep(exceptionData, this->prv->nova_millis);
+		nova_IO_println(exceptionData, this->prv->nova_Thread_word);
+		nova_Thread_sleep(exceptionData, this->prv->nova_Thread_millis);
 	}
 }
 
@@ -99,7 +99,7 @@ FATHOM_THREAD_FUNC lib_fathom_thread_run(FATHOM_THREAD_FUNC_ARG arg)
 		nova_ExceptionData_addCode(exceptionData, exceptionData, 1);
 		
 		{
-			fathom_Thread_run(this, exceptionData);
+			nova_Thread_run(this, exceptionData);
 		}
 	}
 	CATCH (1)

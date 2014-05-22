@@ -24,10 +24,10 @@ CCLASS_CLASS
 
 IO* nova_IO_IO(ExceptionData* exceptionData);
 void nova_del_IO(IO** this, ExceptionData* exceptionData);
-void nova_IO_println(ExceptionData* exceptionData, String* nova_text_26);
-void nova_IO_print(ExceptionData* exceptionData, String* nova_text_29);
-void nova_IO_printi(ExceptionData* exceptionData, int nova_j_32);
-void nova_IO_printl(ExceptionData* exceptionData, long_long nova_j_35);
+void nova_IO_println(ExceptionData* exceptionData, String* nova_IO_text_31);
+void nova_IO_print(ExceptionData* exceptionData, String* nova_IO_text_37);
+void nova_IO_printi(ExceptionData* exceptionData, int nova_IO_j_45);
+void nova_IO_printl(ExceptionData* exceptionData, long_long nova_IO_j_49);
 int nova_IO_getInt(ExceptionData* exceptionData);
 char nova_IO_getChar(ExceptionData* exceptionData);
 String* nova_IO_getLine(ExceptionData* exceptionData);

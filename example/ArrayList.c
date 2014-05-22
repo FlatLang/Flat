@@ -13,20 +13,20 @@
 
 CCLASS_PRIVATE
 (
-	int nova_count;
-	int nova_size;
-	int* nova_data;
+	int nova_ArrayList_count;
+	int nova_ArrayList_size;
+	int* nova_ArrayList_data;
 )
 
 ArrayList* nova_ArrayList_ArrayList(ExceptionData* exceptionData)
 {
 	CCLASS_NEW(ArrayList, this);
 	
-	this->prv->nova_count = 0;
-	this->prv->nova_size = 0;
-	this->prv->nova_data = 0;
+	this->prv->nova_ArrayList_count = 0;
+	this->prv->nova_ArrayList_size = 0;
+	this->prv->nova_ArrayList_data = 0;
 	{
-		this->prv->nova_size = 0;
+		this->prv->nova_ArrayList_size = 0;
 		nova_ArrayList_increaseSize(this, exceptionData);
 	}
 	
@@ -50,33 +50,33 @@ void nova_del_ArrayList(ArrayList** this, ExceptionData* exceptionData)
 	free(*this);
 }
 
-void nova_ArrayList_add(ArrayList* this, ExceptionData* exceptionData, int nova_var_159)
+void nova_ArrayList_add(ArrayList* this, ExceptionData* exceptionData, int nova_ArrayList_var_36)
 {
-	if (this->prv->nova_count + 1 >= this->prv->nova_size)
+	if (this->prv->nova_ArrayList_count + 1 >= this->prv->nova_ArrayList_size)
 	{
 		nova_ArrayList_increaseSize(this, exceptionData);
 	}
-	nova_data[this->prv->nova_count] = nova_var_159;
-	this->prv->nova_count = this->prv->nova_count + 1;
+	this->prv->nova_ArrayList_data[this->prv->nova_ArrayList_count] = nova_ArrayList_var_36;
+	this->prv->nova_ArrayList_count = this->prv->nova_ArrayList_count + 1;
 }
 
 void nova_ArrayList_increaseSize(ArrayList* this, ExceptionData* exceptionData)
 {
-	int* nova_tmp_162;
+	int* nova_ArrayList_tmp_41;
 	
-	this->prv->nova_size = this->prv->nova_size + 3;
-	nova_tmp_162 = (int*)malloc(sizeof(int) * (nova_size));
-	arrayCopy(nova_tmp_162, 0, this->prv->nova_data, 0, this->prv->nova_count, this->prv->nova_size, sizeof(int));
-	free(this->prv->nova_data);
-	this->prv->nova_data = nova_tmp_162;
+	this->prv->nova_ArrayList_size = this->prv->nova_ArrayList_size + 3;
+	nova_ArrayList_tmp_41 = (int*)malloc(sizeof(int) * (this->prv->nova_ArrayList_size));
+	arrayCopy(nova_ArrayList_tmp_41, 0, this->prv->nova_ArrayList_data, 0, this->prv->nova_ArrayList_count, this->prv->nova_ArrayList_size, sizeof(int));
+	free(this->prv->nova_ArrayList_data);
+	this->prv->nova_ArrayList_data = nova_ArrayList_tmp_41;
 }
 
 int nova_ArrayList_getSize(ArrayList* this, ExceptionData* exceptionData)
 {
-	return this->prv->nova_count;
+	return this->prv->nova_ArrayList_count;
 }
 
-int nova_ArrayList_get(ArrayList* this, ExceptionData* exceptionData, int nova_index_168)
+int nova_ArrayList_get(ArrayList* this, ExceptionData* exceptionData, int nova_ArrayList_index_90)
 {
-	return nova_data[nova_index_168];
+	return this->prv->nova_ArrayList_data[nova_ArrayList_index_90];
 }

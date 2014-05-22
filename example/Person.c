@@ -11,19 +11,19 @@
 
 CCLASS_PRIVATE
 (
-	int nova_age;
-	String* nova_name;
+	int nova_Person_age;
+	String* nova_Person_name;
 )
 
-Person* nova_Person_Person(ExceptionData* exceptionData, String* nova_name_73, int nova_age_73)
+Person* nova_Person_Person(ExceptionData* exceptionData, String* nova_Person_name_13, int nova_Person_age_13)
 {
 	CCLASS_NEW(Person, this);
 	
-	this->prv->nova_age = 0;
-	this->prv->nova_name = 0;
+	this->prv->nova_Person_age = 0;
+	this->prv->nova_Person_name = 0;
 	{
-		this->prv->nova_name = nova_name_73;
-		this->prv->nova_age = nova_age_73;
+		this->prv->nova_Person_name = nova_Person_name_13;
+		this->prv->nova_Person_age = nova_Person_age_13;
 	}
 	
 	return this;
@@ -37,7 +37,7 @@ void nova_del_Person(Person** this, ExceptionData* exceptionData)
 	}
 	
 	
-	nova_del_String(&(*this)->prv->nova_name, exceptionData);
+	nova_del_String(&(*this)->prv->nova_Person_name, exceptionData);
 	free((*this)->prv);
 	
 	{
@@ -47,10 +47,10 @@ void nova_del_Person(Person** this, ExceptionData* exceptionData)
 
 int nova_Person_getAge(Person* this, ExceptionData* exceptionData)
 {
-	return this->prv->nova_age;
+	return this->prv->nova_Person_age;
 }
 
 String* nova_Person_getName(Person* this, ExceptionData* exceptionData)
 {
-	return this->prv->nova_name;
+	return this->prv->nova_Person_name;
 }

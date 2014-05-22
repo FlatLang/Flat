@@ -11,18 +11,18 @@
 
 CCLASS_PRIVATE
 (
-	Object* nova_data;
-	ListNode* nova_next;
+	Object* nova_ListNode_data;
+	ListNode* nova_ListNode_next;
 )
 
-ListNode* nova_ListNode_ListNode(ExceptionData* exceptionData, Object* nova_data_93)
+ListNode* nova_ListNode_ListNode(ExceptionData* exceptionData, Object* nova_ListNode_data_16)
 {
 	CCLASS_NEW(ListNode, this);
 	
-	this->prv->nova_data = 0;
-	this->prv->nova_next = 0;
+	this->prv->nova_ListNode_data = 0;
+	this->prv->nova_ListNode_next = 0;
 	{
-		this->prv->nova_data = nova_data_93;
+		this->prv->nova_ListNode_data = nova_ListNode_data_16;
 	}
 	
 	return this;
@@ -35,8 +35,8 @@ void nova_del_ListNode(ListNode** this, ExceptionData* exceptionData)
 		return;
 	}
 	
-	nova_del_Object(&(*this)->prv->nova_data, exceptionData);
-	nova_del_ListNode(&(*this)->prv->nova_next, exceptionData);
+	nova_del_Object(&(*this)->prv->nova_ListNode_data, exceptionData);
+	nova_del_ListNode(&(*this)->prv->nova_ListNode_next, exceptionData);
 	free((*this)->prv);
 	
 	{
@@ -46,15 +46,15 @@ void nova_del_ListNode(ListNode** this, ExceptionData* exceptionData)
 
 Object* nova_ListNode_getData(ListNode* this, ExceptionData* exceptionData)
 {
-	return this->prv->nova_data;
+	return this->prv->nova_ListNode_data;
 }
 
 ListNode* nova_ListNode_getNext(ListNode* this, ExceptionData* exceptionData)
 {
-	return this->prv->nova_next;
+	return this->prv->nova_ListNode_next;
 }
 
-void nova_ListNode_setNext(ListNode* this, ExceptionData* exceptionData, ListNode* nova_next_128)
+void nova_ListNode_setNext(ListNode* this, ExceptionData* exceptionData, ListNode* nova_ListNode_next_131)
 {
-	this->prv->nova_next = nova_next_128;
+	this->prv->nova_ListNode_next = nova_ListNode_next_131;
 }
