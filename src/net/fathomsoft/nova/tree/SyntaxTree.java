@@ -43,7 +43,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:00:15 PM
- * @version	v0.2.4 May 17, 2014 at 9:55:04 PM
+ * @version	v0.2.5 May 22, 2014 at 2:56:28 PM
  */
 public class SyntaxTree
 {
@@ -181,7 +181,7 @@ public class SyntaxTree
 	 */
 	private void phase(int phase) throws InterruptedException
 	{
-		this.phase       = phase;
+		this.phase = phase;
 		
 		if (USE_THREADS)
 		{
@@ -644,7 +644,7 @@ public class SyntaxTree
 	 * 
 	 * @author	Braden Steffaniak
 	 * @since	v0.2.1 Apr 29, 2014 at 8:04:48 PM
-	 * @version	v0.2.2 Apr 29, 2014 at 8:04:48 PM
+	 * @version	v0.2.5 May 22, 2014 at 2:56:28 PM
 	 */
 	private class TreeGenerator implements Runnable
 	{
