@@ -1,0 +1,2 @@
+Line counter regex: \n[\s]*[A-Za-z0-9_{}]
+Comment counter regex: \n[\s]*[/]?[*]+[^/][^\n]*[\S]+
