@@ -29,7 +29,7 @@ import net.fathomsoft.nova.util.Regex;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:57:13 PM
- * @version	v0.2 Apr 2, 2014 at 8:45:24 PM
+ * @version	v0.2.5 May 22, 2014 at 2:56:28 PM
  */
 public class ElseStatementNode extends TreeNode
 {
@@ -172,11 +172,14 @@ public class ElseStatementNode extends TreeNode
 			Location newLocation = new Location(location);
 			newLocation.setBounds(location.getStart() + bounds.getEnd(), location.getStart() + statement.length());
 			
-			TreeNode contents    = TreeNode.decodeStatement(parent, ending, newLocation);
-			
-			if (contents != null)
+			if (ending.length() > 0)
 			{
-				n.addChild(contents);
+				TreeNode contents = TreeNode.decodeStatement(parent, ending, newLocation);
+				
+				if (contents != null)
+				{
+					n.addChild(contents);
+				}
 			}
 			
 			return n;
