@@ -36,7 +36,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:20:35 PM
- * @version	v0.2.4 May 17, 2014 at 9:55:04 PM
+ * @version	v0.2.5 May 22, 2014 at 2:56:28 PM
  */
 public class BinaryOperatorNode extends TreeNode
 {
@@ -192,21 +192,23 @@ public class BinaryOperatorNode extends TreeNode
 		{
 			return null;
 		}
-		if (!Regex.matches(statement, 0, Patterns.PRE_OPERATORS))
+		
+		Bounds operatorLoc = StringUtils.findStrings(statement, StringUtils.BINARY_OPERATORS);
+		
+		if (operatorLoc.getStart() <= 0)
 		{
 			return null;
 		}
 		
 		// Pattern used to find word boundaries. 
-		Matcher matcher = Patterns.PRE_OPERATORS.matcher(statement);
+		Matcher  matcher = Patterns.PRE_OPERATORS.matcher(statement);
 		
-		TreeNode node   = decodeStatement(parent, statement, matcher, location);
+		TreeNode node    = decodeStatement(parent, statement, matcher, location);
 		
 		if (node == null)
 		{
-			SyntaxMessage.error("Cannot decode binary operation '" + statement + "'", parent.getFileNode(), location, parent.getController());
+			SyntaxMessage.error("Could not decode binary operation '" + statement + "'", parent.getFileNode(), location, parent.getController());
 		}
-		
 		return node;
 	}
 	
