@@ -26,7 +26,7 @@ import java.util.regex.Matcher;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Mar 13, 2014 at 9:38:42 PM
- * @version	v0.2.4 May 17, 2014 at 9:55:04 PM
+ * @version	v0.2.5 May 22, 2014 at 2:56:28 PM
  */
 public class StringUtils
 {
@@ -159,9 +159,33 @@ public class StringUtils
 		
 		while (start < value.length())
 		{
-			if (value.charAt(start) == '"')
+			char c = value.charAt(start);
+			
+			if (c == '"')
 			{
 				start = findEndingQuote(value, start) + 1;
+				
+				continue;
+			}
+			else if (c == '(')
+			{
+				start = findEndingMatch(value, start, '(', ')') + 1;
+				
+				if (start == 0)
+				{
+					return bounds;
+				}
+				
+				continue;
+			}
+			else if (c == '[')
+			{
+				start = findEndingMatch(value, start, '[', ']') + 1;
+				
+				if (start == 0)
+				{
+					return bounds;
+				}
 				
 				continue;
 			}
