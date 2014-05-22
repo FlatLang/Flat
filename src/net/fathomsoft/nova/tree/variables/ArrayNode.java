@@ -1,24 +1,26 @@
 /**
- * The Nova Programming Language. Write Unbelievable Code.
- *  Copyright (C) 2014  Braden Steffaniak <BradenSteffaniak@gmail.com>
+ * The Nova Programming Language. Write Explosive Code.
+ * Copyright (C) 2014  Braden Steffaniak <BradenSteffaniak@gmail.com>
  *
- *  This program is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * The Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package net.fathomsoft.nova.tree;
+package net.fathomsoft.nova.tree.variables;
 
 import net.fathomsoft.nova.error.SyntaxMessage;
-import net.fathomsoft.nova.tree.variables.VariableNode;
+import net.fathomsoft.nova.tree.BinaryOperatorNode;
+import net.fathomsoft.nova.tree.LiteralNode;
+import net.fathomsoft.nova.tree.TreeNode;
 import net.fathomsoft.nova.util.Bounds;
 import net.fathomsoft.nova.util.Location;
 import net.fathomsoft.nova.util.Patterns;
@@ -92,7 +94,7 @@ public class ArrayNode extends VariableNode
 	 * <ul>
 	 * 	<li>String[5][size] <i>(Where as 'size' is a number variable)</i></li>
 	 * 	<li>int[names.getSize()]</li>
-	 *  <li>TreeNode[elements.getSize() * (4 + 3) / 2]</li>
+	 * 	<li>TreeNode[elements.getSize() * (4 + 3) / 2]</li>
 	 * </ul>
 	 * <br>
 	 * Array initializer statements are to be implemented in the future.
@@ -177,7 +179,7 @@ public class ArrayNode extends VariableNode
 	{
 		ArrayNode node = new ArrayNode();
 		
-		return clone(node);
+		return cloneTo(node);
 	}
 	
 	/**
@@ -187,9 +189,9 @@ public class ArrayNode extends VariableNode
 	 * @param node The node to copy the data into.
 	 * @return The cloned node.
 	 */
-	public ArrayNode clone(ArrayNode node)
+	public ArrayNode cloneTo(ArrayNode node)
 	{
-		super.clone(node);
+		super.cloneTo(node);
 		
 		return node;
 	}

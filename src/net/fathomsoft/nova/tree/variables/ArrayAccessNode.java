@@ -1,8 +1,9 @@
-package net.fathomsoft.nova.tree;
+package net.fathomsoft.nova.tree.variables;
 
 import net.fathomsoft.nova.error.SyntaxMessage;
-import net.fathomsoft.nova.tree.variables.FieldNode;
-import net.fathomsoft.nova.tree.variables.VariableNode;
+import net.fathomsoft.nova.tree.DimensionsNode;
+import net.fathomsoft.nova.tree.LiteralNode;
+import net.fathomsoft.nova.tree.TreeNode;
 import net.fathomsoft.nova.util.Bounds;
 import net.fathomsoft.nova.util.Location;
 import net.fathomsoft.nova.util.Patterns;
@@ -183,7 +184,7 @@ public class ArrayAccessNode extends VariableNode
 	{
 		ArrayAccessNode node = new ArrayAccessNode();
 		
-		return clone(node);
+		return cloneTo(node);
 	}
 	
 	/**
@@ -193,9 +194,9 @@ public class ArrayAccessNode extends VariableNode
 	 * @param node The node to copy the data into.
 	 * @return The cloned node.
 	 */
-	public ArrayAccessNode clone(ArrayAccessNode node)
+	public ArrayAccessNode cloneTo(ArrayAccessNode node)
 	{
-		super.clone(node);
+		super.cloneTo(node);
 		
 		return node;
 	}

@@ -1,19 +1,19 @@
 /**
- * The Nova Programming Language. Write Unbelievable Code.
- *  Copyright (C) 2014  Braden Steffaniak <BradenSteffaniak@gmail.com>
+ * The Nova Programming Language. Write Explosive Code.
+ * Copyright (C) 2014  Braden Steffaniak <BradenSteffaniak@gmail.com>
  *
- *  This program is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * The Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 package net.fathomsoft.nova.tree.variables;
 
@@ -400,10 +400,26 @@ public class VariableNode extends IdentifierNode
 			builder.append('&');
 		}
 		
-		if (this instanceof FieldNode)
+		FieldNode field = null;
+		
+		TreeNode parent = getParent();
+		
+		if (parent instanceof ArrayAccessNode || parent instanceof ArrayNode)
 		{
-			FieldNode field = (FieldNode)this;
+			VariableNode node = getExistingNode(parent.getParent(), getName());
 			
+			if (node instanceof FieldNode)
+			{
+				field = (FieldNode)node;
+			}
+		}
+		else if (this instanceof FieldNode)
+		{
+			field = (FieldNode)this;
+		}
+		
+		if (field != null)
+		{
 			if (!field.isStatic())
 			{
 				ValueNode ref = getReferenceNode();
@@ -520,21 +536,21 @@ public class VariableNode extends IdentifierNode
 			return name;
 		}
 		
+		ClassNode clazz = getDeclaringClassNode();
+		
 		if (this instanceof InstanceDeclarationNode)
 		{
 			InstanceDeclarationNode node = (InstanceDeclarationNode)this;
 			
 			if (node.isStatic())
 			{
-				ClassNode clazz = (ClassNode)getAncestorOfType(ClassNode.class);
-				
 				return "static_" + Nova.LANGUAGE_NAME.toLowerCase() + "_" + clazz.generateUniquePrefix() + "_" + name;
 			}
 		}
 		
 		VariableNode existing = getExistingNode(getParent(), name);
 		
-		String str = Nova.LANGUAGE_NAME.toLowerCase() + "_" + name;
+		String str = Nova.LANGUAGE_NAME.toLowerCase() + "_" + clazz.generateUniquePrefix() + "_" + name;
 		
 		if (this instanceof FieldNode == false && existing instanceof LocalVariableNode)
 		{
@@ -589,6 +605,22 @@ public class VariableNode extends IdentifierNode
 		return builder.toString();
 	}
 	
+	public ClassNode getDeclaringClassNode()
+	{
+		TreeNode parent = getParent();
+		
+		if (parent instanceof LocalVariableNode || parent instanceof FieldNode)
+		{
+			VariableNode var = (VariableNode)parent;
+			
+			ClassNode clazz  = parent.getProgramNode().getClass(var.getType());
+			
+			return clazz;
+		}
+		
+		return getClassNode();
+	}
+	
 	/**
 	 * Get whether or not the VariableNode instance represents a
 	 * declaration of a local variable.
@@ -609,7 +641,7 @@ public class VariableNode extends IdentifierNode
 	{
 		VariableNode node = new VariableNode();
 		
-		return clone(node);
+		return cloneTo(node);
 	}
 	
 	/**
@@ -619,9 +651,9 @@ public class VariableNode extends IdentifierNode
 	 * @param node The node to copy the data into.
 	 * @return The cloned node.
 	 */
-	public VariableNode clone(VariableNode node)
+	public VariableNode cloneTo(VariableNode node)
 	{
-		super.clone(node);
+		super.cloneTo(node);
 		
 		node.constantVal     = constantVal;
 		node.arrayDimensions = arrayDimensions;

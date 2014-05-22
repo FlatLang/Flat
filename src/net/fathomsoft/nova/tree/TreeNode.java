@@ -1,19 +1,19 @@
 /**
- * The Nova Programming Language. Write Unbelievable Code.
- *  Copyright (C) 2014  Braden Steffaniak <BradenSteffaniak@gmail.com>
+ * The Nova Programming Language. Write Explosive Code.
+ * Copyright (C) 2014  Braden Steffaniak <BradenSteffaniak@gmail.com>
  *
- *  This program is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * The Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 package net.fathomsoft.nova.tree;
 
@@ -29,7 +29,7 @@ import net.fathomsoft.nova.tree.exceptionhandling.ExceptionNode;
 import net.fathomsoft.nova.tree.exceptionhandling.FinallyNode;
 import net.fathomsoft.nova.tree.exceptionhandling.ThrowNode;
 import net.fathomsoft.nova.tree.exceptionhandling.TryNode;
-import net.fathomsoft.nova.tree.variables.LocalArrayAccessNode;
+import net.fathomsoft.nova.tree.variables.ArrayAccessNode;
 import net.fathomsoft.nova.tree.variables.ArrayNode;
 import net.fathomsoft.nova.tree.variables.FieldListNode;
 import net.fathomsoft.nova.tree.variables.FieldNode;
@@ -82,7 +82,7 @@ public abstract class TreeNode
 	{
 		ExceptionHandlingNode.class, AssignmentNode.class, InstantiationNode.class,
 		ElseStatementNode.class, IfStatementNode.class, LoopNode.class, ExternalTypeNode.class,
-		LocalArrayAccessNode.class, UnaryOperatorNode.class, MethodCallNode.class, LocalDeclarationNode.class
+		ArrayAccessNode.class, UnaryOperatorNode.class, MethodCallNode.class, LocalDeclarationNode.class
 	};
 	
 	private static final Class<?>	METHOD_CALL_CHILD_DECODE[] = new Class<?>[]
@@ -783,7 +783,7 @@ public abstract class TreeNode
 			else if (type == IfStatementNode.class) node = IfStatementNode.decodeStatement(parent, statement, location);
 			else if (type == ElseStatementNode.class) node = ElseStatementNode.decodeStatement(parent, statement, location);
 			else if (type == ArgumentListNode.class) node = ArgumentListNode.decodeStatement(parent, statement, location);
-			else if (type == LocalArrayAccessNode.class) node = LocalArrayAccessNode.decodeStatement(parent, statement, location);
+			else if (type == ArrayAccessNode.class) node = ArrayAccessNode.decodeStatement(parent, statement, location);
 			else if (type == AssignmentNode.class) node = AssignmentNode.decodeStatement(parent, statement, location);
 			else if (type == ArrayNode.class) node = ArrayNode.decodeStatement(parent, statement, location);
 			else if (type == BinaryOperatorNode.class) node = BinaryOperatorNode.decodeStatement(parent, statement, location);
@@ -959,7 +959,7 @@ public abstract class TreeNode
 		if (root != null)
 		{
 			root.detach();
-			
+			if(node==null)System.err.println(current + " : " + statement + " " + ((VariableNode)parent).getName());
 			parent.addChild(node);
 			
 			return root;
@@ -1032,6 +1032,20 @@ public abstract class TreeNode
 		}
 		else if (SyntaxUtils.isValidIdentifier(statement))
 		{
+			if (parent instanceof LocalVariableNode || parent instanceof FieldNode)
+			{
+				VariableNode var = (VariableNode)parent;
+				
+				ClassNode clazz  = var.getProgramNode().getClass(var.getType());
+				
+				FieldNode field  = clazz.getField(statement);
+				
+				if (field != null && SyntaxUtils.isVisible(var, field))
+				{
+					return field;
+				}
+			}
+			
 			TreeNode scopeNode = getAncestorWithScope(parent);
 			
 			while (scopeNode != null)
@@ -1065,7 +1079,6 @@ public abstract class TreeNode
 			if (classNode != null)
 			{
 				FieldNode field = classNode.getField(statement);
-//				System.out.println("Tried for '" + statement + "' but found " + classNode.getFieldListNode().getPrivateFieldListNode() + " " + classNode.getName() + "  " + classNode.getFieldListNode().getPrivateFieldListNode().getChildren().size());
 				
 				if (field != null)
 				{

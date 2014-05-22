@@ -1,23 +1,22 @@
 /**
- * The Nova Programming Language. Write Unbelievable Code.
- *  Copyright (C) 2014  Braden Steffaniak <BradenSteffaniak@gmail.com>
+ * The Nova Programming Language. Write Explosive Code.
+ * Copyright (C) 2014  Braden Steffaniak <BradenSteffaniak@gmail.com>
  *
- *  This program is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * The Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 package net.fathomsoft.nova.tree.variables;
 
-import net.fathomsoft.nova.tree.ArrayAccessNode;
 import net.fathomsoft.nova.tree.MethodNode;
 import net.fathomsoft.nova.tree.TreeNode;
 import net.fathomsoft.nova.util.Location;
@@ -66,24 +65,24 @@ public class LocalVariableNode extends VariableNode
 	@Override
 	public void validate()
 	{
-		// If possibly accessing a shadowed field.
+		// If possibly accessing a shadowed field. ONLY for shadowed fields.
 		if (getName().equals(MethodNode.getObjectReferenceIdentifier()) && getChildren().size() > 0)
 		{
 			TreeNode child = getChild(0);
 			
 			if (child instanceof VariableNode)
 			{
-				TreeNode     parent = getParent();
-			
-				VariableNode var    = (VariableNode)child;
+				VariableNode var  = (VariableNode)child;
 				
-				VariableNode node   = getExistingNode(var.getClassNode(), var.getName());
+				VariableNode node = getExistingNode(var.getClassNode(), var.getName());
 				
-				if (node instanceof FieldNode || node instanceof ArrayAccessNode)
+				if (node instanceof FieldNode)
 				{
 					node = node.clone();
 					
 					node.inheritChildren(var);
+					
+					TreeNode     parent = getParent();
 					
 					parent.replace(this, node);
 				}
@@ -99,7 +98,7 @@ public class LocalVariableNode extends VariableNode
 	{
 		LocalVariableNode node = new LocalVariableNode();
 		
-		return clone(node);
+		return cloneTo(node);
 	}
 	
 	/**
@@ -109,9 +108,9 @@ public class LocalVariableNode extends VariableNode
 	 * @param node The node to copy the data into.
 	 * @return The cloned node.
 	 */
-	public LocalVariableNode clone(LocalVariableNode node)
+	public LocalVariableNode cloneTo(LocalVariableNode node)
 	{
-		super.clone(node);
+		super.cloneTo(node);
 		
 		return node;
 	}

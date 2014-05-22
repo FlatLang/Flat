@@ -1,22 +1,24 @@
 /**
- * The Nova Programming Language. Write Unbelievable Code.
- *  Copyright (C) 2014  Braden Steffaniak <BradenSteffaniak@gmail.com>
+ * The Nova Programming Language. Write Explosive Code.
+ * Copyright (C) 2014  Braden Steffaniak <BradenSteffaniak@gmail.com>
  *
- *  This program is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * The Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 package net.fathomsoft.nova.tree;
 
+import net.fathomsoft.nova.tree.variables.ArrayAccessNode;
+import net.fathomsoft.nova.tree.variables.ArrayNode;
 import net.fathomsoft.nova.tree.variables.LocalVariableNode;
 import net.fathomsoft.nova.util.SyntaxUtils;
 
@@ -65,6 +67,14 @@ public class ValueNode extends TreeNode
 	 */
 	public ValueNode getReferenceNode(TreeNode parent)
 	{
+		if (parent instanceof ArrayAccessNode || parent instanceof ArrayNode)
+		{
+			parent = parent.getParent();
+		}
+		if (parent instanceof InstantiationNode)
+		{
+			parent = parent.getParent();
+		}
 		if (parent instanceof ReturnNode)
 		{
 			parent = parent.getParent();
@@ -163,7 +173,7 @@ public class ValueNode extends TreeNode
 	 */
 	public ClassNode getClassNode()
 	{
-		return (ClassNode)getAncestorOfType(ClassNode.class);
+		return (ClassNode)getAncestorOfType(ClassNode.class, true);
 	}
 	
 	public boolean isContainingClass(ValueNode node)
