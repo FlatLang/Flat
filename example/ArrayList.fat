@@ -30,7 +30,7 @@ public class ArrayList
 	{
 		size = size + 3;
 		
-		int tmp[] = new int[size];//stdlib.malloc(stdlib.sizeof(int) * size);
+		int tmp[] = new int[size];
 		
 		Fathom.arrayCopy(tmp, 0, data, 0, count, size, stdlib.sizeof(int));
 		stdlib.free(data);
