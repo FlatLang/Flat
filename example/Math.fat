@@ -2,6 +2,11 @@ import "math.h";
 
 public class Math
 {
+	public static double abs(double number)
+	{
+		return math.abs(number);
+	}
+	
 	public static double sqrt(double number)
 	{
 		return math.sqrt(number);
