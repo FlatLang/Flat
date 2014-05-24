@@ -28,7 +28,7 @@ import net.fathomsoft.nova.tree.TreeNode;
  * @since	v0.1 Jan 5, 2014 at 10:00:50 PM
  * @version	v0.2.4 May 17, 2014 at 9:55:04 PM
  */
-public class PublicFieldListNode extends TreeNode
+public class InstanceFieldListNode extends TreeNode
 {
 	/**
 	 * @see net.fathomsoft.nova.tree.TreeNode#generateJavaSource()
@@ -63,6 +63,28 @@ public class PublicFieldListNode extends TreeNode
 	public String generateCHeader()
 	{
 		StringBuilder builder = new StringBuilder();
+		
+		ClassNode clazz = (ClassNode)getAncestorOfType(ClassNode.class);
+		
+		ClassNode extended = clazz.getExtendedClass();
+		
+		if (extended != null)
+		{
+			boolean publicList = this == clazz.getFieldListNode().getPublicFieldListNode();
+			
+			InstanceFieldListNode fields = null;
+			
+			if (publicList)
+			{
+				fields = extended.getFieldListNode().getPublicFieldListNode();
+			}
+			else
+			{
+				fields = extended.getFieldListNode().getPrivateFieldListNode();
+			}
+			
+			builder.append(fields.generateCHeader());
+		}
 		
 		for (int i = 0; i < getChildren().size(); i++)
 		{
@@ -109,9 +131,9 @@ public class PublicFieldListNode extends TreeNode
 	 * @see net.fathomsoft.nova.tree.TreeNode#clone()
 	 */
 	@Override
-	public PublicFieldListNode clone()
+	public InstanceFieldListNode clone()
 	{
-		PublicFieldListNode node = new PublicFieldListNode();
+		InstanceFieldListNode node = new InstanceFieldListNode();
 		
 		return cloneTo(node);
 	}
@@ -123,7 +145,7 @@ public class PublicFieldListNode extends TreeNode
 	 * @param node The node to copy the data into.
 	 * @return The cloned node.
 	 */
-	public PublicFieldListNode cloneTo(PublicFieldListNode node)
+	public InstanceFieldListNode cloneTo(InstanceFieldListNode node)
 	{
 		super.cloneTo(node);
 		

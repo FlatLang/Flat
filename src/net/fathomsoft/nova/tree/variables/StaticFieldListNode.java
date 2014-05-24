@@ -28,7 +28,7 @@ import net.fathomsoft.nova.tree.TreeNode;
  * @since	v0.1 Jan 5, 2014 at 10:00:50 PM
  * @version	v0.2.4 May 17, 2014 at 9:55:04 PM
  */
-public class PrivateFieldListNode extends TreeNode
+public class StaticFieldListNode extends TreeNode
 {
 	/**
 	 * @see net.fathomsoft.nova.tree.TreeNode#generateJavaSource()
@@ -104,9 +104,9 @@ public class PrivateFieldListNode extends TreeNode
 	 * @see net.fathomsoft.nova.tree.TreeNode#clone()
 	 */
 	@Override
-	public PrivateFieldListNode clone()
+	public StaticFieldListNode clone()
 	{
-		PrivateFieldListNode node = new PrivateFieldListNode();
+		StaticFieldListNode node = new StaticFieldListNode();
 		
 		return cloneTo(node);
 	}
@@ -118,7 +118,7 @@ public class PrivateFieldListNode extends TreeNode
 	 * @param node The node to copy the data into.
 	 * @return The cloned node.
 	 */
-	public PrivateFieldListNode cloneTo(PrivateFieldListNode node)
+	public StaticFieldListNode cloneTo(StaticFieldListNode node)
 	{
 		super.cloneTo(node);
 		
