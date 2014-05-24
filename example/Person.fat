@@ -1,8 +1,8 @@
-public class Person extends Object
+public class Person
 {
-	private int		age;
+	public int		age;
 	
-	private String	name;
+	public String	name;
 	
 	public Person(String name, int age)
 	{
@@ -10,13 +10,8 @@ public class Person extends Object
 		this.age  = age;
 	}
 	
-	public int getAge()
+	public void sayHello()
 	{
-		return age;
-	}
-	
-	public String getName()
-	{
-		return name;
+		IO.println("Hello from " + name + " the Person");
 	}
 }
