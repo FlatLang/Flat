@@ -11,6 +11,8 @@ typedef struct Thread Thread;
 #include "Object.h"
 #include "String.h"
 #include "Math.h"
+#include "IO.h"
+#include "Integer.h"
 #include "DivideByZeroException.h"
 #include <Thread.h>
 #include "IO.h"
@@ -23,11 +25,11 @@ CCLASS_CLASS
 )
 
 
-Thread* nova_Thread_Thread(ExceptionData* exceptionData, long_long nova_Thread_millis_17, String* nova_Thread_word_17);
+Thread* nova_Thread_Thread(ExceptionData* exceptionData, long_long nova_Thread_millis_72, String* nova_Thread_word_72);
 void nova_del_Thread(Thread** this, ExceptionData* exceptionData);
 void nova_Thread_start(Thread* this, ExceptionData* exceptionData);
 void nova_Thread_join(Thread* this, ExceptionData* exceptionData);
-void nova_Thread_sleep(ExceptionData* exceptionData, long_long nova_Thread_millis_157);
+void nova_Thread_sleep(ExceptionData* exceptionData, long_long nova_Thread_millis_103);
 void nova_Thread_run(Thread* this, ExceptionData* exceptionData);
 FATHOM_THREAD_FUNC lib_fathom_thread_run(FATHOM_THREAD_FUNC_ARG arg);
 #endif

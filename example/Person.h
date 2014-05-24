@@ -11,18 +11,21 @@ typedef struct Person Person;
 #include "Object.h"
 #include "String.h"
 #include "Math.h"
+#include "IO.h"
+#include "Integer.h"
 #include "DivideByZeroException.h"
+#include "IO.h"
 
 CCLASS_CLASS
 (
 	Person, 
 	
-	struct Private* prv;
+	int nova_Person_age;
+	String* nova_Person_name;
 )
 
 
-Person* nova_Person_Person(ExceptionData* exceptionData, String* nova_Person_name_136, int nova_Person_age_136);
+Person* nova_Person_Person(ExceptionData* exceptionData, String* nova_Person_name_132, int nova_Person_age_132);
 void nova_del_Person(Person** this, ExceptionData* exceptionData);
-int nova_Person_getAge(Person* this, ExceptionData* exceptionData);
-String* nova_Person_getName(Person* this, ExceptionData* exceptionData);
+void nova_Person_sayHello(Person* this, ExceptionData* exceptionData);
 #endif

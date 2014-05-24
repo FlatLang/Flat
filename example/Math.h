@@ -11,6 +11,8 @@ typedef struct Math Math;
 #include "Object.h"
 #include "String.h"
 #include "Math.h"
+#include "IO.h"
+#include "Integer.h"
 #include "DivideByZeroException.h"
 #include <math.h>
 
@@ -22,15 +24,16 @@ CCLASS_CLASS
 
 Math* nova_Math_Math(ExceptionData* exceptionData);
 void nova_del_Math(Math** this, ExceptionData* exceptionData);
-double nova_Math_sqrt(ExceptionData* exceptionData, double nova_Math_number_13);
-double nova_Math_pow(ExceptionData* exceptionData, double nova_Math_base_18, double nova_Math_power_18);
-double nova_Math_sin(ExceptionData* exceptionData, double nova_Math_number_21);
-double nova_Math_cos(ExceptionData* exceptionData, double nova_Math_number_24);
-double nova_Math_tan(ExceptionData* exceptionData, double nova_Math_number_27);
-double nova_Math_asin(ExceptionData* exceptionData, double nova_Math_number_30);
-double nova_Math_acos(ExceptionData* exceptionData, double nova_Math_number_33);
-double nova_Math_atan(ExceptionData* exceptionData, double nova_Math_number_36);
-long_long nova_Math_round(ExceptionData* exceptionData, double nova_Math_number_41);
-long_long nova_Math_floor(ExceptionData* exceptionData, double nova_Math_number_44);
-long_long nova_Math_ceil(ExceptionData* exceptionData, double nova_Math_number_94);
+int nova_Math_abs(ExceptionData* exceptionData, int nova_Math_number_26);
+double nova_Math_sqrt(ExceptionData* exceptionData, double nova_Math_number_32);
+int nova_Math_pow(ExceptionData* exceptionData, int nova_Math_base_39, int nova_Math_power_39);
+double nova_Math_sin(ExceptionData* exceptionData, double nova_Math_number_46);
+double nova_Math_cos(ExceptionData* exceptionData, double nova_Math_number_54);
+double nova_Math_tan(ExceptionData* exceptionData, double nova_Math_number_62);
+double nova_Math_asin(ExceptionData* exceptionData, double nova_Math_number_74);
+double nova_Math_acos(ExceptionData* exceptionData, double nova_Math_number_94);
+double nova_Math_atan(ExceptionData* exceptionData, double nova_Math_number_106);
+long_long nova_Math_round(ExceptionData* exceptionData, double nova_Math_number_111);
+long_long nova_Math_floor(ExceptionData* exceptionData, double nova_Math_number_118);
+long_long nova_Math_ceil(ExceptionData* exceptionData, double nova_Math_number_124);
 #endif

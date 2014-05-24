@@ -7,6 +7,8 @@
 #include "Object.h"
 #include "String.h"
 #include "Math.h"
+#include "IO.h"
+#include "Integer.h"
 #include "DivideByZeroException.h"
 #include <math.h>
 
@@ -33,57 +35,62 @@ void nova_del_Math(Math** this, ExceptionData* exceptionData)
 	free(*this);
 }
 
-double nova_Math_sqrt(ExceptionData* exceptionData, double nova_Math_number_13)
+int nova_Math_abs(ExceptionData* exceptionData, int nova_Math_number_26)
 {
-	return sqrt(nova_Math_number_13);
+	return abs(nova_Math_number_26);
 }
 
-double nova_Math_pow(ExceptionData* exceptionData, double nova_Math_base_18, double nova_Math_power_18)
+double nova_Math_sqrt(ExceptionData* exceptionData, double nova_Math_number_32)
 {
-	return pow(nova_Math_base_18, nova_Math_power_18);
+	return sqrt(nova_Math_number_32);
 }
 
-double nova_Math_sin(ExceptionData* exceptionData, double nova_Math_number_21)
+int nova_Math_pow(ExceptionData* exceptionData, int nova_Math_base_39, int nova_Math_power_39)
 {
-	return sin(nova_Math_number_21);
+	return pow(nova_Math_base_39, nova_Math_power_39);
 }
 
-double nova_Math_cos(ExceptionData* exceptionData, double nova_Math_number_24)
+double nova_Math_sin(ExceptionData* exceptionData, double nova_Math_number_46)
 {
-	return cos(nova_Math_number_24);
+	return sin(nova_Math_number_46);
 }
 
-double nova_Math_tan(ExceptionData* exceptionData, double nova_Math_number_27)
+double nova_Math_cos(ExceptionData* exceptionData, double nova_Math_number_54)
 {
-	return tan(nova_Math_number_27);
+	return cos(nova_Math_number_54);
 }
 
-double nova_Math_asin(ExceptionData* exceptionData, double nova_Math_number_30)
+double nova_Math_tan(ExceptionData* exceptionData, double nova_Math_number_62)
 {
-	return asin(nova_Math_number_30);
+	return tan(nova_Math_number_62);
 }
 
-double nova_Math_acos(ExceptionData* exceptionData, double nova_Math_number_33)
+double nova_Math_asin(ExceptionData* exceptionData, double nova_Math_number_74)
 {
-	return acos(nova_Math_number_33);
+	return asin(nova_Math_number_74);
 }
 
-double nova_Math_atan(ExceptionData* exceptionData, double nova_Math_number_36)
+double nova_Math_acos(ExceptionData* exceptionData, double nova_Math_number_94)
 {
-	return atan(nova_Math_number_36);
+	return acos(nova_Math_number_94);
 }
 
-long_long nova_Math_round(ExceptionData* exceptionData, double nova_Math_number_41)
+double nova_Math_atan(ExceptionData* exceptionData, double nova_Math_number_106)
 {
-	return nova_Math_floor(exceptionData, nova_Math_number_41 + 0.5);
+	return atan(nova_Math_number_106);
 }
 
-long_long nova_Math_floor(ExceptionData* exceptionData, double nova_Math_number_44)
+long_long nova_Math_round(ExceptionData* exceptionData, double nova_Math_number_111)
 {
-	return floor(nova_Math_number_44);
+	return nova_Math_floor(exceptionData, nova_Math_number_111 + 0.5);
 }
 
-long_long nova_Math_ceil(ExceptionData* exceptionData, double nova_Math_number_94)
+long_long nova_Math_floor(ExceptionData* exceptionData, double nova_Math_number_118)
 {
-	return ceil(nova_Math_number_94);
+	return floor(nova_Math_number_118);
+}
+
+long_long nova_Math_ceil(ExceptionData* exceptionData, double nova_Math_number_124)
+{
+	return ceil(nova_Math_number_124);
 }

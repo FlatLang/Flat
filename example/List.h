@@ -11,6 +11,8 @@ typedef struct List List;
 #include "Object.h"
 #include "String.h"
 #include "Math.h"
+#include "IO.h"
+#include "Integer.h"
 #include "DivideByZeroException.h"
 #include "ListNode.h"
 
@@ -18,6 +20,7 @@ CCLASS_CLASS
 (
 	List, 
 	
+	ListNode* nova_List_start;
 	struct Private* prv;
 )
 
@@ -25,6 +28,6 @@ CCLASS_CLASS
 List* nova_List_List(ExceptionData* exceptionData);
 void nova_del_List(List** this, ExceptionData* exceptionData);
 ListNode* nova_List_getFirst(List* this, ExceptionData* exceptionData);
-void nova_List_add(List* this, ExceptionData* exceptionData, Object* nova_List_data_111);
-void nova_List_remove(List* this, ExceptionData* exceptionData, Object* nova_List_data_121);
+void nova_List_add(List* this, ExceptionData* exceptionData, Object* nova_List_data_98);
+void nova_List_remove(List* this, ExceptionData* exceptionData, Object* nova_List_data_107);
 #endif

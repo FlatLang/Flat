@@ -7,7 +7,10 @@
 #include "Object.h"
 #include "String.h"
 #include "Math.h"
+#include "IO.h"
+#include "Integer.h"
 #include "DivideByZeroException.h"
+#include "IO.h"
 
 Object* nova_Object_Object(ExceptionData* exceptionData)
 {
@@ -34,5 +37,5 @@ void nova_del_Object(Object** this, ExceptionData* exceptionData)
 
 String* nova_Object_toString(Object* this, ExceptionData* exceptionData)
 {
-	return nova_String_String(exceptionData, "Nothing");
+	return nova_String_String(exceptionData, "Object");
 }

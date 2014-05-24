@@ -11,6 +11,8 @@ typedef struct DivideByZeroException DivideByZeroException;
 #include "Object.h"
 #include "String.h"
 #include "Math.h"
+#include "IO.h"
+#include "Integer.h"
 #include "DivideByZeroException.h"
 
 CCLASS_CLASS

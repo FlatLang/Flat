@@ -7,22 +7,25 @@
 #include "Object.h"
 #include "String.h"
 #include "Math.h"
+#include "IO.h"
+#include "Integer.h"
 #include "DivideByZeroException.h"
 
 CCLASS_PRIVATE
 (
 	Object* nova_ListNode_data;
 	ListNode* nova_ListNode_next;
+	
 )
 
-ListNode* nova_ListNode_ListNode(ExceptionData* exceptionData, Object* nova_ListNode_data_123)
+ListNode* nova_ListNode_ListNode(ExceptionData* exceptionData, Object* nova_ListNode_data_4)
 {
 	CCLASS_NEW(ListNode, this);
 	
 	this->prv->nova_ListNode_data = 0;
 	this->prv->nova_ListNode_next = 0;
 	{
-		this->prv->nova_ListNode_data = nova_ListNode_data_123;
+		this->prv->nova_ListNode_data = nova_ListNode_data_4;
 	}
 	
 	return this;
@@ -54,7 +57,7 @@ ListNode* nova_ListNode_getNext(ListNode* this, ExceptionData* exceptionData)
 	return this->prv->nova_ListNode_next;
 }
 
-void nova_ListNode_setNext(ListNode* this, ExceptionData* exceptionData, ListNode* nova_ListNode_next_155)
+void nova_ListNode_setNext(ListNode* this, ExceptionData* exceptionData, ListNode* nova_ListNode_next_17)
 {
-	this->prv->nova_ListNode_next = nova_ListNode_next_155;
+	this->prv->nova_ListNode_next = nova_ListNode_next_17;
 }
