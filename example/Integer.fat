@@ -1,0 +1,98 @@
+public class Integer
+{
+	visible int value;
+	
+	public Integer(int value)
+	{
+		this.value = value;
+	}
+	
+	public static int numDigits(int number)
+	{
+		if (number < 0)
+		{
+			return numDigits(-number) + 1;
+		}
+		
+		int size = 1;
+		
+		number = number / 10;
+			
+		while (number > 0)
+		{
+			number = number / 10;
+			
+			++size;
+		}
+		
+		return size;
+	}
+	
+	static int pow(int a, int b)
+	{
+		if (b == 0)
+		{
+			return 1;
+		}
+		else if (b > 0)
+		{
+			return positivePow(a, b);
+		}
+		else
+		{
+			return 0;
+		}
+	}
+	
+	static int positivePow(int a, int b)
+	{
+		for (int i = b - 2; i >= 0; i--)
+		{
+			a = a * a;
+		}
+		
+		return a;
+	}
+	
+	public static String toAString(int value)
+	{
+		int  index  = 0;
+		
+		int  digits = numDigits(value);
+		
+		char data[] = new char[digits + 1];
+		
+		data[digits] = '\0';
+		
+		int  offset = 0;
+		
+		if (value < 0)
+		{
+			data[0] = '-';
+			
+			value  = -value;
+			
+			offset = 1;
+		}
+		
+		int nums = digits - offset;
+		
+		digits   = digits - 1;
+		
+		while (index < nums)
+		{
+			data[digits - index] = '0' + value % 10;
+			
+			value = value / 10;
+			
+			++index;
+		}
+		
+		return new String(data);
+	}
+	
+	public String toString()
+	{
+		return toAString(value);
+	}
+}
