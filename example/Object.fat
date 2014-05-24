@@ -2,6 +2,6 @@ public class Object
 {
 	public String toString()
 	{
-		return "Nothing";
+		return "[Object text here]";
 	}
 }
