@@ -2,8 +2,8 @@ import "ListNode";
 
 public class List
 {
-	private ListNode	start;
-	private ListNode	current;
+	ListNode	start;
+	ListNode	current;
 	
 	public ListNode getFirst()
 	{
