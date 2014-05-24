@@ -1,8 +1,8 @@
 public class ListNode
 {
-	private Object		data;
+	Object		data;
 	
-	private ListNode	next;
+	ListNode	next;
 	
 	public ListNode(Object data)
 	{
