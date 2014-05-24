@@ -30,9 +30,7 @@ public class IO
 	{
 		String s = getLine();
 		
-		char data[] = s.toCharArray();
-		
-		int num = stdlib.atoi(data);
+		int num = stdlib.atoi(s.toCharArray());
 		
 		return num;
 	}
