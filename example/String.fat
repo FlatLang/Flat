@@ -10,12 +10,12 @@ public class String
 	{
 		this.data = data;
 		
-		calculateLength();
+		length    = calculateLength();
 	}
 	
-	void calculateLength()
+	int calculateLength()
 	{
-		length = string.strlen(data);
+		string.strlen(data);
 	}
 	
 	public char[] toCharArray()
@@ -29,9 +29,7 @@ public class String
 		
 		string.strcpy(newData, data);
 		
-		char chars[] = str.toCharArray();
-		
-		string.strcat(newData, chars);
+		string.strcat(newData, str.toCharArray());
 		
 		String newStr = new String(newData);
 		
