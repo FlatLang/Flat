@@ -18,6 +18,7 @@
 package net.fathomsoft.nova.tree;
 
 import net.fathomsoft.nova.error.SyntaxMessage;
+import net.fathomsoft.nova.tree.variables.LocalVariableNode;
 import net.fathomsoft.nova.tree.variables.VariableNode;
 import net.fathomsoft.nova.util.Bounds;
 import net.fathomsoft.nova.util.Location;
@@ -32,7 +33,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 10:04:31 PM
- * @version	v0.2.5 May 22, 2014 at 2:56:28 PM
+ * @version	v0.2.6 May 24, 2014 at 6:06:20 PM
  */
 public class MethodCallNode extends IdentifierNode
 {
@@ -136,7 +137,7 @@ public class MethodCallNode extends IdentifierNode
 		ClassNode  clazz  = program.getClass(type);
 		
 		MethodNode method = clazz.getMethod(getName());
-			
+		
 		return method;
 	}
 	
@@ -273,32 +274,6 @@ public class MethodCallNode extends IdentifierNode
 		return generateCSourceFragment(false);
 	}
 	
-//	/**
-//	 * Decode the given statement into a MethodCallNode instance, if
-//	 * possible. If it is not possible, this method returns null.<br>
-//	 * To determine whether or not a method is called externally,
-//	 * refer to {@link #isExternal()} for more details on what an
-//	 * external call looks like.
-//	 * <br>
-//	 * Example inputs include:<br>
-//	 * <ul>
-//	 * 	<li>methodName(5, varName, methodThatReturnsAValue(), "arg1")</li>
-//	 * 	<li>externalFile.cFunctionName()</li>
-//	 * 	<li>methodName('q', 5 * (2 / 3))</li>
-//	 * </ul>
-//	 * 
-//	 * @param parent The parent node of the statement.
-//	 * @param statement The statement to try to decode into a
-//	 * 		MethodCallNode instance.
-//	 * @param location The location of the statement in the source code.
-//	 * @return The generated node, if it was possible to translated it
-//	 * 		into a MethodCallNode.
-//	 */
-//	public static MethodCallNode decodeStatement(TreeNode parent, String statement, Location location)
-//	{
-//		return decodeStatement(parent, statement, location, true);
-//	}
-	
 	/**
 	 * Decode the given statement into a MethodCallNode instance, if
 	 * possible. If it is not possible, this method returns null.<br>
@@ -351,8 +326,6 @@ public class MethodCallNode extends IdentifierNode
 				return null;
 			}
 			
-			FileNode fileNode = (FileNode)parent.getAncestorOfType(FileNode.class, true);
-			
 			Location argsLocation = new Location();
 			argsLocation.setLineNumber(location.getLineNumber());
 			argsLocation.setBounds(location.getStart() + bounds.getStart(), location.getStart() + bounds.getEnd());
@@ -361,21 +334,15 @@ public class MethodCallNode extends IdentifierNode
 			
 			String  argumentList = statement.substring(bounds.getStart(), bounds.getEnd());
 			
-			final StringBuilder objectInstance = new StringBuilder();
-			
 			final boolean error[] = new boolean[1];
 			
 			MethodCallNode n = new MethodCallNode()
 			{
 				public void interactWord(String word, int wordNumber, Bounds bounds, int numWords, String leftDelimiter, String rightDelimiter)
 				{
-					if (wordNumber == numWords - 1 && (leftDelimiter.length() == 0 || leftDelimiter.equals(".")))
+					if (wordNumber == numWords - 1 && leftDelimiter.length() == 0)
 					{
 						setName(word);
-					}
-					else if (rightDelimiter.equals("."))
-					{
-						objectInstance.append(word).append("->");
 					}
 					else if (rightDelimiter.length() > 0)
 					{
@@ -386,26 +353,13 @@ public class MethodCallNode extends IdentifierNode
 				}
 			};
 			
-			n.externalCall = checkExternal(parent);
+			n.externalCall = parent instanceof ExternalTypeNode;
 			
 			n.iterateWords(methodCall, Patterns.IDENTIFIER_BOUNDARIES);
 			
 			if (error[0])
 			{
 				return null;
-			}
-			
-			if (objectInstance.length() > 0)
-			{
-				objectInstance.delete(objectInstance.length() - 2, objectInstance.length());
-			}
-			
-			if (objectInstance.length() > 0)
-			{
-				if (fileNode.isExternalImport(objectInstance.toString()))
-				{
-					n.externalCall = true;
-				}
 			}
 			
 			FileNode     file     = parent.getFileNode();
@@ -429,12 +383,25 @@ public class MethodCallNode extends IdentifierNode
 			
 			if (method != null)
 			{
+				if (method.isExternal())
+				{
+					n.externalCall = true;
+				}
+				
 				n.setType(method.getType());
 			}
 			
 			String arguments[] = StringUtils.splitCommas(argumentList);
 			
 			n.addArguments(parent, arguments, argsLocation);
+			
+			if (method != null)
+			{
+				if (!n.fulfillsParameters(method, file, location))
+				{
+					return null;
+				}
+			}
 			
 			return n;
 		}
@@ -443,25 +410,43 @@ public class MethodCallNode extends IdentifierNode
 	}
 	
 	/**
-	 * Get whether or not the method call is external.
+	 * Check to see if the arguments passed to the method call
+	 * fulfills the required parameters of the method declaration.
 	 * 
-	 * @return Whether or not the method call is external.
+	 * @param method The Method to check the arguments against.
+	 * @param fileNode The FileNode that this method call is within.
+	 * @param location The location of the arguments that are being
+	 * 		passed.
+	 * @return True if the method call's arguments fulfill the
+	 * 		requirements of the Method declaration's parameters.
 	 */
-	private static boolean checkExternal(TreeNode parent)
+	private boolean fulfillsParameters(MethodNode method, FileNode fileNode, Location location)
 	{
-		TreeNode current = parent;
+		ParameterListNode parameters = method.getParameterListNode();
+		ArgumentListNode  arguments  = getArgumentListNode();
 		
-		while (current instanceof ValueNode)
+		int offset = 2;
+		
+		if (method.isStatic())
 		{
-			if (current instanceof ExternalTypeNode)
-			{
-				return true;
-			}
-			
-			current = current.getParent();
+			offset = 1;
 		}
 		
-		return false;
+		if (parameters.getChildren().size() - offset != arguments.getChildren().size())
+		{
+			if (parameters.getChildren().size() - offset > arguments.getChildren().size())
+			{
+				SyntaxMessage.error("To few arguments to method call '" + getName() + "'", fileNode, location, fileNode.getController());
+			}
+			else
+			{
+				SyntaxMessage.error("To many arguments to method call '" + getName() + "'", fileNode, location, fileNode.getController());
+			}
+			
+//			return false;
+		}
+		
+		return true;
 	}
 	
 	/**
@@ -489,14 +474,18 @@ public class MethodCallNode extends IdentifierNode
 					argument = StringUtils.trimSurroundingWhitespace(argument.substring(1));
 				}
 				
-				TreeNode arg = BinaryOperatorNode.decodeStatement(parent, argument, location);
+				TreeNode arg = null;
 				
 				if (arg == null && SyntaxUtils.isLiteral(argument))
 				{
 					LiteralNode literal = new LiteralNode();
-					literal.setValue(argument, isWithinExternalContext());
+					literal.setValue(argument, parent.isWithinExternalContext());
 					
 					arg = literal;
+				}
+				if (arg == null)
+				{
+					arg = BinaryOperatorNode.decodeStatement(parent, argument, location);
 				}
 				if (arg == null)
 				{
@@ -516,10 +505,10 @@ public class MethodCallNode extends IdentifierNode
 						}
 					}
 				}
-				if (arg == null && isWithinExternalContext())
+				if (arg == null && parent.isWithinExternalContext())
 				{
 					LiteralNode literal = new LiteralNode();
-					literal.setValue(argument, isWithinExternalContext());
+					literal.setValue(argument, parent.isWithinExternalContext());
 					
 					arg = literal;
 				}
@@ -547,17 +536,17 @@ public class MethodCallNode extends IdentifierNode
 	{
 		StringBuilder builder = new StringBuilder();
 		
-		ValueNode value = getReferenceNode();
-		
-		if (value instanceof VariableNode)
-		{
-			MethodNode method = getMethodNode();
-			
-			if (method instanceof ConstructorNode == false)
-			{
-				builder.append(value.generateNovaInput()).append('.');
-			}
-		}
+//		ValueNode value = getReferenceNode();
+//		
+//		if (value instanceof VariableNode)
+//		{
+//			MethodNode method = getMethodNode();
+//			
+//			if (method instanceof ConstructorNode == false)
+//			{
+//				builder.append(value.generateNovaInput()).append('.');
+//			}
+//		}
 		
 		builder.append(getName()).append('(').append(getArgumentListNode().generateNovaInput()).append(')');
 		
@@ -569,6 +558,19 @@ public class MethodCallNode extends IdentifierNode
 		}
 		
 		return builder.toString();
+	}
+	
+	/**
+	 * @see net.fathomsoft.nova.tree.ValueNode#getAccessedNode()
+	 */
+	public ValueNode getAccessedNode()
+	{
+		if (getChildren().size() <= 1)
+		{
+			return null;
+		}
+		
+		return (ValueNode)getChild(1);
 	}
 	
 	/**
