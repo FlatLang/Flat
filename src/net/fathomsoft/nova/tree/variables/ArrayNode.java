@@ -42,7 +42,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Mar 16, 2014 at 1:13:49 AM
- * @version	v0.2.4 May 17, 2014 at 9:55:04 PM
+ * @version	v0.2.6 May 24, 2014 at 6:06:20 PM
  */
 public class ArrayNode extends VariableNode
 {
@@ -56,7 +56,14 @@ public class ArrayNode extends VariableNode
 		
 //		IdentifierNode identifier = getIdentifierNode();
 		
-		builder.append('(').append(getName()).append('*').append(')');
+		builder.append('(').append(getName()).append('*');
+		
+		if (!isPrimitiveType() && !isExternal())
+		{
+			builder.append('*');
+		}
+		
+		builder.append(')');
 		
 		builder.append("malloc(sizeof(").append(getName()).append(')').append(" * (");
 		
