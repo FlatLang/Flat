@@ -35,11 +35,23 @@ public class Test
 	
 	public static void main(String args[])
 	{
-		String str = "asdfasdfasdf[this + asdf - asdf]";
+//		String array[] = new String[9999999];
+//		long start = System.currentTimeMillis();
+//		
+//		for (int i = 0; i < 9999999; i++)
+//		{
+//			array[i] = Integer.toString(i);
+//		}
 		
-		Bounds b = Regex.boundsOf(str, Patterns.ARRAY_BRACKETS_DATA);
+		int i = 600;
 		
-		System.out.println(str.substring(b.getStart(), b.getEnd()));
+		int j = (i >> 2);// - (i >> 2);
+		
+		System.out.println(j);
+		
+//		long end = System.currentTimeMillis();
+//		
+//		System.out.println(end - start);
 		
 		System.exit(0);
 		try
@@ -79,14 +91,14 @@ public class Test
 		}
 		System.out.println();
 		
-		long start = System.currentTimeMillis();
-		for (int i = 0; i < 99999999; i++)
-		{
-			sin2(i);
-		}
-		long end = System.currentTimeMillis();
-		
-		System.out.println(end - start);
+//		long start = System.currentTimeMillis();
+//		for (int i = 0; i < 99999999; i++)
+//		{
+//			sin2(i);
+//		}
+//		long end = System.currentTimeMillis();
+//		
+//		System.out.println(end - start);
 		
 //		FPattern pattern = new FPattern("([;} \n\r]`s*)((`2startps?`identifier+`2endps?`s*)+[*&]*`s*[\\(]`~*[\\)]`s*[;])()");
 //		FMatcher matcher = new FMatcher("/*This is comment stuff*/ \n public void test \tis a test(these, are, parameters);", pattern);
