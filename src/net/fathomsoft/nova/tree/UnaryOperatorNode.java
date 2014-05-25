@@ -17,11 +17,14 @@
  */
 package net.fathomsoft.nova.tree;
 
+import java.util.HashMap;
+
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.util.Bounds;
 import net.fathomsoft.nova.util.Location;
 import net.fathomsoft.nova.util.Patterns;
 import net.fathomsoft.nova.util.Regex;
+import net.fathomsoft.nova.util.StringUtils;
 
 /**
  * TreeNode extension that represents a unary operator node type.
@@ -30,10 +33,27 @@ import net.fathomsoft.nova.util.Regex;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 10:00:11 PM
- * @version	v0.2.1 Apr 24, 2014 at 4:56:52 PM
+ * @version	v0.2.6 May 24, 2014 at 6:06:20 PM
  */
 public class UnaryOperatorNode extends TreeNode
 {
+	private static final int	LEFT = -1, EITHER = 0, RIGHT = 1;
+	
+	private static final HashMap<String, Integer>	SIDES;
+	
+	/**
+	 * Initialize the SIDES HashMap.
+	 */
+	static
+	{
+		SIDES = new HashMap<String, Integer>();
+		
+		SIDES.put("-",  LEFT);
+		SIDES.put("--", EITHER);
+		SIDES.put("++", EITHER);
+		SIDES.put("!",  LEFT);
+	}
+	
 	/**
 	 * The the TreeNode that represents the variable in the operation.<br>
 	 * For example:<br>
@@ -139,13 +159,13 @@ public class UnaryOperatorNode extends TreeNode
 	 */
 	public static UnaryOperatorNode decodeStatement(TreeNode parent, String statement, Location location)
 	{
-		Bounds bounds = Regex.boundsOf(statement, Patterns.UNARY_ARITH_OPERATORS);
+		Bounds bounds = StringUtils.findStrings(statement, StringUtils.UNARY_OPERATORS);
 		
 		if (bounds.getStart() >= 0)
 		{
 			UnaryOperatorNode n = new UnaryOperatorNode();
 				
-			String operatorVal = statement.substring(bounds.getStart(), bounds.getEnd());
+			String operatorVal  = statement.substring(bounds.getStart(), bounds.getEnd());
 			
 			OperatorNode operator = new OperatorNode();
 			operator.setOperator(operatorVal);
@@ -155,15 +175,29 @@ public class UnaryOperatorNode extends TreeNode
 			
 			if (bounds.getStart() == 0)
 			{
+				if (SIDES.get(operatorVal) == RIGHT)
+				{
+					return null;
+				}
+				
 				varStart = bounds.getEnd();
 				varEnd   = statement.length();
 				
 				n.addChild(operator);
 			}
-			else
+			else if (bounds.getEnd() == statement.length())
 			{
+				if (SIDES.get(operatorVal) == LEFT)
+				{
+					return null;
+				}
+				
 				varStart = 0;
 				varEnd   = bounds.getStart();
+			}
+			else
+			{
+				return null;
 			}
 			
 			String variableName = statement.substring(varStart, varEnd);
@@ -184,7 +218,7 @@ public class UnaryOperatorNode extends TreeNode
 				return n;
 			}
 			
-			SyntaxMessage.error("Undeclared variable '" + variable + "'", parent.getFileNode(), location, parent.getController());
+			SyntaxMessage.error("Undeclared variable '" + variableName + "'", parent.getFileNode(), location, parent.getController());
 		}
 		
 		return null;
