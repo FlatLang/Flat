@@ -19,8 +19,8 @@ package net.fathomsoft.nova.tree;
 
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.tree.variables.FieldListNode;
-import net.fathomsoft.nova.tree.variables.PrivateFieldListNode;
-import net.fathomsoft.nova.tree.variables.PublicFieldListNode;
+import net.fathomsoft.nova.tree.variables.StaticFieldListNode;
+import net.fathomsoft.nova.tree.variables.InstanceFieldListNode;
 import net.fathomsoft.nova.util.Bounds;
 import net.fathomsoft.nova.util.Location;
 import net.fathomsoft.nova.util.Patterns;
@@ -42,7 +42,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Mar 16, 2014 at 1:13:49 AM
- * @version	v0.2.1 Apr 24, 2014 at 4:57:49 PM
+ * @version	v0.2.6 May 24, 2014 at 6:06:20 PM
  */
 public class VTableNode extends ClassNode
 {
@@ -88,7 +88,7 @@ public class VTableNode extends ClassNode
 
 		FieldListNode fields = getFieldListNode();
 		
-		PublicFieldListNode publicFields = fields.getPublicFieldListNode();
+		InstanceFieldListNode publicFields = fields.getPublicFieldListNode();
 		
 		if (publicFields.getChildren().size() > 0)
 		{
@@ -129,7 +129,7 @@ public class VTableNode extends ClassNode
 		
 		FieldListNode fields = getFieldListNode();
 		
-		PrivateFieldListNode privateFields = fields.getPrivateFieldListNode();
+		InstanceFieldListNode privateFields = fields.getPrivateFieldListNode();
 		
 		if (privateFields.getChildren().size() > 0)
 		{
