@@ -26,11 +26,12 @@ import java.util.regex.Matcher;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Mar 13, 2014 at 9:38:42 PM
- * @version	v0.2.5 May 22, 2014 at 2:56:28 PM
+ * @version	v0.2.6 May 24, 2014 at 6:06:20 PM
  */
 public class StringUtils
 {
-	public static final String	BINARY_OPERATORS[] = new String[] { "+", "-", "/", "*", "==", "!=", "&&", "||", "<=", ">=", "<", ">", "%" };
+	public static final String	BINARY_OPERATORS[] = new String[] { "+", "-", "/", "*", "==", "!=", "&&", "||", "<=", ">=", "<<", "<", ">", "%" };
+	public static final String	UNARY_OPERATORS[]  = new String[] { "--", "-", "++", "!" };
 	
 	/**
 	 * Find the index of the ending char for the match. For instance, to
