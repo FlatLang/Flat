@@ -43,7 +43,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:00:04 PM
- * @version	v0.2.5 May 22, 2014 at 2:56:28 PM
+ * @version	v0.2.6 May 24, 2014 at 6:06:20 PM
  */
 public class Nova
 {
@@ -63,7 +63,7 @@ public class Nova
 	private List<File>			lingeringFiles;
 	
 	private static final int	OS;
-
+	
 	private static final String	OUTPUT_EXTENSION;
 	
 	public static final boolean	ANDROID_DEBUG = false;
@@ -89,7 +89,7 @@ public class Nova
 	public static final int		LINUX         = 3;
 	
 	public static final String	LANGUAGE_NAME = "Nova";
-	public static final String	VERSION       = "v0.2.5";
+	public static final String	VERSION       = "v0.2.6";
 	
 	/**
 	 * Find out which operating system the compiler is running on.
@@ -206,6 +206,8 @@ public class Nova
 				directory + "ListNode.fat",
 				directory + "Thread.fat",
 				directory + "Exception.fat",
+				directory + "BodyBuilder.fat",
+				directory + "Integer.fat",
 				"-o", directory + "bin/Executable" + OUTPUT_EXTENSION,
 				"-dir", '"' + directory + "../include" + '"',
 				"-run",
@@ -466,10 +468,10 @@ public class Nova
 			cmd.append("clang ");
 		}
 		
-		if (OS == MACOSX)
-		{
-			cmd.append("-Wno-all ");
-		}
+//		if (OS == MACOSX)
+//		{
+//			cmd.append("-Wno-all ");
+//		}
 		
 		for (int i = 0; i < includeDirectories.size(); i++)
 		{
@@ -489,7 +491,7 @@ public class Nova
 		
 		cmd.append("-o ").append('"').append(outputFile.getAbsolutePath()).append('"').append(' ');
 		
-//		cmd.append("-O2 ");
+		cmd.append("-O3 ");
 //		cmd.append("-s ");
 		
 		if (OS == LINUX)
@@ -515,10 +517,12 @@ public class Nova
 		
 		command.addCommandListener(new CommandListener()
 		{
+			boolean failed = false;
+			
 			@Override
 			public void resultReceived(int result)
 			{
-				if (result == 0)
+				if (!failed)
 				{
 					log("Compilation succeeded.");
 				}
@@ -537,6 +541,25 @@ public class Nova
 			@Override
 			public void errorReceived(String message)
 			{
+				if (compiler == TCC)
+				{
+					if (message.contains("error: "))
+					{
+						failed = true;
+					}
+				}
+				else if (compiler == GCC)
+				{
+					if (message.contains("error: "))
+					{
+						failed = true;
+					}
+				}
+				else
+				{
+					failed = true;
+				}
+				
 				System.err.println(message);
 			}
 			
