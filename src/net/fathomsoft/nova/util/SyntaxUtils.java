@@ -23,6 +23,7 @@ import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.tree.ClassNode;
 import net.fathomsoft.nova.tree.FileNode;
 import net.fathomsoft.nova.tree.InstanceDeclarationNode;
+import net.fathomsoft.nova.tree.InstantiationNode;
 import net.fathomsoft.nova.tree.LiteralNode;
 import net.fathomsoft.nova.tree.MethodNode;
 import net.fathomsoft.nova.tree.ParameterListNode;
@@ -37,7 +38,7 @@ import net.fathomsoft.nova.tree.variables.VariableNode;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Mar 15, 2014 at 7:55:00 PM
- * @version	v0.2.5 May 22, 2014 at 2:56:28 PM
+ * @version	v0.2.6 May 24, 2014 at 6:06:20 PM
  */
 public class SyntaxUtils
 {
@@ -50,9 +51,22 @@ public class SyntaxUtils
 	 */
 	public static int findDotOperator(String str)
 	{
-		return findCharInBaseScope(str, '.');
+		return findCharInBaseScope(str, '.', 0);
 	}
 	
+	/**
+	 * Find the next available dot operator index within the given String.
+	 * 
+	 * @param str The String to find the dot operator within.
+	 * @param start The index to start the search at.
+	 * @return The index of the dot operator. If a dot operator is not
+	 * 		found, then -1 is returned instead.
+	 */
+	public static int findDotOperator(String str, int start)
+	{
+		return findCharInBaseScope(str, '.', start);
+	}
+
 	/**
 	 * Find the next available instance of the given character in the
 	 * base scope of the given haystack String. The base scope means
@@ -65,7 +79,23 @@ public class SyntaxUtils
 	 */
 	public static int findCharInBaseScope(String haystack, char needle)
 	{
-		int i = 0;
+		return findCharInBaseScope(haystack, needle, 0);
+	}
+	
+	/**
+	 * Find the next available instance of the given character in the
+	 * base scope of the given haystack String. The base scope means
+	 * outside of any quotes, parenthesis, and/or brackets.
+	 * 
+	 * @param haystack The String to find the character within.
+	 * @param needle The character to search for in the String.
+	 * @param start The index to start the search at.
+	 * @return The index of the character. If the character is not
+	 * 		found, then -1 is returned instead.
+	 */
+	public static int findCharInBaseScope(String haystack, char needle, int start)
+	{
+		int i = start;
 		
 		while (i < haystack.length())
 		{
@@ -83,7 +113,7 @@ public class SyntaxUtils
 			{
 				i = StringUtils.findEndingMatch(haystack, i, '(', ')') + 1;
 				
-				if (i == 0)
+				if (i <= 0)
 				{
 					return -1;
 				}
@@ -92,7 +122,7 @@ public class SyntaxUtils
 			{
 				i = StringUtils.findEndingMatch(haystack, i, '[', ']') + 1;
 				
-				if (i == 0)
+				if (i <= 0)
 				{
 					return -1;
 				}
@@ -129,6 +159,11 @@ public class SyntaxUtils
 		else if (node instanceof ValueNode)
 		{
 			ValueNode value = (ValueNode)node;
+			
+			if (value.getChildren().size() > 0)
+			{
+				return isString(value.getChild(0));
+			}
 			
 			return value.getType().equals("String");
 		}
@@ -231,63 +266,115 @@ public class SyntaxUtils
 	 * @return Whether or not the String represents a number.
 	 */
 	public static boolean isNumber(String value)
-	{        
-	    boolean seenDot     = false;
-	    boolean seenExp     = false;
-	    boolean justSeenExp = false;
-	    boolean seenDigit   = false;
-	    
-	    for (int i = 0; i < value.length(); i++)
+	{
+		return isInteger(value) || isDouble(value);
+	}
+	
+	/**
+	 * Get whether or not the given String value represents a number.<br>
+	 * <br>
+	 * Possible inputs:
+	 * <ul>
+	 * 	<li>-1231412</li>
+	 * 	<li>1231412</li>
+	 * 	<li>4141.12312</li>
+	 * 	<li>-4141.12312</li>
+	 * </ul>
+	 * 
+	 * @param value The String of text to validate.
+	 * @return Whether or not the String represents a number.
+	 */
+	public static boolean isInteger(String value)
+	{
+		if (value.length() <= 0)
+		{
+			return false;
+		}
+		
+		int start = value.charAt(0) == '-' ? 1 : 0;
+		
+	    for (int i = start; i < value.length(); i++)
 	    {
 	        char c = value.charAt(i);
 	        
-	        if (c >= '0' && c <= '9')
+	        if (c < '0' || c > '9')
 	        {
-	            seenDigit = true;
-	            
-	            continue;
+	        	return false;
 	        }
-	        
-	        if ((c == '-' || c == '+') && (i == 0 || justSeenExp))
-	        {
-	            continue;
-	        }
-	        
-	        if (c == '.' && !seenDot)
-	        {
-	            seenDot = true;
-	            
-	            continue;
-	        }
-	        
-	        justSeenExp = false;
-	        
-	        if ((c == 'e' || c == 'E') && !seenExp)
-	        {
-	            seenExp     = true;
-	            justSeenExp = true;
-	            
-	            continue;
-	        }
-	        
-	        return false;
 	    }
 	    
-	    if (!seenDigit)
-	    {
-	        return false;
-	    }
-	    
-	    try
-	    {
-	        Double.parseDouble(value);
-	        
-	        return true;
-	    }
-	    catch (NumberFormatException e)
-	    {
-	        return false;
-	    }
+	    return true;
+	}
+	
+	/**
+	 * Get whether or not the given String value represents a number.<br>
+	 * <br>
+	 * Possible inputs:
+	 * <ul>
+	 * 	<li>-1231412</li>
+	 * 	<li>1231412</li>
+	 * 	<li>4141.12312</li>
+	 * 	<li>-4141.12312</li>
+	 * </ul>
+	 * 
+	 * @param value The String of text to validate.
+	 * @return Whether or not the String represents a number.
+	 */
+	public static boolean isDouble(String value)
+	{
+		boolean seenDot     = false;
+		boolean seenExp     = false;
+		boolean justSeenExp = false;
+		boolean seenDigit   = false;
+
+		int start = value.charAt(0) == '-' ? 1 : 0;
+		
+		for (int i = start; i < value.length(); i++)
+		{
+			char c = value.charAt(i);
+			
+			if (c >= '0' && c <= '9')
+			{
+				seenDigit = true;
+				
+				continue;
+			}
+			
+			if ((c == '-' || c == '+') && justSeenExp)
+			{
+				continue;
+			}
+			
+			if (c == '.' && !seenDot)
+			{
+				seenDot = true;
+				
+				continue;
+			}
+			
+			justSeenExp = false;
+			
+			if ((c == 'e' || c == 'E') && !seenExp)
+			{
+				seenExp     = true;
+				justSeenExp = true;
+				
+				continue;
+			}
+			
+			return false;
+		}
+		
+		if (!seenDigit)
+		{
+			return false;
+		}
+		else if (!seenDot)
+		{
+			return false;
+		}
+		
+		return true;
 	}
 	
 	/**
@@ -815,5 +902,52 @@ public class SyntaxUtils
 		}
 		
 		return true;
+	}
+	
+	/**
+	 * Try to autobox the given primitive TreeNode, if it truly has a
+	 * primitive value. It the TreeNode does have a primitive value, then
+	 * an Instantiation inside the corresponding class will be returned.
+	 * 
+	 * @param parent The parent of the primitive.
+	 * @param primitive The TreeNode to try to autobox.
+	 * @return An instantiation from the corresponding primitive wrapper
+	 * 		class.
+	 */
+	public static InstantiationNode autoboxPrimitive(TreeNode parent, TreeNode primitive)
+	{
+		if (primitive instanceof LiteralNode)
+		{
+			LiteralNode literal = (LiteralNode)primitive;
+			
+			String      value   = literal.getValue();
+			
+			if (isNumber(value))
+			{
+				if (isInteger(value))
+				{
+					String instantiation   = "new Integer(" + value + ")";
+					
+					InstantiationNode node = InstantiationNode.decodeStatement(parent, instantiation, primitive.getLocationIn());
+					
+					return node;
+				}
+			}
+		}
+		else if (primitive instanceof ValueNode)
+		{
+			ValueNode value = (ValueNode)primitive;
+			
+			if (value.getAccessedNode().getType().equals("int"))
+			{
+				String instantiation   = "new Integer(" + value.generateNovaInput() + ")";
+				
+				InstantiationNode node = InstantiationNode.decodeStatement(parent, instantiation, primitive.getLocationIn());
+				
+				return node;
+			}
+		}
+		
+		return null;
 	}
 }
