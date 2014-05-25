@@ -23,6 +23,8 @@ import net.fathomsoft.nova.tree.IdentifierNode;
 import net.fathomsoft.nova.tree.InstanceDeclarationNode;
 import net.fathomsoft.nova.tree.LocalDeclarationNode;
 import net.fathomsoft.nova.tree.MethodNode;
+import net.fathomsoft.nova.tree.ProgramNode;
+import net.fathomsoft.nova.tree.ReturnNode;
 import net.fathomsoft.nova.tree.ScopeNode;
 import net.fathomsoft.nova.tree.TreeNode;
 import net.fathomsoft.nova.tree.ValueNode;
@@ -35,15 +37,13 @@ import net.fathomsoft.nova.tree.exceptionhandling.ExceptionNode;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:02:42 PM
- * @version	v0.2.4 May 17, 2014 at 9:55:04 PM
+ * @version	v0.2.6 May 24, 2014 at 6:06:20 PM
  */
 public class VariableNode extends IdentifierNode
 {
 	private boolean				referenceVal;
 	private boolean				pointerVal;
 	private boolean				constantVal, external, forceOriginal;
-	
-	private int					arrayDimensions;
 	
 	private static final String	NULL_TEXT	= "0";
 	
@@ -132,21 +132,6 @@ public class VariableNode extends IdentifierNode
 	}
 	
 	/**
-	 * Get whether a variable is primitive or not. A variable is primitive
-	 * if it has a primitive type AND is NOT an array. Arrays are NOT a
-	 * primitive type.<br>
-	 * <br>
-	 * For the list of primitive values, see
-	 * {@link net.fathomsoft.nova.util.SyntaxUtils#isPrimitiveType(String)}.
-	 * 
-	 * @return Whether a variable is primitive or not.
-	 */
-	public boolean isPrimitive()
-	{
-		return isPrimitiveType() && !isArray();
-	}
-	
-	/**
 	 * Get whether or not the variable's value is constant. To
 	 * see more detail, look at {@link #setConstant(boolean)}.
 	 * 
@@ -181,55 +166,6 @@ public class VariableNode extends IdentifierNode
 	public void setConstant(boolean constVal)
 	{
 		this.constantVal = constVal;
-	}
-	
-	/**
-	 * Get whether or not the variable is an array. A variable is an
-	 * array if it has an array dimension of 1 or greater.
-	 * 
-	 * @return Whether or not the variable is an array.
-	 */
-	public boolean isArray()
-	{
-		return getArrayDimensions() > 0;
-	}
-	
-	/**
-	 * Get the amount of dimensions that the array has, if any. For an
-	 * example of what a array declarations and dimensions look like
-	 * {@link #setArrayDimensions(int)}
-	 * 
-	 * @return The amount of dimensions that the array has, if any.
-	 */
-	public int getArrayDimensions()
-	{
-		return arrayDimensions;
-	}
-	
-	/**
-	 * The text that represents an array in the C language.
-	 * 
-	 * @return The text that represents an array in the C language.
-	 */
-	public String getArrayText()
-	{
-		return "*";
-	}
-	
-	/**
-	 * Set the amount of dimensions that the array has, if any.<br>
-	 * <br>
-	 * For example:
-	 * <blockquote><pre>
-	 * int array[][][];</pre></blockquote>
-	 * In the previous example, the variable "array" has three dimensions.
-	 * 
-	 * @param arrayDimensions The amount of dimensions that the array has,
-	 * 		if any.
-	 */
-	public void setArrayDimensions(int arrayDimensions)
-	{
-		this.arrayDimensions = arrayDimensions;
 	}
 	
 	/**
@@ -568,9 +504,19 @@ public class VariableNode extends IdentifierNode
 	@Override
 	public String generateNovaInput()
 	{
+//		if (isSpecialFragment())
+//		{
+//			return getChild(0).generateNovaInput();
+//		}
+		
 		StringBuilder builder = new StringBuilder();
 		
 		builder.append(getName());
+		
+		if (getChildren().size() > 0)
+		{
+			builder.append('.').append(getChild(0).generateNovaInput());
+		}
 		
 		return builder.toString();
 	}
@@ -605,20 +551,108 @@ public class VariableNode extends IdentifierNode
 		return builder.toString();
 	}
 	
+	/**
+	 * @see net.fathomsoft.nova.tree.ValueNode#getAccessedNode()
+	 */
+	public VariableNode getAccessedNode()
+	{
+		VariableNode current = this;
+		
+		while (current.getChildren().size() > 0)
+		{
+			TreeNode child = current.getChild(0);
+			
+			if (child instanceof VariableNode == false)
+			{
+				return current;
+			}
+			
+			current = (VariableNode)child;
+		}
+		
+		return current;
+	}
+	
+	/**
+	 * Get the ClassNode instance that declared this variable.
+	 * 
+	 * @return The ClassNode instance that declared this variable.
+	 */
 	public ClassNode getDeclaringClassNode()
+	{
+		return getDeclaringClassNode(getParent().getProgramNode());
+	}
+	
+	/**
+	 * Get the ClassNode instance that declared this variable.
+	 * 
+	 * @param programNode The ProgramNode to search for the Class in.
+	 * @return The ClassNode instance that declared this variable.
+	 */
+	public ClassNode getDeclaringClassNode(ProgramNode programNode)
+	{
+		VariableNode var = getDeclaration(programNode);
+		
+		return var.getClassNode();
+	}
+	
+	/**
+	 * Get he Instance/LocalDeclarationNode that declares the
+	 * specified variable.
+	 * 
+	 * @return The Instance/LocalDeclarationNode that declares the
+	 * 		specified variable.
+	 */
+	public VariableNode getDeclaration()
+	{
+		return getDeclaration(getProgramNode());
+	}
+	
+	/**
+	 * Get he Instance/LocalDeclarationNode that declares the
+	 * specified variable.
+	 * 
+	 * @param programNode The ProgramNode to search for the declaration
+	 * 		in.
+	 * @return The Instance/LocalDeclarationNode that declares the
+	 * 		specified variable.
+	 */
+	public VariableNode getDeclaration(ProgramNode programNode)
 	{
 		TreeNode parent = getParent();
 		
-		if (parent instanceof LocalVariableNode || parent instanceof FieldNode)
+		if (this instanceof MethodNode)
 		{
-			VariableNode var = (VariableNode)parent;
+			return getClassNode();
+		}
+		if (isAccessed())
+		{
+			ValueNode value = (ValueNode)parent;
 			
-			ClassNode clazz  = parent.getProgramNode().getClass(var.getType());
-			
-			return clazz;
+			ClassNode clazz = programNode.getClass(value.getType());
+			if (clazz==null)System.out.println(value);
+			return clazz.getField(getName());
+		}
+		// If the 'this.' part of the variable access was auto-removed.
+		else if (this instanceof FieldNode)
+		{
+			return getClassNode().getField(getName());
 		}
 		
-		return getClassNode();
+		return getExistingNode(parent, getName());
+	}
+	
+	/**
+	 * Get whether this specified variable node was accessed through
+	 * the dot operator of another value node.
+	 * 
+	 * @return Whether or not the variable was accessed.
+	 */
+	public boolean isAccessed()
+	{
+		TreeNode parent = getParent();
+		
+		return parent instanceof ValueNode && !parent.containsScope() && parent instanceof ReturnNode == false && parent instanceof ArrayAccessNode == false && parent instanceof ArrayNode == false;
 	}
 	
 	/**
@@ -656,7 +690,6 @@ public class VariableNode extends IdentifierNode
 		super.cloneTo(node);
 		
 		node.constantVal     = constantVal;
-		node.arrayDimensions = arrayDimensions;
 		node.external        = external;
 		node.referenceVal    = referenceVal;
 		node.pointerVal      = pointerVal;
