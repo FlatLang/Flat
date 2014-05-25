@@ -34,8 +34,8 @@ import net.fathomsoft.nova.tree.variables.ArrayNode;
 import net.fathomsoft.nova.tree.variables.FieldListNode;
 import net.fathomsoft.nova.tree.variables.FieldNode;
 import net.fathomsoft.nova.tree.variables.LocalVariableNode;
-import net.fathomsoft.nova.tree.variables.PrivateFieldListNode;
-import net.fathomsoft.nova.tree.variables.PublicFieldListNode;
+import net.fathomsoft.nova.tree.variables.StaticFieldListNode;
+import net.fathomsoft.nova.tree.variables.InstanceFieldListNode;
 import net.fathomsoft.nova.tree.variables.VariableListNode;
 import net.fathomsoft.nova.tree.variables.VariableNode;
 import net.fathomsoft.nova.util.Bounds;
@@ -53,7 +53,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:00:11 PM
- * @version	v0.2.5 May 22, 2014 at 2:56:28 PM
+ * @version	v0.2.6 May 24, 2014 at 6:06:20 PM
  */
 public abstract class TreeNode
 {
@@ -630,26 +630,14 @@ public abstract class TreeNode
 	 */
 	public boolean isWithinExternalContext()
 	{
-		if (this instanceof MethodCallNode)
+		if (this instanceof ExternalTypeNode)
 		{
-			MethodCallNode thisNode = (MethodCallNode)this;
-			
-			if (thisNode.isExternal())
-			{
-				return true;
-			}
+			return true;
 		}
 		
-		MethodCallNode current = (MethodCallNode)getAncestorOfType(MethodCallNode.class);
-		
-		while (current != null)
+		if (parent != null)
 		{
-			if (current.isWithinExternalContext())
-			{
-				return true;
-			}
-			
-			current = (MethodCallNode)current.getAncestorOfType(MethodCallNode.class);
+			return parent.isWithinExternalContext();
 		}
 		
 		return false;
@@ -842,8 +830,8 @@ public abstract class TreeNode
 			else if (type == WhileLoopNode.class) node = WhileLoopNode.decodeStatement(parent, statement, location);
 			else if (type == FieldListNode.class) node = FieldListNode.decodeStatement(parent, statement, location);
 			else if (type == FieldNode.class) node = FieldNode.decodeStatement(parent, statement, location);
-			else if (type == PrivateFieldListNode.class) node = PrivateFieldListNode.decodeStatement(parent, statement, location);
-			else if (type == PublicFieldListNode.class) node = PublicFieldListNode.decodeStatement(parent, statement, location);
+			else if (type == StaticFieldListNode.class) node = StaticFieldListNode.decodeStatement(parent, statement, location);
+			else if (type == InstanceFieldListNode.class) node = InstanceFieldListNode.decodeStatement(parent, statement, location);
 			else if (type == VariableListNode.class) node = VariableListNode.decodeStatement(parent, statement, location);
 			else if (type == VariableNode.class) node = VariableNode.decodeStatement(parent, statement, location);
 			else if (type == CatchNode.class) node = CatchNode.decodeStatement(parent, statement, location);
@@ -935,16 +923,15 @@ public abstract class TreeNode
 			return node;
 		}
 		
-		int      offset   = 0;
-		int      oldIndex = -1;
-		int      index    = SyntaxUtils.findDotOperator(statement);
+		int    offset   = 0;
+		int    index    = SyntaxUtils.findDotOperator(statement);
 		
-		String   current  = statement;
+		String current  = statement;
 		
 		while (index >= 0)
 		{
-			current  = statement.substring(offset, index);
-			node     = decodeValue(parent, current, location);
+			current = statement.substring(offset, index);
+			node    = decodeValue(parent, current, location);
 			
 			if (node == null)
 			{
@@ -955,20 +942,12 @@ public abstract class TreeNode
 				
 				return null;
 			}
-//			if (node != null)
-//			{
-				parent.addChild(node);
-//			}
 			
-//			if (root != null)
-//			{
-//				parent.addChild(node);
-//			}
+			parent.addChild(node);
 			
-			offset  += index;
+			offset   = index + 1;
 			
-			oldIndex = index;
-			index    = SyntaxUtils.findDotOperator(current);
+			index    = SyntaxUtils.findDotOperator(statement, offset);
 			
 			parent   = node;
 			
@@ -978,10 +957,7 @@ public abstract class TreeNode
 			}
 		}
 		
-		if (oldIndex >= 0)
-		{
-			current = statement.substring(oldIndex + 1, statement.length());
-		}
+		current = statement.substring(offset, statement.length());
 		
 		node = decodeStatement(parent, current, location, SCOPE_CHILD_DECODE);
 		
