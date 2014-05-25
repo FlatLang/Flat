@@ -21,6 +21,7 @@ import java.util.regex.Matcher;
 
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.tree.exceptionhandling.ThrowNode;
+import net.fathomsoft.nova.tree.variables.VariableNode;
 import net.fathomsoft.nova.util.Bounds;
 import net.fathomsoft.nova.util.Location;
 import net.fathomsoft.nova.util.Patterns;
@@ -36,7 +37,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:20:35 PM
- * @version	v0.2.5 May 22, 2014 at 2:56:28 PM
+ * @version	v0.2.6 May 24, 2014 at 6:06:20 PM
  */
 public class BinaryOperatorNode extends TreeNode
 {
@@ -188,6 +189,10 @@ public class BinaryOperatorNode extends TreeNode
 	 */
 	public static TreeNode decodeStatement(TreeNode parent, String statement, Location location)
 	{
+		if (SyntaxUtils.isLiteral(statement))
+		{
+			return null;
+		}
 		if (SyntaxUtils.isMethodCall(statement))
 		{
 			return null;
@@ -207,8 +212,9 @@ public class BinaryOperatorNode extends TreeNode
 		
 		if (node == null)
 		{
-			SyntaxMessage.error("Could not decode binary operation '" + statement + "'", parent.getFileNode(), location, parent.getController());
+//			SyntaxMessage.error("Could not decode binary operation '" + statement + "'", parent.getFileNode(), location, parent.getController());
 		}
+		
 		return node;
 	}
 	
@@ -240,6 +246,11 @@ public class BinaryOperatorNode extends TreeNode
 	{
 		Bounds operatorLoc = StringUtils.findStrings(statement, StringUtils.BINARY_OPERATORS);
 		
+		if (statement.length() <= 0)
+		{
+			return null;
+		}
+		
 		if (operatorLoc.getStart() >= 0)
 		{
 			BinaryOperatorNode node = new BinaryOperatorNode();
@@ -255,7 +266,11 @@ public class BinaryOperatorNode extends TreeNode
 			
 			// The left-hand value.
 			String   lhv = statement.substring(lhb.getStart(), lhb.getEnd());
-			
+
+			if (lhv.length() <= 0)
+			{
+				return null;
+			}
 			// The left-hand node.
 			TreeNode lhn = createNode(parent, lhv, location);
 			
@@ -308,11 +323,54 @@ public class BinaryOperatorNode extends TreeNode
 			
 			if (operatorVal.equals("/"))
 			{
-				IdentifierNode id = (IdentifierNode)rhn;
+				TreeNode denominator = null;
 				
-				TreeNode divideByZeroCheck = generateDivideByZeroCheck(parent, id.getName(), location);
+				if (rhn instanceof BinaryOperatorNode)
+				{
+					BinaryOperatorNode bon = (BinaryOperatorNode)rhn;
+					
+					denominator = bon.getChild(0);
+				}
+				else
+				{
+					denominator = rhn;
+				}
 				
-				parent.addChild(divideByZeroCheck);
+				if (denominator instanceof IdentifierNode)
+				{
+					IdentifierNode id = (IdentifierNode)denominator;
+					
+					TreeNode divideByZeroCheck = generateDivideByZeroCheck(parent, id.generateNovaInput(), location);
+					
+					parent.addChild(divideByZeroCheck);
+				}
+				else if (denominator instanceof LiteralNode)
+				{
+					LiteralNode literal = (LiteralNode)denominator;
+					
+					String      value   = literal.getValue();
+					
+					if (SyntaxUtils.isNumber(value))
+					{
+						double num = 0;
+						
+						if (SyntaxUtils.isInteger(value))
+						{
+							num = Integer.parseInt(value);
+						}
+						else if (SyntaxUtils.isDouble(value))
+						{
+							num = Double.parseDouble(value);
+						}
+							
+						if (num == 0)
+						{
+							SyntaxMessage.error("Cannot divide by zero", parent.getFileNode(), location, parent.getController());
+							
+							return null;
+						}
+					}
+				}
 			}
 			
 			return node;
@@ -320,17 +378,6 @@ public class BinaryOperatorNode extends TreeNode
 		else
 		{
 			return createNode(parent, statement, location);
-			
-//			ClassNode thisClass  = (ClassNode)parentNode.getAncestorOfType(ClassNode.class, true);
-//			ClassNode nodesClass = (ClassNode)node.getAncestorOfType(ClassNode.class, true);
-//			
-//			if (node instanceof VariableNode)
-//			{
-//				if (thisClass == nodesClass)
-//				{
-//					
-//				}
-//			}
 		}
 	}
 	
@@ -352,29 +399,6 @@ public class BinaryOperatorNode extends TreeNode
 			
 			return literal;
 		}
-//		else if (SyntaxUtils.isInstantiation(statement))
-//		{
-//			InstantiationNode node = InstantiationNode.decodeStatement(parent, statement, location);
-//			
-//			return node;
-//		}
-//		else if (SyntaxUtils.isMethodCall(statement))
-//		{
-//			MethodCallNode node = MethodCallNode.decodeStatement(parent, statement, location);
-//			
-//			return node;
-//		}
-//		else if (SyntaxUtils.isValidIdentifier(statement))
-//		{
-//			VariableNode node = TreeNode.getExistingNode(parent, statement);
-//			
-//			if (node != null)
-//			{
-//				node = node.clone();
-//				
-//				return node;
-//			}
-//		}
 		else if (SyntaxUtils.isExternal(parent.getFileNode(), statement))
 		{
 			String value = statement.substring(statement.indexOf('.') + 1);
@@ -384,12 +408,6 @@ public class BinaryOperatorNode extends TreeNode
 			
 			return node;
 		}
-//		else if (SyntaxUtils.isValidArrayAccess(statement))
-//		{
-//			ArrayAccessNode node = ArrayAccessNode.decodeStatement(parent, statement, location);
-//			
-//			return node;
-//		}
 		
 		return decodeScopeContents(parent, statement, location);
 	}
@@ -432,8 +450,71 @@ public class BinaryOperatorNode extends TreeNode
 		
 		if (operator.getOperator().equals("+"))
 		{
-			if (SyntaxUtils.isString(left) && SyntaxUtils.isString(right) && !parent.isWithinExternalContext())
+			boolean leftString  = SyntaxUtils.isString(left);
+			boolean rightString = SyntaxUtils.isString(right);
+			
+			if ((leftString || rightString) && !parent.isWithinExternalContext())
 			{
+				TreeNode nonString   = null;
+				TreeNode replacement = null;
+				
+				if (!leftString)
+				{
+					nonString = left;
+				}
+				else if (!rightString)
+				{
+					nonString = right;
+				}
+				
+				if (nonString != null)
+				{
+					if (nonString instanceof LiteralNode)
+					{
+						LiteralNode       literal = (LiteralNode)nonString;
+						InstantiationNode autobox = SyntaxUtils.autoboxPrimitive(parent, literal);
+						
+						replace(nonString, autobox);
+						
+						String            methodCall   = autobox.generateNovaInput() + ".toString()";
+						InstantiationNode toStringCall = (InstantiationNode)TreeNode.decodeScopeContents(parent, methodCall, literal.getLocationIn());
+						
+						replace(autobox, toStringCall);
+						
+						replacement = toStringCall;
+					}
+					else if (nonString instanceof ValueNode)
+					{
+						ValueNode value = (ValueNode)nonString;
+						
+						if (value.getAccessedNode().isPrimitive())
+						{
+							InstantiationNode autobox = SyntaxUtils.autoboxPrimitive(parent, value);
+							
+							replace(nonString, autobox);
+							
+							String            methodCall   = autobox.generateNovaInput() + ".toString()";
+							InstantiationNode toStringCall = (InstantiationNode)TreeNode.decodeScopeContents(parent, methodCall, value.getLocationIn());
+							
+							replace(autobox, toStringCall);
+							
+							replacement = toStringCall;
+						}
+					}
+				}
+				
+				if (replacement != null)
+				{
+					if (!leftString)
+					{
+						left = replacement;
+					}
+					else if (!rightString)
+					{
+						right = replacement;
+					}
+				}
+				
 				String   statement = left.generateNovaInput() + ".concat(" + right.generateNovaInput() + ")";
 				
 				TreeNode strConcat = decodeScopeContents(parent, statement, left.getLocationIn());
