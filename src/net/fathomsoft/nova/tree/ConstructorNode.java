@@ -19,8 +19,8 @@ package net.fathomsoft.nova.tree;
 
 import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.error.SyntaxMessage;
-import net.fathomsoft.nova.tree.variables.PrivateFieldListNode;
-import net.fathomsoft.nova.tree.variables.PublicFieldListNode;
+import net.fathomsoft.nova.tree.variables.StaticFieldListNode;
+import net.fathomsoft.nova.tree.variables.InstanceFieldListNode;
 import net.fathomsoft.nova.tree.variables.VariableNode;
 import net.fathomsoft.nova.util.Bounds;
 import net.fathomsoft.nova.util.Location;
@@ -33,7 +33,7 @@ import net.fathomsoft.nova.util.StringUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:50:47 PM
- * @version	v0.2.4 May 17, 2014 at 9:55:04 PM
+ * @version	v0.2.6 May 24, 2014 at 6:06:20 PM
  */
 public class ConstructorNode extends MethodNode
 {
@@ -208,7 +208,7 @@ public class ConstructorNode extends MethodNode
 		
 		ClassNode classNode = (ClassNode)getAncestorOfType(ClassNode.class);
 		
-		PublicFieldListNode fields = classNode.getFieldListNode().getPublicFieldListNode();
+		InstanceFieldListNode fields = classNode.getFieldListNode().getPublicFieldListNode();
 		
 		for (int i = 0; i < fields.getChildren().size(); i++)
 		{
@@ -220,7 +220,7 @@ public class ConstructorNode extends MethodNode
 			}
 		}
 		
-		PrivateFieldListNode privateFields = classNode.getFieldListNode().getPrivateFieldListNode();
+		InstanceFieldListNode privateFields = classNode.getFieldListNode().getPrivateFieldListNode();
 		
 		for (int i = 0; i < privateFields.getChildren().size(); i++)
 		{

@@ -21,8 +21,8 @@ import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.tree.exceptionhandling.ExceptionNode;
 import net.fathomsoft.nova.tree.variables.FieldNode;
-import net.fathomsoft.nova.tree.variables.PrivateFieldListNode;
-import net.fathomsoft.nova.tree.variables.PublicFieldListNode;
+import net.fathomsoft.nova.tree.variables.StaticFieldListNode;
+import net.fathomsoft.nova.tree.variables.InstanceFieldListNode;
 import net.fathomsoft.nova.util.Bounds;
 import net.fathomsoft.nova.util.Location;
 import net.fathomsoft.nova.util.StringUtils;
@@ -34,7 +34,7 @@ import net.fathomsoft.nova.util.StringUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:50:43 PM
- * @version	v0.2.4 May 17, 2014 at 9:55:04 PM
+ * @version	v0.2.6 May 24, 2014 at 6:06:20 PM
  */
 public class DestructorNode extends MethodNode
 {
@@ -135,7 +135,7 @@ public class DestructorNode extends MethodNode
 		
 		ClassNode     classNode = (ClassNode)getAncestorOfType(ClassNode.class);
 		
-		PrivateFieldListNode privateFields = classNode.getFieldListNode().getPrivateFieldListNode();
+		InstanceFieldListNode privateFields = classNode.getFieldListNode().getPrivateFieldListNode();
 		
 		for (int i = 0; i < privateFields.getChildren().size(); i++)
 		{
@@ -149,7 +149,7 @@ public class DestructorNode extends MethodNode
 			builder.append(generateFreeMemberSource("prv")).append('\n');
 		}
 		
-		PublicFieldListNode publicFields = classNode.getFieldListNode().getPublicFieldListNode();
+		InstanceFieldListNode publicFields = classNode.getFieldListNode().getPublicFieldListNode();
 		
 		for (int i = 0; i < publicFields.getChildren().size(); i++)
 		{
