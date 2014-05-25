@@ -18,6 +18,7 @@
 package net.fathomsoft.nova.tree;
 
 import net.fathomsoft.nova.error.SyntaxMessage;
+import net.fathomsoft.nova.tree.variables.FieldNode;
 import net.fathomsoft.nova.tree.variables.VariableNode;
 import net.fathomsoft.nova.util.Location;
 import net.fathomsoft.nova.util.StringUtils;
@@ -29,7 +30,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:19:44 PM
- * @version	v0.2.5 May 22, 2014 at 2:56:28 PM
+ * @version	v0.2.6 May 24, 2014 at 6:06:20 PM
  */
 public class AssignmentNode extends TreeNode
 {
@@ -168,13 +169,35 @@ public class AssignmentNode extends TreeNode
 		Location  varLoc = new Location(location);
 		varLoc.getBounds().setEnd(varLoc.getStart() + endIndex);
 		
-		TreeNode varNode = decodeScopeContents(parent, variable, location);
+		VariableNode varNode = (VariableNode)decodeScopeContents(parent, variable, location);
 		
 		if (varNode == null)
 		{
 			SyntaxMessage.error("Undeclared variable '" + variable + "'", parent.getFileNode(), location, parent.getController());
 			
 			return null;
+		}
+		
+		VariableNode accessed = varNode.getAccessedNode();
+		
+		if (accessed.isAccessed() && accessed instanceof FieldNode)
+		{
+			ProgramNode program = parent.getProgramNode();
+			
+			FieldNode   field   = (FieldNode)accessed.getDeclaration(program);
+			
+			if (field.getVisibility() == FieldNode.VISIBLE)
+			{
+				ClassNode declaringClass = field.getDeclaringClassNode(program);
+				ClassNode thisClass      = (ClassNode)parent.getAncestorOfType(ClassNode.class, true);
+				
+				if (declaringClass != thisClass)
+				{
+					SyntaxMessage.error("The value of Field '" + field.getName() + "' cannot be modified", parent.getFileNode(), location, parent.getController());
+					
+					return null;
+				}
+			}
 		}
 		
 		varNode.setLocationIn(varLoc);
