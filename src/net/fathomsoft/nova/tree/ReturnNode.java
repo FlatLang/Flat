@@ -29,7 +29,7 @@ import net.fathomsoft.nova.util.Regex;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:58:29 PM
- * @version	v0.2.4 May 17, 2014 at 9:55:04 PM
+ * @version	v0.2.6 May 24, 2014 at 6:06:20 PM
  */
 public class ReturnNode extends ValueNode
 {
@@ -137,10 +137,13 @@ public class ReturnNode extends ValueNode
 				
 				if (child == null)
 				{
-					LiteralNode node = new LiteralNode();
-					node.setValue(statement, parent.isWithinExternalContext());
+					child = BinaryOperatorNode.decodeStatement(parent, statement, location);
+				}
+				if (child == null)
+				{
+					SyntaxMessage.error("Could not decode return statement '" + statement + "'", parent.getFileNode(), location, parent.getController());
 					
-					child = node;
+					return null;
 				}
 				
 				n.addChild(child);
