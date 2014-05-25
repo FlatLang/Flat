@@ -35,7 +35,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:10:53 PM
- * @version	v0.2.4 May 17, 2014 at 9:55:04 PM
+ * @version	v0.2.6 May 24, 2014 at 6:06:20 PM
  */
 public class MethodNode extends InstanceDeclarationNode
 {
@@ -130,7 +130,7 @@ public class MethodNode extends InstanceDeclarationNode
 	 * @return Whether or not the specified MethodNode has overridden a
 	 * 		method from a super class.
 	 */
-	public boolean hasOverridden()
+	public boolean doesOverride()
 	{
 		return getOverriddenMethod() != null;
 	}
