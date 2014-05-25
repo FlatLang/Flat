@@ -43,7 +43,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:00:15 PM
- * @version	v0.2.5 May 22, 2014 at 2:56:28 PM
+ * @version	v0.2.6 May 24, 2014 at 6:06:20 PM
  */
 public class SyntaxTree
 {
@@ -348,17 +348,17 @@ public class SyntaxTree
 		}
 		else if (root.containsScope())
 		{
-			if (root instanceof LoopNode || root instanceof IfStatementNode || root instanceof ElseStatementNode)
-			{
-				ScopeNode scope = root.getScopeNode();
-				
-				if (scope.getChildren().size() <= 1)
-				{
-					root.detach();
-					
-					return;
-				}
-			}
+//			if (root instanceof LoopNode || root instanceof IfStatementNode || root instanceof ElseStatementNode)
+//			{
+//				ScopeNode scope = root.getScopeNode();
+//				
+//				if (scope.getChildren().size() <= 1)
+//				{
+//					root.detach();
+//					
+//					return;
+//				}
+//			}
 		}
 		else if (root instanceof BinaryOperatorNode)
 		{
