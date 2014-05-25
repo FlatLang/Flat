@@ -1,9 +1,11 @@
 package net.fathomsoft.nova.tree.variables;
 
 import net.fathomsoft.nova.error.SyntaxMessage;
+import net.fathomsoft.nova.tree.BinaryOperatorNode;
 import net.fathomsoft.nova.tree.DimensionsNode;
 import net.fathomsoft.nova.tree.LiteralNode;
 import net.fathomsoft.nova.tree.TreeNode;
+import net.fathomsoft.nova.tree.UnaryOperatorNode;
 import net.fathomsoft.nova.util.Bounds;
 import net.fathomsoft.nova.util.Location;
 import net.fathomsoft.nova.util.Patterns;
@@ -18,7 +20,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.2 Mar 24, 2014 at 10:45:29 PM
- * @version	v0.2.4 May 17, 2014 at 9:55:04 PM
+ * @version	v0.2.6 May 24, 2014 at 6:06:20 PM
  */
 public class ArrayAccessNode extends VariableNode
 {
@@ -154,11 +156,15 @@ public class ArrayAccessNode extends VariableNode
 				}
 				else
 				{
-					TreeNode created = TreeNode.decodeScopeContents(parent, data, newLoc);
+					TreeNode created = BinaryOperatorNode.decodeStatement(parent, data, newLoc);
 					
 					if (created == null)
 					{
-						SyntaxMessage.error("Unknown array access index", parent.getFileNode(), newLoc, parent.getController());
+						created = TreeNode.decodeScopeContents(parent, data, newLoc);
+					}
+					if (created == null)
+					{
+						SyntaxMessage.error("Unknown array access index '" + data + "'", parent.getFileNode(), newLoc, parent.getController());
 						
 						return null;
 					}
