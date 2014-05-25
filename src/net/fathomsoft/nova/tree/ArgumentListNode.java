@@ -27,7 +27,7 @@ import net.fathomsoft.nova.tree.exceptionhandling.ExceptionNode;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 10, 2014 at 3:12:54 AM
- * @version	v0.2.4 May 17, 2014 at 9:55:04 PM
+ * @version	v0.2.6 May 24, 2014 at 6:06:20 PM
  */
 public class ArgumentListNode extends TreeNode
 {
@@ -71,20 +71,7 @@ public class ArgumentListNode extends TreeNode
 	{
 		StringBuilder builder = new StringBuilder();
 		
-		MethodNode    method  = getMethodCall().getMethodNode();
-		
-		int start = 0;
-		
-		if (method.isStatic())
-		{
-			start = 1;
-		}
-		if (method.isExternal())
-		{
-			start = 0;
-		}
-		
-		for (int i = start; i < getChildren().size(); i++)
+		for (int i = 0; i < getChildren().size(); i++)
 		{
 			TreeNode child = getChild(i);
 			
@@ -115,7 +102,7 @@ public class ArgumentListNode extends TreeNode
 					builder.append('&');
 				}
 				
-				builder.append(caller.getReferenceNode().generateUseOutput()).append(", ");
+				builder.append(caller.getContextNode().generateArgumentReference()).append(", ");
 			}
 			
 			builder.append(ExceptionNode.EXCEPTION_DATA_IDENTIFIER);
