@@ -31,7 +31,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Apr 3, 2014 at 7:53:35 PM
- * @version	v0.2.4 May 17, 2014 at 9:55:04 PM
+ * @version	v0.2.6 May 24, 2014 at 6:06:20 PM
  */
 public class InstantiationNode extends IdentifierNode
 {
@@ -70,7 +70,7 @@ public class InstantiationNode extends IdentifierNode
 	@Override
 	public String generateCSource()
 	{
-		return generateCSourceFragment();
+		return generateCSourceFragment() + ";\n";
 	}
 	
 	/**
