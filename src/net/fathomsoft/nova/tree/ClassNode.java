@@ -20,8 +20,8 @@ package net.fathomsoft.nova.tree;
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.tree.variables.FieldListNode;
 import net.fathomsoft.nova.tree.variables.FieldNode;
-import net.fathomsoft.nova.tree.variables.PrivateFieldListNode;
-import net.fathomsoft.nova.tree.variables.PublicFieldListNode;
+import net.fathomsoft.nova.tree.variables.StaticFieldListNode;
+import net.fathomsoft.nova.tree.variables.InstanceFieldListNode;
 import net.fathomsoft.nova.util.Bounds;
 import net.fathomsoft.nova.util.Location;
 import net.fathomsoft.nova.util.Patterns;
@@ -34,7 +34,7 @@ import net.fathomsoft.nova.util.Regex;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:15:51 PM
- * @version	v0.2.4 May 17, 2014 at 9:55:04 PM
+ * @version	v0.2.6 May 24, 2014 at 6:06:20 PM
  */
 public class ClassNode extends InstanceDeclarationNode
 {
@@ -275,7 +275,14 @@ public class ClassNode extends InstanceDeclarationNode
 	{
 		FieldListNode fields = getFieldListNode();
 		
-		return fields.getField(fieldName);
+		FieldNode field = fields.getField(fieldName);
+		
+		if (field == null && getExtendedClassName() != null)
+		{
+			return getExtendedClass().getField(fieldName);
+		}
+		
+		return field;
 	}
 	
 	/**
@@ -325,11 +332,8 @@ public class ClassNode extends InstanceDeclarationNode
 	 */
 	public MethodNode getMethod(String methodName)
 	{
-		MethodNode method = null;
-		
 		MethodListNode methods = getMethodListNode();
-		
-		method = methods.getMethod(methodName);
+		MethodNode     method  = methods.getMethod(methodName);
 		
 		if (method != null)
 		{
@@ -337,8 +341,7 @@ public class ClassNode extends InstanceDeclarationNode
 		}
 		
 		methods = getConstructorListNode();
-		
-		method = methods.getMethod(methodName);
+		method  = methods.getMethod(methodName);
 		
 		if (method != null)
 		{
@@ -346,8 +349,12 @@ public class ClassNode extends InstanceDeclarationNode
 		}
 		
 		methods = getDestructorListNode();
+		method  = methods.getMethod(methodName);
 		
-		method = methods.getMethod(methodName);
+		if (method == null && getExtendedClassName() != null)
+		{
+			return getExtendedClass().getMethod(methodName);
+		}
 		
 		return method;
 	}
@@ -493,7 +500,7 @@ public class ClassNode extends InstanceDeclarationNode
 	 */
 	public boolean containsStaticPrivateData()
 	{
-		PrivateFieldListNode staticPrivateFields = getFieldListNode().getPrivateStaticFieldListNode();
+		StaticFieldListNode staticPrivateFields = getFieldListNode().getPrivateStaticFieldListNode();
 		
 		if (staticPrivateFields.getChildren().size() > 0)
 		{
@@ -530,7 +537,7 @@ public class ClassNode extends InstanceDeclarationNode
 	 */
 	public boolean containsNonStaticPrivateData()
 	{
-		PrivateFieldListNode privateFields = getFieldListNode().getPrivateFieldListNode();
+		InstanceFieldListNode privateFields = getFieldListNode().getPrivateFieldListNode();
 		
 		if (privateFields.getChildren().size() > 0)
 		{
@@ -554,7 +561,7 @@ public class ClassNode extends InstanceDeclarationNode
 	 */
 	public boolean containsNonStaticData()
 	{
-		PublicFieldListNode fields = getFieldListNode().getPublicFieldListNode();
+		InstanceFieldListNode fields = getFieldListNode().getPublicFieldListNode();
 		
 		if (fields.getChildren().size() > 0 || containsNonStaticPrivateData())
 		{
@@ -730,7 +737,7 @@ public class ClassNode extends InstanceDeclarationNode
 		
 		FieldListNode fields  = getFieldListNode();
 		
-		PrivateFieldListNode privateFields = fields.getPrivateFieldListNode();
+		InstanceFieldListNode privateFields = fields.getPrivateFieldListNode();
 		
 //		if (containsStaticData())
 //		{
@@ -848,6 +855,11 @@ public class ClassNode extends InstanceDeclarationNode
 			
 			n.iterateWords(statement);
 			
+			if (n.getExtendedClassName() == null && !n.getName().equals("Object"))
+			{
+				n.setExtendedClass("Object");
+			}
+			
 			return n;
 		}
 		
@@ -947,15 +959,26 @@ public class ClassNode extends InstanceDeclarationNode
 		
 		if (clazz == null)
 		{
-			SyntaxMessage.error("Class '" + extendedClass + "' not declared", getController());
+			SyntaxMessage.error("Class '" + extendedClass + "' not declared", getFileNode(), getLocationIn(), getController());
+			
+			return;
 		}
 		else
 		{
 			if (clazz.isConstant())
 			{
-				SyntaxMessage.error("Class '" + extendedClass + "' not is constant and cannot be extended", getController());
+				SyntaxMessage.error("Class '" + extendedClass + "' not is constant and cannot be extended", getFileNode(), getLocationIn(), getController());
+				
+				return;
 			}
 		}
+		
+//		FieldListNode fields = clazz.getFieldListNode().clone();
+//		
+//		for (int i = 0; i < fields.getChildren().size(); i++)
+//		{
+//			addChild(fields.getChild(i));
+//		}
 	}
 	
 	/**
