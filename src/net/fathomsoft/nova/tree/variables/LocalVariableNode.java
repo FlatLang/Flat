@@ -28,37 +28,10 @@ import net.fathomsoft.nova.util.Location;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:12:00 PM
- * @version	v0.2.4 May 17, 2014 at 9:55:04 PM
+ * @version	v0.2.6 May 24, 2014 at 6:06:20 PM
  */
 public class LocalVariableNode extends VariableNode
 {
-	/**
-	 * @see net.fathomsoft.nova.tree.TreeNode#generateJavaSource()
-	 */
-	@Override
-	public String generateJavaSource()
-	{
-		return super.generateJavaSource();
-	}
-
-	/**
-	 * @see net.fathomsoft.nova.tree.TreeNode#generateCSource()
-	 */
-	@Override
-	public String generateCSource()
-	{
-		return super.generateCSource();
-	}
-	
-	/**
-	 * @see net.fathomsoft.nova.tree.TreeNode#generateCSourceFragment()
-	 */
-	@Override
-	public String generateCSourceFragment()
-	{
-		return super.generateCSourceFragment();
-	}
-	
 	/**
 	 * @see net.fathomsoft.nova.tree.TreeNode#validate()
 	 */
@@ -82,7 +55,7 @@ public class LocalVariableNode extends VariableNode
 					
 					node.inheritChildren(var);
 					
-					TreeNode     parent = getParent();
+					TreeNode parent = getParent();
 					
 					parent.replace(this, node);
 				}
