@@ -28,7 +28,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Feb 18, 2014 at 8:57:00 PM
- * @version	v0.2.4 May 17, 2014 at 9:55:04 PM
+ * @version	v0.2.6 May 24, 2014 at 6:06:20 PM
  */
 public class FileNode extends IdentifierNode
 {
@@ -56,6 +56,8 @@ public class FileNode extends IdentifierNode
 			"Object",
 			"String",
 			"Math",
+			"IO",
+			"Integer",
 			"DivideByZeroException"
 		};
 	}
