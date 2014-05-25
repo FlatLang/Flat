@@ -641,7 +641,7 @@ public class ValueNode extends TreeNode
 	}
 	
 	/**
-	 * Fill the given IdentifierNode with the data that is in the
+	 * Fill the given ValueNode with the data that is in the
 	 * specified node.
 	 * 
 	 * @param node The node to copy the data into.
