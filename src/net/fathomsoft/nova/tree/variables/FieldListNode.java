@@ -27,7 +27,7 @@ import net.fathomsoft.nova.tree.TreeNode;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 10:00:50 PM
- * @version	v0.2.4 May 17, 2014 at 9:55:04 PM
+ * @version	v0.2.6 May 24, 2014 at 6:06:20 PM
  */
 public class FieldListNode extends TreeNode
 {
@@ -36,10 +36,10 @@ public class FieldListNode extends TreeNode
 	 */
 	public FieldListNode()
 	{
-		PrivateFieldListNode privateFields       = new PrivateFieldListNode();
-		PublicFieldListNode  publicFields        = new PublicFieldListNode();
-		PrivateFieldListNode privateStaticFields = new PrivateFieldListNode();
-		PublicFieldListNode  publicStaticFields  = new PublicFieldListNode();
+		InstanceFieldListNode privateFields       = new InstanceFieldListNode();
+		InstanceFieldListNode publicFields        = new InstanceFieldListNode();
+		StaticFieldListNode   privateStaticFields = new StaticFieldListNode();
+		StaticFieldListNode   publicStaticFields  = new StaticFieldListNode();
 		
 		super.addChild(privateFields);
 		super.addChild(publicFields);
@@ -53,9 +53,9 @@ public class FieldListNode extends TreeNode
 	 * 
 	 * @return The PrivateFieldListNode instance.
 	 */
-	public PrivateFieldListNode getPrivateFieldListNode()
+	public InstanceFieldListNode getPrivateFieldListNode()
 	{
-		return (PrivateFieldListNode)getChild(0);
+		return (InstanceFieldListNode)getChild(0);
 	}
 	
 	/**
@@ -64,9 +64,9 @@ public class FieldListNode extends TreeNode
 	 * 
 	 * @return The PublicFieldListNode instance.
 	 */
-	public PublicFieldListNode getPublicFieldListNode()
+	public InstanceFieldListNode getPublicFieldListNode()
 	{
-		return (PublicFieldListNode)getChild(1);
+		return (InstanceFieldListNode)getChild(1);
 	}
 	
 	/**
@@ -75,9 +75,9 @@ public class FieldListNode extends TreeNode
 	 * 
 	 * @return The PrivateFieldListNode instance.
 	 */
-	public PrivateFieldListNode getPrivateStaticFieldListNode()
+	public StaticFieldListNode getPrivateStaticFieldListNode()
 	{
-		return (PrivateFieldListNode)getChild(2);
+		return (StaticFieldListNode)getChild(2);
 	}
 	
 	/**
@@ -86,9 +86,9 @@ public class FieldListNode extends TreeNode
 	 * 
 	 * @return The PublicFieldListNode instance.
 	 */
-	public PublicFieldListNode getPublicStaticFieldListNode()
+	public StaticFieldListNode getPublicStaticFieldListNode()
 	{
-		return (PublicFieldListNode)getChild(3);
+		return (StaticFieldListNode)getChild(3);
 	}
 	
 	/**
