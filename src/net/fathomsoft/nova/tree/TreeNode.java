@@ -53,7 +53,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:00:11 PM
- * @version	v0.2.6 May 24, 2014 at 6:06:20 PM
+ * @version	v0.2.7 May 25, 2014 at 9:16:48 PM
  */
 public abstract class TreeNode
 {
@@ -93,9 +93,11 @@ public abstract class TreeNode
 	/**
 	 * Create a new TreeNode. Initializes the data.
 	 */
-	public TreeNode()
+	public TreeNode(TreeNode temporaryParent)
 	{
 		children = new ArrayList<TreeNode>();
+		
+		setTemporaryParent(temporaryParent);
 	}
 	
 	/**
@@ -453,17 +455,32 @@ public abstract class TreeNode
 	 */
 	public void addChild(int index, TreeNode node)
 	{
-		children.add(index, node);
-		
 		// If the node already belongs to a parent, remove it from its old parent.
 		if (node.parent != null)
 		{
 //			System.err.println(this + " " + node);
-			node.parent.children.remove(node);
+//			node.parent.children.remove(node);
+			node.detach();
 		}
+		
+		children.add(index, node);
 		
 		// Set this instance as the new parent.
 		node.parent = this;
+	}
+	
+	/**
+	 * Set a temporary parent for the specified TreeNode. When, if ever,
+	 * the TreeNode is formally added to a TreeNode, the temporary parent
+	 * will be removed.
+	 * 
+	 * @param parent The TreeNode to act as the parent temporarily.
+	 */
+	public void setTemporaryParent(TreeNode parent)
+	{
+		detach();
+		
+		this.parent = parent;
 	}
 	
 	/**
@@ -503,13 +520,32 @@ public abstract class TreeNode
 	 */
 	public void inheritChildren(TreeNode oldParent)
 	{
+		inheritChildren(oldParent, false);
+	}
+	
+	/**
+	 * Give the specified node the given nodes children. This removes the
+	 * children from the given oldParent node.
+	 * 
+	 * @param clone Whether or not to clone the children and not remove
+	 * 		them from the previous owner.
+	 */
+	public void inheritChildren(TreeNode oldParent, boolean clone)
+	{
 		int index = children.size();
 		
 		for (int i = oldParent.children.size() - 1; i >= 0; i--)
 		{
 			TreeNode child = oldParent.getChild(i);
 			
-			child.detach();
+			if (clone)
+			{
+				child = child.clone(this);
+			}
+			else
+			{
+				child.detach();
+			}
 			
 			addChild(index, child);
 		}
@@ -712,6 +748,20 @@ public abstract class TreeNode
 	 */
 	public String generateNovaInput()
 	{
+		return generateNovaInput(true);
+	}
+	
+	/**
+	 * Generate the Nova syntax String that represents the TreeNode.
+	 * Essentially, this is the String that is decoded into the node.
+	 * It is the input value from the .fat source file.
+	 * 
+	 * @param outputChildren Whether or not to output the children of the
+	 * 		children of the TreeNode as well.
+	 * @return A String that represents the input String in Nova syntax.
+	 */
+	public String generateNovaInput(boolean outputChildren)
+	{
 		return null;
 	}
 	
@@ -909,7 +959,7 @@ public abstract class TreeNode
 	{
 		if (SyntaxUtils.isLiteral(statement))
 		{
-			LiteralNode literal = new LiteralNode();
+			LiteralNode literal = new LiteralNode(parent);
 			literal.setValue(statement, parent.isWithinExternalContext());
 			
 			return literal;
@@ -959,7 +1009,7 @@ public abstract class TreeNode
 		
 		current = statement.substring(offset, statement.length());
 		
-		node = decodeStatement(parent, current, location, SCOPE_CHILD_DECODE);
+		node    = decodeStatement(parent, current, location, SCOPE_CHILD_DECODE);
 		
 		if (node == null)
 		{
@@ -968,7 +1018,7 @@ public abstract class TreeNode
 		
 		if (root != null && node != null)
 		{
-			root.detach();
+			root.setTemporaryParent(root.parent);
 			
 			parent.addChild(node);
 			
@@ -1015,7 +1065,7 @@ public abstract class TreeNode
 			
 			if (node != null)
 			{
-				node = node.clone();
+				node = node.clone(parent);
 			}
 			else if (parent instanceof ExternalTypeNode)
 			{
@@ -1027,7 +1077,7 @@ public abstract class TreeNode
 			{
 				ClassNode clazz = parent.getProgramNode().getClass(statement);
 				
-				node = new ValueNode();
+				node = new ValueNode(parent);
 				node.setType(clazz.getName());
 			}
 		}
@@ -1157,38 +1207,6 @@ public abstract class TreeNode
 	}
 	
 	/**
-	 * Get whether or not the String contains the given 'before' char
-	 * before the 'after' char is reached. The search is started at index
-	 * 0 of the 'text' String input.
-	 * 
-	 * @param text The text to search.
-	 * @param before The char that should appear before the 'after'
-	 * 		variable.
-	 * @param after The char that should appear after the 'before'
-	 * 		variable.
-	 * @return The index in which the 'before' char appeared at. If it did
-	 * 		not appear before the 'after' char then -1 is returned.
-	 */
-	private static int containsBefore(String text, char before, char after)
-	{
-		for (int i = 0; i < text.length(); i++)
-		{
-			char c = text.charAt(i);
-			
-			if (c == before)
-			{
-				return i;
-			}
-			else if (c == after)
-			{
-				return -1;
-			}
-		}
-		
-		return -1;
-	}
-	
-	/**
 	 * Get the ProgramNode (The oldest parent) of this TreeNode.
 	 * 
 	 * @return The ProgramNode of this TreeNode.
@@ -1239,8 +1257,11 @@ public abstract class TreeNode
 	/**
 	 * Return a new TreeNode containing a copy of the values of the
 	 * specified node, including clones of the children.
+	 * 
+	 * @param temporaryParent The TreeNode to act as the parent
+	 * 		temporarily.
 	 */
-	public abstract TreeNode clone();
+	public abstract TreeNode clone(TreeNode temporaryParent);
 	
 	/**
 	 * Fill the given TreeNode with the data that is in the
@@ -1267,9 +1288,20 @@ public abstract class TreeNode
 		{
 			TreeNode child = children.get(i);
 			
-			node.addChild(child.clone());
+			node.addChild(child.clone(null));
 		}
 		
 		return node;
+	}
+	
+	/**
+	 * Generate a String that represents the TreeNode as how it
+	 * was decoded.
+	 * 
+	 * @return The Nova input equivalent to the node.
+	 */
+	public String toString()
+	{
+		return generateNovaInput();
 	}
 }
