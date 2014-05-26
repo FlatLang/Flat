@@ -397,7 +397,7 @@ public class SyntaxUtils
 	 */
 	public static boolean isPrimitiveType(String type)
 	{
-		return type.equals("int") || type.equals("char") || type.equals("long_long") || type.equals("boolean") || type.equals("short") || type.equals("float") || type.equals("double") || type.equals("void");
+		return type.equals("int") || type.equals("char") || type.equals("long") || type.equals("bool") || type.equals("short") || type.equals("float") || type.equals("double") || type.equals("void");
 	}
 	
 	/**
@@ -916,6 +916,8 @@ public class SyntaxUtils
 	 */
 	public static InstantiationNode autoboxPrimitive(TreeNode parent, TreeNode primitive)
 	{
+		InstantiationNode node = null;
+		
 		if (primitive instanceof LiteralNode)
 		{
 			LiteralNode literal = (LiteralNode)primitive;
@@ -928,9 +930,7 @@ public class SyntaxUtils
 				{
 					String instantiation   = "new Integer(" + value + ")";
 					
-					InstantiationNode node = InstantiationNode.decodeStatement(parent, instantiation, primitive.getLocationIn());
-					
-					return node;
+					node = InstantiationNode.decodeStatement(parent, instantiation, primitive.getLocationIn());
 				}
 			}
 		}
@@ -938,16 +938,21 @@ public class SyntaxUtils
 		{
 			ValueNode value = (ValueNode)primitive;
 			
-			if (value.getAccessedNode().getType().equals("int"))
+			if (value.getType().equals("int"))
 			{
-				String instantiation   = "new Integer(" + value.generateNovaInput() + ")";
+				String instantiation = "new Integer(" + value.generateNovaInput(false) + ")";
 				
-				InstantiationNode node = InstantiationNode.decodeStatement(parent, instantiation, primitive.getLocationIn());
+				node = InstantiationNode.decodeStatement(parent, instantiation, primitive.getLocationIn());
 				
-				return node;
+				node.inheritChildren(value);
 			}
 		}
 		
-		return null;
+//		if (node != null)
+//		{
+//			node.inheritChildren(primitive, true);
+//		}
+		
+		return node;
 	}
 }
