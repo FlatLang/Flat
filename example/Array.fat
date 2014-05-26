@@ -1,0 +1,9 @@
+public class Array
+{
+	visible int length;
+	
+	public Array()
+	{
+		
+	}
+}
