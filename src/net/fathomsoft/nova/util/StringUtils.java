@@ -26,7 +26,7 @@ import java.util.regex.Matcher;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Mar 13, 2014 at 9:38:42 PM
- * @version	v0.2.6 May 24, 2014 at 6:06:20 PM
+ * @version	v0.2.7 May 25, 2014 at 9:16:48 PM
  */
 public class StringUtils
 {
@@ -541,6 +541,16 @@ public class StringUtils
 		return value;
 	}
 	
+	/**
+	 * Search backwards for the index of the next available match of the
+	 * needle within the haystack String, if a match exists. The search
+	 * starts at the given index.
+	 * 
+	 * @param haystack The String to search through.
+	 * @param needle The String to search for.
+	 * @param start The index to start the reverse search for.
+	 * @return The next available index.
+	 */
 	public static int reverseIndexOf(String haystack, String needle, int start)
 	{
 		while (start >= needle.length() - 1)
