@@ -56,15 +56,15 @@ public class Integer
 	
 	public static String toAString(int value)
 	{
-		int  index  = 0;
+		int  index   = 0;
 		
-		int  digits = numDigits(value);
+		int  digits  = numDigits(value);
 		
-		char data[] = new char[digits + 1];
+		char data[]  = new char[digits + 1];
 		
 		data[digits] = '\0';
 		
-		int  offset = 0;
+		int  offset  = 0;
 		
 		if (value < 0)
 		{
