@@ -36,22 +36,21 @@ public class Test
 	public static void main(String args[])
 	{
 //		String array[] = new String[9999999];
-//		long start = System.currentTimeMillis();
+		long start = System.currentTimeMillis();
 //		
 //		for (int i = 0; i < 9999999; i++)
 //		{
 //			array[i] = Integer.toString(i);
 //		}
 		
-		int i = 600;
+		for (int i = 0; i < 999999; i++)
+		{
+			new Integer(i).toString();
+		}
 		
-		int j = (i >> 2);// - (i >> 2);
+		long end = System.currentTimeMillis();
 		
-		System.out.println(j);
-		
-//		long end = System.currentTimeMillis();
-//		
-//		System.out.println(end - start);
+		System.out.println(end - start);
 		
 		System.exit(0);
 		try
