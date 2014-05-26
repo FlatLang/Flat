@@ -10,17 +10,16 @@
 #include "IO.h"
 #include "Integer.h"
 #include "DivideByZeroException.h"
-#include "IO.h"
 
-Person* nova_Person_Person(ExceptionData* exceptionData, String* nova_Person_name_132, int nova_Person_age_132)
+Person* nova_Person_Person(ExceptionData* exceptionData, String* nova_Person_name_147, int nova_Person_age_147)
 {
 	CCLASS_NEW(Person, this,);
 	
 	this->nova_Person_age = 0;
 	this->nova_Person_name = 0;
 	{
-		this->nova_Person_name = nova_Person_name_132;
-		this->nova_Person_age = nova_Person_age_132;
+		this->nova_Person_name = nova_Person_name_147;
+		this->nova_Person_age = nova_Person_age_147;
 	}
 	
 	return this;

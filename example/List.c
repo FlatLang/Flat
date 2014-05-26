@@ -14,6 +14,7 @@
 
 CCLASS_PRIVATE
 (
+	ListNode* nova_List_start;
 	ListNode* nova_List_current;
 	
 )
@@ -22,7 +23,7 @@ List* nova_List_List(ExceptionData* exceptionData)
 {
 	CCLASS_NEW(List, this);
 	
-	this->nova_List_start = 0;
+	this->prv->nova_List_start = 0;
 	this->prv->nova_List_current = 0;
 	{
 	}
@@ -37,9 +38,9 @@ void nova_del_List(List** this, ExceptionData* exceptionData)
 		return;
 	}
 	
+	nova_del_ListNode(&(*this)->prv->nova_List_start, exceptionData);
 	nova_del_ListNode(&(*this)->prv->nova_List_current, exceptionData);
 	free((*this)->prv);
-	nova_del_ListNode(&(*this)->nova_List_start, exceptionData);
 	
 	{
 	}
@@ -48,46 +49,46 @@ void nova_del_List(List** this, ExceptionData* exceptionData)
 
 ListNode* nova_List_getFirst(List* this, ExceptionData* exceptionData)
 {
-	return this->nova_List_start;
+	return this->prv->nova_List_start;
 }
 
-void nova_List_add(List* this, ExceptionData* exceptionData, Object* nova_List_data_98)
+void nova_List_add(List* this, ExceptionData* exceptionData, Object* nova_List_data_154)
 {
-	ListNode* nova_List_node_98;
+	ListNode* nova_List_node_154;
 	
-	nova_List_node_98 = nova_ListNode_ListNode(exceptionData, nova_List_data_98);
-	if (this->nova_List_start == 0)
+	nova_List_node_154 = nova_ListNode_ListNode(exceptionData, nova_List_data_154);
+	if (this->prv->nova_List_start == 0)
 	{
-		this->nova_List_start = nova_List_node_98;
-		this->prv->nova_List_current = nova_List_node_98;
+		this->prv->nova_List_start = nova_List_node_154;
+		this->prv->nova_List_current = nova_List_node_154;
 	}
 	else
 	{
 		ListNode* nova_List_current;
 	}
-	this->prv->nova_List_current = nova_List_node_98;
+	this->prv->nova_List_current = nova_List_node_154;
 }
 
-void nova_List_remove(List* this, ExceptionData* exceptionData, Object* nova_List_data_107)
+void nova_List_remove(List* this, ExceptionData* exceptionData, Object* nova_List_data_163)
 {
-	ListNode* nova_List_prev_107;
-	ListNode* nova_List_cur_107;
+	ListNode* nova_List_prev_163;
+	ListNode* nova_List_cur_163;
 	
-	if (nova_ListNode_getData(this->nova_List_start, exceptionData) == nova_List_data_107)
+	if (nova_ListNode_getData(this->prv->nova_List_start, exceptionData) == nova_List_data_163)
 	{
-		this->nova_List_start = nova_ListNode_getNext(this->nova_List_start, exceptionData);
+		this->prv->nova_List_start = nova_ListNode_getNext(this->prv->nova_List_start, exceptionData);
 	}
-	nova_List_prev_107 = this->nova_List_start;
-	nova_List_cur_107 = nova_ListNode_getNext(this->nova_List_start, exceptionData);
-	while (nova_List_cur_107 != 0)
+	nova_List_prev_163 = this->prv->nova_List_start;
+	nova_List_cur_163 = nova_ListNode_getNext(this->prv->nova_List_start, exceptionData);
+	while (nova_List_cur_163 != 0)
 	{
-		Object* nova_List_d_235;
+		Object* nova_List_d_243;
 		
-		nova_List_d_235 = nova_ListNode_getData(nova_List_cur_107, exceptionData);
-		if (nova_List_d_235 == nova_List_data_107)
+		nova_List_d_243 = nova_ListNode_getData(nova_List_cur_163, exceptionData);
+		if (nova_List_d_243 == nova_List_data_163)
 		{
-			nova_ListNode_setNext(nova_List_prev_107, exceptionData, nova_ListNode_getNext(nova_List_cur_107, exceptionData));
+			nova_ListNode_setNext(nova_List_prev_163, exceptionData, nova_ListNode_getNext(nova_List_cur_163, exceptionData));
 		}
-		nova_List_cur_107 = nova_ListNode_getNext(nova_List_cur_107, exceptionData);
+		nova_List_cur_163 = nova_ListNode_getNext(nova_List_cur_163, exceptionData);
 	}
 }

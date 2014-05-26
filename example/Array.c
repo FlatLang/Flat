@@ -1,4 +1,4 @@
-#include "Object.h"
+#include "Array.h"
 #include <stdlib.h>
 #include <CClass.h>
 #include <ExceptionHandler.h>
@@ -11,17 +11,18 @@
 #include "Integer.h"
 #include "DivideByZeroException.h"
 
-Object* nova_Object_Object(ExceptionData* exceptionData)
+Array* nova_Array_Array(ExceptionData* exceptionData)
 {
-	CCLASS_NEW(Object, this,);
+	CCLASS_NEW(Array, this,);
 	
+	this->nova_Array_length = 0;
 	{
 	}
 	
 	return this;
 }
 
-void nova_del_Object(Object** this, ExceptionData* exceptionData)
+void nova_del_Array(Array** this, ExceptionData* exceptionData)
 {
 	if (!*this)
 	{
@@ -32,9 +33,4 @@ void nova_del_Object(Object** this, ExceptionData* exceptionData)
 	{
 	}
 	free(*this);
-}
-
-String* nova_Object_toString(Object* this, ExceptionData* exceptionData)
-{
-	return nova_String_String(exceptionData, "[Object text here]");
 }

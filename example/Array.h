@@ -1,7 +1,7 @@
-#ifndef FILE_Time_NOVA
-#define FILE_Time_NOVA
+#ifndef FILE_Array_NOVA
+#define FILE_Array_NOVA
 
-typedef struct Time Time;
+typedef struct Array Array;
 
 #include <stdlib.h>
 #include <CClass.h>
@@ -17,11 +17,12 @@ typedef struct Time Time;
 
 CCLASS_CLASS
 (
-	Time
+	Array, 
+	
+	int nova_Array_length;
 )
 
 
-Time* nova_Time_Time(ExceptionData* exceptionData);
-void nova_del_Time(Time** this, ExceptionData* exceptionData);
-long nova_Time_currentTimeMillis(ExceptionData* exceptionData);
+Array* nova_Array_Array(ExceptionData* exceptionData);
+void nova_del_Array(Array** this, ExceptionData* exceptionData);
 #endif

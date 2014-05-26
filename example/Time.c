@@ -34,7 +34,7 @@ void nova_del_Time(Time** this, ExceptionData* exceptionData)
 	free(*this);
 }
 
-long_long nova_Time_currentTimeMillis(ExceptionData* exceptionData)
+long nova_Time_currentTimeMillis(ExceptionData* exceptionData)
 {
 	return currentTimeMillis();
 }

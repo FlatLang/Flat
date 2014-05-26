@@ -23,9 +23,9 @@ CCLASS_CLASS
 )
 
 
-Integer* nova_Integer_Integer(ExceptionData* exceptionData, int nova_Integer_value_144);
+Integer* nova_Integer_Integer(ExceptionData* exceptionData, int nova_Integer_value_12);
 void nova_del_Integer(Integer** this, ExceptionData* exceptionData);
-int nova_Integer_numDigits(ExceptionData* exceptionData, int nova_Integer_number_147);
-String* nova_Integer_toAString(ExceptionData* exceptionData, int nova_Integer_value_171);
+int nova_Integer_numDigits(ExceptionData* exceptionData, int nova_Integer_number_162);
+String* nova_Integer_toAString(ExceptionData* exceptionData, int nova_Integer_value_189);
 String* nova_Integer_toString(Integer* this, ExceptionData* exceptionData);
 #endif

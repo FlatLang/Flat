@@ -53,25 +53,25 @@ void nova_del_ArrayList(ArrayList** this, ExceptionData* exceptionData)
 	free(*this);
 }
 
-void nova_ArrayList_add(ArrayList* this, ExceptionData* exceptionData, int nova_ArrayList_var_75)
+void nova_ArrayList_add(ArrayList* this, ExceptionData* exceptionData, int nova_ArrayList_var_45)
 {
 	if (this->prv->nova_ArrayList_count + 1 >= this->prv->nova_ArrayList_size)
 	{
 		nova_ArrayList_increaseSize(this, exceptionData);
 	}
-	this->prv->nova_ArrayList_data[this->prv->nova_ArrayList_count] = nova_ArrayList_var_75;
+	this->prv->nova_ArrayList_data[this->prv->nova_ArrayList_count] = nova_ArrayList_var_45;
 	this->prv->nova_ArrayList_count = this->prv->nova_ArrayList_count + 1;
 }
 
 void nova_ArrayList_increaseSize(ArrayList* this, ExceptionData* exceptionData)
 {
-	int* nova_ArrayList_tmp_88;
+	int* nova_ArrayList_tmp_54;
 	
 	this->prv->nova_ArrayList_size = this->prv->nova_ArrayList_size + 3;
-	nova_ArrayList_tmp_88 = (int*)malloc(sizeof(int) * (this->prv->nova_ArrayList_size));
-	arrayCopy(nova_ArrayList_tmp_88, 0, this->prv->nova_ArrayList_data, 0, this->prv->nova_ArrayList_count, this->prv->nova_ArrayList_size, sizeof(int));
+	nova_ArrayList_tmp_54 = (int*)malloc(sizeof(int) * (this->prv->nova_ArrayList_size));
+	arrayCopy(nova_ArrayList_tmp_54, 0, this->prv->nova_ArrayList_data, 0, this->prv->nova_ArrayList_count, this->prv->nova_ArrayList_size, sizeof(int));
 	free(this->prv->nova_ArrayList_data);
-	this->prv->nova_ArrayList_data = nova_ArrayList_tmp_88;
+	this->prv->nova_ArrayList_data = nova_ArrayList_tmp_54;
 }
 
 int nova_ArrayList_getSize(ArrayList* this, ExceptionData* exceptionData)
@@ -79,7 +79,7 @@ int nova_ArrayList_getSize(ArrayList* this, ExceptionData* exceptionData)
 	return this->prv->nova_ArrayList_count;
 }
 
-int nova_ArrayList_get(ArrayList* this, ExceptionData* exceptionData, int nova_ArrayList_index_136)
+int nova_ArrayList_get(ArrayList* this, ExceptionData* exceptionData, int nova_ArrayList_index_150)
 {
-	return this->prv->nova_ArrayList_data[nova_ArrayList_index_136];
+	return this->prv->nova_ArrayList_data[nova_ArrayList_index_150];
 }
