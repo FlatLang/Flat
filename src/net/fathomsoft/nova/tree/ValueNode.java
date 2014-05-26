@@ -17,6 +17,7 @@
  */
 package net.fathomsoft.nova.tree;
 
+import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.tree.variables.ArrayAccessNode;
 import net.fathomsoft.nova.tree.variables.ArrayNode;
 import net.fathomsoft.nova.tree.variables.FieldNode;
@@ -31,13 +32,21 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.2.4 May 2, 2014 at 11:14:37 PM
- * @version	v0.2.6 May 24, 2014 at 6:06:20 PM
+ * @version	v0.2.7 May 25, 2014 at 9:16:48 PM
  */
 public class ValueNode extends TreeNode
 {
 	private int		arrayDimensions;
 	
 	private String	type;
+
+	/**
+	 * @see net.fathomsoft.nova.tree.TreeNode#TreeNode(TreeNode)
+	 */
+	public ValueNode(TreeNode temporaryParent)
+	{
+		super(temporaryParent);
+	}
 	
 	/**
 	 * Get the TreeNode that represents the variable that contains
@@ -190,10 +199,10 @@ public class ValueNode extends TreeNode
 	 * 
 	 * @return The last node that is accessed by the specified node.
 	 */
-	public ValueNode getLastAccessedNode()
+	public IdentifierNode getLastAccessedNode()
 	{
-		ValueNode prev = this;
-		ValueNode node = getAccessedNode();
+		IdentifierNode prev = null;
+		IdentifierNode node = getAccessedNode();
 		
 		while (node != null)
 		{
@@ -217,14 +226,14 @@ public class ValueNode extends TreeNode
 	 * 
 	 * @return The next node that is accessed by the specified node.
 	 */
-	public ValueNode getAccessedNode()
+	public IdentifierNode getAccessedNode()
 	{
 		if (getChildren().size() <= 0)
 		{
 			return null;
 		}
 		
-		return (ValueNode)getChild(0);
+		return (IdentifierNode)getChild(0);
 	}
 	
 	/**
@@ -267,7 +276,7 @@ public class ValueNode extends TreeNode
 		
 		if (val != null)
 		{
-			return val.clone();
+			return val.clone(val.getParent());
 		}
 		
 		return null;
@@ -416,12 +425,94 @@ public class ValueNode extends TreeNode
 	 */
 	public void setType(String type)
 	{
-		if (type != null && type.equals("long"))
+		this.type = type;
+	}
+	
+	/**
+	 * Get the ClassNode that represents the type of the specified
+	 * ValueNode. If the type is primitive, this will return the
+	 * wrapper class of the primitive type.
+	 * 
+	 * @return The ClassNode instance of the type.
+	 */
+	public ClassNode getTypeClass()
+	{
+		ProgramNode program = getProgramNode();
+		String      name    = getTypeClassName();
+		
+		ClassNode   clazz   = program.getClass(name);
+		
+		return clazz;
+	}
+	
+	/**
+	 * Get the name of the class that represents the type of the specified
+	 * ValueNode. If the type is primitive, this will return the wrapper
+	 * class name of the primitive type.
+	 * 
+	 * @return The name of the class of the type.
+	 */
+	public String getTypeClassName()
+	{
+		ProgramNode program = getProgramNode();
+		
+		ClassNode   clazz   = program.getClass(type);
+		
+		if (clazz != null)
 		{
-			type = "long_long";
+			return clazz.getName();
 		}
 		
-		this.type = type;
+		if (SyntaxUtils.isPrimitiveType(type))
+		{
+			String name = null;
+			//type.equals("int") || type.equals("char") || type.equals("long_long") || type.equals("bool") || type.equals("short") || type.equals("float") || type.equals("double")
+			if (type.equals("int"))
+			{
+				name = "Integer";
+			}
+			else if (type.equals("long"))
+			{
+				name = "Long";
+			}
+			else if (type.equals("bool"))
+			{
+				name = "Bool";
+			}
+			else if (type.equals("short"))
+			{
+				name = "Short";
+			}
+			else if (type.equals("float"))
+			{
+				name = "Float";
+			}
+			else if (type.equals("double"))
+			{
+				name = "Double";
+			}
+			
+			if (name != null)
+			{
+				if (isArray())
+				{
+					name += "Array";
+				}
+				
+				clazz = program.getClass(name);
+				
+				if (clazz == null)
+				{
+					SyntaxMessage.error("Could not find class '" + name + "'", getFileNode(), getLocationIn(), getController());
+					
+					return null;
+				}
+				
+				return clazz.getName();
+			}
+		}
+		
+		return null;
 	}
 	
 	/**
@@ -595,6 +686,21 @@ public class ValueNode extends TreeNode
 	}
 	
 	/**
+	 * Generate the C syntax for the type of the specified ValueNode.
+	 * 
+	 * @return The C syntax for the type of the ValueNode.
+	 */
+	public String generateCTypeOutput()
+	{
+		if (type.equals("long"))
+		{
+			return "long_long";
+		}
+		
+		return type;
+	}
+	
+	/**
 	 * Generate the representation of when the value node is being used
 	 * in action.
 	 * 
@@ -603,39 +709,39 @@ public class ValueNode extends TreeNode
 	 */
 	public String generateUseOutput()
 	{
-		return getType();
+		return generateCTypeOutput();
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.TreeNode#generateNovaInput()
+	 * @see net.fathomsoft.nova.tree.TreeNode#generateNovaInput(boolean)
 	 */
 	@Override
-	public String generateNovaInput()
+	public String generateNovaInput(boolean outputChildren)
 	{
-//		if (isSpecialFragment())
-//		{
-//			return getChild(0).generateNovaInput();
-//		}
-		
 		StringBuilder builder = new StringBuilder();
 		
 		builder.append(generateUseOutput());
 		
-		if (getChildren().size() > 0)
+		if (outputChildren)
 		{
-			builder.append('.').append(getChild(0).generateNovaInput());
+			IdentifierNode accessed = getAccessedNode();
+			
+			if (accessed != null)
+			{
+				builder.append('.').append(accessed.generateNovaInput());
+			}
 		}
 		
 		return builder.toString();
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.TreeNode#clone()
+	 * @see net.fathomsoft.nova.tree.TreeNode#clone(TreeNode)
 	 */
 	@Override
-	public ValueNode clone()
+	public ValueNode clone(TreeNode temporaryParent)
 	{
-		ValueNode node = new ValueNode();
+		ValueNode node = new ValueNode(temporaryParent);
 		
 		return cloneTo(node);
 	}
