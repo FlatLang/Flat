@@ -5,7 +5,6 @@ import net.fathomsoft.nova.tree.BinaryOperatorNode;
 import net.fathomsoft.nova.tree.DimensionsNode;
 import net.fathomsoft.nova.tree.LiteralNode;
 import net.fathomsoft.nova.tree.TreeNode;
-import net.fathomsoft.nova.tree.UnaryOperatorNode;
 import net.fathomsoft.nova.util.Bounds;
 import net.fathomsoft.nova.util.Location;
 import net.fathomsoft.nova.util.Patterns;
