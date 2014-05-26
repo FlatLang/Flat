@@ -11,16 +11,18 @@ import net.fathomsoft.nova.util.Location;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Mar 21, 2014 at 10:50:26 PM
- * @version	v0.2 Apr 7, 2014 at 8:08:51 PM
+ * @version	v0.2.7 May 25, 2014 at 9:16:48 PM
  */
 public class ExceptionHandlingNode extends TreeNode
 {
 	/**
 	 * Instantiate and initialize default values.
 	 */
-	public ExceptionHandlingNode()
+	public ExceptionHandlingNode(TreeNode temporaryParent)
 	{
-		ScopeNode scopeNode = new ScopeNode();
+		super(temporaryParent);
+		
+		ScopeNode scopeNode = new ScopeNode(this);
 		
 		addChild(scopeNode);
 	}
@@ -48,42 +50,6 @@ public class ExceptionHandlingNode extends TreeNode
 		{
 			getScopeNode().addChild(child);
 		}
-	}
-	
-	/**
-	 * @see net.fathomsoft.nova.tree.TreeNode#generateJavaSource()
-	 */
-	@Override
-	public String generateJavaSource()
-	{
-		return null;
-	}
-
-	/**
-	 * @see net.fathomsoft.nova.tree.TreeNode#generateCHeader()
-	 */
-	@Override
-	public String generateCHeader()
-	{
-		return null;
-	}
-
-	/**
-	 * @see net.fathomsoft.nova.tree.TreeNode#generateCSource()
-	 */
-	@Override
-	public String generateCSource()
-	{
-		return null;
-	}
-	
-	/**
-	 * @see net.fathomsoft.nova.tree.TreeNode#generateCSourceFragment()
-	 */
-	@Override
-	public String generateCSourceFragment()
-	{
-		return null;
 	}
 	
 	/**
@@ -128,14 +94,14 @@ public class ExceptionHandlingNode extends TreeNode
 		
 		return null;
 	}
-
+	
 	/**
-	 * @see net.fathomsoft.nova.tree.TreeNode#clone()
+	 * @see net.fathomsoft.nova.tree.TreeNode#clone(TreeNode)
 	 */
 	@Override
-	public ExceptionHandlingNode clone()
+	public ExceptionHandlingNode clone(TreeNode temporaryParent)
 	{
-		ExceptionHandlingNode node = new ExceptionHandlingNode();
+		ExceptionHandlingNode node = new ExceptionHandlingNode(temporaryParent);
 		
 		return cloneTo(node);
 	}

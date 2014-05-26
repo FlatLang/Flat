@@ -24,7 +24,7 @@ import net.fathomsoft.nova.tree.exceptionhandling.ExceptionNode;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:56:34 PM
- * @version	v0.2.2 Apr 29, 2014 at 7:15:44 PM
+ * @version	v0.2.7 May 25, 2014 at 9:16:48 PM
  */
 public class ParameterListNode extends TreeNode
 {
@@ -50,10 +50,14 @@ public class ParameterListNode extends TreeNode
 	/**
 	 * Instantiate and initialize default data. Generates the
 	 * two default parameters for every method: Exception data.
+	 * 
+	 * @see net.fathomsoft.nova.tree.TreeNode#TreeNode(TreeNode)
 	 */
-	public ParameterListNode()
+	public ParameterListNode(TreeNode temporaryParent)
 	{
-		ParameterNode exceptionData = new ParameterNode();
+		super(temporaryParent);
+		
+		ParameterNode exceptionData = new ParameterNode(this);
 		exceptionData.setName(ExceptionNode.EXCEPTION_DATA_IDENTIFIER, true);
 		exceptionData.setType("ExceptionData");
 		
@@ -109,7 +113,7 @@ public class ParameterListNode extends TreeNode
 		
 		ClassNode     classNode = (ClassNode)method.getAncestorOfType(ClassNode.class);
 		
-		ParameterNode reference = new ParameterNode();
+		ParameterNode reference = new ParameterNode(this);
 		
 		reference.setType(classNode.getName());
 		
@@ -188,12 +192,12 @@ public class ParameterListNode extends TreeNode
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.TreeNode#clone()
+	 * @see net.fathomsoft.nova.tree.TreeNode#clone(TreeNode)
 	 */
 	@Override
-	public ParameterListNode clone()
+	public ParameterListNode clone(TreeNode temporaryParent)
 	{
-		ParameterListNode node = new ParameterListNode();
+		ParameterListNode node = new ParameterListNode(temporaryParent);
 		
 		return cloneTo(node);
 	}

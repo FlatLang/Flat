@@ -26,10 +26,18 @@ import net.fathomsoft.nova.tree.TreeNode;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 10:00:50 PM
- * @version	v0.2.4 May 17, 2014 at 9:55:04 PM
+ * @version	v0.2.7 May 25, 2014 at 9:16:48 PM
  */
 public class InstanceFieldListNode extends TreeNode
 {
+	/**
+	 * @see net.fathomsoft.nova.tree.TreeNode#TreeNode(TreeNode)
+	 */
+	public InstanceFieldListNode(TreeNode temporaryParent)
+	{
+		super(temporaryParent);
+	}
+	
 	/**
 	 * @see net.fathomsoft.nova.tree.TreeNode#generateJavaSource()
 	 */
@@ -128,12 +136,12 @@ public class InstanceFieldListNode extends TreeNode
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.TreeNode#clone()
+	 * @see net.fathomsoft.nova.tree.TreeNode#clone(TreeNode)
 	 */
 	@Override
-	public InstanceFieldListNode clone()
+	public InstanceFieldListNode clone(TreeNode temporaryParent)
 	{
-		InstanceFieldListNode node = new InstanceFieldListNode();
+		InstanceFieldListNode node = new InstanceFieldListNode(temporaryParent);
 		
 		return cloneTo(node);
 	}

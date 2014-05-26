@@ -28,7 +28,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Feb 18, 2014 at 8:57:00 PM
- * @version	v0.2.6 May 24, 2014 at 6:06:20 PM
+ * @version	v0.2.7 May 25, 2014 at 9:16:48 PM
  */
 public class FileNode extends IdentifierNode
 {
@@ -64,10 +64,14 @@ public class FileNode extends IdentifierNode
 	
 	/**
 	 * Instantiate and initialize the default values.
+	 * 
+	 * @see net.fathomsoft.nova.tree.TreeNode#TreeNode(TreeNode)
 	 */
-	public FileNode()
+	public FileNode(TreeNode temporaryParent)
 	{
-		ImportListNode imports = new ImportListNode();
+		super(temporaryParent);
+		
+		ImportListNode imports = new ImportListNode(this);
 		
 		super.addChild(imports);
 		
@@ -315,7 +319,7 @@ public class FileNode extends IdentifierNode
 		{
 			StringBuilder builder = new StringBuilder();
 			
-			ImportNode thisImport = new ImportNode();
+			ImportNode thisImport = new ImportNode(this);
 			thisImport.setImportLocation(getName());
 			
 			builder.append(thisImport.generateCSource());
@@ -376,7 +380,7 @@ public class FileNode extends IdentifierNode
 	{
 		for (String importLoc : DEFAULT_IMPORTS)
 		{
-			ImportNode importNode = new ImportNode();
+			ImportNode importNode = new ImportNode(this);
 			
 			if (importLoc.endsWith(".h"))
 			{
@@ -446,12 +450,12 @@ public class FileNode extends IdentifierNode
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.TreeNode#clone()
+	 * @see net.fathomsoft.nova.tree.TreeNode#clone(TreeNode)
 	 */
 	@Override
-	public FileNode clone()
+	public FileNode clone(TreeNode temporaryParent)
 	{
-		FileNode node = new FileNode();
+		FileNode node = new FileNode(temporaryParent);
 		
 		return cloneTo(node);
 	}

@@ -30,7 +30,7 @@ import net.fathomsoft.nova.util.Regex;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:57:13 PM
- * @version	v0.2.5 May 22, 2014 at 2:56:28 PM
+ * @version	v0.2.7 May 25, 2014 at 9:16:48 PM
  */
 public class IfStatementNode extends TreeNode
 {
@@ -38,10 +38,12 @@ public class IfStatementNode extends TreeNode
 	 * Instantiate a new IfStatementNode and initialize the default
 	 * values.
 	 */
-	public IfStatementNode()
+	public IfStatementNode(TreeNode temporaryParent)
 	{
-		ArgumentListNode condition = new ArgumentListNode();
-		ScopeNode        scopeNode = new ScopeNode();
+		super(temporaryParent);
+		
+		ArgumentListNode condition = new ArgumentListNode(this);
+		ScopeNode        scopeNode = new ScopeNode(this);
 		
 		addChild(condition);
 		addChild(scopeNode);
@@ -81,24 +83,6 @@ public class IfStatementNode extends TreeNode
 		{
 			getScopeNode().addChild(child);
 		}
-	}
-	
-	/**
-	 * @see net.fathomsoft.nova.tree.TreeNode#generateJavaSource()
-	 */
-	@Override
-	public String generateJavaSource()
-	{
-		return null;
-	}
-
-	/**
-	 * @see net.fathomsoft.nova.tree.TreeNode#generateCHeader()
-	 */
-	@Override
-	public String generateCHeader()
-	{
-		return null;
 	}
 	
 	/**
@@ -171,7 +155,7 @@ public class IfStatementNode extends TreeNode
 	{
 		if (Regex.matches(statement, 0, Patterns.PRE_IF))
 		{
-			IfStatementNode n = new IfStatementNode();
+			IfStatementNode n = new IfStatementNode(parent);
 			
 			Bounds bounds     = Regex.boundsOf(statement, Patterns.IF_CONTENTS);
 			
@@ -204,14 +188,14 @@ public class IfStatementNode extends TreeNode
 		
 		return null;
 	}
-
+	
 	/**
-	 * @see net.fathomsoft.nova.tree.TreeNode#clone()
+	 * @see net.fathomsoft.nova.tree.TreeNode#clone(TreeNode)
 	 */
 	@Override
-	public IfStatementNode clone()
+	public IfStatementNode clone(TreeNode temporaryParent)
 	{
-		IfStatementNode node = new IfStatementNode();
+		IfStatementNode node = new IfStatementNode(temporaryParent);
 		
 		return cloneTo(node);
 	}

@@ -23,10 +23,18 @@ package net.fathomsoft.nova.tree;
  * 
  * @author	Braden Steffaniak
  * @since	v0.2.5 May 19, 2014 at 12:09:41 AM
- * @version	v0.2.5 May 19, 2014 at 12:09:41 AM
+ * @version	v0.2.7 May 25, 2014 at 9:16:48 PM
  */
 public class DimensionsNode extends TreeNode
 {
+	/**
+	 * @see net.fathomsoft.nova.tree.TreeNode#TreeNode(TreeNode)
+	 */
+	public DimensionsNode(TreeNode temporaryParent)
+	{
+		super(temporaryParent);
+	}
+
 	/**
 	 * @see net.fathomsoft.nova.tree.TreeNode#generateCSourceFragment()
 	 */
@@ -46,12 +54,12 @@ public class DimensionsNode extends TreeNode
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.TreeNode#clone()
+	 * @see net.fathomsoft.nova.tree.TreeNode#clone(TreeNode)
 	 */
 	@Override
-	public DimensionsNode clone()
+	public DimensionsNode clone(TreeNode temporaryParent)
 	{
-		DimensionsNode node = new DimensionsNode();
+		DimensionsNode node = new DimensionsNode(temporaryParent);
 		
 		return cloneTo(node);
 	}

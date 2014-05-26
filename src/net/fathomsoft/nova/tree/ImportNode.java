@@ -29,13 +29,21 @@ import net.fathomsoft.nova.util.Regex;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 13, 2014 at 7:56:24 PM
- * @version	v0.2.1 Apr 24, 2014 at 4:51:32 PM
+ * @version	v0.2.7 May 25, 2014 at 9:16:48 PM
  */
 public class ImportNode extends TreeNode
 {
 	private boolean	external;
 	
 	private String	importLocation;
+	
+	/**
+	 * @see net.fathomsoft.nova.tree.TreeNode#TreeNode(TreeNode)
+	 */
+	public ImportNode(TreeNode temporaryParent)
+	{
+		super(temporaryParent);
+	}
 	
 	/**
 	 * Get whether or not the imported file is a C Source file, or a
@@ -82,15 +90,6 @@ public class ImportNode extends TreeNode
 	{
 		this.importLocation = location;
 	}
-	
-	/**
-	 * @see net.fathomsoft.nova.tree.TreeNode#generateJavaSource()
-	 */
-	@Override
-	public String generateJavaSource()
-	{
-		return null;
-	}
 
 	/**
 	 * @see net.fathomsoft.nova.tree.TreeNode#generateCHeader()
@@ -126,15 +125,6 @@ public class ImportNode extends TreeNode
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.TreeNode#generateCSourceFragment()
-	 */
-	@Override
-	public String generateCSourceFragment()
-	{
-		return null;
-	}
-	
-	/**
 	 * Decode the given statement into an ImportNode instance, if
 	 * possible. If it is not possible, this method returns null.<br>
 	 * ImportNodes can either contain periods or slashes (backslashes or
@@ -157,11 +147,9 @@ public class ImportNode extends TreeNode
 	 */
 	public static ImportNode decodeStatement(TreeNode parent, String statement, Location location)
 	{
-		ImportNode n = null;
-		
 		if (Regex.indexOf(statement, Patterns.PRE_IMPORT) == 0)
 		{
-			n = new ImportNode();
+			ImportNode n = new ImportNode(parent);
 			
 			int importStartIndex = Regex.indexOf(statement, Patterns.POST_IMPORT);
 			
@@ -191,6 +179,8 @@ public class ImportNode extends TreeNode
 					else
 					{
 						SyntaxMessage.error("Import location ends with unknown extension", parent.getFileNode(), location, parent.getController());
+						
+						return null;
 					}
 				}
 				
@@ -199,19 +189,23 @@ public class ImportNode extends TreeNode
 			else
 			{
 				SyntaxMessage.error("Import statement must specify the location of the file", parent.getFileNode(), location, parent.getController());
+				
+				return null;
 			}
+			
+			return n;
 		}
 		
-		return n;
+		return null;
 	}
-
+	
 	/**
-	 * @see net.fathomsoft.nova.tree.TreeNode#clone()
+	 * @see net.fathomsoft.nova.tree.TreeNode#clone(TreeNode)
 	 */
 	@Override
-	public ImportNode clone()
+	public ImportNode clone(TreeNode temporaryParent)
 	{
-		ImportNode node = new ImportNode();
+		ImportNode node = new ImportNode(temporaryParent);
 		
 		return cloneTo(node);
 	}

@@ -24,10 +24,18 @@ package net.fathomsoft.nova.tree;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 10:29:22 PM
- * @version	v0.2.1 Apr 24, 2014 at 4:52:24 PM
+ * @version	v0.2.7 May 25, 2014 at 9:16:48 PM
  */
 public class MethodListNode extends TreeNode
 {
+	/**
+	 * @see net.fathomsoft.nova.tree.TreeNode#TreeNode(TreeNode)
+	 */
+	public MethodListNode(TreeNode temporaryParent)
+	{
+		super(temporaryParent);
+	}
+	
 	/**
 	 * Get whether or not the ClassNode contains the MethodNode with the
 	 * specified name.<br>
@@ -222,14 +230,14 @@ public class MethodListNode extends TreeNode
 		
 		return builder.toString();
 	}
-
+	
 	/**
-	 * @see net.fathomsoft.nova.tree.TreeNode#clone()
+	 * @see net.fathomsoft.nova.tree.TreeNode#clone(TreeNode)
 	 */
 	@Override
-	public MethodListNode clone()
+	public MethodListNode clone(TreeNode temporaryParent)
 	{
-		MethodListNode node = new MethodListNode();
+		MethodListNode node = new MethodListNode(temporaryParent);
 		
 		return cloneTo(node);
 	}

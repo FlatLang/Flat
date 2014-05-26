@@ -19,7 +19,7 @@ import net.fathomsoft.nova.tree.variables.VariableNode;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Apr 5, 2014 at 10:54:20 PM
- * @version	v0.2.4 May 17, 2014 at 9:55:04 PM
+ * @version	v0.2.7 May 25, 2014 at 9:16:48 PM
  */
 public class ScopeNode extends TreeNode
 {
@@ -29,10 +29,15 @@ public class ScopeNode extends TreeNode
 	
 	/**
 	 * Instantiate and initialize the default values.
+	 * 
+	 * 
+	 * @see net.fathomsoft.nova.tree.TreeNode#TreeNode(TreeNode)
 	 */
-	public ScopeNode()
+	public ScopeNode(TreeNode temporaryParent)
 	{
-		VariableListNode variablesNode = new VariableListNode();
+		super(temporaryParent);
+		
+		VariableListNode variablesNode = new VariableListNode(this);
 		
 		super.addChild(variablesNode);
 		
@@ -127,12 +132,12 @@ public class ScopeNode extends TreeNode
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.TreeNode#clone()
+	 * @see net.fathomsoft.nova.tree.TreeNode#clone(TreeNode)
 	 */
 	@Override
-	public ScopeNode clone()
+	public ScopeNode clone(TreeNode temporaryParent)
 	{
-		ScopeNode node = new ScopeNode();
+		ScopeNode node = new ScopeNode(temporaryParent);
 		
 		return cloneTo(node);
 	}

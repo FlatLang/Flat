@@ -15,10 +15,18 @@ import net.fathomsoft.nova.util.Regex;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Mar 22, 2014 at 4:01:44 PM
- * @version	v0.2.4 May 17, 2014 at 9:55:04 PM
+ * @version	v0.2.7 May 25, 2014 at 9:16:48 PM
  */
 public class CatchNode extends ExceptionHandlingNode
 {
+	/**
+	 * @see net.fathomsoft.nova.tree.TreeNode#TreeNode(TreeNode)
+	 */
+	public CatchNode(TreeNode temporaryParent)
+	{
+		super(temporaryParent);
+	}
+
 	/**
 	 * Get the instance of the Exception variable that is being caught.
 	 * 
@@ -133,7 +141,7 @@ public class CatchNode extends ExceptionHandlingNode
 	{
 		if (Regex.matches(statement, 0, Patterns.PRE_CATCH))
 		{
-			CatchNode n = new CatchNode();
+			CatchNode n = new CatchNode(parent);
 			
 			Bounds bounds = Regex.boundsOf(statement, Patterns.POST_CATCH);
 			
@@ -151,7 +159,7 @@ public class CatchNode extends ExceptionHandlingNode
 				{
 					n.addChild(exceptionInstance);
 					
-					ExceptionNode exception = new ExceptionNode();
+					ExceptionNode exception = new ExceptionNode(n);
 					exception.setType(exceptionInstance.getType());
 					
 					if (exception.getID() > 0)
@@ -185,14 +193,14 @@ public class CatchNode extends ExceptionHandlingNode
 		
 		return null;
 	}
-
+	
 	/**
-	 * @see net.fathomsoft.nova.tree.TreeNode#clone()
+	 * @see net.fathomsoft.nova.tree.TreeNode#clone(TreeNode)
 	 */
 	@Override
-	public CatchNode clone()
+	public CatchNode clone(TreeNode temporaryParent)
 	{
-		CatchNode node = new CatchNode();
+		CatchNode node = new CatchNode(temporaryParent);
 		
 		return cloneTo(node);
 	}

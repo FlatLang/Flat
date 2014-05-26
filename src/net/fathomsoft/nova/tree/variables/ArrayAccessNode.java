@@ -20,13 +20,18 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.2 Mar 24, 2014 at 10:45:29 PM
- * @version	v0.2.6 May 24, 2014 at 6:06:20 PM
+ * @version	v0.2.7 May 25, 2014 at 9:16:48 PM
  */
 public class ArrayAccessNode extends VariableNode
 {
-	public ArrayAccessNode()
+	/**
+	 * @see net.fathomsoft.nova.tree.TreeNode#TreeNode(TreeNode)
+	 */
+	public ArrayAccessNode(TreeNode temporaryParent)
 	{
-		DimensionsNode dimensions = new DimensionsNode();
+		super(temporaryParent);
+		
+		DimensionsNode dimensions = new DimensionsNode(this);
 		
 		addChild(dimensions);
 	}
@@ -132,9 +137,10 @@ public class ArrayAccessNode extends VariableNode
 				return null;
 			}
 			
-			var = var.clone();
+			ArrayAccessNode node = new ArrayAccessNode(parent);
 			
-			ArrayAccessNode node = new ArrayAccessNode();
+			var = var.clone(node);
+			
 			node.addChild(var);
 			node.setName(var.getName());
 			node.setType(var.getType());
@@ -149,7 +155,7 @@ public class ArrayAccessNode extends VariableNode
 				
 				if (SyntaxUtils.isLiteral(data))
 				{
-					LiteralNode literal = new LiteralNode();
+					LiteralNode literal = new LiteralNode(null);
 					literal.setValue(data, false);
 					
 					node.addDimension(literal);
@@ -183,12 +189,25 @@ public class ArrayAccessNode extends VariableNode
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.TreeNode#clone()
+	 * @see net.fathomsoft.nova.tree.ValueNode#getAccessedNode()
+	 */
+	public VariableNode getAccessedNode()
+	{
+		if (getChildren().size() <= 1)
+		{
+			return null;
+		}
+		
+		return (VariableNode)getChild(1);
+	}
+	
+	/**
+	 * @see net.fathomsoft.nova.tree.TreeNode#clone(TreeNode)
 	 */
 	@Override
-	public ArrayAccessNode clone()
+	public ArrayAccessNode clone(TreeNode temporaryParent)
 	{
-		ArrayAccessNode node = new ArrayAccessNode();
+		ArrayAccessNode node = new ArrayAccessNode(temporaryParent);
 		
 		return cloneTo(node);
 	}

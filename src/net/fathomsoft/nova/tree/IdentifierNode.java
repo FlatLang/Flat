@@ -25,11 +25,19 @@ package net.fathomsoft.nova.tree;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:00:19 PM
- * @version	v0.2.4 May 17, 2014 at 9:55:04 PM
+ * @version	v0.2.7 May 25, 2014 at 9:16:48 PM
  */
 public class IdentifierNode extends ValueNode
 {
 	private String	name;
+	
+	/**
+	 * @see net.fathomsoft.nova.tree.TreeNode#TreeNode(TreeNode)
+	 */
+	public IdentifierNode(TreeNode temporaryParent)
+	{
+		super(temporaryParent);
+	}
 	
 	/**
 	 * Get the name of the Identifier. For the rules on what can and
@@ -75,10 +83,10 @@ public class IdentifierNode extends ValueNode
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.TreeNode#generateNovaInput()
+	 * @see net.fathomsoft.nova.tree.TreeNode#generateNovaInput(boolean)
 	 */
 	@Override
-	public String generateNovaInput()
+	public String generateNovaInput(boolean outputChildren)
 	{
 		return name;
 	}
@@ -110,18 +118,22 @@ public class IdentifierNode extends ValueNode
 		return name + generateChildrenCSourceFragment();
 	}
 	
+	/**
+	 * @see net.fathomsoft.nova.tree.ValueNode#generateUseOutput()
+	 */
+	@Override
 	public String generateUseOutput()
 	{
 		return name;
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.TreeNode#clone()
+	 * @see net.fathomsoft.nova.tree.TreeNode#clone(TreeNode)
 	 */
 	@Override
-	public IdentifierNode clone()
+	public IdentifierNode clone(TreeNode temporaryParent)
 	{
-		IdentifierNode node = new IdentifierNode();
+		IdentifierNode node = new IdentifierNode(temporaryParent);
 		
 		return cloneTo(node);
 	}

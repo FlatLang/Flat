@@ -35,7 +35,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:10:53 PM
- * @version	v0.2.6 May 24, 2014 at 6:06:20 PM
+ * @version	v0.2.7 May 25, 2014 at 9:16:48 PM
  */
 public class MethodNode extends InstanceDeclarationNode
 {
@@ -43,13 +43,17 @@ public class MethodNode extends InstanceDeclarationNode
 	
 	/**
 	 * Instantiate and initialize default data.
+	 * 
+	 * @see net.fathomsoft.nova.tree.TreeNode#TreeNode(TreeNode)
 	 */
-	public MethodNode()
+	public MethodNode(TreeNode temporaryParent)
 	{
+		super(temporaryParent);
+		
 		overridingMethods = new ArrayList<MethodNode>();
 		
-		ParameterListNode parameterList = new ParameterListNode();
-		ScopeNode         scopeNode     = new ScopeNode();
+		ParameterListNode parameterList = new ParameterListNode(this);
+		ScopeNode         scopeNode     = new ScopeNode(this);
 		
 		super.addChild(parameterList);
 		super.addChild(scopeNode);
@@ -484,26 +488,6 @@ public class MethodNode extends InstanceDeclarationNode
 		return Nova.LANGUAGE_NAME.toLowerCase() + "_" + clazz.generateUniquePrefix() + "_" + getName();
 	}
 	
-//	/**
-//	 * @see net.fathomsoft.fathom.tree.DeclarationNode#setAttribute(java.lang.String, int)
-//	 */
-//	public boolean setAttribute(String attribute, int argNum)
-//	{
-//		if (super.setAttribute(attribute, argNum))
-//		{
-//			return true;
-//		}
-//		
-//		if (attribute.equals("external"))
-//		{
-//			setExternal(true);
-//			
-//			return true;
-//		}
-//		
-//		return false;
-//	}
-	
 	/**
 	 * Decode the given statement into a MethodNode instance, if
 	 * possible. If it is not possible, this method returns null.
@@ -542,26 +526,21 @@ public class MethodNode extends InstanceDeclarationNode
 			
 			String parameters[]  = StringUtils.splitCommas(parameterList);
 			
-			statement = statement.substring(0, firstParenthIndex);
+			final String   signature  = statement.substring(0, firstParenthIndex);
 			
 			final FileNode fileNode   = parent.getFileNode();
 			
-			final String   statement2 = statement;
+			final boolean error[]        = new boolean[1];
+			final boolean externalType[] = new boolean[1];
 			
-			final boolean error[]         = new boolean[1];
-			final boolean externalType[]  = new boolean[1];
-			final ArrayList<String> words = new ArrayList<String>();
-			
-			MethodNode n = new MethodNode()
+			MethodNode n = new MethodNode(parent)
 			{
-				public void interactWord(String word, int wordNumber, Bounds bounds, int numWords)
+				public void interactWord(String word, int wordNumber, Bounds bounds, int numWords, String leftDelimiter, String rightDelimiter)
 				{
 					if (error[0])
 					{
 						return;
 					}
-					
-					words.add(word);
 					
 					if (wordNumber == numWords - 1)
 					{
@@ -572,31 +551,18 @@ public class MethodNode extends InstanceDeclarationNode
 						setType(word);
 						
 						// If it is an array declaration.
-						if (Regex.matches(statement2, bounds.getEnd(), Patterns.EMPTY_ARRAY_BRACKETS))
+						if (Regex.matches(signature, bounds.getEnd(), Patterns.EMPTY_ARRAY_BRACKETS))
 						{
-							int dimensions = SyntaxUtils.calculateArrayDimensions(statement2, false);
+							int dimensions = SyntaxUtils.calculateArrayDimensions(signature, false);
 							
 							setArrayDimensions(dimensions);
 						}
 					}
 					else if (!setAttribute(word, wordNumber))
 					{
-						if (externalType[0])
+						if (fileNode.isExternalImport(word))
 						{
-							String missing = StringUtils.findLastMissingString(words, statement2);
-							
-							if (!missing.equals(".") && !missing.equals("->"))
-							{
-								SyntaxMessage.error("Incorrect parameter definition", parent.getFileNode(), location, parent.getController());
-								
-								error[0] = true;
-							}
-							
-							setType(missing + getType());
-						}
-						else if (fileNode.isExternalImport(word))
-						{
-							externalType[0] = statement2.charAt(bounds.getEnd()) == '.';
+							externalType[0] = rightDelimiter.equals(".");
 						}
 						
 						if (!externalType[0])
@@ -609,11 +575,18 @@ public class MethodNode extends InstanceDeclarationNode
 				}
 			};
 			
+			n.iterateWords(signature, Patterns.IDENTIFIER_BOUNDARIES);
+			
+			if (error[0])
+			{
+				return null;
+			}
+			
 			for (int i = 0; i < parameters.length; i++)
 			{
 				if (parameters[i].length() > 0)
 				{
-					ParameterNode param = ParameterNode.decodeStatement(parent, parameters[i], location);
+					ParameterNode param = ParameterNode.decodeStatement(n, parameters[i], location);
 					
 					if (param == null)
 					{
@@ -626,13 +599,6 @@ public class MethodNode extends InstanceDeclarationNode
 				}
 			}
 			
-			n.iterateWords(statement, Patterns.IDENTIFIER_BOUNDARIES);
-			
-			if (error[0])
-			{
-				return null;
-			}
-			
 			return n;
 		}
 		
@@ -640,12 +606,12 @@ public class MethodNode extends InstanceDeclarationNode
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.TreeNode#clone()
+	 * @see net.fathomsoft.nova.tree.TreeNode#clone(TreeNode)
 	 */
 	@Override
-	public MethodNode clone()
+	public MethodNode clone(TreeNode temporaryParent)
 	{
-		MethodNode node = new MethodNode();
+		MethodNode node = new MethodNode(temporaryParent);
 		
 		return cloneTo(node);
 	}
@@ -663,7 +629,7 @@ public class MethodNode extends InstanceDeclarationNode
 		
 		for (MethodNode child : overridingMethods)
 		{
-			node.overridingMethods.add(child.clone());
+			node.overridingMethods.add(child.clone(null));
 		}
 		
 		return node;

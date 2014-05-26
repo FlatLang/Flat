@@ -31,10 +31,18 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:55:59 PM
- * @version	v0.2.4 May 17, 2014 at 9:55:04 PM
+ * @version	v0.2.7 May 25, 2014 at 9:16:48 PM
  */
 public class WhileLoopNode extends LoopNode
 {
+	/**
+	 * @see net.fathomsoft.nova.tree.TreeNode#TreeNode(TreeNode)
+	 */
+	public WhileLoopNode(TreeNode temporaryParent)
+	{
+		super(temporaryParent);
+	}
+	
 	/**
 	 * Get the TreeNode that describes the condition section of the while
 	 * loop. For instance: "while (i < 10)" the contents between the
@@ -111,7 +119,7 @@ public class WhileLoopNode extends LoopNode
 	{
 		if (Regex.matches(statement, 0, Patterns.PRE_WHILE))
 		{
-			WhileLoopNode n = new WhileLoopNode();
+			WhileLoopNode n = new WhileLoopNode(parent);
 			
 			Bounds bounds = Regex.boundsOf(statement, Patterns.WHILE_CONTENTS);
 			
@@ -129,7 +137,7 @@ public class WhileLoopNode extends LoopNode
 				{
 					if (SyntaxUtils.isLiteral(contents))
 					{
-						LiteralNode literal = new LiteralNode();
+						LiteralNode literal = new LiteralNode(n);
 						literal.setValue(contents, parent.isWithinExternalContext());
 						
 						condition = literal;
@@ -156,12 +164,12 @@ public class WhileLoopNode extends LoopNode
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.TreeNode#clone()
+	 * @see net.fathomsoft.nova.tree.TreeNode#clone(TreeNode)
 	 */
 	@Override
-	public WhileLoopNode clone()
+	public WhileLoopNode clone(TreeNode temporaryParent)
 	{
-		WhileLoopNode node = new WhileLoopNode();
+		WhileLoopNode node = new WhileLoopNode(temporaryParent);
 		
 		return cloneTo(node);
 	}

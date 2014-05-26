@@ -34,7 +34,7 @@ import net.fathomsoft.nova.util.Regex;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:15:51 PM
- * @version	v0.2.6 May 24, 2014 at 6:06:20 PM
+ * @version	v0.2.7 May 25, 2014 at 9:16:48 PM
  */
 public class ClassNode extends InstanceDeclarationNode
 {
@@ -44,17 +44,21 @@ public class ClassNode extends InstanceDeclarationNode
 	
 	/**
 	 * Instantiate and initialize default values for a class node.
+	 * 
+	 * @see net.fathomsoft.nova.tree.TreeNode#TreeNode(TreeNode)
 	 */
-	public ClassNode()
+	public ClassNode(TreeNode temporaryParent)
 	{
+		super(temporaryParent);
+		
 		implementedClasses = new String[0];
 		
 		setType("class");
 		
-		FieldListNode  fields       = new FieldListNode();
-		MethodListNode constructors = new MethodListNode();
-		MethodListNode destructors  = new MethodListNode();
-		MethodListNode methods      = new MethodListNode();
+		FieldListNode  fields       = new FieldListNode(this);
+		MethodListNode constructors = new MethodListNode(this);
+		MethodListNode destructors  = new MethodListNode(this);
+		MethodListNode methods      = new MethodListNode(this);
 		
 		super.addChild(fields);
 		super.addChild(constructors);
@@ -801,7 +805,7 @@ public class ClassNode extends InstanceDeclarationNode
 			final boolean implementing[] = new boolean[1];
 			final String  prevWord[]     = new String[] { "" };
 			
-			ClassNode n = new ClassNode()
+			ClassNode n = new ClassNode(parent)
 			{
 				public void interactWord(String word, int wordNumber, Bounds bounds, int numWords)
 				{
@@ -916,7 +920,7 @@ public class ClassNode extends InstanceDeclarationNode
 		{
 			Location loc = new Location();
 			
-			ConstructorNode defaultConstructor = new ConstructorNode();
+			ConstructorNode defaultConstructor = new ConstructorNode(null);
 			defaultConstructor.setName(getName());
 			defaultConstructor.setType(getName());
 			defaultConstructor.setVisibility(FieldNode.PUBLIC);
@@ -928,7 +932,7 @@ public class ClassNode extends InstanceDeclarationNode
 		{
 			Location loc = new Location();
 			
-			DestructorNode defaultDestructor = new DestructorNode();
+			DestructorNode defaultDestructor = new DestructorNode(null);
 			defaultDestructor.setName(getName());
 			defaultDestructor.setType("void");
 			defaultDestructor.setVisibility(FieldNode.PUBLIC);
@@ -1140,12 +1144,12 @@ public class ClassNode extends InstanceDeclarationNode
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.TreeNode#clone()
+	 * @see net.fathomsoft.nova.tree.TreeNode#clone(TreeNode)
 	 */
 	@Override
-	public ClassNode clone()
+	public ClassNode clone(TreeNode temporaryParent)
 	{
-		ClassNode node = new ClassNode();
+		ClassNode node = new ClassNode(temporaryParent);
 		
 		return cloneTo(node);
 	}

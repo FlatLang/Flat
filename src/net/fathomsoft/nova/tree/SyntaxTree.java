@@ -43,7 +43,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:00:15 PM
- * @version	v0.2.6 May 24, 2014 at 6:06:20 PM
+ * @version	v0.2.7 May 25, 2014 at 9:16:48 PM
  */
 public class SyntaxTree
 {
@@ -340,7 +340,7 @@ public class SyntaxTree
 							insertIndex = i;
 						}
 						
-						finallyNode = new FinallyNode();
+						finallyNode = new FinallyNode(parent);
 						parent.addChild(insertIndex, finallyNode);
 					}
 				}
@@ -366,6 +366,10 @@ public class SyntaxTree
 		}
 		// Test for shadowed fields.
 		else if (root instanceof LocalVariableNode)
+		{
+			root.validate();
+		}
+		else if (root instanceof MethodCallNode)
 		{
 			root.validate();
 		}
@@ -716,7 +720,7 @@ public class SyntaxTree
 		 * it in a TreeNode format, if not return null.
 		 * 
 		 * @param source The source String to search in.
-		 * @param offset 
+		 * @param offset The offset in the source file that the statement is.
 		 * @param statementType The character array to use that determines what
 		 * 		type of statements are searched for. Possible options include:
 		 * 		<ul>
@@ -749,7 +753,7 @@ public class SyntaxTree
 				Location location   = new Location(lineNumber, lineOffset, offset2 + offset, offset2 + statement.length() + offset);
 				
 				TreeNode node       = decodeStatement(statement, location, searchTypes);
-
+				
 				updateLineNumber(statementStartIndex, newStatementStartIndex, source);
 				
 				if (node instanceof ExternalStatementNode)
@@ -843,7 +847,7 @@ public class SyntaxTree
 			
 			controller.log("Phase one for '" + filename + "'...");
 			
-			FileNode fileNode = new FileNode();
+			FileNode fileNode = new FileNode(root);
 			fileNode.setName(filename);
 			
 			root.addChild(fileNode);

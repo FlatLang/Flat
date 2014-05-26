@@ -24,17 +24,25 @@ package net.fathomsoft.nova.tree;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 10:01:46 PM
- * @version	v0.2 Apr 3, 2014 at 8:11:40 PM
+ * @version	v0.2.7 May 25, 2014 at 9:16:48 PM
  */
 public class LoopInitializationNode extends TreeNode
 {
 	/**
-	 * @see net.fathomsoft.nova.tree.TreeNode#clone()
+	 * @see net.fathomsoft.nova.tree.TreeNode#TreeNode(TreeNode)
+	 */
+	public LoopInitializationNode(TreeNode temporaryParent)
+	{
+		super(temporaryParent);
+	}
+	
+	/**
+	 * @see net.fathomsoft.nova.tree.TreeNode#clone(TreeNode)
 	 */
 	@Override
-	public LoopInitializationNode clone()
+	public LoopInitializationNode clone(TreeNode temporaryParent)
 	{
-		LoopInitializationNode node = new LoopInitializationNode();
+		LoopInitializationNode node = new LoopInitializationNode(temporaryParent);
 		
 		return cloneTo(node);
 	}

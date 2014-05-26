@@ -33,10 +33,18 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.2.4 Jan 5, 2014 at 9:10:49 PM
- * @version	v0.2.4 May 17, 2014 at 9:55:04 PM
+ * @version	v0.2.7 May 25, 2014 at 9:16:48 PM
  */
 public class LocalDeclarationNode extends LocalVariableNode
 {
+	/**
+	 * @see net.fathomsoft.nova.tree.TreeNode#TreeNode(TreeNode)
+	 */
+	public LocalDeclarationNode(TreeNode temporaryParent)
+	{
+		super(temporaryParent);
+	}
+
 	/**
 	 * Decode the given statement into a LocalDeclarationNode instance, if
 	 * possible. If it is not possible, this method returns null.
@@ -71,7 +79,7 @@ public class LocalDeclarationNode extends LocalVariableNode
 		final boolean setExternal[]   = new boolean[1];
 		final String  oldWord[]       = new String[1];
 			
-		LocalDeclarationNode n = new LocalDeclarationNode()
+		LocalDeclarationNode n = new LocalDeclarationNode(parent)
 		{
 			@Override
 			public void interactWord(String word, int wordNumber, Bounds bounds, int numWords, String leftDelimiter, String rightDelimiter)
@@ -169,29 +177,4 @@ public class LocalDeclarationNode extends LocalVariableNode
 		
 		return n;
 	}
-	
-//	/**
-//	 * @see net.fathomsoft.fathom.tree.TreeNode#clone()
-//	 */
-//	@Override
-//	public LocalDeclarationNode clone()
-//	{
-//		LocalDeclarationNode node = new LocalDeclarationNode();
-//		
-//		return cloneTo(node);
-//	}
-//	
-//	/**
-//	 * Fill the given InstanceDeclarationNode with the data that is in the
-//	 * specified node.
-//	 * 
-//	 * @param node The node to copy the data into.
-//	 * @return The cloned node.
-//	 */
-//	public LocalDeclarationNode cloneTo(LocalDeclarationNode node)
-//	{
-//		super.cloneTo(node);
-//		
-//		return node;
-//	}
 }

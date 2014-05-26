@@ -42,11 +42,19 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Mar 16, 2014 at 1:13:49 AM
- * @version	v0.2.6 May 24, 2014 at 6:06:20 PM
+ * @version	v0.2.7 May 25, 2014 at 9:16:48 PM
  */
 public class VTableNode extends ClassNode
 {
 	public static final String	VTABLE_IDENTIFIER = "vtable";
+	
+	/**
+	 * @see net.fathomsoft.nova.tree.TreeNode#TreeNode(TreeNode)
+	 */
+	public VTableNode(TreeNode temporaryParent)
+	{
+		super(temporaryParent);
+	}
 	
 	/**
 	 * @see net.fathomsoft.nova.tree.TreeNode#generateCHeader()
@@ -188,7 +196,7 @@ public class VTableNode extends ClassNode
 	{
 		if (SyntaxUtils.isArrayInitialization(statement))
 		{
-			VTableNode n = new VTableNode();
+			VTableNode n = new VTableNode(parent);
 			
 			int index = statement.indexOf('[') + 1;
 			
@@ -206,14 +214,14 @@ public class VTableNode extends ClassNode
 				
 				if (SyntaxUtils.isNumber(length))
 				{
-					LiteralNode node = new LiteralNode();
+					LiteralNode node = new LiteralNode(n);
 					node.setValue(length, parent.isWithinExternalContext());
 					
 					n.addChild(node);
 				}
 				else
 				{
-					IdentifierNode node = TreeNode.getExistingNode(parent, length).clone();
+					IdentifierNode node = TreeNode.getExistingNode(parent, length).clone(n);
 					
 					n.addChild(node);
 				}
@@ -226,14 +234,14 @@ public class VTableNode extends ClassNode
 		
 		return null;
 	}
-
+	
 	/**
-	 * @see net.fathomsoft.nova.tree.TreeNode#clone()
+	 * @see net.fathomsoft.nova.tree.TreeNode#clone(TreeNode)
 	 */
 	@Override
-	public VTableNode clone()
+	public VTableNode clone(TreeNode temporaryParent)
 	{
-		VTableNode node = new VTableNode();
+		VTableNode node = new VTableNode(temporaryParent);
 		
 		return cloneTo(node);
 	}

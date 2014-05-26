@@ -27,11 +27,19 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:52:01 PM
- * @version	v0.2.4 May 17, 2014 at 9:55:04 PM
+ * @version	v0.2.7 May 25, 2014 at 9:16:48 PM
  */
 public class ParameterNode extends LocalDeclarationNode
 {
 	private TreeNode	defaultValue;
+	
+	/**
+	 * @see net.fathomsoft.nova.tree.TreeNode#TreeNode(TreeNode)
+	 */
+	public ParameterNode(TreeNode temporaryParent)
+	{
+		super(temporaryParent);
+	}
 	
 	/**
 	 * Get the default value of the parameter, if no value is passed to
@@ -88,7 +96,7 @@ public class ParameterNode extends LocalDeclarationNode
 			builder.append(getConstantText()).append(' ');
 		}
 		
-		builder.append(getType());
+		builder.append(generateCTypeOutput());
 		
 		if (isArray())
 		{
@@ -114,15 +122,6 @@ public class ParameterNode extends LocalDeclarationNode
 		return builder.toString();
 	}
 	
-//	/**
-//	 * @see net.fathomsoft.fathom.tree.TreeNode#generateCSourceFragment()
-//	 */
-//	@Override
-//	public String generateCSourceFragment()
-//	{
-//		return generateUseOutput() + generateChildrenCSourceFragment();
-//	}
-	
 	/**
 	 * Decode the given statement into a ParameterNode instance, if
 	 * possible. If it is not possible, this method returns null.
@@ -147,36 +146,9 @@ public class ParameterNode extends LocalDeclarationNode
 	{
 		LocalDeclarationNode node = LocalDeclarationNode.decodeStatement(parent, statement, location);
 		
-		ParameterNode n = new ParameterNode();
+		ParameterNode n = new ParameterNode(parent);
 		node.cloneTo(n);
 		
 		return n;
 	}
-	
-//	/**
-//	 * @see net.fathomsoft.fathom.tree.TreeNode#clone()
-//	 */
-//	@Override
-//	public ParameterNode clone()
-//	{
-//		ParameterNode node = new ParameterNode();
-//		
-//		return cloneTo(node);
-//	}
-//	
-//	/**
-//	 * Fill the given ParameterNode with the data that is in the
-//	 * specified node.
-//	 * 
-//	 * @param node The node to copy the data into.
-//	 * @return The cloned node.
-//	 */
-//	public ParameterNode cloneTo(ParameterNode node)
-//	{
-//		super.cloneTo(node);
-//		
-//		node.setDefaultValue(getDefaultValue());
-//		
-//		return node;
-//	}
 }

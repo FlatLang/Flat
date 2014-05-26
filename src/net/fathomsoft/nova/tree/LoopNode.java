@@ -26,16 +26,20 @@ import net.fathomsoft.nova.util.Location;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:55:18 PM
- * @version	v0.2 Apr 3, 2014 at 8:13:29 PM
+ * @version	v0.2.7 May 25, 2014 at 9:16:48 PM
  */
 public class LoopNode extends TreeNode
 {
 	/**
 	 * Instantiate a new LoopNode and initialize the default values.
+	 * 
+	 * @see net.fathomsoft.nova.tree.TreeNode#TreeNode(TreeNode)
 	 */
-	public LoopNode()
+	public LoopNode(TreeNode temporaryParent)
 	{
-		ScopeNode scopeNode = new ScopeNode();
+		super(temporaryParent);
+		
+		ScopeNode scopeNode = new ScopeNode(this);
 		
 		super.addChild(scopeNode);
 	}
@@ -56,42 +60,6 @@ public class LoopNode extends TreeNode
 	public void addChild(TreeNode child)
 	{
 		getScopeNode().addChild(child);
-	}
-	
-	/**
-	 * @see net.fathomsoft.nova.tree.TreeNode#generateJavaSource()
-	 */
-	@Override
-	public String generateJavaSource()
-	{
-		return null;
-	}
-
-	/**
-	 * @see net.fathomsoft.nova.tree.TreeNode#generateCHeader()
-	 */
-	@Override
-	public String generateCHeader()
-	{
-		return null;
-	}
-
-	/**
-	 * @see net.fathomsoft.nova.tree.TreeNode#generateCSource()
-	 */
-	@Override
-	public String generateCSource()
-	{
-		return null;
-	}
-	
-	/**
-	 * @see net.fathomsoft.nova.tree.TreeNode#generateCSourceFragment()
-	 */
-	@Override
-	public String generateCSourceFragment()
-	{
-		return null;
 	}
 	
 	/**
@@ -130,14 +98,14 @@ public class LoopNode extends TreeNode
 		
 		return null;
 	}
-
+	
 	/**
-	 * @see net.fathomsoft.nova.tree.TreeNode#clone()
+	 * @see net.fathomsoft.nova.tree.TreeNode#clone(TreeNode)
 	 */
 	@Override
-	public LoopNode clone()
+	public LoopNode clone(TreeNode temporaryParent)
 	{
-		LoopNode node = new LoopNode();
+		LoopNode node = new LoopNode(temporaryParent);
 		
 		return cloneTo(node);
 	}

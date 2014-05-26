@@ -32,10 +32,18 @@ import net.fathomsoft.nova.util.Regex;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Mar 22, 2014 at 11:02:52 PM
- * @version	v0.2.2 Apr 29, 2014 at 7:10:36 PM
+ * @version	v0.2.7 May 25, 2014 at 9:16:48 PM
  */
 public class ThrowNode extends ExceptionHandlingNode
 {
+	/**
+	 * @see net.fathomsoft.nova.tree.TreeNode#TreeNode(TreeNode)
+	 */
+	public ThrowNode(TreeNode temporaryParent)
+	{
+		super(temporaryParent);
+	}
+	
 	/**
 	 * Get the ExceptionNode that contains the information about the type
 	 * of exception that was thrown.
@@ -130,7 +138,7 @@ public class ThrowNode extends ExceptionHandlingNode
 			
 			if (bounds.getStart() > 0)
 			{
-				ThrowNode n          = new ThrowNode();
+				ThrowNode n          = new ThrowNode(parent);
 				
 				Location  newLoc     = new Location(location);
 				newLoc.setBounds(location.getStart() + bounds.getStart(), location.getStart() + bounds.getEnd());
@@ -143,7 +151,7 @@ public class ThrowNode extends ExceptionHandlingNode
 				{
 					IdentifierNode node = (IdentifierNode)thrownNode;
 					
-					ExceptionNode exception = new ExceptionNode();
+					ExceptionNode exception = new ExceptionNode(n);
 					exception.setType(node.getName());
 					
 					n.addChild(exception);
@@ -163,12 +171,12 @@ public class ThrowNode extends ExceptionHandlingNode
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.TreeNode#clone()
+	 * @see net.fathomsoft.nova.tree.TreeNode#clone(TreeNode)
 	 */
 	@Override
-	public ThrowNode clone()
+	public ThrowNode clone(TreeNode temporaryParent)
 	{
-		ThrowNode node = new ThrowNode();
+		ThrowNode node = new ThrowNode(temporaryParent);
 		
 		return cloneTo(node);
 	}

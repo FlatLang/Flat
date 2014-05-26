@@ -31,7 +31,7 @@ import net.fathomsoft.nova.util.Patterns;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:12:04 PM
- * @version	v0.2.4 May 17, 2014 at 9:55:04 PM
+ * @version	v0.2.7 May 25, 2014 at 9:16:48 PM
  */
 public class FieldNode extends InstanceDeclarationNode
 {
@@ -40,6 +40,14 @@ public class FieldNode extends InstanceDeclarationNode
 	 * modified.
 	 */
 	public static final int	VISIBLE	= 4;
+	
+	/**
+	 * @see net.fathomsoft.nova.tree.TreeNode#TreeNode(TreeNode)
+	 */
+	public FieldNode(TreeNode temporaryParent)
+	{
+		super(temporaryParent);
+	}
 	
 	/**
 	 * @see net.fathomsoft.nova.tree.InstanceDeclarationNode#isVisibilityValid()
@@ -201,7 +209,7 @@ public class FieldNode extends InstanceDeclarationNode
 		// The field declaration without the field specific modifiers.
 		final Bounds localDeclaration = new Bounds(-1, -1);
 		
-		FieldNode n = new FieldNode()
+		FieldNode n = new FieldNode(parent)
 		{
 			public void interactWord(String word, int wordNumber, Bounds bounds, int numWords)
 			{
@@ -242,33 +250,14 @@ public class FieldNode extends InstanceDeclarationNode
 		
 		return n;
 	}
-
-//	/**
-//	 * @see net.fathomsoft.fathom.tree.TreeNode#validate()
-//	 */
-//	@Override
-//	public void validate()
-//	{
-//		TreeNode parent = getParent();
-//		
-//		if (parent instanceof ParameterNode)
-//		{
-//			ParameterNode param = (ParameterNode)parent;
-//			
-//			if (param.getName().equals("this"))
-//			{
-//				param.getParent().replace(param, this);
-//			}
-//		}
-//	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.TreeNode#clone()
+	 * @see net.fathomsoft.nova.tree.TreeNode#clone(TreeNode)
 	 */
 	@Override
-	public FieldNode clone()
+	public FieldNode clone(TreeNode temporaryParent)
 	{
-		FieldNode node = new FieldNode();
+		FieldNode node = new FieldNode(temporaryParent);
 		
 		return cloneTo(node);
 	}

@@ -37,10 +37,18 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:20:35 PM
- * @version	v0.2.6 May 24, 2014 at 6:06:20 PM
+ * @version	v0.2.7 May 25, 2014 at 9:16:48 PM
  */
 public class BinaryOperatorNode extends TreeNode
 {
+	/**
+	 * @see net.fathomsoft.nova.tree.TreeNode#TreeNode(TreeNode)
+	 */
+	public BinaryOperatorNode(TreeNode temporaryParent)
+	{
+		super(temporaryParent);
+	}
+
 	/**
 	 * @see net.fathomsoft.nova.tree.TreeNode#generateJavaSource()
 	 */
@@ -253,7 +261,7 @@ public class BinaryOperatorNode extends TreeNode
 		
 		if (operatorLoc.getStart() >= 0)
 		{
-			BinaryOperatorNode node = new BinaryOperatorNode();
+			BinaryOperatorNode node = new BinaryOperatorNode(parent);
 			node.setLocationIn(location);
 			
 			Bounds lhb = new Bounds(0, StringUtils.findNextNonWhitespaceIndex(statement, operatorLoc.getStart() - 1, -1) + 1);
@@ -296,7 +304,7 @@ public class BinaryOperatorNode extends TreeNode
 			
 			String operatorVal = statement.substring(operatorLoc.getStart(), operatorLoc.getEnd());
 			
-			OperatorNode operator = new OperatorNode();
+			OperatorNode operator = new OperatorNode(node);
 			operator.setOperator(operatorVal);
 			node.addChild(operator);
 			
@@ -393,7 +401,7 @@ public class BinaryOperatorNode extends TreeNode
 	{
 		if (SyntaxUtils.isLiteral(statement))
 		{
-			LiteralNode literal = new LiteralNode();
+			LiteralNode literal = new LiteralNode(parent);
 			
 			literal.setValue(statement, parent.isWithinExternalContext());
 			
@@ -403,7 +411,7 @@ public class BinaryOperatorNode extends TreeNode
 		{
 			String value = statement.substring(statement.indexOf('.') + 1);
 		
-			LiteralNode node = new LiteralNode();
+			LiteralNode node = new LiteralNode(parent);
 			node.setValue(value, parent.isWithinExternalContext());
 			
 			return node;
@@ -485,9 +493,11 @@ public class BinaryOperatorNode extends TreeNode
 					}
 					else if (nonString instanceof ValueNode)
 					{
-						ValueNode value = (ValueNode)nonString;
+						ValueNode      value    = (ValueNode)nonString;
 						
-						if (value.getAccessedNode().isPrimitive())
+						IdentifierNode accessed = value.getLastAccessedNode();
+						
+						if ((accessed == null || accessed.isPrimitive()) || accessed.isPrimitive())
 						{
 							InstantiationNode autobox = SyntaxUtils.autoboxPrimitive(parent, value);
 							
@@ -525,12 +535,12 @@ public class BinaryOperatorNode extends TreeNode
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.TreeNode#clone()
+	 * @see net.fathomsoft.nova.tree.TreeNode#clone(TreeNode)
 	 */
 	@Override
-	public BinaryOperatorNode clone()
+	public BinaryOperatorNode clone(TreeNode temporaryParent)
 	{
-		BinaryOperatorNode node = new BinaryOperatorNode();
+		BinaryOperatorNode node = new BinaryOperatorNode(temporaryParent);
 		
 		return cloneTo(node);
 	}

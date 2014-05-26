@@ -30,16 +30,20 @@ import net.fathomsoft.nova.util.Regex;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:55:15 PM
- * @version	v0.2.4 May 17, 2014 at 9:55:04 PM
+ * @version	v0.2.7 May 25, 2014 at 9:16:48 PM
  */
 public class ForLoopNode extends LoopNode
 {
 	/**
 	 * Instantiate a new ForLoopNode and initialize its default values.
+	 * 
+	 * @see net.fathomsoft.nova.tree.TreeNode#TreeNode(TreeNode)
 	 */
-	public ForLoopNode()
+	public ForLoopNode(TreeNode temporaryParent)
 	{
-		ArgumentListNode argumentsNode = new ArgumentListNode();
+		super(temporaryParent);
+		
+		ArgumentListNode argumentsNode = new ArgumentListNode(this);
 		
 		addChild(1, argumentsNode);
 	}
@@ -174,7 +178,7 @@ public class ForLoopNode extends LoopNode
 	{
 		if (Regex.matches(statement, 0, Patterns.PRE_FOR))
 		{
-			ForLoopNode n = new ForLoopNode();
+			ForLoopNode n = new ForLoopNode(parent);
 			
 			Bounds bounds = Regex.boundsOf(statement, Patterns.FOR_CONTENTS);
 			
@@ -234,12 +238,12 @@ public class ForLoopNode extends LoopNode
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.TreeNode#clone()
+	 * @see net.fathomsoft.nova.tree.TreeNode#clone(TreeNode)
 	 */
 	@Override
-	public ForLoopNode clone()
+	public ForLoopNode clone(TreeNode temporaryParent)
 	{
-		ForLoopNode node = new ForLoopNode();
+		ForLoopNode node = new ForLoopNode(temporaryParent);
 		
 		return cloneTo(node);
 	}

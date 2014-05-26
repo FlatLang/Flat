@@ -27,11 +27,19 @@ import net.fathomsoft.nova.util.StringUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.2.1 Apr 27, 2014 at 11:14:20 PM
- * @version	v0.2.4 May 17, 2014 at 9:55:04 PM
+ * @version	v0.2.7 May 25, 2014 at 9:16:48 PM
  */
 public class ExternalStatementNode extends TreeNode
 {
 	private String	data;
+	
+	/**
+	 * @see net.fathomsoft.nova.tree.TreeNode#TreeNode(TreeNode)
+	 */
+	public ExternalStatementNode(TreeNode temporaryParent)
+	{
+		super(temporaryParent);
+	}
 	
 	/**
 	 * Set the data that the external statement contains.<br>
@@ -109,7 +117,7 @@ public class ExternalStatementNode extends TreeNode
 	{
 		if (Regex.matches(statement, Patterns.EXTERNAL))
 		{
-			ExternalStatementNode n = new ExternalStatementNode();
+			ExternalStatementNode n = new ExternalStatementNode(parent);
 			
 			return n;
 		}
@@ -118,12 +126,12 @@ public class ExternalStatementNode extends TreeNode
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.TreeNode#clone()
+	 * @see net.fathomsoft.nova.tree.TreeNode#clone(TreeNode)
 	 */
 	@Override
-	public ExternalStatementNode clone()
+	public ExternalStatementNode clone(TreeNode temporaryParent)
 	{
-		ExternalStatementNode node = new ExternalStatementNode();
+		ExternalStatementNode node = new ExternalStatementNode(temporaryParent);
 		
 		return cloneTo(node);
 	}

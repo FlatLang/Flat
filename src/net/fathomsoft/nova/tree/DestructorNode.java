@@ -34,10 +34,18 @@ import net.fathomsoft.nova.util.StringUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:50:43 PM
- * @version	v0.2.6 May 24, 2014 at 6:06:20 PM
+ * @version	v0.2.7 May 25, 2014 at 9:16:48 PM
  */
 public class DestructorNode extends MethodNode
 {
+	/**
+	 * @see net.fathomsoft.nova.tree.TreeNode#TreeNode(TreeNode)
+	 */
+	public DestructorNode(TreeNode temporaryParent)
+	{
+		super(temporaryParent);
+	}
+	
 	/**
 	 * @see net.fathomsoft.nova.tree.TreeNode#generateCHeader()
 	 */
@@ -278,7 +286,7 @@ public class DestructorNode extends MethodNode
 			
 			final String signature = statement.substring(0, firstParenthIndex);
 			
-			DestructorNode n = new DestructorNode()
+			DestructorNode n = new DestructorNode(parent)
 			{
 				public void interactWord(String word, int wordNumber, Bounds bounds, int numWords)
 				{
@@ -323,12 +331,12 @@ public class DestructorNode extends MethodNode
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.TreeNode#clone()
+	 * @see net.fathomsoft.nova.tree.TreeNode#clone(TreeNode)
 	 */
 	@Override
-	public DestructorNode clone()
+	public DestructorNode clone(TreeNode temporaryParent)
 	{
-		DestructorNode node = new DestructorNode();
+		DestructorNode node = new DestructorNode(temporaryParent);
 		
 		return cloneTo(node);
 	}

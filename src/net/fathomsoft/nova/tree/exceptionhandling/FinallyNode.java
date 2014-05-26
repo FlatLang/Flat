@@ -29,26 +29,16 @@ import net.fathomsoft.nova.util.Regex;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Mar 22, 2014 at 4:02:21 PM
- * @version	v0.2 Apr 7, 2014 at 7:58:42 PM
+ * @version	v0.2.7 May 25, 2014 at 9:16:48 PM
  */
 public class FinallyNode extends ExceptionHandlingNode
 {
 	/**
-	 * @see net.fathomsoft.nova.tree.TreeNode#generateJavaSource()
+	 * @see net.fathomsoft.nova.tree.TreeNode#TreeNode(TreeNode)
 	 */
-	@Override
-	public String generateJavaSource()
+	public FinallyNode(TreeNode temporaryParent)
 	{
-		return null;
-	}
-	
-	/**
-	 * @see net.fathomsoft.nova.tree.TreeNode#generateCHeader()
-	 */
-	@Override
-	public String generateCHeader()
-	{
-		return null;
+		super(temporaryParent);
 	}
 	
 	/**
@@ -76,15 +66,6 @@ public class FinallyNode extends ExceptionHandlingNode
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.TreeNode#generateCSourceFragment()
-	 */
-	@Override
-	public String generateCSourceFragment()
-	{
-		return null;
-	}
-	
-	/**
 	 * Decode the given statement into a FinallyNode instance, if
 	 * possible. If it is not possible, this method returns null.
 	 * <br>
@@ -101,7 +82,7 @@ public class FinallyNode extends ExceptionHandlingNode
 	{
 		if (Regex.matches(statement, 0, Patterns.FINALLY))
 		{
-			FinallyNode n = new FinallyNode();
+			FinallyNode n = new FinallyNode(parent);
 			
 			return n;
 		}
@@ -110,12 +91,12 @@ public class FinallyNode extends ExceptionHandlingNode
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.TreeNode#clone()
+	 * @see net.fathomsoft.nova.tree.TreeNode#clone(TreeNode)
 	 */
 	@Override
-	public FinallyNode clone()
+	public FinallyNode clone(TreeNode temporaryParent)
 	{
-		FinallyNode node = new FinallyNode();
+		FinallyNode node = new FinallyNode(temporaryParent);
 		
 		return cloneTo(node);
 	}

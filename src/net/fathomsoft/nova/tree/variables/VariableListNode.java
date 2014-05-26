@@ -24,10 +24,18 @@ import net.fathomsoft.nova.tree.TreeNode;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 9, 2014 at 4:19:57 PM
- * @version	v0.2.4 May 17, 2014 at 9:55:04 PM
+ * @version	v0.2.7 May 25, 2014 at 9:16:48 PM
  */
 public class VariableListNode extends TreeNode
 {
+	/**
+	 * @see net.fathomsoft.nova.tree.TreeNode#TreeNode(TreeNode)
+	 */
+	public VariableListNode(TreeNode temporaryParent)
+	{
+		super(temporaryParent);
+	}
+	
 	/**
 	 * Get whether or not there is a VaraibleNode within the list with
 	 * the given name.
@@ -137,12 +145,12 @@ public class VariableListNode extends TreeNode
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.TreeNode#clone()
+	 * @see net.fathomsoft.nova.tree.TreeNode#clone(TreeNode)
 	 */
 	@Override
-	public VariableListNode clone()
+	public VariableListNode clone(TreeNode temporaryParent)
 	{
-		VariableListNode node = new VariableListNode();
+		VariableListNode node = new VariableListNode(temporaryParent);
 		
 		return cloneTo(node);
 	}

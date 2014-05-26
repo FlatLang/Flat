@@ -27,19 +27,21 @@ import net.fathomsoft.nova.tree.TreeNode;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 10:00:50 PM
- * @version	v0.2.6 May 24, 2014 at 6:06:20 PM
+ * @version	v0.2.7 May 25, 2014 at 9:16:48 PM
  */
 public class FieldListNode extends TreeNode
 {
 	/**
 	 * Instantiate and initialize default data.
 	 */
-	public FieldListNode()
+	public FieldListNode(TreeNode temporaryParent)
 	{
-		InstanceFieldListNode privateFields       = new InstanceFieldListNode();
-		InstanceFieldListNode publicFields        = new InstanceFieldListNode();
-		StaticFieldListNode   privateStaticFields = new StaticFieldListNode();
-		StaticFieldListNode   publicStaticFields  = new StaticFieldListNode();
+		super(temporaryParent);
+		
+		InstanceFieldListNode privateFields       = new InstanceFieldListNode(this);
+		InstanceFieldListNode publicFields        = new InstanceFieldListNode(this);
+		StaticFieldListNode   privateStaticFields = new StaticFieldListNode(this);
+		StaticFieldListNode   publicStaticFields  = new StaticFieldListNode(this);
 		
 		super.addChild(privateFields);
 		super.addChild(publicFields);
@@ -290,12 +292,12 @@ public class FieldListNode extends TreeNode
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.TreeNode#clone()
+	 * @see net.fathomsoft.nova.tree.TreeNode#clone(TreeNode)
 	 */
 	@Override
-	public FieldListNode clone()
+	public FieldListNode clone(TreeNode temporaryParent)
 	{
-		FieldListNode node = new FieldListNode();
+		FieldListNode node = new FieldListNode(temporaryParent);
 		
 		return cloneTo(node);
 	}

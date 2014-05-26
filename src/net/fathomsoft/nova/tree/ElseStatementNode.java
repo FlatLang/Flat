@@ -29,17 +29,21 @@ import net.fathomsoft.nova.util.Regex;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:57:13 PM
- * @version	v0.2.5 May 22, 2014 at 2:56:28 PM
+ * @version	v0.2.7 May 25, 2014 at 9:16:48 PM
  */
 public class ElseStatementNode extends TreeNode
 {
 	/**
 	 * Instantiate a new ElseStatementNode and initialize the default
 	 * values.
+	 * 
+	 * @see net.fathomsoft.nova.tree.TreeNode#TreeNode(TreeNode)
 	 */
-	public ElseStatementNode()
+	public ElseStatementNode(TreeNode temporaryParent)
 	{
-		ScopeNode scopeNode = new ScopeNode();
+		super(temporaryParent);
+		
+		ScopeNode scopeNode = new ScopeNode(this);
 		
 		addChild(scopeNode);
 	}
@@ -165,7 +169,7 @@ public class ElseStatementNode extends TreeNode
 		
 		if (bounds.getStart() == 0)
 		{
-			ElseStatementNode n  = new ElseStatementNode();
+			ElseStatementNode n  = new ElseStatementNode(parent);
 			
 			String   ending      = statement.substring(bounds.getEnd());
 			
@@ -187,14 +191,14 @@ public class ElseStatementNode extends TreeNode
 		
 		return null;
 	}
-
+	
 	/**
-	 * @see net.fathomsoft.nova.tree.TreeNode#clone()
+	 * @see net.fathomsoft.nova.tree.TreeNode#clone(TreeNode)
 	 */
 	@Override
-	public ElseStatementNode clone()
+	public ElseStatementNode clone(TreeNode temporaryParent)
 	{
-		ElseStatementNode node = new ElseStatementNode();
+		ElseStatementNode node = new ElseStatementNode(temporaryParent);
 		
 		return cloneTo(node);
 	}

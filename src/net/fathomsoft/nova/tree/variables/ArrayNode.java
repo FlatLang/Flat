@@ -42,10 +42,18 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Mar 16, 2014 at 1:13:49 AM
- * @version	v0.2.6 May 24, 2014 at 6:06:20 PM
+ * @version	v0.2.7 May 25, 2014 at 9:16:48 PM
  */
 public class ArrayNode extends VariableNode
 {
+	/**
+	 * @see net.fathomsoft.nova.tree.TreeNode#TreeNode(TreeNode)
+	 */
+	public ArrayNode(TreeNode temporaryParent)
+	{
+		super(temporaryParent);
+	}
+	
 	/**
 	 * @see net.fathomsoft.nova.tree.TreeNode#generateCSource()
 	 */
@@ -117,7 +125,7 @@ public class ArrayNode extends VariableNode
 	{
 		if (SyntaxUtils.isArrayInitialization(statement))
 		{
-			ArrayNode n = new ArrayNode();
+			ArrayNode n = new ArrayNode(parent);
 			
 			int index = statement.indexOf('[') + 1;
 			
@@ -139,7 +147,7 @@ public class ArrayNode extends VariableNode
 				
 				if (SyntaxUtils.isNumber(length))
 				{
-					LiteralNode node = new LiteralNode();
+					LiteralNode node = new LiteralNode(n);
 					node.setValue(length, parent.isWithinExternalContext());
 					
 					n.addChild(node);
@@ -163,7 +171,7 @@ public class ArrayNode extends VariableNode
 					}
 					else
 					{
-						node = node.clone();
+						node = node.clone(n);
 					}
 					
 					n.addChild(node);
@@ -177,14 +185,14 @@ public class ArrayNode extends VariableNode
 		
 		return null;
 	}
-
+	
 	/**
-	 * @see net.fathomsoft.nova.tree.TreeNode#clone()
+	 * @see net.fathomsoft.nova.tree.TreeNode#clone(TreeNode)
 	 */
 	@Override
-	public ArrayNode clone()
+	public ArrayNode clone(TreeNode temporaryParent)
 	{
-		ArrayNode node = new ArrayNode();
+		ArrayNode node = new ArrayNode(temporaryParent);
 		
 		return cloneTo(node);
 	}

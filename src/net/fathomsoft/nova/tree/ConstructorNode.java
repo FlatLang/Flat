@@ -33,15 +33,19 @@ import net.fathomsoft.nova.util.StringUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:50:47 PM
- * @version	v0.2.6 May 24, 2014 at 6:06:20 PM
+ * @version	v0.2.7 May 25, 2014 at 9:16:48 PM
  */
 public class ConstructorNode extends MethodNode
 {
 	/**
 	 * Create a ConstructorNode and initialize default values.
+	 * 
+	 * @see net.fathomsoft.nova.tree.TreeNode#TreeNode(TreeNode)
 	 */
-	public ConstructorNode()
+	public ConstructorNode(TreeNode temporaryParent)
 	{
+		super(temporaryParent);
+		
 		setPointer(true);
 	}
 	
@@ -339,7 +343,7 @@ public class ConstructorNode extends MethodNode
 			
 			statement = statement.substring(0, firstParenthIndex);
 			
-			ConstructorNode n = new ConstructorNode()
+			ConstructorNode n = new ConstructorNode(parent)
 			{
 				public void interactWord(String word, int wordNumber, Bounds bounds, int numWords)
 				{
@@ -382,12 +386,12 @@ public class ConstructorNode extends MethodNode
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.TreeNode#clone()
+	 * @see net.fathomsoft.nova.tree.TreeNode#clone(TreeNode)
 	 */
 	@Override
-	public ConstructorNode clone()
+	public ConstructorNode clone(TreeNode temporaryParent)
 	{
-		ConstructorNode node = new ConstructorNode();
+		ConstructorNode node = new ConstructorNode(temporaryParent);
 		
 		return cloneTo(node);
 	}

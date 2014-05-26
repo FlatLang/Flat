@@ -27,11 +27,19 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 10:34:30 PM
- * @version	v0.2.4 May 17, 2014 at 9:55:04 PM
+ * @version	v0.2.7 May 25, 2014 at 9:16:48 PM
  */
 public class LiteralNode extends TreeNode
 {
 	private String	value;
+	
+	/**
+	 * @see net.fathomsoft.nova.tree.TreeNode#TreeNode(TreeNode)
+	 */
+	public LiteralNode(TreeNode temporaryParent)
+	{
+		super(temporaryParent);
+	}
 	
 	/**
 	 * Get the value of the literal.
@@ -143,14 +151,14 @@ public class LiteralNode extends TreeNode
 		
 		return value;
 	}
-
+	
 	/**
-	 * @see net.fathomsoft.nova.tree.TreeNode#clone()
+	 * @see net.fathomsoft.nova.tree.TreeNode#clone(TreeNode)
 	 */
 	@Override
-	public LiteralNode clone()
+	public LiteralNode clone(TreeNode temporaryParent)
 	{
-		LiteralNode node = new LiteralNode();
+		LiteralNode node = new LiteralNode(temporaryParent);
 		
 		return cloneTo(node);
 	}

@@ -26,7 +26,7 @@ import net.fathomsoft.nova.tree.variables.VariableNode;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:10:49 PM
- * @version	v0.2.4 May 17, 2014 at 9:55:04 PM
+ * @version	v0.2.7 May 25, 2014 at 9:16:48 PM
  */
 public class InstanceDeclarationNode extends VariableNode
 {
@@ -55,9 +55,13 @@ public class InstanceDeclarationNode extends VariableNode
 	/**
 	 * Instantiate a new InstanceDeclarationNode and initialize the default
 	 * values.
+	 * 
+	 * @see net.fathomsoft.nova.tree.TreeNode#TreeNode(TreeNode)
 	 */
-	public InstanceDeclarationNode()
+	public InstanceDeclarationNode(TreeNode temporaryParent)
 	{
+		super(temporaryParent);
+		
 		setVisibility(PRIVATE);
 	}
 	
@@ -290,24 +294,6 @@ public class InstanceDeclarationNode extends VariableNode
 	{
 		StringBuilder builder = new StringBuilder();
 		
-//		if (isVisibilityValid())
-//		{
-//			if (getVisibility() == PRIVATE)
-//			{
-//				return "";
-//			}
-//			
-//			builder.append(getVisibilityText()).append(' ');
-//		}
-//		if (isStatic())
-//		{
-//			builder.append(getStaticText()).append(' ');
-//		}
-//		if (isConst())
-//		{
-//			builder.append(getConstText()).append(' ');
-//		}
-		
 		builder.append(getType());
 		
 		if (isReference())
@@ -329,21 +315,16 @@ public class InstanceDeclarationNode extends VariableNode
 		
 		builder.append(' ').append(getName());
 		
-//		if (!isPrimitiveType())
-//		{
-//			builder.append(" = 0;");
-//		}
-		
 		return builder.toString();
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.TreeNode#clone()
+	 * @see net.fathomsoft.nova.tree.TreeNode#clone(TreeNode)
 	 */
 	@Override
-	public InstanceDeclarationNode clone()
+	public InstanceDeclarationNode clone(TreeNode temporaryParent)
 	{
-		InstanceDeclarationNode node = new InstanceDeclarationNode();
+		InstanceDeclarationNode node = new InstanceDeclarationNode(temporaryParent);
 		
 		return cloneTo(node);
 	}

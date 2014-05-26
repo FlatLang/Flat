@@ -30,10 +30,18 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:19:44 PM
- * @version	v0.2.6 May 24, 2014 at 6:06:20 PM
+ * @version	v0.2.7 May 25, 2014 at 9:16:48 PM
  */
 public class AssignmentNode extends TreeNode
 {
+	/**
+	 * @see net.fathomsoft.nova.tree.TreeNode#TreeNode(TreeNode)
+	 */
+	public AssignmentNode(TreeNode temporaryParent)
+	{
+		super(temporaryParent);
+	}
+
 	/**
 	 * Get the node that stores the variable that is having its value
 	 * assigned. In other words, the left hand value of the equation.
@@ -178,29 +186,36 @@ public class AssignmentNode extends TreeNode
 			return null;
 		}
 		
-		VariableNode accessed = varNode.getAccessedNode();
+		IdentifierNode id = varNode.getLastAccessedNode();
 		
-		if (accessed.isAccessed() && accessed instanceof FieldNode)
+		if (id instanceof VariableNode)
 		{
-			ProgramNode program = parent.getProgramNode();
+			VariableNode accessed = (VariableNode)id;
 			
-			FieldNode   field   = (FieldNode)accessed.getDeclaration(program);
-			
-			if (field.getVisibility() == FieldNode.VISIBLE)
+			if (accessed != null && accessed.isAccessed() && accessed instanceof FieldNode)
 			{
-				ClassNode declaringClass = field.getDeclaringClassNode(program);
-				ClassNode thisClass      = (ClassNode)parent.getAncestorOfType(ClassNode.class, true);
+				ProgramNode program = parent.getProgramNode();
 				
-				if (declaringClass != thisClass)
+				FieldNode   field   = (FieldNode)accessed.getDeclaration(program);
+				
+				if (field.getVisibility() == FieldNode.VISIBLE)
 				{
-					SyntaxMessage.error("The value of Field '" + field.getName() + "' cannot be modified", parent.getFileNode(), location, parent.getController());
+					ClassNode declaringClass = field.getDeclaringClassNode(program);
+					ClassNode thisClass      = (ClassNode)parent.getAncestorOfType(ClassNode.class, true);
 					
-					return null;
+					if (declaringClass != thisClass)
+					{
+						SyntaxMessage.error("The value of Field '" + field.getName() + "' cannot be modified", parent.getFileNode(), location, parent.getController());
+						
+						return null;
+					}
 				}
 			}
 		}
 		
 		varNode.setLocationIn(varLoc);
+		
+		AssignmentNode n = new AssignmentNode(parent);
 		
 		if (addDeclaration)
 		{
@@ -216,13 +231,11 @@ public class AssignmentNode extends TreeNode
 					{
 						scope.addChild(varNode);
 						
-						varNode = var.clone();
+						varNode = var.clone(n);
 					}
 				}
 			}
 		}
-		
-		AssignmentNode n = new AssignmentNode();
 		
 		n.addChild(varNode);
 		
@@ -294,7 +307,7 @@ public class AssignmentNode extends TreeNode
 				rhs = rhs.substring(rhs.indexOf('.') + 1);
 			}
 			
-			LiteralNode node = new LiteralNode();
+			LiteralNode node = new LiteralNode(parent);
 			node.setValue(rhs, parent.isWithinExternalContext());
 			
 			child = node;
@@ -302,14 +315,14 @@ public class AssignmentNode extends TreeNode
 		
 		return child;
 	}
-
+	
 	/**
-	 * @see net.fathomsoft.nova.tree.TreeNode#clone()
+	 * @see net.fathomsoft.nova.tree.TreeNode#clone(TreeNode)
 	 */
 	@Override
-	public AssignmentNode clone()
+	public AssignmentNode clone(TreeNode temporaryParent)
 	{
-		AssignmentNode node = new AssignmentNode();
+		AssignmentNode node = new AssignmentNode(temporaryParent);
 		
 		return cloneTo(node);
 	}

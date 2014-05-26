@@ -25,10 +25,18 @@ import net.fathomsoft.nova.util.Location;
  * 
  * @author	Braden Steffaniak
  * @since	v0.2.4 May 8, 2014 at 6:55:51 PM
- * @version	v0.2.4 May 17, 2014 at 9:55:04 PM
+ * @version	v0.2.7 May 25, 2014 at 9:16:48 PM
  */
 public class ExternalTypeNode extends IdentifierNode
 {
+	/**
+	 * @see net.fathomsoft.nova.tree.TreeNode#TreeNode(TreeNode)
+	 */
+	public ExternalTypeNode(TreeNode temporaryParent)
+	{
+		super(temporaryParent);
+	}
+	
 	/**
 	 * @see net.fathomsoft.nova.tree.TreeNode#generateCSource()
 	 */
@@ -69,7 +77,7 @@ public class ExternalTypeNode extends IdentifierNode
 		
 		if (file.isExternalImport(statement))
 		{
-			ExternalTypeNode n = new ExternalTypeNode();
+			ExternalTypeNode n = new ExternalTypeNode(parent);
 			
 			n.setName(statement);
 			
@@ -80,12 +88,12 @@ public class ExternalTypeNode extends IdentifierNode
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.TreeNode#clone()
+	 * @see net.fathomsoft.nova.tree.TreeNode#clone(TreeNode)
 	 */
 	@Override
-	public ExternalTypeNode clone()
+	public ExternalTypeNode clone(TreeNode temporaryParent)
 	{
-		ExternalTypeNode node = new ExternalTypeNode();
+		ExternalTypeNode node = new ExternalTypeNode(temporaryParent);
 		
 		return cloneTo(node);
 	}

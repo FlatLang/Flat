@@ -31,10 +31,18 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Apr 3, 2014 at 7:53:35 PM
- * @version	v0.2.6 May 24, 2014 at 6:06:20 PM
+ * @version	v0.2.7 May 25, 2014 at 9:16:48 PM
  */
 public class InstantiationNode extends IdentifierNode
 {
+	/**
+	 * @see net.fathomsoft.nova.tree.TreeNode#TreeNode(TreeNode)
+	 */
+	public InstantiationNode(TreeNode temporaryParent)
+	{
+		super(temporaryParent);
+	}
+	
 	/**
 	 * Get the node represents the type of instance that is being
 	 * instantiated. For example, a method call or an array
@@ -65,6 +73,19 @@ public class InstantiationNode extends IdentifierNode
 	}
 	
 	/**
+	 * @see net.fathomsoft.nova.tree.ValueNode#getAccessedNode()
+	 */
+	public IdentifierNode getAccessedNode()
+	{
+		if (getChildren().size() <= 1)
+		{
+			return null;
+		}
+		
+		return (IdentifierNode)getChild(1);
+	}
+	
+	/**
 	 * @see net.fathomsoft.nova.tree.TreeNode#generateCSource()
 	 */
 	@Override
@@ -79,6 +100,11 @@ public class InstantiationNode extends IdentifierNode
 	@Override
 	public String generateCSourceFragment()
 	{
+		if (isSpecialFragment())
+		{
+			return generateSpecialFragment();
+		}
+		
 		StringBuilder builder = new StringBuilder();
 		
 		for (int i = 0; i < getChildren().size(); i++)
@@ -112,7 +138,7 @@ public class InstantiationNode extends IdentifierNode
 	{
 		if (SyntaxUtils.isInstantiation(statement))
 		{
-			InstantiationNode n = new InstantiationNode();
+			InstantiationNode n = new InstantiationNode(parent);
 			
 			int startIndex  = Regex.indexOf(statement, Patterns.POST_INSTANTIATION);
 			
@@ -158,25 +184,35 @@ public class InstantiationNode extends IdentifierNode
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.TreeNode#generateNovaInput()
+	 * @see net.fathomsoft.nova.tree.TreeNode#generateNovaInput(boolean)
 	 */
 	@Override
-	public String generateNovaInput()
+	public String generateNovaInput(boolean outputChildren)
 	{
 		StringBuilder builder = new StringBuilder();
 		
 		builder.append("new ").append(getIdentifierNode().generateNovaInput());
 		
+		if (outputChildren)
+		{
+			IdentifierNode accessed = getAccessedNode();
+			
+			if (accessed != null)
+			{
+				builder.append('.').append(accessed.generateNovaInput());
+			}
+		}
+		
 		return builder.toString();
 	}
-
+	
 	/**
-	 * @see net.fathomsoft.nova.tree.TreeNode#clone()
+	 * @see net.fathomsoft.nova.tree.TreeNode#clone(TreeNode)
 	 */
 	@Override
-	public InstantiationNode clone()
+	public InstantiationNode clone(TreeNode temporaryParent)
 	{
-		InstantiationNode node = new InstantiationNode();
+		InstantiationNode node = new InstantiationNode(temporaryParent);
 		
 		return cloneTo(node);
 	}

@@ -33,7 +33,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 10:04:31 PM
- * @version	v0.2.6 May 24, 2014 at 6:06:20 PM
+ * @version	v0.2.7 May 25, 2014 at 9:16:48 PM
  */
 public class MethodCallNode extends IdentifierNode
 {
@@ -41,10 +41,14 @@ public class MethodCallNode extends IdentifierNode
 	
 	/**
 	 * Instantiate a new MethodCallNode and initialize the default values.
+	 * 
+	 * @see net.fathomsoft.nova.tree.TreeNode#TreeNode(TreeNode)
 	 */
-	public MethodCallNode()
+	public MethodCallNode(TreeNode temporaryParent)
 	{
-		ArgumentListNode arguments = new ArgumentListNode();
+		super(temporaryParent);
+		
+		ArgumentListNode arguments = new ArgumentListNode(this);
 		
 		addChild(arguments);
 	}
@@ -132,9 +136,7 @@ public class MethodCallNode extends IdentifierNode
 		
 		ValueNode  val    = getReferenceNode(parent);
 		
-		String     type   = StringUtils.trimToIdentifier(val.getType());
-		
-		ClassNode  clazz  = program.getClass(type);
+		ClassNode  clazz  = val.getTypeClass();
 		
 		MethodNode method = clazz.getMethod(getName());
 		
@@ -336,7 +338,7 @@ public class MethodCallNode extends IdentifierNode
 			
 			final boolean error[] = new boolean[1];
 			
-			MethodCallNode n = new MethodCallNode()
+			MethodCallNode n = new MethodCallNode(parent)
 			{
 				public void interactWord(String word, int wordNumber, Bounds bounds, int numWords, String leftDelimiter, String rightDelimiter)
 				{
@@ -363,7 +365,7 @@ public class MethodCallNode extends IdentifierNode
 			}
 			
 			FileNode     file     = parent.getFileNode();
-			MethodNode   method   = n.getMethodNode(parent);
+			MethodNode   method   = n.getMethodNode();
 			MethodNode   context  = (MethodNode)parent.getAncestorOfType(MethodNode.class, true);
 			VariableNode accessor = context.getClassNode();
 			
@@ -478,7 +480,7 @@ public class MethodCallNode extends IdentifierNode
 				
 				if (arg == null && SyntaxUtils.isLiteral(argument))
 				{
-					LiteralNode literal = new LiteralNode();
+					LiteralNode literal = new LiteralNode(parent);
 					literal.setValue(argument, parent.isWithinExternalContext());
 					
 					arg = literal;
@@ -507,7 +509,7 @@ public class MethodCallNode extends IdentifierNode
 				}
 				if (arg == null && parent.isWithinExternalContext())
 				{
-					LiteralNode literal = new LiteralNode();
+					LiteralNode literal = new LiteralNode(parent);
 					literal.setValue(argument, parent.isWithinExternalContext());
 					
 					arg = literal;
@@ -530,31 +532,24 @@ public class MethodCallNode extends IdentifierNode
 	 * That is, the String that the decoder method decoded to attain
 	 * this node.
 	 * 
+	 * @param outputChildren Whether or not to output the children of the
+	 * 		children of the TreeNode as well.
 	 * @return The String representing the method call in Nova syntax.
 	 */
-	public String generateNovaInput()
+	public String generateNovaInput(boolean outputChildren)
 	{
 		StringBuilder builder = new StringBuilder();
 		
-//		ValueNode value = getReferenceNode();
-//		
-//		if (value instanceof VariableNode)
-//		{
-//			MethodNode method = getMethodNode();
-//			
-//			if (method instanceof ConstructorNode == false)
-//			{
-//				builder.append(value.generateNovaInput()).append('.');
-//			}
-//		}
-		
 		builder.append(getName()).append('(').append(getArgumentListNode().generateNovaInput()).append(')');
 		
-		for (int i = 1; i < getChildren().size(); i++)
+		if (outputChildren)
 		{
-			TreeNode child = getChild(i);
+			IdentifierNode accessed = getAccessedNode();
 			
-			builder.append('.').append(child.generateNovaInput());
+			if (accessed != null)
+			{
+				builder.append('.').append(accessed.generateNovaInput());
+			}
 		}
 		
 		return builder.toString();
@@ -563,23 +558,47 @@ public class MethodCallNode extends IdentifierNode
 	/**
 	 * @see net.fathomsoft.nova.tree.ValueNode#getAccessedNode()
 	 */
-	public ValueNode getAccessedNode()
+	public IdentifierNode getAccessedNode()
 	{
 		if (getChildren().size() <= 1)
 		{
 			return null;
 		}
 		
-		return (ValueNode)getChild(1);
+		return (IdentifierNode)getChild(1);
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.TreeNode#clone()
+	 * @see net.fathomsoft.nova.tree.TreeNode#validate()
 	 */
 	@Override
-	public MethodCallNode clone()
+	public void validate()
 	{
-		MethodCallNode node = new MethodCallNode();
+		ValueNode reference = getReferenceNode();
+		
+		if (reference instanceof VariableNode)
+		{
+			VariableNode var = (VariableNode)reference;
+			
+			if (var.isActiveVariable())
+			{
+				if (var.isPrimitiveType())
+				{
+					InstantiationNode instantiation = SyntaxUtils.autoboxPrimitive(var.getParent(), var);
+					
+					var.getParent().replace(var, instantiation);
+				}
+			}
+		}
+	}
+	
+	/**
+	 * @see net.fathomsoft.nova.tree.TreeNode#clone(TreeNode)
+	 */
+	@Override
+	public MethodCallNode clone(TreeNode temporaryParent)
+	{
+		MethodCallNode node = new MethodCallNode(temporaryParent);
 		
 		return cloneTo(node);
 	}

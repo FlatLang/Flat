@@ -37,7 +37,7 @@ import net.fathomsoft.nova.util.Location;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Apr 6, 2014 at 8:44:35 PM
- * @version	v0.2 Apr 7, 2014 at 8:07:35 PM
+ * @version	v0.2.7 May 25, 2014 at 9:16:48 PM
  */
 public class ExceptionNode extends TreeNode
 {
@@ -46,6 +46,14 @@ public class ExceptionNode extends TreeNode
 	private static int	exceptionId	= 1;
 	
 	private static final HashMap<String, Integer>	ids;
+	
+	/**
+	 * @see net.fathomsoft.nova.tree.TreeNode#TreeNode(TreeNode)
+	 */
+	public ExceptionNode(TreeNode temporaryParent)
+	{
+		super(temporaryParent);
+	}
 	
 	/**
 	 * Identifier for the exception data passed to a method.
@@ -98,48 +106,12 @@ public class ExceptionNode extends TreeNode
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.TreeNode#generateJavaSource()
+	 * @see net.fathomsoft.nova.tree.TreeNode#clone(TreeNode)
 	 */
 	@Override
-	public String generateJavaSource()
+	public ExceptionNode clone(TreeNode temporaryParent)
 	{
-		return null;
-	}
-	
-	/**
-	 * @see net.fathomsoft.nova.tree.TreeNode#generateCHeader()
-	 */
-	@Override
-	public String generateCHeader()
-	{
-		return null;
-	}
-	
-	/**
-	 * @see net.fathomsoft.nova.tree.TreeNode#generateCSource()
-	 */
-	@Override
-	public String generateCSource()
-	{
-		return null;
-	}
-	
-	/**
-	 * @see net.fathomsoft.nova.tree.TreeNode#generateCSourceFragment()
-	 */
-	@Override
-	public String generateCSourceFragment()
-	{
-		return null;
-	}
-	
-	/**
-	 * @see net.fathomsoft.nova.tree.TreeNode#clone()
-	 */
-	@Override
-	public ExceptionNode clone()
-	{
-		ExceptionNode node = new ExceptionNode();
+		ExceptionNode node = new ExceptionNode(temporaryParent);
 		
 		return cloneTo(node);
 	}

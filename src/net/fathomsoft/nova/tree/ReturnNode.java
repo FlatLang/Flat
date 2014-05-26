@@ -29,10 +29,18 @@ import net.fathomsoft.nova.util.Regex;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:58:29 PM
- * @version	v0.2.6 May 24, 2014 at 6:06:20 PM
+ * @version	v0.2.7 May 25, 2014 at 9:16:48 PM
  */
 public class ReturnNode extends ValueNode
 {
+	/**
+	 * @see net.fathomsoft.nova.tree.TreeNode#TreeNode(TreeNode)
+	 */
+	public ReturnNode(TreeNode temporaryParent)
+	{
+		super(temporaryParent);
+	}
+
 	/**
 	 * @see net.fathomsoft.nova.tree.TreeNode#generateJavaSource()
 	 */
@@ -118,7 +126,7 @@ public class ReturnNode extends ValueNode
 	{
 		if (Regex.startsWith(statement, Patterns.PRE_RETURN))
 		{
-			ReturnNode n = new ReturnNode();
+			ReturnNode n = new ReturnNode(parent);
 			
 			MethodNode method = (MethodNode)parent.getAncestorOfType(MethodNode.class, true);
 			n.setType(method.getType());
@@ -133,11 +141,11 @@ public class ReturnNode extends ValueNode
 				newLoc.setLineNumber(location.getLineNumber());
 				newLoc.setBounds(location.getStart() + returnStartIndex, location.getStart() + statement.length());
 				
-				TreeNode child = TreeNode.decodeScopeContents(parent, statement, newLoc);
+				TreeNode child = TreeNode.decodeScopeContents(n, statement, newLoc);
 				
 				if (child == null)
 				{
-					child = BinaryOperatorNode.decodeStatement(parent, statement, location);
+					child = BinaryOperatorNode.decodeStatement(n, statement, location);
 				}
 				if (child == null)
 				{
@@ -165,14 +173,14 @@ public class ReturnNode extends ValueNode
 		
 		return null;
 	}
-
+	
 	/**
-	 * @see net.fathomsoft.nova.tree.TreeNode#clone()
+	 * @see net.fathomsoft.nova.tree.TreeNode#clone(TreeNode)
 	 */
 	@Override
-	public ReturnNode clone()
+	public ReturnNode clone(TreeNode temporaryParent)
 	{
-		ReturnNode node = new ReturnNode();
+		ReturnNode node = new ReturnNode(temporaryParent);
 		
 		return cloneTo(node);
 	}

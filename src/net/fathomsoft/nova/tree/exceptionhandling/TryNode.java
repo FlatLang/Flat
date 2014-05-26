@@ -31,7 +31,7 @@ import net.fathomsoft.nova.util.Regex;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Mar 22, 2014 at 4:01:38 PM
- * @version	v0.2 Apr 7, 2014 at 7:55:12 PM
+ * @version	v0.2.7 May 25, 2014 at 9:16:48 PM
  */
 public class TryNode extends ExceptionHandlingNode
 {
@@ -39,9 +39,13 @@ public class TryNode extends ExceptionHandlingNode
 	
 	/**
 	 * Instantiate and initialize default data.
+	 * 
+	 * @see net.fathomsoft.nova.tree.TreeNode#TreeNode(TreeNode)
 	 */
-	public TryNode()
+	public TryNode(TreeNode temporaryParent)
 	{
+		super(temporaryParent);
+		
 		codes = new ArrayList<Integer>();
 	}
 	
@@ -54,24 +58,6 @@ public class TryNode extends ExceptionHandlingNode
 	public void addExceptionCode(int code)
 	{
 		codes.add(code);
-	}
-	
-	/**
-	 * @see net.fathomsoft.nova.tree.TreeNode#generateJavaSource()
-	 */
-	@Override
-	public String generateJavaSource()
-	{
-		return null;
-	}
-
-	/**
-	 * @see net.fathomsoft.nova.tree.TreeNode#generateCHeader()
-	 */
-	@Override
-	public String generateCHeader()
-	{
-		return null;
 	}
 
 	/**
@@ -94,15 +80,6 @@ public class TryNode extends ExceptionHandlingNode
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.TreeNode#generateCSourceFragment()
-	 */
-	@Override
-	public String generateCSourceFragment()
-	{
-		return null;
-	}
-	
-	/**
 	 * Decode the given statement into a TryNode instance, if
 	 * possible. If it is not possible, this method returns null.
 	 * <br>
@@ -119,7 +96,7 @@ public class TryNode extends ExceptionHandlingNode
 	{
 		if (Regex.matches(statement, 0, Patterns.TRY))
 		{
-			TryNode n = new TryNode();
+			TryNode n = new TryNode(parent);
 			
 			return n;
 		}
@@ -150,12 +127,12 @@ public class TryNode extends ExceptionHandlingNode
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.TreeNode#clone()
+	 * @see net.fathomsoft.nova.tree.TreeNode#clone(TreeNode)
 	 */
 	@Override
-	public TryNode clone()
+	public TryNode clone(TreeNode temporaryParent)
 	{
-		TryNode node = new TryNode();
+		TryNode node = new TryNode(temporaryParent);
 		
 		return cloneTo(node);
 	}

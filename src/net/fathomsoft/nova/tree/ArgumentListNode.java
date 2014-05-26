@@ -27,10 +27,18 @@ import net.fathomsoft.nova.tree.exceptionhandling.ExceptionNode;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 10, 2014 at 3:12:54 AM
- * @version	v0.2.6 May 24, 2014 at 6:06:20 PM
+ * @version	v0.2.7 May 25, 2014 at 9:16:48 PM
  */
 public class ArgumentListNode extends TreeNode
 {
+	/**
+	 * @see net.fathomsoft.nova.tree.TreeNode#TreeNode(TreeNode)
+	 */
+	public ArgumentListNode(TreeNode temporaryParent)
+	{
+		super(temporaryParent);
+	}
+
 	/**
 	 * @see net.fathomsoft.nova.tree.TreeNode#generateJavaSource()
 	 */
@@ -125,14 +133,14 @@ public class ArgumentListNode extends TreeNode
 		
 		return builder.toString();
 	}
-
+	
 	/**
-	 * @see net.fathomsoft.nova.tree.TreeNode#clone()
+	 * @see net.fathomsoft.nova.tree.TreeNode#clone(TreeNode)
 	 */
 	@Override
-	public TreeNode clone()
+	public ArgumentListNode clone(TreeNode temporaryParent)
 	{
-		ArgumentListNode node = new ArgumentListNode();
+		ArgumentListNode node = new ArgumentListNode(temporaryParent);
 		
 		return cloneTo(node);
 	}

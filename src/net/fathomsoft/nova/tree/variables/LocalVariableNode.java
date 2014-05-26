@@ -28,10 +28,18 @@ import net.fathomsoft.nova.util.Location;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:12:00 PM
- * @version	v0.2.6 May 24, 2014 at 6:06:20 PM
+ * @version	v0.2.7 May 25, 2014 at 9:16:48 PM
  */
 public class LocalVariableNode extends VariableNode
 {
+	/**
+	 * @see net.fathomsoft.nova.tree.TreeNode#TreeNode(TreeNode)
+	 */
+	public LocalVariableNode(TreeNode temporaryParent)
+	{
+		super(temporaryParent);
+	}
+
 	/**
 	 * @see net.fathomsoft.nova.tree.TreeNode#validate()
 	 */
@@ -51,7 +59,7 @@ public class LocalVariableNode extends VariableNode
 				
 				if (node instanceof FieldNode)
 				{
-					node = node.clone();
+					node = node.clone(null);
 					
 					node.inheritChildren(var);
 					
@@ -64,12 +72,12 @@ public class LocalVariableNode extends VariableNode
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.TreeNode#clone()
+	 * @see net.fathomsoft.nova.tree.TreeNode#clone(TreeNode)
 	 */
 	@Override
-	public LocalVariableNode clone()
+	public LocalVariableNode clone(TreeNode temporaryParent)
 	{
-		LocalVariableNode node = new LocalVariableNode();
+		LocalVariableNode node = new LocalVariableNode(temporaryParent);
 		
 		return cloneTo(node);
 	}

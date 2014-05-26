@@ -10,7 +10,7 @@ import net.fathomsoft.nova.Nova;
  * 
  * @author	Braden Steffaniak
  * @since	v0.2 Apr 14, 2014 at 11:52:33 PM
- * @version	v0.2.1 Apr 24, 2014 at 4:53:33 PM
+ * @version	v0.2.7 May 25, 2014 at 9:16:48 PM
  */
 public class ProgramNode extends TreeNode
 {
@@ -20,10 +20,14 @@ public class ProgramNode extends TreeNode
 	 * Instantiate and initialize a ProgramNode that contains a reference
 	 * to the compiler's controller.
 	 * 
+	 * @see net.fathomsoft.nova.tree.TreeNode#TreeNode(TreeNode)
+	 * 
 	 * @param controller The controller of the compiler.
 	 */
 	public ProgramNode(Nova controller)
 	{
+		super(null);
+		
 		this.controller = controller;
 	}
 	
@@ -249,10 +253,10 @@ public class ProgramNode extends TreeNode
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.TreeNode#clone()
+	 * @see net.fathomsoft.nova.tree.TreeNode#clone(TreeNode)
 	 */
 	@Override
-	public ProgramNode clone()
+	public ProgramNode clone(TreeNode temporaryParent)
 	{
 		ProgramNode node = new ProgramNode(controller);
 		

@@ -33,13 +33,21 @@ import net.fathomsoft.nova.util.StringUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 10:00:11 PM
- * @version	v0.2.6 May 24, 2014 at 6:06:20 PM
+ * @version	v0.2.7 May 25, 2014 at 9:16:48 PM
  */
 public class UnaryOperatorNode extends TreeNode
 {
 	private static final int	LEFT = -1, EITHER = 0, RIGHT = 1;
 	
 	private static final HashMap<String, Integer>	SIDES;
+	
+	/**
+	 * @see net.fathomsoft.nova.tree.TreeNode#TreeNode(TreeNode)
+	 */
+	public UnaryOperatorNode(TreeNode temporaryParent)
+	{
+		super(temporaryParent);
+	}
 	
 	/**
 	 * Initialize the SIDES HashMap.
@@ -163,11 +171,11 @@ public class UnaryOperatorNode extends TreeNode
 		
 		if (bounds.getStart() >= 0)
 		{
-			UnaryOperatorNode n = new UnaryOperatorNode();
+			UnaryOperatorNode n = new UnaryOperatorNode(parent);
 				
 			String operatorVal  = statement.substring(bounds.getStart(), bounds.getEnd());
 			
-			OperatorNode operator = new OperatorNode();
+			OperatorNode operator = new OperatorNode(n);
 			operator.setOperator(operatorVal);
 			
 			int varStart = 0;
@@ -206,7 +214,7 @@ public class UnaryOperatorNode extends TreeNode
 			
 			if (variable != null)
 			{
-				variable = variable.clone();
+				variable = variable.clone(n);
 				
 				n.addChild(variable);
 				
@@ -225,12 +233,12 @@ public class UnaryOperatorNode extends TreeNode
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.TreeNode#clone()
+	 * @see net.fathomsoft.nova.tree.TreeNode#clone(TreeNode)
 	 */
 	@Override
-	public UnaryOperatorNode clone()
+	public UnaryOperatorNode clone(TreeNode temporaryParent)
 	{
-		UnaryOperatorNode node = new UnaryOperatorNode();
+		UnaryOperatorNode node = new UnaryOperatorNode(temporaryParent);
 		
 		return cloneTo(node);
 	}
