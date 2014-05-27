@@ -49,21 +49,19 @@ void nova_Test_main(ExceptionData* exceptionData, String** nova_Test_args_3)
 		nova_Test_c_3 = 'y';
 		while (nova_Test_c_3 == 'y' || nova_Test_c_3 == 'Y')
 		{
-				long_long nova_Test_start_217;
-				int nova_Test_i_217;
-				long_long nova_Test_end_217;
+				long_long nova_Test_start_230;
+				int nova_Test_i_230;
+				long_long nova_Test_end_230;
 				
-				nova_Test_start_217 = nova_Time_currentTimeMillis(exceptionData);
-				nova_Test_i_217 = 0;
+				nova_Test_start_230 = nova_Time_currentTimeMillis(exceptionData);
+				nova_Test_i_230 = 0;
 				
-				for (; nova_Test_i_217 < 999999; nova_Test_i_217++)
+				for (; nova_Test_i_230 < 999999; nova_Test_i_230++)
 				{
-						String* nova_Test_s_220;
-						
-						nova_Test_s_220 = nova_Integer_toString(nova_Integer_Integer(exceptionData, nova_Test_i_217), exceptionData);
+						nova_Integer_toString(nova_Integer_Integer(exceptionData, nova_Test_i_230), exceptionData);
 				}
-				nova_Test_end_217 = nova_Time_currentTimeMillis(exceptionData);
-				nova_IO_printl(exceptionData, nova_Test_end_217 - nova_Test_start_217);
+				nova_Test_end_230 = nova_Time_currentTimeMillis(exceptionData);
+				nova_IO_printl(exceptionData, nova_Test_end_230 - nova_Test_start_230);
 				nova_IO_println(exceptionData, nova_String_String(exceptionData, ""));
 				nova_IO_print(exceptionData, nova_String_String(exceptionData, "Run again? (Y/N)"));
 				nova_Test_c_3 = nova_IO_getChar(exceptionData);

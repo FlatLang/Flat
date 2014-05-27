@@ -45,52 +45,52 @@ double nova_Math_sqrt(ExceptionData* exceptionData, double nova_Math_number_58)
 	return sqrt(nova_Math_number_58);
 }
 
-double nova_Math_pow(ExceptionData* exceptionData, double nova_Math_base_64, double nova_Math_power_64)
+double nova_Math_pow(ExceptionData* exceptionData, double nova_Math_base_105, double nova_Math_power_105)
 {
-	return pow(nova_Math_base_64, nova_Math_power_64);
+	return pow(nova_Math_base_105, nova_Math_power_105);
 }
 
-double nova_Math_sin(ExceptionData* exceptionData, double nova_Math_number_72)
+double nova_Math_sin(ExceptionData* exceptionData, double nova_Math_number_122)
 {
-	return sin(nova_Math_number_72);
+	return sin(nova_Math_number_122);
 }
 
-double nova_Math_cos(ExceptionData* exceptionData, double nova_Math_number_77)
+double nova_Math_cos(ExceptionData* exceptionData, double nova_Math_number_128)
 {
-	return cos(nova_Math_number_77);
+	return cos(nova_Math_number_128);
 }
 
-double nova_Math_tan(ExceptionData* exceptionData, double nova_Math_number_86)
+double nova_Math_tan(ExceptionData* exceptionData, double nova_Math_number_138)
 {
-	return tan(nova_Math_number_86);
+	return tan(nova_Math_number_138);
 }
 
-double nova_Math_asin(ExceptionData* exceptionData, double nova_Math_number_97)
+double nova_Math_asin(ExceptionData* exceptionData, double nova_Math_number_156)
 {
-	return asin(nova_Math_number_97);
+	return asin(nova_Math_number_156);
 }
 
-double nova_Math_acos(ExceptionData* exceptionData, double nova_Math_number_132)
+double nova_Math_acos(ExceptionData* exceptionData, double nova_Math_number_161)
 {
-	return acos(nova_Math_number_132);
+	return acos(nova_Math_number_161);
 }
 
-double nova_Math_atan(ExceptionData* exceptionData, double nova_Math_number_135)
+double nova_Math_atan(ExceptionData* exceptionData, double nova_Math_number_171)
 {
-	return atan(nova_Math_number_135);
+	return atan(nova_Math_number_171);
 }
 
-long nova_Math_round(ExceptionData* exceptionData, double nova_Math_number_138)
+long nova_Math_round(ExceptionData* exceptionData, double nova_Math_number_179)
 {
-	return nova_Math_floor(exceptionData, nova_Math_number_138 + 0.5);
+	return nova_Math_floor(exceptionData, nova_Math_number_179 + 0.5);
 }
 
-long nova_Math_floor(ExceptionData* exceptionData, double nova_Math_number_159)
+long nova_Math_floor(ExceptionData* exceptionData, double nova_Math_number_183)
 {
-	return floor(nova_Math_number_159);
+	return floor(nova_Math_number_183);
 }
 
-long nova_Math_ceil(ExceptionData* exceptionData, double nova_Math_number_173)
+long nova_Math_ceil(ExceptionData* exceptionData, double nova_Math_number_186)
 {
-	return ceil(nova_Math_number_173);
+	return ceil(nova_Math_number_186);
 }
