@@ -17,7 +17,7 @@ import net.fathomsoft.nova.util.Regex;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:15:51 PM
- * @version	v0.2.7 May 25, 2014 at 9:16:48 PM
+ * @version	v0.2.8 May 26, 2014 at 11:26:58 PM
  */
 public class ClassNode extends InstanceDeclarationNode
 {
@@ -903,7 +903,7 @@ public class ClassNode extends InstanceDeclarationNode
 		{
 			Location loc = new Location();
 			
-			ConstructorNode defaultConstructor = new ConstructorNode(null);
+			ConstructorNode defaultConstructor = new ConstructorNode(this);
 			defaultConstructor.setName(getName());
 			defaultConstructor.setType(getName());
 			defaultConstructor.setVisibility(FieldNode.PUBLIC);
@@ -915,7 +915,7 @@ public class ClassNode extends InstanceDeclarationNode
 		{
 			Location loc = new Location();
 			
-			DestructorNode defaultDestructor = new DestructorNode(null);
+			DestructorNode defaultDestructor = new DestructorNode(this);
 			defaultDestructor.setName(getName());
 			defaultDestructor.setType("void");
 			defaultDestructor.setVisibility(FieldNode.PUBLIC);
