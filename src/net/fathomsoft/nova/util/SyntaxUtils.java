@@ -8,9 +8,12 @@ import net.fathomsoft.nova.tree.FileNode;
 import net.fathomsoft.nova.tree.InstanceDeclarationNode;
 import net.fathomsoft.nova.tree.InstantiationNode;
 import net.fathomsoft.nova.tree.LiteralNode;
+import net.fathomsoft.nova.tree.MethodCallNode;
 import net.fathomsoft.nova.tree.MethodNode;
 import net.fathomsoft.nova.tree.ParameterListNode;
 import net.fathomsoft.nova.tree.ParameterNode;
+import net.fathomsoft.nova.tree.ProgramNode;
+import net.fathomsoft.nova.tree.ReturnNode;
 import net.fathomsoft.nova.tree.TreeNode;
 import net.fathomsoft.nova.tree.ValueNode;
 import net.fathomsoft.nova.tree.variables.FieldNode;
@@ -21,7 +24,7 @@ import net.fathomsoft.nova.tree.variables.VariableNode;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Mar 15, 2014 at 7:55:00 PM
- * @version	v0.2.6 May 24, 2014 at 6:06:20 PM
+ * @version	v0.2.8 May 26, 2014 at 11:26:58 PM
  */
 public class SyntaxUtils
 {
@@ -937,5 +940,76 @@ public class SyntaxUtils
 //		}
 		
 		return node;
+	}
+	
+	/**
+	 * Check whether or not the given type is valid within the
+	 * context of the given ValueNode.<br>
+	 * <br>
+	 * For example:
+	 * <blockquote><pre>
+	 * NonExistingType varName;</pre><blockquote>
+	 * In the example above, "<code>NonExistingType</code>" is not an
+	 * existing Class and is therefore not a valid type.
+	 * 
+	 * @param value The ValueNode to use as the context in which the type
+	 * 		is being declared.
+	 * @param type The type to be tested.
+	 * @return Whether or not the given type is valid.
+	 */
+	public static boolean isValidType(ValueNode value, String type)
+	{
+		if (value.isWithinExternalContext())
+		{
+			return true;
+		}
+		if (value instanceof ClassNode)
+		{
+			return true;
+		}
+		else if (value instanceof ReturnNode)
+		{
+			value = (MethodNode)value.getAncestorOfType(MethodNode.class);
+		}
+		else if (value instanceof MethodCallNode)
+		{
+			MethodCallNode call = (MethodCallNode)value;
+			
+			value = call.getMethodNode();
+		}
+		if (value instanceof MethodNode)
+		{
+			MethodNode method = (MethodNode)value;
+			
+			if (method.isExternalType() || method.isExternal())
+			{
+				return true;
+			}
+		}
+		else if (value instanceof VariableNode)
+		{
+			VariableNode var = (VariableNode)value;
+			
+			if (var.isExternal())
+			{
+				return true;
+			}
+		}
+		
+		if (SyntaxUtils.isPrimitiveType(type))
+		{
+			return true;
+		}
+		else
+		{
+			ClassNode clazz = value.getProgramNode().getClass(type);
+			
+			if (clazz != null)
+			{
+				return true;
+			}
+		}
+		
+		return false;
 	}
 }
