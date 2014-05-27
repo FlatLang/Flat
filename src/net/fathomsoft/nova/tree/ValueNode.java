@@ -5,6 +5,7 @@ import net.fathomsoft.nova.tree.variables.ArrayAccessNode;
 import net.fathomsoft.nova.tree.variables.ArrayNode;
 import net.fathomsoft.nova.tree.variables.FieldNode;
 import net.fathomsoft.nova.tree.variables.LocalVariableNode;
+import net.fathomsoft.nova.tree.variables.VariableNode;
 import net.fathomsoft.nova.util.SyntaxUtils;
 
 /**
@@ -14,7 +15,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.2.4 May 2, 2014 at 11:14:37 PM
- * @version	v0.2.7 May 25, 2014 at 9:16:48 PM
+ * @version	v0.2.8 May 26, 2014 at 11:26:58 PM
  */
 public class ValueNode extends TreeNode
 {
@@ -407,6 +408,11 @@ public class ValueNode extends TreeNode
 	 */
 	public void setType(String type)
 	{
+		if (!SyntaxUtils.isValidType(this, type))
+		{
+			SyntaxMessage.error("Type '" + type + "' does not exist", getFileNode(), getLocationIn(), getController());
+		}
+		
 		this.type = type;
 	}
 	
