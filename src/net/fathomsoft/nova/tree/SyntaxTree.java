@@ -6,6 +6,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import net.fathomsoft.nova.Nova;
+import net.fathomsoft.nova.error.SyntaxErrorException;
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.tree.exceptionhandling.CatchNode;
 import net.fathomsoft.nova.tree.exceptionhandling.FinallyNode;
@@ -26,7 +27,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:00:15 PM
- * @version	v0.2.7 May 25, 2014 at 9:16:48 PM
+ * @version	v0.2.8 May 26, 2014 at 11:26:58 PM
  */
 public class SyntaxTree
 {
@@ -403,6 +404,13 @@ public class SyntaxTree
 		{
 			builder.delete(m.start() - offset, m.end() - offset);
 			
+			int numLines = StringUtils.numNewLines(m.start(), m.end(), source);
+			
+			for (int i = 0; i < numLines; i++)
+			{
+				builder.insert(m.start() - offset, '\n');
+			}
+			
 			offset += m.end() - m.start();
 		}
 		
@@ -735,9 +743,18 @@ public class SyntaxTree
 				
 				Location location   = new Location(lineNumber, lineOffset, offset2 + offset, offset2 + statement.length() + offset);
 				
-				TreeNode node       = decodeStatement(statement, location, searchTypes);
+				TreeNode node       = null;
 				
-				updateLineNumber(statementStartIndex, newStatementStartIndex, source);
+				try
+				{
+					node = decodeStatement(statement, location, searchTypes);
+				}
+				catch (SyntaxErrorException e)
+				{
+					
+				}
+				
+				lineNumber += StringUtils.numNewLines(statementStartIndex, newStatementStartIndex, source);
 				
 				if (node instanceof ExternalStatementNode)
 				{
@@ -798,25 +815,6 @@ public class SyntaxTree
 		}
 		
 		/**
-		 * Check to see if the character is a new-line character. If so,
-		 * increment the line-number variable.
-		 * 
-		 * @param start The index to start the search at.
-		 * @param statementStart The index to end the search at.
-		 * @param source The source String to search in.
-		 */
-		private void updateLineNumber(int start, int statementStart, String source) throws StringIndexOutOfBoundsException
-		{
-			for (int i = start; i < statementStart; i++)
-			{
-				if (source.charAt(i) == '\n')
-				{
-					lineNumber++;
-				}
-			}
-		}
-		
-		/**
 		 * Generate the syntax tree nodes for all of the class nodes and
 		 * import nodes.
 		 * 
@@ -874,7 +872,7 @@ public class SyntaxTree
 						continue;
 					}
 					
-					String subSource  = source.substring(contentStart, contentEnd);
+					String subSource = source.substring(contentStart, contentEnd);
 					
 					traverseCode(node, subSource, contentStart, EITHER_STATEMENT_END_CHARS, SECOND_PASS_CLASSES, true);
 				}
@@ -1019,7 +1017,7 @@ public class SyntaxTree
 			int startingIndex = StringUtils.findNextNonWhitespaceIndex(source, statementEndIndex);
 			int endingIndex   = StringUtils.findEndingMatch(source, startingIndex, '{', '}');
 
-			updateLineNumber(statementEndIndex, endingIndex, source);
+			lineNumber += StringUtils.numNewLines(statementEndIndex, endingIndex, source);
 			
 //			int contentStart  = StringUtils.findNextNonWhitespaceIndex(source, startingIndex + 1);
 //			int contentEnd    = StringUtils.findNextNonWhitespaceIndex(source, endingIndex - 1, -1) + 1;
