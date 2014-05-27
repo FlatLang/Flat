@@ -21,9 +21,9 @@ public class WhileLoopNode extends LoopNode
 	/**
 	 * @see net.fathomsoft.nova.tree.TreeNode#TreeNode(TreeNode)
 	 */
-	public WhileLoopNode(TreeNode temporaryParent)
+	public WhileLoopNode(TreeNode temporaryParent, Location locationIn)
 	{
-		super(temporaryParent);
+		super(temporaryParent, locationIn);
 	}
 	
 	/**
@@ -102,7 +102,7 @@ public class WhileLoopNode extends LoopNode
 	{
 		if (Regex.matches(statement, 0, Patterns.PRE_WHILE))
 		{
-			WhileLoopNode n = new WhileLoopNode(parent);
+			WhileLoopNode n = new WhileLoopNode(parent, location);
 			
 			Bounds bounds = Regex.boundsOf(statement, Patterns.WHILE_CONTENTS);
 			
@@ -120,7 +120,7 @@ public class WhileLoopNode extends LoopNode
 				{
 					if (SyntaxUtils.isLiteral(contents))
 					{
-						LiteralNode literal = new LiteralNode(n);
+						LiteralNode literal = new LiteralNode(n, newLoc);
 						literal.setValue(contents, parent.isWithinExternalContext());
 						
 						condition = literal;
@@ -150,9 +150,9 @@ public class WhileLoopNode extends LoopNode
 	 * @see net.fathomsoft.nova.tree.TreeNode#clone(TreeNode)
 	 */
 	@Override
-	public WhileLoopNode clone(TreeNode temporaryParent)
+	public WhileLoopNode clone(TreeNode temporaryParent, Location locationIn)
 	{
-		WhileLoopNode node = new WhileLoopNode(temporaryParent);
+		WhileLoopNode node = new WhileLoopNode(temporaryParent, locationIn);
 		
 		return cloneTo(node);
 	}

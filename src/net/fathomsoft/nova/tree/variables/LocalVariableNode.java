@@ -18,9 +18,9 @@ public class LocalVariableNode extends VariableNode
 	/**
 	 * @see net.fathomsoft.nova.tree.TreeNode#TreeNode(TreeNode)
 	 */
-	public LocalVariableNode(TreeNode temporaryParent)
+	public LocalVariableNode(TreeNode temporaryParent, Location locationIn)
 	{
-		super(temporaryParent);
+		super(temporaryParent, locationIn);
 	}
 
 	/**
@@ -42,7 +42,7 @@ public class LocalVariableNode extends VariableNode
 				
 				if (node instanceof FieldNode)
 				{
-					node = node.clone(null);
+					node = node.clone(null, null);
 					
 					node.inheritChildren(var);
 					
@@ -58,9 +58,9 @@ public class LocalVariableNode extends VariableNode
 	 * @see net.fathomsoft.nova.tree.TreeNode#clone(TreeNode)
 	 */
 	@Override
-	public LocalVariableNode clone(TreeNode temporaryParent)
+	public LocalVariableNode clone(TreeNode temporaryParent, Location locationIn)
 	{
-		LocalVariableNode node = new LocalVariableNode(temporaryParent);
+		LocalVariableNode node = new LocalVariableNode(temporaryParent, locationIn);
 		
 		return cloneTo(node);
 	}

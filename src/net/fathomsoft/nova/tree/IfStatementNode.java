@@ -21,12 +21,12 @@ public class IfStatementNode extends TreeNode
 	 * Instantiate a new IfStatementNode and initialize the default
 	 * values.
 	 */
-	public IfStatementNode(TreeNode temporaryParent)
+	public IfStatementNode(TreeNode temporaryParent, Location locationIn)
 	{
-		super(temporaryParent);
+		super(temporaryParent, locationIn);
 		
-		ArgumentListNode condition = new ArgumentListNode(this);
-		ScopeNode        scopeNode = new ScopeNode(this);
+		ArgumentListNode condition = new ArgumentListNode(this, locationIn);
+		ScopeNode        scopeNode = new ScopeNode(this, locationIn);
 		
 		addChild(condition);
 		addChild(scopeNode);
@@ -138,7 +138,7 @@ public class IfStatementNode extends TreeNode
 	{
 		if (Regex.matches(statement, 0, Patterns.PRE_IF))
 		{
-			IfStatementNode n = new IfStatementNode(parent);
+			IfStatementNode n = new IfStatementNode(parent, location);
 			
 			Bounds bounds     = Regex.boundsOf(statement, Patterns.IF_CONTENTS);
 			
@@ -176,9 +176,9 @@ public class IfStatementNode extends TreeNode
 	 * @see net.fathomsoft.nova.tree.TreeNode#clone(TreeNode)
 	 */
 	@Override
-	public IfStatementNode clone(TreeNode temporaryParent)
+	public IfStatementNode clone(TreeNode temporaryParent, Location locationIn)
 	{
-		IfStatementNode node = new IfStatementNode(temporaryParent);
+		IfStatementNode node = new IfStatementNode(temporaryParent, locationIn);
 		
 		return cloneTo(node);
 	}

@@ -22,9 +22,9 @@ public class ThrowNode extends ExceptionHandlingNode
 	/**
 	 * @see net.fathomsoft.nova.tree.TreeNode#TreeNode(TreeNode)
 	 */
-	public ThrowNode(TreeNode temporaryParent)
+	public ThrowNode(TreeNode temporaryParent, Location locationIn)
 	{
-		super(temporaryParent);
+		super(temporaryParent, locationIn);
 	}
 	
 	/**
@@ -121,7 +121,7 @@ public class ThrowNode extends ExceptionHandlingNode
 			
 			if (bounds.getStart() > 0)
 			{
-				ThrowNode n          = new ThrowNode(parent);
+				ThrowNode n          = new ThrowNode(parent, location);
 				
 				Location  newLoc     = new Location(location);
 				newLoc.setBounds(location.getStart() + bounds.getStart(), location.getStart() + bounds.getEnd());
@@ -134,7 +134,7 @@ public class ThrowNode extends ExceptionHandlingNode
 				{
 					IdentifierNode node = (IdentifierNode)thrownNode;
 					
-					ExceptionNode exception = new ExceptionNode(n);
+					ExceptionNode exception = new ExceptionNode(n, newLoc);
 					exception.setType(node.getName());
 					
 					n.addChild(exception);
@@ -157,9 +157,9 @@ public class ThrowNode extends ExceptionHandlingNode
 	 * @see net.fathomsoft.nova.tree.TreeNode#clone(TreeNode)
 	 */
 	@Override
-	public ThrowNode clone(TreeNode temporaryParent)
+	public ThrowNode clone(TreeNode temporaryParent, Location locationIn)
 	{
-		ThrowNode node = new ThrowNode(temporaryParent);
+		ThrowNode node = new ThrowNode(temporaryParent, locationIn);
 		
 		return cloneTo(node);
 	}

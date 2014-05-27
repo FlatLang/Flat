@@ -2,6 +2,7 @@ package net.fathomsoft.nova.tree;
 
 import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.tree.exceptionhandling.ExceptionNode;
+import net.fathomsoft.nova.util.Location;
 import net.fathomsoft.nova.util.SyntaxUtils;
 
 /**
@@ -19,9 +20,9 @@ public class LiteralNode extends TreeNode
 	/**
 	 * @see net.fathomsoft.nova.tree.TreeNode#TreeNode(TreeNode)
 	 */
-	public LiteralNode(TreeNode temporaryParent)
+	public LiteralNode(TreeNode temporaryParent, Location locationIn)
 	{
-		super(temporaryParent);
+		super(temporaryParent, locationIn);
 	}
 	
 	/**
@@ -139,9 +140,9 @@ public class LiteralNode extends TreeNode
 	 * @see net.fathomsoft.nova.tree.TreeNode#clone(TreeNode)
 	 */
 	@Override
-	public LiteralNode clone(TreeNode temporaryParent)
+	public LiteralNode clone(TreeNode temporaryParent, Location locationIn)
 	{
-		LiteralNode node = new LiteralNode(temporaryParent);
+		LiteralNode node = new LiteralNode(temporaryParent, locationIn);
 		
 		return cloneTo(node);
 	}

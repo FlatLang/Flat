@@ -32,9 +32,9 @@ public class ArrayNode extends VariableNode
 	/**
 	 * @see net.fathomsoft.nova.tree.TreeNode#TreeNode(TreeNode)
 	 */
-	public ArrayNode(TreeNode temporaryParent)
+	public ArrayNode(TreeNode temporaryParent, Location locationIn)
 	{
-		super(temporaryParent);
+		super(temporaryParent, locationIn);
 	}
 	
 	/**
@@ -108,7 +108,7 @@ public class ArrayNode extends VariableNode
 	{
 		if (SyntaxUtils.isArrayInitialization(statement))
 		{
-			ArrayNode n = new ArrayNode(parent);
+			ArrayNode n = new ArrayNode(parent, location);
 			
 			int index = statement.indexOf('[') + 1;
 			
@@ -130,7 +130,7 @@ public class ArrayNode extends VariableNode
 				
 				if (SyntaxUtils.isNumber(length))
 				{
-					LiteralNode node = new LiteralNode(n);
+					LiteralNode node = new LiteralNode(n, newLoc);
 					node.setValue(length, parent.isWithinExternalContext());
 					
 					n.addChild(node);
@@ -154,7 +154,7 @@ public class ArrayNode extends VariableNode
 					}
 					else
 					{
-						node = node.clone(n);
+						node = node.clone(n, newLoc);
 					}
 					
 					n.addChild(node);
@@ -173,9 +173,9 @@ public class ArrayNode extends VariableNode
 	 * @see net.fathomsoft.nova.tree.TreeNode#clone(TreeNode)
 	 */
 	@Override
-	public ArrayNode clone(TreeNode temporaryParent)
+	public ArrayNode clone(TreeNode temporaryParent, Location locationIn)
 	{
-		ArrayNode node = new ArrayNode(temporaryParent);
+		ArrayNode node = new ArrayNode(temporaryParent, locationIn);
 		
 		return cloneTo(node);
 	}

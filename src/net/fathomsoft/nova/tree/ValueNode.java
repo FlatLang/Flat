@@ -6,6 +6,7 @@ import net.fathomsoft.nova.tree.variables.ArrayNode;
 import net.fathomsoft.nova.tree.variables.FieldNode;
 import net.fathomsoft.nova.tree.variables.LocalVariableNode;
 import net.fathomsoft.nova.tree.variables.VariableNode;
+import net.fathomsoft.nova.util.Location;
 import net.fathomsoft.nova.util.SyntaxUtils;
 
 /**
@@ -26,9 +27,9 @@ public class ValueNode extends TreeNode
 	/**
 	 * @see net.fathomsoft.nova.tree.TreeNode#TreeNode(TreeNode)
 	 */
-	public ValueNode(TreeNode temporaryParent)
+	public ValueNode(TreeNode temporaryParent, Location locationIn)
 	{
-		super(temporaryParent);
+		super(temporaryParent, locationIn);
 	}
 	
 	/**
@@ -259,7 +260,7 @@ public class ValueNode extends TreeNode
 		
 		if (val != null)
 		{
-			return val.clone(val.getParent());
+			return val.clone(val.getParent(), val.getLocationIn());
 		}
 		
 		return null;
@@ -727,9 +728,9 @@ public class ValueNode extends TreeNode
 	 * @see net.fathomsoft.nova.tree.TreeNode#clone(TreeNode)
 	 */
 	@Override
-	public ValueNode clone(TreeNode temporaryParent)
+	public ValueNode clone(TreeNode temporaryParent, Location locationIn)
 	{
-		ValueNode node = new ValueNode(temporaryParent);
+		ValueNode node = new ValueNode(temporaryParent, locationIn);
 		
 		return cloneTo(node);
 	}

@@ -1,6 +1,7 @@
 package net.fathomsoft.nova.tree;
 
 import net.fathomsoft.nova.tree.exceptionhandling.ExceptionNode;
+import net.fathomsoft.nova.util.Location;
 
 /**
  * TreeNode extension that represents a list of parameters for a method.
@@ -36,11 +37,11 @@ public class ParameterListNode extends TreeNode
 	 * 
 	 * @see net.fathomsoft.nova.tree.TreeNode#TreeNode(TreeNode)
 	 */
-	public ParameterListNode(TreeNode temporaryParent)
+	public ParameterListNode(TreeNode temporaryParent, Location locationIn)
 	{
-		super(temporaryParent);
+		super(temporaryParent, locationIn);
 		
-		ParameterNode exceptionData = new ParameterNode(this);
+		ParameterNode exceptionData = new ParameterNode(this, locationIn);
 		exceptionData.setName(ExceptionNode.EXCEPTION_DATA_IDENTIFIER, true);
 		exceptionData.setType("ExceptionData");
 		
@@ -96,7 +97,7 @@ public class ParameterListNode extends TreeNode
 		
 		ClassNode     classNode = (ClassNode)method.getAncestorOfType(ClassNode.class);
 		
-		ParameterNode reference = new ParameterNode(this);
+		ParameterNode reference = new ParameterNode(this, null);
 		
 		reference.setType(classNode.getName());
 		
@@ -178,9 +179,9 @@ public class ParameterListNode extends TreeNode
 	 * @see net.fathomsoft.nova.tree.TreeNode#clone(TreeNode)
 	 */
 	@Override
-	public ParameterListNode clone(TreeNode temporaryParent)
+	public ParameterListNode clone(TreeNode temporaryParent, Location locationIn)
 	{
-		ParameterListNode node = new ParameterListNode(temporaryParent);
+		ParameterListNode node = new ParameterListNode(temporaryParent, locationIn);
 		
 		return cloneTo(node);
 	}

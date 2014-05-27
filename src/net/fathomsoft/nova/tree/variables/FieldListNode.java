@@ -4,6 +4,7 @@ import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.tree.ClassNode;
 import net.fathomsoft.nova.tree.InstanceDeclarationNode;
 import net.fathomsoft.nova.tree.TreeNode;
+import net.fathomsoft.nova.util.Location;
 
 /**
  * TreeNode extension that contains all of the FieldNodes for a ClassNode.
@@ -17,14 +18,14 @@ public class FieldListNode extends TreeNode
 	/**
 	 * Instantiate and initialize default data.
 	 */
-	public FieldListNode(TreeNode temporaryParent)
+	public FieldListNode(TreeNode temporaryParent, Location locationIn)
 	{
-		super(temporaryParent);
+		super(temporaryParent, locationIn);
 		
-		InstanceFieldListNode privateFields       = new InstanceFieldListNode(this);
-		InstanceFieldListNode publicFields        = new InstanceFieldListNode(this);
-		StaticFieldListNode   privateStaticFields = new StaticFieldListNode(this);
-		StaticFieldListNode   publicStaticFields  = new StaticFieldListNode(this);
+		InstanceFieldListNode privateFields       = new InstanceFieldListNode(this, locationIn);
+		InstanceFieldListNode publicFields        = new InstanceFieldListNode(this, locationIn);
+		StaticFieldListNode   privateStaticFields = new StaticFieldListNode(this, locationIn);
+		StaticFieldListNode   publicStaticFields  = new StaticFieldListNode(this, locationIn);
 		
 		super.addChild(privateFields);
 		super.addChild(publicFields);
@@ -278,9 +279,9 @@ public class FieldListNode extends TreeNode
 	 * @see net.fathomsoft.nova.tree.TreeNode#clone(TreeNode)
 	 */
 	@Override
-	public FieldListNode clone(TreeNode temporaryParent)
+	public FieldListNode clone(TreeNode temporaryParent, Location locationIn)
 	{
-		FieldListNode node = new FieldListNode(temporaryParent);
+		FieldListNode node = new FieldListNode(temporaryParent, locationIn);
 		
 		return cloneTo(node);
 	}

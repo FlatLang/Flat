@@ -31,14 +31,14 @@ public class MethodNode extends InstanceDeclarationNode
 	 * 
 	 * @see net.fathomsoft.nova.tree.TreeNode#TreeNode(TreeNode)
 	 */
-	public MethodNode(TreeNode temporaryParent)
+	public MethodNode(TreeNode temporaryParent, Location locationIn)
 	{
-		super(temporaryParent);
+		super(temporaryParent, locationIn);
 		
 		overridingMethods = new ArrayList<MethodNode>();
 		
-		ParameterListNode parameterList = new ParameterListNode(this);
-		ScopeNode         scopeNode     = new ScopeNode(this);
+		ParameterListNode parameterList = new ParameterListNode(this, null);
+		ScopeNode         scopeNode     = new ScopeNode(this, null);
 		
 		super.addChild(parameterList);
 		super.addChild(scopeNode);
@@ -543,7 +543,7 @@ public class MethodNode extends InstanceDeclarationNode
 			
 			final boolean error[]     = new boolean[1];
 			
-			MethodNode n = new MethodNode(parent)
+			MethodNode n = new MethodNode(parent, location)
 			{
 				public void interactWord(String word, int wordNumber, Bounds bounds, int numWords, String leftDelimiter, String rightDelimiter)
 				{
@@ -618,9 +618,9 @@ public class MethodNode extends InstanceDeclarationNode
 	 * @see net.fathomsoft.nova.tree.TreeNode#clone(TreeNode)
 	 */
 	@Override
-	public MethodNode clone(TreeNode temporaryParent)
+	public MethodNode clone(TreeNode temporaryParent, Location locationIn)
 	{
-		MethodNode node = new MethodNode(temporaryParent);
+		MethodNode node = new MethodNode(temporaryParent, locationIn);
 		
 		return cloneTo(node);
 	}
@@ -638,7 +638,7 @@ public class MethodNode extends InstanceDeclarationNode
 		
 		for (MethodNode child : overridingMethods)
 		{
-			node.overridingMethods.add(child.clone(null));
+			node.overridingMethods.add(child.clone(null, child.getLocationIn()));
 		}
 		
 		return node;

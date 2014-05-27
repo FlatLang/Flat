@@ -1,5 +1,7 @@
 package net.fathomsoft.nova.tree;
 
+import net.fathomsoft.nova.util.Location;
+
 /**
  * TreeNode extension that represents the initialization section of the
  * for loop. For instance: "for (int i = 0; i < 10; i++)" the first
@@ -14,18 +16,18 @@ public class LoopInitializationNode extends TreeNode
 	/**
 	 * @see net.fathomsoft.nova.tree.TreeNode#TreeNode(TreeNode)
 	 */
-	public LoopInitializationNode(TreeNode temporaryParent)
+	public LoopInitializationNode(TreeNode temporaryParent, Location locationIn)
 	{
-		super(temporaryParent);
+		super(temporaryParent, locationIn);
 	}
 	
 	/**
 	 * @see net.fathomsoft.nova.tree.TreeNode#clone(TreeNode)
 	 */
 	@Override
-	public LoopInitializationNode clone(TreeNode temporaryParent)
+	public LoopInitializationNode clone(TreeNode temporaryParent, Location locationIn)
 	{
-		LoopInitializationNode node = new LoopInitializationNode(temporaryParent);
+		LoopInitializationNode node = new LoopInitializationNode(temporaryParent, locationIn);
 		
 		return cloneTo(node);
 	}

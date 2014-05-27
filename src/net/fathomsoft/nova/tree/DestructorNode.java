@@ -23,9 +23,9 @@ public class DestructorNode extends MethodNode
 	/**
 	 * @see net.fathomsoft.nova.tree.TreeNode#TreeNode(TreeNode)
 	 */
-	public DestructorNode(TreeNode temporaryParent)
+	public DestructorNode(TreeNode temporaryParent, Location locationIn)
 	{
-		super(temporaryParent);
+		super(temporaryParent, locationIn);
 	}
 	
 	/**
@@ -268,7 +268,7 @@ public class DestructorNode extends MethodNode
 			
 			final String signature = statement.substring(0, firstParenthIndex);
 			
-			DestructorNode n = new DestructorNode(parent)
+			DestructorNode n = new DestructorNode(parent, location)
 			{
 				public void interactWord(String word, int wordNumber, Bounds bounds, int numWords)
 				{
@@ -316,9 +316,9 @@ public class DestructorNode extends MethodNode
 	 * @see net.fathomsoft.nova.tree.TreeNode#clone(TreeNode)
 	 */
 	@Override
-	public DestructorNode clone(TreeNode temporaryParent)
+	public DestructorNode clone(TreeNode temporaryParent, Location locationIn)
 	{
-		DestructorNode node = new DestructorNode(temporaryParent);
+		DestructorNode node = new DestructorNode(temporaryParent, locationIn);
 		
 		return cloneTo(node);
 	}

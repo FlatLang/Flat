@@ -1,6 +1,7 @@
 package net.fathomsoft.nova.tree;
 
 import net.fathomsoft.nova.Nova;
+import net.fathomsoft.nova.util.Location;
 
 /**
  * TreeNode extension that represents a whole Nova program. The
@@ -26,7 +27,7 @@ public class ProgramNode extends TreeNode
 	 */
 	public ProgramNode(Nova controller)
 	{
-		super(null);
+		super(null, null);
 		
 		this.controller = controller;
 	}
@@ -256,7 +257,7 @@ public class ProgramNode extends TreeNode
 	 * @see net.fathomsoft.nova.tree.TreeNode#clone(TreeNode)
 	 */
 	@Override
-	public ProgramNode clone(TreeNode temporaryParent)
+	public ProgramNode clone(TreeNode temporaryParent, Location locationIn)
 	{
 		ProgramNode node = new ProgramNode(controller);
 		

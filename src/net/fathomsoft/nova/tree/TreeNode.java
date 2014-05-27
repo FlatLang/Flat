@@ -77,11 +77,12 @@ public abstract class TreeNode
 	/**
 	 * Create a new TreeNode. Initializes the data.
 	 */
-	public TreeNode(TreeNode temporaryParent)
+	public TreeNode(TreeNode temporaryParent, Location locationIn)
 	{
 		children = new ArrayList<TreeNode>();
 		
 		setTemporaryParent(temporaryParent);
+		setLocationIn(locationIn);
 	}
 	
 	/**
@@ -524,7 +525,7 @@ public abstract class TreeNode
 			
 			if (clone)
 			{
-				child = child.clone(this);
+				child = child.clone(this, child.getLocationIn());
 			}
 			else
 			{
@@ -877,7 +878,7 @@ public abstract class TreeNode
 			
 			if (node != null)
 			{
-				node.setLocationIn(location);
+//				node.setLocationIn(location);
 				
 				return node;
 			}
@@ -938,7 +939,7 @@ public abstract class TreeNode
 	{
 		if (SyntaxUtils.isLiteral(statement))
 		{
-			LiteralNode literal = new LiteralNode(parent);
+			LiteralNode literal = new LiteralNode(parent, location);
 			literal.setValue(statement, parent.isWithinExternalContext());
 			
 			return literal;
@@ -1053,7 +1054,7 @@ public abstract class TreeNode
 			
 			if (node != null)
 			{
-				node = node.clone(parent);
+				node = node.clone(parent, location);
 			}
 			else if (parent instanceof ExternalTypeNode)
 			{
@@ -1065,7 +1066,7 @@ public abstract class TreeNode
 			{
 				ClassNode clazz = parent.getProgramNode().getClass(statement);
 				
-				node = new ValueNode(parent);
+				node = new ValueNode(parent, location);
 				node.setType(clazz.getName());
 			}
 		}
@@ -1249,7 +1250,7 @@ public abstract class TreeNode
 	 * @param temporaryParent The TreeNode to act as the parent
 	 * 		temporarily.
 	 */
-	public abstract TreeNode clone(TreeNode temporaryParent);
+	public abstract TreeNode clone(TreeNode temporaryParent, Location locationIn);
 	
 	/**
 	 * Fill the given TreeNode with the data that is in the
@@ -1276,7 +1277,7 @@ public abstract class TreeNode
 		{
 			TreeNode child = children.get(i);
 			
-			node.addChild(child.clone(null));
+			node.addChild(child.clone(null, child.getLocationIn()));
 		}
 		
 		return node;

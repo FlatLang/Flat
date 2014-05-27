@@ -22,11 +22,11 @@ public class ElseStatementNode extends TreeNode
 	 * 
 	 * @see net.fathomsoft.nova.tree.TreeNode#TreeNode(TreeNode)
 	 */
-	public ElseStatementNode(TreeNode temporaryParent)
+	public ElseStatementNode(TreeNode temporaryParent, Location locationIn)
 	{
-		super(temporaryParent);
+		super(temporaryParent, locationIn);
 		
-		ScopeNode scopeNode = new ScopeNode(this);
+		ScopeNode scopeNode = new ScopeNode(this, locationIn);
 		
 		addChild(scopeNode);
 	}
@@ -152,7 +152,7 @@ public class ElseStatementNode extends TreeNode
 		
 		if (bounds.getStart() == 0)
 		{
-			ElseStatementNode n  = new ElseStatementNode(parent);
+			ElseStatementNode n  = new ElseStatementNode(parent, location);
 			
 			String   ending      = statement.substring(bounds.getEnd());
 			
@@ -179,9 +179,9 @@ public class ElseStatementNode extends TreeNode
 	 * @see net.fathomsoft.nova.tree.TreeNode#clone(TreeNode)
 	 */
 	@Override
-	public ElseStatementNode clone(TreeNode temporaryParent)
+	public ElseStatementNode clone(TreeNode temporaryParent, Location locationIn)
 	{
-		ElseStatementNode node = new ElseStatementNode(temporaryParent);
+		ElseStatementNode node = new ElseStatementNode(temporaryParent, locationIn);
 		
 		return cloneTo(node);
 	}

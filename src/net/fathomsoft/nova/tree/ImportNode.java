@@ -23,9 +23,9 @@ public class ImportNode extends TreeNode
 	/**
 	 * @see net.fathomsoft.nova.tree.TreeNode#TreeNode(TreeNode)
 	 */
-	public ImportNode(TreeNode temporaryParent)
+	public ImportNode(TreeNode temporaryParent, Location locationIn)
 	{
-		super(temporaryParent);
+		super(temporaryParent, locationIn);
 	}
 	
 	/**
@@ -132,7 +132,7 @@ public class ImportNode extends TreeNode
 	{
 		if (Regex.indexOf(statement, Patterns.PRE_IMPORT) == 0)
 		{
-			ImportNode n = new ImportNode(parent);
+			ImportNode n = new ImportNode(parent, location);
 			
 			int importStartIndex = Regex.indexOf(statement, Patterns.POST_IMPORT);
 			
@@ -186,9 +186,9 @@ public class ImportNode extends TreeNode
 	 * @see net.fathomsoft.nova.tree.TreeNode#clone(TreeNode)
 	 */
 	@Override
-	public ImportNode clone(TreeNode temporaryParent)
+	public ImportNode clone(TreeNode temporaryParent, Location locationIn)
 	{
-		ImportNode node = new ImportNode(temporaryParent);
+		ImportNode node = new ImportNode(temporaryParent, locationIn);
 		
 		return cloneTo(node);
 	}

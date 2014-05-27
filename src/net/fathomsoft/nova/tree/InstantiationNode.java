@@ -21,9 +21,9 @@ public class InstantiationNode extends IdentifierNode
 	/**
 	 * @see net.fathomsoft.nova.tree.TreeNode#TreeNode(TreeNode)
 	 */
-	public InstantiationNode(TreeNode temporaryParent)
+	public InstantiationNode(TreeNode temporaryParent, Location locationIn)
 	{
-		super(temporaryParent);
+		super(temporaryParent, locationIn);
 	}
 	
 	/**
@@ -121,7 +121,7 @@ public class InstantiationNode extends IdentifierNode
 	{
 		if (SyntaxUtils.isInstantiation(statement))
 		{
-			InstantiationNode n = new InstantiationNode(parent);
+			InstantiationNode n = new InstantiationNode(parent, location);
 			
 			int startIndex  = Regex.indexOf(statement, Patterns.POST_INSTANTIATION);
 			
@@ -193,9 +193,9 @@ public class InstantiationNode extends IdentifierNode
 	 * @see net.fathomsoft.nova.tree.TreeNode#clone(TreeNode)
 	 */
 	@Override
-	public InstantiationNode clone(TreeNode temporaryParent)
+	public InstantiationNode clone(TreeNode temporaryParent, Location locationIn)
 	{
-		InstantiationNode node = new InstantiationNode(temporaryParent);
+		InstantiationNode node = new InstantiationNode(temporaryParent, locationIn);
 		
 		return cloneTo(node);
 	}

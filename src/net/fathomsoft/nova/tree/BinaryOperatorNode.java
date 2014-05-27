@@ -25,9 +25,9 @@ public class BinaryOperatorNode extends TreeNode
 	/**
 	 * @see net.fathomsoft.nova.tree.TreeNode#TreeNode(TreeNode)
 	 */
-	public BinaryOperatorNode(TreeNode temporaryParent)
+	public BinaryOperatorNode(TreeNode temporaryParent, Location locationIn)
 	{
-		super(temporaryParent);
+		super(temporaryParent, locationIn);
 	}
 
 	/**
@@ -242,7 +242,7 @@ public class BinaryOperatorNode extends TreeNode
 		
 		if (operatorLoc.getStart() >= 0)
 		{
-			BinaryOperatorNode node = new BinaryOperatorNode(parent);
+			BinaryOperatorNode node = new BinaryOperatorNode(parent, location);
 			node.setLocationIn(location);
 			
 			Bounds lhb = new Bounds(0, StringUtils.findNextNonWhitespaceIndex(statement, operatorLoc.getStart() - 1, -1) + 1);
@@ -285,7 +285,7 @@ public class BinaryOperatorNode extends TreeNode
 			
 			String operatorVal = statement.substring(operatorLoc.getStart(), operatorLoc.getEnd());
 			
-			OperatorNode operator = new OperatorNode(node);
+			OperatorNode operator = new OperatorNode(node, location);
 			operator.setOperator(operatorVal);
 			node.addChild(operator);
 			
@@ -382,7 +382,7 @@ public class BinaryOperatorNode extends TreeNode
 	{
 		if (SyntaxUtils.isLiteral(statement))
 		{
-			LiteralNode literal = new LiteralNode(parent);
+			LiteralNode literal = new LiteralNode(parent, location);
 			
 			literal.setValue(statement, parent.isWithinExternalContext());
 			
@@ -392,7 +392,7 @@ public class BinaryOperatorNode extends TreeNode
 		{
 			String value = statement.substring(statement.indexOf('.') + 1);
 		
-			LiteralNode node = new LiteralNode(parent);
+			LiteralNode node = new LiteralNode(parent, location);
 			node.setValue(value, parent.isWithinExternalContext());
 			
 			return node;
@@ -519,9 +519,9 @@ public class BinaryOperatorNode extends TreeNode
 	 * @see net.fathomsoft.nova.tree.TreeNode#clone(TreeNode)
 	 */
 	@Override
-	public BinaryOperatorNode clone(TreeNode temporaryParent)
+	public BinaryOperatorNode clone(TreeNode temporaryParent, Location locationIn)
 	{
-		BinaryOperatorNode node = new BinaryOperatorNode(temporaryParent);
+		BinaryOperatorNode node = new BinaryOperatorNode(temporaryParent, locationIn);
 		
 		return cloneTo(node);
 	}

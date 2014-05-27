@@ -33,9 +33,9 @@ public class VTableNode extends ClassNode
 	/**
 	 * @see net.fathomsoft.nova.tree.TreeNode#TreeNode(TreeNode)
 	 */
-	public VTableNode(TreeNode temporaryParent)
+	public VTableNode(TreeNode temporaryParent, Location locationIn)
 	{
-		super(temporaryParent);
+		super(temporaryParent, locationIn);
 	}
 	
 	/**
@@ -178,7 +178,7 @@ public class VTableNode extends ClassNode
 	{
 		if (SyntaxUtils.isArrayInitialization(statement))
 		{
-			VTableNode n = new VTableNode(parent);
+			VTableNode n = new VTableNode(parent, location);
 			
 			int index = statement.indexOf('[') + 1;
 			
@@ -196,14 +196,14 @@ public class VTableNode extends ClassNode
 				
 				if (SyntaxUtils.isNumber(length))
 				{
-					LiteralNode node = new LiteralNode(n);
+					LiteralNode node = new LiteralNode(n, location);
 					node.setValue(length, parent.isWithinExternalContext());
 					
 					n.addChild(node);
 				}
 				else
 				{
-					IdentifierNode node = TreeNode.getExistingNode(parent, length).clone(n);
+					IdentifierNode node = TreeNode.getExistingNode(parent, length).clone(n, location);
 					
 					n.addChild(node);
 				}
@@ -221,9 +221,9 @@ public class VTableNode extends ClassNode
 	 * @see net.fathomsoft.nova.tree.TreeNode#clone(TreeNode)
 	 */
 	@Override
-	public VTableNode clone(TreeNode temporaryParent)
+	public VTableNode clone(TreeNode temporaryParent, Location locationIn)
 	{
-		VTableNode node = new VTableNode(temporaryParent);
+		VTableNode node = new VTableNode(temporaryParent, locationIn);
 		
 		return cloneTo(node);
 	}

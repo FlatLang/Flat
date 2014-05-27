@@ -20,9 +20,9 @@ public class AssignmentNode extends TreeNode
 	/**
 	 * @see net.fathomsoft.nova.tree.TreeNode#TreeNode(TreeNode)
 	 */
-	public AssignmentNode(TreeNode temporaryParent)
+	public AssignmentNode(TreeNode temporaryParent, Location locationIn)
 	{
-		super(temporaryParent);
+		super(temporaryParent, locationIn);
 	}
 
 	/**
@@ -196,7 +196,7 @@ public class AssignmentNode extends TreeNode
 		
 		varNode.setLocationIn(varLoc);
 		
-		AssignmentNode n = new AssignmentNode(parent);
+		AssignmentNode n = new AssignmentNode(parent, location);
 		
 		if (addDeclaration)
 		{
@@ -212,7 +212,7 @@ public class AssignmentNode extends TreeNode
 					{
 						scope.addChild(varNode);
 						
-						varNode = var.clone(n);
+						varNode = var.clone(n, location);
 					}
 				}
 			}
@@ -270,7 +270,7 @@ public class AssignmentNode extends TreeNode
 				rhs = rhs.substring(rhs.indexOf('.') + 1);
 			}
 			
-			LiteralNode node = new LiteralNode(parent);
+			LiteralNode node = new LiteralNode(parent, location);
 			node.setValue(rhs, parent.isWithinExternalContext());
 			
 			child = node;
@@ -283,9 +283,9 @@ public class AssignmentNode extends TreeNode
 	 * @see net.fathomsoft.nova.tree.TreeNode#clone(TreeNode)
 	 */
 	@Override
-	public AssignmentNode clone(TreeNode temporaryParent)
+	public AssignmentNode clone(TreeNode temporaryParent, Location locationIn)
 	{
-		AssignmentNode node = new AssignmentNode(temporaryParent);
+		AssignmentNode node = new AssignmentNode(temporaryParent, locationIn);
 		
 		return cloneTo(node);
 	}

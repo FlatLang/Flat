@@ -26,11 +26,11 @@ public class MethodCallNode extends IdentifierNode
 	 * 
 	 * @see net.fathomsoft.nova.tree.TreeNode#TreeNode(TreeNode)
 	 */
-	public MethodCallNode(TreeNode temporaryParent)
+	public MethodCallNode(TreeNode temporaryParent, Location locationIn)
 	{
-		super(temporaryParent);
+		super(temporaryParent, locationIn);
 		
-		ArgumentListNode arguments = new ArgumentListNode(this);
+		ArgumentListNode arguments = new ArgumentListNode(this, locationIn);
 		
 		addChild(arguments);
 	}
@@ -320,7 +320,7 @@ public class MethodCallNode extends IdentifierNode
 			
 			final boolean error[] = new boolean[1];
 			
-			MethodCallNode n = new MethodCallNode(parent)
+			MethodCallNode n = new MethodCallNode(parent, location)
 			{
 				public void interactWord(String word, int wordNumber, Bounds bounds, int numWords, String leftDelimiter, String rightDelimiter)
 				{
@@ -462,7 +462,7 @@ public class MethodCallNode extends IdentifierNode
 				
 				if (arg == null && SyntaxUtils.isLiteral(argument))
 				{
-					LiteralNode literal = new LiteralNode(parent);
+					LiteralNode literal = new LiteralNode(parent, location);
 					literal.setValue(argument, parent.isWithinExternalContext());
 					
 					arg = literal;
@@ -491,7 +491,7 @@ public class MethodCallNode extends IdentifierNode
 				}
 				if (arg == null && parent.isWithinExternalContext())
 				{
-					LiteralNode literal = new LiteralNode(parent);
+					LiteralNode literal = new LiteralNode(parent, location);
 					literal.setValue(argument, parent.isWithinExternalContext());
 					
 					arg = literal;
@@ -578,9 +578,9 @@ public class MethodCallNode extends IdentifierNode
 	 * @see net.fathomsoft.nova.tree.TreeNode#clone(TreeNode)
 	 */
 	@Override
-	public MethodCallNode clone(TreeNode temporaryParent)
+	public MethodCallNode clone(TreeNode temporaryParent, Location locationIn)
 	{
-		MethodCallNode node = new MethodCallNode(temporaryParent);
+		MethodCallNode node = new MethodCallNode(temporaryParent, locationIn);
 		
 		return cloneTo(node);
 	}

@@ -2,6 +2,7 @@ package net.fathomsoft.nova.tree;
 
 import net.fathomsoft.nova.tree.variables.VariableListNode;
 import net.fathomsoft.nova.tree.variables.VariableNode;
+import net.fathomsoft.nova.util.Location;
 
 /**
  * TreeNode extension that represents a scope of code. In essence, a
@@ -33,11 +34,11 @@ public class ScopeNode extends TreeNode
 	 * 
 	 * @see net.fathomsoft.nova.tree.TreeNode#TreeNode(TreeNode)
 	 */
-	public ScopeNode(TreeNode temporaryParent)
+	public ScopeNode(TreeNode temporaryParent, Location locationIn)
 	{
-		super(temporaryParent);
+		super(temporaryParent, locationIn);
 		
-		VariableListNode variablesNode = new VariableListNode(this);
+		VariableListNode variablesNode = new VariableListNode(this, locationIn);
 		
 		super.addChild(variablesNode);
 		
@@ -135,9 +136,9 @@ public class ScopeNode extends TreeNode
 	 * @see net.fathomsoft.nova.tree.TreeNode#clone(TreeNode)
 	 */
 	@Override
-	public ScopeNode clone(TreeNode temporaryParent)
+	public ScopeNode clone(TreeNode temporaryParent, Location locationIn)
 	{
-		ScopeNode node = new ScopeNode(temporaryParent);
+		ScopeNode node = new ScopeNode(temporaryParent, locationIn);
 		
 		return cloneTo(node);
 	}

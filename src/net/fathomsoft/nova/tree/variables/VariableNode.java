@@ -12,6 +12,7 @@ import net.fathomsoft.nova.tree.ScopeNode;
 import net.fathomsoft.nova.tree.TreeNode;
 import net.fathomsoft.nova.tree.ValueNode;
 import net.fathomsoft.nova.tree.exceptionhandling.ExceptionNode;
+import net.fathomsoft.nova.util.Location;
 
 /**
  * ModifierNode extension that represents the declaration of a variable
@@ -33,9 +34,9 @@ public class VariableNode extends IdentifierNode
 	/**
 	 * @see net.fathomsoft.nova.tree.TreeNode#TreeNode(TreeNode)
 	 */
-	public VariableNode(TreeNode temporaryParent)
+	public VariableNode(TreeNode temporaryParent, Location locationIn)
 	{
-		super(temporaryParent);
+		super(temporaryParent, locationIn);
 	}
 	
 	/**
@@ -661,9 +662,9 @@ public class VariableNode extends IdentifierNode
 	 * @see net.fathomsoft.nova.tree.TreeNode#clone(TreeNode)
 	 */
 	@Override
-	public VariableNode clone(TreeNode temporaryParent)
+	public VariableNode clone(TreeNode temporaryParent, Location locationIn)
 	{
-		VariableNode node = new VariableNode(temporaryParent);
+		VariableNode node = new VariableNode(temporaryParent, locationIn);
 		
 		return cloneTo(node);
 	}

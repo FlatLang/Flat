@@ -1,5 +1,7 @@
 package net.fathomsoft.nova.tree;
 
+import net.fathomsoft.nova.util.Location;
+
 /**
  * TreeNode extension that represents the update section of the for loop.
  * For instance: "for (int i = 0; i < 10; i++)" the last section
@@ -14,18 +16,18 @@ public class LoopUpdateNode extends TreeNode
 	/**
 	 * @see net.fathomsoft.nova.tree.TreeNode#TreeNode(TreeNode)
 	 */
-	public LoopUpdateNode(TreeNode temporaryParent)
+	public LoopUpdateNode(TreeNode temporaryParent, Location locationIn)
 	{
-		super(temporaryParent);
+		super(temporaryParent, locationIn);
 	}
 	
 	/**
 	 * @see net.fathomsoft.nova.tree.TreeNode#clone(TreeNode)
 	 */
 	@Override
-	public LoopUpdateNode clone(TreeNode temporaryParent)
+	public LoopUpdateNode clone(TreeNode temporaryParent, Location locationIn)
 	{
-		LoopUpdateNode node = new LoopUpdateNode(temporaryParent);
+		LoopUpdateNode node = new LoopUpdateNode(temporaryParent, locationIn);
 		
 		return cloneTo(node);
 	}

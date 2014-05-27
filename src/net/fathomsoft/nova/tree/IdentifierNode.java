@@ -1,5 +1,7 @@
 package net.fathomsoft.nova.tree;
 
+import net.fathomsoft.nova.util.Location;
+
 
 /**
  * ValueNode extension that represents an Identifier. For the rules on
@@ -17,9 +19,9 @@ public class IdentifierNode extends ValueNode
 	/**
 	 * @see net.fathomsoft.nova.tree.TreeNode#TreeNode(TreeNode)
 	 */
-	public IdentifierNode(TreeNode temporaryParent)
+	public IdentifierNode(TreeNode temporaryParent, Location locationIn)
 	{
-		super(temporaryParent);
+		super(temporaryParent, locationIn);
 	}
 	
 	/**
@@ -114,9 +116,9 @@ public class IdentifierNode extends ValueNode
 	 * @see net.fathomsoft.nova.tree.TreeNode#clone(TreeNode)
 	 */
 	@Override
-	public IdentifierNode clone(TreeNode temporaryParent)
+	public IdentifierNode clone(TreeNode temporaryParent, Location locationIn)
 	{
-		IdentifierNode node = new IdentifierNode(temporaryParent);
+		IdentifierNode node = new IdentifierNode(temporaryParent, locationIn);
 		
 		return cloneTo(node);
 	}

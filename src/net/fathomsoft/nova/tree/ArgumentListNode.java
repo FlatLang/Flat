@@ -1,6 +1,7 @@
 package net.fathomsoft.nova.tree;
 
 import net.fathomsoft.nova.tree.exceptionhandling.ExceptionNode;
+import net.fathomsoft.nova.util.Location;
 
 /**
  * TreeNode extension that keeps track of all of the arguments that
@@ -17,9 +18,9 @@ public class ArgumentListNode extends TreeNode
 	/**
 	 * @see net.fathomsoft.nova.tree.TreeNode#TreeNode(TreeNode)
 	 */
-	public ArgumentListNode(TreeNode temporaryParent)
+	public ArgumentListNode(TreeNode temporaryParent, Location locationIn)
 	{
-		super(temporaryParent);
+		super(temporaryParent, locationIn);
 	}
 
 	/**
@@ -121,9 +122,9 @@ public class ArgumentListNode extends TreeNode
 	 * @see net.fathomsoft.nova.tree.TreeNode#clone(TreeNode)
 	 */
 	@Override
-	public ArgumentListNode clone(TreeNode temporaryParent)
+	public ArgumentListNode clone(TreeNode temporaryParent, Location locationIn)
 	{
-		ArgumentListNode node = new ArgumentListNode(temporaryParent);
+		ArgumentListNode node = new ArgumentListNode(temporaryParent, locationIn);
 		
 		return cloneTo(node);
 	}

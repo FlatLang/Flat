@@ -33,9 +33,9 @@ public class ExceptionNode extends TreeNode
 	/**
 	 * @see net.fathomsoft.nova.tree.TreeNode#TreeNode(TreeNode)
 	 */
-	public ExceptionNode(TreeNode temporaryParent)
+	public ExceptionNode(TreeNode temporaryParent, Location locationIn)
 	{
-		super(temporaryParent);
+		super(temporaryParent, locationIn);
 	}
 	
 	/**
@@ -92,9 +92,9 @@ public class ExceptionNode extends TreeNode
 	 * @see net.fathomsoft.nova.tree.TreeNode#clone(TreeNode)
 	 */
 	@Override
-	public ExceptionNode clone(TreeNode temporaryParent)
+	public ExceptionNode clone(TreeNode temporaryParent, Location locationIn)
 	{
-		ExceptionNode node = new ExceptionNode(temporaryParent);
+		ExceptionNode node = new ExceptionNode(temporaryParent, locationIn);
 		
 		return cloneTo(node);
 	}

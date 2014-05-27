@@ -1,6 +1,7 @@
 package net.fathomsoft.nova.tree.variables;
 
 import net.fathomsoft.nova.tree.TreeNode;
+import net.fathomsoft.nova.util.Location;
 
 /**
  * Node that holds the LocalVariableNodes that a method contains.
@@ -14,9 +15,9 @@ public class VariableListNode extends TreeNode
 	/**
 	 * @see net.fathomsoft.nova.tree.TreeNode#TreeNode(TreeNode)
 	 */
-	public VariableListNode(TreeNode temporaryParent)
+	public VariableListNode(TreeNode temporaryParent, Location locationIn)
 	{
-		super(temporaryParent);
+		super(temporaryParent, locationIn);
 	}
 	
 	/**
@@ -131,9 +132,9 @@ public class VariableListNode extends TreeNode
 	 * @see net.fathomsoft.nova.tree.TreeNode#clone(TreeNode)
 	 */
 	@Override
-	public VariableListNode clone(TreeNode temporaryParent)
+	public VariableListNode clone(TreeNode temporaryParent, Location locationIn)
 	{
-		VariableListNode node = new VariableListNode(temporaryParent);
+		VariableListNode node = new VariableListNode(temporaryParent, locationIn);
 		
 		return cloneTo(node);
 	}

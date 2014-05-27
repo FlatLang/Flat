@@ -19,9 +19,9 @@ public class FinallyNode extends ExceptionHandlingNode
 	/**
 	 * @see net.fathomsoft.nova.tree.TreeNode#TreeNode(TreeNode)
 	 */
-	public FinallyNode(TreeNode temporaryParent)
+	public FinallyNode(TreeNode temporaryParent, Location locationIn)
 	{
-		super(temporaryParent);
+		super(temporaryParent, locationIn);
 	}
 	
 	/**
@@ -65,7 +65,7 @@ public class FinallyNode extends ExceptionHandlingNode
 	{
 		if (Regex.matches(statement, 0, Patterns.FINALLY))
 		{
-			FinallyNode n = new FinallyNode(parent);
+			FinallyNode n = new FinallyNode(parent, location);
 			
 			return n;
 		}
@@ -77,9 +77,9 @@ public class FinallyNode extends ExceptionHandlingNode
 	 * @see net.fathomsoft.nova.tree.TreeNode#clone(TreeNode)
 	 */
 	@Override
-	public FinallyNode clone(TreeNode temporaryParent)
+	public FinallyNode clone(TreeNode temporaryParent, Location locationIn)
 	{
-		FinallyNode node = new FinallyNode(temporaryParent);
+		FinallyNode node = new FinallyNode(temporaryParent, locationIn);
 		
 		return cloneTo(node);
 	}

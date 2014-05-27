@@ -18,11 +18,11 @@ public class ExceptionHandlingNode extends TreeNode
 	/**
 	 * Instantiate and initialize default values.
 	 */
-	public ExceptionHandlingNode(TreeNode temporaryParent)
+	public ExceptionHandlingNode(TreeNode temporaryParent, Location locationIn)
 	{
-		super(temporaryParent);
+		super(temporaryParent, locationIn);
 		
-		ScopeNode scopeNode = new ScopeNode(this);
+		ScopeNode scopeNode = new ScopeNode(this, locationIn);
 		
 		addChild(scopeNode);
 	}
@@ -99,9 +99,9 @@ public class ExceptionHandlingNode extends TreeNode
 	 * @see net.fathomsoft.nova.tree.TreeNode#clone(TreeNode)
 	 */
 	@Override
-	public ExceptionHandlingNode clone(TreeNode temporaryParent)
+	public ExceptionHandlingNode clone(TreeNode temporaryParent, Location locationIn)
 	{
-		ExceptionHandlingNode node = new ExceptionHandlingNode(temporaryParent);
+		ExceptionHandlingNode node = new ExceptionHandlingNode(temporaryParent, locationIn);
 		
 		return cloneTo(node);
 	}

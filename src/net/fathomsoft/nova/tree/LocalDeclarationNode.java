@@ -23,9 +23,9 @@ public class LocalDeclarationNode extends LocalVariableNode
 	/**
 	 * @see net.fathomsoft.nova.tree.TreeNode#TreeNode(TreeNode)
 	 */
-	public LocalDeclarationNode(TreeNode temporaryParent)
+	public LocalDeclarationNode(TreeNode temporaryParent, Location locationIn)
 	{
-		super(temporaryParent);
+		super(temporaryParent, locationIn);
 	}
 
 	/**
@@ -61,7 +61,7 @@ public class LocalDeclarationNode extends LocalVariableNode
 		final boolean error[]         = new boolean[1];
 		final String  oldWord[]       = new String[1];
 			
-		LocalDeclarationNode n = new LocalDeclarationNode(parent)
+		LocalDeclarationNode n = new LocalDeclarationNode(parent, location)
 		{
 			@Override
 			public void interactWord(String word, int wordNumber, Bounds bounds, int numWords, String leftDelimiter, String rightDelimiter)

@@ -18,11 +18,11 @@ public class LoopNode extends TreeNode
 	 * 
 	 * @see net.fathomsoft.nova.tree.TreeNode#TreeNode(TreeNode)
 	 */
-	public LoopNode(TreeNode temporaryParent)
+	public LoopNode(TreeNode temporaryParent, Location locationIn)
 	{
-		super(temporaryParent);
+		super(temporaryParent, locationIn);
 		
-		ScopeNode scopeNode = new ScopeNode(this);
+		ScopeNode scopeNode = new ScopeNode(this, locationIn);
 		
 		super.addChild(scopeNode);
 	}
@@ -86,9 +86,9 @@ public class LoopNode extends TreeNode
 	 * @see net.fathomsoft.nova.tree.TreeNode#clone(TreeNode)
 	 */
 	@Override
-	public LoopNode clone(TreeNode temporaryParent)
+	public LoopNode clone(TreeNode temporaryParent, Location locationIn)
 	{
-		LoopNode node = new LoopNode(temporaryParent);
+		LoopNode node = new LoopNode(temporaryParent, locationIn);
 		
 		return cloneTo(node);
 	}

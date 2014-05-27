@@ -25,9 +25,9 @@ public class UnaryOperatorNode extends TreeNode
 	/**
 	 * @see net.fathomsoft.nova.tree.TreeNode#TreeNode(TreeNode)
 	 */
-	public UnaryOperatorNode(TreeNode temporaryParent)
+	public UnaryOperatorNode(TreeNode temporaryParent, Location locationIn)
 	{
-		super(temporaryParent);
+		super(temporaryParent, locationIn);
 	}
 	
 	/**
@@ -152,11 +152,11 @@ public class UnaryOperatorNode extends TreeNode
 		
 		if (bounds.getStart() >= 0)
 		{
-			UnaryOperatorNode n = new UnaryOperatorNode(parent);
+			UnaryOperatorNode n = new UnaryOperatorNode(parent, location);
 				
 			String operatorVal  = statement.substring(bounds.getStart(), bounds.getEnd());
 			
-			OperatorNode operator = new OperatorNode(n);
+			OperatorNode operator = new OperatorNode(n, location);
 			operator.setOperator(operatorVal);
 			
 			int varStart = 0;
@@ -195,7 +195,7 @@ public class UnaryOperatorNode extends TreeNode
 			
 			if (variable != null)
 			{
-				variable = variable.clone(n);
+				variable = variable.clone(n, location);
 				
 				n.addChild(variable);
 				
@@ -217,9 +217,9 @@ public class UnaryOperatorNode extends TreeNode
 	 * @see net.fathomsoft.nova.tree.TreeNode#clone(TreeNode)
 	 */
 	@Override
-	public UnaryOperatorNode clone(TreeNode temporaryParent)
+	public UnaryOperatorNode clone(TreeNode temporaryParent, Location locationIn)
 	{
-		UnaryOperatorNode node = new UnaryOperatorNode(temporaryParent);
+		UnaryOperatorNode node = new UnaryOperatorNode(temporaryParent, locationIn);
 		
 		return cloneTo(node);
 	}

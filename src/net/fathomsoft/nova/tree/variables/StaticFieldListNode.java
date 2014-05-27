@@ -2,6 +2,7 @@ package net.fathomsoft.nova.tree.variables;
 
 import net.fathomsoft.nova.tree.ClassNode;
 import net.fathomsoft.nova.tree.TreeNode;
+import net.fathomsoft.nova.util.Location;
 
 /**
  * TreeNode extensions that contains all of the private FieldNode
@@ -16,9 +17,9 @@ public class StaticFieldListNode extends TreeNode
 	/**
 	 * @see net.fathomsoft.nova.tree.TreeNode#TreeNode(TreeNode)
 	 */
-	public StaticFieldListNode(TreeNode temporaryParent)
+	public StaticFieldListNode(TreeNode temporaryParent, Location locationIn)
 	{
-		super(temporaryParent);
+		super(temporaryParent, locationIn);
 	}
 	
 	/**
@@ -95,9 +96,9 @@ public class StaticFieldListNode extends TreeNode
 	 * @see net.fathomsoft.nova.tree.TreeNode#clone(TreeNode)
 	 */
 	@Override
-	public StaticFieldListNode clone(TreeNode temporaryParent)
+	public StaticFieldListNode clone(TreeNode temporaryParent, Location locationIn)
 	{
-		StaticFieldListNode node = new StaticFieldListNode(temporaryParent);
+		StaticFieldListNode node = new StaticFieldListNode(temporaryParent, locationIn);
 		
 		return cloneTo(node);
 	}

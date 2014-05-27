@@ -22,9 +22,9 @@ public class CatchNode extends ExceptionHandlingNode
 	/**
 	 * @see net.fathomsoft.nova.tree.TreeNode#TreeNode(TreeNode)
 	 */
-	public CatchNode(TreeNode temporaryParent)
+	public CatchNode(TreeNode temporaryParent, Location locationIn)
 	{
-		super(temporaryParent);
+		super(temporaryParent, locationIn);
 	}
 
 	/**
@@ -141,7 +141,7 @@ public class CatchNode extends ExceptionHandlingNode
 	{
 		if (Regex.matches(statement, 0, Patterns.PRE_CATCH))
 		{
-			CatchNode n = new CatchNode(parent);
+			CatchNode n = new CatchNode(parent, location);
 			
 			Bounds bounds = Regex.boundsOf(statement, Patterns.POST_CATCH);
 			
@@ -159,7 +159,7 @@ public class CatchNode extends ExceptionHandlingNode
 				{
 					n.addChild(exceptionInstance);
 					
-					ExceptionNode exception = new ExceptionNode(n);
+					ExceptionNode exception = new ExceptionNode(n, newLoc);
 					exception.setType(exceptionInstance.getType());
 					
 					if (exception.getID() > 0)
@@ -198,9 +198,9 @@ public class CatchNode extends ExceptionHandlingNode
 	 * @see net.fathomsoft.nova.tree.TreeNode#clone(TreeNode)
 	 */
 	@Override
-	public CatchNode clone(TreeNode temporaryParent)
+	public CatchNode clone(TreeNode temporaryParent, Location locationIn)
 	{
-		CatchNode node = new CatchNode(temporaryParent);
+		CatchNode node = new CatchNode(temporaryParent, locationIn);
 		
 		return cloneTo(node);
 	}

@@ -27,9 +27,9 @@ public class FieldNode extends InstanceDeclarationNode
 	/**
 	 * @see net.fathomsoft.nova.tree.TreeNode#TreeNode(TreeNode)
 	 */
-	public FieldNode(TreeNode temporaryParent)
+	public FieldNode(TreeNode temporaryParent, Location locationIn)
 	{
-		super(temporaryParent);
+		super(temporaryParent, locationIn);
 	}
 	
 	/**
@@ -183,7 +183,7 @@ public class FieldNode extends InstanceDeclarationNode
 		// The field declaration without the field specific modifiers.
 		final Bounds localDeclaration = new Bounds(-1, -1);
 		
-		FieldNode n = new FieldNode(parent)
+		FieldNode n = new FieldNode(parent, location)
 		{
 			public void interactWord(String word, int wordNumber, Bounds bounds, int numWords)
 			{
@@ -229,9 +229,9 @@ public class FieldNode extends InstanceDeclarationNode
 	 * @see net.fathomsoft.nova.tree.TreeNode#clone(TreeNode)
 	 */
 	@Override
-	public FieldNode clone(TreeNode temporaryParent)
+	public FieldNode clone(TreeNode temporaryParent, Location locationIn)
 	{
-		FieldNode node = new FieldNode(temporaryParent);
+		FieldNode node = new FieldNode(temporaryParent, locationIn);
 		
 		return cloneTo(node);
 	}

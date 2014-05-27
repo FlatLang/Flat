@@ -1,6 +1,7 @@
 package net.fathomsoft.nova.tree;
 
 import net.fathomsoft.nova.tree.variables.VariableNode;
+import net.fathomsoft.nova.util.Location;
 
 /**
  * VariableNode extension that represents the declaration of a field
@@ -41,9 +42,9 @@ public class InstanceDeclarationNode extends VariableNode
 	 * 
 	 * @see net.fathomsoft.nova.tree.TreeNode#TreeNode(TreeNode)
 	 */
-	public InstanceDeclarationNode(TreeNode temporaryParent)
+	public InstanceDeclarationNode(TreeNode temporaryParent, Location locationIn)
 	{
-		super(temporaryParent);
+		super(temporaryParent, locationIn);
 		
 		setVisibility(PRIVATE);
 	}
@@ -305,9 +306,9 @@ public class InstanceDeclarationNode extends VariableNode
 	 * @see net.fathomsoft.nova.tree.TreeNode#clone(TreeNode)
 	 */
 	@Override
-	public InstanceDeclarationNode clone(TreeNode temporaryParent)
+	public InstanceDeclarationNode clone(TreeNode temporaryParent, Location locationIn)
 	{
-		InstanceDeclarationNode node = new InstanceDeclarationNode(temporaryParent);
+		InstanceDeclarationNode node = new InstanceDeclarationNode(temporaryParent, locationIn);
 		
 		return cloneTo(node);
 	}

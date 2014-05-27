@@ -1,5 +1,7 @@
 package net.fathomsoft.nova.tree;
 
+import net.fathomsoft.nova.util.Location;
+
 /**
  * TreeNode extension that represents a condition. Conditions can be
  * found in if/else if statements, for/while loops, etc.
@@ -13,18 +15,18 @@ public class ConditionNode extends TreeNode
 	/**
 	 * @see net.fathomsoft.nova.tree.TreeNode#TreeNode(TreeNode)
 	 */
-	public ConditionNode(TreeNode temporaryParent)
+	public ConditionNode(TreeNode temporaryParent, Location locationIn)
 	{
-		super(temporaryParent);
+		super(temporaryParent, locationIn);
 	}
 	
 	/**
 	 * @see net.fathomsoft.nova.tree.TreeNode#clone(TreeNode)
 	 */
 	@Override
-	public ConditionNode clone(TreeNode temporaryParent)
+	public ConditionNode clone(TreeNode temporaryParent, Location locationIn)
 	{
-		ConditionNode node = new ConditionNode(temporaryParent);
+		ConditionNode node = new ConditionNode(temporaryParent, locationIn);
 		
 		return cloneTo(node);
 	}

@@ -19,9 +19,9 @@ public class ReturnNode extends ValueNode
 	/**
 	 * @see net.fathomsoft.nova.tree.TreeNode#TreeNode(TreeNode)
 	 */
-	public ReturnNode(TreeNode temporaryParent)
+	public ReturnNode(TreeNode temporaryParent, Location locationIn)
 	{
-		super(temporaryParent);
+		super(temporaryParent, locationIn);
 	}
 
 	/**
@@ -109,7 +109,7 @@ public class ReturnNode extends ValueNode
 	{
 		if (Regex.startsWith(statement, Patterns.PRE_RETURN))
 		{
-			ReturnNode n = new ReturnNode(parent);
+			ReturnNode n = new ReturnNode(parent, location);
 			
 			MethodNode method = (MethodNode)parent.getAncestorOfType(MethodNode.class, true);
 			n.setType(method.getType());
@@ -161,9 +161,9 @@ public class ReturnNode extends ValueNode
 	 * @see net.fathomsoft.nova.tree.TreeNode#clone(TreeNode)
 	 */
 	@Override
-	public ReturnNode clone(TreeNode temporaryParent)
+	public ReturnNode clone(TreeNode temporaryParent, Location locationIn)
 	{
-		ReturnNode node = new ReturnNode(temporaryParent);
+		ReturnNode node = new ReturnNode(temporaryParent, locationIn);
 		
 		return cloneTo(node);
 	}

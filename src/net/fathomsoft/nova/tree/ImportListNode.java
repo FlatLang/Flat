@@ -1,5 +1,7 @@
 package net.fathomsoft.nova.tree;
 
+import net.fathomsoft.nova.util.Location;
+
 /**
  * TreeNode extension that contains children of the type ImportNode.
  * Contains all of a files imports.
@@ -13,9 +15,9 @@ public class ImportListNode extends TreeNode
 	/**
 	 * @see net.fathomsoft.nova.tree.TreeNode#TreeNode(TreeNode)
 	 */
-	public ImportListNode(TreeNode temporaryParent)
+	public ImportListNode(TreeNode temporaryParent, Location locationIn)
 	{
-		super(temporaryParent);
+		super(temporaryParent, locationIn);
 	}
 	
 	/**
@@ -121,9 +123,9 @@ public class ImportListNode extends TreeNode
 	 * @see net.fathomsoft.nova.tree.TreeNode#clone(TreeNode)
 	 */
 	@Override
-	public ImportListNode clone(TreeNode temporaryParent)
+	public ImportListNode clone(TreeNode temporaryParent, Location locationIn)
 	{
-		ImportListNode node = new ImportListNode(temporaryParent);
+		ImportListNode node = new ImportListNode(temporaryParent, locationIn);
 		
 		return cloneTo(node);
 	}

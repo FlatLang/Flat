@@ -25,9 +25,9 @@ public class TryNode extends ExceptionHandlingNode
 	 * 
 	 * @see net.fathomsoft.nova.tree.TreeNode#TreeNode(TreeNode)
 	 */
-	public TryNode(TreeNode temporaryParent)
+	public TryNode(TreeNode temporaryParent, Location locationIn)
 	{
-		super(temporaryParent);
+		super(temporaryParent, locationIn);
 		
 		codes = new ArrayList<Integer>();
 	}
@@ -79,7 +79,7 @@ public class TryNode extends ExceptionHandlingNode
 	{
 		if (Regex.matches(statement, 0, Patterns.TRY))
 		{
-			TryNode n = new TryNode(parent);
+			TryNode n = new TryNode(parent, location);
 			
 			return n;
 		}
@@ -113,9 +113,9 @@ public class TryNode extends ExceptionHandlingNode
 	 * @see net.fathomsoft.nova.tree.TreeNode#clone(TreeNode)
 	 */
 	@Override
-	public TryNode clone(TreeNode temporaryParent)
+	public TryNode clone(TreeNode temporaryParent, Location locationIn)
 	{
-		TryNode node = new TryNode(temporaryParent);
+		TryNode node = new TryNode(temporaryParent, locationIn);
 		
 		return cloneTo(node);
 	}

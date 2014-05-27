@@ -2,6 +2,7 @@ package net.fathomsoft.nova.tree;
 
 import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.error.SyntaxMessage;
+import net.fathomsoft.nova.util.Location;
 import net.fathomsoft.nova.util.SyntaxUtils;
 
 /**
@@ -50,11 +51,11 @@ public class FileNode extends IdentifierNode
 	 * 
 	 * @see net.fathomsoft.nova.tree.TreeNode#TreeNode(TreeNode)
 	 */
-	public FileNode(TreeNode temporaryParent)
+	public FileNode(TreeNode temporaryParent, Location locationIn)
 	{
-		super(temporaryParent);
+		super(temporaryParent, locationIn);
 		
-		ImportListNode imports = new ImportListNode(this);
+		ImportListNode imports = new ImportListNode(this, locationIn);
 		
 		super.addChild(imports);
 		
@@ -302,7 +303,7 @@ public class FileNode extends IdentifierNode
 		{
 			StringBuilder builder = new StringBuilder();
 			
-			ImportNode thisImport = new ImportNode(this);
+			ImportNode thisImport = new ImportNode(this, null);
 			thisImport.setImportLocation(getName());
 			
 			builder.append(thisImport.generateCSource());
@@ -363,7 +364,7 @@ public class FileNode extends IdentifierNode
 	{
 		for (String importLoc : DEFAULT_IMPORTS)
 		{
-			ImportNode importNode = new ImportNode(this);
+			ImportNode importNode = new ImportNode(this, getLocationIn());
 			
 			if (importLoc.endsWith(".h"))
 			{
@@ -436,9 +437,9 @@ public class FileNode extends IdentifierNode
 	 * @see net.fathomsoft.nova.tree.TreeNode#clone(TreeNode)
 	 */
 	@Override
-	public FileNode clone(TreeNode temporaryParent)
+	public FileNode clone(TreeNode temporaryParent, Location locationIn)
 	{
-		FileNode node = new FileNode(temporaryParent);
+		FileNode node = new FileNode(temporaryParent, locationIn);
 		
 		return cloneTo(node);
 	}

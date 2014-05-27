@@ -1,5 +1,7 @@
 package net.fathomsoft.nova.tree;
 
+import net.fathomsoft.nova.util.Location;
+
 
 /**
  * TreeNode extension that represents all of the Methods within
@@ -14,9 +16,9 @@ public class MethodListNode extends TreeNode
 	/**
 	 * @see net.fathomsoft.nova.tree.TreeNode#TreeNode(TreeNode)
 	 */
-	public MethodListNode(TreeNode temporaryParent)
+	public MethodListNode(TreeNode temporaryParent, Location locationIn)
 	{
-		super(temporaryParent);
+		super(temporaryParent, locationIn);
 	}
 	
 	/**
@@ -218,9 +220,9 @@ public class MethodListNode extends TreeNode
 	 * @see net.fathomsoft.nova.tree.TreeNode#clone(TreeNode)
 	 */
 	@Override
-	public MethodListNode clone(TreeNode temporaryParent)
+	public MethodListNode clone(TreeNode temporaryParent, Location locationIn)
 	{
-		MethodListNode node = new MethodListNode(temporaryParent);
+		MethodListNode node = new MethodListNode(temporaryParent, locationIn);
 		
 		return cloneTo(node);
 	}

@@ -30,18 +30,18 @@ public class ClassNode extends InstanceDeclarationNode
 	 * 
 	 * @see net.fathomsoft.nova.tree.TreeNode#TreeNode(TreeNode)
 	 */
-	public ClassNode(TreeNode temporaryParent)
+	public ClassNode(TreeNode temporaryParent, Location locationIn)
 	{
-		super(temporaryParent);
+		super(temporaryParent, locationIn);
 		
 		implementedClasses = new String[0];
 		
 		setType("class");
 		
-		FieldListNode  fields       = new FieldListNode(this);
-		MethodListNode constructors = new MethodListNode(this);
-		MethodListNode destructors  = new MethodListNode(this);
-		MethodListNode methods      = new MethodListNode(this);
+		FieldListNode  fields       = new FieldListNode(this, null);
+		MethodListNode constructors = new MethodListNode(this, null);
+		MethodListNode destructors  = new MethodListNode(this, null);
+		MethodListNode methods      = new MethodListNode(this, null);
 		
 		super.addChild(fields);
 		super.addChild(constructors);
@@ -788,7 +788,7 @@ public class ClassNode extends InstanceDeclarationNode
 			final boolean implementing[] = new boolean[1];
 			final String  prevWord[]     = new String[] { "" };
 			
-			ClassNode n = new ClassNode(parent)
+			ClassNode n = new ClassNode(parent, location)
 			{
 				public void interactWord(String word, int wordNumber, Bounds bounds, int numWords)
 				{
@@ -903,7 +903,7 @@ public class ClassNode extends InstanceDeclarationNode
 		{
 			Location loc = new Location();
 			
-			ConstructorNode defaultConstructor = new ConstructorNode(this);
+			ConstructorNode defaultConstructor = new ConstructorNode(this, null);
 			defaultConstructor.setName(getName());
 			defaultConstructor.setType(getName());
 			defaultConstructor.setVisibility(FieldNode.PUBLIC);
@@ -915,7 +915,7 @@ public class ClassNode extends InstanceDeclarationNode
 		{
 			Location loc = new Location();
 			
-			DestructorNode defaultDestructor = new DestructorNode(this);
+			DestructorNode defaultDestructor = new DestructorNode(this, null);
 			defaultDestructor.setName(getName());
 			defaultDestructor.setType("void");
 			defaultDestructor.setVisibility(FieldNode.PUBLIC);
@@ -1130,9 +1130,9 @@ public class ClassNode extends InstanceDeclarationNode
 	 * @see net.fathomsoft.nova.tree.TreeNode#clone(TreeNode)
 	 */
 	@Override
-	public ClassNode clone(TreeNode temporaryParent)
+	public ClassNode clone(TreeNode temporaryParent, Location locationIn)
 	{
-		ClassNode node = new ClassNode(temporaryParent);
+		ClassNode node = new ClassNode(temporaryParent, locationIn);
 		
 		return cloneTo(node);
 	}

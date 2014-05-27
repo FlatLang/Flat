@@ -1,5 +1,7 @@
 package net.fathomsoft.nova.tree;
 
+import net.fathomsoft.nova.util.Location;
+
 /**
  * TreeNode extension that contains all of the dimension attributes
  * for an array declaration.
@@ -13,9 +15,9 @@ public class DimensionsNode extends TreeNode
 	/**
 	 * @see net.fathomsoft.nova.tree.TreeNode#TreeNode(TreeNode)
 	 */
-	public DimensionsNode(TreeNode temporaryParent)
+	public DimensionsNode(TreeNode temporaryParent, Location locationIn)
 	{
-		super(temporaryParent);
+		super(temporaryParent, locationIn);
 	}
 
 	/**
@@ -40,9 +42,9 @@ public class DimensionsNode extends TreeNode
 	 * @see net.fathomsoft.nova.tree.TreeNode#clone(TreeNode)
 	 */
 	@Override
-	public DimensionsNode clone(TreeNode temporaryParent)
+	public DimensionsNode clone(TreeNode temporaryParent, Location locationIn)
 	{
-		DimensionsNode node = new DimensionsNode(temporaryParent);
+		DimensionsNode node = new DimensionsNode(temporaryParent, locationIn);
 		
 		return cloneTo(node);
 	}

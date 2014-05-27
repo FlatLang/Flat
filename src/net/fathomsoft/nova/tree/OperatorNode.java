@@ -1,5 +1,7 @@
 package net.fathomsoft.nova.tree;
 
+import net.fathomsoft.nova.util.Location;
+
 /**
  * TreeNode extension that represents an operator in an operation.
  * 
@@ -14,9 +16,9 @@ public class OperatorNode extends TreeNode
 	/**
 	 * @see net.fathomsoft.nova.tree.TreeNode#TreeNode(TreeNode)
 	 */
-	public OperatorNode(TreeNode temporaryParent)
+	public OperatorNode(TreeNode temporaryParent, Location locationIn)
 	{
-		super(temporaryParent);
+		super(temporaryParent, locationIn);
 	}
 	
 	/**
@@ -79,9 +81,9 @@ public class OperatorNode extends TreeNode
 	 * @see net.fathomsoft.nova.tree.TreeNode#clone(TreeNode)
 	 */
 	@Override
-	public OperatorNode clone(TreeNode temporaryParent)
+	public OperatorNode clone(TreeNode temporaryParent, Location locationIn)
 	{
-		OperatorNode node = new OperatorNode(temporaryParent);
+		OperatorNode node = new OperatorNode(temporaryParent, locationIn);
 		
 		return cloneTo(node);
 	}

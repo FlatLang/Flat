@@ -24,9 +24,9 @@ public class ConstructorNode extends MethodNode
 	 * 
 	 * @see net.fathomsoft.nova.tree.TreeNode#TreeNode(TreeNode)
 	 */
-	public ConstructorNode(TreeNode temporaryParent)
+	public ConstructorNode(TreeNode temporaryParent, Location locationIn)
 	{
-		super(temporaryParent);
+		super(temporaryParent, locationIn);
 		
 		setPointer(true);
 	}
@@ -325,7 +325,7 @@ public class ConstructorNode extends MethodNode
 			
 			statement = statement.substring(0, firstParenthIndex);
 			
-			ConstructorNode n = new ConstructorNode(parent)
+			ConstructorNode n = new ConstructorNode(parent, location)
 			{
 				public void interactWord(String word, int wordNumber, Bounds bounds, int numWords)
 				{
@@ -371,9 +371,9 @@ public class ConstructorNode extends MethodNode
 	 * @see net.fathomsoft.nova.tree.TreeNode#clone(TreeNode)
 	 */
 	@Override
-	public ConstructorNode clone(TreeNode temporaryParent)
+	public ConstructorNode clone(TreeNode temporaryParent, Location locationIn)
 	{
-		ConstructorNode node = new ConstructorNode(temporaryParent);
+		ConstructorNode node = new ConstructorNode(temporaryParent, locationIn);
 		
 		return cloneTo(node);
 	}

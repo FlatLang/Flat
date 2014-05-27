@@ -19,9 +19,9 @@ public class ExternalStatementNode extends TreeNode
 	/**
 	 * @see net.fathomsoft.nova.tree.TreeNode#TreeNode(TreeNode)
 	 */
-	public ExternalStatementNode(TreeNode temporaryParent)
+	public ExternalStatementNode(TreeNode temporaryParent, Location locationIn)
 	{
-		super(temporaryParent);
+		super(temporaryParent, locationIn);
 	}
 	
 	/**
@@ -100,7 +100,7 @@ public class ExternalStatementNode extends TreeNode
 	{
 		if (Regex.matches(statement, Patterns.EXTERNAL))
 		{
-			ExternalStatementNode n = new ExternalStatementNode(parent);
+			ExternalStatementNode n = new ExternalStatementNode(parent, location);
 			
 			return n;
 		}
@@ -112,9 +112,9 @@ public class ExternalStatementNode extends TreeNode
 	 * @see net.fathomsoft.nova.tree.TreeNode#clone(TreeNode)
 	 */
 	@Override
-	public ExternalStatementNode clone(TreeNode temporaryParent)
+	public ExternalStatementNode clone(TreeNode temporaryParent, Location locationIn)
 	{
-		ExternalStatementNode node = new ExternalStatementNode(temporaryParent);
+		ExternalStatementNode node = new ExternalStatementNode(temporaryParent, locationIn);
 		
 		return cloneTo(node);
 	}

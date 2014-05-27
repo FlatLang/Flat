@@ -19,9 +19,9 @@ public class ParameterNode extends LocalDeclarationNode
 	/**
 	 * @see net.fathomsoft.nova.tree.TreeNode#TreeNode(TreeNode)
 	 */
-	public ParameterNode(TreeNode temporaryParent)
+	public ParameterNode(TreeNode temporaryParent, Location locationIn)
 	{
-		super(temporaryParent);
+		super(temporaryParent, locationIn);
 	}
 	
 	/**
@@ -129,7 +129,7 @@ public class ParameterNode extends LocalDeclarationNode
 	{
 		LocalDeclarationNode node = LocalDeclarationNode.decodeStatement(parent, statement, location);
 		
-		ParameterNode n = new ParameterNode(parent);
+		ParameterNode n = new ParameterNode(parent, location);
 		node.cloneTo(n);
 		
 		return n;

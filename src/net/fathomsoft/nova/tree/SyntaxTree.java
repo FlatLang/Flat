@@ -324,7 +324,7 @@ public class SyntaxTree
 							insertIndex = i;
 						}
 						
-						finallyNode = new FinallyNode(parent);
+						finallyNode = new FinallyNode(parent, null);
 						parent.addChild(insertIndex, finallyNode);
 					}
 				}
@@ -828,7 +828,7 @@ public class SyntaxTree
 			
 			controller.log("Phase one for '" + filename + "'...");
 			
-			FileNode fileNode = new FileNode(root);
+			FileNode fileNode = new FileNode(root, null);
 			fileNode.setName(filename);
 			
 			root.addChild(fileNode);
