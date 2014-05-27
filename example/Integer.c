@@ -10,16 +10,16 @@
 #include "IO.h"
 #include "Integer.h"
 #include "DivideByZeroException.h"
-int nova_Integer_pow(ExceptionData* exceptionData, int nova_Integer_a_130, int nova_Integer_b_130);
-int nova_Integer_positivePow(ExceptionData* exceptionData, int nova_Integer_a_140, int nova_Integer_b_140);
+int nova_Integer_pow(ExceptionData* exceptionData, int nova_Integer_a_33, int nova_Integer_b_33);
+int nova_Integer_positivePow(ExceptionData* exceptionData, int nova_Integer_a_43, int nova_Integer_b_43);
 
-Integer* nova_Integer_Integer(ExceptionData* exceptionData, int nova_Integer_value_74)
+Integer* nova_Integer_Integer(ExceptionData* exceptionData, int nova_Integer_value_20)
 {
 	CCLASS_NEW(Integer, this,);
 	
 	this->nova_Integer_value = 0;
 	{
-		this->nova_Integer_value = nova_Integer_value_74;
+		this->nova_Integer_value = nova_Integer_value_20;
 	}
 	
 	return this;
@@ -38,33 +38,33 @@ void nova_del_Integer(Integer** this, ExceptionData* exceptionData)
 	free(*this);
 }
 
-int nova_Integer_numDigits(ExceptionData* exceptionData, int nova_Integer_number_90)
+int nova_Integer_numDigits(ExceptionData* exceptionData, int nova_Integer_number_28)
 {
-	int nova_Integer_size_90;
+	int nova_Integer_size_28;
 	
-	if (nova_Integer_number_90 < 0)
+	if (nova_Integer_number_28 < 0)
 	{
-		return nova_Integer_numDigits(exceptionData, -nova_Integer_number_90) + 1;
+		return nova_Integer_numDigits(exceptionData, -nova_Integer_number_28) + 1;
 	}
-	nova_Integer_size_90 = 1;
-	nova_Integer_number_90 = nova_Integer_number_90 / 10;
-	while (nova_Integer_number_90 > 0)
+	nova_Integer_size_28 = 1;
+	nova_Integer_number_28 = nova_Integer_number_28 / 10;
+	while (nova_Integer_number_28 > 0)
 	{
-		nova_Integer_number_90 = nova_Integer_number_90 / 10;
-		++nova_Integer_size_90;
+		nova_Integer_number_28 = nova_Integer_number_28 / 10;
+		++nova_Integer_size_28;
 	}
-	return nova_Integer_size_90;
+	return nova_Integer_size_28;
 }
 
-int nova_Integer_pow(ExceptionData* exceptionData, int nova_Integer_a_130, int nova_Integer_b_130)
+int nova_Integer_pow(ExceptionData* exceptionData, int nova_Integer_a_33, int nova_Integer_b_33)
 {
-	if (nova_Integer_b_130 == 0)
+	if (nova_Integer_b_33 == 0)
 	{
 		return 1;
 	}
-	else if (nova_Integer_b_130 > 0)
+	else if (nova_Integer_b_33 > 0)
 	{
-		return nova_Integer_positivePow(exceptionData, nova_Integer_a_130, nova_Integer_b_130);
+		return nova_Integer_positivePow(exceptionData, nova_Integer_a_33, nova_Integer_b_33);
 	}
 	else
 	{
@@ -72,47 +72,47 @@ int nova_Integer_pow(ExceptionData* exceptionData, int nova_Integer_a_130, int n
 	}
 }
 
-int nova_Integer_positivePow(ExceptionData* exceptionData, int nova_Integer_a_140, int nova_Integer_b_140)
+int nova_Integer_positivePow(ExceptionData* exceptionData, int nova_Integer_a_43, int nova_Integer_b_43)
 {
-	int nova_Integer_i_140;
+	int nova_Integer_i_43;
 	
-	nova_Integer_i_140 = nova_Integer_b_140 - 2;
+	nova_Integer_i_43 = nova_Integer_b_43 - 2;
 	
-	for (; nova_Integer_i_140 >= 0; nova_Integer_i_140--)
+	for (; nova_Integer_i_43 >= 0; nova_Integer_i_43--)
 	{
-		nova_Integer_a_140 = nova_Integer_a_140 * nova_Integer_a_140;
+		nova_Integer_a_43 = nova_Integer_a_43 * nova_Integer_a_43;
 	}
-	return nova_Integer_a_140;
+	return nova_Integer_a_43;
 }
 
-String* nova_Integer_toAString(ExceptionData* exceptionData, int nova_Integer_value_158)
+String* nova_Integer_toAString(ExceptionData* exceptionData, int nova_Integer_value_50)
 {
-	int nova_Integer_index_158;
-	int nova_Integer_digits_158;
-	char* nova_Integer_data_158;
-	int nova_Integer_offset_158;
-	int nova_Integer_nums_158;
+	int nova_Integer_index_50;
+	int nova_Integer_digits_50;
+	char* nova_Integer_data_50;
+	int nova_Integer_offset_50;
+	int nova_Integer_nums_50;
 	
-	nova_Integer_index_158 = 0;
-	nova_Integer_digits_158 = nova_Integer_numDigits(exceptionData, nova_Integer_value_158);
-	nova_Integer_data_158 = (char*)malloc(sizeof(char) * (nova_Integer_digits_158 + 1));
-	nova_Integer_data_158[nova_Integer_digits_158] = '\0';
-	nova_Integer_offset_158 = 0;
-	if (nova_Integer_value_158 < 0)
+	nova_Integer_index_50 = 0;
+	nova_Integer_digits_50 = nova_Integer_numDigits(exceptionData, nova_Integer_value_50);
+	nova_Integer_data_50 = (char*)malloc(sizeof(char) * (nova_Integer_digits_50 + 1));
+	nova_Integer_data_50[nova_Integer_digits_50] = '\0';
+	nova_Integer_offset_50 = 0;
+	if (nova_Integer_value_50 < 0)
 	{
-		nova_Integer_data_158[0] = '-';
-		nova_Integer_value_158 = -nova_Integer_value_158;
-		nova_Integer_offset_158 = 1;
+		nova_Integer_data_50[0] = '-';
+		nova_Integer_value_50 = -nova_Integer_value_50;
+		nova_Integer_offset_50 = 1;
 	}
-	nova_Integer_nums_158 = nova_Integer_digits_158 - nova_Integer_offset_158;
-	nova_Integer_digits_158 = nova_Integer_digits_158 - 1;
-	while (nova_Integer_index_158 < nova_Integer_nums_158)
+	nova_Integer_nums_50 = nova_Integer_digits_50 - nova_Integer_offset_50;
+	nova_Integer_digits_50 = nova_Integer_digits_50 - 1;
+	while (nova_Integer_index_50 < nova_Integer_nums_50)
 	{
-		nova_Integer_data_158[nova_Integer_digits_158 - nova_Integer_index_158] = '0' + nova_Integer_value_158 % 10;
-		nova_Integer_value_158 = nova_Integer_value_158 / 10;
-		++nova_Integer_index_158;
+		nova_Integer_data_50[nova_Integer_digits_50 - nova_Integer_index_50] = '0' + nova_Integer_value_50 % 10;
+		nova_Integer_value_50 = nova_Integer_value_50 / 10;
+		++nova_Integer_index_50;
 	}
-	return nova_String_String(exceptionData, nova_Integer_data_158);
+	return nova_String_String(exceptionData, nova_Integer_data_50);
 }
 
 String* nova_Integer_toString(Integer* this, ExceptionData* exceptionData)
