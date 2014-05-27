@@ -16,7 +16,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.2.4 Jan 5, 2014 at 9:10:49 PM
- * @version	v0.2.7 May 25, 2014 at 9:16:48 PM
+ * @version	v0.2.8 May 26, 2014 at 11:26:58 PM
  */
 public class LocalDeclarationNode extends LocalVariableNode
 {
@@ -59,7 +59,6 @@ public class LocalDeclarationNode extends LocalVariableNode
 		
 		final boolean decodingArray[] = new boolean[1];
 		final boolean error[]         = new boolean[1];
-		final boolean setExternal[]   = new boolean[1];
 		final String  oldWord[]       = new String[1];
 			
 		LocalDeclarationNode n = new LocalDeclarationNode(parent)
@@ -67,34 +66,23 @@ public class LocalDeclarationNode extends LocalVariableNode
 			@Override
 			public void interactWord(String word, int wordNumber, Bounds bounds, int numWords, String leftDelimiter, String rightDelimiter)
 			{
+				if (error[0])
+				{
+					return;
+				}
+				
 				if (!decodingArray[0])
 				{
-					if (wordNumber == numWords - 1 && getType() != null && (leftDelimiter.length() == 0 || StringUtils.containsOnly(leftDelimiter, new char[] { '*', '&' })))
+					if (wordNumber == numWords - 1)
 					{
-						setName(word);
-						
-						if (setExternal[0])
+						if (getType() == null || (leftDelimiter.length() != 0 && !StringUtils.containsOnly(leftDelimiter, new char[] { '*', '&' })))
 						{
-							for (int i = 0; i < leftDelimiter.length(); i++)
-							{
-								char c = leftDelimiter.charAt(i);
-								
-								if (c == '*')
-								{
-//									setPointer(true);
-								}
-								else if (c == '&')
-								{
-//									setReference(true);
-								}
-//								else
-//								{
-//									SyntaxMessage.error("Could not decode type '" + getType() + str + "', '" + getName() + "'", parent.getFileNode(), location, parent.getController());
-//									
-//									error[0] = true;
-//								}
-							}
+							error[0] = true;
+							
+							return;
 						}
+						
+						setName(word);
 						
 						if (leftDelimiter.length() > 0)
 						{
@@ -105,7 +93,7 @@ public class LocalDeclarationNode extends LocalVariableNode
 					{
 						if (getType() != null)
 						{
-							SyntaxMessage.error("Unknown fragement '" + leftDelimiter + word + "'", parent.getFileNode(), location, parent.getController());
+							SyntaxMessage.error("Unknown syntax '" + leftDelimiter + word + "'", parent.getFileNode(), location, parent.getController());
 							
 							error[0] = true;
 						}
