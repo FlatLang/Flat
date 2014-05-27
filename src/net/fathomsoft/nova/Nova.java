@@ -7,6 +7,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
+import net.fathomsoft.nova.error.SyntaxErrorException;
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.tree.ClassNode;
 import net.fathomsoft.nova.tree.FileNode;
@@ -26,7 +27,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:00:04 PM
- * @version	v0.2.7 May 25, 2014 at 9:16:48 PM
+ * @version	v0.2.8 May 26, 2014 at 11:26:58 PM
  */
 public class Nova
 {
@@ -72,7 +73,7 @@ public class Nova
 	public static final int		LINUX         = 3;
 	
 	public static final String	LANGUAGE_NAME = "Nova";
-	public static final String	VERSION       = "v0.2.7";
+	public static final String	VERSION       = "v0.2.8";
 	
 	/**
 	 * Find out which operating system the compiler is running on.
@@ -211,10 +212,10 @@ public class Nova
 		
 		parseArguments(args);
 		
-		log("Nova " + VERSION + " Copyright (C) 2014  Braden Steffaniak <BradenSteffaniak@gmail.com>\n" +
-				"This program comes with ABSOLUTELY NO WARRANTY\n" + //; for details type show w." +
-				"This is free software, and you are welcome to redistribute it\n" +
-				"under certain conditions");//; type show c for details.");
+//		log("Nova " + VERSION + " Copyright (C) 2014  Braden Steffaniak <BradenSteffaniak@gmail.com>\n" +
+//				"This program comes with ABSOLUTELY NO WARRANTY\n" + //; for details type show w." +
+//				"This is free software, and you are welcome to redistribute it\n" +
+//				"under certain conditions");//; type show c for details.");
 		
 		workingDir = new File(directory);
 		
@@ -640,7 +641,11 @@ public class Nova
 			errors.add("Compilation failed.");
 		}
 		
-		errors.add("Error: " + message);
+		String error = "Error: " + message;
+		
+		errors.add(error);
+		
+		throw new SyntaxErrorException(error);
 	}
 	
 	/**
