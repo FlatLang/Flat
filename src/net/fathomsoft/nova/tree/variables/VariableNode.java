@@ -20,7 +20,7 @@ import net.fathomsoft.nova.tree.exceptionhandling.ExceptionNode;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:02:42 PM
- * @version	v0.2.7 May 25, 2014 at 9:16:48 PM
+ * @version	v0.2.8 May 26, 2014 at 11:26:58 PM
  */
 public class VariableNode extends IdentifierNode
 {
@@ -86,6 +86,13 @@ public class VariableNode extends IdentifierNode
 	 */
 	public boolean isExternal()
 	{
+		if (getParent() instanceof FieldNode)
+		{
+			FieldNode field = (FieldNode)getParent();
+			
+			return field.isExternal();
+		}
+		
 		return external;
 	}
 	
@@ -550,36 +557,14 @@ public class VariableNode extends IdentifierNode
 	/**
 	 * Get the ClassNode instance that declared this variable.
 	 * 
+	 * @param programNode The ProgramNode to search for the Class in.
 	 * @return The ClassNode instance that declared this variable.
 	 */
 	public ClassNode getDeclaringClassNode()
 	{
-		return getDeclaringClassNode(getParent().getProgramNode());
-	}
-	
-	/**
-	 * Get the ClassNode instance that declared this variable.
-	 * 
-	 * @param programNode The ProgramNode to search for the Class in.
-	 * @return The ClassNode instance that declared this variable.
-	 */
-	public ClassNode getDeclaringClassNode(ProgramNode programNode)
-	{
-		VariableNode var = getDeclaration(programNode);
+		VariableNode var = getDeclaration();
 		
 		return var.getClassNode();
-	}
-	
-	/**
-	 * Get he Instance/LocalDeclarationNode that declares the
-	 * specified variable.
-	 * 
-	 * @return The Instance/LocalDeclarationNode that declares the
-	 * 		specified variable.
-	 */
-	public VariableNode getDeclaration()
-	{
-		return getDeclaration(getProgramNode());
 	}
 	
 	/**
@@ -591,9 +576,10 @@ public class VariableNode extends IdentifierNode
 	 * @return The Instance/LocalDeclarationNode that declares the
 	 * 		specified variable.
 	 */
-	public VariableNode getDeclaration(ProgramNode programNode)
+	public VariableNode getDeclaration()
 	{
-		TreeNode parent = getParent();
+		TreeNode    parent  = getParent();
+		ProgramNode program = parent.getProgramNode();
 		
 		if (this instanceof MethodNode)
 		{
@@ -603,7 +589,7 @@ public class VariableNode extends IdentifierNode
 		{
 			ValueNode value = (ValueNode)parent;
 			
-			ClassNode clazz = programNode.getClass(value.getType());
+			ClassNode clazz = program.getClass(value.getType());
 			
 			return clazz.getField(getName());
 		}
