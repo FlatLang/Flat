@@ -27,6 +27,6 @@ CCLASS_CLASS
 List* nova_List_List(ExceptionData* exceptionData);
 void nova_del_List(List** this, ExceptionData* exceptionData);
 ListNode* nova_List_getFirst(List* this, ExceptionData* exceptionData);
-void nova_List_add(List* this, ExceptionData* exceptionData, Object* nova_List_data_154);
-void nova_List_remove(List* this, ExceptionData* exceptionData, Object* nova_List_data_163);
+void nova_List_add(List* this, ExceptionData* exceptionData, Object* nova_List_data_68);
+void nova_List_remove(List* this, ExceptionData* exceptionData, Object* nova_List_data_73);
 #endif

@@ -18,14 +18,14 @@ CCLASS_PRIVATE
 	
 )
 
-ListNode* nova_ListNode_ListNode(ExceptionData* exceptionData, Object* nova_ListNode_data_33)
+ListNode* nova_ListNode_ListNode(ExceptionData* exceptionData, Object* nova_ListNode_data_105)
 {
 	CCLASS_NEW(ListNode, this);
 	
 	this->prv->nova_ListNode_data = 0;
 	this->prv->nova_ListNode_next = 0;
 	{
-		this->prv->nova_ListNode_data = nova_ListNode_data_33;
+		this->prv->nova_ListNode_data = nova_ListNode_data_105;
 	}
 	
 	return this;
@@ -57,7 +57,7 @@ ListNode* nova_ListNode_getNext(ListNode* this, ExceptionData* exceptionData)
 	return this->prv->nova_ListNode_next;
 }
 
-void nova_ListNode_setNext(ListNode* this, ExceptionData* exceptionData, ListNode* nova_ListNode_next_57)
+void nova_ListNode_setNext(ListNode* this, ExceptionData* exceptionData, ListNode* nova_ListNode_next_116)
 {
-	this->prv->nova_ListNode_next = nova_ListNode_next_57;
+	this->prv->nova_ListNode_next = nova_ListNode_next_116;
 }

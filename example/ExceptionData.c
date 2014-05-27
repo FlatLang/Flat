@@ -57,7 +57,7 @@ ArrayList* nova_ExceptionData_getCodes(ExceptionData* this, ExceptionData* excep
 	return this->prv->nova_ExceptionData_codes;
 }
 
-void nova_ExceptionData_addCode(ExceptionData* this, ExceptionData* exceptionData, int nova_ExceptionData_code_153)
+void nova_ExceptionData_addCode(ExceptionData* this, ExceptionData* exceptionData, int nova_ExceptionData_code_22)
 {
 	ArrayList* nova_ExceptionData_codes;
 }
@@ -67,63 +67,59 @@ jmp_buf* nova_ExceptionData_getBuffer(ExceptionData* this, ExceptionData* except
 	return this->prv->buffer;
 }
 
-void nova_ExceptionData_nothing(ExceptionData* this, ExceptionData* exceptionData)
+ExceptionData* nova_ExceptionData_getCorrectData(ExceptionData* this, ExceptionData* exceptionData, int nova_ExceptionData_code_28)
 {
-}
-
-ExceptionData* nova_ExceptionData_getCorrectData(ExceptionData* this, ExceptionData* exceptionData, int nova_ExceptionData_code_170)
-{
-	ExceptionData* nova_ExceptionData_data_170;
+	ExceptionData* nova_ExceptionData_data_28;
 	
-	nova_ExceptionData_data_170 = this;
-	while (nova_ExceptionData_data_170 != 0)
+	nova_ExceptionData_data_28 = this;
+	while (nova_ExceptionData_data_28 != 0)
 	{
-		ArrayList* nova_ExceptionData_list_230;
-		int nova_ExceptionData_i_230;
+		ArrayList* nova_ExceptionData_list_231;
+		int nova_ExceptionData_i_231;
 		
-		nova_ExceptionData_list_230 = nova_ExceptionData_getCodes(nova_ExceptionData_data_170, exceptionData);
-		nova_ExceptionData_i_230 = 0;
+		nova_ExceptionData_list_231 = nova_ExceptionData_getCodes(nova_ExceptionData_data_28, exceptionData);
+		nova_ExceptionData_i_231 = 0;
 		
-		for (; nova_ExceptionData_i_230 < nova_ArrayList_getSize(nova_ExceptionData_list_230, exceptionData); nova_ExceptionData_i_230++)
+		for (; nova_ExceptionData_i_231 < nova_ArrayList_getSize(nova_ExceptionData_list_231, exceptionData); nova_ExceptionData_i_231++)
 		{
-			if (nova_ArrayList_get(nova_ExceptionData_list_230, exceptionData, nova_ExceptionData_i_230) == nova_ExceptionData_code_170)
+			if (nova_ArrayList_get(nova_ExceptionData_list_231, exceptionData, nova_ExceptionData_i_231) == nova_ExceptionData_code_28)
 			{
-				return nova_ExceptionData_data_170;
+				return nova_ExceptionData_data_28;
 			}
 		}
-		if (nova_ExceptionData_getParent(nova_ExceptionData_data_170, exceptionData) == 0)
+		if (nova_ExceptionData_getParent(nova_ExceptionData_data_28, exceptionData) == 0)
 		{
-			return nova_ExceptionData_data_170;
+			return nova_ExceptionData_data_28;
 		}
-		nova_ExceptionData_data_170 = nova_ExceptionData_getParent(nova_ExceptionData_data_170, exceptionData);
+		nova_ExceptionData_data_28 = nova_ExceptionData_getParent(nova_ExceptionData_data_28, exceptionData);
 	}
 	return 0;
 }
 
-jmp_buf* nova_ExceptionData_getCorrectBuffer(ExceptionData* this, ExceptionData* exceptionData, int nova_ExceptionData_code_176)
+jmp_buf* nova_ExceptionData_getCorrectBuffer(ExceptionData* this, ExceptionData* exceptionData, int nova_ExceptionData_code_31)
 {
-	ExceptionData* nova_ExceptionData_data_176;
+	ExceptionData* nova_ExceptionData_data_31;
 	
-	nova_ExceptionData_data_176 = nova_ExceptionData_getCorrectData(this, exceptionData, nova_ExceptionData_code_176);
-	if (nova_ExceptionData_data_176 == 0)
+	nova_ExceptionData_data_31 = nova_ExceptionData_getCorrectData(this, exceptionData, nova_ExceptionData_code_31);
+	if (nova_ExceptionData_data_31 == 0)
 	{
 		return 0;
 	}
-	return nova_ExceptionData_getBuffer(nova_ExceptionData_data_176, exceptionData);
+	return nova_ExceptionData_getBuffer(nova_ExceptionData_data_31, exceptionData);
 }
 
-void nova_ExceptionData_jumpToBuffer(ExceptionData* this, ExceptionData* exceptionData, int nova_ExceptionData_code_179)
+void nova_ExceptionData_jumpToBuffer(ExceptionData* this, ExceptionData* exceptionData, int nova_ExceptionData_code_34)
 {
-	ExceptionData* nova_ExceptionData_data_179;
+	ExceptionData* nova_ExceptionData_data_34;
 	jmp_buf* buf;
 	
-	nova_ExceptionData_data_179 = nova_ExceptionData_getCorrectData(this, exceptionData, nova_ExceptionData_code_179);
-	if (nova_ExceptionData_getParent(nova_ExceptionData_data_179, exceptionData) == 0)
+	nova_ExceptionData_data_34 = nova_ExceptionData_getCorrectData(this, exceptionData, nova_ExceptionData_code_34);
+	if (nova_ExceptionData_getParent(nova_ExceptionData_data_34, exceptionData) == 0)
 	{
-		nova_ExceptionData_code_179 = 1;
+		nova_ExceptionData_code_34 = 1;
 	}
-	buf = nova_ExceptionData_getBuffer(nova_ExceptionData_data_179, exceptionData);
-	longjmp(*buf, nova_ExceptionData_code_179);
+	buf = nova_ExceptionData_getBuffer(nova_ExceptionData_data_34, exceptionData);
+	longjmp(*buf, nova_ExceptionData_code_34);
 }
 
 ExceptionData* nova_ExceptionData_getParent(ExceptionData* this, ExceptionData* exceptionData)
@@ -131,7 +127,7 @@ ExceptionData* nova_ExceptionData_getParent(ExceptionData* this, ExceptionData* 
 	return this->prv->nova_ExceptionData_parent;
 }
 
-void nova_ExceptionData_setParent(ExceptionData* this, ExceptionData* exceptionData, ExceptionData* nova_ExceptionData_p_187)
+void nova_ExceptionData_setParent(ExceptionData* this, ExceptionData* exceptionData, ExceptionData* nova_ExceptionData_p_40)
 {
-	this->prv->nova_ExceptionData_parent = nova_ExceptionData_p_187;
+	this->prv->nova_ExceptionData_parent = nova_ExceptionData_p_40;
 }

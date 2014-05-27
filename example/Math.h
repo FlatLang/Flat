@@ -24,16 +24,16 @@ CCLASS_CLASS
 
 Math* nova_Math_Math(ExceptionData* exceptionData);
 void nova_del_Math(Math** this, ExceptionData* exceptionData);
-double nova_Math_abs(ExceptionData* exceptionData, double nova_Math_number_84);
-double nova_Math_sqrt(ExceptionData* exceptionData, double nova_Math_number_95);
-double nova_Math_pow(ExceptionData* exceptionData, double nova_Math_base_101, double nova_Math_power_101);
-double nova_Math_sin(ExceptionData* exceptionData, double nova_Math_number_107);
-double nova_Math_cos(ExceptionData* exceptionData, double nova_Math_number_115);
-double nova_Math_tan(ExceptionData* exceptionData, double nova_Math_number_123);
-double nova_Math_asin(ExceptionData* exceptionData, double nova_Math_number_131);
-double nova_Math_acos(ExceptionData* exceptionData, double nova_Math_number_134);
-double nova_Math_atan(ExceptionData* exceptionData, double nova_Math_number_137);
-long nova_Math_round(ExceptionData* exceptionData, double nova_Math_number_140);
-long nova_Math_floor(ExceptionData* exceptionData, double nova_Math_number_143);
-long nova_Math_ceil(ExceptionData* exceptionData, double nova_Math_number_146);
+double nova_Math_abs(ExceptionData* exceptionData, double nova_Math_number_52);
+double nova_Math_sqrt(ExceptionData* exceptionData, double nova_Math_number_58);
+double nova_Math_pow(ExceptionData* exceptionData, double nova_Math_base_64, double nova_Math_power_64);
+double nova_Math_sin(ExceptionData* exceptionData, double nova_Math_number_72);
+double nova_Math_cos(ExceptionData* exceptionData, double nova_Math_number_77);
+double nova_Math_tan(ExceptionData* exceptionData, double nova_Math_number_86);
+double nova_Math_asin(ExceptionData* exceptionData, double nova_Math_number_97);
+double nova_Math_acos(ExceptionData* exceptionData, double nova_Math_number_132);
+double nova_Math_atan(ExceptionData* exceptionData, double nova_Math_number_135);
+long nova_Math_round(ExceptionData* exceptionData, double nova_Math_number_138);
+long nova_Math_floor(ExceptionData* exceptionData, double nova_Math_number_159);
+long nova_Math_ceil(ExceptionData* exceptionData, double nova_Math_number_173);
 #endif

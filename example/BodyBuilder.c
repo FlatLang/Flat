@@ -12,15 +12,15 @@
 #include "DivideByZeroException.h"
 #include "IO.h"
 
-BodyBuilder* nova_BodyBuilder_BodyBuilder(ExceptionData* exceptionData, int nova_BodyBuilder_weightClass_47, String* nova_BodyBuilder_name_47)
+BodyBuilder* nova_BodyBuilder_BodyBuilder(ExceptionData* exceptionData, int nova_BodyBuilder_weightClass_76, String* nova_BodyBuilder_name_76)
 {
 	CCLASS_NEW(BodyBuilder, this,);
 	
 	this->nova_BodyBuilder_weightClass = 0;
 	{
 		this->nova_Person_age = 5;
-		this->nova_BodyBuilder_weightClass = nova_BodyBuilder_weightClass_47;
-		this->nova_Person_name = nova_BodyBuilder_name_47;
+		this->nova_BodyBuilder_weightClass = nova_BodyBuilder_weightClass_76;
+		this->nova_Person_name = nova_BodyBuilder_name_76;
 	}
 	
 	return this;
