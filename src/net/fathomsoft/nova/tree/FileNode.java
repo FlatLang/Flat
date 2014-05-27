@@ -248,7 +248,7 @@ public class FileNode extends IdentifierNode
 		}
 		else
 		{
-			SyntaxMessage.error("Unexpected statement", getFileNode(), child.getLocationIn(), getController());
+			SyntaxMessage.error("Unexpected statement", child);
 			
 			//super.addChild(child);
 		}

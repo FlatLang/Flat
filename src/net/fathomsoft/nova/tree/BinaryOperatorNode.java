@@ -189,7 +189,7 @@ public class BinaryOperatorNode extends TreeNode
 		
 		Bounds operatorLoc = StringUtils.findStrings(statement, StringUtils.BINARY_OPERATORS);
 		
-		if (operatorLoc.getStart() <= 0)
+		if (operatorLoc.getStart() < 0)
 		{
 			return null;
 		}
@@ -245,7 +245,10 @@ public class BinaryOperatorNode extends TreeNode
 			BinaryOperatorNode node = new BinaryOperatorNode(parent, location);
 			node.setLocationIn(location);
 			
-			Bounds lhb = new Bounds(0, StringUtils.findNextNonWhitespaceIndex(statement, operatorLoc.getStart() - 1, -1) + 1);
+			Bounds   lhb = new Bounds(0, StringUtils.findNextNonWhitespaceIndex(statement, operatorLoc.getStart() - 1, -1) + 1);
+			
+			Location lhl = new Location(location);
+			lhl.setBounds(lhb.getStart(), lhb.getEnd());
 			
 			// Decode the value on the left.
 //			Bounds bounds  = Regex.boundsOf(statement, Patterns.PRE_OPERATORS);
@@ -261,17 +264,17 @@ public class BinaryOperatorNode extends TreeNode
 				return null;
 			}
 			// The left-hand node.
-			TreeNode lhn = createNode(parent, lhv, location);
+			TreeNode lhn = createNode(parent, lhv, lhl);
 			
 			if (lhn == null)
 			{
 				if (SyntaxUtils.isValidIdentifier(lhv))
 				{
-					SyntaxMessage.error("Unknown identifier '" + lhv + "'", parent.getFileNode(), location, parent.getController());
+					SyntaxMessage.error("Unknown identifier '" + lhv + "'", lhn);
 				}
 				else
 				{
-					SyntaxMessage.error("Unknown value of '" + lhv + "'", parent.getFileNode(), location, parent.getController());
+					SyntaxMessage.error("Unknown value of '" + lhv + "'", lhn);
 				}
 				
 				return null;
@@ -354,7 +357,7 @@ public class BinaryOperatorNode extends TreeNode
 							
 						if (num == 0)
 						{
-							SyntaxMessage.error("Cannot divide by zero", parent.getFileNode(), location, parent.getController());
+							SyntaxMessage.error("Cannot divide by zero", parent, location);
 							
 							return null;
 						}

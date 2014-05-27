@@ -170,9 +170,7 @@ public class CatchNode extends ExceptionHandlingNode
 						
 						if (tryNode == null)
 						{
-							SyntaxMessage.error("Parent try block not found", parent.getFileNode(), newLoc, parent.getController());
-							
-							return null;
+							SyntaxMessage.error("Parent try block not found", exceptionInstance);
 						}
 						
 						tryNode.addExceptionCode(exception.getID());
@@ -180,14 +178,14 @@ public class CatchNode extends ExceptionHandlingNode
 						return n;
 					}
 					
-					SyntaxMessage.error("Unknown exception type", parent.getFileNode(), newLoc, parent.getController());
+					SyntaxMessage.error("Unknown exception type", exceptionInstance);
 				}
 				
-				SyntaxMessage.error("Incorrect Exception declaration", parent.getFileNode(), newLoc, parent.getController());
+				SyntaxMessage.error("Incorrect Exception declaration", n, newLoc);
 			}
 			else
 			{
-				SyntaxMessage.error("Catch declaration missing Exception type", parent.getFileNode(), location, parent.getController());
+				SyntaxMessage.error("Catch declaration missing Exception type", n);
 			}
 		}
 		

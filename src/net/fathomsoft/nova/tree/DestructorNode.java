@@ -40,7 +40,7 @@ public class DestructorNode extends MethodNode
 		{
 			if (getVisibility() == InstanceDeclarationNode.PRIVATE)
 			{
-				SyntaxMessage.error("Destructor must be public", getFileNode(), getLocationIn(), getController());
+				SyntaxMessage.error("Destructor must be public", this);
 				
 				return null;
 			}
@@ -48,14 +48,14 @@ public class DestructorNode extends MethodNode
 		
 		if (isConstant())
 		{
-			SyntaxMessage.error("Destructor cannot be const", getFileNode(), getLocationIn(), getController());
+			SyntaxMessage.error("Destructor cannot be const", this);
 			
 			return null;
 		}
 		
 		if (isReference())
 		{
-			SyntaxMessage.error("Destructor cannot return a reference", getFileNode(), getLocationIn(), getController());
+			SyntaxMessage.error("Destructor cannot return a reference", this);
 			
 			return null;
 		}
@@ -253,19 +253,6 @@ public class DestructorNode extends MethodNode
 		
 		if (firstParenthIndex >= 0)
 		{
-			// TODO: make better check for last parenth. Take a count of each of the starting parenthesis and
-			// subtract the ending ones from the number.
-			if (lastParenthIndex < 0)
-			{
-				SyntaxMessage.error("Expected a ')' ending parenthesis", parent.getFileNode(), location, parent.getController());
-				
-				return null;
-			}
-			
-			String parameterList = statement.substring(firstParenthIndex + 1, lastParenthIndex);
-			
-			String parameters[]  = StringUtils.splitCommas(parameterList);
-			
 			final String signature = statement.substring(0, firstParenthIndex);
 			
 			DestructorNode n = new DestructorNode(parent, location)
@@ -284,6 +271,19 @@ public class DestructorNode extends MethodNode
 				}
 			};
 			
+			// TODO: make better check for last parenth. Take a count of each of the starting parenthesis and
+			// subtract the ending ones from the number.
+			if (lastParenthIndex < 0)
+			{
+				SyntaxMessage.error("Expected a ')' ending parenthesis", n);
+				
+				return null;
+			}
+			
+			String parameterList = statement.substring(firstParenthIndex + 1, lastParenthIndex);
+			
+			String parameters[]  = StringUtils.splitCommas(parameterList);
+			
 			n.iterateWords(signature);
 			
 			ClassNode classNode = (ClassNode)parent.getAncestorOfType(ClassNode.class, true);
@@ -297,7 +297,7 @@ public class DestructorNode extends MethodNode
 				
 				if (parameters.length > 0)
 				{
-					SyntaxMessage.error("Destructors cannot have any parameters", parent.getFileNode(), location, parent.getController());
+					SyntaxMessage.error("Destructors cannot have any parameters", n);
 					
 					return null;
 				}

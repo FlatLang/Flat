@@ -139,7 +139,7 @@ public class WhileLoopNode extends LoopNode
 			}
 			else
 			{
-				SyntaxMessage.error("While loop missing condition", parent.getFileNode(), location, parent.getController());
+				SyntaxMessage.error("While loop missing condition", n);
 			}
 		}
 		

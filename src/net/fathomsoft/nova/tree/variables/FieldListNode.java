@@ -111,12 +111,12 @@ public class FieldListNode extends TreeNode
 			}
 			else
 			{
-				SyntaxMessage.error("Missing visibility declaration", getFileNode(), getLocationIn(), getController());
+				SyntaxMessage.error("Missing visibility declaration", this);
 			}
 		}
 		else
 		{
-			SyntaxMessage.error("Unknown node being added", getFileNode(), getLocationIn(), getController());
+			SyntaxMessage.error("Unknown node being added", this);
 		}
 	}
 	

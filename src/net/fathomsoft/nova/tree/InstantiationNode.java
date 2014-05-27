@@ -151,7 +151,7 @@ public class InstantiationNode extends IdentifierNode
 			
 			if (child == null)
 			{
-				SyntaxMessage.error("Unable to parse instantiation of '" + action + "'", parent.getFileNode(), newLoc, parent.getController());
+				SyntaxMessage.error("Unable to parse instantiation of '" + action + "'", n);
 				
 				return null;
 			}

@@ -112,6 +112,18 @@ public class Location
 	}
 	
 	/**
+	 * Set character offset that the Location represents on the
+	 * specified line number.
+	 * 
+	 * @param offset The character offset that the Location represents
+	 * 		on the specified line number.
+	 */
+	public void setOffset(int offset)
+	{
+		this.offset = offset;
+	}
+	
+	/**
 	 * Get the Bounds of the Location's offset. The starting and ending
 	 * offsets.
 	 * 

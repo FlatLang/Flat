@@ -301,23 +301,6 @@ public class MethodCallNode extends IdentifierNode
 			bounds.setStart(start);
 			bounds.setEnd(end);
 			
-			// TODO: make better check for last parenth. Take a count of each of the starting parenthesis and
-			// subtract the ending ones from the number.
-			if (bounds.getEnd() < 0)
-			{
-				SyntaxMessage.error("Expected a ')' ending parenthesis", parent.getFileNode(), location, parent.getController());
-				
-				return null;
-			}
-			
-			Location argsLocation = new Location();
-			argsLocation.setLineNumber(location.getLineNumber());
-			argsLocation.setBounds(location.getStart() + bounds.getStart(), location.getStart() + bounds.getEnd());
-			
-			String  methodCall   = statement.substring(0, nameEnd);
-			
-			String  argumentList = statement.substring(bounds.getStart(), bounds.getEnd());
-			
 			final boolean error[] = new boolean[1];
 			
 			MethodCallNode n = new MethodCallNode(parent, location)
@@ -330,12 +313,29 @@ public class MethodCallNode extends IdentifierNode
 					}
 					else if (rightDelimiter.length() > 0)
 					{
-						SyntaxMessage.error("Unknown characters '" + rightDelimiter + "'", parent.getFileNode(), location, parent.getController());
+						SyntaxMessage.error("Unknown characters '" + rightDelimiter + "'", this);
 						
 						error[0] = true;
 					}
 				}
 			};
+			
+			// TODO: make better check for last parenth. Take a count of each of the starting parenthesis and
+			// subtract the ending ones from the number.
+			if (bounds.getEnd() < 0)
+			{
+				SyntaxMessage.error("Expected a ')' ending parenthesis", n);
+				
+				return null;
+			}
+			
+			Location argsLocation = new Location();
+			argsLocation.setLineNumber(location.getLineNumber());
+			argsLocation.setBounds(location.getStart() + bounds.getStart(), location.getStart() + bounds.getEnd());
+			
+			String  methodCall   = statement.substring(0, nameEnd);
+			
+			String  argumentList = statement.substring(bounds.getStart(), bounds.getEnd());
 			
 			n.externalCall = parent instanceof ExternalTypeNode;
 			
@@ -353,14 +353,14 @@ public class MethodCallNode extends IdentifierNode
 			
 			if (method != null && !SyntaxUtils.isVisible(accessor, method))
 			{
-				SyntaxMessage.error("Method '" + method.getName() + "' is not visible", file, argsLocation, file.getController());
+				SyntaxMessage.error("Method '" + method.getName() + "' is not visible", n);
 				
 				return null;
 			}
 			
 			if (method == null && !n.isExternal())
 			{
-				SyntaxMessage.error("Undeclared method '" + n.getName() + "'", parent.getFileNode(), location, parent.getController());
+				SyntaxMessage.error("Undeclared method '" + n.getName() + "'", n);
 				
 				return null;
 			}
@@ -420,11 +420,11 @@ public class MethodCallNode extends IdentifierNode
 		{
 			if (parameters.getChildren().size() - offset > arguments.getChildren().size())
 			{
-				SyntaxMessage.error("To few arguments to method call '" + getName() + "'", fileNode, location, fileNode.getController());
+				SyntaxMessage.error("To few arguments to method call '" + getName() + "'", this);
 			}
 			else
 			{
-				SyntaxMessage.error("To many arguments to method call '" + getName() + "'", fileNode, location, fileNode.getController());
+				SyntaxMessage.error("To many arguments to method call '" + getName() + "'", this);
 			}
 			
 //			return false;
@@ -499,7 +499,7 @@ public class MethodCallNode extends IdentifierNode
 				
 				if (arg == null)
 				{
-					SyntaxMessage.error("Could not decode argument '" + argument + "'", parent.getFileNode(), location, parent.getController());
+					SyntaxMessage.error("Could not decode argument '" + argument + "'", parent, location);
 				}
 				else
 				{

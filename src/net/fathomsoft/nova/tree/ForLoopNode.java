@@ -213,7 +213,7 @@ public class ForLoopNode extends LoopNode
 			}
 			else
 			{
-				SyntaxMessage.error("For loop missing arguments", parent.getFileNode(), location, parent.getController());
+				SyntaxMessage.error("For loop missing arguments", n);
 			}
 		}
 		

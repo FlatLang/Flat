@@ -980,7 +980,7 @@ public abstract class TreeNode
 				Location currentLoc = new Location(location);
 				currentLoc.setBounds(offset, index);
 				
-				SyntaxMessage.error("Could not decode syntax '" + current + "'", parent.getFileNode(), currentLoc, parent.getController());
+				SyntaxMessage.error("Could not decode syntax '" + current + "'", parent, currentLoc);
 				
 				return null;
 			}
@@ -1120,7 +1120,7 @@ public abstract class TreeNode
 					}
 					else
 					{
-						SyntaxMessage.error("Field '" + field.getName() + "' is not accessible", parent.getFileNode(), parent.getLocationIn(), parent.getController());
+						SyntaxMessage.error("Field '" + field.getName() + "' is not accessible", parent);
 						
 						return null;
 					}

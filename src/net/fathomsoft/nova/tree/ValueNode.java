@@ -411,7 +411,7 @@ public class ValueNode extends TreeNode
 	{
 		if (!SyntaxUtils.isValidType(this, type))
 		{
-			SyntaxMessage.error("Type '" + type + "' does not exist", getFileNode(), getLocationIn(), getController());
+			SyntaxMessage.error("Type '" + type + "' does not exist", this);
 		}
 		
 		this.type = type;
@@ -492,7 +492,7 @@ public class ValueNode extends TreeNode
 				
 				if (clazz == null)
 				{
-					SyntaxMessage.error("Could not find class '" + name + "'", getFileNode(), getLocationIn(), getController());
+					SyntaxMessage.error("Could not find class '" + name + "'", this);
 					
 					return null;
 				}

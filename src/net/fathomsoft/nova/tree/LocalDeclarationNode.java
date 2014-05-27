@@ -93,7 +93,7 @@ public class LocalDeclarationNode extends LocalVariableNode
 					{
 						if (getType() != null)
 						{
-							SyntaxMessage.error("Unknown syntax '" + leftDelimiter + word + "'", parent.getFileNode(), location, parent.getController());
+							SyntaxMessage.error("Unknown syntax '" + leftDelimiter + word + "'", this);
 							
 							error[0] = true;
 						}
@@ -135,7 +135,7 @@ public class LocalDeclarationNode extends LocalVariableNode
 		
 		if (node instanceof LocalDeclarationNode)
 		{
-			SyntaxMessage.error("Local variable '" + n.getName() + "' has already been declared", node);
+			SyntaxMessage.error("Local variable '" + n.getName() + "' has already been declared", n);
 //			SyntaxMessage.error("Local variable '" + n.getName() + "' has already been declared", parent.getFileNode(), location, parent.getController());
 			
 			return null;

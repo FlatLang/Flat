@@ -119,10 +119,10 @@ public class ThrowNode extends ExceptionHandlingNode
 		{
 			Bounds bounds = Regex.boundsOf(statement, Patterns.POST_THROW);
 			
+			ThrowNode n   = new ThrowNode(parent, location);
+				
 			if (bounds.getStart() > 0)
 			{
-				ThrowNode n          = new ThrowNode(parent, location);
-				
 				Location  newLoc     = new Location(location);
 				newLoc.setBounds(location.getStart() + bounds.getStart(), location.getStart() + bounds.getEnd());
 				
@@ -142,12 +142,10 @@ public class ThrowNode extends ExceptionHandlingNode
 					return n;
 				}
 				
-				SyntaxMessage.error("Incorrect form of exception thrown", parent.getFileNode(), newLoc, parent.getController());
-				
-				return null;
+				SyntaxMessage.error("Incorrect form of exception thrown", n, newLoc);
 			}
 			
-			SyntaxMessage.error("Throw statement missing exception type", parent.getFileNode(), location, parent.getController());
+			SyntaxMessage.error("Throw statement missing exception type", n);
 		}
 		
 		return null;

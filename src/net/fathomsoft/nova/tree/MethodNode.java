@@ -318,7 +318,7 @@ public class MethodNode extends InstanceDeclarationNode
 //		}
 		if (isConstant())
 		{
-			SyntaxMessage.error("Const methods are not supported in the C implementation yet", getFileNode(), getLocationIn(), getController());
+			SyntaxMessage.error("Const methods are not supported in the C implementation yet", this);
 			
 			return null;
 //			builder.append(getConstantText()).append(' ');
@@ -524,24 +524,9 @@ public class MethodNode extends InstanceDeclarationNode
 		
 		if (firstParenthIndex >= 0)
 		{
-			// TODO: make better check for last parenth. Take a count of each of the starting parenthesis and
-			// subtract the ending ones from the number.
-			if (lastParenthIndex < 0)
-			{
-				SyntaxMessage.error("Expected a ')' ending parenthesis", parent.getFileNode(), location, parent.getController());
-				
-				return null;
-			}
+			final String  signature  = statement.substring(0, firstParenthIndex);
 			
-			String parameterList = statement.substring(firstParenthIndex + 1, lastParenthIndex);
-			
-			String parameters[]  = StringUtils.splitCommas(parameterList);
-			
-			final String   signature  = statement.substring(0, firstParenthIndex);
-			
-			final FileNode fileNode   = parent.getFileNode();
-			
-			final boolean error[]     = new boolean[1];
+			final boolean error[]    = new boolean[1];
 			
 			MethodNode n = new MethodNode(parent, location)
 			{
@@ -570,19 +555,32 @@ public class MethodNode extends InstanceDeclarationNode
 					}
 					else if (!setAttribute(word, wordNumber))
 					{
-						if (fileNode.isExternalImport(word) && rightDelimiter.equals("."))
+						if (getFileNode().isExternalImport(word) && rightDelimiter.equals("."))
 						{
 							setExternalType(true);
 						}
 						else
 						{
-							SyntaxMessage.error("Unknown method definition", parent.getFileNode(), location, parent.getController());
+							SyntaxMessage.error("Unknown method definition", this);
 							
 							error[0] = true;
 						}
 					}
 				}
 			};
+			
+			// TODO: make better check for last parenth. Take a count of each of the starting parenthesis and
+			// subtract the ending ones from the number.
+			if (lastParenthIndex < 0)
+			{
+				SyntaxMessage.error("Expected a ')' ending parenthesis", n);
+				
+				return null;
+			}
+			
+			String parameterList = statement.substring(firstParenthIndex + 1, lastParenthIndex);
+			
+			String parameters[]  = StringUtils.splitCommas(parameterList);
 			
 			n.iterateWords(signature, Patterns.IDENTIFIER_BOUNDARIES);
 			
@@ -599,7 +597,7 @@ public class MethodNode extends InstanceDeclarationNode
 					
 					if (param == null)
 					{
-						SyntaxMessage.error("Incorrect parameter definition", parent.getFileNode(), location, parent.getController());
+						SyntaxMessage.error("Incorrect parameter definition", n);
 						
 						return null;
 					}

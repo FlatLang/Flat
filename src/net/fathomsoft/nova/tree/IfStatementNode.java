@@ -165,7 +165,7 @@ public class IfStatementNode extends TreeNode
 			}
 			else
 			{
-				SyntaxMessage.error("If statement missing condition", parent.getFileNode(), location, parent.getController());
+				SyntaxMessage.error("If statement missing condition", n);
 			}
 		}
 		

@@ -133,6 +133,8 @@ public class ArrayAccessNode extends VariableNode
 	{
 		if (SyntaxUtils.isValidArrayAccess(statement))
 		{
+			ArrayAccessNode n  = new ArrayAccessNode(parent, location);
+			
 			Bounds idBounds    = Regex.boundsOf(statement, Patterns.IDENTIFIER);
 			
 			String identifier  = statement.substring(idBounds.getStart(), idBounds.getEnd());
@@ -146,25 +148,23 @@ public class ArrayAccessNode extends VariableNode
 			
 			if (var == null)
 			{
-				SyntaxMessage.error("Undeclared variable '" + identifier + "'", parent.getFileNode(), location, parent.getController());
+				SyntaxMessage.error("Undeclared variable '" + identifier + "'", n);
 				
 				return null;
 			}
 			
-			ArrayAccessNode node = new ArrayAccessNode(parent, location);
+			var = var.clone(n, location);
 			
-			var = var.clone(node, location);
-			
-			node.addChild(var);
-			node.setName(var.getName());
-			node.setType(var.getType());
+			n.addChild(var);
+			n.setName(var.getName());
+			n.setType(var.getType());
 			
 			while (current > 0)
 			{
 				String data = indexData.substring(indexBounds.getStart(), indexBounds.getEnd());
 				
-				Location newLoc = new Location();
-				newLoc.setLineNumber(location.getLineNumber());
+				Location newLoc = new Location(location);
+				newLoc.setOffset(idBounds.getEnd() + location.getOffset());
 				newLoc.setBounds(identifier.length() + indexBounds.getStart(), identifier.length() + indexBounds.getEnd());
 				
 				if (SyntaxUtils.isLiteral(data))
@@ -172,7 +172,7 @@ public class ArrayAccessNode extends VariableNode
 					LiteralNode literal = new LiteralNode(null, newLoc);
 					literal.setValue(data, false);
 					
-					node.addDimension(literal);
+					n.addDimension(literal);
 				}
 				else
 				{
@@ -184,19 +184,19 @@ public class ArrayAccessNode extends VariableNode
 					}
 					if (created == null)
 					{
-						SyntaxMessage.error("Unknown array access index '" + data + "'", parent.getFileNode(), newLoc, parent.getController());
+						SyntaxMessage.error("Unknown array access index '" + data + "'", n, newLoc);
 						
 						return null;
 					}
 					
-					node.addDimension(created);
+					n.addDimension(created);
 				}
 				
 				indexBounds = Regex.boundsOf(indexData, current, Patterns.ARRAY_BRACKETS_DATA);
 				current     = indexBounds.getEnd() + 1;
 			}
 			
-			return node;
+			return n;
 		}
 		
 		return null;

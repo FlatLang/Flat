@@ -207,7 +207,7 @@ public class UnaryOperatorNode extends TreeNode
 				return n;
 			}
 			
-			SyntaxMessage.error("Undeclared variable '" + variableName + "'", parent.getFileNode(), location, parent.getController());
+			SyntaxMessage.error("Undeclared variable '" + variableName + "'", n);
 		}
 		
 		return null;

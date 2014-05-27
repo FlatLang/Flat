@@ -160,11 +160,11 @@ public class AssignmentNode extends TreeNode
 		Location  varLoc = new Location(location);
 		varLoc.getBounds().setEnd(varLoc.getStart() + endIndex);
 		
-		VariableNode varNode = (VariableNode)decodeScopeContents(parent, variable, location);
+		VariableNode varNode = (VariableNode)decodeScopeContents(parent, variable, varLoc);
 		
 		if (varNode == null)
 		{
-			SyntaxMessage.error("Undeclared variable '" + variable + "'", parent.getFileNode(), location, parent.getController());
+			SyntaxMessage.error("Undeclared variable '" + variable + "'", varNode);
 			
 			return null;
 		}
@@ -186,7 +186,7 @@ public class AssignmentNode extends TreeNode
 					
 					if (declaringClass != thisClass)
 					{
-						SyntaxMessage.error("The value of the field '" + field.getName() + "' cannot be modified", parent.getFileNode(), location, parent.getController());
+						SyntaxMessage.error("The value of the field '" + field.getName() + "' cannot be modified", accessed);
 						
 						return null;
 					}

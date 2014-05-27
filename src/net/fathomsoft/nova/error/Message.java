@@ -33,7 +33,8 @@ public class Message
 	 */
 	public Message(String message, Nova controller)
 	{
-		this(message, null, null, controller);
+		this.message    = message;
+		this.controller = controller;
 	}
 	
 	/**
@@ -43,27 +44,12 @@ public class Message
 	 * @param message The message that describes what happened.
 	 * @param node The node that the message is talking about.
 	 */
-	public Message(String message, TreeNode node)
+	public Message(String message, TreeNode node, Location location)
 	{
-		this(message, node.getFileNode(), node.getLocationIn(), node.getController());
-	}
-	
-	/**
-	 * Create a new message instance with the given message that
-	 * is representing the given location.
-	 * 
-	 * @param message The message that describes what happened.
-	 * @param file The FileNode that the error occurred in.
-	 * @param location The location i the source file that the
-	 * 		message is talking about.
-	 * @param controller The controller of the compiling program.
-	 */
-	public Message(String message, FileNode file, Location location, Nova controller)
-	{
-		this.file       = file;
+		this.file       = node.getFileNode();
 		this.location   = location;
 		this.message    = message;
-		this.controller = controller;
+		this.controller = node.getController();
 	}
 	
 	/**

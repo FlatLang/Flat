@@ -45,26 +45,26 @@ public class ConstructorNode extends MethodNode
 		}
 		if (isStatic())
 		{
-			SyntaxMessage.error("Constructor cannot be static", getFileNode(), getLocationIn(), getController());
+			SyntaxMessage.error("Constructor cannot be static", this);
 			
 			return null;
 		}
 		if (isConstant())
 		{
-			SyntaxMessage.error("Constructor cannot be const", getFileNode(), getLocationIn(), getController());
+			SyntaxMessage.error("Constructor cannot be const", this);
 			
 			return null;
 		}
 		
 		if (isReference())
 		{
-			SyntaxMessage.error("Constructor cannot return a reference", getFileNode(), getLocationIn(), getController());
+			SyntaxMessage.error("Constructor cannot return a reference", this);
 			
 			return null;
 		}
 		else if (isPointer())
 		{
-			SyntaxMessage.error("Constructor cannot return a pointer", getFileNode(), getLocationIn(), getController());
+			SyntaxMessage.error("Constructor cannot return a pointer", this);
 			
 			return null;
 		}
@@ -113,14 +113,14 @@ public class ConstructorNode extends MethodNode
 //		}
 		if (isConstant())
 		{
-			SyntaxMessage.error("Constructor cannot be const", getFileNode(), getLocationIn(), getController());
+			SyntaxMessage.error("Constructor cannot be const", this);
 			
 			return null;
 		}
 		
 		if (isReference())
 		{
-			SyntaxMessage.error("Constructor cannot return a reference", getFileNode(), getLocationIn(), getController());
+			SyntaxMessage.error("Constructor cannot return a reference", this);
 			
 			return null;
 		}
@@ -310,21 +310,6 @@ public class ConstructorNode extends MethodNode
 		
 		if (firstParenthIndex >= 0)
 		{
-			// TODO: make better check for last parenth. Take a count of each of the starting parenthesis and
-			// subtract the ending ones from the number.
-			if (lastParenthIndex < 0)
-			{
-				SyntaxMessage.error("Expected a ')' ending parenthesis", parent.getFileNode(), location, parent.getController());
-				
-				return null;
-			}
-			
-			String parameterList = statement.substring(firstParenthIndex + 1, lastParenthIndex);
-			
-			String parameters[]  = StringUtils.splitCommas(parameterList);
-			
-			statement = statement.substring(0, firstParenthIndex);
-			
 			ConstructorNode n = new ConstructorNode(parent, location)
 			{
 				public void interactWord(String word, int wordNumber, Bounds bounds, int numWords)
@@ -335,6 +320,21 @@ public class ConstructorNode extends MethodNode
 				}
 			};
 			
+			// TODO: make better check for last parenth. Take a count of each of the starting parenthesis and
+			// subtract the ending ones from the number.
+			if (lastParenthIndex < 0)
+			{
+				SyntaxMessage.error("Expected a ')' ending parenthesis", n);
+				
+				return null;
+			}
+			
+			String parameterList = statement.substring(firstParenthIndex + 1, lastParenthIndex);
+			
+			String parameters[]  = StringUtils.splitCommas(parameterList);
+			
+			statement = statement.substring(0, firstParenthIndex);
+			
 			for (int i = 0; i < parameters.length; i++)
 			{
 				if (parameters[i].length() > 0)
@@ -343,7 +343,7 @@ public class ConstructorNode extends MethodNode
 					
 					if (param == null)
 					{
-						SyntaxMessage.error("Incorrect parameter definition", parent.getFileNode(), location, parent.getController());
+						SyntaxMessage.error("Incorrect parameter definition", n);
 						
 						return null;
 					}

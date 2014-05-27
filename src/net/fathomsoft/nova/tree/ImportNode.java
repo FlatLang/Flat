@@ -161,7 +161,7 @@ public class ImportNode extends TreeNode
 					}
 					else
 					{
-						SyntaxMessage.error("Import location ends with unknown extension", parent.getFileNode(), location, parent.getController());
+						SyntaxMessage.error("Import location ends with unknown extension", n);
 						
 						return null;
 					}
@@ -171,7 +171,7 @@ public class ImportNode extends TreeNode
 			}
 			else
 			{
-				SyntaxMessage.error("Import statement must specify the location of the file", parent.getFileNode(), location, parent.getController());
+				SyntaxMessage.error("Import statement must specify the location of the file", n);
 				
 				return null;
 			}

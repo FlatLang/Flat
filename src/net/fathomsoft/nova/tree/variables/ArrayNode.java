@@ -110,7 +110,7 @@ public class ArrayNode extends VariableNode
 		{
 			ArrayNode n = new ArrayNode(parent, location);
 			
-			int index = statement.indexOf('[') + 1;
+			int index   = statement.indexOf('[') + 1;
 			
 			Location newLoc = new Location(location);
 			newLoc.setBounds(location.getStart() + index, location.getEnd());
@@ -145,9 +145,7 @@ public class ArrayNode extends VariableNode
 						
 						if (binary == null)
 						{
-							SyntaxMessage.error("Could not parse length '" + length + "' for array initialization", parent.getFileNode(), newLoc, parent.getController());
-							
-							return null;
+							SyntaxMessage.error("Could not parse length '" + length + "' for array initialization", n, newLoc);
 						}
 						
 						node = binary;

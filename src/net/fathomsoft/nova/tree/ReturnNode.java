@@ -116,13 +116,12 @@ public class ReturnNode extends ValueNode
 			
 			int returnStartIndex = Regex.indexOf(statement, Patterns.POST_RETURN);
 			
+			Location newLoc = new Location(location);
+			newLoc.setBounds(location.getStart() + returnStartIndex, location.getStart() + statement.length());
+			
 			if (returnStartIndex >= 0)
 			{
 				statement = statement.substring(returnStartIndex);
-				
-				Location newLoc = new Location();
-				newLoc.setLineNumber(location.getLineNumber());
-				newLoc.setBounds(location.getStart() + returnStartIndex, location.getStart() + statement.length());
 				
 				TreeNode child = TreeNode.decodeScopeContents(n, statement, newLoc);
 				
@@ -132,7 +131,7 @@ public class ReturnNode extends ValueNode
 				}
 				if (child == null)
 				{
-					SyntaxMessage.error("Could not decode return statement '" + statement + "'", parent.getFileNode(), location, parent.getController());
+					SyntaxMessage.error("Could not decode return statement '" + statement + "'", n, newLoc);
 					
 					return null;
 				}
@@ -145,7 +144,7 @@ public class ReturnNode extends ValueNode
 				
 				if (parentMethod.getType() != null)
 				{
-					SyntaxMessage.error("Method '" + parentMethod.getName() + "' must return a type of '" + parentMethod.getType() + "'", parent.getFileNode(), location, parent.getController());
+					SyntaxMessage.error("Method '" + parentMethod.getName() + "' must return a type of '" + parentMethod.getType() + "'", n, newLoc);
 					
 					return null;
 				}

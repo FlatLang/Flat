@@ -48,22 +48,7 @@ public class SyntaxMessage
 	 */
 	public static void error(String message, TreeNode node)
 	{
-		error(message, node.getFileNode(), node.getLocationIn(), node.getController());
-	}
-	
-	/**
-	 * Output an error message from the compiler.
-	 * 
-	 * @param message The message describing the error.
-	 * @param file The FileNode that the error occurred in.
-	 * @param location The location that the error occurred at.
-	 * @param controller The controller of the compiling program.
-	 */
-	public static void error(String message, FileNode file, Location location, Nova controller)
-	{
-		Message error = new Message(message, file, location, controller);
-		
-		error.outputMessage(Message.ERROR);
+		error(message, node, node.getLocationIn());
 	}
 	
 	/**
@@ -74,20 +59,33 @@ public class SyntaxMessage
 	 */
 	public static void warning(String message, TreeNode node)
 	{
-		warning(message, node.getFileNode(), node.getLocationIn(), node.getController());
+		warning(message, node, node.getLocationIn());
+	}
+	
+	/**
+	 * Output an error message from the compiler.
+	 * 
+	 * @param message The message describing the error.
+	 * @param node The node that the error occurred from.
+	 * @param location The location that the error occurred at.
+	 */
+	public static void error(String message, TreeNode node, Location location)
+	{
+		Message error = new Message(message, node, location);
+		
+		error.outputMessage(Message.ERROR);
 	}
 	
 	/**
 	 * Output a warning message from the compiler.
 	 * 
 	 * @param message The message describing the warning.
-	 * @param file The FileNode that the warning occurred in.
+	 * @param node The node that the warning occurred from.
 	 * @param location The location that the warning occurred at.
-	 * @param controller The controller of the compiling program.
 	 */
-	public static void warning(String message, FileNode file, Location location, Nova controller)
+	public static void warning(String message, TreeNode node, Location location)
 	{
-		Message warning = new Message(message, file, location, controller);
+		Message warning = new Message(message, node, location);
 		
 		warning.outputMessage(Message.WARNING);
 	}

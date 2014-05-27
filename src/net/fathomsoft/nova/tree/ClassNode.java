@@ -454,7 +454,7 @@ public class ClassNode extends InstanceDeclarationNode
 		}
 		else
 		{
-			SyntaxMessage.error("Unexpected statement within class " + getName(), getFileNode(), child.getLocationIn(), getController());
+			SyntaxMessage.error("Unexpected statement within class " + getName(), child);
 			
 			//super.addChild(child);
 		}
@@ -590,13 +590,13 @@ public class ClassNode extends InstanceDeclarationNode
 		
 		if (isReference())
 		{
-			SyntaxMessage.error("A class cannot be of a reference type", getFileNode(), getLocationIn(), getController());
+			SyntaxMessage.error("A class cannot be of a reference type", this);
 			
 			return null;
 		}
 		else if (isPointer())
 		{
-			SyntaxMessage.error("A class cannot be of a pointer type", getFileNode(), getLocationIn(), getController());
+			SyntaxMessage.error("A class cannot be of a pointer type", this);
 			
 			return null;
 		}
@@ -658,13 +658,13 @@ public class ClassNode extends InstanceDeclarationNode
 		
 		if (isReference())
 		{
-			SyntaxMessage.error("A class cannot be of a reference type", getFileNode(), getLocationIn(), getController());
+			SyntaxMessage.error("A class cannot be of a reference type", this);
 			
 			return null;
 		}
 		else if (isPointer())
 		{
-			SyntaxMessage.error("A class cannot be of a pointer type", getFileNode(), getLocationIn(), getController());
+			SyntaxMessage.error("A class cannot be of a pointer type", this);
 			
 			return null;
 		}
@@ -946,7 +946,7 @@ public class ClassNode extends InstanceDeclarationNode
 		
 		if (clazz == null)
 		{
-			SyntaxMessage.error("Class '" + extendedClass + "' not declared", getFileNode(), getLocationIn(), getController());
+			SyntaxMessage.error("Class '" + extendedClass + "' not declared", this);
 			
 			return;
 		}
@@ -954,7 +954,7 @@ public class ClassNode extends InstanceDeclarationNode
 		{
 			if (clazz.isConstant())
 			{
-				SyntaxMessage.error("Class '" + extendedClass + "' not is constant and cannot be extended", getFileNode(), getLocationIn(), getController());
+				SyntaxMessage.error("Class '" + extendedClass + "' not is constant and cannot be extended", this);
 				
 				return;
 			}

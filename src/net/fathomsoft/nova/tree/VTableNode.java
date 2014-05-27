@@ -59,13 +59,13 @@ public class VTableNode extends ClassNode
 		
 		if (isReference())
 		{
-			SyntaxMessage.error("A class cannot be of a reference type", getFileNode(), getLocationIn(), getController());
+			SyntaxMessage.error("A class cannot be of a reference type", this);
 			
 			return null;
 		}
 		else if (isPointer())
 		{
-			SyntaxMessage.error("A class cannot be of a pointer type", getFileNode(), getLocationIn(), getController());
+			SyntaxMessage.error("A class cannot be of a pointer type", this);
 			
 			return null;
 		}
