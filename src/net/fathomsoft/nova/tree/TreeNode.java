@@ -5,6 +5,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import net.fathomsoft.nova.Nova;
+import net.fathomsoft.nova.error.SyntaxErrorException;
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.tree.exceptionhandling.CatchNode;
 import net.fathomsoft.nova.tree.exceptionhandling.ExceptionHandlingNode;
@@ -36,7 +37,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:00:11 PM
- * @version	v0.2.7 May 25, 2014 at 9:16:48 PM
+ * @version	v0.2.8 May 26, 2014 at 11:26:58 PM
  */
 public abstract class TreeNode
 {
@@ -649,7 +650,7 @@ public abstract class TreeNode
 	 */
 	public boolean isWithinExternalContext()
 	{
-		if (this instanceof ExternalTypeNode)
+		if (this instanceof ExternalTypeNode || this instanceof ExternalStatementNode)
 		{
 			return true;
 		}
@@ -874,11 +875,6 @@ public abstract class TreeNode
 			else if (type == ThrowNode.class) node = ThrowNode.decodeStatement(parent, statement, location);
 			else if (type == TryNode.class) node = TryNode.decodeStatement(parent, statement, location);
 			
-			if (node == null)
-			{
-				node = ExternalStatementNode.decodeStatement(parent, statement, location);
-			}
-			
 			if (node != null)
 			{
 				node.setLocationIn(location);
@@ -889,7 +885,7 @@ public abstract class TreeNode
 		
 //		SyntaxMessage.error("Unknown statement", location, parent.getController());
 		
-		return null;
+		return ExternalStatementNode.decodeStatement(parent, statement, location);
 	}
 	
 	/**
@@ -949,11 +945,20 @@ public abstract class TreeNode
 		}
 		
 		TreeNode root = null;
-		TreeNode node = decodeStatement(parent, statement, location, PRE_VALUE_DECODE);
+		TreeNode node = null;
 		
-		if (node != null)
+		try
 		{
-			return node;
+			node = decodeStatement(parent, statement, location, PRE_VALUE_DECODE);
+		
+			if (node != null)
+			{
+				return node;
+			}
+		}
+		catch (SyntaxErrorException e)
+		{
+			return null;
 		}
 		
 		int    offset   = 0;
@@ -1285,6 +1290,13 @@ public abstract class TreeNode
 	 */
 	public String toString()
 	{
-		return generateNovaInput();
+		String str = generateNovaInput();
+		
+		if (str == null)
+		{
+			return "[TreeNode: " + super.toString() + ']';
+		}
+		
+		return str;
 	}
 }
