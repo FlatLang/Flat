@@ -25,11 +25,11 @@ CCLASS_CLASS
 )
 
 
-Thread* nova_Thread_Thread(ExceptionData* exceptionData, long_long nova_Thread_millis_114, String* nova_Thread_word_114);
+Thread* nova_Thread_Thread(ExceptionData* exceptionData, long_long nova_Thread_millis_106, String* nova_Thread_word_106);
 void nova_del_Thread(Thread** this, ExceptionData* exceptionData);
 void nova_Thread_start(Thread* this, ExceptionData* exceptionData);
 void nova_Thread_join(Thread* this, ExceptionData* exceptionData);
-void nova_Thread_sleep(ExceptionData* exceptionData, long_long nova_Thread_millis_125);
+void nova_Thread_sleep(ExceptionData* exceptionData, long_long nova_Thread_millis_115);
 void nova_Thread_run(Thread* this, ExceptionData* exceptionData);
 FATHOM_THREAD_FUNC lib_fathom_thread_run(FATHOM_THREAD_FUNC_ARG arg);
 #endif
