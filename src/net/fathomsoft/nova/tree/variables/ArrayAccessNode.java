@@ -19,7 +19,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.2 Mar 24, 2014 at 10:45:29 PM
- * @version	v0.2.7 May 25, 2014 at 9:16:48 PM
+ * @version	v0.2.8 May 26, 2014 at 11:26:58 PM
  */
 public class ArrayAccessNode extends VariableNode
 {
@@ -35,6 +35,13 @@ public class ArrayAccessNode extends VariableNode
 		addChild(dimensions);
 	}
 	
+	/**
+	 * Get the node that represents the dimensions of the array. The
+	 * DimensionsNode class contains information of the index that is
+	 * being accessed.
+	 * 
+	 * @return The node that represents the dimensions being accessed.
+	 */
 	public DimensionsNode getDimensionsNode()
 	{
 		return (DimensionsNode)getChild(0);
@@ -66,6 +73,14 @@ public class ArrayAccessNode extends VariableNode
 		}
 	}
 	
+	/**
+	 * Add a dimension, that contains the index that is being attained,
+	 * to the DimensionsNode instance of the ArrayAccessNode.
+	 * 
+	 * @param child The node that describes the index that is being
+	 * 		accessed by the array at the specified dimension that is
+	 * 		about to be added.
+	 */
 	public void addDimension(TreeNode child)
 	{
 		getDimensionsNode().addChild(child);
