@@ -18,11 +18,13 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:10:53 PM
- * @version	v0.2.7 May 25, 2014 at 9:16:48 PM
+ * @version	v0.2.8 May 26, 2014 at 11:26:58 PM
  */
 public class MethodNode extends InstanceDeclarationNode
 {
-	private ArrayList<MethodNode> overridingMethods;
+	private boolean					externalType;
+	
+	private ArrayList<MethodNode>	overridingMethods;
 	
 	/**
 	 * Instantiate and initialize default data.
@@ -59,6 +61,32 @@ public class MethodNode extends InstanceDeclarationNode
 	public ParameterListNode getParameterListNode()
 	{
 		return (ParameterListNode)getChild(0);
+	}
+	
+	/**
+	 * Get whether or not the specified method returns an external type.
+	 * For more details on what an external type looks like, see
+	 * {@link net.fathomsoft.nova.tree.variables.VariableNode#setExternal(boolean)}
+	 * 
+	 * @return Whether or not the specified method returns an external
+	 * 		type.
+	 */
+	public boolean isExternalType()
+	{
+		return externalType;
+	}
+	
+	/**
+	 * Set whether or not the specified method returns an external type.
+	 * For more details on what an external type looks like, see
+	 * {@link net.fathomsoft.nova.tree.variables.VariableNode#setExternal(boolean)}
+	 * 
+	 * @param externalType Whether or not the specified method returns an
+	 * 		external type.
+	 */
+	public void setExternalType(boolean externalType)
+	{
+		this.externalType = externalType;
 	}
 	
 	/**
@@ -513,8 +541,7 @@ public class MethodNode extends InstanceDeclarationNode
 			
 			final FileNode fileNode   = parent.getFileNode();
 			
-			final boolean error[]        = new boolean[1];
-			final boolean externalType[] = new boolean[1];
+			final boolean error[]     = new boolean[1];
 			
 			MethodNode n = new MethodNode(parent)
 			{
@@ -543,12 +570,11 @@ public class MethodNode extends InstanceDeclarationNode
 					}
 					else if (!setAttribute(word, wordNumber))
 					{
-						if (fileNode.isExternalImport(word))
+						if (fileNode.isExternalImport(word) && rightDelimiter.equals("."))
 						{
-							externalType[0] = rightDelimiter.equals(".");
+							setExternalType(true);
 						}
-						
-						if (!externalType[0])
+						else
 						{
 							SyntaxMessage.error("Unknown method definition", parent.getFileNode(), location, parent.getController());
 							
