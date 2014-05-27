@@ -15,7 +15,7 @@ import net.fathomsoft.nova.util.Location;
 public class StaticFieldListNode extends TreeNode
 {
 	/**
-	 * @see net.fathomsoft.nova.tree.TreeNode#TreeNode(TreeNode)
+	 * @see net.fathomsoft.nova.tree.TreeNode#TreeNode(TreeNode, Location)
 	 */
 	public StaticFieldListNode(TreeNode temporaryParent, Location locationIn)
 	{

@@ -31,7 +31,7 @@ public class ExceptionNode extends TreeNode
 	private static final HashMap<String, Integer>	ids;
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.TreeNode#TreeNode(TreeNode)
+	 * @see net.fathomsoft.nova.tree.TreeNode#TreeNode(TreeNode, Location)
 	 */
 	public ExceptionNode(TreeNode temporaryParent, Location locationIn)
 	{

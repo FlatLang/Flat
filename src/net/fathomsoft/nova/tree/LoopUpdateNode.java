@@ -14,7 +14,7 @@ import net.fathomsoft.nova.util.Location;
 public class LoopUpdateNode extends TreeNode
 {
 	/**
-	 * @see net.fathomsoft.nova.tree.TreeNode#TreeNode(TreeNode)
+	 * @see net.fathomsoft.nova.tree.TreeNode#TreeNode(TreeNode, Location)
 	 */
 	public LoopUpdateNode(TreeNode temporaryParent, Location locationIn)
 	{

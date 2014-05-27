@@ -49,7 +49,7 @@ public class FileNode extends IdentifierNode
 	/**
 	 * Instantiate and initialize the default values.
 	 * 
-	 * @see net.fathomsoft.nova.tree.TreeNode#TreeNode(TreeNode)
+	 * @see net.fathomsoft.nova.tree.TreeNode#TreeNode(TreeNode, Location)
 	 */
 	public FileNode(TreeNode temporaryParent, Location locationIn)
 	{

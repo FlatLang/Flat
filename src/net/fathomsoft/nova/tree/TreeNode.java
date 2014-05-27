@@ -76,6 +76,9 @@ public abstract class TreeNode
 	
 	/**
 	 * Create a new TreeNode. Initializes the data.
+	 * 
+	 * @param temporaryParent The TreeNode to act as the parent temporarily.
+	 * @param locationIn The location of the Node in the source file.
 	 */
 	public TreeNode(TreeNode temporaryParent, Location locationIn)
 	{
@@ -166,6 +169,20 @@ public abstract class TreeNode
 	public TreeNode getParent()
 	{
 		return parent;
+	}
+	
+	/**
+	 * Set a temporary parent for the specified TreeNode. When, if ever,
+	 * the TreeNode is formally added to a TreeNode, the temporary parent
+	 * will be removed.
+	 * 
+	 * @param parent The TreeNode to act as the parent temporarily.
+	 */
+	public void setTemporaryParent(TreeNode parent)
+	{
+		detach();
+		
+		this.parent = parent;
 	}
 	
 	/**
@@ -452,20 +469,6 @@ public abstract class TreeNode
 		
 		// Set this instance as the new parent.
 		node.parent = this;
-	}
-	
-	/**
-	 * Set a temporary parent for the specified TreeNode. When, if ever,
-	 * the TreeNode is formally added to a TreeNode, the temporary parent
-	 * will be removed.
-	 * 
-	 * @param parent The TreeNode to act as the parent temporarily.
-	 */
-	public void setTemporaryParent(TreeNode parent)
-	{
-		detach();
-		
-		this.parent = parent;
 	}
 	
 	/**

@@ -17,7 +17,7 @@ public class ExternalStatementNode extends TreeNode
 	private String	data;
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.TreeNode#TreeNode(TreeNode)
+	 * @see net.fathomsoft.nova.tree.TreeNode#TreeNode(TreeNode, Location)
 	 */
 	public ExternalStatementNode(TreeNode temporaryParent, Location locationIn)
 	{

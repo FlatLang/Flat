@@ -20,7 +20,7 @@ import net.fathomsoft.nova.util.Regex;
 public class ThrowNode extends ExceptionHandlingNode
 {
 	/**
-	 * @see net.fathomsoft.nova.tree.TreeNode#TreeNode(TreeNode)
+	 * @see net.fathomsoft.nova.tree.TreeNode#TreeNode(TreeNode, Location)
 	 */
 	public ThrowNode(TreeNode temporaryParent, Location locationIn)
 	{

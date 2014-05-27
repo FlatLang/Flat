@@ -17,7 +17,7 @@ import net.fathomsoft.nova.util.Regex;
 public class ReturnNode extends ValueNode
 {
 	/**
-	 * @see net.fathomsoft.nova.tree.TreeNode#TreeNode(TreeNode)
+	 * @see net.fathomsoft.nova.tree.TreeNode#TreeNode(TreeNode, Location)
 	 */
 	public ReturnNode(TreeNode temporaryParent, Location locationIn)
 	{

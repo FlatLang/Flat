@@ -16,7 +16,7 @@ public class LoopNode extends TreeNode
 	/**
 	 * Instantiate a new LoopNode and initialize the default values.
 	 * 
-	 * @see net.fathomsoft.nova.tree.TreeNode#TreeNode(TreeNode)
+	 * @see net.fathomsoft.nova.tree.TreeNode#TreeNode(TreeNode, Location)
 	 */
 	public LoopNode(TreeNode temporaryParent, Location locationIn)
 	{

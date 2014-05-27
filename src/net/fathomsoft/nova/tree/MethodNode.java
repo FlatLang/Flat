@@ -29,7 +29,7 @@ public class MethodNode extends InstanceDeclarationNode
 	/**
 	 * Instantiate and initialize default data.
 	 * 
-	 * @see net.fathomsoft.nova.tree.TreeNode#TreeNode(TreeNode)
+	 * @see net.fathomsoft.nova.tree.TreeNode#TreeNode(TreeNode, Location)
 	 */
 	public MethodNode(TreeNode temporaryParent, Location locationIn)
 	{

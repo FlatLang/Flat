@@ -35,7 +35,7 @@ public class ParameterListNode extends TreeNode
 	 * Instantiate and initialize default data. Generates the
 	 * two default parameters for every method: Exception data.
 	 * 
-	 * @see net.fathomsoft.nova.tree.TreeNode#TreeNode(TreeNode)
+	 * @see net.fathomsoft.nova.tree.TreeNode#TreeNode(TreeNode, Location)
 	 */
 	public ParameterListNode(TreeNode temporaryParent, Location locationIn)
 	{

@@ -14,7 +14,7 @@ public class OperatorNode extends TreeNode
 	private String	operator;
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.TreeNode#TreeNode(TreeNode)
+	 * @see net.fathomsoft.nova.tree.TreeNode#TreeNode(TreeNode, Location)
 	 */
 	public OperatorNode(TreeNode temporaryParent, Location locationIn)
 	{

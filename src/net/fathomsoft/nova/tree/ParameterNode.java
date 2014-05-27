@@ -17,7 +17,7 @@ public class ParameterNode extends LocalDeclarationNode
 	private TreeNode	defaultValue;
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.TreeNode#TreeNode(TreeNode)
+	 * @see net.fathomsoft.nova.tree.TreeNode#TreeNode(TreeNode, Location)
 	 */
 	public ParameterNode(TreeNode temporaryParent, Location locationIn)
 	{

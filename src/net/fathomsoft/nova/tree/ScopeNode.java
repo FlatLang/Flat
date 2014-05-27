@@ -32,7 +32,7 @@ public class ScopeNode extends TreeNode
 	 * Instantiate and initialize the default values.
 	 * 
 	 * 
-	 * @see net.fathomsoft.nova.tree.TreeNode#TreeNode(TreeNode)
+	 * @see net.fathomsoft.nova.tree.TreeNode#TreeNode(TreeNode, Location)
 	 */
 	public ScopeNode(TreeNode temporaryParent, Location locationIn)
 	{

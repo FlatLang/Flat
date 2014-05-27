@@ -21,7 +21,7 @@ public class ImportNode extends TreeNode
 	private String	importLocation;
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.TreeNode#TreeNode(TreeNode)
+	 * @see net.fathomsoft.nova.tree.TreeNode#TreeNode(TreeNode, Location)
 	 */
 	public ImportNode(TreeNode temporaryParent, Location locationIn)
 	{

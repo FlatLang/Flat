@@ -13,7 +13,7 @@ import net.fathomsoft.nova.util.Location;
 public class ImportListNode extends TreeNode
 {
 	/**
-	 * @see net.fathomsoft.nova.tree.TreeNode#TreeNode(TreeNode)
+	 * @see net.fathomsoft.nova.tree.TreeNode#TreeNode(TreeNode, Location)
 	 */
 	public ImportListNode(TreeNode temporaryParent, Location locationIn)
 	{

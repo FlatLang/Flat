@@ -32,7 +32,7 @@ public class VariableNode extends IdentifierNode
 	private static final String	NULL_TEXT	= "0";
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.TreeNode#TreeNode(TreeNode)
+	 * @see net.fathomsoft.nova.tree.TreeNode#TreeNode(TreeNode, Location)
 	 */
 	public VariableNode(TreeNode temporaryParent, Location locationIn)
 	{

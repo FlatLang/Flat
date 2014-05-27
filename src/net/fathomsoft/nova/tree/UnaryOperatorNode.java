@@ -23,7 +23,7 @@ public class UnaryOperatorNode extends TreeNode
 	private static final HashMap<String, Integer>	SIDES;
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.TreeNode#TreeNode(TreeNode)
+	 * @see net.fathomsoft.nova.tree.TreeNode#TreeNode(TreeNode, Location)
 	 */
 	public UnaryOperatorNode(TreeNode temporaryParent, Location locationIn)
 	{

@@ -20,7 +20,7 @@ public class ForLoopNode extends LoopNode
 	/**
 	 * Instantiate a new ForLoopNode and initialize its default values.
 	 * 
-	 * @see net.fathomsoft.nova.tree.TreeNode#TreeNode(TreeNode)
+	 * @see net.fathomsoft.nova.tree.TreeNode#TreeNode(TreeNode, Location)
 	 */
 	public ForLoopNode(TreeNode temporaryParent, Location locationIn)
 	{

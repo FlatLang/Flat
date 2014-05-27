@@ -24,7 +24,7 @@ public class MethodCallNode extends IdentifierNode
 	/**
 	 * Instantiate a new MethodCallNode and initialize the default values.
 	 * 
-	 * @see net.fathomsoft.nova.tree.TreeNode#TreeNode(TreeNode)
+	 * @see net.fathomsoft.nova.tree.TreeNode#TreeNode(TreeNode, Location)
 	 */
 	public MethodCallNode(TreeNode temporaryParent, Location locationIn)
 	{

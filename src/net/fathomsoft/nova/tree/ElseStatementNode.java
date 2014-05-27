@@ -20,7 +20,7 @@ public class ElseStatementNode extends TreeNode
 	 * Instantiate a new ElseStatementNode and initialize the default
 	 * values.
 	 * 
-	 * @see net.fathomsoft.nova.tree.TreeNode#TreeNode(TreeNode)
+	 * @see net.fathomsoft.nova.tree.TreeNode#TreeNode(TreeNode, Location)
 	 */
 	public ElseStatementNode(TreeNode temporaryParent, Location locationIn)
 	{

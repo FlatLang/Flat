@@ -19,7 +19,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
 public class WhileLoopNode extends LoopNode
 {
 	/**
-	 * @see net.fathomsoft.nova.tree.TreeNode#TreeNode(TreeNode)
+	 * @see net.fathomsoft.nova.tree.TreeNode#TreeNode(TreeNode, Location)
 	 */
 	public WhileLoopNode(TreeNode temporaryParent, Location locationIn)
 	{

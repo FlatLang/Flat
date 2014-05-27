@@ -16,7 +16,7 @@ import net.fathomsoft.nova.util.Location;
 public class ArgumentListNode extends TreeNode
 {
 	/**
-	 * @see net.fathomsoft.nova.tree.TreeNode#TreeNode(TreeNode)
+	 * @see net.fathomsoft.nova.tree.TreeNode#TreeNode(TreeNode, Location)
 	 */
 	public ArgumentListNode(TreeNode temporaryParent, Location locationIn)
 	{

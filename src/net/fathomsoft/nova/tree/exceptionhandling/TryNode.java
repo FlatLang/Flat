@@ -23,7 +23,7 @@ public class TryNode extends ExceptionHandlingNode
 	/**
 	 * Instantiate and initialize default data.
 	 * 
-	 * @see net.fathomsoft.nova.tree.TreeNode#TreeNode(TreeNode)
+	 * @see net.fathomsoft.nova.tree.TreeNode#TreeNode(TreeNode, Location)
 	 */
 	public TryNode(TreeNode temporaryParent, Location locationIn)
 	{

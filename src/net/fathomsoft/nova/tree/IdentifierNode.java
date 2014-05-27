@@ -17,7 +17,7 @@ public class IdentifierNode extends ValueNode
 	private String	name;
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.TreeNode#TreeNode(TreeNode)
+	 * @see net.fathomsoft.nova.tree.TreeNode#TreeNode(TreeNode, Location)
 	 */
 	public IdentifierNode(TreeNode temporaryParent, Location locationIn)
 	{

@@ -14,7 +14,7 @@ import net.fathomsoft.nova.util.Location;
 public class MethodListNode extends TreeNode
 {
 	/**
-	 * @see net.fathomsoft.nova.tree.TreeNode#TreeNode(TreeNode)
+	 * @see net.fathomsoft.nova.tree.TreeNode#TreeNode(TreeNode, Location)
 	 */
 	public MethodListNode(TreeNode temporaryParent, Location locationIn)
 	{

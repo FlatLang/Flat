@@ -13,7 +13,7 @@ import net.fathomsoft.nova.util.Location;
 public class VariableListNode extends TreeNode
 {
 	/**
-	 * @see net.fathomsoft.nova.tree.TreeNode#TreeNode(TreeNode)
+	 * @see net.fathomsoft.nova.tree.TreeNode#TreeNode(TreeNode, Location)
 	 */
 	public VariableListNode(TreeNode temporaryParent, Location locationIn)
 	{

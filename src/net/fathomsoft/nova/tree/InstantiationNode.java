@@ -19,7 +19,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
 public class InstantiationNode extends IdentifierNode
 {
 	/**
-	 * @see net.fathomsoft.nova.tree.TreeNode#TreeNode(TreeNode)
+	 * @see net.fathomsoft.nova.tree.TreeNode#TreeNode(TreeNode, Location)
 	 */
 	public InstantiationNode(TreeNode temporaryParent, Location locationIn)
 	{

@@ -25,7 +25,7 @@ public class FieldNode extends InstanceDeclarationNode
 	public static final int	VISIBLE	= 4;
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.TreeNode#TreeNode(TreeNode)
+	 * @see net.fathomsoft.nova.tree.TreeNode#TreeNode(TreeNode, Location)
 	 */
 	public FieldNode(TreeNode temporaryParent, Location locationIn)
 	{

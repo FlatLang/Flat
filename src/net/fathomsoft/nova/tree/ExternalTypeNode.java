@@ -13,7 +13,7 @@ import net.fathomsoft.nova.util.Location;
 public class ExternalTypeNode extends IdentifierNode
 {
 	/**
-	 * @see net.fathomsoft.nova.tree.TreeNode#TreeNode(TreeNode)
+	 * @see net.fathomsoft.nova.tree.TreeNode#TreeNode(TreeNode, Location)
 	 */
 	public ExternalTypeNode(TreeNode temporaryParent, Location locationIn)
 	{

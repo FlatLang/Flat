@@ -18,7 +18,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
 public class AssignmentNode extends TreeNode
 {
 	/**
-	 * @see net.fathomsoft.nova.tree.TreeNode#TreeNode(TreeNode)
+	 * @see net.fathomsoft.nova.tree.TreeNode#TreeNode(TreeNode, Location)
 	 */
 	public AssignmentNode(TreeNode temporaryParent, Location locationIn)
 	{

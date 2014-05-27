@@ -40,7 +40,7 @@ public class InstanceDeclarationNode extends VariableNode
 	 * Instantiate a new InstanceDeclarationNode and initialize the default
 	 * values.
 	 * 
-	 * @see net.fathomsoft.nova.tree.TreeNode#TreeNode(TreeNode)
+	 * @see net.fathomsoft.nova.tree.TreeNode#TreeNode(TreeNode, Location)
 	 */
 	public InstanceDeclarationNode(TreeNode temporaryParent, Location locationIn)
 	{

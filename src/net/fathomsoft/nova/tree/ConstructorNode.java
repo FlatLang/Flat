@@ -22,7 +22,7 @@ public class ConstructorNode extends MethodNode
 	/**
 	 * Create a ConstructorNode and initialize default values.
 	 * 
-	 * @see net.fathomsoft.nova.tree.TreeNode#TreeNode(TreeNode)
+	 * @see net.fathomsoft.nova.tree.TreeNode#TreeNode(TreeNode, Location)
 	 */
 	public ConstructorNode(TreeNode temporaryParent, Location locationIn)
 	{

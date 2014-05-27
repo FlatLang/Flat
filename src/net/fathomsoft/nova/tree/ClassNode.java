@@ -28,7 +28,7 @@ public class ClassNode extends InstanceDeclarationNode
 	/**
 	 * Instantiate and initialize default values for a class node.
 	 * 
-	 * @see net.fathomsoft.nova.tree.TreeNode#TreeNode(TreeNode)
+	 * @see net.fathomsoft.nova.tree.TreeNode#TreeNode(TreeNode, Location)
 	 */
 	public ClassNode(TreeNode temporaryParent, Location locationIn)
 	{

@@ -18,7 +18,7 @@ public class LiteralNode extends TreeNode
 	private String	value;
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.TreeNode#TreeNode(TreeNode)
+	 * @see net.fathomsoft.nova.tree.TreeNode#TreeNode(TreeNode, Location)
 	 */
 	public LiteralNode(TreeNode temporaryParent, Location locationIn)
 	{

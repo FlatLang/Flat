@@ -31,7 +31,7 @@ public class VTableNode extends ClassNode
 	public static final String	VTABLE_IDENTIFIER = "vtable";
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.TreeNode#TreeNode(TreeNode)
+	 * @see net.fathomsoft.nova.tree.TreeNode#TreeNode(TreeNode, Location)
 	 */
 	public VTableNode(TreeNode temporaryParent, Location locationIn)
 	{

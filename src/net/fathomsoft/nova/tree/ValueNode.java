@@ -25,7 +25,7 @@ public class ValueNode extends TreeNode
 	private String	type;
 
 	/**
-	 * @see net.fathomsoft.nova.tree.TreeNode#TreeNode(TreeNode)
+	 * @see net.fathomsoft.nova.tree.TreeNode#TreeNode(TreeNode, Location)
 	 */
 	public ValueNode(TreeNode temporaryParent, Location locationIn)
 	{

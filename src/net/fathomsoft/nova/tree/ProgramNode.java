@@ -21,7 +21,7 @@ public class ProgramNode extends TreeNode
 	 * Instantiate and initialize a ProgramNode that contains a reference
 	 * to the compiler's controller.
 	 * 
-	 * @see net.fathomsoft.nova.tree.TreeNode#TreeNode(TreeNode)
+	 * @see net.fathomsoft.nova.tree.TreeNode#TreeNode(TreeNode, Location)
 	 * 
 	 * @param controller The controller of the compiler.
 	 */

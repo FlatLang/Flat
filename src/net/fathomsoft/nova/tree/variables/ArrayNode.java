@@ -30,7 +30,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
 public class ArrayNode extends VariableNode
 {
 	/**
-	 * @see net.fathomsoft.nova.tree.TreeNode#TreeNode(TreeNode)
+	 * @see net.fathomsoft.nova.tree.TreeNode#TreeNode(TreeNode, Location)
 	 */
 	public ArrayNode(TreeNode temporaryParent, Location locationIn)
 	{
