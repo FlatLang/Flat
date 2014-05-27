@@ -13,7 +13,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:19:44 PM
- * @version	v0.2.7 May 25, 2014 at 9:16:48 PM
+ * @version	v0.2.8 May 26, 2014 at 11:26:58 PM
  */
 public class AssignmentNode extends TreeNode
 {
@@ -177,18 +177,16 @@ public class AssignmentNode extends TreeNode
 			
 			if (accessed != null && accessed.isAccessed() && accessed instanceof FieldNode)
 			{
-				ProgramNode program = parent.getProgramNode();
-				
-				FieldNode   field   = (FieldNode)accessed.getDeclaration(program);
+				FieldNode field = (FieldNode)accessed.getDeclaration();
 				
 				if (field.getVisibility() == FieldNode.VISIBLE)
 				{
-					ClassNode declaringClass = field.getDeclaringClassNode(program);
+					ClassNode declaringClass = field.getDeclaringClassNode();
 					ClassNode thisClass      = (ClassNode)parent.getAncestorOfType(ClassNode.class, true);
 					
 					if (declaringClass != thisClass)
 					{
-						SyntaxMessage.error("The value of Field '" + field.getName() + "' cannot be modified", parent.getFileNode(), location, parent.getController());
+						SyntaxMessage.error("The value of the field '" + field.getName() + "' cannot be modified", parent.getFileNode(), location, parent.getController());
 						
 						return null;
 					}
@@ -222,10 +220,10 @@ public class AssignmentNode extends TreeNode
 		
 		n.addChild(varNode);
 		
-		int    rhsIndex = StringUtils.findNextNonWhitespaceIndex(statement, equalsIndex + 1);
+		int rhsIndex    = StringUtils.findNextNonWhitespaceIndex(statement, equalsIndex + 1);
 		
 		// Right-hand side of the equation.
-		String      rhs = statement.substring(rhsIndex);
+		String rhs      = statement.substring(rhsIndex);
 		
 		Location newLoc = new Location(location);
 		newLoc.setBounds(location.getStart() + rhsIndex, location.getStart() + statement.length());
@@ -263,26 +261,8 @@ public class AssignmentNode extends TreeNode
 		
 		if (child == null)
 		{
-			child = decodeScopeContents(parent, rhs, location);//MethodCallNode.decodeStatement(parent, rhs, location);
+			child = decodeScopeContents(parent, rhs, location);
 		}
-		
-//		if (child == null)
-//		{
-//			child = InstantiationNode.decodeStatement(parent, rhs, location);
-//		}
-//		if (child == null)
-//		{
-//			child = TreeNode.getExistingNode(parent, rhs);
-//			
-//			if (child != null)
-//			{
-//				child = child.clone();
-//			}
-//		}
-//		if (child == null)
-//		{
-//			child = TreeNode.decodeStatement(parent, rhs, location);
-//		}
 		if (child == null)
 		{
 			if (SyntaxUtils.isExternal(parent.getFileNode(), rhs))
