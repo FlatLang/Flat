@@ -9,7 +9,7 @@ import java.util.regex.Matcher;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Mar 13, 2014 at 9:38:42 PM
- * @version	v0.2.7 May 25, 2014 at 9:16:48 PM
+ * @version	v0.2.8 May 26, 2014 at 11:26:58 PM
  */
 public class StringUtils
 {
@@ -197,6 +197,31 @@ public class StringUtils
 		}
 		
 		return bounds;
+	}
+	
+	/**
+	 * Check to see if the character is a new-line character. If so,
+	 * increment the line-number variable.
+	 * 
+	 * @param start The index to start the search at.
+	 * @param statementStart The index to end the search at.
+	 * @param source The source String to search in.
+	 * @return The number of lines that the iterator encountered
+	 * 		within the given bounds.
+	 */
+	public static int numNewLines(int start, int statementStart, String source)
+	{
+		int lines = 0;
+		
+		for (int i = start; i < statementStart; i++)
+		{
+			if (source.charAt(i) == '\n')
+			{
+				lines++;
+			}
+		}
+		
+		return lines;
 	}
 	
 	/**
