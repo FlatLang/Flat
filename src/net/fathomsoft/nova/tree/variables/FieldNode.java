@@ -14,7 +14,7 @@ import net.fathomsoft.nova.util.Patterns;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:12:04 PM
- * @version	v0.2.7 May 25, 2014 at 9:16:48 PM
+ * @version	v0.2.8 May 26, 2014 at 11:26:58 PM
  */
 public class FieldNode extends InstanceDeclarationNode
 {
@@ -87,15 +87,6 @@ public class FieldNode extends InstanceDeclarationNode
 		}
 		
 		return true;
-	}
-
-	/**
-	 * @see net.fathomsoft.nova.tree.TreeNode#generateJavaSource()
-	 */
-	@Override
-	public String generateJavaSource()
-	{
-		return super.generateJavaSource();
 	}
 
 	/**
@@ -202,7 +193,7 @@ public class FieldNode extends InstanceDeclarationNode
 					{
 						localDeclaration.setStart(bounds.getStart());
 					}
-					if (wordNumber == numWords - 1)
+					else if (wordNumber == numWords - 1)
 					{
 						localDeclaration.setEnd(statement.length());
 					}
@@ -220,7 +211,7 @@ public class FieldNode extends InstanceDeclarationNode
 		String preStatement      = statement.substring(0, localDeclaration.getStart());
 		String localStatement    = statement.substring(localDeclaration.getStart(), localDeclaration.getEnd());
 		
-		LocalDeclarationNode var = LocalDeclarationNode.decodeStatement(parent, localStatement, location);
+		LocalDeclarationNode var = LocalDeclarationNode.decodeStatement(n, localStatement, location);
 		
 		if (var == null)
 		{
