@@ -37,7 +37,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:00:11 PM
- * @version	v0.2.8 May 26, 2014 at 11:26:58 PM
+ * @version	v0.2.9 May 28, 2014 at 6:44:37 AM
  */
 public abstract class TreeNode
 {
@@ -826,6 +826,26 @@ public abstract class TreeNode
 	 */
 	public static TreeNode decodeStatement(TreeNode parent, String statement, Location location, Class<?> types[])
 	{
+		return decodeStatement(parent, statement, location, types, false);
+	}
+	
+	/**
+	 * Decode the specific statement into its correct TreeNode value. If
+	 * the statement does not translate into a TreeNode, a syntax error
+	 * has occurred. 
+	 * 
+	 * @param parent The Parent TreeNode of the current statement to be
+	 * 		decoded.
+	 * @param statement The statement to be decoded into a TreeNode.
+	 * @param location The Location in the source text where the statement
+	 * 		is located at.
+	 * @param types The types of TreeNodes to try to decode, in the given
+	 * 		order.
+	 * @param require Throw an error if the statement is not decoded.
+	 * @return The TreeNode constructed from the statement, if any.
+	 */
+	public static TreeNode decodeStatement(TreeNode parent, String statement, Location location, Class<?> types[], boolean require)
+	{
 		TreeNode node = null;
 		
 		for (Class<?> type : types)
@@ -882,14 +902,22 @@ public abstract class TreeNode
 			if (node != null)
 			{
 //				node.setLocationIn(location);
-				
+				if (parent.getFileNode().getName().equals("Test"))
+				{
+					System.out.println(node + " [" + node.getClass() + "]");
+				}
 				return node;
 			}
 		}
 		
-//		SyntaxMessage.error("Unknown statement", location, parent.getController());
+		node = ExternalStatementNode.decodeStatement(parent, statement, location);
 		
-		return ExternalStatementNode.decodeStatement(parent, statement, location);
+		if (require && node == null && parent.getFileNode().getName().equals("Test"))
+		{throw new RuntimeException(statement);
+//			SyntaxMessage.error("Unknown statement", parent, location);
+		}
+		
+		return node;
 	}
 	
 	/**
@@ -940,6 +968,22 @@ public abstract class TreeNode
 	 */
 	public static TreeNode decodeScopeContents(TreeNode parent, String statement, Location location)
 	{
+		return decodeScopeContents(parent, statement, location, true);
+	}
+	
+	/**
+	 * Decode a String that was found within a scope. That is, a method
+	 * or scopes within a method: for loops, while loops, if statements,
+	 * etc.
+	 * 
+	 * @param parent The parent node of the current statement to decode.
+	 * @param statement The statement to decode.
+	 * @param location The location of the statement.
+	 * @param require Throw an error if the statement is not decoded.
+	 * @return The TreeNode representation of the given statement.
+	 */
+	public static TreeNode decodeScopeContents(TreeNode parent, String statement, Location location, boolean require)
+	{
 		if (SyntaxUtils.isLiteral(statement))
 		{
 			LiteralNode literal = new LiteralNode(parent, location);
@@ -953,7 +997,7 @@ public abstract class TreeNode
 		
 		try
 		{
-			node = decodeStatement(parent, statement, location, PRE_VALUE_DECODE);
+			node = decodeStatement(parent, statement, location, PRE_VALUE_DECODE, false);
 		
 			if (node != null)
 			{
@@ -1016,7 +1060,7 @@ public abstract class TreeNode
 			
 			return root;
 		}
-		else if (node == null)
+		else if (node == null && require)
 		{
 			if (parent instanceof VariableNode)
 			{
@@ -1028,6 +1072,8 @@ public abstract class TreeNode
 //				throw new RuntimeException("sumthin gone rong wit " + statement + parent.getLocationInfo());
 //				System.err.println("sumthin gone rong wit " + statement + parent.getLocationInfo());
 			}
+			
+			SyntaxMessage.error("Could not decode syntax", parent, location);
 		}
 		
 		return node;

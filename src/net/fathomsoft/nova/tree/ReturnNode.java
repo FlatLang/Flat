@@ -12,7 +12,7 @@ import net.fathomsoft.nova.util.Regex;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:58:29 PM
- * @version	v0.2.7 May 25, 2014 at 9:16:48 PM
+ * @version	v0.2.9 May 28, 2014 at 6:44:37 AM
  */
 public class ReturnNode extends ValueNode
 {
@@ -123,7 +123,7 @@ public class ReturnNode extends ValueNode
 			{
 				statement = statement.substring(returnStartIndex);
 				
-				TreeNode child = TreeNode.decodeScopeContents(n, statement, newLoc);
+				TreeNode child = TreeNode.decodeScopeContents(n, statement, newLoc, false);
 				
 				if (child == null)
 				{

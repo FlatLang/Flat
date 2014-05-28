@@ -19,7 +19,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.2 Mar 24, 2014 at 10:45:29 PM
- * @version	v0.2.8 May 26, 2014 at 11:26:58 PM
+ * @version	v0.2.9 May 28, 2014 at 6:44:37 AM
  */
 public class ArrayAccessNode extends VariableNode
 {
@@ -149,8 +149,6 @@ public class ArrayAccessNode extends VariableNode
 			if (var == null)
 			{
 				SyntaxMessage.error("Undeclared variable '" + identifier + "'", n);
-				
-				return null;
 			}
 			
 			var = var.clone(n, location);
@@ -185,8 +183,6 @@ public class ArrayAccessNode extends VariableNode
 					if (created == null)
 					{
 						SyntaxMessage.error("Unknown array access index '" + data + "'", n, newLoc);
-						
-						return null;
 					}
 					
 					n.addDimension(created);

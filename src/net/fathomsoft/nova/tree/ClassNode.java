@@ -17,7 +17,7 @@ import net.fathomsoft.nova.util.Regex;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:15:51 PM
- * @version	v0.2.8 May 26, 2014 at 11:26:58 PM
+ * @version	v0.2.9 May 28, 2014 at 6:44:37 AM
  */
 public class ClassNode extends InstanceDeclarationNode
 {
@@ -996,6 +996,19 @@ public class ClassNode extends InstanceDeclarationNode
 	public boolean containsStaticData()
 	{
 		return containsStaticData(this);
+	}
+	
+	/**
+	 * @see net.fathomsoft.nova.tree.ValueNode#getAccessedNode()
+	 */
+	public IdentifierNode getAccessedNode()
+	{
+		if (getChildren().size() <= 4)
+		{
+			return null;
+		}
+		
+		return (IdentifierNode)getChild(4);
 	}
 	
 	/**

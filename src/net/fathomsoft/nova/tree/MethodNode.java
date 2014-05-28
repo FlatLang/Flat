@@ -18,7 +18,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:10:53 PM
- * @version	v0.2.8 May 26, 2014 at 11:26:58 PM
+ * @version	v0.2.9 May 28, 2014 at 6:44:37 AM
  */
 public class MethodNode extends InstanceDeclarationNode
 {
@@ -456,6 +456,19 @@ public class MethodNode extends InstanceDeclarationNode
 		builder.append(')');
 		
 		return builder.toString();
+	}
+	
+	/**
+	 * @see net.fathomsoft.nova.tree.ValueNode#getAccessedNode()
+	 */
+	public IdentifierNode getAccessedNode()
+	{
+		if (getChildren().size() <= 2)
+		{
+			return null;
+		}
+		
+		return (IdentifierNode)getChild(2);
 	}
 	
 	/**

@@ -18,7 +18,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:20:35 PM
- * @version	v0.2.7 May 25, 2014 at 9:16:48 PM
+ * @version	v0.2.9 May 28, 2014 at 6:44:37 AM
  */
 public class BinaryOperatorNode extends TreeNode
 {
@@ -242,27 +242,21 @@ public class BinaryOperatorNode extends TreeNode
 		
 		if (operatorLoc.getStart() >= 0)
 		{
-			BinaryOperatorNode node = new BinaryOperatorNode(parent, location);
-			node.setLocationIn(location);
+			BinaryOperatorNode n = new BinaryOperatorNode(parent, location);
 			
 			Bounds   lhb = new Bounds(0, StringUtils.findNextNonWhitespaceIndex(statement, operatorLoc.getStart() - 1, -1) + 1);
 			
 			Location lhl = new Location(location);
 			lhl.setBounds(lhb.getStart(), lhb.getEnd());
 			
-			// Decode the value on the left.
-//			Bounds bounds  = Regex.boundsOf(statement, Patterns.PRE_OPERATORS);
-//			Bounds bounds2 = Regex.boundsOf(statement, Patterns.POST_OPERATORS);
-			
-//			bounds.setEnd(StringUtils.findNextNonWhitespaceIndex(statement, bounds.getEnd() - 1, -1) + 1);
-			
 			// The left-hand value.
-			String   lhv = statement.substring(lhb.getStart(), lhb.getEnd());
+			String lhv = statement.substring(lhb.getStart(), lhb.getEnd());
 
 			if (lhv.length() <= 0)
 			{
 				return null;
 			}
+			
 			// The left-hand node.
 			TreeNode lhn = createNode(parent, lhv, lhl);
 			
@@ -276,21 +270,19 @@ public class BinaryOperatorNode extends TreeNode
 				{
 					SyntaxMessage.error("Unknown value of '" + lhv + "'", lhn);
 				}
-				
-				return null;
 			}
 			
 			Location leftLoc = new Location(location);
 			leftLoc.setBounds(lhb.getStart(), lhb.getEnd());
 			lhn.setLocationIn(leftLoc);
 			
-			node.addChild(lhn);
+			n.addChild(lhn);
 			
 			String operatorVal = statement.substring(operatorLoc.getStart(), operatorLoc.getEnd());
 			
-			OperatorNode operator = new OperatorNode(node, location);
+			OperatorNode operator = new OperatorNode(n, location);
 			operator.setOperator(operatorVal);
-			node.addChild(operator);
+			n.addChild(operator);
 			
 			int rhIndex = StringUtils.findNextNonWhitespaceIndex(statement, operatorLoc.getEnd());
 			
@@ -311,7 +303,7 @@ public class BinaryOperatorNode extends TreeNode
 			leftLoc.setBounds(rhIndex, statement.length());
 			rhn.setLocationIn(rightLoc);
 			
-			node.addChild(rhn);
+			n.addChild(rhn);
 			
 			if (operatorVal.equals("/"))
 			{
@@ -365,7 +357,7 @@ public class BinaryOperatorNode extends TreeNode
 				}
 			}
 			
-			return node;
+			return n;
 		}
 		else
 		{

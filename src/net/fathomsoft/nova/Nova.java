@@ -27,7 +27,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:00:04 PM
- * @version	v0.2.8 May 26, 2014 at 11:26:58 PM
+ * @version	v0.2.9 May 28, 2014 at 6:44:37 AM
  */
 public class Nova
 {
@@ -73,7 +73,7 @@ public class Nova
 	public static final int		LINUX         = 3;
 	
 	public static final String	LANGUAGE_NAME = "Nova";
-	public static final String	VERSION       = "v0.2.8";
+	public static final String	VERSION       = "v0.2.9";
 	
 	/**
 	 * Find out which operating system the compiler is running on.
@@ -637,8 +637,6 @@ public class Nova
 		if (!isFlagEnabled(DRY_RUN))
 		{
 			enableFlag(DRY_RUN);
-			
-			errors.add("Compilation failed.");
 		}
 		
 		String error = "Error: " + message;
@@ -948,6 +946,11 @@ public class Nova
 		for (String s : messages)
 		{
 			System.out.println(s);
+		}
+		
+		if (errors.size() > 0)
+		{
+			System.err.println("Compilation failed with " + errors.size() + " error" + (errors.size() > 1 ? "s" : "") + ".");
 		}
 		
 		for (String s : errors)

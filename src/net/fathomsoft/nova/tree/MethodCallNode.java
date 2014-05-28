@@ -15,7 +15,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 10:04:31 PM
- * @version	v0.2.7 May 25, 2014 at 9:16:48 PM
+ * @version	v0.2.9 May 28, 2014 at 6:44:37 AM
  */
 public class MethodCallNode extends IdentifierNode
 {
@@ -473,7 +473,7 @@ public class MethodCallNode extends IdentifierNode
 				}
 				if (arg == null)
 				{
-					arg = TreeNode.decodeScopeContents(parent, argument, location);//TreeNode.getExistingNode(parent, argument);
+					arg = TreeNode.decodeScopeContents(parent, argument, location, false);//TreeNode.getExistingNode(parent, argument);
 					
 					if (arg != null && (prefix == '*' || prefix == '&'))
 					{
