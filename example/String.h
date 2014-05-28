@@ -25,8 +25,8 @@ CCLASS_CLASS
 )
 
 
-String* nova_String_String(ExceptionData* exceptionData, char* nova_String_data_75);
+String* nova_String_String(ExceptionData* exceptionData, char* nova_String_data_77);
 void nova_del_String(String** this, ExceptionData* exceptionData);
 char* nova_String_toCharArray(String* this, ExceptionData* exceptionData);
-String* nova_String_concat(String* this, ExceptionData* exceptionData, String* nova_String_str_107);
+String* nova_String_concat(String* this, ExceptionData* exceptionData, String* nova_String_str_100);
 #endif

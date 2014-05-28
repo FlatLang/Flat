@@ -38,46 +38,46 @@ void nova_del_IO(IO** this, ExceptionData* exceptionData)
 	free(*this);
 }
 
-void nova_IO_println(ExceptionData* exceptionData, String* nova_IO_text_132)
+void nova_IO_println(ExceptionData* exceptionData, String* nova_IO_text_134)
 {
-	nova_IO_print(exceptionData, nova_String_concat(nova_IO_text_132, exceptionData, nova_String_String(exceptionData, "\n")));
+	nova_IO_print(exceptionData, nova_String_concat(nova_IO_text_134, exceptionData, nova_String_String(exceptionData, "\n")));
 }
 
-void nova_IO_print(ExceptionData* exceptionData, String* nova_IO_text_138)
+void nova_IO_print(ExceptionData* exceptionData, String* nova_IO_text_140)
 {
-	const char* nova_IO_cText_138;
+	const char* nova_IO_cText_140;
 	
-	nova_IO_cText_138 = nova_String_toCharArray(nova_IO_text_138, exceptionData);
-	fputs(nova_IO_cText_138, stdout);
+	nova_IO_cText_140 = nova_String_toCharArray(nova_IO_text_140, exceptionData);
+	fputs(nova_IO_cText_140, stdout);
 }
 
-void nova_IO_printi(ExceptionData* exceptionData, int nova_IO_j_144)
+void nova_IO_printi(ExceptionData* exceptionData, int nova_IO_j_148)
 {
-	printf("%d", nova_IO_j_144);
+	printf("%d", nova_IO_j_148);
 }
 
-void nova_IO_printl(ExceptionData* exceptionData, long_long nova_IO_j_149)
+void nova_IO_printl(ExceptionData* exceptionData, long_long nova_IO_j_152)
 {
-	printf("%llu", nova_IO_j_149);
+	printf("%llu", nova_IO_j_152);
 }
 
 int nova_IO_getInt(ExceptionData* exceptionData)
 {
-	String* nova_IO_s_154;
-	int nova_IO_num_154;
+	String* nova_IO_s_157;
+	int nova_IO_num_157;
 	
-	nova_IO_s_154 = nova_IO_getLine(exceptionData);
-	nova_IO_num_154 = atoi(nova_String_toCharArray(nova_IO_s_154, exceptionData));
-	return nova_IO_num_154;
+	nova_IO_s_157 = nova_IO_getLine(exceptionData);
+	nova_IO_num_157 = atoi(nova_String_toCharArray(nova_IO_s_157, exceptionData));
+	return nova_IO_num_157;
 }
 
 char nova_IO_getChar(ExceptionData* exceptionData)
 {
-	char nova_IO_c_158;
+	char nova_IO_c_162;
 	
-	nova_IO_c_158 = getchar();
+	nova_IO_c_162 = getchar();
 	nova_IO_flush(exceptionData);
-	return nova_IO_c_158;
+	return nova_IO_c_162;
 }
 
 void nova_IO_flush(ExceptionData* exceptionData)
@@ -87,19 +87,19 @@ void nova_IO_flush(ExceptionData* exceptionData)
 
 String* nova_IO_getLine(ExceptionData* exceptionData)
 {
-	char* nova_IO_line_168;
-	String* nova_IO_s_168;
+	char* nova_IO_line_177;
+	String* nova_IO_s_177;
 	
-	nova_IO_line_168 = ufgets(stdin);
-	nova_IO_s_168 = nova_String_String(exceptionData, nova_IO_line_168);
-	return nova_IO_s_168;
+	nova_IO_line_177 = ufgets(stdin);
+	nova_IO_s_177 = nova_String_String(exceptionData, nova_IO_line_177);
+	return nova_IO_s_177;
 }
 
 void nova_IO_waitForEnter(ExceptionData* exceptionData)
 {
-	char* nova_IO_c_173;
+	char* nova_IO_c_182;
 	
 	nova_IO_flush(exceptionData);
-	nova_IO_c_173 = (char*)malloc(sizeof(char) * (2));
-	fgets(nova_IO_c_173, 2, stdin);
+	nova_IO_c_182 = (char*)malloc(sizeof(char) * (2));
+	fgets(nova_IO_c_182, 2, stdin);
 }
