@@ -247,7 +247,14 @@ public class Nova
 			completed();
 		}
 		
-		insertMainMethod();
+		try
+		{
+			insertMainMethod();
+		}
+		catch (SyntaxErrorException e)
+		{
+			enableFlag(DRY_RUN);
+		}
 		
 		long time = System.currentTimeMillis() - startTime;
 		

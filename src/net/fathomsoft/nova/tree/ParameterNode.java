@@ -1,5 +1,6 @@
 package net.fathomsoft.nova.tree;
 
+import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.util.Location;
 import net.fathomsoft.nova.util.SyntaxUtils;
 
@@ -128,6 +129,12 @@ public class ParameterNode extends LocalDeclarationNode
 	public static ParameterNode decodeStatement(TreeNode parent, String statement, final Location location)
 	{
 		LocalDeclarationNode node = LocalDeclarationNode.decodeStatement(parent, statement, location);
+		
+		if (node == null)
+		{
+//			SyntaxMessage.error("Could not asdf", parent, location);
+			return null;
+		}
 		
 		ParameterNode n = new ParameterNode(parent, location);
 		node.cloneTo(n);

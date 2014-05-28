@@ -901,11 +901,6 @@ public abstract class TreeNode
 			
 			if (node != null)
 			{
-//				node.setLocationIn(location);
-				if (parent.getFileNode().getName().equals("Test"))
-				{
-					System.out.println(node + " [" + node.getClass() + "]");
-				}
 				return node;
 			}
 		}

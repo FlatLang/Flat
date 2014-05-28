@@ -263,9 +263,12 @@ public class DestructorNode extends MethodNode
 					
 					if (wordNumber == numWords - 1)
 					{
-						if (signature.charAt(bounds.getStart() - 1) == '~')
+						if (bounds.getStart() > 0)
 						{
-							setName(word);
+							if (signature.charAt(bounds.getStart() - 1) == '~')
+							{
+								setName(word);
+							}
 						}
 					}
 				}
