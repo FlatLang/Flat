@@ -14,7 +14,7 @@ import net.fathomsoft.nova.util.StringUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 10:00:11 PM
- * @version	v0.2.7 May 25, 2014 at 9:16:48 PM
+ * @version	v0.2.10 May 29, 2014 at 5:14:07 PM
  */
 public class UnaryOperatorNode extends TreeNode
 {
@@ -152,6 +152,13 @@ public class UnaryOperatorNode extends TreeNode
 		
 		if (bounds.getStart() >= 0)
 		{
+			String symbol = StringUtils.findMatch(statement, bounds.getEnd(), StringUtils.SYMBOLS);
+			
+			if (symbol != null)
+			{
+				return null;
+			}
+			
 			UnaryOperatorNode n = new UnaryOperatorNode(parent, location);
 				
 			String operatorVal  = statement.substring(bounds.getStart(), bounds.getEnd());
