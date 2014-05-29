@@ -27,7 +27,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:00:15 PM
- * @version	v0.2.8 May 26, 2014 at 11:26:58 PM
+ * @version	v0.2.10 May 29, 2014 at 5:14:07 PM
  */
 public class SyntaxTree
 {
@@ -411,8 +411,53 @@ public class SyntaxTree
 				builder.insert(m.start() - offset, '\n');
 			}
 			
-			offset += m.end() - m.start();
+			offset += m.end() - m.start() - numLines;
 		}
+		
+//		int offset = 0;
+//		
+//		int start  = source.indexOf("/*");
+//		
+//		while (start >= 0)
+//		{
+//			int end = source.indexOf("*/", start + 2);
+//			
+//			if (end < 0)
+//			{
+//				builder.delete(start - offset, builder.length());
+//				
+//				break;
+//			}
+//			
+//			builder.delete(start - offset, end - offset + 2);
+//			
+//			offset += end - start + 2;
+//			
+//			start = source.indexOf("/*", end + 2);
+//		}
+//
+//		offset = 0;
+//		
+//		start  = builder.indexOf("//");
+//		
+//		while (start >= 0)
+//		{
+//			int end = builder.indexOf("\n", start + 2);
+//
+//			if (end < 0)
+//			{
+//				builder.delete(start, builder.length());
+//				
+//				break;
+//			}
+//			
+//			builder.delete(start, end + 1);
+//			
+//			offset += end - start + 1;
+//			
+//			start = builder.indexOf("//", start);
+//
+//		}
 		
 		return builder.toString();
 	}
