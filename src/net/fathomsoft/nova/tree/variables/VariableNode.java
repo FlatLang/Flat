@@ -21,7 +21,7 @@ import net.fathomsoft.nova.util.Location;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:02:42 PM
- * @version	v0.2.8 May 26, 2014 at 11:26:58 PM
+ * @version	v0.2.10 May 29, 2014 at 5:14:07 PM
  */
 public class VariableNode extends IdentifierNode
 {
@@ -219,7 +219,7 @@ public class VariableNode extends IdentifierNode
 	 * private static int index;</pre></blockquote>
 	 * <u><code>private</code></u> is the first attribute (index: 0) that
 	 * sets the visibility of the declaration to private.
-	 * <u><code>static</code></u> is the second attribute (index: 1) that
+	 * "<u><code>static</code></u>" is the second attribute (index: 1) that
 	 * sets the variable as static.
 	 * 
 	 * @param attribute The attribute to set true.
