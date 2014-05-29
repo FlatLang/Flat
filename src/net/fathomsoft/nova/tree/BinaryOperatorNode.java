@@ -2,6 +2,7 @@ package net.fathomsoft.nova.tree;
 
 import java.util.regex.Matcher;
 
+import net.fathomsoft.nova.Test;
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.tree.exceptionhandling.ThrowNode;
 import net.fathomsoft.nova.util.Bounds;
@@ -18,7 +19,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:20:35 PM
- * @version	v0.2.9 May 28, 2014 at 6:44:37 AM
+ * @version	v0.2.10 May 29, 2014 at 5:14:07 PM
  */
 public class BinaryOperatorNode extends TreeNode
 {
@@ -240,41 +241,63 @@ public class BinaryOperatorNode extends TreeNode
 			return null;
 		}
 		
+		UnaryOperatorNode preTest = UnaryOperatorNode.decodeStatement(parent, statement, location);
+		
+		if (preTest != null)
+		{
+			return preTest;
+		}
+		
 		if (operatorLoc.getStart() >= 0)
 		{
 			BinaryOperatorNode n = new BinaryOperatorNode(parent, location);
 			
 			Bounds   lhb = new Bounds(0, StringUtils.findNextNonWhitespaceIndex(statement, operatorLoc.getStart() - 1, -1) + 1);
 			
-			Location lhl = new Location(location);
-			lhl.setBounds(lhb.getStart(), lhb.getEnd());
+			TreeNode lhn = null;
 			
-			// The left-hand value.
-			String lhv = statement.substring(lhb.getStart(), lhb.getEnd());
-
-			if (lhv.length() <= 0)
+			UnaryOperatorNode unary = testUnaryOperator(parent, statement, location);
+			
+			if (unary != null)
 			{
-				return null;
+				lhn = unary;
+				
+				int offset = lhn.getLocationIn().getEnd() - location.getStart();
+				
+				operatorLoc = StringUtils.findStrings(statement, offset, StringUtils.BINARY_OPERATORS);
 			}
-			
-			// The left-hand node.
-			TreeNode lhn = createNode(parent, lhv, lhl);
-			
-			if (lhn == null)
+			else
 			{
-				if (SyntaxUtils.isValidIdentifier(lhv))
+				Location lhl = new Location(location);
+				lhl.setBounds(lhb.getStart(), lhb.getEnd());
+				
+				// The left-hand value.
+				String lhv = statement.substring(lhb.getStart(), lhb.getEnd());
+	
+				if (lhv.length() <= 0)
 				{
-					SyntaxMessage.error("Unknown identifier '" + lhv + "'", lhn);
+					return null;
 				}
-				else
+				
+				// The left-hand node.
+				lhn = createNode(parent, lhv, lhl);
+				
+				if (lhn == null)
 				{
-					SyntaxMessage.error("Unknown value of '" + lhv + "'", lhn);
+					if (SyntaxUtils.isValidIdentifier(lhv))
+					{
+						SyntaxMessage.error("Unknown identifier '" + lhv + "'", parent, lhl);
+					}
+					else
+					{
+						SyntaxMessage.error("Unknown value of '" + lhv + "'", parent, lhl);
+					}
 				}
-			}
 			
-			Location leftLoc = new Location(location);
-			leftLoc.setBounds(lhb.getStart(), lhb.getEnd());
-			lhn.setLocationIn(leftLoc);
+				Location leftLoc = new Location(location);
+				leftLoc.setBounds(lhb.getStart(), lhb.getEnd());
+				lhn.setLocationIn(leftLoc);
+			}
 			
 			n.addChild(lhn);
 			
@@ -300,7 +323,7 @@ public class BinaryOperatorNode extends TreeNode
 			}
 
 			Location rightLoc = new Location(location);
-			leftLoc.setBounds(rhIndex, statement.length());
+			rightLoc.setBounds(rhIndex, statement.length());
 			rhn.setLocationIn(rightLoc);
 			
 			n.addChild(rhn);
@@ -393,7 +416,107 @@ public class BinaryOperatorNode extends TreeNode
 			return node;
 		}
 		
-		return decodeScopeContents(parent, statement, location);
+		return decodeScopeContents(parent, statement, location, false);
+	}
+	
+	/**
+	 * Try to decode a UnaryOperatorNode from the given statement, if it
+	 * is possible.
+	 * 
+	 * @param parent The parent of the given statement.
+	 * @param statement The statement to decode the UnaryOperatorNode
+	 * 		from.
+	 * @param location The location of the statement in the source code.
+	 * @return The UnaryOperatorNode instance, if one exists. Null
+	 * 		otherwise.
+	 */
+	private static UnaryOperatorNode testUnaryOperator(TreeNode parent, String statement, Location location)
+	{
+		String operator    = null;
+		
+		int    operatorLoc = 0;
+		int    count       = 0;
+		
+		while (count < 2)
+		{
+			Bounds symbolLoc = StringUtils.findStrings(statement, StringUtils.SYMBOLS);
+			
+			if (symbolLoc.getStart() < 0)
+			{
+				return null;
+			}
+			
+			Bounds unaryLoc  = StringUtils.findStrings(statement, StringUtils.UNARY_OPERATORS);
+			
+			int end = 0;
+			
+			if (symbolLoc.getStart() == unaryLoc.getStart())
+			{
+				end = unaryLoc.getEnd();
+			}
+			else
+			{
+				end = StringUtils.findNextWhitespaceIndex(statement, symbolLoc.getEnd());
+				
+				if (end < 0)
+				{
+					end = statement.length();
+				}
+			}
+			
+			operatorLoc = symbolLoc.getStart();
+			operator    = statement.substring(symbolLoc.getStart(), end);
+			
+			if (symbolLoc.getStart() == unaryLoc.getStart())
+			{
+				break;
+			}
+			
+			count++;
+		}
+		
+		if (count >= 2)
+		{
+			return null;
+		}
+		
+		Location newLoc = new Location(location);
+		
+		int      start  = -1;
+		int      end    = -1;
+		
+		if (operatorLoc == 0)
+		{
+			Bounds bounds = StringUtils.findStrings(statement, operatorLoc + operator.length() + 1, StringUtils.SYMBOLS);
+			
+			if (bounds.getStart() < 0)
+			{
+				return null;
+			}
+			
+			end = StringUtils.findNextNonWhitespaceIndex(statement, bounds.getStart() - 1, -1) + 1;
+			
+			if (end <= 0)
+			{
+				return null;
+			}
+			
+			start = operatorLoc;
+		}
+		else
+		{
+			start = 0;
+			end   = operatorLoc + operator.length();
+		}
+			
+		newLoc.setOffset(location.getOffset() + start);
+		newLoc.setBounds(location.getStart() + start, location.getStart() + end);
+		
+		String            expression = statement.substring(start, end);
+		
+		UnaryOperatorNode unary      = UnaryOperatorNode.decodeStatement(parent, expression, newLoc);
+		
+		return unary;
 	}
 	
 	/**
