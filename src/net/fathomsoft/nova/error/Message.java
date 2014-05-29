@@ -11,7 +11,7 @@ import net.fathomsoft.nova.util.Location;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:28:08 PM
- * @version	v0.2.1 Apr 24, 2014 at 4:46:08 PM
+ * @version	v0.2.10 May 29, 2014 at 5:14:07 PM
  */
 public class Message
 {
@@ -67,7 +67,7 @@ public class Message
 		}
 		if (location != null)
 		{
-			info += " on line number " + location.getLineNumber() + " at offset " + location.getOffset();
+			info += " on line number " + location.getLineNumber() + " at offset " + location.getOffset() + " [" + location.getStart() + ", " + location.getEnd() + "]";
 		}
 
 		if (type == MESSAGE)
