@@ -13,7 +13,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:19:44 PM
- * @version	v0.2.8 May 26, 2014 at 11:26:58 PM
+ * @version	v0.2.10 May 29, 2014 at 5:14:07 PM
  */
 public class AssignmentNode extends TreeNode
 {
@@ -164,9 +164,7 @@ public class AssignmentNode extends TreeNode
 		
 		if (varNode == null)
 		{
-			SyntaxMessage.error("Undeclared variable '" + variable + "'", varNode);
-			
-			return null;
+			SyntaxMessage.error("Undeclared variable '" + variable + "'", parent, location);
 		}
 		
 		IdentifierNode id = varNode.getLastAccessedNode();
@@ -187,8 +185,6 @@ public class AssignmentNode extends TreeNode
 					if (declaringClass != thisClass)
 					{
 						SyntaxMessage.error("The value of the field '" + field.getName() + "' cannot be modified", accessed);
-						
-						return null;
 					}
 				}
 			}
