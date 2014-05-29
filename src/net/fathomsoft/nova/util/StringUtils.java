@@ -9,12 +9,13 @@ import java.util.regex.Matcher;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Mar 13, 2014 at 9:38:42 PM
- * @version	v0.2.8 May 26, 2014 at 11:26:58 PM
+ * @version	v0.2.10 May 29, 2014 at 5:14:07 PM
  */
 public class StringUtils
 {
 	public static final String	BINARY_OPERATORS[] = new String[] { "+", "-", "/", "*", "==", "!=", "&&", "||", "<=", ">=", "<<", "<", ">", "%" };
 	public static final String	UNARY_OPERATORS[]  = new String[] { "--", "-", "++", "!" };
+	public static final String	SYMBOLS[]          = new String[] { "-", "+", "~", "!", "=", "%", "^", "&", "|", "*", "/", ">", "<" };
 	
 	/**
 	 * Find the index of the ending char for the match. For instance, to
@@ -123,6 +124,8 @@ public class StringUtils
 	 * 
 	 * @param value The String to search through.
 	 * @param strings The array to search through.
+	 * @return A Bounds instance with the end points of the found String.
+	 * 		If a String is not found, [-1, -1] is returned.
 	 */
 	public static Bounds findStrings(String value, String strings[])
 	{
@@ -136,6 +139,8 @@ public class StringUtils
 	 * @param value The String to search through.
 	 * @param start The index to start the search at.
 	 * @param strings The array to search through.
+	 * @return A Bounds instance with the end points of the found String.
+	 * 		If a String is not found, [-1, -1] is returned.
 	 */
 	public static Bounds findStrings(String value, int start, String strings[])
 	{
@@ -197,6 +202,78 @@ public class StringUtils
 		}
 		
 		return bounds;
+	}
+	
+	/**
+	 * Search the given haystack String for any match within the strings
+	 * array starting at the given char start index. If a match is
+	 * encountered, the String that makes the match is returned. If not
+	 * match is made, null is returned.
+	 * 
+	 * @param haystack The String try to match.
+	 * @param start The index to start to search the value at.
+	 * @param strings The array to search through to try and match.
+	 * @return The String in the strings array that made the match. If no
+	 * 		match was found, null is returned.
+	 */
+	public static String findMatch(String haystack, int start, String strings[])
+	{
+		Bounds bounds = findStrings(haystack, start, strings);
+		
+		if (bounds.getStart() < 0)
+		{
+			return null;
+		}
+		
+		return haystack.substring(bounds.getStart(), bounds.getEnd());
+	}
+	
+	/**
+	 * Search the given haystack String for any match within the strings
+	 * array at the given char offset index. If a match is encountered, the
+	 * String that makes the match is returned. If not match is made, null
+	 * is returned.
+	 * 
+	 * @param haystack The String try to match at the given index.
+	 * @param index The index to search the value at.
+	 * @param strings The array to search through to try and match.
+	 * @return The String in the strings array that made the match. If no
+	 * 		match was found, null is returned.
+	 */
+	public static String getMatch(String haystack, int index, String strings[])
+	{
+		for (String str : strings)
+		{
+			for (int i = 0; i < str.length() && index + i < haystack.length(); i++)
+			{
+				if (haystack.charAt(index + i) != str.charAt(i))
+				{
+					break;
+				}
+				
+				if (i == str.length() - 1)
+				{
+					return str;
+				}
+			}
+		}
+		
+		return null;
+	}
+	
+	/**
+	 * Search the given haystack String for any match within the strings
+	 * array at the given char offset index.
+	 * 
+	 * @param haystack The String try to match at the given index.
+	 * @param index The index to search the value at.
+	 * @param strings The array to search through to try and match.
+	 * @return Whether or not there is a match within the strings array at
+	 * 		the given index in the haystack String.
+	 */
+	public static boolean matches(String haystack, int index, String strings[])
+	{
+		return getMatch(haystack, index, strings) != null;
 	}
 	
 	/**
@@ -472,6 +549,40 @@ public class StringUtils
 		for (int i = array.length - 1; i >= 0; i--)
 		{
 			if (array[i] == c)
+			{
+				return i;
+			}
+		}
+		
+		return -1;
+	}
+	
+	/**
+	 * Search for the given String 's' in the given array.
+	 * 
+	 * @param array The array to search for 's' in.
+	 * @param s The String to search for.
+	 * @return Whether or not the array contains the 'c' String.
+	 */
+	public static boolean containsString(String array[], String s)
+	{
+		return searchString(array, s) >= 0;
+	}
+	
+	/**
+	 * Search for the given String 's' in the given array, if it is found,
+	 * return the index at which it was found.
+	 * 
+	 * @param array The array to search for 's' in.
+	 * @param s The String to search for.
+	 * @return The index in the array of the occurrence of String 's', if
+	 * 		it was found in the array.
+	 */
+	public static int searchString(String array[], String s)
+	{
+		for (int i = array.length - 1; i >= 0; i--)
+		{
+			if (array[i].equals(s))
 			{
 				return i;
 			}
