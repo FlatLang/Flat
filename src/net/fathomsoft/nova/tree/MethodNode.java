@@ -18,7 +18,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:10:53 PM
- * @version	v0.2.9 May 28, 2014 at 6:44:37 AM
+ * @version	v0.2.10 May 29, 2014 at 5:14:07 PM
  */
 public class MethodNode extends InstanceDeclarationNode
 {
@@ -574,7 +574,10 @@ public class MethodNode extends InstanceDeclarationNode
 						}
 						else
 						{
-							SyntaxMessage.error("Unknown method definition", this);
+							Location newLoc = new Location(location);
+							newLoc.setBounds(bounds.getStart(), bounds.getEnd());
+							
+							SyntaxMessage.error("Unknown method definition", this, newLoc);
 							
 							error[0] = true;
 						}
