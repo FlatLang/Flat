@@ -9,11 +9,13 @@ import java.util.regex.Matcher;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Mar 13, 2014 at 9:38:42 PM
- * @version	v0.2.10 May 29, 2014 at 5:14:07 PM
+ * @version	v0.2.11 May 31, 2014 at 1:19:11 PM
  */
 public class StringUtils
 {
-	public static final String	BINARY_OPERATORS[] = new String[] { "+", "-", "/", "*", "==", "!=", "&&", "||", "<=", ">=", "<<", "<", ">", "%" };
+	public static final char	WHITESPACE[]       = new char[] { ' ', '\n', '\t', '\r' };
+	
+	public static final String	BINARY_OPERATORS[] = new String[] { "+", "-", "/", "*", "==", "!=", "&&", "||", "<=", ">=", "<<", ">>", "<", ">", "%" };
 	public static final String	UNARY_OPERATORS[]  = new String[] { "--", "-", "++", "!" };
 	public static final String	SYMBOLS[]          = new String[] { "-", "+", "~", "!", "=", "%", "^", "&", "|", "*", "/", ">", "<" };
 	
