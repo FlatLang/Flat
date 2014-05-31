@@ -16,7 +16,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.2.4 May 2, 2014 at 11:14:37 PM
- * @version	v0.2.8 May 26, 2014 at 11:26:58 PM
+ * @version	v0.2.11 May 31, 2014 at 1:19:11 PM
  */
 public class ValueNode extends TreeNode
 {
@@ -64,7 +64,11 @@ public class ValueNode extends TreeNode
 	 */
 	public ValueNode getReferenceNode(TreeNode parent)
 	{
-		if (parent instanceof ArrayAccessNode || parent instanceof ArrayNode)
+		if (parent instanceof ArrayAccessNode || parent instanceof BinaryOperatorNode)
+		{
+			return getReferenceNode(parent.getParent());
+		}
+		if (parent instanceof ArrayNode)
 		{
 			parent = parent.getParent();
 		}
@@ -218,6 +222,37 @@ public class ValueNode extends TreeNode
 		}
 		
 		return (IdentifierNode)getChild(0);
+	}
+	
+	/**
+	 * Get the ValueNode that returns a value if it is used in an
+	 * expression.<br>
+	 * <br>
+	 * For example:
+	 * <blockquote><pre>
+	 * // Scenario 1
+	 * tree.value.next;
+	 * 
+	 * //Scenario 2
+	 * tree;</pre></blockquote>
+	 * In scenario 1, "<u><code>next</code></u>" is the returned node
+	 * because it is the last accessed node. In scenario 2
+	 * "<u><code>tree</code></u>" is the returned node because it does not
+	 * access any nodes and is therefore the value that is returned.
+	 * 
+	 * @return The last accessed node, or if the node does not access any
+	 * 		nodes, it returns itself.
+	 */
+	public ValueNode getReturnedNode()
+	{
+		IdentifierNode lastAccessed = getLastAccessedNode();
+		
+		if (lastAccessed != null)
+		{
+			return lastAccessed;
+		}
+		
+		return this;
 	}
 	
 	/**
@@ -455,10 +490,14 @@ public class ValueNode extends TreeNode
 		if (SyntaxUtils.isPrimitiveType(type))
 		{
 			String name = null;
-			//type.equals("int") || type.equals("char") || type.equals("long_long") || type.equals("bool") || type.equals("short") || type.equals("float") || type.equals("double")
+			
 			if (type.equals("int"))
 			{
 				name = "Integer";
+			}
+			else if (type.equals("char"))
+			{
+				name = "Character";
 			}
 			else if (type.equals("long"))
 			{
@@ -493,8 +532,6 @@ public class ValueNode extends TreeNode
 				if (clazz == null)
 				{
 					SyntaxMessage.error("Could not find class '" + name + "'", this);
-					
-					return null;
 				}
 				
 				return clazz.getName();
