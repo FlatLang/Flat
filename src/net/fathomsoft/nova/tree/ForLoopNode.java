@@ -1,6 +1,7 @@
 package net.fathomsoft.nova.tree;
 
 import net.fathomsoft.nova.error.SyntaxMessage;
+import net.fathomsoft.nova.tree.variables.VariableNode;
 import net.fathomsoft.nova.util.Bounds;
 import net.fathomsoft.nova.util.Location;
 import net.fathomsoft.nova.util.Patterns;
@@ -13,7 +14,7 @@ import net.fathomsoft.nova.util.Regex;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:55:15 PM
- * @version	v0.2.7 May 25, 2014 at 9:16:48 PM
+ * @version	v0.2.11 May 31, 2014 at 1:19:11 PM
  */
 public class ForLoopNode extends LoopNode
 {
@@ -94,13 +95,6 @@ public class ForLoopNode extends LoopNode
 		TreeNode       condition      = getConditionNode();
 		TreeNode       update         = getUpdateNode();
 		
-//		builder.append('{').append('\n');
-//		
-//		if (declarationNode != null)
-//		{
-//			builder.append(declarationNode.generateCSourceOutput()).append('\n');
-//		}
-		
 		if (initialization != null)
 		{
 			builder.append(initialization.generateCSource()).append('\n');
@@ -134,8 +128,6 @@ public class ForLoopNode extends LoopNode
 			}
 		}
 		
-//		builder.append('}').append('\n');
-		
 		return builder.toString();
 	}
 	
@@ -154,10 +146,11 @@ public class ForLoopNode extends LoopNode
 	 * @param statement The statement to try to decode into a
 	 * 		ForLoopNode instance.
 	 * @param location The location of the statement in the source code.
+	 * @param require Whether or not to throw an error if anything goes wrong.
 	 * @return The generated node, if it was possible to translated it
 	 * 		into a ForLoopNode.
 	 */
-	public static ForLoopNode decodeStatement(TreeNode parent, String statement, Location location)
+	public static ForLoopNode decodeStatement(TreeNode parent, String statement, Location location, boolean require)
 	{
 		if (Regex.matches(statement, 0, Patterns.PRE_FOR))
 		{
@@ -175,28 +168,41 @@ public class ForLoopNode extends LoopNode
 				
 				String arguments[] = contents.split("\\s*;\\s*");
 				
-				AssignmentNode initialization = AssignmentNode.decodeStatement(parent, arguments[0], newLoc);
+				AssignmentNode initialization = AssignmentNode.decodeStatement(parent, arguments[0], newLoc, require);
 				n.getArgumentListNode().addChild(initialization);
 				
-//				if (initialization.getVariableNode() instanceof LocalVariableNode)
-//				{
-//					LocalVariableNode var = (LocalVariableNode)initialization.getVariableNode().clone();
-//					
-//					parent.addToNearestScope(var);
-//				}
+				VariableNode   var      = initialization.getVariableNode();
+				IdentifierNode existing = TreeNode.getExistingNode(parent, var.getName());
 				
-				TreeNode condition = BinaryOperatorNode.decodeStatement(parent, arguments[1], newLoc);
+				if ( var.getLocationIn().getBounds().equals(existing.getLocationIn().getBounds()))
+				{
+					LocalDeclarationNode declaration = (LocalDeclarationNode)existing;
+					
+					declaration.setScopeID(n.getScopeNode().getID());
+					
+//					n.addChild(var);
+//					
+//					LocalVariableNode local = var.clone(n, newLoc);
+//					
+//					initialization.addChild(0, local);
+				}
+				
+				TreeNode condition = BinaryOperatorNode.decodeStatement(parent, arguments[1], newLoc, require);
 				
 				if (condition == null)
 				{
-//					SyntaxMessage.error("Could not decode condition", parent.getFileNode(), newLoc, parent.getController());
+					condition = getExistingNode(parent, arguments[1]);
 					
+//					SyntaxMessage.error("Could not decode condition", parent.getFileNode(), newLoc, parent.getController());
+				}
+				if (condition == null)
+				{
 					return null;
 				}
 				
 				n.getArgumentListNode().addChild(condition);
 				
-				UnaryOperatorNode unaryUpdate = UnaryOperatorNode.decodeStatement(parent, arguments[2], newLoc);
+				UnaryOperatorNode unaryUpdate = UnaryOperatorNode.decodeStatement(parent, arguments[2], newLoc, require);
 				
 				if (unaryUpdate != null)
 				{
@@ -204,7 +210,7 @@ public class ForLoopNode extends LoopNode
 				}
 				else
 				{
-					AssignmentNode update = AssignmentNode.decodeStatement(parent, arguments[2], newLoc);
+					AssignmentNode update = AssignmentNode.decodeStatement(parent, arguments[2], newLoc, require);
 					
 					n.getArgumentListNode().addChild(update);
 				}
