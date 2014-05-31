@@ -1,6 +1,7 @@
 package net.fathomsoft.nova.tree.variables;
 
 import net.fathomsoft.nova.Nova;
+import net.fathomsoft.nova.tree.BinaryOperatorNode;
 import net.fathomsoft.nova.tree.ClassNode;
 import net.fathomsoft.nova.tree.IdentifierNode;
 import net.fathomsoft.nova.tree.InstanceDeclarationNode;
@@ -10,6 +11,7 @@ import net.fathomsoft.nova.tree.ProgramNode;
 import net.fathomsoft.nova.tree.ReturnNode;
 import net.fathomsoft.nova.tree.ScopeNode;
 import net.fathomsoft.nova.tree.TreeNode;
+import net.fathomsoft.nova.tree.UnaryOperatorNode;
 import net.fathomsoft.nova.tree.ValueNode;
 import net.fathomsoft.nova.tree.exceptionhandling.ExceptionNode;
 import net.fathomsoft.nova.util.Location;
@@ -21,7 +23,7 @@ import net.fathomsoft.nova.util.Location;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:02:42 PM
- * @version	v0.2.10 May 29, 2014 at 5:14:07 PM
+ * @version	v0.2.11 May 31, 2014 at 1:19:11 PM
  */
 public class VariableNode extends IdentifierNode
 {
@@ -483,16 +485,24 @@ public class VariableNode extends IdentifierNode
 			}
 		}
 		
-		VariableNode existing = getExistingNode(getParent(), name);
+		String str = Nova.LANGUAGE_NAME.toLowerCase() + "_";
 		
-		String str = Nova.LANGUAGE_NAME.toLowerCase() + "_" + clazz.generateUniquePrefix() + "_" + name;
-		
-		if (this instanceof FieldNode == false && existing instanceof LocalVariableNode)
+		if (this instanceof FieldNode)
 		{
-			ScopeNode scopeNode = TreeNode.getAncestorWithScope(existing.getParent()).getScopeNode();
-			
-			str += "_" + scopeNode.getID();
+			str += clazz.generateUniquePrefix();
 		}
+		else
+		{
+//			VariableNode existing  = getExistingNode(getParent(), name);
+//			
+//			ScopeNode    scopeNode = getAncestorWithScope(existing.getParent()).getScopeNode();
+			
+			LocalDeclarationNode declaration = (LocalDeclarationNode)getExistingNode(getParent(), name);
+			
+			str += declaration.getScopeID();
+		}
+		
+		str += "_" + name;
 		
 		return str;
 	}
@@ -586,6 +596,10 @@ public class VariableNode extends IdentifierNode
 		{
 			return getClassNode();
 		}
+		if (this instanceof LocalDeclarationNode)
+		{
+			return this;
+		}
 		if (isAccessed())
 		{
 			ValueNode value = (ValueNode)parent;
@@ -613,7 +627,7 @@ public class VariableNode extends IdentifierNode
 	{
 		TreeNode parent = getParent();
 		
-		return parent instanceof ValueNode && !parent.containsScope() && parent instanceof ReturnNode == false && parent instanceof ArrayAccessNode == false && parent instanceof ArrayNode == false;
+		return parent instanceof ValueNode && !parent.containsScope() && parent instanceof BinaryOperatorNode == false && parent instanceof UnaryOperatorNode == false && parent instanceof ReturnNode == false && parent instanceof ArrayAccessNode == false && parent instanceof ArrayNode == false;
 	}
 	
 	/**
