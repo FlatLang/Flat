@@ -5,7 +5,7 @@ package net.fathomsoft.nova.util;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Mar 12, 2014 at 4:08:41 PM
- * @version	v0.1 Mar 12, 2014 at 4:08:41 PM
+ * @version	v0.2.11 May 31, 2014 at 1:19:11 PM
  */
 public class Bounds
 {
@@ -82,6 +82,14 @@ public class Bounds
 	public boolean isOptional()
 	{
 		return start == 0;
+	}
+	
+	/**
+	 * @see java.lang.Object#equals(Object)
+	 */
+	public boolean equals(Bounds bounds)
+	{
+		return bounds != null && bounds.getStart() == start && bounds.getEnd() == end;
 	}
 	
 	/**
