@@ -13,7 +13,7 @@ import net.fathomsoft.nova.util.Regex;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:57:13 PM
- * @version	v0.2.7 May 25, 2014 at 9:16:48 PM
+ * @version	v0.2.11 May 31, 2014 at 1:19:11 PM
  */
 public class IfStatementNode extends TreeNode
 {
@@ -131,10 +131,11 @@ public class IfStatementNode extends TreeNode
 	 * @param statement The statement to try to decode into a
 	 * 		IfStatementNode instance.
 	 * @param location The location of the statement in the source code.
+	 * @param require Whether or not to throw an error if anything goes wrong.
 	 * @return The generated node, if it was possible to translated it
 	 * 		into a IfStatementNode.
 	 */
-	public static IfStatementNode decodeStatement(TreeNode parent, String statement, Location location)
+	public static IfStatementNode decodeStatement(TreeNode parent, String statement, Location location, boolean require)
 	{
 		if (Regex.matches(statement, 0, Patterns.PRE_IF))
 		{
@@ -150,16 +151,21 @@ public class IfStatementNode extends TreeNode
 				newLoc.setLineNumber(location.getLineNumber());
 				newLoc.setBounds(location.getStart() + bounds.getStart(), location.getStart() + bounds.getEnd());
 				
-				TreeNode child = BinaryOperatorNode.decodeStatement(parent, contents, newLoc);
+				TreeNode condition = BinaryOperatorNode.decodeStatement(parent, contents, newLoc, require);
 				
-				if (child == null)
+
+				if (condition == null)
 				{
-//					SyntaxMessage.error("Could not decode condition", parent.getFileNode(), newLoc, parent.getController());
+					condition = getExistingNode(parent, contents);
 					
+//					SyntaxMessage.error("Could not decode condition", parent.getFileNode(), newLoc, parent.getController());
+				}
+				if (condition == null)
+				{
 					return null;
 				}
 				
-				n.getCondition().addChild(child);
+				n.getCondition().addChild(condition);
 				
 				return n;
 			}

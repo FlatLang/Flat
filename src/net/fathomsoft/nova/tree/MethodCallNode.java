@@ -15,7 +15,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 10:04:31 PM
- * @version	v0.2.9 May 28, 2014 at 6:44:37 AM
+ * @version	v0.2.11 May 31, 2014 at 1:19:11 PM
  */
 public class MethodCallNode extends IdentifierNode
 {
@@ -276,10 +276,11 @@ public class MethodCallNode extends IdentifierNode
 	 * @param statement The statement to try to decode into a
 	 * 		MethodCallNode instance.
 	 * @param location The location of the statement in the source code.
+	 * @param require Whether or not to throw an error if anything goes wrong.
 	 * @return The generated node, if it was possible to translated it
 	 * 		into a MethodCallNode.
 	 */
-	public static MethodCallNode decodeStatement(final TreeNode parent, String statement, final Location location)//, boolean needsReference)
+	public static MethodCallNode decodeStatement(TreeNode parent, String statement, Location location, boolean require)
 	{
 		if (SyntaxUtils.isMethodCall(statement))
 		{
@@ -325,8 +326,6 @@ public class MethodCallNode extends IdentifierNode
 			if (bounds.getEnd() < 0)
 			{
 				SyntaxMessage.error("Expected a ')' ending parenthesis", n);
-				
-				return null;
 			}
 			
 			Location argsLocation = new Location();
@@ -354,15 +353,11 @@ public class MethodCallNode extends IdentifierNode
 			if (method != null && !SyntaxUtils.isVisible(accessor, method))
 			{
 				SyntaxMessage.error("Method '" + method.getName() + "' is not visible", n);
-				
-				return null;
 			}
 			
 			if (method == null && !n.isExternal())
 			{
 				SyntaxMessage.error("Undeclared method '" + n.getName() + "'", n);
-				
-				return null;
 			}
 			
 			if (method != null)
@@ -462,14 +457,13 @@ public class MethodCallNode extends IdentifierNode
 				
 				if (arg == null && SyntaxUtils.isLiteral(argument))
 				{
-					LiteralNode literal = new LiteralNode(parent, location);
-					literal.setValue(argument, parent.isWithinExternalContext());
+					LiteralNode literal = LiteralNode.decodeStatement(parent, argument, location, true);
 					
 					arg = literal;
 				}
 				if (arg == null)
 				{
-					arg = BinaryOperatorNode.decodeStatement(parent, argument, location);
+					arg = BinaryOperatorNode.decodeStatement(parent, argument, location, false);
 				}
 				if (arg == null)
 				{
@@ -491,8 +485,7 @@ public class MethodCallNode extends IdentifierNode
 				}
 				if (arg == null && parent.isWithinExternalContext())
 				{
-					LiteralNode literal = new LiteralNode(parent, location);
-					literal.setValue(argument, parent.isWithinExternalContext());
+					LiteralNode literal = LiteralNode.decodeStatement(parent, argument, location, true);
 					
 					arg = literal;
 				}

@@ -24,7 +24,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Mar 16, 2014 at 1:13:49 AM
- * @version	v0.2.7 May 25, 2014 at 9:16:48 PM
+ * @version	v0.2.11 May 31, 2014 at 1:19:11 PM
  */
 public class VTableNode extends ClassNode
 {
@@ -60,14 +60,10 @@ public class VTableNode extends ClassNode
 		if (isReference())
 		{
 			SyntaxMessage.error("A class cannot be of a reference type", this);
-			
-			return null;
 		}
 		else if (isPointer())
 		{
 			SyntaxMessage.error("A class cannot be of a pointer type", this);
-			
-			return null;
 		}
 		
 		builder.append('\n').append('(').append('\n');
@@ -171,10 +167,11 @@ public class VTableNode extends ClassNode
 	 * @param parent The parent of the current statement.
 	 * @param statement The statement to decode into an ArrayNode instance.
 	 * @param location The location of the statement in the source code.
+	 * @param require Whether or not to throw an error if anything goes wrong.
 	 * @return The new ArrayNode instance if it was able to decode the
 	 * 		statement. If not, it will return null.
 	 */
-	public static VTableNode decodeStatement(TreeNode parent, String statement, Location location)
+	public static VTableNode decodeStatement(TreeNode parent, String statement, Location location, boolean require)
 	{
 		if (SyntaxUtils.isArrayInitialization(statement))
 		{
@@ -196,8 +193,7 @@ public class VTableNode extends ClassNode
 				
 				if (SyntaxUtils.isNumber(length))
 				{
-					LiteralNode node = new LiteralNode(n, location);
-					node.setValue(length, parent.isWithinExternalContext());
+					LiteralNode node = LiteralNode.decodeStatement(n, length, location, require);
 					
 					n.addChild(node);
 				}

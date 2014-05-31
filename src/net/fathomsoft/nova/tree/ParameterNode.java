@@ -11,7 +11,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:52:01 PM
- * @version	v0.2.7 May 25, 2014 at 9:16:48 PM
+ * @version	v0.2.11 May 31, 2014 at 1:19:11 PM
  */
 public class ParameterNode extends LocalDeclarationNode
 {
@@ -123,12 +123,13 @@ public class ParameterNode extends LocalDeclarationNode
 	 * @param statement The statement to try to decode into a
 	 * 		ParameterNode instance.
 	 * @param location The location of the statement in the source code.
+	 * @param require Whether or not to throw an error if anything goes wrong.
 	 * @return The generated node, if it was possible to translated it
 	 * 		into a ParameterNode.
 	 */
-	public static ParameterNode decodeStatement(TreeNode parent, String statement, final Location location)
+	public static ParameterNode decodeStatement(TreeNode parent, String statement, Location location, boolean require)
 	{
-		LocalDeclarationNode node = LocalDeclarationNode.decodeStatement(parent, statement, location);
+		LocalDeclarationNode node = LocalDeclarationNode.decodeStatement(parent, statement, location, require);
 		
 		if (node == null)
 		{

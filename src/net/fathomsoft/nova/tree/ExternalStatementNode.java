@@ -10,7 +10,7 @@ import net.fathomsoft.nova.util.StringUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.2.1 Apr 27, 2014 at 11:14:20 PM
- * @version	v0.2.7 May 25, 2014 at 9:16:48 PM
+ * @version	v0.2.11 May 31, 2014 at 1:19:11 PM
  */
 public class ExternalStatementNode extends TreeNode
 {
@@ -93,10 +93,11 @@ public class ExternalStatementNode extends TreeNode
 	 * @param statement The statement to try to decode into a
 	 * 		ExternalStatementNode instance.
 	 * @param location The location of the statement in the source code.
+	 * @param require Whether or not to throw an error if anything goes wrong.
 	 * @return The generated node, if it was possible to translated it
 	 * 		into a ExternalStatementNode.
 	 */
-	public static ExternalStatementNode decodeStatement(TreeNode parent, String statement, Location location)
+	public static ExternalStatementNode decodeStatement(TreeNode parent, String statement, Location location, boolean require)
 	{
 		if (Regex.matches(statement, Patterns.EXTERNAL))
 		{

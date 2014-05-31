@@ -14,7 +14,7 @@ import net.fathomsoft.nova.util.Patterns;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:12:04 PM
- * @version	v0.2.8 May 26, 2014 at 11:26:58 PM
+ * @version	v0.2.11 May 31, 2014 at 1:19:11 PM
  */
 public class FieldNode extends InstanceDeclarationNode
 {
@@ -175,13 +175,16 @@ public class FieldNode extends InstanceDeclarationNode
 	 * @param statement The statement to try to decode into a
 	 * 		FieldNode instance.
 	 * @param location The location of the statement in the source code.
+	 * @param require Whether or not to throw an error if anything goes wrong.
 	 * @return The generated node, if it was possible to translated it
 	 * 		into a FieldNode.
 	 */
-	public static FieldNode decodeStatement(TreeNode parent, final String statement, Location location)
+	public static FieldNode decodeStatement(TreeNode parent, String statement, Location location, boolean require)
 	{
 		// The field declaration without the field specific modifiers.
 		final Bounds localDeclaration = new Bounds(-1, -1);
+		
+		final String finalStatement   = statement;
 		
 		FieldNode n = new FieldNode(parent, location)
 		{
@@ -195,7 +198,7 @@ public class FieldNode extends InstanceDeclarationNode
 					}
 					else if (wordNumber == numWords - 1)
 					{
-						localDeclaration.setEnd(statement.length());
+						localDeclaration.setEnd(finalStatement.length());
 					}
 				}
 			}
@@ -211,7 +214,7 @@ public class FieldNode extends InstanceDeclarationNode
 		String preStatement      = statement.substring(0, localDeclaration.getStart());
 		String localStatement    = statement.substring(localDeclaration.getStart(), localDeclaration.getEnd());
 		
-		LocalDeclarationNode var = LocalDeclarationNode.decodeStatement(n, localStatement, location);
+		LocalDeclarationNode var = LocalDeclarationNode.decodeStatement(n, localStatement, location, require);
 		
 		if (var == null)
 		{

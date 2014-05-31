@@ -12,7 +12,7 @@ import net.fathomsoft.nova.util.Regex;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:57:13 PM
- * @version	v0.2.7 May 25, 2014 at 9:16:48 PM
+ * @version	v0.2.11 May 31, 2014 at 1:19:11 PM
  */
 public class ElseStatementNode extends TreeNode
 {
@@ -143,10 +143,11 @@ public class ElseStatementNode extends TreeNode
 	 * @param statement The statement to try to decode into a
 	 * 		ElseStatementNode instance.
 	 * @param location The location of the statement in the source code.
+	 * @param require Whether or not to throw an error if anything goes wrong.
 	 * @return The generated node, if it was possible to translated it
 	 * 		into a ElseStatementNode.
 	 */
-	public static ElseStatementNode decodeStatement(TreeNode parent, String statement, Location location)
+	public static ElseStatementNode decodeStatement(TreeNode parent, String statement, Location location, boolean require)
 	{
 		Bounds bounds = Regex.boundsOf(statement, Patterns.ELSE);
 		
@@ -161,7 +162,7 @@ public class ElseStatementNode extends TreeNode
 			
 			if (ending.length() > 0)
 			{
-				TreeNode contents = TreeNode.decodeStatement(parent, ending, newLocation);
+				TreeNode contents = TreeNode.decodeStatement(parent, ending, newLocation, require);
 				
 				if (contents != null)
 				{

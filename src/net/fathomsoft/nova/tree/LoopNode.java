@@ -9,7 +9,7 @@ import net.fathomsoft.nova.util.Location;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:55:18 PM
- * @version	v0.2.7 May 25, 2014 at 9:16:48 PM
+ * @version	v0.2.11 May 31, 2014 at 1:19:11 PM
  */
 public class LoopNode extends TreeNode
 {
@@ -63,18 +63,19 @@ public class LoopNode extends TreeNode
 	 * @param statement The statement to try to decode into a
 	 * 		LoopNode instance.
 	 * @param location The location of the statement in the source code.
+	 * @param require Whether or not to throw an error if anything goes wrong.
 	 * @return The generated node, if it was possible to translated it
 	 * 		into a LoopNode.
 	 */
-	public static LoopNode decodeStatement(TreeNode parent, String statement, Location location)
+	public static LoopNode decodeStatement(TreeNode parent, String statement, Location location, boolean require)
 	{
 		LoopNode node = null;
 		
-		if ((node = ForLoopNode.decodeStatement(parent, statement, location)) != null)
+		if ((node = ForLoopNode.decodeStatement(parent, statement, location, require)) != null)
 		{
 			return node;
 		}
-		else if ((node = WhileLoopNode.decodeStatement(parent, statement, location)) != null)
+		else if ((node = WhileLoopNode.decodeStatement(parent, statement, location, require)) != null)
 		{
 			return node;
 		}

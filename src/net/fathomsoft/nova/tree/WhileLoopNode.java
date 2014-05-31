@@ -14,7 +14,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:55:59 PM
- * @version	v0.2.7 May 25, 2014 at 9:16:48 PM
+ * @version	v0.2.11 May 31, 2014 at 1:19:11 PM
  */
 public class WhileLoopNode extends LoopNode
 {
@@ -95,16 +95,17 @@ public class WhileLoopNode extends LoopNode
 	 * @param statement The statement to try to decode into a
 	 * 		WhileLoopNode instance.
 	 * @param location The location of the statement in the source code.
+	 * @param require Whether or not to throw an error if anything goes wrong.
 	 * @return The generated node, if it was possible to translated it
 	 * 		into a WhileLoopNode.
 	 */
-	public static WhileLoopNode decodeStatement(TreeNode parent, String statement, Location location)
+	public static WhileLoopNode decodeStatement(TreeNode parent, String statement, Location location, boolean require)
 	{
 		if (Regex.matches(statement, 0, Patterns.PRE_WHILE))
 		{
 			WhileLoopNode n = new WhileLoopNode(parent, location);
 			
-			Bounds bounds = Regex.boundsOf(statement, Patterns.WHILE_CONTENTS);
+			Bounds bounds   = Regex.boundsOf(statement, Patterns.WHILE_CONTENTS);
 			
 			if (bounds.getStart() >= 0)
 			{
@@ -114,18 +115,21 @@ public class WhileLoopNode extends LoopNode
 				
 				String   contents  = statement.substring(bounds.getStart(), bounds.getEnd());
 				
-				TreeNode condition = BinaryOperatorNode.decodeStatement(parent, contents, newLoc);
+				TreeNode condition = BinaryOperatorNode.decodeStatement(parent, contents, newLoc, require);
 				
 				if (condition == null)
 				{
-					if (SyntaxUtils.isLiteral(contents))
+					if (condition == null)
 					{
-						LiteralNode literal = new LiteralNode(n, newLoc);
-						literal.setValue(contents, parent.isWithinExternalContext());
+						condition = getExistingNode(parent, contents);
+					}
+					if (condition == null && SyntaxUtils.isLiteral(contents))
+					{
+						LiteralNode literal = LiteralNode.decodeStatement(n, contents, newLoc, require);
 						
 						condition = literal;
 					}
-					else
+					if (condition == null)
 					{
 //						SyntaxMessage.error("Could not decode conditional statement '" + condition + "'", parent.getFileNode(), newLoc, parent.getController());
 						

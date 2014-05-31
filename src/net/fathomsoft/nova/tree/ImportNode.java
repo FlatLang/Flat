@@ -12,7 +12,7 @@ import net.fathomsoft.nova.util.Regex;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 13, 2014 at 7:56:24 PM
- * @version	v0.2.7 May 25, 2014 at 9:16:48 PM
+ * @version	v0.2.11 May 31, 2014 at 1:19:11 PM
  */
 public class ImportNode extends TreeNode
 {
@@ -125,10 +125,11 @@ public class ImportNode extends TreeNode
 	 * @param statement The statement to try to decode into a
 	 * 		ImportNode instance.
 	 * @param location The location of the statement in the source code.
+	 * @param require Whether or not to throw an error if anything goes wrong.
 	 * @return The generated node, if it was possible to translated it
 	 * 		into a ImportNode.
 	 */
-	public static ImportNode decodeStatement(TreeNode parent, String statement, Location location)
+	public static ImportNode decodeStatement(TreeNode parent, String statement, Location location, boolean require)
 	{
 		if (Regex.indexOf(statement, Patterns.PRE_IMPORT) == 0)
 		{
@@ -162,8 +163,6 @@ public class ImportNode extends TreeNode
 					else
 					{
 						SyntaxMessage.error("Import location ends with unknown extension", n);
-						
-						return null;
 					}
 				}
 				
@@ -172,8 +171,6 @@ public class ImportNode extends TreeNode
 			else
 			{
 				SyntaxMessage.error("Import statement must specify the location of the file", n);
-				
-				return null;
 			}
 			
 			return n;

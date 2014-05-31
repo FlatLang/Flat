@@ -15,7 +15,7 @@ import net.fathomsoft.nova.util.Regex;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Mar 22, 2014 at 4:01:44 PM
- * @version	v0.2.7 May 25, 2014 at 9:16:48 PM
+ * @version	v0.2.11 May 31, 2014 at 1:19:11 PM
  */
 public class CatchNode extends ExceptionHandlingNode
 {
@@ -134,10 +134,11 @@ public class CatchNode extends ExceptionHandlingNode
 	 * @param statement The statement to try to decode into a
 	 * 		CatchNode instance.
 	 * @param location The location of the statement in the source code.
+	 * @param require Whether or not to throw an error if anything goes wrong.
 	 * @return The generated node, if it was possible to translated it
 	 * 		into a CatchNode.
 	 */
-	public static CatchNode decodeStatement(TreeNode parent, String statement, Location location)
+	public static CatchNode decodeStatement(TreeNode parent, String statement, Location location, boolean require)
 	{
 		if (Regex.matches(statement, 0, Patterns.PRE_CATCH))
 		{
@@ -153,7 +154,7 @@ public class CatchNode extends ExceptionHandlingNode
 				newLoc.setLineNumber(location.getLineNumber());
 				newLoc.setBounds(location.getStart() + bounds.getStart(), location.getStart() + bounds.getEnd());
 				
-				LocalDeclarationNode exceptionInstance = LocalDeclarationNode.decodeStatement(parent, contents, newLoc);
+				LocalDeclarationNode exceptionInstance = LocalDeclarationNode.decodeStatement(parent, contents, newLoc, require);
 				
 				if (exceptionInstance != null)
 				{

@@ -11,7 +11,7 @@ import net.fathomsoft.nova.util.Location;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Mar 21, 2014 at 10:50:26 PM
- * @version	v0.2.7 May 25, 2014 at 9:16:48 PM
+ * @version	v0.2.11 May 31, 2014 at 1:19:11 PM
  */
 public class ExceptionHandlingNode extends TreeNode
 {
@@ -68,26 +68,27 @@ public class ExceptionHandlingNode extends TreeNode
 	 * @param statement The statement to try to decode into a
 	 * 		ExceptionHandlingNode instance.
 	 * @param location The location of the statement in the source code.
+	 * @param require Whether or not to throw an error if anything goes wrong.
 	 * @return The generated node, if it was possible to translated it
 	 * 		into a ExceptionHandlingNode.
 	 */
-	public static ExceptionHandlingNode decodeStatement(TreeNode parent, String statement, Location location)
+	public static ExceptionHandlingNode decodeStatement(TreeNode parent, String statement, Location location, boolean require)
 	{
 		ExceptionHandlingNode node = null;
 		
-		if ((node = TryNode.decodeStatement(parent, statement, location)) != null)
+		if ((node = TryNode.decodeStatement(parent, statement, location, require)) != null)
 		{
 			return node;
 		}
-		else if ((node = CatchNode.decodeStatement(parent, statement, location)) != null)
+		else if ((node = CatchNode.decodeStatement(parent, statement, location, require)) != null)
 		{
 			return node;
 		}
-		else if ((node = FinallyNode.decodeStatement(parent, statement, location)) != null)
+		else if ((node = FinallyNode.decodeStatement(parent, statement, location, require)) != null)
 		{
 			return node;
 		}
-		else if ((node = ThrowNode.decodeStatement(parent, statement, location)) != null)
+		else if ((node = ThrowNode.decodeStatement(parent, statement, location, require)) != null)
 		{
 			return node;
 		}

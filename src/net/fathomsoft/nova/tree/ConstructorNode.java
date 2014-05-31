@@ -15,7 +15,7 @@ import net.fathomsoft.nova.util.StringUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:50:47 PM
- * @version	v0.2.7 May 25, 2014 at 9:16:48 PM
+ * @version	v0.2.11 May 31, 2014 at 1:19:11 PM
  */
 public class ConstructorNode extends MethodNode
 {
@@ -46,27 +46,19 @@ public class ConstructorNode extends MethodNode
 		if (isStatic())
 		{
 			SyntaxMessage.error("Constructor cannot be static", this);
-			
-			return null;
 		}
 		if (isConstant())
 		{
 			SyntaxMessage.error("Constructor cannot be const", this);
-			
-			return null;
 		}
 		
 		if (isReference())
 		{
 			SyntaxMessage.error("Constructor cannot return a reference", this);
-			
-			return null;
 		}
 		else if (isPointer())
 		{
 			SyntaxMessage.error("Constructor cannot return a pointer", this);
-			
-			return null;
 		}
 		
 		builder.append(getName()).append('(');
@@ -114,15 +106,11 @@ public class ConstructorNode extends MethodNode
 		if (isConstant())
 		{
 			SyntaxMessage.error("Constructor cannot be const", this);
-			
-			return null;
 		}
 		
 		if (isReference())
 		{
 			SyntaxMessage.error("Constructor cannot return a reference", this);
-			
-			return null;
 		}
 //		else if (isPointer())
 //		{
@@ -300,10 +288,11 @@ public class ConstructorNode extends MethodNode
 	 * @param statement The statement to try to decode into a
 	 * 		ConstructorNode instance.
 	 * @param location The location of the statement in the source code.
+	 * @param require Whether or not to throw an error if anything goes wrong.
 	 * @return The generated node, if it was possible to translated it
 	 * 		into a ConstructorNode.
 	 */
-	public static ConstructorNode decodeStatement(TreeNode parent, String statement, Location location)
+	public static ConstructorNode decodeStatement(TreeNode parent, String statement, Location location, boolean require)
 	{
 		int firstParenthIndex = statement.indexOf('(');
 		int lastParenthIndex  = statement.lastIndexOf(')');
@@ -325,8 +314,6 @@ public class ConstructorNode extends MethodNode
 			if (lastParenthIndex < 0)
 			{
 				SyntaxMessage.error("Expected a ')' ending parenthesis", n);
-				
-				return null;
 			}
 			
 			String parameterList = statement.substring(firstParenthIndex + 1, lastParenthIndex);
@@ -339,13 +326,11 @@ public class ConstructorNode extends MethodNode
 			{
 				if (parameters[i].length() > 0)
 				{
-					ParameterNode param = ParameterNode.decodeStatement(parent, parameters[i], location);
+					ParameterNode param = ParameterNode.decodeStatement(parent, parameters[i], location, require);
 					
 					if (param == null)
 					{
 						SyntaxMessage.error("Incorrect parameter definition", n);
-						
-						return null;
 					}
 					
 					n.getParameterListNode().addChild(param);

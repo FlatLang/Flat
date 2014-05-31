@@ -16,7 +16,7 @@ import net.fathomsoft.nova.util.StringUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:50:43 PM
- * @version	v0.2.7 May 25, 2014 at 9:16:48 PM
+ * @version	v0.2.11 May 31, 2014 at 1:19:11 PM
  */
 public class DestructorNode extends MethodNode
 {
@@ -41,23 +41,17 @@ public class DestructorNode extends MethodNode
 			if (getVisibility() == InstanceDeclarationNode.PRIVATE)
 			{
 				SyntaxMessage.error("Destructor must be public", this);
-				
-				return null;
 			}
 		}
 		
 		if (isConstant())
 		{
 			SyntaxMessage.error("Destructor cannot be const", this);
-			
-			return null;
 		}
 		
 		if (isReference())
 		{
 			SyntaxMessage.error("Destructor cannot return a reference", this);
-			
-			return null;
 		}
 		
 		builder.append(generateCSourcePrototype()).append('\n');
@@ -243,10 +237,11 @@ public class DestructorNode extends MethodNode
 	 * @param statement The statement to try to decode into a
 	 * 		DestructorNode instance.
 	 * @param location The location of the statement in the source code.
+	 * @param require Whether or not to throw an error if anything goes wrong.
 	 * @return The generated node, if it was possible to translated it
 	 * 		into a DestructorNode.
 	 */
-	public static DestructorNode decodeStatement(TreeNode parent, String statement, Location location)
+	public static DestructorNode decodeStatement(TreeNode parent, String statement, Location location, boolean require)
 	{
 		int firstParenthIndex = statement.indexOf('(');
 		int lastParenthIndex  = statement.lastIndexOf(')');
@@ -279,8 +274,6 @@ public class DestructorNode extends MethodNode
 			if (lastParenthIndex < 0)
 			{
 				SyntaxMessage.error("Expected a ')' ending parenthesis", n);
-				
-				return null;
 			}
 			
 			String parameterList = statement.substring(firstParenthIndex + 1, lastParenthIndex);
@@ -301,8 +294,6 @@ public class DestructorNode extends MethodNode
 				if (parameters.length > 0)
 				{
 					SyntaxMessage.error("Destructors cannot have any parameters", n);
-					
-					return null;
 				}
 				
 				n.setLocationIn(location);

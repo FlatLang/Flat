@@ -14,7 +14,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Apr 3, 2014 at 7:53:35 PM
- * @version	v0.2.7 May 25, 2014 at 9:16:48 PM
+ * @version	v0.2.11 May 31, 2014 at 1:19:11 PM
  */
 public class InstantiationNode extends IdentifierNode
 {
@@ -114,10 +114,11 @@ public class InstantiationNode extends IdentifierNode
 	 * @param statement The statement to try to decode into a
 	 * 		InstantiationNode instance.
 	 * @param location The location of the statement in the source code.
+	 * @param require Whether or not to throw an error if anything goes wrong.
 	 * @return The generated node, if it was possible to translated it
 	 * 		into a InstantiationNode.
 	 */
-	public static InstantiationNode decodeStatement(TreeNode parent, String statement, Location location)
+	public static InstantiationNode decodeStatement(TreeNode parent, String statement, Location location, boolean require)
 	{
 		if (SyntaxUtils.isInstantiation(statement))
 		{
@@ -135,7 +136,7 @@ public class InstantiationNode extends IdentifierNode
 			
 			if (SyntaxUtils.isMethodCall(action))
 			{
-				MethodCallNode methodCall = MethodCallNode.decodeStatement(parent, action, newLoc);//, false);
+				MethodCallNode methodCall = MethodCallNode.decodeStatement(parent, action, newLoc, require);//, false);
 				
 				if (methodCall == null)
 				{
@@ -146,14 +147,12 @@ public class InstantiationNode extends IdentifierNode
 			}
 			else if (SyntaxUtils.isArrayInitialization(action))
 			{
-				child = ArrayNode.decodeStatement(parent, action, newLoc);
+				child = ArrayNode.decodeStatement(parent, action, newLoc, require);
 			}
 			
 			if (child == null)
 			{
 				SyntaxMessage.error("Unable to parse instantiation of '" + action + "'", n);
-				
-				return null;
 			}
 			
 			n.setName(child.getName());

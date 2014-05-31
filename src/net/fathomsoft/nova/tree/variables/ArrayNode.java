@@ -3,6 +3,7 @@ package net.fathomsoft.nova.tree.variables;
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.tree.BinaryOperatorNode;
 import net.fathomsoft.nova.tree.LiteralNode;
+import net.fathomsoft.nova.tree.PriorityNode;
 import net.fathomsoft.nova.tree.TreeNode;
 import net.fathomsoft.nova.util.Bounds;
 import net.fathomsoft.nova.util.Location;
@@ -25,7 +26,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Mar 16, 2014 at 1:13:49 AM
- * @version	v0.2.7 May 25, 2014 at 9:16:48 PM
+ * @version	v0.2.11 May 31, 2014 at 1:19:11 PM
  */
 public class ArrayNode extends VariableNode
 {
@@ -42,6 +43,15 @@ public class ArrayNode extends VariableNode
 	 */
 	@Override
 	public String generateCSource()
+	{
+		return generateCSourceFragment();
+	}
+	
+	/**
+	 * @see net.fathomsoft.nova.tree.TreeNode#generateCSourceFragment()
+	 */
+	@Override
+	public String generateCSourceFragment()
 	{
 		StringBuilder builder = new StringBuilder();
 		
@@ -71,15 +81,6 @@ public class ArrayNode extends VariableNode
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.TreeNode#generateCSourceFragment()
-	 */
-	@Override
-	public String generateCSourceFragment()
-	{
-		return generateCSource();
-	}
-	
-	/**
 	 * Decode the given statement into an ArrayNode instance. If the
 	 * given statement cannot be decoded into an ArrayNode, then null is
 	 * returned.<br>
@@ -101,10 +102,11 @@ public class ArrayNode extends VariableNode
 	 * @param parent The parent of the current statement.
 	 * @param statement The statement to decode into an ArrayNode instance.
 	 * @param location The location of the statement in the source code.
+	 * @param require Whether or not to throw an error if anything goes wrong.
 	 * @return The new ArrayNode instance if it was able to decode the
 	 * 		statement. If not, it will return null.
 	 */
-	public static ArrayNode decodeStatement(TreeNode parent, String statement, Location location)
+	public static ArrayNode decodeStatement(TreeNode parent, String statement, Location location, boolean require)
 	{
 		if (SyntaxUtils.isArrayInitialization(statement))
 		{
@@ -130,8 +132,7 @@ public class ArrayNode extends VariableNode
 				
 				if (SyntaxUtils.isNumber(length))
 				{
-					LiteralNode node = new LiteralNode(n, newLoc);
-					node.setValue(length, parent.isWithinExternalContext());
+					LiteralNode node = LiteralNode.decodeStatement(n, length, newLoc, require);
 					
 					n.addChild(node);
 				}
@@ -141,11 +142,15 @@ public class ArrayNode extends VariableNode
 					
 					if (node == null)
 					{
-						TreeNode binary = BinaryOperatorNode.decodeStatement(parent, length, newLoc);
+						TreeNode binary = BinaryOperatorNode.decodeStatement(parent, length, newLoc, require);
 						
 						if (binary == null)
 						{
-							SyntaxMessage.error("Could not parse length '" + length + "' for array initialization", n, newLoc);
+							binary = PriorityNode.decodeStatement(parent, length, location, require);
+						}
+						if (binary == null)
+						{
+							SyntaxMessage.error("Could not parse length '" + length + "' for array initialization ", n, newLoc);
 						}
 						
 						node = binary;

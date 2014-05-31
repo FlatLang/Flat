@@ -19,7 +19,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.2 Mar 24, 2014 at 10:45:29 PM
- * @version	v0.2.9 May 28, 2014 at 6:44:37 AM
+ * @version	v0.2.11 May 31, 2014 at 1:19:11 PM
  */
 public class ArrayAccessNode extends VariableNode
 {
@@ -129,7 +129,7 @@ public class ArrayAccessNode extends VariableNode
 	 * @param location The location of the statement.
 	 * @return The ArrayAccessNode if it was created, null if not.
 	 */
-	public static ArrayAccessNode decodeStatement(TreeNode parent, String statement, Location location)
+	public static ArrayAccessNode decodeStatement(TreeNode parent, String statement, Location location, boolean require)
 	{
 		if (SyntaxUtils.isValidArrayAccess(statement))
 		{
@@ -167,19 +167,14 @@ public class ArrayAccessNode extends VariableNode
 				
 				if (SyntaxUtils.isLiteral(data))
 				{
-					LiteralNode literal = new LiteralNode(null, newLoc);
-					literal.setValue(data, false);
+					LiteralNode literal = LiteralNode.decodeStatement(n, data, newLoc, require);
 					
 					n.addDimension(literal);
 				}
 				else
 				{
-					TreeNode created = BinaryOperatorNode.decodeStatement(parent, data, newLoc);
+					TreeNode created = TreeNode.decodeScopeContents(parent, data, newLoc);
 					
-					if (created == null)
-					{
-						created = TreeNode.decodeScopeContents(parent, data, newLoc);
-					}
 					if (created == null)
 					{
 						SyntaxMessage.error("Unknown array access index '" + data + "'", n, newLoc);
