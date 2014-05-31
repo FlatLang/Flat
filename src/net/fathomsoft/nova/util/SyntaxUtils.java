@@ -10,6 +10,7 @@ import net.fathomsoft.nova.tree.InstantiationNode;
 import net.fathomsoft.nova.tree.LiteralNode;
 import net.fathomsoft.nova.tree.MethodCallNode;
 import net.fathomsoft.nova.tree.MethodNode;
+import net.fathomsoft.nova.tree.OperatorNode;
 import net.fathomsoft.nova.tree.ParameterListNode;
 import net.fathomsoft.nova.tree.ParameterNode;
 import net.fathomsoft.nova.tree.ProgramNode;
@@ -24,7 +25,7 @@ import net.fathomsoft.nova.tree.variables.VariableNode;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Mar 15, 2014 at 7:55:00 PM
- * @version	v0.2.8 May 26, 2014 at 11:26:58 PM
+ * @version	v0.2.11 May 31, 2014 at 1:19:11 PM
  */
 public class SyntaxUtils
 {
@@ -155,6 +156,39 @@ public class SyntaxUtils
 		}
 		
 		return false;
+	}
+	
+	/**
+	 * Get the class name of the type that the literal value implies.<br>
+	 * <br>
+	 * For example: "this is a String literal" would return "String"
+	 * because String is the class name of the String literal type.
+	 * 
+	 * @return The class name of the type that the literal value implies.
+	 */
+	public static String getLiteralTypeName(String literal)
+	{
+		if (isCharLiteral(literal))
+		{
+			return "Character";
+		}
+		else if (isStringLiteral(literal))
+		{
+			return "String";
+		}
+		else if (isNumber(literal))
+		{
+			if (isInteger(literal))
+			{
+				return "Integer";
+			}
+			else if (isDouble(literal))
+			{
+				return "Double";
+			}
+		}
+		
+		return null;
 	}
 	
 	/**
@@ -916,7 +950,7 @@ public class SyntaxUtils
 				{
 					String instantiation   = "new Integer(" + value + ")";
 					
-					node = InstantiationNode.decodeStatement(parent, instantiation, primitive.getLocationIn());
+					node = InstantiationNode.decodeStatement(parent, instantiation, primitive.getLocationIn(), true);
 				}
 			}
 		}
@@ -928,7 +962,7 @@ public class SyntaxUtils
 			{
 				String instantiation = "new Integer(" + value.generateNovaInput(false) + ")";
 				
-				node = InstantiationNode.decodeStatement(parent, instantiation, primitive.getLocationIn());
+				node = InstantiationNode.decodeStatement(parent, instantiation, primitive.getLocationIn(), true);
 				
 				node.inheritChildren(value);
 			}
@@ -960,6 +994,14 @@ public class SyntaxUtils
 	public static boolean isValidType(ValueNode value, String type)
 	{
 		if (value.isWithinExternalContext())
+		{
+			return true;
+		}
+		if (value instanceof LiteralNode)
+		{
+			return true;
+		}
+		if (value instanceof OperatorNode)
 		{
 			return true;
 		}
@@ -1011,5 +1053,46 @@ public class SyntaxUtils
 		}
 		
 		return false;
+	}
+	
+	/**
+	 * Get the base class type that the two ValueNodes have in common. If
+	 * the two nodes do not have anything in common, null is returned.
+	 * 
+	 * @param value1 The first ValueNode to check.
+	 * @param value2 The second ValueNode to check.
+	 * @return The ClassNode instance that the two ValueNodes have in
+	 * 		common. If they have nothing in common, null is returned.
+	 */
+	public static ClassNode getTypeInCommon(ValueNode value1, ValueNode value2)
+	{
+		ClassNode type1 = value1.getTypeClass();
+		ClassNode type2 = value2.getTypeClass();
+		
+		ClassNode type3 = type2;
+		
+		while (type2 != null)
+		{
+			if (type1.isOfType(type2))
+			{
+				return type2;
+			}
+			
+			type2 = type2.getExtendedClass();
+		}
+		
+		type2 = type3;
+		
+		while (type1 != null)
+		{
+			if (type2.isOfType(type1))
+			{
+				return type1;
+			}
+			
+			type1 = type1.getExtendedClass();
+		}
+		
+		return null;
 	}
 }
