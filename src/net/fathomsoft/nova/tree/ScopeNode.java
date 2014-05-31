@@ -20,7 +20,7 @@ import net.fathomsoft.nova.util.Location;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Apr 5, 2014 at 10:54:20 PM
- * @version	v0.2.7 May 25, 2014 at 9:16:48 PM
+ * @version	v0.2.11 May 31, 2014 at 1:19:11 PM
  */
 public class ScopeNode extends TreeNode
 {
@@ -78,7 +78,20 @@ public class ScopeNode extends TreeNode
 			
 			if (var.isDeclaration())
 			{
-				getVariableListNode().addChild(child);
+				if (child instanceof LocalDeclarationNode)
+				{
+					LocalDeclarationNode declaration = (LocalDeclarationNode)child;
+					
+					if (declaration.getScopeID() == 0)
+					{
+						declaration.setScopeID(getID());
+					}
+				}
+				
+//				MethodNode method = (MethodNode)var.getAncestorOfType(MethodNode.class);
+//				
+//				method.getScopeNode().getVariableListNode().addChild(var);
+				getVariableListNode().addChild(var);
 				
 				return;
 			}
