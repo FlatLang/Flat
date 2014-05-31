@@ -17,7 +17,7 @@ import net.fathomsoft.nova.util.Regex;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:15:51 PM
- * @version	v0.2.9 May 28, 2014 at 6:44:37 AM
+ * @version	v0.2.11 May 31, 2014 at 1:19:11 PM
  */
 public class ClassNode extends InstanceDeclarationNode
 {
@@ -103,6 +103,32 @@ public class ClassNode extends InstanceDeclarationNode
 	public VTableNode getVTableNode()
 	{
 		return (VTableNode)getChild(4);
+	}
+	
+	/**
+	 * Check whether or not the specified ClassNode extends the given
+	 * ClassNode.
+	 * 
+	 * @param node The ClassNode to check if the specified Class
+	 * 		extends.
+	 * @return Whether or not the specified ClassNode extends the given
+	 * 		ClassNode.
+	 */
+	public boolean isOfType(ClassNode node)
+	{
+		ClassNode clazz = this;
+		
+		while (clazz != null)
+		{
+			if (clazz == node)
+			{
+				return true;
+			}
+			
+			clazz = clazz.getExtendedClass();
+		}
+		
+		return false;
 	}
 	
 	/**
@@ -591,14 +617,10 @@ public class ClassNode extends InstanceDeclarationNode
 		if (isReference())
 		{
 			SyntaxMessage.error("A class cannot be of a reference type", this);
-			
-			return null;
 		}
 		else if (isPointer())
 		{
 			SyntaxMessage.error("A class cannot be of a pointer type", this);
-			
-			return null;
 		}
 		
 		builder.append(getName());
@@ -659,14 +681,10 @@ public class ClassNode extends InstanceDeclarationNode
 		if (isReference())
 		{
 			SyntaxMessage.error("A class cannot be of a reference type", this);
-			
-			return null;
 		}
 		else if (isPointer())
 		{
 			SyntaxMessage.error("A class cannot be of a pointer type", this);
-			
-			return null;
 		}
 		
 		builder.append('\n').append('(').append('\n');
@@ -776,10 +794,11 @@ public class ClassNode extends InstanceDeclarationNode
 	 * @param statement The statement to translate into a ClassNode
 	 * 		if possible.
 	 * @param location The location of the statement in the source code.
+	 * @param require Whether or not to throw an error if anything goes wrong.
 	 * @return The generated node, if it was possible to translated it
 	 * 		into a ClassNode.
 	 */
-	public static ClassNode decodeStatement(TreeNode parent, String statement, Location location)
+	public static ClassNode decodeStatement(TreeNode parent, String statement, Location location, boolean require)
 	{
 		// If contains 'class' in the statement.
 		if (Regex.indexOf(statement, Patterns.PRE_CLASS) >= 0)
@@ -940,23 +959,25 @@ public class ClassNode extends InstanceDeclarationNode
 			return;
 		}
 		
-		ProgramNode program = getProgramNode();
+		ProgramNode program  = getProgramNode();
 		
-		ClassNode   clazz   = program.getClass(extendedClass);
+		ClassNode   clazz    = program.getClass(extendedClass);
+		
+		String      tempName = extendedClass;
 		
 		if (clazz == null)
 		{
-			SyntaxMessage.error("Class '" + extendedClass + "' not declared", this);
+			extendedClass = null;
 			
-			return;
+			SyntaxMessage.error("Class '" + tempName + "' not declared", this);
 		}
 		else
 		{
 			if (clazz.isConstant())
 			{
-				SyntaxMessage.error("Class '" + extendedClass + "' not is constant and cannot be extended", this);
+				extendedClass = null;
 				
-				return;
+				SyntaxMessage.error("Class '" + tempName + "' not is constant and cannot be extended", this);
 			}
 		}
 		
