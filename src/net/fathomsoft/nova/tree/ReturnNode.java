@@ -12,7 +12,7 @@ import net.fathomsoft.nova.util.Regex;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:58:29 PM
- * @version	v0.2.9 May 28, 2014 at 6:44:37 AM
+ * @version	v0.2.11 May 31, 2014 at 1:19:11 PM
  */
 public class ReturnNode extends ValueNode
 {
@@ -86,6 +86,14 @@ public class ReturnNode extends ValueNode
 	}
 	
 	/**
+	 * @see net.fathomsoft.nova.tree.TreeNode#generateNovaInput(boolean)
+	 */
+	public String generateNovaInput(boolean outputChildren)
+	{
+		return "return " + getChild(0).generateNovaInput(outputChildren);
+	}
+	
+	/**
 	 * Decode the given statement into a ReturnNode instance, if
 	 * possible. If it is not possible, this method returns null.<br>
 	 * <br>
@@ -102,10 +110,11 @@ public class ReturnNode extends ValueNode
 	 * @param statement The statement to try to decode into a
 	 * 		ReturnNode instance.
 	 * @param location The location of the statement in the source code.
+	 * @param require Whether or not to throw an error if anything goes wrong.
 	 * @return The generated node, if it was possible to translated it
 	 * 		into a ReturnNode.
 	 */
-	public static ReturnNode decodeStatement(TreeNode parent, String statement, Location location)
+	public static ReturnNode decodeStatement(TreeNode parent, String statement, Location location, boolean require)
 	{
 		if (Regex.startsWith(statement, Patterns.PRE_RETURN))
 		{
@@ -127,13 +136,7 @@ public class ReturnNode extends ValueNode
 				
 				if (child == null)
 				{
-					child = BinaryOperatorNode.decodeStatement(n, statement, location);
-				}
-				if (child == null)
-				{
 					SyntaxMessage.error("Could not decode return statement '" + statement + "'", n, newLoc);
-					
-					return null;
 				}
 				
 				n.addChild(child);
@@ -145,8 +148,6 @@ public class ReturnNode extends ValueNode
 				if (parentMethod.getType() != null)
 				{
 					SyntaxMessage.error("Method '" + parentMethod.getName() + "' must return a type of '" + parentMethod.getType() + "'", n, newLoc);
-					
-					return null;
 				}
 			}
 			
