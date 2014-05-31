@@ -16,10 +16,33 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.2.4 Jan 5, 2014 at 9:10:49 PM
- * @version	v0.2.8 May 26, 2014 at 11:26:58 PM
+ * @version	v0.2.11 May 31, 2014 at 1:19:11 PM
  */
 public class LocalDeclarationNode extends LocalVariableNode
 {
+	private int scopeID;
+	
+	/**
+	 * Get the ID of the scope that the variable was declared in.
+	 * 
+	 * @return The ID of the scope that the variable was declared in.
+	 */
+	public int getScopeID()
+	{
+		return scopeID;
+	}
+	
+	/**
+	 * Set the ID of the scope that the variable was declared in.
+	 * 
+	 * @param scopeID The ID of the scope that the variable was declared
+	 * 		in.
+	 */
+	public void setScopeID(int scopeID)
+	{
+		this.scopeID = scopeID;
+	}
+	
 	/**
 	 * @see net.fathomsoft.nova.tree.TreeNode#TreeNode(TreeNode, Location)
 	 */
@@ -43,10 +66,11 @@ public class LocalDeclarationNode extends LocalVariableNode
 	 * @param statement The statement to try to decode into a
 	 * 		LocalDeclarationNode instance.
 	 * @param location The location of the statement in the source code.
+	 * @param require Whether or not to throw an error if anything goes wrong.
 	 * @return The generated node, if it was possible to translated it
 	 * 		into a LocalDeclarationNode.
 	 */
-	public static LocalDeclarationNode decodeStatement(final TreeNode parent, final String statement, final Location location)
+	public static LocalDeclarationNode decodeStatement(TreeNode parent, String statement, Location location, boolean require)
 	{
 		if (SyntaxUtils.isLiteral(statement))
 		{
@@ -56,6 +80,8 @@ public class LocalDeclarationNode extends LocalVariableNode
 		{
 			return null;
 		}
+		
+		final String   finalStatement = statement;
 		
 		final boolean decodingArray[] = new boolean[1];
 		final boolean error[]         = new boolean[1];
@@ -104,17 +130,17 @@ public class LocalDeclarationNode extends LocalVariableNode
 					oldWord[0] = word;
 				}
 				
-				int firstBracketIndex = StringUtils.findNextNonWhitespaceIndex(statement, bounds.getEnd());
+				int firstBracketIndex = StringUtils.findNextNonWhitespaceIndex(finalStatement, bounds.getEnd());
 				
 				if (firstBracketIndex > 0)
 				{
-					char c = statement.charAt(firstBracketIndex);
+					char c = finalStatement.charAt(firstBracketIndex);
 					
 					if (c == '[')
 					{
 						decodingArray[0] = true;
 						
-						String brackets  = statement.substring(bounds.getEnd());
+						String brackets  = finalStatement.substring(bounds.getEnd());
 						
 						int dimensions   = SyntaxUtils.calculateArrayDimensions(brackets, false);
 						
@@ -137,8 +163,6 @@ public class LocalDeclarationNode extends LocalVariableNode
 		{
 			SyntaxMessage.error("Local variable '" + n.getName() + "' has already been declared", n);
 //			SyntaxMessage.error("Local variable '" + n.getName() + "' has already been declared", parent.getFileNode(), location, parent.getController());
-			
-			return null;
 		}
 		
 		if (parent instanceof ExternalTypeNode)
