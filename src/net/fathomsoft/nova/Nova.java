@@ -27,7 +27,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:00:04 PM
- * @version	v0.2.10 May 29, 2014 at 5:14:07 PM
+ * @version	v0.2.11 May 31, 2014 at 1:19:11 PM
  */
 public class Nova
 {
@@ -73,7 +73,7 @@ public class Nova
 	public static final int		LINUX         = 3;
 	
 	public static final String	LANGUAGE_NAME = "Nova";
-	public static final String	VERSION       = "v0.2.10";
+	public static final String	VERSION       = "v0.2.11";
 	
 	/**
 	 * Find out which operating system the compiler is running on.
@@ -193,6 +193,11 @@ public class Nova
 				directory + "BodyBuilder.fat",
 				directory + "Integer.fat",
 				directory + "Array.fat",
+				directory + "Character.fat",
+				directory + "Bool.fat",
+				directory + "Long.fat",
+				directory + "Double.fat",
+				directory + "Number.fat",
 				"-o", directory + "bin/Executable" + OUTPUT_EXTENSION,
 				"-dir", '"' + directory + "../include" + '"',
 				"-run",
@@ -474,7 +479,7 @@ public class Nova
 		
 		String libDir = getLibraryDir();
 		
-		cmd.append("-L").append(libDir).append(" -lFathom -lThread ");
+		cmd.append("-L").append(libDir).append(" -lFathom -lThread -lhoard ");
 		
 		for (File sourceFile : cSourceFiles)
 		{
