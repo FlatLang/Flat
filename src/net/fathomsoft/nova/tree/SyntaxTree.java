@@ -27,7 +27,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:00:15 PM
- * @version	v0.2.10 May 29, 2014 at 5:14:07 PM
+ * @version	v0.2.11 May 31, 2014 at 1:19:11 PM
  */
 public class SyntaxTree
 {
@@ -123,7 +123,14 @@ public class SyntaxTree
 		{
 			phase(1);
 			
-			root.validateClasses();
+			try
+			{
+				root.validateClasses();
+			}
+			catch (SyntaxErrorException e)
+			{
+				
+			}
 			
 			phase(2);
 			
@@ -823,8 +830,6 @@ public class SyntaxTree
 					if (endIndex <= 0)
 					{
 						SyntaxMessage.error("External statement missing closing curly brace or semi-colon", controller);
-						
-						return null;
 					}
 					
 					ExternalStatementNode external = (ExternalStatementNode)node;
@@ -1027,7 +1032,6 @@ public class SyntaxTree
 			parentStack.push(parent);
 			
 			currentNode = getNextStatement(source, offset, statementType, searchTypes);
-			
 			// Decode all of the statements in the source text.
 			while (currentNode != null)
 			{
@@ -1090,7 +1094,7 @@ public class SyntaxTree
 		{
 			for (int i = start; i < statementStart; i++)
 			{
-				if (source.charAt(i) == '}')
+				if (source.charAt(i) == '}' && !parentStack.isEmpty())
 				{
 					parentStack.pop();
 				}
@@ -1121,7 +1125,7 @@ public class SyntaxTree
 			}
 			else
 			{
-				return TreeNode.decodeStatement(parent, statement, location);
+				return TreeNode.decodeStatement(parent, statement, location, true);
 			}
 		}
 	}
