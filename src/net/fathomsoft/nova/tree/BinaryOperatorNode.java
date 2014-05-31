@@ -19,9 +19,9 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:20:35 PM
- * @version	v0.2.10 May 29, 2014 at 5:14:07 PM
+ * @version	v0.2.11 May 31, 2014 at 1:19:11 PM
  */
-public class BinaryOperatorNode extends TreeNode
+public class BinaryOperatorNode extends ValueNode
 {
 	/**
 	 * @see net.fathomsoft.nova.tree.TreeNode#TreeNode(TreeNode, Location)
@@ -30,7 +30,18 @@ public class BinaryOperatorNode extends TreeNode
 	{
 		super(temporaryParent, locationIn);
 	}
-
+	
+	/**
+	 * @see net.fathomsoft.nova.tree.ValueNode#getReturnedNode()
+	 */
+	@Override
+	public ValueNode getReturnedNode()
+	{
+		ValueNode child = (ValueNode)getChild(0);
+		
+		return child.getReturnedNode();
+	}
+	
 	/**
 	 * @see net.fathomsoft.nova.tree.TreeNode#generateJavaSource()
 	 */
@@ -131,7 +142,7 @@ public class BinaryOperatorNode extends TreeNode
 //		LocalVariableNode declaration = LocalVariableNode.decodeStatement(parent, "int " + denominatorVar + " = " + denominator, location);
 //		parent.addChild(declaration);
 		
-		IfStatementNode ifStatement = IfStatementNode.decodeStatement(parent, "if (" + denominator + " == 0)", location);
+		IfStatementNode ifStatement = IfStatementNode.decodeStatement(parent, "if (" + denominator + " == 0)", location, true);
 		parent.addChild(ifStatement);
 		
 		ThrowNode throwNode = generateDivideByZeroThrow(parent, location);
@@ -149,7 +160,7 @@ public class BinaryOperatorNode extends TreeNode
 	 */
 	private static ThrowNode generateDivideByZeroThrow(TreeNode parent, Location location)
 	{
-		ThrowNode throwNode = ThrowNode.decodeStatement(parent, "throw new DivideByZeroException()", location);
+		ThrowNode throwNode = ThrowNode.decodeStatement(parent, "throw new DivideByZeroException()", location, true);
 		
 		return throwNode;
 	}
@@ -174,10 +185,11 @@ public class BinaryOperatorNode extends TreeNode
 	 * @param statement The statement to translate into a BinaryOperatorNode
 	 * 		if possible.
 	 * @param location The location of the statement in the source code.
+	 * @param require Whether or not to throw an error if anything goes wrong.
 	 * @return The generated TreeNode, if it was possible to translated it
 	 * 		into a BinaryOperatorNode.
 	 */
-	public static TreeNode decodeStatement(TreeNode parent, String statement, Location location)
+	public static ValueNode decodeStatement(TreeNode parent, String statement, Location location, boolean require)
 	{
 		if (SyntaxUtils.isLiteral(statement))
 		{
@@ -196,9 +208,9 @@ public class BinaryOperatorNode extends TreeNode
 		}
 		
 		// Pattern used to find word boundaries. 
-		Matcher  matcher = Patterns.PRE_OPERATORS.matcher(statement);
+		Matcher   matcher = Patterns.PRE_OPERATORS.matcher(statement);
 		
-		TreeNode node    = decodeStatement(parent, statement, matcher, location);
+		ValueNode node    = decodeStatement(parent, statement, matcher, location, require);
 		
 		if (node == null)
 		{
@@ -229,10 +241,11 @@ public class BinaryOperatorNode extends TreeNode
 	 * 		if possible.
 	 * @param matcher The matcher for the statement.
 	 * @param location The location of the statement in the source code.
+	 * @param require Whether or not to throw an error if anything goes wrong.
 	 * @return The generated TreeNode, if it was possible to translated it
 	 * 		into a BinaryOperatorNode.
 	 */
-	private static TreeNode decodeStatement(TreeNode parent, String statement, Matcher matcher, Location location)
+	private static ValueNode decodeStatement(TreeNode parent, String statement, Matcher matcher, Location location, boolean require)
 	{
 		Bounds operatorLoc = StringUtils.findStrings(statement, StringUtils.BINARY_OPERATORS);
 		
@@ -241,7 +254,7 @@ public class BinaryOperatorNode extends TreeNode
 			return null;
 		}
 		
-		UnaryOperatorNode preTest = UnaryOperatorNode.decodeStatement(parent, statement, location);
+		UnaryOperatorNode preTest = UnaryOperatorNode.decodeStatement(parent, statement, location, require);
 		
 		if (preTest != null)
 		{
@@ -252,9 +265,9 @@ public class BinaryOperatorNode extends TreeNode
 		{
 			BinaryOperatorNode n = new BinaryOperatorNode(parent, location);
 			
-			Bounds   lhb = new Bounds(0, StringUtils.findNextNonWhitespaceIndex(statement, operatorLoc.getStart() - 1, -1) + 1);
+			Bounds    lhb = new Bounds(0, StringUtils.findNextNonWhitespaceIndex(statement, operatorLoc.getStart() - 1, -1) + 1);
 			
-			TreeNode lhn = null;
+			ValueNode lhn = null;
 			
 			UnaryOperatorNode unary = testUnaryOperator(parent, statement, location);
 			
@@ -284,14 +297,19 @@ public class BinaryOperatorNode extends TreeNode
 				
 				if (lhn == null)
 				{
-					if (SyntaxUtils.isValidIdentifier(lhv))
-					{
-						SyntaxMessage.error("Unknown identifier '" + lhv + "'", parent, lhl);
-					}
-					else
-					{
-						SyntaxMessage.error("Unknown value of '" + lhv + "'", parent, lhl);
-					}
+//					if (!require)
+//					{
+						return null;
+//					}
+//					
+//					if (SyntaxUtils.isValidIdentifier(lhv))
+//					{
+//						SyntaxMessage.error("Unknown identifier '" + lhv + "'", parent, lhl);
+//					}
+//					else
+//					{
+//						SyntaxMessage.error("Unknown value of '" + lhv + "'", parent, lhl);
+//					}
 				}
 			
 				Location leftLoc = new Location(location);
@@ -313,7 +331,8 @@ public class BinaryOperatorNode extends TreeNode
 			statement = statement.substring(rhIndex);
 			
 			matcher.reset(statement);
-			TreeNode rhn = decodeStatement(parent, statement, matcher, location);
+			
+			ValueNode rhn = decodeStatement(parent, statement, matcher, location, require);
 			
 			if (rhn == null)
 			{
@@ -327,6 +346,37 @@ public class BinaryOperatorNode extends TreeNode
 			rhn.setLocationIn(rightLoc);
 			
 			n.addChild(rhn);
+			
+			if (!parent.isWithinExternalContext())
+			{
+				ClassNode common    = SyntaxUtils.getTypeInCommon(lhn.getReturnedNode(), rhn.getReturnedNode());
+				
+				String operatorType = operator.getType();
+				
+				if (common == null)
+				{
+					ClassNode integerClass = parent.getProgramNode().getClass("Integer");
+					
+					if (!lhn.getTypeClass().isOfType(integerClass) && !rhn.getTypeClass().isOfType(integerClass) || operatorType == null || !operatorType.equals("bool"))
+					{
+						if (!require)
+						{
+							return null;
+						}
+						
+						SyntaxMessage.error("Type '" + lhn.getType() + "' and '" + rhn.getType() + "' are not compatible", n);
+					}
+				}
+				
+				if (operatorType != null)
+				{
+					n.setType(operatorType);
+				}
+				else
+				{
+					n.setType(common.getName());
+				}
+			}
 			
 			if (operatorVal.equals("/"))
 			{
@@ -373,8 +423,6 @@ public class BinaryOperatorNode extends TreeNode
 						if (num == 0)
 						{
 							SyntaxMessage.error("Cannot divide by zero", parent, location);
-							
-							return null;
 						}
 					}
 				}
@@ -394,29 +442,27 @@ public class BinaryOperatorNode extends TreeNode
 	 * @param parent The parent of the statement.
 	 * @param statement The statement containing the value.
 	 * @param location The location of the statement in the source code.
+	 * @param require Whether or not to throw an error if anything goes wrong.
 	 * @return The generated TreeNode instance.
 	 */
-	private static TreeNode createNode(TreeNode parent, String statement, Location location)
+	private static ValueNode createNode(TreeNode parent, String statement, Location location)
 	{
 		if (SyntaxUtils.isLiteral(statement))
 		{
-			LiteralNode literal = new LiteralNode(parent, location);
-			
-			literal.setValue(statement, parent.isWithinExternalContext());
+			LiteralNode literal = LiteralNode.decodeStatement(parent, statement, location, true);
 			
 			return literal;
 		}
 		else if (SyntaxUtils.isExternal(parent.getFileNode(), statement))
 		{
-			String value = statement.substring(statement.indexOf('.') + 1);
+			String      value   = statement.substring(statement.indexOf('.') + 1);
 		
-			LiteralNode node = new LiteralNode(parent, location);
-			node.setValue(value, parent.isWithinExternalContext());
+			LiteralNode literal = LiteralNode.decodeStatement(parent, value, location, true);
 			
-			return node;
+			return literal;
 		}
 		
-		return decodeScopeContents(parent, statement, location, false);
+		return (ValueNode)decodeScopeContents(parent, statement, location, false);
 	}
 	
 	/**
@@ -427,6 +473,7 @@ public class BinaryOperatorNode extends TreeNode
 	 * @param statement The statement to decode the UnaryOperatorNode
 	 * 		from.
 	 * @param location The location of the statement in the source code.
+	 * @param require Whether or not to throw an error if anything goes wrong.
 	 * @return The UnaryOperatorNode instance, if one exists. Null
 	 * 		otherwise.
 	 */
@@ -514,7 +561,7 @@ public class BinaryOperatorNode extends TreeNode
 		
 		String            expression = statement.substring(start, end);
 		
-		UnaryOperatorNode unary      = UnaryOperatorNode.decodeStatement(parent, expression, newLoc);
+		UnaryOperatorNode unary      = UnaryOperatorNode.decodeStatement(parent, expression, newLoc, false);
 		
 		return unary;
 	}
