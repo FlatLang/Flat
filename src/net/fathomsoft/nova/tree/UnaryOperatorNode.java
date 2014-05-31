@@ -14,9 +14,9 @@ import net.fathomsoft.nova.util.StringUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 10:00:11 PM
- * @version	v0.2.10 May 29, 2014 at 5:14:07 PM
+ * @version	v0.2.11 May 31, 2014 at 1:19:11 PM
  */
-public class UnaryOperatorNode extends TreeNode
+public class UnaryOperatorNode extends ValueNode
 {
 	private static final int	LEFT = -1, EITHER = 0, RIGHT = 1;
 	
@@ -143,10 +143,11 @@ public class UnaryOperatorNode extends TreeNode
 	 * @param statement The statement to try to decode into a
 	 * 		UnaryOperatorNode instance.
 	 * @param location The location of the statement in the source code.
+	 * @param require Whether or not to throw an error if anything goes wrong.
 	 * @return The generated node, if it was possible to translated it
 	 * 		into a UnaryOperatorNode.
 	 */
-	public static UnaryOperatorNode decodeStatement(TreeNode parent, String statement, Location location)
+	public static UnaryOperatorNode decodeStatement(TreeNode parent, String statement, Location location, boolean require)
 	{
 		Bounds bounds = StringUtils.findStrings(statement, StringUtils.UNARY_OPERATORS);
 		
@@ -210,6 +211,8 @@ public class UnaryOperatorNode extends TreeNode
 				{
 					n.addChild(operator);
 				}
+				
+				n.setType(variable.getType());
 				
 				return n;
 			}
