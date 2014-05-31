@@ -7,9 +7,9 @@ import net.fathomsoft.nova.util.Location;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:19:40 PM
- * @version	v0.2.7 May 25, 2014 at 9:16:48 PM
+ * @version	v0.2.11 May 31, 2014 at 1:19:11 PM
  */
-public class OperatorNode extends TreeNode
+public class OperatorNode extends ValueNode
 {
 	private String	operator;
 	
@@ -38,6 +38,11 @@ public class OperatorNode extends TreeNode
 	 */
 	public void setOperator(String operator)
 	{
+		if (operator.contains("=") || operator.equals("!") || operator.equals("&&") || operator.equals("||"))
+		{
+			setType("bool");
+		}
+		
 		this.operator = operator;
 	}
 
@@ -48,15 +53,6 @@ public class OperatorNode extends TreeNode
 	public String generateJavaSource()
 	{
 		return operator;
-	}
-
-	/**
-	 * @see net.fathomsoft.nova.tree.TreeNode#generateCHeader()
-	 */
-	@Override
-	public String generateCHeader()
-	{
-		return null;
 	}
 
 	/**
@@ -73,6 +69,14 @@ public class OperatorNode extends TreeNode
 	 */
 	@Override
 	public String generateCSourceFragment()
+	{
+		return operator;
+	}
+	
+	/**
+	 * @see net.fathomsoft.nova.tree.TreeNode#generateNovaInput(boolean)
+	 */
+	public String generateNovaInput(boolean outputChildren)
 	{
 		return operator;
 	}
