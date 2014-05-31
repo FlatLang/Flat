@@ -3,6 +3,7 @@ package net.fathomsoft.nova.tree;
 import java.util.ArrayList;
 
 import net.fathomsoft.nova.Nova;
+import net.fathomsoft.nova.error.SyntaxErrorException;
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.util.Bounds;
 import net.fathomsoft.nova.util.Location;
@@ -18,11 +19,13 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:10:53 PM
- * @version	v0.2.10 May 29, 2014 at 5:14:07 PM
+ * @version	v0.2.11 May 31, 2014 at 1:19:11 PM
  */
 public class MethodNode extends InstanceDeclarationNode
 {
 	private boolean					externalType;
+	
+	private String					types[];
 	
 	private ArrayList<MethodNode>	overridingMethods;
 	
@@ -221,6 +224,16 @@ public class MethodNode extends InstanceDeclarationNode
 	}
 	
 	/**
+	 * Set the types that the specified method will return.
+	 * 
+	 * @param types The types that the Method returns.
+	 */
+	public void setTypes(String types[])
+	{
+		this.types = types;
+	}
+	
+	/**
 	 * Validate the parameters of the method header.
 	 */
 	public void validate()
@@ -319,8 +332,6 @@ public class MethodNode extends InstanceDeclarationNode
 		if (isConstant())
 		{
 			SyntaxMessage.error("Const methods are not supported in the C implementation yet", this);
-			
-			return null;
 //			builder.append(getConstantText()).append(' ');
 		}
 		
@@ -527,61 +538,86 @@ public class MethodNode extends InstanceDeclarationNode
 	 * @param statement The statement to try to decode into a
 	 * 		MethodNode instance.
 	 * @param location The location of the statement in the source code.
+	 * @param require Whether or not to throw an error if anything goes wrong.
 	 * @return The generated node, if it was possible to translated it
 	 * 		into a MethodNode.
 	 */
-	public static MethodNode decodeStatement(final TreeNode parent, String statement, final Location location)
+	public static MethodNode decodeStatement(TreeNode parent, String statement, Location location, boolean require)
 	{
 		int firstParenthIndex = Regex.indexOf(statement, '(', new char[] { }, new char[] {}, new char[] { '"' }, new boolean[] {}, new boolean[] {}, new boolean[] { true });
-		int lastParenthIndex  = Regex.lastIndexOf(statement, ')', new char[] { }, new char[] {}, new char[] { '"' }, new boolean[] {}, new boolean[] {}, new boolean[] { true });
 		
 		if (firstParenthIndex >= 0)
 		{
-			final String  signature  = statement.substring(0, firstParenthIndex);
+			int lastParenthIndex   = StringUtils.findEndingMatch(statement, firstParenthIndex, '(', ')');//Regex.lastIndexOf(statement, ')', new char[] { }, new char[] {}, new char[] { '"' }, new boolean[] {}, new boolean[] {}, new boolean[] { true });
 			
-			final boolean error[]    = new boolean[1];
+			final String signature       = statement.substring(0, firstParenthIndex);
+			String returnStatement = statement.substring(lastParenthIndex + 1);
+			
+			returnStatement        = StringUtils.trimSurroundingWhitespace(returnStatement);
+			
+			final Location finalLocation  = location;
+			
+			final boolean  returnCycle[]  = new boolean[1];
+			
+			final ArrayList<String> types = new ArrayList<String>();
 			
 			MethodNode n = new MethodNode(parent, location)
 			{
 				public void interactWord(String word, int wordNumber, Bounds bounds, int numWords, String leftDelimiter, String rightDelimiter)
 				{
-					if (error[0])
-					{
-						return;
-					}
+//					if (!returnCycle[0])
+//					{
+//						if (word.equals("returns"))
+//						{
+//							returnCycle[0] = true;
+//							
+//							return;
+//						}
+//					}
 					
-					if (wordNumber == numWords - 1)
+					if (!returnCycle[0])
 					{
-						setName(word);
-					}
-					else if (wordNumber == numWords - 2)
-					{
-						setType(word);
-						
-						// If it is an array declaration.
-						if (Regex.matches(signature, bounds.getEnd(), Patterns.EMPTY_ARRAY_BRACKETS))
+						if (wordNumber == numWords - 1)
 						{
-							int dimensions = SyntaxUtils.calculateArrayDimensions(signature, false);
+							setName(word);
+						}
+						else if (wordNumber == numWords - 2)
+						{
+							setType(word);
 							
-							setArrayDimensions(dimensions);
+							// If it is an array declaration.
+							if (Regex.matches(signature, bounds.getEnd(), Patterns.EMPTY_ARRAY_BRACKETS))
+							{
+								int dimensions = SyntaxUtils.calculateArrayDimensions(signature, false);
+								
+								setArrayDimensions(dimensions);
+							}
+						}
+						else if (!setAttribute(word, wordNumber))
+						{
+							
+							if (getFileNode().isExternalImport(word) && rightDelimiter.equals("."))
+							{
+								setExternalType(true);
+							}
+							else
+							{
+								Location newLoc = new Location(finalLocation);
+								newLoc.setBounds(bounds.getStart(), bounds.getEnd());
+								
+								SyntaxMessage.error("Unknown method definition", this, newLoc);
+							}
 						}
 					}
-					else if (!setAttribute(word, wordNumber))
-					{
-						if (getFileNode().isExternalImport(word) && rightDelimiter.equals("."))
-						{
-							setExternalType(true);
-						}
-						else
-						{
-							Location newLoc = new Location(location);
-							newLoc.setBounds(bounds.getStart(), bounds.getEnd());
-							
-							SyntaxMessage.error("Unknown method definition", this, newLoc);
-							
-							error[0] = true;
-						}
-					}
+//					else
+//					{
+//						if (!leftDelimiter.equals(",") && wordNumber > 2 || !StringUtils.containsOnly(word, StringUtils.WHITESPACE) && wordNumber == 1)
+//						{
+//							SyntaxMessage.error("Unknown delimiter '" + leftDelimiter + "'", this);
+//						}
+//						
+//						types.add(word);
+//					}
 				}
 			};
 			
@@ -590,32 +626,50 @@ public class MethodNode extends InstanceDeclarationNode
 			if (lastParenthIndex < 0)
 			{
 				SyntaxMessage.error("Expected a ')' ending parenthesis", n);
-				
-				return null;
 			}
 			
 			String parameterList = statement.substring(firstParenthIndex + 1, lastParenthIndex);
 			
 			String parameters[]  = StringUtils.splitCommas(parameterList);
 			
-			n.iterateWords(signature, Patterns.IDENTIFIER_BOUNDARIES);
-			
-			if (error[0])
+			try
 			{
-				return null;
+				n.iterateWords(signature, Patterns.IDENTIFIER_BOUNDARIES);
+				n.iterateWords(returnStatement, Patterns.IDENTIFIER_BOUNDARIES);
 			}
+			catch (SyntaxErrorException e)
+			{
+				if (!require)
+				{
+					return null;
+				}
+				
+				throw e;
+			}
+			
+			if (types.size() <= 0)
+			{
+				
+				
+//				if (!require)
+//				{
+//					return null;
+//				}
+//				
+//				SyntaxMessage.error("The method must have a return type", n);
+			}
+			
+//			n.setTypes(types.toArray(new String[0]));
 			
 			for (int i = 0; i < parameters.length; i++)
 			{
 				if (parameters[i].length() > 0)
 				{
-					ParameterNode param = ParameterNode.decodeStatement(n, parameters[i], location);
+					ParameterNode param = ParameterNode.decodeStatement(n, parameters[i], location, require);
 					
 					if (param == null)
 					{
 						SyntaxMessage.error("Incorrect parameter definition", n);
-						
-						return null;
 					}
 					
 					n.getParameterListNode().addChild(param);
