@@ -13,7 +13,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:19:44 PM
- * @version	v0.2.10 May 29, 2014 at 5:14:07 PM
+ * @version	v0.2.11 May 31, 2014 at 1:19:11 PM
  */
 public class AssignmentNode extends TreeNode
 {
@@ -37,9 +37,9 @@ public class AssignmentNode extends TreeNode
 	 * @return The TreeNode that holds the value of the variable that
 	 * 		is to be assigned.
 	 */
-	public TreeNode getVariableNode()
+	public VariableNode getVariableNode()
 	{
-		return getChild(0);
+		return (VariableNode)getChild(0);
 	}
 
 	/**
@@ -89,38 +89,19 @@ public class AssignmentNode extends TreeNode
 		
 		builder.append(" = ");
 		
-		for (int i = 1; i < getChildren().size(); i++)
-		{
-			TreeNode child = getChild(i);
-			
-			builder.append(child.generateCSourceFragment());
-		}
+		TreeNode child = getChild(1);
+		
+		builder.append(child.generateCSourceFragment());
 		
 		return builder.toString();
 	}
 	
 	/**
-	 * Decode the given statement into an AssignmentNode if possible. If
-	 * it is not possible, then null is returned.<br>
-	 * <br>
-	 * Example inputs include:<br>
-	 * <ul>
-	 * 	<li>int variableName = 45</li>
-	 * 	<li>personsName = "Bob"</li>
-	 * 	<li>Person myPeep = new Person(54)</li>
-	 * 	<li>area = width * height / 2</li>
-	 * 	<li>int newSize = array.getSize() + 5</li>
-	 * </ul>
-	 * 
-	 * @param parent The parent of the current statement.
-	 * @param statement The statement to decode into an AssignmentNode.
-	 * @param location The location of the statement in the source code.
-	 * @return The new AssignmentNode if it decodes properly. If not,
-	 * 		it returns null.
+	 * @see net.fathomsoft.nova.tree.TreeNode#generateNovaInput(boolean)
 	 */
-	public static AssignmentNode decodeStatement(TreeNode parent, String statement, Location location)
+	public String generateNovaInput(boolean outputChildren)
 	{
-		return decodeStatement(parent, statement, location, true);
+		return getVariableNode().generateNovaInput(outputChildren) + " = " + getChild(1).generateNovaInput(outputChildren);
 	}
 	
 	/**
@@ -139,13 +120,39 @@ public class AssignmentNode extends TreeNode
 	 * @param parent The parent of the current statement.
 	 * @param statement The statement to decode into an AssignmentNode.
 	 * @param location The location of the statement in the source code.
+	 * @param require Whether or not to throw an error if anything goes wrong.
+	 * @return The new AssignmentNode if it decodes properly. If not,
+	 * 		it returns null.
+	 */
+	public static AssignmentNode decodeStatement(TreeNode parent, String statement, Location location, boolean require)
+	{
+		return decodeStatement(parent, statement, location, require, true);
+	}
+	
+	/**
+	 * Decode the given statement into an AssignmentNode if possible. If
+	 * it is not possible, then null is returned.<br>
+	 * <br>
+	 * Example inputs include:<br>
+	 * <ul>
+	 * 	<li>int variableName = 45</li>
+	 * 	<li>personsName = "Bob"</li>
+	 * 	<li>Person myPeep = new Person(54)</li>
+	 * 	<li>area = width * height / 2</li>
+	 * 	<li>int newSize = array.getSize() + 5</li>
+	 * </ul>
+	 * 
+	 * @param parent The parent of the current statement.
+	 * @param statement The statement to decode into an AssignmentNode.
+	 * @param location The location of the statement in the source code.
+	 * @param require Whether or not to throw an error if anything goes wrong.
 	 * @param addDeclaration Whether or not to add the declaration to the
 	 * 		nearest scope, if the left hand value of the equation is a
 	 * 		variable declaration.
 	 * @return The new AssignmentNode if it decodes properly. If not,
 	 * 		it returns null.
 	 */
-	public static AssignmentNode decodeStatement(TreeNode parent, String statement, Location location, boolean addDeclaration)
+	public static AssignmentNode decodeStatement(TreeNode parent, String statement, Location location, boolean require, boolean addDeclaration)
 	{
 		if (!SyntaxUtils.isVariableAssignment(statement))
 		{
@@ -206,7 +213,7 @@ public class AssignmentNode extends TreeNode
 					
 					if (scope != null)
 					{
-						scope.addChild(varNode);
+						scope.getScopeNode().addChild(varNode);
 						
 						varNode = var.clone(n, location);
 					}
@@ -224,7 +231,12 @@ public class AssignmentNode extends TreeNode
 		Location newLoc = new Location(location);
 		newLoc.setBounds(location.getStart() + rhsIndex, location.getStart() + statement.length());
 		
-		TreeNode  child = decodeRightHandSide(parent, rhs, newLoc);
+		TreeNode  child = decodeRightHandSide(parent, rhs, newLoc, require);
+		
+		if (child == null)
+		{
+			return null;
+		}
 		
 		n.addChild(child);
 		
@@ -248,17 +260,14 @@ public class AssignmentNode extends TreeNode
 	 * @param parent The parent of the current statement.
 	 * @param rhs The right hand side to decode into an AssignmentNode.
 	 * @param location The location of the statement in the source code.
+	 * @param require Whether or not to throw an error if anything goes wrong.
 	 * @return The new TreeNode if it decodes properly. If not,
 	 * 		it returns null.
 	 */
-	public static TreeNode decodeRightHandSide(TreeNode parent, String rhs, Location location)
+	public static TreeNode decodeRightHandSide(TreeNode parent, String rhs, Location location, boolean require)
 	{
-		TreeNode child = BinaryOperatorNode.decodeStatement(parent, rhs, location);
+		TreeNode child = decodeScopeContents(parent, rhs, location, require);
 		
-		if (child == null)
-		{
-			child = decodeScopeContents(parent, rhs, location);
-		}
 		if (child == null)
 		{
 			if (SyntaxUtils.isExternal(parent.getFileNode(), rhs))
@@ -266,8 +275,7 @@ public class AssignmentNode extends TreeNode
 				rhs = rhs.substring(rhs.indexOf('.') + 1);
 			}
 			
-			LiteralNode node = new LiteralNode(parent, location);
-			node.setValue(rhs, parent.isWithinExternalContext());
+			LiteralNode node = LiteralNode.decodeStatement(parent, rhs, location, require);
 			
 			child = node;
 		}
