@@ -11,10 +11,12 @@ import net.fathomsoft.nova.error.SyntaxErrorException;
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.tree.ClassNode;
 import net.fathomsoft.nova.tree.FileNode;
+import net.fathomsoft.nova.tree.MethodCallNode;
 import net.fathomsoft.nova.tree.MethodNode;
 import net.fathomsoft.nova.tree.ProgramNode;
 import net.fathomsoft.nova.tree.SyntaxTree;
 import net.fathomsoft.nova.tree.TreeNode;
+import net.fathomsoft.nova.tree.ValueNode;
 import net.fathomsoft.nova.tree.exceptionhandling.ExceptionNode;
 import net.fathomsoft.nova.util.Command;
 import net.fathomsoft.nova.util.CommandListener;
@@ -27,7 +29,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:00:04 PM
- * @version	v0.2.11 May 31, 2014 at 1:19:11 PM
+ * @version	v0.2.12 Jun 1, 2014 at 7:28:35 PM
  */
 public class Nova
 {
@@ -73,7 +75,7 @@ public class Nova
 	public static final int		LINUX         = 3;
 	
 	public static final String	LANGUAGE_NAME = "Nova";
-	public static final String	VERSION       = "v0.2.11";
+	public static final String	VERSION       = "v0.2.12";
 	
 	/**
 	 * Find out which operating system the compiler is running on.
@@ -198,8 +200,10 @@ public class Nova
 				directory + "Long.fat",
 				directory + "Double.fat",
 				directory + "Number.fat",
+				directory + "GC.fat",
 				"-o", directory + "bin/Executable" + OUTPUT_EXTENSION,
 				"-dir", '"' + directory + "../include" + '"',
+				"-dir", '"' + directory + "../include/gc" + '"',
 				"-run",
 //				"-csource",
 				"-formatc",
@@ -395,6 +399,11 @@ public class Nova
 				}
 			}
 			
+			ValueNode      gc     = new ValueNode(mainMethod, mainMethod.getLocationIn());
+			gc.setType("GC");
+			
+			MethodCallNode gcInit = MethodCallNode.decodeStatement(gc, "init()", mainMethod.getLocationIn(), true);
+			
 			StringBuilder mainMethodText = new StringBuilder();
 			
 			mainMethodText.append('\n').append('\n');
@@ -405,14 +414,16 @@ public class Nova
 			mainMethodText.append('\n');
 			mainMethodText.append("int main(int argc, char** argvs)").append('\n');
 			mainMethodText.append("{").append('\n');
-			mainMethodText.append	("String** args = (String**)malloc(argc * sizeof(String));").append('\n');
+			mainMethodText.append	("String** args;").append('\n');
 			mainMethodText.append	("int      i;").append('\n').append('\n');
 			mainMethodText.append	("ExceptionData* ").append(ExceptionNode.EXCEPTION_DATA_IDENTIFIER).append(" = 0;").append('\n');
+			mainMethodText.append	(gcInit.generateCSource()).append('\n');
+			mainMethodText.append	("args = (String**)GC_MALLOC(argc * sizeof(String));").append('\n');
 //			mainMethodText.append	(staticClassInit);
 			mainMethodText.append	('\n');
 			mainMethodText.append	("for (i = 0; i < argc; i++)").append('\n');
 			mainMethodText.append	("{").append('\n');
-			mainMethodText.append		("char* str = (char*)malloc(sizeof(char) * strlen(argvs[i]) + 1);").append('\n');
+			mainMethodText.append		("char* str = (char*)GC_MALLOC(sizeof(char) * strlen(argvs[i]) + 1);").append('\n');
 			mainMethodText.append		("copy_string(str, argvs[i]);").append('\n');
 			mainMethodText.append		("args[i] = ").append(LANGUAGE_NAME.toLowerCase()).append("_String_String(0, str);").append('\n');
 			mainMethodText.append	("}").append('\n');
@@ -432,7 +443,9 @@ public class Nova
 			mainMethodText.append	('}').append('\n');
 			mainMethodText.append	("END_TRY;").append('\n');
 //			mainMethodText.append	(staticClassFree);
-			mainMethodText.append	("free(args);").append('\n');
+//			mainMethodText.append	("free(args);").append('\n');
+			mainMethodText.append	("args = NULL;").append('\n');
+			mainMethodText.append	("GC_gcollect();").append('\n');
 			mainMethodText.append	('\n');
 			mainMethodText.append	("return 0;").append('\n');
 			mainMethodText.append("}");
@@ -479,7 +492,7 @@ public class Nova
 		
 		String libDir = getLibraryDir();
 		
-		cmd.append("-L").append(libDir).append(" -lFathom -lThread -lhoard ");
+		cmd.append("-L").append(libDir).append(" -lFathom -lThread -lhoard -lgc ");
 		
 		for (File sourceFile : cSourceFiles)
 		{
