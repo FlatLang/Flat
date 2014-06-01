@@ -19,7 +19,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:10:53 PM
- * @version	v0.2.11 May 31, 2014 at 1:19:11 PM
+ * @version	v0.2.12 Jun 1, 2014 at 7:28:35 PM
  */
 public class MethodNode extends InstanceDeclarationNode
 {
@@ -707,6 +707,15 @@ public class MethodNode extends InstanceDeclarationNode
 		for (MethodNode child : overridingMethods)
 		{
 			node.overridingMethods.add(child.clone(null, child.getLocationIn()));
+		}
+		
+		node.types = new String[types.length];
+		
+		for (int i = 0; i < types.length; i++)
+		{
+			String type = types[i];
+			
+			node.types[i] = type;
 		}
 		
 		return node;
