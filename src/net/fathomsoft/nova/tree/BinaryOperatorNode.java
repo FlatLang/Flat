@@ -19,7 +19,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:20:35 PM
- * @version	v0.2.11 May 31, 2014 at 1:19:11 PM
+ * @version	v0.2.12 Jun 1, 2014 at 7:28:35 PM
  */
 public class BinaryOperatorNode extends ValueNode
 {
@@ -650,6 +650,7 @@ public class BinaryOperatorNode extends ValueNode
 							replace(nonString, autobox);
 							
 							String            methodCall   = autobox.generateNovaInput() + ".toString()";
+							
 							InstantiationNode toStringCall = (InstantiationNode)TreeNode.decodeScopeContents(parent, methodCall, value.getLocationIn());
 							
 							replace(autobox, toStringCall);
