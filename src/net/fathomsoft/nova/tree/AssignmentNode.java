@@ -13,7 +13,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:19:44 PM
- * @version	v0.2.11 May 31, 2014 at 1:19:11 PM
+ * @version	v0.2.12 Jun 1, 2014 at 7:28:35 PM
  */
 public class AssignmentNode extends TreeNode
 {
@@ -37,9 +37,9 @@ public class AssignmentNode extends TreeNode
 	 * @return The TreeNode that holds the value of the variable that
 	 * 		is to be assigned.
 	 */
-	public VariableNode getVariableNode()
+	public IdentifierNode getVariableNode()
 	{
-		return (VariableNode)getChild(0);
+		return (IdentifierNode)getChild(0);
 	}
 
 	/**
@@ -159,15 +159,15 @@ public class AssignmentNode extends TreeNode
 			return null;
 		}
 		
-		int  equalsIndex = SyntaxUtils.findCharInBaseScope(statement, '=');
-		int     endIndex = StringUtils.findNextNonWhitespaceIndex(statement, equalsIndex - 1, -1) + 1;
+		int      equalsIndex = SyntaxUtils.findCharInBaseScope(statement, '=');
+		int      endIndex    = StringUtils.findNextNonWhitespaceIndex(statement, equalsIndex - 1, -1) + 1;
 		
-		String  variable = statement.substring(0, endIndex);
+		String   variable    = statement.substring(0, endIndex);
 		
-		Location  varLoc = new Location(location);
+		Location varLoc      = new Location(location);
 		varLoc.getBounds().setEnd(varLoc.getStart() + endIndex);
 		
-		VariableNode varNode = (VariableNode)decodeScopeContents(parent, variable, varLoc);
+		IdentifierNode varNode = (IdentifierNode)decodeScopeContents(parent, variable, varLoc);
 		
 		if (varNode == null)
 		{
