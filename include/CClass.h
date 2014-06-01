@@ -9,6 +9,15 @@
 #ifndef CClass_CClass_h
 #define CClass_CClass_h
 
+#define USE_GC
+
+#if defined(GC_MALLOC)
+#	ifndef USE_GC
+#		undef GC_MALLOC
+#		define GC_MALLOC malloc
+#	endif
+#endif
+
 #include <stdlib.h>
 #include <assert.h>
 
@@ -25,7 +34,7 @@
 	_CCLASS_CLASS_* _OBJ_ = CCLASS_NEW2(_CCLASS_CLASS_);\
 	_CCLASS_PRIVATE_
 
-#define CCLASS_NEW2(_CLASS_) (_CLASS_*)malloc(sizeof(_CLASS_))
+#define CCLASS_NEW2(_CLASS_) (_CLASS_*)GC_MALLOC(sizeof(_CLASS_))
 
 #define CCLASS_NEW_EXT(_CLASS_, _EXTENDS_, _OBJ_) CCLASS_NEW(_CLASS_, _OBJ_); _OBJ_->getParent = getParent
 
