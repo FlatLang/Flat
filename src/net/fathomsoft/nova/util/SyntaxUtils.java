@@ -25,7 +25,7 @@ import net.fathomsoft.nova.tree.variables.VariableNode;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Mar 15, 2014 at 7:55:00 PM
- * @version	v0.2.11 May 31, 2014 at 1:19:11 PM
+ * @version	v0.2.12 Jun 1, 2014 at 7:28:35 PM
  */
 public class SyntaxUtils
 {
@@ -956,15 +956,16 @@ public class SyntaxUtils
 		}
 		else if (primitive instanceof ValueNode)
 		{
-			ValueNode value = (ValueNode)primitive;
+			ValueNode value    = (ValueNode)primitive;
+			ValueNode returned = value.getReturnedNode();
 			
-			if (value.getType().equals("int"))
+			if (returned.getType().equals("int"))
 			{
-				String instantiation = "new Integer(" + value.generateNovaInput(false) + ")";
+				String instantiation = "new Integer(" + value.generateNovaInput(true) + ")";
 				
 				node = InstantiationNode.decodeStatement(parent, instantiation, primitive.getLocationIn(), true);
 				
-				node.inheritChildren(value);
+//				node.inheritChildren(value);
 			}
 		}
 		
