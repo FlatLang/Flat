@@ -14,7 +14,7 @@ import net.fathomsoft.nova.util.Regex;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:55:15 PM
- * @version	v0.2.11 May 31, 2014 at 1:19:11 PM
+ * @version	v0.2.12 Jun 1, 2014 at 7:28:35 PM
  */
 public class ForLoopNode extends LoopNode
 {
@@ -171,10 +171,10 @@ public class ForLoopNode extends LoopNode
 				AssignmentNode initialization = AssignmentNode.decodeStatement(parent, arguments[0], newLoc, require);
 				n.getArgumentListNode().addChild(initialization);
 				
-				VariableNode   var      = initialization.getVariableNode();
+				IdentifierNode var      = initialization.getVariableNode();
 				IdentifierNode existing = TreeNode.getExistingNode(parent, var.getName());
 				
-				if ( var.getLocationIn().getBounds().equals(existing.getLocationIn().getBounds()))
+				if (var.getLocationIn().getBounds().equals(existing.getLocationIn().getBounds()))
 				{
 					LocalDeclarationNode declaration = (LocalDeclarationNode)existing;
 					
