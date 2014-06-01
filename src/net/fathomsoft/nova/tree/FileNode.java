@@ -12,7 +12,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Feb 18, 2014 at 8:57:00 PM
- * @version	v0.2.7 May 25, 2014 at 9:16:48 PM
+ * @version	v0.2.12 Jun 1, 2014 at 7:28:35 PM
  */
 public class FileNode extends IdentifierNode
 {
@@ -32,6 +32,7 @@ public class FileNode extends IdentifierNode
 	{
 		DEFAULT_IMPORTS = new String[]
 		{
+			"gc.h",
 			"stdlib.h",
 			"CClass.h",
 			"ExceptionHandler.h",
