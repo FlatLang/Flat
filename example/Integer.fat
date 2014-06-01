@@ -1,4 +1,4 @@
-public class Integer
+public class Integer extends Number
 {
 	visible int value;
 	
@@ -14,50 +14,20 @@ public class Integer
 			return numDigits(-number) + 1;
 		}
 		
-		int size = 1;
+		int size;
 		
 		number = number / 10;
 			
-		while (number > 0)
+		for (size = 1; number > 0; size++)
 		{
 			number = number / 10;
-			
-			++size;
 		}
 		
 		return size;
 	}
 	
-	static int pow(int a, int b)
-	{
-		if (b == 0)
-		{
-			return 1;
-		}
-		else if (b > 0)
-		{
-			return positivePow(a, b);
-		}
-		else
-		{
-			return 0;
-		}
-	}
-	
-	static int positivePow(int a, int b)
-	{
-		for (int i = b - 2; i >= 0; i--)
-		{
-			a = a * a;
-		}
-		
-		return a;
-	}
-	
 	public static String toAString(int value)
 	{
-		int  index   = 0;
-		
 		int  digits  = numDigits(value);
 		
 		char data[]  = new char[digits + 1];
@@ -75,17 +45,13 @@ public class Integer
 			offset = 1;
 		}
 		
-		int nums = digits - offset;
+		int nums = digits-- - offset;
 		
-		digits   = digits - 1;
-		
-		while (index < nums)
+		for (int index = 0; index < nums; index++)
 		{
 			data[digits - index] = '0' + value % 10;
 			
 			value = value / 10;
-			
-			++index;
 		}
 		
 		return new String(data);
