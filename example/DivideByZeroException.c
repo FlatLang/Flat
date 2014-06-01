@@ -1,4 +1,5 @@
 #include "DivideByZeroException.h"
+#include <gc.h>
 #include <stdlib.h>
 #include <CClass.h>
 #include <ExceptionHandler.h>

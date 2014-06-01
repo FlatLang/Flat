@@ -3,6 +3,7 @@
 
 typedef struct BodyBuilder BodyBuilder;
 
+#include <gc.h>
 #include <stdlib.h>
 #include <CClass.h>
 #include <ExceptionHandler.h>
@@ -26,7 +27,7 @@ CCLASS_CLASS
 )
 
 
-BodyBuilder* nova_BodyBuilder_BodyBuilder(ExceptionData* exceptionData, int nova_BodyBuilder_weightClass_57, String* nova_BodyBuilder_name_57);
+BodyBuilder* nova_BodyBuilder_BodyBuilder(ExceptionData* exceptionData, int nova_0_weightClass, String* nova_0_name);
 void nova_del_BodyBuilder(BodyBuilder** this, ExceptionData* exceptionData);
 void nova_BodyBuilder_sayHello(BodyBuilder* this, ExceptionData* exceptionData);
 #endif

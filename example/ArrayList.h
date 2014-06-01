@@ -3,6 +3,7 @@
 
 typedef struct ArrayList ArrayList;
 
+#include <gc.h>
 #include <stdlib.h>
 #include <CClass.h>
 #include <ExceptionHandler.h>
@@ -27,8 +28,8 @@ CCLASS_CLASS
 
 ArrayList* nova_ArrayList_ArrayList(ExceptionData* exceptionData);
 void nova_del_ArrayList(ArrayList** this, ExceptionData* exceptionData);
-void nova_ArrayList_add(ArrayList* this, ExceptionData* exceptionData, int nova_ArrayList_var_36);
+void nova_ArrayList_add(ArrayList* this, ExceptionData* exceptionData, int nova_0_var);
 void nova_ArrayList_increaseSize(ArrayList* this, ExceptionData* exceptionData);
 int nova_ArrayList_getSize(ArrayList* this, ExceptionData* exceptionData);
-int nova_ArrayList_get(ArrayList* this, ExceptionData* exceptionData, int nova_ArrayList_index_51);
+int nova_ArrayList_get(ArrayList* this, ExceptionData* exceptionData, int nova_0_index);
 #endif

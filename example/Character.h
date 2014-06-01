@@ -1,7 +1,7 @@
-#ifndef FILE_Array_NOVA
-#define FILE_Array_NOVA
+#ifndef FILE_Character_NOVA
+#define FILE_Character_NOVA
 
-typedef struct Array Array;
+typedef struct Character Character;
 
 #include <gc.h>
 #include <stdlib.h>
@@ -18,12 +18,10 @@ typedef struct Array Array;
 
 CCLASS_CLASS
 (
-	Array, 
-	
-	int nova_Array_length;
+	Character
 )
 
 
-Array* nova_Array_Array(ExceptionData* exceptionData);
-void nova_del_Array(Array** this, ExceptionData* exceptionData);
+Character* nova_Character_Character(ExceptionData* exceptionData);
+void nova_del_Character(Character** this, ExceptionData* exceptionData);
 #endif

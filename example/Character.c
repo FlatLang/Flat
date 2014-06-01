@@ -1,4 +1,4 @@
-#include "Exception.h"
+#include "Character.h"
 #include <gc.h>
 #include <stdlib.h>
 #include <CClass.h>
@@ -12,9 +12,9 @@
 #include "Integer.h"
 #include "DivideByZeroException.h"
 
-Exception* nova_Exception_Exception(ExceptionData* exceptionData)
+Character* nova_Character_Character(ExceptionData* exceptionData)
 {
-	CCLASS_NEW(Exception, this,);
+	CCLASS_NEW(Character, this,);
 	
 	{
 	}
@@ -22,7 +22,7 @@ Exception* nova_Exception_Exception(ExceptionData* exceptionData)
 	return this;
 }
 
-void nova_del_Exception(Exception** this, ExceptionData* exceptionData)
+void nova_del_Character(Character** this, ExceptionData* exceptionData)
 {
 	if (!*this)
 	{

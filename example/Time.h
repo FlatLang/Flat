@@ -3,6 +3,7 @@
 
 typedef struct Time Time;
 
+#include <gc.h>
 #include <stdlib.h>
 #include <CClass.h>
 #include <ExceptionHandler.h>

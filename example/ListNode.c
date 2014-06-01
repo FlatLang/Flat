@@ -1,4 +1,5 @@
 #include "ListNode.h"
+#include <gc.h>
 #include <stdlib.h>
 #include <CClass.h>
 #include <ExceptionHandler.h>
@@ -18,14 +19,14 @@ CCLASS_PRIVATE
 	
 )
 
-ListNode* nova_ListNode_ListNode(ExceptionData* exceptionData, Object* nova_ListNode_data_3)
+ListNode* nova_ListNode_ListNode(ExceptionData* exceptionData, Object* nova_0_data)
 {
 	CCLASS_NEW(ListNode, this);
 	
 	this->prv->nova_ListNode_data = 0;
 	this->prv->nova_ListNode_next = 0;
 	{
-		this->prv->nova_ListNode_data = nova_ListNode_data_3;
+		this->prv->nova_ListNode_data = nova_0_data;
 	}
 	
 	return this;
@@ -57,7 +58,7 @@ ListNode* nova_ListNode_getNext(ListNode* this, ExceptionData* exceptionData)
 	return this->prv->nova_ListNode_next;
 }
 
-void nova_ListNode_setNext(ListNode* this, ExceptionData* exceptionData, ListNode* nova_ListNode_next_20)
+void nova_ListNode_setNext(ListNode* this, ExceptionData* exceptionData, ListNode* nova_0_next)
 {
-	this->prv->nova_ListNode_next = nova_ListNode_next_20;
+	this->prv->nova_ListNode_next = nova_0_next;
 }

@@ -1,0 +1,53 @@
+import "gc.h";
+
+public class GC
+{
+	public static void init()
+	{
+		gc.GC_INIT();
+		
+		enableIncremental();
+		
+		setFreeSpaceDivisor(1);
+	}
+	
+	public static int getFreeBytes()
+	{
+		return gc.GC_get_free_bytes();
+	}
+	
+	public static int getTotalBytes()
+	{
+		return gc.GC_get_total_bytes();
+	}
+	
+	public static int getHeapSize()
+	{
+		return gc.GC_get_heap_size();
+	}
+	
+	public static int getBytesSinceGC()
+	{
+		return gc.GC_get_bytes_since_gc();
+	}
+	
+	public static void setFreeSpaceDivisor(int divisor)
+	{
+		gc.GC_free_space_divisor = divisor;
+	}
+	
+	public static void collect()
+	{
+		gc.GC_gcollect();
+	}
+	
+	public static void enableIncremental()
+	{
+		gc.GC_enable_incremental();
+	}
+	
+	public static void dump()
+	{
+		gc.GC_dump();
+	}
+}

@@ -3,6 +3,7 @@
 
 typedef struct ListNode ListNode;
 
+#include <gc.h>
 #include <stdlib.h>
 #include <CClass.h>
 #include <ExceptionHandler.h>
@@ -23,9 +24,9 @@ CCLASS_CLASS
 )
 
 
-ListNode* nova_ListNode_ListNode(ExceptionData* exceptionData, Object* nova_ListNode_data_3);
+ListNode* nova_ListNode_ListNode(ExceptionData* exceptionData, Object* nova_0_data);
 void nova_del_ListNode(ListNode** this, ExceptionData* exceptionData);
 Object* nova_ListNode_getData(ListNode* this, ExceptionData* exceptionData);
 ListNode* nova_ListNode_getNext(ListNode* this, ExceptionData* exceptionData);
-void nova_ListNode_setNext(ListNode* this, ExceptionData* exceptionData, ListNode* nova_ListNode_next_20);
+void nova_ListNode_setNext(ListNode* this, ExceptionData* exceptionData, ListNode* nova_0_next);
 #endif

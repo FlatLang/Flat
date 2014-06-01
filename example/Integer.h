@@ -3,6 +3,7 @@
 
 typedef struct Integer Integer;
 
+#include <gc.h>
 #include <stdlib.h>
 #include <CClass.h>
 #include <ExceptionHandler.h>
@@ -23,9 +24,9 @@ CCLASS_CLASS
 )
 
 
-Integer* nova_Integer_Integer(ExceptionData* exceptionData, int nova_Integer_value_59);
+Integer* nova_Integer_Integer(ExceptionData* exceptionData, int nova_0_value);
 void nova_del_Integer(Integer** this, ExceptionData* exceptionData);
-int nova_Integer_numDigits(ExceptionData* exceptionData, int nova_Integer_number_69);
-String* nova_Integer_toAString(ExceptionData* exceptionData, int nova_Integer_value_97);
+int nova_Integer_numDigits(ExceptionData* exceptionData, int nova_0_number);
+String* nova_Integer_toAString(ExceptionData* exceptionData, int nova_0_value);
 String* nova_Integer_toString(Integer* this, ExceptionData* exceptionData);
 #endif

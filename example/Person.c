@@ -1,4 +1,5 @@
 #include "Person.h"
+#include <gc.h>
 #include <stdlib.h>
 #include <CClass.h>
 #include <ExceptionHandler.h>
@@ -11,15 +12,15 @@
 #include "Integer.h"
 #include "DivideByZeroException.h"
 
-Person* nova_Person_Person(ExceptionData* exceptionData, String* nova_Person_name_118, int nova_Person_age_118)
+Person* nova_Person_Person(ExceptionData* exceptionData, String* nova_0_name, int nova_0_age)
 {
 	CCLASS_NEW(Person, this,);
 	
 	this->nova_Person_age = 0;
 	this->nova_Person_name = 0;
 	{
-		this->nova_Person_name = nova_Person_name_118;
-		this->nova_Person_age = nova_Person_age_118;
+		this->nova_Person_name = nova_0_name;
+		this->nova_Person_age = nova_0_age;
 	}
 	
 	return this;

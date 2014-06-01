@@ -3,6 +3,7 @@
 
 typedef struct String String;
 
+#include <gc.h>
 #include <stdlib.h>
 #include <CClass.h>
 #include <ExceptionHandler.h>
@@ -25,8 +26,8 @@ CCLASS_CLASS
 )
 
 
-String* nova_String_String(ExceptionData* exceptionData, char* nova_String_data_77);
+String* nova_String_String(ExceptionData* exceptionData, char* nova_0_data);
 void nova_del_String(String** this, ExceptionData* exceptionData);
 char* nova_String_toCharArray(String* this, ExceptionData* exceptionData);
-String* nova_String_concat(String* this, ExceptionData* exceptionData, String* nova_String_str_100);
+String* nova_String_concat(String* this, ExceptionData* exceptionData, String* nova_0_str);
 #endif

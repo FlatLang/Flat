@@ -1,8 +1,4 @@
-#ifndef FILE_Array_NOVA
-#define FILE_Array_NOVA
-
-typedef struct Array Array;
-
+#include "Number.h"
 #include <gc.h>
 #include <stdlib.h>
 #include <CClass.h>
@@ -16,14 +12,25 @@ typedef struct Array Array;
 #include "Integer.h"
 #include "DivideByZeroException.h"
 
-CCLASS_CLASS
-(
-	Array, 
+Number* nova_Number_Number(ExceptionData* exceptionData)
+{
+	CCLASS_NEW(Number, this,);
 	
-	int nova_Array_length;
-)
+	{
+	}
+	
+	return this;
+}
 
-
-Array* nova_Array_Array(ExceptionData* exceptionData);
-void nova_del_Array(Array** this, ExceptionData* exceptionData);
-#endif
+void nova_del_Number(Number** this, ExceptionData* exceptionData)
+{
+	if (!*this)
+	{
+		return;
+	}
+	
+	
+	{
+	}
+	free(*this);
+}

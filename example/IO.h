@@ -3,6 +3,7 @@
 
 typedef struct IO IO;
 
+#include <gc.h>
 #include <stdlib.h>
 #include <CClass.h>
 #include <ExceptionHandler.h>
@@ -26,10 +27,10 @@ CCLASS_CLASS
 
 IO* nova_IO_IO(ExceptionData* exceptionData);
 void nova_del_IO(IO** this, ExceptionData* exceptionData);
-void nova_IO_println(ExceptionData* exceptionData, String* nova_IO_text_134);
-void nova_IO_print(ExceptionData* exceptionData, String* nova_IO_text_140);
-void nova_IO_printi(ExceptionData* exceptionData, int nova_IO_j_148);
-void nova_IO_printl(ExceptionData* exceptionData, long_long nova_IO_j_152);
+void nova_IO_println(ExceptionData* exceptionData, String* nova_0_text);
+void nova_IO_print(ExceptionData* exceptionData, String* nova_0_text);
+void nova_IO_printi(ExceptionData* exceptionData, int nova_0_j);
+void nova_IO_printl(ExceptionData* exceptionData, long_long nova_0_j);
 int nova_IO_getInt(ExceptionData* exceptionData);
 char nova_IO_getChar(ExceptionData* exceptionData);
 String* nova_IO_getLine(ExceptionData* exceptionData);

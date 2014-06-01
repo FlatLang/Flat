@@ -3,6 +3,7 @@
 
 typedef struct Test Test;
 
+#include <gc.h>
 #include <stdlib.h>
 #include <CClass.h>
 #include <ExceptionHandler.h>
@@ -22,6 +23,7 @@ typedef struct Test Test;
 #include "List.h"
 #include "ListNode.h"
 #include "BodyBuilder.h"
+#include "GC.h"
 
 CCLASS_CLASS
 (
@@ -31,5 +33,5 @@ CCLASS_CLASS
 
 Test* nova_Test_Test(ExceptionData* exceptionData);
 void nova_del_Test(Test** this, ExceptionData* exceptionData);
-void nova_Test_main(ExceptionData* exceptionData, String** nova_Test_args_109);
+void nova_Test_main(ExceptionData* exceptionData, String** nova_0_args);
 #endif
