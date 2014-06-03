@@ -16,30 +16,30 @@ public class Test
 		
 		while (c == 'y' || c == 'Y')
 		{
-//			Thread thread  = new Thread(100, "Thread1");
-//			Thread thread2 = new Thread(100, "Thread2");
+			Thread thread  = new Thread(100, "Thread1");
+	//		Thread thread2 = new Thread(100, "Thread2");
 			
 			long start = Time.currentTimeMillis();
 			
-			for (int i = 0; i < 99999999; i++)
+			thread.start();
+			//thread2.start();
+			
+			for (int i = 0; i < 999999; i++)
 			{
-				Math.sin(i);//Integer.toAString(i);
+				Integer.toAString(i);
 			}
 			
 			//IO.println("Free bytes: " + GC.getFreeBytes());
 			
 			//GC.dump();
 			
-//			thread.start();
-//			thread2.start();
-			
-//			thread.join();
-//			thread2.join();
-			
 			long end = Time.currentTimeMillis();
 			
 			IO.printl(end - start);
 			IO.println("");
+			
+//			thread.join();
+			//thread2.join();
 			
 			IO.print("Run again? (Y/N)");
 			

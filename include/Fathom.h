@@ -5,12 +5,14 @@
 #include <stdlib.h>
 #include <stddef.h>
 
+#define GC_THREADS
+
 #ifdef WIN32
-  #define unsigned_long_long unsigned __int64
-  #define long_long __int64
+#	define unsigned_long_long unsigned __int64
+#	define long_long __int64
 #else // gcc. Might not work on other compilers!
-  #define unsigned_long_long unsigned long long
-  #define long_long long long
+#	define unsigned_long_long unsigned long long
+#	define long_long long long
 #endif
 
 extern char* ufgets(FILE* stream);

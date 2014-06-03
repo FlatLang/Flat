@@ -3,17 +3,18 @@
 
 typedef struct Math Math;
 
+#include <Fathom.h>
 #include <gc.h>
 #include <stdlib.h>
 #include <CClass.h>
 #include <ExceptionHandler.h>
-#include <Fathom.h>
 #include "ExceptionData.h"
 #include "Object.h"
 #include "String.h"
 #include "Math.h"
 #include "IO.h"
 #include "Integer.h"
+#include "Long.h"
 #include "DivideByZeroException.h"
 #include <math.h>
 
@@ -34,7 +35,7 @@ double nova_Math_tan(ExceptionData* exceptionData, double nova_0_number);
 double nova_Math_asin(ExceptionData* exceptionData, double nova_0_number);
 double nova_Math_acos(ExceptionData* exceptionData, double nova_0_number);
 double nova_Math_atan(ExceptionData* exceptionData, double nova_0_number);
-long nova_Math_round(ExceptionData* exceptionData, double nova_0_number);
-long nova_Math_floor(ExceptionData* exceptionData, double nova_0_number);
-long nova_Math_ceil(ExceptionData* exceptionData, double nova_0_number);
+long_long nova_Math_round(ExceptionData* exceptionData, double nova_0_number);
+long_long nova_Math_floor(ExceptionData* exceptionData, double nova_0_number);
+long_long nova_Math_ceil(ExceptionData* exceptionData, double nova_0_number);
 #endif

@@ -15,7 +15,7 @@ public class String
 	
 	int calculateLength()
 	{
-		string.strlen(data);
+		return string.strlen(data);
 	}
 	
 	public char[] toCharArray()

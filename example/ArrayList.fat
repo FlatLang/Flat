@@ -33,7 +33,7 @@ public class ArrayList
 		int tmp[] = new int[size];
 		
 		Fathom.arrayCopy(tmp, 0, data, 0, count, size, stdlib.sizeof(int));
-		stdlib.free(data);
+		//stdlib.free(data);
 		
 		data = tmp;
 	}

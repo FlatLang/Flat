@@ -21,8 +21,8 @@ int main()
 	
 	FATHOM_THREAD_HANDLE handle, handle2;
 	
-	lib_fathom_thread_create(&handle, func);
-	lib_fathom_thread_create(&handle2, func);
+	lib_fathom_thread_create(&handle, func, 0);
+	lib_fathom_thread_create(&handle2, func, 0);
 	
 	start = currentTimeMillis();
 	

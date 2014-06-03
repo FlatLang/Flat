@@ -1,15 +1,16 @@
 #include "Math.h"
+#include <Fathom.h>
 #include <gc.h>
 #include <stdlib.h>
 #include <CClass.h>
 #include <ExceptionHandler.h>
-#include <Fathom.h>
 #include "ExceptionData.h"
 #include "Object.h"
 #include "String.h"
 #include "Math.h"
 #include "IO.h"
 #include "Integer.h"
+#include "Long.h"
 #include "DivideByZeroException.h"
 #include <math.h>
 
@@ -81,17 +82,17 @@ double nova_Math_atan(ExceptionData* exceptionData, double nova_0_number)
 	return atan(nova_0_number);
 }
 
-long nova_Math_round(ExceptionData* exceptionData, double nova_0_number)
+long_long nova_Math_round(ExceptionData* exceptionData, double nova_0_number)
 {
 	return nova_Math_floor(exceptionData, nova_0_number + 0.5);
 }
 
-long nova_Math_floor(ExceptionData* exceptionData, double nova_0_number)
+long_long nova_Math_floor(ExceptionData* exceptionData, double nova_0_number)
 {
 	return floor(nova_0_number);
 }
 
-long nova_Math_ceil(ExceptionData* exceptionData, double nova_0_number)
+long_long nova_Math_ceil(ExceptionData* exceptionData, double nova_0_number)
 {
 	return ceil(nova_0_number);
 }

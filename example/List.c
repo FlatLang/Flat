@@ -1,15 +1,16 @@
 #include "List.h"
+#include <Fathom.h>
 #include <gc.h>
 #include <stdlib.h>
 #include <CClass.h>
 #include <ExceptionHandler.h>
-#include <Fathom.h>
 #include "ExceptionData.h"
 #include "Object.h"
 #include "String.h"
 #include "Math.h"
 #include "IO.h"
 #include "Integer.h"
+#include "Long.h"
 #include "DivideByZeroException.h"
 #include "ListNode.h"
 
@@ -55,41 +56,41 @@ ListNode* nova_List_getFirst(List* this, ExceptionData* exceptionData)
 
 void nova_List_add(List* this, ExceptionData* exceptionData, Object* nova_0_data)
 {
-	ListNode* nova_63_node;
+	ListNode* nova_134_node;
 	
-	nova_63_node = nova_ListNode_ListNode(exceptionData, nova_0_data);
+	nova_134_node = nova_ListNode_ListNode(exceptionData, nova_0_data);
 	if (this->prv->nova_List_start == 0)
 	{
-		this->prv->nova_List_start = nova_63_node;
-		this->prv->nova_List_current = nova_63_node;
+		this->prv->nova_List_start = nova_134_node;
+		this->prv->nova_List_current = nova_134_node;
 	}
 	else
 	{
 		ListNode* nova_List_current;
 	}
-	this->prv->nova_List_current = nova_63_node;
+	this->prv->nova_List_current = nova_134_node;
 }
 
 void nova_List_remove(List* this, ExceptionData* exceptionData, Object* nova_0_data)
 {
-	ListNode* nova_68_prev;
-	ListNode* nova_68_cur;
+	ListNode* nova_137_prev;
+	ListNode* nova_137_cur;
 	
 	if (nova_ListNode_getData(this->prv->nova_List_start, exceptionData) == nova_0_data)
 	{
 		this->prv->nova_List_start = nova_ListNode_getNext(this->prv->nova_List_start, exceptionData);
 	}
-	nova_68_prev = this->prv->nova_List_start;
-	nova_68_cur = nova_ListNode_getNext(this->prv->nova_List_start, exceptionData);
-	while (nova_68_cur != 0)
+	nova_137_prev = this->prv->nova_List_start;
+	nova_137_cur = nova_ListNode_getNext(this->prv->nova_List_start, exceptionData);
+	while (nova_137_cur != 0)
 	{
-		Object* nova_268_d;
+		Object* nova_270_d;
 		
-		nova_268_d = nova_ListNode_getData(nova_68_cur, exceptionData);
-		if (nova_268_d == nova_0_data)
+		nova_270_d = nova_ListNode_getData(nova_137_cur, exceptionData);
+		if (nova_270_d == nova_0_data)
 		{
-			nova_ListNode_setNext(nova_68_prev, exceptionData, nova_ListNode_getNext(nova_68_cur, exceptionData));
+			nova_ListNode_setNext(nova_137_prev, exceptionData, nova_ListNode_getNext(nova_137_cur, exceptionData));
 		}
-		nova_68_cur = nova_ListNode_getNext(nova_68_cur, exceptionData);
+		nova_137_cur = nova_ListNode_getNext(nova_137_cur, exceptionData);
 	}
 }

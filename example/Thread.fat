@@ -3,7 +3,7 @@ import "IO";
 
 public class Thread
 {
-	external FATHOM_THREAD_HANDLE	handle;
+	external FATHOM_THREAD_HANDLE*	handle;
 	
 	long	millis;
 	
@@ -27,24 +27,38 @@ public class Thread
 	
 	public void start()
 	{
+		external FATHOM_THREAD_HANDLE* handle;
+		
 		external
 		{
 			DataStruct* data = (DataStruct*)malloc(sizeof(DataStruct));
 			
 			data->instance   = this;
 			
-			lib_fathom_thread_create(&this->prv->handle, lib_fathom_thread_run, (FATHOM_THREAD_FUNC_ARG)data);
+			handle = (FATHOM_THREAD_HANDLE*)malloc(sizeof(FATHOM_THREAD_HANDLE));
+			
+			lib_fathom_thread_create(handle, lib_fathom_thread_run, (FATHOM_THREAD_FUNC_ARG)data);
 		}
+		
+		this.handle = handle;
 	}
 	
 	public void join()
 	{
-		Thread.lib_fathom_thread_join(handle);
+		external FATHOM_THREAD_HANDLE* handle = this.handle;
+		
+		external
+		{
+			lib_fathom_thread_join(*handle);
+		}
 	}
 	
-	public static void sleep(long millis)
+	public static void sleep(external long millis)
 	{
-		Thread.lib_fathom_thread_sleep(millis);
+		external
+		{
+			lib_fathom_thread_sleep(millis);
+		}
 	}
 	
 	public void run()

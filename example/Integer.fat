@@ -32,7 +32,7 @@ public class Integer extends Number
 		
 		char data[]  = new char[digits + 1];
 		
-		data[digits] = '\0';
+		/*data[digits] = '\0';
 		
 		int  offset  = 0;
 		
@@ -54,7 +54,7 @@ public class Integer extends Number
 			value = value / 10;
 		}
 		
-		return new String(data);
+		return new String(data);*/
 	}
 	
 	public String toString()

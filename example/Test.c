@@ -1,15 +1,16 @@
 #include "Test.h"
+#include <Fathom.h>
 #include <gc.h>
 #include <stdlib.h>
 #include <CClass.h>
 #include <ExceptionHandler.h>
-#include <Fathom.h>
 #include "ExceptionData.h"
 #include "Object.h"
 #include "String.h"
 #include "Math.h"
 #include "IO.h"
 #include "Integer.h"
+#include "Long.h"
 #include "DivideByZeroException.h"
 #include "IO.h"
 #include "Time.h"
@@ -46,27 +47,30 @@ void nova_del_Test(Test** this, ExceptionData* exceptionData)
 
 void nova_Test_main(ExceptionData* exceptionData, String** nova_0_args)
 {
-		char nova_198_c;
+		char nova_19_c;
 		
-		nova_198_c = 'y';
-		while (nova_198_c == 'y' || nova_198_c == 'Y')
+		nova_19_c = 'y';
+		while (nova_19_c == 'y' || nova_19_c == 'Y')
 		{
-				long_long nova_253_start;
-				int nova_254_i;
-				long_long nova_253_end;
+				Thread* nova_258_thread;
+				long_long nova_258_start;
+				int nova_259_i;
+				long_long nova_258_end;
 				
-				nova_253_start = nova_Time_currentTimeMillis(exceptionData);
-				nova_254_i = 0;
+				nova_258_thread = nova_Thread_Thread(exceptionData, 100, nova_String_String(exceptionData, "Thread1"));
+				nova_258_start = nova_Time_currentTimeMillis(exceptionData);
+				nova_Thread_start(nova_258_thread, exceptionData);
+				nova_259_i = 0;
 				
-				for (; nova_254_i < 99999999; nova_254_i++)
+				for (; nova_259_i < 999999; nova_259_i++)
 				{
-						nova_Math_sin(exceptionData, nova_254_i);
+						nova_Integer_toAString(exceptionData, nova_259_i);
 				}
-				nova_253_end = nova_Time_currentTimeMillis(exceptionData);
-				nova_IO_printl(exceptionData, nova_253_end - nova_253_start);
+				nova_258_end = nova_Time_currentTimeMillis(exceptionData);
+				nova_IO_printl(exceptionData, nova_258_end - nova_258_start);
 				nova_IO_println(exceptionData, nova_String_String(exceptionData, ""));
 				nova_IO_print(exceptionData, nova_String_String(exceptionData, "Run again? (Y/N)"));
-				nova_198_c = nova_IO_getChar(exceptionData);
+				nova_19_c = nova_IO_getChar(exceptionData);
 		}
 		nova_IO_println(exceptionData, nova_String_String(exceptionData, "\nFinished"));
 		nova_IO_waitForEnter(exceptionData);
@@ -107,7 +111,7 @@ int main(int argc, char** argvs)
 				
 		}
 		END_TRY;
-		args = NULL;
+		free(args);
 		GC_gcollect();
 		
 		return 0;

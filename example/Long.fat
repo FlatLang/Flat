@@ -1,4 +1,73 @@
 public class Long extends Number
 {
+	visible long value;
 	
+	public Long(long value)
+	{
+		this.value = value;
+	}
+	
+	public static int numDigits(long number)
+	{
+		if (number < 0)
+		{
+			return numDigits(-number) + 1;
+		}
+		
+		int size;
+		
+		//IO.print("Before: ");
+		//IO.printl(number);
+		//IO.println("");
+		
+		number = number / 10;
+			
+		for (size = 1; number > 0; size++)
+		{
+			//IO.print("Now: ");
+			//IO.printl(number);
+			//IO.println("");
+			number = number / 10;
+		}
+		
+		IO.println("");
+		
+		return size;
+	}
+	
+	public static String toAString(long value)
+	{
+		int  digits  = numDigits(value);
+		
+		char data[]  = new char[digits + 1];
+		
+		data[digits] = '\0';
+		
+		int  offset  = 0;
+		
+		if (value < 0)
+		{
+			data[0] = '-';
+			
+			value  = -value;
+			
+			offset = 1;
+		}
+		
+		int nums = digits-- - offset;
+		
+		for (int index = 0; index < nums; index++)
+		{
+			data[digits - index] = '0' + value % 10;
+			
+			value = value / 10;
+		}
+		
+		return new String(data);
+	}
+	
+	public String toString()
+	{
+		return toAString(value);
+	}
 }

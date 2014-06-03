@@ -11,8 +11,11 @@
 
 #define USE_GC
 
-#if defined(GC_MALLOC)
-#	ifndef USE_GC
+#ifdef GC_MALLOC
+#	ifdef USE_GC
+#		define free GC_FREE
+#		define malloc GC_MALLOC
+#	else
 #		undef GC_MALLOC
 #		define GC_MALLOC malloc
 #	endif
@@ -40,7 +43,7 @@
 
 #define CCLASS_DEL(_OBJ_) CCLASS_DELETE(_OBJ_->prv); CCLASS_DELETE(_OBJ_)
 
-#define CCLASS_DELETE(_OBJ_) free(_OBJ_)
+#define CCLASS_DELETE(_OBJ_) _OBJ_ = NULL//free(_OBJ_)
 
 #define CCLASS_FUNC(_TYPE_, _NAME_, ...) _TYPE_ (*_NAME_)(__VA_ARGS__)
 

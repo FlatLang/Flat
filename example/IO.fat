@@ -23,7 +23,7 @@ public class IO
 	
 	public static void printl(long j)
 	{
-		stdio.printf("%llu", j);
+		stdio.printf("%lld", j);
 	}
 	
 	public static int getInt()

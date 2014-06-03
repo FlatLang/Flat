@@ -2,6 +2,7 @@
 #define LIB_FATHOM_THREAD
 
 #include <stdlib.h>
+#include <gc.h>
 
 #if defined(_WIN32)
 	#include <windows.h>

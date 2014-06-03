@@ -1,15 +1,16 @@
 #include "GC.h"
+#include <Fathom.h>
 #include <gc.h>
 #include <stdlib.h>
 #include <CClass.h>
 #include <ExceptionHandler.h>
-#include <Fathom.h>
 #include "ExceptionData.h"
 #include "Object.h"
 #include "String.h"
 #include "Math.h"
 #include "IO.h"
 #include "Integer.h"
+#include "Long.h"
 #include "DivideByZeroException.h"
 #include <gc.h>
 
@@ -43,22 +44,22 @@ void nova_GC_init(ExceptionData* exceptionData)
 	nova_GC_setFreeSpaceDivisor(exceptionData, 1);
 }
 
-int nova_GC_getFreeBytes(ExceptionData* exceptionData)
+long_long nova_GC_getFreeBytes(ExceptionData* exceptionData)
 {
 	return GC_get_free_bytes();
 }
 
-int nova_GC_getTotalBytes(ExceptionData* exceptionData)
+long_long nova_GC_getTotalBytes(ExceptionData* exceptionData)
 {
 	return GC_get_total_bytes();
 }
 
-int nova_GC_getHeapSize(ExceptionData* exceptionData)
+long_long nova_GC_getHeapSize(ExceptionData* exceptionData)
 {
 	return GC_get_heap_size();
 }
 
-int nova_GC_getBytesSinceGC(ExceptionData* exceptionData)
+long_long nova_GC_getBytesSinceGC(ExceptionData* exceptionData)
 {
 	return GC_get_bytes_since_gc();
 }

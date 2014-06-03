@@ -1,15 +1,16 @@
 #include "ArrayList.h"
+#include <Fathom.h>
 #include <gc.h>
 #include <stdlib.h>
 #include <CClass.h>
 #include <ExceptionHandler.h>
-#include <Fathom.h>
 #include "ExceptionData.h"
 #include "Object.h"
 #include "String.h"
 #include "Math.h"
 #include "IO.h"
 #include "Integer.h"
+#include "Long.h"
 #include "DivideByZeroException.h"
 #include <stdlib.h>
 #include <Fathom.h>
@@ -66,13 +67,12 @@ void nova_ArrayList_add(ArrayList* this, ExceptionData* exceptionData, int nova_
 
 void nova_ArrayList_increaseSize(ArrayList* this, ExceptionData* exceptionData)
 {
-	int* nova_186_tmp;
+	int* nova_75_tmp;
 	
 	this->prv->nova_ArrayList_size = this->prv->nova_ArrayList_size + 3;
-	nova_186_tmp = (int*)GC_MALLOC(sizeof(int) * (this->prv->nova_ArrayList_size));
-	arrayCopy(nova_186_tmp, 0, this->prv->nova_ArrayList_data, 0, this->prv->nova_ArrayList_count, this->prv->nova_ArrayList_size, sizeof(int));
-	free(this->prv->nova_ArrayList_data);
-	this->prv->nova_ArrayList_data = nova_186_tmp;
+	nova_75_tmp = (int*)malloc(sizeof(int) * (this->prv->nova_ArrayList_size));
+	arrayCopy(nova_75_tmp, 0, this->prv->nova_ArrayList_data, 0, this->prv->nova_ArrayList_count, this->prv->nova_ArrayList_size, sizeof(int));
+	this->prv->nova_ArrayList_data = nova_75_tmp;
 }
 
 int nova_ArrayList_getSize(ArrayList* this, ExceptionData* exceptionData)

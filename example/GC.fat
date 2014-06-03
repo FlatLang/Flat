@@ -11,22 +11,27 @@ public class GC
 		setFreeSpaceDivisor(1);
 	}
 	
-	public static int getFreeBytes()
+	public static long getFreeBytes()
 	{
+		/*external
+		{
+			return (long long)GC_get_free_bytes();
+		}*/
+		
 		return gc.GC_get_free_bytes();
 	}
 	
-	public static int getTotalBytes()
+	public static long getTotalBytes()
 	{
 		return gc.GC_get_total_bytes();
 	}
 	
-	public static int getHeapSize()
+	public static long getHeapSize()
 	{
 		return gc.GC_get_heap_size();
 	}
 	
-	public static int getBytesSinceGC()
+	public static long getBytesSinceGC()
 	{
 		return gc.GC_get_bytes_since_gc();
 	}
