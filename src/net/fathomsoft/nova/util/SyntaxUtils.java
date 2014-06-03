@@ -959,13 +959,21 @@ public class SyntaxUtils
 			ValueNode value    = (ValueNode)primitive;
 			ValueNode returned = value.getReturnedNode();
 			
-			if (returned.getType().equals("int"))
+			String    type     = returned.getType();
+			
+			if (type.equals("int"))
 			{
 				String instantiation = "new Integer(" + value.generateNovaInput(true) + ")";
 				
 				node = InstantiationNode.decodeStatement(parent, instantiation, primitive.getLocationIn(), true);
 				
 //				node.inheritChildren(value);
+			}
+			if (type.equals("long"))
+			{
+				String instantiation = "new Long(" + value.generateNovaInput(true) + ")";
+				
+				node = InstantiationNode.decodeStatement(parent, instantiation, primitive.getLocationIn(), true);
 			}
 		}
 		
