@@ -443,8 +443,8 @@ public class Nova
 			mainMethodText.append	('}').append('\n');
 			mainMethodText.append	("END_TRY;").append('\n');
 //			mainMethodText.append	(staticClassFree);
-//			mainMethodText.append	("free(args);").append('\n');
-			mainMethodText.append	("args = NULL;").append('\n');
+			mainMethodText.append	("free(args);").append('\n');
+//			mainMethodText.append	("args = NULL;").append('\n');
 			mainMethodText.append	("GC_gcollect();").append('\n');
 			mainMethodText.append	('\n');
 			mainMethodText.append	("return 0;").append('\n');
@@ -492,7 +492,7 @@ public class Nova
 		
 		String libDir = getLibraryDir();
 		
-		cmd.append("-L").append(libDir).append(" -lFathom -lThread -lhoard -lgc ");
+		cmd.append("-L").append(libDir).append(" -lFathom -lThread -lgc ");
 		
 		for (File sourceFile : cSourceFiles)
 		{
