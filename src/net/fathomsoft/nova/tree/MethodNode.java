@@ -439,7 +439,7 @@ public class MethodNode extends InstanceDeclarationNode
 			builder.append(getConstantText()).append(' ');
 		}
 		
-		builder.append(getType());
+		builder.append(generateCTypeOutput());
 		
 		if (isReference())
 		{
