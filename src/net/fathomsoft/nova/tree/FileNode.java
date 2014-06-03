@@ -32,17 +32,18 @@ public class FileNode extends IdentifierNode
 	{
 		DEFAULT_IMPORTS = new String[]
 		{
+			"Fathom.h",
 			"gc.h",
 			"stdlib.h",
 			"CClass.h",
 			"ExceptionHandler.h",
-			"Fathom.h",
 			"ExceptionData",
 			"Object",
 			"String",
 			"Math",
 			"IO",
 			"Integer",
+			"Long",
 			"DivideByZeroException"
 		};
 	}
