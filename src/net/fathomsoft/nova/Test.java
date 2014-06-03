@@ -24,7 +24,7 @@ public class Test
 //			array[i] = Integer.toString(i);
 //		}
 		
-		for (int i = 0; i < 999999/8; i++)
+		for (int i = 0; i < 999999; i++)
 		{
 			Integer.toString(i);
 		}
