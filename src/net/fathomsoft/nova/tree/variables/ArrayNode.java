@@ -66,7 +66,7 @@ public class ArrayNode extends VariableNode
 		
 		builder.append(')');
 		
-		builder.append("GC_MALLOC(sizeof(").append(getName()).append(')').append(" * (");
+		builder.append("malloc(sizeof(").append(getName()).append(')').append(" * (");
 		
 		for (int i = 0; i < getChildren().size(); i++)
 		{
