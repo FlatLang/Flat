@@ -85,6 +85,8 @@ public class DestructorNode extends MethodNode
 		
 		builder.append("free(").append('*').append(MethodNode.getObjectReferenceIdentifier()).append(");").append('\n');
 		
+		//builder.append('*').append(MethodNode.getObjectReferenceIdentifier()).append(" = NULL;").append('\n');
+		
 		builder.append('}').append('\n');
 		
 		return builder.toString();
@@ -183,6 +185,8 @@ public class DestructorNode extends MethodNode
 		StringBuilder builder = new StringBuilder();
 		
 		builder.append("free((*").append(MethodNode.getObjectReferenceIdentifier()).append(")->").append(name).append(");");
+		
+		//builder.append("(*").append(MethodNode.getObjectReferenceIdentifier()).append(")->").append(name).append(" = NULL;");
 		
 		return builder.toString();
 	}
