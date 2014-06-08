@@ -1,0 +1,41 @@
+import "string.h";
+
+public class String
+{
+	visible int	length;
+	
+	char		data[];
+	
+	external void strcpy(char dst[], char src[]);
+	external void strcat(char dst[], char src[]);
+	external void strlen(char data[]);
+	
+	public String(char data[])
+	{
+		this.data = data;
+		
+		length    = calculateLength();
+	}
+	
+	int calculateLength()
+	{
+		return strlen(data);
+	}
+	
+	public char[] toCharArray()
+	{
+		return data;
+	}
+	
+	public String concat(String str)
+	{
+		char newData[] = new char[str.length + length + 1];
+		
+		strcpy(newData, data);
+		strcat(newData, str.toCharArray());
+		
+		String newStr = new String(newData);
+		
+		return newStr;
+	}
+}

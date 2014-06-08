@@ -1,0 +1,51 @@
+import "stdlib.h";
+import "Fathom.h";
+
+public class ArrayList
+{
+	external void arrayCopy(void* dest, int dIndex, void* src, int sIndex, int len, int destArrLen, int size);
+	
+	int	count;
+	int	size;
+	
+	int data[];
+	
+	public ArrayList()
+	{
+		size = 0;
+		increaseSize();
+	}
+	
+	public void add(int var)
+	{
+		if (count + 1 >= size)
+		{
+			increaseSize();
+		}
+		
+		data[count] = var;
+		
+		count = count + 1;
+	}
+	
+	public void increaseSize()
+	{
+		size = size + 3;
+		
+		int tmp[] = new int[size];
+		
+		arrayCopy(tmp, 0, data, 0, count, size, 4);
+		
+		data = tmp;
+	}
+	
+	public int getSize()
+	{
+		return count;
+	}
+	
+	public int get(int index)
+	{
+		return data[index];
+	}
+}

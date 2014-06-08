@@ -1,0 +1,101 @@
+import "Thread.h";
+import "IO";
+import "GC";
+
+public class Thread
+{
+	external type FATHOM_THREAD_HANDLE;
+	
+	external void lib_fathom_thread_sleep(long millis);
+	external void lib_fathom_thread_join(FATHOM_THREAD_HANDLE* handle);
+	external void create_thread(Thread thread, FATHOM_THREAD_HANDLE* handle);
+	
+	FATHOM_THREAD_HANDLE*	handle;
+	
+	long	millis;
+	
+	String	word;
+	
+	external
+	{
+		typedef struct DataStruct DataStruct;
+		
+		struct DataStruct
+		{
+			Thread* instance;
+		};
+	}
+	
+	public Thread(long millis, String word)
+	{
+		this.millis = millis;
+		this.word   = word;
+	}
+	
+	public void start()
+	{
+		create_thread(this, handle);
+	}
+	
+	public void join()
+	{
+		lib_fathom_thread_join(*handle);
+	}
+	
+	public static void sleep(long millis)
+	{
+		lib_fathom_thread_sleep(millis);
+	}
+	
+	public void run()
+	{
+		for (int i = 0; i < 10; i++)
+		{
+			IO.println(word);
+			
+			sleep(millis);
+		}
+	}
+	
+	void startRun()
+	{
+		GC.init();
+		
+		try
+		{
+			run();
+		}
+		catch (Exception e)
+		{
+			IO.println("An error has occurred...");
+		}
+	}
+	
+	external
+	{
+		FATHOM_THREAD_FUNC lib_fathom_thread_run(FATHOM_THREAD_FUNC_ARG arg)
+		{
+			DataStruct* data = (DataStruct*)arg;
+			
+			Thread* this = data->instance;
+			ExceptionData* exceptionData = 0;
+			
+			nova_Thread_startRun(this, exceptionData);
+			
+			free(data);
+			
+			return 0;
+		}
+		
+		FATHOM_THREAD_HANDLE create_thread(Thread* this, FATHOM_THREAD_HANDLE* handle)
+		{
+			DataStruct* data = (DataStruct*)malloc(sizeof(DataStruct));
+			
+			data->instance   = this;
+			
+			handle = (FATHOM_THREAD_HANDLE*)malloc(sizeof(FATHOM_THREAD_HANDLE));
+			
+			lib_fathom_thread_create(handle, lib_fathom_thread_run, (FATHOM_THREAD_FUNC_ARG)data);
+		}
+	}
+}

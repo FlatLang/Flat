@@ -1,0 +1,83 @@
+import "stdio.h";
+import "stdlib.h";
+import "String";
+
+public class IO
+{
+	external type FILE;
+	
+	external FILE* stdin;
+	external FILE* stdout;
+	external int   SEEK_END;
+	
+	external void fgets(char buf[], int size, FILE* stream);
+	external void fseek(FILE* stream, int offset, int origin);
+	external void printf(char str[], int num);
+	external void fputs(char str[], FILE* stream);
+	external char getchar();
+	external int atoi(char array[]);
+	external char[] ufgets(FILE* stream);
+	
+	public static void println(String text)
+	{
+		IO.print(text + "\n");
+	}
+	
+	public static void print(String text)
+	{
+		constant char cText[] = text.toCharArray();
+		
+		fputs(cText, stdout);
+	}
+	
+	public static void printi(int j)
+	{
+		printf("%d", j);
+	}
+	
+	public static void printl(long j)
+	{
+		printf("%lld", j);
+	}
+	
+	public static int getInt()
+	{
+		String s   = getLine();
+		
+		int    num = atoi(s.toCharArray());
+		
+		return num;
+	}
+	
+	public static char getChar()
+	{
+		char c = getchar();
+		
+		flush();
+		
+		return c;
+	}
+	
+	static void flush()
+	{
+		fseek(stdin, 0, SEEK_END);
+	}
+	
+	public static String getLine()
+	{
+		char line[] = ufgets(stdin);
+		
+		String s = new String(line);
+		
+		return s;
+	}
+	
+	public static void waitForEnter()
+	{
+		flush();
+	
+		char c[] = new char[2];
+		
+		fgets(c, 2, stdin);
+	}
+}

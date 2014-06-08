@@ -14,6 +14,7 @@
 #include "DivideByZeroException.h"
 #include "IO.h"
 
+
 BodyBuilder* nova_BodyBuilder_BodyBuilder(ExceptionData* exceptionData, int nova_0_weightClass, String* nova_0_name)
 {
 	CCLASS_NEW(BodyBuilder, this,);

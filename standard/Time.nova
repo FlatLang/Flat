@@ -1,0 +1,9 @@
+public class Time
+{
+	external long currentTimeMillis();
+	
+	public static long currentTimeMillis()
+	{
+		return currentTimeMillis();
+	}
+}

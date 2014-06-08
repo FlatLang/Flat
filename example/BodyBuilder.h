@@ -27,8 +27,8 @@ CCLASS_CLASS
 	int nova_BodyBuilder_weightClass;
 )
 
-
 BodyBuilder* nova_BodyBuilder_BodyBuilder(ExceptionData* exceptionData, int nova_0_weightClass, String* nova_0_name);
 void nova_del_BodyBuilder(BodyBuilder** this, ExceptionData* exceptionData);
 void nova_BodyBuilder_sayHello(BodyBuilder* this, ExceptionData* exceptionData);
+
 #endif

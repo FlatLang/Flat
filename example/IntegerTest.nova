@@ -1,0 +1,52 @@
+import "IO";
+import "Time";
+import "Thread";
+import "Person";
+import "stdio.h";
+import "List";
+import "ListNode";
+import "BodyBuilder";
+import "GC";
+
+public class Test
+{
+	public static void main(String args[])
+	{
+		char c = 'y';
+		
+		while (c == 'y' || c == 'Y')
+		{
+			//Thread thread  = new Thread(100, "Thread1");
+	//		Thread thread2 = new Thread(100, "Thread2");
+			
+			long start = Time.currentTimeMillis();
+			
+			//thread.start();
+			//thread2.start();
+			
+			for (int i = 0; i < 999999; i++)
+			{
+				Integer.toAString(i);
+			}
+			
+			//IO.println("Free bytes: " + GC.getFreeBytes());
+			
+			//GC.dump();
+			
+			long end = Time.currentTimeMillis();
+			
+			IO.printl(end - start);
+			IO.println("");
+			
+//			thread.join();
+			//thread2.join();
+			
+			IO.print("Run again? (Y/N)");
+			
+			c = IO.getChar();
+		}
+		
+		IO.println("\nFinished");
+		IO.waitForEnter();
+	}
+}

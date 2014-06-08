@@ -19,7 +19,9 @@ CCLASS_PRIVATE
 	char* nova_String_data;
 	
 )
+
 int nova_String_calculateLength(String* this, ExceptionData* exceptionData);
+
 
 String* nova_String_String(ExceptionData* exceptionData, char* nova_0_data)
 {
@@ -62,12 +64,12 @@ char* nova_String_toCharArray(String* this, ExceptionData* exceptionData)
 
 String* nova_String_concat(String* this, ExceptionData* exceptionData, String* nova_0_str)
 {
-	char* nova_170_newData;
-	String* nova_170_newStr;
+	char* nova_222_newData;
+	String* nova_222_newStr;
 	
-	nova_170_newData = (char*)malloc(sizeof(char) * (nova_0_str->nova_String_length + this->nova_String_length + 1));
-	strcpy(nova_170_newData, this->prv->nova_String_data);
-	strcat(nova_170_newData, nova_String_toCharArray(nova_0_str, exceptionData));
-	nova_170_newStr = nova_String_String(exceptionData, nova_170_newData);
-	return nova_170_newStr;
+	nova_222_newData = (char*)malloc(sizeof(char) * (nova_0_str->nova_String_length + this->nova_String_length + 1));
+	strcpy(nova_222_newData, this->prv->nova_String_data);
+	strcat(nova_222_newData, nova_String_toCharArray(nova_0_str, exceptionData));
+	nova_222_newStr = nova_String_String(exceptionData, nova_222_newData);
+	return nova_222_newStr;
 }

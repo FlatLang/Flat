@@ -13,7 +13,6 @@
 #include "Long.h"
 #include "DivideByZeroException.h"
 
-
 Person* nova_Person_Person(ExceptionData* exceptionData, String* nova_0_name, int nova_0_age)
 {
 	CCLASS_NEW(Person, this,);
