@@ -10,7 +10,7 @@
 #ifdef WIN32
 #	define unsigned_long_long unsigned __int64
 #	define long_long __int64
-#else // gcc. Might not work on other compilers!
+#else
 #	define unsigned_long_long unsigned long long
 #	define long_long long long
 #endif
