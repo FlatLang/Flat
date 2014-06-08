@@ -68,7 +68,7 @@ public class MethodListNode extends TreeNode
 	 */
 	public MethodNode getMethod(String methodName)
 	{
-		for (int i = 0; i < getChildren().size(); i++)
+		for (int i = 0; i < getNumChildren(); i++)
 		{
 			MethodNode method = (MethodNode)getChild(i);
 			
@@ -111,7 +111,7 @@ public class MethodListNode extends TreeNode
 	 */
 	public void validate()
 	{
-		for (int i = 0; i < getChildren().size(); i++)
+		for (int i = 0; i < getNumChildren(); i++)
 		{
 			MethodNode method = (MethodNode)getChild(i);
 			
@@ -130,7 +130,7 @@ public class MethodListNode extends TreeNode
 	{
 		StringBuilder builder = new StringBuilder();
 		
-		for (int i = 0; i < getChildren().size(); i++)
+		for (int i = 0; i < getNumChildren(); i++)
 		{
 			if (i > 0)
 			{
@@ -151,9 +151,14 @@ public class MethodListNode extends TreeNode
 	{
 		StringBuilder builder = new StringBuilder();
 		
-		for (int i = 0; i < getChildren().size(); i++)
+		for (int i = 0; i < getNumChildren(); i++)
 		{
-			builder.append(getChild(i).generateCHeader());
+			MethodNode method = (MethodNode)getChild(i);
+			
+			if (!method.isExternal())
+			{
+				builder.append(method.generateCHeader());
+			}
 		}
 		
 		return builder.toString();
@@ -167,31 +172,31 @@ public class MethodListNode extends TreeNode
 	{
 		StringBuilder builder = new StringBuilder();
 		
-		if (getChildren().size() > 0)
+		if (getNumChildren() > 0)
 		{
 			builder.append('\n');
 		}
 		
-		for (int i = 0; i < getChildren().size(); i++)
+		boolean printed = false;
+		
+		for (int i = 0; i < getNumChildren(); i++)
 		{
-			if (i > 0)
-			{
-				builder.append('\n');
-			}
+			MethodNode method = (MethodNode)getChild(i);
 			
-			builder.append(getChild(i).generateCSource());
+			if (!method.isExternal())
+			{
+				if (printed)
+				{
+					builder.append('\n');
+				}
+				
+				builder.append(method.generateCSource());
+				
+				printed = true;
+			}
 		}
 		
 		return builder.toString();
-	}
-	
-	/**
-	 * @see net.fathomsoft.nova.tree.TreeNode#generateCSourceFragment()
-	 */
-	@Override
-	public String generateCSourceFragment()
-	{
-		return null;
 	}
 	
 	/**
@@ -206,7 +211,7 @@ public class MethodListNode extends TreeNode
 	{
 		StringBuilder builder = new StringBuilder();
 			
-		for (int i = 0; i < getChildren().size(); i++)
+		for (int i = 0; i < getNumChildren(); i++)
 		{
 			MethodNode child = (MethodNode)getChild(i);
 			

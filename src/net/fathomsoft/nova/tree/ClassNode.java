@@ -38,15 +38,19 @@ public class ClassNode extends InstanceDeclarationNode
 		
 		setType("class");
 		
-		FieldListNode  fields       = new FieldListNode(this, null);
-		MethodListNode constructors = new MethodListNode(this, null);
-		MethodListNode destructors  = new MethodListNode(this, null);
-		MethodListNode methods      = new MethodListNode(this, null);
+		FieldListNode        fields         = new FieldListNode(this, null);
+		MethodListNode       constructors   = new MethodListNode(this, null);
+		MethodListNode       destructors    = new MethodListNode(this, null);
+		MethodListNode       methods        = new MethodListNode(this, null);
+		ExternalTypeNodeList externalTypes  = new ExternalTypeNodeList(this, null);
+		FieldListNode        externalFields = new FieldListNode(this, null);
 		
 		super.addChild(fields);
 		super.addChild(constructors);
 		super.addChild(destructors);
 		super.addChild(methods);
+		super.addChild(externalTypes);
+		super.addChild(externalFields);
 	}
 	
 	/**
@@ -94,6 +98,28 @@ public class ClassNode extends InstanceDeclarationNode
 	}
 	
 	/**
+	 * Get the ExternalTypeNodeList instance that contains the list of
+	 * external types that this class node contains.
+	 * 
+	 * @return The ExternalTypeNodeList for this class node.
+	 */
+	public ExternalTypeNodeList getExternalTypeListNode()
+	{
+		return (ExternalTypeNodeList)getChild(4);
+	}
+	
+	/**
+	 * Get the FieldListNode instance that contains the list of external
+	 * fields that this class node contains.
+	 * 
+	 * @return The external FieldListNode for this class node.
+	 */
+	public FieldListNode getExternalFieldsListNode()
+	{
+		return (FieldListNode)getChild(5);
+	}
+	
+	/**
 	 * Get the VTableNode instance that contains the list of pointers
 	 * to the virtual methods of a class, if any virtual methods, or
 	 * any methods of the class are overridden..
@@ -102,7 +128,7 @@ public class ClassNode extends InstanceDeclarationNode
 	 */
 	public VTableNode getVTableNode()
 	{
-		return (VTableNode)getChild(4);
+		return (VTableNode)getChild(6);
 	}
 	
 	/**
@@ -239,6 +265,52 @@ public class ClassNode extends InstanceDeclarationNode
 	}
 	
 	/**
+	 * Get whether or not the ClassNode contains an ExternalTypeNode with
+	 * the specified type name.<br>
+	 * <br>
+	 * For example:
+	 * <blockquote><pre>
+	 * public class ClassName
+	 * {
+	 * 	external type FILE;
+	 * }</pre></blockquote>
+	 * <br>
+	 * A call like: "<code>getType("FILE")</code>" would
+	 * return the ExternalTypeNode for the "<code>FILE</code>" external
+	 * type.
+	 * 
+	 * @param typeName The name of the external type to search for.
+	 * @return Whether or not the ClassNode contains the MethodNode with
+	 * 		the specified name.
+	 */
+	public boolean containsExternalType(String typeName)
+	{
+		return getExternalTypeListNode().containsType(typeName);
+	}
+	
+	/**
+	 * Get the ClassNode's ExternalTypeNode with the specified type.<br>
+	 * <br>
+	 * For example:
+	 * <blockquote><pre>
+	 * public class ClassName
+	 * {
+	 * 	external type FILE;
+	 * }</pre></blockquote>
+	 * <br>
+	 * A call like: "<code>getType("FILE")</code>" would
+	 * return the ExternalTypeNode for the "<code>FILE</code>" external
+	 * type.
+	 * 
+	 * @param typeName The name of the external type to search for.
+	 * @return The ExternalTypeNode for the external type, if it exists.
+	 */
+	public ExternalTypeNode getExternalType(String typeName)
+	{
+		return getExternalTypeListNode().getType(typeName);
+	}
+	
+	/**
 	 * Get whether or not the ClassNode contains the FieldNode with the
 	 * specified name.<br>
 	 * <br>
@@ -288,7 +360,14 @@ public class ClassNode extends InstanceDeclarationNode
 	{
 		FieldListNode fields = getFieldListNode();
 		
-		FieldNode field = fields.getField(fieldName);
+		FieldNode     field  = fields.getField(fieldName);
+		
+		if (field == null)
+		{
+			fields = getExternalFieldsListNode();
+			
+			field  = fields.getField(fieldName);
+		}
 		
 		if (field == null && getExtendedClassName() != null)
 		{
@@ -474,15 +553,26 @@ public class ClassNode extends InstanceDeclarationNode
 		{
 			super.addChild(child);
 		}
+		else if (child instanceof ExternalTypeNode)
+		{
+			getExternalTypeListNode().addChild(child);
+		}
 		else if (child instanceof FieldNode)
 		{
-			getFieldListNode().addChild(child);
+			FieldNode field = (FieldNode)child;
+			
+			if (field.isExternal())
+			{
+				getExternalFieldsListNode().addChild(field);
+			}
+			else
+			{
+				getFieldListNode().addChild(field);
+			}
 		}
 		else
 		{
 			SyntaxMessage.error("Unexpected statement within class " + getName(), child);
-			
-			//super.addChild(child);
 		}
 	}
 	
@@ -515,7 +605,7 @@ public class ClassNode extends InstanceDeclarationNode
 	{
 		StaticFieldListNode staticPrivateFields = getFieldListNode().getPrivateStaticFieldListNode();
 		
-		if (staticPrivateFields.getChildren().size() > 0)
+		if (staticPrivateFields.getNumChildren() > 0)
 		{
 			return true;
 		}
@@ -539,7 +629,7 @@ public class ClassNode extends InstanceDeclarationNode
 //	{
 //		PublicFieldListNode staticFields = getFieldListNode().getPublicStaticFieldListNode();
 //		
-//		return staticFields.getChildren().size() > 0 || containsStaticPrivateData();
+//		return staticFields.getNumChildren() > 0 || containsStaticPrivateData();
 //	}
 	
 	/**
@@ -552,7 +642,7 @@ public class ClassNode extends InstanceDeclarationNode
 	{
 		InstanceFieldListNode privateFields = getFieldListNode().getPrivateFieldListNode();
 		
-		if (privateFields.getChildren().size() > 0)
+		if (privateFields.getNumChildren() > 0)
 		{
 			return true;
 		}
@@ -576,7 +666,7 @@ public class ClassNode extends InstanceDeclarationNode
 	{
 		InstanceFieldListNode fields = getFieldListNode().getPublicFieldListNode();
 		
-		if (fields.getChildren().size() > 0 || containsNonStaticPrivateData())
+		if (fields.getNumChildren() > 0 || containsNonStaticPrivateData())
 		{
 			return true;
 		}
@@ -647,7 +737,7 @@ public class ClassNode extends InstanceDeclarationNode
 		
 		builder.append('\n').append('{').append('\n');
 		
-		for (int i = 0; i < getChildren().size(); i++)
+		for (int i = 0; i < getNumChildren(); i++)
 		{
 			builder.append(getChild(i).generateJavaSource());
 		}
@@ -664,10 +754,6 @@ public class ClassNode extends InstanceDeclarationNode
 	public String generateCHeader()
 	{
 		StringBuilder builder = new StringBuilder();
-		
-		// TODO: make use of the modifiers for the c implementation.
-		builder.append('\n');
-		builder.append("CCLASS_CLASS");
 		
 		if (isStatic())
 		{
@@ -687,31 +773,34 @@ public class ClassNode extends InstanceDeclarationNode
 			SyntaxMessage.error("A class cannot be of a pointer type", this);
 		}
 		
-		builder.append('\n').append('(').append('\n');
-		
-		builder.append(getName());
-		
 		FieldListNode fields = getFieldListNode();
-			
+		
 		if (containsNonStaticData())
 		{
-			builder.append(", ");
-		
-			builder.append('\n').append('\n');
+			builder.append('\n').append("CCLASS_CLASS").append('\n').append('(').append('\n');
 			
-			builder.append(fields.generateNonStaticCHeader());
+			builder.append(getName());
 			
-			if (containsNonStaticPrivateData())
-			{
-				builder.append("struct Private* prv;").append('\n');
-			}
+//			if (containsNonStaticData())
+//			{
+				builder.append(", ");
+			
+				builder.append('\n').append('\n');
+				
+				builder.append(fields.generateNonStaticCHeader());
+				
+				if (containsNonStaticPrivateData())
+				{
+					builder.append("struct Private* prv;").append('\n');
+				}
+//			}
+//			else
+//			{
+//				builder.append('\n');
+//			}
+			
+			builder.append(')').append('\n');
 		}
-		else
-		{
-			builder.append('\n');
-		}
-		
-		builder.append(')').append('\n').append('\n');
 		
 		builder.append(fields.generateStaticCHeader()).append('\n');
 		
@@ -762,14 +851,15 @@ public class ClassNode extends InstanceDeclarationNode
 			builder.append(')').append('\n');
 		}
 		
-		for (int i = 4; i < getChildren().size(); i++)
+		builder.append(generatePrivateMethodPrototypes());
+		
+		for (int i = 5; i < getNumChildren(); i++)
 		{
 			TreeNode child = getChild(i);
 			
 			builder.append('\n').append(child.generateCSource());
 		}
 		
-		builder.append(generatePrivateMethodPrototypes());
 		builder.append(fields.generateCSource());
 		
 		builder.append(getConstructorListNode().generateCSource());
@@ -795,10 +885,12 @@ public class ClassNode extends InstanceDeclarationNode
 	 * 		if possible.
 	 * @param location The location of the statement in the source code.
 	 * @param require Whether or not to throw an error if anything goes wrong.
+	 * @param scope Whether or not the given statement is the beginning of
+	 * 		a scope.
 	 * @return The generated node, if it was possible to translated it
 	 * 		into a ClassNode.
 	 */
-	public static ClassNode decodeStatement(TreeNode parent, String statement, Location location, boolean require)
+	public static ClassNode decodeStatement(TreeNode parent, String statement, Location location, boolean require, boolean scope)
 	{
 		// If contains 'class' in the statement.
 		if (Regex.indexOf(statement, Patterns.PRE_CLASS) >= 0)
@@ -883,7 +975,7 @@ public class ClassNode extends InstanceDeclarationNode
 		
 		MethodListNode methods = getMethodListNode();
 		
-		for (int i = 0; i < methods.getChildren().size(); i++)
+		for (int i = 0; i < methods.getNumChildren(); i++)
 		{
 			MethodNode method = (MethodNode)methods.getChild(i);
 			
@@ -891,6 +983,11 @@ public class ClassNode extends InstanceDeclarationNode
 			{
 				builder.append(method.generateCSourcePrototype()).append('\n');
 			}
+		}
+		
+		if (builder.length() > 0)
+		{
+			builder.insert(0, '\n');
 		}
 		
 		return builder.toString();
@@ -983,7 +1080,7 @@ public class ClassNode extends InstanceDeclarationNode
 		
 //		FieldListNode fields = clazz.getFieldListNode().clone();
 //		
-//		for (int i = 0; i < fields.getChildren().size(); i++)
+//		for (int i = 0; i < fields.getNumChildren(); i++)
 //		{
 //			addChild(fields.getChild(i));
 //		}
@@ -1024,7 +1121,7 @@ public class ClassNode extends InstanceDeclarationNode
 	 */
 	public IdentifierNode getAccessedNode()
 	{
-		if (getChildren().size() <= 4)
+		if (getNumChildren() <= 4)
 		{
 			return null;
 		}
@@ -1042,7 +1139,7 @@ public class ClassNode extends InstanceDeclarationNode
 	 */
 	public boolean containsStaticData(TreeNode root)
 	{
-		for (int i = 0; i < root.getChildren().size(); i++)
+		for (int i = 0; i < root.getNumChildren(); i++)
 		{
 			TreeNode child = root.getChild(i);
 			
@@ -1091,7 +1188,7 @@ public class ClassNode extends InstanceDeclarationNode
 		{
 			ConstructorNode method = (ConstructorNode)node;
 			
-			if (method.getParameterListNode().getChildren().size() == 1)
+			if (method.getParameterListNode().getNumChildren() == 1)
 			{
 				return true;
 			}
@@ -1138,7 +1235,7 @@ public class ClassNode extends InstanceDeclarationNode
 	 */
 	public boolean containsMethod(TreeNode root, String methodName, boolean staticVal, String type)
 	{
-		for (int i = 0; i < root.getChildren().size(); i++)
+		for (int i = 0; i < root.getNumChildren(); i++)
 		{
 			TreeNode child = root.getChild(i);
 			

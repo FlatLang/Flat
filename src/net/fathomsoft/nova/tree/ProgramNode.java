@@ -61,7 +61,7 @@ public class ProgramNode extends TreeNode
 	 */
 	public void validateClasses()
 	{
-		for (int i = 0; i < getChildren().size(); i++)
+		for (int i = 0; i < getNumChildren(); i++)
 		{
 			FileNode node = (FileNode)getChild(i);
 			
@@ -74,7 +74,7 @@ public class ProgramNode extends TreeNode
 	 */
 	public void validateFields()
 	{
-		for (int i = 0; i < getChildren().size(); i++)
+		for (int i = 0; i < getNumChildren(); i++)
 		{
 			FileNode node = (FileNode)getChild(i);
 			
@@ -87,7 +87,7 @@ public class ProgramNode extends TreeNode
 	 */
 	public void validateMethods()
 	{
-		for (int i = 0; i < getChildren().size(); i++)
+		for (int i = 0; i < getNumChildren(); i++)
 		{
 			FileNode node = (FileNode)getChild(i);
 			
@@ -115,7 +115,7 @@ public class ProgramNode extends TreeNode
 	 */
 	public ClassNode getClass(String className)
 	{
-		for (int i = 0; i < getChildren().size(); i++)
+		for (int i = 0; i < getNumChildren(); i++)
 		{
 			FileNode  node  = (FileNode)getChild(i);
 			
@@ -138,7 +138,7 @@ public class ProgramNode extends TreeNode
 	 */
 	public FileNode getFile(String filename)
 	{
-		for (int i = 0; i < getChildren().size(); i++)
+		for (int i = 0; i < getNumChildren(); i++)
 		{
 			FileNode node = (FileNode)getChild(i);
 			
@@ -159,7 +159,7 @@ public class ProgramNode extends TreeNode
 	{
 		StringBuilder builder = new StringBuilder();
 		
-		for (int i = 0; i < getChildren().size(); i++)
+		for (int i = 0; i < getNumChildren(); i++)
 		{
 			builder.append(getChild(i).generateJavaSource());
 		}
@@ -175,7 +175,7 @@ public class ProgramNode extends TreeNode
 	{
 		StringBuilder builder = new StringBuilder();
 		
-		for (int i = 0; i < getChildren().size(); i++)
+		for (int i = 0; i < getNumChildren(); i++)
 		{
 			builder.append(getChild(i).generateCHeader());
 		}
@@ -191,7 +191,7 @@ public class ProgramNode extends TreeNode
 	{
 		StringBuilder builder = new StringBuilder();
 		
-		for (int i = 0; i < getChildren().size(); i++)
+		for (int i = 0; i < getNumChildren(); i++)
 		{
 			builder.append(getChild(i).generateCSource());
 		}
@@ -213,7 +213,7 @@ public class ProgramNode extends TreeNode
 	 */
 	public void formatCHeaderOutput()
 	{
-		for (int i = 0; i < getChildren().size(); i++)
+		for (int i = 0; i < getNumChildren(); i++)
 		{
 			TreeNode child = getChild(i);
 			
@@ -231,7 +231,7 @@ public class ProgramNode extends TreeNode
 	 */
 	public void formatCSourceOutput()
 	{
-		for (int i = 0; i < getChildren().size(); i++)
+		for (int i = 0; i < getNumChildren(); i++)
 		{
 			TreeNode child = getChild(i);
 			

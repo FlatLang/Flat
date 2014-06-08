@@ -76,7 +76,7 @@ public class VTableNode extends ClassNode
 		
 		InstanceFieldListNode publicFields = fields.getPublicFieldListNode();
 		
-		if (publicFields.getChildren().size() > 0)
+		if (publicFields.getNumChildren() > 0)
 		{
 			builder.append(publicFields.generateCHeader()).append('\n');
 		}
@@ -117,7 +117,7 @@ public class VTableNode extends ClassNode
 		
 		InstanceFieldListNode privateFields = fields.getPrivateFieldListNode();
 		
-		if (privateFields.getChildren().size() > 0)
+		if (privateFields.getNumChildren() > 0)
 		{
 			builder.append("PRIVATE").append('\n').append('(').append('\n');
 			
@@ -132,7 +132,7 @@ public class VTableNode extends ClassNode
 		
 		builder.append('\n');
 		
-		for (int i = 0; i < getChildren().size(); i++)
+		for (int i = 0; i < getNumChildren(); i++)
 		{
 			TreeNode child = getChild(i);
 			
@@ -168,10 +168,12 @@ public class VTableNode extends ClassNode
 	 * @param statement The statement to decode into an ArrayNode instance.
 	 * @param location The location of the statement in the source code.
 	 * @param require Whether or not to throw an error if anything goes wrong.
+	 * @param scope Whether or not the given statement is the beginning of
+	 * 		a scope.
 	 * @return The new ArrayNode instance if it was able to decode the
 	 * 		statement. If not, it will return null.
 	 */
-	public static VTableNode decodeStatement(TreeNode parent, String statement, Location location, boolean require)
+	public static VTableNode decodeStatement(TreeNode parent, String statement, Location location, boolean require, boolean scope)
 	{
 		if (SyntaxUtils.isArrayInitialization(statement))
 		{
@@ -193,7 +195,7 @@ public class VTableNode extends ClassNode
 				
 				if (SyntaxUtils.isNumber(length))
 				{
-					LiteralNode node = LiteralNode.decodeStatement(n, length, location, require);
+					LiteralNode node = LiteralNode.decodeStatement(n, length, location, require, false);
 					
 					n.addChild(node);
 				}

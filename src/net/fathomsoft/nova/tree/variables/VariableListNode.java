@@ -42,7 +42,7 @@ public class VariableListNode extends TreeNode
 	 */
 	public VariableNode getVariable(String variableName)
 	{
-		for (int i = 0; i < getChildren().size(); i++)
+		for (int i = 0; i < getNumChildren(); i++)
 		{
 			VariableNode variable = (VariableNode)getChild(i);
 			
@@ -65,7 +65,7 @@ public class VariableListNode extends TreeNode
 	{
 		StringBuilder builder = new StringBuilder();
 		
-		for (int i = 0; i < getChildren().size(); i++)
+		for (int i = 0; i < getNumChildren(); i++)
 		{
 			VariableNode variable = (VariableNode)getChild(i);
 			
@@ -83,12 +83,12 @@ public class VariableListNode extends TreeNode
 	{
 		StringBuilder builder = new StringBuilder();
 		
-		for (int i = 0; i < getChildren().size(); i++)
+		for (int i = 0; i < getNumChildren(); i++)
 		{
 			builder.append(getChild(i).generateJavaSource());
 		}
 		
-		if (getChildren().size() > 0)
+		if (getNumChildren() > 0)
 		{
 			builder.append('\n');
 		}
@@ -113,14 +113,14 @@ public class VariableListNode extends TreeNode
 	{
 		StringBuilder builder = new StringBuilder();
 		
-		for (int i = 0; i < getChildren().size(); i++)
+		for (int i = 0; i < getNumChildren(); i++)
 		{
 			TreeNode child = getChild(i);
 			
 			builder.append(child.generateCSource());
 		}
 		
-		if (getChildren().size() > 0)
+		if (getNumChildren() > 0)
 		{
 			builder.append('\n');
 		}

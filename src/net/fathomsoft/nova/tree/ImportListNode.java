@@ -40,7 +40,7 @@ public class ImportListNode extends TreeNode
 	 */
 	public ImportNode getImport(String importLocation)
 	{
-		for (int i = 0; i < getChildren().size(); i++)
+		for (int i = 0; i < getNumChildren(); i++)
 		{
 			ImportNode child = (ImportNode)getChild(i);
 			
@@ -60,7 +60,7 @@ public class ImportListNode extends TreeNode
 	 */
 	public boolean isExternal(String importLocation)
 	{
-		for (int i = 0; i < getChildren().size(); i++)
+		for (int i = 0; i < getNumChildren(); i++)
 		{
 			ImportNode child = (ImportNode)getChild(i);
 			
@@ -81,12 +81,12 @@ public class ImportListNode extends TreeNode
 	{
 		StringBuilder builder = new StringBuilder();
 		
-		for (int i = 0; i < getChildren().size(); i++)
+		for (int i = 0; i < getNumChildren(); i++)
 		{
 			builder.append(getChild(i).generateJavaSource());
 		}
 		
-		if (getChildren().size() > 0)
+		if (getNumChildren() > 0)
 		{
 			builder.append('\n');
 		}
@@ -111,7 +111,7 @@ public class ImportListNode extends TreeNode
 	{
 		StringBuilder builder = new StringBuilder();
 		
-		for (int i = 0; i < getChildren().size(); i++)
+		for (int i = 0; i < getNumChildren(); i++)
 		{
 			builder.append(getChild(i).generateCSource());
 		}

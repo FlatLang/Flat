@@ -1,12 +1,17 @@
 package net.fathomsoft.nova.tree.variables;
 
 import net.fathomsoft.nova.Nova;
+import net.fathomsoft.nova.error.SyntaxMessage;
+import net.fathomsoft.nova.tree.ArgumentListNode;
+import net.fathomsoft.nova.tree.AssignmentNode;
 import net.fathomsoft.nova.tree.BinaryOperatorNode;
 import net.fathomsoft.nova.tree.ClassNode;
 import net.fathomsoft.nova.tree.IdentifierNode;
 import net.fathomsoft.nova.tree.InstanceDeclarationNode;
 import net.fathomsoft.nova.tree.LocalDeclarationNode;
+import net.fathomsoft.nova.tree.MethodCallNode;
 import net.fathomsoft.nova.tree.MethodNode;
+import net.fathomsoft.nova.tree.ParameterNode;
 import net.fathomsoft.nova.tree.ProgramNode;
 import net.fathomsoft.nova.tree.ReturnNode;
 import net.fathomsoft.nova.tree.ScopeNode;
@@ -27,8 +32,6 @@ import net.fathomsoft.nova.util.Location;
  */
 public class VariableNode extends IdentifierNode
 {
-	private boolean				referenceVal;
-	private boolean				pointerVal;
 	private boolean				constantVal, external, forceOriginal;
 	
 	private static final String	NULL_TEXT	= "0";
@@ -39,46 +42,6 @@ public class VariableNode extends IdentifierNode
 	public VariableNode(TreeNode temporaryParent, Location locationIn)
 	{
 		super(temporaryParent, locationIn);
-	}
-	
-	/**
-	 * Get whether or not the identifier is a reference.
-	 * 
-	 * @return Whether or not the identifier is a reference.
-	 */
-	public boolean isReference()
-	{
-		return referenceVal;
-	}
-	
-	/**
-	 * Set whether or not the identifier is a reference.
-	 * 
-	 * @param referenceVal Whether or not the identifier is a reference.
-	 */
-	public void setReference(boolean referenceVal)
-	{
-		this.referenceVal = referenceVal;
-	}
-	
-	/**
-	 * Get whether or not the identifier is a pointer.
-	 * 
-	 * @return Whether or not the identifier is a pointer.
-	 */
-	public boolean isPointer()
-	{
-		return pointerVal;
-	}
-	
-	/**
-	 * Set whether or not the identifier is a pointer.
-	 * 
-	 * @param pointerVal Whether or not the identifier is a pointer.
-	 */
-	public void setPointer(boolean pointerVal)
-	{
-		this.pointerVal = pointerVal;
 	}
 	
 	/**
@@ -234,16 +197,28 @@ public class VariableNode extends IdentifierNode
 		{
 			setConstant(true);
 		}
-		else if (attribute.equals("external"))
-		{
-			setExternal(true);
-		}
 		else
 		{
 			return false;
 		}
 		
 		return true;
+	}
+	
+	/**
+	 * Compare the specified variable with the given one to see if they
+	 * come from the same declaration.
+	 * 
+	 * @param other The variable to compare with.
+	 * @return Whether or not the variables come from the same
+	 * 		declaration.
+	 */
+	public boolean isSameVariable(VariableNode other)
+	{
+		VariableNode first  = getDeclaration();
+		VariableNode second = other.getDeclaration();
+		
+		return first == second;
 	}
 	
 	/**
@@ -328,20 +303,34 @@ public class VariableNode extends IdentifierNode
 	{
 		StringBuilder builder = new StringBuilder();
 		
-		if (isPointer())
+//		byte type = dataType;
+//		
+//		if (isSpecialFragment())
+//		{
+//			MethodNode method = getFurthestMethodCallNode().getMethodNode();
+//			
+//			type = method.getDataType();
+//		}
+		
+		if (!isSpecialFragment())
 		{
-			builder.append('*');
-		}
-		else if (isReference())
-		{
-			builder.append('&');
+			builder.append(generateDataTypeOutput());
 		}
 		
 		FieldNode field = null;
 		
 		TreeNode parent = getParent();
 		
-		if (parent instanceof ArrayAccessNode || parent instanceof ArrayNode)
+		if (this instanceof ArrayAccessNode)
+		{
+			VariableNode node = getExistingNode(parent, getName());
+			
+			if (node instanceof FieldNode)
+			{
+				field = (FieldNode)node;
+			}
+		}
+		else if (parent instanceof ArrayNode)
 		{
 			VariableNode node = getExistingNode(parent.getParent(), getName());
 			
@@ -355,7 +344,7 @@ public class VariableNode extends IdentifierNode
 			field = (FieldNode)this;
 		}
 		
-		if (field != null)
+		if (field != null && !field.isExternal())
 		{
 			if (!field.isStatic())
 			{
@@ -405,38 +394,40 @@ public class VariableNode extends IdentifierNode
 	@Override
 	public String generateCSource()
 	{
-		if (!isDeclaration())
-		{
-			return generateCSourceFragment() + ";\n";
-		}
-		
 		StringBuilder builder = new StringBuilder();
 		
-		if (isConstant())
+		if (isDeclaration())
 		{
-			builder.append(getConstantText()).append(' ');
+			if (isConstant())
+			{
+				builder.append(getConstantText()).append(' ');
+			}
+			
+			builder.append(generateCTypeOutput());
+	
+			if (isReference())
+			{
+				builder.append('&');
+			}
+			else if (isPointer())
+			{
+				builder.append('*');
+			}
+			if (isArray())
+			{
+				builder.append(getArrayText());
+			}
+			if (!isPrimitiveType() && !isExternalType())
+			{
+				builder.append('*');
+			}
+			
+			builder.append(' ').append(generateCSourceFragment());//generateCSourceName());//generateCSourceFragment());
 		}
-		
-		builder.append(generateCTypeOutput());
-
-		if (isReference())
+		else
 		{
-			builder.append('&');
+			builder.append(generateCSourceFragment());
 		}
-		else if (isPointer())
-		{
-			builder.append('*');
-		}
-		if (isArray())
-		{
-			builder.append(getArrayText());
-		}
-		if (!isPrimitiveType() && !isExternal())
-		{
-			builder.append('*');
-		}
-		
-		builder.append(' ').append(generateCSourceFragment());
 		
 		builder.append(';').append('\n');
 		
@@ -455,6 +446,8 @@ public class VariableNode extends IdentifierNode
 		}
 		
 		return generateUseOutput() + generateChildrenCSourceFragment();
+		
+//		return generateCSourceName();
 	}
 	
 	/**
@@ -487,17 +480,15 @@ public class VariableNode extends IdentifierNode
 		
 		String str = Nova.LANGUAGE_NAME.toLowerCase() + "_";
 		
-		if (this instanceof FieldNode)
+		VariableNode existing = getExistingNode(getParent(), name);
+		
+		if (this instanceof FieldNode || existing instanceof FieldNode)
 		{
 			str += clazz.generateUniquePrefix();
 		}
 		else
 		{
-//			VariableNode existing  = getExistingNode(getParent(), name);
-//			
-//			ScopeNode    scopeNode = getAncestorWithScope(existing.getParent()).getScopeNode();
-			
-			LocalDeclarationNode declaration = (LocalDeclarationNode)getExistingNode(getParent(), name);
+			LocalDeclarationNode declaration = (LocalDeclarationNode)existing;
 			
 			str += declaration.getScopeID();
 		}
@@ -550,7 +541,7 @@ public class VariableNode extends IdentifierNode
 		
 		StringBuilder builder = new StringBuilder();
 		
-		if (isPrimitiveType() || isExternal())
+		if (isPrimitiveType() || isExternalType())
 		{
 			if (!isPrimitive())
 			{
@@ -696,8 +687,6 @@ public class VariableNode extends IdentifierNode
 		
 		node.constantVal     = constantVal;
 		node.external        = external;
-		node.referenceVal    = referenceVal;
-		node.pointerVal      = pointerVal;
 		node.forceOriginal   = forceOriginal;
 		
 		return node;

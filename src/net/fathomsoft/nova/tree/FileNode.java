@@ -1,7 +1,10 @@
 package net.fathomsoft.nova.tree;
 
+import java.io.File;
+
 import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.error.SyntaxMessage;
+import net.fathomsoft.nova.util.FileUtils;
 import net.fathomsoft.nova.util.Location;
 import net.fathomsoft.nova.util.SyntaxUtils;
 
@@ -14,11 +17,13 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * @since	v0.1 Feb 18, 2014 at 8:57:00 PM
  * @version	v0.2.12 Jun 1, 2014 at 7:28:35 PM
  */
-public class FileNode extends IdentifierNode
+public class FileNode extends TreeNode
 {
 	//TODO: package name here?
 	
 	private String	header, source;
+	
+	private File	file;
 	
 	/**
 	 * The default imports that each file uses.
@@ -142,7 +147,7 @@ public class FileNode extends IdentifierNode
 	 */
 	public ClassNode getClass(String className)
 	{
-		for (int i = 0; i < getChildren().size(); i++)
+		for (int i = 0; i < getNumChildren(); i++)
 		{
 			TreeNode child = getChild(i);
 			
@@ -161,11 +166,44 @@ public class FileNode extends IdentifierNode
 	}
 	
 	/**
+	 * Get the File that this FileNode represents.
+	 * 
+	 * @return The File that this FileNode represents.
+	 */
+	public File getFile()
+	{
+		return file;
+	}
+	
+	/**
+	 * Set the File that this FileNode represents.
+	 * 
+	 * @param file The File that this FileNode represents.
+	 */
+	public void setFile(File file)
+	{
+		this.file = file;
+	}
+	
+	/**
+	 * Get the name of the file without the extension.<br>
+	 * <br>
+	 * For example: A getName() call for a FileNode of Test.nova would
+	 * return "Test"
+	 * 
+	 * @return The name of the file without the extension.
+	 */
+	public String getName()
+	{
+		return FileUtils.removeFileExtension(file.getName());
+	}
+	
+	/**
 	 * Make sure that the Class declarations are valid.
 	 */
 	public void validateClasses()
 	{
-		for (int i = 0; i < getChildren().size(); i++)
+		for (int i = 0; i < getNumChildren(); i++)
 		{
 			TreeNode child = getChild(i);
 			
@@ -183,7 +221,7 @@ public class FileNode extends IdentifierNode
 	 */
 	public void validateFields()
 	{
-		for (int i = 0; i < getChildren().size(); i++)
+		for (int i = 0; i < getNumChildren(); i++)
 		{
 			TreeNode child = getChild(i);
 			
@@ -201,7 +239,7 @@ public class FileNode extends IdentifierNode
 	 */
 	public void validateMethods()
 	{
-		for (int i = 0; i < getChildren().size(); i++)
+		for (int i = 0; i < getNumChildren(); i++)
 		{
 			TreeNode child = getChild(i);
 			
@@ -277,7 +315,7 @@ public class FileNode extends IdentifierNode
 			
 			builder.append(imports.generateCHeader());
 			
-			for (int i = 0; i < getChildren().size(); i++)
+			for (int i = 0; i < getNumChildren(); i++)
 			{
 				TreeNode child = getChild(i);
 				
@@ -287,7 +325,7 @@ public class FileNode extends IdentifierNode
 				}
 			}
 			
-			builder.append("#endif");
+			builder.append('\n').append("#endif");
 			
 			header = builder.toString();
 		}
@@ -310,12 +348,12 @@ public class FileNode extends IdentifierNode
 			
 			builder.append(thisImport.generateCSource());
 			
-			if (getImportListNode().getChildren().size() <= 0)
+			if (getImportListNode().getNumChildren() <= 0)
 			{
 				builder.append('\n');
 			}
 			
-			for (int i = 0; i < getChildren().size(); i++)
+			for (int i = 0; i < getNumChildren(); i++)
 			{
 				TreeNode child = getChild(i);
 				
@@ -394,7 +432,7 @@ public class FileNode extends IdentifierNode
 	{
 		StringBuilder builder = new StringBuilder();
 		
-		for (int i = 0; i < getChildren().size(); i++)
+		for (int i = 0; i < getNumChildren(); i++)
 		{
 			TreeNode child = getChild(i);
 			

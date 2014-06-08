@@ -1,6 +1,11 @@
 package net.fathomsoft.nova.tree;
 
+import net.fathomsoft.nova.error.SyntaxMessage;
+import net.fathomsoft.nova.util.Bounds;
 import net.fathomsoft.nova.util.Location;
+import net.fathomsoft.nova.util.Patterns;
+import net.fathomsoft.nova.util.Regex;
+import net.fathomsoft.nova.util.StringUtils;
 
 /**
  * TreeNode extension that represents an external type of variable or
@@ -10,7 +15,7 @@ import net.fathomsoft.nova.util.Location;
  * @since	v0.2.4 May 8, 2014 at 6:55:51 PM
  * @version	v0.2.11 May 31, 2014 at 1:19:11 PM
  */
-public class ExternalTypeNode extends IdentifierNode
+public class ExternalTypeNode extends ValueNode
 {
 	/**
 	 * @see net.fathomsoft.nova.tree.TreeNode#TreeNode(TreeNode, Location)
@@ -21,49 +26,42 @@ public class ExternalTypeNode extends IdentifierNode
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.TreeNode#generateCSource()
-	 */
-	@Override
-	public String generateCSource()
-	{
-		return generateCSourceFragment() + ';' + '\n';
-	}
-	
-	/**
-	 * @see net.fathomsoft.nova.tree.TreeNode#generateCSourceFragment()
-	 */
-	@Override
-	public String generateCSourceFragment()
-	{
-		return super.generateChildrenCSourceFragment(false);
-	}
-	
-	/**
 	 * Decode the given statement into a ExternalTypeNode instance, if
-	 * possible. If it is not possible, this method returns null.<br>
-	 * <br>
-	 * Example inputs include:<br>
-	 * <ul>
-	 * 	<li>externalHeaderName</li>
-	 * </ul>
+	 * possible. If it is not possible, this method returns null.
 	 * 
 	 * @param parent The parent node of the statement.
 	 * @param statement The statement to try to decode into a
 	 * 		ExternalTypeNode instance.
 	 * @param location The location of the statement in the source code.
 	 * @param require Whether or not to throw an error if anything goes wrong.
+	 * @param scope Whether or not the given statement is the beginning of
+	 * 		a scope.
 	 * @return The generated node, if it was possible to translated it
 	 * 		into a ExternalTypeNode.
 	 */
-	public static ExternalTypeNode decodeStatement(TreeNode parent, String statement, Location location, boolean require)
+	public static ExternalTypeNode decodeStatement(TreeNode parent, String statement, Location location, boolean require, boolean scope)
 	{
-		FileNode file = parent.getFileNode();
+		Bounds bounds = Regex.boundsOf(statement, Patterns.EXTERNAL_TYPE);
 		
-		if (file.isExternalImport(statement))
+		if (bounds.getStart() == 0)
 		{
 			ExternalTypeNode n = new ExternalTypeNode(parent, location);
 			
-			n.setName(statement);
+			int start = StringUtils.findNextNonWhitespaceIndex(statement, bounds.getEnd());
+			
+			if (start < 0)
+			{
+				SyntaxMessage.error("Unfinished external type declaration", n);
+			}
+			
+			String type = statement.substring(start);
+			
+			if (StringUtils.findNextWhitespaceIndex(type, 0) > 0)
+			{
+				SyntaxMessage.error("Could not decode type declaration '" + type + "'", n);
+			}
+			
+			n.setType(type);
 			
 			return n;
 		}

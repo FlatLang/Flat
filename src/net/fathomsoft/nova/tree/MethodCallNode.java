@@ -54,6 +54,25 @@ public class MethodCallNode extends IdentifierNode
 	}
 	
 	/**
+	 * Get whether or not the specified TreeNode is used within an
+	 * external context.
+	 * 
+	 * @return Whether or not the specified TreeNode is used within an
+	 * 		external context.
+	 */
+	public boolean isWithinExternalContext()
+	{
+		MethodNode method = getMethodNode();
+		
+		if (method.isExternal())
+		{
+			return true;
+		}
+		
+		return super.isWithinExternalContext();
+	}
+	
+	/**
 	 * Get whether or not the method is called externally.
 	 * A method is external if it begins with an externally imported
 	 * C file's name. For example:<br>
@@ -98,11 +117,6 @@ public class MethodCallNode extends IdentifierNode
 	 */
 	public MethodNode getMethodNode(TreeNode parent)
 	{
-		if (isExternal())
-		{
-			return null;
-		}
-		
 		FileNode    file    = parent.getFileNode();
 		
 		ProgramNode program = file.getProgramNode();
@@ -150,6 +164,77 @@ public class MethodCallNode extends IdentifierNode
 	public ValueNode getObjectReferenceValue()
 	{
 		return getObjectReferenceValue(getMethodNode());
+	}
+	
+	/**
+	 * Get the ParameterNode that the given argument represents.<br>
+	 * <br>
+	 * For example:
+	 * <blockquote><pre>
+	 * public void run(int a, int b, int c)
+	 * {
+	 * 	...
+	 * }
+	 * 
+	 * run(432, 1, 5);</pre></blockquote>
+	 * If you were to call getCorrespondingParameter(1) on the method
+	 * call above, you would receive the b ParameterNode.
+	 * 
+	 * @param argument The argument to get the corresponding parameter
+	 * 		from.
+	 * @return The ParameterNode that represents the given argument.
+	 */
+	public ParameterNode getCorrespondingParameter(ValueNode argument)
+	{
+		int argIndex = -1;
+		
+		ArgumentListNode args = getArgumentListNode();
+		
+		for (int i = 0; i < args.getNumChildren(); i++)
+		{
+			ValueNode value = (ValueNode)args.getChild(i);
+			
+			if (value == argument)
+			{
+				argIndex = i;
+				
+				break;
+			}
+		}
+		
+		// If no matching argument was found.
+		if (argIndex == -1)
+		{
+			return null;
+		}
+		
+		return getCorrespondingParameter(argIndex);
+	}
+	
+	/**
+	 * Get the ParameterNode that the given index represents. The
+	 * parameters are ordered from left to right, 0 being the first.<br>
+	 * <br>
+	 * For example:
+	 * <blockquote><pre>
+	 * public void run(int a, int b, int c)
+	 * {
+	 * 	...
+	 * }
+	 * 
+	 * run(432, 1, 5);</pre></blockquote>
+	 * If you were to call getCorrespondingParameter(2) on the method
+	 * call above, you would receive the c ParameterNode.
+	 * 
+	 * @param argIndex The index of the argument to get the corresponding
+	 * 		parameter from.
+	 * @return The ParameterNode at the given index.
+	 */
+	public ParameterNode getCorrespondingParameter(int argIndex)
+	{
+		MethodNode method = getMethodNode();
+		
+		return method.getParameterNode(argIndex);
 	}
 	
 	/**
@@ -205,14 +290,14 @@ public class MethodCallNode extends IdentifierNode
 		
 		MethodNode    method  = getMethodNode();
 		
-		if (method != null)
+		if (!isSpecialFragment())
 		{
-			builder.append(method.generateCSourceName());
+			ValueNode node = getContextNode();
+			
+			builder.append(node.generateDataTypeOutput(getDataType()));
 		}
-		else
-		{
-			builder.append(getName());
-		}
+		
+		builder.append(method.generateCSourceName());
 		
 		builder.append('(');
 		
@@ -236,7 +321,7 @@ public class MethodCallNode extends IdentifierNode
 	{
 		StringBuilder builder = new StringBuilder();
 		
-		for (int i = 1; i < getChildren().size(); i++)
+		for (int i = 1; i < getNumChildren(); i++)
 		{
 			TreeNode child = getChild(i);
 			
@@ -277,10 +362,12 @@ public class MethodCallNode extends IdentifierNode
 	 * 		MethodCallNode instance.
 	 * @param location The location of the statement in the source code.
 	 * @param require Whether or not to throw an error if anything goes wrong.
+	 * @param scope Whether or not the given statement is the beginning of
+	 * 		a scope.
 	 * @return The generated node, if it was possible to translated it
 	 * 		into a MethodCallNode.
 	 */
-	public static MethodCallNode decodeStatement(TreeNode parent, String statement, Location location, boolean require)
+	public static MethodCallNode decodeStatement(TreeNode parent, String statement, Location location, boolean require, boolean scope)
 	{
 		if (SyntaxUtils.isMethodCall(statement))
 		{
@@ -336,7 +423,7 @@ public class MethodCallNode extends IdentifierNode
 			
 			String  argumentList = statement.substring(bounds.getStart(), bounds.getEnd());
 			
-			n.externalCall = parent instanceof ExternalTypeNode;
+//			n.externalCall = parent instanceof ExternalTypeNode;
 			
 			n.iterateWords(methodCall, Patterns.IDENTIFIER_BOUNDARIES);
 			
@@ -355,7 +442,7 @@ public class MethodCallNode extends IdentifierNode
 				SyntaxMessage.error("Method '" + method.getName() + "' is not visible", n);
 			}
 			
-			if (method == null && !n.isExternal())
+			if (method == null)// && !n.isExternal())
 			{
 				SyntaxMessage.error("Undeclared method '" + n.getName() + "'", n);
 			}
@@ -406,20 +493,24 @@ public class MethodCallNode extends IdentifierNode
 		
 		int offset = 2;
 		
-		if (method.isStatic())
+		if (method.isExternal())
+		{
+			offset = 0;
+		}
+		else if (method.isStatic())
 		{
 			offset = 1;
 		}
 		
-		if (parameters.getChildren().size() - offset != arguments.getChildren().size())
+		if (parameters.getNumChildren() - offset != arguments.getNumChildren())
 		{
-			if (parameters.getChildren().size() - offset > arguments.getChildren().size())
+			if (parameters.getNumChildren() - offset > arguments.getNumChildren())
 			{
-				SyntaxMessage.error("To few arguments to method call '" + getName() + "'", this);
+				SyntaxMessage.error("Too few arguments to method call '" + getName() + "'", this);
 			}
 			else
 			{
-				SyntaxMessage.error("To many arguments to method call '" + getName() + "'", this);
+				SyntaxMessage.error("Too many arguments to method call '" + getName() + "'", this);
 			}
 			
 //			return false;
@@ -457,17 +548,17 @@ public class MethodCallNode extends IdentifierNode
 				
 				if (arg == null && SyntaxUtils.isLiteral(argument))
 				{
-					LiteralNode literal = LiteralNode.decodeStatement(parent, argument, location, true);
+					LiteralNode literal = LiteralNode.decodeStatement(parent, argument, location, true, false);
 					
 					arg = literal;
 				}
 				if (arg == null)
 				{
-					arg = BinaryOperatorNode.decodeStatement(parent, argument, location, false);
+					arg = BinaryOperatorNode.decodeStatement(parent, argument, location, false, false);
 				}
 				if (arg == null)
 				{
-					arg = TreeNode.decodeScopeContents(parent, argument, location, false);//TreeNode.getExistingNode(parent, argument);
+					arg = TreeNode.decodeScopeContents(parent, argument, location, false, false);//TreeNode.getExistingNode(parent, argument);
 					
 					if (arg != null && (prefix == '*' || prefix == '&'))
 					{
@@ -475,17 +566,17 @@ public class MethodCallNode extends IdentifierNode
 						
 						if (prefix == '*')
 						{
-							var.setPointer(true);
+							var.setDataType(VariableNode.POINTER);
 						}
 						else if (prefix == '&')
 						{
-							var.setReference(true);
+							var.setDataType(VariableNode.REFERENCE);
 						}
 					}
 				}
 				if (arg == null && parent.isWithinExternalContext())
 				{
-					LiteralNode literal = LiteralNode.decodeStatement(parent, argument, location, true);
+					LiteralNode literal = LiteralNode.decodeStatement(parent, argument, location, true, false);
 					
 					arg = literal;
 				}
@@ -535,7 +626,7 @@ public class MethodCallNode extends IdentifierNode
 	 */
 	public IdentifierNode getAccessedNode()
 	{
-		if (getChildren().size() <= 1)
+		if (getNumChildren() <= 1)
 		{
 			return null;
 		}

@@ -48,7 +48,7 @@ public class SyntaxMessage
 	 */
 	public static void error(String message, TreeNode node)
 	{
-		error(message, node, node.getLocationIn());
+		error(message, node, null);
 	}
 	
 	/**
@@ -59,7 +59,7 @@ public class SyntaxMessage
 	 */
 	public static void warning(String message, TreeNode node)
 	{
-		warning(message, node, node.getLocationIn());
+		warning(message, node, null);
 	}
 	
 	/**

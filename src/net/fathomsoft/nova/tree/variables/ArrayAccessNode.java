@@ -48,28 +48,18 @@ public class ArrayAccessNode extends VariableNode
 	}
 	
 	/**
-	 * Get the VariableNode that corresponds to the array identifier.
-	 * 
-	 * @return The VariableNode instance.
-	 */
-	public VariableNode getVariableNode()
-	{
-		return (VariableNode)getChild(1);
-	}
-	
-	/**
 	 * @see net.fathomsoft.nova.tree.TreeNode#addChild(TreeNode)
 	 */
 	@Override
 	public void addChild(TreeNode child)
 	{
-		if (getChildren().size() <= 1)
+		if (getNumChildren() <= 1)
 		{
 			super.addChild(child);
 		}
 		else
 		{
-			getVariableNode().addChild(child);
+			addChild(getNumChildren() - 1, child);
 		}
 	}
 	
@@ -108,12 +98,31 @@ public class ArrayAccessNode extends VariableNode
 	{
 		StringBuilder  builder    = new StringBuilder();
 		
-		VariableNode   varNode    = getVariableNode();
 		DimensionsNode dimensions = getDimensionsNode();
 		
-		builder.append(varNode.generateUseOutput());
+		builder.append(generateUseOutput());
 		builder.append(dimensions.generateCSourceFragment());
-		builder.append(varNode.generateChildrenCSourceFragment());
+		builder.append(generateChildrenCSourceFragment());
+		
+		return builder.toString();
+	}
+	
+	/**
+	 * @see net.fathomsoft.nova.tree.TreeNode#generateNovaInput(boolean)
+	 */
+	@Override
+	public String generateNovaInput(boolean outputChildren)
+	{
+		StringBuilder builder = new StringBuilder();
+		
+		builder.append(super.generateNovaInput(false) + getDimensionsNode().generateNovaInput());
+		
+		VariableNode accessed = getAccessedNode();
+		
+		if (accessed != null)
+		{
+			builder.append('.').append(accessed.generateNovaInput());
+		}
 		
 		return builder.toString();
 	}
@@ -129,7 +138,7 @@ public class ArrayAccessNode extends VariableNode
 	 * @param location The location of the statement.
 	 * @return The ArrayAccessNode if it was created, null if not.
 	 */
-	public static ArrayAccessNode decodeStatement(TreeNode parent, String statement, Location location, boolean require)
+	public static ArrayAccessNode decodeStatement(TreeNode parent, String statement, Location location, boolean require, boolean scope)
 	{
 		if (SyntaxUtils.isValidArrayAccess(statement))
 		{
@@ -151,11 +160,8 @@ public class ArrayAccessNode extends VariableNode
 				SyntaxMessage.error("Undeclared variable '" + identifier + "'", n);
 			}
 			
-			var = var.clone(n, location);
-			
-			n.addChild(var);
-			n.setName(var.getName());
-			n.setType(var.getType());
+			var.cloneTo(n);
+			n.setLocationIn(location);
 			
 			while (current > 0)
 			{
@@ -167,13 +173,13 @@ public class ArrayAccessNode extends VariableNode
 				
 				if (SyntaxUtils.isLiteral(data))
 				{
-					LiteralNode literal = LiteralNode.decodeStatement(n, data, newLoc, require);
+					LiteralNode literal = LiteralNode.decodeStatement(n, data, newLoc, require, false);
 					
 					n.addDimension(literal);
 				}
 				else
 				{
-					TreeNode created = TreeNode.decodeScopeContents(parent, data, newLoc);
+					TreeNode created = TreeNode.decodeScopeContents(parent, data, newLoc, false);
 					
 					if (created == null)
 					{
@@ -198,7 +204,7 @@ public class ArrayAccessNode extends VariableNode
 	 */
 	public VariableNode getAccessedNode()
 	{
-		if (getChildren().size() <= 1)
+		if (getNumChildren() <= 1)
 		{
 			return null;
 		}

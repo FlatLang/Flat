@@ -20,9 +20,13 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  */
 public class ValueNode extends TreeNode
 {
+	private byte	dataType;
+	
 	private int		arrayDimensions;
 	
 	private String	type;
+	
+	public static final byte	VALUE = 1, POINTER = 2, REFERENCE = 3;
 
 	/**
 	 * @see net.fathomsoft.nova.tree.TreeNode#TreeNode(TreeNode, Location)
@@ -30,6 +34,8 @@ public class ValueNode extends TreeNode
 	public ValueNode(TreeNode temporaryParent, Location locationIn)
 	{
 		super(temporaryParent, locationIn);
+		
+		dataType = VALUE;
 	}
 	
 	/**
@@ -216,7 +222,7 @@ public class ValueNode extends TreeNode
 	 */
 	public IdentifierNode getAccessedNode()
 	{
-		if (getChildren().size() <= 0)
+		if (getNumChildren() <= 0)
 		{
 			return null;
 		}
@@ -422,6 +428,24 @@ public class ValueNode extends TreeNode
 	}
 	
 	/**
+	 * Get whether the type of the ValueNode is external or not.<br>
+	 * <br>
+	 * For example:
+	 * <blockquote><pre>
+	 * external type FILE;
+	 * 
+	 * FILE varName;</pre></blockquote>
+	 * In the code above <u><code>varName</code></u>'s type of
+	 * "<u><code>FILE</code></u>" is external.
+	 * 
+	 * @return Whether or not the type of the valueNode is external.
+	 */
+	public boolean isExternalType()
+	{
+		return type != null && getClassNode().containsExternalType(type);
+	}
+	
+	/**
 	 * Get the type that the statement returns. For an example of what a
 	 * value type looks like, see {@link #setType(String)}
 	 * 
@@ -542,6 +566,179 @@ public class ValueNode extends TreeNode
 	}
 	
 	/**
+	 * Get whether or not the identifier is a reference.
+	 * 
+	 * @return Whether or not the identifier is a reference.
+	 */
+	public boolean isReference()
+	{
+		return dataType == REFERENCE;
+	}
+	
+	/**
+	 * Get whether or not the identifier is a value, pointer, or
+	 * reference.<br>
+	 * <br>
+	 * Possible values include:
+	 * <ul>
+	 * 	<li><b>VariableNode.VALUE</b> - If the variable type simply refers to a value.</li>
+	 * 	<li><b>VariableNode.POINTER</b> - If the variable type is a pointer.</li>
+	 * 	<li><b>VariableNode.REFERENCE</b> - If the variable type is a reference.</li>
+	 * </ul>
+	 * 
+	 * @return The data type that the variable is.
+	 */
+	public byte getDataType()
+	{
+		return dataType;
+	}
+	
+	/**
+	 * Set whether or not the identifier is a value, pointer, or
+	 * reference.<br>
+	 * <br>
+	 * Possible values include:
+	 * <ul>
+	 * 	<li><b>VariableNode.VALUE</b> - If the variable type simply refers to a value.</li>
+	 * 	<li><b>VariableNode.POINTER</b> - If the variable type is a pointer.</li>
+	 * 	<li><b>VariableNode.REFERENCE</b> - If the variable type is a reference.</li>
+	 * </ul>
+	 * 
+	 * @param type The data type that the variable is.
+	 */
+	public void setDataType(byte type)
+	{
+		this.dataType = type;
+	}
+	
+	/**
+	 * Get whether or not the identifier is a pointer.
+	 * 
+	 * @return Whether or not the identifier is a pointer.
+	 */
+	public boolean isPointer()
+	{
+		return dataType == POINTER;
+	}
+	
+	/**
+	 * Get the data type that is required within the context that the
+	 * specified ValueNode is within.
+	 * 
+	 * @return The data type that is required within the context that the
+	 * 		specified ValueNode is within.
+	 */
+	public byte getRequiredDataType()
+	{
+		TreeNode parent = getParent();
+		
+		byte     type   = dataType;
+		
+		if (parent instanceof ArgumentListNode)
+		{
+			MethodCallNode call  = (MethodCallNode)parent.getParent();
+			ParameterNode  param = call.getCorrespondingParameter(this);
+			
+			//TODO: make support for multidimensional arrays too....
+			if (!call.isExternal() || !param.isPointer() || dataType != VALUE || !isArray())
+			{
+				type = param.getDataType();
+			}
+		}
+		else if (parent instanceof AssignmentNode)
+		{
+			AssignmentNode assignment   = (AssignmentNode)parent;
+			VariableNode   assignee     = assignment.getAssigneeNode();
+			
+			if (this instanceof VariableNode == false || !((VariableNode)this).isSameVariable(assignee))
+			{
+				type = assignee.getDataType();
+			}
+		}
+		else if (parent instanceof ReturnNode)
+		{
+			MethodNode method = (MethodNode)getAncestorOfType(MethodNode.class);
+			
+			type = method.getDataType();
+		}
+		
+		return type;
+	}
+	
+	/**
+	 * Generate the text that is required for the data type in the
+	 * current context.
+	 * 
+	 * @return The text that is required.
+	 */
+	public String generateDataTypeOutput()
+	{
+		return generateDataTypeOutput(dataType);
+	}
+	
+	/**
+	 * Generate the text that is required for the data type in the
+	 * current context.
+	 * 
+	 * @param dataType The data type to compare against.
+	 * @return The text that is required.
+	 */
+	public String generateDataTypeOutput(byte dataType)
+	{
+		byte required = getRequiredDataType();
+		
+		if (required == dataType)
+		{
+			return "";
+		}
+		
+		if (required == REFERENCE)
+		{
+			if (dataType == VALUE)
+			{
+				return "&";
+			}
+			else if (dataType == POINTER)
+			{
+				return "**";
+			}
+		}
+		else if (required == VALUE)
+		{
+			if (dataType == REFERENCE)
+			{
+				return "*";
+			}
+			else if (dataType == POINTER)
+			{
+				return "*";
+			}
+		}
+		else if (required == POINTER)
+		{
+			if (dataType == VALUE)
+			{
+				return "&";
+			}
+			else if (dataType == POINTER)
+			{
+				return "&";
+			}
+		}
+		
+		if (required == POINTER)
+		{
+			return "*";
+		}
+		else if (required == REFERENCE)
+		{
+			return "&";
+		}
+		
+		return "";
+	}
+	
+	/**
 	 * @see net.fathomsoft.nova.tree.TreeNode#generateCSource()
 	 */
 	@Override
@@ -606,12 +803,17 @@ public class ValueNode extends TreeNode
 	{
 		StringBuilder builder = new StringBuilder();
 		
-		if (getChildren().size() <= 0)
+		if (getNumChildren() <= 0)
 		{
 			return "";
 		}
 		
-		TreeNode child = getChild(0);
+		TreeNode child = getAccessedNode();
+		
+		if (child == null)
+		{
+			return "";
+		}
 		
 		if (argument && (child instanceof MethodCallNode || child instanceof InstantiationNode))
 		{
@@ -660,7 +862,7 @@ public class ValueNode extends TreeNode
 	 */
 	public String generateSpecialFragment()
 	{
-		for (int i = getChildren().size() - 1; i >= 0; i--)
+		for (int i = getNumChildren() - 1; i >= 0; i--)
 		{
 			TreeNode child = getChild(i);
 			
@@ -689,7 +891,7 @@ public class ValueNode extends TreeNode
 	 */
 	public boolean isSpecialFragment()
 	{
-		for (int i = getChildren().size() - 1; i >= 0; i--)
+		for (int i = getNumChildren() - 1; i >= 0; i--)
 		{
 			TreeNode child = getChild(i);
 			
@@ -784,7 +986,8 @@ public class ValueNode extends TreeNode
 		super.cloneTo(node);
 
 		node.arrayDimensions = arrayDimensions;
-		node.type = type;
+		node.type            = type;
+		node.dataType        = dataType;
 		
 		return node;
 	}

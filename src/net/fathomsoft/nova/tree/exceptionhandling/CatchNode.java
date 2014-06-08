@@ -53,7 +53,7 @@ public class CatchNode extends ExceptionHandlingNode
 	@Override
 	public void addChild(TreeNode child)
 	{
-		if (getChildren().size() == 1 || getChildren().size() == 2)
+		if (getNumChildren() == 1 || getNumChildren() == 2)
 		{
 			addChild(1, child);
 		}
@@ -74,7 +74,7 @@ public class CatchNode extends ExceptionHandlingNode
 		builder.append("CATCH ").append('(').append(getException().getID()).append(')').append('\n');
 		builder.append('{').append('\n');
 		
-		for (int i = 0; i < getChildren().size(); i++)
+		for (int i = 0; i < getNumChildren(); i++)
 		{
 			TreeNode child = getChild(i);
 			
@@ -102,7 +102,7 @@ public class CatchNode extends ExceptionHandlingNode
 			parent = parent.getScopeNode();
 		}
 		
-		for (int i = parent.getChildren().size() - 1; i >= 0; i--)
+		for (int i = parent.getNumChildren() - 1; i >= 0; i--)
 		{
 			TreeNode child = parent.getChild(i);
 			
@@ -135,10 +135,12 @@ public class CatchNode extends ExceptionHandlingNode
 	 * 		CatchNode instance.
 	 * @param location The location of the statement in the source code.
 	 * @param require Whether or not to throw an error if anything goes wrong.
+	 * @param scope Whether or not the given statement is the beginning of
+	 * 		a scope.
 	 * @return The generated node, if it was possible to translated it
 	 * 		into a CatchNode.
 	 */
-	public static CatchNode decodeStatement(TreeNode parent, String statement, Location location, boolean require)
+	public static CatchNode decodeStatement(TreeNode parent, String statement, Location location, boolean require, boolean scope)
 	{
 		if (Regex.matches(statement, 0, Patterns.PRE_CATCH))
 		{
@@ -154,7 +156,7 @@ public class CatchNode extends ExceptionHandlingNode
 				newLoc.setLineNumber(location.getLineNumber());
 				newLoc.setBounds(location.getStart() + bounds.getStart(), location.getStart() + bounds.getEnd());
 				
-				LocalDeclarationNode exceptionInstance = LocalDeclarationNode.decodeStatement(parent, contents, newLoc, require);
+				LocalDeclarationNode exceptionInstance = LocalDeclarationNode.decodeStatement(parent, contents, newLoc, require, false);
 				
 				if (exceptionInstance != null)
 				{

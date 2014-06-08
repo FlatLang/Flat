@@ -112,7 +112,7 @@ public class ScopeNode extends TreeNode
 	@Override
 	public String generateCSource()
 	{
-		if (getChildren().size() <= 1)
+		if (getNumChildren() <= 1)
 		{
 			if (getParent() instanceof MethodNode == false)
 			{
@@ -129,7 +129,7 @@ public class ScopeNode extends TreeNode
 		
 		builder.append('{').append('\n');
 		
-		for (int i = 0; i < getChildren().size(); i++)
+		for (int i = 0; i < getNumChildren(); i++)
 		{
 			TreeNode child = getChild(i);
 			

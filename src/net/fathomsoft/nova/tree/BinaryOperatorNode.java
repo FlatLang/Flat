@@ -50,11 +50,11 @@ public class BinaryOperatorNode extends ValueNode
 	{
 		StringBuilder builder = new StringBuilder();
 		
-		for (int i = 0; i < getChildren().size(); i++)
+		for (int i = 0; i < getNumChildren(); i++)
 		{
 			builder.append(getChild(i).generateJavaSource());
 			
-			if (i < getChildren().size() - 1)
+			if (i < getNumChildren() - 1)
 			{
 				builder.append(' ');
 			}
@@ -80,16 +80,39 @@ public class BinaryOperatorNode extends ValueNode
 	{
 		StringBuilder builder = new StringBuilder();
 		
-		for (int i = 0; i < getChildren().size(); i++)
+		for (int i = 0; i < getNumChildren(); i++)
 		{
 			TreeNode child = getChild(i);
 			
-			builder.append(child.generateCSourceFragment());
-			
-			if (i < getChildren().size() - 1)
+			if (i > 0)
 			{
 				builder.append(' ');
 			}
+			
+			builder.append(child.generateCSourceFragment());
+		}
+		
+		return builder.toString();
+	}
+	
+	/**
+	 * @see net.fathomsoft.nova.tree.TreeNode#generateNovaInput(boolean)
+	 */
+	@Override
+	public String generateNovaInput(boolean outputChildren)
+	{
+		StringBuilder builder = new StringBuilder();
+		
+		for (int i = 0; i < getNumChildren(); i++)
+		{
+			TreeNode child = getChild(i);
+			
+			if (i > 0)
+			{
+				builder.append(' ');
+			}
+			
+			builder.append(child.generateNovaInput());
 		}
 		
 		return builder.toString();
@@ -142,7 +165,7 @@ public class BinaryOperatorNode extends ValueNode
 //		LocalVariableNode declaration = LocalVariableNode.decodeStatement(parent, "int " + denominatorVar + " = " + denominator, location);
 //		parent.addChild(declaration);
 		
-		IfStatementNode ifStatement = IfStatementNode.decodeStatement(parent, "if (" + denominator + " == 0)", location, true);
+		IfStatementNode ifStatement = IfStatementNode.decodeStatement(parent, "if (" + denominator + " == 0)", location, true, true);
 		parent.addChild(ifStatement);
 		
 		ThrowNode throwNode = generateDivideByZeroThrow(parent, location);
@@ -160,7 +183,7 @@ public class BinaryOperatorNode extends ValueNode
 	 */
 	private static ThrowNode generateDivideByZeroThrow(TreeNode parent, Location location)
 	{
-		ThrowNode throwNode = ThrowNode.decodeStatement(parent, "throw new DivideByZeroException()", location, true);
+		ThrowNode throwNode = ThrowNode.decodeStatement(parent, "throw new DivideByZeroException()", location, true, false);
 		
 		return throwNode;
 	}
@@ -186,10 +209,12 @@ public class BinaryOperatorNode extends ValueNode
 	 * 		if possible.
 	 * @param location The location of the statement in the source code.
 	 * @param require Whether or not to throw an error if anything goes wrong.
+	 * @param scope Whether or not the given statement is the beginning of
+	 * 		a scope.
 	 * @return The generated TreeNode, if it was possible to translated it
 	 * 		into a BinaryOperatorNode.
 	 */
-	public static ValueNode decodeStatement(TreeNode parent, String statement, Location location, boolean require)
+	public static ValueNode decodeStatement(TreeNode parent, String statement, Location location, boolean require, boolean scope)
 	{
 		if (SyntaxUtils.isLiteral(statement))
 		{
@@ -210,7 +235,7 @@ public class BinaryOperatorNode extends ValueNode
 		// Pattern used to find word boundaries. 
 		Matcher   matcher = Patterns.PRE_OPERATORS.matcher(statement);
 		
-		ValueNode node    = decodeStatement(parent, statement, matcher, location, require);
+		ValueNode node    = decodeStatement(parent, statement, matcher, location, require, scope);
 		
 		if (node == null)
 		{
@@ -242,10 +267,12 @@ public class BinaryOperatorNode extends ValueNode
 	 * @param matcher The matcher for the statement.
 	 * @param location The location of the statement in the source code.
 	 * @param require Whether or not to throw an error if anything goes wrong.
+	 * @param scope Whether or not the given statement is the beginning of
+	 * 		a scope.
 	 * @return The generated TreeNode, if it was possible to translated it
 	 * 		into a BinaryOperatorNode.
 	 */
-	private static ValueNode decodeStatement(TreeNode parent, String statement, Matcher matcher, Location location, boolean require)
+	private static ValueNode decodeStatement(TreeNode parent, String statement, Matcher matcher, Location location, boolean require, boolean scope)
 	{
 		Bounds operatorLoc = StringUtils.findStrings(statement, StringUtils.BINARY_OPERATORS);
 		
@@ -254,7 +281,7 @@ public class BinaryOperatorNode extends ValueNode
 			return null;
 		}
 		
-		UnaryOperatorNode preTest = UnaryOperatorNode.decodeStatement(parent, statement, location, require);
+		UnaryOperatorNode preTest = UnaryOperatorNode.decodeStatement(parent, statement, location, require, scope);
 		
 		if (preTest != null)
 		{
@@ -332,7 +359,7 @@ public class BinaryOperatorNode extends ValueNode
 			
 			matcher.reset(statement);
 			
-			ValueNode rhn = decodeStatement(parent, statement, matcher, location, require);
+			ValueNode rhn = decodeStatement(parent, statement, matcher, location, require, scope);
 			
 			if (rhn == null)
 			{
@@ -443,13 +470,15 @@ public class BinaryOperatorNode extends ValueNode
 	 * @param statement The statement containing the value.
 	 * @param location The location of the statement in the source code.
 	 * @param require Whether or not to throw an error if anything goes wrong.
+	 * @param scope Whether or not the given statement is the beginning of
+	 * 		a scope.
 	 * @return The generated TreeNode instance.
 	 */
 	private static ValueNode createNode(TreeNode parent, String statement, Location location)
 	{
 		if (SyntaxUtils.isLiteral(statement))
 		{
-			LiteralNode literal = LiteralNode.decodeStatement(parent, statement, location, true);
+			LiteralNode literal = LiteralNode.decodeStatement(parent, statement, location, true, false);
 			
 			return literal;
 		}
@@ -457,12 +486,12 @@ public class BinaryOperatorNode extends ValueNode
 		{
 			String      value   = statement.substring(statement.indexOf('.') + 1);
 		
-			LiteralNode literal = LiteralNode.decodeStatement(parent, value, location, true);
+			LiteralNode literal = LiteralNode.decodeStatement(parent, value, location, true, false);
 			
 			return literal;
 		}
 		
-		return (ValueNode)decodeScopeContents(parent, statement, location, false);
+		return (ValueNode)decodeScopeContents(parent, statement, location, false, false);
 	}
 	
 	/**
@@ -474,6 +503,8 @@ public class BinaryOperatorNode extends ValueNode
 	 * 		from.
 	 * @param location The location of the statement in the source code.
 	 * @param require Whether or not to throw an error if anything goes wrong.
+	 * @param scope Whether or not the given statement is the beginning of
+	 * 		a scope.
 	 * @return The UnaryOperatorNode instance, if one exists. Null
 	 * 		otherwise.
 	 */
@@ -561,7 +592,7 @@ public class BinaryOperatorNode extends ValueNode
 		
 		String            expression = statement.substring(start, end);
 		
-		UnaryOperatorNode unary      = UnaryOperatorNode.decodeStatement(parent, expression, newLoc, false);
+		UnaryOperatorNode unary      = UnaryOperatorNode.decodeStatement(parent, expression, newLoc, false, false);
 		
 		return unary;
 	}
@@ -631,7 +662,7 @@ public class BinaryOperatorNode extends ValueNode
 						replace(nonString, autobox);
 						
 						String            methodCall   = autobox.generateNovaInput() + ".toString()";
-						InstantiationNode toStringCall = (InstantiationNode)TreeNode.decodeScopeContents(parent, methodCall, literal.getLocationIn());
+						InstantiationNode toStringCall = (InstantiationNode)TreeNode.decodeScopeContents(parent, methodCall, literal.getLocationIn(), false);
 						
 						replace(autobox, toStringCall);
 						
@@ -651,7 +682,7 @@ public class BinaryOperatorNode extends ValueNode
 							
 							String            methodCall   = autobox.generateNovaInput() + ".toString()";
 							
-							InstantiationNode toStringCall = (InstantiationNode)TreeNode.decodeScopeContents(parent, methodCall, value.getLocationIn());
+							InstantiationNode toStringCall = (InstantiationNode)TreeNode.decodeScopeContents(parent, methodCall, value.getLocationIn(), false);
 							
 							replace(autobox, toStringCall);
 							
@@ -674,7 +705,7 @@ public class BinaryOperatorNode extends ValueNode
 				
 				String   statement = left.generateNovaInput() + ".concat(" + right.generateNovaInput() + ")";
 				
-				TreeNode strConcat = decodeScopeContents(parent, statement, left.getLocationIn());
+				TreeNode strConcat = decodeScopeContents(parent, statement, left.getLocationIn(), false);
 				
 				parent.replace(this, strConcat);
 			}

@@ -45,7 +45,7 @@ public class WhileLoopNode extends LoopNode
 	@Override
 	public void addChild(TreeNode child)
 	{
-		if (getChildren().size() <= 1)
+		if (getNumChildren() <= 1)
 		{
 			addChild(1, child);
 		}
@@ -67,7 +67,7 @@ public class WhileLoopNode extends LoopNode
 		
 		builder.append("while (").append(condition.generateCSource()).append(')').append('\n');
 		
-		for (int i = 0; i < getChildren().size(); i++)
+		for (int i = 0; i < getNumChildren(); i++)
 		{
 			TreeNode child = getChild(i);
 			
@@ -96,10 +96,12 @@ public class WhileLoopNode extends LoopNode
 	 * 		WhileLoopNode instance.
 	 * @param location The location of the statement in the source code.
 	 * @param require Whether or not to throw an error if anything goes wrong.
+	 * @param scope Whether or not the given statement is the beginning of
+	 * 		a scope.
 	 * @return The generated node, if it was possible to translated it
 	 * 		into a WhileLoopNode.
 	 */
-	public static WhileLoopNode decodeStatement(TreeNode parent, String statement, Location location, boolean require)
+	public static WhileLoopNode decodeStatement(TreeNode parent, String statement, Location location, boolean require, boolean scope)
 	{
 		if (Regex.matches(statement, 0, Patterns.PRE_WHILE))
 		{
@@ -115,7 +117,7 @@ public class WhileLoopNode extends LoopNode
 				
 				String   contents  = statement.substring(bounds.getStart(), bounds.getEnd());
 				
-				TreeNode condition = BinaryOperatorNode.decodeStatement(parent, contents, newLoc, require);
+				TreeNode condition = BinaryOperatorNode.decodeStatement(parent, contents, newLoc, require, false);
 				
 				if (condition == null)
 				{
@@ -125,7 +127,7 @@ public class WhileLoopNode extends LoopNode
 					}
 					if (condition == null && SyntaxUtils.isLiteral(contents))
 					{
-						LiteralNode literal = LiteralNode.decodeStatement(n, contents, newLoc, require);
+						LiteralNode literal = LiteralNode.decodeStatement(n, contents, newLoc, require, false);
 						
 						condition = literal;
 					}

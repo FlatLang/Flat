@@ -30,7 +30,7 @@ public class LocalVariableNode extends VariableNode
 	public void validate()
 	{
 		// If possibly accessing a shadowed field. ONLY for shadowed fields.
-		if (getName().equals(MethodNode.getObjectReferenceIdentifier()) && getChildren().size() > 0)
+		if (getName().equals(MethodNode.getObjectReferenceIdentifier()) && getNumChildren() > 0)
 		{
 			TreeNode child = getChild(0);
 			

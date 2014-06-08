@@ -54,7 +54,7 @@ public class UnaryOperatorNode extends ValueNode
 	 */
 	public TreeNode getVariableNode()
 	{
-		for (int i = 0; i < getChildren().size(); i++)
+		for (int i = 0; i < getNumChildren(); i++)
 		{
 			if (getChild(i) instanceof OperatorNode == false)
 			{
@@ -73,7 +73,7 @@ public class UnaryOperatorNode extends ValueNode
 	{
 		StringBuilder builder = new StringBuilder();
 		
-		for (int i = 0; i < getChildren().size(); i++)
+		for (int i = 0; i < getNumChildren(); i++)
 		{
 			builder.append(getChild(i).generateJavaSource());
 		}
@@ -109,11 +109,29 @@ public class UnaryOperatorNode extends ValueNode
 	{
 		StringBuilder builder = new StringBuilder();
 		
-		for (int i = 0; i < getChildren().size(); i++)
+		for (int i = 0; i < getNumChildren(); i++)
 		{
 			TreeNode child = getChild(i);
 			
 			builder.append(child.generateCSourceFragment());
+		}
+		
+		return builder.toString();
+	}
+	
+	/**
+	 * @see net.fathomsoft.nova.tree.TreeNode#generateNovaInput(boolean)
+	 */
+	@Override
+	public String generateNovaInput(boolean outputChildren)
+	{
+		StringBuilder builder = new StringBuilder();
+		
+		for (int i = 0; i < getNumChildren(); i++)
+		{
+			TreeNode child = getChild(i);
+			
+			builder.append(child.generateNovaInput());
 		}
 		
 		return builder.toString();
@@ -144,10 +162,12 @@ public class UnaryOperatorNode extends ValueNode
 	 * 		UnaryOperatorNode instance.
 	 * @param location The location of the statement in the source code.
 	 * @param require Whether or not to throw an error if anything goes wrong.
+	 * @param scope Whether or not the given statement is the beginning of
+	 * 		a scope.
 	 * @return The generated node, if it was possible to translated it
 	 * 		into a UnaryOperatorNode.
 	 */
-	public static UnaryOperatorNode decodeStatement(TreeNode parent, String statement, Location location, boolean require)
+	public static UnaryOperatorNode decodeStatement(TreeNode parent, String statement, Location location, boolean require, boolean scope)
 	{
 		Bounds bounds = StringUtils.findStrings(statement, StringUtils.UNARY_OPERATORS);
 		

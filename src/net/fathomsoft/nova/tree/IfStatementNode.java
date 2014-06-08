@@ -80,7 +80,7 @@ public class IfStatementNode extends TreeNode
 		
 		ArgumentListNode condition = getCondition();
 		
-		for (int i = 0; i < condition.getChildren().size(); i++)
+		for (int i = 0; i < condition.getNumChildren(); i++)
 		{
 			TreeNode child = condition.getChild(i);
 			
@@ -90,7 +90,7 @@ public class IfStatementNode extends TreeNode
 		builder.append(')').append('\n');
 //		builder.append('{').append('\n');
 //		
-//		for (int i = 0; i < getChildren().size(); i++)
+//		for (int i = 0; i < getNumChildren(); i++)
 //		{
 //			TreeNode child = getChild(i);
 //			
@@ -132,10 +132,12 @@ public class IfStatementNode extends TreeNode
 	 * 		IfStatementNode instance.
 	 * @param location The location of the statement in the source code.
 	 * @param require Whether or not to throw an error if anything goes wrong.
+	 * @param scope Whether or not the given statement is the beginning of
+	 * 		a scope.
 	 * @return The generated node, if it was possible to translated it
 	 * 		into a IfStatementNode.
 	 */
-	public static IfStatementNode decodeStatement(TreeNode parent, String statement, Location location, boolean require)
+	public static IfStatementNode decodeStatement(TreeNode parent, String statement, Location location, boolean require, boolean scope)
 	{
 		if (Regex.matches(statement, 0, Patterns.PRE_IF))
 		{
@@ -151,9 +153,8 @@ public class IfStatementNode extends TreeNode
 				newLoc.setLineNumber(location.getLineNumber());
 				newLoc.setBounds(location.getStart() + bounds.getStart(), location.getStart() + bounds.getEnd());
 				
-				TreeNode condition = BinaryOperatorNode.decodeStatement(parent, contents, newLoc, require);
+				TreeNode condition = BinaryOperatorNode.decodeStatement(parent, contents, newLoc, require, false);
 				
-
 				if (condition == null)
 				{
 					condition = getExistingNode(parent, contents);

@@ -52,10 +52,11 @@ public abstract class TreeNode
 		ImportNode.class, ClassNode.class
 	};
 	
-	private static final Class<?>	CLASS_CHILD_DECODE[] = new Class<?>[]
-	{
-		DestructorNode.class, ConstructorNode.class, MethodNode.class, FieldNode.class
-	};
+//	private static final Class<?>	CLASS_CHILD_DECODE[] = new Class<?>[]
+//	{
+//		DestructorNode.class, ConstructorNode.class, MethodNode.class, FieldNode.class,
+//		ExternalTypeNode.class
+//	};
 	
 	private static final Class<?>	PRE_VALUE_DECODE[] = new Class<?>[]
 	{
@@ -65,8 +66,8 @@ public abstract class TreeNode
 	private static final Class<?>	SCOPE_CHILD_DECODE[] = new Class<?>[]
 	{
 		ExceptionHandlingNode.class, AssignmentNode.class, InstantiationNode.class,
-		ElseStatementNode.class, IfStatementNode.class, LoopNode.class, ExternalTypeNode.class,
-		ArrayAccessNode.class, UnaryOperatorNode.class, MethodCallNode.class, LocalDeclarationNode.class
+		ElseStatementNode.class, IfStatementNode.class, LoopNode.class, ArrayAccessNode.class,
+		UnaryOperatorNode.class, MethodCallNode.class, LocalDeclarationNode.class
 	};
 	
 	private static final Class<?>	METHOD_CALL_CHILD_DECODE[] = new Class<?>[]
@@ -95,25 +96,23 @@ public abstract class TreeNode
 	 */
 	public int getLineNumber()
 	{
-		int lineNumber = 0;
-		
-		if (parent == null || parent.getLocationIn() == null || !parent.getLocationIn().isValid())
+		if (parent == null)
 		{
-			lineNumber = 1;
+			return 0;
 		}
 		else
 		{
-			lineNumber += parent.getLineNumber();
+			int lineNumber = parent.getLineNumber();
+			
+			Location loc = getLocationIn();
+			
+			if (loc != null && loc.isValid())
+			{
+				lineNumber += loc.getLineNumber();
+			}
+			
+			return lineNumber;
 		}
-		
-		Location loc = getLocationIn();
-		
-		if (loc != null && loc.isValid())
-		{
-			lineNumber += loc.getLineNumber();
-		}
-		
-		return lineNumber + 1;
 	}
 	
 	/**
@@ -392,6 +391,16 @@ public abstract class TreeNode
 		}
 		
 		return false;
+	}
+	
+	/**
+	 * Get the number of children that the specified TreeNode has.
+	 * 
+	 * @return The number of children that the specified TreeNode has.
+	 */
+	public int getNumChildren()
+	{
+		return children.size();
 	}
 	
 	/**
@@ -822,11 +831,13 @@ public abstract class TreeNode
 	 * 		is located at.
 	 * @param types The types of TreeNodes to try to decode, in the given
 	 * 		order.
+	 * @param scope Whether or not the given statement is the beginning of
+	 * 		a scope.
 	 * @return The TreeNode constructed from the statement, if any.
 	 */
-	public static TreeNode decodeStatement(TreeNode parent, String statement, Location location, Class<?> types[])
+	public static TreeNode decodeStatement(TreeNode parent, String statement, Location location, boolean scope, Class<?> types[])
 	{
-		return decodeStatement(parent, statement, location, true, types);
+		return decodeStatement(parent, statement, location, true, scope, types);
 	}
 	
 	/**
@@ -839,12 +850,14 @@ public abstract class TreeNode
 	 * @param statement The statement to be decoded into a TreeNode.
 	 * @param location The Location in the source text where the statement
 	 * 		is located at.
-	 * @param require Throw an error if the statement is not decoded.
+	 * @param require Whether or not to throw an error if anything goes wrong.
+	 * @param scope Whether or not the given statement is the beginning of
+	 * 		a scope.
 	 * @param types The types of TreeNodes to try to decode, in the given
 	 * 		order.
 	 * @return The TreeNode constructed from the statement, if any.
 	 */
-	public static TreeNode decodeStatement(TreeNode parent, String statement, Location location, boolean require, Class<?> types[])
+	public static TreeNode decodeStatement(TreeNode parent, String statement, Location location, boolean require, boolean scope, Class<?> types[])
 	{
 		TreeNode node = null;
 		
@@ -858,53 +871,52 @@ public abstract class TreeNode
 //				
 //				node = (TreeNode)m.invoke(a, parent, statement, location);
 				
-				if      (type == LocalDeclarationNode.class) node = LocalDeclarationNode.decodeStatement(parent, statement, location, require);
-				else if (type == LocalVariableNode.class) node = LocalVariableNode.decodeStatement(parent, statement, location, require);
-				else if (type == IfStatementNode.class) node = IfStatementNode.decodeStatement(parent, statement, location, require);
-				else if (type == ElseStatementNode.class) node = ElseStatementNode.decodeStatement(parent, statement, location, require);
-				else if (type == ArgumentListNode.class) node = ArgumentListNode.decodeStatement(parent, statement, location, require);
-				else if (type == ArrayAccessNode.class) node = ArrayAccessNode.decodeStatement(parent, statement, location, require);
-				else if (type == AssignmentNode.class) node = AssignmentNode.decodeStatement(parent, statement, location, require);
-				else if (type == ArrayNode.class) node = ArrayNode.decodeStatement(parent, statement, location, require);
-				else if (type == BinaryOperatorNode.class) node = BinaryOperatorNode.decodeStatement(parent, statement, location, require);
-				else if (type == ClassNode.class) node = ClassNode.decodeStatement(parent, statement, location, require);
-				else if (type == ConditionNode.class) node = ConditionNode.decodeStatement(parent, statement, location, require);
-				else if (type == ConstructorNode.class) node = ConstructorNode.decodeStatement(parent, statement, location, require);
-				else if (type == InstanceDeclarationNode.class) node = InstanceDeclarationNode.decodeStatement(parent, statement, location, require);
-				else if (type == DestructorNode.class) node = DestructorNode.decodeStatement(parent, statement, location, require);
-				else if (type == ExternalTypeNode.class) node = ExternalTypeNode.decodeStatement(parent, statement, location, require);
-				else if (type == FileNode.class) node = FileNode.decodeStatement(parent, statement, location, require);
-				else if (type == IdentifierNode.class) node = IdentifierNode.decodeStatement(parent, statement, location, require);
-				else if (type == IfStatementNode.class) node = IfStatementNode.decodeStatement(parent, statement, location, require);
-				else if (type == ImportListNode.class) node = ImportListNode.decodeStatement(parent, statement, location, require);
-				else if (type == ImportNode.class) node = ImportNode.decodeStatement(parent, statement, location, require);
-				else if (type == InstantiationNode.class) node = InstantiationNode.decodeStatement(parent, statement, location, require);
-				else if (type == LiteralNode.class) node = LiteralNode.decodeStatement(parent, statement, location, require);
-				else if (type == LoopInitializationNode.class) node = LoopInitializationNode.decodeStatement(parent, statement, location, require);
-				else if (type == LoopNode.class) node = LoopNode.decodeStatement(parent, statement, location, require);
-				else if (type == LoopUpdateNode.class) node = LoopUpdateNode.decodeStatement(parent, statement, location, require);
-				else if (type == MethodCallNode.class) node = MethodCallNode.decodeStatement(parent, statement, location, require);
-				else if (type == MethodListNode.class) node = MethodListNode.decodeStatement(parent, statement, location, require);
-				else if (type == MethodNode.class) node = MethodNode.decodeStatement(parent, statement, location, require);
-				else if (type == OperatorNode.class) node = OperatorNode.decodeStatement(parent, statement, location, require);
-				else if (type == ParameterListNode.class) node = ParameterListNode.decodeStatement(parent, statement, location, require);
-				else if (type == PriorityNode.class) node = PriorityNode.decodeStatement(parent, statement, location, require);
-				else if (type == ProgramNode.class) node = ProgramNode.decodeStatement(parent, statement, location, require);
-				else if (type == ReturnNode.class) node = ReturnNode.decodeStatement(parent, statement, location, require);
-				else if (type == ScopeNode.class) node = ScopeNode.decodeStatement(parent, statement, location, require);
-				else if (type == UnaryOperatorNode.class) node = UnaryOperatorNode.decodeStatement(parent, statement, location, require);
-				else if (type == FieldListNode.class) node = FieldListNode.decodeStatement(parent, statement, location, require);
-				else if (type == FieldNode.class) node = FieldNode.decodeStatement(parent, statement, location, require);
-				else if (type == StaticFieldListNode.class) node = StaticFieldListNode.decodeStatement(parent, statement, location, require);
-				else if (type == InstanceFieldListNode.class) node = InstanceFieldListNode.decodeStatement(parent, statement, location, require);
-				else if (type == VariableListNode.class) node = VariableListNode.decodeStatement(parent, statement, location, require);
-				else if (type == VariableNode.class) node = VariableNode.decodeStatement(parent, statement, location, require);
-				else if (type == CatchNode.class) node = CatchNode.decodeStatement(parent, statement, location, require);
-				else if (type == ExceptionHandlingNode.class) node = ExceptionHandlingNode.decodeStatement(parent, statement, location, require);
-				else if (type == ExceptionNode.class) node = ExceptionNode.decodeStatement(parent, statement, location, require);
-				else if (type == FinallyNode.class) node = FinallyNode.decodeStatement(parent, statement, location, require);
-				else if (type == ThrowNode.class) node = ThrowNode.decodeStatement(parent, statement, location, require);
-				else if (type == TryNode.class) node = TryNode.decodeStatement(parent, statement, location, require);
+				if      (type == LocalDeclarationNode.class) node = LocalDeclarationNode.decodeStatement(parent, statement, location, require, scope);
+				else if (type == IfStatementNode.class) node = IfStatementNode.decodeStatement(parent, statement, location, require, scope);
+				else if (type == ElseStatementNode.class) node = ElseStatementNode.decodeStatement(parent, statement, location, require, scope);
+				else if (type == ArgumentListNode.class) node = ArgumentListNode.decodeStatement(parent, statement, location, require, scope);
+				else if (type == ArrayAccessNode.class) node = ArrayAccessNode.decodeStatement(parent, statement, location, require, scope);
+				else if (type == AssignmentNode.class) node = AssignmentNode.decodeStatement(parent, statement, location, require, scope);
+				else if (type == ArrayNode.class) node = ArrayNode.decodeStatement(parent, statement, location, require, scope);
+				else if (type == BinaryOperatorNode.class) node = BinaryOperatorNode.decodeStatement(parent, statement, location, require, scope);
+				else if (type == ClassNode.class) node = ClassNode.decodeStatement(parent, statement, location, require, scope);
+				else if (type == ConditionNode.class) node = ConditionNode.decodeStatement(parent, statement, location, require, scope);
+				else if (type == ConstructorNode.class) node = ConstructorNode.decodeStatement(parent, statement, location, require, scope);
+				else if (type == DestructorNode.class) node = DestructorNode.decodeStatement(parent, statement, location, require, scope);
+				else if (type == ExternalTypeNode.class) node = ExternalTypeNode.decodeStatement(parent, statement, location, require, scope);
+				else if (type == FileNode.class) node = FileNode.decodeStatement(parent, statement, location, require, scope);
+				else if (type == IdentifierNode.class) node = IdentifierNode.decodeStatement(parent, statement, location, require, scope);
+				else if (type == IfStatementNode.class) node = IfStatementNode.decodeStatement(parent, statement, location, require, scope);
+				else if (type == ImportListNode.class) node = ImportListNode.decodeStatement(parent, statement, location, require, scope);
+				else if (type == ImportNode.class) node = ImportNode.decodeStatement(parent, statement, location, require, scope);
+				else if (type == InstanceDeclarationNode.class) node = InstanceDeclarationNode.decodeStatement(parent, statement, location, require, scope);
+				else if (type == InstantiationNode.class) node = InstantiationNode.decodeStatement(parent, statement, location, require, scope);
+				else if (type == LiteralNode.class) node = LiteralNode.decodeStatement(parent, statement, location, require, scope);
+				else if (type == LoopInitializationNode.class) node = LoopInitializationNode.decodeStatement(parent, statement, location, require, scope);
+				else if (type == LoopNode.class) node = LoopNode.decodeStatement(parent, statement, location, require, scope);
+				else if (type == LoopUpdateNode.class) node = LoopUpdateNode.decodeStatement(parent, statement, location, require, scope);
+				else if (type == MethodCallNode.class) node = MethodCallNode.decodeStatement(parent, statement, location, require, scope);
+				else if (type == MethodListNode.class) node = MethodListNode.decodeStatement(parent, statement, location, require, scope);
+				else if (type == MethodNode.class) node = MethodNode.decodeStatement(parent, statement, location, require, scope);
+				else if (type == OperatorNode.class) node = OperatorNode.decodeStatement(parent, statement, location, require, scope);
+				else if (type == ParameterListNode.class) node = ParameterListNode.decodeStatement(parent, statement, location, require, scope);
+				else if (type == PriorityNode.class) node = PriorityNode.decodeStatement(parent, statement, location, require, scope);
+				else if (type == ProgramNode.class) node = ProgramNode.decodeStatement(parent, statement, location, require, scope);
+				else if (type == ReturnNode.class) node = ReturnNode.decodeStatement(parent, statement, location, require, scope);
+				else if (type == ScopeNode.class) node = ScopeNode.decodeStatement(parent, statement, location, require, scope);
+				else if (type == UnaryOperatorNode.class) node = UnaryOperatorNode.decodeStatement(parent, statement, location, require, scope);
+				else if (type == FieldListNode.class) node = FieldListNode.decodeStatement(parent, statement, location, require, scope);
+				else if (type == FieldNode.class) node = FieldNode.decodeStatement(parent, statement, location, require, scope);
+				else if (type == StaticFieldListNode.class) node = StaticFieldListNode.decodeStatement(parent, statement, location, require, scope);
+				else if (type == InstanceFieldListNode.class) node = InstanceFieldListNode.decodeStatement(parent, statement, location, require, scope);
+				else if (type == VariableListNode.class) node = VariableListNode.decodeStatement(parent, statement, location, require, scope);
+				else if (type == VariableNode.class) node = VariableNode.decodeStatement(parent, statement, location, require, scope);
+				else if (type == CatchNode.class) node = CatchNode.decodeStatement(parent, statement, location, require, scope);
+				else if (type == ExceptionHandlingNode.class) node = ExceptionHandlingNode.decodeStatement(parent, statement, location, require, scope);
+				else if (type == ExceptionNode.class) node = ExceptionNode.decodeStatement(parent, statement, location, require, scope);
+				else if (type == FinallyNode.class) node = FinallyNode.decodeStatement(parent, statement, location, require, scope);
+				else if (type == ThrowNode.class) node = ThrowNode.decodeStatement(parent, statement, location, require, scope);
+				else if (type == TryNode.class) node = TryNode.decodeStatement(parent, statement, location, require, scope);
 				
 				if (node != null)
 				{
@@ -933,7 +945,7 @@ public abstract class TreeNode
 //			e.printStackTrace();
 //		}
 		
-		node = ExternalStatementNode.decodeStatement(parent, statement, location, require);
+		node = ExternalStatementNode.decodeStatement(parent, statement, location, require, scope);
 		
 //		if (require)
 //		{
@@ -953,25 +965,28 @@ public abstract class TreeNode
 	 * @param statement The statement to be decoded into a TreeNode.
 	 * @param location The Location in the source text where the statement
 	 * 		is located at.
+	 * @param require Whether or not to throw an error if anything goes wrong.
+	 * @param scope Whether or not the given statement is the beginning of
+	 * 		a scope.
 	 * @return The TreeNode constructed from the statement, if any.
 	 */
-	public static TreeNode decodeStatement(TreeNode parent, String statement, Location location, boolean require)
+	public static TreeNode decodeStatement(TreeNode parent, String statement, Location location, boolean require, boolean scope)
 	{
-		if (parent instanceof FileNode)
+//		if (parent instanceof FileNode)
+//		{
+//			return decodeStatement(parent, statement, location, scope, FILE_CHILD_DECODE);
+//		}
+//		else if (parent instanceof ClassNode)
+//		{
+//			return decodeStatement(parent, statement, location, scope, CLASS_CHILD_DECODE);
+//		}
+		if (parent instanceof MethodNode || parent instanceof IfStatementNode || parent instanceof ElseStatementNode || parent instanceof LoopNode || parent instanceof ExceptionHandlingNode || parent instanceof ScopeNode)
 		{
-			return decodeStatement(parent, statement, location, FILE_CHILD_DECODE);
-		}
-		else if (parent instanceof ClassNode)
-		{
-			return decodeStatement(parent, statement, location, CLASS_CHILD_DECODE);
-		}
-		else if (parent instanceof MethodNode || parent instanceof IfStatementNode || parent instanceof ElseStatementNode || parent instanceof LoopNode || parent instanceof ExceptionHandlingNode || parent instanceof ScopeNode)
-		{
-			return decodeScopeContents(parent, statement, location);
+			return decodeScopeContents(parent, statement, location, scope);
 		}
 		else if (parent instanceof MethodCallNode)
 		{
-			return decodeStatement(parent, statement, location, METHOD_CALL_CHILD_DECODE);
+			return decodeStatement(parent, statement, location, scope, METHOD_CALL_CHILD_DECODE);
 		}
 		
 //		SyntaxError.outputNewError("Unknown statement", location);
@@ -987,11 +1002,13 @@ public abstract class TreeNode
 	 * @param parent The parent node of the current statement to decode.
 	 * @param statement The statement to decode.
 	 * @param location The location of the statement.
+	 * @param scope Whether or not the given statement is the beginning of
+	 * 		a scope.
 	 * @return The TreeNode representation of the given statement.
 	 */
-	public static TreeNode decodeScopeContents(TreeNode parent, String statement, Location location)
+	public static TreeNode decodeScopeContents(TreeNode parent, String statement, Location location, boolean scope)
 	{
-		return decodeScopeContents(parent, statement, location, true);
+		return decodeScopeContents(parent, statement, location, true, scope);
 	}
 	
 	/**
@@ -1002,14 +1019,16 @@ public abstract class TreeNode
 	 * @param parent The parent node of the current statement to decode.
 	 * @param statement The statement to decode.
 	 * @param location The location of the statement.
-	 * @param require Throw an error if the statement is not decoded.
+	 * @param require Whether or not to throw an error if anything goes wrong.
+	 * @param scope Whether or not the given statement is the beginning of
+	 * 		a scope.
 	 * @return The TreeNode representation of the given statement.
 	 */
-	public static TreeNode decodeScopeContents(TreeNode parent, String statement, Location location, boolean require)
+	public static TreeNode decodeScopeContents(TreeNode parent, String statement, Location location, boolean require, boolean scope)
 	{
 		if (SyntaxUtils.isLiteral(statement))
 		{
-			return LiteralNode.decodeStatement(parent, statement, location, require);
+			return LiteralNode.decodeStatement(parent, statement, location, require, scope);
 		}
 		
 		TreeNode root = null;
@@ -1017,7 +1036,7 @@ public abstract class TreeNode
 		
 		try
 		{
-			node = decodeStatement(parent, statement, location, require, PRE_VALUE_DECODE);
+			node = decodeStatement(parent, statement, location, require, scope, PRE_VALUE_DECODE);
 		
 			if (node != null)
 			{
@@ -1046,6 +1065,7 @@ public abstract class TreeNode
 			{
 				Location currentLoc = new Location(location);
 				currentLoc.setBounds(offset, index);
+				currentLoc.setLineNumber(location.getLineNumber());
 				
 				SyntaxMessage.error("Could not decode syntax '" + current + "'", parent, currentLoc);
 			}
@@ -1058,6 +1078,8 @@ public abstract class TreeNode
 			
 			parent   = node;
 			
+			location = new Location(location);
+			
 			if (root == null)
 			{
 				root = node;
@@ -1066,7 +1088,7 @@ public abstract class TreeNode
 		
 		current = statement.substring(offset, statement.length());
 		
-		node    = decodeStatement(parent, current, location, require, SCOPE_CHILD_DECODE);
+		node    = decodeStatement(parent, current, location, require, scope, SCOPE_CHILD_DECODE);
 		
 		if (node == null)
 		{
@@ -1094,7 +1116,7 @@ public abstract class TreeNode
 //				System.err.println("sumthin gone rong wit " + statement + parent.getLocationInfo());
 			}
 			
-			SyntaxMessage.error("Could not decode syntax", parent, location);
+			SyntaxMessage.error("Could not decode syntax '" + statement + "'", parent, location);
 		}
 		
 		return node;
@@ -1141,8 +1163,11 @@ public abstract class TreeNode
 			{
 				ClassNode clazz = parent.getProgramNode().getClass(statement);
 				
-				node = new ValueNode(parent, location);
-				node.setType(clazz.getName());
+				if (clazz != null)
+				{
+					node = new ValueNode(parent, location);
+					node.setType(clazz.getName());
+				}
 			}
 		}
 		
@@ -1214,7 +1239,7 @@ public abstract class TreeNode
 				{
 					MethodNode        methodNode = (MethodNode)scopeNode;
 					ParameterListNode parameters = methodNode.getParameterListNode();
-					ParameterNode     parameter  = parameters.getParameter(statement);
+					ParameterNode     parameter  = parameters.getParameterNode(statement);
 					
 					if (parameter != null)
 					{
@@ -1223,6 +1248,18 @@ public abstract class TreeNode
 				}
 				
 				scopeNode = getAncestorWithScope(scopeNode.getParent());
+			}
+			
+			if (parent instanceof ParameterListNode)
+			{
+				ParameterListNode parameters = (ParameterListNode)parent;
+				
+				ParameterNode     parameter  = parameters.getParameterNode(statement);
+				
+				if (parameter != null)
+				{
+					return parameter;
+				}
 			}
 			
 			clazz = (ClassNode)parent.getAncestorOfType(ClassNode.class, true);
@@ -1237,33 +1274,6 @@ public abstract class TreeNode
 				}
 			}
 		}
-//		else if (SyntaxUtils.isValidIdentifierAccess(statement))
-//		{
-//			if (statement.indexOf('.') >= 0)
-//			{
-//				ClassNode    reference = (ClassNode)parent.getAncestorOfType(ClassNode.class);
-//				
-//				ClassNode    type      = SyntaxUtils.getClassType(reference, statement);
-//				
-//				String       var       = statement.substring(statement.lastIndexOf('.') + 1);
-//				
-//				if (type == null)
-//				{
-//					FieldNode field = reference.getField(var);
-//					
-//					if (field != null && field.isExternal())
-//					{
-//						return field;
-//					}
-//					
-//					return null;
-//				}
-//				
-//				VariableNode n = type.getDeclaration(SyntaxUtils.getIdentifierName(var));
-//				
-//				return n;
-//			}
-//		}
 		
 		return null;
 	}
@@ -1337,12 +1347,14 @@ public abstract class TreeNode
 		if (locationIn != null)
 		{
 			Location locIn  = new Location(locationIn);
+			locIn.setLineNumber(locationIn.getLineNumber());
 			node.setLocationIn(locIn);
 		}
 		
 		if (locationOut != null)
 		{
 			Location locOut = new Location(locationOut);
+			locOut.setLineNumber(locationOut.getLineNumber());
 			node.setLocationOut(locOut);
 		}
 		

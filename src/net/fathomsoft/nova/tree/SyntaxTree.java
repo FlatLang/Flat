@@ -52,7 +52,8 @@ public class SyntaxTree
 	
 	private static final Class<?>	SECOND_PASS_CLASSES[] = new Class<?>[]
 	{
-		DestructorNode.class, ConstructorNode.class, MethodNode.class, FieldNode.class
+		DestructorNode.class, ConstructorNode.class, MethodNode.class, ExternalTypeNode.class,
+		FieldNode.class
 	};
 	
 	private static final Class<?>	THIRD_PASS_CLASSES[] = new Class<?>[]
@@ -80,31 +81,31 @@ public class SyntaxTree
 			sources[i]   = FileUtils.readFile(files[i]);
 		}
 		
-		generate(filenames, sources, controller);
+		generate(files, sources, controller);
 	}
 	
 	/**
 	 * Generate a SyntaxTree instance given the name of the file and the
 	 * source within it.
 	 * 
-	 * @param filenames The names of the files containing the source.
+	 * @param files The files containing the Foxy source code.
 	 * @param sources The source codes inside the files.
 	 * @param controller The controller of the compiling program.
 	 */
-	public SyntaxTree(String filenames[], String sources[], Nova controller)
+	public SyntaxTree(File files[], String sources[], Nova controller)
 	{
-		generate(filenames, sources, controller);
+		generate(files, sources, controller);
 	}
 	
 	/**
 	 * Generate the SyntaxTree given the name of the file and the
 	 * source within it.
 	 * 
-	 * @param filenames The names of the files containing the source.
+	 * @param files The files containing the sources.
 	 * @param sources The source codes inside the files.
 	 * @param controller The controller of the compiling program.
 	 */
-	private void generate(String filenames[], String sources[], Nova controller)
+	private void generate(File files[], String sources[], Nova controller)
 	{
 		this.controller = controller;
 		
@@ -115,9 +116,14 @@ public class SyntaxTree
 		for (int i = 0; i < sources.length; i++)
 		{
 			sources[i] = removeComments(sources[i]);
+			
+			if (files[i].getName().equals("ExceptionData.nova"))
+			{
+				System.out.println(sources[i]);
+			}
 		}
 		
-		initTreeGenerators(filenames, sources);
+		initTreeGenerators(files, sources);
 		
 		try
 		{
@@ -149,17 +155,17 @@ public class SyntaxTree
 	 * Initialize the TreeGenerator objects that will be used to generate
 	 * the trees concurrently (if threads are used).
 	 * 
-	 * @param filenames The names of the files to generate trees for.
+	 * @param files The files to generate trees for.
 	 * @param sources The sources within the files to generate the trees
 	 * 		for.
 	 */
-	private void initTreeGenerators(String filenames[], String sources[])
+	private void initTreeGenerators(File files[], String sources[])
 	{
-		generators = new TreeGenerator[filenames.length];
+		generators = new TreeGenerator[files.length];
 		
 		for (int i = 0; i < generators.length; i++)
 		{
-			TreeGenerator generator = new TreeGenerator(filenames[i], sources[i]);
+			TreeGenerator generator = new TreeGenerator(files[i], sources[i]);
 			
 			generators[i] = generator;
 		}
@@ -181,7 +187,7 @@ public class SyntaxTree
 			for (int i = 0; i < generators.length; i++)
 			{
 				Thread generator = new Thread(generators[i]);
-				generator.setName(generators[i].filename + " Generator");
+				generator.setName(generators[i].file.getName() + " Generator");
 				
 				generator.start();
 				
@@ -215,11 +221,11 @@ public class SyntaxTree
 	 */
 	public MethodNode getMainMethod()
 	{
-		for (int i = 0; i < root.getChildren().size(); i++)
+		for (int i = 0; i < root.getNumChildren(); i++)
 		{
 			TreeNode child = root.getChild(i);
 			
-			for (int j = 0; j < child.getChildren().size(); j++)
+			for (int j = 0; j < child.getNumChildren(); j++)
 			{
 				TreeNode child2 = child.getChild(j);
 				
@@ -229,7 +235,7 @@ public class SyntaxTree
 					
 					MethodListNode methods = classNode.getMethodListNode();
 					
-					for (int k = 0; k < methods.getChildren().size(); k++)
+					for (int k = 0; k < methods.getNumChildren(); k++)
 					{
 						MethodNode method = (MethodNode)methods.getChild(k);
 						
@@ -291,7 +297,7 @@ public class SyntaxTree
 			
 			FinallyNode finallyNode = null;
 			
-			for (int i = 0; i < parent.getChildren().size() && finallyNode == null; i++)
+			for (int i = 0; i < parent.getNumChildren() && finallyNode == null; i++)
 			{
 				TreeNode child = parent.getChild(i);
 				
@@ -301,7 +307,7 @@ public class SyntaxTree
 					
 					int     insertIndex = -1;
 					
-					while (i < parent.getChildren().size() && insertIndex == -1)
+					while (i < parent.getNumChildren() && insertIndex == -1)
 					{
 						child = parent.getChild(i);
 						
@@ -343,7 +349,7 @@ public class SyntaxTree
 //			{
 //				ScopeNode scope = root.getScopeNode();
 //				
-//				if (scope.getChildren().size() <= 1)
+//				if (scope.getNumChildren() <= 1)
 //				{
 //					root.detach();
 //					
@@ -383,7 +389,7 @@ public class SyntaxTree
 //			}
 //		}
 		
-		for (int i = 0; i < root.getChildren().size(); i++)
+		for (int i = 0; i < root.getNumChildren(); i++)
 		{
 			TreeNode child = root.getChild(i);
 			
@@ -543,7 +549,8 @@ public class SyntaxTree
 	}
 	
 	/**
-	 * Get the next non-whitespace character on the right.
+	 * Get the next non-whitespace character while traversing the String
+	 * to the left.
 	 * 
 	 * @param index The index to start the search at.
 	 * @param source The source String to search in.
@@ -556,7 +563,8 @@ public class SyntaxTree
 	}
 	
 	/**
-	 * Get the next non-whitespace character on the right.
+	 * Get the next non-whitespace character while traversing the String
+	 * to the right.
 	 * 
 	 * @param index The index to start the search at.
 	 * @param source The source String to search in.
@@ -621,7 +629,7 @@ public class SyntaxTree
 	 */
 	public String[] getCHeaderOutput()
 	{
-		String headers[] = new String[root.getChildren().size()];
+		String headers[] = new String[root.getNumChildren()];
 		
 		for (int i = 0; i < headers.length; i++)
 		{
@@ -641,7 +649,7 @@ public class SyntaxTree
 	 */
 	public String[] getCSourceOutput()
 	{
-		String sources[] = new String[root.getChildren().size()];
+		String sources[] = new String[root.getNumChildren()];
 		
 		for (int i = 0; i < sources.length; i++)
 		{
@@ -660,15 +668,15 @@ public class SyntaxTree
 	 * @return The filenames of all the files, in order of the way they
 	 * 		are in the tree structure.
 	 */
-	public String[] getFilenames()
+	public File[] getFiles()
 	{
-		String sources[] = new String[root.getChildren().size()];
+		File sources[] = new File[root.getNumChildren()];
 		
 		for (int i = 0; i < sources.length; i++)
 		{
 			FileNode child = root.getChild(i).getFileNode();
 			
-			sources[i] = child.getName();
+			sources[i] = child.getFile();
 		}
 		
 		return sources;
@@ -700,7 +708,9 @@ public class SyntaxTree
 		
 		private Matcher			statementStartMatcher;
 		
-		private String			filename, source;
+		private String			source;
+		
+		private File			file;
 		
 		private TreeNode		currentNode;
 		
@@ -710,14 +720,14 @@ public class SyntaxTree
 		 * Create a tree generator instance with the given filename and
 		 * source data.
 		 * 
-		 * @param filename The name of the file to generate the tree for.
+		 * @param file The file to generate the tree for.
 		 * @param source The source within the file to generate the tree
 		 * 		for.
 		 */
-		public TreeGenerator(String filename, String source)
+		public TreeGenerator(File file, String source)
 		{
-			this.filename = filename;
-			this.source   = source;
+			this.file   = file;
+			this.source = source;
 			
 			init(source);
 		}
@@ -735,7 +745,7 @@ public class SyntaxTree
 			statementStartIndex    = 0;
 			statementEndIndex      = 0;
 			oldStatementStartIndex = 0;
-			lineNumber             = 1;
+			lineNumber             = 0;
 		}
 		
 		/**
@@ -746,15 +756,15 @@ public class SyntaxTree
 		{
 			if (phase == 1)
 			{
-				phase1(filename, source);
+				phase1(file, source);
 			}
 			else if (phase == 2)
 			{
-				phase2(filename, source);
+				phase2(file, source);
 			}
 			else if (phase == 3)
 			{
-				phase3(filename, source);
+				phase3(file, source);
 			}
 		}
 		
@@ -779,19 +789,21 @@ public class SyntaxTree
 		{
 			while ((statementEndIndex = Regex.indexOfExcludeTextAndParentheses(source, statementStartIndex, statementType)) >= 0 && !statementStartMatcher.hitEnd())
 			{
-				statementEndIndex = nextNonWhitespaceIndexOnTheLeft(statementEndIndex - 1, source) + 1;
+				boolean scope = source.charAt(statementEndIndex) == '{';
 				
 				int newStatementStartIndex = 0;
 				
-				if (statementStartMatcher.find(StringUtils.findNextNonWhitespaceIndex(source, statementEndIndex) + 1))
+				if (statementStartMatcher.find(statementEndIndex + 1))
 				{
 					newStatementStartIndex = StringUtils.findNextNonWhitespaceIndex(source, statementStartMatcher.start());
 				}
 				
-				int      offset2    = statementStartIndex;
-				int      lineOffset = calculateOffset(statementStartIndex, source);
+				int      endBound   = nextNonWhitespaceIndexOnTheLeft(statementEndIndex - 1, source) + 1;
 				
-				String   statement  = source.substring(statementStartIndex, statementEndIndex);
+				int      offset2    = statementStartIndex;
+				int      lineOffset = calculateOffset(endBound, source);
+				
+				String   statement  = source.substring(statementStartIndex, endBound);
 				
 				Location location   = new Location(lineNumber, lineOffset, offset2 + offset, offset2 + statement.length() + offset);
 				
@@ -799,54 +811,28 @@ public class SyntaxTree
 				
 				try
 				{
-					node = decodeStatement(statement, location, searchTypes);
+					node = decodeStatement(statement, location, scope, searchTypes);
 				}
 				catch (SyntaxErrorException e)
 				{
+					TreeNode parent = null;
 					
-				}
-				
-				lineNumber += StringUtils.numNewLines(statementStartIndex, newStatementStartIndex, source);
-				
-				if (node instanceof ExternalStatementNode)
-				{
-					int  index    = StringUtils.findNextNonWhitespaceIndex(source, statementEndIndex);
-					int  endIndex = 0;
-					
-					char c        = source.charAt(index);
-					
-					if (c == '{')
+					if (!parentStack.isEmpty())
 					{
-						endIndex = StringUtils.findEndingMatch(source, index, '{', '}');
-						index    = StringUtils.findNextNonWhitespaceIndex(source, index + 1);
-					}
-					else
-					{
-						endIndex = source.indexOf(';', index);
+						parent = parentStack.peek();
 					}
 					
-					endIndex = StringUtils.findNextNonWhitespaceIndex(source, endIndex - 1, -1) + 1;
-					
-					if (endIndex <= 0)
+					if (scope)
 					{
-						SyntaxMessage.error("External statement missing closing curly brace or semi-colon", controller);
-					}
-					
-					ExternalStatementNode external = (ExternalStatementNode)node;
-					
-					if (index < endIndex)
-					{
-						String data = source.substring(index, endIndex);
+						MethodNode tempMethod = MethodNode.generateTemporaryMethod(parent, location);
 						
-						external.setData(data);
+						parentStack.push(tempMethod);
 					}
-					else
-					{
-						external.setData("");
-					}
-					
-					skipScope(source);
 				}
+				
+				updateLineNumber(statementStartIndex, newStatementStartIndex, source);
+				
+				checkExternal(node, source);
 				
 				oldStatementStartIndex = statementStartIndex;
 				
@@ -865,23 +851,76 @@ public class SyntaxTree
 		}
 		
 		/**
+		 * Check whether or not the given node is external. If it is,
+		 * treat it as such and then skip the search index to after the
+		 * ending brace of the external statement.
+		 * 
+		 * @param node The TreeNode to check whether or not is an
+		 * 		ExternalStatementNode.
+		 * @param source The source to traverse through.
+		 */
+		private void checkExternal(TreeNode node, String source)
+		{
+			if (node instanceof ExternalStatementNode)
+			{
+				int  index    = statementEndIndex;
+				int  endIndex = 0;
+				
+				char c        = source.charAt(index);
+				
+				if (c == '{')
+				{
+					endIndex = StringUtils.findEndingMatch(source, index, '{', '}');
+					index    = StringUtils.findNextNonWhitespaceIndex(source, index + 1);
+				}
+				else
+				{
+					endIndex = source.indexOf(';', index);
+				}
+				
+				endIndex = StringUtils.findNextNonWhitespaceIndex(source, endIndex - 1, -1) + 1;
+				
+				if (endIndex <= 0)
+				{
+					SyntaxMessage.error("External statement missing closing curly brace or semi-colon", controller);
+				}
+				
+				ExternalStatementNode external = (ExternalStatementNode)node;
+				
+				if (index < endIndex)
+				{
+					String data = source.substring(index, endIndex);
+					
+					external.setData(data);
+				}
+				else
+				{
+					external.setData("");
+				}
+				
+				skipScope(source);
+			}
+		}
+		
+		/**
 		 * Generate the syntax tree nodes for all of the class nodes and
 		 * import nodes.
 		 * 
-		 * @param filename The name of the file that is generating the syntax
-		 * 		tree.
+		 * @param file The file that is generating the syntax tree.
 		 * @param source The source text within the file.
 		 */
-		private void phase1(String filename, String source)
+		private void phase1(File file, String source)
 		{
-			filename = FileUtils.removeFileExtension(filename);
+			Location location = new Location(1, 0, 0, 0);
 			
-			controller.log("Phase one for '" + filename + "'...");
+			FileNode fileNode = new FileNode(root, location);
+			fileNode.setFile(file);
 			
-			FileNode fileNode = new FileNode(root, null);
-			fileNode.setName(filename);
+			controller.log("Phase one for '" + fileNode.getName() + "'...");
 			
 			root.addChild(fileNode);
+			
+			init(source);
 			
 			traverseCode(fileNode, source, 0, EITHER_STATEMENT_END_CHARS, FIRST_PASS_CLASSES, true);
 		}
@@ -890,27 +929,35 @@ public class SyntaxTree
 		 * Generate the syntax tree nodes for all of the field nodes and
 		 * method nodes.
 		 * 
-		 * @param filename The name of the file that is generating the syntax
-		 * 		tree.
+		 * @param file The file that is generating the syntax tree.
 		 * @param source The source text within the file.
 		 */
-		private void phase2(String filename, String source)
+		private void phase2(File file, String source)
 		{
+			String filename = file.getName();
+			
 			filename = FileUtils.removeFileExtension(filename);
 
 			controller.log("Phase two for '" + filename + "'...");
 			
 			FileNode fileNode = root.getFile(filename);
 			
-			for (int i = 0; i < fileNode.getChildren().size(); i++)
+			for (int i = 0; i < fileNode.getNumChildren(); i++)
 			{
 				TreeNode child = fileNode.getChild(i);
 				
 				if (child instanceof ClassNode)
 				{
-					ClassNode node    = (ClassNode)child;
+					ClassNode node = (ClassNode)child;
+
+					if (node.getName().equals("ExceptionData"))
+					{
+						System.out.println("in syntaxtree 1019 here");
+					}
 					
+					// Finds the starting scope '{'
 					int startingIndex = StringUtils.findNextNonWhitespaceIndex(source, node.getLocationIn().getEnd());
+					// Finds the ending scope '}'
 					int endingIndex   = StringUtils.findEndingMatch(source, startingIndex, '{', '}');
 					
 					int contentStart  = StringUtils.findNextNonWhitespaceIndex(source, startingIndex + 1);
@@ -924,6 +971,9 @@ public class SyntaxTree
 					
 					String subSource = source.substring(contentStart, contentEnd);
 					
+					init(subSource);
+					updateLineNumber(node.getLocationIn().getEnd(), contentStart, source);
+					
 					traverseCode(node, subSource, contentStart, EITHER_STATEMENT_END_CHARS, SECOND_PASS_CLASSES, true);
 				}
 			}
@@ -932,19 +982,20 @@ public class SyntaxTree
 		/**
 		 * Generate the syntax tree nodes for all of the method contents.
 		 * 
-		 * @param filename The name of the file that is generating the syntax
-		 * 		tree.
+		 * @param file The file that is generating the syntax tree.
 		 * @param source The source text within the file.
 		 */
-		private void phase3(String filename, String source)
+		private void phase3(File file, String source)
 		{
+			String filename = file.getName();
+			
 			filename = FileUtils.removeFileExtension(filename);
 
 			controller.log("Phase three for '" + filename + "'...");
 			
 			FileNode fileNode = root.getFile(filename);
 			
-			for (int i = 0; i < fileNode.getChildren().size(); i++)
+			for (int i = 0; i < fileNode.getNumChildren(); i++)
 			{
 				TreeNode child = fileNode.getChild(i);
 				
@@ -981,19 +1032,25 @@ public class SyntaxTree
 					continue;
 				}
 				
-				MethodNode node   = (MethodNode)child;
+				MethodNode node = (MethodNode)child;
 				
-				int startingIndex = StringUtils.findNextNonWhitespaceIndex(source, node.getLocationIn().getEnd());
-				int endingIndex   = StringUtils.findEndingMatch(source, startingIndex, '{', '}');
-				
-				int contentStart  = StringUtils.findNextNonWhitespaceIndex(source, startingIndex + 1);
-				int contentEnd    = StringUtils.findNextNonWhitespaceIndex(source, endingIndex - 1, -1) + 1;
-				
-				if (contentStart < contentEnd)
+				if (!node.isExternal())
 				{
-					String subSource  = source.substring(contentStart, contentEnd);
+					int startingIndex = StringUtils.findNextNonWhitespaceIndex(source, node.getLocationIn().getEnd());
+					int endingIndex   = StringUtils.findEndingMatch(source, startingIndex, '{', '}');
 					
-					traverseCode(node, subSource, contentStart, EITHER_STATEMENT_END_CHARS, THIRD_PASS_CLASSES, false);
+					int contentStart  = StringUtils.findNextNonWhitespaceIndex(source, startingIndex + 1);
+					int contentEnd    = StringUtils.findNextNonWhitespaceIndex(source, endingIndex - 1, -1) + 1;
+					
+					if (contentStart < contentEnd)
+					{
+						String subSource = source.substring(contentStart, contentEnd);
+						
+						init(subSource);
+						updateLineNumber(node.getLocationIn().getEnd(), contentStart, source);
+						
+						traverseCode(node, subSource, contentStart, EITHER_STATEMENT_END_CHARS, THIRD_PASS_CLASSES, false);
+					}
 				}
 			}
 		}
@@ -1020,18 +1077,12 @@ public class SyntaxTree
 		 */
 		private void traverseCode(TreeNode parent, String source, int offset, char statementType[], Class<?> searchTypes[], boolean skipScopes)
 		{
-			init(source);
-			
-			if (parent.getLocationIn() != null)
-			{
-				lineNumber = parent.getLineNumber();
-			}
-			
 			parentStack = new Stack<TreeNode>();
 			
 			parentStack.push(parent);
 			
 			currentNode = getNextStatement(source, offset, statementType, searchTypes);
+			
 			// Decode all of the statements in the source text.
 			while (currentNode != null)
 			{
@@ -1047,7 +1098,7 @@ public class SyntaxTree
 					parentNode.addChild(currentNode);
 				}
 				
-				if (statementEndIndex >= 0 && !skipScopes && nextChar(statementEndIndex, source) == '{')
+				if (statementEndIndex >= 0 && !skipScopes && source.charAt(statementEndIndex) == '{')
 				{
 					parentStack.push(currentNode);
 				}
@@ -1060,18 +1111,20 @@ public class SyntaxTree
 		
 		/**
 		 * Skip the current scope that the source has encountered.
+		 * 
+		 * @param source The source to use as a reference.
 		 */
 		private void skipScope(String source)
 		{
-			int startingIndex = StringUtils.findNextNonWhitespaceIndex(source, statementEndIndex);
-			int endingIndex   = StringUtils.findEndingMatch(source, startingIndex, '{', '}');
-
-			lineNumber += StringUtils.numNewLines(statementEndIndex, endingIndex, source);
+			int contentIndex = StringUtils.findNextNonWhitespaceIndex(source, statementEndIndex + 1);
+			int endingIndex  = StringUtils.findNextNonWhitespaceIndex(source, StringUtils.findEndingMatch(source, statementEndIndex, '{', '}') + 1);
 			
-//			int contentStart  = StringUtils.findNextNonWhitespaceIndex(source, startingIndex + 1);
-//			int contentEnd    = StringUtils.findNextNonWhitespaceIndex(source, endingIndex - 1, -1) + 1;
+			updateLineNumber(contentIndex, endingIndex, source); 
 			
-			statementStartIndex = StringUtils.findNextNonWhitespaceIndex(source, endingIndex + 1);
+//			int contentStart = StringUtils.findNextNonWhitespaceIndex(source, startingIndex + 1);
+//			int contentEnd   = StringUtils.findNextNonWhitespaceIndex(source, endingIndex - 1, -1) + 1;
+			
+			statementStartIndex = endingIndex;// + 1;//StringUtils.findNextNonWhitespaceIndex(source, endingIndex + 1);
 			
 			if (statementStartIndex < 0)
 			{
@@ -1108,9 +1161,11 @@ public class SyntaxTree
 		 * @param statement The statement String to decode into a TreeNode.
 		 * @param location The location of the statement in the source text.
 		 * @param searchTypes The type of TreeNodes to try to decode.
+		 * @param scope Whether or not the given statement is the beginning of
+		 * 		a scope.
 		 * @return The result TreeNode of decoding the statement String.
 		 */
-		private TreeNode decodeStatement(String statement, Location location, Class<?> searchTypes[])
+		private TreeNode decodeStatement(String statement, Location location, boolean scope, Class<?> searchTypes[])
 		{
 			TreeNode parent = null;
 			
@@ -1121,12 +1176,25 @@ public class SyntaxTree
 			
 			if (searchTypes.length > 0)
 			{
-				return TreeNode.decodeStatement(parent, statement, location, searchTypes);
+				return TreeNode.decodeStatement(parent, statement, location, scope, searchTypes);
 			}
 			else
 			{
-				return TreeNode.decodeStatement(parent, statement, location, true);
+				return TreeNode.decodeStatement(parent, statement, location, true, scope);
 			}
+		}
+		
+		/**
+		 * Update the number of new lines that exist between (inclusive)
+		 * the bounds of [start, end].
+		 * 
+		 * @param start The starting index to begin the search for new
+		 * 		lines at.
+		 * @param end The ending index to end the search for new lines at.
+		 */
+		private void updateLineNumber(int start, int end, String source)
+		{
+			lineNumber += StringUtils.numNewLines(start, end, source);
 		}
 	}
 }

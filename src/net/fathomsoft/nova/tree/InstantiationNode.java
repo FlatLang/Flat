@@ -45,7 +45,7 @@ public class InstantiationNode extends IdentifierNode
 	@Override
 	public void addChild(TreeNode child)
 	{
-		if (getChildren().size() == 0)
+		if (getNumChildren() == 0)
 		{
 			super.addChild(child);
 		}
@@ -60,7 +60,7 @@ public class InstantiationNode extends IdentifierNode
 	 */
 	public IdentifierNode getAccessedNode()
 	{
-		if (getChildren().size() <= 1)
+		if (getNumChildren() <= 1)
 		{
 			return null;
 		}
@@ -90,7 +90,7 @@ public class InstantiationNode extends IdentifierNode
 		
 		StringBuilder builder = new StringBuilder();
 		
-		for (int i = 0; i < getChildren().size(); i++)
+		for (int i = 0; i < getNumChildren(); i++)
 		{
 			builder.append(getChild(i).generateCSourceFragment());
 		}
@@ -115,10 +115,12 @@ public class InstantiationNode extends IdentifierNode
 	 * 		InstantiationNode instance.
 	 * @param location The location of the statement in the source code.
 	 * @param require Whether or not to throw an error if anything goes wrong.
+	 * @param scope Whether or not the given statement is the beginning of
+	 * 		a scope.
 	 * @return The generated node, if it was possible to translated it
 	 * 		into a InstantiationNode.
 	 */
-	public static InstantiationNode decodeStatement(TreeNode parent, String statement, Location location, boolean require)
+	public static InstantiationNode decodeStatement(TreeNode parent, String statement, Location location, boolean require, boolean scope)
 	{
 		if (SyntaxUtils.isInstantiation(statement))
 		{
@@ -136,7 +138,7 @@ public class InstantiationNode extends IdentifierNode
 			
 			if (SyntaxUtils.isMethodCall(action))
 			{
-				MethodCallNode methodCall = MethodCallNode.decodeStatement(parent, action, newLoc, require);//, false);
+				MethodCallNode methodCall = MethodCallNode.decodeStatement(parent, action, newLoc, require, scope);
 				
 				if (methodCall == null)
 				{
@@ -147,7 +149,7 @@ public class InstantiationNode extends IdentifierNode
 			}
 			else if (SyntaxUtils.isArrayInitialization(action))
 			{
-				child = ArrayNode.decodeStatement(parent, action, newLoc, require);
+				child = ArrayNode.decodeStatement(parent, action, newLoc, require, scope);
 			}
 			
 			if (child == null)

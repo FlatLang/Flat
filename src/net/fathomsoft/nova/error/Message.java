@@ -2,6 +2,7 @@ package net.fathomsoft.nova.error;
 
 import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.tree.FileNode;
+import net.fathomsoft.nova.tree.MethodCallNode;
 import net.fathomsoft.nova.tree.TreeNode;
 import net.fathomsoft.nova.util.Location;
 
@@ -15,9 +16,11 @@ import net.fathomsoft.nova.util.Location;
  */
 public class Message
 {
-	private Location	location;
+	private TreeNode    node;
 	
 	private FileNode	file;
+	
+	private Location	location;
 	
 	private String		message;
 	
@@ -47,6 +50,7 @@ public class Message
 	public Message(String message, TreeNode node, Location location)
 	{
 		this.file       = node.getFileNode();
+		this.node       = node;
 		this.location   = location;
 		this.message    = message;
 		this.controller = node.getController();
@@ -61,13 +65,19 @@ public class Message
 	{
 		String info = message;
 		
-		if (file != null)
+		if (node != null)
 		{
-			info += " in file " + file.getName();
-		}
-		if (location != null)
-		{
-			info += " on line number " + location.getLineNumber() + " at offset " + location.getOffset() + " [" + location.getStart() + ", " + location.getEnd() + "]";
+			Location loc   = node.getLocationIn();
+			
+			int lineNumber = node.getLineNumber();
+			
+			if (location != null && location.isValid())
+			{
+				lineNumber += location.getLineNumber();
+			}
+			
+			info += " in file " + file.getFile().getName();
+			info += " on line number " + lineNumber + " at offset " + loc.getOffset() + " [" + loc.getStart() + ", " + loc.getEnd() + "]";
 		}
 
 		if (type == MESSAGE)

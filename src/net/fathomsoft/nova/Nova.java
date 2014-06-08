@@ -163,6 +163,7 @@ public class Nova
 	private void compile(String args[])
 	{
 		String directory = getWorkingDirectoryPath() + "example/";
+		String standard  = getWorkingDirectoryPath() + "standard/";
 		
 		if (OS == WINDOWS)
 		{
@@ -177,33 +178,34 @@ public class Nova
 		{
 			args = new String[]
 			{
-				directory + "Test.fat",
-				directory + "IO.fat",
-				directory + "String.fat",
-				directory + "ExceptionData.fat",
-				directory + "ArrayList.fat",
-				directory + "Math.fat",
-				directory + "Time.fat",
-				directory + "Person.fat",
-				directory + "DivideByZeroException.fat",
-//				directory + "Nova.fat",
-				directory + "Object.fat",
-				directory + "List.fat",
-				directory + "ListNode.fat",
-				directory + "Thread.fat",
-				directory + "Exception.fat",
-				directory + "BodyBuilder.fat",
-				directory + "Integer.fat",
-				directory + "Array.fat",
-				directory + "Character.fat",
-				directory + "Bool.fat",
-				directory + "Long.fat",
-				directory + "Double.fat",
-				directory + "Number.fat",
-				directory + "GC.fat",
-				"-o", directory + "bin/Executable" + OUTPUT_EXTENSION,
-				"-dir", '"' + directory + "../include" + '"',
-				"-dir", '"' + directory + "../include/gc" + '"',
+				formatPath(directory + "IntegerTest.nova"),
+				formatPath(directory + "Person.nova"),
+				formatPath(directory + "BodyBuilder.nova"),
+//				formatPath(directory + "Nova.nova"),
+				formatPath(standard  + "IO.nova"),
+				formatPath(standard  + "String.nova"),
+				formatPath(standard  + "ExceptionData.nova"),
+				formatPath(standard  + "ArrayList.nova"),
+				formatPath(standard  + "Math.nova"),
+				formatPath(standard  + "Time.nova"),
+				formatPath(standard  + "DivideByZeroException.nova"),
+				formatPath(standard  + "Object.nova"),
+				formatPath(standard  + "List.nova"),
+				formatPath(standard  + "ListNode.nova"),
+				formatPath(standard  + "Thread.nova"),
+				formatPath(standard  + "Exception.nova"),
+				formatPath(standard  + "Integer.nova"),
+				formatPath(standard  + "Array.nova"),
+				formatPath(standard  + "Character.nova"),
+				formatPath(standard  + "Bool.nova"),
+				formatPath(standard  + "Long.nova"),
+				formatPath(standard  + "Double.nova"),
+				formatPath(standard  + "Number.nova"),
+				formatPath(standard  + "GC.nova"),
+				"-o",   formatPath(directory + "bin/Executable" + OUTPUT_EXTENSION),
+				"-dir", formatPath(directory + "../include"),
+				"-dir", formatPath(directory + "../include/gc"),
+				"-dir", formatPath(directory + "../standard"),
 				"-run",
 //				"-csource",
 				"-formatc",
@@ -265,9 +267,9 @@ public class Nova
 			enableFlag(DRY_RUN);
 		}
 		
-		long time = System.currentTimeMillis() - startTime;
+		long   time = System.currentTimeMillis() - startTime;
 		
-		String str = "Nova compile time: " + time + "ms";
+		String str  = LANGUAGE_NAME + " compile time: " + time + "ms";
 		
 		if (BENCHMARK > 0)
 		{
@@ -286,12 +288,13 @@ public class Nova
 		if (isFlagEnabled(FORMATC))
 		{
 			log("Formatting the output c output code...");
+			
 			tree.formatCOutput();
 		}
 		
-		String headers[]   = tree.getCHeaderOutput();
-		String sources[]   = tree.getCSourceOutput();
-		String filenames[] = tree.getFilenames();
+		String headers[] = tree.getCHeaderOutput();
+		String sources[] = tree.getCSourceOutput();
+		File   files[]   = tree.getFiles();
 		
 		if (isFlagEnabled(CSOURCE))
 		{
@@ -302,16 +305,17 @@ public class Nova
 			}
 		}
 		
-		for (int i = 0; i < inputFiles.size(); i++)
+		for (int i = 0; i < files.length; i++)
 		{
 			String header   = headers[i];
 			String source   = sources[i];
-			String fileName = filenames[i];
+			String fileName = FileUtils.removeFileExtension(files[i].getName());
+			File   parent   = files[i].getParentFile();
 			
 			try
 			{
-				File headerFile = FileUtils.writeFile(fileName + ".h", workingDir, header);
-				File sourceFile = FileUtils.writeFile(fileName + ".c", workingDir, source);
+				File headerFile = FileUtils.writeFile(fileName + ".h", parent, header);
+				File sourceFile = FileUtils.writeFile(fileName + ".c", parent, source);
 				
 				cHeaderFiles.add(headerFile);
 				cSourceFiles.add(sourceFile);
@@ -360,49 +364,49 @@ public class Nova
 			return;
 		}
 		
-		FileNode   fileNode   = (FileNode)mainMethod.getAncestorOfType(FileNode.class);
+		FileNode fileNode = mainMethod.getFileNode();
 		
 		if (mainMethod != null)
 		{
-			ClassNode classNode = (ClassNode)mainMethod.getAncestorOfType(ClassNode.class);
-
-//			StringBuilder staticClassImport = new StringBuilder();
-//			StringBuilder staticClassInit   = new StringBuilder();
-//			StringBuilder staticClassFree   = new StringBuilder();
+//			ClassNode classNode = (ClassNode)mainMethod.getAncestorOfType(ClassNode.class);
+//
+////			StringBuilder staticClassImport = new StringBuilder();
+////			StringBuilder staticClassInit   = new StringBuilder();
+////			StringBuilder staticClassFree   = new StringBuilder();
+//			
+//			ProgramNode root = tree.getRoot();
+//			
+//			for (int i = 0; i < root.getNumChildren(); i++)
+//			{
+//				TreeNode child = root.getChild(i);
+//				
+//				if (child instanceof FileNode)
+//				{
+//					FileNode f = (FileNode)child;
+//						
+//					for (int j = 0; j < f.getNumChildren(); j++)
+//					{
+//						TreeNode child2 = f.getChild(j);
+//						
+//						if (child2 instanceof ClassNode)
+//						{
+//							ClassNode c = (ClassNode)child2;
+//							
+//							if (c.containsStaticData())
+//							{
+////								staticClassImport.append("#include \"" + c.getName() + ".h\"").append('\n');
+////								staticClassInit.append("__static__").append(c.getName()).append(" = ").append(LANGUAGE_NAME.toLowerCase()).append('_').append(c.getName()).append('_').append(c.getName()).append("(0);").append('\n');
+////								staticClassFree.append(LANGUAGE_NAME.toLowerCase()).append("_del_").append(c.getName()).append("(&__static__").append(c.getName()).append(", 0);").append('\n');
+//							}
+//						}
+//					}
+//				}
+//			}
 			
-			ProgramNode root = tree.getRoot();
-			
-			for (int i = 0; i < root.getChildren().size(); i++)
-			{
-				TreeNode child = root.getChild(i);
-				
-				if (child instanceof FileNode)
-				{
-					FileNode f = (FileNode)child;
-						
-					for (int j = 0; j < f.getChildren().size(); j++)
-					{
-						TreeNode child2 = f.getChild(j);
-						
-						if (child2 instanceof ClassNode)
-						{
-							ClassNode c = (ClassNode)child2;
-							
-							if (c.containsStaticData())
-							{
-//								staticClassImport.append("#include \"" + c.getName() + ".h\"").append('\n');
-//								staticClassInit.append("__static__").append(c.getName()).append(" = ").append(LANGUAGE_NAME.toLowerCase()).append('_').append(c.getName()).append('_').append(c.getName()).append("(0);").append('\n');
-//								staticClassFree.append(LANGUAGE_NAME.toLowerCase()).append("_del_").append(c.getName()).append("(&__static__").append(c.getName()).append(", 0);").append('\n');
-							}
-						}
-					}
-				}
-			}
-			
-			ValueNode      gc     = new ValueNode(mainMethod, mainMethod.getLocationIn());
+			ValueNode gc = new ValueNode(mainMethod, mainMethod.getLocationIn());
 			gc.setType("GC");
 			
-			MethodCallNode gcInit = MethodCallNode.decodeStatement(gc, "init()", mainMethod.getLocationIn(), true);
+			MethodCallNode gcInit = MethodCallNode.decodeStatement(gc, "init()", mainMethod.getLocationIn(), true, false);
 			
 			StringBuilder mainMethodText = new StringBuilder();
 			
@@ -478,11 +482,6 @@ public class Nova
 			cmd.append("clang ");
 		}
 		
-//		if (OS == MACOSX)
-//		{
-//			cmd.append("-Wno-all ");
-//		}
-		
 		for (int i = 0; i < includeDirectories.size(); i++)
 		{
 			String dir = includeDirectories.get(i);
@@ -490,9 +489,13 @@ public class Nova
 			cmd.append("-I").append(dir).append(' ');
 		}
 		
-		String libDir = getLibraryDir();
+		String libDir    = workingDir + "/bin/";
 		
-		cmd.append("-L").append(libDir).append(" -lFathom -lThread -lgc ");
+		String libFathom = formatPath(libDir + "libFathom.dll");
+		String libThread = formatPath(libDir + "libThread.dll");
+		String libGC     = formatPath(libDir + "libgc.dll");
+		
+		cmd.append(libFathom).append(' ').append(libThread).append(' ').append(libGC).append(' ');
 		
 		for (File sourceFile : cSourceFiles)
 		{
@@ -501,7 +504,7 @@ public class Nova
 		
 		cmd.append("-o ").append('"').append(outputFile.getAbsolutePath()).append('"').append(' ');
 		
-		cmd.append("-O3 ");
+		cmd.append("-O2 ");
 //		cmd.append("-s ");
 		
 		if (OS == LINUX)
@@ -591,6 +594,33 @@ public class Nova
 	}
 	
 	/**
+	 * Remove all of the relative syntax from the given path.<br>
+	 * <br>
+	 * For example: Passing a path of "C:/folder/../dir1/dir2" would
+	 * return a path of "C:/dir1/dir2"
+	 * 
+	 * @param path The path to remove the relative syntax from.
+	 * @return The newly formatted path.
+	 */
+	private String formAbsolutePath(String path)
+	{
+		StringBuilder absolute = new StringBuilder(path);
+		
+		int index = absolute.indexOf("..");
+		
+		while (index >= 0)
+		{
+			int index2 = absolute.lastIndexOf("/", index - 2);
+			
+			absolute.delete(index2, index + 2);
+			
+			index = absolute.indexOf("..");
+		}
+		
+		return absolute.toString();
+	}
+	
+	/**
 	 * Format a path according to how the specified OS needs it.
 	 * 
 	 * @param path The path to format for the OS standards.
@@ -598,6 +628,10 @@ public class Nova
 	 */
 	private String formatPath(String path)
 	{
+		path = path.replace("\\", "/");
+		
+		path = formAbsolutePath(path);
+		
 		if (OS == WINDOWS)
 		{
 			return '"' + path + '"';
@@ -781,6 +815,11 @@ public class Nova
 			{
 				expectingIncludeDirectory = expectingIncludeDirectoryTemp;
 				
+				if (args[i].startsWith("\""))
+				{
+					args[i] = args[i].substring(1, args[i].length() - 1);
+				}
+				
 				// If the argument is one of the first arguments passed
 				// (If it is one of the sources to compile)
 				if (lastInput == i - 1)
@@ -801,11 +840,6 @@ public class Nova
 				}
 				else if (expectingIncludeDirectory)
 				{
-					if (args[i].startsWith("\""))
-					{
-						args[i] = args[i].substring(1, args[i].length() - 1);
-					}
-					
 					includeDirectories.add(formatPath(args[i]));
 				}
 			}
@@ -832,11 +866,11 @@ public class Nova
 		
 		for (File f : inputFiles)
 		{
-			if (!f.getName().toLowerCase().endsWith(".fat"))
+			if (!f.getName().toLowerCase().endsWith(".nova"))
 			{
 				working = false;
 				
-				error("Input file '" + f.getName() + "' must have an extension of .fat");
+				error("Input file '" + f.getName() + "' must have an extension of .nova");
 			}
 			else if (!f.exists())
 			{

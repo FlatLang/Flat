@@ -31,7 +31,7 @@ public class Location
 	 */
 	public Location(Location loc)
 	{
-		this(loc.lineNumber, loc.offset, loc.bounds.getStart(), loc.bounds.getEnd());
+		this(/*loc.lineNumber*/0, loc.offset, loc.bounds.getStart(), loc.bounds.getEnd());
 	}
 	
 	/**

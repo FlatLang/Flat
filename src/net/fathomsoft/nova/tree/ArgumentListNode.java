@@ -31,11 +31,11 @@ public class ArgumentListNode extends TreeNode
 	{
 		StringBuilder builder = new StringBuilder();
 		
-		for (int i = 0; i < getChildren().size(); i++)
+		for (int i = 0; i < getNumChildren(); i++)
 		{
 			builder.append(getChild(i).generateJavaSource());
 			
-			if (i < getChildren().size() - 1)
+			if (i < getNumChildren() - 1)
 			{
 				builder.append(", ");
 			}
@@ -63,9 +63,14 @@ public class ArgumentListNode extends TreeNode
 	{
 		StringBuilder builder = new StringBuilder();
 		
-		for (int i = 0; i < getChildren().size(); i++)
+		for (int i = 0; i < getNumChildren(); i++)
 		{
 			TreeNode child = getChild(i);
+			
+			if (i > 0)
+			{
+				builder.append(", ");
+			}
 			
 			builder.append(child.generateNovaInput());
 		}
@@ -99,17 +104,17 @@ public class ArgumentListNode extends TreeNode
 			
 			builder.append(ExceptionNode.EXCEPTION_DATA_IDENTIFIER);
 			
-			if (getChildren().size() > 0)
+			if (getNumChildren() > 0)
 			{
 				builder.append(", ");
 			}
 		}
 		
-		for (int i = 0; i < getChildren().size(); i++)
+		for (int i = 0; i < getNumChildren(); i++)
 		{
 			builder.append(getChild(i).generateCSourceFragment());
 			
-			if (i < getChildren().size() - 1)
+			if (i < getNumChildren() - 1)
 			{
 				builder.append(", ");
 			}

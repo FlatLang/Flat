@@ -28,7 +28,7 @@ public class ConstructorNode extends MethodNode
 	{
 		super(temporaryParent, locationIn);
 		
-		setPointer(true);
+		setDataType(VariableNode.POINTER);
 	}
 	
 	/**
@@ -67,7 +67,7 @@ public class ConstructorNode extends MethodNode
 		
 		builder.append(')').append('\n').append('{').append('\n');
 		
-		for (int i = 0; i < getChildren().size(); i++)
+		for (int i = 0; i < getNumChildren(); i++)
 		{
 			TreeNode child = getChild(i);
 			
@@ -136,22 +136,31 @@ public class ConstructorNode extends MethodNode
 		
 		builder.append('{').append('\n');
 		
-		builder.append("CCLASS_NEW(").append(getName()).append(", ").append(MethodNode.getObjectReferenceIdentifier());
-
 		ClassNode classNode = (ClassNode)getAncestorOfType(ClassNode.class, true);
 		
-		if (!classNode.containsNonStaticPrivateData())
+		if (classNode.containsNonStaticData())
 		{
-			builder.append(",");
+			builder.append("CCLASS_NEW(").append(getName()).append(", ").append(MethodNode.getObjectReferenceIdentifier());
+			
+			if (!classNode.containsNonStaticPrivateData())
+			{
+				builder.append(",");
+			}
+			
+			builder.append(");");
+		}
+		else
+		{
+			builder.append(getName()).append('*').append(' ').append(MethodNode.getObjectReferenceIdentifier()).append(" = NULL").append(';');
 		}
 		
-		builder.append(");").append('\n').append('\n');
+		builder.append('\n').append('\n');
 		
 //		builder.append(generateMethodAssignments()).append('\n');
 		
 		builder.append(generateFieldDefaultAssignments());
 		
-		for (int i = 0; i < getChildren().size(); i++)
+		for (int i = 0; i < getNumChildren(); i++)
 		{
 			TreeNode child = getChild(i);
 			
@@ -184,7 +193,7 @@ public class ConstructorNode extends MethodNode
 		
 		InstanceFieldListNode fields = classNode.getFieldListNode().getPublicFieldListNode();
 		
-		for (int i = 0; i < fields.getChildren().size(); i++)
+		for (int i = 0; i < fields.getNumChildren(); i++)
 		{
 			VariableNode child = (VariableNode)fields.getChild(i);
 			
@@ -196,7 +205,7 @@ public class ConstructorNode extends MethodNode
 		
 		InstanceFieldListNode privateFields = classNode.getFieldListNode().getPrivateFieldListNode();
 		
-		for (int i = 0; i < privateFields.getChildren().size(); i++)
+		for (int i = 0; i < privateFields.getNumChildren(); i++)
 		{
 			VariableNode child = (VariableNode)privateFields.getChild(i);
 			
@@ -224,7 +233,7 @@ public class ConstructorNode extends MethodNode
 		
 		MethodListNode methods = classNode.getMethodListNode();
 		
-		for (int i = 0; i < methods.getChildren().size(); i++)
+		for (int i = 0; i < methods.getNumChildren(); i++)
 		{
 			MethodNode method = (MethodNode)methods.getChild(i);
 			
@@ -289,10 +298,12 @@ public class ConstructorNode extends MethodNode
 	 * 		ConstructorNode instance.
 	 * @param location The location of the statement in the source code.
 	 * @param require Whether or not to throw an error if anything goes wrong.
+	 * @param scope Whether or not the given statement is the beginning of
+	 * 		a scope.
 	 * @return The generated node, if it was possible to translated it
 	 * 		into a ConstructorNode.
 	 */
-	public static ConstructorNode decodeStatement(TreeNode parent, String statement, Location location, boolean require)
+	public static ConstructorNode decodeStatement(TreeNode parent, String statement, Location location, boolean require, boolean scope)
 	{
 		int firstParenthIndex = statement.indexOf('(');
 		int lastParenthIndex  = statement.lastIndexOf(')');
@@ -326,7 +337,7 @@ public class ConstructorNode extends MethodNode
 			{
 				if (parameters[i].length() > 0)
 				{
-					ParameterNode param = ParameterNode.decodeStatement(parent, parameters[i], location, require);
+					ParameterNode param = ParameterNode.decodeStatement(parent, parameters[i], location, require, false);
 					
 					if (param == null)
 					{

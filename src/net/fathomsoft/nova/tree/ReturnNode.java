@@ -34,7 +34,7 @@ public class ReturnNode extends ValueNode
 		
 		builder.append("return ");
 		
-		for (int i = 0; i < getChildren().size(); i++)
+		for (int i = 0; i < getNumChildren(); i++)
 		{
 			TreeNode child = getChild(i);
 			
@@ -70,12 +70,12 @@ public class ReturnNode extends ValueNode
 		
 		builder.append("return");
 		
-		if (getChildren().size() > 0)
+		if (getNumChildren() > 0)
 		{
 			builder.append(' ');
 		}
 		
-		for (int i = 0; i < getChildren().size(); i++)
+		for (int i = 0; i < getNumChildren(); i++)
 		{
 			TreeNode child = getChild(i);
 			
@@ -111,10 +111,12 @@ public class ReturnNode extends ValueNode
 	 * 		ReturnNode instance.
 	 * @param location The location of the statement in the source code.
 	 * @param require Whether or not to throw an error if anything goes wrong.
+	 * @param scope Whether or not the given statement is the beginning of
+	 * 		a scope.
 	 * @return The generated node, if it was possible to translated it
 	 * 		into a ReturnNode.
 	 */
-	public static ReturnNode decodeStatement(TreeNode parent, String statement, Location location, boolean require)
+	public static ReturnNode decodeStatement(TreeNode parent, String statement, Location location, boolean require, boolean scope)
 	{
 		if (Regex.startsWith(statement, Patterns.PRE_RETURN))
 		{

@@ -23,7 +23,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  */
 public class MethodNode extends InstanceDeclarationNode
 {
-	private boolean					externalType;
+//	private boolean					externalType;
 	
 	private String					types[];
 	
@@ -67,30 +67,51 @@ public class MethodNode extends InstanceDeclarationNode
 	}
 	
 	/**
-	 * Get whether or not the specified method returns an external type.
-	 * For more details on what an external type looks like, see
-	 * {@link net.fathomsoft.nova.tree.variables.VariableNode#setExternal(boolean)}
+	 * Get the ParameterNode that the given index represents. The
+	 * parameters are ordered from left to right, 0 being the first.<br>
+	 * <br>
+	 * For example:
+	 * <blockquote><pre>
+	 * public void run(int a, int b, int c)
+	 * {
+	 * 	...
+	 * }</pre></blockquote>
+	 * If you were to call getParameterNode(2) on the method
+	 * above, you would receive the c ParameterNode.
 	 * 
-	 * @return Whether or not the specified method returns an external
-	 * 		type.
+	 * @param parameterIndex The index parameter to get.
+	 * @return The ParameterNode at the given index.
 	 */
-	public boolean isExternalType()
+	public ParameterNode getParameterNode(int parameterIndex)
 	{
-		return externalType;
+		return getParameterListNode().getParameterNode(parameterIndex);
 	}
 	
-	/**
-	 * Set whether or not the specified method returns an external type.
-	 * For more details on what an external type looks like, see
-	 * {@link net.fathomsoft.nova.tree.variables.VariableNode#setExternal(boolean)}
-	 * 
-	 * @param externalType Whether or not the specified method returns an
-	 * 		external type.
-	 */
-	public void setExternalType(boolean externalType)
-	{
-		this.externalType = externalType;
-	}
+//	/**
+//	 * Get whether or not the specified method returns an external type.
+//	 * For more details on what an external type looks like, see
+//	 * {@link net.fathomsoft.nova.tree.variables.VariableNode#setExternal(boolean)}
+//	 * 
+//	 * @return Whether or not the specified method returns an external
+//	 * 		type.
+//	 */
+//	public boolean isExternalType()
+//	{
+//		return externalType;
+//	}
+//	
+//	/**
+//	 * Set whether or not the specified method returns an external type.
+//	 * For more details on what an external type looks like, see
+//	 * {@link net.fathomsoft.nova.tree.variables.VariableNode#setExternal(boolean)}
+//	 * 
+//	 * @param externalType Whether or not the specified method returns an
+//	 * 		external type.
+//	 */
+//	public void setExternalType(boolean externalType)
+//	{
+//		this.externalType = externalType;
+//	}
 	
 	/**
 	 * Get whether or not a call to the method would need to pass a
@@ -121,6 +142,11 @@ public class MethodNode extends InstanceDeclarationNode
 	@Override
 	public ScopeNode getScopeNode()
 	{
+		if (isExternal())
+		{
+			return null;
+		}
+		
 		return (ScopeNode)getChild(1);
 	}
 
@@ -249,6 +275,21 @@ public class MethodNode extends InstanceDeclarationNode
 	}
 	
 	/**
+	 * Generate a MethodNode with the given parent and location for
+	 * temporary use.
+	 * 
+	 * @param parent The node to set as the MethodNode's parent.
+	 * @param locationIn The location to set as the MethodNode's location.
+	 * @return The generated temporary MethodNode.
+	 */
+	public static MethodNode generateTemporaryMethod(TreeNode parent, Location locationIn)
+	{
+		MethodNode method = new MethodNode(parent, locationIn);
+		
+		return method;
+	}
+	
+	/**
 	 * @see net.fathomsoft.nova.tree.TreeNode#generateJavaSource()
 	 */
 	@Override
@@ -293,7 +334,7 @@ public class MethodNode extends InstanceDeclarationNode
 		
 		builder.append(')').append('\n').append('{').append('\n');
 		
-		for (int i = 0; i < getChildren().size(); i++)
+		for (int i = 0; i < getNumChildren(); i++)
 		{
 			TreeNode child = getChild(i);
 			
@@ -378,7 +419,7 @@ public class MethodNode extends InstanceDeclarationNode
 		
 //		ParameterListNode parameterList = getParameterListNode();
 //		
-//		for (int i = 0; i < getChildren().size(); i++)
+//		for (int i = 0; i < getNumChildren(); i++)
 //		{
 //			TreeNode child = getChild(i);
 //			
@@ -453,7 +494,7 @@ public class MethodNode extends InstanceDeclarationNode
 		{
 			builder.append(getArrayText());
 		}
-		if (!isPrimitiveType() && !isExternal())
+		if (!isPrimitiveType() && !isExternalType())
 		{
 			builder.append('*');
 		}
@@ -474,7 +515,7 @@ public class MethodNode extends InstanceDeclarationNode
 	 */
 	public IdentifierNode getAccessedNode()
 	{
-		if (getChildren().size() <= 2)
+		if (getNumChildren() <= 2)
 		{
 			return null;
 		}
@@ -539,10 +580,12 @@ public class MethodNode extends InstanceDeclarationNode
 	 * 		MethodNode instance.
 	 * @param location The location of the statement in the source code.
 	 * @param require Whether or not to throw an error if anything goes wrong.
+	 * @param scope Whether or not the given statement is the beginning of
+	 * 		a scope.
 	 * @return The generated node, if it was possible to translated it
 	 * 		into a MethodNode.
 	 */
-	public static MethodNode decodeStatement(TreeNode parent, String statement, Location location, boolean require)
+	public static MethodNode decodeStatement(TreeNode parent, String statement, Location location, boolean require, boolean scope)
 	{
 		int firstParenthIndex = Regex.indexOf(statement, '(', new char[] { }, new char[] {}, new char[] { '"' }, new boolean[] {}, new boolean[] {}, new boolean[] { true });
 		
@@ -550,7 +593,7 @@ public class MethodNode extends InstanceDeclarationNode
 		{
 			int lastParenthIndex   = StringUtils.findEndingMatch(statement, firstParenthIndex, '(', ')');//Regex.lastIndexOf(statement, ')', new char[] { }, new char[] {}, new char[] { '"' }, new boolean[] {}, new boolean[] {}, new boolean[] { true });
 			
-			final String signature       = statement.substring(0, firstParenthIndex);
+			final String signature = statement.substring(0, firstParenthIndex);
 			String returnStatement = statement.substring(lastParenthIndex + 1);
 			
 			returnStatement        = StringUtils.trimSurroundingWhitespace(returnStatement);
@@ -595,18 +638,10 @@ public class MethodNode extends InstanceDeclarationNode
 						}
 						else if (!setAttribute(word, wordNumber))
 						{
+							Location newLoc = new Location(finalLocation);
+							newLoc.setBounds(bounds.getStart(), bounds.getEnd());
 							
-							if (getFileNode().isExternalImport(word) && rightDelimiter.equals("."))
-							{
-								setExternalType(true);
-							}
-							else
-							{
-								Location newLoc = new Location(finalLocation);
-								newLoc.setBounds(bounds.getStart(), bounds.getEnd());
-								
-								SyntaxMessage.error("Unknown method definition", this, newLoc);
-							}
+							SyntaxMessage.error("Unknown method definition", this, newLoc);
 						}
 					}
 //					else
@@ -647,10 +682,13 @@ public class MethodNode extends InstanceDeclarationNode
 				throw e;
 			}
 			
+			if (n.isExternal() && scope)
+			{
+				SyntaxMessage.error("External method declarations cannot have a body", n);
+			}
+			
 			if (types.size() <= 0)
 			{
-				
-				
 //				if (!require)
 //				{
 //					return null;
@@ -665,7 +703,7 @@ public class MethodNode extends InstanceDeclarationNode
 			{
 				if (parameters[i].length() > 0)
 				{
-					ParameterNode param = ParameterNode.decodeStatement(n, parameters[i], location, require);
+					ParameterNode param = ParameterNode.decodeStatement(n, parameters[i], location, require, false);
 					
 					if (param == null)
 					{

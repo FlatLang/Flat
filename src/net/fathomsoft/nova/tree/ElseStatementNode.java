@@ -46,7 +46,7 @@ public class ElseStatementNode extends TreeNode
 	@Override
 	public void addChild(TreeNode child)
 	{
-		if (child instanceof ScopeNode || (getChildren().size() <= 1 && child instanceof IfStatementNode))
+		if (child instanceof ScopeNode || (getNumChildren() <= 1 && child instanceof IfStatementNode))
 		{
 			super.addChild(child);
 		}
@@ -84,7 +84,7 @@ public class ElseStatementNode extends TreeNode
 		
 		builder.append("else");
 		
-		if (getChildren().size() == 2)
+		if (getNumChildren() == 2)
 		{
 			TreeNode child = getChild(1);
 			
@@ -103,7 +103,7 @@ public class ElseStatementNode extends TreeNode
 		
 //		builder.append('{').append('\n');
 //		
-//		for (int i = 0; i < getChildren().size(); i++)
+//		for (int i = 0; i < getNumChildren(); i++)
 //		{
 //			TreeNode child = getChild(i);
 //			
@@ -144,10 +144,12 @@ public class ElseStatementNode extends TreeNode
 	 * 		ElseStatementNode instance.
 	 * @param location The location of the statement in the source code.
 	 * @param require Whether or not to throw an error if anything goes wrong.
+	 * @param scope Whether or not the given statement is the beginning of
+	 * 		a scope.
 	 * @return The generated node, if it was possible to translated it
 	 * 		into a ElseStatementNode.
 	 */
-	public static ElseStatementNode decodeStatement(TreeNode parent, String statement, Location location, boolean require)
+	public static ElseStatementNode decodeStatement(TreeNode parent, String statement, Location location, boolean require, boolean scope)
 	{
 		Bounds bounds = Regex.boundsOf(statement, Patterns.ELSE);
 		
@@ -162,7 +164,7 @@ public class ElseStatementNode extends TreeNode
 			
 			if (ending.length() > 0)
 			{
-				TreeNode contents = TreeNode.decodeStatement(parent, ending, newLocation, require);
+				TreeNode contents = TreeNode.decodeStatement(parent, ending, newLocation, require, false);
 				
 				if (contents != null)
 				{

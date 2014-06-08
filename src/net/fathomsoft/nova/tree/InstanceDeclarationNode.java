@@ -206,6 +206,10 @@ public class InstanceDeclarationNode extends VariableNode
 			{
 				setVisibility(PUBLIC);
 			}
+			else if (attribute.equals("external"))
+			{
+				setExternal(true);
+			}
 			else
 			{
 				return false;
@@ -292,7 +296,7 @@ public class InstanceDeclarationNode extends VariableNode
 		{
 			builder.append(getArrayText());
 		}
-		if (!isPrimitiveType())
+		if (!isPrimitiveType() && !isExternalType())
 		{
 			builder.append('*');
 		}

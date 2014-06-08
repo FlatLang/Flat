@@ -30,16 +30,16 @@ public class StaticFieldListNode extends TreeNode
 	{
 		StringBuilder builder = new StringBuilder();
 		
-		for (int i = 0; i < getChildren().size(); i++)
+		for (int i = 0; i < getNumChildren(); i++)
 		{
 			builder.append(getChild(i).generateJavaSource());
 		}
 		
-		if (getChildren().size() > 0)
+		if (getNumChildren() > 0)
 		{
 			ClassNode parent = (ClassNode)getAncestorOfType(ClassNode.class, true);
 			
-			if (parent.getMethodListNode().getChildren().size() > 0)
+			if (parent.getMethodListNode().getNumChildren() > 0)
 			{
 				builder.append('\n');
 			}
@@ -56,7 +56,7 @@ public class StaticFieldListNode extends TreeNode
 	{
 		StringBuilder builder = new StringBuilder();
 		
-		for (int i = 0; i < getChildren().size(); i++)
+		for (int i = 0; i < getNumChildren(); i++)
 		{
 			builder.append(getChild(i).generateCHeader());
 		}
@@ -74,17 +74,17 @@ public class StaticFieldListNode extends TreeNode
 		
 		boolean hasMethods    = false;
 		
-		if (getChildren().size() > 0)
+		if (getNumChildren() > 0)
 		{
 			ClassNode parent = (ClassNode)getAncestorOfType(ClassNode.class, true);
 			
-			if (parent.getMethodListNode().getChildren().size() > 0)
+			if (parent.getMethodListNode().getNumChildren() > 0)
 			{
 				hasMethods = true;
 			}
 		}
 		
-		for (int i = 0; i < getChildren().size(); i++)
+		for (int i = 0; i < getNumChildren(); i++)
 		{
 			builder.append(getChild(i).generateCSource());
 		}

@@ -24,24 +24,35 @@ public class AssignmentNode extends TreeNode
 	{
 		super(temporaryParent, locationIn);
 	}
-
+	
 	/**
-	 * Get the node that stores the variable that is having its value
-	 * assigned. In other words, the left hand value of the equation.
-	 * For instance, in the statement: "int j = 35" int j is the left
-	 * hand value of the equation.<br>
-	 * <br>
-	 * This does not return a VariableNode type because an ArrayAccessNode
-	 * is also a valid left hand value to an equation.
+	 * Get the node that is having its value modified. In other words,
+	 * the left hand value of the equation. For instance, in the
+	 * statement: "<code>int j = 35<code>" <u><code>int j</code></u> is
+	 * the left hand value of the equation.
 	 * 
-	 * @return The TreeNode that holds the value of the variable that
-	 * 		is to be assigned.
+	 * @return The node that represents the variable that is being
+	 * 		assigned.
 	 */
-	public IdentifierNode getVariableNode()
+	public VariableNode getAssigneeNode()
 	{
-		return (IdentifierNode)getChild(0);
+		return (VariableNode)getChild(0);
 	}
-
+	
+	/**
+	 * Get the node that is being used to set the value of the assignee
+	 * node. In other words, the right hand value of the equation. For
+	 * instance, in the statement: "<code>int j = 35<code>"
+	 * <u><code>35</code></u> is the right hand value of the equation.
+	 * 
+	 * @return The node that represents the value that the assignee
+	 * 		variable is being assigned to.
+	 */
+	public ValueNode getAssignmentNode()
+	{
+		return (ValueNode)getChild(1);
+	}
+	
 	/**
 	 * @see net.fathomsoft.nova.tree.TreeNode#generateJavaSource()
 	 */
@@ -50,12 +61,7 @@ public class AssignmentNode extends TreeNode
 	{
 		StringBuilder builder = new StringBuilder();
 		
-		builder.append(getChild(0).generateJavaSource()).append(" = ");
-		
-		for (int i = 1; i < getChildren().size(); i++)
-		{
-			builder.append(getChild(i).generateJavaSource());
-		}
+		builder.append(getAssigneeNode().generateJavaSource()).append(" = ").append(getAssignmentNode().generateJavaSource());
 		
 		builder.append(';').append('\n');
 		
@@ -85,13 +91,11 @@ public class AssignmentNode extends TreeNode
 	{
 		StringBuilder builder = new StringBuilder();
 		
-		builder.append(getVariableNode().generateCSourceFragment());
+		builder.append(getAssigneeNode().generateCSourceFragment());
 		
 		builder.append(" = ");
 		
-		TreeNode child = getChild(1);
-		
-		builder.append(child.generateCSourceFragment());
+		builder.append(getAssignmentNode().generateCSourceFragment());
 		
 		return builder.toString();
 	}
@@ -101,7 +105,7 @@ public class AssignmentNode extends TreeNode
 	 */
 	public String generateNovaInput(boolean outputChildren)
 	{
-		return getVariableNode().generateNovaInput(outputChildren) + " = " + getChild(1).generateNovaInput(outputChildren);
+		return getAssigneeNode().generateNovaInput(outputChildren) + " = " + getAssignmentNode().generateNovaInput(outputChildren);
 	}
 	
 	/**
@@ -121,12 +125,14 @@ public class AssignmentNode extends TreeNode
 	 * @param statement The statement to decode into an AssignmentNode.
 	 * @param location The location of the statement in the source code.
 	 * @param require Whether or not to throw an error if anything goes wrong.
+	 * @param scope Whether or not the given statement is the beginning of
+	 * 		a scope.
 	 * @return The new AssignmentNode if it decodes properly. If not,
 	 * 		it returns null.
 	 */
-	public static AssignmentNode decodeStatement(TreeNode parent, String statement, Location location, boolean require)
+	public static AssignmentNode decodeStatement(TreeNode parent, String statement, Location location, boolean require, boolean scope)
 	{
-		return decodeStatement(parent, statement, location, require, true);
+		return decodeStatement(parent, statement, location, require, scope, true);
 	}
 	
 	/**
@@ -146,18 +152,22 @@ public class AssignmentNode extends TreeNode
 	 * @param statement The statement to decode into an AssignmentNode.
 	 * @param location The location of the statement in the source code.
 	 * @param require Whether or not to throw an error if anything goes wrong.
+	 * @param scope Whether or not the given statement is the beginning of
+	 * 		a scope.
 	 * @param addDeclaration Whether or not to add the declaration to the
 	 * 		nearest scope, if the left hand value of the equation is a
 	 * 		variable declaration.
 	 * @return The new AssignmentNode if it decodes properly. If not,
 	 * 		it returns null.
 	 */
-	public static AssignmentNode decodeStatement(TreeNode parent, String statement, Location location, boolean require, boolean addDeclaration)
+	public static AssignmentNode decodeStatement(TreeNode parent, String statement, Location location, boolean require, boolean scope, boolean addDeclaration)
 	{
 		if (!SyntaxUtils.isVariableAssignment(statement))
 		{
 			return null;
 		}
+		
+		AssignmentNode n = new AssignmentNode(parent, location);
 		
 		int      equalsIndex = SyntaxUtils.findCharInBaseScope(statement, '=');
 		int      endIndex    = StringUtils.findNextNonWhitespaceIndex(statement, equalsIndex - 1, -1) + 1;
@@ -167,7 +177,7 @@ public class AssignmentNode extends TreeNode
 		Location varLoc      = new Location(location);
 		varLoc.getBounds().setEnd(varLoc.getStart() + endIndex);
 		
-		IdentifierNode varNode = (IdentifierNode)decodeScopeContents(parent, variable, varLoc);
+		IdentifierNode varNode = (IdentifierNode)decodeScopeContents(n, variable, varLoc, scope);
 		
 		if (varNode == null)
 		{
@@ -199,8 +209,6 @@ public class AssignmentNode extends TreeNode
 		
 		varNode.setLocationIn(varLoc);
 		
-		AssignmentNode n = new AssignmentNode(parent, location);
-		
 		if (addDeclaration)
 		{
 			if (varNode instanceof VariableNode)
@@ -209,11 +217,11 @@ public class AssignmentNode extends TreeNode
 				
 				if (var.isDeclaration())
 				{
-					TreeNode scope = getAncestorWithScope(parent);
+					TreeNode scopeNode = getAncestorWithScope(parent);
 					
-					if (scope != null)
+					if (scopeNode != null)
 					{
-						scope.getScopeNode().addChild(varNode);
+						scopeNode.getScopeNode().addChild(varNode);
 						
 						varNode = var.clone(n, location);
 					}
@@ -231,7 +239,7 @@ public class AssignmentNode extends TreeNode
 		Location newLoc = new Location(location);
 		newLoc.setBounds(location.getStart() + rhsIndex, location.getStart() + statement.length());
 		
-		TreeNode  child = decodeRightHandSide(parent, rhs, newLoc, require);
+		TreeNode  child = decodeRightHandSide(n, rhs, newLoc, require, scope);
 		
 		if (child == null)
 		{
@@ -261,10 +269,12 @@ public class AssignmentNode extends TreeNode
 	 * @param rhs The right hand side to decode into an AssignmentNode.
 	 * @param location The location of the statement in the source code.
 	 * @param require Whether or not to throw an error if anything goes wrong.
+	 * @param scope Whether or not the given statement is the beginning of
+	 * 		a scope.
 	 * @return The new TreeNode if it decodes properly. If not,
 	 * 		it returns null.
 	 */
-	public static TreeNode decodeRightHandSide(TreeNode parent, String rhs, Location location, boolean require)
+	public static TreeNode decodeRightHandSide(TreeNode parent, String rhs, Location location, boolean require, boolean scope)
 	{
 		TreeNode child = decodeScopeContents(parent, rhs, location, require);
 		
@@ -275,7 +285,7 @@ public class AssignmentNode extends TreeNode
 				rhs = rhs.substring(rhs.indexOf('.') + 1);
 			}
 			
-			LiteralNode node = LiteralNode.decodeStatement(parent, rhs, location, require);
+			LiteralNode node = LiteralNode.decodeStatement(parent, rhs, location, require, false);
 			
 			child = node;
 		}

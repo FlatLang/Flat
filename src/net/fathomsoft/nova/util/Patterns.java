@@ -399,4 +399,9 @@ public class Patterns
 	 * Pattern that searches for the word "external"
 	 */
 	public static final Pattern EXTERNAL				= Pattern.compile("external");
+	
+	/**
+	 * Pattern that searches for the words "external type"
+	 */
+	public static final Pattern EXTERNAL_TYPE			= Pattern.compile("external\\s+type\\s+");
 }

@@ -67,10 +67,12 @@ public class LocalDeclarationNode extends LocalVariableNode
 	 * 		LocalDeclarationNode instance.
 	 * @param location The location of the statement in the source code.
 	 * @param require Whether or not to throw an error if anything goes wrong.
+	 * @param scope Whether or not the given statement is the beginning of
+	 * 		a scope.
 	 * @return The generated node, if it was possible to translated it
 	 * 		into a LocalDeclarationNode.
 	 */
-	public static LocalDeclarationNode decodeStatement(TreeNode parent, String statement, Location location, boolean require)
+	public static LocalDeclarationNode decodeStatement(TreeNode parent, String statement, Location location, boolean require, boolean scope)
 	{
 		if (SyntaxUtils.isLiteral(statement))
 		{
@@ -112,7 +114,14 @@ public class LocalDeclarationNode extends LocalVariableNode
 						
 						if (leftDelimiter.length() > 0)
 						{
-							setType(getType() + leftDelimiter);
+							if (leftDelimiter.equals("*"))
+							{
+								setDataType(POINTER);
+							}
+							else if (leftDelimiter.equals("&"))
+							{
+								setDataType(REFERENCE);
+							}
 						}
 					}
 					else if (!setAttribute(word, wordNumber))

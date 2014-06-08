@@ -28,11 +28,29 @@ public class DimensionsNode extends TreeNode
 	{
 		StringBuilder builder = new StringBuilder();
 		
-		for (int i = 0; i < getChildren().size(); i++)
+		for (int i = 0; i < getNumChildren(); i++)
 		{
 			TreeNode child = getChild(i);
 			
 			builder.append('[').append(child.generateCSourceFragment()).append(']');
+		}
+		
+		return builder.toString();
+	}
+	
+	/**
+	 * @see net.fathomsoft.nova.tree.TreeNode#generateNovaInput(boolean)
+	 */
+	@Override
+	public String generateNovaInput(boolean outputChildren)
+	{
+		StringBuilder builder = new StringBuilder();
+		
+		for (int i = 0; i < getNumChildren(); i++)
+		{
+			TreeNode child = getChild(i);
+			
+			builder.append('[').append(child.generateNovaInput()).append(']');
 		}
 		
 		return builder.toString();

@@ -64,18 +64,20 @@ public class LoopNode extends TreeNode
 	 * 		LoopNode instance.
 	 * @param location The location of the statement in the source code.
 	 * @param require Whether or not to throw an error if anything goes wrong.
+	 * @param scope Whether or not the given statement is the beginning of
+	 * 		a scope.
 	 * @return The generated node, if it was possible to translated it
 	 * 		into a LoopNode.
 	 */
-	public static LoopNode decodeStatement(TreeNode parent, String statement, Location location, boolean require)
+	public static LoopNode decodeStatement(TreeNode parent, String statement, Location location, boolean require, boolean scope)
 	{
 		LoopNode node = null;
 		
-		if ((node = ForLoopNode.decodeStatement(parent, statement, location, require)) != null)
+		if ((node = ForLoopNode.decodeStatement(parent, statement, location, require, scope)) != null)
 		{
 			return node;
 		}
-		else if ((node = WhileLoopNode.decodeStatement(parent, statement, location, require)) != null)
+		else if ((node = WhileLoopNode.decodeStatement(parent, statement, location, require, scope)) != null)
 		{
 			return node;
 		}

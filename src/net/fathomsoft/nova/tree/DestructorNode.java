@@ -73,7 +73,7 @@ public class DestructorNode extends MethodNode
 		
 		builder.append(deleteData()).append('\n');
 		
-		for (int i = 0; i < getChildren().size(); i++)
+		for (int i = 0; i < getNumChildren(); i++)
 		{
 			TreeNode child = getChild(i);
 			
@@ -123,7 +123,7 @@ public class DestructorNode extends MethodNode
 		
 		InstanceFieldListNode privateFields = classNode.getFieldListNode().getPrivateFieldListNode();
 		
-		for (int i = 0; i < privateFields.getChildren().size(); i++)
+		for (int i = 0; i < privateFields.getNumChildren(); i++)
 		{
 			FieldNode field = (FieldNode)privateFields.getChild(i);
 
@@ -137,7 +137,7 @@ public class DestructorNode extends MethodNode
 		
 		InstanceFieldListNode publicFields = classNode.getFieldListNode().getPublicFieldListNode();
 		
-		for (int i = 0; i < publicFields.getChildren().size(); i++)
+		for (int i = 0; i < publicFields.getNumChildren(); i++)
 		{
 			FieldNode field = (FieldNode)publicFields.getChild(i);
 			
@@ -158,7 +158,7 @@ public class DestructorNode extends MethodNode
 	{
 		StringBuilder builder = new StringBuilder();
 		
-		if (field.isPrimitiveType() || field.isExternal())
+		if (field.isPrimitiveType() || field.isExternalType())
 		{
 			if (!field.isPrimitive())
 			{//builder.append("printf(\"Before. " + field.generateVariableUseOutput(true) + ": %p\", " + field.generateVariableUseOutput(true) + ");");
@@ -242,10 +242,12 @@ public class DestructorNode extends MethodNode
 	 * 		DestructorNode instance.
 	 * @param location The location of the statement in the source code.
 	 * @param require Whether or not to throw an error if anything goes wrong.
+	 * @param scope Whether or not the given statement is the beginning of
+	 * 		a scope.
 	 * @return The generated node, if it was possible to translated it
 	 * 		into a DestructorNode.
 	 */
-	public static DestructorNode decodeStatement(TreeNode parent, String statement, Location location, boolean require)
+	public static DestructorNode decodeStatement(TreeNode parent, String statement, Location location, boolean require, boolean scope)
 	{
 		int firstParenthIndex = statement.indexOf('(');
 		int lastParenthIndex  = statement.lastIndexOf(')');

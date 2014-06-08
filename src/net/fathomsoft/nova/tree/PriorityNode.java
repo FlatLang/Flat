@@ -89,10 +89,12 @@ public class PriorityNode extends ValueNode
 	 * 		PriorityNode instance.
 	 * @param location The location of the statement in the source code.
 	 * @param require Whether or not to throw an error if anything goes wrong.
+	 * @param scope Whether or not the given statement is the beginning of
+	 * 		a scope.
 	 * @return The generated node, if it was possible to translated it
 	 * 		into a PriorityNode.
 	 */
-	public static PriorityNode decodeStatement(TreeNode parent, String statement, Location location, boolean require)
+	public static PriorityNode decodeStatement(TreeNode parent, String statement, Location location, boolean require, boolean scope)
 	{
 		if (statement.charAt(0) == '(')
 		{
@@ -122,15 +124,15 @@ public class PriorityNode extends ValueNode
 			contentsLoc.setOffset(location.getOffset() + 1);
 			contentsLoc.setBounds(location.getStart() + 1, location.getEnd() - 1);
 			
-			ValueNode contents = UnaryOperatorNode.decodeStatement(n, statement, contentsLoc, require);
+			ValueNode contents = UnaryOperatorNode.decodeStatement(n, statement, contentsLoc, require, false);
 			
 			if (contents == null)
 			{
-				contents = BinaryOperatorNode.decodeStatement(n, statement, contentsLoc, require);
+				contents = BinaryOperatorNode.decodeStatement(n, statement, contentsLoc, require, false);
 			}
 			if (contents == null && SyntaxUtils.isLiteral(statement))
 			{
-				LiteralNode literal = LiteralNode.decodeStatement(n, statement, contentsLoc, require);
+				LiteralNode literal = LiteralNode.decodeStatement(n, statement, contentsLoc, require, false);
 				
 				contents = literal;
 			}

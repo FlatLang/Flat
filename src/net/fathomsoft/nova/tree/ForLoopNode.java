@@ -118,7 +118,7 @@ public class ForLoopNode extends LoopNode
 		
 		builder.append(')').append('\n');
 		
-		for (int i = 0; i < getChildren().size(); i++)
+		for (int i = 0; i < getNumChildren(); i++)
 		{
 			TreeNode child = getChild(i);
 			
@@ -147,10 +147,12 @@ public class ForLoopNode extends LoopNode
 	 * 		ForLoopNode instance.
 	 * @param location The location of the statement in the source code.
 	 * @param require Whether or not to throw an error if anything goes wrong.
+	 * @param scope Whether or not the given statement is the beginning of
+	 * 		a scope.
 	 * @return The generated node, if it was possible to translated it
 	 * 		into a ForLoopNode.
 	 */
-	public static ForLoopNode decodeStatement(TreeNode parent, String statement, Location location, boolean require)
+	public static ForLoopNode decodeStatement(TreeNode parent, String statement, Location location, boolean require, boolean scope)
 	{
 		if (Regex.matches(statement, 0, Patterns.PRE_FOR))
 		{
@@ -168,10 +170,10 @@ public class ForLoopNode extends LoopNode
 				
 				String arguments[] = contents.split("\\s*;\\s*");
 				
-				AssignmentNode initialization = AssignmentNode.decodeStatement(parent, arguments[0], newLoc, require);
+				AssignmentNode initialization = AssignmentNode.decodeStatement(parent, arguments[0], newLoc, require, false);
 				n.getArgumentListNode().addChild(initialization);
 				
-				IdentifierNode var      = initialization.getVariableNode();
+				IdentifierNode var      = initialization.getAssigneeNode();
 				IdentifierNode existing = TreeNode.getExistingNode(parent, var.getName());
 				
 				if (var.getLocationIn().getBounds().equals(existing.getLocationIn().getBounds()))
@@ -187,7 +189,7 @@ public class ForLoopNode extends LoopNode
 //					initialization.addChild(0, local);
 				}
 				
-				TreeNode condition = BinaryOperatorNode.decodeStatement(parent, arguments[1], newLoc, require);
+				TreeNode condition = BinaryOperatorNode.decodeStatement(parent, arguments[1], newLoc, require, false);
 				
 				if (condition == null)
 				{
@@ -202,7 +204,7 @@ public class ForLoopNode extends LoopNode
 				
 				n.getArgumentListNode().addChild(condition);
 				
-				UnaryOperatorNode unaryUpdate = UnaryOperatorNode.decodeStatement(parent, arguments[2], newLoc, require);
+				UnaryOperatorNode unaryUpdate = UnaryOperatorNode.decodeStatement(parent, arguments[2], newLoc, require, false);
 				
 				if (unaryUpdate != null)
 				{
@@ -210,7 +212,7 @@ public class ForLoopNode extends LoopNode
 				}
 				else
 				{
-					AssignmentNode update = AssignmentNode.decodeStatement(parent, arguments[2], newLoc, require);
+					AssignmentNode update = AssignmentNode.decodeStatement(parent, arguments[2], newLoc, require, false);
 					
 					n.getArgumentListNode().addChild(update);
 				}

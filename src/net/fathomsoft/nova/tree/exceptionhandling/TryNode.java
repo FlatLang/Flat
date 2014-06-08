@@ -73,10 +73,12 @@ public class TryNode extends ExceptionHandlingNode
 	 * 		TryNode instance.
 	 * @param location The location of the statement in the source code.
 	 * @param require Whether or not to throw an error if anything goes wrong.
+	 * @param scope Whether or not the given statement is the beginning of
+	 * 		a scope.
 	 * @return The generated node, if it was possible to translated it
 	 * 		into a TryNode.
 	 */
-	public static TryNode decodeStatement(TreeNode parent, String statement, Location location, boolean require)
+	public static TryNode decodeStatement(TreeNode parent, String statement, Location location, boolean require, boolean scope)
 	{
 		if (Regex.matches(statement, 0, Patterns.TRY))
 		{

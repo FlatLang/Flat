@@ -193,7 +193,7 @@ public class FieldListNode extends TreeNode
 	 */
 	private FieldNode searchFieldList(TreeNode fieldList, String fieldName)
 	{
-		for (int i = 0; i < fieldList.getChildren().size(); i++)
+		for (int i = 0; i < fieldList.getNumChildren(); i++)
 		{
 			FieldNode variable = (FieldNode)fieldList.getChild(i);
 			
@@ -214,16 +214,16 @@ public class FieldListNode extends TreeNode
 	{
 		StringBuilder builder = new StringBuilder();
 		
-		for (int i = 0; i < getChildren().size(); i++)
+		for (int i = 0; i < getNumChildren(); i++)
 		{
 			builder.append(getChild(i).generateJavaSource());
 		}
 		
-		if (getChildren().size() > 0)
+		if (getNumChildren() > 0)
 		{
 			ClassNode parent = (ClassNode)getAncestorOfType(ClassNode.class, true);
 			
-			if (parent.getMethodListNode().getChildren().size() > 0)
+			if (parent.getMethodListNode().getNumChildren() > 0)
 			{
 				builder.append('\n');
 			}

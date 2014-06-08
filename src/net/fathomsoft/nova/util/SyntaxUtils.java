@@ -147,7 +147,7 @@ public class SyntaxUtils
 		{
 			ValueNode value = (ValueNode)node;
 			
-			if (value.getChildren().size() > 0)
+			if (value.getNumChildren() > 0)
 			{
 				return isString(value.getChild(0));
 			}
@@ -637,7 +637,7 @@ public class SyntaxUtils
 		{
 			ParameterListNode params = (ParameterListNode)method.getParameterListNode();
 			
-			if (params.getChildren().size() == 2)
+			if (params.getNumChildren() == 2)
 			{
 				ParameterNode param = (ParameterNode)params.getChild(1);
 				
@@ -950,7 +950,7 @@ public class SyntaxUtils
 				{
 					String instantiation   = "new Integer(" + value + ")";
 					
-					node = InstantiationNode.decodeStatement(parent, instantiation, primitive.getLocationIn(), true);
+					node = InstantiationNode.decodeStatement(parent, instantiation, primitive.getLocationIn(), true, false);
 				}
 			}
 		}
@@ -965,7 +965,7 @@ public class SyntaxUtils
 			{
 				String instantiation = "new Integer(" + value.generateNovaInput(true) + ")";
 				
-				node = InstantiationNode.decodeStatement(parent, instantiation, primitive.getLocationIn(), true);
+				node = InstantiationNode.decodeStatement(parent, instantiation, primitive.getLocationIn(), true, false);
 				
 //				node.inheritChildren(value);
 			}
@@ -973,7 +973,7 @@ public class SyntaxUtils
 			{
 				String instantiation = "new Long(" + value.generateNovaInput(true) + ")";
 				
-				node = InstantiationNode.decodeStatement(parent, instantiation, primitive.getLocationIn(), true);
+				node = InstantiationNode.decodeStatement(parent, instantiation, primitive.getLocationIn(), true, false);
 			}
 		}
 		
@@ -1002,6 +1002,11 @@ public class SyntaxUtils
 	 */
 	public static boolean isValidType(ValueNode value, String type)
 	{
+		if (type == null)
+		{
+			return false;
+		}
+		
 		if (value.isWithinExternalContext())
 		{
 			return true;
@@ -1061,7 +1066,7 @@ public class SyntaxUtils
 			}
 		}
 		
-		return false;
+		return value.getClassNode().containsExternalType(type);
 	}
 	
 	/**

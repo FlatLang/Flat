@@ -1,6 +1,7 @@
 package net.fathomsoft.nova.tree;
 
 import net.fathomsoft.nova.tree.exceptionhandling.ExceptionNode;
+import net.fathomsoft.nova.tree.variables.VariableNode;
 import net.fathomsoft.nova.util.Location;
 
 /**
@@ -60,9 +61,9 @@ public class ParameterListNode extends TreeNode
 	 * @param parameterName The name of the parameter to find.
 	 * @return The ParameterNode with the given name.
 	 */
-	public ParameterNode getParameter(String parameterName)
+	public ParameterNode getParameterNode(String parameterName)
 	{
-		for (int i = 0; i < getChildren().size(); i++)
+		for (int i = 0; i < getNumChildren(); i++)
 		{
 			ParameterNode parameter = (ParameterNode)getChild(i);
 			
@@ -73,6 +74,72 @@ public class ParameterListNode extends TreeNode
 		}
 		
 		return null;
+	}
+	
+	/**
+	 * Get the ParameterNode that the given index represents. The
+	 * parameters are ordered from left to right, 0 being the first.<br>
+	 * <br>
+	 * For example:
+	 * <blockquote><pre>
+	 * public void run(int a, int b, int c)
+	 * {
+	 * 	...
+	 * }</pre></blockquote>
+	 * If you were to call getParameterNode(2) on the method
+	 * above, you would receive the c ParameterNode.
+	 * 
+	 * @param parameterIndex The index parameter to get.
+	 * @return The ParameterNode at the given index.
+	 */
+	public ParameterNode getParameterNode(int parameterIndex)
+	{
+		return getParameterNode(parameterIndex, getParameterOffset());
+	}
+	
+	/**
+	 * A helper method for getParameterNode(int) to access the correct
+	 * parameter.
+	 * 
+	 * @param parameterIndex The index parameter to get.
+	 * @param offset The offset in which to access the node at.
+	 * @return The ParameterNode at the given index.
+	 */
+	private ParameterNode getParameterNode(int parameterIndex, int offset)
+	{
+		parameterIndex += offset;
+		
+		if (parameterIndex >= getNumChildren())
+		{
+			return null;
+		}
+		
+		return (ParameterNode)getChild(parameterIndex);
+	}
+	
+	/**
+	 * Get the offset used to access the 'visible' data of the method.
+	 * For example, external methods do not have any extra parameters
+	 * such as 'this' and 'exceptionData' to deal with, so 0 is returned.
+	 * However, if it is an instance method, 2 is returned because the
+	 * formerly mentioned parameters are present.
+	 * 
+	 * @return The offset to search the parameters at.
+	 */
+	public int getParameterOffset()
+	{
+		MethodNode method = (MethodNode)getAncestorOfType(MethodNode.class);
+		
+		if (method.isExternal())
+		{
+			return 0;
+		}
+		else if (method.isStatic())
+		{
+			return 1;
+		}
+		
+		return 2;
 	}
 	
 	/**
@@ -103,7 +170,7 @@ public class ParameterListNode extends TreeNode
 		
 		if (method instanceof DestructorNode)
 		{
-			reference.setPointer(true);
+			reference.setDataType(VariableNode.POINTER);
 		}
 		
 		reference.setName(MethodNode.getObjectReferenceIdentifier(), true);
@@ -119,11 +186,11 @@ public class ParameterListNode extends TreeNode
 	{
 		StringBuilder builder = new StringBuilder();
 		
-		for (int i = 0; i < getChildren().size(); i++)
+		for (int i = 0; i < getNumChildren(); i++)
 		{
 			builder.append(getChild(i).generateJavaSource());
 			
-			if (i < getChildren().size() - 1)
+			if (i < getNumChildren() - 1)
 			{
 				builder.append(", ");
 			}
@@ -160,13 +227,13 @@ public class ParameterListNode extends TreeNode
 			start = 1;
 		}
 		
-		for (int i = start; i < getChildren().size(); i++)
+		for (int i = start; i < getNumChildren(); i++)
 		{
 			TreeNode child = getChild(i);
 			
 			builder.append(child.generateCHeader());
 			
-			if (i < getChildren().size() - 1)
+			if (i < getNumChildren() - 1)
 			{
 				builder.append(", ");
 			}

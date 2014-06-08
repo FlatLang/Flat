@@ -111,10 +111,12 @@ public class ThrowNode extends ExceptionHandlingNode
 	 * 		ThrowNode instance.
 	 * @param location The location of the statement in the source code.
 	 * @param require Whether or not to throw an error if anything goes wrong.
+	 * @param scope Whether or not the given statement is the beginning of
+	 * 		a scope.
 	 * @return The generated node, if it was possible to translated it
 	 * 		into a ThrowNode.
 	 */
-	public static ThrowNode decodeStatement(TreeNode parent, String statement, Location location, boolean require)
+	public static ThrowNode decodeStatement(TreeNode parent, String statement, Location location, boolean require, boolean scope)
 	{
 		if (Regex.startsWith(statement, Patterns.PRE_THROW))
 		{
@@ -129,7 +131,7 @@ public class ThrowNode extends ExceptionHandlingNode
 				
 				String    thrown     = statement.substring(bounds.getStart(), bounds.getEnd());
 				
-				TreeNode  thrownNode = TreeNode.decodeStatement(parent, thrown, newLoc, require);
+				TreeNode  thrownNode = TreeNode.decodeStatement(parent, thrown, newLoc, require, false);
 				
 				if (thrownNode instanceof IdentifierNode)
 				{

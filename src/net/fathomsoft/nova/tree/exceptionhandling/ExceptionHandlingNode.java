@@ -69,26 +69,28 @@ public class ExceptionHandlingNode extends TreeNode
 	 * 		ExceptionHandlingNode instance.
 	 * @param location The location of the statement in the source code.
 	 * @param require Whether or not to throw an error if anything goes wrong.
+	 * @param scope Whether or not the given statement is the beginning of
+	 * 		a scope.
 	 * @return The generated node, if it was possible to translated it
 	 * 		into a ExceptionHandlingNode.
 	 */
-	public static ExceptionHandlingNode decodeStatement(TreeNode parent, String statement, Location location, boolean require)
+	public static ExceptionHandlingNode decodeStatement(TreeNode parent, String statement, Location location, boolean require, boolean scope)
 	{
 		ExceptionHandlingNode node = null;
 		
-		if ((node = TryNode.decodeStatement(parent, statement, location, require)) != null)
+		if ((node = TryNode.decodeStatement(parent, statement, location, require, scope)) != null)
 		{
 			return node;
 		}
-		else if ((node = CatchNode.decodeStatement(parent, statement, location, require)) != null)
+		else if ((node = CatchNode.decodeStatement(parent, statement, location, require, scope)) != null)
 		{
 			return node;
 		}
-		else if ((node = FinallyNode.decodeStatement(parent, statement, location, require)) != null)
+		else if ((node = FinallyNode.decodeStatement(parent, statement, location, require, scope)) != null)
 		{
 			return node;
 		}
-		else if ((node = ThrowNode.decodeStatement(parent, statement, location, require)) != null)
+		else if ((node = ThrowNode.decodeStatement(parent, statement, location, require, scope)) != null)
 		{
 			return node;
 		}

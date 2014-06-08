@@ -115,7 +115,7 @@ public class FieldNode extends InstanceDeclarationNode
 			builder.append(getConstantText()).append(' ');
 		}
 		
-		builder.append(getType());
+		builder.append(generateCTypeOutput());
 		
 		if (isReference())
 		{
@@ -129,7 +129,7 @@ public class FieldNode extends InstanceDeclarationNode
 		{
 			builder.append(getArrayText());
 		}
-		if (!isPrimitiveType() && !isExternal())
+		if (!isPrimitiveType() && !isExternalType())
 		{
 			builder.append('*');
 		}
@@ -176,10 +176,12 @@ public class FieldNode extends InstanceDeclarationNode
 	 * 		FieldNode instance.
 	 * @param location The location of the statement in the source code.
 	 * @param require Whether or not to throw an error if anything goes wrong.
+	 * @param scope Whether or not the given statement is the beginning of
+	 * 		a scope.
 	 * @return The generated node, if it was possible to translated it
 	 * 		into a FieldNode.
 	 */
-	public static FieldNode decodeStatement(TreeNode parent, String statement, Location location, boolean require)
+	public static FieldNode decodeStatement(TreeNode parent, String statement, Location location, boolean require, boolean scope)
 	{
 		// The field declaration without the field specific modifiers.
 		final Bounds localDeclaration = new Bounds(-1, -1);
@@ -206,7 +208,7 @@ public class FieldNode extends InstanceDeclarationNode
 		
 		n.iterateWords(statement, Patterns.IDENTIFIER_BOUNDARIES);
 		
-		if (localDeclaration.getStart() < 0)
+		if (localDeclaration.getStart() < 0 || localDeclaration.getEnd() < 0)
 		{
 			return null;
 		}
@@ -214,7 +216,7 @@ public class FieldNode extends InstanceDeclarationNode
 		String preStatement      = statement.substring(0, localDeclaration.getStart());
 		String localStatement    = statement.substring(localDeclaration.getStart(), localDeclaration.getEnd());
 		
-		LocalDeclarationNode var = LocalDeclarationNode.decodeStatement(n, localStatement, location, require);
+		LocalDeclarationNode var = LocalDeclarationNode.decodeStatement(n, localStatement, new Location(location), require, scope);
 		
 		if (var == null)
 		{

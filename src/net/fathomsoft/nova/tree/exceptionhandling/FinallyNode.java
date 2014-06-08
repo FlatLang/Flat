@@ -35,7 +35,7 @@ public class FinallyNode extends ExceptionHandlingNode
 		builder.append("FINALLY").append('\n');
 		builder.append('{').append('\n');
 		
-		for (int i = 0; i < getChildren().size(); i++)
+		for (int i = 0; i < getNumChildren(); i++)
 		{
 			TreeNode child = getChild(i);
 			
@@ -59,10 +59,12 @@ public class FinallyNode extends ExceptionHandlingNode
 	 * 		FinallyNode instance.
 	 * @param location The location of the statement in the source code.
 	 * @param require Whether or not to throw an error if anything goes wrong.
+	 * @param scope Whether or not the given statement is the beginning of
+	 * 		a scope.
 	 * @return The generated node, if it was possible to translated it
 	 * 		into a FinallyNode.
 	 */
-	public static FinallyNode decodeStatement(TreeNode parent, String statement, Location location, boolean require)
+	public static FinallyNode decodeStatement(TreeNode parent, String statement, Location location, boolean require, boolean scope)
 	{
 		if (Regex.matches(statement, 0, Patterns.FINALLY))
 		{

@@ -59,7 +59,7 @@ public class ArrayNode extends VariableNode
 		
 		builder.append('(').append(getName()).append('*');
 		
-		if (!isPrimitiveType() && !isExternal())
+		if (!isPrimitiveType() && !isExternalType())
 		{
 			builder.append('*');
 		}
@@ -68,7 +68,7 @@ public class ArrayNode extends VariableNode
 		
 		builder.append("malloc(sizeof(").append(getName()).append(')').append(" * (");
 		
-		for (int i = 0; i < getChildren().size(); i++)
+		for (int i = 0; i < getNumChildren(); i++)
 		{
 			TreeNode child = getChild(i);
 			
@@ -76,6 +76,26 @@ public class ArrayNode extends VariableNode
 		}
 		
 		builder.append(')').append(')');
+		
+		return builder.toString();
+	}
+	
+	/**
+	 * @see net.fathomsoft.nova.tree.TreeNode#generateNovaInput(boolean)
+	 */
+	@Override
+	public String generateNovaInput(boolean outputChildren)
+	{
+		StringBuilder builder = new StringBuilder();
+		
+		builder.append(getName());
+		
+		for (int i = 0; i < getNumChildren(); i++)
+		{
+			TreeNode child = getChild(i);
+			
+			builder.append('[').append(child.generateNovaInput()).append(']');
+		}
 		
 		return builder.toString();
 	}
@@ -103,10 +123,12 @@ public class ArrayNode extends VariableNode
 	 * @param statement The statement to decode into an ArrayNode instance.
 	 * @param location The location of the statement in the source code.
 	 * @param require Whether or not to throw an error if anything goes wrong.
+	 * @param scope Whether or not the given statement is the beginning of
+	 * 		a scope.
 	 * @return The new ArrayNode instance if it was able to decode the
 	 * 		statement. If not, it will return null.
 	 */
-	public static ArrayNode decodeStatement(TreeNode parent, String statement, Location location, boolean require)
+	public static ArrayNode decodeStatement(TreeNode parent, String statement, Location location, boolean require, boolean scope)
 	{
 		if (SyntaxUtils.isArrayInitialization(statement))
 		{
@@ -132,7 +154,7 @@ public class ArrayNode extends VariableNode
 				
 				if (SyntaxUtils.isNumber(length))
 				{
-					LiteralNode node = LiteralNode.decodeStatement(n, length, newLoc, require);
+					LiteralNode node = LiteralNode.decodeStatement(n, length, newLoc, require, false);
 					
 					n.addChild(node);
 				}
@@ -142,11 +164,11 @@ public class ArrayNode extends VariableNode
 					
 					if (node == null)
 					{
-						TreeNode binary = BinaryOperatorNode.decodeStatement(parent, length, newLoc, require);
+						TreeNode binary = BinaryOperatorNode.decodeStatement(parent, length, newLoc, require, false);
 						
 						if (binary == null)
 						{
-							binary = PriorityNode.decodeStatement(parent, length, location, require);
+							binary = PriorityNode.decodeStatement(parent, length, location, require, false);
 						}
 						if (binary == null)
 						{
