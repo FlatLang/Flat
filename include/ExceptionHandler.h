@@ -7,9 +7,11 @@
 #define TRY \
 	do\
 	{\
-		jmp_buf jmp_buf;\
+		jmp_buf buf;\
 		\
-		ExceptionData* newData = nova_ExceptionData_ExceptionData(exceptionData, &jmp_buf);\
+		ExceptionData* newData = nova_ExceptionData_ExceptionData(exceptionData, &buf);\
+		\
+		int exception_code;\
 		\
 		if (exceptionData)\
 		{\
@@ -18,7 +20,7 @@
 		\
 		exceptionData = newData;\
 		\
-		int exception_code = setjmp(jmp_buf);\
+		exception_code = setjmp(buf);\
 		\
 		if (exception_code == 0)
 
