@@ -1,0 +1,27 @@
+import "SVGComponent";
+import "SVGMainComponent";
+import "File";
+
+public class SVG
+{
+	public SVGMainComponent root;
+	
+	public SVG()
+	{
+		root = new SVGMainComponent();
+	}
+	
+	public void generateOutput(File file)
+	{
+		root.generateOutput(file);
+	}
+	
+	public void generateHTMLOutput(File file)
+	{
+		file.write("<html>\n");
+		
+		generateOutput(file);
+		
+		file.write("</html>");
+	}
+}

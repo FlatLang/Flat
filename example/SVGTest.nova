@@ -1,0 +1,87 @@
+import "SVG";
+import "SVGCircle";
+import "SVGComponentList";
+import "File";
+import "Time";
+
+public class SVGTest
+{
+	public static void main(String args[])
+	{
+		SVG s = new SVG();
+		
+		double pi  = 3.141592653;
+		double pi2 = pi * 2;
+		
+		IO.print("Enter the number of vertices: ");
+		int    numVerts = IO.getInt();
+		
+		IO.print("Enter the coefficient: ");
+		double coefficient = IO.getDouble();
+		
+		IO.print("Enter the number of points: ");
+		int    numPoints = IO.getInt();
+		
+		long   start = Time.currentTimeMillis();
+		
+		double points[] = new double[numVerts * 2];
+		double radius   = 450;
+		double offset   = pi2 / 12;
+		
+		for (int j = 0; j < numVerts; j++)
+		{
+			double rad = pi2 * (j / (numVerts * 1.0)) + offset;
+			
+			points[j * 2 + 0] = radius * Math.cos(rad) + radius + 10;
+			points[j * 2 + 1] = radius * Math.sin(rad) + radius + 10;
+		}
+		
+		for (int k = 0; k < numVerts; k++)
+		{
+			double x = points[k * 2 + 0];
+			double y = points[k * 2 + 1];
+			
+			SVGCircle circle2 = new SVGCircle(x, y, 3);
+			IO.println(circle2 + "");
+			s.root.children.addChild(circle2);
+		}
+		
+		double cx = radius + 10;
+		double cy = radius + 10;
+		
+		for (int i = 0; i < numPoints; i++)
+		{
+			int rand = Math.random(numVerts);
+			
+			double x = points[rand * 2 + 0];
+			double y = points[rand * 2 + 1];
+			
+			cx = cx - (cx - x) * coefficient;
+			cy = cy - (cy - y) * coefficient;
+			
+			if (i > 15)
+			{
+				if (i % 1000 == 0)
+				{
+					IO.println("" + i);
+				}
+				
+				SVGCircle circle = new SVGCircle(cx, cy, 1);
+				
+				s.root.children.addChild(circle);
+			}
+		}
+		
+		File f = new File("C:/Users/Braden Steffaniak/svgoutput.html");
+		
+		f.create();
+		
+		s.generateHTMLOutput(f);
+		
+		long end = Time.currentTimeMillis();
+		
+		IO.print("Done generating " + (end - start));
+		
+		IO.waitForEnter();
+	}
+}

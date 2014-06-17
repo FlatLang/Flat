@@ -1,0 +1,45 @@
+import "SVGComponentNode";
+import "SVGComponent";
+import "File";
+
+public class SVGComponentList
+{
+	public SVGComponentNode start;
+	
+	public void generateOutput(File file)
+	{
+		SVGComponentNode current = start;
+		
+		while (current != 0)
+		{
+			SVGCircle component = current.component;
+			
+			component.generateOutput(file);
+			
+			current = current.next;
+		}
+	}
+	
+	public void addChild(SVGComponent component)
+	{
+		SVGComponentNode node = new SVGComponentNode();
+		
+		node.component = component;
+		
+		if (start == 0)
+		{
+			start = node;
+		}
+		else
+		{
+			SVGComponentNode current = start;
+			
+			while (current.next != 0)
+			{
+				current = current.next;
+			}
+			
+			current.next = node;
+		}
+	}
+}

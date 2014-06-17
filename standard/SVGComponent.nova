@@ -1,0 +1,26 @@
+import "SVGComponentList";
+import "File";
+
+public class SVGComponent
+{
+	public SVGComponentList children;
+	
+	public SVGComponent()
+	{
+		children = new SVGComponentList();
+	}
+	
+	public void generateOutput(File file)
+	{
+		/*String s = "";
+		
+		s = s + startTag + "\n";
+		
+		s = s + children.generateOutput();
+		
+		if (endTag != 0)
+		{
+			s = s + endTag + "\n";
+		}*/
+	}
+}
