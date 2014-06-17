@@ -457,7 +457,6 @@ public class Nova
 			IdentifierNode gc = new IdentifierNode(mainMethod, mainMethod.getLocationIn());
 			gc.setName("GC");
 			gc.setType("GC");
-			gc.setDecodingAccessedNode(true);
 			
 			MethodCallNode gcInit = MethodCallNode.decodeStatement(gc, "init()", mainMethod.getLocationIn(), true, false);
 			
