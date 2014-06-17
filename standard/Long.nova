@@ -16,21 +16,12 @@ public class Long extends Number
 		
 		int size;
 		
-		//IO.print("Before: ");
-		//IO.printl(number);
-		//IO.println("");
-		
 		number = number / 10;
 			
 		for (size = 1; number > 0; size++)
 		{
-			//IO.print("Now: ");
-			//IO.printl(number);
-			//IO.println("");
 			number = number / 10;
 		}
-		
-		IO.println("");
 		
 		return size;
 	}
