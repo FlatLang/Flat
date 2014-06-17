@@ -11,6 +11,8 @@ public class GC
 	external long GC_get_heap_size();
 	external long GC_get_bytes_since_gc();
 	
+//	external int GC_free_space_divisor;
+	
 	public static void init()
 	{
 		GC_INIT();
@@ -40,10 +42,10 @@ public class GC
 		return GC_get_bytes_since_gc();
 	}
 	
-	public static void setFreeSpaceDivisor(int divisor)
-	{
-		//GC_free_space_divisor = divisor;
-	}
+//	public static void setFreeSpaceDivisor(int divisor)
+//	{
+//		GC_free_space_divisor = divisor;
+//	}
 	
 	public static void collect()
 	{
