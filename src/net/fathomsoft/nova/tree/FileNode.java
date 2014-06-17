@@ -3,6 +3,7 @@ package net.fathomsoft.nova.tree;
 import java.io.File;
 
 import net.fathomsoft.nova.Nova;
+import net.fathomsoft.nova.error.SyntaxErrorException;
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.util.FileUtils;
 import net.fathomsoft.nova.util.Location;
@@ -15,7 +16,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Feb 18, 2014 at 8:57:00 PM
- * @version	v0.2.12 Jun 1, 2014 at 7:28:35 PM
+ * @version	v0.2.13 Jun 17, 2014 at 8:45:35 AM
  */
 public class FileNode extends TreeNode
 {
@@ -37,10 +38,7 @@ public class FileNode extends TreeNode
 	{
 		DEFAULT_IMPORTS = new String[]
 		{
-			"Fathom.h",
-			"gc.h",
-			"stdlib.h",
-			"CClass.h",
+			"Nova.h",
 			"ExceptionHandler.h",
 			"ExceptionData",
 			"Object",
@@ -49,6 +47,8 @@ public class FileNode extends TreeNode
 			"IO",
 			"Integer",
 			"Long",
+			"Double",
+			"Char",
 			"DivideByZeroException"
 		};
 	}
@@ -64,7 +64,7 @@ public class FileNode extends TreeNode
 		
 		ImportListNode imports = new ImportListNode(this, locationIn);
 		
-		super.addChild(imports);
+		addChild(imports, this);
 		
 		addDefaultImportNodes();
 	}
@@ -124,7 +124,7 @@ public class FileNode extends TreeNode
 	 */
 	public boolean containsClass(String className)
 	{
-		return getClass(className) != null;
+		return getClassNode(className) != null;
 	}
 	
 	/**
@@ -145,24 +145,26 @@ public class FileNode extends TreeNode
 	 * @param className The name of the class to search for.
 	 * @return The ClassNode for the class, if it exists.
 	 */
-	public ClassNode getClass(String className)
+	public ClassNode getClassNode(String className)
 	{
-		for (int i = 0; i < getNumChildren(); i++)
+		ClassNode clazz = getClassNode();
+		
+		if (clazz.getName().equals(className))
 		{
-			TreeNode child = getChild(i);
-			
-			if (child != getImportListNode())
-			{
-				ClassNode clazz = (ClassNode)child;
-				
-				if (clazz.getName().equals(className))
-				{
-					return clazz;
-				}
-			}
+			return clazz;
 		}
 		
 		return null;
+	}
+	
+	/**
+	 * Get the ClassNode of the class that is contained within the file.
+	 * 
+	 * @return The ClassNode instance from the file.
+	 */
+	public ClassNode getClassNode()
+	{
+		return (ClassNode)getChild(1);
 	}
 	
 	/**
@@ -199,27 +201,59 @@ public class FileNode extends TreeNode
 	}
 	
 	/**
-	 * Make sure that the Class declarations are valid.
+	 * Get the name of the file that will be output as a C header file.<br>
+	 * <br>
+	 * For example: A generateCHeaderName() call for a FileNode of Test.nova
+	 * would return "nova_Test.h"
+	 * 
+	 * @return The name of the file output as a C header file.
 	 */
-	public void validateClasses()
+	public String generateCHeaderName()
 	{
-		for (int i = 0; i < getNumChildren(); i++)
+		return getClassNode().generateCSourceName() + ".h";
+	}
+	
+	/**
+	 * Get the name of the file that will be output as a C source file.<br>
+	 * <br>
+	 * For example: A generateCSourceName() call for a FileNode of Test.nova
+	 * would return "nova_Test.c"
+	 * 
+	 * @return The name of the file output as a C source file.
+	 */
+	public String generateCSourceName()
+	{
+		return getClassNode().generateCSourceName() + ".c";
+	}
+	
+	/**
+	 * Make sure that the Class declarations are valid.
+	 * 
+	 * @param phase The phase that the node is being validated in.
+	 */
+	public void validateClasses(int phase)
+	{
+		ClassNode clazz = getClassNode();
+		
+		if (clazz == null)
 		{
-			TreeNode child = getChild(i);
-			
-			if (child != getImportListNode())
-			{
-				ClassNode clazz = (ClassNode)child;
-				
-				clazz.validateDeclaration();
-			}
+			SyntaxMessage.error("File must contain a class", this);
+		}
+		
+		clazz.validateDeclaration(phase);
+		
+		if (clazz.validate(phase) == null)
+		{
+			getParent().removeChild(this);
 		}
 	}
 	
 	/**
 	 * Make sure that the Field declarations are valid.
+	 * 
+	 * @param phase The phase that the node is being validated in.
 	 */
-	public void validateFields()
+	public void validateFields(int phase)
 	{
 		for (int i = 0; i < getNumChildren(); i++)
 		{
@@ -229,15 +263,17 @@ public class FileNode extends TreeNode
 			{
 				ClassNode clazz = (ClassNode)child;
 				
-				clazz.validateFields();
+				clazz.validateFields(phase);
 			}
 		}
 	}
 	
 	/**
 	 * Make sure that the Method declarations are valid.
+	 * 
+	 * @param phase The phase that the node is being validated in.
 	 */
-	public void validateMethods()
+	public void validateMethods(int phase)
 	{
 		for (int i = 0; i < getNumChildren(); i++)
 		{
@@ -247,7 +283,7 @@ public class FileNode extends TreeNode
 			{
 				ClassNode clazz = (ClassNode)child;
 				
-				clazz.validateMethods();
+				clazz.validateMethods(phase);
 			}
 		}
 	}
@@ -261,15 +297,6 @@ public class FileNode extends TreeNode
 	public ImportListNode getImportListNode()
 	{
 		return (ImportListNode)getChild(0);
-	}
-	
-	/**
-	 * @see net.fathomsoft.nova.tree.IdentifierNode#generateJavaSource()
-	 */
-	@Override
-	public String generateJavaSource()
-	{
-		return "";
 	}
 	
 	/**
@@ -306,9 +333,10 @@ public class FileNode extends TreeNode
 			
 			String definitionName = "FILE_" + getName() + "_" + Nova.LANGUAGE_NAME.toUpperCase();
 			
+			builder.append("#pragma once").append('\n');
 			builder.append("#ifndef ").append(definitionName).append('\n');
 			builder.append("#define ").append(definitionName).append("\n\n");
-			
+
 			builder.append(generateDummyTypes()).append('\n');
 			
 			ImportListNode imports = getImportListNode();
@@ -343,15 +371,7 @@ public class FileNode extends TreeNode
 		{
 			StringBuilder builder = new StringBuilder();
 			
-			ImportNode thisImport = new ImportNode(this, null);
-			thisImport.setImportLocation(getName());
-			
-			builder.append(thisImport.generateCSource());
-			
-			if (getImportListNode().getNumChildren() <= 0)
-			{
-				builder.append('\n');
-			}
+			builder.append("#include <precompiled.h>\n\n");
 			
 			for (int i = 0; i < getNumChildren(); i++)
 			{
@@ -364,15 +384,6 @@ public class FileNode extends TreeNode
 		}
 		
 		return source;
-	}
-	
-	/**
-	 * @see net.fathomsoft.nova.tree.TreeNode#generateCSourceFragment()
-	 */
-	@Override
-	public String generateCSourceFragment()
-	{
-		return null;
 	}
 	
 	/**
@@ -404,16 +415,7 @@ public class FileNode extends TreeNode
 	{
 		for (String importLoc : DEFAULT_IMPORTS)
 		{
-			ImportNode importNode = new ImportNode(this, getLocationIn());
-			
-			if (importLoc.endsWith(".h"))
-			{
-				importLoc = importLoc.substring(0, importLoc.length() - 2);
-				
-				importNode.setExternal(true);
-			}
-			
-			importNode.setImportLocation(importLoc);
+			ImportNode importNode = ImportNode.decodeStatement(this, "import \"" + importLoc + "\"", getLocationIn(), true, false);
 			
 			addChild(importNode);
 		}
@@ -432,6 +434,8 @@ public class FileNode extends TreeNode
 	{
 		StringBuilder builder = new StringBuilder();
 		
+//		builder.append("typedef struct ExceptionData ExceptionData;\n");
+		
 		for (int i = 0; i < getNumChildren(); i++)
 		{
 			TreeNode child = getChild(i);
@@ -443,6 +447,20 @@ public class FileNode extends TreeNode
 				builder.append("typedef struct ").append(clazz.getName()).append(' ').append(clazz.getName()).append(';').append('\n');
 			}
 		}
+		
+//		ImportListNode imports = getImportListNode();
+//		
+//		for (int i = 0; i < imports.getNumChildren(); i++)
+//		{
+//			ImportNode node = (ImportNode)imports.getChild(i);
+//			
+//			if (!node.isExternal())
+//			{
+//				String name = node.getLocationNode().getName();
+//				
+//				builder.append("typedef struct ").append(name).append(' ').append(name).append(';').append('\n');
+//			}
+//		}
 		
 		return builder.toString();
 	}
@@ -474,7 +492,7 @@ public class FileNode extends TreeNode
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.TreeNode#clone(TreeNode)
+	 * @see net.fathomsoft.nova.tree.TreeNode#clone(TreeNode, Location)
 	 */
 	@Override
 	public FileNode clone(TreeNode temporaryParent, Location locationIn)
@@ -496,5 +514,15 @@ public class FileNode extends TreeNode
 		super.cloneTo(node);
 		
 		return node;
+	}
+	
+	/**
+	 * Get the name of the file as the toString().
+	 * 
+	 * @return The name of the file.
+	 */
+	public String toString()
+	{
+		return file.getName();
 	}
 }
