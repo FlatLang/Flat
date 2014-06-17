@@ -11,6 +11,7 @@ import net.fathomsoft.nova.error.SyntaxErrorException;
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.tree.ClassNode;
 import net.fathomsoft.nova.tree.FileNode;
+import net.fathomsoft.nova.tree.IdentifierNode;
 import net.fathomsoft.nova.tree.MethodCallNode;
 import net.fathomsoft.nova.tree.MethodNode;
 import net.fathomsoft.nova.tree.ProgramNode;
@@ -29,7 +30,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:00:04 PM
- * @version	v0.2.12 Jun 1, 2014 at 7:28:35 PM
+ * @version	v0.2.13 Jun 17, 2014 at 8:45:35 AM
  */
 public class Nova
 {
@@ -55,6 +56,7 @@ public class Nova
 	public static final boolean	ANDROID_DEBUG = false;
 	public static final boolean	DEBUG         = true;
 	
+	// Set to 0 to not benchmark.
 	public static final int		BENCHMARK     = 0;
 	
 	public static final long	CSOURCE       = 0x1l;
@@ -65,6 +67,7 @@ public class Nova
 	public static final long	C_ARGS        = 0x100000l;
 	public static final long	RUNTIME       = 0x1000000l;
 	public static final long	LIBRARY       = 0x10000000l;
+	public static final long	NO_GC         = 0x100000000l;
 	
 	public static final int		GCC           = 1;
 	public static final int		TCC           = 2;
@@ -75,7 +78,7 @@ public class Nova
 	public static final int		LINUX         = 3;
 	
 	public static final String	LANGUAGE_NAME = "Nova";
-	public static final String	VERSION       = "v0.2.12";
+	public static final String	VERSION       = "v0.2.13";
 	
 	/**
 	 * Find out which operating system the compiler is running on.
@@ -141,6 +144,8 @@ public class Nova
 			{
 				e.printStackTrace();
 			}
+			
+			enableFlag(DRY_RUN);
 		}
 		
 		lingeringFiles     = new LinkedList<File>();
@@ -178,9 +183,14 @@ public class Nova
 		{
 			args = new String[]
 			{
-				formatPath(directory + "IntegerTest.nova"),
-				formatPath(directory + "Person.nova"),
-				formatPath(directory + "BodyBuilder.nova"),
+//				formatPath(directory + "IntegerTest.nova"),
+//				formatPath(directory + "FileTest.nova"),
+				formatPath(directory + "SVGTest.nova"),
+//				formatPath(directory + "ExceptionHandlingDemo.nova"),
+//				formatPath(directory + "NonWholeDivisionException.nova"),
+//				formatPath(directory + "ArrayListDemo.nova"),
+//				formatPath(directory + "Person.nova"),
+//				formatPath(directory + "BodyBuilder.nova"),
 //				formatPath(directory + "Nova.nova"),
 				formatPath(standard  + "IO.nova"),
 				formatPath(standard  + "String.nova"),
@@ -196,23 +206,33 @@ public class Nova
 				formatPath(standard  + "Exception.nova"),
 				formatPath(standard  + "Integer.nova"),
 				formatPath(standard  + "Array.nova"),
-				formatPath(standard  + "Character.nova"),
+				formatPath(standard  + "Char.nova"),
 				formatPath(standard  + "Bool.nova"),
 				formatPath(standard  + "Long.nova"),
 				formatPath(standard  + "Double.nova"),
 				formatPath(standard  + "Number.nova"),
 				formatPath(standard  + "GC.nova"),
+				formatPath(standard  + "File.nova"),
+				formatPath(standard  + "SVG.nova"),
+				formatPath(standard  + "SVGComponent.nova"),
+				formatPath(standard  + "SVGComponentList.nova"),
+				formatPath(standard  + "SVGComponentNode.nova"),
+				formatPath(standard  + "SVGMainComponent.nova"),
+				formatPath(standard  + "SVGCircle.nova"),
 				"-o",   formatPath(directory + "bin/Executable" + OUTPUT_EXTENSION),
 				"-dir", formatPath(directory + "../include"),
 				"-dir", formatPath(directory + "../include/gc"),
 				"-dir", formatPath(directory + "../standard"),
+//				"-dir", formatPath(directory + "../example"),
 				"-run",
 //				"-csource",
 				"-formatc",
 				"-v",
-//				"-gcc",
+				"-gcc",
 				"-cargs",
 				"-keepc",
+//				"-nogc",
+//				"-dry"
 //				"-library",
 			};
 		}
@@ -275,7 +295,7 @@ public class Nova
 		{
 			if (BENCHMARK > 1)
 			{
-				str += " (Average of " + Math.round(time / (float)BENCHMARK) + "ms)";
+				str += " (Average of " + String.format("%.3f", time / (float)BENCHMARK) + "ms)";
 			}
 			
 			System.out.println(str);
@@ -294,7 +314,7 @@ public class Nova
 		
 		String headers[] = tree.getCHeaderOutput();
 		String sources[] = tree.getCSourceOutput();
-		File   files[]   = tree.getFiles();
+		FileNode files[] = tree.getFiles();
 		
 		if (isFlagEnabled(CSOURCE))
 		{
@@ -305,17 +325,32 @@ public class Nova
 			}
 		}
 		
+		StringBuilder allHeaders = new StringBuilder();
+		StringBuilder includes = new StringBuilder();
+		StringBuilder types = new StringBuilder();
+
+//		allHeaders.append("#pragma once\n");
+		allHeaders.append("#ifndef NOVA_ALL_HEADERS\n");
+		allHeaders.append("#define NOVA_ALL_HEADERS\n\n");
+		allHeaders.append("#include <Nova.h>\n");
+		allHeaders.append("#include <math.h>\n");
+		allHeaders.append("#include <ExceptionHandler.h>\n");
+		allHeaders.append("#include <setjmp.h>\n").append('\n');
+		
 		for (int i = 0; i < files.length; i++)
 		{
-			String header   = headers[i];
-			String source   = sources[i];
-			String fileName = FileUtils.removeFileExtension(files[i].getName());
-			File   parent   = files[i].getParentFile();
+			FileNode file   = files[i];
+			String   header = headers[i];
+			String   source = sources[i];
+			File     parent = files[i].getFile().getParentFile();
+			
+			types.append("typedef struct ").append(file.getName()).append(' ').append(file.getName()).append(';').append('\n');
+			includes.append("#include <").append(file.generateCHeaderName()).append('>').append('\n');
 			
 			try
 			{
-				File headerFile = FileUtils.writeFile(fileName + ".h", parent, header);
-				File sourceFile = FileUtils.writeFile(fileName + ".c", parent, source);
+				File headerFile = FileUtils.writeFile(file.generateCHeaderName(), parent, header);
+				File sourceFile = FileUtils.writeFile(file.generateCSourceName(), parent, source);
 				
 				cHeaderFiles.add(headerFile);
 				cSourceFiles.add(sourceFile);
@@ -326,22 +361,38 @@ public class Nova
 					lingeringFiles.add(sourceFile);
 				}
 			}
-			catch (IOException e1)
+			catch (IOException e)
 			{
-				e1.printStackTrace();
+				e.printStackTrace();
 				
 				completed();
 			}
 		}
 		
-		if (!isFlagEnabled(DRY_RUN))
-		{
+		allHeaders.append(types).append('\n');
+		allHeaders.append(includes).append('\n');
+		
+		allHeaders.append("#endif");
+		
+//		try
+//		{
+//			File file = FileUtils.writeFile("AllNovaHeaders.h", allHeaders.toString());
+//		}
+//		catch (IOException e)
+//		{
+//			e.printStackTrace();
+//			
+//			completed();
+//		}
+		
+//		if (!isFlagEnabled(DRY_RUN))
+//		{
 			compileC();
-		}
-		else
-		{
-			completed();
-		}
+//		}
+//		else
+//		{
+//			completed();
+//		}
 	}
 	
 	/**
@@ -403,16 +454,19 @@ public class Nova
 //				}
 //			}
 			
-			ValueNode gc = new ValueNode(mainMethod, mainMethod.getLocationIn());
+			IdentifierNode gc = new IdentifierNode(mainMethod, mainMethod.getLocationIn());
+			gc.setName("GC");
 			gc.setType("GC");
+			gc.setDecodingAccessedNode(true);
 			
 			MethodCallNode gcInit = MethodCallNode.decodeStatement(gc, "init()", mainMethod.getLocationIn(), true, false);
 			
 			StringBuilder mainMethodText = new StringBuilder();
 			
 			mainMethodText.append('\n').append('\n');
-			mainMethodText.append("#include <stdio.h>").append('\n');
-			mainMethodText.append("#include <string.h>").append('\n');
+//			mainMethodText.append("#include <stdio.h>").append('\n');
+//			mainMethodText.append("#include <stdlib.h>").append('\n');
+//			mainMethodText.append("#include <string.h>").append('\n');
 //			mainMethodText.append(staticClassImport);
 			//mainMethodText.append("jmp_buf __").append(LANGUAGE_NAME.toUpperCase()).append("__jmp_buf;").append('\n');
 			mainMethodText.append('\n');
@@ -421,13 +475,13 @@ public class Nova
 			mainMethodText.append	("String** args;").append('\n');
 			mainMethodText.append	("int      i;").append('\n').append('\n');
 			mainMethodText.append	("ExceptionData* ").append(ExceptionNode.EXCEPTION_DATA_IDENTIFIER).append(" = 0;").append('\n');
+			mainMethodText.append	("srand(currentTimeMillis());").append('\n');
 			mainMethodText.append	(gcInit.generateCSource()).append('\n');
-			mainMethodText.append	("args = (String**)GC_MALLOC(argc * sizeof(String));").append('\n');
-//			mainMethodText.append	(staticClassInit);
+			mainMethodText.append	("args = (String**)NOVA_MALLOC(argc * sizeof(String));").append('\n');
 			mainMethodText.append	('\n');
 			mainMethodText.append	("for (i = 0; i < argc; i++)").append('\n');
 			mainMethodText.append	("{").append('\n');
-			mainMethodText.append		("char* str = (char*)GC_MALLOC(sizeof(char) * strlen(argvs[i]) + 1);").append('\n');
+			mainMethodText.append		("char* str = (char*)NOVA_MALLOC(sizeof(char) * strlen(argvs[i]) + 1);").append('\n');
 			mainMethodText.append		("copy_string(str, argvs[i]);").append('\n');
 			mainMethodText.append		("args[i] = ").append(LANGUAGE_NAME.toLowerCase()).append("_String_String(0, str);").append('\n');
 			mainMethodText.append	("}").append('\n');
@@ -446,9 +500,7 @@ public class Nova
 			mainMethodText.append		('\n');
 			mainMethodText.append	('}').append('\n');
 			mainMethodText.append	("END_TRY;").append('\n');
-//			mainMethodText.append	(staticClassFree);
-			mainMethodText.append	("free(args);").append('\n');
-//			mainMethodText.append	("args = NULL;").append('\n');
+			mainMethodText.append	("NOVA_FREE(args);").append('\n');
 			mainMethodText.append	("GC_gcollect();").append('\n');
 			mainMethodText.append	('\n');
 			mainMethodText.append	("return 0;").append('\n');
@@ -471,7 +523,7 @@ public class Nova
 		
 		if (compiler == GCC)
 		{
-			cmd.append("gcc ");//("compiler/gcc/bin/gcc.exe ");
+			cmd.append("gcc -pipe -march=native -fomit-frame-pointer ");//("compiler/gcc/bin/gcc.exe ");
 		}
 		else if (compiler == TCC)
 		{
@@ -480,6 +532,11 @@ public class Nova
 		else if (compiler == CLANG)
 		{
 			cmd.append("clang ");
+		}
+		
+		if (!isFlagEnabled(NO_GC))
+		{
+			cmd.append("-DUSE_GC ");
 		}
 		
 		for (int i = 0; i < includeDirectories.size(); i++)
@@ -491,9 +548,9 @@ public class Nova
 		
 		String libDir    = workingDir + "/bin/";
 		
-		String libFathom = formatPath(libDir + "libFathom.dll");
-		String libThread = formatPath(libDir + "libThread.dll");
-		String libGC     = formatPath(libDir + "libgc.dll");
+		String libFathom = formatPath(libDir + "libNovafast.dll");
+		String libThread = formatPath(libDir + "libThreadfast.dll");
+		String libGC     = formatPath(libDir + "gcfast.dll");
 		
 		cmd.append(libFathom).append(' ').append(libThread).append(' ').append(libGC).append(' ');
 		
@@ -504,7 +561,8 @@ public class Nova
 		
 		cmd.append("-o ").append('"').append(outputFile.getAbsolutePath()).append('"').append(' ');
 		
-		cmd.append("-O2 ");
+		cmd.append("-O2");
+//		cmd.append("-Ofast ");
 //		cmd.append("-s ");
 		
 		if (OS == LINUX)
@@ -515,6 +573,11 @@ public class Nova
 		if (isFlagEnabled(C_ARGS))
 		{
 			System.out.println(cmd);
+		}
+		
+		if (isFlagEnabled(DRY_RUN))
+		{
+			completed();
 		}
 		
 		final Command command = new Command(cmd.toString(), workingDir);
@@ -701,8 +764,16 @@ public class Nova
 		String error = "Error: " + message;
 		
 		errors.add(error);
-		
-		throw new SyntaxErrorException(error);
+	}
+	
+	/**
+	 * Get whether or not the compilation has accumulated any errors.
+	 * 
+	 * @return Whether or not there are any errors currently.
+	 */
+	public boolean containsErrors()
+	{
+		return errors.size() > 0;
 	}
 	
 	/**
@@ -753,6 +824,11 @@ public class Nova
 			else if (arg.equals("-run"))
 			{
 				enableFlag(RUNTIME);
+			}
+			// Do not use bdw garbage collection.
+			else if (arg.equals("-nogc"))
+			{
+				enableFlag(NO_GC);
 			}
 			// If the user wants to view the c source output.
 			else if (arg.equals("-csource"))
