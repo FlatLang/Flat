@@ -1,0 +1,35 @@
+import "File";
+import "Thread";
+
+public class FileTest
+{
+	public static void main(String args[])
+	{
+		File f = new File("C:/Users/Braden Steffaniak/test3.txt");
+		
+		if (f.exists() == 1)
+		{
+			IO.println("Your file exists!");
+			
+			f.writeLine("Entering data..");
+			f.writeLine("asdfasdf thing.");
+			
+			//f.close();
+			f.reopen();
+			
+			String data = f.readAllContents();
+			
+			IO.println(data);
+		}
+		else
+		{
+			IO.println("Your file does not exist..");
+		}
+		
+		f.close();
+		
+		IO.println("Press enter to exit...");
+		
+		IO.waitForEnter();
+	}
+}
