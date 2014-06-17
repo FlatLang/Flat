@@ -56,7 +56,7 @@ public class InstantiationNode extends IdentifierNode
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.ValueNode#getAccessedNode()
+	 * @see net.fathomsoft.nova.tree.IdentifierNode#getAccessedNode()
 	 */
 	public IdentifierNode getAccessedNode()
 	{

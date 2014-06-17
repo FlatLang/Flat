@@ -135,7 +135,7 @@ public class ClassNode extends InstanceDeclarationNode
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.ValueNode#getAccessedNode()
+	 * @see net.fathomsoft.nova.tree.IdentifierNode#getAccessedNode()
 	 */
 	public IdentifierNode getAccessedNode()
 	{
@@ -919,7 +919,7 @@ public class ClassNode extends InstanceDeclarationNode
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.IdentifierNode#generateCSourceName()
+	 * @see net.fathomsoft.nova.tree.variables.VariableNode#generateCSourceName()
 	 */
 	@Override
 	public String generateCSourceName()

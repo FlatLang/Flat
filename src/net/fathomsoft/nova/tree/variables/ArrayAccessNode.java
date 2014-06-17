@@ -224,7 +224,7 @@ public class ArrayAccessNode extends VariableNode
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.ValueNode#getAccessedNode()
+	 * @see net.fathomsoft.nova.tree.IdentifierNode#getAccessedNode()
 	 */
 	public IdentifierNode getAccessedNode()
 	{

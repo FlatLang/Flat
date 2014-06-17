@@ -7,7 +7,7 @@ import net.fathomsoft.nova.util.Location;
 
 /**
  * VariableNode extension that represents the declaration of a local variable
- * node type. See {@link #decodeStatement(TreeNode, String, Location, boolean, boolean)}
+ * node type. See {@link net.fathomsoft.nova.tree.LocalDeclarationNode#decodeStatement(TreeNode, String, Location, boolean, boolean)}
  * for more details on what correct inputs look like.
  * 
  * @author	Braden Steffaniak

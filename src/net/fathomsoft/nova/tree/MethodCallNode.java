@@ -627,7 +627,7 @@ public class MethodCallNode extends IdentifierNode
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.ValueNode#getAccessedNode()
+	 * @see net.fathomsoft.nova.tree.IdentifierNode#getAccessedNode()
 	 */
 	public IdentifierNode getAccessedNode()
 	{
@@ -640,10 +640,9 @@ public class MethodCallNode extends IdentifierNode
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.TreeNode#validate()
+	 * @see net.fathomsoft.nova.tree.TreeNode#validate(int)
 	 * 
 	 * @param phase The phase that the node is being validated in.
-	 * @see net.fathomsoft.nova.tree.TreeNode#validate(int)
 	 */
 	@Override
 	public TreeNode validate(int phase)

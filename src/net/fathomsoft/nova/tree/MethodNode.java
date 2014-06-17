@@ -524,7 +524,7 @@ public class MethodNode extends InstanceDeclarationNode
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.ValueNode#getAccessedNode()
+	 * @see net.fathomsoft.nova.tree.IdentifierNode#getAccessedNode()
 	 */
 	public IdentifierNode getAccessedNode()
 	{

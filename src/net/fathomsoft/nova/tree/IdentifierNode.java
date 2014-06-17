@@ -341,7 +341,7 @@ public class IdentifierNode extends ValueNode
 	 * @return The C output for when this value node is being used
 	 * 		as an argument for a method call.
 	 */
-	public String generateArgumentReference(IdentifierNode callingMethod)
+	public String generateArgumentReference(MethodCallNode callingMethod)
 	{
 		return generateUseOutput() + generateChildrenCSourceFragment(true, callingMethod);
 	}
@@ -373,11 +373,10 @@ public class IdentifierNode extends ValueNode
 	 * 
 	 * @param reference Whether or not to start the string off with
 	 * 		a "->" reference operator.
-	 * @param argument Whether or not the specified node is being
-	 * 		output as an argument to a method call.
+	 * @param callingMethod The method that the node is calling.
 	 * @return The generated String.
 	 */
-	public String generateChildrenCSourceFragment(boolean reference, IdentifierNode callingMethod)
+	public String generateChildrenCSourceFragment(boolean reference, MethodCallNode callingMethod)
 	{
 		StringBuilder builder = new StringBuilder();
 		
