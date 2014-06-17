@@ -1,0 +1,40 @@
+import "NonWholeDivisionException";
+
+public class ExceptionHandlingDemo
+{
+	public static void main(String args[])
+	{
+		try
+		{
+			int result = divide(100, 5);
+			
+			IO.println("After working example: " + result);
+			
+			result = divide(100, 3);
+			
+			IO.println("this output will not show.");
+		}
+		catch (NonWholeDivisionException e)
+		{
+			IO.println("You used the divide() method incorrectly.");
+		}
+		finally
+		{
+			IO.println("Exiting the try block.");
+		}
+		
+		IO.println("After the try block.");
+		
+		IO.waitForEnter();
+	}
+	
+	static int divide(int num, int den)
+	{
+		if (num % den != 0)
+		{
+			throw new NonWholeDivisionException();//"There cannot be any remainders from the division.");
+		}
+		
+		return num / den;
+	}
+}
