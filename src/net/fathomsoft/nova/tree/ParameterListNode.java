@@ -9,7 +9,7 @@ import net.fathomsoft.nova.util.Location;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:56:34 PM
- * @version	v0.2.7 May 25, 2014 at 9:16:48 PM
+ * @version	v0.2.13 Jun 17, 2014 at 8:45:35 AM
  */
 public class ParameterListNode extends TreeNode
 {
@@ -146,36 +146,45 @@ public class ParameterListNode extends TreeNode
 	 * Validate the parameters that are used for the specified parent
 	 * MethodNode. Checks to make sure that if it needs an object
 	 * reference as the first parameter that it gives it one.
+	 * 
+	 * @param phase The phase that the node is being validated in.
+	 * @see net.fathomsoft.nova.tree.TreeNode#validate(int)
 	 */
-	public void validate()
+	@Override
+	public TreeNode validate(int phase)
 	{
+		if (phase != 2)
+		{
+			return this;
+		}
+		
 		MethodNode method = (MethodNode)getAncestorOfType(MethodNode.class);
 		
 		if (method.isExternal())
 		{
+			// Remove the exceptionData parameter.
 			removeChild(0);
+		}
+		else if (!method.isStatic())
+		{
+			ClassNode     classNode = (ClassNode)method.getAncestorOfType(ClassNode.class);
 			
-			return;
-		}
-		else if (method.isStatic())
-		{
-			return;
-		}
-		
-		ClassNode     classNode = (ClassNode)method.getAncestorOfType(ClassNode.class);
-		
-		ParameterNode reference = new ParameterNode(this, null);
-		
-		reference.setType(classNode.getName());
-		
-		if (method instanceof DestructorNode)
-		{
-			reference.setDataType(VariableNode.POINTER);
+			ParameterNode reference = new ParameterNode(this, null);
+			
+			reference.setType(classNode.getName());
+			
+			if (method instanceof DestructorNode)
+			{
+				reference.setDataType(VariableNode.POINTER);
+			}
+			
+			reference.setName(MethodNode.getObjectReferenceIdentifier(), true);
+			
+			// Add the object reference identifier to the beginning.
+			addChild(0, reference);
 		}
 		
-		reference.setName(MethodNode.getObjectReferenceIdentifier(), true);
-		
-		addChild(0, reference);
+		return this;
 	}
 	
 	/**
@@ -243,7 +252,7 @@ public class ParameterListNode extends TreeNode
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.TreeNode#clone(TreeNode)
+	 * @see net.fathomsoft.nova.tree.TreeNode#clone(TreeNode, Location)
 	 */
 	@Override
 	public ParameterListNode clone(TreeNode temporaryParent, Location locationIn)
