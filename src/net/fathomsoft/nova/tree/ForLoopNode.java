@@ -9,12 +9,12 @@ import net.fathomsoft.nova.util.Regex;
 
 /**
  * LoopNode extension that represents the declaration of a "for loop"
- * node type. See {@link #decodeStatement(TreeNode, String, Location)}
+ * node type. See {@link #decodeStatement(TreeNode, String, Location, boolean, boolean)}
  * for more details on what correct inputs look like.
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:55:15 PM
- * @version	v0.2.12 Jun 1, 2014 at 7:28:35 PM
+ * @version	v0.2.13 Jun 17, 2014 at 8:45:35 AM
  */
 public class ForLoopNode extends LoopNode
 {
@@ -29,7 +29,7 @@ public class ForLoopNode extends LoopNode
 		
 		ArgumentListNode argumentsNode = new ArgumentListNode(this, locationIn);
 		
-		addChild(1, argumentsNode);
+		addChild(argumentsNode, this);
 	}
 	
 	/**
@@ -174,7 +174,7 @@ public class ForLoopNode extends LoopNode
 				n.getArgumentListNode().addChild(initialization);
 				
 				IdentifierNode var      = initialization.getAssigneeNode();
-				IdentifierNode existing = TreeNode.getExistingNode(parent, var.getName());
+				IdentifierNode existing = SyntaxTree.getExistingNode(parent, var.getName());
 				
 				if (var.getLocationIn().getBounds().equals(existing.getLocationIn().getBounds()))
 				{
@@ -193,7 +193,7 @@ public class ForLoopNode extends LoopNode
 				
 				if (condition == null)
 				{
-					condition = getExistingNode(parent, arguments[1]);
+					condition = SyntaxTree.getExistingNode(parent, arguments[1]);
 					
 //					SyntaxMessage.error("Could not decode condition", parent.getFileNode(), newLoc, parent.getController());
 				}
@@ -229,7 +229,7 @@ public class ForLoopNode extends LoopNode
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.TreeNode#clone(TreeNode)
+	 * @see net.fathomsoft.nova.tree.TreeNode#clone(TreeNode, Location)
 	 */
 	@Override
 	public ForLoopNode clone(TreeNode temporaryParent, Location locationIn)
