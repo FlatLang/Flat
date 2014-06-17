@@ -1,4 +1,119 @@
 public class Double extends Number
 {
+	visible double value;
 	
+	external void sprintf(char buffer[], String format, double value);
+	external char[] realloc(char buffer[], int size);
+	external int strlen(char buffer[]);
+	
+	public Double(double value)
+	{
+		this.value = value;
+	}
+	
+	public static int numDigits(double number)
+	{
+		return Long.numDigits(number);
+	}
+	
+	static String genString(char buffer[], int lastIndex)
+	{
+		buffer = realloc(buffer, ++lastIndex + 1);
+		
+		buffer[lastIndex] = '\0';
+		
+		return new String(buffer);
+	}
+	
+	static char[] genBuffer(double value)
+	{
+		int size   = 11 + 1 + 15;
+		
+		char buffer[] = new char[size];
+		
+		sprintf(buffer, "%.15f", value);
+		
+		return buffer;
+	}
+	
+	static int repetition(char buffer[], int start)
+	{
+		int index = start;
+		
+		char c = buffer[index];
+		
+		while (buffer[--index] == c);
+		
+		return start - index - 1;
+	}
+	
+	static int lastSignificantDigit(char buffer[], int start)
+	{
+		while (buffer[start--] == '0');
+		
+		return start + 1;
+	}
+	
+	public static String toAString(double value)
+	{
+		char buffer[] = genBuffer(value);
+		
+		int size = strlen(buffer);
+		
+		int lastIndex = size - 1;
+		
+		char c = buffer[--lastIndex];
+		
+		if (c == '0' || c == '9')
+		{
+			while (buffer[lastIndex--] == c);
+			
+			if (buffer[++lastIndex] == '.')
+			{
+				lastIndex++;
+				
+				return genString(buffer, lastIndex);
+			}
+			else
+			{
+				if (lastIndex >= size - 3 - 4)
+				{
+					lastIndex = size - 1;
+				}
+				else if (c == '9')
+				{
+					buffer[lastIndex]++;
+					
+					return genString(buffer, lastIndex);
+				}
+			}
+		}
+		else
+		{
+			int rep = repetition(buffer, lastIndex);
+			
+			if (rep > 5)
+			{
+				buffer[lastIndex] = c;
+				
+				if (c >= '5')
+				{
+					c++;
+				}
+				
+				buffer[++lastIndex] = c;
+				
+				return genString(buffer, lastIndex);
+			}
+		}
+		
+		lastIndex = lastSignificantDigit(buffer, size - 1);
+		
+		return genString(buffer, lastIndex);
+	}
+	
+	public String toString()
+	{
+		return toAString(value);
+	}
 }
