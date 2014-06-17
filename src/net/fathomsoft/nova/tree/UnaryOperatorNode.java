@@ -3,32 +3,25 @@ package net.fathomsoft.nova.tree;
 import java.util.HashMap;
 
 import net.fathomsoft.nova.error.SyntaxMessage;
+import net.fathomsoft.nova.tree.variables.ArrayAccessNode;
 import net.fathomsoft.nova.util.Bounds;
 import net.fathomsoft.nova.util.Location;
 import net.fathomsoft.nova.util.StringUtils;
 
 /**
  * TreeNode extension that represents a unary operator node type.
- * See {@link #decodeStatement(TreeNode, String, Location)} for more
+ * See {@link #decodeStatement(TreeNode, String, Location, boolean, boolean)} for more
  * details on what correct inputs look like.
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 10:00:11 PM
- * @version	v0.2.11 May 31, 2014 at 1:19:11 PM
+ * @version	v0.2.13 Jun 17, 2014 at 8:45:35 AM
  */
 public class UnaryOperatorNode extends ValueNode
 {
 	private static final int	LEFT = -1, EITHER = 0, RIGHT = 1;
 	
 	private static final HashMap<String, Integer>	SIDES;
-	
-	/**
-	 * @see net.fathomsoft.nova.tree.TreeNode#TreeNode(TreeNode, Location)
-	 */
-	public UnaryOperatorNode(TreeNode temporaryParent, Location locationIn)
-	{
-		super(temporaryParent, locationIn);
-	}
 	
 	/**
 	 * Initialize the SIDES HashMap.
@@ -41,6 +34,14 @@ public class UnaryOperatorNode extends ValueNode
 		SIDES.put("--", EITHER);
 		SIDES.put("++", EITHER);
 		SIDES.put("!",  LEFT);
+	}
+	
+	/**
+	 * @see net.fathomsoft.nova.tree.TreeNode#TreeNode(TreeNode, Location)
+	 */
+	public UnaryOperatorNode(TreeNode temporaryParent, Location locationIn)
+	{
+		super(temporaryParent, locationIn);
 	}
 	
 	/**
@@ -82,16 +83,7 @@ public class UnaryOperatorNode extends ValueNode
 		
 		return builder.toString();
 	}
-
-	/**
-	 * @see net.fathomsoft.nova.tree.TreeNode#generateCHeader()
-	 */
-	@Override
-	public String generateCHeader()
-	{
-		return null;
-	}
-
+	
 	/**
 	 * @see net.fathomsoft.nova.tree.TreeNode#generateCSource()
 	 */
@@ -217,14 +209,23 @@ public class UnaryOperatorNode extends ValueNode
 				return null;
 			}
 			
+			Location newLoc = new Location(location);
+				
 			String variableName = statement.substring(varStart, varEnd);
 			
-			IdentifierNode variable = TreeNode.getExistingNode(parent, variableName);
+			IdentifierNode variable = SyntaxTree.getExistingNode(parent, variableName);
+			
+			if (variable == null)
+			{
+				variable = ArrayAccessNode.decodeStatement(n, variableName, newLoc, false, scope);
+			}
+			else
+			{
+				variable = variable.clone(n, newLoc);
+			}
 			
 			if (variable != null)
 			{
-				variable = variable.clone(n, location);
-				
 				n.addChild(variable);
 				
 				if (bounds.getStart() > 0)
@@ -244,7 +245,7 @@ public class UnaryOperatorNode extends ValueNode
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.TreeNode#clone(TreeNode)
+	 * @see net.fathomsoft.nova.tree.TreeNode#clone(TreeNode, Location)
 	 */
 	@Override
 	public UnaryOperatorNode clone(TreeNode temporaryParent, Location locationIn)
