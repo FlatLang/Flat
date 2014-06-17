@@ -1,6 +1,9 @@
 package net.fathomsoft.nova.tree;
 
+import net.fathomsoft.nova.Nova;
+import net.fathomsoft.nova.error.SyntaxErrorException;
 import net.fathomsoft.nova.error.SyntaxMessage;
+import net.fathomsoft.nova.tree.TreeNode.ExtraData;
 import net.fathomsoft.nova.tree.variables.FieldListNode;
 import net.fathomsoft.nova.tree.variables.FieldNode;
 import net.fathomsoft.nova.tree.variables.InstanceFieldListNode;
@@ -12,12 +15,12 @@ import net.fathomsoft.nova.util.Regex;
 
 /**
  * DeclarationNode extension that represents the declaration of a class
- * node type. See {@link #decodeStatement(TreeNode, String, Location)}
+ * node type. See {@link #decodeStatement(TreeNode, String, Location, boolean, boolean)}
  * for more details on what correct inputs look like.
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:15:51 PM
- * @version	v0.2.11 May 31, 2014 at 1:19:11 PM
+ * @version	v0.2.13 Jun 17, 2014 at 8:45:35 AM
  */
 public class ClassNode extends InstanceDeclarationNode
 {
@@ -132,6 +135,19 @@ public class ClassNode extends InstanceDeclarationNode
 	}
 	
 	/**
+	 * @see net.fathomsoft.nova.tree.ValueNode#getAccessedNode()
+	 */
+	public IdentifierNode getAccessedNode()
+	{
+		if (getNumChildren() <= 6)
+		{
+			return null;
+		}
+		
+		return (IdentifierNode)getChild(6);
+	}
+	
+	/**
 	 * Check whether or not the specified ClassNode extends the given
 	 * ClassNode.
 	 * 
@@ -170,7 +186,7 @@ public class ClassNode extends InstanceDeclarationNode
 	 */
 	public ClassNode getExtendedClass()
 	{
-		ClassNode extendedClass = getProgramNode().getClass(getExtendedClassName());
+		ClassNode extendedClass = getProgramNode().getClassNode(getExtendedClassName());
 		
 		return extendedClass;
 	}
@@ -221,7 +237,7 @@ public class ClassNode extends InstanceDeclarationNode
 		
 		for (int i = 0; i < classes.length; i++)
 		{
-			classes[i] = program.getClass(implementedClasses[i]);
+			classes[i] = program.getClassNode(implementedClasses[i]);
 		}
 		
 		return classes;
@@ -680,72 +696,6 @@ public class ClassNode extends InstanceDeclarationNode
 		
 		return false;
 	}
-	
-	/**
-	 * @see net.fathomsoft.nova.tree.TreeNode#generateJavaSource()
-	 */
-	@Override
-	public String generateJavaSource()
-	{
-		StringBuilder builder = new StringBuilder();
-		
-		if (isVisibilityValid())
-		{
-			builder.append(getVisibilityText()).append(' ');
-		}
-		if (isStatic())
-		{
-			builder.append(getStaticText()).append(' ');
-		}
-		if (isConstant())
-		{
-			builder.append(getConstantText()).append(' ');
-		}
-		
-		builder.append(getType()).append(' ');
-		
-		if (isReference())
-		{
-			SyntaxMessage.error("A class cannot be of a reference type", this);
-		}
-		else if (isPointer())
-		{
-			SyntaxMessage.error("A class cannot be of a pointer type", this);
-		}
-		
-		builder.append(getName());
-		
-		if (getExtendedClassName() != null)
-		{
-			builder.append(" extends ").append(getExtendedClassName());
-		}
-		
-		if (getImplementedClassNames().length > 0)
-		{
-			builder.append(" implements ");
-			
-			for (int i = 0; i < getImplementedClassNames().length; i++)
-			{
-				builder.append(getImplementedClassNames()[i]);
-				
-				if (i < getImplementedClassNames().length - 1)
-				{
-					builder.append(", ");
-				}
-			}
-		}
-		
-		builder.append('\n').append('{').append('\n');
-		
-		for (int i = 0; i < getNumChildren(); i++)
-		{
-			builder.append(getChild(i).generateJavaSource());
-		}
-		
-		builder.append('}').append('\n').append('\n');
-		
-		return builder.toString();
-	}
 
 	/**
 	 * @see net.fathomsoft.nova.tree.TreeNode#generateCHeader()
@@ -853,14 +803,16 @@ public class ClassNode extends InstanceDeclarationNode
 		
 		builder.append(generatePrivateMethodPrototypes());
 		
-		for (int i = 5; i < getNumChildren(); i++)
+		builder.append(fields.generateStaticCSource());
+		
+		for (int i = 6; i < getNumChildren(); i++)
 		{
 			TreeNode child = getChild(i);
 			
 			builder.append('\n').append(child.generateCSource());
 		}
-		
-		builder.append(fields.generateCSource());
+
+		builder.append(fields.generateNonStaticCSource());
 		
 		builder.append(getConstructorListNode().generateCSource());
 		builder.append(getDestructorListNode().generateCSource());
@@ -895,64 +847,11 @@ public class ClassNode extends InstanceDeclarationNode
 		// If contains 'class' in the statement.
 		if (Regex.indexOf(statement, Patterns.PRE_CLASS) >= 0)
 		{
-			final boolean extending[]    = new boolean[1];
-			final boolean implementing[] = new boolean[1];
-			final String  prevWord[]     = new String[] { "" };
+			ClassNode n = new ClassNode(parent, location);
 			
-			ClassNode n = new ClassNode(parent, location)
-			{
-				public void interactWord(String word, int wordNumber, Bounds bounds, int numWords)
-				{
-					if (extending[0])
-					{
-						setExtendedClass(word);
-						
-						extending[0] = false;
-					}
-					else if (implementing[0])
-					{
-						if (word.startsWith(","))
-						{
-							word = word.substring(1);
-						}
-						if (word.endsWith(","))
-						{
-							word = word.substring(0, word.length() - 1);
-						}
-						
-						if (word.length() > 0)
-						{
-							addImplementedClass(word);
-						}
-					}
-					else
-					{
-						if (word.equals("extends"))
-						{
-							extending[0] = true;
-						}
-						else if (word.equals("implements"))
-						{
-							implementing[0] = true;
-						}
-						else
-						{
-							setAttribute(word, wordNumber);
-							
-							if (prevWord[0].equals("class"))
-							{
-								setName(word);
-								setType(word);
-							}
-							
-							prevWord[0] = word;
-						}
-					}
-				}
-			};
+			n.iterateWords(statement, new ClassData());
 			
-			n.iterateWords(statement);
-			
+			// TODO: Check for the standard library version of Object.
 			if (n.getExtendedClassName() == null && !n.getName().equals("Object"))
 			{
 				n.setExtendedClass("Object");
@@ -962,6 +861,70 @@ public class ClassNode extends InstanceDeclarationNode
 		}
 		
 		return null;
+	}
+	
+	/**
+	 * @see net.fathomsoft.nova.tree.TreeNode#interactWord(java.lang.String, int, net.fathomsoft.nova.util.Bounds, int, java.lang.String, java.lang.String, net.fathomsoft.nova.tree.TreeNode.ExtraData)
+	 */
+	@Override
+	public void interactWord(String word, int wordNumber, Bounds bounds, int numWords, String leftDelimiter, String rightDelimiter, ExtraData extra)
+	{
+		ClassData data = (ClassData)extra;
+		
+		if (data.extending)
+		{
+			setExtendedClass(word);
+			
+			data.extending = false;
+		}
+		else if (data.implementing)
+		{
+			if (word.startsWith(","))
+			{
+				word = word.substring(1);
+			}
+			if (word.endsWith(","))
+			{
+				word = word.substring(0, word.length() - 1);
+			}
+			
+			if (word.length() > 0)
+			{
+				addImplementedClass(word);
+			}
+		}
+		else
+		{
+			if (word.equals("extends"))
+			{
+				data.extending = true;
+			}
+			else if (word.equals("implements"))
+			{
+				data.implementing = true;
+			}
+			else
+			{
+				setAttribute(word, wordNumber);
+				
+				if (data.previousWord.equals("class"))
+				{
+					setName(word);
+					setType(word);
+				}
+				
+				data.previousWord = word;
+			}
+		}
+	}
+	
+	/**
+	 * @see net.fathomsoft.nova.tree.IdentifierNode#generateCSourceName()
+	 */
+	@Override
+	public String generateCSourceName()
+	{
+		return Nova.LANGUAGE_NAME + getName();
 	}
 	
 	/**
@@ -994,26 +957,61 @@ public class ClassNode extends InstanceDeclarationNode
 	}
 	
 	/**
-	 * Make sure that the Class is a valid declaration.
+	 * @see net.fathomsoft.nova.tree.TreeNode#validate(int)
 	 */
-	public void validateDeclaration()
+	public TreeNode validate(int phase)
 	{
-		validateExtension();
-		validateImplementations();
+		if (phase != 1)
+		{
+			return this;
+		}
+		
+		ClassNode clazz = (ClassNode)getAncestorOfType(ClassNode.class);
+		
+		if (clazz == null)
+		{
+			FileNode file = getFileNode();
+			
+			if (!file.getName().equals(getName()))
+			{
+				SyntaxMessage.error("The name of the class '" + getName() + "' must be the same as the file that it is contained within", this, false);
+				
+				getParent().removeChild(this);
+				
+				return null;
+			}
+		}
+		
+		return this;
+	}
+	
+	/**
+	 * Make sure that the Class is a valid declaration.
+	 * 
+	 * @param phase The phase that the node is being validated in.
+	 */
+	public void validateDeclaration(int phase)
+	{
+		validateExtension(phase);
+		validateImplementations(phase);
 	}
 	
 	/**
 	 * Make sure that the fields are all valid.
+	 * 
+	 * @param phase The phase that the node is being validated in.
 	 */
-	public void validateFields()
+	public void validateFields(int phase)
 	{
 		
 	}
 	
 	/**
 	 * Make sure that the methods are all valid
+	 * 
+	 * @param phase The phase that the node is being validated in.
 	 */
-	public void validateMethods()
+	public void validateMethods(int phase)
 	{
 		if (!containsConstructor())
 		{
@@ -1040,16 +1038,18 @@ public class ClassNode extends InstanceDeclarationNode
 			addChild(defaultDestructor);
 		}
 		
-		getMethodListNode().validate();
-		getConstructorListNode().validate();
-		getDestructorListNode().validate();
+		getMethodListNode().validate(phase);
+		getConstructorListNode().validate(phase);
+		getDestructorListNode().validate(phase);
 	}
 	
 	/**
 	 * Validate that the extended class has been declared and that it
 	 * is valid to extend.
+	 * 
+	 * @param phase The phase that the node is being validated in.
 	 */
-	public void validateExtension()
+	public void validateExtension(int phase)
 	{
 		if (extendedClass == null)
 		{
@@ -1058,7 +1058,7 @@ public class ClassNode extends InstanceDeclarationNode
 		
 		ProgramNode program  = getProgramNode();
 		
-		ClassNode   clazz    = program.getClass(extendedClass);
+		ClassNode   clazz    = program.getClassNode(extendedClass);
 		
 		String      tempName = extendedClass;
 		
@@ -1089,14 +1089,16 @@ public class ClassNode extends InstanceDeclarationNode
 	/**
 	 * Validate that all of the implemented classes have been declared
 	 * and that they are valid interfaces.
+	 * 
+	 * @param phase The phase that the node is being validated in.
 	 */
-	public void validateImplementations()
+	public void validateImplementations(int phase)
 	{
 		ProgramNode program = getProgramNode();
 		
 		for (String implementedClass : implementedClasses)
 		{
-			ClassNode clazz = program.getClass(implementedClass);
+			ClassNode clazz = program.getClassNode(implementedClass);
 			
 			if (clazz == null)
 			{
@@ -1114,19 +1116,6 @@ public class ClassNode extends InstanceDeclarationNode
 	public boolean containsStaticData()
 	{
 		return containsStaticData(this);
-	}
-	
-	/**
-	 * @see net.fathomsoft.nova.tree.ValueNode#getAccessedNode()
-	 */
-	public IdentifierNode getAccessedNode()
-	{
-		if (getNumChildren() <= 4)
-		{
-			return null;
-		}
-		
-		return (IdentifierNode)getChild(4);
 	}
 	
 	/**
@@ -1184,9 +1173,9 @@ public class ClassNode extends InstanceDeclarationNode
 	{
 		MethodListNode constructors = getConstructorListNode();
 		
-		for (TreeNode node : constructors.getChildren())
+		for (int i = 0; i < constructors.getNumChildren(); i++)
 		{
-			ConstructorNode method = (ConstructorNode)node;
+			ConstructorNode method = (ConstructorNode)constructors.getChild(i);
 			
 			if (method.getParameterListNode().getNumChildren() == 1)
 			{
@@ -1258,7 +1247,22 @@ public class ClassNode extends InstanceDeclarationNode
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.TreeNode#clone(TreeNode)
+	 * Generate a ClassNode with the given parent and location for
+	 * temporary use.
+	 * 
+	 * @param parent The node to set as the ClassNode parent.
+	 * @param locationIn The location to set as the ClassNode location.
+	 * @return The generated temporary ClassNode.
+	 */
+	public static ClassNode generateTemporaryClass(TreeNode parent, Location locationIn)
+	{
+		ClassNode clazz = new ClassNode(parent, locationIn);
+		
+		return clazz;
+	}
+	
+	/**
+	 * @see net.fathomsoft.nova.tree.TreeNode#clone(TreeNode, Location)
 	 */
 	@Override
 	public ClassNode clone(TreeNode temporaryParent, Location locationIn)
@@ -1289,5 +1293,24 @@ public class ClassNode extends InstanceDeclarationNode
 		}
 		
 		return node;
+	}
+	
+	/**
+	 * Implementation of the ExtraData for this class.
+	 * 
+	 * @author	Braden Steffaniak
+	 * @since	v0.2.13 Jun 11, 2014 at 8:31:46 PM
+	 * @version	v0.2.13 Jun 11, 2014 at 8:31:46 PM
+	 */
+	private static class ClassData extends ExtraData
+	{
+		private boolean	extending, implementing;
+		
+		private String	previousWord;
+		
+		public ClassData()
+		{
+			previousWord = "";
+		}
 	}
 }
