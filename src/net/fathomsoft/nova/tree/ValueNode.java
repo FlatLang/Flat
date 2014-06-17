@@ -16,7 +16,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.2.4 May 2, 2014 at 11:14:37 PM
- * @version	v0.2.11 May 31, 2014 at 1:19:11 PM
+ * @version	v0.2.13 Jun 17, 2014 at 8:45:35 AM
  */
 public class ValueNode extends TreeNode
 {
@@ -39,231 +39,18 @@ public class ValueNode extends TreeNode
 	}
 	
 	/**
-	 * Get the TreeNode that represents the variable that contains
-	 * the value. For example:<br>
-	 * <blockquote><pre>
-	 * ClassName obj = new ClassName();
+	 * Get the node that returns a value. (Which is the specified node).
 	 * 
-	 * obj.methodName();</pre></blockquote>
-	 * In the previous statements, 'obj' is the variable and the method
-	 * 'methodName()' is being called through the 'obj' variable.
-	 * 
-	 * @return The TreeNode that represents the calling variable.
-	 */
-	public ValueNode getReferenceNode()
-	{
-		return getReferenceNode(getParent());
-	}
-	
-	/**
-	 * Get the TreeNode that represents the variable that contains
-	 * the value. For example:<br>
-	 * <blockquote><pre>
-	 * ClassName obj = new ClassName();
-	 * 
-	 * obj.methodName();</pre></blockquote>
-	 * In the previous statements, 'obj' is the variable and the method
-	 * 'methodName()' is being called through the 'obj' variable.
-	 * 
-	 * @param parent The parent of the ValueNode.
-	 * @return The TreeNode that represents the calling variable.
-	 */
-	public ValueNode getReferenceNode(TreeNode parent)
-	{
-		if (parent instanceof ArrayAccessNode || parent instanceof BinaryOperatorNode)
-		{
-			return getReferenceNode(parent.getParent());
-		}
-		if (parent instanceof ArrayNode)
-		{
-			parent = parent.getParent();
-		}
-		if (parent instanceof InstantiationNode)
-		{
-			InstantiationNode instantiation = (InstantiationNode)parent;
-			
-			IdentifierNode    identifier    = instantiation.getIdentifierNode();
-			
-			if (this == identifier || identifier instanceof ArrayNode)
-			{
-				parent = parent.getParent();
-			}
-			else
-			{
-				return identifier;
-			}
-		}
-		if (parent instanceof ReturnNode)
-		{
-			parent = parent.getParent();
-		}
-		if (parent instanceof ValueNode == false)
-		{
-			TreeNode value = parent.getAncestorOfType(MethodNode.class);
-			
-			if (value == null)
-			{
-				value = parent.getAncestorOfType(ClassNode.class);
-				
-				//return null;
-			}
-			
-			parent = value;
-		}
-		if (parent instanceof MethodNode)
-		{
-//			MethodNode method = parent.getFileNode().getClass(getName());
-//			
-//			if (method.getFileNode().containsImport(getName()))
-//			{
-//				
-//			}
-			
-			TreeNode value = getObjectReferenceValue((MethodNode)parent);
-			
-			if (value == null)
-			{
-				value = parent.getAncestorOfType(ClassNode.class);
-				
-				//return null;
-			}
-			
-			parent = value;
-		}
-		if (parent instanceof ClassNode)
-		{
-			return (ClassNode)parent;
-		}
-		
-		return (ValueNode)parent;
-	}
-	
-	/**
-	 * Get the furthest node that is accessing the specified node.<br>
-	 * <br>
-	 * For example:
-	 * <blockquote><pre>
-	 * tree.next.calculateSize()</pre></blockquote>
-	 * In the previous statement, "<code>tree</code>" is the context.
-	 * 
-	 * @return The furthest node that accesses the specified node.
-	 */
-	public ValueNode getContextNode()
-	{
-		return getContextNode(getReferenceNode());
-	}
-	
-	/**
-	 * Get the furthest node that is accessing the specified node.<br>
-	 * <br>
-	 * For example:
-	 * <blockquote><pre>
-	 * tree.next.calculateSize()</pre></blockquote>
-	 * In the previous statement, "<code>tree</code>" is the context.
-	 * 
-	 * @param parent The parent of the ValueNode to use.
-	 * @return The furthest node that accesses the specified node.
-	 */
-	public ValueNode getContextNode(ValueNode parent)
-	{
-		TreeNode next = parent;
-		
-		while (next instanceof LocalVariableNode || next instanceof FieldNode)
-		{
-			if (next instanceof LocalVariableNode == false && next instanceof FieldNode == false)//next.containsScope() || next instanceof ReturnNode)
-			{
-				return parent;
-			}
-			
-			parent = (ValueNode)next;
-			next   = parent.getParent();
-		}
-		
-		return parent;
-	}
-	
-	/**
-	 * Get the last node that is accessed by the specified node.<br>
-	 * <br>
-	 * For example:
-	 * <blockquote><pre>
-	 * tree.next.calculateSize()</pre></blockquote>
-	 * In the previous statement, "<code>calculateSize()</code>" is the
-	 * last accessed node.
-	 * 
-	 * @return The last node that is accessed by the specified node.
-	 */
-	public IdentifierNode getLastAccessedNode()
-	{
-		IdentifierNode prev = null;
-		IdentifierNode node = getAccessedNode();
-		
-		while (node != null)
-		{
-			prev = node;
-			
-			node = node.getAccessedNode();
-		}
-		
-		return prev;
-	}
-	
-	/**
-	 * Get the next node that is accessed by the specified node.<br>
-	 * <br>
-	 * For example:
-	 * <blockquote><pre>
-	 * tree.next.calculateSize()</pre></blockquote>
-	 * In the previous statement, "<code>calculateSize()</code>" is the
-	 * accessed node of the "<code>next</code>" node, and "<code>next</code>"
-	 * is the accessed node of the "<code>tree</code>" node.
-	 * 
-	 * @return The next node that is accessed by the specified node.
-	 */
-	public IdentifierNode getAccessedNode()
-	{
-		if (getNumChildren() <= 0)
-		{
-			return null;
-		}
-		
-		return (IdentifierNode)getChild(0);
-	}
-	
-	/**
-	 * Get the ValueNode that returns a value if it is used in an
-	 * expression.<br>
-	 * <br>
-	 * For example:
-	 * <blockquote><pre>
-	 * // Scenario 1
-	 * tree.value.next;
-	 * 
-	 * //Scenario 2
-	 * tree;</pre></blockquote>
-	 * In scenario 1, "<u><code>next</code></u>" is the returned node
-	 * because it is the last accessed node. In scenario 2
-	 * "<u><code>tree</code></u>" is the returned node because it does not
-	 * access any nodes and is therefore the value that is returned.
-	 * 
-	 * @return The last accessed node, or if the node does not access any
-	 * 		nodes, it returns itself.
+	 * @return Returns the specified ValueNode.
 	 */
 	public ValueNode getReturnedNode()
 	{
-		IdentifierNode lastAccessed = getLastAccessedNode();
-		
-		if (lastAccessed != null)
-		{
-			return lastAccessed;
-		}
-		
 		return this;
 	}
 	
 	/**
 	 * Get the name of the object reference identifier for the given
-	 * Method node. Static methods return "__static__ClassName" and
+	 * Method node. Static methods return "ClassName" and
 	 * non-static methods return "this". The given method cannot be
 	 * external.
 	 * 
@@ -280,48 +67,38 @@ public class ValueNode extends TreeNode
 		
 		ClassNode clazz = (ClassNode)method.getAncestorOfType(ClassNode.class);
 		
-		return "__static__" + clazz.getName();
+		return clazz.getName();
 	}
 	
 	/**
 	 * Get the ValueNode that the method was called with for the given
 	 * MethodCallNode's method node, if it was not called with a specific
-	 * object. Static methods return "__static__ClassName" and non-static
+	 * object. Static methods return "ClassName" and non-static
 	 * methods return "this". The call cannot be that of an external
 	 * method.
 	 * 
 	 * @param method The method to get the ValueNode from.
 	 * @return The ValueNode that the method was called with.
 	 */
-	public ValueNode getObjectReferenceValue(MethodNode method)
+	public IdentifierNode getObjectReferenceNode(MethodNode method)
 	{
-		String    identifier = getObjectReferenceIdentifier(method);
+		String identifier = getObjectReferenceIdentifier(method);
 		
-		ValueNode val        = (ValueNode)getExistingNode(method, identifier);
+		IdentifierNode id = (IdentifierNode)SyntaxTree.getExistingNode(method, identifier);
 		
-		if (val != null)
+		if (id != null)
 		{
-			return val.clone(val.getParent(), val.getLocationIn());
+			return id.clone(id.getParent(), id.getLocationIn());
 		}
 		
 		return null;
 	}
 	
 	/**
-	 * Get the ClassNode parent instance of the VariableNode.
-	 * 
-	 * @return The nearest ClassNode instance that contains this variable.
-	 */
-	public ClassNode getClassNode()
-	{
-		return (ClassNode)getAncestorOfType(ClassNode.class, true);
-	}
-	
-	/**
 	 * Check whether or not the given value is accessed within its direct
 	 * parent class.
 	 * 
-	 * @param The node to check.
+	 * @param node The node to check.
 	 * @return Whether or not the node was accessed through its parent
 	 * 		class.
 	 */
@@ -488,7 +265,7 @@ public class ValueNode extends TreeNode
 		ProgramNode program = getProgramNode();
 		String      name    = getTypeClassName();
 		
-		ClassNode   clazz   = program.getClass(name);
+		ClassNode   clazz   = program.getClassNode(name);
 		
 		return clazz;
 	}
@@ -502,9 +279,21 @@ public class ValueNode extends TreeNode
 	 */
 	public String getTypeClassName()
 	{
+		return getTypeClassName(getArrayDimensions());
+	}
+	
+	/**
+	 * Get the name of the class that represents the type of the specified
+	 * ValueNode. If the type is primitive, this will return the wrapper
+	 * class name of the primitive type.
+	 * 
+	 * @return The name of the class of the type.
+	 */
+	public String getTypeClassName(int arrayDimensions)
+	{
 		ProgramNode program = getProgramNode();
 		
-		ClassNode   clazz   = program.getClass(type);
+		ClassNode   clazz   = program.getClassNode(type);
 		
 		if (clazz != null)
 		{
@@ -513,49 +302,21 @@ public class ValueNode extends TreeNode
 		
 		if (SyntaxUtils.isPrimitiveType(type))
 		{
-			String name = null;
-			
-			if (type.equals("int"))
-			{
-				name = "Integer";
-			}
-			else if (type.equals("char"))
-			{
-				name = "Character";
-			}
-			else if (type.equals("long"))
-			{
-				name = "Long";
-			}
-			else if (type.equals("bool"))
-			{
-				name = "Bool";
-			}
-			else if (type.equals("short"))
-			{
-				name = "Short";
-			}
-			else if (type.equals("float"))
-			{
-				name = "Float";
-			}
-			else if (type.equals("double"))
-			{
-				name = "Double";
-			}
+			String name = SyntaxUtils.getPrimitiveWrapperClassName(type);
 			
 			if (name != null)
 			{
-				if (isArray())
+				if (arrayDimensions > 0)
 				{
 					name += "Array";
 				}
 				
-				clazz = program.getClass(name);
+				clazz = program.getClassNode(name);
 				
 				if (clazz == null)
 				{
-					SyntaxMessage.error("Could not find class '" + name + "'", this);
+					throw new RuntimeException("SADF " + name);
+//					SyntaxMessage.error("Could not find class '" + name + "'", this);
 				}
 				
 				return clazz.getName();
@@ -647,8 +408,8 @@ public class ValueNode extends TreeNode
 		}
 		else if (parent instanceof AssignmentNode)
 		{
-			AssignmentNode assignment   = (AssignmentNode)parent;
-			VariableNode   assignee     = assignment.getAssigneeNode();
+			AssignmentNode assignmentNode = (AssignmentNode)parent;
+			VariableNode   assignee       = assignmentNode.getAssigneeNode();
 			
 			if (this instanceof VariableNode == false || !((VariableNode)this).isSameVariable(assignee))
 			{
@@ -720,9 +481,9 @@ public class ValueNode extends TreeNode
 			{
 				return "&";
 			}
-			else if (dataType == POINTER)
+			else if (dataType == REFERENCE)
 			{
-				return "&";
+				return "*";
 			}
 		}
 		
@@ -745,172 +506,6 @@ public class ValueNode extends TreeNode
 	public String generateCSource()
 	{
 		return generateCSourceFragment() + ";\n";
-	}
-	
-	/**
-	 * Generate the C output for when this value node is being used
-	 * as an argument for a method call.
-	 * 
-	 * @return The C output for when this value node is being used
-	 * 		as an argument for a method call.
-	 */
-	public String generateArgumentReference()
-	{
-		return generateUseOutput() + generateChildrenCSourceFragment(true, true);
-	}
-	
-	/**
-	 * @see net.fathomsoft.nova.tree.TreeNode#generateCSourceFragment()
-	 */
-	@Override
-	public String generateCSourceFragment()
-	{
-		return generateChildrenCSourceFragment(false);
-	}
-	
-	/**
-	 * Generate a String representing the accessed nodes.
-	 * 
-	 * @return The generated String.
-	 */
-	public String generateChildrenCSourceFragment()
-	{
-		return generateChildrenCSourceFragment(true);
-	}
-	
-	/**
-	 * Generate a String representing the accessed nodes.
-	 * 
-	 * @param reference Whether or not to start the string off with
-	 * 		a "->" reference operator.
-	 * @return The generated String.
-	 */
-	public String generateChildrenCSourceFragment(boolean reference)
-	{
-		return generateChildrenCSourceFragment(reference, false);
-	}
-	
-	/**
-	 * Generate a String representing the accessed nodes.
-	 * 
-	 * @param reference Whether or not to start the string off with
-	 * 		a "->" reference operator.
-	 * @param argument Whether or not the specified node is being
-	 * 		output as an argument to a method call.
-	 * @return The generated String.
-	 */
-	public String generateChildrenCSourceFragment(boolean reference, boolean argument)
-	{
-		StringBuilder builder = new StringBuilder();
-		
-		if (getNumChildren() <= 0)
-		{
-			return "";
-		}
-		
-		TreeNode child = getAccessedNode();
-		
-		if (child == null)
-		{
-			return "";
-		}
-		
-		if (argument && (child instanceof MethodCallNode || child instanceof InstantiationNode))
-		{
-			return "";
-		}
-		
-		if (reference)
-		{
-			builder.append("->");
-		}
-		
-		if (child instanceof ValueNode)
-		{
-			ValueNode value = (ValueNode)child;
-			
-			if (value.isSpecialFragment())
-			{
-				builder.append(value.generateUseOutput() + value.generateChildrenCSourceFragment(true, true));
-				
-				return builder.toString();
-			}
-		}
-		
-		String s = child.generateCSourceFragment();
-		
-		if (s != null)
-		{
-			builder.append(child.generateCSourceFragment());
-		}
-		else
-		{
-			if (reference)
-			{
-				builder.delete(builder.length() - 2, builder.length());
-			}
-		}
-		
-		return builder.toString();
-	}
-	
-	/**
-	 * If the ValueNode accesses a method call, generate a specialized
-	 * output.
-	 * 
-	 * @return A specialized String generation.
-	 */
-	public String generateSpecialFragment()
-	{
-		for (int i = getNumChildren() - 1; i >= 0; i--)
-		{
-			TreeNode child = getChild(i);
-			
-			if (child instanceof MethodCallNode || child instanceof InstantiationNode)
-			{
-				return child.generateCSourceFragment();
-			}
-			else if (child instanceof ValueNode)
-			{
-				ValueNode value = (ValueNode)child;
-				
-				if (value.isSpecialFragment())
-				{
-					return value.generateSpecialFragment();
-				}
-			}
-		}
-		
-		return null;
-	}
-	
-	/**
-	 * Get whether or not the ValueNode accesses a method call.
-	 * 
-	 * @return Whether or not the ValueNode accesses a method call.
-	 */
-	public boolean isSpecialFragment()
-	{
-		for (int i = getNumChildren() - 1; i >= 0; i--)
-		{
-			TreeNode child = getChild(i);
-			
-			if (child instanceof MethodCallNode || child instanceof InstantiationNode)
-			{
-				return true;
-			}
-			else if (child instanceof ValueNode)
-			{
-				ValueNode value = (ValueNode)child;
-				
-				if (value.isSpecialFragment())
-				{
-					return true;
-				}
-			}
-		}
-		
-		return false;
 	}
 	
 	/**
@@ -952,7 +547,7 @@ public class ValueNode extends TreeNode
 		
 		if (outputChildren)
 		{
-			IdentifierNode accessed = getAccessedNode();
+			IdentifierNode accessed = ((IdentifierNode)this).getAccessedNode();
 			
 			if (accessed != null)
 			{
@@ -964,7 +559,7 @@ public class ValueNode extends TreeNode
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.TreeNode#clone(TreeNode)
+	 * @see net.fathomsoft.nova.tree.TreeNode#clone(TreeNode, Location)
 	 */
 	@Override
 	public ValueNode clone(TreeNode temporaryParent, Location locationIn)
