@@ -1,5 +1,6 @@
 package net.fathomsoft.nova.tree;
 
+import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.tree.exceptionhandling.ExceptionNode;
 import net.fathomsoft.nova.util.Location;
 
@@ -11,7 +12,7 @@ import net.fathomsoft.nova.util.Location;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 10, 2014 at 3:12:54 AM
- * @version	v0.2.7 May 25, 2014 at 9:16:48 PM
+ * @version	v0.2.13 Jun 17, 2014 at 8:45:35 AM
  */
 public class ArgumentListNode extends TreeNode
 {
@@ -56,10 +57,10 @@ public class ArgumentListNode extends TreeNode
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.TreeNode#generateNovaInput()
+	 * @see net.fathomsoft.nova.tree.TreeNode#generateNovaInput(boolean)
 	 */
 	@Override
-	public String generateNovaInput()
+	public String generateNovaInput(boolean outputChildren)
 	{
 		StringBuilder builder = new StringBuilder();
 		
@@ -88,7 +89,7 @@ public class ArgumentListNode extends TreeNode
 		
 		MethodCallNode caller  = getMethodCall();
 		
-		MethodNode     method  = caller.getMethodNode();
+		MethodNode     method  = caller.getMethodDeclarationNode();
 		
 		if (!caller.isExternal())
 		{
@@ -99,7 +100,9 @@ public class ArgumentListNode extends TreeNode
 					builder.append('&');
 				}
 				
-				builder.append(caller.getContextNode().generateArgumentReference()).append(", ");
+				IdentifierNode context = caller.getContextNode();
+				
+				builder.append(context.generateArgumentReference(getMethodCall())).append(", ");
 			}
 			
 			builder.append(ExceptionNode.EXCEPTION_DATA_IDENTIFIER);
@@ -124,7 +127,7 @@ public class ArgumentListNode extends TreeNode
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.TreeNode#clone(TreeNode)
+	 * @see net.fathomsoft.nova.tree.TreeNode#clone(TreeNode, Location)
 	 */
 	@Override
 	public ArgumentListNode clone(TreeNode temporaryParent, Location locationIn)
