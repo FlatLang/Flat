@@ -5,28 +5,13 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import net.fathomsoft.nova.Nova;
-import net.fathomsoft.nova.error.SyntaxErrorException;
-import net.fathomsoft.nova.error.SyntaxMessage;
-import net.fathomsoft.nova.tree.exceptionhandling.CatchNode;
-import net.fathomsoft.nova.tree.exceptionhandling.ExceptionHandlingNode;
-import net.fathomsoft.nova.tree.exceptionhandling.ExceptionNode;
-import net.fathomsoft.nova.tree.exceptionhandling.FinallyNode;
-import net.fathomsoft.nova.tree.exceptionhandling.ThrowNode;
+import net.fathomsoft.nova.error.UnimplementedOperationException;
 import net.fathomsoft.nova.tree.exceptionhandling.TryNode;
-import net.fathomsoft.nova.tree.variables.ArrayAccessNode;
-import net.fathomsoft.nova.tree.variables.ArrayNode;
-import net.fathomsoft.nova.tree.variables.FieldListNode;
-import net.fathomsoft.nova.tree.variables.FieldNode;
-import net.fathomsoft.nova.tree.variables.InstanceFieldListNode;
 import net.fathomsoft.nova.tree.variables.LocalVariableNode;
-import net.fathomsoft.nova.tree.variables.StaticFieldListNode;
-import net.fathomsoft.nova.tree.variables.VariableListNode;
-import net.fathomsoft.nova.tree.variables.VariableNode;
 import net.fathomsoft.nova.util.Bounds;
 import net.fathomsoft.nova.util.Location;
 import net.fathomsoft.nova.util.Patterns;
 import net.fathomsoft.nova.util.StringUtils;
-import net.fathomsoft.nova.util.SyntaxUtils;
 
 /**
  * Class that is the parent of all Nodes on the Tree. Keeps the basic
@@ -37,43 +22,15 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:00:11 PM
- * @version	v0.2.12 Jun 1, 2014 at 7:28:35 PM
+ * @version	v0.2.13 Jun 17, 2014 at 8:45:35 AM
  */
 public abstract class TreeNode
 {
-	private Location			locationIn, locationOut;
+	private Location			locationIn;
 	
 	private TreeNode			parent;
 	
 	private ArrayList<TreeNode>	children;
-	
-	private static final Class<?>	FILE_CHILD_DECODE[] = new Class<?>[]
-	{
-		ImportNode.class, ClassNode.class
-	};
-	
-//	private static final Class<?>	CLASS_CHILD_DECODE[] = new Class<?>[]
-//	{
-//		DestructorNode.class, ConstructorNode.class, MethodNode.class, FieldNode.class,
-//		ExternalTypeNode.class
-//	};
-	
-	private static final Class<?>	PRE_VALUE_DECODE[] = new Class<?>[]
-	{
-		PriorityNode.class, ReturnNode.class, AssignmentNode.class, BinaryOperatorNode.class
-	};
-	
-	private static final Class<?>	SCOPE_CHILD_DECODE[] = new Class<?>[]
-	{
-		ExceptionHandlingNode.class, AssignmentNode.class, InstantiationNode.class,
-		ElseStatementNode.class, IfStatementNode.class, LoopNode.class, ArrayAccessNode.class,
-		UnaryOperatorNode.class, MethodCallNode.class, LocalDeclarationNode.class
-	};
-	
-	private static final Class<?>	METHOD_CALL_CHILD_DECODE[] = new Class<?>[]
-	{
-		MethodCallNode.class, BinaryOperatorNode.class
-	};
 	
 	/**
 	 * Create a new TreeNode. Initializes the data.
@@ -138,28 +95,6 @@ public abstract class TreeNode
 	}
 	
 	/**
-	 * Get the location that the data in the TreeNode is in the destination
-	 * file/text.
-	 * 
-	 * @return The Location instance holding the information.
-	 */
-	public Location getLocationOut()
-	{
-		return locationOut;
-	}
-	
-	/**
-	 * Set the location that the data in the TreeNode is in the destination
-	 * file/text.
-	 * 
-	 * @param locationOut The Location instance holding the information.
-	 */
-	public void setLocationOut(Location locationOut)
-	{
-		this.locationOut = locationOut;
-	}
-	
-	/**
 	 * Get the parent of the specified TreeNode. If the TreeNode
 	 * does not have a parent, null is returned.
 	 * 
@@ -206,37 +141,36 @@ public abstract class TreeNode
 	 */
 	public TreeNode getAncestorOfType(Class<?> type, boolean inclusive)
 	{
-		boolean  checkSuper = true;//false;
-		
-		TreeNode node       = null;
+		TreeNode node = null;
 		
 		if (inclusive)
 		{
 			node = this;
-			
-			if (node.getClass().getSimpleName().length() <= 0 || true)
-			{
-				checkSuper = true;
-			}
 		}
 		else
 		{
 			node = parent;
 		}
 		
-		while (node != null && ((!checkSuper || !node.instanceOf(type)) && !node.getClass().equals(type)))
+		while (node != null && !type.isAssignableFrom(node.getClass()) && !node.getClass().equals(type))
 		{
-			checkSuper = false;
-			
 			node = node.getParent();
-			
-			if (node != null && node.getClass().getSimpleName().length() <= 0 || true)
-			{
-				checkSuper = true;
-			}
 		}
 		
 		return node;
+	}
+	
+	/**
+	 * Get whether or not the given Object is an instance of the given
+	 * Class.
+	 * 
+	 * @param clazz The Class to check the Object against.
+	 * @return Whether or not the given Object is an instance of the given
+	 * 		Class.
+	 */
+	public boolean instanceOf(Class<?> clazz)
+	{
+		return instanceOf(new Class<?>[] { clazz });
 	}
 	
 	/**
@@ -251,45 +185,10 @@ public abstract class TreeNode
 	{
 		for (Class<?> c : classes)
 		{
-			if (instanceOf(c))
+			if (c.isAssignableFrom(getClass()))
 			{
 				return true;
 			}
-		}
-		
-		return false;
-	}
-	
-	/**
-	 * Get whether or not the given Object is an instance of the given
-	 * Class.
-	 * 
-	 * @param clazz The Class to check the Object against.
-	 * @return Whether or not the given Object is an instance of the given
-	 * 		Class.
-	 */
-	public boolean instanceOf(Class<?> clazz)
-	{
-		Class<?> current = getClass();
-		
-		while (current != null)
-		{
-			if (current.equals(clazz))
-			{
-				return true;
-			}
-			
-			Class<?>[] interfaces = current.getInterfaces();
-			
-			for (Class<?> iface : interfaces)
-			{
-				if (iface.equals(clazz))
-				{
-					return true;
-				}
-			}
-			
-			current = current.getSuperclass();
 		}
 		
 		return false;
@@ -318,23 +217,36 @@ public abstract class TreeNode
 	}
 	
 	/**
+	 * Set the ScopeNode of the specified TreeNode to the given
+	 * ScopeNode instance.
+	 * 
+	 * @param scope The ScopeNode instance to use.
+	 */
+	public void setScopeNode(ScopeNode scope)
+	{
+		addChild(0, scope, this);
+	}
+	
+	/**
 	 * Add the given LocalVariableNode to the nearest scope.
 	 * 
 	 * @param node The LocalVariableNode to add.
 	 */
 	public void addToNearestScope(LocalVariableNode node)
 	{
-		getAncestorWithScope(this).addChild(node);
+		getAncestorWithScope().addChild(node);
 	}
 	
 	/**
-	 * Get the nearest ancestor that contains a scope.
+	 * Get the nearest ancestor that contains a scope. (inclusive)
 	 * 
-	 * @param node The node to start the search at.
-	 * @return The nearest ancestor to the given node that has a scope.
+	 * @return The nearest ancestor to the specified node that has a
+	 * 		scope.
 	 */
-	public static TreeNode getAncestorWithScope(TreeNode node)
+	public TreeNode getAncestorWithScope()
 	{
+		TreeNode node = this;
+		
 		while (node != null)
 		{
 			if (node.containsScope())
@@ -404,17 +316,6 @@ public abstract class TreeNode
 	}
 	
 	/**
-	 * Get an ArrayList with all of the children TreeNodes to the specific
-	 * TreeNode.
-	 * 
-	 * @return An ArrayList instance with all of the Children TreeNodes.
-	 */
-	public ArrayList<TreeNode> getChildren()
-	{
-		return children;
-	}
-	
-	/**
 	 * Get the child TreeNode at the specific index in the children
 	 * ArrayList.
 	 * 
@@ -427,6 +328,18 @@ public abstract class TreeNode
 	}
 	
 	/**
+	 * Get whether or not the given TreeNode is a child of the specified
+	 * TreeNode.
+	 * 
+	 * @param child The TreeNode to check whether is a child or not.
+	 * @return Whether or not the given TreeNode is a child.
+	 */
+	public boolean containsChild(TreeNode child)
+	{
+		return children.contains(child);
+	}
+	
+	/**
 	 * Add the specific TreeNode under the current TreeNode as a child.
 	 * 
 	 * @param node The node to set as the child node.
@@ -434,6 +347,17 @@ public abstract class TreeNode
 	public void addChild(TreeNode node)
 	{
 		addChild(children.size(), node);
+	}
+	
+	/**
+	 * Add the specific TreeNode under the given 'toNode' TreeNode as a
+	 * child.
+	 * 
+	 * @param node The node to set as the child node.
+	 */
+	public void addChild(TreeNode node, TreeNode toNode)
+	{
+		addChild(toNode.children.size(), node, toNode);
 	}
 	
 	/**
@@ -466,18 +390,81 @@ public abstract class TreeNode
 	 */
 	public void addChild(int index, TreeNode node)
 	{
-		// If the node already belongs to a parent, remove it from its old parent.
-		if (node.parent != null)
-		{
-//			System.err.println(this + " " + node);
-//			node.parent.children.remove(node);
-			node.detach();
-		}
+		ScopeNode scope = getScopeNode();
 		
-		children.add(index, node);
+		if (scope != null)
+		{
+			addChild(node, scope);
+		}
+		else
+		{
+			addChild(index, node, this);
+		}
+	}
+	
+	/**
+	 * Add the specific TreeNode under the given 'toNode' TreeNode as a
+	 * child.
+	 * 
+	 * @param index The index to add the node at.
+	 * @param node The node to set as the child node.
+	 * @param toNode The node to add the child to.
+	 */
+	public void addChild(int index, TreeNode node, TreeNode toNode)
+	{
+		// If the node already belongs to a parent, remove it from its old parent.
+		node.detach();
+		
+		toNode.children.add(index, node);
 		
 		// Set this instance as the new parent.
 		node.parent = this;
+	}
+	
+	/**
+	 * Add the given 'toAdd' node before the given 'node', if the node
+	 * exists.
+	 * 
+	 * @return Whether or not the child was successfully added.
+	 */
+	public boolean addChildBefore(TreeNode node, TreeNode toAdd)
+	{
+		return addChildAtOffset(node, toAdd, 0);
+	}
+	
+	/**
+	 * Add the given 'toAdd' node after the given 'node', if the node
+	 * exists.
+	 * 
+	 * @return Whether or not the child was successfully added.
+	 */
+	public boolean addChildAfter(TreeNode node, TreeNode toAdd)
+	{
+		return addChildAtOffset(node, toAdd, 1);
+	}
+	
+	/**
+	 * Add the given 'toAdd' node relative to the given 'node' at the
+	 * given offset index.
+	 * 
+	 * @param node The node to add the given 'toAdd' node relatively from.
+	 * @param toAdd The TreeNode to add as a child.
+	 * @param offset The offset in which to add the child at relative to
+	 * 		the given 'node' child.
+	 * @return Whether or not the child was successfully added.
+	 */
+	private boolean addChildAtOffset(TreeNode node, TreeNode toAdd, int offset)
+	{
+		int index = children.indexOf(node);
+		
+		if (index < 0)
+		{
+			return false;
+		}
+		
+		addChild(index + offset, node);
+		
+		return true;
 	}
 	
 	/**
@@ -489,8 +476,21 @@ public abstract class TreeNode
 		{
 			return;
 		}
-
-		parent.getChildren().remove(this);
+		
+		TreeNode scope = null;
+		
+		if (parent.getNumChildren() > 0)
+		{
+			scope = parent.getScopeNode();
+		}
+		if (scope == null)
+		{
+			parent.children.remove(this);
+		}
+		else
+		{
+			scope.children.remove(this);
+		}
 		
 		parent = null;
 	}
@@ -506,7 +506,6 @@ public abstract class TreeNode
 		int index = children.indexOf(old);
 		
 		old.detach();
-		replacement.detach();
 		
 		addChild(index, replacement);
 	}
@@ -558,7 +557,22 @@ public abstract class TreeNode
 	 */
 	public void iterateWords(String statement)
 	{
-		iterateWords(statement, Patterns.WORD_BOUNDARIES);
+		iterateWords(statement, Patterns.WORD_BOUNDARIES, null);
+	}
+	
+	/**
+	 * Iterate through the words of the statement. A word is just anything
+	 * that is surrounded by whitespace. e.g. In the statement:
+	 * "public void test() { }" the words consist of:
+	 * [ public, void, test(), {, } ]
+	 * 
+	 * @param statement The statement to iterate the words from.
+	 * @param extra The extra data that may or may not be needed for the
+	 * 		interactWord() methods.
+	 */
+	public void iterateWords(String statement, ExtraData extra)
+	{
+		iterateWords(statement, Patterns.WORD_BOUNDARIES, extra);
 	}
 	
 	/**
@@ -570,6 +584,21 @@ public abstract class TreeNode
 	 * @param pattern The Pattern to search with.
 	 */
 	public void iterateWords(String statement, Pattern pattern)
+	{
+		iterateWords(statement, pattern, null);
+	}
+	
+	/**
+	 * Iterate through each of the groupings of the given Pattern on the
+	 * statement. In the default case, it will search for the boundaries
+	 * of words and iterate through all of them.
+	 * 
+	 * @param statement The statement to search through.
+	 * @param pattern The Pattern to search with.
+	 * @param extra The extra data that may or may not be needed for the
+	 * 		interactWord() methods.
+	 */
+	public void iterateWords(String statement, Pattern pattern, ExtraData extra)
 	{
 		// Pattern used to find word boundaries.
 		Matcher matcher  = pattern.matcher(statement);
@@ -616,23 +645,8 @@ public abstract class TreeNode
 			String word  = words.get(i);
 			Bounds bound = bounds.get(i);
 			
-			interactWord(word, i, bound, bounds.size(), delims.get(i), delims.get(i + 1));
+			interactWord(word, i, bound, bounds.size(), delims.get(i), delims.get(i + 1), extra);
 		}
-	}
-	
-	/**
-	 * Method that is to be overridden. Whenever the iterateWords(String)
-	 * method is called, this method will be called with the specific word
-	 * and the number (order) the word came in the statement.
-	 * 
-	 * @param word The word that was found.
-	 * @param wordNumber The index of the word on a word-by-word basis.
-	 * @param bounds The bounds of the word that was found.
-	 * @param numWords The number of words that were parsed.
-	 */
-	public void interactWord(String word, int wordNumber, Bounds bounds, int numWords)
-	{
-		
 	}
 	
 	/**
@@ -648,10 +662,12 @@ public abstract class TreeNode
 	 * 		the current word.
 	 * @param rightDelimiter The text that is between the current word and
 	 * 		the next word.
+	 * @param extra The extra data that may or may not be needed for the
+	 * 		interactWord() methods.
 	 */
-	public void interactWord(String word, int wordNumber, Bounds bounds, int numWords, String leftDelimiter, String rightDelimiter)
+	public void interactWord(String word, int wordNumber, Bounds bounds, int numWords, String leftDelimiter, String rightDelimiter, ExtraData extra)
 	{
-		interactWord(word, wordNumber, bounds, numWords);
+		
 	}
 	
 	/**
@@ -685,7 +701,7 @@ public abstract class TreeNode
 	 */
 	public String generateJavaSource()
 	{
-		return null;
+		throw new UnimplementedOperationException("The Java implementation for this feature has not been implemented yet.");
 	}
 	
 	/**
@@ -697,31 +713,7 @@ public abstract class TreeNode
 	 */
 	public String generateCHeader()
 	{
-		return null;
-	}
-	
-	/**
-	 * Method that each Node overrides. Returns a String that translates
-	 * the data that is stored in the TreeNode to the C programming
-	 * language source file syntax.
-	 * 
-	 * @return The C source syntax representation of the TreeNode.
-	 */
-	public String generateCSource()
-	{
-		return null;
-	}
-	
-	/**
-	 * Method that each Node overrides. Returns a String that translates
-	 * the data that is stored in the TreeNode to the C programming
-	 * language source file 'fragment' syntax.
-	 * 
-	 * @return The C source syntax representation of the TreeNode.
-	 */
-	public String generateCSourceFragment()
-	{
-		return null;
+		throw new UnimplementedOperationException("The C Header implementation for this feature has not been implemented yet.");
 	}
 	
 	/**
@@ -733,7 +725,31 @@ public abstract class TreeNode
 	 */
 	public String generateCHeaderFragment()
 	{
-		return null;
+		throw new UnimplementedOperationException("The C Header fragment implementation for this feature has not been implemented yet.");
+	}
+	
+	/**
+	 * Method that each Node overrides. Returns a String that translates
+	 * the data that is stored in the TreeNode to the C programming
+	 * language source file syntax.
+	 * 
+	 * @return The C source syntax representation of the TreeNode.
+	 */
+	public String generateCSource()
+	{
+		throw new UnimplementedOperationException("The C Source implementation for this feature has not been implemented yet.");
+	}
+	
+	/**
+	 * Method that each Node overrides. Returns a String that translates
+	 * the data that is stored in the TreeNode to the C programming
+	 * language source file 'fragment' syntax.
+	 * 
+	 * @return The C source syntax representation of the TreeNode.
+	 */
+	public String generateCSourceFragment()
+	{
+		throw new UnimplementedOperationException("The C Source fragment implementation for this feature has not been implemented yet.");
 	}
 	
 	/**
@@ -743,7 +759,7 @@ public abstract class TreeNode
 	 * 
 	 * @return A String that represents the input String in Nova syntax.
 	 */
-	public String generateNovaInput()
+	public final String generateNovaInput()
 	{
 		return generateNovaInput(true);
 	}
@@ -759,15 +775,17 @@ public abstract class TreeNode
 	 */
 	public String generateNovaInput(boolean outputChildren)
 	{
-		return null;
+		throw new UnimplementedOperationException("The Nova input implementation for this feature has not been implemented yet.");
 	}
 	
 	/**
 	 * Validate the node to make last minute changes or error checking.
+	 * 
+	 * @param phase The phase that the node is being validated in.
 	 */
-	public void validate()
+	public TreeNode validate(int phase)
 	{
-		
+		return this;
 	}
 	
 	/**
@@ -820,465 +838,6 @@ public abstract class TreeNode
 	}
 	
 	/**
-	 * Decode the specific statement into its correct TreeNode value. If
-	 * the statement does not translate into a TreeNode, a syntax error
-	 * has occurred. 
-	 * 
-	 * @param parent The Parent TreeNode of the current statement to be
-	 * 		decoded.
-	 * @param statement The statement to be decoded into a TreeNode.
-	 * @param location The Location in the source text where the statement
-	 * 		is located at.
-	 * @param types The types of TreeNodes to try to decode, in the given
-	 * 		order.
-	 * @param scope Whether or not the given statement is the beginning of
-	 * 		a scope.
-	 * @return The TreeNode constructed from the statement, if any.
-	 */
-	public static TreeNode decodeStatement(TreeNode parent, String statement, Location location, boolean scope, Class<?> types[])
-	{
-		return decodeStatement(parent, statement, location, true, scope, types);
-	}
-	
-	/**
-	 * Decode the specific statement into its correct TreeNode value. If
-	 * the statement does not translate into a TreeNode, a syntax error
-	 * has occurred. 
-	 * 
-	 * @param parent The Parent TreeNode of the current statement to be
-	 * 		decoded.
-	 * @param statement The statement to be decoded into a TreeNode.
-	 * @param location The Location in the source text where the statement
-	 * 		is located at.
-	 * @param require Whether or not to throw an error if anything goes wrong.
-	 * @param scope Whether or not the given statement is the beginning of
-	 * 		a scope.
-	 * @param types The types of TreeNodes to try to decode, in the given
-	 * 		order.
-	 * @return The TreeNode constructed from the statement, if any.
-	 */
-	public static TreeNode decodeStatement(TreeNode parent, String statement, Location location, boolean require, boolean scope, Class<?> types[])
-	{
-		TreeNode node = null;
-		
-//		try
-//		{
-			for (Class<?> type : types)
-			{
-//				Class<TreeNode> a = (Class<TreeNode>)type;
-//				
-//				Method m = a.getMethod("decodeStatement", TreeNode.class, String.class, Location.class);
-//				
-//				node = (TreeNode)m.invoke(a, parent, statement, location);
-				
-				if      (type == LocalDeclarationNode.class) node = LocalDeclarationNode.decodeStatement(parent, statement, location, require, scope);
-				else if (type == IfStatementNode.class) node = IfStatementNode.decodeStatement(parent, statement, location, require, scope);
-				else if (type == ElseStatementNode.class) node = ElseStatementNode.decodeStatement(parent, statement, location, require, scope);
-				else if (type == ArgumentListNode.class) node = ArgumentListNode.decodeStatement(parent, statement, location, require, scope);
-				else if (type == ArrayAccessNode.class) node = ArrayAccessNode.decodeStatement(parent, statement, location, require, scope);
-				else if (type == AssignmentNode.class) node = AssignmentNode.decodeStatement(parent, statement, location, require, scope);
-				else if (type == ArrayNode.class) node = ArrayNode.decodeStatement(parent, statement, location, require, scope);
-				else if (type == BinaryOperatorNode.class) node = BinaryOperatorNode.decodeStatement(parent, statement, location, require, scope);
-				else if (type == ClassNode.class) node = ClassNode.decodeStatement(parent, statement, location, require, scope);
-				else if (type == ConditionNode.class) node = ConditionNode.decodeStatement(parent, statement, location, require, scope);
-				else if (type == ConstructorNode.class) node = ConstructorNode.decodeStatement(parent, statement, location, require, scope);
-				else if (type == DestructorNode.class) node = DestructorNode.decodeStatement(parent, statement, location, require, scope);
-				else if (type == ExternalTypeNode.class) node = ExternalTypeNode.decodeStatement(parent, statement, location, require, scope);
-				else if (type == FileNode.class) node = FileNode.decodeStatement(parent, statement, location, require, scope);
-				else if (type == IdentifierNode.class) node = IdentifierNode.decodeStatement(parent, statement, location, require, scope);
-				else if (type == IfStatementNode.class) node = IfStatementNode.decodeStatement(parent, statement, location, require, scope);
-				else if (type == ImportListNode.class) node = ImportListNode.decodeStatement(parent, statement, location, require, scope);
-				else if (type == ImportNode.class) node = ImportNode.decodeStatement(parent, statement, location, require, scope);
-				else if (type == InstanceDeclarationNode.class) node = InstanceDeclarationNode.decodeStatement(parent, statement, location, require, scope);
-				else if (type == InstantiationNode.class) node = InstantiationNode.decodeStatement(parent, statement, location, require, scope);
-				else if (type == LiteralNode.class) node = LiteralNode.decodeStatement(parent, statement, location, require, scope);
-				else if (type == LoopInitializationNode.class) node = LoopInitializationNode.decodeStatement(parent, statement, location, require, scope);
-				else if (type == LoopNode.class) node = LoopNode.decodeStatement(parent, statement, location, require, scope);
-				else if (type == LoopUpdateNode.class) node = LoopUpdateNode.decodeStatement(parent, statement, location, require, scope);
-				else if (type == MethodCallNode.class) node = MethodCallNode.decodeStatement(parent, statement, location, require, scope);
-				else if (type == MethodListNode.class) node = MethodListNode.decodeStatement(parent, statement, location, require, scope);
-				else if (type == MethodNode.class) node = MethodNode.decodeStatement(parent, statement, location, require, scope);
-				else if (type == OperatorNode.class) node = OperatorNode.decodeStatement(parent, statement, location, require, scope);
-				else if (type == ParameterListNode.class) node = ParameterListNode.decodeStatement(parent, statement, location, require, scope);
-				else if (type == PriorityNode.class) node = PriorityNode.decodeStatement(parent, statement, location, require, scope);
-				else if (type == ProgramNode.class) node = ProgramNode.decodeStatement(parent, statement, location, require, scope);
-				else if (type == ReturnNode.class) node = ReturnNode.decodeStatement(parent, statement, location, require, scope);
-				else if (type == ScopeNode.class) node = ScopeNode.decodeStatement(parent, statement, location, require, scope);
-				else if (type == UnaryOperatorNode.class) node = UnaryOperatorNode.decodeStatement(parent, statement, location, require, scope);
-				else if (type == FieldListNode.class) node = FieldListNode.decodeStatement(parent, statement, location, require, scope);
-				else if (type == FieldNode.class) node = FieldNode.decodeStatement(parent, statement, location, require, scope);
-				else if (type == StaticFieldListNode.class) node = StaticFieldListNode.decodeStatement(parent, statement, location, require, scope);
-				else if (type == InstanceFieldListNode.class) node = InstanceFieldListNode.decodeStatement(parent, statement, location, require, scope);
-				else if (type == VariableListNode.class) node = VariableListNode.decodeStatement(parent, statement, location, require, scope);
-				else if (type == VariableNode.class) node = VariableNode.decodeStatement(parent, statement, location, require, scope);
-				else if (type == CatchNode.class) node = CatchNode.decodeStatement(parent, statement, location, require, scope);
-				else if (type == ExceptionHandlingNode.class) node = ExceptionHandlingNode.decodeStatement(parent, statement, location, require, scope);
-				else if (type == ExceptionNode.class) node = ExceptionNode.decodeStatement(parent, statement, location, require, scope);
-				else if (type == FinallyNode.class) node = FinallyNode.decodeStatement(parent, statement, location, require, scope);
-				else if (type == ThrowNode.class) node = ThrowNode.decodeStatement(parent, statement, location, require, scope);
-				else if (type == TryNode.class) node = TryNode.decodeStatement(parent, statement, location, require, scope);
-				
-				if (node != null)
-				{
-					return node;
-				}
-			}
-//		}
-//		catch (SecurityException e)
-//		{
-//			e.printStackTrace();
-//		}
-//		catch (NoSuchMethodException e)
-//		{
-//			e.printStackTrace();
-//		}
-//		catch (IllegalArgumentException e)
-//		{
-//			e.printStackTrace();
-//		}
-//		catch (IllegalAccessException e)
-//		{
-//			e.printStackTrace();
-//		}
-//		catch (InvocationTargetException e)
-//		{
-//			e.printStackTrace();
-//		}
-		
-		node = ExternalStatementNode.decodeStatement(parent, statement, location, require, scope);
-		
-//		if (require)
-//		{
-//			SyntaxMessage.error("Unknown statement", parent, location);
-//		}
-		
-		return node;
-	}
-	
-	/**
-	 * Decode the specific statement into its correct TreeNode value. If
-	 * the statement does not translate into a TreeNode, a syntax error
-	 * has occurred. 
-	 * 
-	 * @param parent The Parent TreeNode of the current statement to be
-	 * 		decoded.
-	 * @param statement The statement to be decoded into a TreeNode.
-	 * @param location The Location in the source text where the statement
-	 * 		is located at.
-	 * @param require Whether or not to throw an error if anything goes wrong.
-	 * @param scope Whether or not the given statement is the beginning of
-	 * 		a scope.
-	 * @return The TreeNode constructed from the statement, if any.
-	 */
-	public static TreeNode decodeStatement(TreeNode parent, String statement, Location location, boolean require, boolean scope)
-	{
-//		if (parent instanceof FileNode)
-//		{
-//			return decodeStatement(parent, statement, location, scope, FILE_CHILD_DECODE);
-//		}
-//		else if (parent instanceof ClassNode)
-//		{
-//			return decodeStatement(parent, statement, location, scope, CLASS_CHILD_DECODE);
-//		}
-		if (parent instanceof MethodNode || parent instanceof IfStatementNode || parent instanceof ElseStatementNode || parent instanceof LoopNode || parent instanceof ExceptionHandlingNode || parent instanceof ScopeNode)
-		{
-			return decodeScopeContents(parent, statement, location, scope);
-		}
-		else if (parent instanceof MethodCallNode)
-		{
-			return decodeStatement(parent, statement, location, scope, METHOD_CALL_CHILD_DECODE);
-		}
-		
-//		SyntaxError.outputNewError("Unknown statement", location);
-		
-		return null;
-	}
-	
-	/**
-	 * Decode a String that was found within a scope. That is, a method
-	 * or scopes within a method: for loops, while loops, if statements,
-	 * etc.
-	 * 
-	 * @param parent The parent node of the current statement to decode.
-	 * @param statement The statement to decode.
-	 * @param location The location of the statement.
-	 * @param scope Whether or not the given statement is the beginning of
-	 * 		a scope.
-	 * @return The TreeNode representation of the given statement.
-	 */
-	public static TreeNode decodeScopeContents(TreeNode parent, String statement, Location location, boolean scope)
-	{
-		return decodeScopeContents(parent, statement, location, true, scope);
-	}
-	
-	/**
-	 * Decode a String that was found within a scope. That is, a method
-	 * or scopes within a method: for loops, while loops, if statements,
-	 * etc.
-	 * 
-	 * @param parent The parent node of the current statement to decode.
-	 * @param statement The statement to decode.
-	 * @param location The location of the statement.
-	 * @param require Whether or not to throw an error if anything goes wrong.
-	 * @param scope Whether or not the given statement is the beginning of
-	 * 		a scope.
-	 * @return The TreeNode representation of the given statement.
-	 */
-	public static TreeNode decodeScopeContents(TreeNode parent, String statement, Location location, boolean require, boolean scope)
-	{
-		if (SyntaxUtils.isLiteral(statement))
-		{
-			return LiteralNode.decodeStatement(parent, statement, location, require, scope);
-		}
-		
-		TreeNode root = null;
-		TreeNode node = null;
-		
-		try
-		{
-			node = decodeStatement(parent, statement, location, require, scope, PRE_VALUE_DECODE);
-		
-			if (node != null)
-			{
-				return node;
-			}
-		}
-		catch (SyntaxErrorException e)
-		{
-			if (require)
-			{
-				throw e;
-			}
-		}
-		
-		int    offset   = 0;
-		int    index    = SyntaxUtils.findDotOperator(statement);
-		
-		String current  = statement;
-		
-		while (index >= 0)
-		{
-			current = statement.substring(offset, index);
-			node    = decodeValue(parent, current, location);
-			
-			if (node == null)
-			{
-				Location currentLoc = new Location(location);
-				currentLoc.setBounds(offset, index);
-				currentLoc.setLineNumber(location.getLineNumber());
-				
-				SyntaxMessage.error("Could not decode syntax '" + current + "'", parent, currentLoc);
-			}
-			
-			parent.addChild(node);
-			
-			offset   = index + 1;
-			
-			index    = SyntaxUtils.findDotOperator(statement, offset);
-			
-			parent   = node;
-			
-			location = new Location(location);
-			
-			if (root == null)
-			{
-				root = node;
-			}
-		}
-		
-		current = statement.substring(offset, statement.length());
-		
-		node    = decodeStatement(parent, current, location, require, scope, SCOPE_CHILD_DECODE);
-		
-		if (node == null)
-		{
-			node = decodeValue(parent, current, location);
-		}
-		
-		if (root != null && node != null)
-		{
-			root.setTemporaryParent(root.parent);
-			
-			parent.addChild(node);
-			
-			return root;
-		}
-		else if (node == null && require)
-		{
-			if (parent instanceof VariableNode)
-			{
-//				throw new RuntimeException(statement + parent.getLocationInfo());
-//				System.err.println(current + " : " + statement + " " + ((VariableNode)parent).getName());
-			}
-			else
-			{
-//				throw new RuntimeException("sumthin gone rong wit " + statement + parent.getLocationInfo());
-//				System.err.println("sumthin gone rong wit " + statement + parent.getLocationInfo());
-			}
-			
-			SyntaxMessage.error("Could not decode syntax '" + statement + "'", parent, location);
-		}
-		
-		return node;
-	}
-	
-	/**
-	 * Decode the value of the given statement. Can be nodes such as
-	 * VariableNodes, ExternalTypesNodes, FieldNodes, etc. May also
-	 * be just a plain old ValueNode describing the return type of the
-	 * statement. For example: a static class's method call.
-	 * <code>Math.sin(number)</code> in this instance, Math will be the
-	 * ValueNode returned. In most other instances a VariableNode
-	 * variation will be returned.
-	 * 
-	 * @param parent The parent node of the current statement to decode.
-	 * @param statement The statement to decode.
-	 * @param location The location of the statement.
-	 * @return The TreeNode representation of the given statement.
-	 */
-	private static ValueNode decodeValue(TreeNode parent, String statement, Location location)
-	{
-		ValueNode node = (ValueNode)decodeStatement(parent, statement, location, false, SCOPE_CHILD_DECODE);
-		
-		if (node == null)
-		{
-			node = getExistingNode(parent, statement);
-			
-			if (node != null)
-			{
-				node = node.clone(parent, location);
-			}
-			else if (parent instanceof ExternalTypeNode)
-			{
-				ExternalTypeNode type = (ExternalTypeNode)parent;
-				
-				type.setType(statement);
-				
-				IdentifierNode id = new IdentifierNode(type, type.getLocationIn());
-				id.setName(statement);
-				
-				node = id;
-			}
-			else if (parent.getFileNode().containsImport(statement) || parent.getFileNode().containsClass(statement))
-			{
-				ClassNode clazz = parent.getProgramNode().getClass(statement);
-				
-				if (clazz != null)
-				{
-					node = new ValueNode(parent, location);
-					node.setType(clazz.getName());
-				}
-			}
-		}
-		
-		return node;
-	}
-	
-	/**
-	 * Try to find an existing node from the given statement. This method
-	 * searches through fields and local variables.
-	 * 
-	 * @param parent The parent TreeNode to use as our context.
-	 * @param statement The statement to check for an existing node from.
-	 * @return The IdentifierNode that is found, if any.
-	 */
-	public static VariableNode getExistingNode(TreeNode parent, String statement)
-	{
-		if (SyntaxUtils.isLiteral(statement))
-		{
-			return null;
-		}
-		else if (SyntaxUtils.isMethodCall(statement))
-		{
-			return null;
-		}
-		else if (SyntaxUtils.isValidIdentifier(statement))
-		{
-			ClassNode clazz = null;
-			
-			if (parent instanceof LocalVariableNode || parent instanceof FieldNode)
-			{
-				VariableNode var = (VariableNode)parent;
-				
-				clazz  = var.getProgramNode().getClass(var.getType());
-			}
-			
-			if (clazz != null)
-			{
-				VariableNode var   = (VariableNode)parent;
-				
-				FieldNode    field = clazz.getField(statement);
-				
-				if (field != null)
-				{
-					if (SyntaxUtils.isVisible(var, field))
-					{
-						return field;
-					}
-					else
-					{
-						SyntaxMessage.error("Field '" + field.getName() + "' is not accessible", parent);
-					}
-				}
-			}
-			
-			TreeNode scopeNode = getAncestorWithScope(parent);
-			
-			while (scopeNode != null)
-			{
-				VariableListNode variables = scopeNode.getScopeNode().getVariableListNode();
-				
-				VariableNode     variable  = variables.getVariable(statement);
-				
-				if (variable != null)
-				{
-					return variable;
-				}
-				
-				if (scopeNode instanceof MethodNode)
-				{
-					MethodNode        methodNode = (MethodNode)scopeNode;
-					ParameterListNode parameters = methodNode.getParameterListNode();
-					ParameterNode     parameter  = parameters.getParameterNode(statement);
-					
-					if (parameter != null)
-					{
-						return parameter;
-					}
-				}
-				
-				scopeNode = getAncestorWithScope(scopeNode.getParent());
-			}
-			
-			if (parent instanceof ParameterListNode)
-			{
-				ParameterListNode parameters = (ParameterListNode)parent;
-				
-				ParameterNode     parameter  = parameters.getParameterNode(statement);
-				
-				if (parameter != null)
-				{
-					return parameter;
-				}
-			}
-			
-			clazz = (ClassNode)parent.getAncestorOfType(ClassNode.class, true);
-			
-			if (clazz != null)
-			{
-				FieldNode field = clazz.getField(statement);
-				
-				if (field != null)
-				{
-					return field;
-				}
-			}
-		}
-		
-		return null;
-	}
-	
-	/**
 	 * Get the ProgramNode (The oldest parent) of this TreeNode.
 	 * 
 	 * @return The ProgramNode of this TreeNode.
@@ -1313,6 +872,26 @@ public abstract class TreeNode
 		}
 		
 		return null;
+	}
+	
+	/**
+	 * Get the ClassNode parent instance of the TreeNode, if one exists.
+	 * 
+	 * @return The nearest ClassNode instance that contains this node.
+	 */
+	public ClassNode getClassNode()
+	{
+		return (ClassNode)getAncestorOfType(ClassNode.class, true);
+	}
+	
+	/**
+	 * Get the MethodNode parent instance of the TreeNode, if one exists.
+	 * 
+	 * @return The nearest MethodNode instance that contains this node.
+	 */
+	public final MethodNode getMethodNode()
+	{
+		return (MethodNode)getAncestorOfType(MethodNode.class, true);
 	}
 	
 	/**
@@ -1351,18 +930,11 @@ public abstract class TreeNode
 			node.setLocationIn(locIn);
 		}
 		
-		if (locationOut != null)
-		{
-			Location locOut = new Location(locationOut);
-			locOut.setLineNumber(locationOut.getLineNumber());
-			node.setLocationOut(locOut);
-		}
-		
 		for (int i = 0; i < children.size(); i++)
 		{
 			TreeNode child = children.get(i);
 			
-			node.addChild(child.clone(null, child.getLocationIn()));
+			node.children.add(child.clone(node, child.getLocationIn()));
 		}
 		
 		return node;
@@ -1376,13 +948,25 @@ public abstract class TreeNode
 	 */
 	public String toString()
 	{
-		String str = generateNovaInput();
-		
-		if (str == null)
+		try
+		{
+			return generateNovaInput();
+		}
+		catch (UnimplementedOperationException e)
 		{
 			return "[TreeNode: " + super.toString() + ']';
 		}
+	}
+	
+	/**
+	 * Class used to pass data to the interactWord() methods.
+	 * 
+	 * @author	Braden Steffaniak
+	 * @since	v0.2.13 Jun 11, 2014 at 8:29:57 PM
+	 * @version	v0.2.13 Jun 11, 2014 at 8:29:57 PM
+	 */
+	public static class ExtraData
+	{
 		
-		return str;
 	}
 }
