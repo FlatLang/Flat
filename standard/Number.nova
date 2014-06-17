@@ -1,4 +1,10 @@
 public class Number
 {
+	public static int numDigits(int number)
+	{
+	}
 	
+	public static String toAString(int value)
+	{
+	}
 }
