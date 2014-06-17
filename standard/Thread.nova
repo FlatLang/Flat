@@ -7,8 +7,8 @@ public class Thread
 	external type FATHOM_THREAD_HANDLE;
 	
 	external void lib_fathom_thread_sleep(long millis);
-	external void lib_fathom_thread_join(FATHOM_THREAD_HANDLE* handle);
-	external void create_thread(Thread thread, FATHOM_THREAD_HANDLE* handle);
+	external void lib_fathom_thread_join(FATHOM_THREAD_HANDLE handle);
+	external FATHOM_THREAD_HANDLE* create_thread(Thread thread);
 	
 	FATHOM_THREAD_HANDLE*	handle;
 	
@@ -34,7 +34,7 @@ public class Thread
 	
 	public void start()
 	{
-		create_thread(this, handle);
+		handle = create_thread(this);
 	}
 	
 	public void join()
@@ -73,7 +73,7 @@ public class Thread
 	
 	external
 	{
-		FATHOM_THREAD_FUNC lib_fathom_thread_run(FATHOM_THREAD_FUNC_ARG arg)
+		FATHOM_THREAD_FUNC lib_nova_thread_run(FATHOM_THREAD_FUNC_ARG arg)
 		{
 			DataStruct* data = (DataStruct*)arg;
 			
@@ -82,20 +82,24 @@ public class Thread
 			
 			nova_Thread_startRun(this, exceptionData);
 			
-			free(data);
+			NOVA_FREE(data);
 			
 			return 0;
 		}
 		
-		FATHOM_THREAD_HANDLE create_thread(Thread* this, FATHOM_THREAD_HANDLE* handle)
+		FATHOM_THREAD_HANDLE* create_thread(Thread* this)
 		{
+			FATHOM_THREAD_HANDLE* handle;
+			
 			DataStruct* data = (DataStruct*)malloc(sizeof(DataStruct));
 			
 			data->instance   = this;
 			
 			handle = (FATHOM_THREAD_HANDLE*)malloc(sizeof(FATHOM_THREAD_HANDLE));
 			
-			lib_fathom_thread_create(handle, lib_fathom_thread_run, (FATHOM_THREAD_FUNC_ARG)data);
+			lib_fathom_thread_create(handle, lib_nova_thread_run, (FATHOM_THREAD_FUNC_ARG)data);
+			
+			return handle;
 		}
 	}
 }
