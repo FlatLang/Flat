@@ -14,12 +14,12 @@ import net.fathomsoft.nova.util.SyntaxUtils;
 
 /**
  * DeclarationNode extension that represents the declaration of a method
- * node type. See {@link #decodeStatement(TreeNode, String, Location)}
+ * node type. See {@link #decodeStatement(TreeNode, String, Location, boolean, boolean)}
  * for more details on what correct inputs look like.
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:10:53 PM
- * @version	v0.2.12 Jun 1, 2014 at 7:28:35 PM
+ * @version	v0.2.13 Jun 17, 2014 at 8:45:35 AM
  */
 public class MethodNode extends InstanceDeclarationNode
 {
@@ -28,6 +28,8 @@ public class MethodNode extends InstanceDeclarationNode
 	private String					types[];
 	
 	private ArrayList<MethodNode>	overridingMethods;
+	
+	private int						uniqueID = 0;
 	
 	/**
 	 * Instantiate and initialize default data.
@@ -43,8 +45,33 @@ public class MethodNode extends InstanceDeclarationNode
 		ParameterListNode parameterList = new ParameterListNode(this, null);
 		ScopeNode         scopeNode     = new ScopeNode(this, null);
 		
-		super.addChild(parameterList);
-		super.addChild(scopeNode);
+		setScopeNode(scopeNode);
+		addChild(parameterList, this);
+	}
+	
+	/**
+	 * Get a unique integer used for differentiating local variables
+	 * within the method.
+	 * 
+	 * @return A unique identifier for local variables.
+	 */
+	public int generateUniqueID()
+	{
+		return ++uniqueID;
+	}
+	
+	/**
+	 * @see net.fathomsoft.nova.tree.TreeNode#getScopeNode()
+	 */
+	@Override
+	public ScopeNode getScopeNode()
+	{
+		if (isExternal())
+		{
+			return null;
+		}
+		
+		return (ScopeNode)getChild(0);
 	}
 	
 	/**
@@ -63,7 +90,7 @@ public class MethodNode extends InstanceDeclarationNode
 	 */
 	public ParameterListNode getParameterListNode()
 	{
-		return (ParameterListNode)getChild(0);
+		return (ParameterListNode)getChild(1);
 	}
 	
 	/**
@@ -134,20 +161,6 @@ public class MethodNode extends InstanceDeclarationNode
 		
 		setStatic(true);
 		setVisibility(PUBLIC);
-	}
-	
-	/**
-	 * @see net.fathomsoft.nova.tree.TreeNode#getScopeNode()
-	 */
-	@Override
-	public ScopeNode getScopeNode()
-	{
-		if (isExternal())
-		{
-			return null;
-		}
-		
-		return (ScopeNode)getChild(1);
 	}
 
 	/**
@@ -227,6 +240,27 @@ public class MethodNode extends InstanceDeclarationNode
 	}
 	
 	/**
+	 * Get whether or not a MethodNode instance overrides the given
+	 * method.
+	 * 
+	 * @param overridingMethod The MethodNode to check.
+	 */
+	private boolean containsOverridingMethod(MethodNode overridingMethod)
+	{
+		for (int i = 0; i < overridingMethods.size(); i++)
+		{
+			MethodNode method = overridingMethods.get(i);
+			
+			if (method.getName().equals(overridingMethod.getName()))
+			{
+				return true;
+			}
+		}
+		
+		return false;
+	}
+	
+	/**
 	 * Add a MethodNode instance that overrides this MethodNode.
 	 * 
 	 * @param overridingMethod The MethodNode instance that overrides
@@ -261,17 +295,26 @@ public class MethodNode extends InstanceDeclarationNode
 	
 	/**
 	 * Validate the parameters of the method header.
+	 * 
+	 * @param phase The phase that the node is being validated in.
+	 * @see net.fathomsoft.nova.tree.TreeNode#validate(int)
 	 */
-	public void validate()
+	@Override
+	public TreeNode validate(int phase)
 	{
 		MethodNode method = getOverriddenMethod();
 		
 		if (method != null)
 		{
-			method.addOverridingMethod(this);
+			if (!method.containsOverridingMethod(this))
+			{
+				method.addOverridingMethod(this);
+			}
 		}
 		
-		getParameterListNode().validate();
+		getParameterListNode().validate(phase);
+		
+		return this;
 	}
 	
 	/**
@@ -364,40 +407,10 @@ public class MethodNode extends InstanceDeclarationNode
 				return "";
 			}
 		}
-//		if (isStatic())
-//		{
-//			SyntaxError.outputNewError("Static methods are not supported in the C implementation yet", getLocationIn());
-//			
-//			return null;
-//		}
 		if (isConstant())
 		{
 			SyntaxMessage.error("Const methods are not supported in the C implementation yet", this);
-//			builder.append(getConstantText()).append(' ');
 		}
-		
-		/*builder.append("FUNC(");
-		
-		builder.append(getType());
-		
-		if (isArray())
-		{
-			builder.append(getArrayText());
-		}
-		if (!isPrimitiveType())
-		{
-			builder.append('*');
-		}
-		
-		builder.append(", ");
-		
-		builder.append(getName()).append(", ");
-
-		ParameterListNode parameterList = getParameterListNode();
-		
-		builder.append(parameterList.generateCHeaderOutput());
-		
-		builder.append(");").append('\n');*/
 		
 		builder.append(generateCSourcePrototype()).append('\n');
 		
@@ -593,68 +606,12 @@ public class MethodNode extends InstanceDeclarationNode
 		{
 			int lastParenthIndex   = StringUtils.findEndingMatch(statement, firstParenthIndex, '(', ')');//Regex.lastIndexOf(statement, ')', new char[] { }, new char[] {}, new char[] { '"' }, new boolean[] {}, new boolean[] {}, new boolean[] { true });
 			
-			final String signature = statement.substring(0, firstParenthIndex);
+			String signature       = statement.substring(0, firstParenthIndex);
 			String returnStatement = statement.substring(lastParenthIndex + 1);
 			
 			returnStatement        = StringUtils.trimSurroundingWhitespace(returnStatement);
 			
-			final Location finalLocation  = location;
-			
-			final boolean  returnCycle[]  = new boolean[1];
-			
-			final ArrayList<String> types = new ArrayList<String>();
-			
-			MethodNode n = new MethodNode(parent, location)
-			{
-				public void interactWord(String word, int wordNumber, Bounds bounds, int numWords, String leftDelimiter, String rightDelimiter)
-				{
-//					if (!returnCycle[0])
-//					{
-//						if (word.equals("returns"))
-//						{
-//							returnCycle[0] = true;
-//							
-//							return;
-//						}
-//					}
-					
-					if (!returnCycle[0])
-					{
-						if (wordNumber == numWords - 1)
-						{
-							setName(word);
-						}
-						else if (wordNumber == numWords - 2)
-						{
-							setType(word);
-							
-							// If it is an array declaration.
-							if (Regex.matches(signature, bounds.getEnd(), Patterns.EMPTY_ARRAY_BRACKETS))
-							{
-								int dimensions = SyntaxUtils.calculateArrayDimensions(signature, false);
-								
-								setArrayDimensions(dimensions);
-							}
-						}
-						else if (!setAttribute(word, wordNumber))
-						{
-							Location newLoc = new Location(finalLocation);
-							newLoc.setBounds(bounds.getStart(), bounds.getEnd());
-							
-							SyntaxMessage.error("Unknown method definition", this, newLoc);
-						}
-					}
-//					else
-//					{
-//						if (!leftDelimiter.equals(",") && wordNumber > 2 || !StringUtils.containsOnly(word, StringUtils.WHITESPACE) && wordNumber == 1)
-//						{
-//							SyntaxMessage.error("Unknown delimiter '" + leftDelimiter + "'", this);
-//						}
-//						
-//						types.add(word);
-//					}
-				}
-			};
+			MethodNode n = new MethodNode(parent, location);
 			
 			// TODO: make better check for last parenth. Take a count of each of the starting parenthesis and
 			// subtract the ending ones from the number.
@@ -667,10 +624,12 @@ public class MethodNode extends InstanceDeclarationNode
 			
 			String parameters[]  = StringUtils.splitCommas(parameterList);
 			
+			MethodData data = new MethodData(signature, location);
+			
 			try
 			{
-				n.iterateWords(signature, Patterns.IDENTIFIER_BOUNDARIES);
-				n.iterateWords(returnStatement, Patterns.IDENTIFIER_BOUNDARIES);
+				n.iterateWords(signature, Patterns.IDENTIFIER_BOUNDARIES, data);
+				n.iterateWords(returnStatement, Patterns.IDENTIFIER_BOUNDARIES, data);
 			}
 			catch (SyntaxErrorException e)
 			{
@@ -687,7 +646,7 @@ public class MethodNode extends InstanceDeclarationNode
 				SyntaxMessage.error("External method declarations cannot have a body", n);
 			}
 			
-			if (types.size() <= 0)
+			if (data.types.size() <= 0)
 			{
 //				if (!require)
 //				{
@@ -714,6 +673,13 @@ public class MethodNode extends InstanceDeclarationNode
 				}
 			}
 			
+			ClassNode clazz = n.getClassNode();
+			
+			if (clazz.containsExternalType(n.getType()))
+			{
+				n.setDataType(ValueNode.POINTER);
+			}
+			
 			return n;
 		}
 		
@@ -721,7 +687,62 @@ public class MethodNode extends InstanceDeclarationNode
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.TreeNode#clone(TreeNode)
+	 * @see net.fathomsoft.nova.tree.TreeNode#interactWord(java.lang.String, int, net.fathomsoft.nova.util.Bounds, int, java.lang.String, java.lang.String, net.fathomsoft.nova.tree.TreeNode.ExtraData)
+	 */
+	@Override
+	public void interactWord(String word, int wordNumber, Bounds bounds, int numWords, String leftDelimiter, String rightDelimiter, ExtraData extra)
+	{
+		MethodData data = (MethodData)extra;
+		
+//		if (!returnCycle[0])
+//		{
+//			if (word.equals("returns"))
+//			{
+//				returnCycle[0] = true;
+//				
+//				return;
+//			}
+//		}
+		
+		if (!data.returnCycle)
+		{
+			if (wordNumber == numWords - 1)
+			{
+				setName(word);
+			}
+			else if (wordNumber == numWords - 2)
+			{
+				setType(word);
+				
+				// If it is an array declaration.
+				if (Regex.matches(data.signature, bounds.getEnd(), Patterns.EMPTY_ARRAY_BRACKETS))
+				{
+					int dimensions = SyntaxUtils.calculateArrayDimensions(data.signature, false);
+					
+					setArrayDimensions(dimensions);
+				}
+			}
+			else if (!setAttribute(word, wordNumber))
+			{
+				Location newLoc = new Location(data.location);
+				newLoc.setBounds(bounds.getStart(), bounds.getEnd());
+				
+				SyntaxMessage.error("Unknown method definition", this, newLoc);
+			}
+		}
+//		else
+//		{
+//			if (!leftDelimiter.equals(",") && wordNumber > 2 || !StringUtils.containsOnly(word, StringUtils.WHITESPACE) && wordNumber == 1)
+//			{
+//				SyntaxMessage.error("Unknown delimiter '" + leftDelimiter + "'", this);
+//			}
+//			
+//			types.add(word);
+//		}
+	}
+	
+	/**
+	 * @see net.fathomsoft.nova.tree.TreeNode#clone(TreeNode, Location)
 	 */
 	@Override
 	public MethodNode clone(TreeNode temporaryParent, Location locationIn)
@@ -744,18 +765,44 @@ public class MethodNode extends InstanceDeclarationNode
 		
 		for (MethodNode child : overridingMethods)
 		{
-			node.overridingMethods.add(child.clone(null, child.getLocationIn()));
+			node.overridingMethods.add(child.clone(node, child.getLocationIn()));
 		}
 		
-		node.types = new String[types.length];
-		
-		for (int i = 0; i < types.length; i++)
-		{
-			String type = types[i];
-			
-			node.types[i] = type;
-		}
+//		node.types = new String[types.length];
+//		
+//		for (int i = 0; i < types.length; i++)
+//		{
+//			String type = types[i];
+//			
+//			node.types[i] = type;
+//		}
 		
 		return node;
+	}
+	
+	/**
+	 * Implementation of the ExtraData for this class.
+	 * 
+	 * @author	Braden Steffaniak
+	 * @since	v0.2.13 Jun 11, 2014 at 8:31:46 PM
+	 * @version	v0.2.13 Jun 11, 2014 at 8:31:46 PM
+	 */
+	private static class MethodData extends ExtraData
+	{
+		private boolean				returnCycle;
+		
+		private Location			location;
+		
+		private String				signature;
+		
+		private ArrayList<String>	types;
+		
+		public MethodData(String signature, Location location)
+		{
+			this.signature = signature;
+			this.location  = location;
+			
+			types = new ArrayList<String>();
+		}
 	}
 }
