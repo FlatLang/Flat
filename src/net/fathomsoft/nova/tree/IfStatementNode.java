@@ -8,12 +8,12 @@ import net.fathomsoft.nova.util.Regex;
 
 /**
  * TreeNode extension that represents the declaration of an "if statement"
- * node type. See {@link #decodeStatement(TreeNode, String, Location)}
+ * node type. See {@link #decodeStatement(TreeNode, String, Location, boolean, boolean)}
  * for more details on what correct inputs look like.
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:57:13 PM
- * @version	v0.2.11 May 31, 2014 at 1:19:11 PM
+ * @version	v0.2.13 Jun 17, 2014 at 8:45:35 AM
  */
 public class IfStatementNode extends TreeNode
 {
@@ -28,8 +28,17 @@ public class IfStatementNode extends TreeNode
 		ArgumentListNode condition = new ArgumentListNode(this, locationIn);
 		ScopeNode        scopeNode = new ScopeNode(this, locationIn);
 		
-		addChild(condition);
-		addChild(scopeNode);
+		setScopeNode(scopeNode);
+		addChild(condition, this);
+	}
+	
+	/**
+	 * @see net.fathomsoft.nova.tree.TreeNode#getScopeNode()
+	 */
+	@Override
+	public ScopeNode getScopeNode()
+	{
+		return (ScopeNode)getChild(0);
 	}
 	
 	/**
@@ -40,16 +49,7 @@ public class IfStatementNode extends TreeNode
 	 */
 	public ArgumentListNode getCondition()
 	{
-		return (ArgumentListNode)getChild(0);
-	}
-	
-	/**
-	 * @see net.fathomsoft.nova.tree.TreeNode#getScopeNode()
-	 */
-	@Override
-	public ScopeNode getScopeNode()
-	{
-		return (ScopeNode)getChild(1);
+		return (ArgumentListNode)getChild(1);
 	}
 
 	/**
@@ -107,15 +107,6 @@ public class IfStatementNode extends TreeNode
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.TreeNode#generateCSourceFragment()
-	 */
-	@Override
-	public String generateCSourceFragment()
-	{
-		return null;
-	}
-	
-	/**
 	 * Decode the given statement into a IfStatementNode instance, if
 	 * possible. If it is not possible, this method returns null.<br>
 	 * <br>
@@ -157,7 +148,7 @@ public class IfStatementNode extends TreeNode
 				
 				if (condition == null)
 				{
-					condition = getExistingNode(parent, contents);
+					condition = SyntaxTree.getExistingNode(parent, contents);
 					
 //					SyntaxMessage.error("Could not decode condition", parent.getFileNode(), newLoc, parent.getController());
 				}
@@ -180,7 +171,7 @@ public class IfStatementNode extends TreeNode
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.TreeNode#clone(TreeNode)
+	 * @see net.fathomsoft.nova.tree.TreeNode#clone(TreeNode, Location)
 	 */
 	@Override
 	public IfStatementNode clone(TreeNode temporaryParent, Location locationIn)
