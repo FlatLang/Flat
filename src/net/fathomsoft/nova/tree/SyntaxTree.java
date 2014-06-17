@@ -9,10 +9,16 @@ import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.error.SyntaxErrorException;
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.tree.exceptionhandling.CatchNode;
+import net.fathomsoft.nova.tree.exceptionhandling.ExceptionHandlingNode;
 import net.fathomsoft.nova.tree.exceptionhandling.FinallyNode;
+import net.fathomsoft.nova.tree.exceptionhandling.ThrowNode;
 import net.fathomsoft.nova.tree.exceptionhandling.TryNode;
+import net.fathomsoft.nova.tree.variables.ArrayAccessNode;
+import net.fathomsoft.nova.tree.variables.ArrayNode;
 import net.fathomsoft.nova.tree.variables.FieldNode;
 import net.fathomsoft.nova.tree.variables.LocalVariableNode;
+import net.fathomsoft.nova.tree.variables.VariableListNode;
+import net.fathomsoft.nova.tree.variables.VariableNode;
 import net.fathomsoft.nova.util.FileUtils;
 import net.fathomsoft.nova.util.Location;
 import net.fathomsoft.nova.util.Patterns;
@@ -27,7 +33,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:00:15 PM
- * @version	v0.2.11 May 31, 2014 at 1:19:11 PM
+ * @version	v0.2.13 Jun 17, 2014 at 8:45:35 AM
  */
 public class SyntaxTree
 {
@@ -56,9 +62,21 @@ public class SyntaxTree
 		FieldNode.class
 	};
 	
-	private static final Class<?>	THIRD_PASS_CLASSES[] = new Class<?>[]
+	private static final Class<?>	FILE_CHILD_DECODE[] = new Class<?>[]
 	{
-		
+		ImportNode.class, ClassNode.class
+	};
+	
+	private static final Class<?>	PRE_VALUE_DECODE[] = new Class<?>[]
+	{
+		PriorityNode.class, ReturnNode.class, AssignmentNode.class, BinaryOperatorNode.class
+	};
+	
+	private static final Class<?>	SCOPE_CHILD_DECODE[] = new Class<?>[]
+	{
+		ExceptionHandlingNode.class, AssignmentNode.class, InstantiationNode.class,
+		ElseStatementNode.class, IfStatementNode.class, LoopNode.class, ArrayAccessNode.class,
+		UnaryOperatorNode.class, MethodCallNode.class, LocalDeclarationNode.class
 	};
 	
 	/**
@@ -116,11 +134,6 @@ public class SyntaxTree
 		for (int i = 0; i < sources.length; i++)
 		{
 			sources[i] = removeComments(sources[i]);
-			
-			if (files[i].getName().equals("ExceptionData.nova"))
-			{
-				System.out.println(sources[i]);
-			}
 		}
 		
 		initTreeGenerators(files, sources);
@@ -131,7 +144,7 @@ public class SyntaxTree
 			
 			try
 			{
-				root.validateClasses();
+				root.validateClasses(phase);
 			}
 			catch (SyntaxErrorException e)
 			{
@@ -140,8 +153,15 @@ public class SyntaxTree
 			
 			phase(2);
 			
-			root.validateFields();
-			root.validateMethods();
+			try
+			{
+				root.validateFields(phase);
+				root.validateMethods(phase);
+			}
+			catch (SyntaxErrorException e)
+			{
+				
+			}
 			
 			phase(3);
 		}
@@ -172,12 +192,24 @@ public class SyntaxTree
 	}
 	
 	/**
-	 * Generate the SyntaxTree data for the specified phase.
+	 * Generate the SyntaxTree data for the specified phase. A phase
+	 * specified what section of code that the compiler is decoding.<br>
+	 * For instance:
+	 * <ul>
+	 * 	<li><b>Phase 1</b>: Decode imports and class headers</li>
+	 * 	<li><b>Phase 2</b>: Decode fields, external types, and method declarations</li>
+	 * 	<li><b>Phase 3</b>: Decode method contents</li>
+	 * </ul>
 	 * 
 	 * @param phase The phase to start generating.
 	 */
 	private void phase(int phase) throws InterruptedException
 	{
+		if (controller.containsErrors())
+		{
+			return;
+		}
+		
 		this.phase = phase;
 		
 		if (USE_THREADS)
@@ -252,148 +284,24 @@ public class SyntaxTree
 	}
 	
 	/**
-	 * After the SyntaxTree has been created, further check the the tree
-	 * for inconsistencies and errors/warnings.
-	 */
-	private void checkForErrors()
-	{
-		checkForErrors(root);
-	}
-	
-	/**
-	 * After the SyntaxTree has been created, further check the the tree
-	 * for inconsistencies and errors/warnings.
+	 * Traverse through the tree and validate each node.
 	 * 
-	 * @param root The node to start the search for errors at.
+	 * @param root The TreeNode to validate, then validate the children.
 	 */
-	private void checkForErrors(TreeNode root)
+	private void validateNodes(TreeNode root)
 	{
-//		if (root instanceof ClassNode)
-//		{
-//			ClassNode node = (ClassNode)root;
-//			
-//			if (!node.containsConstructor())
-//			{
-//				ConstructorNode defaultConstructor = new ConstructorNode();
-//				defaultConstructor.setName(node.getName());
-//				defaultConstructor.setType(node.getName());
-//				defaultConstructor.setVisibility(FieldNode.PUBLIC);
-//				
-//				node.addChild(defaultConstructor);
-//			}
-//			if (!node.containsDestructor())
-//			{
-//				DestructorNode defaultDestructor = new DestructorNode();
-//				defaultDestructor.setName(node.getName());
-//				defaultDestructor.setType("void");
-//				defaultDestructor.setVisibility(FieldNode.PUBLIC);
-//				
-//				node.addChild(defaultDestructor);
-//			}
-//		}
-		/*else */if (root instanceof TryNode)
+		root = root.validate(phase);
+		
+		if (root == null)
 		{
-			TreeNode parent = root.getParent();
-			
-			FinallyNode finallyNode = null;
-			
-			for (int i = 0; i < parent.getNumChildren() && finallyNode == null; i++)
-			{
-				TreeNode child = parent.getChild(i);
-				
-				if (child == root)
-				{
-					i++;
-					
-					int     insertIndex = -1;
-					
-					while (i < parent.getNumChildren() && insertIndex == -1)
-					{
-						child = parent.getChild(i);
-						
-						// If the current child is a catch node.
-						if (child instanceof CatchNode == false)
-						{
-							// If there already is a finally node.
-							if (child instanceof FinallyNode)
-							{
-								insertIndex = -2;
-							}
-							// If there was not finally node.
-							else
-							{
-								insertIndex = i;
-							}
-						}
-						
-						i++;
-					}
-					
-					// If there does not already exist a finally node.
-					if (insertIndex != -2)
-					{
-						if (insertIndex < 0)
-						{
-							insertIndex = i;
-						}
-						
-						finallyNode = new FinallyNode(parent, null);
-						parent.addChild(insertIndex, finallyNode);
-					}
-				}
-			}
+			return;
 		}
-		else if (root.containsScope())
-		{
-//			if (root instanceof LoopNode || root instanceof IfStatementNode || root instanceof ElseStatementNode)
-//			{
-//				ScopeNode scope = root.getScopeNode();
-//				
-//				if (scope.getNumChildren() <= 1)
-//				{
-//					root.detach();
-//					
-//					return;
-//				}
-//			}
-		}
-		else if (root instanceof BinaryOperatorNode)
-		{
-			root.validate();
-		}
-		// Test for shadowed fields.
-		else if (root instanceof LocalVariableNode)
-		{
-			root.validate();
-		}
-		else if (root instanceof MethodCallNode)
-		{
-			root.validate();
-		}
-//		else if (root instanceof MethodCallNode)
-//		{
-//			MethodCallNode node = (MethodCallNode)root;
-//			
-//			FileNode fileNode = (FileNode)root.getAncestorOfType(FileNode.class);
-//			
-//			int dot = node.getName().indexOf('.');
-//			
-//			if (dot > 0)
-//			{
-//				String cFile = node.getName().substring(0, dot);
-//				
-//				if (fileNode.getImportListNode().contains(cFile))
-//				{
-//					node.setName(node.getName().substring(dot + 1));
-//				}
-//			}
-//		}
 		
 		for (int i = 0; i < root.getNumChildren(); i++)
 		{
 			TreeNode child = root.getChild(i);
 			
-			checkForErrors(child);
+			validateNodes(child);
 		}
 	}
 	
@@ -405,76 +313,514 @@ public class SyntaxTree
 	 */
 	private String removeComments(String source)
 	{
-		Pattern p = Patterns.COMMENT;
-		
-		Matcher m = p.matcher(source);
-		
+//		Pattern p = Patterns.COMMENT;
+//		
+//		Matcher m = p.matcher(source);
+//		
 		StringBuilder builder = new StringBuilder(source);
+//		
+//		int offset = 0;
+//		
+//		while (m.find())
+//		{
+//			builder.delete(m.start() - offset, m.end() - offset);
+//			
+//			int numLines = StringUtils.numNewLines(m.start(), m.end(), source);
+//			
+//			for (int i = 0; i < numLines; i++)
+//			{
+//				builder.insert(m.start() - offset, '\n');
+//			}
+//			
+//			offset += m.end() - m.start() - numLines;
+//		}
+		
+		String starts[] = new String[] { "/*" };
+		String ends[]   = new String[] { "*/" };
 		
 		int offset = 0;
 		
-		while (m.find())
+		int start  = StringUtils.findStrings(source, starts).getStart();
+		
+		while (start >= 0)
 		{
-			builder.delete(m.start() - offset, m.end() - offset);
+			int end = StringUtils.findStrings(source, start, ends).getEnd();
 			
-			int numLines = StringUtils.numNewLines(m.start(), m.end(), source);
+			if (end < 0)
+			{
+				builder.delete(start - offset, builder.length());
+				
+				break;
+			}
+			
+			builder.delete(start - offset, end - offset);
+			
+			int numLines = StringUtils.numNewLines(start + 2, end, source);
 			
 			for (int i = 0; i < numLines; i++)
 			{
-				builder.insert(m.start() - offset, '\n');
+				builder.insert(start - offset, '\n');
 			}
 			
-			offset += m.end() - m.start() - numLines;
+			offset += end - start - numLines;
+			
+			start = StringUtils.findStrings(source, end, starts).getStart();
 		}
+
+		offset = 0;
 		
-//		int offset = 0;
-//		
-//		int start  = source.indexOf("/*");
-//		
-//		while (start >= 0)
-//		{
-//			int end = source.indexOf("*/", start + 2);
-//			
-//			if (end < 0)
-//			{
-//				builder.delete(start - offset, builder.length());
-//				
-//				break;
-//			}
-//			
-//			builder.delete(start - offset, end - offset + 2);
-//			
-//			offset += end - start + 2;
-//			
-//			start = source.indexOf("/*", end + 2);
-//		}
-//
-//		offset = 0;
-//		
-//		start  = builder.indexOf("//");
-//		
-//		while (start >= 0)
-//		{
-//			int end = builder.indexOf("\n", start + 2);
-//
-//			if (end < 0)
-//			{
-//				builder.delete(start, builder.length());
-//				
-//				break;
-//			}
-//			
-//			builder.delete(start, end + 1);
-//			
-//			offset += end - start + 1;
-//			
-//			start = builder.indexOf("//", start);
-//
-//		}
+		starts = new String[] { "//" };
+		
+		start  = StringUtils.findStrings(builder, starts).getStart();
+		
+		while (start >= 0)
+		{
+			int end = builder.indexOf("\n", start);
+
+			if (end <= 0)
+			{
+				builder.delete(start, builder.length());
+				
+				break;
+			}
+			
+			builder.delete(start, end);
+			
+			offset += end - start + 1;
+
+			start   = StringUtils.findStrings(builder, start, starts).getStart();
+		}
 		
 		return builder.toString();
 	}
-
+	
+	/**
+	 * Decode the specific statement into its correct TreeNode value. If
+	 * the statement does not translate into a TreeNode, a syntax error
+	 * has occurred. 
+	 * 
+	 * @param parent The Parent TreeNode of the current statement to be
+	 * 		decoded.
+	 * @param statement The statement to be decoded into a TreeNode.
+	 * @param location The Location in the source text where the statement
+	 * 		is located at.
+	 * @param types The types of TreeNodes to try to decode, in the given
+	 * 		order.
+	 * @param scope Whether or not the given statement is the beginning of
+	 * 		a scope.
+	 * @return The TreeNode constructed from the statement, if any.
+	 */
+	public static TreeNode decodeStatement(TreeNode parent, String statement, Location location, boolean scope, Class<?> types[])
+	{
+		return decodeStatement(parent, statement, location, true, scope, types);
+	}
+	
+	/**
+	 * Decode the specific statement into its correct TreeNode value. If
+	 * the statement does not translate into a TreeNode, a syntax error
+	 * has occurred. 
+	 * 
+	 * @param parent The Parent TreeNode of the current statement to be
+	 * 		decoded.
+	 * @param statement The statement to be decoded into a TreeNode.
+	 * @param location The Location in the source text where the statement
+	 * 		is located at.
+	 * @param require Whether or not to throw an error if anything goes wrong.
+	 * @param scope Whether or not the given statement is the beginning of
+	 * 		a scope.
+	 * @param types The types of TreeNodes to try to decode, in the given
+	 * 		order.
+	 * @return The TreeNode constructed from the statement, if any.
+	 */
+	public static TreeNode decodeStatement(TreeNode parent, String statement, Location location, boolean require, boolean scope, Class<?> types[])
+	{
+		TreeNode node = null;
+		
+//		try
+//		{
+			for (Class<?> type : types)
+			{
+//				Class<TreeNode> a = (Class<TreeNode>)type;
+//				
+//				Method m = a.getMethod("decodeStatement", TreeNode.class, String.class, Location.class);
+//				
+//				node = (TreeNode)m.invoke(a, parent, statement, location);
+				
+				if      (type == LocalDeclarationNode.class) node = LocalDeclarationNode.decodeStatement(parent, statement, location, require, scope);
+				else if (type == IfStatementNode.class) node = IfStatementNode.decodeStatement(parent, statement, location, require, scope);
+				else if (type == ElseStatementNode.class) node = ElseStatementNode.decodeStatement(parent, statement, location, require, scope);
+				else if (type == ArrayAccessNode.class) node = ArrayAccessNode.decodeStatement(parent, statement, location, require, scope);
+				else if (type == AssignmentNode.class) node = AssignmentNode.decodeStatement(parent, statement, location, require, scope);
+				else if (type == ArrayNode.class) node = ArrayNode.decodeStatement(parent, statement, location, require, scope);
+				else if (type == BinaryOperatorNode.class) node = BinaryOperatorNode.decodeStatement(parent, statement, location, require, scope);
+				else if (type == ClassNode.class) node = ClassNode.decodeStatement(parent, statement, location, require, scope);
+				else if (type == ConstructorNode.class) node = ConstructorNode.decodeStatement(parent, statement, location, require, scope);
+				else if (type == DestructorNode.class) node = DestructorNode.decodeStatement(parent, statement, location, require, scope);
+				else if (type == ExternalTypeNode.class) node = ExternalTypeNode.decodeStatement(parent, statement, location, require, scope);
+				else if (type == IfStatementNode.class) node = IfStatementNode.decodeStatement(parent, statement, location, require, scope);
+				else if (type == ImportNode.class) node = ImportNode.decodeStatement(parent, statement, location, require, scope);
+				else if (type == InstantiationNode.class) node = InstantiationNode.decodeStatement(parent, statement, location, require, scope);
+				else if (type == LiteralNode.class) node = LiteralNode.decodeStatement(parent, statement, location, require, scope);
+				else if (type == LoopNode.class) node = LoopNode.decodeStatement(parent, statement, location, require, scope);
+				else if (type == MethodCallNode.class) node = MethodCallNode.decodeStatement(parent, statement, location, require, scope);
+				else if (type == MethodNode.class) node = MethodNode.decodeStatement(parent, statement, location, require, scope);
+				else if (type == PriorityNode.class) node = PriorityNode.decodeStatement(parent, statement, location, require, scope);
+				else if (type == ReturnNode.class) node = ReturnNode.decodeStatement(parent, statement, location, require, scope);
+				else if (type == UnaryOperatorNode.class) node = UnaryOperatorNode.decodeStatement(parent, statement, location, require, scope);
+				else if (type == FieldNode.class) node = FieldNode.decodeStatement(parent, statement, location, require, scope);
+				else if (type == CatchNode.class) node = CatchNode.decodeStatement(parent, statement, location, require, scope);
+				else if (type == ExceptionHandlingNode.class) node = ExceptionHandlingNode.decodeStatement(parent, statement, location, require, scope);
+				else if (type == FinallyNode.class) node = FinallyNode.decodeStatement(parent, statement, location, require, scope);
+				else if (type == ThrowNode.class) node = ThrowNode.decodeStatement(parent, statement, location, require, scope);
+				else if (type == TryNode.class) node = TryNode.decodeStatement(parent, statement, location, require, scope);
+				
+				if (node != null)
+				{
+					return node;
+				}
+			}
+//		}
+//		catch (SecurityException e)
+//		{
+//			e.printStackTrace();
+//		}
+//		catch (NoSuchMethodException e)
+//		{
+//			e.printStackTrace();
+//		}
+//		catch (IllegalArgumentException e)
+//		{
+//			e.printStackTrace();
+//		}
+//		catch (IllegalAccessException e)
+//		{
+//			e.printStackTrace();
+//		}
+//		catch (InvocationTargetException e)
+//		{
+//			e.printStackTrace();
+//		}
+		
+		node = ExternalStatementNode.decodeStatement(parent, statement, location, require, scope);
+		
+//		if (require)
+//		{
+//			SyntaxMessage.error("Unknown statement", parent, location);
+//		}
+		
+		return node;
+	}
+	
+	/**
+	 * Decode a String that was found within a scope. That is, a method
+	 * or scopes within a method: for loops, while loops, if statements,
+	 * etc.
+	 * 
+	 * @param parent The parent node of the current statement to decode.
+	 * @param statement The statement to decode.
+	 * @param location The location of the statement.
+	 * @param scope Whether or not the given statement is the beginning of
+	 * 		a scope.
+	 * @return The TreeNode representation of the given statement.
+	 */
+	public static TreeNode decodeScopeContents(TreeNode parent, String statement, Location location, boolean scope)
+	{
+		return SyntaxTree.decodeScopeContents(parent, statement, location, true, scope);
+	}
+	
+	/**
+	 * Decode a String that was found within a scope. That is, a method
+	 * or scopes within a method: for loops, while loops, if statements,
+	 * etc.
+	 * 
+	 * @param parent The parent node of the current statement to decode.
+	 * @param statement The statement to decode.
+	 * @param location The location of the statement.
+	 * @param require Whether or not to throw an error if anything goes wrong.
+	 * @param scope Whether or not the given statement is the beginning of
+	 * 		a scope.
+	 * @return The TreeNode representation of the given statement.
+	 */
+	public static TreeNode decodeScopeContents(TreeNode parent, String statement, Location location, boolean require, boolean scope)
+	{
+		if (SyntaxUtils.isLiteral(statement))
+		{
+			return LiteralNode.decodeStatement(parent, statement, location, require, scope);
+		}
+		
+		try
+		{
+			TreeNode test = decodeStatement(parent, statement, location, require, scope, PRE_VALUE_DECODE);
+		
+			if (test != null)
+			{
+				return test;
+			}
+		}
+		catch (SyntaxErrorException e)
+		{
+			if (require)
+			{
+				throw e;
+			}
+		}
+		
+		IdentifierNode root = decodeIdentifierAccess(parent, statement, location);
+		
+		if (root != null)
+		{
+			return root;
+		}
+		
+		TreeNode node = decodeStatement(parent, statement, location, require, scope, SCOPE_CHILD_DECODE);
+		
+		if (node == null)
+		{
+			node = decodeIdentifier(parent, statement, location);
+		}
+		
+		if (node == null && require)
+		{
+			SyntaxMessage.error("Could not decode syntax '" + statement + "'", parent, location);
+		}
+		
+		return node;
+	}
+	
+	/**
+	 * Method that tries to decode an identifier access expression.<br>
+	 * <br>
+	 * For example:
+	 * <blockquote><pre>
+	 * tree.children.add(new Node());</pre></blockquote>
+	 * The above expression is an identifier access because it uses the
+	 * dot operator to access another node.
+	 * 
+	 * @param parent The parent of the statement to decode.
+	 * @param statement The statement to decode as an identifier access.
+	 * @param location The location in the source where this statement is.
+	 */
+	private static IdentifierNode decodeIdentifierAccess(TreeNode parent, String statement, Location location)
+	{
+		IdentifierNode root = null;
+		IdentifierNode node = null;
+		
+		int offset = 0;
+		int index  = SyntaxUtils.findDotOperator(statement);
+		
+		if (index < 0)
+		{
+			return null;
+		}
+		
+		String current = statement.substring(offset, index);
+		
+		while (current != null)
+		{
+			node = decodeIdentifier(parent, current, location);
+			
+			if (node == null)
+			{
+				Location currentLoc = new Location(location);
+				currentLoc.setBounds(offset, index);
+				currentLoc.setLineNumber(location.getLineNumber());
+				
+				SyntaxMessage.error("Could not decode syntax '" + current + "'", parent, currentLoc);
+			}
+			
+			location = new Location(location);
+			
+			if (root == null)
+			{
+				root = node;
+			}
+			else
+			{
+				parent.addChild(node);
+				
+				if (index < 0)
+				{
+					break;
+				}
+			}
+			
+			parent = node;
+			
+			offset = index + 1;
+			index  = SyntaxUtils.findDotOperator(statement, offset);
+			
+			if (index > 0)
+			{
+				current = statement.substring(offset, index);
+			}
+			else
+			{
+				current = statement.substring(offset, statement.length());
+			}
+		}
+		
+		return root;
+	}
+	
+	/**
+	 * Decode the value of the given statement. Can be nodes such as
+	 * VariableNodes, ExternalTypesNodes, FieldNodes, etc. May also
+	 * be just a plain old ValueNode describing the return type of the
+	 * statement. For example: a static class's method call.
+	 * <code>Math.sin(number)</code> in this instance, Math will be the
+	 * IdentifierNode returned. In most other instances a VariableNode
+	 * variation will be returned.
+	 * 
+	 * @param parent The parent node of the current statement to decode.
+	 * @param statement The statement to decode.
+	 * @param location The location of the statement.
+	 * @return The IdentifierNode representation of the given statement.
+	 */
+	private static IdentifierNode decodeIdentifier(TreeNode parent, String statement, Location location)
+	{
+		IdentifierNode node = (IdentifierNode)decodeStatement(parent, statement, location, false, SCOPE_CHILD_DECODE);
+		
+		if (node == null)
+		{
+			node = SyntaxTree.getExistingNode(parent, statement);
+			
+			if (node != null)
+			{
+				node = node.clone(parent, location);
+			}
+			else if (parent instanceof ExternalTypeNode)
+			{
+				ExternalTypeNode type = (ExternalTypeNode)parent;
+				
+				type.setType(statement);
+				
+				IdentifierNode id = new IdentifierNode(type, type.getLocationIn());
+				id.setName(statement);
+				
+				node = id;
+			}
+			else if (parent.getFileNode().containsImport(statement) || parent.getFileNode().containsClass(statement))
+			{
+				ClassNode clazz = parent.getProgramNode().getClassNode(statement);
+				
+				if (clazz != null)
+				{
+					IdentifierNode id = new IdentifierNode(parent, location);
+					id.setName(clazz.getName());
+					id.setType(clazz.getName());
+					
+					return id;
+				}
+			}
+		}
+		
+		return node;
+	}
+	
+	/**
+	 * Try to find an existing node from the given statement. This method
+	 * searches through fields and local variables.
+	 * 
+	 * @param parent The parent TreeNode to use as our context.
+	 * @param statement The statement to check for an existing node from.
+	 * @return The IdentifierNode that is found, if any.
+	 */
+	public static VariableNode getExistingNode(TreeNode parent, String statement)
+	{
+		if (SyntaxUtils.isLiteral(statement))
+		{
+			return null;
+		}
+		else if (SyntaxUtils.isMethodCall(statement))
+		{
+			return null;
+		}
+		else if (SyntaxUtils.isValidIdentifier(statement))
+		{
+			ClassNode clazz = null;
+			
+			if (parent instanceof LocalVariableNode || parent instanceof FieldNode)
+			{
+				VariableNode var = (VariableNode)parent;
+				
+				clazz  = var.getProgramNode().getClassNode(var.getType());
+			}
+			
+			if (clazz != null)
+			{
+				VariableNode var   = (VariableNode)parent;
+				
+				FieldNode    field = clazz.getField(statement);
+				
+				if (field != null)
+				{
+					if (SyntaxUtils.isVisible(var, field))
+					{
+						return field;
+					}
+					else
+					{
+						SyntaxMessage.error("Field '" + field.getName() + "' is not accessible", parent);
+					}
+				}
+			}
+			
+			TreeNode scopeNode = parent.getAncestorWithScope();
+			
+			while (scopeNode != null)
+			{
+				VariableListNode variables = scopeNode.getScopeNode().getVariableListNode();
+				
+				VariableNode     variable  = variables.getVariable(statement);
+				
+				if (variable != null)
+				{
+					return variable;
+				}
+				
+				if (scopeNode instanceof MethodNode)
+				{
+					MethodNode        methodNode = (MethodNode)scopeNode;
+					ParameterListNode parameters = methodNode.getParameterListNode();
+					ParameterNode     parameter  = parameters.getParameterNode(statement);
+					
+					if (parameter != null)
+					{
+						return parameter;
+					}
+				}
+				
+				scopeNode = scopeNode.getParent().getAncestorWithScope();
+			}
+			
+			if (parent instanceof ParameterListNode)
+			{
+				ParameterListNode parameters = (ParameterListNode)parent;
+				
+				ParameterNode     parameter  = parameters.getParameterNode(statement);
+				
+				if (parameter != null)
+				{
+					return parameter;
+				}
+			}
+			
+			clazz = (ClassNode)parent.getAncestorOfType(ClassNode.class, true);
+			
+			if (clazz != null)
+			{
+				FieldNode field = clazz.getField(statement);
+				
+				if (field != null)
+				{
+					return field;
+				}
+			}
+		}
+		
+		return null;
+	}
+	
 	/**
 	 * Generate the C Header output from the data contained within the
 	 * syntax tree.
@@ -668,15 +1014,15 @@ public class SyntaxTree
 	 * @return The filenames of all the files, in order of the way they
 	 * 		are in the tree structure.
 	 */
-	public File[] getFiles()
+	public FileNode[] getFiles()
 	{
-		File sources[] = new File[root.getNumChildren()];
+		FileNode sources[] = new FileNode[root.getNumChildren()];
 		
 		for (int i = 0; i < sources.length; i++)
 		{
 			FileNode child = root.getChild(i).getFileNode();
 			
-			sources[i] = child.getFile();
+			sources[i] = child;
 		}
 		
 		return sources;
@@ -711,8 +1057,6 @@ public class SyntaxTree
 		private String			source;
 		
 		private File			file;
-		
-		private TreeNode		currentNode;
 		
 		private Stack<TreeNode>	parentStack;
 		
@@ -766,88 +1110,6 @@ public class SyntaxTree
 			{
 				phase3(file, source);
 			}
-		}
-		
-		/**
-		 * Search for the next statement. If a statement is found, return
-		 * it in a TreeNode format, if not return null.
-		 * 
-		 * @param source The source String to search in.
-		 * @param offset The offset in the source file that the statement is.
-		 * @param statementType The character array to use that determines what
-		 * 		type of statements are searched for. Possible options include:
-		 * 		<ul>
-		 * 			<li>{@link #EITHER_STATEMENT_END_CHARS}</li>
-		 * 			<li>{@link #SINGLE_STATEMENT_END_CHARS}</li>
-		 * 			<li>{@link #SCOPE_STATEMENT_END_CHARS}</li>
-		 * 		</ul>
-		 * @param searchTypes The type of TreeNodes to try to decode.
-		 * @return The TreeNode containing the information, or null if it is
-		 * 		not found.
-		 */
-		private TreeNode getNextStatement(String source, int offset, char statementType[], Class<?> searchTypes[])
-		{
-			while ((statementEndIndex = Regex.indexOfExcludeTextAndParentheses(source, statementStartIndex, statementType)) >= 0 && !statementStartMatcher.hitEnd())
-			{
-				boolean scope = source.charAt(statementEndIndex) == '{';
-				
-				int newStatementStartIndex = 0;
-				
-				if (statementStartMatcher.find(statementEndIndex + 1))
-				{
-					newStatementStartIndex = StringUtils.findNextNonWhitespaceIndex(source, statementStartMatcher.start());
-				}
-				
-				int      endBound   = nextNonWhitespaceIndexOnTheLeft(statementEndIndex - 1, source) + 1;
-				
-				int      offset2    = statementStartIndex;
-				int      lineOffset = calculateOffset(endBound, source);
-				
-				String   statement  = source.substring(statementStartIndex, endBound);
-				
-				Location location   = new Location(lineNumber, lineOffset, offset2 + offset, offset2 + statement.length() + offset);
-				
-				TreeNode node       = null;
-				
-				try
-				{
-					node = decodeStatement(statement, location, scope, searchTypes);
-				}
-				catch (SyntaxErrorException e)
-				{
-					TreeNode parent = null;
-					
-					if (!parentStack.isEmpty())
-					{
-						parent = parentStack.peek();
-					}
-					
-					if (scope)
-					{
-						MethodNode tempMethod = MethodNode.generateTemporaryMethod(parent, location);
-						
-						parentStack.push(tempMethod);
-					}
-				}
-				
-				updateLineNumber(statementStartIndex, newStatementStartIndex, source);
-				
-				checkExternal(node, source);
-				
-				oldStatementStartIndex = statementStartIndex;
-				
-				if (node instanceof ExternalStatementNode == false)
-				{
-					statementStartIndex = newStatementStartIndex;
-				}
-				
-				if (node != null)
-				{
-					return node;
-				}
-			}
-			
-			return null;
 		}
 		
 		/**
@@ -942,6 +1204,11 @@ public class SyntaxTree
 			
 			FileNode fileNode = root.getFile(filename);
 			
+			if (fileNode == null)
+			{
+				return;
+			}
+			
 			for (int i = 0; i < fileNode.getNumChildren(); i++)
 			{
 				TreeNode child = fileNode.getChild(i);
@@ -949,11 +1216,6 @@ public class SyntaxTree
 				if (child instanceof ClassNode)
 				{
 					ClassNode node = (ClassNode)child;
-
-					if (node.getName().equals("ExceptionData"))
-					{
-						System.out.println("in syntaxtree 1019 here");
-					}
 					
 					// Finds the starting scope '{'
 					int startingIndex = StringUtils.findNextNonWhitespaceIndex(source, node.getLocationIn().getEnd());
@@ -993,28 +1255,32 @@ public class SyntaxTree
 
 			controller.log("Phase three for '" + filename + "'...");
 			
-			FileNode fileNode = root.getFile(filename);
+			FileNode  fileNode  = root.getFile(filename);
 			
-			for (int i = 0; i < fileNode.getNumChildren(); i++)
+			if (fileNode == null)
 			{
-				TreeNode child = fileNode.getChild(i);
-				
-				if (child instanceof ClassNode)
-				{
-					ClassNode classNode = (ClassNode)child;
-					
-					MethodListNode methods = classNode.getMethodListNode();
-					decodeMethodContents(methods, source);
-					
-					MethodListNode constructors = classNode.getConstructorListNode();
-					decodeMethodContents(constructors, source);
-					
-					MethodListNode destructors = classNode.getDestructorListNode();
-					decodeMethodContents(destructors, source);
-				}
+				return;
 			}
 			
-			checkForErrors(fileNode);
+			ClassNode classNode = fileNode.getClassNode();
+			
+			MethodListNode methods = classNode.getMethodListNode();
+			decodeMethodContents(methods, source);
+			
+			MethodListNode constructors = classNode.getConstructorListNode();
+			decodeMethodContents(constructors, source);
+			
+			MethodListNode destructors = classNode.getDestructorListNode();
+			decodeMethodContents(destructors, source);
+			
+			try
+			{
+				validateNodes(fileNode);
+			}
+			catch (SyntaxErrorException e)
+			{
+				
+			}
 		}
 		
 		/**
@@ -1025,32 +1291,29 @@ public class SyntaxTree
 		 */
 		private void decodeMethodContents(MethodListNode methods, String source)
 		{
-			for (TreeNode child : methods.getChildren())
+			for (int i = 0; i < methods.getNumChildren(); i++)
 			{
-				if (!child.getLocationIn().isValid())
+				MethodNode node = (MethodNode)methods.getChild(i);
+				
+				if (!node.getLocationIn().getBounds().isValid() || node.isExternal())
 				{
 					continue;
 				}
 				
-				MethodNode node = (MethodNode)child;
+				int startingIndex = StringUtils.findNextNonWhitespaceIndex(source, node.getLocationIn().getEnd());
+				int endingIndex   = StringUtils.findEndingMatch(source, startingIndex, '{', '}');
 				
-				if (!node.isExternal())
+				int contentStart  = StringUtils.findNextNonWhitespaceIndex(source, startingIndex + 1);
+				int contentEnd    = StringUtils.findNextNonWhitespaceIndex(source, endingIndex - 1, -1) + 1;
+				
+				if (contentStart < contentEnd)
 				{
-					int startingIndex = StringUtils.findNextNonWhitespaceIndex(source, node.getLocationIn().getEnd());
-					int endingIndex   = StringUtils.findEndingMatch(source, startingIndex, '{', '}');
+					String subSource = source.substring(contentStart, contentEnd);
 					
-					int contentStart  = StringUtils.findNextNonWhitespaceIndex(source, startingIndex + 1);
-					int contentEnd    = StringUtils.findNextNonWhitespaceIndex(source, endingIndex - 1, -1) + 1;
+					init(subSource);
+					updateLineNumber(node.getLocationIn().getEnd(), contentStart, source);
 					
-					if (contentStart < contentEnd)
-					{
-						String subSource = source.substring(contentStart, contentEnd);
-						
-						init(subSource);
-						updateLineNumber(node.getLocationIn().getEnd(), contentStart, source);
-						
-						traverseCode(node, subSource, contentStart, EITHER_STATEMENT_END_CHARS, THIRD_PASS_CLASSES, false);
-					}
+					traverseCode(node, subSource, contentStart, EITHER_STATEMENT_END_CHARS, null, false);
 				}
 			}
 		}
@@ -1081,32 +1344,147 @@ public class SyntaxTree
 			
 			parentStack.push(parent);
 			
-			currentNode = getNextStatement(source, offset, statementType, searchTypes);
+			TreeNode currentNode = getNextStatement(source, null, offset, statementType, searchTypes);
 			
 			// Decode all of the statements in the source text.
 			while (currentNode != null)
 			{
-				if (skipScopes && (currentNode.containsScope() || currentNode instanceof ClassNode))
-				{
-					skipScope(source);
-				}
+				updateTree(source, currentNode, skipScopes);
 				
-				if (!parentStack.isEmpty())
-				{
-					TreeNode parentNode = parentStack.peek();
-					
-					parentNode.addChild(currentNode);
-				}
-				
-				if (statementEndIndex >= 0 && !skipScopes && source.charAt(statementEndIndex) == '{')
-				{
-					parentStack.push(currentNode);
-				}
-				
-				updateParents(oldStatementStartIndex, statementStartIndex, source);
-				
-				currentNode = getNextStatement(source, offset, statementType, searchTypes);
+				currentNode = getNextStatement(source, currentNode, offset, statementType, searchTypes);
 			}
+		}
+		
+		/**
+		 * Search for the next statement. If a statement is found, return
+		 * it in a TreeNode format, if not return null.
+		 * 
+		 * @param source The source String to search in.
+		 * @param previous The previously decoded node.
+		 * @param offset The offset in the source file that the statement is.
+		 * @param statementType The character array to use that determines what
+		 * 		type of statements are searched for. Possible options include:
+		 * 		<ul>
+		 * 			<li>{@link #EITHER_STATEMENT_END_CHARS}</li>
+		 * 			<li>{@link #SINGLE_STATEMENT_END_CHARS}</li>
+		 * 			<li>{@link #SCOPE_STATEMENT_END_CHARS}</li>
+		 * 		</ul>
+		 * @param searchTypes The type of TreeNodes to try to decode.
+		 * @return The TreeNode containing the information, or null if it is
+		 * 		not found.
+		 */
+		private TreeNode getNextStatement(String source, TreeNode previous, int offset, char statementType[], Class<?> searchTypes[])
+		{
+			while ((statementEndIndex = Regex.indexOfExcludeTextAndParentheses(source, statementStartIndex, statementType)) >= 0 && !statementStartMatcher.hitEnd())
+			{
+				boolean scope = source.charAt(statementEndIndex) == '{';
+				
+				int newStatementStartIndex = 0;
+				
+				if (statementStartMatcher.find(statementEndIndex + 1))
+				{
+					newStatementStartIndex = StringUtils.findNextNonWhitespaceIndex(source, statementStartMatcher.start());
+				}
+				
+				int      endBound   = nextNonWhitespaceIndexOnTheLeft(statementEndIndex - 1, source) + 1;
+				int      offset2    = statementStartIndex;
+				int      lineOffset = calculateOffset(endBound, source);
+				String   statement  = source.substring(statementStartIndex, endBound);
+				Location location   = new Location(lineNumber, lineOffset, offset2 + offset, offset2 + statement.length() + offset);
+				
+				adjustLocation(previous, location);
+				
+				TreeNode node = decodeStatementAndCheck(statement, location, scope, searchTypes);
+				
+				updateLineNumber(statementStartIndex, newStatementStartIndex, source);
+				
+				checkExternal(node, source);
+				
+				oldStatementStartIndex = statementStartIndex;
+				
+				if (node instanceof ExternalStatementNode == false)
+				{
+					statementStartIndex = newStatementStartIndex;
+				}
+				
+				if (node != null)
+				{
+					return node;
+				}
+				
+				updateParents(source);
+			}
+			
+			return null;
+		}
+		
+		/**
+		 * Try to decode the statement. If there is a syntax error within
+		 * the given statement, then the method will try to compensate for
+		 * error.
+		 * 
+		 * @param statement The statement to try to decode.
+		 * @param location The location of the statement in the source
+		 * 		file.
+		 * @param scope Whether or not the statement starts off a scope.
+		 * @param searchTypes The types of nodes that the statement could
+		 * 		possibly be.
+		 */
+		private TreeNode decodeStatementAndCheck(String statement, Location location, boolean scope, Class<?> searchTypes[])
+		{
+			try
+			{
+				return decodeStatement(statement, location, scope, searchTypes);
+			}
+			catch (SyntaxErrorException e)
+			{
+				if (scope && !parentStack.isEmpty())
+				{
+					TreeNode parent = parentStack.peek();
+					
+					if (parent.getClassNode() == null)
+					{
+						parentStack.push(ClassNode.generateTemporaryClass(parent, location));
+					}
+					else
+					{
+						parentStack.push(MethodNode.generateTemporaryMethod(parent, location));
+					}
+				}
+			}
+			
+			return null;
+		}
+		
+		/**
+		 * Update the tree's parent stack, indices, and line numbers, if
+		 * necessary.
+		 * 
+		 * @param source The text that was just decoded.
+		 * @param node The previously decoded node.
+		 * @param skipScopes Whether or not to skip the scopes of anything
+		 * 		that contains a scope. If true, only decode the header.
+		 */
+		private void updateTree(String source, TreeNode node, boolean skipScopes)
+		{
+			if (skipScopes && (node.containsScope() || node instanceof ClassNode))
+			{
+				skipScope(source);
+			}
+			
+			if (!parentStack.isEmpty())
+			{
+				TreeNode parentNode = parentStack.peek();
+				
+				parentNode.addChild(node);
+			}
+			
+			if (statementEndIndex >= 0 && !skipScopes && source.charAt(statementEndIndex) == '{')
+			{
+				parentStack.push(node);
+			}
+			
+			updateParents(source);
 		}
 		
 		/**
@@ -1133,6 +1511,17 @@ public class SyntaxTree
 			
 			oldStatementStartIndex = statementStartIndex;
 			statementEndIndex      = statementStartIndex;
+		}
+		
+		/**
+		 * Check to see if an ending curly brace has been parsed. If so,
+		 * pop the last parent off the stack.
+		 * 
+		 * @param source The source String to search in.
+		 */
+		private void updateParents(String source)
+		{
+			updateParents(oldStatementStartIndex, statementStartIndex, source);
 		}
 		
 		/**
@@ -1174,13 +1563,13 @@ public class SyntaxTree
 				parent = parentStack.peek();
 			}
 			
-			if (searchTypes.length > 0)
+			if (searchTypes != null)
 			{
-				return TreeNode.decodeStatement(parent, statement, location, scope, searchTypes);
+				return SyntaxTree.decodeStatement(parent, statement, location, scope, searchTypes);
 			}
 			else
 			{
-				return TreeNode.decodeStatement(parent, statement, location, true, scope);
+				return SyntaxTree.decodeScopeContents(parent, statement, location, true, scope);
 			}
 		}
 		
@@ -1195,6 +1584,38 @@ public class SyntaxTree
 		private void updateLineNumber(int start, int end, String source)
 		{
 			lineNumber += StringUtils.numNewLines(start, end, source);
+		}
+		
+		/**
+		 * Adjust the given location to be relative within its parent
+		 * scope.
+		 * 
+		 * @param node The previously decoded node.
+		 * @param location The Location to adjust.
+		 */
+		private void adjustLocation(TreeNode node, Location location)
+		{
+			if (node == null)
+			{
+				return;
+			}
+			
+			TreeNode scope = null;
+			
+			for (int i = 0; i < parentStack.size(); i++)
+			{
+				scope = parentStack.peek(i);
+				
+				if ((phase == 3 && scope instanceof MethodNode) ||
+						(phase == 1 && scope instanceof FileNode))
+				{
+					break;
+				}
+				
+				Location scopeLoc = scope.getLocationIn();
+				
+				location.setLineNumber(location.getLineNumber() - scopeLoc.getLineNumber());
+			}
 		}
 	}
 }
