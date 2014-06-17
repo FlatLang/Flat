@@ -8,7 +8,7 @@ import net.fathomsoft.nova.util.Location;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Apr 2, 2014 at 8:49:52 PM
- * @version	v0.2.7 May 25, 2014 at 9:16:48 PM
+ * @version	v0.2.13 Jun 17, 2014 at 8:45:35 AM
  */
 public class ImportListNode extends TreeNode
 {
@@ -44,7 +44,7 @@ public class ImportListNode extends TreeNode
 		{
 			ImportNode child = (ImportNode)getChild(i);
 			
-			if (importLocation.equals(child.getImportLocation()))
+			if (importLocation.equals(child.getLocationNode().getName()))
 			{
 				return child;
 			}
@@ -64,7 +64,7 @@ public class ImportListNode extends TreeNode
 		{
 			ImportNode child = (ImportNode)getChild(i);
 			
-			if (child.isExternal() && child.getImportLocation().equals(importLocation))
+			if (child.isExternal() && child.getLocationNode().getName().equals(importLocation))
 			{
 				return true;
 			}
@@ -100,9 +100,23 @@ public class ImportListNode extends TreeNode
 	@Override
 	public String generateCHeader()
 	{
-		return generateCSource();
+		StringBuilder builder = new StringBuilder();
+		
+		FileNode file = getFileNode();
+		
+		for (int i = 0; i < getNumChildren(); i++)
+		{
+			ImportNode node = (ImportNode)getChild(i);
+			
+			if (node.isExternal() || !file.getName().equals(node.getLocationNode().getName()))
+			{
+				builder.append(node.generateCSource());
+			}
+		}
+		
+		return builder.toString();
 	}
-
+	
 	/**
 	 * @see net.fathomsoft.nova.tree.TreeNode#generateCSource()
 	 */
@@ -111,16 +125,17 @@ public class ImportListNode extends TreeNode
 	{
 		StringBuilder builder = new StringBuilder();
 		
-		for (int i = 0; i < getNumChildren(); i++)
-		{
-			builder.append(getChild(i).generateCSource());
-		}
+		FileNode file = getFileNode();
+
+		ImportNode importNode = ImportNode.decodeStatement(this, "import \"" + file.getName() + "\"", getLocationIn(), true, false);
+		
+		builder.append(importNode.generateCSource());
 		
 		return builder.toString();
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.TreeNode#clone(TreeNode)
+	 * @see net.fathomsoft.nova.tree.TreeNode#clone(TreeNode, Location)
 	 */
 	@Override
 	public ImportListNode clone(TreeNode temporaryParent, Location locationIn)
