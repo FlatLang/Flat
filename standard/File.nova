@@ -1,7 +1,165 @@
 public class File
 {
+	external type FILE;
+	
+	FILE* fp;
+	
+	external FILE* fopen(char location[], char operation[]);
+	external FILE* freopen(char location[], char operation[], FILE* fp);
+	external void fprintf(FILE* fp, char data[]);
+	external void fputs(char str[], FILE* stream);
+	external void fflush(FILE* fp);
+	external int fclose(FILE* fp);
+	external void fgets(char buffer[], int size, FILE* fp);
+	external char[] realloc(char buffer[], int size);
+	external char getc(FILE* fp);
+	external void rewind(FILE* fp);
+	
+	external char EOF;
+	
+	String location;
+	
 	public File(String location)
 	{
+		this.location = location;
 		
+		fopen(location.toCharArray(), "w");
+		reopen();
+	}
+	
+	public void reopen()
+	{
+		if (exists() == 1)
+		{
+			close();
+		}
+		
+		fp = fopen(location.toCharArray(), "r+");
+	}
+	
+	public void rewind()
+	{
+		rewind(fp);
+	}
+	
+	public int exists()
+	{
+		if (fp == 0)
+		{
+			return 0;
+		}
+		
+		return 1;
+	}
+	
+	public int create()
+	{
+		if (exists() == 0)
+		{
+			fp = fopen(location.toCharArray(), "wb");
+			
+			close();
+			
+			fp = fopen(location.toCharArray(), "r+");
+			
+			return 1;
+		}
+		
+		return 0;
+	}
+	
+	public String readAllContents()
+	{
+		String data = "";
+		
+		String line = readLine();
+		
+		while (line != 0)
+		{
+			if (data.length > 0)
+			{
+				data = data + "\n";
+			}
+			
+			data = data + line;
+			
+			line = readLine();
+		}
+		
+		return data;
+	}
+	
+	public String readLine()
+	{
+		int buf  = 5;
+		int size = buf;
+		
+		char line[] = new char[size];
+		
+		char c = getc(fp);
+		
+		if (c == EOF)
+		{
+			return 0;
+		}
+		
+		int index = 0;
+		
+		while (c != '\n' && c != EOF)
+		{
+			if (index >= size)
+			{
+				size = size + buf;
+				
+				line = realloc(line, size);
+			}
+			
+			line[index++] = c;
+			
+			c = getc(fp);
+			
+//			if (c == '3' hk)
+//			{
+//				currentIndex++;
+//			}
+		}
+		
+		if (index >= size)
+		{
+			size++;
+			
+			line = realloc(line, size);
+		}
+		
+		line[index++] = '\0';
+		
+		line = realloc(line, index);
+		
+		return new String(line);
+	}
+	
+	public void writeLine(String line)
+	{
+		write(line + "\n");
+	}
+	
+	public void write(String data)
+	{
+		//fprintf(fp, data.toCharArray());
+		fputs(data.toCharArray(), fp);
+		flush();
+	}
+	
+	public void flush()
+	{
+		fflush(fp);
+	}
+	
+	public void close()
+	{
+		if (exists() == 1)
+		{
+			fclose(fp);
+		}
 	}
 }
