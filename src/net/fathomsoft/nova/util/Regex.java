@@ -9,7 +9,7 @@ import java.util.regex.Pattern;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 10, 2014 at 3:12:48 AM
- * @version	v0.2.2 Apr 29, 2014 at 7:06:43 PM
+ * @version	v0.2.13 Jun 17, 2014 at 8:45:35 AM
  */
 public class Regex
 {
@@ -804,7 +804,7 @@ public class Regex
 			return new Bounds(matcher.start(), matcher.end());
 		}
 		
-		return new Bounds(-1, -1);
+		return Bounds.EMPTY;
 	}
 	
 	/**
@@ -1381,61 +1381,71 @@ public class Regex
 		
 		int first = start;
 		
-		if (excludePrefixes.length > 0 || excludeBinary.length > 0)
-		{
-			if (sign(direction) == -1)
-			{
-				first = src.length() - 1;
-			}
-			else
-			{
-				first = 0;
-			}
-		}
+//		if (excludePrefixes.length > 0 || excludeBinary.length > 0)
+//		{
+//			if (sign(direction) == -1)
+//			{
+//				first = src.length() - 1;
+//			}
+//			else
+//			{
+//				first = 0;
+//			}
+//		}
 		
 		int excluding = 0;
 		
-		Stack<Character> binaryExclude = new Stack<Character>();
+//		Stack<Character> binaryExclude = new Stack<Character>();
 		
-		for (int i = first; i < src.length() && i >= 0; i += direction)
+		int i = first;
+		
+		while (i < src.length() && i >= 0)
 		{
 			char c = src.charAt(i);
 			
 //			int cIndex = 0;
 			
-			if (StringUtils.searchChar(excludePrefixes, c) >= 0)
+			int p = 0;
+			
+			if ((p = StringUtils.searchChar(excludePrefixes, c)) >= 0)
 			{
-				excluding += sign(direction);
+				if (i == 0 || !excludePrefixBackslash[p] || src.charAt(i - 1) != '\\')
+				{
+					i = StringUtils.findEndingMatch(src, i, excludePrefixes[p], excludePostfixes[p]);
+					
+					if (i < 0)
+					{
+						break;
+					}
+				}
+//				
+//				excluding += sign(direction);
 			}
-			else if (StringUtils.searchChar(excludePostfixes, c) >= 0)
-			{
-				excluding -= sign(direction);
-			}
+//			else if ((p = StringUtils.searchChar(excludePostfixes, c)) >= 0)
+//			{
+//				excluding -= sign(direction);
+//			}
 			else if (StringUtils.searchChar(excludeBinary, c) >= 0)
 			{
-				if (excludeBinaryBackslash[0] && i > 0 && src.charAt(i - 1) == '\\')
+				if (i == 0 || !StringUtils.containsChar(excludeBinary, src.charAt(i - 1)))
 				{
-					// Skip because it starts with a backslash...
-				}
-				else
-				{
-					if (!binaryExclude.isEmpty() && binaryExclude.peek() == c)
+					i = StringUtils.findEndingChar(src, c, i, direction);
+					
+					if (i < 0)
 					{
-						binaryExclude.pop();
-					}
-					else
-					{
-						binaryExclude.push(c);
+						break;
 					}
 				}
 			}
-			else if (excluding == 0 && i >= start && binaryExclude.isEmpty() && StringUtils.containsChar(cs, c))
+			else if (excluding == 0 && i >= start /*&& binaryExclude.isEmpty()*/ && StringUtils.containsChar(cs, c))
 			{
 				return new Bounds(i, i);
 			}
+			
+			i += direction;
 		}
 		
-		return new Bounds(-1, -1);
+		return Bounds.EMPTY;
 	}
 	
 	/**
