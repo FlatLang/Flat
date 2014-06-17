@@ -2,8 +2,10 @@ package net.fathomsoft.nova.tree.variables;
 
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.tree.BinaryOperatorNode;
+import net.fathomsoft.nova.tree.IdentifierNode;
 import net.fathomsoft.nova.tree.LiteralNode;
 import net.fathomsoft.nova.tree.PriorityNode;
+import net.fathomsoft.nova.tree.SyntaxTree;
 import net.fathomsoft.nova.tree.TreeNode;
 import net.fathomsoft.nova.util.Bounds;
 import net.fathomsoft.nova.util.Location;
@@ -26,7 +28,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Mar 16, 2014 at 1:13:49 AM
- * @version	v0.2.12 Jun 1, 2014 at 7:28:35 PM
+ * @version	v0.2.13 Jun 17, 2014 at 8:45:35 AM
  */
 public class ArrayNode extends VariableNode
 {
@@ -36,6 +38,19 @@ public class ArrayNode extends VariableNode
 	public ArrayNode(TreeNode temporaryParent, Location locationIn)
 	{
 		super(temporaryParent, locationIn);
+	}
+	
+	/**
+	 * @see net.fathomsoft.nova.tree.ValueNode#getAccessedNode()
+	 */
+	public IdentifierNode getAccessedNode()
+	{
+		if (getNumChildren() <= 1)
+		{
+			return null;
+		}
+		
+		return (IdentifierNode)getChild(1);
 	}
 	
 	/**
@@ -66,7 +81,7 @@ public class ArrayNode extends VariableNode
 		
 		builder.append(')');
 		
-		builder.append("malloc(sizeof(").append(getName()).append(')').append(" * (");
+		builder.append("NOVA_MALLOC(sizeof(").append(getName()).append(')').append(" * (");
 		
 		for (int i = 0; i < getNumChildren(); i++)
 		{
@@ -160,7 +175,7 @@ public class ArrayNode extends VariableNode
 				}
 				else
 				{
-					TreeNode node = TreeNode.getExistingNode(parent, length);
+					TreeNode node = SyntaxTree.getExistingNode(parent, length);
 					
 					if (node == null)
 					{
@@ -195,7 +210,7 @@ public class ArrayNode extends VariableNode
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.TreeNode#clone(TreeNode)
+	 * @see net.fathomsoft.nova.tree.TreeNode#clone(TreeNode, Location)
 	 */
 	@Override
 	public ArrayNode clone(TreeNode temporaryParent, Location locationIn)
