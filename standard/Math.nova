@@ -13,6 +13,14 @@ public class Math
 	external double atan(double number);
 	external long floor(double number);
 	external long ceil(double number);
+	external long rand();
+	
+	visible static double PI = 3.141592653;
+	
+	public static int random(long range)
+	{
+		return rand() % range;
+	}
 	
 	public static double abs(double number)
 	{
