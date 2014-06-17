@@ -2,7 +2,6 @@ package net.fathomsoft.nova.error;
 
 import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.tree.FileNode;
-import net.fathomsoft.nova.tree.MethodCallNode;
 import net.fathomsoft.nova.tree.TreeNode;
 import net.fathomsoft.nova.util.Location;
 

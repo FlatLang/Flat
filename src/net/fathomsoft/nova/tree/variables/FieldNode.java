@@ -3,7 +3,6 @@ package net.fathomsoft.nova.tree.variables;
 import net.fathomsoft.nova.tree.InstanceDeclarationNode;
 import net.fathomsoft.nova.tree.LocalDeclarationNode;
 import net.fathomsoft.nova.tree.TreeNode;
-import net.fathomsoft.nova.tree.TreeNode.ExtraData;
 import net.fathomsoft.nova.util.Bounds;
 import net.fathomsoft.nova.util.Location;
 import net.fathomsoft.nova.util.Patterns;

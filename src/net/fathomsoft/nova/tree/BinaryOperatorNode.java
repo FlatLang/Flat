@@ -1,10 +1,8 @@
 package net.fathomsoft.nova.tree;
 
-import java.io.ObjectInputStream.GetField;
 import java.util.regex.Matcher;
 
 import net.fathomsoft.nova.Nova;
-import net.fathomsoft.nova.Test;
 import net.fathomsoft.nova.error.SyntaxErrorException;
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.tree.exceptionhandling.ThrowNode;

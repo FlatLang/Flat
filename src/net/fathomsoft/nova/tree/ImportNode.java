@@ -1,7 +1,5 @@
 package net.fathomsoft.nova.tree;
 
-import java.io.ObjectInputStream.GetField;
-
 import net.fathomsoft.nova.error.SyntaxErrorException;
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.util.Location;

@@ -3,7 +3,6 @@ package net.fathomsoft.nova.tree;
 import java.io.File;
 
 import net.fathomsoft.nova.Nova;
-import net.fathomsoft.nova.error.SyntaxErrorException;
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.util.FileUtils;
 import net.fathomsoft.nova.util.Location;

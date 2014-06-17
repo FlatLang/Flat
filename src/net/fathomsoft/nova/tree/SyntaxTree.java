@@ -3,7 +3,6 @@ package net.fathomsoft.nova.tree;
 import java.io.File;
 import java.io.IOException;
 import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.error.SyntaxErrorException;

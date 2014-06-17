@@ -1,7 +1,6 @@
 package net.fathomsoft.nova.tree.variables;
 
 import net.fathomsoft.nova.error.SyntaxMessage;
-import net.fathomsoft.nova.tree.BinaryOperatorNode;
 import net.fathomsoft.nova.tree.ClassNode;
 import net.fathomsoft.nova.tree.DimensionsNode;
 import net.fathomsoft.nova.tree.IdentifierNode;

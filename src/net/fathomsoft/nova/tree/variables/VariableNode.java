@@ -1,24 +1,14 @@
 package net.fathomsoft.nova.tree.variables;
 
 import net.fathomsoft.nova.Nova;
-import net.fathomsoft.nova.error.SyntaxMessage;
-import net.fathomsoft.nova.tree.ArgumentListNode;
-import net.fathomsoft.nova.tree.AssignmentNode;
-import net.fathomsoft.nova.tree.BinaryOperatorNode;
 import net.fathomsoft.nova.tree.ClassNode;
 import net.fathomsoft.nova.tree.IdentifierNode;
 import net.fathomsoft.nova.tree.InstanceDeclarationNode;
 import net.fathomsoft.nova.tree.LocalDeclarationNode;
-import net.fathomsoft.nova.tree.MethodCallNode;
 import net.fathomsoft.nova.tree.MethodNode;
-import net.fathomsoft.nova.tree.ParameterNode;
-import net.fathomsoft.nova.tree.PriorityNode;
 import net.fathomsoft.nova.tree.ProgramNode;
-import net.fathomsoft.nova.tree.ReturnNode;
-import net.fathomsoft.nova.tree.ScopeNode;
 import net.fathomsoft.nova.tree.SyntaxTree;
 import net.fathomsoft.nova.tree.TreeNode;
-import net.fathomsoft.nova.tree.UnaryOperatorNode;
 import net.fathomsoft.nova.tree.ValueNode;
 import net.fathomsoft.nova.tree.exceptionhandling.ExceptionNode;
 import net.fathomsoft.nova.util.Location;

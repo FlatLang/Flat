@@ -9,15 +9,11 @@ import java.util.List;
 
 import net.fathomsoft.nova.error.SyntaxErrorException;
 import net.fathomsoft.nova.error.SyntaxMessage;
-import net.fathomsoft.nova.tree.ClassNode;
 import net.fathomsoft.nova.tree.FileNode;
 import net.fathomsoft.nova.tree.IdentifierNode;
 import net.fathomsoft.nova.tree.MethodCallNode;
 import net.fathomsoft.nova.tree.MethodNode;
-import net.fathomsoft.nova.tree.ProgramNode;
 import net.fathomsoft.nova.tree.SyntaxTree;
-import net.fathomsoft.nova.tree.TreeNode;
-import net.fathomsoft.nova.tree.ValueNode;
 import net.fathomsoft.nova.tree.exceptionhandling.ExceptionNode;
 import net.fathomsoft.nova.util.Command;
 import net.fathomsoft.nova.util.CommandListener;
