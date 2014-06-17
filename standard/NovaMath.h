@@ -16,7 +16,6 @@ typedef struct Math Math;
 #include "NovaChar.h"
 #include "NovaDivideByZeroException.h"
 #include <math.h>
-#include <time.h>
 
 Math* nova_Math_Math(ExceptionData* exceptionData);
 void nova_del_Math(Math** this, ExceptionData* exceptionData);

@@ -9,12 +9,12 @@ import java.util.List;
 
 import net.fathomsoft.nova.error.SyntaxErrorException;
 import net.fathomsoft.nova.error.SyntaxMessage;
-import net.fathomsoft.nova.tree.FileNode;
-import net.fathomsoft.nova.tree.IdentifierNode;
-import net.fathomsoft.nova.tree.MethodCallNode;
-import net.fathomsoft.nova.tree.MethodNode;
+import net.fathomsoft.nova.tree.FileDeclaration;
+import net.fathomsoft.nova.tree.Identifier;
+import net.fathomsoft.nova.tree.MethodCall;
+import net.fathomsoft.nova.tree.Method;
 import net.fathomsoft.nova.tree.SyntaxTree;
-import net.fathomsoft.nova.tree.exceptionhandling.ExceptionNode;
+import net.fathomsoft.nova.tree.exceptionhandling.Exception;
 import net.fathomsoft.nova.util.Command;
 import net.fathomsoft.nova.util.CommandListener;
 import net.fathomsoft.nova.util.FileUtils;
@@ -310,7 +310,7 @@ public class Nova
 		
 		String headers[] = tree.getCHeaderOutput();
 		String sources[] = tree.getCSourceOutput();
-		FileNode files[] = tree.getFiles();
+		FileDeclaration files[] = tree.getFiles();
 		
 		if (isFlagEnabled(CSOURCE))
 		{
@@ -335,7 +335,7 @@ public class Nova
 		
 		for (int i = 0; i < files.length; i++)
 		{
-			FileNode file   = files[i];
+			FileDeclaration file   = files[i];
 			String   header = headers[i];
 			String   source = sources[i];
 			File     parent = files[i].getFile().getParentFile();
@@ -397,7 +397,7 @@ public class Nova
 	 */
 	private void insertMainMethod()
 	{
-		MethodNode mainMethod = tree.getMainMethod();
+		Method mainMethod = tree.getMainMethod();
 		
 		if (mainMethod == null)
 		{
@@ -411,7 +411,7 @@ public class Nova
 			return;
 		}
 		
-		FileNode fileNode = mainMethod.getFileNode();
+		FileDeclaration fileDeclaration = mainMethod.getFileNode();
 		
 		if (mainMethod != null)
 		{
@@ -450,11 +450,11 @@ public class Nova
 //				}
 //			}
 			
-			IdentifierNode gc = new IdentifierNode(mainMethod, mainMethod.getLocationIn());
+			Identifier gc = new Identifier(mainMethod, mainMethod.getLocationIn());
 			gc.setName("GC");
 			gc.setType("GC");
 			
-			MethodCallNode gcInit = MethodCallNode.decodeStatement(gc, "init()", mainMethod.getLocationIn(), true, false);
+			MethodCall gcInit = MethodCall.decodeStatement(gc, "init()", mainMethod.getLocationIn(), true, false);
 			
 			StringBuilder mainMethodText = new StringBuilder();
 			
@@ -469,7 +469,7 @@ public class Nova
 			mainMethodText.append("{").append('\n');
 			mainMethodText.append	("String** args;").append('\n');
 			mainMethodText.append	("int      i;").append('\n').append('\n');
-			mainMethodText.append	("ExceptionData* ").append(ExceptionNode.EXCEPTION_DATA_IDENTIFIER).append(" = 0;").append('\n');
+			mainMethodText.append	("ExceptionData* ").append(Exception.EXCEPTION_DATA_IDENTIFIER).append(" = 0;").append('\n');
 			mainMethodText.append	("srand(currentTimeMillis());").append('\n');
 			mainMethodText.append	(gcInit.generateCSource()).append('\n');
 			mainMethodText.append	("args = (String**)NOVA_MALLOC(argc * sizeof(String));").append('\n');
@@ -483,7 +483,7 @@ public class Nova
 			mainMethodText.append	('\n');
 			mainMethodText.append	("TRY").append('\n');
 			mainMethodText.append	('{').append('\n');
-			mainMethodText.append		(mainMethod.generateCSourceName()).append('(').append(ExceptionNode.EXCEPTION_DATA_IDENTIFIER).append(", args);").append('\n');
+			mainMethodText.append		(mainMethod.generateCSourceName()).append('(').append(Exception.EXCEPTION_DATA_IDENTIFIER).append(", args);").append('\n');
 			mainMethodText.append	('}').append('\n');
 			mainMethodText.append	("CATCH (1)").append('\n');
 			mainMethodText.append	('{').append('\n');
@@ -501,11 +501,11 @@ public class Nova
 			mainMethodText.append	("return 0;").append('\n');
 			mainMethodText.append("}");
 			
-			String newSource = fileNode.generateCSource() + mainMethodText.toString();
+			String newSource = fileDeclaration.generateCSource() + mainMethodText.toString();
 			
 			newSource = SyntaxUtils.formatText(newSource);
 			
-			fileNode.setSource(newSource);
+			fileDeclaration.setSource(newSource);
 		}
 	}
 	

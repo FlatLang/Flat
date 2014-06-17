@@ -1,31 +1,31 @@
 package net.fathomsoft.nova.tree.exceptionhandling;
 
-import net.fathomsoft.nova.tree.TreeNode;
+import net.fathomsoft.nova.tree.Node;
 import net.fathomsoft.nova.util.Location;
 import net.fathomsoft.nova.util.Patterns;
 import net.fathomsoft.nova.util.Regex;
 
 /**
  * ExceptionHandlingNode extension that represents the declaration of a
- * finally node type. See {@link #decodeStatement(TreeNode, String, Location, boolean, boolean)}
+ * finally node type. See {@link #decodeStatement(Node, String, Location, boolean, boolean)}
  * for more details on what correct inputs look like.
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Mar 22, 2014 at 4:02:21 PM
  * @version	v0.2.13 Jun 17, 2014 at 8:45:35 AM
  */
-public class FinallyNode extends ExceptionHandlingNode
+public class FinallyNode extends ExceptionHandler
 {
 	/**
-	 * @see net.fathomsoft.nova.tree.TreeNode#TreeNode(TreeNode, Location)
+	 * @see net.fathomsoft.nova.tree.Node#TreeNode(Node, Location)
 	 */
-	public FinallyNode(TreeNode temporaryParent, Location locationIn)
+	public FinallyNode(Node temporaryParent, Location locationIn)
 	{
 		super(temporaryParent, locationIn);
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.TreeNode#generateCSource()
+	 * @see net.fathomsoft.nova.tree.Node#generateCSource()
 	 */
 	@Override
 	public String generateCSource()
@@ -37,7 +37,7 @@ public class FinallyNode extends ExceptionHandlingNode
 		
 		for (int i = 0; i < getNumChildren(); i++)
 		{
-			TreeNode child = getChild(i);
+			Node child = getChild(i);
 			
 			builder.append(child.generateCSource());
 		}
@@ -64,7 +64,7 @@ public class FinallyNode extends ExceptionHandlingNode
 	 * @return The generated node, if it was possible to translated it
 	 * 		into a FinallyNode.
 	 */
-	public static FinallyNode decodeStatement(TreeNode parent, String statement, Location location, boolean require, boolean scope)
+	public static FinallyNode decodeStatement(Node parent, String statement, Location location, boolean require, boolean scope)
 	{
 		if (Regex.matches(statement, 0, Patterns.FINALLY))
 		{
@@ -77,10 +77,10 @@ public class FinallyNode extends ExceptionHandlingNode
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.TreeNode#clone(TreeNode, Location)
+	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location)
 	 */
 	@Override
-	public FinallyNode clone(TreeNode temporaryParent, Location locationIn)
+	public FinallyNode clone(Node temporaryParent, Location locationIn)
 	{
 		FinallyNode node = new FinallyNode(temporaryParent, locationIn);
 		

@@ -1,8 +1,8 @@
 package net.fathomsoft.nova.error;
 
 import net.fathomsoft.nova.Nova;
-import net.fathomsoft.nova.tree.FileNode;
-import net.fathomsoft.nova.tree.TreeNode;
+import net.fathomsoft.nova.tree.FileDeclaration;
+import net.fathomsoft.nova.tree.Node;
 import net.fathomsoft.nova.util.Location;
 
 /**
@@ -15,9 +15,9 @@ import net.fathomsoft.nova.util.Location;
  */
 public class Message
 {
-	private TreeNode    node;
+	private Node    node;
 	
-	private FileNode	file;
+	private FileDeclaration	file;
 	
 	private Location	location;
 	
@@ -46,7 +46,7 @@ public class Message
 	 * @param message The message that describes what happened.
 	 * @param node The node that the message is talking about.
 	 */
-	public Message(String message, TreeNode node, Location location)
+	public Message(String message, Node node, Location location)
 	{
 		this.file       = node.getFileNode();
 		this.node       = node;

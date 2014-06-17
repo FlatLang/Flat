@@ -3,21 +3,21 @@ package net.fathomsoft.nova.util;
 import java.util.regex.Matcher;
 
 import net.fathomsoft.nova.error.SyntaxMessage;
-import net.fathomsoft.nova.tree.ClassNode;
-import net.fathomsoft.nova.tree.FileNode;
-import net.fathomsoft.nova.tree.InstanceDeclarationNode;
-import net.fathomsoft.nova.tree.InstantiationNode;
-import net.fathomsoft.nova.tree.LiteralNode;
-import net.fathomsoft.nova.tree.MethodCallNode;
-import net.fathomsoft.nova.tree.MethodNode;
-import net.fathomsoft.nova.tree.OperatorNode;
-import net.fathomsoft.nova.tree.ParameterListNode;
-import net.fathomsoft.nova.tree.ParameterNode;
-import net.fathomsoft.nova.tree.ReturnNode;
-import net.fathomsoft.nova.tree.TreeNode;
-import net.fathomsoft.nova.tree.ValueNode;
-import net.fathomsoft.nova.tree.variables.FieldNode;
-import net.fathomsoft.nova.tree.variables.VariableNode;
+import net.fathomsoft.nova.tree.ClassDeclaration;
+import net.fathomsoft.nova.tree.FileDeclaration;
+import net.fathomsoft.nova.tree.InstanceDeclaration;
+import net.fathomsoft.nova.tree.Instantiation;
+import net.fathomsoft.nova.tree.Literal;
+import net.fathomsoft.nova.tree.MethodCall;
+import net.fathomsoft.nova.tree.Method;
+import net.fathomsoft.nova.tree.Operator;
+import net.fathomsoft.nova.tree.ParameterList;
+import net.fathomsoft.nova.tree.Parameter;
+import net.fathomsoft.nova.tree.Return;
+import net.fathomsoft.nova.tree.Node;
+import net.fathomsoft.nova.tree.Value;
+import net.fathomsoft.nova.tree.variables.Field;
+import net.fathomsoft.nova.tree.variables.Variable;
 
 /**
  * Class used for getting information about the Syntax of Nova.
@@ -134,17 +134,17 @@ public class SyntaxUtils
 	 * @return Whether or not the given node is a String literal,
 	 * 		or variable.
 	 */
-	public static boolean isString(TreeNode node)
+	public static boolean isString(Node node)
 	{
-		if (node instanceof LiteralNode)
+		if (node instanceof Literal)
 		{
-			LiteralNode literal = (LiteralNode)node;
+			Literal literal = (Literal)node;
 			
 			return isStringLiteral(literal.getValue());
 		}
-		else if (node instanceof ValueNode)
+		else if (node instanceof Value)
 		{
-			ValueNode value = (ValueNode)node;
+			Value value = (Value)node;
 			
 			value = value.getReturnedNode();
 			
@@ -736,15 +736,15 @@ public class SyntaxUtils
 	 * @param method The MethodNode instance to validate.
 	 * @return Whether or not the given MethodNode is a valid main method.
 	 */
-	public static boolean isMainMethod(MethodNode method)
+	public static boolean isMainMethod(Method method)
 	{
-		if (method.getName().equals("main") && method.isStatic() && method.getType().equals("void") && method.getVisibility() == FieldNode.PUBLIC)
+		if (method.getName().equals("main") && method.isStatic() && method.getType().equals("void") && method.getVisibility() == Field.PUBLIC)
 		{
-			ParameterListNode params = (ParameterListNode)method.getParameterListNode();
+			ParameterList params = (ParameterList)method.getParameterListNode();
 			
 			if (params.getNumChildren() == 2)
 			{
-				ParameterNode param = (ParameterNode)params.getChild(1);
+				Parameter param = (Parameter)params.getChild(1);
 				
 				if (param.getType().equals("String") && param.isArray())
 				{
@@ -759,7 +759,7 @@ public class SyntaxUtils
 	/**
 	 * Get whether or not the given statement is an instantiation. For
 	 * more details on what an instantiation consists of see
-	 * {@link net.fathomsoft.nova.tree.InstantiationNode#decodeStatement(TreeNode, String, Location, boolean, boolean)}.
+	 * {@link net.fathomsoft.nova.tree.Instantiation#decodeStatement(Node, String, Location, boolean, boolean)}.
 	 * 
 	 * @param statement The statement to test.
 	 * @return Whether or not the given statement is an instantiation.
@@ -780,7 +780,7 @@ public class SyntaxUtils
 	 * @return Whether or not the given DeclarationNode is able to be
 	 * 		accessed from the given ClassNode context.
 	 */
-	private static boolean isAccessibleFrom(ClassNode accessedFrom, InstanceDeclarationNode declaration)
+	private static boolean isAccessibleFrom(ClassDeclaration accessedFrom, InstanceDeclaration declaration)
 	{
 		if (accessedFrom.isAncestorOf(declaration))
 		{
@@ -789,7 +789,7 @@ public class SyntaxUtils
 		
 		int visibility = declaration.getVisibility();
 		
-		return visibility == InstanceDeclarationNode.PUBLIC || visibility == FieldNode.VISIBLE;
+		return visibility == InstanceDeclaration.PUBLIC || visibility == Field.VISIBLE;
 	}
 	
 	/**
@@ -803,7 +803,7 @@ public class SyntaxUtils
 	 * 		accessed.
 	 * @return The ClassNode that contains the accessed identifier.
 	 */
-	public static ClassNode getClassType(ClassNode reference, String identifierAccess)
+	public static ClassDeclaration getClassType(ClassDeclaration reference, String identifierAccess)
 	{
 		if (!isValidIdentifierAccess(identifierAccess))
 		{
@@ -813,7 +813,7 @@ public class SyntaxUtils
 		String values[] = identifierAccess.split("\\s*\\.\\s*");
 		String output[] = new String[values.length - 1];
 		
-		FileNode file = reference.getFileNode();
+		FileDeclaration file = reference.getFileNode();
 		
 		if (file.isExternalImport(values[0]))
 		{
@@ -834,7 +834,7 @@ public class SyntaxUtils
 	 * 		identifier that is being accessed.
 	 * @return The ClassNode that contains the accessed identifier.
 	 */
-	private static ClassNode getClassType(ClassNode reference, String identifiers[])
+	private static ClassDeclaration getClassType(ClassDeclaration reference, String identifiers[])
 	{
 		if (identifiers.length < 2)
 		{
@@ -843,20 +843,20 @@ public class SyntaxUtils
 		
 		String identifier = identifiers[0];
 		
-		ClassNode current = null;
+		ClassDeclaration current = null;
 		
 		if (!identifier.equals("this"))
 		{
 			identifier = getIdentifierName(identifier);
 			
-			FileNode f = (FileNode)reference.getAncestorOfType(FileNode.class);
+			FileDeclaration f = (FileDeclaration)reference.getAncestorOfType(FileDeclaration.class);
 			
 			if (f.getImportListNode().containsImport(identifier))
 			{
 				return f.getProgramNode().getClassNode(identifier);
 			}
 			
-			InstanceDeclarationNode dec = reference.getDeclaration(identifier);
+			InstanceDeclaration dec = reference.getDeclaration(identifier);
 			
 			if (!isAccessibleFrom(reference, dec))
 			{
@@ -975,12 +975,12 @@ public class SyntaxUtils
 	 * @return Whether or not the declaration is accessible from the
 	 * 		given accessor context.
 	 */
-	public static boolean isVisible(VariableNode accessor, InstanceDeclarationNode declaration)
+	public static boolean isVisible(Variable accessor, InstanceDeclaration declaration)
 	{
-		if (declaration.getVisibility() == InstanceDeclarationNode.PRIVATE)
+		if (declaration.getVisibility() == InstanceDeclaration.PRIVATE)
 		{
-			ClassNode clazz1 = accessor.getClassNode();
-			ClassNode clazz2 = declaration.getDeclaringClassNode();
+			ClassDeclaration clazz1 = accessor.getClassNode();
+			ClassDeclaration clazz2 = declaration.getDeclaringClassNode();
 			
 			if (clazz1.isAncestorOf(clazz2, true) || clazz2.isAncestorOf(clazz1))
 			{
@@ -1003,11 +1003,11 @@ public class SyntaxUtils
 	 * 		class. If the given value is not primitive, then null is
 	 * 		returned.
 	 */
-	public static InstantiationNode autoboxPrimitive(ValueNode primitive)
+	public static Instantiation autoboxPrimitive(Value primitive)
 	{
-		InstantiationNode node = null;
+		Instantiation node = null;
 		
-		ValueNode returned = primitive.getReturnedNode();
+		Value returned = primitive.getReturnedNode();
 		
 		if (returned.isPrimitiveType())
 		{
@@ -1015,7 +1015,7 @@ public class SyntaxUtils
 			
 			String instantiation = "new " + className + '(' + primitive.generateNovaInput() + ')';
 			
-			node = InstantiationNode.decodeStatement(primitive.getParent(), instantiation, primitive.getLocationIn(), true, false);
+			node = Instantiation.decodeStatement(primitive.getParent(), instantiation, primitive.getLocationIn(), true, false);
 		}
 		
 		return node;
@@ -1036,7 +1036,7 @@ public class SyntaxUtils
 	 * @param type The type to be tested.
 	 * @return Whether or not the given type is valid.
 	 */
-	public static boolean isValidType(ValueNode value, String type)
+	public static boolean isValidType(Value value, String type)
 	{
 		if (type == null)
 		{
@@ -1047,40 +1047,40 @@ public class SyntaxUtils
 		{
 			return true;
 		}
-		if (value instanceof LiteralNode)
+		if (value instanceof Literal)
 		{
 			return true;
 		}
-		if (value instanceof OperatorNode)
+		if (value instanceof Operator)
 		{
 			return true;
 		}
-		if (value instanceof ClassNode)
+		if (value instanceof ClassDeclaration)
 		{
 			return true;
 		}
-		else if (value instanceof ReturnNode)
+		else if (value instanceof Return)
 		{
-			value = (MethodNode)value.getAncestorOfType(MethodNode.class);
+			value = (Method)value.getAncestorOfType(Method.class);
 		}
-		else if (value instanceof MethodCallNode)
+		else if (value instanceof MethodCall)
 		{
-			MethodCallNode call = (MethodCallNode)value;
+			MethodCall call = (MethodCall)value;
 			
 			value = call.getMethodDeclarationNode();
 		}
-		if (value instanceof MethodNode)
+		if (value instanceof Method)
 		{
-			MethodNode method = (MethodNode)value;
+			Method method = (Method)value;
 			
 			if (method.isExternalType() || method.isExternal())
 			{
 				return true;
 			}
 		}
-		else if (value instanceof VariableNode)
+		else if (value instanceof Variable)
 		{
-			VariableNode var = (VariableNode)value;
+			Variable var = (Variable)value;
 			
 			if (var.isExternal())
 			{
@@ -1094,7 +1094,7 @@ public class SyntaxUtils
 		}
 		else
 		{
-			ClassNode clazz = value.getProgramNode().getClassNode(type);
+			ClassDeclaration clazz = value.getProgramNode().getClassNode(type);
 			
 			if (clazz != null)
 			{
@@ -1114,17 +1114,17 @@ public class SyntaxUtils
 	 * @return The ClassNode instance that the two ValueNodes have in
 	 * 		common. If they have nothing in common, null is returned.
 	 */
-	public static ClassNode getTypeInCommon(ValueNode value1, ValueNode value2)
+	public static ClassDeclaration getTypeInCommon(Value value1, Value value2)
 	{
-		ClassNode type1 = value1.getTypeClass();
-		ClassNode type2 = value2.getTypeClass();
+		ClassDeclaration type1 = value1.getTypeClass();
+		ClassDeclaration type2 = value2.getTypeClass();
 		
 		if (type1 == null || type2 == null)
 		{
 			return null;
 		}
 		
-		ClassNode type3 = type2;
+		ClassDeclaration type3 = type2;
 		
 		while (type2 != null)
 		{
