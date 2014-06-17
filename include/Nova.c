@@ -1,10 +1,5 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <stdint.h>
-#include <sys/timeb.h>
-#include "Fathom.h"
- 
+#include "precompiled.h"
+#include "Nova.h"
 /**
  * Similar to fgets(), but handles automatic reallocation of the buffer.
  * Only parameter is the input stream.
@@ -13,7 +8,7 @@
 char* ufgets(FILE* stream)
 {
     unsigned int maxlen = 128, size = 128;
-    char* buffer = (char*)malloc(maxlen);
+    char* buffer = (char*)NOVA_MALLOC(maxlen);
     
     if(buffer != NULL) /* NULL if malloc() fails */
     {
@@ -28,7 +23,7 @@ char* ufgets(FILE* stream)
             if(pos == size) /* Next character to be inserted needs more memory */
             {
                 size = pos + maxlen;
-                buffer = (char*)realloc(buffer, size);
+                buffer = (char*)NOVA_REALLOC(buffer, size);
             }
         }
         
@@ -68,7 +63,7 @@ void arrayCopy(void* dest, int dIndex, const void* src, int sIndex, int len, int
 			memcpy(tmp, &udest[dIndex], (destLen-dIndex));
 			memcpy(&udest[dIndex], &usrc[sIndex], len);
 			memcpy(&udest[dIndex+len], tmp, (destLen-dIndex));
-			free(tmp);
+			NOVA_FREE(tmp);
 		}
 		else if (sIndex > dIndex)
 		{

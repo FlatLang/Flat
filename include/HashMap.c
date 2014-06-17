@@ -1,4 +1,4 @@
-#include "hashmap.h"
+#include "HashMap.h"
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -69,7 +69,7 @@ static void rehash(hashmap* hm)
 		if (table[size].flags == ACTIVE)
 			hashmapInsert(hm, table[size].data, table[size].key);
 
-	free(table);
+	NOVA_FREE(table);
 }
 
 hashmap* hashmapCreate(int startsize)
@@ -195,6 +195,6 @@ long hashmapCount(hashmap* hash)
 
 void hashmapDelete(hashmap* hash)
 {
-	free(hash->table);
-	free(hash);
+	NOVA_FREE(hash->table);
+	NOVA_FREE(hash);
 }

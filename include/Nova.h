@@ -1,21 +1,7 @@
-#ifndef FATHOM_H
-#define FATHOM_H
+#ifndef NOVA_NOVA
+#define NOVA_NOVA
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <stddef.h>
-
-#define GC_THREADS
-
-#ifdef WIN32
-#	define unsigned_long_long unsigned __int64
-#	define long_long __int64
-#else
-#	define unsigned_long_long unsigned long long
-#	define long_long long long
-#endif
-
-extern char* ufgets(FILE* stream);
+#include "precompiled.h"
 
 /**
  * @dest Destination array
@@ -27,6 +13,8 @@ extern char* ufgets(FILE* stream);
  * @size The size of the type of the array (ex: if the array of type long, put in this parameter sizeof(long))
  */
 void arrayCopy(void* dest, int dIndex, const void* src, int sIndex, int len, int destArrLen, size_t size);
+
+char* ufgets(FILE* stream);
 
 long_long currentTimeMillis();
 

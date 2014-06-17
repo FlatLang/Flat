@@ -1,6 +1,8 @@
 #ifndef HASHMAP_H_INCLUDED
 #define HASHMAP_H_INCLUDED
 
+#include <CClass.h>
+
 /** Hashmap structure (forward declaration) */
 struct s_hashmap;
 typedef struct s_hashmap hashmap;
