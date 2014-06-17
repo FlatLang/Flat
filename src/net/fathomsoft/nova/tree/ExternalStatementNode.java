@@ -10,7 +10,7 @@ import net.fathomsoft.nova.util.StringUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.2.1 Apr 27, 2014 at 11:14:20 PM
- * @version	v0.2.11 May 31, 2014 at 1:19:11 PM
+ * @version	v0.2.13 Jun 17, 2014 at 8:45:35 AM
  */
 public class ExternalStatementNode extends TreeNode
 {
@@ -112,7 +112,7 @@ public class ExternalStatementNode extends TreeNode
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.TreeNode#clone(TreeNode)
+	 * @see net.fathomsoft.nova.tree.TreeNode#clone(TreeNode, Location)
 	 */
 	@Override
 	public ExternalStatementNode clone(TreeNode temporaryParent, Location locationIn)
