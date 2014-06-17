@@ -10,7 +10,7 @@ import net.fathomsoft.nova.util.Location;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:28:12 PM
- * @version	v0.2.1 Apr 24, 2014 at 4:47:12 PM
+ * @version	v0.2.13 Jun 17, 2014 at 8:45:35 AM
  */
 public class SyntaxMessage
 {
@@ -67,6 +67,32 @@ public class SyntaxMessage
 	 * 
 	 * @param message The message describing the error.
 	 * @param node The node that the error occurred from.
+	 * @param throwException Whether or not to throw a
+	 * 		SyntaxErrorException.
+	 */
+	public static void error(String message, TreeNode node, boolean throwException)
+	{
+		error(message, node, null, throwException);
+	}
+	
+	/**
+	 * Output a warning message from the compiler.
+	 * 
+	 * @param message The message describing the warning.
+	 * @param node The node that the warning occurred from.
+	 * @param throwException Whether or not to throw a
+	 * 		SyntaxErrorException.
+	 */
+	public static void warning(String message, TreeNode node, boolean throwException)
+	{
+		warning(message, node, null, throwException);
+	}
+	
+	/**
+	 * Output an error message from the compiler.
+	 * 
+	 * @param message The message describing the error.
+	 * @param node The node that the error occurred from.
 	 * @param location The location that the error occurred at.
 	 */
 	public static void error(String message, TreeNode node, Location location)
@@ -88,5 +114,37 @@ public class SyntaxMessage
 		Message warning = new Message(message, node, location);
 		
 		warning.outputMessage(Message.WARNING);
+	}
+	
+	/**
+	 * Output an error message from the compiler.
+	 * 
+	 * @param message The message describing the error.
+	 * @param node The node that the error occurred from.
+	 * @param location The location that the error occurred at.
+	 * @param throwException Whether or not to throw a
+	 * 		SyntaxErrorException.
+	 */
+	public static void error(String message, TreeNode node, Location location, boolean throwException)
+	{
+		Message error = new Message(message, node, location);
+		
+		error.outputMessage(Message.ERROR, throwException);
+	}
+	
+	/**
+	 * Output a warning message from the compiler.
+	 * 
+	 * @param message The message describing the warning.
+	 * @param node The node that the warning occurred from.
+	 * @param location The location that the warning occurred at.
+	 * @param throwException Whether or not to throw a
+	 * 		SyntaxErrorException.
+	 */
+	public static void warning(String message, TreeNode node, Location location, boolean throwException)
+	{
+		Message warning = new Message(message, node, location);
+		
+		warning.outputMessage(Message.WARNING, throwException);
 	}
 }
