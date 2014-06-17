@@ -7,12 +7,12 @@ import net.fathomsoft.nova.util.Regex;
 
 /**
  * ValueNode extension that represents a return statement node type.
- * See {@link #decodeStatement(TreeNode, String, Location)} for more
+ * See {@link #decodeStatement(TreeNode, String, Location, boolean, boolean)} for more
  * details on what correct inputs look like.
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:58:29 PM
- * @version	v0.2.11 May 31, 2014 at 1:19:11 PM
+ * @version	v0.2.13 Jun 17, 2014 at 8:45:35 AM
  */
 public class ReturnNode extends ValueNode
 {
@@ -23,27 +23,36 @@ public class ReturnNode extends ValueNode
 	{
 		super(temporaryParent, locationIn);
 	}
-
+	
 	/**
 	 * @see net.fathomsoft.nova.tree.TreeNode#generateJavaSource()
 	 */
 	@Override
 	public String generateJavaSource()
 	{
-		StringBuilder builder = new StringBuilder();
+		String str = "return";
 		
-		builder.append("return ");
+		ValueNode value = getReturnedNode();
 		
-		for (int i = 0; i < getNumChildren(); i++)
+		if (value != null)
 		{
-			TreeNode child = getChild(i);
-			
-			builder.append(child.generateJavaSource());
+			str += " " + value.generateJavaSource();
 		}
 		
-		builder.append(';').append('\n');
+		return str;
+	}
+	
+	/**
+	 * @see net.fathomsoft.nova.tree.ValueNode#getReturnedNode()
+	 */
+	public ValueNode getReturnedNode()
+	{
+		if (getNumChildren() <= 0)
+		{
+			return null;
+		}
 		
-		return builder.toString();
+		return (ValueNode)getChild(0);
 	}
 
 	/**
@@ -52,12 +61,7 @@ public class ReturnNode extends ValueNode
 	@Override
 	public String generateCSource()
 	{
-		StringBuilder builder = new StringBuilder();
-		
-		builder.append(generateCSourceFragment());
-		builder.append(';').append('\n');
-		
-		return builder.toString();
+		return generateCSourceFragment() + ";\n";
 	}
 	
 	/**
@@ -66,23 +70,16 @@ public class ReturnNode extends ValueNode
 	@Override
 	public String generateCSourceFragment()
 	{
-		StringBuilder builder = new StringBuilder();
+		String str = "return";
 		
-		builder.append("return");
+		ValueNode value = getReturnedNode();
 		
-		if (getNumChildren() > 0)
+		if (value != null)
 		{
-			builder.append(' ');
+			str += " " + value.generateCSourceFragment();
 		}
 		
-		for (int i = 0; i < getNumChildren(); i++)
-		{
-			TreeNode child = getChild(i);
-			
-			builder.append(child.generateCSourceFragment());
-		}
-		
-		return builder.toString();
+		return str;
 	}
 	
 	/**
@@ -90,7 +87,16 @@ public class ReturnNode extends ValueNode
 	 */
 	public String generateNovaInput(boolean outputChildren)
 	{
-		return "return " + getChild(0).generateNovaInput(outputChildren);
+		String str = "return";
+		
+		ValueNode value = getReturnedNode();
+		
+		if (value != null)
+		{
+			str += " " + value.generateNovaInput(outputChildren);
+		}
+		
+		return str;
 	}
 	
 	/**
@@ -130,27 +136,34 @@ public class ReturnNode extends ValueNode
 			Location newLoc = new Location(location);
 			newLoc.setBounds(location.getStart() + returnStartIndex, location.getStart() + statement.length());
 			
+			MethodNode parentMethod = (MethodNode)parent.getAncestorOfType(MethodNode.class);
+				
 			if (returnStartIndex >= 0)
 			{
 				statement = statement.substring(returnStartIndex);
 				
-				TreeNode child = TreeNode.decodeScopeContents(n, statement, newLoc, false);
+				ValueNode child = (ValueNode)SyntaxTree.decodeScopeContents(n, statement, newLoc, false);
 				
 				if (child == null)
 				{
 					SyntaxMessage.error("Could not decode return statement '" + statement + "'", n, newLoc);
 				}
 				
+//				if (parentMethod.getType().equals(child.getType()))
+//				{
+//					SyntaxMessage.error("Method '" + parentMethod.getName() + "' must return a type of '" + parentMethod.getType() + "'", n, newLoc);
+//				}
+				
 				n.addChild(child);
 			}
-			else
+			else if (parentMethod.getType() != null)
 			{
-				MethodNode parentMethod = (MethodNode)parent.getAncestorOfType(MethodNode.class);
-				
-				if (parentMethod.getType() != null)
+				if (!require)
 				{
-					SyntaxMessage.error("Method '" + parentMethod.getName() + "' must return a type of '" + parentMethod.getType() + "'", n, newLoc);
+					return null;
 				}
+				
+				SyntaxMessage.error("Method '" + parentMethod.getName() + "' must return a type of '" + parentMethod.getType() + "'", n, newLoc);
 			}
 			
 			return n;
@@ -160,7 +173,7 @@ public class ReturnNode extends ValueNode
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.TreeNode#clone(TreeNode)
+	 * @see net.fathomsoft.nova.tree.TreeNode#clone(TreeNode, Location)
 	 */
 	@Override
 	public ReturnNode clone(TreeNode temporaryParent, Location locationIn)
