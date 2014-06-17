@@ -1,7 +1,5 @@
+#include "test.h"
 #include "Thread.h"
-#include "Fathom.h"
-#include <stdio.h>
-#include <math.h>
 
 FATHOM_THREAD_FUNC func(FATHOM_THREAD_FUNC_ARG arg)
 {
@@ -13,6 +11,14 @@ FATHOM_THREAD_FUNC func(FATHOM_THREAD_FUNC_ARG arg)
 	}
 
 	return 0;
+}
+
+void waitForEnter()
+{
+	char* nova_1_c;
+	
+	nova_1_c = (char*)malloc(sizeof(char) * (2));
+	fgets(nova_1_c, 2, stdin);
 }
 
 int main()
@@ -32,6 +38,8 @@ int main()
 	end = currentTimeMillis();
 	
 	printf("Time: %llu\n", (end - start));
+
+	waitForEnter();
 	
 	return 0;
 }
