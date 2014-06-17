@@ -188,7 +188,7 @@ public class IdentifierNode extends ValueNode
 		
 		if (method != null)
 		{
-			IdentifierNode id = getObjectReferenceValue(method);
+			IdentifierNode id = getObjectReferenceNode(method);
 			
 			if (id != null)
 			{

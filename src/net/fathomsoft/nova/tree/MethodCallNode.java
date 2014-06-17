@@ -154,7 +154,7 @@ public class MethodCallNode extends IdentifierNode
 	 */
 	public ValueNode getObjectReferenceValue()
 	{
-		return getObjectReferenceValue(getMethodDeclarationNode());
+		return getObjectReferenceNode(getMethodDeclarationNode());
 	}
 	
 	/**
