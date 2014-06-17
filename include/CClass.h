@@ -9,24 +9,32 @@
 #ifndef CClass_CClass_h
 #define CClass_CClass_h
 
-#define USE_GC
-
-#ifdef GC_MALLOC
-#	ifdef USE_GC
-#		define free GC_FREE
-#		define malloc GC_MALLOC
-#	else
-#		undef GC_MALLOC
-#		define GC_MALLOC malloc
-#	endif
+#ifdef _WIN32
+#	define unsigned_long_long unsigned __int64
+#	define long_long __int64
+#else
+#	define unsigned_long_long unsigned long long
+#	define long_long long long
 #endif
 
-#include <stdlib.h>
-#include <assert.h>
+#ifdef USE_GC
+#	define GC_WIN32_THREADS
+
+#	define NOVA_FREE GC_free
+#	define NOVA_MALLOC GC_malloc
+#	define NOVA_REALLOC GC_realloc
+#	define free NOVA_FREE
+#	define malloc NOVA_MALLOC
+#	define realloc NOVA_REALLOC
+#else
+#	define NOVA_FREE free
+#	define NOVA_MALLOC malloc
+#	define NOVA_REALLOC realloc
+#endif
 
 //#define TCC
 
-#define CCLASS_NEW1(_CLASS_) (_CLASS_*)GC_MALLOC(sizeof(_CLASS_))
+#define CCLASS_NEW1(_CLASS_) (_CLASS_*)NOVA_MALLOC(sizeof(_CLASS_))
 #define CCLASS_NEW3(_CLASS_, _OBJ_, _CCLASS_PRIVATE_)\
 	_CLASS_* _OBJ_ = CCLASS_NEW1(_CLASS_);\
 	_CCLASS_PRIVATE_
@@ -64,7 +72,7 @@
 #endif
 
 
-#define CCLASS_DELETE(_OBJ_) free(_OBJ_)
+#define CCLASS_DELETE(_OBJ_) NOVA_FREE(_OBJ_)
 #define CCLASS_DEL(_OBJ_) CCLASS_DELETE(_OBJ_->prv); CCLASS_DELETE(_OBJ_)
 #define CCLASS_FUNC(_TYPE_, _NAME_, ...) _TYPE_ (*_NAME_)(__VA_ARGS__)
 
