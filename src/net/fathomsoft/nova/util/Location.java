@@ -7,7 +7,7 @@ package net.fathomsoft.nova.util;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 7, 2014 at 10:11:40 AM
- * @version	v0.2.1 Apr 24, 2014 at 4:59:59 PM
+ * @version	v0.2.13 Jun 17, 2014 at 8:45:35 AM
  */
 public class Location
 {
@@ -124,6 +124,34 @@ public class Location
 	}
 	
 	/**
+	 * Add the given amount to each of the Location's offset value.<br>
+	 * <br>
+	 * This is the same as calling the following:
+	 * <blockquote><pre>
+	 * bounds.setOffset(bounds.getOffset() + amount);</pre></blockquote>
+	 * 
+	 * @param amount The amount to add to the Location's offset.
+	 */
+	public void addOffset(int amount)
+	{
+		offset += amount;
+	}
+	
+	/**
+	 * Subtract the given amount from each of the Location's offset value.<br>
+	 * <br>
+	 * This is the same as calling the following:
+	 * <blockquote><pre>
+	 * bounds.setOffset(bounds.getOffset() - amount);</pre></blockquote>
+	 * 
+	 * @param amount The amount to subtract from the Location's offset.
+	 */
+	public void subtractOffset(int amount)
+	{
+		offset -= amount;
+	}
+	
+	/**
 	 * Get the Bounds of the Location's offset. The starting and ending
 	 * offsets.
 	 * 
@@ -148,6 +176,39 @@ public class Location
 	{
 		bounds.setStart(start);
 		bounds.setEnd(end);
+	}
+	
+	/**
+	 * Add the given amount to each of the Bounds's start and end values.<br>
+	 * <br>
+	 * This is the same as calling the following:
+	 * <blockquote><pre>
+	 * bounds.setStart(bounds.getStart() + amount);
+	 * bounds.setEnd(bounds.getEnd() + amount);</pre></blockquote>
+	 * 
+	 * @param amount The amount to add to the Bounds's values.
+	 */
+	public void addBounds(int amount)
+	{
+		bounds.setStart(bounds.getStart() + amount);
+		bounds.setEnd(bounds.getEnd() + amount);
+	}
+	
+	/**
+	 * Subtract the given amount from each of the Bounds's start and end
+	 * values.<br>
+	 * <br>
+	 * This is the same as calling the following:
+	 * <blockquote><pre>
+	 * bounds.setStart(bounds.getStart() - amount);
+	 * bounds.setEnd(bounds.getEnd() - amount);</pre></blockquote>
+	 * 
+	 * @param amount The amount to subtract from the Bounds's values.
+	 */
+	public void subtractBounds(int amount)
+	{
+		bounds.setStart(bounds.getStart() - amount);
+		bounds.setEnd(bounds.getEnd() - amount);
 	}
 	
 	/**
