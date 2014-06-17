@@ -9,12 +9,12 @@ import net.fathomsoft.nova.util.Regex;
 
 /**
  * ExceptionHandlingNode extension that represents the declaration of a
- * try node type. See {@link #decodeStatement(TreeNode, String, Location)}
+ * try node type. See {@link #decodeStatement(TreeNode, String, Location, boolean, boolean)}
  * for more details on what correct inputs look like.
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Mar 22, 2014 at 4:01:38 PM
- * @version	v0.2.11 May 31, 2014 at 1:19:11 PM
+ * @version	v0.2.13 Jun 17, 2014 at 8:45:35 AM
  */
 public class TryNode extends ExceptionHandlingNode
 {
@@ -91,6 +91,69 @@ public class TryNode extends ExceptionHandlingNode
 	}
 	
 	/**
+	 * Check for a finally node following the try statement. If one does
+	 * not exist, add a default one.
+	 * 
+	 * @param phase The phase that the node is being validated in.
+	 * @see net.fathomsoft.nova.tree.TreeNode#validate(int)
+	 */
+	@Override
+	public TreeNode validate(int phase)
+	{
+		TreeNode parent = getParent();
+		
+		FinallyNode finallyNode = null;
+		
+		for (int i = 0; i < parent.getNumChildren() && finallyNode == null; i++)
+		{
+			TreeNode child = parent.getChild(i);
+			
+			if (child == this)
+			{
+				i++;
+				
+				int     insertIndex = -1;
+				
+				while (i < parent.getNumChildren() && insertIndex == -1)
+				{
+					child = parent.getChild(i);
+					
+					// If the current child is a catch node.
+					if (child instanceof CatchNode == false)
+					{
+						// If there already is a finally node.
+						if (child instanceof FinallyNode)
+						{
+							insertIndex = -2;
+						}
+						// If there was not finally node.
+						else
+						{
+							insertIndex = i;
+						}
+					}
+					
+					i++;
+				}
+				
+				// If there does not already exist a finally node.
+				if (insertIndex != -2)
+				{
+					if (insertIndex < 0)
+					{
+						insertIndex = i;
+					}
+					
+					finallyNode = new FinallyNode(parent, null);
+					parent.addChild(insertIndex, finallyNode);
+				}
+			}
+		}
+		
+		return this;
+	}
+	
+	/**
 	 * Generate a String that adds all of the exception codes that this
 	 * try node catches to the exception data instance.
 	 * 
@@ -113,7 +176,7 @@ public class TryNode extends ExceptionHandlingNode
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.TreeNode#clone(TreeNode)
+	 * @see net.fathomsoft.nova.tree.TreeNode#clone(TreeNode, Location)
 	 */
 	@Override
 	public TryNode clone(TreeNode temporaryParent, Location locationIn)
