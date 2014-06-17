@@ -3,18 +3,19 @@ package net.fathomsoft.nova.tree.variables;
 import net.fathomsoft.nova.tree.InstanceDeclarationNode;
 import net.fathomsoft.nova.tree.LocalDeclarationNode;
 import net.fathomsoft.nova.tree.TreeNode;
+import net.fathomsoft.nova.tree.TreeNode.ExtraData;
 import net.fathomsoft.nova.util.Bounds;
 import net.fathomsoft.nova.util.Location;
 import net.fathomsoft.nova.util.Patterns;
 
 /**
  * DeclarationNode extension that represents the declaration of a field
- * node type. See {@link #decodeStatement(TreeNode, String, Location)}
+ * node type. See {@link #decodeStatement(TreeNode, String, Location, boolean, boolean)}
  * for more details on what correct inputs look like.
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:12:04 PM
- * @version	v0.2.11 May 31, 2014 at 1:19:11 PM
+ * @version	v0.2.13 Jun 17, 2014 at 8:45:35 AM
  */
 public class FieldNode extends InstanceDeclarationNode
 {
@@ -95,6 +96,11 @@ public class FieldNode extends InstanceDeclarationNode
 	@Override
 	public String generateCHeader()
 	{
+		if (isDeclaration() && isStatic() && (getVisibility() == PUBLIC || getVisibility() == VISIBLE))
+		{
+			return "extern " + generateCSource();
+		}
+		
 		return generateCSource();
 	}
 
@@ -106,40 +112,47 @@ public class FieldNode extends InstanceDeclarationNode
 	{
 		StringBuilder builder = new StringBuilder();
 		
-//		if (isStatic())
-//		{
-//			builder.append(getStaticText()).append(' ');
-//		}
-		if (isConstant())
+		if (isDeclaration())
 		{
-			builder.append(getConstantText()).append(' ');
+	//		if (isStatic())
+	//		{
+	//			builder.append(getStaticText()).append(' ');
+	//		}
+			if (isConstant())
+			{
+				builder.append(getConstantText()).append(' ');
+			}
+			
+			builder.append(generateCTypeOutput());
+			
+			if (isReference())
+			{
+				builder.append('&');
+			}
+			else if (isPointer())
+			{
+				builder.append('*');
+			}
+			if (isArray())
+			{
+				builder.append(getArrayText());
+			}
+			if (!isPrimitiveType() && !isExternalType())
+			{
+				builder.append('*');
+			}
+			
+			builder.append(' ').append(generateCSourceName());
+			
+	//		if (!isPrimitiveType())
+	//		{
+	//			builder.append(" = 0");
+	//		}
 		}
-		
-		builder.append(generateCTypeOutput());
-		
-		if (isReference())
+		else
 		{
-			builder.append('&');
+			builder.append(generateCSourceFragment());
 		}
-		else if (isPointer())
-		{
-			builder.append('*');
-		}
-		if (isArray())
-		{
-			builder.append(getArrayText());
-		}
-		if (!isPrimitiveType() && !isExternalType())
-		{
-			builder.append('*');
-		}
-		
-		builder.append(' ').append(generateCSourceName());
-		
-//		if (!isPrimitiveType())
-//		{
-//			builder.append(" = 0");
-//		}
 		
 		builder.append(';').append('\n');
 		
@@ -183,38 +196,20 @@ public class FieldNode extends InstanceDeclarationNode
 	 */
 	public static FieldNode decodeStatement(TreeNode parent, String statement, Location location, boolean require, boolean scope)
 	{
-		// The field declaration without the field specific modifiers.
-		final Bounds localDeclaration = new Bounds(-1, -1);
+		FieldNode n    = new FieldNode(parent, location);
 		
-		final String finalStatement   = statement;
+		FieldData data = new FieldData(statement);
 		
-		FieldNode n = new FieldNode(parent, location)
-		{
-			public void interactWord(String word, int wordNumber, Bounds bounds, int numWords)
-			{
-				if (!setAttribute(word, wordNumber))
-				{
-					if (localDeclaration.getStart() == -1)
-					{
-						localDeclaration.setStart(bounds.getStart());
-					}
-					else if (wordNumber == numWords - 1)
-					{
-						localDeclaration.setEnd(finalStatement.length());
-					}
-				}
-			}
-		};
+		// Find the localDeclaration bounds.
+		n.iterateWords(statement, Patterns.IDENTIFIER_BOUNDARIES, data);
 		
-		n.iterateWords(statement, Patterns.IDENTIFIER_BOUNDARIES);
-		
-		if (localDeclaration.getStart() < 0 || localDeclaration.getEnd() < 0)
+		if (data.localDeclaration.getStart() < 0 || data.localDeclaration.getEnd() < 0)
 		{
 			return null;
 		}
 		
-		String preStatement      = statement.substring(0, localDeclaration.getStart());
-		String localStatement    = statement.substring(localDeclaration.getStart(), localDeclaration.getEnd());
+		String preStatement      = statement.substring(0, data.localDeclaration.getStart());
+		String localStatement    = statement.substring(data.localDeclaration.getStart(), data.localDeclaration.getEnd());
 		
 		LocalDeclarationNode var = LocalDeclarationNode.decodeStatement(n, localStatement, new Location(location), require, scope);
 		
@@ -231,7 +226,28 @@ public class FieldNode extends InstanceDeclarationNode
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.TreeNode#clone(TreeNode)
+	 * @see net.fathomsoft.nova.tree.TreeNode#interactWord(java.lang.String, int, net.fathomsoft.nova.util.Bounds, int, java.lang.String, java.lang.String, net.fathomsoft.nova.tree.TreeNode.ExtraData)
+	 */
+	@Override
+	public void interactWord(String word, int wordNumber, Bounds bounds, int numWords, String leftDelimiter, String rightDelimiter, ExtraData extra)
+	{
+		FieldData data = (FieldData)extra;
+		
+		if (!setAttribute(word, wordNumber))
+		{
+			if (data.localDeclaration.getStart() == -1)
+			{
+				data.localDeclaration.setStart(bounds.getStart());
+			}
+			else if (wordNumber == numWords - 1)
+			{
+				data.localDeclaration.setEnd(data.statement.length());
+			}
+		}
+	}
+	
+	/**
+	 * @see net.fathomsoft.nova.tree.TreeNode#clone(TreeNode, Location)
 	 */
 	@Override
 	public FieldNode clone(TreeNode temporaryParent, Location locationIn)
@@ -253,5 +269,26 @@ public class FieldNode extends InstanceDeclarationNode
 		super.cloneTo(node);
 		
 		return node;
+	}
+	
+	/**
+	 * Implementation of the ExtraData for this class.
+	 * 
+	 * @author	Braden Steffaniak
+	 * @since	v0.2.13 Jun 11, 2014 at 8:31:46 PM
+	 * @version	v0.2.13 Jun 11, 2014 at 8:31:46 PM
+	 */
+	private static class FieldData extends ExtraData
+	{
+		private Bounds	localDeclaration;
+		
+		private String	statement;
+		
+		public FieldData(String statement)
+		{
+			this.statement = statement;
+			
+			localDeclaration = Bounds.EMPTY.clone();
+		}
 	}
 }
