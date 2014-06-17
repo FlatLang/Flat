@@ -44,7 +44,7 @@ public class LocalDeclaration extends LocalVariable
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.Node#TreeNode(Node, Location)
+	 * @see net.fathomsoft.nova.tree.Node#Node(Node, Location)
 	 */
 	public LocalDeclaration(Node temporaryParent, Location locationIn)
 	{

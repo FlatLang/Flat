@@ -6,7 +6,7 @@ import net.fathomsoft.nova.util.Regex;
 import net.fathomsoft.nova.util.StringUtils;
 
 /**
- * TreeNode extension that represents an external statement.
+ * Node extension that represents an external statement.
  * 
  * @author	Braden Steffaniak
  * @since	v0.2.1 Apr 27, 2014 at 11:14:20 PM
@@ -17,7 +17,7 @@ public class ExternalStatement extends Node
 	private String	data;
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.Node#TreeNode(Node, Location)
+	 * @see net.fathomsoft.nova.tree.Node#Node(Node, Location)
 	 */
 	public ExternalStatement(Node temporaryParent, Location locationIn)
 	{

@@ -25,7 +25,7 @@ public class Field extends InstanceDeclaration
 	public static final int	VISIBLE	= 4;
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.Node#TreeNode(Node, Location)
+	 * @see net.fathomsoft.nova.tree.Node#Node(Node, Location)
 	 */
 	public Field(Node temporaryParent, Location locationIn)
 	{

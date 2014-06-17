@@ -29,7 +29,7 @@ public class ClassDeclaration extends InstanceDeclaration
 	/**
 	 * Instantiate and initialize default values for a class node.
 	 * 
-	 * @see net.fathomsoft.nova.tree.Node#TreeNode(Node, Location)
+	 * @see net.fathomsoft.nova.tree.Node#Node(Node, Location)
 	 */
 	public ClassDeclaration(Node temporaryParent, Location locationIn)
 	{
@@ -1120,7 +1120,7 @@ public class ClassDeclaration extends InstanceDeclaration
 	 * Get whether or not the Nova class contains static data. i.e
 	 * static variables, methods, etc.
 	 * 
-	 * @param root The root TreeNode to search for the static modifier
+	 * @param root The root Node to search for the static modifier
 	 * 		from.
 	 * @return Whether or not the class contains static data.
 	 */
@@ -1214,7 +1214,7 @@ public class ClassDeclaration extends InstanceDeclaration
 	 * Get whether or not the Nova class contains a method with the
 	 * given specifications.
 	 * 
-	 * @param root The root TreeNode to search for the method from.
+	 * @param root The root Node to search for the method from.
 	 * @param methodName The name of the method to search for.
 	 * @param staticVal Whether or not the method is static.
 	 * @param type The return type of the method.

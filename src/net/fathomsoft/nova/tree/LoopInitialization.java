@@ -3,7 +3,7 @@ package net.fathomsoft.nova.tree;
 import net.fathomsoft.nova.util.Location;
 
 /**
- * TreeNode extension that represents the initialization section of the
+ * Node extension that represents the initialization section of the
  * for loop. For instance: "for (int i = 0; i < 10; i++)" the first
  * section containing "int i = 0" is the initialization section.
  * 
@@ -14,7 +14,7 @@ import net.fathomsoft.nova.util.Location;
 public class LoopInitialization extends Node
 {
 	/**
-	 * @see net.fathomsoft.nova.tree.Node#TreeNode(Node, Location)
+	 * @see net.fathomsoft.nova.tree.Node#Node(Node, Location)
 	 */
 	public LoopInitialization(Node temporaryParent, Location locationIn)
 	{

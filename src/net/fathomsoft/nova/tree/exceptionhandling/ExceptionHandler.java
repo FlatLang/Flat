@@ -5,7 +5,7 @@ import net.fathomsoft.nova.tree.Node;
 import net.fathomsoft.nova.util.Location;
 
 /**
- * TreeNode extension that represents the declaration of an exception
+ * Node extension that represents the declaration of an exception
  * handling node type. See {@link #decodeStatement(Node, String, Location, boolean, boolean)}
  * for more details on what correct inputs look like.
  * 
@@ -62,7 +62,7 @@ public class ExceptionHandler extends Node
 	{
 		ExceptionHandler node = null;
 		
-		if ((node = TryNode.decodeStatement(parent, statement, location, require, scope)) != null)
+		if ((node = Try.decodeStatement(parent, statement, location, require, scope)) != null)
 		{
 			return node;
 		}
@@ -74,7 +74,7 @@ public class ExceptionHandler extends Node
 		{
 			return node;
 		}
-		else if ((node = ThrowNode.decodeStatement(parent, statement, location, require, scope)) != null)
+		else if ((node = Throw.decodeStatement(parent, statement, location, require, scope)) != null)
 		{
 			return node;
 		}

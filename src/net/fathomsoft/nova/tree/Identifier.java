@@ -19,7 +19,7 @@ public class Identifier extends Value
 	private String	name;
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.Node#TreeNode(Node, Location)
+	 * @see net.fathomsoft.nova.tree.Node#Node(Node, Location)
 	 */
 	public Identifier(Node temporaryParent, Location locationIn)
 	{
@@ -121,7 +121,7 @@ public class Identifier extends Value
 	}
 	
 	/**
-	 * Get the TreeNode that represents the variable that contains
+	 * Get the Node that represents the variable that contains
 	 * the value. For example:<br>
 	 * <blockquote><pre>
 	 * ClassName obj = new ClassName();
@@ -131,7 +131,7 @@ public class Identifier extends Value
 	 * because the method "<code>methodName()</code>" is being called
 	 * through the "<code>data</code>" variable.
 	 * 
-	 * @return The TreeNode that represents the calling variable.
+	 * @return The Node that represents the calling variable.
 	 */
 	public Identifier getReferenceNode()
 	{
@@ -139,7 +139,7 @@ public class Identifier extends Value
 	}
 	
 	/**
-	 * Get the TreeNode that represents the value that contains
+	 * Get the Node that represents the value that contains
 	 * the value.<br>
 	 * For example:<br>
 	 * <blockquote><pre>
@@ -167,7 +167,7 @@ public class Identifier extends Value
 	 * The Identifier for the ClassNode "<code>Time</code>" is returned.
 	 * 
 	 * @param parent The parent of the Identifier.
-	 * @return The TreeNode that represents the calling Identifier.
+	 * @return The Node that represents the calling Identifier.
 	 */
 	private Identifier getReferenceNode(Node parent)
 	{

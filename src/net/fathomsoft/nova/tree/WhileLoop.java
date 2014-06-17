@@ -19,7 +19,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
 public class WhileLoop extends Loop
 {
 	/**
-	 * @see net.fathomsoft.nova.tree.Node#TreeNode(Node, Location)
+	 * @see net.fathomsoft.nova.tree.Node#Node(Node, Location)
 	 */
 	public WhileLoop(Node temporaryParent, Location locationIn)
 	{
@@ -27,11 +27,11 @@ public class WhileLoop extends Loop
 	}
 	
 	/**
-	 * Get the TreeNode that describes the condition section of the while
+	 * Get the Node that describes the condition section of the while
 	 * loop. For instance: "while (i < 10)" the contents between the
 	 * parenthesis is the condition.
 	 * 
-	 * @return The TreeNode instance that describes the condition section
+	 * @return The Node instance that describes the condition section
 	 * 		of the while loop.
 	 */
 	public Node getConditionNode()

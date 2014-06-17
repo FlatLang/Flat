@@ -7,7 +7,7 @@ import net.fathomsoft.nova.tree.Node;
 import net.fathomsoft.nova.util.Location;
 
 /**
- * TreeNode extension that contains all of the FieldNodes for a ClassNode.
+ * Node extension that contains all of the FieldNodes for a ClassNode.
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 10:00:50 PM
@@ -184,7 +184,7 @@ public class FieldList extends Node
 	}
 	
 	/**
-	 * Search the given TreeNode (which should only contain FieldNode
+	 * Search the given Node (which should only contain FieldNode
 	 * children) for a FieldNode with the given name.
 	 * 
 	 * @param fieldList The list of fields to search through.

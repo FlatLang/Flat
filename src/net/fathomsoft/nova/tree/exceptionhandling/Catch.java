@@ -20,7 +20,7 @@ import net.fathomsoft.nova.util.Regex;
 public class Catch extends ExceptionHandler
 {
 	/**
-	 * @see net.fathomsoft.nova.tree.Node#TreeNode(Node, Location)
+	 * @see net.fathomsoft.nova.tree.Node#Node(Node, Location)
 	 */
 	public Catch(Node temporaryParent, Location locationIn)
 	{
@@ -79,7 +79,7 @@ public class Catch extends ExceptionHandler
 	 * @param parent The parent node of this CatchNode.
 	 * @return The TryNode instance that this CatchNode is referring to.
 	 */
-	private TryNode getCurrentTry(Node parent)
+	private Try getCurrentTry(Node parent)
 	{
 		if (parent.containsScope())
 		{
@@ -90,9 +90,9 @@ public class Catch extends ExceptionHandler
 		{
 			Node child = parent.getChild(i);
 			
-			if (child instanceof TryNode)
+			if (child instanceof Try)
 			{
-				return (TryNode)child;
+				return (Try)child;
 			}
 			else if (child instanceof Catch == false)
 			{
@@ -153,7 +153,7 @@ public class Catch extends ExceptionHandler
 					{
 						n.addChild(exception, n);
 						
-						TryNode tryNode = n.getCurrentTry(parent);
+						Try tryNode = n.getCurrentTry(parent);
 						
 						if (tryNode == null)
 						{

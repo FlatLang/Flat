@@ -5,7 +5,7 @@ import net.fathomsoft.nova.tree.variables.Variable;
 import net.fathomsoft.nova.util.Location;
 
 /**
- * TreeNode extension that represents a list of parameters for a method.
+ * Node extension that represents a list of parameters for a method.
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:56:34 PM
@@ -36,7 +36,7 @@ public class ParameterList extends Node
 	 * Instantiate and initialize default data. Generates the
 	 * two default parameters for every method: Exception data.
 	 * 
-	 * @see net.fathomsoft.nova.tree.Node#TreeNode(Node, Location)
+	 * @see net.fathomsoft.nova.tree.Node#Node(Node, Location)
 	 */
 	public ParameterList(Node temporaryParent, Location locationIn)
 	{

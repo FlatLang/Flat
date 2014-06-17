@@ -4,7 +4,7 @@ import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.util.Location;
 
 /**
- * TreeNode extension that represents a whole Nova program. The
+ * Node extension that represents a whole Nova program. The
  * purpose of this Node is to keep track of each FileNode within
  * a compiled program and contain methods to manipulate the
  * FileNodes.
@@ -21,7 +21,7 @@ public class Program extends Node
 	 * Instantiate and initialize a ProgramNode that contains a reference
 	 * to the compiler's controller.
 	 * 
-	 * @see net.fathomsoft.nova.tree.Node#TreeNode(Node, Location)
+	 * @see net.fathomsoft.nova.tree.Node#Node(Node, Location)
 	 * 
 	 * @param controller The controller of the compiler.
 	 */
@@ -33,7 +33,7 @@ public class Program extends Node
 	}
 	
 	/**
-	 * Override addChild(TreeNode) method to make it synchronized. Needs
+	 * Override addChild(Node) method to make it synchronized. Needs
 	 * to be synchronized so that the threads dont try to write their
 	 * file nodes to the ProgramNode at the same time and end up creating
 	 * empty spaces in the tree.

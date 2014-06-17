@@ -21,7 +21,7 @@ import net.fathomsoft.nova.util.StringUtils;
 public class Destructor extends Method
 {
 	/**
-	 * @see net.fathomsoft.nova.tree.Node#TreeNode(Node, Location)
+	 * @see net.fathomsoft.nova.tree.Node#Node(Node, Location)
 	 */
 	public Destructor(Node temporaryParent, Location locationIn)
 	{

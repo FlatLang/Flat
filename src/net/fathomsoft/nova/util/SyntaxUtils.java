@@ -994,7 +994,7 @@ public class SyntaxUtils
 	}
 	
 	/**
-	 * Try to autobox the given primitive TreeNode, if it truly has a
+	 * Try to autobox the given primitive Node, if it truly has a
 	 * primitive value. If the given ValueNode does not have a primitive
 	 * type, then null is returned.
 	 * 

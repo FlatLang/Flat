@@ -425,7 +425,7 @@ public class Nova
 //			
 //			for (int i = 0; i < root.getNumChildren(); i++)
 //			{
-//				TreeNode child = root.getChild(i);
+//				Node child = root.getChild(i);
 //				
 //				if (child instanceof FileNode)
 //				{
@@ -433,7 +433,7 @@ public class Nova
 //						
 //					for (int j = 0; j < f.getNumChildren(); j++)
 //					{
-//						TreeNode child2 = f.getChild(j);
+//						Node child2 = f.getChild(j);
 //						
 //						if (child2 instanceof ClassNode)
 //						{

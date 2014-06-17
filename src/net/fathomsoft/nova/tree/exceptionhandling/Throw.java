@@ -21,7 +21,7 @@ import net.fathomsoft.nova.util.Regex;
 public class Throw extends ExceptionHandler
 {
 	/**
-	 * @see net.fathomsoft.nova.tree.Node#TreeNode(Node, Location)
+	 * @see net.fathomsoft.nova.tree.Node#Node(Node, Location)
 	 */
 	public Throw(Node temporaryParent, Location locationIn)
 	{

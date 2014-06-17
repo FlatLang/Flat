@@ -5,7 +5,7 @@ import java.util.regex.Matcher;
 import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.error.SyntaxErrorException;
 import net.fathomsoft.nova.error.SyntaxMessage;
-import net.fathomsoft.nova.tree.exceptionhandling.ThrowNode;
+import net.fathomsoft.nova.tree.exceptionhandling.Throw;
 import net.fathomsoft.nova.tree.variables.Variable;
 import net.fathomsoft.nova.util.Bounds;
 import net.fathomsoft.nova.util.Location;
@@ -14,7 +14,7 @@ import net.fathomsoft.nova.util.StringUtils;
 import net.fathomsoft.nova.util.SyntaxUtils;
  
 /**
- * TreeNode extension that represents the use of a binary operator.
+ * Node extension that represents the use of a binary operator.
  * For example: "153 + 4 / 2" represents two binary operator nodes.
  * The first node consists of the "153" as the left hand value, and
  * the binary node "4 / 2"
@@ -26,7 +26,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
 public class BinaryOperator extends Value
 {
 	/**
-	 * @see net.fathomsoft.nova.tree.Node#TreeNode(Node, Location)
+	 * @see net.fathomsoft.nova.tree.Node#Node(Node, Location)
 	 */
 	public BinaryOperator(Node temporaryParent, Location locationIn)
 	{
@@ -163,7 +163,7 @@ public class BinaryOperator extends Value
 	 * @param require Whether or not to throw an error if anything goes wrong.
 	 * @param scope Whether or not the given statement is the beginning of
 	 * 		a scope.
-	 * @return The generated TreeNode, if it was possible to translated it
+	 * @return The generated Node, if it was possible to translated it
 	 * 		into a BinaryOperatorNode.
 	 */
 	public static Value decodeStatement(Node parent, String statement, Location location, boolean require, boolean scope)
@@ -234,7 +234,7 @@ public class BinaryOperator extends Value
 	 * @param require Whether or not to throw an error if anything goes wrong.
 	 * @param scope Whether or not the given statement is the beginning of
 	 * 		a scope.
-	 * @return The generated TreeNode, if it was possible to translated it
+	 * @return The generated Node, if it was possible to translated it
 	 * 		into a BinaryOperatorNode.
 	 */
 	private static Value decodeStatement(Node parent, String statement, Matcher matcher, Location location, boolean require, boolean scope)
@@ -426,7 +426,7 @@ public class BinaryOperator extends Value
 		IfStatement ifStatement = IfStatement.decodeStatement(parent, "if (" + denominatorVar + " == 0)", location, true, true);
 		parent.addChild(ifStatement);
 		
-		ThrowNode throwNode = generateDivideByZeroThrow(parent, location);
+		Throw throwNode = generateDivideByZeroThrow(parent, location);
 		ifStatement.addChild(throwNode);
 		
 		return assignee;
@@ -439,9 +439,9 @@ public class BinaryOperator extends Value
 	 * @param location The location of the division.
 	 * @return The ThrowNode for the DivideByZeroException.
 	 */
-	private static ThrowNode generateDivideByZeroThrow(Node parent, Location location)
+	private static Throw generateDivideByZeroThrow(Node parent, Location location)
 	{
-		ThrowNode throwNode = ThrowNode.decodeStatement(parent, "throw new DivideByZeroException()", location, true, false);
+		Throw throwNode = Throw.decodeStatement(parent, "throw new DivideByZeroException()", location, true, false);
 		
 		return throwNode;
 	}
@@ -553,7 +553,7 @@ public class BinaryOperator extends Value
 	 * @param require Whether or not to throw an error if anything goes wrong.
 	 * @param scope Whether or not the given statement is the beginning of
 	 * 		a scope.
-	 * @return The generated TreeNode instance.
+	 * @return The generated Node instance.
 	 */
 	private static Value createNode(Node parent, String statement, Location location)
 	{
@@ -740,11 +740,11 @@ public class BinaryOperator extends Value
 	 * This also works if the obj is primitive by autoboxing the data
 	 * and then calling to toString() on the autoboxed object. If an
 	 * optimization is made, the generated concatenation operation
-	 * is then returned as a TreeNode. If no optimizations can be made,
-	 * then the calling TreeNode is returned (The BinaryOperatorNode).
+	 * is then returned as a Node. If no optimizations can be made,
+	 * then the calling Node is returned (The BinaryOperatorNode).
 	 * 
 	 * @return The generated concatenation operation if generated. If not,
-	 * 		then the calling TreeNode, BinaryOperatorNode, is returned.
+	 * 		then the calling Node, BinaryOperatorNode, is returned.
 	 */
 	private Node optimizeStringConcatenation()
 	{
@@ -822,8 +822,8 @@ public class BinaryOperator extends Value
 	}
 	
 	/**
-	 * If the given TreeNode is a primitive, return the autoboxed form.
-	 * Else, simply return the given TreeNode.
+	 * If the given Node is a primitive, return the autoboxed form.
+	 * Else, simply return the given Node.
 	 * 
 	 * @param value The value to autobox if needed.
 	 * @return The autoboxed primitive value.

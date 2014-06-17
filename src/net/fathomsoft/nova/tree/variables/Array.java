@@ -33,7 +33,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
 public class Array extends Variable
 {
 	/**
-	 * @see net.fathomsoft.nova.tree.Node#TreeNode(Node, Location)
+	 * @see net.fathomsoft.nova.tree.Node#Node(Node, Location)
 	 */
 	public Array(Node temporaryParent, Location locationIn)
 	{
@@ -128,7 +128,7 @@ public class Array extends Variable
 	 * <ul>
 	 * 	<li>String[5][size] <i>(Where as 'size' is a number variable)</i></li>
 	 * 	<li>int[names.getSize()]</li>
-	 * 	<li>TreeNode[elements.getSize() * (4 + 3) / 2]</li>
+	 * 	<li>Node[elements.getSize() * (4 + 3) / 2]</li>
 	 * </ul>
 	 * <br>
 	 * Array initializer statements are to be implemented in the future.

@@ -8,7 +8,7 @@ import net.fathomsoft.nova.util.StringUtils;
 import net.fathomsoft.nova.util.SyntaxUtils;
 
 /**
- * TreeNode extension that contains information describing a variable
+ * Node extension that contains information describing a variable
  * assignment.
  * 
  * @author	Braden Steffaniak
@@ -18,7 +18,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
 public class Assignment extends Node
 {
 	/**
-	 * @see net.fathomsoft.nova.tree.Node#TreeNode(Node, Location)
+	 * @see net.fathomsoft.nova.tree.Node#Node(Node, Location)
 	 */
 	public Assignment(Node temporaryParent, Location locationIn)
 	{
@@ -279,7 +279,7 @@ public class Assignment extends Node
 	}
 	
 	/**
-	 * Decode the right hand side of an assignment into an TreeNode if
+	 * Decode the right hand side of an assignment into an Node if
 	 * possible. If it is not possible, then null is returned. The right
 	 * hand side of an assignment must represent a value.<br>
 	 * <br>
@@ -298,7 +298,7 @@ public class Assignment extends Node
 	 * @param require Whether or not to throw an error if anything goes wrong.
 	 * @param scope Whether or not the given statement is the beginning of
 	 * 		a scope.
-	 * @return The new TreeNode if it decodes properly. If not,
+	 * @return The new Node if it decodes properly. If not,
 	 * 		it returns null.
 	 */
 	public static Node decodeRightHandSide(Node parent, String rhs, Location location, boolean require, boolean scope)

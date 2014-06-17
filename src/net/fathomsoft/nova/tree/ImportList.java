@@ -3,7 +3,7 @@ package net.fathomsoft.nova.tree;
 import net.fathomsoft.nova.util.Location;
 
 /**
- * TreeNode extension that contains children of the type ImportNode.
+ * Node extension that contains children of the type ImportNode.
  * Contains all of a files imports.
  * 
  * @author	Braden Steffaniak
@@ -13,7 +13,7 @@ import net.fathomsoft.nova.util.Location;
 public class ImportList extends Node
 {
 	/**
-	 * @see net.fathomsoft.nova.tree.Node#TreeNode(Node, Location)
+	 * @see net.fathomsoft.nova.tree.Node#Node(Node, Location)
 	 */
 	public ImportList(Node temporaryParent, Location locationIn)
 	{

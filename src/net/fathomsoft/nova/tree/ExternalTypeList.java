@@ -3,7 +3,7 @@ package net.fathomsoft.nova.tree;
 import net.fathomsoft.nova.util.Location;
 
 /**
- * TreeNode extension that represents all of the external types that
+ * Node extension that represents all of the external types that
  * were declared within a class.
  * 
  * @author	Braden Steffaniak
@@ -13,7 +13,7 @@ import net.fathomsoft.nova.util.Location;
 public class ExternalTypeList extends Node
 {
 	/**
-	 * @see net.fathomsoft.nova.tree.Node#TreeNode(Node, Location)
+	 * @see net.fathomsoft.nova.tree.Node#Node(Node, Location)
 	 */
 	public ExternalTypeList(Node temporaryParent, Location locationIn)
 	{

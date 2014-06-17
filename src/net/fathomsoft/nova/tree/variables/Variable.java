@@ -29,7 +29,7 @@ public class Variable extends Identifier
 	private static final String	NULL_TEXT	= "0";
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.Node#TreeNode(Node, Location)
+	 * @see net.fathomsoft.nova.tree.Node#Node(Node, Location)
 	 */
 	public Variable(Node temporaryParent, Location locationIn)
 	{
@@ -632,7 +632,7 @@ public class Variable extends Identifier
 	 * For example:
 	 * <blockquote><pre>
 	 * //Scenario 1
-	 * TreeNode node;
+	 * Node node;
 	 * 
 	 * //Scenario 2
 	 * node.getParent();</pre></blockquote>

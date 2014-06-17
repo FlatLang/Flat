@@ -3,7 +3,7 @@ package net.fathomsoft.nova.tree;
 import net.fathomsoft.nova.util.Location;
 
 /**
- * TreeNode extension that represents an operator in an operation.
+ * Node extension that represents an operator in an operation.
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:19:40 PM
@@ -14,7 +14,7 @@ public class Operator extends Value
 	private String	operator;
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.Node#TreeNode(Node, Location)
+	 * @see net.fathomsoft.nova.tree.Node#Node(Node, Location)
 	 */
 	public Operator(Node temporaryParent, Location locationIn)
 	{

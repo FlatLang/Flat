@@ -25,7 +25,7 @@ public class MethodCall extends Identifier
 	/**
 	 * Instantiate a new MethodCallNode and initialize the default values.
 	 * 
-	 * @see net.fathomsoft.nova.tree.Node#TreeNode(Node, Location)
+	 * @see net.fathomsoft.nova.tree.Node#Node(Node, Location)
 	 */
 	public MethodCall(Node temporaryParent, Location locationIn)
 	{
@@ -37,7 +37,7 @@ public class MethodCall extends Identifier
 	}
 	
 	/**
-	 * The the TreeNode that represents the arguments to the method call.
+	 * The the Node that represents the arguments to the method call.
 	 * For example:<br>
 	 * <blockquote><pre>
 	 * methodName(5, "Arg2", 3 * n);</pre></blockquote>
@@ -46,7 +46,7 @@ public class MethodCall extends Identifier
 	 * method would contain a node for each of the arguments passed, in
 	 * the correct order from left to right.
 	 * 
-	 * @return The TreeNode that represents the arguments to the method
+	 * @return The Node that represents the arguments to the method
 	 * 		call.
 	 */
 	public ArgumentList getArgumentListNode()
@@ -55,10 +55,10 @@ public class MethodCall extends Identifier
 	}
 	
 	/**
-	 * Get whether or not the specified TreeNode is used within an
+	 * Get whether or not the specified Node is used within an
 	 * external context.
 	 * 
-	 * @return Whether or not the specified TreeNode is used within an
+	 * @return Whether or not the specified Node is used within an
 	 * 		external context.
 	 */
 	public boolean isWithinExternalContext()
@@ -523,7 +523,7 @@ public class MethodCall extends Identifier
 	}
 	
 	/**
-	 * Decode the arguments given within the array into TreeNodes that
+	 * Decode the arguments given within the array into Nodes that
 	 * are translatable into C.
 	 * 
 	 * @param parent The parent of the current method call.
@@ -602,7 +602,7 @@ public class MethodCall extends Identifier
 	 * this node.
 	 * 
 	 * @param outputChildren Whether or not to output the children of the
-	 * 		children of the TreeNode as well.
+	 * 		children of the Node as well.
 	 * @return The String representing the method call in Nova syntax.
 	 */
 	public String generateNovaInput(boolean outputChildren)

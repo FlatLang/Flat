@@ -6,7 +6,7 @@ import net.fathomsoft.nova.util.Patterns;
 import net.fathomsoft.nova.util.Regex;
 
 /**
- * TreeNode extension that represents the declaration of an "else
+ * Node extension that represents the declaration of an "else
  * statement" node type. See {@link #decodeStatement(Node, String, Location, boolean, boolean)}
  * for more details on what correct inputs look like.
  * 
@@ -20,7 +20,7 @@ public class ElseStatement extends Node
 	 * Instantiate a new ElseStatementNode and initialize the default
 	 * values.
 	 * 
-	 * @see net.fathomsoft.nova.tree.Node#TreeNode(Node, Location)
+	 * @see net.fathomsoft.nova.tree.Node#Node(Node, Location)
 	 */
 	public ElseStatement(Node temporaryParent, Location locationIn)
 	{
@@ -87,7 +87,7 @@ public class ElseStatement extends Node
 //		
 //		for (int i = 0; i < getNumChildren(); i++)
 //		{
-//			TreeNode child = getChild(i);
+//			Node child = getChild(i);
 //			
 //			if (child != getCondition())
 //			{

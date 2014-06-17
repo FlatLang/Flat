@@ -7,7 +7,7 @@ import net.fathomsoft.nova.util.Patterns;
 import net.fathomsoft.nova.util.Regex;
 
 /**
- * TreeNode extension that represents the declaration of an "if statement"
+ * Node extension that represents the declaration of an "if statement"
  * node type. See {@link #decodeStatement(Node, String, Location, boolean, boolean)}
  * for more details on what correct inputs look like.
  * 
@@ -92,7 +92,7 @@ public class IfStatement extends Node
 //		
 //		for (int i = 0; i < getNumChildren(); i++)
 //		{
-//			TreeNode child = getChild(i);
+//			Node child = getChild(i);
 //			
 //			if (child != getCondition())
 //			{

@@ -3,7 +3,7 @@ package net.fathomsoft.nova.tree;
 import net.fathomsoft.nova.util.Location;
 
 /**
- * TreeNode extension that contains all of the dimension attributes
+ * Node extension that contains all of the dimension attributes
  * for an array declaration.
  * 
  * @author	Braden Steffaniak
@@ -13,7 +13,7 @@ import net.fathomsoft.nova.util.Location;
 public class Dimensions extends Node
 {
 	/**
-	 * @see net.fathomsoft.nova.tree.Node#TreeNode(Node, Location)
+	 * @see net.fathomsoft.nova.tree.Node#Node(Node, Location)
 	 */
 	public Dimensions(Node temporaryParent, Location locationIn)
 	{

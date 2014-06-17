@@ -6,7 +6,7 @@ import net.fathomsoft.nova.tree.Node;
 import net.fathomsoft.nova.util.Location;
 
 /**
- * TreeNode extension that represents an Exception instance that is to
+ * Node extension that represents an Exception instance that is to
  * be thrown within a ThrowNode statement.
  * <blockquote><pre>
  * // Instantiate a new Exception type.
@@ -31,7 +31,7 @@ public class Exception extends Node
 	private static final HashMap<String, Integer>	ids;
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.Node#TreeNode(Node, Location)
+	 * @see net.fathomsoft.nova.tree.Node#Node(Node, Location)
 	 */
 	public Exception(Node temporaryParent, Location locationIn)
 	{

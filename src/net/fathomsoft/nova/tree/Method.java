@@ -34,7 +34,7 @@ public class Method extends InstanceDeclaration
 	/**
 	 * Instantiate and initialize default data.
 	 * 
-	 * @see net.fathomsoft.nova.tree.Node#TreeNode(Node, Location)
+	 * @see net.fathomsoft.nova.tree.Node#Node(Node, Location)
 	 */
 	public Method(Node temporaryParent, Location locationIn)
 	{
@@ -434,7 +434,7 @@ public class Method extends InstanceDeclaration
 //		
 //		for (int i = 0; i < getNumChildren(); i++)
 //		{
-//			TreeNode child = getChild(i);
+//			Node child = getChild(i);
 //			
 //			if (child != parameterList)
 //			{

@@ -17,7 +17,7 @@ import net.fathomsoft.nova.util.Location;
 public class LocalVariable extends Variable
 {
 	/**
-	 * @see net.fathomsoft.nova.tree.Node#TreeNode(Node, Location)
+	 * @see net.fathomsoft.nova.tree.Node#Node(Node, Location)
 	 */
 	public LocalVariable(Node temporaryParent, Location locationIn)
 	{

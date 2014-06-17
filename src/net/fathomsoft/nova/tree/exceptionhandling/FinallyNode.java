@@ -17,7 +17,7 @@ import net.fathomsoft.nova.util.Regex;
 public class FinallyNode extends ExceptionHandler
 {
 	/**
-	 * @see net.fathomsoft.nova.tree.Node#TreeNode(Node, Location)
+	 * @see net.fathomsoft.nova.tree.Node#Node(Node, Location)
 	 */
 	public FinallyNode(Node temporaryParent, Location locationIn)
 	{

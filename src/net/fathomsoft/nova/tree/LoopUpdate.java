@@ -3,7 +3,7 @@ package net.fathomsoft.nova.tree;
 import net.fathomsoft.nova.util.Location;
 
 /**
- * TreeNode extension that represents the update section of the for loop.
+ * Node extension that represents the update section of the for loop.
  * For instance: "for (int i = 0; i < 10; i++)" the last section
  * containing "i++" is the update section.
  * 
@@ -14,7 +14,7 @@ import net.fathomsoft.nova.util.Location;
 public class LoopUpdate extends Node
 {
 	/**
-	 * @see net.fathomsoft.nova.tree.Node#TreeNode(Node, Location)
+	 * @see net.fathomsoft.nova.tree.Node#Node(Node, Location)
 	 */
 	public LoopUpdate(Node temporaryParent, Location locationIn)
 	{

@@ -20,7 +20,7 @@ public class ForLoop extends Loop
 	/**
 	 * Instantiate a new ForLoopNode and initialize its default values.
 	 * 
-	 * @see net.fathomsoft.nova.tree.Node#TreeNode(Node, Location)
+	 * @see net.fathomsoft.nova.tree.Node#Node(Node, Location)
 	 */
 	public ForLoop(Node temporaryParent, Location locationIn)
 	{
@@ -44,11 +44,11 @@ public class ForLoop extends Loop
 	}
 	
 	/**
-	 * Get the TreeNode that describes the initialization section of the
+	 * Get the Node that describes the initialization section of the
 	 * for loop. For instance: "for (int i = 0; i < 10; i++)" the first
 	 * section containing "int i = 0" is the initialization section.
 	 * 
-	 * @return The TreeNode instance that describes the initialization
+	 * @return The Node instance that describes the initialization
 	 * 		section of the for loop.
 	 */
 	public Assignment getInitializationNode()
@@ -57,11 +57,11 @@ public class ForLoop extends Loop
 	}
 	
 	/**
-	 * Get the TreeNode that describes the condition section of the for
+	 * Get the Node that describes the condition section of the for
 	 * loop. For instance: "for (int i = 0; i < 10; i++)" the middle
 	 * section containing "i < 10" is the condition section.
 	 * 
-	 * @return The TreeNode instance that describes the condition section
+	 * @return The Node instance that describes the condition section
 	 * 		of the for loop.
 	 */
 	public Node getConditionNode()
@@ -70,11 +70,11 @@ public class ForLoop extends Loop
 	}
 	
 	/**
-	 * Get the TreeNode that describes the update section of the for loop.
+	 * Get the Node that describes the update section of the for loop.
 	 * For instance: "for (int i = 0; i < 10; i++)" the last section
 	 * containing "i++" is the update section.
 	 * 
-	 * @return The TreeNode instance that describes the update section of
+	 * @return The Node instance that describes the update section of
 	 * 		the for loop.
 	 */
 	public Node getUpdateNode()

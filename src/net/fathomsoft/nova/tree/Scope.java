@@ -5,7 +5,7 @@ import net.fathomsoft.nova.tree.variables.Variable;
 import net.fathomsoft.nova.util.Location;
 
 /**
- * TreeNode extension that represents a scope of code. In essence, a
+ * Node extension that represents a scope of code. In essence, a
  * collection of statements within a pair of curly braces.<br>
  * <br>
  * For example:
@@ -30,7 +30,7 @@ public class Scope extends Node
 	 * Instantiate and initialize the default values.
 	 * 
 	 * 
-	 * @see net.fathomsoft.nova.tree.Node#TreeNode(Node, Location)
+	 * @see net.fathomsoft.nova.tree.Node#Node(Node, Location)
 	 */
 	public Scope(Node temporaryParent, Location locationIn)
 	{

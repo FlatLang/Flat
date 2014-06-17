@@ -5,7 +5,7 @@ import net.fathomsoft.nova.tree.Node;
 import net.fathomsoft.nova.util.Location;
 
 /**
- * TreeNode extensions that contains all of the public FieldNode
+ * Node extensions that contains all of the public FieldNode
  * instances of a ClassNode.
  * 
  * @author	Braden Steffaniak
@@ -15,7 +15,7 @@ import net.fathomsoft.nova.util.Location;
 public class InstanceFieldList extends Node
 {
 	/**
-	 * @see net.fathomsoft.nova.tree.Node#TreeNode(Node, Location)
+	 * @see net.fathomsoft.nova.tree.Node#Node(Node, Location)
 	 */
 	public InstanceFieldList(Node temporaryParent, Location locationIn)
 	{

@@ -31,7 +31,7 @@ public class VTable extends ClassDeclaration
 	public static final String	VTABLE_IDENTIFIER = "vtable";
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.Node#TreeNode(Node, Location)
+	 * @see net.fathomsoft.nova.tree.Node#Node(Node, Location)
 	 */
 	public VTable(Node temporaryParent, Location locationIn)
 	{
@@ -158,7 +158,7 @@ public class VTable extends ClassDeclaration
 	 * <ul>
 	 * 	<li>String[5][size] <i>(Where as 'size' is a number variable)</i></li>
 	 * 	<li>int[names.getSize()]</li>
-	 * 	<li>TreeNode[elements.getSize() * (4 + 3) / 2]</li>
+	 * 	<li>Node[elements.getSize() * (4 + 3) / 2]</li>
 	 * </ul>
 	 * <br>
 	 * Array initializer statements are to be implemented in the future.

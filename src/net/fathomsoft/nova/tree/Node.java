@@ -6,7 +6,7 @@ import java.util.regex.Pattern;
 
 import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.error.UnimplementedOperationException;
-import net.fathomsoft.nova.tree.exceptionhandling.TryNode;
+import net.fathomsoft.nova.tree.exceptionhandling.Try;
 import net.fathomsoft.nova.tree.variables.LocalVariable;
 import net.fathomsoft.nova.util.Bounds;
 import net.fathomsoft.nova.util.Location;
@@ -16,8 +16,8 @@ import net.fathomsoft.nova.util.StringUtils;
 /**
  * Class that is the parent of all Nodes on the Tree. Keeps the basic
  * information of where the statement was in the source, and where it was
- * output in the destination file. A TreeNode can have any number of
- * children, however some of the extensions of TreeNode have default
+ * output in the destination file. A Node can have any number of
+ * children, however some of the extensions of Node have default
  * children at the start.
  * 
  * @author	Braden Steffaniak
@@ -33,9 +33,9 @@ public abstract class Node
 	private ArrayList<Node>	children;
 	
 	/**
-	 * Create a new TreeNode. Initializes the data.
+	 * Create a new Node. Initializes the data.
 	 * 
-	 * @param temporaryParent The TreeNode to act as the parent temporarily.
+	 * @param temporaryParent The Node to act as the parent temporarily.
 	 * @param locationIn The location of the Node in the source file.
 	 */
 	public Node(Node temporaryParent, Location locationIn)
@@ -47,9 +47,9 @@ public abstract class Node
 	}
 	
 	/**
-	 * Get the line number in which the TreeNode was decoded at.
+	 * Get the line number in which the Node was decoded at.
 	 * 
-	 * @return The line number in which the TreeNode was decoded at.
+	 * @return The line number in which the Node was decoded at.
 	 */
 	public int getLineNumber()
 	{
@@ -73,7 +73,7 @@ public abstract class Node
 	}
 	
 	/**
-	 * Get the location that the data in the TreeNode is in the source
+	 * Get the location that the data in the Node is in the source
 	 * file/text.
 	 * 
 	 * @return The Location instance holding the information.
@@ -84,7 +84,7 @@ public abstract class Node
 	}
 	
 	/**
-	 * Set the location that the data in the TreeNode is in the source
+	 * Set the location that the data in the Node is in the source
 	 * file/text.
 	 * 
 	 * @param locationIn The Location instance holding the information.
@@ -95,10 +95,10 @@ public abstract class Node
 	}
 	
 	/**
-	 * Get the parent of the specified TreeNode. If the TreeNode
+	 * Get the parent of the specified Node. If the Node
 	 * does not have a parent, null is returned.
 	 * 
-	 * @return The parent TreeNode instance.
+	 * @return The parent Node instance.
 	 */
 	public Node getParent()
 	{
@@ -106,11 +106,11 @@ public abstract class Node
 	}
 	
 	/**
-	 * Set a temporary parent for the specified TreeNode. When, if ever,
-	 * the TreeNode is formally added to a TreeNode, the temporary parent
+	 * Set a temporary parent for the specified Node. When, if ever,
+	 * the Node is formally added to a Node, the temporary parent
 	 * will be removed.
 	 * 
-	 * @param parent The TreeNode to act as the parent temporarily.
+	 * @param parent The Node to act as the parent temporarily.
 	 */
 	public void setTemporaryParent(Node parent)
 	{
@@ -120,11 +120,11 @@ public abstract class Node
 	}
 	
 	/**
-	 * Get the nearest ancestor TreeNode to the specific TreeNode with
+	 * Get the nearest ancestor Node to the specific Node with
 	 * the given Class type.
 	 * 
 	 * @param type The Class type of the Ancestor to search for.
-	 * @return The nearest ancestor TreeNode to the specific TreeNode.
+	 * @return The nearest ancestor Node to the specific Node.
 	 */
 	public Node getAncestorOfType(Class<?> type)
 	{
@@ -132,12 +132,12 @@ public abstract class Node
 	}
 	
 	/**
-	 * Get the nearest ancestor TreeNode to the specific TreeNode with
+	 * Get the nearest ancestor Node to the specific Node with
 	 * the given Class type.
 	 * 
 	 * @param type The Class type of the Ancestor to search for.
-	 * @param inclusive Whether or not to check the current TreeNode.
-	 * @return The nearest ancestor TreeNode to the specific TreeNode.
+	 * @param inclusive Whether or not to check the current Node.
+	 * @return The nearest ancestor Node to the specific Node.
 	 */
 	public Node getAncestorOfType(Class<?> type, boolean inclusive)
 	{
@@ -195,8 +195,8 @@ public abstract class Node
 	}
 	
 	/**
-	 * Get the ScopeNode instance of this TreeNode if it even has
-	 * a scope. If the TreeNode does not have a ScopeNode then this
+	 * Get the ScopeNode instance of this Node if it even has
+	 * a scope. If the Node does not have a ScopeNode then this
 	 * method call will return null.
 	 * 
 	 * @return The ScopeNode instance, if it exists.
@@ -217,7 +217,7 @@ public abstract class Node
 	}
 	
 	/**
-	 * Set the ScopeNode of the specified TreeNode to the given
+	 * Set the ScopeNode of the specified Node to the given
 	 * ScopeNode instance.
 	 * 
 	 * @param scope The ScopeNode instance to use.
@@ -306,9 +306,9 @@ public abstract class Node
 	}
 	
 	/**
-	 * Get the number of children that the specified TreeNode has.
+	 * Get the number of children that the specified Node has.
 	 * 
-	 * @return The number of children that the specified TreeNode has.
+	 * @return The number of children that the specified Node has.
 	 */
 	public int getNumChildren()
 	{
@@ -316,11 +316,11 @@ public abstract class Node
 	}
 	
 	/**
-	 * Get the child TreeNode at the specific index in the children
+	 * Get the child Node at the specific index in the children
 	 * ArrayList.
 	 * 
 	 * @param index The index to access the child node from.
-	 * @return The child TreeNode at the specific index.
+	 * @return The child Node at the specific index.
 	 */
 	public Node getChild(int index)
 	{
@@ -328,11 +328,11 @@ public abstract class Node
 	}
 	
 	/**
-	 * Get whether or not the given TreeNode is a child of the specified
-	 * TreeNode.
+	 * Get whether or not the given Node is a child of the specified
+	 * Node.
 	 * 
-	 * @param child The TreeNode to check whether is a child or not.
-	 * @return Whether or not the given TreeNode is a child.
+	 * @param child The Node to check whether is a child or not.
+	 * @return Whether or not the given Node is a child.
 	 */
 	public boolean containsChild(Node child)
 	{
@@ -340,7 +340,7 @@ public abstract class Node
 	}
 	
 	/**
-	 * Add the specific TreeNode under the current TreeNode as a child.
+	 * Add the specific Node under the current Node as a child.
 	 * 
 	 * @param node The node to set as the child node.
 	 */
@@ -350,7 +350,7 @@ public abstract class Node
 	}
 	
 	/**
-	 * Add the specific TreeNode under the given 'toNode' TreeNode as a
+	 * Add the specific Node under the given 'toNode' Node as a
 	 * child.
 	 * 
 	 * @param node The node to set as the child node.
@@ -361,7 +361,7 @@ public abstract class Node
 	}
 	
 	/**
-	 * Remove the specific TreeNode from the current TreeNode as a child.
+	 * Remove the specific Node from the current Node as a child.
 	 * 
 	 * @param index The index to remove the node from.
 	 */
@@ -373,7 +373,7 @@ public abstract class Node
 	}
 	
 	/**
-	 * Remove the specific TreeNode from the current TreeNode as a child.
+	 * Remove the specific Node from the current Node as a child.
 	 * 
 	 * @param node The node to remove as the child node.
 	 */
@@ -383,7 +383,7 @@ public abstract class Node
 	}
 	
 	/**
-	 * Add the specific TreeNode under the current TreeNode as a child.
+	 * Add the specific Node under the current Node as a child.
 	 * 
 	 * @param index The index to add the node at.
 	 * @param node The node to set as the child node.
@@ -403,7 +403,7 @@ public abstract class Node
 	}
 	
 	/**
-	 * Add the specific TreeNode under the given 'toNode' TreeNode as a
+	 * Add the specific Node under the given 'toNode' Node as a
 	 * child.
 	 * 
 	 * @param index The index to add the node at.
@@ -448,7 +448,7 @@ public abstract class Node
 	 * given offset index.
 	 * 
 	 * @param node The node to add the given 'toAdd' node relatively from.
-	 * @param toAdd The TreeNode to add as a child.
+	 * @param toAdd The Node to add as a child.
 	 * @param offset The offset in which to add the child at relative to
 	 * 		the given 'node' child.
 	 * @return Whether or not the child was successfully added.
@@ -671,10 +671,10 @@ public abstract class Node
 	}
 	
 	/**
-	 * Get whether or not the specified TreeNode is used within an
+	 * Get whether or not the specified Node is used within an
 	 * external context.
 	 * 
-	 * @return Whether or not the specified TreeNode is used within an
+	 * @return Whether or not the specified Node is used within an
 	 * 		external context.
 	 */
 	public boolean isWithinExternalContext()
@@ -694,10 +694,10 @@ public abstract class Node
 	
 	/**
 	 * Method that each Node overrides. Returns a String that translates
-	 * the data that is stored in the TreeNode to the Java programming
+	 * the data that is stored in the Node to the Java programming
 	 * language syntax.
 	 * 
-	 * @return The Java syntax representation of the TreeNode.
+	 * @return The Java syntax representation of the Node.
 	 */
 	public String generateJavaSource()
 	{
@@ -706,10 +706,10 @@ public abstract class Node
 	
 	/**
 	 * Method that each Node overrides. Returns a String that translates
-	 * the data that is stored in the TreeNode to the C programming
+	 * the data that is stored in the Node to the C programming
 	 * language header file syntax.
 	 * 
-	 * @return The C header file syntax representation of the TreeNode.
+	 * @return The C header file syntax representation of the Node.
 	 */
 	public String generateCHeader()
 	{
@@ -718,10 +718,10 @@ public abstract class Node
 	
 	/**
 	 * Method that each Node can override. Returns a String that
-	 * translates the data that is stored in the TreeNode to the C
+	 * translates the data that is stored in the Node to the C
 	 * programming language header file 'fragment' syntax.
 	 * 
-	 * @return The C header syntax representation of the TreeNode.
+	 * @return The C header syntax representation of the Node.
 	 */
 	public String generateCHeaderFragment()
 	{
@@ -730,10 +730,10 @@ public abstract class Node
 	
 	/**
 	 * Method that each Node overrides. Returns a String that translates
-	 * the data that is stored in the TreeNode to the C programming
+	 * the data that is stored in the Node to the C programming
 	 * language source file syntax.
 	 * 
-	 * @return The C source syntax representation of the TreeNode.
+	 * @return The C source syntax representation of the Node.
 	 */
 	public String generateCSource()
 	{
@@ -742,10 +742,10 @@ public abstract class Node
 	
 	/**
 	 * Method that each Node overrides. Returns a String that translates
-	 * the data that is stored in the TreeNode to the C programming
+	 * the data that is stored in the Node to the C programming
 	 * language source file 'fragment' syntax.
 	 * 
-	 * @return The C source syntax representation of the TreeNode.
+	 * @return The C source syntax representation of the Node.
 	 */
 	public String generateCSourceFragment()
 	{
@@ -753,7 +753,7 @@ public abstract class Node
 	}
 	
 	/**
-	 * Generate the Nova syntax String that represents the TreeNode.
+	 * Generate the Nova syntax String that represents the Node.
 	 * Essentially, this is the String that is decoded into the node.
 	 * It is the input value from the .fat source file.
 	 * 
@@ -765,12 +765,12 @@ public abstract class Node
 	}
 	
 	/**
-	 * Generate the Nova syntax String that represents the TreeNode.
+	 * Generate the Nova syntax String that represents the Node.
 	 * Essentially, this is the String that is decoded into the node.
 	 * It is the input value from the .fat source file.
 	 * 
 	 * @param outputChildren Whether or not to output the children of the
-	 * 		children of the TreeNode as well.
+	 * 		children of the Node as well.
 	 * @return A String that represents the input String in Nova syntax.
 	 */
 	public String generateNovaInput(boolean outputChildren)
@@ -789,10 +789,10 @@ public abstract class Node
 	}
 	
 	/**
-	 * Generate a String containing information of where the TreeNode is
+	 * Generate a String containing information of where the Node is
 	 * located in reference to the source input files.
 	 * 
-	 * @return A String containing information of where the TreeNode is
+	 * @return A String containing information of where the Node is
 	 * 		located in reference to the source input files.
 	 */
 	public String getLocationInfo()
@@ -820,9 +820,9 @@ public abstract class Node
 	 * 
 	 * @return The parent TryNode, if there is one.
 	 */
-	public TryNode getParentTry()
+	public Try getParentTry()
 	{
-		TryNode node = (TryNode)getAncestorOfType(TryNode.class, true);
+		Try node = (Try)getAncestorOfType(Try.class, true);
 		
 		return node;
 	}
@@ -838,9 +838,9 @@ public abstract class Node
 	}
 	
 	/**
-	 * Get the ProgramNode (The oldest parent) of this TreeNode.
+	 * Get the ProgramNode (The oldest parent) of this Node.
 	 * 
-	 * @return The ProgramNode of this TreeNode.
+	 * @return The ProgramNode of this Node.
 	 */
 	public Program getProgramNode()
 	{
@@ -853,9 +853,9 @@ public abstract class Node
 	}
 	
 	/**
-	 * Get the FileNode of this TreeNode, if it exists.
+	 * Get the FileNode of this Node, if it exists.
 	 * 
-	 * @return The FileNode of this TreeNode.
+	 * @return The FileNode of this Node.
 	 */
 	public FileDeclaration getFileNode()
 	{
@@ -875,7 +875,7 @@ public abstract class Node
 	}
 	
 	/**
-	 * Get the ClassNode parent instance of the TreeNode, if one exists.
+	 * Get the ClassNode parent instance of the Node, if one exists.
 	 * 
 	 * @return The nearest ClassNode instance that contains this node.
 	 */
@@ -885,7 +885,7 @@ public abstract class Node
 	}
 	
 	/**
-	 * Get the MethodNode parent instance of the TreeNode, if one exists.
+	 * Get the MethodNode parent instance of the Node, if one exists.
 	 * 
 	 * @return The nearest MethodNode instance that contains this node.
 	 */
@@ -906,16 +906,16 @@ public abstract class Node
 	}
 	
 	/**
-	 * Return a new TreeNode containing a copy of the values of the
+	 * Return a new Node containing a copy of the values of the
 	 * specified node, including clones of the children.
 	 * 
-	 * @param temporaryParent The TreeNode to act as the parent
+	 * @param temporaryParent The Node to act as the parent
 	 * 		temporarily.
 	 */
 	public abstract Node clone(Node temporaryParent, Location locationIn);
 	
 	/**
-	 * Fill the given TreeNode with the data that is in the
+	 * Fill the given Node with the data that is in the
 	 * specified node.
 	 * 
 	 * @param node The node to copy the data into.
@@ -941,7 +941,7 @@ public abstract class Node
 	}
 	
 	/**
-	 * Generate a String that represents the TreeNode as how it
+	 * Generate a String that represents the Node as how it
 	 * was decoded.
 	 * 
 	 * @return The Nova input equivalent to the node.
@@ -954,7 +954,7 @@ public abstract class Node
 		}
 		catch (UnimplementedOperationException e)
 		{
-			return "[TreeNode: " + super.toString() + ']';
+			return "[Node: " + super.toString() + ']';
 		}
 	}
 	

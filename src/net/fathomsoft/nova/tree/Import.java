@@ -7,7 +7,7 @@ import net.fathomsoft.nova.util.Patterns;
 import net.fathomsoft.nova.util.Regex;
 
 /**
- * TreeNode extension that represents the declaration of an
+ * Node extension that represents the declaration of an
  * "import statement" node type. See {@link #decodeStatement(Node, String, Location, boolean, boolean)}
  * for more details on what correct inputs look like.
  * 
@@ -20,7 +20,7 @@ public class Import extends Node
 	private boolean	external;
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.Node#TreeNode(Node, Location)
+	 * @see net.fathomsoft.nova.tree.Node#Node(Node, Location)
 	 */
 	public Import(Node temporaryParent, Location locationIn)
 	{

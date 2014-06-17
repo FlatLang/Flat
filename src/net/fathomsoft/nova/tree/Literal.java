@@ -18,7 +18,7 @@ public class Literal extends Value
 	private String	value;
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.Node#TreeNode(Node, Location)
+	 * @see net.fathomsoft.nova.tree.Node#Node(Node, Location)
 	 */
 	public Literal(Node temporaryParent, Location locationIn)
 	{

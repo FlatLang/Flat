@@ -9,7 +9,7 @@ import net.fathomsoft.nova.util.Location;
 import net.fathomsoft.nova.util.StringUtils;
 
 /**
- * TreeNode extension that represents a unary operator node type.
+ * Node extension that represents a unary operator node type.
  * See {@link #decodeStatement(Node, String, Location, boolean, boolean)} for more
  * details on what correct inputs look like.
  * 
@@ -37,7 +37,7 @@ public class UnaryOperation extends Value
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.Node#TreeNode(Node, Location)
+	 * @see net.fathomsoft.nova.tree.Node#Node(Node, Location)
 	 */
 	public UnaryOperation(Node temporaryParent, Location locationIn)
 	{
@@ -45,13 +45,13 @@ public class UnaryOperation extends Value
 	}
 	
 	/**
-	 * The the TreeNode that represents the variable in the operation.<br>
+	 * The the Node that represents the variable in the operation.<br>
 	 * For example:<br>
 	 * <blockquote><pre>
 	 * var++;</pre></blockquote>
 	 * In the previous statement, 'var' is the variable.
 	 * 
-	 * @return The TreeNode that represents the parameters of the method.
+	 * @return The Node that represents the parameters of the method.
 	 */
 	public Node getVariableNode()
 	{

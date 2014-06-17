@@ -8,7 +8,7 @@ import net.fathomsoft.nova.util.Regex;
 import net.fathomsoft.nova.util.StringUtils;
 
 /**
- * TreeNode extension that represents an external type of variable or
+ * Node extension that represents an external type of variable or
  * method call.
  * 
  * @author	Braden Steffaniak
@@ -18,7 +18,7 @@ import net.fathomsoft.nova.util.StringUtils;
 public class ExternalType extends Value
 {
 	/**
-	 * @see net.fathomsoft.nova.tree.Node#TreeNode(Node, Location)
+	 * @see net.fathomsoft.nova.tree.Node#Node(Node, Location)
 	 */
 	public ExternalType(Node temporaryParent, Location locationIn)
 	{

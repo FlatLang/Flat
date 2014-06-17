@@ -7,7 +7,7 @@ import net.fathomsoft.nova.util.Location;
 import net.fathomsoft.nova.util.SyntaxUtils;
 
 /**
- * TreeNode extension that represents something that returns a value.
+ * Node extension that represents something that returns a value.
  * For the rules on what can and cannot be an value node, refer to
  * {@link #setType(java.lang.String)}
  * 
@@ -26,7 +26,7 @@ public class Value extends Node
 	public static final byte	VALUE = 1, POINTER = 2, REFERENCE = 3;
 
 	/**
-	 * @see net.fathomsoft.nova.tree.Node#TreeNode(Node, Location)
+	 * @see net.fathomsoft.nova.tree.Node#Node(Node, Location)
 	 */
 	public Value(Node temporaryParent, Location locationIn)
 	{

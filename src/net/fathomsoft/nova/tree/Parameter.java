@@ -17,7 +17,7 @@ public class Parameter extends LocalDeclaration
 	private Node	defaultValue;
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.Node#TreeNode(Node, Location)
+	 * @see net.fathomsoft.nova.tree.Node#Node(Node, Location)
 	 */
 	public Parameter(Node temporaryParent, Location locationIn)
 	{
@@ -115,7 +115,7 @@ public class Parameter extends LocalDeclaration
 	 * <ul>
 	 * 	<li>String name</li>
 	 * 	<li>int age</li>
-	 * 	<li>TreeNode parent</li>
+	 * 	<li>Node parent</li>
 	 * </ul>
 	 * 
 	 * @param parent The parent node of the statement.

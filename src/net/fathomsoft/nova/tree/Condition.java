@@ -3,7 +3,7 @@ package net.fathomsoft.nova.tree;
 import net.fathomsoft.nova.util.Location;
 
 /**
- * TreeNode extension that represents a condition. Conditions can be
+ * Node extension that represents a condition. Conditions can be
  * found in if/else if statements, for/while loops, etc.
  * 
  * @author	Braden Steffaniak
@@ -13,7 +13,7 @@ import net.fathomsoft.nova.util.Location;
 public class Condition extends Node
 {
 	/**
-	 * @see net.fathomsoft.nova.tree.Node#TreeNode(Node, Location)
+	 * @see net.fathomsoft.nova.tree.Node#Node(Node, Location)
 	 */
 	public Condition(Node temporaryParent, Location locationIn)
 	{

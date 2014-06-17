@@ -27,7 +27,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
 public class ArrayAccess extends Variable
 {
 	/**
-	 * @see net.fathomsoft.nova.tree.Node#TreeNode(Node, Location)
+	 * @see net.fathomsoft.nova.tree.Node#Node(Node, Location)
 	 */
 	public ArrayAccess(Node temporaryParent, Location locationIn)
 	{

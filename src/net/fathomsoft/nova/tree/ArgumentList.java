@@ -4,7 +4,7 @@ import net.fathomsoft.nova.tree.exceptionhandling.Exception;
 import net.fathomsoft.nova.util.Location;
 
 /**
- * TreeNode extension that keeps track of all of the arguments that
+ * Node extension that keeps track of all of the arguments that
  * are passed during a method call. The children of this node are
  * all ArgumentNode instances. They are stored in the order that
  * they will be passed to the method call.
@@ -16,7 +16,7 @@ import net.fathomsoft.nova.util.Location;
 public class ArgumentList extends Node
 {
 	/**
-	 * @see net.fathomsoft.nova.tree.Node#TreeNode(Node, Location)
+	 * @see net.fathomsoft.nova.tree.Node#Node(Node, Location)
 	 */
 	public ArgumentList(Node temporaryParent, Location locationIn)
 	{

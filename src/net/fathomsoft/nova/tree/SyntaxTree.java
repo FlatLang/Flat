@@ -10,8 +10,8 @@ import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.tree.exceptionhandling.Catch;
 import net.fathomsoft.nova.tree.exceptionhandling.ExceptionHandler;
 import net.fathomsoft.nova.tree.exceptionhandling.FinallyNode;
-import net.fathomsoft.nova.tree.exceptionhandling.ThrowNode;
-import net.fathomsoft.nova.tree.exceptionhandling.TryNode;
+import net.fathomsoft.nova.tree.exceptionhandling.Throw;
+import net.fathomsoft.nova.tree.exceptionhandling.Try;
 import net.fathomsoft.nova.tree.variables.ArrayAccess;
 import net.fathomsoft.nova.tree.variables.Array;
 import net.fathomsoft.nova.tree.variables.Field;
@@ -285,7 +285,7 @@ public class SyntaxTree
 	/**
 	 * Traverse through the tree and validate each node.
 	 * 
-	 * @param root The TreeNode to validate, then validate the children.
+	 * @param root The Node to validate, then validate the children.
 	 */
 	private void validateNodes(Node root)
 	{
@@ -394,20 +394,20 @@ public class SyntaxTree
 	}
 	
 	/**
-	 * Decode the specific statement into its correct TreeNode value. If
-	 * the statement does not translate into a TreeNode, a syntax error
+	 * Decode the specific statement into its correct Node value. If
+	 * the statement does not translate into a Node, a syntax error
 	 * has occurred. 
 	 * 
-	 * @param parent The Parent TreeNode of the current statement to be
+	 * @param parent The Parent Node of the current statement to be
 	 * 		decoded.
-	 * @param statement The statement to be decoded into a TreeNode.
+	 * @param statement The statement to be decoded into a Node.
 	 * @param location The Location in the source text where the statement
 	 * 		is located at.
-	 * @param types The types of TreeNodes to try to decode, in the given
+	 * @param types The types of Nodes to try to decode, in the given
 	 * 		order.
 	 * @param scope Whether or not the given statement is the beginning of
 	 * 		a scope.
-	 * @return The TreeNode constructed from the statement, if any.
+	 * @return The Node constructed from the statement, if any.
 	 */
 	public static Node decodeStatement(Node parent, String statement, Location location, boolean scope, Class<?> types[])
 	{
@@ -415,21 +415,21 @@ public class SyntaxTree
 	}
 	
 	/**
-	 * Decode the specific statement into its correct TreeNode value. If
-	 * the statement does not translate into a TreeNode, a syntax error
+	 * Decode the specific statement into its correct Node value. If
+	 * the statement does not translate into a Node, a syntax error
 	 * has occurred. 
 	 * 
-	 * @param parent The Parent TreeNode of the current statement to be
+	 * @param parent The Parent Node of the current statement to be
 	 * 		decoded.
-	 * @param statement The statement to be decoded into a TreeNode.
+	 * @param statement The statement to be decoded into a Node.
 	 * @param location The Location in the source text where the statement
 	 * 		is located at.
 	 * @param require Whether or not to throw an error if anything goes wrong.
 	 * @param scope Whether or not the given statement is the beginning of
 	 * 		a scope.
-	 * @param types The types of TreeNodes to try to decode, in the given
+	 * @param types The types of Nodes to try to decode, in the given
 	 * 		order.
-	 * @return The TreeNode constructed from the statement, if any.
+	 * @return The Node constructed from the statement, if any.
 	 */
 	public static Node decodeStatement(Node parent, String statement, Location location, boolean require, boolean scope, Class<?> types[])
 	{
@@ -439,11 +439,11 @@ public class SyntaxTree
 //		{
 			for (Class<?> type : types)
 			{
-//				Class<TreeNode> a = (Class<TreeNode>)type;
+//				Class<Node> a = (Class<Node>)type;
 //				
-//				Method m = a.getMethod("decodeStatement", TreeNode.class, String.class, Location.class);
+//				Method m = a.getMethod("decodeStatement", Node.class, String.class, Location.class);
 //				
-//				node = (TreeNode)m.invoke(a, parent, statement, location);
+//				node = (Node)m.invoke(a, parent, statement, location);
 				
 				if      (type == LocalDeclaration.class) node = LocalDeclaration.decodeStatement(parent, statement, location, require, scope);
 				else if (type == IfStatement.class) node = IfStatement.decodeStatement(parent, statement, location, require, scope);
@@ -470,8 +470,8 @@ public class SyntaxTree
 				else if (type == Catch.class) node = Catch.decodeStatement(parent, statement, location, require, scope);
 				else if (type == ExceptionHandler.class) node = ExceptionHandler.decodeStatement(parent, statement, location, require, scope);
 				else if (type == FinallyNode.class) node = FinallyNode.decodeStatement(parent, statement, location, require, scope);
-				else if (type == ThrowNode.class) node = ThrowNode.decodeStatement(parent, statement, location, require, scope);
-				else if (type == TryNode.class) node = TryNode.decodeStatement(parent, statement, location, require, scope);
+				else if (type == Throw.class) node = Throw.decodeStatement(parent, statement, location, require, scope);
+				else if (type == Try.class) node = Try.decodeStatement(parent, statement, location, require, scope);
 				
 				if (node != null)
 				{
@@ -520,7 +520,7 @@ public class SyntaxTree
 	 * @param location The location of the statement.
 	 * @param scope Whether or not the given statement is the beginning of
 	 * 		a scope.
-	 * @return The TreeNode representation of the given statement.
+	 * @return The Node representation of the given statement.
 	 */
 	public static Node decodeScopeContents(Node parent, String statement, Location location, boolean scope)
 	{
@@ -538,7 +538,7 @@ public class SyntaxTree
 	 * @param require Whether or not to throw an error if anything goes wrong.
 	 * @param scope Whether or not the given statement is the beginning of
 	 * 		a scope.
-	 * @return The TreeNode representation of the given statement.
+	 * @return The Node representation of the given statement.
 	 */
 	public static Node decodeScopeContents(Node parent, String statement, Location location, boolean require, boolean scope)
 	{
@@ -720,7 +720,7 @@ public class SyntaxTree
 	 * Try to find an existing node from the given statement. This method
 	 * searches through fields and local variables.
 	 * 
-	 * @param parent The parent TreeNode to use as our context.
+	 * @param parent The parent Node to use as our context.
 	 * @param statement The statement to check for an existing node from.
 	 * @return The IdentifierNode that is found, if any.
 	 */
@@ -1116,7 +1116,7 @@ public class SyntaxTree
 		 * treat it as such and then skip the search index to after the
 		 * ending brace of the external statement.
 		 * 
-		 * @param node The TreeNode to check whether or not is an
+		 * @param node The Node to check whether or not is an
 		 * 		ExternalStatementNode.
 		 * @param source The source to traverse through.
 		 */
@@ -1321,7 +1321,7 @@ public class SyntaxTree
 		 * Traverse the given source code and generate the tree along with the
 		 * data and parameters that are given.
 		 * 
-		 * @param parent The TreeNode to stem all of the following decoded
+		 * @param parent The Node to stem all of the following decoded
 		 * 		data from.
 		 * @param source The text to decode.
 		 * @param offset The character offset within the file's source text
@@ -1333,7 +1333,7 @@ public class SyntaxTree
 		 * 			<li>{@link #SINGLE_STATEMENT_END_CHARS}</li>
 		 * 			<li>{@link #SCOPE_STATEMENT_END_CHARS}</li>
 		 * 		</ul>
-		 * @param searchTypes The type of TreeNodes to try to decode.
+		 * @param searchTypes The type of Nodes to try to decode.
 		 * @param skipScopes Whether or not to skip the scopes of anything
 		 * 		that contains a scope. If true, only decode the header.
 		 */
@@ -1356,7 +1356,7 @@ public class SyntaxTree
 		
 		/**
 		 * Search for the next statement. If a statement is found, return
-		 * it in a TreeNode format, if not return null.
+		 * it in a Node format, if not return null.
 		 * 
 		 * @param source The source String to search in.
 		 * @param previous The previously decoded node.
@@ -1368,8 +1368,8 @@ public class SyntaxTree
 		 * 			<li>{@link #SINGLE_STATEMENT_END_CHARS}</li>
 		 * 			<li>{@link #SCOPE_STATEMENT_END_CHARS}</li>
 		 * 		</ul>
-		 * @param searchTypes The type of TreeNodes to try to decode.
-		 * @return The TreeNode containing the information, or null if it is
+		 * @param searchTypes The type of Nodes to try to decode.
+		 * @return The Node containing the information, or null if it is
 		 * 		not found.
 		 */
 		private Node getNextStatement(String source, Node previous, int offset, char statementType[], Class<?> searchTypes[])
@@ -1544,14 +1544,14 @@ public class SyntaxTree
 		
 		/**
 		 * Decode the specified statement String at the given Location into a
-		 * TreeNode instance.
+		 * Node instance.
 		 * 
-		 * @param statement The statement String to decode into a TreeNode.
+		 * @param statement The statement String to decode into a Node.
 		 * @param location The location of the statement in the source text.
-		 * @param searchTypes The type of TreeNodes to try to decode.
+		 * @param searchTypes The type of Nodes to try to decode.
 		 * @param scope Whether or not the given statement is the beginning of
 		 * 		a scope.
-		 * @return The result TreeNode of decoding the statement String.
+		 * @return The result Node of decoding the statement String.
 		 */
 		private Node decodeStatement(String statement, Location location, boolean scope, Class<?> searchTypes[])
 		{

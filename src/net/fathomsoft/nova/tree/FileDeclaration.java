@@ -55,7 +55,7 @@ public class FileDeclaration extends Node
 	/**
 	 * Instantiate and initialize the default values.
 	 * 
-	 * @see net.fathomsoft.nova.tree.Node#TreeNode(Node, Location)
+	 * @see net.fathomsoft.nova.tree.Node#Node(Node, Location)
 	 */
 	public FileDeclaration(Node temporaryParent, Location locationIn)
 	{

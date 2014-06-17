@@ -22,7 +22,7 @@ public class Constructor extends Method
 	/**
 	 * Create a ConstructorNode and initialize default values.
 	 * 
-	 * @see net.fathomsoft.nova.tree.Node#TreeNode(Node, Location)
+	 * @see net.fathomsoft.nova.tree.Node#Node(Node, Location)
 	 */
 	public Constructor(Node temporaryParent, Location locationIn)
 	{
@@ -290,7 +290,7 @@ public class Constructor extends Method
 	 * <ul>
 	 * 	<li>public ClassName()</li>
 	 * 	<li>private ClassName(int numChildren, String name)</li>
-	 * 	<li>public ClassName(TreeNode parent, Location location)</li>
+	 * 	<li>public ClassName(Node parent, Location location)</li>
 	 * </ul>
 	 * 
 	 * @param parent The parent node of the statement.

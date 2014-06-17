@@ -3,7 +3,7 @@ package net.fathomsoft.nova.tree;
 import net.fathomsoft.nova.util.Location;
 
 /**
- * TreeNode extension that represents the declaration of a LoopNode
+ * Node extension that represents the declaration of a LoopNode
  * node type. See {@link #decodeStatement(Node, String, Location, boolean, boolean)}
  * for more details on what correct inputs look like.
  * 
@@ -16,7 +16,7 @@ public class Loop extends Node
 	/**
 	 * Instantiate a new LoopNode and initialize the default values.
 	 * 
-	 * @see net.fathomsoft.nova.tree.Node#TreeNode(Node, Location)
+	 * @see net.fathomsoft.nova.tree.Node#Node(Node, Location)
 	 */
 	public Loop(Node temporaryParent, Location locationIn)
 	{

@@ -15,7 +15,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
 public class Priority extends Value
 {
 	/**
-	 * @see net.fathomsoft.nova.tree.Node#TreeNode(Node, Location)
+	 * @see net.fathomsoft.nova.tree.Node#Node(Node, Location)
 	 */
 	public Priority(Node temporaryParent, Location locationIn)
 	{

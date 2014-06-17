@@ -23,7 +23,7 @@ public class Try extends ExceptionHandler
 	/**
 	 * Instantiate and initialize default data.
 	 * 
-	 * @see net.fathomsoft.nova.tree.Node#TreeNode(Node, Location)
+	 * @see net.fathomsoft.nova.tree.Node#Node(Node, Location)
 	 */
 	public Try(Node temporaryParent, Location locationIn)
 	{
