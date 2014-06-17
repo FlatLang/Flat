@@ -42,7 +42,7 @@ public class ScopeNode extends TreeNode
 		
 		MethodNode method = getParent().getMethodNode();
 		
-		id = method.generateUniqueId();
+		id = method.generateUniqueID();
 	}
 	
 	/**
