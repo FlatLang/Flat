@@ -11,7 +11,7 @@ import net.fathomsoft.nova.util.Location;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 10:00:50 PM
- * @version	v0.2.7 May 25, 2014 at 9:16:48 PM
+ * @version	v0.2.13 Jun 17, 2014 at 8:45:35 AM
  */
 public class FieldListNode extends TreeNode
 {
@@ -263,10 +263,27 @@ public class FieldListNode extends TreeNode
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.TreeNode#generateCSource()
+	 * Generate the C Source output for the all of the public static
+	 * variables.
+	 * 
+	 * @return The C Source file output.
 	 */
-	@Override
-	public String generateCSource()
+	public String generateStaticCSource()
+	{
+		StringBuilder builder = new StringBuilder();
+		
+		builder.append(getPublicStaticFieldListNode().generateCSource());
+		
+		return builder.toString();
+	}
+
+	/**
+	 * Generate the C Source output for the all of the non-static
+	 * variables.
+	 * 
+	 * @return The C Source file output.
+	 */
+	public String generateNonStaticCSource()
 	{
 		StringBuilder builder = new StringBuilder();
 		
@@ -276,7 +293,7 @@ public class FieldListNode extends TreeNode
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.TreeNode#clone(TreeNode)
+	 * @see net.fathomsoft.nova.tree.TreeNode#clone(TreeNode, Location)
 	 */
 	@Override
 	public FieldListNode clone(TreeNode temporaryParent, Location locationIn)
