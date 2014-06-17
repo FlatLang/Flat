@@ -9,12 +9,12 @@ import net.fathomsoft.nova.util.SyntaxUtils;
 
 /**
  * ValueNode extension that represents the declaration of an
- * instantiation node type. See {@link #decodeStatement(TreeNode, String, Location)}
+ * instantiation node type. See {@link #decodeStatement(TreeNode, String, Location, boolean, boolean)}
  * for more details on what correct inputs look like.
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Apr 3, 2014 at 7:53:35 PM
- * @version	v0.2.11 May 31, 2014 at 1:19:11 PM
+ * @version	v0.2.13 Jun 17, 2014 at 8:45:35 AM
  */
 public class InstantiationNode extends IdentifierNode
 {
@@ -60,12 +60,12 @@ public class InstantiationNode extends IdentifierNode
 	 */
 	public IdentifierNode getAccessedNode()
 	{
-		if (getNumChildren() <= 1)
+		if (getNumChildren() < 1)
 		{
 			return null;
 		}
 		
-		return (IdentifierNode)getChild(1);
+		return getIdentifierNode().getAccessedNode();
 	}
 	
 	/**
@@ -177,21 +177,21 @@ public class InstantiationNode extends IdentifierNode
 		
 		builder.append("new ").append(getIdentifierNode().generateNovaInput());
 		
-		if (outputChildren)
-		{
-			IdentifierNode accessed = getAccessedNode();
-			
-			if (accessed != null)
-			{
-				builder.append('.').append(accessed.generateNovaInput());
-			}
-		}
+//		if (outputChildren)
+//		{
+//			IdentifierNode accessed = getAccessedNode();
+//			
+//			if (accessed != null)
+//			{
+//				builder.append('.').append(accessed.generateNovaInput());
+//			}
+//		}
 		
 		return builder.toString();
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.TreeNode#clone(TreeNode)
+	 * @see net.fathomsoft.nova.tree.TreeNode#clone(TreeNode, Location)
 	 */
 	@Override
 	public InstantiationNode clone(TreeNode temporaryParent, Location locationIn)
