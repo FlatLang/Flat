@@ -411,7 +411,7 @@ public class BinaryOperatorNode extends ValueNode
 			return null;
 		}
 		
-		int checkId = parent.getMethodNode().generateUniqueId();
+		int checkId = parent.getMethodNode().generateUniqueID();
 		
 		String denominatorVar = Nova.LANGUAGE_NAME.toLowerCase() + "_zero_check" + checkId++;
 		
