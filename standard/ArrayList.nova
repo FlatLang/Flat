@@ -1,47 +1,42 @@
 import "stdlib.h";
-import "Fathom.h";
+import "Nova.h";
 
 public class ArrayList
 {
 	external void arrayCopy(void* dest, int dIndex, void* src, int sIndex, int len, int destArrLen, int size);
 	
-	int	count;
-	int	size;
+	int	bufferSize;
+	
+	visible int	size;
 	
 	int data[];
 	
 	public ArrayList()
 	{
 		size = 0;
+		bufferSize = 0;
 		increaseSize();
 	}
 	
 	public void add(int var)
 	{
-		if (count + 1 >= size)
+		if (size >= bufferSize)
 		{
 			increaseSize();
 		}
 		
-		data[count] = var;
-		
-		count = count + 1;
+		data[size++] = var;
 	}
 	
 	public void increaseSize()
 	{
-		size = size + 3;
+		bufferSize = bufferSize + 3;
 		
-		int tmp[] = new int[size];
+		int tmp[] = new int[bufferSize];
 		
-		arrayCopy(tmp, 0, data, 0, count, size, 4);
+		arrayCopy(tmp, 0, data, 0, size, bufferSize, 4);
 		
 		data = tmp;
-	}
-	
-	public int getSize()
-	{
-		return count;
 	}
 	
 	public int get(int index)
