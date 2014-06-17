@@ -1,5 +1,8 @@
 package net.fathomsoft.nova.tree;
 
+import java.io.ObjectInputStream.GetField;
+
+import net.fathomsoft.nova.error.SyntaxErrorException;
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.tree.variables.VariableNode;
 import net.fathomsoft.nova.util.Bounds;
@@ -10,12 +13,12 @@ import net.fathomsoft.nova.util.SyntaxUtils;
 
 /**
  * ValueNode extension that represents the declaration of a method
- * call node type. See {@link #decodeStatement(TreeNode, String, Location)}
+ * call node type. See {@link #decodeStatement(TreeNode, String, Location, boolean, boolean)}
  * for more details on what correct inputs look like.
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 10:04:31 PM
- * @version	v0.2.11 May 31, 2014 at 1:19:11 PM
+ * @version	v0.2.13 Jun 17, 2014 at 8:45:35 AM
  */
 public class MethodCallNode extends IdentifierNode
 {
@@ -62,7 +65,7 @@ public class MethodCallNode extends IdentifierNode
 	 */
 	public boolean isWithinExternalContext()
 	{
-		MethodNode method = getMethodNode();
+		MethodNode method = getMethodDeclarationNode();
 		
 		if (method.isExternal())
 		{
@@ -103,34 +106,22 @@ public class MethodCallNode extends IdentifierNode
 	 * @return The MethodNode instance that this MethodCallNode is
 	 * 		calling.
 	 */
-	public MethodNode getMethodNode()
+	public MethodNode getMethodDeclarationNode()
 	{
-		return getMethodNode(getParent());
-	}
-	
-	/**
-	 * Get the MethodNode instance that this MethodCallNode is calling.
-	 * 
-	 * @param parent The parent node of the Method call node.
-	 * @return The MethodNode instance that this MethodCallNode is
-	 * 		calling.
-	 */
-	public MethodNode getMethodNode(TreeNode parent)
-	{
-		FileNode    file    = parent.getFileNode();
+		FileNode    file    = getParent().getFileNode();
 		
 		ProgramNode program = file.getProgramNode();
 		
 		if (file.containsImport(getName()))
 		{
-			ClassNode  clazz  = program.getClass(getName());
+			ClassNode  clazz  = program.getClassNode(getName());
 			
 			MethodNode method = clazz.getMethod(getName());
 			
 			return method;
 		}
 		
-		ValueNode  val    = getReferenceNode(parent);
+		ValueNode  val    = getReferenceNode();
 		
 		ClassNode  clazz  = val.getTypeClass();
 		
@@ -149,7 +140,7 @@ public class MethodCallNode extends IdentifierNode
 	 */
 	public String getObjectReferenceIdentifier()
 	{
-		return getObjectReferenceIdentifier(getMethodNode());
+		return getObjectReferenceIdentifier(getMethodDeclarationNode());
 	}
 	
 	/**
@@ -163,7 +154,7 @@ public class MethodCallNode extends IdentifierNode
 	 */
 	public ValueNode getObjectReferenceValue()
 	{
-		return getObjectReferenceValue(getMethodNode());
+		return getObjectReferenceValue(getMethodDeclarationNode());
 	}
 	
 	/**
@@ -232,7 +223,7 @@ public class MethodCallNode extends IdentifierNode
 	 */
 	public ParameterNode getCorrespondingParameter(int argIndex)
 	{
-		MethodNode method = getMethodNode();
+		MethodNode method = getMethodDeclarationNode();
 		
 		return method.getParameterNode(argIndex);
 	}
@@ -288,11 +279,11 @@ public class MethodCallNode extends IdentifierNode
 		
 		StringBuilder builder = new StringBuilder();
 		
-		MethodNode    method  = getMethodNode();
+		MethodNode    method  = getMethodDeclarationNode();
 		
 		if (!isSpecialFragment())
 		{
-			ValueNode node = getContextNode();
+			ValueNode node = getRootAccessNode();
 			
 			builder.append(node.generateDataTypeOutput(getDataType()));
 		}
@@ -389,24 +380,7 @@ public class MethodCallNode extends IdentifierNode
 			bounds.setStart(start);
 			bounds.setEnd(end);
 			
-			final boolean error[] = new boolean[1];
-			
-			MethodCallNode n = new MethodCallNode(parent, location)
-			{
-				public void interactWord(String word, int wordNumber, Bounds bounds, int numWords, String leftDelimiter, String rightDelimiter)
-				{
-					if (wordNumber == numWords - 1 && leftDelimiter.length() == 0)
-					{
-						setName(word);
-					}
-					else if (rightDelimiter.length() > 0)
-					{
-						SyntaxMessage.error("Unknown characters '" + rightDelimiter + "'", this);
-						
-						error[0] = true;
-					}
-				}
-			};
+			MethodCallNode n = new MethodCallNode(parent, location);
 			
 			// TODO: make better check for last parenth. Take a count of each of the starting parenthesis and
 			// subtract the ending ones from the number.
@@ -425,37 +399,52 @@ public class MethodCallNode extends IdentifierNode
 			
 //			n.externalCall = parent instanceof ExternalTypeNode;
 			
-			n.iterateWords(methodCall, Patterns.IDENTIFIER_BOUNDARIES);
-			
-			if (error[0])
+			try
 			{
-				return null;
+				n.iterateWords(methodCall, Patterns.IDENTIFIER_BOUNDARIES);
+			}
+			catch (SyntaxErrorException e)
+			{
+				if (!require)
+				{
+					return null;
+				}
+				
+				throw e;
 			}
 			
 			FileNode     file     = parent.getFileNode();
-			MethodNode   method   = n.getMethodNode();
+			MethodNode   method   = n.getMethodDeclarationNode();
 			MethodNode   context  = (MethodNode)parent.getAncestorOfType(MethodNode.class, true);
 			VariableNode accessor = context.getClassNode();
 			
-			if (method != null && !SyntaxUtils.isVisible(accessor, method))
-			{
-				SyntaxMessage.error("Method '" + method.getName() + "' is not visible", n);
-			}
-			
-			if (method == null)// && !n.isExternal())
+			if (method == null)
 			{
 				SyntaxMessage.error("Undeclared method '" + n.getName() + "'", n);
 			}
 			
-			if (method != null)
+			if (!SyntaxUtils.isVisible(accessor, method))
 			{
-				if (method.isExternal())
-				{
-					n.externalCall = true;
-				}
-				
-				n.setType(method.getType());
+				SyntaxMessage.error("Method '" + method.getName() + "' is not visible", n);
 			}
+			
+			n.setDataType(method.getDataType());
+			
+			if (method.isExternal())
+			{
+				n.externalCall = true;
+			}
+			else
+			{
+				ValueNode contextNode = n.getContextNode();
+				
+				if (contextNode instanceof ClassNode && method instanceof ConstructorNode == false && !method.isStatic())
+				{
+					SyntaxMessage.error("Cannot call a non-static method from a static context", n);
+				}
+			}
+			
+			n.setType(method.getType());
 			
 			String arguments[] = StringUtils.splitCommas(argumentList);
 			
@@ -473,6 +462,22 @@ public class MethodCallNode extends IdentifierNode
 		}
 		
 		return null;
+	}
+	
+	/**
+	 * @see net.fathomsoft.nova.tree.TreeNode#interactWord(java.lang.String, int, net.fathomsoft.nova.util.Bounds, int, java.lang.String, java.lang.String, net.fathomsoft.nova.tree.TreeNode.ExtraData)
+	 */
+	@Override
+	public void interactWord(String word, int wordNumber, Bounds bounds, int numWords, String leftDelimiter, String rightDelimiter, ExtraData extra)
+	{
+		if (wordNumber == numWords - 1 && leftDelimiter.length() == 0)
+		{
+			setName(word);
+		}
+		else if (rightDelimiter.length() > 0)
+		{
+			SyntaxMessage.error("Unknown characters '" + rightDelimiter + "'", this);
+		}
 	}
 	
 	/**
@@ -558,7 +563,7 @@ public class MethodCallNode extends IdentifierNode
 				}
 				if (arg == null)
 				{
-					arg = TreeNode.decodeScopeContents(parent, argument, location, false, false);//TreeNode.getExistingNode(parent, argument);
+					arg = SyntaxTree.decodeScopeContents(parent, argument, location, false, false);//SyntaxTree.getExistingNode(parent, argument);
 					
 					if (arg != null && (prefix == '*' || prefix == '&'))
 					{
@@ -636,9 +641,12 @@ public class MethodCallNode extends IdentifierNode
 	
 	/**
 	 * @see net.fathomsoft.nova.tree.TreeNode#validate()
+	 * 
+	 * @param phase The phase that the node is being validated in.
+	 * @see net.fathomsoft.nova.tree.TreeNode#validate(int)
 	 */
 	@Override
-	public void validate()
+	public TreeNode validate(int phase)
 	{
 		ValueNode reference = getReferenceNode();
 		
@@ -650,16 +658,18 @@ public class MethodCallNode extends IdentifierNode
 			{
 				if (var.isPrimitiveType())
 				{
-					InstantiationNode instantiation = SyntaxUtils.autoboxPrimitive(var.getParent(), var);
+					InstantiationNode instantiation = SyntaxUtils.autoboxPrimitive(var);
 					
 					var.getParent().replace(var, instantiation);
 				}
 			}
 		}
+		
+		return this;
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.TreeNode#clone(TreeNode)
+	 * @see net.fathomsoft.nova.tree.TreeNode#clone(TreeNode, Location)
 	 */
 	@Override
 	public MethodCallNode clone(TreeNode temporaryParent, Location locationIn)
