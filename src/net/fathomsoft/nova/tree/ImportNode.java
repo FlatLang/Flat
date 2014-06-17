@@ -1,5 +1,8 @@
 package net.fathomsoft.nova.tree;
 
+import java.io.ObjectInputStream.GetField;
+
+import net.fathomsoft.nova.error.SyntaxErrorException;
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.util.Location;
 import net.fathomsoft.nova.util.Patterns;
@@ -7,18 +10,16 @@ import net.fathomsoft.nova.util.Regex;
 
 /**
  * TreeNode extension that represents the declaration of an
- * "import statement" node type. See {@link net.fathomsoft.nova.tree.ImportNode#decodeStatement(net.fathomsoft.nova.tree.TreeNode, java.lang.String, net.fathomsoft.nova.util.Location) decodeStatement}
+ * "import statement" node type. See {@link #decodeStatement(TreeNode, String, Location, boolean, boolean)}
  * for more details on what correct inputs look like.
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 13, 2014 at 7:56:24 PM
- * @version	v0.2.11 May 31, 2014 at 1:19:11 PM
+ * @version	v0.2.13 Jun 17, 2014 at 8:45:35 AM
  */
 public class ImportNode extends TreeNode
 {
 	private boolean	external;
-	
-	private String	importLocation;
 	
 	/**
 	 * @see net.fathomsoft.nova.tree.TreeNode#TreeNode(TreeNode, Location)
@@ -51,29 +52,35 @@ public class ImportNode extends TreeNode
 	}
 	
 	/**
+	 * Get the IdentifierNode containing the location of the import.
+	 * 
+	 * @return The IdentifierNode containing the location of the import.
+	 */
+	public IdentifierNode getLocationNode()
+	{
+		return (IdentifierNode)getChild(0);
+	}
+	
+	/**
 	 * Get the location of the import. For example, in the statement:
 	 * 'import "net/fathomsoft/String";' the location is the
-	 * net/fathomsoft/String section. In other words, the location is the
+	 * net/fathomsoft/NovaString.h section. In other words, the location is the
 	 * content that is within the double quotes in an import statement.
 	 * 
 	 * @return The location of the import.
 	 */
-	public String getImportLocation()
+	public String getLocation()
 	{
-		return importLocation;
+		if (isExternal())
+		{
+			return getLocationNode().getName() + ".h";
+		}
+		
+		ClassNode node = getProgramNode().getClassNode(getLocationNode().getName());
+		
+		return node.getFileNode().generateCHeaderName();
 	}
 	
-	/**
-	 * Set the location of the import. The location is where the file
-	 * can be found, relative to the buildpath.
-	 * 
-	 * @param location The new location of the import.
-	 */
-	public void setImportLocation(String location)
-	{
-		this.importLocation = location;
-	}
-
 	/**
 	 * @see net.fathomsoft.nova.tree.TreeNode#generateCHeader()
 	 */
@@ -82,7 +89,7 @@ public class ImportNode extends TreeNode
 	{
 		return generateCSource();
 	}
-
+	
 	/**
 	 * @see net.fathomsoft.nova.tree.TreeNode#generateCSource()
 	 */
@@ -95,11 +102,11 @@ public class ImportNode extends TreeNode
 		
 		if (isExternal())
 		{
-			builder.append('<').append(importLocation).append(".h").append('>');
+			builder.append('<').append(getLocation()).append('>');
 		}
 		else
 		{
-			builder.append('"').append(importLocation).append(".h").append('"');
+			builder.append('"').append(getLocation()).append('"');
 		}
 		
 		builder.append('\n');
@@ -116,9 +123,8 @@ public class ImportNode extends TreeNode
 	 * <br>
 	 * Example inputs include:<br>
 	 * <ul>
-	 * 	<li>import "net/fathomsoft/String";</li>
-	 * 	<li>import "net.fathomSOFT.StRing";</li>
-	 * 	<li>import "armadillo"; <i>(If armadillo is a class within the buildpath)</i></li>
+	 * 	<li>import "net/fathomsoft/String"</li>
+	 * 	<li>import "armadillo"<i>(If armadillo is a class within the current package)</i></li>
 	 * </ul>
 	 * 
 	 * @param parent The parent node of the statement.
@@ -168,7 +174,12 @@ public class ImportNode extends TreeNode
 					}
 				}
 				
-				n.setImportLocation(statement);
+				IdentifierNode node = new IdentifierNode(n, location);
+				node.setName(statement);
+				
+				n.addChild(node);
+				
+//				n.setImportLocation(statement);
 			}
 			else
 			{
@@ -182,7 +193,45 @@ public class ImportNode extends TreeNode
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.TreeNode#clone(TreeNode)
+	 * @see net.fathomsoft.nova.tree.TreeNode#validate(int)
+	 */
+	@Override
+	public TreeNode validate(int phase)
+	{
+		if (!isExternal())
+		{
+			IdentifierNode location = getLocationNode();
+			
+			ProgramNode    program  = getProgramNode();
+			
+			ClassNode      clazz    = program.getClassNode(location.getName());
+			
+			if (clazz == null)
+			{
+				try
+				{
+					SyntaxMessage.error("Unknown import location '" + location.getName() + "'", this);
+				}
+				catch (SyntaxErrorException e)
+				{
+					getParent().removeChild(this);
+					
+					return null;
+				}
+			}
+			
+			IdentifierNode node = new IdentifierNode(this, location.getLocationIn());
+			
+			location.cloneTo(node);
+			
+			replace(location, location);
+		}
+		
+		return this;
+	}
+	
+	/**
+	 * @see net.fathomsoft.nova.tree.TreeNode#clone(TreeNode, Location)
 	 */
 	@Override
 	public ImportNode clone(TreeNode temporaryParent, Location locationIn)
@@ -203,8 +252,7 @@ public class ImportNode extends TreeNode
 	{
 		super.cloneTo(node);
 		
-		node.setImportLocation(getImportLocation());
-		node.external = isExternal();
+		node.external = external;
 		
 		return node;
 	}
