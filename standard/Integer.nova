@@ -9,52 +9,12 @@ public class Integer extends Number
 	
 	public static int numDigits(int number)
 	{
-		if (number < 0)
-		{
-			return numDigits(-number) + 1;
-		}
-		
-		int size;
-		
-		number = number / 10;
-			
-		for (size = 1; number > 0; size++)
-		{
-			number = number / 10;
-		}
-		
-		return size;
+		return Long.numDigits(number);
 	}
 	
 	public static String toAString(int value)
 	{
-		int  digits  = numDigits(value);
-		
-		char data[]  = new char[digits + 1];
-		
-		/*data[digits] = '\0';
-		
-		int  offset  = 0;
-		
-		if (value < 0)
-		{
-			data[0] = '-';
-			
-			value  = -value;
-			
-			offset = 1;
-		}
-		
-		int nums = digits-- - offset;
-		
-		for (int index = 0; index < nums; index++)
-		{
-			data[digits - index] = '0' + value % 10;
-			
-			value = value / 10;
-		}
-		
-		return new String(data);*/
+		return Long.toAString(value);
 	}
 	
 	public String toString()
