@@ -7,12 +7,12 @@ import net.fathomsoft.nova.util.Regex;
 
 /**
  * TreeNode extension that represents the declaration of an "else
- * statement" node type. See {@link #decodeStatement(TreeNode, String, Location)}
+ * statement" node type. See {@link #decodeStatement(TreeNode, String, Location, boolean, boolean)}
  * for more details on what correct inputs look like.
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:57:13 PM
- * @version	v0.2.11 May 31, 2014 at 1:19:11 PM
+ * @version	v0.2.13 Jun 17, 2014 at 8:45:35 AM
  */
 public class ElseStatementNode extends TreeNode
 {
@@ -28,7 +28,7 @@ public class ElseStatementNode extends TreeNode
 		
 		ScopeNode scopeNode = new ScopeNode(this, locationIn);
 		
-		addChild(scopeNode);
+		setScopeNode(scopeNode);
 	}
 	
 	/**
@@ -54,24 +54,6 @@ public class ElseStatementNode extends TreeNode
 		{
 			getScopeNode().addChild(child);
 		}
-	}
-	
-	/**
-	 * @see net.fathomsoft.nova.tree.TreeNode#generateJavaSource()
-	 */
-	@Override
-	public String generateJavaSource()
-	{
-		return null;
-	}
-
-	/**
-	 * @see net.fathomsoft.nova.tree.TreeNode#generateCHeader()
-	 */
-	@Override
-	public String generateCHeader()
-	{
-		return null;
 	}
 	
 	/**
@@ -119,15 +101,6 @@ public class ElseStatementNode extends TreeNode
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.TreeNode#generateCSourceFragment()
-	 */
-	@Override
-	public String generateCSourceFragment()
-	{
-		return null;
-	}
-	
-	/**
 	 * Decode the given statement into a ElseStatementNode instance, if
 	 * possible. If it is not possible, this method returns null.<br>
 	 * <br>
@@ -164,7 +137,7 @@ public class ElseStatementNode extends TreeNode
 			
 			if (ending.length() > 0)
 			{
-				TreeNode contents = TreeNode.decodeStatement(parent, ending, newLocation, require, false);
+				TreeNode contents = SyntaxTree.decodeScopeContents(parent, ending, newLocation, require, false);
 				
 				if (contents != null)
 				{
@@ -179,7 +152,7 @@ public class ElseStatementNode extends TreeNode
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.TreeNode#clone(TreeNode)
+	 * @see net.fathomsoft.nova.tree.TreeNode#clone(TreeNode, Location)
 	 */
 	@Override
 	public ElseStatementNode clone(TreeNode temporaryParent, Location locationIn)
