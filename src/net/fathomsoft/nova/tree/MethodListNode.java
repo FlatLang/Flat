@@ -9,7 +9,7 @@ import net.fathomsoft.nova.util.Location;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 10:29:22 PM
- * @version	v0.2.7 May 25, 2014 at 9:16:48 PM
+ * @version	v0.2.13 Jun 17, 2014 at 8:45:35 AM
  */
 public class MethodListNode extends TreeNode
 {
@@ -108,8 +108,12 @@ public class MethodListNode extends TreeNode
 	
 	/**
 	 * Make sure that the Class is a valid declaration.
+	 * 
+	 * @param phase The phase that the node is being validated in.
+	 * @see net.fathomsoft.nova.tree.TreeNode#validate(int)
 	 */
-	public void validate()
+	@Override
+	public TreeNode validate(int phase)
 	{
 		for (int i = 0; i < getNumChildren(); i++)
 		{
@@ -117,9 +121,11 @@ public class MethodListNode extends TreeNode
 			
 			if (method != null)
 			{
-				method.validate();
+				method.validate(phase);
 			}
 		}
+		
+		return this;
 	}
 	
 	/**
@@ -222,7 +228,7 @@ public class MethodListNode extends TreeNode
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.TreeNode#clone(TreeNode)
+	 * @see net.fathomsoft.nova.tree.TreeNode#clone(TreeNode, Location)
 	 */
 	@Override
 	public MethodListNode clone(TreeNode temporaryParent, Location locationIn)
