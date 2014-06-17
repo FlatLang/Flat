@@ -25,7 +25,7 @@ import net.fathomsoft.nova.tree.variables.VariableNode;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Mar 15, 2014 at 7:55:00 PM
- * @version	v0.2.12 Jun 1, 2014 at 7:28:35 PM
+ * @version	v0.2.13 Jun 17, 2014 at 8:45:35 AM
  */
 public class SyntaxUtils
 {
@@ -147,10 +147,12 @@ public class SyntaxUtils
 		{
 			ValueNode value = (ValueNode)node;
 			
-			if (value.getNumChildren() > 0)
-			{
-				return isString(value.getChild(0));
-			}
+			value = value.getReturnedNode();
+			
+//			if (value.getNumChildren() > 0)
+//			{
+//				return isString(value.getChild(0));
+//			}
 			
 			return value.getType().equals("String");
 		}
@@ -170,7 +172,7 @@ public class SyntaxUtils
 	{
 		if (isCharLiteral(literal))
 		{
-			return "Character";
+			return "char";
 		}
 		else if (isStringLiteral(literal))
 		{
@@ -180,11 +182,11 @@ public class SyntaxUtils
 		{
 			if (isInteger(literal))
 			{
-				return "Integer";
+				return "int";
 			}
 			else if (isDouble(literal))
 			{
-				return "Double";
+				return "double";
 			}
 		}
 		
@@ -269,6 +271,69 @@ public class SyntaxUtils
 		}
 		
 		return false;
+	}
+	
+	/**
+	 * Get whether or not the given String value represents zero.
+	 * 
+	 * @param value The value to check.
+	 * @return Whether or not the given String value represents zero.
+	 */
+	public static boolean isZero(String value)
+	{
+		boolean seenDot     = false;
+		boolean seenExp     = false;
+		boolean justSeenExp = false;
+		boolean seenDigit   = false;
+
+		int start = value.charAt(0) == '-' ? 1 : 0;
+		
+		for (int i = start; i < value.length(); i++)
+		{
+			char c = value.charAt(i);
+			
+			if (c == '0' && !seenExp)
+			{
+				seenDigit = true;
+				
+				continue;
+			}
+			
+			if ((c == '-' || c == '+') && justSeenExp)
+			{
+				continue;
+			}
+			
+			if (c == '.' && !seenDot)
+			{
+				seenDot = true;
+				
+				continue;
+			}
+			
+			justSeenExp = false;
+			
+			if ((c == 'e' || c == 'E') && !seenExp)
+			{
+				seenExp     = true;
+				justSeenExp = true;
+				
+				continue;
+			}
+			
+			return false;
+		}
+		
+		if (!seenDigit)
+		{
+			return false;
+		}
+		else if (!seenDot)
+		{
+			return false;
+		}
+		
+		return true;
 	}
 	
 	/**
@@ -418,6 +483,47 @@ public class SyntaxUtils
 	public static boolean isPrimitiveType(String type)
 	{
 		return type.equals("int") || type.equals("char") || type.equals("long") || type.equals("bool") || type.equals("short") || type.equals("float") || type.equals("double") || type.equals("void");
+	}
+	
+	/**
+	 * Get the name of the wrapper class for the given primitive type.
+	 * 
+	 * @param primitiveType The primitive type to get the wrapper class
+	 * 		of.
+	 * @return The name of the wrapper class for the given primitive type.
+	 */
+	public static String getPrimitiveWrapperClassName(String primitiveType)
+	{
+		if (primitiveType.equals("int"))
+		{
+			return "Integer";
+		}
+		else if (primitiveType.equals("char"))
+		{
+			return "Char";
+		}
+		else if (primitiveType.equals("long"))
+		{
+			return "Long";
+		}
+		else if (primitiveType.equals("bool"))
+		{
+			return "Bool";
+		}
+		else if (primitiveType.equals("short"))
+		{
+			return "Short";
+		}
+		else if (primitiveType.equals("float"))
+		{
+			return "Float";
+		}
+		else if (primitiveType.equals("double"))
+		{
+			return "Double";
+		}
+		
+		return null;
 	}
 	
 	/**
@@ -654,7 +760,7 @@ public class SyntaxUtils
 	/**
 	 * Get whether or not the given statement is an instantiation. For
 	 * more details on what an instantiation consists of see
-	 * {@link net.fathomsoft.nova.tree.InstantiationNode#decodeStatement(TreeNode, String, Location)}.
+	 * {@link net.fathomsoft.nova.tree.InstantiationNode#decodeStatement(TreeNode, String, Location, boolean, boolean)}.
 	 * 
 	 * @param statement The statement to test.
 	 * @return Whether or not the given statement is an instantiation.
@@ -748,7 +854,7 @@ public class SyntaxUtils
 			
 			if (f.getImportListNode().containsImport(identifier))
 			{
-				return f.getProgramNode().getClass(identifier);
+				return f.getProgramNode().getClassNode(identifier);
 			}
 			
 			InstanceDeclarationNode dec = reference.getDeclaration(identifier);
@@ -758,7 +864,7 @@ public class SyntaxUtils
 				SyntaxMessage.error("Variable '" + dec.getName() + "' is not visible", reference.getController());
 			}
 			
-			current = dec.getProgramNode().getClass(dec.getType());
+			current = dec.getProgramNode().getClassNode(dec.getType());
 			
 			if (identifiers.length <= 2)
 			{
@@ -864,42 +970,6 @@ public class SyntaxUtils
 	}
 	
 	/**
-	 * Get whether or not the given type String is a representation of
-	 * an external type in the FileNode. Consider the following:
-	 * <blockquote><pre>
-	 * import "externalFile.h";
-	 * 
-	 * public class Example
-	 * {
-	 * 	public void exampleMethod()
-	 * 	{
-	 * 		externalFile.functionCall();
-	 * 	}
-	 * }</pre></blockquote>
-	 * The <code>externalFile.functionCall()</code> is an external type
-	 * because the "<code>externalFile</code>" is imported as an external
-	 * header file at the top of the file.
-	 * 
-	 * @param file The FileNode that contains the possible external
-	 * 		statement.
-	 * @param statement The statement that is possibly an external type.
-	 * @return Whether or not the statement is an external type.
-	 */
-	public static boolean isExternal(FileNode file, String statement)
-	{
-		int index = statement.indexOf('.');
-		
-		if (index < 0)
-		{
-			return false;
-		}
-		
-		String externalName = statement.substring(0, index);
-		
-		return file.getImportListNode().isExternal(externalName);
-	}
-	
-	/**
 	 * Get whether or not the declaration is accessible from the
 	 * given accessor context.
 	 * 
@@ -926,61 +996,28 @@ public class SyntaxUtils
 	
 	/**
 	 * Try to autobox the given primitive TreeNode, if it truly has a
-	 * primitive value. It the TreeNode does have a primitive value, then
-	 * an Instantiation inside the corresponding class will be returned.
+	 * primitive value. If the given ValueNode does not have a primitive
+	 * type, then null is returned.
 	 * 
-	 * @param parent The parent of the primitive.
-	 * @param primitive The TreeNode to try to autobox.
+	 * @param primitive The ValueNode to try to autobox.
 	 * @return An instantiation from the corresponding primitive wrapper
-	 * 		class.
+	 * 		class. If the given value is not primitive, then null is
+	 * 		returned.
 	 */
-	public static InstantiationNode autoboxPrimitive(TreeNode parent, TreeNode primitive)
+	public static InstantiationNode autoboxPrimitive(ValueNode primitive)
 	{
 		InstantiationNode node = null;
 		
-		if (primitive instanceof LiteralNode)
-		{
-			LiteralNode literal = (LiteralNode)primitive;
-			
-			String      value   = literal.getValue();
-			
-			if (isNumber(value))
-			{
-				if (isInteger(value))
-				{
-					String instantiation   = "new Integer(" + value + ")";
-					
-					node = InstantiationNode.decodeStatement(parent, instantiation, primitive.getLocationIn(), true, false);
-				}
-			}
-		}
-		else if (primitive instanceof ValueNode)
-		{
-			ValueNode value    = (ValueNode)primitive;
-			ValueNode returned = value.getReturnedNode();
-			
-			String    type     = returned.getType();
-			
-			if (type.equals("int"))
-			{
-				String instantiation = "new Integer(" + value.generateNovaInput(true) + ")";
-				
-				node = InstantiationNode.decodeStatement(parent, instantiation, primitive.getLocationIn(), true, false);
-				
-//				node.inheritChildren(value);
-			}
-			if (type.equals("long"))
-			{
-				String instantiation = "new Long(" + value.generateNovaInput(true) + ")";
-				
-				node = InstantiationNode.decodeStatement(parent, instantiation, primitive.getLocationIn(), true, false);
-			}
-		}
+		ValueNode returned = primitive.getReturnedNode();
 		
-//		if (node != null)
-//		{
-//			node.inheritChildren(primitive, true);
-//		}
+		if (returned.isPrimitiveType())
+		{
+			String className = getPrimitiveWrapperClassName(returned.getType());
+			
+			String instantiation = "new " + className + '(' + primitive.generateNovaInput() + ')';
+			
+			node = InstantiationNode.decodeStatement(primitive.getParent(), instantiation, primitive.getLocationIn(), true, false);
+		}
 		
 		return node;
 	}
@@ -1031,7 +1068,7 @@ public class SyntaxUtils
 		{
 			MethodCallNode call = (MethodCallNode)value;
 			
-			value = call.getMethodNode();
+			value = call.getMethodDeclarationNode();
 		}
 		if (value instanceof MethodNode)
 		{
@@ -1058,7 +1095,7 @@ public class SyntaxUtils
 		}
 		else
 		{
-			ClassNode clazz = value.getProgramNode().getClass(type);
+			ClassNode clazz = value.getProgramNode().getClassNode(type);
 			
 			if (clazz != null)
 			{
@@ -1082,6 +1119,11 @@ public class SyntaxUtils
 	{
 		ClassNode type1 = value1.getTypeClass();
 		ClassNode type2 = value2.getTypeClass();
+		
+		if (type1 == null || type2 == null)
+		{
+			return null;
+		}
 		
 		ClassNode type3 = type2;
 		
