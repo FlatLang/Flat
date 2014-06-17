@@ -11,7 +11,7 @@ import net.fathomsoft.nova.util.Location;
  * 
  * @author	Braden Steffaniak
  * @since	v0.2 Apr 14, 2014 at 11:52:33 PM
- * @version	v0.2.7 May 25, 2014 at 9:16:48 PM
+ * @version	v0.2.13 Jun 17, 2014 at 8:45:35 AM
  */
 public class ProgramNode extends TreeNode
 {
@@ -58,40 +58,46 @@ public class ProgramNode extends TreeNode
 	
 	/**
 	 * Make sure that the Class declarations are valid.
+	 * 
+	 * @param phase The phase that the node is being validated in.
 	 */
-	public void validateClasses()
+	public void validateClasses(int phase)
 	{
 		for (int i = 0; i < getNumChildren(); i++)
 		{
 			FileNode node = (FileNode)getChild(i);
 			
-			node.validateClasses();
+			node.validateClasses(phase);
 		}
 	}
 	
 	/**
 	 * Make sure that the Field declarations are valid.
+	 * 
+	 * @param phase The phase that the node is being validated in.
 	 */
-	public void validateFields()
+	public void validateFields(int phase)
 	{
 		for (int i = 0; i < getNumChildren(); i++)
 		{
 			FileNode node = (FileNode)getChild(i);
 			
-			node.validateFields();
+			node.validateFields(phase);
 		}
 	}
 	
 	/**
 	 * Make sure that the Method declarations are valid.
+	 * 
+	 * @param phase The phase that the node is being validated in.
 	 */
-	public void validateMethods()
+	public void validateMethods(int phase)
 	{
 		for (int i = 0; i < getNumChildren(); i++)
 		{
 			FileNode node = (FileNode)getChild(i);
 			
-			node.validateMethods();
+			node.validateMethods(phase);
 		}
 	}
 	
@@ -108,18 +114,18 @@ public class ProgramNode extends TreeNode
 	 * }</pre></blockquote>
 	 * <br>
 	 * A call like: "<code>getClass("Person")</code>" would return the
-	 * ClassNode for the "<code>age</code>" int field.
+	 * ClassNode for the "<code>Person</code>" class.
 	 * 
 	 * @param className The name of the class to search for.
 	 * @return The ClassNode for the class, if it exists.
 	 */
-	public ClassNode getClass(String className)
+	public ClassNode getClassNode(String className)
 	{
 		for (int i = 0; i < getNumChildren(); i++)
 		{
 			FileNode  node  = (FileNode)getChild(i);
 			
-			ClassNode clazz = node.getClass(className);
+			ClassNode clazz = node.getClassNode(className);
 			
 			if (clazz != null)
 			{
@@ -200,15 +206,6 @@ public class ProgramNode extends TreeNode
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.TreeNode#generateCSourceFragment()
-	 */
-	@Override
-	public String generateCSourceFragment()
-	{
-		return null;
-	}
-	
-	/**
 	 * Format the C Header output to follow syntactical rules.
 	 */
 	public void formatCHeaderOutput()
@@ -254,7 +251,7 @@ public class ProgramNode extends TreeNode
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.TreeNode#clone(TreeNode)
+	 * @see net.fathomsoft.nova.tree.TreeNode#clone(TreeNode, Location)
 	 */
 	@Override
 	public ProgramNode clone(TreeNode temporaryParent, Location locationIn)
