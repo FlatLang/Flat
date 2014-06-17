@@ -14,7 +14,15 @@ public class String
 	{
 		this.data = data;
 		
-		length    = calculateLength();
+		length = calculateLength();
+		
+		char newData[] = new char[length + 1];
+		
+		strcpy(newData, data);
+		
+		newData[length] = '\0';
+		
+		this.data = newData;
 	}
 	
 	int calculateLength()
@@ -29,10 +37,14 @@ public class String
 	
 	public String concat(String str)
 	{
-		char newData[] = new char[str.length + length + 1];
+		int size = str.length + length + 1;
+		
+		char newData[] = new char[size];
 		
 		strcpy(newData, data);
 		strcat(newData, str.toCharArray());
+		
+		newData[size - 1] = '\0';
 		
 		String newStr = new String(newData);
 		
