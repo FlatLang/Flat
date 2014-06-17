@@ -13,7 +13,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:19:44 PM
- * @version	v0.2.12 Jun 1, 2014 at 7:28:35 PM
+ * @version	v0.2.13 Jun 17, 2014 at 8:45:35 AM
  */
 public class AssignmentNode extends TreeNode
 {
@@ -74,13 +74,7 @@ public class AssignmentNode extends TreeNode
 	@Override
 	public String generateCSource()
 	{
-		StringBuilder builder = new StringBuilder();
-		
-		builder.append(generateCSourceFragment());
-		
-		builder.append(';').append('\n');
-		
-		return builder.toString();
+		return generateCSourceFragment() + ";\n";
 	}
 	
 	/**
@@ -89,15 +83,7 @@ public class AssignmentNode extends TreeNode
 	@Override
 	public String generateCSourceFragment()
 	{
-		StringBuilder builder = new StringBuilder();
-		
-		builder.append(getAssigneeNode().generateCSourceFragment());
-		
-		builder.append(" = ");
-		
-		builder.append(getAssignmentNode().generateCSourceFragment());
-		
-		return builder.toString();
+		return getAssigneeNode().generateCSourceFragment() + " = " + getAssignmentNode().generateCSourceFragment();
 	}
 	
 	/**
@@ -167,7 +153,7 @@ public class AssignmentNode extends TreeNode
 			return null;
 		}
 		
-		AssignmentNode n = new AssignmentNode(parent, location);
+		AssignmentNode n     = new AssignmentNode(parent, location);
 		
 		int      equalsIndex = SyntaxUtils.findCharInBaseScope(statement, '=');
 		int      endIndex    = StringUtils.findNextNonWhitespaceIndex(statement, equalsIndex - 1, -1) + 1;
@@ -177,56 +163,18 @@ public class AssignmentNode extends TreeNode
 		Location varLoc      = new Location(location);
 		varLoc.getBounds().setEnd(varLoc.getStart() + endIndex);
 		
-		IdentifierNode varNode = (IdentifierNode)decodeScopeContents(n, variable, varLoc, scope);
+		VariableNode varNode = (VariableNode)SyntaxTree.decodeScopeContents(n, variable, varLoc, scope);
 		
 		if (varNode == null)
 		{
 			SyntaxMessage.error("Undeclared variable '" + variable + "'", parent, location);
 		}
 		
-		IdentifierNode id = varNode.getLastAccessedNode();
-		
-		if (id instanceof VariableNode)
-		{
-			VariableNode accessed = (VariableNode)id;
-			
-			if (accessed != null && accessed.isAccessed() && accessed instanceof FieldNode)
-			{
-				FieldNode field = (FieldNode)accessed.getDeclaration();
-				
-				if (field.getVisibility() == FieldNode.VISIBLE)
-				{
-					ClassNode declaringClass = field.getDeclaringClassNode();
-					ClassNode thisClass      = (ClassNode)parent.getAncestorOfType(ClassNode.class, true);
-					
-					if (declaringClass != thisClass)
-					{
-						SyntaxMessage.error("The value of the field '" + field.getName() + "' cannot be modified", accessed);
-					}
-				}
-			}
-		}
-		
-		varNode.setLocationIn(varLoc);
+		n.validateAuthorization(varNode);
 		
 		if (addDeclaration)
 		{
-			if (varNode instanceof VariableNode)
-			{
-				VariableNode var = (VariableNode)varNode;
-				
-				if (var.isDeclaration())
-				{
-					TreeNode scopeNode = getAncestorWithScope(parent);
-					
-					if (scopeNode != null)
-					{
-						scopeNode.getScopeNode().addChild(varNode);
-						
-						varNode = var.clone(n, location);
-					}
-				}
-			}
+			varNode = n.addDeclaration(varNode);
 		}
 		
 		n.addChild(varNode);
@@ -249,6 +197,85 @@ public class AssignmentNode extends TreeNode
 		n.addChild(child);
 		
 		return n;
+	}
+	
+	/**
+	 * Validate that the assignment is authorized to assign a value
+	 * to the given variable in the assignments location. The variable
+	 * is not authorized to be modified under the following condition:<br>
+	 * <u>The variable cannot be modified if it is <b>private</b> or
+	 * <b>visible</b> and is not contained within the same class as the
+	 * assignment.</u>
+	 * 
+	 * @param var The VariableNode to validate.
+	 */
+	private void validateAuthorization(VariableNode var)
+	{
+		IdentifierNode id = var.getLastAccessedNode();
+		
+		if (id instanceof VariableNode)
+		{
+			VariableNode accessed = (VariableNode)id;
+			
+			if (accessed != null && accessed.isAccessed() && accessed instanceof FieldNode)
+			{
+				FieldNode field = (FieldNode)accessed.getDeclaration();
+				
+				if (field.getVisibility() == FieldNode.VISIBLE)
+				{
+					ClassNode declaringClass = field.getDeclaringClassNode();
+					ClassNode thisClass      = (ClassNode)getAncestorOfType(ClassNode.class);
+					
+					if (declaringClass != thisClass)
+					{
+						SyntaxMessage.error("The value of the field '" + field.getName() + "' cannot be modified", accessed);
+					}
+				}
+			}
+		}
+	}
+	
+	/**
+	 * Add the variable declaration to the parent scope if the assignment
+	 * was also a declaration.<br>
+	 * <br>
+	 * For example:
+	 * <blockquote><pre>
+	 * // Scenario 1
+	 * int i = 42;
+	 * 
+	 * // Scenario 2
+	 * i = 43;</pre></blockquote>
+	 * Scenario 1 includes a declaration and therefore, this method would
+	 * add that declaration to its parent scope and return a clone of the
+	 * declared VariableNode. On the other hand, scenario 2 does not
+	 * include a declaration and therefore simply does nothing in this
+	 * method (Returns the given VariableNode).
+	 * 
+	 * @param parent The parent of the assignment node.
+	 * @param var The VariableNode to check whether or not declares a
+	 * 		variable.
+	 * @return If a variable is declared, this returns a clone of the
+	 * 		declared variable. If not, this simply returns the given
+	 * 		VariableNode instance.
+	 */
+	private VariableNode addDeclaration(VariableNode var)
+	{
+		if (var.isDeclaration())
+		{
+			TreeNode scopeNode = getParent().getAncestorWithScope();
+			
+			if (scopeNode != null)
+			{
+				scopeNode.getScopeNode().addChild(var);
+				
+				Location newLoc = new Location(getLocationIn());
+				
+				return var.clone(this, newLoc);
+			}
+		}
+		
+		return var;
 	}
 	
 	/**
@@ -276,15 +303,10 @@ public class AssignmentNode extends TreeNode
 	 */
 	public static TreeNode decodeRightHandSide(TreeNode parent, String rhs, Location location, boolean require, boolean scope)
 	{
-		TreeNode child = decodeScopeContents(parent, rhs, location, require);
+		TreeNode child = SyntaxTree.decodeScopeContents(parent, rhs, location, require);
 		
 		if (child == null)
 		{
-			if (SyntaxUtils.isExternal(parent.getFileNode(), rhs))
-			{
-				rhs = rhs.substring(rhs.indexOf('.') + 1);
-			}
-			
 			LiteralNode node = LiteralNode.decodeStatement(parent, rhs, location, require, false);
 			
 			child = node;
@@ -294,7 +316,7 @@ public class AssignmentNode extends TreeNode
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.TreeNode#clone(TreeNode)
+	 * @see net.fathomsoft.nova.tree.TreeNode#clone(TreeNode, Location)
 	 */
 	@Override
 	public AssignmentNode clone(TreeNode temporaryParent, Location locationIn)
