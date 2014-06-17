@@ -9,7 +9,7 @@ import java.util.regex.Matcher;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Mar 13, 2014 at 9:38:42 PM
- * @version	v0.2.11 May 31, 2014 at 1:19:11 PM
+ * @version	v0.2.13 Jun 17, 2014 at 8:45:35 AM
  */
 public class StringUtils
 {
@@ -33,7 +33,7 @@ public class StringUtils
 	 * @return The index of the pair to the starting char, if no pair is
 	 * 		found then -1 is returned.
 	 */
-	public static int findEndingMatch(String str, int index, char startChar, char endChar)
+	public static int findEndingMatch(CharSequence str, int index, char startChar, char endChar)
 	{
 		return findEndingMatch(str, index, startChar, endChar, (char)0);
 	}
@@ -55,7 +55,7 @@ public class StringUtils
 	 * @return The index of the pair to the starting char, if no pair is
 	 * 		found then -1 is returned.
 	 */
-	public static int findEndingMatch(String str, int index, char startChar, char endChar, char escapeChar)
+	public static int findEndingMatch(CharSequence str, int index, char startChar, char endChar, char escapeChar)
 	{
 		int scope = 0;
 		
@@ -88,6 +88,10 @@ public class StringUtils
 					return index;
 				}
 			}
+			else if (c == '"' || c == '\'')
+			{
+				index = findEndingChar(str, c, index, 1);
+			}
 			
 			index++;
 		}
@@ -104,17 +108,51 @@ public class StringUtils
 	 * @return The index of the ending quote. If an end is not found, -1
 	 * 		is returned instead.
 	 */
-	public static int findEndingQuote(String value, int start)
+	public static int findEndingQuote(CharSequence value, int start)
 	{
-		while (++start < value.length())
+		return findEndingQuote(value, start, 1);
+	}
+	
+	/**
+	 * Find the index of the ending quote, given the index of the start
+	 * quote.
+	 * 
+	 * @param value The String to search within.
+	 * @param start The index of the starting quote.
+	 * @param direction The direction in which to search the given String.
+	 * @return The index of the ending quote. If an end is not found, -1
+	 * 		is returned instead.
+	 */
+	public static int findEndingQuote(CharSequence value, int start, int direction)
+	{
+		return findEndingChar(value, '"', start, direction);
+	}
+	
+	/**
+	 * Find the index of the ending char that matches the given 'c' param,
+	 * given the index of the start char.
+	 * 
+	 * @param value The String to search within.
+	 * @param start The index of the starting quote.
+	 * @param direction The direction in which to search the given String.
+	 * @return The index of the matching char. If an end is not found, -1
+	 * 		is returned instead.
+	 */
+	public static int findEndingChar(CharSequence value, char c, int start, int direction)
+	{
+		start += direction;
+		
+		while (start >= 0 && start < value.length())
 		{
-			if (value.charAt(start) == '"')
+			if (value.charAt(start) == c)
 			{
-				if (start > 0 && value.charAt(start - 1) != '\\')
+				if (start == 0 || value.charAt(start - 1) != '\\')
 				{
 					return start;
 				}
 			}
+			
+			start += direction;
 		}
 		
 		return -1;
@@ -129,7 +167,7 @@ public class StringUtils
 	 * @return A Bounds instance with the end points of the found String.
 	 * 		If a String is not found, [-1, -1] is returned.
 	 */
-	public static Bounds findStrings(String value, String strings[])
+	public static Bounds findStrings(CharSequence value, String strings[])
 	{
 		return findStrings(value, 0, strings);
 	}
@@ -144,10 +182,8 @@ public class StringUtils
 	 * @return A Bounds instance with the end points of the found String.
 	 * 		If a String is not found, [-1, -1] is returned.
 	 */
-	public static Bounds findStrings(String value, int start, String strings[])
+	public static Bounds findStrings(CharSequence value, int start, String strings[])
 	{
-		Bounds bounds = new Bounds(-1, -1);
-		
 		while (start < value.length())
 		{
 			char c = value.charAt(start);
@@ -164,7 +200,7 @@ public class StringUtils
 				
 				if (start == 0)
 				{
-					return bounds;
+					return Bounds.EMPTY;
 				}
 				
 				continue;
@@ -175,7 +211,7 @@ public class StringUtils
 				
 				if (start == 0)
 				{
-					return bounds;
+					return Bounds.EMPTY;
 				}
 				
 				continue;
@@ -192,8 +228,7 @@ public class StringUtils
 					
 					if (i == str.length() - 1)
 					{
-						bounds.setStart(start);
-						bounds.setEnd(start + str.length());
+						Bounds bounds = new Bounds(start, start + str.length());
 						
 						return bounds;
 					}
@@ -203,7 +238,7 @@ public class StringUtils
 			start++;
 		}
 		
-		return bounds;
+		return Bounds.EMPTY;
 	}
 	
 	/**
