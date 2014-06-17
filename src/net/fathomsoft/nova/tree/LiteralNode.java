@@ -11,7 +11,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 10:34:30 PM
- * @version	v0.2.11 May 31, 2014 at 1:19:11 PM
+ * @version	v0.2.13 Jun 17, 2014 at 8:45:35 AM
  */
 public class LiteralNode extends ValueNode
 {
@@ -41,8 +41,6 @@ public class LiteralNode extends ValueNode
 	 * of way.
 	 * 
 	 * @param value The value to set the literal as.
-	 * @param external Whether or not the literal is within an external
-	 * 		context.
 	 */
 	public void setValue(String value)
 	{
@@ -55,10 +53,10 @@ public class LiteralNode extends ValueNode
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.TreeNode#generateNovaInput()
+	 * @see net.fathomsoft.nova.tree.TreeNode#generateNovaInput(boolean)
 	 */
 	@Override
-	public String generateNovaInput()
+	public String generateNovaInput(boolean outputChildren)
 	{
 		if (!isWithinExternalContext() && isStringInstantiation())
 		{
@@ -177,7 +175,7 @@ public class LiteralNode extends ValueNode
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.TreeNode#clone(TreeNode)
+	 * @see net.fathomsoft.nova.tree.TreeNode#clone(TreeNode, Location)
 	 */
 	@Override
 	public LiteralNode clone(TreeNode temporaryParent, Location locationIn)

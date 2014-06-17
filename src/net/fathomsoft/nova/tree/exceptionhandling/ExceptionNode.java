@@ -16,11 +16,11 @@ import net.fathomsoft.nova.util.Location;
  * throw varName;</pre></blockquote>
  * For more information on what
  * it looks like to throw an ExceptionNode, see
- * {@link ThrowNode#decodeStatement(TreeNode, String, Location)}.
+ * {@link ThrowNode#decodeStatement(TreeNode, String, Location, boolean, boolean)}.
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Apr 6, 2014 at 8:44:35 PM
- * @version	v0.2.7 May 25, 2014 at 9:16:48 PM
+ * @version	v0.2.13 Jun 17, 2014 at 8:45:35 AM
  */
 public class ExceptionNode extends TreeNode
 {
@@ -89,7 +89,7 @@ public class ExceptionNode extends TreeNode
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.TreeNode#clone(TreeNode)
+	 * @see net.fathomsoft.nova.tree.TreeNode#clone(TreeNode, Location)
 	 */
 	@Override
 	public ExceptionNode clone(TreeNode temporaryParent, Location locationIn)

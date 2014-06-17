@@ -9,12 +9,12 @@ import net.fathomsoft.nova.util.SyntaxUtils;
 
 /**
  * LoopNode extension that represents the declaration of a "while loop"
- * node type. See {@link #decodeStatement(TreeNode, String, Location)}
+ * node type. See {@link #decodeStatement(TreeNode, String, Location, boolean, boolean)}
  * for more details on what correct inputs look like.
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:55:59 PM
- * @version	v0.2.11 May 31, 2014 at 1:19:11 PM
+ * @version	v0.2.13 Jun 17, 2014 at 8:45:35 AM
  */
 public class WhileLoopNode extends LoopNode
 {
@@ -37,22 +37,6 @@ public class WhileLoopNode extends LoopNode
 	public TreeNode getConditionNode()
 	{
 		return getChild(1);
-	}
-	
-	/**
-	 * @see net.fathomsoft.nova.tree.TreeNode#addChild(TreeNode)
-	 */
-	@Override
-	public void addChild(TreeNode child)
-	{
-		if (getNumChildren() <= 1)
-		{
-			addChild(1, child);
-		}
-		else
-		{
-			super.addChild(child);
-		}
 	}
 	
 	/**
@@ -123,7 +107,7 @@ public class WhileLoopNode extends LoopNode
 				{
 					if (condition == null)
 					{
-						condition = getExistingNode(parent, contents);
+						condition = SyntaxTree.getExistingNode(parent, contents);
 					}
 					if (condition == null && SyntaxUtils.isLiteral(contents))
 					{
@@ -139,8 +123,8 @@ public class WhileLoopNode extends LoopNode
 					}
 				}
 				
-				n.addChild(condition);
-					
+				n.addChild(condition, n);
+				
 				return n;
 			}
 			else
@@ -153,7 +137,7 @@ public class WhileLoopNode extends LoopNode
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.TreeNode#clone(TreeNode)
+	 * @see net.fathomsoft.nova.tree.TreeNode#clone(TreeNode, Location)
 	 */
 	@Override
 	public WhileLoopNode clone(TreeNode temporaryParent, Location locationIn)

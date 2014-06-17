@@ -24,7 +24,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Mar 16, 2014 at 1:13:49 AM
- * @version	v0.2.11 May 31, 2014 at 1:19:11 PM
+ * @version	v0.2.13 Jun 17, 2014 at 8:45:35 AM
  */
 public class VTableNode extends ClassNode
 {
@@ -201,7 +201,7 @@ public class VTableNode extends ClassNode
 				}
 				else
 				{
-					IdentifierNode node = TreeNode.getExistingNode(parent, length).clone(n, location);
+					IdentifierNode node = SyntaxTree.getExistingNode(parent, length).clone(n, location);
 					
 					n.addChild(node);
 				}
@@ -216,7 +216,7 @@ public class VTableNode extends ClassNode
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.TreeNode#clone(TreeNode)
+	 * @see net.fathomsoft.nova.tree.TreeNode#clone(TreeNode, Location)
 	 */
 	@Override
 	public VTableNode clone(TreeNode temporaryParent, Location locationIn)

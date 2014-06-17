@@ -10,7 +10,7 @@ import net.fathomsoft.nova.util.Location;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 10:00:50 PM
- * @version	v0.2.7 May 25, 2014 at 9:16:48 PM
+ * @version	v0.2.13 Jun 17, 2014 at 8:45:35 AM
  */
 public class StaticFieldListNode extends TreeNode
 {
@@ -72,18 +72,6 @@ public class StaticFieldListNode extends TreeNode
 	{
 		StringBuilder builder = new StringBuilder();
 		
-		boolean hasMethods    = false;
-		
-		if (getNumChildren() > 0)
-		{
-			ClassNode parent = (ClassNode)getAncestorOfType(ClassNode.class, true);
-			
-			if (parent.getMethodListNode().getNumChildren() > 0)
-			{
-				hasMethods = true;
-			}
-		}
-		
 		for (int i = 0; i < getNumChildren(); i++)
 		{
 			builder.append(getChild(i).generateCSource());
@@ -93,7 +81,7 @@ public class StaticFieldListNode extends TreeNode
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.TreeNode#clone(TreeNode)
+	 * @see net.fathomsoft.nova.tree.TreeNode#clone(TreeNode, Location)
 	 */
 	@Override
 	public StaticFieldListNode clone(TreeNode temporaryParent, Location locationIn)

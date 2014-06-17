@@ -6,12 +6,12 @@ import net.fathomsoft.nova.util.Location;
 
 /**
  * TreeNode extension that represents the declaration of an exception
- * handling node type. See {@link #decodeStatement(TreeNode, String, Location)}
+ * handling node type. See {@link #decodeStatement(TreeNode, String, Location, boolean, boolean)}
  * for more details on what correct inputs look like.
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Mar 21, 2014 at 10:50:26 PM
- * @version	v0.2.11 May 31, 2014 at 1:19:11 PM
+ * @version	v0.2.13 Jun 17, 2014 at 8:45:35 AM
  */
 public class ExceptionHandlingNode extends TreeNode
 {
@@ -24,7 +24,7 @@ public class ExceptionHandlingNode extends TreeNode
 		
 		ScopeNode scopeNode = new ScopeNode(this, locationIn);
 		
-		addChild(scopeNode);
+		setScopeNode(scopeNode);
 	}
 	
 	/**
@@ -34,22 +34,6 @@ public class ExceptionHandlingNode extends TreeNode
 	public ScopeNode getScopeNode()
 	{
 		return (ScopeNode)getChild(0);
-	}
-	
-	/**
-	 * @see net.fathomsoft.nova.tree.TreeNode#addChild(TreeNode)
-	 */
-	@Override
-	public void addChild(TreeNode child)
-	{
-		if (child instanceof ScopeNode)
-		{
-			super.addChild(child);
-		}
-		else
-		{
-			getScopeNode().addChild(child);
-		}
 	}
 	
 	/**
@@ -99,7 +83,7 @@ public class ExceptionHandlingNode extends TreeNode
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.TreeNode#clone(TreeNode)
+	 * @see net.fathomsoft.nova.tree.TreeNode#clone(TreeNode, Location)
 	 */
 	@Override
 	public ExceptionHandlingNode clone(TreeNode temporaryParent, Location locationIn)

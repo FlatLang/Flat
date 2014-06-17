@@ -10,12 +10,12 @@ import net.fathomsoft.nova.util.Regex;
 
 /**
  * ExceptionHandlingNode extension that represents the declaration of a
- * catch node type. See {@link #decodeStatement(TreeNode, String, Location)}
+ * catch node type. See {@link #decodeStatement(TreeNode, String, Location, boolean, boolean)}
  * for more details on what correct inputs look like.
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Mar 22, 2014 at 4:01:44 PM
- * @version	v0.2.11 May 31, 2014 at 1:19:11 PM
+ * @version	v0.2.13 Jun 17, 2014 at 8:45:35 AM
  */
 public class CatchNode extends ExceptionHandlingNode
 {
@@ -34,7 +34,7 @@ public class CatchNode extends ExceptionHandlingNode
 	 */
 	public LocalDeclarationNode getExceptionInstance()
 	{
-		return (LocalDeclarationNode)getChild(2);
+		return (LocalDeclarationNode)getChild(1);
 	}
 	
 	/**
@@ -44,23 +44,7 @@ public class CatchNode extends ExceptionHandlingNode
 	 */
 	public ExceptionNode getException()
 	{
-		return (ExceptionNode)getChild(1);
-	}
-	
-	/**
-	 * @see net.fathomsoft.nova.tree.TreeNode#addChild(TreeNode)
-	 */
-	@Override
-	public void addChild(TreeNode child)
-	{
-		if (getNumChildren() == 1 || getNumChildren() == 2)
-		{
-			addChild(1, child);
-		}
-		else
-		{
-			super.addChild(child);
-		}
+		return (ExceptionNode)getChild(2);
 	}
 	
 	/**
@@ -160,14 +144,14 @@ public class CatchNode extends ExceptionHandlingNode
 				
 				if (exceptionInstance != null)
 				{
-					n.addChild(exceptionInstance);
+					n.addChild(exceptionInstance, n);
 					
 					ExceptionNode exception = new ExceptionNode(n, newLoc);
 					exception.setType(exceptionInstance.getType());
 					
 					if (exception.getID() > 0)
 					{
-						n.addChild(exception);
+						n.addChild(exception, n);
 						
 						TryNode tryNode = n.getCurrentTry(parent);
 						
@@ -196,7 +180,7 @@ public class CatchNode extends ExceptionHandlingNode
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.TreeNode#clone(TreeNode)
+	 * @see net.fathomsoft.nova.tree.TreeNode#clone(TreeNode, Location)
 	 */
 	@Override
 	public CatchNode clone(TreeNode temporaryParent, Location locationIn)

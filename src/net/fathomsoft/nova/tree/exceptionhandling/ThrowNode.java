@@ -2,6 +2,7 @@ package net.fathomsoft.nova.tree.exceptionhandling;
 
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.tree.IdentifierNode;
+import net.fathomsoft.nova.tree.SyntaxTree;
 import net.fathomsoft.nova.tree.TreeNode;
 import net.fathomsoft.nova.util.Bounds;
 import net.fathomsoft.nova.util.Location;
@@ -10,12 +11,12 @@ import net.fathomsoft.nova.util.Regex;
 
 /**
  * ExceptionHandlingNode extension that represents the declaration of a
- * throw node type. See {@link #decodeStatement(TreeNode, String, Location)}
+ * throw node type. See {@link #decodeStatement(TreeNode, String, Location, boolean, boolean)}
  * for more details on what correct inputs look like.
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Mar 22, 2014 at 11:02:52 PM
- * @version	v0.2.11 May 31, 2014 at 1:19:11 PM
+ * @version	v0.2.13 Jun 17, 2014 at 8:45:35 AM
  */
 public class ThrowNode extends ExceptionHandlingNode
 {
@@ -40,40 +41,6 @@ public class ThrowNode extends ExceptionHandlingNode
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.TreeNode#addChild(TreeNode)
-	 */
-	@Override
-	public void addChild(TreeNode child)
-	{
-		if (child instanceof ExceptionNode)
-		{
-			addChild(1, child);
-		}
-		else
-		{
-			super.addChild(child);
-		}
-	}
-	
-	/**
-	 * @see net.fathomsoft.nova.tree.TreeNode#generateJavaSource()
-	 */
-	@Override
-	public String generateJavaSource()
-	{
-		return null;
-	}
-	
-	/**
-	 * @see net.fathomsoft.nova.tree.TreeNode#generateCHeader()
-	 */
-	@Override
-	public String generateCHeader()
-	{
-		return null;
-	}
-	
-	/**
 	 * @see net.fathomsoft.nova.tree.TreeNode#generateCSource()
 	 */
 	@Override
@@ -84,15 +51,6 @@ public class ThrowNode extends ExceptionHandlingNode
 		builder.append("THROW").append('(').append(getException().getID()).append(')').append(';').append('\n');
 		
 		return builder.toString();
-	}
-	
-	/**
-	 * @see net.fathomsoft.nova.tree.TreeNode#generateCSourceFragment()
-	 */
-	@Override
-	public String generateCSourceFragment()
-	{
-		return null;
 	}
 	
 	/**
@@ -127,11 +85,12 @@ public class ThrowNode extends ExceptionHandlingNode
 			if (bounds.getStart() > 0)
 			{
 				Location  newLoc     = new Location(location);
+				newLoc.setLineNumber(location.getLineNumber());
 				newLoc.setBounds(location.getStart() + bounds.getStart(), location.getStart() + bounds.getEnd());
 				
 				String    thrown     = statement.substring(bounds.getStart(), bounds.getEnd());
 				
-				TreeNode  thrownNode = TreeNode.decodeStatement(parent, thrown, newLoc, require, false);
+				TreeNode  thrownNode = SyntaxTree.decodeScopeContents(parent, thrown, newLoc, require, false);
 				
 				if (thrownNode instanceof IdentifierNode)
 				{
@@ -140,12 +99,12 @@ public class ThrowNode extends ExceptionHandlingNode
 					ExceptionNode exception = new ExceptionNode(n, newLoc);
 					exception.setType(node.getName());
 					
-					n.addChild(exception);
+					n.addChild(exception, n);
 					
 					return n;
 				}
 				
-				SyntaxMessage.error("Incorrect form of exception thrown", n, newLoc);
+				SyntaxMessage.error("Incorrect form of exception thrown", n);
 			}
 			
 			SyntaxMessage.error("Throw statement missing exception type", n);
@@ -155,7 +114,7 @@ public class ThrowNode extends ExceptionHandlingNode
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.TreeNode#clone(TreeNode)
+	 * @see net.fathomsoft.nova.tree.TreeNode#clone(TreeNode, Location)
 	 */
 	@Override
 	public ThrowNode clone(TreeNode temporaryParent, Location locationIn)

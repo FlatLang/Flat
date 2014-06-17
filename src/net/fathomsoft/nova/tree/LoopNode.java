@@ -4,12 +4,12 @@ import net.fathomsoft.nova.util.Location;
 
 /**
  * TreeNode extension that represents the declaration of a LoopNode
- * node type. See {@link #decodeStatement(TreeNode, String, Location)}
+ * node type. See {@link #decodeStatement(TreeNode, String, Location, boolean, boolean)}
  * for more details on what correct inputs look like.
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:55:18 PM
- * @version	v0.2.11 May 31, 2014 at 1:19:11 PM
+ * @version	v0.2.13 Jun 17, 2014 at 8:45:35 AM
  */
 public class LoopNode extends TreeNode
 {
@@ -24,7 +24,7 @@ public class LoopNode extends TreeNode
 		
 		ScopeNode scopeNode = new ScopeNode(this, locationIn);
 		
-		super.addChild(scopeNode);
+		setScopeNode(scopeNode);
 	}
 	
 	/**
@@ -86,7 +86,7 @@ public class LoopNode extends TreeNode
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.TreeNode#clone(TreeNode)
+	 * @see net.fathomsoft.nova.tree.TreeNode#clone(TreeNode, Location)
 	 */
 	@Override
 	public LoopNode clone(TreeNode temporaryParent, Location locationIn)

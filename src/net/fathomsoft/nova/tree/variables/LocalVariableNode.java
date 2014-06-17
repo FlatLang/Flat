@@ -1,17 +1,18 @@
 package net.fathomsoft.nova.tree.variables;
 
 import net.fathomsoft.nova.tree.MethodNode;
+import net.fathomsoft.nova.tree.SyntaxTree;
 import net.fathomsoft.nova.tree.TreeNode;
 import net.fathomsoft.nova.util.Location;
 
 /**
  * VariableNode extension that represents the declaration of a local variable
- * node type. See {@link #decodeStatement(TreeNode, String, Location)}
+ * node type. See {@link #decodeStatement(TreeNode, String, Location, boolean, boolean)}
  * for more details on what correct inputs look like.
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:12:00 PM
- * @version	v0.2.7 May 25, 2014 at 9:16:48 PM
+ * @version	v0.2.13 Jun 17, 2014 at 8:45:35 AM
  */
 public class LocalVariableNode extends VariableNode
 {
@@ -24,10 +25,11 @@ public class LocalVariableNode extends VariableNode
 	}
 
 	/**
-	 * @see net.fathomsoft.nova.tree.TreeNode#validate()
+	 * @param phase The phase that the node is being validated in.
+	 * @see net.fathomsoft.nova.tree.TreeNode#validate(int)
 	 */
 	@Override
-	public void validate()
+	public TreeNode validate(int phase)
 	{
 		// If possibly accessing a shadowed field. ONLY for shadowed fields.
 		if (getName().equals(MethodNode.getObjectReferenceIdentifier()) && getNumChildren() > 0)
@@ -38,7 +40,7 @@ public class LocalVariableNode extends VariableNode
 			{
 				VariableNode var  = (VariableNode)child;
 				
-				VariableNode node = getExistingNode(var.getClassNode(), var.getName());
+				VariableNode node = SyntaxTree.getExistingNode(var.getClassNode(), var.getName());
 				
 				if (node instanceof FieldNode)
 				{
@@ -52,10 +54,12 @@ public class LocalVariableNode extends VariableNode
 				}
 			}
 		}
+		
+		return this;
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.TreeNode#clone(TreeNode)
+	 * @see net.fathomsoft.nova.tree.TreeNode#clone(TreeNode, Location)
 	 */
 	@Override
 	public LocalVariableNode clone(TreeNode temporaryParent, Location locationIn)

@@ -7,12 +7,12 @@ import net.fathomsoft.nova.util.Regex;
 
 /**
  * ExceptionHandlingNode extension that represents the declaration of a
- * finally node type. See {@link #decodeStatement(TreeNode, String, Location)}
+ * finally node type. See {@link #decodeStatement(TreeNode, String, Location, boolean, boolean)}
  * for more details on what correct inputs look like.
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Mar 22, 2014 at 4:02:21 PM
- * @version	v0.2.11 May 31, 2014 at 1:19:11 PM
+ * @version	v0.2.13 Jun 17, 2014 at 8:45:35 AM
  */
 public class FinallyNode extends ExceptionHandlingNode
 {
@@ -77,7 +77,7 @@ public class FinallyNode extends ExceptionHandlingNode
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.TreeNode#clone(TreeNode)
+	 * @see net.fathomsoft.nova.tree.TreeNode#clone(TreeNode, Location)
 	 */
 	@Override
 	public FinallyNode clone(TreeNode temporaryParent, Location locationIn)
