@@ -11,12 +11,12 @@ import net.fathomsoft.nova.util.StringUtils;
 
 /**
  * MethodNode extension that represents the declaration of a Destructor
- * node type. See {@link net.fathomsoft.nova.tree.DestructorNode#decodeStatement(net.fathomsoft.nova.tree.TreeNode, java.lang.String, net.fathomsoft.nova.util.Location) decodeStatement}
+ * node type. See {@link #decodeStatement(TreeNode, String, Location, boolean, boolean)}
  * for more details on what correct inputs look like.
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:50:43 PM
- * @version	v0.2.11 May 31, 2014 at 1:19:11 PM
+ * @version	v0.2.13 Jun 17, 2014 at 8:45:35 AM
  */
 public class DestructorNode extends MethodNode
 {
@@ -83,7 +83,7 @@ public class DestructorNode extends MethodNode
 			}
 		}
 		
-		builder.append("free(").append('*').append(MethodNode.getObjectReferenceIdentifier()).append(");").append('\n');
+		builder.append("NOVA_FREE(").append('*').append(MethodNode.getObjectReferenceIdentifier()).append(");").append('\n');
 		
 		//builder.append('*').append(MethodNode.getObjectReferenceIdentifier()).append(" = NULL;").append('\n');
 		
@@ -162,7 +162,7 @@ public class DestructorNode extends MethodNode
 		{
 			if (!field.isPrimitive())
 			{//builder.append("printf(\"Before. " + field.generateVariableUseOutput(true) + ": %p\", " + field.generateVariableUseOutput(true) + ");");
-				//builder.append("free(").append(field.generateVariableUseOutput(true)).append(");");builder.append("printf(\"Aft2.\");");
+				//builder.append("NOVA_FREE(").append(field.generateVariableUseOutput(true)).append(");");builder.append("printf(\"Aft2.\");");
 			}
 		}
 		else
@@ -184,7 +184,7 @@ public class DestructorNode extends MethodNode
 	{
 		StringBuilder builder = new StringBuilder();
 		
-		builder.append("free((*").append(MethodNode.getObjectReferenceIdentifier()).append(")->").append(name).append(");");
+		builder.append("NOVA_FREE((*").append(MethodNode.getObjectReferenceIdentifier()).append(")->").append(name).append(");");
 		
 		//builder.append("(*").append(MethodNode.getObjectReferenceIdentifier()).append(")->").append(name).append(" = NULL;");
 		
@@ -254,26 +254,9 @@ public class DestructorNode extends MethodNode
 		
 		if (firstParenthIndex >= 0)
 		{
-			final String signature = statement.substring(0, firstParenthIndex);
+			String signature = statement.substring(0, firstParenthIndex);
 			
-			DestructorNode n = new DestructorNode(parent, location)
-			{
-				public void interactWord(String word, int wordNumber, Bounds bounds, int numWords)
-				{
-					setAttribute(word, wordNumber);
-					
-					if (wordNumber == numWords - 1)
-					{
-						if (bounds.getStart() > 0)
-						{
-							if (signature.charAt(bounds.getStart() - 1) == '~')
-							{
-								setName(word);
-							}
-						}
-					}
-				}
-			};
+			DestructorNode n = new DestructorNode(parent, location);
 			
 			// TODO: make better check for last parenth. Take a count of each of the starting parenthesis and
 			// subtract the ending ones from the number.
@@ -313,7 +296,27 @@ public class DestructorNode extends MethodNode
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.TreeNode#clone(TreeNode)
+	 * @see net.fathomsoft.nova.tree.TreeNode#interactWord(java.lang.String, int, net.fathomsoft.nova.util.Bounds, int, java.lang.String, java.lang.String, net.fathomsoft.nova.tree.TreeNode.ExtraData)
+	 */
+	@Override
+	public void interactWord(String word, int wordNumber, Bounds bounds, int numWords, String leftDelimiter, String rightDelimiter, ExtraData extra)
+	{
+		setAttribute(word, wordNumber);
+		
+		if (wordNumber == numWords - 1)
+		{
+			if (bounds.getStart() > 0)
+			{
+				if (leftDelimiter.equals("~"))
+				{
+					setName(word);
+				}
+			}
+		}
+	}
+	
+	/**
+	 * @see net.fathomsoft.nova.tree.TreeNode#clone(TreeNode, Location)
 	 */
 	@Override
 	public DestructorNode clone(TreeNode temporaryParent, Location locationIn)

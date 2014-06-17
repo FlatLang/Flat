@@ -2,6 +2,7 @@ package net.fathomsoft.nova.tree;
 
 import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.error.SyntaxMessage;
+import net.fathomsoft.nova.tree.TreeNode.ExtraData;
 import net.fathomsoft.nova.tree.variables.InstanceFieldListNode;
 import net.fathomsoft.nova.tree.variables.VariableNode;
 import net.fathomsoft.nova.util.Bounds;
@@ -10,12 +11,12 @@ import net.fathomsoft.nova.util.StringUtils;
 
 /**
  * MethodNode extension that represents the declaration of a Constructor
- * node type. See {@link #decodeStatement(TreeNode, String, Location)}
+ * node type. See {@link #decodeStatement(TreeNode, String, Location, boolean, boolean)}
  * for more details on what correct inputs look like.
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:50:47 PM
- * @version	v0.2.11 May 31, 2014 at 1:19:11 PM
+ * @version	v0.2.13 Jun 17, 2014 at 8:45:35 AM
  */
 public class ConstructorNode extends MethodNode
 {
@@ -28,7 +29,7 @@ public class ConstructorNode extends MethodNode
 	{
 		super(temporaryParent, locationIn);
 		
-		setDataType(VariableNode.POINTER);
+//		setDataType(VariableNode.POINTER);
 	}
 	
 	/**
@@ -310,15 +311,7 @@ public class ConstructorNode extends MethodNode
 		
 		if (firstParenthIndex >= 0)
 		{
-			ConstructorNode n = new ConstructorNode(parent, location)
-			{
-				public void interactWord(String word, int wordNumber, Bounds bounds, int numWords)
-				{
-					setAttribute(word, wordNumber);
-					
-					setName(word);
-				}
-			};
+			ConstructorNode n = new ConstructorNode(parent, location);
 			
 			// TODO: make better check for last parenth. Take a count of each of the starting parenthesis and
 			// subtract the ending ones from the number.
@@ -364,7 +357,18 @@ public class ConstructorNode extends MethodNode
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.TreeNode#clone(TreeNode)
+	 * @see net.fathomsoft.nova.tree.TreeNode#interactWord(java.lang.String, int, net.fathomsoft.nova.util.Bounds, int, java.lang.String, java.lang.String, net.fathomsoft.nova.tree.TreeNode.ExtraData)
+	 */
+	@Override
+	public void interactWord(String word, int wordNumber, Bounds bounds, int numWords, String leftDelimiter, String rightDelimiter, ExtraData extra)
+	{
+		setAttribute(word, wordNumber);
+		
+		setName(word);
+	}
+	
+	/**
+	 * @see net.fathomsoft.nova.tree.TreeNode#clone(TreeNode, Location)
 	 */
 	@Override
 	public ConstructorNode clone(TreeNode temporaryParent, Location locationIn)
