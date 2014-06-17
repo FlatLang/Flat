@@ -12,9 +12,11 @@ import net.fathomsoft.nova.tree.LocalDeclarationNode;
 import net.fathomsoft.nova.tree.MethodCallNode;
 import net.fathomsoft.nova.tree.MethodNode;
 import net.fathomsoft.nova.tree.ParameterNode;
+import net.fathomsoft.nova.tree.PriorityNode;
 import net.fathomsoft.nova.tree.ProgramNode;
 import net.fathomsoft.nova.tree.ReturnNode;
 import net.fathomsoft.nova.tree.ScopeNode;
+import net.fathomsoft.nova.tree.SyntaxTree;
 import net.fathomsoft.nova.tree.TreeNode;
 import net.fathomsoft.nova.tree.UnaryOperatorNode;
 import net.fathomsoft.nova.tree.ValueNode;
@@ -28,7 +30,7 @@ import net.fathomsoft.nova.util.Location;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:02:42 PM
- * @version	v0.2.11 May 31, 2014 at 1:19:11 PM
+ * @version	v0.2.13 Jun 17, 2014 at 8:45:35 AM
  */
 public class VariableNode extends IdentifierNode
 {
@@ -146,8 +148,8 @@ public class VariableNode extends IdentifierNode
 	
 	/**
 	 * Set the name of the Variable. You specify whether or not you want
-	 * the output in the C language to be the original to the given name,
-	 * or if it will differentiate it. 
+	 * the output in the C language to be the original given name,
+	 * or if it will differentiate it depending on its scope. 
 	 * 
 	 * @param name The String to set as the new name.
 	 * @param forceOriginal Whether or not the name will be output in the
@@ -158,6 +160,19 @@ public class VariableNode extends IdentifierNode
 		this.forceOriginal = forceOriginal;
 		
 		super.setName(name);
+	}
+	
+	/**
+	 * Whether or not you want the output in the C language to be the
+	 * original given name, or if it will differentiate it depending on
+	 * its scope. 
+	 * 
+	 * @param forceOriginal Whether or not the name will be output in the
+	 * 		c code verbatim.
+	 */
+	public void setForceOriginalName(boolean forceOriginal)
+	{
+		this.forceOriginal = forceOriginal;
 	}
 	
 	/**
@@ -303,15 +318,6 @@ public class VariableNode extends IdentifierNode
 	{
 		StringBuilder builder = new StringBuilder();
 		
-//		byte type = dataType;
-//		
-//		if (isSpecialFragment())
-//		{
-//			MethodNode method = getFurthestMethodCallNode().getMethodNode();
-//			
-//			type = method.getDataType();
-//		}
-		
 		if (!isSpecialFragment())
 		{
 			builder.append(generateDataTypeOutput());
@@ -323,7 +329,7 @@ public class VariableNode extends IdentifierNode
 		
 		if (this instanceof ArrayAccessNode)
 		{
-			VariableNode node = getExistingNode(parent, getName());
+			VariableNode node = SyntaxTree.getExistingNode(parent, getName());
 			
 			if (node instanceof FieldNode)
 			{
@@ -332,7 +338,7 @@ public class VariableNode extends IdentifierNode
 		}
 		else if (parent instanceof ArrayNode)
 		{
-			VariableNode node = getExistingNode(parent.getParent(), getName());
+			VariableNode node = SyntaxTree.getExistingNode(parent.getParent(), getName());
 			
 			if (node instanceof FieldNode)
 			{
@@ -480,7 +486,7 @@ public class VariableNode extends IdentifierNode
 		
 		String str = Nova.LANGUAGE_NAME.toLowerCase() + "_";
 		
-		VariableNode existing = getExistingNode(getParent(), name);
+		VariableNode existing = SyntaxTree.getExistingNode(getParent(), name);
 		
 		if (this instanceof FieldNode || existing instanceof FieldNode)
 		{
@@ -545,7 +551,7 @@ public class VariableNode extends IdentifierNode
 		{
 			if (!isPrimitive())
 			{
-				builder.append("free(").append(generateUseOutput(true)).append(");\n");
+				builder.append("NOVA_FREE(").append(generateUseOutput(true)).append(");\n");
 			}
 		}
 		else
@@ -559,7 +565,6 @@ public class VariableNode extends IdentifierNode
 	/**
 	 * Get the ClassNode instance that declared this variable.
 	 * 
-	 * @param programNode The ProgramNode to search for the Class in.
 	 * @return The ClassNode instance that declared this variable.
 	 */
 	public ClassNode getDeclaringClassNode()
@@ -573,8 +578,6 @@ public class VariableNode extends IdentifierNode
 	 * Get he Instance/LocalDeclarationNode that declares the
 	 * specified variable.
 	 * 
-	 * @param programNode The ProgramNode to search for the declaration
-	 * 		in.
 	 * @return The Instance/LocalDeclarationNode that declares the
 	 * 		specified variable.
 	 */
@@ -595,7 +598,7 @@ public class VariableNode extends IdentifierNode
 		{
 			ValueNode value = (ValueNode)parent;
 			
-			ClassNode clazz = program.getClass(value.getType());
+			ClassNode clazz = program.getClassNode(value.getType());
 			
 			return clazz.getField(getName());
 		}
@@ -605,20 +608,7 @@ public class VariableNode extends IdentifierNode
 			return getClassNode().getField(getName());
 		}
 		
-		return getExistingNode(parent, getName());
-	}
-	
-	/**
-	 * Get whether this specified variable node was accessed through
-	 * the dot operator of another value node.
-	 * 
-	 * @return Whether or not the variable was accessed.
-	 */
-	public boolean isAccessed()
-	{
-		TreeNode parent = getParent();
-		
-		return parent instanceof ValueNode && !parent.containsScope() && parent instanceof BinaryOperatorNode == false && parent instanceof UnaryOperatorNode == false && parent instanceof ReturnNode == false && parent instanceof ArrayAccessNode == false && parent instanceof ArrayNode == false;
+		return SyntaxTree.getExistingNode(parent, getName());
 	}
 	
 	/**
@@ -630,7 +620,19 @@ public class VariableNode extends IdentifierNode
 	 */
 	public boolean isDeclaration()
 	{
-		return this instanceof LocalDeclarationNode;
+		if (this instanceof LocalDeclarationNode)
+		{
+			return true;
+		}
+		if (this instanceof InstanceDeclarationNode)
+		{
+			if (getAccessedNode() == null && (getParent().containsScope() || getParent() instanceof InstanceFieldListNode || getParent() instanceof StaticFieldListNode))
+			{
+				return true;
+			}
+		}
+		
+		return false;
 	}
 	
 	/**
@@ -664,7 +666,7 @@ public class VariableNode extends IdentifierNode
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.TreeNode#clone(TreeNode)
+	 * @see net.fathomsoft.nova.tree.TreeNode#clone(TreeNode, Location)
 	 */
 	@Override
 	public VariableNode clone(TreeNode temporaryParent, Location locationIn)
