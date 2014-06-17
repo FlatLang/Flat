@@ -1,4 +1,18 @@
-public class Character extends Number
+public class Char extends Number
 {
+	visible char value;
 	
+	public Char(char value)
+	{
+		this.value = value;
+	}
+	
+	public String toString()
+	{
+		char chars[] = new char[1];
+		
+		chars[0] = value;
+		
+		return new String(chars);
+	}
 }
