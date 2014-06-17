@@ -12,7 +12,7 @@ import net.fathomsoft.nova.util.Location;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:28:08 PM
- * @version	v0.2.10 May 29, 2014 at 5:14:07 PM
+ * @version	v0.2.13 Jun 17, 2014 at 8:45:35 AM
  */
 public class Message
 {
@@ -63,6 +63,18 @@ public class Message
 	 */
 	public void outputMessage(int type)
 	{
+		outputMessage(type, type == ERROR);
+	}
+	
+	/**
+	 * Output a message from the compiler.
+	 * 
+	 * @param type The type of message that is being output.
+	 * @param throwException Whether or not to throw a
+	 * 		SyntaxErrorException.
+	 */
+	public void outputMessage(int type, boolean throwException)
+	{
 		String info = message;
 		
 		if (node != null)
@@ -91,6 +103,11 @@ public class Message
 		else if (type == ERROR)
 		{
 			controller.error(info);
+		}
+		
+		if (throwException)
+		{
+			throw new SyntaxErrorException(info);
 		}
 	}
 }
