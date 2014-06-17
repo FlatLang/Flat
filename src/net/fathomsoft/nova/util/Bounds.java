@@ -5,10 +5,12 @@ package net.fathomsoft.nova.util;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Mar 12, 2014 at 4:08:41 PM
- * @version	v0.2.11 May 31, 2014 at 1:19:11 PM
+ * @version	v0.2.13 Jun 17, 2014 at 8:45:35 AM
  */
 public class Bounds
 {
+	public static final Bounds	EMPTY = new EmptyBounds();
+	
 	private int	start, end;
 	
 	/**
@@ -85,6 +87,27 @@ public class Bounds
 	}
 	
 	/**
+	 * Get the length of the Bounds. end - start.
+	 * 
+	 * @return The length of the Bounds.
+	 */
+	public int length()
+	{
+		return end - start;
+	}
+	
+	/**
+	 * Get whether or not the bounds are positive and that they have
+	 * a length.
+	 * 
+	 * @return Whether or not the Bounds is valid.
+	 */
+	public boolean isValid()
+	{
+		return start >= 0 && end > 0;
+	}
+	
+	/**
 	 * @see java.lang.Object#equals(Object)
 	 */
 	public boolean equals(Bounds bounds)
@@ -103,5 +126,86 @@ public class Bounds
 	public String toString()
 	{
 		return "[" + start + ", " + end + "]";
+	}
+	
+	/**
+	 * Clone the values from the specified Bounds instance into the given
+	 * Bounds instance. This overwrites the existing values in the given
+	 * Bounds instance in favor for the specified Bounds's values.
+	 * 
+	 * @param bounds The Bounds to set the values of.
+	 */
+	public void cloneTo(Bounds bounds)
+	{
+		bounds.start = start;
+		bounds.end   = end;
+	}
+	
+	/**
+	 * Clone the specified Bounds's values into a brand spankin' new
+	 * Bounds instance.
+	 * 
+	 * @see java.lang.Object#clone()
+	 * 
+	 * @return The new Bounds instance.
+	 */
+	public Bounds clone()
+	{
+		return new Bounds(start, end);
+	}
+	
+	/**
+	 * Class specifically for the EMPTY Bounds constant. Prevents the
+	 * modification of the values.
+	 * 
+	 * @author	Braden Steffaniak
+	 * @since	v0.2.13 Jun 17, 2014 at 3:03:39 PM
+	 * @version	v0.2.13 Jun 17, 2014 at 3:03:39 PM
+	 */
+	private static class EmptyBounds extends Bounds
+	{
+		public EmptyBounds()
+		{
+			super(-1, -1);
+		}
+		
+		/**
+		 * @see net.fathomsoft.nova.util.Bounds#setStart(int)
+		 */
+		public void setStart(int start)
+		{
+			throw new EmptyBoundsModificationException("You cannot modify the start value of the EMPTY Bounds instance.");
+		}
+		
+		/**
+		 * @see net.fathomsoft.nova.util.Bounds#setEnd(int)
+		 */
+		public void setEnd(int end)
+		{
+			throw new EmptyBoundsModificationException("You cannot modify the end value of the EMPTY Bounds instance.");
+		}
+	}
+	
+	/**
+	 * Exception thrown when the final EMPTY bounds is attempted to be
+	 * modified.
+	 * 
+	 * @author	Braden Steffaniak
+	 * @since	v0.2.13 Jun 12, 2014 at 12:29:46 PM
+	 * @version	v0.2.13 Jun 12, 2014 at 12:29:46 PM
+	 */
+	public static class EmptyBoundsModificationException extends RuntimeException
+	{
+		/**
+		 * Create an exception for when the final EMPTY Bounds type is
+		 * attempted to be modified.
+		 * 
+		 * @param message The message describing what was trying to be
+		 * 		modified.
+		 */
+		public EmptyBoundsModificationException(String message)
+		{
+			super(message);
+		}
 	}
 }
