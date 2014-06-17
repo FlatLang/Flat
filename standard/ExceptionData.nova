@@ -1,4 +1,3 @@
-import "setjmp.h";
 import "ArrayList";
 
 public class ExceptionData
@@ -36,17 +35,12 @@ public class ExceptionData
 	
 	ExceptionData	parent;
 	
-	ArrayList		codes;
+	visible ArrayList	codes;
 	
 	public ExceptionData(jmp_buf* buf)
 	{
 		buffer = buf;
 		codes  = new ArrayList();
-	}
-	
-	public ArrayList getCodes()
-	{
-		return codes;
 	}
 	
 	public void addCode(int code)
@@ -65,9 +59,9 @@ public class ExceptionData
 		
 		while (data != 0)
 		{
-			ArrayList list = data.getCodes();
+			ArrayList list = data.codes;
 			
-			for (int i = 0; i < list.getSize(); i++)
+			for (int i = 0; i < list.size; i++)
 			{
 				if (list.get(i) == code)
 				{
