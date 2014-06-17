@@ -14,6 +14,7 @@ public class IO
 	external void fseek(FILE* stream, int offset, int origin);
 	external void printf(char str[], int num);
 	external void fputs(char str[], FILE* stream);
+	external char scanf(char buf[], double* num);
 	external char getchar();
 	external int atoi(char array[]);
 	external char[] ufgets(FILE* stream);
@@ -35,6 +36,11 @@ public class IO
 		printf("%d", j);
 	}
 	
+	public static void printd(double j)
+	{
+		printf("%f", j);
+	}
+	
 	public static void printl(long j)
 	{
 		printf("%lld", j);
@@ -45,6 +51,16 @@ public class IO
 		String s   = getLine();
 		
 		int    num = atoi(s.toCharArray());
+		
+		return num;
+	}
+	
+	public static double getDouble()
+	{
+		double num;
+		
+		scanf("%lf", num);
+		flush();
 		
 		return num;
 	}
