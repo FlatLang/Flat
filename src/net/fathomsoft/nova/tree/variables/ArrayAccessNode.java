@@ -2,8 +2,12 @@ package net.fathomsoft.nova.tree.variables;
 
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.tree.BinaryOperatorNode;
+import net.fathomsoft.nova.tree.ClassNode;
 import net.fathomsoft.nova.tree.DimensionsNode;
+import net.fathomsoft.nova.tree.IdentifierNode;
 import net.fathomsoft.nova.tree.LiteralNode;
+import net.fathomsoft.nova.tree.ProgramNode;
+import net.fathomsoft.nova.tree.SyntaxTree;
 import net.fathomsoft.nova.tree.TreeNode;
 import net.fathomsoft.nova.util.Bounds;
 import net.fathomsoft.nova.util.Location;
@@ -19,7 +23,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.2 Mar 24, 2014 at 10:45:29 PM
- * @version	v0.2.11 May 31, 2014 at 1:19:11 PM
+ * @version	v0.2.13 Jun 17, 2014 at 8:45:35 AM
  */
 public class ArrayAccessNode extends VariableNode
 {
@@ -30,9 +34,40 @@ public class ArrayAccessNode extends VariableNode
 	{
 		super(temporaryParent, locationIn);
 		
-		DimensionsNode dimensions = new DimensionsNode(this, locationIn);
+		DimensionsNode dimensionsNode = new DimensionsNode(this, locationIn);
 		
-		addChild(dimensions);
+		addChild(dimensionsNode);
+	}
+	
+	/**
+	 * @see net.fathomsoft.nova.tree.ValueNode#getTypeClass()
+	 */
+	@Override
+	public ClassNode getTypeClass()
+	{
+		ProgramNode program = getProgramNode();
+		String      name    = getTypeClassName(getArrayDimensions() - getNumDimensions());
+		
+		ClassNode   clazz   = program.getClassNode(name);
+		
+		return clazz;
+	}
+	
+	/**
+	 * Get the number of dimensions that this node contains.<br>
+	 * <br>
+	 * For example:
+	 * <blockquote><pre>
+	 * int i[][][] = new int[5][4][3];</pre></blockquote>
+	 * The above array has three dimensions. In general, the number of
+	 * dimensions relates to the number of sets of brackets there are
+	 * contained within the array declaration.
+	 * 
+	 * @return The number of dimensions that this node contains.
+	 */
+	public int getNumDimensions()
+	{
+		return getDimensionsNode().getNumChildren();
 	}
 	
 	/**
@@ -45,22 +80,6 @@ public class ArrayAccessNode extends VariableNode
 	public DimensionsNode getDimensionsNode()
 	{
 		return (DimensionsNode)getChild(0);
-	}
-	
-	/**
-	 * @see net.fathomsoft.nova.tree.TreeNode#addChild(TreeNode)
-	 */
-	@Override
-	public void addChild(TreeNode child)
-	{
-		if (getNumChildren() <= 1)
-		{
-			super.addChild(child);
-		}
-		else
-		{
-			addChild(getNumChildren() - 1, child);
-		}
 	}
 	
 	/**
@@ -96,12 +115,12 @@ public class ArrayAccessNode extends VariableNode
 	@Override
 	public String generateCSourceFragment()
 	{
-		StringBuilder  builder    = new StringBuilder();
+		StringBuilder  builder        = new StringBuilder();
 		
-		DimensionsNode dimensions = getDimensionsNode();
+		DimensionsNode dimensionsNode = getDimensionsNode();
 		
 		builder.append(generateUseOutput());
-		builder.append(dimensions.generateCSourceFragment());
+		builder.append(dimensionsNode.generateCSourceFragment());
 		builder.append(generateChildrenCSourceFragment());
 		
 		return builder.toString();
@@ -117,7 +136,7 @@ public class ArrayAccessNode extends VariableNode
 		
 		builder.append(super.generateNovaInput(false) + getDimensionsNode().generateNovaInput());
 		
-		VariableNode accessed = getAccessedNode();
+		IdentifierNode accessed = getAccessedNode();
 		
 		if (accessed != null)
 		{
@@ -153,7 +172,7 @@ public class ArrayAccessNode extends VariableNode
 			
 			int    current     = indexBounds.getEnd() + 1;
 			
-			VariableNode var   = getExistingNode(parent, identifier);
+			VariableNode var   = SyntaxTree.getExistingNode(parent, identifier);
 			
 			if (var == null)
 			{
@@ -179,10 +198,15 @@ public class ArrayAccessNode extends VariableNode
 				}
 				else
 				{
-					TreeNode created = TreeNode.decodeScopeContents(parent, data, newLoc, false);
+					TreeNode created = SyntaxTree.decodeScopeContents(n, data, newLoc, require, false);
 					
 					if (created == null)
 					{
+						if (!require)
+						{
+							return null;
+						}
+						
 						SyntaxMessage.error("Unknown array access index '" + data + "'", n, newLoc);
 					}
 					
@@ -202,18 +226,18 @@ public class ArrayAccessNode extends VariableNode
 	/**
 	 * @see net.fathomsoft.nova.tree.ValueNode#getAccessedNode()
 	 */
-	public VariableNode getAccessedNode()
+	public IdentifierNode getAccessedNode()
 	{
 		if (getNumChildren() <= 1)
 		{
 			return null;
 		}
 		
-		return (VariableNode)getChild(1);
+		return (IdentifierNode)getChild(1);
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.TreeNode#clone(TreeNode)
+	 * @see net.fathomsoft.nova.tree.TreeNode#clone(TreeNode, Location)
 	 */
 	@Override
 	public ArrayAccessNode clone(TreeNode temporaryParent, Location locationIn)
