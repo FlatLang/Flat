@@ -16,7 +16,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.2.4 Jan 5, 2014 at 9:10:49 PM
- * @version	v0.2.11 May 31, 2014 at 1:19:11 PM
+ * @version	v0.2.13 Jun 17, 2014 at 8:45:35 AM
  */
 public class LocalDeclarationNode extends LocalVariableNode
 {
@@ -83,91 +83,20 @@ public class LocalDeclarationNode extends LocalVariableNode
 			return null;
 		}
 		
-		final String   finalStatement = statement;
+		LocalDeclarationNode n = new LocalDeclarationNode(parent, location);
 		
-		final boolean decodingArray[] = new boolean[1];
-		final boolean error[]         = new boolean[1];
-		final String  oldWord[]       = new String[1];
-			
-		LocalDeclarationNode n = new LocalDeclarationNode(parent, location)
-		{
-			@Override
-			public void interactWord(String word, int wordNumber, Bounds bounds, int numWords, String leftDelimiter, String rightDelimiter)
-			{
-				if (error[0])
-				{
-					return;
-				}
-				
-				if (!decodingArray[0])
-				{
-					if (wordNumber == numWords - 1)
-					{
-						if (getType() == null || (leftDelimiter.length() != 0 && !StringUtils.containsOnly(leftDelimiter, new char[] { '*', '&' })))
-						{
-							error[0] = true;
-							
-							return;
-						}
-						
-						setName(word);
-						
-						if (leftDelimiter.length() > 0)
-						{
-							if (leftDelimiter.equals("*"))
-							{
-								setDataType(POINTER);
-							}
-							else if (leftDelimiter.equals("&"))
-							{
-								setDataType(REFERENCE);
-							}
-						}
-					}
-					else if (!setAttribute(word, wordNumber))
-					{
-						if (getType() != null)
-						{
-							SyntaxMessage.error("Unknown syntax '" + leftDelimiter + word + "'", this);
-							
-							error[0] = true;
-						}
-						
-						setType(leftDelimiter + word);
-					}
-					
-					oldWord[0] = word;
-				}
-				
-				int firstBracketIndex = StringUtils.findNextNonWhitespaceIndex(finalStatement, bounds.getEnd());
-				
-				if (firstBracketIndex > 0)
-				{
-					char c = finalStatement.charAt(firstBracketIndex);
-					
-					if (c == '[')
-					{
-						decodingArray[0] = true;
-						
-						String brackets  = finalStatement.substring(bounds.getEnd());
-						
-						int dimensions   = SyntaxUtils.calculateArrayDimensions(brackets, false);
-						
-						setArrayDimensions(dimensions);
-					}
-				}
-			}
-		};
+		DeclarationData data = new DeclarationData(statement);
 		
-		n.iterateWords(statement, Patterns.IDENTIFIER_BOUNDARIES);
+		n.iterateWords(statement, Patterns.IDENTIFIER_BOUNDARIES, data);
 		
-		if (n.getType() == null || n.getName() == null || error[0])
+		if (n.getType() == null || n.getName() == null || data.error)
 		{
 			return null;
 		}
 		
-		VariableNode node = TreeNode.getExistingNode(parent, n.getName());
+		VariableNode node = SyntaxTree.getExistingNode(parent, n.getName());
 		
+		// If a local variable with the same name has already been declared.
 		if (node instanceof LocalDeclarationNode)
 		{
 			SyntaxMessage.error("Local variable '" + n.getName() + "' has already been declared", n);
@@ -180,5 +109,98 @@ public class LocalDeclarationNode extends LocalVariableNode
 		}
 		
 		return n;
+	}
+	
+	/**
+	 * @see net.fathomsoft.nova.tree.TreeNode#interactWord(java.lang.String, int, net.fathomsoft.nova.util.Bounds, int, java.lang.String, java.lang.String, net.fathomsoft.nova.tree.TreeNode.ExtraData)
+	 */
+	@Override
+	public void interactWord(String word, int wordNumber, Bounds bounds, int numWords, String leftDelimiter, String rightDelimiter, ExtraData data)
+	{
+		DeclarationData extra = (DeclarationData)data;
+		
+		if (extra.error)
+		{
+			return;
+		}
+		
+		if (!extra.decodingArray)
+		{
+			if (wordNumber == numWords - 1)
+			{
+				if (getType() == null || (leftDelimiter.length() != 0 && !StringUtils.containsOnly(leftDelimiter, new char[] { '*', '&' })))
+				{
+					extra.error = true;
+					
+					return;
+				}
+				
+				setName(word);
+				
+				if (leftDelimiter.length() > 0)
+				{
+					if (leftDelimiter.equals("*"))
+					{
+						setDataType(POINTER);
+					}
+					else if (leftDelimiter.equals("&"))
+					{
+						setDataType(REFERENCE);
+					}
+				}
+			}
+			else if (!setAttribute(word, wordNumber))
+			{
+				if (getType() != null)
+				{
+					SyntaxMessage.error("Unknown syntax '" + leftDelimiter + word + "'", this);
+					
+					extra.error = true;
+				}
+				
+				setType(leftDelimiter + word);
+			}
+			
+			extra.oldWord = word;
+		}
+		
+		int firstBracketIndex = StringUtils.findNextNonWhitespaceIndex(extra.statement, bounds.getEnd());
+		
+		if (firstBracketIndex > 0)
+		{
+			char c = extra.statement.charAt(firstBracketIndex);
+			
+			if (c == '[')
+			{
+				extra.decodingArray = true;
+				
+				String brackets  = extra.statement.substring(bounds.getEnd());
+				
+				int dimensions   = SyntaxUtils.calculateArrayDimensions(brackets, false);
+				
+				setArrayDimensions(dimensions);
+			}
+		}
+	}
+	
+	/**
+	 * Implementation of the ExtraData for this class.
+	 * 
+	 * @author	Braden Steffaniak
+	 * @since	v0.2.13 Jun 11, 2014 at 8:31:46 PM
+	 * @version	v0.2.13 Jun 11, 2014 at 8:31:46 PM
+	 */
+	private static class DeclarationData extends ExtraData
+	{
+		private boolean	error;
+		private boolean	decodingArray;
+		
+		private String	oldWord;
+		private String	statement;
+		
+		public DeclarationData(String statement)
+		{
+			this.statement = statement;
+		}
 	}
 }
