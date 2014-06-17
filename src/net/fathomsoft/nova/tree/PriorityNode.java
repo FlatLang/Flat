@@ -10,7 +10,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.2.10 May 29, 2014 at 1:50:25 PM
- * @version	v0.2.11 May 31, 2014 at 1:19:11 PM
+ * @version	v0.2.13 Jun 17, 2014 at 8:45:35 AM
  */
 public class PriorityNode extends ValueNode
 {
@@ -49,6 +49,21 @@ public class PriorityNode extends ValueNode
 		ValueNode contents = getContents();
 		
 		return contents.getReturnedNode();
+	}
+	
+	/**
+	 * @see net.fathomsoft.nova.tree.ValueNode#generateNovaInput(boolean)
+	 */
+	@Override
+	public String generateNovaInput(boolean outputChildren)
+	{
+		StringBuilder builder  = new StringBuilder();
+		
+		ValueNode     contents = getContents();
+		
+		builder.append('(').append(contents.generateNovaInput(outputChildren)).append(')');
+		
+		return builder.toString();
 	}
 	
 	/**
@@ -138,7 +153,7 @@ public class PriorityNode extends ValueNode
 			}
 			if (contents == null)
 			{
-				contents = TreeNode.getExistingNode(n, statement);
+				contents = SyntaxTree.getExistingNode(n, statement);
 			}
 			if (contents == null)
 			{
@@ -148,6 +163,10 @@ public class PriorityNode extends ValueNode
 				}
 				
 				SyntaxMessage.error("Could not decode contents '" + statement + "'", n);
+			}
+			else
+			{
+				contents = contents.clone(n, contentsLoc);
 			}
 			
 			n.addChild(contents);
@@ -159,7 +178,7 @@ public class PriorityNode extends ValueNode
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.TreeNode#clone(TreeNode)
+	 * @see net.fathomsoft.nova.tree.TreeNode#clone(TreeNode, Location)
 	 */
 	@Override
 	public PriorityNode clone(TreeNode temporaryParent, Location locationIn)
