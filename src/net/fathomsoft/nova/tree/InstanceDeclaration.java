@@ -222,43 +222,6 @@ public class InstanceDeclaration extends Variable
 		
 		return true;
 	}
-
-	/**
-	 * @see net.fathomsoft.nova.tree.Node#generateJavaSource()
-	 */
-	@Override
-	public String generateJavaSource()
-	{
-		StringBuilder builder = new StringBuilder();
-		
-		if (isVisibilityValid())
-		{
-			builder.append(getVisibilityText()).append(' ');
-		}
-		if (isStatic())
-		{
-			builder.append(getStaticText()).append(' ');
-		}
-		if (isConstant())
-		{
-			builder.append(getConstantText()).append(' ');
-		}
-		
-		builder.append(getType()).append(' ');
-		
-		if (isReference())
-		{
-			builder.append('&').append(' ');
-		}
-		else if (isPointer())
-		{
-			builder.append('*').append(' ');
-		}
-		
-		builder.append(getName()).append(';').append('\n');
-		
-		return builder.toString();
-	}
 	
 	/**
 	 * @see net.fathomsoft.nova.tree.Node#generateCHeader()

@@ -106,22 +106,22 @@ public class MethodCall extends Identifier
 	 */
 	public Method getMethodDeclaration()
 	{
-		FileDeclaration    file    = getParent().getFileDeclaration();
+		FileDeclaration file = getParent().getFileDeclaration();
 		
 		Program program = file.getProgram();
 		
 		if (file.containsImport(getName()))
 		{
-			ClassDeclaration  clazz  = program.getClassDeclaration(getName());
+			ClassDeclaration clazz = program.getClassDeclaration(getName());
 			
 			Method method = clazz.getMethod(getName());
 			
 			return method;
 		}
 		
-		Value  val    = getReferenceNode();
+		Value val = getReferenceNode();
 		
-		ClassDeclaration  clazz  = val.getTypeClass();
+		ClassDeclaration clazz = val.getTypeClass();
 		
 		Method method = clazz.getMethod(getName());
 		
@@ -224,23 +224,6 @@ public class MethodCall extends Identifier
 		Method method = getMethodDeclaration();
 		
 		return method.getParameter(argIndex);
-	}
-	
-	/**
-	 * @see net.fathomsoft.nova.tree.Node#generateJavaSource()
-	 */
-	@Override
-	public String generateJavaSource()
-	{
-		StringBuilder builder = new StringBuilder();
-		
-		builder.append(getName()).append('(');
-		
-		builder.append(getArgumentList().generateJavaSource());
-		
-		builder.append(");").append('\n');
-		
-		return builder.toString();
 	}
 	
 	/**

@@ -32,57 +32,6 @@ public class Constructor extends Method
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.Node#generateJavaSource()
-	 */
-	@Override
-	public String generateJavaSource()
-	{
-		StringBuilder builder = new StringBuilder();
-		
-		if (isVisibilityValid())
-		{
-			builder.append(getVisibilityText()).append(' ');
-		}
-		if (isStatic())
-		{
-			SyntaxMessage.error("Constructor cannot be static", this);
-		}
-		if (isConstant())
-		{
-			SyntaxMessage.error("Constructor cannot be const", this);
-		}
-		
-		if (isReference())
-		{
-			SyntaxMessage.error("Constructor cannot return a reference", this);
-		}
-		else if (isPointer())
-		{
-			SyntaxMessage.error("Constructor cannot return a pointer", this);
-		}
-		
-		builder.append(getName()).append('(');
-		
-		builder.append(getParameterList().generateJavaSource());
-		
-		builder.append(')').append('\n').append('{').append('\n');
-		
-		for (int i = 0; i < getNumChildren(); i++)
-		{
-			Node child = getChild(i);
-			
-			if (child instanceof ParameterList == false)
-			{
-				builder.append(child.generateJavaSource());
-			}
-		}
-		
-		builder.append('}').append('\n');
-		
-		return builder.toString();
-	}
-
-	/**
 	 * @see net.fathomsoft.nova.tree.Node#generateCHeader()
 	 */
 	@Override

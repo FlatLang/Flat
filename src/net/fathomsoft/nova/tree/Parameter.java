@@ -47,16 +47,7 @@ public class Parameter extends LocalDeclaration
 	{
 		this.defaultValue = defaultValue;
 	}
-
-	/**
-	 * @see net.fathomsoft.nova.tree.Node#generateJavaSource()
-	 */
-	@Override
-	public String generateJavaSource()
-	{
-		return getType() + " " + getName();
-	}
-
+	
 	/**
 	 * @see net.fathomsoft.nova.tree.Node#generateCHeader()
 	 */

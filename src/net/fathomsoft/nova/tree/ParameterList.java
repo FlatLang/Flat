@@ -188,27 +188,6 @@ public class ParameterList extends Node
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.Node#generateJavaSource()
-	 */
-	@Override
-	public String generateJavaSource()
-	{
-		StringBuilder builder = new StringBuilder();
-		
-		for (int i = 0; i < getNumChildren(); i++)
-		{
-			builder.append(getChild(i).generateJavaSource());
-			
-			if (i < getNumChildren() - 1)
-			{
-				builder.append(", ");
-			}
-		}
-		
-		return builder.toString();
-	}
-
-	/**
 	 * @see net.fathomsoft.nova.tree.Node#generateCHeader()
 	 */
 	@Override

@@ -94,15 +94,6 @@ public class Literal extends Value
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.Node#generateJavaSource()
-	 */
-	@Override
-	public String generateJavaSource()
-	{
-		return value;
-	}
-	
-	/**
 	 * @see net.fathomsoft.nova.tree.Node#generateCHeader()
 	 */
 	@Override

@@ -25,24 +25,6 @@ public class Return extends Value
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.Node#generateJavaSource()
-	 */
-	@Override
-	public String generateJavaSource()
-	{
-		String str = "return";
-		
-		Value value = getReturnedNode();
-		
-		if (value != null)
-		{
-			str += " " + value.generateJavaSource();
-		}
-		
-		return str;
-	}
-	
-	/**
 	 * @see net.fathomsoft.nova.tree.Value#getReturnedNode()
 	 */
 	public Value getReturnedNode()

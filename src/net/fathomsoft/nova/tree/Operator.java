@@ -45,16 +45,7 @@ public class Operator extends Value
 		
 		this.operator = operator;
 	}
-
-	/**
-	 * @see net.fathomsoft.nova.tree.Node#generateJavaSource()
-	 */
-	@Override
-	public String generateJavaSource()
-	{
-		return operator;
-	}
-
+	
 	/**
 	 * @see net.fathomsoft.nova.tree.Node#generateCSource()
 	 */

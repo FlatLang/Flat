@@ -129,27 +129,6 @@ public class MethodList extends Node
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.Node#generateJavaSource()
-	 */
-	@Override
-	public String generateJavaSource()
-	{
-		StringBuilder builder = new StringBuilder();
-		
-		for (int i = 0; i < getNumChildren(); i++)
-		{
-			if (i > 0)
-			{
-				builder.append('\n');
-			}
-			
-			builder.append(getChild(i).generateJavaSource());
-		}
-		
-		return builder.toString();
-	}
-	
-	/**
 	 * @see net.fathomsoft.nova.tree.Node#generateCHeader()
 	 */
 	@Override

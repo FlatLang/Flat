@@ -237,35 +237,6 @@ public class Variable extends Identifier
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.Node#generateJavaSource()
-	 */
-	@Override
-	public String generateJavaSource()
-	{
-		StringBuilder builder = new StringBuilder();
-		
-		if (isConstant())
-		{
-			builder.append(getConstantText()).append(' ');
-		}
-		
-		builder.append(getType());
-
-		if (isReference())
-		{
-			builder.append('&');
-		}
-		else if (isPointer())
-		{
-			builder.append('*');
-		}
-		
-		builder.append(' ').append(getName()).append(';').append('\n');
-		
-		return builder.toString();
-	}
-	
-	/**
 	 * Generate the representation of when the variable is being used, in
 	 * action, rather than being declared.<br>
 	 * <br>

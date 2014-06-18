@@ -54,21 +54,6 @@ public class Assignment extends Node
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.Node#generateJavaSource()
-	 */
-	@Override
-	public String generateJavaSource()
-	{
-		StringBuilder builder = new StringBuilder();
-		
-		builder.append(getAssigneeNode().generateJavaSource()).append(" = ").append(getAssignment().generateJavaSource());
-		
-		builder.append(';').append('\n');
-		
-		return builder.toString();
-	}
-	
-	/**
 	 * @see net.fathomsoft.nova.tree.Node#generateCSource()
 	 */
 	@Override

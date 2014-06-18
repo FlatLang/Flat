@@ -90,20 +90,6 @@ public class BinaryOperation extends Value
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.Node#generateJavaSource()
-	 */
-	@Override
-	public String generateJavaSource()
-	{
-		if (getNumChildren() == 1)
-		{
-			return getLeftOperand().generateJavaSource();
-		}
-		
-		return getLeftOperand().generateJavaSource() + ' ' + getOperator().generateJavaSource() + ' ' + getRightOperand().generateJavaSource();
-	}
-	
-	/**
 	 * @see net.fathomsoft.nova.tree.Node#generateCSource()
 	 */
 	@Override

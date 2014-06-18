@@ -333,66 +333,6 @@ public class Method extends InstanceDeclaration
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.Node#generateJavaSource()
-	 */
-	@Override
-	public String generateJavaSource()
-	{
-		StringBuilder builder = new StringBuilder();
-		
-		if (isVisibilityValid())
-		{
-			builder.append(getVisibilityText()).append(' ');
-		}
-		if (isStatic())
-		{
-			builder.append(getStaticText()).append(' ');
-		}
-		if (isConstant())
-		{
-			builder.append(getConstantText()).append(' ');
-		}
-		
-		builder.append(getType());
-		
-		if (isReference())
-		{
-			builder.append('&');
-		}
-		else if (isPointer())
-		{
-			builder.append('*');
-		}
-		
-		if (isArray())
-		{
-			builder.append(getArrayText());
-		}
-		
-		builder.append(' ').append(getName()).append('(');
-
-		ParameterList parameterList = getParameterList();
-		
-		builder.append(parameterList.generateJavaSource());
-		
-		builder.append(')').append('\n').append('{').append('\n');
-		
-		for (int i = 0; i < getNumChildren(); i++)
-		{
-			Node child = getChild(i);
-			
-			if (child != parameterList)
-			{
-				builder.append(child.generateJavaSource());
-			}
-		}
-		
-		builder.append('}').append('\n');
-		
-		return builder.toString();
-	}
-
-	/**
 	 * @see net.fathomsoft.nova.tree.Node#generateCHeader()
 	 */
 	@Override

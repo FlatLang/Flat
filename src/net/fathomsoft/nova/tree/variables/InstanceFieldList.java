@@ -23,32 +23,6 @@ public class InstanceFieldList extends Node
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.Node#generateJavaSource()
-	 */
-	@Override
-	public String generateJavaSource()
-	{
-		StringBuilder builder = new StringBuilder();
-		
-		for (int i = 0; i < getNumChildren(); i++)
-		{
-			builder.append(getChild(i).generateJavaSource());
-		}
-		
-		if (getNumChildren() > 0)
-		{
-			ClassDeclaration parent = (ClassDeclaration)getAncestorOfType(ClassDeclaration.class, true);
-			
-			if (parent.getMethodList().getNumChildren() > 0)
-			{
-				builder.append('\n');
-			}
-		}
-		
-		return builder.toString();
-	}
-
-	/**
 	 * @see net.fathomsoft.nova.tree.Node#generateCHeader()
 	 */
 	@Override

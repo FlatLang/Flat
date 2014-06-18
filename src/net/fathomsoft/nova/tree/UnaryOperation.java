@@ -67,24 +67,6 @@ public class UnaryOperation extends Value
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.Node#generateJavaSource()
-	 */
-	@Override
-	public String generateJavaSource()
-	{
-		StringBuilder builder = new StringBuilder();
-		
-		for (int i = 0; i < getNumChildren(); i++)
-		{
-			builder.append(getChild(i).generateJavaSource());
-		}
-		
-		builder.append(';').append('\n');
-		
-		return builder.toString();
-	}
-	
-	/**
 	 * @see net.fathomsoft.nova.tree.Node#generateCSource()
 	 */
 	@Override
