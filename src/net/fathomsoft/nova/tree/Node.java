@@ -195,13 +195,13 @@ public abstract class Node
 	}
 	
 	/**
-	 * Get the ScopeNode instance of this Node if it even has
-	 * a scope. If the Node does not have a ScopeNode then this
+	 * Get the Scope instance of this Node if it even has
+	 * a scope. If the Node does not have a Scope then this
 	 * method call will return null.
 	 * 
-	 * @return The ScopeNode instance, if it exists.
+	 * @return The Scope instance, if it exists.
 	 */
-	public Scope getScopeNode()
+	public Scope getScope()
 	{
 		return null;
 	}
@@ -213,24 +213,24 @@ public abstract class Node
 	 */
 	public boolean containsScope()
 	{
-		return getScopeNode() != null;
+		return getScope() != null;
 	}
 	
 	/**
-	 * Set the ScopeNode of the specified Node to the given
-	 * ScopeNode instance.
+	 * Set the Scope of the specified Node to the given
+	 * Scope instance.
 	 * 
-	 * @param scope The ScopeNode instance to use.
+	 * @param scope The Scope instance to use.
 	 */
-	public void setScopeNode(Scope scope)
+	public void setScope(Scope scope)
 	{
 		addChild(0, scope, this);
 	}
 	
 	/**
-	 * Add the given LocalVariableNode to the nearest scope.
+	 * Add the given LocalVariable to the nearest scope.
 	 * 
-	 * @param node The LocalVariableNode to add.
+	 * @param node The LocalVariable to add.
 	 */
 	public void addToNearestScope(LocalVariable node)
 	{
@@ -390,7 +390,7 @@ public abstract class Node
 	 */
 	public void addChild(int index, Node node)
 	{
-		Scope scope = getScopeNode();
+		Scope scope = getScope();
 		
 		if (scope != null)
 		{
@@ -481,7 +481,7 @@ public abstract class Node
 		
 		if (parent.getNumChildren() > 0)
 		{
-			scope = parent.getScopeNode();
+			scope = parent.getScope();
 		}
 		if (scope == null)
 		{
@@ -797,7 +797,7 @@ public abstract class Node
 	 */
 	public String getLocationInfo()
 	{
-		FileDeclaration file = getFileNode();
+		FileDeclaration file = getFileDeclaration();
 		Location loc  = getLocationIn();
 		
 		String   info = "";
@@ -818,7 +818,7 @@ public abstract class Node
 	 * If the specified node is within an try block, return the node for
 	 * the try block.
 	 * 
-	 * @return The parent TryNode, if there is one.
+	 * @return The parent Try, if there is one.
 	 */
 	public Try getParentTry()
 	{
@@ -838,26 +838,26 @@ public abstract class Node
 	}
 	
 	/**
-	 * Get the ProgramNode (The oldest parent) of this Node.
+	 * Get the Program (The oldest parent) of this Node.
 	 * 
-	 * @return The ProgramNode of this Node.
+	 * @return The Program of this Node.
 	 */
-	public Program getProgramNode()
+	public Program getProgram()
 	{
 		if (parent != null)
 		{
-			return parent.getProgramNode();
+			return parent.getProgram();
 		}
 		
 		return (Program)this;
 	}
 	
 	/**
-	 * Get the FileNode of this Node, if it exists.
+	 * Get the FileDeclaration of this Node, if it exists.
 	 * 
-	 * @return The FileNode of this Node.
+	 * @return The FileDeclaration of this Node.
 	 */
-	public FileDeclaration getFileNode()
+	public FileDeclaration getFileDeclaration()
 	{
 		Node current = this;
 		
@@ -875,21 +875,21 @@ public abstract class Node
 	}
 	
 	/**
-	 * Get the ClassNode parent instance of the Node, if one exists.
+	 * Get the ClassDeclaration parent instance of the Node, if one exists.
 	 * 
-	 * @return The nearest ClassNode instance that contains this node.
+	 * @return The nearest ClassDeclaration instance that contains this node.
 	 */
-	public ClassDeclaration getClassNode()
+	public ClassDeclaration getClassDeclaration()
 	{
 		return (ClassDeclaration)getAncestorOfType(ClassDeclaration.class, true);
 	}
 	
 	/**
-	 * Get the MethodNode parent instance of the Node, if one exists.
+	 * Get the Method parent instance of the Node, if one exists.
 	 * 
-	 * @return The nearest MethodNode instance that contains this node.
+	 * @return The nearest Method instance that contains this node.
 	 */
-	public final Method getMethodNode()
+	public final Method getMethod()
 	{
 		return (Method)getAncestorOfType(Method.class, true);
 	}
@@ -902,7 +902,7 @@ public abstract class Node
 	 */
 	public Nova getController()
 	{
-		return getProgramNode().getController();
+		return getProgram().getController();
 	}
 	
 	/**

@@ -48,7 +48,7 @@ public class Message
 	 */
 	public Message(String message, Node node, Location location)
 	{
-		this.file       = node.getFileNode();
+		this.file       = node.getFileDeclaration();
 		this.node       = node;
 		this.location   = location;
 		this.message    = message;

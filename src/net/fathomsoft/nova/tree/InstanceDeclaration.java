@@ -4,7 +4,7 @@ import net.fathomsoft.nova.tree.variables.Variable;
 import net.fathomsoft.nova.util.Location;
 
 /**
- * VariableNode extension that represents the declaration of a field
+ * Variable extension that represents the declaration of a field
  * or method. Contains the modifiers for visibility and whether or not
  * the field/method is static. 
  * 
@@ -37,7 +37,7 @@ public class InstanceDeclaration extends Variable
 	public static final int	PUBLIC		= 3;
 	
 	/**
-	 * Instantiate a new InstanceDeclarationNode and initialize the default
+	 * Instantiate a new InstanceDeclaration and initialize the default
 	 * values.
 	 * 
 	 * @see net.fathomsoft.nova.tree.Node#Node(Node, Location)
@@ -50,11 +50,11 @@ public class InstanceDeclaration extends Variable
 	}
 	
 	/**
-	 * Get whether or not the specified InstanceDeclarationNode is static. Static
+	 * Get whether or not the specified InstanceDeclaration is static. Static
 	 * variables/methods are shared among each of its containing class's
 	 * instances.
 	 * 
-	 * @return Whether or not the specified InstanceDeclarationNode is static.
+	 * @return Whether or not the specified InstanceDeclaration is static.
 	 */
 	public boolean isStatic()
 	{
@@ -64,7 +64,7 @@ public class InstanceDeclaration extends Variable
 	/**
 	 * (WARNING: CURRENTLY ONLY RETURNS "static")<br>
 	 * Get the text that is associated with the static value of the
-	 * specified InstanceDeclarationNode.<br>
+	 * specified InstanceDeclaration.<br>
 	 * <br>
 	 * For example: If static is true, the method will return "static" if
 	 * it is not, it will return an empty String.
@@ -77,7 +77,7 @@ public class InstanceDeclaration extends Variable
 	}
 	
 	/**
-	 * Set whether or not the specified InstanceDeclarationNode is static. Static
+	 * Set whether or not the specified InstanceDeclaration is static. Static
 	 * variables/methods are shared among each of its containing class's
 	 * instances.
 	 * 
@@ -93,9 +93,9 @@ public class InstanceDeclaration extends Variable
 	 * <br>
 	 * Possible values include:<br>
 	 * <ul>
-	 * 	<li>InstanceDeclarationNode.PRIVATE</li>
-	 * 	<li>InstanceDeclarationNode.PROTECTED</li>
-	 * 	<li>InstanceDeclarationNode.PUBLIC</li>
+	 * 	<li>InstanceDeclaration.PRIVATE</li>
+	 * 	<li>InstanceDeclaration.PROTECTED</li>
+	 * 	<li>InstanceDeclaration.PUBLIC</li>
 	 * </ul>
 	 * 
 	 * @return The current visibility value of the node.
@@ -112,9 +112,9 @@ public class InstanceDeclaration extends Variable
 	 * <br>
 	 * Possible values include:<br>
 	 * <ul>
-	 * 	<li>InstanceDeclarationNode.PRIVATE</li>
-	 * 	<li>InstanceDeclarationNode.PROTECTED</li>
-	 * 	<li>InstanceDeclarationNode.PUBLIC</li>
+	 * 	<li>InstanceDeclaration.PRIVATE</li>
+	 * 	<li>InstanceDeclaration.PROTECTED</li>
+	 * 	<li>InstanceDeclaration.PUBLIC</li>
 	 * </ul>
 	 * 
 	 * @return Returns whether or not the visibility's value is valid.
@@ -126,9 +126,9 @@ public class InstanceDeclaration extends Variable
 	
 	/**
 	 * Get the text that is associated with the visibility of the
-	 * specified InstanceDeclarationNode.<br>
+	 * specified InstanceDeclaration.<br>
 	 * <br>
-	 * For example: InstanceDeclarationNode.PRIVATE would return a String with
+	 * For example: InstanceDeclaration.PRIVATE would return a String with
 	 * the value of "private"
 	 * 
 	 * @return The text that is associated with the visibility of the
@@ -157,9 +157,9 @@ public class InstanceDeclaration extends Variable
 	 * <br>
 	 * Possible options include:<br>
 	 * <ul>
-	 * 	<li>InstanceDeclarationNode.PRIVATE</li>
-	 * 	<li>InstanceDeclarationNode.PROTECTED</li>
-	 * 	<li>InstanceDeclarationNode.PUBLIC</li>
+	 * 	<li>InstanceDeclaration.PRIVATE</li>
+	 * 	<li>InstanceDeclaration.PROTECTED</li>
+	 * 	<li>InstanceDeclaration.PUBLIC</li>
 	 * </ul>
 	 * 
 	 * @param visibility The visibility of the field/method that was
@@ -318,7 +318,7 @@ public class InstanceDeclaration extends Variable
 	}
 	
 	/**
-	 * Fill the given InstanceDeclarationNode with the data that is in the
+	 * Fill the given InstanceDeclaration with the data that is in the
 	 * specified node.
 	 * 
 	 * @param node The node to copy the data into.

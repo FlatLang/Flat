@@ -6,7 +6,7 @@ import net.fathomsoft.nova.util.StringUtils;
 import net.fathomsoft.nova.util.SyntaxUtils;
 
 /**
- * ValueNode extension that represents an operation within parentheses.
+ * Value extension that represents an operation within parentheses.
  * 
  * @author	Braden Steffaniak
  * @since	v0.2.10 May 29, 2014 at 1:50:25 PM
@@ -23,7 +23,7 @@ public class Priority extends Value
 	}
 	
 	/**
-	 * Get the ValueNode that represents the contents inside the
+	 * Get the Value that represents the contents inside the
 	 * parentheses.<br>
 	 * <br>
 	 * For example:
@@ -32,7 +32,7 @@ public class Priority extends Value
 	 * In the statement above, The binary operation "<u><code>32 + 3 * 3</code></u>"
 	 * is the contents of the Priority node.
 	 * 
-	 * @return The ValueNode that represents the contents inside
+	 * @return The Value that represents the contents inside
 	 * 		the parentheses.
 	 */
 	public Value getContents()
@@ -91,7 +91,7 @@ public class Priority extends Value
 	}
 	
 	/**
-	 * Decode the given statement into a PriorityNode instance, if
+	 * Decode the given statement into a Priority instance, if
 	 * possible. If it is not possible, this method returns null.<br>
 	 * <br>
 	 * Example inputs include:<br>
@@ -101,13 +101,13 @@ public class Priority extends Value
 	 * 
 	 * @param parent The parent node of the statement.
 	 * @param statement The statement to try to decode into a
-	 * 		PriorityNode instance.
+	 * 		Priority instance.
 	 * @param location The location of the statement in the source code.
 	 * @param require Whether or not to throw an error if anything goes wrong.
 	 * @param scope Whether or not the given statement is the beginning of
 	 * 		a scope.
 	 * @return The generated node, if it was possible to translated it
-	 * 		into a PriorityNode.
+	 * 		into a Priority.
 	 */
 	public static Priority decodeStatement(Node parent, String statement, Location location, boolean require, boolean scope)
 	{
@@ -143,7 +143,7 @@ public class Priority extends Value
 			
 			if (contents == null)
 			{
-				contents = BinaryOperator.decodeStatement(n, statement, contentsLoc, require, false);
+				contents = BinaryOperation.decodeStatement(n, statement, contentsLoc, require, false);
 			}
 			if (contents == null && SyntaxUtils.isLiteral(statement))
 			{
@@ -189,7 +189,7 @@ public class Priority extends Value
 	}
 	
 	/**
-	 * Fill the given PriorityNode with the data that is in the
+	 * Fill the given Priority with the data that is in the
 	 * specified node.
 	 * 
 	 * @param node The node to copy the data into.

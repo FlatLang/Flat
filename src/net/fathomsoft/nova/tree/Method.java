@@ -13,7 +13,7 @@ import net.fathomsoft.nova.util.StringUtils;
 import net.fathomsoft.nova.util.SyntaxUtils;
 
 /**
- * DeclarationNode extension that represents the declaration of a method
+ * Declaration extension that represents the declaration of a method
  * node type. See {@link #decodeStatement(Node, String, Location, boolean, boolean)}
  * for more details on what correct inputs look like.
  * 
@@ -45,7 +45,7 @@ public class Method extends InstanceDeclaration
 		ParameterList parameterList = new ParameterList(this, null);
 		Scope         scope     = new Scope(this, null);
 		
-		setScopeNode(scope);
+		setScope(scope);
 		addChild(parameterList, this);
 	}
 	
@@ -61,10 +61,10 @@ public class Method extends InstanceDeclaration
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.Node#getScopeNode()
+	 * @see net.fathomsoft.nova.tree.Node#getScope()
 	 */
 	@Override
-	public Scope getScopeNode()
+	public Scope getScope()
 	{
 		if (isExternal())
 		{
@@ -75,26 +75,26 @@ public class Method extends InstanceDeclaration
 	}
 	
 	/**
-	 * The the ParameterListNode that represents the parameters of the
+	 * The the ParameterList that represents the parameters of the
 	 * method.<br>
 	 * For example:<br>
 	 * <blockquote><pre>
 	 * public void methodName(int age, String name);</pre></blockquote>
 	 * In the previous statement, the data within the parenthesis are the
-	 * parameters of the method. The ParameterListNode returned by this
+	 * parameters of the method. The ParameterList returned by this
 	 * method would contain a node for each of the parameter specified, in
 	 * the correct order from left to right.
 	 * 
-	 * @return The ParameterListNode that represents the parameters of the
+	 * @return The ParameterList that represents the parameters of the
 	 * 		method.
 	 */
-	public ParameterList getParameterListNode()
+	public ParameterList getParameterList()
 	{
 		return (ParameterList)getChild(1);
 	}
 	
 	/**
-	 * Get the ParameterNode that the given index represents. The
+	 * Get the Parameter that the given index represents. The
 	 * parameters are ordered from left to right, 0 being the first.<br>
 	 * <br>
 	 * For example:
@@ -103,21 +103,21 @@ public class Method extends InstanceDeclaration
 	 * {
 	 * 	...
 	 * }</pre></blockquote>
-	 * If you were to call getParameterNode(2) on the method
-	 * above, you would receive the c ParameterNode.
+	 * If you were to call getParameter(2) on the method
+	 * above, you would receive the c Parameter.
 	 * 
 	 * @param parameterIndex The index parameter to get.
-	 * @return The ParameterNode at the given index.
+	 * @return The Parameter at the given index.
 	 */
-	public Parameter getParameterNode(int parameterIndex)
+	public Parameter getParameter(int parameterIndex)
 	{
-		return getParameterListNode().getParameterNode(parameterIndex);
+		return getParameterList().getParameter(parameterIndex);
 	}
 	
 //	/**
 //	 * Get whether or not the specified method returns an external type.
 //	 * For more details on what an external type looks like, see
-//	 * {@link net.fathomsoft.nova.tree.variables.VariableNode#setExternal(boolean)}
+//	 * {@link net.fathomsoft.nova.tree.variables.Variable#setExternal(boolean)}
 //	 * 
 //	 * @return Whether or not the specified method returns an external
 //	 * 		type.
@@ -130,7 +130,7 @@ public class Method extends InstanceDeclaration
 //	/**
 //	 * Set whether or not the specified method returns an external type.
 //	 * For more details on what an external type looks like, see
-//	 * {@link net.fathomsoft.nova.tree.variables.VariableNode#setExternal(boolean)}
+//	 * {@link net.fathomsoft.nova.tree.variables.Variable#setExternal(boolean)}
 //	 * 
 //	 * @param externalType Whether or not the specified method returns an
 //	 * 		external type.
@@ -169,22 +169,22 @@ public class Method extends InstanceDeclaration
 	@Override
 	public void addChild(Node child)
 	{
-//		if (child instanceof LocalVariableNode)
+//		if (child instanceof LocalVariable)
 //		{
-//			getLocalVariableListNode().addChild(child);
+//			getLocalVariableList().addChild(child);
 //		}
 //		else
 //		{
 //			super.addChild(child);
 //		}
-		getScopeNode().addChild(child);
+		getScope().addChild(child);
 	}
 	
 	/**
-	 * Get whether or not the specified MethodNode has overridden a method
+	 * Get whether or not the specified Method has overridden a method
 	 * from a super class
 	 * 
-	 * @return Whether or not the specified MethodNode has overridden a
+	 * @return Whether or not the specified Method has overridden a
 	 * 		method from a super class.
 	 */
 	public boolean doesOverride()
@@ -193,15 +193,15 @@ public class Method extends InstanceDeclaration
 	}
 	
 	/**
-	 * Get the MethodNode instance that this MethodNode overrides, if one
+	 * Get the Method instance that this Method overrides, if one
 	 * exists.
 	 * 
-	 * @return The MethodNode instance that this MethodNode overrides, if
+	 * @return The Method instance that this Method overrides, if
 	 * 		one exists.
 	 */
 	public Method getOverriddenMethod()
 	{
-		ClassDeclaration clazz     = getClassNode();
+		ClassDeclaration clazz     = getClassDeclaration();
 		
 		ClassDeclaration extension = clazz.getExtendedClass();
 		
@@ -216,10 +216,10 @@ public class Method extends InstanceDeclaration
 	}
 	
 	/**
-	 * Get whether or not the specified MethodNode has been overridden by
+	 * Get whether or not the specified Method has been overridden by
 	 * a sub class.
 	 * 
-	 * @return Whether or not the specified MethodNode has been
+	 * @return Whether or not the specified Method has been
 	 * 		overridden.
 	 */
 	public boolean isOverridden()
@@ -228,10 +228,10 @@ public class Method extends InstanceDeclaration
 	}
 	
 	/**
-	 * Get the MethodNode instance that overrides this MethodNode, if
+	 * Get the Method instance that overrides this Method, if
 	 * any exists.
 	 * 
-	 * @return The MethodNode instance that overrides this MethodNode, if
+	 * @return The Method instance that overrides this Method, if
 	 * 		any exists.
 	 */
 	public Method[] getOverridingMethods()
@@ -240,10 +240,10 @@ public class Method extends InstanceDeclaration
 	}
 	
 	/**
-	 * Get whether or not a MethodNode instance overrides the given
+	 * Get whether or not a Method instance overrides the given
 	 * method.
 	 * 
-	 * @param overridingMethod The MethodNode to check.
+	 * @param overridingMethod The Method to check.
 	 */
 	private boolean containsOverridingMethod(Method overridingMethod)
 	{
@@ -261,10 +261,10 @@ public class Method extends InstanceDeclaration
 	}
 	
 	/**
-	 * Add a MethodNode instance that overrides this MethodNode.
+	 * Add a Method instance that overrides this Method.
 	 * 
-	 * @param overridingMethod The MethodNode instance that overrides
-	 * 		this MethodNode.
+	 * @param overridingMethod The Method instance that overrides
+	 * 		this Method.
 	 */
 	private void addOverridingMethod(Method overridingMethod)
 	{
@@ -312,18 +312,18 @@ public class Method extends InstanceDeclaration
 			}
 		}
 		
-		getParameterListNode().validate(phase);
+		getParameterList().validate(phase);
 		
 		return this;
 	}
 	
 	/**
-	 * Generate a MethodNode with the given parent and location for
+	 * Generate a Method with the given parent and location for
 	 * temporary use.
 	 * 
-	 * @param parent The node to set as the MethodNode's parent.
-	 * @param locationIn The location to set as the MethodNode's location.
-	 * @return The generated temporary MethodNode.
+	 * @param parent The node to set as the Method's parent.
+	 * @param locationIn The location to set as the Method's location.
+	 * @return The generated temporary Method.
 	 */
 	public static Method generateTemporaryMethod(Node parent, Location locationIn)
 	{
@@ -371,7 +371,7 @@ public class Method extends InstanceDeclaration
 		
 		builder.append(' ').append(getName()).append('(');
 
-		ParameterList parameterList = getParameterListNode();
+		ParameterList parameterList = getParameterList();
 		
 		builder.append(parameterList.generateJavaSource());
 		
@@ -427,10 +427,10 @@ public class Method extends InstanceDeclaration
 		
 		builder.append(generateCSourceSignature()).append('\n');
 		
-		builder.append(getScopeNode().generateCSource());
+		builder.append(getScope().generateCSource());
 //		builder.append('{').append('\n');
 		
-//		ParameterListNode parameterList = getParameterListNode();
+//		ParameterList parameterList = getParameterList();
 //		
 //		for (int i = 0; i < getNumChildren(); i++)
 //		{
@@ -516,7 +516,7 @@ public class Method extends InstanceDeclaration
 		
 		builder.append(generateMethodName()).append('(');
 		
-		builder.append(getParameterListNode().generateCSource());
+		builder.append(getParameterList().generateCSource());
 		
 		builder.append(')');
 		
@@ -578,7 +578,7 @@ public class Method extends InstanceDeclaration
 	}
 	
 	/**
-	 * Decode the given statement into a MethodNode instance, if
+	 * Decode the given statement into a Method instance, if
 	 * possible. If it is not possible, this method returns null.
 	 * <br>
 	 * Example inputs include:<br>
@@ -590,13 +590,13 @@ public class Method extends InstanceDeclaration
 	 * 
 	 * @param parent The parent node of the statement.
 	 * @param statement The statement to try to decode into a
-	 * 		MethodNode instance.
+	 * 		Method instance.
 	 * @param location The location of the statement in the source code.
 	 * @param require Whether or not to throw an error if anything goes wrong.
 	 * @param scope Whether or not the given statement is the beginning of
 	 * 		a scope.
 	 * @return The generated node, if it was possible to translated it
-	 * 		into a MethodNode.
+	 * 		into a Method.
 	 */
 	public static Method decodeStatement(Node parent, String statement, Location location, boolean require, boolean scope)
 	{
@@ -669,11 +669,11 @@ public class Method extends InstanceDeclaration
 						SyntaxMessage.error("Incorrect parameter definition", n);
 					}
 					
-					n.getParameterListNode().addChild(param);
+					n.getParameterList().addChild(param);
 				}
 			}
 			
-			ClassDeclaration clazz = n.getClassNode();
+			ClassDeclaration clazz = n.getClassDeclaration();
 			
 			if (clazz.containsExternalType(n.getType()))
 			{
@@ -753,7 +753,7 @@ public class Method extends InstanceDeclaration
 	}
 	
 	/**
-	 * Fill the given MethodNode with the data that is in the
+	 * Fill the given Method with the data that is in the
 	 * specified node.
 	 * 
 	 * @param node The node to copy the data into.

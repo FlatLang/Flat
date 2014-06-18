@@ -8,7 +8,7 @@ import net.fathomsoft.nova.util.Regex;
 import net.fathomsoft.nova.util.SyntaxUtils;
 
 /**
- * LoopNode extension that represents the declaration of a "while loop"
+ * Loop extension that represents the declaration of a "while loop"
  * node type. See {@link #decodeStatement(Node, String, Location, boolean, boolean)}
  * for more details on what correct inputs look like.
  * 
@@ -34,7 +34,7 @@ public class WhileLoop extends Loop
 	 * @return The Node instance that describes the condition section
 	 * 		of the while loop.
 	 */
-	public Node getConditionNode()
+	public Node getCondition()
 	{
 		return getChild(1);
 	}
@@ -47,7 +47,7 @@ public class WhileLoop extends Loop
 	{
 		StringBuilder builder = new StringBuilder();
 		
-		Node condition    = getConditionNode();
+		Node condition    = getCondition();
 		
 		builder.append("while (").append(condition.generateCSource()).append(')').append('\n');
 		
@@ -55,7 +55,7 @@ public class WhileLoop extends Loop
 		{
 			Node child = getChild(i);
 			
-			if (child != getConditionNode())
+			if (child != getCondition())
 			{
 				builder.append(child.generateCSource());
 			}
@@ -65,7 +65,7 @@ public class WhileLoop extends Loop
 	}
 	
 	/**
-	 * Decode the given statement into a WhileLoopNode instance, if
+	 * Decode the given statement into a WhileLoop instance, if
 	 * possible. If it is not possible, this method returns null.<br>
 	 * <br>
 	 * Example inputs include:<br>
@@ -77,13 +77,13 @@ public class WhileLoop extends Loop
 	 * 
 	 * @param parent The parent node of the statement.
 	 * @param statement The statement to try to decode into a
-	 * 		WhileLoopNode instance.
+	 * 		WhileLoop instance.
 	 * @param location The location of the statement in the source code.
 	 * @param require Whether or not to throw an error if anything goes wrong.
 	 * @param scope Whether or not the given statement is the beginning of
 	 * 		a scope.
 	 * @return The generated node, if it was possible to translated it
-	 * 		into a WhileLoopNode.
+	 * 		into a WhileLoop.
 	 */
 	public static WhileLoop decodeStatement(Node parent, String statement, Location location, boolean require, boolean scope)
 	{
@@ -101,7 +101,7 @@ public class WhileLoop extends Loop
 				
 				String   contents  = statement.substring(bounds.getStart(), bounds.getEnd());
 				
-				Node condition = BinaryOperator.decodeStatement(parent, contents, newLoc, require, false);
+				Node condition = BinaryOperation.decodeStatement(parent, contents, newLoc, require, false);
 				
 				if (condition == null)
 				{
@@ -117,7 +117,7 @@ public class WhileLoop extends Loop
 					}
 					if (condition == null)
 					{
-//						SyntaxMessage.error("Could not decode conditional statement '" + condition + "'", parent.getFileNode(), newLoc, parent.getController());
+//						SyntaxMessage.error("Could not decode conditional statement '" + condition + "'", parent.getFileDeclaration(), newLoc, parent.getController());
 						
 						return null;
 					}
@@ -148,7 +148,7 @@ public class WhileLoop extends Loop
 	}
 	
 	/**
-	 * Fill the given WhileLoopNode with the data that is in the
+	 * Fill the given WhileLoop with the data that is in the
 	 * specified node.
 	 * 
 	 * @param node The node to copy the data into.

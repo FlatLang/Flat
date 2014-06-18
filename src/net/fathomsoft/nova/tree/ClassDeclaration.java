@@ -12,7 +12,7 @@ import net.fathomsoft.nova.util.Patterns;
 import net.fathomsoft.nova.util.Regex;
 
 /**
- * DeclarationNode extension that represents the declaration of a class
+ * Declaration extension that represents the declaration of a class
  * node type. See {@link #decodeStatement(Node, String, Location, boolean, boolean)}
  * for more details on what correct inputs look like.
  * 
@@ -55,21 +55,21 @@ public class ClassDeclaration extends InstanceDeclaration
 	}
 	
 	/**
-	 * Get the FieldListNode instance that contains the list of fields
+	 * Get the FieldList instance that contains the list of fields
 	 * that this class node contains.
 	 * 
-	 * @return The FieldListNode for this class node.
+	 * @return The FieldList for this class node.
 	 */
-	public FieldList getFieldListNode()
+	public FieldList getFieldList()
 	{
 		return (FieldList)getChild(0);
 	}
 	
 	/**
-	 * Get the MethodListNode instance that contains the list of
+	 * Get the MethodList instance that contains the list of
 	 * constructors that this class node contains.
 	 * 
-	 * @return The MethodListNode for constructors of this class node.
+	 * @return The MethodList for constructors of this class node.
 	 */
 	public MethodList getConstructorListNode()
 	{
@@ -77,10 +77,10 @@ public class ClassDeclaration extends InstanceDeclaration
 	}
 	
 	/**
-	 * Get the MethodListNode instance that contains the list of
+	 * Get the MethodList instance that contains the list of
 	 * destructors that this class node contains.
 	 * 
-	 * @return The MethodListNode for destructors of this class node.
+	 * @return The MethodList for destructors of this class node.
 	 */
 	public MethodList getDestructorListNode()
 	{
@@ -88,21 +88,21 @@ public class ClassDeclaration extends InstanceDeclaration
 	}
 	
 	/**
-	 * Get the MethodListNode instance that contains the list of methods
+	 * Get the MethodList instance that contains the list of methods
 	 * that this class node contains.
 	 * 
-	 * @return The MethodListNode for this class node.
+	 * @return The MethodList for this class node.
 	 */
-	public MethodList getMethodListNode()
+	public MethodList getMethodList()
 	{
 		return (MethodList)getChild(3);
 	}
 	
 	/**
-	 * Get the ExternalTypeNodeList instance that contains the list of
+	 * Get the ExternalTypeList instance that contains the list of
 	 * external types that this class node contains.
 	 * 
-	 * @return The ExternalTypeNodeList for this class node.
+	 * @return The ExternalTypeList for this class node.
 	 */
 	public ExternalTypeList getExternalTypeListNode()
 	{
@@ -110,10 +110,10 @@ public class ClassDeclaration extends InstanceDeclaration
 	}
 	
 	/**
-	 * Get the FieldListNode instance that contains the list of external
+	 * Get the FieldList instance that contains the list of external
 	 * fields that this class node contains.
 	 * 
-	 * @return The external FieldListNode for this class node.
+	 * @return The external FieldList for this class node.
 	 */
 	public FieldList getExternalFieldsListNode()
 	{
@@ -133,7 +133,7 @@ public class ClassDeclaration extends InstanceDeclaration
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.IdentifierNode#getAccessedNode()
+	 * @see net.fathomsoft.nova.tree.Identifier#getAccessedNode()
 	 */
 	public Identifier getAccessedNode()
 	{
@@ -146,13 +146,13 @@ public class ClassDeclaration extends InstanceDeclaration
 	}
 	
 	/**
-	 * Check whether or not the specified ClassNode extends the given
-	 * ClassNode.
+	 * Check whether or not the specified ClassDeclaration extends the given
+	 * ClassDeclaration.
 	 * 
-	 * @param node The ClassNode to check if the specified Class
+	 * @param node The ClassDeclaration to check if the specified Class
 	 * 		extends.
-	 * @return Whether or not the specified ClassNode extends the given
-	 * 		ClassNode.
+	 * @return Whether or not the specified ClassDeclaration extends the given
+	 * 		ClassDeclaration.
 	 */
 	public boolean isOfType(ClassDeclaration node)
 	{
@@ -180,11 +180,11 @@ public class ClassDeclaration extends InstanceDeclaration
 	 * <br>
 	 * A class node can only extend one class.
 	 * 
-	 * @return The ClassNode instance of the class that is extended.
+	 * @return The ClassDeclaration instance of the class that is extended.
 	 */
 	public ClassDeclaration getExtendedClass()
 	{
-		ClassDeclaration extendedClass = getProgramNode().getClassNode(getExtendedClassName());
+		ClassDeclaration extendedClass = getProgram().getClassDeclaration(getExtendedClassName());
 		
 		return extendedClass;
 	}
@@ -225,17 +225,17 @@ public class ClassDeclaration extends InstanceDeclaration
 	 * <br>
 	 * A class node can only extend one class.
 	 * 
-	 * @return The ClassNode instance of the class that is extended.
+	 * @return The ClassDeclaration instance of the class that is extended.
 	 */
 	public ClassDeclaration[] getImplementedClasses()
 	{
-		Program program = getProgramNode();
+		Program program = getProgram();
 		
 		ClassDeclaration classes[] = new ClassDeclaration[implementedClasses.length];
 		
 		for (int i = 0; i < classes.length; i++)
 		{
-			classes[i] = program.getClassNode(implementedClasses[i]);
+			classes[i] = program.getClassDeclaration(implementedClasses[i]);
 		}
 		
 		return classes;
@@ -279,7 +279,7 @@ public class ClassDeclaration extends InstanceDeclaration
 	}
 	
 	/**
-	 * Get whether or not the ClassNode contains an ExternalTypeNode with
+	 * Get whether or not the ClassDeclaration contains an ExternalType with
 	 * the specified type name.<br>
 	 * <br>
 	 * For example:
@@ -290,11 +290,11 @@ public class ClassDeclaration extends InstanceDeclaration
 	 * }</pre></blockquote>
 	 * <br>
 	 * A call like: "<code>getType("FILE")</code>" would
-	 * return the ExternalTypeNode for the "<code>FILE</code>" external
+	 * return the ExternalType for the "<code>FILE</code>" external
 	 * type.
 	 * 
 	 * @param typeName The name of the external type to search for.
-	 * @return Whether or not the ClassNode contains the MethodNode with
+	 * @return Whether or not the ClassDeclaration contains the Method with
 	 * 		the specified name.
 	 */
 	public boolean containsExternalType(String typeName)
@@ -303,7 +303,7 @@ public class ClassDeclaration extends InstanceDeclaration
 	}
 	
 	/**
-	 * Get the ClassNode's ExternalTypeNode with the specified type.<br>
+	 * Get the ClassDeclaration's ExternalType with the specified type.<br>
 	 * <br>
 	 * For example:
 	 * <blockquote><pre>
@@ -313,11 +313,11 @@ public class ClassDeclaration extends InstanceDeclaration
 	 * }</pre></blockquote>
 	 * <br>
 	 * A call like: "<code>getType("FILE")</code>" would
-	 * return the ExternalTypeNode for the "<code>FILE</code>" external
+	 * return the ExternalType for the "<code>FILE</code>" external
 	 * type.
 	 * 
 	 * @param typeName The name of the external type to search for.
-	 * @return The ExternalTypeNode for the external type, if it exists.
+	 * @return The ExternalType for the external type, if it exists.
 	 */
 	public ExternalType getExternalType(String typeName)
 	{
@@ -325,7 +325,7 @@ public class ClassDeclaration extends InstanceDeclaration
 	}
 	
 	/**
-	 * Get whether or not the ClassNode contains the FieldNode with the
+	 * Get whether or not the ClassDeclaration contains the Field with the
 	 * specified name.<br>
 	 * <br>
 	 * For example:
@@ -342,7 +342,7 @@ public class ClassDeclaration extends InstanceDeclaration
 	 * A call like: "<code>containsField("age")</code>" would return true.
 	 * 
 	 * @param fieldName The name of the field to search for.
-	 * @return Whether or not the ClassNode contains the FieldNode with
+	 * @return Whether or not the ClassDeclaration contains the Field with
 	 * 		the specified name.
 	 */
 	public boolean containsField(String fieldName)
@@ -351,7 +351,7 @@ public class ClassDeclaration extends InstanceDeclaration
 	}
 	
 	/**
-	 * Get the ClassNode's FieldNode with the specified name.<br>
+	 * Get the ClassDeclaration's Field with the specified name.<br>
 	 * <br>
 	 * For example:
 	 * <blockquote><pre>
@@ -365,14 +365,14 @@ public class ClassDeclaration extends InstanceDeclaration
 	 * }</pre></blockquote>
 	 * <br>
 	 * A call like: "<code>getField("age")</code>" would return the
-	 * FieldNode for the "<code>age</code>" int field.
+	 * Field for the "<code>age</code>" int field.
 	 * 
 	 * @param fieldName The name of the field to search for.
-	 * @return The FieldNode for the field, if it exists.
+	 * @return The Field for the field, if it exists.
 	 */
 	public Field getField(String fieldName)
 	{
-		FieldList fields = getFieldListNode();
+		FieldList fields = getFieldList();
 		
 		Field     field  = fields.getField(fieldName);
 		
@@ -392,7 +392,7 @@ public class ClassDeclaration extends InstanceDeclaration
 	}
 	
 	/**
-	 * Get whether or not the ClassNode contains the MethodNode with the
+	 * Get whether or not the ClassDeclaration contains the Method with the
 	 * specified name.<br>
 	 * <br>
 	 * For example:
@@ -409,7 +409,7 @@ public class ClassDeclaration extends InstanceDeclaration
 	 * return true.
 	 * 
 	 * @param methodName The name of the method to search for.
-	 * @return Whether or not the ClassNode contains the MethodNode with
+	 * @return Whether or not the ClassDeclaration contains the Method with
 	 * 		the specified name.
 	 */
 	public boolean containsMethod(String methodName)
@@ -418,7 +418,7 @@ public class ClassDeclaration extends InstanceDeclaration
 	}
 	
 	/**
-	 * Get the ClassNode's MethodNode with the specified name.<br>
+	 * Get the ClassDeclaration's Method with the specified name.<br>
 	 * <br>
 	 * For example:
 	 * <blockquote><pre>
@@ -431,14 +431,14 @@ public class ClassDeclaration extends InstanceDeclaration
 	 * }</pre></blockquote>
 	 * <br>
 	 * A call like: "<code>getMethod("doSomething")</code>" would
-	 * return the MethodNode for the "<code>doSomething</code>" method.
+	 * return the Method for the "<code>doSomething</code>" method.
 	 * 
 	 * @param methodName The name of the method to search for.
-	 * @return The MethodNode for the method, if it exists.
+	 * @return The Method for the method, if it exists.
 	 */
 	public Method getMethod(String methodName)
 	{
-		MethodList methods = getMethodListNode();
+		MethodList methods = getMethodList();
 		Method     method  = methods.getMethod(methodName);
 		
 		if (method != null)
@@ -466,12 +466,12 @@ public class ClassDeclaration extends InstanceDeclaration
 	}
 	
 	/**
-	 * Get the DeclarationNode child of the specified ClassNode that has
-	 * the given name. The DeclarationNode can either be a field or
+	 * Get the Declaration child of the specified ClassDeclaration that has
+	 * the given name. The Declaration can either be a field or
 	 * method.
 	 * 
 	 * @param name The name of the declaration node to search for.
-	 * @return The DeclarationNode instance that was found, if any.
+	 * @return The Declaration instance that was found, if any.
 	 */
 	public InstanceDeclaration getDeclaration(String name)
 	{
@@ -513,7 +513,7 @@ public class ClassDeclaration extends InstanceDeclaration
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.InstanceDeclarationNode#setAttribute(java.lang.String)
+	 * @see net.fathomsoft.nova.tree.InstanceDeclaration#setAttribute(java.lang.String)
 	 */
 	public void setAttribute(String attribute)
 	{
@@ -521,7 +521,7 @@ public class ClassDeclaration extends InstanceDeclaration
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.InstanceDeclarationNode#setAttribute(java.lang.String, int)
+	 * @see net.fathomsoft.nova.tree.InstanceDeclaration#setAttribute(java.lang.String, int)
 	 */
 	public boolean setAttribute(String attribute, int argNum)
 	{
@@ -560,7 +560,7 @@ public class ClassDeclaration extends InstanceDeclaration
 			}
 			else if (child instanceof Method)
 			{
-				getMethodListNode().addChild(child);
+				getMethodList().addChild(child);
 			}
 		}
 		else if (child instanceof ExternalStatement)
@@ -581,7 +581,7 @@ public class ClassDeclaration extends InstanceDeclaration
 			}
 			else
 			{
-				getFieldListNode().addChild(field);
+				getFieldList().addChild(field);
 			}
 		}
 		else
@@ -617,7 +617,7 @@ public class ClassDeclaration extends InstanceDeclaration
 	 */
 	public boolean containsStaticPrivateData()
 	{
-		StaticFieldList staticPrivateFields = getFieldListNode().getPrivateStaticFieldListNode();
+		StaticFieldList staticPrivateFields = getFieldList().getPrivateStaticFieldList();
 		
 		if (staticPrivateFields.getNumChildren() > 0)
 		{
@@ -641,7 +641,7 @@ public class ClassDeclaration extends InstanceDeclaration
 //	 */
 //	public boolean containsStaticData()
 //	{
-//		PublicFieldListNode staticFields = getFieldListNode().getPublicStaticFieldListNode();
+//		PublicFieldList staticFields = getFieldList().getPublicStaticFieldList();
 //		
 //		return staticFields.getNumChildren() > 0 || containsStaticPrivateData();
 //	}
@@ -654,7 +654,7 @@ public class ClassDeclaration extends InstanceDeclaration
 	 */
 	public boolean containsNonStaticPrivateData()
 	{
-		InstanceFieldList privateFields = getFieldListNode().getPrivateFieldListNode();
+		InstanceFieldList privateFields = getFieldList().getPrivateFieldList();
 		
 		if (privateFields.getNumChildren() > 0)
 		{
@@ -678,7 +678,7 @@ public class ClassDeclaration extends InstanceDeclaration
 	 */
 	public boolean containsNonStaticData()
 	{
-		InstanceFieldList fields = getFieldListNode().getPublicFieldListNode();
+		InstanceFieldList fields = getFieldList().getPublicFieldList();
 		
 		if (fields.getNumChildren() > 0 || containsNonStaticPrivateData())
 		{
@@ -721,7 +721,7 @@ public class ClassDeclaration extends InstanceDeclaration
 			SyntaxMessage.error("A class cannot be of a pointer type", this);
 		}
 		
-		FieldList fields = getFieldListNode();
+		FieldList fields = getFieldList();
 		
 		if (containsNonStaticData())
 		{
@@ -758,7 +758,7 @@ public class ClassDeclaration extends InstanceDeclaration
 		MethodList destructors = getDestructorListNode();
 		builder.append(destructors.generateCHeader());
 		
-		MethodList methods = getMethodListNode();
+		MethodList methods = getMethodList();
 		builder.append(methods.generateCHeader());
 		
 //		if (containsStaticData())
@@ -777,9 +777,9 @@ public class ClassDeclaration extends InstanceDeclaration
 	{
 		StringBuilder builder = new StringBuilder();
 		
-		FieldList fields  = getFieldListNode();
+		FieldList fields  = getFieldList();
 		
-		InstanceFieldList privateFields = fields.getPrivateFieldListNode();
+		InstanceFieldList privateFields = fields.getPrivateFieldList();
 		
 //		if (containsStaticData())
 //		{
@@ -814,13 +814,13 @@ public class ClassDeclaration extends InstanceDeclaration
 		
 		builder.append(getConstructorListNode().generateCSource());
 		builder.append(getDestructorListNode().generateCSource());
-		builder.append(getMethodListNode().generateCSource());
+		builder.append(getMethodList().generateCSource());
 		
 		return builder.toString();
 	}
 	
 	/**
-	 * Decode the given statement into a ClassNode, if possible. If it is
+	 * Decode the given statement into a ClassDeclaration, if possible. If it is
 	 * not possible, this method returns null.<br>
 	 * <br>
 	 * Example inputs include:<br>
@@ -831,14 +831,14 @@ public class ClassDeclaration extends InstanceDeclaration
 	 * </ul>
 	 * 
 	 * @param parent The parent of the current statement.
-	 * @param statement The statement to translate into a ClassNode
+	 * @param statement The statement to translate into a ClassDeclaration
 	 * 		if possible.
 	 * @param location The location of the statement in the source code.
 	 * @param require Whether or not to throw an error if anything goes wrong.
 	 * @param scope Whether or not the given statement is the beginning of
 	 * 		a scope.
 	 * @return The generated node, if it was possible to translated it
-	 * 		into a ClassNode.
+	 * 		into a ClassDeclaration.
 	 */
 	public static ClassDeclaration decodeStatement(Node parent, String statement, Location location, boolean require, boolean scope)
 	{
@@ -934,7 +934,7 @@ public class ClassDeclaration extends InstanceDeclaration
 	{
 		StringBuilder  builder = new StringBuilder();
 		
-		MethodList methods = getMethodListNode();
+		MethodList methods = getMethodList();
 		
 		for (int i = 0; i < methods.getNumChildren(); i++)
 		{
@@ -968,7 +968,7 @@ public class ClassDeclaration extends InstanceDeclaration
 		
 		if (clazz == null)
 		{
-			FileDeclaration file = getFileNode();
+			FileDeclaration file = getFileDeclaration();
 			
 			if (!file.getName().equals(getName()))
 			{
@@ -1036,7 +1036,7 @@ public class ClassDeclaration extends InstanceDeclaration
 			addChild(defaultDestructor);
 		}
 		
-		getMethodListNode().validate(phase);
+		getMethodList().validate(phase);
 		getConstructorListNode().validate(phase);
 		getDestructorListNode().validate(phase);
 	}
@@ -1054,9 +1054,9 @@ public class ClassDeclaration extends InstanceDeclaration
 			return;
 		}
 		
-		Program program  = getProgramNode();
+		Program program  = getProgram();
 		
-		ClassDeclaration   clazz    = program.getClassNode(extendedClass);
+		ClassDeclaration   clazz    = program.getClassDeclaration(extendedClass);
 		
 		String      tempName = extendedClass;
 		
@@ -1076,7 +1076,7 @@ public class ClassDeclaration extends InstanceDeclaration
 			}
 		}
 		
-//		FieldListNode fields = clazz.getFieldListNode().clone();
+//		FieldList fields = clazz.getFieldList().clone();
 //		
 //		for (int i = 0; i < fields.getNumChildren(); i++)
 //		{
@@ -1092,11 +1092,11 @@ public class ClassDeclaration extends InstanceDeclaration
 	 */
 	public void validateImplementations(int phase)
 	{
-		Program program = getProgramNode();
+		Program program = getProgram();
 		
 		for (String implementedClass : implementedClasses)
 		{
-			ClassDeclaration clazz = program.getClassNode(implementedClass);
+			ClassDeclaration clazz = program.getClassDeclaration(implementedClass);
 			
 			if (clazz == null)
 			{
@@ -1175,7 +1175,7 @@ public class ClassDeclaration extends InstanceDeclaration
 		{
 			Constructor method = (Constructor)constructors.getChild(i);
 			
-			if (method.getParameterListNode().getNumChildren() == 1)
+			if (method.getParameterList().getNumChildren() == 1)
 			{
 				return true;
 			}
@@ -1245,12 +1245,12 @@ public class ClassDeclaration extends InstanceDeclaration
 	}
 	
 	/**
-	 * Generate a ClassNode with the given parent and location for
+	 * Generate a ClassDeclaration with the given parent and location for
 	 * temporary use.
 	 * 
-	 * @param parent The node to set as the ClassNode parent.
-	 * @param locationIn The location to set as the ClassNode location.
-	 * @return The generated temporary ClassNode.
+	 * @param parent The node to set as the ClassDeclaration parent.
+	 * @param locationIn The location to set as the ClassDeclaration location.
+	 * @return The generated temporary ClassDeclaration.
 	 */
 	public static ClassDeclaration generateTemporaryClass(Node parent, Location locationIn)
 	{
@@ -1271,7 +1271,7 @@ public class ClassDeclaration extends InstanceDeclaration
 	}
 	
 	/**
-	 * Fill the given ClassNode with the data that is in the
+	 * Fill the given ClassDeclaration with the data that is in the
 	 * specified node.
 	 * 
 	 * @param node The node to copy the data into.

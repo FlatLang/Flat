@@ -9,7 +9,7 @@ import net.fathomsoft.nova.util.Location;
 import net.fathomsoft.nova.util.StringUtils;
 
 /**
- * MethodNode extension that represents the declaration of a Constructor
+ * Method extension that represents the declaration of a Constructor
  * node type. See {@link #decodeStatement(Node, String, Location, boolean, boolean)}
  * for more details on what correct inputs look like.
  * 
@@ -20,7 +20,7 @@ import net.fathomsoft.nova.util.StringUtils;
 public class Constructor extends Method
 {
 	/**
-	 * Create a ConstructorNode and initialize default values.
+	 * Create a Constructor and initialize default values.
 	 * 
 	 * @see net.fathomsoft.nova.tree.Node#Node(Node, Location)
 	 */
@@ -28,7 +28,7 @@ public class Constructor extends Method
 	{
 		super(temporaryParent, locationIn);
 		
-//		setDataType(VariableNode.POINTER);
+//		setDataType(Variable.POINTER);
 	}
 	
 	/**
@@ -63,7 +63,7 @@ public class Constructor extends Method
 		
 		builder.append(getName()).append('(');
 		
-		builder.append(getParameterListNode().generateJavaSource());
+		builder.append(getParameterList().generateJavaSource());
 		
 		builder.append(')').append('\n').append('{').append('\n');
 		
@@ -164,7 +164,7 @@ public class Constructor extends Method
 		{
 			Node child = getChild(i);
 			
-			if (child != getParameterListNode())
+			if (child != getParameterList())
 			{
 				builder.append(child.generateCSource());
 			}
@@ -191,7 +191,7 @@ public class Constructor extends Method
 		
 		ClassDeclaration classDeclaration = (ClassDeclaration)getAncestorOfType(ClassDeclaration.class);
 		
-		InstanceFieldList fields = classDeclaration.getFieldListNode().getPublicFieldListNode();
+		InstanceFieldList fields = classDeclaration.getFieldList().getPublicFieldList();
 		
 		for (int i = 0; i < fields.getNumChildren(); i++)
 		{
@@ -203,7 +203,7 @@ public class Constructor extends Method
 			}
 		}
 		
-		InstanceFieldList privateFields = classDeclaration.getFieldListNode().getPrivateFieldListNode();
+		InstanceFieldList privateFields = classDeclaration.getFieldList().getPrivateFieldList();
 		
 		for (int i = 0; i < privateFields.getNumChildren(); i++)
 		{
@@ -231,7 +231,7 @@ public class Constructor extends Method
 		
 		ClassDeclaration classDeclaration = (ClassDeclaration)getAncestorOfType(ClassDeclaration.class);
 		
-		MethodList methods = classDeclaration.getMethodListNode();
+		MethodList methods = classDeclaration.getMethodList();
 		
 		for (int i = 0; i < methods.getNumChildren(); i++)
 		{
@@ -273,7 +273,7 @@ public class Constructor extends Method
 		
 		builder.append(classDeclaration.getName()).append('(');
 		
-		builder.append(getParameterListNode().generateCSource());
+		builder.append(getParameterList().generateCSource());
 		
 		builder.append(')');
 		
@@ -281,7 +281,7 @@ public class Constructor extends Method
 	}
 	
 	/**
-	 * Decode the given statement into a ConstructorNode instance, if
+	 * Decode the given statement into a Constructor instance, if
 	 * possible. If it is not possible, this method returns null. A
 	 * constructor must have the same name as the class that it is
 	 * within. Constructors also do not have a return value.<br>
@@ -295,13 +295,13 @@ public class Constructor extends Method
 	 * 
 	 * @param parent The parent node of the statement.
 	 * @param statement The statement to try to decode into a
-	 * 		ConstructorNode instance.
+	 * 		Constructor instance.
 	 * @param location The location of the statement in the source code.
 	 * @param require Whether or not to throw an error if anything goes wrong.
 	 * @param scope Whether or not the given statement is the beginning of
 	 * 		a scope.
 	 * @return The generated node, if it was possible to translated it
-	 * 		into a ConstructorNode.
+	 * 		into a Constructor.
 	 */
 	public static Constructor decodeStatement(Node parent, String statement, Location location, boolean require, boolean scope)
 	{
@@ -336,7 +336,7 @@ public class Constructor extends Method
 						SyntaxMessage.error("Incorrect parameter definition", n);
 					}
 					
-					n.getParameterListNode().addChild(param);
+					n.getParameterList().addChild(param);
 				}
 			}
 			
@@ -378,7 +378,7 @@ public class Constructor extends Method
 	}
 	
 	/**
-	 * Fill the given ConstructorNode with the data that is in the
+	 * Fill the given Constructor with the data that is in the
 	 * specified node.
 	 * 
 	 * @param node The node to copy the data into.

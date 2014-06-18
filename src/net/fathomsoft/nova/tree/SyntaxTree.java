@@ -9,7 +9,7 @@ import net.fathomsoft.nova.error.SyntaxErrorException;
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.tree.exceptionhandling.Catch;
 import net.fathomsoft.nova.tree.exceptionhandling.ExceptionHandler;
-import net.fathomsoft.nova.tree.exceptionhandling.FinallyNode;
+import net.fathomsoft.nova.tree.exceptionhandling.Finally;
 import net.fathomsoft.nova.tree.exceptionhandling.Throw;
 import net.fathomsoft.nova.tree.exceptionhandling.Try;
 import net.fathomsoft.nova.tree.variables.ArrayAccess;
@@ -68,7 +68,7 @@ public class SyntaxTree
 	
 	private static final Class<?>	PRE_VALUE_DECODE[] = new Class<?>[]
 	{
-		Priority.class, Return.class, Assignment.class, BinaryOperator.class
+		Priority.class, Return.class, Assignment.class, BinaryOperation.class
 	};
 	
 	private static final Class<?>	SCOPE_CHILD_DECODE[] = new Class<?>[]
@@ -248,7 +248,7 @@ public class SyntaxTree
 	 * program. For more details on what the main method looks like, see
 	 * {@link net.fathomsoft.nova.util.SyntaxUtils#isMainMethod(Method)}.
 	 * 
-	 * @return The MethodNode representation of the main method.
+	 * @return The Method representation of the main method.
 	 */
 	public Method getMainMethod()
 	{
@@ -264,7 +264,7 @@ public class SyntaxTree
 				{
 					ClassDeclaration classDeclaration = (ClassDeclaration)child2;
 					
-					MethodList methods = classDeclaration.getMethodListNode();
+					MethodList methods = classDeclaration.getMethodList();
 					
 					for (int k = 0; k < methods.getNumChildren(); k++)
 					{
@@ -451,7 +451,7 @@ public class SyntaxTree
 				else if (type == ArrayAccess.class) node = ArrayAccess.decodeStatement(parent, statement, location, require, scope);
 				else if (type == Assignment.class) node = Assignment.decodeStatement(parent, statement, location, require, scope);
 				else if (type == Array.class) node = Array.decodeStatement(parent, statement, location, require, scope);
-				else if (type == BinaryOperator.class) node = BinaryOperator.decodeStatement(parent, statement, location, require, scope);
+				else if (type == BinaryOperation.class) node = BinaryOperation.decodeStatement(parent, statement, location, require, scope);
 				else if (type == ClassDeclaration.class) node = ClassDeclaration.decodeStatement(parent, statement, location, require, scope);
 				else if (type == Constructor.class) node = Constructor.decodeStatement(parent, statement, location, require, scope);
 				else if (type == Destructor.class) node = Destructor.decodeStatement(parent, statement, location, require, scope);
@@ -469,7 +469,7 @@ public class SyntaxTree
 				else if (type == Field.class) node = Field.decodeStatement(parent, statement, location, require, scope);
 				else if (type == Catch.class) node = Catch.decodeStatement(parent, statement, location, require, scope);
 				else if (type == ExceptionHandler.class) node = ExceptionHandler.decodeStatement(parent, statement, location, require, scope);
-				else if (type == FinallyNode.class) node = FinallyNode.decodeStatement(parent, statement, location, require, scope);
+				else if (type == Finally.class) node = Finally.decodeStatement(parent, statement, location, require, scope);
 				else if (type == Throw.class) node = Throw.decodeStatement(parent, statement, location, require, scope);
 				else if (type == Try.class) node = Try.decodeStatement(parent, statement, location, require, scope);
 				
@@ -663,17 +663,17 @@ public class SyntaxTree
 	
 	/**
 	 * Decode the value of the given statement. Can be nodes such as
-	 * VariableNodes, ExternalTypesNodes, FieldNodes, etc. May also
-	 * be just a plain old ValueNode describing the return type of the
+	 * Variables, ExternalTypes, Fields, etc. May also
+	 * be just a plain old Value describing the return type of the
 	 * statement. For example: a static class's method call.
 	 * <code>Math.sin(number)</code> in this instance, Math will be the
-	 * IdentifierNode returned. In most other instances a VariableNode
+	 * Identifier returned. In most other instances a Variable
 	 * variation will be returned.
 	 * 
 	 * @param parent The parent node of the current statement to decode.
 	 * @param statement The statement to decode.
 	 * @param location The location of the statement.
-	 * @return The IdentifierNode representation of the given statement.
+	 * @return The Identifier representation of the given statement.
 	 */
 	private static Identifier decodeIdentifier(Node parent, String statement, Location location)
 	{
@@ -698,9 +698,9 @@ public class SyntaxTree
 				
 				node = id;
 			}
-			else if (parent.getFileNode().containsImport(statement) || parent.getFileNode().containsClass(statement))
+			else if (parent.getFileDeclaration().containsImport(statement) || parent.getFileDeclaration().containsClass(statement))
 			{
-				ClassDeclaration clazz = parent.getProgramNode().getClassNode(statement);
+				ClassDeclaration clazz = parent.getProgram().getClassDeclaration(statement);
 				
 				if (clazz != null)
 				{
@@ -722,7 +722,7 @@ public class SyntaxTree
 	 * 
 	 * @param parent The parent Node to use as our context.
 	 * @param statement The statement to check for an existing node from.
-	 * @return The IdentifierNode that is found, if any.
+	 * @return The Identifier that is found, if any.
 	 */
 	public static Variable getExistingNode(Node parent, String statement)
 	{
@@ -742,7 +742,7 @@ public class SyntaxTree
 			{
 				Variable var = (Variable)parent;
 				
-				clazz  = var.getProgramNode().getClassNode(var.getType());
+				clazz  = var.getProgram().getClassDeclaration(var.getType());
 			}
 			
 			if (clazz != null)
@@ -768,7 +768,7 @@ public class SyntaxTree
 			
 			while (scopeNode != null)
 			{
-				VariableList variables = scopeNode.getScopeNode().getVariableListNode();
+				VariableList variables = scopeNode.getScope().getVariableList();
 				
 				Variable     variable  = variables.getVariable(statement);
 				
@@ -780,8 +780,8 @@ public class SyntaxTree
 				if (scopeNode instanceof Method)
 				{
 					Method        method = (Method)scopeNode;
-					ParameterList parameters = method.getParameterListNode();
-					Parameter     parameter  = parameters.getParameterNode(statement);
+					ParameterList parameters = method.getParameterList();
+					Parameter     parameter  = parameters.getParameter(statement);
 					
 					if (parameter != null)
 					{
@@ -796,7 +796,7 @@ public class SyntaxTree
 			{
 				ParameterList parameters = (ParameterList)parent;
 				
-				Parameter     parameter  = parameters.getParameterNode(statement);
+				Parameter     parameter  = parameters.getParameter(statement);
 				
 				if (parameter != null)
 				{
@@ -1019,7 +1019,7 @@ public class SyntaxTree
 		
 		for (int i = 0; i < sources.length; i++)
 		{
-			FileDeclaration child = root.getChild(i).getFileNode();
+			FileDeclaration child = root.getChild(i).getFileDeclaration();
 			
 			sources[i] = child;
 		}
@@ -1028,10 +1028,10 @@ public class SyntaxTree
 	}
 	
 	/**
-	 * Get the root ProgramNode of the tree. The root of the Syntax tree
-	 * will be a ProgramNode.
+	 * Get the root Program of the tree. The root of the Syntax tree
+	 * will be a Program.
 	 * 
-	 * @return The root ProgramNode instance.
+	 * @return The root Program instance.
 	 */
 	public Program getRoot()
 	{
@@ -1117,7 +1117,7 @@ public class SyntaxTree
 		 * ending brace of the external statement.
 		 * 
 		 * @param node The Node to check whether or not is an
-		 * 		ExternalStatementNode.
+		 * 		ExternalStatement.
 		 * @param source The source to traverse through.
 		 */
 		private void checkExternal(Node node, String source)
@@ -1261,9 +1261,9 @@ public class SyntaxTree
 				return;
 			}
 			
-			ClassDeclaration classDeclaration = fileDeclaration.getClassNode();
+			ClassDeclaration classDeclaration = fileDeclaration.getClassDeclaration();
 			
-			MethodList methods = classDeclaration.getMethodListNode();
+			MethodList methods = classDeclaration.getMethodList();
 			decodeMethodContents(methods, source);
 			
 			MethodList constructors = classDeclaration.getConstructorListNode();
@@ -1441,7 +1441,7 @@ public class SyntaxTree
 				{
 					Node parent = parentStack.peek();
 					
-					if (parent.getClassNode() == null)
+					if (parent.getClassDeclaration() == null)
 					{
 						parentStack.push(ClassDeclaration.generateTemporaryClass(parent, location));
 					}

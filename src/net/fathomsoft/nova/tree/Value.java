@@ -38,7 +38,7 @@ public class Value extends Node
 	/**
 	 * Get the node that returns a value. (Which is the specified node).
 	 * 
-	 * @return Returns the specified ValueNode.
+	 * @return Returns the specified Value.
 	 */
 	public Value getReturnedNode()
 	{
@@ -68,14 +68,14 @@ public class Value extends Node
 	}
 	
 	/**
-	 * Get the ValueNode that the method was called with for the given
-	 * MethodCallNode's method node, if it was not called with a specific
+	 * Get the Value that the method was called with for the given
+	 * MethodCall's method node, if it was not called with a specific
 	 * object. Static methods return "ClassName" and non-static
 	 * methods return "this". The call cannot be that of an external
 	 * method.
 	 * 
-	 * @param method The method to get the ValueNode from.
-	 * @return The ValueNode that the method was called with.
+	 * @param method The method to get the Value from.
+	 * @return The Value that the method was called with.
 	 */
 	public Identifier getObjectReferenceNode(Method method)
 	{
@@ -101,7 +101,7 @@ public class Value extends Node
 	 */
 	public boolean isContainingClass(Value node)
 	{
-		ClassDeclaration clazz = node.getClassNode();
+		ClassDeclaration clazz = node.getClassDeclaration();
 		
 		if (this == clazz)
 		{
@@ -202,7 +202,7 @@ public class Value extends Node
 	}
 	
 	/**
-	 * Get whether the type of the ValueNode is external or not.<br>
+	 * Get whether the type of the Value is external or not.<br>
 	 * <br>
 	 * For example:
 	 * <blockquote><pre>
@@ -216,7 +216,7 @@ public class Value extends Node
 	 */
 	public boolean isExternalType()
 	{
-		return type != null && getClassNode().containsExternalType(type);
+		return type != null && getClassDeclaration().containsExternalType(type);
 	}
 	
 	/**
@@ -251,25 +251,25 @@ public class Value extends Node
 	}
 	
 	/**
-	 * Get the ClassNode that represents the type of the specified
-	 * ValueNode. If the type is primitive, this will return the
+	 * Get the ClassDeclaration that represents the type of the specified
+	 * Value. If the type is primitive, this will return the
 	 * wrapper class of the primitive type.
 	 * 
-	 * @return The ClassNode instance of the type.
+	 * @return The ClassDeclaration instance of the type.
 	 */
 	public ClassDeclaration getTypeClass()
 	{
-		Program program = getProgramNode();
+		Program program = getProgram();
 		String      name    = getTypeClassName();
 		
-		ClassDeclaration   clazz   = program.getClassNode(name);
+		ClassDeclaration   clazz   = program.getClassDeclaration(name);
 		
 		return clazz;
 	}
 	
 	/**
 	 * Get the name of the class that represents the type of the specified
-	 * ValueNode. If the type is primitive, this will return the wrapper
+	 * Value. If the type is primitive, this will return the wrapper
 	 * class name of the primitive type.
 	 * 
 	 * @return The name of the class of the type.
@@ -281,16 +281,16 @@ public class Value extends Node
 	
 	/**
 	 * Get the name of the class that represents the type of the specified
-	 * ValueNode. If the type is primitive, this will return the wrapper
+	 * Value. If the type is primitive, this will return the wrapper
 	 * class name of the primitive type.
 	 * 
 	 * @return The name of the class of the type.
 	 */
 	public String getTypeClassName(int arrayDimensions)
 	{
-		Program program = getProgramNode();
+		Program program = getProgram();
 		
-		ClassDeclaration   clazz   = program.getClassNode(type);
+		ClassDeclaration   clazz   = program.getClassDeclaration(type);
 		
 		if (clazz != null)
 		{
@@ -308,7 +308,7 @@ public class Value extends Node
 					name += "Array";
 				}
 				
-				clazz = program.getClassNode(name);
+				clazz = program.getClassDeclaration(name);
 				
 				if (clazz == null)
 				{
@@ -339,9 +339,9 @@ public class Value extends Node
 	 * <br>
 	 * Possible values include:
 	 * <ul>
-	 * 	<li><b>VariableNode.VALUE</b> - If the variable type simply refers to a value.</li>
-	 * 	<li><b>VariableNode.POINTER</b> - If the variable type is a pointer.</li>
-	 * 	<li><b>VariableNode.REFERENCE</b> - If the variable type is a reference.</li>
+	 * 	<li><b>Variable.VALUE</b> - If the variable type simply refers to a value.</li>
+	 * 	<li><b>Variable.POINTER</b> - If the variable type is a pointer.</li>
+	 * 	<li><b>Variable.REFERENCE</b> - If the variable type is a reference.</li>
 	 * </ul>
 	 * 
 	 * @return The data type that the variable is.
@@ -357,9 +357,9 @@ public class Value extends Node
 	 * <br>
 	 * Possible values include:
 	 * <ul>
-	 * 	<li><b>VariableNode.VALUE</b> - If the variable type simply refers to a value.</li>
-	 * 	<li><b>VariableNode.POINTER</b> - If the variable type is a pointer.</li>
-	 * 	<li><b>VariableNode.REFERENCE</b> - If the variable type is a reference.</li>
+	 * 	<li><b>Variable.VALUE</b> - If the variable type simply refers to a value.</li>
+	 * 	<li><b>Variable.POINTER</b> - If the variable type is a pointer.</li>
+	 * 	<li><b>Variable.REFERENCE</b> - If the variable type is a reference.</li>
 	 * </ul>
 	 * 
 	 * @param type The data type that the variable is.
@@ -381,10 +381,10 @@ public class Value extends Node
 	
 	/**
 	 * Get the data type that is required within the context that the
-	 * specified ValueNode is within.
+	 * specified Value is within.
 	 * 
 	 * @return The data type that is required within the context that the
-	 * 		specified ValueNode is within.
+	 * 		specified Value is within.
 	 */
 	public byte getRequiredDataType()
 	{
@@ -506,9 +506,9 @@ public class Value extends Node
 	}
 	
 	/**
-	 * Generate the C syntax for the type of the specified ValueNode.
+	 * Generate the C syntax for the type of the specified Value.
 	 * 
-	 * @return The C syntax for the type of the ValueNode.
+	 * @return The C syntax for the type of the Value.
 	 */
 	public String generateCTypeOutput()
 	{
@@ -567,7 +567,7 @@ public class Value extends Node
 	}
 	
 	/**
-	 * Fill the given ValueNode with the data that is in the
+	 * Fill the given Value with the data that is in the
 	 * specified node.
 	 * 
 	 * @param node The node to copy the data into.

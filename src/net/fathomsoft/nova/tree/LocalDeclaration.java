@@ -11,7 +11,7 @@ import net.fathomsoft.nova.util.StringUtils;
 import net.fathomsoft.nova.util.SyntaxUtils;
 
 /**
- * LocalVariableNode extension that represents the declaration of local
+ * LocalVariable extension that represents the declaration of local
  * variable.
  * 
  * @author	Braden Steffaniak
@@ -52,7 +52,7 @@ public class LocalDeclaration extends LocalVariable
 	}
 
 	/**
-	 * Decode the given statement into a LocalDeclarationNode instance, if
+	 * Decode the given statement into a LocalDeclaration instance, if
 	 * possible. If it is not possible, this method returns null.
 	 * <br>
 	 * Example inputs include:<br>
@@ -64,13 +64,13 @@ public class LocalDeclaration extends LocalVariable
 	 * 
 	 * @param parent The parent node of the statement.
 	 * @param statement The statement to try to decode into a
-	 * 		LocalDeclarationNode instance.
+	 * 		LocalDeclaration instance.
 	 * @param location The location of the statement in the source code.
 	 * @param require Whether or not to throw an error if anything goes wrong.
 	 * @param scope Whether or not the given statement is the beginning of
 	 * 		a scope.
 	 * @return The generated node, if it was possible to translated it
-	 * 		into a LocalDeclarationNode.
+	 * 		into a LocalDeclaration.
 	 */
 	public static LocalDeclaration decodeStatement(Node parent, String statement, Location location, boolean require, boolean scope)
 	{
@@ -100,7 +100,7 @@ public class LocalDeclaration extends LocalVariable
 		if (node instanceof LocalDeclaration)
 		{
 			SyntaxMessage.error("Local variable '" + n.getName() + "' has already been declared", n);
-//			SyntaxMessage.error("Local variable '" + n.getName() + "' has already been declared", parent.getFileNode(), location, parent.getController());
+//			SyntaxMessage.error("Local variable '" + n.getName() + "' has already been declared", parent.getFileDeclaration(), location, parent.getController());
 		}
 		
 		if (parent instanceof ExternalType)

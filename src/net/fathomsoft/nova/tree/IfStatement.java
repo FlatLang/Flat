@@ -18,7 +18,7 @@ import net.fathomsoft.nova.util.Regex;
 public class IfStatement extends Node
 {
 	/**
-	 * Instantiate a new IfStatementNode and initialize the default
+	 * Instantiate a new IfStatement and initialize the default
 	 * values.
 	 */
 	public IfStatement(Node temporaryParent, Location locationIn)
@@ -28,24 +28,24 @@ public class IfStatement extends Node
 		ArgumentList condition = new ArgumentList(this, locationIn);
 		Scope        scope = new Scope(this, locationIn);
 		
-		setScopeNode(scope);
+		setScope(scope);
 		addChild(condition, this);
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.Node#getScopeNode()
+	 * @see net.fathomsoft.nova.tree.Node#getScope()
 	 */
 	@Override
-	public Scope getScopeNode()
+	public Scope getScope()
 	{
 		return (Scope)getChild(0);
 	}
 	
 	/**
-	 * Get the ArgumentListNode that contains the condition for the if
+	 * Get the ArgumentList that contains the condition for the if
 	 * statement.
 	 * 
-	 * @return The ArgumentListNode instance.
+	 * @return The ArgumentList instance.
 	 */
 	public ArgumentList getCondition()
 	{
@@ -64,7 +64,7 @@ public class IfStatement extends Node
 		}
 		else
 		{
-			getScopeNode().addChild(child);
+			getScope().addChild(child);
 		}
 	}
 	
@@ -101,13 +101,13 @@ public class IfStatement extends Node
 //		}
 //		
 //		builder.append('}').append('\n');
-		builder.append(getScopeNode().generateCSource());
+		builder.append(getScope().generateCSource());
 		
 		return builder.toString();
 	}
 	
 	/**
-	 * Decode the given statement into a IfStatementNode instance, if
+	 * Decode the given statement into a IfStatement instance, if
 	 * possible. If it is not possible, this method returns null.<br>
 	 * <br>
 	 * Example inputs include:<br>
@@ -120,13 +120,13 @@ public class IfStatement extends Node
 	 * 
 	 * @param parent The parent node of the statement.
 	 * @param statement The statement to try to decode into a
-	 * 		IfStatementNode instance.
+	 * 		IfStatement instance.
 	 * @param location The location of the statement in the source code.
 	 * @param require Whether or not to throw an error if anything goes wrong.
 	 * @param scope Whether or not the given statement is the beginning of
 	 * 		a scope.
 	 * @return The generated node, if it was possible to translated it
-	 * 		into a IfStatementNode.
+	 * 		into a IfStatement.
 	 */
 	public static IfStatement decodeStatement(Node parent, String statement, Location location, boolean require, boolean scope)
 	{
@@ -144,13 +144,13 @@ public class IfStatement extends Node
 				newLoc.setLineNumber(location.getLineNumber());
 				newLoc.setBounds(location.getStart() + bounds.getStart(), location.getStart() + bounds.getEnd());
 				
-				Node condition = BinaryOperator.decodeStatement(parent, contents, newLoc, require, false);
+				Node condition = BinaryOperation.decodeStatement(parent, contents, newLoc, require, false);
 				
 				if (condition == null)
 				{
 					condition = SyntaxTree.getExistingNode(parent, contents);
 					
-//					SyntaxMessage.error("Could not decode condition", parent.getFileNode(), newLoc, parent.getController());
+//					SyntaxMessage.error("Could not decode condition", parent.getFileDeclaration(), newLoc, parent.getController());
 				}
 				if (condition == null)
 				{
@@ -182,7 +182,7 @@ public class IfStatement extends Node
 	}
 	
 	/**
-	 * Fill the given IfStatementNode with the data that is in the
+	 * Fill the given IfStatement with the data that is in the
 	 * specified node.
 	 * 
 	 * @param node The node to copy the data into.

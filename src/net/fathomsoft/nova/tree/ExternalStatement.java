@@ -80,7 +80,7 @@ public class ExternalStatement extends Node
 	}
 	
 	/**
-	 * Decode the given statement into a ExternalStatementNode instance, if
+	 * Decode the given statement into a ExternalStatement instance, if
 	 * possible. If it is not possible, this method returns null.<br>
 	 * <br>
 	 * Example inputs include:<br>
@@ -91,13 +91,13 @@ public class ExternalStatement extends Node
 	 * 
 	 * @param parent The parent node of the statement.
 	 * @param statement The statement to try to decode into a
-	 * 		ExternalStatementNode instance.
+	 * 		ExternalStatement instance.
 	 * @param location The location of the statement in the source code.
 	 * @param require Whether or not to throw an error if anything goes wrong.
 	 * @param scope Whether or not the given statement is the beginning of
 	 * 		a scope.
 	 * @return The generated node, if it was possible to translated it
-	 * 		into a ExternalStatementNode.
+	 * 		into a ExternalStatement.
 	 */
 	public static ExternalStatement decodeStatement(Node parent, String statement, Location location, boolean require, boolean scope)
 	{
@@ -123,7 +123,7 @@ public class ExternalStatement extends Node
 	}
 	
 	/**
-	 * Fill the given ExternalStatementNode with the data that is in the
+	 * Fill the given ExternalStatement with the data that is in the
 	 * specified node.
 	 * 
 	 * @param node The node to copy the data into.

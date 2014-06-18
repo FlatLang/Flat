@@ -48,7 +48,7 @@ public class Assignment extends Node
 	 * @return The node that represents the value that the assignee
 	 * 		variable is being assigned to.
 	 */
-	public Value getAssignmentNode()
+	public Value getAssignment()
 	{
 		return (Value)getChild(1);
 	}
@@ -61,7 +61,7 @@ public class Assignment extends Node
 	{
 		StringBuilder builder = new StringBuilder();
 		
-		builder.append(getAssigneeNode().generateJavaSource()).append(" = ").append(getAssignmentNode().generateJavaSource());
+		builder.append(getAssigneeNode().generateJavaSource()).append(" = ").append(getAssignment().generateJavaSource());
 		
 		builder.append(';').append('\n');
 		
@@ -83,7 +83,7 @@ public class Assignment extends Node
 	@Override
 	public String generateCSourceFragment()
 	{
-		return getAssigneeNode().generateCSourceFragment() + " = " + getAssignmentNode().generateCSourceFragment();
+		return getAssigneeNode().generateCSourceFragment() + " = " + getAssignment().generateCSourceFragment();
 	}
 	
 	/**
@@ -91,11 +91,11 @@ public class Assignment extends Node
 	 */
 	public String generateNovaInput(boolean outputChildren)
 	{
-		return getAssigneeNode().generateNovaInput(outputChildren) + " = " + getAssignmentNode().generateNovaInput(outputChildren);
+		return getAssigneeNode().generateNovaInput(outputChildren) + " = " + getAssignment().generateNovaInput(outputChildren);
 	}
 	
 	/**
-	 * Decode the given statement into an AssignmentNode if possible. If
+	 * Decode the given statement into an Assignment if possible. If
 	 * it is not possible, then null is returned.<br>
 	 * <br>
 	 * Example inputs include:<br>
@@ -108,12 +108,12 @@ public class Assignment extends Node
 	 * </ul>
 	 * 
 	 * @param parent The parent of the current statement.
-	 * @param statement The statement to decode into an AssignmentNode.
+	 * @param statement The statement to decode into an Assignment.
 	 * @param location The location of the statement in the source code.
 	 * @param require Whether or not to throw an error if anything goes wrong.
 	 * @param scope Whether or not the given statement is the beginning of
 	 * 		a scope.
-	 * @return The new AssignmentNode if it decodes properly. If not,
+	 * @return The new Assignment if it decodes properly. If not,
 	 * 		it returns null.
 	 */
 	public static Assignment decodeStatement(Node parent, String statement, Location location, boolean require, boolean scope)
@@ -122,7 +122,7 @@ public class Assignment extends Node
 	}
 	
 	/**
-	 * Decode the given statement into an AssignmentNode if possible. If
+	 * Decode the given statement into an Assignment if possible. If
 	 * it is not possible, then null is returned.<br>
 	 * <br>
 	 * Example inputs include:<br>
@@ -135,7 +135,7 @@ public class Assignment extends Node
 	 * </ul>
 	 * 
 	 * @param parent The parent of the current statement.
-	 * @param statement The statement to decode into an AssignmentNode.
+	 * @param statement The statement to decode into an Assignment.
 	 * @param location The location of the statement in the source code.
 	 * @param require Whether or not to throw an error if anything goes wrong.
 	 * @param scope Whether or not the given statement is the beginning of
@@ -143,7 +143,7 @@ public class Assignment extends Node
 	 * @param addDeclaration Whether or not to add the declaration to the
 	 * 		nearest scope, if the left hand value of the equation is a
 	 * 		variable declaration.
-	 * @return The new AssignmentNode if it decodes properly. If not,
+	 * @return The new Assignment if it decodes properly. If not,
 	 * 		it returns null.
 	 */
 	public static Assignment decodeStatement(Node parent, String statement, Location location, boolean require, boolean scope, boolean addDeclaration)
@@ -207,7 +207,7 @@ public class Assignment extends Node
 	 * <b>visible</b> and is not contained within the same class as the
 	 * assignment.</u>
 	 * 
-	 * @param var The VariableNode to validate.
+	 * @param var The Variable to validate.
 	 */
 	private void validateAuthorization(Variable var)
 	{
@@ -223,7 +223,7 @@ public class Assignment extends Node
 				
 				if (field.getVisibility() == Field.VISIBLE)
 				{
-					ClassDeclaration declaringClass = field.getDeclaringClassNode();
+					ClassDeclaration declaringClass = field.getDeclaringClassDeclaration();
 					ClassDeclaration thisClass      = (ClassDeclaration)getAncestorOfType(ClassDeclaration.class);
 					
 					if (declaringClass != thisClass)
@@ -248,16 +248,16 @@ public class Assignment extends Node
 	 * i = 43;</pre></blockquote>
 	 * Scenario 1 includes a declaration and therefore, this method would
 	 * add that declaration to its parent scope and return a clone of the
-	 * declared VariableNode. On the other hand, scenario 2 does not
+	 * declared Variable. On the other hand, scenario 2 does not
 	 * include a declaration and therefore simply does nothing in this
-	 * method (Returns the given VariableNode).
+	 * method (Returns the given Variable).
 	 * 
 	 * @param parent The parent of the assignment node.
-	 * @param var The VariableNode to check whether or not declares a
+	 * @param var The Variable to check whether or not declares a
 	 * 		variable.
 	 * @return If a variable is declared, this returns a clone of the
 	 * 		declared variable. If not, this simply returns the given
-	 * 		VariableNode instance.
+	 * 		Variable instance.
 	 */
 	private Variable addDeclaration(Variable var)
 	{
@@ -267,7 +267,7 @@ public class Assignment extends Node
 			
 			if (scopeNode != null)
 			{
-				scopeNode.getScopeNode().addChild(var);
+				scopeNode.getScope().addChild(var);
 				
 				Location newLoc = new Location(getLocationIn());
 				
@@ -293,7 +293,7 @@ public class Assignment extends Node
 	 * </ul>
 	 * 
 	 * @param parent The parent of the current statement.
-	 * @param rhs The right hand side to decode into an AssignmentNode.
+	 * @param rhs The right hand side to decode into an Assignment.
 	 * @param location The location of the statement in the source code.
 	 * @param require Whether or not to throw an error if anything goes wrong.
 	 * @param scope Whether or not the given statement is the beginning of
@@ -327,7 +327,7 @@ public class Assignment extends Node
 	}
 	
 	/**
-	 * Fill the given AssignmentNode with the data that is in the
+	 * Fill the given Assignment with the data that is in the
 	 * specified node.
 	 * 
 	 * @param node The node to copy the data into.

@@ -65,7 +65,7 @@ public class FileDeclaration extends Node
 		
 		addChild(imports, this);
 		
-		addDefaultImportNodes();
+		addDefaultImports();
 	}
 	
 	/**
@@ -83,12 +83,12 @@ public class FileDeclaration extends Node
 	 * Get the Import node with the given import location, if it exists.
 	 * 
 	 * @param importLocation The location of the import.
-	 * @return The ImportNode with the specified import location, if it
+	 * @return The Import with the specified import location, if it
 	 * 		exists.
 	 */
 	public Import getImport(String importLocation)
 	{
-		return getImportListNode().getImport(importLocation);
+		return getImportList().getImport(importLocation);
 	}
 	
 	/**
@@ -98,11 +98,11 @@ public class FileDeclaration extends Node
 	 */
 	public boolean isExternalImport(String importLocation)
 	{
-		return getImportListNode().isExternal(importLocation);
+		return getImportList().isExternal(importLocation);
 	}
 	
 	/**
-	 * Get whether or not the FileNode contains the ClassNode with
+	 * Get whether or not the FileDeclaration contains the ClassDeclaration with
 	 * the specified name.<br>
 	 * <br>
 	 * For example:
@@ -118,16 +118,16 @@ public class FileDeclaration extends Node
 	 * true.
 	 * 
 	 * @param className The name of the class to search for.
-	 * @return Whether or not the FileNode contains the ClassNode
+	 * @return Whether or not the FileDeclaration contains the ClassDeclaration
 	 * 		with the specified name.
 	 */
 	public boolean containsClass(String className)
 	{
-		return getClassNode(className) != null;
+		return getClassDeclaration(className) != null;
 	}
 	
 	/**
-	 * Get the FileNode's ClassNode with the specified name.<br>
+	 * Get the FileDeclaration's ClassDeclaration with the specified name.<br>
 	 * <br>
 	 * For example:
 	 * <blockquote><pre>
@@ -139,14 +139,14 @@ public class FileDeclaration extends Node
 	 * }</pre></blockquote>
 	 * <br>
 	 * A call like: "<code>getClass("Person")</code>" would return the
-	 * ClassNode for the "<code>age</code>" int field.
+	 * ClassDeclaration for the "<code>age</code>" int field.
 	 * 
 	 * @param className The name of the class to search for.
-	 * @return The ClassNode for the class, if it exists.
+	 * @return The ClassDeclaration for the class, if it exists.
 	 */
-	public ClassDeclaration getClassNode(String className)
+	public ClassDeclaration getClassDeclaration(String className)
 	{
-		ClassDeclaration clazz = getClassNode();
+		ClassDeclaration clazz = getClassDeclaration();
 		
 		if (clazz.getName().equals(className))
 		{
@@ -157,19 +157,19 @@ public class FileDeclaration extends Node
 	}
 	
 	/**
-	 * Get the ClassNode of the class that is contained within the file.
+	 * Get the ClassDeclaration of the class that is contained within the file.
 	 * 
-	 * @return The ClassNode instance from the file.
+	 * @return The ClassDeclaration instance from the file.
 	 */
-	public ClassDeclaration getClassNode()
+	public ClassDeclaration getClassDeclaration()
 	{
 		return (ClassDeclaration)getChild(1);
 	}
 	
 	/**
-	 * Get the File that this FileNode represents.
+	 * Get the File that this FileDeclaration represents.
 	 * 
-	 * @return The File that this FileNode represents.
+	 * @return The File that this FileDeclaration represents.
 	 */
 	public File getFile()
 	{
@@ -177,9 +177,9 @@ public class FileDeclaration extends Node
 	}
 	
 	/**
-	 * Set the File that this FileNode represents.
+	 * Set the File that this FileDeclaration represents.
 	 * 
-	 * @param file The File that this FileNode represents.
+	 * @param file The File that this FileDeclaration represents.
 	 */
 	public void setFile(File file)
 	{
@@ -189,7 +189,7 @@ public class FileDeclaration extends Node
 	/**
 	 * Get the name of the file without the extension.<br>
 	 * <br>
-	 * For example: A getName() call for a FileNode of Test.nova would
+	 * For example: A getName() call for a FileDeclaration of Test.nova would
 	 * return "Test"
 	 * 
 	 * @return The name of the file without the extension.
@@ -202,27 +202,27 @@ public class FileDeclaration extends Node
 	/**
 	 * Get the name of the file that will be output as a C header file.<br>
 	 * <br>
-	 * For example: A generateCHeaderName() call for a FileNode of Test.nova
+	 * For example: A generateCHeaderName() call for a FileDeclaration of Test.nova
 	 * would return "nova_Test.h"
 	 * 
 	 * @return The name of the file output as a C header file.
 	 */
 	public String generateCHeaderName()
 	{
-		return getClassNode().generateCSourceName() + ".h";
+		return getClassDeclaration().generateCSourceName() + ".h";
 	}
 	
 	/**
 	 * Get the name of the file that will be output as a C source file.<br>
 	 * <br>
-	 * For example: A generateCSourceName() call for a FileNode of Test.nova
+	 * For example: A generateCSourceName() call for a FileDeclaration of Test.nova
 	 * would return "nova_Test.c"
 	 * 
 	 * @return The name of the file output as a C source file.
 	 */
 	public String generateCSourceName()
 	{
-		return getClassNode().generateCSourceName() + ".c";
+		return getClassDeclaration().generateCSourceName() + ".c";
 	}
 	
 	/**
@@ -232,7 +232,7 @@ public class FileDeclaration extends Node
 	 */
 	public void validateClasses(int phase)
 	{
-		ClassDeclaration clazz = getClassNode();
+		ClassDeclaration clazz = getClassDeclaration();
 		
 		if (clazz == null)
 		{
@@ -258,7 +258,7 @@ public class FileDeclaration extends Node
 		{
 			Node child = getChild(i);
 			
-			if (child != getImportListNode())
+			if (child != getImportList())
 			{
 				ClassDeclaration clazz = (ClassDeclaration)child;
 				
@@ -278,7 +278,7 @@ public class FileDeclaration extends Node
 		{
 			Node child = getChild(i);
 			
-			if (child != getImportListNode())
+			if (child != getImportList())
 			{
 				ClassDeclaration clazz = (ClassDeclaration)child;
 				
@@ -288,12 +288,12 @@ public class FileDeclaration extends Node
 	}
 	
 	/**
-	 * Get the ImportListNode that contains all of the imports used within
+	 * Get the ImportList that contains all of the imports used within
 	 * the file.
 	 * 
-	 * @return The ImportListNode instance.
+	 * @return The ImportList instance.
 	 */
-	public ImportList getImportListNode()
+	public ImportList getImportList()
 	{
 		return (ImportList)getChild(0);
 	}
@@ -306,7 +306,7 @@ public class FileDeclaration extends Node
 	{
 		if (child instanceof Import)
 		{
-			getImportListNode().addChild(child);
+			getImportList().addChild(child);
 		}
 		else if (child instanceof ClassDeclaration)
 		{
@@ -338,7 +338,7 @@ public class FileDeclaration extends Node
 
 			builder.append(generateDummyTypes()).append('\n');
 			
-			ImportList imports = getImportListNode();
+			ImportList imports = getImportList();
 			
 			builder.append(imports.generateCHeader());
 			
@@ -410,7 +410,7 @@ public class FileDeclaration extends Node
 	 * default imports are included within the {@link #DEFAULT_IMPORTS}
 	 * array.
 	 */
-	private void addDefaultImportNodes()
+	private void addDefaultImports()
 	{
 		for (String importLoc : DEFAULT_IMPORTS)
 		{
@@ -447,11 +447,11 @@ public class FileDeclaration extends Node
 			}
 		}
 		
-//		ImportListNode imports = getImportListNode();
+//		ImportList imports = getImportList();
 //		
 //		for (int i = 0; i < imports.getNumChildren(); i++)
 //		{
-//			ImportNode node = (ImportNode)imports.getChild(i);
+//			Import node = (Import)imports.getChild(i);
 //			
 //			if (!node.isExternal())
 //			{

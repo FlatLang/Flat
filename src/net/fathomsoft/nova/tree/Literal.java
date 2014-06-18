@@ -6,7 +6,7 @@ import net.fathomsoft.nova.util.Location;
 import net.fathomsoft.nova.util.SyntaxUtils;
 
 /**
- * ValueNode extension that represents a literal within the code. For
+ * Value extension that represents a literal within the code. For
  * example, a number literal and a String literal.
  * 
  * @author	Braden Steffaniak
@@ -46,7 +46,7 @@ public class Literal extends Value
 	{
 //		if (!external && SyntaxUtils.isStringLiteral(value))
 //		{
-//			value = Nova.LANGUAGE_NAME.toLowerCase() + "_String_String(" + ExceptionNode.EXCEPTION_DATA_IDENTIFIER + ", " + value + ")";
+//			value = Nova.LANGUAGE_NAME.toLowerCase() + "_String_String(" + Exception.EXCEPTION_DATA_IDENTIFIER + ", " + value + ")";
 //		}
 		
 		this.value = value;
@@ -135,7 +135,7 @@ public class Literal extends Value
 	}
 	
 	/**
-	 * Decode the given statement into a LiteralNode instance, if
+	 * Decode the given statement into a Literal instance, if
 	 * possible. If it is not possible, this method returns null.
 	 * <br>
 	 * Example inputs include:<br>
@@ -150,13 +150,13 @@ public class Literal extends Value
 	 * 
 	 * @param parent The parent node of the statement.
 	 * @param statement The statement to try to decode into a
-	 * 		LiteralNode instance.
+	 * 		Literal instance.
 	 * @param location The location of the statement in the source code.
 	 * @param require Whether or not to throw an error if anything goes wrong.
 	 * @param scope Whether or not the given statement is the beginning of
 	 * 		a scope.
 	 * @return The generated node, if it was possible to translated it
-	 * 		into a LiteralNode.
+	 * 		into a Literal.
 	 */
 	public static Literal decodeStatement(Node parent, String statement, Location location, boolean require, boolean scope)
 	{
@@ -186,7 +186,7 @@ public class Literal extends Value
 	}
 	
 	/**
-	 * Fill the given LiteralNode with the data that is in the
+	 * Fill the given Literal with the data that is in the
 	 * specified node.
 	 * 
 	 * @param node The node to copy the data into.

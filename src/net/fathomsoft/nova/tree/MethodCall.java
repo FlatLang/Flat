@@ -10,7 +10,7 @@ import net.fathomsoft.nova.util.StringUtils;
 import net.fathomsoft.nova.util.SyntaxUtils;
 
 /**
- * ValueNode extension that represents the declaration of a method
+ * Value extension that represents the declaration of a method
  * call node type. See {@link #decodeStatement(Node, String, Location, boolean, boolean)}
  * for more details on what correct inputs look like.
  * 
@@ -23,7 +23,7 @@ public class MethodCall extends Identifier
 	private boolean	externalCall;
 	
 	/**
-	 * Instantiate a new MethodCallNode and initialize the default values.
+	 * Instantiate a new MethodCall and initialize the default values.
 	 * 
 	 * @see net.fathomsoft.nova.tree.Node#Node(Node, Location)
 	 */
@@ -42,14 +42,14 @@ public class MethodCall extends Identifier
 	 * <blockquote><pre>
 	 * methodName(5, "Arg2", 3 * n);</pre></blockquote>
 	 * In the previous statement, the data within the parenthesis are the
-	 * arguments passed to the method. The ArgumentNode returned by this
+	 * arguments passed to the method. The Argument returned by this
 	 * method would contain a node for each of the arguments passed, in
 	 * the correct order from left to right.
 	 * 
 	 * @return The Node that represents the arguments to the method
 	 * 		call.
 	 */
-	public ArgumentList getArgumentListNode()
+	public ArgumentList getArgumentList()
 	{
 		return (ArgumentList)getChild(0);
 	}
@@ -63,7 +63,7 @@ public class MethodCall extends Identifier
 	 */
 	public boolean isWithinExternalContext()
 	{
-		Method method = getMethodDeclarationNode();
+		Method method = getMethodDeclaration();
 		
 		if (method.isExternal())
 		{
@@ -99,20 +99,20 @@ public class MethodCall extends Identifier
 	}
 	
 	/**
-	 * Get the MethodNode instance that this MethodCallNode is calling.
+	 * Get the Method instance that this MethodCall is calling.
 	 * 
-	 * @return The MethodNode instance that this MethodCallNode is
+	 * @return The Method instance that this MethodCall is
 	 * 		calling.
 	 */
-	public Method getMethodDeclarationNode()
+	public Method getMethodDeclaration()
 	{
-		FileDeclaration    file    = getParent().getFileNode();
+		FileDeclaration    file    = getParent().getFileDeclaration();
 		
-		Program program = file.getProgramNode();
+		Program program = file.getProgram();
 		
 		if (file.containsImport(getName()))
 		{
-			ClassDeclaration  clazz  = program.getClassNode(getName());
+			ClassDeclaration  clazz  = program.getClassDeclaration(getName());
 			
 			Method method = clazz.getMethod(getName());
 			
@@ -130,7 +130,7 @@ public class MethodCall extends Identifier
 	
 	/**
 	 * Get the name of the object reference identifier for the given
-	 * MethodCallNode's method node. Static methods return
+	 * MethodCall's method node. Static methods return
 	 * "__static__ClassName" and non-static methods return "this".
 	 * The call cannot be that of an external method.
 	 * 
@@ -138,25 +138,25 @@ public class MethodCall extends Identifier
 	 */
 	public String getObjectReferenceIdentifier()
 	{
-		return getObjectReferenceIdentifier(getMethodDeclarationNode());
+		return getObjectReferenceIdentifier(getMethodDeclaration());
 	}
 	
 	/**
-	 * Get the ValueNode that the method was called with for the given
-	 * MethodCallNode's method node, if it was not called with a specific
+	 * Get the Value that the method was called with for the given
+	 * MethodCall's method node, if it was not called with a specific
 	 * object. Static methods return "__static__ClassName" and non-static
 	 * methods return "this". The call cannot be that of an external
 	 * method.
 	 * 
-	 * @return The ValueNode that the method was called with.
+	 * @return The Value that the method was called with.
 	 */
 	public Value getObjectReferenceValue()
 	{
-		return getObjectReferenceNode(getMethodDeclarationNode());
+		return getObjectReferenceNode(getMethodDeclaration());
 	}
 	
 	/**
-	 * Get the ParameterNode that the given argument represents.<br>
+	 * Get the Parameter that the given argument represents.<br>
 	 * <br>
 	 * For example:
 	 * <blockquote><pre>
@@ -167,17 +167,17 @@ public class MethodCall extends Identifier
 	 * 
 	 * run(432, 1, 5);</pre></blockquote>
 	 * If you were to call getCorrespondingParameter(1) on the method
-	 * call above, you would receive the b ParameterNode.
+	 * call above, you would receive the b Parameter.
 	 * 
 	 * @param argument The argument to get the corresponding parameter
 	 * 		from.
-	 * @return The ParameterNode that represents the given argument.
+	 * @return The Parameter that represents the given argument.
 	 */
 	public Parameter getCorrespondingParameter(Value argument)
 	{
 		int argIndex = -1;
 		
-		ArgumentList args = getArgumentListNode();
+		ArgumentList args = getArgumentList();
 		
 		for (int i = 0; i < args.getNumChildren(); i++)
 		{
@@ -201,7 +201,7 @@ public class MethodCall extends Identifier
 	}
 	
 	/**
-	 * Get the ParameterNode that the given index represents. The
+	 * Get the Parameter that the given index represents. The
 	 * parameters are ordered from left to right, 0 being the first.<br>
 	 * <br>
 	 * For example:
@@ -213,17 +213,17 @@ public class MethodCall extends Identifier
 	 * 
 	 * run(432, 1, 5);</pre></blockquote>
 	 * If you were to call getCorrespondingParameter(2) on the method
-	 * call above, you would receive the c ParameterNode.
+	 * call above, you would receive the c Parameter.
 	 * 
 	 * @param argIndex The index of the argument to get the corresponding
 	 * 		parameter from.
-	 * @return The ParameterNode at the given index.
+	 * @return The Parameter at the given index.
 	 */
 	public Parameter getCorrespondingParameter(int argIndex)
 	{
-		Method method = getMethodDeclarationNode();
+		Method method = getMethodDeclaration();
 		
-		return method.getParameterNode(argIndex);
+		return method.getParameter(argIndex);
 	}
 	
 	/**
@@ -236,7 +236,7 @@ public class MethodCall extends Identifier
 		
 		builder.append(getName()).append('(');
 		
-		builder.append(getArgumentListNode().generateJavaSource());
+		builder.append(getArgumentList().generateJavaSource());
 		
 		builder.append(");").append('\n');
 		
@@ -277,7 +277,7 @@ public class MethodCall extends Identifier
 		
 		StringBuilder builder = new StringBuilder();
 		
-		Method    method  = getMethodDeclarationNode();
+		Method    method  = getMethodDeclaration();
 		
 		if (!isSpecialFragment())
 		{
@@ -290,7 +290,7 @@ public class MethodCall extends Identifier
 		
 		builder.append('(');
 		
-		builder.append(getArgumentListNode().generateCSource());
+		builder.append(getArgumentList().generateCSource());
 		
 		builder.append(')');
 		
@@ -301,10 +301,10 @@ public class MethodCall extends Identifier
 	
 	/**
 	 * Generate a String representing the output of the children of the
-	 * MethodCallNode.
+	 * MethodCall.
 	 * 
 	 * @return A String representing the output of the children of the
-	 * 		MethodCallNode.
+	 * 		MethodCall.
 	 */
 	public String generateChildrenCSourceFragment()
 	{
@@ -333,7 +333,7 @@ public class MethodCall extends Identifier
 	}
 	
 	/**
-	 * Decode the given statement into a MethodCallNode instance, if
+	 * Decode the given statement into a MethodCall instance, if
 	 * possible. If it is not possible, this method returns null.<br>
 	 * To determine whether or not a method is called externally,
 	 * refer to {@link #isExternal()} for more details on what an
@@ -348,13 +348,13 @@ public class MethodCall extends Identifier
 	 * 
 	 * @param parent The parent node of the statement.
 	 * @param statement The statement to try to decode into a
-	 * 		MethodCallNode instance.
+	 * 		MethodCall instance.
 	 * @param location The location of the statement in the source code.
 	 * @param require Whether or not to throw an error if anything goes wrong.
 	 * @param scope Whether or not the given statement is the beginning of
 	 * 		a scope.
 	 * @return The generated node, if it was possible to translated it
-	 * 		into a MethodCallNode.
+	 * 		into a MethodCall.
 	 */
 	public static MethodCall decodeStatement(Node parent, String statement, Location location, boolean require, boolean scope)
 	{
@@ -395,7 +395,7 @@ public class MethodCall extends Identifier
 			
 			String  argumentList = statement.substring(bounds.getStart(), bounds.getEnd());
 			
-//			n.externalCall = parent instanceof ExternalTypeNode;
+//			n.externalCall = parent instanceof ExternalType;
 			
 			try
 			{
@@ -411,10 +411,10 @@ public class MethodCall extends Identifier
 				throw e;
 			}
 			
-			FileDeclaration     file     = parent.getFileNode();
-			Method   method   = n.getMethodDeclarationNode();
+			FileDeclaration     file     = parent.getFileDeclaration();
+			Method   method   = n.getMethodDeclaration();
 			Method   context  = (Method)parent.getAncestorOfType(Method.class, true);
-			Variable accessor = context.getClassNode();
+			Variable accessor = context.getClassDeclaration();
 			
 			if (method == null)
 			{
@@ -483,7 +483,7 @@ public class MethodCall extends Identifier
 	 * fulfills the required parameters of the method declaration.
 	 * 
 	 * @param method The Method to check the arguments against.
-	 * @param fileDeclaration The FileNode that this method call is within.
+	 * @param fileDeclaration The FileDeclaration that this method call is within.
 	 * @param location The location of the arguments that are being
 	 * 		passed.
 	 * @return True if the method call's arguments fulfill the
@@ -491,8 +491,8 @@ public class MethodCall extends Identifier
 	 */
 	private boolean fulfillsParameters(Method method, FileDeclaration fileDeclaration, Location location)
 	{
-		ParameterList parameters = method.getParameterListNode();
-		ArgumentList  arguments  = getArgumentListNode();
+		ParameterList parameters = method.getParameterList();
+		ArgumentList  arguments  = getArgumentList();
 		
 		int offset = 2;
 		
@@ -557,7 +557,7 @@ public class MethodCall extends Identifier
 				}
 				if (arg == null)
 				{
-					arg = BinaryOperator.decodeStatement(parent, argument, location, false, false);
+					arg = BinaryOperation.decodeStatement(parent, argument, location, false, false);
 				}
 				if (arg == null)
 				{
@@ -590,7 +590,7 @@ public class MethodCall extends Identifier
 				}
 				else
 				{
-					getArgumentListNode().addChild(arg);
+					getArgumentList().addChild(arg);
 				}
 			}
 		}
@@ -609,7 +609,7 @@ public class MethodCall extends Identifier
 	{
 		StringBuilder builder = new StringBuilder();
 		
-		builder.append(getName()).append('(').append(getArgumentListNode().generateNovaInput()).append(')');
+		builder.append(getName()).append('(').append(getArgumentList().generateNovaInput()).append(')');
 		
 		if (outputChildren)
 		{
@@ -677,7 +677,7 @@ public class MethodCall extends Identifier
 	}
 	
 	/**
-	 * Fill the given MethodCallNode with the data that is in the
+	 * Fill the given MethodCall with the data that is in the
 	 * specified node.
 	 * 
 	 * @param node The node to copy the data into.

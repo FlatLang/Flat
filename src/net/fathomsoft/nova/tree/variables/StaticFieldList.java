@@ -5,8 +5,8 @@ import net.fathomsoft.nova.tree.Node;
 import net.fathomsoft.nova.util.Location;
 
 /**
- * Node extensions that contains all of the private FieldNode
- * instances of a ClassNode.
+ * Node extensions that contains all of the private Field
+ * instances of a ClassDeclaration.
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 10:00:50 PM
@@ -39,7 +39,7 @@ public class StaticFieldList extends Node
 		{
 			ClassDeclaration parent = (ClassDeclaration)getAncestorOfType(ClassDeclaration.class, true);
 			
-			if (parent.getMethodListNode().getNumChildren() > 0)
+			if (parent.getMethodList().getNumChildren() > 0)
 			{
 				builder.append('\n');
 			}
@@ -92,7 +92,7 @@ public class StaticFieldList extends Node
 	}
 	
 	/**
-	 * Fill the given PrivateFieldListNode with the data that is in the
+	 * Fill the given PrivateFieldList with the data that is in the
 	 * specified node.
 	 * 
 	 * @param node The node to copy the data into.

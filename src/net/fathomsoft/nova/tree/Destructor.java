@@ -10,7 +10,7 @@ import net.fathomsoft.nova.util.Location;
 import net.fathomsoft.nova.util.StringUtils;
 
 /**
- * MethodNode extension that represents the declaration of a Destructor
+ * Method extension that represents the declaration of a Destructor
  * node type. See {@link #decodeStatement(Node, String, Location, boolean, boolean)}
  * for more details on what correct inputs look like.
  * 
@@ -77,7 +77,7 @@ public class Destructor extends Method
 		{
 			Node child = getChild(i);
 			
-			if (child != getParameterListNode())
+			if (child != getParameterList())
 			{
 				builder.append(child.generateCSource());
 			}
@@ -85,7 +85,7 @@ public class Destructor extends Method
 		
 		builder.append("NOVA_FREE(").append('*').append(Method.getObjectReferenceIdentifier()).append(");").append('\n');
 		
-		//builder.append('*').append(MethodNode.getObjectReferenceIdentifier()).append(" = NULL;").append('\n');
+		//builder.append('*').append(Method.getObjectReferenceIdentifier()).append(" = NULL;").append('\n');
 		
 		builder.append('}').append('\n');
 		
@@ -121,7 +121,7 @@ public class Destructor extends Method
 		
 		ClassDeclaration     classDeclaration = (ClassDeclaration)getAncestorOfType(ClassDeclaration.class);
 		
-		InstanceFieldList privateFields = classDeclaration.getFieldListNode().getPrivateFieldListNode();
+		InstanceFieldList privateFields = classDeclaration.getFieldList().getPrivateFieldList();
 		
 		for (int i = 0; i < privateFields.getNumChildren(); i++)
 		{
@@ -135,7 +135,7 @@ public class Destructor extends Method
 			builder.append(generateFreeMemberSource("prv")).append('\n');
 		}
 		
-		InstanceFieldList publicFields = classDeclaration.getFieldListNode().getPublicFieldListNode();
+		InstanceFieldList publicFields = classDeclaration.getFieldList().getPublicFieldList();
 		
 		for (int i = 0; i < publicFields.getNumChildren(); i++)
 		{
@@ -186,7 +186,7 @@ public class Destructor extends Method
 		
 		builder.append("NOVA_FREE((*").append(Method.getObjectReferenceIdentifier()).append(")->").append(name).append(");");
 		
-		//builder.append("(*").append(MethodNode.getObjectReferenceIdentifier()).append(")->").append(name).append(" = NULL;");
+		//builder.append("(*").append(Method.getObjectReferenceIdentifier()).append(")->").append(name).append(" = NULL;");
 		
 		return builder.toString();
 	}
@@ -218,8 +218,8 @@ public class Destructor extends Method
 		builder.append(Nova.LANGUAGE_NAME.toLowerCase()).append("_del_");
 		builder.append(classDeclaration.getName()).append('(');
 		
-		//builder.append(classNode.getName()).append('*').append(' ').append(MethodNode.getObjectReferenceIdentifier());
-		builder.append(getParameterListNode().generateCSource());
+		//builder.append(classNode.getName()).append('*').append(' ').append(Method.getObjectReferenceIdentifier());
+		builder.append(getParameterList().generateCSource());
 		
 		builder.append(')');
 		
@@ -227,7 +227,7 @@ public class Destructor extends Method
 	}
 	
 	/**
-	 * Decode the given statement into a DestructorNode instance, if
+	 * Decode the given statement into a Destructor instance, if
 	 * possible. If it is not possible, this method returns null. A
 	 * destructor must have the same name as the class that it is
 	 * within preceded by a tilde (A tilde is a '~' located above the tab
@@ -239,13 +239,13 @@ public class Destructor extends Method
 	 * 
 	 * @param parent The parent node of the statement.
 	 * @param statement The statement to try to decode into a
-	 * 		DestructorNode instance.
+	 * 		Destructor instance.
 	 * @param location The location of the statement in the source code.
 	 * @param require Whether or not to throw an error if anything goes wrong.
 	 * @param scope Whether or not the given statement is the beginning of
 	 * 		a scope.
 	 * @return The generated node, if it was possible to translated it
-	 * 		into a DestructorNode.
+	 * 		into a Destructor.
 	 */
 	public static Destructor decodeStatement(Node parent, String statement, Location location, boolean require, boolean scope)
 	{
@@ -327,7 +327,7 @@ public class Destructor extends Method
 	}
 	
 	/**
-	 * Fill the given DestructorNode with the data that is in the
+	 * Fill the given Destructor with the data that is in the
 	 * specified node.
 	 * 
 	 * @param node The node to copy the data into.

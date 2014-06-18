@@ -9,7 +9,7 @@ import net.fathomsoft.nova.util.Patterns;
 import net.fathomsoft.nova.util.Regex;
 
 /**
- * ExceptionHandlingNode extension that represents the declaration of a
+ * ExceptionHandler extension that represents the declaration of a
  * catch node type. See {@link #decodeStatement(Node, String, Location, boolean, boolean)}
  * for more details on what correct inputs look like.
  * 
@@ -38,9 +38,9 @@ public class Catch extends ExceptionHandler
 	}
 	
 	/**
-	 * Get the ExceptionNode that is being caught by this node.
+	 * Get the Exception that is being caught by this node.
 	 * 
-	 * @return The ExceptionNode instance.
+	 * @return The Exception instance.
 	 */
 	public Exception getException()
 	{
@@ -74,16 +74,16 @@ public class Catch extends ExceptionHandler
 	}
 	
 	/**
-	 * Get the TryNode that this CatchNode is referring to.
+	 * Get the Try that this Catch is referring to.
 	 * 
-	 * @param parent The parent node of this CatchNode.
-	 * @return The TryNode instance that this CatchNode is referring to.
+	 * @param parent The parent node of this Catch.
+	 * @return The Try instance that this Catch is referring to.
 	 */
 	private Try getCurrentTry(Node parent)
 	{
 		if (parent.containsScope())
 		{
-			parent = parent.getScopeNode();
+			parent = parent.getScope();
 		}
 		
 		for (int i = parent.getNumChildren() - 1; i >= 0; i--)
@@ -104,7 +104,7 @@ public class Catch extends ExceptionHandler
 	}
 	
 	/**
-	 * Decode the given statement into a CatchNode instance, if
+	 * Decode the given statement into a Catch instance, if
 	 * possible. If it is not possible, this method returns null.
 	 * <br>
 	 * Example inputs include:<br>
@@ -116,13 +116,13 @@ public class Catch extends ExceptionHandler
 	 * 
 	 * @param parent The parent node of the statement.
 	 * @param statement The statement to try to decode into a
-	 * 		CatchNode instance.
+	 * 		Catch instance.
 	 * @param location The location of the statement in the source code.
 	 * @param require Whether or not to throw an error if anything goes wrong.
 	 * @param scope Whether or not the given statement is the beginning of
 	 * 		a scope.
 	 * @return The generated node, if it was possible to translated it
-	 * 		into a CatchNode.
+	 * 		into a Catch.
 	 */
 	public static Catch decodeStatement(Node parent, String statement, Location location, boolean require, boolean scope)
 	{
@@ -191,7 +191,7 @@ public class Catch extends ExceptionHandler
 	}
 	
 	/**
-	 * Fill the given CatchNode with the data that is in the
+	 * Fill the given Catch with the data that is in the
 	 * specified node.
 	 * 
 	 * @param node The node to copy the data into.

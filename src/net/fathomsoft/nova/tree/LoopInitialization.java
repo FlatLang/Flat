@@ -33,7 +33,7 @@ public class LoopInitialization extends Node
 	}
 	
 	/**
-	 * Fill the given LoopInitializationNode with the data that is in the
+	 * Fill the given LoopLoopInitialization with the data that is in the
 	 * specified node.
 	 * 
 	 * @param node The node to copy the data into.

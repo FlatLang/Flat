@@ -15,7 +15,7 @@ import net.fathomsoft.nova.util.Regex;
 import net.fathomsoft.nova.util.SyntaxUtils;
 
 /**
- * ValueNode extension that keeps track of any time an array is being
+ * Value extension that keeps track of any time an array is being
  * accessed. For example, the statement: "args[34]" is an array access.
  * Obviously the previous code segment does nothing, however these nodes
  * will be intertwined with method calls, assignments, if statements, etc.
@@ -44,10 +44,10 @@ public class ArrayAccess extends Variable
 	@Override
 	public ClassDeclaration getTypeClass()
 	{
-		Program program = getProgramNode();
+		Program program = getProgram();
 		String      name    = getTypeClassName(getArrayDimensions() - getNumDimensions());
 		
-		ClassDeclaration   clazz   = program.getClassNode(name);
+		ClassDeclaration   clazz   = program.getClassDeclaration(name);
 		
 		return clazz;
 	}
@@ -66,24 +66,24 @@ public class ArrayAccess extends Variable
 	 */
 	public int getNumDimensions()
 	{
-		return getDimensionsNode().getNumChildren();
+		return getDimensions().getNumChildren();
 	}
 	
 	/**
 	 * Get the node that represents the dimensions of the array. The
-	 * DimensionsNode class contains information of the index that is
+	 * Dimensions class contains information of the index that is
 	 * being accessed.
 	 * 
 	 * @return The node that represents the dimensions being accessed.
 	 */
-	public Dimensions getDimensionsNode()
+	public Dimensions getDimensions()
 	{
 		return (Dimensions)getChild(0);
 	}
 	
 	/**
 	 * Add a dimension, that contains the index that is being attained,
-	 * to the DimensionsNode instance of the ArrayAccessNode.
+	 * to the Dimensions instance of the ArrayAccess.
 	 * 
 	 * @param child The node that describes the index that is being
 	 * 		accessed by the array at the specified dimension that is
@@ -91,7 +91,7 @@ public class ArrayAccess extends Variable
 	 */
 	public void addDimension(Node child)
 	{
-		getDimensionsNode().addChild(child);
+		getDimensions().addChild(child);
 	}
 	
 	/**
@@ -116,7 +116,7 @@ public class ArrayAccess extends Variable
 	{
 		StringBuilder  builder        = new StringBuilder();
 		
-		Dimensions dimensions = getDimensionsNode();
+		Dimensions dimensions = getDimensions();
 		
 		builder.append(generateUseOutput());
 		builder.append(dimensions.generateCSourceFragment());
@@ -133,7 +133,7 @@ public class ArrayAccess extends Variable
 	{
 		StringBuilder builder = new StringBuilder();
 		
-		builder.append(super.generateNovaInput(false) + getDimensionsNode().generateNovaInput());
+		builder.append(super.generateNovaInput(false) + getDimensions().generateNovaInput());
 		
 		Identifier accessed = getAccessedNode();
 		
@@ -146,15 +146,15 @@ public class ArrayAccess extends Variable
 	}
 
 	/**
-	 * Decode the given statement into an ArrayAccessNode if possible.
+	 * Decode the given statement into an ArrayAccess if possible.
 	 * If it is not possible, the method will return null.<br>
 	 * <br>
 	 * An example input would be: "args[34]"
 	 * 
 	 * @param parent The parent of the current statement.
-	 * @param statement The statement to decode into an ArrayAccessNode.
+	 * @param statement The statement to decode into an ArrayAccess.
 	 * @param location The location of the statement.
-	 * @return The ArrayAccessNode if it was created, null if not.
+	 * @return The ArrayAccess if it was created, null if not.
 	 */
 	public static ArrayAccess decodeStatement(Node parent, String statement, Location location, boolean require, boolean scope)
 	{
@@ -247,7 +247,7 @@ public class ArrayAccess extends Variable
 	}
 	
 	/**
-	 * Fill the given ArrayAccessNode with the data that is in the
+	 * Fill the given ArrayAccess with the data that is in the
 	 * specified node.
 	 * 
 	 * @param node The node to copy the data into.

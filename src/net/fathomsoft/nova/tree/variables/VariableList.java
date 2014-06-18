@@ -4,7 +4,7 @@ import net.fathomsoft.nova.tree.Node;
 import net.fathomsoft.nova.util.Location;
 
 /**
- * Node that holds the LocalVariableNodes that a method contains.
+ * Node that holds the LocalVariables that a method contains.
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 9, 2014 at 4:19:57 PM
@@ -21,11 +21,11 @@ public class VariableList extends Node
 	}
 	
 	/**
-	 * Get whether or not there is a VaraibleNode within the list with
+	 * Get whether or not there is a Variable within the list with
 	 * the given name.
 	 * 
 	 * @param variableName The name of the variable to search for.
-	 * @return Whether or not there is a VaraibleNode within the list with
+	 * @return Whether or not there is a Variable within the list with
 	 * 		the given name.
 	 */
 	public boolean containsVariable(String variableName)
@@ -34,11 +34,11 @@ public class VariableList extends Node
 	}
 	
 	/**
-	 * Get the VariableNode from the list with the given name, if it
+	 * Get the Variable from the list with the given name, if it
 	 * exists.
 	 * 
 	 * @param variableName The name of the variable to get.
-	 * @return The VariableNode with the given name.
+	 * @return The Variable with the given name.
 	 */
 	public Variable getVariable(String variableName)
 	{
@@ -140,7 +140,7 @@ public class VariableList extends Node
 	}
 	
 	/**
-	 * Fill the given VariableListNode with the data that is in the
+	 * Fill the given VariableList with the data that is in the
 	 * specified node.
 	 * 
 	 * @param node The node to copy the data into.

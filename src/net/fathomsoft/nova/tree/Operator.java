@@ -93,7 +93,7 @@ public class Operator extends Value
 	}
 	
 	/**
-	 * Fill the given OperatorNode with the data that is in the
+	 * Fill the given Operator with the data that is in the
 	 * specified node.
 	 * 
 	 * @param node The node to copy the data into.

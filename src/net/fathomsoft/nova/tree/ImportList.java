@@ -3,7 +3,7 @@ package net.fathomsoft.nova.tree;
 import net.fathomsoft.nova.util.Location;
 
 /**
- * Node extension that contains children of the type ImportNode.
+ * Node extension that contains children of the type Import.
  * Contains all of a files imports.
  * 
  * @author	Braden Steffaniak
@@ -35,7 +35,7 @@ public class ImportList extends Node
 	 * Get the Import node with the given import location, if it exists.
 	 * 
 	 * @param importLocation The location of the import.
-	 * @return The ImportNode with the specified import location, if it
+	 * @return The Import with the specified import location, if it
 	 * 		exists.
 	 */
 	public Import getImport(String importLocation)
@@ -102,7 +102,7 @@ public class ImportList extends Node
 	{
 		StringBuilder builder = new StringBuilder();
 		
-		FileDeclaration file = getFileNode();
+		FileDeclaration file = getFileDeclaration();
 		
 		for (int i = 0; i < getNumChildren(); i++)
 		{
@@ -125,7 +125,7 @@ public class ImportList extends Node
 	{
 		StringBuilder builder = new StringBuilder();
 		
-		FileDeclaration file = getFileNode();
+		FileDeclaration file = getFileDeclaration();
 
 		Import importNode = Import.decodeStatement(this, "import \"" + file.getName() + "\"", getLocationIn(), true, false);
 		
@@ -146,7 +146,7 @@ public class ImportList extends Node
 	}
 	
 	/**
-	 * Fill the given ImportListNode with the data that is in the
+	 * Fill the given ImportList with the data that is in the
 	 * specified node.
 	 * 
 	 * @param node The node to copy the data into.

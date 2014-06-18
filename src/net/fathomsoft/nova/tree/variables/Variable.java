@@ -14,8 +14,8 @@ import net.fathomsoft.nova.tree.exceptionhandling.Exception;
 import net.fathomsoft.nova.util.Location;
 
 /**
- * ModifierNode extension that represents the declaration of a variable
- * node type. Harnesses the needed information of each variable, such as
+ * Identifier extension that represents the use of a variable
+ * type. Harnesses the needed information of each variable, such as
  * whether or not it is constant, external, or an array, and its type.
  * 
  * @author	Braden Steffaniak
@@ -462,7 +462,7 @@ public class Variable extends Identifier
 			return name;
 		}
 		
-		ClassDeclaration clazz = getDeclaringClassNode();
+		ClassDeclaration clazz = getDeclaringClassDeclaration();
 		
 		if (this instanceof InstanceDeclaration)
 		{
@@ -553,32 +553,32 @@ public class Variable extends Identifier
 	}
 	
 	/**
-	 * Get the ClassNode instance that declared this variable.
+	 * Get the ClassDeclaration instance that declared this variable.
 	 * 
-	 * @return The ClassNode instance that declared this variable.
+	 * @return The ClassDeclaration instance that declared this variable.
 	 */
-	public ClassDeclaration getDeclaringClassNode()
+	public ClassDeclaration getDeclaringClassDeclaration()
 	{
 		Variable var = getDeclaration();
 		
-		return var.getClassNode();
+		return var.getClassDeclaration();
 	}
 	
 	/**
-	 * Get he Instance/LocalDeclarationNode that declares the
+	 * Get he Instance/LocalDeclaration that declares the
 	 * specified variable.
 	 * 
-	 * @return The Instance/LocalDeclarationNode that declares the
+	 * @return The Instance/LocalDeclaration that declares the
 	 * 		specified variable.
 	 */
 	public Variable getDeclaration()
 	{
 		Node    parent  = getParent();
-		Program program = parent.getProgramNode();
+		Program program = parent.getProgram();
 		
 		if (this instanceof Method)
 		{
-			return getClassNode();
+			return getClassDeclaration();
 		}
 		if (this instanceof LocalDeclaration)
 		{
@@ -588,21 +588,21 @@ public class Variable extends Identifier
 		{
 			Value value = (Value)parent;
 			
-			ClassDeclaration clazz = program.getClassNode(value.getType());
+			ClassDeclaration clazz = program.getClassDeclaration(value.getType());
 			
 			return clazz.getField(getName());
 		}
 		// If the 'this.' part of the variable access was auto-removed.
 		else if (this instanceof Field)
 		{
-			return getClassNode().getField(getName());
+			return getClassDeclaration().getField(getName());
 		}
 		
 		return SyntaxTree.getExistingNode(parent, getName());
 	}
 	
 	/**
-	 * Get whether or not the VariableNode instance represents a
+	 * Get whether or not the Variable instance represents a
 	 * declaration of a local variable.
 	 * 
 	 * @return Whether or not the instance represents a local variable
@@ -667,7 +667,7 @@ public class Variable extends Identifier
 	}
 	
 	/**
-	 * Fill the given VariableNode with the data that is in the
+	 * Fill the given Variable with the data that is in the
 	 * specified node.
 	 * 
 	 * @param node The node to copy the data into.

@@ -68,7 +68,7 @@ public class Dimensions extends Node
 	}
 	
 	/**
-	 * Fill the given DimensionsNode with the data that is in the
+	 * Fill the given Dimensions with the data that is in the
 	 * specified node.
 	 * 
 	 * @param node The node to copy the data into.

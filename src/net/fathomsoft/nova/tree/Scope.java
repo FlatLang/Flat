@@ -40,18 +40,18 @@ public class Scope extends Node
 		
 		super.addChild(variablesNode);
 		
-		Method method = getParent().getMethodNode();
+		Method method = getParent().getMethod();
 		
 		id = method.generateUniqueID();
 	}
 	
 	/**
-	 * Get the VariableListNode that contains all of the variables
-	 * that have been declared within this ScopeNode.
+	 * Get the VariableList that contains all of the variables
+	 * that have been declared within this Scope.
 	 * 
-	 * @return The VariableListNode instance.
+	 * @return The VariableList instance.
 	 */
-	public VariableList getVariableListNode()
+	public VariableList getVariableList()
 	{
 		return (VariableList)getChild(0);
 	}
@@ -88,17 +88,17 @@ public class Scope extends Node
 					}
 				}
 				
-//				MethodNode method = (MethodNode)var.getAncestorOfType(MethodNode.class);
+//				Method method = (Method)var.getAncestorOfType(Method.class);
 //				
-//				method.getScopeNode().getVariableListNode().addChild(var);
-				getVariableListNode().addChild(var);
+//				method.getScope().getVariableList().addChild(var);
+				getVariableList().addChild(var);
 				
 				return;
 			}
 		}
-//		else if (child instanceof ExternalTypeNode)
+//		else if (child instanceof ExternalType)
 //		{
-////			getVariableListNode().addChild(child.getChild(0).clone());
+////			getVariableList().addChild(child.getChild(0).clone());
 //			
 //			return;
 //		}
@@ -136,7 +136,7 @@ public class Scope extends Node
 			builder.append(child.generateCSource());
 		}
 		
-//		VariableListNode variables = getVariableListNode();
+//		VariableList variables = getVariableList();
 //		
 //		builder.append(variables.generateFreeVariablesOutput());
 		
@@ -157,7 +157,7 @@ public class Scope extends Node
 	}
 	
 	/**
-	 * Fill the given ScopeNode with the data that is in the
+	 * Fill the given Scope with the data that is in the
 	 * specified node.
 	 * 
 	 * @param node The node to copy the data into.

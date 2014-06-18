@@ -17,7 +17,7 @@ import net.fathomsoft.nova.util.Regex;
 public class ElseStatement extends Node
 {
 	/**
-	 * Instantiate a new ElseStatementNode and initialize the default
+	 * Instantiate a new ElseStatement and initialize the default
 	 * values.
 	 * 
 	 * @see net.fathomsoft.nova.tree.Node#Node(Node, Location)
@@ -28,14 +28,14 @@ public class ElseStatement extends Node
 		
 		Scope scope = new Scope(this, locationIn);
 		
-		setScopeNode(scope);
+		setScope(scope);
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.Node#getScopeNode()
+	 * @see net.fathomsoft.nova.tree.Node#getScope()
 	 */
 	@Override
-	public Scope getScopeNode()
+	public Scope getScope()
 	{
 		return (Scope)getChild(0);
 	}
@@ -52,7 +52,7 @@ public class ElseStatement extends Node
 		}
 		else
 		{
-			getScopeNode().addChild(child);
+			getScope().addChild(child);
 		}
 	}
 	
@@ -81,7 +81,7 @@ public class ElseStatement extends Node
 		
 		builder.append('\n');
 	
-		builder.append(getScopeNode().generateCSource());
+		builder.append(getScope().generateCSource());
 		
 //		builder.append('{').append('\n');
 //		
@@ -101,7 +101,7 @@ public class ElseStatement extends Node
 	}
 	
 	/**
-	 * Decode the given statement into a ElseStatementNode instance, if
+	 * Decode the given statement into a ElseStatement instance, if
 	 * possible. If it is not possible, this method returns null.<br>
 	 * <br>
 	 * Example inputs include:<br>
@@ -114,13 +114,13 @@ public class ElseStatement extends Node
 	 * 
 	 * @param parent The parent node of the statement.
 	 * @param statement The statement to try to decode into a
-	 * 		ElseStatementNode instance.
+	 * 		ElseStatement instance.
 	 * @param location The location of the statement in the source code.
 	 * @param require Whether or not to throw an error if anything goes wrong.
 	 * @param scope Whether or not the given statement is the beginning of
 	 * 		a scope.
 	 * @return The generated node, if it was possible to translated it
-	 * 		into a ElseStatementNode.
+	 * 		into a ElseStatement.
 	 */
 	public static ElseStatement decodeStatement(Node parent, String statement, Location location, boolean require, boolean scope)
 	{
@@ -163,7 +163,7 @@ public class ElseStatement extends Node
 	}
 	
 	/**
-	 * Fill the given IfStatementNode with the data that is in the
+	 * Fill the given IfStatement with the data that is in the
 	 * specified node.
 	 * 
 	 * @param node The node to copy the data into.

@@ -1,11 +1,3 @@
-//
-//  CClass.h
-//  CTest
-//
-//  Created by Braden Steffaniak on 12/27/13.
-//  Copyright (c) 2013 Braden Steffaniak. All rights reserved.
-//
-
 #ifndef CClass_CClass_h
 #define CClass_CClass_h
 
@@ -32,8 +24,6 @@
 #	define NOVA_REALLOC realloc
 #endif
 
-//#define TCC
-
 #define CCLASS_NEW1(_CLASS_) (_CLASS_*)NOVA_MALLOC(sizeof(_CLASS_))
 #define CCLASS_NEW3(_CLASS_, _OBJ_, _CCLASS_PRIVATE_)\
 	_CLASS_* _OBJ_ = CCLASS_NEW1(_CLASS_);\
@@ -41,7 +31,6 @@
 #define CCLASS_NEW2(_CLASS_, _OBJ_) CCLASS_NEW3(_CLASS_, _OBJ_, _OBJ_->prv = new_Private())
 
 #define CCLASS_CLASS_DEF(_NAME_, _BODY_) struct _NAME_ { _BODY_ }
-//#define CCLASS_CLASS3(_NAME_, _BODY_) typedef struct _NAME_ { _BODY_ } _NAME_;
 #define CCLASS_CLASS2(_NAME_, _BODY_) CCLASS_CLASS_DEF(_NAME_, _BODY_)
 #define CCLASS_CLASS1(_NAME_) CCLASS_CLASS2(_NAME_,)
 

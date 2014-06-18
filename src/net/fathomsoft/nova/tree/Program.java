@@ -5,9 +5,9 @@ import net.fathomsoft.nova.util.Location;
 
 /**
  * Node extension that represents a whole Nova program. The
- * purpose of this Node is to keep track of each FileNode within
+ * purpose of this Node is to keep track of each FileDeclaration within
  * a compiled program and contain methods to manipulate the
- * FileNodes.
+ * FileDeclarations.
  * 
  * @author	Braden Steffaniak
  * @since	v0.2 Apr 14, 2014 at 11:52:33 PM
@@ -18,7 +18,7 @@ public class Program extends Node
 	private Nova	controller;
 	
 	/**
-	 * Instantiate and initialize a ProgramNode that contains a reference
+	 * Instantiate and initialize a Program that contains a reference
 	 * to the compiler's controller.
 	 * 
 	 * @see net.fathomsoft.nova.tree.Node#Node(Node, Location)
@@ -35,7 +35,7 @@ public class Program extends Node
 	/**
 	 * Override addChild(Node) method to make it synchronized. Needs
 	 * to be synchronized so that the threads dont try to write their
-	 * file nodes to the ProgramNode at the same time and end up creating
+	 * file nodes to the Program at the same time and end up creating
 	 * empty spaces in the tree.
 	 * 
 	 * @see net.fathomsoft.nova.tree.Node#addChild(net.fathomsoft.nova.tree.Node)
@@ -102,7 +102,7 @@ public class Program extends Node
 	}
 	
 	/**
-	 * Get the ProgramNode's ClassNode with the specified name.<br>
+	 * Get the Program's ClassDeclaration with the specified name.<br>
 	 * <br>
 	 * For example:
 	 * <blockquote><pre>
@@ -114,18 +114,18 @@ public class Program extends Node
 	 * }</pre></blockquote>
 	 * <br>
 	 * A call like: "<code>getClass("Person")</code>" would return the
-	 * ClassNode for the "<code>Person</code>" class.
+	 * ClassDeclaration for the "<code>Person</code>" class.
 	 * 
 	 * @param className The name of the class to search for.
-	 * @return The ClassNode for the class, if it exists.
+	 * @return The ClassDeclaration for the class, if it exists.
 	 */
-	public ClassDeclaration getClassNode(String className)
+	public ClassDeclaration getClassDeclaration(String className)
 	{
 		for (int i = 0; i < getNumChildren(); i++)
 		{
 			FileDeclaration  node  = (FileDeclaration)getChild(i);
 			
-			ClassDeclaration clazz = node.getClassNode(className);
+			ClassDeclaration clazz = node.getClassDeclaration(className);
 			
 			if (clazz != null)
 			{
@@ -137,10 +137,10 @@ public class Program extends Node
 	}
 	
 	/**
-	 * Get the ProgramNode's FileNode with the specified name.
+	 * Get the Program's FileDeclaration with the specified name.
 	 * 
 	 * @param filename The name of the file to search for.
-	 * @return The FileNode for the file, if it exists.
+	 * @return The FileDeclaration for the file, if it exists.
 	 */
 	public FileDeclaration getFile(String filename)
 	{
@@ -262,7 +262,7 @@ public class Program extends Node
 	}
 	
 	/**
-	 * Fill the given ProgramNode with the data that is in the
+	 * Fill the given Program with the data that is in the
 	 * specified node.
 	 * 
 	 * @param node The node to copy the data into.

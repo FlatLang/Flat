@@ -6,7 +6,7 @@ import net.fathomsoft.nova.tree.Node;
 import net.fathomsoft.nova.util.Location;
 
 /**
- * VariableNode extension that represents the declaration of a local variable
+ * Variable extension that represents the declaration of a local variable
  * node type. See {@link net.fathomsoft.nova.tree.LocalDeclaration#decodeStatement(Node, String, Location, boolean, boolean)}
  * for more details on what correct inputs look like.
  * 
@@ -40,7 +40,7 @@ public class LocalVariable extends Variable
 			{
 				Variable var  = (Variable)child;
 				
-				Variable node = SyntaxTree.getExistingNode(var.getClassNode(), var.getName());
+				Variable node = SyntaxTree.getExistingNode(var.getClassDeclaration(), var.getName());
 				
 				if (node instanceof Field)
 				{
@@ -70,7 +70,7 @@ public class LocalVariable extends Variable
 	}
 	
 	/**
-	 * Fill the given LocalVariableNode with the data that is in the
+	 * Fill the given LocalVariable with the data that is in the
 	 * specified node.
 	 * 
 	 * @param node The node to copy the data into.

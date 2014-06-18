@@ -21,7 +21,7 @@ public class ExternalTypeList extends Node
 	}
 	
 	/**
-	 * Get whether or not the ClassNode contains an ExternalTypeNode with
+	 * Get whether or not the ClassDeclaration contains an ExternalType with
 	 * the specified type name.<br>
 	 * <br>
 	 * For example:
@@ -32,11 +32,11 @@ public class ExternalTypeList extends Node
 	 * }</pre></blockquote>
 	 * <br>
 	 * A call like: "<code>getType("FILE")</code>" would
-	 * return the ExternalTypeNode for the "<code>FILE</code>" external
+	 * return the ExternalType for the "<code>FILE</code>" external
 	 * type.
 	 * 
 	 * @param typeName The name of the external type to search for.
-	 * @return Whether or not the ClassNode contains the MethodNode with
+	 * @return Whether or not the ClassDeclaration contains the Method with
 	 * 		the specified name.
 	 */
 	public boolean containsType(String typeName)
@@ -45,7 +45,7 @@ public class ExternalTypeList extends Node
 	}
 	
 	/**
-	 * Get the ClassNode's ExternalTypeNode with the specified type.<br>
+	 * Get the ClassDeclaration's ExternalType with the specified type.<br>
 	 * <br>
 	 * For example:
 	 * <blockquote><pre>
@@ -55,11 +55,11 @@ public class ExternalTypeList extends Node
 	 * }</pre></blockquote>
 	 * <br>
 	 * A call like: "<code>getType("FILE")</code>" would
-	 * return the ExternalTypeNode for the "<code>FILE</code>" external
+	 * return the ExternalType for the "<code>FILE</code>" external
 	 * type.
 	 * 
 	 * @param typeName The name of the external type to search for.
-	 * @return The ExternalTypeNode for the external type, if it exists.
+	 * @return The ExternalType for the external type, if it exists.
 	 */
 	public ExternalType getType(String typeName)
 	{
@@ -88,7 +88,7 @@ public class ExternalTypeList extends Node
 	}
 	
 	/**
-	 * Fill the given ExternalTypeNodeList with the data that is in the
+	 * Fill the given ExternalTypeList with the data that is in the
 	 * specified node.
 	 * 
 	 * @param node The node to copy the data into.

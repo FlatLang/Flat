@@ -8,7 +8,7 @@ import net.fathomsoft.nova.util.Location;
 import net.fathomsoft.nova.util.Patterns;
 
 /**
- * DeclarationNode extension that represents the declaration of a field
+ * Declaration extension that represents the declaration of a field
  * node type. See {@link #decodeStatement(Node, String, Location, boolean, boolean)}
  * for more details on what correct inputs look like.
  * 
@@ -173,7 +173,7 @@ public class Field extends InstanceDeclaration
 	}
 	
 	/**
-	 * Decode the given statement into a FieldNode instance, if
+	 * Decode the given statement into a Field instance, if
 	 * possible. If it is not possible, this method returns null.
 	 * <br>
 	 * Example inputs include:<br>
@@ -185,13 +185,13 @@ public class Field extends InstanceDeclaration
 	 * 
 	 * @param parent The parent node of the statement.
 	 * @param statement The statement to try to decode into a
-	 * 		FieldNode instance.
+	 * 		Field instance.
 	 * @param location The location of the statement in the source code.
 	 * @param require Whether or not to throw an error if anything goes wrong.
 	 * @param scope Whether or not the given statement is the beginning of
 	 * 		a scope.
 	 * @return The generated node, if it was possible to translated it
-	 * 		into a FieldNode.
+	 * 		into a Field.
 	 */
 	public static Field decodeStatement(Node parent, String statement, Location location, boolean require, boolean scope)
 	{
@@ -257,7 +257,7 @@ public class Field extends InstanceDeclaration
 	}
 	
 	/**
-	 * Fill the given FieldNode with the data that is in the
+	 * Fill the given Field with the data that is in the
 	 * specified node.
 	 * 
 	 * @param node The node to copy the data into.

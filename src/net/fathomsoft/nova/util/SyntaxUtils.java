@@ -725,7 +725,7 @@ public class SyntaxUtils
 	}
 	
 	/**
-	 * Get whether or not the given MethodNode is a valid main method.
+	 * Get whether or not the given Method is a valid main method.
 	 * The main method has the method header as the following:
 	 * <blockquote><pre>
 	 * public static void main(String args[])
@@ -733,14 +733,14 @@ public class SyntaxUtils
 	 * 	...
 	 * }</pre></blockquote>
 	 * 
-	 * @param method The MethodNode instance to validate.
-	 * @return Whether or not the given MethodNode is a valid main method.
+	 * @param method The Method instance to validate.
+	 * @return Whether or not the given Method is a valid main method.
 	 */
 	public static boolean isMainMethod(Method method)
 	{
 		if (method.getName().equals("main") && method.isStatic() && method.getType().equals("void") && method.getVisibility() == Field.PUBLIC)
 		{
-			ParameterList params = (ParameterList)method.getParameterListNode();
+			ParameterList params = (ParameterList)method.getParameterList();
 			
 			if (params.getNumChildren() == 2)
 			{
@@ -770,15 +770,15 @@ public class SyntaxUtils
 	}
 	
 	/**
-	 * Get whether or not the given DeclarationNode is able to be accessed
-	 * from the given ClassNode context.
+	 * Get whether or not the given Declaration is able to be accessed
+	 * from the given ClassDeclaration context.
 	 * 
-	 * @param accessedFrom The ClassNode context that the DeclarationNode
+	 * @param accessedFrom The ClassDeclaration context that the Declaration
 	 * 		was accessed from.
-	 * @param declaration The DeclarationNode that was accessed from the
-	 * 		given ClassNode context.
-	 * @return Whether or not the given DeclarationNode is able to be
-	 * 		accessed from the given ClassNode context.
+	 * @param declaration The Declaration that was accessed from the
+	 * 		given ClassDeclaration context.
+	 * @return Whether or not the given Declaration is able to be
+	 * 		accessed from the given ClassDeclaration context.
 	 */
 	private static boolean isAccessibleFrom(ClassDeclaration accessedFrom, InstanceDeclaration declaration)
 	{
@@ -793,15 +793,15 @@ public class SyntaxUtils
 	}
 	
 	/**
-	 * Get the ClassNode that contains the accessed identifier. For more
+	 * Get the ClassDeclaration that contains the accessed identifier. For more
 	 * information on what an identifierAccess looks like, see
 	 * {@link #isValidIdentifierAccess(String)}.
 	 * 
-	 * @param reference The ClassNode context that the identifier was
+	 * @param reference The ClassDeclaration context that the identifier was
 	 * 		accessed from.
 	 * @param identifierAccess The trace of the identifier that was
 	 * 		accessed.
-	 * @return The ClassNode that contains the accessed identifier.
+	 * @return The ClassDeclaration that contains the accessed identifier.
 	 */
 	public static ClassDeclaration getClassType(ClassDeclaration reference, String identifierAccess)
 	{
@@ -813,7 +813,7 @@ public class SyntaxUtils
 		String values[] = identifierAccess.split("\\s*\\.\\s*");
 		String output[] = new String[values.length - 1];
 		
-		FileDeclaration file = reference.getFileNode();
+		FileDeclaration file = reference.getFileDeclaration();
 		
 		if (file.isExternalImport(values[0]))
 		{
@@ -826,13 +826,13 @@ public class SyntaxUtils
 	}
 	
 	/**
-	 * Get the ClassNode that contains the accessed identifier.
+	 * Get the ClassDeclaration that contains the accessed identifier.
 	 * 
-	 * @param reference The ClassNode context that the identifier was
+	 * @param reference The ClassDeclaration context that the identifier was
 	 * 		accessed from.
 	 * @param identifiers A list of identifiers leading up to the
 	 * 		identifier that is being accessed.
-	 * @return The ClassNode that contains the accessed identifier.
+	 * @return The ClassDeclaration that contains the accessed identifier.
 	 */
 	private static ClassDeclaration getClassType(ClassDeclaration reference, String identifiers[])
 	{
@@ -851,9 +851,9 @@ public class SyntaxUtils
 			
 			FileDeclaration f = (FileDeclaration)reference.getAncestorOfType(FileDeclaration.class);
 			
-			if (f.getImportListNode().containsImport(identifier))
+			if (f.getImportList().containsImport(identifier))
 			{
-				return f.getProgramNode().getClassNode(identifier);
+				return f.getProgram().getClassDeclaration(identifier);
 			}
 			
 			InstanceDeclaration dec = reference.getDeclaration(identifier);
@@ -863,7 +863,7 @@ public class SyntaxUtils
 				SyntaxMessage.error("Variable '" + dec.getName() + "' is not visible", reference.getController());
 			}
 			
-			current = dec.getProgramNode().getClassNode(dec.getType());
+			current = dec.getProgram().getClassDeclaration(dec.getType());
 			
 			if (identifiers.length <= 2)
 			{
@@ -979,8 +979,8 @@ public class SyntaxUtils
 	{
 		if (declaration.getVisibility() == InstanceDeclaration.PRIVATE)
 		{
-			ClassDeclaration clazz1 = accessor.getClassNode();
-			ClassDeclaration clazz2 = declaration.getDeclaringClassNode();
+			ClassDeclaration clazz1 = accessor.getClassDeclaration();
+			ClassDeclaration clazz2 = declaration.getDeclaringClassDeclaration();
 			
 			if (clazz1.isAncestorOf(clazz2, true) || clazz2.isAncestorOf(clazz1))
 			{
@@ -995,10 +995,10 @@ public class SyntaxUtils
 	
 	/**
 	 * Try to autobox the given primitive Node, if it truly has a
-	 * primitive value. If the given ValueNode does not have a primitive
+	 * primitive value. If the given Value does not have a primitive
 	 * type, then null is returned.
 	 * 
-	 * @param primitive The ValueNode to try to autobox.
+	 * @param primitive The Value to try to autobox.
 	 * @return An instantiation from the corresponding primitive wrapper
 	 * 		class. If the given value is not primitive, then null is
 	 * 		returned.
@@ -1023,7 +1023,7 @@ public class SyntaxUtils
 	
 	/**
 	 * Check whether or not the given type is valid within the
-	 * context of the given ValueNode.<br>
+	 * context of the given Value.<br>
 	 * <br>
 	 * For example:
 	 * <blockquote><pre>
@@ -1031,7 +1031,7 @@ public class SyntaxUtils
 	 * In the example above, "<code>NonExistingType</code>" is not an
 	 * existing Class and is therefore not a valid type.
 	 * 
-	 * @param value The ValueNode to use as the context in which the type
+	 * @param value The Value to use as the context in which the type
 	 * 		is being declared.
 	 * @param type The type to be tested.
 	 * @return Whether or not the given type is valid.
@@ -1067,7 +1067,7 @@ public class SyntaxUtils
 		{
 			MethodCall call = (MethodCall)value;
 			
-			value = call.getMethodDeclarationNode();
+			value = call.getMethodDeclaration();
 		}
 		if (value instanceof Method)
 		{
@@ -1094,7 +1094,7 @@ public class SyntaxUtils
 		}
 		else
 		{
-			ClassDeclaration clazz = value.getProgramNode().getClassNode(type);
+			ClassDeclaration clazz = value.getProgram().getClassDeclaration(type);
 			
 			if (clazz != null)
 			{
@@ -1102,16 +1102,16 @@ public class SyntaxUtils
 			}
 		}
 		
-		return value.getClassNode().containsExternalType(type);
+		return value.getClassDeclaration().containsExternalType(type);
 	}
 	
 	/**
-	 * Get the base class type that the two ValueNodes have in common. If
+	 * Get the base class type that the two Values have in common. If
 	 * the two nodes do not have anything in common, null is returned.
 	 * 
-	 * @param value1 The first ValueNode to check.
-	 * @param value2 The second ValueNode to check.
-	 * @return The ClassNode instance that the two ValueNodes have in
+	 * @param value1 The first Value to check.
+	 * @param value2 The second Value to check.
+	 * @return The ClassDeclaration instance that the two Values have in
 	 * 		common. If they have nothing in common, null is returned.
 	 */
 	public static ClassDeclaration getTypeInCommon(Value value1, Value value2)

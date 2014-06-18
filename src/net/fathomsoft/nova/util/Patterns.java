@@ -364,7 +364,7 @@ public class Patterns
 	 * <br>
 	 * For example:<br>
 	 * <blockquote><pre>catch (ExceptionName varName)</pre></blockquote>
-	 * returns "ExceptionNode varName"
+	 * returns "Exception varName"
 	 */
 	public static final Pattern POST_CATCH				= Pattern.compile("(?<=catch\\s{0,9}\\(\\s{0,9})([\\S\\s]+)(?=\\s*\\))");
 

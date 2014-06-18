@@ -22,7 +22,7 @@ public class MethodList extends Node
 	}
 	
 	/**
-	 * Get whether or not the ClassNode contains the MethodNode with the
+	 * Get whether or not the ClassDeclaration contains the Method with the
 	 * specified name.<br>
 	 * <br>
 	 * For example:
@@ -39,7 +39,7 @@ public class MethodList extends Node
 	 * return true.
 	 * 
 	 * @param methodName The name of the method to search for.
-	 * @return Whether or not the ClassNode contains the MethodNode with
+	 * @return Whether or not the ClassDeclaration contains the Method with
 	 * 		the specified name.
 	 */
 	public boolean containsMethod(String methodName)
@@ -48,7 +48,7 @@ public class MethodList extends Node
 	}
 	
 	/**
-	 * Get the ClassNode's MethodNode with the specified name.<br>
+	 * Get the ClassDeclaration's Method with the specified name.<br>
 	 * <br>
 	 * For example:
 	 * <blockquote><pre>
@@ -61,10 +61,10 @@ public class MethodList extends Node
 	 * }</pre></blockquote>
 	 * <br>
 	 * A call like: "<code>getMethod("doSomething")</code>" would
-	 * return the MethodNode for the "<code>doSomething</code>" method.
+	 * return the Method for the "<code>doSomething</code>" method.
 	 * 
 	 * @param methodName The name of the method to search for.
-	 * @return The MethodNode for the method, if it exists.
+	 * @return The Method for the method, if it exists.
 	 */
 	public Method getMethod(String methodName)
 	{
@@ -239,7 +239,7 @@ public class MethodList extends Node
 	}
 	
 	/**
-	 * Fill the given MethodListNode with the data that is in the
+	 * Fill the given MethodList with the data that is in the
 	 * specified node.
 	 * 
 	 * @param node The node to copy the data into.

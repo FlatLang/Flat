@@ -23,12 +23,12 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * @since	v0.1 Jan 5, 2014 at 9:20:35 PM
  * @version	v0.2.13 Jun 17, 2014 at 8:45:35 AM
  */
-public class BinaryOperator extends Value
+public class BinaryOperation extends Value
 {
 	/**
 	 * @see net.fathomsoft.nova.tree.Node#Node(Node, Location)
 	 */
-	public BinaryOperator(Node temporaryParent, Location locationIn)
+	public BinaryOperation(Node temporaryParent, Location locationIn)
 	{
 		super(temporaryParent, locationIn);
 	}
@@ -69,7 +69,7 @@ public class BinaryOperator extends Value
 	 * 
 	 * @return The operator in the operation.
 	 */
-	public Operator getOperatorNode()
+	public Operator getOperator()
 	{
 		return (Operator)getChild(1);
 	}
@@ -100,7 +100,7 @@ public class BinaryOperator extends Value
 			return getLeftOperand().generateJavaSource();
 		}
 		
-		return getLeftOperand().generateJavaSource() + ' ' + getOperatorNode().generateJavaSource() + ' ' + getRightOperand().generateJavaSource();
+		return getLeftOperand().generateJavaSource() + ' ' + getOperator().generateJavaSource() + ' ' + getRightOperand().generateJavaSource();
 	}
 	
 	/**
@@ -123,7 +123,7 @@ public class BinaryOperator extends Value
 			return getLeftOperand().generateCSourceFragment();
 		}
 		
-		return getLeftOperand().generateCSourceFragment() + ' ' + getOperatorNode().generateCSourceFragment() + ' ' + getRightOperand().generateCSourceFragment();
+		return getLeftOperand().generateCSourceFragment() + ' ' + getOperator().generateCSourceFragment() + ' ' + getRightOperand().generateCSourceFragment();
 	}
 	
 	/**
@@ -137,13 +137,13 @@ public class BinaryOperator extends Value
 			return getLeftOperand().generateNovaInput(outputChildren);
 		}
 		
-		return getLeftOperand().generateNovaInput(outputChildren) + ' ' + getOperatorNode().generateNovaInput(outputChildren) + ' ' + getRightOperand().generateNovaInput(outputChildren);
+		return getLeftOperand().generateNovaInput(outputChildren) + ' ' + getOperator().generateNovaInput(outputChildren) + ' ' + getRightOperand().generateNovaInput(outputChildren);
 	}
 	
 	/**
-	 * Decode the given statement into a BinaryOperatorNode if possible.
+	 * Decode the given statement into a BinaryOperation if possible.
 	 * If it is not possible, the method will return null. The requirements
-	 * of a BinaryOperatorNode include: Contains an operator such as '!=',
+	 * of a BinaryOperation include: Contains an operator such as '!=',
 	 * '>=', '<=', '>', '<', '*', '/', '+', '-', and '%' surrounded by two
 	 * comparable values.<br>
 	 * <br>
@@ -154,17 +154,17 @@ public class BinaryOperator extends Value
 	 * 	<li>variableName % 2 == 0</li>
 	 * </ul>
 	 * 
-	 * The last two examples contain two BinaryOperatorNodes.
+	 * The last two examples contain two BinaryOperations.
 	 * 
 	 * @param parent The parent of the current statement.
-	 * @param statement The statement to translate into a BinaryOperatorNode
+	 * @param statement The statement to translate into a BinaryOperation
 	 * 		if possible.
 	 * @param location The location of the statement in the source code.
 	 * @param require Whether or not to throw an error if anything goes wrong.
 	 * @param scope Whether or not the given statement is the beginning of
 	 * 		a scope.
 	 * @return The generated Node, if it was possible to translated it
-	 * 		into a BinaryOperatorNode.
+	 * 		into a BinaryOperation.
 	 */
 	public static Value decodeStatement(Node parent, String statement, Location location, boolean require, boolean scope)
 	{
@@ -180,7 +180,7 @@ public class BinaryOperator extends Value
 		
 		if (node == null)
 		{
-//			SyntaxMessage.error("Could not decode binary operation '" + statement + "'", parent.getFileNode(), location, parent.getController());
+//			SyntaxMessage.error("Could not decode binary operation '" + statement + "'", parent.getFileDeclaration(), location, parent.getController());
 		}
 		
 		return node;
@@ -211,9 +211,9 @@ public class BinaryOperator extends Value
 	}
 	
 	/**
-	 * Decode the given statement into a BinaryOperatorNode if possible.
+	 * Decode the given statement into a BinaryOperation if possible.
 	 * If it is not possible, the method will return null. The requirements
-	 * of a BinaryOperatorNode include: Contains an operator such as '!=',
+	 * of a BinaryOperation include: Contains an operator such as '!=',
 	 * '>=', '<=', '>', '<', '*', '/', '+', '-', and '%' surrounded by two
 	 * comparable values.<br>
 	 * <br>
@@ -224,10 +224,10 @@ public class BinaryOperator extends Value
 	 * 	<li>variableName % 2 == 0</li>
 	 * </ul>
 	 * 
-	 * The last two examples contain two BinaryOperatorNodes.
+	 * The last two examples contain two BinaryOperations.
 	 * 
 	 * @param parent The parent of the current statement.
-	 * @param statement The statement to translate into a BinaryOperatorNode
+	 * @param statement The statement to translate into a BinaryOperation
 	 * 		if possible.
 	 * @param matcher The matcher for the statement.
 	 * @param location The location of the statement in the source code.
@@ -235,7 +235,7 @@ public class BinaryOperator extends Value
 	 * @param scope Whether or not the given statement is the beginning of
 	 * 		a scope.
 	 * @return The generated Node, if it was possible to translated it
-	 * 		into a BinaryOperatorNode.
+	 * 		into a BinaryOperation.
 	 */
 	private static Value decodeStatement(Node parent, String statement, Matcher matcher, Location location, boolean require, boolean scope)
 	{
@@ -257,7 +257,7 @@ public class BinaryOperator extends Value
 		{
 			if (operatorLoc.getStart() >= 0)
 			{
-				BinaryOperator n = new BinaryOperator(parent, location);
+				BinaryOperation n = new BinaryOperation(parent, location);
 				
 				n.decodeOperands(statement, operatorLoc, matcher, require, scope);
 				
@@ -279,7 +279,7 @@ public class BinaryOperator extends Value
 	/**
 	 * Decode the left and right operands.
 	 * 
-	 * @param statement The statement to translate into a BinaryOperatorNode
+	 * @param statement The statement to translate into a BinaryOperation
 	 * 		if possible.
 	 * @param operatorLoc The Bounds of the operator in the operation.
 	 * @param matcher The matcher for the statement.
@@ -328,7 +328,7 @@ public class BinaryOperator extends Value
 			
 			if (common == null)
 			{
-				ClassDeclaration integerClass = parent.getProgramNode().getClassNode("Integer");
+				ClassDeclaration integerClass = parent.getProgram().getClassDeclaration("Integer");
 				
 				if (!lhn.getTypeClass().isOfType(integerClass) && !rhn.getTypeClass().isOfType(integerClass) || operatorType == null || !operatorType.equals("bool"))
 				{
@@ -360,9 +360,9 @@ public class BinaryOperator extends Value
 		
 		Location  location    = new Location(getLocationIn());
 		
-		if (value instanceof BinaryOperator)
+		if (value instanceof BinaryOperation)
 		{
-			BinaryOperator bon = (BinaryOperator)value;
+			BinaryOperation bon = (BinaryOperation)value;
 			
 			denominator = (Value)bon.getChild(0);
 		}
@@ -409,7 +409,7 @@ public class BinaryOperator extends Value
 			return null;
 		}
 		
-		int checkId = parent.getMethodNode().generateUniqueID();
+		int checkId = parent.getMethod().generateUniqueID();
 		
 		String denominatorVar = Nova.LANGUAGE_NAME.toLowerCase() + "_zero_check" + checkId++;
 		
@@ -437,7 +437,7 @@ public class BinaryOperator extends Value
 	 * 
 	 * @param parent The parent of the node to create.
 	 * @param location The location of the division.
-	 * @return The ThrowNode for the DivideByZeroException.
+	 * @return The Throw for the DivideByZeroException.
 	 */
 	private static Throw generateDivideByZeroThrow(Node parent, Location location)
 	{
@@ -449,7 +449,7 @@ public class BinaryOperator extends Value
 	/**
 	 * Decode the left operand of the operation.
 	 * 
-	 * @param statement The statement to translate into a BinaryOperatorNode
+	 * @param statement The statement to translate into a BinaryOperation
 	 * 		if possible.
 	 * @param operatorLoc The Bounds of the operator in the operation.
 	 * @return The left hand operand.
@@ -506,7 +506,7 @@ public class BinaryOperator extends Value
 	/**
 	 * Decode the right operand of the operation.
 	 * 
-	 * @param statement The statement to translate into a BinaryOperatorNode
+	 * @param statement The statement to translate into a BinaryOperation
 	 * 		if possible.
 	 * @param operatorLoc The Bounds of the operator in the operation.
 	 * @param matcher The matcher for the statement.
@@ -530,7 +530,7 @@ public class BinaryOperator extends Value
 		
 		if (rhn == null)
 		{
-//			SyntaxMessage.error("Cannot decode binary operation '" + statement + "'", parent.getFileNode(), location, parent.getController());
+//			SyntaxMessage.error("Cannot decode binary operation '" + statement + "'", parent.getFileDeclaration(), location, parent.getController());
 
 			throw new BinarySyntaxException("Could not decode right hand value.");
 		}
@@ -561,17 +561,17 @@ public class BinaryOperator extends Value
 	}
 	
 	/**
-	 * Try to decode a UnaryOperatorNode from the given statement, if it
+	 * Try to decode a UnaryOperation from the given statement, if it
 	 * is possible.
 	 * 
 	 * @param parent The parent of the given statement.
-	 * @param statement The statement to decode the UnaryOperatorNode
+	 * @param statement The statement to decode the UnaryOperation
 	 * 		from.
 	 * @param location The location of the statement in the source code.
 	 * @param require Whether or not to throw an error if anything goes wrong.
 	 * @param scope Whether or not the given statement is the beginning of
 	 * 		a scope.
-	 * @return The UnaryOperatorNode instance, if one exists. Null
+	 * @return The UnaryOperation instance, if one exists. Null
 	 * 		otherwise.
 	 */
 	private static UnaryOperation testUnaryOperator(Node parent, String statement, Location location)
@@ -712,21 +712,21 @@ public class BinaryOperator extends Value
 	 */
 	private Node validate(Node parent, boolean checkParent)
 	{
-		if (parent.isWithinExternalContext() || checkParent && parent instanceof BinaryOperator)
+		if (parent.isWithinExternalContext() || checkParent && parent instanceof BinaryOperation)
 		{
 			return this;
 		}
 		
 		Value right = getRightOperand();
 		
-		if (right instanceof BinaryOperator)
+		if (right instanceof BinaryOperation)
 		{
-			BinaryOperator bin = (BinaryOperator)right;
+			BinaryOperation bin = (BinaryOperation)right;
 			
 			bin.validate(this, false);
 		}
 		
-		if (getOperatorNode().getOperator().equals("+"))
+		if (getOperator().getOperator().equals("+"))
 		{
 			return optimizeStringConcatenation();
 		}
@@ -741,10 +741,10 @@ public class BinaryOperator extends Value
 	 * and then calling to toString() on the autoboxed object. If an
 	 * optimization is made, the generated concatenation operation
 	 * is then returned as a Node. If no optimizations can be made,
-	 * then the calling Node is returned (The BinaryOperatorNode).
+	 * then the calling Node is returned (The BinaryOperation).
 	 * 
 	 * @return The generated concatenation operation if generated. If not,
-	 * 		then the calling Node, BinaryOperatorNode, is returned.
+	 * 		then the calling Node, BinaryOperation, is returned.
 	 */
 	private Node optimizeStringConcatenation()
 	{
@@ -794,13 +794,13 @@ public class BinaryOperator extends Value
 	}
 	
 	/**
-	 * Generate a String return value for the given ValueNode. If the
-	 * given ValueNode is already a String, this simply returns the
+	 * Generate a String return value for the given Value. If the
+	 * given Value is already a String, this simply returns the
 	 * given node. Else it a toString() method call on the given
 	 * Object. (Autoboxes if needed)
 	 * 
-	 * @param nonString The ValueNode to convert to a String.
-	 * @return The generated String type ValueNode.
+	 * @param nonString The Value to convert to a String.
+	 * @return The generated String type Value.
 	 */
 	private Value generateStringOutput(Value nonString)
 	{
@@ -808,7 +808,7 @@ public class BinaryOperator extends Value
 		
 		if (!obj.getType().equals("String"))
 		{
-			// TODO: Can optimize to simply add a .toString() MethodCallNode child.
+			// TODO: Can optimize to simply add a .toString() MethodCall child.
 			String methodCall = obj.generateNovaInput() + ".toString()";
 			
 			Location location = new Location(nonString.getLocationIn());
@@ -848,21 +848,21 @@ public class BinaryOperator extends Value
 	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location)
 	 */
 	@Override
-	public BinaryOperator clone(Node temporaryParent, Location locationIn)
+	public BinaryOperation clone(Node temporaryParent, Location locationIn)
 	{
-		BinaryOperator node = new BinaryOperator(temporaryParent, locationIn);
+		BinaryOperation node = new BinaryOperation(temporaryParent, locationIn);
 		
 		return cloneTo(node);
 	}
 	
 	/**
-	 * Fill the given BinaryOperatorNode with the data that is in the
+	 * Fill the given BinaryOperation with the data that is in the
 	 * specified node.
 	 * 
 	 * @param node The node to copy the data into.
 	 * @return The cloned node.
 	 */
-	public BinaryOperator cloneTo(BinaryOperator node)
+	public BinaryOperation cloneTo(BinaryOperation node)
 	{
 		super.cloneTo(node);
 		

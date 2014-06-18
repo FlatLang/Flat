@@ -10,7 +10,7 @@ import net.fathomsoft.nova.util.Patterns;
 import net.fathomsoft.nova.util.Regex;
 
 /**
- * ExceptionHandlingNode extension that represents the declaration of a
+ * ExceptionHandler extension that represents the declaration of a
  * throw node type. See {@link #decodeStatement(Node, String, Location, boolean, boolean)}
  * for more details on what correct inputs look like.
  * 
@@ -29,10 +29,10 @@ public class Throw extends ExceptionHandler
 	}
 	
 	/**
-	 * Get the ExceptionNode that contains the information about the type
+	 * Get the Exception that contains the information about the type
 	 * of exception that was thrown.
 	 * 
-	 * @return The ExceptionNode instance that contains the information
+	 * @return The Exception instance that contains the information
 	 * 		about the exception type.
 	 */
 	public Exception getException()
@@ -54,7 +54,7 @@ public class Throw extends ExceptionHandler
 	}
 	
 	/**
-	 * Decode the given statement into a ThrowNode instance, if
+	 * Decode the given statement into a Throw instance, if
 	 * possible. If it is not possible, this method returns null.
 	 * <br>
 	 * Example inputs include:<br>
@@ -66,13 +66,13 @@ public class Throw extends ExceptionHandler
 	 * 
 	 * @param parent The parent node of the statement.
 	 * @param statement The statement to try to decode into a
-	 * 		ThrowNode instance.
+	 * 		Throw instance.
 	 * @param location The location of the statement in the source code.
 	 * @param require Whether or not to throw an error if anything goes wrong.
 	 * @param scope Whether or not the given statement is the beginning of
 	 * 		a scope.
 	 * @return The generated node, if it was possible to translated it
-	 * 		into a ThrowNode.
+	 * 		into a Throw.
 	 */
 	public static Throw decodeStatement(Node parent, String statement, Location location, boolean require, boolean scope)
 	{
@@ -125,7 +125,7 @@ public class Throw extends ExceptionHandler
 	}
 	
 	/**
-	 * Fill the given ThrowNode with the data that is in the
+	 * Fill the given Throw with the data that is in the
 	 * specified node.
 	 * 
 	 * @param node The node to copy the data into.

@@ -8,7 +8,7 @@ import net.fathomsoft.nova.util.Patterns;
 import net.fathomsoft.nova.util.Regex;
 
 /**
- * ExceptionHandlingNode extension that represents the declaration of a
+ * ExceptionHandler extension that represents the declaration of a
  * try node type. See {@link #decodeStatement(Node, String, Location, boolean, boolean)}
  * for more details on what correct inputs look like.
  * 
@@ -55,7 +55,7 @@ public class Try extends ExceptionHandler
 		builder.append('{').append('\n');
 		builder.append(generateExceptionCodes()).append('\n');
 		
-		builder.append(getScopeNode().generateCSource());
+		builder.append(getScope().generateCSource());
 		
 		builder.append('}').append('\n');
 		
@@ -63,20 +63,20 @@ public class Try extends ExceptionHandler
 	}
 	
 	/**
-	 * Decode the given statement into a TryNode instance, if
+	 * Decode the given statement into a Try instance, if
 	 * possible. If it is not possible, this method returns null.
 	 * <br>
 	 * The only correct input is "try"
 	 * 
 	 * @param parent The parent node of the statement.
 	 * @param statement The statement to try to decode into a
-	 * 		TryNode instance.
+	 * 		Try instance.
 	 * @param location The location of the statement in the source code.
 	 * @param require Whether or not to throw an error if anything goes wrong.
 	 * @param scope Whether or not the given statement is the beginning of
 	 * 		a scope.
 	 * @return The generated node, if it was possible to translated it
-	 * 		into a TryNode.
+	 * 		into a Try.
 	 */
 	public static Try decodeStatement(Node parent, String statement, Location location, boolean require, boolean scope)
 	{
@@ -102,7 +102,7 @@ public class Try extends ExceptionHandler
 	{
 		Node parent = getParent();
 		
-		FinallyNode finallyNode = null;
+		Finally finallyNode = null;
 		
 		for (int i = 0; i < parent.getNumChildren() && finallyNode == null; i++)
 		{
@@ -122,7 +122,7 @@ public class Try extends ExceptionHandler
 					if (child instanceof Catch == false)
 					{
 						// If there already is a finally node.
-						if (child instanceof FinallyNode)
+						if (child instanceof Finally)
 						{
 							insertIndex = -2;
 						}
@@ -144,7 +144,7 @@ public class Try extends ExceptionHandler
 						insertIndex = i;
 					}
 					
-					finallyNode = new FinallyNode(parent, null);
+					finallyNode = new Finally(parent, null);
 					parent.addChild(insertIndex, finallyNode);
 				}
 			}
@@ -187,7 +187,7 @@ public class Try extends ExceptionHandler
 	}
 	
 	/**
-	 * Fill the given TryNode with the data that is in the
+	 * Fill the given Try with the data that is in the
 	 * specified node.
 	 * 
 	 * @param node The node to copy the data into.

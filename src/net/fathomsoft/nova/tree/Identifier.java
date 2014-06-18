@@ -6,7 +6,7 @@ import net.fathomsoft.nova.util.Location;
 
 
 /**
- * ValueNode extension that represents an Identifier. For the rules on
+ * Value extension that represents an Identifier. For the rules on
  * what can and cannot be an Identifier, refer to
  * {@link net.fathomsoft.nova.tree.Identifier#setName(java.lang.String) setName}
  * 
@@ -70,7 +70,7 @@ public class Identifier extends Value
 	}
 	
 	/**
-	 * Get the ValueNode that returns a value if it is used in an
+	 * Get the Value that returns a value if it is used in an
 	 * expression.<br>
 	 * <br>
 	 * For example:
@@ -102,7 +102,7 @@ public class Identifier extends Value
 	
 	/**
 	 * Get whether this specified identifier node was accessed through
-	 * the dot operator of another IdentifierNode.
+	 * the dot operator of another Identifier.
 	 * 
 	 * @return Whether or not the identifier was accessed.
 	 */
@@ -160,11 +160,11 @@ public class Identifier extends Value
 	 * is returned.<br>
 	 * <br>
 	 * If the node is referenced within a static context, the containing
-	 * ClassNode is returned.<br>
+	 * ClassDeclaration is returned.<br>
 	 * For example:
 	 * <blockquote><pre>
 	 * Time.currentTimeMillis();</pre></blockquote>
-	 * The Identifier for the ClassNode "<code>Time</code>" is returned.
+	 * The Identifier for the ClassDeclaration "<code>Time</code>" is returned.
 	 * 
 	 * @param parent The parent of the Identifier.
 	 * @return The Node that represents the calling Identifier.
@@ -184,7 +184,7 @@ public class Identifier extends Value
 			}
 		}
 		
-		Method method = parent.getMethodNode();
+		Method method = parent.getMethod();
 		
 		if (method != null)
 		{
@@ -196,7 +196,7 @@ public class Identifier extends Value
 			}
 		}
 		
-		return parent.getClassNode();
+		return parent.getClassDeclaration();
 	}
 
 	/**
@@ -439,7 +439,7 @@ public class Identifier extends Value
 	}
 	
 	/**
-	 * If the ValueNode accesses a method call, generate a specialized
+	 * If the Value accesses a method call, generate a specialized
 	 * output.
 	 * 
 	 * @return A specialized String generation.
@@ -457,13 +457,13 @@ public class Identifier extends Value
 		
 //		while (current != null)
 //		{
-//			if (current instanceof MethodCallNode || current instanceof InstantiationNode)
+//			if (current instanceof MethodCall || current instanceof Instantiation)
 //			{
 //				
 //			}
-//			else if (current instanceof ValueNode)
+//			else if (current instanceof Value)
 //			{
-//				ValueNode value = (ValueNode)current;
+//				Value value = (Value)current;
 //				
 //				if (value.isSpecialFragment())
 //				{
@@ -478,9 +478,9 @@ public class Identifier extends Value
 	}
 	
 	/**
-	 * Get whether or not the ValueNode accesses a method call.
+	 * Get whether or not the Value accesses a method call.
 	 * 
-	 * @return Whether or not the ValueNode accesses a method call.
+	 * @return Whether or not the Value accesses a method call.
 	 */
 	public boolean isSpecialFragment()
 	{
@@ -560,7 +560,7 @@ public class Identifier extends Value
 	}
 	
 	/**
-	 * Fill the given IdentifierNode with the data that is in the
+	 * Fill the given Identifier with the data that is in the
 	 * specified node.
 	 * 
 	 * @param node The node to copy the data into.

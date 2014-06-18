@@ -6,7 +6,7 @@ import net.fathomsoft.nova.util.Patterns;
 import net.fathomsoft.nova.util.Regex;
 
 /**
- * ValueNode extension that represents a return statement node type.
+ * Value extension that represents a return statement node type.
  * See {@link #decodeStatement(Node, String, Location, boolean, boolean)} for more
  * details on what correct inputs look like.
  * 
@@ -100,7 +100,7 @@ public class Return extends Value
 	}
 	
 	/**
-	 * Decode the given statement into a ReturnNode instance, if
+	 * Decode the given statement into a Return instance, if
 	 * possible. If it is not possible, this method returns null.<br>
 	 * <br>
 	 * Example inputs include:<br>
@@ -114,13 +114,13 @@ public class Return extends Value
 	 * 
 	 * @param parent The parent node of the statement.
 	 * @param statement The statement to try to decode into a
-	 * 		ReturnNode instance.
+	 * 		Return instance.
 	 * @param location The location of the statement in the source code.
 	 * @param require Whether or not to throw an error if anything goes wrong.
 	 * @param scope Whether or not the given statement is the beginning of
 	 * 		a scope.
 	 * @return The generated node, if it was possible to translated it
-	 * 		into a ReturnNode.
+	 * 		into a Return.
 	 */
 	public static Return decodeStatement(Node parent, String statement, Location location, boolean require, boolean scope)
 	{
@@ -184,7 +184,7 @@ public class Return extends Value
 	}
 	
 	/**
-	 * Fill the given ReturnNode with the data that is in the
+	 * Fill the given Return with the data that is in the
 	 * specified node.
 	 * 
 	 * @param node The node to copy the data into.

@@ -32,7 +32,7 @@ public class Condition extends Node
 	}
 	
 	/**
-	 * Fill the given ConditionNode with the data that is in the
+	 * Fill the given Condition with the data that is in the
 	 * specified node.
 	 * 
 	 * @param node The node to copy the data into.

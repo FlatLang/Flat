@@ -33,7 +33,7 @@ public class LoopUpdate extends Node
 	}
 	
 	/**
-	 * Fill the given LoopUpdateNode with the data that is in the
+	 * Fill the given LoopLoopUpdate with the data that is in the
 	 * specified node.
 	 * 
 	 * @param node The node to copy the data into.

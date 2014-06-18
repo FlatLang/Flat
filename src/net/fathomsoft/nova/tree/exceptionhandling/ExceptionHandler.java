@@ -24,20 +24,20 @@ public class ExceptionHandler extends Node
 		
 		Scope scope = new Scope(this, locationIn);
 		
-		setScopeNode(scope);
+		setScope(scope);
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.Node#getScopeNode()
+	 * @see net.fathomsoft.nova.tree.Node#getScope()
 	 */
 	@Override
-	public Scope getScopeNode()
+	public Scope getScope()
 	{
 		return (Scope)getChild(0);
 	}
 	
 	/**
-	 * Decode the given statement into a ExceptionHandlingNode instance,
+	 * Decode the given statement into a ExceptionHandler instance,
 	 * if possible. If it is not possible, this method returns null.
 	 * <br>
 	 * Example inputs include:<br>
@@ -50,13 +50,13 @@ public class ExceptionHandler extends Node
 	 * 
 	 * @param parent The parent node of the statement.
 	 * @param statement The statement to try to decode into a
-	 * 		ExceptionHandlingNode instance.
+	 * 		ExceptionHandler instance.
 	 * @param location The location of the statement in the source code.
 	 * @param require Whether or not to throw an error if anything goes wrong.
 	 * @param scope Whether or not the given statement is the beginning of
 	 * 		a scope.
 	 * @return The generated node, if it was possible to translated it
-	 * 		into a ExceptionHandlingNode.
+	 * 		into a ExceptionHandler.
 	 */
 	public static ExceptionHandler decodeStatement(Node parent, String statement, Location location, boolean require, boolean scope)
 	{
@@ -70,7 +70,7 @@ public class ExceptionHandler extends Node
 		{
 			return node;
 		}
-		else if ((node = FinallyNode.decodeStatement(parent, statement, location, require, scope)) != null)
+		else if ((node = Finally.decodeStatement(parent, statement, location, require, scope)) != null)
 		{
 			return node;
 		}
@@ -94,7 +94,7 @@ public class ExceptionHandler extends Node
 	}
 	
 	/**
-	 * Fill the given ExceptionHandlingNode with the data that is in the
+	 * Fill the given ExceptionHandler with the data that is in the
 	 * specified node.
 	 * 
 	 * @param node The node to copy the data into.

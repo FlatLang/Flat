@@ -26,18 +26,18 @@ public class ExternalType extends Value
 	}
 	
 	/**
-	 * Decode the given statement into a ExternalTypeNode instance, if
+	 * Decode the given statement into a ExternalType instance, if
 	 * possible. If it is not possible, this method returns null.
 	 * 
 	 * @param parent The parent node of the statement.
 	 * @param statement The statement to try to decode into a
-	 * 		ExternalTypeNode instance.
+	 * 		ExternalType instance.
 	 * @param location The location of the statement in the source code.
 	 * @param require Whether or not to throw an error if anything goes wrong.
 	 * @param scope Whether or not the given statement is the beginning of
 	 * 		a scope.
 	 * @return The generated node, if it was possible to translated it
-	 * 		into a ExternalTypeNode.
+	 * 		into a ExternalType.
 	 */
 	public static ExternalType decodeStatement(Node parent, String statement, Location location, boolean require, boolean scope)
 	{
@@ -81,7 +81,7 @@ public class ExternalType extends Value
 	}
 	
 	/**
-	 * Fill the given ExternalTypeNode with the data that is in the
+	 * Fill the given ExternalType with the data that is in the
 	 * specified node.
 	 * 
 	 * @param node The node to copy the data into.

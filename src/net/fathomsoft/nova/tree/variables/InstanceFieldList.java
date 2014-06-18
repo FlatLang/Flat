@@ -5,8 +5,8 @@ import net.fathomsoft.nova.tree.Node;
 import net.fathomsoft.nova.util.Location;
 
 /**
- * Node extensions that contains all of the public FieldNode
- * instances of a ClassNode.
+ * Node extensions that contains all of the public Field
+ * instances of a ClassDeclaration.
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 10:00:50 PM
@@ -39,7 +39,7 @@ public class InstanceFieldList extends Node
 		{
 			ClassDeclaration parent = (ClassDeclaration)getAncestorOfType(ClassDeclaration.class, true);
 			
-			if (parent.getMethodListNode().getNumChildren() > 0)
+			if (parent.getMethodList().getNumChildren() > 0)
 			{
 				builder.append('\n');
 			}
@@ -62,17 +62,17 @@ public class InstanceFieldList extends Node
 		
 		if (extended != null)
 		{
-			boolean publicList = this == clazz.getFieldListNode().getPublicFieldListNode();
+			boolean publicList = this == clazz.getFieldList().getPublicFieldList();
 			
 			InstanceFieldList fields = null;
 			
 			if (publicList)
 			{
-				fields = extended.getFieldListNode().getPublicFieldListNode();
+				fields = extended.getFieldList().getPublicFieldList();
 			}
 			else
 			{
-				fields = extended.getFieldListNode().getPrivateFieldListNode();
+				fields = extended.getFieldList().getPrivateFieldList();
 			}
 			
 			builder.append(fields.generateCHeader());
@@ -100,7 +100,7 @@ public class InstanceFieldList extends Node
 		{
 			ClassDeclaration parent = (ClassDeclaration)getAncestorOfType(ClassDeclaration.class, true);
 			
-			if (parent.getMethodListNode().getNumChildren() > 0)
+			if (parent.getMethodList().getNumChildren() > 0)
 			{
 				hasMethods = true;
 			}
@@ -131,7 +131,7 @@ public class InstanceFieldList extends Node
 	}
 	
 	/**
-	 * Fill the given PublicFieldListNode with the data that is in the
+	 * Fill the given PublicFieldList with the data that is in the
 	 * specified node.
 	 * 
 	 * @param node The node to copy the data into.

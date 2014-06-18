@@ -3,7 +3,7 @@ package net.fathomsoft.nova.tree;
 import net.fathomsoft.nova.util.Location;
 
 /**
- * Node extension that represents the declaration of a LoopNode
+ * Node extension that represents the declaration of a Loop
  * node type. See {@link #decodeStatement(Node, String, Location, boolean, boolean)}
  * for more details on what correct inputs look like.
  * 
@@ -14,7 +14,7 @@ import net.fathomsoft.nova.util.Location;
 public class Loop extends Node
 {
 	/**
-	 * Instantiate a new LoopNode and initialize the default values.
+	 * Instantiate a new Loop and initialize the default values.
 	 * 
 	 * @see net.fathomsoft.nova.tree.Node#Node(Node, Location)
 	 */
@@ -24,14 +24,14 @@ public class Loop extends Node
 		
 		Scope scope = new Scope(this, locationIn);
 		
-		setScopeNode(scope);
+		setScope(scope);
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.Node#getScopeNode()
+	 * @see net.fathomsoft.nova.tree.Node#getScope()
 	 */
 	@Override
-	public Scope getScopeNode()
+	public Scope getScope()
 	{
 		return (Scope)getChild(0);
 	}
@@ -42,11 +42,11 @@ public class Loop extends Node
 	@Override
 	public void addChild(Node child)
 	{
-		getScopeNode().addChild(child);
+		getScope().addChild(child);
 	}
 	
 	/**
-	 * Decode the given statement into a LoopNode instance, if
+	 * Decode the given statement into a Loop instance, if
 	 * possible. If it is not possible, this method returns null.<br>
 	 * The statement can be either a while loop or a for loop.
 	 * <br>
@@ -61,13 +61,13 @@ public class Loop extends Node
 	 * 
 	 * @param parent The parent node of the statement.
 	 * @param statement The statement to try to decode into a
-	 * 		LoopNode instance.
+	 * 		Loop instance.
 	 * @param location The location of the statement in the source code.
 	 * @param require Whether or not to throw an error if anything goes wrong.
 	 * @param scope Whether or not the given statement is the beginning of
 	 * 		a scope.
 	 * @return The generated node, if it was possible to translated it
-	 * 		into a LoopNode.
+	 * 		into a Loop.
 	 */
 	public static Loop decodeStatement(Node parent, String statement, Location location, boolean require, boolean scope)
 	{
@@ -97,7 +97,7 @@ public class Loop extends Node
 	}
 	
 	/**
-	 * Fill the given LoopNode with the data that is in the
+	 * Fill the given Loop with the data that is in the
 	 * specified node.
 	 * 
 	 * @param node The node to copy the data into.

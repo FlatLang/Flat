@@ -6,7 +6,7 @@ import net.fathomsoft.nova.util.Location;
 /**
  * Node extension that keeps track of all of the arguments that
  * are passed during a method call. The children of this node are
- * all ArgumentNode instances. They are stored in the order that
+ * all Argument instances. They are stored in the order that
  * they will be passed to the method call.
  * 
  * @author	Braden Steffaniak
@@ -45,10 +45,10 @@ public class ArgumentList extends Node
 	}
 	
 	/**
-	 * Get the MethodCallNode instance that contains the specified
+	 * Get the MethodCall instance that contains the specified
 	 * arguments.
 	 * 
-	 * @return The parent MethodCallNode instance.
+	 * @return The parent MethodCall instance.
 	 */
 	public MethodCall getMethodCall()
 	{
@@ -88,7 +88,7 @@ public class ArgumentList extends Node
 		
 		MethodCall caller  = getMethodCall();
 		
-		Method     method  = caller.getMethodDeclarationNode();
+		Method     method  = caller.getMethodDeclaration();
 		
 		if (!caller.isExternal())
 		{
@@ -137,7 +137,7 @@ public class ArgumentList extends Node
 	}
 	
 	/**
-	 * Fill the given ArgumentListNode with the data that is in the
+	 * Fill the given ArgumentList with the data that is in the
 	 * specified node.
 	 * 
 	 * @param node The node to copy the data into.

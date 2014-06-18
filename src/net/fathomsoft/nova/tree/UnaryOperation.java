@@ -53,7 +53,7 @@ public class UnaryOperation extends Value
 	 * 
 	 * @return The Node that represents the parameters of the method.
 	 */
-	public Node getVariableNode()
+	public Node getVariable()
 	{
 		for (int i = 0; i < getNumChildren(); i++)
 		{
@@ -130,7 +130,7 @@ public class UnaryOperation extends Value
 	}
 	
 	/**
-	 * Decode the given statement into a UnaryOperatorNode instance, if
+	 * Decode the given statement into a UnaryOperation instance, if
 	 * possible. If it is not possible, this method returns null.<br>
 	 * <br>
 	 * Example inputs include:<br>
@@ -151,13 +151,13 @@ public class UnaryOperation extends Value
 	 * 
 	 * @param parent The parent node of the statement.
 	 * @param statement The statement to try to decode into a
-	 * 		UnaryOperatorNode instance.
+	 * 		UnaryOperation instance.
 	 * @param location The location of the statement in the source code.
 	 * @param require Whether or not to throw an error if anything goes wrong.
 	 * @param scope Whether or not the given statement is the beginning of
 	 * 		a scope.
 	 * @return The generated node, if it was possible to translated it
-	 * 		into a UnaryOperatorNode.
+	 * 		into a UnaryOperation.
 	 */
 	public static UnaryOperation decodeStatement(Node parent, String statement, Location location, boolean require, boolean scope)
 	{
@@ -256,7 +256,7 @@ public class UnaryOperation extends Value
 	}
 	
 	/**
-	 * Fill the given UnaryOperatorNode with the data that is in the
+	 * Fill the given UnaryOperation with the data that is in the
 	 * specified node.
 	 * 
 	 * @param node The node to copy the data into.

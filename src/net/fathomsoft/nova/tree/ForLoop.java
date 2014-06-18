@@ -7,7 +7,7 @@ import net.fathomsoft.nova.util.Patterns;
 import net.fathomsoft.nova.util.Regex;
 
 /**
- * LoopNode extension that represents the declaration of a "for loop"
+ * Loop extension that represents the declaration of a "for loop"
  * node type. See {@link #decodeStatement(Node, String, Location, boolean, boolean)}
  * for more details on what correct inputs look like.
  * 
@@ -18,7 +18,7 @@ import net.fathomsoft.nova.util.Regex;
 public class ForLoop extends Loop
 {
 	/**
-	 * Instantiate a new ForLoopNode and initialize its default values.
+	 * Instantiate a new ForLoop and initialize its default values.
 	 * 
 	 * @see net.fathomsoft.nova.tree.Node#Node(Node, Location)
 	 */
@@ -32,13 +32,13 @@ public class ForLoop extends Loop
 	}
 	
 	/**
-	 * Get the ArgumentListNode instance that contains the initialization,
+	 * Get the ArgumentList instance that contains the initialization,
 	 * condition, and update nodes that instruct the for loop.
 	 * 
-	 * @return The ArgumentListNode instance containing the arguments of
+	 * @return The ArgumentList instance containing the arguments of
 	 * 		the for loop.
 	 */
-	public ArgumentList getArgumentListNode()
+	public ArgumentList getArgumentList()
 	{
 		return (ArgumentList)getChild(1);
 	}
@@ -51,9 +51,9 @@ public class ForLoop extends Loop
 	 * @return The Node instance that describes the initialization
 	 * 		section of the for loop.
 	 */
-	public Assignment getInitializationNode()
+	public Assignment getLoopInitialization()
 	{
-		return (Assignment)getArgumentListNode().getChild(0);
+		return (Assignment)getArgumentList().getChild(0);
 	}
 	
 	/**
@@ -64,9 +64,9 @@ public class ForLoop extends Loop
 	 * @return The Node instance that describes the condition section
 	 * 		of the for loop.
 	 */
-	public Node getConditionNode()
+	public Node getCondition()
 	{
-		return getArgumentListNode().getChild(1);
+		return getArgumentList().getChild(1);
 	}
 	
 	/**
@@ -77,9 +77,9 @@ public class ForLoop extends Loop
 	 * @return The Node instance that describes the update section of
 	 * 		the for loop.
 	 */
-	public Node getUpdateNode()
+	public Node getLoopUpdate()
 	{
-		return getArgumentListNode().getChild(2);
+		return getArgumentList().getChild(2);
 	}
 
 	/**
@@ -90,9 +90,9 @@ public class ForLoop extends Loop
 	{
 		StringBuilder  builder = new StringBuilder();
 		
-		Assignment initialization = getInitializationNode();
-		Node       condition      = getConditionNode();
-		Node       update         = getUpdateNode();
+		Assignment initialization = getLoopInitialization();
+		Node       condition      = getCondition();
+		Node       update         = getLoopUpdate();
 		
 		if (initialization != null)
 		{
@@ -121,7 +121,7 @@ public class ForLoop extends Loop
 		{
 			Node child = getChild(i);
 			
-			if (child != getArgumentListNode())
+			if (child != getArgumentList())
 			{
 				builder.append(child.generateCSource());
 			}
@@ -131,7 +131,7 @@ public class ForLoop extends Loop
 	}
 	
 	/**
-	 * Decode the given statement into a ForLoopNode instance, if
+	 * Decode the given statement into a ForLoop instance, if
 	 * possible. If it is not possible, this method returns null.<br>
 	 * <br>
 	 * Example inputs include:<br>
@@ -143,13 +143,13 @@ public class ForLoop extends Loop
 	 * 
 	 * @param parent The parent node of the statement.
 	 * @param statement The statement to try to decode into a
-	 * 		ForLoopNode instance.
+	 * 		ForLoop instance.
 	 * @param location The location of the statement in the source code.
 	 * @param require Whether or not to throw an error if anything goes wrong.
 	 * @param scope Whether or not the given statement is the beginning of
 	 * 		a scope.
 	 * @return The generated node, if it was possible to translated it
-	 * 		into a ForLoopNode.
+	 * 		into a ForLoop.
 	 */
 	public static ForLoop decodeStatement(Node parent, String statement, Location location, boolean require, boolean scope)
 	{
@@ -170,7 +170,7 @@ public class ForLoop extends Loop
 				String arguments[] = contents.split("\\s*;\\s*");
 				
 				Assignment initialization = Assignment.decodeStatement(parent, arguments[0], newLoc, require, false);
-				n.getArgumentListNode().addChild(initialization);
+				n.getArgumentList().addChild(initialization);
 				
 				Identifier var      = initialization.getAssigneeNode();
 				Identifier existing = SyntaxTree.getExistingNode(parent, var.getName());
@@ -179,41 +179,41 @@ public class ForLoop extends Loop
 				{
 					LocalDeclaration declaration = (LocalDeclaration)existing;
 					
-					declaration.setScopeID(n.getScopeNode().getID());
+					declaration.setScopeID(n.getScope().getID());
 					
 //					n.addChild(var);
 //					
-//					LocalVariableNode local = var.clone(n, newLoc);
+//					LocalVariable local = var.clone(n, newLoc);
 //					
 //					initialization.addChild(0, local);
 				}
 				
-				Node condition = BinaryOperator.decodeStatement(parent, arguments[1], newLoc, require, false);
+				Node condition = BinaryOperation.decodeStatement(parent, arguments[1], newLoc, require, false);
 				
 				if (condition == null)
 				{
 					condition = SyntaxTree.getExistingNode(parent, arguments[1]);
 					
-//					SyntaxMessage.error("Could not decode condition", parent.getFileNode(), newLoc, parent.getController());
+//					SyntaxMessage.error("Could not decode condition", parent.getFileDeclaration(), newLoc, parent.getController());
 				}
 				if (condition == null)
 				{
 					return null;
 				}
 				
-				n.getArgumentListNode().addChild(condition);
+				n.getArgumentList().addChild(condition);
 				
 				UnaryOperation unaryUpdate = UnaryOperation.decodeStatement(parent, arguments[2], newLoc, require, false);
 				
 				if (unaryUpdate != null)
 				{
-					n.getArgumentListNode().addChild(unaryUpdate);
+					n.getArgumentList().addChild(unaryUpdate);
 				}
 				else
 				{
 					Assignment update = Assignment.decodeStatement(parent, arguments[2], newLoc, require, false);
 					
-					n.getArgumentListNode().addChild(update);
+					n.getArgumentList().addChild(update);
 				}
 				
 				return n;
@@ -239,7 +239,7 @@ public class ForLoop extends Loop
 	}
 	
 	/**
-	 * Fill the given ForLoopNode with the data that is in the
+	 * Fill the given ForLoop with the data that is in the
 	 * specified node.
 	 * 
 	 * @param node The node to copy the data into.

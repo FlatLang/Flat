@@ -411,33 +411,33 @@ public class Nova
 			return;
 		}
 		
-		FileDeclaration fileDeclaration = mainMethod.getFileNode();
+		FileDeclaration fileDeclaration = mainMethod.getFileDeclaration();
 		
 		if (mainMethod != null)
 		{
-//			ClassNode classNode = (ClassNode)mainMethod.getAncestorOfType(ClassNode.class);
+//			ClassDeclaration classNode = (ClassDeclaration)mainMethod.getAncestorOfType(ClassDeclaration.class);
 //
 ////			StringBuilder staticClassImport = new StringBuilder();
 ////			StringBuilder staticClassInit   = new StringBuilder();
 ////			StringBuilder staticClassFree   = new StringBuilder();
 //			
-//			ProgramNode root = tree.getRoot();
+//			Program root = tree.getRoot();
 //			
 //			for (int i = 0; i < root.getNumChildren(); i++)
 //			{
 //				Node child = root.getChild(i);
 //				
-//				if (child instanceof FileNode)
+//				if (child instanceof FileDeclaration)
 //				{
-//					FileNode f = (FileNode)child;
+//					FileDeclaration f = (FileDeclaration)child;
 //						
 //					for (int j = 0; j < f.getNumChildren(); j++)
 //					{
 //						Node child2 = f.getChild(j);
 //						
-//						if (child2 instanceof ClassNode)
+//						if (child2 instanceof ClassDeclaration)
 //						{
-//							ClassNode c = (ClassNode)child2;
+//							ClassDeclaration c = (ClassDeclaration)child2;
 //							
 //							if (c.containsStaticData())
 //							{

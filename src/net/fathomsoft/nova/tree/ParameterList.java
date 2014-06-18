@@ -50,18 +50,18 @@ public class ParameterList extends Node
 	}
 	
 	/**
-	 * Get the ParameterNode with the given name.<br>
+	 * Get the Parameter with the given name.<br>
 	 * <br>
 	 * For example:
 	 * <blockquote><pre>
 	 * public Person getPerson(String name, int age)</pre></blockquote>
 	 * Calling getParameter("name") on the Parameter list above would
-	 * return the 'String name' ParameterNode.
+	 * return the 'String name' Parameter.
 	 * 
 	 * @param parameterName The name of the parameter to find.
-	 * @return The ParameterNode with the given name.
+	 * @return The Parameter with the given name.
 	 */
-	public Parameter getParameterNode(String parameterName)
+	public Parameter getParameter(String parameterName)
 	{
 		for (int i = 0; i < getNumChildren(); i++)
 		{
@@ -77,7 +77,7 @@ public class ParameterList extends Node
 	}
 	
 	/**
-	 * Get the ParameterNode that the given index represents. The
+	 * Get the Parameter that the given index represents. The
 	 * parameters are ordered from left to right, 0 being the first.<br>
 	 * <br>
 	 * For example:
@@ -86,26 +86,26 @@ public class ParameterList extends Node
 	 * {
 	 * 	...
 	 * }</pre></blockquote>
-	 * If you were to call getParameterNode(2) on the method
-	 * above, you would receive the c ParameterNode.
+	 * If you were to call getParameter(2) on the method
+	 * above, you would receive the c Parameter.
 	 * 
 	 * @param parameterIndex The index parameter to get.
-	 * @return The ParameterNode at the given index.
+	 * @return The Parameter at the given index.
 	 */
-	public Parameter getParameterNode(int parameterIndex)
+	public Parameter getParameter(int parameterIndex)
 	{
-		return getParameterNode(parameterIndex, getParameterOffset());
+		return getParameter(parameterIndex, getParameterOffset());
 	}
 	
 	/**
-	 * A helper method for getParameterNode(int) to access the correct
+	 * A helper method for getParameter(int) to access the correct
 	 * parameter.
 	 * 
 	 * @param parameterIndex The index parameter to get.
 	 * @param offset The offset in which to access the node at.
-	 * @return The ParameterNode at the given index.
+	 * @return The Parameter at the given index.
 	 */
-	private Parameter getParameterNode(int parameterIndex, int offset)
+	private Parameter getParameter(int parameterIndex, int offset)
 	{
 		parameterIndex += offset;
 		
@@ -144,7 +144,7 @@ public class ParameterList extends Node
 	
 	/**
 	 * Validate the parameters that are used for the specified parent
-	 * MethodNode. Checks to make sure that if it needs an object
+	 * Method. Checks to make sure that if it needs an object
 	 * reference as the first parameter that it gives it one.
 	 * 
 	 * @param phase The phase that the node is being validated in.
@@ -227,7 +227,7 @@ public class ParameterList extends Node
 		
 		StringBuilder builder = new StringBuilder();
 		
-//		builder.append("ExceptionData* ").append(ExceptionNode.EXCEPTION_DATA_IDENTIFIER);
+//		builder.append("ExceptionData* ").append(Exception.EXCEPTION_DATA_IDENTIFIER);
 		
 		int start = 0;
 		
@@ -263,7 +263,7 @@ public class ParameterList extends Node
 	}
 	
 	/**
-	 * Fill the given ParameterListNode with the data that is in the
+	 * Fill the given ParameterList with the data that is in the
 	 * specified node.
 	 * 
 	 * @param node The node to copy the data into.

@@ -7,7 +7,7 @@ import net.fathomsoft.nova.tree.Node;
 import net.fathomsoft.nova.util.Location;
 
 /**
- * Node extension that contains all of the FieldNodes for a ClassNode.
+ * Node extension that contains all of the Fields for a ClassDeclaration.
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 10:00:50 PM
@@ -34,45 +34,45 @@ public class FieldList extends Node
 	}
 	
 	/**
-	 * Get the PrivateFieldListNode that contains all of the private
-	 * FieldNodes for its parent ClassNode.
+	 * Get the PrivateFieldList that contains all of the private
+	 * Fields for its parent ClassDeclaration.
 	 * 
-	 * @return The PrivateFieldListNode instance.
+	 * @return The PrivateFieldList instance.
 	 */
-	public InstanceFieldList getPrivateFieldListNode()
+	public InstanceFieldList getPrivateFieldList()
 	{
 		return (InstanceFieldList)getChild(0);
 	}
 	
 	/**
-	 * Get the PublicFieldListNode that contains all of the public
-	 * FieldNodes for its parent ClassNode.
+	 * Get the PublicFieldList that contains all of the public
+	 * Fields for its parent ClassDeclaration.
 	 * 
-	 * @return The PublicFieldListNode instance.
+	 * @return The PublicFieldList instance.
 	 */
-	public InstanceFieldList getPublicFieldListNode()
+	public InstanceFieldList getPublicFieldList()
 	{
 		return (InstanceFieldList)getChild(1);
 	}
 	
 	/**
-	 * Get the PrivateFieldListNode that contains all of the private
-	 * FieldNodes for its parent ClassNode.
+	 * Get the PrivateFieldList that contains all of the private
+	 * Fields for its parent ClassDeclaration.
 	 * 
-	 * @return The PrivateFieldListNode instance.
+	 * @return The PrivateFieldList instance.
 	 */
-	public StaticFieldList getPrivateStaticFieldListNode()
+	public StaticFieldList getPrivateStaticFieldList()
 	{
 		return (StaticFieldList)getChild(2);
 	}
 	
 	/**
-	 * Get the PublicFieldListNode that contains all of the public
-	 * FieldNodes for its parent ClassNode.
+	 * Get the PublicFieldList that contains all of the public
+	 * Fields for its parent ClassDeclaration.
 	 * 
-	 * @return The PublicFieldListNode instance.
+	 * @return The PublicFieldList instance.
 	 */
-	public StaticFieldList getPublicStaticFieldListNode()
+	public StaticFieldList getPublicStaticFieldList()
 	{
 		return (StaticFieldList)getChild(3);
 	}
@@ -91,22 +91,22 @@ public class FieldList extends Node
 			{
 				if (field.isStatic())
 				{
-					getPrivateStaticFieldListNode().addChild(field);
+					getPrivateStaticFieldList().addChild(field);
 				}
 				else
 				{
-					getPrivateFieldListNode().addChild(field);
+					getPrivateFieldList().addChild(field);
 				}
 			}
 			else if (field.getVisibility() == InstanceDeclaration.PUBLIC || field.getVisibility() == Field.VISIBLE)
 			{
 				if (field.isStatic())
 				{
-					getPublicStaticFieldListNode().addChild(field);
+					getPublicStaticFieldList().addChild(field);
 				}
 				else
 				{
-					getPublicFieldListNode().addChild(field);
+					getPublicFieldList().addChild(field);
 				}
 			}
 			else
@@ -121,7 +121,7 @@ public class FieldList extends Node
 	}
 	
 	/**
-	 * Get whether or not the FieldListNode contains the FieldNode with
+	 * Get whether or not the FieldList contains the Field with
 	 * the specified name.<br>
 	 * <br>
 	 * For example:
@@ -138,7 +138,7 @@ public class FieldList extends Node
 	 * A call like: "<code>containsField("age")</code>" would return true.
 	 * 
 	 * @param fieldName The name of the field to search for.
-	 * @return Whether or not the FieldListNode contains the FieldNode
+	 * @return Whether or not the FieldList contains the Field
 	 * 		with the specified name.
 	 */
 	public boolean containsField(String fieldName)
@@ -147,7 +147,7 @@ public class FieldList extends Node
 	}
 	
 	/**
-	 * Get the FieldListNode's FieldNode with the specified name.<br>
+	 * Get the FieldList's Field with the specified name.<br>
 	 * <br>
 	 * For example:
 	 * <blockquote><pre>
@@ -161,14 +161,14 @@ public class FieldList extends Node
 	 * }</pre></blockquote>
 	 * <br>
 	 * A call like: "<code>getField("age")</code>" would return the
-	 * FieldNode for the "<code>age</code>" int field.
+	 * Field for the "<code>age</code>" int field.
 	 * 
 	 * @param fieldName The name of the field to search for.
-	 * @return The FieldNode for the field, if it exists.
+	 * @return The Field for the field, if it exists.
 	 */
 	public Field getField(String fieldName)
 	{
-		Node nodes[] = new Node[] { getPrivateFieldListNode(), getPrivateStaticFieldListNode(), getPublicFieldListNode(), getPublicStaticFieldListNode() };
+		Node nodes[] = new Node[] { getPrivateFieldList(), getPrivateStaticFieldList(), getPublicFieldList(), getPublicStaticFieldList() };
 		
 		for (Node node : nodes)
 		{
@@ -184,12 +184,12 @@ public class FieldList extends Node
 	}
 	
 	/**
-	 * Search the given Node (which should only contain FieldNode
-	 * children) for a FieldNode with the given name.
+	 * Search the given Node (which should only contain Field
+	 * children) for a Field with the given name.
 	 * 
 	 * @param fieldList The list of fields to search through.
 	 * @param fieldName The name of the field to search for.
-	 * @return The FieldNode instance with the given name, if found.
+	 * @return The Field instance with the given name, if found.
 	 */
 	private Field searchFieldList(Node fieldList, String fieldName)
 	{
@@ -223,7 +223,7 @@ public class FieldList extends Node
 		{
 			ClassDeclaration parent = (ClassDeclaration)getAncestorOfType(ClassDeclaration.class, true);
 			
-			if (parent.getMethodListNode().getNumChildren() > 0)
+			if (parent.getMethodList().getNumChildren() > 0)
 			{
 				builder.append('\n');
 			}
@@ -242,7 +242,7 @@ public class FieldList extends Node
 	{
 		StringBuilder builder = new StringBuilder();
 		
-		builder.append(getPublicFieldListNode().generateCHeader());
+		builder.append(getPublicFieldList().generateCHeader());
 		
 		return builder.toString();
 	}
@@ -257,7 +257,7 @@ public class FieldList extends Node
 	{
 		StringBuilder builder = new StringBuilder();
 		
-		builder.append(getPublicStaticFieldListNode().generateCHeader());
+		builder.append(getPublicStaticFieldList().generateCHeader());
 		
 		return builder.toString();
 	}
@@ -272,7 +272,7 @@ public class FieldList extends Node
 	{
 		StringBuilder builder = new StringBuilder();
 		
-		builder.append(getPublicStaticFieldListNode().generateCSource());
+		builder.append(getPublicStaticFieldList().generateCSource());
 		
 		return builder.toString();
 	}
@@ -287,7 +287,7 @@ public class FieldList extends Node
 	{
 		StringBuilder builder = new StringBuilder();
 		
-		builder.append(getPrivateStaticFieldListNode().generateCHeader());
+		builder.append(getPrivateStaticFieldList().generateCHeader());
 		
 		return builder.toString();
 	}
@@ -304,7 +304,7 @@ public class FieldList extends Node
 	}
 	
 	/**
-	 * Fill the given FieldListNode with the data that is in the
+	 * Fill the given FieldList with the data that is in the
 	 * specified node.
 	 * 
 	 * @param node The node to copy the data into.

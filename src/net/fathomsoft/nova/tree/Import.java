@@ -50,9 +50,9 @@ public class Import extends Node
 	}
 	
 	/**
-	 * Get the IdentifierNode containing the location of the import.
+	 * Get the Identifier containing the location of the import.
 	 * 
-	 * @return The IdentifierNode containing the location of the import.
+	 * @return The Identifier containing the location of the import.
 	 */
 	public Identifier getLocationNode()
 	{
@@ -74,9 +74,9 @@ public class Import extends Node
 			return getLocationNode().getName() + ".h";
 		}
 		
-		ClassDeclaration node = getProgramNode().getClassNode(getLocationNode().getName());
+		ClassDeclaration node = getProgram().getClassDeclaration(getLocationNode().getName());
 		
-		return node.getFileNode().generateCHeaderName();
+		return node.getFileDeclaration().generateCHeaderName();
 	}
 	
 	/**
@@ -113,9 +113,9 @@ public class Import extends Node
 	}
 	
 	/**
-	 * Decode the given statement into an ImportNode instance, if
+	 * Decode the given statement into an Import instance, if
 	 * possible. If it is not possible, this method returns null.<br>
-	 * ImportNodes can either contain periods or slashes (backslashes or
+	 * Imports can either contain periods or slashes (backslashes or
 	 * forward slashes) however, cannot contain both in the same import
 	 * statement.
 	 * <br>
@@ -127,13 +127,13 @@ public class Import extends Node
 	 * 
 	 * @param parent The parent node of the statement.
 	 * @param statement The statement to try to decode into a
-	 * 		ImportNode instance.
+	 * 		Import instance.
 	 * @param location The location of the statement in the source code.
 	 * @param require Whether or not to throw an error if anything goes wrong.
 	 * @param scope Whether or not the given statement is the beginning of
 	 * 		a scope.
 	 * @return The generated node, if it was possible to translated it
-	 * 		into a ImportNode.
+	 * 		into a Import.
 	 */
 	public static Import decodeStatement(Node parent, String statement, Location location, boolean require, boolean scope)
 	{
@@ -200,9 +200,9 @@ public class Import extends Node
 		{
 			Identifier location = getLocationNode();
 			
-			Program    program  = getProgramNode();
+			Program    program  = getProgram();
 			
-			ClassDeclaration      clazz    = program.getClassNode(location.getName());
+			ClassDeclaration      clazz    = program.getClassDeclaration(location.getName());
 			
 			if (clazz == null)
 			{
@@ -240,7 +240,7 @@ public class Import extends Node
 	}
 	
 	/**
-	 * Fill the given ImportNode with the data that is in the
+	 * Fill the given Import with the data that is in the
 	 * specified node.
 	 * 
 	 * @param node The node to copy the data into.

@@ -4,7 +4,7 @@ import net.fathomsoft.nova.util.Location;
 import net.fathomsoft.nova.util.SyntaxUtils;
 
 /**
- * LocalVariableNode extension that represents a Parameter of a method.
+ * LocalVariable extension that represents a Parameter of a method.
  * See {@link #decodeStatement(Node, String, Location, boolean, boolean)} for more
  * details on what correct inputs look like.
  * 
@@ -106,7 +106,7 @@ public class Parameter extends LocalDeclaration
 	}
 	
 	/**
-	 * Decode the given statement into a ParameterNode instance, if
+	 * Decode the given statement into a Parameter instance, if
 	 * possible. If it is not possible, this method returns null.
 	 * A parameter node is essentially a variable declaration, but in
 	 * the context of a method declaration.<br>
@@ -120,13 +120,13 @@ public class Parameter extends LocalDeclaration
 	 * 
 	 * @param parent The parent node of the statement.
 	 * @param statement The statement to try to decode into a
-	 * 		ParameterNode instance.
+	 * 		Parameter instance.
 	 * @param location The location of the statement in the source code.
 	 * @param require Whether or not to throw an error if anything goes wrong.
 	 * @param scope Whether or not the given statement is the beginning of
 	 * 		a scope.
 	 * @return The generated node, if it was possible to translated it
-	 * 		into a ParameterNode.
+	 * 		into a Parameter.
 	 */
 	public static Parameter decodeStatement(Node parent, String statement, Location location, boolean require, boolean scope)
 	{

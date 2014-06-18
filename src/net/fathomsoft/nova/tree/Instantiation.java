@@ -8,7 +8,7 @@ import net.fathomsoft.nova.util.Regex;
 import net.fathomsoft.nova.util.SyntaxUtils;
 
 /**
- * ValueNode extension that represents the declaration of an
+ * Value extension that represents the declaration of an
  * instantiation node type. See {@link #decodeStatement(Node, String, Location, boolean, boolean)}
  * for more details on what correct inputs look like.
  * 
@@ -34,7 +34,7 @@ public class Instantiation extends Identifier
 	 * @return The node that represents the type of instance that is
 	 * 		being instantiated.
 	 */
-	public Identifier getIdentifierNode()
+	public Identifier getIdentifier()
 	{
 		return (Identifier)getChild(0);
 	}
@@ -51,7 +51,7 @@ public class Instantiation extends Identifier
 		}
 		else
 		{
-			getIdentifierNode().addChild(child);
+			getIdentifier().addChild(child);
 		}
 	}
 	
@@ -65,7 +65,7 @@ public class Instantiation extends Identifier
 			return null;
 		}
 		
-		return getIdentifierNode().getAccessedNode();
+		return getIdentifier().getAccessedNode();
 	}
 	
 	/**
@@ -99,7 +99,7 @@ public class Instantiation extends Identifier
 	}
 	
 	/**
-	 * Decode the given statement into an InstantiationNode instance, if
+	 * Decode the given statement into an Instantiation instance, if
 	 * possible. If it is not possible, this method returns null.<br>
 	 * Instantiations always begin with the 'new' keyword.
 	 * <br>
@@ -112,13 +112,13 @@ public class Instantiation extends Identifier
 	 * 
 	 * @param parent The parent node of the statement.
 	 * @param statement The statement to try to decode into a
-	 * 		InstantiationNode instance.
+	 * 		Instantiation instance.
 	 * @param location The location of the statement in the source code.
 	 * @param require Whether or not to throw an error if anything goes wrong.
 	 * @param scope Whether or not the given statement is the beginning of
 	 * 		a scope.
 	 * @return The generated node, if it was possible to translated it
-	 * 		into a InstantiationNode.
+	 * 		into a Instantiation.
 	 */
 	public static Instantiation decodeStatement(Node parent, String statement, Location location, boolean require, boolean scope)
 	{
@@ -175,11 +175,11 @@ public class Instantiation extends Identifier
 	{
 		StringBuilder builder = new StringBuilder();
 		
-		builder.append("new ").append(getIdentifierNode().generateNovaInput());
+		builder.append("new ").append(getIdentifier().generateNovaInput());
 		
 //		if (outputChildren)
 //		{
-//			IdentifierNode accessed = getAccessedNode();
+//			Identifier accessed = getAccessedNode();
 //			
 //			if (accessed != null)
 //			{
@@ -202,7 +202,7 @@ public class Instantiation extends Identifier
 	}
 	
 	/**
-	 * Fill the given InstantiationNode with the data that is in the
+	 * Fill the given Instantiation with the data that is in the
 	 * specified node.
 	 * 
 	 * @param node The node to copy the data into.
