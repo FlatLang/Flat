@@ -1,7 +1,7 @@
 package net.fathomsoft.nova.tree;
 
-import net.fathomsoft.nova.tree.variables.VariableList;
 import net.fathomsoft.nova.tree.variables.Variable;
+import net.fathomsoft.nova.tree.variables.VariableList;
 import net.fathomsoft.nova.util.Location;
 
 /**
@@ -20,7 +20,7 @@ import net.fathomsoft.nova.util.Location;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Apr 5, 2014 at 10:54:20 PM
- * @version	v0.2.13 Jun 17, 2014 at 8:45:35 AM
+ * @version	v0.2.14 Jun 18, 2014 at 10:11:40 PM
  */
 public class Scope extends Node
 {
@@ -88,29 +88,20 @@ public class Scope extends Node
 					}
 				}
 				
-//				Method method = (Method)var.getAncestorOfType(Method.class);
-//				
-//				method.getScope().getVariableList().addChild(var);
 				getVariableList().addChild(var);
 				
 				return;
 			}
 		}
-//		else if (child instanceof ExternalType)
-//		{
-////			getVariableList().addChild(child.getChild(0).clone());
-//			
-//			return;
-//		}
 		
 		super.addChild(child);
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.Node#generateCSource()
+	 * @see net.fathomsoft.nova.tree.Node#generateCSource(StringBuilder)
 	 */
 	@Override
-	public String generateCSource()
+	public StringBuilder generateCSource(StringBuilder builder)
 	{
 		if (getNumChildren() <= 1)
 		{
@@ -118,14 +109,12 @@ public class Scope extends Node
 			{
 				if (getParent() instanceof Loop)
 				{
-					return ";";
+					return builder.append(";");
 				}
 				
-				return "";
+				return builder;
 			}
 		}
-		
-		StringBuilder builder = new StringBuilder();
 		
 		builder.append('{').append('\n');
 		
@@ -133,16 +122,12 @@ public class Scope extends Node
 		{
 			Node child = getChild(i);
 			
-			builder.append(child.generateCSource());
+			child.generateCSource(builder);
 		}
-		
-//		VariableList variables = getVariableList();
-//		
-//		builder.append(variables.generateFreeVariablesOutput());
 		
 		builder.append('}').append('\n');
 		
-		return builder.toString();
+		return builder;
 	}
 	
 	/**

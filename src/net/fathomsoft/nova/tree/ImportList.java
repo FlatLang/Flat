@@ -8,7 +8,7 @@ import net.fathomsoft.nova.util.Location;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Apr 2, 2014 at 8:49:52 PM
- * @version	v0.2.13 Jun 17, 2014 at 8:45:35 AM
+ * @version	v0.2.14 Jun 18, 2014 at 10:11:40 PM
  */
 public class ImportList extends Node
 {
@@ -74,13 +74,11 @@ public class ImportList extends Node
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.Node#generateCHeader()
+	 * @see net.fathomsoft.nova.tree.Node#generateCHeader(StringBuilder)
 	 */
 	@Override
-	public String generateCHeader()
+	public StringBuilder generateCHeader(StringBuilder builder)
 	{
-		StringBuilder builder = new StringBuilder();
-		
 		FileDeclaration file = getFileDeclaration();
 		
 		for (int i = 0; i < getNumChildren(); i++)
@@ -89,28 +87,24 @@ public class ImportList extends Node
 			
 			if (node.isExternal() || !file.getName().equals(node.getLocationNode().getName()))
 			{
-				builder.append(node.generateCSource());
+				node.generateCSource(builder);
 			}
 		}
 		
-		return builder.toString();
+		return builder;
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.Node#generateCSource()
+	 * @see net.fathomsoft.nova.tree.Node#generateCSource(StringBuilder)
 	 */
 	@Override
-	public String generateCSource()
+	public StringBuilder generateCSource(StringBuilder builder)
 	{
-		StringBuilder builder = new StringBuilder();
-		
 		FileDeclaration file = getFileDeclaration();
 
 		Import importNode = Import.decodeStatement(this, "import \"" + file.getName() + "\"", getLocationIn(), true, false);
 		
-		builder.append(importNode.generateCSource());
-		
-		return builder.toString();
+		return importNode.generateCSource(builder);
 	}
 	
 	/**

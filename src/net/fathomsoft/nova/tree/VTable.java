@@ -1,8 +1,5 @@
 package net.fathomsoft.nova.tree;
 
-import net.fathomsoft.nova.error.SyntaxMessage;
-import net.fathomsoft.nova.tree.variables.FieldList;
-import net.fathomsoft.nova.tree.variables.InstanceFieldList;
 import net.fathomsoft.nova.util.Bounds;
 import net.fathomsoft.nova.util.Location;
 import net.fathomsoft.nova.util.Patterns;
@@ -24,7 +21,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Mar 16, 2014 at 1:13:49 AM
- * @version	v0.2.13 Jun 17, 2014 at 8:45:35 AM
+ * @version	v0.2.14 Jun 18, 2014 at 10:11:40 PM
  */
 public class VTable extends ClassDeclaration
 {
@@ -36,113 +33,6 @@ public class VTable extends ClassDeclaration
 	public VTable(Node temporaryParent, Location locationIn)
 	{
 		super(temporaryParent, locationIn);
-	}
-	
-	/**
-	 * @see net.fathomsoft.nova.tree.Node#generateCHeader()
-	 */
-	@Override
-	public String generateCHeader()
-	{
-		StringBuilder builder = new StringBuilder();
-		
-		builder.append("CLASS");
-		
-		if (isStatic())
-		{
-			SyntaxMessage.error("Static classes are not implemented in C yet.", this);
-		}
-		if (isConstant())
-		{
-			SyntaxMessage.error("Const classes are not implemented in C yet.", this);
-		}
-		
-		if (isReference())
-		{
-			SyntaxMessage.error("A class cannot be of a reference type", this);
-		}
-		else if (isPointer())
-		{
-			SyntaxMessage.error("A class cannot be of a pointer type", this);
-		}
-		
-		builder.append('\n').append('(').append('\n');
-		
-		builder.append(getName()).append(", ");
-		
-		builder.append('\n').append('\n');
-
-		FieldList fields = getFieldList();
-		
-		InstanceFieldList publicFields = fields.getPublicFieldList();
-		
-		if (publicFields.getNumChildren() > 0)
-		{
-			builder.append(publicFields.generateCHeader()).append('\n');
-		}
-		
-		builder.append(')').append('\n').append('\n');
-		
-		MethodList constructors = getConstructorListNode();
-		builder.append(constructors.generateCHeader());
-		
-		MethodList destructors = getDestructorListNode();
-		builder.append(destructors.generateCHeader());
-		
-		MethodList methods = getMethodList();
-		builder.append(methods.generateCHeader());
-		
-		if (containsStaticData())
-		{
-			builder.append("extern ").append(getName()).append("* ").append("__static__").append(getName()).append(';').append('\n').append('\n');
-		}
-		
-		return builder.toString();
-	}
-	
-	/**
-	 * @see net.fathomsoft.nova.tree.Node#generateCSource()
-	 */
-	@Override
-	public String generateCSource()
-	{
-		StringBuilder builder = new StringBuilder();
-		
-		if (containsStaticData())
-		{
-			builder.append(getName()).append("* ").append("__static__").append(getName()).append(';').append('\n').append('\n');
-		}
-		
-		FieldList fields = getFieldList();
-		
-		InstanceFieldList privateFields = fields.getPrivateFieldList();
-		
-		if (privateFields.getNumChildren() > 0)
-		{
-			builder.append("PRIVATE").append('\n').append('(').append('\n');
-			
-			builder.append(privateFields.generateCSource());
-			
-			builder.append(')');
-		}
-		else
-		{
-			builder.append("NO_PRIVATE");
-		}
-		
-		builder.append('\n');
-		
-		for (int i = 0; i < getNumChildren(); i++)
-		{
-			Node child = getChild(i);
-			
-			if (child != fields)
-			{
-				builder.append(child.generateCSource());
-			}
-		}
-		
-		return builder.toString();
 	}
 	
 	/**

@@ -13,7 +13,7 @@ import net.fathomsoft.nova.util.Regex;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:57:13 PM
- * @version	v0.2.13 Jun 17, 2014 at 8:45:35 AM
+ * @version	v0.2.14 Jun 18, 2014 at 10:11:40 PM
  */
 public class IfStatement extends Node
 {
@@ -51,31 +51,13 @@ public class IfStatement extends Node
 	{
 		return (ArgumentList)getChild(1);
 	}
-
-	/**
-	 * @see net.fathomsoft.nova.tree.Node#addChild(Node)
-	 */
-	@Override
-	public void addChild(Node child)
-	{
-		if (child instanceof Scope || child instanceof ArgumentList)
-		{
-			super.addChild(child);
-		}
-		else
-		{
-			getScope().addChild(child);
-		}
-	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.Node#generateCSource()
+	 * @see net.fathomsoft.nova.tree.Node#generateCSource(StringBuilder)
 	 */
 	@Override
-	public String generateCSource()
+	public StringBuilder generateCSource(StringBuilder builder)
 	{
-		StringBuilder builder = new StringBuilder();
-		
 		builder.append("if (");
 		
 		ArgumentList condition = getCondition();
@@ -84,26 +66,14 @@ public class IfStatement extends Node
 		{
 			Node child = condition.getChild(i);
 			
-			builder.append(child.generateCSourceFragment());
+			child.generateCSourceFragment(builder);
 		}
 		
 		builder.append(')').append('\n');
-//		builder.append('{').append('\n');
-//		
-//		for (int i = 0; i < getNumChildren(); i++)
-//		{
-//			Node child = getChild(i);
-//			
-//			if (child != getCondition())
-//			{
-//				builder.append(child.generateCSourceOutput());
-//			}
-//		}
-//		
-//		builder.append('}').append('\n');
-		builder.append(getScope().generateCSource());
 		
-		return builder.toString();
+		getScope().generateCSource(builder);
+		
+		return builder;
 	}
 	
 	/**
@@ -134,7 +104,7 @@ public class IfStatement extends Node
 		{
 			IfStatement n = new IfStatement(parent, location);
 			
-			Bounds bounds     = Regex.boundsOf(statement, Patterns.IF_CONTENTS);
+			Bounds bounds = Regex.boundsOf(statement, Patterns.IF_CONTENTS);
 			
 			if (bounds.getStart() >= 0)
 			{

@@ -11,7 +11,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 10:34:30 PM
- * @version	v0.2.13 Jun 17, 2014 at 8:45:35 AM
+ * @version	v0.2.14 Jun 18, 2014 at 10:11:40 PM
  */
 public class Literal extends Value
 {
@@ -94,35 +94,35 @@ public class Literal extends Value
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.Node#generateCHeader()
+	 * @see net.fathomsoft.nova.tree.Node#generateCHeader(StringBuilder)
 	 */
 	@Override
-	public String generateCHeader()
+	public StringBuilder generateCHeader(StringBuilder builder)
 	{
-		return generateCSource();
+		return generateCSource(builder);
 	}
 
 	/**
-	 * @see net.fathomsoft.nova.tree.Node#generateCSource()
+	 * @see net.fathomsoft.nova.tree.Node#generateCSource(StringBuilder)
 	 */
 	@Override
-	public String generateCSource()
+	public StringBuilder generateCSource(StringBuilder builder)
 	{
-		return generateCSourceFragment();
+		return generateCSourceFragment(builder);
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.Node#generateCSourceFragment()
+	 * @see net.fathomsoft.nova.tree.Node#generateCSourceFragment(StringBuilder)
 	 */
 	@Override
-	public String generateCSourceFragment()
+	public StringBuilder generateCSourceFragment(StringBuilder builder)
 	{
 		if (!isWithinExternalContext() && isStringInstantiation())
 		{
-			return Nova.LANGUAGE_NAME.toLowerCase() + "_String_String(" + Exception.EXCEPTION_DATA_IDENTIFIER + ", " + value + ")";
+			return builder.append(Nova.LANGUAGE_NAME.toLowerCase()).append("_String_String(").append(Exception.EXCEPTION_DATA_IDENTIFIER).append(", ").append(value).append(")");
 		}
 		
-		return value;
+		return builder.append(value);
 	}
 	
 	/**

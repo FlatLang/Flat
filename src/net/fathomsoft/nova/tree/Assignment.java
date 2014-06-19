@@ -13,7 +13,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:19:44 PM
- * @version	v0.2.13 Jun 17, 2014 at 8:45:35 AM
+ * @version	v0.2.14 Jun 18, 2014 at 10:11:40 PM
  */
 public class Assignment extends Node
 {
@@ -54,21 +54,21 @@ public class Assignment extends Node
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.Node#generateCSource()
+	 * @see net.fathomsoft.nova.tree.Node#generateCSource(StringBuilder)
 	 */
 	@Override
-	public String generateCSource()
+	public StringBuilder generateCSource(StringBuilder builder)
 	{
-		return generateCSourceFragment() + ";\n";
+		return generateCSourceFragment(builder).append(";\n");
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.Node#generateCSourceFragment()
+	 * @see net.fathomsoft.nova.tree.Node#generateCSourceFragment(StringBuilder)
 	 */
 	@Override
-	public String generateCSourceFragment()
+	public StringBuilder generateCSourceFragment(StringBuilder builder)
 	{
-		return getAssigneeNode().generateCSourceFragment() + " = " + getAssignment().generateCSourceFragment();
+		return getAssigneeNode().generateCSourceFragment(builder).append(" = ").append(getAssignment().generateCSourceFragment());
 	}
 	
 	/**

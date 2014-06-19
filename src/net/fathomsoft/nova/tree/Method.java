@@ -19,7 +19,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:10:53 PM
- * @version	v0.2.13 Jun 17, 2014 at 8:45:35 AM
+ * @version	v0.2.14 Jun 18, 2014 at 10:11:40 PM
  */
 public class Method extends InstanceDeclaration
 {
@@ -333,18 +333,16 @@ public class Method extends InstanceDeclaration
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.Node#generateCHeader()
+	 * @see net.fathomsoft.nova.tree.Node#generateCHeader(StringBuilder)
 	 */
 	@Override
-	public String generateCHeader()
+	public StringBuilder generateCHeader(StringBuilder builder)
 	{
-		StringBuilder builder = new StringBuilder();
-		
 		if (isVisibilityValid())
 		{
 			if (getVisibility() == InstanceDeclaration.PRIVATE)
 			{
-				return "";
+				return builder;
 			}
 		}
 		if (isConstant())
@@ -352,39 +350,20 @@ public class Method extends InstanceDeclaration
 			SyntaxMessage.error("Const methods are not supported in the C implementation yet", this);
 		}
 		
-		builder.append(generateCSourcePrototype()).append('\n');
+		generateCSourcePrototype(builder).append('\n');
 		
-		return builder.toString();
+		return builder;
 	}
 
 	/**
-	 * @see net.fathomsoft.nova.tree.Node#generateCSource()
+	 * @see net.fathomsoft.nova.tree.Node#generateCSource(StringBuilder)
 	 */
 	@Override
-	public String generateCSource()
+	public StringBuilder generateCSource(StringBuilder builder)
 	{
-		StringBuilder builder = new StringBuilder();
+		generateCSourceSignature(builder).append('\n');
 		
-		builder.append(generateCSourceSignature()).append('\n');
-		
-		builder.append(getScope().generateCSource());
-//		builder.append('{').append('\n');
-		
-//		ParameterList parameterList = getParameterList();
-//		
-//		for (int i = 0; i < getNumChildren(); i++)
-//		{
-//			Node child = getChild(i);
-//			
-//			if (child != parameterList)
-//			{
-//				builder.append(child.generateCSourceOutput());
-//			}
-//		}
-//		
-//		builder.append('}').append('\n');
-		
-		return builder.toString();
+		return getScope().generateCSource(builder);
 	}
 	
 	/**
@@ -403,9 +382,9 @@ public class Method extends InstanceDeclaration
 	 * 
 	 * @return The C prototype for the method header.
 	 */
-	public String generateCSourcePrototype()
+	public StringBuilder generateCSourcePrototype(StringBuilder builder)
 	{
-		return generateCSourceSignature() + ";";
+		return generateCSourceSignature(builder).append(";");
 	}
 	
 	/**
@@ -422,18 +401,14 @@ public class Method extends InstanceDeclaration
 	 * 
 	 * @return The method signature in the C language.
 	 */
-	public String generateCSourceSignature()
+	public StringBuilder generateCSourceSignature(StringBuilder builder)
 	{
-		StringBuilder builder = new StringBuilder();
-		
-//		builder.append("static ");
-		
 		if (isConstant())
 		{
 			builder.append(getConstantText()).append(' ');
 		}
 		
-		builder.append(generateCTypeOutput());
+		generateCTypeOutput(builder);
 		
 		if (isReference())
 		{
@@ -456,11 +431,11 @@ public class Method extends InstanceDeclaration
 		
 		builder.append(generateMethodName()).append('(');
 		
-		builder.append(getParameterList().generateCSource());
+		getParameterList().generateCSource(builder);
 		
 		builder.append(')');
 		
-		return builder.toString();
+		return builder;
 	}
 	
 	/**

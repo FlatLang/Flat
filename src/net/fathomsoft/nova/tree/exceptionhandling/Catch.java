@@ -15,7 +15,7 @@ import net.fathomsoft.nova.util.Regex;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Mar 22, 2014 at 4:01:44 PM
- * @version	v0.2.13 Jun 17, 2014 at 8:45:35 AM
+ * @version	v0.2.14 Jun 18, 2014 at 10:11:40 PM
  */
 public class Catch extends ExceptionHandler
 {
@@ -48,13 +48,11 @@ public class Catch extends ExceptionHandler
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.Node#generateCSource()
+	 * @see net.fathomsoft.nova.tree.Node#generateCSource(StringBuilder)
 	 */
 	@Override
-	public String generateCSource()
+	public StringBuilder generateCSource(StringBuilder builder)
 	{
-		StringBuilder builder = new StringBuilder();
-		
 		builder.append("CATCH ").append('(').append(getException().getID()).append(')').append('\n');
 		builder.append('{').append('\n');
 		
@@ -64,13 +62,11 @@ public class Catch extends ExceptionHandler
 			
 			if (child != getExceptionInstance() && child != getException())
 			{
-				builder.append(child.generateCSource());
+				child.generateCSource(builder);
 			}
 		}
 		
-		builder.append('}').append('\n');
-		
-		return builder.toString();
+		return builder.append('}').append('\n');
 	}
 	
 	/**

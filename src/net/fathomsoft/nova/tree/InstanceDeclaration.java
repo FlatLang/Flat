@@ -10,7 +10,7 @@ import net.fathomsoft.nova.util.Location;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:10:49 PM
- * @version	v0.2.13 Jun 17, 2014 at 8:45:35 AM
+ * @version	v0.2.14 Jun 18, 2014 at 10:11:40 PM
  */
 public class InstanceDeclaration extends Variable
 {
@@ -224,27 +224,20 @@ public class InstanceDeclaration extends Variable
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.Node#generateCHeader()
+	 * @see net.fathomsoft.nova.tree.Node#generateCHeader(StringBuilder)
 	 */
 	@Override
-	public String generateCHeader()
+	public StringBuilder generateCHeader(StringBuilder builder)
 	{
-		StringBuilder builder = new StringBuilder();
-		
-		builder.append(generateCHeaderFragment());
-		builder.append(';').append('\n');
-		
-		return builder.toString();
+		return generateCHeaderFragment(builder).append(';').append('\n');
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.Node#generateCHeaderFragment()
+	 * @see net.fathomsoft.nova.tree.Node#generateCHeaderFragment(StringBuilder)
 	 */
 	@Override
-	public String generateCHeaderFragment()
+	public StringBuilder generateCHeaderFragment(StringBuilder builder)
 	{
-		StringBuilder builder = new StringBuilder();
-		
 		builder.append(getType());
 		
 		if (isReference())
@@ -264,9 +257,7 @@ public class InstanceDeclaration extends Variable
 			builder.append('*');
 		}
 		
-		builder.append(' ').append(getName());
-		
-		return builder.toString();
+		return builder.append(' ').append(getName());
 	}
 	
 	/**

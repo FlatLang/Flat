@@ -10,7 +10,7 @@ import net.fathomsoft.nova.util.StringUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.2.1 Apr 27, 2014 at 11:14:20 PM
- * @version	v0.2.13 Jun 17, 2014 at 8:45:35 AM
+ * @version	v0.2.14 Jun 18, 2014 at 10:11:40 PM
  */
 public class ExternalStatement extends Node
 {
@@ -47,36 +47,34 @@ public class ExternalStatement extends Node
 	 */
 	public void setData(String data)
 	{
-		data = StringUtils.removeTypeAfterChar(data, '\n', '\t');
-		
-		this.data = data;
+		this.data = StringUtils.removeTypeAfterChar(data, '\n', '\t');
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.Node#generateCHeader()
+	 * @see net.fathomsoft.nova.tree.Node#generateCHeader(StringBuilder)
 	 */
 	@Override
-	public String generateCHeader()
+	public StringBuilder generateCHeader(StringBuilder builder)
 	{
-		return generateCSource();
+		return generateCSource(builder);
 	}
 
 	/**
-	 * @see net.fathomsoft.nova.tree.Node#generateCSource()
+	 * @see net.fathomsoft.nova.tree.Node#generateCSource(StringBuilder)
 	 */
 	@Override
-	public String generateCSource()
+	public StringBuilder generateCSource(StringBuilder builder)
 	{
-		return generateCSourceFragment() + '\n';
+		return generateCSourceFragment(builder).append('\n');
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.Node#generateCSourceFragment()
+	 * @see net.fathomsoft.nova.tree.Node#generateCSourceFragment(StringBuilder)
 	 */
 	@Override
-	public String generateCSourceFragment()
+	public StringBuilder generateCSourceFragment(StringBuilder builder)
 	{
-		return data;
+		return builder.append(data);
 	}
 	
 	/**

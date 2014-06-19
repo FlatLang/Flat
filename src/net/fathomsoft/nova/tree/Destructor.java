@@ -16,7 +16,7 @@ import net.fathomsoft.nova.util.StringUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:50:43 PM
- * @version	v0.2.13 Jun 17, 2014 at 8:45:35 AM
+ * @version	v0.2.14 Jun 18, 2014 at 10:11:40 PM
  */
 public class Destructor extends Method
 {
@@ -29,13 +29,11 @@ public class Destructor extends Method
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.Node#generateCHeader()
+	 * @see net.fathomsoft.nova.tree.Node#generateCHeader(StringBuilder)
 	 */
 	@Override
-	public String generateCHeader()
+	public StringBuilder generateCHeader(StringBuilder builder)
 	{
-		StringBuilder builder = new StringBuilder();
-		
 		if (isVisibilityValid())
 		{
 			if (getVisibility() == InstanceDeclaration.PRIVATE)
@@ -54,24 +52,20 @@ public class Destructor extends Method
 			SyntaxMessage.error("Destructor cannot return a reference", this);
 		}
 		
-		builder.append(generateCSourcePrototype()).append('\n');
-		
-		return builder.toString();
+		return generateCSourcePrototype(builder).append('\n');
 	}
 
 	/**
-	 * @see net.fathomsoft.nova.tree.Node#generateCSource()
+	 * @see net.fathomsoft.nova.tree.Node#generateCSource(StringBuilder)
 	 */
 	@Override
-	public String generateCSource()
+	public StringBuilder generateCSource(StringBuilder builder)
 	{
-		StringBuilder builder = new StringBuilder();
-		
-		builder.append(generateCSourceSignature()).append('\n').append('{').append('\n');
+		generateCSourceSignature(builder).append('\n').append('{').append('\n');
 
-		builder.append(nullChecker()).append('\n');
+		nullChecker(builder).append('\n');
 		
-		builder.append(deleteData()).append('\n');
+		deleteData(builder).append('\n');
 		
 		for (int i = 0; i < getNumChildren(); i++)
 		{
@@ -79,17 +73,15 @@ public class Destructor extends Method
 			
 			if (child != getParameterList())
 			{
-				builder.append(child.generateCSource());
+				child.generateCSource(builder);
 			}
 		}
 		
 		builder.append("NOVA_FREE(").append('*').append(Method.getObjectReferenceIdentifier()).append(");").append('\n');
 		
-		//builder.append('*').append(Method.getObjectReferenceIdentifier()).append(" = NULL;").append('\n');
-		
 		builder.append('}').append('\n');
 		
-		return builder.toString();
+		return builder;
 	}
 	
 	/**
@@ -98,16 +90,14 @@ public class Destructor extends Method
 	 * 
 	 * @return The code needed to check whether a variable is null or not.
 	 */
-	private String nullChecker()
+	private StringBuilder nullChecker(StringBuilder builder)
 	{
-		StringBuilder builder = new StringBuilder();
-		
 		builder.append("if (!*").append(Method.getObjectReferenceIdentifier()).append(')').append('\n');
 		builder.append('{').append('\n');
 		builder.append("return;").append('\n');
 		builder.append('}').append('\n');
 		
-		return builder.toString();
+		return builder;
 	}
 	
 	/**
@@ -115,24 +105,22 @@ public class Destructor extends Method
 	 * 
 	 * @return The code needed to delete each member of the class.
 	 */
-	private String deleteData()
+	private StringBuilder deleteData(StringBuilder builder)
 	{
-		StringBuilder builder   = new StringBuilder();
+		ClassDeclaration  classDeclaration = (ClassDeclaration)getAncestorOfType(ClassDeclaration.class);
 		
-		ClassDeclaration     classDeclaration = (ClassDeclaration)getAncestorOfType(ClassDeclaration.class);
-		
-		InstanceFieldList privateFields = classDeclaration.getFieldList().getPrivateFieldList();
+		InstanceFieldList privateFields    = classDeclaration.getFieldList().getPrivateFieldList();
 		
 		for (int i = 0; i < privateFields.getNumChildren(); i++)
 		{
 			Field field = (Field)privateFields.getChild(i);
 
-			builder.append(generateFreeFieldSource(field)).append('\n');
+			generateFreeFieldSource(builder, field).append('\n');
 		}
 		
 		if (classDeclaration.containsNonStaticPrivateData())
 		{
-			builder.append(generateFreeMemberSource("prv")).append('\n');
+			generateFreeMemberSource(builder, "prv").append('\n');
 		}
 		
 		InstanceFieldList publicFields = classDeclaration.getFieldList().getPublicFieldList();
@@ -141,10 +129,10 @@ public class Destructor extends Method
 		{
 			Field field = (Field)publicFields.getChild(i);
 			
-			builder.append(field.generateFreeOutput());
+			field.generateFreeOutput(builder);
 		}
 		
-		return builder.toString();
+		return builder;
 	}
 	
 	/**
@@ -154,23 +142,23 @@ public class Destructor extends Method
 	 * @param field The node that contains the information of the field.
 	 * @return The generated String for the code.
 	 */
-	private String generateFreeFieldSource(Field field)
+	private StringBuilder generateFreeFieldSource(StringBuilder builder, Field field)
 	{
-		StringBuilder builder = new StringBuilder();
-		
 		if (field.isPrimitiveType() || field.isExternalType())
 		{
 			if (!field.isPrimitive())
-			{//builder.append("printf(\"Before. " + field.generateVariableUseOutput(true) + ": %p\", " + field.generateVariableUseOutput(true) + ");");
+			{
 				//builder.append("NOVA_FREE(").append(field.generateVariableUseOutput(true)).append(");");builder.append("printf(\"Aft2.\");");
 			}
 		}
 		else
 		{
-			builder.append(Nova.LANGUAGE_NAME.toLowerCase()).append("_del_").append(field.getType()).append('(').append('&').append(field.generateUseOutput(true)).append(", ").append(Exception.EXCEPTION_DATA_IDENTIFIER).append(");");
+			builder.append(Nova.LANGUAGE_NAME.toLowerCase()).append("_del_").append(field.getType()).append('(').append('&');
+			
+			field.generateUseOutput(builder, true).append(", ").append(Exception.EXCEPTION_DATA_IDENTIFIER).append(");");
 		}
 		
-		return builder.toString();
+		return builder;
 	}
 	
 	/**
@@ -180,32 +168,24 @@ public class Destructor extends Method
 	 * @param name The name of the variable to delete.
 	 * @return The generated String for the code.
 	 */
-	private String generateFreeMemberSource(String name)
+	private StringBuilder generateFreeMemberSource(StringBuilder builder, String name)
 	{
-		StringBuilder builder = new StringBuilder();
-		
-		builder.append("NOVA_FREE((*").append(Method.getObjectReferenceIdentifier()).append(")->").append(name).append(");");
-		
-		//builder.append("(*").append(Method.getObjectReferenceIdentifier()).append(")->").append(name).append(" = NULL;");
-		
-		return builder.toString();
+		return builder.append("NOVA_FREE((*").append(Method.getObjectReferenceIdentifier()).append(")->").append(name).append(");");
 	}
 	
 	/**
 	 * @see net.fathomsoft.nova.tree.Method#generateCSourcePrototype()
 	 */
-	public String generateCSourcePrototype()
+	public StringBuilder generateCSourcePrototype(StringBuilder builder)
 	{
-		return generateCSourceSignature().concat(";");
+		return generateCSourceSignature(builder).append(";");
 	}
 	
 	/**
 	 * @see net.fathomsoft.nova.tree.Method#generateCSourceSignature()
 	 */
-	public String generateCSourceSignature()
+	public StringBuilder generateCSourceSignature(StringBuilder builder)
 	{
-		StringBuilder builder = new StringBuilder();
-
 		ClassDeclaration classDeclaration = (ClassDeclaration)getAncestorOfType(ClassDeclaration.class);
 		
 		if (isConstant())
@@ -218,12 +198,11 @@ public class Destructor extends Method
 		builder.append(Nova.LANGUAGE_NAME.toLowerCase()).append("_del_");
 		builder.append(classDeclaration.getName()).append('(');
 		
-		//builder.append(classNode.getName()).append('*').append(' ').append(Method.getObjectReferenceIdentifier());
-		builder.append(getParameterList().generateCSource());
+		getParameterList().generateCSource(builder);
 		
 		builder.append(')');
 		
-		return builder.toString();
+		return builder;
 	}
 	
 	/**

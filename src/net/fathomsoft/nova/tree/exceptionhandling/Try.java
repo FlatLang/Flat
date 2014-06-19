@@ -14,7 +14,7 @@ import net.fathomsoft.nova.util.Regex;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Mar 22, 2014 at 4:01:38 PM
- * @version	v0.2.13 Jun 17, 2014 at 8:45:35 AM
+ * @version	v0.2.14 Jun 18, 2014 at 10:11:40 PM
  */
 public class Try extends ExceptionHandler
 {
@@ -44,22 +44,20 @@ public class Try extends ExceptionHandler
 	}
 
 	/**
-	 * @see net.fathomsoft.nova.tree.Node#generateCSource()
+	 * @see net.fathomsoft.nova.tree.Node#generateCSource(StringBuilder)
 	 */
 	@Override
-	public String generateCSource()
+	public StringBuilder generateCSource(StringBuilder builder)
 	{
-		StringBuilder builder = new StringBuilder();
-		
 		builder.append("TRY").append('\n');
 		builder.append('{').append('\n');
-		builder.append(generateExceptionCodes()).append('\n');
+		generateExceptionCodes(builder).append('\n');
 		
-		builder.append(getScope().generateCSource());
+		getScope().generateCSource(builder);
 		
 		builder.append('}').append('\n');
 		
-		return builder.toString();
+		return builder;
 	}
 	
 	/**
@@ -159,10 +157,8 @@ public class Try extends ExceptionHandler
 	 * 
 	 * @return The generated C language String.
 	 */
-	private String generateExceptionCodes()
+	private StringBuilder generateExceptionCodes(StringBuilder builder)
 	{
-		StringBuilder builder = new StringBuilder();
-			
 		String variableName = Exception.EXCEPTION_DATA_IDENTIFIER;
 		
 		for (int i = 0; i < codes.size(); i++)
@@ -172,7 +168,7 @@ public class Try extends ExceptionHandler
 			builder.append("nova_ExceptionData_addCode(").append(variableName).append(", ").append(variableName).append(", ").append(code).append(");").append('\n');
 		}
 		
-		return builder.toString();
+		return builder;
 	}
 	
 	/**

@@ -10,7 +10,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:52:01 PM
- * @version	v0.2.13 Jun 17, 2014 at 8:45:35 AM
+ * @version	v0.2.14 Jun 18, 2014 at 10:11:40 PM
  */
 public class Parameter extends LocalDeclaration
 {
@@ -49,28 +49,26 @@ public class Parameter extends LocalDeclaration
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.Node#generateCHeader()
+	 * @see net.fathomsoft.nova.tree.Node#generateCHeader(StringBuilder)
 	 */
 	@Override
-	public String generateCHeader()
+	public StringBuilder generateCHeader(StringBuilder builder)
 	{
-		return generateCSource();
+		return generateCSource(builder);
 	}
 
 	/**
-	 * @see net.fathomsoft.nova.tree.Node#generateCSource()
+	 * @see net.fathomsoft.nova.tree.Node#generateCSource(StringBuilder)
 	 */
 	@Override
-	public String generateCSource()
+	public StringBuilder generateCSource(StringBuilder builder)
 	{
-		StringBuilder builder = new StringBuilder();
-		
 		if (isConstant())
 		{
 			builder.append(getConstantText()).append(' ');
 		}
 		
-		builder.append(generateCTypeOutput());
+		generateCTypeOutput(builder);
 		
 		if (isArray())
 		{
@@ -91,9 +89,9 @@ public class Parameter extends LocalDeclaration
 			builder.append('*');
 		}
 		
-		builder.append(' ').append(generateCSourceName());
+		builder.append(' ');
 		
-		return builder.toString();
+		return generateCSourceName(builder);
 	}
 	
 	/**

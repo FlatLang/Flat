@@ -13,7 +13,7 @@ import net.fathomsoft.nova.util.Regex;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 13, 2014 at 7:56:24 PM
- * @version	v0.2.13 Jun 17, 2014 at 8:45:35 AM
+ * @version	v0.2.14 Jun 18, 2014 at 10:11:40 PM
  */
 public class Import extends Node
 {
@@ -80,36 +80,30 @@ public class Import extends Node
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.Node#generateCHeader()
+	 * @see net.fathomsoft.nova.tree.Node#generateCHeader(StringBuilder)
 	 */
 	@Override
-	public String generateCHeader()
+	public StringBuilder generateCHeader(StringBuilder builder)
 	{
-		return generateCSource();
+		return generateCSource(builder);
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.Node#generateCSource()
+	 * @see net.fathomsoft.nova.tree.Node#generateCSource(StringBuilder)
 	 */
 	@Override
-	public String generateCSource()
+	public StringBuilder generateCSource(StringBuilder builder)
 	{
-		StringBuilder builder = new StringBuilder();
-		
 		builder.append("#include ");
 		
 		if (isExternal())
 		{
-			builder.append('<').append(getLocation()).append('>');
+			return builder.append('<').append(getLocation()).append('>').append('\n');
 		}
 		else
 		{
-			builder.append('"').append(getLocation()).append('"');
+			return builder.append('"').append(getLocation()).append('"').append('\n');
 		}
-		
-		builder.append('\n');
-		
-		return builder.toString();
 	}
 	
 	/**

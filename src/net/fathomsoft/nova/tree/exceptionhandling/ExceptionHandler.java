@@ -1,7 +1,7 @@
 package net.fathomsoft.nova.tree.exceptionhandling;
 
-import net.fathomsoft.nova.tree.Scope;
 import net.fathomsoft.nova.tree.Node;
+import net.fathomsoft.nova.tree.Scope;
 import net.fathomsoft.nova.util.Location;
 
 /**
@@ -11,7 +11,7 @@ import net.fathomsoft.nova.util.Location;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Mar 21, 2014 at 10:50:26 PM
- * @version	v0.2.13 Jun 17, 2014 at 8:45:35 AM
+ * @version	v0.2.14 Jun 18, 2014 at 10:11:40 PM
  */
 public class ExceptionHandler extends Node
 {

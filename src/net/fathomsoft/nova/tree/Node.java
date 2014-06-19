@@ -22,13 +22,13 @@ import net.fathomsoft.nova.util.StringUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:00:11 PM
- * @version	v0.2.13 Jun 17, 2014 at 8:45:35 AM
+ * @version	v0.2.14 Jun 18, 2014 at 10:11:40 PM
  */
 public abstract class Node
 {
-	private Location			locationIn;
+	private Location	locationIn;
 	
-	private Node			parent;
+	private Node		parent;
 	
 	private ArrayList<Node>	children;
 	
@@ -346,7 +346,7 @@ public abstract class Node
 	 */
 	public void addChild(Node node)
 	{
-		addChild(children.size(), node);
+		addChild(getNumChildren(), node);
 	}
 	
 	/**
@@ -357,29 +357,7 @@ public abstract class Node
 	 */
 	public void addChild(Node node, Node toNode)
 	{
-		addChild(toNode.children.size(), node, toNode);
-	}
-	
-	/**
-	 * Remove the specific Node from the current Node as a child.
-	 * 
-	 * @param index The index to remove the node from.
-	 */
-	public void removeChild(int index)
-	{
-		Node node = children.get(index);
-		
-		node.detach();
-	}
-	
-	/**
-	 * Remove the specific Node from the current Node as a child.
-	 * 
-	 * @param node The node to remove as the child node.
-	 */
-	public void removeChild(Node node)
-	{
-		removeChild(children.indexOf(node));
+		addChild(toNode.getNumChildren(), node, toNode);
 	}
 	
 	/**
@@ -468,6 +446,28 @@ public abstract class Node
 	}
 	
 	/**
+	 * Remove the specific Node from the current Node as a child.
+	 * 
+	 * @param index The index to remove the node from.
+	 */
+	public void removeChild(int index)
+	{
+		Node node = children.get(index);
+		
+		node.detach();
+	}
+	
+	/**
+	 * Remove the specific Node from the current Node as a child.
+	 * 
+	 * @param node The node to remove as the child node.
+	 */
+	public void removeChild(Node node)
+	{
+		children.remove(node);
+	}
+	
+	/**
 	 * Detach the specified node from its parent.
 	 */
 	public void detach()
@@ -530,7 +530,7 @@ public abstract class Node
 	{
 		int index = children.size();
 		
-		for (int i = oldParent.children.size() - 1; i >= 0; i--)
+		for (int i = oldParent.getNumChildren() - 1; i >= 0; i--)
 		{
 			Node child = oldParent.getChild(i);
 			
@@ -711,7 +711,55 @@ public abstract class Node
 	 * 
 	 * @return The C header file syntax representation of the Node.
 	 */
-	public String generateCHeader()
+	public final StringBuilder generateCHeader()
+	{
+		return generateCHeader(new StringBuilder());
+	}
+	
+	/**
+	 * Method that each Node can override. Returns a String that
+	 * translates the data that is stored in the Node to the C
+	 * programming language header file 'fragment' syntax.
+	 * 
+	 * @return The C header syntax representation of the Node.
+	 */
+	public final StringBuilder generateCHeaderFragment()
+	{
+		return generateCHeaderFragment(new StringBuilder());
+	}
+	
+	/**
+	 * Method that each Node overrides. Returns a String that translates
+	 * the data that is stored in the Node to the C programming
+	 * language source file syntax.
+	 * 
+	 * @return The C source syntax representation of the Node.
+	 */
+	public final StringBuilder generateCSource()
+	{
+		return generateCSource(new StringBuilder());
+	}
+	
+	/**
+	 * Method that each Node overrides. Returns a String that translates
+	 * the data that is stored in the Node to the C programming
+	 * language source file 'fragment' syntax.
+	 * 
+	 * @return The C source syntax representation of the Node.
+	 */
+	public final StringBuilder generateCSourceFragment()
+	{
+		return generateCSourceFragment(new StringBuilder());
+	}
+	
+	/**
+	 * Method that each Node overrides. Returns a String that translates
+	 * the data that is stored in the Node to the C programming
+	 * language header file syntax.
+	 * 
+	 * @return The C header file syntax representation of the Node.
+	 */
+	public StringBuilder generateCHeader(StringBuilder builder)
 	{
 		throw new UnimplementedOperationException("The C Header implementation for this feature has not been implemented yet.");
 	}
@@ -723,7 +771,7 @@ public abstract class Node
 	 * 
 	 * @return The C header syntax representation of the Node.
 	 */
-	public String generateCHeaderFragment()
+	public StringBuilder generateCHeaderFragment(StringBuilder builder)
 	{
 		throw new UnimplementedOperationException("The C Header fragment implementation for this feature has not been implemented yet.");
 	}
@@ -735,7 +783,7 @@ public abstract class Node
 	 * 
 	 * @return The C source syntax representation of the Node.
 	 */
-	public String generateCSource()
+	public StringBuilder generateCSource(StringBuilder builder)
 	{
 		throw new UnimplementedOperationException("The C Source implementation for this feature has not been implemented yet.");
 	}
@@ -747,7 +795,7 @@ public abstract class Node
 	 * 
 	 * @return The C source syntax representation of the Node.
 	 */
-	public String generateCSourceFragment()
+	public StringBuilder generateCSourceFragment(StringBuilder builder)
 	{
 		throw new UnimplementedOperationException("The C Source fragment implementation for this feature has not been implemented yet.");
 	}
@@ -930,7 +978,7 @@ public abstract class Node
 			node.setLocationIn(locIn);
 		}
 		
-		for (int i = 0; i < children.size(); i++)
+		for (int i = 0; i < getNumChildren(); i++)
 		{
 			Node child = children.get(i);
 			

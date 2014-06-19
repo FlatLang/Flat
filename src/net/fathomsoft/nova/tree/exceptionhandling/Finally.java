@@ -12,7 +12,7 @@ import net.fathomsoft.nova.util.Regex;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Mar 22, 2014 at 4:02:21 PM
- * @version	v0.2.13 Jun 17, 2014 at 8:45:35 AM
+ * @version	v0.2.14 Jun 18, 2014 at 10:11:40 PM
  */
 public class Finally extends ExceptionHandler
 {
@@ -25,13 +25,11 @@ public class Finally extends ExceptionHandler
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.Node#generateCSource()
+	 * @see net.fathomsoft.nova.tree.Node#generateCSource(StringBuilder)
 	 */
 	@Override
-	public String generateCSource()
+	public StringBuilder generateCSource(StringBuilder builder)
 	{
-		StringBuilder builder = new StringBuilder();
-		
 		builder.append("FINALLY").append('\n');
 		builder.append('{').append('\n');
 		
@@ -39,13 +37,13 @@ public class Finally extends ExceptionHandler
 		{
 			Node child = getChild(i);
 			
-			builder.append(child.generateCSource());
+			child.generateCSource(builder);
 		}
 		
 		builder.append('}').append('\n');
 		builder.append("END_TRY;").append('\n');
 		
-		return builder.toString();
+		return builder;
 	}
 	
 	/**

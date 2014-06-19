@@ -12,7 +12,7 @@ import net.fathomsoft.nova.util.Regex;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:58:29 PM
- * @version	v0.2.13 Jun 17, 2014 at 8:45:35 AM
+ * @version	v0.2.14 Jun 18, 2014 at 10:11:40 PM
  */
 public class Return extends Value
 {
@@ -38,30 +38,30 @@ public class Return extends Value
 	}
 
 	/**
-	 * @see net.fathomsoft.nova.tree.Node#generateCSource()
+	 * @see net.fathomsoft.nova.tree.Node#generateCSource(StringBuilder)
 	 */
 	@Override
-	public String generateCSource()
+	public StringBuilder generateCSource(StringBuilder builder)
 	{
-		return generateCSourceFragment() + ";\n";
+		return generateCSourceFragment(builder).append(";\n");
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.Node#generateCSourceFragment()
+	 * @see net.fathomsoft.nova.tree.Node#generateCSourceFragment(StringBuilder)
 	 */
 	@Override
-	public String generateCSourceFragment()
+	public StringBuilder generateCSourceFragment(StringBuilder builder)
 	{
-		String str = "return";
+		builder.append("return");
 		
 		Value value = getReturnedNode();
 		
 		if (value != null)
 		{
-			str += " " + value.generateCSourceFragment();
+			builder.append(' ').append(value.generateCSourceFragment());
 		}
 		
-		return str;
+		return builder;
 	}
 	
 	/**

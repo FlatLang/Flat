@@ -11,7 +11,7 @@ import net.fathomsoft.nova.util.Location;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 10, 2014 at 3:12:54 AM
- * @version	v0.2.13 Jun 17, 2014 at 8:45:35 AM
+ * @version	v0.2.14 Jun 18, 2014 at 10:11:40 PM
  */
 public class ArgumentList extends Node
 {
@@ -58,16 +58,14 @@ public class ArgumentList extends Node
 	}
 
 	/**
-	 * @see net.fathomsoft.nova.tree.Node#generateCSource()
+	 * @see net.fathomsoft.nova.tree.Node#generateCSource(StringBuilder)
 	 */
 	@Override
-	public String generateCSource()
+	public StringBuilder generateCSource(StringBuilder builder)
 	{
-		StringBuilder  builder = new StringBuilder();
+		MethodCall caller = getMethodCall();
 		
-		MethodCall caller  = getMethodCall();
-		
-		Method     method  = caller.getMethodDeclaration();
+		Method     method = caller.getMethodDeclaration();
 		
 		if (!caller.isExternal())
 		{
@@ -80,7 +78,7 @@ public class ArgumentList extends Node
 				
 				Identifier context = caller.getContextNode();
 				
-				builder.append(context.generateArgumentReference(getMethodCall())).append(", ");
+				context.generateArgumentReference(builder, getMethodCall()).append(", ");
 			}
 			
 			builder.append(Exception.EXCEPTION_DATA_IDENTIFIER);
@@ -93,7 +91,7 @@ public class ArgumentList extends Node
 		
 		for (int i = 0; i < getNumChildren(); i++)
 		{
-			builder.append(getChild(i).generateCSourceFragment());
+			getChild(i).generateCSourceFragment(builder);
 			
 			if (i < getNumChildren() - 1)
 			{
@@ -101,7 +99,7 @@ public class ArgumentList extends Node
 			}
 		}
 		
-		return builder.toString();
+		return builder;
 	}
 	
 	/**

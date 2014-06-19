@@ -1,8 +1,8 @@
 package net.fathomsoft.nova.tree.variables;
 
 import net.fathomsoft.nova.tree.Method;
-import net.fathomsoft.nova.tree.SyntaxTree;
 import net.fathomsoft.nova.tree.Node;
+import net.fathomsoft.nova.tree.SyntaxTree;
 import net.fathomsoft.nova.util.Location;
 
 /**
@@ -12,7 +12,7 @@ import net.fathomsoft.nova.util.Location;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:12:00 PM
- * @version	v0.2.13 Jun 17, 2014 at 8:45:35 AM
+ * @version	v0.2.14 Jun 18, 2014 at 10:11:40 PM
  */
 public class LocalVariable extends Variable
 {
@@ -44,6 +44,8 @@ public class LocalVariable extends Variable
 				
 				if (node instanceof Field)
 				{
+					var.validate(phase);
+					
 					node = node.clone(null, null);
 					
 					node.inheritChildren(var);
@@ -51,6 +53,8 @@ public class LocalVariable extends Variable
 					Node parent = getParent();
 					
 					parent.replace(this, node);
+					
+					return null;
 				}
 			}
 		}

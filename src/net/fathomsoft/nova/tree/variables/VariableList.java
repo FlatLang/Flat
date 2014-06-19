@@ -8,7 +8,7 @@ import net.fathomsoft.nova.util.Location;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 9, 2014 at 4:19:57 PM
- * @version	v0.2.13 Jun 17, 2014 at 8:45:35 AM
+ * @version	v0.2.14 Jun 18, 2014 at 10:11:40 PM
  */
 public class VariableList extends Node
 {
@@ -61,42 +61,38 @@ public class VariableList extends Node
 	 * 
 	 * @return The String output of the variables being freed.
 	 */
-	public String generateFreeVariablesOutput()
+	public StringBuilder generateFreeVariablesOutput(StringBuilder builder)
 	{
-		StringBuilder builder = new StringBuilder();
-		
 		for (int i = 0; i < getNumChildren(); i++)
 		{
 			Variable variable = (Variable)getChild(i);
 			
-			builder.append(variable.generateFreeOutput());
+			variable.generateFreeOutput(builder);
 		}
 		
-		return builder.toString();
+		return builder;
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.Node#generateCHeader()
+	 * @see net.fathomsoft.nova.tree.Node#generateCHeader(StringBuilder)
 	 */
 	@Override
-	public String generateCHeader()
+	public StringBuilder generateCHeader(StringBuilder builder)
 	{
-		return "";
+		return builder;
 	}
 
 	/**
-	 * @see net.fathomsoft.nova.tree.Node#generateCSource()
+	 * @see net.fathomsoft.nova.tree.Node#generateCSource(StringBuilder)
 	 */
 	@Override
-	public String generateCSource()
+	public StringBuilder generateCSource(StringBuilder builder)
 	{
-		StringBuilder builder = new StringBuilder();
-		
 		for (int i = 0; i < getNumChildren(); i++)
 		{
 			Node child = getChild(i);
 			
-			builder.append(child.generateCSource());
+			child.generateCSource(builder);
 		}
 		
 		if (getNumChildren() > 0)
@@ -104,7 +100,7 @@ public class VariableList extends Node
 			builder.append('\n');
 		}
 		
-		return builder.toString();
+		return builder;
 	}
 	
 	/**

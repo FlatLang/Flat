@@ -15,15 +15,15 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Feb 18, 2014 at 8:57:00 PM
- * @version	v0.2.13 Jun 17, 2014 at 8:45:35 AM
+ * @version	v0.2.14 Jun 18, 2014 at 10:11:40 PM
  */
 public class FileDeclaration extends Node
 {
 	//TODO: package name here?
 	
-	private String	header, source;
+	private StringBuilder	header, source;
 	
-	private File	file;
+	private File			file;
 	
 	/**
 	 * The default imports that each file uses.
@@ -209,7 +209,7 @@ public class FileDeclaration extends Node
 	 */
 	public String generateCHeaderName()
 	{
-		return getClassDeclaration().generateCSourceName() + ".h";
+		return getClassDeclaration().generateCSourceName(new StringBuilder()) + ".h";
 	}
 	
 	/**
@@ -222,7 +222,7 @@ public class FileDeclaration extends Node
 	 */
 	public String generateCSourceName()
 	{
-		return getClassDeclaration().generateCSourceName() + ".c";
+		return getClassDeclaration().generateCSourceName(new StringBuilder()) + ".c";
 	}
 	
 	/**
@@ -321,26 +321,24 @@ public class FileDeclaration extends Node
 	}
 
 	/**
-	 * @see net.fathomsoft.nova.tree.Identifier#generateCHeader()
+	 * @see net.fathomsoft.nova.tree.Identifier#generateCHeader(StringBuilder)
 	 */
 	@Override
-	public String generateCHeader()
+	public StringBuilder generateCHeader(StringBuilder builder)
 	{
 		if (header == null)
 		{
-			StringBuilder builder = new StringBuilder();
-			
 			String definitionName = "FILE_" + getName() + "_" + Nova.LANGUAGE_NAME.toUpperCase();
 			
 			builder.append("#pragma once").append('\n');
 			builder.append("#ifndef ").append(definitionName).append('\n');
 			builder.append("#define ").append(definitionName).append("\n\n");
 
-			builder.append(generateDummyTypes()).append('\n');
+			generateDummyTypes(builder).append('\n');
 			
 			ImportList imports = getImportList();
 			
-			builder.append(imports.generateCHeader());
+			imports.generateCHeader(builder);
 			
 			for (int i = 0; i < getNumChildren(); i++)
 			{
@@ -348,38 +346,36 @@ public class FileDeclaration extends Node
 				
 				if (child != imports)
 				{
-					builder.append(child.generateCHeader());
+					child.generateCHeader(builder);
 				}
 			}
 			
 			builder.append('\n').append("#endif");
 			
-			header = builder.toString();
+			header = builder;
 		}
 		
 		return header;
 	}
 
 	/**
-	 * @see net.fathomsoft.nova.tree.Identifier#generateCSource()
+	 * @see net.fathomsoft.nova.tree.Identifier#generateCSource(StringBuilder)
 	 */
 	@Override
-	public String generateCSource()
+	public StringBuilder generateCSource(StringBuilder builder)
 	{
 		if (source == null)
 		{
-			StringBuilder builder = new StringBuilder();
-			
 			builder.append("#include <precompiled.h>\n\n");
 			
 			for (int i = 0; i < getNumChildren(); i++)
 			{
 				Node child = getChild(i);
 				
-				builder.append(child.generateCSource());
+				child.generateCSource(builder);
 			}
 			
-			source = builder.toString();
+			source = builder;
 		}
 		
 		return source;
@@ -392,7 +388,7 @@ public class FileDeclaration extends Node
 	 */
 	public void setHeader(String header)
 	{
-		this.header = header;
+		this.header = new StringBuilder(header);
 	}
 	
 	/**
@@ -402,7 +398,7 @@ public class FileDeclaration extends Node
 	 */
 	public void setSource(String source)
 	{
-		this.source = source;
+		this.source = new StringBuilder(source);
 	}
 	
 	/**
@@ -429,10 +425,8 @@ public class FileDeclaration extends Node
 	 * @return The generated code used for generating the dummy class
 	 * 		types.
 	 */
-	private String generateDummyTypes()
+	private StringBuilder generateDummyTypes(StringBuilder builder)
 	{
-		StringBuilder builder = new StringBuilder();
-		
 //		builder.append("typedef struct ExceptionData ExceptionData;\n");
 		
 		for (int i = 0; i < getNumChildren(); i++)
@@ -461,7 +455,7 @@ public class FileDeclaration extends Node
 //			}
 //		}
 		
-		return builder.toString();
+		return builder;
 	}
 	
 	/**
@@ -474,7 +468,7 @@ public class FileDeclaration extends Node
 			return;
 		}
 		
-		setHeader(SyntaxUtils.formatText(header));
+		setHeader(SyntaxUtils.formatText(header.toString()));
 	}
 	
 	/**
@@ -487,7 +481,7 @@ public class FileDeclaration extends Node
 			return;
 		}
 		
-		setSource(SyntaxUtils.formatText(source));
+		setSource(SyntaxUtils.formatText(source.toString()));
 	}
 	
 	/**

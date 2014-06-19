@@ -9,7 +9,7 @@ import net.fathomsoft.nova.util.Location;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:56:34 PM
- * @version	v0.2.13 Jun 17, 2014 at 8:45:35 AM
+ * @version	v0.2.14 Jun 18, 2014 at 10:11:40 PM
  */
 public class ParameterList extends Node
 {
@@ -188,25 +188,21 @@ public class ParameterList extends Node
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.Node#generateCHeader()
+	 * @see net.fathomsoft.nova.tree.Node#generateCHeader(StringBuilder)
 	 */
 	@Override
-	public String generateCHeader()
+	public StringBuilder generateCHeader(StringBuilder builder)
 	{
-		return generateCSource();
+		return generateCSource(builder);
 	}
 
 	/**
-	 * @see net.fathomsoft.nova.tree.Node#generateCSource()
+	 * @see net.fathomsoft.nova.tree.Node#generateCSource(StringBuilder)
 	 */
 	@Override
-	public String generateCSource()
+	public StringBuilder generateCSource(StringBuilder builder)
 	{
 		Method method = (Method)getAncestorOfType(Method.class);
-		
-		StringBuilder builder = new StringBuilder();
-		
-//		builder.append("ExceptionData* ").append(Exception.EXCEPTION_DATA_IDENTIFIER);
 		
 		int start = 0;
 		
@@ -219,7 +215,7 @@ public class ParameterList extends Node
 		{
 			Node child = getChild(i);
 			
-			builder.append(child.generateCHeader());
+			child.generateCHeader(builder);
 			
 			if (i < getNumChildren() - 1)
 			{
@@ -227,7 +223,7 @@ public class ParameterList extends Node
 			}
 		}
 		
-		return builder.toString();
+		return builder;
 	}
 	
 	/**

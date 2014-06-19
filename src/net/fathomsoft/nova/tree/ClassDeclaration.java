@@ -2,8 +2,8 @@ package net.fathomsoft.nova.tree;
 
 import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.error.SyntaxMessage;
-import net.fathomsoft.nova.tree.variables.FieldList;
 import net.fathomsoft.nova.tree.variables.Field;
+import net.fathomsoft.nova.tree.variables.FieldList;
 import net.fathomsoft.nova.tree.variables.InstanceFieldList;
 import net.fathomsoft.nova.tree.variables.StaticFieldList;
 import net.fathomsoft.nova.util.Bounds;
@@ -18,7 +18,7 @@ import net.fathomsoft.nova.util.Regex;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:15:51 PM
- * @version	v0.2.13 Jun 17, 2014 at 8:45:35 AM
+ * @version	v0.2.14 Jun 18, 2014 at 10:11:40 PM
  */
 public class ClassDeclaration extends InstanceDeclaration
 {
@@ -696,13 +696,11 @@ public class ClassDeclaration extends InstanceDeclaration
 	}
 
 	/**
-	 * @see net.fathomsoft.nova.tree.Node#generateCHeader()
+	 * @see net.fathomsoft.nova.tree.Node#generateCHeader(StringBuilder)
 	 */
 	@Override
-	public String generateCHeader()
+	public StringBuilder generateCHeader(StringBuilder builder)
 	{
-		StringBuilder builder = new StringBuilder();
-		
 		if (isStatic())
 		{
 			SyntaxMessage.error("Static classes are not implemented in C yet.", this);
@@ -727,81 +725,52 @@ public class ClassDeclaration extends InstanceDeclaration
 		{
 			builder.append('\n').append("CCLASS_CLASS").append('\n').append('(').append('\n');
 			
-			builder.append(getName());
+			builder.append(getName()).append(", ").append('\n').append('\n');
 			
-//			if (containsNonStaticData())
-//			{
-				builder.append(", ");
+			fields.generateNonStaticCHeader(builder);
 			
-				builder.append('\n').append('\n');
+			if (containsNonStaticPrivateData())
+			{
+				builder.append("struct Private* prv;").append('\n');
+			}
 				
-				builder.append(fields.generateNonStaticCHeader());
-				
-				if (containsNonStaticPrivateData())
-				{
-					builder.append("struct Private* prv;").append('\n');
-				}
-//			}
-//			else
-//			{
-//				builder.append('\n');
-//			}
-			
 			builder.append(')').append('\n');
 		}
 		
-		builder.append(fields.generateStaticCHeader()).append('\n');
+		fields.generateStaticCHeader(builder).append('\n');
 		
 		MethodList constructors = getConstructorListNode();
-		builder.append(constructors.generateCHeader());
+		constructors.generateCHeader(builder);
 		
 		MethodList destructors = getDestructorListNode();
-		builder.append(destructors.generateCHeader());
+		destructors.generateCHeader(builder);
 		
 		MethodList methods = getMethodList();
-		builder.append(methods.generateCHeader());
+		methods.generateCHeader(builder);
 		
-//		if (containsStaticData())
-//		{
-//			builder.append("extern ").append(getName()).append("* ").append("__static__").append(getName()).append(';').append('\n').append('\n');
-//		}
-		
-		return builder.toString();
+		return builder;
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.Node#generateCSource()
+	 * @see net.fathomsoft.nova.tree.Node#generateCSource(StringBuilder)
 	 */
 	@Override
-	public String generateCSource()
+	public StringBuilder generateCSource(StringBuilder builder)
 	{
-		StringBuilder builder = new StringBuilder();
-		
-		FieldList fields  = getFieldList();
+		FieldList fields = getFieldList();
 		
 		InstanceFieldList privateFields = fields.getPrivateFieldList();
 		
-//		if (containsStaticData())
-//		{
-//			builder.append('\n');
-//			builder.append(getName()).append("* ").append("__static__").append(getName()).append(';').append('\n');
-//		}
-		
 		if (containsNonStaticPrivateData())
 		{
-//			if (!containsStaticData())
-//			{
-				builder.append('\n');
-//			}
+			builder.append('\n');
 			
-			builder.append("CCLASS_PRIVATE").append('\n').append('(').append('\n');
-			builder.append(privateFields.generateCSource());
-			builder.append(')').append('\n');
+			builder.append("CCLASS_PRIVATE").append('\n').append('(').append('\n').append(privateFields.generateCSource()).append(')').append('\n');
 		}
 		
 		builder.append(generatePrivateMethodPrototypes());
 		
-		builder.append(fields.generateStaticCSource());
+		fields.generateStaticCSource(builder);
 		
 		for (int i = 6; i < getNumChildren(); i++)
 		{
@@ -810,13 +779,13 @@ public class ClassDeclaration extends InstanceDeclaration
 			builder.append('\n').append(child.generateCSource());
 		}
 
-		builder.append(fields.generateNonStaticCSource());
+		fields.generateNonStaticCSource(builder);
 		
-		builder.append(getConstructorListNode().generateCSource());
-		builder.append(getDestructorListNode().generateCSource());
-		builder.append(getMethodList().generateCSource());
+		getConstructorListNode().generateCSource(builder);
+		getDestructorListNode().generateCSource(builder);
+		getMethodList().generateCSource(builder);
 		
-		return builder.toString();
+		return builder;
 	}
 	
 	/**
@@ -920,9 +889,9 @@ public class ClassDeclaration extends InstanceDeclaration
 	 * @see net.fathomsoft.nova.tree.variables.Variable#generateCSourceName()
 	 */
 	@Override
-	public String generateCSourceName()
+	public StringBuilder generateCSourceName(StringBuilder builder)
 	{
-		return Nova.LANGUAGE_NAME + getName();
+		return builder.append(Nova.LANGUAGE_NAME).append(getName());
 	}
 	
 	/**
@@ -942,7 +911,7 @@ public class ClassDeclaration extends InstanceDeclaration
 			
 			if (method.getVisibility() == InstanceDeclaration.PRIVATE)
 			{
-				builder.append(method.generateCSourcePrototype()).append('\n');
+				method.generateCSourcePrototype(builder).append('\n');
 			}
 		}
 		

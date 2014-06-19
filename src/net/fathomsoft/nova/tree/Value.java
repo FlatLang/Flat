@@ -13,7 +13,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.2.4 May 2, 2014 at 11:14:37 PM
- * @version	v0.2.13 Jun 17, 2014 at 8:45:35 AM
+ * @version	v0.2.14 Jun 18, 2014 at 10:11:40 PM
  */
 public class Value extends Node
 {
@@ -290,7 +290,7 @@ public class Value extends Node
 	{
 		Program program = getProgram();
 		
-		ClassDeclaration   clazz   = program.getClassDeclaration(type);
+		ClassDeclaration clazz = program.getClassDeclaration(type);
 		
 		if (clazz != null)
 		{
@@ -390,7 +390,7 @@ public class Value extends Node
 	{
 		Node parent = getParent();
 		
-		byte     type   = dataType;
+		byte type   = dataType;
 		
 		if (parent instanceof ArgumentList)
 		{
@@ -497,12 +497,12 @@ public class Value extends Node
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.Node#generateCSource()
+	 * @see net.fathomsoft.nova.tree.Node#generateCSource(StringBuilder)
 	 */
 	@Override
-	public String generateCSource()
+	public StringBuilder generateCSource(StringBuilder builder)
 	{
-		return generateCSourceFragment() + ";\n";
+		return generateCSourceFragment(builder).append(";\n");
 	}
 	
 	/**
@@ -510,14 +510,14 @@ public class Value extends Node
 	 * 
 	 * @return The C syntax for the type of the Value.
 	 */
-	public String generateCTypeOutput()
+	public StringBuilder generateCTypeOutput(StringBuilder builder)
 	{
 		if (type.equals("long"))
 		{
-			return "long_long";
+			return builder.append("long_long");
 		}
 		
-		return type;
+		return builder.append(type);
 	}
 	
 	/**
@@ -527,9 +527,21 @@ public class Value extends Node
 	 * @return What the method call looks like when it is being used in
 	 * 		action
 	 */
-	public String generateUseOutput()
+	public final StringBuilder generateUseOutput()
 	{
-		return generateCTypeOutput();
+		return generateUseOutput(new StringBuilder());
+	}
+	
+	/**
+	 * Generate the representation of when the value node is being used
+	 * in action.
+	 * 
+	 * @return What the method call looks like when it is being used in
+	 * 		action
+	 */
+	public StringBuilder generateUseOutput(StringBuilder builder)
+	{
+		return generateCTypeOutput(builder);
 	}
 	
 	/**
@@ -540,7 +552,7 @@ public class Value extends Node
 	{
 		StringBuilder builder = new StringBuilder();
 		
-		builder.append(generateUseOutput());
+		generateUseOutput(builder);
 		
 		if (outputChildren)
 		{

@@ -15,7 +15,7 @@ import net.fathomsoft.nova.util.StringUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 10:00:11 PM
- * @version	v0.2.13 Jun 17, 2014 at 8:45:35 AM
+ * @version	v0.2.14 Jun 18, 2014 at 10:11:40 PM
  */
 public class UnaryOperation extends Value
 {
@@ -67,30 +67,28 @@ public class UnaryOperation extends Value
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.Node#generateCSource()
+	 * @see net.fathomsoft.nova.tree.Node#generateCSource(StringBuilder)
 	 */
 	@Override
-	public String generateCSource()
+	public StringBuilder generateCSource(StringBuilder builder)
 	{
-		return generateCSourceFragment() + ";\n";
+		return generateCSourceFragment(builder).append(";\n");
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.Node#generateCSourceFragment()
+	 * @see net.fathomsoft.nova.tree.Node#generateCSourceFragment(StringBuilder)
 	 */
 	@Override
-	public String generateCSourceFragment()
+	public StringBuilder generateCSourceFragment(StringBuilder builder)
 	{
-		StringBuilder builder = new StringBuilder();
-		
 		for (int i = 0; i < getNumChildren(); i++)
 		{
 			Node child = getChild(i);
 			
-			builder.append(child.generateCSourceFragment());
+			child.generateCSourceFragment(builder);
 		}
 		
-		return builder.toString();
+		return builder;
 	}
 	
 	/**

@@ -15,7 +15,7 @@ import net.fathomsoft.nova.util.StringUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:50:47 PM
- * @version	v0.2.13 Jun 17, 2014 at 8:45:35 AM
+ * @version	v0.2.14 Jun 18, 2014 at 10:11:40 PM
  */
 public class Constructor extends Method
 {
@@ -32,18 +32,16 @@ public class Constructor extends Method
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.Node#generateCHeader()
+	 * @see net.fathomsoft.nova.tree.Node#generateCHeader(StringBuilder)
 	 */
 	@Override
-	public String generateCHeader()
+	public StringBuilder generateCHeader(StringBuilder builder)
 	{
-		StringBuilder builder = new StringBuilder();
-		
 		if (isVisibilityValid())
 		{
 			if (getVisibility() == InstanceDeclaration.PRIVATE)
 			{
-				return "";
+				return builder;
 			}
 		}
 //		if (isStatic())
@@ -68,20 +66,16 @@ public class Constructor extends Method
 //			return null;
 //		}
 		
-		builder.append(generateCSourcePrototype()).append('\n');
-		
-		return builder.toString();
+		return generateCSourcePrototype(builder).append('\n');
 	}
 
 	/**
-	 * @see net.fathomsoft.nova.tree.Node#generateCSource()
+	 * @see net.fathomsoft.nova.tree.Node#generateCSource(StringBuilder)
 	 */
 	@Override
-	public String generateCSource()
+	public StringBuilder generateCSource(StringBuilder builder)
 	{
-		StringBuilder builder = new StringBuilder();
-		
-		builder.append(generateCSourceSignature()).append('\n');
+		generateCSourceSignature(builder).append('\n');
 		
 		builder.append('{').append('\n');
 		
@@ -105,9 +99,7 @@ public class Constructor extends Method
 		
 		builder.append('\n').append('\n');
 		
-//		builder.append(generateMethodAssignments()).append('\n');
-		
-		builder.append(generateFieldDefaultAssignments());
+		generateFieldDefaultAssignments(builder);
 		
 		for (int i = 0; i < getNumChildren(); i++)
 		{
@@ -115,15 +107,17 @@ public class Constructor extends Method
 			
 			if (child != getParameterList())
 			{
-				builder.append(child.generateCSource());
+				child.generateCSource(builder);
 			}
 		}
 		
-		builder.append('\n').append("return ").append(Method.getObjectReferenceIdentifier()).append(';').append('\n');
+		builder.append('\n');
+		
+		builder.append("return ").append(Method.getObjectReferenceIdentifier()).append(';').append('\n');
 		
 		builder.append('}').append('\n');
 		
-		return builder.toString();
+		return builder;
 	}
 	
 	/**
@@ -134,13 +128,11 @@ public class Constructor extends Method
 	 * @return A String containing the code needed to assign default values
 	 * 		to each uninitialized/uninstantiated field.
 	 */
-	private String generateFieldDefaultAssignments()
+	private StringBuilder generateFieldDefaultAssignments(StringBuilder builder)
 	{
-		StringBuilder builder = new StringBuilder();
+		ClassDeclaration  classDeclaration = (ClassDeclaration)getAncestorOfType(ClassDeclaration.class);
 		
-		ClassDeclaration classDeclaration = (ClassDeclaration)getAncestorOfType(ClassDeclaration.class);
-		
-		InstanceFieldList fields = classDeclaration.getFieldList().getPublicFieldList();
+		InstanceFieldList fields           = classDeclaration.getFieldList().getPublicFieldList();
 		
 		for (int i = 0; i < fields.getNumChildren(); i++)
 		{
@@ -148,7 +140,7 @@ public class Constructor extends Method
 			
 			if (!child.isExternal())
 			{
-				builder.append(child.generateUseOutput()).append(" = ").append(Variable.getNullText()).append(';').append('\n');
+				child.generateUseOutput(builder).append(" = ").append(Variable.getNullText()).append(';').append('\n');
 			}
 		}
 		
@@ -160,53 +152,26 @@ public class Constructor extends Method
 			
 			if (!child.isExternal())
 			{
-				builder.append(child.generateUseOutput()).append(" = ").append(Variable.getNullText()).append(';').append('\n');
+				child.generateUseOutput(builder).append(" = ").append(Variable.getNullText()).append(';').append('\n');
 			}
 		}
 		
-		return builder.toString();
-	}
-	
-	/**
-	 * This method returns a String that contains the code needed to
-	 * assign the c method pointers to the respective methods in the
-	 * class.
-	 * 
-	 * @return A String containing the code needed to assign the methods.
-	 */
-	private String generateMethodAssignments()
-	{
-		StringBuilder builder = new StringBuilder();
-		
-		ClassDeclaration classDeclaration = (ClassDeclaration)getAncestorOfType(ClassDeclaration.class);
-		
-		MethodList methods = classDeclaration.getMethodList();
-		
-		for (int i = 0; i < methods.getNumChildren(); i++)
-		{
-			Method method = (Method)methods.getChild(i);
-			
-			builder.append(Method.getObjectReferenceIdentifier()).append("->").append(method.getName()).append(" = ").append(method.generateMethodName()).append(';').append('\n');
-		}
-		
-		return builder.toString();
+		return builder;
 	}
 	
 	/**
 	 * @see net.fathomsoft.nova.tree.Method#generateCSourcePrototype()
 	 */
-	public String generateCSourcePrototype()
+	public StringBuilder generateCSourcePrototype(StringBuilder builder)
 	{
-		return generateCSourceSignature().concat(";");
+		return generateCSourceSignature(builder).append(";");
 	}
 	
 	/**
 	 * @see net.fathomsoft.nova.tree.Method#generateCSourceSignature()
 	 */
-	public String generateCSourceSignature()
+	public StringBuilder generateCSourceSignature(StringBuilder builder)
 	{
-		StringBuilder builder = new StringBuilder();
-
 		ClassDeclaration classDeclaration = (ClassDeclaration)getAncestorOfType(ClassDeclaration.class);
 		
 		if (isConstant())
@@ -222,11 +187,11 @@ public class Constructor extends Method
 		
 		builder.append(classDeclaration.getName()).append('(');
 		
-		builder.append(getParameterList().generateCSource());
+		getParameterList().generateCSource(builder);
 		
 		builder.append(')');
 		
-		return builder.toString();
+		return builder;
 	}
 	
 	/**

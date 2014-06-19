@@ -12,7 +12,7 @@ import net.fathomsoft.nova.util.Location;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:00:19 PM
- * @version	v0.2.13 Jun 17, 2014 at 8:45:35 AM
+ * @version	v0.2.14 Jun 18, 2014 at 10:11:40 PM
  */
 public class Identifier extends Value
 {
@@ -341,9 +341,11 @@ public class Identifier extends Value
 	 * @return The C output for when this value node is being used
 	 * 		as an argument for a method call.
 	 */
-	public String generateArgumentReference(MethodCall callingMethod)
+	public StringBuilder generateArgumentReference(StringBuilder builder, MethodCall callingMethod)
 	{
-		return generateUseOutput() + generateChildrenCSourceFragment(true, callingMethod);
+		generateUseOutput(builder);
+		
+		return generateChildrenCSourceFragment(builder, true, callingMethod);
 	}
 	
 	/**
@@ -351,9 +353,19 @@ public class Identifier extends Value
 	 * 
 	 * @return The generated String.
 	 */
-	public String generateChildrenCSourceFragment()
+	public StringBuilder generateChildrenCSourceFragment()
 	{
-		return generateChildrenCSourceFragment(true);
+		return generateChildrenCSourceFragment(new StringBuilder(), true);
+	}
+	
+	/**
+	 * Generate a String representing the accessed nodes.
+	 * 
+	 * @return The generated String.
+	 */
+	public StringBuilder generateChildrenCSourceFragment(StringBuilder builder)
+	{
+		return generateChildrenCSourceFragment(builder, true);
 	}
 	
 	/**
@@ -363,9 +375,9 @@ public class Identifier extends Value
 	 * 		a "->" reference operator.
 	 * @return The generated String.
 	 */
-	public String generateChildrenCSourceFragment(boolean reference)
+	public StringBuilder generateChildrenCSourceFragment(StringBuilder builder, boolean reference)
 	{
-		return generateChildrenCSourceFragment(reference, null);
+		return generateChildrenCSourceFragment(builder, reference, null);
 	}
 	
 	/**
@@ -376,20 +388,13 @@ public class Identifier extends Value
 	 * @param callingMethod The method that the node is calling.
 	 * @return The generated String.
 	 */
-	public String generateChildrenCSourceFragment(boolean reference, MethodCall callingMethod)
+	public StringBuilder generateChildrenCSourceFragment(StringBuilder builder, boolean reference, MethodCall callingMethod)
 	{
-		StringBuilder builder = new StringBuilder();
-		
-		if (getNumChildren() <= 0)
-		{
-			return "";
-		}
-		
-		Identifier child = ((Identifier)this).getAccessedNode();
+		Identifier child = getAccessedNode();
 		
 		if (child == null)
 		{
-			return "";
+			return builder;
 		}
 		
 		if (reference)
@@ -401,12 +406,12 @@ public class Identifier extends Value
 		{
 			if (child instanceof MethodCall || child instanceof Instantiation)
 			{
-				return "";
+				return builder.delete(builder.length() - 2, builder.length());
 			}
 			
-			builder.append(child.generateUseOutput() + child.generateChildrenCSourceFragment(true, callingMethod));
+			child.generateUseOutput(builder);
 			
-			return builder.toString();
+			return child.generateChildrenCSourceFragment(builder, true, callingMethod);
 		}
 		
 		if (child instanceof Identifier)
@@ -415,27 +420,22 @@ public class Identifier extends Value
 			
 			if (value.isSpecialFragment())
 			{
-				builder.append(value.generateSpecialFragment());//value.generateUseOutput() + value.generateChildrenCSourceFragment(true, argument));
-				
-				return builder.toString();
+				return value.generateSpecialFragment(builder);
 			}
 		}
 		
-		String s = child.generateCSourceFragment();
+		StringBuilder s = child.generateCSourceFragment();
 		
-		if (s != null)
+		if (s.length() > 0)
 		{
-			builder.append(child.generateCSourceFragment());
+			builder.append(s);
 		}
-		else
+		else if (reference)
 		{
-			if (reference)
-			{
-				builder.delete(builder.length() - 2, builder.length());
-			}
+			builder.delete(builder.length() - 2, builder.length());
 		}
 		
-		return builder.toString();
+		return builder;
 	}
 	
 	/**
@@ -444,37 +444,16 @@ public class Identifier extends Value
 	 * 
 	 * @return A specialized String generation.
 	 */
-	public String generateSpecialFragment()
+	public StringBuilder generateSpecialFragment(StringBuilder builder)
 	{
-		Node current = ((Identifier)this).getLastAccessedNode();
+		Node current = getLastAccessedNode();
 		
 		while (!(current instanceof MethodCall || current instanceof Instantiation))
 		{
 			current = current.getParent();
 		}
 		
-		return current.generateCSourceFragment();
-		
-//		while (current != null)
-//		{
-//			if (current instanceof MethodCall || current instanceof Instantiation)
-//			{
-//				
-//			}
-//			else if (current instanceof Value)
-//			{
-//				Value value = (Value)current;
-//				
-//				if (value.isSpecialFragment())
-//				{
-//					return value.generateSpecialFragment();
-//				}
-//			}
-//			
-//			current = current.getParent();
-//		}
-//		
-//		return null;
+		return current.generateCSourceFragment(builder);
 	}
 	
 	/**
@@ -508,35 +487,35 @@ public class Identifier extends Value
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.Node#generateCSource()
+	 * @see net.fathomsoft.nova.tree.Node#generateCSource(StringBuilder)
 	 */
 	@Override
-	public String generateCSource()
+	public StringBuilder generateCSource(StringBuilder builder)
 	{
-		return generateCSourceFragment() + ";\n";
+		return generateCSourceFragment(builder).append(";\n");
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.Node#generateCSourceFragment()
+	 * @see net.fathomsoft.nova.tree.Node#generateCSourceFragment(StringBuilder)
 	 */
 	@Override
-	public String generateCSourceFragment()
+	public StringBuilder generateCSourceFragment(StringBuilder builder)
 	{
 		if (isSpecialFragment())
 		{
-			return generateSpecialFragment();
+			return generateSpecialFragment(builder);
 		}
 		
-		return name + generateChildrenCSourceFragment();
+		return builder.append(name).append(generateChildrenCSourceFragment(builder));
 	}
 	
 	/**
 	 * @see net.fathomsoft.nova.tree.Value#generateUseOutput()
 	 */
 	@Override
-	public String generateUseOutput()
+	public StringBuilder generateUseOutput(StringBuilder builder)
 	{
-		return name;
+		return builder.append(name);
 	}
 	
 	/**

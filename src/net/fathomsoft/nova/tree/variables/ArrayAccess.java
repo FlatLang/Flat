@@ -5,9 +5,9 @@ import net.fathomsoft.nova.tree.ClassDeclaration;
 import net.fathomsoft.nova.tree.Dimensions;
 import net.fathomsoft.nova.tree.Identifier;
 import net.fathomsoft.nova.tree.Literal;
+import net.fathomsoft.nova.tree.Node;
 import net.fathomsoft.nova.tree.Program;
 import net.fathomsoft.nova.tree.SyntaxTree;
-import net.fathomsoft.nova.tree.Node;
 import net.fathomsoft.nova.util.Bounds;
 import net.fathomsoft.nova.util.Location;
 import net.fathomsoft.nova.util.Patterns;
@@ -22,7 +22,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.2 Mar 24, 2014 at 10:45:29 PM
- * @version	v0.2.13 Jun 17, 2014 at 8:45:35 AM
+ * @version	v0.2.14 Jun 18, 2014 at 10:11:40 PM
  */
 public class ArrayAccess extends Variable
 {
@@ -95,34 +95,27 @@ public class ArrayAccess extends Variable
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.Node#generateCSource()
+	 * @see net.fathomsoft.nova.tree.Node#generateCSource(StringBuilder)
 	 */
 	@Override
-	public String generateCSource()
+	public StringBuilder generateCSource(StringBuilder builder)
 	{
-		StringBuilder builder = new StringBuilder();
-		
-		builder.append(generateCSourceFragment());
-		builder.append(';').append('\n');
-		
-		return builder.toString();
+		return generateCSourceFragment(builder).append(';').append('\n');
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.Node#generateCSourceFragment()
+	 * @see net.fathomsoft.nova.tree.Node#generateCSourceFragment(StringBuilder)
 	 */
 	@Override
-	public String generateCSourceFragment()
+	public StringBuilder generateCSourceFragment(StringBuilder builder)
 	{
-		StringBuilder  builder        = new StringBuilder();
-		
 		Dimensions dimensions = getDimensions();
 		
-		builder.append(generateUseOutput());
-		builder.append(dimensions.generateCSourceFragment());
-		builder.append(generateChildrenCSourceFragment());
+		generateUseOutput(builder);
+		dimensions.generateCSourceFragment(builder);
+		generateChildrenCSourceFragment(builder);
 		
-		return builder.toString();
+		return builder;
 	}
 	
 	/**

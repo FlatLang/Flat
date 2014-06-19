@@ -14,7 +14,7 @@ import net.fathomsoft.nova.util.Patterns;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:12:04 PM
- * @version	v0.2.13 Jun 17, 2014 at 8:45:35 AM
+ * @version	v0.2.14 Jun 18, 2014 at 10:11:40 PM
  */
 public class Field extends InstanceDeclaration
 {
@@ -90,27 +90,27 @@ public class Field extends InstanceDeclaration
 	}
 
 	/**
-	 * @see net.fathomsoft.nova.tree.Node#generateCHeader()
+	 * @see net.fathomsoft.nova.tree.Node#generateCHeader(StringBuilder)
 	 */
 	@Override
-	public String generateCHeader()
+	public StringBuilder generateCHeader(StringBuilder builder)
 	{
 		if (isDeclaration() && isStatic() && (getVisibility() == PUBLIC || getVisibility() == VISIBLE))
 		{
-			return "extern " + generateCSource();
+			builder.append("extern ");
+			
+			return generateCSource(builder);
 		}
 		
-		return generateCSource();
+		return generateCSource(builder);
 	}
 
 	/**
-	 * @see net.fathomsoft.nova.tree.Node#generateCSource()
+	 * @see net.fathomsoft.nova.tree.Node#generateCSource(StringBuilder)
 	 */
 	@Override
-	public String generateCSource()
+	public StringBuilder generateCSource(StringBuilder builder)
 	{
-		StringBuilder builder = new StringBuilder();
-		
 		if (isDeclaration())
 		{
 	//		if (isStatic())
@@ -122,7 +122,7 @@ public class Field extends InstanceDeclaration
 				builder.append(getConstantText()).append(' ');
 			}
 			
-			builder.append(generateCTypeOutput());
+			generateCTypeOutput(builder);
 			
 			if (isReference())
 			{
@@ -141,7 +141,9 @@ public class Field extends InstanceDeclaration
 				builder.append('*');
 			}
 			
-			builder.append(' ').append(generateCSourceName());
+			builder.append(' ');
+			
+			generateCSourceName(builder);
 			
 	//		if (!isPrimitiveType())
 	//		{
@@ -150,26 +152,24 @@ public class Field extends InstanceDeclaration
 		}
 		else
 		{
-			builder.append(generateCSourceFragment());
+			generateCSourceFragment(builder);
 		}
 		
-		builder.append(';').append('\n');
-		
-		return builder.toString();
+		return builder.append(';').append('\n');
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.Node#generateCSourceFragment()
+	 * @see net.fathomsoft.nova.tree.Node#generateCSourceFragment(StringBuilder)
 	 */
 	@Override
-	public String generateCSourceFragment()
+	public StringBuilder generateCSourceFragment(StringBuilder builder)
 	{
 		if (isSpecialFragment())
 		{
-			return generateSpecialFragment();
+			return generateSpecialFragment(builder);
 		}
 		
-		return generateUseOutput() + generateChildrenCSourceFragment();
+		return generateUseOutput(builder).append(generateChildrenCSourceFragment());
 	}
 	
 	/**

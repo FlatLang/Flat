@@ -13,7 +13,7 @@ import net.fathomsoft.nova.util.Regex;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:55:15 PM
- * @version	v0.2.13 Jun 17, 2014 at 8:45:35 AM
+ * @version	v0.2.14 Jun 18, 2014 at 10:11:40 PM
  */
 public class ForLoop extends Loop
 {
@@ -83,36 +83,32 @@ public class ForLoop extends Loop
 	}
 
 	/**
-	 * @see net.fathomsoft.nova.tree.Node#generateCSource()
+	 * @see net.fathomsoft.nova.tree.Node#generateCSource(StringBuilder)
 	 */
 	@Override
-	public String generateCSource()
+	public StringBuilder generateCSource(StringBuilder builder)
 	{
-		StringBuilder  builder = new StringBuilder();
-		
 		Assignment initialization = getLoopInitialization();
 		Node       condition      = getCondition();
 		Node       update         = getLoopUpdate();
 		
 		if (initialization != null)
 		{
-			builder.append(initialization.generateCSource()).append('\n');
+			initialization.generateCSource(builder).append('\n');
 		}
 		
-		builder.append("for (");
-		
-		builder.append(';').append(' ');
+		builder.append("for (; ");
 		
 		if (condition != null)
 		{
-			builder.append(condition.generateCSourceFragment());
+			condition.generateCSourceFragment(builder);
 		}
 		
 		builder.append(';').append(' ');
 		
 		if (update != null)
 		{
-			builder.append(update.generateCSourceFragment());
+			update.generateCSourceFragment(builder);
 		}
 		
 		builder.append(')').append('\n');
@@ -123,11 +119,11 @@ public class ForLoop extends Loop
 			
 			if (child != getArgumentList())
 			{
-				builder.append(child.generateCSource());
+				child.generateCSource(builder);
 			}
 		}
 		
-		return builder.toString();
+		return builder;
 	}
 	
 	/**

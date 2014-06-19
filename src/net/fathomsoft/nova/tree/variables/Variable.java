@@ -6,9 +6,9 @@ import net.fathomsoft.nova.tree.Identifier;
 import net.fathomsoft.nova.tree.InstanceDeclaration;
 import net.fathomsoft.nova.tree.LocalDeclaration;
 import net.fathomsoft.nova.tree.Method;
+import net.fathomsoft.nova.tree.Node;
 import net.fathomsoft.nova.tree.Program;
 import net.fathomsoft.nova.tree.SyntaxTree;
-import net.fathomsoft.nova.tree.Node;
 import net.fathomsoft.nova.tree.Value;
 import net.fathomsoft.nova.tree.exceptionhandling.Exception;
 import net.fathomsoft.nova.util.Location;
@@ -20,7 +20,7 @@ import net.fathomsoft.nova.util.Location;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:02:42 PM
- * @version	v0.2.13 Jun 17, 2014 at 8:45:35 AM
+ * @version	v0.2.14 Jun 18, 2014 at 10:11:40 PM
  */
 public class Variable extends Identifier
 {
@@ -252,9 +252,9 @@ public class Variable extends Identifier
 	 * @return What the variable looks like when it is being used to do
 	 * 		something.
 	 */
-	public String generateUseOutput()
+	public StringBuilder generateUseOutput(StringBuilder builder)
 	{
-		return generateUseOutput(false);
+		return generateUseOutput(builder, false);
 	}
 	
 	/**
@@ -275,10 +275,8 @@ public class Variable extends Identifier
 	 * @return What the variable looks like when it is being used to do
 	 * 		something.
 	 */
-	public String generateUseOutput(boolean pointer)
+	public StringBuilder generateUseOutput(StringBuilder builder, boolean pointer)
 	{
-		StringBuilder builder = new StringBuilder();
-		
 		if (!isSpecialFragment())
 		{
 			builder.append(generateDataTypeOutput());
@@ -341,28 +339,24 @@ public class Variable extends Identifier
 			}
 		}
 		
-		builder.append(generateCSourceName());
-		
-		return builder.toString();
+		return generateCSourceName(builder);
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.Node#generateCHeader()
+	 * @see net.fathomsoft.nova.tree.Node#generateCHeader(StringBuilder)
 	 */
 	@Override
-	public String generateCHeader()
+	public StringBuilder generateCHeader(StringBuilder builder)
 	{
-		return generateCSource();
+		return generateCSource(builder);
 	}
 
 	/**
-	 * @see net.fathomsoft.nova.tree.Node#generateCSource()
+	 * @see net.fathomsoft.nova.tree.Node#generateCSource(StringBuilder)
 	 */
 	@Override
-	public String generateCSource()
+	public StringBuilder generateCSource(StringBuilder builder)
 	{
-		StringBuilder builder = new StringBuilder();
-		
 		if (isDeclaration())
 		{
 			if (isConstant())
@@ -370,7 +364,7 @@ public class Variable extends Identifier
 				builder.append(getConstantText()).append(' ');
 			}
 			
-			builder.append(generateCTypeOutput());
+			generateCTypeOutput(builder);
 	
 			if (isReference())
 			{
@@ -389,32 +383,30 @@ public class Variable extends Identifier
 				builder.append('*');
 			}
 			
-			builder.append(' ').append(generateCSourceFragment());//generateCSourceName());//generateCSourceFragment());
+			builder.append(' ');
+			
+			generateCSourceFragment(builder);//generateCSourceName());//generateCSourceFragment());
 		}
 		else
 		{
-			builder.append(generateCSourceFragment());
+			generateCSourceFragment(builder);
 		}
 		
-		builder.append(';').append('\n');
-		
-		return builder.toString();
+		return builder.append(';').append('\n');
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.Node#generateCSourceFragment()
+	 * @see net.fathomsoft.nova.tree.Node#generateCSourceFragment(StringBuilder)
 	 */
 	@Override
-	public String generateCSourceFragment()
+	public StringBuilder generateCSourceFragment(StringBuilder builder)
 	{
 		if (isSpecialFragment())
 		{
-			return generateSpecialFragment();
+			return generateSpecialFragment(builder);
 		}
 		
-		return generateUseOutput() + generateChildrenCSourceFragment();
-		
-//		return generateCSourceName();
+		return generateUseOutput(builder).append(generateChildrenCSourceFragment());
 	}
 	
 	/**
@@ -424,13 +416,13 @@ public class Variable extends Identifier
 	 * @return The name of the variable that will be output to the C
 	 * 		source output.
 	 */
-	public String generateCSourceName()
+	public StringBuilder generateCSourceName(StringBuilder builder)
 	{
 		String name = getName();
 		
 		if (forceOriginal || isExternal())
 		{
-			return name;
+			return builder.append(name);
 		}
 		
 		ClassDeclaration clazz = getDeclaringClassDeclaration();
@@ -441,28 +433,26 @@ public class Variable extends Identifier
 			
 			if (node.isStatic())
 			{
-				return "static_" + Nova.LANGUAGE_NAME.toLowerCase() + "_" + clazz.generateUniquePrefix() + "_" + name;
+				return builder.append("static_").append(Nova.LANGUAGE_NAME.toLowerCase()).append("_").append(clazz.generateUniquePrefix()).append("_").append(name);
 			}
 		}
 		
-		String str = Nova.LANGUAGE_NAME.toLowerCase() + "_";
+		builder.append(Nova.LANGUAGE_NAME.toLowerCase()).append("_");
 		
 		Variable existing = SyntaxTree.getExistingNode(getParent(), name);
 		
 		if (this instanceof Field || existing instanceof Field)
 		{
-			str += clazz.generateUniquePrefix();
+			builder.append(clazz.generateUniquePrefix());
 		}
 		else
 		{
 			LocalDeclaration declaration = (LocalDeclaration)existing;
 			
-			str += declaration.getScopeID();
+			builder.append(declaration.getScopeID());
 		}
 		
-		str += "_" + name;
-		
-		return str;
+		return builder.append("_").append(name);
 	}
 	
 	/**
@@ -499,28 +489,30 @@ public class Variable extends Identifier
 	 * 
 	 * @return The generated String for the code.
 	 */
-	public String generateFreeOutput()
+	public StringBuilder generateFreeOutput(StringBuilder builder)
 	{
 		if (isConstant())
 		{
-			return "";
+			return builder;
 		}
-		
-		StringBuilder builder = new StringBuilder();
 		
 		if (isPrimitiveType() || isExternalType())
 		{
 			if (!isPrimitive())
 			{
-				builder.append("NOVA_FREE(").append(generateUseOutput(true)).append(");\n");
+				builder.append("NOVA_FREE(");
+				
+				generateUseOutput(builder, true).append(");\n");
 			}
 		}
 		else
 		{
-			builder.append(Nova.LANGUAGE_NAME.toLowerCase()).append("_del_").append(getType()).append('(').append('&').append(generateUseOutput(true)).append(", ").append(Exception.EXCEPTION_DATA_IDENTIFIER).append(");\n");
+			builder.append(Nova.LANGUAGE_NAME.toLowerCase()).append("_del_").append(getType()).append('(').append('&');
+			
+			generateUseOutput(builder, true).append(", ").append(Exception.EXCEPTION_DATA_IDENTIFIER).append(");\n");
 		}
 		
-		return builder.toString();
+		return builder;
 	}
 	
 	/**

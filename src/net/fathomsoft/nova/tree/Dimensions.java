@@ -8,7 +8,7 @@ import net.fathomsoft.nova.util.Location;
  * 
  * @author	Braden Steffaniak
  * @since	v0.2.5 May 19, 2014 at 12:09:41 AM
- * @version	v0.2.13 Jun 17, 2014 at 8:45:35 AM
+ * @version	v0.2.14 Jun 18, 2014 at 10:11:40 PM
  */
 public class Dimensions extends Node
 {
@@ -21,13 +21,11 @@ public class Dimensions extends Node
 	}
 
 	/**
-	 * @see net.fathomsoft.nova.tree.Node#generateCSourceFragment()
+	 * @see net.fathomsoft.nova.tree.Node#generateCSourceFragment(StringBuilder)
 	 */
 	@Override
-	public String generateCSourceFragment()
+	public StringBuilder generateCSourceFragment(StringBuilder builder)
 	{
-		StringBuilder builder = new StringBuilder();
-		
 		for (int i = 0; i < getNumChildren(); i++)
 		{
 			Node child = getChild(i);
@@ -35,7 +33,7 @@ public class Dimensions extends Node
 			builder.append('[').append(child.generateCSourceFragment()).append(']');
 		}
 		
-		return builder.toString();
+		return builder;
 	}
 	
 	/**

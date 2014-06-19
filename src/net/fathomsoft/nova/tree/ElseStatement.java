@@ -12,7 +12,7 @@ import net.fathomsoft.nova.util.Regex;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:57:13 PM
- * @version	v0.2.13 Jun 17, 2014 at 8:45:35 AM
+ * @version	v0.2.14 Jun 18, 2014 at 10:11:40 PM
  */
 public class ElseStatement extends Node
 {
@@ -39,31 +39,13 @@ public class ElseStatement extends Node
 	{
 		return (Scope)getChild(0);
 	}
-
-	/**
-	 * @see net.fathomsoft.nova.tree.Node#addChild(Node)
-	 */
-	@Override
-	public void addChild(Node child)
-	{
-		if (child instanceof Scope || (getNumChildren() <= 1 && child instanceof IfStatement))
-		{
-			super.addChild(child);
-		}
-		else
-		{
-			getScope().addChild(child);
-		}
-	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.Node#generateCSource()
+	 * @see net.fathomsoft.nova.tree.Node#generateCSource(StringBuilder)
 	 */
 	@Override
-	public String generateCSource()
+	public StringBuilder generateCSource(StringBuilder builder)
 	{
-		StringBuilder builder = new StringBuilder();
-		
 		builder.append("else");
 		
 		if (getNumChildren() == 2)
@@ -72,32 +54,16 @@ public class ElseStatement extends Node
 			
 			if (child instanceof IfStatement)
 			{
-				builder.append(' ').append(child.generateCSource());
+				builder.append(' ');
 				
 				// Delete the new line at the end.
-				builder.deleteCharAt(builder.length() - 1);
+				child.generateCSource(builder).deleteCharAt(builder.length() - 1);
 			}
 		}
 		
 		builder.append('\n');
-	
-		builder.append(getScope().generateCSource());
 		
-//		builder.append('{').append('\n');
-//		
-//		for (int i = 0; i < getNumChildren(); i++)
-//		{
-//			Node child = getChild(i);
-//			
-//			if (child != getCondition())
-//			{
-//				builder.append(child.generateCSourceOutput());
-//			}
-//		}
-//		
-//		builder.append('}').append('\n');
-		
-		return builder.toString();
+		return getScope().generateCSource(builder);
 	}
 	
 	/**
@@ -141,7 +107,7 @@ public class ElseStatement extends Node
 				
 				if (contents != null)
 				{
-					n.addChild(contents);
+					n.addChild(contents, n);
 				}
 			}
 			

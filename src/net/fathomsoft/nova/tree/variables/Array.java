@@ -4,9 +4,9 @@ import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.tree.BinaryOperation;
 import net.fathomsoft.nova.tree.Identifier;
 import net.fathomsoft.nova.tree.Literal;
+import net.fathomsoft.nova.tree.Node;
 import net.fathomsoft.nova.tree.Priority;
 import net.fathomsoft.nova.tree.SyntaxTree;
-import net.fathomsoft.nova.tree.Node;
 import net.fathomsoft.nova.util.Bounds;
 import net.fathomsoft.nova.util.Location;
 import net.fathomsoft.nova.util.Patterns;
@@ -28,7 +28,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Mar 16, 2014 at 1:13:49 AM
- * @version	v0.2.13 Jun 17, 2014 at 8:45:35 AM
+ * @version	v0.2.14 Jun 18, 2014 at 10:11:40 PM
  */
 public class Array extends Variable
 {
@@ -54,24 +54,20 @@ public class Array extends Variable
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.Node#generateCSource()
+	 * @see net.fathomsoft.nova.tree.Node#generateCSource(StringBuilder)
 	 */
 	@Override
-	public String generateCSource()
+	public StringBuilder generateCSource(StringBuilder builder)
 	{
-		return generateCSourceFragment();
+		return generateCSourceFragment(builder);
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.Node#generateCSourceFragment()
+	 * @see net.fathomsoft.nova.tree.Node#generateCSourceFragment(StringBuilder)
 	 */
 	@Override
-	public String generateCSourceFragment()
+	public StringBuilder generateCSourceFragment(StringBuilder builder)
 	{
-		StringBuilder builder = new StringBuilder();
-		
-//		Identifier identifier = getIdentifier();
-		
 		builder.append('(').append(getName()).append('*');
 		
 		if (!isPrimitiveType() && !isExternalType())
@@ -87,12 +83,10 @@ public class Array extends Variable
 		{
 			Node child = getChild(i);
 			
-			builder.append(child.generateCSourceFragment());
+			child.generateCSourceFragment(builder);
 		}
 		
-		builder.append(')').append(')');
-		
-		return builder.toString();
+		return builder.append(')').append(')');
 	}
 	
 	/**

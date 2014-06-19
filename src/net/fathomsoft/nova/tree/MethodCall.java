@@ -16,7 +16,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 10:04:31 PM
- * @version	v0.2.13 Jun 17, 2014 at 8:45:35 AM
+ * @version	v0.2.14 Jun 18, 2014 at 10:11:40 PM
  */
 public class MethodCall extends Identifier
 {
@@ -227,38 +227,32 @@ public class MethodCall extends Identifier
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.Node#generateCSource()
+	 * @see net.fathomsoft.nova.tree.Node#generateCSource(StringBuilder)
 	 */
 	@Override
-	public String generateCSource()
+	public StringBuilder generateCSource(StringBuilder builder)
 	{
-		StringBuilder builder = new StringBuilder();
-		
-		builder.append(generateCSourceFragment()).append(';').append('\n');
-		
-		return builder.toString();
+		return generateCSourceFragment(builder).append(';').append('\n');
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.Node#generateCSourceFragment()
+	 * @see net.fathomsoft.nova.tree.Node#generateCSourceFragment(StringBuilder)
 	 */
 	@Override
-	public String generateCSourceFragment()
+	public StringBuilder generateCSourceFragment(StringBuilder builder)
 	{
-		return generateCSourceFragment(true);
+		return generateCSourceFragment(builder, true);
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.Node#generateCSourceFragment()
+	 * @see net.fathomsoft.nova.tree.Node#generateCSourceFragment(StringBuilder)
 	 */
-	public String generateCSourceFragment(boolean checkSpecial)
+	public StringBuilder generateCSourceFragment(StringBuilder builder, boolean checkSpecial)
 	{
 		if (checkSpecial && isSpecialFragment())
 		{
-			return generateSpecialFragment();
+			return generateSpecialFragment(builder);
 		}
-		
-		StringBuilder builder = new StringBuilder();
 		
 		Method    method  = getMethodDeclaration();
 		
@@ -273,13 +267,11 @@ public class MethodCall extends Identifier
 		
 		builder.append('(');
 		
-		builder.append(getArgumentList().generateCSource());
+		getArgumentList().generateCSource(builder);
 		
 		builder.append(')');
 		
-//		builder.append(generateChildrenCSourceFragment());
-		
-		return builder.toString();
+		return builder;
 	}
 	
 	/**
@@ -289,18 +281,18 @@ public class MethodCall extends Identifier
 	 * @return A String representing the output of the children of the
 	 * 		MethodCall.
 	 */
-	public String generateChildrenCSourceFragment()
+	public StringBuilder generateChildrenCSourceFragment(StringBuilder builder)
 	{
-		StringBuilder builder = new StringBuilder();
-		
 		for (int i = 1; i < getNumChildren(); i++)
 		{
 			Node child = getChild(i);
 			
-			builder.append("->").append(child.generateCSourceFragment());
+			builder.append("->");
+			
+			child.generateCSourceFragment(builder);
 		}
 		
-		return builder.toString();
+		return builder;
 	}
 	
 	/**
@@ -310,9 +302,9 @@ public class MethodCall extends Identifier
 	 * @return What the method call looks like when it is being used in
 	 * 		action
 	 */
-	public String generateUseOutput()
+	public StringBuilder generateUseOutput(StringBuilder builder)
 	{
-		return generateCSourceFragment(false);
+		return generateCSourceFragment(builder, false);
 	}
 	
 	/**

@@ -1,7 +1,6 @@
 package net.fathomsoft.nova.tree.variables;
 
 import net.fathomsoft.nova.error.SyntaxMessage;
-import net.fathomsoft.nova.tree.ClassDeclaration;
 import net.fathomsoft.nova.tree.InstanceDeclaration;
 import net.fathomsoft.nova.tree.Node;
 import net.fathomsoft.nova.util.Location;
@@ -11,7 +10,7 @@ import net.fathomsoft.nova.util.Location;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 10:00:50 PM
- * @version	v0.2.13 Jun 17, 2014 at 8:45:35 AM
+ * @version	v0.2.14 Jun 18, 2014 at 10:11:40 PM
  */
 public class FieldList extends Node
 {
@@ -212,13 +211,9 @@ public class FieldList extends Node
 	 * 
 	 * @return The C Header file output.
 	 */
-	public String generateNonStaticCHeader()
+	public StringBuilder generateNonStaticCHeader(StringBuilder builder)
 	{
-		StringBuilder builder = new StringBuilder();
-		
-		builder.append(getPublicFieldList().generateCHeader());
-		
-		return builder.toString();
+		return getPublicFieldList().generateCHeader(builder);
 	}
 	
 	/**
@@ -227,13 +222,9 @@ public class FieldList extends Node
 	 * 
 	 * @return The C Header file output.
 	 */
-	public String generateStaticCHeader()
+	public StringBuilder generateStaticCHeader(StringBuilder builder)
 	{
-		StringBuilder builder = new StringBuilder();
-		
-		builder.append(getPublicStaticFieldList().generateCHeader());
-		
-		return builder.toString();
+		return getPublicStaticFieldList().generateCHeader(builder);
 	}
 	
 	/**
@@ -242,13 +233,9 @@ public class FieldList extends Node
 	 * 
 	 * @return The C Source file output.
 	 */
-	public String generateStaticCSource()
+	public StringBuilder generateStaticCSource(StringBuilder builder)
 	{
-		StringBuilder builder = new StringBuilder();
-		
-		builder.append(getPublicStaticFieldList().generateCSource());
-		
-		return builder.toString();
+		return getPublicStaticFieldList().generateCSource(builder);
 	}
 
 	/**
@@ -257,13 +244,9 @@ public class FieldList extends Node
 	 * 
 	 * @return The C Source file output.
 	 */
-	public String generateNonStaticCSource()
+	public StringBuilder generateNonStaticCSource(StringBuilder builder)
 	{
-		StringBuilder builder = new StringBuilder();
-		
-		builder.append(getPrivateStaticFieldList().generateCHeader());
-		
-		return builder.toString();
+		return getPrivateStaticFieldList().generateCHeader(builder);
 	}
 	
 	/**
