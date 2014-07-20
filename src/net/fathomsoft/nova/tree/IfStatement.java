@@ -5,15 +5,16 @@ import net.fathomsoft.nova.util.Bounds;
 import net.fathomsoft.nova.util.Location;
 import net.fathomsoft.nova.util.Patterns;
 import net.fathomsoft.nova.util.Regex;
+import net.fathomsoft.nova.util.SyntaxUtils;
 
 /**
  * Node extension that represents the declaration of an "if statement"
- * node type. See {@link #decodeStatement(Node, String, Location, boolean, boolean)}
+ * node type. See {@link #decodeStatement(Node, String, Location, boolean)}
  * for more details on what correct inputs look like.
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:57:13 PM
- * @version	v0.2.14 Jun 18, 2014 at 10:11:40 PM
+ * @version	v0.2.14 Jul 19, 2014 at 7:33:13 PM
  */
 public class IfStatement extends Node
 {
@@ -25,11 +26,36 @@ public class IfStatement extends Node
 	{
 		super(temporaryParent, locationIn);
 		
-		ArgumentList condition = new ArgumentList(this, locationIn);
-		Scope        scope = new Scope(this, locationIn);
+		Scope        scope     = new Scope(this, locationIn);
 		
 		setScope(scope);
-		addChild(condition, this);
+	}
+	
+	/**
+	 * @see net.fathomsoft.nova.tree.Node#getNumDefaultChildren()
+	 */
+	@Override
+	public int getNumDefaultChildren()
+	{
+		return super.getNumDefaultChildren() + 1;
+	}
+	
+	/**
+	 * @see net.fathomsoft.nova.tree.Node#getNumDefaultChildren()
+	 */
+	@Override
+	public int getNumDecodedChildren()
+	{
+		return super.getNumDecodedChildren() + 1;
+	}
+	
+	/**
+	 * @see net.fathomsoft.nova.tree.Node#pendingScopeFragment()
+	 */
+	@Override
+	public boolean pendingScopeFragment()
+	{
+		return getScope().getNumChildren() == 1;
 	}
 	
 	/**
@@ -47,9 +73,9 @@ public class IfStatement extends Node
 	 * 
 	 * @return The ArgumentList instance.
 	 */
-	public ArgumentList getCondition()
+	public Value getCondition()
 	{
-		return (ArgumentList)getChild(1);
+		return (Value)getChild(super.getNumDefaultChildren() + 1);
 	}
 	
 	/**
@@ -58,20 +84,34 @@ public class IfStatement extends Node
 	@Override
 	public StringBuilder generateCSource(StringBuilder builder)
 	{
-		builder.append("if (");
-		
-		ArgumentList condition = getCondition();
-		
-		for (int i = 0; i < condition.getNumChildren(); i++)
-		{
-			Node child = condition.getChild(i);
-			
-			child.generateCSourceFragment(builder);
-		}
-		
-		builder.append(')').append('\n');
+		generateCSourceFragment(builder).append('\n');
 		
 		getScope().generateCSource(builder);
+		
+		return builder;
+	}
+	
+	/**
+	 * @see net.fathomsoft.nova.tree.Node#generateCSourceFragment(java.lang.StringBuilder)
+	 */
+	@Override
+	public StringBuilder generateCSourceFragment(StringBuilder builder)
+	{
+		return builder.append("if (").append(getCondition().generateCSourceFragment()).append(')');
+	}
+	
+	/**
+	 * @see net.fathomsoft.nova.tree.Node#generateNovaInput(StringBuilder, boolean)
+	 */
+	@Override
+	public StringBuilder generateNovaInput(StringBuilder builder, boolean outputChildren)
+	{
+		builder.append("if (").append(getCondition().generateNovaInput()).append(')');
+		
+		if (outputChildren)
+		{
+			builder.append('\n').append(getScope().generateNovaInput());
+		}
 		
 		return builder;
 	}
@@ -92,44 +132,27 @@ public class IfStatement extends Node
 	 * @param statement The statement to try to decode into a
 	 * 		IfStatement instance.
 	 * @param location The location of the statement in the source code.
-	 * @param require Whether or not to throw an error if anything goes wrong.
-	 * @param scope Whether or not the given statement is the beginning of
-	 * 		a scope.
+	 * @param require Whether or not to throw an error if anything goes
+	 * 		wrong.
 	 * @return The generated node, if it was possible to translated it
 	 * 		into a IfStatement.
 	 */
-	public static IfStatement decodeStatement(Node parent, String statement, Location location, boolean require, boolean scope)
+	public static IfStatement decodeStatement(Node parent, String statement, Location location, boolean require)
 	{
 		if (Regex.matches(statement, 0, Patterns.PRE_IF))
 		{
 			IfStatement n = new IfStatement(parent, location);
 			
-			Bounds bounds = Regex.boundsOf(statement, Patterns.IF_CONTENTS);
+			Bounds bounds = SyntaxUtils.findInnerParenthesesBounds(n, statement);
 			
 			if (bounds.getStart() >= 0)
 			{
 				String contents = statement.substring(bounds.getStart(), bounds.getEnd());
 				
-				Location newLoc = new Location();
-				newLoc.setLineNumber(location.getLineNumber());
-				newLoc.setBounds(location.getStart() + bounds.getStart(), location.getStart() + bounds.getEnd());
-				
-				Node condition = BinaryOperation.decodeStatement(parent, contents, newLoc, require, false);
-				
-				if (condition == null)
+				if (n.decodeCondition(contents, bounds, require) && n.decodeScopeFragment(statement, bounds))
 				{
-					condition = SyntaxTree.getExistingNode(parent, contents);
-					
-//					SyntaxMessage.error("Could not decode condition", parent.getFileDeclaration(), newLoc, parent.getController());
+					return n;
 				}
-				if (condition == null)
-				{
-					return null;
-				}
-				
-				n.getCondition().addChild(condition);
-				
-				return n;
 			}
 			else
 			{
@@ -138,6 +161,32 @@ public class IfStatement extends Node
 		}
 		
 		return null;
+	}
+	
+	/**
+	 * Decode the condition within the given contents argument.
+	 * 
+	 * @param contents The condition to decode. 
+	 * @param bounds The bounds of the condition.
+	 * @param require Whether or not to throw an error if anything goes
+	 * 		wrong.
+	 * @return Whether or not the condition decoded correctly.
+	 */
+	private boolean decodeCondition(String contents, Bounds bounds, boolean require)
+	{
+		Location newLoc = new Location(getLocationIn());
+		newLoc.addBounds(bounds.getStart(), bounds.getEnd());
+		
+		Node condition = SyntaxTree.decodeScopeContents(this, contents, newLoc, require);
+		
+		if (condition == null)
+		{
+			return false;
+		}
+		
+		addChild(condition, this);
+		
+		return true;
 	}
 	
 	/**
@@ -163,5 +212,19 @@ public class IfStatement extends Node
 		super.cloneTo(node);
 		
 		return node;
+	}
+	
+	/**
+	 * Test the IfStatement class type to make sure everything
+	 * is working properly.
+	 * 
+	 * @return The error output, if there was an error. If the test was
+	 * 		successful, null is returned.
+	 */
+	public static String test()
+	{
+		
+		
+		return null;
 	}
 }

@@ -1,7 +1,21 @@
+import "NativeObject.h"
+
 public class Object
 {
+	external char[] hashCode(Object obj)
+	
+	String getHashCode()
+	{
+		return new String(hashCode(this))
+	}
+	
 	public String toString()
 	{
-		return "[Object text here]";
+		return "[Object @" + getHashCode() + "]"
+	}
+	
+	public bool equals(Object another)
+	{
+		return this == another
 	}
 }

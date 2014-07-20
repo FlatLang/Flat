@@ -1,8 +1,10 @@
 package net.fathomsoft.nova.tree;
 
+import java.util.ArrayList;
+
 import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.error.SyntaxMessage;
-import net.fathomsoft.nova.tree.variables.Field;
+import net.fathomsoft.nova.tree.variables.FieldDeclaration;
 import net.fathomsoft.nova.tree.variables.FieldList;
 import net.fathomsoft.nova.tree.variables.InstanceFieldList;
 import net.fathomsoft.nova.tree.variables.StaticFieldList;
@@ -13,12 +15,12 @@ import net.fathomsoft.nova.util.Regex;
 
 /**
  * Declaration extension that represents the declaration of a class
- * node type. See {@link #decodeStatement(Node, String, Location, boolean, boolean)}
+ * node type. See {@link #decodeStatement(Node, String, Location, boolean)}
  * for more details on what correct inputs look like.
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:15:51 PM
- * @version	v0.2.14 Jun 18, 2014 at 10:11:40 PM
+ * @version	v0.2.14 Jul 19, 2014 at 7:33:13 PM
  */
 public class ClassDeclaration extends InstanceDeclaration
 {
@@ -39,19 +41,30 @@ public class ClassDeclaration extends InstanceDeclaration
 		
 		setType("class");
 		
-		FieldList    fields         = new FieldList(this, null);
-		MethodList   constructors   = new MethodList(this, null);
-		MethodList   destructors    = new MethodList(this, null);
-		MethodList   methods        = new MethodList(this, null);
+		FieldList        fields         = new FieldList(this, null);
+		MethodList       constructors   = new MethodList(this, null);
+		MethodList       destructors    = new MethodList(this, null);
+		MethodList       methods        = new MethodList(this, null);
 		ExternalTypeList externalTypes  = new ExternalTypeList(this, null);
-		FieldList    externalFields = new FieldList(this, null);
+		FieldList        externalFields = new FieldList(this, null);
+		VTable           vtable         = new VTable(this, null);
 		
-		super.addChild(fields);
-		super.addChild(constructors);
-		super.addChild(destructors);
-		super.addChild(methods);
-		super.addChild(externalTypes);
-		super.addChild(externalFields);
+		addChild(fields, this);
+		addChild(constructors, this);
+		addChild(destructors, this);
+		addChild(methods, this);
+		addChild(externalTypes, this);
+		addChild(externalFields, this);
+		addChild(vtable, this);
+	}
+	
+	/**
+	 * @see net.fathomsoft.nova.tree.Node#getNumDefaultChildren()
+	 */
+	@Override
+	public int getNumDefaultChildren()
+	{
+		return super.getNumDefaultChildren() + 7;
 	}
 	
 	/**
@@ -71,7 +84,7 @@ public class ClassDeclaration extends InstanceDeclaration
 	 * 
 	 * @return The MethodList for constructors of this class node.
 	 */
-	public MethodList getConstructorListNode()
+	public MethodList getConstructorList()
 	{
 		return (MethodList)getChild(1);
 	}
@@ -82,7 +95,7 @@ public class ClassDeclaration extends InstanceDeclaration
 	 * 
 	 * @return The MethodList for destructors of this class node.
 	 */
-	public MethodList getDestructorListNode()
+	public MethodList getDestructorList()
 	{
 		return (MethodList)getChild(2);
 	}
@@ -132,17 +145,37 @@ public class ClassDeclaration extends InstanceDeclaration
 		return (VTable)getChild(6);
 	}
 	
-	/**
-	 * @see net.fathomsoft.nova.tree.Identifier#getAccessedNode()
-	 */
-	public Identifier getAccessedNode()
+	public boolean containsVirtualMethods()
 	{
-		if (getNumChildren() <= 6)
+		return getVirtualMethods().length > 0;
+	}
+	
+	public MethodDeclaration[] getVirtualMethods()
+	{
+		MethodList list = getMethodList();
+		
+		ArrayList<MethodDeclaration> methods = new ArrayList<MethodDeclaration>();
+		
+		for (int i = 0; i < list.getNumVisibleChildren(); i++)
 		{
-			return null;
+			MethodDeclaration method = (MethodDeclaration)list.getChild(i);
+			
+			if (method.getParentClass() == this && (method.doesOverride() || method.isOverridden()))
+			{
+				methods.add(method);
+			}
 		}
 		
-		return (Identifier)getChild(6);
+		return methods.toArray(new MethodDeclaration[0]);
+	}
+	
+	/**
+	 * @see net.fathomsoft.nova.tree.Value#isExternalType()
+	 */
+	@Override
+	public boolean isExternalType()
+	{
+		return false;
 	}
 	
 	/**
@@ -370,22 +403,31 @@ public class ClassDeclaration extends InstanceDeclaration
 	 * @param fieldName The name of the field to search for.
 	 * @return The Field for the field, if it exists.
 	 */
-	public Field getField(String fieldName)
+	public FieldDeclaration getField(String fieldName)
 	{
-		FieldList fields = getFieldList();
-		
-		Field     field  = fields.getField(fieldName);
+		return getField(fieldName, true);
+	}
+	
+	/**
+	 * Get the ClassDeclaration's Field with the specified name.
+	 * 
+	 * @param fieldName The name of the field to search for.
+	 * @param checkAncestor Whether or not to check the ancestor class
+	 * 		if the field is not found.
+	 * @return
+	 */
+	private FieldDeclaration getField(String fieldName, boolean checkAncestor)
+	{
+		FieldDeclaration field = getFieldList().getField(fieldName);
 		
 		if (field == null)
 		{
-			fields = getExternalFieldsListNode();
-			
-			field  = fields.getField(fieldName);
-		}
+			field = getExternalFieldsListNode().getField(fieldName);
 		
-		if (field == null && getExtendedClassName() != null)
-		{
-			return getExtendedClass().getField(fieldName);
+			if (field == null && checkAncestor && getExtendedClassName() != null)
+			{
+				field = getExtendedClass().getField(fieldName);
+			}
 		}
 		
 		return field;
@@ -436,33 +478,39 @@ public class ClassDeclaration extends InstanceDeclaration
 	 * @param methodName The name of the method to search for.
 	 * @return The Method for the method, if it exists.
 	 */
-	public Method getMethod(String methodName)
+	public MethodDeclaration getMethod(String methodName)
 	{
-		MethodList methods = getMethodList();
-		Method     method  = methods.getMethod(methodName);
+		return getMethod(methodName, true);
+	}
+	
+	/**
+	 * Get the ClassDeclaration's Method with the specified name.
+	 * 
+	 * @param methodName The name of the method to search for.
+	 * @param checkAncestor Whether or not to check the ancestor class
+	 * 		if the method is not found.
+	 * @return
+	 */
+	private MethodDeclaration getMethod(String methodName, boolean checkAncestor)
+	{
+		MethodList lists[] = new MethodList[] { getMethodList(), getConstructorList(), getDestructorList() };
 		
-		if (method != null)
+		for (MethodList list : lists)
 		{
-			return method;
+			MethodDeclaration method = list.getMethod(methodName);
+			
+			if (method != null)
+			{
+				return method;
+			}
 		}
 		
-		methods = getConstructorListNode();
-		method  = methods.getMethod(methodName);
-		
-		if (method != null)
-		{
-			return method;
-		}
-		
-		methods = getDestructorListNode();
-		method  = methods.getMethod(methodName);
-		
-		if (method == null && getExtendedClassName() != null)
+		if (checkAncestor && getExtendedClassName() != null)
 		{
 			return getExtendedClass().getMethod(methodName);
 		}
 		
-		return method;
+		return null;
 	}
 	
 	/**
@@ -475,16 +523,16 @@ public class ClassDeclaration extends InstanceDeclaration
 	 */
 	public InstanceDeclaration getDeclaration(String name)
 	{
-		Field field = getField(name);
+		FieldDeclaration field = getField(name);
 		
 		if (field != null)
 		{
 			return field;
 		}
 
-		Method method = getMethod(name);
+		MethodDeclaration methodDeclaration = getMethod(name);
 		
-		return method;
+		return methodDeclaration;
 	}
 	
 	/**
@@ -548,17 +596,17 @@ public class ClassDeclaration extends InstanceDeclaration
 	@Override
 	public void addChild(Node child)
 	{
-		if (child instanceof Method)
+		if (child instanceof MethodDeclaration)
 		{
 			if (child instanceof Constructor)
 			{
-				getConstructorListNode().addChild(child);
+				getConstructorList().addChild(child);
 			}
 			else if (child instanceof Destructor)
 			{
-				getDestructorListNode().addChild(child);
+				getDestructorList().addChild(child);
 			}
-			else if (child instanceof Method)
+			else
 			{
 				getMethodList().addChild(child);
 			}
@@ -571,9 +619,9 @@ public class ClassDeclaration extends InstanceDeclaration
 		{
 			getExternalTypeListNode().addChild(child);
 		}
-		else if (child instanceof Field)
+		else if (child instanceof FieldDeclaration)
 		{
-			Field field = (Field)child;
+			FieldDeclaration field = (FieldDeclaration)child;
 			
 			if (field.isExternal())
 			{
@@ -591,13 +639,22 @@ public class ClassDeclaration extends InstanceDeclaration
 	}
 	
 	/**
+	 * @see net.fathomsoft.nova.tree.Value#setType(java.lang.String)
+	 */
+	@Override
+	public boolean setType(String type)
+	{
+		return setType(type, true, false);
+	}
+	
+	/**
 	 * Get whether or not the class contains any private fields.
 	 * 
 	 * @return Whether or not the class contains private data.
 	 */
-	public boolean containsPrivateData()
+	public boolean containsPrivateData(boolean checkAncestor)
 	{
-		return containsStaticPrivateData() || containsNonStaticPrivateData();
+		return containsStaticPrivateData(checkAncestor) || containsNonStaticPrivateData(checkAncestor);
 	}
 	
 	/**
@@ -605,9 +662,9 @@ public class ClassDeclaration extends InstanceDeclaration
 	 * 
 	 * @return Whether or not the class contains data.
 	 */
-	public boolean containsData()
+	public boolean containsData(boolean checkAncestor)
 	{
-		return containsStaticData() || containsNonStaticData() || containsPrivateData();
+		return containsNonStaticData(checkAncestor) || containsPrivateData(checkAncestor);
 	}
 	
 	/**
@@ -617,6 +674,18 @@ public class ClassDeclaration extends InstanceDeclaration
 	 */
 	public boolean containsStaticPrivateData()
 	{
+		return containsStaticPrivateData(true);
+	}
+	
+	/**
+	 * Get whether or not the class contains any private static fields.
+	 * 
+	 * @param checkAncestor Whether or not to check the ancestor class
+	 * 		if the data is not found.
+	 * @return Whether or not the class contains private static data.
+	 */
+	public boolean containsStaticPrivateData(boolean checkAncestor)
+	{
 		StaticFieldList staticPrivateFields = getFieldList().getPrivateStaticFieldList();
 		
 		if (staticPrivateFields.getNumChildren() > 0)
@@ -624,11 +693,9 @@ public class ClassDeclaration extends InstanceDeclaration
 			return true;
 		}
 		
-		ClassDeclaration extended = getExtendedClass();
-		
-		if (extended != null)
+		if (checkAncestor && getExtendedClassName() != null)
 		{
-			return extended.containsStaticPrivateData();
+			return getExtendedClass().containsStaticPrivateData();
 		}
 		
 		return false;
@@ -654,23 +721,34 @@ public class ClassDeclaration extends InstanceDeclaration
 	 */
 	public boolean containsNonStaticPrivateData()
 	{
+		return containsNonStaticPrivateData(true);
+	}
+
+	/**
+	 * Get whether or not the class contains any private non-static
+	 * fields.
+	 * 
+	 * @param checkAncestor Whether or not to check the ancestor class
+	 * 		if the data is not found.
+	 * @return Whether or not the class contains private non-static data.
+	 */
+	public boolean containsNonStaticPrivateData(boolean checkAncestor)
+	{
 		InstanceFieldList privateFields = getFieldList().getPrivateFieldList();
 		
-		if (privateFields.getNumChildren() > 0)
+		if (privateFields.getNumVisibleChildren() > 0)
 		{
 			return true;
 		}
 		
-		ClassDeclaration extended = getExtendedClass();
-		
-		if (extended != null)
+		if (checkAncestor && getExtendedClassName() != null)
 		{
-			return extended.containsNonStaticPrivateData();
+			return getExtendedClass().containsNonStaticPrivateData();
 		}
 		
 		return false;
 	}
-	
+
 	/**
 	 * Get whether or not the class contains any non-static fields.
 	 * 
@@ -678,18 +756,28 @@ public class ClassDeclaration extends InstanceDeclaration
 	 */
 	public boolean containsNonStaticData()
 	{
+		return containsNonStaticData(true);
+	}
+	
+	/**
+	 * Get whether or not the class contains any non-static fields.
+	 * 
+	 * @param checkAncestor Whether or not to check the ancestor class
+	 * 		if the data is not found.
+	 * @return Whether or not the class contains non-static data.
+	 */
+	public boolean containsNonStaticData(boolean checkAncestor)
+	{
 		InstanceFieldList fields = getFieldList().getPublicFieldList();
 		
-		if (fields.getNumChildren() > 0 || containsNonStaticPrivateData())
+		if (fields.getNumChildren() > 0 || containsNonStaticPrivateData(checkAncestor))
 		{
 			return true;
 		}
 		
-		ClassDeclaration extended = getExtendedClass();
-		
-		if (extended != null)
+		if (checkAncestor && getExtendedClassName() != null)
 		{
-			return extended.containsNonStaticData();
+			return getExtendedClass().containsNonStaticData();
 		}
 		
 		return false;
@@ -701,48 +789,36 @@ public class ClassDeclaration extends InstanceDeclaration
 	@Override
 	public StringBuilder generateCHeader(StringBuilder builder)
 	{
-		if (isStatic())
-		{
-			SyntaxMessage.error("Static classes are not implemented in C yet.", this);
-		}
-		if (isConstant())
-		{
-			SyntaxMessage.error("Const classes are not implemented in C yet.", this);
-		}
+		getVTableNode().generateCHeader(builder).append('\n');
 		
-		if (isReference())
+		if (containsNonStaticData() || containsVirtualMethods())
 		{
-			SyntaxMessage.error("A class cannot be of a reference type", this);
-		}
-		else if (isPointer())
-		{
-			SyntaxMessage.error("A class cannot be of a pointer type", this);
-		}
-		
-		FieldList fields = getFieldList();
-		
-		if (containsNonStaticData())
-		{
-			builder.append('\n').append("CCLASS_CLASS").append('\n').append('(').append('\n');
+			builder.append("CCLASS_CLASS").append('\n').append('(').append('\n');
 			
 			builder.append(getName()).append(", ").append('\n').append('\n');
 			
-			fields.generateNonStaticCHeader(builder);
+			getFieldList().generateNonStaticCHeader(builder);
 			
+			if (containsVirtualMethods())
+			{
+				VTable table = getVTableNode();
+				
+				builder.append(table.generateCTypeOutput()).append("* ").append(VTable.IDENTIFIER).append(";\n");
+			}
 			if (containsNonStaticPrivateData())
 			{
 				builder.append("struct Private* prv;").append('\n');
 			}
-				
+			
 			builder.append(')').append('\n');
 		}
 		
-		fields.generateStaticCHeader(builder).append('\n');
+		getFieldList().generateStaticCHeader(builder).append('\n');
 		
-		MethodList constructors = getConstructorListNode();
+		MethodList constructors = getConstructorList();
 		constructors.generateCHeader(builder);
 		
-		MethodList destructors = getDestructorListNode();
+		MethodList destructors = getDestructorList();
 		destructors.generateCHeader(builder);
 		
 		MethodList methods = getMethodList();
@@ -757,35 +833,46 @@ public class ClassDeclaration extends InstanceDeclaration
 	@Override
 	public StringBuilder generateCSource(StringBuilder builder)
 	{
-		FieldList fields = getFieldList();
-		
-		InstanceFieldList privateFields = fields.getPrivateFieldList();
+		getVTableNode().generateCSource(builder).append('\n');
 		
 		if (containsNonStaticPrivateData())
 		{
-			builder.append('\n');
-			
-			builder.append("CCLASS_PRIVATE").append('\n').append('(').append('\n').append(privateFields.generateCSource()).append(')').append('\n');
+			builder.append("CCLASS_PRIVATE").append('\n').append('(').append('\n').append(generateCPrivateFieldsSource()).append(')').append('\n');
 		}
 		
 		builder.append(generatePrivateMethodPrototypes());
 		
-		fields.generateStaticCSource(builder);
+		getFieldList().generateStaticCSource(builder);
 		
-		for (int i = 6; i < getNumChildren(); i++)
+		for (int i = getNumDefaultChildren(); i < getNumChildren(); i++)
 		{
 			Node child = getChild(i);
 			
 			builder.append('\n').append(child.generateCSource());
 		}
 
-		fields.generateNonStaticCSource(builder);
+		getFieldList().generateNonStaticCSource(builder);
 		
-		getConstructorListNode().generateCSource(builder);
-		getDestructorListNode().generateCSource(builder);
+		getConstructorList().generateCSource(builder);
+		getDestructorList().generateCSource(builder);
 		getMethodList().generateCSource(builder);
 		
 		return builder;
+	}
+	
+	private StringBuilder generateCPrivateFieldsSource()
+	{
+		return generateCPrivateFieldsSource(new StringBuilder());
+	}
+	
+	private StringBuilder generateCPrivateFieldsSource(StringBuilder builder)
+	{
+		if (getExtendedClassName() != null)
+		{
+			getExtendedClass().generateCPrivateFieldsSource(builder);
+		}
+		
+		return getFieldList().getPrivateFieldList().generateCSource(builder);
 	}
 	
 	/**
@@ -804,12 +891,10 @@ public class ClassDeclaration extends InstanceDeclaration
 	 * 		if possible.
 	 * @param location The location of the statement in the source code.
 	 * @param require Whether or not to throw an error if anything goes wrong.
-	 * @param scope Whether or not the given statement is the beginning of
-	 * 		a scope.
 	 * @return The generated node, if it was possible to translated it
 	 * 		into a ClassDeclaration.
 	 */
-	public static ClassDeclaration decodeStatement(Node parent, String statement, Location location, boolean require, boolean scope)
+	public static ClassDeclaration decodeStatement(Node parent, String statement, Location location, boolean require)
 	{
 		// If contains 'class' in the statement.
 		if (Regex.indexOf(statement, Patterns.PRE_CLASS) >= 0)
@@ -907,11 +992,11 @@ public class ClassDeclaration extends InstanceDeclaration
 		
 		for (int i = 0; i < methods.getNumChildren(); i++)
 		{
-			Method method = (Method)methods.getChild(i);
+			MethodDeclaration methodDeclaration = (MethodDeclaration)methods.getChild(i);
 			
-			if (method.getVisibility() == InstanceDeclaration.PRIVATE)
+			if (methodDeclaration.getVisibility() == InstanceDeclaration.PRIVATE)
 			{
-				method.generateCSourcePrototype(builder).append('\n');
+				methodDeclaration.generateCSourcePrototype(builder).append('\n');
 			}
 		}
 		
@@ -928,25 +1013,30 @@ public class ClassDeclaration extends InstanceDeclaration
 	 */
 	public Node validate(int phase)
 	{
-		if (phase != 1)
+		if (phase == SyntaxTree.PHASE_CLASS_DECLARATION)
 		{
-			return this;
-		}
-		
-		ClassDeclaration clazz = (ClassDeclaration)getAncestorOfType(ClassDeclaration.class);
-		
-		if (clazz == null)
-		{
-			FileDeclaration file = getFileDeclaration();
+			validateDeclaration(phase);
 			
-			if (!file.getName().equals(getName()))
+			ClassDeclaration clazz = getParentClass();
+			
+			if (clazz == null)
 			{
-				SyntaxMessage.error("The name of the class '" + getName() + "' must be the same as the file that it is contained within", this, false);
+				FileDeclaration file = getFileDeclaration();
 				
-				getParent().removeChild(this);
-				
-				return null;
+				if (!file.getName().equals(getName()))
+				{
+					SyntaxMessage.error("The name of the class '" + getName() + "' must be the same as the file that it is contained within", this, false);
+					
+					getParent().getParent().removeChild(getParent());
+					
+					return null;
+				}
 			}
+		}
+		else if (phase == SyntaxTree.PHASE_INSTANCE_DECLARATIONS)
+		{
+			validateFields(phase);
+			validateMethods(phase);
 		}
 		
 		return this;
@@ -957,7 +1047,7 @@ public class ClassDeclaration extends InstanceDeclaration
 	 * 
 	 * @param phase The phase that the node is being validated in.
 	 */
-	public void validateDeclaration(int phase)
+	private void validateDeclaration(int phase)
 	{
 		validateExtension(phase);
 		validateImplementations(phase);
@@ -968,7 +1058,7 @@ public class ClassDeclaration extends InstanceDeclaration
 	 * 
 	 * @param phase The phase that the node is being validated in.
 	 */
-	public void validateFields(int phase)
+	private void validateFields(int phase)
 	{
 		
 	}
@@ -978,16 +1068,16 @@ public class ClassDeclaration extends InstanceDeclaration
 	 * 
 	 * @param phase The phase that the node is being validated in.
 	 */
-	public void validateMethods(int phase)
+	private void validateMethods(int phase)
 	{
 		if (!containsConstructor())
 		{
 			Location loc = new Location();
 			
-			Constructor defaultConstructor = new Constructor(this, null);
+			Constructor defaultConstructor = new Constructor(this, new Location(getLocationIn()));
 			defaultConstructor.setName(getName());
 			defaultConstructor.setType(getName());
-			defaultConstructor.setVisibility(Field.PUBLIC);
+			defaultConstructor.setVisibility(FieldDeclaration.PUBLIC);
 			defaultConstructor.setLocationIn(loc);
 			addChild(defaultConstructor);
 		}
@@ -996,18 +1086,18 @@ public class ClassDeclaration extends InstanceDeclaration
 		{
 			Location loc = new Location();
 			
-			Destructor defaultDestructor = new Destructor(this, null);
+			Destructor defaultDestructor = new Destructor(this, new Location(getLocationIn()));
 			defaultDestructor.setName(getName());
 			defaultDestructor.setType("void");
-			defaultDestructor.setVisibility(Field.PUBLIC);
+			defaultDestructor.setVisibility(FieldDeclaration.PUBLIC);
 			defaultDestructor.setLocationIn(loc);
 			
 			addChild(defaultDestructor);
 		}
 		
 		getMethodList().validate(phase);
-		getConstructorListNode().validate(phase);
-		getDestructorListNode().validate(phase);
+		getConstructorList().validate(phase);
+		getDestructorList().validate(phase);
 	}
 	
 	/**
@@ -1016,7 +1106,7 @@ public class ClassDeclaration extends InstanceDeclaration
 	 * 
 	 * @param phase The phase that the node is being validated in.
 	 */
-	public void validateExtension(int phase)
+	private void validateExtension(int phase)
 	{
 		if (extendedClass == null)
 		{
@@ -1059,7 +1149,7 @@ public class ClassDeclaration extends InstanceDeclaration
 	 * 
 	 * @param phase The phase that the node is being validated in.
 	 */
-	public void validateImplementations(int phase)
+	private void validateImplementations(int phase)
 	{
 		Program program = getProgram();
 		
@@ -1074,48 +1164,30 @@ public class ClassDeclaration extends InstanceDeclaration
 		}
 	}
 	
-	/**
-	 * Get whether or not the Nova class contains static data. i.e
-	 * static variables, methods, etc.
-	 * 
-	 * @return Whether or not the class contains static data.
-	 */
-	public boolean containsStaticData()
-	{
-		return containsStaticData(this);
-	}
-	
-	/**
-	 * Get whether or not the Nova class contains static data. i.e
-	 * static variables, methods, etc.
-	 * 
-	 * @param root The root Node to search for the static modifier
-	 * 		from.
-	 * @return Whether or not the class contains static data.
-	 */
-	public boolean containsStaticData(Node root)
-	{
-		for (int i = 0; i < root.getNumChildren(); i++)
-		{
-			Node child = root.getChild(i);
-			
-			if (child instanceof InstanceDeclaration)
-			{
-				InstanceDeclaration declaration = (InstanceDeclaration)child;
-				
-				if (declaration.isStatic() && !declaration.isExternal())
-				{
-					return true;
-				}
-			}
-			else if (containsStaticData(child))
-			{
-				return true;
-			}
-		}
-		
-		return false;
-	}
+//	/**
+//	 * Get whether or not the Nova class contains static data. i.e
+//	 * static variables, methods, etc.
+//	 * 
+//	 * @param checkAncestor Whether or not to check the ancestor class
+//	 * 		if the data is not found.
+//	 * @return Whether or not the class contains static data.
+//	 */
+//	public boolean containsStaticData(boolean checkAncestor)
+//	{
+//		StaticFieldList publicList = getFieldList().getPublicStaticFieldList();
+//		
+//		if (publicList.getNumChildren() > 0)
+//		{
+//			return true;
+//		}
+//		
+//		if (checkAncestor && getExtendedClassName() != null)
+//		{
+//			return getExtendedClass().containsStaticPrivateData();
+//		}
+//		
+//		return containsStaticPrivateData(checkAncestor);
+//	}
 	
 	/**
 	 * Get whether or not the class contains a constructor implementation
@@ -1126,7 +1198,7 @@ public class ClassDeclaration extends InstanceDeclaration
 	 */
 	public boolean containsConstructor()
 	{
-		return containsMethod(getName(), false, getName());
+		return containsMethod(getName(), true, getName());
 	}
 	
 	/**
@@ -1138,7 +1210,7 @@ public class ClassDeclaration extends InstanceDeclaration
 	 */
 	public boolean containsDefaultConstructor()
 	{
-		MethodList constructors = getConstructorListNode();
+		MethodList constructors = getConstructorList();
 		
 		for (int i = 0; i < constructors.getNumChildren(); i++)
 		{
@@ -1162,7 +1234,7 @@ public class ClassDeclaration extends InstanceDeclaration
 	 */
 	public boolean containsDestructor()
 	{
-		return containsMethod("~" + getName(), false, null);
+		return containsMethod("~" + getName(), true, null);
 	}
 	
 	/**
@@ -1176,7 +1248,9 @@ public class ClassDeclaration extends InstanceDeclaration
 	 */
 	public boolean containsMethod(String methodName, boolean staticVal, String type)
 	{
-		return containsMethod(this, methodName, staticVal, type);
+		return containsMethod(getConstructorList(), methodName, staticVal, type) ||
+				containsMethod(getDestructorList(), methodName, staticVal, type) ||
+				containsMethod(getMethodList(), methodName, staticVal, type);
 	}
 	
 	/**
@@ -1193,18 +1267,9 @@ public class ClassDeclaration extends InstanceDeclaration
 	{
 		for (int i = 0; i < root.getNumChildren(); i++)
 		{
-			Node child = root.getChild(i);
+			MethodDeclaration methodDeclaration = (MethodDeclaration)root.getChild(i);
 			
-			if (child instanceof Method)
-			{
-				Method method = (Method)child;
-				
-				if (method.isStatic() == staticVal && method.getName().equals(methodName) && method.getType().equals(type))
-				{
-					return true;
-				}
-			}
-			else if (containsMethod(child, methodName, staticVal, type))
+			if (methodDeclaration.isStatic() == staticVal && methodDeclaration.getName().equals(methodName) && methodDeclaration.getType().equals(type))
 			{
 				return true;
 			}
@@ -1279,5 +1344,19 @@ public class ClassDeclaration extends InstanceDeclaration
 		{
 			previousWord = "";
 		}
+	}
+	
+	/**
+	 * Test the ClassDeclaration class type to make sure everything
+	 * is working properly.
+	 * 
+	 * @return The error output, if there was an error. If the test was
+	 * 		successful, null is returned.
+	 */
+	public static String test()
+	{
+		
+		
+		return null;
 	}
 }

@@ -7,12 +7,12 @@ import net.fathomsoft.nova.util.Regex;
 
 /**
  * Node extension that represents the declaration of an "else
- * statement" node type. See {@link #decodeStatement(Node, String, Location, boolean, boolean)}
+ * statement" node type. See {@link #decodeStatement(Node, String, Location, boolean)}
  * for more details on what correct inputs look like.
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:57:13 PM
- * @version	v0.2.14 Jun 18, 2014 at 10:11:40 PM
+ * @version	v0.2.14 Jul 19, 2014 at 7:33:13 PM
  */
 public class ElseStatement extends Node
 {
@@ -29,6 +29,15 @@ public class ElseStatement extends Node
 		Scope scope = new Scope(this, locationIn);
 		
 		setScope(scope);
+	}
+	
+	/**
+	 * @see net.fathomsoft.nova.tree.Node#pendingScopeFragment()
+	 */
+	@Override
+	public boolean pendingScopeFragment()
+	{
+		return getScope().getNumChildren() == 1;
 	}
 	
 	/**
@@ -56,8 +65,7 @@ public class ElseStatement extends Node
 			{
 				builder.append(' ');
 				
-				// Delete the new line at the end.
-				child.generateCSource(builder).deleteCharAt(builder.length() - 1);
+				child.generateCSourceFragment(builder);
 			}
 		}
 		
@@ -83,27 +91,25 @@ public class ElseStatement extends Node
 	 * 		ElseStatement instance.
 	 * @param location The location of the statement in the source code.
 	 * @param require Whether or not to throw an error if anything goes wrong.
-	 * @param scope Whether or not the given statement is the beginning of
-	 * 		a scope.
 	 * @return The generated node, if it was possible to translated it
 	 * 		into a ElseStatement.
 	 */
-	public static ElseStatement decodeStatement(Node parent, String statement, Location location, boolean require, boolean scope)
+	public static ElseStatement decodeStatement(Node parent, String statement, Location location, boolean require)
 	{
 		Bounds bounds = Regex.boundsOf(statement, Patterns.ELSE);
 		
 		if (bounds.getStart() == 0)
 		{
-			ElseStatement n  = new ElseStatement(parent, location);
+			ElseStatement n = new ElseStatement(parent, location);
 			
-			String   ending      = statement.substring(bounds.getEnd());
+			String   ending = statement.substring(bounds.getEnd());
 			
 			Location newLocation = new Location(location);
 			newLocation.setBounds(location.getStart() + bounds.getEnd(), location.getStart() + statement.length());
 			
 			if (ending.length() > 0)
 			{
-				Node contents = SyntaxTree.decodeScopeContents(parent, ending, newLocation, require, false);
+				Node contents = SyntaxTree.decodeScopeContents(parent, ending, newLocation, require);
 				
 				if (contents != null)
 				{
@@ -140,5 +146,19 @@ public class ElseStatement extends Node
 		super.cloneTo(node);
 		
 		return node;
+	}
+	
+	/**
+	 * Test the ElseStatement class type to make sure everything
+	 * is working properly.
+	 * 
+	 * @return The error output, if there was an error. If the test was
+	 * 		successful, null is returned.
+	 */
+	public static String test()
+	{
+		
+		
+		return null;
 	}
 }

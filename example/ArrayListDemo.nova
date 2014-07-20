@@ -1,31 +1,31 @@
-import "ArrayList";
+import "ArrayList"
 
 public class ArrayListDemo
 {
 	public static void main(String args[])
 	{
-		char c = 'y';
+		char c = 'y'
 		
 		while (c == 'y' || c == 'Y')
 		{
-			ArrayList list = new ArrayList();
+			ArrayList list = new ArrayList()
 			
-			list.add(1);
-			list.add(2);
-			list.add(4);
-			list.add(3);
+			list.add(1)
+			list.add(2)
+			list.add(4)
+			list.add(3)
 			
 			for (int i = 0; i < list.size; i++)
 			{
-				IO.println("Contains: " + list.get(i));
+				Console.writeLine("Contains: " + list.get(i))
 			}
 			
-			IO.print("Run again? (Y/N)");
+			Console.write("Run again? (Y/N)")
 			
-			c = IO.getChar();
+			c = Console.readChar()
 		}
 		
-		IO.println("\nFinished");
-		IO.waitForEnter();
+		Console.writeLine("\nFinished")
+		Console.waitForEnter()
 	}
 }

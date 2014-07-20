@@ -1,0 +1,25 @@
+import "Time";
+import "Thread";
+
+public class TimeStability
+{
+	public static void test(StabilityTest program)
+	{
+		Console.write("Checking Time.nova... ")
+		
+		long start = Time.currentTimeMillis()
+		
+		Thread.sleep(100)
+		
+		long time = Time.currentTimeMillis() - start
+		
+		if (time >= 100 && time < 130)
+		{
+			Console.writeLine("OK")
+		}
+		else
+		{
+			program.fail("Failed; expected 100ms, found " + time + "ms")
+		}
+	}
+}

@@ -1,30 +1,30 @@
-import "ListNode";
+import "ListNode"
 
 public class List
 {
-	ListNode	start;
-	ListNode	current;
+	ListNode	start
+	ListNode	current
 	
 	public ListNode getFirst()
 	{
-		return start;
+		return start
 	}
 	
 	public void add(Object data)
 	{
-		ListNode node = new ListNode(data);
+		ListNode node = new ListNode(data)
 		
-		if (start == 0)
+		if (start == null)
 		{
-			start   = node;
-			current = node;
+			start   = node
+			current = node
 		}
 		else
 		{
-			current.setNext(node);
+			current.setNext(node)
 		}
 		
-		current = node;
+		current = node
 	}
 	
 	public void remove(Object data)
@@ -34,19 +34,19 @@ public class List
 			start = start.getNext();
 		}
 		
-		ListNode prev = start;
-		ListNode cur  = start.getNext();
+		ListNode prev = start
+		ListNode cur  = start.getNext()
 		
-		while (cur != 0)
+		while (cur != null)
 		{
-			Object d = cur.getData();
+			Object d = cur.getData()
 			
 			if (d == data)
 			{
-				prev.setNext(cur.getNext());
+				prev.setNext(cur.getNext())
 			}
 			
-			cur = cur.getNext();
+			cur = cur.getNext()
 		}
 	}
 }

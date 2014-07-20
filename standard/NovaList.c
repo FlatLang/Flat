@@ -1,6 +1,7 @@
 #include <precompiled.h>
-
 #include "NovaList.h"
+
+
 
 CCLASS_PRIVATE
 (
@@ -13,8 +14,8 @@ List* nova_List_List(ExceptionData* exceptionData)
 {
 	CCLASS_NEW(List, this);
 	
-	this->prv->nova_List_start = 0;
-	this->prv->nova_List_current = 0;
+	this->prv->nova_List_start = (Object*)0;
+	this->prv->nova_List_current = (Object*)0;
 	{
 	}
 	
@@ -47,7 +48,7 @@ void nova_List_add(List* this, ExceptionData* exceptionData, Object* nova_0_data
 	ListNode* nova_1_node;
 	
 	nova_1_node = nova_ListNode_ListNode(exceptionData, nova_0_data);
-	if (this->prv->nova_List_start == 0)
+	if (this->prv->nova_List_start == (Object*)0)
 	{
 		this->prv->nova_List_start = nova_1_node;
 		this->prv->nova_List_current = nova_1_node;
@@ -70,7 +71,7 @@ void nova_List_remove(List* this, ExceptionData* exceptionData, Object* nova_0_d
 	}
 	nova_1_prev = this->prv->nova_List_start;
 	nova_1_cur = nova_ListNode_getNext(this->prv->nova_List_start, exceptionData);
-	while (nova_1_cur != 0)
+	while (nova_1_cur != (Object*)0)
 	{
 		Object* nova_3_d;
 		

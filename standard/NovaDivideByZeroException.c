@@ -1,10 +1,12 @@
 #include <precompiled.h>
-
 #include "NovaDivideByZeroException.h"
+
+
+
 
 DivideByZeroException* nova_DivideByZeroException_DivideByZeroException(ExceptionData* exceptionData)
 {
-	DivideByZeroException* this = NULL;
+	DivideByZeroException* this = (DivideByZeroException*)1;
 	
 	{
 	}

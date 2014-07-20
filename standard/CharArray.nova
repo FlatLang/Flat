@@ -1,0 +1,4 @@
+public class CharArray extends Array
+{
+	
+}

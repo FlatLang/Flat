@@ -1,64 +1,64 @@
-import "gc.h";
+import "gc.h"
 
 public class GC
 {
-	external void GC_INIT();
-	external void GC_gcollect();
-	external void GC_enable_incremental();
-	external void GC_dump();
-	external long GC_get_free_bytes();
-	external long GC_get_total_bytes();
-	external long GC_get_heap_size();
-	external long GC_get_bytes_since_gc();
+	external void GC_INIT()
+	external void GC_gcollect()
+	external void GC_enable_incremental()
+	external void GC_dump()
+	external long GC_get_free_bytes()
+	external long GC_get_total_bytes()
+	external long GC_get_heap_size()
+	external long GC_get_bytes_since_gc()
 	
-//	external int GC_free_space_divisor;
+//	external int GC_free_space_divisor
 	
 	public static void init()
 	{
-		GC_INIT();
+		GC_INIT()
 		
-//		enableIncremental();
+//		enableIncremental()
 //		
-//		setFreeSpaceDivisor(1);
+//		setFreeSpaceDivisor(1)
 	}
 	
 	public static long getFreeBytes()
 	{
-		return GC_get_free_bytes();
+		return GC_get_free_bytes()
 	}
 	
 	public static long getTotalBytes()
 	{
-		return GC_get_total_bytes();
+		return GC_get_total_bytes()
 	}
 	
 	public static long getHeapSize()
 	{
-		return GC_get_heap_size();
+		return GC_get_heap_size()
 	}
 	
 	public static long getBytesSinceGC()
 	{
-		return GC_get_bytes_since_gc();
+		return GC_get_bytes_since_gc()
 	}
 	
 //	public static void setFreeSpaceDivisor(int divisor)
 //	{
-//		GC_free_space_divisor = divisor;
+//		GC_free_space_divisor = divisor
 //	}
 	
 	public static void collect()
 	{
-		GC_gcollect();
+		GC_gcollect()
 	}
 	
 	public static void enableIncremental()
 	{
-		GC_enable_incremental();
+		GC_enable_incremental()
 	}
 	
 	public static void dump()
 	{
-		GC_dump();
+		GC_dump()
 	}
 }

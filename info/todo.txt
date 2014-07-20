@@ -1,21 +1,51 @@
-Make arguments and parameters more strict.
-Make BlockNode for the parent of all Method-based blocks in order to declare local variables.
-Use RAII variable initialization when possible.
+* Make arguments and parameters more strict.
+* Make BlockNode for the parent of all Method-based blocks in order to declare local variables.
+* Use RAII variable initialization when possible.
+* Make a nice missing ending } error message.
+* Possibly add === operator.
+* Allow field initialization
+* Add generic support
+* Add scopes within until statement in SyntaxStability
+* Add swift-style switch statements
 
 In-depth compiler error checking:
 - Make sure that the static class's methods/variables are called rightfully.
 - Include the caller of a method and variable and such.
 
 Test cases:
-	char c[] = new String[52];
+  char c[] = new String[52];
+  varName.methodCall().varName2
+  i.value++
+  Multi-dimensional arrays
 	
 Things to fix:
-	Return node
-	Assignment node
-	DivideByZeroException checker
-X	Make better clone method
+  Return node - more careful
+  DivideByZeroException checker
+  MethDecl decodeParams
+  IIdentifier.setType
+
+Things to improve:
+  Clean up File validation methods.
 
 
 Default Exceptions to Implement:
-	CastException
-	ArrayAccessException
+  CastException
+  ArrayAccessException
+
+Create 'or' & 'and' keywords.
+
+
+Document:
+  
+
+rename:
+  
+
+
+
+
+until (#condition) {
+
+if (#condition) #fragment?? #skip : {
+
+#visibility? #modifier? #final? #type #name (#declaration #rep-1( , )) {

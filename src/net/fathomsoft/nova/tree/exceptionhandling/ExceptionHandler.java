@@ -6,12 +6,12 @@ import net.fathomsoft.nova.util.Location;
 
 /**
  * Node extension that represents the declaration of an exception
- * handling node type. See {@link #decodeStatement(Node, String, Location, boolean, boolean)}
+ * handling node type. See {@link #decodeStatement(Node, String, Location, boolean)}
  * for more details on what correct inputs look like.
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Mar 21, 2014 at 10:50:26 PM
- * @version	v0.2.14 Jun 18, 2014 at 10:11:40 PM
+ * @version	v0.2.14 Jul 19, 2014 at 7:33:13 PM
  */
 public class ExceptionHandler extends Node
 {
@@ -25,6 +25,15 @@ public class ExceptionHandler extends Node
 		Scope scope = new Scope(this, locationIn);
 		
 		setScope(scope);
+	}
+	
+	/**
+	 * @see net.fathomsoft.nova.tree.Node#getNumDefaultChildren()
+	 */
+	@Override
+	public int getNumDefaultChildren()
+	{
+		return super.getNumDefaultChildren() + 1;
 	}
 	
 	/**
@@ -53,33 +62,29 @@ public class ExceptionHandler extends Node
 	 * 		ExceptionHandler instance.
 	 * @param location The location of the statement in the source code.
 	 * @param require Whether or not to throw an error if anything goes wrong.
-	 * @param scope Whether or not the given statement is the beginning of
-	 * 		a scope.
 	 * @return The generated node, if it was possible to translated it
 	 * 		into a ExceptionHandler.
 	 */
-	public static ExceptionHandler decodeStatement(Node parent, String statement, Location location, boolean require, boolean scope)
+	public static ExceptionHandler decodeStatement(Node parent, String statement, Location location, boolean require)
 	{
-		ExceptionHandler node = null;
+		ExceptionHandler node = Try.decodeStatement(parent, statement, location, require);
 		
-		if ((node = Try.decodeStatement(parent, statement, location, require, scope)) != null)
+		if (node == null)
 		{
-			return node;
-		}
-		else if ((node = Catch.decodeStatement(parent, statement, location, require, scope)) != null)
-		{
-			return node;
-		}
-		else if ((node = Finally.decodeStatement(parent, statement, location, require, scope)) != null)
-		{
-			return node;
-		}
-		else if ((node = Throw.decodeStatement(parent, statement, location, require, scope)) != null)
-		{
-			return node;
+			node = Catch.decodeStatement(parent, statement, location, require);
+			
+			if (node == null)
+			{
+				node = Finally.decodeStatement(parent, statement, location, require);
+				
+				if (node == null)
+				{
+					node = Throw.decodeStatement(parent, statement, location, require);
+				}
+			}
 		}
 		
-		return null;
+		return node;
 	}
 	
 	/**
@@ -105,5 +110,19 @@ public class ExceptionHandler extends Node
 		super.cloneTo(node);
 		
 		return node;
+	}
+	
+	/**
+	 * Test the ExceptionHandler class type to make sure everything
+	 * is working properly.
+	 * 
+	 * @return The error output, if there was an error. If the test was
+	 * 		successful, null is returned.
+	 */
+	public static String test()
+	{
+		
+		
+		return null;
 	}
 }

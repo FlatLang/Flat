@@ -9,14 +9,14 @@ import net.fathomsoft.nova.util.SyntaxUtils;
 
 /**
  * Value extension that represents the declaration of an
- * instantiation node type. See {@link #decodeStatement(Node, String, Location, boolean, boolean)}
+ * instantiation node type. See {@link #decodeStatement(Node, String, Location, boolean)}
  * for more details on what correct inputs look like.
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Apr 3, 2014 at 7:53:35 PM
- * @version	v0.2.14 Jun 18, 2014 at 10:11:40 PM
+ * @version	v0.2.14 Jul 19, 2014 at 7:33:13 PM
  */
-public class Instantiation extends Identifier
+public class Instantiation extends IIdentifier
 {
 	/**
 	 * @see net.fathomsoft.nova.tree.Node#Node(Node, Location)
@@ -24,6 +24,15 @@ public class Instantiation extends Identifier
 	public Instantiation(Node temporaryParent, Location locationIn)
 	{
 		super(temporaryParent, locationIn);
+	}
+	
+	/**
+	 * @see net.fathomsoft.nova.tree.Node#getNumDecodedChildren()
+	 */
+	@Override
+	public int getNumDecodedChildren()
+	{
+		return super.getNumDecodedChildren() + 1;
 	}
 	
 	/**
@@ -55,16 +64,20 @@ public class Instantiation extends Identifier
 		}
 	}
 	
+//	/**
+//	 * @see net.fathomsoft.nova.tree.Identifier#isDecodingAccessedNode(net.fathomsoft.nova.tree.Node)
+//	 */
+//	@Override
+//	public boolean isDecodingAccessedNode(Node node)
+//	{
+//		return true;
+//	}
+	
 	/**
 	 * @see net.fathomsoft.nova.tree.Identifier#getAccessedNode()
 	 */
 	public Identifier getAccessedNode()
 	{
-		if (getNumChildren() < 1)
-		{
-			return null;
-		}
-		
 		return getIdentifier().getAccessedNode();
 	}
 	
@@ -87,13 +100,8 @@ public class Instantiation extends Identifier
 		{
 			return generateSpecialFragment(builder);
 		}
-		
-		for (int i = 0; i < getNumChildren(); i++)
-		{
-			getChild(i).generateCSourceFragment(builder);
-		}
-		
-		return builder;
+
+		return getIdentifier().generateCSourceFragment(builder);
 	}
 	
 	/**
@@ -113,79 +121,78 @@ public class Instantiation extends Identifier
 	 * 		Instantiation instance.
 	 * @param location The location of the statement in the source code.
 	 * @param require Whether or not to throw an error if anything goes wrong.
-	 * @param scope Whether or not the given statement is the beginning of
-	 * 		a scope.
 	 * @return The generated node, if it was possible to translated it
 	 * 		into a Instantiation.
 	 */
-	public static Instantiation decodeStatement(Node parent, String statement, Location location, boolean require, boolean scope)
+	public static Instantiation decodeStatement(Node parent, String statement, Location location, boolean require)
 	{
-		if (SyntaxUtils.isInstantiation(statement))
+		if (!SyntaxUtils.isInstantiation(statement))
 		{
-			Instantiation n = new Instantiation(parent, location);
-			
-			int startIndex  = Regex.indexOf(statement, Patterns.POST_INSTANTIATION);
-			
-			String action   = statement.substring(startIndex);
-			
-			Location newLoc = new Location();
-			newLoc.setLineNumber(location.getLineNumber());
-			newLoc.setBounds(location.getStart() + startIndex, location.getStart() + statement.length());
-			
-			Identifier child = null;
-			
-			if (SyntaxUtils.isMethodCall(action))
-			{
-				MethodCall methodCall = MethodCall.decodeStatement(parent, action, newLoc, require, scope);
-				
-				if (methodCall == null)
-				{
-					return null;
-				}
-				
-				child = methodCall;
-			}
-			else if (SyntaxUtils.isArrayInitialization(action))
-			{
-				child = Array.decodeStatement(parent, action, newLoc, require, scope);
-			}
-			
-			if (child == null)
-			{
-				SyntaxMessage.error("Unable to parse instantiation of '" + action + "'", n);
-			}
-			
-			n.setName(child.getName());
-			n.setType(child.getType());
-			n.addChild(child);
-			
-			return n;
+			return null;
 		}
 		
-		return null;
+		Instantiation n = new Instantiation(parent, location);
+		
+		int startIndex  = Regex.indexOf(statement, Patterns.POST_INSTANTIATION);
+		
+		Location newLoc = new Location(location);
+		newLoc.addBounds(startIndex, statement.length());
+		
+		String instantiation = statement.substring(startIndex);
+		
+		return n.decodeInstantiation(instantiation, newLoc, require);
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.Node#generateNovaInput(boolean)
+	 * Decode the given instantiation<br>
+	 * <br>
+	 * For example: "<code>String()</code>"
+	 * 
+	 * @param instantiation The instantiation as exemplified above.
+	 * @param location The location that the instantiation occurred.
+	 * @param require Whether or not the given statement is the beginning of
+	 * 		a scope.
+	 * @return The generated Instantiation.
+	 */
+	private Instantiation decodeInstantiation(String instantiation, Location location, boolean require)
+	{
+		Identifier child = null;
+		
+		if (SyntaxUtils.isMethodCall(instantiation))
+		{
+			MethodCall methodCall = MethodCall.decodeStatement(getParent(), instantiation, location, require);
+			
+			if (methodCall == null)
+			{
+				return null;
+			}
+			
+			child = methodCall;
+		}
+		else if (SyntaxUtils.isArrayInitialization(instantiation))
+		{
+			child = Array.decodeStatement(getParent(), instantiation, location, require);
+		}
+		
+		if (child == null)
+		{
+			SyntaxMessage.error("Unable to parse instantiation of '" + instantiation + "'", this);
+		}
+		
+		setName(child.getName());
+		setType(child.getType());
+		addChild(child);
+		
+		return this;
+	}
+	
+	/**
+	 * @see net.fathomsoft.nova.tree.Node#generateNovaInput(StringBuilder, boolean)
 	 */
 	@Override
-	public String generateNovaInput(boolean outputChildren)
+	public StringBuilder generateNovaInput(StringBuilder builder, boolean outputChildren)
 	{
-		StringBuilder builder = new StringBuilder();
-		
-		builder.append("new ").append(getIdentifier().generateNovaInput());
-		
-//		if (outputChildren)
-//		{
-//			Identifier accessed = getAccessedNode();
-//			
-//			if (accessed != null)
-//			{
-//				builder.append('.').append(accessed.generateNovaInput());
-//			}
-//		}
-		
-		return builder.toString();
+		return builder.append("new ").append(getIdentifier().generateNovaInput());
 	}
 	
 	/**
@@ -211,5 +218,19 @@ public class Instantiation extends Identifier
 		super.cloneTo(node);
 		
 		return node;
+	}
+	
+	/**
+	 * Test the Instantiation class type to make sure everything
+	 * is working properly.
+	 * 
+	 * @return The error output, if there was an error. If the test was
+	 * 		successful, null is returned.
+	 */
+	public static String test()
+	{
+		
+		
+		return null;
 	}
 }

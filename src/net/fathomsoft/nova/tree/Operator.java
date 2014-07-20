@@ -1,15 +1,16 @@
 package net.fathomsoft.nova.tree;
 
 import net.fathomsoft.nova.util.Location;
+import net.fathomsoft.nova.util.SyntaxUtils;
 
 /**
  * Node extension that represents an operator in an operation.
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:19:40 PM
- * @version	v0.2.14 Jun 18, 2014 at 10:11:40 PM
+ * @version	v0.2.14 Jul 19, 2014 at 7:33:13 PM
  */
-public class Operator extends Value
+public class Operator extends IValue
 {
 	private String	operator;
 	
@@ -38,12 +39,51 @@ public class Operator extends Value
 	 */
 	public void setOperator(String operator)
 	{
+		this.operator = operator;
+		
+		updateType();
+	}
+	
+	/**
+	 * Get the left Value that the operator is being used with.
+	 * 
+	 * @return The left Value that the operator is being used with.
+	 */
+	public Value getLeftOperand()
+	{
+		return (Value)getParent().getChildBefore(this);
+	}
+	
+	/**
+	 * Get the right Value that the operator is being used with.
+	 * 
+	 * @return The right Value that the operator is being used with.
+	 */
+	public Value getRightOperand()
+	{
+		return (Value)getParent().getChildAfter(this);
+	}
+	
+	/**
+	 * Update the type that the operation returns.
+	 */
+	public void updateType()
+	{
 		if (operator.contains("=") || operator.equals("!") || operator.equals("&&") || operator.equals("||"))
 		{
 			setType("bool");
 		}
-		
-		this.operator = operator;
+		else if (getParent().containsChild(this))
+		{
+			String type = SyntaxUtils.getTypeInCommon(getLeftOperand(), getRightOperand()).getType();
+			
+			if (getLeftOperand().isPrimitive() || getRightOperand().isPrimitive())
+			{
+				type = SyntaxUtils.getHighestPrimitiveType(getLeftOperand().getType(), getRightOperand().getType());
+			}
+			
+			setType(type);
+		}
 	}
 	
 	/**
@@ -65,11 +105,11 @@ public class Operator extends Value
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.Node#generateNovaInput(boolean)
+	 * @see net.fathomsoft.nova.tree.Node#generateNovaInput(StringBuilder, boolean)
 	 */
-	public String generateNovaInput(boolean outputChildren)
+	public StringBuilder generateNovaInput(StringBuilder builder, boolean outputChildren)
 	{
-		return operator;
+		return builder.append(operator);
 	}
 	
 	/**
@@ -97,5 +137,19 @@ public class Operator extends Value
 		node.setOperator(getOperator());
 		
 		return node;
+	}
+	
+	/**
+	 * Test the Operator class type to make sure everything
+	 * is working properly.
+	 * 
+	 * @return The error output, if there was an error. If the test was
+	 * 		successful, null is returned.
+	 */
+	public static String test()
+	{
+		
+		
+		return null;
 	}
 }

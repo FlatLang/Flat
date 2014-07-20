@@ -1,5 +1,6 @@
 package net.fathomsoft.nova.tree;
 
+import java.io.ObjectInputStream.GetField;
 import java.util.regex.Matcher;
 
 import net.fathomsoft.nova.Nova;
@@ -21,9 +22,9 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:20:35 PM
- * @version	v0.2.14 Jun 18, 2014 at 10:11:40 PM
+ * @version	v0.2.14 Jul 19, 2014 at 7:33:13 PM
  */
-public class BinaryOperation extends Value
+public class BinaryOperation extends IValue
 {
 	/**
 	 * @see net.fathomsoft.nova.tree.Node#Node(Node, Location)
@@ -39,9 +40,7 @@ public class BinaryOperation extends Value
 	@Override
 	public Value getReturnedNode()
 	{
-		Value child = getLeftOperand();
-		
-		return child.getReturnedNode();
+		return this;
 	}
 	
 	/**
@@ -113,17 +112,17 @@ public class BinaryOperation extends Value
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.Node#generateNovaInput(boolean)
+	 * @see net.fathomsoft.nova.tree.Node#generateNovaInput(StringBuilder, boolean)
 	 */
 	@Override
-	public String generateNovaInput(boolean outputChildren)
+	public StringBuilder generateNovaInput(StringBuilder builder, boolean outputChildren)
 	{
 		if (getNumChildren() == 1)
 		{
-			return getLeftOperand().generateNovaInput(outputChildren);
+			return getLeftOperand().generateNovaInput(builder, outputChildren);
 		}
 		
-		return getLeftOperand().generateNovaInput(outputChildren) + ' ' + getOperator().generateNovaInput(outputChildren) + ' ' + getRightOperand().generateNovaInput(outputChildren);
+		return getLeftOperand().generateNovaInput(builder, outputChildren).append(' ').append(getOperator().generateNovaInput(outputChildren)).append(' ').append(getRightOperand().generateNovaInput(outputChildren));
 	}
 	
 	/**
@@ -147,12 +146,10 @@ public class BinaryOperation extends Value
 	 * 		if possible.
 	 * @param location The location of the statement in the source code.
 	 * @param require Whether or not to throw an error if anything goes wrong.
-	 * @param scope Whether or not the given statement is the beginning of
-	 * 		a scope.
 	 * @return The generated Node, if it was possible to translated it
 	 * 		into a BinaryOperation.
 	 */
-	public static Value decodeStatement(Node parent, String statement, Location location, boolean require, boolean scope)
+	public static Value decodeStatement(Node parent, String statement, Location location, boolean require)
 	{
 		if (!validateStatement(statement))
 		{
@@ -160,13 +157,16 @@ public class BinaryOperation extends Value
 		}
 		
 		// Pattern used to find word boundaries. 
-		Matcher   matcher = Patterns.PRE_OPERATORS.matcher(statement);
+		Matcher matcher = Patterns.PRE_OPERATORS.matcher(statement);
 		
-		Value node    = decodeStatement(parent, statement, matcher, location, require, scope);
+		Value node = decodeStatement(parent, statement, matcher, location, require);
 		
 		if (node == null)
 		{
-//			SyntaxMessage.error("Could not decode binary operation '" + statement + "'", parent.getFileDeclaration(), location, parent.getController());
+			if (require)
+			{
+//				SyntaxMessage.error("Could not decode binary operation '" + statement + "'", parent, location);
+			}
 		}
 		
 		return node;
@@ -218,40 +218,40 @@ public class BinaryOperation extends Value
 	 * @param matcher The matcher for the statement.
 	 * @param location The location of the statement in the source code.
 	 * @param require Whether or not to throw an error if anything goes wrong.
-	 * @param scope Whether or not the given statement is the beginning of
-	 * 		a scope.
 	 * @return The generated Node, if it was possible to translated it
 	 * 		into a BinaryOperation.
 	 */
-	private static Value decodeStatement(Node parent, String statement, Matcher matcher, Location location, boolean require, boolean scope)
+	private static Value decodeStatement(Node parent, String statement, Matcher matcher, Location location, boolean require)
 	{
-		Bounds operatorLoc = StringUtils.findStrings(statement, StringUtils.BINARY_OPERATORS);
-		
 		if (statement.length() <= 0)
 		{
 			return null;
 		}
 		
-		UnaryOperation preTest = UnaryOperation.decodeStatement(parent, statement, location, require, scope);
+		UnaryOperation preTest = UnaryOperation.decodeStatement(parent, statement, location, false);
 		
 		if (preTest != null)
 		{
 			return preTest;
 		}
 		
+		Bounds operatorLoc = StringUtils.findStrings(statement, StringUtils.BINARY_OPERATORS);
+		
 		try
 		{
-			if (operatorLoc.getStart() >= 0)
+			if (operatorLoc.isValid())
 			{
 				BinaryOperation n = new BinaryOperation(parent, location);
 				
-				n.decodeOperands(statement, operatorLoc, matcher, require, scope);
+				n.decodeOperands(statement, operatorLoc, matcher, require);
+				n.getOperator().updateType();
+				n.setType(n.getOperator().getType());
 				
 				return n;
 			}
 			else
 			{
-				Value v =  createNode(parent, statement, location);
+				Value v = createNode(parent, statement, location);
 				
 				return v;
 			}
@@ -270,22 +270,17 @@ public class BinaryOperation extends Value
 	 * @param operatorLoc The Bounds of the operator in the operation.
 	 * @param matcher The matcher for the statement.
 	 * @param require Whether or not to throw an error if anything goes wrong.
-	 * @param scope Whether or not the given statement is the beginning of
-	 * 		a scope.
 	 */
-	private void decodeOperands(String statement, Bounds operatorLoc, Matcher matcher, boolean require, boolean scope)
+	private void decodeOperands(String statement, Bounds operatorLoc, Matcher matcher, boolean require)
 	{
-		Value lhn = decodeLeftOperand(statement, operatorLoc);
-		
+		Value    lhn         = decodeLeftOperand(statement, operatorLoc);
 		String   operatorVal = statement.substring(operatorLoc.getStart(), operatorLoc.getEnd());
-		
 		Location location    = new Location(getLocationIn());
-		
-		Operator operator = new Operator(this, location);
+		Operator operator    = new Operator(this, location);
 		operator.setOperator(operatorVal);
 		addChild(operator);
 		
-		Value rhn = decodeRightOperand(statement, operatorLoc, matcher, require, scope);
+		Value rhn = decodeRightOperand(statement, operatorLoc, matcher, require);
 		
 		validateOperation(lhn, rhn, operator);
 		
@@ -308,8 +303,9 @@ public class BinaryOperation extends Value
 		
 		if (!parent.isWithinExternalContext() && !lhn.isExternalType() && !rhn.isExternalType())
 		{
-			ClassDeclaration common    = SyntaxUtils.getTypeInCommon(lhn.getReturnedNode(), rhn.getReturnedNode());
+			ClassDeclaration common = SyntaxUtils.getTypeInCommon(lhn.getReturnedNode(), rhn.getReturnedNode());
 			
+			operator.updateType();
 			String operatorType = operator.getType();
 			
 			if (common == null)
@@ -338,23 +334,23 @@ public class BinaryOperation extends Value
 	 * assumption cannot be made, then it adds a check before the division
 	 * is made.
 	 * 
-	 * @param value The value that is the denominator.
+	 * @param abstractValue The value that is the denominator.
 	 */
-	private void validateDivideByZero(Value value)
+	private void validateDivideByZero(Value abstractValue)
 	{
 		Value denominator = null;
 		
 		Location  location    = new Location(getLocationIn());
 		
-		if (value instanceof BinaryOperation)
+		if (abstractValue instanceof BinaryOperation)
 		{
-			BinaryOperation bon = (BinaryOperation)value;
+			BinaryOperation bon = (BinaryOperation)abstractValue;
 			
 			denominator = (Value)bon.getChild(0);
 		}
 		else
 		{
-			denominator = value;
+			denominator = abstractValue;
 		}
 		
 		Node nearest  = getAncestorWithScope();
@@ -365,9 +361,9 @@ public class BinaryOperation extends Value
 		
 		if (checkVar != null)
 		{
-			Location rhnLoc = new Location(value.getLocationIn());
+			Location rhnLoc = new Location(abstractValue.getLocationIn());
 			
-			replace(value, checkVar.clone(this, rhnLoc));
+			replace(abstractValue, checkVar.clone(this, rhnLoc));
 		}
 	}
 	
@@ -381,9 +377,9 @@ public class BinaryOperation extends Value
 	 * @param location The location of the division in the source code.
 	 * @return The node to check the exception.
 	 */
-	private static Variable generateDivideByZeroCheck(Node parent, Value value, Location location)
+	private static Variable generateDivideByZeroCheck(Node parent, Value abstractValue, Location location)
 	{
-		String denominator = value.generateNovaInput();
+		String denominator = abstractValue.generateNovaInput().toString();
 		
 		if (SyntaxUtils.isNumber(denominator))
 		{
@@ -395,21 +391,22 @@ public class BinaryOperation extends Value
 			return null;
 		}
 		
-		int checkId = parent.getMethod().generateUniqueID();
+		int checkId = parent.getParentMethod(true).generateUniqueID();
 		
 		String denominatorVar = Nova.LANGUAGE_NAME.toLowerCase() + "_zero_check" + checkId++;
 		
 		String highestType = "double";
 		
-		Assignment assignment = Assignment.decodeStatement(parent, highestType + " " + denominatorVar + " = " + denominator, location, true, false);
+		Assignment assignment = Assignment.decodeStatement(parent, highestType + " " + denominatorVar + " = " + denominator, location, true);
 		
-		Variable assignee = assignment.getAssigneeNode();
-		assignee.setForceOriginalName(true);
+		Variable assignee = (Variable)assignment.getAssigneeNode();
+//		assignee.setForceOriginalName(true);
 		assignee.getDeclaration().setForceOriginalName(true);
+		assignee.setForceOriginalName(true);
 		
 		parent.addChild(assignment);
 		
-		IfStatement ifStatement = IfStatement.decodeStatement(parent, "if (" + denominatorVar + " == 0)", location, true, true);
+		IfStatement ifStatement = IfStatement.decodeStatement(parent, "if (" + denominatorVar + " == 0)", location, true);
 		parent.addChild(ifStatement);
 		
 		Throw throwNode = generateDivideByZeroThrow(parent, location);
@@ -427,7 +424,7 @@ public class BinaryOperation extends Value
 	 */
 	private static Throw generateDivideByZeroThrow(Node parent, Location location)
 	{
-		Throw throwNode = Throw.decodeStatement(parent, "throw new DivideByZeroException()", location, true, false);
+		Throw throwNode = Throw.decodeStatement(parent, "throw new DivideByZeroException()", location, true);
 		
 		return throwNode;
 	}
@@ -442,11 +439,11 @@ public class BinaryOperation extends Value
 	 */
 	private Value decodeLeftOperand(String statement, Bounds operatorLoc)
 	{
-		Value lhn = null;
+		Value  lhn = null;
 		
-		Bounds    lhb = new Bounds(0, StringUtils.findNextNonWhitespaceIndex(statement, operatorLoc.getStart() - 1, -1) + 1);
+		Bounds lhb = new Bounds(0, StringUtils.findNextNonWhitespaceIndex(statement, operatorLoc.getStart() - 1, -1) + 1);
 		
-		Location  location = new Location(getLocationIn());
+		Location location = new Location(getLocationIn());
 		
 		UnaryOperation unary = testUnaryOperator(getParent(), statement, location);
 		
@@ -456,7 +453,7 @@ public class BinaryOperation extends Value
 			
 			int offset = lhn.getLocationIn().getEnd() - location.getStart();
 			
-			StringUtils.findStrings(statement, offset, StringUtils.BINARY_OPERATORS).cloneTo(operatorLoc);
+			StringUtils.findStrings(statement, StringUtils.BINARY_OPERATORS, offset).cloneTo(operatorLoc);
 		}
 		else
 		{
@@ -497,13 +494,16 @@ public class BinaryOperation extends Value
 	 * @param operatorLoc The Bounds of the operator in the operation.
 	 * @param matcher The matcher for the statement.
 	 * @param require Whether or not to throw an error if anything goes wrong.
-	 * @param scope Whether or not the given statement is the beginning of
-	 * 		a scope.
 	 * @return The right operand.
 	 */
-	private Value decodeRightOperand(String statement, Bounds operatorLoc, Matcher matcher, boolean require, boolean scope)
+	private Value decodeRightOperand(String statement, Bounds operatorLoc, Matcher matcher, boolean require)
 	{
 		int rhIndex = StringUtils.findNextNonWhitespaceIndex(statement, operatorLoc.getEnd());
+		
+		if (rhIndex < 0)
+		{
+			throw new BinarySyntaxException("Could not decode right hand value.");
+		}
 		
 		// Decode the value on the right.
 		statement = statement.substring(rhIndex);
@@ -512,7 +512,7 @@ public class BinaryOperation extends Value
 		
 		Location location = new Location(getLocationIn());
 		
-		Value rhn = decodeStatement(getParent(), statement, matcher, location, require, scope);
+		Value rhn = decodeStatement(getParent(), statement, matcher, location, require);
 		
 		if (rhn == null)
 		{
@@ -536,14 +536,25 @@ public class BinaryOperation extends Value
 	 * @param parent The parent of the statement.
 	 * @param statement The statement containing the value.
 	 * @param location The location of the statement in the source code.
-	 * @param require Whether or not to throw an error if anything goes wrong.
-	 * @param scope Whether or not the given statement is the beginning of
-	 * 		a scope.
 	 * @return The generated Node instance.
 	 */
 	private static Value createNode(Node parent, String statement, Location location)
 	{
-		return (Value)SyntaxTree.decodeScopeContents(parent, statement, location, false, false);
+//		try
+//		{
+			Value node = SyntaxTree.decodeValue(parent, statement, location, false);
+			
+			if (node instanceof Value == false)
+			{
+				throw new BinarySyntaxException("Statement '" + statement + "' does not return a value.");
+			}
+			
+			return node;
+//		}
+//		catch (SyntaxErrorException e)
+//		{
+//			throw new BinarySyntaxException("Could not decode statement '" + statement + "'");
+//		}
 	}
 	
 	/**
@@ -575,7 +586,7 @@ public class BinaryOperation extends Value
 		
 		String expression = statement.substring(unaryOperationBounds.getStart(), unaryOperationBounds.getEnd());
 		
-		return UnaryOperation.decodeStatement(parent, expression, newLoc, false, false);
+		return UnaryOperation.decodeStatement(parent, expression, newLoc, false);
 	}
 	
 	/**
@@ -599,7 +610,7 @@ public class BinaryOperation extends Value
 		
 		if (operatorLoc.getStart() == 0)
 		{
-			Bounds bounds = StringUtils.findStrings(statement, operatorLoc.getEnd() + 1, StringUtils.SYMBOLS);
+			Bounds bounds = StringUtils.findStrings(statement, StringUtils.SYMBOLS, operatorLoc.getEnd() + 1);
 			
 			if (!bounds.isValid())
 			{
@@ -767,9 +778,9 @@ public class BinaryOperation extends Value
 				}
 			}
 			
-			String   statement = left.generateNovaInput() + ".concat(" + right.generateNovaInput() + ")";
+			String statement = left.generateNovaInput() + ".concat(" + right.generateNovaInput() + ")";
 			
-			Node strConcat = SyntaxTree.decodeScopeContents(getParent(), statement, left.getLocationIn(), false);
+			Node   strConcat = SyntaxTree.decodeScopeContents(getParent(), statement, left.getLocationIn(), false);
 			
 			getParent().replace(this, strConcat);
 			
@@ -811,23 +822,23 @@ public class BinaryOperation extends Value
 	 * If the given Node is a primitive, return the autoboxed form.
 	 * Else, simply return the given Node.
 	 * 
-	 * @param value The value to autobox if needed.
+	 * @param abstractValue The value to autobox if needed.
 	 * @return The autoboxed primitive value.
 	 */
-	private Value replaceWithObjectiveValue(Value value)
+	private Value replaceWithObjectiveValue(Value abstractValue)
 	{
-		Value returned = value.getReturnedNode();
+		Value returned = abstractValue.getReturnedNode();
 		
 		if (returned.isPrimitiveType())
 		{
-			Instantiation autobox = SyntaxUtils.autoboxPrimitive(value);
+			Instantiation autobox = SyntaxUtils.autoboxPrimitive(abstractValue);
 			
-			replace(value, autobox);
+			replace(abstractValue, autobox);
 			
 			return autobox;
 		}
 		
-		return value;
+		return abstractValue;
 	}
 	
 	/**
@@ -865,12 +876,38 @@ public class BinaryOperation extends Value
 	 */
 	private static class BinarySyntaxException extends SyntaxErrorException
 	{
+		boolean require;
+		
 		/**
 		 * @see net.fathomsoft.nova.error.SyntaxErrorException#SyntaxErrorException(String)
 		 */
 		public BinarySyntaxException(String message)
 		{
-			super(message);
+			this(message, true);
 		}
+		
+		/**
+		 * @see net.fathomsoft.nova.error.SyntaxErrorException#SyntaxErrorException(String)
+		 */
+		public BinarySyntaxException(String message, boolean require)
+		{
+			super(message);
+			
+			this.require = require;
+		}
+	}
+	
+	/**
+	 * Test the BinaryOperation class type to make sure everything
+	 * is working properly.
+	 * 
+	 * @return The error output, if there was an error. If the test was
+	 * 		successful, null is returned.
+	 */
+	public static String test()
+	{
+		
+		
+		return null;
 	}
 }

@@ -9,7 +9,7 @@ import java.util.regex.Pattern;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 10, 2014 at 3:12:48 AM
- * @version	v0.2.13 Jun 17, 2014 at 8:45:35 AM
+ * @version	v0.2.14 Jul 19, 2014 at 7:33:13 PM
  */
 public class Regex
 {
@@ -1381,29 +1381,13 @@ public class Regex
 		
 		int first = start;
 		
-//		if (excludePrefixes.length > 0 || excludeBinary.length > 0)
-//		{
-//			if (sign(direction) == -1)
-//			{
-//				first = src.length() - 1;
-//			}
-//			else
-//			{
-//				first = 0;
-//			}
-//		}
-		
 		int excluding = 0;
-		
-//		Stack<Character> binaryExclude = new Stack<Character>();
 		
 		int i = first;
 		
 		while (i < src.length() && i >= 0)
 		{
 			char c = src.charAt(i);
-			
-//			int cIndex = 0;
 			
 			int p = 0;
 			
@@ -1418,13 +1402,7 @@ public class Regex
 						break;
 					}
 				}
-//				
-//				excluding += sign(direction);
 			}
-//			else if ((p = StringUtils.searchChar(excludePostfixes, c)) >= 0)
-//			{
-//				excluding -= sign(direction);
-//			}
 			else if (StringUtils.searchChar(excludeBinary, c) >= 0)
 			{
 				if (i == 0 || !StringUtils.containsChar(excludeBinary, src.charAt(i - 1)))
@@ -1437,7 +1415,7 @@ public class Regex
 					}
 				}
 			}
-			else if (excluding == 0 && i >= start /*&& binaryExclude.isEmpty()*/ && StringUtils.containsChar(cs, c))
+			else if (excluding == 0 && i >= start && StringUtils.containsChar(cs, c))
 			{
 				return new Bounds(i, i);
 			}

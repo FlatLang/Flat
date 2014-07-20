@@ -6,5 +6,6 @@
 - Objective functions.
 - Semi-manageable memory.
 - Optional abstract method bodies.
+- Optional inheritence! E.g. extends 'AbstractValue or Value'
 
 *------------------------------------------------*

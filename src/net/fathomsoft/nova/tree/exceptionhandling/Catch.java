@@ -10,12 +10,12 @@ import net.fathomsoft.nova.util.Regex;
 
 /**
  * ExceptionHandler extension that represents the declaration of a
- * catch node type. See {@link #decodeStatement(Node, String, Location, boolean, boolean)}
+ * catch node type. See {@link #decodeStatement(Node, String, Location, boolean)}
  * for more details on what correct inputs look like.
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Mar 22, 2014 at 4:01:44 PM
- * @version	v0.2.14 Jun 18, 2014 at 10:11:40 PM
+ * @version	v0.2.14 Jul 19, 2014 at 7:33:13 PM
  */
 public class Catch extends ExceptionHandler
 {
@@ -26,13 +26,22 @@ public class Catch extends ExceptionHandler
 	{
 		super(temporaryParent, locationIn);
 	}
-
+	
 	/**
-	 * Get the instance of the Exception variable that is being caught.
-	 * 
-	 * @return The Exception variable instance that is being caught.
+	 * @see net.fathomsoft.nova.tree.Node#getNumDecodedChildren()
 	 */
-	public LocalDeclaration getExceptionInstance()
+	@Override
+	public int getNumDecodedChildren()
+	{
+		return super.getNumDecodedChildren() + 2;
+	}
+	
+	/**
+	 * Get the declaration of the Exception variable that is being caught.
+	 * 
+	 * @return The Exception variable declaration that is being caught.
+	 */
+	public LocalDeclaration getExceptionDeclaration()
 	{
 		return (LocalDeclaration)getChild(1);
 	}
@@ -54,19 +63,10 @@ public class Catch extends ExceptionHandler
 	public StringBuilder generateCSource(StringBuilder builder)
 	{
 		builder.append("CATCH ").append('(').append(getException().getID()).append(')').append('\n');
-		builder.append('{').append('\n');
 		
-		for (int i = 0; i < getNumChildren(); i++)
-		{
-			Node child = getChild(i);
-			
-			if (child != getExceptionInstance() && child != getException())
-			{
-				child.generateCSource(builder);
-			}
-		}
+		getScope().generateCSource(builder);
 		
-		return builder.append('}').append('\n');
+		return builder;
 	}
 	
 	/**
@@ -90,7 +90,7 @@ public class Catch extends ExceptionHandler
 			{
 				return (Try)child;
 			}
-			else if (child instanceof Catch == false)
+			else if (!(child instanceof Catch))
 			{
 				return null;
 			}
@@ -115,64 +115,115 @@ public class Catch extends ExceptionHandler
 	 * 		Catch instance.
 	 * @param location The location of the statement in the source code.
 	 * @param require Whether or not to throw an error if anything goes wrong.
-	 * @param scope Whether or not the given statement is the beginning of
-	 * 		a scope.
 	 * @return The generated node, if it was possible to translated it
 	 * 		into a Catch.
 	 */
-	public static Catch decodeStatement(Node parent, String statement, Location location, boolean require, boolean scope)
+	public static Catch decodeStatement(Node parent, String statement, Location location, boolean require)
 	{
 		if (Regex.matches(statement, 0, Patterns.PRE_CATCH))
 		{
-			Catch n = new Catch(parent, location);
+			Catch    n        = new Catch(parent, location);
+			Location newLoc   = new Location(location);
 			
-			Bounds bounds = Regex.boundsOf(statement, Patterns.POST_CATCH);
+			Bounds   bounds   = n.calculateCatchContents(statement);
+			String   contents = statement.substring(bounds.getStart(), bounds.getEnd());
 			
-			if (bounds.getStart() >= 0)
+			newLoc.addBounds(bounds.getStart(), bounds.getEnd());
+			
+			if (n.decodeExceptionDeclaration(contents, location, require) && n.decodeException(newLoc, require))
 			{
-				String contents = statement.substring(bounds.getStart(), bounds.getEnd());
-				
-				Location newLoc = new Location();
-				newLoc.setLineNumber(location.getLineNumber());
-				newLoc.setBounds(location.getStart() + bounds.getStart(), location.getStart() + bounds.getEnd());
-				
-				LocalDeclaration exceptionInstance = LocalDeclaration.decodeStatement(parent, contents, newLoc, require, false);
-				
-				if (exceptionInstance != null)
-				{
-					n.addChild(exceptionInstance, n);
-					
-					Exception exception = new Exception(n, newLoc);
-					exception.setType(exceptionInstance.getType());
-					
-					if (exception.getID() > 0)
-					{
-						n.addChild(exception, n);
-						
-						Try tryNode = n.getCurrentTry(parent);
-						
-						if (tryNode == null)
-						{
-							SyntaxMessage.error("Parent try block not found", exceptionInstance);
-						}
-						
-						tryNode.addExceptionCode(exception.getID());
-						
-						return n;
-					}
-					
-					SyntaxMessage.error("Unknown exception type", exceptionInstance);
-				}
-				
-				SyntaxMessage.error("Incorrect Exception declaration", n, newLoc);
-			}
-			else
-			{
-				SyntaxMessage.error("Catch declaration missing Exception type", n);
+				return n;
 			}
 		}
 		
 		return null;
+	}
+	
+	/**
+	 * Calculate the Bounds that contain the contents that the Catch is
+	 * catching.
+	 * 
+	 * @param statement The statement containing the data.
+	 * @return The Bounds of the contents of the Catch.
+	 */
+	private Bounds calculateCatchContents(String statement)
+	{
+		Bounds bounds = Regex.boundsOf(statement, Patterns.POST_CATCH);
+		
+		if (!bounds.isValid())
+		{
+			SyntaxMessage.error("Catch declaration missing Exception type", this);
+		}
+		
+		return bounds;
+	}
+	
+	/**
+	 * Decode the parameter type declaration of the Exception that
+	 * is being caught by the Catch.
+	 * 
+	 * @param contents The String to decode as a parameter type
+	 * 		declaration.
+	 * @param location The location that the declaration is located at.
+	 * @param require Whether or not to throw an error if anything goes
+	 * 		wrong.
+	 * @return Whether or not the declaration decoded successfully.
+	 */
+	private boolean decodeExceptionDeclaration(String contents, Location location, boolean require)
+	{
+		LocalDeclaration exceptionInstance = LocalDeclaration.decodeStatement(this, contents, location, require);
+		
+		if (exceptionInstance == null)
+		{
+			SyntaxMessage.error("Incorrect Exception declaration", this, location);
+		}
+		
+		addChild(exceptionInstance, this);
+		
+		return true;
+	}
+	
+	/**
+	 * Decode the Exception that was declared. This is used to find out
+	 * the Exception id.
+	 * 
+	 * @param location The location that the declaration was located at.
+	 * @param require Whether or not to throw an error if anything goes
+	 * 		wrong.
+	 * @return Whether or not the exception was found successfully.
+	 */
+	private boolean decodeException(Location location, boolean require)
+	{
+		Exception exception = new Exception(this, location);
+		exception.setType(getExceptionDeclaration().getType());
+		
+		if (exception.getID() <= 0)
+		{
+			SyntaxMessage.error("Unknown exception type", exception);
+		}
+		
+		addChild(exception, this);
+		addExceptionCode(location);
+		
+		return true;
+	}
+	
+	/**
+	 * Add the code that was found when decoding the Exception to the
+	 * parent Try Node.
+	 * 
+	 * @param location The location that the declaration was located at.
+	 */
+	private void addExceptionCode(Location location)
+	{
+		Try tryNode = getCurrentTry(getParent());
+		
+		if (tryNode == null)
+		{
+			SyntaxMessage.error("Parent try block not found", this, location);
+		}
+		
+		tryNode.addExceptionCode(getException().getID());
 	}
 	
 	/**
@@ -198,5 +249,19 @@ public class Catch extends ExceptionHandler
 		super.cloneTo(node);
 		
 		return node;
+	}
+	
+	/**
+	 * Test the Catch class type to make sure everything
+	 * is working properly.
+	 * 
+	 * @return The error output, if there was an error. If the test was
+	 * 		successful, null is returned.
+	 */
+	public static String test()
+	{
+		
+		
+		return null;
 	}
 }

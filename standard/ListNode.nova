@@ -1,26 +1,26 @@
 public class ListNode
 {
-	Object		data;
+	Object		data
 	
-	ListNode	next;
+	ListNode	next
 	
 	public ListNode(Object data)
 	{
-		this.data = data;
+		this.data = data
 	}
 	
 	public Object getData()
 	{
-		return data;
+		return data
 	}
 	
 	public ListNode getNext()
 	{
-		return next;
+		return next
 	}
 	
 	public void setNext(ListNode next)
 	{
-		this.next = next;
+		this.next = next
 	}
 }

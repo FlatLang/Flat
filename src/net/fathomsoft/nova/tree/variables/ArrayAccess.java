@@ -3,7 +3,6 @@ package net.fathomsoft.nova.tree.variables;
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.tree.ClassDeclaration;
 import net.fathomsoft.nova.tree.Dimensions;
-import net.fathomsoft.nova.tree.Identifier;
 import net.fathomsoft.nova.tree.Literal;
 import net.fathomsoft.nova.tree.Node;
 import net.fathomsoft.nova.tree.Program;
@@ -22,7 +21,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.2 Mar 24, 2014 at 10:45:29 PM
- * @version	v0.2.14 Jun 18, 2014 at 10:11:40 PM
+ * @version	v0.2.14 Jul 19, 2014 at 7:33:13 PM
  */
 public class ArrayAccess extends Variable
 {
@@ -39,15 +38,24 @@ public class ArrayAccess extends Variable
 	}
 	
 	/**
+	 * @see net.fathomsoft.nova.tree.Node#getNumDefaultChildren()
+	 */
+	@Override
+	public int getNumDefaultChildren()
+	{
+		return super.getNumDefaultChildren() + 1;
+	}
+	
+	/**
 	 * @see net.fathomsoft.nova.tree.Value#getTypeClass()
 	 */
 	@Override
 	public ClassDeclaration getTypeClass()
 	{
 		Program program = getProgram();
-		String      name    = getTypeClassName(getArrayDimensions() - getNumDimensions());
+		String  name    = getTypeClassName(getArrayDimensions() - getNumDimensions());
 		
-		ClassDeclaration   clazz   = program.getClassDeclaration(name);
+		ClassDeclaration clazz = program.getClassDeclaration(name);
 		
 		return clazz;
 	}
@@ -95,47 +103,33 @@ public class ArrayAccess extends Variable
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.Node#generateCSource(StringBuilder)
+	 * @see net.fathomsoft.nova.tree.variables.Variable#generateCUseOutput(StringBuilder)
 	 */
 	@Override
-	public StringBuilder generateCSource(StringBuilder builder)
-	{
-		return generateCSourceFragment(builder).append(';').append('\n');
-	}
-	
-	/**
-	 * @see net.fathomsoft.nova.tree.Node#generateCSourceFragment(StringBuilder)
-	 */
-	@Override
-	public StringBuilder generateCSourceFragment(StringBuilder builder)
+	public StringBuilder generateCUseOutput(StringBuilder builder)
 	{
 		Dimensions dimensions = getDimensions();
 		
-		generateUseOutput(builder);
+		super.generateCUseOutput(builder);
 		dimensions.generateCSourceFragment(builder);
-		generateChildrenCSourceFragment(builder);
 		
 		return builder;
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.Node#generateNovaInput(boolean)
+	 * @see net.fathomsoft.nova.tree.Node#generateNovaInput(StringBuilder, boolean)
 	 */
 	@Override
-	public String generateNovaInput(boolean outputChildren)
+	public StringBuilder generateNovaInput(StringBuilder builder, boolean outputChildren)
 	{
-		StringBuilder builder = new StringBuilder();
+		super.generateNovaInput(builder, false).append(getDimensions().generateNovaInput());
 		
-		builder.append(super.generateNovaInput(false) + getDimensions().generateNovaInput());
-		
-		Identifier accessed = getAccessedNode();
-		
-		if (accessed != null)
+		if (doesAccess())
 		{
-			builder.append('.').append(accessed.generateNovaInput());
+			builder.append('.').append(getAccessedNode().generateNovaInput());
 		}
 		
-		return builder.toString();
+		return builder;
 	}
 
 	/**
@@ -144,12 +138,16 @@ public class ArrayAccess extends Variable
 	 * <br>
 	 * An example input would be: "args[34]"
 	 * 
-	 * @param parent The parent of the current statement.
-	 * @param statement The statement to decode into an ArrayAccess.
-	 * @param location The location of the statement.
-	 * @return The ArrayAccess if it was created, null if not.
+	 * @param parent The parent node of the statement.
+	 * @param statement The statement to try to decode into a
+	 * 		ArrayAccess instance.
+	 * @param location The location of the statement in the source code.
+	 * @param require Whether or not to throw an error if anything goes
+	 * 		wrong.
+	 * @return The generated node, if it was possible to translated it
+	 * 		into a ArrayAccess.
 	 */
-	public static ArrayAccess decodeStatement(Node parent, String statement, Location location, boolean require, boolean scope)
+	public static ArrayAccess decodeStatement(Node parent, String statement, Location location, boolean require)
 	{
 		if (SyntaxUtils.isValidArrayAccess(statement))
 		{
@@ -164,14 +162,14 @@ public class ArrayAccess extends Variable
 			
 			int    current     = indexBounds.getEnd() + 1;
 			
-			Variable var   = SyntaxTree.getExistingNode(parent, identifier);
+			VariableDeclaration var = SyntaxTree.findDeclaration(parent, identifier);
 			
 			if (var == null)
 			{
 				SyntaxMessage.error("Undeclared variable '" + identifier + "'", n);
 			}
 			
-			var.cloneTo(n);
+			var.generateUsableVariable(n);
 			n.setLocationIn(location);
 			
 			while (current > 0)
@@ -182,28 +180,21 @@ public class ArrayAccess extends Variable
 				newLoc.setOffset(idBounds.getEnd() + location.getOffset());
 				newLoc.setBounds(identifier.length() + indexBounds.getStart(), identifier.length() + indexBounds.getEnd());
 				
-				if (SyntaxUtils.isLiteral(data))
+				Node created = Literal.decodeStatement(n, data, newLoc, require, true);
+				
+				if (created == null)
 				{
-					Literal literal = Literal.decodeStatement(n, data, newLoc, require, false);
-					
-					n.addDimension(literal);
-				}
-				else
-				{
-					Node created = SyntaxTree.decodeScopeContents(n, data, newLoc, require, false);
+					created = SyntaxTree.decodeScopeContents(n.getAncestorWithScope(), data, newLoc, require);
 					
 					if (created == null)
 					{
-						if (!require)
-						{
-							return null;
-						}
+						SyntaxMessage.queryError("Unknown array access index '" + data + "'", n, newLoc, require);
 						
-						SyntaxMessage.error("Unknown array access index '" + data + "'", n, newLoc);
+						return null;
 					}
-					
-					n.addDimension(created);
 				}
+				
+				n.addDimension(created);
 				
 				indexBounds = Regex.boundsOf(indexData, current, Patterns.ARRAY_BRACKETS_DATA);
 				current     = indexBounds.getEnd() + 1;
@@ -213,19 +204,6 @@ public class ArrayAccess extends Variable
 		}
 		
 		return null;
-	}
-	
-	/**
-	 * @see net.fathomsoft.nova.tree.Identifier#getAccessedNode()
-	 */
-	public Identifier getAccessedNode()
-	{
-		if (getNumChildren() <= 1)
-		{
-			return null;
-		}
-		
-		return (Identifier)getChild(1);
 	}
 	
 	/**
@@ -251,5 +229,19 @@ public class ArrayAccess extends Variable
 		super.cloneTo(node);
 		
 		return node;
+	}
+	
+	/**
+	 * Test the ArrayAccess class type to make sure everything
+	 * is working properly.
+	 * 
+	 * @return The error output, if there was an error. If the test was
+	 * 		successful, null is returned.
+	 */
+	public static String test()
+	{
+		
+		
+		return null;
 	}
 }

@@ -1,17 +1,14 @@
 package net.fathomsoft.nova.tree;
 
-import net.fathomsoft.nova.tree.exceptionhandling.Exception;
 import net.fathomsoft.nova.util.Location;
 
 /**
- * Node extension that keeps track of all of the arguments that
- * are passed during a method call. The children of this node are
- * all Argument instances. They are stored in the order that
- * they will be passed to the method call.
+ * Node extension that keeps track of a set of arguments that
+ * are used in an abstract manner.
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 10, 2014 at 3:12:54 AM
- * @version	v0.2.14 Jun 18, 2014 at 10:11:40 PM
+ * @version	v0.2.14 Jul 19, 2014 at 7:33:13 PM
  */
 public class ArgumentList extends Node
 {
@@ -24,79 +21,44 @@ public class ArgumentList extends Node
 	}
 	
 	/**
-	 * Get the MethodCall instance that contains the specified
-	 * arguments.
-	 * 
-	 * @return The parent MethodCall instance.
-	 */
-	public MethodCall getMethodCall()
-	{
-		return (MethodCall)getParent();
-	}
-	
-	/**
-	 * @see net.fathomsoft.nova.tree.Node#generateNovaInput(boolean)
+	 * @see net.fathomsoft.nova.tree.Node#generateNovaInput(StringBuilder, boolean)
 	 */
 	@Override
-	public String generateNovaInput(boolean outputChildren)
+	public StringBuilder generateNovaInput(StringBuilder builder, boolean outputChildren)
 	{
-		StringBuilder builder = new StringBuilder();
-		
 		for (int i = 0; i < getNumChildren(); i++)
 		{
-			Node child = getChild(i);
-			
 			if (i > 0)
 			{
 				builder.append(", ");
 			}
 			
-			builder.append(child.generateNovaInput());
+			getChild(i).generateNovaInput(builder);
 		}
 		
-		return builder.toString();
+		return builder;
 	}
-
+	
 	/**
 	 * @see net.fathomsoft.nova.tree.Node#generateCSource(StringBuilder)
 	 */
 	@Override
 	public StringBuilder generateCSource(StringBuilder builder)
 	{
-		MethodCall caller = getMethodCall();
-		
-		Method     method = caller.getMethodDeclaration();
-		
-		if (!caller.isExternal())
-		{
-			if (method.needsReference())
-			{
-				if (method instanceof Destructor)
-				{
-					builder.append('&');
-				}
-				
-				Identifier context = caller.getContextNode();
-				
-				context.generateArgumentReference(builder, getMethodCall()).append(", ");
-			}
-			
-			builder.append(Exception.EXCEPTION_DATA_IDENTIFIER);
-			
-			if (getNumChildren() > 0)
-			{
-				builder.append(", ");
-			}
-		}
-		
+		return generateCSourceFragment(builder);
+	}
+	
+	/**
+	 * @see net.fathomsoft.nova.tree.Node#generateCSourceFragment(StringBuilder)
+	 */
+	@Override
+	public StringBuilder generateCSourceFragment(StringBuilder builder)
+	{
 		for (int i = 0; i < getNumChildren(); i++)
 		{
-			getChild(i).generateCSourceFragment(builder);
+			Node child = getChild(i);
 			
-			if (i < getNumChildren() - 1)
-			{
-				builder.append(", ");
-			}
+			child.generateCSourceFragment(builder);
 		}
 		
 		return builder;
@@ -125,5 +87,19 @@ public class ArgumentList extends Node
 		super.cloneTo(node);
 		
 		return node;
+	}
+	
+	/**
+	 * Test the ArgumentListNode class type to make sure everything
+	 * is working properly.
+	 * 
+	 * @return The error output, if there was an error. If the test was
+	 * 		successful, null is returned.
+	 */
+	public static String test()
+	{
+		
+		
+		return null;
 	}
 }

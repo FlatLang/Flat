@@ -1,46 +1,43 @@
-import "stdlib.h";
-import "Nova.h";
-
 public class ArrayList
 {
-	external void arrayCopy(void* dest, int dIndex, void* src, int sIndex, int len, int destArrLen, int size);
+	external void arrayCopy(void* dest, int dIndex, void* src, int sIndex, int len, int destArrLen, int size)
 	
-	int	bufferSize;
+	int	bufferSize
 	
-	visible int	size;
+	visible int	size
 	
-	int data[];
+	int data[]
 	
 	public ArrayList()
 	{
-		size = 0;
-		bufferSize = 0;
-		increaseSize();
+		size = 0
+		bufferSize = 0
+		increaseSize()
 	}
 	
 	public void add(int var)
 	{
 		if (size >= bufferSize)
 		{
-			increaseSize();
+			increaseSize()
 		}
 		
-		data[size++] = var;
+		data[size++] = var
 	}
 	
 	public void increaseSize()
 	{
-		bufferSize = bufferSize + 3;
+		bufferSize = bufferSize + 3
 		
-		int tmp[] = new int[bufferSize];
+		int tmp[] = new int[bufferSize]
 		
-		arrayCopy(tmp, 0, data, 0, size, bufferSize, 4);
+		arrayCopy(tmp, 0, data, 0, size, bufferSize, 4)
 		
-		data = tmp;
+		data = tmp
 	}
 	
 	public int get(int index)
 	{
-		return data[index];
+		return data[index]
 	}
 }

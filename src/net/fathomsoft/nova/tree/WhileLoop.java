@@ -3,18 +3,17 @@ package net.fathomsoft.nova.tree;
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.util.Bounds;
 import net.fathomsoft.nova.util.Location;
-import net.fathomsoft.nova.util.Patterns;
-import net.fathomsoft.nova.util.Regex;
+import net.fathomsoft.nova.util.StringUtils;
 import net.fathomsoft.nova.util.SyntaxUtils;
 
 /**
  * Loop extension that represents the declaration of a "while loop"
- * node type. See {@link #decodeStatement(Node, String, Location, boolean, boolean)}
+ * node type. See {@link #decodeStatement(Node, String, Location, boolean)}
  * for more details on what correct inputs look like.
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:55:59 PM
- * @version	v0.2.14 Jun 18, 2014 at 10:11:40 PM
+ * @version	v0.2.14 Jul 19, 2014 at 7:33:13 PM
  */
 public class WhileLoop extends Loop
 {
@@ -24,6 +23,15 @@ public class WhileLoop extends Loop
 	public WhileLoop(Node temporaryParent, Location locationIn)
 	{
 		super(temporaryParent, locationIn);
+	}
+	
+	/**
+	 * @see net.fathomsoft.nova.tree.Node#getNumDefaultChildren()
+	 */
+	@Override
+	public int getNumDecodedChildren()
+	{
+		return super.getNumDecodedChildren() + 1;
 	}
 	
 	/**
@@ -49,15 +57,7 @@ public class WhileLoop extends Loop
 		
 		builder.append("while (").append(condition.generateCSource()).append(')').append('\n');
 		
-		for (int i = 0; i < getNumChildren(); i++)
-		{
-			Node child = getChild(i);
-			
-			if (child != condition)
-			{
-				child.generateCSource(builder);
-			}
-		}
+		getScope().generateCSource(builder);
 		
 		return builder;
 	}
@@ -78,52 +78,28 @@ public class WhileLoop extends Loop
 	 * 		WhileLoop instance.
 	 * @param location The location of the statement in the source code.
 	 * @param require Whether or not to throw an error if anything goes wrong.
-	 * @param scope Whether or not the given statement is the beginning of
-	 * 		a scope.
 	 * @return The generated node, if it was possible to translated it
 	 * 		into a WhileLoop.
 	 */
-	public static WhileLoop decodeStatement(Node parent, String statement, Location location, boolean require, boolean scope)
+	public static WhileLoop decodeStatement(Node parent, String statement, Location location, boolean require)
 	{
-		if (Regex.matches(statement, 0, Patterns.PRE_WHILE))
+		if (StringUtils.findNextWord(statement, 0).equals("while"))
 		{
-			WhileLoop n = new WhileLoop(parent, location);
+			WhileLoop n   = new WhileLoop(parent, location);
 			
-			Bounds bounds   = Regex.boundsOf(statement, Patterns.WHILE_CONTENTS);
+			Bounds bounds = SyntaxUtils.findInnerParenthesesBounds(n, statement);
 			
-			if (bounds.getStart() >= 0)
+			if (bounds.isValid())
 			{
-				Location newLoc    = new Location();
-				newLoc.setLineNumber(location.getLineNumber());
-				newLoc.setBounds(location.getStart() + bounds.getStart(), location.getStart() + bounds.getEnd());
+				Location newLoc = new Location(location);
+				newLoc.addBounds(bounds.getStart(), bounds.getEnd());
 				
-				String   contents  = statement.substring(bounds.getStart(), bounds.getEnd());
+				String contents = statement.substring(bounds.getStart(), bounds.getEnd());
 				
-				Node condition = BinaryOperation.decodeStatement(parent, contents, newLoc, require, false);
-				
-				if (condition == null)
+				if (n.decodeCondition(contents, newLoc) && n.decodeScopeFragment(statement, bounds))
 				{
-					if (condition == null)
-					{
-						condition = SyntaxTree.getExistingNode(parent, contents);
-					}
-					if (condition == null && SyntaxUtils.isLiteral(contents))
-					{
-						Literal literal = Literal.decodeStatement(n, contents, newLoc, require, false);
-						
-						condition = literal;
-					}
-					if (condition == null)
-					{
-//						SyntaxMessage.error("Could not decode conditional statement '" + condition + "'", parent.getFileDeclaration(), newLoc, parent.getController());
-						
-						return null;
-					}
+					return n;
 				}
-				
-				n.addChild(condition, n);
-				
-				return n;
 			}
 			else
 			{
@@ -132,6 +108,37 @@ public class WhileLoop extends Loop
 		}
 		
 		return null;
+	}
+	
+	/**
+	 * Decode the given condition of the if statement.
+	 * 
+	 * @param contents The condition expression to decode.
+	 * @param location The location of the condition in the source code.
+	 * @return Whether or not the condition decoded successfully.
+	 */
+	private boolean decodeCondition(String contents, Location location)
+	{
+		Value condition = BinaryOperation.decodeStatement(this, contents, location, true);
+		
+		if (condition == null)
+		{
+			condition = SyntaxTree.getUsableExistingNode(this, contents, location);
+			
+			if (condition == null)
+			{
+				condition = Literal.decodeStatement(this, contents, location, true, true);
+				
+				if (condition == null)
+				{
+					return false;
+				}
+			}
+		}
+		
+		addChild(condition, this);
+		
+		return true;
 	}
 	
 	/**
@@ -157,5 +164,19 @@ public class WhileLoop extends Loop
 		super.cloneTo(node);
 		
 		return node;
+	}
+	
+	/**
+	 * Test the WhileLoop class type to make sure everything
+	 * is working properly.
+	 * 
+	 * @return The error output, if there was an error. If the test was
+	 * 		successful, null is returned.
+	 */
+	public static String test()
+	{
+		
+		
+		return null;
 	}
 }

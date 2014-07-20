@@ -5,10 +5,47 @@ import static java.lang.Math.sin;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import net.fathomsoft.nova.tree.Value;
+import net.fathomsoft.nova.tree.variables.VariableDeclaration;
 import net.fathomsoft.nova.util.Patterns;
+import net.fathomsoft.nova.util.StringUtils;
 
 public class Test
 {
+	/**
+	 * Replace a directory name in the given path String.<br>
+	 * For example:
+	 * <blockquote><pre>
+	 * String path = "/path/to/changethis/directory/here";
+	 * 
+	 * String value = replaceDirectoryName(path, "changethis", "newDir");</pre></blockquote>
+	 * The above value String would have the contents of:
+	 * "/path/to/newDir/directory/here"
+	 * 
+	 * @param path The path to use as the source String to change a
+	 * 		directory name in.
+	 * @param oldName The old directory name to change.
+	 * @param newName The new directory name to update the old one as.
+	 * @return The newly generated String path.
+	 */
+	private static String replaceDirectoryName(String path, String oldName, String newName)
+	{
+		if (path.indexOf(oldName + '/') >= 0)
+		{
+			return path.replace(oldName + '/', newName + '/');
+		}
+		else if (path.indexOf('/' + oldName) >= 0)
+		{
+			return path.replace('/' + oldName, '/' + newName);
+		}
+		else if (path.equals(oldName))
+		{
+			return newName;
+		}
+		
+		return path;
+	}
+	
 	private static double sin2(double d)
 	{
 		return sin(d);

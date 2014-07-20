@@ -1,4 +1,3 @@
-import "IO";
 import "Time";
 import "Thread";
 import "List";
@@ -13,32 +12,23 @@ public class IntegerTest
 		
 		while (c == 'y' || c == 'Y')
 		{
-//			Thread thread  = new Thread(100, "Thread1");
-//			Thread thread2 = new Thread(100, "Thread2");
-			
 			long start = Time.currentTimeMillis();
-			
-//			thread.start();
-//			thread2.start();
 			
 			for (int i = 0; i < 999999; i++)
 			{
 				Long.toAString(i);
 			}
 			
-//			thread.join();
-//			thread2.join();
-			
 			long end = Time.currentTimeMillis();
 			
-			IO.println("Time taken: " + (end - start) + "ms");
+			Console.writeLine("Time taken: " + (end - start) + "ms");
 			
-			IO.print("Run again? (Y/N)");
+			Console.write("Run again? (Y/N) ");
 			
-			c = IO.getChar();
+			c = Console.readChar();
 		}
 		
-		IO.println("\nFinished");
-		IO.waitForEnter();
+		Console.writeLine("\nFinished");
+		Console.waitForEnter();
 	}
 }

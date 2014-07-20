@@ -1,5 +1,7 @@
 package net.fathomsoft.nova.tree;
 
+import java.util.HashMap;
+
 import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.util.Location;
 
@@ -11,11 +13,15 @@ import net.fathomsoft.nova.util.Location;
  * 
  * @author	Braden Steffaniak
  * @since	v0.2 Apr 14, 2014 at 11:52:33 PM
- * @version	v0.2.14 Jun 18, 2014 at 10:11:40 PM
+ * @version	v0.2.14 Jul 19, 2014 at 7:33:13 PM
  */
 public class Program extends Node
 {
-	private Nova	controller;
+	private SyntaxTree	tree;
+	
+	private Nova		controller;
+	
+	private final HashMap<String, Integer>	files = new HashMap<String, Integer>();
 	
 	/**
 	 * Instantiate and initialize a Program that contains a reference
@@ -25,11 +31,12 @@ public class Program extends Node
 	 * 
 	 * @param controller The controller of the compiler.
 	 */
-	public Program(Nova controller)
+	public Program(Nova controller, SyntaxTree tree)
 	{
 		super(null, null);
 		
 		this.controller = controller;
+		this.tree       = tree;
 	}
 	
 	/**
@@ -38,11 +45,36 @@ public class Program extends Node
 	 * file nodes to the Program at the same time and end up creating
 	 * empty spaces in the tree.
 	 * 
-	 * @see net.fathomsoft.nova.tree.Node#addChild(net.fathomsoft.nova.tree.Node)
+	 * @see net.fathomsoft.nova.tree.Node#addChild(Node)
 	 */
 	public synchronized void addChild(Node child)
 	{
+		FileDeclaration file = (FileDeclaration)child;
+		
+		files.put(file.getName(), getNumChildren());
+		
 		super.addChild(child);
+	}
+	
+	/**
+	 * Add Imports for all of the classes within the same package as the
+	 * given FileDeclaration.
+	 * 
+	 * @param file The FileDeclaration to add the Imports to.
+	 */
+	public void addAutoImports(FileDeclaration file)
+	{
+		String dir = file.getFile().getParent();
+		
+		for (int i = 0; i < getNumChildren(); i++)
+		{
+			FileDeclaration child = (FileDeclaration)getChild(i);
+			
+			if (file != child && dir.equals(child.getFile().getParent()))
+			{
+				file.addImport(child.getName());
+			}
+		}
 	}
 	
 	/**
@@ -54,51 +86,6 @@ public class Program extends Node
 	public Nova getController()
 	{
 		return controller;
-	}
-	
-	/**
-	 * Make sure that the Class declarations are valid.
-	 * 
-	 * @param phase The phase that the node is being validated in.
-	 */
-	public void validateClasses(int phase)
-	{
-		for (int i = 0; i < getNumChildren(); i++)
-		{
-			FileDeclaration node = (FileDeclaration)getChild(i);
-			
-			node.validateClasses(phase);
-		}
-	}
-	
-	/**
-	 * Make sure that the Field declarations are valid.
-	 * 
-	 * @param phase The phase that the node is being validated in.
-	 */
-	public void validateFields(int phase)
-	{
-		for (int i = 0; i < getNumChildren(); i++)
-		{
-			FileDeclaration node = (FileDeclaration)getChild(i);
-			
-			node.validateFields(phase);
-		}
-	}
-	
-	/**
-	 * Make sure that the Method declarations are valid.
-	 * 
-	 * @param phase The phase that the node is being validated in.
-	 */
-	public void validateMethods(int phase)
-	{
-		for (int i = 0; i < getNumChildren(); i++)
-		{
-			FileDeclaration node = (FileDeclaration)getChild(i);
-			
-			node.validateMethods(phase);
-		}
 	}
 	
 	/**
@@ -121,19 +108,14 @@ public class Program extends Node
 	 */
 	public ClassDeclaration getClassDeclaration(String className)
 	{
-		for (int i = 0; i < getNumChildren(); i++)
+		if (!files.containsKey(className))
 		{
-			FileDeclaration  node  = (FileDeclaration)getChild(i);
-			
-			ClassDeclaration clazz = node.getClassDeclaration(className);
-			
-			if (clazz != null)
-			{
-				return clazz;
-			}
+			return null;
 		}
 		
-		return null;
+		FileDeclaration node = (FileDeclaration)getChild(files.get(className));
+		
+		return node.getClassDeclaration(className);
 	}
 	
 	/**
@@ -144,17 +126,7 @@ public class Program extends Node
 	 */
 	public FileDeclaration getFile(String filename)
 	{
-		for (int i = 0; i < getNumChildren(); i++)
-		{
-			FileDeclaration node = (FileDeclaration)getChild(i);
-			
-			if (node.getName().equals(filename))
-			{
-				return node;
-			}
-		}
-		
-		return null;
+		return (FileDeclaration)getChild(files.get(filename));
 	}
 	
 	/**
@@ -192,14 +164,9 @@ public class Program extends Node
 	{
 		for (int i = 0; i < getNumChildren(); i++)
 		{
-			Node child = getChild(i);
+			FileDeclaration fileDeclaration = (FileDeclaration)getChild(i);
 			
-			if (child instanceof FileDeclaration)
-			{
-				FileDeclaration fileDeclaration = (FileDeclaration)child;
-				
-				fileDeclaration.formatCHeaderOutput();
-			}
+			fileDeclaration.formatCHeaderOutput();
 		}
 	}
 	
@@ -210,14 +177,9 @@ public class Program extends Node
 	{
 		for (int i = 0; i < getNumChildren(); i++)
 		{
-			Node child = getChild(i);
+			FileDeclaration fileDeclaration = (FileDeclaration)getChild(i);
 			
-			if (child instanceof FileDeclaration)
-			{
-				FileDeclaration fileDeclaration = (FileDeclaration)child;
-				
-				fileDeclaration.formatCSourceOutput();
-			}
+			fileDeclaration.formatCSourceOutput();
 		}
 	}
 	
@@ -231,12 +193,22 @@ public class Program extends Node
 	}
 	
 	/**
+	 * Get the phase that the SyntaxTree is currently decoding in.
+	 * 
+	 * @return The phase that the SyntaxTree is currently decoding in.
+	 */
+	public int getPhase()
+	{
+		return tree.getPhase();
+	}
+	
+	/**
 	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location)
 	 */
 	@Override
 	public Program clone(Node temporaryParent, Location locationIn)
 	{
-		Program node = new Program(controller);
+		Program node = new Program(controller, tree);
 		
 		return cloneTo(node);
 	}
@@ -255,5 +227,19 @@ public class Program extends Node
 		node.controller = controller;
 		
 		return node;
+	}
+	
+	/**
+	 * Test the Program class type to make sure everything
+	 * is working properly.
+	 * 
+	 * @return The error output, if there was an error. If the test was
+	 * 		successful, null is returned.
+	 */
+	public static String test()
+	{
+		
+		
+		return null;
 	}
 }

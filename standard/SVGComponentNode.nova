@@ -1,9 +1,9 @@
-import "SVGComponent";
-import "SVGCircle";
+import "SVGComponent"
+import "SVGCircle"
 
 public class SVGComponentNode
 {
-	public SVGComponentNode next;
+	public SVGComponentNode next
 	
-	public SVGCircle component;
+	public SVGCircle component
 }

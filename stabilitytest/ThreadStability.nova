@@ -1,0 +1,51 @@
+import "Thread"
+
+public class ThreadStability
+{
+	public static void test(StabilityTest program)
+	{
+		Console.writeLine("Checking Thread.nova with 20 Threads... ")
+		
+		ThreadImplementation threads[] = new ThreadImplementation[20]
+		
+		createThreads(program, threads, 20)
+		
+		checkMemoryAccess()
+		
+		joinThreads(threads, 20)
+	}
+	
+	static void createThreads(StabilityTest program, ThreadImplementation threads[], int amount)
+	{
+		StabilityExceptionHandler handler = new StabilityExceptionHandler(program)
+		
+		for (int i = 0; i < amount; i++)
+		{
+			threads[i] = new ThreadImplementation()
+			//threads[i].addUncaughtExceptionHandler(handler)
+			threads[i].start()
+		}
+	}
+	
+	static void checkMemoryAccess()
+	{
+		Thread.sleep(30)
+		
+		Console.write("Checking memory access with multi-threading... ")
+		
+		for (int i = 0; i < 100000; i++)
+		{
+			String s = Integer.toAString(i)
+		}
+		
+		Console.writeLine("OK")
+	}
+	
+	static void joinThreads(ThreadImplementation threads[], int amount)
+	{
+		for (int i = 0; i < amount; i++)
+		{
+			threads[i].join()
+		}
+	}
+}

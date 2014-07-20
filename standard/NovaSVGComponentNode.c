@@ -1,13 +1,15 @@
 #include <precompiled.h>
-
 #include "NovaSVGComponentNode.h"
+
+
+
 
 SVGComponentNode* nova_SVGComponentNode_SVGComponentNode(ExceptionData* exceptionData)
 {
 	CCLASS_NEW(SVGComponentNode, this,);
 	
-	this->nova_SVGComponentNode_next = 0;
-	this->nova_SVGComponentNode_component = 0;
+	this->nova_SVGComponentNode_next = (Object*)0;
+	this->nova_SVGComponentNode_component = (Object*)0;
 	{
 	}
 	

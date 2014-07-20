@@ -1,0 +1,9 @@
+import "Thread"
+
+public class ThreadImplementation extends Thread
+{
+	public void run()
+	{
+		Thread.sleep(10)
+	}
+}

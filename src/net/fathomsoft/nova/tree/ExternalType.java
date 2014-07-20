@@ -13,9 +13,9 @@ import net.fathomsoft.nova.util.StringUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.2.4 May 8, 2014 at 6:55:51 PM
- * @version	v0.2.13 Jun 17, 2014 at 8:45:35 AM
+ * @version	v0.2.14 Jul 19, 2014 at 7:33:13 PM
  */
-public class ExternalType extends Value
+public class ExternalType extends IValue
 {
 	/**
 	 * @see net.fathomsoft.nova.tree.Node#Node(Node, Location)
@@ -34,12 +34,10 @@ public class ExternalType extends Value
 	 * 		ExternalType instance.
 	 * @param location The location of the statement in the source code.
 	 * @param require Whether or not to throw an error if anything goes wrong.
-	 * @param scope Whether or not the given statement is the beginning of
-	 * 		a scope.
 	 * @return The generated node, if it was possible to translated it
 	 * 		into a ExternalType.
 	 */
-	public static ExternalType decodeStatement(Node parent, String statement, Location location, boolean require, boolean scope)
+	public static ExternalType decodeStatement(Node parent, String statement, Location location, boolean require)
 	{
 		Bounds bounds = Regex.boundsOf(statement, Patterns.EXTERNAL_TYPE);
 		
@@ -92,5 +90,19 @@ public class ExternalType extends Value
 		super.cloneTo(node);
 		
 		return node;
+	}
+	
+	/**
+	 * Test the ExternalType class type to make sure everything
+	 * is working properly.
+	 * 
+	 * @return The error output, if there was an error. If the test was
+	 * 		successful, null is returned.
+	 */
+	public static String test()
+	{
+		
+		
+		return null;
 	}
 }

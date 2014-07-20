@@ -7,7 +7,7 @@ import java.util.ArrayList;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jun 7, 2013 at 9:03:38 PM
- * @version	v0.1 Jan 9, 2014 at 3:00:00 PM
+ * @version	v0.2.14 Jul 19, 2014 at 7:33:13 PM
  */
 public class Stack<E>
 {
@@ -57,10 +57,26 @@ public class Stack<E>
 	}
 	
 	/**
-	 * Peek at the last added element in the Stack without
+	 * Peek at the most recently added element in the Stack without
+	 * removing it, if it exists. If it does not exist, .
+	 * 
+	 * @return The most recently added element added in the Stack.
+	 */
+	public E check()
+	{
+		if (isEmpty())
+		{
+			return null;
+		}
+		
+		return peek(0);
+	}
+	
+	/**
+	 * Peek at the most recently added element in the Stack without
 	 * removing it.
 	 * 
-	 * @return The last element added in the Stack.
+	 * @return The most recently added element added in the Stack.
 	 */
 	public E peek()
 	{

@@ -1,6 +1,6 @@
 public class Array
 {
-	visible int length;
+	visible int length
 	
 	public Array()
 	{

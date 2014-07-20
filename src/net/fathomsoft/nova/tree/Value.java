@@ -1,8 +1,8 @@
 package net.fathomsoft.nova.tree;
 
 import net.fathomsoft.nova.error.SyntaxMessage;
-import net.fathomsoft.nova.tree.variables.LocalVariable;
 import net.fathomsoft.nova.tree.variables.Variable;
+import net.fathomsoft.nova.tree.variables.VariableDeclaration;
 import net.fathomsoft.nova.util.Location;
 import net.fathomsoft.nova.util.SyntaxUtils;
 
@@ -13,26 +13,18 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.2.4 May 2, 2014 at 11:14:37 PM
- * @version	v0.2.14 Jun 18, 2014 at 10:11:40 PM
+ * @version	v0.2.14 Jul 19, 2014 at 7:33:13 PM
  */
-public class Value extends Node
+public abstract class Value extends Node
 {
-	private byte	dataType;
-	
-	private int		arrayDimensions;
-	
-	private String	type;
-	
 	public static final byte	VALUE = 1, POINTER = 2, REFERENCE = 3;
-
+	
 	/**
 	 * @see net.fathomsoft.nova.tree.Node#Node(Node, Location)
 	 */
 	public Value(Node temporaryParent, Location locationIn)
 	{
 		super(temporaryParent, locationIn);
-		
-		dataType = VALUE;
 	}
 	
 	/**
@@ -51,18 +43,18 @@ public class Value extends Node
 	 * non-static methods return "this". The given method cannot be
 	 * external.
 	 * 
-	 * @param method The method to get the object reference identifier
+	 * @param methodDeclaration The method to get the object reference identifier
 	 * 		name from.
 	 * @return The name of the object reference identifier.
 	 */
-	public String getObjectReferenceIdentifier(Method method)
+	public String getObjectReferenceIdentifier(CallableMethod methodDeclaration)
 	{
-		if (!method.isStatic())
+		if (methodDeclaration.isInstance())
 		{
 			return ParameterList.OBJECT_REFERENCE_IDENTIFIER;
 		}
 		
-		ClassDeclaration clazz = (ClassDeclaration)method.getAncestorOfType(ClassDeclaration.class);
+		ClassDeclaration clazz = ((Node)methodDeclaration).getParentClass();
 		
 		return clazz.getName();
 	}
@@ -70,25 +62,50 @@ public class Value extends Node
 	/**
 	 * Get the Value that the method was called with for the given
 	 * MethodCall's method node, if it was not called with a specific
-	 * object. Static methods return "ClassName" and non-static
-	 * methods return "this". The call cannot be that of an external
-	 * method.
+	 * object. Static methods return the ClassDeclaration and non-static
+	 * methods return the "this" instance. The call cannot be that of an
+	 * external method.
 	 * 
-	 * @param method The method to get the Value from.
+	 * @param methodDeclaration The method to get the Value from.
 	 * @return The Value that the method was called with.
 	 */
-	public Identifier getObjectReferenceNode(Method method)
+	public Identifier getObjectReferenceNode(CallableMethod methodDeclaration)
 	{
-		String identifier = getObjectReferenceIdentifier(method);
+		Node     method     = ((Node)methodDeclaration);
 		
-		Identifier id = (Identifier)SyntaxTree.getExistingNode(method, identifier);
+		String   identifier = getObjectReferenceIdentifier(methodDeclaration);
 		
-		if (id != null)
+		Variable var        = SyntaxTree.getUsableExistingNode(method, identifier, method.getLocationIn());
+		
+		if (var != null)
 		{
-			return id.clone(id.getParent(), id.getLocationIn());
+			return var;
 		}
 		
-		return null;
+		return method.getParentClass();
+	}
+	
+	/**
+	 * Check to see if the given Value type is valid. If it is not,
+	 * this will throw an exception if it is required. If it isn't
+	 * required it will return false. If it is valid, it will return
+	 * true.<br>
+	 * In other words, check if the given String is a primitive type name
+	 * or declared class name.
+	 * 
+	 * @param type The type to validate.
+	 * @param require Whether or not throw an error if anything goes
+	 * 		wrong.
+	 * @return Whether or not the given value is valid.
+	 */
+	public boolean checkType(String type, boolean require)
+	{
+		if (!SyntaxUtils.isValidType(this, type))
+		{
+			return SyntaxMessage.queryError("Type '" + type + "' does not exist", this, require);
+		}
+		
+		return true;
 	}
 	
 	/**
@@ -101,21 +118,17 @@ public class Value extends Node
 	 */
 	public boolean isContainingClass(Value node)
 	{
-		ClassDeclaration clazz = node.getClassDeclaration();
+		ClassDeclaration clazz = node.getParentClass();
 		
 		if (this == clazz)
 		{
 			return true;
 		}
-//		else if (getType().equals(clazz.getName()))
-//		{
-//			return true;
-//		}System.out.println(getType() + " is not " + clazz.getName());
-		else if (this instanceof LocalVariable)
+		else if (this instanceof Variable)
 		{
-			LocalVariable param = (LocalVariable)this;
+			Variable param = (Variable)this;
 			
-			if (param.getName().equals(Method.getObjectReferenceIdentifier()))
+			if (param.getName().equals(ParameterList.OBJECT_REFERENCE_IDENTIFIER))
 			{
 				return true;
 			}
@@ -164,18 +177,6 @@ public class Value extends Node
 	}
 	
 	/**
-	 * Get the amount of dimensions that the array has, if any. For an
-	 * example of what a array declarations and dimensions look like
-	 * {@link #setArrayDimensions(int)}
-	 * 
-	 * @return The amount of dimensions that the array has, if any.
-	 */
-	public int getArrayDimensions()
-	{
-		return arrayDimensions;
-	}
-	
-	/**
 	 * The text that represents an array in the C language.
 	 * 
 	 * @return The text that represents an array in the C language.
@@ -183,22 +184,6 @@ public class Value extends Node
 	public String getArrayText()
 	{
 		return "*";
-	}
-	
-	/**
-	 * Set the amount of dimensions that the array has, if any.<br>
-	 * <br>
-	 * For example:
-	 * <blockquote><pre>
-	 * int array[][][];</pre></blockquote>
-	 * In the previous example, the variable "array" has three dimensions.
-	 * 
-	 * @param arrayDimensions The amount of dimensions that the array has,
-	 * 		if any.
-	 */
-	public void setArrayDimensions(int arrayDimensions)
-	{
-		this.arrayDimensions = arrayDimensions;
 	}
 	
 	/**
@@ -216,18 +201,7 @@ public class Value extends Node
 	 */
 	public boolean isExternalType()
 	{
-		return type != null && getClassDeclaration().containsExternalType(type);
-	}
-	
-	/**
-	 * Get the type that the statement returns. For an example of what a
-	 * value type looks like, see {@link #setType(String)}
-	 * 
-	 * @return The type that the statement returns.
-	 */
-	public String getType()
-	{
-		return type;
+		return getType() != null && getParentClass().containsExternalType(getType());
 	}
 	
 	/**
@@ -239,15 +213,48 @@ public class Value extends Node
 	 * The type of the variable returns is "int"
 	 * 
 	 * @param type The type that this statement returns.
+	 * @return Whether or not the type was set successfully.
 	 */
-	public void setType(String type)
+	public boolean setType(String type)
 	{
-		if (!SyntaxUtils.isValidType(this, type))
-		{
-			SyntaxMessage.error("Type '" + type + "' does not exist", this);
-		}
-		
-		this.type = type;
+		return setType(type, true, true);
+	}
+	
+	/**
+	 * Set the type that this statement returns.<br>
+	 * <br>
+	 * For example:
+	 * <blockquote><pre>
+	 * private static int index;</pre></blockquote>
+	 * The type of the variable returns is "int"
+	 * 
+	 * @param type The type that this statement returns.
+	 * @param require Whether or not to throw an error if anything goes
+	 * 		wrong.
+	 * @return Whether or not the type was set successfully.
+	 */
+	public boolean setType(String type, boolean require)
+	{
+		return setType(type, require, true);
+	}
+	
+	/**
+	 * Set the type that this statement returns.<br>
+	 * <br>
+	 * For example:
+	 * <blockquote><pre>
+	 * private static int index;</pre></blockquote>
+	 * The type of the variable returns is "int"
+	 * 
+	 * @param type The type that this statement returns.
+	 * @param require Whether or not to throw an error if anything goes
+	 * 		wrong.
+	 * @param checkType Whether or not to check if the type is valid.
+	 * @return Whether or not the type was set successfully.
+	 */
+	public boolean setType(String type, boolean require, boolean checkType)
+	{
+		return setType(type, require, checkType, true);
 	}
 	
 	/**
@@ -259,12 +266,7 @@ public class Value extends Node
 	 */
 	public ClassDeclaration getTypeClass()
 	{
-		Program program = getProgram();
-		String      name    = getTypeClassName();
-		
-		ClassDeclaration   clazz   = program.getClassDeclaration(name);
-		
-		return clazz;
+		return getProgram().getClassDeclaration(getTypeClassName());
 	}
 	
 	/**
@@ -288,18 +290,16 @@ public class Value extends Node
 	 */
 	public String getTypeClassName(int arrayDimensions)
 	{
-		Program program = getProgram();
-		
-		ClassDeclaration clazz = program.getClassDeclaration(type);
+		ClassDeclaration clazz = getProgram().getClassDeclaration(getType());
 		
 		if (clazz != null)
 		{
 			return clazz.getName();
 		}
 		
-		if (SyntaxUtils.isPrimitiveType(type))
+		if (SyntaxUtils.isPrimitiveType(getType()))
 		{
-			String name = SyntaxUtils.getPrimitiveWrapperClassName(type);
+			String name = SyntaxUtils.getPrimitiveWrapperClassName(getType());
 			
 			if (name != null)
 			{
@@ -308,12 +308,11 @@ public class Value extends Node
 					name += "Array";
 				}
 				
-				clazz = program.getClassDeclaration(name);
+				clazz = getProgram().getClassDeclaration(name);
 				
 				if (clazz == null)
 				{
-					throw new RuntimeException("SADF " + name);
-//					SyntaxMessage.error("Could not find class '" + name + "'", this);
+					SyntaxMessage.error("Could not find class '" + name + "'", this);
 				}
 				
 				return clazz.getName();
@@ -330,43 +329,7 @@ public class Value extends Node
 	 */
 	public boolean isReference()
 	{
-		return dataType == REFERENCE;
-	}
-	
-	/**
-	 * Get whether or not the identifier is a value, pointer, or
-	 * reference.<br>
-	 * <br>
-	 * Possible values include:
-	 * <ul>
-	 * 	<li><b>Variable.VALUE</b> - If the variable type simply refers to a value.</li>
-	 * 	<li><b>Variable.POINTER</b> - If the variable type is a pointer.</li>
-	 * 	<li><b>Variable.REFERENCE</b> - If the variable type is a reference.</li>
-	 * </ul>
-	 * 
-	 * @return The data type that the variable is.
-	 */
-	public byte getDataType()
-	{
-		return dataType;
-	}
-	
-	/**
-	 * Set whether or not the identifier is a value, pointer, or
-	 * reference.<br>
-	 * <br>
-	 * Possible values include:
-	 * <ul>
-	 * 	<li><b>Variable.VALUE</b> - If the variable type simply refers to a value.</li>
-	 * 	<li><b>Variable.POINTER</b> - If the variable type is a pointer.</li>
-	 * 	<li><b>Variable.REFERENCE</b> - If the variable type is a reference.</li>
-	 * </ul>
-	 * 
-	 * @param type The data type that the variable is.
-	 */
-	public void setDataType(byte type)
-	{
-		this.dataType = type;
+		return getDataType() == REFERENCE;
 	}
 	
 	/**
@@ -376,7 +339,7 @@ public class Value extends Node
 	 */
 	public boolean isPointer()
 	{
-		return dataType == POINTER;
+		return getDataType() == POINTER;
 	}
 	
 	/**
@@ -390,15 +353,15 @@ public class Value extends Node
 	{
 		Node parent = getParent();
 		
-		byte type   = dataType;
+		byte type   = getDataType();
 		
-		if (parent instanceof ArgumentList)
+		if (parent instanceof MethodCallArgumentList)
 		{
-			MethodCall call  = (MethodCall)parent.getParent();
-			Parameter  param = call.getCorrespondingParameter(this);
+			MethodCall call  = (MethodCall)parent.getAncestorOfType(MethodCall.class);
+			Value      param = call.getCorrespondingParameter(this);
 			
 			//TODO: make support for multidimensional arrays too....
-			if (!call.isExternal() || !param.isPointer() || dataType != VALUE || !isArray())
+			if (!call.isExternal() || !param.isPointer() || type != VALUE || !isArray())
 			{
 				type = param.getDataType();
 			}
@@ -406,7 +369,7 @@ public class Value extends Node
 		else if (parent instanceof Assignment)
 		{
 			Assignment assignment = (Assignment)parent;
-			Variable   assignee       = assignment.getAssigneeNode();
+			Variable   assignee   = (Variable)assignment.getAssigneeNode();
 			
 			if (this instanceof Variable == false || !((Variable)this).isSameVariable(assignee))
 			{
@@ -415,9 +378,7 @@ public class Value extends Node
 		}
 		else if (parent instanceof Return)
 		{
-			Method method = (Method)getAncestorOfType(Method.class);
-			
-			type = method.getDataType();
+			type = getParentMethod().getDataType();
 		}
 		
 		return type;
@@ -431,7 +392,7 @@ public class Value extends Node
 	 */
 	public String generateDataTypeOutput()
 	{
-		return generateDataTypeOutput(dataType);
+		return generateDataTypeOutput(getDataType());
 	}
 	
 	/**
@@ -497,12 +458,39 @@ public class Value extends Node
 	}
 	
 	/**
+	 * @see net.fathomsoft.nova.tree.Node#generateCHeader(StringBuilder)
+	 */
+	@Override
+	public StringBuilder generateCHeader(StringBuilder builder)
+	{
+		return generateCHeaderFragment(builder);
+	}
+	
+	/**
+	 * @see net.fathomsoft.nova.tree.Node#generateCHeaderFragment(StringBuilder)
+	 */
+	@Override
+	public StringBuilder generateCHeaderFragment(StringBuilder builder)
+	{
+		return generateCSourceFragment(builder);
+	}
+	
+	/**
 	 * @see net.fathomsoft.nova.tree.Node#generateCSource(StringBuilder)
 	 */
 	@Override
 	public StringBuilder generateCSource(StringBuilder builder)
 	{
-		return generateCSourceFragment(builder).append(";\n");
+		return generateCSourceFragment(builder);
+	}
+	
+	/**
+	 * @see net.fathomsoft.nova.tree.Node#generateCSource(StringBuilder)
+	 */
+	@Override
+	public StringBuilder generateCSourceFragment(StringBuilder builder)
+	{
+		return generateCTypeOutput(builder);
 	}
 	
 	/**
@@ -510,26 +498,80 @@ public class Value extends Node
 	 * 
 	 * @return The C syntax for the type of the Value.
 	 */
+	public StringBuilder generateCTypeOutput()
+	{
+		return generateCTypeOutput(new StringBuilder());
+	}
+	
+	/**
+	 * Generate the C syntax for the type of the specified Value.
+	 * 
+	 * @param builder The StringBuider to append the data to.
+	 * @return The C syntax for the type of the Value.
+	 */
 	public StringBuilder generateCTypeOutput(StringBuilder builder)
 	{
-		if (type.equals("long"))
+		if (getType().equals("long"))
 		{
-			return builder.append("long_long");
+			builder.append("long_long");
+		}
+		else if (getType().equals("bool"))
+		{
+			builder.append("char");
+		}
+		else
+		{
+			builder.append(getType());
 		}
 		
-		return builder.append(type);
+		if (isReference())
+		{
+			builder.append('&');
+		}
+		else if (isPointer())
+		{
+			builder.append('*');
+		}
+		if (isArray())
+		{
+			builder.append(getArrayText());
+		}
+		if (getParentMethod() instanceof Destructor && this instanceof Identifier)
+		{
+			if (((Identifier)this).getName().equals(ParameterList.OBJECT_REFERENCE_IDENTIFIER))
+			{
+				builder.append('*');
+			}
+		}
+//		if (!isPrimitiveType() && !isExternalType())
+//		{
+//			builder.append('*');
+//		}
+		
+		return builder;
 	}
 	
 	/**
-	 * Generate the representation of when the value node is being used
-	 * in action.
+	 * Generate a String representing a type cast for the specified Value
+	 * in C syntax.
 	 * 
-	 * @return What the method call looks like when it is being used in
-	 * 		action
+	 * @return The StringBuilder with the appended data.
 	 */
-	public final StringBuilder generateUseOutput()
+	public StringBuilder generateCTypeCast()
 	{
-		return generateUseOutput(new StringBuilder());
+		return generateCTypeCast(new StringBuilder());
+	}
+	
+	/**
+	 * Generate a String representing a type cast for the specified Value
+	 * in C syntax.
+	 * 
+	 * @param builder The StringBuilder to append the data to.
+	 * @return The StringBuilder with the appended data.
+	 */
+	public StringBuilder generateCTypeCast(StringBuilder builder)
+	{
+		return builder.append('(').append(generateCTypeOutput()).append(')');
 	}
 	
 	/**
@@ -539,60 +581,134 @@ public class Value extends Node
 	 * @return What the method call looks like when it is being used in
 	 * 		action
 	 */
-	public StringBuilder generateUseOutput(StringBuilder builder)
+	public final StringBuilder generateCUseOutput()
+	{
+		return generateCUseOutput(new StringBuilder());
+	}
+	
+	/**
+	 * Generate the representation of when the value node is being used
+	 * in action.
+	 * 
+	 * @return What the method call looks like when it is being used in
+	 * 		action
+	 */
+	public StringBuilder generateCUseOutput(StringBuilder builder)
 	{
 		return generateCTypeOutput(builder);
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.Node#generateNovaInput(boolean)
+	 * @see net.fathomsoft.nova.tree.Node#generateNovaInput(StringBuilder, boolean)
 	 */
 	@Override
-	public String generateNovaInput(boolean outputChildren)
+	public StringBuilder generateNovaInput(StringBuilder builder, boolean outputChildren)
 	{
-		StringBuilder builder = new StringBuilder();
-		
-		generateUseOutput(builder);
-		
-		if (outputChildren)
-		{
-			Identifier accessed = ((Identifier)this).getAccessedNode();
-			
-			if (accessed != null)
-			{
-				builder.append('.').append(accessed.generateNovaInput());
-			}
-		}
-		
-		return builder.toString();
+		return generateCUseOutput(builder);
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location)
-	 */
-	@Override
-	public Value clone(Node temporaryParent, Location locationIn)
-	{
-		Value node = new Value(temporaryParent, locationIn);
-		
-		return cloneTo(node);
-	}
-	
-	/**
-	 * Fill the given Value with the data that is in the
-	 * specified node.
+	 * Get whether or not the specified Node's type can be determined NOT
+	 * to be virtual or not at compilation time, i.e. If the program
+	 * doesn't have to use the vtable.
 	 * 
-	 * @param node The node to copy the data into.
-	 * @return The cloned node.
+	 * @return Wether or not the type can be determined to NOT be virtual
+	 * 		at compilation time.
 	 */
-	public Value cloneTo(Value node)
+	public boolean isVirtualTypeKnown()
 	{
-		super.cloneTo(node);
-
-		node.arrayDimensions = arrayDimensions;
-		node.type            = type;
-		node.dataType        = dataType;
+		return false;
+	}
+	
+	/**
+	 * Get the type that the statement returns. For an example of what a
+	 * value type looks like, see {@link #setType(String)}
+	 * 
+	 * @return The type that the statement returns.
+	 */
+	public abstract String getType();
+	
+	/**
+	 * Get the amount of dimensions that the array has, if any. For an
+	 * example of what a array declarations and dimensions look like
+	 * {@link #setArrayDimensions(int)}
+	 * 
+	 * @return The amount of dimensions that the array has, if any.
+	 */
+	public abstract int getArrayDimensions();
+	
+	/**
+	 * Set the amount of dimensions that the array has, if any.<br>
+	 * <br>
+	 * For example:
+	 * <blockquote><pre>
+	 * int array[][][];</pre></blockquote>
+	 * In the previous example, the variable "array" has three dimensions.
+	 * 
+	 * @param arrayDimensions The amount of dimensions that the array has,
+	 * 		if any.
+	 */
+	public abstract void setArrayDimensions(int arrayDimensions);
+	
+	/**
+	 * Set the type that this statement returns.<br>
+	 * <br>
+	 * For example:
+	 * <blockquote><pre>
+	 * private static int index;</pre></blockquote>
+	 * The type of the variable returns is "int"
+	 * 
+	 * @param type The type that this statement returns.
+	 * @param require Whether or not to throw an error if anything goes
+	 * 		wrong.
+	 * @param checkType Whether or not to check if the type is valid.
+	 * @param checkDataType Whether or not to check the data type of
+	 * 		the given type.
+	 * @return Whether or not the type was set successfully.
+	 */
+	public abstract boolean setType(String type, boolean require, boolean checkType, boolean checkDataType);
+	
+	/**
+	 * Get whether or not the identifier is a value, pointer, or
+	 * reference.<br>
+	 * <br>
+	 * Possible values include:
+	 * <ul>
+	 * 	<li><b>Variable.VALUE</b> - If the variable type simply refers to a value.</li>
+	 * 	<li><b>Variable.POINTER</b> - If the variable type is a pointer.</li>
+	 * 	<li><b>Variable.REFERENCE</b> - If the variable type is a reference.</li>
+	 * </ul>
+	 * 
+	 * @return The data type that the variable is.
+	 */
+	public abstract byte getDataType();
+	
+	/**
+	 * Set whether or not the identifier is a value, pointer, or
+	 * reference.<br>
+	 * <br>
+	 * Possible values include:
+	 * <ul>
+	 * 	<li><b>Variable.VALUE</b> - If the variable type simply refers to a value.</li>
+	 * 	<li><b>Variable.POINTER</b> - If the variable type is a pointer.</li>
+	 * 	<li><b>Variable.REFERENCE</b> - If the variable type is a reference.</li>
+	 * </ul>
+	 * 
+	 * @param type The data type that the variable is.
+	 */
+	public abstract void setDataType(byte type);
+	
+	/**
+	 * Test the Value class type to make sure everything
+	 * is working properly.
+	 * 
+	 * @return The error output, if there was an error. If the test was
+	 * 		successful, null is returned.
+	 */
+	public static String test()
+	{
 		
-		return node;
+		
+		return null;
 	}
 }

@@ -1,12 +1,18 @@
 #include <precompiled.h>
-
 #include "NovaSVGComponent.h"
+
+
+nova_VTable_SVGComponent nova_VTable_SVGComponent_val =
+{
+	nova_SVGComponent_generateOutput,
+};
 
 SVGComponent* nova_SVGComponent_SVGComponent(ExceptionData* exceptionData)
 {
 	CCLASS_NEW(SVGComponent, this,);
 	
-	this->nova_SVGComponent_children = 0;
+	this->nova_SVGComponent_children = (Object*)0;
+	this->vtable = &nova_VTable_SVGComponent_val;
 	{
 		this->nova_SVGComponent_children = nova_SVGComponentList_SVGComponentList(exceptionData);
 	}

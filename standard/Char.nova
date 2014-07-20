@@ -1,18 +1,18 @@
 public class Char extends Number
 {
-	visible char value;
+	visible char value
 	
 	public Char(char value)
 	{
-		this.value = value;
+		this.value = value
 	}
 	
 	public String toString()
 	{
-		char chars[] = new char[1];
+		char chars[] = new char[1]
 		
-		chars[0] = value;
+		chars[0] = value
 		
-		return new String(chars);
+		return new String(chars)
 	}
 }

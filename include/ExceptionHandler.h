@@ -4,23 +4,26 @@
 #include <stdio.h>
 #include <setjmp.h>
 
+#define buffer jmp_buf
+#define setJump setjmp
+#define jump longjmp
+
 #define TRY \
 	do\
 	{\
-		jmp_buf buf;\
+		buffer buf;\
+		int exception_code;\
 		\
 		ExceptionData* newData = nova_ExceptionData_ExceptionData(exceptionData, &buf);\
 		\
-		int exception_code;\
-		\
-		if (exceptionData)\
+		if (exceptionData != 0)\
 		{\
 			nova_ExceptionData_setParent(newData, exceptionData, exceptionData);\
 		}\
 		\
 		exceptionData = newData;\
 		\
-		exception_code = setjmp(buf);\
+		exception_code = setJump(buf);\
 		\
 		if (exception_code == 0)
 

@@ -1,24 +1,24 @@
 public class Integer extends Number
 {
-	visible int value;
+	public int value
 	
 	public Integer(int value)
 	{
-		this.value = value;
+		this.value = value
 	}
 	
 	public static int numDigits(int number)
 	{
-		return Long.numDigits(number);
+		return Long.numDigits(number)
 	}
 	
 	public static String toAString(int value)
 	{
-		return Long.toAString(value);
+		return Long.toAString(value)
 	}
 	
 	public String toString()
 	{
-		return toAString(value);
+		return toAString(value)
 	}
 }

@@ -2,22 +2,25 @@ package net.fathomsoft.nova.tree;
 
 import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.error.SyntaxMessage;
+import net.fathomsoft.nova.tree.variables.FieldDeclaration;
+import net.fathomsoft.nova.tree.variables.FieldList;
 import net.fathomsoft.nova.tree.variables.InstanceFieldList;
-import net.fathomsoft.nova.tree.variables.Variable;
+import net.fathomsoft.nova.tree.variables.VariableDeclaration;
 import net.fathomsoft.nova.util.Bounds;
 import net.fathomsoft.nova.util.Location;
+import net.fathomsoft.nova.util.Patterns;
 import net.fathomsoft.nova.util.StringUtils;
 
 /**
- * Method extension that represents the declaration of a Constructor
- * node type. See {@link #decodeStatement(Node, String, Location, boolean, boolean)}
+ * MethodDeclaration extension that represents the declaration of a Constructor
+ * node type. See {@link #decodeStatement(Node, String, Location, boolean)}
  * for more details on what correct inputs look like.
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:50:47 PM
- * @version	v0.2.14 Jun 18, 2014 at 10:11:40 PM
+ * @version	v0.2.14 Jul 19, 2014 at 7:33:13 PM
  */
-public class Constructor extends Method
+public class Constructor extends MethodDeclaration
 {
 	/**
 	 * Create a Constructor and initialize default values.
@@ -28,7 +31,16 @@ public class Constructor extends Method
 	{
 		super(temporaryParent, locationIn);
 		
-//		setDataType(Variable.POINTER);
+		setStatic(true);
+	}
+	
+	/**
+	 * @see net.fathomsoft.nova.tree.MethodDeclaration#isInstance()
+	 */
+	@Override
+	public boolean isInstance()
+	{
+		return true;
 	}
 	
 	/**
@@ -44,12 +56,6 @@ public class Constructor extends Method
 				return builder;
 			}
 		}
-//		if (isStatic())
-//		{
-//			SyntaxError.outputNewError("Constructor cannot be static", getLocationIn());
-//			
-//			return null;
-//		}
 		if (isConstant())
 		{
 			SyntaxMessage.error("Constructor cannot be const", this);
@@ -59,12 +65,6 @@ public class Constructor extends Method
 		{
 			SyntaxMessage.error("Constructor cannot return a reference", this);
 		}
-//		else if (isPointer())
-//		{
-//			SyntaxError.outputNewError("Constructor cannot return a pointer", getLocationIn());
-//			
-//			return null;
-//		}
 		
 		return generateCSourcePrototype(builder).append('\n');
 	}
@@ -79,11 +79,11 @@ public class Constructor extends Method
 		
 		builder.append('{').append('\n');
 		
-		ClassDeclaration classDeclaration = (ClassDeclaration)getAncestorOfType(ClassDeclaration.class, true);
+		ClassDeclaration classDeclaration = getParentClass();
 		
-		if (classDeclaration.containsNonStaticData())
+		if (classDeclaration.containsNonStaticData() || classDeclaration.containsVirtualMethods())
 		{
-			builder.append("CCLASS_NEW(").append(getName()).append(", ").append(Method.getObjectReferenceIdentifier());
+			builder.append("CCLASS_NEW(").append(getName()).append(", ").append(ParameterList.OBJECT_REFERENCE_IDENTIFIER);
 			
 			if (!classDeclaration.containsNonStaticPrivateData())
 			{
@@ -94,7 +94,7 @@ public class Constructor extends Method
 		}
 		else
 		{
-			builder.append(getName()).append('*').append(' ').append(Method.getObjectReferenceIdentifier()).append(" = NULL").append(';');
+			builder.append(getName()).append('*').append(' ').append(ParameterList.OBJECT_REFERENCE_IDENTIFIER).append(" = ").append(generateCTypeCast()).append("1").append(';');
 		}
 		
 		builder.append('\n').append('\n');
@@ -113,7 +113,7 @@ public class Constructor extends Method
 		
 		builder.append('\n');
 		
-		builder.append("return ").append(Method.getObjectReferenceIdentifier()).append(';').append('\n');
+		builder.append("return ").append(ParameterList.OBJECT_REFERENCE_IDENTIFIER).append(';').append('\n');
 		
 		builder.append('}').append('\n');
 		
@@ -125,34 +125,44 @@ public class Constructor extends Method
 	 * assign the default null value to each uninitialized/uninstantiated
 	 * field variables.
 	 * 
-	 * @return A String containing the code needed to assign default values
-	 * 		to each uninitialized/uninstantiated field.
+	 * @param builder The StringBuilder to append the assignments to.
+	 * @return The appended buffer.
 	 */
 	private StringBuilder generateFieldDefaultAssignments(StringBuilder builder)
 	{
-		ClassDeclaration  classDeclaration = (ClassDeclaration)getAncestorOfType(ClassDeclaration.class);
+		FieldList fields = getParentClass().getFieldList();
 		
-		InstanceFieldList fields           = classDeclaration.getFieldList().getPublicFieldList();
+		generateFieldDefaultAssignments(builder, fields.getPublicFieldList());
+		generateFieldDefaultAssignments(builder, fields.getPrivateFieldList());
 		
-		for (int i = 0; i < fields.getNumChildren(); i++)
+		if (getParentClass().containsVirtualMethods())
 		{
-			Variable child = (Variable)fields.getChild(i);
+			VTable table = getParentClass().getVTableNode();
 			
-			if (!child.isExternal())
-			{
-				child.generateUseOutput(builder).append(" = ").append(Variable.getNullText()).append(';').append('\n');
-			}
+			builder.append(ParameterList.OBJECT_REFERENCE_IDENTIFIER).append("->").append(VTable.IDENTIFIER).append(" = &").append(table.generateCSourceName()).append(";\n");
 		}
 		
-		InstanceFieldList privateFields = classDeclaration.getFieldList().getPrivateFieldList();
-		
-		for (int i = 0; i < privateFields.getNumChildren(); i++)
+		return builder;
+	}
+	
+	/**
+	 * This method returns a String that contains the code needed to
+	 * assign the default null value to each uninitialized/uninstantiated
+	 * field variables.
+	 * 
+	 * @param builder The StringBuilder to append the assignments to.
+	 * @param fields The list of fields to assign default values to.
+	 * @return The appended buffer.
+	 */
+	private StringBuilder generateFieldDefaultAssignments(StringBuilder builder, InstanceFieldList fields)
+	{
+		for (int i = 0; i < fields.getNumChildren(); i++)
 		{
-			Variable child = (Variable)privateFields.getChild(i);
+			FieldDeclaration field = (FieldDeclaration)fields.getChild(i);
 			
-			if (!child.isExternal())
+			if (!field.isExternal())
 			{
-				child.generateUseOutput(builder).append(" = ").append(Variable.getNullText()).append(';').append('\n');
+				field.generateCUseOutput(builder).append(" = ").append(Literal.C_NULL_OUTPUT).append(';').append('\n');
 			}
 		}
 		
@@ -160,19 +170,21 @@ public class Constructor extends Method
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.Method#generateCSourcePrototype()
+	 * @see net.fathomsoft.nova.tree.MethodDeclaration#generateCSourcePrototype(StringBuilder)
 	 */
+	@Override
 	public StringBuilder generateCSourcePrototype(StringBuilder builder)
 	{
 		return generateCSourceSignature(builder).append(";");
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.Method#generateCSourceSignature()
+	 * @see net.fathomsoft.nova.tree.MethodDeclaration#generateCSourceSignature(StringBuilder)
 	 */
+	@Override
 	public StringBuilder generateCSourceSignature(StringBuilder builder)
 	{
-		ClassDeclaration classDeclaration = (ClassDeclaration)getAncestorOfType(ClassDeclaration.class);
+		ClassDeclaration classDeclaration = getParentClass();
 		
 		if (isConstant())
 		{
@@ -212,56 +224,31 @@ public class Constructor extends Method
 	 * 		Constructor instance.
 	 * @param location The location of the statement in the source code.
 	 * @param require Whether or not to throw an error if anything goes wrong.
-	 * @param scope Whether or not the given statement is the beginning of
-	 * 		a scope.
 	 * @return The generated node, if it was possible to translated it
 	 * 		into a Constructor.
 	 */
-	public static Constructor decodeStatement(Node parent, String statement, Location location, boolean require, boolean scope)
+	public static Constructor decodeStatement(Node parent, String statement, Location location, boolean require)
 	{
 		int firstParenthIndex = statement.indexOf('(');
-		int lastParenthIndex  = statement.lastIndexOf(')');
 		
 		if (firstParenthIndex >= 0)
 		{
 			Constructor n = new Constructor(parent, location);
 			
-			// TODO: make better check for last parenth. Take a count of each of the starting parenthesis and
-			// subtract the ending ones from the number.
+			int lastParenthIndex = StringUtils.findEndingMatch(statement, firstParenthIndex, '(', ')');
+			
 			if (lastParenthIndex < 0)
 			{
 				SyntaxMessage.error("Expected a ')' ending parenthesis", n);
 			}
 			
 			String parameterList = statement.substring(firstParenthIndex + 1, lastParenthIndex);
+			String preParameters = statement.substring(0, firstParenthIndex);
 			
-			String parameters[]  = StringUtils.splitCommas(parameterList);
+			ExtraData data = n.iterateWords(preParameters, Patterns.IDENTIFIER_BOUNDARIES);
 			
-			statement = statement.substring(0, firstParenthIndex);
-			
-			for (int i = 0; i < parameters.length; i++)
+			if (n.validateDeclaration(data, require) && n.decodeParameters(parameterList, require))
 			{
-				if (parameters[i].length() > 0)
-				{
-					Parameter param = Parameter.decodeStatement(parent, parameters[i], location, require, false);
-					
-					if (param == null)
-					{
-						SyntaxMessage.error("Incorrect parameter definition", n);
-					}
-					
-					n.getParameterList().addChild(param);
-				}
-			}
-			
-			n.iterateWords(statement);
-			
-			ClassDeclaration classDeclaration = (ClassDeclaration)parent.getAncestorOfType(ClassDeclaration.class, true);
-			
-			if (classDeclaration.getName().equals(n.getName()))
-			{
-				n.setType(n.getName());
-				
 				return n;
 			}
 		}
@@ -270,14 +257,46 @@ public class Constructor extends Method
 	}
 	
 	/**
+	 * Validate that the specified statement really is a Constructor
+	 * declaration.
+	 * 
+	 * @param The data that will specify if there was an error.
+	 * @param require Whether or not to throw an error if anything goes wrong.
+	 * @return Whether or not the statement is a Constructor declaration.
+	 */
+	private boolean validateDeclaration(ExtraData data, boolean require)
+	{
+		if (getType() != null)
+		{
+			return false;
+		}
+		else if (data.error != null)
+		{
+			return SyntaxMessage.queryError(data.error, this, require);
+		}
+		
+		return setType(getName(), false);
+	}
+	
+	/**
 	 * @see net.fathomsoft.nova.tree.Node#interactWord(java.lang.String, int, net.fathomsoft.nova.util.Bounds, int, java.lang.String, java.lang.String, net.fathomsoft.nova.tree.Node.ExtraData)
 	 */
 	@Override
 	public void interactWord(String word, int wordNumber, Bounds bounds, int numWords, String leftDelimiter, String rightDelimiter, ExtraData extra)
 	{
-		setAttribute(word, wordNumber);
+		super.interactWord(word, wordNumber, bounds, numWords, leftDelimiter, rightDelimiter, extra);
 		
-		setName(word);
+		if (wordNumber == numWords - 1)
+		{
+			if (!getParentClass().getName().equals(word))
+			{
+				extra.error = "Constructor must have same name as its containing class";
+			}
+		}
+		else if (word.equals("static"))
+		{
+			extra.error = "Constructor cannot be declared as static";
+		}
 	}
 	
 	/**
@@ -303,5 +322,19 @@ public class Constructor extends Method
 		super.cloneTo(node);
 		
 		return node;
+	}
+	
+	/**
+	 * Test the Constructor class type to make sure everything
+	 * is working properly.
+	 * 
+	 * @return The error output, if there was an error. If the test was
+	 * 		successful, null is returned.
+	 */
+	public static String test()
+	{
+		
+		
+		return null;
 	}
 }

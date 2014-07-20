@@ -1,11 +1,18 @@
 #include <precompiled.h>
-
 #include "NovaNumber.h"
+
+
+nova_VTable_Number nova_VTable_Number_val =
+{
+	nova_static_Number_numDigits,
+	nova_static_Number_toAString,
+};
 
 Number* nova_Number_Number(ExceptionData* exceptionData)
 {
-	Number* this = NULL;
+	CCLASS_NEW(Number, this,);
 	
+	this->vtable = &nova_VTable_Number_val;
 	{
 	}
 	
@@ -25,10 +32,10 @@ void nova_del_Number(Number** this, ExceptionData* exceptionData)
 	NOVA_FREE(*this);
 }
 
-int nova_Number_numDigits(ExceptionData* exceptionData, int nova_0_number)
+int nova_static_Number_numDigits(Number* this, ExceptionData* exceptionData, int nova_0_number)
 {
 }
 
-String* nova_Number_toAString(ExceptionData* exceptionData, int nova_0_value)
+String* nova_static_Number_toAString(Number* this, ExceptionData* exceptionData, int nova_0_value)
 {
 }

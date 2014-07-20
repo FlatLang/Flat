@@ -1,12 +1,14 @@
 #include <precompiled.h>
-
 #include "NovaSVG.h"
+
+
+
 
 SVG* nova_SVG_SVG(ExceptionData* exceptionData)
 {
 	CCLASS_NEW(SVG, this,);
 	
-	this->nova_SVG_root = 0;
+	this->nova_SVG_root = (Object*)0;
 	{
 		this->nova_SVG_root = nova_SVGMainComponent_SVGMainComponent(exceptionData);
 	}
@@ -30,7 +32,7 @@ void nova_del_SVG(SVG** this, ExceptionData* exceptionData)
 
 void nova_SVG_generateOutput(SVG* this, ExceptionData* exceptionData, File* nova_0_file)
 {
-	nova_SVGMainComponent_generateOutput(this->nova_SVG_root, exceptionData, nova_0_file);
+	this->nova_SVG_root->vtable->nova_virtual_generateOutput(this->nova_SVG_root, exceptionData, nova_0_file);
 }
 
 void nova_SVG_generateHTMLOutput(SVG* this, ExceptionData* exceptionData, File* nova_0_file)

@@ -1,0 +1,7 @@
+public class PolymorphicSubClass
+{
+	public String toString()
+	{
+		return "sub class"
+	}
+}

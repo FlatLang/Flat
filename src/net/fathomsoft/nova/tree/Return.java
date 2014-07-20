@@ -4,17 +4,19 @@ import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.util.Location;
 import net.fathomsoft.nova.util.Patterns;
 import net.fathomsoft.nova.util.Regex;
+import net.fathomsoft.nova.util.StringUtils;
+import net.fathomsoft.nova.util.SyntaxUtils;
 
 /**
  * Value extension that represents a return statement node type.
- * See {@link #decodeStatement(Node, String, Location, boolean, boolean)} for more
+ * See {@link #decodeStatement(Node, String, Location, boolean)} for more
  * details on what correct inputs look like.
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:58:29 PM
- * @version	v0.2.14 Jun 18, 2014 at 10:11:40 PM
+ * @version	v0.2.14 Jul 19, 2014 at 7:33:13 PM
  */
-public class Return extends Value
+public class Return extends IValue
 {
 	/**
 	 * @see net.fathomsoft.nova.tree.Node#Node(Node, Location)
@@ -25,9 +27,11 @@ public class Return extends Value
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.Value#getReturnedNode()
+	 * Get the Value that the return statement returns.
+	 * 
+	 * @return The Value Node that the return statement returns.
 	 */
-	public Value getReturnedNode()
+	public Value getValueNode()
 	{
 		if (getNumChildren() <= 0)
 		{
@@ -54,31 +58,32 @@ public class Return extends Value
 	{
 		builder.append("return");
 		
-		Value value = getReturnedNode();
-		
-		if (value != null)
+		if (getValueNode() != null)
 		{
-			builder.append(' ').append(value.generateCSourceFragment());
+			if (getValueNode().toString().equals("nova_local_0.equals(new String(\"sub class\"))"))
+			{
+				System.out.println("ASDF");
+			}
+			
+			builder.append(' ').append(getValueNode().generateCSourceFragment());
 		}
 		
 		return builder;
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.Node#generateNovaInput(boolean)
+	 * @see net.fathomsoft.nova.tree.Node#generateNovaInput(StringBuilder, boolean)
 	 */
-	public String generateNovaInput(boolean outputChildren)
+	public StringBuilder generateNovaInput(StringBuilder builder, boolean outputChildren)
 	{
-		String str = "return";
+		builder.append("return");
 		
-		Value value = getReturnedNode();
-		
-		if (value != null)
+		if (getValueNode() != null)
 		{
-			str += " " + value.generateNovaInput(outputChildren);
+			builder.append(' ').append(getValueNode().generateNovaInput(outputChildren));
 		}
 		
-		return str;
+		return builder;
 	}
 	
 	/**
@@ -98,60 +103,122 @@ public class Return extends Value
 	 * @param statement The statement to try to decode into a
 	 * 		Return instance.
 	 * @param location The location of the statement in the source code.
-	 * @param require Whether or not to throw an error if anything goes wrong.
-	 * @param scope Whether or not the given statement is the beginning of
-	 * 		a scope.
+	 * @param require Whether or not to throw an error if anything goes
+	 * 		wrong.
 	 * @return The generated node, if it was possible to translated it
 	 * 		into a Return.
 	 */
-	public static Return decodeStatement(Node parent, String statement, Location location, boolean require, boolean scope)
+	public static Return decodeStatement(Node parent, String statement, Location location, boolean require)
 	{
 		if (Regex.startsWith(statement, Patterns.PRE_RETURN))
 		{
 			Return n = new Return(parent, location);
 			
-			Method method = (Method)parent.getAncestorOfType(Method.class, true);
-			n.setType(method.getType());
-			
-			int returnStartIndex = Regex.indexOf(statement, Patterns.POST_RETURN);
-			
-			Location newLoc = new Location(location);
-			newLoc.setBounds(location.getStart() + returnStartIndex, location.getStart() + statement.length());
-			
-			Method parentMethod = (Method)parent.getAncestorOfType(Method.class);
-				
-			if (returnStartIndex >= 0)
+			if (n.decodeReturnValue(statement, location, require))
 			{
-				statement = statement.substring(returnStartIndex);
-				
-				Value child = (Value)SyntaxTree.decodeScopeContents(n, statement, newLoc, false);
-				
-				if (child == null)
-				{
-					SyntaxMessage.error("Could not decode return statement '" + statement + "'", n, newLoc);
-				}
-				
-//				if (parentMethod.getType().equals(child.getType()))
-//				{
-//					SyntaxMessage.error("Method '" + parentMethod.getName() + "' must return a type of '" + parentMethod.getType() + "'", n, newLoc);
-//				}
-				
-				n.addChild(child);
+				return n;
 			}
-			else if (parentMethod.getType() != null)
-			{
-				if (!require)
-				{
-					return null;
-				}
-				
-				SyntaxMessage.error("Method '" + parentMethod.getName() + "' must return a type of '" + parentMethod.getType() + "'", n, newLoc);
-			}
-			
-			return n;
 		}
 		
 		return null;
+	}
+	
+	/**
+	 * Decode the return value of a return statement, if the return
+	 * statement returns a value.<br>
+	 * <br>
+	 * The value of a return statement looks like the following:
+	 * <blockquote><pre>
+	 * return node</pre></blockquote>
+	 * "<u><code>node</code></u>" is the value in the above return
+	 * statement.
+	 * 
+	 * @param statement The statement to decode the return value from.
+	 * @param location The location of the return statement in the source
+	 * 		code.
+	 * @param require Whether or not to throw an error if anything goes
+	 * 		wrong.
+	 * @return Whether or not the return value decoded correctly.
+	 */
+	private boolean decodeReturnValue(String statement, Location location, boolean require)
+	{
+		String postReturn = generatePostReturn(statement);
+		
+		if (postReturn != null)
+		{
+			Location newLoc = new Location(location);
+			newLoc.addBounds(statement.indexOf(postReturn), statement.length());
+		
+			Value abstractValue = decodeReturnValue(postReturn, getParentMethod(), newLoc);
+			
+			addChild(abstractValue);
+		}
+		else if (getParentMethod().getType() != null)
+		{
+			return SyntaxMessage.queryError("Method '" + getParentMethod().getName() + "' must return a type of '" + getParentMethod().getType() + "'", this, require);
+		}
+		
+		setType(getParentMethod().getType());
+		
+		return true;
+	}
+	
+	/**
+	 * Decode the return value of a return statement.<br>
+	 * <br>
+	 * The value of a return statement looks like the following:
+	 * <blockquote><pre>
+	 * return node</pre></blockquote>
+	 * "<u><code>node</code></u>" is the value in the above return
+	 * statement.
+	 * 
+	 * @param statement The statement containing the return value.
+	 * @param method The method that the return statement is returning
+	 * 		from.
+	 * @param location The location of the return statement value in the
+	 * 		source code.
+	 * @return The Value representing the return value.
+	 */
+	private Value decodeReturnValue(String statement, MethodDeclaration method, Location location)
+	{
+		Value value = SyntaxTree.decodeValue(this, statement, location, false);
+		
+		if (value == null)
+		{
+			SyntaxMessage.error("Could not decode return statement '" + statement + "'", this, location);
+		}
+		else if (!SyntaxUtils.validateCompatibleTypes(method, value.getReturnedNode()))
+		{
+			SyntaxMessage.error("Method '" + method.getName() + "' must return a type of '" + method.getType() + "'", this, location);
+		}
+		
+		return value;
+	}
+	
+	/**
+	 * Get a String representing the return value, if the return
+	 * statement returns a value. If it does not, it returns null.<br>
+	 * <br>
+	 * The value of a return statement looks like the following:
+	 * <blockquote><pre>
+	 * return node</pre></blockquote>
+	 * "<u><code>node</code></u>" is the value in the above return
+	 * statement.
+	 * 
+	 * @param statement The statement to generate the String from.
+	 * @return The String representing the return value. If the return
+	 * 		statement does not return a value, then null.
+	 */
+	private static String generatePostReturn(String statement)
+	{
+		int index = StringUtils.findNextNonWhitespaceIndex(statement, 7);
+		
+		if (index < 0)
+		{
+			return null;
+		}
+		
+		return statement.substring(index);
 	}
 	
 	/**
@@ -177,5 +244,19 @@ public class Return extends Value
 		super.cloneTo(node);
 		
 		return node;
+	}
+	
+	/**
+	 * Test the Return class type to make sure everything
+	 * is working properly.
+	 * 
+	 * @return The error output, if there was an error. If the test was
+	 * 		successful, null is returned.
+	 */
+	public static String test()
+	{
+		
+		
+		return null;
 	}
 }

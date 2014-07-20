@@ -1,7 +1,7 @@
 package net.fathomsoft.nova.tree;
 
+import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.tree.exceptionhandling.Exception;
-import net.fathomsoft.nova.tree.variables.Variable;
 import net.fathomsoft.nova.util.Location;
 
 /**
@@ -9,9 +9,9 @@ import net.fathomsoft.nova.util.Location;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:56:34 PM
- * @version	v0.2.14 Jun 18, 2014 at 10:11:40 PM
+ * @version	v0.2.14 Jul 19, 2014 at 7:33:13 PM
  */
-public class ParameterList extends Node
+public class ParameterList<E extends Value> extends Node
 {
 	/**
 	 * Identifier for the calling object of a method call.<br>
@@ -42,11 +42,85 @@ public class ParameterList extends Node
 	{
 		super(temporaryParent, locationIn);
 		
-		Parameter exceptionData = new Parameter(this, locationIn);
-		exceptionData.setName(Exception.EXCEPTION_DATA_IDENTIFIER, true);
-		exceptionData.setType("ExceptionData");
-		
-		addChild(exceptionData);
+		if (!getMethodDeclaration().isExternal())
+		{
+			Parameter reference = new Parameter(this, getLocationIn());
+			reference.setType(getParentClass().getName());
+			reference.setName(OBJECT_REFERENCE_IDENTIFIER, true);
+			
+			Parameter exceptionData = new Parameter(this, locationIn);
+			exceptionData.setName(Exception.EXCEPTION_DATA_IDENTIFIER, true);
+			exceptionData.setType("ExceptionData");
+			
+			addChild(reference);
+			addChild(exceptionData);
+		}
+	}
+	
+	/**
+	 * @see net.fathomsoft.nova.tree.Node#getNumDefaultChildren()
+	 */
+	@Override
+	public int getNumDefaultChildren()
+	{
+		return super.getNumDefaultChildren() + 2;
+	}
+	
+	/**
+	 * Get the visible child at the given index. Visible children are
+	 * those that can be seen in the .nova original source code.
+	 * Examples of invisible children are the object reference and
+	 * the exception data reference.
+	 * 
+	 * @param index The index to get the argument from, starting at 0.
+	 * @return The specified parameter.
+	 */
+	public E getVisibleChild(int index)
+	{
+		return (E)getChild(index + getParameterOffset());
+	}
+	
+	/**
+	 * Get the number of parameters - the number of default
+	 * parameters.
+	 * 
+	 * @return The number of actually visible parameters.
+	 */
+	public int getNumVisibleChildren()
+	{
+		return getNumChildren() - getParameterOffset();
+	}
+	
+	/**
+	 * Get the MethodDeclaration that this ParameterList belongs to.
+	 * 
+	 * @return The MethodDeclaration that this ParameterList belongs to.
+	 */
+	public CallableMethod getMethodDeclaration()
+	{
+		return (CallableMethod)getAncestorOfType(CallableMethod.class);
+	}
+	
+	/**
+	 * Get the Object reference Parameter instance, if the containing
+	 * MethodDeclaration is not external.
+	 * 
+	 * @return The Object reference Parameter.
+	 */
+	public Parameter getObjectReference()
+	{
+		return (Parameter)getChild(0);
+	}
+	
+	/**
+	 * Get the ExceptionData Parameter that is being passed, if the
+	 * containing MethodDeclaration is not external.
+	 * 
+	 * @return The ExceptionData Parameter.
+	 */
+	public Parameter getExceptionData()
+	{
+		return (Parameter)getChild(1);
 	}
 	
 	/**
@@ -61,7 +135,7 @@ public class ParameterList extends Node
 	 * @param parameterName The name of the parameter to find.
 	 * @return The Parameter with the given name.
 	 */
-	public Parameter getParameter(String parameterName)
+	public E getParameter(String parameterName)
 	{
 		for (int i = 0; i < getNumChildren(); i++)
 		{
@@ -69,11 +143,53 @@ public class ParameterList extends Node
 			
 			if (parameter.getName().equals(parameterName))
 			{
-				return parameter;
+				return (E)parameter;
 			}
 		}
 		
 		return null;
+	}
+	
+	/**
+	 * Validate that the given Parameter is able to be accessed
+	 * within its context.
+	 * 
+	 * @param parameter The Parameter to validate.
+	 * @param parent The Node to use to throw an error if validation
+	 * 		fails.
+	 */
+	public void validateAccess(Parameter parameter, Node parent)
+	{
+		if (parameter.getName().equals(OBJECT_REFERENCE_IDENTIFIER))
+		{
+			if (!getParentMethod().isInstance())
+			{
+				contextError(parent);
+			}
+		}
+	}
+
+	/**
+	 * Generate and throw an error message that describes that
+	 * there was an error trying to access a specific context.
+	 * 
+	 * @param parent The Node to use to throw the error.
+	 */
+	public static void contextError(Node parent)
+	{
+		contextError(parent, parent.getLocationIn());
+	}
+	
+	/**
+	 * Generate and throw an error message that describes that
+	 * there was an error trying to access a specific context.
+	 * 
+	 * @param parent The Node to use to throw the error.
+	 * @param location The location to specify in the error message.
+	 */
+	public static void contextError(Node parent, Location location)
+	{
+		SyntaxMessage.error("Cannot use keyword '" + ParameterList.OBJECT_REFERENCE_IDENTIFIER + "' within a static context", parent, location);
 	}
 	
 	/**
@@ -92,7 +208,7 @@ public class ParameterList extends Node
 	 * @param parameterIndex The index parameter to get.
 	 * @return The Parameter at the given index.
 	 */
-	public Parameter getParameter(int parameterIndex)
+	public E getParameter(int parameterIndex)
 	{
 		return getParameter(parameterIndex, getParameterOffset());
 	}
@@ -105,7 +221,7 @@ public class ParameterList extends Node
 	 * @param offset The offset in which to access the node at.
 	 * @return The Parameter at the given index.
 	 */
-	private Parameter getParameter(int parameterIndex, int offset)
+	private E getParameter(int parameterIndex, int offset)
 	{
 		parameterIndex += offset;
 		
@@ -114,7 +230,7 @@ public class ParameterList extends Node
 			return null;
 		}
 		
-		return (Parameter)getChild(parameterIndex);
+		return (E)getChild(parameterIndex);
 	}
 	
 	/**
@@ -128,63 +244,14 @@ public class ParameterList extends Node
 	 */
 	public int getParameterOffset()
 	{
-		Method method = (Method)getAncestorOfType(Method.class);
+		CallableMethod methodDeclaration = getMethodDeclaration();
 		
-		if (method.isExternal())
+		if (methodDeclaration.isExternal())
 		{
 			return 0;
 		}
-		else if (method.isStatic())
-		{
-			return 1;
-		}
 		
 		return 2;
-	}
-	
-	/**
-	 * Validate the parameters that are used for the specified parent
-	 * Method. Checks to make sure that if it needs an object
-	 * reference as the first parameter that it gives it one.
-	 * 
-	 * @param phase The phase that the node is being validated in.
-	 * @see net.fathomsoft.nova.tree.Node#validate(int)
-	 */
-	@Override
-	public Node validate(int phase)
-	{
-		if (phase != 2)
-		{
-			return this;
-		}
-		
-		Method method = (Method)getAncestorOfType(Method.class);
-		
-		if (method.isExternal())
-		{
-			// Remove the exceptionData parameter.
-			removeChild(0);
-		}
-		else if (!method.isStatic())
-		{
-			ClassDeclaration     classDeclaration = (ClassDeclaration)method.getAncestorOfType(ClassDeclaration.class);
-			
-			Parameter reference = new Parameter(this, null);
-			
-			reference.setType(classDeclaration.getName());
-			
-			if (method instanceof Destructor)
-			{
-				reference.setDataType(Variable.POINTER);
-			}
-			
-			reference.setName(Method.getObjectReferenceIdentifier(), true);
-			
-			// Add the object reference identifier to the beginning.
-			addChild(0, reference);
-		}
-		
-		return this;
 	}
 	
 	/**
@@ -193,29 +260,42 @@ public class ParameterList extends Node
 	@Override
 	public StringBuilder generateCHeader(StringBuilder builder)
 	{
-		return generateCSource(builder);
+		return generateParameters(builder, true);
 	}
-
+	
 	/**
 	 * @see net.fathomsoft.nova.tree.Node#generateCSource(StringBuilder)
 	 */
 	@Override
 	public StringBuilder generateCSource(StringBuilder builder)
 	{
-		Method method = (Method)getAncestorOfType(Method.class);
+		return generateParameters(builder, false);
+	}
+	
+	/**
+	 * @see net.fathomsoft.nova.tree.Node#generateCSourceFragment(StringBuilder)
+	 */
+	public StringBuilder generateParameters(StringBuilder builder, boolean header)
+	{
+		CallableMethod methodDeclaration = getMethodDeclaration();
 		
 		int start = 0;
 		
-		if (method instanceof Constructor)
+		if (methodDeclaration.isStatic() && methodDeclaration.isInstance())
 		{
 			start = 1;
 		}
 		
 		for (int i = start; i < getNumChildren(); i++)
 		{
-			Node child = getChild(i);
-			
-			child.generateCHeader(builder);
+			if (header)
+			{
+				getChild(i).generateCHeader(builder);
+			}
+			else
+			{
+				getChild(i).generateCSource(builder);
+			}
 			
 			if (i < getNumChildren() - 1)
 			{
@@ -227,12 +307,31 @@ public class ParameterList extends Node
 	}
 	
 	/**
+	 * @see net.fathomsoft.nova.tree.Node#generateNovaInput(StringBuilder, boolean)
+	 */
+	@Override
+	public StringBuilder generateNovaInput(StringBuilder builder, boolean outputChildren)
+	{
+		for (int i = 0; i < getNumChildren(); i++)
+		{
+			if (i > 0)
+			{
+				builder.append(", ");
+			}
+			
+			getChild(i).generateNovaInput(builder);
+		}
+		
+		return builder;
+	}
+	
+	/**
 	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location)
 	 */
 	@Override
-	public ParameterList clone(Node temporaryParent, Location locationIn)
+	public ParameterList<E> clone(Node temporaryParent, Location locationIn)
 	{
-		ParameterList node = new ParameterList(temporaryParent, locationIn);
+		ParameterList<E> node = new ParameterList<E>(temporaryParent, locationIn);
 		
 		return cloneTo(node);
 	}
@@ -244,10 +343,24 @@ public class ParameterList extends Node
 	 * @param node The node to copy the data into.
 	 * @return The cloned node.
 	 */
-	public ParameterList cloneTo(ParameterList node)
+	public ParameterList<E> cloneTo(ParameterList<E> node)
 	{
 		super.cloneTo(node);
 		
 		return node;
+	}
+	
+	/**
+	 * Test the ParameterList class type to make sure everything
+	 * is working properly.
+	 * 
+	 * @return The error output, if there was an error. If the test was
+	 * 		successful, null is returned.
+	 */
+	public static String test()
+	{
+		
+		
+		return null;
 	}
 }

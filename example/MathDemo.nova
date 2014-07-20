@@ -1,0 +1,31 @@
+import "Time"
+
+public class MathDemo
+{
+	public static void main(String args[])
+	{
+		Console.writeLine("Beginning benchmark...")
+		
+		int iterations = 999999
+		
+		long start = Time.currentTimeMillis()
+		
+		for (int i = 0; i < iterations; i++)
+		{
+			try
+			{
+				Math.sin(i)
+			}
+			catch (Exception e)
+			{
+				
+			}
+		}
+		
+		long time = Time.currentTimeMillis() - start;
+		
+		Console.writeLine(iterations + " iterations of Math.sin() in " + time + "ms")
+		
+		Console.waitForEnter()
+	}
+}

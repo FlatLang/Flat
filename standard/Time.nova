@@ -1,9 +1,9 @@
 public class Time
 {
-	external long currentTimeMillis();
+	external long currentTimeMillis() as extCurrentTimeMillis
 	
 	public static long currentTimeMillis()
 	{
-		return currentTimeMillis();
+		return extCurrentTimeMillis()
 	}
 }

@@ -1,6 +1,6 @@
 package net.fathomsoft.nova.tree;
 
-import net.fathomsoft.nova.tree.variables.Variable;
+import net.fathomsoft.nova.tree.variables.VariableDeclaration;
 import net.fathomsoft.nova.util.Location;
 
 /**
@@ -10,13 +10,13 @@ import net.fathomsoft.nova.util.Location;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:10:49 PM
- * @version	v0.2.14 Jun 18, 2014 at 10:11:40 PM
+ * @version	v0.2.14 Jul 19, 2014 at 7:33:13 PM
  */
-public class InstanceDeclaration extends Variable
+public class InstanceDeclaration extends VariableDeclaration
 {
-	private boolean 		staticVal;
+	private boolean	staticVal;
 	
-	private int				visibility;
+	private int		visibility;
 	
 	/**
 	 * This visibility allows manipulation and view from only the class
@@ -171,16 +171,18 @@ public class InstanceDeclaration extends Variable
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.variables.Variable#setAttribute(java.lang.String)
+	 * @see net.fathomsoft.nova.tree.variables.VariableDeclaration#setAttribute(java.lang.String)
 	 */
+	@Override
 	public void setAttribute(String attribute)
 	{
 		setAttribute(attribute, -1);
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.variables.Variable#setAttribute(java.lang.String, int)
+	 * @see net.fathomsoft.nova.tree.variables.VariableDeclaration#setAttribute(java.lang.String, int)
 	 */
+	@Override
 	public boolean setAttribute(String attribute, int argNum)
 	{
 		if (super.setAttribute(attribute, argNum))
@@ -229,7 +231,7 @@ public class InstanceDeclaration extends Variable
 	@Override
 	public StringBuilder generateCHeader(StringBuilder builder)
 	{
-		return generateCHeaderFragment(builder).append(';').append('\n');
+		return generateCHeaderFragment(builder).append(";\n");
 	}
 	
 	/**
@@ -238,26 +240,7 @@ public class InstanceDeclaration extends Variable
 	@Override
 	public StringBuilder generateCHeaderFragment(StringBuilder builder)
 	{
-		builder.append(getType());
-		
-		if (isReference())
-		{
-			builder.append('&');
-		}
-		else if (isPointer())
-		{
-			builder.append('*');
-		}
-		if (isArray())
-		{
-			builder.append(getArrayText());
-		}
-		if (!isPrimitiveType() && !isExternalType())
-		{
-			builder.append('*');
-		}
-		
-		return builder.append(' ').append(getName());
+		return generateCModifiersSource(builder).append(' ').append(getName());
 	}
 	
 	/**
@@ -286,5 +269,19 @@ public class InstanceDeclaration extends Variable
 		node.visibility = visibility;
 		
 		return node;
+	}
+	
+	/**
+	 * Test the InstanceDeclaration class type to make sure everything
+	 * is working properly.
+	 * 
+	 * @return The error output, if there was an error. If the test was
+	 * 		successful, null is returned.
+	 */
+	public static String test()
+	{
+		
+		
+		return null;
 	}
 }

@@ -8,7 +8,7 @@ import net.fathomsoft.nova.util.Location;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Apr 2, 2014 at 8:49:52 PM
- * @version	v0.2.14 Jun 18, 2014 at 10:11:40 PM
+ * @version	v0.2.14 Jul 19, 2014 at 7:33:13 PM
  */
 public class ImportList extends Node
 {
@@ -79,16 +79,9 @@ public class ImportList extends Node
 	@Override
 	public StringBuilder generateCHeader(StringBuilder builder)
 	{
-		FileDeclaration file = getFileDeclaration();
-		
 		for (int i = 0; i < getNumChildren(); i++)
 		{
-			Import node = (Import)getChild(i);
-			
-			if (node.isExternal() || !file.getName().equals(node.getLocationNode().getName()))
-			{
-				node.generateCSource(builder);
-			}
+			getChild(i).generateCSource(builder);
 		}
 		
 		return builder;
@@ -102,7 +95,7 @@ public class ImportList extends Node
 	{
 		FileDeclaration file = getFileDeclaration();
 
-		Import importNode = Import.decodeStatement(this, "import \"" + file.getName() + "\"", getLocationIn(), true, false);
+		Import importNode = Import.decodeStatement(this, "import \"" + file.getName() + "\"", getLocationIn(), true);
 		
 		return importNode.generateCSource(builder);
 	}
@@ -130,5 +123,19 @@ public class ImportList extends Node
 		super.cloneTo(node);
 		
 		return node;
+	}
+	
+	/**
+	 * Test the ImportList class type to make sure everything
+	 * is working properly.
+	 * 
+	 * @return The error output, if there was an error. If the test was
+	 * 		successful, null is returned.
+	 */
+	public static String test()
+	{
+		
+		
+		return null;
 	}
 }

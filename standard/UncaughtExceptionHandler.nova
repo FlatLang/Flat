@@ -1,0 +1,14 @@
+import "Thread"
+
+public class UncaughtExceptionHandler
+{
+	public UncaughtExceptionHandler()
+	{
+		
+	}
+	
+	public void uncaughtException(Thread thread, Exception exception)
+	{
+		
+	}
+}

@@ -1,19 +1,17 @@
-import "IO";
-
 public class BodyBuilder extends Person
 {
-	visible int weightClass;
+	visible int weightClass
 	
 	public BodyBuilder(int weightClass, String name)
 	{
-		age = 5;
+		age = 5
 		
-		this.weightClass = weightClass;
-		this.name        = name;
+		this.weightClass = weightClass
+		this.name        = name
 	}
 	
 	public void sayHello()
 	{
-		IO.println("Hello from " + name + " the BodyBuilder");
+		Console.writeLine("Hello from " + name + " the BodyBuilder")
 	}
 }

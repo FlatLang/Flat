@@ -10,7 +10,7 @@ import net.fathomsoft.nova.util.Location;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 10:00:50 PM
- * @version	v0.2.14 Jun 18, 2014 at 10:11:40 PM
+ * @version	v0.2.14 Jul 19, 2014 at 7:33:13 PM
  */
 public class InstanceFieldList extends Node
 {
@@ -28,7 +28,7 @@ public class InstanceFieldList extends Node
 	@Override
 	public StringBuilder generateCHeader(StringBuilder builder)
 	{
-		ClassDeclaration clazz = (ClassDeclaration)getAncestorOfType(ClassDeclaration.class);
+		ClassDeclaration clazz = getParentClass();
 		
 		ClassDeclaration extended = clazz.getExtendedClass();
 		
@@ -68,7 +68,7 @@ public class InstanceFieldList extends Node
 		
 		if (getNumChildren() > 0)
 		{
-			ClassDeclaration parent = (ClassDeclaration)getAncestorOfType(ClassDeclaration.class, true);
+			ClassDeclaration parent = getParentClass();
 			
 			if (parent.getMethodList().getNumChildren() > 0)
 			{
@@ -112,5 +112,19 @@ public class InstanceFieldList extends Node
 		super.cloneTo(node);
 		
 		return node;
+	}
+	
+	/**
+	 * Test the InstanceFieldList class type to make sure everything
+	 * is working properly.
+	 * 
+	 * @return The error output, if there was an error. If the test was
+	 * 		successful, null is returned.
+	 */
+	public static String test()
+	{
+		
+		
+		return null;
 	}
 }

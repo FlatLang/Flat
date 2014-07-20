@@ -5,15 +5,16 @@ import net.fathomsoft.nova.util.Bounds;
 import net.fathomsoft.nova.util.Location;
 import net.fathomsoft.nova.util.Patterns;
 import net.fathomsoft.nova.util.Regex;
+import net.fathomsoft.nova.util.StringUtils;
 
 /**
  * Loop extension that represents the declaration of a "for loop"
- * node type. See {@link #decodeStatement(Node, String, Location, boolean, boolean)}
+ * node type. See {@link #decodeStatement(Node, String, Location, boolean)}
  * for more details on what correct inputs look like.
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:55:15 PM
- * @version	v0.2.14 Jun 18, 2014 at 10:11:40 PM
+ * @version	v0.2.14 Jul 19, 2014 at 7:33:13 PM
  */
 public class ForLoop extends Loop
 {
@@ -29,6 +30,15 @@ public class ForLoop extends Loop
 		ArgumentList argumentsNode = new ArgumentList(this, locationIn);
 		
 		addChild(argumentsNode, this);
+	}
+	
+	/**
+	 * @see net.fathomsoft.nova.tree.Node#getNumDefaultChildren()
+	 */
+	@Override
+	public int getNumDefaultChildren()
+	{
+		return super.getNumDefaultChildren() + 1;
 	}
 	
 	/**
@@ -94,7 +104,7 @@ public class ForLoop extends Loop
 		
 		if (initialization != null)
 		{
-			initialization.generateCSource(builder).append('\n');
+			initialization.generateCSource(builder);//.append('\n');
 		}
 		
 		builder.append("for (; ");
@@ -104,7 +114,7 @@ public class ForLoop extends Loop
 			condition.generateCSourceFragment(builder);
 		}
 		
-		builder.append(';').append(' ');
+		builder.append("; ");
 		
 		if (update != null)
 		{
@@ -142,14 +152,12 @@ public class ForLoop extends Loop
 	 * 		ForLoop instance.
 	 * @param location The location of the statement in the source code.
 	 * @param require Whether or not to throw an error if anything goes wrong.
-	 * @param scope Whether or not the given statement is the beginning of
-	 * 		a scope.
 	 * @return The generated node, if it was possible to translated it
 	 * 		into a ForLoop.
 	 */
-	public static ForLoop decodeStatement(Node parent, String statement, Location location, boolean require, boolean scope)
+	public static ForLoop decodeStatement(Node parent, String statement, Location location, boolean require)
 	{
-		if (Regex.matches(statement, 0, Patterns.PRE_FOR))
+		if (StringUtils.findNextWord(statement, 0).equals("for"))
 		{
 			ForLoop n = new ForLoop(parent, location);
 			
@@ -157,62 +165,12 @@ public class ForLoop extends Loop
 			
 			if (bounds.getStart() >= 0)
 			{
-				Location newLoc    = new Location();
-				newLoc.setLineNumber(location.getLineNumber());
-				newLoc.setBounds(location.getStart() + bounds.getStart(), location.getStart() + bounds.getEnd());
+				String contents = statement.substring(bounds.getStart(), bounds.getEnd());
 				
-				String contents    = statement.substring(bounds.getStart(), bounds.getEnd());
-				
-				String arguments[] = contents.split("\\s*;\\s*");
-				
-				Assignment initialization = Assignment.decodeStatement(parent, arguments[0], newLoc, require, false);
-				n.getArgumentList().addChild(initialization);
-				
-				Identifier var      = initialization.getAssigneeNode();
-				Identifier existing = SyntaxTree.getExistingNode(parent, var.getName());
-				
-				if (var.getLocationIn().getBounds().equals(existing.getLocationIn().getBounds()))
+				if (n.decodeArguments(contents, bounds, require) && n.decodeScopeFragment(statement, bounds))
 				{
-					LocalDeclaration declaration = (LocalDeclaration)existing;
-					
-					declaration.setScopeID(n.getScope().getID());
-					
-//					n.addChild(var);
-//					
-//					LocalVariable local = var.clone(n, newLoc);
-//					
-//					initialization.addChild(0, local);
+					return n;
 				}
-				
-				Node condition = BinaryOperation.decodeStatement(parent, arguments[1], newLoc, require, false);
-				
-				if (condition == null)
-				{
-					condition = SyntaxTree.getExistingNode(parent, arguments[1]);
-					
-//					SyntaxMessage.error("Could not decode condition", parent.getFileDeclaration(), newLoc, parent.getController());
-				}
-				if (condition == null)
-				{
-					return null;
-				}
-				
-				n.getArgumentList().addChild(condition);
-				
-				UnaryOperation unaryUpdate = UnaryOperation.decodeStatement(parent, arguments[2], newLoc, require, false);
-				
-				if (unaryUpdate != null)
-				{
-					n.getArgumentList().addChild(unaryUpdate);
-				}
-				else
-				{
-					Assignment update = Assignment.decodeStatement(parent, arguments[2], newLoc, require, false);
-					
-					n.getArgumentList().addChild(update);
-				}
-				
-				return n;
 			}
 			else
 			{
@@ -221,6 +179,158 @@ public class ForLoop extends Loop
 		}
 		
 		return null;
+	}
+	
+	/**
+	 * Decode all of the arguments given within the for loop.<br>
+	 * <br>
+	 * For example:
+	 * <blockquote><pre>
+	 * for (int i = 0; i < 1000; i++)</pre></blockquote>
+	 * In the above for loop declaration, the arguments are the data
+	 * that is contained within the parentheses. In this case that data
+	 * is: "<code>int i = 0; i < 1000; i++</code>"
+	 * 
+	 * @param contents The contents within the parentheses of the for
+	 * 		loop declaration.
+	 * @param bounds The bounds that the contents are located within.
+	 * @param require Whether or not this should throw an exception if
+	 * 		anything bad happens.
+	 * @return Whether or not all of the arguments decoded correctly.
+	 */
+	private boolean decodeArguments(String contents, Bounds bounds, boolean require)
+	{
+		Location newLoc = new Location(getLocationIn());
+		newLoc.addBounds(bounds.getStart(), bounds.getEnd());
+		
+		String arguments[] = contents.split("\\s*;\\s*");
+		
+		return decodeInitialization(arguments[0], newLoc, require) &&
+				decodeCondition(arguments[1], newLoc, require) &&
+				decodeUpdate(arguments[2], newLoc, require);
+	}
+	
+	/**
+	 * Decode the first argument of the for loop declaration. The first
+	 * argument is the initialization argument.<br>
+	 * <br>
+	 * For example:
+	 * <blockquote><pre>
+	 * for (int i = 0; i < 1000; i++)</pre></blockquote>
+	 * In the above for loop declaration, the initialization argument is
+	 * the first argument within the parentheses. In this case that data
+	 * is: "<code>int i = 0</code>"
+	 * 
+	 * @param argument The variable initialization that will be used
+	 * 		within the for loop.
+	 * @param location The location that the argument is being decoded at.
+	 * @param require Whether or not this should throw an exception if
+	 * 		anything bad happens.
+	 * @return Whether or not the initialization argument decoded
+	 * 		correctly.
+	 */
+	private boolean decodeInitialization(String argument, Location location, boolean require)
+	{
+		Assignment initialization = Assignment.decodeStatement(getParent(), argument, getLocationIn(), require);
+		getArgumentList().addChild(initialization);
+		
+		Identifier var      = initialization.getAssigneeNode();
+		Identifier existing = SyntaxTree.findDeclaration(getArgumentList(), var.getName());
+		
+		if (var.getLocationIn().getBounds().equals(existing.getLocationIn().getBounds()))
+		{
+			LocalDeclaration declaration = (LocalDeclaration)existing;
+			
+			declaration.setScopeID(getScope().getID());
+		}
+		
+		return true;
+	}
+	
+	/**
+	 * Decode the second argument of the for loop declaration. The second
+	 * argument is the condition argument.<br>
+	 * <br>
+	 * For example:
+	 * <blockquote><pre>
+	 * for (int i = 0; i < 1000; i++)</pre></blockquote>
+	 * In the above for loop declaration, the condition argument is
+	 * the second argument within the parentheses. In this case that data
+	 * is: "<code>i < 1000</code>"
+	 * 
+	 * @param argument The boolean condition that is used to determine
+	 * 		when the loop stops looping.
+	 * @param location The location that the argument is being decoded at.
+	 * @param require Whether or not this should throw an exception if
+	 * 		anything bad happens.
+	 * @return Whether or not the condition argument decoded correctly.
+	 */
+	private boolean decodeCondition(String argument, Location location, boolean require)
+	{
+		/*
+		 * 	until (condition != null)
+		 * 	{
+		 * 		condition = BinaryOperation.decodeStatement(getParent(), argument, location, require),
+		 * 		condition = SyntaxTree.getUsableExistingNode(getArgumentList(), argument, location),
+		 * 		
+		 * 		return false
+		 * 	}
+		 * 	
+		 * 	getArgumentList().addChild(condition)
+		 * 	
+		 * 	return true
+		 */
+		
+		Node condition = BinaryOperation.decodeStatement(getArgumentList(), argument, location, require);
+		
+		if (condition == null)
+		{
+			condition = SyntaxTree.getUsableExistingNode(getArgumentList(), argument, location);
+			
+			if (condition == null)
+			{
+				return false;
+			}
+		}
+		
+		getArgumentList().addChild(condition);
+		
+		return true;
+	}
+	
+	/**
+	 * Decode the third argument of the for loop declaration. The third
+	 * argument is the update argument.<br>
+	 * <br>
+	 * For example:
+	 * <blockquote><pre>
+	 * for (int i = 0; i < 1000; i++)</pre></blockquote>
+	 * In the above for loop declaration, the update argument is
+	 * the third argument within the parentheses. In this case that data
+	 * is: "<code>i++</code>"
+	 * 
+	 * @param argument The variable update.
+	 * @param location The location that the argument is being decoded at.
+	 * @param require Whether or not this should throw an exception if
+	 * 		anything bad happens.
+	 * @return Whether or not the update argument decoded correctly.
+	 */
+	private boolean decodeUpdate(String argument, Location location, boolean require)
+	{
+		UnaryOperation unaryUpdate = UnaryOperation.decodeStatement(getArgumentList(), argument, location, require);
+		
+		if (unaryUpdate != null)
+		{
+			getArgumentList().addChild(unaryUpdate);
+		}
+		else
+		{
+			Assignment update = Assignment.decodeStatement(getArgumentList(), argument, location, require, false);
+			
+			getArgumentList().addChild(update);
+		}
+		
+		return true;
 	}
 	
 	/**
@@ -246,5 +356,19 @@ public class ForLoop extends Loop
 		super.cloneTo(node);
 		
 		return node;
+	}
+	
+	/**
+	 * Test the ForLoop class type to make sure everything
+	 * is working properly.
+	 * 
+	 * @return The error output, if there was an error. If the test was
+	 * 		successful, null is returned.
+	 */
+	public static String test()
+	{
+		
+		
+		return null;
 	}
 }

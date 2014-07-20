@@ -16,11 +16,11 @@ import net.fathomsoft.nova.util.Location;
  * throw varName;</pre></blockquote>
  * For more information on what
  * it looks like to throw an Exception, see
- * {@link Throw#decodeStatement(Node, String, Location, boolean, boolean)}.
+ * {@link Throw#decodeStatement(Node, String, Location, boolean)}.
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Apr 6, 2014 at 8:44:35 PM
- * @version	v0.2.13 Jun 17, 2014 at 8:45:35 AM
+ * @version	v0.2.14 Jul 19, 2014 at 7:33:13 PM
  */
 public class Exception extends Node
 {
@@ -29,14 +29,6 @@ public class Exception extends Node
 	private static int	exceptionId	= 1;
 	
 	private static final HashMap<String, Integer>	ids;
-	
-	/**
-	 * @see net.fathomsoft.nova.tree.Node#Node(Node, Location)
-	 */
-	public Exception(Node temporaryParent, Location locationIn)
-	{
-		super(temporaryParent, locationIn);
-	}
 	
 	/**
 	 * Identifier for the exception data passed to a method.
@@ -51,6 +43,14 @@ public class Exception extends Node
 		ids = new HashMap<String, Integer>();
 		
 		ids.put("Exception", exceptionId++);
+	}
+	
+	/**
+	 * @see net.fathomsoft.nova.tree.Node#Node(Node, Location)
+	 */
+	public Exception(Node temporaryParent, Location locationIn)
+	{
+		super(temporaryParent, locationIn);
 	}
 	
 	/**
@@ -113,5 +113,19 @@ public class Exception extends Node
 		node.id = id;
 		
 		return node;
+	}
+	
+	/**
+	 * Test the Exception class type to make sure everything
+	 * is working properly.
+	 * 
+	 * @return The error output, if there was an error. If the test was
+	 * 		successful, null is returned.
+	 */
+	public static String test()
+	{
+		
+		
+		return null;
 	}
 }

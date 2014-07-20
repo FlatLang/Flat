@@ -1,0 +1,9 @@
+public class PolymorphicSuperClass
+{
+	
+	
+	public String toString()
+	{
+		return "super class"
+	}
+}

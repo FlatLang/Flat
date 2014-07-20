@@ -1,12 +1,14 @@
 #include <precompiled.h>
-
 #include "NovaSVGComponentList.h"
+
+
+
 
 SVGComponentList* nova_SVGComponentList_SVGComponentList(ExceptionData* exceptionData)
 {
 	CCLASS_NEW(SVGComponentList, this,);
 	
-	this->nova_SVGComponentList_start = 0;
+	this->nova_SVGComponentList_start = (Object*)0;
 	{
 	}
 	
@@ -32,12 +34,12 @@ void nova_SVGComponentList_generateOutput(SVGComponentList* this, ExceptionData*
 	SVGComponentNode* nova_1_current;
 	
 	nova_1_current = this->nova_SVGComponentList_start;
-	while (nova_1_current != 0)
+	while (nova_1_current != (Object*)0)
 	{
 		SVGCircle* nova_2_component;
 		
 		nova_2_component = nova_1_current->nova_SVGComponentNode_component;
-		nova_SVGCircle_generateOutput(nova_2_component, exceptionData, nova_0_file);
+		nova_2_component->vtable->nova_virtual_generateOutput(nova_2_component, exceptionData, nova_0_file);
 		nova_1_current = nova_1_current->nova_SVGComponentNode_next;
 	}
 }
@@ -48,7 +50,7 @@ void nova_SVGComponentList_addChild(SVGComponentList* this, ExceptionData* excep
 	
 	nova_1_node = nova_SVGComponentNode_SVGComponentNode(exceptionData);
 	nova_1_node->nova_SVGComponentNode_component = nova_0_component;
-	if (this->nova_SVGComponentList_start == 0)
+	if (this->nova_SVGComponentList_start == (Object*)0)
 	{
 		this->nova_SVGComponentList_start = nova_1_node;
 	}
@@ -57,7 +59,7 @@ void nova_SVGComponentList_addChild(SVGComponentList* this, ExceptionData* excep
 		SVGComponentNode* nova_3_current;
 		
 		nova_3_current = this->nova_SVGComponentList_start;
-		while (nova_3_current->nova_SVGComponentNode_next != 0)
+		while (nova_3_current->nova_SVGComponentNode_next != (Object*)0)
 		{
 			nova_3_current = nova_3_current->nova_SVGComponentNode_next;
 		}

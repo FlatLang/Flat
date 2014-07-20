@@ -1,0 +1,4 @@
+public class NonWholeDivisionException extends Exception
+{
+	
+}

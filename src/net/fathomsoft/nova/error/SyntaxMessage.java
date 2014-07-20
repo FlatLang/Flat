@@ -9,7 +9,7 @@ import net.fathomsoft.nova.util.Location;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:28:12 PM
- * @version	v0.2.13 Jun 17, 2014 at 8:45:35 AM
+ * @version	v0.2.14 Jul 19, 2014 at 7:33:13 PM
  */
 public class SyntaxMessage
 {
@@ -145,5 +145,193 @@ public class SyntaxMessage
 		Message warning = new Message(message, node, location);
 		
 		warning.outputMessage(Message.WARNING, throwException);
+	}
+	
+	/**
+	 * Check whether or not to output an error message from the compiler.
+	 * The output is dependent on whether or not require is true. If
+	 * require is false, this method simply returns false.
+	 * 
+	 * @param message The message describing the error.
+	 * @param node The node that the error occurred from.
+	 * @param require Whether or not to follow through with the error
+	 * 		output.
+	 */
+	public static boolean queryError(String message, Node node, boolean require)
+	{
+		if (!require)
+		{
+			return false;
+		}
+		
+		error(message, node);
+		
+		return true;
+	}
+	
+	/**
+	 * Check whether or not to output a warning message from the compiler.
+	 * The output is dependent on whether or not require is true. If
+	 * require is false, this method simply returns false.
+	 * 
+	 * @param message The message describing the warning.
+	 * @param node The node that the warning occurred from.
+	 * @param require Whether or not to follow through with the error
+	 * 		output.
+	 */
+	public static boolean queryWarning(String message, Node node, boolean require)
+	{
+		if (!require)
+		{
+			return false;
+		}
+		
+		warning(message, node);
+		
+		return true;
+	}
+	
+	/**
+	 * Check whether or not to output an error message from the compiler.
+	 * The output is dependent on whether or not require is true. If
+	 * require is false, this method simply returns false.
+	 * 
+	 * @param message The message describing the error.
+	 * @param node The node that the error occurred from.
+	 * @param throwException Whether or not to throw a
+	 * 		SyntaxErrorException.
+	 * @param require Whether or not to follow through with the error
+	 * 		output.
+	 */
+	public static boolean queryError(String message, Node node, boolean throwException, boolean require)
+	{
+		if (!require)
+		{
+			return false;
+		}
+		
+		error(message, node, throwException);
+		
+		return true;
+	}
+	
+	/**
+	 * Check whether or not to output a warning message from the compiler.
+	 * The output is dependent on whether or not require is true. If
+	 * require is false, this method simply returns false.
+	 * 
+	 * @param message The message describing the warning.
+	 * @param node The node that the warning occurred from.
+	 * @param throwException Whether or not to throw a
+	 * 		SyntaxErrorException.
+	 * @param require Whether or not to follow through with the error
+	 * 		output.
+	 */
+	public static boolean queryWarning(String message, Node node, boolean throwException, boolean require)
+	{
+		if (!require)
+		{
+			return false;
+		}
+		
+		warning(message, node, throwException);
+		
+		return true;
+	}
+	
+	/**
+	 * Check whether or not to output an error message from the compiler.
+	 * The output is dependent on whether or not require is true. If
+	 * require is false, this method simply returns false.
+	 * 
+	 * @param message The message describing the error.
+	 * @param node The node that the error occurred from.
+	 * @param location The location that the error occurred at.
+	 * @param require Whether or not to follow through with the error
+	 * 		output.
+	 */
+	public static boolean queryError(String message, Node node, Location location, boolean require)
+	{
+		if (!require)
+		{
+			return false;
+		}
+		
+		error(message, node, location);
+		
+		return true;
+	}
+	
+	/**
+	 * Check whether or not to output a warning message from the compiler.
+	 * The output is dependent on whether or not require is true. If
+	 * require is false, this method simply returns false.
+	 * 
+	 * @param message The message describing the warning.
+	 * @param node The node that the warning occurred from.
+	 * @param location The location that the warning occurred at.
+	 * @param require Whether or not to follow through with the error
+	 * 		output.
+	 */
+	public static boolean queryWarning(String message, Node node, Location location, boolean require)
+	{
+		if (!require)
+		{
+			return false;
+		}
+		
+		warning(message, node, location);
+		
+		return true;
+	}
+	
+	/**
+	 * Check whether or not to output an error message from the compiler.
+	 * The output is dependent on whether or not require is true. If
+	 * require is false, this method simply returns false.
+	 * 
+	 * @param message The message describing the error.
+	 * @param node The node that the error occurred from.
+	 * @param location The location that the error occurred at.
+	 * @param throwException Whether or not to throw a
+	 * 		SyntaxErrorException.
+	 * @param require Whether or not to follow through with the error
+	 * 		output.
+	 */
+	public static boolean queryError(String message, Node node, Location location, boolean throwException, boolean require)
+	{
+		if (!require)
+		{
+			return false;
+		}
+		
+		error(message, node, location, throwException);
+		
+		return true;
+	}
+	
+	/**
+	 * Check whether or not to output a warning message from the compiler.
+	 * The output is dependent on whether or not require is true. If
+	 * require is false, this method simply returns false.
+	 * 
+	 * @param message The message describing the warning.
+	 * @param node The node that the warning occurred from.
+	 * @param location The location that the warning occurred at.
+	 * @param throwException Whether or not to throw a
+	 * 		SyntaxErrorException.
+	 * @param require Whether or not to follow through with the error
+	 * 		output.
+	 */
+	public static boolean queryWarning(String message, Node node, Location location, boolean throwException, boolean require)
+	{
+		if (!require)
+		{
+			return false;
+		}
+		
+		warning(message, node, location, throwException);
+		
+		return true;
 	}
 }

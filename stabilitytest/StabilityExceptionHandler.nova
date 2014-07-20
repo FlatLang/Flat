@@ -1,0 +1,17 @@
+import "UncaughtExceptionHandler"
+import "Thread"
+
+public class StabilityExceptionHandler extends UncaughtExceptionHandler
+{
+	StabilityTest program
+	
+	public StabilityExceptionHandler(StabilityTest program)
+	{
+		this.program = program
+	}
+	
+	public void uncaughtException(Thread thread, Exception exception)
+	{
+		program.fail("")
+	}
+}

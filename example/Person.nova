@@ -1,17 +1,17 @@
 public class Person
 {
-	public int		age;
+	public int		age
 	
-	public String	name;
+	public String	name
 	
 	public Person(String name, int age)
 	{
-		this.name = name;
-		this.age  = age;
+		this.name = name
+		this.age  = age
 	}
 	
 	public void sayHello()
 	{
-		IO.println("Hello from " + name + " the Person");
+		Console.writeLine("Hello from " + name + " the Person")
 	}
 }

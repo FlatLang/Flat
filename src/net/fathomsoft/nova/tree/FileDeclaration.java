@@ -1,6 +1,7 @@
 package net.fathomsoft.nova.tree;
 
 import java.io.File;
+import java.util.ArrayList;
 
 import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.error.SyntaxMessage;
@@ -15,7 +16,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Feb 18, 2014 at 8:57:00 PM
- * @version	v0.2.14 Jun 18, 2014 at 10:11:40 PM
+ * @version	v0.2.14 Jul 19, 2014 at 7:33:13 PM
  */
 public class FileDeclaration extends Node
 {
@@ -24,6 +25,8 @@ public class FileDeclaration extends Node
 	private StringBuilder	header, source;
 	
 	private File			file;
+	
+	private ArrayList<ClosureDeclaration> closures;
 	
 	/**
 	 * The default imports that each file uses.
@@ -42,8 +45,12 @@ public class FileDeclaration extends Node
 			"ExceptionData",
 			"Object",
 			"String",
+			"System",
+			"Exception",
 			"Math",
-			"IO",
+			"Console",
+			"GC",
+			"Number",
 			"Integer",
 			"Long",
 			"Double",
@@ -61,11 +68,55 @@ public class FileDeclaration extends Node
 	{
 		super(temporaryParent, locationIn);
 		
+		closures = new ArrayList<ClosureDeclaration>();
+		
 		ImportList imports = new ImportList(this, locationIn);
 		
 		addChild(imports, this);
 		
 		addDefaultImports();
+	}
+	
+	/**
+	 * @see net.fathomsoft.nova.tree.Node#getNumDefaultChildren()
+	 */
+	@Override
+	public int getNumDefaultChildren()
+	{
+		return super.getNumDefaultChildren() + 1;
+	}
+	
+	public void addAutoImports()
+	{
+		getProgram().addAutoImports(this);
+	}
+	
+	public Import addImport(String loc)
+	{
+		if (containsImport(loc))
+		{
+			return null;
+		}
+		
+		Import importNode = Import.decodeStatement(this, "import \"" + loc + "\"", getLocationIn(), true);
+		
+		addChild(importNode);
+		
+		return importNode;
+	}
+	
+	/**
+	 * Register the ClosureDeclaration so that the FileDeclaration
+	 * can define the closure type during generation.
+	 * 
+	 * @param closure The ClosureDeclaration to register.
+	 * @return The id of the registered ClosureDeclaration.
+	 */
+	public int registerClosure(ClosureDeclaration closure)
+	{
+		closures.add(closure);
+		
+		return closures.size();
 	}
 	
 	/**
@@ -88,7 +139,14 @@ public class FileDeclaration extends Node
 	 */
 	public Import getImport(String importLocation)
 	{
-		return getImportList().getImport(importLocation);
+		Import node = getImportList().getImport(importLocation);
+		
+		if (node != null)
+		{
+			node.markUsed();
+		}
+		
+		return node;
 	}
 	
 	/**
@@ -225,66 +283,22 @@ public class FileDeclaration extends Node
 		return getClassDeclaration().generateCSourceName(new StringBuilder()) + ".c";
 	}
 	
-	/**
-	 * Make sure that the Class declarations are valid.
-	 * 
-	 * @param phase The phase that the node is being validated in.
-	 */
-	public void validateClasses(int phase)
+	public Node validate(int phase)
 	{
-		ClassDeclaration clazz = getClassDeclaration();
-		
-		if (clazz == null)
+		if (phase == SyntaxTree.PHASE_METHOD_CONTENTS)
 		{
-			SyntaxMessage.error("File must contain a class", this);
-		}
-		
-		clazz.validateDeclaration(phase);
-		
-		if (clazz.validate(phase) == null)
-		{
-			getParent().removeChild(this);
-		}
-	}
-	
-	/**
-	 * Make sure that the Field declarations are valid.
-	 * 
-	 * @param phase The phase that the node is being validated in.
-	 */
-	public void validateFields(int phase)
-	{
-		for (int i = 0; i < getNumChildren(); i++)
-		{
-			Node child = getChild(i);
-			
-			if (child != getImportList())
+			for (int i = getImportList().getNumChildren() - 1; i >= 0; i--)
 			{
-				ClassDeclaration clazz = (ClassDeclaration)child;
+				Import node = (Import)getImportList().getChild(i);
 				
-				clazz.validateFields(phase);
+				if (!node.isUsed() || node.getLocation().equals(getName()))
+				{
+					getImportList().removeChild(i);
+				}
 			}
 		}
-	}
-	
-	/**
-	 * Make sure that the Method declarations are valid.
-	 * 
-	 * @param phase The phase that the node is being validated in.
-	 */
-	public void validateMethods(int phase)
-	{
-		for (int i = 0; i < getNumChildren(); i++)
-		{
-			Node child = getChild(i);
-			
-			if (child != getImportList())
-			{
-				ClassDeclaration clazz = (ClassDeclaration)child;
-				
-				clazz.validateMethods(phase);
-			}
-		}
+		
+		return this;
 	}
 	
 	/**
@@ -315,8 +329,6 @@ public class FileDeclaration extends Node
 		else
 		{
 			SyntaxMessage.error("Unexpected statement", child);
-			
-			//super.addChild(child);
 		}
 	}
 
@@ -333,12 +345,14 @@ public class FileDeclaration extends Node
 			builder.append("#pragma once").append('\n');
 			builder.append("#ifndef ").append(definitionName).append('\n');
 			builder.append("#define ").append(definitionName).append("\n\n");
-
+			
 			generateDummyTypes(builder).append('\n');
 			
 			ImportList imports = getImportList();
 			
 			imports.generateCHeader(builder);
+			
+			builder.append('\n');
 			
 			for (int i = 0; i < getNumChildren(); i++)
 			{
@@ -366,13 +380,19 @@ public class FileDeclaration extends Node
 	{
 		if (source == null)
 		{
-			builder.append("#include <precompiled.h>\n\n");
+			builder.append("#include <precompiled.h>\n");
+			getImportList().generateCSource(builder).append('\n');
+			
+			generateClosureDefinitions(builder).append('\n');
 			
 			for (int i = 0; i < getNumChildren(); i++)
 			{
 				Node child = getChild(i);
 				
-				child.generateCSource(builder);
+				if (child != getImportList())
+				{
+					child.generateCSource(builder);
+				}
 			}
 			
 			source = builder;
@@ -410,9 +430,7 @@ public class FileDeclaration extends Node
 	{
 		for (String importLoc : DEFAULT_IMPORTS)
 		{
-			Import importNode = Import.decodeStatement(this, "import \"" + importLoc + "\"", getLocationIn(), true, false);
-			
-			addChild(importNode);
+			addImport(importLoc).markUsed();
 		}
 	}
 	
@@ -454,6 +472,23 @@ public class FileDeclaration extends Node
 //				builder.append("typedef struct ").append(name).append(' ').append(name).append(';').append('\n');
 //			}
 //		}
+		
+		return builder;
+	}
+	
+	/**
+	 * Generate the type definitions for the closures used within the
+	 * file.
+	 * 
+	 * @param builder The StringBuilder to append the data to.
+	 * @return The StringBuilder with the appended data.
+	 */
+	private StringBuilder generateClosureDefinitions(StringBuilder builder)
+	{
+		for (ClosureDeclaration closure : closures)
+		{
+			closure.generateCClosureDefinition(builder);
+		}
 		
 		return builder;
 	}
@@ -506,6 +541,14 @@ public class FileDeclaration extends Node
 	{
 		super.cloneTo(node);
 		
+		node.file     = new File(file.getAbsolutePath());
+		node.closures = new ArrayList<ClosureDeclaration>();
+		
+		for (ClosureDeclaration c : closures)
+		{
+			node.closures.add(c);
+		}
+		
 		return node;
 	}
 	
@@ -517,5 +560,19 @@ public class FileDeclaration extends Node
 	public String toString()
 	{
 		return file.getName();
+	}
+	
+	/**
+	 * Test the FileDeclaration class type to make sure everything
+	 * is working properly.
+	 * 
+	 * @return The error output, if there was an error. If the test was
+	 * 		successful, null is returned.
+	 */
+	public static String test()
+	{
+		
+		
+		return null;
 	}
 }

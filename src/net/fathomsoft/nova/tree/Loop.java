@@ -4,12 +4,12 @@ import net.fathomsoft.nova.util.Location;
 
 /**
  * Node extension that represents the declaration of a Loop
- * node type. See {@link #decodeStatement(Node, String, Location, boolean, boolean)}
+ * node type. See {@link #decodeStatement(Node, String, Location, boolean)}
  * for more details on what correct inputs look like.
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:55:18 PM
- * @version	v0.2.13 Jun 17, 2014 at 8:45:35 AM
+ * @version	v0.2.14 Jul 19, 2014 at 7:33:13 PM
  */
 public class Loop extends Node
 {
@@ -28,21 +28,30 @@ public class Loop extends Node
 	}
 	
 	/**
+	 * @see net.fathomsoft.nova.tree.Node#pendingScopeFragment()
+	 */
+	@Override
+	public boolean pendingScopeFragment()
+	{
+		return getScope().isEmpty();
+	}
+	
+	/**
+	 * @see net.fathomsoft.nova.tree.Node#getNumDefaultChildren()
+	 */
+	@Override
+	public int getNumDefaultChildren()
+	{
+		return super.getNumDefaultChildren() + 1;
+	}
+	
+	/**
 	 * @see net.fathomsoft.nova.tree.Node#getScope()
 	 */
 	@Override
 	public Scope getScope()
 	{
 		return (Scope)getChild(0);
-	}
-	
-	/**
-	 * @see net.fathomsoft.nova.tree.Node#addChild(Node)
-	 */
-	@Override
-	public void addChild(Node child)
-	{
-		getScope().addChild(child);
 	}
 	
 	/**
@@ -64,20 +73,18 @@ public class Loop extends Node
 	 * 		Loop instance.
 	 * @param location The location of the statement in the source code.
 	 * @param require Whether or not to throw an error if anything goes wrong.
-	 * @param scope Whether or not the given statement is the beginning of
-	 * 		a scope.
 	 * @return The generated node, if it was possible to translated it
 	 * 		into a Loop.
 	 */
-	public static Loop decodeStatement(Node parent, String statement, Location location, boolean require, boolean scope)
+	public static Loop decodeStatement(Node parent, String statement, Location location, boolean require)
 	{
 		Loop node = null;
 		
-		if ((node = ForLoop.decodeStatement(parent, statement, location, require, scope)) != null)
+		if ((node = ForLoop.decodeStatement(parent, statement, location, require)) != null)
 		{
 			return node;
 		}
-		else if ((node = WhileLoop.decodeStatement(parent, statement, location, require, scope)) != null)
+		else if ((node = WhileLoop.decodeStatement(parent, statement, location, require)) != null)
 		{
 			return node;
 		}
@@ -108,5 +115,19 @@ public class Loop extends Node
 		super.cloneTo(node);
 		
 		return node;
+	}
+	
+	/**
+	 * Test the Loop class type to make sure everything
+	 * is working properly.
+	 * 
+	 * @return The error output, if there was an error. If the test was
+	 * 		successful, null is returned.
+	 */
+	public static String test()
+	{
+		
+		
+		return null;
 	}
 }

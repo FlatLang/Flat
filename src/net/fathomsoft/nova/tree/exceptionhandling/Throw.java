@@ -11,12 +11,12 @@ import net.fathomsoft.nova.util.Regex;
 
 /**
  * ExceptionHandler extension that represents the declaration of a
- * throw node type. See {@link #decodeStatement(Node, String, Location, boolean, boolean)}
+ * throw node type. See {@link #decodeStatement(Node, String, Location, boolean)}
  * for more details on what correct inputs look like.
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Mar 22, 2014 at 11:02:52 PM
- * @version	v0.2.14 Jun 18, 2014 at 10:11:40 PM
+ * @version	v0.2.14 Jul 19, 2014 at 7:33:13 PM
  */
 public class Throw extends ExceptionHandler
 {
@@ -26,6 +26,15 @@ public class Throw extends ExceptionHandler
 	public Throw(Node temporaryParent, Location locationIn)
 	{
 		super(temporaryParent, locationIn);
+	}
+	
+	/**
+	 * @see net.fathomsoft.nova.tree.Node#getNumDecodedChildren()
+	 */
+	@Override
+	public int getNumDecodedChildren()
+	{
+		return super.getNumDecodedChildren() + 1;
 	}
 	
 	/**
@@ -65,48 +74,76 @@ public class Throw extends ExceptionHandler
 	 * 		Throw instance.
 	 * @param location The location of the statement in the source code.
 	 * @param require Whether or not to throw an error if anything goes wrong.
-	 * @param scope Whether or not the given statement is the beginning of
-	 * 		a scope.
 	 * @return The generated node, if it was possible to translated it
 	 * 		into a Throw.
 	 */
-	public static Throw decodeStatement(Node parent, String statement, Location location, boolean require, boolean scope)
+	public static Throw decodeStatement(Node parent, String statement, Location location, boolean require)
 	{
 		if (Regex.startsWith(statement, Patterns.PRE_THROW))
 		{
-			Bounds bounds = Regex.boundsOf(statement, Patterns.POST_THROW);
+			Throw    n      = new Throw(parent, location);
+			Location newLoc = new Location(location);
 			
-			Throw n   = new Throw(parent, location);
-				
-			if (bounds.getStart() > 0)
+			Bounds   bounds = n.calculateThrowContents(statement);
+			String   thrown = statement.substring(bounds.getStart(), bounds.getEnd());
+			
+			newLoc.addBounds(bounds.getStart(), bounds.getEnd());
+			
+			if (n.decodeThrownNode(thrown, newLoc, require))
 			{
-				Location  newLoc     = new Location(location);
-				newLoc.setLineNumber(location.getLineNumber());
-				newLoc.setBounds(location.getStart() + bounds.getStart(), location.getStart() + bounds.getEnd());
-				
-				String    thrown     = statement.substring(bounds.getStart(), bounds.getEnd());
-				
-				Node  thrownNode = SyntaxTree.decodeScopeContents(parent, thrown, newLoc, require, false);
-				
-				if (thrownNode instanceof Identifier)
-				{
-					Identifier node = (Identifier)thrownNode;
-					
-					Exception exception = new Exception(n, newLoc);
-					exception.setType(node.getName());
-					
-					n.addChild(exception, n);
-					
-					return n;
-				}
-				
-				SyntaxMessage.error("Incorrect form of exception thrown", n);
+				return n;
 			}
-			
-			SyntaxMessage.error("Throw statement missing exception type", n);
 		}
 		
 		return null;
+	}
+	
+	/**
+	 * Calculate the Bounds that contain the contents that the Throw is
+	 * throwing.
+	 * 
+	 * @param statement The statement containing the data.
+	 * @return The Bounds of the contents of the Throw.
+	 */
+	private Bounds calculateThrowContents(String statement)
+	{
+		Bounds bounds = Regex.boundsOf(statement, Patterns.POST_THROW);
+		
+		if (!bounds.isValid())
+		{
+			SyntaxMessage.error("Throw statement missing exception type", this);
+		}
+		
+		return bounds;
+	}
+	
+	/**
+	 * Decode the identifier that is being thrown by the Throw statement.
+	 * 
+	 * @param thrown The data representing what is being thrown.
+	 * @param location The location that the data is within the source
+	 * 		code.
+	 * @param require Whether or not to throw an error if anything goes
+	 * 		wrong.
+	 * @return Whether or not the data was decoded successfully.
+	 */
+	private boolean decodeThrownNode(String thrown, Location location, boolean require)
+	{
+		Node thrownNode = SyntaxTree.decodeScopeContents(this, thrown, location, require);
+		
+		if (!(thrownNode instanceof Identifier))
+		{
+			SyntaxMessage.error("Incorrect form of exception thrown", this);
+		}
+		
+		Identifier node      = (Identifier)thrownNode;
+		
+		Exception  exception = new Exception(this, location);
+		exception.setType(node.getName());
+		
+		addChild(exception, this);
+		
+		return true;
 	}
 	
 	/**
@@ -132,5 +169,19 @@ public class Throw extends ExceptionHandler
 		super.cloneTo(node);
 		
 		return node;
+	}
+	
+	/**
+	 * Test the Throw class type to make sure everything
+	 * is working properly.
+	 * 
+	 * @return The error output, if there was an error. If the test was
+	 * 		successful, null is returned.
+	 */
+	public static String test()
+	{
+		
+		
+		return null;
 	}
 }

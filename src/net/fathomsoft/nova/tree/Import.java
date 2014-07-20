@@ -8,15 +8,16 @@ import net.fathomsoft.nova.util.Regex;
 
 /**
  * Node extension that represents the declaration of an
- * "import statement" node type. See {@link #decodeStatement(Node, String, Location, boolean, boolean)}
+ * "import statement" node type. See {@link #decodeStatement(Node, String, Location, boolean)}
  * for more details on what correct inputs look like.
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 13, 2014 at 7:56:24 PM
- * @version	v0.2.14 Jun 18, 2014 at 10:11:40 PM
+ * @version	v0.2.14 Jul 19, 2014 at 7:33:13 PM
  */
 public class Import extends Node
 {
+	private boolean used;
 	private boolean	external;
 	
 	/**
@@ -25,6 +26,16 @@ public class Import extends Node
 	public Import(Node temporaryParent, Location locationIn)
 	{
 		super(temporaryParent, locationIn);
+	}
+	
+	public boolean isUsed()
+	{
+		return used;
+	}
+	
+	public void markUsed()
+	{
+		used = true;
 	}
 	
 	/**
@@ -80,6 +91,15 @@ public class Import extends Node
 	}
 	
 	/**
+	 * @see net.fathomsoft.nova.tree.Node#generateNovaInput(StringBuilder, boolean)
+	 */
+	@Override
+	public StringBuilder generateNovaInput(StringBuilder builder, boolean outputChildren)
+	{
+		return builder.append(getLocation());
+	}
+	
+	/**
 	 * @see net.fathomsoft.nova.tree.Node#generateCHeader(StringBuilder)
 	 */
 	@Override
@@ -96,7 +116,7 @@ public class Import extends Node
 	{
 		builder.append("#include ");
 		
-		if (isExternal())
+		if (isExternal() || !getFileDeclaration().getName().equals(getLocationNode().getName()))
 		{
 			return builder.append('<').append(getLocation()).append('>').append('\n');
 		}
@@ -124,12 +144,10 @@ public class Import extends Node
 	 * 		Import instance.
 	 * @param location The location of the statement in the source code.
 	 * @param require Whether or not to throw an error if anything goes wrong.
-	 * @param scope Whether or not the given statement is the beginning of
-	 * 		a scope.
 	 * @return The generated node, if it was possible to translated it
 	 * 		into a Import.
 	 */
-	public static Import decodeStatement(Node parent, String statement, Location location, boolean require, boolean scope)
+	public static Import decodeStatement(Node parent, String statement, Location location, boolean require)
 	{
 		if (Regex.indexOf(statement, Patterns.PRE_IMPORT) == 0)
 		{
@@ -141,37 +159,19 @@ public class Import extends Node
 			{
 				int endIndex = statement.length() - 1;
 				
-				while (statement.charAt(endIndex) != '"')
+				if (statement.charAt(endIndex) != '"')
 				{
-					endIndex--;
+					SyntaxMessage.error("Import statement missing ending quotation", n);
 				}
 				
-				statement = statement.substring(importStartIndex + 1, endIndex);
+				String importLocation = statement.substring(importStartIndex + 1, endIndex);
 				
-				int extensionIndex = statement.lastIndexOf('.');
+				importLocation = n.validateExtension(importLocation);
 				
-				if (extensionIndex > 0)
-				{
-					String extension = statement.substring(extensionIndex + 1);
-					
-					if (extension.equals("h"))
-					{
-						n.setExternal(true);
-						
-						statement = statement.substring(0, extensionIndex);
-					}
-					else
-					{
-						SyntaxMessage.error("Import location ends with unknown extension", n);
-					}
-				}
-				
-				Identifier node = new Identifier(n, location);
-				node.setName(statement);
+				IIdentifier node = new IIdentifier(n, location);
+				node.setName(importLocation);
 				
 				n.addChild(node);
-				
-//				n.setImportLocation(statement);
 			}
 			else
 			{
@@ -182,6 +182,37 @@ public class Import extends Node
 		}
 		
 		return null;
+	}
+	
+	/**
+	 * Validate that the given importLocation either does not have an
+	 * extension, or has a .h extension.
+	 * 
+	 * @param importLocation The location of the import statement.
+	 * @return The location to set as the import location.
+	 */
+	private String validateExtension(String importLocation)
+	{
+		int extensionIndex = importLocation.lastIndexOf('.');
+		
+		if (extensionIndex > 0)
+		{
+			String extension = importLocation.substring(extensionIndex + 1);
+			
+			if (extension.equals("h"))
+			{
+				setExternal(true);
+				markUsed();
+				
+				return importLocation.substring(0, extensionIndex);
+			}
+			else
+			{
+				SyntaxMessage.error("Import location ends with unknown extension", this);
+			}
+		}
+		
+		return importLocation;
 	}
 	
 	/**
@@ -212,7 +243,7 @@ public class Import extends Node
 				}
 			}
 			
-			Identifier node = new Identifier(this, location.getLocationIn());
+			IIdentifier node = new IIdentifier(this, location.getLocationIn());
 			
 			location.cloneTo(node);
 			
@@ -247,5 +278,19 @@ public class Import extends Node
 		node.external = external;
 		
 		return node;
+	}
+	
+	/**
+	 * Test the Import class type to make sure everything
+	 * is working properly.
+	 * 
+	 * @return The error output, if there was an error. If the test was
+	 * 		successful, null is returned.
+	 */
+	public static String test()
+	{
+		
+		
+		return null;
 	}
 }

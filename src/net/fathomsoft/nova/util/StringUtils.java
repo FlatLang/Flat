@@ -9,15 +9,272 @@ import java.util.regex.Matcher;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Mar 13, 2014 at 9:38:42 PM
- * @version	v0.2.13 Jun 17, 2014 at 8:45:35 AM
+ * @version	v0.2.14 Jul 19, 2014 at 7:33:13 PM
  */
 public class StringUtils
 {
 	public static final char	WHITESPACE[]       = new char[] { ' ', '\n', '\t', '\r' };
+	public static final char	SYMBOLS_CHARS[]    = new char[] { '-', '+', '~', '!', '=', '%', '^', '&', '|', '*', '/', '>', '<', ',', '"', '\'', '[', ']', '{', '}', ';' };
+	public static final char	STMT_CONT_CHARS[]  = new char[] { '-', '+', '~', '!', '=', '%', '^', '&', '|', '*', '/', '>', '<', ',', '.' };
 	
 	public static final String	BINARY_OPERATORS[] = new String[] { "+", "-", "/", "*", "==", "!=", "&&", "||", "<=", ">=", "<<", ">>", "<", ">", "%" };
 	public static final String	UNARY_OPERATORS[]  = new String[] { "--", "-", "++", "!" };
-	public static final String	SYMBOLS[]          = new String[] { "-", "+", "~", "!", "=", "%", "^", "&", "|", "*", "/", ">", "<" };
+	public static final String	SYMBOLS[];
+	
+	static
+	{
+		SYMBOLS = new String[SYMBOLS_CHARS.length];
+		
+		for (int i = 0; i < SYMBOLS.length; i++)
+		{
+			SYMBOLS[i] = SYMBOLS_CHARS[i] + "";
+		}
+	}
+	
+	/**
+	 * Get the next sequence of symbols, if they are symbols.<br>
+	 * For example:
+	 * <blockquote><pre>
+	 * // Scenario 1
+	 * getGroupedSymbols("number = ++num2", 9);
+	 * 
+	 * // Scenario 2
+	 * getGroupedSymbols("number = ++num2", 8);</pre></blockquote>
+	 * Scenario 1 returns the "++" String and scenario 2 returns ""
+	 * because the index that it starts at is whitespace, not a
+	 * symbol.
+	 * 
+	 * @param str The String to search through for the symbols.
+	 * @param start The index to start the search at.
+	 * @return A String containing the grouped chars. If there
+	 * 		were no grouped chars, then an empty String is returned.
+	 */
+	public static String getGroupedSymbols(CharSequence str, int start)
+	{
+		return getGroupedSymbols(str, start, 1);
+	}
+	
+	/**
+	 * Get the next sequence of symbols, if they are symbols.<br>
+	 * For example:
+	 * <blockquote><pre>
+	 * // Scenario 1
+	 * getGroupedSymbols("number = ++num2", 9, 1);
+	 * 
+	 * // Scenario 2
+	 * getGroupedSymbols("number = ++num2", 10, -1);</pre></blockquote>
+	 * Scenario 1 and 2 both return the "++" String because they are
+	 * searching the same symbols at opposite ends and directions.
+	 * 
+	 * @param str The String to search through for the symbols.
+	 * @param start The index to start the search at.
+	 * @param direction The direction to search for the symbols at.
+	 * @return A String containing the grouped chars. If there
+	 * 		were no grouped chars, then an empty String is returned.
+	 */
+	public static String getGroupedSymbols(CharSequence str, int start, int direction)
+	{
+		return getGroupedChars(str, SYMBOLS_CHARS, start, direction);
+	}
+	
+	/**
+	 * Get the next sequence of characters, if they are contained within
+	 * the given chars array.<br>
+	 * For example:
+	 * <blockquote><pre>
+	 * // Scenario 1
+	 * getGroupedChars("number = ++num2", StringUtils.SYMBOLS_CHARS, 9, 1);
+	 * 
+	 * // Scenario 2
+	 * getGroupedChars("number = ++num2", StringUtils.SYMBOLS_CHARS, 10, -1);</pre></blockquote>
+	 * Scenario 1 and 2 both return the "++" String because they are
+	 * searching the same symbols at opposite ends and directions.
+	 * 
+	 * @param str The String to search through for the characters.
+	 * @param start The index to start the search at.
+	 * @param direction The direction to search for the characters at.
+	 * @return A String containing the grouped chars. If there
+	 * 		were no grouped chars, then an empty String is returned.
+	 */
+	public static String getGroupedChars(CharSequence str, char chars[], int start, int direction)
+	{
+		int index = start;
+		
+		while (index < str.length() && index >= 0 && StringUtils.containsChar(chars, str.charAt(index)))
+		{
+			index += direction;
+		}
+		
+		if (direction < 0)
+		{
+			return str.subSequence(index + 1, start + 1).toString();
+		}
+		
+		return str.subSequence(start, index).toString();
+	}
+	
+	/**
+	 * Find the next word in the given source starting at the given
+	 * index. If there are no words available, an empty String is
+	 * returned.<br>
+	 * For example:
+	 * <blockquote><pre>
+	 * // Scenario 1
+	 * findNextWord("number = ++num2", 0);
+	 * 
+	 * // Scenario 2
+	 * findNextWord("number = ++num2", 8);</pre></blockquote>
+	 * Scenario 1 returns "number"<br>
+	 * Scenario 2 returns "num2"
+	 * 
+	 * @param source The source to search within.
+	 * @param start The index to start the search.
+	 * @return The next available word if available, else it returns
+	 * 		an empty String.
+	 */
+	public static String findNextWord(CharSequence source, int start)
+	{
+		return findNextWord(source, start, 1);
+	}
+	
+	/**
+	 * Find the next word in the given source starting at the given
+	 * index. If there are no words available, an empty String is
+	 * returned.<br>
+	 * For example:
+	 * <blockquote><pre>
+	 * // Scenario 1
+	 * findNextWord("number = ++num2", 0, 1);
+	 * 
+	 * // Scenario 2
+	 * findNextWord("number = ++num2", 8, -1);</pre></blockquote>
+	 * Scenario 1 and 2 both return "number"
+	 * 
+	 * @param source The source to search within.
+	 * @param start The index to start the search.
+	 * @param direction The direction to search for the word in.
+	 * @return The next available word if available, else it returns
+	 * 		an empty String.
+	 */
+	public static String findNextWord(CharSequence source, int start, int direction)
+	{
+		start = StringUtils.findNextLetterIndex(source, start, direction, false, true);
+		
+		int index = StringUtils.findNextLetterIndex(source, start + direction, direction, true, true);
+		
+		if (direction < 0)
+		{
+			return source.subSequence(index + 1, start + 1).toString();
+		}
+		
+		return source.subSequence(start, index).toString();
+	}
+	
+	/**
+	 * Find the next index in which a letter resides, starting at the
+	 * given index. If there are no letters available, -1 is returned.<br>
+	 * For example:
+	 * <blockquote><pre>
+	 * // Scenario 1
+	 * findNextWord("number = ++num2", 0, 1);
+	 * 
+	 * // Scenario 2
+	 * findNextWord("number = ++num2", 8, -1);</pre></blockquote>
+	 * Scenario 1 returns 0<br>
+	 * Scenario 2 returns 5
+	 * 
+	 * @param source The source to search within.
+	 * @param start The index to start the search.
+	 * @param direction The direction to search for the word in.
+	 * @return The next index in which a letter resides. If no letters
+	 * 		are found, -1 is returned.
+	 */
+	public static int findNextLetterIndex(CharSequence source, int start, int direction)
+	{
+		return findNextLetterIndex(source, start, direction, false);
+	}
+	
+	/**
+	 * Find the next index in which a letter resides, starting at the
+	 * given index. If there are no letters available, -1 is returned.
+	 * However, if the <u>opposite</u> param is true, then the opposite
+	 * of what was stated above is done.<br>
+	 * For example:
+	 * <blockquote><pre>
+	 * // Scenario 1
+	 * findNextWord("number = ++num2", 0, 1, true);
+	 * 
+	 * // Scenario 2
+	 * findNextWord("number = ++num2", 8, -1, true);</pre></blockquote>
+	 * Scenario 1 returns 6<br>
+	 * Scenario 2 returns 8
+	 * 
+	 * @param source The source to search within.
+	 * @param start The index to start the search.
+	 * @param direction The direction to search for the word in.
+	 * @param opposite Whether or not to search for anything that is NOT
+	 * 		a letter (instead of searching for a letter).
+	 * @return The next index in which a letter resides. If no letters
+	 * 		are found, -1 is returned.
+	 */
+	public static int findNextLetterIndex(CharSequence source, int start, int direction, boolean opposite)
+	{
+		return findNextLetterIndex(source, start, direction, opposite, false);
+	}
+	
+	/**
+	 * Find the next index in which a letter resides, starting at the
+	 * given index. If there are no letters available, -1 is returned.
+	 * However, if the <u>opposite</u> param is true, then the opposite
+	 * of what was stated above is done. Passing true for the <u>bound</u>
+	 * parameter makes sure that -1 is never returned (It will return the
+	 * end-point of whichever direction that the method was searching
+	 * in).<br>
+	 * For example:
+	 * <blockquote><pre>
+	 * // Scenario 1
+	 * findNextWord("number = ++num2", 11, 1, true);
+	 * 
+	 * // Scenario 2
+	 * findNextWord("number = ++num2", 4, -1, true, true);</pre></blockquote>
+	 * Scenario 1 returns 15<br>
+	 * Scenario 2 returns 0
+	 * 
+	 * @param source The source to search within.
+	 * @param start The index to start the search.
+	 * @param direction The direction to search for the word in.
+	 * @param opposite Whether or not to search for anything that is NOT
+	 * 		a letter (instead of searching for a letter).
+	 * @param bound Whether or not to bound the result returned if the a
+	 * 		result was not found.
+	 * @return The next index in which a letter resides.
+	 */
+	public static int findNextLetterIndex(CharSequence source, int start, int direction, boolean opposite, boolean bound)
+	{
+		while (start >= 0 && start < source.length())
+		{
+			char c = source.charAt(start);
+			
+			if ((containsChar(WHITESPACE, c) || containsChar(SYMBOLS_CHARS, c)) == opposite)
+			{
+				return start;
+			}
+			
+			start += direction;
+		}
+		
+		if (bound)
+		{
+			if (direction > 0)
+			{
+				return source.length();
+			}
+			
+			return 0;
+		}
+		
+		return -1;
+	}
 	
 	/**
 	 * Find the index of the ending char for the match. For instance, to
@@ -35,9 +292,30 @@ public class StringUtils
 	 */
 	public static int findEndingMatch(CharSequence str, int index, char startChar, char endChar)
 	{
-		return findEndingMatch(str, index, startChar, endChar, (char)0);
+		return findEndingMatch(str, index, startChar, endChar, '\0');
+	}
+
+	/**
+	 * Find the index of the ending char for the match. For instance, to
+	 * search for an ending parenthesis, starting from the opening
+	 * parenthesis, you would pass findEndingMatch(str, 0, '(', ')');
+	 * The method call would return the index of the ending parenthesis
+	 * that is paired with the index of 0.
+	 * 
+	 * @param str The String to search for the pair to the start char.
+	 * @param index The index of the start char in the pair.
+	 * @param startChar The char that starts off the pair. eg. '('
+	 * @param endChar The char that ends the pair. eg: ')'
+	 * @param direction The direction in which to search for the match in.
+	 * @return The index of the pair to the starting char, if no pair is
+	 * 		found then -1 is returned.
+	 */
+	public static int findEndingMatch(CharSequence str, int index, char startChar, char endChar, int direction)
+	{
+		return findEndingMatch(str, index, startChar, endChar, '\0', direction);
 	}
 	
+
 	/**
 	 * Find the index of the ending char for the match. For instance, to
 	 * search for an ending parenthesis, starting from the opening
@@ -57,13 +335,43 @@ public class StringUtils
 	 */
 	public static int findEndingMatch(CharSequence str, int index, char startChar, char endChar, char escapeChar)
 	{
+		return findEndingMatch(str, index, startChar, endChar, escapeChar, 1);
+	}
+	
+	/**
+	 * Find the index of the ending char for the match. For instance, to
+	 * search for an ending parenthesis, starting from the opening
+	 * parenthesis, you would pass findEndingMatch(str, 0, '(', ')', '\\');
+	 * <i>(The backslash would act to escape any parentheses. eg: \\(
+	 * would not be counted.)</i> The method call would return the index
+	 * of the ending parenthesis that is paired with the index of 0.
+	 * 
+	 * @param str The String to search for the pair to the start char.
+	 * @param index The index of the start char in the pair.
+	 * @param startChar The char that starts off the pair. eg. '('
+	 * @param endChar The char that ends the pair. eg: ')'
+	 * @param escapeChar The char that escapes a start or end char, of
+	 * 		there is no escape char, pass '(char)0'.
+	 * @param direction The direction in which to search for the match in.
+	 * @return The index of the pair to the starting char, if no pair is
+	 * 		found then -1 is returned.
+	 */
+	public static int findEndingMatch(CharSequence str, int index, char startChar, char endChar, char escapeChar, int direction)
+	{
+		if (direction < 0)
+		{
+			char temp = startChar;
+			startChar = endChar;
+			endChar   = temp;
+		}
+		
 		int scope = 0;
 		
-		while (index < str.length())
+		while (index >= 0 && index < str.length())
 		{
 			char c = str.charAt(index);
 			
-			if (c == escapeChar)
+			if (c == escapeChar && direction > 0)
 			{
 				if (index < str.length() - 1)
 				{
@@ -75,11 +383,11 @@ public class StringUtils
 					}
 				}
 			}
-			else if (c == startChar)
+			else if (c == startChar && (direction > 0 || index > 0 && str.charAt(index - 1) != escapeChar))
 			{
 				scope++;
 			}
-			else if (c == endChar)
+			else if (c == endChar && (direction > 0 || index > 0 && str.charAt(index - 1) != escapeChar))
 			{
 				scope--;
 				
@@ -90,10 +398,10 @@ public class StringUtils
 			}
 			else if (c == '"' || c == '\'')
 			{
-				index = findEndingChar(str, c, index, 1);
+				index = findEndingChar(str, c, index, direction);
 			}
 			
-			index++;
+			index += direction;
 		}
 		
 		return -1;
@@ -169,7 +477,7 @@ public class StringUtils
 	 */
 	public static Bounds findStrings(CharSequence value, String strings[])
 	{
-		return findStrings(value, 0, strings);
+		return findStrings(value, strings, 0);
 	}
 	
 	/**
@@ -177,37 +485,53 @@ public class StringUtils
 	 * array.
 	 * 
 	 * @param value The String to search through.
-	 * @param start The index to start the search at.
 	 * @param strings The array to search through.
+	 * @param start The index to start the search at.
 	 * @return A Bounds instance with the end points of the found String.
 	 * 		If a String is not found, [-1, -1] is returned.
 	 */
-	public static Bounds findStrings(CharSequence value, int start, String strings[])
+	public static Bounds findStrings(CharSequence value, String strings[], int start)
 	{
-		while (start < value.length())
+		return findStrings(value, strings, start, 1);
+	}
+	
+	/**
+	 * Search through the given value for any match within the strings
+	 * array.
+	 * 
+	 * @param value The String to search through.
+	 * @param strings The array to search through.
+	 * @param start The index to start the search at.
+	 * @param direction The direction to search in.
+	 * @return A Bounds instance with the end points of the found String.
+	 * 		If a String is not found, [-1, -1] is returned.
+	 */
+	public static Bounds findStrings(CharSequence value, String strings[], int start, int direction)
+	{
+		while (start >= 0 && start < value.length())
 		{
 			char c = value.charAt(start);
 			
 			if (c == '"')
 			{
-				start = findEndingQuote(value, start) + 1;
+				start = findEndingQuote(value, start, direction) + direction;
 				
 				continue;
 			}
-			else if (c == '(')
+			else if (c == '(' && direction > 0 || c == ')' && direction < 0)
 			{
-				start = findEndingMatch(value, start, '(', ')') + 1;
+				start = findEndingMatch(value, start, '(', ')', direction) + direction;
 				
-				if (start == 0)
+				if (start <= 0 || start >= value.length())
 				{
 					return Bounds.EMPTY;
 				}
 				
 				continue;
 			}
-			else if (c == '[')
+			else if (c == '[' && direction > 0 || c == ']' && direction < 0)
 			{
-				start = findEndingMatch(value, start, '[', ']') + 1;
+				start = findEndingMatch(value, start, '[', ']', direction) + direction;
 				
 				if (start == 0)
 				{
@@ -235,7 +559,7 @@ public class StringUtils
 				}
 			}
 			
-			start++;
+			start += direction;
 		}
 		
 		return Bounds.EMPTY;
@@ -248,14 +572,14 @@ public class StringUtils
 	 * match is made, null is returned.
 	 * 
 	 * @param haystack The String try to match.
-	 * @param start The index to start to search the value at.
 	 * @param strings The array to search through to try and match.
+	 * @param start The index to start to search the value at.
 	 * @return The String in the strings array that made the match. If no
 	 * 		match was found, null is returned.
 	 */
-	public static String findMatch(String haystack, int start, String strings[])
+	public static String findMatch(String haystack, String strings[], int start)
 	{
-		Bounds bounds = findStrings(haystack, start, strings);
+		Bounds bounds = findStrings(haystack, strings, start);
 		
 		if (bounds.getStart() < 0)
 		{
@@ -272,12 +596,12 @@ public class StringUtils
 	 * is returned.
 	 * 
 	 * @param haystack The String try to match at the given index.
-	 * @param index The index to search the value at.
 	 * @param strings The array to search through to try and match.
+	 * @param index The index to search the value at.
 	 * @return The String in the strings array that made the match. If no
 	 * 		match was found, null is returned.
 	 */
-	public static String getMatch(String haystack, int index, String strings[])
+	public static String getMatch(String haystack, String strings[], int index)
 	{
 		for (String str : strings)
 		{
@@ -303,14 +627,14 @@ public class StringUtils
 	 * array at the given char offset index.
 	 * 
 	 * @param haystack The String try to match at the given index.
-	 * @param index The index to search the value at.
 	 * @param strings The array to search through to try and match.
+	 * @param index The index to search the value at.
 	 * @return Whether or not there is a match within the strings array at
 	 * 		the given index in the haystack String.
 	 */
-	public static boolean matches(String haystack, int index, String strings[])
+	public static boolean matches(String haystack, String strings[], int index)
 	{
-		return getMatch(haystack, index, strings) != null;
+		return getMatch(haystack, strings, index) != null;
 	}
 	
 	/**
@@ -323,7 +647,7 @@ public class StringUtils
 	 * @return The number of lines that the iterator encountered
 	 * 		within the given bounds.
 	 */
-	public static int numNewLines(int start, int statementStart, String source)
+	public static int numNewLines(int start, int statementStart, CharSequence source)
 	{
 		int lines = 0;
 		
@@ -347,7 +671,7 @@ public class StringUtils
 	 * @return The next possible index in the String that is not
 	 * 		whitespace.
 	 */
-	public static int findNextNonWhitespaceIndex(String str, int index)
+	public static int findNextNonWhitespaceIndex(CharSequence str, int index)
 	{
 		return findNextNonWhitespaceIndex(str, index, 1);
 	}
@@ -362,21 +686,9 @@ public class StringUtils
 	 * @return The next possible index in the String that is not
 	 * 		whitespace.
 	 */
-	public static int findNextNonWhitespaceIndex(String str, int index, int direction)
+	public static int findNextNonWhitespaceIndex(CharSequence str, int index, int direction)
 	{
-		while (index >= 0 && index < str.length())
-		{
-			char c = str.charAt(index);
-			
-			if (c != ' ' && c != '\n' && c != '\t' && c != '\r')
-			{
-				return index;
-			}
-			
-			index += direction;
-		}
-		
-		return -1;
+		return findNextCharacter(str, WHITESPACE, index, direction, true);
 	}
 	
 	/**
@@ -388,28 +700,45 @@ public class StringUtils
 	 * @return The next possible index in the String that is
 	 * 		whitespace.
 	 */
-	public static int findNextWhitespaceIndex(String str, int index)
+	public static int findNextWhitespaceIndex(CharSequence str, int index)
 	{
-		return findNextWhitespaceIndex(str, index, 1);
+		return findNextCharacter(str, WHITESPACE, index, 1);
 	}
 	
 	/**
-	 * Get the next possible index in the String that is a whitespace
-	 * character, while moving in the specified direction.
+	 * Get the next possible index in the String that contains a char
+	 * in the given character array, while moving in the specified
+	 * direction. If none exists, -1 is returned.
 	 * 
 	 * @param str The String to search through.
 	 * @param index The index to start the search at.
 	 * @param direction The direction in which to increment the index.
 	 * @return The next possible index in the String that is
-	 * 		whitespace.
+	 * 		a character in the given array.
 	 */
-	public static int findNextWhitespaceIndex(String str, int index, int direction)
+	public static int findNextCharacter(CharSequence str, char chars[], int index, int direction)
+	{
+		return findNextCharacter(str, chars, index, direction, false);
+	}
+	
+	/**
+	 * Get the next possible index in the String that contains a char
+	 * in the given character array, while moving in the specified
+	 * direction. If none exists, -1 is returned.
+	 * 
+	 * @param str The String to search through.
+	 * @param index The index to start the search at.
+	 * @param direction The direction in which to increment the index.
+	 * @param opposite Whether or not to search for or against what is
+	 * 		within the character array.
+	 * @return The next possible index in the String that is
+	 * 		a character in the given array.
+	 */
+	public static int findNextCharacter(CharSequence str, char chars[], int index, int direction, boolean opposite)
 	{
 		while (index >= 0 && index < str.length())
 		{
-			char c = str.charAt(index);
-			
-			if (c == ' ' || c == '\n' || c == '\t' || c == '\r')
+			if (containsChar(chars, str.charAt(index)) != opposite)
 			{
 				return index;
 			}
@@ -461,7 +790,7 @@ public class StringUtils
 		
 		StringBuilder builder = new StringBuilder();
 		
-		while ((index = Regex.indexOf(src, index + 1, ',', new char[] { '(' }, new char[] { ')' }, new char[] { '"' }, new boolean[] { false }, new boolean[] { false }, new boolean[] { true })) > 0)
+		while ((index = SyntaxUtils.findCharInBaseScope(src, ',', index + 1)) >= 0)//(index = Regex.indexOf(src, index + 1, ',', new char[] { '(' }, new char[] { ')' }, new char[] { '"' }, new boolean[] { false }, new boolean[] { false }, new boolean[] { true })) > 0)
 		{
 			builder = new StringBuilder(src.substring(oldIndex, index));
 			
@@ -570,6 +899,25 @@ public class StringUtils
 	public static boolean containsChar(char array[], char c)
 	{
 		return searchChar(array, c) >= 0;
+	}
+	
+	/**
+	 * Search for the char at the given index in the given source String
+	 * in the given array.
+	 * 
+	 * @param source The String to search through.
+	 * @param array The array to search for 'c' in.
+	 * @param index The index to get the char from the source String at.
+	 * @return Whether or not the array contains the 'c' char.
+	 */
+	public static boolean containsChar(CharSequence source, char array[], int index)
+	{
+		if (index < 0 || index >= source.length())
+		{
+			return false;
+		}
+		
+		return searchChar(array, source.charAt(index)) >= 0;
 	}
 	
 	/**

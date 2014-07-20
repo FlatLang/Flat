@@ -7,12 +7,13 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
+import net.fathomsoft.nova.tree.*;
 import net.fathomsoft.nova.error.SyntaxErrorException;
 import net.fathomsoft.nova.error.SyntaxMessage;
+import net.fathomsoft.nova.tree.BinaryOperation;
 import net.fathomsoft.nova.tree.FileDeclaration;
 import net.fathomsoft.nova.tree.Identifier;
-import net.fathomsoft.nova.tree.MethodCall;
-import net.fathomsoft.nova.tree.Method;
+import net.fathomsoft.nova.tree.MethodDeclaration;
 import net.fathomsoft.nova.tree.SyntaxTree;
 import net.fathomsoft.nova.tree.exceptionhandling.Exception;
 import net.fathomsoft.nova.util.Command;
@@ -26,7 +27,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:00:04 PM
- * @version	v0.2.13 Jun 17, 2014 at 8:45:35 AM
+ * @version	v0.2.14 Jul 19, 2014 at 7:33:13 PM
  */
 public class Nova
 {
@@ -64,6 +65,8 @@ public class Nova
 	public static final long	RUNTIME       = 0x1000000l;
 	public static final long	LIBRARY       = 0x10000000l;
 	public static final long	NO_GC         = 0x100000000l;
+	public static final long	SMALL_BIN     = 0x1000000000l;
+	public static final long	SINGLE_THREAD = 0x10000000000l;
 	
 	public static final int		GCC           = 1;
 	public static final int		TCC           = 2;
@@ -74,7 +77,7 @@ public class Nova
 	public static final int		LINUX         = 3;
 	
 	public static final String	LANGUAGE_NAME = "Nova";
-	public static final String	VERSION       = "v0.2.13";
+	public static final String	VERSION       = "v0.2.14";
 	
 	/**
 	 * Find out which operating system the compiler is running on.
@@ -132,7 +135,7 @@ public class Nova
 			{
 				System.out.println("Preparing Benchmark...");
 				
-				Thread.sleep(1000);
+				Thread.sleep(100);
 				
 				System.out.println("Starting...");
 			}
@@ -164,6 +167,7 @@ public class Nova
 	private void compile(String args[])
 	{
 		String directory = getWorkingDirectoryPath() + "example/";
+		String stability = getWorkingDirectoryPath() + "stabilitytest/";
 		String standard  = getWorkingDirectoryPath() + "standard/";
 		
 		if (OS == WINDOWS)
@@ -177,18 +181,39 @@ public class Nova
 		
 		if (DEBUG)
 		{
+			if (BENCHMARK <= 0)
+			{
+				testClasses();
+			}
+			
 			args = new String[]
 			{
+				formatPath(stability + "StabilityTest.nova"),
+				formatPath(stability + "TimeStability.nova"),
+				formatPath(stability + "FileStability.nova"),
+				formatPath(stability + "ThreadStability.nova"),
+				formatPath(stability + "ExceptionStability.nova"),
+				formatPath(stability + "SyntaxStability.nova"),
+				formatPath(stability + "ClosureStability.nova"),
+				formatPath(stability + "PolymorphismStability.nova"),
+				formatPath(stability + "PolymorphicSuperClass.nova"),
+				formatPath(stability + "PolymorphicSubClass.nova"),
+				formatPath(stability + "StabilityTestException.nova"),
+				formatPath(stability + "StabilityExceptionHandler.nova"),
+				formatPath(stability + "ThreadImplementation.nova"),
+				formatPath(stability + "UnstableException.nova"),
+//				formatPath(directory + "MathDemo.nova"),
+//				formatPath(directory + "ThreadDemo.nova"),
 //				formatPath(directory + "IntegerTest.nova"),
 //				formatPath(directory + "FileTest.nova"),
-				formatPath(directory + "SVGTest.nova"),
+//				formatPath(directory + "SVGTest.nova"),
 //				formatPath(directory + "ExceptionHandlingDemo.nova"),
 //				formatPath(directory + "NonWholeDivisionException.nova"),
 //				formatPath(directory + "ArrayListDemo.nova"),
+//				formatPath(directory + "ClosureDemo.nova"),
 //				formatPath(directory + "Person.nova"),
 //				formatPath(directory + "BodyBuilder.nova"),
-//				formatPath(directory + "Nova.nova"),
-				formatPath(standard  + "IO.nova"),
+				formatPath(standard  + "Console.nova"),
 				formatPath(standard  + "String.nova"),
 				formatPath(standard  + "ExceptionData.nova"),
 				formatPath(standard  + "ArrayList.nova"),
@@ -199,10 +224,12 @@ public class Nova
 				formatPath(standard  + "List.nova"),
 				formatPath(standard  + "ListNode.nova"),
 				formatPath(standard  + "Thread.nova"),
+				formatPath(standard  + "UncaughtExceptionHandler.nova"),
 				formatPath(standard  + "Exception.nova"),
 				formatPath(standard  + "Integer.nova"),
 				formatPath(standard  + "Array.nova"),
 				formatPath(standard  + "Char.nova"),
+				formatPath(standard  + "CharArray.nova"),
 				formatPath(standard  + "Bool.nova"),
 				formatPath(standard  + "Long.nova"),
 				formatPath(standard  + "Double.nova"),
@@ -215,21 +242,25 @@ public class Nova
 				formatPath(standard  + "SVGComponentNode.nova"),
 				formatPath(standard  + "SVGMainComponent.nova"),
 				formatPath(standard  + "SVGCircle.nova"),
+				formatPath(standard  + "System.nova"),
 				"-o",   formatPath(directory + "bin/Executable" + OUTPUT_EXTENSION),
 				"-dir", formatPath(directory + "../include"),
 				"-dir", formatPath(directory + "../include/gc"),
 				"-dir", formatPath(directory + "../standard"),
-//				"-dir", formatPath(directory + "../example"),
+				"-dir", formatPath(directory + "../example"),
+				"-dir", formatPath(directory + "../stabilitytest"),
 				"-run",
 //				"-csource",
 				"-formatc",
 				"-v",
-				"-gcc",
+//				"-gcc",
+//				"-small",
 				"-cargs",
 				"-keepc",
+//				"-single-thread",
 //				"-nogc",
 //				"-dry"
-//				"-library",
+				"-library",
 			};
 		}
 		if (ANDROID_DEBUG)
@@ -258,12 +289,30 @@ public class Nova
 				times = BENCHMARK;
 			}
 			
-			for (int i = 0; i < times; i++)
+			try
 			{
-				tree = new SyntaxTree(inputFiles.toArray(new File[0]), this);
+				for (int i = 0; i < times; i++)
+				{
+					long before = System.currentTimeMillis();
+					
+					tree = new SyntaxTree(inputFiles.toArray(new File[0]), this);
+					
+					tree.generateCOutput();
+					
+					insertMainMethod();
+					
+					long time = System.currentTimeMillis() - before;
+					
+					if (BENCHMARK > 1)
+					{
+						System.out.println("Benchmark " + (i + 1) + ": " + time + "ms");
+					}
+				}
 			}
-			
-			tree.generateCOutput();
+			catch (SyntaxErrorException e)
+			{
+				enableFlag(DRY_RUN);
+			}
 		}
 		catch (IOException e1)
 		{
@@ -272,15 +321,6 @@ public class Nova
 			e1.printStackTrace();
 			
 			completed();
-		}
-		
-		try
-		{
-			insertMainMethod();
-		}
-		catch (SyntaxErrorException e)
-		{
-			enableFlag(DRY_RUN);
 		}
 		
 		long   time = System.currentTimeMillis() - startTime;
@@ -321,11 +361,13 @@ public class Nova
 			}
 		}
 		
+		log("Writing files...");
+		
 		StringBuilder allHeaders = new StringBuilder();
 		StringBuilder includes = new StringBuilder();
 		StringBuilder types = new StringBuilder();
 
-//		allHeaders.append("#pragma once\n");
+		allHeaders.append("#pragma once\n");
 		allHeaders.append("#ifndef NOVA_ALL_HEADERS\n");
 		allHeaders.append("#define NOVA_ALL_HEADERS\n\n");
 		allHeaders.append("#include <Nova.h>\n");
@@ -336,9 +378,9 @@ public class Nova
 		for (int i = 0; i < files.length; i++)
 		{
 			FileDeclaration file   = files[i];
-			String   header = headers[i];
-			String   source = sources[i];
-			File     parent = files[i].getFile().getParentFile();
+			String          header = headers[i];
+			String          source = sources[i];
+			File            parent = files[i].getFile().getParentFile();
 			
 			types.append("typedef struct ").append(file.getName()).append(' ').append(file.getName()).append(';').append('\n');
 			includes.append("#include <").append(file.generateCHeaderName()).append('>').append('\n');
@@ -370,6 +412,8 @@ public class Nova
 		
 		allHeaders.append("#endif");
 		
+		log("Done writing files.");
+		
 //		try
 //		{
 //			File file = FileUtils.writeFile("AllNovaHeaders.h", allHeaders.toString());
@@ -397,7 +441,7 @@ public class Nova
 	 */
 	private void insertMainMethod()
 	{
-		Method mainMethod = tree.getMainMethod();
+		MethodDeclaration mainMethod = tree.getMainMethod();
 		
 		if (mainMethod == null)
 		{
@@ -415,55 +459,15 @@ public class Nova
 		
 		if (mainMethod != null)
 		{
-//			ClassDeclaration classNode = (ClassDeclaration)mainMethod.getAncestorOfType(ClassDeclaration.class);
-//
-////			StringBuilder staticClassImport = new StringBuilder();
-////			StringBuilder staticClassInit   = new StringBuilder();
-////			StringBuilder staticClassFree   = new StringBuilder();
-//			
-//			Program root = tree.getRoot();
-//			
-//			for (int i = 0; i < root.getNumChildren(); i++)
-//			{
-//				Node child = root.getChild(i);
-//				
-//				if (child instanceof FileDeclaration)
-//				{
-//					FileDeclaration f = (FileDeclaration)child;
-//						
-//					for (int j = 0; j < f.getNumChildren(); j++)
-//					{
-//						Node child2 = f.getChild(j);
-//						
-//						if (child2 instanceof ClassDeclaration)
-//						{
-//							ClassDeclaration c = (ClassDeclaration)child2;
-//							
-//							if (c.containsStaticData())
-//							{
-////								staticClassImport.append("#include \"" + c.getName() + ".h\"").append('\n');
-////								staticClassInit.append("__static__").append(c.getName()).append(" = ").append(LANGUAGE_NAME.toLowerCase()).append('_').append(c.getName()).append('_').append(c.getName()).append("(0);").append('\n');
-////								staticClassFree.append(LANGUAGE_NAME.toLowerCase()).append("_del_").append(c.getName()).append("(&__static__").append(c.getName()).append(", 0);").append('\n');
-//							}
-//						}
-//					}
-//				}
-//			}
+//			FileDeclaration file = mainMethod.getFileDeclaration();
+//			file.addChild(Import.decodeStatement(file, "import \"GC\"", file.getLocationIn(), true, false));
+			Identifier gcInit = (Identifier)SyntaxTree.decodeScopeContents(mainMethod, "GC.init()", mainMethod.getLocationIn(), false);
+			Identifier enter  = (Identifier)SyntaxTree.decodeScopeContents(mainMethod, "Console.waitForEnter()", mainMethod.getLocationIn(), false);
 			
-			Identifier gc = new Identifier(mainMethod, mainMethod.getLocationIn());
-			gc.setName("GC");
-			gc.setType("GC");
-			
-			MethodCall gcInit = MethodCall.decodeStatement(gc, "init()", mainMethod.getLocationIn(), true, false);
 			
 			StringBuilder mainMethodText = new StringBuilder();
 			
 			mainMethodText.append('\n').append('\n');
-//			mainMethodText.append("#include <stdio.h>").append('\n');
-//			mainMethodText.append("#include <stdlib.h>").append('\n');
-//			mainMethodText.append("#include <string.h>").append('\n');
-//			mainMethodText.append(staticClassImport);
-			//mainMethodText.append("jmp_buf __").append(LANGUAGE_NAME.toUpperCase()).append("__jmp_buf;").append('\n');
 			mainMethodText.append('\n');
 			mainMethodText.append("int main(int argc, char** argvs)").append('\n');
 			mainMethodText.append("{").append('\n');
@@ -483,12 +487,12 @@ public class Nova
 			mainMethodText.append	('\n');
 			mainMethodText.append	("TRY").append('\n');
 			mainMethodText.append	('{').append('\n');
-			mainMethodText.append		(mainMethod.generateCSourceName()).append('(').append(Exception.EXCEPTION_DATA_IDENTIFIER).append(", args);").append('\n');
+			mainMethodText.append		(mainMethod.generateCSourceName()).append("(0, ").append(Exception.EXCEPTION_DATA_IDENTIFIER).append(", args);").append('\n');
 			mainMethodText.append	('}').append('\n');
 			mainMethodText.append	("CATCH (1)").append('\n');
 			mainMethodText.append	('{').append('\n');
 			mainMethodText.append		("printf(\"You broke it.\");").append('\n');
-			mainMethodText.append		(LANGUAGE_NAME.toLowerCase()).append("_IO_waitForEnter(0);").append('\n');
+			mainMethodText.append		(enter.generateCSource()).append('\n');
 			mainMethodText.append	('}').append('\n');
 			mainMethodText.append	("FINALLY").append('\n');
 			mainMethodText.append	('{').append('\n');
@@ -518,7 +522,16 @@ public class Nova
 		
 		if (compiler == GCC)
 		{
-			cmd.append("gcc -pipe -march=native -fomit-frame-pointer ");//("compiler/gcc/bin/gcc.exe ");
+			cmd.append("gcc -pipe ");
+			
+			if (isFlagEnabled(SMALL_BIN))
+			{
+				cmd.append("-ffast-math ");
+			}
+			else
+			{
+				cmd.append("-march=native -fomit-frame-pointer ");
+			}
 		}
 		else if (compiler == TCC)
 		{
@@ -534,6 +547,8 @@ public class Nova
 			cmd.append("-DUSE_GC ");
 		}
 		
+		cmd.append("-DE4C_THREADSAFE ");
+		
 		for (int i = 0; i < includeDirectories.size(); i++)
 		{
 			String dir = includeDirectories.get(i);
@@ -543,9 +558,9 @@ public class Nova
 		
 		String libDir    = workingDir + "/bin/";
 		
-		String libFathom = formatPath(libDir + "libNovafast.dll");
-		String libThread = formatPath(libDir + "libThreadfast.dll");
-		String libGC     = formatPath(libDir + "gcfast.dll");
+		String libFathom = formatPath(libDir + "libNova.dll");
+		String libThread = formatPath(libDir + "libThread.dll");
+		String libGC     = formatPath(libDir + "gc.dll");
 		
 		cmd.append(libFathom).append(' ').append(libThread).append(' ').append(libGC).append(' ');
 		
@@ -554,9 +569,19 @@ public class Nova
 			cmd.append('"').append(sourceFile.getAbsolutePath()).append('"').append(' ');
 		}
 		
+		cmd.append(formatPath(workingDir  + "../standard/NativeObject.c")).append(' ');
+		cmd.append(formatPath(workingDir  + "../standard/NativeThread.c")).append(' ');
+		
 		cmd.append("-o ").append('"').append(outputFile.getAbsolutePath()).append('"').append(' ');
 		
-		cmd.append("-O2");
+		if (isFlagEnabled(SMALL_BIN))
+		{
+			cmd.append("-Os -s ");
+		}
+		else
+		{
+			cmd.append("-O2");
+		}
 //		cmd.append("-Ofast ");
 //		cmd.append("-s ");
 		
@@ -575,16 +600,9 @@ public class Nova
 			completed();
 		}
 		
-		final Command command = new Command(cmd.toString(), workingDir);
+		log("Compiling C sources...");
 		
-		try
-		{
-			command.execute();
-		}
-		catch (IOException e)
-		{
-			e.printStackTrace();
-		}
+		final Command command = new Command(cmd.toString(), workingDir);
 		
 		command.addCommandListener(new CommandListener()
 		{
@@ -649,6 +667,15 @@ public class Nova
 				}
 			}
 		});
+		
+		try
+		{
+			command.execute();
+		}
+		catch (IOException e)
+		{
+			e.printStackTrace();
+		}
 	}
 	
 	/**
@@ -781,7 +808,7 @@ public class Nova
 		// Start off the lastInput index to -1 because it will start
 		// checking for (index - 1).
 		// (index starts at 0, therefore 0 - 1 = -1)
-		int     lastInput = -1;
+		int lastInput = -1;
 		
 		// Declare and initialize two booleans used to keep track of
 		// whether or not the argument parser is expecting a certain
@@ -859,6 +886,11 @@ public class Nova
 			{
 				compiler = CLANG;
 			}
+			// If the user wants to run a single threaded compilation
+			else if (arg.equals("-single-thread"))
+			{
+				enableFlag(SINGLE_THREAD);
+			}
 			// If the user wants to perform a dry run of the compilation
 			// process.
 			else if (arg.equals("-dry"))
@@ -874,6 +906,11 @@ public class Nova
 			else if (arg.equals("-cargs"))
 			{
 				enableFlag(C_ARGS);
+			}
+			// If the user wants to generate a smaller executable output.
+			else if (arg.equals("-small"))
+			{
+				enableFlag(SMALL_BIN);
 			}
 			// If the user wants to output a library instead of an
 			// executable.
@@ -912,6 +949,11 @@ public class Nova
 				else if (expectingIncludeDirectory)
 				{
 					includeDirectories.add(formatPath(args[i]));
+				}
+				else
+				{
+					error("Unknown argument '" + args[i] + "'");
+					completed();
 				}
 			}
 		}
@@ -992,7 +1034,7 @@ public class Nova
 	 * @param flag The flag to check if is enabled.
 	 * @return Whether or not the flag is enabled.
 	 */
-	private boolean isFlagEnabled(long flag)
+	public boolean isFlagEnabled(long flag)
 	{
 		return isFlagEnabled(flags, flag);
 	}
@@ -1156,6 +1198,271 @@ public class Nova
 		if (!ANDROID_DEBUG)
 		{
 			System.exit(0);
+		}
+	}
+	
+	private void testClasses()
+	{
+		String error = null;
+		
+		error = ArgumentList.test();
+		
+		if (error == null)
+		{
+			error = Assignment.test();
+			
+			if (error == null)
+			{
+				error = BinaryOperation.test();
+				
+				if (error == null)
+				{
+					error = Bool.test();
+					
+					if (error == null)
+					{
+						error = ClassDeclaration.test();
+						
+						if (error == null)
+						{
+							error = Closure.test();
+							
+							if (error == null)
+							{
+								error = ClosureDeclaration.test();
+								
+								if (error == null)
+								{
+									error = Condition.test();
+									
+									if (error == null)
+									{
+										error = Constructor.test();
+										
+										if (error == null)
+										{
+											error = Destructor.test();
+											
+											if (error == null)
+											{
+												error = Dimensions.test();
+												
+												if (error == null)
+												{
+													error = ElseStatement.test();
+													
+													if (error == null)
+													{
+														error = ExternalMethodDeclaration.test();
+														
+														if (error == null)
+														{
+															error = ExternalStatement.test();
+															
+															if (error == null)
+															{
+																error = ExternalType.test();
+																
+																if (error == null)
+																{
+																	error = ExternalTypeList.test();
+																	
+																	if (error == null)
+																	{
+																		error = FileDeclaration.test();
+																		
+																		if (error == null)
+																		{
+																			error = ForLoop.test();
+																			
+																			if (error == null)
+																			{
+																				error = Identifier.test();
+																				
+																				if (error == null)
+																				{
+																					error = IfStatement.test();
+																					
+																					if (error == null)
+																					{
+																						error = IIdentifier.test();
+																						
+																						if (error == null)
+																						{
+																							error = Import.test();
+																							
+																							if (error == null)
+																							{
+																								error = ImportList.test();
+																								
+																								if (error == null)
+																								{
+																									error = InstanceDeclaration.test();
+																									
+																									if (error == null)
+																									{
+																										error = Instantiation.test();
+																										
+																										if (error == null)
+																										{
+																											error = IValue.test();
+																											
+																											if (error == null)
+																											{
+																												error = Literal.test();
+																												
+																												if (error == null)
+																												{
+																													error = LocalDeclaration.test();
+																													
+																													if (error == null)
+																													{
+																														error = Loop.test();
+																														
+																														if (error == null)
+																														{
+																															error = LoopInitialization.test();
+																															
+																															if (error == null)
+																															{
+																																error = LoopUpdate.test();
+																																
+																																if (error == null)
+																																{
+																																	error = MethodCall.test();
+																																	
+																																	if (error == null)
+																																	{
+																																		error = MethodCallArgumentList.test();
+																																		
+																																		if (error == null)
+																																		{
+																																			error = MethodDeclaration.test();
+																																			
+																																			if (error == null)
+																																			{
+																																				error = MethodList.test();
+																																				
+																																				if (error == null)
+																																				{
+																																					error = Node.test();
+																																					
+																																					if (error == null)
+																																					{
+																																						error = Null.test();
+																																						
+																																						if (error == null)
+																																						{
+																																							error = Operator.test();
+																																							
+																																							if (error == null)
+																																							{
+																																								error = Parameter.test();
+																																								
+																																								if (error == null)
+																																								{
+																																									error = ParameterList.test();
+																																									
+																																									if (error == null)
+																																									{
+																																										error = Priority.test();
+																																										
+																																										if (error == null)
+																																										{
+																																											error = Program.test();
+																																											
+																																											if (error == null)
+																																											{
+																																												error = Return.test();
+																																												
+																																												if (error == null)
+																																												{
+																																													error = Scope.test();
+																																													
+																																													if (error == null)
+																																													{
+																																														error = SyntaxTree.test();
+																																														
+																																														if (error == null)
+																																														{
+																																															error = TreeGenerator.test();
+																																															
+																																															if (error == null)
+																																															{
+																																																error = UnaryOperation.test();
+																																																
+																																																if (error == null)
+																																																{
+																																																	error = Until.test();
+																																																	
+																																																	if (error == null)
+																																																	{
+																																																		error = Value.test();
+																																																		
+																																																		if (error == null)
+																																																		{
+																																																			error = VTable.test();
+																																																			
+																																																			if (error == null)
+																																																			{
+																																																				error = WhileLoop.test();
+																																																			}
+																																																		}
+																																																	}
+																																																}
+																																															}
+																																														}
+																																													}
+																																												}
+																																											}
+																																										}
+																																									}
+																																								}
+																																							}
+																																						}
+																																					}
+																																				}
+																																			}
+																																		}
+																																	}
+																																}
+																															}
+																														}
+																													}
+																												}
+																											}
+																										}
+																									}
+																								}
+																							}
+																						}
+																					}
+																				}
+																			}
+																		}
+																	}
+																}
+															}
+														}
+													}
+												}
+											}
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+		
+		if (error != null)
+		{
+			System.err.println("Pre-compilation class tests failed:");
+			System.err.println(error);
+			
+			completed();
 		}
 	}
 }

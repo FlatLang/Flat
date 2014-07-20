@@ -1,8 +1,9 @@
 package net.fathomsoft.nova.tree;
 
 import net.fathomsoft.nova.error.SyntaxMessage;
-import net.fathomsoft.nova.tree.variables.Field;
+import net.fathomsoft.nova.tree.variables.FieldDeclaration;
 import net.fathomsoft.nova.tree.variables.Variable;
+import net.fathomsoft.nova.tree.variables.VariableDeclaration;
 import net.fathomsoft.nova.util.Location;
 import net.fathomsoft.nova.util.StringUtils;
 import net.fathomsoft.nova.util.SyntaxUtils;
@@ -13,7 +14,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:19:44 PM
- * @version	v0.2.14 Jun 18, 2014 at 10:11:40 PM
+ * @version	v0.2.14 Jul 19, 2014 at 7:33:13 PM
  */
 public class Assignment extends Node
 {
@@ -34,9 +35,9 @@ public class Assignment extends Node
 	 * @return The node that represents the variable that is being
 	 * 		assigned.
 	 */
-	public Variable getAssigneeNode()
+	public Identifier getAssigneeNode()
 	{
-		return (Variable)getChild(0);
+		return (Identifier)getChild(0);
 	}
 	
 	/**
@@ -68,15 +69,41 @@ public class Assignment extends Node
 	@Override
 	public StringBuilder generateCSourceFragment(StringBuilder builder)
 	{
-		return getAssigneeNode().generateCSourceFragment(builder).append(" = ").append(getAssignment().generateCSourceFragment());
+		return getAssigneeNode().generateCSourceFragment(builder).append(" = ").append(generateCAssignmentSource());
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.Node#generateNovaInput(boolean)
+	 * @see net.fathomsoft.nova.tree.Node#generateNovaInput(StringBuilder, boolean)
 	 */
-	public String generateNovaInput(boolean outputChildren)
+	public StringBuilder generateNovaInput(StringBuilder builder, boolean outputChildren)
 	{
-		return getAssigneeNode().generateNovaInput(outputChildren) + " = " + getAssignment().generateNovaInput(outputChildren);
+		return getAssigneeNode().generateNovaInput(builder, outputChildren).append(" = ").append(getAssignment().generateNovaInput(outputChildren));
+	}
+	
+	/**
+	 * Generate the assignment's right hand value C output.
+	 * 
+	 * @return The assignment's right hand value C output.
+	 */
+	private StringBuilder generateCAssignmentSource()
+	{
+		return generateCAssignmentSource(new StringBuilder());
+	}
+	
+	/**
+	 * Generate the assignment's right hand value C output.
+	 * 
+	 * @param builder The StringBuilder to append the data to.
+	 * @return The assignment's right hand value C output.
+	 */
+	private StringBuilder generateCAssignmentSource(StringBuilder builder)
+	{
+		if (getAssignment().toString().equals("Integer.toAString(i)"))
+		{
+			System.out.println("BREAAK");
+		}
+		
+		return builder.append(getAssignment().generateDataTypeOutput(getAssigneeNode().getDataType())).append(getAssignment().generateCSourceFragment());
 	}
 	
 	/**
@@ -96,14 +123,12 @@ public class Assignment extends Node
 	 * @param statement The statement to decode into an Assignment.
 	 * @param location The location of the statement in the source code.
 	 * @param require Whether or not to throw an error if anything goes wrong.
-	 * @param scope Whether or not the given statement is the beginning of
-	 * 		a scope.
 	 * @return The new Assignment if it decodes properly. If not,
 	 * 		it returns null.
 	 */
-	public static Assignment decodeStatement(Node parent, String statement, Location location, boolean require, boolean scope)
+	public static Assignment decodeStatement(Node parent, String statement, Location location, boolean require)
 	{
-		return decodeStatement(parent, statement, location, require, scope, true);
+		return decodeStatement(parent, statement, location, require, true);
 	}
 	
 	/**
@@ -123,22 +148,20 @@ public class Assignment extends Node
 	 * @param statement The statement to decode into an Assignment.
 	 * @param location The location of the statement in the source code.
 	 * @param require Whether or not to throw an error if anything goes wrong.
-	 * @param scope Whether or not the given statement is the beginning of
-	 * 		a scope.
 	 * @param addDeclaration Whether or not to add the declaration to the
 	 * 		nearest scope, if the left hand value of the equation is a
 	 * 		variable declaration.
 	 * @return The new Assignment if it decodes properly. If not,
 	 * 		it returns null.
 	 */
-	public static Assignment decodeStatement(Node parent, String statement, Location location, boolean require, boolean scope, boolean addDeclaration)
+	public static Assignment decodeStatement(Node parent, String statement, Location location, boolean require, boolean addDeclaration)
 	{
 		if (!SyntaxUtils.isVariableAssignment(statement))
 		{
 			return null;
 		}
 		
-		Assignment n     = new Assignment(parent, location);
+		Assignment n         = new Assignment(parent, location);
 		
 		int      equalsIndex = SyntaxUtils.findCharInBaseScope(statement, '=');
 		int      endIndex    = StringUtils.findNextNonWhitespaceIndex(statement, equalsIndex - 1, -1) + 1;
@@ -148,18 +171,20 @@ public class Assignment extends Node
 		Location varLoc      = new Location(location);
 		varLoc.getBounds().setEnd(varLoc.getStart() + endIndex);
 		
-		Variable varNode = (Variable)SyntaxTree.decodeScopeContents(n, variable, varLoc, scope);
+		Identifier varNode = (Identifier)SyntaxTree.decodeScopeContents(n, variable, varLoc);
 		
 		if (varNode == null)
 		{
 			SyntaxMessage.error("Undeclared variable '" + variable + "'", parent, location);
 		}
 		
-		n.validateAuthorization(varNode);
-		
-		if (addDeclaration)
+		if (varNode instanceof Variable)
 		{
-			varNode = n.addDeclaration(varNode);
+			n.validateAuthorization((Variable)varNode);
+		}
+		else if (addDeclaration)
+		{
+			varNode = n.addDeclaration((VariableDeclaration)varNode);
 		}
 		
 		n.addChild(varNode);
@@ -172,7 +197,7 @@ public class Assignment extends Node
 		Location newLoc = new Location(location);
 		newLoc.setBounds(location.getStart() + rhsIndex, location.getStart() + statement.length());
 		
-		Node  child = decodeRightHandSide(n, rhs, newLoc, require, scope);
+		Node child = decodeRightHandSide(n, rhs, newLoc, require);
 		
 		if (child == null)
 		{
@@ -182,6 +207,20 @@ public class Assignment extends Node
 		n.addChild(child);
 		
 		return n;
+	}
+	
+	/**
+	 * @see net.fathomsoft.nova.tree.Node#validate(int)
+	 */
+	@Override
+	public Node validate(int phase)
+	{
+		if (getAssigneeNode() instanceof Variable)
+		{
+			SyntaxUtils.checkVolatile((Variable)getAssigneeNode());
+		}
+		
+		return this;
 	}
 	
 	/**
@@ -200,20 +239,20 @@ public class Assignment extends Node
 		
 		if (id instanceof Variable)
 		{
-			Variable accessed = (Variable)id;
+			VariableDeclaration declaration = ((Variable)id).getDeclaration();
 			
-			if (accessed != null && accessed.isAccessed() && accessed instanceof Field)
+			if (id.isAccessed() && declaration instanceof FieldDeclaration)
 			{
-				Field field = (Field)accessed.getDeclaration();
+				FieldDeclaration field = (FieldDeclaration)declaration;
 				
-				if (field.getVisibility() == Field.VISIBLE)
+				if (field.getVisibility() == FieldDeclaration.VISIBLE)
 				{
-					ClassDeclaration declaringClass = field.getDeclaringClassDeclaration();
-					ClassDeclaration thisClass      = (ClassDeclaration)getAncestorOfType(ClassDeclaration.class);
+					ClassDeclaration declaringClass = field.getParentClass();
+					ClassDeclaration thisClass      = getParentClass();
 					
 					if (declaringClass != thisClass)
 					{
-						SyntaxMessage.error("The value of the field '" + field.getName() + "' cannot be modified", accessed);
+						SyntaxMessage.error("The value of the field '" + field.getName() + "' cannot be modified", id);
 					}
 				}
 			}
@@ -244,23 +283,16 @@ public class Assignment extends Node
 	 * 		declared variable. If not, this simply returns the given
 	 * 		Variable instance.
 	 */
-	private Variable addDeclaration(Variable var)
+	private Variable addDeclaration(VariableDeclaration var)
 	{
-		if (var.isDeclaration())
-		{
-			Node scopeNode = getParent().getAncestorWithScope();
-			
-			if (scopeNode != null)
-			{
-				scopeNode.getScope().addChild(var);
-				
-				Location newLoc = new Location(getLocationIn());
-				
-				return var.clone(this, newLoc);
-			}
-		}
+		Node scopeNode = getParent().getAncestorWithScope();
 		
-		return var;
+		scopeNode.getScope().addChild(var);
+		
+		Location newLoc = new Location(getLocationIn());
+		Variable newVar = var.generateUsableVariable(this, newLoc);
+		
+		return newVar;
 	}
 	
 	/**
@@ -281,20 +313,16 @@ public class Assignment extends Node
 	 * @param rhs The right hand side to decode into an Assignment.
 	 * @param location The location of the statement in the source code.
 	 * @param require Whether or not to throw an error if anything goes wrong.
-	 * @param scope Whether or not the given statement is the beginning of
-	 * 		a scope.
 	 * @return The new Node if it decodes properly. If not,
 	 * 		it returns null.
 	 */
-	public static Node decodeRightHandSide(Node parent, String rhs, Location location, boolean require, boolean scope)
+	public static Node decodeRightHandSide(Node parent, String rhs, Location location, boolean require)
 	{
 		Node child = SyntaxTree.decodeScopeContents(parent, rhs, location, require);
 		
 		if (child == null)
 		{
-			Literal node = Literal.decodeStatement(parent, rhs, location, require, false);
-			
-			child = node;
+			child = SyntaxTree.decodeValue(parent, rhs, location, require);
 		}
 		
 		return child;
@@ -323,5 +351,19 @@ public class Assignment extends Node
 		super.cloneTo(node);
 		
 		return node;
+	}
+	
+	/**
+	 * Test the Assignment class type to make sure everything
+	 * is working properly.
+	 * 
+	 * @return The error output, if there was an error. If the test was
+	 * 		successful, null is returned.
+	 */
+	public static String test()
+	{
+		
+		
+		return null;
 	}
 }

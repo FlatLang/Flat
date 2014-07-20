@@ -1,5 +1,6 @@
 package net.fathomsoft.nova.tree;
 
+import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.util.Location;
 import net.fathomsoft.nova.util.Patterns;
 import net.fathomsoft.nova.util.Regex;
@@ -10,7 +11,7 @@ import net.fathomsoft.nova.util.StringUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.2.1 Apr 27, 2014 at 11:14:20 PM
- * @version	v0.2.14 Jun 18, 2014 at 10:11:40 PM
+ * @version	v0.2.14 Jul 19, 2014 at 7:33:13 PM
  */
 public class ExternalStatement extends Node
 {
@@ -92,16 +93,16 @@ public class ExternalStatement extends Node
 	 * 		ExternalStatement instance.
 	 * @param location The location of the statement in the source code.
 	 * @param require Whether or not to throw an error if anything goes wrong.
-	 * @param scope Whether or not the given statement is the beginning of
-	 * 		a scope.
 	 * @return The generated node, if it was possible to translated it
 	 * 		into a ExternalStatement.
 	 */
-	public static ExternalStatement decodeStatement(Node parent, String statement, Location location, boolean require, boolean scope)
+	public static ExternalStatement decodeStatement(Node parent, String statement, Location location, boolean require)
 	{
 		if (Regex.matches(statement, Patterns.EXTERNAL))
 		{
 			ExternalStatement n = new ExternalStatement(parent, location);
+			
+			SyntaxMessage.error("External statements are not allowed", n);
 			
 			return n;
 		}
@@ -134,5 +135,19 @@ public class ExternalStatement extends Node
 		node.data = data;
 		
 		return node;
+	}
+	
+	/**
+	 * Test the ExternalStatement class type to make sure everything
+	 * is working properly.
+	 * 
+	 * @return The error output, if there was an error. If the test was
+	 * 		successful, null is returned.
+	 */
+	public static String test()
+	{
+		
+		
+		return null;
 	}
 }

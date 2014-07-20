@@ -10,7 +10,7 @@ import net.fathomsoft.nova.util.Location;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 10:00:50 PM
- * @version	v0.2.14 Jun 18, 2014 at 10:11:40 PM
+ * @version	v0.2.14 Jul 19, 2014 at 7:33:13 PM
  */
 public class FieldList extends Node
 {
@@ -30,6 +30,15 @@ public class FieldList extends Node
 		super.addChild(publicFields);
 		super.addChild(privateStaticFields);
 		super.addChild(publicStaticFields);
+	}
+	
+	/**
+	 * @see net.fathomsoft.nova.tree.Node#getNumDefaultChildren()
+	 */
+	@Override
+	public int getNumDefaultChildren()
+	{
+		return super.getNumDefaultChildren() + 4;
 	}
 	
 	/**
@@ -82,9 +91,9 @@ public class FieldList extends Node
 	@Override
 	public void addChild(Node node)
 	{
-		if (node instanceof Field)
+		if (node instanceof FieldDeclaration)
 		{
-			Field field = (Field)node;
+			FieldDeclaration field = (FieldDeclaration)node;
 			
 			if (field.getVisibility() == InstanceDeclaration.PRIVATE)
 			{
@@ -97,7 +106,7 @@ public class FieldList extends Node
 					getPrivateFieldList().addChild(field);
 				}
 			}
-			else if (field.getVisibility() == InstanceDeclaration.PUBLIC || field.getVisibility() == Field.VISIBLE)
+			else if (field.getVisibility() == InstanceDeclaration.PUBLIC || field.getVisibility() == FieldDeclaration.VISIBLE)
 			{
 				if (field.isStatic())
 				{
@@ -165,13 +174,13 @@ public class FieldList extends Node
 	 * @param fieldName The name of the field to search for.
 	 * @return The Field for the field, if it exists.
 	 */
-	public Field getField(String fieldName)
+	public FieldDeclaration getField(String fieldName)
 	{
 		Node nodes[] = new Node[] { getPrivateFieldList(), getPrivateStaticFieldList(), getPublicFieldList(), getPublicStaticFieldList() };
 		
 		for (Node node : nodes)
 		{
-			Field field = searchFieldList(node, fieldName);
+			FieldDeclaration field = searchFieldList(node, fieldName);
 			
 			if (field != null)
 			{
@@ -190,11 +199,11 @@ public class FieldList extends Node
 	 * @param fieldName The name of the field to search for.
 	 * @return The Field instance with the given name, if found.
 	 */
-	private Field searchFieldList(Node fieldList, String fieldName)
+	private FieldDeclaration searchFieldList(Node fieldList, String fieldName)
 	{
 		for (int i = 0; i < fieldList.getNumChildren(); i++)
 		{
-			Field variable = (Field)fieldList.getChild(i);
+			FieldDeclaration variable = (FieldDeclaration)fieldList.getChild(i);
 			
 			if (variable.getName().equals(fieldName))
 			{
@@ -272,5 +281,19 @@ public class FieldList extends Node
 		super.cloneTo(node);
 		
 		return node;
+	}
+	
+	/**
+	 * Test the FieldList class type to make sure everything
+	 * is working properly.
+	 * 
+	 * @return The error output, if there was an error. If the test was
+	 * 		successful, null is returned.
+	 */
+	public static String test()
+	{
+		
+		
+		return null;
 	}
 }

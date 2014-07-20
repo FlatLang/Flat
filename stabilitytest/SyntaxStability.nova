@@ -1,0 +1,125 @@
+public class SyntaxStability
+{
+	public static void test(StabilityTest program)
+	{
+		checkLoops(program)
+		checkUntil(program)
+	}
+	
+	static void checkLoops(StabilityTest program)
+	{
+		checkWhileLoops(program)
+		checkForLoops(program)
+	}
+	
+	static void checkWhileLoops(StabilityTest program)
+	{
+		Console.write("Checking inline while loop... ")
+		
+		int num  = 0
+		int num2 = 0
+		int num3 = 0
+		
+		while (num < 100) num++
+		
+		while (num2 < 100)
+			num2++
+		
+		while (num3 < 100)
+			if (1)
+				if (1)
+				{
+					num3++
+				}
+		
+		if (num != 100 || num2 != 100 || num3 != 100)
+		{
+			program.fail("Inline while loop failed.")
+		}
+		
+		Console.writeLine("OK")
+	}
+	
+	static void checkForLoops(StabilityTest program)
+	{
+		Console.write("Checking inline for loop... ")
+		
+		int num  = 0
+		int num2 = 0
+		int num3 = 0
+		
+		for (int j = 0; j < 100; j++) num++
+		
+		for (int i = 0; i < 100; i++)
+			num2++
+		
+		for (int q = 0; q < 100; q++)
+			if (1)
+				if (1)
+				{
+					num3++
+				}
+		
+		if (num != 100 || num2 != 100 || num3 != 100)
+		{
+			program.fail("Inline for loop failed.")
+		}
+		
+		Console.writeLine("OK")
+	}
+	
+	static void checkUntil(StabilityTest program)
+	{
+		Console.write("Checking until statement... ")
+		
+		Object obj = null
+		
+		until (obj != null)
+		{
+			obj = test1()
+			obj = test2()
+			obj = test3()
+			
+			program.fail("Failed to stop after correct condition");
+		}
+		
+//		if (obj == null)
+//		{
+//			obj = test1();
+//			if (obj == null)
+//			{
+//				obj = test2();
+//				if (obj == null)
+//				{
+//					obj = test3();
+//					if (obj == null)
+//					{
+//						program.fail("Until statement failed");
+//					}
+//				}
+//			}
+//		}
+		
+		if (obj == null)
+		{
+			program.fail("Failed to reach correct condition");
+		}
+		
+		Console.writeLine("OK");
+	}
+	
+	static Object test1()
+	{
+		return null
+	}
+	
+	static Object test2()
+	{
+		return null
+	}
+	
+	static Object test3()
+	{
+		return new Object()
+	}
+}

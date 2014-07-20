@@ -1,6 +1,7 @@
 #include <precompiled.h>
-
 #include "NovaFile.h"
+
+
 
 CCLASS_PRIVATE
 (
@@ -13,11 +14,11 @@ File* nova_File_File(ExceptionData* exceptionData, String* nova_0_location)
 {
 	CCLASS_NEW(File, this);
 	
-	this->prv->nova_File_fp = 0;
-	this->prv->nova_File_location = 0;
+	this->prv->nova_File_fp = (Object*)0;
+	this->prv->nova_File_location = (Object*)0;
 	{
 		this->prv->nova_File_location = nova_0_location;
-		fopen(nova_String_toCharArray(nova_0_location, exceptionData), "w");
+		this->prv->nova_File_fp = fopen(nova_String_toCharArray(nova_0_location, exceptionData), "w");
 		nova_File_reopen(this, exceptionData);
 	}
 	
@@ -40,12 +41,15 @@ void nova_del_File(File** this, ExceptionData* exceptionData)
 	NOVA_FREE(*this);
 }
 
+char nova_File_delete(File* this, ExceptionData* exceptionData)
+{
+	nova_File_close(this, exceptionData);
+	return remove(nova_String_toCharArray(this->prv->nova_File_location, exceptionData)) == 0;
+}
+
 void nova_File_reopen(File* this, ExceptionData* exceptionData)
 {
-	if (nova_File_exists(this, exceptionData) == 1)
-	{
-		nova_File_close(this, exceptionData);
-	}
+	nova_File_close(this, exceptionData);
 	this->prv->nova_File_fp = fopen(nova_String_toCharArray(this->prv->nova_File_location, exceptionData), "r+");
 }
 
@@ -54,18 +58,14 @@ void nova_File_rewind(File* this, ExceptionData* exceptionData)
 	rewind(this->prv->nova_File_fp);
 }
 
-int nova_File_exists(File* this, ExceptionData* exceptionData)
+char nova_File_exists(File* this, ExceptionData* exceptionData)
 {
-	if (this->prv->nova_File_fp == 0)
-	{
-		return 0;
-	}
-	return 1;
+	return this->prv->nova_File_fp != 0;
 }
 
-int nova_File_create(File* this, ExceptionData* exceptionData)
+char nova_File_create(File* this, ExceptionData* exceptionData)
 {
-	if (nova_File_exists(this, exceptionData) == 0)
+	if (!nova_File_exists(this, exceptionData))
 	{
 		this->prv->nova_File_fp = fopen(nova_String_toCharArray(this->prv->nova_File_location, exceptionData), "wb");
 		nova_File_close(this, exceptionData);
@@ -82,7 +82,7 @@ String* nova_File_readAllContents(File* this, ExceptionData* exceptionData)
 	
 	nova_1_data = nova_String_String(exceptionData, "");
 	nova_1_line = nova_File_readLine(this, exceptionData);
-	while (nova_1_line != 0)
+	while (nova_1_line != (Object*)0)
 	{
 		if (nova_1_data->nova_String_length > 0)
 		{
@@ -108,7 +108,7 @@ String* nova_File_readLine(File* this, ExceptionData* exceptionData)
 	nova_1_c = getc(this->prv->nova_File_fp);
 	if (nova_1_c == EOF)
 	{
-		return 0;
+		return (Object*)0;
 	}
 	nova_1_index = 0;
 	while (nova_1_c != '\n' && nova_1_c != EOF)
@@ -149,7 +149,7 @@ void nova_File_flush(File* this, ExceptionData* exceptionData)
 
 void nova_File_close(File* this, ExceptionData* exceptionData)
 {
-	if (nova_File_exists(this, exceptionData) == 1)
+	if (nova_File_exists(this, exceptionData))
 	{
 		fclose(this->prv->nova_File_fp);
 	}

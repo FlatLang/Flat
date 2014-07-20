@@ -1,19 +1,19 @@
 public class OutputStream
 {
-	external type FILE;
+	external type FILE
 	
-	File* stream;
+	File* stream
 	
-	external FILE* fopen(char location[], char operation[]);
-	external FILE* freopen(char location[], char operation[], FILE* fp);
-	external void fprintf(FILE* fp, char data[]);
-	external void fputs(char str[], FILE* stream);
-	external void fflush(FILE* fp);
-	external int fclose(FILE* fp);
-	external void fgets(char buffer[], int size, FILE* fp);
-	external char[] realloc(char buffer[], int size);
-	external char getc(FILE* fp);
-	external void rewind(FILE* fp);
+	external FILE* fopen(char location[], char operation[])
+	external FILE* freopen(char location[], char operation[], FILE* fp)
+	external void fprintf(FILE* fp, char data[])
+	external void fputs(char str[], FILE* stream)
+	external void fflush(FILE* fp)
+	external int fclose(FILE* fp)
+	external void fgets(char buffer[], int size, FILE* fp)
+	external char[] realloc(char buffer[], int size)
+	external char getc(FILE* fp)
+	external void rewind(FILE* fp)
 	
 	
 }

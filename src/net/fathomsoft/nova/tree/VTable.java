@@ -1,31 +1,18 @@
 package net.fathomsoft.nova.tree;
 
-import net.fathomsoft.nova.util.Bounds;
+import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.util.Location;
-import net.fathomsoft.nova.util.Patterns;
-import net.fathomsoft.nova.util.Regex;
-import net.fathomsoft.nova.util.SyntaxUtils;
 
 /**
- * Identifier extension that contains the information describing
- * an array instantiation. The getName() method contains the data type
- * of the array. The children that the node embodies list the sizes of
- * each of the dimensions of the array that is being created. For
- * instance, consider the following scenario:<br>
- * <br>
- * The Array encompasses two children. The first child is a
- * Literal that contains the value 56. This means that the first
- * dimension of the array will have the size of 56. The second child
- * is a LocalVariable containing the data for an integer variable
- * that was declared within the method that the array was declared in.
+ * 
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Mar 16, 2014 at 1:13:49 AM
- * @version	v0.2.14 Jun 18, 2014 at 10:11:40 PM
+ * @version	v0.2.14 Jul 19, 2014 at 7:33:13 PM
  */
-public class VTable extends ClassDeclaration
+public class VTable extends IIdentifier
 {
-	public static final String	VTABLE_IDENTIFIER = "vtable";
+	public static final String	IDENTIFIER = "vtable";
 	
 	/**
 	 * @see net.fathomsoft.nova.tree.Node#Node(Node, Location)
@@ -36,73 +23,96 @@ public class VTable extends ClassDeclaration
 	}
 	
 	/**
-	 * Decode the given statement into an Array instance. If the
-	 * given statement cannot be decoded into an Array, then null is
-	 * returned.<br>
-	 * <br>
-	 * An example input would be: "char[length]" <i>(Where as 'length' is
-	 * a number variable)</i> or any other class name followed by square
-	 * brackets that enclose a size variable or literal.<br>
-	 * <br>
-	 * Other example inputs:<br>
-	 * <ul>
-	 * 	<li>String[5][size] <i>(Where as 'size' is a number variable)</i></li>
-	 * 	<li>int[names.getSize()]</li>
-	 * 	<li>Node[elements.getSize() * (4 + 3) / 2]</li>
-	 * </ul>
-	 * <br>
-	 * Array initializer statements are to be implemented in the future.
-	 * Such syntax would consist of the following: "int[] { 1, 6, 3, 1 }"
-	 * 
-	 * @param parent The parent of the current statement.
-	 * @param statement The statement to decode into an Array instance.
-	 * @param location The location of the statement in the source code.
-	 * @param require Whether or not to throw an error if anything goes wrong.
-	 * @param scope Whether or not the given statement is the beginning of
-	 * 		a scope.
-	 * @return The new Array instance if it was able to decode the
-	 * 		statement. If not, it will return null.
+	 * @see net.fathomsoft.nova.tree.ClassDeclaration#generateCHeader(java.lang.StringBuilder)
 	 */
-	public static VTable decodeStatement(Node parent, String statement, Location location, boolean require, boolean scope)
+	@Override
+	public StringBuilder generateCHeader(StringBuilder builder)
 	{
-		if (SyntaxUtils.isArrayInitialization(statement))
+		MethodDeclaration methods[] = getParentClass().getVirtualMethods();
+		
+		if (methods.length <= 0)
 		{
-			VTable n = new VTable(parent, location);
-			
-			int index = statement.indexOf('[') + 1;
-			
-			Bounds bounds = Regex.boundsOf(statement, Patterns.IDENTIFIER);
-			
-			String idValue = statement.substring(bounds.getStart(), bounds.getEnd());
-			
-			n.setName(idValue);
-			
-			while (index > 1)
-			{
-				int endIndex  = statement.indexOf(']', index);
-				
-				String length = statement.substring(index, endIndex);
-				
-				if (SyntaxUtils.isNumber(length))
-				{
-					Literal node = Literal.decodeStatement(n, length, location, require, false);
-					
-					n.addChild(node);
-				}
-				else
-				{
-					Identifier node = SyntaxTree.getExistingNode(parent, length).clone(n, location);
-					
-					n.addChild(node);
-				}
-				
-				index = statement.indexOf('[', endIndex + 1) + 1;
-			}
-			
-			return n;
+			return builder;
 		}
 		
-		return null;
+		builder.append("typedef struct ").append(generateCTypeOutput()).append('\n');
+		builder.append("{\n");
+		generateVirtualMethodDeclarations(builder, methods);
+		builder.append("} ").append(generateCTypeOutput()).append(";\n");
+		
+		return builder;
+	}
+	
+	/**
+	 * @see net.fathomsoft.nova.tree.ClassDeclaration#generateCSource(java.lang.StringBuilder)
+	 */
+	@Override
+	public StringBuilder generateCSource(StringBuilder builder)
+	{
+		MethodDeclaration methods[] = getParentClass().getVirtualMethods();
+
+		if (methods.length <= 0)
+		{
+			return builder;
+		}
+		
+		generateCTypeOutput(builder).append(' ').append(generateCSourceName()).append(" =\n");
+		builder.append("{\n");
+		generateVirtualMethodValues(builder, methods);
+		builder.append("};");
+		
+		return builder;
+	}
+	
+//	/**
+//	 * @see net.fathomsoft.nova.tree.Identifier#generateCSourceName(java.lang.StringBuilder)
+//	 */
+//	@Override
+//	public StringBuilder generateCSourceName(StringBuilder builder)
+//	{
+//		return builder.append(Nova.LANGUAGE_NAME.toLowerCase()).append("_VTable_").append(getParentClass().generateUniquePrefix());
+//	}
+	
+	public StringBuilder generateVirtualMethodDeclarations(StringBuilder builder, MethodDeclaration methods[])
+	{
+		for (MethodDeclaration method : methods)
+		{
+			generateVirtualMethodDeclaration(builder, method);
+		}
+		
+		return builder;
+	}
+	
+	public StringBuilder generateVirtualMethodDeclaration(StringBuilder builder, MethodDeclaration method)
+	{
+		return method.generateCTypeOutput(builder).append(" (*").append(method.generateCVirtualMethodName()).append(")(").append(method.getParameterList().generateCHeader()).append(");\n");
+	}
+	
+	public StringBuilder generateVirtualMethodValues(StringBuilder builder, MethodDeclaration methods[])
+	{
+		for (MethodDeclaration method : methods)
+		{
+			method.generateCSourceName(builder).append(",\n");
+		}
+		
+		return builder;
+	}
+	
+	/**
+	 * @see net.fathomsoft.nova.tree.Node#validate(int)
+	 */
+	@Override
+	public Node validate(int phase)
+	{
+		if (phase != SyntaxTree.PHASE_CLASS_DECLARATION)
+		{
+			String type = Nova.LANGUAGE_NAME.toLowerCase() + "_VTable_" + getParentClass().generateUniquePrefix();
+			setType(type, true, false, false);
+			
+			setName(type + "_val", true);
+		}
+		
+		return this;
 	}
 	
 	/**
@@ -128,5 +138,19 @@ public class VTable extends ClassDeclaration
 		super.cloneTo(node);
 		
 		return node;
+	}
+	
+	/**
+	 * Test the VTable class type to make sure everything
+	 * is working properly.
+	 * 
+	 * @return The error output, if there was an error. If the test was
+	 * 		successful, null is returned.
+	 */
+	public static String test()
+	{
+		
+		
+		return null;
 	}
 }

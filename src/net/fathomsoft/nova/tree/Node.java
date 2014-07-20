@@ -7,7 +7,6 @@ import java.util.regex.Pattern;
 import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.error.UnimplementedOperationException;
 import net.fathomsoft.nova.tree.exceptionhandling.Try;
-import net.fathomsoft.nova.tree.variables.LocalVariable;
 import net.fathomsoft.nova.util.Bounds;
 import net.fathomsoft.nova.util.Location;
 import net.fathomsoft.nova.util.Patterns;
@@ -22,13 +21,13 @@ import net.fathomsoft.nova.util.StringUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:00:11 PM
- * @version	v0.2.14 Jun 18, 2014 at 10:11:40 PM
+ * @version	v0.2.14 Jul 19, 2014 at 7:33:13 PM
  */
 public abstract class Node
 {
-	private Location	locationIn;
+	private Location		locationIn;
 	
-	private Node		parent;
+	private Node			parent;
 	
 	private ArrayList<Node>	children;
 	
@@ -47,6 +46,81 @@ public abstract class Node
 	}
 	
 	/**
+	 * Get the number of default children that the specified Node has
+	 * right after it is decoded.
+	 * 
+	 * @return The number of default children that the specified Node has
+	 * 		right after it is decoded.
+	 */
+	public int getNumDecodedChildren()
+	{
+		return getNumDefaultChildren();
+	}
+	
+	/**
+	 * Get the number of default children that the specified Node has
+	 * right after it is created.
+	 * 
+	 * @return The number of default children that the specified Node has
+	 * 		right after it is created.
+	 */
+	public int getNumDefaultChildren()
+	{
+		return 0;
+	}
+	
+	/**
+	 * Get whether or not the specified Node has had no custom Nodes
+	 * added to it. I.e. It is in its default state. I.e. It is in its
+	 * post-initialization state.
+	 * 
+	 * @return Whether or not the specified Node has had no custom Nodes
+	 * 		added to it.
+	 */
+	public final boolean isEmpty()
+	{
+		if (getNumChildren() > getNumDefaultChildren())
+		{
+			return false;
+		}
+		
+		for (int i = 0; i < getNumChildren(); i++)
+		{
+			if (!getChild(i).isEmpty())
+			{
+				return false;
+			}
+		}
+		
+		return true;
+	}
+	
+	/**
+	 * Get whether or not the specified Node is waiting for a single
+	 * statement to add as a child.<br>
+	 * <br>
+	 * For example:
+	 * <blockquote><pre>
+	 * // Scenario 1
+	 * if (true)
+	 * {
+	 * 	execute();
+	 * }
+	 * 
+	 * // Scenario 2
+	 * if (true) execute();</pre></blockquote>
+	 * In scenario 2, before the execute() method call was decoded,
+	 * the if statement node was pending a scope fragment.
+	 * 
+	 * @return Whether or not the specified Node is waiting for a
+	 * 		single statement to add as a child.
+	 */
+	public boolean pendingScopeFragment()
+	{
+		return false;
+	}
+	
+	/**
 	 * Get the line number in which the Node was decoded at.
 	 * 
 	 * @return The line number in which the Node was decoded at.
@@ -57,19 +131,17 @@ public abstract class Node
 		{
 			return 0;
 		}
-		else
+		
+		int lineNumber = parent.getLineNumber();
+		
+		Location loc   = getLocationIn();
+		
+		if (loc != null && loc.isValid())
 		{
-			int lineNumber = parent.getLineNumber();
-			
-			Location loc = getLocationIn();
-			
-			if (loc != null && loc.isValid())
-			{
-				lineNumber += loc.getLineNumber();
-			}
-			
-			return lineNumber;
+			lineNumber += loc.getLineNumber();
 		}
+		
+		return lineNumber;
 	}
 	
 	/**
@@ -141,16 +213,7 @@ public abstract class Node
 	 */
 	public Node getAncestorOfType(Class<?> type, boolean inclusive)
 	{
-		Node node = null;
-		
-		if (inclusive)
-		{
-			node = this;
-		}
-		else
-		{
-			node = parent;
-		}
+		Node node = getAncestor(inclusive);
 		
 		while (node != null && !type.isAssignableFrom(node.getClass()) && !node.getClass().equals(type))
 		{
@@ -158,6 +221,25 @@ public abstract class Node
 		}
 		
 		return node;
+	}
+	
+	/**
+	 * Get the ancestor of the Node. The ancestor will be the specified
+	 * node if the call is inclusive. Otherwise it will return the parent
+	 * of the specified Node.
+	 * 
+	 * @param inclusive Whether or not to return the specified Node.
+	 * @return The specified Node if inclusive, otherwise the parent of
+	 * 		the specified Node.
+	 */
+	private Node getAncestor(boolean inclusive)
+	{
+		if (inclusive)
+		{
+			return this;
+		}
+		
+		return parent;
 	}
 	
 	/**
@@ -232,7 +314,7 @@ public abstract class Node
 	 * 
 	 * @param node The LocalVariable to add.
 	 */
-	public void addToNearestScope(LocalVariable node)
+	public void addToNearestScope(LocalDeclaration node)
 	{
 		getAncestorWithScope().addChild(node);
 	}
@@ -247,17 +329,12 @@ public abstract class Node
 	{
 		Node node = this;
 		
-		while (node != null)
+		while (node != null && !node.containsScope())
 		{
-			if (node.containsScope())
-			{
-				return node;
-			}
-			
 			node = node.getParent();
 		}
 		
-		return null;
+		return node;
 	}
 	
 	/**
@@ -285,24 +362,14 @@ public abstract class Node
 	 */
 	public boolean isAncestorOf(Node node, boolean inclusive)
 	{
-		Node current = node;
+		Node current = node.getAncestor(inclusive);
 		
-		if (!inclusive)
+		while (current != null && current != this)
 		{
-			current = node.parent;
-		}
-		
-		while (current != null)
-		{
-			if (current == this)
-			{
-				return true;
-			}
-			
 			current = current.parent;
 		}
 		
-		return false;
+		return current == this;
 	}
 	
 	/**
@@ -325,6 +392,26 @@ public abstract class Node
 	public Node getChild(int index)
 	{
 		return children.get(index);
+	}
+
+	public int getNumVisibleChildren()
+	{
+		return getNumChildren() - getNumDecodedChildren();
+	}
+	
+	public Node getVisibleChild(int index)
+	{
+		return getChild(index + getNumDecodedChildren());
+	}
+	
+	public Node getChildBefore(Node node)
+	{
+		return children.get(children.indexOf(node) - 1);
+	}
+	
+	public Node getChildAfter(Node node)
+	{
+		return children.get(children.indexOf(node) + 1);
 	}
 	
 	/**
@@ -372,7 +459,7 @@ public abstract class Node
 		
 		if (scope != null)
 		{
-			addChild(node, scope);
+			scope.addChild(node);
 		}
 		else
 		{
@@ -437,10 +524,15 @@ public abstract class Node
 		
 		if (index < 0)
 		{
+			if (containsScope())
+			{
+				return ((Node)getScope()).addChildAtOffset(node, toAdd, offset);
+			}
+			
 			return false;
 		}
 		
-		addChild(index + offset, node);
+		addChild(index + offset, toAdd);
 		
 		return true;
 	}
@@ -455,6 +547,11 @@ public abstract class Node
 		Node node = children.get(index);
 		
 		node.detach();
+	}
+	
+	public void removeVisibleChild(int index)
+	{
+		removeChild(index + getNumDecodedChildren());
 	}
 	
 	/**
@@ -485,12 +582,22 @@ public abstract class Node
 		}
 		if (scope == null)
 		{
-			parent.children.remove(this);
+			detach(parent);
 		}
 		else
 		{
-			scope.children.remove(this);
+			detach(scope);
 		}
+	}
+	
+	/**
+	 * Detach the specified Node from the given Node.
+	 * 
+	 * @param fromNode The Node to detach the specified Node from.
+	 */
+	private void detach(Node fromNode)
+	{
+		fromNode.children.remove(this);
 		
 		parent = null;
 	}
@@ -508,6 +615,26 @@ public abstract class Node
 		old.detach();
 		
 		addChild(index, replacement);
+	}
+	
+	/**
+	 * Kill off all of the specified Node's children and send them to
+	 * the void. MAKE SURE THEY PAY
+	 * 
+	 * @param amount The amount of children to slaughter, starting at the
+	 * 		first-born.
+	 */
+	public void slaughterEveryLastChild(int amount)
+	{
+		if (amount > getNumChildren())
+		{
+			amount = getNumChildren();
+		}
+		
+		for (int i = 0; i < amount; i++)
+		{
+			getChild(0).detach(this);
+		}
 	}
 	
 	/**
@@ -548,16 +675,28 @@ public abstract class Node
 	}
 	
 	/**
+	 * Get whether or not the Node requires a special form of output.
+	 * Examples are non-virtual method calls.
+	 * 
+	 * @return Whether or not the Node requires a special form of output.
+	 */
+	public boolean isSpecial()
+	{
+		return false;
+	}
+	
+	/**
 	 * Iterate through the words of the statement. A word is just anything
 	 * that is surrounded by whitespace. e.g. In the statement:
 	 * "public void test() { }" the words consist of:
 	 * [ public, void, test(), {, } ]
 	 * 
 	 * @param statement The statement to iterate the words from.
+	 * @return The given ExtraData instance.
 	 */
-	public void iterateWords(String statement)
+	public final ExtraData iterateWords(String statement)
 	{
-		iterateWords(statement, Patterns.WORD_BOUNDARIES, null);
+		return iterateWords(statement, Patterns.WORD_BOUNDARIES, null);
 	}
 	
 	/**
@@ -569,10 +708,11 @@ public abstract class Node
 	 * @param statement The statement to iterate the words from.
 	 * @param extra The extra data that may or may not be needed for the
 	 * 		interactWord() methods.
+	 * @return The given ExtraData instance.
 	 */
-	public void iterateWords(String statement, ExtraData extra)
+	public final ExtraData iterateWords(String statement, ExtraData extra)
 	{
-		iterateWords(statement, Patterns.WORD_BOUNDARIES, extra);
+		return iterateWords(statement, Patterns.WORD_BOUNDARIES, extra);
 	}
 	
 	/**
@@ -582,10 +722,11 @@ public abstract class Node
 	 * 
 	 * @param statement The statement to search through.
 	 * @param pattern The Pattern to search with.
+	 * @return The given ExtraData instance.
 	 */
-	public void iterateWords(String statement, Pattern pattern)
+	public final ExtraData iterateWords(String statement, Pattern pattern)
 	{
-		iterateWords(statement, pattern, null);
+		return iterateWords(statement, pattern, null);
 	}
 	
 	/**
@@ -597,49 +738,19 @@ public abstract class Node
 	 * @param pattern The Pattern to search with.
 	 * @param extra The extra data that may or may not be needed for the
 	 * 		interactWord() methods.
+	 * @return The given ExtraData instance.
 	 */
-	public void iterateWords(String statement, Pattern pattern, ExtraData extra)
+	public ExtraData iterateWords(String statement, Pattern pattern, ExtraData extra)
 	{
 		// Pattern used to find word boundaries.
 		Matcher matcher  = pattern.matcher(statement);
-		
-		int     index    = 0;
-		int     oldIndex = 0;
-		
-		boolean end      = false;
 		
 		ArrayList<Bounds> bounds = new ArrayList<Bounds>();
 		ArrayList<String> words  = new ArrayList<String>();
 		ArrayList<String> delims = new ArrayList<String>();
 		
-		while (matcher.find())
-		{
-			if (end)
-			{
-				bounds.add(new Bounds(index, matcher.start()));
-				
-				String delim = statement.substring(oldIndex, index);
-				
-				delim = StringUtils.trimSurroundingWhitespace(delim);
-				
-				delims.add(delim);
-				
-				oldIndex = matcher.start();
-				
-				words.add(statement.substring(index, matcher.start()));
-				
-				end = false;
-			}
-			else
-			{
-				index = matcher.start();
-				
-				end   = true;
-			}
-		}
+		findWords(statement, matcher, bounds, words, delims);
 
-		delims.add(statement.substring(oldIndex, statement.length()));
-		
 		for (int i = 0; i < bounds.size(); i++)
 		{
 			String word  = words.get(i);
@@ -647,6 +758,45 @@ public abstract class Node
 			
 			interactWord(word, i, bound, bounds.size(), delims.get(i), delims.get(i + 1), extra);
 		}
+		
+		return extra;
+	}
+	
+	/**
+	 * Find the words, bounds, and delimiters in the given statement.
+	 * 
+	 * @param statement The statement to find the information from.
+	 * @param matcher The matcher searching through the statement.
+	 * @param bounds The list to add the Bounds to.
+	 * @param words The list to add the words to.
+	 * @param delims The list to add the delimiters to.
+	 */
+	private void findWords(String statement, Matcher matcher, ArrayList<Bounds> bounds, ArrayList<String> words, ArrayList<String> delims)
+	{
+		int index    = 0;
+		int oldIndex = 0;
+		
+		for (boolean end = false; matcher.find(); end = !end)
+		{
+			if (end)
+			{
+				String delim = statement.substring(oldIndex, index);
+				delim = StringUtils.trimSurroundingWhitespace(delim);
+				delims.add(delim);
+				
+				oldIndex = matcher.start();
+				
+				bounds.add(new Bounds(index, oldIndex));
+				words.add(statement.substring(index, oldIndex));
+			}
+			else
+			{
+				index = matcher.start();
+			}
+		}
+		
+		// Don't forget the last delimiter.
+		delims.add(statement.substring(oldIndex, statement.length()));
 	}
 	
 	/**
@@ -671,6 +821,18 @@ public abstract class Node
 	}
 	
 	/**
+	 * Get whether or not the specified Node is used within a
+	 * static context.
+	 * 
+	 * @return Whether or not the specified Node is used within a
+	 * 		static context.
+	 */
+	public boolean isWithinStaticContext()
+	{
+		return !getParentMethod().isInstance();
+	}
+	
+	/**
 	 * Get whether or not the specified Node is used within an
 	 * external context.
 	 * 
@@ -683,8 +845,7 @@ public abstract class Node
 		{
 			return true;
 		}
-		
-		if (parent != null)
+		else if (parent != null)
 		{
 			return parent.isWithinExternalContext();
 		}
@@ -805,9 +966,10 @@ public abstract class Node
 	 * Essentially, this is the String that is decoded into the node.
 	 * It is the input value from the .fat source file.
 	 * 
-	 * @return A String that represents the input String in Nova syntax.
+	 * @return The appended StringBuilder that represents the input String
+	 * 		in Nova syntax.
 	 */
-	public final String generateNovaInput()
+	public final StringBuilder generateNovaInput()
 	{
 		return generateNovaInput(true);
 	}
@@ -815,13 +977,44 @@ public abstract class Node
 	/**
 	 * Generate the Nova syntax String that represents the Node.
 	 * Essentially, this is the String that is decoded into the node.
-	 * It is the input value from the .fat source file.
+	 * It is the input value from the .nova source file.
 	 * 
 	 * @param outputChildren Whether or not to output the children of the
 	 * 		children of the Node as well.
-	 * @return A String that represents the input String in Nova syntax.
+	 * @return The appended StringBuilder that represents the input String
+	 * 		in Nova syntax.
 	 */
-	public String generateNovaInput(boolean outputChildren)
+	public final StringBuilder generateNovaInput(boolean outputChildren)
+	{
+		return generateNovaInput(new StringBuilder(), true);
+	}
+	
+	/**
+	 * Generate the Nova syntax String that represents the Node.
+	 * Essentially, this is the String that is decoded into the node.
+	 * It is the input value from the .nova source file.
+	 * 
+	 * @param builder The StringBuilder to append the data to.
+	 * @return The appended StringBuilder that represents the input String
+	 * 		in Nova syntax.
+	 */
+	public final StringBuilder generateNovaInput(StringBuilder builder)
+	{
+		return generateNovaInput(builder, true);
+	}
+	
+	/**
+	 * Generate the Nova syntax String that represents the Node.
+	 * Essentially, this is the String that is decoded into the node.
+	 * It is the input value from the .nova source file.
+	 * 
+	 * @param outputChildren Whether or not to output the children of the
+	 * 		children of the Node as well.
+	 * @param builder The StringBuilder to append the data to.
+	 * @return The appended StringBuilder that represents the input String
+	 * 		in Nova syntax.
+	 */
+	public StringBuilder generateNovaInput(StringBuilder builder, boolean outputChildren)
 	{
 		throw new UnimplementedOperationException("The Nova input implementation for this feature has not been implemented yet.");
 	}
@@ -846,9 +1039,9 @@ public abstract class Node
 	public String getLocationInfo()
 	{
 		FileDeclaration file = getFileDeclaration();
-		Location loc  = getLocationIn();
+		Location        loc  = getLocationIn();
 		
-		String   info = "";
+		String info = "";
 		
 		if (file != null)
 		{
@@ -907,19 +1100,14 @@ public abstract class Node
 	 */
 	public FileDeclaration getFileDeclaration()
 	{
-		Node current = this;
+		Node current = getParent();
 		
-		while (current != null)
+		while (current != null && current instanceof FileDeclaration == false)
 		{
-			if (current instanceof FileDeclaration)
-			{
-				return (FileDeclaration)current;
-			}
-			
 			current = current.parent;
 		}
 		
-		return null;
+		return (FileDeclaration)current;
 	}
 	
 	/**
@@ -927,9 +1115,21 @@ public abstract class Node
 	 * 
 	 * @return The nearest ClassDeclaration instance that contains this node.
 	 */
-	public ClassDeclaration getClassDeclaration()
+	public ClassDeclaration getParentClass()
 	{
-		return (ClassDeclaration)getAncestorOfType(ClassDeclaration.class, true);
+		return getParentClass(false);
+	}
+	
+	/**
+	 * Get the ClassDeclaration parent instance of the Node, if one exists.
+	 * 
+	 * @param inclusive Whether or not to inclusively check the specified
+	 * 		Node to see if it is a ClassDeclaration.
+	 * @return The nearest ClassDeclaration instance that contains this node.
+	 */
+	public ClassDeclaration getParentClass(boolean inclusive)
+	{
+		return (ClassDeclaration)getAncestorOfType(ClassDeclaration.class, inclusive);
 	}
 	
 	/**
@@ -937,9 +1137,21 @@ public abstract class Node
 	 * 
 	 * @return The nearest Method instance that contains this node.
 	 */
-	public final Method getMethod()
+	public final MethodDeclaration getParentMethod()
 	{
-		return (Method)getAncestorOfType(Method.class, true);
+		return getParentMethod(false);
+	}
+	
+	/**
+	 * Get the Method parent instance of the Node, if one exists.
+	 * 
+	 * @param inclusive Whether or not to inclusively check the specified
+	 * 		Node to see if it is a MethodDeclaration.
+	 * @return The nearest Method instance that contains this node.
+	 */
+	public final MethodDeclaration getParentMethod(boolean inclusive)
+	{
+		return (MethodDeclaration)getAncestorOfType(MethodDeclaration.class, inclusive);
 	}
 	
 	/**
@@ -954,11 +1166,58 @@ public abstract class Node
 	}
 	
 	/**
+	 * Decode a scope fragment for the Node, if needed.<br>
+	 * <br>
+	 * For example:
+	 * <blockquote><pre>
+	 * // Scenario 1
+	 * if (true)
+	 * {
+	 * 	execute();
+	 * }
+	 * 
+	 * // Scenario 2
+	 * if (true) execute();</pre></blockquote>
+	 * In scenario 2, before the execute() method call was the scope
+	 * fragment.
+	 * 
+	 * @param statement The statement containing the scope fragment.
+	 * @param bounds The bounds of the Node's arguments.
+	 * @return Whether or not the scope fragment decoded correctly.
+	 */
+	public boolean decodeScopeFragment(String statement, Bounds bounds)
+	{
+		int nextChar = StringUtils.findNextNonWhitespaceIndex(statement, bounds.getEnd() + 1);
+		
+		if (nextChar <= 0)
+		{
+			return true;
+		}
+		
+		String fragment = statement.substring(nextChar);
+		
+		Location location = new Location(getLocationIn());
+		
+		Node node = SyntaxTree.decodeScopeContents(this, fragment, location);
+		
+		if (node == null)
+		{
+			return false;
+		}
+		
+		addChild(node);
+		
+		return true;
+	}
+	
+	/**
 	 * Return a new Node containing a copy of the values of the
 	 * specified node, including clones of the children.
 	 * 
 	 * @param temporaryParent The Node to act as the parent
 	 * 		temporarily.
+	 * @param locationIn The Location instance holding the information.
+	 * @return A clone of the specified Node.
 	 */
 	public abstract Node clone(Node temporaryParent, Location locationIn);
 	
@@ -971,9 +1230,14 @@ public abstract class Node
 	 */
 	public Node cloneTo(Node node)
 	{
+		if (getNumDefaultChildren() > 0)
+		{
+			node.slaughterEveryLastChild(getNumDefaultChildren());
+		}
+		
 		if (locationIn != null)
 		{
-			Location locIn  = new Location(locationIn);
+			Location locIn = new Location(locationIn);
 			locIn.setLineNumber(locationIn.getLineNumber());
 			node.setLocationIn(locIn);
 		}
@@ -982,7 +1246,7 @@ public abstract class Node
 		{
 			Node child = children.get(i);
 			
-			node.children.add(child.clone(node, child.getLocationIn()));
+			node.children.add(child.clone(node, child.getLocationIn()/*, true*/));
 		}
 		
 		return node;
@@ -998,7 +1262,7 @@ public abstract class Node
 	{
 		try
 		{
-			return generateNovaInput();
+			return generateNovaInput().toString();
 		}
 		catch (UnimplementedOperationException e)
 		{
@@ -1015,6 +1279,20 @@ public abstract class Node
 	 */
 	public static class ExtraData
 	{
+		String error;
+	}
+	
+	/**
+	 * Test the Node class type to make sure everything
+	 * is working properly.
+	 * 
+	 * @return The error output, if there was an error. If the test was
+	 * 		successful, null is returned.
+	 */
+	public static String test()
+	{
 		
+		
+		return null;
 	}
 }

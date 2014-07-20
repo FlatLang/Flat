@@ -1,16 +1,8 @@
 package net.fathomsoft.nova.tree.variables;
 
-import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.tree.ClassDeclaration;
 import net.fathomsoft.nova.tree.Identifier;
-import net.fathomsoft.nova.tree.InstanceDeclaration;
-import net.fathomsoft.nova.tree.LocalDeclaration;
-import net.fathomsoft.nova.tree.Method;
 import net.fathomsoft.nova.tree.Node;
-import net.fathomsoft.nova.tree.Program;
-import net.fathomsoft.nova.tree.SyntaxTree;
-import net.fathomsoft.nova.tree.Value;
-import net.fathomsoft.nova.tree.exceptionhandling.Exception;
 import net.fathomsoft.nova.util.Location;
 
 /**
@@ -20,13 +12,11 @@ import net.fathomsoft.nova.util.Location;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:02:42 PM
- * @version	v0.2.14 Jun 18, 2014 at 10:11:40 PM
+ * @version	v0.2.14 Jul 19, 2014 at 7:33:13 PM
  */
 public class Variable extends Identifier
 {
-	private boolean				constantVal, external, forceOriginal;
-	
-	private static final String	NULL_TEXT	= "0";
+	private VariableDeclaration	declaration;
 	
 	/**
 	 * @see net.fathomsoft.nova.tree.Node#Node(Node, Location)
@@ -34,180 +24,6 @@ public class Variable extends Identifier
 	public Variable(Node temporaryParent, Location locationIn)
 	{
 		super(temporaryParent, locationIn);
-	}
-	
-	/**
-	 * Get whether or not the variable is external. For more information
-	 * on external variables, see {@link #setExternal(boolean)}.
-	 * 
-	 * @return Whether or not the variable is external.
-	 */
-	public boolean isExternal()
-	{
-		if (getParent() instanceof Field)
-		{
-			Field field = (Field)getParent();
-			
-			return field.isExternal();
-		}
-		
-		return external;
-	}
-	
-	/**
-	 * Set whether or not the variable is external. A variable is external
-	 * if it is referenced from a language outside of Nova. For example,
-	 * a variable from the C language. Furthermore, a variable is external
-	 * if it begins with an externally imported C file's name.<br>
-	 * <br>
-	 * For example:
-	 * <blockquote><pre>
-	 * import "externalFile.h";
-	 * 
-	 * ...
-	 * 
-	 * public static void main(String args[])
-	 * {
-	 *	// This is the external variable declaration.
-	 * 	externalFile.externalType varName;
-	 * 	
-	 * 	// This is the external variable assignment.
-	 * 	varName = externalFile.variableInstance;
-	 * }</pre></blockquote>
-	 * In this example, 'externalFile' is the C header file that is
-	 * imported. 'variableInstance' is the name of a variable that
-	 * is contained within the imported header file.<br>
-	 * 
-	 * @param external Whether or not the variable will be external.
-	 */
-	public void setExternal(boolean external)
-	{
-		this.external = external;
-		
-		forceOriginal = true;
-	}
-	
-	/**
-	 * Get whether or not the variable's value is constant. To
-	 * see more detail, look at {@link #setConstant(boolean)}.
-	 * 
-	 * @return Whether or not the variable's value is constant.
-	 */
-	public boolean isConstant()
-	{
-		return constantVal;
-	}
-	
-	/**
-	 * Get the C equivalent of the 'constant' keyword.
-	 * 
-	 * @return The C equivalent of the 'constant' keyword.
-	 */
-	public String getConstantText()
-	{
-		return "const";
-	}
-	
-	/**
-	 * Set whether or not the variable's value is constant.<br>
-	 * <br>
-	 * For example:
-	 * <blockquote><pre>
-	 * private constant int MAX_PEOPLE = 10;</pre></blockquote>
-	 * This variable is constant, as defined by the 'constant' keyword.
-	 * 
-	 * @param constVal Whether or not the variable's value
-	 * 		is constant.
-	 */
-	public void setConstant(boolean constVal)
-	{
-		this.constantVal = constVal;
-	}
-	
-	/**
-	 * Set the name of the Variable.
-	 * 
-	 * @see net.fathomsoft.nova.tree.Identifier#setName(java.lang.String)
-	 * 
-	 * @param name The String to set as the new name.
-	 */
-	public void setName(String name)
-	{
-		setName(name, false);
-	}
-	
-	/**
-	 * Set the name of the Variable. You specify whether or not you want
-	 * the output in the C language to be the original given name,
-	 * or if it will differentiate it depending on its scope. 
-	 * 
-	 * @param name The String to set as the new name.
-	 * @param forceOriginal Whether or not the name will be output in the
-	 * 		c code verbatim.
-	 */
-	public void setName(String name, boolean forceOriginal)
-	{
-		this.forceOriginal = forceOriginal;
-		
-		super.setName(name);
-	}
-	
-	/**
-	 * Whether or not you want the output in the C language to be the
-	 * original given name, or if it will differentiate it depending on
-	 * its scope. 
-	 * 
-	 * @param forceOriginal Whether or not the name will be output in the
-	 * 		c code verbatim.
-	 */
-	public void setForceOriginalName(boolean forceOriginal)
-	{
-		this.forceOriginal = forceOriginal;
-	}
-	
-	/**
-	 * Set a specified attribute to true.<br>
-	 * <br>
-	 * For example:
-	 * <blockquote><pre>
-	 * private static int index;</pre></blockquote>
-	 * <u><code>private</code></u> sets the visibility of the declaration
-	 * to private. <u><code>static</code></u> sets the variable as static.
-	 * 
-	 * @param attribute The attribute to set true.
-	 */
-	public void setAttribute(String attribute)
-	{
-		setAttribute(attribute, -1);
-	}
-	
-	/**
-	 * Set a specified attribute to true.<br>
-	 * <br>
-	 * For example:
-	 * <blockquote><pre>
-	 * private static int index;</pre></blockquote>
-	 * <u><code>private</code></u> is the first attribute (index: 0) that
-	 * sets the visibility of the declaration to private.
-	 * "<u><code>static</code></u>" is the second attribute (index: 1) that
-	 * sets the variable as static.
-	 * 
-	 * @param attribute The attribute to set true.
-	 * @param argNum The index of the attribute in the order that it
-	 * 		came in.
-	 */
-	public boolean setAttribute(String attribute, int argNum)
-	{
-		if (attribute.equals("constant"))
-		{
-			setConstant(true);
-		}
-		else
-		{
-			return false;
-		}
-		
-		return true;
 	}
 	
 	/**
@@ -220,299 +36,23 @@ public class Variable extends Identifier
 	 */
 	public boolean isSameVariable(Variable other)
 	{
-		Variable first  = getDeclaration();
-		Variable second = other.getDeclaration();
+		VariableDeclaration first  = getDeclaration();
+		VariableDeclaration second = other.getDeclaration();
 		
 		return first == second;
 	}
 	
 	/**
-	 * Get the text that represents the java 'null' in the C language.
+	 * Get whether or not the specified Variable is a local variable. It
+	 * is a local variable if it was declared inside a method.
+	 * TODO: Can optimize to realize that if a parent is a method only
+	 * node, stop there and return true.
 	 * 
-	 * @return The text that represents the java 'null' in the C language.
+	 * @return Whether or not the specified Variable is local.
 	 */
-	public static String getNullText()
+	public boolean isLocal()
 	{
-		return NULL_TEXT;
-	}
-	
-	/**
-	 * Generate the representation of when the variable is being used, in
-	 * action, rather than being declared.<br>
-	 * <br>
-	 * For example:<br>
-	 * <blockquote><pre>
-	 * Person p;
-	 * p.getName();</pre></blockquote>
-	 * The first line shows the declaration of the Variable. The second
-	 * line demonstrates a "variable use" for the "p" variable.
-	 * Essentially, the "variable use" output is exactly what it says,
-	 * what the variable looks like when it is being used to do something.
-	 * 
-	 * @return What the variable looks like when it is being used to do
-	 * 		something.
-	 */
-	public StringBuilder generateUseOutput(StringBuilder builder)
-	{
-		return generateUseOutput(builder, false);
-	}
-	
-	/**
-	 * Generate the representation of when the variable is being used, in
-	 * action, rather than being declared.<br>
-	 * <br>
-	 * For example:<br>
-	 * <blockquote><pre>
-	 * Person p;
-	 * p.getName();</pre></blockquote>
-	 * The first line shows the declaration of the Variable. The second
-	 * line demonstrates a "variable use" for the "p" variable.
-	 * Essentially, the "variable use" output is exactly what it says,
-	 * what the variable looks like when it is being used to do something.
-	 * 
-	 * @param pointer Whether or not the variable is to be accessed by a
-	 * 		pointer.
-	 * @return What the variable looks like when it is being used to do
-	 * 		something.
-	 */
-	public StringBuilder generateUseOutput(StringBuilder builder, boolean pointer)
-	{
-		if (!isSpecialFragment())
-		{
-			builder.append(generateDataTypeOutput());
-		}
-		
-		Field field = null;
-		
-		Node parent = getParent();
-		
-		if (this instanceof ArrayAccess)
-		{
-			Variable node = SyntaxTree.getExistingNode(parent, getName());
-			
-			if (node instanceof Field)
-			{
-				field = (Field)node;
-			}
-		}
-		else if (parent instanceof Array)
-		{
-			Variable node = SyntaxTree.getExistingNode(parent.getParent(), getName());
-			
-			if (node instanceof Field)
-			{
-				field = (Field)node;
-			}
-		}
-		else if (this instanceof Field)
-		{
-			field = (Field)this;
-		}
-		
-		if (field != null && !field.isExternal())
-		{
-			if (!field.isStatic())
-			{
-				Value ref = getReferenceNode();
-				
-				if (ref.isContainingClass(this))
-				{
-					if (pointer)
-					{
-						builder.append('(').append('*');
-					}
-					
-					builder.append(Method.getObjectReferenceIdentifier());
-					
-					if (pointer)
-					{
-						builder.append(')');
-					}
-					
-					builder.append("->");
-			
-					if (field.getVisibility() == Field.PRIVATE)
-					{
-						builder.append("prv").append("->");
-					}
-				}
-			}
-		}
-		
-		return generateCSourceName(builder);
-	}
-	
-	/**
-	 * @see net.fathomsoft.nova.tree.Node#generateCHeader(StringBuilder)
-	 */
-	@Override
-	public StringBuilder generateCHeader(StringBuilder builder)
-	{
-		return generateCSource(builder);
-	}
-
-	/**
-	 * @see net.fathomsoft.nova.tree.Node#generateCSource(StringBuilder)
-	 */
-	@Override
-	public StringBuilder generateCSource(StringBuilder builder)
-	{
-		if (isDeclaration())
-		{
-			if (isConstant())
-			{
-				builder.append(getConstantText()).append(' ');
-			}
-			
-			generateCTypeOutput(builder);
-	
-			if (isReference())
-			{
-				builder.append('&');
-			}
-			else if (isPointer())
-			{
-				builder.append('*');
-			}
-			if (isArray())
-			{
-				builder.append(getArrayText());
-			}
-			if (!isPrimitiveType() && !isExternalType())
-			{
-				builder.append('*');
-			}
-			
-			builder.append(' ');
-			
-			generateCSourceFragment(builder);//generateCSourceName());//generateCSourceFragment());
-		}
-		else
-		{
-			generateCSourceFragment(builder);
-		}
-		
-		return builder.append(';').append('\n');
-	}
-	
-	/**
-	 * @see net.fathomsoft.nova.tree.Node#generateCSourceFragment(StringBuilder)
-	 */
-	@Override
-	public StringBuilder generateCSourceFragment(StringBuilder builder)
-	{
-		if (isSpecialFragment())
-		{
-			return generateSpecialFragment(builder);
-		}
-		
-		return generateUseOutput(builder).append(generateChildrenCSourceFragment());
-	}
-	
-	/**
-	 * Generate a variable name that will be used to keep the variables
-	 * in their own "namespace" per-say.
-	 * 
-	 * @return The name of the variable that will be output to the C
-	 * 		source output.
-	 */
-	public StringBuilder generateCSourceName(StringBuilder builder)
-	{
-		String name = getName();
-		
-		if (forceOriginal || isExternal())
-		{
-			return builder.append(name);
-		}
-		
-		ClassDeclaration clazz = getDeclaringClassDeclaration();
-		
-		if (this instanceof InstanceDeclaration)
-		{
-			InstanceDeclaration node = (InstanceDeclaration)this;
-			
-			if (node.isStatic())
-			{
-				return builder.append("static_").append(Nova.LANGUAGE_NAME.toLowerCase()).append("_").append(clazz.generateUniquePrefix()).append("_").append(name);
-			}
-		}
-		
-		builder.append(Nova.LANGUAGE_NAME.toLowerCase()).append("_");
-		
-		Variable existing = SyntaxTree.getExistingNode(getParent(), name);
-		
-		if (this instanceof Field || existing instanceof Field)
-		{
-			builder.append(clazz.generateUniquePrefix());
-		}
-		else
-		{
-			LocalDeclaration declaration = (LocalDeclaration)existing;
-			
-			builder.append(declaration.getScopeID());
-		}
-		
-		return builder.append("_").append(name);
-	}
-	
-	/**
-	 * @see net.fathomsoft.nova.tree.Node#generateNovaInput(boolean)
-	 */
-	@Override
-	public String generateNovaInput(boolean outputChildren)
-	{
-//		if (isSpecialFragment())
-//		{
-//			return getChild(0).generateNovaInput();
-//		}
-		
-		StringBuilder builder = new StringBuilder();
-		
-		builder.append(getName());
-		
-		if (outputChildren)
-		{
-			Identifier accessed = getAccessedNode();
-			
-			if (accessed != null)
-			{
-				builder.append('.').append(accessed.generateNovaInput());
-			}
-		}
-		
-		return builder.toString();
-	}
-	
-	/**
-	 * Generate a String for the code used to free memory of the
-	 * specified variable.
-	 * 
-	 * @return The generated String for the code.
-	 */
-	public StringBuilder generateFreeOutput(StringBuilder builder)
-	{
-		if (isConstant())
-		{
-			return builder;
-		}
-		
-		if (isPrimitiveType() || isExternalType())
-		{
-			if (!isPrimitive())
-			{
-				builder.append("NOVA_FREE(");
-				
-				generateUseOutput(builder, true).append(");\n");
-			}
-		}
-		else
-		{
-			builder.append(Nova.LANGUAGE_NAME.toLowerCase()).append("_del_").append(getType()).append('(').append('&');
-			
-			generateUseOutput(builder, true).append(", ").append(Exception.EXCEPTION_DATA_IDENTIFIER).append(");\n");
-		}
-		
-		return builder;
+		return getDeclaration().getParentMethod() != null;
 	}
 	
 	/**
@@ -520,102 +60,141 @@ public class Variable extends Identifier
 	 * 
 	 * @return The ClassDeclaration instance that declared this variable.
 	 */
-	public ClassDeclaration getDeclaringClassDeclaration()
+	public ClassDeclaration getDeclaringClass()
 	{
-		Variable var = getDeclaration();
+		VariableDeclaration var = getDeclaration();
 		
-		return var.getClassDeclaration();
+		return var.getParentClass(true);
 	}
 	
 	/**
-	 * Get he Instance/LocalDeclaration that declares the
+	 * Get the Instance/LocalDeclaration that declares the
 	 * specified variable.
 	 * 
 	 * @return The Instance/LocalDeclaration that declares the
 	 * 		specified variable.
 	 */
-	public Variable getDeclaration()
+	public VariableDeclaration getDeclaration()
 	{
-		Node    parent  = getParent();
-		Program program = parent.getProgram();
-		
-		if (this instanceof Method)
-		{
-			return getClassDeclaration();
-		}
-		if (this instanceof LocalDeclaration)
-		{
-			return this;
-		}
-		if (isAccessed())
-		{
-			Value value = (Value)parent;
-			
-			ClassDeclaration clazz = program.getClassDeclaration(value.getType());
-			
-			return clazz.getField(getName());
-		}
-		// If the 'this.' part of the variable access was auto-removed.
-		else if (this instanceof Field)
-		{
-			return getClassDeclaration().getField(getName());
-		}
-		
-		return SyntaxTree.getExistingNode(parent, getName());
+		return declaration;
 	}
 	
 	/**
-	 * Get whether or not the Variable instance represents a
-	 * declaration of a local variable.
+	 * Set the Instance/LocalDeclaration that declares the
+	 * specified variable.
 	 * 
-	 * @return Whether or not the instance represents a local variable
-	 * 		declaration.
+	 * @param declaration The Instance/LocalDeclaration that declares the
+	 * 		specified variable.
 	 */
-	public boolean isDeclaration()
+	public void setDeclaration(VariableDeclaration declaration)
 	{
-		if (this instanceof LocalDeclaration)
-		{
-			return true;
-		}
-		if (this instanceof InstanceDeclaration)
-		{
-			if (getAccessedNode() == null && (getParent().containsScope() || getParent() instanceof InstanceFieldList || getParent() instanceof StaticFieldList))
-			{
-				return true;
-			}
-		}
-		
-		return false;
+		this.declaration = declaration;
 	}
 	
 	/**
-	 * Get whether or not the specified variable is being used as an
-	 * action.<br>
-	 * <br>
-	 * For example:
-	 * <blockquote><pre>
-	 * //Scenario 1
-	 * Node node;
-	 * 
-	 * //Scenario 2
-	 * node.getParent();</pre></blockquote>
-	 * <ul>
-	 * 	<li>
-	 * 		In scenario 1, the variable is a declaration, NOT an active
-	 * 		variable.
-	 * 	</li>
-	 * 	<li>
-	 * 		In scenario 2, the variable is an active variable because it is
-	 * 		being used to access the "<code>getParent()</code>" method.
-	 * 	</li>
-	 * <ul>
-	 * 
-	 * @return Whether or not the specified variable is being used as an
-	 * 		action.
+	 * @see net.fathomsoft.nova.tree.Identifier#getName()
 	 */
-	public boolean isActiveVariable()
+	@Override
+	public String getName()
 	{
-		return this instanceof LocalVariable || this instanceof Field;
+		return declaration.getName();
+	}
+	
+	/**
+	 * @see net.fathomsoft.nova.tree.Identifier#setName(java.lang.String, boolean)
+	 */
+	@Override
+	public void setName(String name, boolean forceOriginal)
+	{
+		declaration.setName(name, forceOriginal);
+	}
+	
+	/**
+	 * @see net.fathomsoft.nova.tree.Identifier#willForceOriginalName()
+	 */
+	@Override
+	public boolean willForceOriginalName()
+	{
+		return declaration.willForceOriginalName();
+	}
+	
+	/**
+	 * @see net.fathomsoft.nova.tree.Identifier#setForceOriginalName(boolean)
+	 */
+	@Override
+	public void setForceOriginalName(boolean forceOriginal)
+	{
+		declaration.setForceOriginalName(forceOriginal);
+	}
+	
+	/**
+	 * @see net.fathomsoft.nova.tree.Value#getArrayDimensions()
+	 */
+	@Override
+	public int getArrayDimensions()
+	{
+		return declaration.getArrayDimensions();
+	}
+	
+	/**
+	 * @see net.fathomsoft.nova.tree.Value#setArrayDimensions(int)
+	 */
+	@Override
+	public void setArrayDimensions(int arrayDimensions)
+	{
+		declaration.setArrayDimensions(arrayDimensions);
+	}
+	
+	/**
+	 * @see net.fathomsoft.nova.tree.Value#getType()
+	 */
+	@Override
+	public String getType()
+	{
+		return declaration.getType();
+	}
+	
+	/**
+	 * @see net.fathomsoft.nova.tree.Value#setType(java.lang.String, boolean, boolean, boolean)
+	 */
+	@Override
+	public boolean setType(String type, boolean require, boolean checkType, boolean checkExternal)
+	{
+		return declaration.setType(type, require, checkType, checkExternal);
+	}
+	
+	/**
+	 * @see net.fathomsoft.nova.tree.Value#getDataType()
+	 */
+	@Override
+	public byte getDataType()
+	{
+		return declaration.getDataType();
+	}
+	
+	/**
+	 * @see net.fathomsoft.nova.tree.Value#setDataType(byte)
+	 */
+	@Override
+	public void setDataType(byte type)
+	{
+		declaration.setDataType(type);
+	}
+	
+	/**
+	 * @see net.fathomsoft.nova.tree.variables.VariableDeclaration#isVolatile()
+	 */
+	public boolean isVolatile()
+	{
+		return declaration.isVolatile();
+	}
+	
+	/**
+	 * @see net.fathomsoft.nova.tree.variables.VariableDeclaration#setVolatile(boolean)
+	 */
+	public void setVolatile(boolean volatileVal)
+	{
+		declaration.setVolatile(volatileVal);
 	}
 	
 	/**
@@ -640,10 +219,22 @@ public class Variable extends Identifier
 	{
 		super.cloneTo(node);
 		
-		node.constantVal     = constantVal;
-		node.external        = external;
-		node.forceOriginal   = forceOriginal;
+		node.declaration = declaration;
 		
 		return node;
+	}
+	
+	/**
+	 * Test the Variable class type to make sure everything
+	 * is working properly.
+	 * 
+	 * @return The error output, if there was an error. If the test was
+	 * 		successful, null is returned.
+	 */
+	public static String test()
+	{
+		
+		
+		return null;
 	}
 }

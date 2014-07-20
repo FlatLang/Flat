@@ -3,16 +3,15 @@ package net.fathomsoft.nova.tree;
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.util.Location;
 import net.fathomsoft.nova.util.StringUtils;
-import net.fathomsoft.nova.util.SyntaxUtils;
 
 /**
  * Value extension that represents an operation within parentheses.
  * 
  * @author	Braden Steffaniak
  * @since	v0.2.10 May 29, 2014 at 1:50:25 PM
- * @version	v0.2.14 Jun 18, 2014 at 10:11:40 PM
+ * @version	v0.2.14 Jul 19, 2014 at 7:33:13 PM
  */
-public class Priority extends Value
+public class Priority extends IValue
 {
 	/**
 	 * @see net.fathomsoft.nova.tree.Node#Node(Node, Location)
@@ -46,24 +45,16 @@ public class Priority extends Value
 	@Override
 	public Value getReturnedNode()
 	{
-		Value contents = getContents();
-		
-		return contents.getReturnedNode();
+		return getContents().getReturnedNode();
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.Value#generateNovaInput(boolean)
+	 * @see net.fathomsoft.nova.tree.Value#generateNovaInput(StringBuilder, boolean)
 	 */
 	@Override
-	public String generateNovaInput(boolean outputChildren)
+	public StringBuilder generateNovaInput(StringBuilder builder, boolean outputChildren)
 	{
-		StringBuilder builder  = new StringBuilder();
-		
-		Value     contents = getContents();
-		
-		builder.append('(').append(contents.generateNovaInput(outputChildren)).append(')');
-		
-		return builder.toString();
+		return builder.append('(').append(getContents().generateNovaInput(outputChildren)).append(')');
 	}
 	
 	/**
@@ -81,9 +72,7 @@ public class Priority extends Value
 	@Override
 	public StringBuilder generateCSourceFragment(StringBuilder builder)
 	{
-		Value contents = getContents();
-		
-		return builder.append('(').append(contents.generateCSourceFragment()).append(')');
+		return builder.append('(').append(getContents().generateCSourceFragment()).append(')');
 	}
 	
 	/**
@@ -92,85 +81,127 @@ public class Priority extends Value
 	 * <br>
 	 * Example inputs include:<br>
 	 * <ul>
-	 * 	<li>externalHeaderName</li>
+	 * 	<li>(5 + 4)</li>
+	 * 	<li>(getName() + " is here")</li>
+	 * 	<li>( 54 * (2 + 4) )</li>
 	 * </ul>
 	 * 
 	 * @param parent The parent node of the statement.
 	 * @param statement The statement to try to decode into a
 	 * 		Priority instance.
 	 * @param location The location of the statement in the source code.
-	 * @param require Whether or not to throw an error if anything goes wrong.
-	 * @param scope Whether or not the given statement is the beginning of
-	 * 		a scope.
+	 * @param require Whether or not to throw an error if anything goes
+	 * 		wrong.
 	 * @return The generated node, if it was possible to translated it
 	 * 		into a Priority.
 	 */
-	public static Priority decodeStatement(Node parent, String statement, Location location, boolean require, boolean scope)
+	public static Priority decodeStatement(Node parent, String statement, Location location, boolean require)
 	{
 		if (statement.charAt(0) == '(')
 		{
-			Priority n  = new Priority(parent, location);
+			Priority n = new Priority(parent, location);
 			
-			int endingIndex = StringUtils.findEndingMatch(statement, 0, '(', ')');
-			
-			if (endingIndex < 0)
-			{
-				if (!require)
-				{
-					return null;
-				}
-				
-				SyntaxMessage.error("Missing ending parenthesis", n);
-			}
-			else if (endingIndex < statement.length() - 1)
+			if (!n.validatePriority(statement, require))
 			{
 				return null;
 			}
 			
 			statement = statement.substring(1, statement.length() - 1);
-			
 			statement = StringUtils.trimSurroundingWhitespace(statement);
 			
 			Location contentsLoc = new Location(location);
-			contentsLoc.setOffset(location.getOffset() + 1);
-			contentsLoc.setBounds(location.getStart() + 1, location.getEnd() - 1);
+			contentsLoc.addOffset(1);
+			contentsLoc.moveBounds(1, -1);
 			
-			Value contents = UnaryOperation.decodeStatement(n, statement, contentsLoc, require, false);
-			
-			if (contents == null)
+			if (n.decodeContents(statement, contentsLoc, require))
 			{
-				contents = BinaryOperation.decodeStatement(n, statement, contentsLoc, require, false);
-			}
-			if (contents == null && SyntaxUtils.isLiteral(statement))
-			{
-				Literal literal = Literal.decodeStatement(n, statement, contentsLoc, require, false);
+				n.setType(n.getContents().getType());
 				
-				contents = literal;
+				return n;
 			}
-			if (contents == null)
-			{
-				contents = SyntaxTree.getExistingNode(n, statement);
-			}
-			if (contents == null)
-			{
-				if (!require)
-				{
-					return null;
-				}
-				
-				SyntaxMessage.error("Could not decode contents '" + statement + "'", n);
-			}
-			else
-			{
-				contents = contents.clone(n, contentsLoc);
-			}
-			
-			n.addChild(contents);
-			
-			return n;
 		}
 		
 		return null;
+	}
+	
+	/**
+	 * Validate that the given statement is a Priority. To see what a
+	 * Priority looks like see {@link #decodeStatement(Node, String, Location, boolean)}
+	 * 
+	 * @param statement The statement to validate.
+	 * @param require Whether or not to throw an error if anything goes
+	 * 		wrong.
+	 * @return Whether or not the given statement is a valid Priority.
+	 */
+	private boolean validatePriority(String statement, boolean require)
+	{
+		int endingIndex = StringUtils.findEndingMatch(statement, 0, '(', ')');
+		
+		if (endingIndex < 0)
+		{
+			return SyntaxMessage.queryError("Missing ending parenthesis", this, require);
+		}
+		
+		return endingIndex == statement.length() - 1;
+	}
+	
+	/**
+	 * Decode the contents of the Priority. The contents is the data
+	 * within the parentheses.
+	 * 
+	 * @param contents The contents within the parentheses of the
+	 * 		statement.
+	 * @param location The location of the contents within the source
+	 * 		file.
+	 * @param require Whether or not to throw an error if anything goes
+	 * 		wrong.
+	 * @return Whether or not the contents decoded successfully.
+	 */
+	private boolean decodeContents(String contents, Location location, boolean require)
+	{
+		Value node = null;
+		
+//		Value node = null
+//		
+//		until (node != null)
+//		{
+//			node = Literal.decodeStatement(this, contents, location, true, true),
+//			node = UnaryOperation.decodeStatement(this, contents, location, require),
+//			node = BinaryOperation.decodeStatement(this, contents, location, require),
+//			node = SyntaxTree.getUsableExistingNode(this, contents, location),
+//			
+//			SyntaxMessage.queryError("Could not decode contents '" + contents + "'", this, require)
+//		}
+//		
+//		addChild(node)
+//		
+//		return true
+		
+		node = Literal.decodeStatement(this, contents, location, true, true);
+		
+		if (node == null)
+		{
+			node = UnaryOperation.decodeStatement(this, contents, location, require);
+			
+			if (node == null)
+			{
+				node = BinaryOperation.decodeStatement(this, contents, location, require);
+				
+				if (node == null)
+				{
+					node = SyntaxTree.getUsableExistingNode(this, contents, location);
+					
+					if (node == null)
+					{
+						return SyntaxMessage.queryError("Could not decode contents '" + contents + "'", this, require);
+					}
+				}
+			}
+		}
+		
+		addChild(node);
+		
+		return true;
 	}
 	
 	/**
@@ -196,5 +227,19 @@ public class Priority extends Value
 		super.cloneTo(node);
 		
 		return node;
+	}
+	
+	/**
+	 * Test the Priority class type to make sure everything
+	 * is working properly.
+	 * 
+	 * @return The error output, if there was an error. If the test was
+	 * 		successful, null is returned.
+	 */
+	public static String test()
+	{
+		
+		
+		return null;
 	}
 }

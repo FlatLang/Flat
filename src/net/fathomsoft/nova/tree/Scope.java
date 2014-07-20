@@ -1,7 +1,8 @@
 package net.fathomsoft.nova.tree;
 
 import net.fathomsoft.nova.tree.variables.Variable;
-import net.fathomsoft.nova.tree.variables.VariableList;
+import net.fathomsoft.nova.tree.variables.VariableDeclaration;
+import net.fathomsoft.nova.tree.variables.VariableDeclarationList;
 import net.fathomsoft.nova.util.Location;
 
 /**
@@ -20,15 +21,14 @@ import net.fathomsoft.nova.util.Location;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Apr 5, 2014 at 10:54:20 PM
- * @version	v0.2.14 Jun 18, 2014 at 10:11:40 PM
+ * @version	v0.2.14 Jul 19, 2014 at 7:33:13 PM
  */
 public class Scope extends Node
 {
-	private int	id;
+	private int	id, localVariableID;
 	
 	/**
 	 * Instantiate and initialize the default values.
-	 * 
 	 * 
 	 * @see net.fathomsoft.nova.tree.Node#Node(Node, Location)
 	 */
@@ -36,24 +36,65 @@ public class Scope extends Node
 	{
 		super(temporaryParent, locationIn);
 		
-		VariableList variablesNode = new VariableList(this, locationIn);
+		VariableDeclarationList variablesNode  = new VariableDeclarationList(this, locationIn);
+		VariableDeclarationList localVariables = new VariableDeclarationList(this, locationIn);
 		
-		super.addChild(variablesNode);
+		addChild(variablesNode, this);		
+		addChild(localVariables, this);
 		
-		Method method = getParent().getMethod();
-		
-		id = method.generateUniqueID();
+		id = getParentMethod().generateUniqueID();
+	}
+	
+	/**
+	 * @see net.fathomsoft.nova.tree.Node#getNumDefaultChildren()
+	 */
+	@Override
+	public int getNumDefaultChildren()
+	{
+		return super.getNumDefaultChildren() + 2;
 	}
 	
 	/**
 	 * Get the VariableList that contains all of the variables
 	 * that have been declared within this Scope.
 	 * 
-	 * @return The VariableList instance.
+	 * @return The VariableDeclarationList instance.
 	 */
-	public VariableList getVariableList()
+	public VariableDeclarationList getVariableList()
 	{
-		return (VariableList)getChild(0);
+		return (VariableDeclarationList)getChild(super.getNumDefaultChildren() + 0);
+	}
+	
+	/**
+	 * Get the VariableList that contains the variables that were
+	 * required to be implicitly declared before they were used within
+	 * a method call. For instance, when a virtual object is calling
+	 * a virtual method.
+	 * 
+	 * @return The VariableDeclarationList instance.
+	 */
+	private VariableDeclarationList getLocalVariableList()
+	{
+		return (VariableDeclarationList)getChild(super.getNumDefaultChildren() + 1);
+	}
+	
+	public Variable registerLocalVariable(Identifier identifier, MethodCall stopAt)
+	{
+		Node       base;
+		String     decl;
+		Assignment assignment;
+		Variable   variable;
+		
+		base       = stopAt.getBaseNode();
+		decl       = identifier.getType() + " nova_local_" + localVariableID++ + " = null";// identifier.generateCArgumentReference(new StringBuilder(), stopAt.getAccessedNode());
+		assignment = Assignment.decodeStatement(this, decl, getLocationIn(), true, true);
+		variable   = (Variable)assignment.getAssigneeNode();
+		
+		variable.setForceOriginalName(true);
+		
+		base.getParent().addChildBefore(base, assignment);
+		
+		return variable.clone(this, getLocationIn());
 	}
 	
 	/**
@@ -72,29 +113,32 @@ public class Scope extends Node
 	@Override
 	public void addChild(Node child)
 	{
-		if (child instanceof Variable)
+		if (child instanceof LocalDeclaration)
 		{
-			Variable var = (Variable)child;
+			LocalDeclaration var = (LocalDeclaration)child;
 			
-			if (var.isDeclaration())
-			{
-				if (child instanceof LocalDeclaration)
-				{
-					LocalDeclaration declaration = (LocalDeclaration)child;
-					
-					if (declaration.getScopeID() == 0)
-					{
-						declaration.setScopeID(getID());
-					}
-				}
-				
-				getVariableList().addChild(var);
-				
-				return;
-			}
+			setVariableScopeID(var);
+			
+			getVariableList().addChild(var);
 		}
-		
-		super.addChild(child);
+		else
+		{
+			super.addChild(child);
+		}
+	}
+	
+	/**
+	 * Set the scope ID of the given variable if it is a valid
+	 * LocalDeclaration and its scope ID has not already been set.
+	 * 
+	 * @param var The LocalDeclaration to set the scope ID of.
+	 */
+	private void setVariableScopeID(LocalDeclaration declaration)
+	{
+		if (declaration.getScopeID() == 0)
+		{
+			declaration.setScopeID(getID());
+		}
 	}
 	
 	/**
@@ -103,26 +147,54 @@ public class Scope extends Node
 	@Override
 	public StringBuilder generateCSource(StringBuilder builder)
 	{
+		return generateCSource(builder, true);
+	}
+	
+	/**
+	 * @see net.fathomsoft.nova.tree.Node#generateCSource(StringBuilder)
+	 * 
+	 * @param braces Whether or not to output the braces as well.
+	 */
+	public StringBuilder generateCSource(StringBuilder builder, boolean braces)
+	{
 		if (getNumChildren() <= 1)
 		{
-			if (getParent() instanceof Method == false)
+			if (getParent() instanceof Loop)
 			{
-				if (getParent() instanceof Loop)
-				{
-					return builder.append(";");
-				}
-				
-				return builder;
+				// Insert the semicolon before the new line.
+				return builder.insert(builder.length() - 1, ";");
 			}
 		}
 		
-		builder.append('{').append('\n');
+		if (braces)
+		{
+			builder.append('{').append('\n');
+		}
 		
 		for (int i = 0; i < getNumChildren(); i++)
 		{
-			Node child = getChild(i);
-			
-			child.generateCSource(builder);
+			getChild(i).generateCSource(builder);
+		}
+		
+		if (braces)
+		{
+			builder.append('}').append('\n');
+		}
+		
+		return builder;
+	}
+	
+	/**
+	 * @see net.fathomsoft.nova.tree.Node#generateNovaInput(StringBuilder, boolean)
+	 */
+	@Override
+	public StringBuilder generateNovaInput(StringBuilder builder, boolean outputChildren)
+	{
+		builder.append('{').append('\n');
+		
+		for (int i = 0; i < getNumVisibleChildren(); i++)
+		{
+			getVisibleChild(i).generateNovaInput(builder).append('\n');
 		}
 		
 		builder.append('}').append('\n');
@@ -153,5 +225,19 @@ public class Scope extends Node
 		super.cloneTo(node);
 		
 		return node;
+	}
+	
+	/**
+	 * Test the Scope class type to make sure everything
+	 * is working properly.
+	 * 
+	 * @return The error output, if there was an error. If the test was
+	 * 		successful, null is returned.
+	 */
+	public static String test()
+	{
+		
+		
+		return null;
 	}
 }

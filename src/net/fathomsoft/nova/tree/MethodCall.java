@@ -3,6 +3,7 @@ package net.fathomsoft.nova.tree;
 import net.fathomsoft.nova.error.SyntaxErrorException;
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.tree.variables.Variable;
+import net.fathomsoft.nova.tree.variables.VariableDeclaration;
 import net.fathomsoft.nova.util.Bounds;
 import net.fathomsoft.nova.util.Location;
 import net.fathomsoft.nova.util.Patterns;
@@ -11,14 +12,14 @@ import net.fathomsoft.nova.util.SyntaxUtils;
 
 /**
  * Value extension that represents the declaration of a method
- * call node type. See {@link #decodeStatement(Node, String, Location, boolean, boolean)}
+ * call node type. See {@link #decodeStatement(Node, String, Location, boolean)}
  * for more details on what correct inputs look like.
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 10:04:31 PM
- * @version	v0.2.14 Jun 18, 2014 at 10:11:40 PM
+ * @version	v0.2.14 Jul 19, 2014 at 7:33:13 PM
  */
-public class MethodCall extends Identifier
+public class MethodCall extends IIdentifier
 {
 	private boolean	externalCall;
 	
@@ -31,9 +32,18 @@ public class MethodCall extends Identifier
 	{
 		super(temporaryParent, locationIn);
 		
-		ArgumentList arguments = new ArgumentList(this, locationIn);
+		MethodCallArgumentList arguments = new MethodCallArgumentList(this, new Location(locationIn));
 		
 		addChild(arguments);
+	}
+	
+	/**
+	 * @see net.fathomsoft.nova.tree.Node#getNumDefaultChildren()
+	 */
+	@Override
+	public int getNumDefaultChildren()
+	{
+		return super.getNumDefaultChildren() + 1;
 	}
 	
 	/**
@@ -49,9 +59,18 @@ public class MethodCall extends Identifier
 	 * @return The Node that represents the arguments to the method
 	 * 		call.
 	 */
-	public ArgumentList getArgumentList()
+	public MethodCallArgumentList getArgumentList()
 	{
-		return (ArgumentList)getChild(0);
+		return (MethodCallArgumentList)getChild(0);
+	}
+	
+	/**
+	 * @see net.fathomsoft.nova.tree.Value#isVirtualTypeKnown()
+	 */
+	@Override
+	public boolean isVirtualTypeKnown()
+	{
+		return getParent() instanceof Instantiation || super.isVirtualTypeKnown();
 	}
 	
 	/**
@@ -63,9 +82,9 @@ public class MethodCall extends Identifier
 	 */
 	public boolean isWithinExternalContext()
 	{
-		Method method = getMethodDeclaration();
+		CallableMethod methodDeclaration = getCallableDeclaration();
 		
-		if (method.isExternal())
+		if (methodDeclaration.isExternal())
 		{
 			return true;
 		}
@@ -99,33 +118,77 @@ public class MethodCall extends Identifier
 	}
 	
 	/**
+	 * @see net.fathomsoft.nova.tree.Node#isSpecial()
+	 */
+	@Override
+	public boolean isSpecial()
+	{
+		if (getCallableDeclaration().isVirtual())
+		{
+			if (isAccessed() && getAccessingNode().isVirtualTypeKnown())
+			{
+				return true;
+			}
+			
+			return false;
+		}
+		
+		return true;
+	}
+	
+	/**
+	 * @see net.fathomsoft.nova.tree.Identifier#isSpecialFragment()
+	 */
+	@Override
+	public boolean isSpecialFragment()
+	{
+		if (getCallableDeclaration().isVirtual() && !isVirtualTypeKnown())
+		{
+			return false;
+		}
+		
+		return super.isSpecialFragment();
+	}
+	
+	/**
+	 * Get the Method instance that this MethodCall is calling in the
+	 * form of a CallableMethod.
+	 * 
+	 * @return The Method instance that this MethodCall is
+	 * 		calling.
+	 */
+	public CallableMethod getCallableDeclaration()
+	{
+		return (CallableMethod)getMethodDeclaration();
+	}
+	
+	/**
 	 * Get the Method instance that this MethodCall is calling.
 	 * 
 	 * @return The Method instance that this MethodCall is
 	 * 		calling.
 	 */
-	public Method getMethodDeclaration()
+	public VariableDeclaration getMethodDeclaration()
 	{
-		FileDeclaration file = getParent().getFileDeclaration();
+		ClassDeclaration clazz = null;
 		
-		Program program = file.getProgram();
-		
-		if (file.containsImport(getName()))
+		if (getFileDeclaration().containsImport(getName()))
 		{
-			ClassDeclaration clazz = program.getClassDeclaration(getName());
-			
-			Method method = clazz.getMethod(getName());
-			
+			clazz = getProgram().getClassDeclaration(getName());
+		}
+		else
+		{
+			clazz = getReferenceNode().getTypeClass();
+		}
+		
+		MethodDeclaration method = clazz.getMethod(getName());
+		
+		if (method != null)
+		{
 			return method;
 		}
 		
-		Value val = getReferenceNode();
-		
-		ClassDeclaration clazz = val.getTypeClass();
-		
-		Method method = clazz.getMethod(getName());
-		
-		return method;
+		return getParentMethod().getParameterList().getParameter(getName());
 	}
 	
 	/**
@@ -138,7 +201,7 @@ public class MethodCall extends Identifier
 	 */
 	public String getObjectReferenceIdentifier()
 	{
-		return getObjectReferenceIdentifier(getMethodDeclaration());
+		return getObjectReferenceIdentifier(getCallableDeclaration());
 	}
 	
 	/**
@@ -152,7 +215,7 @@ public class MethodCall extends Identifier
 	 */
 	public Value getObjectReferenceValue()
 	{
-		return getObjectReferenceNode(getMethodDeclaration());
+		return getObjectReferenceNode(getCallableDeclaration());
 	}
 	
 	/**
@@ -173,31 +236,21 @@ public class MethodCall extends Identifier
 	 * 		from.
 	 * @return The Parameter that represents the given argument.
 	 */
-	public Parameter getCorrespondingParameter(Value argument)
+	public Value getCorrespondingParameter(Value argument)
 	{
-		int argIndex = -1;
-		
 		ArgumentList args = getArgumentList();
 		
 		for (int i = 0; i < args.getNumChildren(); i++)
 		{
-			Value value = (Value)args.getChild(i);
+			Value abstractValue = (Value)args.getChild(i);
 			
-			if (value == argument)
+			if (abstractValue == argument)
 			{
-				argIndex = i;
-				
-				break;
+				return getCorrespondingParameter(i);
 			}
 		}
 		
-		// If no matching argument was found.
-		if (argIndex == -1)
-		{
-			return null;
-		}
-		
-		return getCorrespondingParameter(argIndex);
+		return null;
 	}
 	
 	/**
@@ -219,11 +272,9 @@ public class MethodCall extends Identifier
 	 * 		parameter from.
 	 * @return The Parameter at the given index.
 	 */
-	public Parameter getCorrespondingParameter(int argIndex)
+	public Value getCorrespondingParameter(int argIndex)
 	{
-		Method method = getMethodDeclaration();
-		
-		return method.getParameter(argIndex);
+		return getCallableDeclaration().getParameterList().getParameter(argIndex);
 	}
 	
 	/**
@@ -238,40 +289,14 @@ public class MethodCall extends Identifier
 	/**
 	 * @see net.fathomsoft.nova.tree.Node#generateCSourceFragment(StringBuilder)
 	 */
-	@Override
-	public StringBuilder generateCSourceFragment(StringBuilder builder)
-	{
-		return generateCSourceFragment(builder, true);
-	}
-	
-	/**
-	 * @see net.fathomsoft.nova.tree.Node#generateCSourceFragment(StringBuilder)
-	 */
-	public StringBuilder generateCSourceFragment(StringBuilder builder, boolean checkSpecial)
+	public StringBuilder generatedCSourceFragment(StringBuilder builder, boolean checkSpecial)
 	{
 		if (checkSpecial && isSpecialFragment())
 		{
 			return generateSpecialFragment(builder);
 		}
 		
-		Method    method  = getMethodDeclaration();
-		
-		if (!isSpecialFragment())
-		{
-			Value node = getRootAccessNode();
-			
-			builder.append(node.generateDataTypeOutput(getDataType()));
-		}
-		
-		builder.append(method.generateCSourceName());
-		
-		builder.append('(');
-		
-		getArgumentList().generateCSource(builder);
-		
-		builder.append(')');
-		
-		return builder;
+		return generateCUseOutput(builder);
 	}
 	
 	/**
@@ -300,11 +325,33 @@ public class MethodCall extends Identifier
 	 * in action.
 	 * 
 	 * @return What the method call looks like when it is being used in
-	 * 		action
+	 * 		action.
 	 */
-	public StringBuilder generateUseOutput(StringBuilder builder)
+	public StringBuilder generateCUseOutput(StringBuilder builder)
 	{
-		return generateCSourceFragment(builder, false);
+		VariableDeclaration method   = getMethodDeclaration();
+		CallableMethod      callable = (CallableMethod)method;
+		
+		if (getParentMethod().getName().equals("testSubCall"))
+		{
+			System.out.println("Break");
+		}
+		
+		if (callable.isVirtual() && !isVirtualTypeKnown())
+		{
+			if (!isAccessed())
+			{
+				builder.append(ParameterList.OBJECT_REFERENCE_IDENTIFIER).append("->");
+			}
+			
+			builder.append(VTable.IDENTIFIER).append("->").append(callable.generateCVirtualMethodName());
+		}
+		else
+		{
+			method.generateCSourceName(builder);
+		}
+		
+		return builder.append(getArgumentList().generateCSource());
 	}
 	
 	/**
@@ -326,115 +373,126 @@ public class MethodCall extends Identifier
 	 * 		MethodCall instance.
 	 * @param location The location of the statement in the source code.
 	 * @param require Whether or not to throw an error if anything goes wrong.
-	 * @param scope Whether or not the given statement is the beginning of
-	 * 		a scope.
 	 * @return The generated node, if it was possible to translated it
 	 * 		into a MethodCall.
 	 */
-	public static MethodCall decodeStatement(Node parent, String statement, Location location, boolean require, boolean scope)
+	public static MethodCall decodeStatement(Node parent, String statement, Location location, boolean require)
 	{
 		if (SyntaxUtils.isMethodCall(statement))
 		{
-			Bounds bounds  = new Bounds(0, 0);//Regex.boundsOf(statement, Patterns.POST_METHOD_CALL);
+			MethodCall n  = new MethodCall(parent, location);
 			
-			int    start   = statement.indexOf('(');
+			Bounds bounds = SyntaxUtils.findInnerParenthesesBounds(n, statement);
 			
-			int    nameEnd = StringUtils.findNextNonWhitespaceIndex(statement, start - 1, -1) + 1;
-			
-			int    end     = StringUtils.findEndingMatch(statement, start, '(', ')');
-			
-			if (end >= 0)
+			if (!n.decodeMethodName(statement, bounds, require))
 			{
-				end = StringUtils.findNextNonWhitespaceIndex(statement, end - 1, -1) + 1;
+				return null;
 			}
 			
-			start = StringUtils.findNextNonWhitespaceIndex(statement, start + 1);
-			
-			bounds.setStart(start);
-			bounds.setEnd(end);
-			
-			MethodCall n = new MethodCall(parent, location);
-			
-			// TODO: make better check for last parenth. Take a count of each of the starting parenthesis and
-			// subtract the ending ones from the number.
-			if (bounds.getEnd() < 0)
-			{
-				SyntaxMessage.error("Expected a ')' ending parenthesis", n);
-			}
-			
-			Location argsLocation = new Location();
-			argsLocation.setLineNumber(location.getLineNumber());
-			argsLocation.setBounds(location.getStart() + bounds.getStart(), location.getStart() + bounds.getEnd());
-			
-			String  methodCall   = statement.substring(0, nameEnd);
-			
-			String  argumentList = statement.substring(bounds.getStart(), bounds.getEnd());
-			
-//			n.externalCall = parent instanceof ExternalType;
-			
-			try
-			{
-				n.iterateWords(methodCall, Patterns.IDENTIFIER_BOUNDARIES);
-			}
-			catch (SyntaxErrorException e)
-			{
-				if (!require)
-				{
-					return null;
-				}
-				
-				throw e;
-			}
-			
-			FileDeclaration     file     = parent.getFileDeclaration();
-			Method   method   = n.getMethodDeclaration();
-			Method   context  = (Method)parent.getAncestorOfType(Method.class, true);
-			Variable accessor = context.getClassDeclaration();
+			CallableMethod method = n.getCallableDeclaration();
 			
 			if (method == null)
 			{
 				SyntaxMessage.error("Undeclared method '" + n.getName() + "'", n);
 			}
 			
-			if (!SyntaxUtils.isVisible(accessor, method))
-			{
-				SyntaxMessage.error("Method '" + method.getName() + "' is not visible", n);
-			}
+			n.validateAccess(method);
 			
+			// Align the data with the method declaration.
 			n.setDataType(method.getDataType());
-			
-			if (method.isExternal())
-			{
-				n.externalCall = true;
-			}
-			else
-			{
-				Value contextNode = n.getContextNode();
-				
-				if (contextNode instanceof ClassDeclaration && method instanceof Constructor == false && !method.isStatic())
-				{
-					SyntaxMessage.error("Cannot call a non-static method from a static context", n);
-				}
-			}
-			
 			n.setType(method.getType());
+			n.externalCall = method.isExternal();
 			
-			String arguments[] = StringUtils.splitCommas(argumentList);
-			
-			n.addArguments(parent, arguments, argsLocation);
-			
-			if (method != null)
+			if (n.decodeArguments(statement, bounds))
 			{
-				if (!n.fulfillsParameters(method, file, location))
-				{
-					return null;
-				}
+				return n;
 			}
-			
-			return n;
 		}
 		
 		return null;
+	}
+	
+	/**
+	 * Decode the name of the method call. Check that it is all up to
+	 * flying squid.
+	 * 
+	 * @param statement The method call statement.
+	 * @param bounds The bounds of the arguments.
+	 * @param require Whether or not to throw an error if anything goes wrong.
+	 * @return Whether or not the method name decoded correctly.
+	 */
+	private boolean decodeMethodName(String statement, Bounds bounds, boolean require)
+	{
+		// Parenthesis index
+		int    parenIndex = StringUtils.findNextNonWhitespaceIndex(statement, bounds.getStart() - 1, -1);
+		int    nameEnd    = StringUtils.findNextNonWhitespaceIndex(statement, parenIndex, -1) + 1;
+		
+		String methodCall = statement.substring(0, nameEnd);
+		
+		try
+		{
+			iterateWords(methodCall, Patterns.IDENTIFIER_BOUNDARIES);
+		}
+		catch (SyntaxErrorException e)
+		{
+			if (!require)
+			{
+				return false;
+			}
+			
+			throw e;
+		}
+		
+		return true;
+	}
+	
+	/**
+	 * Make sure that the method call is authorized to be made. Check if
+	 * the method is visible and that it is referenced in the correct
+	 * context. (e.g. Accessing a non-static method within a static
+	 * context)
+	 * 
+	 * @param method The MethodDeclaration that this method call is
+	 * 		calling.
+	 */
+	private void validateAccess(CallableMethod method)
+	{
+		if (method instanceof ClosureDeclaration)
+		{
+			return;
+		}
+		
+		if (!SyntaxUtils.isVisible(getParentClass(), ((MethodDeclaration)method)))
+		{
+			SyntaxMessage.error("Method '" + method.getName() + "' is not visible", this);
+		}
+	}
+	
+	/**
+	 * Decode all of the given arguments to the method call. Return
+	 * true if it was successfully decoded.
+	 * 
+	 * @param statement The method call statement.
+	 * @param bounds The bounds of the arguments.
+	 * @return Whether or not the arguments decoded successfully.
+	 */
+	private boolean decodeArguments(String statement, Bounds bounds)
+	{
+		String argumentList = statement.substring(bounds.getStart(), bounds.getEnd());
+		
+		if (argumentList.length() <= 0)
+		{
+			return true;
+		}
+		
+		String arguments[]  = StringUtils.splitCommas(argumentList);
+
+		Location argsLocation = new Location(getLocationIn());
+		argsLocation.addBounds(bounds.getStart(), bounds.getEnd());
+		
+		addArguments(arguments, argsLocation);
+		
+		return validateArguments(getFileDeclaration(), getLocationIn());
 	}
 	
 	/**
@@ -447,9 +505,24 @@ public class MethodCall extends Identifier
 		{
 			setName(word);
 		}
-		else if (rightDelimiter.length() > 0)
+		else
 		{
-			SyntaxMessage.error("Unknown characters '" + rightDelimiter + "'", this);
+			String characters = null;
+			
+			if (leftDelimiter.length() > 0)
+			{
+				characters = leftDelimiter;
+			}
+			else if (rightDelimiter.length() > 0)
+			{
+				characters = rightDelimiter;
+			}
+			else
+			{
+				SyntaxMessage.error("Could not decode method name", this);
+			}
+			
+			SyntaxMessage.error("Unknown characters '" + characters + "'", this);
 		}
 	}
 	
@@ -457,32 +530,22 @@ public class MethodCall extends Identifier
 	 * Check to see if the arguments passed to the method call
 	 * fulfills the required parameters of the method declaration.
 	 * 
-	 * @param method The Method to check the arguments against.
 	 * @param fileDeclaration The FileDeclaration that this method call is within.
 	 * @param location The location of the arguments that are being
 	 * 		passed.
 	 * @return True if the method call's arguments fulfill the
 	 * 		requirements of the Method declaration's parameters.
 	 */
-	private boolean fulfillsParameters(Method method, FileDeclaration fileDeclaration, Location location)
+	private boolean validateArguments(FileDeclaration fileDeclaration, Location location)
 	{
-		ParameterList parameters = method.getParameterList();
-		ArgumentList  arguments  = getArgumentList();
+		CallableMethod methodDeclaration = getCallableDeclaration();
 		
-		int offset = 2;
+		ParameterList<Value> parameters = methodDeclaration.getParameterList();
+		ArgumentList         arguments  = getArgumentList();
 		
-		if (method.isExternal())
+		if (parameters.getNumVisibleChildren() != arguments.getNumChildren())
 		{
-			offset = 0;
-		}
-		else if (method.isStatic())
-		{
-			offset = 1;
-		}
-		
-		if (parameters.getNumChildren() - offset != arguments.getNumChildren())
-		{
-			if (parameters.getNumChildren() - offset > arguments.getNumChildren())
+			if (parameters.getNumVisibleChildren() > arguments.getNumChildren())
 			{
 				SyntaxMessage.error("Too few arguments to method call '" + getName() + "'", this);
 			}
@@ -490,84 +553,85 @@ public class MethodCall extends Identifier
 			{
 				SyntaxMessage.error("Too many arguments to method call '" + getName() + "'", this);
 			}
-			
-//			return false;
 		}
 		
 		return true;
 	}
 	
 	/**
-	 * Decode the arguments given within the array into Nodes that
+	 * Decode and add the arguments given within the array into Nodes that
 	 * are translatable into C.
 	 * 
-	 * @param parent The parent of the current method call.
-	 * @param arguments The arguments to decode.
+	 * @param arguments The arguments to decode and then add.
 	 * @param location The location of the method call in the source code.
 	 */
-	private void addArguments(Node parent, String arguments[], Location location)
+	private void addArguments(String arguments[], Location location)
 	{
+		Node parent = getArgumentList();
+		
 		for (int i = 0; i < arguments.length; i++)
 		{
 			String argument = arguments[i];
 			
 			if (argument.length() > 0)
 			{
-				char prefix = '\0';
+				Node arg = Literal.decodeStatement(parent, argument, location, true, true);
 				
-				if (argument.startsWith("*") || argument.startsWith("&"))
-				{
-					prefix   = argument.substring(0, 1).charAt(0);
-					
-					argument = StringUtils.trimSurroundingWhitespace(argument.substring(1));
-				}
-				
-				Node arg = null;
-				
-				if (arg == null && SyntaxUtils.isLiteral(argument))
-				{
-					Literal literal = Literal.decodeStatement(parent, argument, location, true, false);
-					
-					arg = literal;
-				}
 				if (arg == null)
 				{
-					arg = BinaryOperation.decodeStatement(parent, argument, location, false, false);
-				}
-				if (arg == null)
-				{
-					arg = SyntaxTree.decodeScopeContents(parent, argument, location, false, false);//SyntaxTree.getExistingNode(parent, argument);
+					arg = BinaryOperation.decodeStatement(parent, argument, location, false);
 					
-					if (arg != null && (prefix == '*' || prefix == '&'))
+					if (arg == null)
 					{
-						Variable var = (Variable)arg;
+						arg = SyntaxTree.decodeScopeContents(parent, argument, location, false);
 						
-						if (prefix == '*')
+						if (arg == null)
 						{
-							var.setDataType(Variable.POINTER);
-						}
-						else if (prefix == '&')
-						{
-							var.setDataType(Variable.REFERENCE);
+							validateCharacters(parent, argument, location);
+							
+							if (parent.isWithinExternalContext())
+							{
+								arg = Literal.decodeStatement(parent, argument, location, true);
+							}
+							
+							if (arg == null)
+							{
+								SyntaxMessage.error("Could not decode argument '" + argument + "'", parent, location);
+							}
 						}
 					}
 				}
-				if (arg == null && parent.isWithinExternalContext())
-				{
-					Literal literal = Literal.decodeStatement(parent, argument, location, true, false);
-					
-					arg = literal;
-				}
 				
-				if (arg == null)
-				{
-					SyntaxMessage.error("Could not decode argument '" + argument + "'", parent, location);
-				}
-				else
-				{
-					getArgumentList().addChild(arg);
-				}
+				parent.addChild(arg);
 			}
+			else
+			{
+				SyntaxMessage.error("Expected an argument definition", this);
+			}
+		}
+	}
+	
+	/**
+	 * Validate that the characters in the given argument are valid
+	 * identifier-type characters with no symbols.
+	 * 
+	 * @param parent The MethodCallArgumentList Node that the argument
+	 * 		was being added to.
+	 * @param argument The argument String to validate.
+	 * @param location The location of the argument in the source text.
+	 */
+	private void validateCharacters(Node parent, String argument, Location location)
+	{
+		String prefix  = StringUtils.getGroupedSymbols(argument, 0);
+		String postfix = StringUtils.getGroupedSymbols(argument, argument.length() - 1, -1);
+		
+		if (prefix.length() > 0)
+		{
+			SyntaxMessage.error("Unknown symbol" + (prefix.length() > 1 ? "s" : "") + " '" + prefix + "'", parent, location);
+		}
+		else if (postfix.length() > 0)
+		{
+			SyntaxMessage.error("Unknown symbol" + (postfix.length() > 1 ? "s" : "") + " '" + postfix + "'", parent, location);
 		}
 	}
 	
@@ -580,36 +644,16 @@ public class MethodCall extends Identifier
 	 * 		children of the Node as well.
 	 * @return The String representing the method call in Nova syntax.
 	 */
-	public String generateNovaInput(boolean outputChildren)
+	public StringBuilder generateNovaInput(StringBuilder builder, boolean outputChildren)
 	{
-		StringBuilder builder = new StringBuilder();
-		
 		builder.append(getName()).append('(').append(getArgumentList().generateNovaInput()).append(')');
 		
-		if (outputChildren)
+		if (outputChildren && doesAccess())
 		{
-			Identifier accessed = getAccessedNode();
-			
-			if (accessed != null)
-			{
-				builder.append('.').append(accessed.generateNovaInput());
-			}
+			builder.append('.').append(getAccessedNode().generateNovaInput());
 		}
 		
-		return builder.toString();
-	}
-	
-	/**
-	 * @see net.fathomsoft.nova.tree.Identifier#getAccessedNode()
-	 */
-	public Identifier getAccessedNode()
-	{
-		if (getNumChildren() <= 1)
-		{
-			return null;
-		}
-		
-		return (Identifier)getChild(1);
+		return builder;
 	}
 	
 	/**
@@ -620,20 +664,33 @@ public class MethodCall extends Identifier
 	@Override
 	public Node validate(int phase)
 	{
-		Value reference = getReferenceNode();
+		Identifier reference = getReferenceNode();
 		
 		if (reference instanceof Variable)
 		{
 			Variable var = (Variable)reference;
 			
-			if (var.isActiveVariable())
+			if (var.isPrimitiveType())
 			{
-				if (var.isPrimitiveType())
-				{
-					Instantiation instantiation = SyntaxUtils.autoboxPrimitive(var);
-					
-					var.getParent().replace(var, instantiation);
-				}
+				Instantiation instantiation = SyntaxUtils.autoboxPrimitive(var);
+				
+				var.getParent().replace(var, instantiation);
+			}
+		}
+		
+		if (getCallableDeclaration().isVirtual())
+		{
+			if (!isVirtualTypeKnown() && doesAccess() && !getAccessedNode().isVirtualTypeKnown())
+			{
+				Variable replacement = getAncestorWithScope().getScope().registerLocalVariable(reference, this);
+				
+				Node replacing = getLastAccessingOfType(MethodCall.class, true);
+				
+				replacing.getParent().replace(replacing, replacement);
+				
+				replacement.setAccessedNode(getAccessedNode());
+				
+				return replacement.getAccessedNode();
 			}
 		}
 		
@@ -665,5 +722,19 @@ public class MethodCall extends Identifier
 		node.externalCall = externalCall;
 		
 		return node;
+	}
+	
+	/**
+	 * Test the MethodCall class type to make sure everything
+	 * is working properly.
+	 * 
+	 * @return The error output, if there was an error. If the test was
+	 * 		successful, null is returned.
+	 */
+	public static String test()
+	{
+		
+		
+		return null;
 	}
 }

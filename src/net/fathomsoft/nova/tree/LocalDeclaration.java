@@ -1,8 +1,7 @@
 package net.fathomsoft.nova.tree;
 
 import net.fathomsoft.nova.error.SyntaxMessage;
-import net.fathomsoft.nova.tree.variables.LocalVariable;
-import net.fathomsoft.nova.tree.variables.Variable;
+import net.fathomsoft.nova.tree.variables.VariableDeclaration;
 import net.fathomsoft.nova.util.Bounds;
 import net.fathomsoft.nova.util.Location;
 import net.fathomsoft.nova.util.Patterns;
@@ -16,11 +15,19 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.2.4 Jan 5, 2014 at 9:10:49 PM
- * @version	v0.2.13 Jun 17, 2014 at 8:45:35 AM
+ * @version	v0.2.14 Jul 19, 2014 at 7:33:13 PM
  */
-public class LocalDeclaration extends LocalVariable
+public class LocalDeclaration extends VariableDeclaration
 {
 	private int scopeID;
+	
+	/**
+	 * @see net.fathomsoft.nova.tree.Node#Node(Node, Location)
+	 */
+	public LocalDeclaration(Node temporaryParent, Location locationIn)
+	{
+		super(temporaryParent, locationIn);
+	}
 	
 	/**
 	 * Get the ID of the scope that the variable was declared in.
@@ -42,14 +49,6 @@ public class LocalDeclaration extends LocalVariable
 	{
 		this.scopeID = scopeID;
 	}
-	
-	/**
-	 * @see net.fathomsoft.nova.tree.Node#Node(Node, Location)
-	 */
-	public LocalDeclaration(Node temporaryParent, Location locationIn)
-	{
-		super(temporaryParent, locationIn);
-	}
 
 	/**
 	 * Decode the given statement into a LocalDeclaration instance, if
@@ -67,120 +66,152 @@ public class LocalDeclaration extends LocalVariable
 	 * 		LocalDeclaration instance.
 	 * @param location The location of the statement in the source code.
 	 * @param require Whether or not to throw an error if anything goes wrong.
-	 * @param scope Whether or not the given statement is the beginning of
-	 * 		a scope.
 	 * @return The generated node, if it was possible to translated it
 	 * 		into a LocalDeclaration.
 	 */
-	public static LocalDeclaration decodeStatement(Node parent, String statement, Location location, boolean require, boolean scope)
+	public static LocalDeclaration decodeStatement(Node parent, String statement, Location location, boolean require)
 	{
-		if (SyntaxUtils.isLiteral(statement))
-		{
-			return null;
-		}
-		if (!Regex.matches(statement, Patterns.IDENTIFIER_DECLARATION))
+		if (SyntaxUtils.isLiteral(statement) || !Regex.matches(statement, Patterns.IDENTIFIER_DECLARATION))
 		{
 			return null;
 		}
 		
-		LocalDeclaration n = new LocalDeclaration(parent, location);
-		
-		DeclarationData data = new DeclarationData(statement);
+		LocalDeclaration n    = new LocalDeclaration(parent, location);
+		DeclarationData  data = new DeclarationData(statement);
 		
 		n.iterateWords(statement, Patterns.IDENTIFIER_BOUNDARIES, data);
-		
-		if (n.getType() == null || n.getName() == null || data.error)
+	
+		if (data.error != null)
 		{
+			SyntaxMessage.queryError(data.error, n, require);
+			
 			return null;
 		}
 		
-		Variable node = SyntaxTree.getExistingNode(parent, n.getName());
+		n.checkExternal();
+		
+		if (n.validateDeclaration())
+		{
+			return n;
+		}
+		
+		return null;
+	}
+	
+	/**
+	 * Make sure that the declaration is valid and that a declaration of
+	 * another variable does not have the same name.
+	 * 
+	 * @return Whether or not the specified declaration is valid.
+	 */
+	private boolean validateDeclaration()
+	{
+		if (getType() == null || getName() == null)
+		{
+			return false;
+		}
+		
+		VariableDeclaration node = SyntaxTree.findDeclaration(getParent(), getName());
 		
 		// If a local variable with the same name has already been declared.
 		if (node instanceof LocalDeclaration)
 		{
-			SyntaxMessage.error("Local variable '" + n.getName() + "' has already been declared", n);
-//			SyntaxMessage.error("Local variable '" + n.getName() + "' has already been declared", parent.getFileDeclaration(), location, parent.getController());
+			SyntaxMessage.error("Local variable '" + getName() + "' has already been declared", this);
 		}
 		
-		if (parent instanceof ExternalType)
-		{
-			n.setExternal(true);
-		}
-		
-		return n;
+		return true;
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.Node#interactWord(java.lang.String, int, net.fathomsoft.nova.util.Bounds, int, java.lang.String, java.lang.String, net.fathomsoft.nova.tree.Node.ExtraData)
+	 * Check whether or not the specified declaration is external.
+	 */
+	private void checkExternal()
+	{
+		if (getParent() instanceof ExternalType)
+		{
+			setExternal(true);
+		}
+	}
+	
+	/**
+	 * @see net.fathomsoft.nova.tree.Node#interactWord(String, int, Bounds, int, String, String, ExtraData)
 	 */
 	@Override
 	public void interactWord(String word, int wordNumber, Bounds bounds, int numWords, String leftDelimiter, String rightDelimiter, ExtraData data)
 	{
 		DeclarationData extra = (DeclarationData)data;
 		
-		if (extra.error)
+		if (wordNumber == numWords - 1)
+		{
+			interactName(word, leftDelimiter, rightDelimiter);
+		}
+		else if (!setAttribute(word, wordNumber))
+		{
+			if (getType() != null)
+			{
+				extra.error = "Unknown syntax '" + leftDelimiter + word + "'";
+			}
+			else if (!setType(leftDelimiter + word, false))
+			{
+				extra.error = "Type '" + leftDelimiter + word + "' does not exist";
+			}
+		}
+		
+		checkArray(extra.statement, bounds.getEnd(), rightDelimiter);
+	}
+	
+	/**
+	 * Decode the given word as the name of the declaration.
+	 * 
+	 * @param word The name of the declared variable.
+	 * @param leftDelimiter The left delimiter of the name.
+	 * @param rightDelimiter The right delimiter of the name.
+	 */
+	private void interactName(String word, String leftDelimiter, String rightDelimiter)
+	{
+		if (getType() == null || (leftDelimiter.length() != 0 && !StringUtils.containsOnly(leftDelimiter, new char[] { '*', '&' })))
 		{
 			return;
 		}
 		
-		if (!extra.decodingArray)
-		{
-			if (wordNumber == numWords - 1)
-			{
-				if (getType() == null || (leftDelimiter.length() != 0 && !StringUtils.containsOnly(leftDelimiter, new char[] { '*', '&' })))
-				{
-					extra.error = true;
-					
-					return;
-				}
-				
-				setName(word);
-				
-				if (leftDelimiter.length() > 0)
-				{
-					if (leftDelimiter.equals("*"))
-					{
-						setDataType(POINTER);
-					}
-					else if (leftDelimiter.equals("&"))
-					{
-						setDataType(REFERENCE);
-					}
-				}
-			}
-			else if (!setAttribute(word, wordNumber))
-			{
-				if (getType() != null)
-				{
-					SyntaxMessage.error("Unknown syntax '" + leftDelimiter + word + "'", this);
-					
-					extra.error = true;
-				}
-				
-				setType(leftDelimiter + word);
-			}
-			
-			extra.oldWord = word;
-		}
+		setName(word);
 		
-		int firstBracketIndex = StringUtils.findNextNonWhitespaceIndex(extra.statement, bounds.getEnd());
-		
-		if (firstBracketIndex > 0)
+		if (leftDelimiter.length() > 0)
 		{
-			char c = extra.statement.charAt(firstBracketIndex);
-			
-			if (c == '[')
+			if (leftDelimiter.equals("*"))
 			{
-				extra.decodingArray = true;
-				
-				String brackets  = extra.statement.substring(bounds.getEnd());
-				
-				int dimensions   = SyntaxUtils.calculateArrayDimensions(brackets, false);
-				
-				setArrayDimensions(dimensions);
+				setDataType(IValue.POINTER);
+			}
+			else if (leftDelimiter.equals("&"))
+			{
+				setDataType(IValue.REFERENCE);
 			}
 		}
+	}
+	
+	/**
+	 * @see net.fathomsoft.nova.tree.variables.VariableDeclaration#clone(Node, Location)
+	 */
+	@Override
+	public LocalDeclaration clone(Node temporaryParent, Location locationIn)
+	{
+		LocalDeclaration node = new LocalDeclaration(temporaryParent, locationIn);
+		
+		return cloneTo(node);
+	}
+	
+	/**
+	 * Fill the given LocalDeclaration with the data that is in the
+	 * specified node.
+	 * 
+	 * @param node The node to copy the data into.
+	 * @return The cloned node.
+	 */
+	public LocalDeclaration cloneTo(LocalDeclaration node)
+	{
+		super.cloneTo(node);
+		
+		return node;
 	}
 	
 	/**
@@ -192,15 +223,32 @@ public class LocalDeclaration extends LocalVariable
 	 */
 	private static class DeclarationData extends ExtraData
 	{
-		private boolean	error;
-		private boolean	decodingArray;
-		
-		private String	oldWord;
 		private String	statement;
 		
+		/**
+		 * Construct the DeclarationData instance with the given statement
+		 * to pass to the interactWord() method.
+		 * 
+		 * @param statement The statement to pass to the interactWord()
+		 * 		method.
+		 */
 		public DeclarationData(String statement)
 		{
 			this.statement = statement;
 		}
+	}
+	
+	/**
+	 * Test the LocalDeclaration class type to make sure everything
+	 * is working properly.
+	 * 
+	 * @return The error output, if there was an error. If the test was
+	 * 		successful, null is returned.
+	 */
+	public static String test()
+	{
+		
+		
+		return null;
 	}
 }

@@ -2,7 +2,6 @@ package net.fathomsoft.nova.tree.variables;
 
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.tree.BinaryOperation;
-import net.fathomsoft.nova.tree.Identifier;
 import net.fathomsoft.nova.tree.Literal;
 import net.fathomsoft.nova.tree.Node;
 import net.fathomsoft.nova.tree.Priority;
@@ -11,6 +10,7 @@ import net.fathomsoft.nova.util.Bounds;
 import net.fathomsoft.nova.util.Location;
 import net.fathomsoft.nova.util.Patterns;
 import net.fathomsoft.nova.util.Regex;
+import net.fathomsoft.nova.util.StringUtils;
 import net.fathomsoft.nova.util.SyntaxUtils;
 
 /**
@@ -28,9 +28,9 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Mar 16, 2014 at 1:13:49 AM
- * @version	v0.2.14 Jun 18, 2014 at 10:11:40 PM
+ * @version	v0.2.14 Jul 19, 2014 at 7:33:13 PM
  */
-public class Array extends Variable
+public class Array extends VariableDeclaration
 {
 	/**
 	 * @see net.fathomsoft.nova.tree.Node#Node(Node, Location)
@@ -41,16 +41,12 @@ public class Array extends Variable
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.Identifier#getAccessedNode()
+	 * @see net.fathomsoft.nova.tree.Node#getNumDecodedChildren()
 	 */
-	public Identifier getAccessedNode()
+	@Override
+	public int getNumDecodedChildren()
 	{
-		if (getNumChildren() <= 1)
-		{
-			return null;
-		}
-		
-		return (Identifier)getChild(1);
+		return super.getNumDecodedChildren() + 1;
 	}
 	
 	/**
@@ -68,45 +64,33 @@ public class Array extends Variable
 	@Override
 	public StringBuilder generateCSourceFragment(StringBuilder builder)
 	{
-		builder.append('(').append(getName()).append('*');
-		
-		if (!isPrimitiveType() && !isExternalType())
-		{
-			builder.append('*');
-		}
-		
-		builder.append(')');
+		generateCTypeCast(builder);
+		builder.insert(builder.length() - 1, '*');
 		
 		builder.append("NOVA_MALLOC(sizeof(").append(getName()).append(')').append(" * (");
 		
 		for (int i = 0; i < getNumChildren(); i++)
 		{
-			Node child = getChild(i);
-			
-			child.generateCSourceFragment(builder);
+			getChild(i).generateCSourceFragment(builder);
 		}
 		
 		return builder.append(')').append(')');
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.Node#generateNovaInput(boolean)
+	 * @see net.fathomsoft.nova.tree.Node#generateNovaInput(StringBuilder, boolean)
 	 */
 	@Override
-	public String generateNovaInput(boolean outputChildren)
+	public StringBuilder generateNovaInput(StringBuilder builder, boolean outputChildren)
 	{
-		StringBuilder builder = new StringBuilder();
-		
 		builder.append(getName());
 		
 		for (int i = 0; i < getNumChildren(); i++)
 		{
-			Node child = getChild(i);
-			
-			builder.append('[').append(child.generateNovaInput()).append(']');
+			builder.append('[').append(getChild(i).generateNovaInput()).append(']');
 		}
 		
-		return builder.toString();
+		return builder;
 	}
 	
 	/**
@@ -132,75 +116,94 @@ public class Array extends Variable
 	 * @param statement The statement to decode into an Array instance.
 	 * @param location The location of the statement in the source code.
 	 * @param require Whether or not to throw an error if anything goes wrong.
-	 * @param scope Whether or not the given statement is the beginning of
-	 * 		a scope.
 	 * @return The new Array instance if it was able to decode the
 	 * 		statement. If not, it will return null.
 	 */
-	public static Array decodeStatement(Node parent, String statement, Location location, boolean require, boolean scope)
+	public static Array decodeStatement(Node parent, String statement, Location location, boolean require)
 	{
 		if (SyntaxUtils.isArrayInitialization(statement))
 		{
 			Array n = new Array(parent, location);
 			
-			int index   = statement.indexOf('[') + 1;
+			int index = statement.indexOf('[');
 			
 			Location newLoc = new Location(location);
-			newLoc.setBounds(location.getStart() + index, location.getEnd());
+			newLoc.setBounds(location.getStart() + index + 1, location.getEnd());
 			
-			Bounds bounds = Regex.boundsOf(statement, Patterns.IDENTIFIER);
-			
-			String idValue = statement.substring(bounds.getStart(), bounds.getEnd());
+			String idValue = StringUtils.trimSurroundingWhitespace(statement.substring(0, index));
 			
 			n.setName(idValue);
 			n.setType(idValue);
 			
-			while (index > 1)
+			if (n.decodeDimensions(statement, index, newLoc, require))
 			{
-				int endIndex  = statement.indexOf(']', index);
-				
-				String length = statement.substring(index, endIndex);
-				
-				if (SyntaxUtils.isNumber(length))
-				{
-					Literal node = Literal.decodeStatement(n, length, newLoc, require, false);
-					
-					n.addChild(node);
-				}
-				else
-				{
-					Node node = SyntaxTree.getExistingNode(parent, length);
-					
-					if (node == null)
-					{
-						Node binary = BinaryOperation.decodeStatement(parent, length, newLoc, require, false);
-						
-						if (binary == null)
-						{
-							binary = Priority.decodeStatement(parent, length, location, require, false);
-						}
-						if (binary == null)
-						{
-							SyntaxMessage.error("Could not parse length '" + length + "' for array initialization ", n, newLoc);
-						}
-						
-						node = binary;
-					}
-					else
-					{
-						node = node.clone(n, newLoc);
-					}
-					
-					n.addChild(node);
-				}
-				
-				index = statement.indexOf('[', endIndex + 1) + 1;
+				return n;
 			}
-			
-			return n;
 		}
 		
 		return null;
+	}
+	
+	/**
+	 * Decode the dimensions containing the sizes of each dimension
+	 * of the array.
+	 * 
+	 * @param statement The statement containing the dimensions.
+	 * @param index The starting index of the first set of brackets.
+	 * @param location The location that the dimensions are located at.
+	 * @param require Whether or not to throw an error if anything goes
+	 * 		wrong.
+	 * @return Whether or not the dimensions decoded successfully.
+	 */
+	private boolean decodeDimensions(String statement, int index, Location location, boolean require)
+	{
+		while (index++ > 0)
+		{
+			int    endIndex = statement.indexOf(']', index);
+			String length   = StringUtils.trimSurroundingWhitespace(statement.substring(index, endIndex));
+			
+			decodeLength(length, location, require);
+			
+			index = statement.indexOf('[', endIndex + 1);
+		}
+		
+		return true;
+	}
+	
+	/**
+	 * Decode the identifier or literal that represents the length of
+	 * a dimension of the array.
+	 * 
+	 * @param length The String representing the length.
+	 * @param location The location of the length String.
+	 * @param require Whether or not to throw an error if anything goes
+	 * 		wrong.
+	 */
+	private void decodeLength(String length, Location location, boolean require)
+	{
+		Node node = Literal.decodeStatement(this, length, location, require, true);
+		
+		if (node == null)
+		{
+			node = SyntaxTree.getUsableExistingNode(this, length, location);
+			
+			if (node == null)
+			{
+				node = BinaryOperation.decodeStatement(this, length, location, require);
+				
+				if (node == null)
+				{
+					node = Priority.decodeStatement(this, length, location, require);
+					
+					if (node == null)
+					{
+						SyntaxMessage.error("Could not parse length '" + length + "' for array initialization ", this, location);
+					}
+				}
+			}
+		}
+		
+		addChild(node);
 	}
 	
 	/**
@@ -226,5 +229,19 @@ public class Array extends Variable
 		super.cloneTo(node);
 		
 		return node;
+	}
+	
+	/**
+	 * Test the Array class type to make sure everything
+	 * is working properly.
+	 * 
+	 * @return The error output, if there was an error. If the test was
+	 * 		successful, null is returned.
+	 */
+	public static String test()
+	{
+		
+		
+		return null;
 	}
 }

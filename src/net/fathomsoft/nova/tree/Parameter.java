@@ -1,16 +1,17 @@
 package net.fathomsoft.nova.tree;
 
+import net.fathomsoft.nova.error.SyntaxMessage;
+import net.fathomsoft.nova.tree.variables.VariableDeclaration;
 import net.fathomsoft.nova.util.Location;
-import net.fathomsoft.nova.util.SyntaxUtils;
 
 /**
  * LocalVariable extension that represents a Parameter of a method.
- * See {@link #decodeStatement(Node, String, Location, boolean, boolean)} for more
+ * See {@link #decodeStatement(Node, String, Location, boolean)} for more
  * details on what correct inputs look like.
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:52:01 PM
- * @version	v0.2.14 Jun 18, 2014 at 10:11:40 PM
+ * @version	v0.2.14 Jul 19, 2014 at 7:33:13 PM
  */
 public class Parameter extends LocalDeclaration
 {
@@ -54,7 +55,7 @@ public class Parameter extends LocalDeclaration
 	@Override
 	public StringBuilder generateCHeader(StringBuilder builder)
 	{
-		return generateCSource(builder);
+		return generateCModifiersSource(builder);
 	}
 
 	/**
@@ -63,35 +64,7 @@ public class Parameter extends LocalDeclaration
 	@Override
 	public StringBuilder generateCSource(StringBuilder builder)
 	{
-		if (isConstant())
-		{
-			builder.append(getConstantText()).append(' ');
-		}
-		
-		generateCTypeOutput(builder);
-		
-		if (isArray())
-		{
-			builder.append(getArrayText());
-		}
-		
-		if (isPointer())
-		{
-			builder.append('*');
-		}
-		else if (isReference())
-		{
-			builder.append('&');
-		}
-		
-		if (!SyntaxUtils.isPrimitiveType(getType()) && !isExternalType())
-		{
-			builder.append('*');
-		}
-		
-		builder.append(' ');
-		
-		return generateCSourceName(builder);
+		return generateCHeader(builder).append(' ').append(generateCSourceName());
 	}
 	
 	/**
@@ -112,24 +85,74 @@ public class Parameter extends LocalDeclaration
 	 * 		Parameter instance.
 	 * @param location The location of the statement in the source code.
 	 * @param require Whether or not to throw an error if anything goes wrong.
-	 * @param scope Whether or not the given statement is the beginning of
-	 * 		a scope.
 	 * @return The generated node, if it was possible to translated it
 	 * 		into a Parameter.
 	 */
-	public static Parameter decodeStatement(Node parent, String statement, Location location, boolean require, boolean scope)
+	public static Parameter decodeStatement(Node parent, String statement, Location location, boolean require)
 	{
-		LocalDeclaration node = LocalDeclaration.decodeStatement(parent, statement, location, require, scope);
+		VariableDeclaration node = LocalDeclaration.decodeStatement(parent, statement, location, require);
 		
 		if (node == null)
 		{
-//			SyntaxMessage.error("Could not asdf", parent, location);
-			return null;
+			node = ClosureDeclaration.decodeStatement(parent, statement, location, require);
+			
+			if (node == null)
+			{
+				SyntaxMessage.queryError("Could not decode parameter", parent, location, require);
+				
+				return null;
+			}
+		}
+		
+		if (node instanceof Parameter)
+		{
+			return (Parameter)node;
 		}
 		
 		Parameter n = new Parameter(parent, location);
 		node.cloneTo(n);
 		
 		return n;
+	}
+	
+	/**
+	 * @see net.fathomsoft.nova.tree.LocalDeclaration#clone(Node, Location)
+	 */
+	@Override
+	public Parameter clone(Node temporaryParent, Location locationIn)
+	{
+		Parameter node = new Parameter(temporaryParent, locationIn);
+		
+		return cloneTo(node);
+	}
+	
+	/**
+	 * Fill the given Parameter with the data that is in the
+	 * specified node.
+	 * 
+	 * @param node The node to copy the data into.
+	 * @return The cloned node.
+	 */
+	public Parameter cloneTo(Parameter node)
+	{
+		super.cloneTo(node);
+		
+		node.defaultValue = defaultValue;
+		
+		return node;
+	}
+	
+	/**
+	 * Test the Parameter class type to make sure everything
+	 * is working properly.
+	 * 
+	 * @return The error output, if there was an error. If the test was
+	 * 		successful, null is returned.
+	 */
+	public static String test()
+	{
+		
+		
+		return null;
 	}
 }

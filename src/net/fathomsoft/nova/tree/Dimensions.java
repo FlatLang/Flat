@@ -8,7 +8,7 @@ import net.fathomsoft.nova.util.Location;
  * 
  * @author	Braden Steffaniak
  * @since	v0.2.5 May 19, 2014 at 12:09:41 AM
- * @version	v0.2.14 Jun 18, 2014 at 10:11:40 PM
+ * @version	v0.2.14 Jul 19, 2014 at 7:33:13 PM
  */
 public class Dimensions extends Node
 {
@@ -28,30 +28,24 @@ public class Dimensions extends Node
 	{
 		for (int i = 0; i < getNumChildren(); i++)
 		{
-			Node child = getChild(i);
-			
-			builder.append('[').append(child.generateCSourceFragment()).append(']');
+			builder.append('[').append(getChild(i).generateCSourceFragment()).append(']');
 		}
 		
 		return builder;
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.Node#generateNovaInput(boolean)
+	 * @see net.fathomsoft.nova.tree.Node#generateNovaInput(StringBuilder, boolean)
 	 */
 	@Override
-	public String generateNovaInput(boolean outputChildren)
+	public StringBuilder generateNovaInput(StringBuilder builder, boolean outputChildren)
 	{
-		StringBuilder builder = new StringBuilder();
-		
 		for (int i = 0; i < getNumChildren(); i++)
 		{
-			Node child = getChild(i);
-			
-			builder.append('[').append(child.generateNovaInput()).append(']');
+			builder.append('[').append(getChild(i).generateNovaInput()).append(']');
 		}
 		
-		return builder.toString();
+		return builder;
 	}
 	
 	/**
@@ -77,5 +71,19 @@ public class Dimensions extends Node
 		super.cloneTo(node);
 		
 		return node;
+	}
+	
+	/**
+	 * Test the Dimensions class type to make sure everything
+	 * is working properly.
+	 * 
+	 * @return The error output, if there was an error. If the test was
+	 * 		successful, null is returned.
+	 */
+	public static String test()
+	{
+		
+		
+		return null;
 	}
 }

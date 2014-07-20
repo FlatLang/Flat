@@ -1,0 +1,93 @@
+import "File"
+import "Time"
+
+public class FileStability
+{
+	static String inputString
+	
+	static int lines
+	
+	public static void test(StabilityTest program)
+	{
+		Console.writeLine("Checking File IO...")
+		
+		inputString = "This is test input..."
+		lines       = 100
+		
+		try
+		{
+			File f = new File("temp" + Time.currentTimeMillis())
+			
+			createFile(program, f)
+			writeToFile(program, f)
+			readFromFile(program, f)
+			deleteFile(program, f)
+		}
+		catch (Exception e)
+		{
+			program.fail("Failed; Exception thrown")
+		}
+	}
+	
+	static void createFile(StabilityTest program, File f)
+	{
+		Console.write("Creating file... ")
+		
+		f.create()
+		
+		Console.writeLine("OK")
+	}
+	
+	static void writeToFile(StabilityTest program, File f)
+	{
+		Console.write("Writing " + lines + " lines of data to file... ")
+		
+		for (int i = 0; i < lines; i++)
+		{
+			f.writeLine(inputString)
+		}
+		
+		Console.writeLine("OK")
+	}
+	
+	static void readFromFile(StabilityTest program, File f)
+	{
+		Console.write("Reading lines from file... ")
+		
+		f.reopen()
+		
+		int    times = 0
+		String line  = f.readLine()
+		
+		while (line != null)
+		{
+			if (!line.equals(inputString))
+			{
+				program.fail("")
+			}
+			
+			line = f.readLine()
+			
+			times++
+		}
+		
+		if (times != lines)
+		{
+			program.fail("Failed; only read " + times + "/" + 100 + " lines")
+		}
+		
+		Console.writeLine("OK")
+	}
+	
+	static void deleteFile(StabilityTest program, File f)
+	{
+		Console.write("Deleting file... ")
+		
+		if (!f.delete())
+		{
+			program.fail("Failed to delete file")
+		}
+		
+		Console.writeLine("OK")
+	}
+}

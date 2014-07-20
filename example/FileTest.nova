@@ -1,35 +1,34 @@
-import "File";
-import "Thread";
+import "File"
+import "Thread"
 
 public class FileTest
 {
 	public static void main(String args[])
 	{
-		File f = new File("C:/Users/Braden Steffaniak/test3.txt");
+		File f = new File("C:/Users/Braden Steffaniak/test3.txt")
 		
-		if (f.exists() == 1)
+		if (f.exists())
 		{
-			IO.println("Your file exists!");
+			Console.writeLine("Your file exists!")
 			
-			f.writeLine("Entering data..");
-			f.writeLine("asdfasdf thing.");
+			f.writeLine("Entering data..")
+			f.writeLine("asdfasdf thing.")
 			
-			//f.close();
-			f.reopen();
+			f.reopen()
 			
-			String data = f.readAllContents();
+			String data = f.readAllContents()
 			
-			IO.println(data);
+			Console.writeLine(data)
 		}
 		else
 		{
-			IO.println("Your file does not exist..");
+			Console.writeLine("Your file does not exist..")
 		}
 		
-		f.close();
+		f.close()
 		
-		IO.println("Press enter to exit...");
+		Console.writeLine("Press enter to exit...")
 		
-		IO.waitForEnter();
+		Console.waitForEnter()
 	}
 }

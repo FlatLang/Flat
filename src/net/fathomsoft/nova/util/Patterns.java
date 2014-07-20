@@ -8,7 +8,7 @@ import java.util.regex.Pattern;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Apr 5, 2014 at 3:53:04 PM
- * @version	v0.2.6 May 24, 2014 at 6:06:20 PM
+ * @version	v0.2.14 Jul 19, 2014 at 7:33:13 PM
  */
 public class Patterns
 {
@@ -396,9 +396,10 @@ public class Patterns
 	public static final Pattern PRE_CLASS				= Pattern.compile("class\\s");
 	
 	/**
-	 * Pattern that searches for the word "external"
+	 * Pattern that searches for the word "external" followed by a
+	 * whitespace character.
 	 */
-	public static final Pattern EXTERNAL				= Pattern.compile("external");
+	public static final Pattern EXTERNAL				= Pattern.compile("external\\s");
 	
 	/**
 	 * Pattern that searches for the words "external type"

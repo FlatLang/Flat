@@ -3,18 +3,19 @@ package net.fathomsoft.nova.tree.exceptionhandling;
 import java.util.ArrayList;
 
 import net.fathomsoft.nova.tree.Node;
+import net.fathomsoft.nova.tree.SyntaxTree;
 import net.fathomsoft.nova.util.Location;
 import net.fathomsoft.nova.util.Patterns;
 import net.fathomsoft.nova.util.Regex;
 
 /**
  * ExceptionHandler extension that represents the declaration of a
- * try node type. See {@link #decodeStatement(Node, String, Location, boolean, boolean)}
+ * try node type. See {@link #decodeStatement(Node, String, Location, boolean)}
  * for more details on what correct inputs look like.
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Mar 22, 2014 at 4:01:38 PM
- * @version	v0.2.14 Jun 18, 2014 at 10:11:40 PM
+ * @version	v0.2.14 Jul 19, 2014 at 7:33:13 PM
  */
 public class Try extends ExceptionHandler
 {
@@ -71,12 +72,10 @@ public class Try extends ExceptionHandler
 	 * 		Try instance.
 	 * @param location The location of the statement in the source code.
 	 * @param require Whether or not to throw an error if anything goes wrong.
-	 * @param scope Whether or not the given statement is the beginning of
-	 * 		a scope.
 	 * @return The generated node, if it was possible to translated it
 	 * 		into a Try.
 	 */
-	public static Try decodeStatement(Node parent, String statement, Location location, boolean require, boolean scope)
+	public static Try decodeStatement(Node parent, String statement, Location location, boolean require)
 	{
 		if (Regex.matches(statement, 0, Patterns.TRY))
 		{
@@ -98,53 +97,43 @@ public class Try extends ExceptionHandler
 	@Override
 	public Node validate(int phase)
 	{
+		if (phase != SyntaxTree.PHASE_METHOD_CONTENTS)
+		{
+			return this;
+		}
+		
 		Node parent = getParent();
 		
-		Finally finallyNode = null;
-		
-		for (int i = 0; i < parent.getNumChildren() && finallyNode == null; i++)
+		for (int i = 0; i < parent.getNumChildren(); i++)
 		{
 			Node child = parent.getChild(i);
 			
 			if (child == this)
 			{
-				i++;
-				
-				int     insertIndex = -1;
-				
-				while (i < parent.getNumChildren() && insertIndex == -1)
+				if (++i < parent.getNumChildren())
 				{
 					child = parent.getChild(i);
-					
-					// If the current child is a catch node.
-					if (child instanceof Catch == false)
-					{
-						// If there already is a finally node.
-						if (child instanceof Finally)
-						{
-							insertIndex = -2;
-						}
-						// If there was not finally node.
-						else
-						{
-							insertIndex = i;
-						}
-					}
-					
-					i++;
 				}
 				
-				// If there does not already exist a finally node.
-				if (insertIndex != -2)
+				while (child instanceof Catch)
 				{
-					if (insertIndex < 0)
+					if (++i < parent.getNumChildren())
 					{
-						insertIndex = i;
+						child = parent.getChild(i);
 					}
-					
-					finallyNode = new Finally(parent, null);
-					parent.addChild(insertIndex, finallyNode);
+					else
+					{
+						child = null;
+					}
 				}
+				
+				if (!(child instanceof Finally))
+				{
+					Finally finallyNode = new Finally(parent, null);
+					parent.addChild(i, finallyNode);
+				}
+				
+				return this;
 			}
 		}
 		
@@ -193,6 +182,27 @@ public class Try extends ExceptionHandler
 	{
 		super.cloneTo(node);
 		
+		node.codes = new ArrayList<Integer>();
+		
+		for (Integer c : codes)
+		{
+			node.codes.add(c);
+		}
+		
 		return node;
+	}
+	
+	/**
+	 * Test the Try class type to make sure everything
+	 * is working properly.
+	 * 
+	 * @return The error output, if there was an error. If the test was
+	 * 		successful, null is returned.
+	 */
+	public static String test()
+	{
+		
+		
+		return null;
 	}
 }

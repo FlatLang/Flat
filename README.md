@@ -21,7 +21,7 @@ __Aim__
 __Pre-requisites__
 
   * The early version of the compiler uses Java 1.6 or later.
-  * Any Windows 95 (x86) machine or later. (Or any machine that contains GCC/Clang)
+  * Pretty much any machine that has a GCC C compiler.
   * Patience. (There will be bugs)
 
 
@@ -46,16 +46,19 @@ __An Example command to compile a source__
 
 __Optional arguments to the Compiler Include__
 
-  * `-csource` Output the compiled c source files during compilation.
+  * `-csource` Output the compiled C source files during compilation.
   * `-verbose` or `-v` Output debugging messages during compilation.
   * `-dir` Used to specify the directory in which to include in the compilation.
   * `-dry` Perform a dry-run of the compilation. Do not compile into an executable.
-  * `-gcc` Compile the c code with the GCC (GNU Compiler Collection) compiler.
-  * `-tcc` Compile the c code with the TCC (Tiny C Compiler) compiler.
-  * `-keepc` Keep the c output files that were generated during the compilation process.
-  * `-cargs` Display the arguments that were passed to the c compiler.
+  * `-gcc` Compile the program with the GCC (GNU Compiler Collection) compiler.
+  * `-tcc` Compile the program with the TCC (Tiny C Compiler) compiler.
+  * `-keepc` Keep the C output files that were generated during the compilation process.
+  * `-cargs` Display the arguments that were passed to the C compiler.
+  * `-nogc` Compile the program without garbage collection. (Not recommended)
+  * `-small` Generate the smallest possible executable output.
+  * `-single-thread` Compile the program with only a single thread.
 
-The default c compiler is TCC because it is more stable at the moment.
+The default C compiler for Windows is TCC because it is already packaged with the download.
 
 
 

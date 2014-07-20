@@ -1,0 +1,60 @@
+public class ExceptionStability
+{
+	public static void test(StabilityTest program)
+	{
+		Console.write("Checking Exception handling... ")
+		
+		bool worked = false
+		
+		try
+		{
+			testException(program)
+		}
+		catch (Exception e)
+		{
+			worked = true
+		}
+		
+		if (!worked)
+		{
+			program.fail("Failed; uncaught Exception")
+		}
+		
+		Console.writeLine("OK")
+	}
+	
+	static void testException(StabilityTest program)
+	{
+		bool worked = false
+		
+		try
+		{
+			try
+			{
+				int den = 0
+				
+				int i = 43 / den
+			}
+			catch (DivideByZeroException e)
+			{
+				worked = true
+				
+				throw new StabilityTestException()
+			}
+		}
+		catch (StabilityTestException e)
+		{
+			if (!worked)
+			{
+				program.fail("Failed; uncaught DivideByZeroException")
+			}
+			
+			throw new Exception()
+		}
+		
+		if (!worked)
+		{
+			program.fail("Failed; uncaught StabilityTestException")
+		}
+	}
+}

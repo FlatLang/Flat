@@ -1,0 +1,9 @@
+public class System
+{
+	external void exit(int code) as externalExit
+	
+	public static void exit(int code)
+	{
+		externalExit(code)
+	}
+}

@@ -1,118 +1,93 @@
-import "ArrayList";
+import "ArrayList"
 
 public class ExceptionData
 {
-	/*external header
+	external type buffer
+	
+	external void jump(buffer buf, int code)
+	
+	buffer				buf
+	
+	ExceptionData		parent
+	
+	visible ArrayList	codes
+	
+	public ExceptionData(buffer buf)
 	{
-		j
-	}*/
-	
-//	external
-//	{
-//		/*jmp_buf getCorrectBuffer(int code)
-//		{
-//			ExceptionData data = nova_ExceptionData_getCorrectData(code);
-//			
-//			if (data == 0)
-//			{
-//				return 0;
-//			}
-//			
-//			return data.getBuffer();
-//		}*/
-//		
-//		jmp_buf getBuffer()
-//		{
-//			return *buffer;
-//		}
-//	}
-	
-	external type jmp_buf;
-	
-	external void longjmp(jmp_buf buf, int code);
-	
-	jmp_buf*		buffer;
-	
-	ExceptionData	parent;
-	
-	visible ArrayList	codes;
-	
-	public ExceptionData(jmp_buf* buf)
-	{
-		buffer = buf;
-		codes  = new ArrayList();
+		this.buf = buf
+		codes    = new ArrayList()
 	}
 	
 	public void addCode(int code)
 	{
-		codes.add(code);
+		codes.add(code)
 	}
 	
-	public jmp_buf getBuffer()
+	public buffer getBuffer()
 	{
-		return buffer;
+		return buf
 	}
 	
 	public ExceptionData getCorrectData(int code)
 	{
-		ExceptionData data = this;
+		ExceptionData data = this
 		
-		while (data != 0)
+		while (data != null)
 		{
-			ArrayList list = data.codes;
+			ArrayList list = data.codes
 			
 			for (int i = 0; i < list.size; i++)
 			{
 				if (list.get(i) == code)
 				{
-					return data;
+					return data
 				}
 			}
 			
-			if (data.getParent() == 0)
+			if (data.getParent() == null)
 			{
-				return data;
+				return data
 			}
 			
-			data = data.getParent();
+			data = data.getParent()
 		}
 		
-		return 0;
+		return 0
 	}
 	
-	public jmp_buf getCorrectBuffer(int code)
+	public buffer getCorrectBuffer(int code)
 	{
-		ExceptionData data = getCorrectData(code);
+		ExceptionData data = getCorrectData(code)
 		
-		if (data == 0)
+		if (data == null)
 		{
-			return 0;
+			return 0
 		}
 		
-		return data.getBuffer();
+		return data.getBuffer()
 	}
 	
 	public void jumpToBuffer(int code)
 	{
-		ExceptionData data = getCorrectData(code);
+		ExceptionData data = getCorrectData(code)
 		
-		if (data.getParent() == 0)
+		if (data.getParent() == null)
 		{
-			code = 1;
+			code = 1
 		}
 		
-		jmp_buf* buf = data.getBuffer();
+		buffer b = data.getBuffer()
 		
-		longjmp(buf, code);
+		jump(b, code)
 	}
 	
 	public ExceptionData getParent()
 	{
-		return parent;
+		return parent
 	}
 	
 	public void setParent(ExceptionData p)
 	{
-		parent = p;
+		parent = p
 	}
 }

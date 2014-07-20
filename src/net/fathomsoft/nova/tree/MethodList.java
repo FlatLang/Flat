@@ -9,7 +9,7 @@ import net.fathomsoft.nova.util.Location;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 10:29:22 PM
- * @version	v0.2.14 Jun 18, 2014 at 10:11:40 PM
+ * @version	v0.2.14 Jul 19, 2014 at 7:33:13 PM
  */
 public class MethodList extends Node
 {
@@ -66,40 +66,15 @@ public class MethodList extends Node
 	 * @param methodName The name of the method to search for.
 	 * @return The Method for the method, if it exists.
 	 */
-	public Method getMethod(String methodName)
+	public MethodDeclaration getMethod(String methodName)
 	{
 		for (int i = 0; i < getNumChildren(); i++)
 		{
-			Method method = (Method)getChild(i);
+			MethodDeclaration methodDeclaration = (MethodDeclaration)getChild(i);
 			
-			if (method.getName().equals(methodName))
+			if (methodDeclaration.getName().equals(methodName))
 			{
-				return method;
-			}
-		}
-		
-		ClassDeclaration classDeclaration = (ClassDeclaration)getAncestorOfType(ClassDeclaration.class);
-		ClassDeclaration extended  = classDeclaration.getExtendedClass();
-		
-		if (extended != null)
-		{
-			Method method = extended.getMethod(methodName);
-			
-			if (method != null)
-			{
-				return method;
-			}
-		}
-		
-		ClassDeclaration implemented[] = classDeclaration.getImplementedClasses();
-		
-		for (ClassDeclaration clazz : implemented)
-		{
-			Method method = clazz.getMethod(methodName);
-			
-			if (method != null)
-			{
-				return method;
+				return methodDeclaration;
 			}
 		}
 		
@@ -117,11 +92,11 @@ public class MethodList extends Node
 	{
 		for (int i = 0; i < getNumChildren(); i++)
 		{
-			Method method = (Method)getChild(i);
+			MethodDeclaration methodDeclaration = (MethodDeclaration)getChild(i);
 			
-			if (method != null)
+			if (methodDeclaration != null)
 			{
-				method.validate(phase);
+				methodDeclaration.validate(phase);
 			}
 		}
 		
@@ -136,11 +111,11 @@ public class MethodList extends Node
 	{
 		for (int i = 0; i < getNumChildren(); i++)
 		{
-			Method method = (Method)getChild(i);
+			MethodDeclaration methodDeclaration = (MethodDeclaration)getChild(i);
 			
-			if (!method.isExternal())
+			if (!methodDeclaration.isExternal())
 			{
-				method.generateCHeader(builder);
+				methodDeclaration.generateCHeader(builder);
 			}
 		}
 		
@@ -162,16 +137,16 @@ public class MethodList extends Node
 		
 		for (int i = 0; i < getNumChildren(); i++)
 		{
-			Method method = (Method)getChild(i);
+			MethodDeclaration methodDeclaration = (MethodDeclaration)getChild(i);
 			
-			if (!method.isExternal())
+			if (!methodDeclaration.isExternal())
 			{
 				if (printed)
 				{
 					builder.append('\n');
 				}
 				
-				method.generateCSource(builder);
+				methodDeclaration.generateCSource(builder);
 				
 				printed = true;
 			}
@@ -192,7 +167,7 @@ public class MethodList extends Node
 	{
 		for (int i = 0; i < getNumChildren(); i++)
 		{
-			Method child = (Method)getChild(i);
+			MethodDeclaration child = (MethodDeclaration)getChild(i);
 			
 			child.generateCSourcePrototype(builder).append('\n');
 		}
@@ -223,5 +198,19 @@ public class MethodList extends Node
 		super.cloneTo(node);
 		
 		return node;
+	}
+	
+	/**
+	 * Test the MethodList class type to make sure everything
+	 * is working properly.
+	 * 
+	 * @return The error output, if there was an error. If the test was
+	 * 		successful, null is returned.
+	 */
+	public static String test()
+	{
+		
+		
+		return null;
 	}
 }

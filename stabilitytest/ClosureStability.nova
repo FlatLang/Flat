@@ -1,0 +1,101 @@
+public class ClosureStability
+{
+	static double TOLERANCE
+	
+	int	number
+	
+	void incrementNumber()
+	{
+		number++
+	}
+	
+	public static void test(StabilityTest program)
+	{
+		TOLERANCE = 0.0000000001
+		
+		testClosures(program)
+	}
+	
+	static void testClosures(StabilityTest program)
+	{
+		Console.writeLine("Testing closures...")
+		
+		testMathClosures(program)
+		testInstanceClosure(program)
+	}
+	
+	static void testMathClosures(StabilityTest program)
+	{
+		Console.write("Testing static math closures... ")
+		
+		int a = 5
+		int b = 3
+		
+		double value = 0.5
+		
+		if (callClosure(multiply, a, b) != multiply(a, b))
+			program.fail("Failed to call multiply(int, int) closure")
+			
+		if (callClosure(pow, a, b) != pow(a, b))
+			program.fail("Failed to call pow(int, int) closure")
+			
+		if (mathClosure(Math.sin, value) - Math.sin(value) >= TOLERANCE)
+			program.fail("Failed to call Math.sin(double) closure")
+			
+		if (mathClosure(Math.tan, value) - Math.tan(value) >= TOLERANCE)
+			program.fail("Failed to call Math.tan(double) closure")
+		
+		Console.writeLine("OK")
+	}
+	
+	static void testInstanceClosure(StabilityTest program)
+	{
+		Console.write("Testing instance closures... ")
+		
+		ClosureStability c = new ClosureStability()
+		
+		instanceClosure(c.incrementNumber)
+		
+		if (c.number == 0)
+		{
+			program.fail("Failed to call incrementNumber() instance closure")
+		}
+		
+		instanceClosure(new ClosureStability().incrementNumber)
+		instanceClosure(c.incrementNumber)
+		
+		Console.writeLine("OK")
+	}
+	
+	static int callClosure(int closure(int, int), int a, int b)
+	{
+		return closure(a, b)
+	}
+	
+	static double mathClosure(double closure(double), double value)
+	{
+		return closure(value)
+	}
+	
+	static void instanceClosure(void closure())
+	{
+		closure()
+	}
+	
+	static int multiply(int value1, int value2)
+	{
+		return value1 * value2
+	}
+	
+	static int pow(int base, int pow)
+	{
+		int value = base
+		
+		for (int i = 0; i < pow - 1; i++)
+		{
+			value = value * base
+		}
+		
+		return value
+	}
+}

@@ -1,10 +1,12 @@
 #include <precompiled.h>
-
 #include "NovaException.h"
+
+
+
 
 Exception* nova_Exception_Exception(ExceptionData* exceptionData)
 {
-	Exception* this = NULL;
+	Exception* this = (Exception*)1;
 	
 	{
 	}

@@ -1,8 +1,10 @@
 package net.fathomsoft.nova.tree;
 
 import net.fathomsoft.nova.Nova;
+import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.tree.exceptionhandling.Exception;
 import net.fathomsoft.nova.util.Location;
+import net.fathomsoft.nova.util.StringUtils;
 import net.fathomsoft.nova.util.SyntaxUtils;
 
 /**
@@ -11,11 +13,17 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 10:34:30 PM
- * @version	v0.2.14 Jun 18, 2014 at 10:11:40 PM
+ * @version	v0.2.14 Jul 19, 2014 at 7:33:13 PM
  */
-public class Literal extends Value
+public class Literal extends IValue
 {
 	private String	value;
+	
+	public static final String	NULL_IDENTIFIER		= "null";
+	public static final String	TRUE_IDENTIFIER		= "true";
+	public static final String	FALSE_IDENTIFIER	= "false";
+	
+	public static final String	C_NULL_OUTPUT		= "(Object*)0";
 	
 	/**
 	 * @see net.fathomsoft.nova.tree.Node#Node(Node, Location)
@@ -44,26 +52,31 @@ public class Literal extends Value
 	 */
 	public void setValue(String value)
 	{
-//		if (!external && SyntaxUtils.isStringLiteral(value))
-//		{
-//			value = Nova.LANGUAGE_NAME.toLowerCase() + "_String_String(" + Exception.EXCEPTION_DATA_IDENTIFIER + ", " + value + ")";
-//		}
-		
 		this.value = value;
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.Node#generateNovaInput(boolean)
+	 * @see net.fathomsoft.nova.tree.Node#generateNovaInput(StringBuilder, boolean)
 	 */
 	@Override
-	public String generateNovaInput(boolean outputChildren)
+	public StringBuilder generateNovaInput(StringBuilder builder, boolean outputChildren)
 	{
 		if (!isWithinExternalContext() && isStringInstantiation())
 		{
-			return "new String(" + value + ")";
+			return builder.append("new String(").append(value).append(')');
 		}
 		
-		return value;
+		return builder.append(value);
+	}
+	
+	public byte getDataType()
+	{
+		if (SyntaxUtils.isStringLiteral(value) && (!isStringInstantiation() || isWithinExternalContext()))
+		{
+			return 1;
+		}
+		
+		return super.getDataType();
 	}
 	
 	/**
@@ -121,8 +134,36 @@ public class Literal extends Value
 		{
 			return builder.append(Nova.LANGUAGE_NAME.toLowerCase()).append("_String_String(").append(Exception.EXCEPTION_DATA_IDENTIFIER).append(", ").append(value).append(")");
 		}
+		else if (value.equals(NULL_IDENTIFIER))
+		{
+			return builder.append(C_NULL_OUTPUT);
+		}
+		else if (value.equals(TRUE_IDENTIFIER))
+		{
+			return builder.append(1);
+		}
+		else if (value.equals(FALSE_IDENTIFIER))
+		{
+			return builder.append(0);
+		}
 		
 		return builder.append(value);
+	}
+	
+	/**
+	 * @see #decodeStatement(Node, String, Location, boolean)
+	 * 
+	 * @param mustBeLiteral Whether or not the statement must be a literal
+	 * 		to decode.
+	 */
+	public static Literal decodeStatement(Node parent, String statement, Location location, boolean require, boolean mustBeLiteral)
+	{
+		if (mustBeLiteral && !SyntaxUtils.isLiteral(statement))
+		{
+			return null;
+		}
+		
+		return decodeStatement(parent, statement, location, require);
 	}
 	
 	/**
@@ -144,12 +185,10 @@ public class Literal extends Value
 	 * 		Literal instance.
 	 * @param location The location of the statement in the source code.
 	 * @param require Whether or not to throw an error if anything goes wrong.
-	 * @param scope Whether or not the given statement is the beginning of
-	 * 		a scope.
 	 * @return The generated node, if it was possible to translated it
 	 * 		into a Literal.
 	 */
-	public static Literal decodeStatement(Node parent, String statement, Location location, boolean require, boolean scope)
+	public static Literal decodeStatement(Node parent, String statement, Location location, boolean require)
 	{
 		String literalType = SyntaxUtils.getLiteralTypeName(statement);
 		
@@ -157,9 +196,17 @@ public class Literal extends Value
 		{
 			Literal n = new Literal(parent, location);
 			n.setValue(statement);
-			n.setType(literalType);
+			
+			if (literalType != null)
+			{
+				n.setType(literalType);
+			}
 			
 			return n;
+		}
+		else if (require)
+		{
+			SyntaxMessage.error("Could not decode literal '" + statement + "'", parent, location);
 		}
 		
 		return null;
@@ -190,5 +237,19 @@ public class Literal extends Value
 		node.value = value;
 		
 		return node;
+	}
+	
+	/**
+	 * Test the Literal class type to make sure everything
+	 * is working properly.
+	 * 
+	 * @return The error output, if there was an error. If the test was
+	 * 		successful, null is returned.
+	 */
+	public static String test()
+	{
+		
+		
+		return null;
 	}
 }

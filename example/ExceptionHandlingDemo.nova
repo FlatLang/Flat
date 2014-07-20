@@ -1,4 +1,4 @@
-import "NonWholeDivisionException";
+import "NonWholeDivisionException"
 
 public class ExceptionHandlingDemo
 {
@@ -6,35 +6,35 @@ public class ExceptionHandlingDemo
 	{
 		try
 		{
-			int result = divide(100, 5);
+			int result = divide(100, 5)
 			
-			IO.println("After working example: " + result);
+			Console.writeLine("After working example: " + result)
 			
-			result = divide(100, 3);
+			result = divide(100, 3)
 			
-			IO.println("this output will not show.");
+			Console.writeLine("this output will not show.")
 		}
 		catch (NonWholeDivisionException e)
 		{
-			IO.println("You used the divide() method incorrectly.");
+			Console.writeLine("You used the divide() method incorrectly.")
 		}
 		finally
 		{
-			IO.println("Exiting the try block.");
+			Console.writeLine("Exiting the try block.")
 		}
 		
-		IO.println("After the try block.");
+		Console.writeLine("After the try block.")
 		
-		IO.waitForEnter();
+		Console.waitForEnter()
 	}
 	
 	static int divide(int num, int den)
 	{
 		if (num % den != 0)
 		{
-			throw new NonWholeDivisionException();//"There cannot be any remainders from the division.");
+			throw new NonWholeDivisionException()//"There cannot be any remainders from the division.")
 		}
 		
-		return num / den;
+		return num / den
 	}
 }

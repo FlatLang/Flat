@@ -11,7 +11,7 @@ import net.fathomsoft.nova.util.Location;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:28:08 PM
- * @version	v0.2.13 Jun 17, 2014 at 8:45:35 AM
+ * @version	v0.2.14 Jul 19, 2014 at 7:33:13 PM
  */
 public class Message
 {
@@ -87,7 +87,7 @@ public class Message
 				lineNumber += location.getLineNumber();
 			}
 			
-			info += " in file " + file.getFile().getName();
+			info += " - in file \"" + file.getFile().getName() + '"';
 			info += " on line number " + lineNumber + " at offset " + loc.getOffset() + " [" + loc.getStart() + ", " + loc.getEnd() + "]";
 		}
 

@@ -1,64 +1,63 @@
 public class Long extends Number
 {
-	visible long value;
+	visible long value
 	
 	public Long(long value)
 	{
-		this.value = value;
+		this.value = value
 	}
 	
 	public static int numDigits(long number)
 	{
 		if (number < 0)
 		{
-			return numDigits(-number) + 1;
+			return numDigits(-number) + 1
 		}
 		
-		int size;
+		int size
 		
-		number = number / 10;
-			
+		number = number / 10
+		
 		for (size = 1; number > 0; size++)
 		{
-			number = number / 10;
+			number = number / 10
 		}
 		
-		return size;
+		return size
 	}
 	
 	public static String toAString(long value)
 	{
-		int  digits  = numDigits(value);
+		int  digits  = numDigits(value)
+		char data[]  = new char[digits + 1]
 		
-		char data[]  = new char[digits + 1];
+		data[digits] = '\0'
 		
-		data[digits] = '\0';
-		
-		int  offset  = 0;
+		int  offset  = 0
 		
 		if (value < 0)
 		{
-			data[0] = '-';
+			data[0] = '-'
 			
-			value  = -value;
+			value  = -value
 			
-			offset = 1;
+			offset = 1
 		}
 		
-		int nums = digits-- - offset;
+		int nums = digits-- - offset
 		
 		for (int index = 0; index < nums; index++)
 		{
-			data[digits - index] = '0' + value % 10;
+			data[digits - index] = '0' + value % 10
 			
-			value = value / 10;
+			value = value / 10
 		}
 		
-		return new String(data);
+		return new String(data)
 	}
 	
 	public String toString()
 	{
-		return toAString(value);
+		return toAString(value)
 	}
 }

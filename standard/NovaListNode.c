@@ -1,6 +1,7 @@
 #include <precompiled.h>
-
 #include "NovaListNode.h"
+
+
 
 CCLASS_PRIVATE
 (
@@ -13,8 +14,8 @@ ListNode* nova_ListNode_ListNode(ExceptionData* exceptionData, Object* nova_0_da
 {
 	CCLASS_NEW(ListNode, this);
 	
-	this->prv->nova_ListNode_data = 0;
-	this->prv->nova_ListNode_next = 0;
+	this->prv->nova_ListNode_data = (Object*)0;
+	this->prv->nova_ListNode_next = (Object*)0;
 	{
 		this->prv->nova_ListNode_data = nova_0_data;
 	}

@@ -1,15 +1,21 @@
 Line counter regex: (^|\n)[\t\r ]*[A-Za-z0-9_]
 Comment counter regex: \n[\t\r ]*[/]?[*]+[^/][^\n]*[\S]+
 Total line number count: ((^|\n)[\t\r ]*[A-Za-z0-9_])|(\n[\t\r ]*[/]?[*]+[^/][^\n]*[\S]+)
+Whitespace count: (^|\n)([{}/*\s]*?(\n|$))
 
 Pre v0.2.13:
-Code: 6687
-Comments: 5191
-Total: 11878
+Code: 6687 - 56%
+Comments: 5191 - 44%
+Total: 11878 - 100%
 
 v0.2.13 release:
-Code: 6655
-Comments: 5338
-Total: 11993
+Code: 6655 - 55% - 99%
+Comments: 5338 - 45% - 103%
+Total: 11993 - 101%
 
-gcc -I include -I libatomic_ops/src -O2 -DGC_THREADS -DTHREAD_LOCAL_ALLOC -DPARALLEL_MARK? -shared -o gc.dll extra/gc.c
+Current:
+Code: 7371 - 53% - 108% - 107%
+Comments: 6534 - 47% - 120% - 124%
+Total: 13918 - 113% - 114%
+
+gcc -I include -I libatomic_ops/src -O2 -DGC_THREADS -DTHREAD_LOCAL_ALLOC ???-DPARALLEL_MARK??? -shared -o gc.dll extra/gc.c

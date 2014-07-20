@@ -1,10 +1,12 @@
 #include <precompiled.h>
-
 #include "NovaBool.h"
+
+
+
 
 Bool* nova_Bool_Bool(ExceptionData* exceptionData)
 {
-	Bool* this = NULL;
+	Bool* this = (Bool*)1;
 	
 	{
 	}

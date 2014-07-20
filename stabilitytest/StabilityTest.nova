@@ -1,0 +1,51 @@
+import "Time"
+
+public class StabilityTest
+{
+	public static void main(String args[])
+	{
+		StabilityTest test = new StabilityTest()
+		
+		long start  = Time.currentTimeMillis()
+		int  result = test.runTests()
+		long time   = Time.currentTimeMillis() - start
+		
+		Console.writeLine("Took " + time + "ms")
+		
+		Console.waitForEnter()
+	}
+	
+	public int runTests()
+	{
+		try
+		{
+			ExceptionStability.test(this)
+			TimeStability.test(this)
+			ThreadStability.test(this)
+			FileStability.test(this)
+			SyntaxStability.test(this)
+			ClosureStability.test(this)
+			PolymorphismStability.test(this)
+			
+			Console.writeLine("All OK")
+			
+			return 0
+		}
+		catch (UnstableException e)
+		{
+			return 1
+		}
+	}
+	
+	public void fail(String message)
+	{
+		if (message.length <= 0)
+		{
+			message = "Failed"
+		}
+		
+		Console.writeLine(message)
+		
+		throw new UnstableException();
+	}
+}
