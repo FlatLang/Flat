@@ -14,7 +14,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:58:29 PM
- * @version	v0.2.14 Jul 19, 2014 at 7:33:13 PM
+ * @version	v0.2.16 Jul 22, 2014 at 12:47:19 AM
  */
 public class Return extends IValue
 {
@@ -60,11 +60,6 @@ public class Return extends IValue
 		
 		if (getValueNode() != null)
 		{
-			if (getValueNode().toString().equals("nova_local_0.equals(new String(\"sub class\"))"))
-			{
-				System.out.println("ASDF");
-			}
-			
 			builder.append(' ').append(getValueNode().generateCSourceFragment());
 		}
 		
