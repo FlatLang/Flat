@@ -12,7 +12,7 @@ import net.fathomsoft.nova.util.Location;
  * 
  * @author	Braden Steffaniak
  * @since	v0.2.14 Jun 19, 2014 at 12:14:53 PM
- * @version	v0.2.14 Jul 19, 2014 at 7:33:13 PM
+ * @version	v0.2.16 Jul 22, 2014 at 12:47:19 AM
  */
 public class MethodCallArgumentList extends ArgumentList
 {
@@ -62,8 +62,29 @@ public class MethodCallArgumentList extends ArgumentList
 			
 			Value child = (Value)getChild(i);
 			
+			Value param = getMethodCall().getCorrespondingParameter(child);
+			
+			boolean sameType = child.getReturnedNode().getType().equals(param.getType());
+			
+			if (!sameType)
+			{
+				param.generateCTypeCast(builder);
+			}
+			
 			generateCArgumentPrefix(builder, child, i);
+			
+			if (!sameType)
+			{
+				builder.append('(');
+			}
+			
+			
 			child.generateCSourceFragment(builder);
+			
+			if (!sameType)
+			{
+				builder.append(')');
+			}
 		}
 		
 		return builder.append(')');
@@ -141,7 +162,22 @@ public class MethodCallArgumentList extends ArgumentList
 				builder.append('&');
 			}
 			
-			getMethodCallContext().generateCArgumentReference(builder, getMethodCall()).append(", ");
+			Identifier context  = getMethodCallContext();
+			boolean    sameType = context.getReturnedNode().getType().equals(method.getParentClass().getType());
+			
+			if (!sameType)
+			{
+				method.getParentClass().generateCTypeCast(builder).append('(');
+			}
+			
+			context.generateCArgumentReference(builder, getMethodCall());
+			
+			if (!sameType)
+			{
+				builder.append(')');
+			}
+			
+			builder.append(", ");
 		}
 		
 		return builder;
@@ -155,16 +191,7 @@ public class MethodCallArgumentList extends ArgumentList
 	 */
 	private Identifier getMethodCallContext()
 	{
-		Identifier current = getMethodCall().getReferenceNode();
-		Identifier next    = current.getAccessingNode();
-		
-		while (next != null && !(next instanceof MethodCall))
-		{
-			current = next;
-			next    = next.getAccessingNode();
-		}
-		
-		return current;
+		return getMethodCall().getRootReferenceNode();
 	}
 	
 	/**
