@@ -9,8 +9,8 @@ public class ThreadDemo
 		
 		while (c == 'y' || c == 'Y')
 		{
-			Thread thread  = new Thread(100, "Thread1")
-			Thread thread2 = new Thread(100, "Thread2")
+			Thread thread  = new ThreadDemoImplementation(100, "Thread1")
+			Thread thread2 = new ThreadDemoImplementation(100, "Thread2")
 			
 			long start = Time.currentTimeMillis()
 			

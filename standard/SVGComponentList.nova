@@ -1,7 +1,4 @@
-import "SVGComponentNode"
-import "SVGComponent"
 import "File"
-import "SVGCircle"
 
 public class SVGComponentList
 {
@@ -13,7 +10,7 @@ public class SVGComponentList
 		
 		while (current != null)
 		{
-			SVGCircle component = current.component
+			SVGComponent component = current.component
 			
 			component.generateOutput(file)
 			

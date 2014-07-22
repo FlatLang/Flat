@@ -1,0 +1,31 @@
+public class PolymorphismDemo
+{
+	public static void main(String args[])
+	{
+		Animal animals[] = new Animal[2]
+		
+		Dog    dog    = new Dog()
+		Spider spider = new Spider()
+		
+		animals[0] = dog
+		animals[1] = spider
+		
+		String description = getDescriptionOfAnimalWithNumberOfLegs(animals, 8)
+		
+		Console.writeLine("Searched for animal with 8 legs and found:")
+		Console.writeLine(description)
+		
+		Console.waitForEnter()
+	}
+	
+	static String getDescriptionOfAnimalWithNumberOfLegs(Animal animals[], int numLegs)
+	{
+		for (int i = 0; i < 2; i++)
+		{
+			if (animals[i].getNumLegs() == numLegs)
+			{
+				return animals[i].getDescription()
+			}
+		}
+	}
+}

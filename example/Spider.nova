@@ -1,0 +1,17 @@
+public class Spider extends Animal
+{
+	public int getNumLegs()
+	{
+		return 8
+	}
+	
+	public int getNumEyes()
+	{
+		return 9000
+	}
+	
+	public String getDescription()
+	{
+		return "It's a disgusting thing (Spider)"
+	}
+}
