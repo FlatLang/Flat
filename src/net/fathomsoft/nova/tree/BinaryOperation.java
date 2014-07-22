@@ -22,7 +22,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:20:35 PM
- * @version	v0.2.14 Jul 19, 2014 at 7:33:13 PM
+ * @version	v0.2.16 Jul 22, 2014 at 12:47:19 AM
  */
 public class BinaryOperation extends IValue
 {
@@ -395,9 +395,7 @@ public class BinaryOperation extends IValue
 		
 		String denominatorVar = Nova.LANGUAGE_NAME.toLowerCase() + "_zero_check" + checkId++;
 		
-		String highestType = "double";
-		
-		Assignment assignment = Assignment.decodeStatement(parent, highestType + " " + denominatorVar + " = " + denominator, location, true);
+		Assignment assignment = Assignment.decodeStatement(parent, abstractValue.getType() + " " + denominatorVar + " = " + denominator, location, true);
 		
 		Variable assignee = (Variable)assignment.getAssigneeNode();
 //		assignee.setForceOriginalName(true);
