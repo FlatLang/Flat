@@ -13,7 +13,7 @@ import net.fathomsoft.nova.util.Location;
  * 
  * @author	Braden Steffaniak
  * @since	v0.2 Apr 14, 2014 at 11:52:33 PM
- * @version	v0.2.14 Jul 19, 2014 at 7:33:13 PM
+ * @version	v0.2.17 Jul 22, 2014 at 4:24:45 PM
  */
 public class Program extends Node
 {
@@ -54,6 +54,20 @@ public class Program extends Node
 		files.put(file.getName(), getNumChildren());
 		
 		super.addChild(child);
+	}
+	
+	/**
+	 * Add Imports for all of the classes within the same package as the
+	 * given FileDeclaration.
+	 */
+	public void addAutoImports()
+	{
+		for (int i = 0; i < getNumChildren(); i++)
+		{
+			FileDeclaration child = (FileDeclaration)getChild(i);
+			
+			child.addAutoImports();
+		}
 	}
 	
 	/**
