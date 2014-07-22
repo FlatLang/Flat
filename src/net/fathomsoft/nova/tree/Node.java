@@ -79,7 +79,7 @@ public abstract class Node
 	 */
 	public final boolean isEmpty()
 	{
-		if (getNumChildren() > getNumDefaultChildren())
+		if (getNumVisibleChildren() > 0)
 		{
 			return false;
 		}
