@@ -18,7 +18,7 @@ import net.fathomsoft.nova.util.StringUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:50:47 PM
- * @version	v0.2.14 Jul 19, 2014 at 7:33:13 PM
+ * @version	v0.2.15 Jul 22, 2014 at 12:05:49 AM
  */
 public class Constructor extends MethodDeclaration
 {
@@ -162,7 +162,18 @@ public class Constructor extends MethodDeclaration
 			
 			if (!field.isExternal())
 			{
-				field.generateCUseOutput(builder).append(" = ").append(Literal.C_NULL_OUTPUT).append(';').append('\n');
+				field.generateCUseOutput(builder).append(" = ");
+				
+				if (!field.isPrimitiveType())
+				{
+					builder.append(Literal.C_NULL_OUTPUT);
+				}
+				else
+				{
+					builder.append(0);
+				}
+				
+				builder.append(';').append('\n');
 			}
 		}
 		
