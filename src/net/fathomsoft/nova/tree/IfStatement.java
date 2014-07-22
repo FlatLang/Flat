@@ -26,7 +26,7 @@ public class IfStatement extends Node
 	{
 		super(temporaryParent, locationIn);
 		
-		Scope        scope     = new Scope(this, locationIn);
+		Scope scope = new Scope(this, locationIn);
 		
 		setScope(scope);
 	}
@@ -55,7 +55,7 @@ public class IfStatement extends Node
 	@Override
 	public boolean pendingScopeFragment()
 	{
-		return getScope().getNumVisibleChildren() == 0;
+		return getScope().isEmpty();
 	}
 	
 	/**
