@@ -12,6 +12,7 @@ import net.fathomsoft.nova.util.Bounds;
 import net.fathomsoft.nova.util.Location;
 import net.fathomsoft.nova.util.Patterns;
 import net.fathomsoft.nova.util.Regex;
+import net.fathomsoft.nova.util.SyntaxUtils;
 
 /**
  * Declaration extension that represents the declaration of a class
@@ -20,7 +21,7 @@ import net.fathomsoft.nova.util.Regex;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:15:51 PM
- * @version	v0.2.14 Jul 19, 2014 at 7:33:13 PM
+ * @version	v0.2.16 Jul 22, 2014 at 12:47:19 AM
  */
 public class ClassDeclaration extends InstanceDeclaration
 {
@@ -189,6 +190,11 @@ public class ClassDeclaration extends InstanceDeclaration
 	 */
 	public boolean isOfType(ClassDeclaration node)
 	{
+		if (node == null)
+		{
+			return false;
+		}
+		
 		ClassDeclaration clazz = this;
 		
 		while (clazz != null)
@@ -199,6 +205,11 @@ public class ClassDeclaration extends InstanceDeclaration
 			}
 			
 			clazz = clazz.getExtendedClass();
+		}
+		
+		if (SyntaxUtils.isPrimitiveTypeCompatible(SyntaxUtils.getWrapperClassPrimitiveName(node.getType()), SyntaxUtils.getWrapperClassPrimitiveName(getType())))
+		{
+			return true;
 		}
 		
 		return false;
@@ -247,6 +258,11 @@ public class ClassDeclaration extends InstanceDeclaration
 	public void setExtendedClass(String extendedClass)
 	{
 		this.extendedClass = extendedClass;
+		
+		if (getFileDeclaration().containsImport(extendedClass))
+		{
+			getFileDeclaration().getImport(extendedClass).markUsed();
+		}
 	}
 	
 	/**
