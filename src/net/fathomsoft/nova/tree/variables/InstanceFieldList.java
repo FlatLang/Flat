@@ -10,7 +10,7 @@ import net.fathomsoft.nova.util.Location;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 10:00:50 PM
- * @version	v0.2.14 Jul 19, 2014 at 7:33:13 PM
+ * @version	v0.2.16 Jul 22, 2014 at 12:47:19 AM
  */
 public class InstanceFieldList extends Node
 {
@@ -28,13 +28,11 @@ public class InstanceFieldList extends Node
 	@Override
 	public StringBuilder generateCHeader(StringBuilder builder)
 	{
-		ClassDeclaration clazz = getParentClass();
-		
-		ClassDeclaration extended = clazz.getExtendedClass();
+		ClassDeclaration extended = getParentClass().getExtendedClass();
 		
 		if (extended != null)
 		{
-			boolean publicList = this == clazz.getFieldList().getPublicFieldList();
+			boolean publicList = this == getParentClass().getFieldList().getPublicFieldList();
 			
 			InstanceFieldList fields = null;
 			
