@@ -15,7 +15,7 @@ import net.fathomsoft.nova.util.Location;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:00:19 PM
- * @version	v0.2.15 Jul 22, 2014 at 12:05:49 AM
+ * @version	v0.2.16 Jul 22, 2014 at 12:47:19 AM
  */
 public abstract class Identifier extends Value
 {
@@ -114,16 +114,34 @@ public abstract class Identifier extends Value
 
 	public Identifier getLastAccessingOfType(Class<?> type, boolean opposite)
 	{
+		return getLastAccessingOfType(new Class<?>[] { type }, opposite);
+	}
+
+	public Identifier getLastAccessingOfType(Class<?> types[], boolean opposite)
+	{
 		Identifier previous = this;
 		Identifier current  = getAccessingNode();
 		
-		while (current != null && type.isAssignableFrom(current.getClass()) != opposite)
+		while (current != null && checkTypes(types, current.getClass()) != opposite)
 		{
 			previous = current;
 			current  = current.getAccessingNode();
 		}
 		
 		return previous;
+	}
+	
+	private boolean checkTypes(Class<?> types[], Class<?> clazz)
+	{
+		for (Class<?> type : types)
+		{
+			if (type.isAssignableFrom(clazz))
+			{
+				return true;
+			}
+		}
+		
+		return false;
 	}
 	
 	public Identifier getNextAccessedOfType(Class<?> type)
@@ -150,6 +168,21 @@ public abstract class Identifier extends Value
 		}
 		
 		return prev;
+	}
+	
+	public Identifier getRootReferenceNode()
+	{
+		return getRootReferenceNode(false);
+	}
+	
+	public Identifier getRootReferenceNode(boolean inclusive)
+	{
+		if (inclusive && !isAccessed())
+		{
+			return this;
+		}
+		
+		return getReferenceNode().getLastAccessingOfType(new Class<?>[] { Closure.class, MethodCall.class }, true);
 	}
 	
 	/**
@@ -384,9 +417,8 @@ public abstract class Identifier extends Value
 	 */
 	public boolean isAccessedWithinStaticContext()
 	{
-		return isWithinStaticContext() && !isAccessed() && !(this instanceof Variable);
+		return isWithinStaticContext() && !isAccessed() && (!isInstance() || getParentClass().containsMethod(getName()));
 	}
-	// TODO: Fix the "this instanceof Variable" thing
 	
 	/**
 	 * Get whether this specified identifier node was accessed through
@@ -447,9 +479,11 @@ public abstract class Identifier extends Value
 			return generateNovaInput(builder, true);
 		}
 		
+		stopAt = stopAt.getAccessedNode();
+		
 		Identifier current = this;
 		
-		while (current != stopAt.getAccessedNode())
+		while (current != stopAt)
 		{
 			current.generateNovaInput(builder, false).append('.');
 			
@@ -474,7 +508,7 @@ public abstract class Identifier extends Value
 			
 			if (declaration.isStatic())
 			{
-				return builder.append(Literal.C_NULL_OUTPUT);
+				return declaration.getParameterList().getObjectReference().generateCNullOutput(builder);
 			}
 			else if (declaration instanceof ClosureDeclaration)
 			{
@@ -631,18 +665,19 @@ public abstract class Identifier extends Value
 	 */
 	public boolean isSpecialFragment()
 	{
-		Identifier current = getAccessedNode();
+		Identifier current = getLastAccessedNode();
 		
-		if (current == null)
+		while (current != this && current != null)
 		{
-			return false;
-		}
-		else if (current.isSpecial())// instanceof MethodCall || current instanceof Closure)
-		{
-			return true;
+			if (current.isSpecial())// instanceof MethodCall || current instanceof Closure)
+			{
+				return true;
+			}
+			
+			current = current.getAccessingNode();
 		}
 		
-		return current.isSpecialFragment();
+		return false;
 	}
 	
 	/**
@@ -863,7 +898,7 @@ public abstract class Identifier extends Value
 			
 			if (existing == null)
 			{
-				return builder.append(Literal.C_NULL_OUTPUT);
+				return builder.append(0);
 			}
 		}
 		
