@@ -17,7 +17,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 10:04:31 PM
- * @version	v0.2.14 Jul 19, 2014 at 7:33:13 PM
+ * @version	v0.2.15 Jul 22, 2014 at 12:05:49 AM
  */
 public class MethodCall extends IIdentifier
 {
@@ -331,11 +331,6 @@ public class MethodCall extends IIdentifier
 	{
 		VariableDeclaration method   = getMethodDeclaration();
 		CallableMethod      callable = (CallableMethod)method;
-		
-		if (getParentMethod().getName().equals("testSubCall"))
-		{
-			System.out.println("Break");
-		}
 		
 		if (callable.isVirtual() && !isVirtualTypeKnown())
 		{
