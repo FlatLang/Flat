@@ -15,7 +15,7 @@ import net.fathomsoft.nova.util.Location;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:00:19 PM
- * @version	v0.2.14 Jul 19, 2014 at 7:33:13 PM
+ * @version	v0.2.15 Jul 22, 2014 at 12:05:49 AM
  */
 public abstract class Identifier extends Value
 {
@@ -384,8 +384,9 @@ public abstract class Identifier extends Value
 	 */
 	public boolean isAccessedWithinStaticContext()
 	{
-		return isWithinStaticContext() && !isAccessed() && !doesAccess();
+		return isWithinStaticContext() && !isAccessed() && !(this instanceof Variable);
 	}
+	// TODO: Fix the "this instanceof Variable" thing
 	
 	/**
 	 * Get whether this specified identifier node was accessed through
@@ -432,6 +433,30 @@ public abstract class Identifier extends Value
 	public boolean isDecodingAccessedNode(Node node)
 	{
 		return node.getParent() == this && !containsChild(node);
+	}
+	
+	public StringBuilder generateNovaInputUntil(Identifier stopAt)
+	{
+		return generateNovaInputUntil(new StringBuilder(), stopAt);
+	}
+	
+	public StringBuilder generateNovaInputUntil(StringBuilder builder, Identifier stopAt)
+	{
+		if (stopAt == null)
+		{
+			return generateNovaInput(builder, true);
+		}
+		
+		Identifier current = this;
+		
+		while (current != stopAt.getAccessedNode())
+		{
+			current.generateNovaInput(builder, false).append('.');
+			
+			current = current.getAccessedNode();
+		}
+		
+		return builder.deleteCharAt(builder.length() - 1);
 	}
 	
 	/**
@@ -520,6 +545,8 @@ public abstract class Identifier extends Value
 	{
 		return generateChildrenCSourceFragment(new StringBuilder(), reference, stopBefore);
 	}
+	
+	// TODO: use stopAt instead of stopBefore.
 	
 	/**
 	 * Generate a String representing the accessed nodes.
