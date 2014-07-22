@@ -17,7 +17,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 10:04:31 PM
- * @version	v0.2.15 Jul 22, 2014 at 12:05:49 AM
+ * @version	v0.2.16 Jul 22, 2014 at 12:47:19 AM
  */
 public class MethodCall extends IIdentifier
 {
@@ -673,23 +673,26 @@ public class MethodCall extends IIdentifier
 			}
 		}
 		
-		if (getCallableDeclaration().isVirtual())
+		if (localDeclarationRequired())
 		{
-			if (!isVirtualTypeKnown() && doesAccess() && !getAccessedNode().isVirtualTypeKnown())
-			{
-				Variable replacement = getAncestorWithScope().getScope().registerLocalVariable(reference, this);
-				
-				Node replacing = getLastAccessingOfType(MethodCall.class, true);
-				
-				replacing.getParent().replace(replacing, replacement);
-				
-				replacement.setAccessedNode(getAccessedNode());
-				
-				return replacement.getAccessedNode();
-			}
+			MethodCall calling   = (MethodCall)reference;
+			
+			Variable replacement = getAncestorWithScope().getScope().registerLocalVariable(calling, this);
+			Node     replacing   = calling.getRootReferenceNode(true);
+			
+			replacing.getParent().replace(replacing, replacement);
+			
+			replacement.setAccessedNode(this);
+			
+			return replacement.getAccessedNode();
 		}
 		
 		return this;
+	}
+	
+	private boolean localDeclarationRequired()
+	{
+		return getCallableDeclaration().isVirtual() && !isVirtualTypeKnown() && isAccessed() && getAccessingNode() instanceof MethodCall && !getAccessingNode().isVirtualTypeKnown();
 	}
 	
 	/**
