@@ -21,7 +21,7 @@ import net.fathomsoft.nova.util.StringUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:00:11 PM
- * @version	v0.2.14 Jul 19, 2014 at 7:33:13 PM
+ * @version	v0.2.16 Jul 22, 2014 at 12:47:19 AM
  */
 public abstract class Node
 {
@@ -380,6 +380,11 @@ public abstract class Node
 	public int getNumChildren()
 	{
 		return children.size();
+	}
+	
+	public ArrayList<Node> getChildren()
+	{
+		return children;
 	}
 	
 	/**
