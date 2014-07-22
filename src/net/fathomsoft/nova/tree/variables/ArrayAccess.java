@@ -21,7 +21,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.2 Mar 24, 2014 at 10:45:29 PM
- * @version	v0.2.14 Jul 19, 2014 at 7:33:13 PM
+ * @version	v0.2.16 Jul 22, 2014 at 12:47:19 AM
  */
 public class ArrayAccess extends Variable
 {
@@ -100,6 +100,15 @@ public class ArrayAccess extends Variable
 	public void addDimension(Node child)
 	{
 		getDimensions().addChild(child);
+	}
+	
+	/**
+	 * @see net.fathomsoft.nova.tree.Value#generateCTypeOutput(java.lang.StringBuilder)
+	 */
+	@Override
+	public StringBuilder generateCTypeOutput(StringBuilder builder)
+	{
+		return super.generateCTypeOutput(builder, false);
 	}
 	
 	/**
