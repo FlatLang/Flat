@@ -1,5 +1,7 @@
 package net.fathomsoft.nova.tree;
 
+import java.io.ObjectInputStream.GetField;
+
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.tree.variables.FieldDeclaration;
 import net.fathomsoft.nova.tree.variables.Variable;
@@ -14,7 +16,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:19:44 PM
- * @version	v0.2.14 Jul 19, 2014 at 7:33:13 PM
+ * @version	v0.2.16 Jul 22, 2014 at 12:47:19 AM
  */
 public class Assignment extends Node
 {
@@ -98,12 +100,21 @@ public class Assignment extends Node
 	 */
 	private StringBuilder generateCAssignmentSource(StringBuilder builder)
 	{
-		if (getAssignment().toString().equals("Integer.toAString(i)"))
+		boolean sameType = getAssignment().getReturnedNode().getType().equals(getAssigneeNode().getReturnedNode().getType());
+		
+		if (!sameType)
 		{
-			System.out.println("BREAAK");
+			getAssigneeNode().getReturnedNode().generateCTypeCast(builder).append('(');
 		}
 		
-		return builder.append(getAssignment().generateDataTypeOutput(getAssigneeNode().getDataType())).append(getAssignment().generateCSourceFragment());
+		builder.append(getAssignment().generateDataTypeOutput(getAssigneeNode().getDataType())).append(getAssignment().generateCSourceFragment());
+		
+		if (!sameType)
+		{
+			builder.append(')');
+		}
+		
+		return builder;
 	}
 	
 	/**
@@ -197,7 +208,7 @@ public class Assignment extends Node
 		Location newLoc = new Location(location);
 		newLoc.setBounds(location.getStart() + rhsIndex, location.getStart() + statement.length());
 		
-		Node child = decodeRightHandSide(n, rhs, newLoc, require);
+		Node child = n.decodeRightHandSide(n, rhs, newLoc, require);
 		
 		if (child == null)
 		{
@@ -316,7 +327,7 @@ public class Assignment extends Node
 	 * @return The new Node if it decodes properly. If not,
 	 * 		it returns null.
 	 */
-	public static Node decodeRightHandSide(Node parent, String rhs, Location location, boolean require)
+	public Value decodeRightHandSide(Node parent, String rhs, Location location, boolean require)
 	{
 		Node child = SyntaxTree.decodeScopeContents(parent, rhs, location, require);
 		
@@ -325,7 +336,26 @@ public class Assignment extends Node
 			child = SyntaxTree.decodeValue(parent, rhs, location, require);
 		}
 		
-		return child;
+		if (!(child instanceof Value))
+		{
+			SyntaxMessage.queryError("Could not decode assignment right-hand side '" + rhs + "'", parent, location, require);
+			
+			return null;
+		}
+		
+		Value value         = (Value)child;
+		Value returnedLeft  = getAssigneeNode().getReturnedNode();
+		Value returnedRight = value.getReturnedNode();
+		
+		if (!returnedRight.getType().equals(returnedLeft.getType()))
+		{
+			if (returnedRight.getTypeClass() == null || !returnedRight.getTypeClass().isOfType(returnedLeft.getTypeClass()))
+			{
+//				SyntaxMessage.error("Type '" + returnedRight.getType() + "' is not compatible with type '" + returnedLeft.getType() + "'", parent, location);
+			}
+		}
+		
+		return value;
 	}
 	
 	/**
