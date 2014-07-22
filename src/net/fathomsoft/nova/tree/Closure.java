@@ -12,7 +12,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.2.14 Jul 5, 2014 at 9:02:42 PM
- * @version	v0.2.14 Jul 19, 2014 at 7:33:13 PM
+ * @version	v0.2.16 Jul 22, 2014 at 12:47:19 AM
  */
 public class Closure extends Variable
 {
@@ -45,15 +45,25 @@ public class Closure extends Variable
 	public StringBuilder generateCSourceFragment(StringBuilder builder)
 	{
 		getClosureDeclaration().generateCTypeCast(builder);
-		builder.append('&').append(getReferenceNode().getTypeClass().getMethod(getName()).generateCSourceName()).append(", ");
 		
-		if (getReferenceNode() instanceof ClassDeclaration == false)
+		if (getMethodDeclaration().isVirtual() && !isVirtualTypeKnown())
 		{
-			getReferenceNode().generateCArgumentReference(builder, this);
+			getRootReferenceNode().generateCArgumentReference(builder, this).append("->").append(VTable.IDENTIFIER).append("->").append(getMethodDeclaration().generateCVirtualMethodName());
 		}
 		else
 		{
-			builder.append(Literal.C_NULL_OUTPUT);
+			builder.append('&').append(getMethodDeclaration().generateCSourceName());
+		}
+		
+		builder.append(", ");
+		
+		if (getRootReferenceNode() instanceof ClassDeclaration == false)
+		{
+			getRootReferenceNode().generateCArgumentReference(builder, this);
+		}
+		else
+		{
+			getMethodDeclaration().getParameterList().getObjectReference().generateCNullOutput(builder);
 		}
 		
 		return builder;
