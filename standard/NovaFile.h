@@ -22,11 +22,17 @@ typedef struct File File;
 #include <NovaDivideByZeroException.h>
 #include <NovaThread.h>
 
+typedef struct nova_VTable_File
+{
+	String* (*nova_virtual_toString)(Object*, ExceptionData*);
+	char (*nova_virtual_equals)(Object*, ExceptionData*, Object*);
+} nova_VTable_File;
 
 CCLASS_CLASS
 (
 	File, 
 	
+	nova_VTable_File* vtable;
 	struct Private* prv;
 )
 

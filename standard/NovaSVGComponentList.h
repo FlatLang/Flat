@@ -24,12 +24,18 @@ typedef struct SVGComponentList SVGComponentList;
 #include <NovaSVGComponent.h>
 #include <NovaSVGComponentNode.h>
 
+typedef struct nova_VTable_SVGComponentList
+{
+	String* (*nova_virtual_toString)(Object*, ExceptionData*);
+	char (*nova_virtual_equals)(Object*, ExceptionData*, Object*);
+} nova_VTable_SVGComponentList;
 
 CCLASS_CLASS
 (
 	SVGComponentList, 
 	
 	SVGComponentNode* nova_SVGComponentList_start;
+	nova_VTable_SVGComponentList* vtable;
 )
 
 SVGComponentList* nova_SVGComponentList_SVGComponentList(ExceptionData* exceptionData);

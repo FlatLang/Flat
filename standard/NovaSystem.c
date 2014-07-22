@@ -2,12 +2,17 @@
 #include "NovaSystem.h"
 
 
-
+nova_VTable_System nova_VTable_System_val =
+{
+	nova_Object_toString,
+	nova_Object_equals,
+};
 
 System* nova_System_System(ExceptionData* exceptionData)
 {
-	System* this = (System*)1;
+	CCLASS_NEW(System, this,);
 	
+	this->vtable = &nova_VTable_System_val;
 	{
 	}
 	

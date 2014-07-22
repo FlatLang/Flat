@@ -2,13 +2,18 @@
 #include "NovaSVG.h"
 
 
-
+nova_VTable_SVG nova_VTable_SVG_val =
+{
+	nova_Object_toString,
+	nova_Object_equals,
+};
 
 SVG* nova_SVG_SVG(ExceptionData* exceptionData)
 {
 	CCLASS_NEW(SVG, this,);
 	
 	this->nova_SVG_root = (SVGMainComponent*)0;
+	this->vtable = &nova_VTable_SVG_val;
 	{
 		this->nova_SVG_root = nova_SVGMainComponent_SVGMainComponent(exceptionData);
 	}

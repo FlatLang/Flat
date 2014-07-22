@@ -22,11 +22,17 @@ typedef struct List List;
 #include <NovaDivideByZeroException.h>
 #include <NovaListNode.h>
 
+typedef struct nova_VTable_List
+{
+	String* (*nova_virtual_toString)(Object*, ExceptionData*);
+	char (*nova_virtual_equals)(Object*, ExceptionData*, Object*);
+} nova_VTable_List;
 
 CCLASS_CLASS
 (
 	List, 
 	
+	nova_VTable_List* vtable;
 	struct Private* prv;
 )
 

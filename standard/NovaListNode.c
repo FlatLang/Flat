@@ -2,7 +2,11 @@
 #include "NovaListNode.h"
 
 
-
+nova_VTable_ListNode nova_VTable_ListNode_val =
+{
+	nova_Object_toString,
+	nova_Object_equals,
+};
 CCLASS_PRIVATE
 (
 	Object* nova_ListNode_data;
@@ -16,6 +20,7 @@ ListNode* nova_ListNode_ListNode(ExceptionData* exceptionData, Object* nova_0_da
 	
 	this->prv->nova_ListNode_data = (Object*)0;
 	this->prv->nova_ListNode_next = (ListNode*)0;
+	this->vtable = &nova_VTable_ListNode_val;
 	{
 		this->prv->nova_ListNode_data = nova_0_data;
 	}

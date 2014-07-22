@@ -22,7 +22,18 @@ typedef struct Math Math;
 #include <NovaDivideByZeroException.h>
 #include <math.h>
 
+typedef struct nova_VTable_Math
+{
+	String* (*nova_virtual_toString)(Object*, ExceptionData*);
+	char (*nova_virtual_equals)(Object*, ExceptionData*, Object*);
+} nova_VTable_Math;
 
+CCLASS_CLASS
+(
+	Math, 
+	
+	nova_VTable_Math* vtable;
+)
 
 Math* nova_Math_Math(ExceptionData* exceptionData);
 void nova_del_Math(Math** this, ExceptionData* exceptionData);

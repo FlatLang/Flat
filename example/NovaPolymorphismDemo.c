@@ -2,14 +2,19 @@
 #include "NovaPolymorphismDemo.h"
 
 
-
+nova_VTable_PolymorphismDemo nova_VTable_PolymorphismDemo_val =
+{
+		nova_Object_toString,
+		nova_Object_equals,
+};
 
 String* nova_static_PolymorphismDemo_getDescriptionOfAnimalWithNumberOfLegs(PolymorphismDemo* this, ExceptionData* exceptionData, Animal** nova_0_animals, int nova_0_numLegs);
 
 PolymorphismDemo* nova_PolymorphismDemo_PolymorphismDemo(ExceptionData* exceptionData)
 {
-		PolymorphismDemo* this = (PolymorphismDemo*)1;
+		CCLASS_NEW(PolymorphismDemo, this,);
 		
+		this->vtable = &nova_VTable_PolymorphismDemo_val;
 		{
 		}
 		

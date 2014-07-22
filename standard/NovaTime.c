@@ -2,12 +2,17 @@
 #include "NovaTime.h"
 
 
-
+nova_VTable_Time nova_VTable_Time_val =
+{
+	nova_Object_toString,
+	nova_Object_equals,
+};
 
 Time* nova_Time_Time(ExceptionData* exceptionData)
 {
-	Time* this = (Time*)1;
+	CCLASS_NEW(Time, this,);
 	
+	this->vtable = &nova_VTable_Time_val;
 	{
 	}
 	

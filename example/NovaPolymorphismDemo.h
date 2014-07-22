@@ -24,7 +24,18 @@ typedef struct PolymorphismDemo PolymorphismDemo;
 #include <NovaSpider.h>
 #include <NovaDog.h>
 
+typedef struct nova_VTable_PolymorphismDemo
+{
+	String* (*nova_virtual_toString)(Object*, ExceptionData*);
+	char (*nova_virtual_equals)(Object*, ExceptionData*, Object*);
+} nova_VTable_PolymorphismDemo;
 
+CCLASS_CLASS
+(
+	PolymorphismDemo, 
+	
+	nova_VTable_PolymorphismDemo* vtable;
+)
 
 PolymorphismDemo* nova_PolymorphismDemo_PolymorphismDemo(ExceptionData* exceptionData);
 void nova_del_PolymorphismDemo(PolymorphismDemo** this, ExceptionData* exceptionData);

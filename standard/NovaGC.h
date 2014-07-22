@@ -22,7 +22,18 @@ typedef struct GC GC;
 #include <NovaDivideByZeroException.h>
 #include <gc.h>
 
+typedef struct nova_VTable_GC
+{
+	String* (*nova_virtual_toString)(Object*, ExceptionData*);
+	char (*nova_virtual_equals)(Object*, ExceptionData*, Object*);
+} nova_VTable_GC;
 
+CCLASS_CLASS
+(
+	GC, 
+	
+	nova_VTable_GC* vtable;
+)
 
 GC* nova_GC_GC(ExceptionData* exceptionData);
 void nova_del_GC(GC** this, ExceptionData* exceptionData);

@@ -21,7 +21,18 @@ typedef struct Time Time;
 #include <NovaChar.h>
 #include <NovaDivideByZeroException.h>
 
+typedef struct nova_VTable_Time
+{
+	String* (*nova_virtual_toString)(Object*, ExceptionData*);
+	char (*nova_virtual_equals)(Object*, ExceptionData*, Object*);
+} nova_VTable_Time;
 
+CCLASS_CLASS
+(
+	Time, 
+	
+	nova_VTable_Time* vtable;
+)
 
 Time* nova_Time_Time(ExceptionData* exceptionData);
 void nova_del_Time(Time** this, ExceptionData* exceptionData);

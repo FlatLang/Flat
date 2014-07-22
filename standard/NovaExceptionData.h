@@ -22,12 +22,18 @@ typedef struct ExceptionData ExceptionData;
 #include <NovaDivideByZeroException.h>
 #include <NovaArrayList.h>
 
+typedef struct nova_VTable_ExceptionData
+{
+	String* (*nova_virtual_toString)(Object*, ExceptionData*);
+	char (*nova_virtual_equals)(Object*, ExceptionData*, Object*);
+} nova_VTable_ExceptionData;
 
 CCLASS_CLASS
 (
 	ExceptionData, 
 	
 	ArrayList* nova_ExceptionData_codes;
+	nova_VTable_ExceptionData* vtable;
 	struct Private* prv;
 )
 

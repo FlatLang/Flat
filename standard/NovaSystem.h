@@ -21,7 +21,18 @@ typedef struct System System;
 #include <NovaChar.h>
 #include <NovaDivideByZeroException.h>
 
+typedef struct nova_VTable_System
+{
+	String* (*nova_virtual_toString)(Object*, ExceptionData*);
+	char (*nova_virtual_equals)(Object*, ExceptionData*, Object*);
+} nova_VTable_System;
 
+CCLASS_CLASS
+(
+	System, 
+	
+	nova_VTable_System* vtable;
+)
 
 System* nova_System_System(ExceptionData* exceptionData);
 void nova_del_System(System** this, ExceptionData* exceptionData);

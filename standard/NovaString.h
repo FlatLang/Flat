@@ -24,6 +24,7 @@ typedef struct String String;
 typedef struct nova_VTable_String
 {
 	char (*nova_virtual_equals)(String*, ExceptionData*, String*);
+	String* (*nova_virtual_toString)(Object*, ExceptionData*);
 } nova_VTable_String;
 
 CCLASS_CLASS

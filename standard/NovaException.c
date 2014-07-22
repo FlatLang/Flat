@@ -2,12 +2,17 @@
 #include "NovaException.h"
 
 
-
+nova_VTable_Exception nova_VTable_Exception_val =
+{
+	nova_Object_toString,
+	nova_Object_equals,
+};
 
 Exception* nova_Exception_Exception(ExceptionData* exceptionData)
 {
-	Exception* this = (Exception*)1;
+	CCLASS_NEW(Exception, this,);
 	
+	this->vtable = &nova_VTable_Exception_val;
 	{
 	}
 	

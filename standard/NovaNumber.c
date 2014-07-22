@@ -6,6 +6,8 @@ nova_VTable_Number nova_VTable_Number_val =
 {
 	nova_static_Number_numDigits,
 	nova_static_Number_toAString,
+	nova_Object_toString,
+	nova_Object_equals,
 };
 
 Number* nova_Number_Number(ExceptionData* exceptionData)

@@ -24,6 +24,8 @@ typedef struct Char Char;
 typedef struct nova_VTable_Char
 {
 	String* (*nova_virtual_toString)(Char*, ExceptionData*);
+	int (*nova_virtual_numDigits)(Number*, ExceptionData*, int);
+	String* (*nova_virtual_toAString)(Number*, ExceptionData*, int);
 } nova_VTable_Char;
 
 CCLASS_CLASS

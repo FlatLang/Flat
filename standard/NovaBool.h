@@ -21,7 +21,18 @@ typedef struct Bool Bool;
 #include <NovaChar.h>
 #include <NovaDivideByZeroException.h>
 
+typedef struct nova_VTable_Bool
+{
+	String* (*nova_virtual_toString)(Object*, ExceptionData*);
+	char (*nova_virtual_equals)(Object*, ExceptionData*, Object*);
+} nova_VTable_Bool;
 
+CCLASS_CLASS
+(
+	Bool, 
+	
+	nova_VTable_Bool* vtable;
+)
 
 Bool* nova_Bool_Bool(ExceptionData* exceptionData);
 void nova_del_Bool(Bool** this, ExceptionData* exceptionData);

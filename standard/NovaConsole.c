@@ -2,14 +2,19 @@
 #include "NovaConsole.h"
 
 
-
+nova_VTable_Console nova_VTable_Console_val =
+{
+	nova_Object_toString,
+	nova_Object_equals,
+};
 
 void nova_static_Console_flush(Console* this, ExceptionData* exceptionData);
 
 Console* nova_Console_Console(ExceptionData* exceptionData)
 {
-	Console* this = (Console*)1;
+	CCLASS_NEW(Console, this,);
 	
+	this->vtable = &nova_VTable_Console_val;
 	{
 	}
 	

@@ -2,12 +2,17 @@
 #include "NovaMath.h"
 
 
-
+nova_VTable_Math nova_VTable_Math_val =
+{
+	nova_Object_toString,
+	nova_Object_equals,
+};
 
 Math* nova_Math_Math(ExceptionData* exceptionData)
 {
-	Math* this = (Math*)1;
+	CCLASS_NEW(Math, this,);
 	
+	this->vtable = &nova_VTable_Math_val;
 	{
 	}
 	

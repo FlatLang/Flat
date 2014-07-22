@@ -21,12 +21,18 @@ typedef struct Array Array;
 #include <NovaChar.h>
 #include <NovaDivideByZeroException.h>
 
+typedef struct nova_VTable_Array
+{
+	String* (*nova_virtual_toString)(Object*, ExceptionData*);
+	char (*nova_virtual_equals)(Object*, ExceptionData*, Object*);
+} nova_VTable_Array;
 
 CCLASS_CLASS
 (
 	Array, 
 	
 	int nova_Array_length;
+	nova_VTable_Array* vtable;
 )
 
 Array* nova_Array_Array(ExceptionData* exceptionData);

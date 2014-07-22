@@ -23,7 +23,18 @@ typedef struct Console Console;
 #include <stdio.h>
 #include <stdlib.h>
 
+typedef struct nova_VTable_Console
+{
+	String* (*nova_virtual_toString)(Object*, ExceptionData*);
+	char (*nova_virtual_equals)(Object*, ExceptionData*, Object*);
+} nova_VTable_Console;
 
+CCLASS_CLASS
+(
+	Console, 
+	
+	nova_VTable_Console* vtable;
+)
 
 Console* nova_Console_Console(ExceptionData* exceptionData);
 void nova_del_Console(Console** this, ExceptionData* exceptionData);

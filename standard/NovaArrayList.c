@@ -2,7 +2,11 @@
 #include "NovaArrayList.h"
 
 
-
+nova_VTable_ArrayList nova_VTable_ArrayList_val =
+{
+	nova_Object_toString,
+	nova_Object_equals,
+};
 CCLASS_PRIVATE
 (
 	int nova_ArrayList_bufferSize;
@@ -17,6 +21,7 @@ ArrayList* nova_ArrayList_ArrayList(ExceptionData* exceptionData)
 	this->nova_ArrayList_size = 0;
 	this->prv->nova_ArrayList_bufferSize = 0;
 	this->prv->nova_ArrayList_data = 0;
+	this->vtable = &nova_VTable_ArrayList_val;
 	{
 		this->nova_ArrayList_size = 0;
 		this->prv->nova_ArrayList_bufferSize = 0;

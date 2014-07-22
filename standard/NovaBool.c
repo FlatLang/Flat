@@ -2,12 +2,17 @@
 #include "NovaBool.h"
 
 
-
+nova_VTable_Bool nova_VTable_Bool_val =
+{
+	nova_Object_toString,
+	nova_Object_equals,
+};
 
 Bool* nova_Bool_Bool(ExceptionData* exceptionData)
 {
-	Bool* this = (Bool*)1;
+	CCLASS_NEW(Bool, this,);
 	
+	this->vtable = &nova_VTable_Bool_val;
 	{
 	}
 	

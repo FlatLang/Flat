@@ -20,6 +20,7 @@ typedef struct Spider Spider;
 #include <NovaDouble.h>
 #include <NovaChar.h>
 #include <NovaDivideByZeroException.h>
+#include <NovaAnimal.h>
 
 typedef struct nova_VTable_Spider
 {

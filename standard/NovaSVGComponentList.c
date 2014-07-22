@@ -2,13 +2,18 @@
 #include "NovaSVGComponentList.h"
 
 
-
+nova_VTable_SVGComponentList nova_VTable_SVGComponentList_val =
+{
+	nova_Object_toString,
+	nova_Object_equals,
+};
 
 SVGComponentList* nova_SVGComponentList_SVGComponentList(ExceptionData* exceptionData)
 {
 	CCLASS_NEW(SVGComponentList, this,);
 	
 	this->nova_SVGComponentList_start = (SVGComponentNode*)0;
+	this->vtable = &nova_VTable_SVGComponentList_val;
 	{
 	}
 	

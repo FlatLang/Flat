@@ -2,7 +2,11 @@
 #include "NovaSVGComponentNode.h"
 
 
-
+nova_VTable_SVGComponentNode nova_VTable_SVGComponentNode_val =
+{
+	nova_Object_toString,
+	nova_Object_equals,
+};
 
 SVGComponentNode* nova_SVGComponentNode_SVGComponentNode(ExceptionData* exceptionData)
 {
@@ -10,6 +14,7 @@ SVGComponentNode* nova_SVGComponentNode_SVGComponentNode(ExceptionData* exceptio
 	
 	this->nova_SVGComponentNode_next = (SVGComponentNode*)0;
 	this->nova_SVGComponentNode_component = (SVGComponent*)0;
+	this->vtable = &nova_VTable_SVGComponentNode_val;
 	{
 	}
 	

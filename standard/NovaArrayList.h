@@ -21,12 +21,18 @@ typedef struct ArrayList ArrayList;
 #include <NovaChar.h>
 #include <NovaDivideByZeroException.h>
 
+typedef struct nova_VTable_ArrayList
+{
+	String* (*nova_virtual_toString)(Object*, ExceptionData*);
+	char (*nova_virtual_equals)(Object*, ExceptionData*, Object*);
+} nova_VTable_ArrayList;
 
 CCLASS_CLASS
 (
 	ArrayList, 
 	
 	int nova_ArrayList_size;
+	nova_VTable_ArrayList* vtable;
 	struct Private* prv;
 )
 

@@ -21,7 +21,18 @@ typedef struct Exception Exception;
 #include <NovaChar.h>
 #include <NovaDivideByZeroException.h>
 
+typedef struct nova_VTable_Exception
+{
+	String* (*nova_virtual_toString)(Object*, ExceptionData*);
+	char (*nova_virtual_equals)(Object*, ExceptionData*, Object*);
+} nova_VTable_Exception;
 
+CCLASS_CLASS
+(
+	Exception, 
+	
+	nova_VTable_Exception* vtable;
+)
 
 Exception* nova_Exception_Exception(ExceptionData* exceptionData);
 void nova_del_Exception(Exception** this, ExceptionData* exceptionData);

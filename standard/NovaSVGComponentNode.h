@@ -22,6 +22,11 @@ typedef struct SVGComponentNode SVGComponentNode;
 #include <NovaDivideByZeroException.h>
 #include <NovaSVGComponent.h>
 
+typedef struct nova_VTable_SVGComponentNode
+{
+	String* (*nova_virtual_toString)(Object*, ExceptionData*);
+	char (*nova_virtual_equals)(Object*, ExceptionData*, Object*);
+} nova_VTable_SVGComponentNode;
 
 CCLASS_CLASS
 (
@@ -29,6 +34,7 @@ CCLASS_CLASS
 	
 	SVGComponentNode* nova_SVGComponentNode_next;
 	SVGComponent* nova_SVGComponentNode_component;
+	nova_VTable_SVGComponentNode* vtable;
 )
 
 SVGComponentNode* nova_SVGComponentNode_SVGComponentNode(ExceptionData* exceptionData);

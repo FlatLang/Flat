@@ -2,7 +2,11 @@
 #include "NovaFile.h"
 
 
-
+nova_VTable_File nova_VTable_File_val =
+{
+	nova_Object_toString,
+	nova_Object_equals,
+};
 CCLASS_PRIVATE
 (
 	FILE* nova_File_fp;
@@ -16,6 +20,7 @@ File* nova_File_File(ExceptionData* exceptionData, String* nova_0_location)
 	
 	this->prv->nova_File_fp = (FILE*)0;
 	this->prv->nova_File_location = (String*)0;
+	this->vtable = &nova_VTable_File_val;
 	{
 		this->prv->nova_File_location = nova_0_location;
 		this->prv->nova_File_fp = fopen(nova_String_toCharArray((String*)(nova_0_location), exceptionData), (char*)("w"));

@@ -26,6 +26,8 @@ typedef struct nova_VTable_Animal
 	int (*nova_virtual_getNumLegs)(Animal*, ExceptionData*);
 	int (*nova_virtual_getNumEyes)(Animal*, ExceptionData*);
 	String* (*nova_virtual_getDescription)(Animal*, ExceptionData*);
+	String* (*nova_virtual_toString)(Object*, ExceptionData*);
+	char (*nova_virtual_equals)(Object*, ExceptionData*, Object*);
 } nova_VTable_Animal;
 
 CCLASS_CLASS

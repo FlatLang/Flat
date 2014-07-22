@@ -24,12 +24,18 @@ typedef struct SVG SVG;
 #include <NovaSVGMainComponent.h>
 #include <NovaFile.h>
 
+typedef struct nova_VTable_SVG
+{
+	String* (*nova_virtual_toString)(Object*, ExceptionData*);
+	char (*nova_virtual_equals)(Object*, ExceptionData*, Object*);
+} nova_VTable_SVG;
 
 CCLASS_CLASS
 (
 	SVG, 
 	
 	SVGMainComponent* nova_SVG_root;
+	nova_VTable_SVG* vtable;
 )
 
 SVG* nova_SVG_SVG(ExceptionData* exceptionData);

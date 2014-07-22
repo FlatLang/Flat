@@ -2,12 +2,17 @@
 #include "NovaGC.h"
 
 
-
+nova_VTable_GC nova_VTable_GC_val =
+{
+	nova_Object_toString,
+	nova_Object_equals,
+};
 
 GC* nova_GC_GC(ExceptionData* exceptionData)
 {
-	GC* this = (GC*)1;
+	CCLASS_NEW(GC, this,);
 	
+	this->vtable = &nova_VTable_GC_val;
 	{
 	}
 	

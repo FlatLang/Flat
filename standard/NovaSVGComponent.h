@@ -26,6 +26,8 @@ typedef struct SVGComponent SVGComponent;
 typedef struct nova_VTable_SVGComponent
 {
 	void (*nova_virtual_generateOutput)(SVGComponent*, ExceptionData*, File*);
+	String* (*nova_virtual_toString)(Object*, ExceptionData*);
+	char (*nova_virtual_equals)(Object*, ExceptionData*, Object*);
 } nova_VTable_SVGComponent;
 
 CCLASS_CLASS

@@ -2,7 +2,11 @@
 #include "NovaList.h"
 
 
-
+nova_VTable_List nova_VTable_List_val =
+{
+	nova_Object_toString,
+	nova_Object_equals,
+};
 CCLASS_PRIVATE
 (
 	ListNode* nova_List_start;
@@ -16,6 +20,7 @@ List* nova_List_List(ExceptionData* exceptionData)
 	
 	this->prv->nova_List_start = (ListNode*)0;
 	this->prv->nova_List_current = (ListNode*)0;
+	this->vtable = &nova_VTable_List_val;
 	{
 	}
 	

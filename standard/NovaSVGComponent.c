@@ -5,6 +5,8 @@
 nova_VTable_SVGComponent nova_VTable_SVGComponent_val =
 {
 	nova_SVGComponent_generateOutput,
+	nova_Object_toString,
+	nova_Object_equals,
 };
 
 SVGComponent* nova_SVGComponent_SVGComponent(ExceptionData* exceptionData)

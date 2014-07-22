@@ -7,6 +7,8 @@ nova_VTable_Animal nova_VTable_Animal_val =
 	nova_Animal_getNumLegs,
 	nova_Animal_getNumEyes,
 	nova_Animal_getDescription,
+	nova_Object_toString,
+	nova_Object_equals,
 };
 
 Animal* nova_Animal_Animal(ExceptionData* exceptionData)

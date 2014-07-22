@@ -5,6 +5,8 @@
 nova_VTable_Char nova_VTable_Char_val =
 {
 	nova_Char_toString,
+	nova_static_Number_numDigits,
+	nova_static_Number_toAString,
 };
 
 Char* nova_Char_Char(ExceptionData* exceptionData, char nova_0_value)

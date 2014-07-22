@@ -2,7 +2,11 @@
 #include "NovaExceptionData.h"
 
 
-
+nova_VTable_ExceptionData nova_VTable_ExceptionData_val =
+{
+	nova_Object_toString,
+	nova_Object_equals,
+};
 CCLASS_PRIVATE
 (
 	buffer* nova_ExceptionData_buf;
@@ -17,6 +21,7 @@ ExceptionData* nova_ExceptionData_ExceptionData(ExceptionData* exceptionData, bu
 	this->nova_ExceptionData_codes = (ArrayList*)0;
 	this->prv->nova_ExceptionData_buf = (buffer*)0;
 	this->prv->nova_ExceptionData_parent = (ExceptionData*)0;
+	this->vtable = &nova_VTable_ExceptionData_val;
 	{
 		this->prv->nova_ExceptionData_buf = nova_0_buf;
 		this->nova_ExceptionData_codes = nova_ArrayList_ArrayList(exceptionData);

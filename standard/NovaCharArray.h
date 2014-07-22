@@ -20,6 +20,7 @@ typedef struct CharArray CharArray;
 #include <NovaDouble.h>
 #include <NovaChar.h>
 #include <NovaDivideByZeroException.h>
+#include <NovaArray.h>
 
 
 CCLASS_CLASS
