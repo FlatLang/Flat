@@ -28,7 +28,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:00:15 PM
- * @version	v0.2.14 Jul 19, 2014 at 7:33:13 PM
+ * @version	v0.2.17 Jul 22, 2014 at 4:24:45 PM
  */
 public class SyntaxTree
 {
@@ -217,6 +217,11 @@ public class SyntaxTree
 				
 				generator.run();
 			}
+		}
+		
+		if (phase == PHASE_CLASS_DECLARATION)
+		{
+			root.addAutoImports();
 		}
 		
 		validateNodes(root);
