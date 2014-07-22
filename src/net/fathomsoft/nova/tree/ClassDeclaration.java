@@ -21,7 +21,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:15:51 PM
- * @version	v0.2.16 Jul 22, 2014 at 12:47:19 AM
+ * @version	v0.2.17 Jul 22, 2014 at 4:24:45 PM
  */
 public class ClassDeclaration extends InstanceDeclaration
 {
@@ -153,21 +153,45 @@ public class ClassDeclaration extends InstanceDeclaration
 	
 	public MethodDeclaration[] getVirtualMethods()
 	{
-		MethodList list = getMethodList();
-		
 		ArrayList<MethodDeclaration> methods = new ArrayList<MethodDeclaration>();
+		
+		addVirtualMethods(methods);
+		
+		if (getExtendedClassName() != null)
+		{
+			getExtendedClass().addVirtualMethods(methods);
+		}
+		
+		return methods.toArray(new MethodDeclaration[0]);
+	}
+	
+	private void addVirtualMethods(ArrayList<MethodDeclaration> methods)
+	{
+		MethodList list = getMethodList();
 		
 		for (int i = 0; i < list.getNumVisibleChildren(); i++)
 		{
 			MethodDeclaration method = (MethodDeclaration)list.getChild(i);
 			
-			if (method.getParentClass() == this && (method.doesOverride() || method.isOverridden()))
+			if (method.getParentClass() == this && (method.doesOverride() || method.isOverridden()) && !containsMethod(method, methods))
 			{
 				methods.add(method);
 			}
 		}
 		
-		return methods.toArray(new MethodDeclaration[0]);
+	}
+	
+	private boolean containsMethod(MethodDeclaration method, ArrayList<MethodDeclaration> methods)
+	{
+		for (MethodDeclaration m : methods)
+		{
+			if (m.getName().equals(method.getName()))
+			{
+				return true;
+			}
+		}
+		
+		return false;
 	}
 	
 	/**
@@ -258,11 +282,6 @@ public class ClassDeclaration extends InstanceDeclaration
 	public void setExtendedClass(String extendedClass)
 	{
 		this.extendedClass = extendedClass;
-		
-		if (getFileDeclaration().containsImport(extendedClass))
-		{
-			getFileDeclaration().getImport(extendedClass).markUsed();
-		}
 	}
 	
 	/**
@@ -1041,12 +1060,17 @@ public class ClassDeclaration extends InstanceDeclaration
 				
 				if (!file.getName().equals(getName()))
 				{
-					SyntaxMessage.error("The name of the class '" + getName() + "' must be the same as the file that it is contained within", this, false);
+					SyntaxMessage.error("The name of the class '" + getName() + "' must be the same as the file that it is contained within", this);//, false);
 					
-					getParent().getParent().removeChild(getParent());
+//					getParent().getParent().removeChild(getParent());
 					
 					return null;
 				}
+			}
+			
+			if (getExtendedClassName() != null && getFileDeclaration().containsImport(getExtendedClassName()))
+			{
+				getFileDeclaration().getImport(getExtendedClassName()).markUsed();
 			}
 		}
 		else if (phase == SyntaxTree.PHASE_INSTANCE_DECLARATIONS)
