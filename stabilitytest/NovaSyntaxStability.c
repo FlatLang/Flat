@@ -69,11 +69,11 @@ void nova_static_SyntaxStability_checkWhileLoops(SyntaxStability* this, Exceptio
 	{
 		if (1)
 		{
+			if (1)
+			{
+				nova_1_num3++;
+			}
 		}
-	}
-	if (1)
-	{
-		nova_1_num3++;
 	}
 	if (nova_1_num != 100 || nova_1_num2 != 100 || nova_1_num3 != 100)
 	{
@@ -110,11 +110,11 @@ void nova_static_SyntaxStability_checkForLoops(SyntaxStability* this, ExceptionD
 	{
 		if (1)
 		{
+			if (1)
+			{
+				nova_1_num3++;
+			}
 		}
-	}
-	if (1)
-	{
-		nova_1_num3++;
 	}
 	if (nova_1_num != 100 || nova_1_num2 != 100 || nova_1_num3 != 100)
 	{

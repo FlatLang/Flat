@@ -14,9 +14,9 @@ ArrayList* nova_ArrayList_ArrayList(ExceptionData* exceptionData)
 {
 	CCLASS_NEW(ArrayList, this);
 	
-	this->nova_ArrayList_size = (Object*)0;
-	this->prv->nova_ArrayList_bufferSize = (Object*)0;
-	this->prv->nova_ArrayList_data = (Object*)0;
+	this->nova_ArrayList_size = 0;
+	this->prv->nova_ArrayList_bufferSize = 0;
+	this->prv->nova_ArrayList_data = 0;
 	{
 		this->nova_ArrayList_size = 0;
 		this->prv->nova_ArrayList_bufferSize = 0;

@@ -18,8 +18,8 @@ String* nova_String_String(ExceptionData* exceptionData, char* nova_0_data)
 {
 	CCLASS_NEW(String, this);
 	
-	this->nova_String_length = (Object*)0;
-	this->prv->nova_String_data = (Object*)0;
+	this->nova_String_length = 0;
+	this->prv->nova_String_data = 0;
 	this->vtable = &nova_VTable_String_val;
 	{
 		this->prv->nova_String_data = nova_0_data;

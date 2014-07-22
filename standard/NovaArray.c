@@ -8,7 +8,7 @@ Array* nova_Array_Array(ExceptionData* exceptionData)
 {
 	CCLASS_NEW(Array, this,);
 	
-	this->nova_Array_length = (Object*)0;
+	this->nova_Array_length = 0;
 	{
 	}
 	

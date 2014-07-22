@@ -20,8 +20,8 @@ typedef struct ExceptionStability ExceptionStability;
 #include <NovaDouble.h>
 #include <NovaChar.h>
 #include <NovaDivideByZeroException.h>
-#include <NovaStabilityTestException.h>
 #include <NovaStabilityTest.h>
+#include <NovaStabilityTestException.h>
 
 
 

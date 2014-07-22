@@ -63,11 +63,11 @@ void nova_static_ThreadStability_checkMemoryAccess(ThreadStability* this, Except
 	nova_static_Thread_sleep((Object*)0, exceptionData, 30);
 	nova_static_Console_write((Object*)0, exceptionData, nova_String_String(exceptionData, "Checking memory access with multi-threading... "));
 	nova_1_i = 0;
-	for (; nova_1_i < 100000; nova_1_i++)
+	for (; nova_1_i < 1000; nova_1_i++)
 	{
 		String* nova_2_s;
 		
-		nova_2_s = (Object*)0->nova_static_Integer_toAString((Object*)0, exceptionData, nova_1_i);
+		nova_2_s = nova_static_Integer_toAString((Object*)0, exceptionData, nova_1_i);
 	}
 	nova_static_Console_writeLine((Object*)0, exceptionData, nova_String_String(exceptionData, "OK"));
 }

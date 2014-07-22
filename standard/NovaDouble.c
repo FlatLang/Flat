@@ -18,7 +18,7 @@ Double* nova_Double_Double(ExceptionData* exceptionData, double nova_0_value)
 {
 	CCLASS_NEW(Double, this,);
 	
-	this->nova_Double_value = (Object*)0;
+	this->nova_Double_value = 0;
 	this->vtable = &nova_VTable_Double_val;
 	{
 		this->nova_Double_value = nova_0_value;
@@ -42,7 +42,7 @@ void nova_del_Double(Double** this, ExceptionData* exceptionData)
 
 int nova_static_Double_numDigits(Double* this, ExceptionData* exceptionData, double nova_0_number)
 {
-	return (Object*)0->nova_static_Long_numDigits((Object*)0, exceptionData, nova_0_number);
+	return nova_static_Long_numDigits((Object*)0, exceptionData, nova_0_number);
 }
 
 String* nova_static_Double_genString(Double* this, ExceptionData* exceptionData, char* nova_0_buffer, int nova_0_lastIndex)

@@ -41,5 +41,11 @@ void nova_del_ThreadImplementation(ThreadImplementation** this, ExceptionData* e
 
 void nova_ThreadImplementation_run(ThreadImplementation* this, ExceptionData* exceptionData)
 {
-	nova_static_Thread_sleep((Object*)0, exceptionData, 10);
+	int nova_1_i;
+	
+	nova_1_i = 0;
+	for (; nova_1_i < 10; nova_1_i++)
+	{
+		nova_static_Thread_sleep((Object*)0, exceptionData, 10);
+	}
 }

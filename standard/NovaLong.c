@@ -13,7 +13,7 @@ Long* nova_Long_Long(ExceptionData* exceptionData, long_long nova_0_value)
 {
 	CCLASS_NEW(Long, this,);
 	
-	this->nova_Long_value = (Object*)0;
+	this->nova_Long_value = 0;
 	this->vtable = &nova_VTable_Long_val;
 	{
 		this->nova_Long_value = nova_0_value;

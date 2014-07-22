@@ -54,7 +54,7 @@
 #	define OVERLOAD_MACRO1(name, count) OVERLOAD_MACRO2(name, count)
 #	define OVERLOAD_MACRO(name, count) OVERLOAD_MACRO1(name, count)
 
-#	define CALL_OVERLOAD(name, ...) GLUE(OVERLOAD_MACRO(name, COUNT_ARGS_MAX5(__VA_ARGS__)), (__VA_ARGS__));
+#	define CALL_OVERLOAD(name, ...) GLUE(OVERLOAD_MACRO(name, COUNT_ARGS_MAX5(__VA_ARGS__)), (__VA_ARGS__))
 
 #	define CCLASS_NEW(...) CALL_OVERLOAD(CCLASS_NEW, __VA_ARGS__)
 #	define CCLASS_CLASS(...) CALL_OVERLOAD(CCLASS_CLASS, __VA_ARGS__);

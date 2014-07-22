@@ -13,7 +13,7 @@ Integer* nova_Integer_Integer(ExceptionData* exceptionData, int nova_0_value)
 {
 	CCLASS_NEW(Integer, this,);
 	
-	this->nova_Integer_value = (Object*)0;
+	this->nova_Integer_value = 0;
 	this->vtable = &nova_VTable_Integer_val;
 	{
 		this->nova_Integer_value = nova_0_value;
@@ -37,12 +37,12 @@ void nova_del_Integer(Integer** this, ExceptionData* exceptionData)
 
 int nova_static_Integer_numDigits(Integer* this, ExceptionData* exceptionData, int nova_0_number)
 {
-	return (Object*)0->nova_static_Long_numDigits((Object*)0, exceptionData, nova_0_number);
+	return nova_static_Long_numDigits((Object*)0, exceptionData, nova_0_number);
 }
 
 String* nova_static_Integer_toAString(Integer* this, ExceptionData* exceptionData, int nova_0_value)
 {
-	return (Object*)0->nova_static_Long_toAString((Object*)0, exceptionData, nova_0_value);
+	return nova_static_Long_toAString((Object*)0, exceptionData, nova_0_value);
 }
 
 String* nova_Integer_toString(Integer* this, ExceptionData* exceptionData)

@@ -21,14 +21,14 @@ typedef struct StabilityTest StabilityTest;
 #include <NovaChar.h>
 #include <NovaDivideByZeroException.h>
 #include <NovaTime.h>
-#include <NovaExceptionStability.h>
-#include <NovaFileStability.h>
-#include <NovaSyntaxStability.h>
-#include <NovaUnstableException.h>
-#include <NovaClosureStability.h>
 #include <NovaTimeStability.h>
+#include <NovaFileStability.h>
 #include <NovaThreadStability.h>
+#include <NovaExceptionStability.h>
+#include <NovaSyntaxStability.h>
+#include <NovaClosureStability.h>
 #include <NovaPolymorphismStability.h>
+#include <NovaUnstableException.h>
 
 
 

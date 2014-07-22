@@ -12,9 +12,9 @@ SVGCircle* nova_SVGCircle_SVGCircle(ExceptionData* exceptionData, double nova_0_
 {
 	CCLASS_NEW(SVGCircle, this,);
 	
-	this->nova_SVGCircle_x = (Object*)0;
-	this->nova_SVGCircle_y = (Object*)0;
-	this->nova_SVGCircle_r = (Object*)0;
+	this->nova_SVGCircle_x = 0;
+	this->nova_SVGCircle_y = 0;
+	this->nova_SVGCircle_r = 0;
 	this->vtable = &nova_VTable_SVGCircle_val;
 	{
 		this->nova_SVGCircle_x = nova_0_x;

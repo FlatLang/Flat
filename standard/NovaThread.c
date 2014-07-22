@@ -22,7 +22,7 @@ Thread* nova_Thread_Thread(ExceptionData* exceptionData, long_long nova_0_millis
 	CCLASS_NEW(Thread, this);
 	
 	this->prv->nova_Thread_handle = (Object*)0;
-	this->prv->nova_Thread_millis = (Object*)0;
+	this->prv->nova_Thread_millis = 0;
 	this->prv->nova_Thread_word = (Object*)0;
 	this->vtable = &nova_VTable_Thread_val;
 	{

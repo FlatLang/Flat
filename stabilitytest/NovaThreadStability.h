@@ -21,9 +21,9 @@ typedef struct ThreadStability ThreadStability;
 #include <NovaChar.h>
 #include <NovaDivideByZeroException.h>
 #include <NovaThread.h>
+#include <NovaStabilityTest.h>
 #include <NovaStabilityExceptionHandler.h>
 #include <NovaThreadImplementation.h>
-#include <NovaStabilityTest.h>
 
 
 

@@ -27,7 +27,7 @@ ClosureStability* nova_ClosureStability_ClosureStability(ExceptionData* exceptio
 {
 	CCLASS_NEW(ClosureStability, this);
 	
-	this->prv->nova_ClosureStability_number = (Object*)0;
+	this->prv->nova_ClosureStability_number = 0;
 	{
 	}
 	
@@ -79,20 +79,20 @@ void nova_static_ClosureStability_testMathClosures(ClosureStability* this, Excep
 	nova_1_value = 0.5;
 	if (nova_static_ClosureStability_callClosure((Object*)0, exceptionData, (nova_1_0_closure)&nova_static_ClosureStability_multiply, (Object*)0, nova_1_a, nova_1_b) != nova_static_ClosureStability_multiply((Object*)0, exceptionData, nova_1_a, nova_1_b))
 	{
+		nova_StabilityTest_fail(nova_0_program, exceptionData, nova_String_String(exceptionData, "Failed to call multiply(int, int) closure"));
 	}
-	nova_StabilityTest_fail(nova_0_program, exceptionData, nova_String_String(exceptionData, "Failed to call multiply(int, int) closure"));
 	if (nova_static_ClosureStability_callClosure((Object*)0, exceptionData, (nova_1_0_closure)&nova_static_ClosureStability_pow, (Object*)0, nova_1_a, nova_1_b) != nova_static_ClosureStability_pow((Object*)0, exceptionData, nova_1_a, nova_1_b))
 	{
+		nova_StabilityTest_fail(nova_0_program, exceptionData, nova_String_String(exceptionData, "Failed to call pow(int, int) closure"));
 	}
-	nova_StabilityTest_fail(nova_0_program, exceptionData, nova_String_String(exceptionData, "Failed to call pow(int, int) closure"));
 	if (nova_static_ClosureStability_mathClosure((Object*)0, exceptionData, (nova_2_0_closure)&nova_static_Math_sin, (Object*)0, nova_1_value) - nova_static_Math_sin((Object*)0, exceptionData, nova_1_value) >= nova_static_ClosureStability_TOLERANCE)
 	{
+		nova_StabilityTest_fail(nova_0_program, exceptionData, nova_String_String(exceptionData, "Failed to call Math.sin(double) closure"));
 	}
-	nova_StabilityTest_fail(nova_0_program, exceptionData, nova_String_String(exceptionData, "Failed to call Math.sin(double) closure"));
 	if (nova_static_ClosureStability_mathClosure((Object*)0, exceptionData, (nova_2_0_closure)&nova_static_Math_tan, (Object*)0, nova_1_value) - nova_static_Math_tan((Object*)0, exceptionData, nova_1_value) >= nova_static_ClosureStability_TOLERANCE)
 	{
+		nova_StabilityTest_fail(nova_0_program, exceptionData, nova_String_String(exceptionData, "Failed to call Math.tan(double) closure"));
 	}
-	nova_StabilityTest_fail(nova_0_program, exceptionData, nova_String_String(exceptionData, "Failed to call Math.tan(double) closure"));
 	nova_static_Console_writeLine((Object*)0, exceptionData, nova_String_String(exceptionData, "OK"));
 }
 

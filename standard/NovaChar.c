@@ -11,7 +11,7 @@ Char* nova_Char_Char(ExceptionData* exceptionData, char nova_0_value)
 {
 	CCLASS_NEW(Char, this,);
 	
-	this->nova_Char_value = (Object*)0;
+	this->nova_Char_value = 0;
 	this->vtable = &nova_VTable_Char_val;
 	{
 		this->nova_Char_value = nova_0_value;

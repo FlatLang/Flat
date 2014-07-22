@@ -20,9 +20,9 @@ typedef struct PolymorphismStability PolymorphismStability;
 #include <NovaDouble.h>
 #include <NovaChar.h>
 #include <NovaDivideByZeroException.h>
-#include <NovaPolymorphicSubClass.h>
 #include <NovaStabilityTest.h>
 #include <NovaPolymorphicSuperClass.h>
+#include <NovaPolymorphicSubClass.h>
 
 
 
