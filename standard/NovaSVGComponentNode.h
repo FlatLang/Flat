@@ -21,7 +21,6 @@ typedef struct SVGComponentNode SVGComponentNode;
 #include <NovaChar.h>
 #include <NovaDivideByZeroException.h>
 #include <NovaSVGComponent.h>
-#include <NovaSVGCircle.h>
 
 
 CCLASS_CLASS
@@ -29,7 +28,7 @@ CCLASS_CLASS
 	SVGComponentNode, 
 	
 	SVGComponentNode* nova_SVGComponentNode_next;
-	SVGCircle* nova_SVGComponentNode_component;
+	SVGComponent* nova_SVGComponentNode_component;
 )
 
 SVGComponentNode* nova_SVGComponentNode_SVGComponentNode(ExceptionData* exceptionData);

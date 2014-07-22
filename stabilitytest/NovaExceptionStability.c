@@ -33,14 +33,14 @@ void nova_static_ExceptionStability_test(ExceptionStability* this, ExceptionData
 {
 	char nova_1_worked;
 	
-	nova_static_Console_write((Object*)0, exceptionData, nova_String_String(exceptionData, "Checking Exception handling... "));
+	nova_static_Console_write((Console*)(0), exceptionData, nova_String_String(exceptionData, "Checking Exception handling... "));
 	nova_1_worked = 0;
 	TRY
 	{
 		nova_ExceptionData_addCode(exceptionData, exceptionData, 1);
 		
 		{
-			nova_static_ExceptionStability_testException((Object*)0, exceptionData, nova_0_program);
+			nova_static_ExceptionStability_testException((ExceptionStability*)0, exceptionData, nova_0_program);
 		}
 	}
 	CATCH (1)
@@ -53,9 +53,9 @@ void nova_static_ExceptionStability_test(ExceptionStability* this, ExceptionData
 	END_TRY;
 	if (!nova_1_worked)
 	{
-		nova_StabilityTest_fail(nova_0_program, exceptionData, nova_String_String(exceptionData, "Failed; uncaught Exception"));
+		nova_StabilityTest_fail((StabilityTest*)(nova_0_program), exceptionData, nova_String_String(exceptionData, "Failed; uncaught Exception"));
 	}
-	nova_static_Console_writeLine((Object*)0, exceptionData, nova_String_String(exceptionData, "OK"));
+	nova_static_Console_writeLine((Console*)(0), exceptionData, nova_String_String(exceptionData, "OK"));
 }
 
 void nova_static_ExceptionStability_testException(ExceptionStability* this, ExceptionData* exceptionData, StabilityTest* nova_0_program)
@@ -75,7 +75,7 @@ void nova_static_ExceptionStability_testException(ExceptionStability* this, Exce
 				{
 					int nova_3_den;
 					int nova_3_i;
-					double nova_zero_check4;
+					int nova_zero_check4;
 					
 					nova_3_den = 0;
 					nova_zero_check4 = nova_3_den;
@@ -101,7 +101,7 @@ void nova_static_ExceptionStability_testException(ExceptionStability* this, Exce
 	{
 		if (!nova_1_worked)
 		{
-			nova_StabilityTest_fail(nova_0_program, exceptionData, nova_String_String(exceptionData, "Failed; uncaught DivideByZeroException"));
+			nova_StabilityTest_fail((StabilityTest*)(nova_0_program), exceptionData, nova_String_String(exceptionData, "Failed; uncaught DivideByZeroException"));
 		}
 		THROW(1);
 	}
@@ -111,6 +111,6 @@ void nova_static_ExceptionStability_testException(ExceptionStability* this, Exce
 	END_TRY;
 	if (!nova_1_worked)
 	{
-		nova_StabilityTest_fail(nova_0_program, exceptionData, nova_String_String(exceptionData, "Failed; uncaught StabilityTestException"));
+		nova_StabilityTest_fail((StabilityTest*)(nova_0_program), exceptionData, nova_String_String(exceptionData, "Failed; uncaught StabilityTestException"));
 	}
 }

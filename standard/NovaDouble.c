@@ -42,7 +42,7 @@ void nova_del_Double(Double** this, ExceptionData* exceptionData)
 
 int nova_static_Double_numDigits(Double* this, ExceptionData* exceptionData, double nova_0_number)
 {
-	return nova_static_Long_numDigits((Object*)0, exceptionData, nova_0_number);
+	return nova_static_Long_numDigits((Long*)(0), exceptionData, (long_long)(nova_0_number));
 }
 
 String* nova_static_Double_genString(Double* this, ExceptionData* exceptionData, char* nova_0_buffer, int nova_0_lastIndex)
@@ -59,7 +59,7 @@ char* nova_static_Double_genBuffer(Double* this, ExceptionData* exceptionData, d
 	
 	nova_1_size = 11 + 1 + 15;
 	nova_1_buffer = (char*)NOVA_MALLOC(sizeof(char) * (nova_1_size));
-	sprintf(nova_1_buffer, "%.15f", nova_0_value);
+	sprintf(nova_1_buffer, (char*)("%.15f"), nova_0_value);
 	return nova_1_buffer;
 }
 
@@ -91,7 +91,7 @@ String* nova_static_Double_toAString(Double* this, ExceptionData* exceptionData,
 	int nova_1_lastIndex;
 	char nova_1_c;
 	
-	nova_1_buffer = nova_static_Double_genBuffer((Object*)0, exceptionData, nova_0_value);
+	nova_1_buffer = nova_static_Double_genBuffer((Double*)0, exceptionData, nova_0_value);
 	nova_1_size = strlen(nova_1_buffer);
 	nova_1_lastIndex = nova_1_size - 1;
 	nova_1_c = nova_1_buffer[--nova_1_lastIndex];
@@ -103,7 +103,7 @@ String* nova_static_Double_toAString(Double* this, ExceptionData* exceptionData,
 		if (nova_1_buffer[++nova_1_lastIndex] == '.')
 		{
 			nova_1_lastIndex++;
-			return nova_static_Double_genString((Object*)0, exceptionData, nova_1_buffer, nova_1_lastIndex);
+			return nova_static_Double_genString((Double*)0, exceptionData, nova_1_buffer, nova_1_lastIndex);
 		}
 		else
 		{
@@ -114,7 +114,7 @@ String* nova_static_Double_toAString(Double* this, ExceptionData* exceptionData,
 			else if (nova_1_c == '9')
 			{
 				nova_1_buffer[nova_1_lastIndex]++;
-				return nova_static_Double_genString((Object*)0, exceptionData, nova_1_buffer, nova_1_lastIndex);
+				return nova_static_Double_genString((Double*)0, exceptionData, nova_1_buffer, nova_1_lastIndex);
 			}
 		}
 	}
@@ -122,7 +122,7 @@ String* nova_static_Double_toAString(Double* this, ExceptionData* exceptionData,
 	{
 		int nova_9_rep;
 		
-		nova_9_rep = nova_static_Double_repetition((Object*)0, exceptionData, nova_1_buffer, nova_1_lastIndex);
+		nova_9_rep = nova_static_Double_repetition((Double*)0, exceptionData, nova_1_buffer, nova_1_lastIndex);
 		if (nova_9_rep > 5)
 		{
 			nova_1_buffer[nova_1_lastIndex] = nova_1_c;
@@ -131,11 +131,11 @@ String* nova_static_Double_toAString(Double* this, ExceptionData* exceptionData,
 				nova_1_c++;
 			}
 			nova_1_buffer[++nova_1_lastIndex] = nova_1_c;
-			return nova_static_Double_genString((Object*)0, exceptionData, nova_1_buffer, nova_1_lastIndex);
+			return nova_static_Double_genString((Double*)0, exceptionData, nova_1_buffer, nova_1_lastIndex);
 		}
 	}
-	nova_1_lastIndex = nova_static_Double_lastSignificantDigit((Object*)0, exceptionData, nova_1_buffer, nova_1_size - 1);
-	return nova_static_Double_genString((Object*)0, exceptionData, nova_1_buffer, nova_1_lastIndex);
+	nova_1_lastIndex = nova_static_Double_lastSignificantDigit((Double*)0, exceptionData, nova_1_buffer, nova_1_size - 1);
+	return nova_static_Double_genString((Double*)0, exceptionData, nova_1_buffer, nova_1_lastIndex);
 }
 
 String* nova_Double_toString(Double* this, ExceptionData* exceptionData)

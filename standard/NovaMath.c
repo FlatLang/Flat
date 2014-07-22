@@ -79,7 +79,7 @@ double nova_static_Math_atan(Math* this, ExceptionData* exceptionData, double no
 
 long_long nova_static_Math_round(Math* this, ExceptionData* exceptionData, double nova_0_number)
 {
-	return nova_static_Math_floor((Object*)0, exceptionData, nova_0_number + 0.5);
+	return nova_static_Math_floor((Math*)0, exceptionData, nova_0_number + 0.5);
 }
 
 long_long nova_static_Math_floor(Math* this, ExceptionData* exceptionData, double nova_0_number)

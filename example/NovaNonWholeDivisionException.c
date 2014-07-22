@@ -3,6 +3,7 @@
 
 
 
+
 NonWholeDivisionException* nova_NonWholeDivisionException_NonWholeDivisionException(ExceptionData* exceptionData)
 {
 	NonWholeDivisionException* this = (NonWholeDivisionException*)1;

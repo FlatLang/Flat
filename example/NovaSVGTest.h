@@ -25,6 +25,8 @@ typedef struct SVGTest SVGTest;
 #include <NovaFile.h>
 #include <NovaTime.h>
 
+
+
 SVGTest* nova_SVGTest_SVGTest(ExceptionData* exceptionData);
 void nova_del_SVGTest(SVGTest** this, ExceptionData* exceptionData);
 void nova_static_SVGTest_main(SVGTest* this, ExceptionData* exceptionData, String** nova_0_args);

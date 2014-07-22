@@ -21,12 +21,18 @@ typedef struct Person Person;
 #include <NovaChar.h>
 #include <NovaDivideByZeroException.h>
 
+typedef struct nova_VTable_Person
+{
+	void (*nova_virtual_sayHello)(Person*, ExceptionData*);
+} nova_VTable_Person;
+
 CCLASS_CLASS
 (
 	Person, 
 	
 	int nova_Person_age;
 	String* nova_Person_name;
+	nova_VTable_Person* vtable;
 )
 
 Person* nova_Person_Person(ExceptionData* exceptionData, String* nova_0_name, int nova_0_age);

@@ -20,10 +20,9 @@ typedef struct SVGComponentList SVGComponentList;
 #include <NovaDouble.h>
 #include <NovaChar.h>
 #include <NovaDivideByZeroException.h>
-#include <NovaSVGComponentNode.h>
-#include <NovaSVGComponent.h>
 #include <NovaFile.h>
-#include <NovaSVGCircle.h>
+#include <NovaSVGComponent.h>
+#include <NovaSVGComponentNode.h>
 
 
 CCLASS_CLASS

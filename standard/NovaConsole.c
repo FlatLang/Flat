@@ -31,46 +31,46 @@ void nova_del_Console(Console** this, ExceptionData* exceptionData)
 
 void nova_static_Console_writeLine(Console* this, ExceptionData* exceptionData, String* nova_0_text)
 {
-	nova_static_Console_write((Object*)0, exceptionData, nova_String_concat(nova_0_text, exceptionData, nova_String_String(exceptionData, "\n")));
+	nova_static_Console_write((Console*)0, exceptionData, nova_String_concat(nova_0_text, exceptionData, nova_String_String(exceptionData, (char*)("\n"))));
 }
 
 void nova_static_Console_write(Console* this, ExceptionData* exceptionData, String* nova_0_text)
 {
 	char* nova_1_cText;
 	
-	nova_1_cText = nova_String_toCharArray(nova_0_text, exceptionData);
+	nova_1_cText = nova_String_toCharArray((String*)(nova_0_text), exceptionData);
 	fputs(nova_1_cText, stdout);
 }
 
 void nova_static_Console_writei(Console* this, ExceptionData* exceptionData, int nova_0_j)
 {
-	printf("%d", nova_0_j);
+	printf((char*)("%d"), nova_0_j);
 }
 
 void nova_static_Console_writed(Console* this, ExceptionData* exceptionData, double nova_0_j)
 {
-	printf("%f", nova_0_j);
+	printf((char*)("%f"), (int)(nova_0_j));
 }
 
 void nova_static_Console_writel(Console* this, ExceptionData* exceptionData, long_long nova_0_j)
 {
-	printf("%lld", nova_0_j);
+	printf((char*)("%lld"), (int)(nova_0_j));
 }
 
 int nova_static_Console_readInt(Console* this, ExceptionData* exceptionData)
 {
 	String* nova_1_s;
 	
-	nova_1_s = nova_static_Console_readLine((Object*)0, exceptionData);
-	return atoi(nova_String_toCharArray(nova_1_s, exceptionData));
+	nova_1_s = nova_static_Console_readLine((Console*)0, exceptionData);
+	return atoi(nova_String_toCharArray((String*)(nova_1_s), exceptionData));
 }
 
 double nova_static_Console_readDouble(Console* this, ExceptionData* exceptionData)
 {
 	double nova_1_num;
 	
-	scanf("%lf", &nova_1_num);
-	nova_static_Console_flush((Object*)0, exceptionData);
+	scanf((char*)("%lf"), &nova_1_num);
+	nova_static_Console_flush((Console*)0, exceptionData);
 	return nova_1_num;
 }
 
@@ -79,7 +79,7 @@ char nova_static_Console_readChar(Console* this, ExceptionData* exceptionData)
 	char nova_1_c;
 	
 	nova_1_c = getchar();
-	nova_static_Console_flush((Object*)0, exceptionData);
+	nova_static_Console_flush((Console*)0, exceptionData);
 	return nova_1_c;
 }
 
@@ -102,7 +102,7 @@ void nova_static_Console_waitForEnter(Console* this, ExceptionData* exceptionDat
 {
 	char* nova_1_c;
 	
-	nova_static_Console_flush((Object*)0, exceptionData);
+	nova_static_Console_flush((Console*)0, exceptionData);
 	nova_1_c = (char*)NOVA_MALLOC(sizeof(char) * (2));
 	fgets(nova_1_c, 2, stdin);
 }

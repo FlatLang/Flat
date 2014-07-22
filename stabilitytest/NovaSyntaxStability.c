@@ -37,14 +37,14 @@ void nova_del_SyntaxStability(SyntaxStability** this, ExceptionData* exceptionDa
 
 void nova_static_SyntaxStability_test(SyntaxStability* this, ExceptionData* exceptionData, StabilityTest* nova_0_program)
 {
-	nova_static_SyntaxStability_checkLoops((Object*)0, exceptionData, nova_0_program);
-	nova_static_SyntaxStability_checkUntil((Object*)0, exceptionData, nova_0_program);
+	nova_static_SyntaxStability_checkLoops((SyntaxStability*)0, exceptionData, nova_0_program);
+	nova_static_SyntaxStability_checkUntil((SyntaxStability*)0, exceptionData, nova_0_program);
 }
 
 void nova_static_SyntaxStability_checkLoops(SyntaxStability* this, ExceptionData* exceptionData, StabilityTest* nova_0_program)
 {
-	nova_static_SyntaxStability_checkWhileLoops((Object*)0, exceptionData, nova_0_program);
-	nova_static_SyntaxStability_checkForLoops((Object*)0, exceptionData, nova_0_program);
+	nova_static_SyntaxStability_checkWhileLoops((SyntaxStability*)0, exceptionData, nova_0_program);
+	nova_static_SyntaxStability_checkForLoops((SyntaxStability*)0, exceptionData, nova_0_program);
 }
 
 void nova_static_SyntaxStability_checkWhileLoops(SyntaxStability* this, ExceptionData* exceptionData, StabilityTest* nova_0_program)
@@ -53,7 +53,7 @@ void nova_static_SyntaxStability_checkWhileLoops(SyntaxStability* this, Exceptio
 	int nova_1_num2;
 	int nova_1_num3;
 	
-	nova_static_Console_write((Object*)0, exceptionData, nova_String_String(exceptionData, "Checking inline while loop... "));
+	nova_static_Console_write((Console*)(0), exceptionData, nova_String_String(exceptionData, "Checking inline while loop... "));
 	nova_1_num = 0;
 	nova_1_num2 = 0;
 	nova_1_num3 = 0;
@@ -77,9 +77,9 @@ void nova_static_SyntaxStability_checkWhileLoops(SyntaxStability* this, Exceptio
 	}
 	if (nova_1_num != 100 || nova_1_num2 != 100 || nova_1_num3 != 100)
 	{
-		nova_StabilityTest_fail(nova_0_program, exceptionData, nova_String_String(exceptionData, "Inline while loop failed."));
+		nova_StabilityTest_fail((StabilityTest*)(nova_0_program), exceptionData, nova_String_String(exceptionData, "Inline while loop failed."));
 	}
-	nova_static_Console_writeLine((Object*)0, exceptionData, nova_String_String(exceptionData, "OK"));
+	nova_static_Console_writeLine((Console*)(0), exceptionData, nova_String_String(exceptionData, "OK"));
 }
 
 void nova_static_SyntaxStability_checkForLoops(SyntaxStability* this, ExceptionData* exceptionData, StabilityTest* nova_0_program)
@@ -91,7 +91,7 @@ void nova_static_SyntaxStability_checkForLoops(SyntaxStability* this, ExceptionD
 	int nova_1_i;
 	int nova_1_q;
 	
-	nova_static_Console_write((Object*)0, exceptionData, nova_String_String(exceptionData, "Checking inline for loop... "));
+	nova_static_Console_write((Console*)(0), exceptionData, nova_String_String(exceptionData, "Checking inline for loop... "));
 	nova_1_num = 0;
 	nova_1_num2 = 0;
 	nova_1_num3 = 0;
@@ -118,38 +118,38 @@ void nova_static_SyntaxStability_checkForLoops(SyntaxStability* this, ExceptionD
 	}
 	if (nova_1_num != 100 || nova_1_num2 != 100 || nova_1_num3 != 100)
 	{
-		nova_StabilityTest_fail(nova_0_program, exceptionData, nova_String_String(exceptionData, "Inline for loop failed."));
+		nova_StabilityTest_fail((StabilityTest*)(nova_0_program), exceptionData, nova_String_String(exceptionData, "Inline for loop failed."));
 	}
-	nova_static_Console_writeLine((Object*)0, exceptionData, nova_String_String(exceptionData, "OK"));
+	nova_static_Console_writeLine((Console*)(0), exceptionData, nova_String_String(exceptionData, "OK"));
 }
 
 void nova_static_SyntaxStability_checkUntil(SyntaxStability* this, ExceptionData* exceptionData, StabilityTest* nova_0_program)
 {
 	Object* nova_1_obj;
 	
-	nova_static_Console_write((Object*)0, exceptionData, nova_String_String(exceptionData, "Checking until statement... "));
+	nova_static_Console_write((Console*)(0), exceptionData, nova_String_String(exceptionData, "Checking until statement... "));
 	nova_1_obj = (Object*)0;
 	if (!(nova_1_obj != (Object*)0))
 	{
-		nova_1_obj = nova_static_SyntaxStability_test1((Object*)0, exceptionData);
+		nova_1_obj = nova_static_SyntaxStability_test1((SyntaxStability*)0, exceptionData);
 		if (!(nova_1_obj != (Object*)0))
 		{
-			nova_1_obj = nova_static_SyntaxStability_test2((Object*)0, exceptionData);
+			nova_1_obj = nova_static_SyntaxStability_test2((SyntaxStability*)0, exceptionData);
 			if (!(nova_1_obj != (Object*)0))
 			{
-				nova_1_obj = nova_static_SyntaxStability_test3((Object*)0, exceptionData);
+				nova_1_obj = nova_static_SyntaxStability_test3((SyntaxStability*)0, exceptionData);
 				if (!(nova_1_obj != (Object*)0))
 				{
-					nova_StabilityTest_fail(nova_0_program, exceptionData, nova_String_String(exceptionData, "Failed to stop after correct condition"));
+					nova_StabilityTest_fail((StabilityTest*)(nova_0_program), exceptionData, nova_String_String(exceptionData, "Failed to stop after correct condition"));
 				}
 			}
 		}
 	}
 	if (nova_1_obj == (Object*)0)
 	{
-		nova_StabilityTest_fail(nova_0_program, exceptionData, nova_String_String(exceptionData, "Failed to reach correct condition"));
+		nova_StabilityTest_fail((StabilityTest*)(nova_0_program), exceptionData, nova_String_String(exceptionData, "Failed to reach correct condition"));
 	}
-	nova_static_Console_writeLine((Object*)0, exceptionData, nova_String_String(exceptionData, "OK"));
+	nova_static_Console_writeLine((Console*)(0), exceptionData, nova_String_String(exceptionData, "OK"));
 }
 
 Object* nova_static_SyntaxStability_test1(SyntaxStability* this, ExceptionData* exceptionData)

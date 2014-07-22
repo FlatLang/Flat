@@ -63,7 +63,7 @@ String* nova_String_concat(String* this, ExceptionData* exceptionData, String* n
 	nova_1_size = nova_0_str->nova_String_length + this->nova_String_length + 1;
 	nova_1_newData = (char*)NOVA_MALLOC(sizeof(char) * (nova_1_size));
 	strcpy(nova_1_newData, this->prv->nova_String_data);
-	strcat(nova_1_newData, nova_String_toCharArray(nova_0_str, exceptionData));
+	strcat(nova_1_newData, nova_String_toCharArray((String*)(nova_0_str), exceptionData));
 	nova_1_newData[nova_1_size - 1] = '\0';
 	nova_1_newStr = nova_String_String(exceptionData, nova_1_newData);
 	return nova_1_newStr;

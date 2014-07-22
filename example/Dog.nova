@@ -1,0 +1,17 @@
+public class Dog extends Animal
+{
+	public int getNumLegs()
+	{
+		return 4
+	}
+	
+	public int getNumEyes()
+	{
+		return 2
+	}
+	
+	public String getDescription()
+	{
+		return "It's a fuzzy dog"
+	}
+}

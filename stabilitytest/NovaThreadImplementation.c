@@ -9,8 +9,6 @@ nova_VTable_ThreadImplementation nova_VTable_ThreadImplementation_val =
 CCLASS_PRIVATE
 (
 	FATHOM_THREAD_HANDLE* nova_Thread_handle;
-	long_long nova_Thread_millis;
-	String* nova_Thread_word;
 	
 )
 
@@ -46,6 +44,6 @@ void nova_ThreadImplementation_run(ThreadImplementation* this, ExceptionData* ex
 	nova_1_i = 0;
 	for (; nova_1_i < 10; nova_1_i++)
 	{
-		nova_static_Thread_sleep((Object*)0, exceptionData, 10);
+		nova_static_Thread_sleep((Thread*)(0), exceptionData, (long_long)(10));
 	}
 }

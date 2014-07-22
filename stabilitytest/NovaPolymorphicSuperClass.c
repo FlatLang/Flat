@@ -11,6 +11,7 @@ PolymorphicSuperClass* nova_PolymorphicSuperClass_PolymorphicSuperClass(Exceptio
 {
 	CCLASS_NEW(PolymorphicSuperClass, this,);
 	
+	this->nova_PolymorphicSuperClass_child = (PolymorphicSubClass*)0;
 	this->vtable = &nova_VTable_PolymorphicSuperClass_val;
 	{
 	}
@@ -25,10 +26,16 @@ void nova_del_PolymorphicSuperClass(PolymorphicSuperClass** this, ExceptionData*
 		return;
 	}
 	
+	nova_del_PolymorphicSubClass(&(*this)->nova_PolymorphicSuperClass_child, exceptionData);
 	
 	{
 	}
 	NOVA_FREE(*this);
+}
+
+void nova_PolymorphicSuperClass_giveBirth(PolymorphicSuperClass* this, ExceptionData* exceptionData)
+{
+	this->nova_PolymorphicSuperClass_child = nova_PolymorphicSubClass_PolymorphicSubClass(exceptionData);
 }
 
 String* nova_PolymorphicSuperClass_toString(PolymorphicSuperClass* this, ExceptionData* exceptionData)

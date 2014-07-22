@@ -8,8 +8,8 @@ SVGComponentNode* nova_SVGComponentNode_SVGComponentNode(ExceptionData* exceptio
 {
 	CCLASS_NEW(SVGComponentNode, this,);
 	
-	this->nova_SVGComponentNode_next = (Object*)0;
-	this->nova_SVGComponentNode_component = (Object*)0;
+	this->nova_SVGComponentNode_next = (SVGComponentNode*)0;
+	this->nova_SVGComponentNode_component = (SVGComponent*)0;
 	{
 	}
 	
@@ -24,7 +24,7 @@ void nova_del_SVGComponentNode(SVGComponentNode** this, ExceptionData* exception
 	}
 	
 	nova_del_SVGComponentNode(&(*this)->nova_SVGComponentNode_next, exceptionData);
-	nova_del_SVGCircle(&(*this)->nova_SVGComponentNode_component, exceptionData);
+	nova_del_SVGComponent(&(*this)->nova_SVGComponentNode_component, exceptionData);
 	
 	{
 	}

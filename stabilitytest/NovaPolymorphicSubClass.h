@@ -30,6 +30,7 @@ CCLASS_CLASS
 (
 	PolymorphicSubClass, 
 	
+	PolymorphicSubClass* nova_PolymorphicSuperClass_child;
 	nova_VTable_PolymorphicSubClass* vtable;
 )
 

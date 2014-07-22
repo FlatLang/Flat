@@ -57,7 +57,7 @@ void nova_ArrayList_increaseSize(ArrayList* this, ExceptionData* exceptionData)
 	
 	this->prv->nova_ArrayList_bufferSize = this->prv->nova_ArrayList_bufferSize + 3;
 	nova_1_tmp = (int*)NOVA_MALLOC(sizeof(int) * (this->prv->nova_ArrayList_bufferSize));
-	arrayCopy(&nova_1_tmp, 0, &this->prv->nova_ArrayList_data, 0, this->nova_ArrayList_size, this->prv->nova_ArrayList_bufferSize, 4);
+	arrayCopy((void*)&(nova_1_tmp), 0, (void*)&(this->prv->nova_ArrayList_data), 0, this->nova_ArrayList_size, this->prv->nova_ArrayList_bufferSize, 4);
 	this->prv->nova_ArrayList_data = nova_1_tmp;
 }
 

@@ -41,7 +41,7 @@ int nova_static_Long_numDigits(Long* this, ExceptionData* exceptionData, long_lo
 	
 	if (nova_0_number < 0)
 	{
-		return nova_static_Long_numDigits((Object*)0, exceptionData, -nova_0_number) + 1;
+		return nova_static_Long_numDigits((Long*)0, exceptionData, -nova_0_number) + 1;
 	}
 	nova_0_number = nova_0_number / 10;
 	nova_1_size = 1;
@@ -54,13 +54,15 @@ int nova_static_Long_numDigits(Long* this, ExceptionData* exceptionData, long_lo
 
 String* nova_static_Long_toAString(Long* this, ExceptionData* exceptionData, long_long nova_0_value)
 {
+	int nova_1_charOffset;
 	int nova_1_digits;
 	char* nova_1_data;
 	int nova_1_offset;
 	int nova_1_nums;
 	int nova_1_index;
 	
-	nova_1_digits = nova_static_Long_numDigits((Object*)0, exceptionData, nova_0_value);
+	nova_1_charOffset = (int)('0');
+	nova_1_digits = nova_static_Long_numDigits((Long*)0, exceptionData, nova_0_value);
 	nova_1_data = (char*)NOVA_MALLOC(sizeof(char) * (nova_1_digits + 1));
 	nova_1_data[nova_1_digits] = '\0';
 	nova_1_offset = 0;
@@ -74,7 +76,7 @@ String* nova_static_Long_toAString(Long* this, ExceptionData* exceptionData, lon
 	nova_1_index = 0;
 	for (; nova_1_index < nova_1_nums; nova_1_index++)
 	{
-		nova_1_data[nova_1_digits - nova_1_index] = '0' + nova_0_value % 10;
+		nova_1_data[nova_1_digits - nova_1_index] = (char)(nova_1_charOffset + nova_0_value % 10);
 		nova_0_value = nova_0_value / 10;
 	}
 	return nova_String_String(exceptionData, nova_1_data);

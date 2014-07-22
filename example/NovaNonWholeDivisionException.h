@@ -21,6 +21,8 @@ typedef struct NonWholeDivisionException NonWholeDivisionException;
 #include <NovaChar.h>
 #include <NovaDivideByZeroException.h>
 
+
+
 NonWholeDivisionException* nova_NonWholeDivisionException_NonWholeDivisionException(ExceptionData* exceptionData);
 void nova_del_NonWholeDivisionException(NonWholeDivisionException** this, ExceptionData* exceptionData);
 

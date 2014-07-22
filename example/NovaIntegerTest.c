@@ -3,6 +3,7 @@
 
 
 
+
 IntegerTest* nova_IntegerTest_IntegerTest(ExceptionData* exceptionData)
 {
 	IntegerTest* this = (IntegerTest*)1;
@@ -37,17 +38,17 @@ void nova_static_IntegerTest_main(IntegerTest* this, ExceptionData* exceptionDat
 		int nova_2_i;
 		long_long nova_2_end;
 		
-		nova_2_start = nova_static_Time_currentTimeMillis(0, exceptionData);
+		nova_2_start = nova_static_Time_currentTimeMillis((Time*)(0), exceptionData);
 		nova_2_i = 0;
 		for (; nova_2_i < 999999; nova_2_i++)
 		{
-			nova_static_Long_toAString(0, exceptionData, nova_2_i);
+			nova_static_Long_toAString((Long*)(0), exceptionData, (long_long)(nova_2_i));
 		}
-		nova_2_end = nova_static_Time_currentTimeMillis(0, exceptionData);
-		nova_static_Console_writeLine(0, exceptionData, nova_String_concat(nova_String_String(exceptionData, "Time taken: "), exceptionData, nova_String_concat(nova_Long_toString(nova_Long_Long(exceptionData, (nova_2_end - nova_2_start)), exceptionData), exceptionData, nova_String_String(exceptionData, "ms"))));
-		nova_static_Console_write(0, exceptionData, nova_String_String(exceptionData, "Run again? (Y/N) "));
-		nova_1_c = nova_static_Console_readChar(0, exceptionData);
+		nova_2_end = nova_static_Time_currentTimeMillis((Time*)(0), exceptionData);
+		nova_static_Console_writeLine((Console*)(0), exceptionData, nova_String_concat(nova_String_String(exceptionData, (char*)("Time taken: ")), exceptionData, nova_String_concat(nova_Long_toString((Long*)(nova_Long_Long(exceptionData, (nova_2_end - nova_2_start))), exceptionData), exceptionData, nova_String_String(exceptionData, (char*)("ms")))));
+		nova_static_Console_write((Console*)(0), exceptionData, nova_String_String(exceptionData, "Run again? (Y/N) "));
+		nova_1_c = nova_static_Console_readChar((Console*)(0), exceptionData);
 	}
-	nova_static_Console_writeLine(0, exceptionData, nova_String_String(exceptionData, "\nFinished"));
-	nova_static_Console_waitForEnter(0, exceptionData);
+	nova_static_Console_writeLine((Console*)(0), exceptionData, nova_String_String(exceptionData, "\nFinished"));
+	nova_static_Console_waitForEnter((Console*)(0), exceptionData);
 }

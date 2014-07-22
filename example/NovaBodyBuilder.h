@@ -21,6 +21,11 @@ typedef struct BodyBuilder BodyBuilder;
 #include <NovaChar.h>
 #include <NovaDivideByZeroException.h>
 
+typedef struct nova_VTable_BodyBuilder
+{
+	void (*nova_virtual_sayHello)(BodyBuilder*, ExceptionData*);
+} nova_VTable_BodyBuilder;
+
 CCLASS_CLASS
 (
 	BodyBuilder, 
@@ -28,6 +33,7 @@ CCLASS_CLASS
 	int nova_Person_age;
 	String* nova_Person_name;
 	int nova_BodyBuilder_weightClass;
+	nova_VTable_BodyBuilder* vtable;
 )
 
 BodyBuilder* nova_BodyBuilder_BodyBuilder(ExceptionData* exceptionData, int nova_0_weightClass, String* nova_0_name);

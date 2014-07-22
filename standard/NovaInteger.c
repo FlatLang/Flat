@@ -37,12 +37,12 @@ void nova_del_Integer(Integer** this, ExceptionData* exceptionData)
 
 int nova_static_Integer_numDigits(Integer* this, ExceptionData* exceptionData, int nova_0_number)
 {
-	return nova_static_Long_numDigits((Object*)0, exceptionData, nova_0_number);
+	return nova_static_Long_numDigits((Long*)(0), exceptionData, (long_long)(nova_0_number));
 }
 
 String* nova_static_Integer_toAString(Integer* this, ExceptionData* exceptionData, int nova_0_value)
 {
-	return nova_static_Long_toAString((Object*)0, exceptionData, nova_0_value);
+	return nova_static_Long_toAString((Long*)(0), exceptionData, (long_long)(nova_0_value));
 }
 
 String* nova_Integer_toString(Integer* this, ExceptionData* exceptionData)

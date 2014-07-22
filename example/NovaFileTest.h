@@ -22,6 +22,8 @@ typedef struct FileTest FileTest;
 #include <NovaDivideByZeroException.h>
 #include <NovaFile.h>
 
+
+
 FileTest* nova_FileTest_FileTest(ExceptionData* exceptionData);
 void nova_del_FileTest(FileTest** this, ExceptionData* exceptionData);
 void nova_static_FileTest_main(FileTest* this, ExceptionData* exceptionData, String** nova_0_args);

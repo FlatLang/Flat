@@ -20,6 +20,7 @@ typedef struct StabilityExceptionHandler StabilityExceptionHandler;
 #include <NovaDouble.h>
 #include <NovaChar.h>
 #include <NovaDivideByZeroException.h>
+#include <NovaUncaughtExceptionHandler.h>
 #include <NovaThread.h>
 #include <NovaStabilityTest.h>
 

@@ -22,6 +22,8 @@ typedef struct MathDemo MathDemo;
 #include <NovaDivideByZeroException.h>
 #include <NovaTime.h>
 
+
+
 MathDemo* nova_MathDemo_MathDemo(ExceptionData* exceptionData);
 void nova_del_MathDemo(MathDemo** this, ExceptionData* exceptionData);
 void nova_static_MathDemo_main(MathDemo* this, ExceptionData* exceptionData, String** nova_0_args);

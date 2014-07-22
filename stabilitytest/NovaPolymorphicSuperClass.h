@@ -20,6 +20,7 @@ typedef struct PolymorphicSuperClass PolymorphicSuperClass;
 #include <NovaDouble.h>
 #include <NovaChar.h>
 #include <NovaDivideByZeroException.h>
+#include <NovaPolymorphicSubClass.h>
 
 typedef struct nova_VTable_PolymorphicSuperClass
 {
@@ -30,11 +31,13 @@ CCLASS_CLASS
 (
 	PolymorphicSuperClass, 
 	
+	PolymorphicSubClass* nova_PolymorphicSuperClass_child;
 	nova_VTable_PolymorphicSuperClass* vtable;
 )
 
 PolymorphicSuperClass* nova_PolymorphicSuperClass_PolymorphicSuperClass(ExceptionData* exceptionData);
 void nova_del_PolymorphicSuperClass(PolymorphicSuperClass** this, ExceptionData* exceptionData);
+void nova_PolymorphicSuperClass_giveBirth(PolymorphicSuperClass* this, ExceptionData* exceptionData);
 String* nova_PolymorphicSuperClass_toString(PolymorphicSuperClass* this, ExceptionData* exceptionData);
 
 #endif

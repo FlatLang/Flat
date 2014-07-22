@@ -22,6 +22,8 @@ typedef struct IntegerTest IntegerTest;
 #include <NovaDivideByZeroException.h>
 #include <NovaTime.h>
 
+
+
 IntegerTest* nova_IntegerTest_IntegerTest(ExceptionData* exceptionData);
 void nova_del_IntegerTest(IntegerTest** this, ExceptionData* exceptionData);
 void nova_static_IntegerTest_main(IntegerTest* this, ExceptionData* exceptionData, String** nova_0_args);

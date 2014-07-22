@@ -1,6 +1,11 @@
 public class PolymorphicSuperClass
 {
+	visible PolymorphicSubClass child
 	
+	public void giveBirth()
+	{
+		child = new PolymorphicSubClass()
+	}
 	
 	public String toString()
 	{

@@ -22,6 +22,8 @@ typedef struct ArrayListDemo ArrayListDemo;
 #include <NovaDivideByZeroException.h>
 #include <NovaArrayList.h>
 
+
+
 ArrayListDemo* nova_ArrayListDemo_ArrayListDemo(ExceptionData* exceptionData);
 void nova_del_ArrayListDemo(ArrayListDemo** this, ExceptionData* exceptionData);
 void nova_static_ArrayListDemo_main(ArrayListDemo* this, ExceptionData* exceptionData, String** nova_0_args);

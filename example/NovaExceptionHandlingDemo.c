@@ -3,6 +3,7 @@
 
 
 
+
 int nova_static_ExceptionHandlingDemo_divide(ExceptionHandlingDemo* this, ExceptionData* exceptionData, int nova_0_num, int nova_0_den);
 
 ExceptionHandlingDemo* nova_ExceptionHandlingDemo_ExceptionHandlingDemo(ExceptionData* exceptionData)
@@ -37,32 +38,28 @@ void nova_static_ExceptionHandlingDemo_main(ExceptionHandlingDemo* this, Excepti
 		{
 			int nova_2_result;
 			
-			nova_2_result = nova_static_ExceptionHandlingDemo_divide(0, exceptionData, 100, 5);
-			nova_static_Console_writeLine(0, exceptionData, nova_String_concat(nova_String_String(exceptionData, "After working example: "), exceptionData, nova_Integer_toString(nova_Integer_Integer(exceptionData, nova_2_result), exceptionData)));
-			nova_2_result = nova_static_ExceptionHandlingDemo_divide(0, exceptionData, 100, 3);
-			nova_static_Console_writeLine(0, exceptionData, nova_String_String(exceptionData, "this output will not show."));
+			nova_2_result = nova_static_ExceptionHandlingDemo_divide((ExceptionHandlingDemo*)0, exceptionData, 100, 5);
+			nova_static_Console_writeLine((Console*)(0), exceptionData, nova_String_concat(nova_String_String(exceptionData, (char*)("After working example: ")), exceptionData, nova_Integer_toString((Integer*)(nova_Integer_Integer(exceptionData, nova_2_result)), exceptionData)));
+			nova_2_result = nova_static_ExceptionHandlingDemo_divide((ExceptionHandlingDemo*)0, exceptionData, 100, 3);
+			nova_static_Console_writeLine((Console*)(0), exceptionData, nova_String_String(exceptionData, "this output will not show."));
 		}
 	}
 	CATCH (5)
 	{
-		{
-			nova_static_Console_writeLine(0, exceptionData, nova_String_String(exceptionData, "You used the divide() method incorrectly."));
-		}
+		nova_static_Console_writeLine((Console*)(0), exceptionData, nova_String_String(exceptionData, "You used the divide() method incorrectly."));
 	}
 	FINALLY
 	{
-		{
-			nova_static_Console_writeLine(0, exceptionData, nova_String_String(exceptionData, "Exiting the try block."));
-		}
+		nova_static_Console_writeLine((Console*)(0), exceptionData, nova_String_String(exceptionData, "Exiting the try block."));
 	}
 	END_TRY;
-	nova_static_Console_writeLine(0, exceptionData, nova_String_String(exceptionData, "After the try block."));
-	nova_static_Console_waitForEnter(0, exceptionData);
+	nova_static_Console_writeLine((Console*)(0), exceptionData, nova_String_String(exceptionData, "After the try block."));
+	nova_static_Console_waitForEnter((Console*)(0), exceptionData);
 }
 
 int nova_static_ExceptionHandlingDemo_divide(ExceptionHandlingDemo* this, ExceptionData* exceptionData, int nova_0_num, int nova_0_den)
 {
-	double nova_zero_check4;
+	int nova_zero_check4;
 	
 	if (nova_0_num % nova_0_den != 0)
 	{
@@ -71,7 +68,7 @@ int nova_static_ExceptionHandlingDemo_divide(ExceptionHandlingDemo* this, Except
 	nova_zero_check4 = nova_0_den;
 	if (nova_zero_check4 == 0)
 	{
-		THROW(2);
+		THROW(3);
 	}
 	return nova_0_num / nova_zero_check4;
 }

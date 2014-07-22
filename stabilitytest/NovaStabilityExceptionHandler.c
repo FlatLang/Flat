@@ -16,7 +16,7 @@ StabilityExceptionHandler* nova_StabilityExceptionHandler_StabilityExceptionHand
 {
 	CCLASS_NEW(StabilityExceptionHandler, this);
 	
-	this->prv->nova_StabilityExceptionHandler_program = (Object*)0;
+	this->prv->nova_StabilityExceptionHandler_program = (StabilityTest*)0;
 	this->vtable = &nova_VTable_StabilityExceptionHandler_val;
 	{
 		this->prv->nova_StabilityExceptionHandler_program = nova_0_program;
@@ -42,5 +42,5 @@ void nova_del_StabilityExceptionHandler(StabilityExceptionHandler** this, Except
 
 void nova_StabilityExceptionHandler_uncaughtException(StabilityExceptionHandler* this, ExceptionData* exceptionData, Thread* nova_0_thread, Exception* nova_0_exception)
 {
-	nova_StabilityTest_fail(this->prv->nova_StabilityExceptionHandler_program, exceptionData, nova_String_String(exceptionData, ""));
+	nova_StabilityTest_fail((StabilityTest*)(this->prv->nova_StabilityExceptionHandler_program), exceptionData, nova_String_String(exceptionData, ""));
 }

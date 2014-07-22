@@ -1,0 +1,44 @@
+#pragma once
+#ifndef FILE_Animal_NOVA
+#define FILE_Animal_NOVA
+
+typedef struct Animal Animal;
+
+#include <Nova.h>
+#include <ExceptionHandler.h>
+#include <NovaExceptionData.h>
+#include <NovaObject.h>
+#include <NovaString.h>
+#include <NovaSystem.h>
+#include <NovaException.h>
+#include <NovaMath.h>
+#include <NovaConsole.h>
+#include <NovaGC.h>
+#include <NovaNumber.h>
+#include <NovaInteger.h>
+#include <NovaLong.h>
+#include <NovaDouble.h>
+#include <NovaChar.h>
+#include <NovaDivideByZeroException.h>
+
+typedef struct nova_VTable_Animal
+{
+	int (*nova_virtual_getNumLegs)(Animal*, ExceptionData*);
+	int (*nova_virtual_getNumEyes)(Animal*, ExceptionData*);
+	String* (*nova_virtual_getDescription)(Animal*, ExceptionData*);
+} nova_VTable_Animal;
+
+CCLASS_CLASS
+(
+	Animal, 
+	
+	nova_VTable_Animal* vtable;
+)
+
+Animal* nova_Animal_Animal(ExceptionData* exceptionData);
+void nova_del_Animal(Animal** this, ExceptionData* exceptionData);
+int nova_Animal_getNumLegs(Animal* this, ExceptionData* exceptionData);
+int nova_Animal_getNumEyes(Animal* this, ExceptionData* exceptionData);
+String* nova_Animal_getDescription(Animal* this, ExceptionData* exceptionData);
+
+#endif

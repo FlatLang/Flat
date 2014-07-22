@@ -22,6 +22,8 @@ typedef struct ExceptionHandlingDemo ExceptionHandlingDemo;
 #include <NovaDivideByZeroException.h>
 #include <NovaNonWholeDivisionException.h>
 
+
+
 ExceptionHandlingDemo* nova_ExceptionHandlingDemo_ExceptionHandlingDemo(ExceptionData* exceptionData);
 void nova_del_ExceptionHandlingDemo(ExceptionHandlingDemo** this, ExceptionData* exceptionData);
 void nova_static_ExceptionHandlingDemo_main(ExceptionHandlingDemo* this, ExceptionData* exceptionData, String** nova_0_args);

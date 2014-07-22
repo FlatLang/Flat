@@ -1,4 +1,4 @@
-public class PolymorphicSubClass
+public class PolymorphicSubClass extends PolymorphicSuperClass
 {
 	public String toString()
 	{

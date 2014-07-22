@@ -22,6 +22,9 @@ typedef struct ThreadDemo ThreadDemo;
 #include <NovaDivideByZeroException.h>
 #include <NovaThread.h>
 #include <NovaTime.h>
+#include <NovaThreadDemoImplementation.h>
+
+
 
 ThreadDemo* nova_ThreadDemo_ThreadDemo(ExceptionData* exceptionData);
 void nova_del_ThreadDemo(ThreadDemo** this, ExceptionData* exceptionData);

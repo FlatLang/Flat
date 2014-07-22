@@ -41,7 +41,7 @@ String* nova_Object_getHashCode(Object* this, ExceptionData* exceptionData)
 
 String* nova_Object_toString(Object* this, ExceptionData* exceptionData)
 {
-	return nova_String_concat(nova_String_String(exceptionData, "[Object @"), exceptionData, nova_String_concat(nova_Object_getHashCode(this, exceptionData), exceptionData, nova_String_String(exceptionData, "]")));
+	return nova_String_concat(nova_String_String(exceptionData, (char*)("[Object @")), exceptionData, nova_String_concat(nova_Object_getHashCode(this, exceptionData), exceptionData, nova_String_String(exceptionData, (char*)("]"))));
 }
 
 char nova_Object_equals(Object* this, ExceptionData* exceptionData, Object* nova_0_another)

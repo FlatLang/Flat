@@ -35,11 +35,11 @@ void nova_static_StabilityTest_main(StabilityTest* this, ExceptionData* exceptio
 		long_long nova_1_time;
 		
 		nova_1_test = nova_StabilityTest_StabilityTest(exceptionData);
-		nova_1_start = nova_static_Time_currentTimeMillis((Object*)0, exceptionData);
-		nova_1_result = nova_StabilityTest_runTests(nova_1_test, exceptionData);
-		nova_1_time = nova_static_Time_currentTimeMillis((Object*)0, exceptionData) - nova_1_start;
-		nova_static_Console_writeLine((Object*)0, exceptionData, nova_String_concat(nova_String_String(exceptionData, "Took "), exceptionData, nova_String_concat(nova_Long_toString(nova_Long_Long(exceptionData, nova_1_time), exceptionData), exceptionData, nova_String_String(exceptionData, "ms"))));
-		nova_static_Console_waitForEnter((Object*)0, exceptionData);
+		nova_1_start = nova_static_Time_currentTimeMillis((Time*)(0), exceptionData);
+		nova_1_result = nova_StabilityTest_runTests((StabilityTest*)(nova_1_test), exceptionData);
+		nova_1_time = nova_static_Time_currentTimeMillis((Time*)(0), exceptionData) - nova_1_start;
+		nova_static_Console_writeLine((Console*)(0), exceptionData, nova_String_concat(nova_String_String(exceptionData, (char*)("Took ")), exceptionData, nova_String_concat(nova_Long_toString((Long*)(nova_Long_Long(exceptionData, nova_1_time)), exceptionData), exceptionData, nova_String_String(exceptionData, (char*)("ms")))));
+		nova_static_Console_waitForEnter((Console*)(0), exceptionData);
 }
 
 int nova_StabilityTest_runTests(StabilityTest* this, ExceptionData* exceptionData)
@@ -49,14 +49,14 @@ int nova_StabilityTest_runTests(StabilityTest* this, ExceptionData* exceptionDat
 				nova_ExceptionData_addCode(exceptionData, exceptionData, 2);
 				
 				{
-						nova_static_ExceptionStability_test((Object*)0, exceptionData, this);
-						nova_static_TimeStability_test((Object*)0, exceptionData, this);
-						nova_static_ThreadStability_test((Object*)0, exceptionData, this);
-						nova_static_FileStability_test((Object*)0, exceptionData, this);
-						nova_static_SyntaxStability_test((Object*)0, exceptionData, this);
-						nova_static_ClosureStability_test((Object*)0, exceptionData, this);
-						nova_static_PolymorphismStability_test((Object*)0, exceptionData, this);
-						nova_static_Console_writeLine((Object*)0, exceptionData, nova_String_String(exceptionData, "All OK"));
+						nova_static_ExceptionStability_test((ExceptionStability*)(0), exceptionData, this);
+						nova_static_TimeStability_test((TimeStability*)(0), exceptionData, this);
+						nova_static_ThreadStability_test((ThreadStability*)(0), exceptionData, this);
+						nova_static_FileStability_test((FileStability*)(0), exceptionData, this);
+						nova_static_SyntaxStability_test((SyntaxStability*)(0), exceptionData, this);
+						nova_static_ClosureStability_test((ClosureStability*)(0), exceptionData, this);
+						nova_static_PolymorphismStability_test((PolymorphismStability*)(0), exceptionData, this);
+						nova_static_Console_writeLine((Console*)(0), exceptionData, nova_String_String(exceptionData, "All OK"));
 						return 0;
 				}
 		}
@@ -76,7 +76,7 @@ void nova_StabilityTest_fail(StabilityTest* this, ExceptionData* exceptionData, 
 		{
 				nova_0_message = nova_String_String(exceptionData, "Failed");
 		}
-		nova_static_Console_writeLine((Object*)0, exceptionData, nova_0_message);
+		nova_static_Console_writeLine((Console*)(0), exceptionData, nova_0_message);
 		THROW(2);
 }
 
@@ -89,7 +89,7 @@ int main(int argc, char** argvs)
 		
 		ExceptionData* exceptionData = 0;
 		srand(currentTimeMillis());
-		nova_static_GC_init((Object*)0, exceptionData);
+		nova_static_GC_init((GC*)(0), exceptionData);
 		
 		args = (String**)NOVA_MALLOC(argc * sizeof(String));
 		
@@ -107,7 +107,7 @@ int main(int argc, char** argvs)
 		CATCH (1)
 		{
 				printf("You broke it.");
-				nova_static_Console_waitForEnter((Object*)0, exceptionData);
+				nova_static_Console_waitForEnter((Console*)(0), exceptionData);
 				
 		}
 		FINALLY

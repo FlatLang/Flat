@@ -3,6 +3,7 @@
 
 
 
+
 SVGTest* nova_SVGTest_SVGTest(ExceptionData* exceptionData)
 {
 	SVGTest* this = (SVGTest*)1;
@@ -49,15 +50,15 @@ void nova_static_SVGTest_main(SVGTest* this, ExceptionData* exceptionData, Strin
 	nova_1_s = nova_SVG_SVG(exceptionData);
 	nova_1_pi = 3.141592653;
 	nova_1_pi2 = nova_1_pi * 2;
-	nova_static_Console_write(0, exceptionData, nova_String_String(exceptionData, "Enter the number of vertices: "));
-	nova_1_numVerts = nova_static_Console_readInt(0, exceptionData);
-	nova_static_Console_write(0, exceptionData, nova_String_String(exceptionData, "Enter the coefficient: "));
-	nova_1_coefficient = nova_static_Console_readDouble(0, exceptionData);
-	nova_static_Console_write(0, exceptionData, nova_String_String(exceptionData, "Enter the number of points: "));
-	nova_1_numPoints = nova_static_Console_readInt(0, exceptionData);
-	nova_1_start = nova_static_Time_currentTimeMillis(0, exceptionData);
+	nova_static_Console_write((Console*)(0), exceptionData, nova_String_String(exceptionData, "Enter the number of vertices: "));
+	nova_1_numVerts = nova_static_Console_readInt((Console*)(0), exceptionData);
+	nova_static_Console_write((Console*)(0), exceptionData, nova_String_String(exceptionData, "Enter the coefficient: "));
+	nova_1_coefficient = nova_static_Console_readDouble((Console*)(0), exceptionData);
+	nova_static_Console_write((Console*)(0), exceptionData, nova_String_String(exceptionData, "Enter the number of points: "));
+	nova_1_numPoints = nova_static_Console_readInt((Console*)(0), exceptionData);
+	nova_1_start = nova_static_Time_currentTimeMillis((Time*)(0), exceptionData);
 	nova_1_points = (double*)NOVA_MALLOC(sizeof(double) * (nova_1_numVerts * 2));
-	nova_1_radius = 450;
+	nova_1_radius = (double)(450);
 	nova_1_offset = nova_1_pi2 / 12;
 	nova_1_j = 0;
 	for (; nova_1_j < nova_1_numVerts; nova_1_j++)
@@ -68,11 +69,11 @@ void nova_static_SVGTest_main(SVGTest* this, ExceptionData* exceptionData, Strin
 		nova_zero_check3 = (nova_1_numVerts * 1.0);
 		if (nova_zero_check3 == 0)
 		{
-			THROW(2);
+			THROW(3);
 		}
 		nova_2_rad = nova_1_pi2 * (nova_1_j / nova_zero_check3) + nova_1_offset;
-		nova_1_points[nova_1_j * 2 + 0] = nova_1_radius * nova_static_Math_cos(0, exceptionData, nova_2_rad) + nova_1_radius + 10;
-		nova_1_points[nova_1_j * 2 + 1] = nova_1_radius * nova_static_Math_sin(0, exceptionData, nova_2_rad) + nova_1_radius + 10;
+		nova_1_points[nova_1_j * 2 + 0] = nova_1_radius * nova_static_Math_cos((Math*)(0), exceptionData, nova_2_rad) + nova_1_radius + 10;
+		nova_1_points[nova_1_j * 2 + 1] = nova_1_radius * nova_static_Math_sin((Math*)(0), exceptionData, nova_2_rad) + nova_1_radius + 10;
 	}
 	nova_1_k = 0;
 	for (; nova_1_k < nova_1_numVerts; nova_1_k++)
@@ -84,7 +85,7 @@ void nova_static_SVGTest_main(SVGTest* this, ExceptionData* exceptionData, Strin
 		nova_6_x = nova_1_points[nova_1_k * 2 + 0];
 		nova_6_y = nova_1_points[nova_1_k * 2 + 1];
 		nova_6_circle2 = nova_SVGCircle_SVGCircle(exceptionData, nova_6_x, nova_6_y, 3);
-		nova_SVGComponentList_addChild(nova_1_s->nova_SVG_root->nova_SVGComponent_children, exceptionData, nova_6_circle2);
+		nova_SVGComponentList_addChild((SVGComponentList*)(nova_1_s->nova_SVG_root->nova_SVGComponent_children), exceptionData, (SVGComponent*)(nova_6_circle2));
 	}
 	nova_1_cx = nova_1_radius + 10;
 	nova_1_cy = nova_1_radius + 10;
@@ -95,7 +96,7 @@ void nova_static_SVGTest_main(SVGTest* this, ExceptionData* exceptionData, Strin
 		double nova_7_x;
 		double nova_7_y;
 		
-		nova_7_rand = nova_static_Math_random(0, exceptionData, nova_1_numVerts);
+		nova_7_rand = nova_static_Math_random((Math*)(0), exceptionData, (long_long)(nova_1_numVerts));
 		nova_7_x = nova_1_points[nova_7_rand * 2 + 0];
 		nova_7_y = nova_1_points[nova_7_rand * 2 + 1];
 		nova_1_cx = nova_1_cx - (nova_1_cx - nova_7_x) * nova_1_coefficient;
@@ -106,16 +107,16 @@ void nova_static_SVGTest_main(SVGTest* this, ExceptionData* exceptionData, Strin
 			
 			if (nova_1_i % 1000 == 0)
 			{
-				nova_static_Console_writeLine(0, exceptionData, nova_String_concat(nova_String_String(exceptionData, ""), exceptionData, nova_Integer_toString(nova_Integer_Integer(exceptionData, nova_1_i), exceptionData)));
+				nova_static_Console_writeLine((Console*)(0), exceptionData, nova_String_concat(nova_String_String(exceptionData, (char*)("")), exceptionData, nova_Integer_toString((Integer*)(nova_Integer_Integer(exceptionData, nova_1_i)), exceptionData)));
 			}
 			nova_8_circle = nova_SVGCircle_SVGCircle(exceptionData, nova_1_cx, nova_1_cy, 1);
-			nova_SVGComponentList_addChild(nova_1_s->nova_SVG_root->nova_SVGComponent_children, exceptionData, nova_8_circle);
+			nova_SVGComponentList_addChild((SVGComponentList*)(nova_1_s->nova_SVG_root->nova_SVGComponent_children), exceptionData, (SVGComponent*)(nova_8_circle));
 		}
 	}
 	nova_1_f = nova_File_File(exceptionData, nova_String_String(exceptionData, "C:/Users/Braden Steffaniak/svgoutput.html"));
-	nova_File_create(nova_1_f, exceptionData);
-	nova_SVG_generateHTMLOutput(nova_1_s, exceptionData, nova_1_f);
-	nova_1_end = nova_static_Time_currentTimeMillis(0, exceptionData);
-	nova_static_Console_write(0, exceptionData, nova_String_concat(nova_String_String(exceptionData, "Done generating "), exceptionData, nova_Long_toString(nova_Long_Long(exceptionData, (nova_1_end - nova_1_start)), exceptionData)));
-	nova_static_Console_waitForEnter(0, exceptionData);
+	nova_File_create((File*)(nova_1_f), exceptionData);
+	nova_SVG_generateHTMLOutput((SVG*)(nova_1_s), exceptionData, nova_1_f);
+	nova_1_end = nova_static_Time_currentTimeMillis((Time*)(0), exceptionData);
+	nova_static_Console_write((Console*)(0), exceptionData, nova_String_concat(nova_String_String(exceptionData, (char*)("Done generating ")), exceptionData, nova_Long_toString((Long*)(nova_Long_Long(exceptionData, (nova_1_end - nova_1_start))), exceptionData)));
+	nova_static_Console_waitForEnter((Console*)(0), exceptionData);
 }

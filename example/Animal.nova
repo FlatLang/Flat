@@ -1,0 +1,17 @@
+public class Animal
+{
+	public int getNumLegs()
+	{
+		return 0
+	}
+	
+	public int getNumEyes()
+	{
+		return 0
+	}
+	
+	public String getDescription()
+	{
+		return "Its just a stupid animal..."
+	}
+}

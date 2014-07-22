@@ -28,6 +28,7 @@ public class Long extends Number
 	
 	public static String toAString(long value)
 	{
+		int  charOffset = '0'
 		int  digits  = numDigits(value)
 		char data[]  = new char[digits + 1]
 		
@@ -48,7 +49,7 @@ public class Long extends Number
 		
 		for (int index = 0; index < nums; index++)
 		{
-			data[digits - index] = '0' + value % 10
+			data[digits - index] = charOffset + value % 10
 			
 			value = value / 10
 		}
