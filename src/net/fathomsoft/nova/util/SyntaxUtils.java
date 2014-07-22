@@ -12,7 +12,6 @@ import net.fathomsoft.nova.tree.Literal;
 import net.fathomsoft.nova.tree.MethodCall;
 import net.fathomsoft.nova.tree.MethodDeclaration;
 import net.fathomsoft.nova.tree.Node;
-import net.fathomsoft.nova.tree.Null;
 import net.fathomsoft.nova.tree.Operator;
 import net.fathomsoft.nova.tree.Parameter;
 import net.fathomsoft.nova.tree.ParameterList;
@@ -27,7 +26,7 @@ import net.fathomsoft.nova.tree.variables.Variable;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Mar 15, 2014 at 7:55:00 PM
- * @version	v0.2.14 Jul 19, 2014 at 7:33:13 PM
+ * @version	v0.2.16 Jul 22, 2014 at 12:47:19 AM
  */
 public class SyntaxUtils
 {
@@ -638,6 +637,31 @@ public class SyntaxUtils
 		}
 		
 		return null;
+	}
+	
+	public static boolean isPrimitiveTypeCompatible(String assignee, String assignment)
+	{
+		if (assignee == null || assignment == null)
+		{
+			return false;
+		}
+		
+		if (assignee.equals("double"))
+		{
+			if (assignment.equals("int") || assignment.equals("long") || assignment.equals("float") || assignment.equals("short") || assignment.equals("byte") || assignment.equals("char"))
+			{
+				return true;
+			}
+		}
+		else if (assignee.equals("int"))
+		{
+			if (assignment.equals("short") || assignment.equals("byte") || assignment.equals("char"))
+			{
+				return true;
+			}
+		}
+		
+		return false;
 	}
 	
 	/**
