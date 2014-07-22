@@ -33,7 +33,7 @@ public class ThreadStability
 		
 		Console.write("Checking memory access with multi-threading... ")
 		
-		for (int i = 0; i < 100000; i++)
+		for (int i = 0; i < 1000; i++)
 		{
 			String s = Integer.toAString(i)
 		}
