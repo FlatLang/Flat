@@ -21,7 +21,7 @@ import net.fathomsoft.nova.util.Location;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Apr 5, 2014 at 10:54:20 PM
- * @version	v0.2.15 Jul 22, 2014 at 12:05:49 AM
+ * @version	v0.2.16 Jul 22, 2014 at 12:47:19 AM
  */
 public class Scope extends Node
 {
@@ -78,15 +78,17 @@ public class Scope extends Node
 		return (VariableDeclarationList)getChild(super.getNumDefaultChildren() + 1);
 	}
 	
-	public Variable registerLocalVariable(Identifier identifier, MethodCall stopAt)
+	public Variable registerLocalVariable(MethodCall virtual, MethodCall stopAt)
 	{
+		String     value;
 		Node       base;
 		String     decl;
 		Assignment assignment;
 		Variable   variable;
 		
-		base       = stopAt.getBaseNode();
-		decl       = stopAt.getType() + " nova_local_" + localVariableID++ + " = " + identifier.generateNovaInputUntil(stopAt);// + identifier.generateNovaArgumentReference(new StringBuilder(), stopAt.getAccessedNode());
+		value      = virtual.getRootReferenceNode(true).generateNovaInputUntil(virtual).toString();
+		base       = virtual.getBaseNode();
+		decl       = virtual.getType() + " nova_local_" + localVariableID++ + " = " + value;// + identifier.generateNovaArgumentReference(new StringBuilder(), stopAt.getAccessedNode());
 		assignment = Assignment.decodeStatement(this, decl, getLocationIn(), true, true);
 		variable   = (Variable)assignment.getAssigneeNode();
 		
