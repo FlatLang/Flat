@@ -27,7 +27,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:00:04 PM
- * @version	v0.2.14 Jul 19, 2014 at 7:33:13 PM
+ * @version	v0.2.15 Jul 22, 2014 at 12:05:49 AM
  */
 public class Nova
 {
@@ -77,7 +77,7 @@ public class Nova
 	public static final int		LINUX         = 3;
 	
 	public static final String	LANGUAGE_NAME = "Nova";
-	public static final String	VERSION       = "v0.2.14";
+	public static final String	VERSION       = "v0.2.15";
 	
 	/**
 	 * Find out which operating system the compiler is running on.
@@ -257,7 +257,7 @@ public class Nova
 //				"-small",
 				"-cargs",
 				"-keepc",
-//				"-single-thread",
+				"-single-thread",
 //				"-nogc",
 //				"-dry"
 				"-library",
@@ -580,8 +580,9 @@ public class Nova
 		}
 		else
 		{
-			cmd.append("-O2");
+			cmd.append("-O2 ");
 		}
+		
 //		cmd.append("-Ofast ");
 //		cmd.append("-s ");
 		
