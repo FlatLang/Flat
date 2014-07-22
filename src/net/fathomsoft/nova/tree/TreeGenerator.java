@@ -19,7 +19,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.2.1 Apr 29, 2014 at 8:04:48 PM
- * @version	v0.2.14 Jul 19, 2014 at 7:33:13 PM
+ * @version	v0.2.16 Jul 22, 2014 at 12:47:19 AM
  */
 public class TreeGenerator implements Runnable
 {
@@ -312,7 +312,7 @@ public class TreeGenerator implements Runnable
 	 */
 	private Node getNextStatement(Node previous, int offset, Class<?> searchTypes[])
 	{
-		while ((statementEndIndex = calculateStatementEnd(statementStartIndex)) >= 0 && !statementStartMatcher.hitEnd())
+		while ((statementEndIndex = calculateStatementEnd(statementStartIndex)) >= 0 && !statementStartMatcher.hitEnd() && !parentStack.isEmpty())
 		{
 			char endChar = '\0';
 			
