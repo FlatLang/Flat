@@ -13,7 +13,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 10:34:30 PM
- * @version	v0.2.14 Jul 19, 2014 at 7:33:13 PM
+ * @version	v0.2.16 Jul 22, 2014 at 12:47:19 AM
  */
 public class Literal extends IValue
 {
@@ -23,7 +23,7 @@ public class Literal extends IValue
 	public static final String	TRUE_IDENTIFIER		= "true";
 	public static final String	FALSE_IDENTIFIER	= "false";
 	
-	public static final String	C_NULL_OUTPUT		= "(Object*)0";
+//	public static final String	C_NULL_OUTPUT		= "(Object*)0";
 	
 	/**
 	 * @see net.fathomsoft.nova.tree.Node#Node(Node, Location)
@@ -136,7 +136,7 @@ public class Literal extends IValue
 		}
 		else if (value.equals(NULL_IDENTIFIER))
 		{
-			return builder.append(C_NULL_OUTPUT);
+			return generateCNullOutput(builder);
 		}
 		else if (value.equals(TRUE_IDENTIFIER))
 		{
@@ -210,6 +210,46 @@ public class Literal extends IValue
 		}
 		
 		return null;
+	}
+	
+	public Node validate(int phase)
+	{
+		if (value.equals(NULL_IDENTIFIER))
+		{
+			if (getParent() instanceof BinaryOperation)
+			{
+				BinaryOperation node = (BinaryOperation)getParent();
+				
+				Value side = null;
+				
+				if (node.getLeftOperand() == this)
+				{
+					side = node.getRightOperand();
+				}
+				else
+				{
+					side = node.getLeftOperand();
+				}
+				
+				setType(side.getType());
+			}
+			else if (getParent() instanceof Return)
+			{
+				setType(getParentMethod().getType());
+			}
+		}
+		
+		return this;
+	}
+	
+	public static StringBuilder generateCNullOutput(Value value)
+	{
+		return generateCNullOutput(new StringBuilder(), value);
+	}
+	
+	public static StringBuilder generateCNullOutput(StringBuilder builder, Value value)
+	{
+		return value.generateCTypeCast(builder).append(0);
 	}
 	
 	/**

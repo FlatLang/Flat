@@ -13,7 +13,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.2.4 May 2, 2014 at 11:14:37 PM
- * @version	v0.2.14 Jul 19, 2014 at 7:33:13 PM
+ * @version	v0.2.16 Jul 22, 2014 at 12:47:19 AM
  */
 public abstract class Value extends Node
 {
@@ -490,7 +490,26 @@ public abstract class Value extends Node
 	@Override
 	public StringBuilder generateCSourceFragment(StringBuilder builder)
 	{
+//		Value required  = null;
+//		
+//		boolean sameType = getType().equals(required.getType());
+//		
+//		if (!sameType)
+//		{
+//			required.generateCTypeCast(builder);
+//		}
+		
 		return generateCTypeOutput(builder);
+	}
+	
+	public StringBuilder generateCNullOutput()
+	{
+		return generateCNullOutput(new StringBuilder());
+	}
+	
+	public StringBuilder generateCNullOutput(StringBuilder builder)
+	{
+		return Literal.generateCNullOutput(builder, this);
 	}
 	
 	/**
@@ -510,6 +529,18 @@ public abstract class Value extends Node
 	 * @return The C syntax for the type of the Value.
 	 */
 	public StringBuilder generateCTypeOutput(StringBuilder builder)
+	{
+		return generateCTypeOutput(builder, true);
+	}
+	
+	/**
+	 * Generate the C syntax for the type of the specified Value.
+	 * 
+	 * @param builder The StringBuider to append the data to.
+	 * @param checkArray Whether or not to check if the type is an array.
+	 * @return The C syntax for the type of the Value.
+	 */
+	public StringBuilder generateCTypeOutput(StringBuilder builder, boolean checkArray)
 	{
 		if (getType().equals("long"))
 		{
@@ -532,7 +563,7 @@ public abstract class Value extends Node
 		{
 			builder.append('*');
 		}
-		if (isArray())
+		if (checkArray && isArray())
 		{
 			builder.append(getArrayText());
 		}
