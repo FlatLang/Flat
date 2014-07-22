@@ -19,7 +19,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.2.1 Apr 29, 2014 at 8:04:48 PM
- * @version	v0.2.16 Jul 22, 2014 at 12:47:19 AM
+ * @version	v0.2.17 Jul 22, 2014 at 4:24:45 PM
  */
 public class TreeGenerator implements Runnable
 {
@@ -186,7 +186,6 @@ public class TreeGenerator implements Runnable
 		controller.log("Phase two for '" + filename + "'...");
 		
 		FileDeclaration fileDeclaration = tree.getRoot().getFile(filename);
-		fileDeclaration.addAutoImports();
 		
 		ClassDeclaration node = fileDeclaration.getClassDeclaration();
 		
