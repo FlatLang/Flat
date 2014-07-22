@@ -14,7 +14,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:57:13 PM
- * @version	v0.2.14 Jul 19, 2014 at 7:33:13 PM
+ * @version	v0.2.15 Jul 22, 2014 at 12:05:49 AM
  */
 public class IfStatement extends Node
 {
@@ -55,7 +55,7 @@ public class IfStatement extends Node
 	@Override
 	public boolean pendingScopeFragment()
 	{
-		return getScope().getNumChildren() == 1;
+		return getScope().getNumVisibleChildren() == 0;
 	}
 	
 	/**
