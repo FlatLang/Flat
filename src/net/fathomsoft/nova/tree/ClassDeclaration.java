@@ -646,10 +646,6 @@ public class ClassDeclaration extends InstanceDeclaration
 				getMethodList().addChild(child);
 			}
 		}
-		else if (child instanceof ExternalStatement)
-		{
-			super.addChild(child);
-		}
 		else if (child instanceof ExternalType)
 		{
 			getExternalTypeListNode().addChild(child);

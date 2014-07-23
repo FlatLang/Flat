@@ -1260,152 +1260,147 @@ public class Nova
 													
 													if (error == null)
 													{
-														error = ExternalStatement.test();
+														error = ExternalType.test();
 														
 														if (error == null)
 														{
-															error = ExternalType.test();
+															error = ExternalTypeList.test();
 															
 															if (error == null)
 															{
-																error = ExternalTypeList.test();
+																error = FileDeclaration.test();
 																
 																if (error == null)
 																{
-																	error = FileDeclaration.test();
+																	error = ForLoop.test();
 																	
 																	if (error == null)
 																	{
-																		error = ForLoop.test();
+																		error = Identifier.test();
 																		
 																		if (error == null)
 																		{
-																			error = Identifier.test();
+																			error = IfStatement.test();
 																			
 																			if (error == null)
 																			{
-																				error = IfStatement.test();
+																				error = IIdentifier.test();
 																				
 																				if (error == null)
 																				{
-																					error = IIdentifier.test();
+																					error = Import.test();
 																					
 																					if (error == null)
 																					{
-																						error = Import.test();
+																						error = ImportList.test();
 																						
 																						if (error == null)
 																						{
-																							error = ImportList.test();
+																							error = InstanceDeclaration.test();
 																							
 																							if (error == null)
 																							{
-																								error = InstanceDeclaration.test();
+																								error = Instantiation.test();
 																								
 																								if (error == null)
 																								{
-																									error = Instantiation.test();
+																									error = IValue.test();
 																									
 																									if (error == null)
 																									{
-																										error = IValue.test();
+																										error = Literal.test();
 																										
 																										if (error == null)
 																										{
-																											error = Literal.test();
+																											error = LocalDeclaration.test();
 																											
 																											if (error == null)
 																											{
-																												error = LocalDeclaration.test();
+																												error = Loop.test();
 																												
 																												if (error == null)
 																												{
-																													error = Loop.test();
+																													error = LoopInitialization.test();
 																													
 																													if (error == null)
 																													{
-																														error = LoopInitialization.test();
+																														error = LoopUpdate.test();
 																														
 																														if (error == null)
 																														{
-																															error = LoopUpdate.test();
+																															error = MethodCall.test();
 																															
 																															if (error == null)
 																															{
-																																error = MethodCall.test();
+																																error = MethodCallArgumentList.test();
 																																
 																																if (error == null)
 																																{
-																																	error = MethodCallArgumentList.test();
+																																	error = MethodDeclaration.test();
 																																	
 																																	if (error == null)
 																																	{
-																																		error = MethodDeclaration.test();
+																																		error = MethodList.test();
 																																		
 																																		if (error == null)
 																																		{
-																																			error = MethodList.test();
+																																			error = Node.test();
 																																			
 																																			if (error == null)
 																																			{
-																																				error = Node.test();
+																																				error = Operator.test();
 																																				
 																																				if (error == null)
 																																				{
-																																					error = Operator.test();
+																																					error = Parameter.test();
 																																					
 																																					if (error == null)
 																																					{
-																																						error = Parameter.test();
+																																						error = ParameterList.test();
 																																						
 																																						if (error == null)
 																																						{
-																																							error = ParameterList.test();
+																																							error = Priority.test();
 																																							
 																																							if (error == null)
 																																							{
-																																								error = Priority.test();
+																																								error = Program.test();
 																																								
 																																								if (error == null)
 																																								{
-																																									error = Program.test();
+																																									error = Return.test();
 																																									
 																																									if (error == null)
 																																									{
-																																										error = Return.test();
+																																										error = Scope.test();
 																																										
 																																										if (error == null)
 																																										{
-																																											error = Scope.test();
+																																											error = SyntaxTree.test();
 																																											
 																																											if (error == null)
 																																											{
-																																												error = SyntaxTree.test();
+																																												error = TreeGenerator.test();
 																																												
 																																												if (error == null)
 																																												{
-																																													error = TreeGenerator.test();
+																																													error = UnaryOperation.test();
 																																													
 																																													if (error == null)
 																																													{
-																																														error = UnaryOperation.test();
+																																														error = Until.test();
 																																														
 																																														if (error == null)
 																																														{
-																																															error = Until.test();
+																																															error = Value.test();
 																																															
 																																															if (error == null)
 																																															{
-																																																error = Value.test();
+																																																error = VTable.test();
 																																																
 																																																if (error == null)
 																																																{
-																																																	error = VTable.test();
-																																																	
-																																																	if (error == null)
-																																																	{
-																																																		error = WhileLoop.test();
-																																																	}
+																																																	error = WhileLoop.test();
 																																																}
 																																															}
 																																														}

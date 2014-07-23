@@ -846,7 +846,7 @@ public abstract class Node
 	 */
 	public boolean isWithinExternalContext()
 	{
-		if (this instanceof ExternalType || this instanceof ExternalStatement)
+		if (this instanceof ExternalType)
 		{
 			return true;
 		}
