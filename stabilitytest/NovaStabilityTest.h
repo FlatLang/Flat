@@ -30,7 +30,18 @@ typedef struct StabilityTest StabilityTest;
 #include <NovaPolymorphismStability.h>
 #include <NovaUnstableException.h>
 
+typedef struct nova_VTable_StabilityTest
+{
+	String* (*nova_virtual_toString)(Object*, ExceptionData*);
+	char (*nova_virtual_equals)(Object*, ExceptionData*, Object*);
+} nova_VTable_StabilityTest;
 
+CCLASS_CLASS
+(
+	StabilityTest, 
+	
+	nova_VTable_StabilityTest* vtable;
+)
 
 StabilityTest* nova_StabilityTest_StabilityTest(ExceptionData* exceptionData);
 void nova_del_StabilityTest(StabilityTest** this, ExceptionData* exceptionData);

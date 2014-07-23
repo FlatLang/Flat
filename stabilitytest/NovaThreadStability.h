@@ -25,7 +25,18 @@ typedef struct ThreadStability ThreadStability;
 #include <NovaStabilityExceptionHandler.h>
 #include <NovaThreadImplementation.h>
 
+typedef struct nova_VTable_ThreadStability
+{
+	String* (*nova_virtual_toString)(Object*, ExceptionData*);
+	char (*nova_virtual_equals)(Object*, ExceptionData*, Object*);
+} nova_VTable_ThreadStability;
 
+CCLASS_CLASS
+(
+	ThreadStability, 
+	
+	nova_VTable_ThreadStability* vtable;
+)
 
 ThreadStability* nova_ThreadStability_ThreadStability(ExceptionData* exceptionData);
 void nova_del_ThreadStability(ThreadStability** this, ExceptionData* exceptionData);

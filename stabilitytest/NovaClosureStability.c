@@ -5,7 +5,11 @@ typedef int (*nova_1_0_closure)(void*, ExceptionData*, int, int);
 typedef double (*nova_2_0_closure)(void*, ExceptionData*, double);
 typedef void (*nova_3_0_closure)(void*, ExceptionData*);
 
-
+nova_VTable_ClosureStability nova_VTable_ClosureStability_val =
+{
+	nova_Object_toString,
+	nova_Object_equals,
+};
 CCLASS_PRIVATE
 (
 	int nova_ClosureStability_number;
@@ -28,6 +32,7 @@ ClosureStability* nova_ClosureStability_ClosureStability(ExceptionData* exceptio
 	CCLASS_NEW(ClosureStability, this);
 	
 	this->prv->nova_ClosureStability_number = 0;
+	this->vtable = &nova_VTable_ClosureStability_val;
 	{
 	}
 	

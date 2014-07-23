@@ -24,7 +24,18 @@ typedef struct TimeStability TimeStability;
 #include <NovaThread.h>
 #include <NovaStabilityTest.h>
 
+typedef struct nova_VTable_TimeStability
+{
+	String* (*nova_virtual_toString)(Object*, ExceptionData*);
+	char (*nova_virtual_equals)(Object*, ExceptionData*, Object*);
+} nova_VTable_TimeStability;
 
+CCLASS_CLASS
+(
+	TimeStability, 
+	
+	nova_VTable_TimeStability* vtable;
+)
 
 TimeStability* nova_TimeStability_TimeStability(ExceptionData* exceptionData);
 void nova_del_TimeStability(TimeStability** this, ExceptionData* exceptionData);

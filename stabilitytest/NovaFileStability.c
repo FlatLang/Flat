@@ -2,7 +2,11 @@
 #include "NovaFileStability.h"
 
 
-
+nova_VTable_FileStability nova_VTable_FileStability_val =
+{
+	nova_Object_toString,
+	nova_Object_equals,
+};
 
 void nova_static_FileStability_createFile(FileStability* this, ExceptionData* exceptionData, StabilityTest* nova_0_program, File* nova_0_f);
 void nova_static_FileStability_writeToFile(FileStability* this, ExceptionData* exceptionData, StabilityTest* nova_0_program, File* nova_0_f);
@@ -13,8 +17,9 @@ int nova_static_FileStability_lines;
 
 FileStability* nova_FileStability_FileStability(ExceptionData* exceptionData)
 {
-	FileStability* this = (FileStability*)1;
+	CCLASS_NEW(FileStability, this,);
 	
+	this->vtable = &nova_VTable_FileStability_val;
 	{
 	}
 	

@@ -4,6 +4,7 @@
 
 nova_VTable_UncaughtExceptionHandler nova_VTable_UncaughtExceptionHandler_val =
 {
+	nova_UncaughtExceptionHandler_uncaughtException,
 	nova_Object_toString,
 	nova_Object_equals,
 };

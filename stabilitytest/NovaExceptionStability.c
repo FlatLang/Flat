@@ -2,14 +2,19 @@
 #include "NovaExceptionStability.h"
 
 
-
+nova_VTable_ExceptionStability nova_VTable_ExceptionStability_val =
+{
+	nova_Object_toString,
+	nova_Object_equals,
+};
 
 void nova_static_ExceptionStability_testException(ExceptionStability* this, ExceptionData* exceptionData, StabilityTest* nova_0_program);
 
 ExceptionStability* nova_ExceptionStability_ExceptionStability(ExceptionData* exceptionData)
 {
-	ExceptionStability* this = (ExceptionStability*)1;
+	CCLASS_NEW(ExceptionStability, this,);
 	
+	this->vtable = &nova_VTable_ExceptionStability_val;
 	{
 	}
 	

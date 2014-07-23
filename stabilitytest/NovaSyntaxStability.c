@@ -2,7 +2,11 @@
 #include "NovaSyntaxStability.h"
 
 
-
+nova_VTable_SyntaxStability nova_VTable_SyntaxStability_val =
+{
+	nova_Object_toString,
+	nova_Object_equals,
+};
 
 void nova_static_SyntaxStability_checkLoops(SyntaxStability* this, ExceptionData* exceptionData, StabilityTest* nova_0_program);
 void nova_static_SyntaxStability_checkWhileLoops(SyntaxStability* this, ExceptionData* exceptionData, StabilityTest* nova_0_program);
@@ -14,8 +18,9 @@ Object* nova_static_SyntaxStability_test3(SyntaxStability* this, ExceptionData* 
 
 SyntaxStability* nova_SyntaxStability_SyntaxStability(ExceptionData* exceptionData)
 {
-	SyntaxStability* this = (SyntaxStability*)1;
+	CCLASS_NEW(SyntaxStability, this,);
 	
+	this->vtable = &nova_VTable_SyntaxStability_val;
 	{
 	}
 	

@@ -2,12 +2,17 @@
 #include "NovaStabilityTest.h"
 
 
-
+nova_VTable_StabilityTest nova_VTable_StabilityTest_val =
+{
+		nova_Object_toString,
+		nova_Object_equals,
+};
 
 StabilityTest* nova_StabilityTest_StabilityTest(ExceptionData* exceptionData)
 {
-		StabilityTest* this = (StabilityTest*)1;
+		CCLASS_NEW(StabilityTest, this,);
 		
+		this->vtable = &nova_VTable_StabilityTest_val;
 		{
 		}
 		

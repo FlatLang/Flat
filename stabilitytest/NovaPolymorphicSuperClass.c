@@ -5,6 +5,7 @@
 nova_VTable_PolymorphicSuperClass nova_VTable_PolymorphicSuperClass_val =
 {
 	nova_PolymorphicSuperClass_toString,
+	nova_Object_equals,
 };
 
 PolymorphicSuperClass* nova_PolymorphicSuperClass_PolymorphicSuperClass(ExceptionData* exceptionData)

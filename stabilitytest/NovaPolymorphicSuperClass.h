@@ -25,6 +25,7 @@ typedef struct PolymorphicSuperClass PolymorphicSuperClass;
 typedef struct nova_VTable_PolymorphicSuperClass
 {
 	String* (*nova_virtual_toString)(PolymorphicSuperClass*, ExceptionData*);
+	char (*nova_virtual_equals)(Object*, ExceptionData*, Object*);
 } nova_VTable_PolymorphicSuperClass;
 
 CCLASS_CLASS

@@ -24,7 +24,18 @@ typedef struct FileStability FileStability;
 #include <NovaTime.h>
 #include <NovaStabilityTest.h>
 
+typedef struct nova_VTable_FileStability
+{
+	String* (*nova_virtual_toString)(Object*, ExceptionData*);
+	char (*nova_virtual_equals)(Object*, ExceptionData*, Object*);
+} nova_VTable_FileStability;
 
+CCLASS_CLASS
+(
+	FileStability, 
+	
+	nova_VTable_FileStability* vtable;
+)
 
 FileStability* nova_FileStability_FileStability(ExceptionData* exceptionData);
 void nova_del_FileStability(FileStability** this, ExceptionData* exceptionData);

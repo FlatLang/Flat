@@ -22,11 +22,17 @@ typedef struct ClosureStability ClosureStability;
 #include <NovaDivideByZeroException.h>
 #include <NovaStabilityTest.h>
 
+typedef struct nova_VTable_ClosureStability
+{
+	String* (*nova_virtual_toString)(Object*, ExceptionData*);
+	char (*nova_virtual_equals)(Object*, ExceptionData*, Object*);
+} nova_VTable_ClosureStability;
 
 CCLASS_CLASS
 (
 	ClosureStability, 
 	
+	nova_VTable_ClosureStability* vtable;
 	struct Private* prv;
 )
 

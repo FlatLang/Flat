@@ -23,7 +23,18 @@ typedef struct ExceptionStability ExceptionStability;
 #include <NovaStabilityTest.h>
 #include <NovaStabilityTestException.h>
 
+typedef struct nova_VTable_ExceptionStability
+{
+	String* (*nova_virtual_toString)(Object*, ExceptionData*);
+	char (*nova_virtual_equals)(Object*, ExceptionData*, Object*);
+} nova_VTable_ExceptionStability;
 
+CCLASS_CLASS
+(
+	ExceptionStability, 
+	
+	nova_VTable_ExceptionStability* vtable;
+)
 
 ExceptionStability* nova_ExceptionStability_ExceptionStability(ExceptionData* exceptionData);
 void nova_del_ExceptionStability(ExceptionStability** this, ExceptionData* exceptionData);

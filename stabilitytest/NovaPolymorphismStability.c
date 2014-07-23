@@ -3,7 +3,11 @@
 
 typedef String* (*nova_1_0_closure)(void*, ExceptionData*);
 
-
+nova_VTable_PolymorphismStability nova_VTable_PolymorphismStability_val =
+{
+	nova_Object_toString,
+	nova_Object_equals,
+};
 
 void nova_static_PolymorphismStability_testCalls(PolymorphismStability* this, ExceptionData* exceptionData, StabilityTest* nova_0_program);
 char nova_static_PolymorphismStability_testSubCall(PolymorphismStability* this, ExceptionData* exceptionData, PolymorphicSuperClass* nova_0_obj);
@@ -12,8 +16,9 @@ char nova_static_PolymorphismStability_callPolymorphicClosure(PolymorphismStabil
 
 PolymorphismStability* nova_PolymorphismStability_PolymorphismStability(ExceptionData* exceptionData)
 {
-	PolymorphismStability* this = (PolymorphismStability*)1;
+	CCLASS_NEW(PolymorphismStability, this,);
 	
+	this->vtable = &nova_VTable_PolymorphismStability_val;
 	{
 	}
 	

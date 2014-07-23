@@ -5,6 +5,7 @@ typedef void (*nova_1_0_run)(void*, ExceptionData*);
 
 nova_VTable_Thread nova_VTable_Thread_val =
 {
+	nova_Thread_run,
 	nova_Object_toString,
 	nova_Object_equals,
 };
@@ -69,7 +70,7 @@ void nova_Thread_startRun(Thread* this, ExceptionData* exceptionData)
 		nova_ExceptionData_addCode(exceptionData, exceptionData, 1);
 		
 		{
-			nova_Thread_run(this, exceptionData);
+			this->vtable->nova_virtual_run(this, exceptionData);
 		}
 	}
 	CATCH (1)

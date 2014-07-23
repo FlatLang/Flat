@@ -2,7 +2,11 @@
 #include "NovaThreadStability.h"
 
 
-
+nova_VTable_ThreadStability nova_VTable_ThreadStability_val =
+{
+	nova_Object_toString,
+	nova_Object_equals,
+};
 
 void nova_static_ThreadStability_createThreads(ThreadStability* this, ExceptionData* exceptionData, StabilityTest* nova_0_program, ThreadImplementation** nova_0_threads, int nova_0_amount);
 void nova_static_ThreadStability_checkMemoryAccess(ThreadStability* this, ExceptionData* exceptionData);
@@ -10,8 +14,9 @@ void nova_static_ThreadStability_joinThreads(ThreadStability* this, ExceptionDat
 
 ThreadStability* nova_ThreadStability_ThreadStability(ExceptionData* exceptionData)
 {
-	ThreadStability* this = (ThreadStability*)1;
+	CCLASS_NEW(ThreadStability, this,);
 	
+	this->vtable = &nova_VTable_ThreadStability_val;
 	{
 	}
 	

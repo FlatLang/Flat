@@ -20,6 +20,7 @@ typedef struct PolymorphicSubClass PolymorphicSubClass;
 #include <NovaDouble.h>
 #include <NovaChar.h>
 #include <NovaDivideByZeroException.h>
+#include <NovaPolymorphicSuperClass.h>
 
 typedef struct nova_VTable_PolymorphicSubClass
 {

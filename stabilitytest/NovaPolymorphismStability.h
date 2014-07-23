@@ -24,7 +24,18 @@ typedef struct PolymorphismStability PolymorphismStability;
 #include <NovaPolymorphicSuperClass.h>
 #include <NovaPolymorphicSubClass.h>
 
+typedef struct nova_VTable_PolymorphismStability
+{
+	String* (*nova_virtual_toString)(Object*, ExceptionData*);
+	char (*nova_virtual_equals)(Object*, ExceptionData*, Object*);
+} nova_VTable_PolymorphismStability;
 
+CCLASS_CLASS
+(
+	PolymorphismStability, 
+	
+	nova_VTable_PolymorphismStability* vtable;
+)
 
 PolymorphismStability* nova_PolymorphismStability_PolymorphismStability(ExceptionData* exceptionData);
 void nova_del_PolymorphismStability(PolymorphismStability** this, ExceptionData* exceptionData);

@@ -22,7 +22,18 @@ typedef struct SyntaxStability SyntaxStability;
 #include <NovaDivideByZeroException.h>
 #include <NovaStabilityTest.h>
 
+typedef struct nova_VTable_SyntaxStability
+{
+	String* (*nova_virtual_toString)(Object*, ExceptionData*);
+	char (*nova_virtual_equals)(Object*, ExceptionData*, Object*);
+} nova_VTable_SyntaxStability;
 
+CCLASS_CLASS
+(
+	SyntaxStability, 
+	
+	nova_VTable_SyntaxStability* vtable;
+)
 
 SyntaxStability* nova_SyntaxStability_SyntaxStability(ExceptionData* exceptionData);
 void nova_del_SyntaxStability(SyntaxStability** this, ExceptionData* exceptionData);

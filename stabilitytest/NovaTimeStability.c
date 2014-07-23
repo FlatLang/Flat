@@ -2,12 +2,17 @@
 #include "NovaTimeStability.h"
 
 
-
+nova_VTable_TimeStability nova_VTable_TimeStability_val =
+{
+	nova_Object_toString,
+	nova_Object_equals,
+};
 
 TimeStability* nova_TimeStability_TimeStability(ExceptionData* exceptionData)
 {
-	TimeStability* this = (TimeStability*)1;
+	CCLASS_NEW(TimeStability, this,);
 	
+	this->vtable = &nova_VTable_TimeStability_val;
 	{
 	}
 	
