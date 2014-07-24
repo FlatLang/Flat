@@ -1,3 +1,7 @@
+#pragma once
+#ifndef NATIVE_NOVA_THREAD
+#define NATIVE_NOVA_THREAD
+
 #include <Thread.h>
 
 typedef struct Thread Thread;
@@ -14,3 +18,5 @@ struct DataStruct
 
 FATHOM_THREAD_FUNC lib_nova_thread_run(FATHOM_THREAD_FUNC_ARG arg);
 FATHOM_THREAD_HANDLE* create_thread(Thread* this, run_method run_method, void* ref);
+
+#endif
