@@ -14,7 +14,7 @@ import net.fathomsoft.nova.util.Patterns;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:12:04 PM
- * @version	v0.2.14 Jul 19, 2014 at 7:33:13 PM
+ * @version	v0.2.18 Jul 23, 2014 at 10:43:40 PM
  */
 public class FieldDeclaration extends InstanceDeclaration
 {
@@ -136,10 +136,10 @@ public class FieldDeclaration extends InstanceDeclaration
 			return null;
 		}
 		
-		String preStatement      = statement.substring(0, data.localDeclaration.getStart());
-		String localStatement    = statement.substring(data.localDeclaration.getStart(), data.localDeclaration.getEnd());
+		String preStatement   = statement.substring(0, data.localDeclaration.getStart());
+		String localStatement = statement.substring(data.localDeclaration.getStart(), data.localDeclaration.getEnd());
 		
-		LocalDeclaration var = LocalDeclaration.decodeStatement(parent, localStatement, new Location(location), require);
+		LocalDeclaration var  = LocalDeclaration.decodeStatement(n, localStatement, new Location(location), require);
 		
 		if (var == null)
 		{
