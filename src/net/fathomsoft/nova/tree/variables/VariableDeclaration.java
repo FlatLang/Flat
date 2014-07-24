@@ -4,6 +4,7 @@ import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.tree.IIdentifier;
 import net.fathomsoft.nova.tree.Node;
+import net.fathomsoft.nova.tree.SyntaxTree;
 import net.fathomsoft.nova.tree.exceptionhandling.Exception;
 import net.fathomsoft.nova.util.Location;
 import net.fathomsoft.nova.util.SyntaxUtils;
@@ -15,7 +16,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.2.4 May 2, 2014 at 11:14:37 PM
- * @version	v0.2.14 Jul 19, 2014 at 7:33:13 PM
+ * @version	v0.2.18 Jul 23, 2014 at 10:43:40 PM
  */
 public class VariableDeclaration extends IIdentifier
 {
@@ -235,16 +236,6 @@ public class VariableDeclaration extends IIdentifier
 		return this == second;
 	}
 	
-//	/**
-//	 * Get the text that represents the java 'null' in the C language.
-//	 * 
-//	 * @return The text that represents the java 'null' in the C language.
-//	 */
-//	public static String getNullText()
-//	{
-//		return NULL_TEXT;
-//	}
-	
 	/**
 	 * @see net.fathomsoft.nova.tree.Node#generateCHeader(StringBuilder)
 	 */
@@ -402,6 +393,23 @@ public class VariableDeclaration extends IIdentifier
 		toVar.setDeclaration(this);
 		
 		return toVar;
+	}
+	
+	/**
+	 * @see net.fathomsoft.nova.tree.Node#validate(int)
+	 */
+	@Override
+	public Node validate(int phase)
+	{
+		if (phase == SyntaxTree.PHASE_INSTANCE_DECLARATIONS)
+		{
+			if (!setType(getType(), false, true))
+			{
+				SyntaxMessage.error("Type '" + getType() + "' does not exist", this);
+			}
+		}
+		
+		return super.validate(phase);
 	}
 	
 	/**
