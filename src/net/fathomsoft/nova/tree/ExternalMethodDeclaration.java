@@ -15,7 +15,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:10:53 PM
- * @version	v0.2.14 Jul 19, 2014 at 7:33:13 PM
+ * @version	v0.2.18 Jul 23, 2014 at 10:43:40 PM
  */
 public class ExternalMethodDeclaration extends MethodDeclaration
 {
@@ -83,7 +83,7 @@ public class ExternalMethodDeclaration extends MethodDeclaration
 		if (methodSignature != null && methodSignature.length() > 0)
 		{
 			ExternalMethodDeclaration n      = new ExternalMethodDeclaration(parent, location);
-			MethodDeclaration         method = MethodDeclaration.decodeStatement(n, methodSignature, location, require);
+			MethodDeclaration         method = MethodDeclaration.decodeStatement(n, methodSignature, location.asNew(), require);
 			
 			if (method != null)
 			{
