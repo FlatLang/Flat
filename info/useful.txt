@@ -14,8 +14,8 @@ Comments: 5338 - 45% - 103%
 Total: 11993 - 101%
 
 Current:
-Code: 7371 - 53% - 108% - 107%
-Comments: 6534 - 47% - 120% - 124%
-Total: 13918 - 113% - 114%
+Code: 7806 - 53% - 108% - 107%
+Comments: 6861 - 47% - 120% - 124%
+Total: 14704 - 113% - 114%
 
 gcc -I include -I libatomic_ops/src -O2 -DGC_THREADS -DTHREAD_LOCAL_ALLOC ???-DPARALLEL_MARK??? -shared -o gc.dll extra/gc.c
