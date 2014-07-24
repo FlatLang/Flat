@@ -7,7 +7,7 @@ package net.fathomsoft.nova.util;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 7, 2014 at 10:11:40 AM
- * @version	v0.2.14 Jul 19, 2014 at 7:33:13 PM
+ * @version	v0.2.18 Jul 23, 2014 at 10:43:40 PM
  */
 public class Location
 {
@@ -273,5 +273,15 @@ public class Location
 	public boolean isValid()
 	{
 		return lineNumber > 0;
+	}
+	
+	/**
+	 * Create a new Location that reflects the specified parent Location.
+	 * 
+	 * @return A new Location reflecting the specified parent Location.
+	 */
+	public Location asNew()
+	{
+		return new Location(this);
 	}
 }
