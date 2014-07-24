@@ -26,7 +26,7 @@ import net.fathomsoft.nova.tree.variables.Variable;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Mar 15, 2014 at 7:55:00 PM
- * @version	v0.2.16 Jul 22, 2014 at 12:47:19 AM
+ * @version	v0.2.18 Jul 23, 2014 at 10:43:40 PM
  */
 public class SyntaxUtils
 {
@@ -1311,7 +1311,7 @@ public class SyntaxUtils
 		{
 			MethodDeclaration methodDeclaration = (MethodDeclaration)value;
 			
-			if (methodDeclaration.isExternalType() || methodDeclaration.isExternal())
+			if (methodDeclaration.isExternalType())
 			{
 				return true;
 			}
