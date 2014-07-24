@@ -18,6 +18,8 @@
 #elif defined(__APPLE__) || defined(__linux__)
 #	include <pthread.h>
 #	include <unistd.h>
+#else
+#	error Operating system not defined.
 #endif
 
 #ifdef USE_GC
