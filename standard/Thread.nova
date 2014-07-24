@@ -10,11 +10,6 @@ public class Thread
 	
 	FATHOM_THREAD_HANDLE*	handle
 	
-	public Thread()
-	{
-		
-	}
-	
 	public void start()
 	{
 		handle = create_thread(this, startRun)
