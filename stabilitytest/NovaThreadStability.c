@@ -56,7 +56,7 @@ void nova_static_ThreadStability_createThreads(ThreadStability* this, ExceptionD
 	nova_1_i = 0;
 	for (; nova_1_i < nova_0_amount; nova_1_i++)
 	{
-		nova_0_threads[nova_1_i] = nova_ThreadImplementation_ThreadImplementation(exceptionData);
+		nova_0_threads[nova_1_i] = nova_ThreadImplementation_ThreadImplementation(exceptionData, 10, 10);
 		nova_Thread_start((Thread*)(nova_0_threads[nova_1_i]), exceptionData);
 	}
 }
