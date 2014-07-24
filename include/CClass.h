@@ -10,7 +10,11 @@
 #endif
 
 #ifdef USE_GC
-#	define GC_WIN32_THREADS
+#	ifdef _WIN32
+#		define GC_WIN32_THREADS
+#	elif defined(__APPLE__) || defined(__linux__)
+#		define GC_PTHREADS
+#	endif
 
 #	define NOVA_FREE GC_free
 #	define NOVA_MALLOC GC_malloc
