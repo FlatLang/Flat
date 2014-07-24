@@ -48,7 +48,7 @@ public class Nova
 	
 	private static final int	OS;
 	
-	private static final String	OUTPUT_EXTENSION;
+	private static final String	OUTPUT_EXTENSION, DYNAMIC_LIB_EXT;
 	
 	public static final boolean	ANDROID_DEBUG = false;
 	public static final boolean	DEBUG         = true;
@@ -90,21 +90,25 @@ public class Nova
 		{
 			OS = WINDOWS;
 			OUTPUT_EXTENSION = ".exe";
+			DYNAMIC_LIB_EXT = ".dll";
 		}
 		else if (osName.startsWith("mac"))
 		{
 			OS = MACOSX;
 			OUTPUT_EXTENSION = "";
+			DYNAMIC_LIB_EXT = ".dylib";
 		}
 		else if (osName.startsWith("lin"))
 		{
 			OS = LINUX;
 			OUTPUT_EXTENSION = "";
+			DYNAMIC_LIB_EXT = ".so";
 		}
 		else
 		{
 			OS = 0;
 			OUTPUT_EXTENSION = "";
+			DYNAMIC_LIB_EXT = "";
 		}
 	}
 	
@@ -564,9 +568,9 @@ public class Nova
 		
 		String libDir    = workingDir + "/bin/";
 		
-		String libFathom = formatPath(libDir + "libNova.dll");
-		String libThread = formatPath(libDir + "libThread.dll");
-		String libGC     = formatPath(libDir + "gc.dll");
+		String libFathom = formatPath(libDir + "libNova" + DYNAMIC_LIB_EXT);
+		String libThread = formatPath(libDir + "libThread" + DYNAMIC_LIB_EXT);
+		String libGC     = formatPath(libDir + "gc" + DYNAMIC_LIB_EXT);
 		
 		cmd.append(libFathom).append(' ').append(libThread).append(' ').append(libGC).append(' ');
 		
