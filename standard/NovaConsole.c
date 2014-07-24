@@ -47,21 +47,6 @@ void nova_static_Console_write(Console* this, ExceptionData* exceptionData, Stri
 	fputs(nova_1_cText, stdout);
 }
 
-void nova_static_Console_writei(Console* this, ExceptionData* exceptionData, int nova_0_j)
-{
-	printf((char*)("%d"), nova_0_j);
-}
-
-void nova_static_Console_writed(Console* this, ExceptionData* exceptionData, double nova_0_j)
-{
-	printf((char*)("%f"), (int)(nova_0_j));
-}
-
-void nova_static_Console_writel(Console* this, ExceptionData* exceptionData, long_long nova_0_j)
-{
-	printf((char*)("%lld"), (int)(nova_0_j));
-}
-
 int nova_static_Console_readInt(Console* this, ExceptionData* exceptionData)
 {
 	String* nova_1_s;
