@@ -21,7 +21,7 @@ public class ThreadStability
 		
 		for (int i = 0; i < amount; i++)
 		{
-			threads[i] = new ThreadImplementation()
+			threads[i] = new ThreadImplementation(10, 10)
 			//threads[i].addUncaughtExceptionHandler(handler)
 			threads[i].start()
 		}
