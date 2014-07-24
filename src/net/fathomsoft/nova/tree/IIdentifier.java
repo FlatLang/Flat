@@ -10,7 +10,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:00:19 PM
- * @version	v0.2.14 Jul 19, 2014 at 7:33:13 PM
+ * @version	v0.2.18 Jul 23, 2014 at 10:43:40 PM
  */
 public class IIdentifier extends Identifier
 {
@@ -118,11 +118,14 @@ public class IIdentifier extends Identifier
 		
 		if (checkDataType)
 		{
-			if (isExternalType() && (getParentMethod() == null || getParentMethod().getParentMethod() instanceof ExternalMethodDeclaration == false))
+			if (isExternalType())
 			{
-				setDataType(POINTER);
+				if (getParentMethod() == null || getAncestorOfType(ExternalMethodDeclaration.class) == null)
+				{
+					setDataType(POINTER);
+				}
 			}
-			else if (!isExternalType() && !SyntaxUtils.isPrimitiveType(type))
+			else if (!SyntaxUtils.isPrimitiveType(type))
 			{
 				setDataType(POINTER);
 			}
