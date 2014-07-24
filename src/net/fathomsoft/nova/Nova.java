@@ -27,7 +27,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:00:04 PM
- * @version	v0.2.17 Jul 22, 2014 at 4:24:45 PM
+ * @version	v0.2.18 Jul 23, 2014 at 10:43:40 PM
  */
 public class Nova
 {
@@ -77,7 +77,7 @@ public class Nova
 	public static final int		LINUX         = 3;
 	
 	public static final String	LANGUAGE_NAME = "Nova";
-	public static final String	VERSION       = "v0.2.17";
+	public static final String	VERSION       = "v0.2.18";
 	
 	/**
 	 * Find out which operating system the compiler is running on.
