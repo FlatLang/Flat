@@ -19,7 +19,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.2.1 Apr 29, 2014 at 8:04:48 PM
- * @version	v0.2.17 Jul 22, 2014 at 4:24:45 PM
+ * @version	v0.2.18 Jul 23, 2014 at 10:43:40 PM
  */
 public class TreeGenerator implements Runnable
 {
@@ -224,15 +224,6 @@ public class TreeGenerator implements Runnable
 		decodeMethodContents(classDeclaration.getMethodList());
 		decodeMethodContents(classDeclaration.getConstructorList());
 		decodeMethodContents(classDeclaration.getDestructorList());
-		
-		try
-		{
-			tree.validateNodes(fileDeclaration);
-		}
-		catch (SyntaxErrorException e)
-		{
-			
-		}
 	}
 	
 	/**
