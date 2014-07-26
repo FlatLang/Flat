@@ -21,7 +21,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:15:51 PM
- * @version	v0.2.17 Jul 22, 2014 at 4:24:45 PM
+ * @version	v0.2.19 Jul 26, 2014 at 12:30:24 AM
  */
 public class ClassDeclaration extends InstanceDeclaration
 {
@@ -185,7 +185,7 @@ public class ClassDeclaration extends InstanceDeclaration
 	{
 		for (MethodDeclaration m : methods)
 		{
-			if (m.getName().equals(method.getName()))
+			if (m.getName().equals(method.getName()) && m.areCompatibleParameterTypes(method.getParameterList().getTypes()))
 			{
 				return true;
 			}
@@ -468,6 +468,38 @@ public class ClassDeclaration extends InstanceDeclaration
 		return field;
 	}
 	
+	public MethodDeclaration getMethod(String methodName, Value ... parameterTypes)
+	{
+		MethodDeclaration methods[] = getMethods(methodName, parameterTypes.length);
+		
+		for (MethodDeclaration method : methods)
+		{
+			if (method.areCompatibleParameterTypes(parameterTypes))// && SyntaxUtils.isTypeCompatible(getProgram(), method.getType(), returnType))
+			{
+				return method;
+			}
+		}
+		
+		return null;
+	}
+	
+	public MethodDeclaration[] getMethods(String methodName, int numParams)
+	{
+		ArrayList<MethodDeclaration> output = new ArrayList<MethodDeclaration>();
+		
+		MethodDeclaration methods[] = getMethods(methodName);
+		
+		for (MethodDeclaration method : methods)
+		{
+			if (method.getParameterList().getNumVisibleChildren() == numParams)
+			{
+				output.add(method);
+			}
+		}
+		
+		return output.toArray(new MethodDeclaration[0]);
+	}
+	
 	/**
 	 * Get whether or not the ClassDeclaration contains the Method with the
 	 * specified name.<br>
@@ -491,7 +523,7 @@ public class ClassDeclaration extends InstanceDeclaration
 	 */
 	public boolean containsMethod(String methodName)
 	{
-		return getMethod(methodName) != null;
+		return getMethods(methodName).length > 0;
 	}
 	
 	/**
@@ -513,9 +545,9 @@ public class ClassDeclaration extends InstanceDeclaration
 	 * @param methodName The name of the method to search for.
 	 * @return The Method for the method, if it exists.
 	 */
-	public MethodDeclaration getMethod(String methodName)
+	public MethodDeclaration[] getMethods(String methodName)
 	{
-		return getMethod(methodName, true);
+		return getMethods(methodName, true);
 	}
 	
 	/**
@@ -526,26 +558,33 @@ public class ClassDeclaration extends InstanceDeclaration
 	 * 		if the method is not found.
 	 * @return
 	 */
-	private MethodDeclaration getMethod(String methodName, boolean checkAncestor)
+	private MethodDeclaration[] getMethods(String methodName, boolean checkAncestor)
 	{
-		MethodList lists[] = new MethodList[] { getMethodList(), getConstructorList(), getDestructorList() };
+		MethodList lists[] = new MethodList[] { getMethodList(), getConstructorList() };
+		
+		ArrayList<MethodDeclaration> output = new ArrayList<MethodDeclaration>();
 		
 		for (MethodList list : lists)
 		{
-			MethodDeclaration method = list.getMethod(methodName);
+			MethodDeclaration methods[] = list.getMethods(methodName);
 			
-			if (method != null)
-			{
-				return method;
-			}
+			addMethods(output, methods);
 		}
 		
 		if (checkAncestor && getExtendedClassName() != null)
 		{
-			return getExtendedClass().getMethod(methodName);
+			addMethods(output, getExtendedClass().getMethods(methodName));
 		}
 		
-		return null;
+		return output.toArray(new MethodDeclaration[0]);
+	}
+	
+	private void addMethods(ArrayList<MethodDeclaration> dst, MethodDeclaration src[])
+	{
+		for (MethodDeclaration method : src)
+		{
+			dst.add(method);
+		}
 	}
 	
 	/**
@@ -564,10 +603,15 @@ public class ClassDeclaration extends InstanceDeclaration
 		{
 			return field;
 		}
-
-		MethodDeclaration methodDeclaration = getMethod(name);
 		
-		return methodDeclaration;
+		MethodDeclaration methods[] = getMethods(name);
+		
+		if (methods.length > 0)
+		{
+			return methods[0];
+		}
+		
+		return null;
 	}
 	
 	/**
@@ -1341,7 +1385,7 @@ public class ClassDeclaration extends InstanceDeclaration
 	}
 	
 	/**
-	 * Fill the given ClassDeclaration with the data that is in the
+	 * Fill the given {@link ClassDeclaration} with the data that is in the
 	 * specified node.
 	 * 
 	 * @param node The node to copy the data into.
