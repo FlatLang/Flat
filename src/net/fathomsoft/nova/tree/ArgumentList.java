@@ -1,5 +1,7 @@
 package net.fathomsoft.nova.tree;
 
+import java.util.ArrayList;
+
 import net.fathomsoft.nova.util.Location;
 
 /**
@@ -8,7 +10,7 @@ import net.fathomsoft.nova.util.Location;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 10, 2014 at 3:12:54 AM
- * @version	v0.2.14 Jul 19, 2014 at 7:33:13 PM
+ * @version	v0.2.19 Jul 26, 2014 at 12:30:24 AM
  */
 public class ArgumentList extends Node
 {
@@ -64,6 +66,20 @@ public class ArgumentList extends Node
 		return builder;
 	}
 	
+	public Value[] getTypes()
+	{
+		ArrayList<Value> types = new ArrayList<Value>();
+		
+		for (int i = 0; i < getNumVisibleChildren(); i++)
+		{
+			Value child = ((Value)getVisibleChild(i)).getReturnedNode();
+			
+			types.add(child);
+		}
+		
+		return types.toArray(new Value[0]);
+	}
+	
 	/**
 	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location)
 	 */
@@ -76,7 +92,7 @@ public class ArgumentList extends Node
 	}
 	
 	/**
-	 * Fill the given ArgumentList with the data that is in the
+	 * Fill the given {@link ArgumentList} with the data that is in the
 	 * specified node.
 	 * 
 	 * @param node The node to copy the data into.

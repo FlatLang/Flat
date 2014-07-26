@@ -1,5 +1,7 @@
 package net.fathomsoft.nova.tree;
 
+import java.util.ArrayList;
+
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.tree.exceptionhandling.Exception;
 import net.fathomsoft.nova.util.Location;
@@ -9,7 +11,7 @@ import net.fathomsoft.nova.util.Location;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:56:34 PM
- * @version	v0.2.14 Jul 19, 2014 at 7:33:13 PM
+ * @version	v0.2.19 Jul 26, 2014 at 12:30:24 AM
  */
 public class ParameterList<E extends Value> extends Node
 {
@@ -148,6 +150,18 @@ public class ParameterList<E extends Value> extends Node
 		}
 		
 		return null;
+	}
+	
+	public Value[] getTypes()
+	{
+		ArrayList<Value> types = new ArrayList<Value>();
+		
+		for (int i = 0; i < getNumVisibleChildren(); i++)
+		{
+			types.add(getParameter(i));
+		}
+		
+		return types.toArray(new Value[0]);
 	}
 	
 	/**
@@ -337,7 +351,7 @@ public class ParameterList<E extends Value> extends Node
 	}
 	
 	/**
-	 * Fill the given ParameterList with the data that is in the
+	 * Fill the given {@link ParameterList} with the data that is in the
 	 * specified node.
 	 * 
 	 * @param node The node to copy the data into.
