@@ -5,7 +5,7 @@ package net.fathomsoft.nova.tree;
  * 
  * @author	Braden Steffaniak
  * @since	v0.2.14 Jul 1, 2014 at 11:41:22 PM
- * @version	v0.2.16 Jul 22, 2014 at 12:47:19 AM
+ * @version	v0.2.19 Jul 26, 2014 at 12:30:24 AM
  */
 public interface CallableMethod
 {
@@ -51,6 +51,11 @@ public interface CallableMethod
 	 * @return The type returned by the method.
 	 */
 	public String getType();
+	
+	/**
+	 * @see net.fathomsoft.nova.tree.variables.VariableDeclaration#getArrayDimensions()
+	 */
+	public int getArrayDimensions();
 	
 	/**
 	 * @see net.fathomsoft.nova.tree.MethodDeclaration#isVirtual()
