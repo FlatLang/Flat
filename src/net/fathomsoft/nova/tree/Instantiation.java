@@ -14,7 +14,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Apr 3, 2014 at 7:53:35 PM
- * @version	v0.2.14 Jul 19, 2014 at 7:33:13 PM
+ * @version	v0.2.19 Jul 26, 2014 at 12:30:24 AM
  */
 public class Instantiation extends IIdentifier
 {
@@ -135,7 +135,7 @@ public class Instantiation extends IIdentifier
 		
 		int startIndex  = Regex.indexOf(statement, Patterns.POST_INSTANTIATION);
 		
-		Location newLoc = new Location(location);
+		Location newLoc = location.asNew();
 		newLoc.addBounds(startIndex, statement.length());
 		
 		String instantiation = statement.substring(startIndex);
@@ -207,7 +207,7 @@ public class Instantiation extends IIdentifier
 	}
 	
 	/**
-	 * Fill the given Instantiation with the data that is in the
+	 * Fill the given {@link Instantiation} with the data that is in the
 	 * specified node.
 	 * 
 	 * @param node The node to copy the data into.

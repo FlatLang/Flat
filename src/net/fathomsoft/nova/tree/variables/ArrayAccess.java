@@ -21,7 +21,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.2 Mar 24, 2014 at 10:45:29 PM
- * @version	v0.2.16 Jul 22, 2014 at 12:47:19 AM
+ * @version	v0.2.19 Jul 26, 2014 at 12:30:24 AM
  */
 public class ArrayAccess extends Variable
 {
@@ -185,7 +185,7 @@ public class ArrayAccess extends Variable
 			{
 				String data = indexData.substring(indexBounds.getStart(), indexBounds.getEnd());
 				
-				Location newLoc = new Location(location);
+				Location newLoc = location.asNew();
 				newLoc.setOffset(idBounds.getEnd() + location.getOffset());
 				newLoc.setBounds(identifier.length() + indexBounds.getStart(), identifier.length() + indexBounds.getEnd());
 				
@@ -227,7 +227,7 @@ public class ArrayAccess extends Variable
 	}
 	
 	/**
-	 * Fill the given ArrayAccess with the data that is in the
+	 * Fill the given {@link ArrayAccess} with the data that is in the
 	 * specified node.
 	 * 
 	 * @param node The node to copy the data into.

@@ -9,7 +9,7 @@ import net.fathomsoft.nova.util.Location;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 10:00:50 PM
- * @version	v0.2.14 Jul 19, 2014 at 7:33:13 PM
+ * @version	v0.2.19 Jul 26, 2014 at 12:30:24 AM
  */
 public class StaticFieldList extends Node
 {
@@ -61,7 +61,7 @@ public class StaticFieldList extends Node
 	}
 	
 	/**
-	 * Fill the given PrivateFieldList with the data that is in the
+	 * Fill the given {@link PrivateFieldList} with the data that is in the
 	 * specified node.
 	 * 
 	 * @param node The node to copy the data into.

@@ -10,7 +10,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:00:19 PM
- * @version	v0.2.18 Jul 23, 2014 at 10:43:40 PM
+ * @version	v0.2.19 Jul 26, 2014 at 12:30:24 AM
  */
 public class IIdentifier extends Identifier
 {
@@ -166,7 +166,7 @@ public class IIdentifier extends Identifier
 	}
 	
 	/**
-	 * Fill the given Identifier with the data that is in the
+	 * Fill the given {@link Identifier} with the data that is in the
 	 * specified node.
 	 * 
 	 * @param node The node to copy the data into.

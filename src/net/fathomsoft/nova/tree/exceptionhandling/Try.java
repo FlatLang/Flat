@@ -15,7 +15,7 @@ import net.fathomsoft.nova.util.Regex;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Mar 22, 2014 at 4:01:38 PM
- * @version	v0.2.14 Jul 19, 2014 at 7:33:13 PM
+ * @version	v0.2.19 Jul 26, 2014 at 12:30:24 AM
  */
 public class Try extends ExceptionHandler
 {
@@ -172,7 +172,7 @@ public class Try extends ExceptionHandler
 	}
 	
 	/**
-	 * Fill the given Try with the data that is in the
+	 * Fill the given {@link Try} with the data that is in the
 	 * specified node.
 	 * 
 	 * @param node The node to copy the data into.

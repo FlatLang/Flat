@@ -19,7 +19,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 10:00:11 PM
- * @version	v0.2.14 Jul 19, 2014 at 7:33:13 PM
+ * @version	v0.2.19 Jul 26, 2014 at 12:30:24 AM
  */
 public class UnaryOperation extends IValue
 {
@@ -219,7 +219,7 @@ public class UnaryOperation extends IValue
 		{
 			UnaryOperation n  = new UnaryOperation(parent, location);
 			
-			Location newLoc   = new Location(location);
+			Location newLoc   = location.asNew();
 			
 			if (!n.decodeOperator(statement, bounds, newLoc))
 			{
@@ -380,7 +380,7 @@ public class UnaryOperation extends IValue
 	}
 	
 	/**
-	 * Fill the given UnaryOperation with the data that is in the
+	 * Fill the given {@link UnaryOperation} with the data that is in the
 	 * specified node.
 	 * 
 	 * @param node The node to copy the data into.

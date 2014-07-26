@@ -13,7 +13,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 10:34:30 PM
- * @version	v0.2.16 Jul 22, 2014 at 12:47:19 AM
+ * @version	v0.2.19 Jul 26, 2014 at 12:30:24 AM
  */
 public class Literal extends IValue
 {
@@ -199,7 +199,7 @@ public class Literal extends IValue
 			
 			if (literalType != null)
 			{
-				n.setType(literalType);
+				n.setType(literalType);//, true, false);
 			}
 			
 			return n;
@@ -264,7 +264,7 @@ public class Literal extends IValue
 	}
 	
 	/**
-	 * Fill the given Literal with the data that is in the
+	 * Fill the given {@link Literal} with the data that is in the
 	 * specified node.
 	 * 
 	 * @param node The node to copy the data into.

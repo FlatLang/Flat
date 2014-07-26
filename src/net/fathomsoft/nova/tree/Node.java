@@ -21,7 +21,7 @@ import net.fathomsoft.nova.util.StringUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:00:11 PM
- * @version	v0.2.16 Jul 22, 2014 at 12:47:19 AM
+ * @version	v0.2.19 Jul 26, 2014 at 12:30:24 AM
  */
 public abstract class Node
 {
@@ -39,7 +39,7 @@ public abstract class Node
 	 */
 	public Node(Node temporaryParent, Location locationIn)
 	{
-		children = new ArrayList<Node>();
+		children = new ArrayList<Node>(4);
 		
 		setTemporaryParent(temporaryParent);
 		setLocationIn(locationIn);
@@ -1227,7 +1227,7 @@ public abstract class Node
 	public abstract Node clone(Node temporaryParent, Location locationIn);
 	
 	/**
-	 * Fill the given Node with the data that is in the
+	 * Fill the given {@link Node} with the data that is in the
 	 * specified node.
 	 * 
 	 * @param node The node to copy the data into.

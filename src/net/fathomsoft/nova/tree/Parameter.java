@@ -5,13 +5,13 @@ import net.fathomsoft.nova.tree.variables.VariableDeclaration;
 import net.fathomsoft.nova.util.Location;
 
 /**
- * LocalVariable extension that represents a Parameter of a method.
+ * LocalDeclaration extension that represents a Parameter of a method.
  * See {@link #decodeStatement(Node, String, Location, boolean)} for more
  * details on what correct inputs look like.
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:52:01 PM
- * @version	v0.2.14 Jul 19, 2014 at 7:33:13 PM
+ * @version	v0.2.19 Jul 26, 2014 at 12:30:24 AM
  */
 public class Parameter extends LocalDeclaration
 {
@@ -127,7 +127,7 @@ public class Parameter extends LocalDeclaration
 	}
 	
 	/**
-	 * Fill the given Parameter with the data that is in the
+	 * Fill the given {@link Parameter} with the data that is in the
 	 * specified node.
 	 * 
 	 * @param node The node to copy the data into.

@@ -14,7 +14,7 @@ import net.fathomsoft.nova.util.Patterns;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:12:04 PM
- * @version	v0.2.18 Jul 23, 2014 at 10:43:40 PM
+ * @version	v0.2.19 Jul 26, 2014 at 12:30:24 AM
  */
 public class FieldDeclaration extends InstanceDeclaration
 {
@@ -139,7 +139,7 @@ public class FieldDeclaration extends InstanceDeclaration
 		String preStatement   = statement.substring(0, data.localDeclaration.getStart());
 		String localStatement = statement.substring(data.localDeclaration.getStart(), data.localDeclaration.getEnd());
 		
-		LocalDeclaration var  = LocalDeclaration.decodeStatement(n, localStatement, new Location(location), require);
+		LocalDeclaration var  = LocalDeclaration.decodeStatement(n, localStatement, location.asNew(), require);
 		
 		if (var == null)
 		{
@@ -186,7 +186,7 @@ public class FieldDeclaration extends InstanceDeclaration
 	}
 	
 	/**
-	 * Fill the given Field with the data that is in the
+	 * Fill the given {@link Field} with the data that is in the
 	 * specified node.
 	 * 
 	 * @param node The node to copy the data into.

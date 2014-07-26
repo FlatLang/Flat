@@ -10,7 +10,7 @@ import net.fathomsoft.nova.util.Location;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:10:49 PM
- * @version	v0.2.14 Jul 19, 2014 at 7:33:13 PM
+ * @version	v0.2.19 Jul 26, 2014 at 12:30:24 AM
  */
 public class InstanceDeclaration extends VariableDeclaration
 {
@@ -255,7 +255,7 @@ public class InstanceDeclaration extends VariableDeclaration
 	}
 	
 	/**
-	 * Fill the given InstanceDeclaration with the data that is in the
+	 * Fill the given {@link InstanceDeclaration} with the data that is in the
 	 * specified node.
 	 * 
 	 * @param node The node to copy the data into.

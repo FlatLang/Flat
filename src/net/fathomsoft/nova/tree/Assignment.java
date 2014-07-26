@@ -16,7 +16,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:19:44 PM
- * @version	v0.2.16 Jul 22, 2014 at 12:47:19 AM
+ * @version	v0.2.19 Jul 26, 2014 at 12:30:24 AM
  */
 public class Assignment extends Node
 {
@@ -179,7 +179,7 @@ public class Assignment extends Node
 		
 		String   variable    = statement.substring(0, endIndex);
 		
-		Location varLoc      = new Location(location);
+		Location varLoc      = location.asNew();
 		varLoc.getBounds().setEnd(varLoc.getStart() + endIndex);
 		
 		Identifier varNode = (Identifier)SyntaxTree.decodeScopeContents(n, variable, varLoc);
@@ -205,7 +205,7 @@ public class Assignment extends Node
 		// Right-hand side of the equation.
 		String rhs      = statement.substring(rhsIndex);
 		
-		Location newLoc = new Location(location);
+		Location newLoc = location.asNew();
 		newLoc.setBounds(location.getStart() + rhsIndex, location.getStart() + statement.length());
 		
 		Node child = n.decodeRightHandSide(n, rhs, newLoc, require);
@@ -370,7 +370,7 @@ public class Assignment extends Node
 	}
 	
 	/**
-	 * Fill the given Assignment with the data that is in the
+	 * Fill the given {@link Assignment} with the data that is in the
 	 * specified node.
 	 * 
 	 * @param node The node to copy the data into.

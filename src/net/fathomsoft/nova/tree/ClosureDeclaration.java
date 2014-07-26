@@ -15,7 +15,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.2.14 Jul 5, 2014 at 9:02:42 PM
- * @version	v0.2.14 Jul 19, 2014 at 7:33:13 PM
+ * @version	v0.2.19 Jul 26, 2014 at 12:30:24 AM
  */
 public class ClosureDeclaration extends Parameter implements CallableMethod
 {
@@ -160,7 +160,7 @@ public class ClosureDeclaration extends Parameter implements CallableMethod
 	}
 	
 	/**
-	 * Decode the given statement into a Closure instance, if
+	 * Decode the given statement into a ClosureDeclaration instance, if
 	 * possible. If it is not possible, this method returns null.
 	 * <br>
 	 * Example inputs include:<br>
@@ -172,12 +172,12 @@ public class ClosureDeclaration extends Parameter implements CallableMethod
 	 * 
 	 * @param parent The parent node of the statement.
 	 * @param statement The statement to try to decode into a
-	 * 		Closure instance.
+	 * 		ClosureDeclaration instance.
 	 * @param location The location of the statement in the source code.
 	 * @param require Whether or not to throw an error if anything goes
 	 * 		wrong.
 	 * @return The generated node, if it was possible to translated it
-	 * 		into a Closure.
+	 * 		into a ClosureDeclaration.
 	 */
 	public static ClosureDeclaration decodeStatement(Node parent, String statement, Location location, boolean require)
 	{
@@ -362,7 +362,7 @@ public class ClosureDeclaration extends Parameter implements CallableMethod
 	}
 	
 	/**
-	 * Fill the given Variable with the data that is in the
+	 * Fill the given {@link ClosureDeclaration} with the data that is in the
 	 * specified node.
 	 * 
 	 * @param node The node to copy the data into.

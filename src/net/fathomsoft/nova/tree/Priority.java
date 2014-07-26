@@ -9,7 +9,7 @@ import net.fathomsoft.nova.util.StringUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.2.10 May 29, 2014 at 1:50:25 PM
- * @version	v0.2.14 Jul 19, 2014 at 7:33:13 PM
+ * @version	v0.2.19 Jul 26, 2014 at 12:30:24 AM
  */
 public class Priority extends IValue
 {
@@ -109,7 +109,7 @@ public class Priority extends IValue
 			statement = statement.substring(1, statement.length() - 1);
 			statement = StringUtils.trimSurroundingWhitespace(statement);
 			
-			Location contentsLoc = new Location(location);
+			Location contentsLoc = location.asNew();
 			contentsLoc.addOffset(1);
 			contentsLoc.moveBounds(1, -1);
 			
@@ -216,7 +216,7 @@ public class Priority extends IValue
 	}
 	
 	/**
-	 * Fill the given Priority with the data that is in the
+	 * Fill the given {@link Priority} with the data that is in the
 	 * specified node.
 	 * 
 	 * @param node The node to copy the data into.

@@ -15,7 +15,7 @@ import net.fathomsoft.nova.util.Regex;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Mar 22, 2014 at 4:01:44 PM
- * @version	v0.2.14 Jul 19, 2014 at 7:33:13 PM
+ * @version	v0.2.19 Jul 26, 2014 at 12:30:24 AM
  */
 public class Catch extends ExceptionHandler
 {
@@ -123,7 +123,7 @@ public class Catch extends ExceptionHandler
 		if (Regex.matches(statement, 0, Patterns.PRE_CATCH))
 		{
 			Catch    n        = new Catch(parent, location);
-			Location newLoc   = new Location(location);
+			Location newLoc   = location.asNew();
 			
 			Bounds   bounds   = n.calculateCatchContents(statement);
 			String   contents = statement.substring(bounds.getStart(), bounds.getEnd());
@@ -238,7 +238,7 @@ public class Catch extends ExceptionHandler
 	}
 	
 	/**
-	 * Fill the given Catch with the data that is in the
+	 * Fill the given {@link Catch} with the data that is in the
 	 * specified node.
 	 * 
 	 * @param node The node to copy the data into.

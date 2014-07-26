@@ -13,7 +13,7 @@ import net.fathomsoft.nova.util.Location;
  * 
  * @author	Braden Steffaniak
  * @since	v0.2 Apr 14, 2014 at 11:52:33 PM
- * @version	v0.2.17 Jul 22, 2014 at 4:24:45 PM
+ * @version	v0.2.19 Jul 26, 2014 at 12:30:24 AM
  */
 public class Program extends Node
 {
@@ -228,7 +228,7 @@ public class Program extends Node
 	}
 	
 	/**
-	 * Fill the given Program with the data that is in the
+	 * Fill the given {@link Program} with the data that is in the
 	 * specified node.
 	 * 
 	 * @param node The node to copy the data into.

@@ -13,7 +13,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.2.14 Jul 5, 2014 at 12:29:23 AM
- * @version	v0.2.14 Jul 19, 2014 at 7:33:13 PM
+ * @version	v0.2.19 Jul 26, 2014 at 12:30:24 AM
  */
 public class Until extends IfStatement
 {
@@ -74,7 +74,7 @@ public class Until extends IfStatement
 			
 			if (bounds.isValid())
 			{
-				Location newLoc = new Location(location);
+				Location newLoc = location.asNew();
 				newLoc.addBounds(bounds.getStart(), bounds.getEnd());
 				
 				String contents = statement.substring(bounds.getStart(), bounds.getEnd());
@@ -176,7 +176,7 @@ public class Until extends IfStatement
 	}
 	
 	/**
-	 * Fill the given Until with the data that is in the
+	 * Fill the given {@link Until} with the data that is in the
 	 * specified node.
 	 * 
 	 * @param node The node to copy the data into.
