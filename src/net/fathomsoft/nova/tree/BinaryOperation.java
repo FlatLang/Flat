@@ -22,7 +22,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:20:35 PM
- * @version	v0.2.16 Jul 22, 2014 at 12:47:19 AM
+ * @version	v0.2.19 Jul 26, 2014 at 12:30:24 AM
  */
 public class BinaryOperation extends IValue
 {
@@ -158,8 +158,7 @@ public class BinaryOperation extends IValue
 		
 		// Pattern used to find word boundaries. 
 		Matcher matcher = Patterns.PRE_OPERATORS.matcher(statement);
-		
-		Value node = decodeStatement(parent, statement, matcher, location, require);
+		Value   node    = decodeStatement(parent, statement, matcher, location, require);
 		
 		if (node == null)
 		{
@@ -247,13 +246,11 @@ public class BinaryOperation extends IValue
 				n.getOperator().updateType();
 				n.setType(n.getOperator().getType());
 				
-				return n;
+				return n.optimizeStringConcatenation();
 			}
 			else
 			{
-				Value v = createNode(parent, statement, location);
-				
-				return v;
+				return createNode(parent, statement, location);
 			}
 		}
 		catch (BinarySyntaxException e)
@@ -334,26 +331,25 @@ public class BinaryOperation extends IValue
 	 * assumption cannot be made, then it adds a check before the division
 	 * is made.
 	 * 
-	 * @param abstractValue The value that is the denominator.
+	 * @param value The value that is the denominator.
 	 */
-	private void validateDivideByZero(Value abstractValue)
+	private void validateDivideByZero(Value value)
 	{
-		Value denominator = null;
+		Value    denominator = null;
+		Location location    = new Location(getLocationIn());
 		
-		Location  location    = new Location(getLocationIn());
-		
-		if (abstractValue instanceof BinaryOperation)
+		if (value instanceof BinaryOperation)
 		{
-			BinaryOperation bon = (BinaryOperation)abstractValue;
+			BinaryOperation bon = (BinaryOperation)value;
 			
 			denominator = (Value)bon.getChild(0);
 		}
 		else
 		{
-			denominator = abstractValue;
+			denominator = value;
 		}
 		
-		Node nearest  = getAncestorWithScope();
+		Node nearest = getAncestorWithScope();
 		
 		// TODO: Take into consideration if there is a method call or modifications
 		// to the any of the other variables in the operation.
@@ -361,9 +357,9 @@ public class BinaryOperation extends IValue
 		
 		if (checkVar != null)
 		{
-			Location rhnLoc = new Location(abstractValue.getLocationIn());
+			Location rhnLoc = new Location(value.getLocationIn());
 			
-			replace(abstractValue, checkVar.clone(this, rhnLoc));
+			replace(value, checkVar.clone(this, rhnLoc));
 		}
 	}
 	
@@ -438,7 +434,6 @@ public class BinaryOperation extends IValue
 	private Value decodeLeftOperand(String statement, Bounds operatorLoc)
 	{
 		Value  lhn = null;
-		
 		Bounds lhb = new Bounds(0, StringUtils.findNextNonWhitespaceIndex(statement, operatorLoc.getStart() - 1, -1) + 1);
 		
 		Location location = new Location(getLocationIn());
@@ -455,7 +450,7 @@ public class BinaryOperation extends IValue
 		}
 		else
 		{
-			Location lhl = new Location(location);
+			Location lhl = location.asNew();
 			lhl.setBounds(lhb.getStart(), lhb.getEnd());
 			
 			// The left-hand value.
@@ -474,7 +469,7 @@ public class BinaryOperation extends IValue
 				throw new BinarySyntaxException("Could not decode left hand value.");
 			}
 		
-			Location leftLoc = new Location(location);
+			Location leftLoc = location.asNew();
 			leftLoc.setBounds(lhb.getStart(), lhb.getEnd());
 			lhn.setLocationIn(leftLoc);
 		}
@@ -519,7 +514,7 @@ public class BinaryOperation extends IValue
 			throw new BinarySyntaxException("Could not decode right hand value.");
 		}
 
-		Location rightLoc = new Location(location);
+		Location rightLoc = location.asNew();
 		rightLoc.setBounds(rhIndex, statement.length());
 		rhn.setLocationIn(rightLoc);
 		
@@ -538,21 +533,14 @@ public class BinaryOperation extends IValue
 	 */
 	private static Value createNode(Node parent, String statement, Location location)
 	{
-//		try
-//		{
-			Value node = SyntaxTree.decodeValue(parent, statement, location, false);
-			
-			if (node instanceof Value == false)
-			{
-				throw new BinarySyntaxException("Statement '" + statement + "' does not return a value.");
-			}
-			
-			return node;
-//		}
-//		catch (SyntaxErrorException e)
-//		{
-//			throw new BinarySyntaxException("Could not decode statement '" + statement + "'");
-//		}
+		Value node = SyntaxTree.decodeValue(parent, statement, location, false);
+		
+		if (node instanceof Value == false)
+		{
+			throw new BinarySyntaxException("Statement '" + statement + "' does not return a value.");
+		}
+		
+		return node;
 	}
 	
 	/**
@@ -578,7 +566,7 @@ public class BinaryOperation extends IValue
 			return null;
 		}
 		
-		Location newLoc = new Location(location);
+		Location newLoc = location.asNew();
 		newLoc.addOffset(unaryOperationBounds.getStart());
 		newLoc.setBounds(location.getStart() + unaryOperationBounds.getStart(), location.getStart() + unaryOperationBounds.getEnd());
 		
@@ -686,50 +674,6 @@ public class BinaryOperation extends IValue
 	}
 	
 	/**
-	 * Validate the operator values. For instance, concatenates Strings
-	 * that are added using the + operator.
-	 * 
-	 * @param phase The phase that the node is being validated in.
-	 * @see net.fathomsoft.nova.tree.Node#validate(int)
-	 */
-	@Override
-	public Node validate(int phase)
-	{
-		return validate(getParent(), true);
-	}
-	
-	/**
-	 * Validate the operator values. For instance, concatenates Strings
-	 * that are added using the + operator.
-	 * 
-	 * @param parent The parent of the current node being validated.
-	 * @param checkParent Whether or not to validate the parent as well.
-	 */
-	private Node validate(Node parent, boolean checkParent)
-	{
-		if (parent.isWithinExternalContext() || checkParent && parent instanceof BinaryOperation)
-		{
-			return this;
-		}
-		
-		Value right = getRightOperand();
-		
-		if (right instanceof BinaryOperation)
-		{
-			BinaryOperation bin = (BinaryOperation)right;
-			
-			bin.validate(this, false);
-		}
-		
-		if (getOperator().getOperator().equals("+"))
-		{
-			return optimizeStringConcatenation();
-		}
-		
-		return this;
-	}
-	
-	/**
 	 * Convert "<code>str + obj</code>" type String concatenations
 	 * to "<code>str1.concat(obj.toString())</code>" type concatenations.
 	 * This also works if the obj is primitive by autoboxing the data
@@ -741,8 +685,13 @@ public class BinaryOperation extends IValue
 	 * @return The generated concatenation operation if generated. If not,
 	 * 		then the calling Node, BinaryOperation, is returned.
 	 */
-	private Node optimizeStringConcatenation()
+	private Value optimizeStringConcatenation()
 	{
+		if (!getOperator().getOperator().equals("+"))
+		{
+			return this;
+		}
+		
 		Value left  = getLeftOperand();
 		Value right = getRightOperand();
 		
@@ -778,9 +727,12 @@ public class BinaryOperation extends IValue
 			
 			String statement = left.generateNovaInput() + ".concat(" + right.generateNovaInput() + ")";
 			
-			Node   strConcat = SyntaxTree.decodeScopeContents(getParent(), statement, left.getLocationIn(), false);
+			if (statement.contains("HOLY FRIC"))
+			{
+				Nova.debuggingBreakpoint();
+			}
 			
-			getParent().replace(this, strConcat);
+			Value  strConcat = (Value)SyntaxTree.decodeScopeContents(getParent(), statement, left.getLocationIn(), false);
 			
 			return strConcat;
 		}
@@ -820,23 +772,31 @@ public class BinaryOperation extends IValue
 	 * If the given Node is a primitive, return the autoboxed form.
 	 * Else, simply return the given Node.
 	 * 
-	 * @param abstractValue The value to autobox if needed.
+	 * @param value The value to autobox if needed.
 	 * @return The autoboxed primitive value.
 	 */
-	private Value replaceWithObjectiveValue(Value abstractValue)
+	private Value replaceWithObjectiveValue(Value value)
 	{
-		Value returned = abstractValue.getReturnedNode();
+		Value returned = value.getReturnedNode();
+		Value newVal   = null;
 		
 		if (returned.isPrimitiveType())
 		{
-			Instantiation autobox = SyntaxUtils.autoboxPrimitive(abstractValue);
-			
-			replace(abstractValue, autobox);
-			
-			return autobox;
+			newVal = SyntaxUtils.autoboxPrimitive(value);
+		}
+		else if (value instanceof Literal && ((Literal)value).getValue().equals("null"))
+		{
+			newVal = Literal.decodeStatement(this, "\"null\"", value.getLocationIn(), true);
 		}
 		
-		return abstractValue;
+		if (newVal != null)
+		{
+			replace(value, newVal);
+			
+			return newVal;
+		}
+		
+		return value;
 	}
 	
 	/**
@@ -851,7 +811,7 @@ public class BinaryOperation extends IValue
 	}
 	
 	/**
-	 * Fill the given BinaryOperation with the data that is in the
+	 * Fill the given {@link BinaryOperation} with the data that is in the
 	 * specified node.
 	 * 
 	 * @param node The node to copy the data into.
