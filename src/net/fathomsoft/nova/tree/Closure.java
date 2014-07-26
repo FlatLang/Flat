@@ -3,6 +3,7 @@ package net.fathomsoft.nova.tree;
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.tree.variables.Variable;
 import net.fathomsoft.nova.util.Location;
+import net.fathomsoft.nova.util.StringUtils;
 import net.fathomsoft.nova.util.SyntaxUtils;
 
 /**
@@ -12,10 +13,12 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.2.14 Jul 5, 2014 at 9:02:42 PM
- * @version	v0.2.16 Jul 22, 2014 at 12:47:19 AM
+ * @version	v0.2.19 Jul 26, 2014 at 12:30:24 AM
  */
 public class Closure extends Variable
 {
+	private MethodDeclaration[] declarations;
+	
 	/**
 	 * @see net.fathomsoft.nova.tree.Node#Node(Node, Location)
 	 */
@@ -77,19 +80,9 @@ public class Closure extends Variable
 	 */
 	public ClosureDeclaration getClosureDeclaration()
 	{
-		return getClosureDeclaration(false);
-	}
-	
-	/**
-	 * Get the ClosureDeclaration instance that corresponds with the
-	 * specified Closure.
-	 * 
-	 * @param decoding Whether or not the Node is still being decoded.
-	 * @return The Closure Declaration instance.
-	 */
-	private ClosureDeclaration getClosureDeclaration(boolean decoding)
-	{
-		if (decoding)
+//		return (ClosureDeclaration)getParentMethod().getParameterList().getParameter(name);
+		
+		if (isDecoding())
 		{
 			int argNum = getMethodCall().getArgumentList().getNumChildren();
 			
@@ -131,7 +124,7 @@ public class Closure extends Variable
 	 */
 	private MethodDeclaration getMethodDeclaration(String name)
 	{
-		return getReferenceNode().getTypeClass().getMethod(name);
+		return getReferenceNode().getTypeClass().getMethod(name, getClosureDeclaration().getParameterList().getTypes());
 	}
 	
 	/**
@@ -178,14 +171,37 @@ public class Closure extends Variable
 	 */
 	private boolean decodeName(String name, boolean require)
 	{
-		MethodDeclaration declaration = getMethodDeclaration(name);
+		if (StringUtils.containsChar(name, StringUtils.SYMBOLS_CHARS))
+		{
+			return false;
+		}
 		
-		if (declaration == null)
+//		MethodDeclaration declaration = getMethodDeclaration(name);
+//		
+		declarations = getReferenceNode().getTypeClass().getMethods(name);
+		
+		if (declarations.length <= 0)
 		{
 			return SyntaxMessage.queryError("Method '" + name + "' not found", this, require);
 		}
-		else
+		
+//		setDeclaration(declaration);
+		
+		return true;
+	}
+	
+	public Node validate(int phase)
+	{
+		if (phase == SyntaxTree.PHASE_METHOD_CONTENTS)
 		{
+			MethodDeclaration declaration = getMethodDeclaration(declarations[0].getName());
+			
+			if (declaration == null)
+			{
+				SyntaxMessage.error("Method '" + declarations[0].getName() + "' is not compatible", this);
+			}
+			
+			setDeclaration(declaration);
 			validateType(declaration);
 			
 			if (declaration.isInstance())
@@ -194,9 +210,7 @@ public class Closure extends Variable
 			}
 		}
 		
-		setDeclaration(declaration);
-		
-		return true;
+		return this;
 	}
 	
 	/**
@@ -208,7 +222,7 @@ public class Closure extends Variable
 	 */
 	private void validateType(MethodDeclaration method)
 	{
-		ClosureDeclaration declaration = getClosureDeclaration(true);
+		ClosureDeclaration declaration = getClosureDeclaration();
 		
 		if (!declaration.getType().equals("void") && (method.getType().equals("void") || !method.getTypeClass().isOfType(declaration.getTypeClass())))
 		{
@@ -289,21 +303,21 @@ public class Closure extends Variable
 	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location)
 	 */
 	@Override
-	public Variable clone(Node temporaryParent, Location locationIn)
+	public Closure clone(Node temporaryParent, Location locationIn)
 	{
-		Variable node = new Variable(temporaryParent, locationIn);
+		Closure node = new Closure(temporaryParent, locationIn);
 		
 		return cloneTo(node);
 	}
 	
 	/**
-	 * Fill the given Variable with the data that is in the
+	 * Fill the given {@link Closure} with the data that is in the
 	 * specified node.
 	 * 
 	 * @param node The node to copy the data into.
 	 * @return The cloned node.
 	 */
-	public Variable cloneTo(Variable node)
+	public Closure cloneTo(Closure node)
 	{
 		super.cloneTo(node);
 		
