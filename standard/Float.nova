@@ -1,6 +1,5 @@
 public class Float extends Number
 {
-	
 	public float value
 	
 	public Float(int value)
