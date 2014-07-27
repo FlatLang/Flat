@@ -598,7 +598,7 @@ public class Nova
 		
 		if (OS == LINUX)
 		{
-			cmd.append("-lm ");
+			cmd.append("-lm -lpthread -ldl");
 		}
 		
 		if (isFlagEnabled(C_ARGS))
