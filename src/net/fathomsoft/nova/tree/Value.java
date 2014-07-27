@@ -2,7 +2,6 @@ package net.fathomsoft.nova.tree;
 
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.tree.variables.Variable;
-import net.fathomsoft.nova.tree.variables.VariableDeclaration;
 import net.fathomsoft.nova.util.Location;
 import net.fathomsoft.nova.util.SyntaxUtils;
 
@@ -13,7 +12,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.2.4 May 2, 2014 at 11:14:37 PM
- * @version	v0.2.16 Jul 22, 2014 at 12:47:19 AM
+ * @version	v0.2.19 Jul 26, 2014 at 12:30:24 AM
  */
 public abstract class Value extends Node
 {
@@ -305,7 +304,8 @@ public abstract class Value extends Node
 			{
 				if (arrayDimensions > 0)
 				{
-					name += "Array";
+//					return "Array";
+//					name += "Array";
 				}
 				
 				clazz = getProgram().getClassDeclaration(name);

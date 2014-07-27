@@ -4,6 +4,7 @@ import java.util.regex.Matcher;
 
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.tree.ClassDeclaration;
+import net.fathomsoft.nova.tree.Closure;
 import net.fathomsoft.nova.tree.FileDeclaration;
 import net.fathomsoft.nova.tree.Identifier;
 import net.fathomsoft.nova.tree.InstanceDeclaration;
@@ -26,7 +27,7 @@ import net.fathomsoft.nova.tree.variables.Variable;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Mar 15, 2014 at 7:55:00 PM
- * @version	v0.2.18 Jul 23, 2014 at 10:43:40 PM
+ * @version	v0.2.19 Jul 26, 2014 at 12:30:24 AM
  */
 public class SyntaxUtils
 {
@@ -34,27 +35,29 @@ public class SyntaxUtils
 	
 	private static int getPrimitiveRank(String primitiveType)
 	{
-		if (primitiveType.equals("byte"))
+		primitiveType = getPrimitiveWrapperClassName(primitiveType);
+		
+		if (primitiveType.equals("Byte"))
 		{
 			return BYTE;
 		}
-		else if (primitiveType.equals("short"))
+		else if (primitiveType.equals("Short"))
 		{
 			return SHORT;
 		}
-		else if (primitiveType.equals("int"))
+		else if (primitiveType.equals("Integer"))
 		{
 			return INT;
 		}
-		else if (primitiveType.equals("long"))
+		else if (primitiveType.equals("Long"))
 		{
 			return LONG;
 		}
-		else if (primitiveType.equals("float"))
+		else if (primitiveType.equals("Float"))
 		{
 			return FLOAT;
 		}
-		else if (primitiveType.equals("double"))
+		else if (primitiveType.equals("Double"))
 		{
 			return DOUBLE;
 		}
@@ -73,6 +76,19 @@ public class SyntaxUtils
 		}
 		
 		return type2;
+	}
+	
+	public static boolean arePrimitiveTypesCompatible(String required, String given)
+	{
+		int rank1 = getPrimitiveRank(required);
+		int rank2 = getPrimitiveRank(given);
+		
+		if (rank1 <= 0 || rank2 <= 0)
+		{
+			return false;
+		}
+		
+		return rank2 <= rank1;
 	}
 	
 	/**
@@ -594,8 +610,12 @@ public class SyntaxUtils
 		{
 			return "Double";
 		}
+		else if (primitiveType.equals("void"))
+		{
+			return "Object";
+		}
 		
-		return null;
+		return primitiveType;
 	}
 	
 	/**
@@ -1481,6 +1501,42 @@ public class SyntaxUtils
 		}
 		
 		return null;
+	}
+	
+	public static boolean isTypeCompatible(Program program, String required, String given)
+	{
+		return isTypeCompatible(program.getClassDeclaration(getPrimitiveWrapperClassName(given)), program.getClassDeclaration(getPrimitiveWrapperClassName(required)));
+	}
+	
+	public static boolean isTypeCompatible(Value required, Value given)
+	{
+		if (given instanceof Closure)
+		{
+			return true;
+		}
+		else if (given.isExternalType() ^ required.isExternalType())
+		{
+			return false;
+		}
+		else if (given.isExternalType() && given.getType().equals(required.getType()))
+		{
+			return true;
+		}
+		else if (given.isPrimitiveType() ^ required.isPrimitiveType() == false && given.getTypeClass().isOfType(required.getTypeClass()))
+		{
+			return true;
+		}
+		else if (arePrimitiveTypesCompatible(required.getTypeClassName(), given.getTypeClassName()))
+		{
+			return true;
+		}
+		
+		if (required.getTypeClassName().equals("Char") && required.getArrayDimensions() == 1 && given.getTypeClassName().equals("String"))
+		{
+			return true;
+		}
+		
+		return false;
 	}
 	
 	public static boolean isImported(FileDeclaration file, String clazz)

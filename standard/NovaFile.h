@@ -15,8 +15,10 @@ typedef struct File File;
 #include <NovaConsole.h>
 #include <NovaGC.h>
 #include <NovaNumber.h>
+#include <NovaShort.h>
 #include <NovaInteger.h>
 #include <NovaLong.h>
+#include <NovaFloat.h>
 #include <NovaDouble.h>
 #include <NovaChar.h>
 #include <NovaDivideByZeroException.h>
@@ -24,8 +26,8 @@ typedef struct File File;
 
 typedef struct nova_VTable_File
 {
-	String* (*nova_virtual_toString)(Object*, ExceptionData*);
-	char (*nova_virtual_equals)(Object*, ExceptionData*, Object*);
+	String* (*nova_virtual_2_toString)(Object*, ExceptionData*);
+	char (*nova_virtual_2_equals)(Object*, ExceptionData*, Object*);
 } nova_VTable_File;
 
 CCLASS_CLASS
@@ -36,11 +38,12 @@ CCLASS_CLASS
 	struct Private* prv;
 )
 
-File* nova_File_File(ExceptionData* exceptionData, String* nova_0_location);
+File* nova_1_File_File(ExceptionData* exceptionData, String* nova_0_location);
+File* nova_2_File_File(ExceptionData* exceptionData, FILE* nova_0_fp);
 void nova_del_File(File** this, ExceptionData* exceptionData);
 char nova_File_delete(File* this, ExceptionData* exceptionData);
 void nova_File_reopen(File* this, ExceptionData* exceptionData);
-void nova_File_rewind(File* this, ExceptionData* exceptionData);
+void nova_2_File_rewind(File* this, ExceptionData* exceptionData);
 char nova_File_exists(File* this, ExceptionData* exceptionData);
 char nova_File_create(File* this, ExceptionData* exceptionData);
 String* nova_File_readAllContents(File* this, ExceptionData* exceptionData);

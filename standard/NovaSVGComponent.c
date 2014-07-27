@@ -4,9 +4,9 @@
 
 nova_VTable_SVGComponent nova_VTable_SVGComponent_val =
 {
-	nova_SVGComponent_generateOutput,
-	nova_Object_toString,
-	nova_Object_equals,
+	nova_2_SVGComponent_generateOutput,
+	nova_2_Object_toString,
+	nova_2_Object_equals,
 };
 
 SVGComponent* nova_SVGComponent_SVGComponent(ExceptionData* exceptionData)
@@ -36,6 +36,6 @@ void nova_del_SVGComponent(SVGComponent** this, ExceptionData* exceptionData)
 	NOVA_FREE(*this);
 }
 
-void nova_SVGComponent_generateOutput(SVGComponent* this, ExceptionData* exceptionData, File* nova_0_file)
+void nova_2_SVGComponent_generateOutput(SVGComponent* this, ExceptionData* exceptionData, File* nova_0_file)
 {
 }

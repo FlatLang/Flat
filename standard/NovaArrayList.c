@@ -4,8 +4,8 @@
 
 nova_VTable_ArrayList nova_VTable_ArrayList_val =
 {
-	nova_Object_toString,
-	nova_Object_equals,
+	nova_2_Object_toString,
+	nova_2_Object_equals,
 };
 CCLASS_PRIVATE
 (

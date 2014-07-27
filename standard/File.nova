@@ -30,6 +30,11 @@ public class File
 		reopen()
 	}
 	
+	public File(FILE* fp)
+	{
+		this.fp = fp;
+	}
+	
 	public bool delete()
 	{
 		close()

@@ -4,8 +4,8 @@
 
 nova_VTable_Array nova_VTable_Array_val =
 {
-	nova_Object_toString,
-	nova_Object_equals,
+	nova_2_Object_toString,
+	nova_2_Object_equals,
 };
 
 Array* nova_Array_Array(ExceptionData* exceptionData)

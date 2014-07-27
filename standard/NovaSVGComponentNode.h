@@ -15,8 +15,10 @@ typedef struct SVGComponentNode SVGComponentNode;
 #include <NovaConsole.h>
 #include <NovaGC.h>
 #include <NovaNumber.h>
+#include <NovaShort.h>
 #include <NovaInteger.h>
 #include <NovaLong.h>
+#include <NovaFloat.h>
 #include <NovaDouble.h>
 #include <NovaChar.h>
 #include <NovaDivideByZeroException.h>
@@ -24,8 +26,8 @@ typedef struct SVGComponentNode SVGComponentNode;
 
 typedef struct nova_VTable_SVGComponentNode
 {
-	String* (*nova_virtual_toString)(Object*, ExceptionData*);
-	char (*nova_virtual_equals)(Object*, ExceptionData*, Object*);
+	String* (*nova_virtual_2_toString)(Object*, ExceptionData*);
+	char (*nova_virtual_2_equals)(Object*, ExceptionData*, Object*);
 } nova_VTable_SVGComponentNode;
 
 CCLASS_CLASS

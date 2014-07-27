@@ -15,5 +15,7 @@ public class OutputStream
 	external char getc(FILE* fp)
 	external void rewind(FILE* fp)
 	
+	public abstract void write(String data)
 	
+	public abstract void write(Object data)
 }

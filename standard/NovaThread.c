@@ -5,9 +5,9 @@ typedef void (*nova_1_0_run)(void*, ExceptionData*);
 
 nova_VTable_Thread nova_VTable_Thread_val =
 {
-	nova_Thread_run,
-	nova_Object_toString,
-	nova_Object_equals,
+	nova_2_Thread_run,
+	nova_2_Object_toString,
+	nova_2_Object_equals,
 };
 CCLASS_PRIVATE
 (
@@ -59,7 +59,7 @@ void nova_static_Thread_sleep(Thread* this, ExceptionData* exceptionData, long_l
 	lib_fathom_thread_sleep(nova_0_millis);
 }
 
-void nova_Thread_run(Thread* this, ExceptionData* exceptionData)
+void nova_2_Thread_run(Thread* this, ExceptionData* exceptionData)
 {
 }
 
@@ -70,12 +70,12 @@ void nova_Thread_startRun(Thread* this, ExceptionData* exceptionData)
 		nova_ExceptionData_addCode(exceptionData, exceptionData, 1);
 		
 		{
-			this->vtable->nova_virtual_run(this, exceptionData);
+			this->vtable->nova_virtual_2_run(this, exceptionData);
 		}
 	}
 	CATCH (1)
 	{
-		nova_static_Console_writeLine((Console*)(0), exceptionData, nova_String_String(exceptionData, "An error has occurred..."));
+		nova_static_1_Console_writeLine(0, exceptionData, nova_String_String(exceptionData, "An error has occurred..."));
 	}
 	FINALLY
 	{

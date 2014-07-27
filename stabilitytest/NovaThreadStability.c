@@ -4,8 +4,8 @@
 
 nova_VTable_ThreadStability nova_VTable_ThreadStability_val =
 {
-	nova_Object_toString,
-	nova_Object_equals,
+	nova_2_Object_toString,
+	nova_2_Object_equals,
 };
 
 void nova_static_ThreadStability_createThreads(ThreadStability* this, ExceptionData* exceptionData, StabilityTest* nova_0_program, ThreadImplementation** nova_0_threads, int nova_0_amount);
@@ -40,7 +40,7 @@ void nova_static_ThreadStability_test(ThreadStability* this, ExceptionData* exce
 {
 	ThreadImplementation** nova_1_threads;
 	
-	nova_static_Console_writeLine((Console*)(0), exceptionData, nova_String_String(exceptionData, "Checking Thread.nova with 20 Threads... "));
+	nova_static_1_Console_writeLine(0, exceptionData, nova_String_String(exceptionData, "Checking Thread.nova with 20 Threads... "));
 	nova_1_threads = (ThreadImplementation**)NOVA_MALLOC(sizeof(ThreadImplementation) * (20));
 	nova_static_ThreadStability_createThreads((ThreadStability*)0, exceptionData, nova_0_program, nova_1_threads, 20);
 	nova_static_ThreadStability_checkMemoryAccess((ThreadStability*)0, exceptionData);
@@ -65,16 +65,16 @@ void nova_static_ThreadStability_checkMemoryAccess(ThreadStability* this, Except
 {
 	int nova_1_i;
 	
-	nova_static_Thread_sleep((Thread*)(0), exceptionData, (long_long)(30));
-	nova_static_Console_write((Console*)(0), exceptionData, nova_String_String(exceptionData, "Checking memory access with multi-threading... "));
+	nova_static_Thread_sleep(0, exceptionData, (long_long)(30));
+	nova_static_1_Console_write(0, exceptionData, nova_String_String(exceptionData, "Checking memory access with multi-threading... "));
 	nova_1_i = 0;
 	for (; nova_1_i < 1000; nova_1_i++)
 	{
 		String* nova_2_s;
 		
-		nova_2_s = nova_static_Integer_toAString((Integer*)(0), exceptionData, nova_1_i);
+		nova_2_s = nova_static_1_Integer_toString(0, exceptionData, nova_1_i);
 	}
-	nova_static_Console_writeLine((Console*)(0), exceptionData, nova_String_String(exceptionData, "OK"));
+	nova_static_1_Console_writeLine(0, exceptionData, nova_String_String(exceptionData, "OK"));
 }
 
 void nova_static_ThreadStability_joinThreads(ThreadStability* this, ExceptionData* exceptionData, ThreadImplementation** nova_0_threads, int nova_0_amount)

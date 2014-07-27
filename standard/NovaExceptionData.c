@@ -4,8 +4,8 @@
 
 nova_VTable_ExceptionData nova_VTable_ExceptionData_val =
 {
-	nova_Object_toString,
-	nova_Object_equals,
+	nova_2_Object_toString,
+	nova_2_Object_equals,
 };
 CCLASS_PRIVATE
 (
@@ -49,7 +49,7 @@ void nova_del_ExceptionData(ExceptionData** this, ExceptionData* exceptionData)
 
 void nova_ExceptionData_addCode(ExceptionData* this, ExceptionData* exceptionData, int nova_0_code)
 {
-	nova_ArrayList_add((ArrayList*)(this->nova_ExceptionData_codes), exceptionData, nova_0_code);
+	nova_ArrayList_add(this->nova_ExceptionData_codes, exceptionData, nova_0_code);
 }
 
 buffer* nova_ExceptionData_getBuffer(ExceptionData* this, ExceptionData* exceptionData)
@@ -71,7 +71,7 @@ ExceptionData* nova_ExceptionData_getCorrectData(ExceptionData* this, ExceptionD
 		nova_2_i = 0;
 		for (; nova_2_i < nova_2_list->nova_ArrayList_size; nova_2_i++)
 		{
-			if (nova_ArrayList_get((ArrayList*)(nova_2_list), exceptionData, nova_2_i) == nova_0_code)
+			if (nova_ArrayList_get(nova_2_list, exceptionData, nova_2_i) == nova_0_code)
 			{
 				return nova_1_data;
 			}
@@ -94,7 +94,7 @@ buffer* nova_ExceptionData_getCorrectBuffer(ExceptionData* this, ExceptionData* 
 	{
 		return 0;
 	}
-	return nova_ExceptionData_getBuffer((ExceptionData*)(nova_1_data), exceptionData);
+	return nova_ExceptionData_getBuffer(nova_1_data, exceptionData);
 }
 
 void nova_ExceptionData_jumpToBuffer(ExceptionData* this, ExceptionData* exceptionData, int nova_0_code)
@@ -107,7 +107,7 @@ void nova_ExceptionData_jumpToBuffer(ExceptionData* this, ExceptionData* excepti
 	{
 		nova_0_code = 1;
 	}
-	nova_1_b = nova_ExceptionData_getBuffer((ExceptionData*)(nova_1_data), exceptionData);
+	nova_1_b = nova_ExceptionData_getBuffer(nova_1_data, exceptionData);
 	jump(*nova_1_b, nova_0_code);
 }
 

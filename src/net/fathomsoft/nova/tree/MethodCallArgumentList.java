@@ -12,7 +12,7 @@ import net.fathomsoft.nova.util.Location;
  * 
  * @author	Braden Steffaniak
  * @since	v0.2.14 Jun 19, 2014 at 12:14:53 PM
- * @version	v0.2.16 Jul 22, 2014 at 12:47:19 AM
+ * @version	v0.2.19 Jul 26, 2014 at 12:30:24 AM
  */
 public class MethodCallArgumentList extends ArgumentList
 {
@@ -155,6 +155,11 @@ public class MethodCallArgumentList extends ArgumentList
 	{
 		CallableMethod method = getMethodCall().getCallableDeclaration();
 		
+		if (method.getName().equals("read"))
+		{
+			System.out.println("ASDF");
+		}
+		
 		if (method instanceof Constructor == false)//!method.isStatic())
 		{
 			if (method instanceof Destructor)
@@ -163,7 +168,7 @@ public class MethodCallArgumentList extends ArgumentList
 			}
 			
 			Identifier context  = getMethodCallContext();
-			boolean    sameType = context.getReturnedNode().getType().equals(method.getParentClass().getType());
+			boolean    sameType = getMethodCall().getReferenceNode().getType().equals(method.getParentClass().getType());
 			
 			if (!sameType)
 			{
@@ -206,7 +211,7 @@ public class MethodCallArgumentList extends ArgumentList
 	}
 	
 	/**
-	 * Fill the given ArgumentList with the data that is in the
+	 * Fill the given {@link ArgumentList} with the data that is in the
 	 * specified node.
 	 * 
 	 * @param node The node to copy the data into.

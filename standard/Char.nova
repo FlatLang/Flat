@@ -7,12 +7,17 @@ public class Char extends Number
 		this.value = value
 	}
 	
-	public String toString()
+	public String toString(char c)
 	{
 		char chars[] = new char[1]
 		
-		chars[0] = value
+		chars[0] = c
 		
 		return new String(chars)
+	}
+	
+	public String toString()
+	{
+		return toString(value)
 	}
 }

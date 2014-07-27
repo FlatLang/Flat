@@ -19,11 +19,11 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:10:53 PM
- * @version	v0.2.18 Jul 23, 2014 at 10:43:40 PM
+ * @version	v0.2.19 Jul 26, 2014 at 12:30:24 AM
  */
 public class MethodDeclaration extends InstanceDeclaration implements CallableMethod
 {
-	private int	uniqueID;
+	private int		uniqueID, overloadID;
 	
 	private ArrayList<MethodDeclaration>	overridingMethods;
 	
@@ -37,6 +37,7 @@ public class MethodDeclaration extends InstanceDeclaration implements CallableMe
 		super(temporaryParent, locationIn);
 		
 		uniqueID          = 0;
+		overloadID        = -1;
 		overridingMethods = new ArrayList<MethodDeclaration>();
 		
 		ParameterList<Parameter> parameterList = new ParameterList<Parameter>(this, new Location(locationIn));
@@ -44,6 +45,17 @@ public class MethodDeclaration extends InstanceDeclaration implements CallableMe
 		
 		setScope(scope);
 		addChild(parameterList, this);
+	}
+	
+	/**
+	 * Get whether or not the specified MethodDeclaration contains a Body.
+	 * 
+	 * @return Whether or not the specified MethodDeclaration contains a
+	 * 		Body.
+	 */
+	public boolean containsBody()
+	{
+		return true;
 	}
 	
 	/**
@@ -64,6 +76,28 @@ public class MethodDeclaration extends InstanceDeclaration implements CallableMe
 	public int generateUniqueID()
 	{
 		return ++uniqueID;
+	}
+	
+	/**
+	 * Get a unique integer used for differentiating methods that are
+	 * overloaded.
+	 * 
+	 * @return A unique identifier for overloaded methods.
+	 */
+	public int getOverloadID()
+	{
+		return overloadID;
+	}
+	
+	/**
+	 * Set a unique integer used for differentiating methods that are
+	 * overloaded.
+	 * 
+	 * @param id A unique identifier for overloaded methods.
+	 */
+	public void setOverloadID(int id)
+	{
+		this.overloadID = id;
 	}
 	
 	/**
@@ -190,7 +224,7 @@ public class MethodDeclaration extends InstanceDeclaration implements CallableMe
 			return null;
 		}
 		
-		return extension.getMethod(getName());
+		return extension.getMethod(getName(), getParameterList().getTypes());
 	}
 	
 	/**
@@ -269,9 +303,45 @@ public class MethodDeclaration extends InstanceDeclaration implements CallableMe
 			}
 		}
 		
+		if (overloadID < 0)
+		{
+			MethodDeclaration methods[] = getParentClass().getMethods(getName());
+			
+			if (methods.length > 1)
+			{
+				setOverloadIDs(methods);
+			}
+		}
+		
 		getParameterList().validate(phase);
 		
-		return this;
+		return super.validate(phase);
+	}
+	
+	private void setOverloadIDs(MethodDeclaration methods[])
+	{
+		ArrayList<MethodDeclaration> list = new ArrayList<MethodDeclaration>();
+		
+		int max = -1;
+		
+		for (MethodDeclaration method : methods)
+		{
+			if (method.overloadID < 0)
+			{
+				list.add(method);
+			}
+			else if (max > method.overloadID)
+			{
+				max = overloadID;
+			}
+		}
+		
+		overloadID = ++max;
+		
+		for (MethodDeclaration method : list)
+		{
+			method.overloadID = ++max;
+		}
 	}
 	
 	/**
@@ -381,7 +451,14 @@ public class MethodDeclaration extends InstanceDeclaration implements CallableMe
 	
 	public StringBuilder generateCVirtualMethodName(StringBuilder builder)
 	{
-		return builder.append(Nova.LANGUAGE_NAME.toLowerCase()).append("_virtual_").append(getName());
+		builder.append(Nova.LANGUAGE_NAME.toLowerCase()).append("_virtual_");
+		
+		if (overloadID >= 0)
+		{
+			builder.append(overloadID).append('_');
+		}
+		
+		return builder.append(getName());
 	}
 	
 	public StringBuilder generateCMethodCall(Identifier reference)
@@ -399,6 +476,20 @@ public class MethodDeclaration extends InstanceDeclaration implements CallableMe
 		}
 		
 		return generateCSourceName(builder);
+	}
+	
+	/**
+	 * @see net.fathomsoft.nova.tree.Identifier#generateCSourceName(java.lang.StringBuilder)
+	 */
+	@Override
+	public StringBuilder generateCSourceName(StringBuilder builder)
+	{
+		if (overloadID == -1)
+		{
+			return super.generateCSourceName(builder);
+		}
+		
+		return super.generateCSourceName(builder, overloadID + "");
 	}
 	
 	/**
@@ -558,6 +649,24 @@ public class MethodDeclaration extends InstanceDeclaration implements CallableMe
 		return true;
 	}
 	
+	public boolean areCompatibleParameterTypes(Value ... types)
+	{
+		if (types.length != getParameterList().getNumVisibleChildren())
+		{
+			return false;
+		}
+		
+		for (int i = 0; i < types.length; i++)
+		{
+			if (!SyntaxUtils.isTypeCompatible(getParameterList().getParameter(i), types[i]))
+			{
+				return false;
+			}
+		}
+		
+		return true;
+	}
+	
 	/**
 	 * @see net.fathomsoft.nova.tree.Node#iterateWords(java.lang.String, java.util.regex.Pattern, net.fathomsoft.nova.tree.Node.ExtraData)
 	 */
@@ -610,7 +719,7 @@ public class MethodDeclaration extends InstanceDeclaration implements CallableMe
 	}
 	
 	/**
-	 * Fill the given MethodDeclaration with the data that is in the
+	 * Fill the given {@link MethodDeclaration} with the data that is in the
 	 * specified node.
 	 * 
 	 * @param node The node to copy the data into.

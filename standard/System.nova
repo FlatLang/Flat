@@ -1,9 +1,54 @@
+import "StreamReader"
+
 public class System
 {
+	external type FILE
+	
+	external int NULL
+	
 	external void exit(int code) as externalExit
+	external int  system(char command[])
+	
+	/**
+	 * Flags:
+	 * "r" The calling process can read the spawned command's standard output using the returned stream.
+	 * "w" The calling process can write to the spawned command's standard input using the returned stream.
+	 * "b" Open in binary mode.
+	 * "t" Open in text mode.
+	 */
+	external FILE* _popen(char command[], char flags[])
+	external bool fgets(char buffer[], int length, FILE* pipe)
+	external bool feof(FILE* pipe)
 	
 	public static void exit(int code)
 	{
 		externalExit(code)
+	}
+	
+	public static void exit(int code, String message)
+	{
+		Console.writeLine(message)
+		
+		exit(code)
+	}
+	
+	public static int execute(String command)
+	{
+//		return system(command.toCharArray())
+		
+		FILE* pipe = _popen("dir", "rt")
+		
+		if (pipe == NULL)
+		{
+			exit(1, "Unable to open pipe")
+		}
+		
+		File file = new File(pipe)
+		
+		StreamReader reader = new StreamReader(file)
+		
+		String s = reader.read()
+		
+		Console.writeLine("HOLY FRICKEN: " + s + " CRAP")
 	}
 }

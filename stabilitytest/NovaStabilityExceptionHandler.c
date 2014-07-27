@@ -4,7 +4,7 @@
 
 nova_VTable_StabilityExceptionHandler nova_VTable_StabilityExceptionHandler_val =
 {
-	nova_StabilityExceptionHandler_uncaughtException,
+	nova_1_StabilityExceptionHandler_uncaughtException,
 };
 CCLASS_PRIVATE
 (
@@ -40,7 +40,7 @@ void nova_del_StabilityExceptionHandler(StabilityExceptionHandler** this, Except
 	NOVA_FREE(*this);
 }
 
-void nova_StabilityExceptionHandler_uncaughtException(StabilityExceptionHandler* this, ExceptionData* exceptionData, Thread* nova_0_thread, Exception* nova_0_exception)
+void nova_1_StabilityExceptionHandler_uncaughtException(StabilityExceptionHandler* this, ExceptionData* exceptionData, Thread* nova_0_thread, Exception* nova_0_exception)
 {
-	nova_StabilityTest_fail((StabilityTest*)(this->prv->nova_StabilityExceptionHandler_program), exceptionData, nova_String_String(exceptionData, ""));
+	nova_1_StabilityTest_fail(this->prv->nova_StabilityExceptionHandler_program, exceptionData);
 }

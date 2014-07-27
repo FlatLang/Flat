@@ -15,17 +15,19 @@ typedef struct Long Long;
 #include <NovaConsole.h>
 #include <NovaGC.h>
 #include <NovaNumber.h>
+#include <NovaShort.h>
 #include <NovaInteger.h>
 #include "NovaLong.h"
+#include <NovaFloat.h>
 #include <NovaDouble.h>
 #include <NovaChar.h>
 #include <NovaDivideByZeroException.h>
 
 typedef struct nova_VTable_Long
 {
-	int (*nova_virtual_numDigits)(Long*, ExceptionData*, long_long);
-	String* (*nova_virtual_toAString)(Long*, ExceptionData*, long_long);
-	String* (*nova_virtual_toString)(Long*, ExceptionData*);
+	String* (*nova_virtual_2_toString)(Long*, ExceptionData*);
+	int (*nova_virtual_2_numDigits)(Number*, ExceptionData*, int);
+	String* (*nova_virtual_3_toString)(Number*, ExceptionData*, int);
 } nova_VTable_Long;
 
 CCLASS_CLASS
@@ -38,8 +40,8 @@ CCLASS_CLASS
 
 Long* nova_Long_Long(ExceptionData* exceptionData, long_long nova_0_value);
 void nova_del_Long(Long** this, ExceptionData* exceptionData);
-int nova_static_Long_numDigits(Long* this, ExceptionData* exceptionData, long_long nova_0_number);
-String* nova_static_Long_toAString(Long* this, ExceptionData* exceptionData, long_long nova_0_value);
-String* nova_Long_toString(Long* this, ExceptionData* exceptionData);
+int nova_static_1_Long_numDigits(Long* this, ExceptionData* exceptionData, long_long nova_0_number);
+String* nova_static_1_Long_toString(Long* this, ExceptionData* exceptionData, long_long nova_0_value);
+String* nova_2_Long_toString(Long* this, ExceptionData* exceptionData);
 
 #endif

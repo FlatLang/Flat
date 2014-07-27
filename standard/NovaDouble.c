@@ -4,9 +4,9 @@
 
 nova_VTable_Double nova_VTable_Double_val =
 {
-	nova_static_Double_numDigits,
-	nova_static_Double_toAString,
-	nova_Double_toString,
+	nova_2_Double_toString,
+	nova_static_2_Number_numDigits,
+	nova_static_3_Number_toString,
 };
 
 String* nova_static_Double_genString(Double* this, ExceptionData* exceptionData, char* nova_0_buffer, int nova_0_lastIndex);
@@ -40,9 +40,21 @@ void nova_del_Double(Double** this, ExceptionData* exceptionData)
 	NOVA_FREE(*this);
 }
 
-int nova_static_Double_numDigits(Double* this, ExceptionData* exceptionData, double nova_0_number)
+int nova_static_1_Double_numDigits(Double* this, ExceptionData* exceptionData, double nova_0_number)
 {
-	return nova_static_Long_numDigits((Long*)(0), exceptionData, (long_long)(nova_0_number));
+	int nova_1_size;
+	
+	if (nova_0_number < 0)
+	{
+		return nova_static_1_Double_numDigits((Double*)0, exceptionData, -nova_0_number) + 1;
+	}
+	nova_0_number = nova_0_number / 10;
+	nova_1_size = 1;
+	for (; nova_0_number > 0; nova_1_size++)
+	{
+		nova_0_number = nova_0_number / 10;
+	}
+	return nova_1_size;
 }
 
 String* nova_static_Double_genString(Double* this, ExceptionData* exceptionData, char* nova_0_buffer, int nova_0_lastIndex)
@@ -84,7 +96,7 @@ int nova_static_Double_lastSignificantDigit(Double* this, ExceptionData* excepti
 	return nova_0_start + 1;
 }
 
-String* nova_static_Double_toAString(Double* this, ExceptionData* exceptionData, double nova_0_value)
+String* nova_static_1_Double_toString(Double* this, ExceptionData* exceptionData, double nova_0_value)
 {
 	char* nova_1_buffer;
 	int nova_1_size;
@@ -138,7 +150,7 @@ String* nova_static_Double_toAString(Double* this, ExceptionData* exceptionData,
 	return nova_static_Double_genString((Double*)0, exceptionData, nova_1_buffer, nova_1_lastIndex);
 }
 
-String* nova_Double_toString(Double* this, ExceptionData* exceptionData)
+String* nova_2_Double_toString(Double* this, ExceptionData* exceptionData)
 {
-	return this->vtable->nova_virtual_toAString(this, exceptionData, this->nova_Double_value);
+	return nova_static_1_Double_toString(this, exceptionData, this->nova_Double_value);
 }

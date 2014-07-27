@@ -13,7 +13,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:55:59 PM
- * @version	v0.2.14 Jul 19, 2014 at 7:33:13 PM
+ * @version	v0.2.19 Jul 26, 2014 at 12:30:24 AM
  */
 public class WhileLoop extends Loop
 {
@@ -55,7 +55,7 @@ public class WhileLoop extends Loop
 	{
 		Node condition = getCondition();
 		
-		builder.append("while (").append(condition.generateCSource()).append(')').append('\n');
+		builder.append("while (").append(condition.generateCSourceFragment()).append(')').append('\n');
 		
 		getScope().generateCSource(builder);
 		
@@ -83,7 +83,7 @@ public class WhileLoop extends Loop
 	 */
 	public static WhileLoop decodeStatement(Node parent, String statement, Location location, boolean require)
 	{
-		if (StringUtils.findNextWord(statement, 0).equals("while"))
+		if (StringUtils.findNextWord(statement).equals("while"))
 		{
 			WhileLoop n   = new WhileLoop(parent, location);
 			
@@ -91,7 +91,7 @@ public class WhileLoop extends Loop
 			
 			if (bounds.isValid())
 			{
-				Location newLoc = new Location(location);
+				Location newLoc = location.asNew();
 				newLoc.addBounds(bounds.getStart(), bounds.getEnd());
 				
 				String contents = statement.substring(bounds.getStart(), bounds.getEnd());
@@ -100,6 +100,8 @@ public class WhileLoop extends Loop
 				{
 					return n;
 				}
+				
+				SyntaxMessage.error("Could not decode while loop condition '" + contents + "'", n);
 			}
 			else
 			{
@@ -131,7 +133,12 @@ public class WhileLoop extends Loop
 				
 				if (condition == null)
 				{
-					return false;
+					condition = checkMethodCallCondition(contents, location);
+					
+					if (condition == null)
+					{
+						return false;
+					}
 				}
 			}
 		}
@@ -139,6 +146,18 @@ public class WhileLoop extends Loop
 		addChild(condition, this);
 		
 		return true;
+	}
+	
+	private MethodCall checkMethodCallCondition(String contents, Location location)
+	{
+		MethodCall call = MethodCall.decodeStatement(this, contents, location, false);
+		
+		if (call != null && call.getTypeClassName().equals("Bool"))
+		{
+			return call;
+		}
+		
+		return null;
 	}
 	
 	/**
@@ -153,7 +172,7 @@ public class WhileLoop extends Loop
 	}
 	
 	/**
-	 * Fill the given WhileLoop with the data that is in the
+	 * Fill the given {@link WhileLoop} with the data that is in the
 	 * specified node.
 	 * 
 	 * @param node The node to copy the data into.

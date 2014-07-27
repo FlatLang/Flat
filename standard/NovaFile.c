@@ -4,8 +4,8 @@
 
 nova_VTable_File nova_VTable_File_val =
 {
-	nova_Object_toString,
-	nova_Object_equals,
+	nova_2_Object_toString,
+	nova_2_Object_equals,
 };
 CCLASS_PRIVATE
 (
@@ -14,7 +14,7 @@ CCLASS_PRIVATE
 	
 )
 
-File* nova_File_File(ExceptionData* exceptionData, String* nova_0_location)
+File* nova_1_File_File(ExceptionData* exceptionData, String* nova_0_location)
 {
 	CCLASS_NEW(File, this);
 	
@@ -23,8 +23,22 @@ File* nova_File_File(ExceptionData* exceptionData, String* nova_0_location)
 	this->vtable = &nova_VTable_File_val;
 	{
 		this->prv->nova_File_location = nova_0_location;
-		this->prv->nova_File_fp = fopen(nova_String_toCharArray((String*)(nova_0_location), exceptionData), (char*)("w"));
+		this->prv->nova_File_fp = fopen(nova_String_toCharArray(nova_0_location, exceptionData), (char*)("w"));
 		nova_File_reopen(this, exceptionData);
+	}
+	
+	return this;
+}
+
+File* nova_2_File_File(ExceptionData* exceptionData, FILE* nova_0_fp)
+{
+	CCLASS_NEW(File, this);
+	
+	this->prv->nova_File_fp = (FILE*)0;
+	this->prv->nova_File_location = (String*)0;
+	this->vtable = &nova_VTable_File_val;
+	{
+		this->prv->nova_File_fp = nova_0_fp;
 	}
 	
 	return this;
@@ -49,16 +63,16 @@ void nova_del_File(File** this, ExceptionData* exceptionData)
 char nova_File_delete(File* this, ExceptionData* exceptionData)
 {
 	nova_File_close(this, exceptionData);
-	return remove(nova_String_toCharArray((String*)(this->prv->nova_File_location), exceptionData)) == 0;
+	return remove(nova_String_toCharArray(this->prv->nova_File_location, exceptionData)) == 0;
 }
 
 void nova_File_reopen(File* this, ExceptionData* exceptionData)
 {
 	nova_File_close(this, exceptionData);
-	this->prv->nova_File_fp = fopen(nova_String_toCharArray((String*)(this->prv->nova_File_location), exceptionData), (char*)("r+"));
+	this->prv->nova_File_fp = fopen(nova_String_toCharArray(this->prv->nova_File_location, exceptionData), (char*)("r+"));
 }
 
-void nova_File_rewind(File* this, ExceptionData* exceptionData)
+void nova_2_File_rewind(File* this, ExceptionData* exceptionData)
 {
 	rewind(this->prv->nova_File_fp);
 }
@@ -72,9 +86,9 @@ char nova_File_create(File* this, ExceptionData* exceptionData)
 {
 	if (!nova_File_exists(this, exceptionData))
 	{
-		this->prv->nova_File_fp = fopen(nova_String_toCharArray((String*)(this->prv->nova_File_location), exceptionData), (char*)("wb"));
+		this->prv->nova_File_fp = fopen(nova_String_toCharArray(this->prv->nova_File_location, exceptionData), (char*)("wb"));
 		nova_File_close(this, exceptionData);
-		this->prv->nova_File_fp = fopen(nova_String_toCharArray((String*)(this->prv->nova_File_location), exceptionData), (char*)("r+"));
+		this->prv->nova_File_fp = fopen(nova_String_toCharArray(this->prv->nova_File_location, exceptionData), (char*)("r+"));
 		return 1;
 	}
 	return 0;
@@ -143,7 +157,7 @@ void nova_File_writeLine(File* this, ExceptionData* exceptionData, String* nova_
 
 void nova_File_write(File* this, ExceptionData* exceptionData, String* nova_0_data)
 {
-	fputs(nova_String_toCharArray((String*)(nova_0_data), exceptionData), this->prv->nova_File_fp);
+	fputs(nova_String_toCharArray(nova_0_data, exceptionData), this->prv->nova_File_fp);
 	nova_File_flush(this, exceptionData);
 }
 

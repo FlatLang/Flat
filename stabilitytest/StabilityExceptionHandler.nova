@@ -12,6 +12,6 @@ public class StabilityExceptionHandler extends UncaughtExceptionHandler
 	
 	public void uncaughtException(Thread thread, Exception exception)
 	{
-		program.fail("")
+		program.fail()
 	}
 }

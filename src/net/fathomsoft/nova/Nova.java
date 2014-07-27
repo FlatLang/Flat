@@ -27,7 +27,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:00:04 PM
- * @version	v0.2.18 Jul 23, 2014 at 10:43:40 PM
+ * @version	v0.2.19 Jul 26, 2014 at 12:30:24 AM
  */
 public class Nova
 {
@@ -77,7 +77,7 @@ public class Nova
 	public static final int		LINUX         = 3;
 	
 	public static final String	LANGUAGE_NAME = "Nova";
-	public static final String	VERSION       = "v0.2.18";
+	public static final String	VERSION       = "v0.2.19";
 	
 	/**
 	 * Find out which operating system the compiler is running on.
@@ -230,17 +230,22 @@ public class Nova
 				formatPath(standard  + "Time.nova"),
 				formatPath(standard  + "DivideByZeroException.nova"),
 				formatPath(standard  + "Object.nova"),
+				formatPath(standard  + "InputStream.nova"),
+				formatPath(standard  + "OutputStream.nova"),
+				formatPath(standard  + "StreamReader.nova"),
 				formatPath(standard  + "List.nova"),
 				formatPath(standard  + "ListNode.nova"),
 				formatPath(standard  + "Thread.nova"),
 				formatPath(standard  + "UncaughtExceptionHandler.nova"),
 				formatPath(standard  + "Exception.nova"),
-				formatPath(standard  + "Integer.nova"),
 				formatPath(standard  + "Array.nova"),
 				formatPath(standard  + "Char.nova"),
 				formatPath(standard  + "CharArray.nova"),
 				formatPath(standard  + "Bool.nova"),
+				formatPath(standard  + "Short.nova"),
+				formatPath(standard  + "Integer.nova"),
 				formatPath(standard  + "Long.nova"),
+				formatPath(standard  + "Float.nova"),
 				formatPath(standard  + "Double.nova"),
 				formatPath(standard  + "Number.nova"),
 				formatPath(standard  + "GC.nova"),
@@ -1210,6 +1215,11 @@ public class Nova
 		{
 			System.exit(0);
 		}
+	}
+	
+	public static void debuggingBreakpoint()
+	{
+		
 	}
 	
 	private void testClasses()

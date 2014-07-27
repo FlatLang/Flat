@@ -63,7 +63,7 @@ public class FileStability
 		{
 			if (!line.equals(inputString))
 			{
-				program.fail("")
+				program.fail()
 			}
 			
 			line = f.readLine()

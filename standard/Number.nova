@@ -4,7 +4,7 @@ public class Number
 	{
 	}
 	
-	public static String toAString(int value)
+	public static String toString(int value)
 	{
 	}
 }

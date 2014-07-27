@@ -15,8 +15,10 @@ typedef struct Thread Thread;
 #include <NovaConsole.h>
 #include <NovaGC.h>
 #include <NovaNumber.h>
+#include <NovaShort.h>
 #include <NovaInteger.h>
 #include <NovaLong.h>
+#include <NovaFloat.h>
 #include <NovaDouble.h>
 #include <NovaChar.h>
 #include <NovaDivideByZeroException.h>
@@ -24,9 +26,9 @@ typedef struct Thread Thread;
 
 typedef struct nova_VTable_Thread
 {
-	void (*nova_virtual_run)(Thread*, ExceptionData*);
-	String* (*nova_virtual_toString)(Object*, ExceptionData*);
-	char (*nova_virtual_equals)(Object*, ExceptionData*, Object*);
+	void (*nova_virtual_2_run)(Thread*, ExceptionData*);
+	String* (*nova_virtual_2_toString)(Object*, ExceptionData*);
+	char (*nova_virtual_2_equals)(Object*, ExceptionData*, Object*);
 } nova_VTable_Thread;
 
 CCLASS_CLASS
@@ -42,6 +44,6 @@ void nova_del_Thread(Thread** this, ExceptionData* exceptionData);
 void nova_Thread_start(Thread* this, ExceptionData* exceptionData);
 void nova_Thread_join(Thread* this, ExceptionData* exceptionData);
 void nova_static_Thread_sleep(Thread* this, ExceptionData* exceptionData, long_long nova_0_millis);
-void nova_Thread_run(Thread* this, ExceptionData* exceptionData);
+void nova_2_Thread_run(Thread* this, ExceptionData* exceptionData);
 
 #endif

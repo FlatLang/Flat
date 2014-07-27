@@ -16,7 +16,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.2.4 May 2, 2014 at 11:14:37 PM
- * @version	v0.2.18 Jul 23, 2014 at 10:43:40 PM
+ * @version	v0.2.19 Jul 26, 2014 at 12:30:24 AM
  */
 public class VariableDeclaration extends IIdentifier
 {
@@ -305,6 +305,11 @@ public class VariableDeclaration extends IIdentifier
 	{
 		builder.append(getType()).append(' ').append(getName());
 		
+		for (int i = 0; i < getArrayDimensions(); i++)
+		{
+			builder.append("[]");
+		}
+		
 		return builder;
 	}
 	
@@ -424,7 +429,7 @@ public class VariableDeclaration extends IIdentifier
 	}
 	
 	/**
-	 * Fill the given ActionValue with the data that is in the
+	 * Fill the given {@link ActionValue} with the data that is in the
 	 * specified node.
 	 * 
 	 * @param node The node to copy the data into.

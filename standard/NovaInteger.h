@@ -15,17 +15,19 @@ typedef struct Integer Integer;
 #include <NovaConsole.h>
 #include <NovaGC.h>
 #include <NovaNumber.h>
+#include <NovaShort.h>
 #include "NovaInteger.h"
 #include <NovaLong.h>
+#include <NovaFloat.h>
 #include <NovaDouble.h>
 #include <NovaChar.h>
 #include <NovaDivideByZeroException.h>
 
 typedef struct nova_VTable_Integer
 {
-	int (*nova_virtual_numDigits)(Integer*, ExceptionData*, int);
-	String* (*nova_virtual_toAString)(Integer*, ExceptionData*, int);
-	String* (*nova_virtual_toString)(Integer*, ExceptionData*);
+	int (*nova_virtual_1_numDigits)(Integer*, ExceptionData*, int);
+	String* (*nova_virtual_1_toString)(Integer*, ExceptionData*, int);
+	String* (*nova_virtual_2_toString)(Integer*, ExceptionData*);
 } nova_VTable_Integer;
 
 CCLASS_CLASS
@@ -38,8 +40,8 @@ CCLASS_CLASS
 
 Integer* nova_Integer_Integer(ExceptionData* exceptionData, int nova_0_value);
 void nova_del_Integer(Integer** this, ExceptionData* exceptionData);
-int nova_static_Integer_numDigits(Integer* this, ExceptionData* exceptionData, int nova_0_number);
-String* nova_static_Integer_toAString(Integer* this, ExceptionData* exceptionData, int nova_0_value);
-String* nova_Integer_toString(Integer* this, ExceptionData* exceptionData);
+int nova_static_1_Integer_numDigits(Integer* this, ExceptionData* exceptionData, int nova_0_number);
+String* nova_static_1_Integer_toString(Integer* this, ExceptionData* exceptionData, int nova_0_value);
+String* nova_2_Integer_toString(Integer* this, ExceptionData* exceptionData);
 
 #endif

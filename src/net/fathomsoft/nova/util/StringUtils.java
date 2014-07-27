@@ -9,12 +9,12 @@ import java.util.regex.Matcher;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Mar 13, 2014 at 9:38:42 PM
- * @version	v0.2.14 Jul 19, 2014 at 7:33:13 PM
+ * @version	v0.2.19 Jul 26, 2014 at 12:30:24 AM
  */
 public class StringUtils
 {
 	public static final char	WHITESPACE[]       = new char[] { ' ', '\n', '\t', '\r' };
-	public static final char	SYMBOLS_CHARS[]    = new char[] { '-', '+', '~', '!', '=', '%', '^', '&', '|', '*', '/', '>', '<', ',', '"', '\'', '[', ']', '{', '}', ';' };
+	public static final char	SYMBOLS_CHARS[]    = new char[] { '-', '+', '~', '!', '=', '%', '^', '&', '|', '*', '/', '>', '<', ',', '"', '\'', '[', ']', '{', '}', ';', '(', ')' };
 	public static final char	STMT_CONT_CHARS[]  = new char[] { '-', '+', '~', '!', '=', '%', '^', '&', '|', '*', '/', '>', '<', ',', '.' };
 	
 	public static final String	BINARY_OPERATORS[] = new String[] { "+", "-", "/", "*", "==", "!=", "&&", "||", "<=", ">=", "<<", ">>", "<", ">", "%" };
@@ -111,6 +111,29 @@ public class StringUtils
 		}
 		
 		return str.subSequence(start, index).toString();
+	}
+	
+	/**
+	 * Find the next word in the given source starting at the beginning
+	 * of the String. If there are no words available, an empty String is
+	 * returned.<br>
+	 * For example:
+	 * <blockquote><pre>
+	 * // Scenario 1
+	 * findNextWord("number = ++num2");
+	 * 
+	 * // Scenario 2
+	 * findNextWord("asdf = ++num2");</pre></blockquote>
+	 * Scenario 1 returns "number"<br>
+	 * Scenario 2 returns "asdf"
+	 * 
+	 * @param source The source to search within.
+	 * @return The next available word if available, else it returns
+	 * 		an empty String.
+	 */
+	public static String findNextWord(CharSequence source)
+	{
+		return findNextWord(source, 0);
 	}
 	
 	/**
@@ -899,6 +922,28 @@ public class StringUtils
 	public static boolean containsChar(char array[], char c)
 	{
 		return searchChar(array, c) >= 0;
+	}
+	
+	/**
+	 * Search for the char at the given index in the given source String
+	 * in the given array.
+	 * 
+	 * @param source The String to search through.
+	 * @param array The array to search for 'c' in.
+	 * @param index The index to get the char from the source String at.
+	 * @return Whether or not the array contains the 'c' char.
+	 */
+	public static boolean containsChar(CharSequence source, char array[])
+	{
+		for (int i = 0; i < source.length(); i++)
+		{
+			if (containsChar(source, array, i))
+			{
+				return true;
+			}
+		}
+		
+		return false;
 	}
 	
 	/**

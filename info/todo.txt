@@ -10,6 +10,7 @@
 * Sub-classes must initialize default values to the super-class variables too.
 * Rename Integer to Int
 * Fix the conflict between data type output and polymorphic type casts.
+* Can Constructor use generateCNameOutput()?
 
 In-depth compiler error checking:
 - Make sure that the static class's methods/variables are called rightfully.

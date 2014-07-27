@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.IOException;
 
 import net.fathomsoft.nova.Nova;
-import net.fathomsoft.nova.error.SyntaxErrorException;
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.tree.exceptionhandling.Catch;
 import net.fathomsoft.nova.tree.exceptionhandling.ExceptionHandler;
@@ -28,7 +27,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:00:15 PM
- * @version	v0.2.17 Jul 22, 2014 at 4:24:45 PM
+ * @version	v0.2.19 Jul 26, 2014 at 12:30:24 AM
  */
 public class SyntaxTree
 {
@@ -427,6 +426,7 @@ public class SyntaxTree
 				
 				if      (type == LocalDeclaration.class) node = LocalDeclaration.decodeStatement(parent, statement, location, require);
 				else if (node == null && type == ElseStatement.class) node = ElseStatement.decodeStatement(parent, statement, location, require);
+				else if (node == null && type == AbstractMethodDeclaration.class) node = AbstractMethodDeclaration.decodeStatement(parent, statement, location, require);
 				else if (node == null && type == ArrayAccess.class) node = ArrayAccess.decodeStatement(parent, statement, location, require);
 				else if (node == null && type == Assignment.class) node = Assignment.decodeStatement(parent, statement, location, require);
 				else if (node == null && type == Array.class) node = Array.decodeStatement(parent, statement, location, require);
@@ -505,8 +505,9 @@ public class SyntaxTree
 	public static Node decodeStatementOfType(Node parent, String statement, Location location, boolean require, Class<?> type)
 	{
 		Node node = null;
-		
-		if      (type.isAssignableFrom(ArrayAccess.class) && (node = ArrayAccess.decodeStatement(parent, statement, location, require)) != null);
+
+		if      (type.isAssignableFrom(AbstractMethodDeclaration.class) && (node = AbstractMethodDeclaration.decodeStatement(parent, statement, location, require)) != null);
+		else if (type.isAssignableFrom(ArrayAccess.class) && (node = ArrayAccess.decodeStatement(parent, statement, location, require)) != null);
 		else if (type.isAssignableFrom(Assignment.class) && (node = Assignment.decodeStatement(parent, statement, location, require)) != null);
 		else if (type.isAssignableFrom(Array.class) && (node = Array.decodeStatement(parent, statement, location, require)) != null);
 //		else if (type.isAssignableFrom(Bool.class) && (node = Bool.decodeStatement(parent, statement, location, require)) != null);
@@ -560,8 +561,9 @@ public class SyntaxTree
 		Class<?> type2 = VariableDeclaration.class;
 		
 		Node node = null;
-		
-		if      (type2.isAssignableFrom(ArrayAccess.class) == declaration && type.isAssignableFrom(ArrayAccess.class) && (node = ArrayAccess.decodeStatement(parent, statement, location, require)) != null);
+
+		if      (type2.isAssignableFrom(AbstractMethodDeclaration.class) == declaration && type.isAssignableFrom(AbstractMethodDeclaration.class) && (node = AbstractMethodDeclaration.decodeStatement(parent, statement, location, require)) != null);
+		else if (type2.isAssignableFrom(ArrayAccess.class) == declaration && type.isAssignableFrom(ArrayAccess.class) && (node = ArrayAccess.decodeStatement(parent, statement, location, require)) != null);
 		else if (type2.isAssignableFrom(Array.class) == declaration && type.isAssignableFrom(Array.class) && (node = Array.decodeStatement(parent, statement, location, require)) != null);
 		else if (type2.isAssignableFrom(ClassDeclaration.class) == declaration && type.isAssignableFrom(ClassDeclaration.class) && (node = ClassDeclaration.decodeStatement(parent, statement, location, require)) != null);
 		else if (type2.isAssignableFrom(Closure.class) == declaration && type.isAssignableFrom(Closure.class) && (node = Closure.decodeStatement(parent, statement, location, require)) != null);
@@ -674,7 +676,7 @@ public class SyntaxTree
 					return null;
 				}
 				
-				Location currentLoc = new Location(location);
+				Location currentLoc = location.asNew();
 				currentLoc.setBounds(offset, index);
 				currentLoc.setLineNumber(location.getLineNumber());
 				
@@ -697,7 +699,7 @@ public class SyntaxTree
 				}
 			}
 			
-			location = new Location(location);
+			location = location.asNew();
 			parent   = node;
 			offset   = index + 1;
 			index    = SyntaxUtils.findDotOperator(statement, offset);

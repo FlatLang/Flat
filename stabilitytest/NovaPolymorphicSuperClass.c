@@ -4,8 +4,8 @@
 
 nova_VTable_PolymorphicSuperClass nova_VTable_PolymorphicSuperClass_val =
 {
-	nova_PolymorphicSuperClass_toString,
-	nova_Object_equals,
+	nova_1_PolymorphicSuperClass_toString,
+	nova_2_Object_equals,
 };
 
 PolymorphicSuperClass* nova_PolymorphicSuperClass_PolymorphicSuperClass(ExceptionData* exceptionData)
@@ -39,7 +39,7 @@ void nova_PolymorphicSuperClass_giveBirth(PolymorphicSuperClass* this, Exception
 	this->nova_PolymorphicSuperClass_child = nova_PolymorphicSubClass_PolymorphicSubClass(exceptionData);
 }
 
-String* nova_PolymorphicSuperClass_toString(PolymorphicSuperClass* this, ExceptionData* exceptionData)
+String* nova_1_PolymorphicSuperClass_toString(PolymorphicSuperClass* this, ExceptionData* exceptionData)
 {
 	return nova_String_String(exceptionData, "super class");
 }

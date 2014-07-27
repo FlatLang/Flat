@@ -1,5 +1,7 @@
 package net.fathomsoft.nova.tree;
 
+import java.util.ArrayList;
+
 import net.fathomsoft.nova.util.Location;
 
 
@@ -9,7 +11,7 @@ import net.fathomsoft.nova.util.Location;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 10:29:22 PM
- * @version	v0.2.14 Jul 19, 2014 at 7:33:13 PM
+ * @version	v0.2.19 Jul 26, 2014 at 12:30:24 AM
  */
 public class MethodList extends Node
 {
@@ -44,7 +46,7 @@ public class MethodList extends Node
 	 */
 	public boolean containsMethod(String methodName)
 	{
-		return getMethod(methodName) != null;
+		return getMethods(methodName).length > 0;
 	}
 	
 	/**
@@ -66,19 +68,21 @@ public class MethodList extends Node
 	 * @param methodName The name of the method to search for.
 	 * @return The Method for the method, if it exists.
 	 */
-	public MethodDeclaration getMethod(String methodName)
+	public MethodDeclaration[] getMethods(String methodName)
 	{
+		ArrayList<MethodDeclaration> methods = new ArrayList<MethodDeclaration>();
+		
 		for (int i = 0; i < getNumChildren(); i++)
 		{
 			MethodDeclaration methodDeclaration = (MethodDeclaration)getChild(i);
 			
 			if (methodDeclaration.getName().equals(methodName))
 			{
-				return methodDeclaration;
+				methods.add(methodDeclaration);
 			}
 		}
 		
-		return null;
+		return methods.toArray(new MethodDeclaration[0]);
 	}
 	
 	/**
@@ -187,7 +191,7 @@ public class MethodList extends Node
 	}
 	
 	/**
-	 * Fill the given MethodList with the data that is in the
+	 * Fill the given {@link MethodList} with the data that is in the
 	 * specified node.
 	 * 
 	 * @param node The node to copy the data into.

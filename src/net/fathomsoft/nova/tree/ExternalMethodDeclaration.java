@@ -4,7 +4,6 @@ import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.util.Bounds;
 import net.fathomsoft.nova.util.Location;
 import net.fathomsoft.nova.util.Patterns;
-import net.fathomsoft.nova.util.Regex;
 import net.fathomsoft.nova.util.StringUtils;
 import net.fathomsoft.nova.util.SyntaxUtils;
 
@@ -15,9 +14,9 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:10:53 PM
- * @version	v0.2.18 Jul 23, 2014 at 10:43:40 PM
+ * @version	v0.2.19 Jul 26, 2014 at 12:30:24 AM
  */
-public class ExternalMethodDeclaration extends MethodDeclaration
+public class ExternalMethodDeclaration extends BodylessMethodDeclaration
 {
 	private String	alias;
 	
@@ -39,12 +38,12 @@ public class ExternalMethodDeclaration extends MethodDeclaration
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.Node#getScope()
+	 * @see net.fathomsoft.nova.tree.MethodDeclaration#containsBody()
 	 */
 	@Override
-	public Scope getScope()
+	public boolean containsBody()
 	{
-		return null;
+		return false;
 	}
 	
 	/**
@@ -78,7 +77,7 @@ public class ExternalMethodDeclaration extends MethodDeclaration
 	 */
 	public static ExternalMethodDeclaration decodeStatement(Node parent, String statement, Location location, boolean require)
 	{
-		String methodSignature = findMethodSignature(statement);
+		String methodSignature = findMethodSignature(statement, Patterns.EXTERNAL);
 		
 		if (methodSignature != null && methodSignature.length() > 0)
 		{
@@ -100,34 +99,6 @@ public class ExternalMethodDeclaration extends MethodDeclaration
 		}
 		
 		return null;
-	}
-	
-	/**
-	 * Find the String representing the signature of the external
-	 * method that is currently being decoded from the given
-	 * statement String.
-	 * 
-	 * @param statement The String containing the method signature.
-	 * @return The signature for the external method to decode.
-	 */
-	private static String findMethodSignature(String statement)
-	{
-		if (!Regex.startsWith(statement, Patterns.EXTERNAL))
-		{
-			return null;
-		}
-		
-		int start = StringUtils.findNextNonWhitespaceIndex(statement, 9);
-		int paren = statement.indexOf('(', start);
-		
-		if (paren < 0)
-		{
-			return null;
-		}
-		
-		int end = StringUtils.findEndingMatch(statement, paren, '(', ')') + 1;
-		
-		return statement.substring(start, end);
 	}
 	
 	/**
@@ -214,7 +185,7 @@ public class ExternalMethodDeclaration extends MethodDeclaration
 	}
 	
 	/**
-	 * Fill the given ExternalMethodDeclaration with the data that is in
+	 * Fill the given {@link ExternalMethodDeclaration} with the data that is in
 	 * the specified node.
 	 * 
 	 * @param node The node to copy the data into.
@@ -228,7 +199,7 @@ public class ExternalMethodDeclaration extends MethodDeclaration
 	}
 	
 	/**
-	 * Test the ExternalMethodDeclaration class type to make sure everything
+	 * Test the {@link ExternalMethodDeclaration} class type to make sure everything
 	 * is working properly.
 	 * 
 	 * @return The error output, if there was an error. If the test was

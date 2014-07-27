@@ -4,8 +4,8 @@
 
 nova_VTable_List nova_VTable_List_val =
 {
-	nova_Object_toString,
-	nova_Object_equals,
+	nova_2_Object_toString,
+	nova_2_Object_equals,
 };
 CCLASS_PRIVATE
 (
@@ -60,7 +60,7 @@ void nova_List_add(List* this, ExceptionData* exceptionData, Object* nova_0_data
 	}
 	else
 	{
-		nova_ListNode_setNext((ListNode*)(this->prv->nova_List_current), exceptionData, nova_1_node);
+		nova_ListNode_setNext(this->prv->nova_List_current, exceptionData, nova_1_node);
 	}
 	this->prv->nova_List_current = nova_1_node;
 }
@@ -70,7 +70,7 @@ void nova_List_remove(List* this, ExceptionData* exceptionData, Object* nova_0_d
 	ListNode* nova_1_prev;
 	ListNode* nova_1_cur;
 	
-	if (nova_ListNode_getData((ListNode*)(this->prv->nova_List_start), exceptionData) == nova_0_data)
+	if (nova_ListNode_getData(this->prv->nova_List_start, exceptionData) == nova_0_data)
 	{
 		this->prv->nova_List_start = nova_ListNode_getNext(this->prv->nova_List_start, exceptionData);
 	}
@@ -80,10 +80,10 @@ void nova_List_remove(List* this, ExceptionData* exceptionData, Object* nova_0_d
 	{
 		Object* nova_3_d;
 		
-		nova_3_d = nova_ListNode_getData((ListNode*)(nova_1_cur), exceptionData);
+		nova_3_d = nova_ListNode_getData(nova_1_cur, exceptionData);
 		if (nova_3_d == nova_0_data)
 		{
-			nova_ListNode_setNext((ListNode*)(nova_1_prev), exceptionData, nova_ListNode_getNext(nova_1_cur, exceptionData));
+			nova_ListNode_setNext(nova_1_prev, exceptionData, nova_ListNode_getNext(nova_1_cur, exceptionData));
 		}
 		nova_1_cur = nova_ListNode_getNext(nova_1_cur, exceptionData);
 	}

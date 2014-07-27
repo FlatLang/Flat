@@ -15,8 +15,10 @@ typedef struct SVGCircle SVGCircle;
 #include <NovaConsole.h>
 #include <NovaGC.h>
 #include <NovaNumber.h>
+#include <NovaShort.h>
 #include <NovaInteger.h>
 #include <NovaLong.h>
+#include <NovaFloat.h>
 #include <NovaDouble.h>
 #include <NovaChar.h>
 #include <NovaDivideByZeroException.h>
@@ -26,8 +28,8 @@ typedef struct SVGCircle SVGCircle;
 
 typedef struct nova_VTable_SVGCircle
 {
-	void (*nova_virtual_generateOutput)(SVGCircle*, ExceptionData*, File*);
-	String* (*nova_virtual_toString)(SVGCircle*, ExceptionData*);
+	void (*nova_virtual_1_generateOutput)(SVGCircle*, ExceptionData*, File*);
+	String* (*nova_virtual_1_toString)(SVGCircle*, ExceptionData*);
 } nova_VTable_SVGCircle;
 
 CCLASS_CLASS
@@ -43,7 +45,7 @@ CCLASS_CLASS
 
 SVGCircle* nova_SVGCircle_SVGCircle(ExceptionData* exceptionData, double nova_0_x, double nova_0_y, int nova_0_r);
 void nova_del_SVGCircle(SVGCircle** this, ExceptionData* exceptionData);
-void nova_SVGCircle_generateOutput(SVGCircle* this, ExceptionData* exceptionData, File* nova_0_file);
-String* nova_SVGCircle_toString(SVGCircle* this, ExceptionData* exceptionData);
+void nova_1_SVGCircle_generateOutput(SVGCircle* this, ExceptionData* exceptionData, File* nova_0_file);
+String* nova_1_SVGCircle_toString(SVGCircle* this, ExceptionData* exceptionData);
 
 #endif

@@ -15,8 +15,10 @@ typedef struct PolymorphicSuperClass PolymorphicSuperClass;
 #include <NovaConsole.h>
 #include <NovaGC.h>
 #include <NovaNumber.h>
+#include <NovaShort.h>
 #include <NovaInteger.h>
 #include <NovaLong.h>
+#include <NovaFloat.h>
 #include <NovaDouble.h>
 #include <NovaChar.h>
 #include <NovaDivideByZeroException.h>
@@ -24,8 +26,8 @@ typedef struct PolymorphicSuperClass PolymorphicSuperClass;
 
 typedef struct nova_VTable_PolymorphicSuperClass
 {
-	String* (*nova_virtual_toString)(PolymorphicSuperClass*, ExceptionData*);
-	char (*nova_virtual_equals)(Object*, ExceptionData*, Object*);
+	String* (*nova_virtual_1_toString)(PolymorphicSuperClass*, ExceptionData*);
+	char (*nova_virtual_2_equals)(Object*, ExceptionData*, Object*);
 } nova_VTable_PolymorphicSuperClass;
 
 CCLASS_CLASS
@@ -39,6 +41,6 @@ CCLASS_CLASS
 PolymorphicSuperClass* nova_PolymorphicSuperClass_PolymorphicSuperClass(ExceptionData* exceptionData);
 void nova_del_PolymorphicSuperClass(PolymorphicSuperClass** this, ExceptionData* exceptionData);
 void nova_PolymorphicSuperClass_giveBirth(PolymorphicSuperClass* this, ExceptionData* exceptionData);
-String* nova_PolymorphicSuperClass_toString(PolymorphicSuperClass* this, ExceptionData* exceptionData);
+String* nova_1_PolymorphicSuperClass_toString(PolymorphicSuperClass* this, ExceptionData* exceptionData);
 
 #endif

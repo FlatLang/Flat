@@ -23,11 +23,91 @@ public class Console
 		write(text + "\n")
 	}
 	
+	public static void writeLine(Object obj)
+	{
+		writeLine(obj.toString())
+	}
+	
+	public static void writeLine(double num)
+	{
+		writeLine(Double.toString(num))
+	}
+	
+	public static void writeLine(float num)
+	{
+		writeLine(Double.toString(num))
+	}
+	
+	public static void writeLine(long num)
+	{
+		writeLine(Long.toString(num))
+	}
+	
+	public static void writeLine(int num)
+	{
+		writeLine(Integer.toString(num))
+	}
+	
+	public static void writeLine(short num)
+	{
+		writeLine(Integer.toString(num))
+	}
+	
+//	public static void writeLine(byte num)
+//	{
+//		writeLine(Integer.toString(num))
+//	}
+	
+	public static void writeLine(char c)
+	{
+		writeLine(Char.toString(c))
+	}
+	
 	public static void write(String text)
 	{
 		char cText[] = text.toCharArray()
 		
 		fputs(cText, stdout)
+	}
+	
+	public static void write(Object obj)
+	{
+		write(obj.toString())
+	}
+	
+	public static void write(double num)
+	{
+		write(Double.toString(num))
+	}
+	
+	public static void write(float num)
+	{
+		write(Double.toString(num))
+	}
+	
+	public static void write(long num)
+	{
+		write(Long.toString(num))
+	}
+	
+	public static void write(int num)
+	{
+		write(Integer.toString(num))
+	}
+	
+	public static void write(short num)
+	{
+		write(Integer.toString(num))
+	}
+	
+//	public static void write(byte num)
+//	{
+//		write(Integer.toString(num))
+//	}
+	
+	public static void write(char c)
+	{
+		write(Char.toString(c))
 	}
 	
 	public static int readInt()

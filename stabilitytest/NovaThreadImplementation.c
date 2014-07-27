@@ -4,7 +4,7 @@
 
 nova_VTable_ThreadImplementation nova_VTable_ThreadImplementation_val =
 {
-	nova_ThreadImplementation_run,
+	nova_1_ThreadImplementation_run,
 };
 CCLASS_PRIVATE
 (
@@ -46,13 +46,13 @@ void nova_del_ThreadImplementation(ThreadImplementation** this, ExceptionData* e
 	NOVA_FREE(*this);
 }
 
-void nova_ThreadImplementation_run(ThreadImplementation* this, ExceptionData* exceptionData)
+void nova_1_ThreadImplementation_run(ThreadImplementation* this, ExceptionData* exceptionData)
 {
 	int nova_1_i;
 	
 	nova_1_i = 0;
 	for (; nova_1_i < this->prv->nova_ThreadImplementation_times; nova_1_i++)
 	{
-		nova_static_Thread_sleep((Thread*)(0), exceptionData, (long_long)(this->prv->nova_ThreadImplementation_millis));
+		nova_static_Thread_sleep(0, exceptionData, (long_long)(this->prv->nova_ThreadImplementation_millis));
 	}
 }

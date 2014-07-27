@@ -17,7 +17,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 10:04:31 PM
- * @version	v0.2.16 Jul 22, 2014 at 12:47:19 AM
+ * @version	v0.2.19 Jul 26, 2014 at 12:30:24 AM
  */
 public class MethodCall extends IIdentifier
 {
@@ -82,14 +82,23 @@ public class MethodCall extends IIdentifier
 	 */
 	public boolean isWithinExternalContext()
 	{
-		CallableMethod methodDeclaration = getCallableDeclaration();
+		CallableMethod method = null;
 		
-		if (methodDeclaration.isExternal())
+		if (isDecoding())
 		{
-			return true;
+			MethodDeclaration methods[] = getDeclaringClass().getMethods(getName());
+			
+			if (methods.length > 0)
+			{
+				method = methods[0];
+			}
+		}
+		else
+		{
+			method = getCallableDeclaration();
 		}
 		
-		return super.isWithinExternalContext();
+		return method != null && method.isExternal() || super.isWithinExternalContext();
 	}
 	
 	/**
@@ -170,18 +179,7 @@ public class MethodCall extends IIdentifier
 	 */
 	public VariableDeclaration getMethodDeclaration()
 	{
-		ClassDeclaration clazz = null;
-		
-		if (getFileDeclaration().containsImport(getName()))
-		{
-			clazz = getProgram().getClassDeclaration(getName());
-		}
-		else
-		{
-			clazz = getReferenceNode().getTypeClass();
-		}
-		
-		MethodDeclaration method = clazz.getMethod(getName());
+		MethodDeclaration method = getDeclaringClass().getMethod(getName(), getArgumentList().getTypes());
 		
 		if (method != null)
 		{
@@ -189,6 +187,16 @@ public class MethodCall extends IIdentifier
 		}
 		
 		return getParentMethod().getParameterList().getParameter(getName());
+	}
+	
+	public ClassDeclaration getDeclaringClass()
+	{
+		if (getFileDeclaration().containsImport(getName()))
+		{
+			return getProgram().getClassDeclaration(getName());
+		}
+		
+		return getReferenceNode().getTypeClass();
 	}
 	
 	/**
@@ -332,6 +340,11 @@ public class MethodCall extends IIdentifier
 		VariableDeclaration method   = getMethodDeclaration();
 		CallableMethod      callable = (CallableMethod)method;
 		
+		if (getName().equals("read"))
+		{
+			System.out.println("ASDF");
+		}
+		
 		if (callable.isVirtual() && !isVirtualTypeKnown())
 		{
 			if (!isAccessed())
@@ -379,7 +392,11 @@ public class MethodCall extends IIdentifier
 			
 			Bounds bounds = SyntaxUtils.findInnerParenthesesBounds(n, statement);
 			
-			if (!n.decodeMethodName(statement, bounds, require))
+			if (statement.equals("execute(\"dir\")"))
+			{
+				System.out.println("B");
+			}
+			if (!n.decodeMethodName(statement, bounds, require) || !n.decodeArguments(statement, bounds))
 			{
 				return null;
 			}
@@ -396,12 +413,10 @@ public class MethodCall extends IIdentifier
 			// Align the data with the method declaration.
 			n.setDataType(method.getDataType());
 			n.setType(method.getType());
+			n.setArrayDimensions(method.getArrayDimensions());
 			n.externalCall = method.isExternal();
 			
-			if (n.decodeArguments(statement, bounds))
-			{
-				return n;
-			}
+			return n;
 		}
 		
 		return null;
@@ -534,6 +549,13 @@ public class MethodCall extends IIdentifier
 	private boolean validateArguments(FileDeclaration fileDeclaration, Location location)
 	{
 		CallableMethod methodDeclaration = getCallableDeclaration();
+		
+		if (methodDeclaration == null)
+		{
+			String s = getLocationInfo();
+			
+			getMethodDeclaration();
+		}
 		
 		ParameterList<Value> parameters = methodDeclaration.getParameterList();
 		ArgumentList         arguments  = getArgumentList();
@@ -707,7 +729,7 @@ public class MethodCall extends IIdentifier
 	}
 	
 	/**
-	 * Fill the given MethodCall with the data that is in the
+	 * Fill the given {@link MethodCall} with the data that is in the
 	 * specified node.
 	 * 
 	 * @param node The node to copy the data into.

@@ -19,7 +19,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.2.1 Apr 29, 2014 at 8:04:48 PM
- * @version	v0.2.18 Jul 23, 2014 at 10:43:40 PM
+ * @version	v0.2.19 Jul 26, 2014 at 12:30:24 AM
  */
 public class TreeGenerator implements Runnable
 {
@@ -48,8 +48,8 @@ public class TreeGenerator implements Runnable
 	
 	private static final Class<?>	SECOND_PASS_CLASSES[] = new Class<?>[]
 	{
-		ExternalMethodDeclaration.class, Destructor.class, Constructor.class,
-		MethodDeclaration.class, ExternalType.class, FieldDeclaration.class
+		AbstractMethodDeclaration.class, ExternalMethodDeclaration.class, Destructor.class,
+		Constructor.class, MethodDeclaration.class, ExternalType.class, FieldDeclaration.class
 	};
 	
 	/**
@@ -238,20 +238,18 @@ public class TreeGenerator implements Runnable
 		{
 			MethodDeclaration node = (MethodDeclaration)methods.getChild(i);
 			
-			if (!node.getLocationIn().getBounds().isValid() || node.isExternal())
+			if (node.getLocationIn().getBounds().isValid() && node.containsBody())
 			{
-				continue;
-			}
-			
-			int startingIndex = StringUtils.findNextNonWhitespaceIndex(source, node.getLocationIn().getEnd());
-			int endingIndex   = StringUtils.findEndingMatch(source, startingIndex, '{', '}');
-			
-			int contentStart  = StringUtils.findNextNonWhitespaceIndex(source, startingIndex + 1);
-			int contentEnd    = StringUtils.findNextNonWhitespaceIndex(source, endingIndex - 1, -1) + 1;
-			
-			if (contentStart < contentEnd)
-			{
-				traverseCode(node, contentStart, null, false);
+				int startingIndex = StringUtils.findNextNonWhitespaceIndex(source, node.getLocationIn().getEnd());
+				int endingIndex   = StringUtils.findEndingMatch(source, startingIndex, '{', '}');
+				
+				int contentStart  = StringUtils.findNextNonWhitespaceIndex(source, startingIndex + 1);
+				int contentEnd    = StringUtils.findNextNonWhitespaceIndex(source, endingIndex - 1, -1) + 1;
+				
+				if (contentStart < contentEnd)
+				{
+					traverseCode(node, contentStart, null, false);
+				}
 			}
 		}
 	}

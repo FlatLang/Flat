@@ -4,8 +4,8 @@
 
 nova_VTable_SVGComponentList nova_VTable_SVGComponentList_val =
 {
-	nova_Object_toString,
-	nova_Object_equals,
+	nova_2_Object_toString,
+	nova_2_Object_equals,
 };
 
 SVGComponentList* nova_SVGComponentList_SVGComponentList(ExceptionData* exceptionData)
@@ -44,7 +44,7 @@ void nova_SVGComponentList_generateOutput(SVGComponentList* this, ExceptionData*
 		SVGComponent* nova_2_component;
 		
 		nova_2_component = nova_1_current->nova_SVGComponentNode_component;
-		nova_2_component->vtable->nova_virtual_generateOutput((SVGComponent*)(nova_2_component), exceptionData, nova_0_file);
+		nova_2_component->vtable->nova_virtual_2_generateOutput(nova_2_component, exceptionData, nova_0_file);
 		nova_1_current = nova_1_current->nova_SVGComponentNode_next;
 	}
 }

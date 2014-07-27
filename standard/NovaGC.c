@@ -4,8 +4,8 @@
 
 nova_VTable_GC nova_VTable_GC_val =
 {
-	nova_Object_toString,
-	nova_Object_equals,
+	nova_2_Object_toString,
+	nova_2_Object_equals,
 };
 
 GC* nova_GC_GC(ExceptionData* exceptionData)
