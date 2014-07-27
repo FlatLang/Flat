@@ -71,7 +71,10 @@ void nova_static_FileStability_test(FileStability* this, ExceptionData* exceptio
 void nova_static_FileStability_createFile(FileStability* this, ExceptionData* exceptionData, StabilityTest* nova_0_program, File* nova_0_f)
 {
 	nova_static_Console_write((Console*)(0), exceptionData, nova_String_String(exceptionData, "Creating file... "));
-	nova_File_create((File*)(nova_0_f), exceptionData);
+	if (!nova_File_create((File*)(nova_0_f), exceptionData))
+	{
+		nova_StabilityTest_fail((StabilityTest*)(nova_0_program), exceptionData, nova_String_String(exceptionData, ""));
+	}
 	nova_static_Console_writeLine((Console*)(0), exceptionData, nova_String_String(exceptionData, "OK"));
 }
 
