@@ -1,0 +1,25 @@
+public class Float extends Number
+{
+	
+	public float value
+	
+	public Float(int value)
+	{
+		this.value = value
+	}
+	
+	public static int numDigits(float number)
+	{
+		return Double.numDigits(number)
+	}
+	
+	public static String toString(float value)
+	{
+		return Double.toString(value)
+	}
+	
+	public String toString()
+	{
+		return toString(value)
+	}
+}
