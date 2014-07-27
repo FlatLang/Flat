@@ -2,13 +2,15 @@ import "NativeThread.h"
 
 public class Thread
 {
-	external type FATHOM_THREAD_HANDLE
+	external type NOVA_THREAD_HANDLE
 	
-	external void lib_fathom_thread_sleep(long millis)
-	external void lib_fathom_thread_join(FATHOM_THREAD_HANDLE handle)
-	external FATHOM_THREAD_HANDLE* create_thread(Thread thread, void run())
+	external void lib_nova_thread_sleep(long millis)
+	external void lib_nova_thread_join(NOVA_THREAD_HANDLE handle)
+	external NOVA_THREAD_HANDLE* create_thread(Thread thread, void run())
 	
-	FATHOM_THREAD_HANDLE*	handle
+	external void nanosleep(long millis) as extSl
+	
+	NOVA_THREAD_HANDLE*	handle
 	
 	public void start()
 	{
@@ -17,12 +19,12 @@ public class Thread
 	
 	public void join()
 	{
-		lib_fathom_thread_join(handle)
+		lib_nova_thread_join(handle)
 	}
 	
 	public static void sleep(long millis)
 	{
-		lib_fathom_thread_sleep(millis)
+		lib_nova_thread_sleep(millis)
 	}
 	
 	public void run()

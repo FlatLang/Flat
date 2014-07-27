@@ -11,7 +11,7 @@ nova_VTable_Thread nova_VTable_Thread_val =
 };
 CCLASS_PRIVATE
 (
-	FATHOM_THREAD_HANDLE* nova_Thread_handle;
+	NOVA_THREAD_HANDLE* nova_Thread_handle;
 	
 )
 
@@ -21,7 +21,7 @@ Thread* nova_Thread_Thread(ExceptionData* exceptionData)
 {
 	CCLASS_NEW(Thread, this);
 	
-	this->prv->nova_Thread_handle = (FATHOM_THREAD_HANDLE*)0;
+	this->prv->nova_Thread_handle = (NOVA_THREAD_HANDLE*)0;
 	this->vtable = &nova_VTable_Thread_val;
 	{
 	}
@@ -51,12 +51,12 @@ void nova_Thread_start(Thread* this, ExceptionData* exceptionData)
 
 void nova_Thread_join(Thread* this, ExceptionData* exceptionData)
 {
-	lib_fathom_thread_join(*this->prv->nova_Thread_handle);
+	lib_nova_thread_join(*this->prv->nova_Thread_handle);
 }
 
 void nova_static_Thread_sleep(Thread* this, ExceptionData* exceptionData, long_long nova_0_millis)
 {
-	lib_fathom_thread_sleep(nova_0_millis);
+	lib_nova_thread_sleep(nova_0_millis);
 }
 
 void nova_Thread_run(Thread* this, ExceptionData* exceptionData)
