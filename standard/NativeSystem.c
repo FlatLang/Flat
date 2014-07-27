@@ -25,7 +25,7 @@ FILE* getPipe(char command[])
 		
 		char* const argv[] = { command, 0 };
 		
-		if (execv(command, argv) < 0)
+		if (execv(command, argv) < 0)f
 		{
 			printf("Failed\n");
 			fputs("execv error....", stderr);
