@@ -1,4 +1,5 @@
 import "StreamReader"
+import "NativeSystem.h"
 
 public class System
 {
@@ -16,7 +17,7 @@ public class System
 	 * "b" Open in binary mode.
 	 * "t" Open in text mode.
 	 */
-	external FILE* _popen(char command[], char flags[])
+	external FILE* getPipe(char command[], char flags[])
 	external bool fgets(char buffer[], int length, FILE* pipe)
 	external bool feof(FILE* pipe)
 	
@@ -36,9 +37,9 @@ public class System
 	{
 //		return system(command.toCharArray())
 		
-		FILE* pipe = _popen("dir", "rt")
+		getPipe("/bin/ls")
 		
-		if (pipe == NULL)
+		/*if (pipe == NULL)
 		{
 			exit(1, "Unable to open pipe")
 		}
@@ -49,6 +50,6 @@ public class System
 		
 		String s = reader.read()
 		
-		Console.writeLine("HOLY FRICKEN: " + s + " CRAP")
+		Console.writeLine("HOLY FRICKEN: " + s + " CRAP")*/
 	}
 }

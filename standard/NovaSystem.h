@@ -23,7 +23,7 @@ typedef struct System System;
 #include <NovaChar.h>
 #include <NovaDivideByZeroException.h>
 #include <NovaStreamReader.h>
-#include <NovaFile.h>
+#include <NativeSystem.h>
 
 typedef struct nova_VTable_System
 {
