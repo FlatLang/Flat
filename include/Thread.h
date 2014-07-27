@@ -2,6 +2,7 @@
 #define LIB_NOVA_THREAD
 
 #include "precompiled.h"
+#include <time.h>
 
 #ifdef _WIN32
 #	define NOVA_THREAD_FUNC DWORD WINAPI
@@ -34,6 +35,9 @@
 #endif
 
 void lib_nova_thread_create(NOVA_THREAD_HANDLE* handle, NOVA_THREAD_FUNC_TYPE func, NOVA_THREAD_FUNC_ARG arg);
+
+#if defined(__APPLE__) || defined(__linux__)
 void thread_nanosleep(long_long nanos);
+#endif
 
 #endif

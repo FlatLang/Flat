@@ -1,8 +1,6 @@
 #include "precompiled.h"
 #include "Thread.h"
 
-void thread_nanosleep2(struct timespec req);
-
 void lib_nova_thread_create(NOVA_THREAD_HANDLE* handle, NOVA_THREAD_FUNC_TYPE func, NOVA_THREAD_FUNC_ARG arg)
 {
 #if defined(_WIN32)
@@ -13,6 +11,10 @@ void lib_nova_thread_create(NOVA_THREAD_HANDLE* handle, NOVA_THREAD_FUNC_TYPE fu
 	new_thread(handle, NULL, func, arg);
 #endif
 }
+
+#if defined(__APPLE__) || defined(__linux__)
+
+void thread_nanosleep2(struct timespec req);
 
 void thread_nanosleep(long_long nanos)
 {
@@ -33,3 +35,5 @@ void thread_nanosleep2(struct timespec req)
 		thread_nanosleep2(rem);
 	}
 }
+
+#endif
