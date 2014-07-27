@@ -7,6 +7,7 @@ public class File
 	FILE* fp
 	
 	external FILE* fopen(char location[], char operation[])
+	external void perror(char name[])
 	external FILE* freopen(char location[], char operation[], FILE* fp)
 	external void fprintf(FILE* fp, char data[])
 	external void fputs(char str[], FILE* stream)
@@ -26,8 +27,7 @@ public class File
 	{
 		this.location = location
 		
-		fp = fopen(location.toCharArray(), "w")
-		reopen()
+		fp = fopen(location.toCharArray(), "r+")
 	}
 	
 	public File(FILE* fp)
@@ -65,9 +65,21 @@ public class File
 		{
 			fp = fopen(location.toCharArray(), "wb")
 			
-			close()
+			if (!exists())
+			{
+				perror("fopen")
+				
+				return false
+			}
 			
-			fp = fopen(location.toCharArray(), "r+")
+			reopen()
+			
+			if (!exists())
+			{
+				perror("fopen")
+				
+				return false
+			}
 			
 			return true
 		}

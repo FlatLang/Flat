@@ -23,6 +23,7 @@ File* nova_1_File_File(ExceptionData* exceptionData, String* nova_0_location)
 	this->vtable = &nova_VTable_File_val;
 	{
 		this->prv->nova_File_location = nova_0_location;
+<<<<<<< HEAD
 		this->prv->nova_File_fp = fopen(nova_String_toCharArray(nova_0_location, exceptionData), (char*)("w"));
 		nova_File_reopen(this, exceptionData);
 	}
@@ -39,6 +40,9 @@ File* nova_2_File_File(ExceptionData* exceptionData, FILE* nova_0_fp)
 	this->vtable = &nova_VTable_File_val;
 	{
 		this->prv->nova_File_fp = nova_0_fp;
+=======
+		this->prv->nova_File_fp = fopen(nova_String_toCharArray((String*)(nova_0_location), exceptionData), (char*)("r+"));
+>>>>>>> refs/remotes/origin/master
 	}
 	
 	return this;
@@ -86,11 +90,33 @@ char nova_File_create(File* this, ExceptionData* exceptionData)
 {
 	if (!nova_File_exists(this, exceptionData))
 	{
+<<<<<<< HEAD
 		this->prv->nova_File_fp = fopen(nova_String_toCharArray(this->prv->nova_File_location, exceptionData), (char*)("wb"));
+=======
+		this->prv->nova_File_fp = fopen(nova_String_toCharArray((String*)(this->prv->nova_File_location), exceptionData), (char*)("wb"));
+		if (!nova_File_exists(this, exceptionData))
+		{
+			nova_static_Console_writeLine((Console*)(0), exceptionData, nova_String_String(exceptionData, "FAIL"));
+			perror((char*)("fopen"));
+			nova_static_Console_writeLine((Console*)(0), exceptionData, nova_String_String(exceptionData, "FAIL"));
+		}
+>>>>>>> refs/remotes/origin/master
 		nova_File_close(this, exceptionData);
+<<<<<<< HEAD
 		this->prv->nova_File_fp = fopen(nova_String_toCharArray(this->prv->nova_File_location, exceptionData), (char*)("r+"));
+=======
+		this->prv->nova_File_fp = fopen(nova_String_toCharArray((String*)(this->prv->nova_File_location), exceptionData), (char*)("r+"));
+		if (!nova_File_exists(this, exceptionData))
+		{
+			nova_static_Console_writeLine((Console*)(0), exceptionData, nova_String_String(exceptionData, "FAIL"));
+			perror((char*)("fopen"));
+			nova_static_Console_writeLine((Console*)(0), exceptionData, nova_String_String(exceptionData, "FAIL"));
+			return 0;
+		}
+>>>>>>> refs/remotes/origin/master
 		return 1;
 	}
+	nova_static_Console_writeLine((Console*)(0), exceptionData, nova_String_String(exceptionData, "Failure"));
 	return 0;
 }
 

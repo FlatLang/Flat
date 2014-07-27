@@ -33,7 +33,10 @@ public class FileStability
 	{
 		Console.write("Creating file... ")
 		
-		f.create()
+		if (!f.create())
+		{
+			program.fail("")
+		}
 		
 		Console.writeLine("OK")
 	}
