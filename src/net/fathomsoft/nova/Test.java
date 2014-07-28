@@ -51,8 +51,35 @@ public class Test
 		return sin(d);
 	}
 	
+	public static void d(Object o, String s)
+	{
+		
+	}
+	
+	public static void d(String s, Object o)
+	{
+		System.out.println("String");
+	}
+	
+	public static void d(CharSequence s, Object o)
+	{
+		System.out.println("Charseq");
+	}
+	
+	public static void d(CharSequence s)
+	{
+		d(s, (Object)s);
+	}
+	
 	public static void main(String args[])
 	{
+		String s = "ADF";
+		
+		CharSequence c = (CharSequence)s;
+		
+		d(c);
+		
+		System.exit(0);
 //		String array[] = new String[9999999];
 		long start = System.currentTimeMillis();
 //		
