@@ -1,4 +1,5 @@
 import "Thread"
+import "NativeFile.h"
 
 public class File
 {
@@ -18,8 +19,8 @@ public class File
 	external char getc(FILE* fp)
 	external void rewind(FILE* fp)
 	external int remove(char name[])
-	external int _getmaxstdio()
-	external void _setmaxstdio(int max)
+	external int getMaxOpenFiles() as extGetMaxOpenFiles
+	external void setMaxOpenFiles(int max) as extSetMaxOpenFiles
 	
 	external char EOF
 	
@@ -185,7 +186,7 @@ public class File
 	
 	public static int getMaxOpenFiles()
 	{
-		return _getmaxstdio()
+		return extGetMaxOpenFiles()
 	}
 	
 	public static void setMaxOpenFiles(int max)
@@ -199,7 +200,7 @@ public class File
 		}
 		else
 		{
-			_setmaxstdio(max)
+			extSetMaxOpenFiles(max)
 		}
 	}
 }

@@ -23,6 +23,7 @@ typedef struct File File;
 #include <NovaChar.h>
 #include <NovaDivideByZeroException.h>
 #include <NovaThread.h>
+#include <NativeFile.h>
 
 typedef struct nova_VTable_File
 {

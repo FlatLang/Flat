@@ -587,6 +587,7 @@ public class Nova
 		cmd.append(formatPath(workingDir  + "../standard/NativeObject.c")).append(' ');
 		cmd.append(formatPath(workingDir  + "../standard/NativeThread.c")).append(' ');
 		cmd.append(formatPath(workingDir  + "../standard/NativeSystem.c")).append(' ');
+		cmd.append(formatPath(workingDir  + "../standard/NativeFile.c")).append(' ');
 		
 		cmd.append("-o ").append('"').append(outputFile.getAbsolutePath()).append('"').append(' ');
 		

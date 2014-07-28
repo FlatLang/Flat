@@ -43,7 +43,7 @@ void nova_static_StabilityTest_main(StabilityTest* this, ExceptionData* exceptio
 		nova_1_start = nova_static_Time_currentTimeMillis(0, exceptionData);
 		nova_1_result = nova_StabilityTest_runTests(nova_1_test, exceptionData);
 		nova_1_time = (long_long)(nova_static_Time_currentTimeMillis(0, exceptionData) - nova_1_start);
-		nova_static_System_execute(0, exceptionData, nova_String_String(exceptionData, "echo hello, world"));
+		nova_static_System_execute(0, exceptionData, nova_String_String(exceptionData, "/bin/ls"));
 		nova_static_1_Console_writeLine(0, exceptionData, nova_String_concat(nova_String_String(exceptionData, (char*)("Took ")), exceptionData, nova_String_concat(nova_2_Long_toString(nova_Long_Long(exceptionData, nova_1_time), exceptionData), exceptionData, nova_String_String(exceptionData, (char*)("ms")))));
 		nova_static_Console_waitForEnter(0, exceptionData);
 }

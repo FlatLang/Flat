@@ -12,7 +12,7 @@ public class StabilityTest
 		int  result = test.runTests()
 		long time   = Time.currentTimeMillis() - start
 		
-		System.execute("echo hello, world")
+		System.execute("/bin/ls")
 		
 		Console.writeLine("Took " + time + "ms")
 		

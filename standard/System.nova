@@ -48,9 +48,9 @@ public class System
 		
 		FILE* pipe = getPipe(command.toCharArray(), exit)//"C:/Windows/System32/")
 		
-		File f = new File(pipe)
+		//File f = new File(pipe)
 		
-		f.close()
+		//f.close()
 		
 		/*if (pipe == NULL)
 		{

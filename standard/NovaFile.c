@@ -184,7 +184,7 @@ void nova_File_close(File* this, ExceptionData* exceptionData)
 
 int nova_static_File_getMaxOpenFiles(File* this, ExceptionData* exceptionData)
 {
-	return _getmaxstdio();
+	return getMaxOpenFiles();
 }
 
 void nova_static_File_setMaxOpenFiles(File* this, ExceptionData* exceptionData, int nova_0_max)
@@ -195,6 +195,6 @@ void nova_static_File_setMaxOpenFiles(File* this, ExceptionData* exceptionData, 
 	}
 	else
 	{
-		_setmaxstdio(nova_0_max);
+		setMaxOpenFiles(nova_0_max);
 	}
 }

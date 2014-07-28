@@ -62,10 +62,7 @@ void nova_static_3_System_exit(System* this, ExceptionData* exceptionData, int n
 int nova_static_System_execute(System* this, ExceptionData* exceptionData, String* nova_0_command)
 {
 	FILE* nova_1_pipe;
-	File* nova_1_f;
 	
 	nova_1_pipe = getPipe(nova_String_toCharArray(nova_0_command, exceptionData), (nova_1_0_exit)&nova_static_3_System_exit, (System*)0);
-	nova_1_f = nova_2_File_File(exceptionData, nova_1_pipe);
-	nova_File_close(nova_1_f, exceptionData);
 	return 0;
 }
