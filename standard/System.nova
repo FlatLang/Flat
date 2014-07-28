@@ -1,4 +1,6 @@
 import "StreamReader"
+import "File"
+import "Time"
 import "NativeSystem.h"
 
 public class System
@@ -9,15 +11,7 @@ public class System
 	
 	external void exit(int code) as externalExit
 	external int  system(char command[])
-	
-	/**
-	 * Flags:
-	 * "r" The calling process can read the spawned command's standard output using the returned stream.
-	 * "w" The calling process can write to the spawned command's standard input using the returned stream.
-	 * "b" Open in binary mode.
-	 * "t" Open in text mode.
-	 */
-	external FILE* getPipe(char command[], char flags[])
+	external FILE* getPipe(char command[], void exit(int, String, bool))
 	external bool fgets(char buffer[], int length, FILE* pipe)
 	external bool feof(FILE* pipe)
 	
@@ -28,6 +22,21 @@ public class System
 	
 	public static void exit(int code, String message)
 	{
+		exit(code, message, false)
+	}
+	
+	public static void exit(int code, String message, bool log)
+	{
+		if (log)
+		{
+			File f = new File("Log" + Time.currentTimeMillis() + ".txt")
+			
+			if (f.create())
+			{
+				f.writeLine(message)
+			}
+		}
+		
 		Console.writeLine(message)
 		
 		exit(code)
@@ -37,7 +46,11 @@ public class System
 	{
 //		return system(command.toCharArray())
 		
-		getPipe("/bin/ls")
+		FILE* pipe = getPipe(command.toCharArray(), exit)//"C:/Windows/System32/")
+		
+		File f = new File(pipe)
+		
+		f.close()
 		
 		/*if (pipe == NULL)
 		{
@@ -51,5 +64,7 @@ public class System
 		String s = reader.read()
 		
 		Console.writeLine("HOLY FRICKEN: " + s + " CRAP")*/
+		
+		return 0
 	}
 }
