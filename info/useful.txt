@@ -18,4 +18,8 @@ Code: 7806 - 53% - 108% - 107%
 Comments: 6861 - 47% - 120% - 124%
 Total: 14704 - 113% - 114%
 
-gcc -I include -I libatomic_ops/src -O2 -DGC_THREADS -DTHREAD_LOCAL_ALLOC ???-DPARALLEL_MARK??? -shared -o gc.dll extra/gc.c
+-DPARALLEL_MARK
+gcc -I include -I libatomic_ops/src -O2 -DGC_THREADS -DTHREAD_LOCAL_ALLOC -shared -o gc.dll extra/gc.c
+
+gcc -I. -Igc -L. -lgc -DUSE_GC -O2 -shared -o libNova.dll Nova.c && cp libNova.dll ../lib/libNova.dll && cp libNova.dll ../example/bin/libNova.dll
+gcc -I. -Igc -L. -lgc -DUSE_GC -O2 -shared -o libThread.dll Thread.c && cp libThread.dll ../lib/libThread.dll && cp libThread.dll ../example/bin/libThread.dll

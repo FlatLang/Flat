@@ -17,6 +17,6 @@ struct DataStruct
 };
 
 NOVA_THREAD_FUNC lib_nova_thread_run(NOVA_THREAD_FUNC_ARG arg);
-NOVA_THREAD_HANDLE* create_thread(Thread* this, run_method run_method, void* ref);
+NOVA_THREAD_HANDLE* create_thread(Thread* this, run_method method, void* ref);
 
 #endif

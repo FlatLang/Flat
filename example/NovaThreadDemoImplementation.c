@@ -8,7 +8,7 @@ nova_VTable_ThreadDemoImplementation nova_VTable_ThreadDemoImplementation_val =
 };
 CCLASS_PRIVATE
 (
-	FATHOM_THREAD_HANDLE* nova_Thread_handle;
+	NOVA_THREAD_HANDLE* nova_Thread_handle;
 	
 	long_long nova_ThreadDemoImplementation_millis;
 	String* nova_ThreadDemoImplementation_word;

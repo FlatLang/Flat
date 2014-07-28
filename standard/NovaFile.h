@@ -52,5 +52,7 @@ void nova_File_writeLine(File* this, ExceptionData* exceptionData, String* nova_
 void nova_File_write(File* this, ExceptionData* exceptionData, String* nova_0_data);
 void nova_File_flush(File* this, ExceptionData* exceptionData);
 void nova_File_close(File* this, ExceptionData* exceptionData);
+int nova_static_File_getMaxOpenFiles(File* this, ExceptionData* exceptionData);
+void nova_static_File_setMaxOpenFiles(File* this, ExceptionData* exceptionData, int nova_0_max);
 
 #endif

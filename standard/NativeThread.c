@@ -14,14 +14,14 @@ NOVA_THREAD_FUNC lib_nova_thread_run(NOVA_THREAD_FUNC_ARG arg)
 	return 0;
 }
 
-NOVA_THREAD_HANDLE* create_thread(Thread* this, run_method run_method, void* ref)
+NOVA_THREAD_HANDLE* create_thread(Thread* this, run_method method, void* ref)
 {
 	NOVA_THREAD_HANDLE* handle;
 
 	DataStruct* data = (DataStruct*)malloc(sizeof(DataStruct));
 
 	data->instance   = ref;
-	data->run_method = run_method;
+	data->run_method = method;
 
 	handle = (NOVA_THREAD_HANDLE*)malloc(sizeof(NOVA_THREAD_HANDLE));
 	

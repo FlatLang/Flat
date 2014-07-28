@@ -4,8 +4,17 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include <unistd.h>
+#include <NovaString.h>
 
-FILE* getPipe(char command[]);
+#if defined(__APPLE__) || defined(__linux__)
+#include <unistd.h>
+#elif defined(_WIN32)
+#include <process.h>
+#include <io.h>
+#endif
+
+typedef void (*error_func)(void*, ExceptionData*, int, String*, char);
+
+FILE* getPipe(char command[], error_func func, void* ref);
 
 #endif

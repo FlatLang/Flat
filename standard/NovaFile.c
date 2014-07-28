@@ -181,3 +181,20 @@ void nova_File_close(File* this, ExceptionData* exceptionData)
 		fclose(this->prv->nova_File_fp);
 	}
 }
+
+int nova_static_File_getMaxOpenFiles(File* this, ExceptionData* exceptionData)
+{
+	return _getmaxstdio();
+}
+
+void nova_static_File_setMaxOpenFiles(File* this, ExceptionData* exceptionData, int nova_0_max)
+{
+	if (nova_0_max > 2048 || nova_0_max < 20)
+	{
+		nova_static_1_Console_writeLine(0, exceptionData, nova_String_concat(nova_String_String(exceptionData, (char*)("Invalid max number of open files: ")), exceptionData, nova_String_concat(nova_2_Integer_toString(nova_Integer_Integer(exceptionData, nova_0_max), exceptionData), exceptionData, nova_String_String(exceptionData, (char*)("\nValid values include 20-2048")))));
+	}
+	else
+	{
+		_setmaxstdio(nova_0_max);
+	}
+}

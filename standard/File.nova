@@ -18,6 +18,8 @@ public class File
 	external char getc(FILE* fp)
 	external void rewind(FILE* fp)
 	external int remove(char name[])
+	external int _getmaxstdio()
+	external void _setmaxstdio(int max)
 	
 	external char EOF
 	
@@ -178,6 +180,26 @@ public class File
 		if (exists())
 		{
 			fclose(fp)
+		}
+	}
+	
+	public static int getMaxOpenFiles()
+	{
+		return _getmaxstdio()
+	}
+	
+	public static void setMaxOpenFiles(int max)
+	{
+		if (max > 2048 || max < 20)
+		{
+//			Console.error.writeLine("")
+			Console.writeLine("Invalid max number of open files: " + max + "\nValid values include 20-2048")
+			
+//			return
+		}
+		else
+		{
+			_setmaxstdio(max)
 		}
 	}
 }

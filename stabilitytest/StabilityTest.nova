@@ -1,4 +1,6 @@
 import "Time"
+import "Thread"
+import "File"
 
 public class StabilityTest
 {
@@ -10,7 +12,7 @@ public class StabilityTest
 		int  result = test.runTests()
 		long time   = Time.currentTimeMillis() - start
 		
-		System.execute("gcc")
+		System.execute("echo hello, world")
 		
 		Console.writeLine("Took " + time + "ms")
 		

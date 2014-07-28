@@ -1,14 +1,49 @@
 #include "NativeSystem.h"
 
-FILE* getPipe(char command[])
+void error(int code, char message[], error_func func, void* ref)
+{
+	String* s = nova_String_String(0, message);
+
+	func(ref, 0, code, s, 1);
+}
+
+#ifdef _WIN32
+FILE* getPipe(char command[], error_func func, void* ref)
+{
+	FILE* pPipe;
+	
+	char buf[256];
+	
+	/**
+	 * Flags:
+	 * "r" The calling process can read the spawned command's standard output using the returned stream.
+	 * "w" The calling process can write to the spawned command's standard input using the returned stream.
+	 * "b" Open in binary mode.
+	 * "t" Open in text mode.
+	 */
+	pPipe = _popen(command, "rt");
+
+	if (pPipe == 0)
+	{
+		error(1, "_popen error...", func, ref);
+	}
+
+	while (fgets(buf, 256, pPipe))
+	{
+		printf(buf);
+	}
+
+	return pPipe;
+}
+#else
+FILE* getPipe(char command[], error_func func, void* ref)
 {
 	pid_t pid = NULL;
 	int pipefd[2];
 	int status;
-	
-	FILE* output;
+
 	char buf[256];
-	
+
 	pipe(pipefd);
 	pid = fork();
 	
@@ -25,26 +60,21 @@ FILE* getPipe(char command[])
 		
 		char* const argv[] = { command, 0 };
 		
-		if (execv(command, argv) < 0)f
+		if (execv(command, argv) < 0)
 		{
-			printf("Failed\n");
-			fputs("execv error....", stderr);
-			
-			exit(1);
+			error(1, "execv error.", func, ref);
 		}
-		
-		printf("Success!\n");
 		
 		exit(0);
 	}
 	else if (pid < 0)
 	{
-		fputs("Couldn't create process...", stderr);
+		error(1, "Could not create process.", func, ref);
 	}
 	
 	if (waitpid(pid, &status, 0) != pid)
 	{
-		fputs("Couldn't wait for process...", stderr);
+		error(1, "Could not wait for process.", func, ref);
 	}
 	
 	close(pipefd[1]);
@@ -54,3 +84,4 @@ FILE* getPipe(char command[])
 		printf("%s\n", buf);
 	}
 }
+#endif
