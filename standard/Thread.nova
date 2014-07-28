@@ -1,4 +1,5 @@
 import "NativeThread.h"
+import "GC"
 
 public class Thread
 {
@@ -7,8 +8,6 @@ public class Thread
 	external void lib_nova_thread_sleep(long millis)
 	external void lib_nova_thread_join(NOVA_THREAD_HANDLE handle)
 	external NOVA_THREAD_HANDLE* create_thread(Thread thread, void run())
-	
-	external void nanosleep(long millis) as extSl
 	
 	NOVA_THREAD_HANDLE*	handle
 	
