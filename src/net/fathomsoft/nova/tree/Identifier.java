@@ -511,7 +511,7 @@ public abstract class Identifier extends Value
 		{
 			CallableMethod declaration = ((MethodCall)callingMethod).getCallableDeclaration();
 			
-			if (declaration.isStatic())
+			if (declaration.isStatic() || declaration instanceof Constructor)
 			{
 				return declaration.getParameterList().getObjectReference().generateCNullOutput(builder);
 			}
