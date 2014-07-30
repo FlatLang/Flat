@@ -27,7 +27,7 @@ typedef struct Console Console;
 
 typedef struct nova_VTable_Console
 {
-	String* (*nova_virtual_4_toString)(Object*, ExceptionData*);
+	String* (*nova_virtual_2_toString)(Object*, ExceptionData*);
 	char (*nova_virtual_2_equals)(Object*, ExceptionData*, Object*);
 } nova_VTable_Console;
 

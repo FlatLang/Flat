@@ -6,7 +6,7 @@ nova_VTable_Number nova_VTable_Number_val =
 {
 	nova_static_2_Number_numDigits,
 	nova_static_3_Number_toString,
-	nova_4_Object_toString,
+	nova_2_Object_toString,
 	nova_2_Object_equals,
 };
 

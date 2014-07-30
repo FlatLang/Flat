@@ -5,7 +5,7 @@
 nova_VTable_String nova_VTable_String_val =
 {
 	nova_1_String_equals,
-	nova_4_Object_toString,
+	nova_2_Object_toString,
 	nova_2_Object_equals,
 };
 CCLASS_PRIVATE

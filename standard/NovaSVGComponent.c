@@ -5,7 +5,7 @@
 nova_VTable_SVGComponent nova_VTable_SVGComponent_val =
 {
 	nova_2_SVGComponent_generateOutput,
-	nova_4_Object_toString,
+	nova_2_Object_toString,
 	nova_2_Object_equals,
 };
 

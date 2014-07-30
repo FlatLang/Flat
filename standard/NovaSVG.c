@@ -4,7 +4,7 @@
 
 nova_VTable_SVG nova_VTable_SVG_val =
 {
-	nova_4_Object_toString,
+	nova_2_Object_toString,
 	nova_2_Object_equals,
 };
 

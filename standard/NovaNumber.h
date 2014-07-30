@@ -27,7 +27,7 @@ typedef struct nova_VTable_Number
 {
 	int (*nova_virtual_2_numDigits)(Number*, ExceptionData*, int);
 	String* (*nova_virtual_3_toString)(Number*, ExceptionData*, int);
-	String* (*nova_virtual_4_toString)(Object*, ExceptionData*);
+	String* (*nova_virtual_2_toString)(Object*, ExceptionData*);
 	char (*nova_virtual_2_equals)(Object*, ExceptionData*, Object*);
 } nova_VTable_Number;
 

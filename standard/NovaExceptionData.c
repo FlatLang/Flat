@@ -4,7 +4,7 @@
 
 nova_VTable_ExceptionData nova_VTable_ExceptionData_val =
 {
-	nova_4_Object_toString,
+	nova_2_Object_toString,
 	nova_2_Object_equals,
 };
 CCLASS_PRIVATE

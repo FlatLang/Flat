@@ -4,7 +4,7 @@
 
 nova_VTable_ListNode nova_VTable_ListNode_val =
 {
-	nova_4_Object_toString,
+	nova_2_Object_toString,
 	nova_2_Object_equals,
 };
 CCLASS_PRIVATE

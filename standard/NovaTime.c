@@ -4,7 +4,7 @@
 
 nova_VTable_Time nova_VTable_Time_val =
 {
-	nova_4_Object_toString,
+	nova_2_Object_toString,
 	nova_2_Object_equals,
 };
 
