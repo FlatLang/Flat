@@ -9,7 +9,7 @@ import java.util.regex.Matcher;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Mar 13, 2014 at 9:38:42 PM
- * @version	v0.2.19 Jul 26, 2014 at 12:30:24 AM
+ * @version	v0.2.20 Jul 29, 2014 at 7:26:50 PM
  */
 public class StringUtils
 {
@@ -113,6 +113,106 @@ public class StringUtils
 		return str.subSequence(start, index).toString();
 	}
 	
+	public static Bounds findGroupedCharsBounds(String source, char types[][], int start)
+	{
+		return findGroupedCharsBounds(source, types, start, 1, false);
+	}
+	
+	public static Bounds findGroupedCharsBounds(String source, char types[][], int start, int direction, boolean opposite)
+	{
+		int index = start;
+		
+		while (index >= 0 && index < source.length())
+		{
+			char c = source.charAt(index);
+			
+			if (containsChar(types, c) == opposite)
+			{
+				index -= direction;
+				
+				break;
+			}
+			
+			index += direction;
+		}
+		
+		if (index != start && index > start == direction > 0)
+		{
+			if (index < 0)
+			{
+				index = 0;
+			}
+			
+			if (direction > 0)
+			{
+				return new Bounds(start, index);
+			}
+			else
+			{
+				return new Bounds(index, start + 1);
+			}
+		}
+		
+		return Bounds.EMPTY;
+	}
+	
+	public static int findWordIndex(String source, String word)
+	{
+		return findWordIndex(source, word, 0);
+	}
+	
+	public static int findWordIndex(String source, String word, int index)
+	{
+		return findWordIndex(source, word, index, 1);
+	}
+	
+	public static int findLastWordIndex(String source, String word)
+	{
+		return findWordIndex(source, word, source.length() - 1, -1);
+	}
+	
+	public static int findWordIndex(String source, String word, int index, int direction)
+	{
+		String current = findNextWord(source, index, direction);
+		
+		while (current != null)
+		{
+			int i = findIndex(source, current, index, direction);
+			
+			if (current.equals(word))
+			{
+				return i;
+			}
+			
+			index = i;
+			
+			if (direction > 0)
+			{
+				index += current.length() + 1;
+			}
+			else
+			{
+				index -= 1;
+			}
+			
+			current = findNextWord(source, index, direction);
+		}
+		
+		return -1;
+	}
+	
+	private static int findIndex(String source, String word, int index, int direction)
+	{
+		if (direction > 0)
+		{
+			return source.indexOf(word, index);
+		}
+		else
+		{
+			return source.lastIndexOf(word, index);
+		}
+	}
+	
 	/**
 	 * Find the next word in the given source starting at the beginning
 	 * of the String. If there are no words available, an empty String is
@@ -181,12 +281,22 @@ public class StringUtils
 	 */
 	public static String findNextWord(CharSequence source, int start, int direction)
 	{
+		if (start < 0 || start >= source.length())
+		{
+			return null;
+		}
+		
 		start = StringUtils.findNextLetterIndex(source, start, direction, false, true);
 		
 		int index = StringUtils.findNextLetterIndex(source, start + direction, direction, true, true);
 		
 		if (direction < 0)
 		{
+			if (index == 0)
+			{
+				index--;
+			}
+			
 			return source.subSequence(index + 1, start + 1).toString();
 		}
 		
@@ -725,7 +835,22 @@ public class StringUtils
 	 */
 	public static int findNextWhitespaceIndex(CharSequence str, int index)
 	{
-		return findNextCharacter(str, WHITESPACE, index, 1);
+		return findNextWhitespaceIndex(str, index, 1);
+	}
+	
+	/**
+	 * Get the next possible index in the String that is a whitespace
+	 * character.
+	 * 
+	 * @param str The String to search through.
+	 * @param index The index to start the search at.
+	 * @param direction The direction in which to increment the index.
+	 * @return The next possible index in the String that is
+	 * 		whitespace.
+	 */
+	public static int findNextWhitespaceIndex(CharSequence str, int index, int direction)
+	{
+		return findNextCharacter(str, WHITESPACE, index, direction);
 	}
 	
 	/**
@@ -922,6 +1047,26 @@ public class StringUtils
 	public static boolean containsChar(char array[], char c)
 	{
 		return searchChar(array, c) >= 0;
+	}
+	
+	/**
+	 * Search for the given char 'c' in the given arrays.
+	 * 
+	 * @param arrays The arrays to search for 'c' in.
+	 * @param c The char to search for.
+	 * @return Whether or not the arrays contains the 'c' char.
+	 */
+	public static boolean containsChar(char arrays[][], char c)
+	{
+		for (char array[] : arrays)
+		{
+			if (containsChar(array, c))
+			{
+				return true;
+			}
+		}
+		
+		return false;
 	}
 	
 	/**
