@@ -14,7 +14,7 @@
 		buffer buf;\
 		int exception_code;\
 		\
-		ExceptionData* newData = nova_ExceptionData_ExceptionData(exceptionData, &buf);\
+		ExceptionData* newData = nova_ExceptionData_ExceptionData(0, exceptionData, &buf);\
 		\
 		if (exceptionData != 0)\
 		{\
