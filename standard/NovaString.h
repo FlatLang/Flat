@@ -26,7 +26,7 @@ typedef struct String String;
 typedef struct nova_VTable_String
 {
 	char (*nova_virtual_1_equals)(String*, ExceptionData*, String*);
-	String* (*nova_virtual_2_toString)(Object*, ExceptionData*);
+	String* (*nova_virtual_4_toString)(Object*, ExceptionData*);
 	char (*nova_virtual_2_equals)(Object*, ExceptionData*, Object*);
 } nova_VTable_String;
 
@@ -39,7 +39,7 @@ CCLASS_CLASS
 	struct Private* prv;
 )
 
-String* nova_String_String(ExceptionData* exceptionData, char* nova_0_data);
+String* nova_String_String(String* this, ExceptionData* exceptionData, char* nova_0_data);
 void nova_del_String(String** this, ExceptionData* exceptionData);
 char* nova_String_toCharArray(String* this, ExceptionData* exceptionData);
 String* nova_String_concat(String* this, ExceptionData* exceptionData, String* nova_0_str);

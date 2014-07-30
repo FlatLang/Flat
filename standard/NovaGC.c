@@ -4,11 +4,11 @@
 
 nova_VTable_GC nova_VTable_GC_val =
 {
-	nova_2_Object_toString,
+	nova_4_Object_toString,
 	nova_2_Object_equals,
 };
 
-GC* nova_GC_GC(ExceptionData* exceptionData)
+GC* nova_GC_GC(GC* this, ExceptionData* exceptionData)
 {
 	CCLASS_NEW(GC, this,);
 	

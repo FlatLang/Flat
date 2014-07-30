@@ -22,7 +22,24 @@ typedef struct CharArray CharArray;
 #include <NovaDouble.h>
 #include <NovaChar.h>
 #include <NovaDivideByZeroException.h>
+#include <NovaArrayList.h>
+#include <NovaTime.h>
+#include <NovaInputStream.h>
+#include <NovaOutputStream.h>
+#include <NovaStreamReader.h>
+#include <NovaList.h>
+#include <NovaListNode.h>
+#include <NovaThread.h>
+#include <NovaUncaughtExceptionHandler.h>
 #include <NovaArray.h>
+#include <NovaBool.h>
+#include <NovaFile.h>
+#include <NovaSVG.h>
+#include <NovaSVGComponent.h>
+#include <NovaSVGComponentList.h>
+#include <NovaSVGComponentNode.h>
+#include <NovaSVGMainComponent.h>
+#include <NovaSVGCircle.h>
 
 
 CCLASS_CLASS

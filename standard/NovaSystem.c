@@ -5,11 +5,11 @@ typedef void (*nova_1_0_exit)(void*, ExceptionData*, int, String*, char);
 
 nova_VTable_System nova_VTable_System_val =
 {
-	nova_2_Object_toString,
+	nova_4_Object_toString,
 	nova_2_Object_equals,
 };
 
-System* nova_System_System(ExceptionData* exceptionData)
+System* nova_System_System(System* this, ExceptionData* exceptionData)
 {
 	CCLASS_NEW(System, this,);
 	
@@ -49,7 +49,7 @@ void nova_static_3_System_exit(System* this, ExceptionData* exceptionData, int n
 	{
 		File* nova_2_f;
 		
-		nova_2_f = nova_1_File_File(exceptionData, nova_String_concat(nova_String_String(exceptionData, (char*)("Log")), exceptionData, nova_String_concat(nova_2_Long_toString(nova_Long_Long(exceptionData, nova_static_Time_currentTimeMillis(0, exceptionData)), exceptionData), exceptionData, nova_String_String(exceptionData, (char*)(".txt")))));
+		nova_2_f = nova_1_File_File(0, exceptionData, nova_String_concat(nova_String_String(0, exceptionData, (char*)("Log")), exceptionData, nova_String_concat(nova_2_Long_toString(nova_Long_Long(0, exceptionData, nova_static_Time_currentTimeMillis(0, exceptionData)), exceptionData), exceptionData, nova_String_String(0, exceptionData, (char*)(".txt")))));
 		if (nova_File_create(nova_2_f, exceptionData))
 		{
 			nova_File_writeLine(nova_2_f, exceptionData, nova_0_message);

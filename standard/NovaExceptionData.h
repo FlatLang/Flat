@@ -26,7 +26,7 @@ typedef struct ExceptionData ExceptionData;
 
 typedef struct nova_VTable_ExceptionData
 {
-	String* (*nova_virtual_2_toString)(Object*, ExceptionData*);
+	String* (*nova_virtual_4_toString)(Object*, ExceptionData*);
 	char (*nova_virtual_2_equals)(Object*, ExceptionData*, Object*);
 } nova_VTable_ExceptionData;
 
@@ -39,7 +39,7 @@ CCLASS_CLASS
 	struct Private* prv;
 )
 
-ExceptionData* nova_ExceptionData_ExceptionData(ExceptionData* exceptionData, buffer* nova_0_buf);
+ExceptionData* nova_ExceptionData_ExceptionData(ExceptionData* this, ExceptionData* exceptionData, buffer* nova_0_buf);
 void nova_del_ExceptionData(ExceptionData** this, ExceptionData* exceptionData);
 void nova_ExceptionData_addCode(ExceptionData* this, ExceptionData* exceptionData, int nova_0_code);
 buffer* nova_ExceptionData_getBuffer(ExceptionData* this, ExceptionData* exceptionData);

@@ -25,7 +25,7 @@ typedef struct Bool Bool;
 
 typedef struct nova_VTable_Bool
 {
-	String* (*nova_virtual_2_toString)(Object*, ExceptionData*);
+	String* (*nova_virtual_4_toString)(Object*, ExceptionData*);
 	char (*nova_virtual_2_equals)(Object*, ExceptionData*, Object*);
 } nova_VTable_Bool;
 
@@ -36,7 +36,7 @@ CCLASS_CLASS
 	nova_VTable_Bool* vtable;
 )
 
-Bool* nova_Bool_Bool(ExceptionData* exceptionData);
+Bool* nova_Bool_Bool(Bool* this, ExceptionData* exceptionData);
 void nova_del_Bool(Bool** this, ExceptionData* exceptionData);
 
 #endif

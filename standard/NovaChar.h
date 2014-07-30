@@ -39,7 +39,7 @@ CCLASS_CLASS
 	nova_VTable_Char* vtable;
 )
 
-Char* nova_Char_Char(ExceptionData* exceptionData, char nova_0_value);
+Char* nova_Char_Char(Char* this, ExceptionData* exceptionData, char nova_0_value);
 void nova_del_Char(Char** this, ExceptionData* exceptionData);
 String* nova_1_Char_toString(Char* this, ExceptionData* exceptionData, char nova_0_c);
 String* nova_2_Char_toString(Char* this, ExceptionData* exceptionData);

@@ -28,7 +28,7 @@ typedef struct SVG SVG;
 
 typedef struct nova_VTable_SVG
 {
-	String* (*nova_virtual_2_toString)(Object*, ExceptionData*);
+	String* (*nova_virtual_4_toString)(Object*, ExceptionData*);
 	char (*nova_virtual_2_equals)(Object*, ExceptionData*, Object*);
 } nova_VTable_SVG;
 
@@ -40,7 +40,7 @@ CCLASS_CLASS
 	nova_VTable_SVG* vtable;
 )
 
-SVG* nova_SVG_SVG(ExceptionData* exceptionData);
+SVG* nova_SVG_SVG(SVG* this, ExceptionData* exceptionData);
 void nova_del_SVG(SVG** this, ExceptionData* exceptionData);
 void nova_SVG_generateOutput(SVG* this, ExceptionData* exceptionData, File* nova_0_file);
 void nova_SVG_generateHTMLOutput(SVG* this, ExceptionData* exceptionData, File* nova_0_file);

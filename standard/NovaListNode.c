@@ -4,7 +4,7 @@
 
 nova_VTable_ListNode nova_VTable_ListNode_val =
 {
-	nova_2_Object_toString,
+	nova_4_Object_toString,
 	nova_2_Object_equals,
 };
 CCLASS_PRIVATE
@@ -14,7 +14,7 @@ CCLASS_PRIVATE
 	
 )
 
-ListNode* nova_ListNode_ListNode(ExceptionData* exceptionData, Object* nova_0_data)
+ListNode* nova_ListNode_ListNode(ListNode* this, ExceptionData* exceptionData, Object* nova_0_data)
 {
 	CCLASS_NEW(ListNode, this);
 	

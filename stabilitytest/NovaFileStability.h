@@ -39,7 +39,7 @@ CCLASS_CLASS
 	nova_VTable_FileStability* vtable;
 )
 
-FileStability* nova_FileStability_FileStability(ExceptionData* exceptionData);
+FileStability* nova_FileStability_FileStability(FileStability* this, ExceptionData* exceptionData);
 void nova_del_FileStability(FileStability** this, ExceptionData* exceptionData);
 void nova_static_FileStability_test(FileStability* this, ExceptionData* exceptionData, StabilityTest* nova_0_program);
 

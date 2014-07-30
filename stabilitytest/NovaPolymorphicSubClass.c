@@ -7,7 +7,7 @@ nova_VTable_PolymorphicSubClass nova_VTable_PolymorphicSubClass_val =
 	nova_1_PolymorphicSubClass_toString,
 };
 
-PolymorphicSubClass* nova_PolymorphicSubClass_PolymorphicSubClass(ExceptionData* exceptionData)
+PolymorphicSubClass* nova_PolymorphicSubClass_PolymorphicSubClass(PolymorphicSubClass* this, ExceptionData* exceptionData)
 {
 	CCLASS_NEW(PolymorphicSubClass, this,);
 	
@@ -33,5 +33,5 @@ void nova_del_PolymorphicSubClass(PolymorphicSubClass** this, ExceptionData* exc
 
 String* nova_1_PolymorphicSubClass_toString(PolymorphicSubClass* this, ExceptionData* exceptionData)
 {
-	return nova_String_String(exceptionData, "sub class");
+	return nova_String_String(0, exceptionData, (char*)("sub class"));
 }

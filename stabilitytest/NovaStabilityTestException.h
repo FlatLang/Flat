@@ -25,7 +25,7 @@ typedef struct StabilityTestException StabilityTestException;
 
 
 
-StabilityTestException* nova_StabilityTestException_StabilityTestException(ExceptionData* exceptionData);
+StabilityTestException* nova_StabilityTestException_StabilityTestException(StabilityTestException* this, ExceptionData* exceptionData);
 void nova_del_StabilityTestException(StabilityTestException** this, ExceptionData* exceptionData);
 
 #endif

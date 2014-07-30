@@ -4,13 +4,13 @@
 
 nova_VTable_Console nova_VTable_Console_val =
 {
-	nova_2_Object_toString,
+	nova_4_Object_toString,
 	nova_2_Object_equals,
 };
 
 void nova_static_Console_flush(Console* this, ExceptionData* exceptionData);
 
-Console* nova_Console_Console(ExceptionData* exceptionData)
+Console* nova_Console_Console(Console* this, ExceptionData* exceptionData)
 {
 	CCLASS_NEW(Console, this,);
 	
@@ -36,12 +36,12 @@ void nova_del_Console(Console** this, ExceptionData* exceptionData)
 
 void nova_static_1_Console_writeLine(Console* this, ExceptionData* exceptionData, String* nova_0_text)
 {
-	nova_static_1_Console_write((Console*)0, exceptionData, nova_String_concat(nova_0_text, exceptionData, nova_String_String(exceptionData, (char*)("\n"))));
+	nova_static_1_Console_write((Console*)0, exceptionData, nova_String_concat(nova_0_text, exceptionData, nova_String_String(0, exceptionData, (char*)("\n"))));
 }
 
 void nova_static_2_Console_writeLine(Console* this, ExceptionData* exceptionData, Object* nova_0_obj)
 {
-	nova_static_1_Console_writeLine((Console*)0, exceptionData, nova_0_obj->vtable->nova_virtual_2_toString(nova_0_obj, exceptionData));
+	nova_static_1_Console_writeLine((Console*)0, exceptionData, nova_0_obj->vtable->nova_virtual_4_toString(nova_0_obj, exceptionData));
 }
 
 void nova_static_3_Console_writeLine(Console* this, ExceptionData* exceptionData, double nova_0_num)
@@ -84,7 +84,7 @@ void nova_static_1_Console_write(Console* this, ExceptionData* exceptionData, St
 
 void nova_static_2_Console_write(Console* this, ExceptionData* exceptionData, Object* nova_0_obj)
 {
-	nova_static_1_Console_write((Console*)0, exceptionData, nova_0_obj->vtable->nova_virtual_2_toString(nova_0_obj, exceptionData));
+	nova_static_1_Console_write((Console*)0, exceptionData, nova_0_obj->vtable->nova_virtual_4_toString(nova_0_obj, exceptionData));
 }
 
 void nova_static_3_Console_write(Console* this, ExceptionData* exceptionData, double nova_0_num)
@@ -154,7 +154,7 @@ String* nova_static_Console_readLine(Console* this, ExceptionData* exceptionData
 	String* nova_1_s;
 	
 	nova_1_line = ufgets(stdin);
-	nova_1_s = nova_String_String(exceptionData, nova_1_line);
+	nova_1_s = nova_String_String(0, exceptionData, nova_1_line);
 	return nova_1_s;
 }
 

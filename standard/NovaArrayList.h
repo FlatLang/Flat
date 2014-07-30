@@ -25,7 +25,7 @@ typedef struct ArrayList ArrayList;
 
 typedef struct nova_VTable_ArrayList
 {
-	String* (*nova_virtual_2_toString)(Object*, ExceptionData*);
+	String* (*nova_virtual_4_toString)(Object*, ExceptionData*);
 	char (*nova_virtual_2_equals)(Object*, ExceptionData*, Object*);
 } nova_VTable_ArrayList;
 
@@ -38,7 +38,7 @@ CCLASS_CLASS
 	struct Private* prv;
 )
 
-ArrayList* nova_ArrayList_ArrayList(ExceptionData* exceptionData);
+ArrayList* nova_ArrayList_ArrayList(ArrayList* this, ExceptionData* exceptionData);
 void nova_del_ArrayList(ArrayList** this, ExceptionData* exceptionData);
 void nova_ArrayList_add(ArrayList* this, ExceptionData* exceptionData, int nova_0_var);
 void nova_ArrayList_increaseSize(ArrayList* this, ExceptionData* exceptionData);

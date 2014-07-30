@@ -38,7 +38,7 @@ CCLASS_CLASS
 	nova_VTable_Long* vtable;
 )
 
-Long* nova_Long_Long(ExceptionData* exceptionData, long_long nova_0_value);
+Long* nova_Long_Long(Long* this, ExceptionData* exceptionData, long_long nova_0_value);
 void nova_del_Long(Long** this, ExceptionData* exceptionData);
 int nova_static_1_Long_numDigits(Long* this, ExceptionData* exceptionData, long_long nova_0_number);
 String* nova_static_1_Long_toString(Long* this, ExceptionData* exceptionData, long_long nova_0_value);

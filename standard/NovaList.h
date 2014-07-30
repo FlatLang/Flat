@@ -26,7 +26,7 @@ typedef struct List List;
 
 typedef struct nova_VTable_List
 {
-	String* (*nova_virtual_2_toString)(Object*, ExceptionData*);
+	String* (*nova_virtual_4_toString)(Object*, ExceptionData*);
 	char (*nova_virtual_2_equals)(Object*, ExceptionData*, Object*);
 } nova_VTable_List;
 
@@ -38,7 +38,7 @@ CCLASS_CLASS
 	struct Private* prv;
 )
 
-List* nova_List_List(ExceptionData* exceptionData);
+List* nova_List_List(List* this, ExceptionData* exceptionData);
 void nova_del_List(List** this, ExceptionData* exceptionData);
 ListNode* nova_List_getFirst(List* this, ExceptionData* exceptionData);
 void nova_List_add(List* this, ExceptionData* exceptionData, Object* nova_0_data);

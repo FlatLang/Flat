@@ -4,11 +4,11 @@
 
 nova_VTable_Time nova_VTable_Time_val =
 {
-	nova_2_Object_toString,
+	nova_4_Object_toString,
 	nova_2_Object_equals,
 };
 
-Time* nova_Time_Time(ExceptionData* exceptionData)
+Time* nova_Time_Time(Time* this, ExceptionData* exceptionData)
 {
 	CCLASS_NEW(Time, this,);
 	

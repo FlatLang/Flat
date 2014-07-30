@@ -4,7 +4,7 @@
 
 nova_VTable_ArrayList nova_VTable_ArrayList_val =
 {
-	nova_2_Object_toString,
+	nova_4_Object_toString,
 	nova_2_Object_equals,
 };
 CCLASS_PRIVATE
@@ -14,7 +14,7 @@ CCLASS_PRIVATE
 	
 )
 
-ArrayList* nova_ArrayList_ArrayList(ExceptionData* exceptionData)
+ArrayList* nova_ArrayList_ArrayList(ArrayList* this, ExceptionData* exceptionData)
 {
 	CCLASS_NEW(ArrayList, this);
 	

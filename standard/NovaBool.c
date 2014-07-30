@@ -4,11 +4,11 @@
 
 nova_VTable_Bool nova_VTable_Bool_val =
 {
-	nova_2_Object_toString,
+	nova_4_Object_toString,
 	nova_2_Object_equals,
 };
 
-Bool* nova_Bool_Bool(ExceptionData* exceptionData)
+Bool* nova_Bool_Bool(Bool* this, ExceptionData* exceptionData)
 {
 	CCLASS_NEW(Bool, this,);
 	

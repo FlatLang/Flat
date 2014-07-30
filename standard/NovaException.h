@@ -25,7 +25,7 @@ typedef struct Exception Exception;
 
 typedef struct nova_VTable_Exception
 {
-	String* (*nova_virtual_2_toString)(Object*, ExceptionData*);
+	String* (*nova_virtual_4_toString)(Object*, ExceptionData*);
 	char (*nova_virtual_2_equals)(Object*, ExceptionData*, Object*);
 } nova_VTable_Exception;
 
@@ -36,7 +36,7 @@ CCLASS_CLASS
 	nova_VTable_Exception* vtable;
 )
 
-Exception* nova_Exception_Exception(ExceptionData* exceptionData);
+Exception* nova_Exception_Exception(Exception* this, ExceptionData* exceptionData);
 void nova_del_Exception(Exception** this, ExceptionData* exceptionData);
 
 #endif

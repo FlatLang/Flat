@@ -26,7 +26,7 @@ typedef struct OutputStream OutputStream;
 
 typedef struct nova_VTable_OutputStream
 {
-	String* (*nova_virtual_2_toString)(Object*, ExceptionData*);
+	String* (*nova_virtual_4_toString)(Object*, ExceptionData*);
 	char (*nova_virtual_2_equals)(Object*, ExceptionData*, Object*);
 } nova_VTable_OutputStream;
 
@@ -38,7 +38,7 @@ CCLASS_CLASS
 	struct Private* prv;
 )
 
-OutputStream* nova_OutputStream_OutputStream(ExceptionData* exceptionData);
+OutputStream* nova_OutputStream_OutputStream(OutputStream* this, ExceptionData* exceptionData);
 void nova_del_OutputStream(OutputStream** this, ExceptionData* exceptionData);
 
 #endif

@@ -9,7 +9,7 @@ nova_VTable_Float nova_VTable_Float_val =
 	nova_static_3_Number_toString,
 };
 
-Float* nova_Float_Float(ExceptionData* exceptionData, int nova_0_value)
+Float* nova_Float_Float(Float* this, ExceptionData* exceptionData, int nova_0_value)
 {
 	CCLASS_NEW(Float, this,);
 	

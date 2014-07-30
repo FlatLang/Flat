@@ -4,7 +4,7 @@
 
 nova_VTable_OutputStream nova_VTable_OutputStream_val =
 {
-	nova_2_Object_toString,
+	nova_4_Object_toString,
 	nova_2_Object_equals,
 };
 CCLASS_PRIVATE
@@ -13,7 +13,7 @@ CCLASS_PRIVATE
 	
 )
 
-OutputStream* nova_OutputStream_OutputStream(ExceptionData* exceptionData)
+OutputStream* nova_OutputStream_OutputStream(OutputStream* this, ExceptionData* exceptionData)
 {
 	CCLASS_NEW(OutputStream, this);
 	

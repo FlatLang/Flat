@@ -38,7 +38,7 @@ CCLASS_CLASS
 	nova_VTable_Float* vtable;
 )
 
-Float* nova_Float_Float(ExceptionData* exceptionData, int nova_0_value);
+Float* nova_Float_Float(Float* this, ExceptionData* exceptionData, int nova_0_value);
 void nova_del_Float(Float** this, ExceptionData* exceptionData);
 int nova_static_1_Float_numDigits(Float* this, ExceptionData* exceptionData, float nova_0_number);
 String* nova_static_1_Float_toString(Float* this, ExceptionData* exceptionData, float nova_0_value);

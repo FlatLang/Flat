@@ -4,11 +4,11 @@
 
 nova_VTable_Math nova_VTable_Math_val =
 {
-	nova_2_Object_toString,
+	nova_4_Object_toString,
 	nova_2_Object_equals,
 };
 
-Math* nova_Math_Math(ExceptionData* exceptionData)
+Math* nova_Math_Math(Math* this, ExceptionData* exceptionData)
 {
 	CCLASS_NEW(Math, this,);
 	

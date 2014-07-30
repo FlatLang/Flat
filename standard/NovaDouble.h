@@ -38,7 +38,7 @@ CCLASS_CLASS
 	nova_VTable_Double* vtable;
 )
 
-Double* nova_Double_Double(ExceptionData* exceptionData, double nova_0_value);
+Double* nova_Double_Double(Double* this, ExceptionData* exceptionData, double nova_0_value);
 void nova_del_Double(Double** this, ExceptionData* exceptionData);
 int nova_static_1_Double_numDigits(Double* this, ExceptionData* exceptionData, double nova_0_number);
 String* nova_static_1_Double_toString(Double* this, ExceptionData* exceptionData, double nova_0_value);

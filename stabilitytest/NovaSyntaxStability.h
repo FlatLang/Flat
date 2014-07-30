@@ -37,7 +37,7 @@ CCLASS_CLASS
 	nova_VTable_SyntaxStability* vtable;
 )
 
-SyntaxStability* nova_SyntaxStability_SyntaxStability(ExceptionData* exceptionData);
+SyntaxStability* nova_SyntaxStability_SyntaxStability(SyntaxStability* this, ExceptionData* exceptionData);
 void nova_del_SyntaxStability(SyntaxStability** this, ExceptionData* exceptionData);
 void nova_static_SyntaxStability_test(SyntaxStability* this, ExceptionData* exceptionData, StabilityTest* nova_0_program);
 

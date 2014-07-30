@@ -45,7 +45,7 @@ CCLASS_CLASS
 	nova_VTable_StabilityTest* vtable;
 )
 
-StabilityTest* nova_StabilityTest_StabilityTest(ExceptionData* exceptionData);
+StabilityTest* nova_StabilityTest_StabilityTest(StabilityTest* this, ExceptionData* exceptionData);
 void nova_del_StabilityTest(StabilityTest** this, ExceptionData* exceptionData);
 void nova_static_StabilityTest_main(StabilityTest* this, ExceptionData* exceptionData, String** nova_0_args);
 int nova_StabilityTest_runTests(StabilityTest* this, ExceptionData* exceptionData);

@@ -38,7 +38,7 @@ CCLASS_CLASS
 	struct Private* prv;
 )
 
-ClosureStability* nova_ClosureStability_ClosureStability(ExceptionData* exceptionData);
+ClosureStability* nova_ClosureStability_ClosureStability(ClosureStability* this, ExceptionData* exceptionData);
 void nova_del_ClosureStability(ClosureStability** this, ExceptionData* exceptionData);
 void nova_static_ClosureStability_test(ClosureStability* this, ExceptionData* exceptionData, StabilityTest* nova_0_program);
 

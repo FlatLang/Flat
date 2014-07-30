@@ -28,7 +28,7 @@ typedef struct SVGComponentList SVGComponentList;
 
 typedef struct nova_VTable_SVGComponentList
 {
-	String* (*nova_virtual_2_toString)(Object*, ExceptionData*);
+	String* (*nova_virtual_4_toString)(Object*, ExceptionData*);
 	char (*nova_virtual_2_equals)(Object*, ExceptionData*, Object*);
 } nova_VTable_SVGComponentList;
 
@@ -40,7 +40,7 @@ CCLASS_CLASS
 	nova_VTable_SVGComponentList* vtable;
 )
 
-SVGComponentList* nova_SVGComponentList_SVGComponentList(ExceptionData* exceptionData);
+SVGComponentList* nova_SVGComponentList_SVGComponentList(SVGComponentList* this, ExceptionData* exceptionData);
 void nova_del_SVGComponentList(SVGComponentList** this, ExceptionData* exceptionData);
 void nova_SVGComponentList_generateOutput(SVGComponentList* this, ExceptionData* exceptionData, File* nova_0_file);
 void nova_SVGComponentList_addChild(SVGComponentList* this, ExceptionData* exceptionData, SVGComponent* nova_0_component);

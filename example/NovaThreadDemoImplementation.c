@@ -4,7 +4,7 @@
 
 nova_VTable_ThreadDemoImplementation nova_VTable_ThreadDemoImplementation_val =
 {
-	nova_ThreadDemoImplementation_run,
+	nova_1_ThreadDemoImplementation_run,
 };
 CCLASS_PRIVATE
 (
@@ -15,7 +15,7 @@ CCLASS_PRIVATE
 	
 )
 
-ThreadDemoImplementation* nova_ThreadDemoImplementation_ThreadDemoImplementation(ExceptionData* exceptionData, long_long nova_0_millis, String* nova_0_word)
+ThreadDemoImplementation* nova_ThreadDemoImplementation_ThreadDemoImplementation(ThreadDemoImplementation* this, ExceptionData* exceptionData, long_long nova_0_millis, String* nova_0_word)
 {
 	CCLASS_NEW(ThreadDemoImplementation, this);
 	
@@ -46,14 +46,14 @@ void nova_del_ThreadDemoImplementation(ThreadDemoImplementation** this, Exceptio
 	NOVA_FREE(*this);
 }
 
-void nova_ThreadDemoImplementation_run(ThreadDemoImplementation* this, ExceptionData* exceptionData)
+void nova_1_ThreadDemoImplementation_run(ThreadDemoImplementation* this, ExceptionData* exceptionData)
 {
 	int nova_1_i;
 	
 	nova_1_i = 0;
 	for (; nova_1_i < 10; nova_1_i++)
 	{
-		nova_static_Console_writeLine((Console*)(0), exceptionData, this->prv->nova_ThreadDemoImplementation_word);
+		nova_static_1_Console_writeLine(0, exceptionData, this->prv->nova_ThreadDemoImplementation_word);
 		nova_static_Thread_sleep((Thread*)(this), exceptionData, this->prv->nova_ThreadDemoImplementation_millis);
 	}
 }

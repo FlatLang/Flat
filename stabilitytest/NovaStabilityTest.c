@@ -8,7 +8,7 @@ nova_VTable_StabilityTest nova_VTable_StabilityTest_val =
 		nova_2_Object_equals,
 };
 
-StabilityTest* nova_StabilityTest_StabilityTest(ExceptionData* exceptionData)
+StabilityTest* nova_StabilityTest_StabilityTest(StabilityTest* this, ExceptionData* exceptionData)
 {
 		CCLASS_NEW(StabilityTest, this,);
 		
@@ -39,12 +39,12 @@ void nova_static_StabilityTest_main(StabilityTest* this, ExceptionData* exceptio
 		int nova_1_result;
 		long_long nova_1_time;
 		
-		nova_1_test = nova_StabilityTest_StabilityTest(exceptionData);
+		nova_1_test = nova_StabilityTest_StabilityTest(0, exceptionData);
 		nova_1_start = nova_static_Time_currentTimeMillis(0, exceptionData);
 		nova_1_result = nova_StabilityTest_runTests(nova_1_test, exceptionData);
 		nova_1_time = (long_long)(nova_static_Time_currentTimeMillis(0, exceptionData) - nova_1_start);
-		nova_static_System_execute(0, exceptionData, nova_String_String(exceptionData, "/bin/ls"));
-		nova_static_1_Console_writeLine(0, exceptionData, nova_String_concat(nova_String_String(exceptionData, (char*)("Took ")), exceptionData, nova_String_concat(nova_2_Long_toString(nova_Long_Long(exceptionData, nova_1_time), exceptionData), exceptionData, nova_String_String(exceptionData, (char*)("ms")))));
+		nova_static_System_execute(0, exceptionData, nova_String_String(0, exceptionData, (char*)("dir")));
+		nova_static_1_Console_writeLine(0, exceptionData, nova_String_concat(nova_String_String(0, exceptionData, (char*)("Took ")), exceptionData, nova_String_concat(nova_2_Long_toString(nova_Long_Long(0, exceptionData, nova_1_time), exceptionData), exceptionData, nova_String_String(0, exceptionData, (char*)("ms")))));
 		nova_static_Console_waitForEnter(0, exceptionData);
 }
 
@@ -62,7 +62,7 @@ int nova_StabilityTest_runTests(StabilityTest* this, ExceptionData* exceptionDat
 						nova_static_SyntaxStability_test(0, exceptionData, this);
 						nova_static_ClosureStability_test(0, exceptionData, this);
 						nova_static_PolymorphismStability_test(0, exceptionData, this);
-						nova_static_1_Console_writeLine(0, exceptionData, nova_String_String(exceptionData, "All OK"));
+						nova_static_1_Console_writeLine(0, exceptionData, nova_String_String(0, exceptionData, (char*)("All OK")));
 						return 0;
 				}
 		}
@@ -78,7 +78,7 @@ int nova_StabilityTest_runTests(StabilityTest* this, ExceptionData* exceptionDat
 
 void nova_1_StabilityTest_fail(StabilityTest* this, ExceptionData* exceptionData)
 {
-		nova_2_StabilityTest_fail(this, exceptionData, nova_String_String(exceptionData, "Failed"));
+		nova_2_StabilityTest_fail(this, exceptionData, nova_String_String(0, exceptionData, (char*)("Failed")));
 }
 
 void nova_2_StabilityTest_fail(StabilityTest* this, ExceptionData* exceptionData, String* nova_0_message)
@@ -104,7 +104,7 @@ int main(int argc, char** argvs)
 		{
 				char* str = (char*)NOVA_MALLOC(sizeof(char) * strlen(argvs[i]) + 1);
 				copy_string(str, argvs[i]);
-				args[i] = nova_String_String(0, str);
+				args[i] = nova_String_String(0, 0, str);
 		}
 		
 		TRY

@@ -26,7 +26,7 @@ typedef struct Math Math;
 
 typedef struct nova_VTable_Math
 {
-	String* (*nova_virtual_2_toString)(Object*, ExceptionData*);
+	String* (*nova_virtual_4_toString)(Object*, ExceptionData*);
 	char (*nova_virtual_2_equals)(Object*, ExceptionData*, Object*);
 } nova_VTable_Math;
 
@@ -37,7 +37,7 @@ CCLASS_CLASS
 	nova_VTable_Math* vtable;
 )
 
-Math* nova_Math_Math(ExceptionData* exceptionData);
+Math* nova_Math_Math(Math* this, ExceptionData* exceptionData);
 void nova_del_Math(Math** this, ExceptionData* exceptionData);
 int nova_static_Math_random(Math* this, ExceptionData* exceptionData, long_long nova_0_range);
 double nova_static_Math_abs(Math* this, ExceptionData* exceptionData, double nova_0_number);

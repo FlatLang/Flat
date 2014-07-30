@@ -37,7 +37,7 @@ CCLASS_CLASS
 	struct Private* prv;
 )
 
-ThreadImplementation* nova_ThreadImplementation_ThreadImplementation(ExceptionData* exceptionData, int nova_0_times, int nova_0_millis);
+ThreadImplementation* nova_ThreadImplementation_ThreadImplementation(ThreadImplementation* this, ExceptionData* exceptionData, int nova_0_times, int nova_0_millis);
 void nova_del_ThreadImplementation(ThreadImplementation** this, ExceptionData* exceptionData);
 void nova_1_ThreadImplementation_run(ThreadImplementation* this, ExceptionData* exceptionData);
 

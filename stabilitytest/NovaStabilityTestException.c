@@ -4,7 +4,7 @@
 
 
 
-StabilityTestException* nova_StabilityTestException_StabilityTestException(ExceptionData* exceptionData)
+StabilityTestException* nova_StabilityTestException_StabilityTestException(StabilityTestException* this, ExceptionData* exceptionData)
 {
 	StabilityTestException* this = (StabilityTestException*)1;
 	

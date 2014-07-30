@@ -11,7 +11,7 @@ CCLASS_PRIVATE
 	
 )
 
-StreamReader* nova_StreamReader_StreamReader(ExceptionData* exceptionData, File* nova_0_file)
+StreamReader* nova_StreamReader_StreamReader(StreamReader* this, ExceptionData* exceptionData, File* nova_0_file)
 {
 	CCLASS_NEW(StreamReader, this);
 	

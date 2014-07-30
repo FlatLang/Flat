@@ -39,7 +39,7 @@ CCLASS_CLASS
 	nova_VTable_TimeStability* vtable;
 )
 
-TimeStability* nova_TimeStability_TimeStability(ExceptionData* exceptionData);
+TimeStability* nova_TimeStability_TimeStability(TimeStability* this, ExceptionData* exceptionData);
 void nova_del_TimeStability(TimeStability** this, ExceptionData* exceptionData);
 void nova_static_TimeStability_test(TimeStability* this, ExceptionData* exceptionData, StabilityTest* nova_0_program);
 

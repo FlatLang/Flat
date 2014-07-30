@@ -25,7 +25,7 @@ typedef struct Array Array;
 
 typedef struct nova_VTable_Array
 {
-	String* (*nova_virtual_2_toString)(Object*, ExceptionData*);
+	String* (*nova_virtual_4_toString)(Object*, ExceptionData*);
 	char (*nova_virtual_2_equals)(Object*, ExceptionData*, Object*);
 } nova_VTable_Array;
 
@@ -37,7 +37,7 @@ CCLASS_CLASS
 	nova_VTable_Array* vtable;
 )
 
-Array* nova_Array_Array(ExceptionData* exceptionData);
+Array* nova_Array_Array(Array* this, ExceptionData* exceptionData);
 void nova_del_Array(Array** this, ExceptionData* exceptionData);
 
 #endif

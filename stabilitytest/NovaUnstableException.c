@@ -4,7 +4,7 @@
 
 
 
-UnstableException* nova_UnstableException_UnstableException(ExceptionData* exceptionData)
+UnstableException* nova_UnstableException_UnstableException(UnstableException* this, ExceptionData* exceptionData)
 {
 	UnstableException* this = (UnstableException*)1;
 	

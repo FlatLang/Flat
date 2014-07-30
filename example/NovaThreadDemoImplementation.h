@@ -15,8 +15,10 @@ typedef struct ThreadDemoImplementation ThreadDemoImplementation;
 #include <NovaConsole.h>
 #include <NovaGC.h>
 #include <NovaNumber.h>
+#include <NovaShort.h>
 #include <NovaInteger.h>
 #include <NovaLong.h>
+#include <NovaFloat.h>
 #include <NovaDouble.h>
 #include <NovaChar.h>
 #include <NovaDivideByZeroException.h>
@@ -24,7 +26,7 @@ typedef struct ThreadDemoImplementation ThreadDemoImplementation;
 
 typedef struct nova_VTable_ThreadDemoImplementation
 {
-	void (*nova_virtual_run)(ThreadDemoImplementation*, ExceptionData*);
+	void (*nova_virtual_1_run)(ThreadDemoImplementation*, ExceptionData*);
 } nova_VTable_ThreadDemoImplementation;
 
 CCLASS_CLASS
@@ -35,8 +37,8 @@ CCLASS_CLASS
 	struct Private* prv;
 )
 
-ThreadDemoImplementation* nova_ThreadDemoImplementation_ThreadDemoImplementation(ExceptionData* exceptionData, long_long nova_0_millis, String* nova_0_word);
+ThreadDemoImplementation* nova_ThreadDemoImplementation_ThreadDemoImplementation(ThreadDemoImplementation* this, ExceptionData* exceptionData, long_long nova_0_millis, String* nova_0_word);
 void nova_del_ThreadDemoImplementation(ThreadDemoImplementation** this, ExceptionData* exceptionData);
-void nova_ThreadDemoImplementation_run(ThreadDemoImplementation* this, ExceptionData* exceptionData);
+void nova_1_ThreadDemoImplementation_run(ThreadDemoImplementation* this, ExceptionData* exceptionData);
 
 #endif

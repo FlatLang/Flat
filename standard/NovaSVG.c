@@ -4,18 +4,18 @@
 
 nova_VTable_SVG nova_VTable_SVG_val =
 {
-	nova_2_Object_toString,
+	nova_4_Object_toString,
 	nova_2_Object_equals,
 };
 
-SVG* nova_SVG_SVG(ExceptionData* exceptionData)
+SVG* nova_SVG_SVG(SVG* this, ExceptionData* exceptionData)
 {
 	CCLASS_NEW(SVG, this,);
 	
 	this->nova_SVG_root = (SVGMainComponent*)0;
 	this->vtable = &nova_VTable_SVG_val;
 	{
-		this->nova_SVG_root = nova_SVGMainComponent_SVGMainComponent(exceptionData);
+		this->nova_SVG_root = nova_SVGMainComponent_SVGMainComponent(0, exceptionData);
 	}
 	
 	return this;
@@ -42,7 +42,7 @@ void nova_SVG_generateOutput(SVG* this, ExceptionData* exceptionData, File* nova
 
 void nova_SVG_generateHTMLOutput(SVG* this, ExceptionData* exceptionData, File* nova_0_file)
 {
-	nova_File_write(nova_0_file, exceptionData, nova_String_String(exceptionData, "<html>\n"));
+	nova_File_write(nova_0_file, exceptionData, nova_String_String(0, exceptionData, (char*)("<html>\n")));
 	nova_SVG_generateOutput(this, exceptionData, nova_0_file);
-	nova_File_write(nova_0_file, exceptionData, nova_String_String(exceptionData, "</html>"));
+	nova_File_write(nova_0_file, exceptionData, nova_String_String(0, exceptionData, (char*)("</html>")));
 }

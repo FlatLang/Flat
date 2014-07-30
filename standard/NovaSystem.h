@@ -29,7 +29,7 @@ typedef struct System System;
 
 typedef struct nova_VTable_System
 {
-	String* (*nova_virtual_2_toString)(Object*, ExceptionData*);
+	String* (*nova_virtual_4_toString)(Object*, ExceptionData*);
 	char (*nova_virtual_2_equals)(Object*, ExceptionData*, Object*);
 } nova_VTable_System;
 
@@ -40,7 +40,7 @@ CCLASS_CLASS
 	nova_VTable_System* vtable;
 )
 
-System* nova_System_System(ExceptionData* exceptionData);
+System* nova_System_System(System* this, ExceptionData* exceptionData);
 void nova_del_System(System** this, ExceptionData* exceptionData);
 void nova_static_1_System_exit(System* this, ExceptionData* exceptionData, int nova_0_code);
 void nova_static_2_System_exit(System* this, ExceptionData* exceptionData, int nova_0_code, String* nova_0_message);

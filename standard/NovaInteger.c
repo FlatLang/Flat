@@ -9,7 +9,7 @@ nova_VTable_Integer nova_VTable_Integer_val =
 	nova_2_Integer_toString,
 };
 
-Integer* nova_Integer_Integer(ExceptionData* exceptionData, int nova_0_value)
+Integer* nova_Integer_Integer(Integer* this, ExceptionData* exceptionData, int nova_0_value)
 {
 	CCLASS_NEW(Integer, this,);
 	

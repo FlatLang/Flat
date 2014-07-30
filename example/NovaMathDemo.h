@@ -15,16 +15,29 @@ typedef struct MathDemo MathDemo;
 #include <NovaConsole.h>
 #include <NovaGC.h>
 #include <NovaNumber.h>
+#include <NovaShort.h>
 #include <NovaInteger.h>
 #include <NovaLong.h>
+#include <NovaFloat.h>
 #include <NovaDouble.h>
 #include <NovaChar.h>
 #include <NovaDivideByZeroException.h>
 #include <NovaTime.h>
 
+typedef struct nova_VTable_MathDemo
+{
+	String* (*nova_virtual_4_toString)(Object*, ExceptionData*);
+	char (*nova_virtual_2_equals)(Object*, ExceptionData*, Object*);
+} nova_VTable_MathDemo;
 
+CCLASS_CLASS
+(
+	MathDemo, 
+	
+	nova_VTable_MathDemo* vtable;
+)
 
-MathDemo* nova_MathDemo_MathDemo(ExceptionData* exceptionData);
+MathDemo* nova_MathDemo_MathDemo(MathDemo* this, ExceptionData* exceptionData);
 void nova_del_MathDemo(MathDemo** this, ExceptionData* exceptionData);
 void nova_static_MathDemo_main(MathDemo* this, ExceptionData* exceptionData, String** nova_0_args);
 

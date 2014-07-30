@@ -39,7 +39,7 @@ CCLASS_CLASS
 	struct Private* prv;
 )
 
-StabilityExceptionHandler* nova_StabilityExceptionHandler_StabilityExceptionHandler(ExceptionData* exceptionData, StabilityTest* nova_0_program);
+StabilityExceptionHandler* nova_StabilityExceptionHandler_StabilityExceptionHandler(StabilityExceptionHandler* this, ExceptionData* exceptionData, StabilityTest* nova_0_program);
 void nova_del_StabilityExceptionHandler(StabilityExceptionHandler** this, ExceptionData* exceptionData);
 void nova_1_StabilityExceptionHandler_uncaughtException(StabilityExceptionHandler* this, ExceptionData* exceptionData, Thread* nova_0_thread, Exception* nova_0_exception);
 

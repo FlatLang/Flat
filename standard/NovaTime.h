@@ -25,7 +25,7 @@ typedef struct Time Time;
 
 typedef struct nova_VTable_Time
 {
-	String* (*nova_virtual_2_toString)(Object*, ExceptionData*);
+	String* (*nova_virtual_4_toString)(Object*, ExceptionData*);
 	char (*nova_virtual_2_equals)(Object*, ExceptionData*, Object*);
 } nova_VTable_Time;
 
@@ -36,7 +36,7 @@ CCLASS_CLASS
 	nova_VTable_Time* vtable;
 )
 
-Time* nova_Time_Time(ExceptionData* exceptionData);
+Time* nova_Time_Time(Time* this, ExceptionData* exceptionData);
 void nova_del_Time(Time** this, ExceptionData* exceptionData);
 long_long nova_static_Time_currentTimeMillis(Time* this, ExceptionData* exceptionData);
 

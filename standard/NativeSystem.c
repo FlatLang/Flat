@@ -2,7 +2,7 @@
 
 void error(int code, char message[], error_func func, void* ref)
 {
-	String* s = nova_String_String(0, message);
+	String* s = nova_String_String(0, 0, message);
 
 	func(ref, 0, code, s, 1);
 }

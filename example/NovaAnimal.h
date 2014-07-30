@@ -15,19 +15,21 @@ typedef struct Animal Animal;
 #include <NovaConsole.h>
 #include <NovaGC.h>
 #include <NovaNumber.h>
+#include <NovaShort.h>
 #include <NovaInteger.h>
 #include <NovaLong.h>
+#include <NovaFloat.h>
 #include <NovaDouble.h>
 #include <NovaChar.h>
 #include <NovaDivideByZeroException.h>
 
 typedef struct nova_VTable_Animal
 {
-	int (*nova_virtual_getNumLegs)(Animal*, ExceptionData*);
-	int (*nova_virtual_getNumEyes)(Animal*, ExceptionData*);
-	String* (*nova_virtual_getDescription)(Animal*, ExceptionData*);
-	String* (*nova_virtual_toString)(Object*, ExceptionData*);
-	char (*nova_virtual_equals)(Object*, ExceptionData*, Object*);
+	int (*nova_virtual_2_getNumLegs)(Animal*, ExceptionData*);
+	int (*nova_virtual_2_getNumEyes)(Animal*, ExceptionData*);
+	String* (*nova_virtual_2_getDescription)(Animal*, ExceptionData*);
+	String* (*nova_virtual_4_toString)(Object*, ExceptionData*);
+	char (*nova_virtual_2_equals)(Object*, ExceptionData*, Object*);
 } nova_VTable_Animal;
 
 CCLASS_CLASS
@@ -37,10 +39,10 @@ CCLASS_CLASS
 	nova_VTable_Animal* vtable;
 )
 
-Animal* nova_Animal_Animal(ExceptionData* exceptionData);
+Animal* nova_Animal_Animal(Animal* this, ExceptionData* exceptionData);
 void nova_del_Animal(Animal** this, ExceptionData* exceptionData);
-int nova_Animal_getNumLegs(Animal* this, ExceptionData* exceptionData);
-int nova_Animal_getNumEyes(Animal* this, ExceptionData* exceptionData);
-String* nova_Animal_getDescription(Animal* this, ExceptionData* exceptionData);
+int nova_2_Animal_getNumLegs(Animal* this, ExceptionData* exceptionData);
+int nova_2_Animal_getNumEyes(Animal* this, ExceptionData* exceptionData);
+String* nova_2_Animal_getDescription(Animal* this, ExceptionData* exceptionData);
 
 #endif

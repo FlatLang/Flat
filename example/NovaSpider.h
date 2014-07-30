@@ -15,8 +15,10 @@ typedef struct Spider Spider;
 #include <NovaConsole.h>
 #include <NovaGC.h>
 #include <NovaNumber.h>
+#include <NovaShort.h>
 #include <NovaInteger.h>
 #include <NovaLong.h>
+#include <NovaFloat.h>
 #include <NovaDouble.h>
 #include <NovaChar.h>
 #include <NovaDivideByZeroException.h>
@@ -24,9 +26,9 @@ typedef struct Spider Spider;
 
 typedef struct nova_VTable_Spider
 {
-	int (*nova_virtual_getNumLegs)(Spider*, ExceptionData*);
-	int (*nova_virtual_getNumEyes)(Spider*, ExceptionData*);
-	String* (*nova_virtual_getDescription)(Spider*, ExceptionData*);
+	void (*nova_virtual_1_getNumLegs)(Spider*, ExceptionData*);
+	void (*nova_virtual_1_getNumEyes)(Spider*, ExceptionData*);
+	String* (*nova_virtual_1_getDescription)(Spider*, ExceptionData*);
 } nova_VTable_Spider;
 
 CCLASS_CLASS
@@ -36,10 +38,10 @@ CCLASS_CLASS
 	nova_VTable_Spider* vtable;
 )
 
-Spider* nova_Spider_Spider(ExceptionData* exceptionData);
+Spider* nova_Spider_Spider(Spider* this, ExceptionData* exceptionData);
 void nova_del_Spider(Spider** this, ExceptionData* exceptionData);
-int nova_Spider_getNumLegs(Spider* this, ExceptionData* exceptionData);
-int nova_Spider_getNumEyes(Spider* this, ExceptionData* exceptionData);
-String* nova_Spider_getDescription(Spider* this, ExceptionData* exceptionData);
+void nova_1_Spider_getNumLegs(Spider* this, ExceptionData* exceptionData);
+void nova_1_Spider_getNumEyes(Spider* this, ExceptionData* exceptionData);
+String* nova_1_Spider_getDescription(Spider* this, ExceptionData* exceptionData);
 
 #endif
