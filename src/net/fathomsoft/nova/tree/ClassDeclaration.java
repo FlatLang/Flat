@@ -21,7 +21,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:15:51 PM
- * @version	v0.2.19 Jul 26, 2014 at 12:30:24 AM
+ * @version	v0.2.20 Jul 29, 2014 at 7:26:50 PM
  */
 public class ClassDeclaration extends InstanceDeclaration
 {
@@ -1152,25 +1152,15 @@ public class ClassDeclaration extends InstanceDeclaration
 	{
 		if (!containsConstructor())
 		{
-			Location loc = new Location();
-			
-			Constructor defaultConstructor = new Constructor(this, new Location(getLocationIn()));
-			defaultConstructor.setName(getName());
-			defaultConstructor.setType(getName());
-			defaultConstructor.setVisibility(FieldDeclaration.PUBLIC);
-			defaultConstructor.setLocationIn(loc);
-			addChild(defaultConstructor);
+			addChild(Constructor.decodeStatement(this, "public construct()", Location.INVALID, true));
 		}
 		
 		if (!containsDestructor())
 		{
-			Location loc = new Location();
-			
-			Destructor defaultDestructor = new Destructor(this, new Location(getLocationIn()));
+			Destructor defaultDestructor = new Destructor(this, Location.INVALID);
 			defaultDestructor.setName(getName());
 			defaultDestructor.setType("void");
 			defaultDestructor.setVisibility(FieldDeclaration.PUBLIC);
-			defaultDestructor.setLocationIn(loc);
 			
 			addChild(defaultDestructor);
 		}
