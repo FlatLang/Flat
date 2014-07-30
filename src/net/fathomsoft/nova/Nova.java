@@ -27,7 +27,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:00:04 PM
- * @version	v0.2.19 Jul 26, 2014 at 12:30:24 AM
+ * @version	v0.2.20 Jul 29, 2014 at 7:26:50 PM
  */
 public class Nova
 {
@@ -77,7 +77,7 @@ public class Nova
 	public static final int		LINUX         = 3;
 	
 	public static final String	LANGUAGE_NAME = "Nova";
-	public static final String	VERSION       = "v0.2.19";
+	public static final String	VERSION       = "v0.2.20";
 	
 	/**
 	 * Find out which operating system the compiler is running on.
@@ -208,11 +208,11 @@ public class Nova
 				formatPath(stability + "UnstableException.nova"),
 //				formatPath(directory + "MathDemo.nova"),
 //				formatPath(directory + "ThreadDemo.nova"),
+//				formatPath(directory + "ThreadDemoImplementation.nova"),
 //				formatPath(directory + "PolymorphismDemo.nova"),
 //				formatPath(directory + "Animal.nova"),
 //				formatPath(directory + "Spider.nova"),
 //				formatPath(directory + "Dog.nova"),
-//				formatPath(directory + "ThreadDemoImplementation.nova"),
 //				formatPath(directory + "IntegerTest.nova"),
 //				formatPath(directory + "FileTest.nova"),
 //				formatPath(directory + "SVGTest.nova"),
@@ -240,7 +240,6 @@ public class Nova
 				formatPath(standard  + "Exception.nova"),
 				formatPath(standard  + "Array.nova"),
 				formatPath(standard  + "Char.nova"),
-				formatPath(standard  + "CharArray.nova"),
 				formatPath(standard  + "Bool.nova"),
 				formatPath(standard  + "Short.nova"),
 				formatPath(standard  + "Integer.nova"),
@@ -497,7 +496,7 @@ public class Nova
 			mainMethodText.append	("{").append('\n');
 			mainMethodText.append		("char* str = (char*)NOVA_MALLOC(sizeof(char) * strlen(argvs[i]) + 1);").append('\n');
 			mainMethodText.append		("copy_string(str, argvs[i]);").append('\n');
-			mainMethodText.append		("args[i] = ").append(LANGUAGE_NAME.toLowerCase()).append("_String_String(0, str);").append('\n');
+			mainMethodText.append		("args[i] = ").append(LANGUAGE_NAME.toLowerCase()).append("_String_String(0, 0, str);").append('\n');
 			mainMethodText.append	("}").append('\n');
 			mainMethodText.append	('\n');
 			mainMethodText.append	("TRY").append('\n');
