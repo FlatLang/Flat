@@ -72,7 +72,7 @@
 #define CCLASS_INSTANTIATE(_CLASS_, _OBJ_, _VARIABLE_INITIALIZE_)\
 	do\
 	{\
-		_CLASS_* _OBJ_ = CCLASS_NEW1(_CLASS_);\
+		_OBJ_ = CCLASS_NEW1(_CLASS_);\
 		assert(_OBJ_);\
 		\
 		{\
@@ -87,6 +87,7 @@
 	\
 	static Private* new_Private()\
 	{\
+		Private* p;\
 		CCLASS_INSTANTIATE(Private, p,);\
 	}\
 	static void del_Private(Private* p)\
