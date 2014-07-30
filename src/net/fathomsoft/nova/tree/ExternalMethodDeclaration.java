@@ -14,7 +14,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:10:53 PM
- * @version	v0.2.19 Jul 26, 2014 at 12:30:24 AM
+ * @version	v0.2.20 Jul 29, 2014 at 7:26:50 PM
  */
 public class ExternalMethodDeclaration extends BodylessMethodDeclaration
 {
@@ -81,8 +81,15 @@ public class ExternalMethodDeclaration extends BodylessMethodDeclaration
 		
 		if (methodSignature != null && methodSignature.length() > 0)
 		{
-			ExternalMethodDeclaration n      = new ExternalMethodDeclaration(parent, location);
-			MethodDeclaration         method = MethodDeclaration.decodeStatement(n, methodSignature, location.asNew(), require);
+			ExternalMethodDeclaration n = new ExternalMethodDeclaration(parent, location);
+			
+			String withAlias = methodSignature;
+			methodSignature  = trimAlias(methodSignature);
+			
+			statement        = methodSignature;
+			methodSignature  = n.formMethodSignature(methodSignature);
+			
+			MethodDeclaration method = MethodDeclaration.decodeStatement(n, methodSignature, location.asNew(), require);
 			
 			if (method != null)
 			{
@@ -91,7 +98,7 @@ public class ExternalMethodDeclaration extends BodylessMethodDeclaration
 				n.setExternal(true);
 				n.alias = n.getName();
 				
-				if (n.decodeAlias(statement, methodSignature, require))
+				if (n.decodeAlias(withAlias, statement, require))
 				{
 					return n;
 				}
@@ -99,6 +106,50 @@ public class ExternalMethodDeclaration extends BodylessMethodDeclaration
 		}
 		
 		return null;
+	}
+	
+	private String formMethodSignature(String methodSignature)
+	{
+		int paren, prev, end, start;
+		
+		paren = methodSignature.indexOf('(');
+		
+		prev  = StringUtils.findNextLetterIndex(methodSignature, paren - 1, -1);
+		end   = StringUtils.findNextLetterIndex(methodSignature, prev - 1, -1, true);
+		end   = StringUtils.findNextLetterIndex(methodSignature, end - 1, -1);
+		start = StringUtils.findNextLetterIndex(methodSignature, end - 1, -1, true);
+		
+		if (end < 0)
+		{
+			SyntaxMessage.error("External method definition missing return type", this);
+		}
+		
+		Bounds symbols = StringUtils.findGroupedCharsBounds(methodSignature, new char[][] { StringUtils.SYMBOLS_CHARS, StringUtils.WHITESPACE }, end + 1);
+		
+		if (symbols.isValid())
+		{
+			end = symbols.getEnd();
+		}
+		
+		String type = methodSignature.substring(start + 1, end + 1);
+		
+		methodSignature = methodSignature.substring(0, start + 1) + methodSignature.substring(end + 1) +
+				" -> " + type;
+		
+		return StringUtils.trimSurroundingWhitespace(methodSignature);
+	}
+	
+	private static String trimAlias(String methodSignature)
+	{
+		int paren = methodSignature.lastIndexOf(')');
+		int index = StringUtils.findLastWordIndex(methodSignature, "as");
+		
+		if (index <= paren)
+		{
+			return methodSignature;
+		}
+		
+		return methodSignature.substring(0, StringUtils.findNextNonWhitespaceIndex(methodSignature, index - 1, -1) + 1);
 	}
 	
 	/**
@@ -117,9 +168,7 @@ public class ExternalMethodDeclaration extends BodylessMethodDeclaration
 	 */
 	private boolean decodeAlias(String statement, String methodSignature, boolean require)
 	{
-		int start = StringUtils.findNextNonWhitespaceIndex(statement, 9) + methodSignature.length();
-		
-		String nameChange = statement.substring(start);
+		String nameChange = statement.substring(methodSignature.length());
 		
 		nameChange = StringUtils.trimSurroundingWhitespace(nameChange);
 		
