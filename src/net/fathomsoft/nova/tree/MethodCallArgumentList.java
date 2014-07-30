@@ -12,7 +12,7 @@ import net.fathomsoft.nova.util.Location;
  * 
  * @author	Braden Steffaniak
  * @since	v0.2.14 Jun 19, 2014 at 12:14:53 PM
- * @version	v0.2.19 Jul 26, 2014 at 12:30:24 AM
+ * @version	v0.2.20 Jul 29, 2014 at 7:26:50 PM
  */
 public class MethodCallArgumentList extends ArgumentList
 {
@@ -154,13 +154,12 @@ public class MethodCallArgumentList extends ArgumentList
 	private StringBuilder checkReference(StringBuilder builder)
 	{
 		CallableMethod method = getMethodCall().getCallableDeclaration();
-		
-		if (method.getName().equals("read"))
+
+		if (method instanceof Constructor)
 		{
-			System.out.println("ASDF");
+			builder.append(0);
 		}
-		
-		if (method instanceof Constructor == false)//!method.isStatic())
+		else
 		{
 			if (method instanceof Destructor)
 			{
@@ -181,9 +180,9 @@ public class MethodCallArgumentList extends ArgumentList
 			{
 				builder.append(')');
 			}
-			
-			builder.append(", ");
 		}
+		
+		builder.append(", ");
 		
 		return builder;
 	}
