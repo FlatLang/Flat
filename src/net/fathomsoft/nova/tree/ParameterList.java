@@ -291,16 +291,7 @@ public class ParameterList<E extends Value> extends Node
 	 */
 	public StringBuilder generateParameters(StringBuilder builder, boolean header)
 	{
-		CallableMethod methodDeclaration = getMethodDeclaration();
-		
-		int start = 0;
-		
-		if (methodDeclaration.isStatic() && methodDeclaration.isInstance())
-		{
-			start = 1;
-		}
-		
-		for (int i = start; i < getNumChildren(); i++)
+		for (int i = 0; i < getNumChildren(); i++)
 		{
 			if (header)
 			{
