@@ -12,7 +12,7 @@ import net.fathomsoft.nova.util.Location;
  * 
  * @author	Braden Steffaniak
  * @since	v0.2.14 Jun 19, 2014 at 12:14:53 PM
- * @version	v0.2.20 Jul 29, 2014 at 7:26:50 PM
+ * @version	v0.2.21 Jul 30, 2014 at 1:45:00 PM
  */
 public class MethodCallArgumentList extends ArgumentList
 {
@@ -69,6 +69,11 @@ public class MethodCallArgumentList extends ArgumentList
 			if (!sameType)
 			{
 				param.generateCTypeCast(builder);
+			}
+			
+			if (child instanceof Identifier && ((Identifier)child).getName().equals("b"))
+			{
+				Nova.debuggingBreakpoint();
 			}
 			
 			generateCArgumentPrefix(builder, child, i);

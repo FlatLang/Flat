@@ -21,9 +21,9 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:50:47 PM
- * @version	v0.2.20 Jul 29, 2014 at 7:26:50 PM
+ * @version	v0.2.21 Jul 30, 2014 at 1:45:00 PM
  */
-public class Constructor extends MethodDeclaration
+public class Constructor extends BodyMethodDeclaration
 {
 	public static final String	IDENTIFIER = "construct";
 	
@@ -250,7 +250,7 @@ public class Constructor extends MethodDeclaration
 	 */
 	public static Constructor decodeStatement(Node parent, String statement, Location location, boolean require)
 	{
-		MethodDeclaration method = MethodDeclaration.decodeStatement(parent, statement, location, false);
+		MethodDeclaration method = BodyMethodDeclaration.decodeStatement(parent, statement, location, false);
 		
 		if (method != null && method.getName().equals(IDENTIFIER))
 		{

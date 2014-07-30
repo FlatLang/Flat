@@ -15,7 +15,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.2.14 Jul 5, 2014 at 9:02:42 PM
- * @version	v0.2.19 Jul 26, 2014 at 12:30:24 AM
+ * @version	v0.2.21 Jul 30, 2014 at 1:45:00 PM
  */
 public class ClosureDeclaration extends Parameter implements CallableMethod
 {
@@ -375,24 +375,6 @@ public class ClosureDeclaration extends Parameter implements CallableMethod
 		node.id = id;
 		
 		return node;
-	}
-
-	/**
-	 * @see net.fathomsoft.nova.tree.CallableMethod#generateCVirtualMethodName()
-	 */
-	@Override
-	public StringBuilder generateCVirtualMethodName()
-	{
-		return null;
-	}
-
-	/**
-	 * @see net.fathomsoft.nova.tree.CallableMethod#generateCVirtualMethodName(java.lang.StringBuilder)
-	 */
-	@Override
-	public StringBuilder generateCVirtualMethodName(StringBuilder builder)
-	{
-		return null;
 	}
 	
 	/**

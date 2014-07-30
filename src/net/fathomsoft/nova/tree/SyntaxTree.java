@@ -27,7 +27,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:00:15 PM
- * @version	v0.2.20 Jul 29, 2014 at 7:26:50 PM
+ * @version	v0.2.21 Jul 30, 2014 at 1:45:00 PM
  */
 public class SyntaxTree
 {
@@ -253,9 +253,12 @@ public class SyntaxTree
 					{
 						MethodDeclaration methodDeclaration = (MethodDeclaration)methods.getChild(k);
 						
-						if (SyntaxUtils.isMainMethod(methodDeclaration))
+						if (methodDeclaration.containsBody())
 						{
-							return methodDeclaration;
+							if (SyntaxUtils.isMainMethod((BodyMethodDeclaration)methodDeclaration))
+							{
+								return methodDeclaration;
+							}
 						}
 					}
 				}
@@ -442,7 +445,7 @@ public class SyntaxTree
 				else if (node == null && type == Instantiation.class) node = Instantiation.decodeStatement(parent, statement, location, require);
 				else if (node == null && type == Literal.class) node = Literal.decodeStatement(parent, statement, location, require);
 				else if (node == null && type == Loop.class) node = Loop.decodeStatement(parent, statement, location, require);
-				else if (node == null && type == MethodDeclaration.class) node = MethodDeclaration.decodeStatement(parent, statement, location, require);
+				else if (node == null && type == BodyMethodDeclaration.class) node = BodyMethodDeclaration.decodeStatement(parent, statement, location, require);
 				else if (node == null && type == Priority.class) node = Priority.decodeStatement(parent, statement, location, require);
 				else if (node == null && type == Return.class) node = Return.decodeStatement(parent, statement, location, require);
 				else if (node == null && type == UnaryOperation.class) node = UnaryOperation.decodeStatement(parent, statement, location, require);
@@ -526,7 +529,7 @@ public class SyntaxTree
 		else if (type.isAssignableFrom(LocalDeclaration.class) && (node = LocalDeclaration.decodeStatement(parent, statement, location, require)) != null);
 //		else if (type.isAssignableFrom(Null.class) && (node = Null.decodeStatement(parent, statement, location, require)) != null);
 		else if (type.isAssignableFrom(MethodCall.class) && (node = MethodCall.decodeStatement(parent, statement, location, require)) != null);
-		else if (type.isAssignableFrom(MethodDeclaration.class) && (node = MethodDeclaration.decodeStatement(parent, statement, location, require)) != null);
+		else if (type.isAssignableFrom(BodyMethodDeclaration.class) && (node = BodyMethodDeclaration.decodeStatement(parent, statement, location, require)) != null);
 		else if (type.isAssignableFrom(Priority.class) && (node = Priority.decodeStatement(parent, statement, location, require)) != null);
 		else if (type.isAssignableFrom(Return.class) && (node = Return.decodeStatement(parent, statement, location, require)) != null);
 		else if (type.isAssignableFrom(UnaryOperation.class) && (node = UnaryOperation.decodeStatement(parent, statement, location, require)) != null);
@@ -573,7 +576,7 @@ public class SyntaxTree
 		else if (type2.isAssignableFrom(Instantiation.class) == declaration && type.isAssignableFrom(Instantiation.class) && (node = Instantiation.decodeStatement(parent, statement, location, require)) != null);
 		else if (type2.isAssignableFrom(LocalDeclaration.class) == declaration && type.isAssignableFrom(LocalDeclaration.class) && (node = LocalDeclaration.decodeStatement(parent, statement, location, require)) != null);
 		else if (type2.isAssignableFrom(MethodCall.class) == declaration && type.isAssignableFrom(MethodCall.class) && (node = MethodCall.decodeStatement(parent, statement, location, require)) != null);
-		else if (type2.isAssignableFrom(MethodDeclaration.class) == declaration && type.isAssignableFrom(MethodDeclaration.class) && (node = MethodDeclaration.decodeStatement(parent, statement, location, require)) != null);
+		else if (type2.isAssignableFrom(BodyMethodDeclaration.class) == declaration && type.isAssignableFrom(BodyMethodDeclaration.class) && (node = BodyMethodDeclaration.decodeStatement(parent, statement, location, require)) != null);
 		else if (type2.isAssignableFrom(FieldDeclaration.class) == declaration && type.isAssignableFrom(FieldDeclaration.class) && (node = FieldDeclaration.decodeStatement(parent, statement, location, require)) != null);
 		
 		return node;
@@ -884,15 +887,14 @@ public class SyntaxTree
 				return variable;
 			}
 			
-			if (scopeNode instanceof MethodDeclaration)
+			if (scopeNode instanceof NovaMethodDeclaration)
 			{
-				MethodDeclaration        method     = (MethodDeclaration)scopeNode;
-				ParameterList<Parameter> parameters = method.getParameterList();
-				Parameter                parameter  = parameters.getParameter(statement);
+				NovaMethodDeclaration method   = (NovaMethodDeclaration)scopeNode;
+				Parameter            parameter = method.getParameter(statement);
 				
 				if (parameter != null)
 				{
-					parameters.validateAccess(parameter, parent);
+					method.getParameterList().validateAccess(parameter, parent);
 					
 					return parameter;
 				}

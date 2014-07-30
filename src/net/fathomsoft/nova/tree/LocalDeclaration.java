@@ -15,7 +15,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.2.4 Jan 5, 2014 at 9:10:49 PM
- * @version	v0.2.19 Jul 26, 2014 at 12:30:24 AM
+ * @version	v0.2.21 Jul 30, 2014 at 1:45:00 PM
  */
 public class LocalDeclaration extends VariableDeclaration
 {

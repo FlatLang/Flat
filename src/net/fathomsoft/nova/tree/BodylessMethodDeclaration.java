@@ -5,7 +5,6 @@ import java.util.regex.Pattern;
 import net.fathomsoft.nova.util.Bounds;
 import net.fathomsoft.nova.util.Location;
 import net.fathomsoft.nova.util.Regex;
-import net.fathomsoft.nova.util.StringUtils;
 
 /**
  * MethodDeclaration extension that represents the declaration of a
@@ -13,7 +12,7 @@ import net.fathomsoft.nova.util.StringUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.2.19 Jul 26, 2014 at 12:30:24 AM
- * @version	v0.2.20 Jul 29, 2014 at 7:26:50 PM
+ * @version	v0.2.21 Jul 30, 2014 at 1:45:00 PM
  */
 public class BodylessMethodDeclaration extends MethodDeclaration
 {
@@ -26,48 +25,30 @@ public class BodylessMethodDeclaration extends MethodDeclaration
 	}
 	
 	/**
+	 * @see net.fathomsoft.nova.tree.CallableMethod#isVirtual()
+	 */
+	@Override
+	public boolean isVirtual()
+	{
+		return false;
+	}
+	
+	/**
+	 * @see net.fathomsoft.nova.tree.MethodDeclaration#containsBody()
+	 */
+	@Override
+	public boolean containsBody()
+	{
+		return false;
+	}
+	
+	/**
 	 * @see net.fathomsoft.nova.tree.Node#getScope()
 	 */
 	@Override
 	public Scope getScope()
 	{
 		return null;
-	}
-	
-	/**
-	 * @see net.fathomsoft.nova.tree.Node#generateCHeader(StringBuilder)
-	 */
-	@Override
-	public StringBuilder generateCHeader(StringBuilder builder)
-	{
-		return generateCHeaderFragment(builder);
-	}
-	
-	/**
-	 * @see net.fathomsoft.nova.tree.Node#generateCHeaderFragment(StringBuilder)
-	 */
-	@Override
-	public StringBuilder generateCHeaderFragment(StringBuilder builder)
-	{
-		return builder;
-	}
-	
-	/**
-	 * @see net.fathomsoft.nova.tree.Node#generateCSource(StringBuilder)
-	 */
-	@Override
-	public StringBuilder generateCSource(StringBuilder builder)
-	{
-		return generateCSourceFragment(builder);
-	}
-	
-	/**
-	 * @see net.fathomsoft.nova.tree.Node#generateCSourceFragment(StringBuilder)
-	 */
-	@Override
-	public StringBuilder generateCSourceFragment(StringBuilder builder)
-	{
-		return builder;
 	}
 	
 	/**
@@ -87,7 +68,7 @@ public class BodylessMethodDeclaration extends MethodDeclaration
 			return null;
 		}
 		
-		String signature = findMethodSignature(statement);
+		String signature = NovaMethodDeclaration.findMethodSignature(statement);
 		Bounds bounds    = Regex.boundsOf(signature, pattern);
 		
 		if (!bounds.isValid())

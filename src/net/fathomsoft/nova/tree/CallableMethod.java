@@ -5,7 +5,7 @@ package net.fathomsoft.nova.tree;
  * 
  * @author	Braden Steffaniak
  * @since	v0.2.14 Jul 1, 2014 at 11:41:22 PM
- * @version	v0.2.19 Jul 26, 2014 at 12:30:24 AM
+ * @version	v0.2.21 Jul 30, 2014 at 1:45:00 PM
  */
 public interface CallableMethod
 {
@@ -58,19 +58,9 @@ public interface CallableMethod
 	public int getArrayDimensions();
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.MethodDeclaration#isVirtual()
+	 * @see net.fathomsoft.nova.tree.NovaMethodDeclaration#isVirtual()
 	 */
 	public boolean isVirtual();
-	
-	/**
-	 * @see net.fathomsoft.nova.tree.MethodDeclaration#generateCVirtualMethodName()
-	 */
-	public StringBuilder generateCVirtualMethodName();
-	
-	/**
-	 * @see net.fathomsoft.nova.tree.MethodDeclaration#generateCVirtualMethodName(StringBuilder)
-	 */
-	public StringBuilder generateCVirtualMethodName(StringBuilder builder);
 	
 	/**
 	 * @see net.fathomsoft.nova.tree.Node#getParentClass()

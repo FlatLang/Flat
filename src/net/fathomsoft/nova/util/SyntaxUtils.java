@@ -3,6 +3,7 @@ package net.fathomsoft.nova.util;
 import java.util.regex.Matcher;
 
 import net.fathomsoft.nova.error.SyntaxMessage;
+import net.fathomsoft.nova.tree.BodyMethodDeclaration;
 import net.fathomsoft.nova.tree.ClassDeclaration;
 import net.fathomsoft.nova.tree.Closure;
 import net.fathomsoft.nova.tree.FileDeclaration;
@@ -27,7 +28,7 @@ import net.fathomsoft.nova.tree.variables.Variable;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Mar 15, 2014 at 7:55:00 PM
- * @version	v0.2.19 Jul 26, 2014 at 12:30:24 AM
+ * @version	v0.2.21 Jul 30, 2014 at 1:45:00 PM
  */
 public class SyntaxUtils
 {
@@ -952,11 +953,11 @@ public class SyntaxUtils
 	 * @param methodDeclaration The Method instance to validate.
 	 * @return Whether or not the given Method is a valid main method.
 	 */
-	public static boolean isMainMethod(MethodDeclaration methodDeclaration)
+	public static boolean isMainMethod(BodyMethodDeclaration methodDeclaration)
 	{
 		if (methodDeclaration.getName().equals("main") && methodDeclaration.isStatic() && methodDeclaration.getType().equals("void") && methodDeclaration.getVisibility() == FieldDeclaration.PUBLIC)
 		{
-			ParameterList<Parameter> params = methodDeclaration.getParameterList();
+			ParameterList<Value> params = methodDeclaration.getParameterList();
 			
 			if (params.getNumVisibleChildren() == 1)
 			{

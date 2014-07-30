@@ -11,6 +11,7 @@
 * Rename Integer to Int
 * Fix the conflict between data type output and polymorphic type casts.
 * Can Constructor use generateCNameOutput()?
+* Fix the setScope() method to not break sub-classing.
 
 In-depth compiler error checking:
 - Make sure that the static class's methods/variables are called rightfully.

@@ -10,7 +10,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:00:19 PM
- * @version	v0.2.19 Jul 26, 2014 at 12:30:24 AM
+ * @version	v0.2.21 Jul 30, 2014 at 1:45:00 PM
  */
 public class IIdentifier extends Identifier
 {
@@ -120,7 +120,7 @@ public class IIdentifier extends Identifier
 		{
 			if (isExternalType())
 			{
-				if (getParentMethod() == null || getAncestorOfType(ExternalMethodDeclaration.class) == null)
+				if (getAncestorOfType(ExternalMethodDeclaration.class) == null)
 				{
 					setDataType(POINTER);
 				}

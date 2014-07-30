@@ -19,7 +19,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.2.1 Apr 29, 2014 at 8:04:48 PM
- * @version	v0.2.19 Jul 26, 2014 at 12:30:24 AM
+ * @version	v0.2.21 Jul 30, 2014 at 1:45:00 PM
  */
 public class TreeGenerator implements Runnable
 {
@@ -49,7 +49,7 @@ public class TreeGenerator implements Runnable
 	private static final Class<?>	SECOND_PASS_CLASSES[] = new Class<?>[]
 	{
 		AbstractMethodDeclaration.class, ExternalMethodDeclaration.class, Destructor.class,
-		Constructor.class, MethodDeclaration.class, ExternalType.class, FieldDeclaration.class
+		Constructor.class, BodyMethodDeclaration.class, ExternalType.class, FieldDeclaration.class
 	};
 	
 	/**
@@ -475,7 +475,7 @@ public class TreeGenerator implements Runnable
 				}
 				else
 				{
-					parentStack.push(MethodDeclaration.generateTemporaryMethod(parent, location));
+					parentStack.push(BodyMethodDeclaration.generateTemporaryMethod(parent, location));
 				}
 			}
 		}

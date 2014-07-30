@@ -16,9 +16,9 @@ import net.fathomsoft.nova.util.StringUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:50:43 PM
- * @version	v0.2.19 Jul 26, 2014 at 12:30:24 AM
+ * @version	v0.2.21 Jul 30, 2014 at 1:45:00 PM
  */
-public class Destructor extends MethodDeclaration
+public class Destructor extends BodyMethodDeclaration
 {
 	/**
 	 * @see net.fathomsoft.nova.tree.Node#Node(Node, Location)
@@ -26,10 +26,6 @@ public class Destructor extends MethodDeclaration
 	public Destructor(Node temporaryParent, Location locationIn)
 	{
 		super(temporaryParent, locationIn);
-		
-//		setStatic(true);
-		
-//		getParameterList().getObjectReference().setDataType(POINTER);
 	}
 	
 	/**

@@ -82,17 +82,13 @@ int nova_static_Double_repetition(Double* this, ExceptionData* exceptionData, ch
 	
 	nova_1_index = nova_0_start;
 	nova_1_c = nova_0_buffer[nova_1_index];
-	while (nova_0_buffer[--nova_1_index] == nova_1_c)
-	{
-	}
+	while (nova_0_buffer[--nova_1_index] == nova_1_c);
 	return nova_0_start - nova_1_index - 1;
 }
 
 int nova_static_Double_lastSignificantDigit(Double* this, ExceptionData* exceptionData, char* nova_0_buffer, int nova_0_start)
 {
-	while (nova_0_buffer[nova_0_start--] == '0')
-	{
-	}
+	while (nova_0_buffer[nova_0_start--] == '0');
 	return nova_0_start + 1;
 }
 
@@ -109,9 +105,7 @@ String* nova_static_1_Double_toString(Double* this, ExceptionData* exceptionData
 	nova_1_c = nova_1_buffer[--nova_1_lastIndex];
 	if (nova_1_c == '0' || nova_1_c == '9')
 	{
-		while (nova_1_buffer[nova_1_lastIndex--] == nova_1_c)
-		{
-		}
+		while (nova_1_buffer[nova_1_lastIndex--] == nova_1_c);
 		if (nova_1_buffer[++nova_1_lastIndex] == '.')
 		{
 			nova_1_lastIndex++;

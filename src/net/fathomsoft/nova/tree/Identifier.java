@@ -15,7 +15,7 @@ import net.fathomsoft.nova.util.Location;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:00:19 PM
- * @version	v0.2.20 Jul 29, 2014 at 7:26:50 PM
+ * @version	v0.2.21 Jul 30, 2014 at 1:45:00 PM
  */
 public abstract class Identifier extends Value
 {
@@ -465,11 +465,6 @@ public abstract class Identifier extends Value
 	public boolean isDecodingAccessedNode(Node node)
 	{
 		return node.getParent() == this && !containsChild(node);
-	}
-	
-	public boolean isDecoding()
-	{
-		return !getParent().containsChild(this);
 	}
 	
 	public StringBuilder generateNovaInputUntil(Identifier stopAt)

@@ -13,7 +13,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.2.14 Jul 5, 2014 at 9:02:42 PM
- * @version	v0.2.19 Jul 26, 2014 at 12:30:24 AM
+ * @version	v0.2.21 Jul 30, 2014 at 1:45:00 PM
  */
 public class Closure extends Variable
 {
@@ -51,7 +51,9 @@ public class Closure extends Variable
 		
 		if (getMethodDeclaration().isVirtual() && !isVirtualTypeKnown())
 		{
-			getRootReferenceNode().generateCArgumentReference(builder, this).append("->").append(VTable.IDENTIFIER).append("->").append(getMethodDeclaration().generateCVirtualMethodName());
+			getRootReferenceNode().generateCArgumentReference(builder, this).append("->").append(VTable.IDENTIFIER).append("->");
+			
+			builder.append(getMethodDeclaration().generateCVirtualMethodName());
 		}
 		else
 		{
@@ -109,7 +111,7 @@ public class Closure extends Variable
 	 * @return The MethodDeclaration that is being passed as the closure
 	 * 		to the MethodCall.
 	 */
-	public MethodDeclaration getMethodDeclaration()
+	public NovaMethodDeclaration getMethodDeclaration()
 	{
 		return getMethodDeclaration(getName());
 	}
@@ -122,9 +124,9 @@ public class Closure extends Variable
 	 * @return The MethodDeclaration that is being passed as the closure
 	 * 		to the MethodCall.
 	 */
-	private MethodDeclaration getMethodDeclaration(String name)
+	private NovaMethodDeclaration getMethodDeclaration(String name)
 	{
-		return getReferenceNode().getTypeClass().getMethod(name, getClosureDeclaration().getParameterList().getTypes());
+		return (NovaMethodDeclaration)getReferenceNode().getTypeClass().getMethod(name, getClosureDeclaration().getParameterList().getTypes());
 	}
 	
 	/**
@@ -243,8 +245,8 @@ public class Closure extends Variable
 	 */
 	private void validateParameters(ClosureDeclaration declaration, MethodDeclaration method)
 	{
-		ParameterList<Value>     list1 = declaration.getParameterList();
-		ParameterList<Parameter> list2 = method.getParameterList();
+		ParameterList<Value> list1 = declaration.getParameterList();
+		ParameterList<Value> list2 = method.getParameterList();
 		
 		validateNumParameters(method, list1, list2);
 		validateIndividualParameters(method, list1, list2);
@@ -260,7 +262,7 @@ public class Closure extends Variable
 	 * @param list1 The ParameterList of the ClosureDeclaration.
 	 * @param list2 The ParameterList of the MethodDeclaration.
 	 */
-	private void validateNumParameters(MethodDeclaration method, ParameterList<Value> list1, ParameterList<Parameter> list2)
+	private void validateNumParameters(MethodDeclaration method, ParameterList<Value> list1, ParameterList<Value> list2)
 	{
 		if (list1.getNumVisibleChildren() != list2.getNumVisibleChildren())
 		{
@@ -285,7 +287,7 @@ public class Closure extends Variable
 	 * @param list1 The ParameterList of the ClosureDeclaration.
 	 * @param list2 The ParameterList of the MethodDeclaration.
 	 */
-	private void validateIndividualParameters(MethodDeclaration method, ParameterList<Value> list1, ParameterList<Parameter> list2)
+	private void validateIndividualParameters(MethodDeclaration method, ParameterList<Value> list1, ParameterList<Value> list2)
 	{
 		for (int i = 0; i < list1.getNumVisibleChildren(); i++)
 		{

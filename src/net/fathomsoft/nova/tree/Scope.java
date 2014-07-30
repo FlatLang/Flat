@@ -1,7 +1,6 @@
 package net.fathomsoft.nova.tree;
 
 import net.fathomsoft.nova.tree.variables.Variable;
-import net.fathomsoft.nova.tree.variables.VariableDeclaration;
 import net.fathomsoft.nova.tree.variables.VariableDeclarationList;
 import net.fathomsoft.nova.util.Location;
 
@@ -21,7 +20,7 @@ import net.fathomsoft.nova.util.Location;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Apr 5, 2014 at 10:54:20 PM
- * @version	v0.2.19 Jul 26, 2014 at 12:30:24 AM
+ * @version	v0.2.21 Jul 30, 2014 at 1:45:00 PM
  */
 public class Scope extends Node
 {
@@ -37,10 +36,8 @@ public class Scope extends Node
 		super(temporaryParent, locationIn);
 		
 		VariableDeclarationList variablesNode  = new VariableDeclarationList(this, locationIn);
-		VariableDeclarationList localVariables = new VariableDeclarationList(this, locationIn);
 		
-		addChild(variablesNode, this);		
-		addChild(localVariables, this);
+		addChild(variablesNode, this);
 		
 		id = getParentMethod().generateUniqueID();
 	}
@@ -63,19 +60,6 @@ public class Scope extends Node
 	public VariableDeclarationList getVariableList()
 	{
 		return (VariableDeclarationList)getChild(super.getNumDefaultChildren() + 0);
-	}
-	
-	/**
-	 * Get the VariableList that contains the variables that were
-	 * required to be implicitly declared before they were used within
-	 * a method call. For instance, when a virtual object is calling
-	 * a virtual method.
-	 * 
-	 * @return The VariableDeclarationList instance.
-	 */
-	private VariableDeclarationList getLocalVariableList()
-	{
-		return (VariableDeclarationList)getChild(super.getNumDefaultChildren() + 1);
 	}
 	
 	public Variable registerLocalVariable(MethodCall virtual, MethodCall stopAt)

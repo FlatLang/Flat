@@ -17,7 +17,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 10:04:31 PM
- * @version	v0.2.19 Jul 26, 2014 at 12:30:24 AM
+ * @version	v0.2.21 Jul 30, 2014 at 1:45:00 PM
  */
 public class MethodCall extends IIdentifier
 {
@@ -186,7 +186,7 @@ public class MethodCall extends IIdentifier
 			return method;
 		}
 		
-		return getParentMethod().getParameterList().getParameter(getName());
+		return getParentMethod().getParameter(getName());
 	}
 	
 	public ClassDeclaration getDeclaringClass()
@@ -340,19 +340,16 @@ public class MethodCall extends IIdentifier
 		VariableDeclaration method   = getMethodDeclaration();
 		CallableMethod      callable = (CallableMethod)method;
 		
-		if (getName().equals("read"))
-		{
-			System.out.println("ASDF");
-		}
-		
 		if (callable.isVirtual() && !isVirtualTypeKnown())
 		{
+			NovaMethodDeclaration novaMethod = (NovaMethodDeclaration)method;
+			
 			if (!isAccessed())
 			{
 				builder.append(ParameterList.OBJECT_REFERENCE_IDENTIFIER).append("->");
 			}
 			
-			builder.append(VTable.IDENTIFIER).append("->").append(callable.generateCVirtualMethodName());
+			builder.append(VTable.IDENTIFIER).append("->").append(novaMethod.generateCVirtualMethodName());
 		}
 		else
 		{
@@ -392,10 +389,6 @@ public class MethodCall extends IIdentifier
 			
 			Bounds bounds = SyntaxUtils.findInnerParenthesesBounds(n, statement);
 			
-			if (statement.equals("execute(\"dir\")"))
-			{
-				System.out.println("B");
-			}
 			if (!n.decodeMethodName(statement, bounds, require) || !n.decodeArguments(statement, bounds))
 			{
 				return null;

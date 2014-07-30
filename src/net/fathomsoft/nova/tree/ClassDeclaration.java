@@ -21,7 +21,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:15:51 PM
- * @version	v0.2.20 Jul 29, 2014 at 7:26:50 PM
+ * @version	v0.2.21 Jul 30, 2014 at 1:45:00 PM
  */
 public class ClassDeclaration extends InstanceDeclaration
 {
@@ -151,9 +151,9 @@ public class ClassDeclaration extends InstanceDeclaration
 		return getVirtualMethods().length > 0;
 	}
 	
-	public MethodDeclaration[] getVirtualMethods()
+	public NovaMethodDeclaration[] getVirtualMethods()
 	{
-		ArrayList<MethodDeclaration> methods = new ArrayList<MethodDeclaration>();
+		ArrayList<NovaMethodDeclaration> methods = new ArrayList<NovaMethodDeclaration>();
 		
 		addVirtualMethods(methods);
 		
@@ -162,26 +162,31 @@ public class ClassDeclaration extends InstanceDeclaration
 			getExtendedClass().addVirtualMethods(methods);
 		}
 		
-		return methods.toArray(new MethodDeclaration[0]);
+		return methods.toArray(new NovaMethodDeclaration[0]);
 	}
 	
-	private void addVirtualMethods(ArrayList<MethodDeclaration> methods)
+	private void addVirtualMethods(ArrayList<NovaMethodDeclaration> methods)
 	{
 		MethodList list = getMethodList();
 		
 		for (int i = 0; i < list.getNumVisibleChildren(); i++)
 		{
-			MethodDeclaration method = (MethodDeclaration)list.getChild(i);
+			MethodDeclaration m = (MethodDeclaration)list.getChild(i);
 			
-			if (method.getParentClass() == this && (method.doesOverride() || method.isOverridden()) && !containsMethod(method, methods))
+			if (!m.isExternal())
 			{
-				methods.add(method);
+				NovaMethodDeclaration method = (NovaMethodDeclaration)m;
+				
+				if (method.getParentClass() == this && (method.doesOverride() || method.isOverridden()) && !containsMethod(method, methods))
+				{
+					methods.add(method);
+				}
 			}
 		}
 		
 	}
 	
-	private boolean containsMethod(MethodDeclaration method, ArrayList<MethodDeclaration> methods)
+	private boolean containsMethod(NovaMethodDeclaration method, ArrayList<NovaMethodDeclaration> methods)
 	{
 		for (MethodDeclaration m : methods)
 		{

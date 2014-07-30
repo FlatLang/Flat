@@ -8,7 +8,7 @@ import net.fathomsoft.nova.util.Location;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Mar 16, 2014 at 1:13:49 AM
- * @version	v0.2.19 Jul 26, 2014 at 12:30:24 AM
+ * @version	v0.2.21 Jul 30, 2014 at 1:45:00 PM
  */
 public class VTable extends IIdentifier
 {
@@ -28,7 +28,7 @@ public class VTable extends IIdentifier
 	@Override
 	public StringBuilder generateCHeader(StringBuilder builder)
 	{
-		MethodDeclaration methods[] = getParentClass().getVirtualMethods();
+		NovaMethodDeclaration methods[] = getParentClass().getVirtualMethods();
 		
 		if (methods.length <= 0)
 		{
@@ -49,7 +49,7 @@ public class VTable extends IIdentifier
 	@Override
 	public StringBuilder generateCSource(StringBuilder builder)
 	{
-		MethodDeclaration methods[] = getParentClass().getVirtualMethods();
+		NovaMethodDeclaration methods[] = getParentClass().getVirtualMethods();
 
 		if (methods.length <= 0)
 		{
@@ -73,9 +73,9 @@ public class VTable extends IIdentifier
 //		return builder.append(Nova.LANGUAGE_NAME.toLowerCase()).append("_VTable_").append(getParentClass().generateUniquePrefix());
 //	}
 	
-	public StringBuilder generateVirtualMethodDeclarations(StringBuilder builder, MethodDeclaration methods[])
+	public StringBuilder generateVirtualMethodDeclarations(StringBuilder builder, NovaMethodDeclaration methods[])
 	{
-		for (MethodDeclaration method : methods)
+		for (NovaMethodDeclaration method : methods)
 		{
 			generateVirtualMethodDeclaration(builder, method);
 		}
@@ -83,12 +83,12 @@ public class VTable extends IIdentifier
 		return builder;
 	}
 	
-	public StringBuilder generateVirtualMethodDeclaration(StringBuilder builder, MethodDeclaration method)
+	public StringBuilder generateVirtualMethodDeclaration(StringBuilder builder, NovaMethodDeclaration method)
 	{
 		return method.generateCTypeOutput(builder).append(" (*").append(method.generateCVirtualMethodName()).append(")(").append(method.getParameterList().generateCHeader()).append(");\n");
 	}
 	
-	public StringBuilder generateVirtualMethodValues(StringBuilder builder, MethodDeclaration methods[])
+	public StringBuilder generateVirtualMethodValues(StringBuilder builder, NovaMethodDeclaration methods[])
 	{
 		for (MethodDeclaration method : methods)
 		{

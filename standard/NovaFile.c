@@ -71,7 +71,7 @@ void nova_File_reopen(File* this, ExceptionData* exceptionData)
 	this->prv->nova_File_fp = fopen(nova_String_toCharArray(this->prv->nova_File_location, exceptionData), (char*)("r+"));
 }
 
-void nova_2_File_rewind(File* this, ExceptionData* exceptionData)
+void nova_1_File_rewind(File* this, ExceptionData* exceptionData)
 {
 	rewind(this->prv->nova_File_fp);
 }

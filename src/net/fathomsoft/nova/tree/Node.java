@@ -21,7 +21,7 @@ import net.fathomsoft.nova.util.StringUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:00:11 PM
- * @version	v0.2.19 Jul 26, 2014 at 12:30:24 AM
+ * @version	v0.2.21 Jul 30, 2014 at 1:45:00 PM
  */
 public abstract class Node
 {
@@ -306,7 +306,7 @@ public abstract class Node
 	 */
 	public void setScope(Scope scope)
 	{
-		addChild(0, scope, this);
+		addChild(scope, this);
 	}
 	
 	/**
@@ -569,30 +569,29 @@ public abstract class Node
 		children.remove(node);
 	}
 	
+	public boolean isDecoding()
+	{
+		return !getParent().containsChild(this);
+	}
+	
 	/**
 	 * Detach the specified node from its parent.
 	 */
 	public void detach()
 	{
-		if (parent == null)
+		if (parent == null || isDecoding())
 		{
 			return;
 		}
 		
-		Node scope = null;
+		Node from = parent;
 		
-		if (parent.getNumChildren() > 0)
+		if (parent.getNumChildren() > 0 && parent.containsScope())
 		{
-			scope = parent.getScope();
+			from = parent.getScope();
 		}
-		if (scope == null)
-		{
-			detach(parent);
-		}
-		else
-		{
-			detach(scope);
-		}
+		
+		detach(from);
 	}
 	
 	/**
@@ -1142,7 +1141,7 @@ public abstract class Node
 	 * 
 	 * @return The nearest Method instance that contains this node.
 	 */
-	public final MethodDeclaration getParentMethod()
+	public final BodyMethodDeclaration getParentMethod()
 	{
 		return getParentMethod(false);
 	}
@@ -1154,9 +1153,9 @@ public abstract class Node
 	 * 		Node to see if it is a MethodDeclaration.
 	 * @return The nearest Method instance that contains this node.
 	 */
-	public final MethodDeclaration getParentMethod(boolean inclusive)
+	public final BodyMethodDeclaration getParentMethod(boolean inclusive)
 	{
-		return (MethodDeclaration)getAncestorOfType(MethodDeclaration.class, inclusive);
+		return (BodyMethodDeclaration)getAncestorOfType(BodyMethodDeclaration.class, inclusive);
 	}
 	
 	/**
@@ -1247,11 +1246,11 @@ public abstract class Node
 			node.setLocationIn(locIn);
 		}
 		
-		for (int i = 0; i < getNumChildren(); i++)
+		for (int i = getNumChildren() - 1; i >= 0; i--)
 		{
 			Node child = children.get(i);
 			
-			node.children.add(child.clone(node, child.getLocationIn()/*, true*/));
+			node.children.add(0, child.clone(node, child.getLocationIn()));
 		}
 		
 		return node;

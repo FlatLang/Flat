@@ -13,7 +13,7 @@ import net.fathomsoft.nova.util.Regex;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 13, 2014 at 7:56:24 PM
- * @version	v0.2.19 Jul 26, 2014 at 12:30:24 AM
+ * @version	v0.2.21 Jul 30, 2014 at 1:45:00 PM
  */
 public class Import extends Node
 {
@@ -247,7 +247,7 @@ public class Import extends Node
 			
 			location.cloneTo(node);
 			
-			replace(location, location);
+			//replace(location, location);
 		}
 		
 		return this;

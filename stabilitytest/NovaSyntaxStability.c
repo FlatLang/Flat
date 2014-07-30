@@ -136,17 +136,13 @@ void nova_static_SyntaxStability_checkUntil(SyntaxStability* this, ExceptionData
 	nova_1_obj = (Object*)0;
 	if (!(nova_1_obj != (Object*)0))
 	{
-		nova_1_obj = nova_static_SyntaxStability_test1((SyntaxStability*)0, exceptionData);
+		nova_1_obj = nova_static_SyntaxStability_test2((SyntaxStability*)0, exceptionData);
 		if (!(nova_1_obj != (Object*)0))
 		{
-			nova_1_obj = nova_static_SyntaxStability_test2((SyntaxStability*)0, exceptionData);
+			nova_1_obj = nova_static_SyntaxStability_test3((SyntaxStability*)0, exceptionData);
 			if (!(nova_1_obj != (Object*)0))
 			{
-				nova_1_obj = nova_static_SyntaxStability_test3((SyntaxStability*)0, exceptionData);
-				if (!(nova_1_obj != (Object*)0))
-				{
-					nova_2_StabilityTest_fail(nova_0_program, exceptionData, nova_String_String(0, exceptionData, (char*)("Failed to stop after correct condition")));
-				}
+				nova_2_StabilityTest_fail(nova_0_program, exceptionData, nova_String_String(0, exceptionData, (char*)("Failed to stop after correct condition")));
 			}
 		}
 	}
