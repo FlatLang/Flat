@@ -303,7 +303,7 @@ public class Constructor extends MethodDeclaration
 		if (wordNumber == numWords - 1)
 		{
 			if (!word.equals(IDENTIFIER))
-			{'
+			{
 				extra.error = "Constructor must be named \"" + IDENTIFIER + '"';
 			}
 		}
