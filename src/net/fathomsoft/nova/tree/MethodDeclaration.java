@@ -19,7 +19,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:10:53 PM
- * @version	v0.2.19 Jul 26, 2014 at 12:30:24 AM
+ * @version	v0.2.20 Jul 29, 2014 at 7:26:50 PM
  */
 public class MethodDeclaration extends InstanceDeclaration implements CallableMethod
 {
@@ -558,13 +558,8 @@ public class MethodDeclaration extends InstanceDeclaration implements CallableMe
 	 */
 	private boolean decodeSignature(String statement, boolean require)
 	{
-		int parenthesisIndex = statement.indexOf('(');
-		
-		int end = StringUtils.findNextNonWhitespaceIndex(statement, parenthesisIndex - 1, -1) + 1;
-		
-		String signature = statement.substring(0, end);
-		
-		MethodData data = (MethodData)iterateWords(signature, Patterns.IDENTIFIER_BOUNDARIES);
+		String signature = findMethodSignature(statement);
+		MethodData data  = (MethodData)iterateWords(signature, Patterns.IDENTIFIER_BOUNDARIES);
 		
 		if (data.error != null)
 		{
@@ -572,6 +567,29 @@ public class MethodDeclaration extends InstanceDeclaration implements CallableMe
 		}
 		
 		return true;
+	}
+	
+	/**
+	 * Find the String representing the signature of the bodyless
+	 * method that is currently being decoded from the given
+	 * statement String.
+	 * 
+	 * @param statement The String containing the method signature.
+	 * @return The signature for the bodyless method to decode.
+	 */
+	public static String findMethodSignature(String statement)
+	{
+		int paren = statement.indexOf('(');
+		
+		if (paren < 0)
+		{
+			return null;
+		}
+		
+		int end = StringUtils.findNextNonWhitespaceIndex(statement, paren - 1, -1) + 1;
+		int ret = StringUtils.findEndingMatch(statement, end, '(', ')');
+		
+		return statement.substring(0, end) + statement.substring(ret + 1);
 	}
 	
 	/**
@@ -688,15 +706,15 @@ public class MethodDeclaration extends InstanceDeclaration implements CallableMe
 		
 		if (data.error != null || !setAttribute(word, wordNumber))
 		{
-			if (wordNumber == numWords - 1)
-			{
-				setName(word);
-			}
-			else if (wordNumber == numWords - 2)
+			if (leftDelimiter.equals("->"))
 			{
 				setType(word, true, false);
 				
 				checkArray(data.signature, bounds.getEnd(), rightDelimiter);
+			}
+			else if (wordNumber == numWords - 1 || rightDelimiter.equals("->"))
+			{
+				setName(word);
 			}
 			else
 			{
@@ -704,6 +722,11 @@ public class MethodDeclaration extends InstanceDeclaration implements CallableMe
 				
 				return;
 			}
+		}
+		
+		if (getType() == null)
+		{
+			setType("void", true, false);
 		}
 	}
 	
