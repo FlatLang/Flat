@@ -1,5 +1,7 @@
 package net.fathomsoft.nova.tree;
 
+import java.io.ObjectInputStream.GetField;
+
 import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.tree.variables.FieldDeclaration;
@@ -10,6 +12,7 @@ import net.fathomsoft.nova.util.Bounds;
 import net.fathomsoft.nova.util.Location;
 import net.fathomsoft.nova.util.Patterns;
 import net.fathomsoft.nova.util.StringUtils;
+import net.fathomsoft.nova.util.SyntaxUtils;
 
 /**
  * MethodDeclaration extension that represents the declaration of a Constructor
@@ -18,10 +21,12 @@ import net.fathomsoft.nova.util.StringUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:50:47 PM
- * @version	v0.2.19 Jul 26, 2014 at 12:30:24 AM
+ * @version	v0.2.20 Jul 29, 2014 at 7:26:50 PM
  */
 public class Constructor extends MethodDeclaration
 {
+	public static final String	IDENTIFIER = "construct";
+	
 	/**
 	 * Create a Constructor and initialize default values.
 	 * 
@@ -30,8 +35,6 @@ public class Constructor extends MethodDeclaration
 	public Constructor(Node temporaryParent, Location locationIn)
 	{
 		super(temporaryParent, locationIn);
-		
-		setStatic(true);
 	}
 	
 	/**
@@ -247,28 +250,19 @@ public class Constructor extends MethodDeclaration
 	 */
 	public static Constructor decodeStatement(Node parent, String statement, Location location, boolean require)
 	{
-		int firstParenthIndex = statement.indexOf('(');
+		MethodDeclaration method = MethodDeclaration.decodeStatement(parent, statement, location, false);
 		
-		if (firstParenthIndex >= 0)
+		if (method != null && method.getName().equals(IDENTIFIER))
 		{
 			Constructor n = new Constructor(parent, location);
 			
-			int lastParenthIndex = StringUtils.findEndingMatch(statement, firstParenthIndex, '(', ')');
+			method.cloneTo(n);
 			
-			if (lastParenthIndex < 0)
-			{
-				SyntaxMessage.error("Expected a ')' ending parenthesis", n);
-			}
+			n.setName(n.getParentClass().getName());
+			n.setType(n.getParentClass().getName(), true, false);
+			n.setStatic(true);
 			
-			String parameterList = statement.substring(firstParenthIndex + 1, lastParenthIndex);
-			String preParameters = statement.substring(0, firstParenthIndex);
-			
-			ExtraData data = n.iterateWords(preParameters, Patterns.IDENTIFIER_BOUNDARIES);
-			
-			if (n.validateDeclaration(data, require) && n.decodeParameters(parameterList, require))
-			{
-				return n;
-			}
+			return n;
 		}
 		
 		return null;
@@ -293,6 +287,8 @@ public class Constructor extends MethodDeclaration
 			return SyntaxMessage.queryError(data.error, this, require);
 		}
 		
+		setName(getParentClass().getName());
+		
 		return setType(getName(), false);
 	}
 	
@@ -306,9 +302,9 @@ public class Constructor extends MethodDeclaration
 		
 		if (wordNumber == numWords - 1)
 		{
-			if (!getParentClass().getName().equals(word))
-			{
-				extra.error = "Constructor must have same name as its containing class";
+			if (!word.equals(IDENTIFIER))
+			{'
+				extra.error = "Constructor must be named \"" + IDENTIFIER + '"';
 			}
 		}
 		else if (word.equals("static"))
