@@ -7,13 +7,15 @@ package net.fathomsoft.nova.util;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 7, 2014 at 10:11:40 AM
- * @version	v0.2.18 Jul 23, 2014 at 10:43:40 PM
+ * @version	v0.2.20 Jul 29, 2014 at 7:26:50 PM
  */
 public class Location
 {
 	private int		lineNumber, offset;
 	
 	private Bounds	bounds;
+	
+	public static final Location INVALID = new Location(0, 0, 0, 0);
 	
 	/**
 	 * Default constructor.
