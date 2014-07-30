@@ -4,7 +4,7 @@ public class SVGComponentList
 {
 	public SVGComponentNode start
 	
-	public void generateOutput(File file)
+	public generateOutput(File file)
 	{
 		SVGComponentNode current = start
 		
@@ -18,7 +18,7 @@ public class SVGComponentList
 		}
 	}
 	
-	public void addChild(SVGComponent component)
+	public addChild(SVGComponent component)
 	{
 		SVGComponentNode node = new SVGComponentNode()
 		

@@ -2,12 +2,12 @@ public class Char extends Number
 {
 	visible char value
 	
-	public Char(char value)
+	public construct(char value)
 	{
 		this.value = value
 	}
 	
-	public String toString(char c)
+	public toString(char c) -> String
 	{
 		char chars[] = new char[1]
 		
@@ -16,7 +16,7 @@ public class Char extends Number
 		return new String(chars)
 	}
 	
-	public String toString()
+	public toString() -> String
 	{
 		return toString(value)
 	}

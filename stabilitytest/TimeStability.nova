@@ -3,7 +3,7 @@ import "Thread";
 
 public class TimeStability
 {
-	public static void test(StabilityTest program)
+	public static test(StabilityTest program)
 	{
 		Console.write("Checking Time.nova... ")
 		

@@ -1,8 +1,10 @@
 public class Array
 {
+	//external type void
+	
 	visible int length
 	
-	public Array()
+	public construct()//(void** data, int length)
 	{
 		
 	}

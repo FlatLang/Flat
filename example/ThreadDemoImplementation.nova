@@ -6,13 +6,13 @@ public class ThreadDemoImplementation extends Thread
 	
 	String	word
 	
-	public ThreadDemoImplementation(long millis, String word)
+	public construct(long millis, String word)
 	{
 		this.millis = millis
 		this.word   = word
 	}
 	
-	public void run()
+	public run()
 	{
 		for (int i = 0; i < 10; i++)
 		{

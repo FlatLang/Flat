@@ -4,22 +4,22 @@ public class ListNode
 	
 	ListNode	next
 	
-	public ListNode(Object data)
+	public construct(Object data)
 	{
 		this.data = data
 	}
 	
-	public Object getData()
+	public getData() -> Object
 	{
 		return data
 	}
 	
-	public ListNode getNext()
+	public getNext() -> ListNode
 	{
 		return next
 	}
 	
-	public void setNext(ListNode next)
+	public setNext(ListNode next)
 	{
 		this.next = next
 	}

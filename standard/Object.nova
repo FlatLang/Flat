@@ -4,17 +4,17 @@ public class Object
 {
 	external char[] hashCode(Object obj)
 	
-	String getHashCode()
+	getHashCode() -> String
 	{
 		return new String(hashCode(this))
 	}
 	
-	public String toString()
+	public toString() -> String
 	{
 		return "[Object @" + getHashCode() + "]"
 	}
 	
-	public bool equals(Object another)
+	public equals(Object another) -> bool
 	{
 		return this == another
 	}

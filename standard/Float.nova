@@ -2,22 +2,22 @@ public class Float extends Number
 {
 	public float value
 	
-	public Float(int value)
+	public construct(int value)
 	{
 		this.value = value
 	}
 	
-	public static int numDigits(float number)
+	public static numDigits(float number) -> int
 	{
 		return Double.numDigits(number)
 	}
 	
-	public static String toString(float value)
+	public static toString(float value) -> String
 	{
 		return Double.toString(value)
 	}
 	
-	public String toString()
+	public toString() -> String
 	{
 		return toString(value)
 	}

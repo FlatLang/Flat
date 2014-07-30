@@ -1,6 +1,6 @@
 public class PolymorphicSubClass extends PolymorphicSuperClass
 {
-	public String toString()
+	public toString() -> String
 	{
 		return "sub class"
 	}

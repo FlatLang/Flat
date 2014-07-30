@@ -1,18 +1,18 @@
 public class SyntaxStability
 {
-	public static void test(StabilityTest program)
+	public static test(StabilityTest program)
 	{
 		checkLoops(program)
 		checkUntil(program)
 	}
 	
-	static void checkLoops(StabilityTest program)
+	static checkLoops(StabilityTest program)
 	{
 		checkWhileLoops(program)
 		checkForLoops(program)
 	}
 	
-	static void checkWhileLoops(StabilityTest program)
+	static checkWhileLoops(StabilityTest program)
 	{
 		Console.write("Checking inline while loop... ")
 		
@@ -40,7 +40,7 @@ public class SyntaxStability
 		Console.writeLine("OK")
 	}
 	
-	static void checkForLoops(StabilityTest program)
+	static checkForLoops(StabilityTest program)
 	{
 		Console.write("Checking inline for loop... ")
 		
@@ -68,7 +68,7 @@ public class SyntaxStability
 		Console.writeLine("OK")
 	}
 	
-	static void checkUntil(StabilityTest program)
+	static checkUntil(StabilityTest program)
 	{
 		Console.write("Checking until statement... ")
 		
@@ -108,17 +108,17 @@ public class SyntaxStability
 		Console.writeLine("OK");
 	}
 	
-	static Object test1()
+	static test1() -> Object
 	{
 		return null
 	}
 	
-	static Object test2()
+	static test2() -> Object
 	{
 		return null
 	}
 	
-	static Object test3()
+	static test3() -> Object
 	{
 		return new Object()
 	}

@@ -10,22 +10,22 @@ public class System
 	external int NULL
 	
 	external void exit(int code) as externalExit
-	external int  system(char command[])
+	external int system(char command[])
 	external FILE* getPipe(char command[], void exit(int, String, bool))
 	external bool fgets(char buffer[], int length, FILE* pipe)
 	external bool feof(FILE* pipe)
 	
-	public static void exit(int code)
+	public static exit(int code)
 	{
 		externalExit(code)
 	}
 	
-	public static void exit(int code, String message)
+	public static exit(int code, String message)
 	{
 		exit(code, message, false)
 	}
 	
-	public static void exit(int code, String message, bool log)
+	public static exit(int code, String message, bool log)
 	{
 		if (log)
 		{
@@ -42,7 +42,7 @@ public class System
 		exit(code)
 	}
 	
-	public static int execute(String command)
+	public static execute(String command) -> int
 	{
 //		return system(command.toCharArray())
 		

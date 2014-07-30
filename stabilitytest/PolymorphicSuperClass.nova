@@ -2,12 +2,12 @@ public class PolymorphicSuperClass
 {
 	visible PolymorphicSubClass child
 	
-	public void giveBirth()
+	public giveBirth()
 	{
 		child = new PolymorphicSubClass()
 	}
 	
-	public String toString()
+	public toString() -> String
 	{
 		return "super class"
 	}

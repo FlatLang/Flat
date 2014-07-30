@@ -8,14 +8,14 @@ public class ArrayList
 	
 	int data[]
 	
-	public ArrayList()
+	public construct()
 	{
 		size = 0
 		bufferSize = 0
 		increaseSize()
 	}
 	
-	public void add(int var)
+	public add(int var)
 	{
 		if (size >= bufferSize)
 		{
@@ -25,7 +25,7 @@ public class ArrayList
 		data[size++] = var
 	}
 	
-	public void increaseSize()
+	public increaseSize()
 	{
 		bufferSize = bufferSize + 3
 		
@@ -36,7 +36,7 @@ public class ArrayList
 		data = tmp
 	}
 	
-	public int get(int index)
+	public get(int index) -> int
 	{
 		return data[index]
 	}

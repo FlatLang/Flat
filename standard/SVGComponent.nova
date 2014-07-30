@@ -5,12 +5,12 @@ public class SVGComponent
 {
 	public SVGComponentList children
 	
-	public SVGComponent()
+	public construct()
 	{
 		children = new SVGComponentList()
 	}
 	
-	public void generateOutput(File file)
+	public generateOutput(File file)
 	{
 		/*String s = ""
 		

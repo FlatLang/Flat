@@ -4,7 +4,7 @@ import "File"
 
 public class StabilityTest
 {
-	public static void main(String args[])
+	public static main(String args[])
 	{
 		StabilityTest test = new StabilityTest()
 		
@@ -12,14 +12,14 @@ public class StabilityTest
 		int  result = test.runTests()
 		long time   = Time.currentTimeMillis() - start
 		
-		System.execute("/bin/ls")
+		System.execute("dir")
 		
 		Console.writeLine("Took " + time + "ms")
 		
 		Console.waitForEnter()
 	}
 	
-	public int runTests()
+	public runTests() -> int
 	{
 		try
 		{
@@ -41,12 +41,12 @@ public class StabilityTest
 		}
 	}
 	
-	public void fail()
+	public fail()
 	{
 		fail("Failed")
 	}
 	
-	public void fail(String message)
+	public fail(String message)
 	{
 		Console.writeLine(message)
 		

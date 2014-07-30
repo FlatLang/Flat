@@ -6,9 +6,9 @@ public class String
 	
 	external void strcpy(char dst[], char src[])
 	external void strcat(char dst[], char src[])
-	external int  strlen(char data[])
+	external int strlen(char data[])
 	
-	public String(char data[])
+	public construct(char data[])
 	{
 		this.data = data
 		
@@ -26,17 +26,17 @@ public class String
 //		}
 	}
 	
-	int calculateLength()
+	calculateLength() -> int
 	{
 		return strlen(data)
 	}
 	
-	public char[] toCharArray()
+	public toCharArray() -> char[]
 	{
 		return data
 	}
 	
-	public String concat(String str)
+	public concat(String str) -> String
 	{
 		int size = str.length + length + 1
 		
@@ -52,7 +52,7 @@ public class String
 		return newStr
 	}
 	
-	public bool equals(String other)
+	public equals(String other) -> bool
 	{
 		if (length != other.length)
 		{

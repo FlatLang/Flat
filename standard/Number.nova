@@ -1,10 +1,10 @@
 public class Number
 {
-	public static int numDigits(int number)
+	public static numDigits(int number) -> int
 	{
 	}
 	
-	public static String toString(int value)
+	public static toString(int value) -> String
 	{
 	}
 }

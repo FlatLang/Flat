@@ -1,5 +1,6 @@
 import "Thread"
 import "NativeFile.h"
+import "Time"
 
 public class File
 {
@@ -26,43 +27,48 @@ public class File
 	
 	String location
 	
-	public File(String location)
+	/*static
+	{
+		File exitLog = new File("log" + Time.currentTimeMillis())
+	}*/
+	
+	public construct(String location)
 	{
 		this.location = location
 		
 		fp = fopen(location.toCharArray(), "r+")
 	}
 	
-	public File(FILE* fp)
+	public construct(FILE* fp)
 	{
 		this.fp = fp;
 	}
 	
-	public bool delete()
+	public delete() -> bool
 	{
 		close()
 		
 		return remove(location.toCharArray()) == 0
 	}
 	
-	public void reopen()
+	public reopen()
 	{
 		close()
 		
 		fp = fopen(location.toCharArray(), "r+")
 	}
 	
-	public void rewind()
+	public rewind()
 	{
 		rewind(fp)
 	}
 	
-	public bool exists()
+	public exists() -> bool
 	{
 		return fp != 0
 	}
 	
-	public bool create()
+	public create() -> bool
 	{
 		if (!exists())
 		{
@@ -90,7 +96,7 @@ public class File
 		return false
 	}
 	
-	public String readAllContents()
+	public readAllContents() -> String
 	{
 		String data = ""
 		
@@ -111,7 +117,7 @@ public class File
 		return data
 	}
 	
-	public String readLine()
+	public readLine() -> String
 	{
 		int buf  = 5
 		int size = buf
@@ -160,23 +166,23 @@ public class File
 		return new String(line)
 	}
 	
-	public void writeLine(String line)
+	public writeLine(String line)
 	{
 		write(line + "\n")
 	}
 	
-	public void write(String data)
+	public write(String data)
 	{
 		fputs(data.toCharArray(), fp)
 		flush()
 	}
 	
-	public void flush()
+	public flush()
 	{
 		fflush(fp)
 	}
 	
-	public void close()
+	public close()
 	{
 		if (exists())
 		{
@@ -184,12 +190,12 @@ public class File
 		}
 	}
 	
-	public static int getMaxOpenFiles()
+	public static getMaxOpenFiles() -> int
 	{
 		return extGetMaxOpenFiles()
 	}
 	
-	public static void setMaxOpenFiles(int max)
+	public static setMaxOpenFiles(int max)
 	{
 		if (max > 2048 || max < 20)
 		{

@@ -5,12 +5,12 @@ public class StabilityExceptionHandler extends UncaughtExceptionHandler
 {
 	StabilityTest program
 	
-	public StabilityExceptionHandler(StabilityTest program)
+	public construct(StabilityTest program)
 	{
 		this.program = program
 	}
 	
-	public void uncaughtException(Thread thread, Exception exception)
+	public uncaughtException(Thread thread, Exception exception)
 	{
 		program.fail()
 	}

@@ -1,16 +1,16 @@
 public class Animal
 {
-	public int getNumLegs()
+	public getNumLegs() -> int
 	{
 		return 0
 	}
 	
-	public int getNumEyes()
+	public getNumEyes() -> int
 	{
 		return 0
 	}
 	
-	public String getDescription()
+	public getDescription() -> String
 	{
 		return "Its just a stupid animal..."
 	}

@@ -6,17 +6,17 @@ public class SVG
 {
 	public SVGMainComponent root
 	
-	public SVG()
+	public construct()
 	{
 		root = new SVGMainComponent()
 	}
 	
-	public void generateOutput(File file)
+	public generateOutput(File file)
 	{
 		root.generateOutput(file)
 	}
 	
-	public void generateHTMLOutput(File file)
+	public generateHTMLOutput(File file)
 	{
 		file.write("<html>\n")
 		

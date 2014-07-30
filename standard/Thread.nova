@@ -10,27 +10,27 @@ public class Thread
 	
 	NOVA_THREAD_HANDLE*	handle
 	
-	public void start()
+	public start()
 	{
 		handle = create_thread(this, startRun)
 	}
 	
-	public void join()
+	public join()
 	{
 		lib_nova_thread_join(handle)
 	}
 	
-	public static void sleep(long millis)
+	public static sleep(long millis)
 	{
 		lib_nova_thread_sleep(millis)
 	}
 	
-	public void run()
+	public run()
 	{
 		
 	}
 	
-	void startRun()
+	startRun()
 	{
 		try
 		{

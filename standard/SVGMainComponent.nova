@@ -4,12 +4,12 @@ import "File"
 
 public class SVGMainComponent extends SVGComponent
 {
-	public SVGMainComponent()
+	public construct()
 	{
 		children = new SVGComponentList()
 	}
 	
-	public void generateOutput(File file)
+	public generateOutput(File file)
 	{
 		file.write("<?xml version = '1.0' standalone = 'no'?>\n" +
 					"<!DOCTYPE svg PUBLIC\"-//W3C//DTD SVG1.1//EN\" \"http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd\">" +

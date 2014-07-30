@@ -2,7 +2,7 @@ public class BodyBuilder extends Person
 {
 	visible int weightClass
 	
-	public BodyBuilder(int weightClass, String name)
+	public construct(int weightClass, String name)
 	{
 		age = 5
 		
@@ -10,7 +10,7 @@ public class BodyBuilder extends Person
 		this.name        = name
 	}
 	
-	public void sayHello()
+	public sayHello()
 	{
 		Console.writeLine("Hello from " + name + " the BodyBuilder")
 	}

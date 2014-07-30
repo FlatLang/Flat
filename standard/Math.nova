@@ -17,72 +17,72 @@ public class Math
 	
 	//visible static double PI = 3.141592653
 	
-	public static int random(long range)
+	public static random(long range) -> int
 	{
 		return extRand() % range
 	}
 	
-	public static double abs(double number)
+	public static abs(double number) -> double
 	{
 		return extAbs(number)
 	}
 	
-	public static double sqrt(double number)
+	public static sqrt(double number) -> double
 	{
 		return extSqrt(number)
 	}
 	
-	public static double pow(double base, double power)
+	public static pow(double base, double power) -> double
 	{
 		return extPow(base, power)
 	}
 	
-	public static double sin(double number)
+	public static sin(double number) -> double
 	{
 		return extSin(number)
 	}
 	
-	public static double cos(double number)
+	public static cos(double number) -> double
 	{
 		return extCos(number)
 	}
 	
-	public static double tan(double number)
+	public static tan(double number) -> double
 	{
 		return extTan(number)
 	}
 	
-	public static double asin(double number)
+	public static asin(double number) -> double
 	{
 		return extAsin(number)
 	}
 	
-	public static double acos(double number)
+	public static acos(double number) -> double
 	{
 		return extAcos(number)
 	}
 	
-	public static double atan(double number)
+	public static atan(double number) -> double
 	{
 		return extAtan(number)
 	}
 	
-	public static long round(double number)
+	public static round(double number) -> long
 	{
 		return floor(number + 0.5)
 	}
 	
-	public static long floor(double number)
+	public static floor(double number) -> long
 	{
 		return extFloor(number)
 	}
 	
-	public static long ceil(double number)
+	public static ceil(double number) -> long
 	{
 		return extCeil(number)
 	}
 	
-	/*static int pow(int a, int b)
+	/*static pow(int a, int b) -> int
 	{
 		if (b == 0)
 		{
@@ -98,7 +98,7 @@ public class Math
 		}
 	}
 	
-	static int positivePow(int a, int b)
+	static positivePow(int a, int b) -> int
 	{
 		for (int i = b - 2; i >= 0; i--)
 		{

@@ -4,19 +4,19 @@ public class ClosureStability
 	
 	int	number
 	
-	void incrementNumber()
+	incrementNumber()
 	{
 		number++
 	}
 	
-	public static void test(StabilityTest program)
+	public static test(StabilityTest program)
 	{
 		TOLERANCE = 0.0000000001
 		
 		testClosures(program)
 	}
 	
-	static void testClosures(StabilityTest program)
+	static testClosures(StabilityTest program)
 	{
 		Console.writeLine("Testing closures...")
 		
@@ -24,7 +24,7 @@ public class ClosureStability
 		testInstanceClosure(program)
 	}
 	
-	static void testMathClosures(StabilityTest program)
+	static testMathClosures(StabilityTest program)
 	{
 		Console.write("Testing static math closures... ")
 		
@@ -48,7 +48,7 @@ public class ClosureStability
 		Console.writeLine("OK")
 	}
 	
-	static void testInstanceClosure(StabilityTest program)
+	static testInstanceClosure(StabilityTest program)
 	{
 		Console.write("Testing instance closures... ")
 		
@@ -67,27 +67,27 @@ public class ClosureStability
 		Console.writeLine("OK")
 	}
 	
-	static int callClosure(int closure(int, int), int a, int b)
+	static callClosure(int closure(int, int), int a, int b) -> int
 	{
 		return closure(a, b)
 	}
 	
-	static double mathClosure(double closure(double), double value)
+	static mathClosure(double closure(double), double value) -> double
 	{
 		return closure(value)
 	}
 	
-	static void instanceClosure(void closure())
+	static instanceClosure(void closure())
 	{
 		closure()
 	}
 	
-	static int multiply(int value1, int value2)
+	static multiply(int value1, int value2) -> int
 	{
 		return value1 * value2
 	}
 	
-	static int pow(int base, int pow)
+	static pow(int base, int pow) -> int
 	{
 		int value = base
 		

@@ -1,17 +1,17 @@
 public class Dog extends Animal
 {
-	public int getNumLegs()
+	public getNumLegs() -> int
 	{
 		return 4
 	}
 	
-	public int getNumEyes()
+	public getNumEyes() -> int
 	{
 		return 2
 	}
 	
-	public String getDescription()
+	public getDescription() -> String
 	{
-		return "It's a fuzzy dog"
+		return "A fuzzy dog"
 	}
 }

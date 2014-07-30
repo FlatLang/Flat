@@ -2,7 +2,7 @@ import "Thread"
 
 public class ThreadStability
 {
-	public static void test(StabilityTest program)
+	public static test(StabilityTest program)
 	{
 		Console.writeLine("Checking Thread.nova with 20 Threads... ")
 		
@@ -15,7 +15,7 @@ public class ThreadStability
 		joinThreads(threads, 20)
 	}
 	
-	static void createThreads(StabilityTest program, ThreadImplementation threads[], int amount)
+	static createThreads(StabilityTest program, ThreadImplementation threads[], int amount)
 	{
 		StabilityExceptionHandler handler = new StabilityExceptionHandler(program)
 		
@@ -27,7 +27,7 @@ public class ThreadStability
 		}
 	}
 	
-	static void checkMemoryAccess()
+	static checkMemoryAccess()
 	{
 		Thread.sleep(30)
 		
@@ -41,7 +41,7 @@ public class ThreadStability
 		Console.writeLine("OK")
 	}
 	
-	static void joinThreads(ThreadImplementation threads[], int amount)
+	static joinThreads(ThreadImplementation threads[], int amount)
 	{
 		for (int i = 0; i < amount; i++)
 		{

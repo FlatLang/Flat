@@ -1,6 +1,6 @@
 public class ExceptionStability
 {
-	public static void test(StabilityTest program)
+	public static test(StabilityTest program)
 	{
 		Console.write("Checking Exception handling... ")
 		
@@ -23,7 +23,7 @@ public class ExceptionStability
 		Console.writeLine("OK")
 	}
 	
-	static void testException(StabilityTest program)
+	static testException(StabilityTest program)
 	{
 		bool worked = false
 		

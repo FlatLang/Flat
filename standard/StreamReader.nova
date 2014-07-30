@@ -4,12 +4,12 @@ public class StreamReader extends InputStream
 {
 	File	file
 	
-	public StreamReader(File file)
+	public construct(File file)
 	{
 		this.file = file
 	}
 	
-	public String read()
+	public read() -> String
 	{
 		String output = file.readAllContents()
 		

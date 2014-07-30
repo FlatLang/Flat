@@ -6,12 +6,12 @@ public class Double extends Number
 	external char[] realloc(char buffer[], int size)
 	external int strlen(char buffer[])
 	
-	public Double(double value)
+	public construct(double value)
 	{
 		this.value = value
 	}
 	
-	public static int numDigits(double number)
+	public static numDigits(double number) -> int
 	{
 		//return Long.numDigits(number)
 		
@@ -32,7 +32,7 @@ public class Double extends Number
 		return size
 	}
 	
-	static String genString(char buffer[], int lastIndex)
+	static genString(char buffer[], int lastIndex) -> String
 	{
 		buffer = realloc(buffer, ++lastIndex + 1)
 		
@@ -41,7 +41,7 @@ public class Double extends Number
 		return new String(buffer)
 	}
 	
-	static char[] genBuffer(double value)
+	static genBuffer(double value) -> char[]
 	{
 		int size   = 11 + 1 + 15
 		
@@ -52,7 +52,7 @@ public class Double extends Number
 		return buffer
 	}
 	
-	static int repetition(char buffer[], int start)
+	static repetition(char buffer[], int start) -> int
 	{
 		int index = start
 		
@@ -63,14 +63,14 @@ public class Double extends Number
 		return start - index - 1
 	}
 	
-	static int lastSignificantDigit(char buffer[], int start)
+	static lastSignificantDigit(char buffer[], int start) -> int
 	{
 		while (buffer[start--] == '0');
 		
 		return start + 1
 	}
 	
-	public static String toString(double value)
+	public static toString(double value) -> String
 	{
 		char buffer[] = genBuffer(value)
 		
@@ -128,7 +128,7 @@ public class Double extends Number
 		return genString(buffer, lastIndex)
 	}
 	
-	public String toString()
+	public toString() -> String
 	{
 		return toString(value)
 	}

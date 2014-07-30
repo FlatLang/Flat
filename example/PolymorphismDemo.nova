@@ -1,6 +1,6 @@
 public class PolymorphismDemo
 {
-	public static void main(String args[])
+	public static main(String args[])
 	{
 		Animal animals[] = new Animal[2]
 		
@@ -18,7 +18,7 @@ public class PolymorphismDemo
 		Console.waitForEnter()
 	}
 	
-	static String getDescriptionOfAnimalWithNumberOfLegs(Animal animals[], int numLegs)
+	static getDescriptionOfAnimalWithNumberOfLegs(Animal animals[], int numLegs) -> String
 	{
 		for (int i = 0; i < 2; i++)
 		{

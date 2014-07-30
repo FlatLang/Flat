@@ -9,19 +9,19 @@ public class SVGCircle extends SVGComponent
 	visible double y
 	visible int r
 	
-	public SVGCircle(double x, double y, int r)
+	public construct(double x, double y, int r)
 	{
 		this.x = x
 		this.y = y
 		this.r = r
 	}
 	
-	public void generateOutput(File file)
+	public generateOutput(File file)
 	{
 		file.write("<circle cx=\"" + x + "\" cy=\"" + y + "\" r=\"" + r + "\" stroke=\"false\" fill=\"black\"/>\n")
 	}
 	
-	public String toString()
+	public toString() -> String
 	{
 		return "[Circle at (" + x + ", " + y + ") with a radius of " + r + "]"
 	}

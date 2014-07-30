@@ -6,7 +6,7 @@ import "Time"
 
 public class SVGTest
 {
-	public static void main(String args[])
+	public static main(String args[])
 	{
 		SVG s = new SVG()
 		

@@ -2,7 +2,7 @@ public class InputStream
 {
 	external type FILE
 	
-	File* stream
+	File stream
 	
 	external FILE* fopen(char location[], char operation[])
 	external FILE* freopen(char location[], char operation[], FILE* fp)
@@ -15,7 +15,7 @@ public class InputStream
 	external char getc(FILE* fp)
 	external void rewind(FILE* fp)
 	
-	public abstract String readString()
+	public abstract readString() -> String
 	
-	public abstract void readBytes()
+	public abstract readBytes()
 }

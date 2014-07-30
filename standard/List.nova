@@ -5,12 +5,12 @@ public class List
 	ListNode	start
 	ListNode	current
 	
-	public ListNode getFirst()
+	public getFirst() -> ListNode
 	{
 		return start
 	}
 	
-	public void add(Object data)
+	public add(Object data)
 	{
 		ListNode node = new ListNode(data)
 		
@@ -27,7 +27,7 @@ public class List
 		current = node
 	}
 	
-	public void remove(Object data)
+	public remove(Object data)
 	{
 		if (start.getData() == data)
 		{

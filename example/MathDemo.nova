@@ -2,7 +2,7 @@ import "Time"
 
 public class MathDemo
 {
-	public static void main(String args[])
+	public static main(String args[])
 	{
 		Console.writeLine("Beginning benchmark...")
 		

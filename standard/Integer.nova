@@ -2,22 +2,22 @@ public class Integer extends Number
 {
 	public int value
 	
-	public Integer(int value)
+	public construct(int value)
 	{
 		this.value = value
 	}
 	
-	public static int numDigits(int number)
+	public static numDigits(int number) -> int
 	{
 		return Long.numDigits(number)
 	}
 	
-	public static String toString(int value)
+	public static toString(int value) -> String
 	{
 		return Long.toString(value)
 	}
 	
-	public String toString()
+	public toString() -> String
 	{
 		return toString(value)
 	}

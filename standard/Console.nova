@@ -18,106 +18,106 @@ public class Console
 	external int atoi(char array[])
 	external char[] ufgets(FILE* stream)
 	
-	public static void writeLine(String text)
+	public static writeLine(String text)
 	{
 		write(text + "\n")
 	}
 	
-	public static void writeLine(Object obj)
+	public static writeLine(Object obj)
 	{
 		writeLine(obj.toString())
 	}
 	
-	public static void writeLine(double num)
+	public static writeLine(double num)
 	{
 		writeLine(Double.toString(num))
 	}
 	
-	public static void writeLine(float num)
+	public static writeLine(float num)
 	{
 		writeLine(Double.toString(num))
 	}
 	
-	public static void writeLine(long num)
+	public static writeLine(long num)
 	{
 		writeLine(Long.toString(num))
 	}
 	
-	public static void writeLine(int num)
+	public static writeLine(int num)
 	{
 		writeLine(Integer.toString(num))
 	}
 	
-	public static void writeLine(short num)
+	public static writeLine(short num)
 	{
 		writeLine(Integer.toString(num))
 	}
 	
-//	public static void writeLine(byte num)
+//	public static writeLine(byte num)
 //	{
 //		writeLine(Integer.toString(num))
 //	}
 	
-	public static void writeLine(char c)
+	public static writeLine(char c)
 	{
 		writeLine(Char.toString(c))
 	}
 	
-	public static void write(String text)
+	public static write(String text)
 	{
 		char cText[] = text.toCharArray()
 		
 		fputs(cText, stdout)
 	}
 	
-	public static void write(Object obj)
+	public static write(Object obj)
 	{
 		write(obj.toString())
 	}
 	
-	public static void write(double num)
+	public static write(double num)
 	{
 		write(Double.toString(num))
 	}
 	
-	public static void write(float num)
+	public static write(float num)
 	{
 		write(Double.toString(num))
 	}
 	
-	public static void write(long num)
+	public static write(long num)
 	{
 		write(Long.toString(num))
 	}
 	
-	public static void write(int num)
+	public static write(int num)
 	{
 		write(Integer.toString(num))
 	}
 	
-	public static void write(short num)
+	public static write(short num)
 	{
 		write(Integer.toString(num))
 	}
 	
-//	public static void write(byte num)
+//	public static write(byte num)
 //	{
 //		write(Integer.toString(num))
 //	}
 	
-	public static void write(char c)
+	public static write(char c)
 	{
 		write(Char.toString(c))
 	}
 	
-	public static int readInt()
+	public static readInt() -> int
 	{
 		String s = readLine()
 		
 		return atoi(s.toCharArray())
 	}
 	
-	public static double readDouble()
+	public static readDouble() -> double
 	{
 		double num
 		
@@ -127,7 +127,7 @@ public class Console
 		return num
 	}
 	
-	public static char readChar()
+	public static readChar() -> char
 	{
 		char c = getchar()
 		
@@ -136,12 +136,12 @@ public class Console
 		return c
 	}
 	
-	static void flush()
+	static flush()
 	{
 		fseek(stdin, 0, SEEK_END)
 	}
 	
-	public static String readLine()
+	public static readLine() -> String
 	{
 		char line[] = ufgets(stdin)
 		
@@ -150,7 +150,7 @@ public class Console
 		return s
 	}
 	
-	public static void waitForEnter()
+	public static waitForEnter()
 	{
 		flush()
 		

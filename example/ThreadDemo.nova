@@ -3,7 +3,7 @@ import "Time"
 
 public class ThreadDemo
 {
-	public static void main(String args[])
+	public static main(String args[])
 	{
 		char c = 'y'
 		

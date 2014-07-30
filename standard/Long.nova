@@ -2,12 +2,12 @@ public class Long extends Number
 {
 	visible long value
 	
-	public Long(long value)
+	public construct(long value)
 	{
 		this.value = value
 	}
 	
-	public static int numDigits(long number)
+	public static numDigits(long number) -> int
 	{
 		if (number < 0)
 		{
@@ -26,7 +26,7 @@ public class Long extends Number
 		return size
 	}
 	
-	public static String toString(long value)
+	public static toString(long value) -> String
 	{
 		int  charOffset = '0'
 		int  digits  = numDigits(value)
@@ -57,7 +57,7 @@ public class Long extends Number
 		return new String(data)
 	}
 	
-	public String toString()
+	public toString() -> String
 	{
 		return toString(value)
 	}

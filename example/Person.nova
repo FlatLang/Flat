@@ -4,13 +4,13 @@ public class Person
 	
 	public String	name
 	
-	public Person(String name, int age)
+	public construct(String name, int age)
 	{
 		this.name = name
 		this.age  = age
 	}
 	
-	public void sayHello()
+	public sayHello()
 	{
 		Console.writeLine("Hello from " + name + " the Person")
 	}

@@ -12,23 +12,23 @@ public class ExceptionData
 	
 	visible ArrayList	codes
 	
-	public ExceptionData(buffer buf)
+	public construct(buffer buf)
 	{
 		this.buf = buf
 		codes    = new ArrayList()
 	}
 	
-	public void addCode(int code)
+	public addCode(int code)
 	{
 		codes.add(code)
 	}
 	
-	public buffer getBuffer()
+	public getBuffer() -> buffer
 	{
 		return buf
 	}
 	
-	public ExceptionData getCorrectData(int code)
+	public getCorrectData(int code) -> ExceptionData
 	{
 		ExceptionData data = this
 		
@@ -55,7 +55,7 @@ public class ExceptionData
 		return 0
 	}
 	
-	public buffer getCorrectBuffer(int code)
+	public getCorrectBuffer(int code) -> buffer
 	{
 		ExceptionData data = getCorrectData(code)
 		
@@ -67,7 +67,7 @@ public class ExceptionData
 		return data.getBuffer()
 	}
 	
-	public void jumpToBuffer(int code)
+	public jumpToBuffer(int code)
 	{
 		ExceptionData data = getCorrectData(code)
 		
@@ -81,12 +81,12 @@ public class ExceptionData
 		jump(b, code)
 	}
 	
-	public ExceptionData getParent()
+	public getParent() -> ExceptionData
 	{
 		return parent
 	}
 	
-	public void setParent(ExceptionData p)
+	public setParent(ExceptionData p)
 	{
 		parent = p
 	}

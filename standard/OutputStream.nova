@@ -2,7 +2,7 @@ public class OutputStream
 {
 	external type FILE
 	
-	File* stream
+	File stream
 	
 	external FILE* fopen(char location[], char operation[])
 	external FILE* freopen(char location[], char operation[], FILE* fp)
@@ -15,7 +15,6 @@ public class OutputStream
 	external char getc(FILE* fp)
 	external void rewind(FILE* fp)
 	
-	public abstract void write(String data)
-	
-	public abstract void write(Object data)
+	public abstract write(String data)
+	public abstract write(Object data)
 }

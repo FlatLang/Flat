@@ -2,7 +2,7 @@ import "NonWholeDivisionException"
 
 public class ExceptionHandlingDemo
 {
-	public static void main(String args[])
+	public static main(String args[])
 	{
 		try
 		{
@@ -28,7 +28,7 @@ public class ExceptionHandlingDemo
 		Console.waitForEnter()
 	}
 	
-	static int divide(int num, int den)
+	static divide(int num, int den) -> int
 	{
 		if (num % den != 0)
 		{
