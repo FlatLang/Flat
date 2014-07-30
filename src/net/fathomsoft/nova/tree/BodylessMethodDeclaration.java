@@ -13,7 +13,7 @@ import net.fathomsoft.nova.util.StringUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.2.19 Jul 26, 2014 at 12:30:24 AM
- * @version	v0.2.19 Jul 26, 2014 at 12:30:24 AM
+ * @version	v0.2.20 Jul 29, 2014 at 7:26:50 PM
  */
 public class BodylessMethodDeclaration extends MethodDeclaration
 {
@@ -87,9 +87,8 @@ public class BodylessMethodDeclaration extends MethodDeclaration
 			return null;
 		}
 		
-		String modifiers = statement.substring(0, paren);
-		
-		Bounds bounds = Regex.boundsOf(modifiers, pattern);
+		String signature = findMethodSignature(statement);
+		Bounds bounds    = Regex.boundsOf(signature, pattern);
 		
 		if (!bounds.isValid())
 		{
@@ -100,9 +99,7 @@ public class BodylessMethodDeclaration extends MethodDeclaration
 		
 		statement = statement.substring(0, bounds.getStart()) + statement.substring(bounds.getEnd(), statement.length());
 		
-		int end = StringUtils.findEndingMatch(statement, paren, '(', ')') + 1;
-		
-		return statement.substring(0, end);
+		return statement;
 	}
 	
 	/**
