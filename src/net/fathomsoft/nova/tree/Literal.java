@@ -13,7 +13,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 10:34:30 PM
- * @version	v0.2.19 Jul 26, 2014 at 12:30:24 AM
+ * @version	v0.2.20 Jul 29, 2014 at 7:26:50 PM
  */
 public class Literal extends IValue
 {
@@ -132,7 +132,9 @@ public class Literal extends IValue
 	{
 		if (!isWithinExternalContext() && isStringInstantiation())
 		{
-			return builder.append(Nova.LANGUAGE_NAME.toLowerCase()).append("_String_String(").append(Exception.EXCEPTION_DATA_IDENTIFIER).append(", ").append(value).append(")");
+			Instantiation str = Instantiation.decodeStatement(getParent(), "new String(" + value + ")", getLocationIn(), true);
+			
+			return str.generateCSourceFragment(builder);//builder.append(Nova.LANGUAGE_NAME.toLowerCase()).append("_String_String(0, ").append(Exception.EXCEPTION_DATA_IDENTIFIER).append(", ").append(value).append(")");
 		}
 		else if (value.equals(NULL_IDENTIFIER))
 		{
