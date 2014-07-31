@@ -13,13 +13,27 @@ Code: 6655 - 55% - 99%
 Comments: 5338 - 45% - 103%
 Total: 11993 - 101%
 
+v0.2.22 release:
+Code: 8145 - 54% - 122% - 122%
+Comments: 6940 - 46% - 130% - 134%
+Total: 15085 - 126% - 127%
+
 Current:
-Code: 7806 - 53% - 108% - 107%
-Comments: 6861 - 47% - 120% - 124%
-Total: 14704 - 113% - 114%
+Code: 8145 - 54% - 122% - 122%
+Comments: 6940 - 46% - 130% - 134%
+Total: 15085 - 126% - 127%
 
 -DPARALLEL_MARK
 gcc -I include -I libatomic_ops/src -O2 -DGC_THREADS -DTHREAD_LOCAL_ALLOC -shared -o gc.dll extra/gc.c
 
+Windows
 gcc -I. -Igc -L. -lgc -DUSE_GC -O2 -shared -o libNova.dll Nova.c && cp libNova.dll ../lib/libNova.dll && cp libNova.dll ../example/bin/libNova.dll
 gcc -I. -Igc -L. -lgc -DUSE_GC -O2 -shared -o libThread.dll Thread.c && cp libThread.dll ../lib/libThread.dll && cp libThread.dll ../example/bin/libThread.dll
+
+Mac
+gcc -I. -Igc -L. -lgc -DUSE_GC -O2 -shared -o libNova.dylib Nova.c && cp libNova.dylib ../lib/libNova.dylib && cp libNova.dylib ../example/bin/libNova.dylib
+gcc -I. -Igc -L. -lgc -DUSE_GC -O2 -shared -o libThread.dylib Thread.c && cp libThread.dylib ../lib/libThread.dylib && cp libThread.dylib ../example/bin/libThread.dylib
+
+Linux
+gcc -I. -Igc -L. -lgc -DUSE_GC -O2 -shared -fPIC -o libNova.so Nova.c && cp libNova.so ../lib/libNova.so && cp libNova.so ../example/bin/libNova.so
+gcc -I. -Igc -L. -lgc -DUSE_GC -O2 -shared -fPIC -o libThread.so Thread.c && cp libThread.so ../lib/libThread.so && cp libThread.so ../example/bin/libThread.so
