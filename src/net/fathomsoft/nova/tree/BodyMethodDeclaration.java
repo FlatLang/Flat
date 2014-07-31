@@ -10,7 +10,7 @@ import net.fathomsoft.nova.util.Location;
  * 
  * @author	Braden Steffaniak
  * @since	v0.2.21 Jul 30, 2014 at 1:45:00 PM
- * @version	v0.2.21 Jul 30, 2014 at 1:45:00 PM
+ * @version	v0.2.22 Jul 30, 2014 at 11:56:00 PM
  */
 public class BodyMethodDeclaration extends NovaMethodDeclaration
 {
@@ -102,7 +102,6 @@ public class BodyMethodDeclaration extends NovaMethodDeclaration
 	public static BodyMethodDeclaration generateTemporaryMethod(Node parent, Location locationIn)
 	{
 		BodyMethodDeclaration methodDeclaration = new BodyMethodDeclaration(parent, locationIn);
-		methodDeclaration.setType("void");
 		
 		return methodDeclaration;
 	}
@@ -136,6 +135,7 @@ public class BodyMethodDeclaration extends NovaMethodDeclaration
 			BodyMethodDeclaration n = new BodyMethodDeclaration(parent, location);
 			
 			method.cloneTo(n);
+			n.setLocationIn(location);
 			
 			return n;
 		}
