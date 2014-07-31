@@ -15,7 +15,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.2.14 Jul 5, 2014 at 9:02:42 PM
- * @version	v0.2.21 Jul 30, 2014 at 1:45:00 PM
+ * @version	v0.2.22 Jul 30, 2014 at 11:56:00 PM
  */
 public class ClosureDeclaration extends Parameter implements CallableMethod
 {
@@ -28,11 +28,11 @@ public class ClosureDeclaration extends Parameter implements CallableMethod
 	{
 		super(temporaryParent, locationIn);
 		
-		ParameterList<Value> parameterList = new ParameterList<Value>(this, null);
+		ParameterList<Value> parameterList = new ParameterList<Value>(this, Location.INVALID);
 		
 		addChild(parameterList);
 		
-		parameterList.getObjectReference().setType("void");
+		parameterList.getObjectReference().setType(null, true, false, false);
 		parameterList.getObjectReference().setDataType(POINTER);
 	}
 	
@@ -226,11 +226,9 @@ public class ClosureDeclaration extends Parameter implements CallableMethod
 	 */
 	private boolean decodeSignature(String statement, boolean require)
 	{
-		int parenthesisIndex = statement.indexOf('(');
-		int end              = StringUtils.findNextNonWhitespaceIndex(statement, parenthesisIndex - 1, -1) + 1;
+		String signature = NovaMethodDeclaration.findMethodSignature(statement);
 		
-		String signature = statement.substring(0, end);
-		ExtraData data   = iterateWords(signature, new ExtraData());
+		ExtraData data   = iterateWords(signature, Patterns.IDENTIFIER_BOUNDARIES);
 		
 		if (data.error != null)
 		{
@@ -253,11 +251,6 @@ public class ClosureDeclaration extends Parameter implements CallableMethod
 	 */
 	private boolean validateDeclaration(String statement, Bounds bounds, boolean require)
 	{
-		if (getType() == null)
-		{
-			return false;
-		}
-		
 		String parameterList = statement.substring(bounds.getStart(), bounds.getEnd());
 		
 		return decodeParameters(parameterList, require);
@@ -321,32 +314,24 @@ public class ClosureDeclaration extends Parameter implements CallableMethod
 	@Override
 	public void interactWord(String word, int wordNumber, Bounds bounds, int numWords, String leftDelimiter, String rightDelimiter, ExtraData data)
 	{
-		String full = word;
-		
-		word = StringUtils.findNextWord(full, 0);
-		
-		if (wordNumber == numWords - 1)
+		if (data.error != null || !setAttribute(word, wordNumber))
 		{
-			setName(word);
-		}
-		else if (wordNumber == numWords - 2)
-		{
-			if (!setType(word, false))
+			if (leftDelimiter.equals("->"))
 			{
-				data.error = "Type '" + word + "' does not exist";
+				setType(word, true, false);
+				
+				checkArray(data.statement, bounds.getEnd(), rightDelimiter);
+			}
+			else if (wordNumber == numWords - 1 || rightDelimiter.equals("->"))
+			{
+				setName(word);
+			}
+			else
+			{
+				data.error = "Unknown closure definition";
 				
 				return;
 			}
-			
-			int index = full.indexOf(word) > 0 ? 0 : word.length();
-			
-			checkArray(full, index, rightDelimiter);
-		}
-		else
-		{
-			data.error = "Unknown closure definition";
-			
-			return;
 		}
 	}
 	
