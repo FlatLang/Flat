@@ -18,7 +18,7 @@ public class File
 	external void fgets(char buffer[], int size, FILE* fp)
 	external char[] realloc(char buffer[], int size)
 	external char getc(FILE* fp)
-	external void rewind(FILE* fp)
+	external void rewind(FILE* fp) as extRewind
 	external int remove(char name[])
 	external int getMaxOpenFiles() as extGetMaxOpenFiles
 	external void setMaxOpenFiles(int max) as extSetMaxOpenFiles
@@ -60,7 +60,7 @@ public class File
 	
 	public rewind()
 	{
-		rewind(fp)
+		extRewind(fp)
 	}
 	
 	public exists() -> bool

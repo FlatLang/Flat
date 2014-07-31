@@ -15,8 +15,9 @@ typedef struct SVGCircle SVGCircle;
 #include <NovaConsole.h>
 #include <NovaGC.h>
 #include <NovaNumber.h>
+#include <NovaByte.h>
 #include <NovaShort.h>
-#include <NovaInteger.h>
+#include <NovaInt.h>
 #include <NovaLong.h>
 #include <NovaFloat.h>
 #include <NovaDouble.h>

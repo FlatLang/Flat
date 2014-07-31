@@ -45,18 +45,18 @@ public class Console
 	
 	public static writeLine(int num)
 	{
-		writeLine(Integer.toString(num))
+		writeLine(Int.toString(num))
 	}
 	
 	public static writeLine(short num)
 	{
-		writeLine(Integer.toString(num))
+		writeLine(Int.toString(num))
 	}
 	
-//	public static writeLine(byte num)
-//	{
-//		writeLine(Integer.toString(num))
-//	}
+	public static writeLine(byte num)
+	{
+		writeLine(Byte.toString(num))
+	}
 	
 	public static writeLine(char c)
 	{
@@ -92,18 +92,18 @@ public class Console
 	
 	public static write(int num)
 	{
-		write(Integer.toString(num))
+		write(Int.toString(num))
 	}
 	
 	public static write(short num)
 	{
-		write(Integer.toString(num))
+		write(Int.toString(num))
 	}
 	
-//	public static write(byte num)
-//	{
-//		write(Integer.toString(num))
-//	}
+	public static write(byte num)
+	{
+		write(Byte.toString(num))
+	}
 	
 	public static write(char c)
 	{

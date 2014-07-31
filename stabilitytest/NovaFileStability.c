@@ -73,7 +73,7 @@ void nova_static_FileStability_createFile(FileStability* this, ExceptionData* ex
 	nova_static_1_Console_write(0, exceptionData, nova_String_String(0, exceptionData, (char*)("Creating file... ")));
 	if (!nova_File_create(nova_0_f, exceptionData))
 	{
-		nova_2_StabilityTest_fail(nova_0_program, exceptionData, nova_String_String(0, exceptionData, (char*)("")));
+		nova_1_StabilityTest_fail(nova_0_program, exceptionData);
 	}
 	nova_static_1_Console_writeLine(0, exceptionData, nova_String_String(0, exceptionData, (char*)("OK")));
 }
@@ -82,7 +82,7 @@ void nova_static_FileStability_writeToFile(FileStability* this, ExceptionData* e
 {
 	int nova_1_i;
 	
-	nova_static_1_Console_write(0, exceptionData, nova_String_concat(nova_String_String(0, exceptionData, (char*)("Writing ")), exceptionData, nova_String_concat(nova_2_Integer_toString(nova_Integer_Integer(0, exceptionData, nova_static_FileStability_lines), exceptionData), exceptionData, nova_String_String(0, exceptionData, (char*)(" lines of data to file... ")))));
+	nova_static_1_Console_write(0, exceptionData, nova_String_concat(nova_String_String(0, exceptionData, (char*)("Writing ")), exceptionData, nova_String_concat(nova_2_Int_toString(nova_Int_Int(0, exceptionData, nova_static_FileStability_lines), exceptionData), exceptionData, nova_String_String(0, exceptionData, (char*)(" lines of data to file... ")))));
 	nova_1_i = 0;
 	for (; nova_1_i < nova_static_FileStability_lines; nova_1_i++)
 	{
@@ -111,7 +111,7 @@ void nova_static_FileStability_readFromFile(FileStability* this, ExceptionData* 
 	}
 	if (nova_1_times != nova_static_FileStability_lines)
 	{
-		nova_2_StabilityTest_fail(nova_0_program, exceptionData, nova_String_concat(nova_String_String(0, exceptionData, (char*)("Failed; only read ")), exceptionData, nova_String_concat(nova_2_Integer_toString(nova_Integer_Integer(0, exceptionData, nova_1_times), exceptionData), exceptionData, nova_String_concat(nova_String_String(0, exceptionData, (char*)("/")), exceptionData, nova_String_concat(nova_2_Integer_toString(nova_Integer_Integer(0, exceptionData, 100), exceptionData), exceptionData, nova_String_String(0, exceptionData, (char*)(" lines")))))));
+		nova_2_StabilityTest_fail(nova_0_program, exceptionData, nova_String_concat(nova_String_String(0, exceptionData, (char*)("Failed; only read ")), exceptionData, nova_String_concat(nova_2_Int_toString(nova_Int_Int(0, exceptionData, nova_1_times), exceptionData), exceptionData, nova_String_concat(nova_String_String(0, exceptionData, (char*)("/")), exceptionData, nova_String_concat(nova_2_Int_toString(nova_Int_Int(0, exceptionData, 100), exceptionData), exceptionData, nova_String_String(0, exceptionData, (char*)(" lines")))))));
 	}
 	nova_static_1_Console_writeLine(0, exceptionData, nova_String_String(0, exceptionData, (char*)("OK")));
 }

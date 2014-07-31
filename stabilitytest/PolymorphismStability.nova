@@ -51,7 +51,7 @@ public class PolymorphismStability
 		Console.writeLine("OK")
 	}
 	
-	static callPolymorphicClosure(String closure()) -> bool
+	static callPolymorphicClosure(closure() -> String) -> bool
 	{
 		return closure().equals("sub class")
 	}

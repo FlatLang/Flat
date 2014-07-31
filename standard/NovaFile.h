@@ -15,8 +15,9 @@ typedef struct File File;
 #include <NovaConsole.h>
 #include <NovaGC.h>
 #include <NovaNumber.h>
+#include <NovaByte.h>
 #include <NovaShort.h>
-#include <NovaInteger.h>
+#include <NovaInt.h>
 #include <NovaLong.h>
 #include <NovaFloat.h>
 #include <NovaDouble.h>
@@ -45,7 +46,7 @@ File* nova_2_File_File(File* this, ExceptionData* exceptionData, FILE* nova_0_fp
 void nova_del_File(File** this, ExceptionData* exceptionData);
 char nova_File_delete(File* this, ExceptionData* exceptionData);
 void nova_File_reopen(File* this, ExceptionData* exceptionData);
-void nova_1_File_rewind(File* this, ExceptionData* exceptionData);
+void nova_File_rewind(File* this, ExceptionData* exceptionData);
 char nova_File_exists(File* this, ExceptionData* exceptionData);
 char nova_File_create(File* this, ExceptionData* exceptionData);
 String* nova_File_readAllContents(File* this, ExceptionData* exceptionData);

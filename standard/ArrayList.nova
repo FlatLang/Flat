@@ -1,6 +1,6 @@
 public class ArrayList
 {
-	external void arrayCopy(void* dest, int dIndex, void* src, int sIndex, int len, int destArrLen, int size)
+	external void arrayCopy(int dest[], int dIndex, int src[], int sIndex, int len, int destArrLen, int size)
 	
 	int	bufferSize
 	

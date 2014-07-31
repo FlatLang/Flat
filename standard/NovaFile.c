@@ -71,7 +71,7 @@ void nova_File_reopen(File* this, ExceptionData* exceptionData)
 	this->prv->nova_File_fp = fopen(nova_String_toCharArray(this->prv->nova_File_location, exceptionData), (char*)("r+"));
 }
 
-void nova_1_File_rewind(File* this, ExceptionData* exceptionData)
+void nova_File_rewind(File* this, ExceptionData* exceptionData)
 {
 	rewind(this->prv->nova_File_fp);
 }
@@ -191,7 +191,7 @@ void nova_static_File_setMaxOpenFiles(File* this, ExceptionData* exceptionData, 
 {
 	if (nova_0_max > 2048 || nova_0_max < 20)
 	{
-		nova_static_1_Console_writeLine(0, exceptionData, nova_String_concat(nova_String_String(0, exceptionData, (char*)("Invalid max number of open files: ")), exceptionData, nova_String_concat(nova_2_Integer_toString(nova_Integer_Integer(0, exceptionData, nova_0_max), exceptionData), exceptionData, nova_String_String(0, exceptionData, (char*)("\nValid values include 20-2048")))));
+		nova_static_1_Console_writeLine(0, exceptionData, nova_String_concat(nova_String_String(0, exceptionData, (char*)("Invalid max number of open files: ")), exceptionData, nova_String_concat(nova_2_Int_toString(nova_Int_Int(0, exceptionData, nova_0_max), exceptionData), exceptionData, nova_String_String(0, exceptionData, (char*)("\nValid values include 20-2048")))));
 	}
 	else
 	{

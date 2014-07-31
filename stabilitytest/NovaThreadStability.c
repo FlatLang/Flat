@@ -72,7 +72,7 @@ void nova_static_ThreadStability_checkMemoryAccess(ThreadStability* this, Except
 	{
 		String* nova_2_s;
 		
-		nova_2_s = nova_static_1_Integer_toString(0, exceptionData, nova_1_i);
+		nova_2_s = nova_static_1_Int_toString(0, exceptionData, nova_1_i);
 	}
 	nova_static_1_Console_writeLine(0, exceptionData, nova_String_String(0, exceptionData, (char*)("OK")));
 }
