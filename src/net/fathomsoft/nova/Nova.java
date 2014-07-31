@@ -27,7 +27,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:00:04 PM
- * @version	v0.2.21 Jul 30, 2014 at 1:45:00 PM
+ * @version	v0.2.22 Jul 30, 2014 at 11:56:00 PM
  */
 public class Nova
 {
@@ -77,7 +77,7 @@ public class Nova
 	public static final int		LINUX         = 3;
 	
 	public static final String	LANGUAGE_NAME = "Nova";
-	public static final String	VERSION       = "v0.2.21";
+	public static final String	VERSION       = "v0.2.22";
 	
 	/**
 	 * Find out which operating system the compiler is running on.
@@ -241,8 +241,9 @@ public class Nova
 				formatPath(standard  + "Array.nova"),
 				formatPath(standard  + "Char.nova"),
 				formatPath(standard  + "Bool.nova"),
+				formatPath(standard  + "Byte.nova"),
 				formatPath(standard  + "Short.nova"),
-				formatPath(standard  + "Integer.nova"),
+				formatPath(standard  + "Int.nova"),
 				formatPath(standard  + "Long.nova"),
 				formatPath(standard  + "Float.nova"),
 				formatPath(standard  + "Double.nova"),
