@@ -12,7 +12,7 @@ import net.fathomsoft.nova.util.Regex;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:57:13 PM
- * @version	v0.2.19 Jul 26, 2014 at 12:30:24 AM
+ * @version	v0.2.22 Jul 30, 2014 at 11:56:00 PM
  */
 public class ElseStatement extends Node
 {
@@ -46,7 +46,7 @@ public class ElseStatement extends Node
 	@Override
 	public Scope getScope()
 	{
-		return (Scope)getChild(0);
+		return (Scope)getChild(super.getNumDefaultChildren());
 	}
 	
 	/**
