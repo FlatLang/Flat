@@ -21,7 +21,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:15:51 PM
- * @version	v0.2.21 Jul 30, 2014 at 1:45:00 PM
+ * @version	v0.2.22 Jul 30, 2014 at 11:56:00 PM
  */
 public class ClassDeclaration extends InstanceDeclaration
 {
@@ -1164,7 +1164,6 @@ public class ClassDeclaration extends InstanceDeclaration
 		{
 			Destructor defaultDestructor = new Destructor(this, Location.INVALID);
 			defaultDestructor.setName(getName());
-			defaultDestructor.setType("void");
 			defaultDestructor.setVisibility(FieldDeclaration.PUBLIC);
 			
 			addChild(defaultDestructor);
