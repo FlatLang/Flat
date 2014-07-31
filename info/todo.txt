@@ -8,10 +8,11 @@
 * Add scopes within until statement in SyntaxStability
 * Add swift-style switch statements
 * Sub-classes must initialize default values to the super-class variables too.
-* Rename Integer to Int
+X Rename Integer to Int
 * Fix the conflict between data type output and polymorphic type casts.
 * Can Constructor use generateCNameOutput()?
-* Fix the setScope() method to not break sub-classing.
+X Fix the setScope() method to not break sub-classing.
+X Make sure there are no external method name collisions.
 
 In-depth compiler error checking:
 - Make sure that the static class's methods/variables are called rightfully.
@@ -41,7 +42,7 @@ Create 'or' & 'and' keywords.
 
 
 Document:
-  
+  Lots
 
 rename:
   
@@ -51,6 +52,6 @@ rename:
 
 until (#condition) {
 
-if (#condition) #fragment?? #skip : {
+if \(#condition\) #fragment?? #skip : {
 
-#visibility? #modifier? #final? #type #name (#declaration #rep-1( , )) {
+#visibility? #modifier? #final? #name \(#declaration @rep-1( , )\) (-> #type)? {
