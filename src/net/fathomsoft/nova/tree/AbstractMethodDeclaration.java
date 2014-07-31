@@ -10,7 +10,7 @@ import net.fathomsoft.nova.util.Patterns;
  * 
  * @author	Braden Steffaniak
  * @since	v0.2.19 Jul 26, 2014 at 12:30:24 AM
- * @version	v0.2.21 Jul 30, 2014 at 1:45:00 PM
+ * @version	v0.2.22 Jul 30, 2014 at 11:56:00 PM
  */
 public class AbstractMethodDeclaration extends NovaMethodDeclaration
 {
@@ -29,42 +29,6 @@ public class AbstractMethodDeclaration extends NovaMethodDeclaration
 	public boolean containsBody()
 	{
 		return false;
-	}
-	
-	/**
-	 * @see net.fathomsoft.nova.tree.Node#generateCHeader(StringBuilder)
-	 */
-	@Override
-	public StringBuilder generateCHeader(StringBuilder builder)
-	{
-		return generateCHeaderFragment(builder);
-	}
-	
-	/**
-	 * @see net.fathomsoft.nova.tree.Node#generateCHeaderFragment(StringBuilder)
-	 */
-	@Override
-	public StringBuilder generateCHeaderFragment(StringBuilder builder)
-	{
-		return builder;
-	}
-	
-	/**
-	 * @see net.fathomsoft.nova.tree.Node#generateCSource(StringBuilder)
-	 */
-	@Override
-	public StringBuilder generateCSource(StringBuilder builder)
-	{
-		return generateCSourceFragment(builder);
-	}
-	
-	/**
-	 * @see net.fathomsoft.nova.tree.Node#generateCSourceFragment(StringBuilder)
-	 */
-	@Override
-	public StringBuilder generateCSourceFragment(StringBuilder builder)
-	{
-		return builder;
 	}
 	
 	/**
@@ -89,7 +53,7 @@ public class AbstractMethodDeclaration extends NovaMethodDeclaration
 	 */
 	public static AbstractMethodDeclaration decodeStatement(Node parent, String statement, Location location, boolean require)
 	{
-		String methodSignature = BodylessMethodDeclaration.findMethodSignature(statement, Patterns.ABSTRACT);
+		String methodSignature = findMethodSignature(statement, Patterns.ABSTRACT);
 		
 		if (methodSignature != null && methodSignature.length() > 0)
 		{
