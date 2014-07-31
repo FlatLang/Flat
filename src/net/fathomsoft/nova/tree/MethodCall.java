@@ -1,5 +1,6 @@
 package net.fathomsoft.nova.tree;
 
+import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.error.SyntaxErrorException;
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.tree.variables.Variable;
@@ -17,7 +18,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 10:04:31 PM
- * @version	v0.2.21 Jul 30, 2014 at 1:45:00 PM
+ * @version	v0.2.22 Jul 30, 2014 at 11:56:00 PM
  */
 public class MethodCall extends IIdentifier
 {
@@ -545,9 +546,8 @@ public class MethodCall extends IIdentifier
 		
 		if (methodDeclaration == null)
 		{
-			String s = getLocationInfo();
-			
 			getMethodDeclaration();
+			SyntaxMessage.error("Incompatible arguments for method call '" + getName() + "'", this);
 		}
 		
 		ParameterList<Value> parameters = methodDeclaration.getParameterList();
