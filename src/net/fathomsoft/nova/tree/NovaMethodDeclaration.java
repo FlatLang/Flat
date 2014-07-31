@@ -19,7 +19,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.2.21 Jul 30, 2014 at 1:45:00 PM
- * @version	v0.2.21 Jul 30, 2014 at 1:45:00 PM
+ * @version	v0.2.22 Jul 30, 2014 at 11:56:00 PM
  */
 public class NovaMethodDeclaration extends MethodDeclaration
 {
@@ -37,15 +37,6 @@ public class NovaMethodDeclaration extends MethodDeclaration
 		uniqueID          = 0;
 		overloadID        = -1;
 		overridingMethods = new ArrayList<NovaMethodDeclaration>();
-	}
-	
-	/**
-	 * @see net.fathomsoft.nova.tree.MethodDeclaration#containsBody()
-	 */
-	@Override
-	public boolean containsBody()
-	{
-		return false;
 	}
 	
 	/**
@@ -382,11 +373,6 @@ public class NovaMethodDeclaration extends MethodDeclaration
 	 */
 	private boolean validateDeclaration(String statement, Bounds bounds, boolean require)
 	{
-		if (getType() == null)
-		{
-			return false;
-		}
-		
 		String parameterList = statement.substring(bounds.getStart(), bounds.getEnd());
 		
 		return decodeParameters(parameterList, require);
@@ -511,11 +497,6 @@ public class NovaMethodDeclaration extends MethodDeclaration
 				
 				return;
 			}
-		}
-		
-		if (getType() == null)
-		{
-			setType("void", true, false);
 		}
 	}
 	
