@@ -1,7 +1,11 @@
 package net.fathomsoft.nova.tree;
 
+import java.util.regex.Pattern;
+
 import net.fathomsoft.nova.error.SyntaxMessage;
+import net.fathomsoft.nova.util.Bounds;
 import net.fathomsoft.nova.util.Location;
+import net.fathomsoft.nova.util.Regex;
 import net.fathomsoft.nova.util.StringUtils;
 import net.fathomsoft.nova.util.SyntaxUtils;
 
@@ -12,7 +16,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:10:53 PM
- * @version	v0.2.21 Jul 30, 2014 at 1:45:00 PM
+ * @version	v0.2.22 Jul 30, 2014 at 11:56:00 PM
  */
 public abstract class MethodDeclaration extends InstanceDeclaration implements CallableMethod
 {
@@ -28,7 +32,10 @@ public abstract class MethodDeclaration extends InstanceDeclaration implements C
 		addChild(parameterList, this);
 	}
 	
-	public abstract boolean containsBody();
+	public boolean containsBody()
+	{
+		return false;
+	}
 	
 	/**
 	 * @see net.fathomsoft.nova.tree.Node#getNumDefaultChildren()
@@ -117,6 +124,42 @@ public abstract class MethodDeclaration extends InstanceDeclaration implements C
 	}
 	
 	/**
+	 * @see net.fathomsoft.nova.tree.Node#generateCHeader(StringBuilder)
+	 */
+	@Override
+	public StringBuilder generateCHeader(StringBuilder builder)
+	{
+		return generateCHeaderFragment(builder);
+	}
+	
+	/**
+	 * @see net.fathomsoft.nova.tree.Node#generateCHeaderFragment(StringBuilder)
+	 */
+	@Override
+	public StringBuilder generateCHeaderFragment(StringBuilder builder)
+	{
+		return builder;
+	}
+	
+	/**
+	 * @see net.fathomsoft.nova.tree.Node#generateCSource(StringBuilder)
+	 */
+	@Override
+	public StringBuilder generateCSource(StringBuilder builder)
+	{
+		return generateCSourceFragment(builder);
+	}
+	
+	/**
+	 * @see net.fathomsoft.nova.tree.Node#generateCSourceFragment(StringBuilder)
+	 */
+	@Override
+	public StringBuilder generateCSourceFragment(StringBuilder builder)
+	{
+		return builder;
+	}
+	
+	/**
 	 * Generate the C prototype for the method header.<br>
 	 * <br>
 	 * For example:
@@ -164,6 +207,36 @@ public abstract class MethodDeclaration extends InstanceDeclaration implements C
 		builder.append(')');
 		
 		return builder;
+	}
+	
+	/**
+	 * Find the String representing the signature of the bodyless
+	 * method that is currently being decoded from the given
+	 * statement String.
+	 * 
+	 * @param statement The String containing the method signature.
+	 * @return The signature for the bodyless method to decode.
+	 */
+	public static String findMethodSignature(String statement, Pattern pattern)
+	{
+		int paren = statement.indexOf('(');
+		
+		if (paren < 0)
+		{
+			return null;
+		}
+		
+		String signature = NovaMethodDeclaration.findMethodSignature(statement);
+		Bounds bounds    = Regex.boundsOf(signature, pattern);
+		
+		if (!bounds.isValid())
+		{
+			return null;
+		}
+		
+		paren -= bounds.length();
+		
+		return statement.substring(0, bounds.getStart()) + statement.substring(bounds.getEnd(), statement.length());
 	}
 	
 	/**
