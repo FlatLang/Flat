@@ -35,7 +35,7 @@ public class FileStability
 		
 		if (!f.create())
 		{
-			program.fail("")
+			program.fail()
 		}
 		
 		Console.writeLine("OK")
