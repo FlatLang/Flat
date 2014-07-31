@@ -11,7 +11,7 @@ public class System
 	
 	external void exit(int code) as externalExit
 	external int system(char command[])
-	external FILE* getPipe(char command[], void exit(int, String, bool))
+	external FILE* getPipe(char command[], exit(int, String, bool))
 	external bool fgets(char buffer[], int length, FILE* pipe)
 	external bool feof(FILE* pipe)
 	

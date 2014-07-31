@@ -67,17 +67,17 @@ public class ClosureStability
 		Console.writeLine("OK")
 	}
 	
-	static callClosure(int closure(int, int), int a, int b) -> int
+	static callClosure(closure(int, int) -> int, int a, int b) -> int
 	{
 		return closure(a, b)
 	}
 	
-	static mathClosure(double closure(double), double value) -> double
+	static mathClosure(closure(double) -> double, double value) -> double
 	{
 		return closure(value)
 	}
 	
-	static instanceClosure(void closure())
+	static instanceClosure(closure())
 	{
 		closure()
 	}

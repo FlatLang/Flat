@@ -6,7 +6,7 @@ public class Thread
 	
 	external void lib_nova_thread_sleep(long millis)
 	external void lib_nova_thread_join(NOVA_THREAD_HANDLE handle)
-	external NOVA_THREAD_HANDLE* create_thread(Thread thread, void run())
+	external NOVA_THREAD_HANDLE* create_thread(Thread thread, run())
 	
 	NOVA_THREAD_HANDLE*	handle
 	
