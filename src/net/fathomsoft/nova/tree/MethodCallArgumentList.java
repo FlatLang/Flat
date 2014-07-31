@@ -12,7 +12,7 @@ import net.fathomsoft.nova.util.Location;
  * 
  * @author	Braden Steffaniak
  * @since	v0.2.14 Jun 19, 2014 at 12:14:53 PM
- * @version	v0.2.21 Jul 30, 2014 at 1:45:00 PM
+ * @version	v0.2.22 Jul 30, 2014 at 11:56:00 PM
  */
 public class MethodCallArgumentList extends ArgumentList
 {
@@ -64,16 +64,20 @@ public class MethodCallArgumentList extends ArgumentList
 			
 			Value param = getMethodCall().getCorrespondingParameter(child);
 			
-			boolean sameType = child.getReturnedNode().getType().equals(param.getType());
+			boolean sameType = false;
+			
+			if (child.getReturnedNode().getType() == null)
+			{
+				sameType = param.getType() == null;
+			}
+			else
+			{
+				sameType = child.getReturnedNode().getType().equals(param.getType());
+			}
 			
 			if (!sameType)
 			{
 				param.generateCTypeCast(builder);
-			}
-			
-			if (child instanceof Identifier && ((Identifier)child).getName().equals("b"))
-			{
-				Nova.debuggingBreakpoint();
 			}
 			
 			generateCArgumentPrefix(builder, child, i);

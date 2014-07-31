@@ -16,7 +16,7 @@ import net.fathomsoft.nova.util.StringUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:50:43 PM
- * @version	v0.2.21 Jul 30, 2014 at 1:45:00 PM
+ * @version	v0.2.22 Jul 30, 2014 at 11:56:00 PM
  */
 public class Destructor extends BodyMethodDeclaration
 {
@@ -194,7 +194,7 @@ public class Destructor extends BodyMethodDeclaration
 	{
 		ClassDeclaration classDeclaration = getParentClass();
 		
-		builder.append(getType()).append(' ');
+		generateCTypeOutput(builder).append(' ');
 		builder.append(Nova.LANGUAGE_NAME.toLowerCase()).append("_del_");
 		builder.append(classDeclaration.getName()).append('(').append(getParameterList().generateCSource()).append(')');
 		

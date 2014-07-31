@@ -14,9 +14,9 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:10:53 PM
- * @version	v0.2.21 Jul 30, 2014 at 1:45:00 PM
+ * @version	v0.2.22 Jul 30, 2014 at 11:56:00 PM
  */
-public class ExternalMethodDeclaration extends BodylessMethodDeclaration
+public class ExternalMethodDeclaration extends MethodDeclaration
 {
 	private String	alias;
 	
@@ -26,6 +26,15 @@ public class ExternalMethodDeclaration extends BodylessMethodDeclaration
 	public ExternalMethodDeclaration(Node temporaryParent, Location locationIn)
 	{
 		super(temporaryParent, locationIn);
+	}
+	
+	/**
+	 * @see net.fathomsoft.nova.tree.MethodDeclaration#isVirtual()
+	 */
+	@Override
+	public boolean isVirtual()
+	{
+		return false;
 	}
 	
 	/**
@@ -97,6 +106,7 @@ public class ExternalMethodDeclaration extends BodylessMethodDeclaration
 				
 				n.setExternal(true);
 				n.alias = n.getName();
+				n.setLocationIn(location);
 				
 				if (n.decodeAlias(withAlias, statement, require))
 				{
@@ -133,8 +143,12 @@ public class ExternalMethodDeclaration extends BodylessMethodDeclaration
 		
 		String type = methodSignature.substring(start + 1, end + 1);
 		
-		methodSignature = methodSignature.substring(0, start + 1) + methodSignature.substring(end + 1) +
-				" -> " + type;
+		methodSignature = methodSignature.substring(0, start + 1) + methodSignature.substring(end + 1);
+		
+		if (!type.equals("void"))
+		{
+			methodSignature += " -> " + type;
+		}
 		
 		return StringUtils.trimSurroundingWhitespace(methodSignature);
 	}
@@ -220,6 +234,22 @@ public class ExternalMethodDeclaration extends BodylessMethodDeclaration
 		newLoc.setBounds(bounds.getStart(), bounds.getEnd());
 		
 		SyntaxMessage.error("Unknown text '" + word + "'", this, newLoc);
+	}
+	
+	/**
+	 * @see net.fathomsoft.nova.tree.variables.VariableDeclaration#validate(int)
+	 */
+	@Override
+	public Node validate(int phase)
+	{
+		MethodDeclaration methods[] = getParentClass().getMethods(getName());
+		
+		if (methods.length > 1)
+		{
+			SyntaxMessage.error("Non-external method with name '" + alias + "' already exists", this);
+		}
+		
+		return super.validate(phase);
 	}
 	
 	/**

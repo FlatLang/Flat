@@ -13,7 +13,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.2.14 Jul 5, 2014 at 9:02:42 PM
- * @version	v0.2.21 Jul 30, 2014 at 1:45:00 PM
+ * @version	v0.2.22 Jul 30, 2014 at 11:56:00 PM
  */
 public class Closure extends Variable
 {
@@ -226,7 +226,7 @@ public class Closure extends Variable
 	{
 		ClosureDeclaration declaration = getClosureDeclaration();
 		
-		if (!declaration.getType().equals("void") && (method.getType().equals("void") || !method.getTypeClass().isOfType(declaration.getTypeClass())))
+		if (declaration.getType() != null && (method.getType() == null || !method.getTypeClass().isOfType(declaration.getTypeClass())))
 		{
 			SyntaxMessage.error("The method '" + method.getName() + "()' return type of '" + method.getType() + "' is not compatible with required closure type of '" + declaration.getType() + "'", this);
 		}

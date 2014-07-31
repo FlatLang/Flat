@@ -12,7 +12,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.2.4 May 2, 2014 at 11:14:37 PM
- * @version	v0.2.19 Jul 26, 2014 at 12:30:24 AM
+ * @version	v0.2.22 Jul 30, 2014 at 11:56:00 PM
  */
 public abstract class Value extends Node
 {
@@ -542,11 +542,19 @@ public abstract class Value extends Node
 	 */
 	public StringBuilder generateCTypeOutput(StringBuilder builder, boolean checkArray)
 	{
-		if (getType().equals("long"))
+		if (getType() == null)
+		{
+			builder.append("void");
+		}
+		else if (getType().equals("long"))
 		{
 			builder.append("long_long");
 		}
 		else if (getType().equals("bool"))
+		{
+			builder.append("char");
+		}
+		else if (getType().equals("byte"))
 		{
 			builder.append("char");
 		}

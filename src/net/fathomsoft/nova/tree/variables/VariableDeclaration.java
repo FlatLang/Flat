@@ -16,7 +16,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.2.4 May 2, 2014 at 11:14:37 PM
- * @version	v0.2.19 Jul 26, 2014 at 12:30:24 AM
+ * @version	v0.2.22 Jul 30, 2014 at 11:56:00 PM
  */
 public class VariableDeclaration extends IIdentifier
 {
@@ -408,7 +408,7 @@ public class VariableDeclaration extends IIdentifier
 	{
 		if (phase == SyntaxTree.PHASE_INSTANCE_DECLARATIONS)
 		{
-			if (!setType(getType(), false, true))
+			if (getType() != null && !setType(getType(), false, true))
 			{
 				SyntaxMessage.error("Type '" + getType() + "' does not exist", this);
 			}
