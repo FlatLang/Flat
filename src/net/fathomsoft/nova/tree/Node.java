@@ -21,7 +21,7 @@ import net.fathomsoft.nova.util.StringUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:00:11 PM
- * @version	v0.2.21 Jul 30, 2014 at 1:45:00 PM
+ * @version	v0.2.22 Jul 30, 2014 at 11:56:00 PM
  */
 public abstract class Node
 {
@@ -754,6 +754,13 @@ public abstract class Node
 		ArrayList<String> delims = new ArrayList<String>();
 		
 		findWords(statement, matcher, bounds, words, delims);
+		
+		if (extra == null)
+		{
+			extra = new ExtraData();
+		}
+		
+		extra.statement = statement;
 
 		for (int i = 0; i < bounds.size(); i++)
 		{
@@ -1283,7 +1290,8 @@ public abstract class Node
 	 */
 	public static class ExtraData
 	{
-		String error;
+		public String	error;
+		public String	statement;
 	}
 	
 	/**
