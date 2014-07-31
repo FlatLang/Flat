@@ -28,7 +28,7 @@ import net.fathomsoft.nova.tree.variables.Variable;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Mar 15, 2014 at 7:55:00 PM
- * @version	v0.2.21 Jul 30, 2014 at 1:45:00 PM
+ * @version	v0.2.22 Jul 30, 2014 at 11:56:00 PM
  */
 public class SyntaxUtils
 {
@@ -46,7 +46,7 @@ public class SyntaxUtils
 		{
 			return SHORT;
 		}
-		else if (primitiveType.equals("Integer"))
+		else if (primitiveType.equals("Int"))
 		{
 			return INT;
 		}
@@ -571,7 +571,7 @@ public class SyntaxUtils
 	 */
 	public static boolean isPrimitiveType(String type)
 	{
-		return type.equals("int") || type.equals("char") || type.equals("long") || type.equals("bool") || type.equals("short") || type.equals("float") || type.equals("double") || type.equals("void");
+		return type == null || type.equals("int") || type.equals("char") || type.equals("long") || type.equals("bool") || type.equals("short") || type.equals("float") || type.equals("double") || type.equals("byte");
 	}
 	
 	/**
@@ -583,9 +583,13 @@ public class SyntaxUtils
 	 */
 	public static String getPrimitiveWrapperClassName(String primitiveType)
 	{
-		if (primitiveType.equals("int"))
+		if (primitiveType == null)
 		{
-			return "Integer";
+			return "Object";
+		}
+		else if (primitiveType.equals("int"))
+		{
+			return "Int";
 		}
 		else if (primitiveType.equals("char"))
 		{
@@ -611,9 +615,9 @@ public class SyntaxUtils
 		{
 			return "Double";
 		}
-		else if (primitiveType.equals("void"))
+		else if (primitiveType.equals("byte"))
 		{
-			return "Object";
+			return "Byte";
 		}
 		
 		return primitiveType;
@@ -628,9 +632,13 @@ public class SyntaxUtils
 	 */
 	public static String getWrapperClassPrimitiveName(String wrapperName)
 	{
-		if (wrapperName.equals("Integer"))
+		if (wrapperName.equals("Int"))
 		{
 			return "int";
+		}
+		else if (wrapperName.equals("Byte"))
+		{
+			return "byte";
 		}
 		else if (wrapperName.equals("Char"))
 		{
@@ -669,14 +677,14 @@ public class SyntaxUtils
 		
 		if (assignee.equals("double"))
 		{
-			if (assignment.equals("int") || assignment.equals("long") || assignment.equals("float") || assignment.equals("short") || assignment.equals("byte") || assignment.equals("char"))
+			if (assignment.equals("byte") || assignment.equals("int") || assignment.equals("long") || assignment.equals("float") || assignment.equals("short") || assignment.equals("byte") || assignment.equals("char"))
 			{
 				return true;
 			}
 		}
 		else if (assignee.equals("int"))
 		{
-			if (assignment.equals("short") || assignment.equals("byte") || assignment.equals("char"))
+			if (assignment.equals("byte") || assignment.equals("short") || assignment.equals("byte") || assignment.equals("char"))
 			{
 				return true;
 			}
@@ -955,7 +963,7 @@ public class SyntaxUtils
 	 */
 	public static boolean isMainMethod(BodyMethodDeclaration methodDeclaration)
 	{
-		if (methodDeclaration.getName().equals("main") && methodDeclaration.isStatic() && methodDeclaration.getType().equals("void") && methodDeclaration.getVisibility() == FieldDeclaration.PUBLIC)
+		if (methodDeclaration.getName().equals("main") && methodDeclaration.isStatic() && methodDeclaration.getType() == null && methodDeclaration.getVisibility() == FieldDeclaration.PUBLIC)
 		{
 			ParameterList<Value> params = methodDeclaration.getParameterList();
 			
@@ -1299,7 +1307,7 @@ public class SyntaxUtils
 	{
 		if (type == null)
 		{
-			return false;
+			return true;
 		}
 		
 		if (value.isWithinExternalContext())
@@ -1567,6 +1575,6 @@ public class SyntaxUtils
 	
 	public static boolean isBasicType(String type)
 	{
-		return type.equals("void") || type.equals("class");
+		return type.equals("class");
 	}
 }
