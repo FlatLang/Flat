@@ -14,7 +14,7 @@ import net.fathomsoft.nova.util.Patterns;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:12:04 PM
- * @version	v0.2.19 Jul 26, 2014 at 12:30:24 AM
+ * @version	v0.2.22 Jul 30, 2014 at 11:56:00 PM
  */
 public class FieldDeclaration extends InstanceDeclaration
 {
@@ -124,9 +124,9 @@ public class FieldDeclaration extends InstanceDeclaration
 	 */
 	public static FieldDeclaration decodeStatement(Node parent, String statement, Location location, boolean require)
 	{
-		FieldDeclaration n    = new FieldDeclaration(parent, location);
+		FieldDeclaration n = new FieldDeclaration(parent, location);
 		
-		FieldData data = new FieldData(statement);
+		FieldData data = new FieldData();
 		
 		// Find the localDeclaration bounds.
 		n.iterateWords(statement, Patterns.IDENTIFIER_BOUNDARIES, data);
@@ -148,7 +148,7 @@ public class FieldDeclaration extends InstanceDeclaration
 		
 		var.cloneTo(n);
 		
-		n.iterateWords(preStatement);
+		n.iterateWords(preStatement, data);
 		
 		return n;
 	}
@@ -210,12 +210,8 @@ public class FieldDeclaration extends InstanceDeclaration
 	{
 		private Bounds	localDeclaration;
 		
-		private String	statement;
-		
-		public FieldData(String statement)
+		public FieldData()
 		{
-			this.statement = statement;
-			
 			localDeclaration = Bounds.EMPTY.clone();
 		}
 	}
