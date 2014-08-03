@@ -18,7 +18,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 10:04:31 PM
- * @version	v0.2.22 Jul 30, 2014 at 11:56:00 PM
+ * @version	v0.2.24 Aug 2, 2014 at 10:39:00 PM
  */
 public class MethodCall extends IIdentifier
 {
@@ -302,14 +302,7 @@ public class MethodCall extends IIdentifier
 		// TODO: there is a better way.
 		if (getCallableDeclaration().isVirtual() && isAccessed() && !isVirtualTypeKnown())
 		{
-			Identifier current = getAccessingNode().getLastAccessingOfType(new Class<?>[] { MethodCall.class, Closure.class }, true);
-			
-			while (current != null && current != this)
-			{
-				current.generateCUseOutput(builder).append("->");
-				
-				current = current.getAccessedNode();
-			}
+			getAccessingNode().getLastAccessingOfType(new Class<?>[] { MethodCall.class, Closure.class }, true).generateCSourceUntil(builder, "->", this);
 		}
 		
 		return super.generateCArgumentReference(builder, callingMethod);
