@@ -10,7 +10,7 @@ nova_VTable_Console nova_VTable_Console_val =
 
 void nova_static_Console_flush(Console* this, ExceptionData* exceptionData);
 
-Console* nova_Console_Console(Console* this, ExceptionData* exceptionData)
+Console* nova_Console_construct(Console* this, ExceptionData* exceptionData)
 {
 	CCLASS_NEW(Console, this,);
 	
@@ -36,7 +36,7 @@ void nova_del_Console(Console** this, ExceptionData* exceptionData)
 
 void nova_static_1_Console_writeLine(Console* this, ExceptionData* exceptionData, String* nova_0_text)
 {
-	nova_static_1_Console_write((Console*)0, exceptionData, nova_String_concat(nova_0_text, exceptionData, nova_String_String(0, exceptionData, (char*)("\n"))));
+	nova_static_1_Console_write((Console*)0, exceptionData, nova_String_concat(nova_0_text, exceptionData, nova_String_construct(0, exceptionData, (char*)("\n"))));
 }
 
 void nova_static_2_Console_writeLine(Console* this, ExceptionData* exceptionData, Object* nova_0_obj)
@@ -164,7 +164,7 @@ String* nova_static_Console_readLine(Console* this, ExceptionData* exceptionData
 	String* nova_1_s;
 	
 	nova_1_line = ufgets(stdin);
-	nova_1_s = nova_String_String(0, exceptionData, nova_1_line);
+	nova_1_s = nova_String_construct(0, exceptionData, nova_1_line);
 	return nova_1_s;
 }
 

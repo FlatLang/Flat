@@ -14,7 +14,7 @@ CCLASS_PRIVATE
 	
 )
 
-ExceptionData* nova_ExceptionData_ExceptionData(ExceptionData* this, ExceptionData* exceptionData, buffer* nova_0_buf)
+ExceptionData* nova_ExceptionData_construct(ExceptionData* this, ExceptionData* exceptionData, buffer* nova_0_buf)
 {
 	CCLASS_NEW(ExceptionData, this);
 	
@@ -24,7 +24,7 @@ ExceptionData* nova_ExceptionData_ExceptionData(ExceptionData* this, ExceptionDa
 	this->vtable = &nova_VTable_ExceptionData_val;
 	{
 		this->prv->nova_ExceptionData_buf = nova_0_buf;
-		this->nova_ExceptionData_codes = nova_ArrayList_ArrayList(0, exceptionData);
+		this->nova_ExceptionData_codes = nova_ArrayList_construct(0, exceptionData);
 	}
 	
 	return this;

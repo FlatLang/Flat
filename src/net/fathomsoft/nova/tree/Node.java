@@ -382,11 +382,6 @@ public abstract class Node
 		return children.size();
 	}
 	
-	public ArrayList<Node> getChildren()
-	{
-		return children;
-	}
-	
 	/**
 	 * Get the child Node at the specific index in the children
 	 * ArrayList.
@@ -398,22 +393,61 @@ public abstract class Node
 	{
 		return children.get(index);
 	}
-
+	
+	/**
+	 * Get the number of children that have been added to the specified
+	 * Node after the Node has been decoded.
+	 * 
+	 * @return The number of children added to the Node after decoding.
+	 */
 	public int getNumVisibleChildren()
 	{
 		return getNumChildren() - getNumDecodedChildren();
 	}
 	
+	/**
+	 * Get the child that has added at the specified index after the Node
+	 * has been decoded.
+	 * 
+	 * @param index The index (starting at 0) of the child to get.
+	 * @return The child at the given index.
+	 */
 	public Node getVisibleChild(int index)
 	{
 		return getChild(index + getNumDecodedChildren());
 	}
 	
+	/**
+	 * Remove the child that was added at the specified index after the
+	 * Node has been decoded.
+	 * 
+	 * @param index index The index (starting at 0) of the child to
+	 * 		remove.
+	 */
+	public void removeVisibleChild(int index)
+	{
+		removeChild(index + getNumDecodedChildren());
+	}
+	
+	/**
+	 * Get the child that was added before the given Node child. On a tree
+	 * representation, the node to the left of this Node.
+	 * 
+	 * @param node The Node to get the child before.
+	 * @return The Node that was added before the given node.
+	 */
 	public Node getChildBefore(Node node)
 	{
 		return children.get(children.indexOf(node) - 1);
 	}
 	
+	/**
+	 * Get the child that was added after the given Node child. On a tree
+	 * representation, the node to the right of this Node.
+	 * 
+	 * @param node The Node to get the child after.
+	 * @return The Node that was added after the given node.
+	 */
 	public Node getChildAfter(Node node)
 	{
 		return children.get(children.indexOf(node) + 1);
@@ -446,6 +480,7 @@ public abstract class Node
 	 * child.
 	 * 
 	 * @param node The node to set as the child node.
+	 * @param toNode The node to add the child to.
 	 */
 	public void addChild(Node node, Node toNode)
 	{
@@ -495,6 +530,8 @@ public abstract class Node
 	 * Add the given 'toAdd' node before the given 'node', if the node
 	 * exists.
 	 * 
+	 * @param node The node to add the child before.
+	 * @param toAdd The child to add before the given node.
 	 * @return Whether or not the child was successfully added.
 	 */
 	public boolean addChildBefore(Node node, Node toAdd)
@@ -506,6 +543,8 @@ public abstract class Node
 	 * Add the given 'toAdd' node after the given 'node', if the node
 	 * exists.
 	 * 
+	 * @param node The Node to add the child after.
+	 * @param toAdd The Node to add after the given node.
 	 * @return Whether or not the child was successfully added.
 	 */
 	public boolean addChildAfter(Node node, Node toAdd)
@@ -554,11 +593,6 @@ public abstract class Node
 		node.detach();
 	}
 	
-	public void removeVisibleChild(int index)
-	{
-		removeChild(index + getNumDecodedChildren());
-	}
-	
 	/**
 	 * Remove the specific Node from the current Node as a child.
 	 * 
@@ -569,6 +603,13 @@ public abstract class Node
 		children.remove(node);
 	}
 	
+	/**
+	 * Get whether or not the specified Node is being decoded at
+	 * the current moment.
+	 * 
+	 * @return Whether or not the specified Node is being decoded at
+	 * 		the current moment.
+	 */
 	public boolean isDecoding()
 	{
 		return !getParent().containsChild(this);
@@ -644,6 +685,8 @@ public abstract class Node
 	/**
 	 * Give the specified node the given nodes children. This removes the
 	 * children from the given oldParent node.
+	 * 
+	 * @param oldParent The parent to inherit the children from.
 	 */
 	public void inheritChildren(Node oldParent)
 	{
@@ -654,6 +697,7 @@ public abstract class Node
 	 * Give the specified node the given nodes children. This removes the
 	 * children from the given oldParent node.
 	 * 
+	 * @param oldParent The parent to inherit the children from.
 	 * @param clone Whether or not to clone the children and not remove
 	 * 		them from the previous owner.
 	 */
@@ -929,6 +973,7 @@ public abstract class Node
 	 * the data that is stored in the Node to the C programming
 	 * language header file syntax.
 	 * 
+	 * @param builder The StringBuilder to append the data to.
 	 * @return The C header file syntax representation of the Node.
 	 */
 	public StringBuilder generateCHeader(StringBuilder builder)
@@ -941,6 +986,7 @@ public abstract class Node
 	 * translates the data that is stored in the Node to the C
 	 * programming language header file 'fragment' syntax.
 	 * 
+	 * @param builder The StringBuilder to append the data to.
 	 * @return The C header syntax representation of the Node.
 	 */
 	public StringBuilder generateCHeaderFragment(StringBuilder builder)
@@ -953,6 +999,7 @@ public abstract class Node
 	 * the data that is stored in the Node to the C programming
 	 * language source file syntax.
 	 * 
+	 * @param builder The StringBuilder to append the data to.
 	 * @return The C source syntax representation of the Node.
 	 */
 	public StringBuilder generateCSource(StringBuilder builder)
@@ -965,6 +1012,7 @@ public abstract class Node
 	 * the data that is stored in the Node to the C programming
 	 * language source file 'fragment' syntax.
 	 * 
+	 * @param builder The StringBuilder to append the data to.
 	 * @return The C source syntax representation of the Node.
 	 */
 	public StringBuilder generateCSourceFragment(StringBuilder builder)
@@ -1019,9 +1067,9 @@ public abstract class Node
 	 * Essentially, this is the String that is decoded into the node.
 	 * It is the input value from the .nova source file.
 	 * 
+	 * @param builder The StringBuilder to append the data to.
 	 * @param outputChildren Whether or not to output the children of the
 	 * 		children of the Node as well.
-	 * @param builder The StringBuilder to append the data to.
 	 * @return The appended StringBuilder that represents the input String
 	 * 		in Nova syntax.
 	 */
@@ -1034,6 +1082,7 @@ public abstract class Node
 	 * Validate the node to make last minute changes or error checking.
 	 * 
 	 * @param phase The phase that the node is being validated in.
+	 * @return The Node to continue the validation off of.
 	 */
 	public Node validate(int phase)
 	{

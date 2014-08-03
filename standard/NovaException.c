@@ -8,7 +8,7 @@ nova_VTable_Exception nova_VTable_Exception_val =
 	nova_2_Object_equals,
 };
 
-Exception* nova_Exception_Exception(Exception* this, ExceptionData* exceptionData)
+Exception* nova_Exception_construct(Exception* this, ExceptionData* exceptionData)
 {
 	CCLASS_NEW(Exception, this,);
 	

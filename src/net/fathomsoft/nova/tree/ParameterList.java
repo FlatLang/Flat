@@ -24,7 +24,7 @@ public class ParameterList<E extends Value> extends Node
 	 * "person" is the calling object, so this translates to the
 	 * following in C:
 	 * <blockquote><pre>
-	 * person->getName(person);</pre></blockquote>
+	 * person-&gt;getName(person);</pre></blockquote>
 	 * And this means that the method header in C must include a Person
 	 * type as the first parameter for the getName() method. Therefore,
 	 * the method header looks like this:
@@ -152,6 +152,12 @@ public class ParameterList<E extends Value> extends Node
 		return null;
 	}
 	
+	/**
+	 * Get the types that the parameter list contains.
+	 * 
+	 * @return The list of types that the parameter list requires from
+	 * 		an argument list.
+	 */
 	public Value[] getTypes()
 	{
 		ArrayList<Value> types = new ArrayList<Value>();

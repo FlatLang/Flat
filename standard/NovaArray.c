@@ -8,7 +8,7 @@ nova_VTable_Array nova_VTable_Array_val =
 	nova_2_Object_equals,
 };
 
-Array* nova_Array_Array(Array* this, ExceptionData* exceptionData)
+Array* nova_Array_construct(Array* this, ExceptionData* exceptionData)
 {
 	CCLASS_NEW(Array, this,);
 	

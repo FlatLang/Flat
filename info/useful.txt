@@ -18,10 +18,15 @@ Code: 8145 - 54% - 122% - 122%
 Comments: 6940 - 46% - 130% - 134%
 Total: 15085 - 126% - 127%
 
+v0.2.23:
+Code: 8066 - 52% - 99% - 121% - 121%
+Comments: 7347 - 48% - 106% - 138% - 142%
+Total: 15413 - 102% - 129% - 130%
+
 Current:
-Code: 8145 - 54% - 122% - 122%
-Comments: 6940 - 46% - 130% - 134%
-Total: 15085 - 126% - 127%
+Code: 8066 - 52% - 99% - 121% - 121%
+Comments: 7347 - 48% - 106% - 138% - 142%
+Total: 15413 - 102% - 129% - 130%
 
 -DPARALLEL_MARK
 gcc -I include -I libatomic_ops/src -O2 -DGC_THREADS -DTHREAD_LOCAL_ALLOC -shared -o gc.dll extra/gc.c

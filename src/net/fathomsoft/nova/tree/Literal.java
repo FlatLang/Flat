@@ -69,6 +69,13 @@ public class Literal extends IValue
 		return builder.append(value);
 	}
 	
+	/**
+	 * Get the data type that the literal represents.<br>
+	 * see {@link net.fathomsoft.nova.tree.Value#getDataType()} for
+	 * more information on what possible data types there are.
+	 * 
+	 * @return The data type that the literal represents.
+	 */
 	public byte getDataType()
 	{
 		if (SyntaxUtils.isStringLiteral(value) && (!isStringInstantiation() || isWithinExternalContext()))
@@ -214,6 +221,10 @@ public class Literal extends IValue
 		return null;
 	}
 	
+	/**
+	 * @see net.fathomsoft.nova.tree.Node#validate(int)
+	 */
+	@Override
 	public Node validate(int phase)
 	{
 		if (value.equals(NULL_IDENTIFIER))
@@ -242,16 +253,6 @@ public class Literal extends IValue
 		}
 		
 		return this;
-	}
-	
-	public static StringBuilder generateCNullOutput(Value value)
-	{
-		return generateCNullOutput(new StringBuilder(), value);
-	}
-	
-	public static StringBuilder generateCNullOutput(StringBuilder builder, Value value)
-	{
-		return value.generateCTypeCast(builder).append(0);
 	}
 	
 	/**

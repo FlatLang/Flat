@@ -8,7 +8,7 @@ nova_VTable_Bool nova_VTable_Bool_val =
 	nova_2_Object_equals,
 };
 
-Bool* nova_Bool_Bool(Bool* this, ExceptionData* exceptionData)
+Bool* nova_Bool_construct(Bool* this, ExceptionData* exceptionData)
 {
 	CCLASS_NEW(Bool, this,);
 	

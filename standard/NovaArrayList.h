@@ -39,7 +39,7 @@ CCLASS_CLASS
 	struct Private* prv;
 )
 
-ArrayList* nova_ArrayList_ArrayList(ArrayList* this, ExceptionData* exceptionData);
+ArrayList* nova_ArrayList_construct(ArrayList* this, ExceptionData* exceptionData);
 void nova_del_ArrayList(ArrayList** this, ExceptionData* exceptionData);
 void nova_ArrayList_add(ArrayList* this, ExceptionData* exceptionData, int nova_0_var);
 void nova_ArrayList_increaseSize(ArrayList* this, ExceptionData* exceptionData);

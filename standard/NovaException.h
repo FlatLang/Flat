@@ -37,7 +37,7 @@ CCLASS_CLASS
 	nova_VTable_Exception* vtable;
 )
 
-Exception* nova_Exception_Exception(Exception* this, ExceptionData* exceptionData);
+Exception* nova_Exception_construct(Exception* this, ExceptionData* exceptionData);
 void nova_del_Exception(Exception** this, ExceptionData* exceptionData);
 
 #endif

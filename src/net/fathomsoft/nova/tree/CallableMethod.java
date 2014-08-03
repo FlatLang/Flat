@@ -54,16 +54,22 @@ public interface CallableMethod
 	
 	/**
 	 * @see net.fathomsoft.nova.tree.variables.VariableDeclaration#getArrayDimensions()
+	 * 
+	 * @return The amount of dimensions that the array has, if any.
 	 */
 	public int getArrayDimensions();
 	
 	/**
 	 * @see net.fathomsoft.nova.tree.NovaMethodDeclaration#isVirtual()
+	 * 
+	 * @return Whether or not the method is virtual.
 	 */
 	public boolean isVirtual();
 	
 	/**
 	 * @see net.fathomsoft.nova.tree.Node#getParentClass()
+	 * 
+	 * @return The nearest ClassDeclaration instance that contains this node.
 	 */
 	public ClassDeclaration getParentClass();
 	

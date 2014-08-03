@@ -4,7 +4,7 @@ import net.fathomsoft.nova.util.Location;
 import net.fathomsoft.nova.util.Patterns;
 
 /**
- * {@link BodylessMethodDeclaration} extension that represents the declaration of an
+ * {@link NovaMethodDeclaration} extension that represents the declaration of an
  * abstract method node type. See {@link #decodeStatement(Node, String, Location, boolean)}
  * for more details on what correct inputs look like.
  * 

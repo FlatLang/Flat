@@ -31,7 +31,7 @@ public class FileDeclaration extends Node
 	/**
 	 * The default imports that each file uses.
 	 */
-	private static final String DEFAULT_IMPORTS[];
+	public static final String DEFAULT_IMPORTS[];
 	
 	/**
 	 * Initialize the defaultImports constant.
@@ -67,11 +67,12 @@ public class FileDeclaration extends Node
 	 * 
 	 * @see net.fathomsoft.nova.tree.Node#Node(Node, Location)
 	 */
-	public FileDeclaration(Node temporaryParent, Location locationIn)
+	public FileDeclaration(Node temporaryParent, Location locationIn, File file)
 	{
 		super(temporaryParent, locationIn);
 		
-		closures = new ArrayList<ClosureDeclaration>();
+		closures  = new ArrayList<ClosureDeclaration>();
+		this.file = file;
 		
 		ImportList imports = new ImportList(this, locationIn);
 		
@@ -89,11 +90,21 @@ public class FileDeclaration extends Node
 		return super.getNumDefaultChildren() + 1;
 	}
 	
+	/**
+	 * Add all of the imports of the classes that are within the same
+	 * directory of the specified file.
+	 */
 	public void addAutoImports()
 	{
 		getProgram().addAutoImports(this);
 	}
 	
+	/**
+	 * Add an Import node from the given location.
+	 * 
+	 * @param loc The location to add an import from.
+	 * @return The generated Import node.
+	 */
 	public Import addImport(String loc)
 	{
 		if (containsImport(loc))
@@ -238,16 +249,6 @@ public class FileDeclaration extends Node
 	}
 	
 	/**
-	 * Set the File that this FileDeclaration represents.
-	 * 
-	 * @param file The File that this FileDeclaration represents.
-	 */
-	public void setFile(File file)
-	{
-		this.file = file;
-	}
-	
-	/**
 	 * Get the name of the file without the extension.<br>
 	 * <br>
 	 * For example: A getName() call for a FileDeclaration of Test.nova would
@@ -286,6 +287,10 @@ public class FileDeclaration extends Node
 		return getClassDeclaration().generateCSourceName(new StringBuilder()) + ".c";
 	}
 	
+	/**
+	 * @see net.fathomsoft.nova.tree.Node#validate(int)
+	 */
+	@Override
 	public Node validate(int phase)
 	{
 		if (phase == SyntaxTree.PHASE_METHOD_CONTENTS)
@@ -528,13 +533,13 @@ public class FileDeclaration extends Node
 	@Override
 	public FileDeclaration clone(Node temporaryParent, Location locationIn)
 	{
-		FileDeclaration node = new FileDeclaration(temporaryParent, locationIn);
+		FileDeclaration node = new FileDeclaration(temporaryParent, locationIn, null);
 		
 		return cloneTo(node);
 	}
 	
 	/**
-	 * Fill the given {@link FileNode} with the data that is in the
+	 * Fill the given {@link FileDeclaration} with the data that is in the
 	 * specified node.
 	 * 
 	 * @param node The node to copy the data into.

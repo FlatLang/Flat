@@ -40,7 +40,7 @@ CCLASS_CLASS
 	nova_VTable_PolymorphismStability* vtable;
 )
 
-PolymorphismStability* nova_PolymorphismStability_PolymorphismStability(PolymorphismStability* this, ExceptionData* exceptionData);
+PolymorphismStability* nova_PolymorphismStability_construct(PolymorphismStability* this, ExceptionData* exceptionData);
 void nova_del_PolymorphismStability(PolymorphismStability** this, ExceptionData* exceptionData);
 void nova_static_PolymorphismStability_test(PolymorphismStability* this, ExceptionData* exceptionData, StabilityTest* nova_0_program);
 

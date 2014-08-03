@@ -26,7 +26,7 @@ typedef struct UnstableException UnstableException;
 
 
 
-UnstableException* nova_UnstableException_UnstableException(UnstableException* this, ExceptionData* exceptionData);
+UnstableException* nova_UnstableException_construct(UnstableException* this, ExceptionData* exceptionData);
 void nova_del_UnstableException(UnstableException** this, ExceptionData* exceptionData);
 
 #endif

@@ -41,7 +41,7 @@ CCLASS_CLASS
 	nova_VTable_SVGComponent* vtable;
 )
 
-SVGComponent* nova_SVGComponent_SVGComponent(SVGComponent* this, ExceptionData* exceptionData);
+SVGComponent* nova_SVGComponent_construct(SVGComponent* this, ExceptionData* exceptionData);
 void nova_del_SVGComponent(SVGComponent** this, ExceptionData* exceptionData);
 void nova_2_SVGComponent_generateOutput(SVGComponent* this, ExceptionData* exceptionData, File* nova_0_file);
 

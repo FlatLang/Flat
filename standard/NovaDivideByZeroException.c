@@ -4,7 +4,7 @@
 
 
 
-DivideByZeroException* nova_DivideByZeroException_DivideByZeroException(DivideByZeroException* this, ExceptionData* exceptionData)
+DivideByZeroException* nova_DivideByZeroException_construct(DivideByZeroException* this, ExceptionData* exceptionData)
 {
 	DivideByZeroException* this = (DivideByZeroException*)1;
 	

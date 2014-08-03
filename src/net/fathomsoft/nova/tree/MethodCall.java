@@ -190,6 +190,13 @@ public class MethodCall extends IIdentifier
 		return getParentMethod().getParameter(getName());
 	}
 	
+	/**
+	 * Get the ClassDeclaration instance that declares the method that
+	 * this MethodCall is calling.
+	 * 
+	 * @return The Class that this MethodCall's declaration is declared
+	 * 		in.
+	 */
 	public ClassDeclaration getDeclaringClass()
 	{
 		if (getFileDeclaration().containsImport(getName()))
@@ -286,6 +293,27 @@ public class MethodCall extends IIdentifier
 		return getCallableDeclaration().getParameterList().getParameter(argIndex);
 	}
 	
+	/**
+	 * @see net.fathomsoft.nova.tree.Identifier#generateCArgumentReference(StringBuilder, Identifier)
+	 */
+	@Override
+	public StringBuilder generateCArgumentReference(StringBuilder builder, Identifier callingMethod)
+	{
+		// TODO: there is a better way.
+		if (getCallableDeclaration().isVirtual() && isAccessed() && !isVirtualTypeKnown())
+		{
+			Identifier current = getAccessingNode().getLastAccessingOfType(new Class<?>[] { MethodCall.class, Closure.class }, true);
+			
+			while (current != null && current != this)
+			{
+				current.generateCUseOutput(builder).append("->");
+				
+				current = current.getAccessedNode();
+			}
+		}
+		
+		return super.generateCArgumentReference(builder, callingMethod);
+	}
 	/**
 	 * @see net.fathomsoft.nova.tree.Node#generateCSource(StringBuilder)
 	 */
@@ -632,8 +660,8 @@ public class MethodCall extends IIdentifier
 	 */
 	private void validateCharacters(Node parent, String argument, Location location)
 	{
-		String prefix  = StringUtils.getGroupedSymbols(argument, 0);
-		String postfix = StringUtils.getGroupedSymbols(argument, argument.length() - 1, -1);
+		String prefix  = StringUtils.findGroupedSymbols(argument, 0);
+		String postfix = StringUtils.findGroupedSymbols(argument, argument.length() - 1, -1);
 		
 		if (prefix.length() > 0)
 		{
@@ -692,7 +720,7 @@ public class MethodCall extends IIdentifier
 		{
 			MethodCall calling   = (MethodCall)reference;
 			
-			Variable replacement = getAncestorWithScope().getScope().registerLocalVariable(calling, this);
+			Variable replacement = getAncestorWithScope().getScope().registerLocalVariable(calling);
 			Node     replacing   = calling.getRootReferenceNode(true);
 			
 			replacing.getParent().replace(replacing, replacement);
@@ -705,6 +733,13 @@ public class MethodCall extends IIdentifier
 		return this;
 	}
 	
+	/**
+	 * Check to see if a local declaration is required to keep a virtual
+	 * method from being called too many times.
+	 * 
+	 * @return Whether or not a local declaration for a virtual method
+	 * 		call is required.
+	 */
 	private boolean localDeclarationRequired()
 	{
 		return getCallableDeclaration().isVirtual() && !isVirtualTypeKnown() && isAccessed() && getAccessingNode() instanceof MethodCall && !getAccessingNode().isVirtualTypeKnown();

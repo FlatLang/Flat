@@ -2,7 +2,7 @@
 
 void error(int code, char message[], error_func func, void* ref)
 {
-	String* s = nova_String_String(0, 0, message);
+	String* s = nova_String_construct(0, 0, message);
 
 	func(ref, 0, code, s, 1);
 }
@@ -28,10 +28,10 @@ FILE* getPipe(char command[], error_func func, void* ref)
 		error(1, "_popen error...", func, ref);
 	}
 
-	while (fgets(buf, 256, pPipe))
+	/*while (fgets(buf, 256, pPipe))
 	{
 		printf(buf);
-	}
+	}*/
 
 	return pPipe;
 }

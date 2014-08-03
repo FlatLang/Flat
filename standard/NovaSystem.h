@@ -41,7 +41,7 @@ CCLASS_CLASS
 	nova_VTable_System* vtable;
 )
 
-System* nova_System_System(System* this, ExceptionData* exceptionData);
+System* nova_System_construct(System* this, ExceptionData* exceptionData);
 void nova_del_System(System** this, ExceptionData* exceptionData);
 void nova_static_1_System_exit(System* this, ExceptionData* exceptionData, int nova_0_code);
 void nova_static_2_System_exit(System* this, ExceptionData* exceptionData, int nova_0_code, String* nova_0_message);

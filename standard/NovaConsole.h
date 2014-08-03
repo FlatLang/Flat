@@ -39,7 +39,7 @@ CCLASS_CLASS
 	nova_VTable_Console* vtable;
 )
 
-Console* nova_Console_Console(Console* this, ExceptionData* exceptionData);
+Console* nova_Console_construct(Console* this, ExceptionData* exceptionData);
 void nova_del_Console(Console** this, ExceptionData* exceptionData);
 void nova_static_1_Console_writeLine(Console* this, ExceptionData* exceptionData, String* nova_0_text);
 void nova_static_2_Console_writeLine(Console* this, ExceptionData* exceptionData, Object* nova_0_obj);

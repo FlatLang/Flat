@@ -40,7 +40,7 @@ CCLASS_CLASS
 	struct Private* prv;
 )
 
-String* nova_String_String(String* this, ExceptionData* exceptionData, char* nova_0_data);
+String* nova_String_construct(String* this, ExceptionData* exceptionData, char* nova_0_data);
 void nova_del_String(String** this, ExceptionData* exceptionData);
 char* nova_String_toCharArray(String* this, ExceptionData* exceptionData);
 String* nova_String_concat(String* this, ExceptionData* exceptionData, String* nova_0_str);

@@ -186,7 +186,7 @@ public class FieldDeclaration extends InstanceDeclaration
 	}
 	
 	/**
-	 * Fill the given {@link Field} with the data that is in the
+	 * Fill the given {@link FieldDeclaration} with the data that is in the
 	 * specified node.
 	 * 
 	 * @param node The node to copy the data into.

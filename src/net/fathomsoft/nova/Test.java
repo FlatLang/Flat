@@ -71,11 +71,15 @@ public class Test
 		d(s, (Object)s);
 	}
 	
+	public static void d(String s)
+	{
+		System.out.println("Str");
+		
+		d(s, (Object)s);
+	}
+	
 	public static void main(String args[])
 	{
-		System.out.println(StringUtils.findGroupedCharsBounds("asdf [ ] sadf", new char[][] { StringUtils.SYMBOLS_CHARS , StringUtils.WHITESPACE }, 3, -1, true));
-		
-		System.exit(0);
 		String s = "ADF";
 		
 		CharSequence c = (CharSequence)s;

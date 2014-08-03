@@ -209,6 +209,18 @@ public class Constructor extends BodyMethodDeclaration
 		
 		builder.append(' ');
 		
+		generateCSourceName(builder).append('(');
+		
+		getParameterList().generateCSource(builder);
+		
+		builder.append(')');
+		
+		return builder;
+	}
+	
+	@Override
+	public StringBuilder generateCSourceName(StringBuilder builder)
+	{
 		builder.append(Nova.LANGUAGE_NAME.toLowerCase()).append('_');
 		
 		if (getOverloadID() >= 0)
@@ -216,15 +228,9 @@ public class Constructor extends BodyMethodDeclaration
 			builder.append(getOverloadID()).append('_');
 		}
 		
-		builder.append(classDeclaration.getName()).append('_');
+		builder.append(getParentClass().getName()).append('_');
 		
-		builder.append(classDeclaration.getName()).append('(');
-		
-		getParameterList().generateCSource(builder);
-		
-		builder.append(')');
-		
-		return builder;
+		return builder.append(IDENTIFIER);
 	}
 	
 	/**

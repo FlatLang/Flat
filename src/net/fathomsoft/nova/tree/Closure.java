@@ -27,6 +27,10 @@ public class Closure extends Variable
 		super(temporaryParent, locationIn);
 	}
 	
+	/**
+	 * @see net.fathomsoft.nova.tree.Node#isSpecial()
+	 */
+	@Override
 	public boolean isSpecial()
 	{
 		return true;
@@ -192,6 +196,10 @@ public class Closure extends Variable
 		return true;
 	}
 	
+	/**
+	 * @see net.fathomsoft.nova.tree.Node#validate(int)
+	 */
+	@Override
 	public Node validate(int phase)
 	{
 		if (phase == SyntaxTree.PHASE_METHOD_CONTENTS)

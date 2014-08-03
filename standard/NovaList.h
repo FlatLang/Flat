@@ -39,7 +39,7 @@ CCLASS_CLASS
 	struct Private* prv;
 )
 
-List* nova_List_List(List* this, ExceptionData* exceptionData);
+List* nova_List_construct(List* this, ExceptionData* exceptionData);
 void nova_del_List(List** this, ExceptionData* exceptionData);
 ListNode* nova_List_getFirst(List* this, ExceptionData* exceptionData);
 void nova_List_add(List* this, ExceptionData* exceptionData, Object* nova_0_data);

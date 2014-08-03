@@ -10,7 +10,7 @@ nova_VTable_Object nova_VTable_Object_val =
 
 String* nova_Object_getHashCode(Object* this, ExceptionData* exceptionData);
 
-Object* nova_Object_Object(Object* this, ExceptionData* exceptionData)
+Object* nova_Object_construct(Object* this, ExceptionData* exceptionData)
 {
 	CCLASS_NEW(Object, this,);
 	
@@ -36,12 +36,12 @@ void nova_del_Object(Object** this, ExceptionData* exceptionData)
 
 String* nova_Object_getHashCode(Object* this, ExceptionData* exceptionData)
 {
-	return nova_String_String(0, exceptionData, hashCode(this));
+	return nova_String_construct(0, exceptionData, hashCode(this));
 }
 
 String* nova_2_Object_toString(Object* this, ExceptionData* exceptionData)
 {
-	return nova_String_concat(nova_String_String(0, exceptionData, (char*)("[Object @")), exceptionData, nova_String_concat(nova_Object_getHashCode(this, exceptionData), exceptionData, nova_String_String(0, exceptionData, (char*)("]"))));
+	return nova_String_concat(nova_String_construct(0, exceptionData, (char*)("[Object @")), exceptionData, nova_String_concat(nova_Object_getHashCode(this, exceptionData), exceptionData, nova_String_construct(0, exceptionData, (char*)("]"))));
 }
 
 char nova_2_Object_equals(Object* this, ExceptionData* exceptionData, Object* nova_0_another)

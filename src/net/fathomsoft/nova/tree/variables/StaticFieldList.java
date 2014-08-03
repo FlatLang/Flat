@@ -61,7 +61,7 @@ public class StaticFieldList extends Node
 	}
 	
 	/**
-	 * Fill the given {@link PrivateFieldList} with the data that is in the
+	 * Fill the given {@link StaticFieldList} with the data that is in the
 	 * specified node.
 	 * 
 	 * @param node The node to copy the data into.

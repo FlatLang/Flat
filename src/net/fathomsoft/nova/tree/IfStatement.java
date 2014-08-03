@@ -122,10 +122,10 @@ public class IfStatement extends Node
 	 * <br>
 	 * Example inputs include:<br>
 	 * <ul>
-	 * 	<li>if (index >= array.size())</li>
+	 * 	<li>if (index &gt;= array.size())</li>
 	 * 	<li>if (getParent().isAlive())</li>
-	 * 	<li>if (!person.canWalk() && !person.isVegetable())</li>
-	 * 	<li>if ((age + 2 >= 21 && gender == "male") || gender == "female")</li>
+	 * 	<li>if (!person.canWalk() &amp;&amp; !person.isVegetable())</li>
+	 * 	<li>if ((age + 2 &gt;= 21 &amp;&amp; gender == "male") || gender == "female")</li>
 	 * </ul>
 	 * 
 	 * @param parent The parent node of the statement.

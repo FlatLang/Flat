@@ -8,7 +8,7 @@ nova_VTable_GC nova_VTable_GC_val =
 	nova_2_Object_equals,
 };
 
-GC* nova_GC_GC(GC* this, ExceptionData* exceptionData)
+GC* nova_GC_construct(GC* this, ExceptionData* exceptionData)
 {
 	CCLASS_NEW(GC, this,);
 	

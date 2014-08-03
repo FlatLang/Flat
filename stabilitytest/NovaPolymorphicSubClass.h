@@ -38,7 +38,7 @@ CCLASS_CLASS
 	nova_VTable_PolymorphicSubClass* vtable;
 )
 
-PolymorphicSubClass* nova_PolymorphicSubClass_PolymorphicSubClass(PolymorphicSubClass* this, ExceptionData* exceptionData);
+PolymorphicSubClass* nova_PolymorphicSubClass_construct(PolymorphicSubClass* this, ExceptionData* exceptionData);
 void nova_del_PolymorphicSubClass(PolymorphicSubClass** this, ExceptionData* exceptionData);
 String* nova_1_PolymorphicSubClass_toString(PolymorphicSubClass* this, ExceptionData* exceptionData);
 

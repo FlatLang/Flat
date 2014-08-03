@@ -134,7 +134,7 @@ public class VariableDeclarationList extends Node
 	}
 	
 	/**
-	 * Fill the given {@link VariableList} with the data that is in the
+	 * Fill the given {@link VariableDeclarationList} with the data that is in the
 	 * specified node.
 	 * 
 	 * @param node The node to copy the data into.

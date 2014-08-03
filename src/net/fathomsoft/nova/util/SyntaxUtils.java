@@ -32,13 +32,25 @@ import net.fathomsoft.nova.tree.variables.Variable;
  */
 public class SyntaxUtils
 {
-	private static final int BYTE = 1, SHORT = 2, INT = 3, LONG = 4, FLOAT = 5, DOUBLE = 6;
+	private static final int CHAR = 1, BYTE = 1, SHORT = 2, INT = 3, LONG = 4, FLOAT = 5, DOUBLE = 6;
 	
+	/**
+	 * Get the rank of the given primitive type in terms of assignment
+	 * hierarchy. For example: integers can be assigned to long types and
+	 * not vice-versa.
+	 * 
+	 * @param primitiveType The primitive type to get the rank of.
+	 * @return The rank of the given primitive type.
+	 */
 	private static int getPrimitiveRank(String primitiveType)
 	{
 		primitiveType = getPrimitiveWrapperClassName(primitiveType);
 		
-		if (primitiveType.equals("Byte"))
+		if (primitiveType.equals("Char"))
+		{
+			return CHAR;
+		}
+		else if (primitiveType.equals("Byte"))
 		{
 			return BYTE;
 		}
@@ -66,6 +78,14 @@ public class SyntaxUtils
 		return 0;
 	}
 	
+	/**
+	 * Compare the ranks of the two given primitive types and return the
+	 * higher one.
+	 * 
+	 * @param type1 The first primitive type to check.
+	 * @param type2 The second primitive type to check.
+	 * @return The higher ranked primitive type of the two given.
+	 */
 	public static String getHighestPrimitiveType(String type1, String type2)
 	{
 		int rank1 = getPrimitiveRank(type1);
@@ -79,6 +99,15 @@ public class SyntaxUtils
 		return type2;
 	}
 	
+	/**
+	 * Check to see if the given primitive is compatible with the required
+	 * primitive type.
+	 * 
+	 * @param required The required primitive type.
+	 * @param given The given primitive type to check against the required
+	 * 		primitive type.
+	 * @return Whether or not the two primitive types are compatible.
+	 */
 	public static boolean arePrimitiveTypesCompatible(String required, String given)
 	{
 		int rank1 = getPrimitiveRank(required);
@@ -247,6 +276,7 @@ public class SyntaxUtils
 	 * For example: "this is a String literal" would return "String"
 	 * because String is the class name of the String literal type.
 	 * 
+	 * @param literal The literal to find the type name of.
 	 * @return The class name of the type that the literal value implies.
 	 */
 	public static String getLiteralTypeName(String literal)
@@ -668,31 +698,6 @@ public class SyntaxUtils
 		return null;
 	}
 	
-	public static boolean isPrimitiveTypeCompatible(String assignee, String assignment)
-	{
-		if (assignee == null || assignment == null)
-		{
-			return false;
-		}
-		
-		if (assignee.equals("double"))
-		{
-			if (assignment.equals("byte") || assignment.equals("int") || assignment.equals("long") || assignment.equals("float") || assignment.equals("short") || assignment.equals("byte") || assignment.equals("char"))
-			{
-				return true;
-			}
-		}
-		else if (assignee.equals("int"))
-		{
-			if (assignment.equals("byte") || assignment.equals("short") || assignment.equals("byte") || assignment.equals("char"))
-			{
-				return true;
-			}
-		}
-		
-		return false;
-	}
-	
 	/**
 	 * Get whether or not the given String is a valid variable assignment.
 	 * Assignments contain an identifier or array access on the left
@@ -700,7 +705,7 @@ public class SyntaxUtils
 	 * the right hand side.<br>
 	 * <br>
 	 * For example:
-	 * <blockqoute><pre>
+	 * <blockquote><pre>
 	 * variable_NAME1 = (getSize() + 5) / array[index]</pre></blockquote>
 	 * 
 	 * @param statement The String of text to validate.
@@ -841,6 +846,8 @@ public class SyntaxUtils
 	 * Calculate the Bounds of the data that is within the parentheses
 	 * in the given statement.
 	 * 
+	 * @param parent The node to throw an error with if anything goes
+	 * 		wrong.
 	 * @param statement The statement containing parentheses.
 	 * @return The bounds of the data within the parentheses.
 	 */
@@ -1239,6 +1246,9 @@ public class SyntaxUtils
 	 * Get whether or not the declaration is accessible from the
 	 * given accessor context.
 	 * 
+	 * @param accessor The Identifier that is accessing the type.
+	 * @param declaration The declaration of the type that is being
+	 * 		accessed.
 	 * @return Whether or not the declaration is accessible from the
 	 * 		given accessor context.
 	 */
@@ -1294,7 +1304,7 @@ public class SyntaxUtils
 	 * <br>
 	 * For example:
 	 * <blockquote><pre>
-	 * NonExistingType varName;</pre><blockquote>
+	 * NonExistingType varName;</pre></blockquote>
 	 * In the example above, "<code>NonExistingType</code>" is not an
 	 * existing Class and is therefore not a valid type.
 	 * 
@@ -1475,10 +1485,19 @@ public class SyntaxUtils
 //		return program.getClassDeclaration(getTypeInCommon(program, value1.getType(), value2.getType()));
 //	}
 	
-	public static String getTypeInCommon(Program program, String type1, String type2)
+	/**
+	 * Get the type in common between the two given types.
+	 * 
+	 * @param context The program that the two types are located in.
+	 * @param type1 The first type to compare.
+	 * @param type2 The second type to compare.
+	 * @return The type in common between the two types. If there is
+	 * 		no type in common, null is returned.
+	 */
+	public static String getTypeInCommon(Program context, String type1, String type2)
 	{
-		ClassDeclaration clazz1 = program.getClassDeclaration(type1);
-		ClassDeclaration clazz2 = program.getClassDeclaration(type2);
+		ClassDeclaration clazz1 = context.getClassDeclaration(type1);
+		ClassDeclaration clazz2 = context.getClassDeclaration(type2);
 		
 		if (clazz1 == null || clazz2 == null)
 		{
@@ -1512,11 +1531,30 @@ public class SyntaxUtils
 		return null;
 	}
 	
-	public static boolean isTypeCompatible(Program program, String required, String given)
+	/**
+	 * Check to see if the 'given' type is compatible with the
+	 * required type.
+	 * 
+	 * @param context The program that the two types are located in.
+	 * @param required The type that the 'given' type is required
+	 * 		to be compatible with.
+	 * @param given The given type to check against the required type.
+	 * @return Whether or not the two types are compatible.
+	 */
+	public static boolean isTypeCompatible(Program context, String required, String given)
 	{
-		return isTypeCompatible(program.getClassDeclaration(getPrimitiveWrapperClassName(given)), program.getClassDeclaration(getPrimitiveWrapperClassName(required)));
+		return isTypeCompatible(context.getClassDeclaration(getPrimitiveWrapperClassName(given)), context.getClassDeclaration(getPrimitiveWrapperClassName(required)));
 	}
 	
+	/**
+	 * Check to see if the 'given' type is compatible with the
+	 * required type.
+	 * 
+	 * @param required The type that the 'given' type is required
+	 * 		to be compatible with.
+	 * @param given The given type to check against the required type.
+	 * @return Whether or not the two types are compatible.
+	 */
 	public static boolean isTypeCompatible(Value required, Value given)
 	{
 		if (given instanceof Closure)
@@ -1548,16 +1586,46 @@ public class SyntaxUtils
 		return false;
 	}
 	
+	/**
+	 * Check to see if the FileDeclaration already has the given class
+	 * imported or not.
+	 * 
+	 * @param file The File to check to see whether or not has the class
+	 * 		imported.
+	 * @param clazz The class to see if the File has imported.
+	 * @return Whether or not the File already has the given class
+	 * 		imported.
+	 */
 	public static boolean isImported(FileDeclaration file, String clazz)
 	{
 		return file.containsImport(clazz) || file.containsClass(clazz);
 	}
 	
+	/**
+	 * Validate that given class has been imported by the given node's
+	 * FileDeclaration.
+	 * 
+	 * @param node The node that needs to validate that the class
+	 * 		has been imported.
+	 * @param clazz The class to check to see if has been imported.
+	 * @return Whether or not the class has been imported.
+	 */
 	public static boolean validateImported(Node node, String clazz)
 	{
 		return validateImported(node, clazz, node.getLocationIn());
 	}
 	
+	/**
+	 * Validate that given class has been imported by the given node's
+	 * FileDeclaration.
+	 * 
+	 * @param node The node that needs to validate that the class
+	 * 		has been imported.
+	 * @param clazz The class to check to see if has been imported.
+	 * @param location The location to point the error at if the class
+	 * 		has not been imported.
+	 * @return Whether or not the class has been imported.
+	 */
 	public static boolean validateImported(Node node, String clazz, Location location)
 	{
 		if (node.getProgram().getClassDeclaration(clazz) != null)
@@ -1573,6 +1641,13 @@ public class SyntaxUtils
 		return false;
 	}
 	
+	/**
+	 * Check to see if the type is a basic type and does not
+	 * have a class to represent it.
+	 * 
+	 * @param type The type to check.
+	 * @return Whether or not it is a basic type.
+	 */
 	public static boolean isBasicType(String type)
 	{
 		return type.equals("class");

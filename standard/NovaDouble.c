@@ -14,7 +14,7 @@ char* nova_static_Double_genBuffer(Double* this, ExceptionData* exceptionData, d
 int nova_static_Double_repetition(Double* this, ExceptionData* exceptionData, char* nova_0_buffer, int nova_0_start);
 int nova_static_Double_lastSignificantDigit(Double* this, ExceptionData* exceptionData, char* nova_0_buffer, int nova_0_start);
 
-Double* nova_Double_Double(Double* this, ExceptionData* exceptionData, double nova_0_value)
+Double* nova_Double_construct(Double* this, ExceptionData* exceptionData, double nova_0_value)
 {
 	CCLASS_NEW(Double, this,);
 	
@@ -61,7 +61,7 @@ String* nova_static_Double_genString(Double* this, ExceptionData* exceptionData,
 {
 	nova_0_buffer = realloc(nova_0_buffer, ++nova_0_lastIndex + 1);
 	nova_0_buffer[nova_0_lastIndex] = '\0';
-	return nova_String_String(0, exceptionData, nova_0_buffer);
+	return nova_String_construct(0, exceptionData, nova_0_buffer);
 }
 
 char* nova_static_Double_genBuffer(Double* this, ExceptionData* exceptionData, double nova_0_value)

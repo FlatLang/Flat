@@ -277,18 +277,6 @@ public abstract class Value extends Node
 	 */
 	public String getTypeClassName()
 	{
-		return getTypeClassName(getArrayDimensions());
-	}
-	
-	/**
-	 * Get the name of the class that represents the type of the specified
-	 * Value. If the type is primitive, this will return the wrapper
-	 * class name of the primitive type.
-	 * 
-	 * @return The name of the class of the type.
-	 */
-	public String getTypeClassName(int arrayDimensions)
-	{
 		ClassDeclaration clazz = getProgram().getClassDeclaration(getType());
 		
 		if (clazz != null)
@@ -302,12 +290,6 @@ public abstract class Value extends Node
 			
 			if (name != null)
 			{
-				if (arrayDimensions > 0)
-				{
-//					return "Array";
-//					name += "Array";
-				}
-				
 				clazz = getProgram().getClassDeclaration(name);
 				
 				if (clazz == null)
@@ -502,14 +484,25 @@ public abstract class Value extends Node
 		return generateCTypeOutput(builder);
 	}
 	
+	/**
+	 * Generate the C null representation for the given value type.
+	 * 
+	 * @return The generated null output.
+	 */
 	public StringBuilder generateCNullOutput()
 	{
 		return generateCNullOutput(new StringBuilder());
 	}
 	
+	/**
+	 * Generate the C null representation for the given value type.
+	 * 
+	 * @param builder The StringBuilder to append the data to.
+	 * @return The generated null output.
+	 */
 	public StringBuilder generateCNullOutput(StringBuilder builder)
 	{
-		return Literal.generateCNullOutput(builder, this);
+		return generateCTypeCast(builder).append(0);
 	}
 	
 	/**
@@ -629,6 +622,7 @@ public abstract class Value extends Node
 	 * Generate the representation of when the value node is being used
 	 * in action.
 	 * 
+	 * @param builder The StringBuilder to append the data to.
 	 * @return What the method call looks like when it is being used in
 	 * 		action
 	 */

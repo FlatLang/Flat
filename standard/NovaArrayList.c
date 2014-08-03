@@ -14,7 +14,7 @@ CCLASS_PRIVATE
 	
 )
 
-ArrayList* nova_ArrayList_ArrayList(ArrayList* this, ExceptionData* exceptionData)
+ArrayList* nova_ArrayList_construct(ArrayList* this, ExceptionData* exceptionData)
 {
 	CCLASS_NEW(ArrayList, this);
 	

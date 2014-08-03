@@ -64,15 +64,14 @@ public class VTable extends IIdentifier
 		return builder;
 	}
 	
-//	/**
-//	 * @see net.fathomsoft.nova.tree.Identifier#generateCSourceName(java.lang.StringBuilder)
-//	 */
-//	@Override
-//	public StringBuilder generateCSourceName(StringBuilder builder)
-//	{
-//		return builder.append(Nova.LANGUAGE_NAME.toLowerCase()).append("_VTable_").append(getParentClass().generateUniquePrefix());
-//	}
-	
+	/**
+	 * Generate the virtual method declarations that declares the names
+	 * of the methods that are used in the class and its ancestors.
+	 * 
+	 * @param builder The StringBuilder to append the data to.
+	 * @param methods The methods to add the identifiers from.
+	 * @return The StringBuilder with the appended data.
+	 */
 	public StringBuilder generateVirtualMethodDeclarations(StringBuilder builder, NovaMethodDeclaration methods[])
 	{
 		for (NovaMethodDeclaration method : methods)
@@ -83,11 +82,27 @@ public class VTable extends IIdentifier
 		return builder;
 	}
 	
+	/**
+	 * Generate the virtual method declaration that declares the name
+	 * of the given method.
+	 * 
+	 * @param builder The StringBuilder to append the data to.
+	 * @param method The method to add the identifier from.
+	 * @return The StringBuilder with the appended data.
+	 */
 	public StringBuilder generateVirtualMethodDeclaration(StringBuilder builder, NovaMethodDeclaration method)
 	{
 		return method.generateCTypeOutput(builder).append(" (*").append(method.generateCVirtualMethodName()).append(")(").append(method.getParameterList().generateCHeader()).append(");\n");
 	}
 	
+	/**
+	 * Add the vtable values that point to the correct virtual method
+	 * implementation for the specified class.
+	 * 
+	 * @param builder The StringBuilder to append the data to.
+	 * @param methods The methods to add the references to.
+	 * @return The StringBuilder with the appended data.
+	 */
 	public StringBuilder generateVirtualMethodValues(StringBuilder builder, NovaMethodDeclaration methods[])
 	{
 		for (MethodDeclaration method : methods)
@@ -127,7 +142,7 @@ public class VTable extends IIdentifier
 	}
 	
 	/**
-	 * Fill the given {@link Array} with the data that is in the
+	 * Fill the given {@link VTable} with the data that is in the
 	 * specified node.
 	 * 
 	 * @param node The node to copy the data into.

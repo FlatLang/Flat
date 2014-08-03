@@ -39,7 +39,7 @@ CCLASS_CLASS
 	struct Private* prv;
 )
 
-OutputStream* nova_OutputStream_OutputStream(OutputStream* this, ExceptionData* exceptionData);
+OutputStream* nova_OutputStream_construct(OutputStream* this, ExceptionData* exceptionData);
 void nova_del_OutputStream(OutputStream** this, ExceptionData* exceptionData);
 
 #endif

@@ -206,6 +206,7 @@ public class VariableDeclaration extends IIdentifier
 	 * @param attribute The attribute to set true.
 	 * @param argNum The index of the attribute in the order that it
 	 * 		came in.
+	 * @return Whether or not an attribute was successfully set.
 	 */
 	public boolean setAttribute(String attribute, int argNum)
 	{
@@ -317,6 +318,7 @@ public class VariableDeclaration extends IIdentifier
 	 * Generate a String for the code used to free memory of the
 	 * specified variable.
 	 * 
+	 * @param builder The StringBuilder to append the data to.
 	 * @return The generated String for the code.
 	 */
 	public StringBuilder generateFreeOutput(StringBuilder builder)
@@ -429,7 +431,7 @@ public class VariableDeclaration extends IIdentifier
 	}
 	
 	/**
-	 * Fill the given {@link ActionValue} with the data that is in the
+	 * Fill the given {@link VariableDeclaration} with the data that is in the
 	 * specified node.
 	 * 
 	 * @param node The node to copy the data into.

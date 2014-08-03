@@ -39,7 +39,7 @@ CCLASS_CLASS
 	nova_VTable_UncaughtExceptionHandler* vtable;
 )
 
-UncaughtExceptionHandler* nova_2_UncaughtExceptionHandler_UncaughtExceptionHandler(UncaughtExceptionHandler* this, ExceptionData* exceptionData);
+UncaughtExceptionHandler* nova_2_UncaughtExceptionHandler_construct(UncaughtExceptionHandler* this, ExceptionData* exceptionData);
 void nova_del_UncaughtExceptionHandler(UncaughtExceptionHandler** this, ExceptionData* exceptionData);
 void nova_1_UncaughtExceptionHandler_UncaughtExceptionHandler(UncaughtExceptionHandler* this, ExceptionData* exceptionData);
 void nova_2_UncaughtExceptionHandler_uncaughtException(UncaughtExceptionHandler* this, ExceptionData* exceptionData, Thread* nova_0_thread, Exception* nova_0_exception);

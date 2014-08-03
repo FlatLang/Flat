@@ -11,7 +11,7 @@ nova_VTable_Byte nova_VTable_Byte_val =
 	nova_static_3_Number_toString,
 };
 
-Byte* nova_Byte_Byte(Byte* this, ExceptionData* exceptionData, char nova_0_value)
+Byte* nova_Byte_construct(Byte* this, ExceptionData* exceptionData, char nova_0_value)
 {
 	CCLASS_NEW(Byte, this,);
 	

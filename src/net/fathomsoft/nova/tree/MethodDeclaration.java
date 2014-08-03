@@ -10,9 +10,8 @@ import net.fathomsoft.nova.util.StringUtils;
 import net.fathomsoft.nova.util.SyntaxUtils;
 
 /**
- * Declaration extension that represents the declaration of a method
- * node type. See {@link #decodeStatement(Node, String, Location, boolean)}
- * for more details on what correct inputs look like.
+ * InstanceDeclaration extension that represents the declaration of a method
+ * node type.
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:10:53 PM
@@ -32,6 +31,13 @@ public abstract class MethodDeclaration extends InstanceDeclaration implements C
 		addChild(parameterList, this);
 	}
 	
+	/**
+	 * Get whether or not the specified MethodDeclaration contains a body
+	 * or not. The default is false.
+	 * 
+	 * @return Whether or not the specified MethodDeclaration contains a
+	 * 		body.
+	 */
 	public boolean containsBody()
 	{
 		return false;
@@ -173,6 +179,7 @@ public abstract class MethodDeclaration extends InstanceDeclaration implements C
 	 * In essence, this method is just {@link #generateCSourceSignature(StringBuilder)}
 	 * with a semi-colon attached to the end.
 	 * 
+	 * @param builder The StringBuilder to append the data to.
 	 * @return The C prototype for the method header.
 	 */
 	public StringBuilder generateCSourcePrototype(StringBuilder builder)
@@ -192,6 +199,7 @@ public abstract class MethodDeclaration extends InstanceDeclaration implements C
 	 * }</pre></blockquote>
 	 * will output as "<code>static void test()</code>"
 	 * 
+	 * @param builder The StringBuilder to append the data to.
 	 * @return The method signature in the C language.
 	 */
 	public StringBuilder generateCSourceSignature(StringBuilder builder)
@@ -215,6 +223,7 @@ public abstract class MethodDeclaration extends InstanceDeclaration implements C
 	 * statement String.
 	 * 
 	 * @param statement The String containing the method signature.
+	 * @param pattern The Pattern to remove from the statement.
 	 * @return The signature for the bodyless method to decode.
 	 */
 	public static String findMethodSignature(String statement, Pattern pattern)
@@ -280,6 +289,15 @@ public abstract class MethodDeclaration extends InstanceDeclaration implements C
 		return true;
 	}
 	
+	/**
+	 * Check to see if the given types are compatible with the specified
+	 * MethodDeclaration's parameters.
+	 * 
+	 * @param types The types that are being tested against the
+	 * 		parameters.
+	 * @return Whether or not the types are compatible with the
+	 * 		parameters.
+	 */
 	public boolean areCompatibleParameterTypes(Value ... types)
 	{
 		if (types.length != getParameterList().getNumVisibleChildren())

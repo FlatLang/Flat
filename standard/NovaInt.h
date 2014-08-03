@@ -39,7 +39,7 @@ CCLASS_CLASS
 	nova_VTable_Int* vtable;
 )
 
-Int* nova_Int_Int(Int* this, ExceptionData* exceptionData, int nova_0_value);
+Int* nova_Int_construct(Int* this, ExceptionData* exceptionData, int nova_0_value);
 void nova_del_Int(Int** this, ExceptionData* exceptionData);
 int nova_static_1_Int_numDigits(Int* this, ExceptionData* exceptionData, int nova_0_number);
 String* nova_static_1_Int_toString(Int* this, ExceptionData* exceptionData, int nova_0_value);

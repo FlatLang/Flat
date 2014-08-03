@@ -81,7 +81,7 @@ public class ElseStatement extends Node
 	 * Example inputs include:<br>
 	 * <ul>
 	 * 	<li>else</li>
-	 * 	<li>else if (!person.canWalk() && !person.isVegetable())</li>
+	 * 	<li>else if (!person.canWalk() &amp;&amp; !person.isVegetable())</li>
 	 * 	<li>else doSomethingInOneLine()</li>
 	 * 	<li>else counter++</li>
 	 * </ul>

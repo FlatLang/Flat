@@ -66,6 +66,14 @@ public class Bounds
 		this.end = end;
 	}
 	
+	/**
+	 * Extract a substring from the given source at the specified bound's
+	 * start and end. This is equivalent to the following:
+	 * <blockquote><pre>source.substring(Bounds.getStart(), Bounds.getEnd())</pre></blockquote>
+	 * 
+	 * @param source The String to get the substring from.
+	 * @return The extracted substring.
+	 */
 	public String extractString(String source)
 	{
 		if (!isValid())
@@ -119,6 +127,9 @@ public class Bounds
 	
 	/**
 	 * @see java.lang.Object#equals(Object)
+	 * 
+	 * @param bounds The Bounds to check against.
+	 * @return Whether or not the two Bounds have equal values.
 	 */
 	public boolean equals(Bounds bounds)
 	{

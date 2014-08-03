@@ -12,7 +12,7 @@ CCLASS_PRIVATE
 	
 )
 
-StabilityExceptionHandler* nova_StabilityExceptionHandler_StabilityExceptionHandler(StabilityExceptionHandler* this, ExceptionData* exceptionData, StabilityTest* nova_0_program)
+StabilityExceptionHandler* nova_StabilityExceptionHandler_construct(StabilityExceptionHandler* this, ExceptionData* exceptionData, StabilityTest* nova_0_program)
 {
 	CCLASS_NEW(StabilityExceptionHandler, this);
 	

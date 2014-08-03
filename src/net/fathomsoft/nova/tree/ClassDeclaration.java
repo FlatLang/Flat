@@ -146,11 +146,27 @@ public class ClassDeclaration extends InstanceDeclaration
 		return (VTable)getChild(6);
 	}
 	
+	/**
+	 * Get whether or not the class contains any virtual methods. For
+	 * more information on what virtual methods are, see {@link #getVirtualMethods()}
+	 * 
+	 * @return Whether or not the class contains any virtual methods.
+	 */
 	public boolean containsVirtualMethods()
 	{
 		return getVirtualMethods().length > 0;
 	}
 	
+	/**
+	 * Get an array containing all of the virtual methods that this class
+	 * and its ancestors contain.<br><br>
+	 * <b>What are virtual methods?</b><br>
+	 * Virtual methods are methods that have been overridden, or override
+	 * a method.
+	 * 
+	 * @return An array containing all of the virtual methods that the
+	 * 		class and its ancestors contain.
+	 */
 	public NovaMethodDeclaration[] getVirtualMethods()
 	{
 		ArrayList<NovaMethodDeclaration> methods = new ArrayList<NovaMethodDeclaration>();
@@ -165,6 +181,13 @@ public class ClassDeclaration extends InstanceDeclaration
 		return methods.toArray(new NovaMethodDeclaration[0]);
 	}
 	
+	/**
+	 * Add all of the virtual methods that the specified class contains
+	 * to the given method list.
+	 * 
+	 * @param methods The list of methods to add the found virtual method
+	 * 		data to.
+	 */
 	private void addVirtualMethods(ArrayList<NovaMethodDeclaration> methods)
 	{
 		MethodList list = getMethodList();
@@ -186,6 +209,15 @@ public class ClassDeclaration extends InstanceDeclaration
 		
 	}
 	
+	/**
+	 * Check to see whether or not the given methods list already contains
+	 * a compatible method with the given 'method' method.
+	 * 
+	 * @param method The method to see if the methods list contains.
+	 * @param methods The list of methods to search through.
+	 * @return Whether or not the given method is contained within the
+	 * 		methods list.
+	 */
 	private boolean containsMethod(NovaMethodDeclaration method, ArrayList<NovaMethodDeclaration> methods)
 	{
 		for (MethodDeclaration m : methods)
@@ -236,7 +268,7 @@ public class ClassDeclaration extends InstanceDeclaration
 			clazz = clazz.getExtendedClass();
 		}
 		
-		if (SyntaxUtils.isPrimitiveTypeCompatible(SyntaxUtils.getWrapperClassPrimitiveName(node.getType()), SyntaxUtils.getWrapperClassPrimitiveName(getType())))
+		if (SyntaxUtils.arePrimitiveTypesCompatible(SyntaxUtils.getWrapperClassPrimitiveName(node.getType()), SyntaxUtils.getWrapperClassPrimitiveName(getType())))
 		{
 			return true;
 		}
@@ -473,6 +505,16 @@ public class ClassDeclaration extends InstanceDeclaration
 		return field;
 	}
 	
+	/**
+	 * Get the method with the given methodName and parameterTypes. If a
+	 * method with the specified name and parameter types does not exist,
+	 * null is returned.
+	 * 
+	 * @param methodName The name of the method to search for.
+	 * @param parameterTypes An array of types that the parameters of the
+	 * 		searching method must be compatible with.
+	 * @return The compatible method with the given method name.
+	 */
 	public MethodDeclaration getMethod(String methodName, Value ... parameterTypes)
 	{
 		MethodDeclaration methods[] = getMethods(methodName, parameterTypes.length);
@@ -488,6 +530,16 @@ public class ClassDeclaration extends InstanceDeclaration
 		return null;
 	}
 	
+	/**
+	 * Get all of the methods that have the given methodName and the given
+	 * number of parameters.
+	 * 
+	 * @param methodName The name of the methods to search for.
+	 * @param numParams The number of parameters that the methods can
+	 * 		have.
+	 * @return An array of methods that are compatible with the given
+	 * 		data.
+	 */
 	public MethodDeclaration[] getMethods(String methodName, int numParams)
 	{
 		ArrayList<MethodDeclaration> output = new ArrayList<MethodDeclaration>();
@@ -584,6 +636,12 @@ public class ClassDeclaration extends InstanceDeclaration
 		return output.toArray(new MethodDeclaration[0]);
 	}
 	
+	/**
+	 * Add the methods in the src array to the given dst array list.
+	 * 
+	 * @param dst The array list to add the given src methods to.
+	 * @param src The array containing the methods to add to the list.
+	 */
 	private void addMethods(ArrayList<MethodDeclaration> dst, MethodDeclaration src[])
 	{
 		for (MethodDeclaration method : src)
@@ -940,11 +998,24 @@ public class ClassDeclaration extends InstanceDeclaration
 		return builder;
 	}
 	
+	/**
+	 * Generate the C source representation of the private field
+	 * declarations.
+	 * 
+	 * @return The StringBuilder with the appended data.
+	 */
 	private StringBuilder generateCPrivateFieldsSource()
 	{
 		return generateCPrivateFieldsSource(new StringBuilder());
 	}
 	
+	/**
+	 * Generate the C source representation of the private field
+	 * declarations.
+	 * 
+	 * @param builder The StringBuilder to append that data to.
+	 * @return The StringBuilder with the appended data.
+	 */
 	private StringBuilder generateCPrivateFieldsSource(StringBuilder builder)
 	{
 		if (getExtendedClassName() != null)

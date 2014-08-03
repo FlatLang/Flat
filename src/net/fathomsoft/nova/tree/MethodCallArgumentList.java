@@ -1,8 +1,10 @@
 package net.fathomsoft.nova.tree;
 
+import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.tree.exceptionhandling.Exception;
 import net.fathomsoft.nova.tree.variables.Variable;
 import net.fathomsoft.nova.util.Location;
+import net.fathomsoft.nova.util.SyntaxUtils;
 
 /**
  * Node extension that keeps track of all of the arguments that
@@ -64,16 +66,7 @@ public class MethodCallArgumentList extends ArgumentList
 			
 			Value param = getMethodCall().getCorrespondingParameter(child);
 			
-			boolean sameType = false;
-			
-			if (child.getReturnedNode().getType() == null)
-			{
-				sameType = param.getType() == null;
-			}
-			else
-			{
-				sameType = child.getReturnedNode().getType().equals(param.getType());
-			}
+			boolean sameType = isSameType(child.getReturnedNode(), param);
 			
 			if (!sameType)
 			{
@@ -86,7 +79,6 @@ public class MethodCallArgumentList extends ArgumentList
 			{
 				builder.append('(');
 			}
-			
 			
 			child.generateCSourceFragment(builder);
 			
@@ -176,7 +168,7 @@ public class MethodCallArgumentList extends ArgumentList
 			}
 			
 			Identifier context  = getMethodCallContext();
-			boolean    sameType = getMethodCall().getReferenceNode().getType().equals(method.getParentClass().getType());
+			boolean    sameType = isSameType(getMethodCall().getReferenceNode(), method.getParentClass());
 			
 			if (!sameType)
 			{
@@ -194,6 +186,26 @@ public class MethodCallArgumentList extends ArgumentList
 		builder.append(", ");
 		
 		return builder;
+	}
+	
+	/**
+	 * Check to see if the two types are the same type.
+	 * 
+	 * @param value1 The first Value to compare.
+	 * @param value2 The second Value to compare.
+	 * @return Whether or not the two types are the same.
+	 */
+	private boolean isSameType(Value value1, Value value2)
+	{
+		String type1 = SyntaxUtils.getPrimitiveWrapperClassName(value1.getType());
+		String type2 = SyntaxUtils.getPrimitiveWrapperClassName(value2.getType());
+		
+		if (type1 == null)
+		{
+			return type2 == null;
+		}
+		
+		return type1.equals(type2);
 	}
 	
 	/**

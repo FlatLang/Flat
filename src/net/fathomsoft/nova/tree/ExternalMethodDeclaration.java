@@ -118,6 +118,17 @@ public class ExternalMethodDeclaration extends MethodDeclaration
 		return null;
 	}
 	
+	/**
+	 * Form the Nova-style method signature.<br>
+	 * For example:
+	 * <blockquote><pre>
+	 * String in  = "int getValue(String type)";
+	 * String out = formMethodSignature(in);</pre></blockquote>
+	 * The 'out' String would contain the value of "getValue(String type) -> int"
+	 * 
+	 * @param methodSignature The external type method signature.
+	 * @return The Nova-style method signature.
+	 */
 	private String formMethodSignature(String methodSignature)
 	{
 		int paren, prev, end, start;
@@ -134,7 +145,7 @@ public class ExternalMethodDeclaration extends MethodDeclaration
 			SyntaxMessage.error("External method definition missing return type", this);
 		}
 		
-		Bounds symbols = StringUtils.findGroupedCharsBounds(methodSignature, new char[][] { StringUtils.SYMBOLS_CHARS, StringUtils.WHITESPACE }, end + 1);
+		Bounds symbols = StringUtils.findGroupedCharsBounds(methodSignature, end + 1, StringUtils.SYMBOLS_CHARS, StringUtils.WHITESPACE);
 		
 		if (symbols.isValid())
 		{
@@ -153,6 +164,18 @@ public class ExternalMethodDeclaration extends MethodDeclaration
 		return StringUtils.trimSurroundingWhitespace(methodSignature);
 	}
 	
+	/**
+	 * Trim the alias signature off of the external method declaration.<br>
+	 * For example:
+	 * <blockquote><pre>
+	 * String in  = "int getValue(String type) as ext_getValue";
+	 * String out = trimAlias(in);</pre></blockquote>
+	 * The 'out' String would contain "int getValue(String type)"
+	 * 
+	 * @param methodSignature The external method declaration signature to
+	 * 		trim the alias from.
+	 * @return The trimmed method signature.
+	 */
 	private static String trimAlias(String methodSignature)
 	{
 		int paren = methodSignature.lastIndexOf(')');

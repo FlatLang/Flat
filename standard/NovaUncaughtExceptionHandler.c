@@ -9,7 +9,7 @@ nova_VTable_UncaughtExceptionHandler nova_VTable_UncaughtExceptionHandler_val =
 	nova_2_Object_equals,
 };
 
-UncaughtExceptionHandler* nova_2_UncaughtExceptionHandler_UncaughtExceptionHandler(UncaughtExceptionHandler* this, ExceptionData* exceptionData)
+UncaughtExceptionHandler* nova_2_UncaughtExceptionHandler_construct(UncaughtExceptionHandler* this, ExceptionData* exceptionData)
 {
 	CCLASS_NEW(UncaughtExceptionHandler, this,);
 	

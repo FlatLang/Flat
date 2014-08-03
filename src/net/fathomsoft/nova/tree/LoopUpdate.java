@@ -4,7 +4,7 @@ import net.fathomsoft.nova.util.Location;
 
 /**
  * Node extension that represents the update section of the for loop.
- * For instance: "for (int i = 0; i < 10; i++)" the last section
+ * For instance: "for (int i = 0; i &lt; 10; i++)" the last section
  * containing "i++" is the update section.
  * 
  * @author	Braden Steffaniak
@@ -33,7 +33,7 @@ public class LoopUpdate extends Node
 	}
 	
 	/**
-	 * Fill the given {@link LoopLoopUpdate} with the data that is in the
+	 * Fill the given {@link LoopUpdate} with the data that is in the
 	 * specified node.
 	 * 
 	 * @param node The node to copy the data into.

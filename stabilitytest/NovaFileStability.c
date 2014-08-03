@@ -15,7 +15,7 @@ void nova_static_FileStability_deleteFile(FileStability* this, ExceptionData* ex
 String* nova_static_FileStability_inputString;
 int nova_static_FileStability_lines;
 
-FileStability* nova_FileStability_FileStability(FileStability* this, ExceptionData* exceptionData)
+FileStability* nova_FileStability_construct(FileStability* this, ExceptionData* exceptionData)
 {
 	CCLASS_NEW(FileStability, this,);
 	
@@ -41,8 +41,8 @@ void nova_del_FileStability(FileStability** this, ExceptionData* exceptionData)
 
 void nova_static_FileStability_test(FileStability* this, ExceptionData* exceptionData, StabilityTest* nova_0_program)
 {
-	nova_static_1_Console_writeLine(0, exceptionData, nova_String_String(0, exceptionData, (char*)("Checking File IO...")));
-	nova_static_FileStability_inputString = nova_String_String(0, exceptionData, (char*)("This is test input..."));
+	nova_static_1_Console_writeLine(0, exceptionData, nova_String_construct(0, exceptionData, (char*)("Checking File IO...")));
+	nova_static_FileStability_inputString = nova_String_construct(0, exceptionData, (char*)("This is test input..."));
 	nova_static_FileStability_lines = 100;
 	TRY
 	{
@@ -51,7 +51,7 @@ void nova_static_FileStability_test(FileStability* this, ExceptionData* exceptio
 		{
 			File* nova_2_f;
 			
-			nova_2_f = nova_1_File_File(0, exceptionData, nova_String_concat(nova_String_String(0, exceptionData, (char*)("temp")), exceptionData, nova_2_Long_toString(nova_Long_Long(0, exceptionData, nova_static_Time_currentTimeMillis(0, exceptionData)), exceptionData)));
+			nova_2_f = nova_1_File_construct(0, exceptionData, nova_String_concat(nova_String_construct(0, exceptionData, (char*)("temp")), exceptionData, nova_2_Long_toString(nova_Long_construct(0, exceptionData, nova_static_Time_currentTimeMillis(0, exceptionData)), exceptionData)));
 			nova_static_FileStability_createFile((FileStability*)0, exceptionData, nova_0_program, nova_2_f);
 			nova_static_FileStability_writeToFile((FileStability*)0, exceptionData, nova_0_program, nova_2_f);
 			nova_static_FileStability_readFromFile((FileStability*)0, exceptionData, nova_0_program, nova_2_f);
@@ -60,7 +60,7 @@ void nova_static_FileStability_test(FileStability* this, ExceptionData* exceptio
 	}
 	CATCH (1)
 	{
-		nova_2_StabilityTest_fail(nova_0_program, exceptionData, nova_String_String(0, exceptionData, (char*)("Failed; Exception thrown")));
+		nova_2_StabilityTest_fail(nova_0_program, exceptionData, nova_String_construct(0, exceptionData, (char*)("Failed; Exception thrown")));
 	}
 	FINALLY
 	{
@@ -70,25 +70,25 @@ void nova_static_FileStability_test(FileStability* this, ExceptionData* exceptio
 
 void nova_static_FileStability_createFile(FileStability* this, ExceptionData* exceptionData, StabilityTest* nova_0_program, File* nova_0_f)
 {
-	nova_static_1_Console_write(0, exceptionData, nova_String_String(0, exceptionData, (char*)("Creating file... ")));
+	nova_static_1_Console_write(0, exceptionData, nova_String_construct(0, exceptionData, (char*)("Creating file... ")));
 	if (!nova_File_create(nova_0_f, exceptionData))
 	{
 		nova_1_StabilityTest_fail(nova_0_program, exceptionData);
 	}
-	nova_static_1_Console_writeLine(0, exceptionData, nova_String_String(0, exceptionData, (char*)("OK")));
+	nova_static_1_Console_writeLine(0, exceptionData, nova_String_construct(0, exceptionData, (char*)("OK")));
 }
 
 void nova_static_FileStability_writeToFile(FileStability* this, ExceptionData* exceptionData, StabilityTest* nova_0_program, File* nova_0_f)
 {
 	int nova_1_i;
 	
-	nova_static_1_Console_write(0, exceptionData, nova_String_concat(nova_String_String(0, exceptionData, (char*)("Writing ")), exceptionData, nova_String_concat(nova_2_Int_toString(nova_Int_Int(0, exceptionData, nova_static_FileStability_lines), exceptionData), exceptionData, nova_String_String(0, exceptionData, (char*)(" lines of data to file... ")))));
+	nova_static_1_Console_write(0, exceptionData, nova_String_concat(nova_String_construct(0, exceptionData, (char*)("Writing ")), exceptionData, nova_String_concat(nova_2_Int_toString(nova_Int_construct(0, exceptionData, nova_static_FileStability_lines), exceptionData), exceptionData, nova_String_construct(0, exceptionData, (char*)(" lines of data to file... ")))));
 	nova_1_i = 0;
 	for (; nova_1_i < nova_static_FileStability_lines; nova_1_i++)
 	{
 		nova_File_writeLine(nova_0_f, exceptionData, nova_static_FileStability_inputString);
 	}
-	nova_static_1_Console_writeLine(0, exceptionData, nova_String_String(0, exceptionData, (char*)("OK")));
+	nova_static_1_Console_writeLine(0, exceptionData, nova_String_construct(0, exceptionData, (char*)("OK")));
 }
 
 void nova_static_FileStability_readFromFile(FileStability* this, ExceptionData* exceptionData, StabilityTest* nova_0_program, File* nova_0_f)
@@ -96,7 +96,7 @@ void nova_static_FileStability_readFromFile(FileStability* this, ExceptionData* 
 	int nova_1_times;
 	String* nova_1_line;
 	
-	nova_static_1_Console_write(0, exceptionData, nova_String_String(0, exceptionData, (char*)("Reading lines from file... ")));
+	nova_static_1_Console_write(0, exceptionData, nova_String_construct(0, exceptionData, (char*)("Reading lines from file... ")));
 	nova_File_reopen(nova_0_f, exceptionData);
 	nova_1_times = 0;
 	nova_1_line = nova_File_readLine(nova_0_f, exceptionData);
@@ -111,17 +111,17 @@ void nova_static_FileStability_readFromFile(FileStability* this, ExceptionData* 
 	}
 	if (nova_1_times != nova_static_FileStability_lines)
 	{
-		nova_2_StabilityTest_fail(nova_0_program, exceptionData, nova_String_concat(nova_String_String(0, exceptionData, (char*)("Failed; only read ")), exceptionData, nova_String_concat(nova_2_Int_toString(nova_Int_Int(0, exceptionData, nova_1_times), exceptionData), exceptionData, nova_String_concat(nova_String_String(0, exceptionData, (char*)("/")), exceptionData, nova_String_concat(nova_2_Int_toString(nova_Int_Int(0, exceptionData, 100), exceptionData), exceptionData, nova_String_String(0, exceptionData, (char*)(" lines")))))));
+		nova_2_StabilityTest_fail(nova_0_program, exceptionData, nova_String_concat(nova_String_construct(0, exceptionData, (char*)("Failed; only read ")), exceptionData, nova_String_concat(nova_2_Int_toString(nova_Int_construct(0, exceptionData, nova_1_times), exceptionData), exceptionData, nova_String_concat(nova_String_construct(0, exceptionData, (char*)("/")), exceptionData, nova_String_concat(nova_2_Int_toString(nova_Int_construct(0, exceptionData, 100), exceptionData), exceptionData, nova_String_construct(0, exceptionData, (char*)(" lines")))))));
 	}
-	nova_static_1_Console_writeLine(0, exceptionData, nova_String_String(0, exceptionData, (char*)("OK")));
+	nova_static_1_Console_writeLine(0, exceptionData, nova_String_construct(0, exceptionData, (char*)("OK")));
 }
 
 void nova_static_FileStability_deleteFile(FileStability* this, ExceptionData* exceptionData, StabilityTest* nova_0_program, File* nova_0_f)
 {
-	nova_static_1_Console_write(0, exceptionData, nova_String_String(0, exceptionData, (char*)("Deleting file... ")));
+	nova_static_1_Console_write(0, exceptionData, nova_String_construct(0, exceptionData, (char*)("Deleting file... ")));
 	if (!nova_File_delete(nova_0_f, exceptionData))
 	{
-		nova_2_StabilityTest_fail(nova_0_program, exceptionData, nova_String_String(0, exceptionData, (char*)("Failed to delete file")));
+		nova_2_StabilityTest_fail(nova_0_program, exceptionData, nova_String_construct(0, exceptionData, (char*)("Failed to delete file")));
 	}
-	nova_static_1_Console_writeLine(0, exceptionData, nova_String_String(0, exceptionData, (char*)("OK")));
+	nova_static_1_Console_writeLine(0, exceptionData, nova_String_construct(0, exceptionData, (char*)("OK")));
 }

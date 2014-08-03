@@ -58,6 +58,9 @@ public class NovaMethodDeclaration extends MethodDeclaration
 	
 	/**
 	 * @see net.fathomsoft.nova.tree.ParameterList#getParameter(String)
+	 * 
+	 * @param parameterName The name of the parameter to find.
+	 * @return The Parameter with the given name.
 	 */
 	public Parameter getParameter(String parameterName)
 	{
@@ -98,7 +101,10 @@ public class NovaMethodDeclaration extends MethodDeclaration
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.CallableMethod#isVirtual()
+	 * Get whether or not the method overrides another method or is
+	 * overridden by another method.
+	 * 
+	 * @return Whether or not the method is virtual.
 	 */
 	@Override
 	public boolean isVirtual()
@@ -193,6 +199,11 @@ public class NovaMethodDeclaration extends MethodDeclaration
 		overridingMethods.add(overridingMethod);
 	}
 	
+	/**
+	 * Set the overload IDs for all of the given methods.
+	 * 
+	 * @param methods The methods to generate overload IDs for.
+	 */
 	private void setOverloadIDs(MethodDeclaration methods[])
 	{
 		ArrayList<NovaMethodDeclaration> list = new ArrayList<NovaMethodDeclaration>();
@@ -224,11 +235,22 @@ public class NovaMethodDeclaration extends MethodDeclaration
 		}
 	}
 	
+	/**
+	 * Get the identifier for the virtual abstract method in the vtable.
+	 * 
+	 * @return The identifier for the virtual method in the vtable.
+	 */
 	public StringBuilder generateCVirtualMethodName()
 	{
 		return generateCVirtualMethodName(new StringBuilder());
 	}
 	
+	/**
+	 * Get the identifier for the virtual abstract method in the vtable.
+	 * 
+	 * @param builder The StringBuilder to append the data to.
+	 * @return The identifier for the virtual method in the vtable.
+	 */
 	public StringBuilder generateCVirtualMethodName(StringBuilder builder)
 	{
 		builder.append(Nova.LANGUAGE_NAME.toLowerCase()).append("_virtual_");
@@ -241,17 +263,16 @@ public class NovaMethodDeclaration extends MethodDeclaration
 		return builder.append(getName());
 	}
 	
-	public StringBuilder generateCMethodCall(Identifier reference)
-	{
-		return generateCMethodCall(new StringBuilder(), reference);
-	}
-	
-	public StringBuilder generateCMethodCall(StringBuilder builder, Identifier reference)
+	/**
+	 * Generate the identifier that will be used to call the method.
+	 * 
+	 * @param builder The StringBuilder to append the data to.
+	 * @return The updated StringBuilder.
+	 */
+	public StringBuilder generateCMethodCall(StringBuilder builder)
 	{
 		if (isVirtual())
 		{
-//			reference.generate
-			
 			return generateCVirtualMethodName(builder);
 		}
 		
@@ -442,6 +463,14 @@ public class NovaMethodDeclaration extends MethodDeclaration
 		return true;
 	}
 	
+	/**
+	 * Check to see if the given types are compatible with the Method's
+	 * parameters.
+	 * 
+	 * @param types The types to check against the parameters.
+	 * @return Whether or not the types are compatible with the
+	 * 		parameters.
+	 */
 	public boolean areCompatibleParameterTypes(Value ... types)
 	{
 		if (types.length != getParameterList().getNumVisibleChildren())

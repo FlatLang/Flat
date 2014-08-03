@@ -99,7 +99,7 @@ public class InstanceFieldList extends Node
 	}
 	
 	/**
-	 * Fill the given {@link PublicFieldList} with the data that is in the
+	 * Fill the given {@link InstanceFieldList} with the data that is in the
 	 * specified node.
 	 * 
 	 * @param node The node to copy the data into.

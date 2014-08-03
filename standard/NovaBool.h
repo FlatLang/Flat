@@ -37,7 +37,7 @@ CCLASS_CLASS
 	nova_VTable_Bool* vtable;
 )
 
-Bool* nova_Bool_Bool(Bool* this, ExceptionData* exceptionData);
+Bool* nova_Bool_construct(Bool* this, ExceptionData* exceptionData);
 void nova_del_Bool(Bool** this, ExceptionData* exceptionData);
 
 #endif

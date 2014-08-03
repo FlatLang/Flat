@@ -55,7 +55,7 @@ public class ForLoop extends Loop
 	
 	/**
 	 * Get the Node that describes the initialization section of the
-	 * for loop. For instance: "for (int i = 0; i < 10; i++)" the first
+	 * for loop. For instance: "for (int i = 0; i &lt; 10; i++)" the first
 	 * section containing "int i = 0" is the initialization section.
 	 * 
 	 * @return The Node instance that describes the initialization
@@ -68,8 +68,8 @@ public class ForLoop extends Loop
 	
 	/**
 	 * Get the Node that describes the condition section of the for
-	 * loop. For instance: "for (int i = 0; i < 10; i++)" the middle
-	 * section containing "i < 10" is the condition section.
+	 * loop. For instance: "for (int i = 0; i &lt; 10; i++)" the middle
+	 * section containing "i &lt; 10" is the condition section.
 	 * 
 	 * @return The Node instance that describes the condition section
 	 * 		of the for loop.
@@ -81,7 +81,7 @@ public class ForLoop extends Loop
 	
 	/**
 	 * Get the Node that describes the update section of the for loop.
-	 * For instance: "for (int i = 0; i < 10; i++)" the last section
+	 * For instance: "for (int i = 0; i &lt; 10; i++)" the last section
 	 * containing "i++" is the update section.
 	 * 
 	 * @return The Node instance that describes the update section of
@@ -142,8 +142,8 @@ public class ForLoop extends Loop
 	 * <br>
 	 * Example inputs include:<br>
 	 * <ul>
-	 * 	<li>for (int i = 0; i < array.size(); i++)</li>
-	 * 	<li>for (index = size - 1; index >= 0; index -= 2) <i>(Where index and size are already declared variables)</i></li>
+	 * 	<li>for (int i = 0; i &lt; array.size(); i++)</li>
+	 * 	<li>for (index = size - 1; index &gt;= 0; index -= 2) <i>(Where index and size are already declared variables)</i></li>
 	 * 	<li>for (;;) <i>(This is an infinite loop. Preferably use "while (true)" instead.)</i></li>
 	 * </ul>
 	 * 

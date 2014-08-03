@@ -8,7 +8,7 @@ nova_VTable_SVGComponentNode nova_VTable_SVGComponentNode_val =
 	nova_2_Object_equals,
 };
 
-SVGComponentNode* nova_SVGComponentNode_SVGComponentNode(SVGComponentNode* this, ExceptionData* exceptionData)
+SVGComponentNode* nova_SVGComponentNode_construct(SVGComponentNode* this, ExceptionData* exceptionData)
 {
 	CCLASS_NEW(SVGComponentNode, this,);
 	

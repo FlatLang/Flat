@@ -40,7 +40,7 @@ CCLASS_CLASS
 	struct Private* prv;
 )
 
-Thread* nova_Thread_Thread(Thread* this, ExceptionData* exceptionData);
+Thread* nova_Thread_construct(Thread* this, ExceptionData* exceptionData);
 void nova_del_Thread(Thread** this, ExceptionData* exceptionData);
 void nova_Thread_start(Thread* this, ExceptionData* exceptionData);
 void nova_Thread_join(Thread* this, ExceptionData* exceptionData);

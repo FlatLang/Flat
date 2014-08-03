@@ -38,7 +38,7 @@ CCLASS_CLASS
 	nova_VTable_Array* vtable;
 )
 
-Array* nova_Array_Array(Array* this, ExceptionData* exceptionData);
+Array* nova_Array_construct(Array* this, ExceptionData* exceptionData);
 void nova_del_Array(Array** this, ExceptionData* exceptionData);
 
 #endif

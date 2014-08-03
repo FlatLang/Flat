@@ -27,6 +27,12 @@ public abstract class Identifier extends Value
 		super(temporaryParent, locationIn);
 	}
 	
+	/**
+	 * Get whether or not the Identifier is accessed in a non-static way.
+	 * 
+	 * @return Whether or not the Identifier is accessed in a non-static
+	 * 		way.
+	 */
 	public boolean isInstance()
 	{
 		return getProgram().getClassDeclaration(getName()) == null;
@@ -99,28 +105,85 @@ public abstract class Identifier extends Value
 	{
 		return false;
 	}
-
+	
+	/**
+	 * Get the next accessed node that is of the given class type.
+	 * 
+	 * @param type The class type to search for.
+	 * @return The next accessed node of the given type. If there are
+	 * 		no matches, null is returned.
+	 */
 	public Identifier getNextAccessingOfType(Class<?> type)
+	{
+		return getNextAccessingOfType(new Class<?>[] { type });
+	}
+	
+	/**
+	 * Get the next accessed node that is of the given class types.
+	 * 
+	 * @param types The class types to search for.
+	 * @return The next accessed node of the given types. If there are
+	 * 		no matches, null is returned.
+	 */
+	public Identifier getNextAccessingOfType(Class<?> types[])
+	{
+		return getNextAccessingOfType(types, false);
+	}
+	
+	/**
+	 * Get the next accessed node that is of the given class types.
+	 * 
+	 * @param types The class types to search for.
+	 * @param opposite Whether or not to search for or against the given
+	 * 		data.
+	 * @return The next accessed node of the given types. If there are
+	 * 		no matches, null is returned.
+	 */
+	public Identifier getNextAccessingOfType(Class<?> types[], boolean opposite)
 	{
 		Identifier current = getAccessingNode();
 		
-		while (current != null && !type.isAssignableFrom(current.getClass()))
+		while (current != null && checkTypes(types, current.getClass()) == opposite)
 		{
 			current = current.getAccessingNode();
 		}
 		
 		return current;
 	}
-
+	
+	/**
+	 * Get the last accessed node of the given type that was in a series.
+	 * In other words, if we are looking for the last method call and
+	 * there are three consecutive method calls in a row, the third method
+	 * call node would be returned.
+	 * 
+	 * @param type The class type to search for.
+	 * @param opposite Whether or not to search for or against the given
+	 * 		type.
+	 * @return The last accessed node of the given type. If there is not a
+	 * 		match, null is returned.
+	 */
 	public Identifier getLastAccessingOfType(Class<?> type, boolean opposite)
 	{
 		return getLastAccessingOfType(new Class<?>[] { type }, opposite);
 	}
-
+	
+	/**
+	 * Get the last accessed node of the given types that was in a series.
+	 * In other words, if we are looking for the last method call and
+	 * there are three consecutive method calls in a row, the third method
+	 * call node would be returned.
+	 * 
+	 * @param types An array of accepted types.
+	 * @param opposite Whether or not to search for or against the given
+	 * 		data.
+	 * @return The last accessed node of the given types. If there is not
+	 * 		a match, null is returned.
+	 */
 	public Identifier getLastAccessingOfType(Class<?> types[], boolean opposite)
 	{
-		Identifier previous = this;
-		Identifier current  = getAccessingNode();
+		Identifier previous = null;
+		Identifier current  = this;
 		
 		while (current != null && checkTypes(types, current.getClass()) != opposite)
 		{
@@ -131,6 +194,15 @@ public abstract class Identifier extends Value
 		return previous;
 	}
 	
+	/**
+	 * Check to see if the given clazz is an instanceof any of the
+	 * classes in the given type array.
+	 * 
+	 * @param types The types to check against.
+	 * @param clazz The type to check for.
+	 * @return Whether or not the given clazz is an instanceof any of
+	 * 		the classes in the given array.
+	 */
 	private boolean checkTypes(Class<?> types[], Class<?> clazz)
 	{
 		for (Class<?> type : types)
@@ -144,11 +216,32 @@ public abstract class Identifier extends Value
 		return false;
 	}
 	
+	/**
+	 * Get the next node that this node accesses that is of the given
+	 * type.
+	 * 
+	 * @param type The type to search for.
+	 * @return The next accessed of the given type. If there is not a
+	 * 		match, null is returned.
+	 */
 	public Identifier getNextAccessedOfType(Class<?> type)
+	{
+		return getNextAccessedOfType(new Class<?>[] { type });
+	}
+	
+	/**
+	 * Get the next node that this node accesses that is of the given
+	 * types.
+	 * 
+	 * @param types The types to search for.
+	 * @return The next accessed of the given types. If there is not a
+	 * 		match, null is returned.
+	 */
+	public Identifier getNextAccessedOfType(Class<?> types[])
 	{
 		Identifier current = getAccessedNode();
 		
-		while (current != null && !type.isAssignableFrom(current.getClass()))
+		while (current != null && !checkTypes(types, current.getClass()))
 		{
 			current = current.getAccessedNode();
 		}
@@ -156,6 +249,13 @@ public abstract class Identifier extends Value
 		return current;
 	}
 	
+	/**
+	 * Get the Node that is highest on the tree, up until a scope is hit.
+	 * (The Node that is returned will have a scope as a parent)
+	 * 
+	 * @return The Node that is the highest on the tree up until a scope
+	 * 		is found.
+	 */
 	public Node getBaseNode()
 	{
 		Node prev    = this;
@@ -170,19 +270,47 @@ public abstract class Identifier extends Value
 		return prev;
 	}
 	
+	/**
+	 * Get the root variable that is accessing the specified Identifier.
+	 * 
+	 * @return The root variable that is accessing the specified
+	 * 		Identifier.
+	 */
 	public Identifier getRootReferenceNode()
 	{
 		return getRootReferenceNode(false);
 	}
 	
+	/**
+	 * Get the root variable that is accessing the specified Identifier.
+	 * 
+	 * @param inclusive Whether or not to return the specified Identifier
+	 * 		if the Identifier is not accessed.
+	 * @return The root variable that is accessing the specified
+	 * 		Identifier.
+	 */
 	public Identifier getRootReferenceNode(boolean inclusive)
 	{
-		if (inclusive && !isAccessed())
+		if (!isAccessed())
 		{
-			return this;
+			if (inclusive)
+			{
+				return this;
+			}
+			
+			return getReferenceNode();
 		}
 		
-		return getReferenceNode().getLastAccessingOfType(new Class<?>[] { Closure.class, MethodCall.class }, true);
+		Identifier reference = getReferenceNode();
+		
+		Identifier node = reference.getLastAccessingOfType(new Class<?>[] { Closure.class, MethodCall.class }, true);
+		
+		if (node == null)
+		{
+			return reference;
+		}
+		
+		return node;
 	}
 	
 	/**
@@ -240,7 +368,7 @@ public abstract class Identifier extends Value
 	}
 	
 	/**
-	 * Get the furthest node that is accessing the specified identifier.<br>
+	 * Get the farthest node that is accessing the specified identifier.<br>
 	 * <br>
 	 * For example:
 	 * <blockquote><pre>
@@ -396,6 +524,11 @@ public abstract class Identifier extends Value
 		return (Identifier)getVisibleChild(0);
 	}
 	
+	/**
+	 * Set the Identifier that this Identifier accesses.
+	 * 
+	 * @param node The Identifier for this Identifier to access.
+	 */
 	public void setAccessedNode(Identifier node)
 	{
 		if (doesAccess())
@@ -467,11 +600,26 @@ public abstract class Identifier extends Value
 		return node.getParent() == this && !containsChild(node);
 	}
 	
+	/**
+	 * Generate the Nova input String until the given stopAt Identifier
+	 * is found.
+	 * 
+	 * @param stopAt The Node to stop at.
+	 * @return The generated Nova input.
+	 */
 	public StringBuilder generateNovaInputUntil(Identifier stopAt)
 	{
 		return generateNovaInputUntil(new StringBuilder(), stopAt);
 	}
 	
+	/**
+	 * Generate the Nova input String until the given stopAt Identifier
+	 * is found.
+	 * 
+	 * @param builder The builder to append the data to.
+	 * @param stopAt The Node to stop at.
+	 * @return The generated Nova input.
+	 */
 	public StringBuilder generateNovaInputUntil(StringBuilder builder, Identifier stopAt)
 	{
 		if (stopAt == null)
@@ -497,6 +645,9 @@ public abstract class Identifier extends Value
 	 * Generate the C output for when this value node is being used
 	 * as an argument for a method call.
 	 * 
+	 * @param builder The StringBuilder to append the data to.
+	 * @param callingMethod The method that is being called by the
+	 * 		specified Identifier.
 	 * @return The C output for when this value node is being used
 	 * 		as an argument for a method call.
 	 */
@@ -518,9 +669,21 @@ public abstract class Identifier extends Value
 			}
 		}
 		
-		generateCUseOutput(builder);
-		
-		return generateChildrenCSourceFragment(builder, true, callingMethod);
+//		MethodCall m = (MethodCall)callingMethod.getNextAccessingOfType(MethodCall.class);
+//		
+//		if (m == callingMethod)
+//		{
+			generateCUseOutput(builder);
+			
+			return generateChildrenCSourceFragment(builder, true, callingMethod);
+//		}
+//		else
+//		{
+//			
+//		}
+//		generateCUseOutput(builder);
+//		
+//		return generateChildrenCSourceFragment(builder, true, callingMethod);
 	}
 	
 	/**
@@ -536,6 +699,7 @@ public abstract class Identifier extends Value
 	/**
 	 * Generate a String representing the accessed nodes.
 	 * 
+	 * @param builder The StringBuilder to append the data to.
 	 * @return The StringBuilder with the appended generation output.
 	 */
 	public StringBuilder generateChildrenCSourceFragment(StringBuilder builder)
@@ -547,7 +711,7 @@ public abstract class Identifier extends Value
 	 * Generate a String representing the accessed nodes.
 	 * 
 	 * @param reference Whether or not to start the string off with
-	 * 		a "->" reference operator.
+	 * 		a "-&gt;" reference operator.
 	 * @return The generated String.
 	 */
 	public StringBuilder generateChildrenCSourceFragment(boolean reference)
@@ -558,8 +722,9 @@ public abstract class Identifier extends Value
 	/**
 	 * Generate a String representing the accessed nodes.
 	 * 
+	 * @param builder The StringBuilder to append the data to.
 	 * @param reference Whether or not to start the string off with
-	 * 		a "->" reference operator.
+	 * 		a "-&gt;" reference operator.
 	 * @return The StringBuilder with the appended generation output.
 	 */
 	public StringBuilder generateChildrenCSourceFragment(StringBuilder builder, boolean reference)
@@ -571,7 +736,7 @@ public abstract class Identifier extends Value
 	 * Generate a String representing the accessed nodes.
 	 * 
 	 * @param reference Whether or not to start the string off with
-	 * 		a "->" reference operator.
+	 * 		a "-&gt;" reference operator.
 	 * @param stopBefore The Identifier to stop the generation before.
 	 * @return The generated String.
 	 */
@@ -585,8 +750,9 @@ public abstract class Identifier extends Value
 	/**
 	 * Generate a String representing the accessed nodes.
 	 * 
+	 * @param builder The StringBuilder to append the data to.
 	 * @param reference Whether or not to start the string off with
-	 * 		a "->" reference operator.
+	 * 		a "-&gt;" reference operator.
 	 * @param stopBefore The Identifier to stop the generation before.
 	 * @return The StringBuilder with the appended generation output.
 	 */
@@ -644,6 +810,7 @@ public abstract class Identifier extends Value
 	 * If the Value accesses a method call, generate a specialized
 	 * output.
 	 * 
+	 * @param builder The StringBuilder to append the data to.
 	 * @return A specialized String generation.
 	 */
 	public StringBuilder generateSpecialFragment(StringBuilder builder)
@@ -665,11 +832,22 @@ public abstract class Identifier extends Value
 	 */
 	public boolean isSpecialFragment()
 	{
+//		Identifier lastAccessed = getLastAccessedNode();
+//		
+//		if (lastAccessed == null)
+//		{
+//			return false;
+//		}
+//		
+//		Identifier next = (Identifier)lastAccessed.getNextAccessingOfType(new Class<?>[] { MethodCall.class, Closure.class });
+//		
+//		return next != null && next.isSpecial();
+		
 		Identifier current = getLastAccessedNode();
 		
 		while (current != this && current != null)
 		{
-			if (current.isSpecial())// instanceof MethodCall || current instanceof Closure)
+			if (current.isSpecial())
 			{
 				return true;
 			}
@@ -753,6 +931,7 @@ public abstract class Identifier extends Value
 	 * Essentially, the "variable use" output is exactly what it says,
 	 * what the variable looks like when it is being used to do something.
 	 * 
+	 * @param builder The StringBuilder to append the data to.
 	 * @param pointer Whether or not the variable is to be accessed by a
 	 * 		pointer.
 	 * @return What the variable looks like when it is being used to do
@@ -850,6 +1029,7 @@ public abstract class Identifier extends Value
 	 * Generate a variable name that will be used to keep the variables
 	 * in their own "namespace" per-say.
 	 * 
+	 * @param builder The StringBuilder to append the data to.
 	 * @return The name of the variable that will be output to the C
 	 * 		source output.
 	 */
@@ -862,6 +1042,8 @@ public abstract class Identifier extends Value
 	 * Generate a variable name that will be used to keep the variables
 	 * in their own "namespace" per-say.
 	 * 
+	 * @param uniquePrefix The unique identifying prefix to prepend to the
+	 * 		name output.
 	 * @return The name of the variable that will be output to the C
 	 * 		source output.
 	 */
@@ -874,6 +1056,9 @@ public abstract class Identifier extends Value
 	 * Generate a variable name that will be used to keep the variables
 	 * in their own "namespace" per-say.
 	 * 
+	 * @param builder The StringBuilder to append the data to.
+	 * @param uniquePrefix The unique identifying prefix to prepend to the
+	 * 		name output.
 	 * @return The name of the variable that will be output to the C
 	 * 		source output.
 	 */

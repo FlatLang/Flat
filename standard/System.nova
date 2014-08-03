@@ -44,26 +44,22 @@ public class System
 	
 	public static execute(String command) -> int
 	{
-//		return system(command.toCharArray())
+		FILE* pipe = getPipe(command.toCharArray(), exit)
 		
-		FILE* pipe = getPipe(command.toCharArray(), exit)//"C:/Windows/System32/")
+		File f = new File(pipe)
 		
-		//File f = new File(pipe)
-		
-		//f.close()
-		
-		/*if (pipe == NULL)
+		if (!f.exists())
 		{
 			exit(1, "Unable to open pipe")
 		}
 		
-		File file = new File(pipe)
+		StreamReader reader = new StreamReader(f)
 		
-		StreamReader reader = new StreamReader(file)
+		reader.read()
 		
-		String s = reader.read()
+		Console.writeLine("HOLY FRICKEN: " + reader.read() + " CRAP")
 		
-		Console.writeLine("HOLY FRICKEN: " + s + " CRAP")*/
+		f.close()
 		
 		return 0
 	}

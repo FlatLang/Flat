@@ -8,7 +8,7 @@ nova_VTable_SVGComponentList nova_VTable_SVGComponentList_val =
 	nova_2_Object_equals,
 };
 
-SVGComponentList* nova_SVGComponentList_SVGComponentList(SVGComponentList* this, ExceptionData* exceptionData)
+SVGComponentList* nova_SVGComponentList_construct(SVGComponentList* this, ExceptionData* exceptionData)
 {
 	CCLASS_NEW(SVGComponentList, this,);
 	
@@ -53,7 +53,7 @@ void nova_SVGComponentList_addChild(SVGComponentList* this, ExceptionData* excep
 {
 	SVGComponentNode* nova_1_node;
 	
-	nova_1_node = nova_SVGComponentNode_SVGComponentNode(0, exceptionData);
+	nova_1_node = nova_SVGComponentNode_construct(0, exceptionData);
 	nova_1_node->nova_SVGComponentNode_component = nova_0_component;
 	if (this->nova_SVGComponentList_start == (SVGComponentNode*)0)
 	{

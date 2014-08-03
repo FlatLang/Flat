@@ -40,7 +40,7 @@ CCLASS_CLASS
 	nova_VTable_SVGComponentNode* vtable;
 )
 
-SVGComponentNode* nova_SVGComponentNode_SVGComponentNode(SVGComponentNode* this, ExceptionData* exceptionData);
+SVGComponentNode* nova_SVGComponentNode_construct(SVGComponentNode* this, ExceptionData* exceptionData);
 void nova_del_SVGComponentNode(SVGComponentNode** this, ExceptionData* exceptionData);
 
 #endif

@@ -8,7 +8,7 @@ nova_VTable_Math nova_VTable_Math_val =
 	nova_2_Object_equals,
 };
 
-Math* nova_Math_Math(Math* this, ExceptionData* exceptionData)
+Math* nova_Math_construct(Math* this, ExceptionData* exceptionData)
 {
 	CCLASS_NEW(Math, this,);
 	

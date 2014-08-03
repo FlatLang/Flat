@@ -23,7 +23,7 @@ public class Operator extends IValue
 	}
 	
 	/**
-	 * Get the value of the operator. For example: '+', '*', '&&', etc.
+	 * Get the value of the operator. For example: '+', '*', '&amp;&amp;', etc.
 	 * 
 	 * @return The value of the operator.
 	 */
@@ -33,7 +33,7 @@ public class Operator extends IValue
 	}
 	
 	/**
-	 * Set the operator value. For example: '+', '*', '&&', etc.
+	 * Set the operator value. For example: '+', '*', '&amp;&amp;', etc.
 	 * 
 	 * @param operator The new value of the operator.
 	 */

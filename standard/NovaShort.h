@@ -41,7 +41,7 @@ CCLASS_CLASS
 	nova_VTable_Short* vtable;
 )
 
-Short* nova_Short_Short(Short* this, ExceptionData* exceptionData, short nova_0_value);
+Short* nova_Short_construct(Short* this, ExceptionData* exceptionData, short nova_0_value);
 void nova_del_Short(Short** this, ExceptionData* exceptionData);
 int nova_static_1_Short_numDigits(Short* this, ExceptionData* exceptionData, short nova_0_number);
 String* nova_static_1_Short_toString(Short* this, ExceptionData* exceptionData, short nova_0_value);

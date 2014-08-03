@@ -27,7 +27,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:00:04 PM
- * @version	v0.2.22 Jul 30, 2014 at 11:56:00 PM
+ * @version	v0.2.23 Aug 2, 2014 at 7:49:00 PM
  */
 public class Nova
 {
@@ -40,7 +40,7 @@ public class Nova
 	
 	private SyntaxTree			tree;
 	
-	private ArrayList<String>	includeDirectories, errors, messages;
+	private ArrayList<String>	includeDirectories, externalImports, errors, messages;
 	
 	private ArrayList<File>		inputFiles, cSourceFiles, cHeaderFiles;
 	
@@ -77,7 +77,7 @@ public class Nova
 	public static final int		LINUX         = 3;
 	
 	public static final String	LANGUAGE_NAME = "Nova";
-	public static final String	VERSION       = "v0.2.22";
+	public static final String	VERSION       = "v0.2.23";
 	
 	/**
 	 * Find out which operating system the compiler is running on.
@@ -90,25 +90,25 @@ public class Nova
 		{
 			OS = WINDOWS;
 			OUTPUT_EXTENSION = ".exe";
-			DYNAMIC_LIB_EXT = ".dll";
+			DYNAMIC_LIB_EXT  = ".dll";
 		}
 		else if (osName.startsWith("mac"))
 		{
 			OS = MACOSX;
 			OUTPUT_EXTENSION = "";
-			DYNAMIC_LIB_EXT = ".dylib";
+			DYNAMIC_LIB_EXT  = ".dylib";
 		}
 		else if (osName.startsWith("lin"))
 		{
 			OS = LINUX;
 			OUTPUT_EXTENSION = "";
-			DYNAMIC_LIB_EXT = ".so";
+			DYNAMIC_LIB_EXT  = ".so";
 		}
 		else
 		{
 			OS = 0;
 			OUTPUT_EXTENSION = "";
-			DYNAMIC_LIB_EXT = "";
+			DYNAMIC_LIB_EXT  = "";
 		}
 	}
 	
@@ -156,6 +156,7 @@ public class Nova
 		cSourceFiles       = new ArrayList<File>();
 		cHeaderFiles       = new ArrayList<File>();
 		includeDirectories = new ArrayList<String>();
+		externalImports    = new ArrayList<String>();
 		errors             = new ArrayList<String>();
 		messages           = new ArrayList<String>();
 		
@@ -497,7 +498,7 @@ public class Nova
 			mainMethodText.append	("{").append('\n');
 			mainMethodText.append		("char* str = (char*)NOVA_MALLOC(sizeof(char) * strlen(argvs[i]) + 1);").append('\n');
 			mainMethodText.append		("copy_string(str, argvs[i]);").append('\n');
-			mainMethodText.append		("args[i] = ").append(LANGUAGE_NAME.toLowerCase()).append("_String_String(0, 0, str);").append('\n');
+			mainMethodText.append		("args[i] = ").append(LANGUAGE_NAME.toLowerCase()).append("_String_construct(0, 0, str);").append('\n');
 			mainMethodText.append	("}").append('\n');
 			mainMethodText.append	('\n');
 			mainMethodText.append	("TRY").append('\n');
@@ -581,13 +582,13 @@ public class Nova
 		
 		for (File sourceFile : cSourceFiles)
 		{
-			cmd.append('"').append(sourceFile.getAbsolutePath()).append('"').append(' ');
+			cmd.append(formatPath(sourceFile.getAbsolutePath())).append(' ');
 		}
 		
-		cmd.append(formatPath(workingDir  + "../standard/NativeObject.c")).append(' ');
-		cmd.append(formatPath(workingDir  + "../standard/NativeThread.c")).append(' ');
-		cmd.append(formatPath(workingDir  + "../standard/NativeSystem.c")).append(' ');
-		cmd.append(formatPath(workingDir  + "../standard/NativeFile.c")).append(' ');
+		for (String external : externalImports)
+		{
+			cmd.append(formatPath(external)).append(' ');
+		}
 		
 		cmd.append("-o ").append('"').append(outputFile.getAbsolutePath()).append('"').append(' ');
 		
@@ -814,6 +815,75 @@ public class Nova
 	public boolean containsErrors()
 	{
 		return errors.size() > 0;
+	}
+	
+	/**
+	 * Add the given external import location to be added to the
+	 * compilation list.
+	 * 
+	 * @param file The File that is importing the location.
+	 * @param location The location that is being imported.
+	 */
+	public void addExternalImport(FileDeclaration file, String location)
+	{
+		if (!StringUtils.containsString(FileDeclaration.DEFAULT_IMPORTS, location))
+		{
+//			location = file.getFile().getParent() + "/" + location;
+			location = location.substring(0, location.length() - 1) + "c"; 
+			location = findFileLocation(location);
+			
+			if (location != null && !StringUtils.containsString(externalImports, location))
+			{
+				externalImports.add(location);
+			}
+		}
+	}
+	
+	/**
+	 * Find the location that the given filename is located within the
+	 * compilation's library directories.
+	 * 
+	 * @param filename The name of the file to search for.
+	 * @return The location of the file with the given filename. If the
+	 * 		location was not found, null is returned.
+	 */
+	private String findFileLocation(String filename)
+	{
+		for (String dir : includeDirectories)
+		{
+			String location = removeSurroundingQuotes(dir) + "/" + filename;
+			
+			File f = new File(location);
+			
+			if (f.isFile())
+			{
+				return location;
+			}
+		}
+		
+		return null;
+	}
+	
+	/**
+	 * Remove the surrounding double quotes from the given input String.<br>
+	 * For example:
+	 * <blockquote><pre>
+	 * String s = "\"C:/myfile/test\"";
+	 * String out = removeSurroundingQuotes(s);</pre></blockquote>
+	 * The out String would contain the data "C:/myfile/test" without
+	 * the surrounding quotes.
+	 * 
+	 * @param input The String to remove the surrounding quotes from.
+	 * @return The String without the surrounding quotes.
+	 */
+	private String removeSurroundingQuotes(String input)
+	{
+		while (input.length() >= 2 && input.charAt(0) == '"' && input.charAt(input.length() - 1) == '"')
+		{
+			input = input.substring(1, input.length() - 1);
+		}
+		
+		return input;
 	}
 	
 	/**
@@ -1219,11 +1289,18 @@ public class Nova
 		}
 	}
 	
+	/**
+	 * Used to represent a debugging breakpoint...
+	 */
 	public static void debuggingBreakpoint()
 	{
 		
 	}
 	
+	/**
+	 * Call the test case methods for all of the classes to make sure they
+	 * are working correctly.
+	 */
 	private void testClasses()
 	{
 		String error = null;

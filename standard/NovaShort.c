@@ -11,7 +11,7 @@ nova_VTable_Short nova_VTable_Short_val =
 	nova_static_3_Number_toString,
 };
 
-Short* nova_Short_Short(Short* this, ExceptionData* exceptionData, short nova_0_value)
+Short* nova_Short_construct(Short* this, ExceptionData* exceptionData, short nova_0_value)
 {
 	CCLASS_NEW(Short, this,);
 	

@@ -115,6 +115,7 @@ public class Regex
 	 * src String and return the start index of the finding.
 	 * 
 	 * @param src The source String to search through.
+	 * @param start The index to start the search at.
 	 * @param regex The regex pattern to search for in the src String.
 	 * @return The start index of the next possible occurrence, if any.
 	 */

@@ -38,7 +38,7 @@ CCLASS_CLASS
 	nova_VTable_Math* vtable;
 )
 
-Math* nova_Math_Math(Math* this, ExceptionData* exceptionData);
+Math* nova_Math_construct(Math* this, ExceptionData* exceptionData);
 void nova_del_Math(Math** this, ExceptionData* exceptionData);
 int nova_static_Math_random(Math* this, ExceptionData* exceptionData, long_long nova_0_range);
 double nova_static_Math_abs(Math* this, ExceptionData* exceptionData, double nova_0_number);

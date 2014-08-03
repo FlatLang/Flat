@@ -229,7 +229,7 @@ public class SyntaxTree
 	/**
 	 * Search for the main method, if one exists, in the compiling
 	 * program. For more details on what the main method looks like, see
-	 * {@link net.fathomsoft.nova.util.SyntaxUtils#isMainMethod(MethodDeclaration)}.
+	 * {@link net.fathomsoft.nova.util.SyntaxUtils#isMainMethod(BodyMethodDeclaration)}.
 	 * 
 	 * @return The Method representation of the main method.
 	 */
@@ -833,7 +833,7 @@ public class SyntaxTree
 		
 		if (SyntaxUtils.isValidIdentifier(statement))
 		{
-			node = checkForParentVariable(parent, statement);
+			node = checkForVariableAccess(parent, statement);
 			
 			if (node == null)
 			{
@@ -849,13 +849,20 @@ public class SyntaxTree
 		return node;
 	}
 	
-	private static FieldDeclaration checkForParentVariable(Node parent, String statement)
+	/**
+	 * Check to see if the data is being accessed from a variable.
+	 * 
+	 * @param parent The parent of the given statement.
+	 * @param statement The statement to decode as a field.
+	 * @return The found Field. If the Field was not found, null is
+	 * 		returned.
+	 */
+	private static FieldDeclaration checkForVariableAccess(Node parent, String statement)
 	{
 		if (parent instanceof Variable)
 		{
-			VariableDeclaration var = ((Variable)parent).getDeclaration();
-			
-			FieldDeclaration field = var.getTypeClass().getField(statement);
+			VariableDeclaration var   = ((Variable)parent).getDeclaration();
+			FieldDeclaration    field = var.getTypeClass().getField(statement);
 			
 			if (field != null)
 			{
@@ -873,6 +880,14 @@ public class SyntaxTree
 		return null;
 	}
 	
+	/**
+	 * Check to see if the given statement is a local variable.
+	 * 
+	 * @param parent The parent of the given statement
+	 * @param statement The statement containing the variable name.
+	 * @return The found local variable declaration. If the local
+	 * 		variable was not found, null is returned.
+	 */
 	private static VariableDeclaration checkForLocalVariable(Node parent, String statement)
 	{
 		Node scopeNode = parent.getAncestorWithScope();
@@ -1105,6 +1120,11 @@ public class SyntaxTree
 		return root;
 	}
 	
+	/**
+	 * Add the given FileDeclaration to the SyntaxTree.
+	 * 
+	 * @param file The FileDeclaration to add.
+	 */
 	public void addFile(FileDeclaration file)
 	{
 		root.addChild(file);

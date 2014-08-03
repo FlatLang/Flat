@@ -10,7 +10,7 @@ nova_VTable_Char nova_VTable_Char_val =
 	nova_static_3_Number_toString,
 };
 
-Char* nova_Char_Char(Char* this, ExceptionData* exceptionData, char nova_0_value)
+Char* nova_Char_construct(Char* this, ExceptionData* exceptionData, char nova_0_value)
 {
 	CCLASS_NEW(Char, this,);
 	
@@ -42,7 +42,7 @@ String* nova_1_Char_toString(Char* this, ExceptionData* exceptionData, char nova
 	
 	nova_1_chars = (char*)NOVA_MALLOC(sizeof(char) * (1));
 	nova_1_chars[0] = nova_0_c;
-	return nova_String_String(0, exceptionData, nova_1_chars);
+	return nova_String_construct(0, exceptionData, nova_1_chars);
 }
 
 String* nova_2_Char_toString(Char* this, ExceptionData* exceptionData)

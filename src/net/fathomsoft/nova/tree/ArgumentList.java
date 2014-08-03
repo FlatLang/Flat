@@ -66,6 +66,13 @@ public class ArgumentList extends Node
 		return builder;
 	}
 	
+	/**
+	 * Get the types that the Argument list is providing for the
+	 * parameters.
+	 * 
+	 * @return An array of Values that represent that types in the
+	 * 		argument list.
+	 */
 	public Value[] getTypes()
 	{
 		ArrayList<Value> types = new ArrayList<Value>();

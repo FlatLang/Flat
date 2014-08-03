@@ -13,7 +13,7 @@ CCLASS_PRIVATE
 	
 )
 
-OutputStream* nova_OutputStream_OutputStream(OutputStream* this, ExceptionData* exceptionData)
+OutputStream* nova_OutputStream_construct(OutputStream* this, ExceptionData* exceptionData)
 {
 	CCLASS_NEW(OutputStream, this);
 	

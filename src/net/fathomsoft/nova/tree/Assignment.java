@@ -31,7 +31,7 @@ public class Assignment extends Node
 	/**
 	 * Get the node that is having its value modified. In other words,
 	 * the left hand value of the equation. For instance, in the
-	 * statement: "<code>int j = 35<code>" <u><code>int j</code></u> is
+	 * statement: "<code>int j = 35</code>" <u><code>int j</code></u> is
 	 * the left hand value of the equation.
 	 * 
 	 * @return The node that represents the variable that is being
@@ -45,7 +45,7 @@ public class Assignment extends Node
 	/**
 	 * Get the node that is being used to set the value of the assignee
 	 * node. In other words, the right hand value of the equation. For
-	 * instance, in the statement: "<code>int j = 35<code>"
+	 * instance, in the statement: "<code>int j = 35</code>"
 	 * <u><code>35</code></u> is the right hand value of the equation.
 	 * 
 	 * @return The node that represents the value that the assignee

@@ -129,7 +129,7 @@ public class BinaryOperation extends IValue
 	 * Decode the given statement into a BinaryOperation if possible.
 	 * If it is not possible, the method will return null. The requirements
 	 * of a BinaryOperation include: Contains an operator such as '!=',
-	 * '>=', '<=', '>', '<', '*', '/', '+', '-', and '%' surrounded by two
+	 * '&gt;=', '&lt;=', '&gt;', '&lt;', '*', '/', '+', '-', and '%' surrounded by two
 	 * comparable values.<br>
 	 * <br>
 	 * Example inputs include:<br>
@@ -727,12 +727,12 @@ public class BinaryOperation extends IValue
 			
 			String statement = left.generateNovaInput() + ".concat(" + right.generateNovaInput() + ")";
 			
-			if (statement.contains("HOLY FRIC"))
-			{
-				Nova.debuggingBreakpoint();
-			}
-			
 			Value  strConcat = (Value)SyntaxTree.decodeScopeContents(getParent(), statement, left.getLocationIn(), false);
+			
+			if (statement.contains("CRAP"))
+			{
+				strConcat.generateCSource();
+			}
 			
 			return strConcat;
 		}

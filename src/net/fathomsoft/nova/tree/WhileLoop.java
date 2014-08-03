@@ -36,7 +36,7 @@ public class WhileLoop extends Loop
 	
 	/**
 	 * Get the Node that describes the condition section of the while
-	 * loop. For instance: "while (i < 10)" the contents between the
+	 * loop. For instance: "while (i &lt; 10)" the contents between the
 	 * parenthesis is the condition.
 	 * 
 	 * @return The Node instance that describes the condition section
@@ -148,6 +148,14 @@ public class WhileLoop extends Loop
 		return true;
 	}
 	
+	/**
+	 * Check to see if the while loop's condition is a method call.
+	 * Also validate that the return type of the method is a bool.
+	 * 
+	 * @param contents The contents of the while loop's condition.
+	 * @param location The location of the while loop's condition.
+	 * @return The decoded while loop's condition.
+	 */
 	private MethodCall checkMethodCallCondition(String contents, Location location)
 	{
 		MethodCall call = MethodCall.decodeStatement(this, contents, location, false);

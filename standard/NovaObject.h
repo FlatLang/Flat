@@ -38,7 +38,7 @@ CCLASS_CLASS
 	nova_VTable_Object* vtable;
 )
 
-Object* nova_Object_Object(Object* this, ExceptionData* exceptionData);
+Object* nova_Object_construct(Object* this, ExceptionData* exceptionData);
 void nova_del_Object(Object** this, ExceptionData* exceptionData);
 String* nova_2_Object_toString(Object* this, ExceptionData* exceptionData);
 char nova_2_Object_equals(Object* this, ExceptionData* exceptionData, Object* nova_0_another);

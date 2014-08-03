@@ -37,7 +37,7 @@ CCLASS_CLASS
 	nova_VTable_Time* vtable;
 )
 
-Time* nova_Time_Time(Time* this, ExceptionData* exceptionData);
+Time* nova_Time_construct(Time* this, ExceptionData* exceptionData);
 void nova_del_Time(Time** this, ExceptionData* exceptionData);
 long_long nova_static_Time_currentTimeMillis(Time* this, ExceptionData* exceptionData);
 

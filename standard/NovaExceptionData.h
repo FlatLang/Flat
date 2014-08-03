@@ -40,7 +40,7 @@ CCLASS_CLASS
 	struct Private* prv;
 )
 
-ExceptionData* nova_ExceptionData_ExceptionData(ExceptionData* this, ExceptionData* exceptionData, buffer* nova_0_buf);
+ExceptionData* nova_ExceptionData_construct(ExceptionData* this, ExceptionData* exceptionData, buffer* nova_0_buf);
 void nova_del_ExceptionData(ExceptionData** this, ExceptionData* exceptionData);
 void nova_ExceptionData_addCode(ExceptionData* this, ExceptionData* exceptionData, int nova_0_code);
 buffer* nova_ExceptionData_getBuffer(ExceptionData* this, ExceptionData* exceptionData);

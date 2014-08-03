@@ -36,10 +36,10 @@ public class StringUtils
 	 * For example:
 	 * <blockquote><pre>
 	 * // Scenario 1
-	 * getGroupedSymbols("number = ++num2", 9);
+	 * findGroupedSymbols("number = ++num2", 9);
 	 * 
 	 * // Scenario 2
-	 * getGroupedSymbols("number = ++num2", 8);</pre></blockquote>
+	 * findGroupedSymbols("number = ++num2", 8);</pre></blockquote>
 	 * Scenario 1 returns the "++" String and scenario 2 returns ""
 	 * because the index that it starts at is whitespace, not a
 	 * symbol.
@@ -49,9 +49,9 @@ public class StringUtils
 	 * @return A String containing the grouped chars. If there
 	 * 		were no grouped chars, then an empty String is returned.
 	 */
-	public static String getGroupedSymbols(CharSequence str, int start)
+	public static String findGroupedSymbols(CharSequence str, int start)
 	{
-		return getGroupedSymbols(str, start, 1);
+		return findGroupedSymbols(str, start, 1);
 	}
 	
 	/**
@@ -59,10 +59,10 @@ public class StringUtils
 	 * For example:
 	 * <blockquote><pre>
 	 * // Scenario 1
-	 * getGroupedSymbols("number = ++num2", 9, 1);
+	 * findGroupedSymbols("number = ++num2", 9, 1);
 	 * 
 	 * // Scenario 2
-	 * getGroupedSymbols("number = ++num2", 10, -1);</pre></blockquote>
+	 * findGroupedSymbols("number = ++num2", 10, -1);</pre></blockquote>
 	 * Scenario 1 and 2 both return the "++" String because they are
 	 * searching the same symbols at opposite ends and directions.
 	 * 
@@ -72,9 +72,9 @@ public class StringUtils
 	 * @return A String containing the grouped chars. If there
 	 * 		were no grouped chars, then an empty String is returned.
 	 */
-	public static String getGroupedSymbols(CharSequence str, int start, int direction)
+	public static String findGroupedSymbols(CharSequence str, int start, int direction)
 	{
-		return getGroupedChars(str, SYMBOLS_CHARS, start, direction);
+		return findGroupedChars(str, SYMBOLS_CHARS, start, direction);
 	}
 	
 	/**
@@ -83,20 +83,21 @@ public class StringUtils
 	 * For example:
 	 * <blockquote><pre>
 	 * // Scenario 1
-	 * getGroupedChars("number = ++num2", StringUtils.SYMBOLS_CHARS, 9, 1);
+	 * findGroupedChars("number = ++num2", StringUtils.SYMBOLS_CHARS, 9, 1);
 	 * 
 	 * // Scenario 2
-	 * getGroupedChars("number = ++num2", StringUtils.SYMBOLS_CHARS, 10, -1);</pre></blockquote>
+	 * findGroupedChars("number = ++num2", StringUtils.SYMBOLS_CHARS, 10, -1);</pre></blockquote>
 	 * Scenario 1 and 2 both return the "++" String because they are
 	 * searching the same symbols at opposite ends and directions.
 	 * 
 	 * @param str The String to search through for the characters.
+	 * @param chars The chars to search for.
 	 * @param start The index to start the search at.
 	 * @param direction The direction to search for the characters at.
 	 * @return A String containing the grouped chars. If there
 	 * 		were no grouped chars, then an empty String is returned.
 	 */
-	public static String getGroupedChars(CharSequence str, char chars[], int start, int direction)
+	public static String findGroupedChars(CharSequence str, char chars[], int start, int direction)
 	{
 		int index = start;
 		
@@ -113,12 +114,58 @@ public class StringUtils
 		return str.subSequence(start, index).toString();
 	}
 	
-	public static Bounds findGroupedCharsBounds(String source, char types[][], int start)
+	/**
+	 * Get the Bounds of the next sequence of characters, if they are
+	 * contained within the given chars array.<br>
+	 * For example:
+	 * <blockquote><pre>
+	 * // Scenario 1
+	 * findGroupedCharsBounds("number = ++num2", StringUtils.SYMBOLS_CHARS, 9);
+	 * 
+	 * // Scenario 2
+	 * findGroupedCharsBounds("number = ++num2", StringUtils.SYMBOLS_CHARS, 2);</pre></blockquote>
+	 * Scenario 1 returns a Bounds containing [9, 11].<br>
+	 * Scenario 2 returns a Bounds containing [-1, -1], In other words
+	 * Bounds.EMPTY.
+	 * 
+	 * @param source The String to search through for the characters to
+	 * 		find the Bounds from.
+	 * @param start The index to start the search at.
+	 * @param types Character arrays containing valid characters to search
+	 * 		for.
+	 * @return The Bounds of the location that the characters were found
+	 * 		at in the given source String.
+	 */
+	public static Bounds findGroupedCharsBounds(String source, int start, char[] ... types)
 	{
-		return findGroupedCharsBounds(source, types, start, 1, false);
+		return findGroupedCharsBounds(source, start, 1, false, types);
 	}
 	
-	public static Bounds findGroupedCharsBounds(String source, char types[][], int start, int direction, boolean opposite)
+	/**
+	 * Get the Bounds of the next sequence of characters, if they are
+	 * contained within the given chars array.<br>
+	 * For example:
+	 * <blockquote><pre>
+	 * // Scenario 1
+	 * findGroupedCharsBounds("number = ++num2", 9, 1, false, StringUtils.SYMBOLS_CHARS);
+	 * 
+	 * // Scenario 2
+	 * findGroupedCharsBounds("number = ++num2", 0, 1, true, StringUtils.SYMBOLS_CHARS);</pre></blockquote>
+	 * Scenario 1 returns a Bounds containing [9, 11].<br>
+	 * Scenario 2 returns a Bounds containing [0, 7].
+	 * 
+	 * @param source The String to search through for the characters to
+	 * 		find the Bounds from.
+	 * @param start The index to start the search at.
+	 * @param direction The direction to search for the characters in.
+	 * @param opposite Whether to search for or against the data in the
+	 * 		types array.
+	 * @param types Character arrays containing valid characters to search
+	 * 		for.
+	 * @return The Bounds of the location that the characters were found
+	 * 		at in the given source String.
+	 */
+	public static Bounds findGroupedCharsBounds(String source, int start, int direction, boolean opposite, char[] ... types)
 	{
 		int index = start;
 		
@@ -156,60 +203,109 @@ public class StringUtils
 		return Bounds.EMPTY;
 	}
 	
+	/**
+	 * Find the index of the next word in the given source String starting
+	 * at the start of the source String.
+	 * 
+	 * @param source The source String to search for the next word in.
+	 * @param word The word to search for.
+	 * @return The index of the word. If the word was not found, -1 is
+	 * 		returned.
+	 */
 	public static int findWordIndex(String source, String word)
 	{
 		return findWordIndex(source, word, 0);
 	}
 	
-	public static int findWordIndex(String source, String word, int index)
+	/**
+	 * Find the index of the next word in the given source String starting
+	 * at the given start index.
+	 * 
+	 * @param source The source String to search for the next word in.
+	 * @param word The word to search for.
+	 * @param start The index to start the search at.
+	 * @return The index of the word. If the word was not found, -1 is
+	 * 		returned.
+	 */
+	public static int findWordIndex(String source, String word, int start)
 	{
-		return findWordIndex(source, word, index, 1);
+		return findWordIndex(source, word, start, 1);
 	}
 	
+	/**
+	 * Find the index of the last instance of the given word in the given
+	 * source String.
+	 * 
+	 * @param source The source String to search for the next word in.
+	 * @param word The word to search for.
+	 * @return The index of the word. If the word was not found, -1 is
+	 * 		returned.
+	 */
 	public static int findLastWordIndex(String source, String word)
 	{
 		return findWordIndex(source, word, source.length() - 1, -1);
 	}
 	
-	public static int findWordIndex(String source, String word, int index, int direction)
+	/**
+	 * Find the index of the next word in the given source String starting
+	 * at the given start index.
+	 * 
+	 * @param source The source String to search for the next word in.
+	 * @param word The word to search for.
+	 * @param start The index to start the search at.
+	 * @param direction The direction to search for the word in.
+	 * @return The index of the word. If the word was not found, -1 is
+	 * 		returned.
+	 */
+	public static int findWordIndex(String source, String word, int start, int direction)
 	{
-		String current = findNextWord(source, index, direction);
+		String current = findNextWord(source, start, direction);
 		
 		while (current != null)
 		{
-			int i = findIndex(source, current, index, direction);
+			int i = findIndex(source, current, start, direction);
 			
 			if (current.equals(word))
 			{
 				return i;
 			}
 			
-			index = i;
+			start = i;
 			
 			if (direction > 0)
 			{
-				index += current.length() + 1;
+				start += current.length() + 1;
 			}
 			else
 			{
-				index -= 1;
+				start -= 1;
 			}
 			
-			current = findNextWord(source, index, direction);
+			current = findNextWord(source, start, direction);
 		}
 		
 		return -1;
 	}
 	
-	private static int findIndex(String source, String word, int index, int direction)
+	/**
+	 * Find the index of the given word in the given source String.
+	 * 
+	 * @param source The source String to search for the word in.
+	 * @param word The word to search for.
+	 * @param start The index to start the search at.
+	 * @param direction The direction to search for the word in.
+	 * @return The index of the found word. If the word is not found,
+	 * 		-1 is returned.
+	 */
+	private static int findIndex(String source, String word, int start, int direction)
 	{
 		if (direction > 0)
 		{
-			return source.indexOf(word, index);
+			return source.indexOf(word, start);
 		}
 		else
 		{
-			return source.lastIndexOf(word, index);
+			return source.lastIndexOf(word, start);
 		}
 	}
 	
@@ -574,6 +670,7 @@ public class StringUtils
 	 * given the index of the start char.
 	 * 
 	 * @param value The String to search within.
+	 * @param c The char to search for an end for.
 	 * @param start The index of the starting quote.
 	 * @param direction The direction in which to search the given String.
 	 * @return The index of the matching char. If an end is not found, -1
@@ -859,6 +956,7 @@ public class StringUtils
 	 * direction. If none exists, -1 is returned.
 	 * 
 	 * @param str The String to search through.
+	 * @param chars The array of valid characters to search for.
 	 * @param index The index to start the search at.
 	 * @param direction The direction in which to increment the index.
 	 * @return The next possible index in the String that is
@@ -875,6 +973,7 @@ public class StringUtils
 	 * direction. If none exists, -1 is returned.
 	 * 
 	 * @param str The String to search through.
+	 * @param chars The array of valid characters to search for.
 	 * @param index The index to start the search at.
 	 * @param direction The direction in which to increment the index.
 	 * @param opposite Whether or not to search for or against what is
@@ -962,6 +1061,7 @@ public class StringUtils
 	 * Trim the surrounding whitespace off of the String's ends.
 	 * 
 	 * @param str The String to trim the whitespace from.
+	 * @return The freshly trimmed String.
 	 */
 	public static String trimSurroundingWhitespace(String str)
 	{
@@ -993,7 +1093,7 @@ public class StringUtils
 	/**
 	 * Trim the given statement to strictly an identifier.<br>
 	 * <br>
-	 * For example: A call of "<code>trimToIdentifier("**identifer322&+")<code>"
+	 * For example: A call of "<code>trimToIdentifier("**identifer322&amp;+")</code>"
 	 * would return "<code>identifier322</code>"
 	 * 
 	 * @param statement The statement to trim down.
@@ -1075,7 +1175,6 @@ public class StringUtils
 	 * 
 	 * @param source The String to search through.
 	 * @param array The array to search for 'c' in.
-	 * @param index The index to get the char from the source String at.
 	 * @return Whether or not the array contains the 'c' char.
 	 */
 	public static boolean containsChar(CharSequence source, char array[])
@@ -1166,6 +1265,40 @@ public class StringUtils
 		return -1;
 	}
 	
+	/**
+	 * Search for the given String 's' in the given list.
+	 * 
+	 * @param array The list to search for 's' in.
+	 * @param s The String to search for.
+	 * @return Whether or not the array contains the 'c' String.
+	 */
+	public static boolean containsString(ArrayList<String> array, String s)
+	{
+		return searchString(array, s) >= 0;
+	}
+	
+	/**
+	 * Search for the given String 's' in the given list, if it is found,
+	 * return the index at which it was found.
+	 * 
+	 * @param array The list to search for 's' in.
+	 * @param s The String to search for.
+	 * @return The index in the array of the occurrence of String 's', if
+	 * 		it was found in the array.
+	 */
+	public static int searchString(ArrayList<String> array, String s)
+	{
+		for (int i = array.size() - 1; i >= 0; i--)
+		{
+			if (array.get(i).equals(s))
+			{
+				return i;
+			}
+		}
+		
+		return -1;
+	}
+	
 //	public String joinIdentifiers(String statement)
 //	{
 //		String data[][] = splitIdentifiers(statement);
@@ -1209,7 +1342,7 @@ public class StringUtils
 	 * two words in the array.<br>
 	 * <br>
 	 * For example: A call of <code>findLastMissingString([this, is, a, test],
-	 * "this.is->a==test")</code> would return "=="
+	 * "this.is-&gt;a==test")</code> would return "=="
 	 * 
 	 * @param words The list of words that lead of up the desired value.
 	 * @param statement The String to search the words with.

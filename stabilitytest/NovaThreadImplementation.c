@@ -15,7 +15,7 @@ CCLASS_PRIVATE
 	
 )
 
-ThreadImplementation* nova_ThreadImplementation_ThreadImplementation(ThreadImplementation* this, ExceptionData* exceptionData, int nova_0_times, int nova_0_millis)
+ThreadImplementation* nova_ThreadImplementation_construct(ThreadImplementation* this, ExceptionData* exceptionData, int nova_0_times, int nova_0_millis)
 {
 	CCLASS_NEW(ThreadImplementation, this);
 	

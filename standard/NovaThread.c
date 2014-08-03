@@ -17,7 +17,7 @@ CCLASS_PRIVATE
 
 void nova_Thread_startRun(Thread* this, ExceptionData* exceptionData);
 
-Thread* nova_Thread_Thread(Thread* this, ExceptionData* exceptionData)
+Thread* nova_Thread_construct(Thread* this, ExceptionData* exceptionData)
 {
 	CCLASS_NEW(Thread, this);
 	
@@ -75,7 +75,7 @@ void nova_Thread_startRun(Thread* this, ExceptionData* exceptionData)
 	}
 	CATCH (1)
 	{
-		nova_static_1_Console_writeLine(0, exceptionData, nova_String_String(0, exceptionData, (char*)("An error has occurred...")));
+		nova_static_1_Console_writeLine(0, exceptionData, nova_String_construct(0, exceptionData, (char*)("An error has occurred...")));
 	}
 	FINALLY
 	{

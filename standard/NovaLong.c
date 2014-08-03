@@ -9,7 +9,7 @@ nova_VTable_Long nova_VTable_Long_val =
 	nova_static_3_Number_toString,
 };
 
-Long* nova_Long_Long(Long* this, ExceptionData* exceptionData, long_long nova_0_value)
+Long* nova_Long_construct(Long* this, ExceptionData* exceptionData, long_long nova_0_value)
 {
 	CCLASS_NEW(Long, this,);
 	
@@ -79,7 +79,7 @@ String* nova_static_1_Long_toString(Long* this, ExceptionData* exceptionData, lo
 		nova_1_data[nova_1_digits - nova_1_index] = (char)(nova_1_charOffset + nova_0_value % 10);
 		nova_0_value = nova_0_value / 10;
 	}
-	return nova_String_String(0, exceptionData, nova_1_data);
+	return nova_String_construct(0, exceptionData, nova_1_data);
 }
 
 String* nova_2_Long_toString(Long* this, ExceptionData* exceptionData)

@@ -162,8 +162,7 @@ public class TreeGenerator implements Runnable
 	{
 		Location location = new Location(1, 0, 0, 0);
 		
-		FileDeclaration fileDeclaration = new FileDeclaration(tree.getRoot(), location);
-		fileDeclaration.setFile(file);
+		FileDeclaration fileDeclaration = new FileDeclaration(tree.getRoot(), location, file);
 		
 		controller.log("Phase one for '" + fileDeclaration.getName() + "'...");
 		
@@ -415,7 +414,7 @@ public class TreeGenerator implements Runnable
 	private boolean checkStatementContinuation(int prevCharIndex, int nextCharIndex)
 	{
 		boolean left  = StringUtils.containsChar(source, StringUtils.STMT_CONT_CHARS, prevCharIndex) && !UnaryOperation.isUnaryOperator(source, prevCharIndex, -1);
-		boolean right = StringUtils.containsChar(source, StringUtils.STMT_CONT_CHARS, nextCharIndex) && (!UnaryOperation.isUnaryOperator(source, nextCharIndex) || StringUtils.getGroupedSymbols(source, nextCharIndex).equals("-"));
+		boolean right = StringUtils.containsChar(source, StringUtils.STMT_CONT_CHARS, nextCharIndex) && (!UnaryOperation.isUnaryOperator(source, nextCharIndex) || StringUtils.findGroupedSymbols(source, nextCharIndex).equals("-"));
 		
 		String prevWord = StringUtils.findNextWord(source, prevCharIndex, -1);
 		

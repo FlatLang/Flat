@@ -4,7 +4,7 @@ import net.fathomsoft.nova.util.Location;
 
 /**
  * Node extension that represents the initialization section of the
- * for loop. For instance: "for (int i = 0; i < 10; i++)" the first
+ * for loop. For instance: "for (int i = 0; i &lt; 10; i++)" the first
  * section containing "int i = 0" is the initialization section.
  * 
  * @author	Braden Steffaniak
@@ -33,7 +33,7 @@ public class LoopInitialization extends Node
 	}
 	
 	/**
-	 * Fill the given {@link LoopLoopInitialization} with the data that is in the
+	 * Fill the given {@link LoopInitialization} with the data that is in the
 	 * specified node.
 	 * 
 	 * @param node The node to copy the data into.

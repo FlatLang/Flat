@@ -41,7 +41,7 @@ CCLASS_CLASS
 	nova_VTable_Byte* vtable;
 )
 
-Byte* nova_Byte_Byte(Byte* this, ExceptionData* exceptionData, char nova_0_value);
+Byte* nova_Byte_construct(Byte* this, ExceptionData* exceptionData, char nova_0_value);
 void nova_del_Byte(Byte** this, ExceptionData* exceptionData);
 int nova_static_1_Byte_numDigits(Byte* this, ExceptionData* exceptionData, char nova_0_number);
 String* nova_static_1_Byte_toString(Byte* this, ExceptionData* exceptionData, char nova_0_value);

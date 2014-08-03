@@ -44,7 +44,7 @@ CCLASS_CLASS
 	nova_VTable_SVGCircle* vtable;
 )
 
-SVGCircle* nova_SVGCircle_SVGCircle(SVGCircle* this, ExceptionData* exceptionData, double nova_0_x, double nova_0_y, int nova_0_r);
+SVGCircle* nova_SVGCircle_construct(SVGCircle* this, ExceptionData* exceptionData, double nova_0_x, double nova_0_y, int nova_0_r);
 void nova_del_SVGCircle(SVGCircle** this, ExceptionData* exceptionData);
 void nova_1_SVGCircle_generateOutput(SVGCircle* this, ExceptionData* exceptionData, File* nova_0_file);
 String* nova_1_SVGCircle_toString(SVGCircle* this, ExceptionData* exceptionData);

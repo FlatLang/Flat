@@ -94,7 +94,7 @@ public class Patterns
 
 	/**
 	 * Pattern that searches for binary logical operators. The operators
-	 * include !=, ==, >=, <=, |, &, <, >
+	 * include !=, ==, &gt;=, &lt;=, |, &amp;, &lt;, &gt;
 	 */
 	public static final Pattern BINARY_LOGIC_OPERATORS	= Pattern.compile("!=|==|>=|<=|[\\|\\&\\<\\>]");
 
@@ -153,7 +153,7 @@ public class Patterns
 	 * Pattern that searches for the contents of an if statement.<br>
 	 * <br>
 	 * For example:<br>
-	 * "if (getSize() > 4)" will return "getSize() > 4"
+	 * "if (getSize() &gt; 4)" will return "getSize() &gt; 4"
 	 */
 	public static final Pattern IF_CONTENTS				= Pattern.compile("(?<=if\\s{0,9}\\(\\s{0,9})([\\S\\s]+)(?=\\s*\\))");
 
@@ -196,7 +196,7 @@ public class Patterns
 	 * Pattern that searches for the contents of a for statement.<br>
 	 * <br>
 	 * For example:<br>
-	 * "for (int i = 0; i < 10; i++)" will return "int i = 0; i < 10; i++"
+	 * "for (int i = 0; i &lt; 10; i++)" will return "int i = 0; i &lt; 10; i++"
 	 */
 	public static final Pattern FOR_CONTENTS     	    = Pattern.compile("(?<=for\\s{0,9}\\(\\s{0,9})([\\S\\s]+)(?=\\s*\\))");
 

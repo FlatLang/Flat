@@ -28,11 +28,20 @@ public class Import extends Node
 		super(temporaryParent, locationIn);
 	}
 	
+	/**
+	 * Get whether or not the specified Import is actually used within
+	 * the File it was imported in.
+	 * 
+	 * @return Whether or not the Import was used.
+	 */
 	public boolean isUsed()
 	{
 		return used;
 	}
 	
+	/**
+	 * Mark that the specified Import was used and is required.
+	 */
 	public void markUsed()
 	{
 		used = true;
@@ -203,6 +212,7 @@ public class Import extends Node
 			{
 				setExternal(true);
 				markUsed();
+				getController().addExternalImport(getFileDeclaration(), importLocation);
 				
 				return importLocation.substring(0, extensionIndex);
 			}

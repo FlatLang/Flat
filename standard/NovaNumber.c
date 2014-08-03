@@ -10,7 +10,7 @@ nova_VTable_Number nova_VTable_Number_val =
 	nova_2_Object_equals,
 };
 
-Number* nova_Number_Number(Number* this, ExceptionData* exceptionData)
+Number* nova_Number_construct(Number* this, ExceptionData* exceptionData)
 {
 	CCLASS_NEW(Number, this,);
 	

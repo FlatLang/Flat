@@ -39,7 +39,7 @@ CCLASS_CLASS
 	nova_VTable_PolymorphicSuperClass* vtable;
 )
 
-PolymorphicSuperClass* nova_PolymorphicSuperClass_PolymorphicSuperClass(PolymorphicSuperClass* this, ExceptionData* exceptionData);
+PolymorphicSuperClass* nova_PolymorphicSuperClass_construct(PolymorphicSuperClass* this, ExceptionData* exceptionData);
 void nova_del_PolymorphicSuperClass(PolymorphicSuperClass** this, ExceptionData* exceptionData);
 void nova_PolymorphicSuperClass_giveBirth(PolymorphicSuperClass* this, ExceptionData* exceptionData);
 String* nova_1_PolymorphicSuperClass_toString(PolymorphicSuperClass* this, ExceptionData* exceptionData);

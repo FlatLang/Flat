@@ -61,8 +61,8 @@ public class Loop extends Node
 	 * <br>
 	 * Example inputs include:<br>
 	 * <ul>
-	 * 	<li>for (int i = 0; i < 100; i++)</li>
-	 * 	<li>for (int i = 0; array != null && i < array.getSize(); i = num * 3 * i)</li>
+	 * 	<li>for (int i = 0; i &lt; 100; i++)</li>
+	 * 	<li>for (int i = 0; array != null &amp;&amp; i &lt; array.getSize(); i = num * 3 * i)</li>
 	 * 	<li>while (currentNode != null)</li>
 	 * 	<li>while (true)</li>
 	 * 	<li>while (number.isEven())</li>

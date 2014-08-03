@@ -62,7 +62,15 @@ public class Scope extends Node
 		return (VariableDeclarationList)getChild(super.getNumDefaultChildren() + 0);
 	}
 	
-	public Variable registerLocalVariable(MethodCall virtual, MethodCall stopAt)
+	/**
+	 * Register a local variable to take the place of the virtual method
+	 * call so that the method call is not called twice.
+	 * 
+	 * @param virtual The method call to convert into a local variable.
+	 * @return The newly generated local variable representing the old
+	 * 		virtual method call.
+	 */
+	public Variable registerLocalVariable(MethodCall virtual)
 	{
 		String     value;
 		Node       base;
@@ -72,7 +80,7 @@ public class Scope extends Node
 		
 		value      = virtual.getRootReferenceNode(true).generateNovaInputUntil(virtual).toString();
 		base       = virtual.getBaseNode();
-		decl       = virtual.getType() + " nova_local_" + localVariableID++ + " = " + value;// + identifier.generateNovaArgumentReference(new StringBuilder(), stopAt.getAccessedNode());
+		decl       = virtual.getType() + " nova_local_" + localVariableID++ + " = " + value;
 		assignment = Assignment.decodeStatement(this, decl, getLocationIn(), true, true);
 		variable   = (Variable)assignment.getAssigneeNode();
 		

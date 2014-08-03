@@ -14,7 +14,7 @@ CCLASS_PRIVATE
 	
 )
 
-ListNode* nova_ListNode_ListNode(ListNode* this, ExceptionData* exceptionData, Object* nova_0_data)
+ListNode* nova_ListNode_construct(ListNode* this, ExceptionData* exceptionData, Object* nova_0_data)
 {
 	CCLASS_NEW(ListNode, this);
 	
