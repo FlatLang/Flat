@@ -15,7 +15,7 @@ import net.fathomsoft.nova.util.Location;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:00:19 PM
- * @version	v0.2.21 Jul 30, 2014 at 1:45:00 PM
+ * @version	v0.2.24 Aug 2, 2014 at 10:39:00 PM
  */
 public abstract class Identifier extends Value
 {
@@ -598,6 +598,44 @@ public abstract class Identifier extends Value
 	public boolean isDecodingAccessedNode(Node node)
 	{
 		return node.getParent() == this && !containsChild(node);
+	}
+	
+	/**
+	 * Generate the C Source for the Identifier and the Identifiers that
+	 * it accesses until the given 'stopAt' Identifier is reached.
+	 * 
+	 * @param delimiter The String to append in between each Identifier
+	 * 		that is accessed.
+	 * @param stopAt The Identifier to stop the generation before.
+	 * @return The StrignBuilder with the appended data.
+	 */
+	public StringBuilder generateCSourceUntil(String delimiter, Identifier stopAt)
+	{
+		return generateCSourceUntil(new StringBuilder(), delimiter, stopAt);
+	}
+	
+	/**
+	 * Generate the C Source for the Identifier and the Identifiers that
+	 * it accesses until the given 'stopAt' Identifier is reached.
+	 * 
+	 * @param builder The StringBuilder to append the data to.
+	 * @param delimiter The String to append in between each Identifier
+	 * 		that is accessed.
+	 * @param stopAt The Identifier to stop the generation before.
+	 * @return The StrignBuilder with the appended data.
+	 */
+	public StringBuilder generateCSourceUntil(StringBuilder builder, String delimiter, Identifier stopAt)
+	{
+		Identifier current = this;
+		
+		while (current != null && current != stopAt)
+		{
+			current.generateCUseOutput(builder).append(delimiter);
+			
+			current = current.getAccessedNode();
+		}
+		
+		return builder;
 	}
 	
 	/**
