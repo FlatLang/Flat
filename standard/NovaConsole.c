@@ -36,7 +36,7 @@ void nova_del_Console(Console** this, ExceptionData* exceptionData)
 
 void nova_static_1_Console_writeLine(Console* this, ExceptionData* exceptionData, String* nova_0_text)
 {
-	nova_static_1_Console_write((Console*)0, exceptionData, nova_String_concat(nova_0_text, exceptionData, nova_String_construct(0, exceptionData, (char*)("\n"))));
+	nova_static_1_Console_write((Console*)0, exceptionData, nova_String_concat(nova_0_text, exceptionData, nova_String_construct(0, exceptionData, "\n")));
 }
 
 void nova_static_2_Console_writeLine(Console* this, ExceptionData* exceptionData, Object* nova_0_obj)
@@ -139,7 +139,7 @@ double nova_static_Console_readDouble(Console* this, ExceptionData* exceptionDat
 {
 	double nova_1_num;
 	
-	scanf((char*)("%lf"), &nova_1_num);
+	scanf("%lf", &nova_1_num);
 	nova_static_Console_flush((Console*)0, exceptionData);
 	return nova_1_num;
 }

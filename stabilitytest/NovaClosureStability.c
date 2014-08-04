@@ -70,7 +70,7 @@ void nova_static_ClosureStability_test(ClosureStability* this, ExceptionData* ex
 
 void nova_static_ClosureStability_testClosures(ClosureStability* this, ExceptionData* exceptionData, StabilityTest* nova_0_program)
 {
-	nova_static_1_Console_writeLine(0, exceptionData, nova_String_construct(0, exceptionData, (char*)("Testing closures...")));
+	nova_static_1_Console_writeLine(0, exceptionData, nova_String_construct(0, exceptionData, "Testing closures..."));
 	nova_static_ClosureStability_testMathClosures((ClosureStability*)0, exceptionData, nova_0_program);
 	nova_static_ClosureStability_testInstanceClosure((ClosureStability*)0, exceptionData, nova_0_program);
 }
@@ -81,43 +81,43 @@ void nova_static_ClosureStability_testMathClosures(ClosureStability* this, Excep
 	int nova_1_b;
 	double nova_1_value;
 	
-	nova_static_1_Console_write(0, exceptionData, nova_String_construct(0, exceptionData, (char*)("Testing static math closures... ")));
+	nova_static_1_Console_write(0, exceptionData, nova_String_construct(0, exceptionData, "Testing static math closures... "));
 	nova_1_a = 5;
 	nova_1_b = 3;
 	nova_1_value = 0.5;
 	if (nova_static_ClosureStability_callClosure((ClosureStability*)0, exceptionData, (nova_2_0_closure)&nova_static_ClosureStability_multiply, (ClosureStability*)0, nova_1_a, nova_1_b) != nova_static_ClosureStability_multiply((ClosureStability*)0, exceptionData, nova_1_a, nova_1_b))
 	{
-		nova_2_StabilityTest_fail(nova_0_program, exceptionData, nova_String_construct(0, exceptionData, (char*)("Failed to call multiply(int, int) closure")));
+		nova_2_StabilityTest_fail(nova_0_program, exceptionData, nova_String_construct(0, exceptionData, "Failed to call multiply(int, int) closure"));
 	}
 	if (nova_static_ClosureStability_callClosure((ClosureStability*)0, exceptionData, (nova_2_0_closure)&nova_static_ClosureStability_pow, (ClosureStability*)0, nova_1_a, nova_1_b) != nova_static_ClosureStability_pow((ClosureStability*)0, exceptionData, nova_1_a, nova_1_b))
 	{
-		nova_2_StabilityTest_fail(nova_0_program, exceptionData, nova_String_construct(0, exceptionData, (char*)("Failed to call pow(int, int) closure")));
+		nova_2_StabilityTest_fail(nova_0_program, exceptionData, nova_String_construct(0, exceptionData, "Failed to call pow(int, int) closure"));
 	}
 	if (nova_static_ClosureStability_mathClosure((ClosureStability*)0, exceptionData, (nova_4_0_closure)&nova_static_Math_sin, 0, nova_1_value) - nova_static_Math_sin(0, exceptionData, nova_1_value) >= nova_static_ClosureStability_TOLERANCE)
 	{
-		nova_2_StabilityTest_fail(nova_0_program, exceptionData, nova_String_construct(0, exceptionData, (char*)("Failed to call Math.sin(double) closure")));
+		nova_2_StabilityTest_fail(nova_0_program, exceptionData, nova_String_construct(0, exceptionData, "Failed to call Math.sin(double) closure"));
 	}
 	if (nova_static_ClosureStability_mathClosure((ClosureStability*)0, exceptionData, (nova_4_0_closure)&nova_static_Math_tan, 0, nova_1_value) - nova_static_Math_tan(0, exceptionData, nova_1_value) >= nova_static_ClosureStability_TOLERANCE)
 	{
-		nova_2_StabilityTest_fail(nova_0_program, exceptionData, nova_String_construct(0, exceptionData, (char*)("Failed to call Math.tan(double) closure")));
+		nova_2_StabilityTest_fail(nova_0_program, exceptionData, nova_String_construct(0, exceptionData, "Failed to call Math.tan(double) closure"));
 	}
-	nova_static_1_Console_writeLine(0, exceptionData, nova_String_construct(0, exceptionData, (char*)("OK")));
+	nova_static_1_Console_writeLine(0, exceptionData, nova_String_construct(0, exceptionData, "OK"));
 }
 
 void nova_static_ClosureStability_testInstanceClosure(ClosureStability* this, ExceptionData* exceptionData, StabilityTest* nova_0_program)
 {
 	ClosureStability* nova_1_c;
 	
-	nova_static_1_Console_write(0, exceptionData, nova_String_construct(0, exceptionData, (char*)("Testing instance closures... ")));
+	nova_static_1_Console_write(0, exceptionData, nova_String_construct(0, exceptionData, "Testing instance closures... "));
 	nova_1_c = nova_ClosureStability_construct(0, exceptionData);
 	nova_static_ClosureStability_instanceClosure((ClosureStability*)0, exceptionData, (nova_6_0_closure)&nova_ClosureStability_incrementNumber, nova_1_c);
 	if (nova_1_c->prv->nova_ClosureStability_number == 0)
 	{
-		nova_2_StabilityTest_fail(nova_0_program, exceptionData, nova_String_construct(0, exceptionData, (char*)("Failed to call incrementNumber() instance closure")));
+		nova_2_StabilityTest_fail(nova_0_program, exceptionData, nova_String_construct(0, exceptionData, "Failed to call incrementNumber() instance closure"));
 	}
 	nova_static_ClosureStability_instanceClosure((ClosureStability*)0, exceptionData, (nova_6_0_closure)&nova_ClosureStability_incrementNumber, nova_ClosureStability_construct(0, exceptionData));
 	nova_static_ClosureStability_instanceClosure((ClosureStability*)0, exceptionData, (nova_6_0_closure)&nova_ClosureStability_incrementNumber, nova_1_c);
-	nova_static_1_Console_writeLine(0, exceptionData, nova_String_construct(0, exceptionData, (char*)("OK")));
+	nova_static_1_Console_writeLine(0, exceptionData, nova_String_construct(0, exceptionData, "OK"));
 }
 
 int nova_static_ClosureStability_callClosure(ClosureStability* this, ExceptionData* exceptionData, nova_2_0_closure nova_0_closure, void* nova_ref_0_closure, int nova_0_a, int nova_0_b)

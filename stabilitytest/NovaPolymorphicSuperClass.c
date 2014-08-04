@@ -41,5 +41,5 @@ void nova_PolymorphicSuperClass_giveBirth(PolymorphicSuperClass* this, Exception
 
 String* nova_1_PolymorphicSuperClass_toString(PolymorphicSuperClass* this, ExceptionData* exceptionData)
 {
-	return nova_String_construct(0, exceptionData, (char*)("super class"));
+	return nova_String_construct(0, exceptionData, "super class");
 }

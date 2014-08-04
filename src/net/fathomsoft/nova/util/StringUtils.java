@@ -9,7 +9,7 @@ import java.util.regex.Matcher;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Mar 13, 2014 at 9:38:42 PM
- * @version	v0.2.20 Jul 29, 2014 at 7:26:50 PM
+ * @version	v0.2.25 Aug 4, 2014 at 3:56:00 PM
  */
 public class StringUtils
 {
@@ -201,6 +201,39 @@ public class StringUtils
 		}
 		
 		return Bounds.EMPTY;
+	}
+	
+	public static boolean containsWords(String source)
+	{
+		return findNumWords(source) > 0;
+	}
+	
+	public static boolean containsMultipleWords(String source)
+	{
+		return findNumWords(source) > 1;
+	}
+	
+	public static int findNumWords(String source)
+	{
+		return findNumWords(source, 0);
+	}
+	
+	public static int findNumWords(String source, int start)
+	{
+		int num = 0;
+		
+		while (start < source.length())
+		{
+			String word = findNextWord(source, start);
+			
+			if (word != null)
+			{
+				num++;
+				start += word.length() + 1;
+			}
+		}
+		
+		return num;
 	}
 	
 	/**

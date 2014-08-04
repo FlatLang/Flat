@@ -75,7 +75,7 @@ void nova_Thread_startRun(Thread* this, ExceptionData* exceptionData)
 	}
 	CATCH (1)
 	{
-		nova_static_1_Console_writeLine(0, exceptionData, nova_String_construct(0, exceptionData, (char*)("An error has occurred...")));
+		nova_static_1_Console_writeLine(0, exceptionData, nova_String_construct(0, exceptionData, "An error has occurred..."));
 	}
 	FINALLY
 	{

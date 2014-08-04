@@ -27,7 +27,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:00:04 PM
- * @version	v0.2.24 Aug 2, 2014 at 10:39:00 PM
+ * @version	v0.2.25 Aug 4, 2014 at 3:56:00 PM
  */
 public class Nova
 {
@@ -77,7 +77,7 @@ public class Nova
 	public static final int		LINUX         = 3;
 	
 	public static final String	LANGUAGE_NAME = "Nova";
-	public static final String	VERSION       = "v0.2.24";
+	public static final String	VERSION       = "v0.2.25";
 	
 	/**
 	 * Find out which operating system the compiler is running on.
@@ -258,6 +258,7 @@ public class Nova
 				formatPath(standard  + "SVGMainComponent.nova"),
 				formatPath(standard  + "SVGCircle.nova"),
 				formatPath(standard  + "System.nova"),
+				formatPath(standard  + "Process.nova"),
 				"-o",   formatPath(directory + "bin/Executable" + OUTPUT_EXTENSION),
 				"-dir", formatPath(directory + "../include"),
 				"-dir", formatPath(directory + "../include/gc"),

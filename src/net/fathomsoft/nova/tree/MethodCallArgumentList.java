@@ -14,7 +14,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.2.14 Jun 19, 2014 at 12:14:53 PM
- * @version	v0.2.22 Jul 30, 2014 at 11:56:00 PM
+ * @version	v0.2.25 Aug 4, 2014 at 3:56:00 PM
  */
 public class MethodCallArgumentList extends ArgumentList
 {
@@ -203,6 +203,14 @@ public class MethodCallArgumentList extends ArgumentList
 		if (type1 == null)
 		{
 			return type2 == null;
+		}
+		else if (type1.equals("String") && value2.getArrayDimensions() == 1 && type2.equals("Char"))
+		{
+			return value1 instanceof Literal;
+		}
+		else if (type2.equals("String") && value1.getArrayDimensions() == 1 && type1.equals("Char"))
+		{
+			return value2 instanceof Literal;
 		}
 		
 		return type1.equals(type2);

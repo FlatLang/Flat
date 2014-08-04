@@ -33,5 +33,5 @@ void nova_del_PolymorphicSubClass(PolymorphicSubClass** this, ExceptionData* exc
 
 String* nova_1_PolymorphicSubClass_toString(PolymorphicSubClass* this, ExceptionData* exceptionData)
 {
-	return nova_String_construct(0, exceptionData, (char*)("sub class"));
+	return nova_String_construct(0, exceptionData, "sub class");
 }

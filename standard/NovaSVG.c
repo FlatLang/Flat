@@ -42,7 +42,7 @@ void nova_SVG_generateOutput(SVG* this, ExceptionData* exceptionData, File* nova
 
 void nova_SVG_generateHTMLOutput(SVG* this, ExceptionData* exceptionData, File* nova_0_file)
 {
-	nova_File_write(nova_0_file, exceptionData, nova_String_construct(0, exceptionData, (char*)("<html>\n")));
+	nova_File_write(nova_0_file, exceptionData, nova_String_construct(0, exceptionData, "<html>\n"));
 	nova_SVG_generateOutput(this, exceptionData, nova_0_file);
-	nova_File_write(nova_0_file, exceptionData, nova_String_construct(0, exceptionData, (char*)("</html>")));
+	nova_File_write(nova_0_file, exceptionData, nova_String_construct(0, exceptionData, "</html>"));
 }

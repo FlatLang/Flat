@@ -38,7 +38,7 @@ FILE* getPipe(char command[], error_func func, void* ref)
 #else
 FILE* getPipe(char command[], error_func func, void* ref)
 {
-	pid_t pid = NULL;
+	pid_t pid = 0;
 	int pipefd[2];
 	int status;
 

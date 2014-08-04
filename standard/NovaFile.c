@@ -23,7 +23,7 @@ File* nova_1_File_construct(File* this, ExceptionData* exceptionData, String* no
 	this->vtable = &nova_VTable_File_val;
 	{
 		this->prv->nova_File_location = nova_0_location;
-		this->prv->nova_File_fp = fopen(nova_String_toCharArray(nova_0_location, exceptionData), (char*)("r+"));
+		this->prv->nova_File_fp = fopen(nova_String_toCharArray(nova_0_location, exceptionData), "r+");
 	}
 	
 	return this;
@@ -68,7 +68,7 @@ char nova_File_delete(File* this, ExceptionData* exceptionData)
 void nova_File_reopen(File* this, ExceptionData* exceptionData)
 {
 	nova_File_close(this, exceptionData);
-	this->prv->nova_File_fp = fopen(nova_String_toCharArray(this->prv->nova_File_location, exceptionData), (char*)("r+"));
+	this->prv->nova_File_fp = fopen(nova_String_toCharArray(this->prv->nova_File_location, exceptionData), "r+");
 }
 
 void nova_File_rewind(File* this, ExceptionData* exceptionData)
@@ -85,16 +85,16 @@ char nova_File_create(File* this, ExceptionData* exceptionData)
 {
 	if (!nova_File_exists(this, exceptionData))
 	{
-		this->prv->nova_File_fp = fopen(nova_String_toCharArray(this->prv->nova_File_location, exceptionData), (char*)("wb"));
+		this->prv->nova_File_fp = fopen(nova_String_toCharArray(this->prv->nova_File_location, exceptionData), "wb");
 		if (!nova_File_exists(this, exceptionData))
 		{
-			perror((char*)("fopen"));
+			perror("fopen");
 			return 0;
 		}
 		nova_File_reopen(this, exceptionData);
 		if (!nova_File_exists(this, exceptionData))
 		{
-			perror((char*)("fopen"));
+			perror("fopen");
 			return 0;
 		}
 		return 1;
@@ -107,13 +107,13 @@ String* nova_File_readAllContents(File* this, ExceptionData* exceptionData)
 	String* nova_1_data;
 	String* nova_1_line;
 	
-	nova_1_data = nova_String_construct(0, exceptionData, (char*)(""));
+	nova_1_data = nova_String_construct(0, exceptionData, "");
 	nova_1_line = nova_File_readLine(this, exceptionData);
 	while (nova_1_line != (String*)0)
 	{
 		if (nova_1_data->nova_String_length > 0)
 		{
-			nova_1_data = nova_String_concat(nova_1_data, exceptionData, nova_String_construct(0, exceptionData, (char*)("\n")));
+			nova_1_data = nova_String_concat(nova_1_data, exceptionData, nova_String_construct(0, exceptionData, "\n"));
 		}
 		nova_1_data = nova_String_concat(nova_1_data, exceptionData, nova_1_line);
 		nova_1_line = nova_File_readLine(this, exceptionData);
@@ -160,7 +160,7 @@ String* nova_File_readLine(File* this, ExceptionData* exceptionData)
 
 void nova_File_writeLine(File* this, ExceptionData* exceptionData, String* nova_0_line)
 {
-	nova_File_write(this, exceptionData, nova_String_concat(nova_0_line, exceptionData, nova_String_construct(0, exceptionData, (char*)("\n"))));
+	nova_File_write(this, exceptionData, nova_String_concat(nova_0_line, exceptionData, nova_String_construct(0, exceptionData, "\n")));
 }
 
 void nova_File_write(File* this, ExceptionData* exceptionData, String* nova_0_data)
@@ -191,7 +191,7 @@ void nova_static_File_setMaxOpenFiles(File* this, ExceptionData* exceptionData, 
 {
 	if (nova_0_max > 2048 || nova_0_max < 20)
 	{
-		nova_static_1_Console_writeLine(0, exceptionData, nova_String_concat(nova_String_construct(0, exceptionData, (char*)("Invalid max number of open files: ")), exceptionData, nova_String_concat(nova_2_Int_toString(nova_Int_construct(0, exceptionData, nova_0_max), exceptionData), exceptionData, nova_String_construct(0, exceptionData, (char*)("\nValid values include 20-2048")))));
+		nova_static_1_Console_writeLine(0, exceptionData, nova_String_concat(nova_String_construct(0, exceptionData, "Invalid max number of open files: "), exceptionData, nova_String_concat(nova_2_Int_toString(nova_Int_construct(0, exceptionData, nova_0_max), exceptionData), exceptionData, nova_String_construct(0, exceptionData, "\nValid values include 20-2048"))));
 	}
 	else
 	{

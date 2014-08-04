@@ -42,7 +42,7 @@ public class System
 		exit(code)
 	}
 	
-	public static execute(String command) -> int
+	public static execute(String command) -> Process
 	{
 		FILE* pipe = getPipe(command.toCharArray(), exit)
 		
@@ -55,12 +55,8 @@ public class System
 		
 		StreamReader reader = new StreamReader(f)
 		
-		reader.read()
+		Process process = new Process(reader)
 		
-		Console.writeLine("HOLY FRICKEN: " + reader.read() + " CRAP")
-		
-		f.close()
-		
-		return 0
+		return process
 	}
 }

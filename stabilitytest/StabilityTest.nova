@@ -12,7 +12,8 @@ public class StabilityTest
 		int  result = test.runTests()
 		long time   = Time.currentTimeMillis() - start
 		
-		System.execute("dir")
+//		if (args[1].equals("test"))
+//		System.execute("Executable.exe a")
 		
 		Console.writeLine("Took " + time + "ms")
 		

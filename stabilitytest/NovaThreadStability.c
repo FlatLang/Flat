@@ -40,7 +40,7 @@ void nova_static_ThreadStability_test(ThreadStability* this, ExceptionData* exce
 {
 	ThreadImplementation** nova_1_threads;
 	
-	nova_static_1_Console_writeLine(0, exceptionData, nova_String_construct(0, exceptionData, (char*)("Checking Thread.nova with 20 Threads... ")));
+	nova_static_1_Console_writeLine(0, exceptionData, nova_String_construct(0, exceptionData, "Checking Thread.nova with 20 Threads... "));
 	nova_1_threads = (ThreadImplementation**)NOVA_MALLOC(sizeof(ThreadImplementation) * (20));
 	nova_static_ThreadStability_createThreads((ThreadStability*)0, exceptionData, nova_0_program, nova_1_threads, 20);
 	nova_static_ThreadStability_checkMemoryAccess((ThreadStability*)0, exceptionData);
@@ -66,7 +66,7 @@ void nova_static_ThreadStability_checkMemoryAccess(ThreadStability* this, Except
 	int nova_1_i;
 	
 	nova_static_Thread_sleep(0, exceptionData, (long_long)(30));
-	nova_static_1_Console_write(0, exceptionData, nova_String_construct(0, exceptionData, (char*)("Checking memory access with multi-threading... ")));
+	nova_static_1_Console_write(0, exceptionData, nova_String_construct(0, exceptionData, "Checking memory access with multi-threading... "));
 	nova_1_i = 0;
 	for (; nova_1_i < 1000; nova_1_i++)
 	{
@@ -74,7 +74,7 @@ void nova_static_ThreadStability_checkMemoryAccess(ThreadStability* this, Except
 		
 		nova_2_s = nova_static_1_Int_toString(0, exceptionData, nova_1_i);
 	}
-	nova_static_1_Console_writeLine(0, exceptionData, nova_String_construct(0, exceptionData, (char*)("OK")));
+	nova_static_1_Console_writeLine(0, exceptionData, nova_String_construct(0, exceptionData, "OK"));
 }
 
 void nova_static_ThreadStability_joinThreads(ThreadStability* this, ExceptionData* exceptionData, ThreadImplementation** nova_0_threads, int nova_0_amount)

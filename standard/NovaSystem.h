@@ -27,6 +27,7 @@ typedef struct System System;
 #include <NovaFile.h>
 #include <NovaTime.h>
 #include <NativeSystem.h>
+#include <NovaProcess.h>
 
 typedef struct nova_VTable_System
 {
@@ -46,6 +47,6 @@ void nova_del_System(System** this, ExceptionData* exceptionData);
 void nova_static_1_System_exit(System* this, ExceptionData* exceptionData, int nova_0_code);
 void nova_static_2_System_exit(System* this, ExceptionData* exceptionData, int nova_0_code, String* nova_0_message);
 void nova_static_3_System_exit(System* this, ExceptionData* exceptionData, int nova_0_code, String* nova_0_message, char nova_0_log);
-int nova_static_System_execute(System* this, ExceptionData* exceptionData, String* nova_0_command);
+Process* nova_static_System_execute(System* this, ExceptionData* exceptionData, String* nova_0_command);
 
 #endif

@@ -71,7 +71,7 @@ char* nova_static_Double_genBuffer(Double* this, ExceptionData* exceptionData, d
 	
 	nova_1_size = 11 + 1 + 15;
 	nova_1_buffer = (char*)NOVA_MALLOC(sizeof(char) * (nova_1_size));
-	sprintf(nova_1_buffer, (char*)("%.15f"), nova_0_value);
+	sprintf(nova_1_buffer, "%.15f", nova_0_value);
 	return nova_1_buffer;
 }
 
