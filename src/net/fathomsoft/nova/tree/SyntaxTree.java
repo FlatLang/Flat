@@ -27,7 +27,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:00:15 PM
- * @version	v0.2.21 Jul 30, 2014 at 1:45:00 PM
+ * @version	v0.2.26 Aug 6, 2014 at 2:48:50 PM
  */
 public class SyntaxTree
 {
@@ -513,6 +513,7 @@ public class SyntaxTree
 		else if (type.isAssignableFrom(Instantiation.class) && (node = Instantiation.decodeStatement(parent, statement, location, require)) != null);
 		else if (type.isAssignableFrom(IfStatement.class) && (node = IfStatement.decodeStatement(parent, statement, location, require)) != null);
 		else if (type.isAssignableFrom(AbstractMethodDeclaration.class) && (node = AbstractMethodDeclaration.decodeStatement(parent, statement, location, require)) != null);
+		else if (type.isAssignableFrom(Cast.class) && (node = Cast.decodeStatement(parent, statement, location, require)) != null);
 		else if (type.isAssignableFrom(ArrayAccess.class) && (node = ArrayAccess.decodeStatement(parent, statement, location, require)) != null);
 		else if (type.isAssignableFrom(Assignment.class) && (node = Assignment.decodeStatement(parent, statement, location, require)) != null);
 		else if (type.isAssignableFrom(Array.class) && (node = Array.decodeStatement(parent, statement, location, require)) != null);
@@ -1137,7 +1138,7 @@ public class SyntaxTree
 	 * @return The error output, if there was an error. If the test was
 	 * 		successful, null is returned.
 	 */
-	public static String test()
+	public static String test(Nova controller, ClassDeclaration clazz, BodyMethodDeclaration method)
 	{
 		
 		
