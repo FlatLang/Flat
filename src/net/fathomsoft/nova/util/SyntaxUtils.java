@@ -28,7 +28,7 @@ import net.fathomsoft.nova.tree.variables.Variable;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Mar 15, 2014 at 7:55:00 PM
- * @version	v0.2.22 Jul 30, 2014 at 11:56:00 PM
+ * @version	v0.2.26 Aug 6, 2014 at 2:48:50 PM
  */
 public class SyntaxUtils
 {
@@ -851,7 +851,7 @@ public class SyntaxUtils
 	 * @param statement The statement containing parentheses.
 	 * @return The bounds of the data within the parentheses.
 	 */
-	public static Bounds findInnerParenthesesBounds(Node parent, String statement)
+	public static Bounds findParenthesesBounds(Node parent, String statement)
 	{
 		int start = statement.indexOf('(');
 		int end   = StringUtils.findEndingMatch(statement, start, '(', ')');
@@ -861,12 +861,23 @@ public class SyntaxUtils
 			SyntaxMessage.error("Expected a ')' ending parenthesis", parent);
 		}
 		
-		end   = StringUtils.findNextNonWhitespaceIndex(statement, end - 1, -1) + 1;
-		start = StringUtils.findNextNonWhitespaceIndex(statement, start + 1);
-		
 		return new Bounds(start, end);
 	}
-
+	
+	/**
+	 * Calculate the Bounds of the data that is within the parentheses
+	 * in the given statement.
+	 * 
+	 * @param parent The node to throw an error with if anything goes
+	 * 		wrong.
+	 * @param statement The statement containing parentheses.
+	 * @return The bounds of the data within the parentheses.
+	 */
+	public static Bounds findInnerParenthesesBounds(Node parent, String statement)
+	{
+		return StringUtils.removeSurroundingParenthesis(statement, findParenthesesBounds(parent, statement));
+	}
+	
 	/**
 	 * Calculate the number of dimensions that the given array has, if
 	 * any.<br>
@@ -888,9 +899,9 @@ public class SyntaxUtils
 	 * 		within the set of brackets.
 	 * @return The number of dimensions that the given array has, if any.
 	 */
-	public static int calculateArrayDimensions(String statement, boolean contentPossible)
+	public static int findArrayDimensions(String statement, boolean contentPossible)
 	{
-		return calculateArrayDimensions(statement, 0, contentPossible);
+		return findArrayDimensions(statement, 0, contentPossible);
 	}
 	
 	/**
@@ -915,7 +926,7 @@ public class SyntaxUtils
 	 * 		within the set of brackets.
 	 * @return The number of dimensions that the given array has, if any.
 	 */
-	public static int calculateArrayDimensions(String statement, int start, boolean contentPossible)
+	public static int findArrayDimensions(String statement, int start, boolean contentPossible)
 	{
 		if (start < 0)
 		{
@@ -946,7 +957,7 @@ public class SyntaxUtils
 			}
 		}
 		
-		int nextAmount = calculateArrayDimensions(statement, next, contentPossible);
+		int nextAmount = findArrayDimensions(statement, next, contentPossible);
 		
 		if (nextAmount < 0)
 		{
