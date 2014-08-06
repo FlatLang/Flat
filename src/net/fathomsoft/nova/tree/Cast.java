@@ -1,5 +1,7 @@
 package net.fathomsoft.nova.tree;
 
+import net.fathomsoft.nova.Nova;
+import net.fathomsoft.nova.error.SyntaxErrorException;
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.util.Bounds;
 import net.fathomsoft.nova.util.Location;
@@ -7,14 +9,15 @@ import net.fathomsoft.nova.util.StringUtils;
 import net.fathomsoft.nova.util.SyntaxUtils;
 
 /**
- * Node extension that represents what one type is being casted
- * to another. See 
+ * Value extension that represents what one type is being casted
+ * to another. See {@link #decodeStatement(Node, String, Location, boolean)}
+ * for more information on what a cast looks like.
  * 
  * @author	Braden Steffaniak
  * @since	v0.2.25 Aug 3, 2014 at 1:52:00 PM
- * @version	v0.2.25 Aug 4, 2014 at 3:56:00 PM
+ * @version	v0.2.26 Aug 6, 2014 at 2:48:50 PM
  */
-public class Cast extends Node
+public class Cast extends IValue
 {
 	/**
 	 * @see net.fathomsoft.nova.tree.Node#Node(Node, Location)
@@ -25,14 +28,52 @@ public class Cast extends Node
 	}
 	
 	/**
+	 * @see net.fathomsoft.nova.tree.Node#getNumDecodedChildren()
+	 */
+	@Override
+	public int getNumDecodedChildren()
+	{
+		return super.getNumDecodedChildren() + 1;
+	}
+	
+	public Value getValueNode()
+	{
+		return (Value)getChild(super.getNumDefaultChildren() + 0);
+	}
+	
+	/**
+	 * @see net.fathomsoft.nova.tree.Value#generateCSourceFragment(java.lang.StringBuilder)
+	 */
+	@Override
+	public StringBuilder generateCSourceFragment(StringBuilder builder)
+	{
+		builder.append('(').append(generateCType()).append(')');
+		getValueNode().generateCSourceFragment(builder);
+		
+		return builder;
+	}
+	
+	/**
+	 * @see net.fathomsoft.nova.tree.Value#generateNovaInput(java.lang.StringBuilder, boolean)
+	 */
+	@Override
+	public StringBuilder generateNovaInput(StringBuilder builder, boolean outputChildren)
+	{
+		builder.append('(').append(generateNovaType()).append(')');
+		getValueNode().generateNovaInput(builder);
+		
+		return builder;
+	}
+	
+	/**
 	 * Decode the given statement into a {@link Cast} instance, if
 	 * possible. If it is not possible, this method returns null.<br>
 	 * <br>
 	 * Example inputs include:<br>
 	 * <ul>
-	 * 	<li></li>
-	 * 	<li></li>
-	 * 	<li></li>
+	 * 	<li>(int)5.2</li>
+	 * 	<li>(Value)getChild(getNumChildren())</li>
+	 * 	<li>(String[])array</li>
 	 * </ul>
 	 * 
 	 * @param parent The parent node of the statement.
@@ -47,12 +88,12 @@ public class Cast extends Node
 	{
 		if (statement.charAt(0) == '(')
 		{
-			Cast   n      = new Cast(parent, location);
-			Bounds bounds = SyntaxUtils.findInnerParenthesesBounds(n, statement);
+			Cast   n        = new Cast(parent, location);
+			Bounds bounds   = SyntaxUtils.findParenthesesBounds(n, statement);
+			String contents = StringUtils.removeSurroundingParenthesis(statement, bounds).extractString(statement);
+			String value    = statement.substring(bounds.getEnd() + 1).trim();
 			
-			String contents = n.extractContents(statement, bounds);
-			
-			if (n.decodeType(contents))
+			if (contents != null && n.decodeType(contents, require) && n.decodeValue(value, bounds, require))
 			{
 				return n;
 			}
@@ -61,25 +102,18 @@ public class Cast extends Node
 		return null;
 	}
 	
-	private String extractContents(String statement, Bounds bounds)
+	private boolean decodeType(String contents, boolean require)
 	{
-		String contents = bounds.extractString(statement);
-		
 		if (StringUtils.containsMultipleWords(contents))
 		{
-			invalidTypeError(contents);
+			return invalidTypeError(contents, require);
 		}
 		
-		return contents;
-	}
-	
-	private boolean decodeType(String contents)
-	{
 		String type = StringUtils.findNextWord(contents);
 		
 		if (type == null)
 		{
-			invalidTypeError(type);
+			return invalidTypeError(type, require);
 		}
 		
 		int index = contents.indexOf(type);
@@ -87,17 +121,74 @@ public class Cast extends Node
 		// If symbols are before the type... can't have that.
 		if (index > 0)
 		{
-			invalidTypeError(contents);
+			return invalidTypeError(contents, require);
 		}
 		
+		if (!checkArray(contents.substring(type.length()), require))
+		{
+			return false;
+		}
 		
+		return setType(type, require);
+	}
+	
+	private boolean checkArray(String postfix, boolean require)
+	{
+		if (postfix.length() > 0)
+		{
+			int dimensions = SyntaxUtils.findArrayDimensions(postfix, false);
+			
+			if (dimensions <= 0)
+			{
+				return SyntaxMessage.queryError("Invalid symbols '" + postfix + "'", this, require);
+			}
+			
+			setArrayDimensions(dimensions);
+		}
+		
+		return true;
+	}
+	
+	private boolean decodeValue(String value, Bounds bounds, boolean require)
+	{
+		Location newLoc = getLocationIn().asNew();
+		
+		bounds = bounds.clone();
+		bounds.setStart(bounds.getEnd());
+		bounds.setEnd(bounds.getStart() + value.length());
+		
+		newLoc.setBounds(bounds);
+		
+		Value node = SyntaxTree.decodeValue(this, value, newLoc, require);
+		
+		if (node == null)
+		{
+			if (require)
+			{
+				SyntaxMessage.error("Could not decode value '" + value + "'", this);
+			}
+			
+			return false;
+		}
+		
+		if (!getTypeClass().isOfType(node.getTypeClass()))
+		{
+			SyntaxMessage.error("Cannot cast from type '" + node.getTypeClassName() + "' to type '" + getTypeClassName() + "'", this);
+		}
+		
+		addChild(node);
 		
 		return true;
 	}
 	
 	private void invalidTypeError(String type)
 	{
-		SyntaxMessage.error("Cannot cast to invalid type '" + type + "'", this);
+		invalidTypeError(type, true);
+	}
+	
+	private boolean invalidTypeError(String type, boolean require)
+	{
+		return SyntaxMessage.queryError("Cannot cast to invalid type '" + type + "'", this, require);
 	}
 	
 	/**
@@ -132,9 +223,41 @@ public class Cast extends Node
 	 * @return The error output, if there was an error. If the test was
 	 * 		successful, null is returned.
 	 */
-	public static String test()
+	public static String test(Nova controller, ClassDeclaration clazz, BodyMethodDeclaration method)
 	{
+		Cast   node      = null;
+		String statement = null;
 		
+		statement = "(int)5.2";
+		node      = decodeStatement(method, statement, Location.INVALID, true);
+		
+		if (node != null)
+		{
+			statement = "(String)\"test\"";
+			node      = decodeStatement(method, statement, Location.INVALID, true);
+			
+			if (node != null)
+			{
+				try
+				{
+					statement = "(String)54";
+					node      = decodeStatement(method, statement, Location.INVALID, true);
+					
+					return "Cast failed test at '" + statement + "'";
+				}
+				catch (SyntaxErrorException e)
+				{
+					
+				}
+				
+				
+			}
+		}
+		
+		if (node == null)
+		{
+			return "Could not decode cast '" + statement + "'";
+		}
 		
 		return null;
 	}
