@@ -9,7 +9,7 @@ import java.util.regex.Matcher;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Mar 13, 2014 at 9:38:42 PM
- * @version	v0.2.25 Aug 4, 2014 at 3:56:00 PM
+ * @version	v0.2.26 Aug 6, 2014 at 2:48:50 PM
  */
 public class StringUtils
 {
@@ -1052,6 +1052,16 @@ public class StringUtils
 		}
 		
 		return output.toString();
+	}
+	
+	public static Bounds removeSurroundingParenthesis(String source, Bounds bounds)
+	{
+		Bounds out = bounds.clone();
+		
+		out.setEnd(StringUtils.findNextNonWhitespaceIndex(source, bounds.getEnd() - 1, -1) + 1);
+		out.setStart(StringUtils.findNextNonWhitespaceIndex(source, bounds.getStart() + 1));
+		
+		return out;
 	}
 	
 	/**
