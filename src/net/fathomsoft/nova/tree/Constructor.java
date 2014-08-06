@@ -1,18 +1,12 @@
 package net.fathomsoft.nova.tree;
 
-import java.io.ObjectInputStream.GetField;
-
 import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.tree.variables.FieldDeclaration;
 import net.fathomsoft.nova.tree.variables.FieldList;
 import net.fathomsoft.nova.tree.variables.InstanceFieldList;
-import net.fathomsoft.nova.tree.variables.VariableDeclaration;
 import net.fathomsoft.nova.util.Bounds;
 import net.fathomsoft.nova.util.Location;
-import net.fathomsoft.nova.util.Patterns;
-import net.fathomsoft.nova.util.StringUtils;
-import net.fathomsoft.nova.util.SyntaxUtils;
 
 /**
  * MethodDeclaration extension that represents the declaration of a Constructor
@@ -21,7 +15,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:50:47 PM
- * @version	v0.2.21 Jul 30, 2014 at 1:45:00 PM
+ * @version	v0.2.26 Aug 6, 2014 at 2:48:50 PM
  */
 public class Constructor extends BodyMethodDeclaration
 {
@@ -97,7 +91,7 @@ public class Constructor extends BodyMethodDeclaration
 		}
 		else
 		{
-			builder.append(getName()).append('*').append(' ').append(ParameterList.OBJECT_REFERENCE_IDENTIFIER).append(" = ").append(generateCTypeCast()).append("1").append(';');
+			builder.append(ParameterList.OBJECT_REFERENCE_IDENTIFIER).append(" = ").append(generateCTypeCast()).append("1").append(';');
 		}
 		
 		builder.append('\n').append('\n');
@@ -198,8 +192,6 @@ public class Constructor extends BodyMethodDeclaration
 	@Override
 	public StringBuilder generateCSourceSignature(StringBuilder builder)
 	{
-		ClassDeclaration classDeclaration = getParentClass();
-		
 		if (isConstant())
 		{
 			builder.append(getConstantText()).append(' ');
@@ -351,7 +343,7 @@ public class Constructor extends BodyMethodDeclaration
 	 * @return The error output, if there was an error. If the test was
 	 * 		successful, null is returned.
 	 */
-	public static String test()
+	public static String test(Nova controller, ClassDeclaration clazz, BodyMethodDeclaration method)
 	{
 		
 		
