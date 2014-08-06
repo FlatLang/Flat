@@ -1,5 +1,6 @@
 package net.fathomsoft.nova.tree;
 
+import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.util.Location;
 
@@ -10,7 +11,7 @@ import net.fathomsoft.nova.util.Location;
  * 
  * @author	Braden Steffaniak
  * @since	v0.2.21 Jul 30, 2014 at 1:45:00 PM
- * @version	v0.2.22 Jul 30, 2014 at 11:56:00 PM
+ * @version	v0.2.26 Aug 6, 2014 at 2:48:50 PM
  */
 public class BodyMethodDeclaration extends NovaMethodDeclaration
 {
@@ -92,21 +93,6 @@ public class BodyMethodDeclaration extends NovaMethodDeclaration
 	}
 	
 	/**
-	 * Generate a Method with the given parent and location for
-	 * temporary use.
-	 * 
-	 * @param parent The node to set as the Method's parent.
-	 * @param locationIn The location to set as the Method's location.
-	 * @return The generated temporary Method.
-	 */
-	public static BodyMethodDeclaration generateTemporaryMethod(Node parent, Location locationIn)
-	{
-		BodyMethodDeclaration methodDeclaration = new BodyMethodDeclaration(parent, locationIn);
-		
-		return methodDeclaration;
-	}
-	
-	/**
 	 * Decode the given statement into a Method instance, if
 	 * possible. If it is not possible, this method returns null.
 	 * <br>
@@ -144,6 +130,34 @@ public class BodyMethodDeclaration extends NovaMethodDeclaration
 	}
 	
 	/**
+	 * Generate a Method with the given parent and location for
+	 * temporary use.
+	 * 
+	 * @param parent The node to set as the Method's parent.
+	 * @param locationIn The location to set as the Method's location.
+	 * @return The generated temporary Method.
+	 */
+	public static BodyMethodDeclaration generateTemporaryMethod(Node parent, Location locationIn)
+	{
+//		BodyMethodDeclaration methodDeclaration = new BodyMethodDeclaration(parent, locationIn);
+//		methodDeclaration.setName("temp");
+		
+		BodyMethodDeclaration methodDeclaration = decodeStatement(parent, "temp()", locationIn, true);
+		
+		return methodDeclaration;
+	}
+	
+	public static BodyMethodDeclaration generateTemporaryHierarchy(Nova controller)
+	{
+		ClassDeclaration c = ClassDeclaration.generateTemporaryHierarchy(controller);
+		
+		BodyMethodDeclaration method = generateTemporaryMethod(c, Location.INVALID);
+		c.addChild(method);
+		
+		return method;
+	}
+	
+	/**
 	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location)
 	 */
 	@Override
@@ -161,7 +175,7 @@ public class BodyMethodDeclaration extends NovaMethodDeclaration
 	 * @return The error output, if there was an error. If the test was
 	 * 		successful, null is returned.
 	 */
-	public static String test()
+	public static String test(Nova controller, ClassDeclaration clazz, BodyMethodDeclaration method)
 	{
 		
 		

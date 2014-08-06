@@ -1,5 +1,6 @@
 package net.fathomsoft.nova.tree;
 
+import java.io.File;
 import java.util.HashMap;
 
 import net.fathomsoft.nova.Nova;
@@ -13,7 +14,7 @@ import net.fathomsoft.nova.util.Location;
  * 
  * @author	Braden Steffaniak
  * @since	v0.2 Apr 14, 2014 at 11:52:33 PM
- * @version	v0.2.19 Jul 26, 2014 at 12:30:24 AM
+ * @version	v0.2.26 Aug 6, 2014 at 2:48:50 PM
  */
 public class Program extends Node
 {
@@ -216,6 +217,16 @@ public class Program extends Node
 		return tree.getPhase();
 	}
 	
+	public static Program generateTemporaryProgram(Nova controller)
+	{
+		return controller.getTree().getRoot();
+	}
+	
+	public static Program generateTemporaryHierarchy(Nova controller)
+	{
+		return generateTemporaryProgram(controller);
+	}
+	
 	/**
 	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location)
 	 */
@@ -250,7 +261,7 @@ public class Program extends Node
 	 * @return The error output, if there was an error. If the test was
 	 * 		successful, null is returned.
 	 */
-	public static String test()
+	public static String test(Nova controller, ClassDeclaration clazz, BodyMethodDeclaration method)
 	{
 		
 		
