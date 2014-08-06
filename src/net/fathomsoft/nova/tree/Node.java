@@ -5,6 +5,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import net.fathomsoft.nova.Nova;
+import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.error.UnimplementedOperationException;
 import net.fathomsoft.nova.tree.exceptionhandling.Try;
 import net.fathomsoft.nova.util.Bounds;
@@ -1350,7 +1351,7 @@ public abstract class Node
 	 * @return The error output, if there was an error. If the test was
 	 * 		successful, null is returned.
 	 */
-	public static String test(Nova controller, ClassDeclaration clazz, BodyMethodDeclaration method)
+	public static String test(TestContext context)
 	{
 		
 		

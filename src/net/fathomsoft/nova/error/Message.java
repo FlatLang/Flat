@@ -1,6 +1,7 @@
 package net.fathomsoft.nova.error;
 
 import net.fathomsoft.nova.Nova;
+import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.tree.FileDeclaration;
 import net.fathomsoft.nova.tree.Node;
 import net.fathomsoft.nova.util.Location;

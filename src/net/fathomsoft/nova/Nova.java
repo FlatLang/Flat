@@ -1334,204 +1334,203 @@ public class Nova
 			
 			Nova temp = generateTemporaryController();
 			
-			BodyMethodDeclaration method = BodyMethodDeclaration.generateTemporaryHierarchy(temp);
-			ClassDeclaration      clazz  = method.getParentClass();
+			TestContext context = new TestContext(temp);
 			
 			String error = null;
 			
-			error = ArgumentList.test(temp, clazz, method);
+			error = ArgumentList.test(context);
 			
 			if (error == null)
 			{
-				error = Assignment.test(temp, clazz, method);
+				error = Assignment.test(context);
 				
 				if (error == null)
 				{
-					error = BinaryOperation.test(temp, clazz, method);
+					error = BinaryOperation.test(context);
 					
 					if (error == null)
 					{
-						error = Cast.test(temp, clazz, method);
+						error = Cast.test(context);
 						
 						if (error == null)
 						{
-							error = ClassDeclaration.test(temp, clazz, method);
+							error = ClassDeclaration.test(context);
 							
 							if (error == null)
 							{
-								error = Closure.test(temp, clazz, method);
+								error = Closure.test(context);
 								
 								if (error == null)
 								{
-									error = ClosureDeclaration.test(temp, clazz, method);
+									error = ClosureDeclaration.test(context);
 									
 									if (error == null)
 									{
-										error = Condition.test(temp, clazz, method);
+										error = Condition.test(context);
 										
 										if (error == null)
 										{
-											error = Constructor.test(temp, clazz, method);
+											error = Constructor.test(context);
 											
 											if (error == null)
 											{
-												error = Destructor.test(temp, clazz, method);
+												error = Destructor.test(context);
 												
 												if (error == null)
 												{
-													error = Dimensions.test(temp, clazz, method);
+													error = Dimensions.test(context);
 													
 													if (error == null)
 													{
-														error = ElseStatement.test(temp, clazz, method);
+														error = ElseStatement.test(context);
 														
 														if (error == null)
 														{
-															error = ExternalMethodDeclaration.test(temp, clazz, method);
+															error = ExternalMethodDeclaration.test(context);
 															
 															if (error == null)
 															{
-																error = ExternalType.test(temp, clazz, method);
+																error = ExternalType.test(context);
 																
 																if (error == null)
 																{
-																	error = ExternalTypeList.test(temp, clazz, method);
+																	error = ExternalTypeList.test(context);
 																	
 																	if (error == null)
 																	{
-																		error = FileDeclaration.test(temp, clazz, method);
+																		error = FileDeclaration.test(context);
 																		
 																		if (error == null)
 																		{
-																			error = ForLoop.test(temp, clazz, method);
+																			error = ForLoop.test(context);
 																			
 																			if (error == null)
 																			{
-																				error = Identifier.test(temp, clazz, method);
+																				error = Identifier.test(context);
 																				
 																				if (error == null)
 																				{
-																					error = IfStatement.test(temp, clazz, method);
+																					error = IfStatement.test(context);
 																					
 																					if (error == null)
 																					{
-																						error = IIdentifier.test(temp, clazz, method);
+																						error = IIdentifier.test(context);
 																						
 																						if (error == null)
 																						{
-																							error = Import.test(temp, clazz, method);
+																							error = Import.test(context);
 																							
 																							if (error == null)
 																							{
-																								error = ImportList.test(temp, clazz, method);
+																								error = ImportList.test(context);
 																								
 																								if (error == null)
 																								{
-																									error = InstanceDeclaration.test(temp, clazz, method);
+																									error = InstanceDeclaration.test(context);
 																									
 																									if (error == null)
 																									{
-																										error = Instantiation.test(temp, clazz, method);
+																										error = Instantiation.test(context);
 																										
 																										if (error == null)
 																										{
-																											error = IValue.test(temp, clazz, method);
+																											error = IValue.test(context);
 																											
 																											if (error == null)
 																											{
-																												error = Literal.test(temp, clazz, method);
+																												error = Literal.test(context);
 																												
 																												if (error == null)
 																												{
-																													error = LocalDeclaration.test(temp, clazz, method);
+																													error = LocalDeclaration.test(context);
 																													
 																													if (error == null)
 																													{
-																														error = Loop.test(temp, clazz, method);
+																														error = Loop.test(context);
 																														
 																														if (error == null)
 																														{
-																															error = LoopInitialization.test(temp, clazz, method);
+																															error = LoopInitialization.test(context);
 																															
 																															if (error == null)
 																															{
-																																error = LoopUpdate.test(temp, clazz, method);
+																																error = LoopUpdate.test(context);
 																																
 																																if (error == null)
 																																{
-																																	error = MethodCall.test(temp, clazz, method);
+																																	error = MethodCall.test(context);
 																																	
 																																	if (error == null)
 																																	{
-																																		error = MethodCallArgumentList.test(temp, clazz, method);
+																																		error = MethodCallArgumentList.test(context);
 																																		
 																																		if (error == null)
 																																		{
-																																			error = MethodDeclaration.test(temp, clazz, method);
+																																			error = MethodDeclaration.test(context);
 																																			
 																																			if (error == null)
 																																			{
-																																				error = MethodList.test(temp, clazz, method);
+																																				error = MethodList.test(context);
 																																				
 																																				if (error == null)
 																																				{
-																																					error = Node.test(temp, clazz, method);
+																																					error = Node.test(context);
 																																					
 																																					if (error == null)
 																																					{
-																																						error = Operator.test(temp, clazz, method);
+																																						error = Operator.test(context);
 																																						
 																																						if (error == null)
 																																						{
-																																							error = Parameter.test(temp, clazz, method);
+																																							error = Parameter.test(context);
 																																							
 																																							if (error == null)
 																																							{
-																																								error = ParameterList.test(temp, clazz, method);
+																																								error = ParameterList.test(context);
 																																								
 																																								if (error == null)
 																																								{
-																																									error = Priority.test(temp, clazz, method);
+																																									error = Priority.test(context);
 																																									
 																																									if (error == null)
 																																									{
-																																										error = Program.test(temp, clazz, method);
+																																										error = Program.test(context);
 																																										
 																																										if (error == null)
 																																										{
-																																											error = Return.test(temp, clazz, method);
+																																											error = Return.test(context);
 																																											
 																																											if (error == null)
 																																											{
-																																												error = Scope.test(temp, clazz, method);
+																																												error = Scope.test(context);
 																																												
 																																												if (error == null)
 																																												{
-																																													error = SyntaxTree.test(temp, clazz, method);
+																																													error = SyntaxTree.test(context);
 																																													
 																																													if (error == null)
 																																													{
-																																														error = TreeGenerator.test(temp, clazz, method);
+																																														error = TreeGenerator.test(context);
 																																														
 																																														if (error == null)
 																																														{
-																																															error = UnaryOperation.test(temp, clazz, method);
+																																															error = UnaryOperation.test(context);
 																																															
 																																															if (error == null)
 																																															{
-																																																error = Until.test(temp, clazz, method);
+																																																error = Until.test(context);
 																																																
 																																																if (error == null)
 																																																{
-																																																	error = Value.test(temp, clazz, method);
+																																																	error = Value.test(context);
 																																																	
 																																																	if (error == null)
 																																																	{
-																																																		error = VTable.test(temp, clazz, method);
+																																																		error = VTable.test(context);
 																																																		
 																																																		if (error == null)
 																																																		{
-																																																			error = WhileLoop.test(temp, clazz, method);
+																																																			error = WhileLoop.test(context);
 																																																		}
 																																																	}
 																																																}

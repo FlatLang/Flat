@@ -4,6 +4,7 @@ import java.io.File;
 import java.util.regex.Matcher;
 
 import net.fathomsoft.nova.Nova;
+import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.error.SyntaxErrorException;
 import net.fathomsoft.nova.tree.variables.FieldDeclaration;
 import net.fathomsoft.nova.util.FileUtils;
@@ -670,7 +671,7 @@ public class TreeGenerator implements Runnable
 	 * @return The error output, if there was an error. If the test was
 	 * 		successful, null is returned.
 	 */
-	public static String test(Nova controller, ClassDeclaration clazz, BodyMethodDeclaration method)
+	public static String test(TestContext context)
 	{
 		
 		
