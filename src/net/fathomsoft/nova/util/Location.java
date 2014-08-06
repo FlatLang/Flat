@@ -7,7 +7,7 @@ package net.fathomsoft.nova.util;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 7, 2014 at 10:11:40 AM
- * @version	v0.2.20 Jul 29, 2014 at 7:26:50 PM
+ * @version	v0.2.26 Aug 6, 2014 at 2:48:50 PM
  */
 public class Location
 {
@@ -165,9 +165,13 @@ public class Location
 		return bounds;
 	}
 	
+	public void setBounds(Bounds bounds)
+	{
+		this.bounds = bounds;
+	}
+	
 	/**
-	 * Set the character bound offsets on the specified Location's line
-	 * number.
+	 * Set the Bounds that the location encapsulates.
 	 * 
 	 * @param start The character offset that the Location represents as
 	 * 		the start on the specified line.
