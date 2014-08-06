@@ -30,7 +30,7 @@
 
 #define CCLASS_NEW1(_CLASS_) (_CLASS_*)NOVA_MALLOC(sizeof(_CLASS_))
 #define CCLASS_NEW3(_CLASS_, _OBJ_, _CCLASS_PRIVATE_)\
-	_CLASS_* _OBJ_ = CCLASS_NEW1(_CLASS_);\
+	_OBJ_ = CCLASS_NEW1(_CLASS_);\
 	_CCLASS_PRIVATE_
 #define CCLASS_NEW2(_CLASS_, _OBJ_) CCLASS_NEW3(_CLASS_, _OBJ_, _OBJ_->prv = new_Private())
 

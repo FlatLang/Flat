@@ -4,7 +4,7 @@
 
 nova_VTable_Array nova_VTable_Array_val =
 {
-	nova_2_Object_toString,
+	nova_4_Object_toString,
 	nova_2_Object_equals,
 };
 

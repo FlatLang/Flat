@@ -4,7 +4,7 @@
 
 nova_VTable_Exception nova_VTable_Exception_val =
 {
-	nova_2_Object_toString,
+	nova_4_Object_toString,
 	nova_2_Object_equals,
 };
 

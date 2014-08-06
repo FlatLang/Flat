@@ -15,8 +15,11 @@ typedef struct SVGTest SVGTest;
 #include <NovaConsole.h>
 #include <NovaGC.h>
 #include <NovaNumber.h>
-#include <NovaInteger.h>
+#include <NovaByte.h>
+#include <NovaShort.h>
+#include <NovaInt.h>
 #include <NovaLong.h>
+#include <NovaFloat.h>
 #include <NovaDouble.h>
 #include <NovaChar.h>
 #include <NovaDivideByZeroException.h>
@@ -25,9 +28,20 @@ typedef struct SVGTest SVGTest;
 #include <NovaFile.h>
 #include <NovaTime.h>
 
+typedef struct nova_VTable_SVGTest
+{
+	String* (*nova_virtual_4_toString)(Object*, ExceptionData*);
+	char (*nova_virtual_2_equals)(Object*, ExceptionData*, Object*);
+} nova_VTable_SVGTest;
 
+CCLASS_CLASS
+(
+	SVGTest, 
+	
+	nova_VTable_SVGTest* vtable;
+)
 
-SVGTest* nova_SVGTest_SVGTest(ExceptionData* exceptionData);
+SVGTest* nova_SVGTest_construct(SVGTest* this, ExceptionData* exceptionData);
 void nova_del_SVGTest(SVGTest** this, ExceptionData* exceptionData);
 void nova_static_SVGTest_main(SVGTest* this, ExceptionData* exceptionData, String** nova_0_args);
 

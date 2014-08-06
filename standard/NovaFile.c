@@ -4,7 +4,7 @@
 
 nova_VTable_File nova_VTable_File_val =
 {
-	nova_2_Object_toString,
+	nova_4_Object_toString,
 	nova_2_Object_equals,
 };
 CCLASS_PRIVATE

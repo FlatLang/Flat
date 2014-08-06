@@ -10,19 +10,19 @@ char* ufgets(FILE* stream)
     unsigned int maxlen = 128, size = 128;
     char* buffer = (char*)NOVA_MALLOC(maxlen);
     
-    if(buffer != NULL) /* NULL if malloc() fails */
+    if (buffer != NULL) /* NULL if malloc() fails */
     {
-        int ch = EOF;
+        int ch  = EOF;
         int pos = 0;
  
         /* Read input one character at a time, resizing the buffer as necessary */
-        while((ch = fgetc(stream)) != '\n' && ch != EOF && !feof(stream))
+        while ((ch = fgetc(stream)) != '\n' && ch != EOF && !feof(stream))
         {
             buffer[pos++] = ch;
             
-            if(pos == size) /* Next character to be inserted needs more memory */
+            if (pos == size) /* Next character to be inserted needs more memory */
             {
-                size = pos + maxlen;
+                size   = pos + maxlen;
                 buffer = (char*)NOVA_REALLOC(buffer, size);
             }
         }

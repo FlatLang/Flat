@@ -5,7 +5,7 @@ typedef void (*nova_1_0_exit)(void*, ExceptionData*, int, String*, char);
 
 nova_VTable_System nova_VTable_System_val =
 {
-	nova_2_Object_toString,
+	nova_4_Object_toString,
 	nova_2_Object_equals,
 };
 
