@@ -16,7 +16,7 @@ import net.fathomsoft.nova.util.StringUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:50:43 PM
- * @version	v0.2.22 Jul 30, 2014 at 11:56:00 PM
+ * @version	v0.2.26 Aug 6, 2014 at 2:48:50 PM
  */
 public class Destructor extends BodyMethodDeclaration
 {
@@ -194,7 +194,7 @@ public class Destructor extends BodyMethodDeclaration
 	{
 		ClassDeclaration classDeclaration = getParentClass();
 		
-		generateCTypeOutput(builder).append(' ');
+		generateCType(builder).append(' ');
 		builder.append(Nova.LANGUAGE_NAME.toLowerCase()).append("_del_");
 		builder.append(classDeclaration.getName()).append('(').append(getParameterList().generateCSource()).append(')');
 		
@@ -327,7 +327,7 @@ public class Destructor extends BodyMethodDeclaration
 	 * @return The error output, if there was an error. If the test was
 	 * 		successful, null is returned.
 	 */
-	public static String test()
+	public static String test(Nova controller, ClassDeclaration clazz, BodyMethodDeclaration method)
 	{
 		
 		

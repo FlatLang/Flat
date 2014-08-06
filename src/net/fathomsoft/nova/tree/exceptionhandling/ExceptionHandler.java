@@ -1,5 +1,8 @@
 package net.fathomsoft.nova.tree.exceptionhandling;
 
+import net.fathomsoft.nova.Nova;
+import net.fathomsoft.nova.tree.BodyMethodDeclaration;
+import net.fathomsoft.nova.tree.ClassDeclaration;
 import net.fathomsoft.nova.tree.Node;
 import net.fathomsoft.nova.tree.Scope;
 import net.fathomsoft.nova.util.Location;
@@ -11,7 +14,7 @@ import net.fathomsoft.nova.util.Location;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Mar 21, 2014 at 10:50:26 PM
- * @version	v0.2.22 Jul 30, 2014 at 11:56:00 PM
+ * @version	v0.2.26 Aug 6, 2014 at 2:48:50 PM
  */
 public class ExceptionHandler extends Node
 {
@@ -119,7 +122,7 @@ public class ExceptionHandler extends Node
 	 * @return The error output, if there was an error. If the test was
 	 * 		successful, null is returned.
 	 */
-	public static String test()
+	public static String test(Nova controller, ClassDeclaration clazz, BodyMethodDeclaration method)
 	{
 		
 		

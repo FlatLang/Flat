@@ -1,5 +1,6 @@
 package net.fathomsoft.nova.tree;
 
+import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.util.Bounds;
 import net.fathomsoft.nova.util.Location;
@@ -15,7 +16,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.2.14 Jul 5, 2014 at 9:02:42 PM
- * @version	v0.2.22 Jul 30, 2014 at 11:56:00 PM
+ * @version	v0.2.26 Aug 6, 2014 at 2:48:50 PM
  */
 public class ClosureDeclaration extends Parameter implements CallableMethod
 {
@@ -119,17 +120,17 @@ public class ClosureDeclaration extends Parameter implements CallableMethod
 	@Override
 	public StringBuilder generateCSourceFragment(StringBuilder builder)
 	{
-		builder.append(generateCTypeOutput()).append(' ').append(generateCSourceName()).append(", ");
-		getParameterList().getObjectReference().generateCTypeOutput(builder).append(' ').append(generateCSourceName("ref"));
+		builder.append(generateCType()).append(' ').append(generateCSourceName()).append(", ");
+		getParameterList().getObjectReference().generateCType(builder).append(' ').append(generateCSourceName("ref"));
 		
 		return builder;
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.Value#generateCTypeOutput(java.lang.StringBuilder)
+	 * @see net.fathomsoft.nova.tree.Value#generateCType(java.lang.StringBuilder)
 	 */
 	@Override
-	public StringBuilder generateCTypeOutput(StringBuilder builder)
+	public StringBuilder generateCType(StringBuilder builder)
 	{
 		return builder.append(generateCSourceName(id + ""));
 	}
@@ -153,7 +154,7 @@ public class ClosureDeclaration extends Parameter implements CallableMethod
 	{
 		builder.append("typedef ");
 		
-		super.generateCTypeOutput(builder).append(" (*").append(generateCSourceName(id + "")).append(')');
+		super.generateCType(builder).append(" (*").append(generateCSourceName(id + "")).append(')');
 		builder.append('(').append(getParameterList().generateCHeader()).append(')').append(";\n");
 		
 		return builder;
@@ -369,7 +370,7 @@ public class ClosureDeclaration extends Parameter implements CallableMethod
 	 * @return The error output, if there was an error. If the test was
 	 * 		successful, null is returned.
 	 */
-	public static String test()
+	public static String test(Nova controller, ClassDeclaration clazz, BodyMethodDeclaration method)
 	{
 		
 		

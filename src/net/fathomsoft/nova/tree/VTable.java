@@ -8,7 +8,7 @@ import net.fathomsoft.nova.util.Location;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Mar 16, 2014 at 1:13:49 AM
- * @version	v0.2.21 Jul 30, 2014 at 1:45:00 PM
+ * @version	v0.2.26 Aug 6, 2014 at 2:48:50 PM
  */
 public class VTable extends IIdentifier
 {
@@ -35,10 +35,10 @@ public class VTable extends IIdentifier
 			return builder;
 		}
 		
-		builder.append("typedef struct ").append(generateCTypeOutput()).append('\n');
+		builder.append("typedef struct ").append(generateCType()).append('\n');
 		builder.append("{\n");
 		generateVirtualMethodDeclarations(builder, methods);
-		builder.append("} ").append(generateCTypeOutput()).append(";\n");
+		builder.append("} ").append(generateCType()).append(";\n");
 		
 		return builder;
 	}
@@ -56,7 +56,7 @@ public class VTable extends IIdentifier
 			return builder;
 		}
 		
-		generateCTypeOutput(builder).append(' ').append(generateCSourceName()).append(" =\n");
+		generateCType(builder).append(' ').append(generateCSourceName()).append(" =\n");
 		builder.append("{\n");
 		generateVirtualMethodValues(builder, methods);
 		builder.append("};");
@@ -92,7 +92,7 @@ public class VTable extends IIdentifier
 	 */
 	public StringBuilder generateVirtualMethodDeclaration(StringBuilder builder, NovaMethodDeclaration method)
 	{
-		return method.generateCTypeOutput(builder).append(" (*").append(method.generateCVirtualMethodName()).append(")(").append(method.getParameterList().generateCHeader()).append(");\n");
+		return method.generateCType(builder).append(" (*").append(method.generateCVirtualMethodName()).append(")(").append(method.getParameterList().generateCHeader()).append(");\n");
 	}
 	
 	/**
@@ -162,7 +162,7 @@ public class VTable extends IIdentifier
 	 * @return The error output, if there was an error. If the test was
 	 * 		successful, null is returned.
 	 */
-	public static String test()
+	public static String test(Nova controller, ClassDeclaration clazz, BodyMethodDeclaration method)
 	{
 		
 		

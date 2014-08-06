@@ -1,5 +1,6 @@
 package net.fathomsoft.nova.tree;
 
+import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.tree.variables.Variable;
 import net.fathomsoft.nova.util.Location;
@@ -12,7 +13,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.2.4 May 2, 2014 at 11:14:37 PM
- * @version	v0.2.22 Jul 30, 2014 at 11:56:00 PM
+ * @version	v0.2.26 Aug 6, 2014 at 2:48:50 PM
  */
 public abstract class Value extends Node
 {
@@ -180,7 +181,7 @@ public abstract class Value extends Node
 	 * 
 	 * @return The text that represents an array in the C language.
 	 */
-	public String getArrayText()
+	public String generateArrayText()
 	{
 		return "*";
 	}
@@ -481,7 +482,7 @@ public abstract class Value extends Node
 //			required.generateCTypeCast(builder);
 //		}
 		
-		return generateCTypeOutput(builder);
+		return generateCType(builder);
 	}
 	
 	/**
@@ -510,9 +511,9 @@ public abstract class Value extends Node
 	 * 
 	 * @return The C syntax for the type of the Value.
 	 */
-	public StringBuilder generateCTypeOutput()
+	public StringBuilder generateCType()
 	{
-		return generateCTypeOutput(new StringBuilder());
+		return generateCType(new StringBuilder());
 	}
 	
 	/**
@@ -521,9 +522,9 @@ public abstract class Value extends Node
 	 * @param builder The StringBuider to append the data to.
 	 * @return The C syntax for the type of the Value.
 	 */
-	public StringBuilder generateCTypeOutput(StringBuilder builder)
+	public StringBuilder generateCType(StringBuilder builder)
 	{
-		return generateCTypeOutput(builder, true);
+		return generateCType(builder, true);
 	}
 	
 	/**
@@ -533,7 +534,7 @@ public abstract class Value extends Node
 	 * @param checkArray Whether or not to check if the type is an array.
 	 * @return The C syntax for the type of the Value.
 	 */
-	public StringBuilder generateCTypeOutput(StringBuilder builder, boolean checkArray)
+	public StringBuilder generateCType(StringBuilder builder, boolean checkArray)
 	{
 		if (getType() == null)
 		{
@@ -566,7 +567,7 @@ public abstract class Value extends Node
 		}
 		if (checkArray && isArray())
 		{
-			builder.append(getArrayText());
+			builder.append(generateArrayText());
 		}
 		if (getParentMethod() instanceof Destructor && this instanceof Identifier)
 		{
@@ -579,6 +580,46 @@ public abstract class Value extends Node
 //		{
 //			builder.append('*');
 //		}
+		
+		return builder;
+	}
+	
+	/**
+	 * Generate the Nova syntax for the type of the specified Value's type.
+	 * 
+	 * @return The Nova syntax for the type of the Value.
+	 */
+	public StringBuilder generateNovaType()
+	{
+		return generateNovaType(new StringBuilder());
+	}
+	
+	/**
+	 * Generate the Nova syntax for the type of the specified Value'stype.
+	 * 
+	 * @param builder The StringBuider to append the data to.
+	 * @return The Nova syntax for the type of the Value.
+	 */
+	public StringBuilder generateNovaType(StringBuilder builder)
+	{
+		return generateNovaType(builder, true);
+	}
+	
+	/**
+	 * Generate the Nova syntax for the type of the specified Value's type.
+	 * 
+	 * @param builder The StringBuider to append the data to.
+	 * @param checkArray Whether or not to check if the type is an array.
+	 * @return The Nova syntax for the type of the Value.
+	 */
+	public StringBuilder generateNovaType(StringBuilder builder, boolean checkArray)
+	{
+		builder.append(getType());
+		
+		if (checkArray && isArray())
+		{
+			builder.append(generateArrayText());
+		}
 		
 		return builder;
 	}
@@ -603,7 +644,7 @@ public abstract class Value extends Node
 	 */
 	public StringBuilder generateCTypeCast(StringBuilder builder)
 	{
-		return builder.append('(').append(generateCTypeOutput()).append(')');
+		return builder.append('(').append(generateCType()).append(')');
 	}
 	
 	/**
@@ -628,7 +669,7 @@ public abstract class Value extends Node
 	 */
 	public StringBuilder generateCUseOutput(StringBuilder builder)
 	{
-		return generateCTypeOutput(builder);
+		return generateCType(builder);
 	}
 	
 	/**
@@ -738,7 +779,7 @@ public abstract class Value extends Node
 	 * @return The error output, if there was an error. If the test was
 	 * 		successful, null is returned.
 	 */
-	public static String test()
+	public static String test(Nova controller, ClassDeclaration clazz, BodyMethodDeclaration method)
 	{
 		
 		

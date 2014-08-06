@@ -21,7 +21,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:15:51 PM
- * @version	v0.2.22 Jul 30, 2014 at 11:56:00 PM
+ * @version	v0.2.26 Aug 6, 2014 at 2:48:50 PM
  */
 public class ClassDeclaration extends InstanceDeclaration
 {
@@ -941,7 +941,7 @@ public class ClassDeclaration extends InstanceDeclaration
 			{
 				VTable table = getVTableNode();
 				
-				builder.append(table.generateCTypeOutput()).append("* ").append(VTable.IDENTIFIER).append(";\n");
+				builder.append(table.generateCType()).append("* ").append(VTable.IDENTIFIER).append(";\n");
 			}
 			if (containsNonStaticPrivateData())
 			{
@@ -1433,7 +1433,17 @@ public class ClassDeclaration extends InstanceDeclaration
 	 */
 	public static ClassDeclaration generateTemporaryClass(Node parent, Location locationIn)
 	{
-		ClassDeclaration clazz = new ClassDeclaration(parent, locationIn);
+		ClassDeclaration methodDeclaration = decodeStatement(parent, "public class Temp", locationIn, true);
+		
+		return methodDeclaration;
+	}
+	
+	public static ClassDeclaration generateTemporaryHierarchy(Nova controller)
+	{
+		FileDeclaration f = FileDeclaration.generateTemporaryHierarchy(controller);
+		
+		ClassDeclaration clazz = generateTemporaryClass(f, Location.INVALID);
+		f.addChild(clazz);
 		
 		return clazz;
 	}
@@ -1498,7 +1508,7 @@ public class ClassDeclaration extends InstanceDeclaration
 	 * @return The error output, if there was an error. If the test was
 	 * 		successful, null is returned.
 	 */
-	public static String test()
+	public static String test(Nova controller, ClassDeclaration clazz, BodyMethodDeclaration method)
 	{
 		
 		

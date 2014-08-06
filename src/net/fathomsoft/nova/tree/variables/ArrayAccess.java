@@ -1,6 +1,8 @@
 package net.fathomsoft.nova.tree.variables;
 
+import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.error.SyntaxMessage;
+import net.fathomsoft.nova.tree.BodyMethodDeclaration;
 import net.fathomsoft.nova.tree.ClassDeclaration;
 import net.fathomsoft.nova.tree.Dimensions;
 import net.fathomsoft.nova.tree.Literal;
@@ -21,7 +23,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.2 Mar 24, 2014 at 10:45:29 PM
- * @version	v0.2.24 Aug 2, 2014 at 10:39:00 PM
+ * @version	v0.2.26 Aug 6, 2014 at 2:48:50 PM
  */
 public class ArrayAccess extends Variable
 {
@@ -103,12 +105,12 @@ public class ArrayAccess extends Variable
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.Value#generateCTypeOutput(java.lang.StringBuilder)
+	 * @see net.fathomsoft.nova.tree.Value#generateCType(java.lang.StringBuilder)
 	 */
 	@Override
-	public StringBuilder generateCTypeOutput(StringBuilder builder)
+	public StringBuilder generateCType(StringBuilder builder)
 	{
-		return super.generateCTypeOutput(builder, false);
+		return super.generateCType(builder, false);
 	}
 	
 	/**
@@ -247,7 +249,7 @@ public class ArrayAccess extends Variable
 	 * @return The error output, if there was an error. If the test was
 	 * 		successful, null is returned.
 	 */
-	public static String test()
+	public static String test(Nova controller, ClassDeclaration clazz, BodyMethodDeclaration method)
 	{
 		
 		
