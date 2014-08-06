@@ -27,10 +27,12 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:00:04 PM
- * @version	v0.2.25 Aug 4, 2014 at 3:56:00 PM
+ * @version	v0.2.26 Aug 6, 2014 at 2:48:50 PM
  */
 public class Nova
 {
+	private boolean				testClasses;
+	
 	private int					compiler;
 	
 	private long				flags;
@@ -77,7 +79,7 @@ public class Nova
 	public static final int		LINUX         = 3;
 	
 	public static final String	LANGUAGE_NAME = "Nova";
-	public static final String	VERSION       = "v0.2.25";
+	public static final String	VERSION       = "v0.2.26";
 	
 	/**
 	 * Find out which operating system the compiler is running on.
@@ -121,17 +123,19 @@ public class Nova
 	 */
 	public static void main(String args[])
 	{
-		Nova nova = new Nova(args);
+		Nova nova = new Nova();
+		
+		nova.compile(args, true);
+		nova.formatOutput();
+		nova.writeFiles();
+		nova.compileC();
 	}
 	
 	/**
 	 * Method used to initialize the compiler data and start the
 	 * compilation process.
-	 * 
-	 * @param args The String array containing the locations of the files
-	 * 		to compile, as well as other compiler arguments.
 	 */
-	private Nova(String args[])
+	public Nova()
 	{
 		if (BENCHMARK > 0)
 		{
@@ -160,7 +164,7 @@ public class Nova
 		errors             = new ArrayList<String>();
 		messages           = new ArrayList<String>();
 		
-		compile(args);
+		testClasses = BENCHMARK <= 0;
 	}
 	
 	/**
@@ -169,7 +173,7 @@ public class Nova
 	 * @param args The String array containing the locations of the files
 	 * 		to compile, as well as other compiler arguments.
 	 */
-	private void compile(String args[])
+	public void compile(String args[], boolean generateCode)
 	{
 		String directory = getWorkingDirectoryPath() + "example/";
 		String stability = getWorkingDirectoryPath() + "stabilitytest/";
@@ -186,27 +190,24 @@ public class Nova
 		
 		if (DEBUG)
 		{
-			if (BENCHMARK <= 0)
-			{
-				testClasses();
-			}
+			testClasses();
 			
 			args = new String[]
 			{
-				formatPath(stability + "StabilityTest.nova"),
-				formatPath(stability + "TimeStability.nova"),
-				formatPath(stability + "FileStability.nova"),
-				formatPath(stability + "ThreadStability.nova"),
-				formatPath(stability + "ExceptionStability.nova"),
-				formatPath(stability + "SyntaxStability.nova"),
-				formatPath(stability + "ClosureStability.nova"),
-				formatPath(stability + "PolymorphismStability.nova"),
-				formatPath(stability + "PolymorphicSuperClass.nova"),
-				formatPath(stability + "PolymorphicSubClass.nova"),
-				formatPath(stability + "StabilityTestException.nova"),
-				formatPath(stability + "StabilityExceptionHandler.nova"),
-				formatPath(stability + "ThreadImplementation.nova"),
-				formatPath(stability + "UnstableException.nova"),
+//				formatPath(stability + "StabilityTest.nova"),
+//				formatPath(stability + "TimeStability.nova"),
+//				formatPath(stability + "FileStability.nova"),
+//				formatPath(stability + "ThreadStability.nova"),
+//				formatPath(stability + "ExceptionStability.nova"),
+//				formatPath(stability + "SyntaxStability.nova"),
+//				formatPath(stability + "ClosureStability.nova"),
+//				formatPath(stability + "PolymorphismStability.nova"),
+//				formatPath(stability + "PolymorphicSuperClass.nova"),
+//				formatPath(stability + "PolymorphicSubClass.nova"),
+//				formatPath(stability + "StabilityTestException.nova"),
+//				formatPath(stability + "StabilityExceptionHandler.nova"),
+//				formatPath(stability + "ThreadImplementation.nova"),
+//				formatPath(stability + "UnstableException.nova"),
 //				formatPath(directory + "MathDemo.nova"),
 //				formatPath(directory + "ThreadDemo.nova"),
 //				formatPath(directory + "ThreadDemoImplementation.nova"),
@@ -216,7 +217,7 @@ public class Nova
 //				formatPath(directory + "Dog.nova"),
 //				formatPath(directory + "IntegerTest.nova"),
 //				formatPath(directory + "FileTest.nova"),
-//				formatPath(directory + "SVGTest.nova"),
+				formatPath(directory + "SVGTest.nova"),
 //				formatPath(directory + "ExceptionHandlingDemo.nova"),
 //				formatPath(directory + "NonWholeDivisionException.nova"),
 //				formatPath(directory + "ArrayListDemo.nova"),
@@ -268,7 +269,7 @@ public class Nova
 				"-run",
 //				"-csource",
 				"-formatc",
-				"-v",
+				testClasses ? "-v" : "",
 //				"-gcc",
 //				"-small",
 				"-cargs",
@@ -295,6 +296,11 @@ public class Nova
 		
 		startTimer();
 		
+		createSyntaxTree(generateCode);
+	}
+	
+	private void createSyntaxTree(boolean generateCode)
+	{
 		// Try to create a Syntax Tree for the given file.
 		try
 		{
@@ -313,9 +319,12 @@ public class Nova
 					
 					tree = new SyntaxTree(inputFiles.toArray(new File[0]), this);
 					
-					tree.generateCOutput();
-					
-					insertMainMethod();
+					if (generateCode)
+					{
+						tree.generateCOutput();
+						
+						insertMainMethod();
+					}
 					
 					long time = System.currentTimeMillis() - before;
 					
@@ -357,14 +366,20 @@ public class Nova
 		{
 			log(str);
 		}
-		
+	}
+	
+	public void formatOutput()
+	{
 		if (isFlagEnabled(FORMATC))
 		{
 			log("Formatting the output c output code...");
 			
 			tree.formatCOutput();
 		}
-		
+	}
+	
+	public void writeFiles()
+	{
 		String headers[] = tree.getCHeaderOutput();
 		String sources[] = tree.getCSourceOutput();
 		FileDeclaration files[] = tree.getFiles();
@@ -381,8 +396,8 @@ public class Nova
 		log("Writing files...");
 		
 		StringBuilder allHeaders = new StringBuilder();
-		StringBuilder includes = new StringBuilder();
-		StringBuilder types = new StringBuilder();
+		StringBuilder includes   = new StringBuilder();
+		StringBuilder types      = new StringBuilder();
 
 		allHeaders.append("#pragma once\n");
 		allHeaders.append("#ifndef NOVA_ALL_HEADERS\n");
@@ -430,26 +445,6 @@ public class Nova
 		allHeaders.append("#endif");
 		
 		log("Done writing files.");
-		
-//		try
-//		{
-//			File file = FileUtils.writeFile("AllNovaHeaders.h", allHeaders.toString());
-//		}
-//		catch (IOException e)
-//		{
-//			e.printStackTrace();
-//			
-//			completed();
-//		}
-		
-//		if (!isFlagEnabled(DRY_RUN))
-//		{
-			compileC();
-//		}
-//		else
-//		{
-//			completed();
-//		}
 	}
 	
 	/**
@@ -574,12 +569,15 @@ public class Nova
 		}
 		
 		String libDir    = workingDir + "/bin/";
+		String incDir    = workingDir + "../include/";
 		
-		String libFathom = formatPath(libDir + "libNova" + DYNAMIC_LIB_EXT);
+//		String libFathom = formatPath(libDir + "libNova" + DYNAMIC_LIB_EXT);
 		String libThread = formatPath(libDir + "libThread" + DYNAMIC_LIB_EXT);
 		String libGC     = formatPath(libDir + "gc" + DYNAMIC_LIB_EXT);
 		
-		cmd.append(libFathom).append(' ').append(libThread).append(' ').append(libGC).append(' ');
+//		cmd.append(libFathom).append(' ');
+		cmd.append(libThread).append(' ');
+		cmd.append(libGC).append(' ');
 		
 		for (File sourceFile : cSourceFiles)
 		{
@@ -590,6 +588,8 @@ public class Nova
 		{
 			cmd.append(formatPath(external)).append(' ');
 		}
+		
+		cmd.append(formatPath(incDir + "Nova.c")).append(' ');
 		
 		cmd.append("-o ").append('"').append(outputFile.getAbsolutePath()).append('"').append(' ');
 		
@@ -912,6 +912,11 @@ public class Nova
 			// matching.
 			String arg = args[i].toLowerCase();
 			
+			if (arg.length() <= 0)
+			{
+				continue;
+			}
+			
 			// Create temporary variables holding the current values.
 			boolean expectingIncludeDirectoryTemp = expectingIncludeDirectory;
 			
@@ -1181,6 +1186,16 @@ public class Nova
 		return endTime - startTime;
 	}
 	
+	public void setTestClasses(boolean testClasses)
+	{
+		this.testClasses = testClasses;
+	}
+	
+	public SyntaxTree getTree()
+	{
+		return tree;
+	}
+	
 	/**
 	 * Delete the files that are left over from the compilation process.
 	 */
@@ -1298,203 +1313,227 @@ public class Nova
 		
 	}
 	
+	public static Nova generateTemporaryController()
+	{
+		Nova controller = new Nova();
+		controller.setTestClasses(false);
+		controller.compile(new String[0], false);
+		
+		return controller;
+	}
+	
 	/**
 	 * Call the test case methods for all of the classes to make sure they
 	 * are working correctly.
 	 */
 	private void testClasses()
 	{
-		String error = null;
-		
-		error = ArgumentList.test();
-		
-		if (error == null)
+		if (testClasses)
 		{
-			error = Assignment.test();
+			System.out.println("Testing classes");
+			
+			Nova temp = generateTemporaryController();
+			
+			BodyMethodDeclaration method = BodyMethodDeclaration.generateTemporaryHierarchy(temp);
+			ClassDeclaration      clazz  = method.getParentClass();
+			
+			String error = null;
+			
+			error = ArgumentList.test(temp, clazz, method);
 			
 			if (error == null)
 			{
-				error = BinaryOperation.test();
-					
+				error = Assignment.test(temp, clazz, method);
+				
 				if (error == null)
 				{
-					error = ClassDeclaration.test();
+					error = BinaryOperation.test(temp, clazz, method);
 					
 					if (error == null)
 					{
-						error = Closure.test();
+						error = Cast.test(temp, clazz, method);
 						
 						if (error == null)
 						{
-							error = ClosureDeclaration.test();
+							error = ClassDeclaration.test(temp, clazz, method);
 							
 							if (error == null)
 							{
-								error = Condition.test();
+								error = Closure.test(temp, clazz, method);
 								
 								if (error == null)
 								{
-									error = Constructor.test();
+									error = ClosureDeclaration.test(temp, clazz, method);
 									
 									if (error == null)
 									{
-										error = Destructor.test();
+										error = Condition.test(temp, clazz, method);
 										
 										if (error == null)
 										{
-											error = Dimensions.test();
+											error = Constructor.test(temp, clazz, method);
 											
 											if (error == null)
 											{
-												error = ElseStatement.test();
+												error = Destructor.test(temp, clazz, method);
 												
 												if (error == null)
 												{
-													error = ExternalMethodDeclaration.test();
+													error = Dimensions.test(temp, clazz, method);
 													
 													if (error == null)
 													{
-														error = ExternalType.test();
+														error = ElseStatement.test(temp, clazz, method);
 														
 														if (error == null)
 														{
-															error = ExternalTypeList.test();
+															error = ExternalMethodDeclaration.test(temp, clazz, method);
 															
 															if (error == null)
 															{
-																error = FileDeclaration.test();
+																error = ExternalType.test(temp, clazz, method);
 																
 																if (error == null)
 																{
-																	error = ForLoop.test();
+																	error = ExternalTypeList.test(temp, clazz, method);
 																	
 																	if (error == null)
 																	{
-																		error = Identifier.test();
+																		error = FileDeclaration.test(temp, clazz, method);
 																		
 																		if (error == null)
 																		{
-																			error = IfStatement.test();
+																			error = ForLoop.test(temp, clazz, method);
 																			
 																			if (error == null)
 																			{
-																				error = IIdentifier.test();
+																				error = Identifier.test(temp, clazz, method);
 																				
 																				if (error == null)
 																				{
-																					error = Import.test();
+																					error = IfStatement.test(temp, clazz, method);
 																					
 																					if (error == null)
 																					{
-																						error = ImportList.test();
+																						error = IIdentifier.test(temp, clazz, method);
 																						
 																						if (error == null)
 																						{
-																							error = InstanceDeclaration.test();
+																							error = Import.test(temp, clazz, method);
 																							
 																							if (error == null)
 																							{
-																								error = Instantiation.test();
+																								error = ImportList.test(temp, clazz, method);
 																								
 																								if (error == null)
 																								{
-																									error = IValue.test();
+																									error = InstanceDeclaration.test(temp, clazz, method);
 																									
 																									if (error == null)
 																									{
-																										error = Literal.test();
+																										error = Instantiation.test(temp, clazz, method);
 																										
 																										if (error == null)
 																										{
-																											error = LocalDeclaration.test();
+																											error = IValue.test(temp, clazz, method);
 																											
 																											if (error == null)
 																											{
-																												error = Loop.test();
+																												error = Literal.test(temp, clazz, method);
 																												
 																												if (error == null)
 																												{
-																													error = LoopInitialization.test();
+																													error = LocalDeclaration.test(temp, clazz, method);
 																													
 																													if (error == null)
 																													{
-																														error = LoopUpdate.test();
+																														error = Loop.test(temp, clazz, method);
 																														
 																														if (error == null)
 																														{
-																															error = MethodCall.test();
+																															error = LoopInitialization.test(temp, clazz, method);
 																															
 																															if (error == null)
 																															{
-																																error = MethodCallArgumentList.test();
+																																error = LoopUpdate.test(temp, clazz, method);
 																																
 																																if (error == null)
 																																{
-																																	error = MethodDeclaration.test();
+																																	error = MethodCall.test(temp, clazz, method);
 																																	
 																																	if (error == null)
 																																	{
-																																		error = MethodList.test();
+																																		error = MethodCallArgumentList.test(temp, clazz, method);
 																																		
 																																		if (error == null)
 																																		{
-																																			error = Node.test();
+																																			error = MethodDeclaration.test(temp, clazz, method);
 																																			
 																																			if (error == null)
 																																			{
-																																				error = Operator.test();
+																																				error = MethodList.test(temp, clazz, method);
 																																				
 																																				if (error == null)
 																																				{
-																																					error = Parameter.test();
+																																					error = Node.test(temp, clazz, method);
 																																					
 																																					if (error == null)
 																																					{
-																																						error = ParameterList.test();
+																																						error = Operator.test(temp, clazz, method);
 																																						
 																																						if (error == null)
 																																						{
-																																							error = Priority.test();
+																																							error = Parameter.test(temp, clazz, method);
 																																							
 																																							if (error == null)
 																																							{
-																																								error = Program.test();
+																																								error = ParameterList.test(temp, clazz, method);
 																																								
 																																								if (error == null)
 																																								{
-																																									error = Return.test();
+																																									error = Priority.test(temp, clazz, method);
 																																									
 																																									if (error == null)
 																																									{
-																																										error = Scope.test();
+																																										error = Program.test(temp, clazz, method);
 																																										
 																																										if (error == null)
 																																										{
-																																											error = SyntaxTree.test();
+																																											error = Return.test(temp, clazz, method);
 																																											
 																																											if (error == null)
 																																											{
-																																												error = TreeGenerator.test();
+																																												error = Scope.test(temp, clazz, method);
 																																												
 																																												if (error == null)
 																																												{
-																																													error = UnaryOperation.test();
+																																													error = SyntaxTree.test(temp, clazz, method);
 																																													
 																																													if (error == null)
 																																													{
-																																														error = Until.test();
+																																														error = TreeGenerator.test(temp, clazz, method);
 																																														
 																																														if (error == null)
 																																														{
-																																															error = Value.test();
+																																															error = UnaryOperation.test(temp, clazz, method);
 																																															
 																																															if (error == null)
 																																															{
-																																																error = VTable.test();
+																																																error = Until.test(temp, clazz, method);
 																																																
 																																																if (error == null)
 																																																{
-																																																	error = WhileLoop.test();
+																																																	error = Value.test(temp, clazz, method);
+																																																	
+																																																	if (error == null)
+																																																	{
+																																																		error = VTable.test(temp, clazz, method);
+																																																		
+																																																		if (error == null)
+																																																		{
+																																																			error = WhileLoop.test(temp, clazz, method);
+																																																		}
+																																																	}
 																																																}
 																																															}
 																																														}
@@ -1541,14 +1580,16 @@ public class Nova
 					}
 				}
 			}
-		}
-		
-		if (error != null)
-		{
-			System.err.println("Pre-compilation class tests failed:");
-			System.err.println(error);
 			
-			completed();
+			if (error != null)
+			{
+				System.err.println("Pre-compilation class tests failed:");
+				System.err.println(error);
+				
+				completed();
+			}
+			
+			System.out.println("Done testing classes");
 		}
 	}
 }
