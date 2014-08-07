@@ -22,7 +22,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:15:51 PM
- * @version	v0.2.26 Aug 6, 2014 at 2:48:50 PM
+ * @version	v0.2.27 Aug 7, 2014 at 1:32:02 AM
  */
 public class ClassDeclaration extends InstanceDeclaration
 {
@@ -609,27 +609,40 @@ public class ClassDeclaration extends InstanceDeclaration
 	}
 	
 	/**
-	 * Get the ClassDeclaration's Method with the specified name.
+	 * Get the ClassDeclaration's Method with the specified name.<br>
+	 * <br>
+	 * For example:
+	 * <blockquote><pre>
+	 * public class ClassName
+	 * {
+	 * 	public void doSomething()
+	 * 	{
+	 * 		...
+	 * 	}
+	 * }</pre></blockquote>
+	 * <br>
+	 * A call like: "<code>getMethod("doSomething")</code>" would
+	 * return the Method for the "<code>doSomething</code>" method.
 	 * 
 	 * @param methodName The name of the method to search for.
-	 * @param checkAncestor Whether or not to check the ancestor class
-	 * 		if the method is not found.
-	 * @return
+	 * @return The Method for the method, if it exists.
 	 */
-	private MethodDeclaration[] getMethods(String methodName, boolean checkAncestor)
+	public MethodDeclaration[] getMethods(String methodName, boolean checkConstructors)
 	{
-		MethodList lists[] = new MethodList[] { getMethodList(), getConstructorList() };
-		
 		ArrayList<MethodDeclaration> output = new ArrayList<MethodDeclaration>();
 		
-		for (MethodList list : lists)
+		addMethods(output, getMethodList().getMethods(methodName));
+		
+		if (checkConstructors && methodName.equals(getName()))
 		{
-			MethodDeclaration methods[] = list.getMethods(methodName);
-			
-			addMethods(output, methods);
+			addMethods(output, getConstructorList().getMethods(Constructor.IDENTIFIER));
+		}
+		else
+		{
+			addMethods(output, getConstructorList().getMethods(methodName));
 		}
 		
-		if (checkAncestor && getExtendedClassName() != null)
+		if (getExtendedClassName() != null)
 		{
 			addMethods(output, getExtendedClass().getMethods(methodName));
 		}
@@ -1280,13 +1293,6 @@ public class ClassDeclaration extends InstanceDeclaration
 				SyntaxMessage.error("Class '" + tempName + "' not is constant and cannot be extended", this);
 			}
 		}
-		
-//		FieldList fields = clazz.getFieldList().clone();
-//		
-//		for (int i = 0; i < fields.getNumChildren(); i++)
-//		{
-//			addChild(fields.getChild(i));
-//		}
 	}
 	
 	/**
@@ -1310,31 +1316,6 @@ public class ClassDeclaration extends InstanceDeclaration
 		}
 	}
 	
-//	/**
-//	 * Get whether or not the Nova class contains static data. i.e
-//	 * static variables, methods, etc.
-//	 * 
-//	 * @param checkAncestor Whether or not to check the ancestor class
-//	 * 		if the data is not found.
-//	 * @return Whether or not the class contains static data.
-//	 */
-//	public boolean containsStaticData(boolean checkAncestor)
-//	{
-//		StaticFieldList publicList = getFieldList().getPublicStaticFieldList();
-//		
-//		if (publicList.getNumChildren() > 0)
-//		{
-//			return true;
-//		}
-//		
-//		if (checkAncestor && getExtendedClassName() != null)
-//		{
-//			return getExtendedClass().containsStaticPrivateData();
-//		}
-//		
-//		return containsStaticPrivateData(checkAncestor);
-//	}
-	
 	/**
 	 * Get whether or not the class contains a constructor implementation
 	 * or not.
@@ -1344,7 +1325,7 @@ public class ClassDeclaration extends InstanceDeclaration
 	 */
 	public boolean containsConstructor()
 	{
-		return containsMethod(getName(), true, getName());
+		return containsMethod(Constructor.IDENTIFIER, true, getName());
 	}
 	
 	/**

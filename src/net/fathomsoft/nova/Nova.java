@@ -27,7 +27,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:00:04 PM
- * @version	v0.2.26 Aug 6, 2014 at 2:48:50 PM
+ * @version	v0.2.27 Aug 7, 2014 at 1:32:02 AM
  */
 public class Nova
 {
@@ -194,20 +194,20 @@ public class Nova
 			
 			args = new String[]
 			{
-//				formatPath(stability + "StabilityTest.nova"),
-//				formatPath(stability + "TimeStability.nova"),
-//				formatPath(stability + "FileStability.nova"),
-//				formatPath(stability + "ThreadStability.nova"),
-//				formatPath(stability + "ExceptionStability.nova"),
-//				formatPath(stability + "SyntaxStability.nova"),
-//				formatPath(stability + "ClosureStability.nova"),
-//				formatPath(stability + "PolymorphismStability.nova"),
-//				formatPath(stability + "PolymorphicSuperClass.nova"),
-//				formatPath(stability + "PolymorphicSubClass.nova"),
-//				formatPath(stability + "StabilityTestException.nova"),
-//				formatPath(stability + "StabilityExceptionHandler.nova"),
-//				formatPath(stability + "ThreadImplementation.nova"),
-//				formatPath(stability + "UnstableException.nova"),
+				formatPath(stability + "StabilityTest.nova"),
+				formatPath(stability + "TimeStability.nova"),
+				formatPath(stability + "FileStability.nova"),
+				formatPath(stability + "ThreadStability.nova"),
+				formatPath(stability + "ExceptionStability.nova"),
+				formatPath(stability + "SyntaxStability.nova"),
+				formatPath(stability + "ClosureStability.nova"),
+				formatPath(stability + "PolymorphismStability.nova"),
+				formatPath(stability + "PolymorphicSuperClass.nova"),
+				formatPath(stability + "PolymorphicSubClass.nova"),
+				formatPath(stability + "StabilityTestException.nova"),
+				formatPath(stability + "StabilityExceptionHandler.nova"),
+				formatPath(stability + "ThreadImplementation.nova"),
+				formatPath(stability + "UnstableException.nova"),
 //				formatPath(directory + "MathDemo.nova"),
 //				formatPath(directory + "ThreadDemo.nova"),
 //				formatPath(directory + "ThreadDemoImplementation.nova"),
@@ -217,7 +217,7 @@ public class Nova
 //				formatPath(directory + "Dog.nova"),
 //				formatPath(directory + "IntegerTest.nova"),
 //				formatPath(directory + "FileTest.nova"),
-				formatPath(directory + "SVGTest.nova"),
+//				formatPath(directory + "SVGTest.nova"),
 //				formatPath(directory + "ExceptionHandlingDemo.nova"),
 //				formatPath(directory + "NonWholeDivisionException.nova"),
 //				formatPath(directory + "ArrayListDemo.nova"),
@@ -1332,9 +1332,7 @@ public class Nova
 		{
 			System.out.println("Testing classes");
 			
-			Nova temp = generateTemporaryController();
-			
-			TestContext context = new TestContext(temp);
+			TestContext context = new TestContext();
 			
 			String error = null;
 			

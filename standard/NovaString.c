@@ -4,9 +4,9 @@
 
 nova_VTable_String nova_VTable_String_val =
 {
-	nova_1_String_equals,
-	nova_4_Object_toString,
-	nova_2_Object_equals,
+	nova_String_equals,
+	nova_Object_toString,
+	nova_Object_equals,
 };
 CCLASS_PRIVATE
 (
@@ -71,7 +71,7 @@ String* nova_String_concat(String* this, ExceptionData* exceptionData, String* n
 	return nova_1_newStr;
 }
 
-char nova_1_String_equals(String* this, ExceptionData* exceptionData, String* nova_0_other)
+char nova_String_equals(String* this, ExceptionData* exceptionData, String* nova_0_other)
 {
 	int nova_1_i;
 	

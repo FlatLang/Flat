@@ -4,8 +4,8 @@
 
 nova_VTable_File nova_VTable_File_val =
 {
-	nova_4_Object_toString,
-	nova_2_Object_equals,
+	nova_Object_toString,
+	nova_Object_equals,
 };
 CCLASS_PRIVATE
 (
@@ -14,7 +14,7 @@ CCLASS_PRIVATE
 	
 )
 
-File* nova_1_File_construct(File* this, ExceptionData* exceptionData, String* nova_0_location)
+File* nova_0_File_construct(File* this, ExceptionData* exceptionData, String* nova_0_location)
 {
 	CCLASS_NEW(File, this);
 	
@@ -29,7 +29,7 @@ File* nova_1_File_construct(File* this, ExceptionData* exceptionData, String* no
 	return this;
 }
 
-File* nova_2_File_construct(File* this, ExceptionData* exceptionData, FILE* nova_0_fp)
+File* nova_1_File_construct(File* this, ExceptionData* exceptionData, FILE* nova_0_fp)
 {
 	CCLASS_NEW(File, this);
 	
@@ -191,7 +191,7 @@ void nova_static_File_setMaxOpenFiles(File* this, ExceptionData* exceptionData, 
 {
 	if (nova_0_max > 2048 || nova_0_max < 20)
 	{
-		nova_static_1_Console_writeLine(0, exceptionData, nova_String_concat(nova_String_construct(0, exceptionData, "Invalid max number of open files: "), exceptionData, nova_String_concat(nova_2_Int_toString(nova_Int_construct(0, exceptionData, nova_0_max), exceptionData), exceptionData, nova_String_construct(0, exceptionData, "\nValid values include 20-2048"))));
+		nova_static_0_Console_writeLine(0, exceptionData, nova_String_concat(nova_String_construct(0, exceptionData, "Invalid max number of open files: "), exceptionData, nova_String_concat(nova_1_Int_toString(nova_Int_construct(0, exceptionData, nova_0_max), exceptionData), exceptionData, nova_String_construct(0, exceptionData, "\nValid values include 20-2048"))));
 	}
 	else
 	{

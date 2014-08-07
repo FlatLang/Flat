@@ -29,8 +29,8 @@ typedef struct File File;
 
 typedef struct nova_VTable_File
 {
-	String* (*nova_virtual_4_toString)(Object*, ExceptionData*);
-	char (*nova_virtual_2_equals)(Object*, ExceptionData*, Object*);
+	String* (*nova_virtual_toString)(Object*, ExceptionData*);
+	char (*nova_virtual_equals)(Object*, ExceptionData*, Object*);
 } nova_VTable_File;
 
 CCLASS_CLASS
@@ -41,8 +41,8 @@ CCLASS_CLASS
 	struct Private* prv;
 )
 
-File* nova_1_File_construct(File* this, ExceptionData* exceptionData, String* nova_0_location);
-File* nova_2_File_construct(File* this, ExceptionData* exceptionData, FILE* nova_0_fp);
+File* nova_0_File_construct(File* this, ExceptionData* exceptionData, String* nova_0_location);
+File* nova_1_File_construct(File* this, ExceptionData* exceptionData, FILE* nova_0_fp);
 void nova_del_File(File** this, ExceptionData* exceptionData);
 char nova_File_delete(File* this, ExceptionData* exceptionData);
 void nova_File_reopen(File* this, ExceptionData* exceptionData);

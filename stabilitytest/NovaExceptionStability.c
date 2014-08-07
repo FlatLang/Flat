@@ -4,8 +4,8 @@
 
 nova_VTable_ExceptionStability nova_VTable_ExceptionStability_val =
 {
-	nova_2_Object_toString,
-	nova_2_Object_equals,
+	nova_Object_toString,
+	nova_Object_equals,
 };
 
 void nova_static_ExceptionStability_testException(ExceptionStability* this, ExceptionData* exceptionData, StabilityTest* nova_0_program);
@@ -38,7 +38,7 @@ void nova_static_ExceptionStability_test(ExceptionStability* this, ExceptionData
 {
 	char nova_1_worked;
 	
-	nova_static_1_Console_write(0, exceptionData, nova_String_construct(0, exceptionData, "Checking Exception handling... "));
+	nova_static_0_Console_write(0, exceptionData, nova_String_construct(0, exceptionData, "Checking Exception handling... "));
 	nova_1_worked = 0;
 	TRY
 	{
@@ -58,9 +58,9 @@ void nova_static_ExceptionStability_test(ExceptionStability* this, ExceptionData
 	END_TRY;
 	if (!nova_1_worked)
 	{
-		nova_2_StabilityTest_fail(nova_0_program, exceptionData, nova_String_construct(0, exceptionData, "Failed; uncaught Exception"));
+		nova_1_StabilityTest_fail(nova_0_program, exceptionData, nova_String_construct(0, exceptionData, "Failed; uncaught Exception"));
 	}
-	nova_static_1_Console_writeLine(0, exceptionData, nova_String_construct(0, exceptionData, "OK"));
+	nova_static_0_Console_writeLine(0, exceptionData, nova_String_construct(0, exceptionData, "OK"));
 }
 
 void nova_static_ExceptionStability_testException(ExceptionStability* this, ExceptionData* exceptionData, StabilityTest* nova_0_program)
@@ -106,7 +106,7 @@ void nova_static_ExceptionStability_testException(ExceptionStability* this, Exce
 	{
 		if (!nova_1_worked)
 		{
-			nova_2_StabilityTest_fail(nova_0_program, exceptionData, nova_String_construct(0, exceptionData, "Failed; uncaught DivideByZeroException"));
+			nova_1_StabilityTest_fail(nova_0_program, exceptionData, nova_String_construct(0, exceptionData, "Failed; uncaught DivideByZeroException"));
 		}
 		THROW(1);
 	}
@@ -116,6 +116,6 @@ void nova_static_ExceptionStability_testException(ExceptionStability* this, Exce
 	END_TRY;
 	if (!nova_1_worked)
 	{
-		nova_2_StabilityTest_fail(nova_0_program, exceptionData, nova_String_construct(0, exceptionData, "Failed; uncaught StabilityTestException"));
+		nova_1_StabilityTest_fail(nova_0_program, exceptionData, nova_String_construct(0, exceptionData, "Failed; uncaught StabilityTestException"));
 	}
 }

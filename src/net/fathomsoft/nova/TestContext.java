@@ -9,7 +9,7 @@ import net.fathomsoft.nova.tree.Program;
  * 
  * @author	Braden Steffaniak
  * @since	v0.2.27 Aug 6, 2014 at 3:25:42 PM
- * @version	v0.2.27 Aug 6, 2014 at 3:25:42 PM
+ * @version	v0.2.27 Aug 7, 2014 at 1:32:02 AM
  */
 public class TestContext
 {
@@ -21,9 +21,9 @@ public class TestContext
 	
 	public BodyMethodDeclaration	method;
 	
-	public TestContext(Nova controller)
+	public TestContext()
 	{
-		this.controller = controller;
+		controller = Nova.generateTemporaryController();
 		
 		reset();
 	}

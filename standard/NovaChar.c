@@ -4,10 +4,10 @@
 
 nova_VTable_Char nova_VTable_Char_val =
 {
+	nova_0_Char_toString,
 	nova_1_Char_toString,
-	nova_2_Char_toString,
-	nova_static_2_Number_numDigits,
-	nova_static_3_Number_toString,
+	nova_static_Number_numDigits,
+	nova_static_Number_toString,
 };
 
 Char* nova_Char_construct(Char* this, ExceptionData* exceptionData, char nova_0_value)
@@ -36,7 +36,7 @@ void nova_del_Char(Char** this, ExceptionData* exceptionData)
 	NOVA_FREE(*this);
 }
 
-String* nova_1_Char_toString(Char* this, ExceptionData* exceptionData, char nova_0_c)
+String* nova_0_Char_toString(Char* this, ExceptionData* exceptionData, char nova_0_c)
 {
 	char* nova_1_chars;
 	
@@ -45,7 +45,7 @@ String* nova_1_Char_toString(Char* this, ExceptionData* exceptionData, char nova
 	return nova_String_construct(0, exceptionData, nova_1_chars);
 }
 
-String* nova_2_Char_toString(Char* this, ExceptionData* exceptionData)
+String* nova_1_Char_toString(Char* this, ExceptionData* exceptionData)
 {
-	return this->vtable->nova_virtual_1_toString(this, exceptionData, this->nova_Char_value);
+	return this->vtable->nova_virtual_0_toString(this, exceptionData, this->nova_Char_value);
 }

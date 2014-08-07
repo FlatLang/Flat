@@ -22,7 +22,7 @@ import net.fathomsoft.nova.util.StringUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:00:11 PM
- * @version	v0.2.26 Aug 6, 2014 at 2:48:50 PM
+ * @version	v0.2.27 Aug 7, 2014 at 1:32:02 AM
  */
 public abstract class Node
 {
@@ -525,6 +525,8 @@ public abstract class Node
 		
 		// Set this instance as the new parent.
 		node.parent = this;
+		
+		node.onAdded(toNode);
 	}
 	
 	/**
@@ -582,6 +584,16 @@ public abstract class Node
 		return true;
 	}
 	
+	public void onAdded(Node parent)
+	{
+		
+	}
+	
+	public void onRemoved(Node parent)
+	{
+		
+	}
+	
 	/**
 	 * Remove the specific Node from the current Node as a child.
 	 * 
@@ -601,7 +613,7 @@ public abstract class Node
 	 */
 	public void removeChild(Node node)
 	{
-		children.remove(node);
+		node.detach();
 	}
 	
 	/**
@@ -646,6 +658,8 @@ public abstract class Node
 		fromNode.children.remove(this);
 		
 		parent = null;
+		
+		onRemoved(fromNode);
 	}
 	
 	/**

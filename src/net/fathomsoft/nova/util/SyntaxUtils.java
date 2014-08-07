@@ -28,7 +28,7 @@ import net.fathomsoft.nova.tree.variables.Variable;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Mar 15, 2014 at 7:55:00 PM
- * @version	v0.2.26 Aug 6, 2014 at 2:48:50 PM
+ * @version	v0.2.27 Aug 7, 2014 at 1:32:02 AM
  */
 public class SyntaxUtils
 {
@@ -1662,5 +1662,26 @@ public class SyntaxUtils
 	public static boolean isBasicType(String type)
 	{
 		return type.equals("class");
+	}
+	
+	public static boolean areSameTypes(Value types1[], Value types2[])
+	{
+		if (types1.length != types2.length)
+		{
+			return false;
+		}
+		
+		for (int i = 0; i < types1.length; i++)
+		{
+			String type1 = types1[i].getType();
+			String type2 = types2[i].getType();
+			
+			if (!type1.equals(type2))
+			{
+				return false;
+			}
+		}
+		
+		return true;
 	}
 }

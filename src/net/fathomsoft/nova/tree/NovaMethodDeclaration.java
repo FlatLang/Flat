@@ -20,11 +20,11 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.2.21 Jul 30, 2014 at 1:45:00 PM
- * @version	v0.2.26 Aug 6, 2014 at 2:48:50 PM
+ * @version	v0.2.27 Aug 7, 2014 at 1:32:02 AM
  */
 public class NovaMethodDeclaration extends MethodDeclaration
 {
-	private int		uniqueID, overloadID;
+	private int	uniqueID, overloadID;
 	
 	private ArrayList<NovaMethodDeclaration>	overridingMethods;
 	
@@ -213,26 +213,42 @@ public class NovaMethodDeclaration extends MethodDeclaration
 		
 		for (MethodDeclaration m : methods)
 		{
+			if (m == this)
+			{
+				continue;
+			}
+			
 			if (!m.isExternal())
 			{
 				NovaMethodDeclaration method = (NovaMethodDeclaration)m;
 				
-				if (method.overloadID < 0)
+				if (method.getParentClass() == getParentClass())
 				{
-					list.add(method);
-				}
-				else if (max > method.overloadID)
-				{
-					max = overloadID;
+					if (method.overloadID < 0)
+					{
+						if (SyntaxUtils.areSameTypes(getParameterList().getTypes(), method.getParameterList().getTypes()))
+						{
+							SyntaxMessage.error("Duplicate method '" + getName() + "'", this);
+						}
+						
+						list.add(method);
+					}
+					else if (max > method.overloadID)
+					{
+						max = overloadID;
+					}
 				}
 			}
 		}
 		
-		overloadID = ++max;
-		
-		for (NovaMethodDeclaration method : list)
+		if (list.size() > 0)
 		{
-			method.overloadID = ++max;
+			overloadID = ++max;
+			
+			for (NovaMethodDeclaration method : list)
+			{
+				method.overloadID = ++max;
+			}
 		}
 	}
 	
@@ -552,7 +568,7 @@ public class NovaMethodDeclaration extends MethodDeclaration
 		
 		if (overloadID < 0)
 		{
-			MethodDeclaration methods[] = getParentClass().getMethods(getName());
+			MethodDeclaration methods[] = getParentClass().getMethods(getName(), false);
 			
 			if (methods.length > 1)
 			{

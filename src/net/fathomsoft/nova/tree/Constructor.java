@@ -16,7 +16,7 @@ import net.fathomsoft.nova.util.Location;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:50:47 PM
- * @version	v0.2.26 Aug 6, 2014 at 2:48:50 PM
+ * @version	v0.2.27 Aug 7, 2014 at 1:32:02 AM
  */
 public class Constructor extends BodyMethodDeclaration
 {
@@ -39,6 +39,15 @@ public class Constructor extends BodyMethodDeclaration
 	public boolean isInstance()
 	{
 		return true;
+	}
+	
+	/**
+	 * @see net.fathomsoft.nova.tree.Node#onAdded(net.fathomsoft.nova.tree.Node)
+	 */
+	@Override
+	public void onAdded(Node parent)
+	{
+		
 	}
 	
 	/**
@@ -81,7 +90,7 @@ public class Constructor extends BodyMethodDeclaration
 		
 		if (classDeclaration.containsNonStaticData() || classDeclaration.containsVirtualMethods())
 		{
-			builder.append("CCLASS_NEW(").append(getName()).append(", ").append(ParameterList.OBJECT_REFERENCE_IDENTIFIER);
+			builder.append("CCLASS_NEW(").append(getTypeClassName()).append(", ").append(ParameterList.OBJECT_REFERENCE_IDENTIFIER);
 			
 			if (!classDeclaration.containsNonStaticPrivateData())
 			{
@@ -257,7 +266,8 @@ public class Constructor extends BodyMethodDeclaration
 			
 			method.cloneTo(n);
 			
-			n.setName(n.getParentClass().getName());
+//			n.setName(n.getParentClass().getName());
+			n.setName(IDENTIFIER);
 			n.setType(n.getParentClass().getName(), true, false);
 			n.setStatic(true);
 			
