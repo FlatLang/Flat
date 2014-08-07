@@ -4,8 +4,8 @@
 
 nova_VTable_InputStream nova_VTable_InputStream_val =
 {
-	nova_4_Object_toString,
-	nova_2_Object_equals,
+	nova_Object_toString,
+	nova_Object_equals,
 };
 CCLASS_PRIVATE
 (

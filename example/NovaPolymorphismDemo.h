@@ -15,8 +15,9 @@ typedef struct PolymorphismDemo PolymorphismDemo;
 #include <NovaConsole.h>
 #include <NovaGC.h>
 #include <NovaNumber.h>
+#include <NovaByte.h>
 #include <NovaShort.h>
-#include <NovaInteger.h>
+#include <NovaInt.h>
 #include <NovaLong.h>
 #include <NovaFloat.h>
 #include <NovaDouble.h>
@@ -28,8 +29,8 @@ typedef struct PolymorphismDemo PolymorphismDemo;
 
 typedef struct nova_VTable_PolymorphismDemo
 {
-	String* (*nova_virtual_4_toString)(Object*, ExceptionData*);
-	char (*nova_virtual_2_equals)(Object*, ExceptionData*, Object*);
+	String* (*nova_virtual_toString)(Object*, ExceptionData*);
+	char (*nova_virtual_equals)(Object*, ExceptionData*, Object*);
 } nova_VTable_PolymorphismDemo;
 
 CCLASS_CLASS
@@ -39,7 +40,7 @@ CCLASS_CLASS
 	nova_VTable_PolymorphismDemo* vtable;
 )
 
-PolymorphismDemo* nova_PolymorphismDemo_PolymorphismDemo(PolymorphismDemo* this, ExceptionData* exceptionData);
+PolymorphismDemo* nova_PolymorphismDemo_construct(PolymorphismDemo* this, ExceptionData* exceptionData);
 void nova_del_PolymorphismDemo(PolymorphismDemo** this, ExceptionData* exceptionData);
 void nova_static_PolymorphismDemo_main(PolymorphismDemo* this, ExceptionData* exceptionData, String** nova_0_args);
 

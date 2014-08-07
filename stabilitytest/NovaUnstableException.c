@@ -6,7 +6,7 @@
 
 UnstableException* nova_UnstableException_construct(UnstableException* this, ExceptionData* exceptionData)
 {
-	UnstableException* this = (UnstableException*)1;
+	this = (UnstableException*)1;
 	
 	{
 	}

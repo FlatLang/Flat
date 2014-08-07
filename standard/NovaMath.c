@@ -4,8 +4,8 @@
 
 nova_VTable_Math nova_VTable_Math_val =
 {
-	nova_4_Object_toString,
-	nova_2_Object_equals,
+	nova_Object_toString,
+	nova_Object_equals,
 };
 
 Math* nova_Math_construct(Math* this, ExceptionData* exceptionData)

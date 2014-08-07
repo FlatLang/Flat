@@ -6,7 +6,7 @@
 
 StabilityTestException* nova_StabilityTestException_construct(StabilityTestException* this, ExceptionData* exceptionData)
 {
-	StabilityTestException* this = (StabilityTestException*)1;
+	this = (StabilityTestException*)1;
 	
 	{
 	}

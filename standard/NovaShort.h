@@ -26,11 +26,11 @@ typedef struct Short Short;
 
 typedef struct nova_VTable_Short
 {
-	int (*nova_virtual_1_numDigits)(Short*, ExceptionData*, short);
-	String* (*nova_virtual_1_toString)(Short*, ExceptionData*, short);
-	String* (*nova_virtual_2_toString)(Short*, ExceptionData*);
-	int (*nova_virtual_2_numDigits)(Number*, ExceptionData*, int);
-	String* (*nova_virtual_3_toString)(Number*, ExceptionData*, int);
+	int (*nova_virtual_numDigits)(Short*, ExceptionData*, short);
+	String* (*nova_virtual_0_toString)(Short*, ExceptionData*, short);
+	String* (*nova_virtual_1_toString)(Short*, ExceptionData*);
+	int (*nova_virtual_numDigits)(Number*, ExceptionData*, int);
+	String* (*nova_virtual_toString)(Number*, ExceptionData*, int);
 } nova_VTable_Short;
 
 CCLASS_CLASS
@@ -43,8 +43,8 @@ CCLASS_CLASS
 
 Short* nova_Short_construct(Short* this, ExceptionData* exceptionData, short nova_0_value);
 void nova_del_Short(Short** this, ExceptionData* exceptionData);
-int nova_static_1_Short_numDigits(Short* this, ExceptionData* exceptionData, short nova_0_number);
-String* nova_static_1_Short_toString(Short* this, ExceptionData* exceptionData, short nova_0_value);
-String* nova_2_Short_toString(Short* this, ExceptionData* exceptionData);
+int nova_static_Short_numDigits(Short* this, ExceptionData* exceptionData, short nova_0_number);
+String* nova_static_0_Short_toString(Short* this, ExceptionData* exceptionData, short nova_0_value);
+String* nova_1_Short_toString(Short* this, ExceptionData* exceptionData);
 
 #endif

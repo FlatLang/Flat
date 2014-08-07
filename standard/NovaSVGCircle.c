@@ -4,8 +4,8 @@
 
 nova_VTable_SVGCircle nova_VTable_SVGCircle_val =
 {
-	nova_1_SVGCircle_generateOutput,
-	nova_1_SVGCircle_toString,
+	nova_SVGCircle_generateOutput,
+	nova_SVGCircle_toString,
 };
 
 SVGCircle* nova_SVGCircle_construct(SVGCircle* this, ExceptionData* exceptionData, double nova_0_x, double nova_0_y, int nova_0_r)
@@ -38,12 +38,12 @@ void nova_del_SVGCircle(SVGCircle** this, ExceptionData* exceptionData)
 	NOVA_FREE(*this);
 }
 
-void nova_1_SVGCircle_generateOutput(SVGCircle* this, ExceptionData* exceptionData, File* nova_0_file)
+void nova_SVGCircle_generateOutput(SVGCircle* this, ExceptionData* exceptionData, File* nova_0_file)
 {
-	nova_File_write(nova_0_file, exceptionData, nova_String_concat(nova_String_construct(0, exceptionData, "<circle cx=\""), exceptionData, nova_String_concat(nova_2_Double_toString(nova_Double_construct(0, exceptionData, this->nova_SVGCircle_x), exceptionData), exceptionData, nova_String_concat(nova_String_construct(0, exceptionData, "\" cy=\""), exceptionData, nova_String_concat(nova_2_Double_toString(nova_Double_construct(0, exceptionData, this->nova_SVGCircle_y), exceptionData), exceptionData, nova_String_concat(nova_String_construct(0, exceptionData, "\" r=\""), exceptionData, nova_String_concat(nova_2_Int_toString(nova_Int_construct(0, exceptionData, this->nova_SVGCircle_r), exceptionData), exceptionData, nova_String_construct(0, exceptionData, "\" stroke=\"false\" fill=\"black\"/>\n"))))))));
+	nova_File_write(nova_0_file, exceptionData, nova_String_concat(nova_String_construct(0, exceptionData, "<circle cx=\""), exceptionData, nova_String_concat(nova_1_Double_toString(nova_Double_construct(0, exceptionData, this->nova_SVGCircle_x), exceptionData), exceptionData, nova_String_concat(nova_String_construct(0, exceptionData, "\" cy=\""), exceptionData, nova_String_concat(nova_1_Double_toString(nova_Double_construct(0, exceptionData, this->nova_SVGCircle_y), exceptionData), exceptionData, nova_String_concat(nova_String_construct(0, exceptionData, "\" r=\""), exceptionData, nova_String_concat(nova_1_Int_toString(nova_Int_construct(0, exceptionData, this->nova_SVGCircle_r), exceptionData), exceptionData, nova_String_construct(0, exceptionData, "\" stroke=\"false\" fill=\"black\"/>\n"))))))));
 }
 
-String* nova_1_SVGCircle_toString(SVGCircle* this, ExceptionData* exceptionData)
+String* nova_SVGCircle_toString(SVGCircle* this, ExceptionData* exceptionData)
 {
-	return nova_String_concat(nova_String_construct(0, exceptionData, "[Circle at ("), exceptionData, nova_String_concat(nova_2_Double_toString(nova_Double_construct(0, exceptionData, this->nova_SVGCircle_x), exceptionData), exceptionData, nova_String_concat(nova_String_construct(0, exceptionData, ", "), exceptionData, nova_String_concat(nova_2_Double_toString(nova_Double_construct(0, exceptionData, this->nova_SVGCircle_y), exceptionData), exceptionData, nova_String_concat(nova_String_construct(0, exceptionData, ") with a radius of "), exceptionData, nova_String_concat(nova_2_Int_toString(nova_Int_construct(0, exceptionData, this->nova_SVGCircle_r), exceptionData), exceptionData, nova_String_construct(0, exceptionData, "]")))))));
+	return nova_String_concat(nova_String_construct(0, exceptionData, "[Circle at ("), exceptionData, nova_String_concat(nova_1_Double_toString(nova_Double_construct(0, exceptionData, this->nova_SVGCircle_x), exceptionData), exceptionData, nova_String_concat(nova_String_construct(0, exceptionData, ", "), exceptionData, nova_String_concat(nova_1_Double_toString(nova_Double_construct(0, exceptionData, this->nova_SVGCircle_y), exceptionData), exceptionData, nova_String_concat(nova_String_construct(0, exceptionData, ") with a radius of "), exceptionData, nova_String_concat(nova_1_Int_toString(nova_Int_construct(0, exceptionData, this->nova_SVGCircle_r), exceptionData), exceptionData, nova_String_construct(0, exceptionData, "]")))))));
 }

@@ -4,7 +4,7 @@
 
 nova_VTable_ThreadImplementation nova_VTable_ThreadImplementation_val =
 {
-	nova_1_ThreadImplementation_run,
+	nova_ThreadImplementation_run,
 };
 CCLASS_PRIVATE
 (
@@ -46,7 +46,7 @@ void nova_del_ThreadImplementation(ThreadImplementation** this, ExceptionData* e
 	NOVA_FREE(*this);
 }
 
-void nova_1_ThreadImplementation_run(ThreadImplementation* this, ExceptionData* exceptionData)
+void nova_ThreadImplementation_run(ThreadImplementation* this, ExceptionData* exceptionData)
 {
 	int nova_1_i;
 	

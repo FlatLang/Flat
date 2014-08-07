@@ -26,9 +26,9 @@ typedef struct Double Double;
 
 typedef struct nova_VTable_Double
 {
-	String* (*nova_virtual_2_toString)(Double*, ExceptionData*);
-	int (*nova_virtual_2_numDigits)(Number*, ExceptionData*, int);
-	String* (*nova_virtual_3_toString)(Number*, ExceptionData*, int);
+	String* (*nova_virtual_1_toString)(Double*, ExceptionData*);
+	int (*nova_virtual_numDigits)(Number*, ExceptionData*, int);
+	String* (*nova_virtual_toString)(Number*, ExceptionData*, int);
 } nova_VTable_Double;
 
 CCLASS_CLASS
@@ -41,8 +41,8 @@ CCLASS_CLASS
 
 Double* nova_Double_construct(Double* this, ExceptionData* exceptionData, double nova_0_value);
 void nova_del_Double(Double** this, ExceptionData* exceptionData);
-int nova_static_1_Double_numDigits(Double* this, ExceptionData* exceptionData, double nova_0_number);
-String* nova_static_1_Double_toString(Double* this, ExceptionData* exceptionData, double nova_0_value);
-String* nova_2_Double_toString(Double* this, ExceptionData* exceptionData);
+int nova_static_Double_numDigits(Double* this, ExceptionData* exceptionData, double nova_0_number);
+String* nova_static_0_Double_toString(Double* this, ExceptionData* exceptionData, double nova_0_value);
+String* nova_1_Double_toString(Double* this, ExceptionData* exceptionData);
 
 #endif

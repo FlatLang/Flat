@@ -26,8 +26,8 @@ typedef struct Time Time;
 
 typedef struct nova_VTable_Time
 {
-	String* (*nova_virtual_4_toString)(Object*, ExceptionData*);
-	char (*nova_virtual_2_equals)(Object*, ExceptionData*, Object*);
+	String* (*nova_virtual_toString)(Object*, ExceptionData*);
+	char (*nova_virtual_equals)(Object*, ExceptionData*, Object*);
 } nova_VTable_Time;
 
 CCLASS_CLASS

@@ -4,11 +4,12 @@
 
 nova_VTable_UncaughtExceptionHandler nova_VTable_UncaughtExceptionHandler_val =
 {
-	nova_4_Object_toString,
-	nova_2_Object_equals,
+	nova_UncaughtExceptionHandler_uncaughtException,
+	nova_Object_toString,
+	nova_Object_equals,
 };
 
-UncaughtExceptionHandler* nova_2_UncaughtExceptionHandler_construct(UncaughtExceptionHandler* this, ExceptionData* exceptionData)
+UncaughtExceptionHandler* nova_UncaughtExceptionHandler_construct(UncaughtExceptionHandler* this, ExceptionData* exceptionData)
 {
 	CCLASS_NEW(UncaughtExceptionHandler, this,);
 	
@@ -32,7 +33,7 @@ void nova_del_UncaughtExceptionHandler(UncaughtExceptionHandler** this, Exceptio
 	NOVA_FREE(*this);
 }
 
-void nova_1_UncaughtExceptionHandler_UncaughtExceptionHandler(UncaughtExceptionHandler* this, ExceptionData* exceptionData)
+void nova_UncaughtExceptionHandler_UncaughtExceptionHandler(UncaughtExceptionHandler* this, ExceptionData* exceptionData)
 {
 }
 

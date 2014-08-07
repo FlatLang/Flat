@@ -4,9 +4,9 @@
 
 nova_VTable_Long nova_VTable_Long_val =
 {
-	nova_2_Long_toString,
-	nova_static_2_Number_numDigits,
-	nova_static_3_Number_toString,
+	nova_1_Long_toString,
+	nova_static_Number_numDigits,
+	nova_static_Number_toString,
 };
 
 Long* nova_Long_construct(Long* this, ExceptionData* exceptionData, long_long nova_0_value)
@@ -35,13 +35,13 @@ void nova_del_Long(Long** this, ExceptionData* exceptionData)
 	NOVA_FREE(*this);
 }
 
-int nova_static_1_Long_numDigits(Long* this, ExceptionData* exceptionData, long_long nova_0_number)
+int nova_static_Long_numDigits(Long* this, ExceptionData* exceptionData, long_long nova_0_number)
 {
 	int nova_1_size;
 	
 	if (nova_0_number < 0)
 	{
-		return nova_static_1_Long_numDigits((Long*)0, exceptionData, -nova_0_number) + 1;
+		return nova_static_Long_numDigits((Long*)0, exceptionData, -nova_0_number) + 1;
 	}
 	nova_0_number = nova_0_number / 10;
 	nova_1_size = 1;
@@ -52,7 +52,7 @@ int nova_static_1_Long_numDigits(Long* this, ExceptionData* exceptionData, long_
 	return nova_1_size;
 }
 
-String* nova_static_1_Long_toString(Long* this, ExceptionData* exceptionData, long_long nova_0_value)
+String* nova_static_0_Long_toString(Long* this, ExceptionData* exceptionData, long_long nova_0_value)
 {
 	int nova_1_charOffset;
 	int nova_1_digits;
@@ -62,7 +62,7 @@ String* nova_static_1_Long_toString(Long* this, ExceptionData* exceptionData, lo
 	int nova_1_index;
 	
 	nova_1_charOffset = (int)('0');
-	nova_1_digits = nova_static_1_Long_numDigits((Long*)0, exceptionData, nova_0_value);
+	nova_1_digits = nova_static_Long_numDigits((Long*)0, exceptionData, nova_0_value);
 	nova_1_data = (char*)NOVA_MALLOC(sizeof(char) * (nova_1_digits + 1));
 	nova_1_data[nova_1_digits] = '\0';
 	nova_1_offset = 0;
@@ -82,7 +82,7 @@ String* nova_static_1_Long_toString(Long* this, ExceptionData* exceptionData, lo
 	return nova_String_construct(0, exceptionData, nova_1_data);
 }
 
-String* nova_2_Long_toString(Long* this, ExceptionData* exceptionData)
+String* nova_1_Long_toString(Long* this, ExceptionData* exceptionData)
 {
-	return nova_static_1_Long_toString(this, exceptionData, this->nova_Long_value);
+	return nova_static_0_Long_toString(this, exceptionData, this->nova_Long_value);
 }

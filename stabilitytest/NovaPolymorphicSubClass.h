@@ -27,7 +27,7 @@ typedef struct PolymorphicSubClass PolymorphicSubClass;
 
 typedef struct nova_VTable_PolymorphicSubClass
 {
-	String* (*nova_virtual_1_toString)(PolymorphicSubClass*, ExceptionData*);
+	String* (*nova_virtual_toString)(PolymorphicSubClass*, ExceptionData*);
 } nova_VTable_PolymorphicSubClass;
 
 CCLASS_CLASS
@@ -40,6 +40,6 @@ CCLASS_CLASS
 
 PolymorphicSubClass* nova_PolymorphicSubClass_construct(PolymorphicSubClass* this, ExceptionData* exceptionData);
 void nova_del_PolymorphicSubClass(PolymorphicSubClass** this, ExceptionData* exceptionData);
-String* nova_1_PolymorphicSubClass_toString(PolymorphicSubClass* this, ExceptionData* exceptionData);
+String* nova_PolymorphicSubClass_toString(PolymorphicSubClass* this, ExceptionData* exceptionData);
 
 #endif

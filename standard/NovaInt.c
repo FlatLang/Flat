@@ -4,9 +4,9 @@
 
 nova_VTable_Int nova_VTable_Int_val =
 {
-	nova_static_1_Int_numDigits,
-	nova_static_1_Int_toString,
-	nova_2_Int_toString,
+	nova_static_Int_numDigits,
+	nova_static_0_Int_toString,
+	nova_1_Int_toString,
 };
 
 Int* nova_Int_construct(Int* this, ExceptionData* exceptionData, int nova_0_value)
@@ -35,17 +35,17 @@ void nova_del_Int(Int** this, ExceptionData* exceptionData)
 	NOVA_FREE(*this);
 }
 
-int nova_static_1_Int_numDigits(Int* this, ExceptionData* exceptionData, int nova_0_number)
+int nova_static_Int_numDigits(Int* this, ExceptionData* exceptionData, int nova_0_number)
 {
-	return nova_static_1_Long_numDigits(0, exceptionData, (long_long)(nova_0_number));
+	return nova_static_Long_numDigits(0, exceptionData, (long_long)(nova_0_number));
 }
 
-String* nova_static_1_Int_toString(Int* this, ExceptionData* exceptionData, int nova_0_value)
+String* nova_static_0_Int_toString(Int* this, ExceptionData* exceptionData, int nova_0_value)
 {
-	return nova_static_1_Long_toString(0, exceptionData, (long_long)(nova_0_value));
+	return nova_static_0_Long_toString(0, exceptionData, (long_long)(nova_0_value));
 }
 
-String* nova_2_Int_toString(Int* this, ExceptionData* exceptionData)
+String* nova_1_Int_toString(Int* this, ExceptionData* exceptionData)
 {
-	return this->vtable->nova_virtual_1_toString(this, exceptionData, this->nova_Int_value);
+	return this->vtable->nova_virtual_0_toString(this, exceptionData, this->nova_Int_value);
 }

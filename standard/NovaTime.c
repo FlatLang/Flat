@@ -4,8 +4,8 @@
 
 nova_VTable_Time nova_VTable_Time_val =
 {
-	nova_4_Object_toString,
-	nova_2_Object_equals,
+	nova_Object_toString,
+	nova_Object_equals,
 };
 
 Time* nova_Time_construct(Time* this, ExceptionData* exceptionData)

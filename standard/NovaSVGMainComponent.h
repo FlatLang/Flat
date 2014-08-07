@@ -29,7 +29,7 @@ typedef struct SVGMainComponent SVGMainComponent;
 
 typedef struct nova_VTable_SVGMainComponent
 {
-	void (*nova_virtual_1_generateOutput)(SVGMainComponent*, ExceptionData*, File*);
+	void (*nova_virtual_generateOutput)(SVGMainComponent*, ExceptionData*, File*);
 } nova_VTable_SVGMainComponent;
 
 CCLASS_CLASS
@@ -42,6 +42,6 @@ CCLASS_CLASS
 
 SVGMainComponent* nova_SVGMainComponent_construct(SVGMainComponent* this, ExceptionData* exceptionData);
 void nova_del_SVGMainComponent(SVGMainComponent** this, ExceptionData* exceptionData);
-void nova_1_SVGMainComponent_generateOutput(SVGMainComponent* this, ExceptionData* exceptionData, File* nova_0_file);
+void nova_SVGMainComponent_generateOutput(SVGMainComponent* this, ExceptionData* exceptionData, File* nova_0_file);
 
 #endif

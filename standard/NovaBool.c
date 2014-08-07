@@ -4,8 +4,8 @@
 
 nova_VTable_Bool nova_VTable_Bool_val =
 {
-	nova_4_Object_toString,
-	nova_2_Object_equals,
+	nova_Object_toString,
+	nova_Object_equals,
 };
 
 Bool* nova_Bool_construct(Bool* this, ExceptionData* exceptionData)

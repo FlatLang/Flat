@@ -4,8 +4,8 @@
 
 nova_VTable_SVGComponentList nova_VTable_SVGComponentList_val =
 {
-	nova_4_Object_toString,
-	nova_2_Object_equals,
+	nova_Object_toString,
+	nova_Object_equals,
 };
 
 SVGComponentList* nova_SVGComponentList_construct(SVGComponentList* this, ExceptionData* exceptionData)
@@ -46,8 +46,8 @@ void nova_SVGComponentList_generateOutput(SVGComponentList* this, ExceptionData*
 		
 		nova_2_component = nova_1_current->nova_SVGComponentNode_component;
 		nova_2_c = (SVGCircle*)nova_2_component;
-		nova_static_1_Console_writeLine(0, exceptionData, nova_String_concat(nova_2_Double_toString(nova_Double_construct(0, exceptionData, nova_2_c->nova_SVGCircle_x), exceptionData), exceptionData, nova_String_concat(nova_String_construct(0, exceptionData, ", "), exceptionData, nova_2_Double_toString(nova_Double_construct(0, exceptionData, nova_2_c->nova_SVGCircle_y), exceptionData))));
-		nova_2_component->vtable->nova_virtual_2_generateOutput(nova_2_component, exceptionData, nova_0_file);
+		nova_static_0_Console_writeLine(0, exceptionData, nova_String_concat(nova_1_Double_toString(nova_Double_construct(0, exceptionData, nova_2_c->nova_SVGCircle_x), exceptionData), exceptionData, nova_String_concat(nova_String_construct(0, exceptionData, ", "), exceptionData, nova_1_Double_toString(nova_Double_construct(0, exceptionData, nova_2_c->nova_SVGCircle_y), exceptionData))));
+		nova_2_component->vtable->nova_virtual_generateOutput(nova_2_component, exceptionData, nova_0_file);
 		nova_1_current = nova_1_current->nova_SVGComponentNode_next;
 	}
 }

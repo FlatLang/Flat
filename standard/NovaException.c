@@ -4,8 +4,8 @@
 
 nova_VTable_Exception nova_VTable_Exception_val =
 {
-	nova_4_Object_toString,
-	nova_2_Object_equals,
+	nova_Object_toString,
+	nova_Object_equals,
 };
 
 Exception* nova_Exception_construct(Exception* this, ExceptionData* exceptionData)

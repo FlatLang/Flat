@@ -26,10 +26,10 @@ typedef struct Char Char;
 
 typedef struct nova_VTable_Char
 {
-	String* (*nova_virtual_1_toString)(Char*, ExceptionData*, char);
-	String* (*nova_virtual_2_toString)(Char*, ExceptionData*);
-	int (*nova_virtual_2_numDigits)(Number*, ExceptionData*, int);
-	String* (*nova_virtual_3_toString)(Number*, ExceptionData*, int);
+	String* (*nova_virtual_0_toString)(Char*, ExceptionData*, char);
+	String* (*nova_virtual_1_toString)(Char*, ExceptionData*);
+	int (*nova_virtual_numDigits)(Number*, ExceptionData*, int);
+	String* (*nova_virtual_toString)(Number*, ExceptionData*, int);
 } nova_VTable_Char;
 
 CCLASS_CLASS
@@ -42,7 +42,7 @@ CCLASS_CLASS
 
 Char* nova_Char_construct(Char* this, ExceptionData* exceptionData, char nova_0_value);
 void nova_del_Char(Char** this, ExceptionData* exceptionData);
-String* nova_1_Char_toString(Char* this, ExceptionData* exceptionData, char nova_0_c);
-String* nova_2_Char_toString(Char* this, ExceptionData* exceptionData);
+String* nova_0_Char_toString(Char* this, ExceptionData* exceptionData, char nova_0_c);
+String* nova_1_Char_toString(Char* this, ExceptionData* exceptionData);
 
 #endif

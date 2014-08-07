@@ -4,9 +4,9 @@
 
 nova_VTable_Float nova_VTable_Float_val =
 {
-	nova_2_Float_toString,
-	nova_static_2_Number_numDigits,
-	nova_static_3_Number_toString,
+	nova_1_Float_toString,
+	nova_static_Number_numDigits,
+	nova_static_Number_toString,
 };
 
 Float* nova_Float_construct(Float* this, ExceptionData* exceptionData, int nova_0_value)
@@ -35,17 +35,17 @@ void nova_del_Float(Float** this, ExceptionData* exceptionData)
 	NOVA_FREE(*this);
 }
 
-int nova_static_1_Float_numDigits(Float* this, ExceptionData* exceptionData, float nova_0_number)
+int nova_static_Float_numDigits(Float* this, ExceptionData* exceptionData, float nova_0_number)
 {
-	return nova_static_1_Double_numDigits(0, exceptionData, (double)(nova_0_number));
+	return nova_static_Double_numDigits(0, exceptionData, (double)(nova_0_number));
 }
 
-String* nova_static_1_Float_toString(Float* this, ExceptionData* exceptionData, float nova_0_value)
+String* nova_static_0_Float_toString(Float* this, ExceptionData* exceptionData, float nova_0_value)
 {
-	return nova_static_1_Double_toString(0, exceptionData, (double)(nova_0_value));
+	return nova_static_0_Double_toString(0, exceptionData, (double)(nova_0_value));
 }
 
-String* nova_2_Float_toString(Float* this, ExceptionData* exceptionData)
+String* nova_1_Float_toString(Float* this, ExceptionData* exceptionData)
 {
-	return nova_static_1_Float_toString(this, exceptionData, this->nova_Float_value);
+	return nova_static_0_Float_toString(this, exceptionData, this->nova_Float_value);
 }

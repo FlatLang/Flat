@@ -26,9 +26,9 @@ typedef struct Float Float;
 
 typedef struct nova_VTable_Float
 {
-	String* (*nova_virtual_2_toString)(Float*, ExceptionData*);
-	int (*nova_virtual_2_numDigits)(Number*, ExceptionData*, int);
-	String* (*nova_virtual_3_toString)(Number*, ExceptionData*, int);
+	String* (*nova_virtual_1_toString)(Float*, ExceptionData*);
+	int (*nova_virtual_numDigits)(Number*, ExceptionData*, int);
+	String* (*nova_virtual_toString)(Number*, ExceptionData*, int);
 } nova_VTable_Float;
 
 CCLASS_CLASS
@@ -41,8 +41,8 @@ CCLASS_CLASS
 
 Float* nova_Float_construct(Float* this, ExceptionData* exceptionData, int nova_0_value);
 void nova_del_Float(Float** this, ExceptionData* exceptionData);
-int nova_static_1_Float_numDigits(Float* this, ExceptionData* exceptionData, float nova_0_number);
-String* nova_static_1_Float_toString(Float* this, ExceptionData* exceptionData, float nova_0_value);
-String* nova_2_Float_toString(Float* this, ExceptionData* exceptionData);
+int nova_static_Float_numDigits(Float* this, ExceptionData* exceptionData, float nova_0_number);
+String* nova_static_0_Float_toString(Float* this, ExceptionData* exceptionData, float nova_0_value);
+String* nova_1_Float_toString(Float* this, ExceptionData* exceptionData);
 
 #endif

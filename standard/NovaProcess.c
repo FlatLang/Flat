@@ -4,8 +4,8 @@
 
 nova_VTable_Process nova_VTable_Process_val =
 {
-	nova_4_Object_toString,
-	nova_2_Object_equals,
+	nova_Object_toString,
+	nova_Object_equals,
 };
 
 Process* nova_Process_construct(Process* this, ExceptionData* exceptionData, StreamReader* nova_0_reader)

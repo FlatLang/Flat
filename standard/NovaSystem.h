@@ -31,8 +31,8 @@ typedef struct System System;
 
 typedef struct nova_VTable_System
 {
-	String* (*nova_virtual_4_toString)(Object*, ExceptionData*);
-	char (*nova_virtual_2_equals)(Object*, ExceptionData*, Object*);
+	String* (*nova_virtual_toString)(Object*, ExceptionData*);
+	char (*nova_virtual_equals)(Object*, ExceptionData*, Object*);
 } nova_VTable_System;
 
 CCLASS_CLASS
@@ -44,9 +44,9 @@ CCLASS_CLASS
 
 System* nova_System_construct(System* this, ExceptionData* exceptionData);
 void nova_del_System(System** this, ExceptionData* exceptionData);
-void nova_static_1_System_exit(System* this, ExceptionData* exceptionData, int nova_0_code);
-void nova_static_2_System_exit(System* this, ExceptionData* exceptionData, int nova_0_code, String* nova_0_message);
-void nova_static_3_System_exit(System* this, ExceptionData* exceptionData, int nova_0_code, String* nova_0_message, char nova_0_log);
+void nova_static_0_System_exit(System* this, ExceptionData* exceptionData, int nova_0_code);
+void nova_static_1_System_exit(System* this, ExceptionData* exceptionData, int nova_0_code, String* nova_0_message);
+void nova_static_2_System_exit(System* this, ExceptionData* exceptionData, int nova_0_code, String* nova_0_message, char nova_0_log);
 Process* nova_static_System_execute(System* this, ExceptionData* exceptionData, String* nova_0_command);
 
 #endif

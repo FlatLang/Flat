@@ -4,10 +4,10 @@
 
 nova_VTable_Number nova_VTable_Number_val =
 {
-	nova_static_2_Number_numDigits,
-	nova_static_3_Number_toString,
-	nova_4_Object_toString,
-	nova_2_Object_equals,
+	nova_static_Number_numDigits,
+	nova_static_Number_toString,
+	nova_Object_toString,
+	nova_Object_equals,
 };
 
 Number* nova_Number_construct(Number* this, ExceptionData* exceptionData)
@@ -34,10 +34,10 @@ void nova_del_Number(Number** this, ExceptionData* exceptionData)
 	NOVA_FREE(*this);
 }
 
-int nova_static_2_Number_numDigits(Number* this, ExceptionData* exceptionData, int nova_0_number)
+int nova_static_Number_numDigits(Number* this, ExceptionData* exceptionData, int nova_0_number)
 {
 }
 
-String* nova_static_3_Number_toString(Number* this, ExceptionData* exceptionData, int nova_0_value)
+String* nova_static_Number_toString(Number* this, ExceptionData* exceptionData, int nova_0_value)
 {
 }

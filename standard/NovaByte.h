@@ -26,11 +26,11 @@ typedef struct Byte Byte;
 
 typedef struct nova_VTable_Byte
 {
-	int (*nova_virtual_1_numDigits)(Byte*, ExceptionData*, char);
-	String* (*nova_virtual_1_toString)(Byte*, ExceptionData*, char);
-	String* (*nova_virtual_2_toString)(Byte*, ExceptionData*);
-	int (*nova_virtual_2_numDigits)(Number*, ExceptionData*, int);
-	String* (*nova_virtual_3_toString)(Number*, ExceptionData*, int);
+	int (*nova_virtual_numDigits)(Byte*, ExceptionData*, char);
+	String* (*nova_virtual_0_toString)(Byte*, ExceptionData*, char);
+	String* (*nova_virtual_1_toString)(Byte*, ExceptionData*);
+	int (*nova_virtual_numDigits)(Number*, ExceptionData*, int);
+	String* (*nova_virtual_toString)(Number*, ExceptionData*, int);
 } nova_VTable_Byte;
 
 CCLASS_CLASS
@@ -43,8 +43,8 @@ CCLASS_CLASS
 
 Byte* nova_Byte_construct(Byte* this, ExceptionData* exceptionData, char nova_0_value);
 void nova_del_Byte(Byte** this, ExceptionData* exceptionData);
-int nova_static_1_Byte_numDigits(Byte* this, ExceptionData* exceptionData, char nova_0_number);
-String* nova_static_1_Byte_toString(Byte* this, ExceptionData* exceptionData, char nova_0_value);
-String* nova_2_Byte_toString(Byte* this, ExceptionData* exceptionData);
+int nova_static_Byte_numDigits(Byte* this, ExceptionData* exceptionData, char nova_0_number);
+String* nova_static_0_Byte_toString(Byte* this, ExceptionData* exceptionData, char nova_0_value);
+String* nova_1_Byte_toString(Byte* this, ExceptionData* exceptionData);
 
 #endif

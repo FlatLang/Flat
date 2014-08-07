@@ -4,8 +4,8 @@
 
 nova_VTable_Console nova_VTable_Console_val =
 {
-	nova_4_Object_toString,
-	nova_2_Object_equals,
+	nova_Object_toString,
+	nova_Object_equals,
 };
 
 void nova_static_Console_flush(Console* this, ExceptionData* exceptionData);
@@ -34,52 +34,52 @@ void nova_del_Console(Console** this, ExceptionData* exceptionData)
 	NOVA_FREE(*this);
 }
 
-void nova_static_1_Console_writeLine(Console* this, ExceptionData* exceptionData, String* nova_0_text)
+void nova_static_0_Console_writeLine(Console* this, ExceptionData* exceptionData, String* nova_0_text)
 {
-	nova_static_1_Console_write((Console*)0, exceptionData, nova_String_concat(nova_0_text, exceptionData, nova_String_construct(0, exceptionData, "\n")));
+	nova_static_0_Console_write((Console*)0, exceptionData, nova_String_concat(nova_0_text, exceptionData, nova_String_construct(0, exceptionData, "\n")));
 }
 
-void nova_static_2_Console_writeLine(Console* this, ExceptionData* exceptionData, Object* nova_0_obj)
+void nova_static_1_Console_writeLine(Console* this, ExceptionData* exceptionData, Object* nova_0_obj)
 {
-	nova_static_1_Console_writeLine((Console*)0, exceptionData, nova_0_obj->vtable->nova_virtual_4_toString(nova_0_obj, exceptionData));
+	nova_static_0_Console_writeLine((Console*)0, exceptionData, nova_0_obj->vtable->nova_virtual_toString(nova_0_obj, exceptionData));
 }
 
-void nova_static_3_Console_writeLine(Console* this, ExceptionData* exceptionData, double nova_0_num)
+void nova_static_2_Console_writeLine(Console* this, ExceptionData* exceptionData, double nova_0_num)
 {
-	nova_static_1_Console_writeLine((Console*)0, exceptionData, nova_static_1_Double_toString(0, exceptionData, nova_0_num));
+	nova_static_0_Console_writeLine((Console*)0, exceptionData, nova_static_0_Double_toString(0, exceptionData, nova_0_num));
 }
 
-void nova_static_4_Console_writeLine(Console* this, ExceptionData* exceptionData, float nova_0_num)
+void nova_static_3_Console_writeLine(Console* this, ExceptionData* exceptionData, float nova_0_num)
 {
-	nova_static_1_Console_writeLine((Console*)0, exceptionData, nova_static_1_Double_toString(0, exceptionData, (double)(nova_0_num)));
+	nova_static_0_Console_writeLine((Console*)0, exceptionData, nova_static_0_Double_toString(0, exceptionData, (double)(nova_0_num)));
 }
 
-void nova_static_5_Console_writeLine(Console* this, ExceptionData* exceptionData, long_long nova_0_num)
+void nova_static_4_Console_writeLine(Console* this, ExceptionData* exceptionData, long_long nova_0_num)
 {
-	nova_static_1_Console_writeLine((Console*)0, exceptionData, nova_static_1_Long_toString(0, exceptionData, nova_0_num));
+	nova_static_0_Console_writeLine((Console*)0, exceptionData, nova_static_0_Long_toString(0, exceptionData, nova_0_num));
 }
 
-void nova_static_6_Console_writeLine(Console* this, ExceptionData* exceptionData, int nova_0_num)
+void nova_static_5_Console_writeLine(Console* this, ExceptionData* exceptionData, int nova_0_num)
 {
-	nova_static_1_Console_writeLine((Console*)0, exceptionData, nova_static_1_Int_toString(0, exceptionData, nova_0_num));
+	nova_static_0_Console_writeLine((Console*)0, exceptionData, nova_static_0_Int_toString(0, exceptionData, nova_0_num));
 }
 
-void nova_static_7_Console_writeLine(Console* this, ExceptionData* exceptionData, short nova_0_num)
+void nova_static_6_Console_writeLine(Console* this, ExceptionData* exceptionData, short nova_0_num)
 {
-	nova_static_1_Console_writeLine((Console*)0, exceptionData, nova_static_1_Int_toString(0, exceptionData, (int)(nova_0_num)));
+	nova_static_0_Console_writeLine((Console*)0, exceptionData, nova_static_0_Int_toString(0, exceptionData, (int)(nova_0_num)));
 }
 
-void nova_static_8_Console_writeLine(Console* this, ExceptionData* exceptionData, char nova_0_num)
+void nova_static_7_Console_writeLine(Console* this, ExceptionData* exceptionData, char nova_0_num)
 {
-	nova_static_1_Console_writeLine((Console*)0, exceptionData, nova_static_1_Byte_toString(0, exceptionData, nova_0_num));
+	nova_static_0_Console_writeLine((Console*)0, exceptionData, nova_static_0_Byte_toString(0, exceptionData, nova_0_num));
 }
 
-void nova_static_9_Console_writeLine(Console* this, ExceptionData* exceptionData, char nova_0_c)
+void nova_static_8_Console_writeLine(Console* this, ExceptionData* exceptionData, char nova_0_c)
 {
-	nova_static_1_Console_writeLine((Console*)0, exceptionData, nova_1_Char_toString(0, exceptionData, nova_0_c));
+	nova_static_0_Console_writeLine((Console*)0, exceptionData, nova_0_Char_toString(0, exceptionData, nova_0_c));
 }
 
-void nova_static_1_Console_write(Console* this, ExceptionData* exceptionData, String* nova_0_text)
+void nova_static_0_Console_write(Console* this, ExceptionData* exceptionData, String* nova_0_text)
 {
 	char* nova_1_cText;
 	
@@ -87,44 +87,44 @@ void nova_static_1_Console_write(Console* this, ExceptionData* exceptionData, St
 	fputs(nova_1_cText, stdout);
 }
 
-void nova_static_2_Console_write(Console* this, ExceptionData* exceptionData, Object* nova_0_obj)
+void nova_static_1_Console_write(Console* this, ExceptionData* exceptionData, Object* nova_0_obj)
 {
-	nova_static_1_Console_write((Console*)0, exceptionData, nova_0_obj->vtable->nova_virtual_4_toString(nova_0_obj, exceptionData));
+	nova_static_0_Console_write((Console*)0, exceptionData, nova_0_obj->vtable->nova_virtual_toString(nova_0_obj, exceptionData));
 }
 
-void nova_static_3_Console_write(Console* this, ExceptionData* exceptionData, double nova_0_num)
+void nova_static_2_Console_write(Console* this, ExceptionData* exceptionData, double nova_0_num)
 {
-	nova_static_1_Console_write((Console*)0, exceptionData, nova_static_1_Double_toString(0, exceptionData, nova_0_num));
+	nova_static_0_Console_write((Console*)0, exceptionData, nova_static_0_Double_toString(0, exceptionData, nova_0_num));
 }
 
-void nova_static_4_Console_write(Console* this, ExceptionData* exceptionData, float nova_0_num)
+void nova_static_3_Console_write(Console* this, ExceptionData* exceptionData, float nova_0_num)
 {
-	nova_static_1_Console_write((Console*)0, exceptionData, nova_static_1_Double_toString(0, exceptionData, (double)(nova_0_num)));
+	nova_static_0_Console_write((Console*)0, exceptionData, nova_static_0_Double_toString(0, exceptionData, (double)(nova_0_num)));
 }
 
-void nova_static_5_Console_write(Console* this, ExceptionData* exceptionData, long_long nova_0_num)
+void nova_static_4_Console_write(Console* this, ExceptionData* exceptionData, long_long nova_0_num)
 {
-	nova_static_1_Console_write((Console*)0, exceptionData, nova_static_1_Long_toString(0, exceptionData, nova_0_num));
+	nova_static_0_Console_write((Console*)0, exceptionData, nova_static_0_Long_toString(0, exceptionData, nova_0_num));
 }
 
-void nova_static_6_Console_write(Console* this, ExceptionData* exceptionData, int nova_0_num)
+void nova_static_5_Console_write(Console* this, ExceptionData* exceptionData, int nova_0_num)
 {
-	nova_static_1_Console_write((Console*)0, exceptionData, nova_static_1_Int_toString(0, exceptionData, nova_0_num));
+	nova_static_0_Console_write((Console*)0, exceptionData, nova_static_0_Int_toString(0, exceptionData, nova_0_num));
 }
 
-void nova_static_7_Console_write(Console* this, ExceptionData* exceptionData, short nova_0_num)
+void nova_static_6_Console_write(Console* this, ExceptionData* exceptionData, short nova_0_num)
 {
-	nova_static_1_Console_write((Console*)0, exceptionData, nova_static_1_Int_toString(0, exceptionData, (int)(nova_0_num)));
+	nova_static_0_Console_write((Console*)0, exceptionData, nova_static_0_Int_toString(0, exceptionData, (int)(nova_0_num)));
 }
 
-void nova_static_8_Console_write(Console* this, ExceptionData* exceptionData, char nova_0_num)
+void nova_static_7_Console_write(Console* this, ExceptionData* exceptionData, char nova_0_num)
 {
-	nova_static_1_Console_write((Console*)0, exceptionData, nova_static_1_Byte_toString(0, exceptionData, nova_0_num));
+	nova_static_0_Console_write((Console*)0, exceptionData, nova_static_0_Byte_toString(0, exceptionData, nova_0_num));
 }
 
-void nova_static_9_Console_write(Console* this, ExceptionData* exceptionData, char nova_0_c)
+void nova_static_8_Console_write(Console* this, ExceptionData* exceptionData, char nova_0_c)
 {
-	nova_static_1_Console_write((Console*)0, exceptionData, nova_1_Char_toString(0, exceptionData, nova_0_c));
+	nova_static_0_Console_write((Console*)0, exceptionData, nova_0_Char_toString(0, exceptionData, nova_0_c));
 }
 
 int nova_static_Console_readInt(Console* this, ExceptionData* exceptionData)

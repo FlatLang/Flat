@@ -15,8 +15,9 @@ typedef struct Dog Dog;
 #include <NovaConsole.h>
 #include <NovaGC.h>
 #include <NovaNumber.h>
+#include <NovaByte.h>
 #include <NovaShort.h>
-#include <NovaInteger.h>
+#include <NovaInt.h>
 #include <NovaLong.h>
 #include <NovaFloat.h>
 #include <NovaDouble.h>
@@ -26,9 +27,9 @@ typedef struct Dog Dog;
 
 typedef struct nova_VTable_Dog
 {
-	int (*nova_virtual_1_getNumLegs)(Dog*, ExceptionData*);
-	int (*nova_virtual_1_getNumEyes)(Dog*, ExceptionData*);
-	String* (*nova_virtual_1_getDescription)(Dog*, ExceptionData*);
+	int (*nova_virtual_getNumLegs)(Dog*, ExceptionData*);
+	int (*nova_virtual_getNumEyes)(Dog*, ExceptionData*);
+	String* (*nova_virtual_getDescription)(Dog*, ExceptionData*);
 } nova_VTable_Dog;
 
 CCLASS_CLASS
@@ -38,10 +39,10 @@ CCLASS_CLASS
 	nova_VTable_Dog* vtable;
 )
 
-Dog* nova_Dog_Dog(Dog* this, ExceptionData* exceptionData);
+Dog* nova_Dog_construct(Dog* this, ExceptionData* exceptionData);
 void nova_del_Dog(Dog** this, ExceptionData* exceptionData);
-int nova_1_Dog_getNumLegs(Dog* this, ExceptionData* exceptionData);
-int nova_1_Dog_getNumEyes(Dog* this, ExceptionData* exceptionData);
-String* nova_1_Dog_getDescription(Dog* this, ExceptionData* exceptionData);
+int nova_Dog_getNumLegs(Dog* this, ExceptionData* exceptionData);
+int nova_Dog_getNumEyes(Dog* this, ExceptionData* exceptionData);
+String* nova_Dog_getDescription(Dog* this, ExceptionData* exceptionData);
 
 #endif

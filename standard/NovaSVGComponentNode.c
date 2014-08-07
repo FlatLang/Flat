@@ -4,8 +4,8 @@
 
 nova_VTable_SVGComponentNode nova_VTable_SVGComponentNode_val =
 {
-	nova_4_Object_toString,
-	nova_2_Object_equals,
+	nova_Object_toString,
+	nova_Object_equals,
 };
 
 SVGComponentNode* nova_SVGComponentNode_construct(SVGComponentNode* this, ExceptionData* exceptionData)

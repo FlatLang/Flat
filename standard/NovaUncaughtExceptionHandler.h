@@ -27,8 +27,9 @@ typedef struct UncaughtExceptionHandler UncaughtExceptionHandler;
 
 typedef struct nova_VTable_UncaughtExceptionHandler
 {
-	String* (*nova_virtual_4_toString)(Object*, ExceptionData*);
-	char (*nova_virtual_2_equals)(Object*, ExceptionData*, Object*);
+	void (*nova_virtual_uncaughtException)(UncaughtExceptionHandler*, ExceptionData*, Thread*, Exception*);
+	String* (*nova_virtual_toString)(Object*, ExceptionData*);
+	char (*nova_virtual_equals)(Object*, ExceptionData*, Object*);
 } nova_VTable_UncaughtExceptionHandler;
 
 CCLASS_CLASS
@@ -38,9 +39,9 @@ CCLASS_CLASS
 	nova_VTable_UncaughtExceptionHandler* vtable;
 )
 
-UncaughtExceptionHandler* nova_2_UncaughtExceptionHandler_construct(UncaughtExceptionHandler* this, ExceptionData* exceptionData);
+UncaughtExceptionHandler* nova_UncaughtExceptionHandler_construct(UncaughtExceptionHandler* this, ExceptionData* exceptionData);
 void nova_del_UncaughtExceptionHandler(UncaughtExceptionHandler** this, ExceptionData* exceptionData);
-void nova_1_UncaughtExceptionHandler_UncaughtExceptionHandler(UncaughtExceptionHandler* this, ExceptionData* exceptionData);
+void nova_UncaughtExceptionHandler_UncaughtExceptionHandler(UncaughtExceptionHandler* this, ExceptionData* exceptionData);
 void nova_UncaughtExceptionHandler_uncaughtException(UncaughtExceptionHandler* this, ExceptionData* exceptionData, Thread* nova_0_thread, Exception* nova_0_exception);
 
 #endif
