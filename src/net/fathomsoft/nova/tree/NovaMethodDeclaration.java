@@ -233,9 +233,9 @@ public class NovaMethodDeclaration extends MethodDeclaration
 						
 						list.add(method);
 					}
-					else if (max > method.overloadID)
+					else if (max < method.overloadID)
 					{
-						max = overloadID;
+						max = method.overloadID;
 					}
 				}
 			}
