@@ -1,11 +1,11 @@
 public class Spider extends Animal
 {
-	public getNumLegs()
+	public getNumLegs() -> int
 	{
 		return 8
 	}
 	
-	public getNumEyes()
+	public getNumEyes() -> int
 	{
 		return 9000
 	}

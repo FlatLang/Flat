@@ -4,43 +4,85 @@ import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.util.Location;
 
 /**
- * BodyMethodDeclaration extension that represents
+ * {@link BodyMethodDeclaration} extension that represents
  * 
  * @author	Braden Steffaniak
  * @since	v0.2.27 Aug 6, 2014 at 5:12:43 PM
- * @version	v0.2.27 Aug 7, 2014 at 1:32:02 AM
+ * @version	v0.2.28 Aug 20, 2014 at 12:10:45 AM
  */
-public class InstantiationMethod extends NovaMethodDeclaration
+public class InitializationMethod extends BodyMethodDeclaration
 {
+	public static final String	SUPER_IDENTIFIER = "super";
+	public static final String	IDENTIFIER       = ParameterList.OBJECT_REFERENCE_IDENTIFIER;
+	
 	/**
 	 * @see net.fathomsoft.nova.tree.Node#Node(Node, Location)
 	 */
-	public InstantiationMethod(Node temporaryParent, Location locationIn)
+	public InitializationMethod(Node temporaryParent, Location locationIn)
 	{
 		super(temporaryParent, locationIn);
+	}
+	
+	/**
+	 * Get whether or not the specified Method has overridden a method
+	 * from a super class
+	 * 
+	 * @return Whether or not the specified Method has overridden a
+	 * 		method from a super class.
+	 */
+	public boolean doesOverride()
+	{
+		return false;
+	}
+	
+	/**
+	 * @see net.fathomsoft.nova.tree.NovaMethodDeclaration#isOverridden()
+	 */
+	@Override
+	public boolean isOverridden()
+	{
+		return false;
+	}
+	
+	/**
+	 * @see net.fathomsoft.nova.tree.NovaMethodDeclaration#isVirtual()
+	 */
+	@Override
+	public boolean isVirtual()
+	{
+		return false;
+	}
+	
+	public void createFrom(Constructor constructor)
+	{
+		String name   = getParentClass(true).generateTemporaryMethodName();
+		String params = constructor.getParameterList().generateNovaInput().toString();
 		
-		decodeStatement(temporaryParent, "public  -> " + getParentClass().getName(), locationIn, true);
+		NovaMethodDeclaration method = decodeStatement(getParentClass(true), "public " + name + '(' + params + ')', getLocationIn(), true);
+		
+		method.setName(ParameterList.OBJECT_REFERENCE_IDENTIFIER);
+		method.cloneTo(this);
 	}
 	
 	/**
 	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location)
 	 */
 	@Override
-	public InstantiationMethod clone(Node temporaryParent, Location locationIn)
+	public InitializationMethod clone(Node temporaryParent, Location locationIn)
 	{
-		InstantiationMethod node = new InstantiationMethod(temporaryParent, locationIn);
+		InitializationMethod node = new InitializationMethod(temporaryParent, locationIn);
 		
 		return cloneTo(node);
 	}
 	
 	/**
-	 * Fill the given {@link InstantiationMethod} with the data that is in the
+	 * Fill the given {@link InitializationMethod} with the data that is in the
 	 * specified node.
 	 * 
 	 * @param node The node to copy the data into.
 	 * @return The cloned node.
 	 */
-	public InstantiationMethod cloneTo(InstantiationMethod node)
+	public InitializationMethod cloneTo(InitializationMethod node)
 	{
 		super.cloneTo(node);
 		
@@ -48,7 +90,7 @@ public class InstantiationMethod extends NovaMethodDeclaration
 	}
 	
 	/**
-	 * Test the {@link InstantiationMethod} class type to make sure everything
+	 * Test the {@link InitializationMethod} class type to make sure everything
 	 * is working properly.
 	 * 
 	 * @return The error output, if there was an error. If the test was

@@ -42,3 +42,474 @@ gcc -I. -Igc -L. -lgc -DUSE_GC -O2 -shared -o libThread.dylib Thread.c && cp lib
 Linux
 gcc -I. -Igc -L. -lgc -DUSE_GC -O2 -shared -fPIC -o libNova.so Nova.c && cp libNova.so ../lib/libNova.so && cp libNova.so ../example/bin/libNova.so
 gcc -I. -Igc -L. -lgc -DUSE_GC -O2 -shared -fPIC -o libThread.so Thread.c && cp libThread.so ../lib/libThread.so && cp libThread.so ../example/bin/libThread.so
+
+
+
+
+
+
+
+
+
+
+This documentation file is intended for administrators only.
+An administrator can assume the position of a teacher as well.
+
+Server Management:
+------------------
+For the following, you will need to access terminal.
+
+ * How to obtain the local IP address:
+   1. Execute the command: "sudo ifconfig"
+   2. Locate the eth0 category.
+   3. Under eth0, the IP is after "inet addr:"
+
+ * Open the server port:
+   1. Execute the command: "sudo iptables -A INPUT -p tcp --dport [port number] -j ACCEPT"
+   2. You may be prompted for a password. Enter the password
+      and press return.
+      * The remote desktop port is 3389
+      * The web interface port is 80
+
+ * Restart Tomcat:
+   1. Execute the command: "sudo service tomcat7 restart"
+   2. You may be prompted for a password. Enter the password
+      and press return.
+
+ * Stop Tomcat:
+   1. Execute the command: "sudo service tomcat7 stop"
+   2. You may be prompted for a password. Enter the password
+      and press return.
+
+ * Start Tomcat:
+   1. Execute the command: "sudo service tomcat7 start"
+   2. You may be prompted for a password. Enter the password
+      and press return.
+ 
+ * Allow AUTHBIND (port bindings <= 1023)
+   1. From terminal "sudo pico /etc/default/tomcat7"
+   2. Scroll down to the very last line.
+   3. Remove the preceding '#' character.
+   4. Change the 'no' to a 'yes'
+   5. Save the file by pressing Ctrl+x, then press y, then press enter.
+
+ * Generate a .war file from existing website:
+   1. From terminal "cd /to/location/inside/of/website"
+   2. From terminal "jar -cvf filename.war *"
+
+ * Generate website from .war file:
+   1. Place the .war file into the webapps folder.
+          The webapps folder is located at "/var/lib/tomcat7/webapps"
+   2. Make sure you place the server.xml in the webapps directory as well.
+   3. Restart the tomcat server.
+   4. In your web-browser navigate to "localhost:[port number]/TED/WebContent"
+
+ * How to set up the Tomcat server.xml:
+   1. Insert the following text as a child of the <Host> element:
+          "<Context path="/TED" docBase="TED/WebContent/" reloadable="true" />"
+          (Do not copy the surrounding quotes)
+   2. Using this <Context> element data, the website is accessible from "localhost:[port number]/TED"
+   3. For changes to take affect, you need to restart your Tomcat server.
+   
+ * How to set up the TED Common lib
+   -- For both the InteractiveDisplayBoard and TEDControlPanel projects, do the following --
+   1. Open the eclipse Package Explorer.
+   2. Right click the Project that requires the TED Common lib.
+   3. From the right-click menu, select properties.
+   4. From properties, select "Java Build Path"
+   5. Within the Java Build Path dialog, select the "Libraries" tab.
+   6. Within the Libraries Tab, select the "Add External JARs..." button.
+   7. Navigate the file explorer to the TEDCommonLib.jar file and select it.
+   8. Now, copy and paste the TEDCommonLib.jar file into the Projects "/WebContent/WEB-INF/lib" directory.
+   9. Recompile your projects and restart tomcat (See *Restart Tomcat).
+
+
+Database Management:
+--------------------
+
+ * Import a database into MariaDB:
+   1. In terminal execute "mysql -u root -p database_name < path/to/file.sql"
+          For example, importing the ehsdata database would look like:
+          "mysql -u root -p ehsdata < /home/ehs/ehsdata.sql"
+   2. When prompted for the password, enter the MariaDB root password.
+
+ * Export a database from MariaDB into a file:
+   1. In terminal execute "mysqldump -u root -p database_name > file.sql"
+          For example, exporting the ehsdata database would look like:
+          "mysqldump -u root -p ehsdata > ehsdata.sql"
+   2. When prompted for the password, enter the MariaDB root password.
+   3. The generated file will be located in the same directory that the command was executed in.
+
+For the following, you will need traverse from the administrator
+panel to the "Database Management" page.
+
+ * Delete all entries from the database:
+   1. Select the "Select All" button.
+   2. Select the "Delete Selected" button.
+
+ * Delete a single, or multiple entries from the database:
+   1. Select all of the entries that you want to delete.
+   2. Select the "Delete Selected" button.
+
+
+TED Client Management (The NUC):
+--------------------------------
+
+ * How to open command prompt:
+   1. Press Win+R and type in "cmd"
+   2. Press enter.
+
+ * Open Firefox in safe mode:
+   1. With a hardware keyboard, press Alt+F4 to close kiosk Firefox.
+   2. Open command prompt (See *How to open command prompt).
+   3. Navigate inside the Firefox directory with the command 'cd "C:\Program Files (x86)\Mozilla Firefox"' (Without the SINGLE quotes)
+   4. Type in "firefox -safe-mode"
+   5. If prompted, select "Start in Safe Mode"
+   
+ * Change the IP to connect to:
+   1. Open Firefox in safe mode.
+   2. In the top right corner of Firefox open the menu. (The 3 horizontal lines)
+   3. Within the menu, select "Options"
+   4. Navigate under the "General" tab in the top-left of the window.
+   5. Under the "Startup" division, Edit the "Home Page" field to the desired IP.
+   6. Click the "OK" button when you are finished.
+   
+ * Whitelist a website address:
+   1. Open Firefox in safe mode.
+   2. In the top right corner of Firefox open the menu. (The 3 horizontal lines)
+   3. Within the menu, select "Options"
+   4. Within the options menu, select the "Advanced" tab.
+   5. Within the advanced menu, select the "Network" tab.
+   6. Within the network menu, under "Connection" select "Settings..."
+   7. Within the settings menu, make sure "anual proxy configuration" is selected.
+   8. Make sure that the HTTP Proxy is a non-real, non-working proxy. eg. "54.432.2.4" port 20 (This is important)
+   9. Also make sure that the "Use this proxy for all protocols" is selected.
+   10. Under "No Proxy for" add the address that you desire at the end of the list, separated by a comma.
+           For example, if the "No Proxy for" input contains: "localhost, www.google.com" and you
+           want to add "www.youtube.com" you would make the input box match "localhost, www.google.com, www.youtube.com"
+   11. When you are finished adding addresses, select OK on all of the dialog boxes.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    		<Realm className="org.apache.catalina.realm.JDBCRealm" debug="99"
+                localDataSource="true"
+                driverName="org.mariadb.jdbc.Driver"
+                connectionURL="jdbc:mysql://localhost/authority"
+                connectionName="root" connectionPassword="programming2013"
+                userTable="users" userNameCol="user_name" userCredCol="user_pass"
+                userRoleTable="user_roles" roleNameCol="role_name"
+                digest="md5"/>
+
+
+
+
+<?xml version='1.0' encoding='utf-8'?>
+<!--
+  Licensed to the Apache Software Foundation (ASF) under one or more
+  contributor license agreements.  See the NOTICE file distributed with
+  this work for additional information regarding copyright ownership.
+  The ASF licenses this file to You under the Apache License, Version 2.0
+  (the "License"); you may not use this file except in compliance with
+  the License.  You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+-->
+<!-- Note:  A "Server" is not itself a "Container", so you may not
+     define subcomponents such as "Valves" at this level.
+     Documentation at /docs/config/server.html
+ -->
+<Server port="8005" shutdown="SHUTDOWN">
+  <!-- Security listener. Documentation at /docs/config/listeners.html
+  <Listener className="org.apache.catalina.security.SecurityListener" />
+  -->
+  <!--APR library loader. Documentation at /docs/apr.html -->
+  <!--
+  <Listener className="org.apache.catalina.core.AprLifecycleListener" SSLEngine="on" />
+  -->
+  <!--Initialize Jasper prior to webapps are loaded. Documentation at /docs/jasper-howto.html -->
+  <Listener className="org.apache.catalina.core.JasperListener" />
+  <!-- Prevent memory leaks due to use of particular java/javax APIs-->
+  <Listener className="org.apache.catalina.core.JreMemoryLeakPreventionListener" />
+  <Listener className="org.apache.catalina.mbeans.GlobalResourcesLifecycleListener" />
+  <Listener className="org.apache.catalina.core.ThreadLocalLeakPreventionListener" />
+
+  <!-- Global JNDI resources
+       Documentation at /docs/jndi-resources-howto.html
+  -->
+  <GlobalNamingResources>
+    <!-- Editable user database that can also be used by
+         UserDatabaseRealm to authenticate users
+    -->
+    <Resource name="UserDatabase" auth="Container"
+              type="org.apache.catalina.UserDatabase"
+              description="User database that can be updated and saved"
+              factory="org.apache.catalina.users.MemoryUserDatabaseFactory"
+              pathname="conf/tomcat-users.xml" />
+  </GlobalNamingResources>
+
+  <!-- A "Service" is a collection of one or more "Connectors" that share
+       a single "Container" Note:  A "Service" is not itself a "Container",
+       so you may not define subcomponents such as "Valves" at this level.
+       Documentation at /docs/config/service.html
+   -->
+  <Service name="Catalina">
+
+    <!--The connectors can use a shared executor, you can define one or more named thread pools-->
+    <!--
+    <Executor name="tomcatThreadPool" namePrefix="catalina-exec-"
+        maxThreads="150" minSpareThreads="4"/>
+    -->
+
+
+    <!-- A "Connector" represents an endpoint by which requests are received
+         and responses are returned. Documentation at :
+         Java HTTP Connector: /docs/config/http.html (blocking & non-blocking)
+         Java AJP  Connector: /docs/config/ajp.html
+         APR (HTTP/AJP) Connector: /docs/apr.html
+         Define a non-SSL HTTP/1.1 Connector on port 8080
+    -->
+    <Connector port="80" protocol="HTTP/1.1"
+               connectionTimeout="20000"
+               URIEncoding="UTF-8"
+               redirectPort="8443" />
+    <!-- A "Connector" using the shared thread pool-->
+    <!--
+    <Connector executor="tomcatThreadPool"
+               port="8080" protocol="HTTP/1.1"
+               connectionTimeout="20000"
+               redirectPort="8443" />
+    -->
+    <!-- Define a SSL HTTP/1.1 Connector on port 8443
+         This connector uses the JSSE configuration, when using APR, the
+         connector should be using the OpenSSL style configuration
+         described in the APR documentation -->
+    
+    <!--
+    <Connector port="8443" protocol="HTTP/1.1" SSLEnabled="true"
+               maxThreads="150" scheme="https" secure="true"
+               clientAuth="false" sslProtocol="TLS" keystoreFile="/home/usrnamehere/TED/TEDCERT.cer" />
+               -->
+    
+
+    <!-- Define an AJP 1.3 Connector on port 8009 -->
+    <!--
+    <Connector port="8009" protocol="AJP/1.3" redirectPort="8443" />
+    -->
+
+
+    <!-- An Engine represents the entry point (within Catalina) that processes
+         every request.  The Engine implementation for Tomcat stand alone
+         analyzes the HTTP headers included with the request, and passes them
+         on to the appropriate Host (virtual host).
+         Documentation at /docs/config/engine.html -->
+
+    <!-- You should set jvmRoute to support load-balancing via AJP ie :
+    <Engine name="Catalina" defaultHost="localhost" jvmRoute="jvm1">
+    -->
+    <Engine name="Catalina" defaultHost="localhost">
+
+      <!--For clustering, please take a look at documentation at:
+          /docs/cluster-howto.html  (simple how to)
+          /docs/config/cluster.html (reference documentation) -->
+      <!--
+      <Cluster className="org.apache.catalina.ha.tcp.SimpleTcpCluster"/>
+      -->
+
+      <!-- Use the LockOutRealm to prevent attempts to guess user passwords
+           via a brute-force attack -->
+     <!-- <Realm className="org.apache.catalina.realm.LockOutRealm">-->
+        <!-- This Realm uses the UserDatabase configured in the global JNDI
+             resources under the key "UserDatabase".  Any edits
+             that are performed against this UserDatabase are immediately
+             available for use by the Realm.  -->
+<!--        <Realm className="org.apache.catalina.realm.UserDatabaseRealm"
+               resourceName="UserDatabase"/>
+      </Realm>-->
+	
+	<Host name="localhost" appBase="webapps"
+            unpackWARs="true" autoDeploy="true">
+
+        <!-- SingleSignOn valve, share authentication between web applications
+             Documentation at: /docs/config/valve.html -->
+        <!--
+        <Valve className="org.apache.catalina.authenticator.SingleSignOn" />
+        -->
+	
+        <Context path="" docBase="/home/[username here]/TED/WebContent/" reloadable="true">
+        </Context>
+        
+        <Context path="/ControlPanel" docBase="/home/[username here]/TEDControlPanel/WebContent/" reloadable="true">
+        </Context>
+	
+        <!-- Access log processes all example.
+             Documentation at: /docs/config/valve.html
+             Note: The pattern used is equivalent to using pattern="common" -->
+        <Valve className="org.apache.catalina.valves.AccessLogValve" directory="logs"
+               prefix="localhost_access_log." suffix=".txt"
+               pattern="%h %l %u %t &quot;%r&quot; %s %b" />
+
+      </Host>
+    </Engine>
+  </Service>
+</Server>
+
+
+
+
+<MySQL>
+	<username>root</username>
+	<password>programming2013</password>
+	<database>ehsdata</database>
+</MySQL>
+
+
+
+ * Access root privileges:
+   1. Open terminal.
+   2. Execute the command 'su' and enter the root password.
+
+Select all of the default options (already selected).
+If requested to search for missing firmware, select no.
+If requested to use a network mirror, select no.
+
+Login with the credentials.
+Set up the aptitude resources list:
+  1. Follow the [* Access root privileges] procedure.
+  2. Execute the command 'pico /etc/apt/sources.list'
+  3. Navigate (with the arrow keys) after the line containing 'deb-src http://security.debian.org/ wheezy/updates main'
+  4. Add the text 'deb http://ftp.de.debian.org/debian sid main' on the current line.
+  5. Press Ctrl+X and then Y and then press enter to save the file.
+Update aptitude:
+  1. Follow the [* Access root privileges] procedure.
+  2. Execute the command 'apt-get update'
+Install xrdp for remote desktop:
+  1. Follow the [* Access root privileges] procedure.
+  2. Execute the command 'apt-get install xrdp'
+Upgrade your system to the latest version (May take a while):
+  1. Follow the [* Access root privileges] procedure.
+  2. Execute the command 'apt-get upgrade'
+Install Chrome browser:
+  1. Follow the [* Access root privileges] procedure.
+  2. Execute the command 'apt-get install chromium chromium-l10n'
+Install tomcat7:
+  1. Follow the [* Access root privileges] procedure.
+  2. Execute the command 'apt-get install tomcat7'
+Install mysql:
+  1. Follow the [* Access root privileges] procedure.
+  2. Execute the command 'apt-get install mysql-server'
+  3. Make sure to enter the correct password for the root user.
+Install git:
+  1. Follow the [* Access root privileges] procedure.
+  2. Execute the command 'apt-get install git'
+Download the repositories:
+  1. Execute the command 'cd /home/$(logname)'
+  * Download the TED client lib
+    1. Execute the command 'mkdir TED'
+    2. Execute the command 'cd TED'
+    3. Execute the command 'git init'
+    4. Execute the command 'git remote add origin https://EdwardsvilleHighSchool@bitbucket.org/EdwardsvilleHighSchool/ted.git'
+    5. Execute the command 'git pull origin master'
+    6. Enter the repository password when prompted.
+  2. Execute the command 'cd ..'
+  * Download the TEDControlPanel
+    1. Execute the command 'mkdir TEDControlPanel'
+    2. Execute the command 'cd TEDControlPanel'
+    3. Execute the command 'git init'
+    4. Execute the command 'git remote add origin https://EdwardsvilleHighSchool@bitbucket.org/EdwardsvilleHighSchool/tedcontrolpanel.git'
+    5. Execute the command 'git pull origin master'
+    6. Enter the repository password when prompted.
+  3. Execute the command 'cd ..'
+  * Download the TEDCommonLib
+    1. Execute the command 'mkdir TEDCommonLib'
+    2. Execute the command 'cd TEDCommonLib'
+    3. Execute the command 'git init'
+    4. Execute the command 'git remote add origin https://EdwardsvilleHighSchool@bitbucket.org/EdwardsvilleHighSchool/tedcommonlib.git'
+    5. Execute the command 'git pull origin master'
+    6. Enter the repository password when prompted.
+Update java:
+  1. Execute the command 'echo "deb http://ppa.launchpad.net/webupd8team/java/ubuntu precise main" | tee -a /etc/apt/sources.list'
+  2. Execute the command 'echo "deb-src http://ppa.launchpad.net/webupd8team/java/ubuntu precise main" | tee -a /etc/apt/sources.list'
+  3. Execute the command 'apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys EEA14886'
+  4. Execute the command 'apt-get update'
+  5. Execute the command 'apt-get install oracle-java7-installer'
+  6. Accept the license terms.
+Install eclipse:
+  1. From the internet browser, navigate to 'http://eclipse.org'
+  2. Click the download button.
+  3. Download the latest linux version.
+  4. Extract the downloaded file to the desktop (or wherever).
+Set up eclipse:
+  1. In the extracted eclipse folder, execute the 'eclipse' executable file. (double click it)
+  2. When prompted for the workspace location, use the default one and continue.
+  3. Import the projects:
+  * Import TED
+    1. Within the file menu, select 'Import'
+    2. Under the 'General' folder, select 'Existing Projects into Workspace'
+    3. Select the 'Browse' button next to 'Select root directory'
+    4. Select the the 'TED' folder in the user's home directory.
+    5. Select 'Finish'
+  * Import TEDControlPanel
+    1. Within the file menu, select 'Import'
+    2. Under the 'General' folder, select 'Existing Projects into Workspace'
+    3. Select the 'Browse' button next to 'Select root directory'
+    4. Select the the 'TEDControlPanel' folder in the user's home directory.
+    5. Select 'Finish'
+  * Import TEDCommonLib
+    1. Within the file menu, select 'Import'
+    2. Under the 'General' folder, select 'Existing Projects into Workspace'
+    3. Select the 'Browse' button next to 'Select root directory'
+    4. Select the the 'TEDCommonLib' folder in the user's home directory.
+    5. Select 'Finish'
+  4. Construct the TEDCommonLib.jar file
+  * Construct the TEDCommonLib.jar file
+    1. Within the file menu, select 'Export'
+    2. Under the 'Java' folder, select 'JAR file'
+    3. Make sure that 'TEDCommonLib' is checked.
+    4. Select the 'Browse' button next to the 'JAR file' text input.
+    5. Navigate to the user's home directory.
+    6. In the 'Name' input dialog, enter 'TEDCommonLib.jar' and select OK.
+    7. Select 'Finish'
+  * Include the TEDCommonLib.jar JAR in the other projects:
+    1. Right-click on the TEDControlPanel project in the 'package explorer'
+    2. Select properties (Located at the very bottom of the right-click menu).
+    3. Select the 'Java Build Path' tab on the left.
+    4. Select the 'Libraries' tab.
+    5. Select the existing TEDCommonLib.jar (should say that it is missing)
+    6. Select the 'Edit' button on the right.
+    7. Navigate to where the newly generated TEDCommonLib.jar was generated.
+    8. Select the new JAR.
+    9. Select 'OK' to save the changes.
+    10. Do the same for the other 'InteractiveDisplayBoard' project.
+Set up the Tomcat server.xml file:
+  1. Follow the [* Access root privileges] procedure.
+  2. Figure out your current username by executing the command 'echo $(logname)'
+  3. Execute the command 'rm /var/lib/tomcat7/conf/server.xml'
+  4. Execute the command 'pico /var/lib/tomcat7/conf/server.xml'
+  5. Paste the contents from within the provided server.xml file. (Paste is Ctrl+Shift+V)
+  6. While still within pico, press Ctrl+W and then Ctrl+R
+  7. Enter '[username here]' press enter.
+  8. Enter the username that was output from 'echo $(logname)' (probably 'ehs'), and press enter.
+  9. Press y twice.
+  10. Press Ctrl+X and then y and then press enter.
+Follow the [* Allow AUTHBIND (port bindings <= 1023)] directions under server management.
+Restart tomcat7:
+  1. Follow the [* Access root privileges] procedure.
+  2. Execute the command 'service tomcat7 restart'

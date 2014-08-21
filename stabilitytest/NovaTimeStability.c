@@ -4,16 +4,20 @@
 
 nova_VTable_TimeStability nova_VTable_TimeStability_val =
 {
-	nova_Object_toString,
-	nova_Object_equals,
+	nova_0_Object_toString,
+	nova_0_Object_equals,
 };
 
 TimeStability* nova_TimeStability_construct(TimeStability* this, ExceptionData* exceptionData)
 {
 	CCLASS_NEW(TimeStability, this,);
-	
 	this->vtable = &nova_VTable_TimeStability_val;
+	nova_Object_super((Object*)this, 0);
+	nova_Object_this((Object*)(this), exceptionData);
+	nova_TimeStability_super(this, 0);
+	
 	{
+		nova_TimeStability_this(this, exceptionData);
 	}
 	
 	return this;
@@ -47,6 +51,14 @@ void nova_static_TimeStability_test(TimeStability* this, ExceptionData* exceptio
 	}
 	else
 	{
-		nova_1_StabilityTest_fail(nova_0_program, exceptionData, nova_String_concat(nova_String_construct(0, exceptionData, "Failed; expected 100ms, found "), exceptionData, nova_String_concat(nova_1_Long_toString(nova_Long_construct(0, exceptionData, nova_1_time), exceptionData), exceptionData, nova_String_construct(0, exceptionData, "ms"))));
+		nova_1_StabilityTest_fail(nova_0_program, exceptionData, nova_String_concat(nova_String_construct(0, exceptionData, "Failed; expected 100ms, found "), exceptionData, nova_String_concat(nova_3_Long_toString(nova_Long_construct(0, exceptionData, nova_1_time), exceptionData), exceptionData, nova_String_construct(0, exceptionData, "ms"))));
 	}
+}
+
+void nova_TimeStability_this(TimeStability* this, ExceptionData* exceptionData)
+{
+}
+
+void nova_TimeStability_super(TimeStability* this, ExceptionData* exceptionData)
+{
 }

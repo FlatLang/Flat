@@ -26,25 +26,26 @@ typedef struct SVGComponentList SVGComponentList;
 #include <NovaFile.h>
 #include <NovaSVGComponent.h>
 #include <NovaSVGComponentNode.h>
-#include <NovaSVGCircle.h>
 
 typedef struct nova_VTable_SVGComponentList
 {
-	String* (*nova_virtual_toString)(Object*, ExceptionData*);
-	char (*nova_virtual_equals)(Object*, ExceptionData*, Object*);
+	String* (*nova_virtual_0_toString)(Object*, ExceptionData*);
+	char (*nova_virtual_0_equals)(Object*, ExceptionData*, Object*);
 } nova_VTable_SVGComponentList;
 
 CCLASS_CLASS
 (
 	SVGComponentList, 
 	
-	SVGComponentNode* nova_SVGComponentList_start;
 	nova_VTable_SVGComponentList* vtable;
+	SVGComponentNode* nova_SVGComponentList_start;
 )
 
-SVGComponentList* nova_SVGComponentList_construct(SVGComponentList* this, ExceptionData* exceptionData);
+SVGComponentList* nova_0_SVGComponentList_construct(SVGComponentList* this, ExceptionData* exceptionData);
 void nova_del_SVGComponentList(SVGComponentList** this, ExceptionData* exceptionData);
 void nova_SVGComponentList_generateOutput(SVGComponentList* this, ExceptionData* exceptionData, File* nova_0_file);
 void nova_SVGComponentList_addChild(SVGComponentList* this, ExceptionData* exceptionData, SVGComponent* nova_0_component);
+void nova_SVGComponentList_this(SVGComponentList* this, ExceptionData* exceptionData);
+void nova_SVGComponentList_super(SVGComponentList* this, ExceptionData* exceptionData);
 
 #endif

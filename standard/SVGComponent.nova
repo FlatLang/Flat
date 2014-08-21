@@ -12,15 +12,6 @@ public class SVGComponent
 	
 	public generateOutput(File file)
 	{
-		/*String s = ""
-		
-		s = s + startTag + "\n"
-		
-		s = s + children.generateOutput()
-		
-		if (endTag != null)
-		{
-			s = s + endTag + "\n"
-		}*/
+		Console.writeLine("This is wrong")
 	}
 }

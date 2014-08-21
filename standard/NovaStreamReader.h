@@ -34,8 +34,10 @@ CCLASS_CLASS
 	struct Private* prv;
 )
 
-StreamReader* nova_StreamReader_construct(StreamReader* this, ExceptionData* exceptionData, File* nova_0_file);
+StreamReader* nova_1_StreamReader_construct(StreamReader* this, ExceptionData* exceptionData, File* nova_0_file);
 void nova_del_StreamReader(StreamReader** this, ExceptionData* exceptionData);
+void nova_StreamReader_this(StreamReader* this, ExceptionData* exceptionData, File* nova_0_file);
 String* nova_StreamReader_read(StreamReader* this, ExceptionData* exceptionData);
+void nova_StreamReader_super(StreamReader* this, ExceptionData* exceptionData);
 
 #endif

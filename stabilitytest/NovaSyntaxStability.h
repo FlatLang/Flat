@@ -27,8 +27,8 @@ typedef struct SyntaxStability SyntaxStability;
 
 typedef struct nova_VTable_SyntaxStability
 {
-	String* (*nova_virtual_toString)(Object*, ExceptionData*);
-	char (*nova_virtual_equals)(Object*, ExceptionData*, Object*);
+	String* (*nova_virtual_0_toString)(Object*, ExceptionData*);
+	char (*nova_virtual_0_equals)(Object*, ExceptionData*, Object*);
 } nova_VTable_SyntaxStability;
 
 CCLASS_CLASS
@@ -41,5 +41,7 @@ CCLASS_CLASS
 SyntaxStability* nova_SyntaxStability_construct(SyntaxStability* this, ExceptionData* exceptionData);
 void nova_del_SyntaxStability(SyntaxStability** this, ExceptionData* exceptionData);
 void nova_static_SyntaxStability_test(SyntaxStability* this, ExceptionData* exceptionData, StabilityTest* nova_0_program);
+void nova_SyntaxStability_this(SyntaxStability* this, ExceptionData* exceptionData);
+void nova_SyntaxStability_super(SyntaxStability* this, ExceptionData* exceptionData);
 
 #endif

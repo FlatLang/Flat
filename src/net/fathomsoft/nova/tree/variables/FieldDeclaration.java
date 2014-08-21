@@ -2,14 +2,20 @@ package net.fathomsoft.nova.tree.variables;
 
 import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.TestContext;
+import net.fathomsoft.nova.error.SyntaxMessage;
+import net.fathomsoft.nova.tree.Assignment;
 import net.fathomsoft.nova.tree.BodyMethodDeclaration;
 import net.fathomsoft.nova.tree.ClassDeclaration;
 import net.fathomsoft.nova.tree.InstanceDeclaration;
 import net.fathomsoft.nova.tree.LocalDeclaration;
 import net.fathomsoft.nova.tree.Node;
+import net.fathomsoft.nova.tree.SyntaxTree;
+import net.fathomsoft.nova.tree.Value;
 import net.fathomsoft.nova.util.Bounds;
 import net.fathomsoft.nova.util.Location;
 import net.fathomsoft.nova.util.Patterns;
+import net.fathomsoft.nova.util.StringUtils;
+import net.fathomsoft.nova.util.SyntaxUtils;
 
 /**
  * Declaration extension that represents the declaration of a field
@@ -18,10 +24,12 @@ import net.fathomsoft.nova.util.Patterns;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:12:04 PM
- * @version	v0.2.26 Aug 6, 2014 at 2:48:50 PM
+ * @version	v0.2.28 Aug 20, 2014 at 12:10:45 AM
  */
 public class FieldDeclaration extends InstanceDeclaration
 {
+	private String	initializationValue;
+	
 	/**
 	 * Declares that a variable can be viewed from anywhere, but not
 	 * modified.
@@ -34,6 +42,21 @@ public class FieldDeclaration extends InstanceDeclaration
 	public FieldDeclaration(Node temporaryParent, Location locationIn)
 	{
 		super(temporaryParent, locationIn);
+	}
+	
+	public boolean containsInitializationValue()
+	{
+		return initializationValue != null;
+	}
+	
+	/**
+	 * Get the value that the Field is initialized to.
+	 * 
+	 * @return The  Value that represents the initialization value.
+	 */
+	public Value getInitializationValue()
+	{
+		return (Value)getChild(super.getNumDefaultChildren() + 0);
 	}
 	
 	/**
@@ -130,10 +153,15 @@ public class FieldDeclaration extends InstanceDeclaration
 	{
 		FieldDeclaration n = new FieldDeclaration(parent, location);
 		
-		FieldData data = new FieldData();
+		Bounds localDeclaration = n.findPreAssignment(statement);
+		
+		FieldData data = new FieldData(localDeclaration);
+		
+		String declaration = localDeclaration.extractString(statement);
+		localDeclaration.setStart(-1);
 		
 		// Find the localDeclaration bounds.
-		n.iterateWords(statement, Patterns.IDENTIFIER_BOUNDARIES, data);
+		n.iterateWords(declaration, Patterns.IDENTIFIER_BOUNDARIES, data);
 		
 		if (data.localDeclaration.getStart() < 0 || data.localDeclaration.getEnd() < 0)
 		{
@@ -171,11 +199,48 @@ public class FieldDeclaration extends InstanceDeclaration
 			{
 				data.localDeclaration.setStart(bounds.getStart());
 			}
-			else if (wordNumber == numWords - 1)
+		}
+	}
+	
+	private Bounds findPreAssignment(String statement)
+	{
+		int index = SyntaxUtils.findCharInBaseScope(statement, '=');
+		
+		if (index >= 0)
+		{
+			initializationValue = statement.substring(StringUtils.findNextNonWhitespaceIndex(statement, index + 1));
+			
+//			Bounds bounds     = StringUtils.findNextWordBounds(statement, index - 1, -1);
+//			String assignment = statement.substring(bounds.getStart());
+//			
+//			if (Assignment.decodeStatement(getParent(), assignment, Location.INVALID, false, false) == null)
+//			{
+//				SyntaxMessage.error("Incorrect field definition", this);
+//			}
+			
+			return new Bounds(0, StringUtils.findNextNonWhitespaceIndex(statement, index - 1, -1) + 1);
+		}
+		
+		return new Bounds(0, statement.length());
+	}
+	
+	/**
+	 * @see net.fathomsoft.nova.tree.variables.VariableDeclaration#validate(int)
+	 */
+	@Override
+	public Node validate(int phase)
+	{
+		if (phase == SyntaxTree.PHASE_INSTANCE_DECLARATIONS)
+		{
+			if (initializationValue != null)
 			{
-				data.localDeclaration.setEnd(data.statement.length());
+				Value value = SyntaxTree.decodeValue(this, initializationValue, getLocationIn(), true);
+				
+				addChild(value);
 			}
 		}
+		
+		return super.validate(phase);
 	}
 	
 	/**
@@ -216,7 +281,12 @@ public class FieldDeclaration extends InstanceDeclaration
 		
 		public FieldData()
 		{
-			localDeclaration = Bounds.EMPTY.clone();
+			this(Bounds.EMPTY.clone());
+		}
+		
+		public FieldData(Bounds localDeclaration)
+		{
+			this.localDeclaration = localDeclaration;
 		}
 	}
 	

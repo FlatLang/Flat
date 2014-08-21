@@ -19,7 +19,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 10:04:31 PM
- * @version	v0.2.26 Aug 6, 2014 at 2:48:50 PM
+ * @version	v0.2.28 Aug 20, 2014 at 12:10:45 AM
  */
 public class MethodCall extends IIdentifier
 {
@@ -412,7 +412,7 @@ public class MethodCall extends IIdentifier
 			
 			Bounds bounds = SyntaxUtils.findInnerParenthesesBounds(n, statement);
 			
-			if (!n.decodeMethodName(statement, bounds, require) || !n.decodeArguments(statement, bounds))
+			if (!n.decodeMethodName(statement, bounds, require) || !n.decodeArguments(statement, bounds, require))
 			{
 				return null;
 			}
@@ -451,7 +451,7 @@ public class MethodCall extends IIdentifier
 	{
 		// Parenthesis index
 		int    parenIndex = StringUtils.findNextNonWhitespaceIndex(statement, bounds.getStart() - 1, -1);
-		int    nameEnd    = StringUtils.findNextNonWhitespaceIndex(statement, parenIndex, -1) + 1;
+		int    nameEnd    = StringUtils.findNextNonWhitespaceIndex(statement, parenIndex - 1, -1) + 1;
 		
 		String methodCall = statement.substring(0, nameEnd);
 		
@@ -500,9 +500,10 @@ public class MethodCall extends IIdentifier
 	 * 
 	 * @param statement The method call statement.
 	 * @param bounds The bounds of the arguments.
+	 * @param require Whether or not to throw an error if anything goes wrong.
 	 * @return Whether or not the arguments decoded successfully.
 	 */
-	private boolean decodeArguments(String statement, Bounds bounds)
+	private boolean decodeArguments(String statement, Bounds bounds, boolean require)
 	{
 		String argumentList = statement.substring(bounds.getStart(), bounds.getEnd());
 		
@@ -518,7 +519,7 @@ public class MethodCall extends IIdentifier
 		
 		addArguments(arguments, argsLocation);
 		
-		return validateArguments(getFileDeclaration(), getLocationIn());
+		return validateArguments(getFileDeclaration(), getLocationIn(), require);
 	}
 	
 	/**
@@ -559,17 +560,17 @@ public class MethodCall extends IIdentifier
 	 * @param fileDeclaration The FileDeclaration that this method call is within.
 	 * @param location The location of the arguments that are being
 	 * 		passed.
+	 * @param require Whether or not to throw an error if anything goes wrong.
 	 * @return True if the method call's arguments fulfill the
 	 * 		requirements of the Method declaration's parameters.
 	 */
-	private boolean validateArguments(FileDeclaration fileDeclaration, Location location)
+	private boolean validateArguments(FileDeclaration fileDeclaration, Location location, boolean require)
 	{
 		CallableMethod methodDeclaration = getCallableDeclaration();
 		
 		if (methodDeclaration == null)
 		{
-			getMethodDeclaration();
-			SyntaxMessage.error("Incompatible arguments for method call '" + getName() + "'", this);
+			return SyntaxMessage.queryError("Incompatible arguments for method call '" + getName() + "'", this, require);
 		}
 		
 		ParameterList<Value> parameters = methodDeclaration.getParameterList();

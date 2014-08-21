@@ -2,7 +2,9 @@ package net.fathomsoft.nova.tree;
 
 import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.TestContext;
+import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.util.Location;
+import net.fathomsoft.nova.util.StringUtils;
 import net.fathomsoft.nova.util.SyntaxUtils;
 
 /**
@@ -10,11 +12,48 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:19:40 PM
- * @version	v0.2.26 Aug 6, 2014 at 2:48:50 PM
+ * @version	v0.2.28 Aug 20, 2014 at 12:10:45 AM
  */
 public class Operator extends IValue
 {
 	private String	operator;
+	
+	// Logical operators
+	public static final String	AND = "&&", AND_C = "&&";
+	public static final String	OR  = "||",  OR_C  = "||";
+	
+	// Math operators
+	public static final String	DIVIDE     = "/",  DIVIDE_C     = "/";
+	public static final String	MULTIPLY   = "*",  MULTIPLY_C   = "*";
+	public static final String	MODULO     = "%",  MODULO_C     = "%";
+	public static final String	ADD        = "+",  ADD_C        = "+";
+	public static final String	SUBTRACT   = "-",  SUBTRACT_C   = "-";
+	public static final String	ASSIGN     = "=",  ASSIGN_C     = "=";
+	public static final String	BANG       = "!",  BANG_C       = "!";
+	public static final String	EQUALS     = "==", EQUALS_C     = "==";
+	public static final String	NOT_EQUAL  = "!=", NOT_EQUAL_C  = "!=";
+	public static final String	INCREMENT  = "++", INCREMENT_C  = "++";
+	public static final String	DECREMENT  = "--", DECREMENT_C  = "--";
+	public static final String	GREATER    = ">",  GREATER_C    = ">";
+	public static final String	LESS       = "<",  LESS_C       = "<";
+	public static final String	GREATER_EQ = ">=", GREATER_EQ_C = ">=";
+	public static final String	LESS_EQ    = "<=", LESS_EQ_C    = "<=";
+	public static final String	L_SHIFT    = "<<", L_SHIFT_C    = "<<";
+	public static final String	R_SHIFT    = ">>", R_SHIFT_C    = ">>";
+	
+	public static final String	OPERATORS[] = new String[] { AND, OR, DIVIDE, MULTIPLY, MODULO, INCREMENT, DECREMENT,
+																EQUALS, BANG, ASSIGN, NOT_EQUAL, ADD, SUBTRACT,
+																L_SHIFT, R_SHIFT, GREATER_EQ, LESS_EQ, GREATER, LESS, };
+	
+	public static final String	UNARY_OPERATORS[] = new String[] { BANG, INCREMENT, DECREMENT, SUBTRACT };
+	
+	public static final String	BINARY_OPERATORS[] = new String[] { AND, OR, DIVIDE, MULTIPLY, MODULO, ADD, SUBTRACT,
+																EQUALS, NOT_EQUAL, ASSIGN, GREATER_EQ, LESS_EQ, L_SHIFT,
+																R_SHIFT, GREATER, LESS };
+	
+	public static final String	LOGICAL_OPERATORS[] = new String[] { AND, OR, DIVIDE, MULTIPLY, MODULO, ADD, SUBTRACT,
+																EQUALS, NOT_EQUAL, GREATER_EQ, LESS_EQ, L_SHIFT,
+																R_SHIFT, GREATER, LESS };
 	
 	/**
 	 * @see net.fathomsoft.nova.tree.Node#Node(Node, Location)
@@ -25,7 +64,7 @@ public class Operator extends IValue
 	}
 	
 	/**
-	 * Get the value of the operator. For example: '+', '*', '&amp;&amp;', etc.
+	 * Get the value of the operator. For example: '+', '*', 'and', etc.
 	 * 
 	 * @return The value of the operator.
 	 */
@@ -35,7 +74,7 @@ public class Operator extends IValue
 	}
 	
 	/**
-	 * Set the operator value. For example: '+', '*', '&amp;&amp;', etc.
+	 * Set the operator value. For example: '+', '*', 'and', etc.
 	 * 
 	 * @param operator The new value of the operator.
 	 */
@@ -71,11 +110,16 @@ public class Operator extends IValue
 	 */
 	public void updateType()
 	{
-		if (operator.contains("=") || operator.equals("!") || operator.equals("&&") || operator.equals("||"))
+		if (!StringUtils.containsString(operator, OPERATORS))
+		{
+			SyntaxMessage.error("Unknown operator '" + operator + "'", this);
+		}
+		
+		if (operator.equals(EQUALS) || operator.equals(NOT_EQUAL) || operator.equals(BANG) || operator.equals(AND) || operator.equals(OR))
 		{
 			setType("bool");
 		}
-		else if (getParent().containsChild(this))
+		else if (!isDecoding())
 		{
 			String type = SyntaxUtils.getTypeInCommon(getLeftOperand(), getRightOperand()).getType();
 			
@@ -103,6 +147,15 @@ public class Operator extends IValue
 	@Override
 	public StringBuilder generateCSourceFragment(StringBuilder builder)
 	{
+		if (operator.equals(AND))
+		{
+			return builder.append(AND_C);
+		}
+		else if (operator.equals(OR))
+		{
+			return builder.append(OR_C);
+		}
+		
 		return builder.append(operator);
 	}
 	

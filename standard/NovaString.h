@@ -26,24 +26,25 @@ typedef struct String String;
 
 typedef struct nova_VTable_String
 {
-	char (*nova_virtual_equals)(String*, ExceptionData*, String*);
-	String* (*nova_virtual_toString)(Object*, ExceptionData*);
-	char (*nova_virtual_equals)(Object*, ExceptionData*, Object*);
+	char (*nova_virtual_0_equals)(String*, ExceptionData*, String*);
+	String* (*nova_virtual_0_toString)(Object*, ExceptionData*);
 } nova_VTable_String;
 
 CCLASS_CLASS
 (
 	String, 
 	
-	int nova_String_length;
 	nova_VTable_String* vtable;
+	int nova_String_length;
 	struct Private* prv;
 )
 
 String* nova_String_construct(String* this, ExceptionData* exceptionData, char* nova_0_data);
 void nova_del_String(String** this, ExceptionData* exceptionData);
+void nova_String_this(String* this, ExceptionData* exceptionData, char* nova_0_data);
 char* nova_String_toCharArray(String* this, ExceptionData* exceptionData);
 String* nova_String_concat(String* this, ExceptionData* exceptionData, String* nova_0_str);
-char nova_String_equals(String* this, ExceptionData* exceptionData, String* nova_0_other);
+char nova_0_String_equals(String* this, ExceptionData* exceptionData, String* nova_0_other);
+void nova_String_super(String* this, ExceptionData* exceptionData);
 
 #endif

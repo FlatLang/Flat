@@ -27,8 +27,8 @@ typedef struct GC GC;
 
 typedef struct nova_VTable_GC
 {
-	String* (*nova_virtual_toString)(Object*, ExceptionData*);
-	char (*nova_virtual_equals)(Object*, ExceptionData*, Object*);
+	String* (*nova_virtual_0_toString)(Object*, ExceptionData*);
+	char (*nova_virtual_0_equals)(Object*, ExceptionData*, Object*);
 } nova_VTable_GC;
 
 CCLASS_CLASS
@@ -38,7 +38,7 @@ CCLASS_CLASS
 	nova_VTable_GC* vtable;
 )
 
-GC* nova_GC_construct(GC* this, ExceptionData* exceptionData);
+GC* nova_0_GC_construct(GC* this, ExceptionData* exceptionData);
 void nova_del_GC(GC** this, ExceptionData* exceptionData);
 void nova_static_GC_init(GC* this, ExceptionData* exceptionData);
 long_long nova_static_GC_getFreeBytes(GC* this, ExceptionData* exceptionData);
@@ -48,5 +48,7 @@ long_long nova_static_GC_getBytesSinceGC(GC* this, ExceptionData* exceptionData)
 void nova_static_GC_collect(GC* this, ExceptionData* exceptionData);
 void nova_static_GC_enableIncremental(GC* this, ExceptionData* exceptionData);
 void nova_static_GC_dump(GC* this, ExceptionData* exceptionData);
+void nova_GC_this(GC* this, ExceptionData* exceptionData);
+void nova_GC_super(GC* this, ExceptionData* exceptionData);
 
 #endif

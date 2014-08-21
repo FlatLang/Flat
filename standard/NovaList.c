@@ -4,8 +4,8 @@
 
 nova_VTable_List nova_VTable_List_val =
 {
-	nova_Object_toString,
-	nova_Object_equals,
+	nova_0_Object_toString,
+	nova_0_Object_equals,
 };
 CCLASS_PRIVATE
 (
@@ -14,14 +14,16 @@ CCLASS_PRIVATE
 	
 )
 
-List* nova_List_construct(List* this, ExceptionData* exceptionData)
+List* nova_0_List_construct(List* this, ExceptionData* exceptionData)
 {
 	CCLASS_NEW(List, this);
-	
-	this->prv->nova_List_start = (ListNode*)0;
-	this->prv->nova_List_current = (ListNode*)0;
 	this->vtable = &nova_VTable_List_val;
+	nova_Object_super((Object*)this, 0);
+	nova_Object_this((Object*)(this), exceptionData);
+	nova_List_super(this, 0);
+	
 	{
+		nova_List_this(this, exceptionData);
 	}
 	
 	return this;
@@ -87,4 +89,14 @@ void nova_List_remove(List* this, ExceptionData* exceptionData, Object* nova_0_d
 		}
 		nova_1_cur = nova_ListNode_getNext(nova_1_cur, exceptionData);
 	}
+}
+
+void nova_List_this(List* this, ExceptionData* exceptionData)
+{
+}
+
+void nova_List_super(List* this, ExceptionData* exceptionData)
+{
+	this->prv->nova_List_start = (ListNode*)0;
+	this->prv->nova_List_current = (ListNode*)0;
 }

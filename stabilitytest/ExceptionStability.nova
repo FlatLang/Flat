@@ -32,8 +32,7 @@ public class ExceptionStability
 			try
 			{
 				int den = 0
-				
-				int i = 43 / den
+				int i   = 43 / den
 			}
 			catch (DivideByZeroException e)
 			{

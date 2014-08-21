@@ -4,20 +4,23 @@
 
 nova_VTable_Char nova_VTable_Char_val =
 {
-	nova_0_Char_toString,
 	nova_1_Char_toString,
-	nova_static_Number_numDigits,
-	nova_static_Number_toString,
+	nova_0_Char_toString,
+	nova_static_0_Number_numDigits,
 };
 
 Char* nova_Char_construct(Char* this, ExceptionData* exceptionData, char nova_0_value)
 {
 	CCLASS_NEW(Char, this,);
-	
-	this->nova_Char_value = 0;
 	this->vtable = &nova_VTable_Char_val;
+	nova_Object_super((Object*)this, 0);
+	nova_Number_super((Number*)this, 0);
+	nova_Object_this((Object*)(this), exceptionData);
+	nova_Number_this((Number*)(this), exceptionData);
+	nova_Char_super(this, 0);
+	
 	{
-		this->nova_Char_value = nova_0_value;
+		nova_Char_this(this, exceptionData, nova_0_value);
 	}
 	
 	return this;
@@ -36,7 +39,12 @@ void nova_del_Char(Char** this, ExceptionData* exceptionData)
 	NOVA_FREE(*this);
 }
 
-String* nova_0_Char_toString(Char* this, ExceptionData* exceptionData, char nova_0_c)
+void nova_Char_this(Char* this, ExceptionData* exceptionData, char nova_0_value)
+{
+	this->nova_Char_value = nova_0_value;
+}
+
+String* nova_1_Char_toString(Char* this, ExceptionData* exceptionData, char nova_0_c)
 {
 	char* nova_1_chars;
 	
@@ -45,7 +53,12 @@ String* nova_0_Char_toString(Char* this, ExceptionData* exceptionData, char nova
 	return nova_String_construct(0, exceptionData, nova_1_chars);
 }
 
-String* nova_1_Char_toString(Char* this, ExceptionData* exceptionData)
+String* nova_0_Char_toString(Char* this, ExceptionData* exceptionData)
 {
-	return this->vtable->nova_virtual_0_toString(this, exceptionData, this->nova_Char_value);
+	return this->vtable->nova_virtual_1_toString(this, exceptionData, this->nova_Char_value);
+}
+
+void nova_Char_super(Char* this, ExceptionData* exceptionData)
+{
+	this->nova_Char_value = 0;
 }

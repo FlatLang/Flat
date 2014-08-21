@@ -20,7 +20,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.2.1 Apr 29, 2014 at 8:04:48 PM
- * @version	v0.2.26 Aug 6, 2014 at 2:48:50 PM
+ * @version	v0.2.28 Aug 20, 2014 at 12:10:45 AM
  */
 public class TreeGenerator implements Runnable
 {
@@ -49,8 +49,9 @@ public class TreeGenerator implements Runnable
 	
 	private static final Class<?>	SECOND_PASS_CLASSES[] = new Class<?>[]
 	{
-		AbstractMethodDeclaration.class, ExternalMethodDeclaration.class, Destructor.class,
-		Constructor.class, BodyMethodDeclaration.class, ExternalType.class, FieldDeclaration.class
+		StaticBlock.class, AbstractMethodDeclaration.class, ExternalMethodDeclaration.class,
+		Destructor.class, Constructor.class, BodyMethodDeclaration.class, ExternalType.class,
+		FieldDeclaration.class
 	};
 	
 	/**
@@ -271,7 +272,7 @@ public class TreeGenerator implements Runnable
 	{
 		init(parent, offset);
 		
-		Node currentNode = getNextStatement(null, offset, searchTypes);
+		Node currentNode = getNextStatement(null, offset, searchTypes, skipScopes);
 		
 		// Decode all of the statements in the source text.
 		while (currentNode != null)
@@ -283,7 +284,7 @@ public class TreeGenerator implements Runnable
 				break;
 			}
 			
-			currentNode = getNextStatement(currentNode, offset, searchTypes);
+			currentNode = getNextStatement(currentNode, offset, searchTypes, skipScopes);
 		}
 	}
 	
@@ -295,10 +296,12 @@ public class TreeGenerator implements Runnable
 	 * @param previous The previously decoded node.
 	 * @param offset The offset in the source file that the statement is.
 	 * @param searchTypes The type of Nodes to try to decode.
+	 * @param skipScopes Whether or not to skip the scopes of anything
+	 * 		that contains a scope. If true, only decode the header.
 	 * @return The Node containing the information, or null if it is
 	 * 		not found.
 	 */
-	private Node getNextStatement(Node previous, int offset, Class<?> searchTypes[])
+	private Node getNextStatement(Node previous, int offset, Class<?> searchTypes[], boolean skipScopes)
 	{
 		while ((statementEndIndex = calculateStatementEnd(statementStartIndex)) >= 0 && !statementStartMatcher.hitEnd() && !parentStack.isEmpty())
 		{
@@ -324,7 +327,7 @@ public class TreeGenerator implements Runnable
 			
 			adjustLocation(previous, location);
 			
-			Node node = decodeStatementAndCheck(statement, location, scope, searchTypes);
+			Node node = decodeStatementAndCheck(statement, location, scope, searchTypes, skipScopes);
 			
 			checkScopeFragment(node, endChar, scope);
 			
@@ -336,6 +339,10 @@ public class TreeGenerator implements Runnable
 			if (node != null)
 			{
 				return node;
+			}
+			else if (skipScopes)
+			{
+				statementStartIndex = oldStatementStartIndex;
 			}
 			
 			updateParents();
@@ -456,8 +463,10 @@ public class TreeGenerator implements Runnable
 	 * @param scope Whether or not the statement starts off a scope.
 	 * @param searchTypes The types of nodes that the statement could
 	 * 		possibly be.
+	 * @param skipScopes Whether or not to skip the scopes of anything
+	 * 		that contains a scope. If true, only decode the header.
 	 */
-	private Node decodeStatementAndCheck(String statement, Location location, boolean scope, Class<?> searchTypes[])
+	private Node decodeStatementAndCheck(String statement, Location location, boolean scope, Class<?> searchTypes[], boolean skipScopes)
 	{
 		try
 		{
@@ -465,7 +474,7 @@ public class TreeGenerator implements Runnable
 		}
 		catch (SyntaxErrorException e)
 		{
-			if (scope && !parentStack.isEmpty())
+			if (!skipScopes && scope && !parentStack.isEmpty())
 			{
 				Node parent = parentStack.peek();
 				
@@ -477,6 +486,10 @@ public class TreeGenerator implements Runnable
 				{
 					parentStack.push(BodyMethodDeclaration.generateTemporaryMethod(parent, location));
 				}
+			}
+			else if (skipScopes)
+			{
+				updateTree(null, skipScopes);
 			}
 		}
 		
@@ -493,6 +506,13 @@ public class TreeGenerator implements Runnable
 	 */
 	private void updateTree(Node node, boolean skipScopes)
 	{
+		if (node == null)
+		{
+			skipScope();
+			
+			return;
+		}
+		
 		if (skipScopes && (node.containsScope() || node instanceof ClassDeclaration))
 		{
 			skipScope();

@@ -26,19 +26,21 @@ typedef struct Array Array;
 
 typedef struct nova_VTable_Array
 {
-	String* (*nova_virtual_toString)(Object*, ExceptionData*);
-	char (*nova_virtual_equals)(Object*, ExceptionData*, Object*);
+	String* (*nova_virtual_0_toString)(Object*, ExceptionData*);
+	char (*nova_virtual_0_equals)(Object*, ExceptionData*, Object*);
 } nova_VTable_Array;
 
 CCLASS_CLASS
 (
 	Array, 
 	
-	int nova_Array_length;
 	nova_VTable_Array* vtable;
+	int nova_Array_length;
 )
 
-Array* nova_Array_construct(Array* this, ExceptionData* exceptionData);
+Array* nova_0_Array_construct(Array* this, ExceptionData* exceptionData);
 void nova_del_Array(Array** this, ExceptionData* exceptionData);
+void nova_Array_this(Array* this, ExceptionData* exceptionData);
+void nova_Array_super(Array* this, ExceptionData* exceptionData);
 
 #endif

@@ -1,3 +1,4 @@
+#include <precompiled.h>
 #include "NativeSystem.h"
 
 void error(int code, char message[], error_func func, void* ref)

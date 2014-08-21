@@ -30,8 +30,8 @@ typedef struct ThreadStability ThreadStability;
 
 typedef struct nova_VTable_ThreadStability
 {
-	String* (*nova_virtual_toString)(Object*, ExceptionData*);
-	char (*nova_virtual_equals)(Object*, ExceptionData*, Object*);
+	String* (*nova_virtual_0_toString)(Object*, ExceptionData*);
+	char (*nova_virtual_0_equals)(Object*, ExceptionData*, Object*);
 } nova_VTable_ThreadStability;
 
 CCLASS_CLASS
@@ -44,5 +44,7 @@ CCLASS_CLASS
 ThreadStability* nova_ThreadStability_construct(ThreadStability* this, ExceptionData* exceptionData);
 void nova_del_ThreadStability(ThreadStability** this, ExceptionData* exceptionData);
 void nova_static_ThreadStability_test(ThreadStability* this, ExceptionData* exceptionData, StabilityTest* nova_0_program);
+void nova_ThreadStability_this(ThreadStability* this, ExceptionData* exceptionData);
+void nova_ThreadStability_super(ThreadStability* this, ExceptionData* exceptionData);
 
 #endif

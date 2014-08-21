@@ -22,7 +22,7 @@ import net.fathomsoft.nova.util.StringUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:00:11 PM
- * @version	v0.2.27 Aug 7, 2014 at 1:32:02 AM
+ * @version	v0.2.28 Aug 20, 2014 at 12:10:45 AM
  */
 public abstract class Node
 {
@@ -719,21 +719,33 @@ public abstract class Node
 	public void inheritChildren(Node oldParent, boolean clone)
 	{
 		int index = children.size();
+		int end   = oldParent.getNumDefaultChildren();
 		
 		for (int i = oldParent.getNumChildren() - 1; i >= 0; i--)
 		{
 			Node child = oldParent.getChild(i);
 			
-			if (clone)
+			if (i >= end)
 			{
-				child = child.clone(this, child.getLocationIn());
+				if (clone)
+				{
+					child = child.clone(this, child.getLocationIn());
+				}
+				else
+				{
+					child.detach();
+				}
+				
+				addChild(index, child);
 			}
 			else
 			{
-				child.detach();
+				Node newChild = child.clone(oldParent, child.getLocationIn());
+				
+				addChild(index, newChild);
+				
+				newChild.inheritChildren(child);
 			}
-			
-			addChild(index, child);
 		}
 	}
 	
@@ -1343,6 +1355,18 @@ public abstract class Node
 		{
 			return "[Node: " + super.toString() + ']';
 		}
+	}
+	
+	public static Node newEmptyNode()
+	{
+		return new Node(null, null)
+		{
+			@Override
+			public Node clone(Node temporaryParent, Location locationIn)
+			{
+				return null;
+			}
+		};
 	}
 	
 	/**

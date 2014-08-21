@@ -1,4 +1,4 @@
-#include "precompiled.h"
+#include <precompiled.h>
 #include "Nova.h"
 /**
  * Similar to fgets(), but handles automatic reallocation of the buffer.

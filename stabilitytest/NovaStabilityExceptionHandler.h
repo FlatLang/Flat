@@ -29,7 +29,7 @@ typedef struct StabilityExceptionHandler StabilityExceptionHandler;
 
 typedef struct nova_VTable_StabilityExceptionHandler
 {
-	void (*nova_virtual_uncaughtException)(StabilityExceptionHandler*, ExceptionData*, Thread*, Exception*);
+	void (*nova_virtual_0_uncaughtException)(StabilityExceptionHandler*, ExceptionData*, Thread*, Exception*);
 } nova_VTable_StabilityExceptionHandler;
 
 CCLASS_CLASS
@@ -42,6 +42,8 @@ CCLASS_CLASS
 
 StabilityExceptionHandler* nova_StabilityExceptionHandler_construct(StabilityExceptionHandler* this, ExceptionData* exceptionData, StabilityTest* nova_0_program);
 void nova_del_StabilityExceptionHandler(StabilityExceptionHandler** this, ExceptionData* exceptionData);
-void nova_StabilityExceptionHandler_uncaughtException(StabilityExceptionHandler* this, ExceptionData* exceptionData, Thread* nova_0_thread, Exception* nova_0_exception);
+void nova_StabilityExceptionHandler_this(StabilityExceptionHandler* this, ExceptionData* exceptionData, StabilityTest* nova_0_program);
+void nova_0_StabilityExceptionHandler_uncaughtException(StabilityExceptionHandler* this, ExceptionData* exceptionData, Thread* nova_0_thread, Exception* nova_0_exception);
+void nova_StabilityExceptionHandler_super(StabilityExceptionHandler* this, ExceptionData* exceptionData);
 
 #endif

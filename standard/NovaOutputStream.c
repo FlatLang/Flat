@@ -4,8 +4,8 @@
 
 nova_VTable_OutputStream nova_VTable_OutputStream_val =
 {
-	nova_Object_toString,
-	nova_Object_equals,
+	nova_0_Object_toString,
+	nova_0_Object_equals,
 };
 CCLASS_PRIVATE
 (
@@ -13,13 +13,16 @@ CCLASS_PRIVATE
 	
 )
 
-OutputStream* nova_OutputStream_construct(OutputStream* this, ExceptionData* exceptionData)
+OutputStream* nova_0_OutputStream_construct(OutputStream* this, ExceptionData* exceptionData)
 {
 	CCLASS_NEW(OutputStream, this);
-	
-	this->prv->nova_OutputStream_stream = (File*)0;
 	this->vtable = &nova_VTable_OutputStream_val;
+	nova_Object_super((Object*)this, 0);
+	nova_Object_this((Object*)(this), exceptionData);
+	nova_OutputStream_super(this, 0);
+	
 	{
+		nova_OutputStream_this(this, exceptionData);
 	}
 	
 	return this;
@@ -41,3 +44,12 @@ void nova_del_OutputStream(OutputStream** this, ExceptionData* exceptionData)
 }
 
 
+
+void nova_OutputStream_this(OutputStream* this, ExceptionData* exceptionData)
+{
+}
+
+void nova_OutputStream_super(OutputStream* this, ExceptionData* exceptionData)
+{
+	this->prv->nova_OutputStream_stream = (File*)0;
+}

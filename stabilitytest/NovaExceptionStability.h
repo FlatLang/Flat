@@ -28,8 +28,8 @@ typedef struct ExceptionStability ExceptionStability;
 
 typedef struct nova_VTable_ExceptionStability
 {
-	String* (*nova_virtual_toString)(Object*, ExceptionData*);
-	char (*nova_virtual_equals)(Object*, ExceptionData*, Object*);
+	String* (*nova_virtual_0_toString)(Object*, ExceptionData*);
+	char (*nova_virtual_0_equals)(Object*, ExceptionData*, Object*);
 } nova_VTable_ExceptionStability;
 
 CCLASS_CLASS
@@ -42,5 +42,7 @@ CCLASS_CLASS
 ExceptionStability* nova_ExceptionStability_construct(ExceptionStability* this, ExceptionData* exceptionData);
 void nova_del_ExceptionStability(ExceptionStability** this, ExceptionData* exceptionData);
 void nova_static_ExceptionStability_test(ExceptionStability* this, ExceptionData* exceptionData, StabilityTest* nova_0_program);
+void nova_ExceptionStability_this(ExceptionStability* this, ExceptionData* exceptionData);
+void nova_ExceptionStability_super(ExceptionStability* this, ExceptionData* exceptionData);
 
 #endif

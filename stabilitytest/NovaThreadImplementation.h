@@ -27,7 +27,7 @@ typedef struct ThreadImplementation ThreadImplementation;
 
 typedef struct nova_VTable_ThreadImplementation
 {
-	void (*nova_virtual_run)(ThreadImplementation*, ExceptionData*);
+	void (*nova_virtual_0_run)(ThreadImplementation*, ExceptionData*);
 } nova_VTable_ThreadImplementation;
 
 CCLASS_CLASS
@@ -40,6 +40,8 @@ CCLASS_CLASS
 
 ThreadImplementation* nova_ThreadImplementation_construct(ThreadImplementation* this, ExceptionData* exceptionData, int nova_0_times, int nova_0_millis);
 void nova_del_ThreadImplementation(ThreadImplementation** this, ExceptionData* exceptionData);
-void nova_ThreadImplementation_run(ThreadImplementation* this, ExceptionData* exceptionData);
+void nova_ThreadImplementation_this(ThreadImplementation* this, ExceptionData* exceptionData, int nova_0_times, int nova_0_millis);
+void nova_0_ThreadImplementation_run(ThreadImplementation* this, ExceptionData* exceptionData);
+void nova_ThreadImplementation_super(ThreadImplementation* this, ExceptionData* exceptionData);
 
 #endif

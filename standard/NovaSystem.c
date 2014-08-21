@@ -5,16 +5,20 @@ typedef void (*nova_1_0_exit)(void*, ExceptionData*, int, String*, char);
 
 nova_VTable_System nova_VTable_System_val =
 {
-	nova_Object_toString,
-	nova_Object_equals,
+	nova_0_Object_toString,
+	nova_0_Object_equals,
 };
 
-System* nova_System_construct(System* this, ExceptionData* exceptionData)
+System* nova_0_System_construct(System* this, ExceptionData* exceptionData)
 {
 	CCLASS_NEW(System, this,);
-	
 	this->vtable = &nova_VTable_System_val;
+	nova_Object_super((Object*)this, 0);
+	nova_Object_this((Object*)(this), exceptionData);
+	nova_System_super(this, 0);
+	
 	{
+		nova_System_this(this, exceptionData);
 	}
 	
 	return this;
@@ -49,7 +53,7 @@ void nova_static_2_System_exit(System* this, ExceptionData* exceptionData, int n
 	{
 		File* nova_2_f;
 		
-		nova_2_f = nova_0_File_construct(0, exceptionData, nova_String_concat(nova_String_construct(0, exceptionData, "Log"), exceptionData, nova_String_concat(nova_1_Long_toString(nova_Long_construct(0, exceptionData, nova_static_Time_currentTimeMillis(0, exceptionData)), exceptionData), exceptionData, nova_String_construct(0, exceptionData, ".txt"))));
+		nova_2_f = nova_1_File_construct(0, exceptionData, nova_String_concat(nova_String_construct(0, exceptionData, "Log"), exceptionData, nova_String_concat(nova_3_Long_toString(nova_Long_construct(0, exceptionData, nova_static_Time_currentTimeMillis(0, exceptionData)), exceptionData), exceptionData, nova_String_construct(0, exceptionData, ".txt"))));
 		if (nova_File_create(nova_2_f, exceptionData))
 		{
 			nova_File_writeLine(nova_2_f, exceptionData, nova_0_message);
@@ -67,12 +71,20 @@ Process* nova_static_System_execute(System* this, ExceptionData* exceptionData, 
 	Process* nova_1_process;
 	
 	nova_1_pipe = getPipe(nova_String_toCharArray(nova_0_command, exceptionData), (nova_1_0_exit)&nova_static_2_System_exit, (System*)0);
-	nova_1_f = nova_1_File_construct(0, exceptionData, nova_1_pipe);
+	nova_1_f = nova_2_File_construct(0, exceptionData, nova_1_pipe);
 	if (!nova_File_exists(nova_1_f, exceptionData))
 	{
 		nova_static_1_System_exit((System*)0, exceptionData, 1, nova_String_construct(0, exceptionData, "Unable to open pipe"));
 	}
-	nova_1_reader = nova_StreamReader_construct(0, exceptionData, nova_1_f);
+	nova_1_reader = nova_1_StreamReader_construct(0, exceptionData, nova_1_f);
 	nova_1_process = nova_Process_construct(0, exceptionData, nova_1_reader);
 	return nova_1_process;
+}
+
+void nova_System_this(System* this, ExceptionData* exceptionData)
+{
+}
+
+void nova_System_super(System* this, ExceptionData* exceptionData)
+{
 }

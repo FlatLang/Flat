@@ -28,7 +28,7 @@ import net.fathomsoft.nova.tree.variables.Variable;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Mar 15, 2014 at 7:55:00 PM
- * @version	v0.2.27 Aug 7, 2014 at 1:32:02 AM
+ * @version	v0.2.28 Aug 20, 2014 at 12:10:45 AM
  */
 public class SyntaxUtils
 {
@@ -118,7 +118,7 @@ public class SyntaxUtils
 			return false;
 		}
 		
-		return rank2 <= rank1;
+		return rank1 >= rank2;
 	}
 	
 	/**
@@ -144,6 +144,20 @@ public class SyntaxUtils
 	public static int findDotOperator(String str, int start)
 	{
 		return findCharInBaseScope(str, '.', start);
+	}
+
+	/**
+	 * Check to see if the given char exists within the
+	 * base scope of the given haystack String. The base scope means
+	 * outside of any quotes, parenthesis, and/or brackets.
+	 * 
+	 * @param haystack The String to find the character within.
+	 * @param needle The character to search for in the String.
+	 * @return Whether or not the char exists within the base scope.
+	 */
+	public static boolean containsCharInBaseScope(String haystack, char needle)
+	{
+		return findCharInBaseScope(haystack, needle) >= 0;
 	}
 
 	/**
@@ -721,7 +735,7 @@ public class SyntaxUtils
 			return false;
 		}
 		
-		int binary = StringUtils.findStrings(statement, StringUtils.BINARY_OPERATORS, index - 1).getStart();
+		int binary = StringUtils.findStrings(statement, Operator.LOGICAL_OPERATORS, index - 1).getStart();
 		
 		return binary - 1 != index && binary != index && binary != index - 1;
 	}
@@ -854,9 +868,9 @@ public class SyntaxUtils
 	public static Bounds findParenthesesBounds(Node parent, String statement)
 	{
 		int start = statement.indexOf('(');
-		int end   = StringUtils.findEndingMatch(statement, start, '(', ')');
+		int end   = StringUtils.findEndingMatch(statement, start, '(', ')') + 1;
 		
-		if (end < 0)
+		if (end <= 0)
 		{
 			SyntaxMessage.error("Expected a ')' ending parenthesis", parent);
 		}

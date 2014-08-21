@@ -5,7 +5,7 @@ package net.fathomsoft.nova.util;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Mar 12, 2014 at 4:08:41 PM
- * @version	v0.2.20 Jul 29, 2014 at 7:26:50 PM
+ * @version	v0.2.28 Aug 20, 2014 at 12:10:45 AM
  */
 public class Bounds
 {
@@ -82,6 +82,36 @@ public class Bounds
 		}
 		
 		return source.substring(getStart(), getEnd());
+	}
+	
+	public String extractPreString(String source)
+	{
+		if (!isValid())
+		{
+			return null;
+		}
+		
+		return source.substring(0, getStart());
+	}
+	
+	public String extractPostString(String source)
+	{
+		if (!isValid())
+		{
+			return null;
+		}
+		
+		return source.substring(getEnd());
+	}
+	
+	public String trimString(String source)
+	{
+		if (!isValid())
+		{
+			return null;
+		}
+		
+		return extractPreString(source) + extractPostString(source);
 	}
 	
 	/**

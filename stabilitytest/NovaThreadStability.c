@@ -4,8 +4,8 @@
 
 nova_VTable_ThreadStability nova_VTable_ThreadStability_val =
 {
-	nova_Object_toString,
-	nova_Object_equals,
+	nova_0_Object_toString,
+	nova_0_Object_equals,
 };
 
 void nova_static_ThreadStability_createThreads(ThreadStability* this, ExceptionData* exceptionData, StabilityTest* nova_0_program, ThreadImplementation** nova_0_threads, int nova_0_amount);
@@ -15,9 +15,13 @@ void nova_static_ThreadStability_joinThreads(ThreadStability* this, ExceptionDat
 ThreadStability* nova_ThreadStability_construct(ThreadStability* this, ExceptionData* exceptionData)
 {
 	CCLASS_NEW(ThreadStability, this,);
-	
 	this->vtable = &nova_VTable_ThreadStability_val;
+	nova_Object_super((Object*)this, 0);
+	nova_Object_this((Object*)(this), exceptionData);
+	nova_ThreadStability_super(this, 0);
+	
 	{
+		nova_ThreadStability_this(this, exceptionData);
 	}
 	
 	return this;
@@ -72,7 +76,7 @@ void nova_static_ThreadStability_checkMemoryAccess(ThreadStability* this, Except
 	{
 		String* nova_2_s;
 		
-		nova_2_s = nova_static_0_Int_toString(0, exceptionData, nova_1_i);
+		nova_2_s = nova_static_1_Int_toString(0, exceptionData, nova_1_i);
 	}
 	nova_static_0_Console_writeLine(0, exceptionData, nova_String_construct(0, exceptionData, "OK"));
 }
@@ -86,4 +90,12 @@ void nova_static_ThreadStability_joinThreads(ThreadStability* this, ExceptionDat
 	{
 		nova_Thread_join((Thread*)(nova_0_threads[nova_1_i]), exceptionData);
 	}
+}
+
+void nova_ThreadStability_this(ThreadStability* this, ExceptionData* exceptionData)
+{
+}
+
+void nova_ThreadStability_super(ThreadStability* this, ExceptionData* exceptionData)
+{
 }

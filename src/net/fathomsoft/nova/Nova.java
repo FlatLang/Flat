@@ -27,7 +27,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:00:04 PM
- * @version	v0.2.27 Aug 7, 2014 at 1:32:02 AM
+ * @version	v0.2.28 Aug 20, 2014 at 12:10:45 AM
  */
 public class Nova
 {
@@ -79,7 +79,7 @@ public class Nova
 	public static final int		LINUX         = 3;
 	
 	public static final String	LANGUAGE_NAME = "Nova";
-	public static final String	VERSION       = "v0.2.26";
+	public static final String	VERSION       = "v0.2.28";
 	
 	/**
 	 * Find out which operating system the compiler is running on.
@@ -270,7 +270,7 @@ public class Nova
 //				"-csource",
 				"-formatc",
 				testClasses ? "-v" : "",
-//				"-gcc",
+				"-gcc",
 //				"-small",
 				"-cargs",
 				"-keepc",
@@ -530,10 +530,14 @@ public class Nova
 	 */
 	private void compileC()
 	{
-		StringBuilder cmd = new StringBuilder();
+		StringBuilder cmd  = new StringBuilder();
+		
+		File compilerDir = null;
 		
 		if (compiler == GCC)
 		{
+			compilerDir = workingDir;
+			
 			cmd.append("gcc -pipe ");
 			
 			if (isFlagEnabled(SMALL_BIN))
@@ -547,6 +551,8 @@ public class Nova
 		}
 		else if (compiler == TCC)
 		{
+			compilerDir = new File(removeSurroundingQuotes(formatPath(workingDir + "/../compiler/tcc")));
+			
 			cmd.append("compiler/tcc/tcc.exe ");
 		}
 		else if (compiler == CLANG)
@@ -556,10 +562,16 @@ public class Nova
 		
 		if (!isFlagEnabled(NO_GC))
 		{
-			cmd.append("-DUSE_GC ");
+			cmd.append("-DUSE_GC -L\"C:/Users/Braden Steffaniak/Documents/GitHub/Nova/example/bin/\" -lgc ");
 		}
-		
-		cmd.append("-DE4C_THREADSAFE ");
+		if (isFlagEnabled(SMALL_BIN))
+		{
+			cmd.append("-Os -s ");
+		}
+		else
+		{
+			cmd.append("-O2 ");
+		}
 		
 		for (int i = 0; i < includeDirectories.size(); i++)
 		{
@@ -571,13 +583,16 @@ public class Nova
 		String libDir    = workingDir + "/bin/";
 		String incDir    = workingDir + "../include/";
 		
-//		String libFathom = formatPath(libDir + "libNova" + DYNAMIC_LIB_EXT);
-		String libThread = formatPath(libDir + "libThread" + DYNAMIC_LIB_EXT);
-		String libGC     = formatPath(libDir + "gc" + DYNAMIC_LIB_EXT);
+//		String libNova   = formatPath(libDir + "libNova" + DYNAMIC_LIB_EXT);
+//		String libThread = formatPath(libDir + "libThread" + DYNAMIC_LIB_EXT);
+//		String libGC     = formatPath(libDir + "gc" + DYNAMIC_LIB_EXT);
 		
-//		cmd.append(libFathom).append(' ');
-		cmd.append(libThread).append(' ');
-		cmd.append(libGC).append(' ');
+//		cmd.append(libNova).append(' ');
+//		cmd.append(libThread).append(' ');
+//		cmd.append(libGC).append(' ');
+		
+		cmd.append(formatPath(incDir + "Nova.c")).append(' ');
+//		cmd.append(formatPath(incDir + "LibNovaThread.c")).append(' ');
 		
 		for (File sourceFile : cSourceFiles)
 		{
@@ -589,18 +604,7 @@ public class Nova
 			cmd.append(formatPath(external)).append(' ');
 		}
 		
-		cmd.append(formatPath(incDir + "Nova.c")).append(' ');
-		
 		cmd.append("-o ").append('"').append(outputFile.getAbsolutePath()).append('"').append(' ');
-		
-		if (isFlagEnabled(SMALL_BIN))
-		{
-			cmd.append("-Os -s ");
-		}
-		else
-		{
-			cmd.append("-O2 ");
-		}
 		
 //		cmd.append("-Ofast ");
 //		cmd.append("-s ");
@@ -622,7 +626,7 @@ public class Nova
 		
 		log("Compiling C sources...");
 		
-		final Command command = new Command(cmd.toString(), workingDir);
+		final Command command = new Command(cmd.toString(), compilerDir);
 		
 		command.addCommandListener(new CommandListener()
 		{
@@ -827,7 +831,7 @@ public class Nova
 	 */
 	public void addExternalImport(FileDeclaration file, String location)
 	{
-		if (!StringUtils.containsString(FileDeclaration.DEFAULT_IMPORTS, location))
+		if (!StringUtils.containsString(location, FileDeclaration.DEFAULT_IMPORTS))
 		{
 //			location = file.getFile().getParent() + "/" + location;
 			location = location.substring(0, location.length() - 1) + "c"; 
@@ -1307,10 +1311,15 @@ public class Nova
 	
 	/**
 	 * Used to represent a debugging breakpoint...
+	 * 
+	 * @param condition Whether or not to break.
 	 */
-	public static void debuggingBreakpoint()
+	public static void debuggingBreakpoint(boolean condition)
 	{
-		
+		if (condition)
+		{
+			System.out.println("Breakpoint");
+		}
 	}
 	
 	public static Nova generateTemporaryController()

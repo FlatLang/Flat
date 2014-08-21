@@ -4,8 +4,8 @@
 
 nova_VTable_ExceptionStability nova_VTable_ExceptionStability_val =
 {
-	nova_Object_toString,
-	nova_Object_equals,
+	nova_0_Object_toString,
+	nova_0_Object_equals,
 };
 
 void nova_static_ExceptionStability_testException(ExceptionStability* this, ExceptionData* exceptionData, StabilityTest* nova_0_program);
@@ -13,9 +13,13 @@ void nova_static_ExceptionStability_testException(ExceptionStability* this, Exce
 ExceptionStability* nova_ExceptionStability_construct(ExceptionStability* this, ExceptionData* exceptionData)
 {
 	CCLASS_NEW(ExceptionStability, this,);
-	
 	this->vtable = &nova_VTable_ExceptionStability_val;
+	nova_Object_super((Object*)this, 0);
+	nova_Object_this((Object*)(this), exceptionData);
+	nova_ExceptionStability_super(this, 0);
+	
 	{
+		nova_ExceptionStability_this(this, exceptionData);
 	}
 	
 	return this;
@@ -118,4 +122,12 @@ void nova_static_ExceptionStability_testException(ExceptionStability* this, Exce
 	{
 		nova_1_StabilityTest_fail(nova_0_program, exceptionData, nova_String_construct(0, exceptionData, "Failed; uncaught StabilityTestException"));
 	}
+}
+
+void nova_ExceptionStability_this(ExceptionStability* this, ExceptionData* exceptionData)
+{
+}
+
+void nova_ExceptionStability_super(ExceptionStability* this, ExceptionData* exceptionData)
+{
 }

@@ -4,8 +4,8 @@
 
 nova_VTable_ArrayList nova_VTable_ArrayList_val =
 {
-	nova_Object_toString,
-	nova_Object_equals,
+	nova_0_Object_toString,
+	nova_0_Object_equals,
 };
 CCLASS_PRIVATE
 (
@@ -17,15 +17,13 @@ CCLASS_PRIVATE
 ArrayList* nova_ArrayList_construct(ArrayList* this, ExceptionData* exceptionData)
 {
 	CCLASS_NEW(ArrayList, this);
-	
-	this->nova_ArrayList_size = 0;
-	this->prv->nova_ArrayList_bufferSize = 0;
-	this->prv->nova_ArrayList_data = 0;
 	this->vtable = &nova_VTable_ArrayList_val;
+	nova_Object_super((Object*)this, 0);
+	nova_Object_this((Object*)(this), exceptionData);
+	nova_ArrayList_super(this, 0);
+	
 	{
-		this->nova_ArrayList_size = 0;
-		this->prv->nova_ArrayList_bufferSize = 0;
-		nova_ArrayList_increaseSize(this, exceptionData);
+		nova_ArrayList_this(this, exceptionData);
 	}
 	
 	return this;
@@ -45,6 +43,13 @@ void nova_del_ArrayList(ArrayList** this, ExceptionData* exceptionData)
 	{
 	}
 	NOVA_FREE(*this);
+}
+
+void nova_ArrayList_this(ArrayList* this, ExceptionData* exceptionData)
+{
+	this->nova_ArrayList_size = 0;
+	this->prv->nova_ArrayList_bufferSize = 0;
+	nova_ArrayList_increaseSize(this, exceptionData);
 }
 
 void nova_ArrayList_add(ArrayList* this, ExceptionData* exceptionData, int nova_0_var)
@@ -69,4 +74,11 @@ void nova_ArrayList_increaseSize(ArrayList* this, ExceptionData* exceptionData)
 int nova_ArrayList_get(ArrayList* this, ExceptionData* exceptionData, int nova_0_index)
 {
 	return this->prv->nova_ArrayList_data[nova_0_index];
+}
+
+void nova_ArrayList_super(ArrayList* this, ExceptionData* exceptionData)
+{
+	this->nova_ArrayList_size = 0;
+	this->prv->nova_ArrayList_bufferSize = 0;
+	this->prv->nova_ArrayList_data = 0;
 }

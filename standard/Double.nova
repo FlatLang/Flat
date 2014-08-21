@@ -13,8 +13,6 @@ public class Double extends Number
 	
 	public static numDigits(double number) -> int
 	{
-		//return Long.numDigits(number)
-		
 		if (number < 0)
 		{
 			return numDigits(-number) + 1
@@ -43,8 +41,7 @@ public class Double extends Number
 	
 	static genBuffer(double value) -> char[]
 	{
-		int size   = 11 + 1 + 15
-		
+		int  size     = 11 + 1 + 15
 		char buffer[] = new char[size]
 		
 		sprintf(buffer, "%.15f", value)
@@ -54,9 +51,8 @@ public class Double extends Number
 	
 	static repetition(char buffer[], int start) -> int
 	{
-		int index = start
-		
-		char c = buffer[index]
+		int  index = start
+		char c     = buffer[index]
 		
 		while (buffer[--index] == c);
 		
@@ -72,11 +68,9 @@ public class Double extends Number
 	
 	public static toString(double value) -> String
 	{
-		char buffer[] = genBuffer(value)
-		
-		int size = strlen(buffer)
-		
-		int lastIndex = size - 1
+		char buffer[]  = genBuffer(value)
+		int  size      = strlen(buffer)
+		int  lastIndex = size - 1
 		
 		char c = buffer[--lastIndex]
 		

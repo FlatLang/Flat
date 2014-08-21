@@ -9,7 +9,7 @@ import java.util.regex.Matcher;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Mar 13, 2014 at 9:38:42 PM
- * @version	v0.2.26 Aug 6, 2014 at 2:48:50 PM
+ * @version	v0.2.28 Aug 20, 2014 at 12:10:45 AM
  */
 public class StringUtils
 {
@@ -17,8 +17,6 @@ public class StringUtils
 	public static final char	SYMBOLS_CHARS[]    = new char[] { '-', '+', '~', '!', '=', '%', '^', '&', '|', '*', '/', '>', '<', ',', '"', '\'', '[', ']', '{', '}', ';', '(', ')' };
 	public static final char	STMT_CONT_CHARS[]  = new char[] { '-', '+', '~', '!', '=', '%', '^', '&', '|', '*', '/', '>', '<', ',', '.' };
 	
-	public static final String	BINARY_OPERATORS[] = new String[] { "+", "-", "/", "*", "==", "!=", "&&", "||", "<=", ">=", "<<", ">>", "<", ">", "%" };
-	public static final String	UNARY_OPERATORS[]  = new String[] { "--", "-", "++", "!" };
 	public static final String	SYMBOLS[];
 	
 	static
@@ -410,6 +408,28 @@ public class StringUtils
 	 */
 	public static String findNextWord(CharSequence source, int start, int direction)
 	{
+		Bounds bounds = findNextWordBounds(source, start, direction);
+		
+		if (bounds == null)
+		{
+			return null;
+		}
+		
+		return bounds.extractString(source.toString());
+	}
+	
+	public static Bounds findNextWordBounds(CharSequence source)
+	{
+		return findNextWordBounds(source, 0);
+	}
+	
+	public static Bounds findNextWordBounds(CharSequence source, int start)
+	{
+		return findNextWordBounds(source, start, 1);
+	}
+	
+	public static Bounds findNextWordBounds(CharSequence source, int start, int direction)
+	{
 		if (start < 0 || start >= source.length())
 		{
 			return null;
@@ -426,10 +446,10 @@ public class StringUtils
 				index--;
 			}
 			
-			return source.subSequence(index + 1, start + 1).toString();
+			return new Bounds(index + 1, start + 1);
 		}
 		
-		return source.subSequence(start, index).toString();
+		return new Bounds(start, index);
 	}
 	
 	/**
@@ -1056,9 +1076,14 @@ public class StringUtils
 	
 	public static Bounds removeSurroundingParenthesis(String source, Bounds bounds)
 	{
+		if (!bounds.isValid())
+		{
+			return Bounds.EMPTY;
+		}
+		
 		Bounds out = bounds.clone();
 		
-		out.setEnd(StringUtils.findNextNonWhitespaceIndex(source, bounds.getEnd() - 1, -1) + 1);
+		out.setEnd(StringUtils.findNextNonWhitespaceIndex(source, bounds.getEnd() - 2, -1) + 1);
 		out.setStart(StringUtils.findNextNonWhitespaceIndex(source, bounds.getStart() + 1));
 		
 		return out;
@@ -1277,13 +1302,13 @@ public class StringUtils
 	/**
 	 * Search for the given String 's' in the given array.
 	 * 
-	 * @param array The array to search for 's' in.
 	 * @param s The String to search for.
+	 * @param array The array to search for 's' in.
 	 * @return Whether or not the array contains the 'c' String.
 	 */
-	public static boolean containsString(String array[], String s)
+	public static boolean containsString(String s, String ... array)
 	{
-		return searchString(array, s) >= 0;
+		return searchString(s, array) >= 0;
 	}
 	
 	/**
@@ -1295,7 +1320,7 @@ public class StringUtils
 	 * @return The index in the array of the occurrence of String 's', if
 	 * 		it was found in the array.
 	 */
-	public static int searchString(String array[], String s)
+	public static int searchString(String s, String ... array)
 	{
 		for (int i = array.length - 1; i >= 0; i--)
 		{

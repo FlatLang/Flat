@@ -29,8 +29,8 @@ typedef struct TimeStability TimeStability;
 
 typedef struct nova_VTable_TimeStability
 {
-	String* (*nova_virtual_toString)(Object*, ExceptionData*);
-	char (*nova_virtual_equals)(Object*, ExceptionData*, Object*);
+	String* (*nova_virtual_0_toString)(Object*, ExceptionData*);
+	char (*nova_virtual_0_equals)(Object*, ExceptionData*, Object*);
 } nova_VTable_TimeStability;
 
 CCLASS_CLASS
@@ -43,5 +43,7 @@ CCLASS_CLASS
 TimeStability* nova_TimeStability_construct(TimeStability* this, ExceptionData* exceptionData);
 void nova_del_TimeStability(TimeStability** this, ExceptionData* exceptionData);
 void nova_static_TimeStability_test(TimeStability* this, ExceptionData* exceptionData, StabilityTest* nova_0_program);
+void nova_TimeStability_this(TimeStability* this, ExceptionData* exceptionData);
+void nova_TimeStability_super(TimeStability* this, ExceptionData* exceptionData);
 
 #endif

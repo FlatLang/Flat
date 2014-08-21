@@ -26,8 +26,8 @@ typedef struct Bool Bool;
 
 typedef struct nova_VTable_Bool
 {
-	String* (*nova_virtual_toString)(Object*, ExceptionData*);
-	char (*nova_virtual_equals)(Object*, ExceptionData*, Object*);
+	String* (*nova_virtual_0_toString)(Object*, ExceptionData*);
+	char (*nova_virtual_0_equals)(Object*, ExceptionData*, Object*);
 } nova_VTable_Bool;
 
 CCLASS_CLASS
@@ -37,7 +37,9 @@ CCLASS_CLASS
 	nova_VTable_Bool* vtable;
 )
 
-Bool* nova_Bool_construct(Bool* this, ExceptionData* exceptionData);
+Bool* nova_0_Bool_construct(Bool* this, ExceptionData* exceptionData);
 void nova_del_Bool(Bool** this, ExceptionData* exceptionData);
+void nova_Bool_this(Bool* this, ExceptionData* exceptionData);
+void nova_Bool_super(Bool* this, ExceptionData* exceptionData);
 
 #endif

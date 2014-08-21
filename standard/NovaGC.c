@@ -4,16 +4,20 @@
 
 nova_VTable_GC nova_VTable_GC_val =
 {
-	nova_Object_toString,
-	nova_Object_equals,
+	nova_0_Object_toString,
+	nova_0_Object_equals,
 };
 
-GC* nova_GC_construct(GC* this, ExceptionData* exceptionData)
+GC* nova_0_GC_construct(GC* this, ExceptionData* exceptionData)
 {
 	CCLASS_NEW(GC, this,);
-	
 	this->vtable = &nova_VTable_GC_val;
+	nova_Object_super((Object*)this, 0);
+	nova_Object_this((Object*)(this), exceptionData);
+	nova_GC_super(this, 0);
+	
 	{
+		nova_GC_this(this, exceptionData);
 	}
 	
 	return this;
@@ -70,4 +74,12 @@ void nova_static_GC_enableIncremental(GC* this, ExceptionData* exceptionData)
 void nova_static_GC_dump(GC* this, ExceptionData* exceptionData)
 {
 	GC_dump();
+}
+
+void nova_GC_this(GC* this, ExceptionData* exceptionData)
+{
+}
+
+void nova_GC_super(GC* this, ExceptionData* exceptionData)
+{
 }

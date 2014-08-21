@@ -16,7 +16,7 @@ public class IntegerTest
 			
 			for (int i = 0; i < 999999; i++)
 			{
-				Long.toAString(i);
+				Long.toString(i);
 			}
 			
 			long end = Time.currentTimeMillis();

@@ -27,21 +27,22 @@ typedef struct ExceptionData ExceptionData;
 
 typedef struct nova_VTable_ExceptionData
 {
-	String* (*nova_virtual_toString)(Object*, ExceptionData*);
-	char (*nova_virtual_equals)(Object*, ExceptionData*, Object*);
+	String* (*nova_virtual_0_toString)(Object*, ExceptionData*);
+	char (*nova_virtual_0_equals)(Object*, ExceptionData*, Object*);
 } nova_VTable_ExceptionData;
 
 CCLASS_CLASS
 (
 	ExceptionData, 
 	
-	ArrayList* nova_ExceptionData_codes;
 	nova_VTable_ExceptionData* vtable;
+	ArrayList* nova_ExceptionData_codes;
 	struct Private* prv;
 )
 
 ExceptionData* nova_ExceptionData_construct(ExceptionData* this, ExceptionData* exceptionData, buffer* nova_0_buf);
 void nova_del_ExceptionData(ExceptionData** this, ExceptionData* exceptionData);
+void nova_ExceptionData_this(ExceptionData* this, ExceptionData* exceptionData, buffer* nova_0_buf);
 void nova_ExceptionData_addCode(ExceptionData* this, ExceptionData* exceptionData, int nova_0_code);
 buffer* nova_ExceptionData_getBuffer(ExceptionData* this, ExceptionData* exceptionData);
 ExceptionData* nova_ExceptionData_getCorrectData(ExceptionData* this, ExceptionData* exceptionData, int nova_0_code);
@@ -49,5 +50,6 @@ buffer* nova_ExceptionData_getCorrectBuffer(ExceptionData* this, ExceptionData* 
 void nova_ExceptionData_jumpToBuffer(ExceptionData* this, ExceptionData* exceptionData, int nova_0_code);
 ExceptionData* nova_ExceptionData_getParent(ExceptionData* this, ExceptionData* exceptionData);
 void nova_ExceptionData_setParent(ExceptionData* this, ExceptionData* exceptionData, ExceptionData* nova_0_p);
+void nova_ExceptionData_super(ExceptionData* this, ExceptionData* exceptionData);
 
 #endif

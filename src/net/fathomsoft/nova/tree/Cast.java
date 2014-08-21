@@ -16,7 +16,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.2.25 Aug 3, 2014 at 1:52:00 PM
- * @version	v0.2.26 Aug 6, 2014 at 2:48:50 PM
+ * @version	v0.2.28 Aug 20, 2014 at 12:10:45 AM
  */
 public class Cast extends IValue
 {
@@ -92,7 +92,7 @@ public class Cast extends IValue
 			Cast   n        = new Cast(parent, location);
 			Bounds bounds   = SyntaxUtils.findParenthesesBounds(n, statement);
 			String contents = StringUtils.removeSurroundingParenthesis(statement, bounds).extractString(statement);
-			String value    = statement.substring(bounds.getEnd() + 1).trim();
+			String value    = statement.substring(bounds.getEnd()).trim();
 			
 			if (contents != null && n.decodeType(contents, require) && n.decodeValue(value, bounds, require))
 			{
@@ -172,7 +172,7 @@ public class Cast extends IValue
 			return false;
 		}
 		
-		if (!getTypeClass().isOfType(node.getTypeClass()))
+		if (!getTypeClass().isRelatedTo(node.getTypeClass()))
 		{
 			SyntaxMessage.error("Cannot cast from type '" + node.getTypeClassName() + "' to type '" + getTypeClassName() + "'", this);
 		}

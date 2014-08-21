@@ -1,3 +1,4 @@
+#include <precompiled.h>
 #include "NativeObject.h"
 
 char* hashCode(Object* obj)

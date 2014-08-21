@@ -23,7 +23,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:20:35 PM
- * @version	v0.2.26 Aug 6, 2014 at 2:48:50 PM
+ * @version	v0.2.28 Aug 20, 2014 at 12:10:45 AM
  */
 public class BinaryOperation extends IValue
 {
@@ -186,7 +186,7 @@ public class BinaryOperation extends IValue
 			return false;
 		}
 		
-		Bounds operatorLoc = StringUtils.findStrings(statement, StringUtils.BINARY_OPERATORS);
+		Bounds operatorLoc = StringUtils.findStrings(statement, Operator.LOGICAL_OPERATORS);
 		
 		if (operatorLoc.getStart() < 0)
 		{
@@ -235,7 +235,7 @@ public class BinaryOperation extends IValue
 			return preTest;
 		}
 		
-		Bounds operatorLoc = StringUtils.findStrings(statement, StringUtils.BINARY_OPERATORS);
+		Bounds operatorLoc = StringUtils.findStrings(statement, Operator.LOGICAL_OPERATORS);
 		
 		try
 		{
@@ -271,7 +271,13 @@ public class BinaryOperation extends IValue
 	 */
 	private void decodeOperands(String statement, Bounds operatorLoc, Matcher matcher, boolean require)
 	{
-		Value    lhn         = decodeLeftOperand(statement, operatorLoc);
+		Value lhn = decodeLeftOperand(statement, operatorLoc);
+		
+		if (!operatorLoc.isValid())
+		{
+			throw new BinarySyntaxException("Could not decode operation.");
+		}
+		
 		String   operatorVal = statement.substring(operatorLoc.getStart(), operatorLoc.getEnd());
 		Location location    = new Location(getLocationIn());
 		Operator operator    = new Operator(this, location);
@@ -282,7 +288,7 @@ public class BinaryOperation extends IValue
 		
 		validateOperation(lhn, rhn, operator);
 		
-		if (operatorVal.equals("/"))
+		if (operatorVal.equals(Operator.DIVIDE))
 		{
 			validateDivideByZero(rhn);
 		}
@@ -437,6 +443,11 @@ public class BinaryOperation extends IValue
 		Value  lhn = null;
 		Bounds lhb = new Bounds(0, StringUtils.findNextNonWhitespaceIndex(statement, operatorLoc.getStart() - 1, -1) + 1);
 		
+		if (!lhb.isValid())
+		{
+			throw new BinarySyntaxException("Could not decode left hand value.");
+		}
+		
 		Location location = new Location(getLocationIn());
 		
 		UnaryOperation unary = testUnaryOperator(getParent(), statement, location);
@@ -447,15 +458,15 @@ public class BinaryOperation extends IValue
 			
 			int offset = lhn.getLocationIn().getEnd() - location.getStart();
 			
-			StringUtils.findStrings(statement, StringUtils.BINARY_OPERATORS, offset).cloneTo(operatorLoc);
+			StringUtils.findStrings(statement, Operator.LOGICAL_OPERATORS, offset).cloneTo(operatorLoc);
 		}
 		else
 		{
 			Location lhl = location.asNew();
-			lhl.setBounds(lhb.getStart(), lhb.getEnd());
+			lhl.setBounds(lhb);
 			
 			// The left-hand value.
-			String lhv = statement.substring(lhb.getStart(), lhb.getEnd());
+			String lhv = lhb.extractString(statement);
 
 			if (lhv.length() <= 0)
 			{
@@ -471,7 +482,7 @@ public class BinaryOperation extends IValue
 			}
 		
 			Location leftLoc = location.asNew();
-			leftLoc.setBounds(lhb.getStart(), lhb.getEnd());
+			leftLoc.setBounds(lhb);
 			lhn.setLocationIn(leftLoc);
 		}
 		
@@ -643,7 +654,7 @@ public class BinaryOperation extends IValue
 				return Bounds.EMPTY;
 			}
 			
-			Bounds unaryLoc = StringUtils.findStrings(statement, StringUtils.UNARY_OPERATORS);
+			Bounds unaryLoc = StringUtils.findStrings(statement, Operator.UNARY_OPERATORS);
 			
 			int end = 0;
 			

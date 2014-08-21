@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.error.SyntaxMessage;
+import net.fathomsoft.nova.tree.MethodList.SearchFilter;
 import net.fathomsoft.nova.tree.variables.FieldDeclaration;
 import net.fathomsoft.nova.tree.variables.FieldList;
 import net.fathomsoft.nova.tree.variables.InstanceFieldList;
@@ -22,7 +23,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:15:51 PM
- * @version	v0.2.27 Aug 7, 2014 at 1:32:02 AM
+ * @version	v0.2.28 Aug 20, 2014 at 12:10:45 AM
  */
 public class ClassDeclaration extends InstanceDeclaration
 {
@@ -43,13 +44,13 @@ public class ClassDeclaration extends InstanceDeclaration
 		
 		setType("class");
 		
-		FieldList        fields         = new FieldList(this, null);
-		MethodList       constructors   = new MethodList(this, null);
-		MethodList       destructors    = new MethodList(this, null);
-		MethodList       methods        = new MethodList(this, null);
-		ExternalTypeList externalTypes  = new ExternalTypeList(this, null);
-		FieldList        externalFields = new FieldList(this, null);
-		VTable           vtable         = new VTable(this, null);
+		FieldList        fields         = new FieldList(this, Location.INVALID);
+		MethodList       constructors   = new MethodList(this, Location.INVALID);
+		MethodList       destructors    = new MethodList(this, Location.INVALID);
+		MethodList       methods        = new MethodList(this, Location.INVALID);
+		ExternalTypeList externalTypes  = new ExternalTypeList(this, Location.INVALID);
+		FieldList        externalFields = new FieldList(this, Location.INVALID);
+		VTable           vtable         = new VTable(this, Location.INVALID);
 		
 		addChild(fields, this);
 		addChild(constructors, this);
@@ -77,7 +78,7 @@ public class ClassDeclaration extends InstanceDeclaration
 	 */
 	public FieldList getFieldList()
 	{
-		return (FieldList)getChild(0);
+		return (FieldList)getChild(super.getNumDefaultChildren() + 0);
 	}
 	
 	/**
@@ -88,7 +89,7 @@ public class ClassDeclaration extends InstanceDeclaration
 	 */
 	public MethodList getConstructorList()
 	{
-		return (MethodList)getChild(1);
+		return (MethodList)getChild(super.getNumDefaultChildren() + 1);
 	}
 	
 	/**
@@ -99,7 +100,7 @@ public class ClassDeclaration extends InstanceDeclaration
 	 */
 	public MethodList getDestructorList()
 	{
-		return (MethodList)getChild(2);
+		return (MethodList)getChild(super.getNumDefaultChildren() + 2);
 	}
 	
 	/**
@@ -110,7 +111,7 @@ public class ClassDeclaration extends InstanceDeclaration
 	 */
 	public MethodList getMethodList()
 	{
-		return (MethodList)getChild(3);
+		return (MethodList)getChild(super.getNumDefaultChildren() + 3);
 	}
 	
 	/**
@@ -121,7 +122,7 @@ public class ClassDeclaration extends InstanceDeclaration
 	 */
 	public ExternalTypeList getExternalTypeListNode()
 	{
-		return (ExternalTypeList)getChild(4);
+		return (ExternalTypeList)getChild(super.getNumDefaultChildren() + 4);
 	}
 	
 	/**
@@ -132,7 +133,18 @@ public class ClassDeclaration extends InstanceDeclaration
 	 */
 	public FieldList getExternalFieldsListNode()
 	{
-		return (FieldList)getChild(5);
+		return (FieldList)getChild(super.getNumDefaultChildren() + 5);
+	}
+	
+	/**
+	 * Get the AssignmentMethod instance that contains the list of
+	 * default field assignments and vtable assignment.
+	 * 
+	 * @return The AssignmentMethod for this class node.
+	 */
+	public AssignmentMethod getAssignmentMethodNode()
+	{
+		return (AssignmentMethod)getMethodList().getChild(getMethodList().getNumChildren() - 1);
 	}
 	
 	/**
@@ -144,7 +156,7 @@ public class ClassDeclaration extends InstanceDeclaration
 	 */
 	public VTable getVTableNode()
 	{
-		return (VTable)getChild(6);
+		return (VTable)getChild(super.getNumDefaultChildren() + 6);
 	}
 	
 	/**
@@ -172,11 +184,11 @@ public class ClassDeclaration extends InstanceDeclaration
 	{
 		ArrayList<NovaMethodDeclaration> methods = new ArrayList<NovaMethodDeclaration>();
 		
-		addVirtualMethods(methods);
+		addVirtualMethods(methods, this);
 		
 		if (getExtendedClassName() != null)
 		{
-			getExtendedClass().addVirtualMethods(methods);
+			getExtendedClass().addVirtualMethods(methods, this);
 		}
 		
 		return methods.toArray(new NovaMethodDeclaration[0]);
@@ -189,7 +201,7 @@ public class ClassDeclaration extends InstanceDeclaration
 	 * @param methods The list of methods to add the found virtual method
 	 * 		data to.
 	 */
-	private void addVirtualMethods(ArrayList<NovaMethodDeclaration> methods)
+	private void addVirtualMethods(ArrayList<NovaMethodDeclaration> methods, ClassDeclaration context)
 	{
 		MethodList list = getMethodList();
 		
@@ -201,13 +213,12 @@ public class ClassDeclaration extends InstanceDeclaration
 			{
 				NovaMethodDeclaration method = (NovaMethodDeclaration)m;
 				
-				if (method.getParentClass() == this && (method.doesOverride() || method.isOverridden()) && !containsMethod(method, methods))
+				if (method.getParentClass() == this && method.isVirtual() && !containsMethod(method, methods))
 				{
 					methods.add(method);
 				}
 			}
 		}
-		
 	}
 	
 	/**
@@ -223,7 +234,8 @@ public class ClassDeclaration extends InstanceDeclaration
 	{
 		for (MethodDeclaration m : methods)
 		{
-			if (m.getName().equals(method.getName()) && m.areCompatibleParameterTypes(method.getParameterList().getTypes()))
+			// TODO: need to make this more strict.
+			if (m.getName().equals(method.getName()) && method.areCompatibleParameterTypes(m.getParameterList().getTypes()))
 			{
 				return true;
 			}
@@ -239,6 +251,11 @@ public class ClassDeclaration extends InstanceDeclaration
 	public boolean isExternalType()
 	{
 		return false;
+	}
+	
+	public boolean isRelatedTo(ClassDeclaration node)
+	{
+		return isOfType(node) || node.isOfType(this);
 	}
 	
 	/**
@@ -290,9 +307,7 @@ public class ClassDeclaration extends InstanceDeclaration
 	 */
 	public ClassDeclaration getExtendedClass()
 	{
-		ClassDeclaration extendedClass = getProgram().getClassDeclaration(getExtendedClassName());
-		
-		return extendedClass;
+		return getProgram().getClassDeclaration(getExtendedClassName());
 	}
 	
 	/**
@@ -518,7 +533,22 @@ public class ClassDeclaration extends InstanceDeclaration
 	 */
 	public MethodDeclaration getMethod(String methodName, Value ... parameterTypes)
 	{
-		MethodDeclaration methods[] = getMethods(methodName, parameterTypes.length);
+		return getMethod(methodName, SearchFilter.DEFAULT, parameterTypes);
+	}
+	
+	/**
+	 * Get the method with the given methodName and parameterTypes. If a
+	 * method with the specified name and parameter types does not exist,
+	 * null is returned.
+	 * 
+	 * @param methodName The name of the method to search for.
+	 * @param parameterTypes An array of types that the parameters of the
+	 * 		searching method must be compatible with.
+	 * @return The compatible method with the given method name.
+	 */
+	public MethodDeclaration getMethod(String methodName, SearchFilter filter, Value ... parameterTypes)
+	{
+		MethodDeclaration methods[] = getMethods(methodName, parameterTypes.length, filter);
 		
 		for (MethodDeclaration method : methods)
 		{
@@ -543,9 +573,24 @@ public class ClassDeclaration extends InstanceDeclaration
 	 */
 	public MethodDeclaration[] getMethods(String methodName, int numParams)
 	{
+		return getMethods(methodName, numParams, SearchFilter.DEFAULT);
+	}
+	
+	/**
+	 * Get all of the methods that have the given methodName and the given
+	 * number of parameters.
+	 * 
+	 * @param methodName The name of the methods to search for.
+	 * @param numParams The number of parameters that the methods can
+	 * 		have.
+	 * @return An array of methods that are compatible with the given
+	 * 		data.
+	 */
+	public MethodDeclaration[] getMethods(String methodName, int numParams, SearchFilter filter)
+	{
 		ArrayList<MethodDeclaration> output = new ArrayList<MethodDeclaration>();
 		
-		MethodDeclaration methods[] = getMethods(methodName);
+		MethodDeclaration methods[] = getMethods(methodName, filter);
 		
 		for (MethodDeclaration method : methods)
 		{
@@ -605,7 +650,7 @@ public class ClassDeclaration extends InstanceDeclaration
 	 */
 	public MethodDeclaration[] getMethods(String methodName)
 	{
-		return getMethods(methodName, true);
+		return getMethods(methodName, SearchFilter.DEFAULT);
 	}
 	
 	/**
@@ -627,22 +672,32 @@ public class ClassDeclaration extends InstanceDeclaration
 	 * @param methodName The name of the method to search for.
 	 * @return The Method for the method, if it exists.
 	 */
-	public MethodDeclaration[] getMethods(String methodName, boolean checkConstructors)
+	public MethodDeclaration[] getMethods(String methodName, SearchFilter filter)
 	{
 		ArrayList<MethodDeclaration> output = new ArrayList<MethodDeclaration>();
 		
-		addMethods(output, getMethodList().getMethods(methodName));
-		
-		if (checkConstructors && methodName.equals(getName()))
+		if (methodName.equals(InitializationMethod.SUPER_IDENTIFIER))
 		{
-			addMethods(output, getConstructorList().getMethods(Constructor.IDENTIFIER));
+			if (filter.checkAncestor && getExtendedClassName() != null)
+			{
+				addMethods(output, getExtendedClass().getMethods(InitializationMethod.IDENTIFIER));
+			}
+			
+			return output.toArray(new MethodDeclaration[0]);
+		}
+		
+		addMethods(output, getMethodList().getMethods(methodName, filter));
+		
+		if (filter.checkConstructors && methodName.equals(getName()))
+		{
+			addMethods(output, getConstructorList().getMethods(Constructor.IDENTIFIER, filter));
 		}
 		else
 		{
-			addMethods(output, getConstructorList().getMethods(methodName));
+			addMethods(output, getConstructorList().getMethods(methodName, filter));
 		}
 		
-		if (getExtendedClassName() != null)
+		if (filter.checkAncestor && getExtendedClassName() != null)
 		{
 			addMethods(output, getExtendedClass().getMethods(methodName));
 		}
@@ -949,14 +1004,15 @@ public class ClassDeclaration extends InstanceDeclaration
 			
 			builder.append(getName()).append(", ").append('\n').append('\n');
 			
-			getFieldList().generateNonStaticCHeader(builder);
-			
 			if (containsVirtualMethods())
 			{
 				VTable table = getVTableNode();
 				
 				builder.append(table.generateCType()).append("* ").append(VTable.IDENTIFIER).append(";\n");
 			}
+			
+			getFieldList().generateNonStaticCHeader(builder);
+			
 			if (containsNonStaticPrivateData())
 			{
 				builder.append("struct Private* prv;").append('\n');
@@ -1135,6 +1191,24 @@ public class ClassDeclaration extends InstanceDeclaration
 		}
 	}
 	
+	public String generateTemporaryMethodName()
+	{
+		return generateTemporaryMethodName("temp");
+	}
+	
+	public String generateTemporaryMethodName(String prefix)
+	{
+		String name = prefix;
+		int    i    = 0;
+		
+		while (containsMethod(name))
+		{
+			name = prefix + i++;
+		}
+		
+		return name;
+	}
+	
 	/**
 	 * @see net.fathomsoft.nova.tree.variables.Variable#generateCSourceName()
 	 */
@@ -1257,6 +1331,9 @@ public class ClassDeclaration extends InstanceDeclaration
 		getMethodList().validate(phase);
 		getConstructorList().validate(phase);
 		getDestructorList().validate(phase);
+		
+		AssignmentMethod assignments = new AssignmentMethod(this, Location.INVALID);
+		addChild(assignments);
 	}
 	
 	/**

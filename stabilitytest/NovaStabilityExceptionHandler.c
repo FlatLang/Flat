@@ -4,7 +4,7 @@
 
 nova_VTable_StabilityExceptionHandler nova_VTable_StabilityExceptionHandler_val =
 {
-	nova_StabilityExceptionHandler_uncaughtException,
+	nova_0_StabilityExceptionHandler_uncaughtException,
 };
 CCLASS_PRIVATE
 (
@@ -15,11 +15,15 @@ CCLASS_PRIVATE
 StabilityExceptionHandler* nova_StabilityExceptionHandler_construct(StabilityExceptionHandler* this, ExceptionData* exceptionData, StabilityTest* nova_0_program)
 {
 	CCLASS_NEW(StabilityExceptionHandler, this);
-	
-	this->prv->nova_StabilityExceptionHandler_program = (StabilityTest*)0;
 	this->vtable = &nova_VTable_StabilityExceptionHandler_val;
+	nova_Object_super((Object*)this, 0);
+	nova_UncaughtExceptionHandler_super((UncaughtExceptionHandler*)this, 0);
+	nova_Object_this((Object*)(this), exceptionData);
+	nova_UncaughtExceptionHandler_this((UncaughtExceptionHandler*)(this), exceptionData);
+	nova_StabilityExceptionHandler_super(this, 0);
+	
 	{
-		this->prv->nova_StabilityExceptionHandler_program = nova_0_program;
+		nova_StabilityExceptionHandler_this(this, exceptionData, nova_0_program);
 	}
 	
 	return this;
@@ -40,7 +44,17 @@ void nova_del_StabilityExceptionHandler(StabilityExceptionHandler** this, Except
 	NOVA_FREE(*this);
 }
 
-void nova_StabilityExceptionHandler_uncaughtException(StabilityExceptionHandler* this, ExceptionData* exceptionData, Thread* nova_0_thread, Exception* nova_0_exception)
+void nova_StabilityExceptionHandler_this(StabilityExceptionHandler* this, ExceptionData* exceptionData, StabilityTest* nova_0_program)
+{
+	this->prv->nova_StabilityExceptionHandler_program = nova_0_program;
+}
+
+void nova_0_StabilityExceptionHandler_uncaughtException(StabilityExceptionHandler* this, ExceptionData* exceptionData, Thread* nova_0_thread, Exception* nova_0_exception)
 {
 	nova_0_StabilityTest_fail(this->prv->nova_StabilityExceptionHandler_program, exceptionData);
+}
+
+void nova_StabilityExceptionHandler_super(StabilityExceptionHandler* this, ExceptionData* exceptionData)
+{
+	this->prv->nova_StabilityExceptionHandler_program = (StabilityTest*)0;
 }

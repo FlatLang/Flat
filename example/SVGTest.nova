@@ -63,7 +63,7 @@ public class SVGTest
 			{
 				if (i % 1000 == 0)
 				{
-					Console.writeLine("" + i)
+					Console.writeLine(i)
 				}
 				
 				SVGCircle circle = new SVGCircle(cx, cy, 1)
@@ -75,6 +75,7 @@ public class SVGTest
 		File f = new File("C:/Users/Braden Steffaniak/svgoutput.html")
 
 		f.create()
+		f.clearContents()
 		
 		s.generateHTMLOutput(f)
 		

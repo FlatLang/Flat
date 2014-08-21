@@ -4,8 +4,8 @@
 
 nova_VTable_ExceptionData nova_VTable_ExceptionData_val =
 {
-	nova_Object_toString,
-	nova_Object_equals,
+	nova_0_Object_toString,
+	nova_0_Object_equals,
 };
 CCLASS_PRIVATE
 (
@@ -17,14 +17,13 @@ CCLASS_PRIVATE
 ExceptionData* nova_ExceptionData_construct(ExceptionData* this, ExceptionData* exceptionData, buffer* nova_0_buf)
 {
 	CCLASS_NEW(ExceptionData, this);
-	
-	this->nova_ExceptionData_codes = (ArrayList*)0;
-	this->prv->nova_ExceptionData_buf = (buffer*)0;
-	this->prv->nova_ExceptionData_parent = (ExceptionData*)0;
 	this->vtable = &nova_VTable_ExceptionData_val;
+	nova_Object_super((Object*)this, 0);
+	nova_Object_this((Object*)(this), exceptionData);
+	nova_ExceptionData_super(this, 0);
+	
 	{
-		this->prv->nova_ExceptionData_buf = nova_0_buf;
-		this->nova_ExceptionData_codes = nova_ArrayList_construct(0, exceptionData);
+		nova_ExceptionData_this(this, exceptionData, nova_0_buf);
 	}
 	
 	return this;
@@ -45,6 +44,12 @@ void nova_del_ExceptionData(ExceptionData** this, ExceptionData* exceptionData)
 	{
 	}
 	NOVA_FREE(*this);
+}
+
+void nova_ExceptionData_this(ExceptionData* this, ExceptionData* exceptionData, buffer* nova_0_buf)
+{
+	this->prv->nova_ExceptionData_buf = nova_0_buf;
+	this->nova_ExceptionData_codes = nova_ArrayList_construct(0, exceptionData);
 }
 
 void nova_ExceptionData_addCode(ExceptionData* this, ExceptionData* exceptionData, int nova_0_code)
@@ -119,4 +124,11 @@ ExceptionData* nova_ExceptionData_getParent(ExceptionData* this, ExceptionData* 
 void nova_ExceptionData_setParent(ExceptionData* this, ExceptionData* exceptionData, ExceptionData* nova_0_p)
 {
 	this->prv->nova_ExceptionData_parent = nova_0_p;
+}
+
+void nova_ExceptionData_super(ExceptionData* this, ExceptionData* exceptionData)
+{
+	this->nova_ExceptionData_codes = (ArrayList*)0;
+	this->prv->nova_ExceptionData_buf = (buffer*)0;
+	this->prv->nova_ExceptionData_parent = (ExceptionData*)0;
 }

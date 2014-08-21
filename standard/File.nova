@@ -1,4 +1,3 @@
-import "Thread"
 import "NativeFile.h"
 import "Time"
 
@@ -41,7 +40,7 @@ public class File
 	
 	public construct(FILE* fp)
 	{
-		this.fp = fp;
+		this.fp = fp
 	}
 	
 	public delete() -> bool
@@ -68,11 +67,19 @@ public class File
 		return fp != 0
 	}
 	
+	public clearContents()
+	{
+		if (exists())
+		{
+			fp = fopen(location.toCharArray(), "w")
+		}
+	}
+	
 	public create() -> bool
 	{
 		if (!exists())
 		{
-			fp = fopen(location.toCharArray(), "wb")
+			fp = fopen(location.toCharArray(), "w")
 			
 			if (!exists())
 			{
@@ -145,11 +152,6 @@ public class File
 			line[index++] = c
 			
 			c = getc(fp)
-			
-//			if (c == '3' hk)
-//			{
-//				currentIndex++;
-//			}
 		}
 		
 		if (index >= size)
@@ -195,18 +197,18 @@ public class File
 		return extGetMaxOpenFiles()
 	}
 	
-	public static setMaxOpenFiles(int max)
+	public static setMaxOpenFiles(int num)
 	{
-		if (max > 2048 || max < 20)
+		short min = 20
+		short max = 2048
+		
+		if (num > max || num < min)
 		{
-//			Console.error.writeLine("")
-			Console.writeLine("Invalid max number of open files: " + max + "\nValid values include 20-2048")
-			
-//			return
+			Console.writeLine("Invalid max number of open files: " + num + "\nValid values include " + min + "-" + max)
 		}
 		else
 		{
-			extSetMaxOpenFiles(max)
+			extSetMaxOpenFiles(num)
 		}
 	}
 }

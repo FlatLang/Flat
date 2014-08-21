@@ -10,8 +10,8 @@ typedef void (*nova_6_0_closure)(void*, ExceptionData*);
 
 nova_VTable_ClosureStability nova_VTable_ClosureStability_val =
 {
-	nova_Object_toString,
-	nova_Object_equals,
+	nova_0_Object_toString,
+	nova_0_Object_equals,
 };
 CCLASS_PRIVATE
 (
@@ -33,10 +33,13 @@ double nova_static_ClosureStability_TOLERANCE;
 ClosureStability* nova_ClosureStability_construct(ClosureStability* this, ExceptionData* exceptionData)
 {
 	CCLASS_NEW(ClosureStability, this);
-	
-	this->prv->nova_ClosureStability_number = 0;
 	this->vtable = &nova_VTable_ClosureStability_val;
+	nova_Object_super((Object*)this, 0);
+	nova_Object_this((Object*)(this), exceptionData);
+	nova_ClosureStability_super(this, 0);
+	
 	{
+		nova_ClosureStability_this(this, exceptionData);
 	}
 	
 	return this;
@@ -152,4 +155,13 @@ int nova_static_ClosureStability_pow(ClosureStability* this, ExceptionData* exce
 		nova_1_value = nova_1_value * nova_0_base;
 	}
 	return nova_1_value;
+}
+
+void nova_ClosureStability_this(ClosureStability* this, ExceptionData* exceptionData)
+{
+}
+
+void nova_ClosureStability_super(ClosureStability* this, ExceptionData* exceptionData)
+{
+	this->prv->nova_ClosureStability_number = 0;
 }

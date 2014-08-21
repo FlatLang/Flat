@@ -13,7 +13,7 @@ import net.fathomsoft.nova.util.Location;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:56:34 PM
- * @version	v0.2.26 Aug 6, 2014 at 2:48:50 PM
+ * @version	v0.2.28 Aug 20, 2014 at 12:10:45 AM
  */
 public class ParameterList<E extends Value> extends Node
 {
@@ -325,14 +325,14 @@ public class ParameterList<E extends Value> extends Node
 	@Override
 	public StringBuilder generateNovaInput(StringBuilder builder, boolean outputChildren)
 	{
-		for (int i = 0; i < getNumChildren(); i++)
+		for (int i = 0; i < getNumVisibleChildren(); i++)
 		{
 			if (i > 0)
 			{
 				builder.append(", ");
 			}
 			
-			getChild(i).generateNovaInput(builder);
+			getVisibleChild(i).generateNovaInput(builder);
 		}
 		
 		return builder;

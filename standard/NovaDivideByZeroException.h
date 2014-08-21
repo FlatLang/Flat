@@ -28,5 +28,7 @@ typedef struct DivideByZeroException DivideByZeroException;
 
 DivideByZeroException* nova_DivideByZeroException_construct(DivideByZeroException* this, ExceptionData* exceptionData);
 void nova_del_DivideByZeroException(DivideByZeroException** this, ExceptionData* exceptionData);
+void nova_DivideByZeroException_this(DivideByZeroException* this, ExceptionData* exceptionData);
+void nova_DivideByZeroException_super(DivideByZeroException* this, ExceptionData* exceptionData);
 
 #endif

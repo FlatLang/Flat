@@ -4,9 +4,8 @@
 
 nova_VTable_String nova_VTable_String_val =
 {
-	nova_String_equals,
-	nova_Object_toString,
-	nova_Object_equals,
+	nova_0_String_equals,
+	nova_0_Object_toString,
 };
 CCLASS_PRIVATE
 (
@@ -19,13 +18,13 @@ int nova_String_calculateLength(String* this, ExceptionData* exceptionData);
 String* nova_String_construct(String* this, ExceptionData* exceptionData, char* nova_0_data)
 {
 	CCLASS_NEW(String, this);
-	
-	this->nova_String_length = 0;
-	this->prv->nova_String_data = 0;
 	this->vtable = &nova_VTable_String_val;
+	nova_Object_super((Object*)this, 0);
+	nova_Object_this((Object*)(this), exceptionData);
+	nova_String_super(this, 0);
+	
 	{
-		this->prv->nova_String_data = nova_0_data;
-		this->nova_String_length = nova_String_calculateLength(this, exceptionData);
+		nova_String_this(this, exceptionData, nova_0_data);
 	}
 	
 	return this;
@@ -44,6 +43,12 @@ void nova_del_String(String** this, ExceptionData* exceptionData)
 	{
 	}
 	NOVA_FREE(*this);
+}
+
+void nova_String_this(String* this, ExceptionData* exceptionData, char* nova_0_data)
+{
+	this->prv->nova_String_data = nova_0_data;
+	this->nova_String_length = nova_String_calculateLength(this, exceptionData);
 }
 
 int nova_String_calculateLength(String* this, ExceptionData* exceptionData)
@@ -71,7 +76,7 @@ String* nova_String_concat(String* this, ExceptionData* exceptionData, String* n
 	return nova_1_newStr;
 }
 
-char nova_String_equals(String* this, ExceptionData* exceptionData, String* nova_0_other)
+char nova_0_String_equals(String* this, ExceptionData* exceptionData, String* nova_0_other)
 {
 	int nova_1_i;
 	
@@ -88,4 +93,10 @@ char nova_String_equals(String* this, ExceptionData* exceptionData, String* nova
 		}
 	}
 	return 1;
+}
+
+void nova_String_super(String* this, ExceptionData* exceptionData)
+{
+	this->nova_String_length = 0;
+	this->prv->nova_String_data = 0;
 }

@@ -35,8 +35,8 @@ typedef struct StabilityTest StabilityTest;
 
 typedef struct nova_VTable_StabilityTest
 {
-	String* (*nova_virtual_toString)(Object*, ExceptionData*);
-	char (*nova_virtual_equals)(Object*, ExceptionData*, Object*);
+	String* (*nova_virtual_0_toString)(Object*, ExceptionData*);
+	char (*nova_virtual_0_equals)(Object*, ExceptionData*, Object*);
 } nova_VTable_StabilityTest;
 
 CCLASS_CLASS
@@ -52,5 +52,7 @@ void nova_static_StabilityTest_main(StabilityTest* this, ExceptionData* exceptio
 int nova_StabilityTest_runTests(StabilityTest* this, ExceptionData* exceptionData);
 void nova_0_StabilityTest_fail(StabilityTest* this, ExceptionData* exceptionData);
 void nova_1_StabilityTest_fail(StabilityTest* this, ExceptionData* exceptionData, String* nova_0_message);
+void nova_StabilityTest_this(StabilityTest* this, ExceptionData* exceptionData);
+void nova_StabilityTest_super(StabilityTest* this, ExceptionData* exceptionData);
 
 #endif

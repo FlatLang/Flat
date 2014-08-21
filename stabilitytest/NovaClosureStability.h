@@ -27,8 +27,8 @@ typedef struct ClosureStability ClosureStability;
 
 typedef struct nova_VTable_ClosureStability
 {
-	String* (*nova_virtual_toString)(Object*, ExceptionData*);
-	char (*nova_virtual_equals)(Object*, ExceptionData*, Object*);
+	String* (*nova_virtual_0_toString)(Object*, ExceptionData*);
+	char (*nova_virtual_0_equals)(Object*, ExceptionData*, Object*);
 } nova_VTable_ClosureStability;
 
 CCLASS_CLASS
@@ -42,5 +42,7 @@ CCLASS_CLASS
 ClosureStability* nova_ClosureStability_construct(ClosureStability* this, ExceptionData* exceptionData);
 void nova_del_ClosureStability(ClosureStability** this, ExceptionData* exceptionData);
 void nova_static_ClosureStability_test(ClosureStability* this, ExceptionData* exceptionData, StabilityTest* nova_0_program);
+void nova_ClosureStability_this(ClosureStability* this, ExceptionData* exceptionData);
+void nova_ClosureStability_super(ClosureStability* this, ExceptionData* exceptionData);
 
 #endif

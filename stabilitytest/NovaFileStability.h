@@ -29,8 +29,8 @@ typedef struct FileStability FileStability;
 
 typedef struct nova_VTable_FileStability
 {
-	String* (*nova_virtual_toString)(Object*, ExceptionData*);
-	char (*nova_virtual_equals)(Object*, ExceptionData*, Object*);
+	String* (*nova_virtual_0_toString)(Object*, ExceptionData*);
+	char (*nova_virtual_0_equals)(Object*, ExceptionData*, Object*);
 } nova_VTable_FileStability;
 
 CCLASS_CLASS
@@ -43,5 +43,7 @@ CCLASS_CLASS
 FileStability* nova_FileStability_construct(FileStability* this, ExceptionData* exceptionData);
 void nova_del_FileStability(FileStability** this, ExceptionData* exceptionData);
 void nova_static_FileStability_test(FileStability* this, ExceptionData* exceptionData, StabilityTest* nova_0_program);
+void nova_FileStability_this(FileStability* this, ExceptionData* exceptionData);
+void nova_FileStability_super(FileStability* this, ExceptionData* exceptionData);
 
 #endif

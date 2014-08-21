@@ -1,5 +1,7 @@
 package net.fathomsoft.nova.tree;
 
+import java.util.ArrayList;
+
 import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.error.SyntaxMessage;
@@ -8,6 +10,7 @@ import net.fathomsoft.nova.tree.variables.FieldList;
 import net.fathomsoft.nova.tree.variables.InstanceFieldList;
 import net.fathomsoft.nova.util.Bounds;
 import net.fathomsoft.nova.util.Location;
+import net.fathomsoft.nova.util.Stack;
 
 /**
  * MethodDeclaration extension that represents the declaration of a Constructor
@@ -16,11 +19,13 @@ import net.fathomsoft.nova.util.Location;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:50:47 PM
- * @version	v0.2.27 Aug 7, 2014 at 1:32:02 AM
+ * @version	v0.2.28 Aug 20, 2014 at 12:10:45 AM
  */
 public class Constructor extends BodyMethodDeclaration
 {
 	public static final String	IDENTIFIER = "construct";
+	
+	private InitializationMethod	initMethod;
 	
 	/**
 	 * Create a Constructor and initialize default values.
@@ -39,15 +44,6 @@ public class Constructor extends BodyMethodDeclaration
 	public boolean isInstance()
 	{
 		return true;
-	}
-	
-	/**
-	 * @see net.fathomsoft.nova.tree.Node#onAdded(net.fathomsoft.nova.tree.Node)
-	 */
-	@Override
-	public void onAdded(Node parent)
-	{
-		
 	}
 	
 	/**
@@ -104,9 +100,48 @@ public class Constructor extends BodyMethodDeclaration
 			builder.append(ParameterList.OBJECT_REFERENCE_IDENTIFIER).append(" = ").append(generateCTypeCast()).append("1").append(';');
 		}
 		
-		builder.append('\n').append('\n');
+		builder.append('\n');
 		
-		generateFieldDefaultAssignments(builder);
+		if (getParentClass().containsVirtualMethods())
+		{
+			VTable table = getParentClass().getVTableNode();
+			
+			builder.append(ParameterList.OBJECT_REFERENCE_IDENTIFIER).append("->").append(VTable.IDENTIFIER).append(" = &").append(table.generateCSourceName()).append(";\n");
+		}
+		
+		{
+			Stack<AssignmentMethod> calls = new Stack<AssignmentMethod>();
+			
+			ClassDeclaration extended = getParentClass().getExtendedClass();
+			
+			while (extended != null)
+			{
+				calls.push(extended.getAssignmentMethodNode());
+				
+				extended = extended.getExtendedClass();
+			}
+			
+			while (!calls.isEmpty())
+			{
+				calls.pop().generateCMethodCall(builder, true);
+			}
+		}
+		
+		// Generate super calls.
+		{
+			Stack<MethodCall> calls = new Stack<MethodCall>();
+			
+			addSuperCallFor(calls, this);
+			
+			while (!calls.isEmpty())
+			{
+				calls.pop().generateCSource(builder);
+			}
+		}
+		
+		getParentClass().getAssignmentMethodNode().generateCMethodCall(builder);
+		
+		builder.append('\n');
 		
 		for (int i = 0; i < getNumChildren(); i++)
 		{
@@ -123,66 +158,6 @@ public class Constructor extends BodyMethodDeclaration
 		builder.append("return ").append(ParameterList.OBJECT_REFERENCE_IDENTIFIER).append(';').append('\n');
 		
 		builder.append('}').append('\n');
-		
-		return builder;
-	}
-	
-	/**
-	 * This method returns a String that contains the code needed to
-	 * assign the default null value to each uninitialized/uninstantiated
-	 * field variables.
-	 * 
-	 * @param builder The StringBuilder to append the assignments to.
-	 * @return The appended buffer.
-	 */
-	private StringBuilder generateFieldDefaultAssignments(StringBuilder builder)
-	{
-		FieldList fields = getParentClass().getFieldList();
-		
-		generateFieldDefaultAssignments(builder, fields.getPublicFieldList());
-		generateFieldDefaultAssignments(builder, fields.getPrivateFieldList());
-		
-		if (getParentClass().containsVirtualMethods())
-		{
-			VTable table = getParentClass().getVTableNode();
-			
-			builder.append(ParameterList.OBJECT_REFERENCE_IDENTIFIER).append("->").append(VTable.IDENTIFIER).append(" = &").append(table.generateCSourceName()).append(";\n");
-		}
-		
-		return builder;
-	}
-	
-	/**
-	 * This method returns a String that contains the code needed to
-	 * assign the default null value to each uninitialized/uninstantiated
-	 * field variables.
-	 * 
-	 * @param builder The StringBuilder to append the assignments to.
-	 * @param fields The list of fields to assign default values to.
-	 * @return The appended buffer.
-	 */
-	private StringBuilder generateFieldDefaultAssignments(StringBuilder builder, InstanceFieldList fields)
-	{
-		for (int i = 0; i < fields.getNumChildren(); i++)
-		{
-			FieldDeclaration field = (FieldDeclaration)fields.getChild(i);
-			
-			if (!field.isExternal())
-			{
-				field.generateCUseOutput(builder).append(" = ");
-				
-				if (!field.isPrimitiveType())
-				{
-					field.generateCNullOutput(builder);
-				}
-				else
-				{
-					builder.append(0);
-				}
-				
-				builder.append(';').append('\n');
-			}
-		}
 		
 		return builder;
 	}
@@ -275,6 +250,87 @@ public class Constructor extends BodyMethodDeclaration
 		}
 		
 		return null;
+	}
+	
+	/**
+	 * @see net.fathomsoft.nova.tree.Node#onAdded(net.fathomsoft.nova.tree.Node)
+	 */
+	@Override
+	public void onAdded(Node parent)
+	{
+		initMethod = new InitializationMethod(getParent(), Location.INVALID);
+		
+		initMethod.createFrom(this);
+		
+		getParentClass().addChild(initMethod);
+	}
+	
+	/**
+	 * @see net.fathomsoft.nova.tree.NovaMethodDeclaration#validate(int)
+	 */
+	@Override
+	public Node validate(int phase)
+	{
+		if (phase == SyntaxTree.PHASE_METHOD_CONTENTS)
+		{
+			initMethod.getScope().inheritChildren(getScope());
+			
+			String args = generateParameterOutput(this);
+			
+			MethodCall init = MethodCall.decodeStatement(this, "this(" + args + ")", Location.INVALID, true);
+			addChild(init);
+			
+			return initMethod;
+		}
+		
+		return super.validate(phase);
+	}
+	
+	private void addSuperCallFor(Stack<MethodCall> constructorCalls, Constructor current)
+	{
+		ClassDeclaration clazz = current.getParentClass().getExtendedClass();
+		
+		if (clazz == null)
+		{
+			return;
+		}
+		
+		Constructor c = (Constructor)clazz.getMethod(IDENTIFIER, getParameterList().getTypes());
+		
+		if (c == null)
+		{
+			c = (Constructor)clazz.getMethod(IDENTIFIER);
+			
+			if (c == null)
+			{
+				SyntaxMessage.error("Cant", this);
+			}
+		}
+		
+		String args = generateParameterOutput(c);
+		
+		MethodCall sup = MethodCall.decodeStatement(current, "super(" + args + ")", Location.INVALID, true);
+		
+		constructorCalls.push(sup);
+		
+		addSuperCallFor(constructorCalls, c);
+	}
+	
+	private String generateParameterOutput(NovaMethodDeclaration method)
+	{
+		StringBuilder args = new StringBuilder();
+		
+		for (int i = 0; i < method.getParameterList().getNumVisibleChildren(); i++)
+		{
+			if (i > 0)
+			{
+				args.append(", ");
+			}
+			
+			args.append(method.getParameter(i).getName());
+		}
+		
+		return args.toString();
 	}
 	
 	/**

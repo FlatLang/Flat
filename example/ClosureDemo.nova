@@ -10,7 +10,7 @@ public class ClosureDemo
 		Console.waitForEnter()
 	}
 	
-	callClosure(int closure(int, int))
+	callClosure(closure(int, int) -> int)
 	{
 		int value = closure(5, 3)
 		

@@ -4,19 +4,23 @@
 
 nova_VTable_Long nova_VTable_Long_val =
 {
-	nova_1_Long_toString,
-	nova_static_Number_numDigits,
-	nova_static_Number_toString,
+	nova_3_Long_toString,
+	nova_static_0_Number_numDigits,
+	nova_static_1_Number_toString,
 };
 
 Long* nova_Long_construct(Long* this, ExceptionData* exceptionData, long_long nova_0_value)
 {
 	CCLASS_NEW(Long, this,);
-	
-	this->nova_Long_value = 0;
 	this->vtable = &nova_VTable_Long_val;
+	nova_Object_super((Object*)this, 0);
+	nova_Number_super((Number*)this, 0);
+	nova_Object_this((Object*)(this), exceptionData);
+	nova_Number_this((Number*)(this), exceptionData);
+	nova_Long_super(this, 0);
+	
 	{
-		this->nova_Long_value = nova_0_value;
+		nova_Long_this(this, exceptionData, nova_0_value);
 	}
 	
 	return this;
@@ -33,6 +37,11 @@ void nova_del_Long(Long** this, ExceptionData* exceptionData)
 	{
 	}
 	NOVA_FREE(*this);
+}
+
+void nova_Long_this(Long* this, ExceptionData* exceptionData, long_long nova_0_value)
+{
+	this->nova_Long_value = nova_0_value;
 }
 
 int nova_static_Long_numDigits(Long* this, ExceptionData* exceptionData, long_long nova_0_number)
@@ -52,7 +61,7 @@ int nova_static_Long_numDigits(Long* this, ExceptionData* exceptionData, long_lo
 	return nova_1_size;
 }
 
-String* nova_static_0_Long_toString(Long* this, ExceptionData* exceptionData, long_long nova_0_value)
+String* nova_static_2_Long_toString(Long* this, ExceptionData* exceptionData, long_long nova_0_value)
 {
 	int nova_1_charOffset;
 	int nova_1_digits;
@@ -82,7 +91,12 @@ String* nova_static_0_Long_toString(Long* this, ExceptionData* exceptionData, lo
 	return nova_String_construct(0, exceptionData, nova_1_data);
 }
 
-String* nova_1_Long_toString(Long* this, ExceptionData* exceptionData)
+String* nova_3_Long_toString(Long* this, ExceptionData* exceptionData)
 {
-	return nova_static_0_Long_toString(this, exceptionData, this->nova_Long_value);
+	return nova_static_2_Long_toString(this, exceptionData, this->nova_Long_value);
+}
+
+void nova_Long_super(Long* this, ExceptionData* exceptionData)
+{
+	this->nova_Long_value = 0;
 }

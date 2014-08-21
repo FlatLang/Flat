@@ -12,7 +12,7 @@ import net.fathomsoft.nova.util.Location;
  * 
  * @author	Braden Steffaniak
  * @since	v0.2.21 Jul 30, 2014 at 1:45:00 PM
- * @version	v0.2.26 Aug 6, 2014 at 2:48:50 PM
+ * @version	v0.2.28 Aug 20, 2014 at 12:10:45 AM
  */
 public class BodyMethodDeclaration extends NovaMethodDeclaration
 {
@@ -140,10 +140,9 @@ public class BodyMethodDeclaration extends NovaMethodDeclaration
 	 */
 	public static BodyMethodDeclaration generateTemporaryMethod(Node parent, Location locationIn)
 	{
-//		BodyMethodDeclaration methodDeclaration = new BodyMethodDeclaration(parent, locationIn);
-//		methodDeclaration.setName("temp");
+		String name = parent.getParentClass(true).generateTemporaryMethodName();
 		
-		BodyMethodDeclaration methodDeclaration = decodeStatement(parent, "temp()", locationIn, true);
+		BodyMethodDeclaration methodDeclaration = decodeStatement(parent, name + "()", locationIn, true);
 		
 		return methodDeclaration;
 	}

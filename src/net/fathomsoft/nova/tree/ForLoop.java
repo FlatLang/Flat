@@ -8,6 +8,7 @@ import net.fathomsoft.nova.util.Location;
 import net.fathomsoft.nova.util.Patterns;
 import net.fathomsoft.nova.util.Regex;
 import net.fathomsoft.nova.util.StringUtils;
+import net.fathomsoft.nova.util.SyntaxUtils;
 
 /**
  * Loop extension that represents the declaration of a "for loop"
@@ -16,10 +17,12 @@ import net.fathomsoft.nova.util.StringUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:55:15 PM
- * @version	v0.2.26 Aug 6, 2014 at 2:48:50 PM
+ * @version	v0.2.28 Aug 20, 2014 at 12:10:45 AM
  */
 public class ForLoop extends Loop
 {
+	public static final String	IDENTIFIER = "for";
+	
 	/**
 	 * Instantiate a new ForLoop and initialize its default values.
 	 * 
@@ -159,11 +162,19 @@ public class ForLoop extends Loop
 	 */
 	public static ForLoop decodeStatement(Node parent, String statement, Location location, boolean require)
 	{
-		if (StringUtils.findNextWord(statement, 0).equals("for"))
+		if (StringUtils.findNextWord(statement).equals(IDENTIFIER))
 		{
-			ForLoop n = new ForLoop(parent, location);
+			ForLoop n      = new ForLoop(parent, location);
+			Bounds  bounds = SyntaxUtils.findParenthesesBounds(n, statement);
 			
-			Bounds bounds = Regex.boundsOf(statement, Patterns.FOR_CONTENTS);
+			if (!bounds.extractPreString(statement).trim().equals(IDENTIFIER))
+			{
+				SyntaxMessage.queryError("Incorrect " + IDENTIFIER + " loop definition", n, require);
+				
+				return null;
+			}
+			
+			bounds = StringUtils.removeSurroundingParenthesis(statement, bounds);
 			
 			if (bounds.getStart() >= 0)
 			{

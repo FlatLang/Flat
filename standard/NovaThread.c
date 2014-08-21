@@ -5,9 +5,9 @@ typedef void (*nova_1_0_run)(void*, ExceptionData*);
 
 nova_VTable_Thread nova_VTable_Thread_val =
 {
-	nova_Thread_run,
-	nova_Object_toString,
-	nova_Object_equals,
+	nova_0_Thread_run,
+	nova_0_Object_toString,
+	nova_0_Object_equals,
 };
 CCLASS_PRIVATE
 (
@@ -17,13 +17,16 @@ CCLASS_PRIVATE
 
 void nova_Thread_startRun(Thread* this, ExceptionData* exceptionData);
 
-Thread* nova_Thread_construct(Thread* this, ExceptionData* exceptionData)
+Thread* nova_0_Thread_construct(Thread* this, ExceptionData* exceptionData)
 {
 	CCLASS_NEW(Thread, this);
-	
-	this->prv->nova_Thread_handle = (NOVA_THREAD_HANDLE*)0;
 	this->vtable = &nova_VTable_Thread_val;
+	nova_Object_super((Object*)this, 0);
+	nova_Object_this((Object*)(this), exceptionData);
+	nova_Thread_super(this, 0);
+	
 	{
+		nova_Thread_this(this, exceptionData);
 	}
 	
 	return this;
@@ -59,7 +62,7 @@ void nova_static_Thread_sleep(Thread* this, ExceptionData* exceptionData, long_l
 	lib_nova_thread_sleep(nova_0_millis);
 }
 
-void nova_Thread_run(Thread* this, ExceptionData* exceptionData)
+void nova_0_Thread_run(Thread* this, ExceptionData* exceptionData)
 {
 }
 
@@ -70,7 +73,7 @@ void nova_Thread_startRun(Thread* this, ExceptionData* exceptionData)
 		nova_ExceptionData_addCode(exceptionData, exceptionData, 1);
 		
 		{
-			this->vtable->nova_virtual_run(this, exceptionData);
+			this->vtable->nova_virtual_0_run(this, exceptionData);
 		}
 	}
 	CATCH (1)
@@ -81,4 +84,13 @@ void nova_Thread_startRun(Thread* this, ExceptionData* exceptionData)
 	{
 	}
 	END_TRY;
+}
+
+void nova_Thread_this(Thread* this, ExceptionData* exceptionData)
+{
+}
+
+void nova_Thread_super(Thread* this, ExceptionData* exceptionData)
+{
+	this->prv->nova_Thread_handle = (NOVA_THREAD_HANDLE*)0;
 }

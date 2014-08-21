@@ -4,11 +4,9 @@ import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.util.Location;
 
 /**
- * Node extension that represents
+ * {@link Node} extension that represents
  * 
  * @author	Braden Steffaniak
- * @since	v0.2.
- * @version	v0.2.
  */
 public class Skeleton extends Node
 {
@@ -41,6 +39,8 @@ public class Skeleton extends Node
 	 */
 	public static Skeleton decodeStatement(Node parent, String statement, Location location, boolean require)
 	{
+		
+		
 		return null;
 	}
 	

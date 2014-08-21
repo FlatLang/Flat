@@ -18,7 +18,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:19:44 PM
- * @version	v0.2.26 Aug 6, 2014 at 2:48:50 PM
+ * @version	v0.2.28 Aug 20, 2014 at 12:10:45 AM
  */
 public class Assignment extends Node
 {
@@ -184,11 +184,13 @@ public class Assignment extends Node
 		Location varLoc      = location.asNew();
 		varLoc.getBounds().setEnd(varLoc.getStart() + endIndex);
 		
-		Identifier varNode = (Identifier)SyntaxTree.decodeScopeContents(n, variable, varLoc);
+		Identifier varNode = (Identifier)SyntaxTree.decodeScopeContents(n, variable, varLoc, require);
 		
 		if (varNode == null)
 		{
-			SyntaxMessage.error("Undeclared variable '" + variable + "'", parent, location);
+			SyntaxMessage.queryError("Undeclared variable '" + variable + "'", parent, location, require);
+			
+			return null;
 		}
 		
 		if (varNode instanceof Variable)
@@ -202,10 +204,10 @@ public class Assignment extends Node
 		
 		n.addChild(varNode);
 		
-		int rhsIndex    = StringUtils.findNextNonWhitespaceIndex(statement, equalsIndex + 1);
+		int rhsIndex = StringUtils.findNextNonWhitespaceIndex(statement, equalsIndex + 1);
 		
 		// Right-hand side of the equation.
-		String rhs      = statement.substring(rhsIndex);
+		String rhs   = statement.substring(rhsIndex);
 		
 		Location newLoc = location.asNew();
 		newLoc.setBounds(location.getStart() + rhsIndex, location.getStart() + statement.length());

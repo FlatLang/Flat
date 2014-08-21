@@ -29,8 +29,8 @@ typedef struct PolymorphismStability PolymorphismStability;
 
 typedef struct nova_VTable_PolymorphismStability
 {
-	String* (*nova_virtual_toString)(Object*, ExceptionData*);
-	char (*nova_virtual_equals)(Object*, ExceptionData*, Object*);
+	String* (*nova_virtual_0_toString)(Object*, ExceptionData*);
+	char (*nova_virtual_0_equals)(Object*, ExceptionData*, Object*);
 } nova_VTable_PolymorphismStability;
 
 CCLASS_CLASS
@@ -43,5 +43,7 @@ CCLASS_CLASS
 PolymorphismStability* nova_PolymorphismStability_construct(PolymorphismStability* this, ExceptionData* exceptionData);
 void nova_del_PolymorphismStability(PolymorphismStability** this, ExceptionData* exceptionData);
 void nova_static_PolymorphismStability_test(PolymorphismStability* this, ExceptionData* exceptionData, StabilityTest* nova_0_program);
+void nova_PolymorphismStability_this(PolymorphismStability* this, ExceptionData* exceptionData);
+void nova_PolymorphismStability_super(PolymorphismStability* this, ExceptionData* exceptionData);
 
 #endif

@@ -1,8 +1,6 @@
 #ifndef NOVA_NOVA
 #define NOVA_NOVA
 
-#include "precompiled.h"
-
 /**
  * @dest Destination array
  * @dIndex Index to which we will start copying

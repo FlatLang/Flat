@@ -22,7 +22,7 @@ import net.fathomsoft.nova.util.Location;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Apr 5, 2014 at 10:54:20 PM
- * @version	v0.2.26 Aug 6, 2014 at 2:48:50 PM
+ * @version	v0.2.28 Aug 20, 2014 at 12:10:45 AM
  */
 public class Scope extends Node
 {
@@ -50,7 +50,7 @@ public class Scope extends Node
 	@Override
 	public int getNumDefaultChildren()
 	{
-		return super.getNumDefaultChildren() + 2;
+		return super.getNumDefaultChildren() + 1;
 	}
 	
 	/**
@@ -232,7 +232,12 @@ public class Scope extends Node
 	 */
 	public static String test(TestContext context)
 	{
+		Scope s = new Scope(context.method, Location.INVALID);
 		
+		if (s.getNumChildren() != s.getNumDefaultChildren())
+		{
+			return "Incorrect number of default children.";
+		}
 		
 		return null;
 	}

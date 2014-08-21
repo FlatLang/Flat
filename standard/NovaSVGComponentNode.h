@@ -27,20 +27,22 @@ typedef struct SVGComponentNode SVGComponentNode;
 
 typedef struct nova_VTable_SVGComponentNode
 {
-	String* (*nova_virtual_toString)(Object*, ExceptionData*);
-	char (*nova_virtual_equals)(Object*, ExceptionData*, Object*);
+	String* (*nova_virtual_0_toString)(Object*, ExceptionData*);
+	char (*nova_virtual_0_equals)(Object*, ExceptionData*, Object*);
 } nova_VTable_SVGComponentNode;
 
 CCLASS_CLASS
 (
 	SVGComponentNode, 
 	
+	nova_VTable_SVGComponentNode* vtable;
 	SVGComponentNode* nova_SVGComponentNode_next;
 	SVGComponent* nova_SVGComponentNode_component;
-	nova_VTable_SVGComponentNode* vtable;
 )
 
-SVGComponentNode* nova_SVGComponentNode_construct(SVGComponentNode* this, ExceptionData* exceptionData);
+SVGComponentNode* nova_0_SVGComponentNode_construct(SVGComponentNode* this, ExceptionData* exceptionData);
 void nova_del_SVGComponentNode(SVGComponentNode** this, ExceptionData* exceptionData);
+void nova_SVGComponentNode_this(SVGComponentNode* this, ExceptionData* exceptionData);
+void nova_SVGComponentNode_super(SVGComponentNode* this, ExceptionData* exceptionData);
 
 #endif

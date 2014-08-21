@@ -15,7 +15,12 @@ public class Math
 	external long ceil(double number) as extCeil
 	external long rand() as extRand
 	
-	//visible static double PI = 3.141592653
+	visible static double PI = 3.141592653
+	
+//	static
+//	{
+//		PI = 3.141592653
+//	}
 	
 	public static random(long range) -> int
 	{

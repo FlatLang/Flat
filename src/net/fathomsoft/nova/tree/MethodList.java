@@ -13,7 +13,7 @@ import net.fathomsoft.nova.util.Location;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 10:29:22 PM
- * @version	v0.2.26 Aug 6, 2014 at 2:48:50 PM
+ * @version	v0.2.28 Aug 20, 2014 at 12:10:45 AM
  */
 public class MethodList extends Node
 {
@@ -48,7 +48,7 @@ public class MethodList extends Node
 	 */
 	public boolean containsMethod(String methodName)
 	{
-		return getMethods(methodName).length > 0;
+		return getMethods(methodName, SearchFilter.DEFAULT).length > 0;
 	}
 	
 	/**
@@ -70,43 +70,21 @@ public class MethodList extends Node
 	 * @param methodName The name of the method to search for.
 	 * @return The Method for the method, if it exists.
 	 */
-	public MethodDeclaration[] getMethods(String methodName)
+	public MethodDeclaration[] getMethods(String methodName, SearchFilter filter)
 	{
 		ArrayList<MethodDeclaration> methods = new ArrayList<MethodDeclaration>();
 		
 		for (int i = 0; i < getNumChildren(); i++)
 		{
-			MethodDeclaration methodDeclaration = (MethodDeclaration)getChild(i);
+			MethodDeclaration method = (MethodDeclaration)getChild(i);
 			
-			if (methodDeclaration.getName().equals(methodName))
+			if (method.getName().equals(methodName) && (!filter.checkStatic || filter.staticValue == method.isStatic()))
 			{
-				methods.add(methodDeclaration);
+				methods.add(method);
 			}
 		}
 		
 		return methods.toArray(new MethodDeclaration[0]);
-	}
-	
-	/**
-	 * Make sure that the Class is a valid declaration.
-	 * 
-	 * @param phase The phase that the node is being validated in.
-	 * @see net.fathomsoft.nova.tree.Node#validate(int)
-	 */
-	@Override
-	public Node validate(int phase)
-	{
-		for (int i = 0; i < getNumChildren(); i++)
-		{
-			MethodDeclaration methodDeclaration = (MethodDeclaration)getChild(i);
-			
-			if (methodDeclaration != null)
-			{
-				methodDeclaration.validate(phase);
-			}
-		}
-		
-		return this;
 	}
 	
 	/**
@@ -218,5 +196,33 @@ public class MethodList extends Node
 		
 		
 		return null;
+	}
+	
+	/**
+	 * 
+	 * 
+	 * @author	Braden Steffaniak
+	 * @since	v0.2.28 Aug 8, 2014 at 12:35:41 PM
+	 * @version	v0.2.28 Aug 8, 2014 at 12:35:41 PM
+	 */
+	public static class SearchFilter
+	{
+		public boolean	checkAncestor, checkStatic, staticValue, checkConstructors;
+		
+		public static final SearchFilter	DEFAULT = new SearchFilter();
+		
+		public SearchFilter()
+		{
+			checkAncestor     = true;
+			checkStatic       = false;
+			checkConstructors = true;
+		}
+		
+		public void checkStatic(boolean staticValue)
+		{
+			this.staticValue = staticValue;
+			
+			checkStatic = true;
+		}
 	}
 }

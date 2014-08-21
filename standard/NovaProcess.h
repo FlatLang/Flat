@@ -27,19 +27,21 @@ typedef struct Process Process;
 
 typedef struct nova_VTable_Process
 {
-	String* (*nova_virtual_toString)(Object*, ExceptionData*);
-	char (*nova_virtual_equals)(Object*, ExceptionData*, Object*);
+	String* (*nova_virtual_0_toString)(Object*, ExceptionData*);
+	char (*nova_virtual_0_equals)(Object*, ExceptionData*, Object*);
 } nova_VTable_Process;
 
 CCLASS_CLASS
 (
 	Process, 
 	
-	StreamReader* nova_Process_reader;
 	nova_VTable_Process* vtable;
+	StreamReader* nova_Process_reader;
 )
 
 Process* nova_Process_construct(Process* this, ExceptionData* exceptionData, StreamReader* nova_0_reader);
 void nova_del_Process(Process** this, ExceptionData* exceptionData);
+void nova_Process_this(Process* this, ExceptionData* exceptionData, StreamReader* nova_0_reader);
+void nova_Process_super(Process* this, ExceptionData* exceptionData);
 
 #endif

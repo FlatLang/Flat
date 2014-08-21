@@ -4,17 +4,20 @@
 
 nova_VTable_SVGComponentList nova_VTable_SVGComponentList_val =
 {
-	nova_Object_toString,
-	nova_Object_equals,
+	nova_0_Object_toString,
+	nova_0_Object_equals,
 };
 
-SVGComponentList* nova_SVGComponentList_construct(SVGComponentList* this, ExceptionData* exceptionData)
+SVGComponentList* nova_0_SVGComponentList_construct(SVGComponentList* this, ExceptionData* exceptionData)
 {
 	CCLASS_NEW(SVGComponentList, this,);
-	
-	this->nova_SVGComponentList_start = (SVGComponentNode*)0;
 	this->vtable = &nova_VTable_SVGComponentList_val;
+	nova_Object_super((Object*)this, 0);
+	nova_Object_this((Object*)(this), exceptionData);
+	nova_SVGComponentList_super(this, 0);
+	
 	{
+		nova_SVGComponentList_this(this, exceptionData);
 	}
 	
 	return this;
@@ -41,13 +44,7 @@ void nova_SVGComponentList_generateOutput(SVGComponentList* this, ExceptionData*
 	nova_1_current = this->nova_SVGComponentList_start;
 	while (nova_1_current != (SVGComponentNode*)0)
 	{
-		SVGComponent* nova_2_component;
-		SVGCircle* nova_2_c;
-		
-		nova_2_component = nova_1_current->nova_SVGComponentNode_component;
-		nova_2_c = (SVGCircle*)nova_2_component;
-		nova_static_0_Console_writeLine(0, exceptionData, nova_String_concat(nova_1_Double_toString(nova_Double_construct(0, exceptionData, nova_2_c->nova_SVGCircle_x), exceptionData), exceptionData, nova_String_concat(nova_String_construct(0, exceptionData, ", "), exceptionData, nova_1_Double_toString(nova_Double_construct(0, exceptionData, nova_2_c->nova_SVGCircle_y), exceptionData))));
-		nova_2_component->vtable->nova_virtual_generateOutput(nova_2_component, exceptionData, nova_0_file);
+		nova_1_current->nova_SVGComponentNode_component->vtable->nova_virtual_0_generateOutput(nova_1_current->nova_SVGComponentNode_component, exceptionData, nova_0_file);
 		nova_1_current = nova_1_current->nova_SVGComponentNode_next;
 	}
 }
@@ -56,7 +53,7 @@ void nova_SVGComponentList_addChild(SVGComponentList* this, ExceptionData* excep
 {
 	SVGComponentNode* nova_1_node;
 	
-	nova_1_node = nova_SVGComponentNode_construct(0, exceptionData);
+	nova_1_node = nova_0_SVGComponentNode_construct(0, exceptionData);
 	nova_1_node->nova_SVGComponentNode_component = nova_0_component;
 	if (this->nova_SVGComponentList_start == (SVGComponentNode*)0)
 	{
@@ -73,4 +70,13 @@ void nova_SVGComponentList_addChild(SVGComponentList* this, ExceptionData* excep
 		}
 		nova_3_current->nova_SVGComponentNode_next = nova_1_node;
 	}
+}
+
+void nova_SVGComponentList_this(SVGComponentList* this, ExceptionData* exceptionData)
+{
+}
+
+void nova_SVGComponentList_super(SVGComponentList* this, ExceptionData* exceptionData)
+{
+	this->nova_SVGComponentList_start = (SVGComponentNode*)0;
 }

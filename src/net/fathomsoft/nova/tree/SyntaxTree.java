@@ -28,7 +28,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:00:15 PM
- * @version	v0.2.26 Aug 6, 2014 at 2:48:50 PM
+ * @version	v0.2.28 Aug 20, 2014 at 12:10:45 AM
  */
 public class SyntaxTree
 {
@@ -454,6 +454,7 @@ public class SyntaxTree
 				else if (node == null && type == Catch.class) node = Catch.decodeStatement(parent, statement, location, require);
 				else if (node == null && type == ExceptionHandler.class) node = ExceptionHandler.decodeStatement(parent, statement, location, require);
 				else if (node == null && type == Finally.class) node = Finally.decodeStatement(parent, statement, location, require);
+				else if (node == null && type == StaticBlock.class) node = StaticBlock.decodeStatement(parent, statement, location, require);
 				else if (node == null && type == Throw.class) node = Throw.decodeStatement(parent, statement, location, require);
 				else if (node == null && type == Try.class) node = Try.decodeStatement(parent, statement, location, require);
 				else if (node == null && type == Until.class) node = Until.decodeStatement(parent, statement, location, require);

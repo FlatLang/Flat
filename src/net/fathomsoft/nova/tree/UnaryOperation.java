@@ -20,7 +20,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 10:00:11 PM
- * @version	v0.2.26 Aug 6, 2014 at 2:48:50 PM
+ * @version	v0.2.28 Aug 20, 2014 at 12:10:45 AM
  */
 public class UnaryOperation extends IValue
 {
@@ -83,7 +83,7 @@ public class UnaryOperation extends IValue
 	 */
 	public static boolean isUnaryOperator(CharSequence source, int index, int direction)
 	{
-		Bounds bounds = StringUtils.findStrings(source, StringUtils.UNARY_OPERATORS, index, direction);//StringUtils.getGroupedSymbols(source, index, direction);
+		Bounds bounds = StringUtils.findStrings(source, Operator.UNARY_OPERATORS, index, direction);//StringUtils.getGroupedSymbols(source, index, direction);
 		
 		if (bounds.isValid())
 		{
@@ -214,7 +214,7 @@ public class UnaryOperation extends IValue
 	 */
 	public static UnaryOperation decodeStatement(Node parent, String statement, Location location, boolean require)
 	{
-		Bounds bounds = StringUtils.findStrings(statement, StringUtils.UNARY_OPERATORS);
+		Bounds bounds = StringUtils.findStrings(statement, Operator.UNARY_OPERATORS);
 		
 		if (bounds.getStart() >= 0)
 		{
@@ -255,7 +255,7 @@ public class UnaryOperation extends IValue
 	 */
 	private boolean decodeOperator(String statement, Bounds bounds, Location location)
 	{
-		String symbol = StringUtils.findMatch(statement, StringUtils.UNARY_OPERATORS, bounds.getEnd());
+		String symbol = StringUtils.findMatch(statement, Operator.UNARY_OPERATORS, bounds.getEnd());
 		
 		if (symbol != null)
 		{

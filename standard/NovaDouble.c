@@ -4,9 +4,9 @@
 
 nova_VTable_Double nova_VTable_Double_val =
 {
-	nova_1_Double_toString,
-	nova_static_Number_numDigits,
-	nova_static_Number_toString,
+	nova_3_Double_toString,
+	nova_static_0_Number_numDigits,
+	nova_static_1_Number_toString,
 };
 
 String* nova_static_Double_genString(Double* this, ExceptionData* exceptionData, char* nova_0_buffer, int nova_0_lastIndex);
@@ -17,11 +17,15 @@ int nova_static_Double_lastSignificantDigit(Double* this, ExceptionData* excepti
 Double* nova_Double_construct(Double* this, ExceptionData* exceptionData, double nova_0_value)
 {
 	CCLASS_NEW(Double, this,);
-	
-	this->nova_Double_value = 0;
 	this->vtable = &nova_VTable_Double_val;
+	nova_Object_super((Object*)this, 0);
+	nova_Number_super((Number*)this, 0);
+	nova_Object_this((Object*)(this), exceptionData);
+	nova_Number_this((Number*)(this), exceptionData);
+	nova_Double_super(this, 0);
+	
 	{
-		this->nova_Double_value = nova_0_value;
+		nova_Double_this(this, exceptionData, nova_0_value);
 	}
 	
 	return this;
@@ -38,6 +42,11 @@ void nova_del_Double(Double** this, ExceptionData* exceptionData)
 	{
 	}
 	NOVA_FREE(*this);
+}
+
+void nova_Double_this(Double* this, ExceptionData* exceptionData, double nova_0_value)
+{
+	this->nova_Double_value = nova_0_value;
 }
 
 int nova_static_Double_numDigits(Double* this, ExceptionData* exceptionData, double nova_0_number)
@@ -92,7 +101,7 @@ int nova_static_Double_lastSignificantDigit(Double* this, ExceptionData* excepti
 	return nova_0_start + 1;
 }
 
-String* nova_static_0_Double_toString(Double* this, ExceptionData* exceptionData, double nova_0_value)
+String* nova_static_2_Double_toString(Double* this, ExceptionData* exceptionData, double nova_0_value)
 {
 	char* nova_1_buffer;
 	int nova_1_size;
@@ -144,7 +153,12 @@ String* nova_static_0_Double_toString(Double* this, ExceptionData* exceptionData
 	return nova_static_Double_genString((Double*)0, exceptionData, nova_1_buffer, nova_1_lastIndex);
 }
 
-String* nova_1_Double_toString(Double* this, ExceptionData* exceptionData)
+String* nova_3_Double_toString(Double* this, ExceptionData* exceptionData)
 {
-	return nova_static_0_Double_toString(this, exceptionData, this->nova_Double_value);
+	return nova_static_2_Double_toString(this, exceptionData, this->nova_Double_value);
+}
+
+void nova_Double_super(Double* this, ExceptionData* exceptionData)
+{
+	this->nova_Double_value = 0;
 }

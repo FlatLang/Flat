@@ -10,13 +10,7 @@ public class SVGComponentList
 		
 		while (current != null)
 		{
-			SVGComponent component = current.component
-			
-			SVGCircle c = (SVGCircle)component
-			
-			Console.writeLine(c.x + ", " + c.y)
-			
-			component.generateOutput(file)
+			current.component.generateOutput(file)
 			
 			current = current.next
 		}

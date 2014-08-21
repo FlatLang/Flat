@@ -26,8 +26,8 @@ typedef struct ListNode ListNode;
 
 typedef struct nova_VTable_ListNode
 {
-	String* (*nova_virtual_toString)(Object*, ExceptionData*);
-	char (*nova_virtual_equals)(Object*, ExceptionData*, Object*);
+	String* (*nova_virtual_0_toString)(Object*, ExceptionData*);
+	char (*nova_virtual_0_equals)(Object*, ExceptionData*, Object*);
 } nova_VTable_ListNode;
 
 CCLASS_CLASS
@@ -40,8 +40,10 @@ CCLASS_CLASS
 
 ListNode* nova_ListNode_construct(ListNode* this, ExceptionData* exceptionData, Object* nova_0_data);
 void nova_del_ListNode(ListNode** this, ExceptionData* exceptionData);
+void nova_ListNode_this(ListNode* this, ExceptionData* exceptionData, Object* nova_0_data);
 Object* nova_ListNode_getData(ListNode* this, ExceptionData* exceptionData);
 ListNode* nova_ListNode_getNext(ListNode* this, ExceptionData* exceptionData);
 void nova_ListNode_setNext(ListNode* this, ExceptionData* exceptionData, ListNode* nova_0_next);
+void nova_ListNode_super(ListNode* this, ExceptionData* exceptionData);
 
 #endif

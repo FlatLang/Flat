@@ -1,8 +1,12 @@
+#pragma once
 #ifndef LIB_NOVA_THREAD
 #define LIB_NOVA_THREAD
 
-#include "precompiled.h"
 #include <time.h>
+
+#ifdef USE_GC
+#	undef GC_NO_THREAD_DECLS
+#endif
 
 #ifdef _WIN32
 #	define NOVA_THREAD_FUNC DWORD WINAPI
@@ -11,7 +15,11 @@
 #	define NOVA_THREAD_HANDLE HANDLE
 #	define lib_nova_thread_join(_HANDLE_) WaitForSingleObject(_HANDLE_, INFINITE)
 #	define lib_nova_thread_sleep(_MILLIS_) Sleep(_MILLIS_)
-#	define new_thread CreateThread
+#	ifdef USE_GC
+#		define new_thread GC_CreateThread
+#	else
+#		define new_thread CreateThread
+#	endif
 
 #elif defined(__APPLE__) || defined(__linux__)
 #	define NOVA_THREAD_FUNC void*
@@ -20,17 +28,10 @@
 #	define NOVA_THREAD_HANDLE pthread_t
 #	define lib_nova_thread_join(_HANDLE_) pthread_join(_HANDLE_, NULL)
 #	define lib_nova_thread_sleep(_MILLIS_) thread_nanosleep(_MILLIS_ * 1000000)
-#	define new_thread pthread_create
-#endif
-
-#ifdef USE_GC
-#	undef GC_NO_THREAD_DECLS
-#	undef new_thread
-
-#	ifdef _WIN32
-#		define new_thread GC_CreateThread
-#	elif defined(__APPLE__) || defined(__linux__)
+#	ifdef USE_GC
 #		define new_thread GC_pthread_create
+#	else
+#		define new_thread pthread_create
 #	endif
 #endif
 

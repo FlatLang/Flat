@@ -17,7 +17,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:10:53 PM
- * @version	v0.2.26 Aug 6, 2014 at 2:48:50 PM
+ * @version	v0.2.28 Aug 20, 2014 at 12:10:45 AM
  */
 public abstract class MethodDeclaration extends InstanceDeclaration implements CallableMethod
 {
@@ -217,6 +217,17 @@ public abstract class MethodDeclaration extends InstanceDeclaration implements C
 		builder.append(')');
 		
 		return builder;
+	}
+	
+	/**
+	 * Generate the identifier that will be used to call the method.
+	 * 
+	 * @param builder The StringBuilder to append the data to.
+	 * @return The updated StringBuilder.
+	 */
+	public StringBuilder generateCMethodCall(StringBuilder builder)
+	{
+		return generateCSourceName(builder);
 	}
 	
 	/**

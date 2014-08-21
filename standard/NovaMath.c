@@ -4,16 +4,21 @@
 
 nova_VTable_Math nova_VTable_Math_val =
 {
-	nova_Object_toString,
-	nova_Object_equals,
+	nova_0_Object_toString,
+	nova_0_Object_equals,
 };
+double nova_static_Math_PI;
 
 Math* nova_Math_construct(Math* this, ExceptionData* exceptionData)
 {
 	CCLASS_NEW(Math, this,);
-	
 	this->vtable = &nova_VTable_Math_val;
+	nova_Object_super((Object*)this, 0);
+	nova_Object_this((Object*)(this), exceptionData);
+	nova_Math_super(this, 0);
+	
 	{
+		nova_Math_this(this, exceptionData);
 	}
 	
 	return this;
@@ -95,4 +100,12 @@ long_long nova_static_Math_floor(Math* this, ExceptionData* exceptionData, doubl
 long_long nova_static_Math_ceil(Math* this, ExceptionData* exceptionData, double nova_0_number)
 {
 	return ceil(nova_0_number);
+}
+
+void nova_Math_this(Math* this, ExceptionData* exceptionData)
+{
+}
+
+void nova_Math_super(Math* this, ExceptionData* exceptionData)
+{
 }

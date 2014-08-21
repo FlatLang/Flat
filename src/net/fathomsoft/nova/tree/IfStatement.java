@@ -16,7 +16,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:57:13 PM
- * @version	v0.2.26 Aug 6, 2014 at 2:48:50 PM
+ * @version	v0.2.28 Aug 20, 2014 at 12:10:45 AM
  */
 public class IfStatement extends Node
 {
@@ -28,7 +28,7 @@ public class IfStatement extends Node
 	{
 		super(temporaryParent, locationIn);
 		
-		Scope scope = new Scope(this, locationIn);
+		Scope scope = new Scope(this, locationIn.asNew());
 		
 		setScope(scope);
 	}

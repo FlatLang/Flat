@@ -4,8 +4,8 @@
 
 nova_VTable_SyntaxStability nova_VTable_SyntaxStability_val =
 {
-	nova_Object_toString,
-	nova_Object_equals,
+	nova_0_Object_toString,
+	nova_0_Object_equals,
 };
 
 void nova_static_SyntaxStability_checkLoops(SyntaxStability* this, ExceptionData* exceptionData, StabilityTest* nova_0_program);
@@ -19,9 +19,13 @@ Object* nova_static_SyntaxStability_test3(SyntaxStability* this, ExceptionData* 
 SyntaxStability* nova_SyntaxStability_construct(SyntaxStability* this, ExceptionData* exceptionData)
 {
 	CCLASS_NEW(SyntaxStability, this,);
-	
 	this->vtable = &nova_VTable_SyntaxStability_val;
+	nova_Object_super((Object*)this, 0);
+	nova_Object_this((Object*)(this), exceptionData);
+	nova_SyntaxStability_super(this, 0);
+	
 	{
+		nova_SyntaxStability_this(this, exceptionData);
 	}
 	
 	return this;
@@ -136,13 +140,17 @@ void nova_static_SyntaxStability_checkUntil(SyntaxStability* this, ExceptionData
 	nova_1_obj = (Object*)0;
 	if (!(nova_1_obj != (Object*)0))
 	{
-		nova_1_obj = nova_static_SyntaxStability_test2((SyntaxStability*)0, exceptionData);
+		nova_1_obj = nova_static_SyntaxStability_test1((SyntaxStability*)0, exceptionData);
 		if (!(nova_1_obj != (Object*)0))
 		{
-			nova_1_obj = nova_static_SyntaxStability_test3((SyntaxStability*)0, exceptionData);
+			nova_1_obj = nova_static_SyntaxStability_test2((SyntaxStability*)0, exceptionData);
 			if (!(nova_1_obj != (Object*)0))
 			{
-				nova_1_StabilityTest_fail(nova_0_program, exceptionData, nova_String_construct(0, exceptionData, "Failed to stop after correct condition"));
+				nova_1_obj = nova_static_SyntaxStability_test3((SyntaxStability*)0, exceptionData);
+				if (!(nova_1_obj != (Object*)0))
+				{
+					nova_1_StabilityTest_fail(nova_0_program, exceptionData, nova_String_construct(0, exceptionData, "Failed to stop after correct condition"));
+				}
 			}
 		}
 	}
@@ -165,5 +173,13 @@ Object* nova_static_SyntaxStability_test2(SyntaxStability* this, ExceptionData* 
 
 Object* nova_static_SyntaxStability_test3(SyntaxStability* this, ExceptionData* exceptionData)
 {
-	return nova_Object_construct(0, exceptionData);
+	return nova_0_Object_construct(0, exceptionData);
+}
+
+void nova_SyntaxStability_this(SyntaxStability* this, ExceptionData* exceptionData)
+{
+}
+
+void nova_SyntaxStability_super(SyntaxStability* this, ExceptionData* exceptionData)
+{
 }

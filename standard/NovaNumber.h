@@ -26,10 +26,10 @@ typedef struct Number Number;
 
 typedef struct nova_VTable_Number
 {
-	int (*nova_virtual_numDigits)(Number*, ExceptionData*, int);
-	String* (*nova_virtual_toString)(Number*, ExceptionData*, int);
-	String* (*nova_virtual_toString)(Object*, ExceptionData*);
-	char (*nova_virtual_equals)(Object*, ExceptionData*, Object*);
+	int (*nova_virtual_0_numDigits)(Number*, ExceptionData*, int);
+	String* (*nova_virtual_1_toString)(Number*, ExceptionData*, int);
+	String* (*nova_virtual_0_toString)(Object*, ExceptionData*);
+	char (*nova_virtual_0_equals)(Object*, ExceptionData*, Object*);
 } nova_VTable_Number;
 
 CCLASS_CLASS
@@ -39,9 +39,11 @@ CCLASS_CLASS
 	nova_VTable_Number* vtable;
 )
 
-Number* nova_Number_construct(Number* this, ExceptionData* exceptionData);
+Number* nova_0_Number_construct(Number* this, ExceptionData* exceptionData);
 void nova_del_Number(Number** this, ExceptionData* exceptionData);
-int nova_static_Number_numDigits(Number* this, ExceptionData* exceptionData, int nova_0_number);
-String* nova_static_Number_toString(Number* this, ExceptionData* exceptionData, int nova_0_value);
+int nova_static_0_Number_numDigits(Number* this, ExceptionData* exceptionData, int nova_0_number);
+String* nova_static_1_Number_toString(Number* this, ExceptionData* exceptionData, int nova_0_value);
+void nova_Number_this(Number* this, ExceptionData* exceptionData);
+void nova_Number_super(Number* this, ExceptionData* exceptionData);
 
 #endif

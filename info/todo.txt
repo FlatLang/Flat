@@ -14,6 +14,7 @@ X Rename Integer to Int
 X Fix the setScope() method to not break sub-classing.
 X Make sure there are no external method name collisions.
 * Do we need generateCVirtualMethodName()?
+* Fix single line comment on first line.
 
 In-depth compiler error checking:
 - Make sure that the static class's methods/variables are called rightfully.

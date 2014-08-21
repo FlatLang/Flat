@@ -23,14 +23,13 @@ typedef struct File File;
 #include <NovaDouble.h>
 #include <NovaChar.h>
 #include <NovaDivideByZeroException.h>
-#include <NovaThread.h>
 #include <NativeFile.h>
 #include <NovaTime.h>
 
 typedef struct nova_VTable_File
 {
-	String* (*nova_virtual_toString)(Object*, ExceptionData*);
-	char (*nova_virtual_equals)(Object*, ExceptionData*, Object*);
+	String* (*nova_virtual_0_toString)(Object*, ExceptionData*);
+	char (*nova_virtual_0_equals)(Object*, ExceptionData*, Object*);
 } nova_VTable_File;
 
 CCLASS_CLASS
@@ -41,13 +40,16 @@ CCLASS_CLASS
 	struct Private* prv;
 )
 
-File* nova_0_File_construct(File* this, ExceptionData* exceptionData, String* nova_0_location);
-File* nova_1_File_construct(File* this, ExceptionData* exceptionData, FILE* nova_0_fp);
+File* nova_1_File_construct(File* this, ExceptionData* exceptionData, String* nova_0_location);
+File* nova_2_File_construct(File* this, ExceptionData* exceptionData, FILE* nova_0_fp);
 void nova_del_File(File** this, ExceptionData* exceptionData);
+void nova_0_File_this(File* this, ExceptionData* exceptionData, String* nova_0_location);
+void nova_1_File_this(File* this, ExceptionData* exceptionData, FILE* nova_0_fp);
 char nova_File_delete(File* this, ExceptionData* exceptionData);
 void nova_File_reopen(File* this, ExceptionData* exceptionData);
 void nova_File_rewind(File* this, ExceptionData* exceptionData);
 char nova_File_exists(File* this, ExceptionData* exceptionData);
+void nova_File_clearContents(File* this, ExceptionData* exceptionData);
 char nova_File_create(File* this, ExceptionData* exceptionData);
 String* nova_File_readAllContents(File* this, ExceptionData* exceptionData);
 String* nova_File_readLine(File* this, ExceptionData* exceptionData);
@@ -56,6 +58,7 @@ void nova_File_write(File* this, ExceptionData* exceptionData, String* nova_0_da
 void nova_File_flush(File* this, ExceptionData* exceptionData);
 void nova_File_close(File* this, ExceptionData* exceptionData);
 int nova_static_File_getMaxOpenFiles(File* this, ExceptionData* exceptionData);
-void nova_static_File_setMaxOpenFiles(File* this, ExceptionData* exceptionData, int nova_0_max);
+void nova_static_File_setMaxOpenFiles(File* this, ExceptionData* exceptionData, int nova_0_num);
+void nova_File_super(File* this, ExceptionData* exceptionData);
 
 #endif

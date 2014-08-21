@@ -6,6 +6,7 @@ import java.util.regex.Pattern;
 import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.error.SyntaxMessage;
+import net.fathomsoft.nova.tree.MethodList.SearchFilter;
 import net.fathomsoft.nova.util.Bounds;
 import net.fathomsoft.nova.util.Location;
 import net.fathomsoft.nova.util.Patterns;
@@ -20,7 +21,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.2.21 Jul 30, 2014 at 1:45:00 PM
- * @version	v0.2.27 Aug 7, 2014 at 1:32:02 AM
+ * @version	v0.2.28 Aug 20, 2014 at 12:10:45 AM
  */
 public class NovaMethodDeclaration extends MethodDeclaration
 {
@@ -141,6 +142,9 @@ public class NovaMethodDeclaration extends MethodDeclaration
 			return null;
 		}
 		
+		SearchFilter filter = new SearchFilter();
+		filter.checkStatic(isStatic());
+		
 		return (NovaMethodDeclaration)extension.getMethod(getName(), getParameterList().getTypes());
 	}
 	
@@ -163,7 +167,7 @@ public class NovaMethodDeclaration extends MethodDeclaration
 	 * @return The Method instance that overrides this Method, if
 	 * 		any exists.
 	 */
-	public NovaMethodDeclaration[] getOverridingMethods()
+	public NovaMethodDeclaration[] getOverridingMethod()
 	{
 		return overridingMethods.toArray(new NovaMethodDeclaration[0]);
 	}
@@ -197,7 +201,7 @@ public class NovaMethodDeclaration extends MethodDeclaration
 	 */
 	private void addOverridingMethod(NovaMethodDeclaration overridingMethod)
 	{
-		overridingMethods.add(overridingMethod);
+		this.overridingMethods.add(overridingMethod);
 	}
 	
 	/**
@@ -222,9 +226,9 @@ public class NovaMethodDeclaration extends MethodDeclaration
 			{
 				NovaMethodDeclaration method = (NovaMethodDeclaration)m;
 				
-				if (method.getParentClass() == getParentClass())
+				if (method.overloadID < 0)
 				{
-					if (method.overloadID < 0)
+					if (method.getParentClass() == getParentClass())
 					{
 						if (SyntaxUtils.areSameTypes(getParameterList().getTypes(), method.getParameterList().getTypes()))
 						{
@@ -233,22 +237,33 @@ public class NovaMethodDeclaration extends MethodDeclaration
 						
 						list.add(method);
 					}
-					else if (max < method.overloadID)
+					else if (method.isVirtual())
 					{
-						max = method.overloadID;
+						list.add(method);
 					}
+				}
+				else if (max < method.overloadID)
+				{
+					max = method.overloadID;
 				}
 			}
 		}
 		
-		if (list.size() > 0)
+		if (getOverriddenMethod() != null)
+		{
+			overloadID = getOverriddenMethod().overloadID;
+		}
+		else if (list.size() > 0)
 		{
 			overloadID = ++max;
 			
-			for (NovaMethodDeclaration method : list)
-			{
-				method.overloadID = ++max;
-			}
+		}
+		
+		max = overloadID;
+		
+		for (NovaMethodDeclaration method : list)
+		{
+			method.overloadID = ++max;
 		}
 	}
 	
@@ -293,7 +308,7 @@ public class NovaMethodDeclaration extends MethodDeclaration
 			return generateCVirtualMethodName(builder);
 		}
 		
-		return generateCSourceName(builder);
+		return super.generateCMethodCall(builder);
 	}
 	
 	/**
@@ -411,7 +426,7 @@ public class NovaMethodDeclaration extends MethodDeclaration
 	 */
 	private boolean validateDeclaration(String statement, Bounds bounds, boolean require)
 	{
-		String parameterList = statement.substring(bounds.getStart(), bounds.getEnd());
+		String parameterList = bounds.extractString(statement);
 		
 		return decodeParameters(parameterList, require);
 	}
@@ -557,18 +572,20 @@ public class NovaMethodDeclaration extends MethodDeclaration
 	{
 		NovaMethodDeclaration methodDeclaration = getOverriddenMethod();
 		
-		if (methodDeclaration != null)
+		if (methodDeclaration != null && methodDeclaration.isStatic() == isStatic())
 		{
-			// TODO: Why do I need to check this?
-			if (!methodDeclaration.containsOverridingMethod(this))
+			if (!containsOverridingMethod(methodDeclaration))
 			{
-				methodDeclaration.addOverridingMethod(this);
+				methodDeclaration.overridingMethods.add(this);
 			}
 		}
 		
 		if (overloadID < 0)
 		{
-			MethodDeclaration methods[] = getParentClass().getMethods(getName(), false);
+			SearchFilter filter = new SearchFilter();
+			filter.checkConstructors = false;
+			
+			MethodDeclaration methods[] = getParentClass().getMethods(getName(), filter);
 			
 			if (methods.length > 1)
 			{

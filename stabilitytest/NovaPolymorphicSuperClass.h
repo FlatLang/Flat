@@ -27,21 +27,23 @@ typedef struct PolymorphicSuperClass PolymorphicSuperClass;
 
 typedef struct nova_VTable_PolymorphicSuperClass
 {
-	String* (*nova_virtual_toString)(PolymorphicSuperClass*, ExceptionData*);
-	char (*nova_virtual_equals)(Object*, ExceptionData*, Object*);
+	String* (*nova_virtual_0_toString)(PolymorphicSuperClass*, ExceptionData*);
+	char (*nova_virtual_0_equals)(Object*, ExceptionData*, Object*);
 } nova_VTable_PolymorphicSuperClass;
 
 CCLASS_CLASS
 (
 	PolymorphicSuperClass, 
 	
-	PolymorphicSubClass* nova_PolymorphicSuperClass_child;
 	nova_VTable_PolymorphicSuperClass* vtable;
+	PolymorphicSubClass* nova_PolymorphicSuperClass_child;
 )
 
-PolymorphicSuperClass* nova_PolymorphicSuperClass_construct(PolymorphicSuperClass* this, ExceptionData* exceptionData);
+PolymorphicSuperClass* nova_0_PolymorphicSuperClass_construct(PolymorphicSuperClass* this, ExceptionData* exceptionData);
 void nova_del_PolymorphicSuperClass(PolymorphicSuperClass** this, ExceptionData* exceptionData);
 void nova_PolymorphicSuperClass_giveBirth(PolymorphicSuperClass* this, ExceptionData* exceptionData);
-String* nova_PolymorphicSuperClass_toString(PolymorphicSuperClass* this, ExceptionData* exceptionData);
+String* nova_0_PolymorphicSuperClass_toString(PolymorphicSuperClass* this, ExceptionData* exceptionData);
+void nova_PolymorphicSuperClass_this(PolymorphicSuperClass* this, ExceptionData* exceptionData);
+void nova_PolymorphicSuperClass_super(PolymorphicSuperClass* this, ExceptionData* exceptionData);
 
 #endif

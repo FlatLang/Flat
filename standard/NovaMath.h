@@ -27,8 +27,8 @@ typedef struct Math Math;
 
 typedef struct nova_VTable_Math
 {
-	String* (*nova_virtual_toString)(Object*, ExceptionData*);
-	char (*nova_virtual_equals)(Object*, ExceptionData*, Object*);
+	String* (*nova_virtual_0_toString)(Object*, ExceptionData*);
+	char (*nova_virtual_0_equals)(Object*, ExceptionData*, Object*);
 } nova_VTable_Math;
 
 CCLASS_CLASS
@@ -37,6 +37,7 @@ CCLASS_CLASS
 	
 	nova_VTable_Math* vtable;
 )
+extern double nova_static_Math_PI;
 
 Math* nova_Math_construct(Math* this, ExceptionData* exceptionData);
 void nova_del_Math(Math** this, ExceptionData* exceptionData);
@@ -53,5 +54,7 @@ double nova_static_Math_atan(Math* this, ExceptionData* exceptionData, double no
 long_long nova_static_Math_round(Math* this, ExceptionData* exceptionData, double nova_0_number);
 long_long nova_static_Math_floor(Math* this, ExceptionData* exceptionData, double nova_0_number);
 long_long nova_static_Math_ceil(Math* this, ExceptionData* exceptionData, double nova_0_number);
+void nova_Math_this(Math* this, ExceptionData* exceptionData);
+void nova_Math_super(Math* this, ExceptionData* exceptionData);
 
 #endif

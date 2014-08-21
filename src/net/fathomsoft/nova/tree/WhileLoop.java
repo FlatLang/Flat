@@ -15,10 +15,12 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:55:59 PM
- * @version	v0.2.26 Aug 6, 2014 at 2:48:50 PM
+ * @version	v0.2.28 Aug 20, 2014 at 12:10:45 AM
  */
 public class WhileLoop extends Loop
 {
+	public static final String IDENTIFIER = "while";
+	
 	/**
 	 * @see net.fathomsoft.nova.tree.Node#Node(Node, Location)
 	 */
@@ -85,11 +87,19 @@ public class WhileLoop extends Loop
 	 */
 	public static WhileLoop decodeStatement(Node parent, String statement, Location location, boolean require)
 	{
-		if (StringUtils.findNextWord(statement).equals("while"))
+		if (StringUtils.findNextWord(statement).equals(IDENTIFIER))
 		{
-			WhileLoop n   = new WhileLoop(parent, location);
+			WhileLoop n      = new WhileLoop(parent, location);
+			Bounds    bounds = SyntaxUtils.findParenthesesBounds(n, statement);
 			
-			Bounds bounds = SyntaxUtils.findInnerParenthesesBounds(n, statement);
+			if (!bounds.extractPreString(statement).trim().equals(IDENTIFIER))
+			{
+				SyntaxMessage.queryError("Incorrect " + IDENTIFIER + " loop definition", n, require);
+				
+				return null;
+			}
+			
+			bounds = StringUtils.removeSurroundingParenthesis(statement, bounds);
 			
 			if (bounds.isValid())
 			{

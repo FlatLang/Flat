@@ -4,16 +4,20 @@
 
 nova_VTable_StabilityTest nova_VTable_StabilityTest_val =
 {
-		nova_Object_toString,
-		nova_Object_equals,
+		nova_0_Object_toString,
+		nova_0_Object_equals,
 };
 
 StabilityTest* nova_StabilityTest_construct(StabilityTest* this, ExceptionData* exceptionData)
 {
 		CCLASS_NEW(StabilityTest, this,);
-		
 		this->vtable = &nova_VTable_StabilityTest_val;
+		nova_Object_super((Object*)this, 0);
+		nova_Object_this((Object*)(this), exceptionData);
+		nova_StabilityTest_super(this, 0);
+		
 		{
+				nova_StabilityTest_this(this, exceptionData);
 		}
 		
 		return this;
@@ -43,7 +47,7 @@ void nova_static_StabilityTest_main(StabilityTest* this, ExceptionData* exceptio
 		nova_1_start = nova_static_Time_currentTimeMillis(0, exceptionData);
 		nova_1_result = nova_StabilityTest_runTests(nova_1_test, exceptionData);
 		nova_1_time = (long_long)(nova_static_Time_currentTimeMillis(0, exceptionData) - nova_1_start);
-		nova_static_0_Console_writeLine(0, exceptionData, nova_String_concat(nova_String_construct(0, exceptionData, "Took "), exceptionData, nova_String_concat(nova_1_Long_toString(nova_Long_construct(0, exceptionData, nova_1_time), exceptionData), exceptionData, nova_String_construct(0, exceptionData, "ms"))));
+		nova_static_0_Console_writeLine(0, exceptionData, nova_String_concat(nova_String_construct(0, exceptionData, "Took "), exceptionData, nova_String_concat(nova_3_Long_toString(nova_Long_construct(0, exceptionData, nova_1_time), exceptionData), exceptionData, nova_String_construct(0, exceptionData, "ms"))));
 		nova_static_Console_waitForEnter(0, exceptionData);
 }
 
@@ -84,6 +88,14 @@ void nova_1_StabilityTest_fail(StabilityTest* this, ExceptionData* exceptionData
 {
 		nova_static_0_Console_writeLine(0, exceptionData, nova_0_message);
 		THROW(2);
+}
+
+void nova_StabilityTest_this(StabilityTest* this, ExceptionData* exceptionData)
+{
+}
+
+void nova_StabilityTest_super(StabilityTest* this, ExceptionData* exceptionData)
+{
 }
 
 
