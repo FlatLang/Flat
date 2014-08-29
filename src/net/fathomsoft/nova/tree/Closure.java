@@ -1,6 +1,5 @@
 package net.fathomsoft.nova.tree;
 
-import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.tree.variables.Variable;

@@ -1,6 +1,5 @@
 package net.fathomsoft.nova.tree;
 
-import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.util.Location;
 
@@ -10,9 +9,9 @@ import net.fathomsoft.nova.util.Location;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Apr 2, 2014 at 8:49:52 PM
- * @version	v0.2.26 Aug 6, 2014 at 2:48:50 PM
+ * @version	v0.2.29 Aug 29, 2014 at 3:17:45 PM
  */
-public class ImportList extends Node
+public class ImportList extends List
 {
 	/**
 	 * @see net.fathomsoft.nova.tree.Node#Node(Node, Location)

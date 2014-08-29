@@ -1,6 +1,5 @@
 package net.fathomsoft.nova.tree;
 
-import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.util.Bounds;
@@ -16,7 +15,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:57:13 PM
- * @version	v0.2.28 Aug 20, 2014 at 12:10:45 AM
+ * @version	v0.2.29 Aug 29, 2014 at 3:17:45 PM
  */
 public class IfStatement extends Node
 {

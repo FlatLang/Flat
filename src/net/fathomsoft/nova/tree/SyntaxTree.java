@@ -28,7 +28,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:00:15 PM
- * @version	v0.2.28 Aug 20, 2014 at 12:10:45 AM
+ * @version	v0.2.29 Aug 29, 2014 at 3:17:45 PM
  */
 public class SyntaxTree
 {
@@ -57,6 +57,18 @@ public class SyntaxTree
 		ElseStatement.class, IfStatement.class, Until.class, Loop.class,
 		ArrayAccess.class, UnaryOperation.class, MethodCall.class,
 		LocalDeclaration.class
+	};
+	
+	public static final Class<?>	FIRST_PASS_CLASSES[] = new Class<?>[]
+	{
+		Import.class, ClassDeclaration.class
+	};
+	
+	public static final Class<?>	SECOND_PASS_CLASSES[] = new Class<?>[]
+	{
+		StaticBlock.class, AbstractMethodDeclaration.class, ExternalMethodDeclaration.class,
+		Destructor.class, Constructor.class, BodyMethodDeclaration.class, ExternalType.class,
+		FieldDeclaration.class
 	};
 	
 	/**
@@ -540,6 +552,7 @@ public class SyntaxTree
 		else if (type.isAssignableFrom(Catch.class) && (node = Catch.decodeStatement(parent, statement, location, require)) != null);
 		else if (type.isAssignableFrom(ExceptionHandler.class) && (node = ExceptionHandler.decodeStatement(parent, statement, location, require)) != null);
 		else if (type.isAssignableFrom(Finally.class) && (node = Finally.decodeStatement(parent, statement, location, require)) != null);
+		else if (type.isAssignableFrom(StaticBlock.class) && (node = StaticBlock.decodeStatement(parent, statement, location, require)) != null);
 		else if (type.isAssignableFrom(Throw.class) && (node = Throw.decodeStatement(parent, statement, location, require)) != null);
 		else if (type.isAssignableFrom(Try.class) && (node = Try.decodeStatement(parent, statement, location, require)) != null);
 		else if (type.isAssignableFrom(Until.class) && (node = Until.decodeStatement(parent, statement, location, require)) != null);
@@ -788,11 +801,9 @@ public class SyntaxTree
 				
 				if (clazz != null)
 				{
-					IIdentifier id = new IIdentifier(parent, location);
-					id.setName(clazz.getName());
-					id.setType(clazz.getName());
+					StaticClassReference reference = StaticClassReference.decodeStatement(parent, statement, location, true);
 					
-					node = id;
+					node = reference;
 				}
 			}
 		}
@@ -832,6 +843,11 @@ public class SyntaxTree
 	 */
 	public static VariableDeclaration findDeclaration(Node parent, String statement)
 	{
+//		if (parent instanceof StaticClassReference)
+//		{
+//			parent = parent.getProgram().getClassDeclaration(((StaticClassReference) parent).getName());
+//		}
+		
 		VariableDeclaration node = null;
 		
 		if (SyntaxUtils.isValidIdentifier(statement))
@@ -867,16 +883,30 @@ public class SyntaxTree
 			VariableDeclaration var   = ((Variable)parent).getDeclaration();
 			FieldDeclaration    field = var.getTypeClass().getField(statement);
 			
-			if (field != null)
+			return validateFieldAccess(parent, var, field);
+		}
+		else if (parent instanceof StaticClassReference)
+		{
+			StaticClassReference ref   = (StaticClassReference)parent;
+			FieldDeclaration     field = ref.getTypeClass().getField(statement);
+			
+			return validateFieldAccess(parent, ref, field);
+		}
+		
+		return null;
+	}
+	
+	private static FieldDeclaration validateFieldAccess(Node parent, Identifier accessor, FieldDeclaration field)
+	{
+		if (field != null)
+		{
+			if (SyntaxUtils.isVisible(accessor, field))
 			{
-				if (SyntaxUtils.isVisible(var, field))
-				{
-					return field;
-				}
-				else
-				{
-					SyntaxMessage.error("Field '" + field.getName() + "' is not accessible", parent);
-				}
+				return field;
+			}
+			else
+			{
+				SyntaxMessage.error("Field '" + field.getName() + "' is not accessible", parent);
 			}
 		}
 		

@@ -22,7 +22,7 @@ import net.fathomsoft.nova.util.StringUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:00:11 PM
- * @version	v0.2.28 Aug 20, 2014 at 12:10:45 AM
+ * @version	v0.2.29 Aug 29, 2014 at 3:17:45 PM
  */
 public abstract class Node
 {
@@ -222,6 +222,25 @@ public abstract class Node
 		}
 		
 		return node;
+	}
+	
+	/**
+	 * Get the next available ancestor that is of the {@link ScopeAncestor}
+	 * Class type.
+	 * 
+	 * @param inclusive Whether or not to check the current Node.
+	 * @return The next available ancestor that is a {@link ScopeAncestor}
+	 */
+	public ScopeAncestor getNextScopeAncestor(boolean inclusive)
+	{
+		Node node = getAncestor(inclusive);
+		
+		while (node != null && !(node instanceof ScopeAncestor))
+		{
+			node = node.getParent();
+		}
+		
+		return (ScopeAncestor)node;
 	}
 	
 	/**
@@ -771,7 +790,7 @@ public abstract class Node
 	 */
 	public final ExtraData iterateWords(String statement)
 	{
-		return iterateWords(statement, Patterns.WORD_BOUNDARIES, null);
+		return iterateWords(statement, Patterns.IDENTIFIER_BOUNDARIES, null);
 	}
 	
 	/**
@@ -787,7 +806,7 @@ public abstract class Node
 	 */
 	public final ExtraData iterateWords(String statement, ExtraData extra)
 	{
-		return iterateWords(statement, Patterns.WORD_BOUNDARIES, extra);
+		return iterateWords(statement, Patterns.IDENTIFIER_BOUNDARIES, extra);
 	}
 	
 	/**
@@ -818,13 +837,7 @@ public abstract class Node
 	public ExtraData iterateWords(String statement, Pattern pattern, ExtraData extra)
 	{
 		// Pattern used to find word boundaries.
-		Matcher matcher  = pattern.matcher(statement);
-		
-		ArrayList<Bounds> bounds = new ArrayList<Bounds>();
-		ArrayList<String> words  = new ArrayList<String>();
-		ArrayList<String> delims = new ArrayList<String>();
-		
-		findWords(statement, matcher, bounds, words, delims);
+		Matcher matcher = pattern.matcher(statement);
 		
 		if (extra == null)
 		{
@@ -832,13 +845,19 @@ public abstract class Node
 		}
 		
 		extra.statement = statement;
-
-		for (int i = 0; i < bounds.size(); i++)
+		
+		findWords(statement, matcher, extra);
+		
+		extra.wordNumber = 0;
+		
+		while (extra.wordNumber < extra.bounds.size())
 		{
-			String word  = words.get(i);
-			Bounds bound = bounds.get(i);
+			String word  = extra.words.get(extra.wordNumber);
+			Bounds bound = extra.bounds.get(extra.wordNumber);
 			
-			interactWord(word, i, bound, bounds.size(), delims.get(i), delims.get(i + 1), extra);
+			interactWord(word, bound, extra.delims.get(extra.wordNumber), extra.delims.get(extra.wordNumber + 1), extra);
+			
+			extra.wordNumber++;
 		}
 		
 		return extra;
@@ -849,11 +868,10 @@ public abstract class Node
 	 * 
 	 * @param statement The statement to find the information from.
 	 * @param matcher The matcher searching through the statement.
-	 * @param bounds The list to add the Bounds to.
-	 * @param words The list to add the words to.
-	 * @param delims The list to add the delimiters to.
+	 * @param extra The ExtraData containing the lists that will acquire the
+	 * 		words, delimiters, and bounds.
 	 */
-	private void findWords(String statement, Matcher matcher, ArrayList<Bounds> bounds, ArrayList<String> words, ArrayList<String> delims)
+	private void findWords(String statement, Matcher matcher, ExtraData extra)
 	{
 		int index    = 0;
 		int oldIndex = 0;
@@ -862,14 +880,29 @@ public abstract class Node
 		{
 			if (end)
 			{
-				String delim = statement.substring(oldIndex, index);
-				delim = StringUtils.trimSurroundingWhitespace(delim);
-				delims.add(delim);
+				Bounds bounds = new Bounds(oldIndex, index);
+				String delim = "";
+				
+				trimBounds(bounds, extra);
+				
+				if (bounds.isValid())
+				{
+					delim = bounds.extractString(statement);
+					delim = StringUtils.trimSurroundingWhitespace(delim);
+				}
 				
 				oldIndex = matcher.start();
 				
-				bounds.add(new Bounds(index, oldIndex));
-				words.add(statement.substring(index, oldIndex));
+				bounds = new Bounds(index, oldIndex);
+				
+				trimBounds(bounds, extra);
+				
+				if (bounds.isValid())
+				{
+					extra.delims.add(delim);
+					extra.bounds.add(bounds);
+					extra.words.add(statement.substring(index, oldIndex));
+				}
 			}
 			else
 			{
@@ -878,7 +911,32 @@ public abstract class Node
 		}
 		
 		// Don't forget the last delimiter.
-		delims.add(statement.substring(oldIndex, statement.length()));
+		extra.delims.add(statement.substring(oldIndex, statement.length()));
+	}
+	
+	private void trimBounds(Bounds bounds, ExtraData extra)
+	{
+		for (int i = 0; i < extra.skipBounds.length; i++)
+		{
+			Bounds skip = extra.skipBounds[i];
+			
+			boolean end = bounds.getEnd() > skip.getStart() && bounds.getEnd() <= skip.getEnd();
+			
+			if (bounds.getStart() < skip.getEnd() && bounds.getStart() >= skip.getStart())
+			{
+				if (end)
+				{
+					bounds.setInvalid();
+					return;
+				}
+				
+				bounds.setStart(skip.getEnd());
+			}
+			else if (end)
+			{
+				bounds.setEnd(skip.getStart());
+			}
+		}
 	}
 	
 	/**
@@ -887,9 +945,7 @@ public abstract class Node
 	 * and the number (order) the word came in the statement.
 	 * 
 	 * @param word The word that was found.
-	 * @param wordNumber The index of the word on a word-by-word basis.
 	 * @param bounds The bounds of the word that was found.
-	 * @param numWords The number of words that were parsed.
 	 * @param leftDelimiter The text that is between the previous word and
 	 * 		the current word.
 	 * @param rightDelimiter The text that is between the current word and
@@ -897,7 +953,7 @@ public abstract class Node
 	 * @param extra The extra data that may or may not be needed for the
 	 * 		interactWord() methods.
 	 */
-	public void interactWord(String word, int wordNumber, Bounds bounds, int numWords, String leftDelimiter, String rightDelimiter, ExtraData extra)
+	public void interactWord(String word, Bounds bounds, String leftDelimiter, String rightDelimiter, ExtraData extra)
 	{
 		
 	}
@@ -1378,8 +1434,144 @@ public abstract class Node
 	 */
 	public static class ExtraData
 	{
+		private int		wordNumber;
+		
+		private Bounds	skipBounds[];
+		
+		private ArrayList<Bounds> bounds;
+		private ArrayList<String> words;
+		private ArrayList<String> delims;
+		
 		public String	error;
-		public String	statement;
+		public String	statement; 
+		
+		public ExtraData()
+		{
+			skipBounds = new Bounds[0];
+			
+			bounds = new ArrayList<Bounds>();
+			words  = new ArrayList<String>();
+			delims = new ArrayList<String>();
+		}
+		
+		public int getWordNumber()
+		{
+			return wordNumber;
+		}
+		
+		public boolean isLastWord()
+		{
+			return wordNumber == words.size() - 1;
+		}
+		
+		public boolean isFirstWord()
+		{
+			return wordNumber == 0;
+		}
+		
+		public Bounds getCurrentWordBounds()
+		{
+			return bounds.get(wordNumber);
+		}
+		
+		public Bounds getNextWordBounds()
+		{
+			if (isLastWord())
+			{
+				return null;
+			}
+			
+			return bounds.get(wordNumber + 1);
+		}
+		
+		public Bounds getPreviousWordBounds()
+		{
+			if (isFirstWord())
+			{
+				return null;
+			}
+			
+			return bounds.get(wordNumber - 1);
+		}
+		
+		public String getNextWord()
+		{
+			if (isLastWord())
+			{
+				return null;
+			}
+			
+			return words.get(wordNumber + 1);
+		}
+		
+		public String getPreviousWord()
+		{
+			if (isFirstWord())
+			{
+				return null;
+			}
+			
+			return words.get(wordNumber - 1);
+		}
+		
+		public boolean isSkipBoundsNext()
+		{
+			return getRightAdjacentSkipBounds() != null;
+		}
+		
+		public Bounds getRightAdjacentSkipBounds()
+		{
+			for (Bounds skip : skipBounds)
+			{
+				if (skip.getStart() >= getCurrentWordBounds().getEnd() &&
+						(isLastWord() || skip.getEnd() <= getNextWordBounds().getStart()))
+				{
+					return skip;
+				}
+			}
+			
+			return null;
+		}
+		
+		public Bounds getLeftAdjacentSkipBounds()
+		{
+			for (Bounds skip : skipBounds)
+			{
+				if (skip.getEnd() <= getCurrentWordBounds().getStart() &&
+						(isFirstWord() || skip.getStart() >= getPreviousWordBounds().getEnd()))
+				{
+					return skip;
+				}
+			}
+			
+			return null;
+		}
+		
+		public int getNumSkipBounds()
+		{
+			return skipBounds.length;
+		}
+		
+		public Bounds getSkipBounds(int index)
+		{
+			return skipBounds[index];
+		}
+		
+		public boolean containsSkipBounds()
+		{
+			return getNumSkipBounds() > 0;
+		}
+		
+		public void addSkipBounds(Bounds bounds)
+		{
+			Bounds temp[] = new Bounds[skipBounds.length + 1];
+			
+			System.arraycopy(skipBounds, 0, temp, 0, skipBounds.length);
+			
+			temp[skipBounds.length] = bounds;
+			
+			skipBounds = temp;
+		}
 	}
 	
 	/**

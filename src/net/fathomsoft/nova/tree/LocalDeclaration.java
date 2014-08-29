@@ -17,7 +17,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.2.4 Jan 5, 2014 at 9:10:49 PM
- * @version	v0.2.26 Aug 6, 2014 at 2:48:50 PM
+ * @version	v0.2.29 Aug 29, 2014 at 3:17:45 PM
  */
 public class LocalDeclaration extends VariableDeclaration
 {
@@ -73,13 +73,15 @@ public class LocalDeclaration extends VariableDeclaration
 	 */
 	public static LocalDeclaration decodeStatement(Node parent, String statement, Location location, boolean require)
 	{
-		if (SyntaxUtils.isLiteral(statement) || !Regex.matches(statement, Patterns.IDENTIFIER_DECLARATION))
+		if (SyntaxUtils.isLiteral(statement) || !StringUtils.containsMultipleWords(statement) || StringUtils.containsChar(statement, StringUtils.INVALID_DECLARATION_CHARS))// || !Regex.matches(statement, Patterns.IDENTIFIER_DECLARATION))
 		{
 			return null;
 		}
 		
 		LocalDeclaration n    = new LocalDeclaration(parent, location);
-		DeclarationData  data = new DeclarationData(statement);
+		DeclarationData  data = new DeclarationData();
+
+		n.searchGenericParameters(statement, data);
 		
 		n.iterateWords(statement, Patterns.IDENTIFIER_BOUNDARIES, data);
 	
@@ -136,22 +138,22 @@ public class LocalDeclaration extends VariableDeclaration
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.Node#interactWord(String, int, Bounds, int, String, String, ExtraData)
+	 * @see net.fathomsoft.nova.tree.Node#interactWord(String, Bounds, String, String, ExtraData)
 	 */
 	@Override
-	public void interactWord(String word, int wordNumber, Bounds bounds, int numWords, String leftDelimiter, String rightDelimiter, ExtraData data)
+	public void interactWord(String word, Bounds bounds, String leftDelimiter, String rightDelimiter, ExtraData data)
 	{
 		DeclarationData extra = (DeclarationData)data;
 		
-		if (wordNumber == numWords - 1)
+		if (extra.isLastWord())
 		{
-			interactName(word, leftDelimiter, rightDelimiter);
+			interactName(word, leftDelimiter, rightDelimiter, extra);
 		}
-		else if (!setAttribute(word, wordNumber))
+		else if (!setAttribute(word, extra.getWordNumber()))
 		{
 			if (getType() != null)
 			{
-				extra.error = "Unknown syntax '" + leftDelimiter + word + "'";
+				extra.error = "Invalid syntax '" + leftDelimiter + word + "'";
 			}
 			else
 			{
@@ -173,8 +175,9 @@ public class LocalDeclaration extends VariableDeclaration
 	 * @param word The name of the declared variable.
 	 * @param leftDelimiter The left delimiter of the name.
 	 * @param rightDelimiter The right delimiter of the name.
+	 * @param extra The ExtraData for the word iteration.
 	 */
-	private void interactName(String word, String leftDelimiter, String rightDelimiter)
+	private void interactName(String word, String leftDelimiter, String rightDelimiter, DeclarationData extra)
 	{
 		if (getType() == null || (leftDelimiter.length() != 0 && !StringUtils.containsOnly(leftDelimiter, new char[] { '*', '&' })))
 		{
@@ -193,6 +196,13 @@ public class LocalDeclaration extends VariableDeclaration
 			{
 				setDataType(IValue.REFERENCE);
 			}
+		}
+		
+		if (extra.getRightAdjacentSkipBounds() != null)
+		{
+			decodeGenericParameter(extra.statement, extra.getRightAdjacentSkipBounds());
+			
+			extra.decrementGenericsRemaining();
 		}
 	}
 	
@@ -219,30 +229,6 @@ public class LocalDeclaration extends VariableDeclaration
 		super.cloneTo(node);
 		
 		return node;
-	}
-	
-	/**
-	 * Implementation of the ExtraData for this class.
-	 * 
-	 * @author	Braden Steffaniak
-	 * @since	v0.2.13 Jun 11, 2014 at 8:31:46 PM
-	 * @version	v0.2.13 Jun 11, 2014 at 8:31:46 PM
-	 */
-	private static class DeclarationData extends ExtraData
-	{
-		private String	statement;
-		
-		/**
-		 * Construct the DeclarationData instance with the given statement
-		 * to pass to the interactWord() method.
-		 * 
-		 * @param statement The statement to pass to the interactWord()
-		 * 		method.
-		 */
-		public DeclarationData(String statement)
-		{
-			this.statement = statement;
-		}
 	}
 	
 	/**

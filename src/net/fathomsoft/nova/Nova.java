@@ -7,14 +7,59 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
-import net.fathomsoft.nova.tree.*;
 import net.fathomsoft.nova.error.SyntaxErrorException;
 import net.fathomsoft.nova.error.SyntaxMessage;
+import net.fathomsoft.nova.tree.ArgumentList;
+import net.fathomsoft.nova.tree.Assignment;
 import net.fathomsoft.nova.tree.BinaryOperation;
+import net.fathomsoft.nova.tree.Cast;
+import net.fathomsoft.nova.tree.ClassDeclaration;
+import net.fathomsoft.nova.tree.Closure;
+import net.fathomsoft.nova.tree.ClosureDeclaration;
+import net.fathomsoft.nova.tree.Condition;
+import net.fathomsoft.nova.tree.Constructor;
+import net.fathomsoft.nova.tree.Destructor;
+import net.fathomsoft.nova.tree.Dimensions;
+import net.fathomsoft.nova.tree.ElseStatement;
+import net.fathomsoft.nova.tree.ExternalMethodDeclaration;
+import net.fathomsoft.nova.tree.ExternalType;
+import net.fathomsoft.nova.tree.ExternalTypeList;
 import net.fathomsoft.nova.tree.FileDeclaration;
+import net.fathomsoft.nova.tree.ForLoop;
+import net.fathomsoft.nova.tree.IIdentifier;
+import net.fathomsoft.nova.tree.IValue;
 import net.fathomsoft.nova.tree.Identifier;
+import net.fathomsoft.nova.tree.IfStatement;
+import net.fathomsoft.nova.tree.Import;
+import net.fathomsoft.nova.tree.ImportList;
+import net.fathomsoft.nova.tree.InstanceDeclaration;
+import net.fathomsoft.nova.tree.Instantiation;
+import net.fathomsoft.nova.tree.Literal;
+import net.fathomsoft.nova.tree.LocalDeclaration;
+import net.fathomsoft.nova.tree.Loop;
+import net.fathomsoft.nova.tree.LoopInitialization;
+import net.fathomsoft.nova.tree.LoopUpdate;
+import net.fathomsoft.nova.tree.MethodCall;
+import net.fathomsoft.nova.tree.MethodCallArgumentList;
 import net.fathomsoft.nova.tree.MethodDeclaration;
+import net.fathomsoft.nova.tree.MethodList;
+import net.fathomsoft.nova.tree.Node;
+import net.fathomsoft.nova.tree.Operator;
+import net.fathomsoft.nova.tree.Parameter;
+import net.fathomsoft.nova.tree.ParameterList;
+import net.fathomsoft.nova.tree.Priority;
+import net.fathomsoft.nova.tree.Program;
+import net.fathomsoft.nova.tree.Return;
+import net.fathomsoft.nova.tree.Scope;
+import net.fathomsoft.nova.tree.StaticBlock;
 import net.fathomsoft.nova.tree.SyntaxTree;
+import net.fathomsoft.nova.tree.TreeGenerator;
+import net.fathomsoft.nova.tree.TypeList;
+import net.fathomsoft.nova.tree.UnaryOperation;
+import net.fathomsoft.nova.tree.Until;
+import net.fathomsoft.nova.tree.VTable;
+import net.fathomsoft.nova.tree.Value;
+import net.fathomsoft.nova.tree.WhileLoop;
 import net.fathomsoft.nova.tree.exceptionhandling.Exception;
 import net.fathomsoft.nova.util.Command;
 import net.fathomsoft.nova.util.CommandListener;
@@ -27,7 +72,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:00:04 PM
- * @version	v0.2.28 Aug 20, 2014 at 12:10:45 AM
+ * @version	v0.2.29 Aug 29, 2014 at 3:17:45 PM
  */
 public class Nova
 {
@@ -260,6 +305,8 @@ public class Nova
 				formatPath(standard  + "SVGCircle.nova"),
 				formatPath(standard  + "System.nova"),
 				formatPath(standard  + "Process.nova"),
+				formatPath(standard  + "Stack.nova"),
+				formatPath(standard  + "EmptyStackException.nova"),
 				"-o",   formatPath(directory + "bin/Executable" + OUTPUT_EXTENSION),
 				"-dir", formatPath(directory + "../include"),
 				"-dir", formatPath(directory + "../include/gc"),
@@ -319,6 +366,11 @@ public class Nova
 					
 					tree = new SyntaxTree(inputFiles.toArray(new File[0]), this);
 					
+					if (containsErrors())
+					{
+						enableFlag(DRY_RUN);
+						completed();
+					}
 					if (generateCode)
 					{
 						tree.generateCOutput();
@@ -467,6 +519,8 @@ public class Nova
 			return;
 		}
 		
+		StringBuilder staticBlockCalls = generateStaticBlockCalls();
+		
 		FileDeclaration fileDeclaration = mainMethod.getFileDeclaration();
 		
 		if (mainMethod != null)
@@ -475,7 +529,6 @@ public class Nova
 //			file.addChild(Import.decodeStatement(file, "import \"GC\"", file.getLocationIn(), true, false));
 			Identifier gcInit = (Identifier)SyntaxTree.decodeScopeContents(mainMethod, "GC.init()", mainMethod.getLocationIn(), false);
 			Identifier enter  = (Identifier)SyntaxTree.decodeScopeContents(mainMethod, "Console.waitForEnter()", mainMethod.getLocationIn(), false);
-			
 			
 			StringBuilder mainMethodText = new StringBuilder();
 			
@@ -488,6 +541,7 @@ public class Nova
 			mainMethodText.append	("ExceptionData* ").append(Exception.EXCEPTION_DATA_IDENTIFIER).append(" = 0;").append('\n');
 			mainMethodText.append	("srand(currentTimeMillis());").append('\n');
 			mainMethodText.append	(gcInit.generateCSource()).append('\n');
+			mainMethodText.append	(staticBlockCalls).append('\n');
 			mainMethodText.append	("args = (String**)NOVA_MALLOC(argc * sizeof(String));").append('\n');
 			mainMethodText.append	('\n');
 			mainMethodText.append	("for (i = 0; i < argc; i++)").append('\n');
@@ -525,14 +579,36 @@ public class Nova
 		}
 	}
 	
+	private StringBuilder generateStaticBlockCalls()
+	{
+		StringBuilder builder = new StringBuilder();
+		
+		Program root = tree.getRoot();
+		
+		for (int i = 0; i < root.getNumVisibleChildren(); i++)
+		{
+			FileDeclaration  file  = (FileDeclaration)root.getVisibleChild(i);
+			ClassDeclaration clazz = file.getClassDeclaration();
+			
+			TypeList<StaticBlock> blocks = clazz.getStaticBlockList();
+			
+			for (int j = 0; j < blocks.getNumVisibleChildren(); j++)
+			{
+				StaticBlock.generateCMethodCall(builder, clazz).append(';').append('\n');
+			}
+		}
+		
+		return builder;
+	}
+	
 	/**
 	 * Compile the generated c code into an executable file.
 	 */
 	private void compileC()
 	{
-		StringBuilder cmd  = new StringBuilder();
+		StringBuilder cmd = new StringBuilder();
 		
-		File compilerDir = null;
+		File compilerDir  = null;
 		
 		if (compiler == GCC)
 		{

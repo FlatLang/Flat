@@ -1,6 +1,5 @@
 package net.fathomsoft.nova.tree;
 
-import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.util.Bounds;
@@ -17,7 +16,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.2.14 Jul 5, 2014 at 9:02:42 PM
- * @version	v0.2.26 Aug 6, 2014 at 2:48:50 PM
+ * @version	v0.2.29 Aug 29, 2014 at 3:17:45 PM
  */
 public class ClosureDeclaration extends Parameter implements CallableMethod
 {
@@ -311,26 +310,26 @@ public class ClosureDeclaration extends Parameter implements CallableMethod
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.Node#interactWord(java.lang.String, int, net.fathomsoft.nova.util.Bounds, int, java.lang.String, java.lang.String, net.fathomsoft.nova.tree.Node.ExtraData)
+	 * @see net.fathomsoft.nova.tree.Node#interactWord(java.lang.String, net.fathomsoft.nova.util.Bounds, java.lang.String, java.lang.String, net.fathomsoft.nova.tree.Node.ExtraData)
 	 */
 	@Override
-	public void interactWord(String word, int wordNumber, Bounds bounds, int numWords, String leftDelimiter, String rightDelimiter, ExtraData data)
+	public void interactWord(String word, Bounds bounds, String leftDelimiter, String rightDelimiter, ExtraData extra)
 	{
-		if (data.error != null || !setAttribute(word, wordNumber))
+		if (extra.error != null || !setAttribute(word, extra.getWordNumber()))
 		{
 			if (leftDelimiter.equals("->"))
 			{
 				setType(word, true, false);
 				
-				checkArray(data.statement, bounds.getEnd(), rightDelimiter);
+				checkArray(extra.statement, bounds.getEnd(), rightDelimiter);
 			}
-			else if (wordNumber == numWords - 1 || rightDelimiter.equals("->"))
+			else if (extra.isLastWord() || rightDelimiter.equals("->"))
 			{
 				setName(word);
 			}
 			else
 			{
-				data.error = "Unknown closure definition";
+				extra.error = "Unknown closure definition";
 				
 				return;
 			}

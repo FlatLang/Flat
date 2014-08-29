@@ -3,8 +3,8 @@ package net.fathomsoft.nova.tree.variables;
 import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.error.SyntaxMessage;
-import net.fathomsoft.nova.tree.BodyMethodDeclaration;
-import net.fathomsoft.nova.tree.ClassDeclaration;
+import net.fathomsoft.nova.tree.GenericCompatible;
+import net.fathomsoft.nova.tree.GenericType;
 import net.fathomsoft.nova.tree.IIdentifier;
 import net.fathomsoft.nova.tree.Node;
 import net.fathomsoft.nova.tree.SyntaxTree;
@@ -19,13 +19,16 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.2.4 May 2, 2014 at 11:14:37 PM
- * @version	v0.2.26 Aug 6, 2014 at 2:48:50 PM
+ * @version	v0.2.29 Aug 29, 2014 at 3:17:45 PM
  */
-public class VariableDeclaration extends IIdentifier
+public class VariableDeclaration extends IIdentifier implements GenericCompatible
 {
-	private boolean				constantVal, volatileVal, external;
+	private boolean		constantVal, volatileVal, external;
 	
-//	private static final String	NULL_TEXT	= "0";
+	private GenericType	genericTypes[];
+	
+	public static final String	GENERIC_START = "<";
+	public static final String	GENERIC_END   = ">";
 	
 	/**
 	 * @see net.fathomsoft.nova.tree.Node#Node(Node, Location)
@@ -33,6 +36,26 @@ public class VariableDeclaration extends IIdentifier
 	public VariableDeclaration(Node temporaryParent, Location locationIn)
 	{
 		super(temporaryParent, locationIn);
+		
+		genericTypes = new GenericType[0];
+	}
+
+	/**
+	 * @see net.fathomsoft.nova.tree.GenericCompatible#getGenericParameterNames()
+	 */
+	@Override
+	public GenericType[] getGenericParameterNames()
+	{
+		return genericTypes;
+	}
+
+	/**
+	 * @see net.fathomsoft.nova.tree.GenericCompatible#setGenericTypes(net.fathomsoft.nova.tree.GenericType[])
+	 */
+	@Override
+	public void setGenericTypes(GenericType[] types)
+	{
+		this.genericTypes = types;
 	}
 	
 	/**
@@ -446,6 +469,7 @@ public class VariableDeclaration extends IIdentifier
 
 		node.constantVal = constantVal;
 		node.external    = external;
+		node.volatileVal = volatileVal;
 		
 		return node;
 	}
@@ -462,5 +486,32 @@ public class VariableDeclaration extends IIdentifier
 		
 		
 		return null;
+	}
+	
+	/**
+	 * Implementation of the ExtraData for this class.
+	 * 
+	 * @author	Braden Steffaniak
+	 * @since	v0.2.29 Aug 28, 2014 at 6:56:45 PM
+	 * @version	v0.2.29 Aug 28, 2014 at 6:56:45 PM
+	 */
+	public static class DeclarationData extends ExtraData
+	{
+		private int	genericsRemaining;
+		
+		public int getGenericsRemaining()
+		{
+			return genericsRemaining;
+		}
+		
+		public void setGenericsRemaining(int remaining)
+		{
+			this.genericsRemaining = remaining;
+		}
+		
+		public void decrementGenericsRemaining()
+		{
+			genericsRemaining--;
+		}
 	}
 }

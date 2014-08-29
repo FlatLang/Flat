@@ -35,15 +35,13 @@ CCLASS_CLASS
 	ListNode, 
 	
 	nova_VTable_ListNode* vtable;
-	struct Private* prv;
+	Object* nova_ListNode_data;
+	ListNode* nova_ListNode_next;
 )
 
 ListNode* nova_ListNode_construct(ListNode* this, ExceptionData* exceptionData, Object* nova_0_data);
 void nova_del_ListNode(ListNode** this, ExceptionData* exceptionData);
 void nova_ListNode_this(ListNode* this, ExceptionData* exceptionData, Object* nova_0_data);
-Object* nova_ListNode_getData(ListNode* this, ExceptionData* exceptionData);
-ListNode* nova_ListNode_getNext(ListNode* this, ExceptionData* exceptionData);
-void nova_ListNode_setNext(ListNode* this, ExceptionData* exceptionData, ListNode* nova_0_next);
 void nova_ListNode_super(ListNode* this, ExceptionData* exceptionData);
 
 #endif

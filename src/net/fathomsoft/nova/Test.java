@@ -5,8 +5,6 @@ import static java.lang.Math.sin;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import net.fathomsoft.nova.tree.Value;
-import net.fathomsoft.nova.tree.variables.VariableDeclaration;
 import net.fathomsoft.nova.util.Patterns;
 import net.fathomsoft.nova.util.StringUtils;
 
@@ -80,6 +78,10 @@ public class Test
 	
 	public static void main(String args[])
 	{
+		System.out.println(StringUtils.removeContentsWithin("This<E  >d is a test", "<", ">"));
+		
+		System.exit(0);
+		
 		String s = "ADF";
 		
 		CharSequence c = (CharSequence)s;

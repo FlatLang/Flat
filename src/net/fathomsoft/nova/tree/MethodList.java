@@ -2,20 +2,19 @@ package net.fathomsoft.nova.tree;
 
 import java.util.ArrayList;
 
-import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.util.Location;
 
 
 /**
- * Node extension that represents all of the Methods within
+ * {@link Node} extension that represents all of the Methods within
  * a class.
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 10:29:22 PM
- * @version	v0.2.28 Aug 20, 2014 at 12:10:45 AM
+ * @version	v0.2.29 Aug 29, 2014 at 3:17:45 PM
  */
-public class MethodList extends Node
+public class MethodList extends List
 {
 	/**
 	 * @see net.fathomsoft.nova.tree.Node#Node(Node, Location)

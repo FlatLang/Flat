@@ -1,6 +1,5 @@
 package net.fathomsoft.nova.tree;
 
-import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.util.Bounds;
@@ -16,7 +15,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:10:53 PM
- * @version	v0.2.26 Aug 6, 2014 at 2:48:50 PM
+ * @version	v0.2.29 Aug 29, 2014 at 3:17:45 PM
  */
 public class ExternalMethodDeclaration extends MethodDeclaration
 {
@@ -222,19 +221,19 @@ public class ExternalMethodDeclaration extends MethodDeclaration
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.Node#interactWord(java.lang.String, int, net.fathomsoft.nova.util.Bounds, int, java.lang.String, java.lang.String, net.fathomsoft.nova.tree.Node.ExtraData)
+	 * @see net.fathomsoft.nova.tree.Node#interactWord(java.lang.String, net.fathomsoft.nova.util.Bounds, java.lang.String, java.lang.String, net.fathomsoft.nova.tree.Node.ExtraData)
 	 */
 	@Override
-	public void interactWord(String word, int wordNumber, Bounds bounds, int numWords, String leftDelimiter, String rightDelimiter, ExtraData extra)
+	public void interactWord(String word, Bounds bounds, String leftDelimiter, String rightDelimiter, ExtraData extra)
 	{
-		if (wordNumber == 0)
+		if (extra.getWordNumber() == 0)
 		{
 			if (!word.equals("as"))
 			{
 				fail(word, bounds);
 			}
 		}
-		else if (wordNumber == 1 && wordNumber == numWords - 1)
+		else if (extra.getWordNumber() == 1 && extra.isLastWord())
 		{
 			if (SyntaxUtils.isValidIdentifier(word))
 			{

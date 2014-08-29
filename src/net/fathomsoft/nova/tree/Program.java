@@ -1,6 +1,5 @@
 package net.fathomsoft.nova.tree;
 
-import java.io.File;
 import java.util.HashMap;
 
 import net.fathomsoft.nova.Nova;

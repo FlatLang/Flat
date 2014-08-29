@@ -1,9 +1,7 @@
 package net.fathomsoft.nova.tree.variables;
 
-import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.TestContext;
-import net.fathomsoft.nova.tree.BodyMethodDeclaration;
-import net.fathomsoft.nova.tree.ClassDeclaration;
+import net.fathomsoft.nova.tree.List;
 import net.fathomsoft.nova.tree.Node;
 import net.fathomsoft.nova.util.Location;
 
@@ -12,9 +10,9 @@ import net.fathomsoft.nova.util.Location;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 9, 2014 at 4:19:57 PM
- * @version	v0.2.26 Aug 6, 2014 at 2:48:50 PM
+ * @version	v0.2.29 Aug 29, 2014 at 3:17:45 PM
  */
-public class VariableDeclarationList extends Node
+public class VariableDeclarationList extends List
 {
 	/**
 	 * @see net.fathomsoft.nova.tree.Node#Node(Node, Location)

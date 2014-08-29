@@ -1,21 +1,20 @@
 package net.fathomsoft.nova.tree.variables;
 
-import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.TestContext;
-import net.fathomsoft.nova.tree.BodyMethodDeclaration;
 import net.fathomsoft.nova.tree.ClassDeclaration;
+import net.fathomsoft.nova.tree.List;
 import net.fathomsoft.nova.tree.Node;
 import net.fathomsoft.nova.util.Location;
 
 /**
- * Node extensions that contains all of the public Field
+ * {@link FieldList} extensions that contains all of the public Field
  * instances of a ClassDeclaration.
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 10:00:50 PM
- * @version	v0.2.26 Aug 6, 2014 at 2:48:50 PM
+ * @version	v0.2.29 Aug 29, 2014 at 3:17:45 PM
  */
-public class InstanceFieldList extends Node
+public class InstanceFieldList extends List
 {
 	/**
 	 * @see net.fathomsoft.nova.tree.Node#Node(Node, Location)

@@ -1,11 +1,9 @@
 package net.fathomsoft.nova.tree.variables;
 
-import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.error.SyntaxMessage;
-import net.fathomsoft.nova.tree.BodyMethodDeclaration;
-import net.fathomsoft.nova.tree.ClassDeclaration;
 import net.fathomsoft.nova.tree.InstanceDeclaration;
+import net.fathomsoft.nova.tree.List;
 import net.fathomsoft.nova.tree.Node;
 import net.fathomsoft.nova.util.Location;
 
@@ -14,9 +12,9 @@ import net.fathomsoft.nova.util.Location;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 10:00:50 PM
- * @version	v0.2.26 Aug 6, 2014 at 2:48:50 PM
+ * @version	v0.2.29 Aug 29, 2014 at 3:17:45 PM
  */
-public class FieldList extends Node
+public class FieldList extends List
 {
 	/**
 	 * Instantiate and initialize default data.

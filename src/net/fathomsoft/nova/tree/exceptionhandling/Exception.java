@@ -2,10 +2,7 @@ package net.fathomsoft.nova.tree.exceptionhandling;
 
 import java.util.HashMap;
 
-import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.TestContext;
-import net.fathomsoft.nova.tree.BodyMethodDeclaration;
-import net.fathomsoft.nova.tree.ClassDeclaration;
 import net.fathomsoft.nova.tree.Node;
 import net.fathomsoft.nova.util.Location;
 

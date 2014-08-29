@@ -1,6 +1,5 @@
 package net.fathomsoft.nova.tree;
 
-import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.util.Location;
 import net.fathomsoft.nova.util.SyntaxUtils;
@@ -12,7 +11,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:00:19 PM
- * @version	v0.2.26 Aug 6, 2014 at 2:48:50 PM
+ * @version	v0.2.29 Aug 29, 2014 at 3:17:45 PM
  */
 public class IIdentifier extends Identifier
 {
@@ -111,9 +110,14 @@ public class IIdentifier extends Identifier
 	public boolean setType(String type, boolean require, boolean checkType, boolean checkDataType)
 	{
 		// Dont forget about IValue.setType()!!!!
-		if (checkType && !checkType(type, require))
+		if (checkType)
 		{
-			return false;
+			if (!checkType(type, require))
+			{
+				return false;
+			}
+			
+			type = SyntaxUtils.getValidType(this, type);
 		}
 		
 		this.type = type;

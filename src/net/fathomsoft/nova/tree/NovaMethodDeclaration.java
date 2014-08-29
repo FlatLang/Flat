@@ -21,9 +21,9 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.2.21 Jul 30, 2014 at 1:45:00 PM
- * @version	v0.2.28 Aug 20, 2014 at 12:10:45 AM
+ * @version	v0.2.29 Aug 29, 2014 at 3:17:45 PM
  */
-public class NovaMethodDeclaration extends MethodDeclaration
+public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAncestor
 {
 	private int	uniqueID, overloadID;
 	
@@ -70,11 +70,9 @@ public class NovaMethodDeclaration extends MethodDeclaration
 	}
 	
 	/**
-	 * Get a unique integer used for differentiating local variables
-	 * within the method.
-	 * 
-	 * @return A unique identifier for local variables.
+	 * @see net.fathomsoft.nova.tree.ScopeAncestor#generateUniqueID()
 	 */
+	@Override
 	public int generateUniqueID()
 	{
 		return ++uniqueID;
@@ -533,14 +531,14 @@ public class NovaMethodDeclaration extends MethodDeclaration
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.Node#interactWord(java.lang.String, int, net.fathomsoft.nova.util.Bounds, int, java.lang.String, java.lang.String, net.fathomsoft.nova.tree.Node.ExtraData)
+	 * @see net.fathomsoft.nova.tree.Node#interactWord(java.lang.String, net.fathomsoft.nova.util.Bounds, java.lang.String, java.lang.String, net.fathomsoft.nova.tree.Node.ExtraData)
 	 */
 	@Override
-	public void interactWord(String word, int wordNumber, Bounds bounds, int numWords, String leftDelimiter, String rightDelimiter, ExtraData extra)
+	public void interactWord(String word, Bounds bounds, String leftDelimiter, String rightDelimiter, ExtraData extra)
 	{
 		MethodData data = (MethodData)extra;
 		
-		if (data.error != null || !setAttribute(word, wordNumber))
+		if (data.error != null || !setAttribute(word, extra.getWordNumber()))
 		{
 			if (leftDelimiter.equals("->"))
 			{
@@ -548,7 +546,7 @@ public class NovaMethodDeclaration extends MethodDeclaration
 				
 				checkArray(data.signature, bounds.getEnd(), rightDelimiter);
 			}
-			else if (wordNumber == numWords - 1 || rightDelimiter.equals("->"))
+			else if (extra.isLastWord() || rightDelimiter.equals("->"))
 			{
 				setName(word);
 			}

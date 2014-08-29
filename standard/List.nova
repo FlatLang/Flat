@@ -1,18 +1,18 @@
 import "ListNode"
 
-public class List
+public class List<E>
 {
-	ListNode	start
-	ListNode	current
+	ListNode<E>	start
+	ListNode<E>	current
 	
-	public getFirst() -> ListNode
+	public getFirst() -> ListNode<E>
 	{
 		return start
 	}
 	
-	public add(Object data)
+	public add(E data)
 	{
-		ListNode node = new ListNode(data)
+		ListNode<E> node = new ListNode<E>(data)
 		
 		if (start == null)
 		{
@@ -21,32 +21,32 @@ public class List
 		}
 		else
 		{
-			current.setNext(node)
+			current.next = node
 		}
-		
 		current = node
+		
 	}
 	
-	public remove(Object data)
+	public remove(E data)
 	{
-		if (start.getData() == data)
+		if (start.data == data)
 		{
-			start = start.getNext();
+			start = start.next;
 		}
 		
-		ListNode prev = start
-		ListNode cur  = start.getNext()
+		ListNode<E> prev = start
+		ListNode<E> cur  = start.next
 		
 		while (cur != null)
 		{
-			Object d = cur.getData()
+			E d = cur.data
 			
 			if (d == data)
 			{
-				prev.setNext(cur.getNext())
+				prev.next = cur.next
 			}
 			
-			cur = cur.getNext()
+			cur = cur.next
 		}
 	}
 }

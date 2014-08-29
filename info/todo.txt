@@ -15,6 +15,7 @@ X Fix the setScope() method to not break sub-classing.
 X Make sure there are no external method name collisions.
 * Do we need generateCVirtualMethodName()?
 * Fix single line comment on first line.
+* Check Java for inner-class inheritence of generic parameters.
 
 In-depth compiler error checking:
 - Make sure that the static class's methods/variables are called rightfully.
@@ -34,6 +35,7 @@ Things to fix:
 
 Things to improve:
   Clean up File validation methods.
+  Make Values actually hold Values for their types (instead of Strings).
 
 
 Default Exceptions to Implement:

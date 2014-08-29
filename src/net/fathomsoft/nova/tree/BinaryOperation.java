@@ -1,6 +1,5 @@
 package net.fathomsoft.nova.tree;
 
-import java.io.ObjectInputStream.GetField;
 import java.util.regex.Matcher;
 
 import net.fathomsoft.nova.Nova;
@@ -23,7 +22,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:20:35 PM
- * @version	v0.2.28 Aug 20, 2014 at 12:10:45 AM
+ * @version	v0.2.29 Aug 29, 2014 at 3:17:45 PM
  */
 public class BinaryOperation extends IValue
 {
@@ -181,7 +180,7 @@ public class BinaryOperation extends IValue
 	 */
 	private static boolean validateStatement(String statement)
 	{
-		if (SyntaxUtils.isLiteral(statement) || SyntaxUtils.isMethodCall(statement))
+		if (SyntaxUtils.isLiteral(statement) || SyntaxUtils.isInstantiationCall(statement))
 		{
 			return false;
 		}
@@ -738,13 +737,7 @@ public class BinaryOperation extends IValue
 			}
 			
 			String statement = left.generateNovaInput() + ".concat(" + right.generateNovaInput() + ")";
-			
 			Value  strConcat = (Value)SyntaxTree.decodeScopeContents(getParent(), statement, left.getLocationIn(), false);
-			
-			if (statement.contains("CRAP"))
-			{
-				strConcat.generateCSource();
-			}
 			
 			return strConcat;
 		}

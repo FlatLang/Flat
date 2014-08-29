@@ -17,7 +17,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Feb 18, 2014 at 8:57:00 PM
- * @version	v0.2.26 Aug 6, 2014 at 2:48:50 PM
+ * @version	v0.2.29 Aug 29, 2014 at 3:17:45 PM
  */
 public class FileDeclaration extends Node
 {
@@ -221,7 +221,7 @@ public class FileDeclaration extends Node
 	{
 		ClassDeclaration clazz = getClassDeclaration();
 		
-		if (clazz.getName().equals(className))
+		if (clazz != null && clazz.getName().equals(className))
 		{
 			return clazz;
 		}
@@ -236,7 +236,12 @@ public class FileDeclaration extends Node
 	 */
 	public ClassDeclaration getClassDeclaration()
 	{
-		return (ClassDeclaration)getChild(1);
+		if (getNumChildren() <= super.getNumDefaultChildren() + 1)
+		{
+			return null;
+		}
+		
+		return (ClassDeclaration)getChild(super.getNumDefaultChildren() + 1);
 	}
 	
 	/**

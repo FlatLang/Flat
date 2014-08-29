@@ -2,10 +2,6 @@ package net.fathomsoft.nova.tree.variables;
 
 import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.TestContext;
-import net.fathomsoft.nova.error.SyntaxMessage;
-import net.fathomsoft.nova.tree.Assignment;
-import net.fathomsoft.nova.tree.BodyMethodDeclaration;
-import net.fathomsoft.nova.tree.ClassDeclaration;
 import net.fathomsoft.nova.tree.InstanceDeclaration;
 import net.fathomsoft.nova.tree.LocalDeclaration;
 import net.fathomsoft.nova.tree.Node;
@@ -24,7 +20,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:12:04 PM
- * @version	v0.2.28 Aug 20, 2014 at 12:10:45 AM
+ * @version	v0.2.29 Aug 29, 2014 at 3:17:45 PM
  */
 public class FieldDeclaration extends InstanceDeclaration
 {
@@ -186,14 +182,14 @@ public class FieldDeclaration extends InstanceDeclaration
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.Node#interactWord(java.lang.String, int, net.fathomsoft.nova.util.Bounds, int, java.lang.String, java.lang.String, net.fathomsoft.nova.tree.Node.ExtraData)
+	 * @see net.fathomsoft.nova.tree.Node#interactWord(java.lang.String, net.fathomsoft.nova.util.Bounds, java.lang.String, java.lang.String, net.fathomsoft.nova.tree.Node.ExtraData)
 	 */
 	@Override
-	public void interactWord(String word, int wordNumber, Bounds bounds, int numWords, String leftDelimiter, String rightDelimiter, ExtraData extra)
+	public void interactWord(String word, Bounds bounds, String leftDelimiter, String rightDelimiter, ExtraData extra)
 	{
 		FieldData data = (FieldData)extra;
 		
-		if (!setAttribute(word, wordNumber))
+		if (!setAttribute(word, extra.getWordNumber()))
 		{
 			if (data.localDeclaration.getStart() == -1)
 			{

@@ -1,0 +1,31 @@
+public class Stack<E>
+{
+	ListNode top
+	
+	public push(E data)
+	{
+		ListNode node = new ListNode(data)
+		
+		node.next = top
+		top       = node
+	}
+	
+	public pop() -> E
+	{
+		if (isEmpty())
+		{
+			throw new EmptyStackException()
+		}
+		
+		E data = top.data
+		
+		top = top.next
+		
+		return data
+	}
+	
+	public isEmpty() -> bool
+	{
+		return top == null
+	}
+}

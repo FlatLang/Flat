@@ -1,9 +1,7 @@
 package net.fathomsoft.nova.tree.variables;
 
-import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.error.SyntaxMessage;
-import net.fathomsoft.nova.tree.BodyMethodDeclaration;
 import net.fathomsoft.nova.tree.ClassDeclaration;
 import net.fathomsoft.nova.tree.Dimensions;
 import net.fathomsoft.nova.tree.Literal;

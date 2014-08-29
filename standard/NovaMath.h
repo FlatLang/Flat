@@ -39,6 +39,7 @@ CCLASS_CLASS
 )
 extern double nova_static_Math_PI;
 
+void MathNova_init_static();
 Math* nova_Math_construct(Math* this, ExceptionData* exceptionData);
 void nova_del_Math(Math** this, ExceptionData* exceptionData);
 int nova_static_Math_random(Math* this, ExceptionData* exceptionData, long_long nova_0_range);

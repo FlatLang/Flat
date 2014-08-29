@@ -1,6 +1,5 @@
 package net.fathomsoft.nova.tree;
 
-import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.tree.variables.Variable;
@@ -14,7 +13,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.2.4 May 2, 2014 at 11:14:37 PM
- * @version	v0.2.26 Aug 6, 2014 at 2:48:50 PM
+ * @version	v0.2.29 Aug 29, 2014 at 3:17:45 PM
  */
 public abstract class Value extends Node
 {
@@ -73,9 +72,7 @@ public abstract class Value extends Node
 	public Identifier getObjectReferenceNode(CallableMethod methodDeclaration)
 	{
 		Node     method     = ((Node)methodDeclaration);
-		
 		String   identifier = getObjectReferenceIdentifier(methodDeclaration);
-		
 		Variable var        = SyntaxTree.getUsableExistingNode(method, identifier, method.getLocationIn());
 		
 		if (var != null)
@@ -301,6 +298,10 @@ public abstract class Value extends Node
 				
 				return clazz.getName();
 			}
+		}
+		else if (getParentClass().containsGenericParameter(getType()))
+		{
+			return getParentClass().getGenericParameter(getType()).getDefaultType();
 		}
 		
 		return null;

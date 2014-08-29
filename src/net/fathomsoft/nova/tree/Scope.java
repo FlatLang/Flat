@@ -1,6 +1,5 @@
 package net.fathomsoft.nova.tree;
 
-import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.tree.variables.Variable;
 import net.fathomsoft.nova.tree.variables.VariableDeclarationList;
@@ -22,7 +21,7 @@ import net.fathomsoft.nova.util.Location;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Apr 5, 2014 at 10:54:20 PM
- * @version	v0.2.28 Aug 20, 2014 at 12:10:45 AM
+ * @version	v0.2.29 Aug 29, 2014 at 3:17:45 PM
  */
 public class Scope extends Node
 {
@@ -37,11 +36,11 @@ public class Scope extends Node
 	{
 		super(temporaryParent, locationIn);
 		
-		VariableDeclarationList variablesNode  = new VariableDeclarationList(this, locationIn);
+		VariableDeclarationList variablesNode = new VariableDeclarationList(this, locationIn);
 		
 		addChild(variablesNode, this);
 		
-		id = getParentMethod().generateUniqueID();
+		id = getNextScopeAncestor(false).generateUniqueID();
 	}
 	
 	/**
@@ -74,23 +73,17 @@ public class Scope extends Node
 	 */
 	public Variable registerLocalVariable(MethodCall virtual)
 	{
-		String     value;
-		Node       base;
-		String     decl;
-		Assignment assignment;
-		Variable   variable;
+		String     value  = virtual.getRootReferenceNode(true).generateNovaInputUntil(virtual).toString();
+		Node       base   = virtual.getBaseNode();
+		String     decl   = virtual.getType() + " nova_local_" + localVariableID++ + " = " + value;
+		Assignment assign = Assignment.decodeStatement(this, decl, getLocationIn(), true, true);
+		Variable   var    = (Variable)assign.getAssigneeNode();
 		
-		value      = virtual.getRootReferenceNode(true).generateNovaInputUntil(virtual).toString();
-		base       = virtual.getBaseNode();
-		decl       = virtual.getType() + " nova_local_" + localVariableID++ + " = " + value;
-		assignment = Assignment.decodeStatement(this, decl, getLocationIn(), true, true);
-		variable   = (Variable)assignment.getAssigneeNode();
+		var.setForceOriginalName(true);
 		
-		variable.setForceOriginalName(true);
+		base.getParent().addChildBefore(base, assign);
 		
-		base.getParent().addChildBefore(base, assignment);
-		
-		return variable.clone(this, getLocationIn());
+		return var.clone(this, getLocationIn());
 	}
 	
 	/**

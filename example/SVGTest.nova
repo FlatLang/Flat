@@ -10,8 +10,7 @@ public class SVGTest
 	{
 		SVG s = new SVG()
 		
-		double pi  = 3.141592653
-		double pi2 = pi * 2
+		double pi2 = Math.PI * 2
 		
 		Console.write("Enter the number of vertices: ")
 		int    numVerts = Console.readInt()

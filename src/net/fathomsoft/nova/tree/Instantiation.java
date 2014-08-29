@@ -1,12 +1,14 @@
 package net.fathomsoft.nova.tree;
 
-import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.tree.variables.Array;
+import net.fathomsoft.nova.tree.variables.VariableDeclaration;
+import net.fathomsoft.nova.util.Bounds;
 import net.fathomsoft.nova.util.Location;
 import net.fathomsoft.nova.util.Patterns;
 import net.fathomsoft.nova.util.Regex;
+import net.fathomsoft.nova.util.StringUtils;
 import net.fathomsoft.nova.util.SyntaxUtils;
 
 /**
@@ -16,16 +18,38 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Apr 3, 2014 at 7:53:35 PM
- * @version	v0.2.26 Aug 6, 2014 at 2:48:50 PM
+ * @version	v0.2.29 Aug 29, 2014 at 3:17:45 PM
  */
-public class Instantiation extends IIdentifier
+public class Instantiation extends IIdentifier implements GenericCompatible
 {
+	private GenericType	genericTypes[];
+	
 	/**
 	 * @see net.fathomsoft.nova.tree.Node#Node(Node, Location)
 	 */
 	public Instantiation(Node temporaryParent, Location locationIn)
 	{
 		super(temporaryParent, locationIn);
+		
+		genericTypes = new GenericType[0];
+	}
+	
+	/**
+	 * @see net.fathomsoft.nova.tree.GenericCompatible#getGenericParameterNames()
+	 */
+	@Override
+	public GenericType[] getGenericParameterNames()
+	{
+		return genericTypes;
+	}
+
+	/**
+	 * @see net.fathomsoft.nova.tree.GenericCompatible#setGenericTypes(net.fathomsoft.nova.tree.GenericType[])
+	 */
+	@Override
+	public void setGenericTypes(GenericType[] types)
+	{
+		this.genericTypes = types;
 	}
 	
 	/**
@@ -158,7 +182,17 @@ public class Instantiation extends IIdentifier
 	 */
 	private Instantiation decodeInstantiation(String instantiation, Location location, boolean require)
 	{
-		Identifier child = null;
+		Identifier child  = null;
+		String     params = null;
+		Bounds     bounds = StringUtils.findContentBoundsWithin(instantiation, VariableDeclaration.GENERIC_START, VariableDeclaration.GENERIC_END, 0, false);
+		
+		if (bounds.isValid())
+		{
+			params = bounds.extractString(instantiation);
+			bounds = StringUtils.findContentBoundsWithin(instantiation, VariableDeclaration.GENERIC_START, VariableDeclaration.GENERIC_END, 0);
+			
+			instantiation = bounds.trimString(instantiation);
+		}
 		
 		if (SyntaxUtils.isMethodCall(instantiation))
 		{
@@ -179,6 +213,11 @@ public class Instantiation extends IIdentifier
 		if (child == null)
 		{
 			SyntaxMessage.error("Unable to parse instantiation of '" + instantiation + "'", this);
+		}
+		
+		if (bounds.isValid())
+		{
+			decodeGenericParameter(params);
 		}
 		
 		setName(child.getName());

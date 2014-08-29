@@ -22,13 +22,14 @@ import net.fathomsoft.nova.tree.Return;
 import net.fathomsoft.nova.tree.Value;
 import net.fathomsoft.nova.tree.variables.FieldDeclaration;
 import net.fathomsoft.nova.tree.variables.Variable;
+import net.fathomsoft.nova.tree.variables.VariableDeclaration;
 
 /**
  * Class used for getting information about the Syntax of Nova.
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Mar 15, 2014 at 7:55:00 PM
- * @version	v0.2.28 Aug 20, 2014 at 12:10:45 AM
+ * @version	v0.2.29 Aug 29, 2014 at 3:17:45 PM
  */
 public class SyntaxUtils
 {
@@ -204,11 +205,58 @@ public class SyntaxUtils
 	 */
 	public static int findCharInBaseScope(String haystack, char needles[], int start)
 	{
+		return findStringInBaseScope(haystack, StringUtils.toString(needles), start);
+	}
+	
+	/**
+	 * Find the next available instance of the given String in the
+	 * base scope of the given haystack String. The base scope means
+	 * outside of any quotes, parenthesis, and/or brackets.
+	 * 
+	 * @param haystack The String to find the character within.
+	 * @param needle The String to search for in the String.
+	 * @return The index to search for in the String. If the String is
+	 * 		not found, then -1 is returned instead.
+	 */
+	public static int findStringInBaseScope(String haystack, String needle)
+	{
+		return findStringInBaseScope(haystack, needle, 0);
+	}
+	
+	/**
+	 * Find the next available instance of the given String in the
+	 * base scope of the given haystack String. The base scope means
+	 * outside of any quotes, parenthesis, and/or brackets.
+	 * 
+	 * @param haystack The String to find the character within.
+	 * @param needle The String to search for in the String.
+	 * @param start The index to start the search at.
+	 * @return The index to search for in the String. If the String is
+	 * 		not found, then -1 is returned instead.
+	 */
+	public static int findStringInBaseScope(String haystack, String needle, int start)
+	{
+		return findStringInBaseScope(haystack, new String[] { needle }, start);
+	}
+	
+	/**
+	 * Find the next available instance of the given String in the
+	 * base scope of the given haystack String. The base scope means
+	 * outside of any quotes, parenthesis, and/or brackets.
+	 * 
+	 * @param haystack The String to find the character within.
+	 * @param needles The String to search for in the String.
+	 * @param start The index to start the search at.
+	 * @return The index to search for in the String. If the String is
+	 * 		not found, then -1 is returned instead.
+	 */
+	public static int findStringInBaseScope(String haystack, String needles[], int start)
+	{
 		while (start < haystack.length())
 		{
 			char c = haystack.charAt(start);
 			
-			if (StringUtils.containsChar(needles, c))
+			if (StringUtils.containsString(haystack, needles, start))
 			{
 				return start;
 			}
@@ -840,6 +888,33 @@ public class SyntaxUtils
 	}
 	
 	/**
+	 * Get whether or not the given statement is a valid instantiation method call.<br>
+	 * <br>
+	 * For example:
+	 * <blockquote><pre>
+	 * new ListNode&lt;E&gt;()
+	 * new Object()</pre></blockquote>
+	 * The "ListNode&lt;E&gt;()" is a valid instantiation method call, as
+	 * well as "Object()".
+	 * 
+	 * @param statement The statement to test.
+	 * @return Whether or not the given statement is a valid instantiation call.
+	 */
+	public static boolean isInstantiationCall(String statement)
+	{
+		Bounds bounds = SyntaxUtils.findParenthesesBounds(null, statement);
+		
+		statement = bounds.trimString(statement);
+		bounds    = StringUtils.findNextWordBounds(statement);
+		statement = bounds.trimString(statement);
+		bounds    = StringUtils.findContentBoundsWithin(statement, VariableDeclaration.GENERIC_START, VariableDeclaration.GENERIC_END, 0, true);
+		statement = bounds.trimString(statement);
+		statement = statement.trim();
+		
+		return SyntaxUtils.isValidIdentifier(statement);
+	}
+	
+	/**
 	 * Get whether or not the given statement is an array
 	 * initialization.<br>
 	 * <br>
@@ -872,6 +947,11 @@ public class SyntaxUtils
 		
 		if (end <= 0)
 		{
+			if (parent == null)
+			{
+				return Bounds.EMPTY;
+			}
+			
 			SyntaxMessage.error("Expected a ')' ending parenthesis", parent);
 		}
 		
@@ -1345,21 +1425,26 @@ public class SyntaxUtils
 			return true;
 		}
 		
+		return getValidType(value, type) != null;
+	}
+	
+	public static String getValidType(Value value, String type)
+	{
 		if (value.isWithinExternalContext())
 		{
-			return true;
+			return type;
 		}
 		if (value instanceof Literal)
 		{
-			return true;
+			return type;
 		}
 		if (value instanceof Operator)
 		{
-			return true;
+			return type;
 		}
 		if (value instanceof ClassDeclaration)
 		{
-			return true;
+			return type;
 		}
 		else if (value instanceof Return)
 		{
@@ -1377,7 +1462,7 @@ public class SyntaxUtils
 			
 			if (methodDeclaration.isExternalType())
 			{
-				return true;
+				return type;
 			}
 		}
 		else if (value instanceof Variable)
@@ -1386,25 +1471,40 @@ public class SyntaxUtils
 			
 			if (var.getDeclaration().isExternal())
 			{
-				return true;
+				return type;
 			}
 		}
 		
 		if (SyntaxUtils.isPrimitiveType(type))
 		{
-			return true;
+			return type;
 		}
 		else
 		{
+			if (value.getParentClass().containsGenericParameter(type))
+			{
+				return value.getParentClass().getGenericParameter(type).getDefaultType();
+			}
+			
 			ClassDeclaration clazz = value.getProgram().getClassDeclaration(type);
 			
 			if (clazz != null)
 			{
-				return SyntaxUtils.validateImported(value, clazz.getType());
+				if (SyntaxUtils.validateImported(value, clazz.getType()))
+				{
+					return type;
+				}
+				
+				return null;
 			}
 		}
 		
-		return value.getParentClass().containsExternalType(type);
+		if (value.getParentClass().containsExternalType(type))
+		{
+			return type;
+		}
+		
+		return null;
 	}
 	
 	/**

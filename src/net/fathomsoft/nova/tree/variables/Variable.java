@@ -1,8 +1,6 @@
 package net.fathomsoft.nova.tree.variables;
 
-import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.TestContext;
-import net.fathomsoft.nova.tree.BodyMethodDeclaration;
 import net.fathomsoft.nova.tree.ClassDeclaration;
 import net.fathomsoft.nova.tree.Identifier;
 import net.fathomsoft.nova.tree.Node;
@@ -15,7 +13,7 @@ import net.fathomsoft.nova.util.Location;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:02:42 PM
- * @version	v0.2.26 Aug 6, 2014 at 2:48:50 PM
+ * @version	v0.2.29 Aug 29, 2014 at 3:17:45 PM
  */
 public class Variable extends Identifier
 {
@@ -118,7 +116,18 @@ public class Variable extends Identifier
 	@Override
 	public boolean willForceOriginalName()
 	{
-		return declaration.willForceOriginalName();
+		return declaration.willForceOriginalName() || isExternal();
+	}
+	
+	/**
+	 * Get whether or not the variable is external. For more information
+	 * on external variables, see {@link #setExternal(boolean)}.
+	 * 
+	 * @return Whether or not the variable is external.
+	 */
+	public boolean isExternal()
+	{
+		return declaration.isExternal();
 	}
 	
 	/**

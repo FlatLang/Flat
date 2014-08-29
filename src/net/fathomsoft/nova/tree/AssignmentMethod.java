@@ -49,8 +49,6 @@ public class AssignmentMethod extends NovaMethodDeclaration
 		
 		builder.append('{').append('\n');
 		
-		Nova.debuggingBreakpoint(getFileDeclaration().getName().equals("Math"));
-		
 		generateFieldDefaultAssignments(builder);
 		
 		builder.append('}').append('\n');

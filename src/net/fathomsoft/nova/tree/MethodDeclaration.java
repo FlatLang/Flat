@@ -2,7 +2,6 @@ package net.fathomsoft.nova.tree;
 
 import java.util.regex.Pattern;
 
-import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.util.Bounds;

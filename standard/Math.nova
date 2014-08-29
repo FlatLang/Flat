@@ -17,10 +17,10 @@ public class Math
 	
 	visible static double PI = 3.141592653
 	
-//	static
-//	{
-//		PI = 3.141592653
-//	}
+	static
+	{
+		PI = 3.141592653
+	}
 	
 	public static random(long range) -> int
 	{

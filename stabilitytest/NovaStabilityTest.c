@@ -109,6 +109,8 @@ int main(int argc, char** argvs)
 		srand(currentTimeMillis());
 		nova_static_GC_init(0, exceptionData);
 		
+		MathNova_init_static();
+		
 		args = (String**)NOVA_MALLOC(argc * sizeof(String));
 		
 		for (i = 0; i < argc; i++)

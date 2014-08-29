@@ -1,13 +1,8 @@
 package net.fathomsoft.nova.tree;
 
-import java.util.ArrayList;
-
 import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.error.SyntaxMessage;
-import net.fathomsoft.nova.tree.variables.FieldDeclaration;
-import net.fathomsoft.nova.tree.variables.FieldList;
-import net.fathomsoft.nova.tree.variables.InstanceFieldList;
 import net.fathomsoft.nova.util.Bounds;
 import net.fathomsoft.nova.util.Location;
 import net.fathomsoft.nova.util.Stack;
@@ -19,7 +14,7 @@ import net.fathomsoft.nova.util.Stack;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:50:47 PM
- * @version	v0.2.28 Aug 20, 2014 at 12:10:45 AM
+ * @version	v0.2.29 Aug 29, 2014 at 3:17:45 PM
  */
 public class Constructor extends BodyMethodDeclaration
 {
@@ -358,14 +353,14 @@ public class Constructor extends BodyMethodDeclaration
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.Node#interactWord(java.lang.String, int, net.fathomsoft.nova.util.Bounds, int, java.lang.String, java.lang.String, net.fathomsoft.nova.tree.Node.ExtraData)
+	 * @see net.fathomsoft.nova.tree.Node#interactWord(java.lang.String, net.fathomsoft.nova.util.Bounds, java.lang.String, java.lang.String, net.fathomsoft.nova.tree.Node.ExtraData)
 	 */
 	@Override
-	public void interactWord(String word, int wordNumber, Bounds bounds, int numWords, String leftDelimiter, String rightDelimiter, ExtraData extra)
+	public void interactWord(String word, Bounds bounds, String leftDelimiter, String rightDelimiter, ExtraData extra)
 	{
-		super.interactWord(word, wordNumber, bounds, numWords, leftDelimiter, rightDelimiter, extra);
+		super.interactWord(word, bounds, leftDelimiter, rightDelimiter, extra);
 		
-		if (wordNumber == numWords - 1)
+		if (extra.isLastWord())
 		{
 			if (!word.equals(IDENTIFIER))
 			{

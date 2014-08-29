@@ -1,9 +1,7 @@
 package net.fathomsoft.nova.tree;
 
-import java.io.ObjectInputStream.GetField;
 import java.util.HashMap;
 
-import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.tree.variables.ArrayAccess;

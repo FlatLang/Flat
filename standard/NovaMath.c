@@ -8,6 +8,12 @@ nova_VTable_Math nova_VTable_Math_val =
 	nova_0_Object_equals,
 };
 double nova_static_Math_PI;
+void MathNova_init_static()
+{
+	{
+		nova_static_Math_PI = 3.141592653;
+	}
+}
 
 Math* nova_Math_construct(Math* this, ExceptionData* exceptionData)
 {

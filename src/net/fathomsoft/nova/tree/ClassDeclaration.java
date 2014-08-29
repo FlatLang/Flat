@@ -14,6 +14,7 @@ import net.fathomsoft.nova.util.Bounds;
 import net.fathomsoft.nova.util.Location;
 import net.fathomsoft.nova.util.Patterns;
 import net.fathomsoft.nova.util.Regex;
+import net.fathomsoft.nova.util.StringUtils;
 import net.fathomsoft.nova.util.SyntaxUtils;
 
 /**
@@ -23,7 +24,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:15:51 PM
- * @version	v0.2.28 Aug 20, 2014 at 12:10:45 AM
+ * @version	v0.2.29 Aug 29, 2014 at 3:17:45 PM
  */
 public class ClassDeclaration extends InstanceDeclaration
 {
@@ -44,13 +45,14 @@ public class ClassDeclaration extends InstanceDeclaration
 		
 		setType("class");
 		
-		FieldList        fields         = new FieldList(this, Location.INVALID);
-		MethodList       constructors   = new MethodList(this, Location.INVALID);
-		MethodList       destructors    = new MethodList(this, Location.INVALID);
-		MethodList       methods        = new MethodList(this, Location.INVALID);
-		ExternalTypeList externalTypes  = new ExternalTypeList(this, Location.INVALID);
-		FieldList        externalFields = new FieldList(this, Location.INVALID);
-		VTable           vtable         = new VTable(this, Location.INVALID);
+		FieldList             fields         = new FieldList(this, Location.INVALID);
+		MethodList            constructors   = new MethodList(this, Location.INVALID);
+		MethodList            destructors    = new MethodList(this, Location.INVALID);
+		MethodList            methods        = new MethodList(this, Location.INVALID);
+		ExternalTypeList      externalTypes  = new ExternalTypeList(this, Location.INVALID);
+		FieldList             externalFields = new FieldList(this, Location.INVALID);
+		TypeList<StaticBlock> staticBlocks   = new TypeList<StaticBlock>(this, Location.INVALID);
+		VTable                vtable         = new VTable(this, Location.INVALID);
 		
 		addChild(fields, this);
 		addChild(constructors, this);
@@ -58,6 +60,7 @@ public class ClassDeclaration extends InstanceDeclaration
 		addChild(methods, this);
 		addChild(externalTypes, this);
 		addChild(externalFields, this);
+		addChild(staticBlocks, this);
 		addChild(vtable, this);
 	}
 	
@@ -67,7 +70,7 @@ public class ClassDeclaration extends InstanceDeclaration
 	@Override
 	public int getNumDefaultChildren()
 	{
-		return super.getNumDefaultChildren() + 7;
+		return super.getNumDefaultChildren() + 8;
 	}
 	
 	/**
@@ -148,6 +151,17 @@ public class ClassDeclaration extends InstanceDeclaration
 	}
 	
 	/**
+	 * Get the List that contains the StaticBlocks for the specified
+	 * Class.
+	 * 
+	 * @return The StaticBlock List.
+	 */
+	public TypeList<StaticBlock> getStaticBlockList()
+	{
+		return (TypeList<StaticBlock>)getChild(super.getNumDefaultChildren() + 6);
+	}
+	
+	/**
 	 * Get the VTableNode instance that contains the list of pointers
 	 * to the virtual methods of a class, if any virtual methods, or
 	 * any methods of the class are overridden..
@@ -156,7 +170,7 @@ public class ClassDeclaration extends InstanceDeclaration
 	 */
 	public VTable getVTableNode()
 	{
-		return (VTable)getChild(super.getNumDefaultChildren() + 6);
+		return (VTable)getChild(super.getNumDefaultChildren() + 7);
 	}
 	
 	/**
@@ -388,15 +402,7 @@ public class ClassDeclaration extends InstanceDeclaration
 	 */
 	public void addImplementedClass(String implementedClass)
 	{
-		int size = implementedClasses.length + 1;
-		
-		String temp[] = implementedClasses;
-		
-		implementedClasses = new String[size];
-		
-		System.arraycopy(temp, 0, implementedClasses, 0, temp.length);
-		
-		implementedClasses[size - 1] = implementedClass;
+		implementedClasses = StringUtils.appendString(implementedClasses, implementedClass);
 	}
 	
 	/**
@@ -774,6 +780,7 @@ public class ClassDeclaration extends InstanceDeclaration
 	/**
 	 * @see net.fathomsoft.nova.tree.InstanceDeclaration#setAttribute(java.lang.String)
 	 */
+	@Override
 	public void setAttribute(String attribute)
 	{
 		setAttribute(attribute, -1);
@@ -782,6 +789,7 @@ public class ClassDeclaration extends InstanceDeclaration
 	/**
 	 * @see net.fathomsoft.nova.tree.InstanceDeclaration#setAttribute(java.lang.String, int)
 	 */
+	@Override
 	public boolean setAttribute(String attribute, int argNum)
 	{
 		if (super.setAttribute(attribute, argNum))
@@ -839,9 +847,13 @@ public class ClassDeclaration extends InstanceDeclaration
 				getFieldList().addChild(field);
 			}
 		}
+		else if (child instanceof StaticBlock)
+		{
+			getStaticBlockList().addChild(child);
+		}
 		else
 		{
-			SyntaxMessage.error("Unexpected statement within class " + getName(), child);
+			SyntaxMessage.error("Unexpected node type of '" + child.getClass().getSimpleName() + "' within class " + getName(), child);
 		}
 	}
 	
@@ -1023,6 +1035,11 @@ public class ClassDeclaration extends InstanceDeclaration
 		
 		getFieldList().generateStaticCHeader(builder).append('\n');
 		
+		if (getStaticBlockList().getNumVisibleChildren() > 0)
+		{
+			StaticBlock.generateCHeader(builder, this);
+		}
+		
 		MethodList constructors = getConstructorList();
 		constructors.generateCHeader(builder);
 		
@@ -1061,9 +1078,31 @@ public class ClassDeclaration extends InstanceDeclaration
 
 		getFieldList().generateNonStaticCSource(builder);
 		
+		generateStaticBlocksSource(builder);
+		
 		getConstructorList().generateCSource(builder);
 		getDestructorList().generateCSource(builder);
 		getMethodList().generateCSource(builder);
+		
+		return builder;
+	}
+	
+	private StringBuilder generateStaticBlocksSource(StringBuilder builder)
+	{
+		if (getStaticBlockList().getNumVisibleChildren() > 0)
+		{
+			StaticBlock.generateCMethodHeader(builder, this).append('\n');
+			builder.append('{').append('\n');
+			
+			for (int i = 0; i < getStaticBlockList().getNumVisibleChildren(); i++)
+			{
+				StaticBlock block = getStaticBlockList().getChild(i);
+				
+				block.generateCSource(builder);
+			}
+			
+			builder.append('}').append('\n');
+		}
 		
 		return builder;
 	}
@@ -1122,7 +1161,21 @@ public class ClassDeclaration extends InstanceDeclaration
 		{
 			ClassDeclaration n = new ClassDeclaration(parent, location);
 			
-			n.iterateWords(statement, new ClassData());
+			ClassData data = new ClassData();
+			
+			n.searchGenericParameters(statement, data);
+			
+			n.iterateWords(statement, data);
+			
+			if (data.getGenericsRemaining() > 0)
+			{
+				Location newLoc = n.getLocationIn().asNew();
+				Bounds   b      = data.getSkipBounds(data.getNumSkipBounds() - data.getGenericsRemaining());
+				
+				newLoc.addBounds(b.getStart(), b.getEnd());
+				
+				SyntaxMessage.error("Invalid generic type declaration", n, newLoc);
+			}
 			
 			// TODO: Check for the standard library version of Object.
 			if (n.getExtendedClassName() == null && !n.getName().equals("Object"))
@@ -1137,33 +1190,43 @@ public class ClassDeclaration extends InstanceDeclaration
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.Node#interactWord(java.lang.String, int, net.fathomsoft.nova.util.Bounds, int, java.lang.String, java.lang.String, net.fathomsoft.nova.tree.Node.ExtraData)
+	 * @see net.fathomsoft.nova.tree.Node#interactWord(java.lang.String, net.fathomsoft.nova.util.Bounds, java.lang.String, java.lang.String, net.fathomsoft.nova.tree.Node.ExtraData)
 	 */
 	@Override
-	public void interactWord(String word, int wordNumber, Bounds bounds, int numWords, String leftDelimiter, String rightDelimiter, ExtraData extra)
+	public void interactWord(String word, Bounds bounds, String leftDelimiter, String rightDelimiter, ExtraData extra)
 	{
 		ClassData data = (ClassData)extra;
 		
-		if (data.extending)
+		if (data.extending || data.implementing)
 		{
-			setExtendedClass(word);
-			
-			data.extending = false;
-		}
-		else if (data.implementing)
-		{
-			if (word.startsWith(","))
+			if (data.extending)
 			{
-				word = word.substring(1);
+				setExtendedClass(word);
+				
+				data.extending = false;
 			}
-			if (word.endsWith(","))
+			else
 			{
-				word = word.substring(0, word.length() - 1);
+				if (word.startsWith(","))
+				{
+					word = word.substring(1);
+				}
+				if (word.endsWith(","))
+				{
+					word = word.substring(0, word.length() - 1);
+				}
+				
+				if (word.length() > 0)
+				{
+					addImplementedClass(word);
+				}
 			}
 			
-			if (word.length() > 0)
+			if (data.getRightAdjacentSkipBounds() != null)
 			{
-				addImplementedClass(word);
+				decodeGenericParameter(data.statement, data.getRightAdjacentSkipBounds());
+				
+				data.decrementGenericsRemaining();
 			}
 		}
 		else
@@ -1178,15 +1241,20 @@ public class ClassDeclaration extends InstanceDeclaration
 			}
 			else
 			{
-				setAttribute(word, wordNumber);
+				setAttribute(word, extra.getWordNumber());
 				
-				if (data.previousWord.equals("class"))
+				if (!data.isFirstWord() && data.getPreviousWord().equals("class"))
 				{
 					setName(word);
 					setType(word);
+					
+					if (data.getRightAdjacentSkipBounds() != null)
+					{
+						decodeGenericParameter(data.statement, data.getRightAdjacentSkipBounds());
+						
+						data.decrementGenericsRemaining();
+					}
 				}
-				
-				data.previousWord = word;
 			}
 		}
 	}
@@ -1349,11 +1417,11 @@ public class ClassDeclaration extends InstanceDeclaration
 			return;
 		}
 		
-		Program program  = getProgram();
+		Program program = getProgram();
 		
-		ClassDeclaration   clazz    = program.getClassDeclaration(extendedClass);
+		ClassDeclaration clazz = program.getClassDeclaration(extendedClass);
 		
-		String      tempName = extendedClass;
+		String tempName = extendedClass;
 		
 		if (clazz == null)
 		{
@@ -1361,14 +1429,11 @@ public class ClassDeclaration extends InstanceDeclaration
 			
 			SyntaxMessage.error("Class '" + tempName + "' not declared", this);
 		}
-		else
+		else if (clazz.isConstant())
 		{
-			if (clazz.isConstant())
-			{
-				extendedClass = null;
-				
-				SyntaxMessage.error("Class '" + tempName + "' not is constant and cannot be extended", this);
-			}
+			extendedClass = null;
+			
+			SyntaxMessage.error("Class '" + tempName + "' not is constant and cannot be extended", this);
 		}
 	}
 	
@@ -1546,18 +1611,11 @@ public class ClassDeclaration extends InstanceDeclaration
 	 * 
 	 * @author	Braden Steffaniak
 	 * @since	v0.2.13 Jun 11, 2014 at 8:31:46 PM
-	 * @version	v0.2.13 Jun 11, 2014 at 8:31:46 PM
+	 * @version	v0.2.29 Jun 11, 2014 at 8:31:46 PM
 	 */
-	private static class ClassData extends ExtraData
+	public static class ClassData extends DeclarationData
 	{
 		private boolean	extending, implementing;
-		
-		private String	previousWord;
-		
-		public ClassData()
-		{
-			previousWord = "";
-		}
 	}
 	
 	/**

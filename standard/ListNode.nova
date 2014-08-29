@@ -1,26 +1,11 @@
-public class ListNode
+public class ListNode<E>
 {
-	Object		data
+	visible E			data
 	
-	ListNode	next
+	public ListNode<E>	next
 	
-	public construct(Object data)
+	public construct(E data)
 	{
 		this.data = data
-	}
-	
-	public getData() -> Object
-	{
-		return data
-	}
-	
-	public getNext() -> ListNode
-	{
-		return next
-	}
-	
-	public setNext(ListNode next)
-	{
-		this.next = next
 	}
 }

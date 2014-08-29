@@ -2,6 +2,7 @@ package net.fathomsoft.nova.tree;
 
 import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.TestContext;
+import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.tree.variables.Array;
 import net.fathomsoft.nova.tree.variables.FieldDeclaration;
 import net.fathomsoft.nova.tree.variables.Variable;
@@ -16,7 +17,7 @@ import net.fathomsoft.nova.util.Location;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:00:19 PM
- * @version	v0.2.26 Aug 6, 2014 at 2:48:50 PM
+ * @version	v0.2.29 Aug 29, 2014 at 3:17:45 PM
  */
 public abstract class Identifier extends Value
 {
@@ -708,21 +709,9 @@ public abstract class Identifier extends Value
 			}
 		}
 		
-//		MethodCall m = (MethodCall)callingMethod.getNextAccessingOfType(MethodCall.class);
-//		
-//		if (m == callingMethod)
-//		{
-			generateCUseOutput(builder);
-			
-			return generateChildrenCSourceFragment(builder, true, callingMethod);
-//		}
-//		else
-//		{
-//			
-//		}
-//		generateCUseOutput(builder);
-//		
-//		return generateChildrenCSourceFragment(builder, true, callingMethod);
+		generateCUseOutput(builder);
+		
+		return generateChildrenCSourceFragment(builder, true, callingMethod);
 	}
 	
 	/**
@@ -1120,10 +1109,7 @@ public abstract class Identifier extends Value
 		{
 			existing = SyntaxTree.findDeclaration(getParent(), name);
 			
-			if (existing == null)
-			{
-				return builder.append(0);
-			}
+			SyntaxMessage.queryError("Unable to find declaration for variable '" + name + "'", this, existing == null);
 		}
 		
 		String classUniquePrefix = existing.getParentClass().generateUniquePrefix();

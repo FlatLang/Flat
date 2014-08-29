@@ -9,13 +9,14 @@ import java.util.regex.Matcher;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Mar 13, 2014 at 9:38:42 PM
- * @version	v0.2.28 Aug 20, 2014 at 12:10:45 AM
+ * @version	v0.2.29 Aug 29, 2014 at 3:17:45 PM
  */
 public class StringUtils
 {
-	public static final char	WHITESPACE[]       = new char[] { ' ', '\n', '\t', '\r' };
-	public static final char	SYMBOLS_CHARS[]    = new char[] { '-', '+', '~', '!', '=', '%', '^', '&', '|', '*', '/', '>', '<', ',', '"', '\'', '[', ']', '{', '}', ';', '(', ')' };
-	public static final char	STMT_CONT_CHARS[]  = new char[] { '-', '+', '~', '!', '=', '%', '^', '&', '|', '*', '/', '>', '<', ',', '.' };
+	public static final char	WHITESPACE[]                = new char[] { ' ', '\n', '\t', '\r' };
+	public static final char	SYMBOLS_CHARS[]             = new char[] { '-', '+', '~', '!', '=', '%', '^', '&', '|', '*', '/', '>', '<', ',', '"', '\'', '[', ']', '{', '}', ';', '(', ')' };
+	public static final char	STMT_CONT_CHARS[]           = new char[] { '-', '+', '~', '!', '=', '%', '^', '&', '|', '*', '/', '>', '<', ',', '.' };
+	public static final char	INVALID_DECLARATION_CHARS[] = new char[] { '-', '+', '~', '!', '=', '%', '^', '|', '/', ',', '"', '\'', '{', '}', ';', '(', ')' };
 	
 	public static final String	SYMBOLS[];
 	
@@ -432,7 +433,7 @@ public class StringUtils
 	{
 		if (start < 0 || start >= source.length())
 		{
-			return null;
+			return Bounds.EMPTY;
 		}
 		
 		start = StringUtils.findNextLetterIndex(source, start, direction, false, true);
@@ -597,7 +598,6 @@ public class StringUtils
 		return findEndingMatch(str, index, startChar, endChar, '\0', direction);
 	}
 	
-
 	/**
 	 * Find the index of the ending char for the match. For instance, to
 	 * search for an ending parenthesis, starting from the opening
@@ -640,11 +640,97 @@ public class StringUtils
 	 */
 	public static int findEndingMatch(CharSequence str, int index, char startChar, char endChar, char escapeChar, int direction)
 	{
+		return findEndingMatch(str, index, Character.toString(startChar), Character.toString(endChar), escapeChar, direction);
+	}
+	
+	/**
+	 * Find the index of the ending String for the match. For instance, to
+	 * search for an ending parenthesis, starting from the opening
+	 * parenthesis, you would pass findEndingMatch(str, 0, "(", ")", '\\');
+	 * <i>(The backslash would act to escape any parentheses. eg: \\(
+	 * would not be counted.)</i> The method call would return the index
+	 * of the ending parenthesis that is paired with the index of 0.
+	 * 
+	 * @param str The String to search for the pair to the start String.
+	 * @param index The index of the start String in the pair.
+	 * @param start The String that starts off the pair. eg. "("
+	 * @param end The String that ends the pair. eg: ")"
+	 * @return The index of the pair to the starting String, if no pair is
+	 * 		found then -1 is returned.
+	 */
+	public static int findEndingMatch(CharSequence str, int index, String start, String end)
+	{
+		return findEndingMatch(str, index, start, end, '\0');
+	}
+	
+	/**
+	 * Find the index of the ending String for the match. For instance, to
+	 * search for an ending parenthesis, starting from the opening
+	 * parenthesis, you would pass findEndingMatch(str, 0, "(", ")", '\\');
+	 * <i>(The backslash would act to escape any parentheses. eg: \\(
+	 * would not be counted.)</i> The method call would return the index
+	 * of the ending parenthesis that is paired with the index of 0.
+	 * 
+	 * @param str The String to search for the pair to the start String.
+	 * @param index The index of the start String in the pair.
+	 * @param start The String that starts off the pair. eg. "("
+	 * @param end The String that ends the pair. eg: ")"
+	 * @param direction The direction in which to search for the match in.
+	 * @return The index of the pair to the starting String, if no pair is
+	 * 		found then -1 is returned.
+	 */
+	public static int findEndingMatch(CharSequence str, int index, String start, String end, int direction)
+	{
+		return findEndingMatch(str, index, start, end, '\0', direction);
+	}
+	
+	/**
+	 * Find the index of the ending String for the match. For instance, to
+	 * search for an ending parenthesis, starting from the opening
+	 * parenthesis, you would pass findEndingMatch(str, 0, "(", ")", '\\');
+	 * <i>(The backslash would act to escape any parentheses. eg: \\(
+	 * would not be counted.)</i> The method call would return the index
+	 * of the ending parenthesis that is paired with the index of 0.
+	 * 
+	 * @param str The String to search for the pair to the start String.
+	 * @param index The index of the start String in the pair.
+	 * @param start The String that starts off the pair. eg. "("
+	 * @param end The String that ends the pair. eg: ")"
+	 * @param escapeChar The char that escapes a start or end char, of
+	 * 		there is no escape char, pass '(char)0'.
+	 * @return The index of the pair to the starting String, if no pair is
+	 * 		found then -1 is returned.
+	 */
+	public static int findEndingMatch(CharSequence str, int index, String start, String end, char escapeChar)
+	{
+		return findEndingMatch(str, index, start, end, escapeChar, 1);
+	}
+	
+	/**
+	 * Find the index of the ending String for the match. For instance, to
+	 * search for an ending parenthesis, starting from the opening
+	 * parenthesis, you would pass findEndingMatch(str, 0, "(", ")", '\\');
+	 * <i>(The backslash would act to escape any parentheses. eg: \\(
+	 * would not be counted.)</i> The method call would return the index
+	 * of the ending parenthesis that is paired with the index of 0.
+	 * 
+	 * @param str The String to search for the pair to the start String.
+	 * @param index The index of the start String in the pair.
+	 * @param start The String that starts off the pair. eg. "("
+	 * @param end The String that ends the pair. eg: ")"
+	 * @param escapeChar The char that escapes a start or end char, of
+	 * 		there is no escape char, pass '(char)0'.
+	 * @param direction The direction in which to search for the match in.
+	 * @return The index of the pair to the starting String, if no pair is
+	 * 		found then -1 is returned.
+	 */
+	public static int findEndingMatch(CharSequence str, int index, String start, String end, char escapeChar, int direction)
+	{
 		if (direction < 0)
 		{
-			char temp = startChar;
-			startChar = endChar;
-			endChar   = temp;
+			String temp = start;
+			start = end;
+			end   = temp;
 		}
 		
 		int scope = 0;
@@ -657,19 +743,17 @@ public class StringUtils
 			{
 				if (index < str.length() - 1)
 				{
-					char next = str.charAt(index + 1);
-					
-					if (next == startChar || next == endChar)
+					if (StringUtils.containsString(str, start, index + 1) || StringUtils.containsString(str, start, index + 1))
 					{
 						index++;
 					}
 				}
 			}
-			else if (c == startChar && (direction > 0 || index > 0 && str.charAt(index - 1) != escapeChar))
+			else if (StringUtils.containsString(str, start, index) && (direction > 0 || index > 0 && str.charAt(index - 1) != escapeChar))
 			{
 				scope++;
 			}
-			else if (c == endChar && (direction > 0 || index > 0 && str.charAt(index - 1) != escapeChar))
+			else if (StringUtils.containsString(str, end, index) && (direction > 0 || index > 0 && str.charAt(index - 1) != escapeChar))
 			{
 				scope--;
 				
@@ -747,6 +831,107 @@ public class StringUtils
 		}
 		
 		return -1;
+	}
+	
+	public static String[] toString(char array[])
+	{
+		String dest[] = new String[array.length];
+		
+		for (int i = 0; i < dest.length; i++)
+		{
+			dest[i] = Character.toString(array[i]);
+		}
+		
+		return dest;
+	}
+	
+	public static <E>String[] toString(E array[])
+	{
+		String dest[] = new String[array.length];
+		
+		for (int i = 0; i < dest.length; i++)
+		{
+			dest[i] = array[i].toString();
+		}
+		
+		return dest;
+	}
+	
+	public static boolean containsString(CharSequence haystack, String needles[], int index)
+	{
+		for (String needle : needles)
+		{
+			if (containsString(haystack, needle, index))
+			{
+				return true;
+			}
+		}
+		
+		return false;
+	}
+	
+	public static boolean containsString(CharSequence haystack, String needle, int index)
+	{
+		for (int i = 0; i < needle.length(); i++)
+		{
+			if (haystack.charAt(i + index) != needle.charAt(i))
+			{
+				return false;
+			}
+		}
+		
+		return true;
+	}
+	
+	/**
+	 * Remove on the BASE SCOPE all of the instances in which the 
+	 * 
+	 * @param source
+	 * @param start
+	 * @param end
+	 * @return
+	 */
+	//
+	public static String removeContentsWithin(String source, String start, String end)
+	{
+		return removeContentsWithin(source, start, end, 0);
+	}
+	
+	public static String removeContentsWithin(String source, String start, String end, int index)
+	{
+		Bounds bounds = findContentBoundsWithin(source, start, end, index);
+		
+		return source.substring(0, bounds.getStart() - start.length()) + source.substring(bounds.getEnd() + end.length());
+	}
+
+	public static Bounds findContentBoundsWithin(String source, String start, String end, int index)
+	{
+		return findContentBoundsWithin(source, start, end, index, true);
+	}
+	
+	public static Bounds findContentBoundsWithin(String source, String start, String end, int index, boolean includeEndings)
+	{
+		// Start and end bounds.
+		int s = SyntaxUtils.findStringInBaseScope(source, start, index);
+		int e = StringUtils.findEndingMatch(source, index, start, end);
+		
+		if (includeEndings)
+		{
+			e += end.length();
+		}
+		else
+		{
+			s += start.length();
+		}
+		
+		Bounds bounds = new Bounds(s, e);
+		
+		if (!bounds.isValid())
+		{
+			return Bounds.EMPTY;
+		}
+		
+		return bounds;
 	}
 	
 	/**
@@ -1304,27 +1489,39 @@ public class StringUtils
 	 * 
 	 * @param s The String to search for.
 	 * @param array The array to search for 's' in.
-	 * @return Whether or not the array contains the 'c' String.
+	 * @return Whether or not the array contains the 's' String.
 	 */
 	public static boolean containsString(String s, String ... array)
 	{
-		return searchString(s, array) >= 0;
+		return containsElement(s, array);
 	}
 	
 	/**
-	 * Search for the given String 's' in the given array, if it is found,
+	 * Search for the given Element 'element' in the given array.
+	 * 
+	 * @param element The Element to search for.
+	 * @param array The array to search for 'element' in.
+	 * @return Whether or not the array contains the 'element' String.
+	 */
+	public static <E> boolean containsElement(E element, E ... array)
+	{
+		return searchElement(element, array) >= 0;
+	}
+	
+	/**
+	 * Search for the given Element 'element' in the given array, if it is found,
 	 * return the index at which it was found.
 	 * 
-	 * @param array The array to search for 's' in.
-	 * @param s The String to search for.
-	 * @return The index in the array of the occurrence of String 's', if
+	 * @param element The Element to search for.
+	 * @param array The array to search for 'element' in.
+	 * @return The index in the array of the occurrence of String 'element', if
 	 * 		it was found in the array.
 	 */
-	public static int searchString(String s, String ... array)
+	public static <E> int searchElement(E element, E ... array)
 	{
 		for (int i = array.length - 1; i >= 0; i--)
 		{
-			if (array[i].equals(s))
+			if (array[i].equals(element))
 			{
 				return i;
 			}
@@ -1521,5 +1718,45 @@ public class StringUtils
 		}
 		
 		return builder.toString();
+	}
+	
+	/**
+	 * Increase the given String array size by one and insert the given
+	 * String into the newly added index.
+	 * 
+	 * @param array The array to expand.
+	 * @param str The String to add at the end.
+	 * @return The updated/expanded String array.
+	 */
+	public static String[] appendString(String array[], String str)
+	{
+		return appendElement(array, new String[array.length + 1], str);
+//		
+//		String temp[] = array;
+//		
+//		array = new String[temp.length + 1];
+//		
+//		System.arraycopy(temp, 0, array, 0, temp.length);
+//		
+//		array[temp.length] = str;
+//		
+//		return array;
+	}
+	
+	/**
+	 * Increase the given Element array size by one and insert the given
+	 * Element into the newly added index.
+	 * 
+	 * @param array The array to expand.
+	 * @param str The Element to add at the end.
+	 * @return The updated/expanded Element array.
+	 */
+	public static <E> E[] appendElement(E array[], E dest[], E str)
+	{
+		System.arraycopy(array, 0, dest, 0, array.length);
+		
+		dest[array.length] = str;
+		
+		return dest;
 	}
 }

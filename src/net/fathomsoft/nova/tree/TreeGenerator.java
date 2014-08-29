@@ -6,7 +6,6 @@ import java.util.regex.Matcher;
 import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.error.SyntaxErrorException;
-import net.fathomsoft.nova.tree.variables.FieldDeclaration;
 import net.fathomsoft.nova.util.FileUtils;
 import net.fathomsoft.nova.util.Location;
 import net.fathomsoft.nova.util.Patterns;
@@ -20,7 +19,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.2.1 Apr 29, 2014 at 8:04:48 PM
- * @version	v0.2.28 Aug 20, 2014 at 12:10:45 AM
+ * @version	v0.2.29 Aug 29, 2014 at 3:17:45 PM
  */
 public class TreeGenerator implements Runnable
 {
@@ -41,18 +40,6 @@ public class TreeGenerator implements Runnable
 	private Stack<Node>	pendingScopeFragment;
 	
 	private static final char		EITHER_STATEMENT_END_CHARS[] = new char[] { '\n', ';', '{', '}' };
-	
-	private static final Class<?>	FIRST_PASS_CLASSES[] = new Class<?>[]
-	{
-		Import.class, ClassDeclaration.class
-	};
-	
-	private static final Class<?>	SECOND_PASS_CLASSES[] = new Class<?>[]
-	{
-		StaticBlock.class, AbstractMethodDeclaration.class, ExternalMethodDeclaration.class,
-		Destructor.class, Constructor.class, BodyMethodDeclaration.class, ExternalType.class,
-		FieldDeclaration.class
-	};
 	
 	/**
 	 * Create a tree generator instance with the given filename and
@@ -170,7 +157,7 @@ public class TreeGenerator implements Runnable
 		
 		tree.addFile(fileDeclaration);
 		
-		traverseCode(fileDeclaration, 0, FIRST_PASS_CLASSES, true);
+		traverseCode(fileDeclaration, 0, SyntaxTree.FIRST_PASS_CLASSES, true);
 	}
 	
 	/**
@@ -204,11 +191,11 @@ public class TreeGenerator implements Runnable
 			return;
 		}
 		
-		traverseCode(node, contentStart, SECOND_PASS_CLASSES, true);
+		traverseCode(node, contentStart, SyntaxTree.SECOND_PASS_CLASSES, true);
 	}
 	
 	/**
-	 * Generate the syntax tree nodes for all of the method contents.
+	 * Generate the syntax tree nodes for all of the scope contents.
 	 * 
 	 * @param file The file that is generating the syntax tree.
 	 * @param source The source text within the file.
@@ -222,24 +209,25 @@ public class TreeGenerator implements Runnable
 		FileDeclaration  fileDeclaration  = tree.getRoot().getFile(filename);
 		ClassDeclaration classDeclaration = fileDeclaration.getClassDeclaration();
 		
-		decodeMethodContents(classDeclaration.getMethodList());
-		decodeMethodContents(classDeclaration.getConstructorList());
-		decodeMethodContents(classDeclaration.getDestructorList());
+		decodeScopeContents(classDeclaration.getMethodList());
+		decodeScopeContents(classDeclaration.getConstructorList());
+		decodeScopeContents(classDeclaration.getDestructorList());
+		decodeScopeContents(classDeclaration.getStaticBlockList());
 	}
 	
 	/**
-	 * Decode all of the method contents.
+	 * Decode all of the Scope's contents.
 	 * 
 	 * @param methods The list of methods to decode.
 	 * @param source The source text to decode.
 	 */
-	private void decodeMethodContents(MethodList methods)
+	private void decodeScopeContents(List scopeAncestors)
 	{
-		for (int i = 0; i < methods.getNumChildren(); i++)
+		for (int i = 0; i < scopeAncestors.getNumChildren(); i++)
 		{
-			MethodDeclaration node = (MethodDeclaration)methods.getChild(i);
+			Node node = scopeAncestors.getChild(i);
 			
-			if (node.getLocationIn().getBounds().isValid() && node.containsBody())
+			if (node.getLocationIn().getBounds().isValid() && node.containsScope())
 			{
 				int startingIndex = StringUtils.findNextNonWhitespaceIndex(source, node.getLocationIn().getEnd());
 				int endingIndex   = StringUtils.findEndingMatch(source, startingIndex, '{', '}');

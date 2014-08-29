@@ -2,7 +2,6 @@ package net.fathomsoft.nova.tree;
 
 import java.util.ArrayList;
 
-import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.tree.exceptionhandling.Exception;
@@ -13,9 +12,9 @@ import net.fathomsoft.nova.util.Location;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:56:34 PM
- * @version	v0.2.28 Aug 20, 2014 at 12:10:45 AM
+ * @version	v0.2.29 Aug 29, 2014 at 3:17:45 PM
  */
-public class ParameterList<E extends Value> extends Node
+public class ParameterList<E extends Value> extends TypeList<E>
 {
 	/**
 	 * Identifier for the calling object of a method call.<br>
