@@ -13,11 +13,13 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.2.4 May 2, 2014 at 11:14:37 PM
- * @version	v0.2.29 Aug 29, 2014 at 3:17:45 PM
+ * @version	v0.2.30 Sep 2, 2014 at 7:58:20 PM
  */
 public abstract class Value extends Node
 {
 	public static final byte	VALUE = 1, POINTER = 2, REFERENCE = 3;
+	
+	public static final String NULL_IDENTIFIER = "nova_null";
 	
 	/**
 	 * @see net.fathomsoft.nova.tree.Node#Node(Node, Location)
@@ -505,7 +507,7 @@ public abstract class Value extends Node
 	 */
 	public StringBuilder generateCNullOutput(StringBuilder builder)
 	{
-		return generateCTypeCast(builder).append(0);
+		return generateCTypeCast(builder).append(NULL_IDENTIFIER);
 	}
 	
 	/**
