@@ -17,7 +17,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Feb 18, 2014 at 8:57:00 PM
- * @version	v0.2.29 Aug 29, 2014 at 3:17:45 PM
+ * @version	v0.2.30 Sep 2, 2014 at 7:58:20 PM
  */
 public class FileDeclaration extends Node
 {
@@ -44,6 +44,7 @@ public class FileDeclaration extends Node
 			"Nova.h",
 			"ExceptionHandler.h",
 			"ExceptionData",
+			"Null",
 			"Object",
 			"String",
 			"System",

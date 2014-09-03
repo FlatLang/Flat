@@ -13,7 +13,7 @@ import static net.fathomsoft.nova.tree.variables.VariableDeclaration.GENERIC_STA
  * 
  * @author	Braden Steffaniak
  * @since	v0.2.29 Aug 28, 2014 at 11:51:16 PM
- * @version	v0.2.29 Aug 29, 2014 at 3:17:45 PM
+ * @version	v0.2.30 Sep 2, 2014 at 7:58:20 PM
  */
 public interface GenericCompatible
 {
@@ -62,7 +62,9 @@ public interface GenericCompatible
 	 */
 	public default void addGenericParameterName(String parameterName)
 	{
-		setGenericTypes(StringUtils.appendElement(getGenericParameterNames(), new GenericType[getGenericParameterNames().length + 1], new GenericType((Node)this, Location.INVALID, parameterName)));
+		GenericType type = new GenericType((Node)this, Location.INVALID, parameterName);
+		
+		setGenericTypes(StringUtils.appendElement(getGenericParameterNames(), new GenericType[getGenericParameterNames().length + 1], type));
 	}
 
 	public default void decodeGenericParameter(String statement, Bounds genericBounds)

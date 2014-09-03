@@ -69,4 +69,9 @@ public class String
 		
 		return true
 	}
+	
+	public toString() -> String
+	{
+		return this
+	}
 }

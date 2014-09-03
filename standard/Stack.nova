@@ -1,10 +1,10 @@
 public class Stack<E>
 {
-	ListNode top
+	ListNode<E> top
 	
 	public push(E data)
 	{
-		ListNode node = new ListNode(data)
+		ListNode<E> node = new ListNode<E>(data)
 		
 		node.next = top
 		top       = node

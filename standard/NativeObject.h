@@ -4,8 +4,9 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <NovaObject.h>
 
-typedef struct Object Object;
+//typedef struct Object Object;
 
 char* hashCode(Object* obj);
 

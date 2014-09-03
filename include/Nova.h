@@ -1,6 +1,8 @@
 #ifndef NOVA_NOVA
 #define NOVA_NOVA
 
+#include <NovaNull.h>
+
 /**
  * @dest Destination array
  * @dIndex Index to which we will start copying
@@ -17,5 +19,7 @@ char* ufgets(FILE* stream);
 long_long currentTimeMillis();
 
 void copy_string(char* target, char* source);
+
+extern Null* nova_null;
 
 #endif

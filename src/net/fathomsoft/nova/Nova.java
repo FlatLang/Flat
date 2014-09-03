@@ -72,7 +72,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:00:04 PM
- * @version	v0.2.29 Aug 29, 2014 at 3:17:45 PM
+ * @version	v0.2.30 Sep 2, 2014 at 7:58:20 PM
  */
 public class Nova
 {
@@ -226,7 +226,7 @@ public class Nova
 		
 		if (OS == WINDOWS)
 		{
-			compiler = TCC;
+			compiler = GCC;
 		}
 		else
 		{
@@ -239,20 +239,21 @@ public class Nova
 			
 			args = new String[]
 			{
-				formatPath(stability + "StabilityTest.nova"),
-				formatPath(stability + "TimeStability.nova"),
-				formatPath(stability + "FileStability.nova"),
-				formatPath(stability + "ThreadStability.nova"),
-				formatPath(stability + "ExceptionStability.nova"),
-				formatPath(stability + "SyntaxStability.nova"),
-				formatPath(stability + "ClosureStability.nova"),
-				formatPath(stability + "PolymorphismStability.nova"),
-				formatPath(stability + "PolymorphicSuperClass.nova"),
-				formatPath(stability + "PolymorphicSubClass.nova"),
-				formatPath(stability + "StabilityTestException.nova"),
-				formatPath(stability + "StabilityExceptionHandler.nova"),
-				formatPath(stability + "ThreadImplementation.nova"),
-				formatPath(stability + "UnstableException.nova"),
+//				formatPath(stability + "StabilityTest.nova"),
+//				formatPath(stability + "TimeStability.nova"),
+//				formatPath(stability + "FileStability.nova"),
+//				formatPath(stability + "ThreadStability.nova"),
+//				formatPath(stability + "ExceptionStability.nova"),
+//				formatPath(stability + "SyntaxStability.nova"),
+//				formatPath(stability + "ClosureStability.nova"),
+//				formatPath(stability + "PolymorphismStability.nova"),
+//				formatPath(stability + "PolymorphicSuperClass.nova"),
+//				formatPath(stability + "PolymorphicSubClass.nova"),
+//				formatPath(stability + "StabilityTestException.nova"),
+//				formatPath(stability + "StabilityExceptionHandler.nova"),
+//				formatPath(stability + "ThreadImplementation.nova"),
+//				formatPath(stability + "UnstableException.nova"),
+				formatPath(directory + "GenericDemo.nova"),
 //				formatPath(directory + "MathDemo.nova"),
 //				formatPath(directory + "ThreadDemo.nova"),
 //				formatPath(directory + "ThreadDemoImplementation.nova"),
@@ -269,68 +270,87 @@ public class Nova
 //				formatPath(directory + "ClosureDemo.nova"),
 //				formatPath(directory + "Person.nova"),
 //				formatPath(directory + "BodyBuilder.nova"),
-				formatPath(standard  + "Console.nova"),
-				formatPath(standard  + "String.nova"),
-				formatPath(standard  + "ExceptionData.nova"),
-				formatPath(standard  + "ArrayList.nova"),
-				formatPath(standard  + "Math.nova"),
-				formatPath(standard  + "Time.nova"),
-				formatPath(standard  + "DivideByZeroException.nova"),
-				formatPath(standard  + "Object.nova"),
-				formatPath(standard  + "InputStream.nova"),
-				formatPath(standard  + "OutputStream.nova"),
-				formatPath(standard  + "StreamReader.nova"),
-				formatPath(standard  + "List.nova"),
-				formatPath(standard  + "ListNode.nova"),
-				formatPath(standard  + "Thread.nova"),
-				formatPath(standard  + "UncaughtExceptionHandler.nova"),
-				formatPath(standard  + "Exception.nova"),
-				formatPath(standard  + "Array.nova"),
-				formatPath(standard  + "Char.nova"),
-				formatPath(standard  + "Bool.nova"),
-				formatPath(standard  + "Byte.nova"),
-				formatPath(standard  + "Short.nova"),
-				formatPath(standard  + "Int.nova"),
-				formatPath(standard  + "Long.nova"),
-				formatPath(standard  + "Float.nova"),
-				formatPath(standard  + "Double.nova"),
-				formatPath(standard  + "Number.nova"),
-				formatPath(standard  + "GC.nova"),
-				formatPath(standard  + "File.nova"),
-				formatPath(standard  + "SVG.nova"),
-				formatPath(standard  + "SVGComponent.nova"),
-				formatPath(standard  + "SVGComponentList.nova"),
-				formatPath(standard  + "SVGComponentNode.nova"),
-				formatPath(standard  + "SVGMainComponent.nova"),
-				formatPath(standard  + "SVGCircle.nova"),
-				formatPath(standard  + "System.nova"),
-				formatPath(standard  + "Process.nova"),
-				formatPath(standard  + "Stack.nova"),
-				formatPath(standard  + "EmptyStackException.nova"),
 				"-o",   formatPath(directory + "bin/Executable" + OUTPUT_EXTENSION),
-				"-dir", formatPath(directory + "../include"),
-				"-dir", formatPath(directory + "../include/gc"),
-				"-dir", formatPath(directory + "../standard"),
 				"-dir", formatPath(directory + "../example"),
 				"-dir", formatPath(directory + "../stabilitytest"),
-				"-run",
-//				"-csource",
-				"-formatc",
-				testClasses ? "-v" : "",
-				"-gcc",
-//				"-small",
-				"-cargs",
-				"-keepc",
-				"-single-thread",
-//				"-nogc",
-//				"-dry"
-				"-library",
+//				"-run",
+////				"-csource",
+//				"-formatc",
+//				testClasses ? "-v" : "",
+////				"-gcc",
+////				"-small",
+//				"-cargs",
+//				"-keepc",
+//				"-single-thread",
+////				"-nogc",
+////				"-dry"
+//				"-library",
 			};
 		}
 		if (ANDROID_DEBUG)
 		{
 			enableFlag(DRY_RUN);
 		}
+		
+		String standardFiles[] = new String[]
+		{
+			formatPath(standard  + "Console.nova"),
+			formatPath(standard  + "String.nova"),
+			formatPath(standard  + "ExceptionData.nova"),
+			formatPath(standard  + "ArrayList.nova"),
+			formatPath(standard  + "Math.nova"),
+			formatPath(standard  + "Time.nova"),
+			formatPath(standard  + "DivideByZeroException.nova"),
+			formatPath(standard  + "Object.nova"),
+			formatPath(standard  + "InputStream.nova"),
+			formatPath(standard  + "OutputStream.nova"),
+			formatPath(standard  + "StreamReader.nova"),
+			formatPath(standard  + "List.nova"),
+			formatPath(standard  + "ListNode.nova"),
+			formatPath(standard  + "Thread.nova"),
+			formatPath(standard  + "UncaughtExceptionHandler.nova"),
+			formatPath(standard  + "Exception.nova"),
+			formatPath(standard  + "Array.nova"),
+			formatPath(standard  + "Char.nova"),
+			formatPath(standard  + "Bool.nova"),
+			formatPath(standard  + "Byte.nova"),
+			formatPath(standard  + "Short.nova"),
+			formatPath(standard  + "Int.nova"),
+			formatPath(standard  + "Long.nova"),
+			formatPath(standard  + "Float.nova"),
+			formatPath(standard  + "Double.nova"),
+			formatPath(standard  + "Number.nova"),
+			formatPath(standard  + "GC.nova"),
+			formatPath(standard  + "File.nova"),
+			formatPath(standard  + "SVG.nova"),
+			formatPath(standard  + "SVGComponent.nova"),
+			formatPath(standard  + "SVGComponentList.nova"),
+			formatPath(standard  + "SVGComponentNode.nova"),
+			formatPath(standard  + "SVGMainComponent.nova"),
+			formatPath(standard  + "SVGCircle.nova"),
+			formatPath(standard  + "System.nova"),
+			formatPath(standard  + "Process.nova"),
+			formatPath(standard  + "Stack.nova"),
+			formatPath(standard  + "EmptyStackException.nova"),
+			formatPath(standard  + "Null.nova"),
+		};
+		
+		String postArgs[] = new String[]
+		{
+			"-dir", formatPath(directory + "../include"),
+			"-dir", formatPath(directory + "../include/gc"),
+			"-dir", formatPath(directory + "../standard"),
+		};
+		
+//		for (String location : standardFiles)
+//		{
+//			location = removeSurroundingQuotes(location);
+//			
+//			inputFiles.add(new File(location));
+//		}
+		
+		args = prependArguments(args, standardFiles);
+		args = appendArguments(args, postArgs);
 		
 		parseArguments(args);
 		
@@ -344,6 +364,26 @@ public class Nova
 		startTimer();
 		
 		createSyntaxTree(generateCode);
+	}
+	
+	private String[] prependArguments(String args[], String ... newData)
+	{
+		String temp[] = new String[args.length + newData.length];
+		
+		System.arraycopy(newData, 0, temp, 0, newData.length);
+		System.arraycopy(args, 0, temp, newData.length, args.length);
+		
+		return temp;
+	}
+	
+	private String[] appendArguments(String args[], String ... newData)
+	{
+		String temp[] = new String[args.length + newData.length];
+		
+		System.arraycopy(args, 0, temp, 0, args.length);
+		System.arraycopy(newData, 0, temp, args.length, newData.length);
+		
+		return temp;
 	}
 	
 	private void createSyntaxTree(boolean generateCode)
@@ -530,9 +570,12 @@ public class Nova
 			Identifier gcInit = (Identifier)SyntaxTree.decodeScopeContents(mainMethod, "GC.init()", mainMethod.getLocationIn(), false);
 			Identifier enter  = (Identifier)SyntaxTree.decodeScopeContents(mainMethod, "Console.waitForEnter()", mainMethod.getLocationIn(), false);
 			
+			Instantiation nullConstructor = (Instantiation)SyntaxTree.decodeScopeContents(mainMethod, "new Null()", mainMethod.getLocationIn());
+			
 			StringBuilder mainMethodText = new StringBuilder();
 			
 			mainMethodText.append('\n').append('\n');
+			mainMethodText.append("Null* nova_null;").append('\n');
 			mainMethodText.append('\n');
 			mainMethodText.append("int main(int argc, char** argvs)").append('\n');
 			mainMethodText.append("{").append('\n');
@@ -540,6 +583,7 @@ public class Nova
 			mainMethodText.append	("int      i;").append('\n').append('\n');
 			mainMethodText.append	("ExceptionData* ").append(Exception.EXCEPTION_DATA_IDENTIFIER).append(" = 0;").append('\n');
 			mainMethodText.append	("srand(currentTimeMillis());").append('\n');
+			mainMethodText.append	("nova_null = ").append(nullConstructor.generateCSourceFragment()).append(';').append('\n');
 			mainMethodText.append	(gcInit.generateCSource()).append('\n');
 			mainMethodText.append	(staticBlockCalls).append('\n');
 			mainMethodText.append	("args = (String**)NOVA_MALLOC(argc * sizeof(String));").append('\n');
@@ -638,7 +682,7 @@ public class Nova
 		
 		if (!isFlagEnabled(NO_GC))
 		{
-			cmd.append("-DUSE_GC -L\"C:/Users/Braden Steffaniak/Documents/GitHub/Nova/example/bin/\" -lgc ");
+			cmd.append("-DUSE_GC -L\"C:/Users/Braden/Documents/GitHub/Nova/example/bin/\" -lgc ");
 		}
 		if (isFlagEnabled(SMALL_BIN))
 		{
@@ -1099,7 +1143,7 @@ public class Nova
 				
 				if (args[i].startsWith("\""))
 				{
-					args[i] = args[i].substring(1, args[i].length() - 1);
+					args[i] = removeSurroundingQuotes(args[i]);
 				}
 				
 				// If the argument is one of the first arguments passed

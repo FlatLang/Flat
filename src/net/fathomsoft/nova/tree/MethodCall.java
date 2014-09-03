@@ -18,7 +18,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 10:04:31 PM
- * @version	v0.2.29 Aug 29, 2014 at 3:17:45 PM
+ * @version	v0.2.30 Sep 2, 2014 at 7:58:20 PM
  */
 public class MethodCall extends IIdentifier
 {
@@ -511,7 +511,7 @@ public class MethodCall extends IIdentifier
 			return true;
 		}
 		
-		String arguments[]  = StringUtils.splitCommas(argumentList);
+		String arguments[] = StringUtils.splitCommas(argumentList);
 
 		Location argsLocation = new Location(getLocationIn());
 		argsLocation.addBounds(bounds.getStart(), bounds.getEnd());
@@ -587,7 +587,9 @@ public class MethodCall extends IIdentifier
 			}
 		}
 		
-		return true;
+//		checkGenerics
+		
+		return methodDeclaration.areCompatibleParameterTypes(arguments.getTypes());
 	}
 	
 	/**

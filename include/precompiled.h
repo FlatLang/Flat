@@ -13,6 +13,9 @@
 #include <CClass.h>
 
 #if defined(_WIN32)
+#	ifdef _MSC_VER
+//#		define _CRT_SECURE_NO_WARNINGS
+#	endif
 #	include <windows.h>
 #elif defined(__APPLE__) || defined(__linux__)
 #	include <pthread.h>

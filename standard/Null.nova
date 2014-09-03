@@ -1,0 +1,7 @@
+public class Null
+{
+	public toString() -> String
+	{
+		return "null"
+	}
+}

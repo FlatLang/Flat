@@ -24,7 +24,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:15:51 PM
- * @version	v0.2.29 Aug 29, 2014 at 3:17:45 PM
+ * @version	v0.2.30 Sep 2, 2014 at 7:58:20 PM
  */
 public class ClassDeclaration extends InstanceDeclaration
 {
@@ -200,11 +200,6 @@ public class ClassDeclaration extends InstanceDeclaration
 		
 		addVirtualMethods(methods, this);
 		
-		if (getExtendedClassName() != null)
-		{
-			getExtendedClass().addVirtualMethods(methods, this);
-		}
-		
 		return methods.toArray(new NovaMethodDeclaration[0]);
 	}
 	
@@ -217,6 +212,11 @@ public class ClassDeclaration extends InstanceDeclaration
 	 */
 	private void addVirtualMethods(ArrayList<NovaMethodDeclaration> methods, ClassDeclaration context)
 	{
+		if (getExtendedClassName() != null)
+		{
+			getExtendedClass().addVirtualMethods(methods, this);
+		}
+		
 		MethodList list = getMethodList();
 		
 		for (int i = 0; i < list.getNumVisibleChildren(); i++)
@@ -227,9 +227,20 @@ public class ClassDeclaration extends InstanceDeclaration
 			{
 				NovaMethodDeclaration method = (NovaMethodDeclaration)m;
 				
-				if (method.getParentClass() == this && method.isVirtual() && !containsMethod(method, methods))
+				if (method.getParentClass() == this && method.isVirtual())
 				{
-					methods.add(method);
+					NovaMethodDeclaration existing = getMethod(method, methods);
+					
+					if (existing != null)
+					{
+						int index = methods.indexOf(existing);
+						
+						methods.set(index, method);
+					}
+					else
+					{
+						methods.add(method);
+					}
 				}
 			}
 		}
@@ -246,16 +257,21 @@ public class ClassDeclaration extends InstanceDeclaration
 	 */
 	private boolean containsMethod(NovaMethodDeclaration method, ArrayList<NovaMethodDeclaration> methods)
 	{
-		for (MethodDeclaration m : methods)
+		return getMethod(method, methods) != null;
+	}
+	
+	private NovaMethodDeclaration getMethod(NovaMethodDeclaration method, ArrayList<NovaMethodDeclaration> methods)
+	{
+		for (NovaMethodDeclaration m : methods)
 		{
 			// TODO: need to make this more strict.
-			if (m.getName().equals(method.getName()) && method.areCompatibleParameterTypes(m.getParameterList().getTypes()))
+			if (m.getName().equals(method.getName()) && m.areCompatibleParameterTypes(method.getParameterList().getTypes()))// method.areCompatibleParameterTypes(m.getParameterList().getTypes()))
 			{
-				return true;
+				return m;
 			}
 		}
 		
-		return false;
+		return null;
 	}
 	
 	/**

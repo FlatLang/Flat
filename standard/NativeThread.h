@@ -41,9 +41,14 @@ void lib_nova_thread_create(NOVA_THREAD_HANDLE* handle, NOVA_THREAD_FUNC_TYPE fu
 void thread_nanosleep(long_long nanos);
 #endif
 
-typedef struct Thread Thread;
+#include <NovaThread.h>
+#include <NovaExceptionData.h>
+
+//typedef struct Thread Thread;
 typedef struct DataStruct DataStruct;
-typedef struct ExceptionData ExceptionData;
+//typedef struct ExceptionData ExceptionData;
+
+
 
 typedef void (*run_method)(void*, ExceptionData*);
 

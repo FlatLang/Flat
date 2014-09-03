@@ -1,11 +1,13 @@
 package net.fathomsoft.nova.tree;
 
+import net.fathomsoft.nova.util.SyntaxUtils;
+
 /**
  * 
  * 
  * @author	Braden Steffaniak
  * @since	v0.2.14 Jul 1, 2014 at 11:41:22 PM
- * @version	v0.2.21 Jul 30, 2014 at 1:45:00 PM
+ * @version	v0.2.30 Sep 2, 2014 at 7:58:20 PM
  */
 public interface CallableMethod
 {
@@ -81,4 +83,30 @@ public interface CallableMethod
 	 * 		Method.
 	 */
 	public ParameterList getParameterList();
+	
+	/**
+	 * Check to see if the given types are compatible with the Method's
+	 * parameters.
+	 * 
+	 * @param types The types to check against the parameters.
+	 * @return Whether or not the types are compatible with the
+	 * 		parameters.
+	 */
+	public default boolean areCompatibleParameterTypes(Value ... types)
+	{
+		if (types.length != getParameterList().getNumVisibleChildren())
+		{
+			return false;
+		}
+		
+		for (int i = 0; i < types.length; i++)
+		{
+			if (!SyntaxUtils.isTypeCompatible(getParameterList().getParameter(i), types[i]))
+			{
+				return false;
+			}
+		}
+		
+		return true;
+	}
 }
