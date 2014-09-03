@@ -16,7 +16,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:10:53 PM
- * @version	v0.2.28 Aug 20, 2014 at 12:10:45 AM
+ * @version	v0.2.30 Sep 2, 2014 at 7:58:20 PM
  */
 public abstract class MethodDeclaration extends InstanceDeclaration implements CallableMethod
 {
@@ -295,33 +295,6 @@ public abstract class MethodDeclaration extends InstanceDeclaration implements C
 			else
 			{
 				SyntaxMessage.error("Expected a parameter definition", this);
-			}
-		}
-		
-		return true;
-	}
-	
-	/**
-	 * Check to see if the given types are compatible with the specified
-	 * MethodDeclaration's parameters.
-	 * 
-	 * @param types The types that are being tested against the
-	 * 		parameters.
-	 * @return Whether or not the types are compatible with the
-	 * 		parameters.
-	 */
-	public boolean areCompatibleParameterTypes(Value ... types)
-	{
-		if (types.length != getParameterList().getNumVisibleChildren())
-		{
-			return false;
-		}
-		
-		for (int i = 0; i < types.length; i++)
-		{
-			if (!SyntaxUtils.isTypeCompatible(getParameterList().getParameter(i), types[i]))
-			{
-				return false;
 			}
 		}
 		

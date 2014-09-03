@@ -21,7 +21,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.2.21 Jul 30, 2014 at 1:45:00 PM
- * @version	v0.2.29 Aug 29, 2014 at 3:17:45 PM
+ * @version	v0.2.30 Sep 2, 2014 at 7:58:20 PM
  */
 public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAncestor
 {
@@ -487,32 +487,6 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 			else
 			{
 				SyntaxMessage.error("Expected a parameter definition", this);
-			}
-		}
-		
-		return true;
-	}
-	
-	/**
-	 * Check to see if the given types are compatible with the Method's
-	 * parameters.
-	 * 
-	 * @param types The types to check against the parameters.
-	 * @return Whether or not the types are compatible with the
-	 * 		parameters.
-	 */
-	public boolean areCompatibleParameterTypes(Value ... types)
-	{
-		if (types.length != getParameterList().getNumVisibleChildren())
-		{
-			return false;
-		}
-		
-		for (int i = 0; i < types.length; i++)
-		{
-			if (!SyntaxUtils.isTypeCompatible(getParameterList().getParameter(i), types[i]))
-			{
-				return false;
 			}
 		}
 		
