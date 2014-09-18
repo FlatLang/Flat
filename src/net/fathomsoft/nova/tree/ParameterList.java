@@ -338,10 +338,10 @@ public class ParameterList<E extends Value> extends TypeList<E>
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location)
+	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location, boolean)
 	 */
 	@Override
-	public ParameterList<E> clone(Node temporaryParent, Location locationIn)
+	public ParameterList<E> clone(Node temporaryParent, Location locationIn, boolean cloneChildren)
 	{
 		ParameterList<E> node = new ParameterList<E>(temporaryParent, locationIn);
 		

@@ -65,10 +65,10 @@ public class InitializationMethod extends BodyMethodDeclaration
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location)
+	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location, boolean)
 	 */
 	@Override
-	public InitializationMethod clone(Node temporaryParent, Location locationIn)
+	public InitializationMethod clone(Node temporaryParent, Location locationIn, boolean cloneChildren)
 	{
 		InitializationMethod node = new InitializationMethod(temporaryParent, locationIn);
 		

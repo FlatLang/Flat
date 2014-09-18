@@ -27,9 +27,6 @@ public class VariableDeclaration extends IIdentifier implements GenericCompatibl
 	
 	private GenericType	genericTypes[];
 	
-	public static final String	GENERIC_START = "<";
-	public static final String	GENERIC_END   = ">";
-	
 	/**
 	 * @see net.fathomsoft.nova.tree.Node#Node(Node, Location)
 	 */
@@ -446,10 +443,10 @@ public class VariableDeclaration extends IIdentifier implements GenericCompatibl
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location)
+	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location, boolean)
 	 */
 	@Override
-	public VariableDeclaration clone(Node temporaryParent, Location locationIn)
+	public VariableDeclaration clone(Node temporaryParent, Location locationIn, boolean cloneChildren)
 	{
 		VariableDeclaration node = new VariableDeclaration(temporaryParent, locationIn);
 		
@@ -470,6 +467,13 @@ public class VariableDeclaration extends IIdentifier implements GenericCompatibl
 		node.constantVal = constantVal;
 		node.external    = external;
 		node.volatileVal = volatileVal;
+		
+		node.genericTypes = new GenericType[genericTypes.length];
+		
+		for (int i = 0; i < genericTypes.length; i++)
+		{
+			node.genericTypes[i] = (GenericType)genericTypes[i].clone(node, Location.INVALID);
+		}
 		
 		return node;
 	}

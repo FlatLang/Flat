@@ -73,10 +73,10 @@ public class AbstractMethodDeclaration extends NovaMethodDeclaration
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location)
+	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location, boolean)
 	 */
 	@Override
-	public AbstractMethodDeclaration clone(Node temporaryParent, Location locationIn)
+	public AbstractMethodDeclaration clone(Node temporaryParent, Location locationIn, boolean cloneChildren)
 	{
 		AbstractMethodDeclaration node = new AbstractMethodDeclaration(temporaryParent, locationIn);
 		

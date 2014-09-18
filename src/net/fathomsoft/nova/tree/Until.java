@@ -144,7 +144,7 @@ public class Until extends IfStatement
 		
 		for (int i = scope.getNumVisibleChildren() - 1; i >= 0; i--)
 		{
-			IfStatement newClone = clonable.clone(getScope(), getLocationIn());
+			IfStatement newClone = (IfStatement)clonable.clone(getScope(), getLocationIn());
 			
 			Node node = scope.getVisibleChild(i);
 			
@@ -166,10 +166,10 @@ public class Until extends IfStatement
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location)
+	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location, boolean)
 	 */
 	@Override
-	public Until clone(Node temporaryParent, Location locationIn)
+	public Until clone(Node temporaryParent, Location locationIn, boolean cloneChildren)
 	{
 		Until node = new Until(temporaryParent, locationIn);
 		

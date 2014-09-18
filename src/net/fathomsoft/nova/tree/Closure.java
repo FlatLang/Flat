@@ -311,10 +311,10 @@ public class Closure extends Variable
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location)
+	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location, boolean)
 	 */
 	@Override
-	public Closure clone(Node temporaryParent, Location locationIn)
+	public Closure clone(Node temporaryParent, Location locationIn, boolean cloneChildren)
 	{
 		Closure node = new Closure(temporaryParent, locationIn);
 		

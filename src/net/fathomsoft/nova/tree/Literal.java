@@ -254,10 +254,10 @@ public class Literal extends IValue
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location)
+	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location, boolean)
 	 */
 	@Override
-	public Literal clone(Node temporaryParent, Location locationIn)
+	public Literal clone(Node temporaryParent, Location locationIn, boolean cloneChildren)
 	{
 		Literal node = new Literal(temporaryParent, locationIn);
 		

@@ -75,10 +75,10 @@ public class StaticClassReference extends IIdentifier
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location)
+	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location, boolean)
 	 */
 	@Override
-	public StaticClassReference clone(Node temporaryParent, Location locationIn)
+	public StaticClassReference clone(Node temporaryParent, Location locationIn, boolean cloneChildren)
 	{
 		StaticClassReference node = new StaticClassReference(temporaryParent, locationIn);
 		

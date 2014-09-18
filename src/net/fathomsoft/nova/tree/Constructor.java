@@ -374,10 +374,10 @@ public class Constructor extends BodyMethodDeclaration
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location)
+	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location, boolean)
 	 */
 	@Override
-	public Constructor clone(Node temporaryParent, Location locationIn)
+	public Constructor clone(Node temporaryParent, Location locationIn, boolean cloneChildren)
 	{
 		Constructor node = new Constructor(temporaryParent, locationIn);
 		

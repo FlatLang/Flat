@@ -240,10 +240,10 @@ public class FieldDeclaration extends InstanceDeclaration
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location)
+	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location, boolean)
 	 */
 	@Override
-	public FieldDeclaration clone(Node temporaryParent, Location locationIn)
+	public FieldDeclaration clone(Node temporaryParent, Location locationIn, boolean cloneChildren)
 	{
 		FieldDeclaration node = new FieldDeclaration(temporaryParent, locationIn);
 		

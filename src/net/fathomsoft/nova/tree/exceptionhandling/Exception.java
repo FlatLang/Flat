@@ -90,10 +90,10 @@ public class Exception extends Node
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location)
+	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location, boolean)
 	 */
 	@Override
-	public Exception clone(Node temporaryParent, Location locationIn)
+	public Exception clone(Node temporaryParent, Location locationIn, boolean cloneChildren)
 	{
 		Exception node = new Exception(temporaryParent, locationIn);
 		

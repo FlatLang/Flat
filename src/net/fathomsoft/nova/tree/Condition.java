@@ -22,10 +22,10 @@ public class Condition extends Node
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location)
+	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location, boolean)
 	 */
 	@Override
-	public Condition clone(Node temporaryParent, Location locationIn)
+	public Condition clone(Node temporaryParent, Location locationIn, boolean cloneChildren)
 	{
 		Condition node = new Condition(temporaryParent, locationIn);
 		

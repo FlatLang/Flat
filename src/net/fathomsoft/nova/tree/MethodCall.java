@@ -1,5 +1,6 @@
 package net.fathomsoft.nova.tree;
 
+import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.error.SyntaxErrorException;
 import net.fathomsoft.nova.error.SyntaxMessage;
@@ -235,6 +236,22 @@ public class MethodCall extends IIdentifier
 	}
 	
 	/**
+	 * @see net.fathomsoft.nova.tree.Identifier#getReferenceNode()
+	 */
+	@Override
+	public Identifier getReferenceNode()
+	{
+		Identifier ref = super.getReferenceNode();
+		
+		if (ref.getParent() instanceof Instantiation)
+		{
+			return (Identifier)ref.getParent();
+		}
+		
+		return ref;
+	}
+	
+	/**
 	 * Get the Parameter that the given argument represents.<br>
 	 * <br>
 	 * For example:
@@ -291,6 +308,15 @@ public class MethodCall extends IIdentifier
 	public Value getCorrespondingParameter(int argIndex)
 	{
 		return getCallableDeclaration().getParameterList().getParameter(argIndex);
+	}
+	
+	/**
+	 * @see net.fathomsoft.nova.tree.Value#getGenericType()
+	 */
+	@Override
+	public GenericType getGenericType()
+	{
+		return getMethodDeclaration().getGenericType();
 	}
 	
 	/**
@@ -738,14 +764,14 @@ public class MethodCall extends IIdentifier
 	 */
 	private boolean localDeclarationRequired()
 	{
-		return getCallableDeclaration().isVirtual() && !isVirtualTypeKnown() && isAccessed() && getAccessingNode() instanceof MethodCall && !getAccessingNode().isVirtualTypeKnown();
+		return getCallableDeclaration().isVirtual() && !isVirtualTypeKnown() && isAccessed() && getAccessingNode() instanceof MethodCall;// && !getAccessingNode().isVirtualTypeKnown();
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location)
+	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location, boolean)
 	 */
 	@Override
-	public MethodCall clone(Node temporaryParent, Location locationIn)
+	public MethodCall clone(Node temporaryParent, Location locationIn, boolean cloneChildren)
 	{
 		MethodCall node = new MethodCall(temporaryParent, locationIn);
 		

@@ -132,10 +132,10 @@ public class VTable extends IIdentifier
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location)
+	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location, boolean)
 	 */
 	@Override
-	public VTable clone(Node temporaryParent, Location locationIn)
+	public VTable clone(Node temporaryParent, Location locationIn, boolean cloneChildren)
 	{
 		VTable node = new VTable(temporaryParent, locationIn);
 		

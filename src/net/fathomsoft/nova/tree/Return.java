@@ -218,10 +218,10 @@ public class Return extends IValue
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location)
+	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location, boolean)
 	 */
 	@Override
-	public Return clone(Node temporaryParent, Location locationIn)
+	public Return clone(Node temporaryParent, Location locationIn, boolean cloneChildren)
 	{
 		Return node = new Return(temporaryParent, locationIn);
 		

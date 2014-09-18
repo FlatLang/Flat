@@ -206,10 +206,10 @@ public class Priority extends IValue
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location)
+	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location, boolean)
 	 */
 	@Override
-	public Priority clone(Node temporaryParent, Location locationIn)
+	public Priority clone(Node temporaryParent, Location locationIn, boolean cloneChildren)
 	{
 		Priority node = new Priority(temporaryParent, locationIn);
 		

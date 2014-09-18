@@ -337,10 +337,10 @@ public class ClosureDeclaration extends Parameter implements CallableMethod
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location)
+	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location, boolean)
 	 */
 	@Override
-	public ClosureDeclaration clone(Node temporaryParent, Location locationIn)
+	public ClosureDeclaration clone(Node temporaryParent, Location locationIn, boolean cloneChildren)
 	{
 		ClosureDeclaration node = new ClosureDeclaration(temporaryParent, locationIn);
 		

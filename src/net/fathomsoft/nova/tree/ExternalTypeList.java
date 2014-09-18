@@ -78,10 +78,10 @@ public class ExternalTypeList extends List
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location)
+	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location, boolean)
 	 */
 	@Override
-	public ExternalTypeList clone(Node temporaryParent, Location locationIn)
+	public ExternalTypeList clone(Node temporaryParent, Location locationIn, boolean cloneChildren)
 	{
 		ExternalTypeList node = new ExternalTypeList(temporaryParent, locationIn);
 		

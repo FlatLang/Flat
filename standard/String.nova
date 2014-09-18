@@ -38,6 +38,8 @@ public class String
 	
 	public concat(String str) -> String
 	{
+		str = str.toString()
+		
 		int size = str.length + length + 1
 		
 		char newData[] = new char[size]

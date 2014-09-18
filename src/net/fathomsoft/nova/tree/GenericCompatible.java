@@ -1,12 +1,11 @@
 package net.fathomsoft.nova.tree;
 
+import net.fathomsoft.nova.TestContext;
+import net.fathomsoft.nova.tree.variables.VariableDeclaration;
 import net.fathomsoft.nova.tree.variables.VariableDeclaration.DeclarationData;
 import net.fathomsoft.nova.util.Bounds;
 import net.fathomsoft.nova.util.Location;
 import net.fathomsoft.nova.util.StringUtils;
-
-import static net.fathomsoft.nova.tree.variables.VariableDeclaration.GENERIC_END;
-import static net.fathomsoft.nova.tree.variables.VariableDeclaration.GENERIC_START;
 
 /**
  * 
@@ -17,6 +16,9 @@ import static net.fathomsoft.nova.tree.variables.VariableDeclaration.GENERIC_STA
  */
 public interface GenericCompatible
 {
+	public static final String	GENERIC_START = "<";
+	public static final String	GENERIC_END   = ">";
+	
 	/**
 	 * Get the list of names that the ClassDeclaration accepts as generic
 	 * declarations.<br>
@@ -35,6 +37,26 @@ public interface GenericCompatible
 	
 	public void setGenericTypes(GenericType types[]);
 	
+	public default int getGenericParameterIndex(String parameterName)
+	{
+		if (parameterName == null)
+		{
+			return -1;
+		}
+		
+		for (int i = 0; i < getGenericParameterNames().length; i++)
+		{
+			GenericType type = getGenericParameterNames()[i];
+			
+			if (type.getType().equals(parameterName))
+			{
+				return i;
+			}
+		}
+		
+		return -1;
+	}
+	
 	public default boolean containsGenericParameter(String parameterName)
 	{
 		return getGenericParameter(parameterName) != null;
@@ -42,15 +64,14 @@ public interface GenericCompatible
 	
 	public default GenericType getGenericParameter(String parameterName)
 	{
-		for (GenericType type : getGenericParameterNames())
+		int index = getGenericParameterIndex(parameterName);
+		
+		if (index < 0)
 		{
-			if (type.getType().equals(parameterName))
-			{
-				return type;
-			}
+			return null;
 		}
 		
-		return null;
+		return getGenericParameterNames()[index];
 	}
 	
 	/**
@@ -114,5 +135,34 @@ public interface GenericCompatible
 		while (bounds.isValid());
 		
 		data.setGenericsRemaining(data.getNumSkipBounds());
+	}
+	
+	/**
+	 * Test the GenericCompatible class type to make sure everything
+	 * is working properly.
+	 * 
+	 * @return The error output, if there was an error. If the test was
+	 * 		successful, null is returned.
+	 */
+	public static String test(TestContext context)
+	{
+		Import importNode = Import.decodeStatement(context.clazz, "import \"Stack\"", Location.INVALID, true);
+		
+		context.clazz.getFileDeclaration().addChild(importNode);
+		
+		Node declaration = SyntaxTree.decodeScopeContents(context.method, "Stack<String> s = new Stack<String>()", Location.INVALID, false);
+		
+		if (declaration == null)
+		{
+			return "Could not decode generic declaration";
+		}
+		
+		context.method.addChild(declaration);
+		
+//		Node pushNonString = SyntaxTree.decodeScopeContents(context.method, "s.push(4)", Location.INVALID, true);
+//		System.out.println(pushNonString);
+//		context.method.addChild(pushNonString);
+		
+		return null;
 	}
 }

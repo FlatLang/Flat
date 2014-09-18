@@ -50,10 +50,10 @@ public class Dimensions extends Node
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location)
+	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location, boolean)
 	 */
 	@Override
-	public Dimensions clone(Node temporaryParent, Location locationIn)
+	public Dimensions clone(Node temporaryParent, Location locationIn, boolean cloneChildren)
 	{
 		Dimensions node = new Dimensions(temporaryParent, locationIn);
 		

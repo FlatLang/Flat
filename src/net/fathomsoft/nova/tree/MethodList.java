@@ -159,10 +159,10 @@ public class MethodList extends List
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location)
+	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location, boolean)
 	 */
 	@Override
-	public MethodList clone(Node temporaryParent, Location locationIn)
+	public MethodList clone(Node temporaryParent, Location locationIn, boolean cloneChildren)
 	{
 		MethodList node = new MethodList(temporaryParent, locationIn);
 		

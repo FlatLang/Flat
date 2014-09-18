@@ -167,10 +167,10 @@ public class Operator extends IValue
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location)
+	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location, boolean)
 	 */
 	@Override
-	public Operator clone(Node temporaryParent, Location locationIn)
+	public Operator clone(Node temporaryParent, Location locationIn, boolean cloneChildren)
 	{
 		Operator node = new Operator(temporaryParent, locationIn);
 		

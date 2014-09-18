@@ -45,10 +45,10 @@ public class Skeleton extends Node
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location)
+	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location, boolean)
 	 */
 	@Override
-	public Skeleton clone(Node temporaryParent, Location locationIn)
+	public Skeleton clone(Node temporaryParent, Location locationIn, boolean cloneChildren)
 	{
 		Skeleton node = new Skeleton(temporaryParent, locationIn);
 		

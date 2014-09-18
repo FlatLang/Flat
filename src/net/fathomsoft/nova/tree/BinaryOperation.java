@@ -709,7 +709,7 @@ public class BinaryOperation extends IValue
 		boolean leftString  = SyntaxUtils.isString(left);
 		boolean rightString = SyntaxUtils.isString(right);
 		
-		if ((leftString || rightString))
+		if (leftString || rightString)
 		{
 			Value nonString = null;
 			
@@ -805,10 +805,10 @@ public class BinaryOperation extends IValue
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location)
+	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location, boolean)
 	 */
 	@Override
-	public BinaryOperation clone(Node temporaryParent, Location locationIn)
+	public BinaryOperation clone(Node temporaryParent, Location locationIn, boolean cloneChildren)
 	{
 		BinaryOperation node = new BinaryOperation(temporaryParent, locationIn);
 		

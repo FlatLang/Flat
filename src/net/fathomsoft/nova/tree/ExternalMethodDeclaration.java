@@ -277,10 +277,10 @@ public class ExternalMethodDeclaration extends MethodDeclaration
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location)
+	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location, boolean)
 	 */
 	@Override
-	public ExternalMethodDeclaration clone(Node temporaryParent, Location locationIn)
+	public ExternalMethodDeclaration clone(Node temporaryParent, Location locationIn, boolean cloneChildren)
 	{
 		ExternalMethodDeclaration node = new ExternalMethodDeclaration(temporaryParent, locationIn);
 		

@@ -1589,10 +1589,10 @@ public class ClassDeclaration extends InstanceDeclaration
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location)
+	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location, boolean)
 	 */
 	@Override
-	public ClassDeclaration clone(Node temporaryParent, Location locationIn)
+	public ClassDeclaration clone(Node temporaryParent, Location locationIn, boolean cloneChildren)
 	{
 		ClassDeclaration node = new ClassDeclaration(temporaryParent, locationIn);
 		

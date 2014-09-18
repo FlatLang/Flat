@@ -245,10 +245,10 @@ public class InstanceDeclaration extends VariableDeclaration
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location)
+	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location, boolean)
 	 */
 	@Override
-	public InstanceDeclaration clone(Node temporaryParent, Location locationIn)
+	public InstanceDeclaration clone(Node temporaryParent, Location locationIn, boolean cloneChildren)
 	{
 		InstanceDeclaration node = new InstanceDeclaration(temporaryParent, locationIn);
 		

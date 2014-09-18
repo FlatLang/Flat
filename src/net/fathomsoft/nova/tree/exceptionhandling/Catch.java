@@ -228,10 +228,10 @@ public class Catch extends ExceptionHandler
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location)
+	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location, boolean)
 	 */
 	@Override
-	public Catch clone(Node temporaryParent, Location locationIn)
+	public Catch clone(Node temporaryParent, Location locationIn, boolean cloneChildren)
 	{
 		Catch node = new Catch(temporaryParent, locationIn);
 		

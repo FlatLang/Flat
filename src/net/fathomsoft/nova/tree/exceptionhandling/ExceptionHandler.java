@@ -89,10 +89,10 @@ public class ExceptionHandler extends Node
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location)
+	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location, boolean)
 	 */
 	@Override
-	public ExceptionHandler clone(Node temporaryParent, Location locationIn)
+	public ExceptionHandler clone(Node temporaryParent, Location locationIn, boolean cloneChildren)
 	{
 		ExceptionHandler node = new ExceptionHandler(temporaryParent, locationIn);
 		

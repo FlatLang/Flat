@@ -21,10 +21,10 @@ public class List extends Node
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location)
+	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location, boolean)
 	 */
 	@Override
-	public List clone(Node temporaryParent, Location locationIn)
+	public List clone(Node temporaryParent, Location locationIn, boolean cloneChildren)
 	{
 		List node = new List(temporaryParent, locationIn);
 		

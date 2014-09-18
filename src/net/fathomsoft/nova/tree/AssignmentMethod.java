@@ -164,10 +164,10 @@ public class AssignmentMethod extends NovaMethodDeclaration
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location)
+	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location, boolean)
 	 */
 	@Override
-	public AssignmentMethod clone(Node temporaryParent, Location locationIn)
+	public AssignmentMethod clone(Node temporaryParent, Location locationIn, boolean cloneChildren)
 	{
 		AssignmentMethod node = new AssignmentMethod(temporaryParent, locationIn);
 		

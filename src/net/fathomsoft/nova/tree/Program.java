@@ -228,10 +228,10 @@ public class Program extends Node
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location)
+	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location, boolean)
 	 */
 	@Override
-	public Program clone(Node temporaryParent, Location locationIn)
+	public Program clone(Node temporaryParent, Location locationIn, boolean cloneChildren)
 	{
 		Program node = new Program(controller, tree);
 		

@@ -261,10 +261,10 @@ public class FieldList extends List
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location)
+	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location, boolean)
 	 */
 	@Override
-	public FieldList clone(Node temporaryParent, Location locationIn)
+	public FieldList clone(Node temporaryParent, Location locationIn, boolean cloneChildren)
 	{
 		FieldList node = new FieldList(temporaryParent, locationIn);
 		

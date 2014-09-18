@@ -209,11 +209,16 @@ public class Variable extends Identifier
 		declaration.setVolatile(volatileVal);
 	}
 	
+	public boolean doesUseGenericTypes()
+	{
+		return getDeclaration().getGenericParameterNames().length > 0;
+	}
+	
 	/**
-	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location)
+	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location, boolean)
 	 */
 	@Override
-	public Variable clone(Node temporaryParent, Location locationIn)
+	public Variable clone(Node temporaryParent, Location locationIn, boolean cloneChildren)
 	{
 		Variable node = new Variable(temporaryParent, locationIn);
 		

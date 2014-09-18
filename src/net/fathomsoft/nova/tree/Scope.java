@@ -83,7 +83,7 @@ public class Scope extends Node
 		
 		base.getParent().addChildBefore(base, assign);
 		
-		return var.clone(this, getLocationIn());
+		return (Variable)var.clone(this, getLocationIn());
 	}
 	
 	/**
@@ -192,10 +192,10 @@ public class Scope extends Node
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location)
+	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location, boolean)
 	 */
 	@Override
-	public Scope clone(Node temporaryParent, Location locationIn)
+	public Scope clone(Node temporaryParent, Location locationIn, boolean cloneChildren)
 	{
 		Scope node = new Scope(temporaryParent, locationIn);
 		

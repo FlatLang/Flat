@@ -9,11 +9,14 @@ public class GenericDemo
 		Stack<String> strs = new Stack<String>()
 		
 		push(strs, "test")
+		push(strs, "ASDFASDF")
+		push(strs, "3!")
+		push(strs, "34!!4334")
 		push(strs, null)
 		
 		Object o = new Object()
 		
-		push(strs, o)
+//		push(strs, o)
 		
 		while (false == strs.isEmpty())
 		{

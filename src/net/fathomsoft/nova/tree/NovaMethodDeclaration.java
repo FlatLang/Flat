@@ -571,10 +571,10 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location)
+	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location, boolean)
 	 */
 	@Override
-	public NovaMethodDeclaration clone(Node temporaryParent, Location locationIn)
+	public NovaMethodDeclaration clone(Node temporaryParent, Location locationIn, boolean cloneChildren)
 	{
 		NovaMethodDeclaration node = new NovaMethodDeclaration(temporaryParent, locationIn);
 		
@@ -594,7 +594,7 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 		
 		for (NovaMethodDeclaration child : overridingMethods)
 		{
-			node.overridingMethods.add(child.clone(node, child.getLocationIn()));
+			node.overridingMethods.add((NovaMethodDeclaration)child.clone(node, child.getLocationIn()));
 		}
 		
 		return node;

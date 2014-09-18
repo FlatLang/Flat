@@ -120,7 +120,7 @@ public class Parameter extends LocalDeclaration
 	 * @see net.fathomsoft.nova.tree.LocalDeclaration#clone(Node, Location)
 	 */
 	@Override
-	public Parameter clone(Node temporaryParent, Location locationIn)
+	public Parameter clone(Node temporaryParent, Location locationIn, boolean cloneChildren)
 	{
 		Parameter node = new Parameter(temporaryParent, locationIn);
 		

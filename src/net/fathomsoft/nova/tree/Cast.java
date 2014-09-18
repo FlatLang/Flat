@@ -192,10 +192,10 @@ public class Cast extends IValue
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location)
+	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location, boolean)
 	 */
 	@Override
-	public Cast clone(Node temporaryParent, Location locationIn)
+	public Cast clone(Node temporaryParent, Location locationIn, boolean cloneChildren)
 	{
 		Cast node = new Cast(temporaryParent, locationIn);
 		

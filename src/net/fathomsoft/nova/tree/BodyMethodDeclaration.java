@@ -158,10 +158,10 @@ public class BodyMethodDeclaration extends NovaMethodDeclaration
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location)
+	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location, boolean)
 	 */
 	@Override
-	public BodyMethodDeclaration clone(Node temporaryParent, Location locationIn)
+	public BodyMethodDeclaration clone(Node temporaryParent, Location locationIn, boolean cloneChildren)
 	{
 		BodyMethodDeclaration node = new BodyMethodDeclaration(temporaryParent, locationIn);
 		

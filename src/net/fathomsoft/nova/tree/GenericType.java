@@ -70,10 +70,10 @@ public class GenericType extends IValue
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location)
+	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location, boolean)
 	 */
 	@Override
-	public GenericType clone(Node temporaryParent, Location locationIn)
+	public GenericType clone(Node temporaryParent, Location locationIn, boolean cloneChildren)
 	{
 		GenericType node = new GenericType(temporaryParent, locationIn);
 		

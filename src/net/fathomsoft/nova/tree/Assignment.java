@@ -360,10 +360,10 @@ public class Assignment extends Node
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location)
+	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location, boolean)
 	 */
 	@Override
-	public Assignment clone(Node temporaryParent, Location locationIn)
+	public Assignment clone(Node temporaryParent, Location locationIn, boolean cloneChildren)
 	{
 		Assignment node = new Assignment(temporaryParent, locationIn);
 		

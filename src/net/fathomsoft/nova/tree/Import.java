@@ -265,10 +265,10 @@ public class Import extends Node
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location)
+	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location, boolean)
 	 */
 	@Override
-	public Import clone(Node temporaryParent, Location locationIn)
+	public Import clone(Node temporaryParent, Location locationIn, boolean cloneChildren)
 	{
 		Import node = new Import(temporaryParent, locationIn);
 		

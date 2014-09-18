@@ -52,10 +52,10 @@ public class StaticFieldList extends List
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location)
+	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location, boolean)
 	 */
 	@Override
-	public StaticFieldList clone(Node temporaryParent, Location locationIn)
+	public StaticFieldList clone(Node temporaryParent, Location locationIn, boolean cloneChildren)
 	{
 		StaticFieldList node = new StaticFieldList(temporaryParent, locationIn);
 		

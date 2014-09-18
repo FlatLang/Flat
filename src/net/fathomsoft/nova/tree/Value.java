@@ -556,6 +556,10 @@ public abstract class Value extends Node
 		{
 			builder.append("char");
 		}
+		else if (isGenericType())
+		{
+			builder.append(getGenericType().getDefaultType());
+		}
 		else
 		{
 			builder.append(getType());
@@ -696,6 +700,21 @@ public abstract class Value extends Node
 	public boolean isVirtualTypeKnown()
 	{
 		return false;
+	}
+	
+	public GenericType getGenericType()
+	{
+		if (getParentClass() == null)
+		{
+			return null;
+		}
+		
+		return getParentClass().getGenericParameter(getType());
+	}
+	
+	public final boolean isGenericType()
+	{
+		return getGenericType() != null;
 	}
 	
 	/**

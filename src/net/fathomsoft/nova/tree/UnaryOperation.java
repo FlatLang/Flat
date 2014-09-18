@@ -368,10 +368,10 @@ public class UnaryOperation extends IValue
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location)
+	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location, boolean)
 	 */
 	@Override
-	public UnaryOperation clone(Node temporaryParent, Location locationIn)
+	public UnaryOperation clone(Node temporaryParent, Location locationIn, boolean cloneChildren)
 	{
 		UnaryOperation node = new UnaryOperation(temporaryParent, locationIn);
 		

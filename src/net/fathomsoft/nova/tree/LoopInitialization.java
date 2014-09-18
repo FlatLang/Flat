@@ -23,10 +23,10 @@ public class LoopInitialization extends Node
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location)
+	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location, boolean)
 	 */
 	@Override
-	public LoopInitialization clone(Node temporaryParent, Location locationIn)
+	public LoopInitialization clone(Node temporaryParent, Location locationIn, boolean cloneChildren)
 	{
 		LoopInitialization node = new LoopInitialization(temporaryParent, locationIn);
 		

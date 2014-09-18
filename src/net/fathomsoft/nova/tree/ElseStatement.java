@@ -125,10 +125,10 @@ public class ElseStatement extends Node
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location)
+	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location, boolean)
 	 */
 	@Override
-	public ElseStatement clone(Node temporaryParent, Location locationIn)
+	public ElseStatement clone(Node temporaryParent, Location locationIn, boolean cloneChildren)
 	{
 		ElseStatement node = new ElseStatement(temporaryParent, locationIn);
 		

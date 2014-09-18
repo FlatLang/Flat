@@ -198,9 +198,9 @@ public class LocalDeclaration extends VariableDeclaration
 			}
 		}
 		
-		if (extra.getRightAdjacentSkipBounds() != null)
+		if (extra.getLeftAdjacentSkipBounds() != null)
 		{
-			decodeGenericParameter(extra.statement, extra.getRightAdjacentSkipBounds());
+			decodeGenericParameter(extra.statement, extra.getLeftAdjacentSkipBounds());
 			
 			extra.decrementGenericsRemaining();
 		}
@@ -210,7 +210,7 @@ public class LocalDeclaration extends VariableDeclaration
 	 * @see net.fathomsoft.nova.tree.variables.VariableDeclaration#clone(Node, Location)
 	 */
 	@Override
-	public LocalDeclaration clone(Node temporaryParent, Location locationIn)
+	public LocalDeclaration clone(Node temporaryParent, Location locationIn, boolean cloneChildren)
 	{
 		LocalDeclaration node = new LocalDeclaration(temporaryParent, locationIn);
 		

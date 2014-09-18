@@ -134,7 +134,8 @@ public class Destructor extends BodyMethodDeclaration
 		{
 			FieldDeclaration field = (FieldDeclaration)publicFields.getChild(i);
 			
-			field.generateFreeOutput(builder);
+//			field.generateFreeOutput(builder);
+			generateFreeFieldSource(builder, field).append('\n');
 		}
 		
 		return builder;
@@ -149,7 +150,7 @@ public class Destructor extends BodyMethodDeclaration
 	 */
 	private StringBuilder generateFreeFieldSource(StringBuilder builder, FieldDeclaration field)
 	{
-		if (field.isPrimitiveType() || field.isExternalType())
+		if (field.isPrimitiveType() || field.isExternalType() || field.isGenericType())
 		{
 			if (!field.isPrimitive())
 			{
@@ -297,10 +298,10 @@ public class Destructor extends BodyMethodDeclaration
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location)
+	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location, boolean)
 	 */
 	@Override
-	public Destructor clone(Node temporaryParent, Location locationIn)
+	public Destructor clone(Node temporaryParent, Location locationIn, boolean cloneChildren)
 	{
 		Destructor node = new Destructor(temporaryParent, locationIn);
 		

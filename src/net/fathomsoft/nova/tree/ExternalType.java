@@ -69,10 +69,10 @@ public class ExternalType extends IValue
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location)
+	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location, boolean)
 	 */
 	@Override
-	public ExternalType clone(Node temporaryParent, Location locationIn)
+	public ExternalType clone(Node temporaryParent, Location locationIn, boolean cloneChildren)
 	{
 		ExternalType node = new ExternalType(temporaryParent, locationIn);
 		

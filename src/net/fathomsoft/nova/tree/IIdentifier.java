@@ -161,10 +161,10 @@ public class IIdentifier extends Identifier
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location)
+	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location, boolean)
 	 */
 	@Override
-	public IIdentifier clone(Node temporaryParent, Location locationIn)
+	public IIdentifier clone(Node temporaryParent, Location locationIn, boolean cloneChildren)
 	{
 		IIdentifier node = new IIdentifier(temporaryParent, locationIn);
 		

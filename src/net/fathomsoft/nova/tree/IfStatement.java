@@ -191,10 +191,10 @@ public class IfStatement extends Node
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location)
+	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location, boolean)
 	 */
 	@Override
-	public IfStatement clone(Node temporaryParent, Location locationIn)
+	public IfStatement clone(Node temporaryParent, Location locationIn, boolean cloneChildren)
 	{
 		IfStatement node = new IfStatement(temporaryParent, locationIn);
 		

@@ -41,10 +41,10 @@ public class TypeList<E extends Node> extends List
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location)
+	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location, boolean)
 	 */
 	@Override
-	public TypeList<E> clone(Node temporaryParent, Location locationIn)
+	public TypeList<E> clone(Node temporaryParent, Location locationIn, boolean cloneChildren)
 	{
 		TypeList<E> node = new TypeList<E>(temporaryParent, locationIn);
 		

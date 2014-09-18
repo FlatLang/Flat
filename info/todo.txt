@@ -16,6 +16,9 @@ X Make sure there are no external method name collisions.
 * Do we need generateCVirtualMethodName()?
 * Fix single line comment on first line.
 * Check Java for inner-class inheritence of generic parameters.
+* Add support for virtual destructor calls. (For generic types)
+
+Remove the '0' exception in SyntaxUtils.validateCompatibleTypes()
 
 In-depth compiler error checking:
 - Make sure that the static class's methods/variables are called rightfully.
@@ -59,3 +62,6 @@ until (#condition) {
 if \(#condition\) #fragment?? #skip : {
 
 #visibility? #modifier? #final? #name \(#declaration @rep-1( , )\) (-> #type)? {
+
+Projects to consider:
+  Memory efficient Nova

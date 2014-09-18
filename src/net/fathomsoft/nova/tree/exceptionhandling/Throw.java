@@ -148,10 +148,10 @@ public class Throw extends ExceptionHandler
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location)
+	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location, boolean)
 	 */
 	@Override
-	public Throw clone(Node temporaryParent, Location locationIn)
+	public Throw clone(Node temporaryParent, Location locationIn, boolean cloneChildren)
 	{
 		Throw node = new Throw(temporaryParent, locationIn);
 		

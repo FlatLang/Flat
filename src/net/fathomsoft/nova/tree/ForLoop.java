@@ -344,10 +344,10 @@ public class ForLoop extends Loop
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location)
+	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location, boolean)
 	 */
 	@Override
-	public ForLoop clone(Node temporaryParent, Location locationIn)
+	public ForLoop clone(Node temporaryParent, Location locationIn, boolean cloneChildren)
 	{
 		ForLoop node = new ForLoop(temporaryParent, locationIn);
 		

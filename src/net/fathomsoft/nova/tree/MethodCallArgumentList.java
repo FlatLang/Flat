@@ -212,6 +212,14 @@ public class MethodCallArgumentList extends ArgumentList
 		{
 			return value2 instanceof Literal;
 		}
+		if (value1.isGenericType())
+		{
+			type1 = value1.getGenericType().getDefaultType();
+		}
+		if (value2.isGenericType())
+		{
+			type2 = value2.getGenericType().getDefaultType();
+		}
 		
 		return type1.equals(type2);
 	}
@@ -228,10 +236,10 @@ public class MethodCallArgumentList extends ArgumentList
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location)
+	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location, boolean)
 	 */
 	@Override
-	public MethodCallArgumentList clone(Node temporaryParent, Location locationIn)
+	public MethodCallArgumentList clone(Node temporaryParent, Location locationIn, boolean cloneChildren)
 	{
 		MethodCallArgumentList node = new MethodCallArgumentList(temporaryParent, locationIn);
 		

@@ -205,10 +205,10 @@ public class Array extends VariableDeclaration
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location)
+	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location, boolean)
 	 */
 	@Override
-	public Array clone(Node temporaryParent, Location locationIn)
+	public Array clone(Node temporaryParent, Location locationIn, boolean cloneChildren)
 	{
 		Array node = new Array(temporaryParent, locationIn);
 		

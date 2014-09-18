@@ -131,6 +131,15 @@ public class Instantiation extends IIdentifier implements GenericCompatible
 	}
 	
 	/**
+	 * @see net.fathomsoft.nova.tree.Identifier#generateCUseOutput(java.lang.StringBuilder, boolean)
+	 */
+	@Override
+	public StringBuilder generateCUseOutput(StringBuilder builder, boolean pointer)
+	{
+		return getIdentifier().generateCUseOutput(builder, pointer);
+	}
+	
+	/**
 	 * Decode the given statement into an Instantiation instance, if
 	 * possible. If it is not possible, this method returns null.<br>
 	 * Instantiations always begin with the 'new' keyword.
@@ -233,14 +242,23 @@ public class Instantiation extends IIdentifier implements GenericCompatible
 	@Override
 	public StringBuilder generateNovaInput(StringBuilder builder, boolean outputChildren)
 	{
-		return builder.append("new ").append(getIdentifier().generateNovaInput());
+		return builder.append("new ").append(getIdentifier().generateNovaInput(outputChildren));
 	}
 	
+//	/**
+//	 * @see net.fathomsoft.nova.tree.Identifier#generateCSourceName(java.lang.StringBuilder, java.lang.String)
+//	 */
+//	@Override
+//	public StringBuilder generateCSourceName(StringBuilder builder, String uniquePrefix)
+//	{
+//		return builder.append(getName());
+//	}
+	
 	/**
-	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location)
+	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location, boolean)
 	 */
 	@Override
-	public Instantiation clone(Node temporaryParent, Location locationIn)
+	public Instantiation clone(Node temporaryParent, Location locationIn, boolean cloneChildren)
 	{
 		Instantiation node = new Instantiation(temporaryParent, locationIn);
 		

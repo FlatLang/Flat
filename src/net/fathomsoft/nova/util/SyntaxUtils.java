@@ -2,11 +2,14 @@ package net.fathomsoft.nova.util;
 
 import java.util.regex.Matcher;
 
+import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.tree.BodyMethodDeclaration;
 import net.fathomsoft.nova.tree.ClassDeclaration;
 import net.fathomsoft.nova.tree.Closure;
 import net.fathomsoft.nova.tree.FileDeclaration;
+import net.fathomsoft.nova.tree.GenericCompatible;
+import net.fathomsoft.nova.tree.GenericType;
 import net.fathomsoft.nova.tree.Identifier;
 import net.fathomsoft.nova.tree.InstanceDeclaration;
 import net.fathomsoft.nova.tree.Instantiation;
@@ -317,16 +320,10 @@ public class SyntaxUtils
 		}
 		else if (node instanceof Value)
 		{
-			Value abstractValue = (Value)node;
+			Value value    = (Value)node;
+			Value returned = value.getReturnedNode();
 			
-			abstractValue = abstractValue.getReturnedNode();
-			
-//			if (value.getNumChildren() > 0)
-//			{
-//				return isString(value.getChild(0));
-//			}
-			
-			return abstractValue.getType().equals("String");
+			return returned.getType().equals("String");
 		}
 		
 		return false;
@@ -1425,38 +1422,44 @@ public class SyntaxUtils
 			return true;
 		}
 		
-		return getValidType(value, type) != null;
+		value = getValidValue(value);
+		
+		return checkGenericType(value, type) || getValidType(value, type) != null;
 	}
 	
-	public static String getValidType(Value value, String type)
+	private static boolean checkGenericType(Value value, String type)
 	{
-		if (value.isWithinExternalContext())
+		return value.getParentClass().containsGenericParameter(type);
+	}
+	
+	private static Value getValidValue(Value value)
+	{
+		if (value instanceof Return)
 		{
-			return type;
-		}
-		if (value instanceof Literal)
-		{
-			return type;
-		}
-		if (value instanceof Operator)
-		{
-			return type;
-		}
-		if (value instanceof ClassDeclaration)
-		{
-			return type;
-		}
-		else if (value instanceof Return)
-		{
-			value = (MethodDeclaration)value.getAncestorOfType(MethodDeclaration.class);
+			value = value.getParentMethod();
 		}
 		else if (value instanceof MethodCall)
 		{
 			MethodCall call = (MethodCall)value;
 			
-			value = call.getParentMethod();
+			value = call.getMethodDeclaration();
 		}
-		if (value instanceof MethodDeclaration)
+		
+		return value;
+	}
+	
+	public static String getValidType(Value value, String type)
+	{
+		Value original = value;
+		
+		value = getValidValue(value);
+		
+		if (value.isWithinExternalContext() || value instanceof Literal ||
+				value instanceof Operator || value instanceof ClassDeclaration)
+		{
+			return type;
+		}
+		else if (value instanceof MethodDeclaration)
 		{
 			MethodDeclaration methodDeclaration = (MethodDeclaration)value;
 			
@@ -1481,9 +1484,27 @@ public class SyntaxUtils
 		}
 		else
 		{
-			if (value.getParentClass().containsGenericParameter(type))
+			if (checkGenericType(value, type))
 			{
-				return value.getParentClass().getGenericParameter(type).getDefaultType();
+				Variable genericCheck = null;
+				
+				if (original != value && original instanceof Identifier)
+				{
+					Identifier id = (Identifier)original;
+					
+					genericCheck = (Variable)id.getAccessingNode();
+				}
+				
+ 				if (genericCheck != null && genericCheck.doesUseGenericTypes())
+				{
+					String genericName = value.getType();
+					
+					GenericType generic = getCorrespondingGenericType(genericCheck.getTypeClass(), genericCheck.getDeclaration(), genericName);
+
+					return generic.getType();
+				}
+				
+				return value.getParentClass().getGenericParameter(type).getType();//.getDefaultType();
 			}
 			
 			ClassDeclaration clazz = value.getProgram().getClassDeclaration(type);
@@ -1505,6 +1526,18 @@ public class SyntaxUtils
 		}
 		
 		return null;
+	}
+	
+	public static GenericType getCorrespondingGenericType(ClassDeclaration genericDeclaration, GenericCompatible genericUse, String genericName)
+	{
+		int index = genericDeclaration.getGenericParameterIndex(genericName);
+		
+		if (index < 0)
+		{
+			SyntaxMessage.error("Could not find the corresponding generic for generic type '" + genericName + "'", (Node)genericUse);
+		}
+		
+		return genericUse.getGenericParameterNames()[index];
 	}
 	
 	/**

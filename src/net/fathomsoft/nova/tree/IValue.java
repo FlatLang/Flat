@@ -145,10 +145,10 @@ public class IValue extends Value
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location)
+	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location, boolean)
 	 */
 	@Override
-	public IValue clone(Node temporaryParent, Location locationIn)
+	public IValue clone(Node temporaryParent, Location locationIn, boolean cloneChildren)
 	{
 		IValue node = new IValue(temporaryParent, locationIn);
 		

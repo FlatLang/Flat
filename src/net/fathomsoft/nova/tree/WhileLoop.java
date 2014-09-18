@@ -180,10 +180,10 @@ public class WhileLoop extends Loop
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location)
+	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location, boolean)
 	 */
 	@Override
-	public WhileLoop clone(Node temporaryParent, Location locationIn)
+	public WhileLoop clone(Node temporaryParent, Location locationIn, boolean cloneChildren)
 	{
 		WhileLoop node = new WhileLoop(temporaryParent, locationIn);
 		

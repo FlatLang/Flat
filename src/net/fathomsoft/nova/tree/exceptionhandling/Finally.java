@@ -65,10 +65,10 @@ public class Finally extends ExceptionHandler
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location)
+	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location, boolean)
 	 */
 	@Override
-	public Finally clone(Node temporaryParent, Location locationIn)
+	public Finally clone(Node temporaryParent, Location locationIn, boolean cloneChildren)
 	{
 		Finally node = new Finally(temporaryParent, locationIn);
 		

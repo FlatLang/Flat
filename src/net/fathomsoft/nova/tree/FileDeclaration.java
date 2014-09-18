@@ -552,10 +552,10 @@ public class FileDeclaration extends Node
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location)
+	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location, boolean)
 	 */
 	@Override
-	public FileDeclaration clone(Node temporaryParent, Location locationIn)
+	public FileDeclaration clone(Node temporaryParent, Location locationIn, boolean cloneChildren)
 	{
 		FileDeclaration node = new FileDeclaration(temporaryParent, locationIn, null);
 		

@@ -1128,7 +1128,7 @@ public abstract class Node
 	 */
 	public final StringBuilder generateNovaInput(boolean outputChildren)
 	{
-		return generateNovaInput(new StringBuilder(), true);
+		return generateNovaInput(new StringBuilder(), outputChildren);
 	}
 	
 	/**
@@ -1362,7 +1362,23 @@ public abstract class Node
 	 * @param locationIn The Location instance holding the information.
 	 * @return A clone of the specified Node.
 	 */
-	public abstract Node clone(Node temporaryParent, Location locationIn);
+	public Node clone(Node temporaryParent, Location locationIn)
+	{
+		return clone(temporaryParent, locationIn, true); 
+	}
+	
+	/**
+	 * Return a new Node containing a copy of the values of the
+	 * specified node, including clones of the children.
+	 * 
+	 * @param temporaryParent The Node to act as the parent
+	 * 		temporarily.
+	 * @param locationIn The Location instance holding the information.
+	 * @param cloneChildren Whether or not to clone the children of the
+	 * 		Node as well.
+	 * @return A clone of the specified Node.
+	 */
+	public abstract Node clone(Node temporaryParent, Location locationIn, boolean cloneChildren);
 	
 	/**
 	 * Fill the given {@link Node} with the data that is in the
@@ -1372,6 +1388,20 @@ public abstract class Node
 	 * @return The cloned node.
 	 */
 	public Node cloneTo(Node node)
+	{
+		return cloneTo(node, true);
+	}
+	
+	/**
+	 * Fill the given {@link Node} with the data that is in the
+	 * specified node.
+	 * 
+	 * @param node The node to copy the data into.
+	 * @param cloneChildren Whether or not to clone the children of the
+	 * 		Node as well.
+	 * @return The cloned node.
+	 */
+	public Node cloneTo(Node node, boolean cloneChildren)
 	{
 		if (getNumDefaultChildren() > 0)
 		{
@@ -1385,11 +1415,14 @@ public abstract class Node
 			node.setLocationIn(locIn);
 		}
 		
-		for (int i = getNumChildren() - 1; i >= 0; i--)
+		if (cloneChildren)
 		{
-			Node child = children.get(i);
-			
-			node.children.add(0, child.clone(node, child.getLocationIn()));
+			for (int i = getNumChildren() - 1; i >= 0; i--)
+			{
+				Node child = children.get(i);
+				
+				node.children.add(0, child.clone(node, child.getLocationIn()));
+			}
 		}
 		
 		return node;
@@ -1418,7 +1451,7 @@ public abstract class Node
 		return new Node(null, null)
 		{
 			@Override
-			public Node clone(Node temporaryParent, Location locationIn)
+			public Node clone(Node temporaryParent, Location locationIn, boolean cloneChildren)
 			{
 				return null;
 			}

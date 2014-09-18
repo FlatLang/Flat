@@ -109,4 +109,6 @@ public interface CallableMethod
 		
 		return true;
 	}
+	
+	public boolean isGenericType();
 }

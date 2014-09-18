@@ -89,10 +89,10 @@ public class ArgumentList extends List
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location)
+	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location, boolean)
 	 */
 	@Override
-	public ArgumentList clone(Node temporaryParent, Location locationIn)
+	public ArgumentList clone(Node temporaryParent, Location locationIn, boolean cloneChildren)
 	{
 		ArgumentList node = new ArgumentList(temporaryParent, locationIn);
 		

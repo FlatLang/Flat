@@ -125,10 +125,10 @@ public class VariableDeclarationList extends List
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location)
+	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location, boolean)
 	 */
 	@Override
-	public VariableDeclarationList clone(Node temporaryParent, Location locationIn)
+	public VariableDeclarationList clone(Node temporaryParent, Location locationIn, boolean cloneChildren)
 	{
 		VariableDeclarationList node = new VariableDeclarationList(temporaryParent, locationIn);
 		

@@ -94,10 +94,10 @@ public class Loop extends Node
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location)
+	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location, boolean)
 	 */
 	@Override
-	public Loop clone(Node temporaryParent, Location locationIn)
+	public Loop clone(Node temporaryParent, Location locationIn, boolean cloneChildren)
 	{
 		Loop node = new Loop(temporaryParent, locationIn);
 		

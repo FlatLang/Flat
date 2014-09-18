@@ -90,10 +90,10 @@ public class InstanceFieldList extends List
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location)
+	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location, boolean)
 	 */
 	@Override
-	public InstanceFieldList clone(Node temporaryParent, Location locationIn)
+	public InstanceFieldList clone(Node temporaryParent, Location locationIn, boolean cloneChildren)
 	{
 		InstanceFieldList node = new InstanceFieldList(temporaryParent, locationIn);
 		

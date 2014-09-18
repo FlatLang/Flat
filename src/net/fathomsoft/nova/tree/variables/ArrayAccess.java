@@ -217,10 +217,10 @@ public class ArrayAccess extends Variable
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location)
+	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location, boolean)
 	 */
 	@Override
-	public ArrayAccess clone(Node temporaryParent, Location locationIn)
+	public ArrayAccess clone(Node temporaryParent, Location locationIn, boolean cloneChildren)
 	{
 		ArrayAccess node = new ArrayAccess(temporaryParent, locationIn);
 		

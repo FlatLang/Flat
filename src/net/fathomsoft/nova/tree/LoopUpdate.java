@@ -23,10 +23,10 @@ public class LoopUpdate extends Node
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location)
+	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location, boolean)
 	 */
 	@Override
-	public LoopUpdate clone(Node temporaryParent, Location locationIn)
+	public LoopUpdate clone(Node temporaryParent, Location locationIn, boolean cloneChildren)
 	{
 		LoopUpdate node = new LoopUpdate(temporaryParent, locationIn);
 		

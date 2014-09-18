@@ -26,6 +26,7 @@ import net.fathomsoft.nova.tree.ExternalType;
 import net.fathomsoft.nova.tree.ExternalTypeList;
 import net.fathomsoft.nova.tree.FileDeclaration;
 import net.fathomsoft.nova.tree.ForLoop;
+import net.fathomsoft.nova.tree.GenericCompatible;
 import net.fathomsoft.nova.tree.IIdentifier;
 import net.fathomsoft.nova.tree.IValue;
 import net.fathomsoft.nova.tree.Identifier;
@@ -273,18 +274,18 @@ public class Nova
 				"-o",   formatPath(directory + "bin/Executable" + OUTPUT_EXTENSION),
 				"-dir", formatPath(directory + "../example"),
 				"-dir", formatPath(directory + "../stabilitytest"),
-//				"-run",
-////				"-csource",
-//				"-formatc",
-//				testClasses ? "-v" : "",
-////				"-gcc",
-////				"-small",
-//				"-cargs",
-//				"-keepc",
-//				"-single-thread",
-////				"-nogc",
-////				"-dry"
-//				"-library",
+				"-run",
+//				"-csource",
+				"-formatc",
+				testClasses ? "-v" : "",
+//				"-gcc",
+//				"-small",
+				"-cargs",
+				"-keepc",
+				"-single-thread",
+//				"-nogc",
+//				"-dry"
+				"-library",
 			};
 		}
 		if (ANDROID_DEBUG)
@@ -682,7 +683,7 @@ public class Nova
 		
 		if (!isFlagEnabled(NO_GC))
 		{
-			cmd.append("-DUSE_GC -L\"C:/Users/Braden/Documents/GitHub/Nova/example/bin/\" -lgc ");
+			cmd.append("-DUSE_GC -L\"bin/\" -lgc ");
 		}
 		if (isFlagEnabled(SMALL_BIN))
 		{
@@ -1657,7 +1658,12 @@ public class Nova
 																																																		
 																																																		if (error == null)
 																																																		{
-																																																			error = WhileLoop.test(context);
+																																																			error = GenericCompatible.test(context);
+																																																			
+																																																			if (error == null)
+																																																			{
+																																																				error = WhileLoop.test(context);
+																																																			}
 																																																		}
 																																																	}
 																																																}
