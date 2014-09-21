@@ -5,9 +5,10 @@
 nova_VTable_PolymorphicSubClass nova_VTable_PolymorphicSubClass_val =
 {
 	nova_0_PolymorphicSubClass_toString,
+	nova_0_Object_equals,
 };
 
-PolymorphicSubClass* nova_PolymorphicSubClass_construct(PolymorphicSubClass* this, ExceptionData* exceptionData)
+PolymorphicSubClass* nova_0_PolymorphicSubClass_construct(PolymorphicSubClass* this, ExceptionData* exceptionData)
 {
 	CCLASS_NEW(PolymorphicSubClass, this,);
 	this->vtable = &nova_VTable_PolymorphicSubClass_val;

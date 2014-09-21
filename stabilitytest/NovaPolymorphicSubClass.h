@@ -7,6 +7,7 @@ typedef struct PolymorphicSubClass PolymorphicSubClass;
 #include <Nova.h>
 #include <ExceptionHandler.h>
 #include <NovaExceptionData.h>
+#include <NovaNull.h>
 #include <NovaObject.h>
 #include <NovaString.h>
 #include <NovaSystem.h>
@@ -28,6 +29,7 @@ typedef struct PolymorphicSubClass PolymorphicSubClass;
 typedef struct nova_VTable_PolymorphicSubClass
 {
 	String* (*nova_virtual_0_toString)(PolymorphicSubClass*, ExceptionData*);
+	char (*nova_virtual_0_equals)(Object*, ExceptionData*, Object*);
 } nova_VTable_PolymorphicSubClass;
 
 CCLASS_CLASS
@@ -38,7 +40,7 @@ CCLASS_CLASS
 	PolymorphicSubClass* nova_PolymorphicSuperClass_child;
 )
 
-PolymorphicSubClass* nova_PolymorphicSubClass_construct(PolymorphicSubClass* this, ExceptionData* exceptionData);
+PolymorphicSubClass* nova_0_PolymorphicSubClass_construct(PolymorphicSubClass* this, ExceptionData* exceptionData);
 void nova_del_PolymorphicSubClass(PolymorphicSubClass** this, ExceptionData* exceptionData);
 String* nova_0_PolymorphicSubClass_toString(PolymorphicSubClass* this, ExceptionData* exceptionData);
 void nova_PolymorphicSubClass_this(PolymorphicSubClass* this, ExceptionData* exceptionData);

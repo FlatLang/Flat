@@ -54,8 +54,8 @@ void nova_static_2_System_exit(System* this, ExceptionData* exceptionData, int n
 		File* nova_2_f;
 		String* nova_local_0;
 		
-		nova_local_0 = nova_3_Long_toString(Long, exceptionData);
-		nova_2_f = nova_1_File_construct(0, exceptionData, nova_0_String_concat(String, exceptionData, nova_local_0->vtable->nova_virtual_0_concat(nova_local_0, exceptionData, nova_String_construct(0, exceptionData, ".txt"))));
+		nova_local_0 = nova_3_Long_toString(nova_Long_construct(0, exceptionData, nova_static_Time_currentTimeMillis(0, exceptionData)), exceptionData);
+		nova_2_f = nova_1_File_construct(0, exceptionData, nova_0_String_concat(nova_String_construct(0, exceptionData, "Log"), exceptionData, nova_local_0->vtable->nova_virtual_0_concat(nova_local_0, exceptionData, nova_String_construct(0, exceptionData, ".txt"))));
 		if (nova_File_create(nova_2_f, exceptionData))
 		{
 			nova_File_writeLine(nova_2_f, exceptionData, nova_0_message);

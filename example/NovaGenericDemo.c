@@ -61,13 +61,13 @@ void nova_static_GenericDemo_main(GenericDemo* this, ExceptionData* exceptionDat
 
 void nova_static_GenericDemo_push(GenericDemo* this, ExceptionData* exceptionData, Stack* nova_0_s, Object* nova_0_o)
 {
-		nova_static_0_Console_writeLine(0, exceptionData, nova_0_String_concat(String, exceptionData, nova_0_o->vtable->nova_virtual_0_toString(nova_0_o, exceptionData)));
+		nova_static_0_Console_writeLine(0, exceptionData, nova_0_String_concat(nova_String_construct(0, exceptionData, "Pushing: "), exceptionData, nova_0_o->vtable->nova_virtual_0_toString(nova_0_o, exceptionData)));
 		nova_Stack_push(nova_0_s, exceptionData, nova_0_o);
 }
 
 void nova_static_GenericDemo_pop(GenericDemo* this, ExceptionData* exceptionData, Stack* nova_0_s)
 {
-		nova_static_0_Console_writeLine(0, exceptionData, nova_0_String_concat(String, exceptionData, (String*)(nova_Stack_pop(nova_0_s, exceptionData))));
+		nova_static_0_Console_writeLine(0, exceptionData, nova_0_String_concat(nova_String_construct(0, exceptionData, "Popping: "), exceptionData, (String*)(nova_Stack_pop(nova_0_s, exceptionData))));
 }
 
 void nova_GenericDemo_this(GenericDemo* this, ExceptionData* exceptionData)

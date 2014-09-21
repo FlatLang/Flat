@@ -16,7 +16,7 @@ Object* nova_static_SyntaxStability_test1(SyntaxStability* this, ExceptionData* 
 Object* nova_static_SyntaxStability_test2(SyntaxStability* this, ExceptionData* exceptionData);
 Object* nova_static_SyntaxStability_test3(SyntaxStability* this, ExceptionData* exceptionData);
 
-SyntaxStability* nova_SyntaxStability_construct(SyntaxStability* this, ExceptionData* exceptionData)
+SyntaxStability* nova_0_SyntaxStability_construct(SyntaxStability* this, ExceptionData* exceptionData)
 {
 	CCLASS_NEW(SyntaxStability, this,);
 	this->vtable = &nova_VTable_SyntaxStability_val;
@@ -46,14 +46,14 @@ void nova_del_SyntaxStability(SyntaxStability** this, ExceptionData* exceptionDa
 
 void nova_static_SyntaxStability_test(SyntaxStability* this, ExceptionData* exceptionData, StabilityTest* nova_0_program)
 {
-	nova_static_SyntaxStability_checkLoops((SyntaxStability*)0, exceptionData, nova_0_program);
-	nova_static_SyntaxStability_checkUntil((SyntaxStability*)0, exceptionData, nova_0_program);
+	nova_static_SyntaxStability_checkLoops((SyntaxStability*)nova_null, exceptionData, nova_0_program);
+	nova_static_SyntaxStability_checkUntil((SyntaxStability*)nova_null, exceptionData, nova_0_program);
 }
 
 void nova_static_SyntaxStability_checkLoops(SyntaxStability* this, ExceptionData* exceptionData, StabilityTest* nova_0_program)
 {
-	nova_static_SyntaxStability_checkWhileLoops((SyntaxStability*)0, exceptionData, nova_0_program);
-	nova_static_SyntaxStability_checkForLoops((SyntaxStability*)0, exceptionData, nova_0_program);
+	nova_static_SyntaxStability_checkWhileLoops((SyntaxStability*)nova_null, exceptionData, nova_0_program);
+	nova_static_SyntaxStability_checkForLoops((SyntaxStability*)nova_null, exceptionData, nova_0_program);
 }
 
 void nova_static_SyntaxStability_checkWhileLoops(SyntaxStability* this, ExceptionData* exceptionData, StabilityTest* nova_0_program)
@@ -137,24 +137,24 @@ void nova_static_SyntaxStability_checkUntil(SyntaxStability* this, ExceptionData
 	Object* nova_1_obj;
 	
 	nova_static_0_Console_write(0, exceptionData, nova_String_construct(0, exceptionData, "Checking until statement... "));
-	nova_1_obj = (Object*)0;
-	if (!(nova_1_obj != (Object*)0))
+	nova_1_obj = (Object*)nova_null;
+	if (!(nova_1_obj != (Object*)nova_null))
 	{
-		nova_1_obj = nova_static_SyntaxStability_test1((SyntaxStability*)0, exceptionData);
-		if (!(nova_1_obj != (Object*)0))
+		nova_1_obj = nova_static_SyntaxStability_test1((SyntaxStability*)nova_null, exceptionData);
+		if (!(nova_1_obj != (Object*)nova_null))
 		{
-			nova_1_obj = nova_static_SyntaxStability_test2((SyntaxStability*)0, exceptionData);
-			if (!(nova_1_obj != (Object*)0))
+			nova_1_obj = nova_static_SyntaxStability_test2((SyntaxStability*)nova_null, exceptionData);
+			if (!(nova_1_obj != (Object*)nova_null))
 			{
-				nova_1_obj = nova_static_SyntaxStability_test3((SyntaxStability*)0, exceptionData);
-				if (!(nova_1_obj != (Object*)0))
+				nova_1_obj = nova_static_SyntaxStability_test3((SyntaxStability*)nova_null, exceptionData);
+				if (!(nova_1_obj != (Object*)nova_null))
 				{
 					nova_1_StabilityTest_fail(nova_0_program, exceptionData, nova_String_construct(0, exceptionData, "Failed to stop after correct condition"));
 				}
 			}
 		}
 	}
-	if (nova_1_obj == (Object*)0)
+	if (nova_1_obj == (Object*)nova_null)
 	{
 		nova_1_StabilityTest_fail(nova_0_program, exceptionData, nova_String_construct(0, exceptionData, "Failed to reach correct condition"));
 	}
@@ -163,12 +163,12 @@ void nova_static_SyntaxStability_checkUntil(SyntaxStability* this, ExceptionData
 
 Object* nova_static_SyntaxStability_test1(SyntaxStability* this, ExceptionData* exceptionData)
 {
-	return (Object*)0;
+	return (Object*)nova_null;
 }
 
 Object* nova_static_SyntaxStability_test2(SyntaxStability* this, ExceptionData* exceptionData)
 {
-	return (Object*)0;
+	return (Object*)nova_null;
 }
 
 Object* nova_static_SyntaxStability_test3(SyntaxStability* this, ExceptionData* exceptionData)

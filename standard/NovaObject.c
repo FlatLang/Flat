@@ -46,7 +46,7 @@ String* nova_0_Object_toString(Object* this, ExceptionData* exceptionData)
 	String* nova_local_0;
 	
 	nova_local_0 = nova_Object_getHashCode(this, exceptionData);
-	return nova_0_String_concat(String, exceptionData, nova_local_0->vtable->nova_virtual_0_concat(nova_local_0, exceptionData, nova_String_construct(0, exceptionData, "]")));
+	return nova_0_String_concat(nova_String_construct(0, exceptionData, "[Object @"), exceptionData, nova_local_0->vtable->nova_virtual_0_concat(nova_local_0, exceptionData, nova_String_construct(0, exceptionData, "]")));
 }
 
 char nova_0_Object_equals(Object* this, ExceptionData* exceptionData, Object* nova_0_another)

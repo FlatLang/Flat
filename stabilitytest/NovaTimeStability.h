@@ -7,6 +7,7 @@ typedef struct TimeStability TimeStability;
 #include <Nova.h>
 #include <ExceptionHandler.h>
 #include <NovaExceptionData.h>
+#include <NovaNull.h>
 #include <NovaObject.h>
 #include <NovaString.h>
 #include <NovaSystem.h>
@@ -40,7 +41,7 @@ CCLASS_CLASS
 	nova_VTable_TimeStability* vtable;
 )
 
-TimeStability* nova_TimeStability_construct(TimeStability* this, ExceptionData* exceptionData);
+TimeStability* nova_0_TimeStability_construct(TimeStability* this, ExceptionData* exceptionData);
 void nova_del_TimeStability(TimeStability** this, ExceptionData* exceptionData);
 void nova_static_TimeStability_test(TimeStability* this, ExceptionData* exceptionData, StabilityTest* nova_0_program);
 void nova_TimeStability_this(TimeStability* this, ExceptionData* exceptionData);

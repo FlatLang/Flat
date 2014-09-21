@@ -8,7 +8,7 @@ nova_VTable_StabilityTest nova_VTable_StabilityTest_val =
 		nova_0_Object_equals,
 };
 
-StabilityTest* nova_StabilityTest_construct(StabilityTest* this, ExceptionData* exceptionData)
+StabilityTest* nova_0_StabilityTest_construct(StabilityTest* this, ExceptionData* exceptionData)
 {
 		CCLASS_NEW(StabilityTest, this,);
 		this->vtable = &nova_VTable_StabilityTest_val;
@@ -42,12 +42,14 @@ void nova_static_StabilityTest_main(StabilityTest* this, ExceptionData* exceptio
 		long_long nova_1_start;
 		int nova_1_result;
 		long_long nova_1_time;
+		String* nova_local_0;
 		
-		nova_1_test = nova_StabilityTest_construct(0, exceptionData);
+		nova_1_test = nova_0_StabilityTest_construct(0, exceptionData);
 		nova_1_start = nova_static_Time_currentTimeMillis(0, exceptionData);
 		nova_1_result = nova_StabilityTest_runTests(nova_1_test, exceptionData);
 		nova_1_time = (long_long)(nova_static_Time_currentTimeMillis(0, exceptionData) - nova_1_start);
-		nova_static_0_Console_writeLine(0, exceptionData, nova_String_concat(nova_String_construct(0, exceptionData, "Took "), exceptionData, nova_String_concat(nova_3_Long_toString(nova_Long_construct(0, exceptionData, nova_1_time), exceptionData), exceptionData, nova_String_construct(0, exceptionData, "ms"))));
+		nova_local_0 = nova_3_Long_toString(nova_Long_construct(0, exceptionData, nova_1_time), exceptionData);
+		nova_static_0_Console_writeLine(0, exceptionData, nova_0_String_concat(nova_String_construct(0, exceptionData, "Took "), exceptionData, nova_local_0->vtable->nova_virtual_0_concat(nova_local_0, exceptionData, nova_String_construct(0, exceptionData, "ms"))));
 		nova_static_Console_waitForEnter(0, exceptionData);
 }
 
@@ -55,7 +57,7 @@ int nova_StabilityTest_runTests(StabilityTest* this, ExceptionData* exceptionDat
 {
 		TRY
 		{
-				nova_ExceptionData_addCode(exceptionData, exceptionData, 2);
+				nova_ExceptionData_addCode(exceptionData, exceptionData, 3);
 				
 				{
 						nova_static_ExceptionStability_test(0, exceptionData, this);
@@ -69,7 +71,7 @@ int nova_StabilityTest_runTests(StabilityTest* this, ExceptionData* exceptionDat
 						return 0;
 				}
 		}
-		CATCH (2)
+		CATCH (3)
 		{
 				return 1;
 		}
@@ -87,7 +89,7 @@ void nova_0_StabilityTest_fail(StabilityTest* this, ExceptionData* exceptionData
 void nova_1_StabilityTest_fail(StabilityTest* this, ExceptionData* exceptionData, String* nova_0_message)
 {
 		nova_static_0_Console_writeLine(0, exceptionData, nova_0_message);
-		THROW(2);
+		THROW(3);
 }
 
 void nova_StabilityTest_this(StabilityTest* this, ExceptionData* exceptionData)
@@ -99,6 +101,7 @@ void nova_StabilityTest_super(StabilityTest* this, ExceptionData* exceptionData)
 }
 
 
+Null* nova_null;
 
 int main(int argc, char** argvs)
 {
@@ -107,6 +110,7 @@ int main(int argc, char** argvs)
 		
 		ExceptionData* exceptionData = 0;
 		srand(currentTimeMillis());
+		nova_null = nova_0_Null_construct(0, exceptionData);
 		nova_static_GC_init(0, exceptionData);
 		
 		MathNova_init_static();

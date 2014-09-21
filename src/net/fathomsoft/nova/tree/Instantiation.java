@@ -122,10 +122,10 @@ public class Instantiation extends IIdentifier implements GenericCompatible
 	@Override
 	public StringBuilder generateCSourceFragment(StringBuilder builder)
 	{
-		if (isSpecialFragment())
-		{
-			return generateSpecialFragment(builder);
-		}
+//		if (isSpecialFragment())
+//		{
+//			return generateSpecialFragment(builder);
+//		}
 
 		return getIdentifier().generateCSourceFragment(builder);
 	}

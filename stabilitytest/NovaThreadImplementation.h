@@ -7,6 +7,7 @@ typedef struct ThreadImplementation ThreadImplementation;
 #include <Nova.h>
 #include <ExceptionHandler.h>
 #include <NovaExceptionData.h>
+#include <NovaNull.h>
 #include <NovaObject.h>
 #include <NovaString.h>
 #include <NovaSystem.h>
@@ -27,6 +28,8 @@ typedef struct ThreadImplementation ThreadImplementation;
 
 typedef struct nova_VTable_ThreadImplementation
 {
+	String* (*nova_virtual_0_toString)(Object*, ExceptionData*);
+	char (*nova_virtual_0_equals)(Object*, ExceptionData*, Object*);
 	void (*nova_virtual_0_run)(ThreadImplementation*, ExceptionData*);
 } nova_VTable_ThreadImplementation;
 

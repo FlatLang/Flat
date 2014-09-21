@@ -7,6 +7,7 @@ typedef struct UnstableException UnstableException;
 #include <Nova.h>
 #include <ExceptionHandler.h>
 #include <NovaExceptionData.h>
+#include <NovaNull.h>
 #include <NovaObject.h>
 #include <NovaString.h>
 #include <NovaSystem.h>
@@ -24,9 +25,20 @@ typedef struct UnstableException UnstableException;
 #include <NovaChar.h>
 #include <NovaDivideByZeroException.h>
 
+typedef struct nova_VTable_UnstableException
+{
+	String* (*nova_virtual_0_toString)(Object*, ExceptionData*);
+	char (*nova_virtual_0_equals)(Object*, ExceptionData*, Object*);
+} nova_VTable_UnstableException;
 
+CCLASS_CLASS
+(
+	UnstableException, 
+	
+	nova_VTable_UnstableException* vtable;
+)
 
-UnstableException* nova_UnstableException_construct(UnstableException* this, ExceptionData* exceptionData);
+UnstableException* nova_0_UnstableException_construct(UnstableException* this, ExceptionData* exceptionData);
 void nova_del_UnstableException(UnstableException** this, ExceptionData* exceptionData);
 void nova_UnstableException_this(UnstableException* this, ExceptionData* exceptionData);
 void nova_UnstableException_super(UnstableException* this, ExceptionData* exceptionData);

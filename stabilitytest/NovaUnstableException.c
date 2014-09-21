@@ -2,11 +2,16 @@
 #include "NovaUnstableException.h"
 
 
-
-
-UnstableException* nova_UnstableException_construct(UnstableException* this, ExceptionData* exceptionData)
+nova_VTable_UnstableException nova_VTable_UnstableException_val =
 {
-	this = (UnstableException*)1;
+	nova_0_Object_toString,
+	nova_0_Object_equals,
+};
+
+UnstableException* nova_0_UnstableException_construct(UnstableException* this, ExceptionData* exceptionData)
+{
+	CCLASS_NEW(UnstableException, this,);
+	this->vtable = &nova_VTable_UnstableException_val;
 	nova_Object_super((Object*)this, 0);
 	nova_Exception_super((Exception*)this, 0);
 	nova_Object_this((Object*)(this), exceptionData);

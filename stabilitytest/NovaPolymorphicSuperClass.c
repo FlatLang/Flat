@@ -39,7 +39,7 @@ void nova_del_PolymorphicSuperClass(PolymorphicSuperClass** this, ExceptionData*
 
 void nova_PolymorphicSuperClass_giveBirth(PolymorphicSuperClass* this, ExceptionData* exceptionData)
 {
-	this->nova_PolymorphicSuperClass_child = nova_PolymorphicSubClass_construct(0, exceptionData);
+	this->nova_PolymorphicSuperClass_child = nova_0_PolymorphicSubClass_construct(0, exceptionData);
 }
 
 String* nova_0_PolymorphicSuperClass_toString(PolymorphicSuperClass* this, ExceptionData* exceptionData)
@@ -53,5 +53,5 @@ void nova_PolymorphicSuperClass_this(PolymorphicSuperClass* this, ExceptionData*
 
 void nova_PolymorphicSuperClass_super(PolymorphicSuperClass* this, ExceptionData* exceptionData)
 {
-	this->nova_PolymorphicSuperClass_child = (PolymorphicSubClass*)0;
+	this->nova_PolymorphicSuperClass_child = (PolymorphicSubClass*)nova_null;
 }

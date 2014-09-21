@@ -7,6 +7,7 @@ typedef struct StabilityTest StabilityTest;
 #include <Nova.h>
 #include <ExceptionHandler.h>
 #include <NovaExceptionData.h>
+#include <NovaNull.h>
 #include <NovaObject.h>
 #include <NovaString.h>
 #include <NovaSystem.h>
@@ -46,7 +47,7 @@ CCLASS_CLASS
 	nova_VTable_StabilityTest* vtable;
 )
 
-StabilityTest* nova_StabilityTest_construct(StabilityTest* this, ExceptionData* exceptionData);
+StabilityTest* nova_0_StabilityTest_construct(StabilityTest* this, ExceptionData* exceptionData);
 void nova_del_StabilityTest(StabilityTest** this, ExceptionData* exceptionData);
 void nova_static_StabilityTest_main(StabilityTest* this, ExceptionData* exceptionData, String** nova_0_args);
 int nova_StabilityTest_runTests(StabilityTest* this, ExceptionData* exceptionData);

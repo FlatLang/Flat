@@ -380,10 +380,13 @@ public class MethodCall extends IIdentifier
 	 * Generate the representation of when the method call is being used
 	 * in action.
 	 * 
+	 * @see net.fathomsoft.nova.tree.Identifier#generateCUseOutput(java.lang.StringBuilder, boolean)
+	 * 
 	 * @return What the method call looks like when it is being used in
 	 * 		action.
 	 */
-	public StringBuilder generateCUseOutput(StringBuilder builder)
+	@Override
+	public StringBuilder generateCUseOutput(StringBuilder builder, boolean pointer)
 	{
 		VariableDeclaration method   = getMethodDeclaration();
 		CallableMethod      callable = (CallableMethod)method;

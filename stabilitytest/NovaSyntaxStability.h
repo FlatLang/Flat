@@ -7,6 +7,7 @@ typedef struct SyntaxStability SyntaxStability;
 #include <Nova.h>
 #include <ExceptionHandler.h>
 #include <NovaExceptionData.h>
+#include <NovaNull.h>
 #include <NovaObject.h>
 #include <NovaString.h>
 #include <NovaSystem.h>
@@ -38,7 +39,7 @@ CCLASS_CLASS
 	nova_VTable_SyntaxStability* vtable;
 )
 
-SyntaxStability* nova_SyntaxStability_construct(SyntaxStability* this, ExceptionData* exceptionData);
+SyntaxStability* nova_0_SyntaxStability_construct(SyntaxStability* this, ExceptionData* exceptionData);
 void nova_del_SyntaxStability(SyntaxStability** this, ExceptionData* exceptionData);
 void nova_static_SyntaxStability_test(SyntaxStability* this, ExceptionData* exceptionData, StabilityTest* nova_0_program);
 void nova_SyntaxStability_this(SyntaxStability* this, ExceptionData* exceptionData);

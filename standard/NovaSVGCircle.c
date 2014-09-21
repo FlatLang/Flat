@@ -55,10 +55,10 @@ void nova_0_SVGCircle_generateOutput(SVGCircle* this, ExceptionData* exceptionDa
 	String* nova_local_1;
 	String* nova_local_2;
 	
-	nova_local_0 = nova_3_Double_toString(Double, exceptionData);
-	nova_local_1 = nova_3_Double_toString(Double, exceptionData);
-	nova_local_2 = nova_2_Int_toString(Int, exceptionData);
-	nova_File_write(nova_0_file, exceptionData, nova_0_String_concat(String, exceptionData, nova_local_0->vtable->nova_virtual_0_concat(nova_local_0, exceptionData, nova_0_String_concat(String, exceptionData, nova_local_1->vtable->nova_virtual_0_concat(nova_local_1, exceptionData, nova_0_String_concat(String, exceptionData, nova_local_2->vtable->nova_virtual_0_concat(nova_local_2, exceptionData, nova_String_construct(0, exceptionData, "\" stroke=\"false\" fill=\"black\"/>\n"))))))));
+	nova_local_0 = nova_3_Double_toString(nova_Double_construct(0, exceptionData, this->nova_SVGCircle_x), exceptionData);
+	nova_local_1 = nova_3_Double_toString(nova_Double_construct(0, exceptionData, this->nova_SVGCircle_y), exceptionData);
+	nova_local_2 = nova_2_Int_toString(nova_Int_construct(0, exceptionData, this->nova_SVGCircle_r), exceptionData);
+	nova_File_write(nova_0_file, exceptionData, nova_0_String_concat(nova_String_construct(0, exceptionData, "<circle cx=\""), exceptionData, nova_local_0->vtable->nova_virtual_0_concat(nova_local_0, exceptionData, nova_0_String_concat(nova_String_construct(0, exceptionData, "\" cy=\""), exceptionData, nova_local_1->vtable->nova_virtual_0_concat(nova_local_1, exceptionData, nova_0_String_concat(nova_String_construct(0, exceptionData, "\" r=\""), exceptionData, nova_local_2->vtable->nova_virtual_0_concat(nova_local_2, exceptionData, nova_String_construct(0, exceptionData, "\" stroke=\"false\" fill=\"black\"/>\n"))))))));
 }
 
 String* nova_0_SVGCircle_toString(SVGCircle* this, ExceptionData* exceptionData)
@@ -67,10 +67,10 @@ String* nova_0_SVGCircle_toString(SVGCircle* this, ExceptionData* exceptionData)
 	String* nova_local_1;
 	String* nova_local_2;
 	
-	nova_local_0 = nova_3_Double_toString(Double, exceptionData);
-	nova_local_1 = nova_3_Double_toString(Double, exceptionData);
-	nova_local_2 = nova_2_Int_toString(Int, exceptionData);
-	return nova_0_String_concat(String, exceptionData, nova_local_0->vtable->nova_virtual_0_concat(nova_local_0, exceptionData, nova_0_String_concat(String, exceptionData, nova_local_1->vtable->nova_virtual_0_concat(nova_local_1, exceptionData, nova_0_String_concat(String, exceptionData, nova_local_2->vtable->nova_virtual_0_concat(nova_local_2, exceptionData, nova_String_construct(0, exceptionData, "]")))))));
+	nova_local_0 = nova_3_Double_toString(nova_Double_construct(0, exceptionData, this->nova_SVGCircle_x), exceptionData);
+	nova_local_1 = nova_3_Double_toString(nova_Double_construct(0, exceptionData, this->nova_SVGCircle_y), exceptionData);
+	nova_local_2 = nova_2_Int_toString(nova_Int_construct(0, exceptionData, this->nova_SVGCircle_r), exceptionData);
+	return nova_0_String_concat(nova_String_construct(0, exceptionData, "[Circle at ("), exceptionData, nova_local_0->vtable->nova_virtual_0_concat(nova_local_0, exceptionData, nova_0_String_concat(nova_String_construct(0, exceptionData, ", "), exceptionData, nova_local_1->vtable->nova_virtual_0_concat(nova_local_1, exceptionData, nova_0_String_concat(nova_String_construct(0, exceptionData, ") with a radius of "), exceptionData, nova_local_2->vtable->nova_virtual_0_concat(nova_local_2, exceptionData, nova_String_construct(0, exceptionData, "]")))))));
 }
 
 void nova_SVGCircle_super(SVGCircle* this, ExceptionData* exceptionData)

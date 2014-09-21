@@ -219,9 +219,9 @@ void nova_static_File_setMaxOpenFiles(File* this, ExceptionData* exceptionData, 
 		String* nova_local_0;
 		String* nova_local_1;
 		
-		nova_local_0 = nova_2_Int_toString(Int, exceptionData);
-		nova_local_1 = nova_2_Short_toString(Short, exceptionData);
-		nova_static_0_Console_writeLine(0, exceptionData, nova_0_String_concat(String, exceptionData, nova_local_0->vtable->nova_virtual_0_concat(nova_local_0, exceptionData, nova_0_String_concat(String, exceptionData, nova_local_1->vtable->nova_virtual_0_concat(nova_local_1, exceptionData, nova_0_String_concat(String, exceptionData, nova_2_Short_toString(Short, exceptionData)))))));
+		nova_local_0 = nova_2_Int_toString(nova_Int_construct(0, exceptionData, nova_0_num), exceptionData);
+		nova_local_1 = nova_2_Short_toString(nova_Short_construct(0, exceptionData, nova_1_min), exceptionData);
+		nova_static_0_Console_writeLine(0, exceptionData, nova_0_String_concat(nova_String_construct(0, exceptionData, "Invalid max number of open files: "), exceptionData, nova_local_0->vtable->nova_virtual_0_concat(nova_local_0, exceptionData, nova_0_String_concat(nova_String_construct(0, exceptionData, "\nValid values include "), exceptionData, nova_local_1->vtable->nova_virtual_0_concat(nova_local_1, exceptionData, nova_0_String_concat(nova_String_construct(0, exceptionData, "-"), exceptionData, nova_2_Short_toString(nova_Short_construct(0, exceptionData, nova_1_max), exceptionData)))))));
 	}
 	else
 	{

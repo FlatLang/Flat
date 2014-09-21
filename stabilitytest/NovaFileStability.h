@@ -7,6 +7,7 @@ typedef struct FileStability FileStability;
 #include <Nova.h>
 #include <ExceptionHandler.h>
 #include <NovaExceptionData.h>
+#include <NovaNull.h>
 #include <NovaObject.h>
 #include <NovaString.h>
 #include <NovaSystem.h>
@@ -40,7 +41,7 @@ CCLASS_CLASS
 	nova_VTable_FileStability* vtable;
 )
 
-FileStability* nova_FileStability_construct(FileStability* this, ExceptionData* exceptionData);
+FileStability* nova_0_FileStability_construct(FileStability* this, ExceptionData* exceptionData);
 void nova_del_FileStability(FileStability** this, ExceptionData* exceptionData);
 void nova_static_FileStability_test(FileStability* this, ExceptionData* exceptionData, StabilityTest* nova_0_program);
 void nova_FileStability_this(FileStability* this, ExceptionData* exceptionData);

@@ -7,6 +7,7 @@ typedef struct PolymorphicSuperClass PolymorphicSuperClass;
 #include <Nova.h>
 #include <ExceptionHandler.h>
 #include <NovaExceptionData.h>
+#include <NovaNull.h>
 #include <NovaObject.h>
 #include <NovaString.h>
 #include <NovaSystem.h>

@@ -7,6 +7,7 @@ typedef struct ExceptionStability ExceptionStability;
 #include <Nova.h>
 #include <ExceptionHandler.h>
 #include <NovaExceptionData.h>
+#include <NovaNull.h>
 #include <NovaObject.h>
 #include <NovaString.h>
 #include <NovaSystem.h>
@@ -39,7 +40,7 @@ CCLASS_CLASS
 	nova_VTable_ExceptionStability* vtable;
 )
 
-ExceptionStability* nova_ExceptionStability_construct(ExceptionStability* this, ExceptionData* exceptionData);
+ExceptionStability* nova_0_ExceptionStability_construct(ExceptionStability* this, ExceptionData* exceptionData);
 void nova_del_ExceptionStability(ExceptionStability** this, ExceptionData* exceptionData);
 void nova_static_ExceptionStability_test(ExceptionStability* this, ExceptionData* exceptionData, StabilityTest* nova_0_program);
 void nova_ExceptionStability_this(ExceptionStability* this, ExceptionData* exceptionData);

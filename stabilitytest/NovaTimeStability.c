@@ -8,7 +8,7 @@ nova_VTable_TimeStability nova_VTable_TimeStability_val =
 	nova_0_Object_equals,
 };
 
-TimeStability* nova_TimeStability_construct(TimeStability* this, ExceptionData* exceptionData)
+TimeStability* nova_0_TimeStability_construct(TimeStability* this, ExceptionData* exceptionData)
 {
 	CCLASS_NEW(TimeStability, this,);
 	this->vtable = &nova_VTable_TimeStability_val;
@@ -51,7 +51,10 @@ void nova_static_TimeStability_test(TimeStability* this, ExceptionData* exceptio
 	}
 	else
 	{
-		nova_1_StabilityTest_fail(nova_0_program, exceptionData, nova_String_concat(nova_String_construct(0, exceptionData, "Failed; expected 100ms, found "), exceptionData, nova_String_concat(nova_3_Long_toString(nova_Long_construct(0, exceptionData, nova_1_time), exceptionData), exceptionData, nova_String_construct(0, exceptionData, "ms"))));
+		String* nova_local_0;
+		
+		nova_local_0 = nova_3_Long_toString(nova_Long_construct(0, exceptionData, nova_1_time), exceptionData);
+		nova_1_StabilityTest_fail(nova_0_program, exceptionData, nova_0_String_concat(nova_String_construct(0, exceptionData, "Failed; expected 100ms, found "), exceptionData, nova_local_0->vtable->nova_virtual_0_concat(nova_local_0, exceptionData, nova_String_construct(0, exceptionData, "ms"))));
 	}
 }
 

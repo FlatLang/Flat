@@ -4,6 +4,8 @@
 
 nova_VTable_StabilityExceptionHandler nova_VTable_StabilityExceptionHandler_val =
 {
+	nova_0_Object_toString,
+	nova_0_Object_equals,
 	nova_0_StabilityExceptionHandler_uncaughtException,
 };
 CCLASS_PRIVATE
@@ -56,5 +58,5 @@ void nova_0_StabilityExceptionHandler_uncaughtException(StabilityExceptionHandle
 
 void nova_StabilityExceptionHandler_super(StabilityExceptionHandler* this, ExceptionData* exceptionData)
 {
-	this->prv->nova_StabilityExceptionHandler_program = (StabilityTest*)0;
+	this->prv->nova_StabilityExceptionHandler_program = (StabilityTest*)nova_null;
 }

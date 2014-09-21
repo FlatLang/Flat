@@ -12,7 +12,7 @@ void nova_static_ThreadStability_createThreads(ThreadStability* this, ExceptionD
 void nova_static_ThreadStability_checkMemoryAccess(ThreadStability* this, ExceptionData* exceptionData);
 void nova_static_ThreadStability_joinThreads(ThreadStability* this, ExceptionData* exceptionData, ThreadImplementation** nova_0_threads, int nova_0_amount);
 
-ThreadStability* nova_ThreadStability_construct(ThreadStability* this, ExceptionData* exceptionData)
+ThreadStability* nova_0_ThreadStability_construct(ThreadStability* this, ExceptionData* exceptionData)
 {
 	CCLASS_NEW(ThreadStability, this,);
 	this->vtable = &nova_VTable_ThreadStability_val;
@@ -46,9 +46,9 @@ void nova_static_ThreadStability_test(ThreadStability* this, ExceptionData* exce
 	
 	nova_static_0_Console_writeLine(0, exceptionData, nova_String_construct(0, exceptionData, "Checking Thread.nova with 20 Threads... "));
 	nova_1_threads = (ThreadImplementation**)NOVA_MALLOC(sizeof(ThreadImplementation) * (20));
-	nova_static_ThreadStability_createThreads((ThreadStability*)0, exceptionData, nova_0_program, nova_1_threads, 20);
-	nova_static_ThreadStability_checkMemoryAccess((ThreadStability*)0, exceptionData);
-	nova_static_ThreadStability_joinThreads((ThreadStability*)0, exceptionData, nova_1_threads, 20);
+	nova_static_ThreadStability_createThreads((ThreadStability*)nova_null, exceptionData, nova_0_program, nova_1_threads, 20);
+	nova_static_ThreadStability_checkMemoryAccess((ThreadStability*)nova_null, exceptionData);
+	nova_static_ThreadStability_joinThreads((ThreadStability*)nova_null, exceptionData, nova_1_threads, 20);
 }
 
 void nova_static_ThreadStability_createThreads(ThreadStability* this, ExceptionData* exceptionData, StabilityTest* nova_0_program, ThreadImplementation** nova_0_threads, int nova_0_amount)

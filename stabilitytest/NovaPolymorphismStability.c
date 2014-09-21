@@ -15,7 +15,7 @@ char nova_static_PolymorphismStability_testSubCall(PolymorphismStability* this, 
 void nova_static_PolymorphismStability_testClosure(PolymorphismStability* this, ExceptionData* exceptionData, StabilityTest* nova_0_program);
 char nova_static_PolymorphismStability_callPolymorphicClosure(PolymorphismStability* this, ExceptionData* exceptionData, nova_2_0_closure nova_0_closure, void* nova_ref_0_closure);
 
-PolymorphismStability* nova_PolymorphismStability_construct(PolymorphismStability* this, ExceptionData* exceptionData)
+PolymorphismStability* nova_0_PolymorphismStability_construct(PolymorphismStability* this, ExceptionData* exceptionData)
 {
 	CCLASS_NEW(PolymorphismStability, this,);
 	this->vtable = &nova_VTable_PolymorphismStability_val;
@@ -46,8 +46,8 @@ void nova_del_PolymorphismStability(PolymorphismStability** this, ExceptionData*
 void nova_static_PolymorphismStability_test(PolymorphismStability* this, ExceptionData* exceptionData, StabilityTest* nova_0_program)
 {
 	nova_static_0_Console_writeLine(0, exceptionData, nova_String_construct(0, exceptionData, "Checking Polymorphism stability..."));
-	nova_static_PolymorphismStability_testCalls((PolymorphismStability*)0, exceptionData, nova_0_program);
-	nova_static_PolymorphismStability_testClosure((PolymorphismStability*)0, exceptionData, nova_0_program);
+	nova_static_PolymorphismStability_testCalls((PolymorphismStability*)nova_null, exceptionData, nova_0_program);
+	nova_static_PolymorphismStability_testClosure((PolymorphismStability*)nova_null, exceptionData, nova_0_program);
 }
 
 void nova_static_PolymorphismStability_testCalls(PolymorphismStability* this, ExceptionData* exceptionData, StabilityTest* nova_0_program)
@@ -57,8 +57,8 @@ void nova_static_PolymorphismStability_testCalls(PolymorphismStability* this, Ex
 	
 	nova_static_0_Console_write(0, exceptionData, nova_String_construct(0, exceptionData, "Checking polymorphic method calls... "));
 	nova_1_obj1 = nova_0_PolymorphicSuperClass_construct(0, exceptionData);
-	nova_1_obj2 = nova_PolymorphicSubClass_construct(0, exceptionData);
-	if (!nova_static_PolymorphismStability_testSubCall((PolymorphismStability*)0, exceptionData, (PolymorphicSuperClass*)(nova_1_obj2)))
+	nova_1_obj2 = nova_0_PolymorphicSubClass_construct(0, exceptionData);
+	if (!nova_static_PolymorphismStability_testSubCall((PolymorphismStability*)nova_null, exceptionData, (PolymorphicSuperClass*)(nova_1_obj2)))
 	{
 		nova_1_StabilityTest_fail(nova_0_program, exceptionData, nova_String_construct(0, exceptionData, "Did not call sub class method"));
 	}
@@ -77,16 +77,18 @@ void nova_static_PolymorphismStability_testClosure(PolymorphismStability* this, 
 {
 	PolymorphicSuperClass* nova_1_obj;
 	String* nova_1_child;
+	String* nova_local_0;
 	
 	nova_static_0_Console_write(0, exceptionData, nova_String_construct(0, exceptionData, "Checking polymorphic closure method calls... "));
-	nova_1_obj = (PolymorphicSuperClass*)(nova_PolymorphicSubClass_construct(0, exceptionData));
-	if (!nova_static_PolymorphismStability_callPolymorphicClosure((PolymorphismStability*)0, exceptionData, (nova_2_0_closure)nova_1_obj->vtable->nova_virtual_0_toString, nova_1_obj))
+	nova_1_obj = (PolymorphicSuperClass*)(nova_0_PolymorphicSubClass_construct(0, exceptionData));
+	if (!nova_static_PolymorphismStability_callPolymorphicClosure((PolymorphismStability*)nova_null, exceptionData, (nova_2_0_closure)nova_1_obj->vtable->nova_virtual_0_toString, nova_1_obj))
 	{
 		nova_1_StabilityTest_fail(nova_0_program, exceptionData, nova_String_construct(0, exceptionData, "Did not call sub class method as closure"));
 	}
 	nova_PolymorphicSuperClass_giveBirth(nova_1_obj, exceptionData);
-	nova_1_child = nova_String_concat(nova_1_obj->nova_PolymorphicSuperClass_child->vtable->nova_virtual_0_toString(nova_1_obj->nova_PolymorphicSuperClass_child, exceptionData), exceptionData, nova_String_construct(0, exceptionData, "!"));
-	if (!nova_static_PolymorphismStability_callPolymorphicClosure((PolymorphismStability*)0, exceptionData, (nova_2_0_closure)nova_1_obj->nova_PolymorphicSuperClass_child->vtable->nova_virtual_0_toString, nova_1_obj->nova_PolymorphicSuperClass_child))
+	nova_local_0 = nova_1_obj->nova_PolymorphicSuperClass_child->vtable->nova_virtual_0_toString(nova_1_obj->nova_PolymorphicSuperClass_child, exceptionData);
+	nova_1_child = nova_local_0->vtable->nova_virtual_0_concat(nova_local_0, exceptionData, nova_String_construct(0, exceptionData, "!"));
+	if (!nova_static_PolymorphismStability_callPolymorphicClosure((PolymorphismStability*)nova_null, exceptionData, (nova_2_0_closure)nova_1_obj->nova_PolymorphicSuperClass_child->vtable->nova_virtual_0_toString, nova_1_obj->nova_PolymorphicSuperClass_child))
 	{
 		nova_1_StabilityTest_fail(nova_0_program, exceptionData, nova_String_construct(0, exceptionData, "Did not call sub class method as closure"));
 	}

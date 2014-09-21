@@ -4,6 +4,8 @@
 
 nova_VTable_ThreadImplementation nova_VTable_ThreadImplementation_val =
 {
+	nova_0_Object_toString,
+	nova_0_Object_equals,
 	nova_0_ThreadImplementation_run,
 };
 CCLASS_PRIVATE

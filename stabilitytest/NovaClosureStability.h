@@ -7,6 +7,7 @@ typedef struct ClosureStability ClosureStability;
 #include <Nova.h>
 #include <ExceptionHandler.h>
 #include <NovaExceptionData.h>
+#include <NovaNull.h>
 #include <NovaObject.h>
 #include <NovaString.h>
 #include <NovaSystem.h>
@@ -39,7 +40,7 @@ CCLASS_CLASS
 	struct Private* prv;
 )
 
-ClosureStability* nova_ClosureStability_construct(ClosureStability* this, ExceptionData* exceptionData);
+ClosureStability* nova_0_ClosureStability_construct(ClosureStability* this, ExceptionData* exceptionData);
 void nova_del_ClosureStability(ClosureStability** this, ExceptionData* exceptionData);
 void nova_static_ClosureStability_test(ClosureStability* this, ExceptionData* exceptionData, StabilityTest* nova_0_program);
 void nova_ClosureStability_this(ClosureStability* this, ExceptionData* exceptionData);

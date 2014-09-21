@@ -7,6 +7,7 @@ typedef struct StabilityExceptionHandler StabilityExceptionHandler;
 #include <Nova.h>
 #include <ExceptionHandler.h>
 #include <NovaExceptionData.h>
+#include <NovaNull.h>
 #include <NovaObject.h>
 #include <NovaString.h>
 #include <NovaSystem.h>
@@ -29,6 +30,8 @@ typedef struct StabilityExceptionHandler StabilityExceptionHandler;
 
 typedef struct nova_VTable_StabilityExceptionHandler
 {
+	String* (*nova_virtual_0_toString)(Object*, ExceptionData*);
+	char (*nova_virtual_0_equals)(Object*, ExceptionData*, Object*);
 	void (*nova_virtual_0_uncaughtException)(StabilityExceptionHandler*, ExceptionData*, Thread*, Exception*);
 } nova_VTable_StabilityExceptionHandler;
 

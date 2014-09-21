@@ -2,11 +2,16 @@
 #include "NovaStabilityTestException.h"
 
 
-
-
-StabilityTestException* nova_StabilityTestException_construct(StabilityTestException* this, ExceptionData* exceptionData)
+nova_VTable_StabilityTestException nova_VTable_StabilityTestException_val =
 {
-	this = (StabilityTestException*)1;
+	nova_0_Object_toString,
+	nova_0_Object_equals,
+};
+
+StabilityTestException* nova_0_StabilityTestException_construct(StabilityTestException* this, ExceptionData* exceptionData)
+{
+	CCLASS_NEW(StabilityTestException, this,);
+	this->vtable = &nova_VTable_StabilityTestException_val;
 	nova_Object_super((Object*)this, 0);
 	nova_Exception_super((Exception*)this, 0);
 	nova_Object_this((Object*)(this), exceptionData);

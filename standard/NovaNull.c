@@ -51,7 +51,7 @@ String* nova_0_Null_toString(Null* this, ExceptionData* exceptionData)
 
 String* nova_0_Null_concat(Null* this, ExceptionData* exceptionData, String* nova_0_other)
 {
-	return nova_0_String_concat(String, exceptionData, nova_0_other);
+	return nova_0_String_concat(nova_String_construct(0, exceptionData, "null"), exceptionData, nova_0_other);
 }
 
 void nova_Null_this(Null* this, ExceptionData* exceptionData)

@@ -7,6 +7,7 @@ typedef struct ThreadStability ThreadStability;
 #include <Nova.h>
 #include <ExceptionHandler.h>
 #include <NovaExceptionData.h>
+#include <NovaNull.h>
 #include <NovaObject.h>
 #include <NovaString.h>
 #include <NovaSystem.h>
@@ -41,7 +42,7 @@ CCLASS_CLASS
 	nova_VTable_ThreadStability* vtable;
 )
 
-ThreadStability* nova_ThreadStability_construct(ThreadStability* this, ExceptionData* exceptionData);
+ThreadStability* nova_0_ThreadStability_construct(ThreadStability* this, ExceptionData* exceptionData);
 void nova_del_ThreadStability(ThreadStability** this, ExceptionData* exceptionData);
 void nova_static_ThreadStability_test(ThreadStability* this, ExceptionData* exceptionData, StabilityTest* nova_0_program);
 void nova_ThreadStability_this(ThreadStability* this, ExceptionData* exceptionData);
