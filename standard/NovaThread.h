@@ -30,7 +30,6 @@ typedef struct nova_VTable_Thread
 {
 	String* (*nova_virtual_0_toString)(Object*, ExceptionData*);
 	char (*nova_virtual_0_equals)(Object*, ExceptionData*, Object*);
-	void (*nova_virtual_0_run)(Thread*, ExceptionData*);
 } nova_VTable_Thread;
 
 CCLASS_CLASS
@@ -46,7 +45,7 @@ void nova_del_Thread(Thread** this, ExceptionData* exceptionData);
 void nova_Thread_start(Thread* this, ExceptionData* exceptionData);
 void nova_Thread_join(Thread* this, ExceptionData* exceptionData);
 void nova_static_Thread_sleep(Thread* this, ExceptionData* exceptionData, long_long nova_0_millis);
-void nova_0_Thread_run(Thread* this, ExceptionData* exceptionData);
+void nova_Thread_run(Thread* this, ExceptionData* exceptionData);
 void nova_Thread_this(Thread* this, ExceptionData* exceptionData);
 void nova_Thread_super(Thread* this, ExceptionData* exceptionData);
 

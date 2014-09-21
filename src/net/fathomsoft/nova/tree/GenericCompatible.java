@@ -1,6 +1,7 @@
 package net.fathomsoft.nova.tree;
 
 import net.fathomsoft.nova.TestContext;
+import net.fathomsoft.nova.tree.variables.Variable;
 import net.fathomsoft.nova.tree.variables.VariableDeclaration;
 import net.fathomsoft.nova.tree.variables.VariableDeclaration.DeclarationData;
 import net.fathomsoft.nova.util.Bounds;
@@ -71,7 +72,34 @@ public interface GenericCompatible
 			return null;
 		}
 		
+		return getGenericParameter(index);
+	}
+	
+	public default GenericType getGenericParameter(int index)
+	{
 		return getGenericParameterNames()[index];
+	}
+	
+	public default GenericType getGenericParameterInstance(String parameterName)
+	{
+		VariableDeclaration decl = (VariableDeclaration)this;
+		
+		ClassDeclaration clazz = decl.getTypeClass();
+		
+		int index = clazz.getGenericParameterIndex(parameterName);
+		
+		return getGenericParameter(index);
+	}
+	
+	public default GenericType getGenericParameterDeclaration(String parameterName)
+	{
+		VariableDeclaration decl = (VariableDeclaration)this;
+		
+		int index = decl.getGenericParameterIndex(parameterName);
+		
+		ClassDeclaration clazz = decl.getTypeClass();
+		
+		return clazz.getGenericParameter(index);
 	}
 	
 	/**

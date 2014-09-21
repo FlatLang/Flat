@@ -7,7 +7,6 @@ nova_VTable_Thread nova_VTable_Thread_val =
 {
 	nova_0_Object_toString,
 	nova_0_Object_equals,
-	nova_0_Thread_run,
 };
 CCLASS_PRIVATE
 (
@@ -62,7 +61,7 @@ void nova_static_Thread_sleep(Thread* this, ExceptionData* exceptionData, long_l
 	lib_nova_thread_sleep(nova_0_millis);
 }
 
-void nova_0_Thread_run(Thread* this, ExceptionData* exceptionData)
+void nova_Thread_run(Thread* this, ExceptionData* exceptionData)
 {
 }
 
@@ -73,7 +72,7 @@ void nova_Thread_startRun(Thread* this, ExceptionData* exceptionData)
 		nova_ExceptionData_addCode(exceptionData, exceptionData, 1);
 		
 		{
-			this->vtable->nova_virtual_0_run(this, exceptionData);
+			nova_Thread_run(this, exceptionData);
 		}
 	}
 	CATCH (1)

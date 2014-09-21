@@ -10,6 +10,19 @@ public class Stack<E>
 		top       = node
 	}
 	
+	public test()
+	{
+		Stack<String> s = new Stack<String>();
+		
+		s.push("$#")
+		
+		push("#$")
+		
+		s.pop()
+		
+		pop()
+	}
+	
 	public pop() -> E
 	{
 		if (isEmpty())

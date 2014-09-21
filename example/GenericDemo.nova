@@ -8,33 +8,32 @@ public class GenericDemo
 		
 		Stack<String> strs = new Stack<String>()
 		
-		push(strs, "test")
-		push(strs, "ASDFASDF")
-		push(strs, "3!")
-		push(strs, "34!!4334")
-		push(strs, null)
+		Console.writeLine("Pushing \"test\"")
+		strs.push("test")
+		
+		Console.writeLine("Pushing \"ASDFASDF\"")
+		strs.push("ASDFASDF")
+		
+		Console.writeLine("Pushing \"3!\"")
+		strs.push("3!")
+		
+		Console.writeLine("Pushing \"34!!4334\"")
+		strs.push("34!!4334")
+		
+		Console.writeLine("Pushing null")
+		strs.push(null)
 		
 		Object o = new Object()
 		
-//		push(strs, o)
+//		strs.push(o)
 		
 		while (false == strs.isEmpty())
 		{
-			pop(strs)
+			String popped = strs.pop()
+			
+			Console.writeLine("Popping: " + popped)
 		}
 		
 		Console.waitForEnter()
-	}
-	
-	static push(Stack<String> s, Object o)
-	{
-		Console.writeLine("Pushing: " + o)
-		
-		s.push(o)
-	}
-	
-	static pop(Stack<String> s)
-	{
-		Console.writeLine("Popping: " + s.pop())
 	}
 }

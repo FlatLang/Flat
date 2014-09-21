@@ -391,6 +391,11 @@ public class MethodCall extends IIdentifier
 		VariableDeclaration method   = getMethodDeclaration();
 		CallableMethod      callable = (CallableMethod)method;
 		
+		if (isGenericType())
+		{
+			generateCTypeCast(builder);
+		}
+		
 		if (callable.isVirtual() && !isVirtualTypeKnown())
 		{
 			NovaMethodDeclaration novaMethod = (NovaMethodDeclaration)method;
@@ -408,6 +413,31 @@ public class MethodCall extends IIdentifier
 		}
 		
 		return builder.append(getArgumentList().generateCSource());
+	}
+	
+	/**
+	 * @see net.fathomsoft.nova.tree.Value#generateCType(StringBuilder, boolean)
+	 */
+	@Override
+	public StringBuilder generateCType(StringBuilder builder, boolean checkArray)
+	{
+		VariableDeclaration method = getMethodDeclaration();
+		
+		if (method.isGenericType())
+		{
+			Identifier identifier = getReferenceNode();
+			
+			if (identifier instanceof Variable)
+			{
+				Variable variable = (Variable)identifier;
+				
+				GenericType type = variable.getDeclaration().getGenericParameterInstance(method.getType());
+				
+				return type.generateCType(builder);
+			}
+		}
+		
+		return super.generateCType(builder, checkArray);
 	}
 	
 	/**
