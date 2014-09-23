@@ -212,8 +212,8 @@ void nova_static_File_setMaxOpenFiles(File* this, ExceptionData* exceptionData, 
 	short nova_1_min;
 	short nova_1_max;
 	
-	nova_1_min = (short)(20);
-	nova_1_max = (short)(2048);
+	nova_1_min = (short)20;
+	nova_1_max = (short)2048;
 	if (nova_0_num > nova_1_max || nova_0_num < nova_1_min)
 	{
 		String* nova_local_0;

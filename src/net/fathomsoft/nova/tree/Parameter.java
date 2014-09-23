@@ -2,6 +2,7 @@ package net.fathomsoft.nova.tree;
 
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.error.SyntaxMessage;
+import net.fathomsoft.nova.tree.variables.Variable;
 import net.fathomsoft.nova.tree.variables.VariableDeclaration;
 import net.fathomsoft.nova.util.Location;
 
@@ -48,6 +49,31 @@ public class Parameter extends LocalDeclaration
 	public void setDefaultValue(Node defaultValue)
 	{
 		this.defaultValue = defaultValue;
+	}
+	
+	/**
+	 * @see net.fathomsoft.nova.tree.Value#getGenericType()
+	 */
+	@Override
+	public GenericType getGenericType()
+	{
+		Identifier identifier = getParentMethodCall().getReferenceNode();
+		
+		if (identifier instanceof Variable)
+		{
+			Variable variable = (Variable)identifier;
+			
+			GenericType type = variable.getDeclaration().getGenericParameterInstance(method.getType());
+			
+			return type.generateCType(builder);
+		}
+		
+		return super.getGenericType();
+	}
+	
+	public MethodCall getParentMethodCall()
+	{
+		return (MethodCall)getParent().getParent();
 	}
 	
 	/**

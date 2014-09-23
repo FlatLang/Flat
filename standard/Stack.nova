@@ -12,7 +12,7 @@ public class Stack<E>
 	
 	public test()
 	{
-		Stack<String> s = new Stack<String>();
+		Stack<String> s = new Stack<String>()
 		
 		s.push("$#")
 		
@@ -20,7 +20,9 @@ public class Stack<E>
 		
 		s.pop()
 		
-		pop()
+		String str = (String)pop()
+		
+		Console.writeLine(str)
 	}
 	
 	public pop() -> E

@@ -1109,10 +1109,6 @@ public abstract class Identifier extends Value
 		{
 			existing = SyntaxTree.findDeclaration(getParent(), name);
 			
-			if (existing == null)
-			{
-				SyntaxTree.findDeclaration(getParent(), name);
-			}
 			SyntaxMessage.queryError("Unable to find declaration for variable '" + name + "'", this, existing == null);
 		}
 		

@@ -52,6 +52,19 @@ void nova_Stack_push(Stack* this, ExceptionData* exceptionData, Object* nova_0_d
 	this->prv->nova_Stack_top = nova_1_node;
 }
 
+void nova_Stack_test(Stack* this, ExceptionData* exceptionData)
+{
+	Stack* nova_1_s;
+	String* nova_1_str;
+	
+	nova_1_s = nova_0_Stack_construct(0, exceptionData);
+	nova_Stack_push(nova_1_s, exceptionData, (Object*)(nova_String_construct(0, exceptionData, "$#")));
+	nova_Stack_push(this, exceptionData, (Object*)(nova_String_construct(0, exceptionData, "#$")));
+	(String*)nova_Stack_pop(nova_1_s, exceptionData);
+	nova_1_str = (String*)(Object*)nova_Stack_pop(this, exceptionData);
+	nova_static_0_Console_writeLine(0, exceptionData, nova_1_str);
+}
+
 Object* nova_Stack_pop(Stack* this, ExceptionData* exceptionData)
 {
 	Object* nova_1_data;

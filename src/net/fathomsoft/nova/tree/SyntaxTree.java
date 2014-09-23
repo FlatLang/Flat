@@ -55,8 +55,8 @@ public class SyntaxTree
 	{
 		ExceptionHandler.class, Assignment.class, Instantiation.class,
 		ElseStatement.class, IfStatement.class, Until.class, Loop.class,
-		ArrayAccess.class, UnaryOperation.class, MethodCall.class,
-		LocalDeclaration.class
+		ArrayAccess.class, UnaryOperation.class, Cast.class,
+		MethodCall.class, LocalDeclaration.class
 	};
 	
 	public static final Class<?>	FIRST_PASS_CLASSES[] = new Class<?>[]
@@ -446,6 +446,7 @@ public class SyntaxTree
 				else if (node == null && type == ArrayAccess.class) node = ArrayAccess.decodeStatement(parent, statement, location, require);
 				else if (node == null && type == Assignment.class) node = Assignment.decodeStatement(parent, statement, location, require);
 				else if (node == null && type == Array.class) node = Array.decodeStatement(parent, statement, location, require);
+				else if (node == null && type == Cast.class) node = Cast.decodeStatement(parent, statement, location, require);
 				else if (node == null && type == BinaryOperation.class) node = BinaryOperation.decodeStatement(parent, statement, location, require);
 				else if (node == null && type == MethodCall.class) node = MethodCall.decodeStatement(parent, statement, location, require);
 				else if (node == null && type == ClassDeclaration.class) node = ClassDeclaration.decodeStatement(parent, statement, location, require);

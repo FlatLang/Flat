@@ -2,6 +2,7 @@ package net.fathomsoft.nova;
 
 import static java.lang.Math.sin;
 
+import java.util.ArrayList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -76,9 +77,22 @@ public class Test
 		d(s, (Object)s);
 	}
 	
+	private static void test(ArrayList list)
+	{
+		list.add(4);
+	}
+	
 	public static void main(String args[])
 	{
-		System.out.println(StringUtils.removeContentsWithin("This<E  >d is a test", "<", ">"));
+		ArrayList<String> s2 = new ArrayList<String>();
+		
+		s2.add("test");
+		
+		test(s2);
+		
+		System.out.println(s2.get(s2.size() - 1));
+		
+		System.out.println("ASDf");
 		
 		System.exit(0);
 		

@@ -1715,6 +1715,10 @@ public class SyntaxUtils
 	 */
 	public static boolean isTypeCompatible(Value required, Value given)
 	{
+		if (required.isGenericType())
+		{
+			required.getGenericType(
+		}
 		if (given instanceof Closure)
 		{
 			return true;

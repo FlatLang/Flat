@@ -352,7 +352,7 @@ public class Assignment extends Node
 		{
 			if (returnedRight.getTypeClass() == null || !returnedRight.getTypeClass().isOfType(returnedLeft.getTypeClass()))
 			{
-//				SyntaxMessage.error("Type '" + returnedRight.getType() + "' is not compatible with type '" + returnedLeft.getType() + "'", parent, location);
+				SyntaxMessage.error("Type '" + returnedRight.getType() + "' is not compatible with type '" + returnedLeft.getType() + "'", parent, location);
 			}
 		}
 		

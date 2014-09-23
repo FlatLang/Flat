@@ -4,10 +4,8 @@ public class GenericDemo
 {
 	public static main(String args[])
 	{
-		Console.writeLine("Test")
-		
 		Stack<String> strs = new Stack<String>()
-		
+		strs.test()
 		Console.writeLine("Pushing \"test\"")
 		strs.push("test")
 		
@@ -25,11 +23,16 @@ public class GenericDemo
 		
 		Object o = new Object()
 		
-//		strs.push(o)
+		strs.push(o)
 		
 		while (false == strs.isEmpty())
 		{
 			String popped = strs.pop()
+			
+			if (popped != null)
+			{
+				popped = "\"" + popped + "\""
+			}
 			
 			Console.writeLine("Popping: " + popped)
 		}

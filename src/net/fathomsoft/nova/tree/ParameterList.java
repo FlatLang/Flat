@@ -47,17 +47,37 @@ public class ParameterList<E extends Value> extends TypeList<E>
 		
 		if (!getMethodDeclaration().isExternal())
 		{
-			Parameter reference = new Parameter(this, getLocationIn());
-			reference.setType(getParentClass().getName());
-			reference.setName(OBJECT_REFERENCE_IDENTIFIER, true);
-			
-			Parameter exceptionData = new Parameter(this, locationIn);
-			exceptionData.setName(Exception.EXCEPTION_DATA_IDENTIFIER, true);
-			exceptionData.setType("ExceptionData");
+			Parameter reference     = generateReferenceParameter();
+			Parameter exceptionData = generateExceptionDataParameter(locationIn);
 			
 			addChild(reference);
 			addChild(exceptionData);
 		}
+	}
+	
+	private Parameter generateReferenceParameter()
+	{
+		Parameter reference = new Parameter(this, getLocationIn());
+		reference.setType(getParentClass().getName());
+		reference.setName(OBJECT_REFERENCE_IDENTIFIER, true);
+		
+		GenericType types[] = getParentClass().getGenericParameterNames();
+		
+		for (GenericType type : types)
+		{
+			reference.addGenericParameterName(type.getDefaultType());
+		}
+		
+		return reference;
+	}
+	
+	private Parameter generateExceptionDataParameter(Location locationIn)
+	{
+		Parameter exceptionData = new Parameter(this, locationIn);
+		exceptionData.setName(Exception.EXCEPTION_DATA_IDENTIFIER, true);
+		exceptionData.setType("ExceptionData");
+		
+		return exceptionData;
 	}
 	
 	/**

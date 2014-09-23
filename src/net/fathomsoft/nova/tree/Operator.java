@@ -1,7 +1,9 @@
 package net.fathomsoft.nova.tree;
 
+import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.error.SyntaxMessage;
+import net.fathomsoft.nova.tree.variables.Variable;
 import net.fathomsoft.nova.util.Location;
 import net.fathomsoft.nova.util.StringUtils;
 import net.fathomsoft.nova.util.SyntaxUtils;
@@ -120,7 +122,7 @@ public class Operator extends IValue
 		}
 		else if (!isDecoding())
 		{
-			String type = SyntaxUtils.getTypeInCommon(getLeftOperand(), getRightOperand()).getType();
+			String type = SyntaxUtils.getTypeInCommon(getLeftOperand().getReturnedNode(), getRightOperand().getReturnedNode()).getType();
 			
 			if (getLeftOperand().isPrimitive() && getRightOperand().isPrimitive())
 			{

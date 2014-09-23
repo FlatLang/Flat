@@ -2,6 +2,7 @@ package net.fathomsoft.nova.tree.variables;
 
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.tree.ClassDeclaration;
+import net.fathomsoft.nova.tree.GenericType;
 import net.fathomsoft.nova.tree.Identifier;
 import net.fathomsoft.nova.tree.Node;
 import net.fathomsoft.nova.util.Location;
@@ -207,6 +208,15 @@ public class Variable extends Identifier
 	public void setVolatile(boolean volatileVal)
 	{
 		declaration.setVolatile(volatileVal);
+	}
+	
+	/**
+	 * @see net.fathomsoft.nova.tree.Value#getGenericType()
+	 */
+	@Override
+	public GenericType getGenericType()
+	{
+		return declaration.getGenericType();
 	}
 	
 	public boolean doesUseGenericTypes()

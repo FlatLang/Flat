@@ -44,6 +44,7 @@ CCLASS_CLASS
 Stack* nova_0_Stack_construct(Stack* this, ExceptionData* exceptionData);
 void nova_del_Stack(Stack** this, ExceptionData* exceptionData);
 void nova_Stack_push(Stack* this, ExceptionData* exceptionData, Object* nova_0_data);
+void nova_Stack_test(Stack* this, ExceptionData* exceptionData);
 Object* nova_Stack_pop(Stack* this, ExceptionData* exceptionData);
 char nova_Stack_isEmpty(Stack* this, ExceptionData* exceptionData);
 void nova_Stack_this(Stack* this, ExceptionData* exceptionData);

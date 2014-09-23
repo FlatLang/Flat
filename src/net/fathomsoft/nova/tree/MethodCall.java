@@ -466,6 +466,8 @@ public class MethodCall extends IIdentifier
 	{
 		if (SyntaxUtils.isMethodCall(statement))
 		{
+			Nova.debuggingBreakpoint(statement.equals("push(o)"));
+			
 			MethodCall n  = new MethodCall(parent, location);
 			
 			Bounds bounds = SyntaxUtils.findInnerParenthesesBounds(n, statement);
@@ -645,8 +647,6 @@ public class MethodCall extends IIdentifier
 				SyntaxMessage.error("Too many arguments to method call '" + getName() + "'", this);
 			}
 		}
-		
-//		checkGenerics
 		
 		return methodDeclaration.areCompatibleParameterTypes(arguments.getTypes());
 	}

@@ -41,8 +41,8 @@ void nova_static_GenericDemo_main(GenericDemo* this, ExceptionData* exceptionDat
 		Stack* nova_1_strs;
 		Object* nova_1_o;
 		
-		nova_static_0_Console_writeLine(0, exceptionData, nova_String_construct(0, exceptionData, "Test"));
 		nova_1_strs = nova_0_Stack_construct(0, exceptionData);
+		nova_Stack_test(nova_1_strs, exceptionData);
 		nova_static_0_Console_writeLine(0, exceptionData, nova_String_construct(0, exceptionData, "Pushing \"test\""));
 		nova_Stack_push(nova_1_strs, exceptionData, (Object*)(nova_String_construct(0, exceptionData, "test")));
 		nova_static_0_Console_writeLine(0, exceptionData, nova_String_construct(0, exceptionData, "Pushing \"ASDFASDF\""));
@@ -54,11 +54,16 @@ void nova_static_GenericDemo_main(GenericDemo* this, ExceptionData* exceptionDat
 		nova_static_0_Console_writeLine(0, exceptionData, nova_String_construct(0, exceptionData, "Pushing null"));
 		nova_Stack_push(nova_1_strs, exceptionData, (Object*)nova_null);
 		nova_1_o = nova_0_Object_construct(0, exceptionData);
+		nova_Stack_push(nova_1_strs, exceptionData, nova_1_o);
 		while (0 == nova_Stack_isEmpty(nova_1_strs, exceptionData))
 		{
 				String* nova_2_popped;
 				
 				nova_2_popped = (String*)nova_Stack_pop(nova_1_strs, exceptionData);
+				if (nova_2_popped != (String*)nova_null)
+				{
+						nova_2_popped = nova_0_String_concat(nova_String_construct(0, exceptionData, "\""), exceptionData, nova_2_popped->vtable->nova_virtual_0_concat(nova_2_popped, exceptionData, nova_String_construct(0, exceptionData, "\"")));
+				}
 				nova_static_0_Console_writeLine(0, exceptionData, nova_0_String_concat(nova_String_construct(0, exceptionData, "Popping: "), exceptionData, nova_2_popped));
 		}
 		nova_static_Console_waitForEnter(0, exceptionData);

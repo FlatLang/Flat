@@ -199,8 +199,8 @@ public class File
 	
 	public static setMaxOpenFiles(int num)
 	{
-		short min = 20
-		short max = 2048
+		short min = (short)20
+		short max = (short)2048
 		
 		if (num > max || num < min)
 		{
