@@ -26,7 +26,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Mar 16, 2014 at 1:13:49 AM
- * @version	v0.2.26 Aug 6, 2014 at 2:48:50 PM
+ * @version	v0.2.31 Sep 24, 2014 at 4:41:04 PM
  */
 public class Array extends VariableDeclaration
 {
@@ -132,6 +132,14 @@ public class Array extends VariableDeclaration
 			
 			n.setName(idValue);
 			n.setType(idValue);
+			
+			if (n.isGenericType())
+			{
+				String type = n.getGenericReturnType();
+				
+				n.setName(type);
+				n.setType(type);
+			}
 			
 			if (n.decodeDimensions(statement, index, newLoc, require))
 			{
