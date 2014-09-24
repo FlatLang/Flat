@@ -13,7 +13,7 @@ import net.fathomsoft.nova.util.Location;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:52:01 PM
- * @version	v0.2.26 Aug 6, 2014 at 2:48:50 PM
+ * @version	v0.2.31 Sep 24, 2014 at 4:41:04 PM
  */
 public class Parameter extends LocalDeclaration
 {
@@ -50,27 +50,6 @@ public class Parameter extends LocalDeclaration
 	{
 		this.defaultValue = defaultValue;
 	}
-//	
-//	public GenericType getGenericTypeDeclaration()
-//	{
-//		if (isGenericType())
-//		{
-//			return null;
-//		}
-//		
-//		Identifier identifier = getParentMethod().getReferenceNode();
-//		
-//		if (identifier instanceof Variable)
-//		{
-//			Variable variable = (Variable)identifier;
-//			
-//			GenericType type = variable.getDeclaration().getGenericParameterInstance(method.getType());
-//			
-//			return type;
-//		}
-//		
-//		return ;
-//	}
 	
 	/**
 	 * @see net.fathomsoft.nova.tree.Node#generateCHeader(StringBuilder)
