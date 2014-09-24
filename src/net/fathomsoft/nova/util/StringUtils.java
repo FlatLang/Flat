@@ -16,7 +16,7 @@ public class StringUtils
 	public static final char	WHITESPACE[]                = new char[] { ' ', '\n', '\t', '\r' };
 	public static final char	SYMBOLS_CHARS[]             = new char[] { '-', '+', '~', '!', '=', '%', '^', '&', '|', '*', '/', '>', '<', ',', '"', '\'', '[', ']', '{', '}', ';', '(', ')' };
 	public static final char	STMT_CONT_CHARS[]           = new char[] { '-', '+', '~', '!', '=', '%', '^', '&', '|', '*', '/', '>', '<', ',', '.' };
-	public static final char	INVALID_DECLARATION_CHARS[] = new char[] { '-', '+', '~', '!', '=', '%', '^', '|', '/', ',', '"', '\'', '{', '}', ';', '(', ')' };
+	public static final char	INVALID_DECLARATION_CHARS[] = new char[] { '-', '+', '~', '!', '=', '%', '^', '|', '/', '"', '\'', '{', '}', ';', '(', ')' };
 	
 	public static final String	SYMBOLS[];
 	

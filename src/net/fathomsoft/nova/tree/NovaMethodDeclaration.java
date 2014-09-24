@@ -442,7 +442,7 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 	public boolean decodeSignature(String statement, boolean require)
 	{
 		String signature = findMethodSignature(statement);
-		MethodData data  = (MethodData)iterateWords(signature, Patterns.IDENTIFIER_BOUNDARIES);
+		MethodData data  = (MethodData)iterateWords(signature, Patterns.IDENTIFIER_BOUNDARIES, require);
 		
 		if (data.error != null)
 		{
@@ -494,14 +494,14 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.Node#iterateWords(java.lang.String, java.util.regex.Pattern, net.fathomsoft.nova.tree.Node.ExtraData)
+	 * @see net.fathomsoft.nova.tree.Node#iterateWords(String, Pattern, ExtraData, boolean)
 	 */
 	@Override
-	public ExtraData iterateWords(String statement, Pattern pattern, ExtraData extra)
+	public ExtraData iterateWords(String statement, Pattern pattern, ExtraData extra, boolean require)
 	{
 		MethodData data = new MethodData(statement);
 		
-		return (MethodData)super.iterateWords(statement, pattern, data);
+		return (MethodData)super.iterateWords(statement, pattern, data, require);
 	}
 	
 	/**

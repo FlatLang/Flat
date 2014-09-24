@@ -1,6 +1,7 @@
 package net.fathomsoft.nova.tree;
 
 import net.fathomsoft.nova.TestContext;
+import net.fathomsoft.nova.error.SyntaxErrorException;
 import net.fathomsoft.nova.tree.variables.Variable;
 import net.fathomsoft.nova.tree.variables.VariableDeclaration;
 import net.fathomsoft.nova.tree.variables.VariableDeclaration.DeclarationData;
@@ -109,19 +110,19 @@ public interface GenericCompatible
 	 * 
 	 * @param parameterName The name of the generic parameter to add.
 	 */
-	public default void addGenericParameterName(String parameterName)
+	public default void addGenericParameterNames(String parameterName)
 	{
 		GenericType type = new GenericType((Node)this, Location.INVALID, parameterName);
 		
 		setGenericTypes(StringUtils.appendElement(getGenericParameterNames(), new GenericType[getGenericParameterNames().length + 1], type));
 	}
 
-	public default void decodeGenericParameter(String statement, Bounds genericBounds)
+	public default void decodeGenericParameters(String statement, Bounds genericBounds)
 	{
-		decodeGenericParameter(statement, genericBounds, true);
+		decodeGenericParameters(statement, genericBounds, true);
 	}
 	
-	public default void decodeGenericParameter(String statement, Bounds genericBounds, boolean endingsIncluded)
+	public default void decodeGenericParameters(String statement, Bounds genericBounds, boolean endingsIncluded)
 	{
 		if (endingsIncluded)
 		{
@@ -131,16 +132,16 @@ public interface GenericCompatible
 		
 		String params = genericBounds.extractString(statement);
 		
-		decodeGenericParameter(params);
+		decodeGenericParameters(params);
 	}
 	
-	public default void decodeGenericParameter(String params)
+	public default void decodeGenericParameters(String params)
 	{
 		String paramsList[] = StringUtils.splitCommas(params);
 		
 		for (String param : paramsList)
 		{
-			addGenericParameterName(param);
+			addGenericParameterNames(param);
 		}
 	}
 	
@@ -187,9 +188,16 @@ public interface GenericCompatible
 		
 		context.method.addChild(declaration);
 		
-//		Node pushNonString = SyntaxTree.decodeScopeContents(context.method, "s.push(4)", Location.INVALID, true);
-//		System.out.println(pushNonString);
-//		context.method.addChild(pushNonString);
+		try
+		{
+			SyntaxTree.decodeScopeContents(context.method, "s.push(4)", Location.INVALID, true);
+			
+			return "Did not throw an error for passing wrong generic type";
+		}
+		catch (SyntaxErrorException e)
+		{
+			
+		}
 		
 		return null;
 	}

@@ -332,6 +332,7 @@ public class Nova
 			formatPath(standard  + "System.nova"),
 			formatPath(standard  + "Process.nova"),
 			formatPath(standard  + "Stack.nova"),
+			formatPath(standard  + "HashMap.nova"),
 			formatPath(standard  + "EmptyStackException.nova"),
 			formatPath(standard  + "Null.nova"),
 		};

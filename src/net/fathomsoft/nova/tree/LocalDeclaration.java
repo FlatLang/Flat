@@ -1,5 +1,6 @@
 package net.fathomsoft.nova.tree;
 
+import jdk.nashorn.internal.runtime.FindProperty;
 import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.error.SyntaxMessage;
@@ -80,10 +81,10 @@ public class LocalDeclaration extends VariableDeclaration
 		
 		LocalDeclaration n    = new LocalDeclaration(parent, location);
 		DeclarationData  data = new DeclarationData();
-
+		
 		n.searchGenericParameters(statement, data);
 		
-		n.iterateWords(statement, Patterns.IDENTIFIER_BOUNDARIES, data);
+		n.iterateWords(statement, Patterns.IDENTIFIER_BOUNDARIES, data, require);
 	
 		if (data.error != null)
 		{
@@ -200,7 +201,7 @@ public class LocalDeclaration extends VariableDeclaration
 		
 		if (extra.getLeftAdjacentSkipBounds() != null)
 		{
-			decodeGenericParameter(extra.statement, extra.getLeftAdjacentSkipBounds());
+			decodeGenericParameters(extra.statement, extra.getLeftAdjacentSkipBounds());
 			
 			extra.decrementGenericsRemaining();
 		}

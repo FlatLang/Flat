@@ -41,6 +41,8 @@ CCLASS_CLASS
 
 Object* nova_0_Object_construct(Object* this, ExceptionData* exceptionData);
 void nova_del_Object(Object** this, ExceptionData* exceptionData);
+String* nova_Object_getHashCode(Object* this, ExceptionData* exceptionData);
+long_long nova_Object_getHashCodeLong(Object* this, ExceptionData* exceptionData);
 String* nova_0_Object_toString(Object* this, ExceptionData* exceptionData);
 char nova_0_Object_equals(Object* this, ExceptionData* exceptionData, Object* nova_0_another);
 void nova_Object_this(Object* this, ExceptionData* exceptionData);

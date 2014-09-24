@@ -265,7 +265,7 @@ public class ClassDeclaration extends InstanceDeclaration
 		for (NovaMethodDeclaration m : methods)
 		{
 			// TODO: need to make this more strict.
-			if (m.getName().equals(method.getName()) && m.areCompatibleParameterTypes(method.getParameterList().getTypes()))// method.areCompatibleParameterTypes(m.getParameterList().getTypes()))
+			if (m.getName().equals(method.getName()) && m.areCompatibleParameterTypes(false, method.getParameterList().getTypes()))// method.areCompatibleParameterTypes(m.getParameterList().getTypes()))
 			{
 				return m;
 			}
@@ -574,7 +574,7 @@ public class ClassDeclaration extends InstanceDeclaration
 		
 		for (MethodDeclaration method : methods)
 		{
-			if (method.areCompatibleParameterTypes(parameterTypes))// && SyntaxUtils.isTypeCompatible(getProgram(), method.getType(), returnType))
+			if (method.areCompatibleParameterTypes(false, parameterTypes))// && SyntaxUtils.isTypeCompatible(getProgram(), method.getType(), returnType))
 			{
 				return method;
 			}
@@ -1181,7 +1181,7 @@ public class ClassDeclaration extends InstanceDeclaration
 			
 			n.searchGenericParameters(statement, data);
 			
-			n.iterateWords(statement, data);
+			n.iterateWords(statement, data, require);
 			
 			if (data.getGenericsRemaining() > 0)
 			{
@@ -1240,7 +1240,7 @@ public class ClassDeclaration extends InstanceDeclaration
 			
 			if (data.getRightAdjacentSkipBounds() != null)
 			{
-				decodeGenericParameter(data.statement, data.getRightAdjacentSkipBounds());
+				decodeGenericParameters(data.statement, data.getRightAdjacentSkipBounds());
 				
 				data.decrementGenericsRemaining();
 			}
@@ -1266,7 +1266,7 @@ public class ClassDeclaration extends InstanceDeclaration
 					
 					if (data.getRightAdjacentSkipBounds() != null)
 					{
-						decodeGenericParameter(data.statement, data.getRightAdjacentSkipBounds());
+						decodeGenericParameters(data.statement, data.getRightAdjacentSkipBounds());
 						
 						data.decrementGenericsRemaining();
 					}

@@ -215,7 +215,7 @@ public class ExternalMethodDeclaration extends MethodDeclaration
 			return true;
 		}
 		
-		iterateWords(nameChange);
+		iterateWords(nameChange, require);
 		
 		return true;
 	}

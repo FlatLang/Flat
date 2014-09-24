@@ -111,6 +111,11 @@ public class Literal extends IValue
 		return false;
 	}
 	
+	public static boolean isNullLiteral(Node node)
+	{
+		return node instanceof Literal && ((Literal)node).value.equals(NULL_IDENTIFIER);
+	}
+	
 	/**
 	 * @see net.fathomsoft.nova.tree.Node#generateCHeader(StringBuilder)
 	 */
@@ -141,7 +146,7 @@ public class Literal extends IValue
 			
 			return str.generateCSourceFragment(builder);//builder.append(Nova.LANGUAGE_NAME.toLowerCase()).append("_String_String(0, ").append(Exception.EXCEPTION_DATA_IDENTIFIER).append(", ").append(value).append(")");
 		}
-		else if (value.equals(NULL_IDENTIFIER))
+		else if (isNullLiteral(this))
 		{
 			return generateCNullOutput(builder);
 		}

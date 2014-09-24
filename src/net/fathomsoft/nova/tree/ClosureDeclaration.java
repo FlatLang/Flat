@@ -229,7 +229,7 @@ public class ClosureDeclaration extends Parameter implements CallableMethod
 	{
 		String signature = NovaMethodDeclaration.findMethodSignature(statement);
 		
-		ExtraData data   = iterateWords(signature, Patterns.IDENTIFIER_BOUNDARIES);
+		ExtraData data   = iterateWords(signature, Patterns.IDENTIFIER_BOUNDARIES, require);
 		
 		if (data.error != null)
 		{

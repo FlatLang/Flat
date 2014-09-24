@@ -55,6 +55,12 @@ public class VariableDeclaration extends IIdentifier implements GenericCompatibl
 		this.genericTypes = types;
 	}
 	
+	@Override
+	public String getGenericReturnType()
+	{
+		return getGenericType().getDefaultType();
+	}
+	
 	/**
 	 * @see net.fathomsoft.nova.tree.Identifier#isDeclaration()
 	 */

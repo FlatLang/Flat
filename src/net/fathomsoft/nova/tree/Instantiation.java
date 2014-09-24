@@ -221,7 +221,7 @@ public class Instantiation extends IIdentifier implements GenericCompatible
 		
 		if (bounds.isValid())
 		{
-			decodeGenericParameter(params);
+			decodeGenericParameters(params);
 		}
 		
 		setName(child.getName());

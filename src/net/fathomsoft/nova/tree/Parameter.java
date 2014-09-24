@@ -50,31 +50,27 @@ public class Parameter extends LocalDeclaration
 	{
 		this.defaultValue = defaultValue;
 	}
-	
-	/**
-	 * @see net.fathomsoft.nova.tree.Value#getGenericType()
-	 */
-	@Override
-	public GenericType getGenericType()
-	{
-		Identifier identifier = getParentMethodCall().getReferenceNode();
-		
-		if (identifier instanceof Variable)
-		{
-			Variable variable = (Variable)identifier;
-			
-			GenericType type = variable.getDeclaration().getGenericParameterInstance(method.getType());
-			
-			return type.generateCType(builder);
-		}
-		
-		return super.getGenericType();
-	}
-	
-	public MethodCall getParentMethodCall()
-	{
-		return (MethodCall)getParent().getParent();
-	}
+//	
+//	public GenericType getGenericTypeDeclaration()
+//	{
+//		if (isGenericType())
+//		{
+//			return null;
+//		}
+//		
+//		Identifier identifier = getParentMethod().getReferenceNode();
+//		
+//		if (identifier instanceof Variable)
+//		{
+//			Variable variable = (Variable)identifier;
+//			
+//			GenericType type = variable.getDeclaration().getGenericParameterInstance(method.getType());
+//			
+//			return type;
+//		}
+//		
+//		return ;
+//	}
 	
 	/**
 	 * @see net.fathomsoft.nova.tree.Node#generateCHeader(StringBuilder)

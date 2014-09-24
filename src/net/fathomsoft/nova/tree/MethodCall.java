@@ -311,15 +311,6 @@ public class MethodCall extends IIdentifier
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.Value#getGenericType()
-	 */
-	@Override
-	public GenericType getGenericType()
-	{
-		return getMethodDeclaration().getGenericType();
-	}
-	
-	/**
 	 * @see net.fathomsoft.nova.tree.Identifier#generateCArgumentReference(StringBuilder, Identifier)
 	 */
 	@Override
@@ -416,14 +407,20 @@ public class MethodCall extends IIdentifier
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.Value#generateCType(StringBuilder, boolean)
+	 * @see net.fathomsoft.nova.tree.Value#getGenericType()
 	 */
 	@Override
-	public StringBuilder generateCType(StringBuilder builder, boolean checkArray)
+	public GenericType getGenericType()
+	{
+		return getMethodDeclaration().getGenericType();
+	}
+	
+	@Override
+	public VariableDeclaration getGenericDeclaration()
 	{
 		VariableDeclaration method = getMethodDeclaration();
 		
-		if (method.isGenericType())
+//		if (method.isGenericType())
 		{
 			Identifier identifier = getReferenceNode();
 			
@@ -431,13 +428,25 @@ public class MethodCall extends IIdentifier
 			{
 				Variable variable = (Variable)identifier;
 				
-				GenericType type = variable.getDeclaration().getGenericParameterInstance(method.getType());
-				
-				return type.generateCType(builder);
+				return variable.getDeclaration();
 			}
 		}
 		
-		return super.generateCType(builder, checkArray);
+		return null;
+	}
+	
+	@Override
+	public String getGenericReturnType()
+	{
+		VariableDeclaration method = getMethodDeclaration();
+		VariableDeclaration decl   = getGenericDeclaration();
+		
+		if (decl != null)
+		{
+			return decl.getGenericParameterInstance(method.getType()).getType();
+		}
+		
+		return super.getGenericReturnType();
 	}
 	
 	/**
@@ -466,7 +475,7 @@ public class MethodCall extends IIdentifier
 	{
 		if (SyntaxUtils.isMethodCall(statement))
 		{
-			Nova.debuggingBreakpoint(statement.equals("push(o)"));
+			Nova.debuggingBreakpoint(statement.equals("put(0, \"Zero\")"));
 			
 			MethodCall n  = new MethodCall(parent, location);
 			
@@ -517,7 +526,12 @@ public class MethodCall extends IIdentifier
 		
 		try
 		{
-			iterateWords(methodCall, Patterns.IDENTIFIER_BOUNDARIES);
+			String error = iterateWords(methodCall, Patterns.IDENTIFIER_BOUNDARIES, require).error;
+			
+			if (error != null)
+			{
+				return false;
+			}
 		}
 		catch (SyntaxErrorException e)
 		{
@@ -609,7 +623,9 @@ public class MethodCall extends IIdentifier
 				SyntaxMessage.error("Could not decode method name", this);
 			}
 			
-			SyntaxMessage.error("Unknown characters '" + characters + "'", this);
+			extra.error = "Unknown characters '" + characters + "'";
+			
+			SyntaxMessage.queryError(extra.error, this, extra.require);
 		}
 	}
 	

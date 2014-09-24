@@ -25,6 +25,7 @@ typedef struct GenericDemo GenericDemo;
 #include <NovaChar.h>
 #include <NovaDivideByZeroException.h>
 #include <NovaStack.h>
+#include <NovaHashMap.h>
 
 typedef struct nova_VTable_GenericDemo
 {

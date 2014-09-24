@@ -4,6 +4,7 @@ import java.util.regex.Matcher;
 
 import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.error.SyntaxMessage;
+import net.fathomsoft.nova.error.UnimplementedOperationException;
 import net.fathomsoft.nova.tree.BodyMethodDeclaration;
 import net.fathomsoft.nova.tree.ClassDeclaration;
 import net.fathomsoft.nova.tree.Closure;
@@ -1689,6 +1690,20 @@ public class SyntaxUtils
 		return null;
 	}
 	
+	public static String getParameterGenericReturnType(Parameter required, Value given)
+	{
+		MethodCall call = (MethodCall)given.getAncestorOfType(MethodCall.class);
+		
+		VariableDeclaration decl = call.getGenericDeclaration();
+		
+		return decl.getGenericParameterInstance(required.getType()).getType();
+	}
+	
+	public static ClassDeclaration getParameterGenericReturnType(Program context, Parameter required, Value given)
+	{
+		return context.getClassDeclaration(getParameterGenericReturnType(required, given));
+	}
+	
 	/**
 	 * Check to see if the 'given' type is compatible with the
 	 * required type.
@@ -1715,9 +1730,39 @@ public class SyntaxUtils
 	 */
 	public static boolean isTypeCompatible(Value required, Value given)
 	{
-		if (required.isGenericType())
+		return isTypeCompatible(required, given, true);
+	}
+	
+	/**
+	 * Check to see if the 'given' type is compatible with the
+	 * required type.
+	 * 
+	 * @param required The type that the 'given' type is required
+	 * 		to be compatible with.
+	 * @param given The given type to check against the required type.
+	 * @param searchGeneric Whether or not to search for the actual generic
+	 * 		return type.
+	 * @return Whether or not the two types are compatible.
+	 */
+	public static boolean isTypeCompatible(Value required, Value given, boolean searchGeneric)
+	{
+		if (required.isGenericType() && searchGeneric)
 		{
-			required.getGenericType(
+			if (!(required instanceof Parameter))
+			{
+				throw new UnimplementedOperationException("The validation of generic type " + required.getClass().getName() + " is not implemented.");
+			}
+			
+			Value value = getParameterGenericReturnType(given.getProgram(), (Parameter)required, given);
+			
+			if (!Literal.isNullLiteral(given) && !isTypeCompatible(value, given, false))
+			{
+				SyntaxMessage.error("Incorrect type '" + given.getType() + "' given for required generic type of '" + value.getType() + "' type", given);
+				
+				return false;
+			}
+			
+			return true;
 		}
 		if (given instanceof Closure)
 		{

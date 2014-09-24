@@ -788,9 +788,9 @@ public abstract class Node
 	 * @param statement The statement to iterate the words from.
 	 * @return The given ExtraData instance.
 	 */
-	public final ExtraData iterateWords(String statement)
+	public final ExtraData iterateWords(String statement, boolean require)
 	{
-		return iterateWords(statement, Patterns.IDENTIFIER_BOUNDARIES, null);
+		return iterateWords(statement, Patterns.IDENTIFIER_BOUNDARIES, null, require);
 	}
 	
 	/**
@@ -804,9 +804,9 @@ public abstract class Node
 	 * 		interactWord() methods.
 	 * @return The given ExtraData instance.
 	 */
-	public final ExtraData iterateWords(String statement, ExtraData extra)
+	public final ExtraData iterateWords(String statement, ExtraData extra, boolean require)
 	{
-		return iterateWords(statement, Patterns.IDENTIFIER_BOUNDARIES, extra);
+		return iterateWords(statement, Patterns.IDENTIFIER_BOUNDARIES, extra, require);
 	}
 	
 	/**
@@ -818,9 +818,9 @@ public abstract class Node
 	 * @param pattern The Pattern to search with.
 	 * @return The given ExtraData instance.
 	 */
-	public final ExtraData iterateWords(String statement, Pattern pattern)
+	public final ExtraData iterateWords(String statement, Pattern pattern, boolean require)
 	{
-		return iterateWords(statement, pattern, null);
+		return iterateWords(statement, pattern, null, require);
 	}
 	
 	/**
@@ -834,7 +834,7 @@ public abstract class Node
 	 * 		interactWord() methods.
 	 * @return The given ExtraData instance.
 	 */
-	public ExtraData iterateWords(String statement, Pattern pattern, ExtraData extra)
+	public ExtraData iterateWords(String statement, Pattern pattern, ExtraData extra, boolean require)
 	{
 		// Pattern used to find word boundaries.
 		Matcher matcher = pattern.matcher(statement);
@@ -845,6 +845,7 @@ public abstract class Node
 		}
 		
 		extra.statement = statement;
+		extra.require   = require;
 		
 		findWords(statement, matcher, extra);
 		
@@ -1467,6 +1468,8 @@ public abstract class Node
 	 */
 	public static class ExtraData
 	{
+		public  boolean require;
+		
 		private int		wordNumber;
 		
 		private Bounds	skipBounds[];

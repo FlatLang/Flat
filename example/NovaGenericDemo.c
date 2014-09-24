@@ -39,7 +39,9 @@ void nova_del_GenericDemo(GenericDemo** this, ExceptionData* exceptionData)
 void nova_static_GenericDemo_main(GenericDemo* this, ExceptionData* exceptionData, String** nova_0_args)
 {
 		Stack* nova_1_strs;
-		Object* nova_1_o;
+		HashMap* nova_1_words;
+		Int** nova_1_nums;
+		int nova_1_i;
 		
 		nova_1_strs = nova_0_Stack_construct(0, exceptionData);
 		nova_Stack_test(nova_1_strs, exceptionData);
@@ -53,8 +55,6 @@ void nova_static_GenericDemo_main(GenericDemo* this, ExceptionData* exceptionDat
 		nova_Stack_push(nova_1_strs, exceptionData, (Object*)(nova_String_construct(0, exceptionData, "34!!4334")));
 		nova_static_0_Console_writeLine(0, exceptionData, nova_String_construct(0, exceptionData, "Pushing null"));
 		nova_Stack_push(nova_1_strs, exceptionData, (Object*)nova_null);
-		nova_1_o = nova_0_Object_construct(0, exceptionData);
-		nova_Stack_push(nova_1_strs, exceptionData, nova_1_o);
 		while (0 == nova_Stack_isEmpty(nova_1_strs, exceptionData))
 		{
 				String* nova_2_popped;
@@ -65,6 +65,31 @@ void nova_static_GenericDemo_main(GenericDemo* this, ExceptionData* exceptionDat
 						nova_2_popped = nova_0_String_concat(nova_String_construct(0, exceptionData, "\""), exceptionData, nova_2_popped->vtable->nova_virtual_0_concat(nova_2_popped, exceptionData, nova_String_construct(0, exceptionData, "\"")));
 				}
 				nova_static_0_Console_writeLine(0, exceptionData, nova_0_String_concat(nova_String_construct(0, exceptionData, "Popping: "), exceptionData, nova_2_popped));
+		}
+		nova_1_words = nova_0_HashMap_construct(0, exceptionData);
+		nova_1_nums = (Int**)NOVA_MALLOC(sizeof(Int) * (6));
+		nova_1_nums[0] = nova_Int_construct(0, exceptionData, 0);
+		nova_1_nums[1] = nova_Int_construct(0, exceptionData, 1);
+		nova_1_nums[2] = nova_Int_construct(0, exceptionData, 2);
+		nova_1_nums[3] = nova_Int_construct(0, exceptionData, 3);
+		nova_1_nums[4] = nova_Int_construct(0, exceptionData, 4);
+		nova_1_nums[5] = nova_Int_construct(0, exceptionData, 5);
+		nova_HashMap_put(nova_1_words, exceptionData, (Object*)(nova_1_nums[0]), (Object*)(nova_String_construct(0, exceptionData, "Zero")));
+		nova_HashMap_put(nova_1_words, exceptionData, (Object*)(nova_1_nums[1]), (Object*)(nova_String_construct(0, exceptionData, "One")));
+		nova_HashMap_put(nova_1_words, exceptionData, (Object*)(nova_1_nums[2]), (Object*)(nova_String_construct(0, exceptionData, "Two")));
+		nova_HashMap_put(nova_1_words, exceptionData, (Object*)(nova_1_nums[3]), (Object*)(nova_String_construct(0, exceptionData, "Three")));
+		nova_HashMap_put(nova_1_words, exceptionData, (Object*)(nova_1_nums[4]), (Object*)(nova_String_construct(0, exceptionData, "Four")));
+		nova_HashMap_put(nova_1_words, exceptionData, (Object*)(nova_1_nums[5]), (Object*)(nova_String_construct(0, exceptionData, "Five")));
+		nova_HashMap_put(nova_1_words, exceptionData, (Object*)(nova_1_nums[5]), (Object*)nova_null);
+		nova_1_i = 0;
+		for (; nova_1_i <= 5; nova_1_i++)
+		{
+				Int* nova_4_index;
+				String* nova_local_0;
+				
+				nova_4_index = nova_1_nums[nova_static_Math_random(0, exceptionData, (long_long)(6))];
+				nova_local_0 = nova_4_index->vtable->nova_virtual_2_toString(nova_4_index, exceptionData);
+				nova_static_0_Console_writeLine(0, exceptionData, nova_0_String_concat(nova_String_construct(0, exceptionData, "Getting value at index "), exceptionData, nova_local_0->vtable->nova_virtual_0_concat(nova_local_0, exceptionData, nova_0_String_concat(nova_String_construct(0, exceptionData, " "), exceptionData, (String*)((String*)nova_HashMap_get(nova_1_words, exceptionData, (Object*)(nova_4_index)))))));
 		}
 		nova_static_Console_waitForEnter(0, exceptionData);
 }

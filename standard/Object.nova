@@ -3,10 +3,17 @@ import "NativeObject.h"
 public class Object
 {
 	external char[] hashCode(Object obj)
+	/*char** endptr*/
+	external long strtol(char str[], int a, int base)
 	
-	getHashCode() -> String
+	public getHashCode() -> String
 	{
 		return new String(hashCode(this))
+	}
+	
+	public getHashCodeLong() -> long
+	{
+		return strtol(hashCode(this), 0, 16)
 	}
 	
 	public toString() -> String

@@ -239,7 +239,7 @@ public class Destructor extends BodyMethodDeclaration
 			
 			String signature = statement.substring(0, firstParenthIndex);
 			
-			n.iterateWords(signature);
+			n.iterateWords(signature, require);
 			
 			if (n.getName() == null)
 			{

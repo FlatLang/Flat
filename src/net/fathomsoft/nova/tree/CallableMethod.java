@@ -94,6 +94,21 @@ public interface CallableMethod
 	 */
 	public default boolean areCompatibleParameterTypes(Value ... types)
 	{
+		return areCompatibleParameterTypes(true, types);
+	}
+	
+	/**
+	 * Check to see if the given types are compatible with the Method's
+	 * parameters.
+	 * 
+	 * @param searchGeneric Whether or not to search for the actual generic
+	 * 		return type.
+	 * @param types The types to check against the parameters.
+	 * @return Whether or not the types are compatible with the
+	 * 		parameters.
+	 */
+	public default boolean areCompatibleParameterTypes(boolean searchGeneric, Value ... types)
+	{
 		if (types.length != getParameterList().getNumVisibleChildren())
 		{
 			return false;
@@ -101,7 +116,7 @@ public interface CallableMethod
 		
 		for (int i = 0; i < types.length; i++)
 		{
-			if (!SyntaxUtils.isTypeCompatible(getParameterList().getParameter(i), types[i]))
+			if (!SyntaxUtils.isTypeCompatible(getParameterList().getParameter(i), types[i], searchGeneric))
 			{
 				return false;
 			}

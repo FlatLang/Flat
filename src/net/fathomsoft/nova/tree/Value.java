@@ -2,7 +2,9 @@ package net.fathomsoft.nova.tree;
 
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.error.SyntaxMessage;
+import net.fathomsoft.nova.error.UnimplementedOperationException;
 import net.fathomsoft.nova.tree.variables.Variable;
+import net.fathomsoft.nova.tree.variables.VariableDeclaration;
 import net.fathomsoft.nova.util.Location;
 import net.fathomsoft.nova.util.SyntaxUtils;
 
@@ -558,7 +560,7 @@ public abstract class Value extends Node
 		}
 		else if (isGenericType())
 		{
-			builder.append(getGenericType().getDefaultType());
+			builder.append(getGenericReturnType());
 		}
 		else
 		{
@@ -715,6 +717,17 @@ public abstract class Value extends Node
 	public final boolean isGenericType()
 	{
 		return getGenericType() != null;
+	}
+	
+	public String getGenericReturnType()
+	{
+		throw new UnimplementedOperationException("The getGenericReturnType() method must be implemented by class " + this.getClass().getName());
+//		return getGenericType();
+	}
+	
+	public VariableDeclaration getGenericDeclaration()
+	{
+		throw new UnimplementedOperationException("The getGenericDeclaration() method must be implemented by class " + this.getClass().getName());
 	}
 	
 	/**

@@ -157,7 +157,7 @@ public class FieldDeclaration extends InstanceDeclaration
 		localDeclaration.setStart(-1);
 		
 		// Find the localDeclaration bounds.
-		n.iterateWords(declaration, Patterns.IDENTIFIER_BOUNDARIES, data);
+		n.iterateWords(declaration, Patterns.IDENTIFIER_BOUNDARIES, data, require);
 		
 		if (data.localDeclaration.getStart() < 0 || data.localDeclaration.getEnd() < 0)
 		{
@@ -176,7 +176,7 @@ public class FieldDeclaration extends InstanceDeclaration
 		
 		var.cloneTo(n);
 		
-		n.iterateWords(preStatement, data);
+		n.iterateWords(preStatement, data, require);
 		
 		return n;
 	}
