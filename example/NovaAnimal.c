@@ -4,11 +4,11 @@
 
 nova_VTable_Animal nova_VTable_Animal_val =
 {
+	nova_0_Animal_toString,
+	nova_0_Object_equals,
 	nova_0_Animal_getNumLegs,
 	nova_0_Animal_getNumEyes,
 	nova_0_Animal_getDescription,
-	nova_0_Object_toString,
-	nova_0_Object_equals,
 };
 
 Animal* nova_0_Animal_construct(Animal* this, ExceptionData* exceptionData)
@@ -52,6 +52,11 @@ int nova_0_Animal_getNumEyes(Animal* this, ExceptionData* exceptionData)
 String* nova_0_Animal_getDescription(Animal* this, ExceptionData* exceptionData)
 {
 	return nova_String_construct(0, exceptionData, "Its just a stupid animal...");
+}
+
+String* nova_0_Animal_toString(Animal* this, ExceptionData* exceptionData)
+{
+	return this->vtable->nova_virtual_0_getDescription(this, exceptionData);
 }
 
 void nova_Animal_this(Animal* this, ExceptionData* exceptionData)

@@ -7,6 +7,7 @@ typedef struct ArrayListDemo ArrayListDemo;
 #include <Nova.h>
 #include <ExceptionHandler.h>
 #include <NovaExceptionData.h>
+#include <NovaNull.h>
 #include <NovaObject.h>
 #include <NovaString.h>
 #include <NovaSystem.h>
@@ -24,6 +25,9 @@ typedef struct ArrayListDemo ArrayListDemo;
 #include <NovaChar.h>
 #include <NovaDivideByZeroException.h>
 #include <NovaArrayList.h>
+#include <NovaAnimal.h>
+#include <NovaSpider.h>
+#include <NovaDog.h>
 
 typedef struct nova_VTable_ArrayListDemo
 {
@@ -38,7 +42,7 @@ CCLASS_CLASS
 	nova_VTable_ArrayListDemo* vtable;
 )
 
-ArrayListDemo* nova_ArrayListDemo_construct(ArrayListDemo* this, ExceptionData* exceptionData);
+ArrayListDemo* nova_0_ArrayListDemo_construct(ArrayListDemo* this, ExceptionData* exceptionData);
 void nova_del_ArrayListDemo(ArrayListDemo** this, ExceptionData* exceptionData);
 void nova_static_ArrayListDemo_main(ArrayListDemo* this, ExceptionData* exceptionData, String** nova_0_args);
 void nova_ArrayListDemo_this(ArrayListDemo* this, ExceptionData* exceptionData);

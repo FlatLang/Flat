@@ -4,6 +4,8 @@
 
 nova_VTable_Dog nova_VTable_Dog_val =
 {
+	nova_0_Animal_toString,
+	nova_0_Object_equals,
 	nova_0_Dog_getNumLegs,
 	nova_0_Dog_getNumEyes,
 	nova_0_Dog_getDescription,

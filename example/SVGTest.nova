@@ -1,3 +1,5 @@
+package "example"
+
 import "SVG";
 import "SVGCircle";
 import "SVGComponentList"

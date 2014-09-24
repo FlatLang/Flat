@@ -7,6 +7,7 @@ typedef struct Animal Animal;
 #include <Nova.h>
 #include <ExceptionHandler.h>
 #include <NovaExceptionData.h>
+#include <NovaNull.h>
 #include <NovaObject.h>
 #include <NovaString.h>
 #include <NovaSystem.h>
@@ -26,11 +27,11 @@ typedef struct Animal Animal;
 
 typedef struct nova_VTable_Animal
 {
+	String* (*nova_virtual_0_toString)(Animal*, ExceptionData*);
+	char (*nova_virtual_0_equals)(Object*, ExceptionData*, Object*);
 	int (*nova_virtual_0_getNumLegs)(Animal*, ExceptionData*);
 	int (*nova_virtual_0_getNumEyes)(Animal*, ExceptionData*);
 	String* (*nova_virtual_0_getDescription)(Animal*, ExceptionData*);
-	String* (*nova_virtual_0_toString)(Object*, ExceptionData*);
-	char (*nova_virtual_0_equals)(Object*, ExceptionData*, Object*);
 } nova_VTable_Animal;
 
 CCLASS_CLASS
@@ -45,6 +46,7 @@ void nova_del_Animal(Animal** this, ExceptionData* exceptionData);
 int nova_0_Animal_getNumLegs(Animal* this, ExceptionData* exceptionData);
 int nova_0_Animal_getNumEyes(Animal* this, ExceptionData* exceptionData);
 String* nova_0_Animal_getDescription(Animal* this, ExceptionData* exceptionData);
+String* nova_0_Animal_toString(Animal* this, ExceptionData* exceptionData);
 void nova_Animal_this(Animal* this, ExceptionData* exceptionData);
 void nova_Animal_super(Animal* this, ExceptionData* exceptionData);
 

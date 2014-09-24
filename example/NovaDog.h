@@ -7,6 +7,7 @@ typedef struct Dog Dog;
 #include <Nova.h>
 #include <ExceptionHandler.h>
 #include <NovaExceptionData.h>
+#include <NovaNull.h>
 #include <NovaObject.h>
 #include <NovaString.h>
 #include <NovaSystem.h>
@@ -27,6 +28,8 @@ typedef struct Dog Dog;
 
 typedef struct nova_VTable_Dog
 {
+	String* (*nova_virtual_0_toString)(Animal*, ExceptionData*);
+	char (*nova_virtual_0_equals)(Object*, ExceptionData*, Object*);
 	int (*nova_virtual_0_getNumLegs)(Dog*, ExceptionData*);
 	int (*nova_virtual_0_getNumEyes)(Dog*, ExceptionData*);
 	String* (*nova_virtual_0_getDescription)(Dog*, ExceptionData*);
