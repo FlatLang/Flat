@@ -18,7 +18,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.2.4 Jan 5, 2014 at 9:10:49 PM
- * @version	v0.2.29 Aug 29, 2014 at 3:17:45 PM
+ * @version	v0.2.31 Sep 24, 2014 at 4:41:04 PM
  */
 public class LocalDeclaration extends VariableDeclaration
 {
@@ -97,6 +97,14 @@ public class LocalDeclaration extends VariableDeclaration
 		
 		if (n.validateDeclaration())
 		{
+			for (GenericType type : n.getGenericParameterNames())
+			{
+				if (!type.isGenericType() && !SyntaxUtils.validateImported(n, type.getType()))
+				{
+					return null;
+				}
+			}
+			
 			return n;
 		}
 		
