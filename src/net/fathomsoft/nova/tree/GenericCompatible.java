@@ -2,6 +2,7 @@ package net.fathomsoft.nova.tree;
 
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.error.SyntaxErrorException;
+import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.tree.variables.Variable;
 import net.fathomsoft.nova.tree.variables.VariableDeclaration;
 import net.fathomsoft.nova.tree.variables.VariableDeclaration.DeclarationData;
@@ -14,7 +15,7 @@ import net.fathomsoft.nova.util.StringUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.2.29 Aug 28, 2014 at 11:51:16 PM
- * @version	v0.2.30 Sep 2, 2014 at 7:58:20 PM
+ * @version	v0.2.31 Sep 24, 2014 at 4:41:04 PM
  */
 public interface GenericCompatible
 {
@@ -78,6 +79,11 @@ public interface GenericCompatible
 	
 	public default GenericType getGenericParameter(int index)
 	{
+		if (index >= getGenericParameterNames().length)
+		{
+			SyntaxMessage.error("Missing generic type declaration", (Node)this);
+		}
+		
 		return getGenericParameterNames()[index];
 	}
 	
@@ -175,9 +181,7 @@ public interface GenericCompatible
 	 */
 	public static String test(TestContext context)
 	{
-		Import importNode = Import.decodeStatement(context.clazz, "import \"Stack\"", Location.INVALID, true);
-		
-		context.clazz.getFileDeclaration().addChild(importNode);
+		context.importClass("Stack");
 		
 		Node declaration = SyntaxTree.decodeScopeContents(context.method, "Stack<String> s = new Stack<String>()", Location.INVALID, false);
 		
@@ -192,11 +196,33 @@ public interface GenericCompatible
 		{
 			SyntaxTree.decodeScopeContents(context.method, "s.push(4)", Location.INVALID, true);
 			
-			return "Did not throw an error for passing wrong generic type";
+			return "Did not throw an error for passing incorrect generic type";
 		}
 		catch (SyntaxErrorException e)
 		{
 			
+		}
+		
+		try
+		{
+			Node node = SyntaxTree.decodeScopeContents(context.method, "s.push(\"str\")", Location.INVALID, true);
+			
+			context.method.addChild(node);
+		}
+		catch (SyntaxErrorException e)
+		{
+			return "Could not add correct generic type";
+		}
+		
+		try
+		{
+			Node node = SyntaxTree.decodeScopeContents(context.method, "s.push(null)", Location.INVALID, true);
+			
+			context.method.addChild(node);
+		}
+		catch (SyntaxErrorException e)
+		{
+			return "Could not add null generic type";
 		}
 		
 		return null;
