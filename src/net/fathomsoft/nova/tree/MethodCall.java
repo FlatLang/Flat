@@ -19,7 +19,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 10:04:31 PM
- * @version	v0.2.30 Sep 2, 2014 at 7:58:20 PM
+ * @version	v0.2.31 Sep 24, 2014 at 4:41:04 PM
  */
 public class MethodCall extends IIdentifier
 {
@@ -384,6 +384,7 @@ public class MethodCall extends IIdentifier
 		
 		if (isGenericType())
 		{
+			builder.append('(');
 			generateCTypeCast(builder);
 		}
 		
@@ -403,7 +404,14 @@ public class MethodCall extends IIdentifier
 			method.generateCSourceName(builder);
 		}
 		
-		return builder.append(getArgumentList().generateCSource());
+		builder.append(getArgumentList().generateCSource());
+		
+		if (isGenericType())
+		{
+			builder.append(')');
+		}
+		
+		return builder;
 	}
 	
 	/**
@@ -447,6 +455,17 @@ public class MethodCall extends IIdentifier
 		}
 		
 		return super.getGenericReturnType();
+	}
+	
+	@Override
+	public String getType()
+	{
+		if (isGenericType())
+		{
+			return getGenericReturnType();
+		}
+		
+		return super.getType();
 	}
 	
 	/**
