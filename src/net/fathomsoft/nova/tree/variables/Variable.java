@@ -14,7 +14,7 @@ import net.fathomsoft.nova.util.Location;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:02:42 PM
- * @version	v0.2.29 Aug 29, 2014 at 3:17:45 PM
+ * @version	v0.2.31 Sep 24, 2014 at 4:41:04 PM
  */
 public class Variable extends Identifier
 {
@@ -26,6 +26,17 @@ public class Variable extends Identifier
 	public Variable(Node temporaryParent, Location locationIn)
 	{
 		super(temporaryParent, locationIn);
+	}
+	
+	@Override
+	public String getGenericReturnType()
+	{
+		if (isGenericType())
+		{
+			return getGenericType().getDefaultType();
+		}
+		
+		return super.getGenericReturnType();
 	}
 	
 	/**
