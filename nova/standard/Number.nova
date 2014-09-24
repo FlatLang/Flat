@@ -1,0 +1,14 @@
+package "nova/standard"
+
+public class Number
+{
+	public static numDigits(int number) -> int
+	{
+		return -1
+	}
+	
+	public static toString(int value) -> String
+	{
+		return "[Unimplemented]"
+	}
+}

@@ -1,0 +1,26 @@
+package "nova/standard"
+
+public class Byte extends Number
+{
+	public byte value
+	
+	public construct(byte value)
+	{
+		this.value = value
+	}
+	
+	public static numDigits(byte number) -> int
+	{
+		return Long.numDigits(number)
+	}
+	
+	public static toString(byte value) -> String
+	{
+		return Long.toString(value)
+	}
+	
+	public toString() -> String
+	{
+		return toString(value)
+	}
+}

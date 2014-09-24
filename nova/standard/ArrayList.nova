@@ -1,0 +1,45 @@
+package "nova/standard"
+
+public class ArrayList<E>
+{
+	external void arrayCopy(E dest[], int dIndex, E src[], int sIndex, int len, int destArrLen, int size)
+	
+	int	bufferSize
+	
+	visible int	size
+	
+	E data[]
+	
+	public construct()
+	{
+		size = 0
+		bufferSize = 0
+		increaseSize()
+	}
+	
+	public add(E element)
+	{
+		if (size >= bufferSize)
+		{
+			increaseSize()
+		}
+		
+		data[size++] = element
+	}
+	
+	public increaseSize()
+	{
+		bufferSize = bufferSize + 3
+		
+		E tmp[] = new E[bufferSize]
+		
+		arrayCopy(tmp, 0, data, 0, size, bufferSize, 4)
+		
+		data = tmp
+	}
+	
+	public get(int index) -> E
+	{
+		return data[index]
+	}
+}

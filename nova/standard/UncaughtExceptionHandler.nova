@@ -1,0 +1,16 @@
+package "nova/standard"
+
+import "Thread"
+
+public class UncaughtExceptionHandler
+{
+	public UncaughtExceptionHandler()
+	{
+		
+	}
+	
+	public uncaughtException(Thread thread, Exception exception)
+	{
+		
+	}
+}

@@ -1,0 +1,54 @@
+package "nova/standard"
+
+import "ListNode"
+
+public class List<E>
+{
+	ListNode<E>	start
+	ListNode<E>	current
+	
+	public getFirst() -> ListNode<E>
+	{
+		return start
+	}
+	
+	public add(E data)
+	{
+		ListNode<E> node = new ListNode<E>(data)
+		
+		if (start == null)
+		{
+			start   = node
+			current = node
+		}
+		else
+		{
+			current.next = node
+		}
+		current = node
+		
+	}
+	
+	public remove(E data)
+	{
+		if (start.data == data)
+		{
+			start = start.next;
+		}
+		
+		ListNode<E> prev = start
+		ListNode<E> cur  = start.next
+		
+		while (cur != null)
+		{
+			E d = cur.data
+			
+			if (d == data)
+			{
+				prev.next = cur.next
+			}
+			
+			cur = cur.next
+		}
+	}
+}

@@ -1,0 +1,26 @@
+package "nova/standard"
+
+public class Short extends Number
+{
+	public short value
+	
+	public construct(short value)
+	{
+		this.value = value
+	}
+	
+	public static numDigits(short number) -> int
+	{
+		return Long.numDigits(number)
+	}
+	
+	public static toString(short value) -> String
+	{
+		return Long.toString(value)
+	}
+	
+	public toString() -> String
+	{
+		return toString(value)
+	}
+}

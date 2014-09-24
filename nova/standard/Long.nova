@@ -1,0 +1,66 @@
+package "nova/standard"
+
+public class Long extends Number
+{
+	visible long value
+	
+	public construct(long value)
+	{
+		this.value = value
+	}
+	
+	public static numDigits(long number) -> int
+	{
+		if (number < 0)
+		{
+			return numDigits(-number) + 1
+		}
+		
+		int size
+		
+		number = number / 10
+		
+		for (size = 1; number > 0; size++)
+		{
+			number = number / 10
+		}
+		
+		return size
+	}
+	
+	public static toString(long value) -> String
+	{
+		int  charOffset = '0'
+		int  digits  = numDigits(value)
+		char data[]  = new char[digits + 1]
+		
+		data[digits] = '\0'
+		
+		int  offset  = 0
+		
+		if (value < 0)
+		{
+			data[0] = '-'
+			
+			value  = -value
+			
+			offset = 1
+		}
+		
+		int nums = digits-- - offset
+		
+		for (int index = 0; index < nums; index++)
+		{
+			data[digits - index] = (char)(charOffset + value % 10)
+			
+			value = value / 10
+		}
+		
+		return new String(data)
+	}
+	
+	public toString() -> String
+	{
+		return toString(value)
+	}
+}

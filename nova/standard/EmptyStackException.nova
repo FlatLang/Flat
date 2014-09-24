@@ -1,0 +1,6 @@
+package "nova/standard"
+
+public class EmptyStackException extends Exception
+{
+	
+}
