@@ -73,7 +73,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:00:04 PM
- * @version	v0.2.30 Sep 2, 2014 at 7:58:20 PM
+ * @version	v0.2.31 Sep 24, 2014 at 4:41:04 PM
  */
 public class Nova
 {
@@ -125,7 +125,7 @@ public class Nova
 	public static final int		LINUX         = 3;
 	
 	public static final String	LANGUAGE_NAME = "Nova";
-	public static final String	VERSION       = "v0.2.28";
+	public static final String	VERSION       = "v0.2.31";
 	
 	/**
 	 * Find out which operating system the compiler is running on.
@@ -223,7 +223,7 @@ public class Nova
 	{
 		String directory = getWorkingDirectoryPath() + "example/";
 		String stability = getWorkingDirectoryPath() + "stabilitytest/";
-		String standard  = getWorkingDirectoryPath() + "standard/";
+		String standard  = getWorkingDirectoryPath() + "nova/standard/";
 		
 		if (OS == WINDOWS)
 		{
@@ -254,20 +254,20 @@ public class Nova
 //				formatPath(stability + "StabilityExceptionHandler.nova"),
 //				formatPath(stability + "ThreadImplementation.nova"),
 //				formatPath(stability + "UnstableException.nova"),
-				formatPath(directory + "GenericDemo.nova"),
+//				formatPath(directory + "GenericDemo.nova"),
 //				formatPath(directory + "MathDemo.nova"),
 //				formatPath(directory + "ThreadDemo.nova"),
 //				formatPath(directory + "ThreadDemoImplementation.nova"),
 //				formatPath(directory + "PolymorphismDemo.nova"),
-//				formatPath(directory + "Animal.nova"),
-//				formatPath(directory + "Spider.nova"),
-//				formatPath(directory + "Dog.nova"),
+				formatPath(directory + "Animal.nova"),
+				formatPath(directory + "Spider.nova"),
+				formatPath(directory + "Dog.nova"),
+				formatPath(directory + "ArrayListDemo.nova"),
 //				formatPath(directory + "IntegerTest.nova"),
 //				formatPath(directory + "FileTest.nova"),
 //				formatPath(directory + "SVGTest.nova"),
 //				formatPath(directory + "ExceptionHandlingDemo.nova"),
 //				formatPath(directory + "NonWholeDivisionException.nova"),
-//				formatPath(directory + "ArrayListDemo.nova"),
 //				formatPath(directory + "ClosureDemo.nova"),
 //				formatPath(directory + "Person.nova"),
 //				formatPath(directory + "BodyBuilder.nova"),
@@ -341,7 +341,7 @@ public class Nova
 		{
 			"-dir", formatPath(directory + "../include"),
 			"-dir", formatPath(directory + "../include/gc"),
-			"-dir", formatPath(directory + "../standard"),
+			"-dir", formatPath(directory + "../nova/standard"),
 		};
 		
 //		for (String location : standardFiles)
@@ -673,7 +673,7 @@ public class Nova
 		}
 		else if (compiler == TCC)
 		{
-			compilerDir = new File(removeSurroundingQuotes(formatPath(workingDir + "/../compiler/tcc")));
+			compilerDir = new File(StringUtils.removeSurroundingQuotes(formatPath(workingDir + "/../compiler/tcc")));
 			
 			cmd.append("compiler/tcc/tcc.exe ");
 		}
@@ -978,7 +978,7 @@ public class Nova
 	{
 		for (String dir : includeDirectories)
 		{
-			String location = removeSurroundingQuotes(dir) + "/" + filename;
+			String location = StringUtils.removeSurroundingQuotes(dir) + "/" + filename;
 			
 			File f = new File(location);
 			
@@ -989,28 +989,6 @@ public class Nova
 		}
 		
 		return null;
-	}
-	
-	/**
-	 * Remove the surrounding double quotes from the given input String.<br>
-	 * For example:
-	 * <blockquote><pre>
-	 * String s = "\"C:/myfile/test\"";
-	 * String out = removeSurroundingQuotes(s);</pre></blockquote>
-	 * The out String would contain the data "C:/myfile/test" without
-	 * the surrounding quotes.
-	 * 
-	 * @param input The String to remove the surrounding quotes from.
-	 * @return The String without the surrounding quotes.
-	 */
-	private String removeSurroundingQuotes(String input)
-	{
-		while (input.length() >= 2 && input.charAt(0) == '"' && input.charAt(input.length() - 1) == '"')
-		{
-			input = input.substring(1, input.length() - 1);
-		}
-		
-		return input;
 	}
 	
 	/**
@@ -1145,7 +1123,7 @@ public class Nova
 				
 				if (args[i].startsWith("\""))
 				{
-					args[i] = removeSurroundingQuotes(args[i]);
+					args[i] = StringUtils.removeSurroundingQuotes(args[i]);
 				}
 				
 				// If the argument is one of the first arguments passed
