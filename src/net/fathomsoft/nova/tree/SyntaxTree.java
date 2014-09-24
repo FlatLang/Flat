@@ -28,7 +28,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:00:15 PM
- * @version	v0.2.29 Aug 29, 2014 at 3:17:45 PM
+ * @version	v0.2.31 Sep 24, 2014 at 4:41:04 PM
  */
 public class SyntaxTree
 {
@@ -61,7 +61,7 @@ public class SyntaxTree
 	
 	public static final Class<?>	FIRST_PASS_CLASSES[] = new Class<?>[]
 	{
-		Import.class, ClassDeclaration.class
+		Import.class, ClassDeclaration.class, Package.class
 	};
 	
 	public static final Class<?>	SECOND_PASS_CLASSES[] = new Class<?>[]
@@ -460,6 +460,7 @@ public class SyntaxTree
 				else if (node == null && type == Literal.class) node = Literal.decodeStatement(parent, statement, location, require);
 				else if (node == null && type == Loop.class) node = Loop.decodeStatement(parent, statement, location, require);
 				else if (node == null && type == BodyMethodDeclaration.class) node = BodyMethodDeclaration.decodeStatement(parent, statement, location, require);
+				else if (node == null && type == Package.class) node = Package.decodeStatement(parent, statement, location, require);
 				else if (node == null && type == Priority.class) node = Priority.decodeStatement(parent, statement, location, require);
 				else if (node == null && type == Return.class) node = Return.decodeStatement(parent, statement, location, require);
 				else if (node == null && type == UnaryOperation.class) node = UnaryOperation.decodeStatement(parent, statement, location, require);
@@ -844,11 +845,6 @@ public class SyntaxTree
 	 */
 	public static VariableDeclaration findDeclaration(Node parent, String statement)
 	{
-//		if (parent instanceof StaticClassReference)
-//		{
-//			parent = parent.getProgram().getClassDeclaration(((StaticClassReference) parent).getName());
-//		}
-		
 		VariableDeclaration node = null;
 		
 		if (SyntaxUtils.isValidIdentifier(statement))
@@ -879,19 +875,26 @@ public class SyntaxTree
 	 */
 	private static FieldDeclaration checkForVariableAccess(Node parent, String statement)
 	{
+		Identifier id = null;
+		
 		if (parent instanceof Variable)
 		{
-			VariableDeclaration var   = ((Variable)parent).getDeclaration();
-			FieldDeclaration    field = var.getTypeClass().getField(statement);
-			
-			return validateFieldAccess(parent, var, field);
+			id = ((Variable)parent).getDeclaration();
+		}
+		else if (parent instanceof MethodCall)
+		{
+			id = (MethodCall)parent;
 		}
 		else if (parent instanceof StaticClassReference)
 		{
-			StaticClassReference ref   = (StaticClassReference)parent;
-			FieldDeclaration     field = ref.getTypeClass().getField(statement);
+			id = (StaticClassReference)parent;
+		}
+		
+		if (id != null)
+		{
+			FieldDeclaration field = id.getTypeClass().getField(statement);
 			
-			return validateFieldAccess(parent, ref, field);
+			return validateFieldAccess(parent, id, field);
 		}
 		
 		return null;
