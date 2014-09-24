@@ -9,7 +9,7 @@ import java.util.regex.Matcher;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Mar 13, 2014 at 9:38:42 PM
- * @version	v0.2.29 Aug 29, 2014 at 3:17:45 PM
+ * @version	v0.2.31 Sep 24, 2014 at 4:41:04 PM
  */
 public class StringUtils
 {
@@ -233,6 +233,28 @@ public class StringUtils
 		}
 		
 		return num;
+	}
+
+	public static String trimFirstWord(String source)
+	{
+		return trimFirstWord(source, false);
+	}
+	
+	public static String trimFirstWord(String source, boolean trimTrailingWhitespace)
+	{
+		int index = StringUtils.findNextWhitespaceIndex(source, 0);
+		
+		if (trimTrailingWhitespace)
+		{
+			index = StringUtils.findNextNonWhitespaceIndex(source, index + 1);
+			
+			if (index < 0)
+			{
+				index = source.length();
+			}
+		}
+		
+		return source.substring(index, source.length());
 	}
 	
 	/**
@@ -1758,5 +1780,32 @@ public class StringUtils
 		dest[array.length] = str;
 		
 		return dest;
+	}
+	
+	public static boolean isSurroundedByQuotes(String input)
+	{
+		return input.length() >= 2 && input.charAt(0) == '"' && input.charAt(input.length() - 1) == '"';
+	}
+	
+	/**
+	 * Remove the surrounding double quotes from the given input String.<br>
+	 * For example:
+	 * <blockquote><pre>
+	 * String s = "\"C:/myfile/test\"";
+	 * String out = removeSurroundingQuotes(s);</pre></blockquote>
+	 * The out String would contain the data "C:/myfile/test" without
+	 * the surrounding quotes.
+	 * 
+	 * @param input The String to remove the surrounding quotes from.
+	 * @return The String without the surrounding quotes.
+	 */
+	public static String removeSurroundingQuotes(String input)
+	{
+		while (isSurroundedByQuotes(input))
+		{
+			input = input.substring(1, input.length() - 1);
+		}
+		
+		return input;
 	}
 }
