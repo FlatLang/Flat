@@ -17,7 +17,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Feb 18, 2014 at 8:57:00 PM
- * @version	v0.2.30 Sep 2, 2014 at 7:58:20 PM
+ * @version	v0.2.31 Sep 24, 2014 at 4:41:04 PM
  */
 public class FileDeclaration extends Node
 {
@@ -237,12 +237,24 @@ public class FileDeclaration extends Node
 	 */
 	public ClassDeclaration getClassDeclaration()
 	{
-		if (getNumChildren() <= super.getNumDefaultChildren() + 1)
+		if (getNumChildren() > getNumDecodedChildren())
 		{
-			return null;
+			int offset = 1;
+			
+			if (getChild(getNumDecodedChildren()) instanceof Package)
+			{
+				if (getNumChildren() <= getNumDecodedChildren() + 1)
+				{
+					SyntaxMessage.error("Missing class declaration", this);
+				}
+				
+				offset++;
+			}
+			
+			return (ClassDeclaration)getChild(super.getNumDefaultChildren() + offset);
 		}
 		
-		return (ClassDeclaration)getChild(super.getNumDefaultChildren() + 1);
+		return null;
 	}
 	
 	/**
@@ -333,7 +345,16 @@ public class FileDeclaration extends Node
 	@Override
 	public void addChild(Node child)
 	{
-		if (child instanceof Import)
+		if (child instanceof Package)
+		{
+			if (getNumChildren() > getNumDefaultChildren())
+			{
+				SyntaxMessage.error("Package statement must be the first statement in the file", child);
+			}
+			
+			super.addChild(child);
+		}
+		else if (child instanceof Import)
 		{
 			getImportList().addChild(child);
 		}
