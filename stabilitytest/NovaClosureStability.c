@@ -146,11 +146,11 @@ int nova_static_ClosureStability_multiply(ClosureStability* this, ExceptionData*
 int nova_static_ClosureStability_pow(ClosureStability* this, ExceptionData* exceptionData, int nova_0_base, int nova_0_pow)
 {
 	int nova_1_value;
-	int nova_1_i;
+	int nova_2_i;
 	
 	nova_1_value = nova_0_base;
-	nova_1_i = 0;
-	for (; nova_1_i < nova_0_pow - 1; nova_1_i++)
+	nova_2_i = 0;
+	for (; nova_2_i < nova_0_pow - 1; nova_2_i++)
 	{
 		nova_1_value = nova_1_value * nova_0_base;
 	}

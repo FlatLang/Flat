@@ -96,26 +96,26 @@ void nova_static_SyntaxStability_checkForLoops(SyntaxStability* this, ExceptionD
 	int nova_1_num;
 	int nova_1_num2;
 	int nova_1_num3;
-	int nova_1_j;
-	int nova_1_i;
-	int nova_1_q;
+	int nova_2_j;
+	int nova_3_i;
+	int nova_4_q;
 	
 	nova_static_0_Console_write(0, exceptionData, nova_String_construct(0, exceptionData, "Checking inline for loop... "));
 	nova_1_num = 0;
 	nova_1_num2 = 0;
 	nova_1_num3 = 0;
-	nova_1_j = 0;
-	for (; nova_1_j < 100; nova_1_j++)
+	nova_2_j = 0;
+	for (; nova_2_j < 100; nova_2_j++)
 	{
 		nova_1_num++;
 	}
-	nova_1_i = 0;
-	for (; nova_1_i < 100; nova_1_i++)
+	nova_3_i = 0;
+	for (; nova_3_i < 100; nova_3_i++)
 	{
 		nova_1_num2++;
 	}
-	nova_1_q = 0;
-	for (; nova_1_q < 100; nova_1_q++)
+	nova_4_q = 0;
+	for (; nova_4_q < 100; nova_4_q++)
 	{
 		if (1)
 		{

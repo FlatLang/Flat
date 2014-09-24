@@ -54,41 +54,41 @@ void nova_static_ThreadStability_test(ThreadStability* this, ExceptionData* exce
 void nova_static_ThreadStability_createThreads(ThreadStability* this, ExceptionData* exceptionData, StabilityTest* nova_0_program, ThreadImplementation** nova_0_threads, int nova_0_amount)
 {
 	StabilityExceptionHandler* nova_1_handler;
-	int nova_1_i;
+	int nova_2_i;
 	
 	nova_1_handler = nova_StabilityExceptionHandler_construct(0, exceptionData, nova_0_program);
-	nova_1_i = 0;
-	for (; nova_1_i < nova_0_amount; nova_1_i++)
+	nova_2_i = 0;
+	for (; nova_2_i < nova_0_amount; nova_2_i++)
 	{
-		nova_0_threads[nova_1_i] = nova_ThreadImplementation_construct(0, exceptionData, 10, 10);
-		nova_Thread_start((Thread*)(nova_0_threads[nova_1_i]), exceptionData);
+		nova_0_threads[nova_2_i] = nova_ThreadImplementation_construct(0, exceptionData, 10, 10);
+		nova_Thread_start((Thread*)(nova_0_threads[nova_2_i]), exceptionData);
 	}
 }
 
 void nova_static_ThreadStability_checkMemoryAccess(ThreadStability* this, ExceptionData* exceptionData)
 {
-	int nova_1_i;
+	int nova_2_i;
 	
 	nova_static_Thread_sleep(0, exceptionData, (long_long)(30));
 	nova_static_0_Console_write(0, exceptionData, nova_String_construct(0, exceptionData, "Checking memory access with multi-threading... "));
-	nova_1_i = 0;
-	for (; nova_1_i < 1000; nova_1_i++)
+	nova_2_i = 0;
+	for (; nova_2_i < 1000; nova_2_i++)
 	{
 		String* nova_2_s;
 		
-		nova_2_s = nova_static_1_Int_toString(0, exceptionData, nova_1_i);
+		nova_2_s = nova_static_1_Int_toString(0, exceptionData, nova_2_i);
 	}
 	nova_static_0_Console_writeLine(0, exceptionData, nova_String_construct(0, exceptionData, "OK"));
 }
 
 void nova_static_ThreadStability_joinThreads(ThreadStability* this, ExceptionData* exceptionData, ThreadImplementation** nova_0_threads, int nova_0_amount)
 {
-	int nova_1_i;
+	int nova_2_i;
 	
-	nova_1_i = 0;
-	for (; nova_1_i < nova_0_amount; nova_1_i++)
+	nova_2_i = 0;
+	for (; nova_2_i < nova_0_amount; nova_2_i++)
 	{
-		nova_Thread_join((Thread*)(nova_0_threads[nova_1_i]), exceptionData);
+		nova_Thread_join((Thread*)(nova_0_threads[nova_2_i]), exceptionData);
 	}
 }
 

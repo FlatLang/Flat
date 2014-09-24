@@ -1,3 +1,5 @@
+package "stabilitytest"
+
 import "Thread"
 
 public class ThreadImplementation extends Thread

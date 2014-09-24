@@ -84,13 +84,13 @@ void nova_static_FileStability_createFile(FileStability* this, ExceptionData* ex
 
 void nova_static_FileStability_writeToFile(FileStability* this, ExceptionData* exceptionData, StabilityTest* nova_0_program, File* nova_0_f)
 {
-	int nova_1_i;
+	int nova_2_i;
 	String* nova_local_0;
 	
 	nova_local_0 = nova_2_Int_toString(nova_Int_construct(0, exceptionData, nova_static_FileStability_lines), exceptionData);
 	nova_static_0_Console_write(0, exceptionData, nova_0_String_concat(nova_String_construct(0, exceptionData, "Writing "), exceptionData, nova_local_0->vtable->nova_virtual_0_concat(nova_local_0, exceptionData, nova_String_construct(0, exceptionData, " lines of data to file... "))));
-	nova_1_i = 0;
-	for (; nova_1_i < nova_static_FileStability_lines; nova_1_i++)
+	nova_2_i = 0;
+	for (; nova_2_i < nova_static_FileStability_lines; nova_2_i++)
 	{
 		nova_File_writeLine(nova_0_f, exceptionData, nova_static_FileStability_inputString);
 	}
