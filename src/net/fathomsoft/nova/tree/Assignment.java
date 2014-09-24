@@ -15,7 +15,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:19:44 PM
- * @version	v0.2.28 Aug 20, 2014 at 12:10:45 AM
+ * @version	v0.2.31 Sep 24, 2014 at 4:41:04 PM
  */
 public class Assignment extends Node
 {
@@ -303,6 +303,8 @@ public class Assignment extends Node
 		
 		Location newLoc = new Location(getLocationIn());
 		Variable newVar = var.generateUsableVariable(this, newLoc);
+		
+		var.setLocationIn(getLocationIn());
 		
 		return newVar;
 	}
