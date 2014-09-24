@@ -22,7 +22,7 @@ import net.fathomsoft.nova.util.StringUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:00:11 PM
- * @version	v0.2.29 Aug 29, 2014 at 3:17:45 PM
+ * @version	v0.2.31 Sep 24, 2014 at 4:41:04 PM
  */
 public abstract class Node
 {
@@ -1062,7 +1062,7 @@ public abstract class Node
 	 */
 	public StringBuilder generateCHeader(StringBuilder builder)
 	{
-		throw new UnimplementedOperationException("The C Header implementation for this feature has not been implemented yet.");
+		throw new UnimplementedOperationException("The C Header implementation for " + this.getClass().getName() + " has not been implemented yet.");
 	}
 	
 	/**
@@ -1075,7 +1075,7 @@ public abstract class Node
 	 */
 	public StringBuilder generateCHeaderFragment(StringBuilder builder)
 	{
-		throw new UnimplementedOperationException("The C Header fragment implementation for this feature has not been implemented yet.");
+		throw new UnimplementedOperationException("The C Header fragment implementation for " + this.getClass().getName() + " has not been implemented yet.");
 	}
 	
 	/**
@@ -1088,7 +1088,7 @@ public abstract class Node
 	 */
 	public StringBuilder generateCSource(StringBuilder builder)
 	{
-		throw new UnimplementedOperationException("The C Source implementation for this feature has not been implemented yet.");
+		throw new UnimplementedOperationException("The C Source implementation for " + this.getClass().getName() + " has not been implemented yet.");
 	}
 	
 	/**
@@ -1101,7 +1101,7 @@ public abstract class Node
 	 */
 	public StringBuilder generateCSourceFragment(StringBuilder builder)
 	{
-		throw new UnimplementedOperationException("The C Source fragment implementation for this feature has not been implemented yet.");
+		throw new UnimplementedOperationException("The C Source fragment implementation for " + this.getClass().getName() + " has not been implemented yet.");
 	}
 	
 	/**
