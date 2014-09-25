@@ -41,7 +41,7 @@ public class GenericDemo
 		
 		HashMap<Int, String> words = new HashMap()
 		
-		Int nums[] = new Int[6];
+		Int nums[] = new Int[6]
 		
 		nums[0] = new Int(0)
 		nums[1] = new Int(1)

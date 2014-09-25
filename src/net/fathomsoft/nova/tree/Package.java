@@ -69,7 +69,7 @@ public class Package extends Node
 	{
 		if (statement.startsWith(PACKAGE_KEYWORD))
 		{
-			Package n = new Package(parent, location);
+			Package n = generateDefaultPackage(parent, location);
 			
 			statement = StringUtils.trimFirstWord(statement, true);
 			
@@ -89,7 +89,7 @@ public class Package extends Node
 		return null;
 	}
 	
-	public boolean validatePackageExists(boolean require)
+	private boolean validatePackageExists(boolean require)
 	{
 		String directories[] = location.split("/");
 		
@@ -127,6 +127,13 @@ public class Package extends Node
 	private void throwIncorrectPackageException(String message)
 	{
 		SyntaxMessage.error(message, this);
+	}
+	
+	public static Package generateDefaultPackage(Node parent, Location location)
+	{
+		Package n = new Package(parent, location);
+		
+		return n;
 	}
 	
 	/**

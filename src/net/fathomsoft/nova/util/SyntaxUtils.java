@@ -1746,7 +1746,7 @@ public class SyntaxUtils
 	 */
 	public static boolean isTypeCompatible(Value required, Value given, boolean searchGeneric)
 	{
-		if (required.isGenericType() && searchGeneric)
+		if (searchGeneric && required.isGenericType())
 		{
 			if (!(required instanceof Parameter))
 			{

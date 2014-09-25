@@ -230,6 +230,21 @@ public class FileDeclaration extends Node
 		return null;
 	}
 	
+	public Package getPackage()
+	{
+		if (getNumChildren() > getNumDecodedChildren() && getChild(getNumDecodedChildren()) instanceof Package)
+		{
+			return (Package)getChild(getNumDecodedChildren());
+		}
+		
+		return null;
+	}
+	
+	private void setPackage(Package n)
+	{
+		addChild(getNumDecodedChildren(), n);
+	}
+	
 	/**
 	 * Get the ClassDeclaration of the class that is contained within the file.
 	 * 
@@ -241,7 +256,7 @@ public class FileDeclaration extends Node
 		{
 			int offset = 1;
 			
-			if (getChild(getNumDecodedChildren()) instanceof Package)
+			if (getPackage() != null)
 			{
 				if (getNumChildren() <= getNumDecodedChildren() + 1)
 				{
@@ -312,20 +327,39 @@ public class FileDeclaration extends Node
 	@Override
 	public Node validate(int phase)
 	{
-		if (phase == SyntaxTree.PHASE_METHOD_CONTENTS)
+		if (phase == SyntaxTree.PHASE_CLASS_DECLARATION)
 		{
-			for (int i = getImportList().getNumChildren() - 1; i >= 0; i--)
-			{
-				Import node = (Import)getImportList().getChild(i);
-				
-				if (!node.isUsed() || node.getLocation().equals(getName()))
-				{
-					getImportList().removeChild(i);
-				}
-			}
+			validatePackage();
+		}
+		else if (phase == SyntaxTree.PHASE_METHOD_CONTENTS)
+		{
+			validateImports();
 		}
 		
 		return this;
+	}
+	
+	private void validatePackage()
+	{
+		if (getPackage() == null)
+		{
+			Package p = Package.generateDefaultPackage(this, Location.INVALID);
+			
+			setPackage(p);
+		}
+	}
+	
+	private void validateImports()
+	{
+		for (int i = getImportList().getNumChildren() - 1; i >= 0; i--)
+		{
+			Import node = (Import)getImportList().getChild(i);
+			
+			if (!node.isUsed() || node.getLocation().equals(getName()))
+			{
+				getImportList().removeChild(i);
+			}
+		}
 	}
 	
 	/**
@@ -352,7 +386,7 @@ public class FileDeclaration extends Node
 				SyntaxMessage.error("Package statement must be the first statement in the file", child);
 			}
 			
-			super.addChild(child);
+			setPackage((Package)child);
 		}
 		else if (child instanceof Import)
 		{

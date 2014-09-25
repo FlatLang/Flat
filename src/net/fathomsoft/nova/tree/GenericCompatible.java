@@ -89,9 +89,8 @@ public interface GenericCompatible
 	
 	public default GenericType getGenericParameterInstance(String parameterName)
 	{
-		VariableDeclaration decl = (VariableDeclaration)this;
-		
-		ClassDeclaration clazz = decl.getTypeClass();
+		VariableDeclaration decl  = (VariableDeclaration)this;
+		ClassDeclaration    clazz = decl.getTypeClass();
 		
 		int index = clazz.getGenericParameterIndex(parameterName);
 		
