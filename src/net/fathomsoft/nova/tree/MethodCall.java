@@ -181,14 +181,31 @@ public class MethodCall extends IIdentifier
 	 */
 	public VariableDeclaration getMethodDeclaration()
 	{
-		MethodDeclaration method = getDeclaringClass().getMethod(getName(), getArgumentList().getTypes());
+		VariableDeclaration closure = getClosureDeclaration();
 		
-		if (method != null)
+		if (closure != null)
 		{
-			return method;
+			return closure;
 		}
 		
-		return getParentMethod().getParameter(getName());
+		return  getDeclaringClass().getMethod(getName(), getArgumentList().getTypes());
+	}
+	
+	private VariableDeclaration getClosureDeclaration()
+	{
+		Parameter param = getParentMethod().getParameter(getName());
+		
+		if (param instanceof ClosureDeclaration)
+		{
+			return param;
+		}
+		
+		return null;
+	}
+	
+	public boolean isClosureCall()
+	{
+		return getClosureDeclaration() != null;
 	}
 	
 	/**
@@ -426,18 +443,13 @@ public class MethodCall extends IIdentifier
 	@Override
 	public VariableDeclaration getGenericDeclaration()
 	{
-		VariableDeclaration method = getMethodDeclaration();
+		Identifier identifier = getReferenceNode();
 		
-//		if (method.isGenericType())
+		if (identifier instanceof Variable)
 		{
-			Identifier identifier = getReferenceNode();
+			Variable variable = (Variable)identifier;
 			
-			if (identifier instanceof Variable)
-			{
-				Variable variable = (Variable)identifier;
-				
-				return variable.getDeclaration();
-			}
+			return variable.getDeclaration();
 		}
 		
 		return null;
@@ -455,17 +467,6 @@ public class MethodCall extends IIdentifier
 		}
 		
 		return super.getGenericReturnType();
-	}
-	
-	@Override
-	public String getType()
-	{
-		if (isGenericType())
-		{
-			return getGenericReturnType();
-		}
-		
-		return super.getType();
 	}
 	
 	/**
