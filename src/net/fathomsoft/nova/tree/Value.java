@@ -15,7 +15,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.2.4 May 2, 2014 at 11:14:37 PM
- * @version	v0.2.30 Sep 2, 2014 at 7:58:20 PM
+ * @version	v0.2.32 Sep 26, 2014 at 12:17:33 PM
  */
 public abstract class Value extends Node
 {
@@ -268,7 +268,7 @@ public abstract class Value extends Node
 	 */
 	public ClassDeclaration getTypeClass()
 	{
-		return getProgram().getClassDeclaration(getTypeClassName());
+		return getProgram().getClassDeclaration(getTypeClassLocation());
 	}
 	
 	/**
@@ -280,35 +280,25 @@ public abstract class Value extends Node
 	 */
 	public String getTypeClassName()
 	{
-		ClassDeclaration clazz = getProgram().getClassDeclaration(getType());
+		return SyntaxUtils.getClassName(getTypeClassLocation());
+	}
+	
+	public String getTypeClassLocation()
+	{
+		String type = null;
 		
-		if (clazz != null)
+		if (getParentClass(true).containsGenericParameter(getType()))
 		{
-			return clazz.getName();
+			type = getParentClass().getGenericParameter(getType()).getDefaultType();
+		}
+		else
+		{
+			type = SyntaxUtils.getPrimitiveWrapperClassName(getType());
 		}
 		
-		if (SyntaxUtils.isPrimitiveType(getType()))
-		{
-			String name = SyntaxUtils.getPrimitiveWrapperClassName(getType());
-			
-			if (name != null)
-			{
-				clazz = getProgram().getClassDeclaration(name);
-				
-				if (clazz == null)
-				{
-					SyntaxMessage.error("Could not find class '" + name + "'", this);
-				}
-				
-				return clazz.getName();
-			}
-		}
-		else if (getParentClass().containsGenericParameter(getType()))
-		{
-			return getParentClass().getGenericParameter(getType()).getDefaultType();
-		}
+		String location = getFileDeclaration().getImportList().getAbsoluteClassLocation(type);
 		
-		return null;
+		return location;
 	}
 	
 	/**
@@ -512,6 +502,34 @@ public abstract class Value extends Node
 		return generateCTypeCast(builder).append(NULL_IDENTIFIER);
 	}
 	
+	public StringBuilder generateCTypeClassName()
+	{
+		return generateCTypeClassName(new StringBuilder());
+	}
+	
+	public StringBuilder generateCTypeClassName(StringBuilder builder)
+	{
+		String type = getType();
+		
+		if (isGenericType())
+		{
+			type = getGenericReturnType();
+		}
+		
+		ClassDeclaration clazz = SyntaxUtils.getImportedClass(getFileDeclaration(), type);
+		
+		if (clazz == null)
+		{
+			builder.append(type);
+		}
+		else
+		{
+			clazz.generateCSourceName(builder);
+		}
+		
+		return builder;
+	}
+	
 	/**
 	 * Generate the C syntax for the type of the specified Value.
 	 * 
@@ -558,13 +576,9 @@ public abstract class Value extends Node
 		{
 			builder.append("char");
 		}
-		else if (isGenericType())
-		{
-			builder.append(getGenericReturnType());
-		}
 		else
 		{
-			builder.append(getType());
+			generateCTypeClassName(builder);
 		}
 		
 		if (isReference())
