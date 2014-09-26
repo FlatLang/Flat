@@ -81,7 +81,7 @@ public class Constructor extends BodyMethodDeclaration
 		
 		if (classDeclaration.containsNonStaticData() || classDeclaration.containsVirtualMethods())
 		{
-			builder.append("CCLASS_NEW(").append(getTypeClassName()).append(", ").append(ParameterList.OBJECT_REFERENCE_IDENTIFIER);
+			builder.append("CCLASS_NEW(").append(getTypeClass().generateCSourceName()).append(", ").append(ParameterList.OBJECT_REFERENCE_IDENTIFIER);
 			
 			if (!classDeclaration.containsNonStaticPrivateData())
 			{
@@ -155,54 +155,6 @@ public class Constructor extends BodyMethodDeclaration
 		builder.append('}').append('\n');
 		
 		return builder;
-	}
-	
-	/**
-	 * @see net.fathomsoft.nova.tree.MethodDeclaration#generateCSourcePrototype(StringBuilder)
-	 */
-	@Override
-	public StringBuilder generateCSourcePrototype(StringBuilder builder)
-	{
-		return generateCSourceSignature(builder).append(";");
-	}
-	
-	/**
-	 * @see net.fathomsoft.nova.tree.MethodDeclaration#generateCSourceSignature(StringBuilder)
-	 */
-	@Override
-	public StringBuilder generateCSourceSignature(StringBuilder builder)
-	{
-		if (isConstant())
-		{
-			builder.append(getConstantText()).append(' ');
-		}
-		
-		builder.append(getType()).append('*');
-		
-		builder.append(' ');
-		
-		generateCSourceName(builder).append('(');
-		
-		getParameterList().generateCSource(builder);
-		
-		builder.append(')');
-		
-		return builder;
-	}
-	
-	@Override
-	public StringBuilder generateCSourceName(StringBuilder builder)
-	{
-		builder.append(Nova.LANGUAGE_NAME.toLowerCase()).append('_');
-		
-		if (getOverloadID() >= 0)
-		{
-			builder.append(getOverloadID()).append('_');
-		}
-		
-		builder.append(getParentClass().getName()).append('_');
-		
-		return builder.append(IDENTIFIER);
 	}
 	
 	/**
