@@ -1,6 +1,6 @@
 package "nova/standard"
 
-import "NativeThread.h"
+import "nova/standard/NativeThread.h"
 
 public class Thread
 {

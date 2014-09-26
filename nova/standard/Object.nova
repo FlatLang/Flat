@@ -1,6 +1,6 @@
 package "nova/standard"
 
-import "NativeObject.h"
+import "nova/standard/NativeObject.h"
 
 public class Object
 {

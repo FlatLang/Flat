@@ -1,6 +1,6 @@
 package "nova/standard"
 
-import "File"
+import "nova/standard/File"
 
 public class SVGComponentList
 {

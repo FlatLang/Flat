@@ -1,4 +1,4 @@
-package "nova/standard"
+package "nova/standard/datastruct"
 
 public class Stack<E>
 {
@@ -10,21 +10,6 @@ public class Stack<E>
 		
 		node.next = top
 		top       = node
-	}
-	
-	public test()
-	{
-		Stack<String> s = new Stack<String>()
-		
-		s.push("$#")
-		
-		push("#$")
-		
-		s.pop()
-		
-		String str = (String)pop()
-		
-		Console.writeLine(str)
 	}
 	
 	public pop() -> E

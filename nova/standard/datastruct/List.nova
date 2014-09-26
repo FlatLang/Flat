@@ -1,6 +1,4 @@
-package "nova/standard"
-
-import "ListNode"
+package "nova/standard/datastruct"
 
 public class List<E>
 {

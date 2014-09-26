@@ -4,10 +4,8 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <NovaObject.h>
+#include <nova/standard/nova_standard_NovaObject.h>
 
-//typedef struct Object Object;
-
-char* hashCode(Object* obj);
+char* hashCode(nova_standard_NovaObject* obj);
 
 #endif

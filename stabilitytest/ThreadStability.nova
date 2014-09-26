@@ -1,6 +1,6 @@
 package "stabilitytest"
 
-import "Thread"
+import "nova/standard/Thread"
 
 public class ThreadStability
 {

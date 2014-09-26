@@ -1,9 +1,6 @@
 package "nova/standard"
 
-import "SVGComponent"
-import "SVGComponentList"
-import "File"
-import "Math"
+import "nova/standard/File"
 
 public class SVGCircle extends SVGComponent
 {

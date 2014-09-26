@@ -1,7 +1,7 @@
 #ifndef NOVA_NOVA
 #define NOVA_NOVA
 
-#include <NovaNull.h>
+#include <nova/standard/nova_standard_NovaNull.h>
 
 /**
  * @dest Destination array
@@ -20,6 +20,6 @@ long_long currentTimeMillis();
 
 void copy_string(char* target, char* source);
 
-extern Null* nova_null;
+extern nova_standard_NovaNull* nova_null;
 
 #endif

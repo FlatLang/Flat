@@ -1,7 +1,7 @@
 package "stabilitytest"
 
-import "File"
-import "Time"
+import "nova/standard/File"
+import "nova/standard/Time"
 
 public class FileStability
 {

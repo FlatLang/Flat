@@ -1,8 +1,6 @@
 package "nova/standard"
 
-import "SVGComponent"
-import "SVGComponentList"
-import "File"
+import "nova/standard/File"
 
 public class SVGMainComponent extends SVGComponent
 {

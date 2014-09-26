@@ -1,7 +1,7 @@
 package "stabilitytest"
 
-import "UncaughtExceptionHandler"
-import "Thread"
+import "nova/standard/UncaughtExceptionHandler"
+import "nova/standard/Thread"
 
 public class StabilityExceptionHandler extends UncaughtExceptionHandler
 {

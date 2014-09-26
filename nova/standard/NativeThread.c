@@ -60,8 +60,8 @@ NOVA_THREAD_FUNC lib_nova_thread_run(NOVA_THREAD_FUNC_ARG arg)
 {
 	DataStruct* data = (DataStruct*)arg;
 
-	Thread* this = data->instance;
-	ExceptionData* exceptionData = 0;
+	nova_standard_NovaThread* this = data->instance;
+	nova_standard_exception_NovaExceptionData* exceptionData = 0;
 	
 	data->run_method(this, exceptionData);
 
@@ -70,7 +70,7 @@ NOVA_THREAD_FUNC lib_nova_thread_run(NOVA_THREAD_FUNC_ARG arg)
 	return 0;
 }
 
-NOVA_THREAD_HANDLE* create_thread(Thread* this, run_method method, void* ref)
+NOVA_THREAD_HANDLE* create_thread(nova_standard_NovaThread* this, run_method method, void* ref)
 {
 	NOVA_THREAD_HANDLE* handle;
 

@@ -1,7 +1,7 @@
 package "nova/standard"
 
-import "NativeFile.h"
-import "Time"
+import "nova/standard/NativeFile.h"
+import "nova/standard/Time"
 
 public class File
 {
