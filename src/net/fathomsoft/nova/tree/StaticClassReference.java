@@ -10,7 +10,7 @@ import net.fathomsoft.nova.util.Location;
  * 
  * @author	Braden Steffaniak
  * @since	v0.2.9 Aug 23, 2014 at 11:25:19 PM
- * @version	v0.2.29 Aug 29, 2014 at 3:17:45 PM
+ * @version	v0.2.32 Sep 26, 2014 at 12:17:33 PM
  */
 public class StaticClassReference extends IIdentifier
 {
@@ -61,7 +61,7 @@ public class StaticClassReference extends IIdentifier
 	 */
 	public static StaticClassReference decodeStatement(Node parent, String statement, Location location, boolean require)
 	{
-		if (parent.getProgram().getClassDeclaration(statement) != null)
+		if (parent.getFileDeclaration().containsImport(statement, false))
 		{
 			StaticClassReference n = new StaticClassReference(parent, location);
 			
