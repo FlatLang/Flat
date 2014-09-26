@@ -1,6 +1,5 @@
 package net.fathomsoft.nova.tree;
 
-import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.error.SyntaxErrorException;
 import net.fathomsoft.nova.error.SyntaxMessage;
@@ -19,7 +18,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 10:04:31 PM
- * @version	v0.2.31 Sep 24, 2014 at 4:41:04 PM
+ * @version	v0.2.32 Sep 26, 2014 at 12:17:33 PM
  */
 public class MethodCall extends IIdentifier
 {
@@ -217,9 +216,9 @@ public class MethodCall extends IIdentifier
 	 */
 	public ClassDeclaration getDeclaringClass()
 	{
-		if (getFileDeclaration().containsImport(getName()))
+		if (getFileDeclaration().getImportList().getAbsoluteClassLocation(getName()) != null)
 		{
-			return getProgram().getClassDeclaration(getName());
+			return SyntaxUtils.getImportedClass(getFileDeclaration(), getName());
 		}
 		
 		return getReferenceNode().getTypeClass();
@@ -336,7 +335,12 @@ public class MethodCall extends IIdentifier
 		// TODO: there is a better way.
 		if (getCallableDeclaration().isVirtual() && isAccessed() && !isVirtualTypeKnown())
 		{
-			getAccessingNode().getLastAccessingOfType(new Class<?>[] { MethodCall.class, Closure.class }, true).generateCSourceUntil(builder, "->", this);
+			Identifier node = getAccessingNode().getLastAccessingOfType(new Class<?>[] { MethodCall.class, Closure.class }, true);
+			
+			if (node != null)
+			{
+				node.generateCSourceUntil(builder, "->", this);
+			}
 		}
 		
 		return super.generateCArgumentReference(builder, callingMethod);
@@ -495,8 +499,6 @@ public class MethodCall extends IIdentifier
 	{
 		if (SyntaxUtils.isMethodCall(statement))
 		{
-			Nova.debuggingBreakpoint(statement.equals("put(0, \"Zero\")"));
-			
 			MethodCall n  = new MethodCall(parent, location);
 			
 			Bounds bounds = SyntaxUtils.findInnerParenthesesBounds(n, statement);
@@ -809,6 +811,11 @@ public class MethodCall extends IIdentifier
 		
 		if (localDeclarationRequired())
 		{
+			if (reference instanceof Instantiation)
+			{
+				reference = reference.getAccessedNode();
+			}
+			
 			MethodCall calling   = (MethodCall)reference;
 			
 			Variable replacement = getAncestorWithScope().getScope().registerLocalVariable(calling);
