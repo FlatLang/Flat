@@ -16,7 +16,7 @@ import net.fathomsoft.nova.util.Regex;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Mar 22, 2014 at 4:01:38 PM
- * @version	v0.2.26 Aug 6, 2014 at 2:48:50 PM
+ * @version	v0.2.32 Sep 26, 2014 at 12:17:33 PM
  */
 public class Try extends ExceptionHandler
 {
@@ -155,7 +155,7 @@ public class Try extends ExceptionHandler
 		{
 			int code = codes.get(i);
 			
-			builder.append("nova_ExceptionData_addCode(").append(variableName).append(", ").append(variableName).append(", ").append(code).append(");").append('\n');
+			builder.append("nova_standard_exception_NovaExceptionData_NovaaddCode(").append(variableName).append(", ").append(variableName).append(", ").append(code).append(");").append('\n');
 		}
 		
 		return builder;
