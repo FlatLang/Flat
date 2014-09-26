@@ -11,7 +11,7 @@ import net.fathomsoft.nova.util.Location;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:28:08 PM
- * @version	v0.2.14 Jul 19, 2014 at 7:33:13 PM
+ * @version	v0.2.32 Sep 26, 2014 at 12:17:33 PM
  */
 public class Message
 {
@@ -48,7 +48,7 @@ public class Message
 	 */
 	public Message(String message, Node node, Location location)
 	{
-		this.file       = node.getFileDeclaration();
+		this.file       = node.getFileDeclaration(true);
 		this.node       = node;
 		this.location   = location;
 		this.message    = message;
