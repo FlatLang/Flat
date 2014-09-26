@@ -14,7 +14,7 @@ import net.fathomsoft.nova.util.Regex;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 13, 2014 at 7:56:24 PM
- * @version	v0.2.29 Aug 29, 2014 at 3:17:45 PM
+ * @version	v0.2.32 Sep 26, 2014 at 12:17:33 PM
  */
 public class Import extends Node
 {
@@ -106,7 +106,7 @@ public class Import extends Node
 	@Override
 	public StringBuilder generateNovaInput(StringBuilder builder, boolean outputChildren)
 	{
-		return builder.append(getLocation());
+		return builder.append(getLocationNode().getName());
 	}
 	
 	/**
