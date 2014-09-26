@@ -28,7 +28,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:00:15 PM
- * @version	v0.2.31 Sep 24, 2014 at 4:41:04 PM
+ * @version	v0.2.32 Sep 26, 2014 at 12:17:33 PM
  */
 public class SyntaxTree
 {
@@ -797,9 +797,9 @@ public class SyntaxTree
 				
 				node = id;
 			}
-			else if (parent.getFileDeclaration().containsImport(statement) || parent.getFileDeclaration().containsClass(statement))
+			else if (parent.getFileDeclaration().containsImport(statement, false) || parent.getFileDeclaration().containsClass(statement))
 			{
-				ClassDeclaration clazz = parent.getProgram().getClassDeclaration(statement);
+				ClassDeclaration clazz = SyntaxUtils.getImportedClass(parent.getFileDeclaration(), statement);
 				
 				if (clazz != null)
 				{
