@@ -3,7 +3,6 @@ package net.fathomsoft.nova.tree;
 import java.util.ArrayList;
 import java.util.regex.Pattern;
 
-import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.tree.MethodList.SearchFilter;
@@ -21,7 +20,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.2.21 Jul 30, 2014 at 1:45:00 PM
- * @version	v0.2.30 Sep 2, 2014 at 7:58:20 PM
+ * @version	v0.2.32 Sep 26, 2014 at 12:17:33 PM
  */
 public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAncestor
 {
@@ -283,14 +282,7 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 	 */
 	public StringBuilder generateCVirtualMethodName(StringBuilder builder)
 	{
-		builder.append(Nova.LANGUAGE_NAME.toLowerCase()).append("_virtual_");
-		
-		if (overloadID >= 0)
-		{
-			builder.append(overloadID).append('_');
-		}
-		
-		return builder.append(getName());
+		return generateCSourceName(builder, "virtual");
 	}
 	
 	/**
@@ -310,17 +302,17 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.Identifier#generateCSourceName(java.lang.StringBuilder)
+	 * @see net.fathomsoft.nova.tree.Identifier#generateCSourceName(java.lang.StringBuilder, String)
 	 */
 	@Override
-	public StringBuilder generateCSourceName(StringBuilder builder)
+	public StringBuilder generateCSourceName(StringBuilder builder, String uniquePrefix)
 	{
 		if (overloadID == -1)
 		{
-			return super.generateCSourceName(builder);
+			return super.generateCSourceName(builder, uniquePrefix);
 		}
 		
-		return super.generateCSourceName(builder, overloadID + "");
+		return super.generateCSourceName(builder, uniquePrefix + overloadID + "");
 	}
 	
 	/**
