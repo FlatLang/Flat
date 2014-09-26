@@ -14,11 +14,11 @@
 		buffer buf;\
 		int exception_code;\
 		\
-		ExceptionData* newData = nova_ExceptionData_construct(0, exceptionData, &buf);\
+		nova_standard_exception_NovaExceptionData* newData = nova_standard_exception_NovaExceptionData_Novaconstruct(0, exceptionData, &buf);\
 		\
 		if (exceptionData != 0)\
 		{\
-			nova_ExceptionData_setParent(newData, exceptionData, exceptionData);\
+			nova_standard_exception_NovaExceptionData_NovasetParent(newData, exceptionData, exceptionData);\
 		}\
 		\
 		exceptionData = newData;\
@@ -35,8 +35,8 @@
 
 #define END_TRY \
 		{\
-			ExceptionData* oldData = exceptionData;\
-			ExceptionData* newData = nova_ExceptionData_getParent(exceptionData, 0);\
+			nova_standard_exception_NovaExceptionData* oldData = exceptionData;\
+			nova_standard_exception_NovaExceptionData* newData = nova_standard_exception_NovaExceptionData_NovagetParent(exceptionData, 0);\
 			if (newData != 0)\
 			{\
 				exceptionData = newData;\
@@ -52,6 +52,6 @@
 	}\
 	while(0)
 
-#define THROW(x) nova_ExceptionData_jumpToBuffer(exceptionData, 0, x);
+#define THROW(x) nova_standard_exception_NovaExceptionData_NovajumpToBuffer(exceptionData, 0, x);
 
 #endif
