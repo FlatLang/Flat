@@ -1,7 +1,5 @@
 package "nova/standard"
 
-import "Thread"
-
 public class UncaughtExceptionHandler
 {
 	public UncaughtExceptionHandler()
