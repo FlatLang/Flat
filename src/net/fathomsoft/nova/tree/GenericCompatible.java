@@ -15,7 +15,7 @@ import net.fathomsoft.nova.util.StringUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.2.29 Aug 28, 2014 at 11:51:16 PM
- * @version	v0.2.31 Sep 24, 2014 at 4:41:04 PM
+ * @version	v0.2.32 Sep 26, 2014 at 12:17:33 PM
  */
 public interface GenericCompatible
 {
@@ -180,9 +180,9 @@ public interface GenericCompatible
 	 */
 	public static String test(TestContext context)
 	{
-		context.importClass("Stack");
+		context.importClass("nova/standard/datastruct/Stack");
 		
-		Node declaration = SyntaxTree.decodeScopeContents(context.method, "Stack<String> s = new Stack<String>()", Location.INVALID, false);
+		Node declaration = SyntaxTree.decodeScopeContents(context.method, "Stack<String> s = new Stack()", Location.INVALID, false);
 		
 		if (declaration == null)
 		{
