@@ -2,6 +2,7 @@ package net.fathomsoft.nova.tree;
 
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.util.Location;
+import net.fathomsoft.nova.util.SyntaxUtils;
 
 /**
  * Node extension that contains children of the type Import.
@@ -9,7 +10,7 @@ import net.fathomsoft.nova.util.Location;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Apr 2, 2014 at 8:49:52 PM
- * @version	v0.2.29 Aug 29, 2014 at 3:17:45 PM
+ * @version	v0.2.32 Sep 26, 2014 at 12:17:33 PM
  */
 public class ImportList extends List
 {
@@ -41,17 +42,60 @@ public class ImportList extends List
 	 */
 	public Import getImport(String importLocation)
 	{
+		return getImport(importLocation, true);
+	}
+	
+	/**
+	 * Get the Import node with the given import location, if it exists.
+	 * 
+	 * @param importLocation The location of the import.
+	 * @return The Import with the specified import location, if it
+	 * 		exists.
+	 */
+	public Import getImport(String importLocation, boolean absoluteLocation)
+	{
 		for (int i = 0; i < getNumChildren(); i++)
 		{
 			Import child = (Import)getChild(i);
 			
-			if (importLocation.equals(child.getLocationNode().getName()))
+			String location = child.getLocationNode().getName();
+			
+			if (!absoluteLocation)
+			{
+				location = SyntaxUtils.getClassName(location);
+			}
+			
+			if (importLocation.equals(location))
 			{
 				return child;
 			}
 		}
 		
 		return null;
+	}
+	
+	public String getAbsoluteClassLocation(String className)
+	{
+		if (SyntaxUtils.isAbsoluteClassLocation(className))
+		{
+			return className;
+		}
+		
+		ClassDeclaration clazz = getFileDeclaration().getClassDeclaration();
+		
+		if (clazz.getName().equals(className))
+		{
+			return clazz.getClassLocation();
+		}
+		
+		Import i = getImport(className, false);
+		
+		if (i == null)
+		{
+			return null;
+		}
+		
+		return i.getLocationNode().getName();
 	}
 	
 	/**
@@ -96,7 +140,7 @@ public class ImportList extends List
 	{
 		FileDeclaration file = getFileDeclaration();
 
-		Import importNode = Import.decodeStatement(this, "import \"" + file.getName() + "\"", getLocationIn(), true);
+		Import importNode = Import.decodeStatement(this, "import \"" + file.getClassDeclaration().getClassLocation() + "\"", getLocationIn(), true);
 		
 		return importNode.generateCSource(builder);
 	}
