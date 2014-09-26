@@ -2,11 +2,9 @@ package net.fathomsoft.nova.tree.variables;
 
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.error.SyntaxMessage;
-import net.fathomsoft.nova.tree.ClassDeclaration;
 import net.fathomsoft.nova.tree.Dimensions;
 import net.fathomsoft.nova.tree.Literal;
 import net.fathomsoft.nova.tree.Node;
-import net.fathomsoft.nova.tree.Program;
 import net.fathomsoft.nova.tree.SyntaxTree;
 import net.fathomsoft.nova.util.Bounds;
 import net.fathomsoft.nova.util.Location;
@@ -22,7 +20,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.2 Mar 24, 2014 at 10:45:29 PM
- * @version	v0.2.26 Aug 6, 2014 at 2:48:50 PM
+ * @version	v0.2.32 Sep 26, 2014 at 12:17:33 PM
  */
 public class ArrayAccess extends Variable
 {
@@ -45,20 +43,6 @@ public class ArrayAccess extends Variable
 	public int getNumDefaultChildren()
 	{
 		return super.getNumDefaultChildren() + 1;
-	}
-	
-	/**
-	 * @see net.fathomsoft.nova.tree.Value#getTypeClass()
-	 */
-	@Override
-	public ClassDeclaration getTypeClass()
-	{
-		Program program = getProgram();
-		String  name    = getTypeClassName();
-		
-		ClassDeclaration clazz = program.getClassDeclaration(name);
-		
-		return clazz;
 	}
 	
 	/**
