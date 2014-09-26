@@ -1,14 +1,11 @@
 package net.fathomsoft.nova.tree;
 
-import jdk.nashorn.internal.runtime.FindProperty;
-import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.tree.variables.VariableDeclaration;
 import net.fathomsoft.nova.util.Bounds;
 import net.fathomsoft.nova.util.Location;
 import net.fathomsoft.nova.util.Patterns;
-import net.fathomsoft.nova.util.Regex;
 import net.fathomsoft.nova.util.StringUtils;
 import net.fathomsoft.nova.util.SyntaxUtils;
 
@@ -18,7 +15,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.2.4 Jan 5, 2014 at 9:10:49 PM
- * @version	v0.2.31 Sep 24, 2014 at 4:41:04 PM
+ * @version	v0.2.32 Sep 26, 2014 at 12:17:33 PM
  */
 public class LocalDeclaration extends VariableDeclaration
 {
@@ -99,7 +96,7 @@ public class LocalDeclaration extends VariableDeclaration
 		{
 			for (GenericType type : n.getGenericParameterNames())
 			{
-				if (!type.isGenericType() && !SyntaxUtils.validateImported(n, type.getType()))
+				if (!type.isGenericType() && !SyntaxUtils.validateImported(n, type.getTypeClassLocation()))
 				{
 					return null;
 				}
