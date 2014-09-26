@@ -1,6 +1,6 @@
-package "nova/standard"
+package "nova/standard/exception"
 
-import "ArrayList"
+import "nova/standard/datastruct/ArrayList"
 
 public class ExceptionData
 {
