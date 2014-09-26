@@ -67,6 +67,8 @@ public class ImportList extends List
 			
 			if (importLocation.equals(location))
 			{
+				child.markUsed();
+				
 				return child;
 			}
 		}

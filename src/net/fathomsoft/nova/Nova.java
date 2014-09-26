@@ -281,7 +281,7 @@ public class Nova
 //				"-gcc",
 //				"-small",
 				"-cargs",
-				"-keepc",
+//				"-keepc",
 				"-single-thread",
 //				"-nogc",
 //				"-dry"

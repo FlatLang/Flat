@@ -337,7 +337,12 @@ public class ClassDeclaration extends InstanceDeclaration
 	 */
 	public ClassDeclaration getExtendedClass()
 	{
-		return getProgram().getClassDeclaration(getExtendedClassName());
+		if (getExtendedClassName() == null)
+		{
+			return null;
+		}
+		
+		return SyntaxUtils.getImportedClass(getFileDeclaration(), getExtendedClassName());
 	}
 	
 	/**

@@ -188,7 +188,6 @@ public class Constructor extends BodyMethodDeclaration
 			
 			method.cloneTo(n);
 			
-//			n.setName(n.getParentClass().getName());
 			n.setName(IDENTIFIER);
 			n.setType(n.getParentClass().getName(), true, false);
 			n.setStatic(true);
