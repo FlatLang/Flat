@@ -19,25 +19,26 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.2.1 Apr 29, 2014 at 8:04:48 PM
- * @version	v0.2.29 Aug 29, 2014 at 3:17:45 PM
+ * @version	v0.2.32 Sep 26, 2014 at 12:17:33 PM
  */
 public class TreeGenerator implements Runnable
 {
-	private int			statementStartIndex, statementEndIndex, oldStatementStartIndex;
-	private int			lineNumber;
+	private int				statementStartIndex, statementEndIndex, oldStatementStartIndex;
+	private int				lineNumber;
 	
-	private Matcher		statementStartMatcher;
+	private Matcher			statementStartMatcher;
 	
-	private String		source;
+	private String			source;
 	
-	private File		file;
+	private File			file;
+	private FileDeclaration	fileDeclaration;
 	
-	private SyntaxTree	tree;
+	private SyntaxTree		tree;
 	
-	private Nova		controller;
+	private Nova			controller;
 	
-	private Stack<Node>	parentStack;
-	private Stack<Node>	pendingScopeFragment;
+	private Stack<Node>		parentStack;
+	private Stack<Node>		pendingScopeFragment;
 	
 	private static final char		EITHER_STATEMENT_END_CHARS[] = new char[] { '\n', ';', '{', '}' };
 	
@@ -151,7 +152,7 @@ public class TreeGenerator implements Runnable
 	{
 		Location location = new Location(1, 0, 0, 0);
 		
-		FileDeclaration fileDeclaration = new FileDeclaration(tree.getRoot(), location, file);
+		fileDeclaration = new FileDeclaration(tree.getRoot(), location, file);
 		
 		controller.log("Phase one for '" + fileDeclaration.getName() + "'...");
 		
@@ -170,10 +171,8 @@ public class TreeGenerator implements Runnable
 	private void phase2(File file)
 	{
 		String filename = FileUtils.removeFileExtension(file.getName());
-
-		controller.log("Phase two for '" + filename + "'...");
 		
-		FileDeclaration fileDeclaration = tree.getRoot().getFile(filename);
+		controller.log("Phase two for '" + filename + "'...");
 		
 		ClassDeclaration node = fileDeclaration.getClassDeclaration();
 		
@@ -206,7 +205,6 @@ public class TreeGenerator implements Runnable
 
 		controller.log("Phase three for '" + filename + "'...");
 		
-		FileDeclaration  fileDeclaration  = tree.getRoot().getFile(filename);
 		ClassDeclaration classDeclaration = fileDeclaration.getClassDeclaration();
 		
 		decodeScopeContents(classDeclaration.getMethodList());
