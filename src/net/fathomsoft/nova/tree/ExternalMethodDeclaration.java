@@ -15,7 +15,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:10:53 PM
- * @version	v0.2.29 Aug 29, 2014 at 3:17:45 PM
+ * @version	v0.2.32 Sep 26, 2014 at 12:17:33 PM
  */
 public class ExternalMethodDeclaration extends MethodDeclaration
 {
@@ -57,10 +57,10 @@ public class ExternalMethodDeclaration extends MethodDeclaration
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.MethodDeclaration#generateCSourceName(java.lang.StringBuilder)
+	 * @see net.fathomsoft.nova.tree.MethodDeclaration#generateCSourceName(java.lang.StringBuilder, String)
 	 */
 	@Override
-	public StringBuilder generateCSourceName(StringBuilder builder)
+	public StringBuilder generateCSourceName(StringBuilder builder, String uniquePrefix)
 	{
 		return builder.append(alias);
 	}
