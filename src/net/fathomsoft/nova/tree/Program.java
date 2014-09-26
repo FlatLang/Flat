@@ -5,6 +5,7 @@ import java.util.HashMap;
 import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.util.Location;
+import net.fathomsoft.nova.util.SyntaxUtils;
 
 /**
  * Node extension that represents a whole Nova program. The
@@ -14,7 +15,7 @@ import net.fathomsoft.nova.util.Location;
  * 
  * @author	Braden Steffaniak
  * @since	v0.2 Apr 14, 2014 at 11:52:33 PM
- * @version	v0.2.26 Aug 6, 2014 at 2:48:50 PM
+ * @version	v0.2.32 Sep 26, 2014 at 12:17:33 PM
  */
 public class Program extends Node
 {
@@ -50,10 +51,6 @@ public class Program extends Node
 	 */
 	public synchronized void addChild(Node child)
 	{
-		FileDeclaration file = (FileDeclaration)child;
-		
-		files.put(file.getName(), getNumChildren());
-		
 		super.addChild(child);
 	}
 	
@@ -87,7 +84,7 @@ public class Program extends Node
 			
 			if (file != child && dir.equals(child.getFile().getParent()))
 			{
-				file.addImport(child.getName());
+				file.addImport(child.getClassDeclaration().getClassLocation());
 			}
 		}
 	}
@@ -118,17 +115,21 @@ public class Program extends Node
 	 * A call like: "<code>getClass("Person")</code>" would return the
 	 * ClassDeclaration for the "<code>Person</code>" class.
 	 * 
-	 * @param className The name of the class to search for.
+	 * @param classLocation The name of the class to search for.
 	 * @return The ClassDeclaration for the class, if it exists.
 	 */
-	public ClassDeclaration getClassDeclaration(String className)
+	public ClassDeclaration getClassDeclaration(String classLocation)
 	{
-		if (!files.containsKey(className))
+		if (!files.containsKey(classLocation))
 		{
 			return null;
 		}
 		
-		FileDeclaration node = (FileDeclaration)getChild(files.get(className));
+		int index = files.get(classLocation);
+		
+		FileDeclaration node = (FileDeclaration)getChild(index);
+		
+		String className = SyntaxUtils.getClassName(classLocation);
 		
 		return node.getClassDeclaration(className);
 	}
@@ -141,7 +142,9 @@ public class Program extends Node
 	 */
 	public FileDeclaration getFile(String filename)
 	{
-		return (FileDeclaration)getChild(files.get(filename));
+		int index = files.get(filename);
+		
+		return (FileDeclaration)getChild(index);
 	}
 	
 	/**
@@ -225,6 +228,26 @@ public class Program extends Node
 	public static Program generateTemporaryHierarchy(Nova controller)
 	{
 		return generateTemporaryProgram(controller);
+	}
+	
+	@Override
+	public Node validate(int phase)
+	{
+		if (phase == SyntaxTree.PHASE_CLASS_DECLARATION)
+		{
+			for (int i = 0; i < getNumChildren(); i++)
+			{
+				Node child = getChild(i);
+				
+				FileDeclaration file = (FileDeclaration)child;
+				
+				String location = file.getClassDeclaration().getClassLocation();
+				
+				files.put(location, i);
+			}
+		}
+		
+		return super.validate(phase);
 	}
 	
 	/**
