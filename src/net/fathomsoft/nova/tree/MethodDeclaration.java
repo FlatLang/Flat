@@ -8,7 +8,6 @@ import net.fathomsoft.nova.util.Bounds;
 import net.fathomsoft.nova.util.Location;
 import net.fathomsoft.nova.util.Regex;
 import net.fathomsoft.nova.util.StringUtils;
-import net.fathomsoft.nova.util.SyntaxUtils;
 
 /**
  * InstanceDeclaration extension that represents the declaration of a method
@@ -205,9 +204,7 @@ public abstract class MethodDeclaration extends InstanceDeclaration implements C
 	 */
 	public StringBuilder generateCSourceSignature(StringBuilder builder)
 	{
-		generateCModifiersSource(builder);
-		
-		builder.append(' ');
+		generateCModifiersSource(builder).append(' ');
 		
 		generateCSourceName(builder).append('(');
 		
