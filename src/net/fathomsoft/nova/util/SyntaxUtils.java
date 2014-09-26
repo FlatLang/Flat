@@ -2,7 +2,6 @@ package net.fathomsoft.nova.util;
 
 import java.util.regex.Matcher;
 
-import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.error.UnimplementedOperationException;
 import net.fathomsoft.nova.tree.BodyMethodDeclaration;
@@ -33,7 +32,7 @@ import net.fathomsoft.nova.tree.variables.VariableDeclaration;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Mar 15, 2014 at 7:55:00 PM
- * @version	v0.2.29 Aug 29, 2014 at 3:17:45 PM
+ * @version	v0.2.32 Sep 26, 2014 at 12:17:33 PM
  */
 public class SyntaxUtils
 {
@@ -1485,6 +1484,18 @@ public class SyntaxUtils
 		}
 		else
 		{
+			ClassDeclaration clazz = value.getParentClass();
+			
+			while (clazz != null)
+			{
+				if (clazz.getName().equals(type))
+				{
+					return type;
+				}
+				
+				clazz = clazz.getParentClass();
+			}
+			
 			if (checkGenericType(value, type))
 			{
 				Variable genericCheck = null;
@@ -1508,11 +1519,13 @@ public class SyntaxUtils
 				return value.getParentClass().getGenericParameter(type).getType();//.getDefaultType();
 			}
 			
-			ClassDeclaration clazz = value.getProgram().getClassDeclaration(type);
+			String location = value.getFileDeclaration().getImportList().getAbsoluteClassLocation(type);
+			
+			clazz = value.getProgram().getClassDeclaration(location);
 			
 			if (clazz != null)
 			{
-				if (SyntaxUtils.validateImported(value, clazz.getType()))
+				if (SyntaxUtils.validateImported(value, location))
 				{
 					return type;
 				}
@@ -1690,18 +1703,15 @@ public class SyntaxUtils
 		return null;
 	}
 	
-	public static String getParameterGenericReturnType(Parameter required, Value given)
+	public static ClassDeclaration getParameterGenericReturnType(Parameter required, Value given)
 	{
 		MethodCall call = (MethodCall)given.getAncestorOfType(MethodCall.class);
 		
 		VariableDeclaration decl = call.getGenericDeclaration();
 		
-		return decl.getGenericParameterInstance(required.getType()).getType();
-	}
-	
-	public static ClassDeclaration getParameterGenericReturnType(Program context, Parameter required, Value given)
-	{
-		return context.getClassDeclaration(getParameterGenericReturnType(required, given));
+		String name = decl.getGenericParameterInstance(required.getType()).getType();
+		
+		return SyntaxUtils.getImportedClass(given.getFileDeclaration(), name);
 	}
 	
 	/**
@@ -1753,7 +1763,7 @@ public class SyntaxUtils
 				throw new UnimplementedOperationException("The validation of generic type " + required.getClass().getName() + " is not implemented.");
 			}
 			
-			Value value = getParameterGenericReturnType(given.getProgram(), (Parameter)required, given);
+			Value value = getParameterGenericReturnType((Parameter)required, given);
 			
 			if (!Literal.isNullLiteral(given) && !isTypeCompatible(value, given, false))
 			{
@@ -1785,7 +1795,7 @@ public class SyntaxUtils
 			return true;
 		}
 		
-		if (required.getTypeClassName().equals("Char") && required.getArrayDimensions() == 1 && given.getTypeClassName().equals("String"))
+		if (required.getTypeClassLocation().equals("nova/standard/Char") && required.getArrayDimensions() == 1 && given.getTypeClassLocation().equals("nova/standard/String"))
 		{
 			return true;
 		}
@@ -1879,5 +1889,24 @@ public class SyntaxUtils
 		}
 		
 		return true;
+	}
+	
+	public static boolean isAbsoluteClassLocation(String location)
+	{
+		return location.contains("/");
+	}
+	
+	public static String getClassName(String classLocation)
+	{
+		int lastIndex = classLocation.lastIndexOf('/') + 1;
+		
+		return classLocation.substring(lastIndex);
+	}
+	
+	public static ClassDeclaration getImportedClass(FileDeclaration file, String className)
+	{
+		String location = file.getImportList().getAbsoluteClassLocation(className);
+		
+		return file.getProgram().getClassDeclaration(location);
 	}
 }
