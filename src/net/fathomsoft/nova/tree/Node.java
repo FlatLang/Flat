@@ -22,7 +22,7 @@ import net.fathomsoft.nova.util.StringUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:00:11 PM
- * @version	v0.2.31 Sep 24, 2014 at 4:41:04 PM
+ * @version	v0.2.32 Sep 26, 2014 at 12:17:33 PM
  */
 public abstract class Node
 {
@@ -1244,7 +1244,18 @@ public abstract class Node
 	 */
 	public FileDeclaration getFileDeclaration()
 	{
-		Node current = getParent();
+		return getFileDeclaration(false);
+	}
+	
+	/**
+	 * Get the FileDeclaration of this Node, if it exists.
+	 * 
+	 * @param inclusive Whether or not to check the specified Node.
+	 * @return The FileDeclaration of this Node.
+	 */
+	public FileDeclaration getFileDeclaration(boolean inclusive)
+	{
+		Node current = getAncestor(inclusive);
 		
 		while (current != null && current instanceof FileDeclaration == false)
 		{
