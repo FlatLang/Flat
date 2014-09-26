@@ -17,7 +17,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Feb 18, 2014 at 8:57:00 PM
- * @version	v0.2.31 Sep 24, 2014 at 4:41:04 PM
+ * @version	v0.2.32 Sep 26, 2014 at 12:17:33 PM
  */
 public class FileDeclaration extends Node
 {
@@ -43,24 +43,25 @@ public class FileDeclaration extends Node
 		{
 			"Nova.h",
 			"ExceptionHandler.h",
-			"ExceptionData",
-			"Null",
-			"Object",
-			"String",
-			"System",
-			"Exception",
-			"Math",
-			"Console",
-			"GC",
-			"Number",
-			"Byte",
-			"Short",
-			"Int",
-			"Long",
-			"Float",
-			"Double",
-			"Char",
-			"DivideByZeroException"
+			"nova/standard/exception/ExceptionData",
+			"nova/standard/exception/Exception",
+			"nova/standard/exception/DivideByZeroException",
+			"nova/standard/Null",
+			"nova/standard/Object",
+			"nova/standard/String",
+			"nova/standard/System",
+			"nova/standard/Math",
+			"nova/standard/Console",
+			"nova/standard/GC",
+			"nova/standard/Number",
+			"nova/standard/Byte",
+			"nova/standard/Short",
+			"nova/standard/Int",
+			"nova/standard/Long",
+			"nova/standard/Float",
+			"nova/standard/Double",
+			"nova/standard/Char",
+			"nova/standard/Bool",
 		};
 	}
 	
@@ -81,6 +82,9 @@ public class FileDeclaration extends Node
 		addChild(imports, this);
 		
 		addDefaultImports();
+		
+		Package p = Package.generateDefaultPackage(this, Location.INVALID);
+		setPackage(p);
 	}
 	
 	/**
@@ -109,7 +113,7 @@ public class FileDeclaration extends Node
 	 */
 	public Import addImport(String loc)
 	{
-		if (containsImport(loc))
+		if (containsImport(loc) || !SyntaxUtils.isAbsoluteClassLocation(loc) && getClassDeclaration() != null && getClassDeclaration().getName().equals(loc))
 		{
 			return null;
 		}
@@ -143,7 +147,20 @@ public class FileDeclaration extends Node
 	 */
 	public boolean containsImport(String importLocation)
 	{
-		return getImport(importLocation) != null;
+		return containsImport(importLocation, true);
+	}
+	
+	/**
+	 * Get whether or not the given location has been imported.
+	 * 
+	 * @param importLocation The location of the import.
+	 * @param absoluteLocation Whether or not the importLocation is an
+	 * 		package relative path (true), or just a class name (false).
+	 * @return Whether or not the given location has been imported.
+	 */
+	public boolean containsImport(String importLocation, boolean absoluteLocation)
+	{
+		return getImport(importLocation, absoluteLocation) != null;
 	}
 	
 	/**
@@ -155,7 +172,21 @@ public class FileDeclaration extends Node
 	 */
 	public Import getImport(String importLocation)
 	{
-		Import node = getImportList().getImport(importLocation);
+		return getImport(importLocation, true);
+	}
+	
+	/**
+	 * Get the Import node with the given import location, if it exists.
+	 * 
+	 * @param importLocation The location of the import.
+	 * @param absoluteLocation Whether or not the importLocation is an
+	 * 		package relative path (true), or just a class name (false).
+	 * @return The Import with the specified import location, if it
+	 * 		exists.
+	 */
+	public Import getImport(String importLocation, boolean absoluteLocation)
+	{
+		Import node = getImportList().getImport(importLocation, absoluteLocation);
 		
 		if (node != null)
 		{
@@ -242,6 +273,11 @@ public class FileDeclaration extends Node
 	
 	private void setPackage(Package n)
 	{
+		if (getPackage() != null)
+		{
+			removeChild(getNumDecodedChildren());
+		}
+		
 		addChild(getNumDecodedChildren(), n);
 	}
 	
@@ -305,7 +341,7 @@ public class FileDeclaration extends Node
 	 */
 	public String generateCHeaderName()
 	{
-		return getClassDeclaration().generateCSourceName(new StringBuilder()) + ".h";
+		return getPackage().generateCHeaderLocation() + "/" + getClassDeclaration().generateCSourceName() + ".h";
 	}
 	
 	/**
@@ -318,7 +354,7 @@ public class FileDeclaration extends Node
 	 */
 	public String generateCSourceName()
 	{
-		return getClassDeclaration().generateCSourceName(new StringBuilder()) + ".c";
+		return getPackage().generateCHeaderLocation() + "/" + getClassDeclaration().generateCSourceName() + ".c";
 	}
 	
 	/**
@@ -327,26 +363,12 @@ public class FileDeclaration extends Node
 	@Override
 	public Node validate(int phase)
 	{
-		if (phase == SyntaxTree.PHASE_CLASS_DECLARATION)
-		{
-			validatePackage();
-		}
-		else if (phase == SyntaxTree.PHASE_METHOD_CONTENTS)
+		if (phase == SyntaxTree.PHASE_METHOD_CONTENTS)
 		{
 			validateImports();
 		}
 		
 		return this;
-	}
-	
-	private void validatePackage()
-	{
-		if (getPackage() == null)
-		{
-			Package p = Package.generateDefaultPackage(this, Location.INVALID);
-			
-			setPackage(p);
-		}
 	}
 	
 	private void validateImports()
@@ -381,7 +403,7 @@ public class FileDeclaration extends Node
 	{
 		if (child instanceof Package)
 		{
-			if (getNumChildren() > getNumDefaultChildren())
+			if (!getPackage().isDefaultPackage())
 			{
 				SyntaxMessage.error("Package statement must be the first statement in the file", child);
 			}
@@ -525,7 +547,7 @@ public class FileDeclaration extends Node
 			{
 				ClassDeclaration clazz = (ClassDeclaration)child;
 				
-				builder.append("typedef struct ").append(clazz.getName()).append(' ').append(clazz.getName()).append(';').append('\n');
+				builder.append("typedef struct ").append(clazz.generateCSourceName()).append(' ').append(clazz.generateCSourceName()).append(';').append('\n');
 			}
 		}
 		
