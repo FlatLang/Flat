@@ -9,7 +9,7 @@ import net.fathomsoft.nova.util.Location;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Mar 16, 2014 at 1:13:49 AM
- * @version	v0.2.26 Aug 6, 2014 at 2:48:50 PM
+ * @version	v0.2.32 Sep 26, 2014 at 12:17:33 PM
  */
 public class VTable extends IIdentifier
 {
@@ -122,7 +122,7 @@ public class VTable extends IIdentifier
 	{
 		if (phase != SyntaxTree.PHASE_CLASS_DECLARATION)
 		{
-			String type = Nova.LANGUAGE_NAME.toLowerCase() + "_VTable_" + getParentClass().generateUniquePrefix();
+			String type = Nova.LANGUAGE_NAME.toLowerCase() + "_VTable_" + getParentClass().generateCSourceName();
 			setType(type, true, false, false);
 			
 			setName(type + "_val", true);
