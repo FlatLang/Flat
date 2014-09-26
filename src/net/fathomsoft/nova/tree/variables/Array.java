@@ -26,7 +26,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Mar 16, 2014 at 1:13:49 AM
- * @version	v0.2.31 Sep 24, 2014 at 4:41:04 PM
+ * @version	v0.2.32 Sep 26, 2014 at 12:17:33 PM
  */
 public class Array extends VariableDeclaration
 {
@@ -65,7 +65,7 @@ public class Array extends VariableDeclaration
 		generateCTypeCast(builder);
 		builder.insert(builder.length() - 1, '*');
 		
-		builder.append("NOVA_MALLOC(sizeof(").append(getName()).append(')').append(" * (");
+		builder.append("NOVA_MALLOC(sizeof(").append(generateCTypeClassName()).append(')').append(" * (");
 		
 		for (int i = 0; i < getNumChildren(); i++)
 		{
