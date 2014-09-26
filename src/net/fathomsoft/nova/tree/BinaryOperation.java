@@ -313,9 +313,9 @@ public class BinaryOperation extends IValue
 			
 			if (common == null)
 			{
-				ClassDeclaration integerClass = parent.getProgram().getClassDeclaration("Integer");
+				ClassDeclaration integerClass = parent.getProgram().getClassDeclaration("nova/standard/Int");
 				
-				if (!lhn.getTypeClass().isOfType(integerClass) && !rhn.getTypeClass().isOfType(integerClass) || operatorType == null || !operatorType.equals("bool"))
+				if (operatorType == null || !operatorType.equals("bool") || !lhn.getReturnedNode().getTypeClass().isOfType(integerClass) && !rhn.getReturnedNode().getTypeClass().isOfType(integerClass))
 				{
 					SyntaxMessage.error("Type '" + lhn.getType() + "' and '" + rhn.getType() + "' are not compatible", this);
 				}
