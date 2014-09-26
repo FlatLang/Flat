@@ -73,7 +73,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:00:04 PM
- * @version	v0.2.31 Sep 24, 2014 at 4:41:04 PM
+ * @version	v0.2.32 Sep 26, 2014 at 12:17:33 PM
  */
 public class Nova
 {
@@ -104,16 +104,16 @@ public class Nova
 	// Set to 0 to not benchmark.
 	public static final int		BENCHMARK     = 0;
 	
-	public static final long	CSOURCE       = 0x1l;
-	public static final long	FORMATC       = 0x10l;
-	public static final long	VERBOSE       = 0x100l;
-	public static final long	DRY_RUN       = 0x1000l;
-	public static final long	KEEP_C        = 0x10000l;
-	public static final long	C_ARGS        = 0x100000l;
-	public static final long	RUNTIME       = 0x1000000l;
-	public static final long	LIBRARY       = 0x10000000l;
-	public static final long	NO_GC         = 0x100000000l;
-	public static final long	SMALL_BIN     = 0x1000000000l;
+	public static final long	CSOURCE       = 0x00000000001l;
+	public static final long	FORMATC       = 0x00000000010l;
+	public static final long	VERBOSE       = 0x00000000100l;
+	public static final long	DRY_RUN       = 0x00000001000l;
+	public static final long	KEEP_C        = 0x00000010000l;
+	public static final long	C_ARGS        = 0x00000100000l;
+	public static final long	RUNTIME       = 0x00001000000l;
+	public static final long	LIBRARY       = 0x00010000000l;
+	public static final long	NO_GC         = 0x00100000000l;
+	public static final long	SMALL_BIN     = 0x01000000000l;
 	public static final long	SINGLE_THREAD = 0x10000000000l;
 	
 	public static final int		GCC           = 1;
@@ -125,7 +125,7 @@ public class Nova
 	public static final int		LINUX         = 3;
 	
 	public static final String	LANGUAGE_NAME = "Nova";
-	public static final String	VERSION       = "v0.2.31";
+	public static final String	VERSION       = "v0.2.32";
 	
 	/**
 	 * Find out which operating system the compiler is running on.
@@ -254,15 +254,15 @@ public class Nova
 //				formatPath(stability + "StabilityExceptionHandler.nova"),
 //				formatPath(stability + "ThreadImplementation.nova"),
 //				formatPath(stability + "UnstableException.nova"),
-//				formatPath(directory + "GenericDemo.nova"),
+				formatPath(directory + "GenericDemo.nova"),
 //				formatPath(directory + "MathDemo.nova"),
 //				formatPath(directory + "ThreadDemo.nova"),
 //				formatPath(directory + "ThreadDemoImplementation.nova"),
 //				formatPath(directory + "PolymorphismDemo.nova"),
-				formatPath(directory + "Animal.nova"),
-				formatPath(directory + "Spider.nova"),
-				formatPath(directory + "Dog.nova"),
-				formatPath(directory + "ArrayListDemo.nova"),
+//				formatPath(directory + "Animal.nova"),
+//				formatPath(directory + "Spider.nova"),
+//				formatPath(directory + "Dog.nova"),
+//				formatPath(directory + "ArrayListDemo.nova"),
 //				formatPath(directory + "IntegerTest.nova"),
 //				formatPath(directory + "FileTest.nova"),
 //				formatPath(directory + "SVGTest.nova"),
@@ -297,21 +297,24 @@ public class Nova
 		{
 			formatPath(standard  + "Console.nova"),
 			formatPath(standard  + "String.nova"),
-			formatPath(standard  + "ExceptionData.nova"),
-			formatPath(standard  + "ArrayList.nova"),
+			formatPath(standard  + "exception/ExceptionData.nova"),
+			formatPath(standard  + "exception/DivideByZeroException.nova"),
+			formatPath(standard  + "exception/Exception.nova"),
+			formatPath(standard  + "datastruct/ArrayList.nova"),
 			formatPath(standard  + "Math.nova"),
 			formatPath(standard  + "Time.nova"),
-			formatPath(standard  + "DivideByZeroException.nova"),
 			formatPath(standard  + "Object.nova"),
 			formatPath(standard  + "InputStream.nova"),
 			formatPath(standard  + "OutputStream.nova"),
 			formatPath(standard  + "StreamReader.nova"),
-			formatPath(standard  + "List.nova"),
-			formatPath(standard  + "ListNode.nova"),
+			formatPath(standard  + "datastruct/List.nova"),
+			formatPath(standard  + "datastruct/ListNode.nova"),
+			formatPath(standard  + "datastruct/Array.nova"),
+			formatPath(standard  + "datastruct/Stack.nova"),
+			formatPath(standard  + "datastruct/EmptyStackException.nova"),
+			formatPath(standard  + "datastruct/HashMap.nova"),
 			formatPath(standard  + "Thread.nova"),
 			formatPath(standard  + "UncaughtExceptionHandler.nova"),
-			formatPath(standard  + "Exception.nova"),
-			formatPath(standard  + "Array.nova"),
 			formatPath(standard  + "Char.nova"),
 			formatPath(standard  + "Bool.nova"),
 			formatPath(standard  + "Byte.nova"),
@@ -331,9 +334,6 @@ public class Nova
 			formatPath(standard  + "SVGCircle.nova"),
 			formatPath(standard  + "System.nova"),
 			formatPath(standard  + "Process.nova"),
-			formatPath(standard  + "Stack.nova"),
-			formatPath(standard  + "HashMap.nova"),
-			formatPath(standard  + "EmptyStackException.nova"),
 			formatPath(standard  + "Null.nova"),
 		};
 		
@@ -341,7 +341,7 @@ public class Nova
 		{
 			"-dir", formatPath(directory + "../include"),
 			"-dir", formatPath(directory + "../include/gc"),
-			"-dir", formatPath(directory + "../nova/standard"),
+			"-dir", formatPath(directory + ".."),
 		};
 		
 //		for (String location : standardFiles)
@@ -506,7 +506,7 @@ public class Nova
 			FileDeclaration file   = files[i];
 			String          header = headers[i];
 			String          source = sources[i];
-			File            parent = files[i].getFile().getParentFile();
+			File            parent = files[i].getPackage().getParentFile();
 			
 			types.append("typedef struct ").append(file.getName()).append(' ').append(file.getName()).append(';').append('\n');
 			includes.append("#include <").append(file.generateCHeaderName()).append('>').append('\n');
@@ -577,24 +577,24 @@ public class Nova
 			StringBuilder mainMethodText = new StringBuilder();
 			
 			mainMethodText.append('\n').append('\n');
-			mainMethodText.append("Null* nova_null;").append('\n');
+			mainMethodText.append("nova_standard_NovaNull* nova_null;").append('\n');
 			mainMethodText.append('\n');
 			mainMethodText.append("int main(int argc, char** argvs)").append('\n');
 			mainMethodText.append("{").append('\n');
-			mainMethodText.append	("String** args;").append('\n');
+			mainMethodText.append	("nova_standard_NovaString** args;").append('\n');
 			mainMethodText.append	("int      i;").append('\n').append('\n');
-			mainMethodText.append	("ExceptionData* ").append(Exception.EXCEPTION_DATA_IDENTIFIER).append(" = 0;").append('\n');
+			mainMethodText.append	("nova_standard_exception_NovaExceptionData* ").append(Exception.EXCEPTION_DATA_IDENTIFIER).append(" = 0;").append('\n');
 			mainMethodText.append	("srand(currentTimeMillis());").append('\n');
 			mainMethodText.append	("nova_null = ").append(nullConstructor.generateCSourceFragment()).append(';').append('\n');
 			mainMethodText.append	(gcInit.generateCSource()).append('\n');
 			mainMethodText.append	(staticBlockCalls).append('\n');
-			mainMethodText.append	("args = (String**)NOVA_MALLOC(argc * sizeof(String));").append('\n');
+			mainMethodText.append	("args = (nova_standard_NovaString**)NOVA_MALLOC(argc * sizeof(nova_standard_NovaString));").append('\n');
 			mainMethodText.append	('\n');
 			mainMethodText.append	("for (i = 0; i < argc; i++)").append('\n');
 			mainMethodText.append	("{").append('\n');
 			mainMethodText.append		("char* str = (char*)NOVA_MALLOC(sizeof(char) * strlen(argvs[i]) + 1);").append('\n');
 			mainMethodText.append		("copy_string(str, argvs[i]);").append('\n');
-			mainMethodText.append		("args[i] = ").append(LANGUAGE_NAME.toLowerCase()).append("_String_construct(0, 0, str);").append('\n');
+			mainMethodText.append		("args[i] = nova_standard_NovaString_Novaconstruct(0, 0, str);").append('\n');
 			mainMethodText.append	("}").append('\n');
 			mainMethodText.append	('\n');
 			mainMethodText.append	("TRY").append('\n');
