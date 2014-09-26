@@ -768,29 +768,47 @@ public class ClassDeclaration extends InstanceDeclaration
 		return null;
 	}
 	
+	public String getClassLocation()
+	{
+		Package p = getFileDeclaration().getPackage();
+		
+		return p.getLocation() + "/" + getName();
+	}
+	
+	/**
+	 * @see #generateUniquePrefix(StringBuilder)
+	 */
+	public StringBuilder generateUniquePrefix()
+	{
+		return generateUniquePrefix(new StringBuilder());
+	}
+	
 	/**
 	 * Get the prefix that is used for the data that is contained
 	 * within the specified class.<br>
 	 * <br>
 	 * For example:
 	 * <blockquote><pre>
-	 * package "this/is/my/package";
+	 * package "this/is/my/package"
 	 * 
 	 * public class Test
 	 * {
 	 * 	...
 	 * }</pre></blockquote>
 	 * The method prefix would look like:
-	 * "<code>this_is_my_package_Test</code>"
+	 * "<code>this_is_my_package_NovaTest</code>"
 	 * 
 	 * @return The prefix that is used for the data contained within
 	 * 		the class.
 	 */
-	public String generateUniquePrefix()
+	public StringBuilder generateUniquePrefix(StringBuilder builder)
 	{
-		String str = getName();
-		
-		return str;
+		return getFileDeclaration().getPackage().generateCLocation(builder).append('_');
+	}
+	
+	public Package getPackage()
+	{
+		return getFileDeclaration().getPackage();
 	}
 	
 	/**
@@ -1030,7 +1048,7 @@ public class ClassDeclaration extends InstanceDeclaration
 		{
 			builder.append("CCLASS_CLASS").append('\n').append('(').append('\n');
 			
-			builder.append(getName()).append(", ").append('\n').append('\n');
+			generateCSourceName(builder).append(", ").append('\n').append('\n');
 			
 			if (containsVirtualMethods())
 			{
@@ -1194,9 +1212,9 @@ public class ClassDeclaration extends InstanceDeclaration
 			}
 			
 			// TODO: Check for the standard library version of Object.
-			if (n.getExtendedClassName() == null && !n.getName().equals("Object"))
+			if (n.getExtendedClassName() == null && !n.getClassLocation().equals("nova/standard/Object"))
 			{
-				n.setExtendedClass("Object");
+				n.setExtendedClass("nova/standard/Object");
 			}
 			
 			return n;
@@ -1294,12 +1312,12 @@ public class ClassDeclaration extends InstanceDeclaration
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.variables.Variable#generateCSourceName()
+	 * @see net.fathomsoft.nova.tree.variables.Variable#generateCSourceName(StringBuilder, String)
 	 */
 	@Override
-	public StringBuilder generateCSourceName(StringBuilder builder)
+	public StringBuilder generateCSourceName(StringBuilder builder, String uniquePrefix)
 	{
-		return builder.append(Nova.LANGUAGE_NAME).append(getName());
+		return generateUniquePrefix(builder).append(Nova.LANGUAGE_NAME).append(getName());
 	}
 	
 	/**
@@ -1433,9 +1451,7 @@ public class ClassDeclaration extends InstanceDeclaration
 			return;
 		}
 		
-		Program program = getProgram();
-		
-		ClassDeclaration clazz = program.getClassDeclaration(extendedClass);
+		ClassDeclaration clazz = SyntaxUtils.getImportedClass(getFileDeclaration(), extendedClass);
 		
 		String tempName = extendedClass;
 		
