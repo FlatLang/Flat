@@ -12,7 +12,7 @@ import net.fathomsoft.nova.util.StringUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.2.31 Sep 24, 2014 at 11:13:15 AM
- * @version	v0.2.31 Sep 24, 2014 at 4:41:04 PM
+ * @version	v0.2.32 Sep 26, 2014 at 12:17:33 PM
  */
 public class Package extends Node
 {
@@ -44,6 +44,63 @@ public class Package extends Node
 	public StringBuilder generateCSource(StringBuilder builder)
 	{
 		return builder;
+	}
+	
+	public StringBuilder generateCHeaderLocation()
+	{
+		return generateCHeaderLocation(new StringBuilder());
+	}
+	
+	public StringBuilder generateCHeaderLocation(StringBuilder builder)
+	{
+		return builder.append(getLocation());
+	}
+	
+	public String getLocation()
+	{
+		return location;
+	}
+	
+	public StringBuilder generateCLocation()
+	{
+		return generateCLocation(new StringBuilder());
+	}
+	
+	public StringBuilder generateCLocation(StringBuilder builder)
+	{
+		String output = location.replace('/', '_');
+		
+		return builder.append(output);
+	}
+	
+	public boolean isDefaultPackage()
+	{
+		return location == null;
+	}
+	
+	public File getParentFile()
+	{
+		String directories[] = location.split("/");
+		
+		File current = getFileDeclaration().getFile().getParentFile();
+		
+		for (int i = directories.length - 1; i >= 0; i--)
+		{
+			String directory = directories[i];
+			
+			if (!current.isDirectory())
+			{
+				return null;
+			}
+			else if (!directory.equals(current.getName()))
+			{
+				return null;
+			}
+			
+			current = current.getParentFile();
+		}
+		
+		return current;
 	}
 	
 	/**
@@ -98,22 +155,9 @@ public class Package extends Node
 			throwIncorrectPackageException("Package location cannot be empty. Perhaps try using the default package");
 		}
 		
-		File current = getFileDeclaration().getFile().getParentFile();
-		
-		for (int i = directories.length - 1; i >= 0; i--)
+		if (getParentFile() == null)
 		{
-			String directory = directories[i];
-			
-			if (!current.isDirectory())
-			{
-				throwIncorrectPackageException();
-			}
-			else if (!directory.equals(current.getName()))
-			{
-				throwIncorrectPackageException();
-			}
-			
-			current = current.getParentFile();
+			throwIncorrectPackageException();
 		}
 		
 		return true;
