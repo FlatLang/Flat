@@ -8,6 +8,7 @@ import net.fathomsoft.nova.tree.variables.FieldDeclaration;
 import net.fathomsoft.nova.tree.variables.Variable;
 import net.fathomsoft.nova.tree.variables.VariableDeclaration;
 import net.fathomsoft.nova.util.Location;
+import net.fathomsoft.nova.util.SyntaxUtils;
 
 
 /**
@@ -17,7 +18,7 @@ import net.fathomsoft.nova.util.Location;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:00:19 PM
- * @version	v0.2.29 Aug 29, 2014 at 3:17:45 PM
+ * @version	v0.2.32 Sep 26, 2014 at 12:17:33 PM
  */
 public abstract class Identifier extends Value
 {
@@ -37,7 +38,7 @@ public abstract class Identifier extends Value
 	 */
 	public boolean isInstance()
 	{
-		return getProgram().getClassDeclaration(getName()) == null;
+		return SyntaxUtils.getImportedClass(getFileDeclaration(), getName()) == null;
 	}
 	
 	/**
@@ -1061,7 +1062,7 @@ public abstract class Identifier extends Value
 	 * @return The name of the variable that will be output to the C
 	 * 		source output.
 	 */
-	public StringBuilder generateCSourceName(StringBuilder builder)
+	public final StringBuilder generateCSourceName(StringBuilder builder)
 	{
 		return generateCSourceName(builder, null);
 	}
@@ -1112,9 +1113,10 @@ public abstract class Identifier extends Value
 			SyntaxMessage.queryError("Unable to find declaration for variable '" + name + "'", this, existing == null);
 		}
 		
-		String classUniquePrefix = existing.getParentClass().generateUniquePrefix();
-		
-		builder.append(Nova.LANGUAGE_NAME.toLowerCase()).append("_");
+		if (!(existing instanceof LocalDeclaration))
+		{
+			existing.getParentClass().generateCSourceName(builder).append('_');
+		}
 		
 		if (existing instanceof InstanceDeclaration)
 		{
@@ -1129,20 +1131,18 @@ public abstract class Identifier extends Value
 			}
 		}
 		
-		if (uniquePrefix != null)
-		{
-			builder.append(uniquePrefix).append('_');
-		}
-		
 		if (existing instanceof LocalDeclaration)
 		{
 			LocalDeclaration declaration = (LocalDeclaration)existing;
 			
-			builder.append(declaration.getScopeID()).append('_');
+			builder.append('l').append(declaration.getScopeID()).append('_');
 		}
-		else
+		
+		builder.append(Nova.LANGUAGE_NAME);
+
+		if (uniquePrefix != null)
 		{
-			builder.append(classUniquePrefix).append('_');
+			builder.append(uniquePrefix).append('_');
 		}
 		
 		return builder.append(name);
