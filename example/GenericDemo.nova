@@ -1,14 +1,14 @@
 package "example"
 
-import "Stack"
-import "HashMap"
+import "nova/standard/datastruct/Stack"
+import "nova/standard/datastruct/HashMap"
 
 public class GenericDemo
 {
 	public static main(String args[])
 	{
 		Stack<String> strs = new Stack()
-		strs.test()
+		
 		Console.writeLine("Pushing \"test\"")
 		strs.push("test")
 		
@@ -24,6 +24,8 @@ public class GenericDemo
 		Console.writeLine("Pushing null")
 		strs.push(null)
 		
+		// Uncomment the next two lines to demonstrate the type
+		// checking of generic methods.
 //		Object o = new Object()
 //		strs.push(o)
 		
@@ -37,32 +39,6 @@ public class GenericDemo
 			}
 			
 			Console.writeLine("Popping: " + popped)
-		}
-		
-		HashMap<Int, String> words = new HashMap()
-		
-		Int nums[] = new Int[6]
-		
-		nums[0] = new Int(0)
-		nums[1] = new Int(1)
-		nums[2] = new Int(2)
-		nums[3] = new Int(3)
-		nums[4] = new Int(4)
-		nums[5] = new Int(5)
-		
-		words.put(nums[0], "Zero")
-		words.put(nums[1], "One")
-		words.put(nums[2], "Two")
-		words.put(nums[3], "Three")
-		words.put(nums[4], "Four")
-		words.put(nums[5], "Five")
-		words.put(nums[5], null)
-		
-		for (int i = 0; i <= 5; i++)
-		{
-			Int index = nums[Math.random(6)]
-			
-			Console.writeLine("Getting value at index " + index + " " + words.get(index))
 		}
 		
 		Console.waitForEnter()
