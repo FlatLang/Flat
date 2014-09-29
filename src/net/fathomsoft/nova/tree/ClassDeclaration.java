@@ -24,7 +24,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:15:51 PM
- * @version	v0.2.30 Sep 2, 2014 at 7:58:20 PM
+ * @version	v0.2.33 Sep 29, 2014 at 10:29:33 AM
  */
 public class ClassDeclaration extends InstanceDeclaration
 {
@@ -1076,7 +1076,7 @@ public class ClassDeclaration extends InstanceDeclaration
 		
 		if (getStaticBlockList().getNumVisibleChildren() > 0)
 		{
-			StaticBlock.generateCHeader(builder, this);
+			getStaticBlockList().getChild(0).generateCHeader(builder, this);
 		}
 		
 		MethodList constructors = getConstructorList();
@@ -1130,7 +1130,8 @@ public class ClassDeclaration extends InstanceDeclaration
 	{
 		if (getStaticBlockList().getNumVisibleChildren() > 0)
 		{
-			StaticBlock.generateCMethodHeader(builder, this).append('\n');
+			getStaticBlockList().getChild(0).generateCMethodHeader(builder, this).append('\n');
+			
 			builder.append('{').append('\n');
 			
 			for (int i = 0; i < getStaticBlockList().getNumVisibleChildren(); i++)
@@ -1217,9 +1218,9 @@ public class ClassDeclaration extends InstanceDeclaration
 			}
 			
 			// TODO: Check for the standard library version of Object.
-			if (n.getExtendedClassName() == null && !n.getClassLocation().equals("nova/standard/Object"))
+			if (n.getExtendedClassName() == null && !n.getClassLocation().equals(Nova.getClassLocation("Object")))
 			{
-				n.setExtendedClass("nova/standard/Object");
+				n.setExtendedClass(Nova.getClassLocation("Object"));
 			}
 			
 			return n;
