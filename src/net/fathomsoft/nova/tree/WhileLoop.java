@@ -1,5 +1,6 @@
 package net.fathomsoft.nova.tree;
 
+import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.util.Bounds;
@@ -14,7 +15,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:55:59 PM
- * @version	v0.2.28 Aug 20, 2014 at 12:10:45 AM
+ * @version	v0.2.33 Sep 29, 2014 at 10:29:33 AM
  */
 public class WhileLoop extends Loop
 {
@@ -171,7 +172,7 @@ public class WhileLoop extends Loop
 	{
 		MethodCall call = MethodCall.decodeStatement(this, contents, location, false);
 		
-		if (call != null && call.getTypeClassName().equals("Bool"))
+		if (call != null && call.getTypeClassLocation().equals(Nova.getClassLocation("Bool")))
 		{
 			return call;
 		}
