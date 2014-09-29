@@ -27,11 +27,10 @@
 		\
 		if (exception_code == 0)
 
-#define CATCH(x) \
+#define CATCH(x)\
 	else if (exception_code == x)
 
-#define FINALLY	\
-	
+#define FINALLY
 
 #define END_TRY \
 		{\
@@ -52,6 +51,8 @@
 	}\
 	while(0)
 
-#define THROW(x) nova_standard_exception_NovaExceptionData_NovajumpToBuffer(exceptionData, 0, x);
+#define THROW(x, exception) \
+	exceptionData->nova_standard_exception_NovaExceptionData_NovathrownException = (nova_standard_exception_NovaException*)exception;\
+	nova_standard_exception_NovaExceptionData_NovajumpToBuffer(exceptionData, 0, x);
 
 #endif

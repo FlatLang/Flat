@@ -2,8 +2,11 @@ package net.fathomsoft.nova.tree.exceptionhandling;
 
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.error.SyntaxMessage;
+import net.fathomsoft.nova.tree.Assignment;
 import net.fathomsoft.nova.tree.LocalDeclaration;
 import net.fathomsoft.nova.tree.Node;
+import net.fathomsoft.nova.tree.SyntaxTree;
+import net.fathomsoft.nova.tree.variables.Variable;
 import net.fathomsoft.nova.util.Bounds;
 import net.fathomsoft.nova.util.Location;
 import net.fathomsoft.nova.util.Patterns;
@@ -16,7 +19,7 @@ import net.fathomsoft.nova.util.Regex;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Mar 22, 2014 at 4:01:44 PM
- * @version	v0.2.26 Aug 6, 2014 at 2:48:50 PM
+ * @version	v0.2.33 Sep 29, 2014 at 10:29:33 AM
  */
 public class Catch extends ExceptionHandler
 {
@@ -172,14 +175,25 @@ public class Catch extends ExceptionHandler
 	 */
 	private boolean decodeExceptionDeclaration(String contents, Location location, boolean require)
 	{
-		LocalDeclaration exceptionInstance = LocalDeclaration.decodeStatement(this, contents, location, require);
+		LocalDeclaration exceptionDeclaration = LocalDeclaration.decodeStatement(this, contents, location, require);
 		
-		if (exceptionInstance == null)
+		if (exceptionDeclaration == null)
 		{
 			SyntaxMessage.error("Incorrect Exception declaration", this, location);
 		}
 		
-		addChild(exceptionInstance, this);
+		getScope().addChild(exceptionDeclaration.clone(this, exceptionDeclaration.getLocationIn()));
+		
+		Assignment assign = Assignment.decodeStatement(this, exceptionDeclaration.getName() + " = null", Location.INVALID, true);
+		
+		Variable exceptionData   = getParentMethod().getParameterList().getExceptionData().generateUsableVariable(this, Location.INVALID);
+		Variable thrownException = SyntaxTree.getUsableExistingNode(exceptionData, "thrownException", Location.INVALID);
+		exceptionData.addChild(thrownException);
+		
+		assign.replace(assign.getAssignmentNode(), exceptionData);
+		
+		addChild(exceptionDeclaration, this);
+		addChild(assign);
 		
 		return true;
 	}

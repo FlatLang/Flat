@@ -17,7 +17,7 @@ import net.fathomsoft.nova.util.Regex;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Mar 22, 2014 at 11:02:52 PM
- * @version	v0.2.26 Aug 6, 2014 at 2:48:50 PM
+ * @version	v0.2.33 Sep 29, 2014 at 10:29:33 AM
  */
 public class Throw extends ExceptionHandler
 {
@@ -35,7 +35,7 @@ public class Throw extends ExceptionHandler
 	@Override
 	public int getNumDecodedChildren()
 	{
-		return super.getNumDecodedChildren() + 1;
+		return super.getNumDecodedChildren() + 2;
 	}
 	
 	/**
@@ -47,7 +47,12 @@ public class Throw extends ExceptionHandler
 	 */
 	public Exception getException()
 	{
-		return (Exception)getChild(1);
+		return (Exception)getChild(super.getNumDefaultChildren() + 0);
+	}
+	
+	public Identifier getExceptionInstance()
+	{
+		return (Identifier)getChild(super.getNumDefaultChildren() + 1);
 	}
 	
 	/**
@@ -56,7 +61,10 @@ public class Throw extends ExceptionHandler
 	@Override
 	public StringBuilder generateCSource(StringBuilder builder)
 	{
-		return builder.append("THROW").append('(').append(getException().getID()).append(')').append(';').append('\n');
+		builder.append("THROW").append('(').append(getException().getID()).append(", ");
+		getExceptionInstance().generateCSourceFragment(builder).append(')').append(';').append('\n');
+		
+		return builder;
 	}
 	
 	/**
@@ -143,6 +151,7 @@ public class Throw extends ExceptionHandler
 		exception.setType(node.getName());
 		
 		addChild(exception, this);
+		addChild(node, this);
 		
 		return true;
 	}
