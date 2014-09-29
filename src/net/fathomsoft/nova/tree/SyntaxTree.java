@@ -28,7 +28,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:00:15 PM
- * @version	v0.2.32 Sep 26, 2014 at 12:17:33 PM
+ * @version	v0.2.33 Sep 29, 2014 at 10:29:33 AM
  */
 public class SyntaxTree
 {
@@ -973,24 +973,35 @@ public class SyntaxTree
 	 */
 	public static Value decodeValue(Node parent, String statement, Location location, boolean require)
 	{
-		Value value = Literal.decodeStatement(parent, statement, location, require, true);
+//		Value value = Literal.decodeStatement(parent, statement, location, require, true);
+//		
+//		if (value == null)
+//		{
+//			value = decodeIdentifierAccess(parent, statement, location, true);
+//			
+//			if (value == null)
+//			{
+//				value = decodeIdentifier(parent, statement, location);
+//				
+//				if (value == null)
+//				{
+//					value = (Value)decodeStatementOfType(parent, statement, location, require, Value.class);
+//				}
+//			}
+//		}
 		
-		if (value == null)
+		Node node = decodeScopeContents(parent, statement, location, require);
+		
+		if (node instanceof Value)
 		{
-			value = decodeIdentifierAccess(parent, statement, location, true);
-			
-			if (value == null)
-			{
-				value = decodeIdentifier(parent, statement, location);
-				
-				if (value == null)
-				{
-					value = (Value)decodeStatementOfType(parent, statement, location, require, Value.class);
-				}
-			}
+			return (Value)node;
+		}
+		else if (node != null)
+		{
+			SyntaxMessage.error("Invalid operation '" + statement + "'", parent, location);
 		}
 		
-		return value;
+		return null;
 	}
 	
 	/**
