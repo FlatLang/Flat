@@ -1,10 +1,12 @@
 package net.fathomsoft.nova.tree;
 
+import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.tree.variables.FieldDeclaration;
 import net.fathomsoft.nova.tree.variables.Variable;
 import net.fathomsoft.nova.tree.variables.VariableDeclaration;
+import net.fathomsoft.nova.tree.variables.VariableDeclarationList;
 import net.fathomsoft.nova.util.Location;
 import net.fathomsoft.nova.util.StringUtils;
 import net.fathomsoft.nova.util.SyntaxUtils;
@@ -15,7 +17,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:19:44 PM
- * @version	v0.2.31 Sep 24, 2014 at 4:41:04 PM
+ * @version	v0.2.33 Sep 29, 2014 at 10:29:33 AM
  */
 public class Assignment extends Node
 {
@@ -36,9 +38,9 @@ public class Assignment extends Node
 	 * @return The node that represents the variable that is being
 	 * 		assigned.
 	 */
-	public Identifier getAssigneeNode()
+	public Variable getAssigneeNode()
 	{
-		return (Identifier)getChild(0);
+		return (Variable)getChild(0);
 	}
 	
 	/**
@@ -50,7 +52,7 @@ public class Assignment extends Node
 	 * @return The node that represents the value that the assignee
 	 * 		variable is being assigned to.
 	 */
-	public Value getAssignment()
+	public Value getAssignmentNode()
 	{
 		return (Value)getChild(1);
 	}
@@ -78,7 +80,7 @@ public class Assignment extends Node
 	 */
 	public StringBuilder generateNovaInput(StringBuilder builder, boolean outputChildren)
 	{
-		return getAssigneeNode().generateNovaInput(builder, outputChildren).append(" = ").append(getAssignment().generateNovaInput(outputChildren));
+		return getAssigneeNode().generateNovaInput(builder, outputChildren).append(" = ").append(getAssignmentNode().generateNovaInput(outputChildren));
 	}
 	
 	/**
@@ -99,14 +101,14 @@ public class Assignment extends Node
 	 */
 	private StringBuilder generateCAssignmentSource(StringBuilder builder)
 	{
-		boolean sameType = getAssignment().getReturnedNode().getType().equals(getAssigneeNode().getReturnedNode().getType());
+		boolean sameType = getAssignmentNode().getReturnedNode().getType().equals(getAssigneeNode().getReturnedNode().getType());
 		
 		if (!sameType)
 		{
 			getAssigneeNode().getReturnedNode().generateCTypeCast(builder).append('(');
 		}
 		
-		builder.append(getAssignment().generateDataTypeOutput(getAssigneeNode().getDataType())).append(getAssignment().generateCSourceFragment());
+		builder.append(getAssignmentNode().generateDataTypeOutput(getAssigneeNode().getDataType())).append(getAssignmentNode().generateCSourceFragment());
 		
 		if (!sameType)
 		{
@@ -213,12 +215,42 @@ public class Assignment extends Node
 		
 		if (child == null)
 		{
+			if (addDeclaration)
+			{
+				n.removeDeclaration();
+			}
+			
 			return null;
 		}
 		
 		n.addChild(child);
 		
+		n.validateCompatible(newLoc);
+		
 		return n;
+	}
+	
+	private boolean validateCompatible(Location location)
+	{
+		Value returnedLeft  = getAssigneeNode().getReturnedNode();
+		Value returnedRight = getAssignmentNode().getReturnedNode();
+		
+		if (!Literal.isNullLiteral(returnedRight) && !returnedRight.getType().equals(returnedLeft.getType()))
+		{
+			if (returnedRight.getTypeClass() == null || !returnedRight.getTypeClass().isOfType(returnedLeft.getTypeClass()))
+			{
+				if (returnedRight.getType().equals("Type"))
+				{
+					Nova.debuggingBreakpoint(true);
+					
+					returnedRight.getTypeClass().isOfType(returnedLeft.getTypeClass());
+				}
+				
+				SyntaxMessage.error("Type '" + returnedRight.getType() + "' is not compatible with type '" + returnedLeft.getType() + "'", this, location);
+			}
+		}
+		
+		return true;
 	}
 	
 	/**
@@ -309,6 +341,13 @@ public class Assignment extends Node
 		return newVar;
 	}
 	
+	private void removeDeclaration()
+	{
+		VariableDeclarationList list = getParent().getAncestorWithScope().getScope().getVariableList();
+		
+		list.removeChildWithName(getAssigneeNode().getName());
+	}
+	
 	/**
 	 * Decode the right hand side of an assignment into an Node if
 	 * possible. If it is not possible, then null is returned. The right
@@ -346,19 +385,7 @@ public class Assignment extends Node
 			return null;
 		}
 		
-		Value value         = (Value)child;
-		Value returnedLeft  = getAssigneeNode().getReturnedNode();
-		Value returnedRight = value.getReturnedNode();
-		
-		if (!returnedRight.getType().equals(returnedLeft.getType()))
-		{
-			if (returnedRight.getTypeClass() == null || !returnedRight.getTypeClass().isOfType(returnedLeft.getTypeClass()))
-			{
-				SyntaxMessage.error("Type '" + returnedRight.getType() + "' is not compatible with type '" + returnedLeft.getType() + "'", parent, location);
-			}
-		}
-		
-		return value;
+		return (Value)child;
 	}
 	
 	/**
