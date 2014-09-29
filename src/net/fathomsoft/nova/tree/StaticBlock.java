@@ -3,13 +3,14 @@ package net.fathomsoft.nova.tree;
 import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.util.Location;
+import net.fathomsoft.nova.tree.exceptionhandling.Exception;
 
 /**
  * {@link Node} extension that represents
  * 
  * @author	Braden Steffaniak
  * @since	v0.2.28 Aug 16, 2014 at 8:57:51 PM
- * @version	v0.2.29 Aug 29, 2014 at 3:17:45 PM
+ * @version	v0.2.33 Sep 29, 2014 at 10:29:33 AM
  */
 public class StaticBlock extends Node implements ScopeAncestor
 {
@@ -29,6 +30,10 @@ public class StaticBlock extends Node implements ScopeAncestor
 		Scope scope = new Scope(this, Location.INVALID);
 		
 		setScope(scope);
+		
+		ParameterList<Parameter> list = new ParameterList<Parameter>(this, Location.INVALID);
+		
+		addChild(list, this);
 	}
 	
 	/**
@@ -49,10 +54,15 @@ public class StaticBlock extends Node implements ScopeAncestor
 		return ++uniqueID;
 	}
 	
+	public ParameterList getParameterList()
+	{
+		return (ParameterList)getChild(super.getNumDefaultChildren() + 1);
+	}
+	
 	/**
 	 * @see net.fathomsoft.nova.tree.Node#generateCHeader(java.lang.StringBuilder)
 	 */
-	public static StringBuilder generateCHeader(StringBuilder builder, ClassDeclaration clazz)
+	public StringBuilder generateCHeader(StringBuilder builder, ClassDeclaration clazz)
 	{
 		return generateCMethodHeader(builder, clazz).append(';').append('\n');
 	}
@@ -66,21 +76,25 @@ public class StaticBlock extends Node implements ScopeAncestor
 		return getScope().generateCSource(builder);
 	}
 	
-	public static StringBuilder generateCMethodHeader(StringBuilder builder, ClassDeclaration clazz)
+	public StringBuilder generateCMethodHeader(StringBuilder builder, ClassDeclaration clazz)
 	{
 		builder.append("void ");
 		
-		return generateCMethodName(builder, clazz).append("()");
+		generateCMethodName(builder, clazz);
+		
+		builder.append('(').append(getParameterList().generateCSource()).append(')');
+		
+		return builder;
 	}
 	
 	public static StringBuilder generateCMethodName(StringBuilder builder, ClassDeclaration clazz)
 	{
-		return builder.append(clazz.getName()).append(C_PREFIX).append(IDENTIFIER);
+		return builder.append(clazz.generateCSourceName()).append(C_PREFIX).append(IDENTIFIER);
 	}
 	
 	public static StringBuilder generateCMethodCall(StringBuilder builder, ClassDeclaration clazz)
 	{
-		return generateCMethodName(builder, clazz).append("()");
+		return generateCMethodName(builder, clazz).append("(" + Exception.EXCEPTION_DATA_IDENTIFIER + ")");
 	}
 	
 	/**
