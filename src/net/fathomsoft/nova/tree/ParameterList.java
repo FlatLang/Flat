@@ -12,7 +12,7 @@ import net.fathomsoft.nova.util.Location;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:56:34 PM
- * @version	v0.2.29 Aug 29, 2014 at 3:17:45 PM
+ * @version	v0.2.33 Sep 29, 2014 at 10:29:33 AM
  */
 public class ParameterList<E extends Value> extends TypeList<E>
 {
@@ -45,7 +45,12 @@ public class ParameterList<E extends Value> extends TypeList<E>
 	{
 		super(temporaryParent, locationIn);
 		
-		if (!getMethodDeclaration().isExternal())
+		if (temporaryParent instanceof StaticBlock)
+		{
+			Parameter exceptionData = generateExceptionDataParameter(locationIn);
+			addChild(exceptionData);
+		}
+		else if (!getMethodDeclaration().isExternal())
 		{
 			Parameter reference     = generateReferenceParameter();
 			Parameter exceptionData = generateExceptionDataParameter(locationIn);
