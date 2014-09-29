@@ -9,13 +9,14 @@ import java.util.regex.Matcher;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Mar 13, 2014 at 9:38:42 PM
- * @version	v0.2.31 Sep 24, 2014 at 4:41:04 PM
+ * @version	v0.2.33 Sep 29, 2014 at 10:29:33 AM
  */
 public class StringUtils
 {
 	public static final char	WHITESPACE[]                = new char[] { ' ', '\n', '\t', '\r' };
 	public static final char	SYMBOLS_CHARS[]             = new char[] { '-', '+', '~', '!', '=', '%', '^', '&', '|', '*', '/', '>', '<', ',', '"', '\'', '[', ']', '{', '}', ';', '(', ')' };
-	public static final char	STMT_CONT_CHARS[]           = new char[] { '-', '+', '~', '!', '=', '%', '^', '&', '|', '*', '/', '>', '<', ',', '.' };
+	public static final char	STMT_PRE_CONT_CHARS[]       = new char[] { '-', '+', '~', '!', '=', '%', '^', '&', '|', '*', '/', '>', '<', ',', '.' };
+	public static final char	STMT_POST_CONT_CHARS[]      = new char[] { '-', '+', '~', '!', '=', '%', '^', '&', '|', '*', '/', '>', '<', ',', '.', '"' };
 	public static final char	INVALID_DECLARATION_CHARS[] = new char[] { '-', '+', '~', '!', '=', '%', '^', '|', '/', '"', '\'', '{', '}', ';', '(', ')' };
 	
 	public static final String	SYMBOLS[];
@@ -935,7 +936,7 @@ public class StringUtils
 	{
 		// Start and end bounds.
 		int s = SyntaxUtils.findStringInBaseScope(source, start, index);
-		int e = StringUtils.findEndingMatch(source, index, start, end);
+		int e = StringUtils.findEndingMatch(source, s, start, end);
 		
 		if (includeEndings)
 		{
