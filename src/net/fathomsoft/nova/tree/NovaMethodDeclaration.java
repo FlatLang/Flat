@@ -1,7 +1,6 @@
 package net.fathomsoft.nova.tree;
 
 import java.util.ArrayList;
-import java.util.regex.Pattern;
 
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.error.SyntaxMessage;
@@ -20,7 +19,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.2.21 Jul 30, 2014 at 1:45:00 PM
- * @version	v0.2.32 Sep 26, 2014 at 12:17:33 PM
+ * @version	v0.2.33 Sep 29, 2014 at 10:29:33 AM
  */
 public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAncestor
 {
@@ -312,6 +311,11 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 			return super.generateCSourceName(builder, uniquePrefix);
 		}
 		
+		if (uniquePrefix == null)
+		{
+			uniquePrefix = "";
+		}
+		
 		return super.generateCSourceName(builder, uniquePrefix + overloadID + "");
 	}
 	
@@ -434,7 +438,12 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 	public boolean decodeSignature(String statement, boolean require)
 	{
 		String signature = findMethodSignature(statement);
-		MethodData data  = (MethodData)iterateWords(signature, Patterns.IDENTIFIER_BOUNDARIES, require);
+		
+		MethodData data = new MethodData(signature);
+		
+		searchGenericParameters(signature, data);
+		
+		iterateWords(signature, Patterns.IDENTIFIER_BOUNDARIES, data, require);
 		
 		if (data.error != null)
 		{
@@ -483,17 +492,6 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 		}
 		
 		return true;
-	}
-	
-	/**
-	 * @see net.fathomsoft.nova.tree.Node#iterateWords(String, Pattern, ExtraData, boolean)
-	 */
-	@Override
-	public ExtraData iterateWords(String statement, Pattern pattern, ExtraData extra, boolean require)
-	{
-		MethodData data = new MethodData(statement);
-		
-		return (MethodData)super.iterateWords(statement, pattern, data, require);
 	}
 	
 	/**
@@ -599,7 +597,7 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 	 * @since	v0.2.13 Jun 11, 2014 at 8:31:46 PM
 	 * @version	v0.2.13 Jun 11, 2014 at 8:31:46 PM
 	 */
-	private static class MethodData extends ExtraData
+	private static class MethodData extends DeclarationData
 	{
 		private String	signature;
 		
