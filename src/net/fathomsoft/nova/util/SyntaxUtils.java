@@ -2,6 +2,7 @@ package net.fathomsoft.nova.util;
 
 import java.util.regex.Matcher;
 
+import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.error.UnimplementedOperationException;
 import net.fathomsoft.nova.tree.BodyMethodDeclaration;
@@ -32,7 +33,7 @@ import net.fathomsoft.nova.tree.variables.VariableDeclaration;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Mar 15, 2014 at 7:55:00 PM
- * @version	v0.2.32 Sep 26, 2014 at 12:17:33 PM
+ * @version	v0.2.33 Sep 29, 2014 at 10:29:33 AM
  */
 public class SyntaxUtils
 {
@@ -1706,10 +1707,10 @@ public class SyntaxUtils
 	public static ClassDeclaration getParameterGenericReturnType(Parameter required, Value given)
 	{
 		MethodCall call = (MethodCall)given.getAncestorOfType(MethodCall.class);
+
+		GenericCompatible gen = call.getGenericDeclaration();
 		
-		VariableDeclaration decl = call.getGenericDeclaration();
-		
-		String name = decl.getGenericParameterInstance(required.getType()).getType();
+		String name = gen.getGenericParameterType(required.getType());
 		
 		return SyntaxUtils.getImportedClass(given.getFileDeclaration(), name);
 	}
@@ -1795,7 +1796,7 @@ public class SyntaxUtils
 			return true;
 		}
 		
-		if (required.getTypeClassLocation().equals("nova/standard/Char") && required.getArrayDimensions() == 1 && given.getTypeClassLocation().equals("nova/standard/String"))
+		if (required.getTypeClassLocation().equals(Nova.getClassLocation("Char")) && required.getArrayDimensions() == 1 && given.getTypeClassLocation().equals(Nova.getClassLocation("String")))
 		{
 			return true;
 		}
