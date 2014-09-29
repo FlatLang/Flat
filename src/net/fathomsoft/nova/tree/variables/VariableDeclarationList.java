@@ -10,7 +10,7 @@ import net.fathomsoft.nova.util.Location;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 9, 2014 at 4:19:57 PM
- * @version	v0.2.29 Aug 29, 2014 at 3:17:45 PM
+ * @version	v0.2.33 Sep 29, 2014 at 10:29:33 AM
  */
 public class VariableDeclarationList extends List
 {
@@ -55,6 +55,11 @@ public class VariableDeclarationList extends List
 		}
 		
 		return null;
+	}
+	
+	public void removeChildWithName(String variableName)
+	{
+		removeChild(getVariable(variableName));
 	}
 	
 	/**
