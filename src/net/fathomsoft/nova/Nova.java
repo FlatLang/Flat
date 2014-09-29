@@ -3,6 +3,7 @@ package net.fathomsoft.nova;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -73,7 +74,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:00:04 PM
- * @version	v0.2.32 Sep 26, 2014 at 12:17:33 PM
+ * @version	v0.2.33 Sep 29, 2014 at 10:29:33 AM
  */
 public class Nova
 {
@@ -97,6 +98,8 @@ public class Nova
 	private static final int	OS;
 	
 	private static final String	OUTPUT_EXTENSION, DYNAMIC_LIB_EXT;
+	
+	private static final HashMap<String, String>	CLASS_LOCATIONS = new HashMap<String, String>();
 	
 	public static final boolean	ANDROID_DEBUG = false;
 	public static final boolean	DEBUG         = true;
@@ -125,7 +128,7 @@ public class Nova
 	public static final int		LINUX         = 3;
 	
 	public static final String	LANGUAGE_NAME = "Nova";
-	public static final String	VERSION       = "v0.2.32";
+	public static final String	VERSION       = "v0.2.33";
 	
 	/**
 	 * Find out which operating system the compiler is running on.
@@ -221,6 +224,7 @@ public class Nova
 	 */
 	public void compile(String args[], boolean generateCode)
 	{
+		String root      = getWorkingDirectoryPath();
 		String directory = getWorkingDirectoryPath() + "example/";
 		String stability = getWorkingDirectoryPath() + "stabilitytest/";
 		String standard  = getWorkingDirectoryPath() + "nova/standard/";
@@ -254,7 +258,10 @@ public class Nova
 //				formatPath(stability + "StabilityExceptionHandler.nova"),
 //				formatPath(stability + "ThreadImplementation.nova"),
 //				formatPath(stability + "UnstableException.nova"),
-				formatPath(directory + "GenericDemo.nova"),
+//				formatPath(directory + "GenericDemo.nova"),
+//				formatPath(directory + "database/DatabaseDemo.nova"),
+//				formatPath(root      + "bank/Bank.nova"),
+				formatPath(directory + "Lab.nova"),
 //				formatPath(directory + "MathDemo.nova"),
 //				formatPath(directory + "ThreadDemo.nova"),
 //				formatPath(directory + "ThreadDemoImplementation.nova"),
@@ -281,7 +288,7 @@ public class Nova
 //				"-gcc",
 //				"-small",
 				"-cargs",
-//				"-keepc",
+				"-keepc",
 				"-single-thread",
 //				"-nogc",
 //				"-dry"
@@ -295,52 +302,78 @@ public class Nova
 		
 		String standardFiles[] = new String[]
 		{
-			formatPath(standard  + "Console.nova"),
 			formatPath(standard  + "String.nova"),
+			formatPath(standard  + "Math.nova"),
+			formatPath(standard  + "Object.nova"),
+			formatPath(standard  + "System.nova"),
+			
+			formatPath(standard  + "database/DBConnector.nova"),
+			formatPath(standard  + "database/ResultSet.nova"),
+			
+			formatPath(standard  + "logic/Conclusion.nova"),
+			formatPath(standard  + "logic/Hypothesis.nova"),
+			formatPath(standard  + "logic/LogicalConnective.nova"),
+			formatPath(standard  + "logic/Statement.nova"),
+			formatPath(standard  + "logic/StatementComponent.nova"),
+			formatPath(standard  + "logic/StatementLetter.nova"),
+			formatPath(standard  + "logic/WFF.nova"),
+			formatPath(standard  + "logic/StatementGroup.nova"),
+			formatPath(standard  + "logic/InvalidFormulaException.nova"),
+			
+			formatPath(standard  + "process/Process.nova"),
+			
+			formatPath(standard  + "primitive/Char.nova"),
+			formatPath(standard  + "primitive/Bool.nova"),
+			formatPath(standard  + "primitive/Null.nova"),
+			
+			formatPath(standard  + "primitive/number/Byte.nova"),
+			formatPath(standard  + "primitive/number/Short.nova"),
+			formatPath(standard  + "primitive/number/Int.nova"),
+			formatPath(standard  + "primitive/number/Long.nova"),
+			formatPath(standard  + "primitive/number/Float.nova"),
+			formatPath(standard  + "primitive/number/Double.nova"),
+			formatPath(standard  + "primitive/number/Number.nova"),
+			
+			formatPath(standard  + "gc/GC.nova"),
+			
+			formatPath(standard  + "time/Time.nova"),
+			formatPath(standard  + "time/Date.nova"),
+			
+			formatPath(standard  + "thread/Thread.nova"),
+			formatPath(standard  + "thread/UncaughtExceptionHandler.nova"),
+			
+			formatPath(standard  + "io/InputStream.nova"),
+			formatPath(standard  + "io/OutputStream.nova"),
+			formatPath(standard  + "io/StreamReader.nova"),
+			formatPath(standard  + "io/File.nova"),
+			formatPath(standard  + "io/Console.nova"),
+			
+			formatPath(standard  + "svg/SVG.nova"),
+			formatPath(standard  + "svg/SVGComponent.nova"),
+			formatPath(standard  + "svg/SVGComponentList.nova"),
+			formatPath(standard  + "svg/SVGComponentNode.nova"),
+			formatPath(standard  + "svg/SVGMainComponent.nova"),
+			formatPath(standard  + "svg/SVGCircle.nova"),
+			
 			formatPath(standard  + "exception/ExceptionData.nova"),
 			formatPath(standard  + "exception/DivideByZeroException.nova"),
 			formatPath(standard  + "exception/Exception.nova"),
+			
 			formatPath(standard  + "datastruct/ArrayList.nova"),
-			formatPath(standard  + "Math.nova"),
-			formatPath(standard  + "Time.nova"),
-			formatPath(standard  + "Object.nova"),
-			formatPath(standard  + "InputStream.nova"),
-			formatPath(standard  + "OutputStream.nova"),
-			formatPath(standard  + "StreamReader.nova"),
 			formatPath(standard  + "datastruct/List.nova"),
 			formatPath(standard  + "datastruct/ListNode.nova"),
 			formatPath(standard  + "datastruct/Array.nova"),
 			formatPath(standard  + "datastruct/Stack.nova"),
 			formatPath(standard  + "datastruct/EmptyStackException.nova"),
 			formatPath(standard  + "datastruct/HashMap.nova"),
-			formatPath(standard  + "Thread.nova"),
-			formatPath(standard  + "UncaughtExceptionHandler.nova"),
-			formatPath(standard  + "Char.nova"),
-			formatPath(standard  + "Bool.nova"),
-			formatPath(standard  + "Byte.nova"),
-			formatPath(standard  + "Short.nova"),
-			formatPath(standard  + "Int.nova"),
-			formatPath(standard  + "Long.nova"),
-			formatPath(standard  + "Float.nova"),
-			formatPath(standard  + "Double.nova"),
-			formatPath(standard  + "Number.nova"),
-			formatPath(standard  + "GC.nova"),
-			formatPath(standard  + "File.nova"),
-			formatPath(standard  + "SVG.nova"),
-			formatPath(standard  + "SVGComponent.nova"),
-			formatPath(standard  + "SVGComponentList.nova"),
-			formatPath(standard  + "SVGComponentNode.nova"),
-			formatPath(standard  + "SVGMainComponent.nova"),
-			formatPath(standard  + "SVGCircle.nova"),
-			formatPath(standard  + "System.nova"),
-			formatPath(standard  + "Process.nova"),
-			formatPath(standard  + "Null.nova"),
+			formatPath(standard  + "datastruct/Bounds.nova"),
 		};
 		
 		String postArgs[] = new String[]
 		{
 			"-dir", formatPath(directory + "../include"),
 			"-dir", formatPath(directory + "../include/gc"),
+			"-dir", formatPath(directory + "../include/nova_mysql"),
 			"-dir", formatPath(directory + ".."),
 		};
 		
@@ -350,6 +383,14 @@ public class Nova
 //			
 //			inputFiles.add(new File(location));
 //		}
+		
+		for (String classLocation : standardFiles)
+		{
+			String location = classLocation.substring(getWorkingDirectoryPath().length() + 1, classLocation.lastIndexOf('.'));
+			String name     = SyntaxUtils.getClassName(location);
+			
+			CLASS_LOCATIONS.put(name, location);
+		}
 		
 		args = prependArguments(args, standardFiles);
 		args = appendArguments(args, postArgs);
@@ -366,6 +407,11 @@ public class Nova
 		startTimer();
 		
 		createSyntaxTree(generateCode);
+	}
+	
+	public static final String getClassLocation(String className)
+	{
+		return CLASS_LOCATIONS.get(className);
 	}
 	
 	private String[] prependArguments(String args[], String ... newData)
@@ -577,7 +623,7 @@ public class Nova
 			StringBuilder mainMethodText = new StringBuilder();
 			
 			mainMethodText.append('\n').append('\n');
-			mainMethodText.append("nova_standard_NovaNull* nova_null;").append('\n');
+			mainMethodText.append("nova_standard_primitive_NovaNull* nova_null;").append('\n');
 			mainMethodText.append('\n');
 			mainMethodText.append("int main(int argc, char** argvs)").append('\n');
 			mainMethodText.append("{").append('\n');
@@ -603,7 +649,8 @@ public class Nova
 			mainMethodText.append	('}').append('\n');
 			mainMethodText.append	("CATCH (1)").append('\n');
 			mainMethodText.append	('{').append('\n');
-			mainMethodText.append		("printf(\"You broke it.\");").append('\n');
+			mainMethodText.append		("nova_standard_exception_NovaException* base = (nova_standard_exception_NovaException*)").append(Exception.EXCEPTION_DATA_IDENTIFIER).append("->nova_standard_exception_NovaExceptionData_NovathrownException;").append('\n');
+			mainMethodText.append		("printf(\"Exception in Thread 'main': %s\", nova_standard_NovaString_NovatoCharArray(base->nova_standard_exception_NovaException_Novamessage, 0));").append('\n');
 			mainMethodText.append		(enter.generateCSource()).append('\n');
 			mainMethodText.append	('}').append('\n');
 			mainMethodText.append	("FINALLY").append('\n');
@@ -686,6 +733,9 @@ public class Nova
 		{
 			cmd.append("-DUSE_GC -L\"bin/\" -lgc ");
 		}
+		
+		cmd.append("-lmysql ");
+		
 		if (isFlagEnabled(SMALL_BIN))
 		{
 			cmd.append("-Os -s ");
@@ -785,7 +835,7 @@ public class Nova
 				}
 				else if (compiler == GCC)
 				{
-					if (message.contains("error: "))
+					if (message.contains("\nerror: ") || message.contains(": error: "))
 					{
 						failed = true;
 					}
