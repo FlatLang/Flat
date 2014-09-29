@@ -1,5 +1,6 @@
 package net.fathomsoft.nova.tree;
 
+import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.util.Location;
 
@@ -8,7 +9,7 @@ import net.fathomsoft.nova.util.Location;
  * 
  * @author	Braden Steffaniak
  * @since	v0.2.29 Aug 25, 2014 at 6:11:02 PM
- * @version	v0.2.29 Aug 29, 2014 at 3:17:45 PM
+ * @version	v0.2.33 Sep 29, 2014 at 10:29:33 AM
  */
 public class GenericType extends IValue
 {
@@ -29,13 +30,22 @@ public class GenericType extends IValue
 	{
 		this(temporaryParent, locationIn);
 		
-		defaultType = "Object";
+		defaultType = Nova.getClassLocation("Object");
 		setType(parameterName, true, false);
 	}
 	
 	public String getDefaultType()
 	{
 		return defaultType;
+	}
+	
+	/**
+	 * @see net.fathomsoft.nova.tree.Value#getGenericReturnType()
+	 */
+	@Override
+	public String getGenericReturnType()
+	{
+		return getType();
 	}
 	
 	/**
@@ -90,6 +100,8 @@ public class GenericType extends IValue
 	public GenericType cloneTo(GenericType node)
 	{
 		super.cloneTo(node);
+		
+		node.defaultType = defaultType;
 		
 		return node;
 	}
