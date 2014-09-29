@@ -14,7 +14,7 @@ import net.fathomsoft.nova.util.Location;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:02:42 PM
- * @version	v0.2.31 Sep 24, 2014 at 4:41:04 PM
+ * @version	v0.2.33 Sep 29, 2014 at 10:29:33 AM
  */
 public class Variable extends Identifier
 {
@@ -33,6 +33,22 @@ public class Variable extends Identifier
 	{
 		if (isGenericType())
 		{
+			Identifier ref = getReferenceNode();
+			
+			if (ref instanceof Variable)
+			{
+				VariableDeclaration decl = ((Variable)ref).getDeclaration();
+				
+				GenericType type = decl.getGenericParameterInstance(getType());
+				
+				if (type.isGenericType())
+				{
+					return type.getDefaultType();
+				}
+				
+				return type.getType();
+			}
+			
 			return getGenericType().getDefaultType();
 		}
 		
