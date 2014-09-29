@@ -18,7 +18,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 10:00:11 PM
- * @version	v0.2.28 Aug 20, 2014 at 12:10:45 AM
+ * @version	v0.2.33 Sep 29, 2014 at 10:29:33 AM
  */
 public class UnaryOperation extends IValue
 {
@@ -81,9 +81,46 @@ public class UnaryOperation extends IValue
 	 */
 	public static boolean isUnaryOperator(CharSequence source, int index, int direction)
 	{
-		Bounds bounds = StringUtils.findStrings(source, Operator.UNARY_OPERATORS, index, direction);//StringUtils.getGroupedSymbols(source, index, direction);
+		return containsUnaryOperator(source, index, direction > 0 ? source.length() : 0, direction);
+	}
+	
+	/**
+	 * Check whether or not the next sequence of chars in the given source
+	 * is a unary operator.
+	 * 
+	 * @param source The source to check.
+	 * @param index The index to start the search at.
+	 * @param stopIndex The index to stop the search at.
+	 * @return Whether or not the next sequence of chars is a unary
+	 * 		operator.
+	 */
+	public static boolean containsUnaryOperator(CharSequence source, int index, int stopIndex)
+	{
+		return containsUnaryOperator(source, index, stopIndex, 1);
+	}
+	
+	/**
+	 * Check whether or not the next sequence of chars in the given source
+	 * is a unary operator.
+	 * 
+	 * @param source The source to check.
+	 * @param index The index to start the search at.
+	 * @param stopIndex The index to stop the search at.
+	 * @param direction The direction to search in, e.g., 1 is forward and
+	 * 		-1 is backward.
+	 * @return Whether or not the next sequence of chars is a unary
+	 * 		operator.
+	 */
+	public static boolean containsUnaryOperator(CharSequence source, int index, int stopIndex, int direction)
+	{
+		Bounds bounds = StringUtils.findStrings(source, Operator.UNARY_OPERATORS_NO_MINUS, index, direction);
 		
-		if (bounds.isValid())
+		if (!validBounds(bounds, stopIndex, direction))
+		{
+			bounds = StringUtils.findStrings(source, Operator.MINUS, index, direction);
+		}
+		
+		if (validBounds(bounds, stopIndex, direction))
 		{
 			String unary = source.subSequence(bounds.getStart(), bounds.getEnd()).toString();
 			
@@ -95,6 +132,11 @@ public class UnaryOperation extends IValue
 		}
 		
 		return false;
+	}
+	
+	private static boolean validBounds(Bounds bounds, int stopIndex, int direction)
+	{
+		return bounds.isValid() && (direction > 0 && bounds.getEnd() < stopIndex || direction < 0 && bounds.getStart() >= stopIndex);
 	}
 	
 	/**
