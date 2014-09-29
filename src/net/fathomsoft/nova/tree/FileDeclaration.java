@@ -17,7 +17,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Feb 18, 2014 at 8:57:00 PM
- * @version	v0.2.32 Sep 26, 2014 at 12:17:33 PM
+ * @version	v0.2.33 Sep 29, 2014 at 10:29:33 AM
  */
 public class FileDeclaration extends Node
 {
@@ -43,25 +43,25 @@ public class FileDeclaration extends Node
 		{
 			"Nova.h",
 			"ExceptionHandler.h",
-			"nova/standard/exception/ExceptionData",
-			"nova/standard/exception/Exception",
-			"nova/standard/exception/DivideByZeroException",
-			"nova/standard/Null",
-			"nova/standard/Object",
-			"nova/standard/String",
-			"nova/standard/System",
-			"nova/standard/Math",
-			"nova/standard/Console",
-			"nova/standard/GC",
-			"nova/standard/Number",
-			"nova/standard/Byte",
-			"nova/standard/Short",
-			"nova/standard/Int",
-			"nova/standard/Long",
-			"nova/standard/Float",
-			"nova/standard/Double",
-			"nova/standard/Char",
-			"nova/standard/Bool",
+			Nova.getClassLocation("ExceptionData"),
+			Nova.getClassLocation("Exception"),
+			Nova.getClassLocation("DivideByZeroException"),
+			Nova.getClassLocation("Console"),
+			Nova.getClassLocation("Number"),
+			Nova.getClassLocation("Byte"),
+			Nova.getClassLocation("Short"),
+			Nova.getClassLocation("Int"),
+			Nova.getClassLocation("Long"),
+			Nova.getClassLocation("Float"),
+			Nova.getClassLocation("Double"),
+			Nova.getClassLocation("Null"),
+			Nova.getClassLocation("Char"),
+			Nova.getClassLocation("Bool"),
+			Nova.getClassLocation("GC"),
+			Nova.getClassLocation("Object"),
+			Nova.getClassLocation("String"),
+			Nova.getClassLocation("System"),
+			Nova.getClassLocation("Math"),
 		};
 	}
 	
