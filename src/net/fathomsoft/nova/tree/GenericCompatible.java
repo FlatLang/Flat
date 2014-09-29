@@ -1,9 +1,9 @@
 package net.fathomsoft.nova.tree;
 
+import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.error.SyntaxErrorException;
 import net.fathomsoft.nova.error.SyntaxMessage;
-import net.fathomsoft.nova.tree.variables.Variable;
 import net.fathomsoft.nova.tree.variables.VariableDeclaration;
 import net.fathomsoft.nova.tree.variables.VariableDeclaration.DeclarationData;
 import net.fathomsoft.nova.util.Bounds;
@@ -15,7 +15,7 @@ import net.fathomsoft.nova.util.StringUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.2.29 Aug 28, 2014 at 11:51:16 PM
- * @version	v0.2.32 Sep 26, 2014 at 12:17:33 PM
+ * @version	v0.2.33 Sep 29, 2014 at 10:29:33 AM
  */
 public interface GenericCompatible
 {
@@ -85,6 +85,18 @@ public interface GenericCompatible
 		}
 		
 		return getGenericParameterNames()[index];
+	}
+	
+	public default String getGenericParameterType(String parameterName)
+	{
+		GenericType type = getGenericParameterInstance(parameterName);
+		
+		if (type.isGenericType())
+		{
+			return type.getDefaultType();
+		}
+		
+		return type.getType();
 	}
 	
 	public default GenericType getGenericParameterInstance(String parameterName)
@@ -180,7 +192,7 @@ public interface GenericCompatible
 	 */
 	public static String test(TestContext context)
 	{
-		context.importClass("nova/standard/datastruct/Stack");
+		context.importClass(Nova.getClassLocation("Stack"));
 		
 		Node declaration = SyntaxTree.decodeScopeContents(context.method, "Stack<String> s = new Stack()", Location.INVALID, false);
 		
