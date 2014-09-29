@@ -22,7 +22,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:20:35 PM
- * @version	v0.2.29 Aug 29, 2014 at 3:17:45 PM
+ * @version	v0.2.33 Sep 29, 2014 at 10:29:33 AM
  */
 public class BinaryOperation extends IValue
 {
@@ -313,7 +313,7 @@ public class BinaryOperation extends IValue
 			
 			if (common == null)
 			{
-				ClassDeclaration integerClass = parent.getProgram().getClassDeclaration("nova/standard/Int");
+				ClassDeclaration integerClass = parent.getProgram().getClassDeclaration(Nova.getClassLocation("Int"));
 				
 				if (operatorType == null || !operatorType.equals("bool") || !lhn.getReturnedNode().getTypeClass().isOfType(integerClass) && !rhn.getReturnedNode().getTypeClass().isOfType(integerClass))
 				{
