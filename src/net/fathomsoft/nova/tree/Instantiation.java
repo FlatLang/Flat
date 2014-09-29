@@ -18,7 +18,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Apr 3, 2014 at 7:53:35 PM
- * @version	v0.2.29 Aug 29, 2014 at 3:17:45 PM
+ * @version	v0.2.33 Sep 29, 2014 at 10:29:33 AM
  */
 public class Instantiation extends IIdentifier implements GenericCompatible
 {
@@ -198,6 +198,11 @@ public class Instantiation extends IIdentifier implements GenericCompatible
 			instantiation = bounds.trimString(instantiation);
 		}
 		
+		if (bounds.isValid())
+		{
+			decodeGenericParameters(params);
+		}
+		
 		if (SyntaxUtils.isMethodCall(instantiation))
 		{
 			MethodCall methodCall = MethodCall.decodeStatement(getParent(), instantiation, location, require);
@@ -217,11 +222,6 @@ public class Instantiation extends IIdentifier implements GenericCompatible
 		if (child == null)
 		{
 			SyntaxMessage.error("Unable to parse instantiation of '" + instantiation + "'", this);
-		}
-		
-		if (bounds.isValid())
-		{
-			decodeGenericParameters(params);
 		}
 		
 		setName(child.getName());
