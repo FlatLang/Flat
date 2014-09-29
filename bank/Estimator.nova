@@ -1,0 +1,9 @@
+package "bank"
+
+public class Estimator
+{
+	public static getMonthlyProfit(ResultSet set) -> double
+	{
+		
+	}
+}
