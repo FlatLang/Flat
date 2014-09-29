@@ -15,7 +15,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.2.4 May 2, 2014 at 11:14:37 PM
- * @version	v0.2.32 Sep 26, 2014 at 12:17:33 PM
+ * @version	v0.2.33 Sep 29, 2014 at 10:29:33 AM
  */
 public abstract class Value extends Node
 {
@@ -185,7 +185,14 @@ public abstract class Value extends Node
 	 */
 	public String generateArrayText()
 	{
-		return "*";
+		String text = "";
+		
+		for (int i = 0; i < getArrayDimensions(); i++)
+		{
+			text += "*";
+		}
+		
+		return text;
 	}
 	
 	/**
@@ -287,9 +294,9 @@ public abstract class Value extends Node
 	{
 		String type = null;
 		
-		if (getParentClass(true).containsGenericParameter(getType()))
+		if (isGenericType() && getGenericReturnType() != null)//getParentClass(true).containsGenericParameter(getType()))
 		{
-			type = getParentClass().getGenericParameter(getType()).getDefaultType();
+			type = getGenericReturnType();//getParentClass().getGenericParameter(getType()).getDefaultType();
 		}
 		else
 		{
@@ -739,7 +746,7 @@ public abstract class Value extends Node
 //		return getGenericType();
 	}
 	
-	public VariableDeclaration getGenericDeclaration()
+	public GenericCompatible getGenericDeclaration()
 	{
 		throw new UnimplementedOperationException("The getGenericDeclaration() method must be implemented by class " + this.getClass().getName());
 	}
