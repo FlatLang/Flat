@@ -13,7 +13,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:19:40 PM
- * @version	v0.2.28 Aug 20, 2014 at 12:10:45 AM
+ * @version	v0.2.33 Sep 29, 2014 at 10:29:33 AM
  */
 public class Operator extends IValue
 {
@@ -46,7 +46,9 @@ public class Operator extends IValue
 																EQUALS, BANG, ASSIGN, NOT_EQUAL, ADD, SUBTRACT,
 																L_SHIFT, R_SHIFT, GREATER_EQ, LESS_EQ, GREATER, LESS, };
 	
-	public static final String	UNARY_OPERATORS[] = new String[] { BANG, INCREMENT, DECREMENT, SUBTRACT };
+	public static final String	UNARY_OPERATORS[]          = new String[] { BANG, INCREMENT, DECREMENT, SUBTRACT };
+	public static final String	UNARY_OPERATORS_NO_MINUS[] = new String[] { BANG, INCREMENT, DECREMENT };
+	public static final String	MINUS[]                    = new String[] { SUBTRACT };
 	
 	public static final String	BINARY_OPERATORS[] = new String[] { AND, OR, DIVIDE, MULTIPLY, MODULO, ADD, SUBTRACT,
 																EQUALS, NOT_EQUAL, ASSIGN, GREATER_EQ, LESS_EQ, L_SHIFT,
@@ -124,7 +126,7 @@ public class Operator extends IValue
 		{
 			String type = SyntaxUtils.getTypeInCommon(getLeftOperand().getReturnedNode(), getRightOperand().getReturnedNode()).getType();
 			
-			if (getLeftOperand().isPrimitive() && getRightOperand().isPrimitive())
+			if (getLeftOperand().getReturnedNode().isPrimitive() && getRightOperand().getReturnedNode().isPrimitive())
 			{
 				type = SyntaxUtils.getHighestPrimitiveType(getLeftOperand().getType(), getRightOperand().getType());
 			}
