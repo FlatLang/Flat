@@ -18,7 +18,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 10:04:31 PM
- * @version	v0.2.32 Sep 26, 2014 at 12:17:33 PM
+ * @version	v0.2.33 Sep 29, 2014 at 10:29:33 AM
  */
 public class MethodCall extends IIdentifier
 {
@@ -192,6 +192,11 @@ public class MethodCall extends IIdentifier
 	
 	private VariableDeclaration getClosureDeclaration()
 	{
+		if (getParentMethod() == null)
+		{
+			return null;
+		}
+		
 		Parameter param = getParentMethod().getParameter(getName());
 		
 		if (param instanceof ClosureDeclaration)
@@ -445,16 +450,36 @@ public class MethodCall extends IIdentifier
 	}
 	
 	@Override
-	public VariableDeclaration getGenericDeclaration()
+	public GenericCompatible getGenericDeclaration()
 	{
+		Assignment assign = null;
+		
+		if (getParent() instanceof Assignment)
+		{
+			assign = (Assignment)getParent();
+		}
+		if (getParent() instanceof Instantiation && getParent().getParent() instanceof Assignment)
+		{
+			assign = (Assignment)getParent().getParent();
+		}
+		if (assign != null)
+		{
+			return assign.getAssigneeNode().getDeclaration();
+		}
+		
 		Identifier identifier = getReferenceNode();
 		
 		if (identifier instanceof Variable)
 		{
-			Variable variable = (Variable)identifier;
+			VariableDeclaration decl = ((Variable)identifier).getDeclaration();
 			
-			return variable.getDeclaration();
+			if (decl != null)
+			{
+				return decl;
+			}
 		}
+		
+		SyntaxMessage.error("Unable to determine generic type declaration for method call '" + getName() + "'", this);
 		
 		return null;
 	}
@@ -462,12 +487,12 @@ public class MethodCall extends IIdentifier
 	@Override
 	public String getGenericReturnType()
 	{
-		VariableDeclaration method = getMethodDeclaration();
-		VariableDeclaration decl   = getGenericDeclaration();
+		VariableDeclaration method  = getMethodDeclaration();
+		GenericCompatible   generic = getGenericDeclaration();
 		
-		if (decl != null)
+		if (generic != null)
 		{
-			return decl.getGenericParameterInstance(method.getType()).getType();
+			return generic.getGenericParameterInstance(method.getType()).getType();
 		}
 		
 		return super.getGenericReturnType();
