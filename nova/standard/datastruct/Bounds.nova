@@ -1,0 +1,172 @@
+package "nova/standard/datastruct"
+
+/**
+ * Class used to store data about a start and end location.
+ * 
+ * @author	Braden Steffaniak
+ * @since	v0.2.33 Sep 28, 2014 at 6:28:45 PM
+ * @version	v0.2.33 Sep 28, 2014 at 6:28:45 PM
+ */
+public class Bounds
+{
+	public int start
+	public int end
+	
+	/**
+	 * Create a Bounds instance with the specified start and
+	 * end location.
+	 * 
+	 * @param start The start location of the Bound.
+	 * @param end The end location of the Bound.
+	 */
+	public construct(int start, int end)
+	{
+		this.start = start
+		this.end   = end
+	}
+	
+	/**
+	 * Extract a substring from the given source at the specified bound's
+	 * start and end. This is equivalent to the following:
+	 * <blockquote><pre>source.substring(Bounds.start, Bounds.end)</pre></blockquote>
+	 * 
+	 * @param source The String to get the substring from.
+	 * @return The extracted substring.
+	 */
+	public extractString(String source) -> String
+	{
+		if (!isValid())
+		{
+			return null
+		}
+		
+		return source.substring(start, end)
+	}
+	
+	public extractPreString(String source) -> String
+	{
+		if (!isValid())
+		{
+			return null
+		}
+		
+		return source.substring(0, start)
+	}
+	
+	public extractPostString(String source) -> String
+	{
+		if (!isValid())
+		{
+			return source
+		}
+		
+		return source.substring(end)
+	}
+	
+	public trimString(String source) -> String
+	{
+		if (!isValid())
+		{
+			return source
+		}
+		
+		return extractPreString(source) + extractPostString(source)
+	}
+	
+	/**
+	 * Get whether or not the bounds are endless.
+	 * 
+	 * @return Whether or not the bounds will search endlessly.
+	 */
+	public isEndless() -> bool
+	{
+		return end < 0
+	}
+	
+	/**
+	 * Get whether or not the bounds are optional.
+	 * 
+	 * @return Whether or not the bounds will search optionally.
+	 */
+	public isOptional() -> bool
+	{
+		return start == 0
+	}
+	
+	/**
+	 * Get the length of the Bounds. end - start.
+	 * 
+	 * @return The length of the Bounds.
+	 */
+	public length() -> int
+	{
+		return end - start
+	}
+	
+	/**
+	 * Get whether or not the bounds are positive and that they have
+	 * a length.
+	 * 
+	 * @return Whether or not the Bounds is valid.
+	 */
+	public isValid() -> bool
+	{
+		return start >= 0 && end > 0
+	}
+	
+	public setInvalid()
+	{
+		start = -1
+		end   = -1
+	}
+	
+	/**
+	 * @see nova/standard/Object#equals(Object)
+	 * 
+	 * @param bounds The Bounds to check against.
+	 * @return Whether or not the two Bounds have equal values.
+	 */
+	public equals(Bounds bounds) -> bool
+	{
+		return bounds != null && bounds.start == start && bounds.end == end
+	}
+	
+	/**
+	 * Generate a String representation of the Bounds Object
+	 * containing the start and end position of the Bounds.
+	 * 
+	 * @see nova/standard/Object#toString()
+	 * 
+	 * @return A String representation of the Bounds Object.
+	 */
+	public toString() -> String
+	{
+		return "[" + start + ", " + end + "]"
+	}
+	
+	/**
+	 * Clone the values from the specified Bounds instance into the given
+	 * Bounds instance. This overwrites the existing values in the given
+	 * Bounds instance in favor for the specified Bounds's values.
+	 * 
+	 * @param bounds The Bounds to set the values of.
+	 */
+	public cloneTo(Bounds bounds)
+	{
+		bounds.start = start
+		bounds.end   = end
+	}
+	
+	/**
+	 * Clone the specified Bounds's values into a brand spankin' new
+	 * Bounds instance.
+	 * 
+	 * @see java.lang.Object#clone()
+	 * 
+	 * @return The new Bounds instance.
+	 */
+	public clone() -> Bounds
+	{
+		return new Bounds(start, end)
+	}
+}

@@ -1,4 +1,6 @@
-package "nova/standard"
+package "nova/standard/time"
+
+import "nova/standard/time/NativeTime.h"
 
 public class Time
 {

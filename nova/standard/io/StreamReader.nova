@@ -1,6 +1,5 @@
-package "nova/standard"
+package "nova/standard/io"
 
-import "nova/standard/InputStream"
 public class StreamReader extends InputStream
 {
 	File	file

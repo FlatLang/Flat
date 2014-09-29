@@ -1,7 +1,7 @@
 #ifndef NOVA_NOVA
 #define NOVA_NOVA
 
-#include <nova/standard/nova_standard_NovaNull.h>
+#include <nova/standard/primitive/nova_standard_primitive_NovaNull.h>
 
 /**
  * @dest Destination array
@@ -16,10 +16,10 @@ void arrayCopy(void* dest, int dIndex, const void* src, int sIndex, int len, int
 
 char* ufgets(FILE* stream);
 
-long_long currentTimeMillis();
-
 void copy_string(char* target, char* source);
 
-extern nova_standard_NovaNull* nova_null;
+void** nova_gen_array(void** array, int* dimensionSizes, int dimension, int dimensions, int size);
+
+extern nova_standard_primitive_NovaNull* nova_null;
 
 #endif

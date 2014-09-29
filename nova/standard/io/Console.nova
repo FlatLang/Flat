@@ -1,7 +1,8 @@
-package "nova/standard"
+package "nova/standard/io"
 
 import "stdio.h"
 import "stdlib.h"
+//import "nova/standard/io/NativeConsole.h"
 
 public class Console
 {
@@ -18,6 +19,7 @@ public class Console
 	external char getchar()
 	external int atoi(char array[])
 	external char[] ufgets(FILE* stream)
+	external char[] nova_getPass(char message[])
 	
 	public static writeLine(String text)
 	{
@@ -115,17 +117,17 @@ public class Console
 	{
 		String s = readLine()
 		
-		return atoi(s.toCharArray())
+		return Int.parseInt(s)
 	}
 	
 	public static readDouble() -> double
 	{
-		double num
+//		double num
 		
-		scanf("%lf", num)
-		flush()
-		
-		return num
+//		scanf("%lf", num)
+//		flush()
+		String s = readLine()
+		return Double.parseDouble(s)
 	}
 	
 	public static readChar() -> char
@@ -150,6 +152,11 @@ public class Console
 		
 		return s
 	}
+	
+//	public static readPassword(String message) -> String
+//	{
+//		return new String(nova_getPass(message.toCharArray()))
+//	}
 	
 	public static waitForEnter()
 	{

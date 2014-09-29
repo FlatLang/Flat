@@ -9,6 +9,7 @@
 #include <string.h>
 #include <stdint.h>
 #include <sys/timeb.h>
+#include <time.h>
 #include <MacroLib.h>
 #include <CClass.h>
 

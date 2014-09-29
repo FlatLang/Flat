@@ -9,6 +9,7 @@ public class String
 	external void strcpy(char dst[], char src[])
 	external void strcat(char dst[], char src[])
 	external int strlen(char data[])
+	external void memcpy(char dst[], char* src[], int length)
 	
 	public construct(char data[])
 	{
@@ -72,6 +73,81 @@ public class String
 		}
 		
 		return true
+	}
+	
+	indexOf(String search, int start, int direction) -> int
+	{
+		for (int i = start; i < length && i >= 0; i = i + direction)
+		{
+			bool found = true
+					
+			for (int j = 0; j < search.length && i + j < length && found; j++)
+			{
+				if (search.data[j] != data[i + j])
+				{
+					found = false
+				}
+			}
+			
+			if (found)
+			{
+//				if (direction > 0)
+//				{
+					return i
+//				}
+//				else
+//				{
+//					return i - search.length + 1
+//				}
+			}
+		}
+		
+		return -1
+	}
+	
+	public indexOf(String search) -> int
+	{
+		return indexOf(search, 0, 1)
+	}
+	
+	public lastIndexOf(String search) -> int
+	{
+		return indexOf(search, length - 1, -1)
+	}
+	
+	public substring(int start, int end) -> String
+	{
+		if (end - start == 0)
+		{
+			return ""
+		}
+		else if (end - start < 0)
+		{
+			throw new Exception()
+		}
+		
+		char buf[] = new char[end - start + 1]
+		
+		memcpy(buf, data[start], end - start)
+		
+		buf[end - start] = '\0'
+		
+		return new String(buf)
+	}
+	
+	public substring(int start) -> String
+	{
+		return substring(start, length)
+	}
+	
+	public lastChar() -> char
+	{
+		return charAt(length - 1)
+	}
+	
+	public charAt(int index) -> char
+	{
+		return data[index]
 	}
 	
 	public toString() -> String

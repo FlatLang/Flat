@@ -76,22 +76,6 @@ void arrayCopy(void* dest, int dIndex, const void* src, int sIndex, int len, int
 	}
 }
 
-long_long currentTimeMillis()
-{
-	struct timeb tmb;
-	unsigned_long_long value;
- 
-	ftime(&tmb);
-	/*printf("tmb.time     = %ld (seconds)\n", tmb.time);
-	printf("tmb.millitm  = %d (mlliseconds)\n", tmb.millitm);*/
-
-	value  = tmb.time;
-	value *= 1000;
-	value += tmb.millitm;
-
-	return value;
-}
-
 void copy_string(char* target, char* source)
 {
 	int length = strlen(source);
@@ -104,4 +88,21 @@ void copy_string(char* target, char* source)
 	}
 	
 	target[i] = '\0';
+}
+
+void** nova_gen_array(void** array, int* dimensionSizes, int dimension, int dimensions, int size)
+{
+	int i;
+
+	for (i = 0; i < dimensionSizes[dimension]; i++)
+	{
+		array[i] = NOVA_MALLOC(size * dimensionSizes[dimension]);
+
+		if (dimension + 1 < dimensions)
+		{
+			nova_gen_array(array[i], dimensionSizes, dimension + 1, dimensions, size);
+		}
+	}
+
+	return array;
 }

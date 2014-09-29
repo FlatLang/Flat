@@ -1,4 +1,4 @@
-package "nova/standard"
+package "nova/standard/primitive/number"
 
 public class Double extends Number
 {
@@ -7,6 +7,7 @@ public class Double extends Number
 	external void sprintf(char buffer[], char format[], double value)
 	external char[] realloc(char buffer[], int size)
 	external int strlen(char buffer[])
+	external double strtod(char str[], char* pEnd[])
 	
 	public construct(double value)
 	{
@@ -127,5 +128,12 @@ public class Double extends Number
 	public toString() -> String
 	{
 		return toString(value)
+	}
+	
+	public parseDouble(String str) -> double
+	{
+		char pEnd[]
+		
+		return strtod(str.toCharArray(), pEnd)
 	}
 }

@@ -1,0 +1,160 @@
+package "nova/standard/logic"
+
+import "nova/standard/datastruct/ArrayList"
+import "nova/standard/datastruct/Bounds"
+
+public class WFF
+{
+	StatementLetter       letters[]
+	
+	ArrayList<Hypothesis> hypotheses
+	
+	Conclusion            conclusion
+	
+	String                wff
+	
+	static char           whitespace[]
+	
+	static
+	{
+		whitespace = new char[4]
+		
+		whitespace[0] = ' '
+		whitespace[1] = '\t'
+		whitespace[2] = '\n'
+		whitespace[3] = '\r'
+	}
+	
+	public construct(String wellFormedFormula, StatementLetter letters[])
+	{
+		this.wff     = wellFormedFormula
+		this.letters = letters
+		
+		decodeFormula()
+	}
+	
+	decodeFormula()
+	{
+		StatementGroup<Conclusion> conclusionGroup = searchForConclusion(wff)
+		
+		if (conclusionGroup == null)
+		{
+			throw new InvalidFormulaException("No valid conclusion found")
+		}
+		
+		Conclusion conclusio = conclusionGroup.statement
+		
+		Console.writeLine("Conclusion: " + conclusio)
+	}
+	
+	searchForConclusion(String wff) -> StatementGroup<Conclusion>
+	{
+		Bounds bounds = new Bounds(-1, -1)
+		
+		int index = wff.lastIndexOf("->")
+		
+		if (index < 0)
+		{
+			return null
+		}
+		
+		if (wff.lastChar() == ')')
+		{
+			int first = findEndingMatch(wff, '(', ')', wff.length - 1, -1)
+			
+			
+		}
+		
+		int conclusionStart = nextNonWhitespaceIndex(wff, index + 2, 1)
+		
+		bounds.start = conclusionStart
+		bounds.end   = wff.length
+		
+		Conclusion conclusion = new Conclusion(bounds.extractString(wff))
+		
+		StatementGroup<Conclusion> group = new StatementGroup(conclusion, bounds)
+		
+		return group
+	}
+	
+	decodeStatements(String wff) -> ArrayList<StatementGroup<Statement>>
+	{
+		
+	}
+	
+	searchForStatement(String wff) -> StatementGroup<Statement>
+	{
+		return null
+	}
+	
+	static nextNonWhitespaceIndex(String wff, int index, int direction) -> int
+	{
+		return nextWhitespaceIndex(wff, index, direction, true)
+	}
+	
+	static nextWhitespaceIndex(String wff, int index, int direction) -> int
+	{
+		return nextWhitespaceIndex(wff, index, direction, false)
+	}
+	
+	static nextWhitespaceIndex(String wff, int index, int direction, bool opposite) -> int
+	{
+		for (int i = index; i < wff.length && i >= 0; i = i + direction)
+		{
+			char c = wff.charAt(i)
+			
+			if (containsChar(c, whitespace, 4) != opposite)
+			{
+				return i
+			}
+		}
+		
+		return -1
+	}
+	
+	static containsChar(char needle, char chars[], int length) -> bool
+	{
+		for (int i = 0; i < length; i++)
+		{
+			if (needle == chars[i])
+			{
+				return true
+			}
+		}
+		
+		return false
+	}
+	
+	static findEndingMatch(String wff, char start, char end, int index, int direction) -> int
+	{
+		if (direction < 0)
+		{
+			char temp = start
+			start     = end
+			end       = temp
+		}
+		
+		int scope = 0
+		
+		for (int i = index; i < wff.length && i >= 0; i = i + direction)
+		{
+			char c = wff.charAt(i)
+			
+			if (c == start)
+			{
+				scope++
+			}
+			else if (c == end)
+			{
+				scope--
+			}
+			
+			if (scope == 0)
+			{
+				return i
+			}
+		}
+		
+		return -1
+	}
+}

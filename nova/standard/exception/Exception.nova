@@ -2,5 +2,15 @@ package "nova/standard/exception"
 
 public class Exception
 {
+	visible String message
 	
+	public construct()
+	{
+		this("")
+	}
+	
+	public construct(String message)
+	{
+		this.message = message
+	}
 }

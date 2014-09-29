@@ -12,6 +12,8 @@ public class ExceptionData
 	
 	ExceptionData			parent
 	
+	public Exception		thrownException
+	
 	visible ArrayList<Int>	codes
 	
 	public construct(buffer buf)

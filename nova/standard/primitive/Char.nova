@@ -1,4 +1,6 @@
-package "nova/standard"
+package "nova/standard/primitive"
+
+
 
 public class Char extends Number
 {

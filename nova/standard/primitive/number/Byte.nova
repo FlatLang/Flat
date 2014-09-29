@@ -1,4 +1,4 @@
-package "nova/standard"
+package "nova/standard/primitive/number"
 
 public class Byte extends Number
 {

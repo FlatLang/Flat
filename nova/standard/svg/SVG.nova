@@ -1,6 +1,6 @@
-package "nova/standard"
+package "nova/standard/svg"
 
-import "nova/standard/File"
+import "nova/standard/io/File"
 
 public class SVG
 {

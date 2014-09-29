@@ -1,8 +1,9 @@
 package "nova/standard"
 
-import "nova/standard/StreamReader"
-import "nova/standard/File"
-import "nova/standard/Time"
+import "nova/standard/io/StreamReader"
+import "nova/standard/io/File"
+import "nova/standard/time/Time"
+import "nova/standard/process/Process"
 import "nova/standard/NativeSystem.h"
 
 public class System

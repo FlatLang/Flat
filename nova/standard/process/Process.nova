@@ -1,4 +1,6 @@
-package "nova/standard"
+package "nova/standard/process"
+
+import "nova/standard/io/StreamReader"
 
 public class Process
 {
