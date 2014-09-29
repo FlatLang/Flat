@@ -6,6 +6,7 @@ import java.util.regex.Matcher;
 import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.error.SyntaxErrorException;
+import net.fathomsoft.nova.util.Bounds;
 import net.fathomsoft.nova.util.FileUtils;
 import net.fathomsoft.nova.util.Location;
 import net.fathomsoft.nova.util.Patterns;
@@ -19,7 +20,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.2.1 Apr 29, 2014 at 8:04:48 PM
- * @version	v0.2.32 Sep 26, 2014 at 12:17:33 PM
+ * @version	v0.2.33 Sep 29, 2014 at 10:29:33 AM
  */
 public class TreeGenerator implements Runnable
 {
@@ -407,12 +408,18 @@ public class TreeGenerator implements Runnable
 	 */
 	private boolean checkStatementContinuation(int prevCharIndex, int nextCharIndex)
 	{
-		boolean left  = StringUtils.containsChar(source, StringUtils.STMT_CONT_CHARS, prevCharIndex) && !UnaryOperation.isUnaryOperator(source, prevCharIndex, -1);
-		boolean right = StringUtils.containsChar(source, StringUtils.STMT_CONT_CHARS, nextCharIndex) && (!UnaryOperation.isUnaryOperator(source, nextCharIndex) || StringUtils.findGroupedSymbols(source, nextCharIndex).equals("-"));
+		Bounds prevWordBounds = StringUtils.findNextWordBounds(source, prevCharIndex, -1);
 		
-		String prevWord = StringUtils.findNextWord(source, prevCharIndex, -1);
+		int nextNextCharIndex = StringUtils.findNextNonWhitespaceIndex(source, StringUtils.findNextWhitespaceIndex(source, nextCharIndex + 1));
 		
-		return left ^ right || prevWord.equals("return");
+		// Whether or not the current statement needs the next line to complete the statement
+		boolean pendingCompletion  = StringUtils.containsChar(source, StringUtils.STMT_PRE_CONT_CHARS, prevCharIndex) && !UnaryOperation.containsUnaryOperator(source, prevCharIndex, prevWordBounds.getEnd(), -1);
+		// Whether or not the next statement needs a fragment before it to complete the statement
+		boolean requiresCompletion = StringUtils.containsChar(source, StringUtils.STMT_POST_CONT_CHARS, nextCharIndex) && (!UnaryOperation.containsUnaryOperator(source, nextCharIndex, nextNextCharIndex) || StringUtils.findGroupedSymbols(source, nextCharIndex).equals("-"));
+		
+		String prevWord = prevWordBounds.extractString(source);
+		
+		return pendingCompletion ^ requiresCompletion || (prevWord.equals("return") && pendingCompletion && parentStack.check().getParentMethod().getType() != null);
 	}
 	
 	/**
