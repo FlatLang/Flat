@@ -22,7 +22,7 @@ import net.fathomsoft.nova.util.StringUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:00:11 PM
- * @version	v0.2.32 Sep 26, 2014 at 12:17:33 PM
+ * @version	v0.2.33 Sep 29, 2014 at 10:29:33 AM
  */
 public abstract class Node
 {
@@ -856,7 +856,10 @@ public abstract class Node
 			String word  = extra.words.get(extra.wordNumber);
 			Bounds bound = extra.bounds.get(extra.wordNumber);
 			
-			interactWord(word, bound, extra.delims.get(extra.wordNumber), extra.delims.get(extra.wordNumber + 1), extra);
+			String leftDelim  = extra.delims.get(extra.wordNumber);
+			String rightDelim = extra.delims.get(extra.wordNumber + 1);
+			
+			interactWord(word, bound, leftDelim, rightDelim, extra);
 			
 			extra.wordNumber++;
 		}
