@@ -3,6 +3,7 @@ package net.fathomsoft.nova.tree.variables;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.tree.BinaryOperation;
+import net.fathomsoft.nova.tree.Identifier;
 import net.fathomsoft.nova.tree.Literal;
 import net.fathomsoft.nova.tree.Node;
 import net.fathomsoft.nova.tree.Priority;
@@ -26,7 +27,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Mar 16, 2014 at 1:13:49 AM
- * @version	v0.2.32 Sep 26, 2014 at 12:17:33 PM
+ * @version	v0.2.33 Sep 29, 2014 at 10:29:33 AM
  */
 public class Array extends VariableDeclaration
 {
@@ -36,6 +37,20 @@ public class Array extends VariableDeclaration
 	public Array(Node temporaryParent, Location locationIn)
 	{
 		super(temporaryParent, locationIn);
+	}
+	
+	/**
+	 * @see net.fathomsoft.nova.tree.Identifier#getAccessedNode()
+	 */
+	@Override
+	public Identifier getAccessedNode()
+	{
+		if (getNumVisibleChildren() <= getArrayDimensions())
+		{
+			return null;
+		}
+		
+		return (Identifier)getVisibleChild(getArrayDimensions());
 	}
 	
 	/**
@@ -63,16 +78,45 @@ public class Array extends VariableDeclaration
 	public StringBuilder generateCSourceFragment(StringBuilder builder)
 	{
 		generateCTypeCast(builder);
-		builder.insert(builder.length() - 1, '*');
+//		builder.insert(builder.length() - 1, '*');
 		
-		builder.append("NOVA_MALLOC(sizeof(").append(generateCTypeClassName()).append(')').append(" * (");
+		if (getNumChildren() > 1)
+		{
+			builder.append("nova_gen_array(");
+		}
+		
+		builder.append("NOVA_MALLOC(sizeof(").append(generateCTypeClassName());
 		
 		for (int i = 0; i < getNumChildren(); i++)
 		{
+			builder.append('[');
 			getChild(i).generateCSourceFragment(builder);
+			builder.append(']');
 		}
 		
-		return builder.append(')').append(')');
+		builder.append(')');
+		
+		if (getNumChildren() > 1)
+		{
+//			l1_Novas = (nova_standard_NovaString****)nova_gen_array(NOVA_MALLOC(sizeof(nova_standard_NovaString[5][3][2])), (int[]) { 3, 2 }, 0, 2, sizeof(nova_standard_NovaString));
+			builder.append("), (int[]) { ");
+			
+			for (int i = 0; i < getNumChildren() - 1; i++)
+			{
+				if (i > 0)
+				{
+					builder.append(", ");
+				}
+				
+				getChild(i).generateCSourceFragment(builder);
+			}
+			
+			builder.append(" }, 0, ").append(getNumChildren() - 1).append(", ");
+			
+			builder.append("sizeof(").append(generateCTypeClassName()).append(')');
+		}
+		
+		return builder.append(')');
 	}
 	
 	/**
@@ -171,6 +215,8 @@ public class Array extends VariableDeclaration
 			decodeLength(length, location, require);
 			
 			index = statement.indexOf('[', endIndex + 1);
+			
+			setArrayDimensions(getArrayDimensions() + 1);
 		}
 		
 		return true;
