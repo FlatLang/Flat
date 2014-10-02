@@ -2,10 +2,12 @@ package net.fathomsoft.nova.tree.variables;
 
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.tree.ClassDeclaration;
+import net.fathomsoft.nova.tree.FileDeclaration;
 import net.fathomsoft.nova.tree.GenericType;
 import net.fathomsoft.nova.tree.Identifier;
 import net.fathomsoft.nova.tree.Node;
 import net.fathomsoft.nova.util.Location;
+import net.fathomsoft.nova.util.SyntaxUtils;
 
 /**
  * Identifier extension that represents the use of a variable
@@ -14,7 +16,7 @@ import net.fathomsoft.nova.util.Location;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:02:42 PM
- * @version	v0.2.33 Sep 29, 2014 at 10:29:33 AM
+ * @version	v0.2.34 Oct 1, 2014 at 9:51:33 PM
  */
 public class Variable extends Identifier
 {
@@ -93,7 +95,24 @@ public class Variable extends Identifier
 	{
 		VariableDeclaration var = getDeclaration();
 		
-		return var.getParentClass(true);
+		Identifier ref = getReferenceNode();
+		FileDeclaration file = null;
+		
+		if (getParent() == ref.getParent())//ref.getName().equals(ParameterList.OBJECT_REFERENCE_IDENTIFIER))
+		{
+			file = getFileDeclaration();
+		}
+		else
+		{
+			file = ref.getDeclaringClass().getFileDeclaration();
+		}
+		
+		if (var.isGenericType())
+		{
+			return SyntaxUtils.getImportedClass(file, var.getGenericReturnType());
+		}
+		
+		return SyntaxUtils.getImportedClass(file, var.getType());
 	}
 	
 	/**
