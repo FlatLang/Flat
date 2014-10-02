@@ -33,7 +33,7 @@ import net.fathomsoft.nova.tree.variables.VariableDeclaration;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Mar 15, 2014 at 7:55:00 PM
- * @version	v0.2.33 Sep 29, 2014 at 10:29:33 AM
+ * @version	v0.2.34 Oct 1, 2014 at 9:51:33 PM
  */
 public class SyntaxUtils
 {
@@ -1850,13 +1850,18 @@ public class SyntaxUtils
 		{
 			if (!isImported(node.getFileDeclaration(), clazz))
 			{
-				SyntaxMessage.error("Type '" + clazz + "' is not imported", node, location);
+				throwImportException(node, clazz, location);
 			}
 			
 			return true;
 		}
 		
 		return false;
+	}
+	
+	public static void throwImportException(Node parent, String type, Location location)
+	{
+		SyntaxMessage.error("Type '" + type + "' is not imported", parent, location);
 	}
 	
 	/**
