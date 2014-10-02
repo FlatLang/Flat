@@ -13,6 +13,11 @@ CCLASS_PRIVATE
 	nova_standard_NovaString* nova_standard_io_NovaFile_Novalocation;
 	
 )
+void nova_standard_io_NovaFileNova_init_static(nova_standard_exception_NovaExceptionData* exceptionData)
+{
+	{
+	}
+}
 
 nova_standard_io_NovaFile* nova_standard_io_NovaFile_Nova1_construct(nova_standard_io_NovaFile* this, nova_standard_exception_NovaExceptionData* exceptionData, nova_standard_NovaString* l0_Novalocation)
 {

@@ -12,6 +12,11 @@ CCLASS_PRIVATE
 	nova_standard_datastruct_NovaListNode* nova_standard_datastruct_NovaStack_Novatop;
 	
 )
+void nova_standard_datastruct_NovaStackNova_init_static(nova_standard_exception_NovaExceptionData* exceptionData)
+{
+	{
+	}
+}
 
 nova_standard_datastruct_NovaStack* nova_standard_datastruct_NovaStack_Nova0_construct(nova_standard_datastruct_NovaStack* this, nova_standard_exception_NovaExceptionData* exceptionData)
 {

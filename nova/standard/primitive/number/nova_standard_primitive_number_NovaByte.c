@@ -9,6 +9,11 @@ nova_VTable_nova_standard_primitive_number_NovaByte nova_VTable_nova_standard_pr
 	nova_standard_primitive_number_NovaByte_static_Nova0_numDigits,
 	nova_standard_primitive_number_NovaByte_static_Nova1_toString,
 };
+void nova_standard_primitive_number_NovaByteNova_init_static(nova_standard_exception_NovaExceptionData* exceptionData)
+{
+	{
+	}
+}
 
 nova_standard_primitive_number_NovaByte* nova_standard_primitive_number_NovaByte_Novaconstruct(nova_standard_primitive_number_NovaByte* this, nova_standard_exception_NovaExceptionData* exceptionData, char l0_Novavalue)
 {

@@ -40,6 +40,7 @@ CCLASS_CLASS
 	nova_VTable_nova_standard_gc_NovaGC* vtable;
 )
 
+void nova_standard_gc_NovaGCNova_init_static(nova_standard_exception_NovaExceptionData* exceptionData);
 nova_standard_gc_NovaGC* nova_standard_gc_NovaGC_Nova0_construct(nova_standard_gc_NovaGC* this, nova_standard_exception_NovaExceptionData* exceptionData);
 void nova_del_GC(nova_standard_gc_NovaGC** this, nova_standard_exception_NovaExceptionData* exceptionData);
 void nova_standard_gc_NovaGC_static_Novainit(nova_standard_gc_NovaGC* this, nova_standard_exception_NovaExceptionData* exceptionData);

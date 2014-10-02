@@ -7,6 +7,11 @@ nova_VTable_nova_standard_svg_NovaSVGComponentList nova_VTable_nova_standard_svg
 	nova_standard_NovaObject_Nova0_toString,
 	nova_standard_NovaObject_Nova0_equals,
 };
+void nova_standard_svg_NovaSVGComponentListNova_init_static(nova_standard_exception_NovaExceptionData* exceptionData)
+{
+	{
+	}
+}
 
 nova_standard_svg_NovaSVGComponentList* nova_standard_svg_NovaSVGComponentList_Nova0_construct(nova_standard_svg_NovaSVGComponentList* this, nova_standard_exception_NovaExceptionData* exceptionData)
 {

@@ -46,6 +46,7 @@ CCLASS_CLASS
 	int nova_standard_svg_NovaSVGCircle_Novar;
 )
 
+void nova_standard_svg_NovaSVGCircleNova_init_static(nova_standard_exception_NovaExceptionData* exceptionData);
 nova_standard_svg_NovaSVGCircle* nova_standard_svg_NovaSVGCircle_Novaconstruct(nova_standard_svg_NovaSVGCircle* this, nova_standard_exception_NovaExceptionData* exceptionData, double l0_Novax, double l0_Novay, int l0_Novar);
 void nova_del_SVGCircle(nova_standard_svg_NovaSVGCircle** this, nova_standard_exception_NovaExceptionData* exceptionData);
 void nova_standard_svg_NovaSVGCircle_Novathis(nova_standard_svg_NovaSVGCircle* this, nova_standard_exception_NovaExceptionData* exceptionData, double l0_Novax, double l0_Novay, int l0_Novar);

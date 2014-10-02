@@ -42,6 +42,7 @@ CCLASS_CLASS
 	struct Private* prv;
 )
 
+void nova_standard_logic_NovaStatementNova_init_static(nova_standard_exception_NovaExceptionData* exceptionData);
 nova_standard_logic_NovaStatement* nova_standard_logic_NovaStatement_Nova0_construct(nova_standard_logic_NovaStatement* this, nova_standard_exception_NovaExceptionData* exceptionData, nova_standard_NovaString* l0_Novastatement);
 void nova_del_Statement(nova_standard_logic_NovaStatement** this, nova_standard_exception_NovaExceptionData* exceptionData);
 void nova_standard_logic_NovaStatement_Novathis(nova_standard_logic_NovaStatement* this, nova_standard_exception_NovaExceptionData* exceptionData, nova_standard_NovaString* l0_Novastatement);

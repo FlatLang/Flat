@@ -13,6 +13,11 @@ CCLASS_PRIVATE
 	nova_standard_datastruct_NovaArrayList* nova_standard_logic_NovaStatement_Novacomponents;
 	
 )
+void nova_standard_logic_NovaHypothesisNova_init_static(nova_standard_exception_NovaExceptionData* exceptionData)
+{
+	{
+	}
+}
 
 nova_standard_logic_NovaHypothesis* nova_standard_logic_NovaHypothesis_Nova0_construct(nova_standard_logic_NovaHypothesis* this, nova_standard_exception_NovaExceptionData* exceptionData, nova_standard_NovaString* l0_Novastatement)
 {

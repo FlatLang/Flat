@@ -40,6 +40,7 @@ CCLASS_CLASS
 	nova_VTable_nova_standard_time_NovaTime* vtable;
 )
 
+void nova_standard_time_NovaTimeNova_init_static(nova_standard_exception_NovaExceptionData* exceptionData);
 nova_standard_time_NovaTime* nova_standard_time_NovaTime_Nova0_construct(nova_standard_time_NovaTime* this, nova_standard_exception_NovaExceptionData* exceptionData);
 void nova_del_Time(nova_standard_time_NovaTime** this, nova_standard_exception_NovaExceptionData* exceptionData);
 long_long nova_standard_time_NovaTime_static_NovacurrentTimeMillis(nova_standard_time_NovaTime* this, nova_standard_exception_NovaExceptionData* exceptionData);

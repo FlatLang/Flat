@@ -7,6 +7,11 @@ nova_VTable_nova_standard_logic_NovaStatementGroup nova_VTable_nova_standard_log
 	nova_standard_NovaObject_Nova0_toString,
 	nova_standard_NovaObject_Nova0_equals,
 };
+void nova_standard_logic_NovaStatementGroupNova_init_static(nova_standard_exception_NovaExceptionData* exceptionData)
+{
+	{
+	}
+}
 
 nova_standard_logic_NovaStatementGroup* nova_standard_logic_NovaStatementGroup_Novaconstruct(nova_standard_logic_NovaStatementGroup* this, nova_standard_exception_NovaExceptionData* exceptionData, nova_standard_NovaObject* l0_Novastatement, nova_standard_datastruct_NovaBounds* l0_Novabounds)
 {

@@ -41,6 +41,7 @@ CCLASS_CLASS
 	struct Private* prv;
 )
 
+void nova_standard_datastruct_NovaListNova_init_static(nova_standard_exception_NovaExceptionData* exceptionData);
 nova_standard_datastruct_NovaList* nova_standard_datastruct_NovaList_Nova0_construct(nova_standard_datastruct_NovaList* this, nova_standard_exception_NovaExceptionData* exceptionData);
 void nova_del_List(nova_standard_datastruct_NovaList** this, nova_standard_exception_NovaExceptionData* exceptionData);
 nova_standard_datastruct_NovaListNode* nova_standard_datastruct_NovaList_NovagetFirst(nova_standard_datastruct_NovaList* this, nova_standard_exception_NovaExceptionData* exceptionData);

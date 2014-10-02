@@ -42,6 +42,7 @@ CCLASS_CLASS
 	struct Private* prv;
 )
 
+void nova_standard_NovaStringNova_init_static(nova_standard_exception_NovaExceptionData* exceptionData);
 nova_standard_NovaString* nova_standard_NovaString_Novaconstruct(nova_standard_NovaString* this, nova_standard_exception_NovaExceptionData* exceptionData, char* l0_Novadata);
 void nova_del_String(nova_standard_NovaString** this, nova_standard_exception_NovaExceptionData* exceptionData);
 void nova_standard_NovaString_Novathis(nova_standard_NovaString* this, nova_standard_exception_NovaExceptionData* exceptionData, char* l0_Novadata);
@@ -49,11 +50,13 @@ char* nova_standard_NovaString_NovatoCharArray(nova_standard_NovaString* this, n
 nova_standard_NovaString* nova_standard_NovaString_Nova0_concat(nova_standard_NovaString* this, nova_standard_exception_NovaExceptionData* exceptionData, nova_standard_NovaString* l0_Novastr);
 char nova_standard_NovaString_Nova0_equals(nova_standard_NovaString* this, nova_standard_exception_NovaExceptionData* exceptionData, nova_standard_NovaString* l0_Novaother);
 int nova_standard_NovaString_Nova1_indexOf(nova_standard_NovaString* this, nova_standard_exception_NovaExceptionData* exceptionData, nova_standard_NovaString* l0_Novasearch);
+int nova_standard_NovaString_Nova2_indexOf(nova_standard_NovaString* this, nova_standard_exception_NovaExceptionData* exceptionData, nova_standard_NovaString* l0_Novasearch, int l0_Novastart);
 int nova_standard_NovaString_NovalastIndexOf(nova_standard_NovaString* this, nova_standard_exception_NovaExceptionData* exceptionData, nova_standard_NovaString* l0_Novasearch);
 nova_standard_NovaString* nova_standard_NovaString_Nova0_substring(nova_standard_NovaString* this, nova_standard_exception_NovaExceptionData* exceptionData, int l0_Novastart, int l0_Novaend);
 nova_standard_NovaString* nova_standard_NovaString_Nova1_substring(nova_standard_NovaString* this, nova_standard_exception_NovaExceptionData* exceptionData, int l0_Novastart);
 char nova_standard_NovaString_NovalastChar(nova_standard_NovaString* this, nova_standard_exception_NovaExceptionData* exceptionData);
 char nova_standard_NovaString_NovacharAt(nova_standard_NovaString* this, nova_standard_exception_NovaExceptionData* exceptionData, int l0_Novaindex);
+nova_standard_NovaString* nova_standard_NovaString_Novatrim(nova_standard_NovaString* this, nova_standard_exception_NovaExceptionData* exceptionData);
 nova_standard_NovaString* nova_standard_NovaString_Nova0_toString(nova_standard_NovaString* this, nova_standard_exception_NovaExceptionData* exceptionData);
 void nova_standard_NovaString_Novasuper(nova_standard_NovaString* this, nova_standard_exception_NovaExceptionData* exceptionData);
 

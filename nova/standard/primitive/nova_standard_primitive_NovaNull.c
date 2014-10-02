@@ -13,6 +13,11 @@ CCLASS_PRIVATE
 	char* nova_standard_NovaString_Novadata;
 	
 )
+void nova_standard_primitive_NovaNullNova_init_static(nova_standard_exception_NovaExceptionData* exceptionData)
+{
+	{
+	}
+}
 
 nova_standard_primitive_NovaNull* nova_standard_primitive_NovaNull_Nova0_construct(nova_standard_primitive_NovaNull* this, nova_standard_exception_NovaExceptionData* exceptionData)
 {

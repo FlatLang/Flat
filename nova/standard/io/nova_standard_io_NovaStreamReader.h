@@ -42,6 +42,7 @@ CCLASS_CLASS
 	struct Private* prv;
 )
 
+void nova_standard_io_NovaStreamReaderNova_init_static(nova_standard_exception_NovaExceptionData* exceptionData);
 nova_standard_io_NovaStreamReader* nova_standard_io_NovaStreamReader_Novaconstruct(nova_standard_io_NovaStreamReader* this, nova_standard_exception_NovaExceptionData* exceptionData, nova_standard_io_NovaFile* l0_Novafile);
 void nova_del_StreamReader(nova_standard_io_NovaStreamReader** this, nova_standard_exception_NovaExceptionData* exceptionData);
 void nova_standard_io_NovaStreamReader_Novathis(nova_standard_io_NovaStreamReader* this, nova_standard_exception_NovaExceptionData* exceptionData, nova_standard_io_NovaFile* l0_Novafile);

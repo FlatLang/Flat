@@ -41,6 +41,7 @@ CCLASS_CLASS
 	struct Private* prv;
 )
 
+void nova_standard_io_NovaOutputStreamNova_init_static(nova_standard_exception_NovaExceptionData* exceptionData);
 nova_standard_io_NovaOutputStream* nova_standard_io_NovaOutputStream_Nova0_construct(nova_standard_io_NovaOutputStream* this, nova_standard_exception_NovaExceptionData* exceptionData);
 void nova_del_OutputStream(nova_standard_io_NovaOutputStream** this, nova_standard_exception_NovaExceptionData* exceptionData);
 void nova_standard_io_NovaOutputStream_Novathis(nova_standard_io_NovaOutputStream* this, nova_standard_exception_NovaExceptionData* exceptionData);

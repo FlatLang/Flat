@@ -13,6 +13,11 @@ CCLASS_PRIVATE
 	nova_standard_exception_NovaExceptionData* nova_standard_exception_NovaExceptionData_Novaparent;
 	
 )
+void nova_standard_exception_NovaExceptionDataNova_init_static(nova_standard_exception_NovaExceptionData* exceptionData)
+{
+	{
+	}
+}
 
 nova_standard_exception_NovaExceptionData* nova_standard_exception_NovaExceptionData_Novaconstruct(nova_standard_exception_NovaExceptionData* this, nova_standard_exception_NovaExceptionData* exceptionData, buffer* l0_Novabuf)
 {

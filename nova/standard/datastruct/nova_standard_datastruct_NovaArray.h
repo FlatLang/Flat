@@ -40,6 +40,7 @@ CCLASS_CLASS
 	int nova_standard_datastruct_NovaArray_Novalength;
 )
 
+void nova_standard_datastruct_NovaArrayNova_init_static(nova_standard_exception_NovaExceptionData* exceptionData);
 nova_standard_datastruct_NovaArray* nova_standard_datastruct_NovaArray_Nova0_construct(nova_standard_datastruct_NovaArray* this, nova_standard_exception_NovaExceptionData* exceptionData);
 void nova_del_Array(nova_standard_datastruct_NovaArray** this, nova_standard_exception_NovaExceptionData* exceptionData);
 void nova_standard_datastruct_NovaArray_Novathis(nova_standard_datastruct_NovaArray* this, nova_standard_exception_NovaExceptionData* exceptionData);

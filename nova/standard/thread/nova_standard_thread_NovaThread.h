@@ -31,6 +31,7 @@ typedef struct nova_VTable_nova_standard_thread_NovaThread
 {
 	nova_standard_NovaString* (*nova_standard_NovaObject_Novavirtual0_toString)(nova_standard_NovaObject*, nova_standard_exception_NovaExceptionData*);
 	char (*nova_standard_NovaObject_Novavirtual0_equals)(nova_standard_NovaObject*, nova_standard_exception_NovaExceptionData*, nova_standard_NovaObject*);
+	void (*nova_standard_thread_NovaThread_Novavirtual0_run)(nova_standard_thread_NovaThread*, nova_standard_exception_NovaExceptionData*);
 } nova_VTable_nova_standard_thread_NovaThread;
 
 CCLASS_CLASS
@@ -41,12 +42,13 @@ CCLASS_CLASS
 	struct Private* prv;
 )
 
+void nova_standard_thread_NovaThreadNova_init_static(nova_standard_exception_NovaExceptionData* exceptionData);
 nova_standard_thread_NovaThread* nova_standard_thread_NovaThread_Nova0_construct(nova_standard_thread_NovaThread* this, nova_standard_exception_NovaExceptionData* exceptionData);
 void nova_del_Thread(nova_standard_thread_NovaThread** this, nova_standard_exception_NovaExceptionData* exceptionData);
 void nova_standard_thread_NovaThread_Novastart(nova_standard_thread_NovaThread* this, nova_standard_exception_NovaExceptionData* exceptionData);
 void nova_standard_thread_NovaThread_Novajoin(nova_standard_thread_NovaThread* this, nova_standard_exception_NovaExceptionData* exceptionData);
 void nova_standard_thread_NovaThread_static_Novasleep(nova_standard_thread_NovaThread* this, nova_standard_exception_NovaExceptionData* exceptionData, long_long l0_Novamillis);
-void nova_standard_thread_NovaThread_Novarun(nova_standard_thread_NovaThread* this, nova_standard_exception_NovaExceptionData* exceptionData);
+void nova_standard_thread_NovaThread_Nova0_run(nova_standard_thread_NovaThread* this, nova_standard_exception_NovaExceptionData* exceptionData);
 void nova_standard_thread_NovaThread_Novathis(nova_standard_thread_NovaThread* this, nova_standard_exception_NovaExceptionData* exceptionData);
 void nova_standard_thread_NovaThread_Novasuper(nova_standard_thread_NovaThread* this, nova_standard_exception_NovaExceptionData* exceptionData);
 

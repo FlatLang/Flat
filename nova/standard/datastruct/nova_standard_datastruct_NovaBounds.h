@@ -41,6 +41,7 @@ CCLASS_CLASS
 	int nova_standard_datastruct_NovaBounds_Novaend;
 )
 
+void nova_standard_datastruct_NovaBoundsNova_init_static(nova_standard_exception_NovaExceptionData* exceptionData);
 nova_standard_datastruct_NovaBounds* nova_standard_datastruct_NovaBounds_Novaconstruct(nova_standard_datastruct_NovaBounds* this, nova_standard_exception_NovaExceptionData* exceptionData, int l0_Novastart, int l0_Novaend);
 void nova_del_Bounds(nova_standard_datastruct_NovaBounds** this, nova_standard_exception_NovaExceptionData* exceptionData);
 void nova_standard_datastruct_NovaBounds_Novathis(nova_standard_datastruct_NovaBounds* this, nova_standard_exception_NovaExceptionData* exceptionData, int l0_Novastart, int l0_Novaend);

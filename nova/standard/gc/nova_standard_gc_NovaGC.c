@@ -7,6 +7,11 @@ nova_VTable_nova_standard_gc_NovaGC nova_VTable_nova_standard_gc_NovaGC_val =
 	nova_standard_NovaObject_Nova0_toString,
 	nova_standard_NovaObject_Nova0_equals,
 };
+void nova_standard_gc_NovaGCNova_init_static(nova_standard_exception_NovaExceptionData* exceptionData)
+{
+	{
+	}
+}
 
 nova_standard_gc_NovaGC* nova_standard_gc_NovaGC_Nova0_construct(nova_standard_gc_NovaGC* this, nova_standard_exception_NovaExceptionData* exceptionData)
 {

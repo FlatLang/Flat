@@ -13,6 +13,11 @@ CCLASS_PRIVATE
 	nova_standard_NovaObject** nova_standard_datastruct_NovaArrayList_Novadata;
 	
 )
+void nova_standard_datastruct_NovaArrayListNova_init_static(nova_standard_exception_NovaExceptionData* exceptionData)
+{
+	{
+	}
+}
 
 nova_standard_datastruct_NovaArrayList* nova_standard_datastruct_NovaArrayList_Nova0_construct(nova_standard_datastruct_NovaArrayList* this, nova_standard_exception_NovaExceptionData* exceptionData)
 {

@@ -7,6 +7,11 @@ nova_VTable_nova_standard_database_NovaDBConnector nova_VTable_nova_standard_dat
 	nova_standard_NovaObject_Nova0_toString,
 	nova_standard_NovaObject_Nova0_equals,
 };
+void nova_standard_database_NovaDBConnectorNova_init_static(nova_standard_exception_NovaExceptionData* exceptionData)
+{
+	{
+	}
+}
 
 nova_standard_database_NovaDBConnector* nova_standard_database_NovaDBConnector_Nova0_construct(nova_standard_database_NovaDBConnector* this, nova_standard_exception_NovaExceptionData* exceptionData)
 {
@@ -67,12 +72,12 @@ nova_standard_database_NovaResultSet* nova_standard_database_NovaDBConnector_Nov
 		int l2_NovanumRows;
 		int l2_NovanumCols;
 		nova_standard_NovaString*** l2_Novarows;
-		int l3_Novai;
 		nova_standard_database_NovaResultSet* l2_Novaresult;
+		int l3_Novai;
 		
 		l2_NovanumRows = (int)nova_num_rows();
 		l2_NovanumCols = (int)nova_num_cols();
-		l2_Novarows = (nova_standard_NovaString***)nova_gen_array(NOVA_MALLOC(sizeof(nova_standard_NovaString[l2_NovanumRows][l2_NovanumCols])), (int[]) { l2_NovanumRows }, 0, 1, sizeof(nova_standard_NovaString));
+		l2_Novarows = (nova_standard_NovaString***)nova_gen_array(NOVA_MALLOC(sizeof(nova_standard_NovaString[l2_NovanumRows][l2_NovanumCols])), (int[]) { l2_NovanumRows, l2_NovanumCols }, 0, 1, sizeof(nova_standard_NovaString));
 		l3_Novai = 0;
 		for (; l3_Novai < l2_NovanumRows; l3_Novai++)
 		{

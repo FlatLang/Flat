@@ -7,6 +7,7 @@ nova_VTable_nova_standard_thread_NovaThread nova_VTable_nova_standard_thread_Nov
 {
 	nova_standard_NovaObject_Nova0_toString,
 	nova_standard_NovaObject_Nova0_equals,
+	nova_standard_thread_NovaThread_Nova0_run,
 };
 CCLASS_PRIVATE
 (
@@ -15,6 +16,11 @@ CCLASS_PRIVATE
 )
 
 void nova_standard_thread_NovaThread_NovastartRun(nova_standard_thread_NovaThread* this, nova_standard_exception_NovaExceptionData* exceptionData);
+void nova_standard_thread_NovaThreadNova_init_static(nova_standard_exception_NovaExceptionData* exceptionData)
+{
+	{
+	}
+}
 
 nova_standard_thread_NovaThread* nova_standard_thread_NovaThread_Nova0_construct(nova_standard_thread_NovaThread* this, nova_standard_exception_NovaExceptionData* exceptionData)
 {
@@ -61,7 +67,7 @@ void nova_standard_thread_NovaThread_static_Novasleep(nova_standard_thread_NovaT
 	lib_nova_thread_sleep(l0_Novamillis);
 }
 
-void nova_standard_thread_NovaThread_Novarun(nova_standard_thread_NovaThread* this, nova_standard_exception_NovaExceptionData* exceptionData)
+void nova_standard_thread_NovaThread_Nova0_run(nova_standard_thread_NovaThread* this, nova_standard_exception_NovaExceptionData* exceptionData)
 {
 }
 
@@ -72,7 +78,7 @@ void nova_standard_thread_NovaThread_NovastartRun(nova_standard_thread_NovaThrea
 		nova_standard_exception_NovaExceptionData_NovaaddCode(exceptionData, exceptionData, 1);
 		
 		{
-			nova_standard_thread_NovaThread_Novarun(this, exceptionData);
+			this->vtable->nova_standard_thread_NovaThread_Novavirtual0_run(this, exceptionData);
 		}
 	}
 	CATCH (1)

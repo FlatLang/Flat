@@ -12,6 +12,11 @@ CCLASS_PRIVATE
 	nova_standard_io_NovaFile* nova_standard_io_NovaOutputStream_Novastream;
 	
 )
+void nova_standard_io_NovaOutputStreamNova_init_static(nova_standard_exception_NovaExceptionData* exceptionData)
+{
+	{
+	}
+}
 
 nova_standard_io_NovaOutputStream* nova_standard_io_NovaOutputStream_Nova0_construct(nova_standard_io_NovaOutputStream* this, nova_standard_exception_NovaExceptionData* exceptionData)
 {

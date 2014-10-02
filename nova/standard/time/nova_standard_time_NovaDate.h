@@ -46,6 +46,7 @@ CCLASS_CLASS
 	int nova_standard_time_NovaDate_Novasecond;
 )
 
+void nova_standard_time_NovaDateNova_init_static(nova_standard_exception_NovaExceptionData* exceptionData);
 nova_standard_time_NovaDate* nova_standard_time_NovaDate_Nova0_construct(nova_standard_time_NovaDate* this, nova_standard_exception_NovaExceptionData* exceptionData);
 void nova_del_Date(nova_standard_time_NovaDate** this, nova_standard_exception_NovaExceptionData* exceptionData);
 void nova_standard_time_NovaDate_Novathis(nova_standard_time_NovaDate* this, nova_standard_exception_NovaExceptionData* exceptionData);

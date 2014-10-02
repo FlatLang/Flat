@@ -40,6 +40,7 @@ CCLASS_CLASS
 	nova_VTable_nova_standard_NovaObject* vtable;
 )
 
+void nova_standard_NovaObjectNova_init_static(nova_standard_exception_NovaExceptionData* exceptionData);
 nova_standard_NovaObject* nova_standard_NovaObject_Nova0_construct(nova_standard_NovaObject* this, nova_standard_exception_NovaExceptionData* exceptionData);
 void nova_del_Object(nova_standard_NovaObject** this, nova_standard_exception_NovaExceptionData* exceptionData);
 nova_standard_NovaString* nova_standard_NovaObject_NovagetHashCode(nova_standard_NovaObject* this, nova_standard_exception_NovaExceptionData* exceptionData);

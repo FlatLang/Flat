@@ -42,6 +42,7 @@ CCLASS_CLASS
 	nova_standard_svg_NovaSVGMainComponent* nova_standard_svg_NovaSVG_Novaroot;
 )
 
+void nova_standard_svg_NovaSVGNova_init_static(nova_standard_exception_NovaExceptionData* exceptionData);
 nova_standard_svg_NovaSVG* nova_standard_svg_NovaSVG_Nova0_construct(nova_standard_svg_NovaSVG* this, nova_standard_exception_NovaExceptionData* exceptionData);
 void nova_del_SVG(nova_standard_svg_NovaSVG** this, nova_standard_exception_NovaExceptionData* exceptionData);
 void nova_standard_svg_NovaSVG_Novathis(nova_standard_svg_NovaSVG* this, nova_standard_exception_NovaExceptionData* exceptionData);

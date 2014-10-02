@@ -7,6 +7,11 @@ nova_VTable_nova_standard_database_NovaResultSet nova_VTable_nova_standard_datab
 	nova_standard_NovaObject_Nova0_toString,
 	nova_standard_NovaObject_Nova0_equals,
 };
+void nova_standard_database_NovaResultSetNova_init_static(nova_standard_exception_NovaExceptionData* exceptionData)
+{
+	{
+	}
+}
 
 nova_standard_database_NovaResultSet* nova_standard_database_NovaResultSet_Novaconstruct(nova_standard_database_NovaResultSet* this, nova_standard_exception_NovaExceptionData* exceptionData, nova_standard_NovaString*** l0_Novarows, int l0_NovanumRows, int l0_NovanumCols)
 {
@@ -32,7 +37,7 @@ void nova_del_ResultSet(nova_standard_database_NovaResultSet** this, nova_standa
 	
 	
 	
-	nova_del_String(&(*this)->nova_standard_database_NovaResultSet_Novarows, exceptionData);
+	NOVA_FREE((*this)->nova_standard_database_NovaResultSet_Novarows);
 	
 	{
 	}

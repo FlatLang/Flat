@@ -44,6 +44,7 @@ CCLASS_CLASS
 	nova_VTable_nova_standard_NovaSystem* vtable;
 )
 
+void nova_standard_NovaSystemNova_init_static(nova_standard_exception_NovaExceptionData* exceptionData);
 nova_standard_NovaSystem* nova_standard_NovaSystem_Novaconstruct(nova_standard_NovaSystem* this, nova_standard_exception_NovaExceptionData* exceptionData);
 void nova_del_System(nova_standard_NovaSystem** this, nova_standard_exception_NovaExceptionData* exceptionData);
 void nova_standard_NovaSystem_static_Nova0_exit(nova_standard_NovaSystem* this, nova_standard_exception_NovaExceptionData* exceptionData, int l0_Novacode);

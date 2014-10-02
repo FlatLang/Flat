@@ -42,6 +42,7 @@ CCLASS_CLASS
 	char nova_standard_primitive_number_NovaByte_Novavalue;
 )
 
+void nova_standard_primitive_number_NovaByteNova_init_static(nova_standard_exception_NovaExceptionData* exceptionData);
 nova_standard_primitive_number_NovaByte* nova_standard_primitive_number_NovaByte_Novaconstruct(nova_standard_primitive_number_NovaByte* this, nova_standard_exception_NovaExceptionData* exceptionData, char l0_Novavalue);
 void nova_del_Byte(nova_standard_primitive_number_NovaByte** this, nova_standard_exception_NovaExceptionData* exceptionData);
 void nova_standard_primitive_number_NovaByte_Novathis(nova_standard_primitive_number_NovaByte* this, nova_standard_exception_NovaExceptionData* exceptionData, char l0_Novavalue);

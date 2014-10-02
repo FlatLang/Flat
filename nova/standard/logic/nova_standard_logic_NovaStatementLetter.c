@@ -13,6 +13,11 @@ CCLASS_PRIVATE
 	nova_standard_NovaString* nova_standard_logic_NovaStatementLetter_Novarepresentation;
 	
 )
+void nova_standard_logic_NovaStatementLetterNova_init_static(nova_standard_exception_NovaExceptionData* exceptionData)
+{
+	{
+	}
+}
 
 nova_standard_logic_NovaStatementLetter* nova_standard_logic_NovaStatementLetter_Novaconstruct(nova_standard_logic_NovaStatementLetter* this, nova_standard_exception_NovaExceptionData* exceptionData, nova_standard_NovaString* l0_Novaletter, nova_standard_NovaString* l0_Novarepresentation)
 {

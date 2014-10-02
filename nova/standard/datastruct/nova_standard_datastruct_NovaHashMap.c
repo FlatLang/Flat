@@ -12,6 +12,11 @@ CCLASS_PRIVATE
 	hashmap* nova_standard_datastruct_NovaHashMap_Novamap;
 	
 )
+void nova_standard_datastruct_NovaHashMapNova_init_static(nova_standard_exception_NovaExceptionData* exceptionData)
+{
+	{
+	}
+}
 
 nova_standard_datastruct_NovaHashMap* nova_standard_datastruct_NovaHashMap_Nova0_construct(nova_standard_datastruct_NovaHashMap* this, nova_standard_exception_NovaExceptionData* exceptionData)
 {

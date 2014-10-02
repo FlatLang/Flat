@@ -8,6 +8,11 @@ nova_VTable_nova_standard_NovaSystem nova_VTable_nova_standard_NovaSystem_val =
 	nova_standard_NovaObject_Nova0_toString,
 	nova_standard_NovaObject_Nova0_equals,
 };
+void nova_standard_NovaSystemNova_init_static(nova_standard_exception_NovaExceptionData* exceptionData)
+{
+	{
+	}
+}
 
 nova_standard_NovaSystem* nova_standard_NovaSystem_Novaconstruct(nova_standard_NovaSystem* this, nova_standard_exception_NovaExceptionData* exceptionData)
 {

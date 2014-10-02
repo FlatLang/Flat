@@ -42,6 +42,7 @@ CCLASS_CLASS
 	int nova_standard_primitive_number_NovaInt_Novavalue;
 )
 
+void nova_standard_primitive_number_NovaIntNova_init_static(nova_standard_exception_NovaExceptionData* exceptionData);
 nova_standard_primitive_number_NovaInt* nova_standard_primitive_number_NovaInt_Novaconstruct(nova_standard_primitive_number_NovaInt* this, nova_standard_exception_NovaExceptionData* exceptionData, int l0_Novavalue);
 void nova_del_Int(nova_standard_primitive_number_NovaInt** this, nova_standard_exception_NovaExceptionData* exceptionData);
 void nova_standard_primitive_number_NovaInt_Novathis(nova_standard_primitive_number_NovaInt* this, nova_standard_exception_NovaExceptionData* exceptionData, int l0_Novavalue);

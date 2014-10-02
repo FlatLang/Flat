@@ -13,6 +13,11 @@ CCLASS_PRIVATE
 	nova_standard_datastruct_NovaListNode* nova_standard_datastruct_NovaList_Novacurrent;
 	
 )
+void nova_standard_datastruct_NovaListNova_init_static(nova_standard_exception_NovaExceptionData* exceptionData)
+{
+	{
+	}
+}
 
 nova_standard_datastruct_NovaList* nova_standard_datastruct_NovaList_Nova0_construct(nova_standard_datastruct_NovaList* this, nova_standard_exception_NovaExceptionData* exceptionData)
 {

@@ -9,6 +9,11 @@ nova_VTable_nova_standard_io_NovaConsole nova_VTable_nova_standard_io_NovaConsol
 };
 
 void nova_standard_io_NovaConsole_static_Novaflush(nova_standard_io_NovaConsole* this, nova_standard_exception_NovaExceptionData* exceptionData);
+void nova_standard_io_NovaConsoleNova_init_static(nova_standard_exception_NovaExceptionData* exceptionData)
+{
+	{
+	}
+}
 
 nova_standard_io_NovaConsole* nova_standard_io_NovaConsole_Nova0_construct(nova_standard_io_NovaConsole* this, nova_standard_exception_NovaExceptionData* exceptionData)
 {
