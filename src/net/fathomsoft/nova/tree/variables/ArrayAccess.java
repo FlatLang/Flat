@@ -22,7 +22,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * @since	v0.2 Mar 24, 2014 at 10:45:29 PM
  * @version	v0.2.32 Sep 26, 2014 at 12:17:33 PM
  */
-public class ArrayAccess extends Variable
+public class ArrayAccess extends Variable implements ArrayCompatible
 {
 	/**
 	 * @see net.fathomsoft.nova.tree.Node#Node(Node, Location)
@@ -36,6 +36,12 @@ public class ArrayAccess extends Variable
 		addChild(dimensions);
 	}
 	
+	@Override
+	public Dimensions getDimensions()
+	{
+		return (Dimensions)getChild(super.getNumDefaultChildren() + 0);
+	}
+	
 	/**
 	 * @see net.fathomsoft.nova.tree.Node#getNumDefaultChildren()
 	 */
@@ -43,48 +49,6 @@ public class ArrayAccess extends Variable
 	public int getNumDefaultChildren()
 	{
 		return super.getNumDefaultChildren() + 1;
-	}
-	
-	/**
-	 * Get the number of dimensions that this node contains.<br>
-	 * <br>
-	 * For example:
-	 * <blockquote><pre>
-	 * int i[][][] = new int[5][4][3];</pre></blockquote>
-	 * The above array has three dimensions. In general, the number of
-	 * dimensions relates to the number of sets of brackets there are
-	 * contained within the array declaration.
-	 * 
-	 * @return The number of dimensions that this node contains.
-	 */
-	public int getNumDimensions()
-	{
-		return getDimensions().getNumChildren();
-	}
-	
-	/**
-	 * Get the node that represents the dimensions of the array. The
-	 * Dimensions class contains information of the index that is
-	 * being accessed.
-	 * 
-	 * @return The node that represents the dimensions being accessed.
-	 */
-	public Dimensions getDimensions()
-	{
-		return (Dimensions)getChild(0);
-	}
-	
-	/**
-	 * Add a dimension, that contains the index that is being attained,
-	 * to the Dimensions instance of the ArrayAccess.
-	 * 
-	 * @param child The node that describes the index that is being
-	 * 		accessed by the array at the specified dimension that is
-	 * 		about to be added.
-	 */
-	public void addDimension(Node child)
-	{
-		getDimensions().addChild(child);
 	}
 	
 	/**
