@@ -1,12 +1,11 @@
 package net.fathomsoft.nova.tree.variables;
 
-import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.TestContext;
+import net.fathomsoft.nova.tree.Assignment;
 import net.fathomsoft.nova.tree.InstanceDeclaration;
 import net.fathomsoft.nova.tree.LocalDeclaration;
 import net.fathomsoft.nova.tree.Node;
 import net.fathomsoft.nova.tree.SyntaxTree;
-import net.fathomsoft.nova.tree.Value;
 import net.fathomsoft.nova.util.Bounds;
 import net.fathomsoft.nova.util.Location;
 import net.fathomsoft.nova.util.Patterns;
@@ -20,11 +19,12 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:12:04 PM
- * @version	v0.2.29 Aug 29, 2014 at 3:17:45 PM
+ * @version	v0.2.34 Oct 1, 2014 at 9:51:33 PM
  */
 public class FieldDeclaration extends InstanceDeclaration
 {
-	private String	initializationValue;
+	private String   initializationValue;
+	private String[] extraDeclarations;
 	
 	/**
 	 * Declares that a variable can be viewed from anywhere, but not
@@ -38,21 +38,8 @@ public class FieldDeclaration extends InstanceDeclaration
 	public FieldDeclaration(Node temporaryParent, Location locationIn)
 	{
 		super(temporaryParent, locationIn);
-	}
-	
-	public boolean containsInitializationValue()
-	{
-		return initializationValue != null;
-	}
-	
-	/**
-	 * Get the value that the Field is initialized to.
-	 * 
-	 * @return The  Value that represents the initialization value.
-	 */
-	public Value getInitializationValue()
-	{
-		return (Value)getChild(super.getNumDefaultChildren() + 0);
+		
+		extraDeclarations = new String[0];
 	}
 	
 	/**
@@ -149,6 +136,13 @@ public class FieldDeclaration extends InstanceDeclaration
 	{
 		FieldDeclaration n = new FieldDeclaration(parent, location);
 		
+		Bounds extraDeclarations = n.findExtraDeclarations(statement);
+		
+		if (extraDeclarations.isValid())
+		{
+			statement = extraDeclarations.extractPreString(statement);
+		}
+		
 		Bounds localDeclaration = n.findPreAssignment(statement);
 		
 		FieldData data = new FieldData(localDeclaration);
@@ -197,6 +191,22 @@ public class FieldDeclaration extends InstanceDeclaration
 			}
 		}
 	}
+
+	private Bounds findExtraDeclarations(String statement)
+	{
+		String declarations[] = StringUtils.splitCommas(statement);
+		
+		if (declarations.length > 1)
+		{
+			extraDeclarations = new String[declarations.length - 1];
+			
+			System.arraycopy(declarations, 1, extraDeclarations, 0, declarations.length - 1);
+			
+			return new Bounds(declarations[0].length(), statement.length());
+		}
+		
+		return Bounds.EMPTY;
+	}
 	
 	private Bounds findPreAssignment(String statement)
 	{
@@ -221,6 +231,28 @@ public class FieldDeclaration extends InstanceDeclaration
 	}
 	
 	/**
+	 * @see net.fathomsoft.nova.tree.Node#onAdded(Node)
+	 */
+	@Override
+	public void onAdded(Node parent)
+	{
+		FieldDeclaration previous = this;
+		
+		for (int i = 0; i < extraDeclarations.length; i++)
+		{
+			String name = extraDeclarations[i];
+			
+			FieldDeclaration field = FieldDeclaration.decodeStatement(getParent(), generateNovaType() + " " + name, getLocationIn(), true);
+			
+			parent.addChildAfter(previous, field);
+			
+			previous = field;
+		}
+		
+		super.onAdded(parent);
+	}
+	
+	/**
 	 * @see net.fathomsoft.nova.tree.variables.VariableDeclaration#validate(int)
 	 */
 	@Override
@@ -230,9 +262,9 @@ public class FieldDeclaration extends InstanceDeclaration
 		{
 			if (initializationValue != null)
 			{
-				Value value = SyntaxTree.decodeValue(this, initializationValue, getLocationIn(), true);
+				Assignment assignment = Assignment.decodeStatement(getParentClass().getAssignmentMethodNode(), getName() + " = " + initializationValue, getLocationIn(), true);
 				
-				addChild(value);
+				getParentClass().addFieldInitialization(assignment);
 			}
 		}
 		
