@@ -19,7 +19,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.2.4 May 2, 2014 at 11:14:37 PM
- * @version	v0.2.29 Aug 29, 2014 at 3:17:45 PM
+ * @version	v0.2.34 Oct 1, 2014 at 9:51:33 PM
  */
 public class VariableDeclaration extends IIdentifier implements GenericCompatible
 {
@@ -45,7 +45,7 @@ public class VariableDeclaration extends IIdentifier implements GenericCompatibl
 	{
 		return genericTypes;
 	}
-
+	
 	/**
 	 * @see net.fathomsoft.nova.tree.GenericCompatible#setGenericTypes(net.fathomsoft.nova.tree.GenericType[])
 	 */
@@ -55,6 +55,9 @@ public class VariableDeclaration extends IIdentifier implements GenericCompatibl
 		this.genericTypes = types;
 	}
 	
+	/**
+	 * @see net.fathomsoft.nova.tree.Value#getGenericReturnType()
+	 */
 	@Override
 	public String getGenericReturnType()
 	{
@@ -333,14 +336,7 @@ public class VariableDeclaration extends IIdentifier implements GenericCompatibl
 	@Override
 	public StringBuilder generateNovaInput(StringBuilder builder, boolean outputChildren)
 	{
-		builder.append(getType()).append(' ').append(getName());
-		
-		for (int i = 0; i < getArrayDimensions(); i++)
-		{
-			builder.append("[]");
-		}
-		
-		return builder;
+		return generateNovaType(builder).append(' ').append(getName());
 	}
 	
 	/**
@@ -397,7 +393,7 @@ public class VariableDeclaration extends IIdentifier implements GenericCompatibl
 				SyntaxMessage.error("Array brackets cannot contain data", this);
 			}
 			
-			setArrayDimensions(dimensions);
+			setArrayDimensions(getArrayDimensions() + dimensions);
 		}
 	}
 	
@@ -470,16 +466,11 @@ public class VariableDeclaration extends IIdentifier implements GenericCompatibl
 	{
 		super.cloneTo(node);
 
-		node.constantVal = constantVal;
-		node.external    = external;
-		node.volatileVal = volatileVal;
+		node.constantVal  = constantVal;
+		node.external     = external;
+		node.volatileVal  = volatileVal;
 		
-		node.genericTypes = new GenericType[genericTypes.length];
-		
-		for (int i = 0; i < genericTypes.length; i++)
-		{
-			node.genericTypes[i] = (GenericType)genericTypes[i].clone(node, Location.INVALID);
-		}
+		node.genericTypes = cloneGenericTypes(node);
 		
 		return node;
 	}
