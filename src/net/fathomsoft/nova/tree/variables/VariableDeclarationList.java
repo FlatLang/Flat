@@ -2,6 +2,7 @@ package net.fathomsoft.nova.tree.variables;
 
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.tree.List;
+import net.fathomsoft.nova.tree.LocalDeclaration;
 import net.fathomsoft.nova.tree.Node;
 import net.fathomsoft.nova.util.Location;
 
@@ -10,7 +11,7 @@ import net.fathomsoft.nova.util.Location;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 9, 2014 at 4:19:57 PM
- * @version	v0.2.33 Sep 29, 2014 at 10:29:33 AM
+ * @version	v0.2.34 Oct 1, 2014 at 9:51:33 PM
  */
 public class VariableDeclarationList extends List
 {
@@ -30,9 +31,9 @@ public class VariableDeclarationList extends List
 	 * @return Whether or not there is a Variable within the list with
 	 * 		the given name.
 	 */
-	public boolean containsVariable(String variableName)
+	public boolean containsVariable(String variableName, int scopeID)
 	{
-		return getVariable(variableName) != null;
+		return getVariable(variableName, scopeID) != null;
 	}
 	
 	/**
@@ -42,24 +43,36 @@ public class VariableDeclarationList extends List
 	 * @param variableName The name of the variable to get.
 	 * @return The Variable with the given name.
 	 */
-	public VariableDeclaration getVariable(String variableName)
+	public LocalDeclaration getVariable(String variableName, int scopeID)
 	{
+		LocalDeclaration valid = null;
+		
 		for (int i = 0; i < getNumChildren(); i++)
 		{
-			VariableDeclaration variable = (VariableDeclaration)getChild(i);
+			LocalDeclaration variable = (LocalDeclaration)getChild(i);
 			
-			if (variable.getName().equals(variableName))
+			if (variable.getName().equals(variableName) && scopeID >= variable.getScopeID())
 			{
-				return variable;
+				valid = variable;
 			}
 		}
 		
-		return null;
+		return valid;
 	}
 	
 	public void removeChildWithName(String variableName)
 	{
-		removeChild(getVariable(variableName));
+		removeChildWithName(variableName, getAncestorWithScope().getScope().getID());
+	}
+	
+	public void removeChildWithName(String variableName, int scopeID)
+	{
+		VariableDeclaration var = getVariable(variableName, scopeID);
+		
+		if (var != null)
+		{
+			removeChild(var);
+		}
 	}
 	
 	/**
