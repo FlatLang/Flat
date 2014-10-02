@@ -20,7 +20,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.2 Mar 24, 2014 at 10:45:29 PM
- * @version	v0.2.32 Sep 26, 2014 at 12:17:33 PM
+ * @version	v0.2.34 Oct 1, 2014 at 9:51:33 PM
  */
 public class ArrayAccess extends Variable implements ArrayCompatible
 {
