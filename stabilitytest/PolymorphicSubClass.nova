@@ -2,6 +2,8 @@ package "stabilitytest"
 
 public class PolymorphicSubClass extends PolymorphicSuperClass
 {
+	int i
+	
 	public toString() -> String
 	{
 		return "sub class"

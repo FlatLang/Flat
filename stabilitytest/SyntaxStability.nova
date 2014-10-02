@@ -28,8 +28,8 @@ public class SyntaxStability
 			num2++
 		
 		while (num3 < 100)
-			if (1)
-				if (1)
+			if (true)
+				if (true)
 				{
 					num3++
 				}
@@ -50,14 +50,14 @@ public class SyntaxStability
 		int num2 = 0
 		int num3 = 0
 		
-		for (int j = 0; j < 100; j++) num++
+		for (int i = 0; i < 100; i++) num++
 		
 		for (int i = 0; i < 100; i++)
 			num2++
 		
-		for (int q = 0; q < 100; q++)
-			if (1)
-				if (1)
+		for (int i = 0; i < 100; i++)
+			if (true)
+				if (true)
 				{
 					num3++
 				}

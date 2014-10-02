@@ -1,8 +1,8 @@
 package "stabilitytest"
 
-import "nova/standard/Time"
-import "nova/standard/Thread"
-import "nova/standard/File"
+import "nova/standard/time/Time"
+import "nova/standard/thread/Thread"
+import "nova/standard/io/File"
 
 public class StabilityTest
 {
