@@ -74,7 +74,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:00:04 PM
- * @version	v0.2.33 Sep 29, 2014 at 10:29:33 AM
+ * @version	v0.2.34 Oct 1, 2014 at 9:51:33 PM
  */
 public class Nova
 {
@@ -244,24 +244,24 @@ public class Nova
 			
 			args = new String[]
 			{
-//				formatPath(stability + "StabilityTest.nova"),
-//				formatPath(stability + "TimeStability.nova"),
-//				formatPath(stability + "FileStability.nova"),
-//				formatPath(stability + "ThreadStability.nova"),
-//				formatPath(stability + "ExceptionStability.nova"),
-//				formatPath(stability + "SyntaxStability.nova"),
-//				formatPath(stability + "ClosureStability.nova"),
-//				formatPath(stability + "PolymorphismStability.nova"),
-//				formatPath(stability + "PolymorphicSuperClass.nova"),
-//				formatPath(stability + "PolymorphicSubClass.nova"),
-//				formatPath(stability + "StabilityTestException.nova"),
-//				formatPath(stability + "StabilityExceptionHandler.nova"),
-//				formatPath(stability + "ThreadImplementation.nova"),
-//				formatPath(stability + "UnstableException.nova"),
+				formatPath(stability + "StabilityTest.nova"),
+				formatPath(stability + "TimeStability.nova"),
+				formatPath(stability + "FileStability.nova"),
+				formatPath(stability + "ThreadStability.nova"),
+				formatPath(stability + "ExceptionStability.nova"),
+				formatPath(stability + "SyntaxStability.nova"),
+				formatPath(stability + "ClosureStability.nova"),
+				formatPath(stability + "PolymorphismStability.nova"),
+				formatPath(stability + "PolymorphicSuperClass.nova"),
+				formatPath(stability + "PolymorphicSubClass.nova"),
+				formatPath(stability + "StabilityTestException.nova"),
+				formatPath(stability + "StabilityExceptionHandler.nova"),
+				formatPath(stability + "ThreadImplementation.nova"),
+				formatPath(stability + "UnstableException.nova"),
 //				formatPath(directory + "GenericDemo.nova"),
 //				formatPath(directory + "database/DatabaseDemo.nova"),
 //				formatPath(root      + "bank/Bank.nova"),
-				formatPath(directory + "Lab.nova"),
+//				formatPath(directory + "Lab.nova"),
 //				formatPath(directory + "MathDemo.nova"),
 //				formatPath(directory + "ThreadDemo.nova"),
 //				formatPath(directory + "ThreadDemoImplementation.nova"),
@@ -707,7 +707,7 @@ public class Nova
 		{
 			compilerDir = workingDir;
 			
-			cmd.append("gcc -pipe ");
+			cmd.append("gcc -pipe -Wl,--enable-stdcall-fixup ");
 			
 			if (isFlagEnabled(SMALL_BIN))
 			{
@@ -729,12 +729,12 @@ public class Nova
 			cmd.append("clang ");
 		}
 		
+		cmd.append("-L\"bin/\" -lmysql ");
+		
 		if (!isFlagEnabled(NO_GC))
 		{
-			cmd.append("-DUSE_GC -L\"bin/\" -lgc ");
+			cmd.append("-DUSE_GC -lgc ");
 		}
-		
-		cmd.append("-lmysql ");
 		
 		if (isFlagEnabled(SMALL_BIN))
 		{
