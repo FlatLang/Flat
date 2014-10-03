@@ -2,6 +2,7 @@ package net.fathomsoft.nova.tree;
 
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.error.SyntaxMessage;
+import net.fathomsoft.nova.tree.variables.Variable;
 import net.fathomsoft.nova.util.Bounds;
 import net.fathomsoft.nova.util.Location;
 import net.fathomsoft.nova.util.StringUtils;
@@ -14,7 +15,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:55:15 PM
- * @version	v0.2.28 Aug 20, 2014 at 12:10:45 AM
+ * @version	v0.2.34 Oct 1, 2014 at 9:51:33 PM
  */
 public class ForLoop extends Loop
 {
@@ -241,18 +242,8 @@ public class ForLoop extends Loop
 	 */
 	private boolean decodeInitialization(String argument, Location location, boolean require)
 	{
-		Assignment initialization = Assignment.decodeStatement(getParent(), argument, getLocationIn(), require);
+		Assignment initialization = Assignment.decodeStatement(this, argument, getLocationIn(), require);
 		getArgumentList().addChild(initialization);
-		
-		Identifier var      = initialization.getAssigneeNode();
-		Identifier existing = SyntaxTree.findDeclaration(getArgumentList(), var.getName());
-		
-		if (var.getLocationIn().getBounds().equals(existing.getLocationIn().getBounds()))
-		{
-			LocalDeclaration declaration = (LocalDeclaration)existing;
-			
-			declaration.setScopeID(getScope().getID());
-		}
 		
 		return true;
 	}
@@ -341,6 +332,27 @@ public class ForLoop extends Loop
 		}
 		
 		return true;
+	}
+	
+	@Override
+	public Node validate(int phase)
+	{
+		if (phase == SyntaxTree.PHASE_METHOD_CONTENTS)
+		{
+			Variable   var      = getLoopInitialization().getAssigneeNode();
+			Identifier existing = var.getDeclaration();SyntaxTree.findDeclaration(getArgumentList(), var.getName());
+			
+			if (var.getLocationIn().getBounds().equals(existing.getLocationIn().getBounds()))
+			{
+				LocalDeclaration declaration = (LocalDeclaration)existing;
+				
+				declaration.getAncestorWithScope().getParent().getAncestorWithScope().addChild(declaration);
+				
+				declaration.setScopeID(getScope().getID());
+			}
+		}
+		
+		return super.validate(phase);
 	}
 	
 	/**
