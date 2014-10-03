@@ -18,7 +18,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Apr 3, 2014 at 7:53:35 PM
- * @version	v0.2.33 Sep 29, 2014 at 10:29:33 AM
+ * @version	v0.2.34 Oct 1, 2014 at 9:51:33 PM
  */
 public class Instantiation extends IIdentifier implements GenericCompatible
 {
@@ -50,6 +50,12 @@ public class Instantiation extends IIdentifier implements GenericCompatible
 	public void setGenericTypes(GenericType[] types)
 	{
 		this.genericTypes = types;
+	}
+	
+	@Override
+	public ClassDeclaration getDeclaringClass()
+	{
+		return getIdentifier().getDeclaringClass();
 	}
 	
 	/**
@@ -270,6 +276,8 @@ public class Instantiation extends IIdentifier implements GenericCompatible
 	public Instantiation cloneTo(Instantiation node)
 	{
 		super.cloneTo(node);
+		
+		node.genericTypes = cloneGenericTypes(node);
 		
 		return node;
 	}
