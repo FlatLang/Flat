@@ -14,7 +14,7 @@ import net.fathomsoft.nova.util.Location;
  * @since	v0.2.28 Aug 12, 2014 at 1:54:08 AM
  * @version	v0.2.28 Aug 20, 2014 at 12:10:45 AM
  */
-public class AssignmentMethod extends NovaMethodDeclaration
+public class AssignmentMethod extends BodyMethodDeclaration
 {
 	public static final String	IDENTIFIER = InitializationMethod.SUPER_IDENTIFIER;
 	
@@ -50,6 +50,13 @@ public class AssignmentMethod extends NovaMethodDeclaration
 		builder.append('{').append('\n');
 		
 		generateFieldDefaultAssignments(builder);
+		
+		for (int i = 0; i < getNumVisibleChildren(); i++)
+		{
+			getVisibleChild(i).generateCSource(builder);
+		}
+		
+		getScope().generateCSource(builder, false);
 		
 		builder.append('}').append('\n');
 		
@@ -122,11 +129,7 @@ public class AssignmentMethod extends NovaMethodDeclaration
 			{
 				field.generateCUseOutput(builder).append(" = ");
 				
-				if (field.containsInitializationValue())
-				{
-					field.getInitializationValue().generateCSourceFragment(builder);
-				}
-				else if (!field.isPrimitiveType())
+				if (!field.isPrimitiveType())
 				{
 					field.generateCNullOutput(builder);
 				}
