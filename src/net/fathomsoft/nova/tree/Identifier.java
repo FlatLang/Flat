@@ -3,6 +3,7 @@ package net.fathomsoft.nova.tree;
 import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.error.SyntaxMessage;
+import net.fathomsoft.nova.error.UnimplementedOperationException;
 import net.fathomsoft.nova.tree.variables.Array;
 import net.fathomsoft.nova.tree.variables.FieldDeclaration;
 import net.fathomsoft.nova.tree.variables.Variable;
@@ -588,6 +589,11 @@ public abstract class Identifier extends Value
 		}
 		
 		return null;
+	}
+	
+	public ClassDeclaration getDeclaringClass()
+	{
+		throw new UnimplementedOperationException("Class " + getClass().getName() + " has not implemented the getDeclaringClass() method.");
 	}
 	
 	/**
