@@ -52,6 +52,17 @@ public class Scope extends Node
 		return super.getNumDefaultChildren() + 1;
 	}
 	
+	@Override
+	public boolean isEmpty()
+	{
+		if (getNumVisibleChildren() <= 0)
+		{
+			return true;
+		}
+		
+		return super.isEmpty();
+	}
+	
 	/**
 	 * Get the VariableList that contains all of the variables
 	 * that have been declared within this Scope.
