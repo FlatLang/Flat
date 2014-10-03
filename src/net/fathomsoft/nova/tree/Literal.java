@@ -11,7 +11,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 10:34:30 PM
- * @version	v0.2.29 Aug 29, 2014 at 3:17:45 PM
+ * @version	v0.2.34 Oct 1, 2014 at 9:51:33 PM
  */
 public class Literal extends IValue
 {
@@ -211,7 +211,7 @@ public class Literal extends IValue
 			
 			if (literalType != null)
 			{
-				n.setType(literalType);//, true, false);
+				n.setType(literalType);
 			}
 			
 			return n;
@@ -238,13 +238,25 @@ public class Literal extends IValue
 				
 				Value side = null;
 				
-				if (node.getLeftOperand() == this)
+				if (!node.isComparison())
 				{
-					side = node.getRightOperand();
+					if (node.getParent() instanceof BinaryOperation)
+					{
+						node = (BinaryOperation)node.getParent();
+						
+						side = node.getLeftOperand();
+					}
 				}
 				else
 				{
-					side = node.getLeftOperand();
+					if (node.getLeftOperand() == this)
+					{
+						side = node.getRightOperand();
+					}
+					else
+					{
+						side = node.getLeftOperand();
+					}
 				}
 				
 				setType(side.getType());
@@ -255,7 +267,7 @@ public class Literal extends IValue
 			}
 		}
 		
-		return this;
+		return super.validate(phase);
 	}
 	
 	/**
