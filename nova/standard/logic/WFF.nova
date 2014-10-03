@@ -5,7 +5,7 @@ import "nova/standard/datastruct/Bounds"
 
 public class WFF
 {
-	StatementLetter       letters[]
+	StatementLetter[]     letters
 	
 	ArrayList<Hypothesis> hypotheses
 	
@@ -13,22 +13,14 @@ public class WFF
 	
 	String                wff
 	
-	static char           whitespace[]
+	static char[]         whitespace = [ ' ', '\t', '\n', '\r' ]
 	
-	static
+	public construct(String wellFormedFormula, StatementLetter[] letters)
 	{
-		whitespace = new char[4]
-		
-		whitespace[0] = ' '
-		whitespace[1] = '\t'
-		whitespace[2] = '\n'
-		whitespace[3] = '\r'
-	}
-	
-	public construct(String wellFormedFormula, StatementLetter letters[])
-	{
-		this.wff     = wellFormedFormula
+		this.wff     = wellFormedFormula.trim()
 		this.letters = letters
+		
+		hypotheses = new ArrayList()
 		
 		decodeFormula()
 	}
@@ -42,15 +34,28 @@ public class WFF
 			throw new InvalidFormulaException("No valid conclusion found")
 		}
 		
-		Conclusion conclusio = conclusionGroup.statement
+		Conclusion conclusion = conclusionGroup.statement
 		
-		Console.writeLine("Conclusion: " + conclusio)
+		Console.writeLine("Conclusion: " + conclusion)
+		
+		wff = conclusionGroup.bounds.extractPreString(wff)
+		
+		ArrayList<StatementGroup<Hypothesis>> statements = decodeHypotheses(wff)
+		
+		for (int i = 0; i < statements.size; i++)
+		{
+			StatementGroup<Hypothesis> group = statements.get(i)
+			
+			hypotheses.add(group.statement)
+		}
+		for (int n = 0; n < hypotheses.size; n++)
+		{
+			Console.writeLine(hypotheses.get(n))
+		}
 	}
 	
 	searchForConclusion(String wff) -> StatementGroup<Conclusion>
 	{
-		Bounds bounds = new Bounds(-1, -1)
-		
 		int index = wff.lastIndexOf("->")
 		
 		if (index < 0)
@@ -67,19 +72,47 @@ public class WFF
 		
 		int conclusionStart = nextNonWhitespaceIndex(wff, index + 2, 1)
 		
-		bounds.start = conclusionStart
-		bounds.end   = wff.length
+		Bounds bounds = new Bounds(conclusionStart, wff.length)
 		
 		Conclusion conclusion = new Conclusion(bounds.extractString(wff))
+		
+		bounds.start = nextNonWhitespaceIndex(wff, index - 1, -1) + 1
 		
 		StatementGroup<Conclusion> group = new StatementGroup(conclusion, bounds)
 		
 		return group
 	}
 	
-	decodeStatements(String wff) -> ArrayList<StatementGroup<Statement>>
+	decodeHypotheses(String wff) -> ArrayList<StatementGroup<Hypothesis>>
 	{
+		ArrayList<StatementGroup<Hypothesis>> list = new ArrayList()
 		
+		int next = 0
+		int prev = 0
+		
+		for (int index = wff.indexOf("&"); index >= 0; index = wff.indexOf("&", prev + 1))
+		{
+			next = nextNonWhitespaceIndex(wff, index - 1, -1)
+			//next = nextWhitespaceIndex(wff, next + 1, 1)
+			
+			list.add(generateHypothesis(wff, prev, next + 1))
+			
+			prev = nextNonWhitespaceIndex(wff, index + 1, 1)
+		}
+		
+		list.add(generateHypothesis(wff, prev, wff.length))
+		
+		return list
+	}
+	
+	generateHypothesis(String wff, int start, int end) -> StatementGroup<Hypothesis>
+	{
+		Bounds bounds = new Bounds(start, end)
+		Hypothesis h  = new Hypothesis(bounds.extractString(wff))
+		
+		StatementGroup<Hypothesis> group = new StatementGroup(h, bounds)
+		
+		return group
 	}
 	
 	searchForStatement(String wff) -> StatementGroup<Statement>
