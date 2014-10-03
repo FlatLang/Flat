@@ -375,9 +375,7 @@ public class UnaryOperation extends IValue
 			
 			if (value == null)
 			{
-				SyntaxMessage.queryError("Undeclared value '" + contents + "'", this, require);
-				
-				return false;
+				return SyntaxMessage.queryError("Undeclared value '" + contents + "'", this, require);
 			}
 		}
 		
