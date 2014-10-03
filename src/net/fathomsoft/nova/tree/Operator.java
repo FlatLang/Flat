@@ -13,7 +13,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:19:40 PM
- * @version	v0.2.33 Sep 29, 2014 at 10:29:33 AM
+ * @version	v0.2.34 Oct 1, 2014 at 9:51:33 PM
  */
 public class Operator extends IValue
 {
@@ -106,6 +106,28 @@ public class Operator extends IValue
 	public Value getRightOperand()
 	{
 		return (Value)getParent().getChildAfter(this);
+	}
+	
+	public boolean isComparison()
+	{
+		switch (operator)
+		{
+			case AND: 
+			case OR: return false;
+			default:
+				return true;
+		}
+	}
+	
+	public boolean isConjunction()
+	{
+		switch (operator)
+		{
+			case AND: 
+			case OR: return true;
+			default:
+				return false;
+		}
 	}
 	
 	/**

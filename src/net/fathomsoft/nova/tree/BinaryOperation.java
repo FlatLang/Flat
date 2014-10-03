@@ -22,7 +22,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:20:35 PM
- * @version	v0.2.33 Sep 29, 2014 at 10:29:33 AM
+ * @version	v0.2.34 Oct 1, 2014 at 9:51:33 PM
  */
 public class BinaryOperation extends IValue
 {
@@ -32,6 +32,16 @@ public class BinaryOperation extends IValue
 	public BinaryOperation(Node temporaryParent, Location locationIn)
 	{
 		super(temporaryParent, locationIn);
+	}
+	
+	public boolean isComparison()
+	{
+		return getOperator().isComparison();
+	}
+	
+	public boolean isConjunction()
+	{
+		return getOperator().isConjunction();
 	}
 	
 	/**
