@@ -15,7 +15,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.2.4 Jan 5, 2014 at 9:10:49 PM
- * @version	v0.2.32 Sep 26, 2014 at 12:17:33 PM
+ * @version	v0.2.34 Oct 1, 2014 at 9:51:33 PM
  */
 public class LocalDeclaration extends VariableDeclaration
 {
@@ -71,38 +71,36 @@ public class LocalDeclaration extends VariableDeclaration
 	 */
 	public static LocalDeclaration decodeStatement(Node parent, String statement, Location location, boolean require)
 	{
-		if (SyntaxUtils.isLiteral(statement) || !StringUtils.containsMultipleWords(statement) || StringUtils.containsChar(statement, StringUtils.INVALID_DECLARATION_CHARS))// || !Regex.matches(statement, Patterns.IDENTIFIER_DECLARATION))
+		if (!SyntaxUtils.isLiteral(statement) && StringUtils.containsMultipleWords(statement) && !StringUtils.containsChar(statement, StringUtils.INVALID_DECLARATION_CHARS))// || !Regex.matches(statement, Patterns.IDENTIFIER_DECLARATION))
 		{
-			return null;
-		}
-		
-		LocalDeclaration n    = new LocalDeclaration(parent, location);
-		DeclarationData  data = new DeclarationData();
-		
-		n.searchGenericParameters(statement, data);
-		
-		n.iterateWords(statement, Patterns.IDENTIFIER_BOUNDARIES, data, require);
-	
-		if (data.error != null)
-		{
-			SyntaxMessage.queryError(data.error, n, require);
+			LocalDeclaration n    = new LocalDeclaration(parent, location);
+			DeclarationData  data = new DeclarationData();
 			
-			return null;
-		}
+			n.searchGenericParameters(statement, data);
+			
+			n.iterateWords(statement, Patterns.IDENTIFIER_BOUNDARIES, data, require);
 		
-		n.checkExternal();
-		
-		if (n.validateDeclaration())
-		{
-			for (GenericType type : n.getGenericParameterNames())
+			if (data.error != null)
 			{
-				if (!type.isGenericType() && !SyntaxUtils.validateImported(n, type.getTypeClassLocation()))
-				{
-					return null;
-				}
+				SyntaxMessage.queryError(data.error, n, require);
+				
+				return null;
 			}
 			
-			return n;
+			n.checkExternal();
+			
+			if (n.validateDeclaration())
+			{
+				for (GenericType type : n.getGenericParameterNames())
+				{
+					if (!type.isGenericType() && !SyntaxUtils.validateImported(n, type.getTypeClassLocation()))
+					{
+						return null;
+					}
+				}
+				
+				return n;
+			}
 		}
 		
 		return null;
@@ -185,7 +183,7 @@ public class LocalDeclaration extends VariableDeclaration
 	 */
 	private void interactName(String word, String leftDelimiter, String rightDelimiter, DeclarationData extra)
 	{
-		if (getType() == null || (leftDelimiter.length() != 0 && !StringUtils.containsOnly(leftDelimiter, new char[] { '*', '&' })))
+		if (getType() == null)// || (leftDelimiter.length() != 0 && !StringUtils.containsOnly(leftDelimiter, new char[] { '*', '&' })))
 		{
 			return;
 		}
