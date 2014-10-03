@@ -17,7 +17,7 @@ import net.fathomsoft.nova.util.StringUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:50:43 PM
- * @version	v0.2.29 Aug 29, 2014 at 3:17:45 PM
+ * @version	v0.2.34 Oct 1, 2014 at 9:51:33 PM
  */
 public class Destructor extends BodyMethodDeclaration
 {
@@ -159,9 +159,18 @@ public class Destructor extends BodyMethodDeclaration
 		}
 		else
 		{
-			builder.append(Nova.LANGUAGE_NAME.toLowerCase()).append("_del_").append(field.getType()).append('(').append('&');
-			
-			field.generateCUseOutput(builder, true).append(", ").append(Exception.EXCEPTION_DATA_IDENTIFIER).append(");");
+			if (field.isArray())
+			{
+//				void nova_free_array(void** array, int* dimensionSizes, int dimension, int dimensions, del_function function);
+//				builder.append("nova_free_array(" + field.generateCUseOutput(new StringBuilder(), true) + ", );");
+				builder.append("NOVA_FREE(" + field.generateCUseOutput(new StringBuilder(), true) + ");");
+			}
+			else
+			{
+				builder.append(Nova.LANGUAGE_NAME.toLowerCase()).append("_del_").append(field.getType()).append('(').append('&');
+				
+				field.generateCUseOutput(builder, true).append(", ").append(Exception.EXCEPTION_DATA_IDENTIFIER).append(");");
+			}
 		}
 		
 		return builder;
