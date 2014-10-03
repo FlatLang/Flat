@@ -4,7 +4,6 @@ import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.error.UnimplementedOperationException;
 import net.fathomsoft.nova.tree.variables.Variable;
-import net.fathomsoft.nova.tree.variables.VariableDeclaration;
 import net.fathomsoft.nova.util.Location;
 import net.fathomsoft.nova.util.SyntaxUtils;
 
@@ -15,7 +14,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.2.4 May 2, 2014 at 11:14:37 PM
- * @version	v0.2.33 Sep 29, 2014 at 10:29:33 AM
+ * @version	v0.2.34 Oct 1, 2014 at 9:51:33 PM
  */
 public abstract class Value extends Node
 {
@@ -196,6 +195,23 @@ public abstract class Value extends Node
 	}
 	
 	/**
+	 * The text that represents an array in the Nova language.
+	 * 
+	 * @return The text that represents an array in the Nova language.
+	 */
+	public String generateNovaArrayText()
+	{
+		String text = "";
+		
+		for (int i = 0; i < getArrayDimensions(); i++)
+		{
+			text += "[]";
+		}
+		
+		return text;
+	}
+	
+	/**
 	 * Get whether the type of the Value is external or not.<br>
 	 * <br>
 	 * For example:
@@ -303,7 +319,29 @@ public abstract class Value extends Node
 			type = SyntaxUtils.getPrimitiveWrapperClassName(getType());
 		}
 		
-		String location = getFileDeclaration().getImportList().getAbsoluteClassLocation(type);
+		FileDeclaration file = getFileDeclaration();
+		
+		if (this instanceof Identifier)
+		{
+			Identifier id = (Identifier)this;
+			
+			if (id.isAccessed())
+			{
+				if (isGenericType())
+				{
+					id = id.getAccessingNode();
+				}
+				
+				file = id.getReferenceNode().getDeclaringClass().getFileDeclaration();
+			}
+		}
+		
+		String location = file.getImportList().getAbsoluteClassLocation(type);
+		
+//		if (location == null)
+//		{
+//			SyntaxUtils.throwImportException(this, type, getLocationIn());
+//		}
 		
 		return location;
 	}
@@ -649,7 +687,7 @@ public abstract class Value extends Node
 		
 		if (checkArray && isArray())
 		{
-			builder.append(generateArrayText());
+			builder.append(generateNovaArrayText());
 		}
 		
 		return builder;
