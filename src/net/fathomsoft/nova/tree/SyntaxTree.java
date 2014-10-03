@@ -28,7 +28,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:00:15 PM
- * @version	v0.2.33 Sep 29, 2014 at 10:29:33 AM
+ * @version	v0.2.34 Oct 1, 2014 at 9:51:33 PM
  */
 public class SyntaxTree
 {
@@ -54,8 +54,8 @@ public class SyntaxTree
 	private static final Class<?>	SCOPE_CHILD_DECODE[] = new Class<?>[]
 	{
 		ExceptionHandler.class, Assignment.class, Instantiation.class,
-		ElseStatement.class, IfStatement.class, Until.class, Loop.class,
-		ArrayAccess.class, UnaryOperation.class, Cast.class,
+		ArrayAccess.class, ElseStatement.class, IfStatement.class, Until.class,
+		Loop.class, Array.class, UnaryOperation.class, Cast.class,
 		MethodCall.class, LocalDeclaration.class
 	};
 	
@@ -927,12 +927,33 @@ public class SyntaxTree
 	 */
 	private static VariableDeclaration checkForLocalVariable(Node parent, String statement)
 	{
+		Node node = parent.getAncestorWithScope();
+		
+		if (node == null)
+		{
+			return null;
+		}
+		
+		return checkForLocalVariable(parent, statement, node.getScope().getID());
+	}
+	
+	/**
+	 * Check to see if the given statement is a local variable.
+	 * 
+	 * @param parent The parent of the given statement
+	 * @param statement The statement containing the variable name.
+	 * @param scopeID The scope to search for the variable from.
+	 * @return The found local variable declaration. If the local
+	 * 		variable was not found, null is returned.
+	 */
+	private static VariableDeclaration checkForLocalVariable(Node parent, String statement, int scopeID)
+	{
 		Node scopeNode = parent.getAncestorWithScope();
 		
 		while (scopeNode != null)
 		{
 			VariableDeclarationList variables = scopeNode.getScope().getVariableList();
-			VariableDeclaration     variable  = variables.getVariable(statement);
+			VariableDeclaration     variable  = variables.getVariable(statement, scopeID);
 			
 			if (variable != null)
 			{
@@ -998,7 +1019,9 @@ public class SyntaxTree
 		}
 		else if (node != null)
 		{
-			SyntaxMessage.error("Invalid operation '" + statement + "'", parent, location);
+			node.rollback();
+			
+			SyntaxMessage.queryError("Invalid operation '" + statement + "'", parent, location, require);
 		}
 		
 		return null;
