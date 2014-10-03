@@ -10,7 +10,7 @@ import net.fathomsoft.nova.tree.exceptionhandling.Exception;
  * 
  * @author	Braden Steffaniak
  * @since	v0.2.28 Aug 16, 2014 at 8:57:51 PM
- * @version	v0.2.33 Sep 29, 2014 at 10:29:33 AM
+ * @version	v0.2.34 Oct 1, 2014 at 9:51:33 PM
  */
 public class StaticBlock extends Node implements ScopeAncestor
 {
@@ -118,12 +118,17 @@ public class StaticBlock extends Node implements ScopeAncestor
 	{
 		if (statement.equals(IDENTIFIER))
 		{
-			StaticBlock b = new StaticBlock(parent, location);
+			StaticBlock b = generateEmptyBlock(parent, location);
 			
 			return b;
 		}
 		
 		return null;
+	}
+	
+	public static StaticBlock generateEmptyBlock(Node parent, Location location)
+	{
+		return new StaticBlock(parent, location);
 	}
 	
 	/**
