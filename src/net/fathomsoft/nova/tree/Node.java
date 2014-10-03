@@ -22,7 +22,7 @@ import net.fathomsoft.nova.util.StringUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:00:11 PM
- * @version	v0.2.33 Sep 29, 2014 at 10:29:33 AM
+ * @version	v0.2.34 Oct 1, 2014 at 9:51:33 PM
  */
 public abstract class Node
 {
@@ -78,7 +78,7 @@ public abstract class Node
 	 * @return Whether or not the specified Node has had no custom Nodes
 	 * 		added to it.
 	 */
-	public final boolean isEmpty()
+	public boolean isEmpty()
 	{
 		if (getNumVisibleChildren() > 0)
 		{
@@ -1174,6 +1174,18 @@ public abstract class Node
 	public Node validate(int phase)
 	{
 		return this;
+	}
+	
+	/**
+	 * Rollback any changes to external resources that the specified Node
+	 * has made, if the Node is not going to be used.
+	 */
+	public void rollback()
+	{
+		for (int i = 0; i < getNumChildren(); i++)
+		{
+			getChild(i).rollback();
+		}
 	}
 	
 	/**
