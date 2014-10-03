@@ -1,3 +1,4 @@
+#include <precompiled.h>
 #include "NativeDBConnector.h"
 
 MYSQL mysql;

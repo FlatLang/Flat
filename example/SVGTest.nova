@@ -1,10 +1,10 @@
 package "example"
 
-import "SVG";
-import "SVGCircle";
-import "SVGComponentList"
-import "File"
-import "Time"
+import "nova/standard/svg/SVG";
+import "nova/standard/svg/SVGCircle";
+import "nova/standard/svg/SVGComponentList"
+import "nova/standard/io/File"
+import "nova/standard/time/Time"
 
 public class SVGTest
 {
@@ -29,18 +29,18 @@ public class SVGTest
 		double radius   = 450
 		double offset   = pi2 / 12
 		
-		for (int j = 0; j < numVerts; j++)
+		for (int i = 0; i < numVerts; i++)
 		{
-			double rad = pi2 * (j / (numVerts * 1.0)) + offset
+			double rad = pi2 * (i / (numVerts * 1.0)) + offset
 			
-			points[j * 2 + 0] = radius * Math.cos(rad) + radius + 10
-			points[j * 2 + 1] = radius * Math.sin(rad) + radius + 10
+			points[i * 2 + 0] = radius * Math.cos(rad) + radius + 10
+			points[i * 2 + 1] = radius * Math.sin(rad) + radius + 10
 		}
 		
-		for (int k = 0; k < numVerts; k++)
+		for (int i = 0; i < numVerts; i++)
 		{
-			double x = points[k * 2 + 0]
-			double y = points[k * 2 + 1]
+			double x = points[i * 2 + 0]
+			double y = points[i * 2 + 1]
 			
 			SVGCircle circle2 = new SVGCircle(x, y, 3)
 			
@@ -73,7 +73,7 @@ public class SVGTest
 			}
 		}
 		
-		File f = new File("C:/Users/Braden Steffaniak/svgoutput.html")
+		File f = new File("C:/Users/Braden/svgoutput.html")
 
 		f.create()
 		f.clearContents()

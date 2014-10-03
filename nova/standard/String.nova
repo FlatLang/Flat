@@ -2,9 +2,12 @@ package "nova/standard"
 
 public class String
 {
-	visible int	length
+	visible int   length
 	
-	char		data[]
+	char[]        data
+	
+	static int    whitespaceLength = 4
+	static char[] whitespace       = [ ' ', '\t', '\n', '\r' ]
 	
 	external void strcpy(char dst[], char src[])
 	external void strcat(char dst[], char src[])
@@ -110,6 +113,11 @@ public class String
 		return indexOf(search, 0, 1)
 	}
 	
+	public indexOf(String search, int start) -> int
+	{
+		return indexOf(search, start, 1)
+	}
+	
 	public lastIndexOf(String search) -> int
 	{
 		return indexOf(search, length - 1, -1)
@@ -148,6 +156,47 @@ public class String
 	public charAt(int index) -> char
 	{
 		return data[index]
+	}
+	
+	public trim() -> String
+	{
+		int start = 0
+		int end   = length - 1
+		
+		while (start < length && containsChar(data[start], whitespace, whitespaceLength))
+		{
+			start++
+		}
+		
+		while (end >= 0 && containsChar(data[end], whitespace, whitespaceLength))
+		{
+			end--
+		}
+		
+		if (end == 0)
+		{
+			return ""
+		}
+		
+		if (start == 0 && end == length - 1)
+		{
+			return this
+		}
+		
+		return substring(start, end + 1)
+	}
+	
+	static containsChar(char needle, char chars[], int length) -> bool
+	{
+		for (int i = 0; i < length; i++)
+		{
+			if (needle == chars[i])
+			{
+				return true
+			}
+		}
+		
+		return false
 	}
 	
 	public toString() -> String

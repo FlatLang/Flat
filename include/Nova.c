@@ -106,3 +106,22 @@ void** nova_gen_array(void** array, int* dimensionSizes, int dimension, int dime
 
 	return array;
 }
+
+void nova_free_array(void** array, int* dimensionSizes, int dimension, int dimensions, del_function function, nova_standard_exception_NovaExceptionData* exceptionData)
+{
+	int i;
+
+	for (i = 0; i < dimensionSizes[dimension]; i++)
+	{
+		if (dimension + 1 < dimensions)
+		{
+			nova_free_array(array[i], dimensionSizes, dimension + 1, dimensions, function, exceptionData);
+
+			NOVA_FREE(array[i]);
+		}
+		else
+		{
+			function(array[i], exceptionData);
+		}
+	}
+}

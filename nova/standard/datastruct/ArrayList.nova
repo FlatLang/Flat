@@ -8,7 +8,7 @@ public class ArrayList<E>
 	
 	visible int	size
 	
-	E data[]
+	E[] data
 	
 	public construct()
 	{
