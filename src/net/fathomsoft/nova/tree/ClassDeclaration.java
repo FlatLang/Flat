@@ -24,7 +24,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:15:51 PM
- * @version	v0.2.33 Sep 29, 2014 at 10:29:33 AM
+ * @version	v0.2.34 Oct 1, 2014 at 9:51:33 PM
  */
 public class ClassDeclaration extends InstanceDeclaration
 {
@@ -148,6 +148,11 @@ public class ClassDeclaration extends InstanceDeclaration
 	public AssignmentMethod getAssignmentMethodNode()
 	{
 		return (AssignmentMethod)getMethodList().getChild(getMethodList().getNumChildren() - 1);
+	}
+	
+	public StaticBlock getStaticAssignmentBlock()
+	{
+		return getStaticBlockList().getVisibleChild(0);
 	}
 	
 	/**
@@ -498,6 +503,20 @@ public class ClassDeclaration extends InstanceDeclaration
 		return getField(fieldName) != null;
 	}
 	
+	public void addFieldInitialization(Assignment assignment)
+	{
+		FieldDeclaration field = (FieldDeclaration)assignment.getAssigneeNode().getDeclaration();
+		
+		if (field.isStatic())
+		{
+			getStaticAssignmentBlock().addChild(assignment);
+		}
+		else
+		{
+			getAssignmentMethodNode().addChild(assignment);
+		}
+	}
+	
 	/**
 	 * Get the ClassDeclaration's Field with the specified name.<br>
 	 * <br>
@@ -771,6 +790,12 @@ public class ClassDeclaration extends InstanceDeclaration
 		}
 		
 		return null;
+	}
+	
+	@Override
+	public ClassDeclaration getDeclaringClass()
+	{
+		return this;
 	}
 	
 	public String getClassLocation()
@@ -1362,6 +1387,8 @@ public class ClassDeclaration extends InstanceDeclaration
 	{
 		if (phase == SyntaxTree.PHASE_CLASS_DECLARATION)
 		{
+			getStaticBlockList().addChild(StaticBlock.generateEmptyBlock(getStaticBlockList(), Location.INVALID));
+			
 			validateDeclaration(phase);
 			
 			ClassDeclaration clazz = getParentClass();
