@@ -2,6 +2,7 @@ package net.fathomsoft.nova.tree;
 
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.util.Location;
+import net.fathomsoft.nova.util.SyntaxUtils;
 
 /**
  * {@link IIdentifier} extension that represents the use of a Static
@@ -10,7 +11,7 @@ import net.fathomsoft.nova.util.Location;
  * 
  * @author	Braden Steffaniak
  * @since	v0.2.9 Aug 23, 2014 at 11:25:19 PM
- * @version	v0.2.32 Sep 26, 2014 at 12:17:33 PM
+ * @version	v0.2.34 Oct 1, 2014 at 9:51:33 PM
  */
 public class StaticClassReference extends IIdentifier
 {
@@ -72,6 +73,12 @@ public class StaticClassReference extends IIdentifier
 		}
 		
 		return null;
+	}
+	
+	@Override
+	public ClassDeclaration getDeclaringClass()
+	{
+		return SyntaxUtils.getImportedClass(getFileDeclaration(), getName());
 	}
 	
 	/**
