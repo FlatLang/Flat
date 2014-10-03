@@ -17,7 +17,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:19:44 PM
- * @version	v0.2.33 Sep 29, 2014 at 10:29:33 AM
+ * @version	v0.2.34 Oct 1, 2014 at 9:51:33 PM
  */
 public class Assignment extends Node
 {
@@ -265,6 +265,14 @@ public class Assignment extends Node
 		}
 		
 		return this;
+	}
+	
+	@Override
+	public void rollback()
+	{
+		removeDeclaration();
+		
+		super.rollback();
 	}
 	
 	/**
