@@ -15,7 +15,7 @@ import net.fathomsoft.nova.util.StringUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.2.29 Aug 28, 2014 at 11:51:16 PM
- * @version	v0.2.33 Sep 29, 2014 at 10:29:33 AM
+ * @version	v0.2.34 Oct 1, 2014 at 9:51:33 PM
  */
 public interface GenericCompatible
 {
@@ -130,6 +130,16 @@ public interface GenericCompatible
 	public default void addGenericParameterNames(String parameterName)
 	{
 		GenericType type = new GenericType((Node)this, Location.INVALID, parameterName);
+
+		DeclarationData data = new DeclarationData();
+		
+		type.searchGenericParameters(parameterName, data);
+		type.iterateWords(parameterName, data, true);
+		
+		if (data.containsSkipBounds())
+		{
+			type.setType(data.getSkipBounds(0).trimString(parameterName), true, false);
+		}
 		
 		setGenericTypes(StringUtils.appendElement(getGenericParameterNames(), new GenericType[getGenericParameterNames().length + 1], type));
 	}
@@ -141,13 +151,15 @@ public interface GenericCompatible
 	
 	public default void decodeGenericParameters(String statement, Bounds genericBounds, boolean endingsIncluded)
 	{
+		Bounds clone = genericBounds.clone();
+		
 		if (endingsIncluded)
 		{
-			genericBounds.setStart(genericBounds.getStart() + GENERIC_START.length());
-			genericBounds.setEnd(genericBounds.getEnd() - GENERIC_END.length());
+			clone.setStart(genericBounds.getStart() + GENERIC_START.length());
+			clone.setEnd(genericBounds.getEnd() - GENERIC_END.length());
 		}
 		
-		String params = genericBounds.extractString(statement);
+		String params = clone.extractString(statement);
 		
 		decodeGenericParameters(params);
 	}
@@ -181,6 +193,19 @@ public interface GenericCompatible
 		while (bounds.isValid());
 		
 		data.setGenericsRemaining(data.getNumSkipBounds());
+	}
+	
+	public default GenericType[] cloneGenericTypes(Node parent)
+	{
+		GenericType genericTypes[] = getGenericParameterNames();
+		GenericType types[] = new GenericType[genericTypes.length];
+		
+		for (int i = 0; i < genericTypes.length; i++)
+		{
+			types[i] = (GenericType)genericTypes[i].clone(parent, Location.INVALID);
+		}
+		
+		return types;
 	}
 	
 	/**
