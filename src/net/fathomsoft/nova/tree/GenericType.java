@@ -2,6 +2,8 @@ package net.fathomsoft.nova.tree;
 
 import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.TestContext;
+import net.fathomsoft.nova.tree.variables.VariableDeclaration.DeclarationData;
+import net.fathomsoft.nova.util.Bounds;
 import net.fathomsoft.nova.util.Location;
 
 /**
@@ -11,9 +13,11 @@ import net.fathomsoft.nova.util.Location;
  * @since	v0.2.29 Aug 25, 2014 at 6:11:02 PM
  * @version	v0.2.33 Sep 29, 2014 at 10:29:33 AM
  */
-public class GenericType extends IValue
+public class GenericType extends IValue implements GenericCompatible
 {
-	private String	defaultType;
+	private String      defaultType;
+	
+	private GenericType genericTypes[];
 	
 	/**
 	 * @see net.fathomsoft.nova.tree.Node#Node(Node, Location)
@@ -21,6 +25,9 @@ public class GenericType extends IValue
 	public GenericType(Node temporaryParent, Location locationIn)
 	{
 		super(temporaryParent, locationIn);
+		
+		defaultType  = Nova.getClassLocation("Object");
+		genericTypes = new GenericType[0];
 	}
 	
 	/**
@@ -30,8 +37,25 @@ public class GenericType extends IValue
 	{
 		this(temporaryParent, locationIn);
 		
-		defaultType = Nova.getClassLocation("Object");
 		setType(parameterName, true, false);
+	}
+
+	/**
+	 * @see net.fathomsoft.nova.tree.GenericCompatible#getGenericParameterNames()
+	 */
+	@Override
+	public GenericType[] getGenericParameterNames()
+	{
+		return genericTypes;
+	}
+	
+	/**
+	 * @see net.fathomsoft.nova.tree.GenericCompatible#setGenericTypes(net.fathomsoft.nova.tree.GenericType[])
+	 */
+	@Override
+	public void setGenericTypes(GenericType[] types)
+	{
+		this.genericTypes = types;
 	}
 	
 	public String getDefaultType()
@@ -79,6 +103,19 @@ public class GenericType extends IValue
 		return null;
 	}
 	
+	@Override
+	public void interactWord(String word, Bounds bounds, String leftDelimiter, String rightDelimiter, ExtraData extra)
+	{
+		DeclarationData d = (DeclarationData)extra;
+		
+		if (extra.getRightAdjacentSkipBounds() != null)
+		{
+			decodeGenericParameters(extra.statement, extra.getRightAdjacentSkipBounds());
+			
+			d.decrementGenericsRemaining();
+		}
+	}
+	
 	/**
 	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location, boolean)
 	 */
@@ -101,7 +138,8 @@ public class GenericType extends IValue
 	{
 		super.cloneTo(node);
 		
-		node.defaultType = defaultType;
+		node.defaultType  = defaultType;
+		node.genericTypes = cloneGenericTypes(node);
 		
 		return node;
 	}
