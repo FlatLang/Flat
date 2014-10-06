@@ -19,7 +19,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:00:19 PM
- * @version	v0.2.32 Sep 26, 2014 at 12:17:33 PM
+ * @version	v0.2.35 Oct 5, 2014 at 11:22:42 PM
  */
 public abstract class Identifier extends Value
 {
@@ -664,7 +664,7 @@ public abstract class Identifier extends Value
 	 * is found.
 	 * 
 	 * @param builder The builder to append the data to.
-	 * @param stopAt The Node to stop at.
+	 * @param stopAt The Node to stop at. (This Node will output)
 	 * @return The generated Nova input.
 	 */
 	public StringBuilder generateNovaInputUntil(StringBuilder builder, Identifier stopAt)
@@ -1114,7 +1114,7 @@ public abstract class Identifier extends Value
 		}
 		else
 		{
-			existing = SyntaxTree.findDeclaration(getParent(), name);
+			existing = SyntaxTree.findDeclaration(getParent(), name, false);
 			
 			SyntaxMessage.queryError("Unable to find declaration for variable '" + name + "'", this, existing == null);
 		}
