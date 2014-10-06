@@ -16,7 +16,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.2.14 Jul 5, 2014 at 9:02:42 PM
- * @version	v0.2.29 Aug 29, 2014 at 3:17:45 PM
+ * @version	v0.2.35 Oct 5, 2014 at 11:22:42 PM
  */
 public class ClosureDeclaration extends Parameter implements CallableMethod
 {
@@ -127,10 +127,10 @@ public class ClosureDeclaration extends Parameter implements CallableMethod
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.Value#generateCType(java.lang.StringBuilder)
+	 * @see net.fathomsoft.nova.tree.Value#generateCType(java.lang.StringBuilder, boolean)
 	 */
 	@Override
-	public StringBuilder generateCType(StringBuilder builder)
+	public StringBuilder generateCType(StringBuilder builder, boolean checkArray)
 	{
 		return builder.append(generateCSourceName(id + ""));
 	}
@@ -154,7 +154,7 @@ public class ClosureDeclaration extends Parameter implements CallableMethod
 	{
 		builder.append("typedef ");
 		
-		super.generateCType(builder).append(" (*").append(generateCSourceName(id + "")).append(')');
+		super.generateCType(builder, true).append(" (*").append(generateCSourceName(id + "")).append(')');
 		builder.append('(').append(getParameterList().generateCHeader()).append(')').append(";\n");
 		
 		return builder;
@@ -291,7 +291,7 @@ public class ClosureDeclaration extends Parameter implements CallableMethod
 		{
 			if (parameters[i].length() > 0)
 			{
-				IValue param = IValue.generateFromType(this, location, parameters[i], require);
+				Value param = Value.generateFromType(this, location, parameters[i], require);
 				
 				if (param == null)
 				{
