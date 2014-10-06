@@ -12,7 +12,7 @@ import net.fathomsoft.nova.util.Location;
  * 
  * @author	Braden Steffaniak
  * @since	v0.2.21 Jul 30, 2014 at 1:45:00 PM
- * @version	v0.2.28 Aug 20, 2014 at 12:10:45 AM
+ * @version	v0.2.35 Oct 5, 2014 at 11:22:42 PM
  */
 public class BodyMethodDeclaration extends NovaMethodDeclaration
 {
@@ -45,7 +45,7 @@ public class BodyMethodDeclaration extends NovaMethodDeclaration
 	@Override
 	public Scope getScope()
 	{
-		return (Scope)getChild(super.getNumDefaultChildren());
+		return (Scope)getChild(super.getNumDefaultChildren() + 0);
 	}
 	
 	/**
