@@ -4,6 +4,7 @@ import java.util.regex.Matcher;
 
 import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.TestContext;
+import net.fathomsoft.nova.error.Message;
 import net.fathomsoft.nova.error.SyntaxErrorException;
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.tree.exceptionhandling.Throw;
@@ -22,7 +23,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:20:35 PM
- * @version	v0.2.34 Oct 1, 2014 at 9:51:33 PM
+ * @version	v0.2.35 Oct 5, 2014 at 11:22:42 PM
  */
 public class BinaryOperation extends IValue
 {
@@ -325,7 +326,7 @@ public class BinaryOperation extends IValue
 			{
 				ClassDeclaration integerClass = parent.getProgram().getClassDeclaration(Nova.getClassLocation("Int"));
 				
-				if (operatorType == null || !operatorType.equals("bool") || !lhn.getReturnedNode().getTypeClass().isOfType(integerClass) && !rhn.getReturnedNode().getTypeClass().isOfType(integerClass))
+				if (operatorType == null || !operatorType.equals("Bool") || !lhn.getReturnedNode().getTypeClass().isOfType(integerClass) && !rhn.getReturnedNode().getTypeClass().isOfType(integerClass))
 				{
 					SyntaxMessage.error("Type '" + lhn.getType() + "' and '" + rhn.getType() + "' are not compatible", this);
 				}
@@ -554,7 +555,7 @@ public class BinaryOperation extends IValue
 	 */
 	private static Value createNode(Node parent, String statement, Location location)
 	{
-		Value node = SyntaxTree.decodeValue(parent, statement, location, false);
+		Value node = SyntaxTree.decodeValue(parent, statement, location.asNew(), false);
 		
 		if (node instanceof Value == false)
 		{
@@ -766,19 +767,25 @@ public class BinaryOperation extends IValue
 	 */
 	private Value generateStringOutput(Value nonString)
 	{
-		Value obj = replaceWithObjectiveValue(nonString);
+		Value old = nonString;
 		
-		if (!obj.getType().equals("String"))
+		String methodCall = null;
+		
+		if (nonString.isPrimitiveType())
+		{
+			methodCall = nonString.getTypeClassName() + ".toString(" + nonString.generateNovaInput() + ")";
+		}
+		else
 		{
 			// TODO: Can optimize to simply add a .toString() MethodCall child.
-			String methodCall = obj.generateNovaInput() + ".toString()";
-			
-			Location location = new Location(nonString.getLocationIn());
-			
-			nonString = (Value)SyntaxTree.decodeScopeContents(getParent(), methodCall, location, false);
-			
-			replace(obj, nonString);
+			methodCall = nonString.generateNovaInput() + ".toString()";
 		}
+		
+		Location location = new Location(nonString.getLocationIn());
+		
+		nonString = (Value)SyntaxTree.decodeScopeContents(getParent(), methodCall, location, false);
+		
+		replace(old, nonString);
 		
 		return nonString;
 	}
@@ -795,11 +802,11 @@ public class BinaryOperation extends IValue
 		Value returned = value.getReturnedNode();
 		Value newVal   = null;
 		
-		if (returned.isPrimitiveType())
+		/*if (returned.isPrimitiveType())
 		{
 			newVal = SyntaxUtils.autoboxPrimitive(value);
 		}
-		else if (value instanceof Literal && ((Literal)value).getValue().equals("null"))
+		else */if (value instanceof Literal && Literal.isNullLiteral(value))
 		{
 			newVal = Literal.decodeStatement(this, "\"null\"", value.getLocationIn(), true);
 		}
@@ -849,7 +856,7 @@ public class BinaryOperation extends IValue
 	 */
 	private static class BinarySyntaxException extends SyntaxErrorException
 	{
-		boolean require;
+		private boolean require;
 		
 		/**
 		 * @see net.fathomsoft.nova.error.SyntaxErrorException#SyntaxErrorException(String)
@@ -864,7 +871,7 @@ public class BinaryOperation extends IValue
 		 */
 		public BinarySyntaxException(String message, boolean require)
 		{
-			super(message);
+			super(message, Message.ERROR);
 			
 			this.require = require;
 		}
