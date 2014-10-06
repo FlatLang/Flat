@@ -1,6 +1,7 @@
 package net.fathomsoft.nova.tree;
 
 import net.fathomsoft.nova.TestContext;
+import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.util.Bounds;
 import net.fathomsoft.nova.util.Location;
@@ -15,7 +16,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:10:53 PM
- * @version	v0.2.32 Sep 26, 2014 at 12:17:33 PM
+ * @version	v0.2.35 Oct 5, 2014 at 11:22:42 PM
  */
 public class ExternalMethodDeclaration extends MethodDeclaration
 {
@@ -43,6 +44,15 @@ public class ExternalMethodDeclaration extends MethodDeclaration
 	 */
 	@Override
 	public boolean isExternal()
+	{
+		return true;
+	}
+	
+	/**
+	 * @see net.fathomsoft.nova.tree.Node#isWithinExternalContext()
+	 */
+	@Override
+	public boolean isWithinExternalContext()
 	{
 		return true;
 	}
@@ -264,16 +274,27 @@ public class ExternalMethodDeclaration extends MethodDeclaration
 	 * @see net.fathomsoft.nova.tree.variables.VariableDeclaration#validate(int)
 	 */
 	@Override
-	public Node validate(int phase)
+	public ValidationResult validate(int phase)
 	{
+		ValidationResult result = super.validate(phase);
+		
+		if (result.errorOccurred)
+		{
+			return result;
+		}
+		
 		MethodDeclaration methods[] = getParentClass().getMethods(getName());
 		
 		if (methods.length > 1)
 		{
-			SyntaxMessage.error("Non-external method with name '" + alias + "' already exists", this);
+			SyntaxMessage.error("Non-external method with name '" + alias + "' already exists", this, false);
+			
+			result.errorOccurred = true;
+			
+			return result;
 		}
 		
-		return super.validate(phase);
+		return result;
 	}
 	
 	/**
