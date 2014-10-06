@@ -1,6 +1,7 @@
 package net.fathomsoft.nova.tree;
 
 import net.fathomsoft.nova.TestContext;
+import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.util.Bounds;
 import net.fathomsoft.nova.util.Location;
@@ -14,7 +15,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.2.14 Jul 5, 2014 at 12:29:23 AM
- * @version	v0.2.26 Aug 6, 2014 at 2:48:50 PM
+ * @version	v0.2.35 Oct 5, 2014 at 11:22:42 PM
  */
 public class Until extends IfStatement
 {
@@ -133,36 +134,48 @@ public class Until extends IfStatement
 	 * @see net.fathomsoft.nova.tree.Node#validate(int)
 	 */
 	@Override
-	public Node validate(int phase)
+	public ValidationResult validate(int phase)
 	{
-		String      statement = "if (" + getCondition().generateNovaInput().toString() + ")";
+		ValidationResult result = super.validate(phase);
 		
-		IfStatement clonable  = IfStatement.decodeStatement(getScope(), statement, getLocationIn(), true);
-		IfStatement clone     = null;
-		
-		Scope scope = getScope();
-		
-		for (int i = scope.getNumVisibleChildren() - 1; i >= 0; i--)
+		if (result.errorOccurred)
 		{
-			IfStatement newClone = (IfStatement)clonable.clone(getScope(), getLocationIn());
-			
-			Node node = scope.getVisibleChild(i);
-			
-			newClone.addChild(node);
-			
-			if (clone != null)
-			{
-				newClone.addChild(clone);
-			}
-			
-			clone = newClone;
+			return result;
 		}
 		
-		scope.addChild(clone);
+		if (phase == SyntaxTree.PHASE_METHOD_CONTENTS)
+		{
+			String      statement = "if (" + getCondition().generateNovaInput().toString() + ")";
+			
+			IfStatement clonable  = IfStatement.decodeStatement(getScope(), statement, getLocationIn(), true);
+			IfStatement clone     = null;
+			
+			Scope scope = getScope();
+			
+			for (int i = scope.getNumVisibleChildren() - 1; i >= 0; i--)
+			{
+				IfStatement newClone = (IfStatement)clonable.clone(getScope(), getLocationIn());
+				
+				Node node = scope.getVisibleChild(i);
+				
+				newClone.addChild(node);
+				
+				if (clone != null)
+				{
+					newClone.addChild(clone);
+				}
+				
+				clone = newClone;
+			}
+			
+			scope.addChild(clone);
+			
+			getParent().replace(this, clone);
+			
+			result.returnedNode = clone;
+		}
 		
-		getParent().replace(this, clone);
-		
-		return clone;
+		return result;
 	}
 	
 	/**
