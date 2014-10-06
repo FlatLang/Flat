@@ -21,7 +21,7 @@ import net.fathomsoft.nova.util.Location;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Apr 5, 2014 at 10:54:20 PM
- * @version	v0.2.29 Aug 29, 2014 at 3:17:45 PM
+ * @version	v0.2.35 Oct 5, 2014 at 11:22:42 PM
  */
 public class Scope extends Node
 {
@@ -200,6 +200,11 @@ public class Scope extends Node
 		builder.append('}').append('\n');
 		
 		return builder;
+	}
+	
+	public static Scope generateEmptyScope(Node parent, Location location)
+	{
+		return new Scope(parent, location);
 	}
 	
 	/**
