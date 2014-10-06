@@ -2,7 +2,6 @@ package net.fathomsoft.nova.tree;
 
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.util.Location;
-import net.fathomsoft.nova.util.SyntaxUtils;
 
 /**
  * Value extension that represents an Identifier. For the rules on
@@ -11,7 +10,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:00:19 PM
- * @version	v0.2.29 Aug 29, 2014 at 3:17:45 PM
+ * @version	v0.2.35 Oct 5, 2014 at 11:22:42 PM
  */
 public class IIdentifier extends Identifier
 {
@@ -101,43 +100,14 @@ public class IIdentifier extends Identifier
 	{
 		return type;
 	}
-
+	
 	/**
-	 * @see net.fathomsoft.nova.tree.Value#setType(java.lang.String, boolean, boolean, boolean)
+	 * @see net.fathomsoft.nova.tree.AbstractValue#setTypeValue(java.lang.String)
 	 */
 	@Override
-	// Dont forget about IValue!!!!
-	public boolean setType(String type, boolean require, boolean checkType, boolean checkDataType)
+	public void setTypeValue(String type)
 	{
-		// Dont forget about IValue.setType()!!!!
-		if (checkType)
-		{
-			if (!checkType(type, require))
-			{
-				return false;
-			}
-			
-			type = SyntaxUtils.getValidType(this, type);
-		}
-		
 		this.type = type;
-		
-		if (checkDataType)
-		{
-			if (isExternalType())
-			{
-				if (getAncestorOfType(ExternalMethodDeclaration.class) == null)
-				{
-					setDataType(POINTER);
-				}
-			}
-			else if (!SyntaxUtils.isPrimitiveType(type))
-			{
-				setDataType(POINTER);
-			}
-		}
-		
-		return true;
 	}
 	
 	/**
