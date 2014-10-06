@@ -23,6 +23,7 @@ import net.fathomsoft.nova.tree.Parameter;
 import net.fathomsoft.nova.tree.ParameterList;
 import net.fathomsoft.nova.tree.Program;
 import net.fathomsoft.nova.tree.Return;
+import net.fathomsoft.nova.tree.SyntaxTree;
 import net.fathomsoft.nova.tree.Value;
 import net.fathomsoft.nova.tree.variables.FieldDeclaration;
 import net.fathomsoft.nova.tree.variables.Variable;
@@ -33,7 +34,7 @@ import net.fathomsoft.nova.tree.variables.VariableDeclaration;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Mar 15, 2014 at 7:55:00 PM
- * @version	v0.2.34 Oct 1, 2014 at 9:51:33 PM
+ * @version	v0.2.35 Oct 5, 2014 at 11:22:42 PM
  */
 public class SyntaxUtils
 {
@@ -49,8 +50,6 @@ public class SyntaxUtils
 	 */
 	private static int getPrimitiveRank(String primitiveType)
 	{
-		primitiveType = getPrimitiveWrapperClassName(primitiveType);
-		
 		if (primitiveType.equals("Char"))
 		{
 			return CHAR;
@@ -115,6 +114,11 @@ public class SyntaxUtils
 	 */
 	public static boolean arePrimitiveTypesCompatible(String required, String given)
 	{
+		if (required == null || given == null)
+		{
+			return false;
+		}
+		
 		int rank1 = getPrimitiveRank(required);
 		int rank2 = getPrimitiveRank(given);
 		
@@ -124,6 +128,102 @@ public class SyntaxUtils
 		}
 		
 		return rank1 >= rank2;
+	}
+	
+	/**
+	 * Get whether the specified type is primitive.<br>
+	 * <br>
+	 * Primitive types include:
+	 * <ul>
+	 * 	<li>Int</li>
+	 * 	<li>Char</li>
+	 * 	<li>Long</li>
+	 * 	<li>Bool</li>
+	 * 	<li>Short</li>
+	 * 	<li>Float</li>
+	 * 	<li>Double</li>
+	 * </ul>
+	 * 
+	 * @param type The type to check.
+	 * @return Whether or not the type is primitive.
+	 */
+	public static boolean isPrimitiveType(String type)
+	{
+		return type == null || type.equals("Int") || type.equals("Char") || type.equals("Long") || type.equals("Bool") || type.equals("Short") || type.equals("Float") || type.equals("Double") || type.equals("Byte");
+	}
+	
+	public static String getPrimitiveExternalType(String type)
+	{
+		if (type == null)
+		{
+			return type;
+		}
+		
+		switch (type)
+		{
+			case "Int":
+				return "int";
+			case "Char":
+				return "char";
+			case "Long":
+				return "long";
+			case "Float":
+				return "float";
+			case "Double":
+				return "double";
+			case "Bool":
+				return "char";
+			case "Short":
+				return "short";
+			case "Byte":
+				return "char";
+			default:
+				return type;
+		}
+	}
+	
+	/**
+	 * Get whether the specified type is a C primitive type.<br>
+	 * <br>
+	 * Primitive types include:
+	 * <ul>
+	 * 	<li>int</li>
+	 * 	<li>char</li>
+	 * 	<li>long</li>
+	 * 	<li>float</li>
+	 * 	<li>double</li>
+	 * </ul>
+	 * 
+	 * @param type The type to check.
+	 * @return Whether or not the type is primitive.
+	 */
+	public static boolean isExternalPrimitiveType(String type)
+	{
+		return getPrimitiveNovaType(type) != type;
+	}
+	
+	public static String getPrimitiveNovaType(String type)
+	{
+		if (type == null)
+		{
+			return type;
+		}
+		
+		switch (type)
+		{
+			case "int":
+				return "Int";
+			case "char":
+				return "Char";
+			case "long":
+				return "Long";
+			case "float":
+				return "Float";
+			case "double":
+				return "Double";
+			default:
+				return type;
+		}
 	}
 	
 	/**
@@ -347,11 +447,11 @@ public class SyntaxUtils
 		}
 		else if (literal.equals(Literal.TRUE_IDENTIFIER) || literal.equals(Literal.FALSE_IDENTIFIER))
 		{
-			return "bool";
+			return "Bool";
 		}
 		else if (isCharLiteral(literal))
 		{
-			return "char";
+			return "Char";
 		}
 		else if (isStringLiteral(literal))
 		{
@@ -361,11 +461,11 @@ public class SyntaxUtils
 		{
 			if (isInteger(literal))
 			{
-				return "int";
+				return "Int";
 			}
 			else if (isDouble(literal))
 			{
-				return "double";
+				return "Double";
 			}
 		}
 		
@@ -639,123 +739,6 @@ public class SyntaxUtils
 		}
 		
 		return true;
-	}
-	
-	/**
-	 * Get whether the specified type is primitive.<br>
-	 * <br>
-	 * Primitive types include:
-	 * <ul>
-	 * 	<li>int</li>
-	 * 	<li>char</li>
-	 * 	<li>long_long (aka long)</li>
-	 * 	<li>boolean</li>
-	 * 	<li>short</li>
-	 * 	<li>float</li>
-	 * 	<li>double</li>
-	 * 	<li>void (lightly)</li>
-	 * </ul>
-	 * 
-	 * @param type The type to check.
-	 * @return Whether or not the type is primitive.
-	 */
-	public static boolean isPrimitiveType(String type)
-	{
-		return type == null || type.equals("int") || type.equals("char") || type.equals("long") || type.equals("bool") || type.equals("short") || type.equals("float") || type.equals("double") || type.equals("byte");
-	}
-	
-	/**
-	 * Get the name of the wrapper class for the given primitive type.
-	 * 
-	 * @param primitiveType The primitive type to get the wrapper class
-	 * 		of.
-	 * @return The name of the wrapper class for the given primitive type.
-	 */
-	public static String getPrimitiveWrapperClassName(String primitiveType)
-	{
-		if (primitiveType == null)
-		{
-			return "Object";
-		}
-		else if (primitiveType.equals("int"))
-		{
-			return "Int";
-		}
-		else if (primitiveType.equals("char"))
-		{
-			return "Char";
-		}
-		else if (primitiveType.equals("long"))
-		{
-			return "Long";
-		}
-		else if (primitiveType.equals("bool"))
-		{
-			return "Bool";
-		}
-		else if (primitiveType.equals("short"))
-		{
-			return "Short";
-		}
-		else if (primitiveType.equals("float"))
-		{
-			return "Float";
-		}
-		else if (primitiveType.equals("double"))
-		{
-			return "Double";
-		}
-		else if (primitiveType.equals("byte"))
-		{
-			return "Byte";
-		}
-		
-		return primitiveType;
-	}
-	
-	/**
-	 * Get the name of the primitive type given the wrapper class name.
-	 * 
-	 * @param wrapperName The name of the wrapper class.
-	 * @return The name of the primitive type given the wrapper class
-	 * 		name.
-	 */
-	public static String getWrapperClassPrimitiveName(String wrapperName)
-	{
-		if (wrapperName.equals("Int"))
-		{
-			return "int";
-		}
-		else if (wrapperName.equals("Byte"))
-		{
-			return "byte";
-		}
-		else if (wrapperName.equals("Char"))
-		{
-			return "char";
-		}
-		else if (wrapperName.equals("Long"))
-		{
-			return "long";
-		}
-		else if (wrapperName.equals("Bool"))
-		{
-			return "bool";
-		}
-		else if (wrapperName.equals("Short"))
-		{
-			return "short";
-		}
-		else if (wrapperName.equals("Float"))
-		{
-			return "float";
-		}
-		else if (wrapperName.equals("Double"))
-		{
-			return "double";
-		}
-		
-		return null;
 	}
 	
 	/**
@@ -1355,14 +1338,13 @@ public class SyntaxUtils
 	 * @return Whether or not the declaration is accessible from the
 	 * 		given accessor context.
 	 */
-	public static boolean isVisible(Identifier accessor, InstanceDeclaration declaration)
+	public static boolean isVisible(ClassDeclaration accessingClass, InstanceDeclaration declaration)
 	{
 		if (declaration.getVisibility() == InstanceDeclaration.PRIVATE)
 		{
-			ClassDeclaration clazz1 = accessor.getParentClass(true);
 			ClassDeclaration clazz2 = declaration.getParentClass();
 			
-			if (clazz1.isAncestorOf(clazz2, true) || clazz2.isAncestorOf(clazz1))
+			if (accessingClass.isAncestorOf(clazz2, true) || clazz2.isAncestorOf(accessingClass))
 			{
 				return true;
 			}
@@ -1371,6 +1353,39 @@ public class SyntaxUtils
 		}
 		
 		return true;
+	}
+	
+	public static Identifier generatePrimitiveFacade(MethodCall call)
+	{
+		Identifier accessing = call.getAccessingNode();
+		
+		Identifier id = accessing.getRootAccessNode();
+		
+		String input = accessing.getTypeClassName() + "." + call.getName() + "(" + id.generateNovaInputUntil(accessing);
+		
+		String params = call.getArgumentList().generateNovaInput().toString();
+		
+		if (params.length() > 0)
+		{
+			input += ". " + params;
+		}
+		
+		input += ")";
+		
+		Identifier output = (Identifier)SyntaxTree.decodeScopeContents(id.getParent(), input, call.getLocationIn(), true);
+		
+		return output;
+	}
+	
+	public static Identifier replaceWithPrimitiveFacade(MethodCall call)
+	{
+		Identifier accessing = call.getAccessingNode().getRootAccessNode();
+		
+		Identifier output = generatePrimitiveFacade(call);
+		
+		accessing.getParent().replace(accessing, output);
+		
+		return output;
 	}
 	
 	/**
@@ -1391,14 +1406,51 @@ public class SyntaxUtils
 		
 		if (returned.isPrimitiveType())
 		{
-			String className = getPrimitiveWrapperClassName(returned.getType());
+			String className = returned.getType();
 			
 			String instantiation = "new " + className + '(' + primitive.generateNovaInput() + ')';
 			
-			node = Instantiation.decodeStatement(primitive.getParent(), instantiation, primitive.getLocationIn(), true);
+			node = Instantiation.decodeStatement(primitive.getParent(), instantiation, primitive.getLocationIn(), true, false);
 		}
 		
 		return node;
+	}
+	
+	/**
+	 * Try to autobox the given primitive Node, if it truly has a
+	 * primitive value. If the given Value does not have a primitive
+	 * type, then null is returned.
+	 * 
+	 * @param primitive The Value to try to autobox.
+	 * @return An instantiation from the corresponding primitive wrapper
+	 * 		class. If the given value is not primitive, then null is
+	 * 		returned.
+	 */
+	public static Instantiation autoboxPrimitiveOnly(Value primitive)
+	{
+		Instantiation node = null;
+		
+		if (primitive.isPrimitiveType())
+		{
+			String className = primitive.getType();
+			
+			String instantiation = "new " + className + '(' + primitive.generateNovaInput(false) + ')';
+			
+			node = Instantiation.decodeStatement(primitive.getParent(), instantiation, primitive.getLocationIn(), true, false);
+		}
+		
+		return node;
+	}
+	
+	public static Instantiation replaceWithAutoboxPrimitive(Identifier primitive)
+	{
+		Instantiation autobox = autoboxPrimitiveOnly(primitive);
+		
+		autobox.setAccessedNode(primitive.getAccessedNode());
+		
+		primitive.getParent().replace(primitive, autobox);
+		
+		return autobox;
 	}
 	
 	/**
@@ -1430,7 +1482,7 @@ public class SyntaxUtils
 	
 	private static boolean checkGenericType(Value value, String type)
 	{
-		return value.getParentClass().containsGenericParameter(type);
+		return value.getParentClass(true).containsGenericParameter(type);
 	}
 	
 	private static Value getValidValue(Value value)
@@ -1479,60 +1531,53 @@ public class SyntaxUtils
 			}
 		}
 		
-		if (SyntaxUtils.isPrimitiveType(type))
+		ClassDeclaration clazz = value.getParentClass();
+		
+		while (clazz != null)
 		{
-			return type;
+			if (clazz.getName().equals(type))
+			{
+				return type;
+			}
+			
+			clazz = clazz.getParentClass();
 		}
-		else
+		
+		if (checkGenericType(value, type))
 		{
-			ClassDeclaration clazz = value.getParentClass();
+			Variable genericCheck = null;
 			
-			while (clazz != null)
+			if (original != value && original instanceof Identifier)
 			{
-				if (clazz.getName().equals(type))
-				{
-					return type;
-				}
+				Identifier id = (Identifier)original;
 				
-				clazz = clazz.getParentClass();
+				genericCheck = (Variable)id.getAccessingNode();
 			}
 			
-			if (checkGenericType(value, type))
+			if (genericCheck != null && genericCheck.doesUseGenericTypes())
 			{
-				Variable genericCheck = null;
+				String genericName = value.getType();
 				
-				if (original != value && original instanceof Identifier)
-				{
-					Identifier id = (Identifier)original;
-					
-					genericCheck = (Variable)id.getAccessingNode();
-				}
-				
- 				if (genericCheck != null && genericCheck.doesUseGenericTypes())
-				{
-					String genericName = value.getType();
-					
-					GenericType generic = getCorrespondingGenericType(genericCheck.getTypeClass(), genericCheck.getDeclaration(), genericName);
+				GenericType generic = getCorrespondingGenericType(genericCheck.getTypeClass(), genericCheck.getDeclaration(), genericName);
 
-					return generic.getType();
-				}
-				
-				return value.getParentClass().getGenericParameter(type).getType();//.getDefaultType();
+				return generic.getType();
 			}
 			
-			String location = value.getFileDeclaration().getImportList().getAbsoluteClassLocation(type);
-			
-			clazz = value.getProgram().getClassDeclaration(location);
-			
-			if (clazz != null)
+			return value.getParentClass().getGenericParameter(type).getType();//.getDefaultType();
+		}
+		
+		String location = value.getFileDeclaration().getImportList().getAbsoluteClassLocation(type);
+		
+		clazz = value.getProgram().getClassDeclaration(location);
+		
+		if (clazz != null)
+		{
+			if (SyntaxUtils.validateImported(value, location))
 			{
-				if (SyntaxUtils.validateImported(value, location))
-				{
-					return type;
-				}
-				
-				return null;
+				return type;
 			}
+			
+			return null;
 		}
 		
 		if (value.getParentClass().containsExternalType(type))
@@ -1727,7 +1772,7 @@ public class SyntaxUtils
 	 */
 	public static boolean isTypeCompatible(Program context, String required, String given)
 	{
-		return isTypeCompatible(context.getClassDeclaration(getPrimitiveWrapperClassName(given)), context.getClassDeclaration(getPrimitiveWrapperClassName(required)));
+		return isTypeCompatible(context.getClassDeclaration(given), context.getClassDeclaration(required));
 	}
 	
 	/**
@@ -1757,6 +1802,43 @@ public class SyntaxUtils
 	 */
 	public static boolean isTypeCompatible(Value required, Value given, boolean searchGeneric)
 	{
+		return isTypeCompatible(required, given, searchGeneric, 0);
+	}
+	
+	/**
+	 * Check to see if the 'given' type is compatible with the
+	 * required type.
+	 * 
+	 * @param required The type that the 'given' type is required
+	 * 		to be compatible with.
+	 * @param given The given type to check against the required type.
+	 * @param searchGeneric Whether or not to search for the actual generic
+	 * 		return type.
+	 * @param arrayDifference The difference that is allowed between the two
+	 * 		type's array dimensions. Difference =
+	 * 		required.dimensions - given.dimensions.
+	 * @return Whether or not the two types are compatible.
+	 */
+	public static boolean isTypeCompatible(Value required, Value given, boolean searchGeneric, int arrayDifference)
+	{
+		if (given instanceof Closure)
+		{
+			return true;
+		}
+		if (given.isWithinExternalContext() && getPrimitiveExternalType(given.getType()).equals(required.getType()))
+		{
+			return true;
+		}
+		else if (required.getArrayDimensions() - given.getArrayDimensions() - arrayDifference != 0)
+		{
+			if (required.getTypeClassLocation().equals(Nova.getClassLocation("Char")) && required.getArrayDimensions() == 1 && given.getTypeClassLocation().equals(Nova.getClassLocation("String")))
+			{
+				return true;
+			}
+			
+			return false;
+		}
+		
 		if (searchGeneric && required.isGenericType())
 		{
 			if (!(required instanceof Parameter))
@@ -1775,11 +1857,7 @@ public class SyntaxUtils
 			
 			return true;
 		}
-		if (given instanceof Closure)
-		{
-			return true;
-		}
-		else if (given.isExternalType() ^ required.isExternalType())
+		if (given.isExternalType() ^ required.isExternalType())
 		{
 			return false;
 		}
@@ -1787,7 +1865,7 @@ public class SyntaxUtils
 		{
 			return true;
 		}
-		else if (given.isPrimitiveType() ^ required.isPrimitiveType() == false && given.getTypeClass().isOfType(required.getTypeClass()))
+		else if (/*given.isPrimitiveType() ^ required.isPrimitiveType() == false && */given.getTypeClass().isOfType(required.getTypeClass()))
 		{
 			return true;
 		}
@@ -1796,9 +1874,9 @@ public class SyntaxUtils
 			return true;
 		}
 		
-		if (required.getTypeClassLocation().equals(Nova.getClassLocation("Char")) && required.getArrayDimensions() == 1 && given.getTypeClassLocation().equals(Nova.getClassLocation("String")))
+		if (required.getTypeClassLocation() == null || given.getTypeClassLocation() == null)
 		{
-			return true;
+			return false;
 		}
 		
 		return false;
@@ -1885,10 +1963,13 @@ public class SyntaxUtils
 		
 		for (int i = 0; i < types1.length; i++)
 		{
-			String type1 = types1[i].getType();
-			String type2 = types2[i].getType();
+			Value  value1 = types1[i];
+			Value  value2 = types2[i];
 			
-			if (!type1.equals(type2))
+			String type1  = types1[i].getType();
+			String type2  = types2[i].getType();
+			
+			if (!type1.equals(type2) || value1.getArrayDimensions() != value2.getArrayDimensions())
 			{
 				return false;
 			}
@@ -1899,11 +1980,21 @@ public class SyntaxUtils
 	
 	public static boolean isAbsoluteClassLocation(String location)
 	{
+		if (location == null)
+		{
+			return false;
+		}
+		
 		return location.contains("/");
 	}
 	
 	public static String getClassName(String classLocation)
 	{
+		if (classLocation == null)
+		{
+			return null;
+		}
+		
 		int lastIndex = classLocation.lastIndexOf('/') + 1;
 		
 		return classLocation.substring(lastIndex);
