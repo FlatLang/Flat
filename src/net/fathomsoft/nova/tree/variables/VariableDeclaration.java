@@ -2,6 +2,7 @@ package net.fathomsoft.nova.tree.variables;
 
 import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.TestContext;
+import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.tree.GenericCompatible;
 import net.fathomsoft.nova.tree.GenericType;
@@ -19,7 +20,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.2.4 May 2, 2014 at 11:14:37 PM
- * @version	v0.2.34 Oct 1, 2014 at 9:51:33 PM
+ * @version	v0.2.35 Oct 5, 2014 at 11:22:42 PM
  */
 public class VariableDeclaration extends IIdentifier implements GenericCompatible
 {
@@ -89,6 +90,15 @@ public class VariableDeclaration extends IIdentifier implements GenericCompatibl
 		}
 		
 		return external;
+	}
+	
+	/**
+	 * @see net.fathomsoft.nova.tree.Node#isWithinExternalContext()
+	 */
+	@Override
+	public boolean isWithinExternalContext()
+	{
+		return isExternal() || super.isWithinExternalContext();
 	}
 	
 	/**
@@ -431,17 +441,28 @@ public class VariableDeclaration extends IIdentifier implements GenericCompatibl
 	 * @see net.fathomsoft.nova.tree.Node#validate(int)
 	 */
 	@Override
-	public Node validate(int phase)
+	public ValidationResult validate(int phase)
 	{
+		ValidationResult result = super.validate(phase);
+		
+		if (result.errorOccurred)
+		{
+			return result;
+		}
+		
 		if (phase == SyntaxTree.PHASE_INSTANCE_DECLARATIONS)
 		{
 			if (getType() != null && !setType(getType(), false, true))
 			{
-				SyntaxMessage.error("Type '" + getType() + "' does not exist", this);
+				SyntaxMessage.error("Type '" + getType() + "' does not exist", this, false);
+				
+				result.errorOccurred = true;
+				
+				return result;
 			}
 		}
 		
-		return super.validate(phase);
+		return result;
 	}
 	
 	/**
