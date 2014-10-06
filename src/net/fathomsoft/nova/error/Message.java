@@ -11,7 +11,7 @@ import net.fathomsoft.nova.util.Location;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:28:08 PM
- * @version	v0.2.32 Sep 26, 2014 at 12:17:33 PM
+ * @version	v0.2.35 Oct 5, 2014 at 11:22:42 PM
  */
 public class Message
 {
@@ -90,7 +90,7 @@ public class Message
 			info += " - in file \"" + file.getFile().getName() + '"';
 			info += " on line number " + lineNumber + " at offset " + loc.getOffset() + " [" + loc.getStart() + ", " + loc.getEnd() + "]";
 		}
-
+		
 		if (type == MESSAGE)
 		{
 			controller.log(info);
@@ -106,7 +106,7 @@ public class Message
 		
 		if (throwException)
 		{
-			throw new SyntaxErrorException(info);
+			throw new SyntaxErrorException(info, type);
 		}
 	}
 }
