@@ -20,7 +20,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.2.1 Apr 29, 2014 at 8:04:48 PM
- * @version	v0.2.33 Sep 29, 2014 at 10:29:33 AM
+ * @version	v0.2.35 Oct 5, 2014 at 11:22:42 PM
  */
 public class TreeGenerator implements Runnable
 {
@@ -475,9 +475,13 @@ public class TreeGenerator implements Runnable
 				{
 					parentStack.push(ClassDeclaration.generateTemporaryClass(parent, location));
 				}
-				else
+				else if (parent.getParentMethod(true) == null)
 				{
 					parentStack.push(BodyMethodDeclaration.generateTemporaryMethod(parent, location));
+				}
+				else
+				{
+					parentStack.push(Scope.generateEmptyScope(parent, location));
 				}
 			}
 			else if (skipScopes)
