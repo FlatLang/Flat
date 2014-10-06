@@ -14,9 +14,9 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.2.4 May 2, 2014 at 11:14:37 PM
- * @version	v0.2.34 Oct 1, 2014 at 9:51:33 PM
+ * @version	v0.2.35 Oct 5, 2014 at 11:22:42 PM
  */
-public abstract class Value extends Node
+public abstract class Value extends Node implements AbstractValue
 {
 	public static final byte	VALUE = 1, POINTER = 2, REFERENCE = 3;
 	
@@ -28,6 +28,29 @@ public abstract class Value extends Node
 	public Value(Node temporaryParent, Location locationIn)
 	{
 		super(temporaryParent, locationIn);
+	}
+	
+	/**
+	 * Generate a IValue instance from the given type.
+	 * 
+	 * @param temporaryParent The temporary parent of the new Node.
+	 * @param locationIn The location of the new Node.
+	 * @param type The type to set for the Value.
+	 * @param require Whether or not a successful decode is required.
+	 * @return The generated IValue instance.
+	 */
+	public static IValue generateFromType(Node temporaryParent, Location locationIn, String type, boolean require)
+	{
+		IValue value = new IValue(temporaryParent, locationIn);
+		
+		if (!value.setType(type, require, true))
+		{
+			// We already know that it is not required because if it was,
+			// it would have thrown an exception and never reached here.
+			return null;
+		}
+		
+		return value;
 	}
 	
 	/**
@@ -316,7 +339,7 @@ public abstract class Value extends Node
 		}
 		else
 		{
-			type = SyntaxUtils.getPrimitiveWrapperClassName(getType());
+			type = SyntaxUtils.getPrimitiveNovaType(getType());
 		}
 		
 		FileDeclaration file = getFileDeclaration();
@@ -531,7 +554,7 @@ public abstract class Value extends Node
 	 * 
 	 * @return The generated null output.
 	 */
-	public StringBuilder generateCNullOutput()
+	public final StringBuilder generateCNullOutput()
 	{
 		return generateCNullOutput(new StringBuilder());
 	}
@@ -547,7 +570,7 @@ public abstract class Value extends Node
 		return generateCTypeCast(builder).append(NULL_IDENTIFIER);
 	}
 	
-	public StringBuilder generateCTypeClassName()
+	public final StringBuilder generateCTypeClassName()
 	{
 		return generateCTypeClassName(new StringBuilder());
 	}
@@ -580,7 +603,7 @@ public abstract class Value extends Node
 	 * 
 	 * @return The C syntax for the type of the Value.
 	 */
-	public StringBuilder generateCType()
+	public final StringBuilder generateCType()
 	{
 		return generateCType(new StringBuilder());
 	}
@@ -591,7 +614,7 @@ public abstract class Value extends Node
 	 * @param builder The StringBuider to append the data to.
 	 * @return The C syntax for the type of the Value.
 	 */
-	public StringBuilder generateCType(StringBuilder builder)
+	public final StringBuilder generateCType(StringBuilder builder)
 	{
 		return generateCType(builder, true);
 	}
@@ -605,26 +628,7 @@ public abstract class Value extends Node
 	 */
 	public StringBuilder generateCType(StringBuilder builder, boolean checkArray)
 	{
-		if (getType() == null)
-		{
-			builder.append("void");
-		}
-		else if (getType().equals("long"))
-		{
-			builder.append("long_long");
-		}
-		else if (getType().equals("bool"))
-		{
-			builder.append("char");
-		}
-		else if (getType().equals("byte"))
-		{
-			builder.append("char");
-		}
-		else
-		{
-			generateCTypeClassName(builder);
-		}
+		generateCTypeName(builder);
 		
 		if (isReference())
 		{
@@ -649,6 +653,38 @@ public abstract class Value extends Node
 //		{
 //			builder.append('*');
 //		}
+		
+		return builder;
+	}
+	
+	public StringBuilder generateCTypeName(StringBuilder builder)
+	{
+		String type = getType();
+		
+		if (type == null)
+		{
+			builder.append("void");
+		}
+		else if (type.equals("long"))
+		{
+			builder.append("long_long");
+		}
+		else if (type.equals("bool"))
+		{
+			builder.append("char");
+		}
+		else if (type.equals("byte"))
+		{
+			builder.append("char");
+		}
+		else if (SyntaxUtils.isPrimitiveType(type))
+		{
+			builder.append(SyntaxUtils.getPrimitiveExternalType(type));
+		}
+		else
+		{
+			generateCTypeClassName(builder);
+		}
 		
 		return builder;
 	}
@@ -778,6 +814,11 @@ public abstract class Value extends Node
 		return getGenericType() != null;
 	}
 	
+	public boolean isPrimitiveGenericType()
+	{
+		return isGenericType() && SyntaxUtils.isPrimitiveType(getGenericReturnType());
+	}
+	
 	public String getGenericReturnType()
 	{
 		throw new UnimplementedOperationException("The getGenericReturnType() method must be implemented by class " + this.getClass().getName());
@@ -788,84 +829,6 @@ public abstract class Value extends Node
 	{
 		throw new UnimplementedOperationException("The getGenericDeclaration() method must be implemented by class " + this.getClass().getName());
 	}
-	
-	/**
-	 * Get the type that the statement returns. For an example of what a
-	 * value type looks like, see {@link #setType(String)}
-	 * 
-	 * @return The type that the statement returns.
-	 */
-	public abstract String getType();
-	
-	/**
-	 * Get the amount of dimensions that the array has, if any. For an
-	 * example of what a array declarations and dimensions look like
-	 * {@link #setArrayDimensions(int)}
-	 * 
-	 * @return The amount of dimensions that the array has, if any.
-	 */
-	public abstract int getArrayDimensions();
-	
-	/**
-	 * Set the amount of dimensions that the array has, if any.<br>
-	 * <br>
-	 * For example:
-	 * <blockquote><pre>
-	 * int array[][][];</pre></blockquote>
-	 * In the previous example, the variable "array" has three dimensions.
-	 * 
-	 * @param arrayDimensions The amount of dimensions that the array has,
-	 * 		if any.
-	 */
-	public abstract void setArrayDimensions(int arrayDimensions);
-	
-	/**
-	 * Set the type that this statement returns.<br>
-	 * <br>
-	 * For example:
-	 * <blockquote><pre>
-	 * private static int index;</pre></blockquote>
-	 * The type of the variable returns is "int"
-	 * 
-	 * @param type The type that this statement returns.
-	 * @param require Whether or not to throw an error if anything goes
-	 * 		wrong.
-	 * @param checkType Whether or not to check if the type is valid.
-	 * @param checkDataType Whether or not to check the data type of
-	 * 		the given type.
-	 * @return Whether or not the type was set successfully.
-	 */
-	public abstract boolean setType(String type, boolean require, boolean checkType, boolean checkDataType);
-	
-	/**
-	 * Get whether or not the identifier is a value, pointer, or
-	 * reference.<br>
-	 * <br>
-	 * Possible values include:
-	 * <ul>
-	 * 	<li><b>Variable.VALUE</b> - If the variable type simply refers to a value.</li>
-	 * 	<li><b>Variable.POINTER</b> - If the variable type is a pointer.</li>
-	 * 	<li><b>Variable.REFERENCE</b> - If the variable type is a reference.</li>
-	 * </ul>
-	 * 
-	 * @return The data type that the variable is.
-	 */
-	public abstract byte getDataType();
-	
-	/**
-	 * Set whether or not the identifier is a value, pointer, or
-	 * reference.<br>
-	 * <br>
-	 * Possible values include:
-	 * <ul>
-	 * 	<li><b>Variable.VALUE</b> - If the variable type simply refers to a value.</li>
-	 * 	<li><b>Variable.POINTER</b> - If the variable type is a pointer.</li>
-	 * 	<li><b>Variable.REFERENCE</b> - If the variable type is a reference.</li>
-	 * </ul>
-	 * 
-	 * @param type The data type that the variable is.
-	 */
-	public abstract void setDataType(byte type);
 	
 	/**
 	 * Test the Value class type to make sure everything
