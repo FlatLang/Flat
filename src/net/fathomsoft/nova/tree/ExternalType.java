@@ -14,7 +14,7 @@ import net.fathomsoft.nova.util.StringUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.2.4 May 8, 2014 at 6:55:51 PM
- * @version	v0.2.29 Aug 29, 2014 at 3:17:45 PM
+ * @version	v0.2.35 Oct 5, 2014 at 11:22:42 PM
  */
 public class ExternalType extends IValue
 {
@@ -24,6 +24,15 @@ public class ExternalType extends IValue
 	public ExternalType(Node temporaryParent, Location locationIn)
 	{
 		super(temporaryParent, locationIn);
+	}
+	
+	/**
+	 * @see net.fathomsoft.nova.tree.Node#isWithinExternalContext()
+	 */
+	@Override
+	public boolean isWithinExternalContext()
+	{
+		return true;
 	}
 	
 	/**
