@@ -9,8 +9,8 @@ package "nova/standard/datastruct"
  */
 public class Bounds
 {
-	public int start
-	public int end
+	public Int start
+	public Int end
 	
 	/**
 	 * Create a Bounds instance with the specified start and
@@ -19,7 +19,7 @@ public class Bounds
 	 * @param start The start location of the Bound.
 	 * @param end The end location of the Bound.
 	 */
-	public construct(int start, int end)
+	public construct(Int start, Int end)
 	{
 		this.start = start
 		this.end   = end
@@ -78,7 +78,7 @@ public class Bounds
 	 * 
 	 * @return Whether or not the bounds will search endlessly.
 	 */
-	public isEndless() -> bool
+	public isEndless() -> Bool
 	{
 		return end < 0
 	}
@@ -88,7 +88,7 @@ public class Bounds
 	 * 
 	 * @return Whether or not the bounds will search optionally.
 	 */
-	public isOptional() -> bool
+	public isOptional() -> Bool
 	{
 		return start == 0
 	}
@@ -98,7 +98,7 @@ public class Bounds
 	 * 
 	 * @return The length of the Bounds.
 	 */
-	public length() -> int
+	public length() -> Int
 	{
 		return end - start
 	}
@@ -109,7 +109,7 @@ public class Bounds
 	 * 
 	 * @return Whether or not the Bounds is valid.
 	 */
-	public isValid() -> bool
+	public isValid() -> Bool
 	{
 		return start >= 0 && end > 0
 	}
@@ -126,7 +126,7 @@ public class Bounds
 	 * @param bounds The Bounds to check against.
 	 * @return Whether or not the two Bounds have equal values.
 	 */
-	public equals(Bounds bounds) -> bool
+	public equals(Bounds bounds) -> Bool
 	{
 		return bounds != null && bounds.start == start && bounds.end == end
 	}
@@ -145,7 +145,7 @@ public class Bounds
 	}
 	
 	/**
-	 * Clone the values from the specified Bounds instance into the given
+	 * Clone the values from the specified Bounds instance Into the given
 	 * Bounds instance. This overwrites the existing values in the given
 	 * Bounds instance in favor for the specified Bounds's values.
 	 * 
@@ -158,7 +158,7 @@ public class Bounds
 	}
 	
 	/**
-	 * Clone the specified Bounds's values into a brand spankin' new
+	 * Clone the specified Bounds's values Into a brand spankin' new
 	 * Bounds instance.
 	 * 
 	 * @see java.lang.Object#clone()

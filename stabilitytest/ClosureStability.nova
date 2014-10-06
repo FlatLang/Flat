@@ -2,9 +2,9 @@ package "stabilitytest"
 
 public class ClosureStability
 {
-	static double TOLERANCE
+	static Double TOLERANCE
 	
-	int	number
+	Int	number
 	
 	incrementNumber()
 	{
@@ -30,22 +30,22 @@ public class ClosureStability
 	{
 		Console.write("Testing static math closures... ")
 		
-		int a = 5
-		int b = 3
+		Int a = 5
+		Int b = 3
 		
-		double value = 0.5
+		Double value = 0.5
 		
 		if (callClosure(multiply, a, b) != multiply(a, b))
-			program.fail("Failed to call multiply(int, int) closure")
+			program.fail("Failed to call multiply(Int, Int) closure")
 			
 		if (callClosure(pow, a, b) != pow(a, b))
-			program.fail("Failed to call pow(int, int) closure")
+			program.fail("Failed to call pow(Int, Int) closure")
 			
 		if (mathClosure(Math.sin, value) - Math.sin(value) >= TOLERANCE)
-			program.fail("Failed to call Math.sin(double) closure")
+			program.fail("Failed to call Math.sin(Double) closure")
 			
 		if (mathClosure(Math.tan, value) - Math.tan(value) >= TOLERANCE)
-			program.fail("Failed to call Math.tan(double) closure")
+			program.fail("Failed to call Math.tan(Double) closure")
 		
 		Console.writeLine("OK")
 	}
@@ -69,12 +69,12 @@ public class ClosureStability
 		Console.writeLine("OK")
 	}
 	
-	static callClosure(closure(int, int) -> int, int a, int b) -> int
+	static callClosure(closure(Int, Int) -> Int, Int a, Int b) -> Int
 	{
 		return closure(a, b)
 	}
 	
-	static mathClosure(closure(double) -> double, double value) -> double
+	static mathClosure(closure(Double) -> Double, Double value) -> Double
 	{
 		return closure(value)
 	}
@@ -84,16 +84,16 @@ public class ClosureStability
 		closure()
 	}
 	
-	static multiply(int value1, int value2) -> int
+	static multiply(Int value1, Int value2) -> Int
 	{
 		return value1 * value2
 	}
 	
-	static pow(int base, int pow) -> int
+	static pow(Int base, Int pow) -> Int
 	{
-		int value = base
+		Int value = base
 		
-		for (int i = 0; i < pow - 1; i++)
+		for (Int i = 0; i < pow - 1; i++)
 		{
 			value = value * base
 		}

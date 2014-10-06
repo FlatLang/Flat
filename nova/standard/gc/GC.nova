@@ -24,27 +24,27 @@ public class GC
 //		setFreeSpaceDivisor(1)
 	}
 	
-	public static getFreeBytes() -> long
+	public static getFreeBytes() -> Long
 	{
 		return GC_get_free_bytes()
 	}
 	
-	public static getTotalBytes() -> long
+	public static getTotalBytes() -> Long
 	{
 		return GC_get_total_bytes()
 	}
 	
-	public static getHeapSize() -> long
+	public static getHeapSize() -> Long
 	{
 		return GC_get_heap_size()
 	}
 	
-	public static getBytesSinceGC() -> long
+	public static getBytesSinceGC() -> Long
 	{
 		return GC_get_bytes_since_gc()
 	}
 	
-//	public static setFreeSpaceDivisor(int divisor)
+//	public static setFreeSpaceDivisor(Int divisor)
 //	{
 //		GC_free_space_divisor = divisor
 //	}

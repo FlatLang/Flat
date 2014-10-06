@@ -6,7 +6,7 @@ public class Time
 {
 	external long currentTimeMillis() as extCurrentTimeMillis
 	
-	public static currentTimeMillis() -> long
+	public static currentTimeMillis() -> Long
 	{
 		return extCurrentTimeMillis()
 	}

@@ -13,12 +13,12 @@ public class Date
 	external int nova_getMinute()
 	external int nova_getSecond()
 	
-	public int year
-	public int month
-	public int day
-	public int hour
-	public int minute
-	public int second
+	public Int year
+	public Int month
+	public Int day
+	public Int hour
+	public Int minute
+	public Int second
 	
 //	static HashMap<String,  
 	
@@ -49,9 +49,9 @@ public class Date
 		formatDate(str, month, day, year, hour, minute, second)
 	}
 	
-	public formatDate(String str, int first, int second, int third, int fourth, int fifth, int sixth) -> String
+	public formatDate(String str, Int first, Int second, Int third, Int fourth, Int fifth, Int sixth) -> String
 	{
-		char data[] = nova_formatDate(str.toCharArray(), first, second, third, fourth, fifth, sixth)
+		Char data[] = nova_formatDate(str.toCharArray(), first, second, third, fourth, fifth, sixth)
 		
 		return new String(data)
 	}

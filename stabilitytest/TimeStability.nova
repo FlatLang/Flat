@@ -9,11 +9,11 @@ public class TimeStability
 	{
 		Console.write("Checking Time.nova... ")
 		
-		long start = Time.currentTimeMillis()
+		Long start = Time.currentTimeMillis()
 		
 		Thread.sleep(100)
 		
-		long time = Time.currentTimeMillis() - start
+		Long time = Time.currentTimeMillis() - start
 		
 		if (time >= 100 && time < 130)
 		{

@@ -2,12 +2,12 @@ package "nova/standard/database"
 
 public class ResultSet
 {
-	visible int numRows
-	visible int numCols
+	visible Int numRows
+	visible Int numCols
 	
 	visible String rows[][]
 	
-	public construct(String rows[][], int numRows, int numCols)
+	public construct(String rows[][], Int numRows, Int numCols)
 	{
 		this.rows = rows;
 		

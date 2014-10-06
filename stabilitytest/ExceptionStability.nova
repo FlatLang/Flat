@@ -6,7 +6,7 @@ public class ExceptionStability
 	{
 		Console.write("Checking Exception handling... ")
 		
-		bool worked = false
+		Bool worked = false
 		
 		try
 		{
@@ -27,14 +27,14 @@ public class ExceptionStability
 	
 	static testException(StabilityTest program)
 	{
-		bool worked = false
+		Bool worked = false
 		
 		try
 		{
 			try
 			{
-				int den = 0
-				int i   = 43 / den
+				Int den = 0
+				Int i   = 43 / den
 			}
 			catch (DivideByZeroException e)
 			{

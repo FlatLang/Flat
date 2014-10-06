@@ -22,9 +22,9 @@ public class ExceptionData
 		codes    = new ArrayList()
 	}
 	
-	public addCode(int code)
+	public addCode(Int code)
 	{
-		codes.add(new Int(code))
+		codes.add(code)
 	}
 	
 	public getBuffer() -> buffer
@@ -32,7 +32,7 @@ public class ExceptionData
 		return buf
 	}
 	
-	public getCorrectData(int code) -> ExceptionData
+	public getCorrectData(Int code) -> ExceptionData
 	{
 		ExceptionData data = this
 		
@@ -40,9 +40,9 @@ public class ExceptionData
 		{
 			ArrayList<Int> list = data.codes
 			
-			for (int i = 0; i < list.size; i++)
+			for (Int i = 0; i < list.size; i++)
 			{
-				if (list.get(i).value == code)
+				if (list.get(i) == code)
 				{
 					return data
 				}
@@ -59,7 +59,7 @@ public class ExceptionData
 		return 0
 	}
 	
-	public getCorrectBuffer(int code) -> buffer
+	public getCorrectBuffer(Int code) -> buffer
 	{
 		ExceptionData data = getCorrectData(code)
 		
@@ -71,7 +71,7 @@ public class ExceptionData
 		return data.getBuffer()
 	}
 	
-	public jumpToBuffer(int code)
+	public jumpToBuffer(Int code)
 	{
 		ExceptionData data = getCorrectData(code)
 		

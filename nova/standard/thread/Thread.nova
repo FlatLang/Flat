@@ -22,7 +22,7 @@ public class Thread
 		lib_nova_thread_join(handle)
 	}
 	
-	public static sleep(long millis)
+	public static sleep(Long millis)
 	{
 		lib_nova_thread_sleep(millis)
 	}

@@ -4,11 +4,11 @@ import "nova/standard/io/File"
 
 public class SVGCircle extends SVGComponent
 {
-	visible double x
-	visible double y
-	visible int r
+	visible Double x
+	visible Double y
+	visible Int r
 	
-	public construct(double x, double y, int r)
+	public construct(Double x, Double y, Int r)
 	{
 		this.x = x
 		this.y = y

@@ -4,9 +4,9 @@ public class ArrayList<E>
 {
 	external void arrayCopy(E dest[], int dIndex, E src[], int sIndex, int len, int destArrLen, int size)
 	
-	int	bufferSize
+	Int	bufferSize
 	
-	visible int	size
+	visible Int	size
 	
 	E[] data
 	
@@ -38,7 +38,7 @@ public class ArrayList<E>
 		data = tmp
 	}
 	
-	public get(int index) -> E
+	public get(Int index) -> E
 	{
 		return data[index]
 	}

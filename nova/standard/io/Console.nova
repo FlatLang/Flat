@@ -2,7 +2,7 @@ package "nova/standard/io"
 
 import "stdio.h"
 import "stdlib.h"
-//import "nova/standard/io/NativeConsole.h"
+import "nova/standard/io/NativeConsole.h"
 
 public class Console
 {
@@ -19,7 +19,8 @@ public class Console
 	external char getchar()
 	external int atoi(char array[])
 	external char[] ufgets(FILE* stream)
-	external char[] nova_getPass(char message[])
+	external void nova_setEcho(Bool echo)
+	external void nova_clearScreen()
 	
 	public static writeLine(String text)
 	{
@@ -31,44 +32,44 @@ public class Console
 		writeLine(obj.toString())
 	}
 	
-	public static writeLine(double num)
+	public static writeLine(Double num)
 	{
 		writeLine(Double.toString(num))
 	}
 	
-	public static writeLine(float num)
+	public static writeLine(Float num)
 	{
 		writeLine(Double.toString(num))
 	}
 	
-	public static writeLine(long num)
+	public static writeLine(Long num)
 	{
 		writeLine(Long.toString(num))
 	}
 	
-	public static writeLine(int num)
+	public static writeLine(Int num)
 	{
 		writeLine(Int.toString(num))
 	}
 	
-	public static writeLine(short num)
+	public static writeLine(Short num)
 	{
 		writeLine(Int.toString(num))
 	}
 	
-	public static writeLine(byte num)
+	public static writeLine(Byte num)
 	{
 		writeLine(Byte.toString(num))
 	}
 	
-	public static writeLine(char c)
+	public static writeLine(Char c)
 	{
 		writeLine(Char.toString(c))
 	}
 	
 	public static write(String text)
 	{
-		char cText[] = text.toCharArray()
+		Char cText[] = text.toCharArray()
 		
 		fputs(cText, stdout)
 	}
@@ -78,51 +79,51 @@ public class Console
 		write(obj.toString())
 	}
 	
-	public static write(double num)
+	public static write(Double num)
 	{
 		write(Double.toString(num))
 	}
 	
-	public static write(float num)
+	public static write(Float num)
 	{
 		write(Double.toString(num))
 	}
 	
-	public static write(long num)
+	public static write(Long num)
 	{
 		write(Long.toString(num))
 	}
 	
-	public static write(int num)
+	public static write(Int num)
 	{
 		write(Int.toString(num))
 	}
 	
-	public static write(short num)
+	public static write(Short num)
 	{
 		write(Int.toString(num))
 	}
 	
-	public static write(byte num)
+	public static write(Byte num)
 	{
 		write(Byte.toString(num))
 	}
 	
-	public static write(char c)
+	public static write(Char c)
 	{
 		write(Char.toString(c))
 	}
 	
-	public static readInt() -> int
+	public static readInt() -> Int
 	{
 		String s = readLine()
 		
 		return Int.parseInt(s)
 	}
 	
-	public static readDouble() -> double
+	public static readDouble() -> Double
 	{
-//		double num
+//		Double num
 		
 //		scanf("%lf", num)
 //		flush()
@@ -130,9 +131,9 @@ public class Console
 		return Double.parseDouble(s)
 	}
 	
-	public static readChar() -> char
+	public static readChar() -> Char
 	{
-		char c = getchar()
+		Char c = getchar()
 		
 		flush()
 		
@@ -146,23 +147,41 @@ public class Console
 	
 	public static readLine() -> String
 	{
-		char line[] = ufgets(stdin)
+		Char line[] = ufgets(stdin)
 		
 		String s = new String(line)
 		
 		return s
 	}
 	
-//	public static readPassword(String message) -> String
-//	{
-//		return new String(nova_getPass(message.toCharArray()))
-//	}
+	public static readPassword() -> String
+	{
+		setEcho(false)
+		
+		String pass = readLine()
+		
+		setEcho(true)
+		
+		write("\n")
+		
+		return pass
+	}
+	
+	public static setEcho(Bool echo)
+	{
+		nova_setEcho(echo)
+	}
+	
+	public static clearScreen()
+	{
+		nova_clearScreen()
+	}
 	
 	public static waitForEnter()
 	{
 		flush()
 		
-		char c[] = new char[2]
+		Char c[] = new Char[2]
 		
 		fgets(c, 2, stdin)
 	}

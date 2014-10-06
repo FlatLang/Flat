@@ -20,7 +20,6 @@ public class HashMap<K, V>
 	
 	public put(K key, V value)
 	{
-		Console.writeLine("Adding " + value + " at " + key.getHashCodeLong())
 		hashmapInsert(map, value, key.getHashCodeLong())
 	}
 	

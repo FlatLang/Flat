@@ -7,7 +7,7 @@ public class FileStability
 {
 	static String inputString
 	
-	static int lines
+	static Int lines
 	
 	public static test(StabilityTest program)
 	{
@@ -47,7 +47,7 @@ public class FileStability
 	{
 		Console.write("Writing " + lines + " lines of data to file... ")
 		
-		for (int i = 0; i < lines; i++)
+		for (Int i = 0; i < lines; i++)
 		{
 			f.writeLine(inputString)
 		}
@@ -61,7 +61,7 @@ public class FileStability
 		
 		f.reopen()
 		
-		int    times = 0
+		Int    times = 0
 		String line  = f.readLine()
 		
 		while (line != null)

@@ -17,74 +17,74 @@ public class Math
 	external long ceil(double number) as extCeil
 	external long rand() as extRand
 	
-	visible static double PI = 3.141592653
+	visible static Double PI = 3.141592653
 	
-	public static random(long range) -> int
+	public static random(Long range) -> Int
 	{
 		return extRand() % range
 	}
 	
-	public static abs(double number) -> double
+	public static abs(Double number) -> Double
 	{
 		return extAbs(number)
 	}
 	
-	public static sqrt(double number) -> double
+	public static sqrt(Double number) -> Double
 	{
 		return extSqrt(number)
 	}
 	
-	public static pow(double base, double power) -> double
+	public static pow(Double base, Double power) -> Double
 	{
 		return extPow(base, power)
 	}
 	
-	public static sin(double number) -> double
+	public static sin(Double number) -> Double
 	{
 		return extSin(number)
 	}
 	
-	public static cos(double number) -> double
+	public static cos(Double number) -> Double
 	{
 		return extCos(number)
 	}
 	
-	public static tan(double number) -> double
+	public static tan(Double number) -> Double
 	{
 		return extTan(number)
 	}
 	
-	public static asin(double number) -> double
+	public static asin(Double number) -> Double
 	{
 		return extAsin(number)
 	}
 	
-	public static acos(double number) -> double
+	public static acos(Double number) -> Double
 	{
 		return extAcos(number)
 	}
 	
-	public static atan(double number) -> double
+	public static atan(Double number) -> Double
 	{
 		return extAtan(number)
 	}
 	
-	public static round(double number) -> long
+	public static round(Double number) -> Long
 	{
 		return floor(number + 0.5)
 	}
 	
-	public static floor(double number) -> long
+	public static floor(Double number) -> Long
 	{
 		return extFloor(number)
 	}
 	
-	public static ceil(double number) -> long
+	public static ceil(Double number) -> Long
 	{
 		return extCeil(number)
 	}
 	
-	/*static pow(int a, int b) -> int
+	/*static pow(Int a, Int b) -> Int
 	{
 		if (b == 0)
 		{
@@ -100,9 +100,9 @@ public class Math
 		}
 	}
 	
-	static positivePow(int a, int b) -> int
+	static positivePow(Int a, Int b) -> Int
 	{
-		for (int i = b - 2; i >= 0; i--)
+		for (Int i = b - 2; i >= 0; i--)
 		{
 			a = a * a
 		}

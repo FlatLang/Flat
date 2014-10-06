@@ -14,21 +14,21 @@ public class System
 	
 	external void exit(int code) as externalExit
 	external int system(char command[])
-	external FILE* getPipe(char command[], exit(int, String, bool))
+	external FILE* getPipe(char command[], exit(Int, String, Bool))
 	external bool fgets(char buffer[], int length, FILE* pipe)
 	external bool feof(FILE* pipe)
 	
-	public static exit(int code)
+	public static exit(Int code)
 	{
 		externalExit(code)
 	}
 	
-	public static exit(int code, String message)
+	public static exit(Int code, String message)
 	{
 		exit(code, message, false)
 	}
 	
-	public static exit(int code, String message, bool log)
+	public static exit(Int code, String message, Bool log)
 	{
 		if (log)
 		{

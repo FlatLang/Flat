@@ -18,9 +18,9 @@ public class SyntaxStability
 	{
 		Console.write("Checking inline while loop... ")
 		
-		int num  = 0
-		int num2 = 0
-		int num3 = 0
+		Int num  = 0
+		Int num2 = 0
+		Int num3 = 0
 		
 		while (num < 100) num++
 		
@@ -46,16 +46,16 @@ public class SyntaxStability
 	{
 		Console.write("Checking inline for loop... ")
 		
-		int num  = 0
-		int num2 = 0
-		int num3 = 0
+		Int num  = 0
+		Int num2 = 0
+		Int num3 = 0
 		
-		for (int i = 0; i < 100; i++) num++
+		for (Int i = 0; i < 100; i++) num++
 		
-		for (int i = 0; i < 100; i++)
+		for (Int i = 0; i < 100; i++)
 			num2++
 		
-		for (int i = 0; i < 100; i++)
+		for (Int i = 0; i < 100; i++)
 			if (true)
 				if (true)
 				{

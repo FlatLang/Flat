@@ -2,19 +2,29 @@ package "nova/standard"
 
 public class String
 {
-	visible int   length
+	visible Int   length
 	
-	char[]        data
+	Char[]        data
 	
-	static int    whitespaceLength = 4
-	static char[] whitespace       = [ ' ', '\t', '\n', '\r' ]
+	static Int    whitespaceLength = 4
+	static Char[] whitespace       = [ ' ', '\t', '\n', '\r' ]
 	
 	external void strcpy(char dst[], char src[])
 	external void strcat(char dst[], char src[])
 	external int strlen(char data[])
 	external void memcpy(char dst[], char* src[], int length)
 	
-	public construct(char data[])
+	public construct(Char c)
+	{
+		Char data[] = new Char[2]
+		
+		data[0] = c
+		data[1] = '\0'
+		
+		this(data)
+	}
+	
+	public construct(Char data[])
 	{
 		this.data = data
 		
@@ -32,12 +42,12 @@ public class String
 //		}
 	}
 	
-	calculateLength() -> int
+	calculateLength() -> Int
 	{
 		return strlen(data)
 	}
 	
-	public toCharArray() -> char[]
+	public toCharArray() -> Char[]
 	{
 		return data
 	}
@@ -46,9 +56,9 @@ public class String
 	{
 		str = str.toString()
 		
-		int size = str.length + length + 1
+		Int size = str.length + length + 1
 		
-		char newData[] = new char[size]
+		Char newData[] = new Char[size]
 		
 		strcpy(newData, data)
 		strcat(newData, str.toCharArray())
@@ -60,14 +70,14 @@ public class String
 		return newStr
 	}
 	
-	public equals(String other) -> bool
+	public equals(String other) -> Bool
 	{
 		if (length != other.length)
 		{
 			return false
 		}
 		
-		for (int i = 0; i < length; i++)
+		for (Int i = 0; i < length; i++)
 		{
 			if (data[i] != other.data[i])
 			{
@@ -78,13 +88,13 @@ public class String
 		return true
 	}
 	
-	indexOf(String search, int start, int direction) -> int
+	indexOf(String search, Int start, Int direction) -> Int
 	{
-		for (int i = start; i < length && i >= 0; i = i + direction)
+		for (Int i = start; i < length && i >= 0; i = i + direction)
 		{
-			bool found = true
+			Bool found = true
 					
-			for (int j = 0; j < search.length && i + j < length && found; j++)
+			for (Int j = 0; j < search.length && i + j < length && found; j++)
 			{
 				if (search.data[j] != data[i + j])
 				{
@@ -108,22 +118,22 @@ public class String
 		return -1
 	}
 	
-	public indexOf(String search) -> int
+	public indexOf(String search) -> Int
 	{
 		return indexOf(search, 0, 1)
 	}
 	
-	public indexOf(String search, int start) -> int
+	public indexOf(String search, Int start) -> Int
 	{
 		return indexOf(search, start, 1)
 	}
 	
-	public lastIndexOf(String search) -> int
+	public lastIndexOf(String search) -> Int
 	{
 		return indexOf(search, length - 1, -1)
 	}
 	
-	public substring(int start, int end) -> String
+	public substring(Int start, Int end) -> String
 	{
 		if (end - start == 0)
 		{
@@ -134,7 +144,7 @@ public class String
 			throw new Exception()
 		}
 		
-		char buf[] = new char[end - start + 1]
+		Char buf[] = new Char[end - start + 1]
 		
 		memcpy(buf, data[start], end - start)
 		
@@ -143,25 +153,25 @@ public class String
 		return new String(buf)
 	}
 	
-	public substring(int start) -> String
+	public substring(Int start) -> String
 	{
 		return substring(start, length)
 	}
 	
-	public lastChar() -> char
+	public lastChar() -> Char
 	{
-		return charAt(length - 1)
+		return CharAt(length - 1)
 	}
 	
-	public charAt(int index) -> char
+	public CharAt(Int index) -> Char
 	{
 		return data[index]
 	}
 	
 	public trim() -> String
 	{
-		int start = 0
-		int end   = length - 1
+		Int start = 0
+		Int end   = length - 1
 		
 		while (start < length && containsChar(data[start], whitespace, whitespaceLength))
 		{
@@ -186,11 +196,11 @@ public class String
 		return substring(start, end + 1)
 	}
 	
-	static containsChar(char needle, char chars[], int length) -> bool
+	static containsChar(Char needle, Char Chars[], Int length) -> Bool
 	{
-		for (int i = 0; i < length; i++)
+		for (Int i = 0; i < length; i++)
 		{
-			if (needle == chars[i])
+			if (needle == Chars[i])
 			{
 				return true
 			}

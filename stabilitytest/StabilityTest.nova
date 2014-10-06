@@ -10,9 +10,9 @@ public class StabilityTest
 	{
 		StabilityTest test = new StabilityTest()
 		
-		long start  = Time.currentTimeMillis()
-		int  result = test.runTests()
-		long time   = Time.currentTimeMillis() - start
+		Long start  = Time.currentTimeMillis()
+		Int  result = test.runTests()
+		Long time   = Time.currentTimeMillis() - start
 		
 //		if (args[1].equals("test"))
 //		System.execute("Executable.exe a")
@@ -22,7 +22,7 @@ public class StabilityTest
 		Console.waitForEnter()
 	}
 	
-	public runTests() -> int
+	public runTests() -> Int
 	{
 		try
 		{

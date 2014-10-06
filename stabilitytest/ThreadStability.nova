@@ -17,11 +17,11 @@ public class ThreadStability
 		joinThreads(threads, 20)
 	}
 	
-	static createThreads(StabilityTest program, ThreadImplementation threads[], int amount)
+	static createThreads(StabilityTest program, ThreadImplementation threads[], Int amount)
 	{
 		StabilityExceptionHandler handler = new StabilityExceptionHandler(program)
 		
-		for (int i = 0; i < amount; i++)
+		for (Int i = 0; i < amount; i++)
 		{
 			threads[i] = new ThreadImplementation(10, 10)
 			//threads[i].addUncaughtExceptionHandler(handler)
@@ -35,7 +35,7 @@ public class ThreadStability
 		
 		Console.write("Checking memory access with multi-threading... ")
 		
-		for (int i = 0; i < 1000; i++)
+		for (Int i = 0; i < 1000; i++)
 		{
 			String s = Int.toString(i)
 		}
@@ -43,9 +43,9 @@ public class ThreadStability
 		Console.writeLine("OK")
 	}
 	
-	static joinThreads(ThreadImplementation threads[], int amount)
+	static joinThreads(ThreadImplementation threads[], Int amount)
 	{
-		for (int i = 0; i < amount; i++)
+		for (Int i = 0; i < amount; i++)
 		{
 			threads[i].join()
 		}

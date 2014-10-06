@@ -4,10 +4,10 @@ import "nova/standard/thread/Thread"
 
 public class ThreadImplementation extends Thread
 {
-	int times
-	int millis
+	Int times
+	Int millis
 	
-	public construct(int times, int millis)
+	public construct(Int times, Int millis)
 	{
 		this.times  = times
 		this.millis = millis
@@ -15,7 +15,7 @@ public class ThreadImplementation extends Thread
 	
 	public run()
 	{
-		for (int i = 0; i < times; i++)
+		for (Int i = 0; i < times; i++)
 		{
 			Thread.sleep(millis)
 		}

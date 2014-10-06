@@ -13,7 +13,7 @@ public class WFF
 	
 	String                wff
 	
-	static char[]         whitespace = [ ' ', '\t', '\n', '\r' ]
+	static Char[]         whitespace = [ ' ', '\t', '\n', '\r' ]
 	
 	public construct(String wellFormedFormula, StatementLetter[] letters)
 	{
@@ -42,13 +42,13 @@ public class WFF
 		
 		ArrayList<StatementGroup<Hypothesis>> statements = decodeHypotheses(wff)
 		
-		for (int i = 0; i < statements.size; i++)
+		for (Int i = 0; i < statements.size; i++)
 		{
 			StatementGroup<Hypothesis> group = statements.get(i)
 			
 			hypotheses.add(group.statement)
 		}
-		for (int n = 0; n < hypotheses.size; n++)
+		for (Int n = 0; n < hypotheses.size; n++)
 		{
 			Console.writeLine(hypotheses.get(n))
 		}
@@ -56,7 +56,7 @@ public class WFF
 	
 	searchForConclusion(String wff) -> StatementGroup<Conclusion>
 	{
-		int index = wff.lastIndexOf("->")
+		Int index = wff.lastIndexOf("->")
 		
 		if (index < 0)
 		{
@@ -65,12 +65,12 @@ public class WFF
 		
 		if (wff.lastChar() == ')')
 		{
-			int first = findEndingMatch(wff, '(', ')', wff.length - 1, -1)
+			Int first = findEndingMatch(wff, '(', ')', wff.length - 1, -1)
 			
 			
 		}
 		
-		int conclusionStart = nextNonWhitespaceIndex(wff, index + 2, 1)
+		Int conclusionStart = nextNonWhitespaceIndex(wff, index + 2, 1)
 		
 		Bounds bounds = new Bounds(conclusionStart, wff.length)
 		
@@ -87,10 +87,10 @@ public class WFF
 	{
 		ArrayList<StatementGroup<Hypothesis>> list = new ArrayList()
 		
-		int next = 0
-		int prev = 0
+		Int next = 0
+		Int prev = 0
 		
-		for (int index = wff.indexOf("&"); index >= 0; index = wff.indexOf("&", prev + 1))
+		for (Int index = wff.indexOf("&"); index >= 0; index = wff.indexOf("&", prev + 1))
 		{
 			next = nextNonWhitespaceIndex(wff, index - 1, -1)
 			//next = nextWhitespaceIndex(wff, next + 1, 1)
@@ -105,7 +105,7 @@ public class WFF
 		return list
 	}
 	
-	generateHypothesis(String wff, int start, int end) -> StatementGroup<Hypothesis>
+	generateHypothesis(String wff, Int start, Int end) -> StatementGroup<Hypothesis>
 	{
 		Bounds bounds = new Bounds(start, end)
 		Hypothesis h  = new Hypothesis(bounds.extractString(wff))
@@ -120,21 +120,21 @@ public class WFF
 		return null
 	}
 	
-	static nextNonWhitespaceIndex(String wff, int index, int direction) -> int
+	static nextNonWhitespaceIndex(String wff, Int index, Int direction) -> Int
 	{
 		return nextWhitespaceIndex(wff, index, direction, true)
 	}
 	
-	static nextWhitespaceIndex(String wff, int index, int direction) -> int
+	static nextWhitespaceIndex(String wff, Int index, Int direction) -> Int
 	{
 		return nextWhitespaceIndex(wff, index, direction, false)
 	}
 	
-	static nextWhitespaceIndex(String wff, int index, int direction, bool opposite) -> int
+	static nextWhitespaceIndex(String wff, Int index, Int direction, Bool opposite) -> Int
 	{
-		for (int i = index; i < wff.length && i >= 0; i = i + direction)
+		for (Int i = index; i < wff.length && i >= 0; i = i + direction)
 		{
-			char c = wff.charAt(i)
+			Char c = wff.CharAt(i)
 			
 			if (containsChar(c, whitespace, 4) != opposite)
 			{
@@ -145,11 +145,11 @@ public class WFF
 		return -1
 	}
 	
-	static containsChar(char needle, char chars[], int length) -> bool
+	static containsChar(Char needle, Char Chars[], Int length) -> Bool
 	{
-		for (int i = 0; i < length; i++)
+		for (Int i = 0; i < length; i++)
 		{
-			if (needle == chars[i])
+			if (needle == Chars[i])
 			{
 				return true
 			}
@@ -158,20 +158,20 @@ public class WFF
 		return false
 	}
 	
-	static findEndingMatch(String wff, char start, char end, int index, int direction) -> int
+	static findEndingMatch(String wff, Char start, Char end, Int index, Int direction) -> Int
 	{
 		if (direction < 0)
 		{
-			char temp = start
+			Char temp = start
 			start     = end
 			end       = temp
 		}
 		
-		int scope = 0
+		Int scope = 0
 		
-		for (int i = index; i < wff.length && i >= 0; i = i + direction)
+		for (Int i = index; i < wff.length && i >= 0; i = i + direction)
 		{
-			char c = wff.charAt(i)
+			Char c = wff.CharAt(i)
 			
 			if (c == start)
 			{

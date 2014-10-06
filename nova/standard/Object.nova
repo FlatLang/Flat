@@ -13,7 +13,7 @@ public class Object
 		return new String(hashCode(this))
 	}
 	
-	public getHashCodeLong() -> long
+	public getHashCodeLong() -> Long
 	{
 		return strtol(hashCode(this), 0, 16)
 	}
@@ -23,7 +23,7 @@ public class Object
 		return "[Object @" + getHashCode() + "]"
 	}
 	
-	public equals(Object another) -> bool
+	public equals(Object another) -> Bool
 	{
 		return this == another
 	}

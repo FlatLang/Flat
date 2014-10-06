@@ -4,7 +4,7 @@ public class Array
 {
 	//external type void
 	
-	visible int length
+	visible Int length
 	
 	public construct()//(void** data, int length)
 	{

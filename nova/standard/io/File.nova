@@ -45,7 +45,7 @@ public class File
 		this.fp = fp
 	}
 	
-	public delete() -> bool
+	public delete() -> Bool
 	{
 		close()
 		
@@ -64,7 +64,7 @@ public class File
 		extRewind(fp)
 	}
 	
-	public exists() -> bool
+	public exists() -> Bool
 	{
 		return fp != 0
 	}
@@ -77,7 +77,7 @@ public class File
 		}
 	}
 	
-	public create() -> bool
+	public create() -> Bool
 	{
 		if (!exists())
 		{
@@ -128,19 +128,19 @@ public class File
 	
 	public readLine() -> String
 	{
-		int buf  = 5
-		int size = buf
+		Int buf  = 5
+		Int size = buf
 		
-		char line[] = new char[size]
+		Char line[] = new Char[size]
 		
-		char c = getc(fp)
+		Char c = getc(fp)
 		
 		if (c == EOF)
 		{
 			return null
 		}
 		
-		int index = 0
+		Int index = 0
 		
 		while (c != '\n' && c != EOF)
 		{
@@ -194,15 +194,15 @@ public class File
 		}
 	}
 	
-	public static getMaxOpenFiles() -> int
+	public static getMaxOpenFiles() -> Int
 	{
 		return extGetMaxOpenFiles()
 	}
 	
-	public static setMaxOpenFiles(int num)
+	public static setMaxOpenFiles(Int num)
 	{
-		short min = (short)20
-		short max = (short)2048
+		Short min = (Short)20
+		Short max = (Short)2048
 		
 		if (num > max || num < min)
 		{

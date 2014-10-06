@@ -32,7 +32,7 @@ public class DBConnector
 		nova_db_connect2(host.toCharArray(), user.toCharArray(), password.toCharArray(), database.toCharArray())
 	}
 	
-	public connect(String host, String user, String password, String database, int port, String unixSocket, int clientFlag)
+	public connect(String host, String user, String password, String database, Int port, String unixSocket, Int clientFlag)
 	{
 		nova_db_connect3(host.toCharArray(), user.toCharArray(), password.toCharArray(), database.toCharArray(), port, unixSocket.toCharArray(), clientFlag)
 	}
@@ -46,18 +46,18 @@ public class DBConnector
 	{
 		nova_exec_query(query.toCharArray())
 		
-		char arrays[][][] = nova_get_results()
+		Char arrays[][][] = nova_get_results()
 		
 		if (arrays != 0)
 		{
-			int numRows = (int)nova_num_rows()
-			int numCols = (int)nova_num_cols()
+			Int numRows = (Int)nova_num_rows()
+			Int numCols = (Int)nova_num_cols()
 			
 			String rows[][] = new String[numRows][numCols]
 			
-			for (int i = 0; i < numRows; i++)
+			for (Int i = 0; i < numRows; i++)
 			{
-				for (int j = 0; j < numCols; j++)
+				for (Int j = 0; j < numCols; j++)
 				{
 					rows[i][j] = new String(arrays[i][j])
 				}
