@@ -2,12 +2,12 @@ package net.fathomsoft.nova;
 
 import static java.lang.Math.sin;
 
+import java.io.Console;
 import java.util.ArrayList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import net.fathomsoft.nova.util.Patterns;
-import net.fathomsoft.nova.util.StringUtils;
 
 public class Test
 {
@@ -84,15 +84,9 @@ public class Test
 	
 	public static void main(String args[])
 	{
-		ArrayList<String> s2 = new ArrayList<String>();
-		
-		s2.add("test");
-		
-		test(s2);
-		
-		System.out.println(s2.get(s2.size() - 1));
-		
-		System.out.println("ASDf");
+		Console console = System.console();
+		String username = console.readLine("Username: ");
+		char[] password = console.readPassword("Password: ");
 		
 		System.exit(0);
 		
