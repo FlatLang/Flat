@@ -18,7 +18,7 @@ typedef struct nova_standard_NovaMath nova_standard_NovaMath;
 #include <nova/standard/primitive/number/nova_standard_primitive_number_NovaFloat.h>
 #include <nova/standard/primitive/number/nova_standard_primitive_number_NovaDouble.h>
 #include <nova/standard/primitive/nova_standard_primitive_NovaNull.h>
-#include <nova/standard/primitive/nova_standard_primitive_NovaChar.h>
+#include <nova/standard/primitive/number/nova_standard_primitive_number_NovaChar.h>
 #include <nova/standard/primitive/nova_standard_primitive_NovaBool.h>
 #include <nova/standard/gc/nova_standard_gc_NovaGC.h>
 #include <nova/standard/nova_standard_NovaObject.h>
@@ -44,7 +44,7 @@ extern double nova_standard_NovaMath_static_NovaPI;
 void nova_standard_NovaMathNova_init_static(nova_standard_exception_NovaExceptionData* exceptionData);
 nova_standard_NovaMath* nova_standard_NovaMath_Novaconstruct(nova_standard_NovaMath* this, nova_standard_exception_NovaExceptionData* exceptionData);
 void nova_del_Math(nova_standard_NovaMath** this, nova_standard_exception_NovaExceptionData* exceptionData);
-int nova_standard_NovaMath_static_Novarandom(nova_standard_NovaMath* this, nova_standard_exception_NovaExceptionData* exceptionData, long_long l0_Novarange);
+int nova_standard_NovaMath_static_Novarandom(nova_standard_NovaMath* this, nova_standard_exception_NovaExceptionData* exceptionData, long l0_Novarange);
 double nova_standard_NovaMath_static_Novaabs(nova_standard_NovaMath* this, nova_standard_exception_NovaExceptionData* exceptionData, double l0_Novanumber);
 double nova_standard_NovaMath_static_Novasqrt(nova_standard_NovaMath* this, nova_standard_exception_NovaExceptionData* exceptionData, double l0_Novanumber);
 double nova_standard_NovaMath_static_Novapow(nova_standard_NovaMath* this, nova_standard_exception_NovaExceptionData* exceptionData, double l0_Novabase, double l0_Novapower);
@@ -54,9 +54,9 @@ double nova_standard_NovaMath_static_Novatan(nova_standard_NovaMath* this, nova_
 double nova_standard_NovaMath_static_Novaasin(nova_standard_NovaMath* this, nova_standard_exception_NovaExceptionData* exceptionData, double l0_Novanumber);
 double nova_standard_NovaMath_static_Novaacos(nova_standard_NovaMath* this, nova_standard_exception_NovaExceptionData* exceptionData, double l0_Novanumber);
 double nova_standard_NovaMath_static_Novaatan(nova_standard_NovaMath* this, nova_standard_exception_NovaExceptionData* exceptionData, double l0_Novanumber);
-long_long nova_standard_NovaMath_static_Novaround(nova_standard_NovaMath* this, nova_standard_exception_NovaExceptionData* exceptionData, double l0_Novanumber);
-long_long nova_standard_NovaMath_static_Novafloor(nova_standard_NovaMath* this, nova_standard_exception_NovaExceptionData* exceptionData, double l0_Novanumber);
-long_long nova_standard_NovaMath_static_Novaceil(nova_standard_NovaMath* this, nova_standard_exception_NovaExceptionData* exceptionData, double l0_Novanumber);
+long nova_standard_NovaMath_static_Novaround(nova_standard_NovaMath* this, nova_standard_exception_NovaExceptionData* exceptionData, double l0_Novanumber);
+long nova_standard_NovaMath_static_Novafloor(nova_standard_NovaMath* this, nova_standard_exception_NovaExceptionData* exceptionData, double l0_Novanumber);
+long nova_standard_NovaMath_static_Novaceil(nova_standard_NovaMath* this, nova_standard_exception_NovaExceptionData* exceptionData, double l0_Novanumber);
 void nova_standard_NovaMath_Novathis(nova_standard_NovaMath* this, nova_standard_exception_NovaExceptionData* exceptionData);
 void nova_standard_NovaMath_Novasuper(nova_standard_NovaMath* this, nova_standard_exception_NovaExceptionData* exceptionData);
 

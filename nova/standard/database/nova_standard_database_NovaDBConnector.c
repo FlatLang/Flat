@@ -43,30 +43,30 @@ void nova_del_DBConnector(nova_standard_database_NovaDBConnector** this, nova_st
 
 void nova_standard_database_NovaDBConnector_Nova0_connect(nova_standard_database_NovaDBConnector* this, nova_standard_exception_NovaExceptionData* exceptionData, nova_standard_NovaString* l0_Novahost, nova_standard_NovaString* l0_Novauser, nova_standard_NovaString* l0_Novapassword)
 {
-	nova_db_connect1(nova_standard_NovaString_NovatoCharArray(l0_Novahost, exceptionData), nova_standard_NovaString_NovatoCharArray(l0_Novauser, exceptionData), nova_standard_NovaString_NovatoCharArray(l0_Novapassword, exceptionData));
+	nova_db_connect1((char*)(nova_standard_NovaString_NovatoCharArray(l0_Novahost, exceptionData)), (char*)(nova_standard_NovaString_NovatoCharArray(l0_Novauser, exceptionData)), (char*)(nova_standard_NovaString_NovatoCharArray(l0_Novapassword, exceptionData)));
 }
 
 void nova_standard_database_NovaDBConnector_Nova1_connect(nova_standard_database_NovaDBConnector* this, nova_standard_exception_NovaExceptionData* exceptionData, nova_standard_NovaString* l0_Novahost, nova_standard_NovaString* l0_Novauser, nova_standard_NovaString* l0_Novapassword, nova_standard_NovaString* l0_Novadatabase)
 {
-	nova_db_connect2(nova_standard_NovaString_NovatoCharArray(l0_Novahost, exceptionData), nova_standard_NovaString_NovatoCharArray(l0_Novauser, exceptionData), nova_standard_NovaString_NovatoCharArray(l0_Novapassword, exceptionData), nova_standard_NovaString_NovatoCharArray(l0_Novadatabase, exceptionData));
+	nova_db_connect2((char*)(nova_standard_NovaString_NovatoCharArray(l0_Novahost, exceptionData)), (char*)(nova_standard_NovaString_NovatoCharArray(l0_Novauser, exceptionData)), (char*)(nova_standard_NovaString_NovatoCharArray(l0_Novapassword, exceptionData)), (char*)(nova_standard_NovaString_NovatoCharArray(l0_Novadatabase, exceptionData)));
 }
 
 void nova_standard_database_NovaDBConnector_Nova2_connect(nova_standard_database_NovaDBConnector* this, nova_standard_exception_NovaExceptionData* exceptionData, nova_standard_NovaString* l0_Novahost, nova_standard_NovaString* l0_Novauser, nova_standard_NovaString* l0_Novapassword, nova_standard_NovaString* l0_Novadatabase, int l0_Novaport, nova_standard_NovaString* l0_NovaunixSocket, int l0_NovaclientFlag)
 {
-	nova_db_connect3(nova_standard_NovaString_NovatoCharArray(l0_Novahost, exceptionData), nova_standard_NovaString_NovatoCharArray(l0_Novauser, exceptionData), nova_standard_NovaString_NovatoCharArray(l0_Novapassword, exceptionData), nova_standard_NovaString_NovatoCharArray(l0_Novadatabase, exceptionData), l0_Novaport, nova_standard_NovaString_NovatoCharArray(l0_NovaunixSocket, exceptionData), l0_NovaclientFlag);
+	nova_db_connect3((char*)(nova_standard_NovaString_NovatoCharArray(l0_Novahost, exceptionData)), (char*)(nova_standard_NovaString_NovatoCharArray(l0_Novauser, exceptionData)), (char*)(nova_standard_NovaString_NovatoCharArray(l0_Novapassword, exceptionData)), (char*)(nova_standard_NovaString_NovatoCharArray(l0_Novadatabase, exceptionData)), (int)(l0_Novaport), (char*)(nova_standard_NovaString_NovatoCharArray(l0_NovaunixSocket, exceptionData)), (int)(l0_NovaclientFlag));
 }
 
 void nova_standard_database_NovaDBConnector_NovachangeUser(nova_standard_database_NovaDBConnector* this, nova_standard_exception_NovaExceptionData* exceptionData, nova_standard_NovaString* l0_Novausername, nova_standard_NovaString* l0_Novapassword, nova_standard_NovaString* l0_Novadatabase)
 {
-	nova_user_select(nova_standard_NovaString_NovatoCharArray(l0_Novausername, exceptionData), nova_standard_NovaString_NovatoCharArray(l0_Novapassword, exceptionData), nova_standard_NovaString_NovatoCharArray(l0_Novadatabase, exceptionData));
+	nova_user_select((char*)(nova_standard_NovaString_NovatoCharArray(l0_Novausername, exceptionData)), (char*)(nova_standard_NovaString_NovatoCharArray(l0_Novapassword, exceptionData)), (char*)(nova_standard_NovaString_NovatoCharArray(l0_Novadatabase, exceptionData)));
 }
 
 nova_standard_database_NovaResultSet* nova_standard_database_NovaDBConnector_Novaquery(nova_standard_database_NovaDBConnector* this, nova_standard_exception_NovaExceptionData* exceptionData, nova_standard_NovaString* l0_Novaquery)
 {
 	char*** l1_Novaarrays;
 	
-	nova_exec_query(nova_standard_NovaString_NovatoCharArray(l0_Novaquery, exceptionData));
-	l1_Novaarrays = nova_get_results();
+	nova_exec_query((char*)(nova_standard_NovaString_NovatoCharArray(l0_Novaquery, exceptionData)));
+	l1_Novaarrays = (char***)(nova_get_results());
 	if (l1_Novaarrays != 0)
 	{
 		int l2_NovanumRows;
@@ -86,7 +86,7 @@ nova_standard_database_NovaResultSet* nova_standard_database_NovaDBConnector_Nov
 			l4_Novaj = 0;
 			for (; l4_Novaj < l2_NovanumCols; l4_Novaj++)
 			{
-				l2_Novarows[l3_Novai][l4_Novaj] = nova_standard_NovaString_Novaconstruct(0, exceptionData, l1_Novaarrays[l3_Novai][l4_Novaj]);
+				l2_Novarows[l3_Novai][l4_Novaj] = nova_standard_NovaString_Nova1_construct(0, exceptionData, l1_Novaarrays[l3_Novai][l4_Novaj]);
 			}
 		}
 		l2_Novaresult = nova_standard_database_NovaResultSet_Novaconstruct(0, exceptionData, l2_Novarows, l2_NovanumRows, l2_NovanumCols);
@@ -102,7 +102,7 @@ void nova_standard_database_NovaDBConnector_Novaclose(nova_standard_database_Nov
 
 nova_standard_NovaString* nova_standard_database_NovaDBConnector_NovagetError(nova_standard_database_NovaDBConnector* this, nova_standard_exception_NovaExceptionData* exceptionData)
 {
-	return nova_standard_NovaString_Novaconstruct(0, exceptionData, nova_db_error());
+	return nova_standard_NovaString_Nova1_construct(0, exceptionData, (char*)(nova_db_error()));
 }
 
 void nova_standard_database_NovaDBConnector_Novathis(nova_standard_database_NovaDBConnector* this, nova_standard_exception_NovaExceptionData* exceptionData)

@@ -13,16 +13,18 @@ void nova_standard_primitive_NovaBoolNova_init_static(nova_standard_exception_No
 	}
 }
 
-nova_standard_primitive_NovaBool* nova_standard_primitive_NovaBool_Nova0_construct(nova_standard_primitive_NovaBool* this, nova_standard_exception_NovaExceptionData* exceptionData)
+nova_standard_primitive_NovaBool* nova_standard_primitive_NovaBool_Nova1_construct(nova_standard_primitive_NovaBool* this, nova_standard_exception_NovaExceptionData* exceptionData, char l0_Novavalue)
 {
 	CCLASS_NEW(nova_standard_primitive_NovaBool, this,);
 	this->vtable = &nova_VTable_nova_standard_primitive_NovaBool_val;
 	nova_standard_NovaObject_Novasuper((nova_standard_NovaObject*)this, 0);
+	nova_standard_primitive_NovaPrimitive_Novasuper((nova_standard_primitive_NovaPrimitive*)this, 0);
 	nova_standard_NovaObject_Novathis((nova_standard_NovaObject*)(this), exceptionData);
+	nova_standard_primitive_NovaPrimitive_Novathis((nova_standard_primitive_NovaPrimitive*)(this), exceptionData);
 	nova_standard_primitive_NovaBool_Novasuper(this, 0);
 	
 	{
-		nova_standard_primitive_NovaBool_Novathis(this, exceptionData);
+		nova_standard_primitive_NovaBool_Novathis(this, exceptionData, l0_Novavalue);
 	}
 	
 	return this;
@@ -36,15 +38,27 @@ void nova_del_Bool(nova_standard_primitive_NovaBool** this, nova_standard_except
 	}
 	
 	
+	
 	{
 	}
 	NOVA_FREE(*this);
 }
 
-void nova_standard_primitive_NovaBool_Novathis(nova_standard_primitive_NovaBool* this, nova_standard_exception_NovaExceptionData* exceptionData)
+void nova_standard_primitive_NovaBool_Novathis(nova_standard_primitive_NovaBool* this, nova_standard_exception_NovaExceptionData* exceptionData, char l0_Novavalue)
 {
+	this->nova_standard_primitive_NovaBool_Novavalue = l0_Novavalue;
+}
+
+nova_standard_NovaString* nova_standard_primitive_NovaBool_static_NovatoString(nova_standard_primitive_NovaBool* this, nova_standard_exception_NovaExceptionData* exceptionData, char l0_Novavalue)
+{
+	if (l0_Novavalue)
+	{
+		return nova_standard_NovaString_Nova1_construct(0, exceptionData, "true");
+	}
+	return nova_standard_NovaString_Nova1_construct(0, exceptionData, "false");
 }
 
 void nova_standard_primitive_NovaBool_Novasuper(nova_standard_primitive_NovaBool* this, nova_standard_exception_NovaExceptionData* exceptionData)
 {
+	this->nova_standard_primitive_NovaBool_Novavalue = 0;
 }

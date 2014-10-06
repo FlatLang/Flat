@@ -62,9 +62,9 @@ void nova_standard_thread_NovaThread_Novajoin(nova_standard_thread_NovaThread* t
 	lib_nova_thread_join(*this->prv->nova_standard_thread_NovaThread_Novahandle);
 }
 
-void nova_standard_thread_NovaThread_static_Novasleep(nova_standard_thread_NovaThread* this, nova_standard_exception_NovaExceptionData* exceptionData, long_long l0_Novamillis)
+void nova_standard_thread_NovaThread_static_Novasleep(nova_standard_thread_NovaThread* this, nova_standard_exception_NovaExceptionData* exceptionData, long l0_Novamillis)
 {
-	lib_nova_thread_sleep(l0_Novamillis);
+	lib_nova_thread_sleep((long_long)(l0_Novamillis));
 }
 
 void nova_standard_thread_NovaThread_Nova0_run(nova_standard_thread_NovaThread* this, nova_standard_exception_NovaExceptionData* exceptionData)
@@ -86,7 +86,7 @@ void nova_standard_thread_NovaThread_NovastartRun(nova_standard_thread_NovaThrea
 		nova_standard_exception_NovaException* l3_Novae;
 		
 		l3_Novae = exceptionData->nova_standard_exception_NovaExceptionData_NovathrownException;
-		nova_standard_io_NovaConsole_static_Nova0_writeLine(0, exceptionData, nova_standard_NovaString_Novaconstruct(0, exceptionData, "An error has occurred..."));
+		nova_standard_io_NovaConsole_static_Nova0_writeLine(0, exceptionData, nova_standard_NovaString_Nova1_construct(0, exceptionData, "An error has occurred..."));
 	}
 	FINALLY
 	{

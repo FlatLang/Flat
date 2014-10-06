@@ -73,7 +73,7 @@ void nova_standard_datastruct_NovaArrayList_NovaincreaseSize(nova_standard_datas
 	
 	this->prv->nova_standard_datastruct_NovaArrayList_NovabufferSize = this->prv->nova_standard_datastruct_NovaArrayList_NovabufferSize + 3;
 	l1_Novatmp = (nova_standard_NovaObject**)((nova_standard_NovaObject**)NOVA_MALLOC(sizeof(nova_standard_NovaObject[this->prv->nova_standard_datastruct_NovaArrayList_NovabufferSize])));
-	arrayCopy(l1_Novatmp, 0, this->prv->nova_standard_datastruct_NovaArrayList_Novadata, 0, this->nova_standard_datastruct_NovaArrayList_Novasize, this->prv->nova_standard_datastruct_NovaArrayList_NovabufferSize, 4);
+	arrayCopy(l1_Novatmp, (int)(0), this->prv->nova_standard_datastruct_NovaArrayList_Novadata, (int)(0), (int)(this->nova_standard_datastruct_NovaArrayList_Novasize), (int)(this->prv->nova_standard_datastruct_NovaArrayList_NovabufferSize), (int)(4));
 	this->prv->nova_standard_datastruct_NovaArrayList_Novadata = l1_Novatmp;
 }
 

@@ -18,7 +18,7 @@ typedef struct nova_standard_gc_NovaGC nova_standard_gc_NovaGC;
 #include <nova/standard/primitive/number/nova_standard_primitive_number_NovaFloat.h>
 #include <nova/standard/primitive/number/nova_standard_primitive_number_NovaDouble.h>
 #include <nova/standard/primitive/nova_standard_primitive_NovaNull.h>
-#include <nova/standard/primitive/nova_standard_primitive_NovaChar.h>
+#include <nova/standard/primitive/number/nova_standard_primitive_number_NovaChar.h>
 #include <nova/standard/primitive/nova_standard_primitive_NovaBool.h>
 #include <nova/standard/gc/nova_standard_gc_NovaGC.h>
 #include <nova/standard/nova_standard_NovaObject.h>
@@ -44,10 +44,10 @@ void nova_standard_gc_NovaGCNova_init_static(nova_standard_exception_NovaExcepti
 nova_standard_gc_NovaGC* nova_standard_gc_NovaGC_Nova0_construct(nova_standard_gc_NovaGC* this, nova_standard_exception_NovaExceptionData* exceptionData);
 void nova_del_GC(nova_standard_gc_NovaGC** this, nova_standard_exception_NovaExceptionData* exceptionData);
 void nova_standard_gc_NovaGC_static_Novainit(nova_standard_gc_NovaGC* this, nova_standard_exception_NovaExceptionData* exceptionData);
-long_long nova_standard_gc_NovaGC_static_NovagetFreeBytes(nova_standard_gc_NovaGC* this, nova_standard_exception_NovaExceptionData* exceptionData);
-long_long nova_standard_gc_NovaGC_static_NovagetTotalBytes(nova_standard_gc_NovaGC* this, nova_standard_exception_NovaExceptionData* exceptionData);
-long_long nova_standard_gc_NovaGC_static_NovagetHeapSize(nova_standard_gc_NovaGC* this, nova_standard_exception_NovaExceptionData* exceptionData);
-long_long nova_standard_gc_NovaGC_static_NovagetBytesSinceGC(nova_standard_gc_NovaGC* this, nova_standard_exception_NovaExceptionData* exceptionData);
+long nova_standard_gc_NovaGC_static_NovagetFreeBytes(nova_standard_gc_NovaGC* this, nova_standard_exception_NovaExceptionData* exceptionData);
+long nova_standard_gc_NovaGC_static_NovagetTotalBytes(nova_standard_gc_NovaGC* this, nova_standard_exception_NovaExceptionData* exceptionData);
+long nova_standard_gc_NovaGC_static_NovagetHeapSize(nova_standard_gc_NovaGC* this, nova_standard_exception_NovaExceptionData* exceptionData);
+long nova_standard_gc_NovaGC_static_NovagetBytesSinceGC(nova_standard_gc_NovaGC* this, nova_standard_exception_NovaExceptionData* exceptionData);
 void nova_standard_gc_NovaGC_static_Novacollect(nova_standard_gc_NovaGC* this, nova_standard_exception_NovaExceptionData* exceptionData);
 void nova_standard_gc_NovaGC_static_NovaenableIncremental(nova_standard_gc_NovaGC* this, nova_standard_exception_NovaExceptionData* exceptionData);
 void nova_standard_gc_NovaGC_static_Novadump(nova_standard_gc_NovaGC* this, nova_standard_exception_NovaExceptionData* exceptionData);

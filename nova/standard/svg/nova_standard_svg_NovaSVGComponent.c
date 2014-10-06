@@ -50,7 +50,7 @@ void nova_standard_svg_NovaSVGComponent_Novathis(nova_standard_svg_NovaSVGCompon
 
 void nova_standard_svg_NovaSVGComponent_Nova0_generateOutput(nova_standard_svg_NovaSVGComponent* this, nova_standard_exception_NovaExceptionData* exceptionData, nova_standard_io_NovaFile* l0_Novafile)
 {
-	nova_standard_io_NovaConsole_static_Nova0_writeLine(0, exceptionData, nova_standard_NovaString_Novaconstruct(0, exceptionData, "This is wrong"));
+	nova_standard_io_NovaConsole_static_Nova0_writeLine(0, exceptionData, nova_standard_NovaString_Nova1_construct(0, exceptionData, "This is wrong"));
 }
 
 void nova_standard_svg_NovaSVGComponent_Novasuper(nova_standard_svg_NovaSVGComponent* this, nova_standard_exception_NovaExceptionData* exceptionData)

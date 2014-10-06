@@ -7,7 +7,7 @@ nova_VTable_nova_standard_primitive_number_NovaNumber nova_VTable_nova_standard_
 	nova_standard_NovaObject_Nova0_toString,
 	nova_standard_NovaObject_Nova0_equals,
 	nova_standard_primitive_number_NovaNumber_static_Nova0_numDigits,
-	nova_standard_primitive_number_NovaNumber_static_Nova1_toString,
+	nova_standard_primitive_number_NovaNumber_static_Nova0_toString,
 };
 void nova_standard_primitive_number_NovaNumberNova_init_static(nova_standard_exception_NovaExceptionData* exceptionData)
 {
@@ -15,12 +15,14 @@ void nova_standard_primitive_number_NovaNumberNova_init_static(nova_standard_exc
 	}
 }
 
-nova_standard_primitive_number_NovaNumber* nova_standard_primitive_number_NovaNumber_Nova0_construct(nova_standard_primitive_number_NovaNumber* this, nova_standard_exception_NovaExceptionData* exceptionData)
+nova_standard_primitive_number_NovaNumber* nova_standard_primitive_number_NovaNumber_Nova4_construct(nova_standard_primitive_number_NovaNumber* this, nova_standard_exception_NovaExceptionData* exceptionData)
 {
 	CCLASS_NEW(nova_standard_primitive_number_NovaNumber, this,);
 	this->vtable = &nova_VTable_nova_standard_primitive_number_NovaNumber_val;
 	nova_standard_NovaObject_Novasuper((nova_standard_NovaObject*)this, 0);
+	nova_standard_primitive_NovaPrimitive_Novasuper((nova_standard_primitive_NovaPrimitive*)this, 0);
 	nova_standard_NovaObject_Novathis((nova_standard_NovaObject*)(this), exceptionData);
+	nova_standard_primitive_NovaPrimitive_Novathis((nova_standard_primitive_NovaPrimitive*)(this), exceptionData);
 	nova_standard_primitive_number_NovaNumber_Novasuper(this, 0);
 	
 	{
@@ -43,14 +45,14 @@ void nova_del_Number(nova_standard_primitive_number_NovaNumber** this, nova_stan
 	NOVA_FREE(*this);
 }
 
-int nova_standard_primitive_number_NovaNumber_static_Nova0_numDigits(nova_standard_primitive_number_NovaNumber* this, nova_standard_exception_NovaExceptionData* exceptionData, int l0_Novanumber)
+int nova_standard_primitive_number_NovaNumber_static_Nova0_numDigits(nova_standard_primitive_number_NovaNumber* this, nova_standard_exception_NovaExceptionData* exceptionData, nova_standard_primitive_number_NovaNumber* l0_Novanumber)
 {
 	return -1;
 }
 
-nova_standard_NovaString* nova_standard_primitive_number_NovaNumber_static_Nova1_toString(nova_standard_primitive_number_NovaNumber* this, nova_standard_exception_NovaExceptionData* exceptionData, int l0_Novavalue)
+nova_standard_NovaString* nova_standard_primitive_number_NovaNumber_static_Nova0_toString(nova_standard_primitive_number_NovaNumber* this, nova_standard_exception_NovaExceptionData* exceptionData, nova_standard_primitive_number_NovaNumber* l0_Novavalue)
 {
-	return nova_standard_NovaString_Novaconstruct(0, exceptionData, "[Unimplemented]");
+	return nova_standard_NovaString_Nova1_construct(0, exceptionData, "[Unimplemented]");
 }
 
 void nova_standard_primitive_number_NovaNumber_Novathis(nova_standard_primitive_number_NovaNumber* this, nova_standard_exception_NovaExceptionData* exceptionData)

@@ -43,69 +43,69 @@ void nova_del_Math(nova_standard_NovaMath** this, nova_standard_exception_NovaEx
 	NOVA_FREE(*this);
 }
 
-int nova_standard_NovaMath_static_Novarandom(nova_standard_NovaMath* this, nova_standard_exception_NovaExceptionData* exceptionData, long_long l0_Novarange)
+int nova_standard_NovaMath_static_Novarandom(nova_standard_NovaMath* this, nova_standard_exception_NovaExceptionData* exceptionData, long l0_Novarange)
 {
 	return rand() % l0_Novarange;
 }
 
 double nova_standard_NovaMath_static_Novaabs(nova_standard_NovaMath* this, nova_standard_exception_NovaExceptionData* exceptionData, double l0_Novanumber)
 {
-	return abs(l0_Novanumber);
+	return abs((double)(l0_Novanumber));
 }
 
 double nova_standard_NovaMath_static_Novasqrt(nova_standard_NovaMath* this, nova_standard_exception_NovaExceptionData* exceptionData, double l0_Novanumber)
 {
-	return sqrt(l0_Novanumber);
+	return sqrt((double)(l0_Novanumber));
 }
 
 double nova_standard_NovaMath_static_Novapow(nova_standard_NovaMath* this, nova_standard_exception_NovaExceptionData* exceptionData, double l0_Novabase, double l0_Novapower)
 {
-	return pow(l0_Novabase, l0_Novapower);
+	return pow((double)(l0_Novabase), (double)(l0_Novapower));
 }
 
 double nova_standard_NovaMath_static_Novasin(nova_standard_NovaMath* this, nova_standard_exception_NovaExceptionData* exceptionData, double l0_Novanumber)
 {
-	return sin(l0_Novanumber);
+	return sin((double)(l0_Novanumber));
 }
 
 double nova_standard_NovaMath_static_Novacos(nova_standard_NovaMath* this, nova_standard_exception_NovaExceptionData* exceptionData, double l0_Novanumber)
 {
-	return cos(l0_Novanumber);
+	return cos((double)(l0_Novanumber));
 }
 
 double nova_standard_NovaMath_static_Novatan(nova_standard_NovaMath* this, nova_standard_exception_NovaExceptionData* exceptionData, double l0_Novanumber)
 {
-	return tan(l0_Novanumber);
+	return tan((double)(l0_Novanumber));
 }
 
 double nova_standard_NovaMath_static_Novaasin(nova_standard_NovaMath* this, nova_standard_exception_NovaExceptionData* exceptionData, double l0_Novanumber)
 {
-	return asin(l0_Novanumber);
+	return asin((double)(l0_Novanumber));
 }
 
 double nova_standard_NovaMath_static_Novaacos(nova_standard_NovaMath* this, nova_standard_exception_NovaExceptionData* exceptionData, double l0_Novanumber)
 {
-	return acos(l0_Novanumber);
+	return acos((double)(l0_Novanumber));
 }
 
 double nova_standard_NovaMath_static_Novaatan(nova_standard_NovaMath* this, nova_standard_exception_NovaExceptionData* exceptionData, double l0_Novanumber)
 {
-	return atan(l0_Novanumber);
+	return atan((double)(l0_Novanumber));
 }
 
-long_long nova_standard_NovaMath_static_Novaround(nova_standard_NovaMath* this, nova_standard_exception_NovaExceptionData* exceptionData, double l0_Novanumber)
+long nova_standard_NovaMath_static_Novaround(nova_standard_NovaMath* this, nova_standard_exception_NovaExceptionData* exceptionData, double l0_Novanumber)
 {
 	return nova_standard_NovaMath_static_Novafloor((nova_standard_NovaMath*)nova_null, exceptionData, l0_Novanumber + 0.5);
 }
 
-long_long nova_standard_NovaMath_static_Novafloor(nova_standard_NovaMath* this, nova_standard_exception_NovaExceptionData* exceptionData, double l0_Novanumber)
+long nova_standard_NovaMath_static_Novafloor(nova_standard_NovaMath* this, nova_standard_exception_NovaExceptionData* exceptionData, double l0_Novanumber)
 {
-	return floor(l0_Novanumber);
+	return floor((double)(l0_Novanumber));
 }
 
-long_long nova_standard_NovaMath_static_Novaceil(nova_standard_NovaMath* this, nova_standard_exception_NovaExceptionData* exceptionData, double l0_Novanumber)
+long nova_standard_NovaMath_static_Novaceil(nova_standard_NovaMath* this, nova_standard_exception_NovaExceptionData* exceptionData, double l0_Novanumber)
 {
-	return ceil(l0_Novanumber);
+	return ceil((double)(l0_Novanumber));
 }
 
 void nova_standard_NovaMath_Novathis(nova_standard_NovaMath* this, nova_standard_exception_NovaExceptionData* exceptionData)

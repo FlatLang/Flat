@@ -59,7 +59,7 @@ void nova_del_Exception(nova_standard_exception_NovaException** this, nova_stand
 
 void nova_standard_exception_NovaException_Novathis(nova_standard_exception_NovaException* this, nova_standard_exception_NovaExceptionData* exceptionData)
 {
-	nova_standard_exception_NovaException_Nova0_this(this, exceptionData, nova_standard_NovaString_Novaconstruct(0, exceptionData, ""));
+	nova_standard_exception_NovaException_Nova0_this(this, exceptionData, nova_standard_NovaString_Nova1_construct(0, exceptionData, ""));
 }
 
 void nova_standard_exception_NovaException_Nova0_this(nova_standard_exception_NovaException* this, nova_standard_exception_NovaExceptionData* exceptionData, nova_standard_NovaString* l0_Novamessage)

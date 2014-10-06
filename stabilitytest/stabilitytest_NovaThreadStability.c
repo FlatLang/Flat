@@ -49,7 +49,7 @@ void stabilitytest_NovaThreadStability_static_Novatest(stabilitytest_NovaThreadS
 {
 	stabilitytest_NovaThreadImplementation** l1_Novathreads;
 	
-	nova_standard_io_NovaConsole_static_Nova0_writeLine(0, exceptionData, nova_standard_NovaString_Novaconstruct(0, exceptionData, "Checking Thread.nova with 20 Threads... "));
+	nova_standard_io_NovaConsole_static_Nova0_writeLine(0, exceptionData, nova_standard_NovaString_Nova1_construct(0, exceptionData, "Checking Thread.nova with 20 Threads... "));
 	l1_Novathreads = (stabilitytest_NovaThreadImplementation**)NOVA_MALLOC(sizeof(stabilitytest_NovaThreadImplementation[20]));
 	stabilitytest_NovaThreadStability_static_NovacreateThreads((stabilitytest_NovaThreadStability*)nova_null, exceptionData, l0_Novaprogram, l1_Novathreads, 20);
 	stabilitytest_NovaThreadStability_static_NovacheckMemoryAccess((stabilitytest_NovaThreadStability*)nova_null, exceptionData);
@@ -74,16 +74,16 @@ void stabilitytest_NovaThreadStability_static_NovacheckMemoryAccess(stabilitytes
 {
 	int l2_Novai;
 	
-	nova_standard_thread_NovaThread_static_Novasleep(0, exceptionData, (long_long)(30));
-	nova_standard_io_NovaConsole_static_Nova0_write(0, exceptionData, nova_standard_NovaString_Novaconstruct(0, exceptionData, "Checking memory access with multi-threading... "));
+	nova_standard_thread_NovaThread_static_Novasleep(0, exceptionData, (long)(30));
+	nova_standard_io_NovaConsole_static_Nova0_write(0, exceptionData, nova_standard_NovaString_Nova1_construct(0, exceptionData, "Checking memory access with multi-threading... "));
 	l2_Novai = 0;
 	for (; l2_Novai < 1000; l2_Novai++)
 	{
 		nova_standard_NovaString* l2_Novas;
 		
-		l2_Novas = nova_standard_primitive_number_NovaInt_static_Nova1_toString(0, exceptionData, l2_Novai);
+		l2_Novas = nova_standard_primitive_number_NovaInt_static_Nova0_toString(0, exceptionData, l2_Novai);
 	}
-	nova_standard_io_NovaConsole_static_Nova0_writeLine(0, exceptionData, nova_standard_NovaString_Novaconstruct(0, exceptionData, "OK"));
+	nova_standard_io_NovaConsole_static_Nova0_writeLine(0, exceptionData, nova_standard_NovaString_Nova1_construct(0, exceptionData, "OK"));
 }
 
 void stabilitytest_NovaThreadStability_static_NovajoinThreads(stabilitytest_NovaThreadStability* this, nova_standard_exception_NovaExceptionData* exceptionData, stabilitytest_NovaThreadImplementation** l0_Novathreads, int l0_Novaamount)

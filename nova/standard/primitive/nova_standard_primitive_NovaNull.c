@@ -4,9 +4,9 @@
 
 nova_VTable_nova_standard_primitive_NovaNull nova_VTable_nova_standard_primitive_NovaNull_val =
 {
-	nova_standard_primitive_NovaNull_Nova0_toString,
-	nova_standard_NovaString_Nova0_equals,
-	nova_standard_primitive_NovaNull_Nova0_concat,
+	nova_standard_primitive_NovaNull_NovatoString,
+	nova_standard_NovaString_Novaequals,
+	nova_standard_primitive_NovaNull_Novaconcat,
 };
 CCLASS_PRIVATE
 (
@@ -49,14 +49,14 @@ void nova_del_Null(nova_standard_primitive_NovaNull** this, nova_standard_except
 	NOVA_FREE(*this);
 }
 
-nova_standard_NovaString* nova_standard_primitive_NovaNull_Nova0_toString(nova_standard_primitive_NovaNull* this, nova_standard_exception_NovaExceptionData* exceptionData)
+nova_standard_NovaString* nova_standard_primitive_NovaNull_NovatoString(nova_standard_primitive_NovaNull* this, nova_standard_exception_NovaExceptionData* exceptionData)
 {
-	return nova_standard_NovaString_Novaconstruct(0, exceptionData, "null");
+	return nova_standard_NovaString_Nova1_construct(0, exceptionData, "null");
 }
 
-nova_standard_NovaString* nova_standard_primitive_NovaNull_Nova0_concat(nova_standard_primitive_NovaNull* this, nova_standard_exception_NovaExceptionData* exceptionData, nova_standard_NovaString* l0_Novaother)
+nova_standard_NovaString* nova_standard_primitive_NovaNull_Novaconcat(nova_standard_primitive_NovaNull* this, nova_standard_exception_NovaExceptionData* exceptionData, nova_standard_NovaString* l0_Novaother)
 {
-	return nova_standard_NovaString_Nova0_concat(nova_standard_NovaString_Novaconstruct(0, exceptionData, "null"), exceptionData, l0_Novaother);
+	return nova_standard_NovaString_Nova0_concat(nova_standard_NovaString_Nova1_construct(0, exceptionData, "null"), exceptionData, l0_Novaother);
 }
 
 void nova_standard_primitive_NovaNull_Novathis(nova_standard_primitive_NovaNull* this, nova_standard_exception_NovaExceptionData* exceptionData)

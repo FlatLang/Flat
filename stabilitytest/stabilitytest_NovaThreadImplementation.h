@@ -18,7 +18,7 @@ typedef struct stabilitytest_NovaThreadImplementation stabilitytest_NovaThreadIm
 #include <nova/standard/primitive/number/nova_standard_primitive_number_NovaFloat.h>
 #include <nova/standard/primitive/number/nova_standard_primitive_number_NovaDouble.h>
 #include <nova/standard/primitive/nova_standard_primitive_NovaNull.h>
-#include <nova/standard/primitive/nova_standard_primitive_NovaChar.h>
+#include <nova/standard/primitive/number/nova_standard_primitive_number_NovaChar.h>
 #include <nova/standard/primitive/nova_standard_primitive_NovaBool.h>
 #include <nova/standard/gc/nova_standard_gc_NovaGC.h>
 #include <nova/standard/nova_standard_NovaObject.h>
@@ -31,7 +31,7 @@ typedef struct nova_VTable_stabilitytest_NovaThreadImplementation
 {
 	nova_standard_NovaString* (*nova_standard_NovaObject_Novavirtual0_toString)(nova_standard_NovaObject*, nova_standard_exception_NovaExceptionData*);
 	char (*nova_standard_NovaObject_Novavirtual0_equals)(nova_standard_NovaObject*, nova_standard_exception_NovaExceptionData*, nova_standard_NovaObject*);
-	void (*stabilitytest_NovaThreadImplementation_Novavirtual0_run)(stabilitytest_NovaThreadImplementation*, nova_standard_exception_NovaExceptionData*);
+	void (*stabilitytest_NovaThreadImplementation_Novavirtual_run)(stabilitytest_NovaThreadImplementation*, nova_standard_exception_NovaExceptionData*);
 } nova_VTable_stabilitytest_NovaThreadImplementation;
 
 CCLASS_CLASS
@@ -46,7 +46,7 @@ void stabilitytest_NovaThreadImplementationNova_init_static(nova_standard_except
 stabilitytest_NovaThreadImplementation* stabilitytest_NovaThreadImplementation_Novaconstruct(stabilitytest_NovaThreadImplementation* this, nova_standard_exception_NovaExceptionData* exceptionData, int l0_Novatimes, int l0_Novamillis);
 void nova_del_ThreadImplementation(stabilitytest_NovaThreadImplementation** this, nova_standard_exception_NovaExceptionData* exceptionData);
 void stabilitytest_NovaThreadImplementation_Novathis(stabilitytest_NovaThreadImplementation* this, nova_standard_exception_NovaExceptionData* exceptionData, int l0_Novatimes, int l0_Novamillis);
-void stabilitytest_NovaThreadImplementation_Nova0_run(stabilitytest_NovaThreadImplementation* this, nova_standard_exception_NovaExceptionData* exceptionData);
+void stabilitytest_NovaThreadImplementation_Novarun(stabilitytest_NovaThreadImplementation* this, nova_standard_exception_NovaExceptionData* exceptionData);
 void stabilitytest_NovaThreadImplementation_Novasuper(stabilitytest_NovaThreadImplementation* this, nova_standard_exception_NovaExceptionData* exceptionData);
 
 #endif

@@ -18,7 +18,7 @@ typedef struct nova_standard_NovaObject nova_standard_NovaObject;
 #include <nova/standard/primitive/number/nova_standard_primitive_number_NovaFloat.h>
 #include <nova/standard/primitive/number/nova_standard_primitive_number_NovaDouble.h>
 #include <nova/standard/primitive/nova_standard_primitive_NovaNull.h>
-#include <nova/standard/primitive/nova_standard_primitive_NovaChar.h>
+#include <nova/standard/primitive/number/nova_standard_primitive_number_NovaChar.h>
 #include <nova/standard/primitive/nova_standard_primitive_NovaBool.h>
 #include <nova/standard/gc/nova_standard_gc_NovaGC.h>
 #include <nova/standard/nova_standard_NovaObject.h>
@@ -44,7 +44,7 @@ void nova_standard_NovaObjectNova_init_static(nova_standard_exception_NovaExcept
 nova_standard_NovaObject* nova_standard_NovaObject_Nova0_construct(nova_standard_NovaObject* this, nova_standard_exception_NovaExceptionData* exceptionData);
 void nova_del_Object(nova_standard_NovaObject** this, nova_standard_exception_NovaExceptionData* exceptionData);
 nova_standard_NovaString* nova_standard_NovaObject_NovagetHashCode(nova_standard_NovaObject* this, nova_standard_exception_NovaExceptionData* exceptionData);
-long_long nova_standard_NovaObject_NovagetHashCodeLong(nova_standard_NovaObject* this, nova_standard_exception_NovaExceptionData* exceptionData);
+long nova_standard_NovaObject_NovagetHashCodeLong(nova_standard_NovaObject* this, nova_standard_exception_NovaExceptionData* exceptionData);
 nova_standard_NovaString* nova_standard_NovaObject_Nova0_toString(nova_standard_NovaObject* this, nova_standard_exception_NovaExceptionData* exceptionData);
 char nova_standard_NovaObject_Nova0_equals(nova_standard_NovaObject* this, nova_standard_exception_NovaExceptionData* exceptionData, nova_standard_NovaObject* l0_Novaanother);
 void nova_standard_NovaObject_Novathis(nova_standard_NovaObject* this, nova_standard_exception_NovaExceptionData* exceptionData);

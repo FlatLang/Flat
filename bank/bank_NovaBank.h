@@ -42,6 +42,7 @@ CCLASS_CLASS
 	nova_VTable_bank_NovaBank* vtable;
 )
 
+void bank_NovaBankNova_init_static(nova_standard_exception_NovaExceptionData* exceptionData);
 bank_NovaBank* bank_NovaBank_Nova0_construct(bank_NovaBank* this, nova_standard_exception_NovaExceptionData* exceptionData);
 void nova_del_Bank(bank_NovaBank** this, nova_standard_exception_NovaExceptionData* exceptionData);
 void bank_NovaBank_static_Novamain(bank_NovaBank* this, nova_standard_exception_NovaExceptionData* exceptionData, nova_standard_NovaString** l0_Novaargs);

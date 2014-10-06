@@ -119,7 +119,7 @@ void nova_standard_exception_NovaExceptionData_NovajumpToBuffer(nova_standard_ex
 		l0_Novacode = 1;
 	}
 	l1_Novab = nova_standard_exception_NovaExceptionData_NovagetBuffer(l1_Novadata, exceptionData);
-	jump(*l1_Novab, l0_Novacode);
+	jump(*l1_Novab, (int)(l0_Novacode));
 }
 
 nova_standard_exception_NovaExceptionData* nova_standard_exception_NovaExceptionData_NovagetParent(nova_standard_exception_NovaExceptionData* this, nova_standard_exception_NovaExceptionData* exceptionData)

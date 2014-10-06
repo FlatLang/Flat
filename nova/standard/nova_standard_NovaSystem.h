@@ -18,7 +18,7 @@ typedef struct nova_standard_NovaSystem nova_standard_NovaSystem;
 #include <nova/standard/primitive/number/nova_standard_primitive_number_NovaFloat.h>
 #include <nova/standard/primitive/number/nova_standard_primitive_number_NovaDouble.h>
 #include <nova/standard/primitive/nova_standard_primitive_NovaNull.h>
-#include <nova/standard/primitive/nova_standard_primitive_NovaChar.h>
+#include <nova/standard/primitive/number/nova_standard_primitive_number_NovaChar.h>
 #include <nova/standard/primitive/nova_standard_primitive_NovaBool.h>
 #include <nova/standard/gc/nova_standard_gc_NovaGC.h>
 #include <nova/standard/nova_standard_NovaObject.h>
@@ -45,7 +45,7 @@ CCLASS_CLASS
 )
 
 void nova_standard_NovaSystemNova_init_static(nova_standard_exception_NovaExceptionData* exceptionData);
-nova_standard_NovaSystem* nova_standard_NovaSystem_Novaconstruct(nova_standard_NovaSystem* this, nova_standard_exception_NovaExceptionData* exceptionData);
+nova_standard_NovaSystem* nova_standard_NovaSystem_Nova0_construct(nova_standard_NovaSystem* this, nova_standard_exception_NovaExceptionData* exceptionData);
 void nova_del_System(nova_standard_NovaSystem** this, nova_standard_exception_NovaExceptionData* exceptionData);
 void nova_standard_NovaSystem_static_Nova0_exit(nova_standard_NovaSystem* this, nova_standard_exception_NovaExceptionData* exceptionData, int l0_Novacode);
 void nova_standard_NovaSystem_static_Nova1_exit(nova_standard_NovaSystem* this, nova_standard_exception_NovaExceptionData* exceptionData, int l0_Novacode, nova_standard_NovaString* l0_Novamessage);

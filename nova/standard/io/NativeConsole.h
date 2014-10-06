@@ -3,6 +3,11 @@
 
 #include <unistd.h>
 
-char* nova_getPass(char* message);
+#ifdef _WIN32
+	#include <windows.h>
+#endif
+
+void nova_setEcho(char echo);
+void nova_clearScreen();
 
 #endif

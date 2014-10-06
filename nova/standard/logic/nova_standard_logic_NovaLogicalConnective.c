@@ -13,7 +13,7 @@ void nova_standard_logic_NovaLogicalConnectiveNova_init_static(nova_standard_exc
 	}
 }
 
-nova_standard_logic_NovaLogicalConnective* nova_standard_logic_NovaLogicalConnective_Nova0_construct(nova_standard_logic_NovaLogicalConnective* this, nova_standard_exception_NovaExceptionData* exceptionData)
+nova_standard_logic_NovaLogicalConnective* nova_standard_logic_NovaLogicalConnective_Novaconstruct(nova_standard_logic_NovaLogicalConnective* this, nova_standard_exception_NovaExceptionData* exceptionData)
 {
 	CCLASS_NEW(nova_standard_logic_NovaLogicalConnective, this,);
 	this->vtable = &nova_VTable_nova_standard_logic_NovaLogicalConnective_val;

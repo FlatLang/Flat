@@ -18,7 +18,7 @@ typedef struct nova_standard_primitive_NovaNull nova_standard_primitive_NovaNull
 #include <nova/standard/primitive/number/nova_standard_primitive_number_NovaFloat.h>
 #include <nova/standard/primitive/number/nova_standard_primitive_number_NovaDouble.h>
 #include <nova/standard/primitive/nova_standard_primitive_NovaNull.h>
-#include <nova/standard/primitive/nova_standard_primitive_NovaChar.h>
+#include <nova/standard/primitive/number/nova_standard_primitive_number_NovaChar.h>
 #include <nova/standard/primitive/nova_standard_primitive_NovaBool.h>
 #include <nova/standard/gc/nova_standard_gc_NovaGC.h>
 #include <nova/standard/nova_standard_NovaObject.h>
@@ -28,9 +28,9 @@ typedef struct nova_standard_primitive_NovaNull nova_standard_primitive_NovaNull
 
 typedef struct nova_VTable_nova_standard_primitive_NovaNull
 {
-	nova_standard_NovaString* (*nova_standard_primitive_NovaNull_Novavirtual0_toString)(nova_standard_primitive_NovaNull*, nova_standard_exception_NovaExceptionData*);
-	char (*nova_standard_NovaString_Novavirtual0_equals)(nova_standard_NovaString*, nova_standard_exception_NovaExceptionData*, nova_standard_NovaString*);
-	nova_standard_NovaString* (*nova_standard_primitive_NovaNull_Novavirtual0_concat)(nova_standard_primitive_NovaNull*, nova_standard_exception_NovaExceptionData*, nova_standard_NovaString*);
+	nova_standard_NovaString* (*nova_standard_primitive_NovaNull_Novavirtual_toString)(nova_standard_primitive_NovaNull*, nova_standard_exception_NovaExceptionData*);
+	char (*nova_standard_NovaString_Novavirtual_equals)(nova_standard_NovaString*, nova_standard_exception_NovaExceptionData*, nova_standard_NovaString*);
+	nova_standard_NovaString* (*nova_standard_primitive_NovaNull_Novavirtual_concat)(nova_standard_primitive_NovaNull*, nova_standard_exception_NovaExceptionData*, nova_standard_NovaString*);
 } nova_VTable_nova_standard_primitive_NovaNull;
 
 CCLASS_CLASS
@@ -45,8 +45,8 @@ CCLASS_CLASS
 void nova_standard_primitive_NovaNullNova_init_static(nova_standard_exception_NovaExceptionData* exceptionData);
 nova_standard_primitive_NovaNull* nova_standard_primitive_NovaNull_Nova0_construct(nova_standard_primitive_NovaNull* this, nova_standard_exception_NovaExceptionData* exceptionData);
 void nova_del_Null(nova_standard_primitive_NovaNull** this, nova_standard_exception_NovaExceptionData* exceptionData);
-nova_standard_NovaString* nova_standard_primitive_NovaNull_Nova0_toString(nova_standard_primitive_NovaNull* this, nova_standard_exception_NovaExceptionData* exceptionData);
-nova_standard_NovaString* nova_standard_primitive_NovaNull_Nova0_concat(nova_standard_primitive_NovaNull* this, nova_standard_exception_NovaExceptionData* exceptionData, nova_standard_NovaString* l0_Novaother);
+nova_standard_NovaString* nova_standard_primitive_NovaNull_NovatoString(nova_standard_primitive_NovaNull* this, nova_standard_exception_NovaExceptionData* exceptionData);
+nova_standard_NovaString* nova_standard_primitive_NovaNull_Novaconcat(nova_standard_primitive_NovaNull* this, nova_standard_exception_NovaExceptionData* exceptionData, nova_standard_NovaString* l0_Novaother);
 void nova_standard_primitive_NovaNull_Novathis(nova_standard_primitive_NovaNull* this, nova_standard_exception_NovaExceptionData* exceptionData);
 void nova_standard_primitive_NovaNull_Novasuper(nova_standard_primitive_NovaNull* this, nova_standard_exception_NovaExceptionData* exceptionData);
 

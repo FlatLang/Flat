@@ -6,7 +6,7 @@ nova_VTable_stabilitytest_NovaStabilityExceptionHandler nova_VTable_stabilitytes
 {
 	nova_standard_NovaObject_Nova0_toString,
 	nova_standard_NovaObject_Nova0_equals,
-	stabilitytest_NovaStabilityExceptionHandler_Nova0_uncaughtException,
+	stabilitytest_NovaStabilityExceptionHandler_NovauncaughtException,
 };
 CCLASS_PRIVATE
 (
@@ -56,7 +56,7 @@ void stabilitytest_NovaStabilityExceptionHandler_Novathis(stabilitytest_NovaStab
 	this->prv->stabilitytest_NovaStabilityExceptionHandler_Novaprogram = l0_Novaprogram;
 }
 
-void stabilitytest_NovaStabilityExceptionHandler_Nova0_uncaughtException(stabilitytest_NovaStabilityExceptionHandler* this, nova_standard_exception_NovaExceptionData* exceptionData, nova_standard_thread_NovaThread* l0_Novathread, nova_standard_exception_NovaException* l0_Novaexception)
+void stabilitytest_NovaStabilityExceptionHandler_NovauncaughtException(stabilitytest_NovaStabilityExceptionHandler* this, nova_standard_exception_NovaExceptionData* exceptionData, nova_standard_thread_NovaThread* l0_Novathread, nova_standard_exception_NovaException* l0_Novaexception)
 {
 	stabilitytest_NovaStabilityTest_Nova0_fail(this->prv->stabilitytest_NovaStabilityExceptionHandler_Novaprogram, exceptionData);
 }

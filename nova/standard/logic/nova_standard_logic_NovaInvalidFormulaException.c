@@ -24,7 +24,7 @@ nova_standard_logic_NovaInvalidFormulaException* nova_standard_logic_NovaInvalid
 	nova_standard_logic_NovaInvalidFormulaException_Novasuper(this, 0);
 	
 	{
-		nova_standard_logic_NovaInvalidFormulaException_Nova0_this(this, exceptionData, l0_Novamessage);
+		nova_standard_logic_NovaInvalidFormulaException_Novathis(this, exceptionData, l0_Novamessage);
 	}
 	
 	return this;
@@ -43,7 +43,7 @@ void nova_del_InvalidFormulaException(nova_standard_logic_NovaInvalidFormulaExce
 	NOVA_FREE(*this);
 }
 
-void nova_standard_logic_NovaInvalidFormulaException_Nova0_this(nova_standard_logic_NovaInvalidFormulaException* this, nova_standard_exception_NovaExceptionData* exceptionData, nova_standard_NovaString* l0_Novamessage)
+void nova_standard_logic_NovaInvalidFormulaException_Novathis(nova_standard_logic_NovaInvalidFormulaException* this, nova_standard_exception_NovaExceptionData* exceptionData, nova_standard_NovaString* l0_Novamessage)
 {
 	nova_standard_exception_NovaException_Nova0_this((nova_standard_exception_NovaException*)(this), exceptionData, l0_Novamessage);
 }

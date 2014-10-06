@@ -49,7 +49,7 @@ void stabilitytest_NovaPolymorphicSuperClass_NovagiveBirth(stabilitytest_NovaPol
 
 nova_standard_NovaString* stabilitytest_NovaPolymorphicSuperClass_Nova0_toString(stabilitytest_NovaPolymorphicSuperClass* this, nova_standard_exception_NovaExceptionData* exceptionData)
 {
-	return nova_standard_NovaString_Novaconstruct(0, exceptionData, "super class");
+	return nova_standard_NovaString_Nova1_construct(0, exceptionData, "super class");
 }
 
 void stabilitytest_NovaPolymorphicSuperClass_Novathis(stabilitytest_NovaPolymorphicSuperClass* this, nova_standard_exception_NovaExceptionData* exceptionData)

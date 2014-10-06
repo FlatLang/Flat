@@ -18,7 +18,7 @@ typedef struct example_NovaGenericDemo example_NovaGenericDemo;
 #include <nova/standard/primitive/number/nova_standard_primitive_number_NovaFloat.h>
 #include <nova/standard/primitive/number/nova_standard_primitive_number_NovaDouble.h>
 #include <nova/standard/primitive/nova_standard_primitive_NovaNull.h>
-#include <nova/standard/primitive/nova_standard_primitive_NovaChar.h>
+#include <nova/standard/primitive/number/nova_standard_primitive_number_NovaChar.h>
 #include <nova/standard/primitive/nova_standard_primitive_NovaBool.h>
 #include <nova/standard/gc/nova_standard_gc_NovaGC.h>
 #include <nova/standard/nova_standard_NovaObject.h>
@@ -40,6 +40,7 @@ CCLASS_CLASS
 	nova_VTable_example_NovaGenericDemo* vtable;
 )
 
+void example_NovaGenericDemoNova_init_static(nova_standard_exception_NovaExceptionData* exceptionData);
 example_NovaGenericDemo* example_NovaGenericDemo_Nova0_construct(example_NovaGenericDemo* this, nova_standard_exception_NovaExceptionData* exceptionData);
 void nova_del_GenericDemo(example_NovaGenericDemo** this, nova_standard_exception_NovaExceptionData* exceptionData);
 void example_NovaGenericDemo_static_Novamain(example_NovaGenericDemo* this, nova_standard_exception_NovaExceptionData* exceptionData, nova_standard_NovaString** l0_Novaargs);

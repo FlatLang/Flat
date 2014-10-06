@@ -18,13 +18,14 @@ typedef struct nova_standard_primitive_NovaBool nova_standard_primitive_NovaBool
 #include <nova/standard/primitive/number/nova_standard_primitive_number_NovaFloat.h>
 #include <nova/standard/primitive/number/nova_standard_primitive_number_NovaDouble.h>
 #include <nova/standard/primitive/nova_standard_primitive_NovaNull.h>
-#include <nova/standard/primitive/nova_standard_primitive_NovaChar.h>
+#include <nova/standard/primitive/number/nova_standard_primitive_number_NovaChar.h>
 #include <nova/standard/primitive/nova_standard_primitive_NovaBool.h>
 #include <nova/standard/gc/nova_standard_gc_NovaGC.h>
 #include <nova/standard/nova_standard_NovaObject.h>
 #include <nova/standard/nova_standard_NovaString.h>
 #include <nova/standard/nova_standard_NovaSystem.h>
 #include <nova/standard/nova_standard_NovaMath.h>
+#include <nova/standard/primitive/nova_standard_primitive_NovaPrimitive.h>
 
 typedef struct nova_VTable_nova_standard_primitive_NovaBool
 {
@@ -37,12 +38,13 @@ CCLASS_CLASS
 	nova_standard_primitive_NovaBool, 
 	
 	nova_VTable_nova_standard_primitive_NovaBool* vtable;
+	char nova_standard_primitive_NovaBool_Novavalue;
 )
 
 void nova_standard_primitive_NovaBoolNova_init_static(nova_standard_exception_NovaExceptionData* exceptionData);
-nova_standard_primitive_NovaBool* nova_standard_primitive_NovaBool_Nova0_construct(nova_standard_primitive_NovaBool* this, nova_standard_exception_NovaExceptionData* exceptionData);
 void nova_del_Bool(nova_standard_primitive_NovaBool** this, nova_standard_exception_NovaExceptionData* exceptionData);
-void nova_standard_primitive_NovaBool_Novathis(nova_standard_primitive_NovaBool* this, nova_standard_exception_NovaExceptionData* exceptionData);
+void nova_standard_primitive_NovaBool_Novathis(nova_standard_primitive_NovaBool* this, nova_standard_exception_NovaExceptionData* exceptionData, char l0_Novavalue);
+nova_standard_NovaString* nova_standard_primitive_NovaBool_static_NovatoString(nova_standard_primitive_NovaBool* this, nova_standard_exception_NovaExceptionData* exceptionData, char l0_Novavalue);
 void nova_standard_primitive_NovaBool_Novasuper(nova_standard_primitive_NovaBool* this, nova_standard_exception_NovaExceptionData* exceptionData);
 
 #endif

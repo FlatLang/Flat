@@ -44,17 +44,20 @@ void nova_del_StabilityTest(stabilitytest_NovaStabilityTest** this, nova_standar
 void stabilitytest_NovaStabilityTest_static_Novamain(stabilitytest_NovaStabilityTest* this, nova_standard_exception_NovaExceptionData* exceptionData, nova_standard_NovaString** l0_Novaargs)
 {
 		stabilitytest_NovaStabilityTest* l1_Novatest;
-		long_long l1_Novastart;
+		long l1_Novastart;
 		int l1_Novaresult;
-		long_long l1_Novatime;
+		long l1_Novatime;
+		nova_standard_NovaString* l1_Novas;
 		nova_standard_NovaString* nova_local_0;
 		
 		l1_Novatest = stabilitytest_NovaStabilityTest_Nova0_construct(0, exceptionData);
 		l1_Novastart = nova_standard_time_NovaTime_static_NovacurrentTimeMillis(0, exceptionData);
 		l1_Novaresult = stabilitytest_NovaStabilityTest_NovarunTests(l1_Novatest, exceptionData);
 		l1_Novatime = nova_standard_time_NovaTime_static_NovacurrentTimeMillis(0, exceptionData) - l1_Novastart;
-		nova_local_0 = nova_standard_primitive_number_NovaLong_Nova3_toString(nova_standard_primitive_number_NovaLong_Novaconstruct(0, exceptionData, l1_Novatime), exceptionData);
-		nova_standard_io_NovaConsole_static_Nova0_writeLine(0, exceptionData, nova_standard_NovaString_Nova0_concat(nova_standard_NovaString_Novaconstruct(0, exceptionData, "Took "), exceptionData, nova_local_0->vtable->nova_standard_NovaString_Novavirtual0_concat(nova_local_0, exceptionData, nova_standard_NovaString_Novaconstruct(0, exceptionData, "ms"))));
+		l1_Novas = nova_standard_NovaObject_NovagetHashCode((nova_standard_NovaObject*)(nova_standard_primitive_number_NovaInt_Novaconstruct(0, exceptionData, l1_Novaresult)), exceptionData);
+		nova_standard_io_NovaConsole_static_Nova0_writeLine(0, exceptionData, nova_standard_NovaString_Nova0_concat(nova_standard_NovaString_Nova1_construct(0, exceptionData, "!!!"), exceptionData, l1_Novas));
+		nova_local_0 = nova_standard_primitive_number_NovaLong_static_Nova0_toString(0, exceptionData, l1_Novatime);
+		nova_standard_io_NovaConsole_static_Nova0_writeLine(0, exceptionData, nova_standard_NovaString_Nova0_concat(nova_standard_NovaString_Nova1_construct(0, exceptionData, "Took "), exceptionData, nova_local_0->vtable->nova_standard_NovaString_Novavirtual0_concat(nova_local_0, exceptionData, nova_standard_NovaString_Nova1_construct(0, exceptionData, "ms"))));
 		nova_standard_io_NovaConsole_static_NovawaitForEnter(0, exceptionData);
 }
 
@@ -72,7 +75,7 @@ int stabilitytest_NovaStabilityTest_NovarunTests(stabilitytest_NovaStabilityTest
 						stabilitytest_NovaSyntaxStability_static_Novatest(0, exceptionData, this);
 						stabilitytest_NovaClosureStability_static_Novatest(0, exceptionData, this);
 						stabilitytest_NovaPolymorphismStability_static_Novatest(0, exceptionData, this);
-						nova_standard_io_NovaConsole_static_Nova0_writeLine(0, exceptionData, nova_standard_NovaString_Novaconstruct(0, exceptionData, "All OK"));
+						nova_standard_io_NovaConsole_static_Nova0_writeLine(0, exceptionData, nova_standard_NovaString_Nova1_construct(0, exceptionData, "All OK"));
 						return 0;
 				}
 		}
@@ -91,7 +94,7 @@ int stabilitytest_NovaStabilityTest_NovarunTests(stabilitytest_NovaStabilityTest
 
 void stabilitytest_NovaStabilityTest_Nova0_fail(stabilitytest_NovaStabilityTest* this, nova_standard_exception_NovaExceptionData* exceptionData)
 {
-		stabilitytest_NovaStabilityTest_Nova1_fail(this, exceptionData, nova_standard_NovaString_Novaconstruct(0, exceptionData, "Failed"));
+		stabilitytest_NovaStabilityTest_Nova1_fail(this, exceptionData, nova_standard_NovaString_Nova1_construct(0, exceptionData, "Failed"));
 }
 
 void stabilitytest_NovaStabilityTest_Nova1_fail(stabilitytest_NovaStabilityTest* this, nova_standard_exception_NovaExceptionData* exceptionData, nova_standard_NovaString* l0_Novamessage)
@@ -137,9 +140,10 @@ int main(int argc, char** argvs)
 		nova_standard_logic_NovaStatementGroupNova_init_static(exceptionData);
 		nova_standard_logic_NovaInvalidFormulaExceptionNova_init_static(exceptionData);
 		nova_standard_process_NovaProcessNova_init_static(exceptionData);
-		nova_standard_primitive_NovaCharNova_init_static(exceptionData);
 		nova_standard_primitive_NovaBoolNova_init_static(exceptionData);
 		nova_standard_primitive_NovaNullNova_init_static(exceptionData);
+		nova_standard_primitive_NovaPrimitiveNova_init_static(exceptionData);
+		nova_standard_primitive_number_NovaCharNova_init_static(exceptionData);
 		nova_standard_primitive_number_NovaByteNova_init_static(exceptionData);
 		nova_standard_primitive_number_NovaShortNova_init_static(exceptionData);
 		nova_standard_primitive_number_NovaIntNova_init_static(exceptionData);
@@ -188,6 +192,7 @@ int main(int argc, char** argvs)
 		stabilitytest_NovaStabilityExceptionHandlerNova_init_static(exceptionData);
 		stabilitytest_NovaThreadImplementationNova_init_static(exceptionData);
 		stabilitytest_NovaUnstableExceptionNova_init_static(exceptionData);
+		example_NovaGenericDemoNova_init_static(exceptionData);
 		
 		args = (nova_standard_NovaString**)NOVA_MALLOC(argc * sizeof(nova_standard_NovaString));
 		
@@ -195,7 +200,7 @@ int main(int argc, char** argvs)
 		{
 				char* str = (char*)NOVA_MALLOC(sizeof(char) * strlen(argvs[i]) + 1);
 				copy_string(str, argvs[i]);
-				args[i] = nova_standard_NovaString_Novaconstruct(0, 0, str);
+				args[i] = nova_standard_NovaString_Nova1_construct(0, 0, str);
 		}
 		
 		TRY

@@ -28,10 +28,10 @@ typedef struct nova_standard_primitive_NovaChar nova_standard_primitive_NovaChar
 
 typedef struct nova_VTable_nova_standard_primitive_NovaChar
 {
-	nova_standard_NovaString* (*nova_standard_primitive_NovaChar_Novavirtual0_toString)(nova_standard_primitive_NovaChar*, nova_standard_exception_NovaExceptionData*);
+	nova_standard_NovaString* (*nova_standard_NovaObject_Novavirtual0_toString)(nova_standard_NovaObject*, nova_standard_exception_NovaExceptionData*);
 	char (*nova_standard_NovaObject_Novavirtual0_equals)(nova_standard_NovaObject*, nova_standard_exception_NovaExceptionData*, nova_standard_NovaObject*);
-	int (*nova_standard_primitive_number_NovaNumber_static_Novavirtual0_numDigits)(nova_standard_primitive_number_NovaNumber*, nova_standard_exception_NovaExceptionData*, int);
-	nova_standard_NovaString* (*nova_standard_primitive_NovaChar_Novavirtual1_toString)(nova_standard_primitive_NovaChar*, nova_standard_exception_NovaExceptionData*, char);
+	int (*nova_standard_primitive_number_NovaNumber_static_Novavirtual0_numDigits)(nova_standard_primitive_number_NovaNumber*, nova_standard_exception_NovaExceptionData*, nova_standard_primitive_number_NovaNumber*);
+	nova_standard_NovaString* (*nova_standard_primitive_NovaChar_static_Novavirtual_toString)(nova_standard_primitive_NovaChar*, nova_standard_exception_NovaExceptionData*, char);
 } nova_VTable_nova_standard_primitive_NovaChar;
 
 CCLASS_CLASS
@@ -43,11 +43,9 @@ CCLASS_CLASS
 )
 
 void nova_standard_primitive_NovaCharNova_init_static(nova_standard_exception_NovaExceptionData* exceptionData);
-nova_standard_primitive_NovaChar* nova_standard_primitive_NovaChar_Novaconstruct(nova_standard_primitive_NovaChar* this, nova_standard_exception_NovaExceptionData* exceptionData, char l0_Novavalue);
 void nova_del_Char(nova_standard_primitive_NovaChar** this, nova_standard_exception_NovaExceptionData* exceptionData);
 void nova_standard_primitive_NovaChar_Novathis(nova_standard_primitive_NovaChar* this, nova_standard_exception_NovaExceptionData* exceptionData, char l0_Novavalue);
-nova_standard_NovaString* nova_standard_primitive_NovaChar_Nova1_toString(nova_standard_primitive_NovaChar* this, nova_standard_exception_NovaExceptionData* exceptionData, char l0_Novac);
-nova_standard_NovaString* nova_standard_primitive_NovaChar_Nova0_toString(nova_standard_primitive_NovaChar* this, nova_standard_exception_NovaExceptionData* exceptionData);
+nova_standard_NovaString* nova_standard_primitive_NovaChar_static_NovatoString(nova_standard_primitive_NovaChar* this, nova_standard_exception_NovaExceptionData* exceptionData, char l0_Novac);
 void nova_standard_primitive_NovaChar_Novasuper(nova_standard_primitive_NovaChar* this, nova_standard_exception_NovaExceptionData* exceptionData);
 
 #endif

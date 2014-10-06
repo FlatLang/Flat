@@ -6,7 +6,7 @@ nova_VTable_stabilitytest_NovaThreadImplementation nova_VTable_stabilitytest_Nov
 {
 	nova_standard_NovaObject_Nova0_toString,
 	nova_standard_NovaObject_Nova0_equals,
-	stabilitytest_NovaThreadImplementation_Nova0_run,
+	stabilitytest_NovaThreadImplementation_Novarun,
 };
 CCLASS_PRIVATE
 (
@@ -61,14 +61,14 @@ void stabilitytest_NovaThreadImplementation_Novathis(stabilitytest_NovaThreadImp
 	this->prv->stabilitytest_NovaThreadImplementation_Novamillis = l0_Novamillis;
 }
 
-void stabilitytest_NovaThreadImplementation_Nova0_run(stabilitytest_NovaThreadImplementation* this, nova_standard_exception_NovaExceptionData* exceptionData)
+void stabilitytest_NovaThreadImplementation_Novarun(stabilitytest_NovaThreadImplementation* this, nova_standard_exception_NovaExceptionData* exceptionData)
 {
 	int l2_Novai;
 	
 	l2_Novai = 0;
 	for (; l2_Novai < this->prv->stabilitytest_NovaThreadImplementation_Novatimes; l2_Novai++)
 	{
-		nova_standard_thread_NovaThread_static_Novasleep(0, exceptionData, (long_long)(this->prv->stabilitytest_NovaThreadImplementation_Novamillis));
+		nova_standard_thread_NovaThread_static_Novasleep(0, exceptionData, (long)(this->prv->stabilitytest_NovaThreadImplementation_Novamillis));
 	}
 }
 

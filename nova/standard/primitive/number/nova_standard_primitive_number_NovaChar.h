@@ -1,8 +1,8 @@
 #pragma once
-#ifndef FILE_LogicalConnective_NOVA
-#define FILE_LogicalConnective_NOVA
+#ifndef FILE_Char_NOVA
+#define FILE_Char_NOVA
 
-typedef struct nova_standard_logic_NovaLogicalConnective nova_standard_logic_NovaLogicalConnective;
+typedef struct nova_standard_primitive_number_NovaChar nova_standard_primitive_number_NovaChar;
 
 #include <Nova.h>
 #include <ExceptionHandler.h>
@@ -25,25 +25,27 @@ typedef struct nova_standard_logic_NovaLogicalConnective nova_standard_logic_Nov
 #include <nova/standard/nova_standard_NovaString.h>
 #include <nova/standard/nova_standard_NovaSystem.h>
 #include <nova/standard/nova_standard_NovaMath.h>
-#include <nova/standard/logic/nova_standard_logic_NovaStatementComponent.h>
 
-typedef struct nova_VTable_nova_standard_logic_NovaLogicalConnective
+typedef struct nova_VTable_nova_standard_primitive_number_NovaChar
 {
 	nova_standard_NovaString* (*nova_standard_NovaObject_Novavirtual0_toString)(nova_standard_NovaObject*, nova_standard_exception_NovaExceptionData*);
 	char (*nova_standard_NovaObject_Novavirtual0_equals)(nova_standard_NovaObject*, nova_standard_exception_NovaExceptionData*, nova_standard_NovaObject*);
-} nova_VTable_nova_standard_logic_NovaLogicalConnective;
+	int (*nova_standard_primitive_number_NovaNumber_static_Novavirtual0_numDigits)(nova_standard_primitive_number_NovaNumber*, nova_standard_exception_NovaExceptionData*, nova_standard_primitive_number_NovaNumber*);
+	nova_standard_NovaString* (*nova_standard_primitive_number_NovaChar_static_Novavirtual_toString)(nova_standard_primitive_number_NovaChar*, nova_standard_exception_NovaExceptionData*, char);
+} nova_VTable_nova_standard_primitive_number_NovaChar;
 
 CCLASS_CLASS
 (
-	nova_standard_logic_NovaLogicalConnective, 
+	nova_standard_primitive_number_NovaChar, 
 	
-	nova_VTable_nova_standard_logic_NovaLogicalConnective* vtable;
+	nova_VTable_nova_standard_primitive_number_NovaChar* vtable;
+	char nova_standard_primitive_number_NovaChar_Novavalue;
 )
 
-void nova_standard_logic_NovaLogicalConnectiveNova_init_static(nova_standard_exception_NovaExceptionData* exceptionData);
-nova_standard_logic_NovaLogicalConnective* nova_standard_logic_NovaLogicalConnective_Novaconstruct(nova_standard_logic_NovaLogicalConnective* this, nova_standard_exception_NovaExceptionData* exceptionData);
-void nova_del_LogicalConnective(nova_standard_logic_NovaLogicalConnective** this, nova_standard_exception_NovaExceptionData* exceptionData);
-void nova_standard_logic_NovaLogicalConnective_Novathis(nova_standard_logic_NovaLogicalConnective* this, nova_standard_exception_NovaExceptionData* exceptionData);
-void nova_standard_logic_NovaLogicalConnective_Novasuper(nova_standard_logic_NovaLogicalConnective* this, nova_standard_exception_NovaExceptionData* exceptionData);
+void nova_standard_primitive_number_NovaCharNova_init_static(nova_standard_exception_NovaExceptionData* exceptionData);
+void nova_del_Char(nova_standard_primitive_number_NovaChar** this, nova_standard_exception_NovaExceptionData* exceptionData);
+void nova_standard_primitive_number_NovaChar_Novathis(nova_standard_primitive_number_NovaChar* this, nova_standard_exception_NovaExceptionData* exceptionData, char l0_Novavalue);
+nova_standard_NovaString* nova_standard_primitive_number_NovaChar_static_NovatoString(nova_standard_primitive_number_NovaChar* this, nova_standard_exception_NovaExceptionData* exceptionData, char l0_Novac);
+void nova_standard_primitive_number_NovaChar_Novasuper(nova_standard_primitive_number_NovaChar* this, nova_standard_exception_NovaExceptionData* exceptionData);
 
 #endif

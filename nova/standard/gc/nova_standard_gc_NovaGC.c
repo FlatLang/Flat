@@ -46,22 +46,22 @@ void nova_standard_gc_NovaGC_static_Novainit(nova_standard_gc_NovaGC* this, nova
 	GC_INIT();
 }
 
-long_long nova_standard_gc_NovaGC_static_NovagetFreeBytes(nova_standard_gc_NovaGC* this, nova_standard_exception_NovaExceptionData* exceptionData)
+long nova_standard_gc_NovaGC_static_NovagetFreeBytes(nova_standard_gc_NovaGC* this, nova_standard_exception_NovaExceptionData* exceptionData)
 {
 	return GC_get_free_bytes();
 }
 
-long_long nova_standard_gc_NovaGC_static_NovagetTotalBytes(nova_standard_gc_NovaGC* this, nova_standard_exception_NovaExceptionData* exceptionData)
+long nova_standard_gc_NovaGC_static_NovagetTotalBytes(nova_standard_gc_NovaGC* this, nova_standard_exception_NovaExceptionData* exceptionData)
 {
 	return GC_get_total_bytes();
 }
 
-long_long nova_standard_gc_NovaGC_static_NovagetHeapSize(nova_standard_gc_NovaGC* this, nova_standard_exception_NovaExceptionData* exceptionData)
+long nova_standard_gc_NovaGC_static_NovagetHeapSize(nova_standard_gc_NovaGC* this, nova_standard_exception_NovaExceptionData* exceptionData)
 {
 	return GC_get_heap_size();
 }
 
-long_long nova_standard_gc_NovaGC_static_NovagetBytesSinceGC(nova_standard_gc_NovaGC* this, nova_standard_exception_NovaExceptionData* exceptionData)
+long nova_standard_gc_NovaGC_static_NovagetBytesSinceGC(nova_standard_gc_NovaGC* this, nova_standard_exception_NovaExceptionData* exceptionData)
 {
 	return GC_get_bytes_since_gc();
 }

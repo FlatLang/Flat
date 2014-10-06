@@ -4,10 +4,10 @@
 
 nova_VTable_nova_standard_primitive_number_NovaDouble nova_VTable_nova_standard_primitive_number_NovaDouble_val =
 {
-	nova_standard_primitive_number_NovaDouble_Nova3_toString,
+	nova_standard_NovaObject_Nova0_toString,
 	nova_standard_NovaObject_Nova0_equals,
-	nova_standard_primitive_number_NovaNumber_static_Nova0_numDigits,
-	nova_standard_primitive_number_NovaNumber_static_Nova1_toString,
+	nova_standard_primitive_number_NovaDouble_static_Nova0_numDigits,
+	nova_standard_primitive_number_NovaDouble_static_Nova0_toString,
 };
 
 nova_standard_NovaString* nova_standard_primitive_number_NovaDouble_static_NovagenString(nova_standard_primitive_number_NovaDouble* this, nova_standard_exception_NovaExceptionData* exceptionData, char* l0_Novabuffer, int l0_NovalastIndex);
@@ -25,8 +25,10 @@ nova_standard_primitive_number_NovaDouble* nova_standard_primitive_number_NovaDo
 	CCLASS_NEW(nova_standard_primitive_number_NovaDouble, this,);
 	this->vtable = &nova_VTable_nova_standard_primitive_number_NovaDouble_val;
 	nova_standard_NovaObject_Novasuper((nova_standard_NovaObject*)this, 0);
+	nova_standard_primitive_NovaPrimitive_Novasuper((nova_standard_primitive_NovaPrimitive*)this, 0);
 	nova_standard_primitive_number_NovaNumber_Novasuper((nova_standard_primitive_number_NovaNumber*)this, 0);
 	nova_standard_NovaObject_Novathis((nova_standard_NovaObject*)(this), exceptionData);
+	nova_standard_primitive_NovaPrimitive_Novathis((nova_standard_primitive_NovaPrimitive*)(this), exceptionData);
 	nova_standard_primitive_number_NovaNumber_Novathis((nova_standard_primitive_number_NovaNumber*)(this), exceptionData);
 	nova_standard_primitive_number_NovaDouble_Novasuper(this, 0);
 	
@@ -56,13 +58,13 @@ void nova_standard_primitive_number_NovaDouble_Novathis(nova_standard_primitive_
 	this->nova_standard_primitive_number_NovaDouble_Novavalue = l0_Novavalue;
 }
 
-int nova_standard_primitive_number_NovaDouble_static_NovanumDigits(nova_standard_primitive_number_NovaDouble* this, nova_standard_exception_NovaExceptionData* exceptionData, double l0_Novanumber)
+int nova_standard_primitive_number_NovaDouble_static_Nova0_numDigits(nova_standard_primitive_number_NovaDouble* this, nova_standard_exception_NovaExceptionData* exceptionData, double l0_Novanumber)
 {
 	int l1_Novasize;
 	
 	if (l0_Novanumber < 0)
 	{
-		return nova_standard_primitive_number_NovaDouble_static_NovanumDigits((nova_standard_primitive_number_NovaDouble*)nova_null, exceptionData, -l0_Novanumber) + 1;
+		return nova_standard_primitive_number_NovaDouble_static_Nova0_numDigits((nova_standard_primitive_number_NovaDouble*)nova_null, exceptionData, -l0_Novanumber) + 1;
 	}
 	l0_Novanumber = l0_Novanumber / 10;
 	l1_Novasize = 1;
@@ -75,9 +77,9 @@ int nova_standard_primitive_number_NovaDouble_static_NovanumDigits(nova_standard
 
 nova_standard_NovaString* nova_standard_primitive_number_NovaDouble_static_NovagenString(nova_standard_primitive_number_NovaDouble* this, nova_standard_exception_NovaExceptionData* exceptionData, char* l0_Novabuffer, int l0_NovalastIndex)
 {
-	l0_Novabuffer = realloc(l0_Novabuffer, ++l0_NovalastIndex + 1);
+	l0_Novabuffer = (char*)(realloc((char*)(l0_Novabuffer), (int)(++l0_NovalastIndex + 1)));
 	l0_Novabuffer[l0_NovalastIndex] = '\0';
-	return nova_standard_NovaString_Novaconstruct(0, exceptionData, l0_Novabuffer);
+	return nova_standard_NovaString_Nova1_construct(0, exceptionData, l0_Novabuffer);
 }
 
 char* nova_standard_primitive_number_NovaDouble_static_NovagenBuffer(nova_standard_primitive_number_NovaDouble* this, nova_standard_exception_NovaExceptionData* exceptionData, double l0_Novavalue)
@@ -86,8 +88,8 @@ char* nova_standard_primitive_number_NovaDouble_static_NovagenBuffer(nova_standa
 	char* l1_Novabuffer;
 	
 	l1_Novasize = 11 + 1 + 15;
-	l1_Novabuffer = (char*)NOVA_MALLOC(sizeof(char[l1_Novasize]));
-	sprintf(l1_Novabuffer, "%.15f", l0_Novavalue);
+	l1_Novabuffer = (char*)NOVA_MALLOC(sizeof(nova_standard_primitive_number_NovaChar[l1_Novasize]));
+	sprintf((char*)(l1_Novabuffer), (char*)("%.15f"), (double)(l0_Novavalue));
 	return l1_Novabuffer;
 }
 
@@ -108,7 +110,7 @@ int nova_standard_primitive_number_NovaDouble_static_NovalastSignificantDigit(no
 	return l0_Novastart + 1;
 }
 
-nova_standard_NovaString* nova_standard_primitive_number_NovaDouble_static_Nova2_toString(nova_standard_primitive_number_NovaDouble* this, nova_standard_exception_NovaExceptionData* exceptionData, double l0_Novavalue)
+nova_standard_NovaString* nova_standard_primitive_number_NovaDouble_static_Nova0_toString(nova_standard_primitive_number_NovaDouble* this, nova_standard_exception_NovaExceptionData* exceptionData, double l0_Novavalue)
 {
 	char* l1_Novabuffer;
 	int l1_Novasize;
@@ -116,7 +118,7 @@ nova_standard_NovaString* nova_standard_primitive_number_NovaDouble_static_Nova2
 	char l1_Novac;
 	
 	l1_Novabuffer = nova_standard_primitive_number_NovaDouble_static_NovagenBuffer((nova_standard_primitive_number_NovaDouble*)nova_null, exceptionData, l0_Novavalue);
-	l1_Novasize = strlen(l1_Novabuffer);
+	l1_Novasize = (int)(strlen((char*)(l1_Novabuffer)));
 	l1_NovalastIndex = l1_Novasize - 1;
 	l1_Novac = l1_Novabuffer[--l1_NovalastIndex];
 	if (l1_Novac == '0' || l1_Novac == '9')
@@ -160,16 +162,11 @@ nova_standard_NovaString* nova_standard_primitive_number_NovaDouble_static_Nova2
 	return nova_standard_primitive_number_NovaDouble_static_NovagenString((nova_standard_primitive_number_NovaDouble*)nova_null, exceptionData, l1_Novabuffer, l1_NovalastIndex);
 }
 
-nova_standard_NovaString* nova_standard_primitive_number_NovaDouble_Nova3_toString(nova_standard_primitive_number_NovaDouble* this, nova_standard_exception_NovaExceptionData* exceptionData)
-{
-	return nova_standard_primitive_number_NovaDouble_static_Nova2_toString(this, exceptionData, this->nova_standard_primitive_number_NovaDouble_Novavalue);
-}
-
-double nova_standard_primitive_number_NovaDouble_NovaparseDouble(nova_standard_primitive_number_NovaDouble* this, nova_standard_exception_NovaExceptionData* exceptionData, nova_standard_NovaString* l0_Novastr)
+double nova_standard_primitive_number_NovaDouble_static_NovaparseDouble(nova_standard_primitive_number_NovaDouble* this, nova_standard_exception_NovaExceptionData* exceptionData, nova_standard_NovaString* l0_Novastr)
 {
 	char* l1_NovapEnd;
 	
-	return strtod(nova_standard_NovaString_NovatoCharArray(l0_Novastr, exceptionData), &l1_NovapEnd);
+	return strtod((char*)(nova_standard_NovaString_NovatoCharArray(l0_Novastr, exceptionData)), (char**)&(l1_NovapEnd));
 }
 
 void nova_standard_primitive_number_NovaDouble_Novasuper(nova_standard_primitive_number_NovaDouble* this, nova_standard_exception_NovaExceptionData* exceptionData)

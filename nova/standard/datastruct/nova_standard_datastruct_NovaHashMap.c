@@ -50,21 +50,17 @@ void nova_del_HashMap(nova_standard_datastruct_NovaHashMap** this, nova_standard
 
 void nova_standard_datastruct_NovaHashMap_Novathis(nova_standard_datastruct_NovaHashMap* this, nova_standard_exception_NovaExceptionData* exceptionData)
 {
-	this->prv->nova_standard_datastruct_NovaHashMap_Novamap = hashmapCreate(10);
+	this->prv->nova_standard_datastruct_NovaHashMap_Novamap = hashmapCreate((int)(10));
 }
 
 void nova_standard_datastruct_NovaHashMap_Novaput(nova_standard_datastruct_NovaHashMap* this, nova_standard_exception_NovaExceptionData* exceptionData, nova_standard_NovaObject* l0_Novakey, nova_standard_NovaObject* l0_Novavalue)
 {
-	nova_standard_NovaString* nova_local_0;
-	
-	nova_local_0 = l0_Novavalue->vtable->nova_standard_NovaObject_Novavirtual0_toString((nova_standard_NovaObject*)(l0_Novavalue), exceptionData);
-	nova_standard_io_NovaConsole_static_Nova0_writeLine(0, exceptionData, nova_standard_NovaString_Nova0_concat(nova_standard_NovaString_Novaconstruct(0, exceptionData, "Adding "), exceptionData, nova_local_0->vtable->nova_standard_NovaString_Novavirtual0_concat(nova_local_0, exceptionData, nova_standard_NovaString_Nova0_concat(nova_standard_NovaString_Novaconstruct(0, exceptionData, " at "), exceptionData, nova_standard_primitive_number_NovaLong_Nova3_toString(nova_standard_primitive_number_NovaLong_Novaconstruct(0, exceptionData, nova_standard_NovaObject_NovagetHashCodeLong((nova_standard_NovaObject*)(l0_Novakey), exceptionData)), exceptionData)))));
-	hashmapInsert(this->prv->nova_standard_datastruct_NovaHashMap_Novamap, l0_Novavalue, nova_standard_NovaObject_NovagetHashCodeLong((nova_standard_NovaObject*)(l0_Novakey), exceptionData));
+	hashmapInsert(this->prv->nova_standard_datastruct_NovaHashMap_Novamap, l0_Novavalue, (long_long)(nova_standard_NovaObject_NovagetHashCodeLong((nova_standard_NovaObject*)(l0_Novakey), exceptionData)));
 }
 
 nova_standard_NovaObject* nova_standard_datastruct_NovaHashMap_Novaget(nova_standard_datastruct_NovaHashMap* this, nova_standard_exception_NovaExceptionData* exceptionData, nova_standard_NovaObject* l0_Novakey)
 {
-	return ((nova_standard_NovaObject*)hashmapGet(this->prv->nova_standard_datastruct_NovaHashMap_Novamap, nova_standard_NovaObject_NovagetHashCodeLong((nova_standard_NovaObject*)(l0_Novakey), exceptionData)));
+	return ((nova_standard_NovaObject*)hashmapGet(this->prv->nova_standard_datastruct_NovaHashMap_Novamap, (long_long)(nova_standard_NovaObject_NovagetHashCodeLong((nova_standard_NovaObject*)(l0_Novakey), exceptionData))));
 }
 
 void nova_standard_datastruct_NovaHashMap_Novasuper(nova_standard_datastruct_NovaHashMap* this, nova_standard_exception_NovaExceptionData* exceptionData)

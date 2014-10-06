@@ -18,7 +18,7 @@ typedef struct nova_standard_thread_NovaThread nova_standard_thread_NovaThread;
 #include <nova/standard/primitive/number/nova_standard_primitive_number_NovaFloat.h>
 #include <nova/standard/primitive/number/nova_standard_primitive_number_NovaDouble.h>
 #include <nova/standard/primitive/nova_standard_primitive_NovaNull.h>
-#include <nova/standard/primitive/nova_standard_primitive_NovaChar.h>
+#include <nova/standard/primitive/number/nova_standard_primitive_number_NovaChar.h>
 #include <nova/standard/primitive/nova_standard_primitive_NovaBool.h>
 #include <nova/standard/gc/nova_standard_gc_NovaGC.h>
 #include <nova/standard/nova_standard_NovaObject.h>
@@ -47,7 +47,7 @@ nova_standard_thread_NovaThread* nova_standard_thread_NovaThread_Nova0_construct
 void nova_del_Thread(nova_standard_thread_NovaThread** this, nova_standard_exception_NovaExceptionData* exceptionData);
 void nova_standard_thread_NovaThread_Novastart(nova_standard_thread_NovaThread* this, nova_standard_exception_NovaExceptionData* exceptionData);
 void nova_standard_thread_NovaThread_Novajoin(nova_standard_thread_NovaThread* this, nova_standard_exception_NovaExceptionData* exceptionData);
-void nova_standard_thread_NovaThread_static_Novasleep(nova_standard_thread_NovaThread* this, nova_standard_exception_NovaExceptionData* exceptionData, long_long l0_Novamillis);
+void nova_standard_thread_NovaThread_static_Novasleep(nova_standard_thread_NovaThread* this, nova_standard_exception_NovaExceptionData* exceptionData, long l0_Novamillis);
 void nova_standard_thread_NovaThread_Nova0_run(nova_standard_thread_NovaThread* this, nova_standard_exception_NovaExceptionData* exceptionData);
 void nova_standard_thread_NovaThread_Novathis(nova_standard_thread_NovaThread* this, nova_standard_exception_NovaExceptionData* exceptionData);
 void nova_standard_thread_NovaThread_Novasuper(nova_standard_thread_NovaThread* this, nova_standard_exception_NovaExceptionData* exceptionData);

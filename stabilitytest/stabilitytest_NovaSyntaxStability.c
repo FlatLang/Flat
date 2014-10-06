@@ -67,7 +67,7 @@ void stabilitytest_NovaSyntaxStability_static_NovacheckWhileLoops(stabilitytest_
 	int l1_Novanum2;
 	int l1_Novanum3;
 	
-	nova_standard_io_NovaConsole_static_Nova0_write(0, exceptionData, nova_standard_NovaString_Novaconstruct(0, exceptionData, "Checking inline while loop... "));
+	nova_standard_io_NovaConsole_static_Nova0_write(0, exceptionData, nova_standard_NovaString_Nova1_construct(0, exceptionData, "Checking inline while loop... "));
 	l1_Novanum = 0;
 	l1_Novanum2 = 0;
 	l1_Novanum3 = 0;
@@ -91,9 +91,9 @@ void stabilitytest_NovaSyntaxStability_static_NovacheckWhileLoops(stabilitytest_
 	}
 	if (l1_Novanum != 100 || l1_Novanum2 != 100 || l1_Novanum3 != 100)
 	{
-		stabilitytest_NovaStabilityTest_Nova1_fail(l0_Novaprogram, exceptionData, nova_standard_NovaString_Novaconstruct(0, exceptionData, "Inline while loop failed."));
+		stabilitytest_NovaStabilityTest_Nova1_fail(l0_Novaprogram, exceptionData, nova_standard_NovaString_Nova1_construct(0, exceptionData, "Inline while loop failed."));
 	}
-	nova_standard_io_NovaConsole_static_Nova0_writeLine(0, exceptionData, nova_standard_NovaString_Novaconstruct(0, exceptionData, "OK"));
+	nova_standard_io_NovaConsole_static_Nova0_writeLine(0, exceptionData, nova_standard_NovaString_Nova1_construct(0, exceptionData, "OK"));
 }
 
 void stabilitytest_NovaSyntaxStability_static_NovacheckForLoops(stabilitytest_NovaSyntaxStability* this, nova_standard_exception_NovaExceptionData* exceptionData, stabilitytest_NovaStabilityTest* l0_Novaprogram)
@@ -105,7 +105,7 @@ void stabilitytest_NovaSyntaxStability_static_NovacheckForLoops(stabilitytest_No
 	int l6_Novai;
 	int l7_Novai;
 	
-	nova_standard_io_NovaConsole_static_Nova0_write(0, exceptionData, nova_standard_NovaString_Novaconstruct(0, exceptionData, "Checking inline for loop... "));
+	nova_standard_io_NovaConsole_static_Nova0_write(0, exceptionData, nova_standard_NovaString_Nova1_construct(0, exceptionData, "Checking inline for loop... "));
 	l1_Novanum = 0;
 	l1_Novanum2 = 0;
 	l1_Novanum3 = 0;
@@ -132,16 +132,16 @@ void stabilitytest_NovaSyntaxStability_static_NovacheckForLoops(stabilitytest_No
 	}
 	if (l1_Novanum != 100 || l1_Novanum2 != 100 || l1_Novanum3 != 100)
 	{
-		stabilitytest_NovaStabilityTest_Nova1_fail(l0_Novaprogram, exceptionData, nova_standard_NovaString_Novaconstruct(0, exceptionData, "Inline for loop failed."));
+		stabilitytest_NovaStabilityTest_Nova1_fail(l0_Novaprogram, exceptionData, nova_standard_NovaString_Nova1_construct(0, exceptionData, "Inline for loop failed."));
 	}
-	nova_standard_io_NovaConsole_static_Nova0_writeLine(0, exceptionData, nova_standard_NovaString_Novaconstruct(0, exceptionData, "OK"));
+	nova_standard_io_NovaConsole_static_Nova0_writeLine(0, exceptionData, nova_standard_NovaString_Nova1_construct(0, exceptionData, "OK"));
 }
 
 void stabilitytest_NovaSyntaxStability_static_NovacheckUntil(stabilitytest_NovaSyntaxStability* this, nova_standard_exception_NovaExceptionData* exceptionData, stabilitytest_NovaStabilityTest* l0_Novaprogram)
 {
 	nova_standard_NovaObject* l1_Novaobj;
 	
-	nova_standard_io_NovaConsole_static_Nova0_write(0, exceptionData, nova_standard_NovaString_Novaconstruct(0, exceptionData, "Checking until statement... "));
+	nova_standard_io_NovaConsole_static_Nova0_write(0, exceptionData, nova_standard_NovaString_Nova1_construct(0, exceptionData, "Checking until statement... "));
 	l1_Novaobj = (nova_standard_NovaObject*)nova_null;
 	if (!(l1_Novaobj != (nova_standard_NovaObject*)nova_null))
 	{
@@ -154,16 +154,16 @@ void stabilitytest_NovaSyntaxStability_static_NovacheckUntil(stabilitytest_NovaS
 				l1_Novaobj = stabilitytest_NovaSyntaxStability_static_Novatest3((stabilitytest_NovaSyntaxStability*)nova_null, exceptionData);
 				if (!(l1_Novaobj != (nova_standard_NovaObject*)nova_null))
 				{
-					stabilitytest_NovaStabilityTest_Nova1_fail(l0_Novaprogram, exceptionData, nova_standard_NovaString_Novaconstruct(0, exceptionData, "Failed to stop after correct condition"));
+					stabilitytest_NovaStabilityTest_Nova1_fail(l0_Novaprogram, exceptionData, nova_standard_NovaString_Nova1_construct(0, exceptionData, "Failed to stop after correct condition"));
 				}
 			}
 		}
 	}
 	if (l1_Novaobj == (nova_standard_NovaObject*)nova_null)
 	{
-		stabilitytest_NovaStabilityTest_Nova1_fail(l0_Novaprogram, exceptionData, nova_standard_NovaString_Novaconstruct(0, exceptionData, "Failed to reach correct condition"));
+		stabilitytest_NovaStabilityTest_Nova1_fail(l0_Novaprogram, exceptionData, nova_standard_NovaString_Nova1_construct(0, exceptionData, "Failed to reach correct condition"));
 	}
-	nova_standard_io_NovaConsole_static_Nova0_writeLine(0, exceptionData, nova_standard_NovaString_Novaconstruct(0, exceptionData, "OK"));
+	nova_standard_io_NovaConsole_static_Nova0_writeLine(0, exceptionData, nova_standard_NovaString_Nova1_construct(0, exceptionData, "OK"));
 }
 
 nova_standard_NovaObject* stabilitytest_NovaSyntaxStability_static_Novatest1(stabilitytest_NovaSyntaxStability* this, nova_standard_exception_NovaExceptionData* exceptionData)

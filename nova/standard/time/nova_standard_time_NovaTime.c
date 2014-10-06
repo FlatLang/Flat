@@ -41,7 +41,7 @@ void nova_del_Time(nova_standard_time_NovaTime** this, nova_standard_exception_N
 	NOVA_FREE(*this);
 }
 
-long_long nova_standard_time_NovaTime_static_NovacurrentTimeMillis(nova_standard_time_NovaTime* this, nova_standard_exception_NovaExceptionData* exceptionData)
+long nova_standard_time_NovaTime_static_NovacurrentTimeMillis(nova_standard_time_NovaTime* this, nova_standard_exception_NovaExceptionData* exceptionData)
 {
 	return currentTimeMillis();
 }

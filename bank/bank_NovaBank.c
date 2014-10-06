@@ -10,6 +10,11 @@ nova_VTable_bank_NovaBank nova_VTable_bank_NovaBank_val =
 
 double bank_NovaBank_static_NovagetBalance(bank_NovaBank* this, nova_standard_exception_NovaExceptionData* exceptionData, nova_standard_database_NovaDBConnector* l0_Novaconnection);
 void bank_NovaBank_static_NovainsertQuery(bank_NovaBank* this, nova_standard_exception_NovaExceptionData* exceptionData, nova_standard_database_NovaDBConnector* l0_Novaconnection, nova_standard_NovaString* l0_Novadate, nova_standard_NovaString* l0_Novaitem, nova_standard_NovaString* l0_Novadesc, char l0_Novadeposit, double l0_Novaamount);
+void bank_NovaBankNova_init_static(nova_standard_exception_NovaExceptionData* exceptionData)
+{
+		{
+		}
+}
 
 bank_NovaBank* bank_NovaBank_Nova0_construct(bank_NovaBank* this, nova_standard_exception_NovaExceptionData* exceptionData)
 {
@@ -49,7 +54,8 @@ void bank_NovaBank_static_Novamain(bank_NovaBank* this, nova_standard_exception_
 		nova_standard_io_NovaConsole_static_Nova0_write(0, exceptionData, nova_standard_NovaString_Novaconstruct(0, exceptionData, "Enter username: "));
 		l1_Novausername = nova_standard_io_NovaConsole_static_NovareadLine(0, exceptionData);
 		nova_standard_io_NovaConsole_static_Nova0_write(0, exceptionData, nova_standard_NovaString_Novaconstruct(0, exceptionData, "Enter password: "));
-		l1_Novapassword = nova_standard_io_NovaConsole_static_NovareadLine(0, exceptionData);
+		l1_Novapassword = nova_standard_io_NovaConsole_static_NovareadPassword(0, exceptionData);
+		nova_standard_io_NovaConsole_static_NovaclearScreen(0, exceptionData);
 		l1_Novaconnection = nova_standard_database_NovaDBConnector_Nova0_construct(0, exceptionData);
 		nova_standard_database_NovaDBConnector_Nova1_connect(l1_Novaconnection, exceptionData, nova_standard_NovaString_Novaconstruct(0, exceptionData, "localhost"), l1_Novausername, l1_Novapassword, nova_standard_NovaString_Novaconstruct(0, exceptionData, "bank"));
 		if (nova_standard_database_NovaDBConnector_NovagetError(l1_Novaconnection, exceptionData)->nova_standard_NovaString_Novalength > 0)
@@ -73,14 +79,14 @@ void bank_NovaBank_static_Novamain(bank_NovaBank* this, nova_standard_exception_
 				nova_standard_io_NovaConsole_static_Nova0_writeLine(0, exceptionData, nova_standard_NovaString_Novaconstruct(0, exceptionData, "  (3) Record a withdrawal."));
 				nova_standard_io_NovaConsole_static_Nova0_writeLine(0, exceptionData, nova_standard_NovaString_Novaconstruct(0, exceptionData, "  (4) Record a deposit."));
 				l3_Novad = nova_standard_time_NovaDate_Nova0_construct(0, exceptionData);
-				l3_Novadate = nova_standard_time_NovaDate_Nova1_formatDate(l3_Novad, exceptionData, nova_standard_NovaString_Novaconstruct(0, exceptionData, "%d/%d/%d %d:%02d:%02d"), l3_Novad->nova_standard_time_NovaDate_Novayear, l3_Novad->nova_standard_time_NovaDate_Novamonth, l3_Novad->nova_standard_time_NovaDate_Novaday, l3_Novad->nova_standard_time_NovaDate_Novahour, l3_Novad->nova_standard_time_NovaDate_Novaminute, l3_Novad->nova_standard_time_NovaDate_Novasecond);
+				l3_Novadate = nova_standard_time_NovaDate_Nova1_formatDate(l3_Novad, exceptionData, nova_standard_NovaString_Novaconstruct(0, exceptionData, "%d/%02d/%02d %02d:%02d:%02d"), l3_Novad->nova_standard_time_NovaDate_Novayear, l3_Novad->nova_standard_time_NovaDate_Novamonth, l3_Novad->nova_standard_time_NovaDate_Novaday, l3_Novad->nova_standard_time_NovaDate_Novahour, l3_Novad->nova_standard_time_NovaDate_Novaminute, l3_Novad->nova_standard_time_NovaDate_Novasecond);
 				l3_Novachoice = nova_standard_io_NovaConsole_static_NovareadInt(0, exceptionData);
 				if (l3_Novachoice == 1)
 				{
 						double l4_Novabalance;
 						
 						l4_Novabalance = bank_NovaBank_static_NovagetBalance((bank_NovaBank*)nova_null, exceptionData, l1_Novaconnection);
-						nova_standard_io_NovaConsole_static_Nova0_writeLine(0, exceptionData, nova_standard_NovaString_Nova0_concat(nova_standard_NovaString_Novaconstruct(0, exceptionData, "Your current balance is: $"), exceptionData, nova_standard_primitive_number_NovaDouble_Nova3_toString(nova_standard_primitive_number_NovaDouble_Novaconstruct(0, exceptionData, l4_Novabalance), exceptionData)));
+						nova_standard_io_NovaConsole_static_Nova0_writeLine(0, exceptionData, nova_standard_NovaString_Nova0_concat(nova_standard_NovaString_Novaconstruct(0, exceptionData, "Your current balance is: $"), exceptionData, nova_standard_primitive_number_NovaDouble_static_Nova2_toString(0, exceptionData, l4_Novabalance)));
 				}
 				else if (l3_Novachoice == 2)
 				{
@@ -126,6 +132,7 @@ void bank_NovaBank_static_Novamain(bank_NovaBank* this, nova_standard_exception_
 						nova_standard_io_NovaConsole_static_Nova0_write(0, exceptionData, nova_standard_NovaString_Novaconstruct(0, exceptionData, "Would you like to do more? (Y/N): "));
 						l1_Novaanswer = nova_standard_io_NovaConsole_static_NovareadChar(0, exceptionData);
 				}
+				nova_standard_io_NovaConsole_static_NovaclearScreen(0, exceptionData);
 		}
 		nova_standard_io_NovaConsole_static_Nova0_writeLine(0, exceptionData, nova_standard_NovaString_Novaconstruct(0, exceptionData, "Bye!"));
 }
@@ -162,8 +169,8 @@ void bank_NovaBank_static_NovainsertQuery(bank_NovaBank* this, nova_standard_exc
 				l1_Novabalance = l1_Novabalance - l0_Novaamount;
 				l1_Novadeposited = nova_standard_NovaString_Novaconstruct(0, exceptionData, "false");
 		}
-		nova_local_0 = nova_standard_primitive_number_NovaDouble_Nova3_toString(nova_standard_primitive_number_NovaDouble_Novaconstruct(0, exceptionData, l0_Novaamount), exceptionData);
-		nova_local_1 = nova_standard_primitive_number_NovaDouble_Nova3_toString(nova_standard_primitive_number_NovaDouble_Novaconstruct(0, exceptionData, l1_Novabalance), exceptionData);
+		nova_local_0 = nova_standard_primitive_number_NovaDouble_static_Nova2_toString(0, exceptionData, l0_Novaamount);
+		nova_local_1 = nova_standard_primitive_number_NovaDouble_static_Nova2_toString(0, exceptionData, l1_Novabalance);
 		nova_standard_database_NovaDBConnector_Novaquery(l0_Novaconnection, exceptionData, nova_standard_NovaString_Nova0_concat(nova_standard_NovaString_Novaconstruct(0, exceptionData, "INSERT INTO register VALUES('"), exceptionData, l0_Novadate->vtable->nova_standard_NovaString_Novavirtual0_concat(l0_Novadate, exceptionData, nova_standard_NovaString_Nova0_concat(nova_standard_NovaString_Novaconstruct(0, exceptionData, "', '"), exceptionData, l0_Novaitem->vtable->nova_standard_NovaString_Novavirtual0_concat(l0_Novaitem, exceptionData, nova_standard_NovaString_Nova0_concat(nova_standard_NovaString_Novaconstruct(0, exceptionData, "', '"), exceptionData, l0_Novadesc->vtable->nova_standard_NovaString_Novavirtual0_concat(l0_Novadesc, exceptionData, nova_standard_NovaString_Nova0_concat(nova_standard_NovaString_Novaconstruct(0, exceptionData, "', '"), exceptionData, l1_Novadeposited->vtable->nova_standard_NovaString_Novavirtual0_concat(l1_Novadeposited, exceptionData, nova_standard_NovaString_Nova0_concat(nova_standard_NovaString_Novaconstruct(0, exceptionData, "', "), exceptionData, nova_local_0->vtable->nova_standard_NovaString_Novavirtual0_concat(nova_local_0, exceptionData, nova_standard_NovaString_Nova0_concat(nova_standard_NovaString_Novaconstruct(0, exceptionData, ", "), exceptionData, nova_local_1->vtable->nova_standard_NovaString_Novavirtual0_concat(nova_local_1, exceptionData, nova_standard_NovaString_Novaconstruct(0, exceptionData, ");"))))))))))))));
 }
 
@@ -188,7 +195,60 @@ int main(int argc, char** argvs)
 		nova_null = nova_standard_primitive_NovaNull_Nova0_construct(0, exceptionData);
 		nova_standard_gc_NovaGC_static_Novainit(0, exceptionData);
 		
-		MathNova_init_static();
+		nova_standard_NovaStringNova_init_static(exceptionData);
+		nova_standard_NovaMathNova_init_static(exceptionData);
+		nova_standard_NovaObjectNova_init_static(exceptionData);
+		nova_standard_NovaSystemNova_init_static(exceptionData);
+		nova_standard_database_NovaDBConnectorNova_init_static(exceptionData);
+		nova_standard_database_NovaResultSetNova_init_static(exceptionData);
+		nova_standard_logic_NovaConclusionNova_init_static(exceptionData);
+		nova_standard_logic_NovaHypothesisNova_init_static(exceptionData);
+		nova_standard_logic_NovaLogicalConnectiveNova_init_static(exceptionData);
+		nova_standard_logic_NovaStatementNova_init_static(exceptionData);
+		nova_standard_logic_NovaStatementComponentNova_init_static(exceptionData);
+		nova_standard_logic_NovaStatementLetterNova_init_static(exceptionData);
+		nova_standard_logic_NovaWFFNova_init_static(exceptionData);
+		nova_standard_logic_NovaStatementGroupNova_init_static(exceptionData);
+		nova_standard_logic_NovaInvalidFormulaExceptionNova_init_static(exceptionData);
+		nova_standard_process_NovaProcessNova_init_static(exceptionData);
+		nova_standard_primitive_NovaCharNova_init_static(exceptionData);
+		nova_standard_primitive_NovaBoolNova_init_static(exceptionData);
+		nova_standard_primitive_NovaNullNova_init_static(exceptionData);
+		nova_standard_primitive_number_NovaByteNova_init_static(exceptionData);
+		nova_standard_primitive_number_NovaShortNova_init_static(exceptionData);
+		nova_standard_primitive_number_NovaIntNova_init_static(exceptionData);
+		nova_standard_primitive_number_NovaLongNova_init_static(exceptionData);
+		nova_standard_primitive_number_NovaFloatNova_init_static(exceptionData);
+		nova_standard_primitive_number_NovaDoubleNova_init_static(exceptionData);
+		nova_standard_primitive_number_NovaNumberNova_init_static(exceptionData);
+		nova_standard_gc_NovaGCNova_init_static(exceptionData);
+		nova_standard_time_NovaTimeNova_init_static(exceptionData);
+		nova_standard_time_NovaDateNova_init_static(exceptionData);
+		nova_standard_thread_NovaThreadNova_init_static(exceptionData);
+		nova_standard_thread_NovaUncaughtExceptionHandlerNova_init_static(exceptionData);
+		nova_standard_io_NovaInputStreamNova_init_static(exceptionData);
+		nova_standard_io_NovaOutputStreamNova_init_static(exceptionData);
+		nova_standard_io_NovaStreamReaderNova_init_static(exceptionData);
+		nova_standard_io_NovaFileNova_init_static(exceptionData);
+		nova_standard_io_NovaConsoleNova_init_static(exceptionData);
+		nova_standard_svg_NovaSVGNova_init_static(exceptionData);
+		nova_standard_svg_NovaSVGComponentNova_init_static(exceptionData);
+		nova_standard_svg_NovaSVGComponentListNova_init_static(exceptionData);
+		nova_standard_svg_NovaSVGComponentNodeNova_init_static(exceptionData);
+		nova_standard_svg_NovaSVGMainComponentNova_init_static(exceptionData);
+		nova_standard_svg_NovaSVGCircleNova_init_static(exceptionData);
+		nova_standard_exception_NovaExceptionDataNova_init_static(exceptionData);
+		nova_standard_exception_NovaDivideByZeroExceptionNova_init_static(exceptionData);
+		nova_standard_exception_NovaExceptionNova_init_static(exceptionData);
+		nova_standard_datastruct_NovaArrayListNova_init_static(exceptionData);
+		nova_standard_datastruct_NovaListNova_init_static(exceptionData);
+		nova_standard_datastruct_NovaListNodeNova_init_static(exceptionData);
+		nova_standard_datastruct_NovaArrayNova_init_static(exceptionData);
+		nova_standard_datastruct_NovaStackNova_init_static(exceptionData);
+		nova_standard_datastruct_NovaEmptyStackExceptionNova_init_static(exceptionData);
+		nova_standard_datastruct_NovaHashMapNova_init_static(exceptionData);
+		nova_standard_datastruct_NovaBoundsNova_init_static(exceptionData);
+		bank_NovaBankNova_init_static(exceptionData);
 		
 		args = (nova_standard_NovaString**)NOVA_MALLOC(argc * sizeof(nova_standard_NovaString));
 		
@@ -205,7 +265,8 @@ int main(int argc, char** argvs)
 		}
 		CATCH (1)
 		{
-				printf("You broke it.");
+				nova_standard_exception_NovaException* base = (nova_standard_exception_NovaException*)exceptionData->nova_standard_exception_NovaExceptionData_NovathrownException;
+				printf("Exception in Thread 'main': %s", nova_standard_NovaString_NovatoCharArray(base->nova_standard_exception_NovaException_Novamessage, 0));
 				nova_standard_io_NovaConsole_static_NovawaitForEnter(0, exceptionData);
 				
 		}

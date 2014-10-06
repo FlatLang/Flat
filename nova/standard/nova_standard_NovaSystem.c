@@ -14,7 +14,7 @@ void nova_standard_NovaSystemNova_init_static(nova_standard_exception_NovaExcept
 	}
 }
 
-nova_standard_NovaSystem* nova_standard_NovaSystem_Novaconstruct(nova_standard_NovaSystem* this, nova_standard_exception_NovaExceptionData* exceptionData)
+nova_standard_NovaSystem* nova_standard_NovaSystem_Nova0_construct(nova_standard_NovaSystem* this, nova_standard_exception_NovaExceptionData* exceptionData)
 {
 	CCLASS_NEW(nova_standard_NovaSystem, this,);
 	this->vtable = &nova_VTable_nova_standard_NovaSystem_val;
@@ -44,7 +44,7 @@ void nova_del_System(nova_standard_NovaSystem** this, nova_standard_exception_No
 
 void nova_standard_NovaSystem_static_Nova0_exit(nova_standard_NovaSystem* this, nova_standard_exception_NovaExceptionData* exceptionData, int l0_Novacode)
 {
-	exit(l0_Novacode);
+	exit((int)(l0_Novacode));
 }
 
 void nova_standard_NovaSystem_static_Nova1_exit(nova_standard_NovaSystem* this, nova_standard_exception_NovaExceptionData* exceptionData, int l0_Novacode, nova_standard_NovaString* l0_Novamessage)
@@ -57,10 +57,8 @@ void nova_standard_NovaSystem_static_Nova2_exit(nova_standard_NovaSystem* this, 
 	if (l0_Novalog)
 	{
 		nova_standard_io_NovaFile* l2_Novaf;
-		nova_standard_NovaString* nova_local_0;
 		
-		nova_local_0 = nova_standard_primitive_number_NovaLong_Nova3_toString(nova_standard_primitive_number_NovaLong_Novaconstruct(0, exceptionData, nova_standard_time_NovaTime_static_NovacurrentTimeMillis(0, exceptionData)), exceptionData);
-		l2_Novaf = nova_standard_io_NovaFile_Nova1_construct(0, exceptionData, nova_standard_NovaString_Nova0_concat(nova_standard_NovaString_Novaconstruct(0, exceptionData, "Log"), exceptionData, nova_local_0->vtable->nova_standard_NovaString_Novavirtual0_concat(nova_local_0, exceptionData, nova_standard_NovaString_Novaconstruct(0, exceptionData, ".txt"))));
+		l2_Novaf = nova_standard_io_NovaFile_Nova1_construct(0, exceptionData, nova_standard_NovaString_Nova0_concat(nova_standard_NovaString_Nova1_construct(0, exceptionData, "Log"), exceptionData, nova_standard_primitive_number_NovaLong_static_Nova0_toString(0, exceptionData, nova_standard_time_NovaTime_static_NovacurrentTimeMillis(0, exceptionData))));
 		if (nova_standard_io_NovaFile_Novacreate(l2_Novaf, exceptionData))
 		{
 			nova_standard_io_NovaFile_NovawriteLine(l2_Novaf, exceptionData, l0_Novamessage);
@@ -77,11 +75,11 @@ nova_standard_process_NovaProcess* nova_standard_NovaSystem_static_Novaexecute(n
 	nova_standard_io_NovaStreamReader* l1_Novareader;
 	nova_standard_process_NovaProcess* l1_Novaprocess;
 	
-	l1_Novapipe = getPipe(nova_standard_NovaString_NovatoCharArray(l0_Novacommand, exceptionData), (l0_Nova1_exit)&nova_standard_NovaSystem_static_Nova2_exit, (nova_standard_NovaSystem*)nova_null);
+	l1_Novapipe = getPipe((char*)(nova_standard_NovaString_NovatoCharArray(l0_Novacommand, exceptionData)), (l0_Nova1_exit)&nova_standard_NovaSystem_static_Nova2_exit, (nova_standard_NovaSystem*)nova_null);
 	l1_Novaf = nova_standard_io_NovaFile_Nova2_construct(0, exceptionData, l1_Novapipe);
 	if (!nova_standard_io_NovaFile_Novaexists(l1_Novaf, exceptionData))
 	{
-		nova_standard_NovaSystem_static_Nova1_exit((nova_standard_NovaSystem*)nova_null, exceptionData, 1, nova_standard_NovaString_Novaconstruct(0, exceptionData, "Unable to open pipe"));
+		nova_standard_NovaSystem_static_Nova1_exit((nova_standard_NovaSystem*)nova_null, exceptionData, 1, nova_standard_NovaString_Nova1_construct(0, exceptionData, "Unable to open pipe"));
 	}
 	l1_Novareader = nova_standard_io_NovaStreamReader_Novaconstruct(0, exceptionData, l1_Novaf);
 	l1_Novaprocess = nova_standard_process_NovaProcess_Novaconstruct(0, exceptionData, l1_Novareader);

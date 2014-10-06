@@ -124,9 +124,9 @@ nova_standard_NovaString* nova_standard_datastruct_NovaBounds_Nova0_toString(nov
 	nova_standard_NovaString* nova_local_0;
 	nova_standard_NovaString* nova_local_1;
 	
-	nova_local_0 = nova_standard_primitive_number_NovaInt_Nova2_toString(nova_standard_primitive_number_NovaInt_Novaconstruct(0, exceptionData, this->nova_standard_datastruct_NovaBounds_Novastart), exceptionData);
-	nova_local_1 = nova_standard_primitive_number_NovaInt_Nova2_toString(nova_standard_primitive_number_NovaInt_Novaconstruct(0, exceptionData, this->nova_standard_datastruct_NovaBounds_Novaend), exceptionData);
-	return nova_standard_NovaString_Nova0_concat(nova_standard_NovaString_Novaconstruct(0, exceptionData, "["), exceptionData, nova_local_0->vtable->nova_standard_NovaString_Novavirtual0_concat(nova_local_0, exceptionData, nova_standard_NovaString_Nova0_concat(nova_standard_NovaString_Novaconstruct(0, exceptionData, ", "), exceptionData, nova_local_1->vtable->nova_standard_NovaString_Novavirtual0_concat(nova_local_1, exceptionData, nova_standard_NovaString_Novaconstruct(0, exceptionData, "]")))));
+	nova_local_0 = nova_standard_primitive_number_NovaInt_static_Nova0_toString(0, exceptionData, this->nova_standard_datastruct_NovaBounds_Novastart);
+	nova_local_1 = nova_standard_primitive_number_NovaInt_static_Nova0_toString(0, exceptionData, this->nova_standard_datastruct_NovaBounds_Novaend);
+	return nova_standard_NovaString_Nova0_concat(nova_standard_NovaString_Nova1_construct(0, exceptionData, "["), exceptionData, nova_local_0->vtable->nova_standard_NovaString_Novavirtual0_concat(nova_local_0, exceptionData, nova_standard_NovaString_Nova0_concat(nova_standard_NovaString_Nova1_construct(0, exceptionData, ", "), exceptionData, nova_local_1->vtable->nova_standard_NovaString_Novavirtual0_concat(nova_local_1, exceptionData, nova_standard_NovaString_Nova1_construct(0, exceptionData, "]")))));
 }
 
 void nova_standard_datastruct_NovaBounds_NovacloneTo(nova_standard_datastruct_NovaBounds* this, nova_standard_exception_NovaExceptionData* exceptionData, nova_standard_datastruct_NovaBounds* l0_Novabounds)
