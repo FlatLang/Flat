@@ -3,6 +3,14 @@ package net.fathomsoft.nova.tree.variables;
 import net.fathomsoft.nova.tree.Dimensions;
 import net.fathomsoft.nova.tree.Node;
 
+/**
+ * Interface used to share some of the common ground between arrays
+ * and array accesses. Such as the Dimensional count.
+ * 
+ * @author	Braden Steffaniak
+ * @since	v0.2.34 Oct 4, 2014 at 3:36:34 PM
+ * @version	v0.2.35 Oct 5, 2014 at 11:22:42 PM
+ */
 public interface ArrayCompatible
 {
 	/**
