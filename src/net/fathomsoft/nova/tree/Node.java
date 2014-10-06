@@ -6,6 +6,7 @@ import java.util.regex.Pattern;
 
 import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.TestContext;
+import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.error.UnimplementedOperationException;
 import net.fathomsoft.nova.tree.exceptionhandling.Try;
 import net.fathomsoft.nova.util.Bounds;
@@ -22,7 +23,7 @@ import net.fathomsoft.nova.util.StringUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:00:11 PM
- * @version	v0.2.34 Oct 1, 2014 at 9:51:33 PM
+ * @version	v0.2.35 Oct 5, 2014 at 11:22:42 PM
  */
 public abstract class Node
 {
@@ -759,11 +760,7 @@ public abstract class Node
 			}
 			else
 			{
-				Node newChild = child.clone(oldParent, child.getLocationIn());
-				
-				addChild(index, newChild);
-				
-				newChild.inheritChildren(child);
+				getChild(i).inheritChildren(child, clone);
 			}
 		}
 	}
@@ -1171,9 +1168,9 @@ public abstract class Node
 	 * @param phase The phase that the node is being validated in.
 	 * @return The Node to continue the validation off of.
 	 */
-	public Node validate(int phase)
+	public ValidationResult validate(int phase)
 	{
-		return this;
+		return new ValidationResult(this);
 	}
 	
 	/**
