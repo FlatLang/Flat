@@ -6,17 +6,50 @@ package net.fathomsoft.nova.error;
  * 
  * @author	Braden Steffaniak
  * @since	v0.2.8 May 26, 2014 at 4:24:19 PM
- * @version	v0.2.8 May 26, 2014 at 11:26:58 PM
+ * @version	v0.2.35 Oct 5, 2014 at 11:22:42 PM
  */
 public class SyntaxErrorException extends RuntimeException
 {
+	private int 	type;
+	
+	private String	info;
+	
 	/**
 	 * Generate an exception that outputs a given error message.
 	 * 
-	 * @param message The error message to be output.
+	 * @param info The error message to be output.
 	 */
-	public SyntaxErrorException(String message)
+	public SyntaxErrorException(String info, int type)
 	{
-		super(message);
+		super(info);
+		
+		this.info = info;
+		this.type = type;
+	}
+	
+	/**
+	 * Get the type that the SyntaxErrorException is.<br>
+	 * Possible values include:
+	 * <ul>
+	 * 	<li>{@link net.fathomsoft.nova.error.Message#ERROR}</li>
+	 * 	<li>{@link net.fathomsoft.nova.error.Message#WARNING}</li>
+	 * 	<li>{@link net.fathomsoft.nova.error.Message#MESSAGE}</li>
+	 * </ul>
+	 * 
+	 * @return The type that the SyntaxErrorException is.
+	 */
+	public int getType()
+	{
+		return type;
+	}
+	
+	/**
+	 * Get the info describing the error that occurred.
+	 * 
+	 * @return The info describing the error that occurred.
+	 */
+	public String getInfo()
+	{
+		return info;
 	}
 }
