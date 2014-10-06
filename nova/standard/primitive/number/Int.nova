@@ -4,29 +4,24 @@ public class Int extends Number
 {
 	external int atoi(char str[])
 	
-	public int value
+	Int value
 	
-	public construct(int value)
+	construct(Int value)
 	{
 		this.value = value
 	}
 	
-	public static numDigits(int number) -> int
+	public static numDigits(Int number) -> Int
 	{
 		return Long.numDigits(number)
 	}
 	
-	public static toString(int value) -> String
+	public static toString(Int value) -> String
 	{
 		return Long.toString(value)
 	}
 	
-	public toString() -> String
-	{
-		return toString(value)
-	}
-	
-	public parseInt(String num) -> int
+	public static parseInt(String num) -> Int
 	{
 		return atoi(num.toCharArray())
 	}

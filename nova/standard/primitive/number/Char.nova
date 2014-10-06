@@ -1,27 +1,16 @@
-package "nova/standard/primitive"
-
-
+package "nova/standard/primitive/number"
 
 public class Char extends Number
 {
-	visible char value
+	Char value
 	
-	public construct(char value)
+	construct(Char value)
 	{
 		this.value = value
 	}
 	
-	public toString(char c) -> String
+	public static toString(Char c) -> String
 	{
-		char chars[] = new char[1]
-		
-		chars[0] = c
-		
-		return new String(chars)
-	}
-	
-	public toString() -> String
-	{
-		return toString(value)
+		return new String(c)
 	}
 }

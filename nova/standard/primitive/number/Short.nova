@@ -2,25 +2,20 @@ package "nova/standard/primitive/number"
 
 public class Short extends Number
 {
-	public short value
+	Short value
 	
-	public construct(short value)
+	construct(Short value)
 	{
 		this.value = value
 	}
 	
-	public static numDigits(short number) -> int
+	public static numDigits(Short number) -> Int
 	{
 		return Long.numDigits(number)
 	}
 	
-	public static toString(short value) -> String
+	public static toString(Short value) -> String
 	{
 		return Long.toString(value)
-	}
-	
-	public toString() -> String
-	{
-		return toString(value)
 	}
 }

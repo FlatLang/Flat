@@ -2,25 +2,20 @@ package "nova/standard/primitive/number"
 
 public class Float extends Number
 {
-	public float value
+	Float value
 	
-	public construct(int value)
+	construct(Int value)
 	{
 		this.value = value
 	}
 	
-	public static numDigits(float number) -> int
+	public static numDigits(Float number) -> Int
 	{
 		return Double.numDigits(number)
 	}
 	
-	public static toString(float value) -> String
+	public static toString(Float value) -> String
 	{
 		return Double.toString(value)
-	}
-	
-	public toString() -> String
-	{
-		return toString(value)
 	}
 }

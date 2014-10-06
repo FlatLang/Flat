@@ -1,6 +1,21 @@
 package "nova/standard/primitive"
 
-public class Bool
+public class Bool extends Primitive
 {
+	Bool value
 	
+	construct(Bool value)
+	{
+		this.value = value
+	}
+	
+	public static toString(Bool value) -> String
+	{
+		if (value)
+		{
+			return "true"
+		}
+		
+		return "false"
+	}
 }

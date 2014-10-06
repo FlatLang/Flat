@@ -2,26 +2,26 @@ package "nova/standard/primitive/number"
 
 public class Double extends Number
 {
-	visible double value
-	
 	external void sprintf(char buffer[], char format[], double value)
 	external char[] realloc(char buffer[], int size)
 	external int strlen(char buffer[])
 	external double strtod(char str[], char* pEnd[])
 	
-	public construct(double value)
+	Double value
+	
+	construct(Double value)
 	{
 		this.value = value
 	}
 	
-	public static numDigits(double number) -> int
+	public static numDigits(Double number) -> Int
 	{
 		if (number < 0)
 		{
 			return numDigits(-number) + 1
 		}
 		
-		int size
+		Int size
 		
 		number = number / 10
 		
@@ -33,7 +33,7 @@ public class Double extends Number
 		return size
 	}
 	
-	static genString(char buffer[], int lastIndex) -> String
+	static genString(Char buffer[], Int lastIndex) -> String
 	{
 		buffer = realloc(buffer, ++lastIndex + 1)
 		
@@ -42,40 +42,40 @@ public class Double extends Number
 		return new String(buffer)
 	}
 	
-	static genBuffer(double value) -> char[]
+	static genBuffer(Double value) -> Char[]
 	{
-		int  size     = 11 + 1 + 15
-		char buffer[] = new char[size]
+		Int  size     = 11 + 1 + 15
+		Char buffer[] = new Char[size]
 		
 		sprintf(buffer, "%.15f", value)
 		
 		return buffer
 	}
 	
-	static repetition(char buffer[], int start) -> int
+	static repetition(Char buffer[], Int start) -> Int
 	{
-		int  index = start
-		char c     = buffer[index]
+		Int  index = start
+		Char c     = buffer[index]
 		
 		while (buffer[--index] == c);
 		
 		return start - index - 1
 	}
 	
-	static lastSignificantDigit(char buffer[], int start) -> int
+	static lastSignificantDigit(Char buffer[], Int start) -> Int
 	{
 		while (buffer[start--] == '0');
 		
 		return start + 1
 	}
 	
-	public static toString(double value) -> String
+	public static toString(Double value) -> String
 	{
-		char buffer[]  = genBuffer(value)
-		int  size      = strlen(buffer)
-		int  lastIndex = size - 1
+		Char buffer[]  = genBuffer(value)
+		Int  size      = strlen(buffer)
+		Int  lastIndex = size - 1
 		
-		char c = buffer[--lastIndex]
+		Char c = buffer[--lastIndex]
 		
 		if (c == '0' || c == '9')
 		{
@@ -103,7 +103,7 @@ public class Double extends Number
 		}
 		else
 		{
-			int rep = repetition(buffer, lastIndex)
+			Int rep = repetition(buffer, lastIndex)
 			
 			if (rep > 5)
 			{
@@ -125,14 +125,9 @@ public class Double extends Number
 		return genString(buffer, lastIndex)
 	}
 	
-	public toString() -> String
+	public static parseDouble(String str) -> Double
 	{
-		return toString(value)
-	}
-	
-	public parseDouble(String str) -> double
-	{
-		char pEnd[]
+		Char pEnd[]
 		
 		return strtod(str.toCharArray(), pEnd)
 	}

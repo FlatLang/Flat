@@ -1,13 +1,15 @@
 package "nova/standard/primitive/number"
 
-public class Number
+import "nova/standard/primitive/Primitive"
+
+public class Number extends Primitive
 {
-	public static numDigits(int number) -> int
+	public static numDigits(Number number) -> Int
 	{
 		return -1
 	}
 	
-	public static toString(int value) -> String
+	public static toString(Number value) -> String
 	{
 		return "[Unimplemented]"
 	}
