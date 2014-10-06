@@ -10,7 +10,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Apr 2, 2014 at 8:49:52 PM
- * @version	v0.2.32 Sep 26, 2014 at 12:17:33 PM
+ * @version	v0.2.35 Oct 5, 2014 at 11:22:42 PM
  */
 public class ImportList extends List
 {
@@ -54,6 +54,11 @@ public class ImportList extends List
 	 */
 	public Import getImport(String importLocation, boolean absoluteLocation)
 	{
+		if (importLocation == null)
+		{
+			return null;
+		}
+		
 		for (int i = 0; i < getNumChildren(); i++)
 		{
 			Import child = (Import)getChild(i);
