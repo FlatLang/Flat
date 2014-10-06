@@ -1,6 +1,7 @@
 package net.fathomsoft.nova.tree;
 
 import net.fathomsoft.nova.TestContext;
+import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.tree.variables.Variable;
 import net.fathomsoft.nova.util.Bounds;
@@ -15,7 +16,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:55:15 PM
- * @version	v0.2.34 Oct 1, 2014 at 9:51:33 PM
+ * @version	v0.2.35 Oct 5, 2014 at 11:22:42 PM
  */
 public class ForLoop extends Loop
 {
@@ -243,6 +244,12 @@ public class ForLoop extends Loop
 	private boolean decodeInitialization(String argument, Location location, boolean require)
 	{
 		Assignment initialization = Assignment.decodeStatement(this, argument, getLocationIn(), require);
+		
+		if (initialization == null)
+		{
+			return false;
+		}
+		
 		getArgumentList().addChild(initialization);
 		
 		return true;
@@ -335,8 +342,10 @@ public class ForLoop extends Loop
 	}
 	
 	@Override
-	public Node validate(int phase)
+	public ValidationResult validate(int phase)
 	{
+		ValidationResult result = super.validate(phase);
+		
 		if (phase == SyntaxTree.PHASE_METHOD_CONTENTS)
 		{
 			Variable   var      = getLoopInitialization().getAssigneeNode();
@@ -352,7 +361,7 @@ public class ForLoop extends Loop
 			}
 		}
 		
-		return super.validate(phase);
+		return result;
 	}
 	
 	/**
