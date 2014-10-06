@@ -5,6 +5,8 @@ import java.io.IOException;
 
 import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.TestContext;
+import net.fathomsoft.nova.ValidationResult;
+import net.fathomsoft.nova.error.SyntaxErrorException;
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.tree.exceptionhandling.Catch;
 import net.fathomsoft.nova.tree.exceptionhandling.ExceptionHandler;
@@ -28,7 +30,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:00:15 PM
- * @version	v0.2.34 Oct 1, 2014 at 9:51:33 PM
+ * @version	v0.2.35 Oct 5, 2014 at 11:22:42 PM
  */
 public class SyntaxTree
 {
@@ -43,7 +45,7 @@ public class SyntaxTree
 	private boolean					useThreads;
 	
 	public static final int			PHASE_CLASS_DECLARATION = 1, PHASE_INSTANCE_DECLARATIONS = 2,
-									PHASE_METHOD_CONTENTS = 3;
+									PHASE_METHOD_CONTENTS = 3, PHASE_PRE_GENERATION = 4;
 	
 	private static final Class<?>	PRE_VALUE_DECODE[] = new Class<?>[]
 	{
@@ -136,6 +138,10 @@ public class SyntaxTree
 			phase(PHASE_CLASS_DECLARATION);
 			phase(PHASE_INSTANCE_DECLARATIONS);
 			phase(PHASE_METHOD_CONTENTS);
+			
+			phase = PHASE_PRE_GENERATION;
+			
+			validateNodes(root);
 		}
 		catch (InterruptedException e)
 		{
@@ -288,21 +294,30 @@ public class SyntaxTree
 	 */
 	public boolean validateNodes(Node root)
 	{
-		root = root.validate(phase);
-		
-		if (root == null)
+		try
 		{
-			return false;
-		}
-		
-		for (int i = 0; i < root.getNumChildren(); i++)
-		{
-			Node child = root.getChild(i);
+			ValidationResult result = root.validate(phase);
 			
-			if (!validateNodes(child))
+			if (!result.continueValidation)
 			{
 				return false;
 			}
+			
+			root = result.returnedNode;
+			
+			for (int i = 0; i < root.getNumChildren(); i++)
+			{
+				Node child = root.getChild(i);
+				
+				if (!validateNodes(child))
+				{
+					return false;
+				}
+			}
+		}
+		catch (SyntaxErrorException e)
+		{
+			
 		}
 		
 		return true;
@@ -670,8 +685,30 @@ public class SyntaxTree
 	 * @param parent The parent of the statement to decode.
 	 * @param statement The statement to decode as an identifier access.
 	 * @param location The location in the source where this statement is.
+	 * @param require Whether or not to throw an error if anything goes wrong.
 	 */
-	private static Identifier decodeIdentifierAccess(Node parent, String statement, Location location, boolean require)
+	public static Identifier decodeIdentifierAccess(Node parent, String statement, Location location, boolean require)
+	{
+		return decodeIdentifierAccess(parent, statement, location, require, true);
+	}
+	
+	/**
+	 * Method that tries to decode an identifier access expression.<br>
+	 * <br>
+	 * For example:
+	 * <blockquote><pre>
+	 * tree.children.add(new Node())</pre></blockquote>
+	 * The above expression is an identifier access because it uses the
+	 * dot operator to access another node.
+	 * 
+	 * @param parent The parent of the statement to decode.
+	 * @param statement The statement to decode as an identifier access.
+	 * @param location The location in the source where this statement is.
+	 * @param require Whether or not to throw an error if anything goes wrong.
+	 * @param validateAccess Whether or not to check if method call can be
+	 * 		accessed legally.
+	 */
+	public static Identifier decodeIdentifierAccess(Node parent, String statement, Location location, boolean require, boolean validateAccess)
 	{
 		Identifier root = null;
 		Identifier node = null;
@@ -688,7 +725,7 @@ public class SyntaxTree
 		
 		while (current != null)
 		{
-			node = decodeVariable(parent, current, location);
+			node = decodeVariable(parent, current, location, validateAccess);
 			
 			if (node == null)
 			{
@@ -755,7 +792,28 @@ public class SyntaxTree
 	 */
 	private static Identifier decodeVariable(Node parent, String statement, Location location)
 	{
-		Identifier node = decodeIdentifier(parent, statement, location);
+		return decodeVariable(parent, statement, location, true);
+	}
+	
+	/**
+	 * Decode the value of the given statement. Can be nodes such as
+	 * Variables, ExternalTypes, Fields, etc. May also
+	 * be just a plain old Value describing the return type of the
+	 * statement. For example: a static class's method call.
+	 * "<u><code>Math.sin(number)</code></u>" in this instance, Math
+	 * will be the Identifier returned. In most other instances a
+	 * Variable variation will be returned.
+	 * 
+	 * @param parent The parent node of the current statement to decode.
+	 * @param statement The statement to decode.
+	 * @param location The location of the statement.
+	 * @param validateAccess Whether or not to check if method call can be
+	 * 		accessed legally.
+	 * @return The Identifier representation of the given statement.
+	 */
+	private static Identifier decodeVariable(Node parent, String statement, Location location, boolean validateAccess)
+	{
+		Identifier node = decodeIdentifier(parent, statement, location, validateAccess);
 		
 		if (node == null)
 		{
@@ -778,11 +836,13 @@ public class SyntaxTree
 	 * @param parent The parent node of the current statement to decode.
 	 * @param statement The statement to decode.
 	 * @param location The location of the statement.
+	 * @param validateAccess Whether or not to check if method call can be
+	 * 		accessed legally.
 	 * @return The Identifier representation of the given statement.
 	 */
-	public static Identifier decodeIdentifier(Node parent, String statement, Location location)
+	public static Identifier decodeIdentifier(Node parent, String statement, Location location, boolean validateAccess)
 	{
-		Identifier node = SyntaxTree.getUsableExistingNode(parent, statement, location);
+		Identifier node = SyntaxTree.getUsableExistingNode(parent, statement, location, validateAccess);
 		
 		if (node == null)
 		{
@@ -824,7 +884,23 @@ public class SyntaxTree
 	 */
 	public static Variable getUsableExistingNode(Node parent, String statement, Location location)
 	{
-		VariableDeclaration declaration = findDeclaration(parent, statement);
+		return getUsableExistingNode(parent, statement, location, true);
+	}
+	
+	/**
+	 * Try to find an existing node from the given statement. This method
+	 * searches through fields and local variables.
+	 * 
+	 * @param parent The parent Node to use as our context.
+	 * @param statement The statement to check for an existing node from.
+	 * @param location The location of the newly generated usable variable.
+	 * @param validateAccess Whether or not to check if method call can be
+	 * 		accessed legally.
+	 * @return The Identifier that is found, if any.
+	 */
+	public static Variable getUsableExistingNode(Node parent, String statement, Location location, boolean validateAccess)
+	{
+		VariableDeclaration declaration = findDeclaration(parent, statement, validateAccess);
 		
 		if (declaration != null)
 		{
@@ -845,11 +921,27 @@ public class SyntaxTree
 	 */
 	public static VariableDeclaration findDeclaration(Node parent, String statement)
 	{
+		return findDeclaration(parent, statement, true);
+	}
+	
+	/**
+	 * Try to find an existing Node's declaration from the given
+	 * statement. This method searches through fields and local variables.
+	 * 
+	 * @param parent The parent Node to use as our context.
+	 * @param statement The statement to check for an existing declaration
+	 * 		from.
+	 * @param validateAccess Whether or not to check if method call can be
+	 * 		accessed legally.
+	 * @return The VariableDeclaration that is found, if any.
+	 */
+	public static VariableDeclaration findDeclaration(Node parent, String statement, boolean validateAccess)
+	{
 		VariableDeclaration node = null;
 		
 		if (SyntaxUtils.isValidIdentifier(statement))
 		{
-			node = checkForVariableAccess(parent, statement);
+			node = checkForVariableAccess(parent, statement, validateAccess);
 			
 			if (node == null)
 			{
@@ -870,16 +962,23 @@ public class SyntaxTree
 	 * 
 	 * @param parent The parent of the given statement.
 	 * @param statement The statement to decode as a field.
+	 * @param validateAccess Whether or not to check if method call can be
+	 * 		accessed legally.
 	 * @return The found Field. If the Field was not found, null is
 	 * 		returned.
 	 */
-	private static FieldDeclaration checkForVariableAccess(Node parent, String statement)
+	private static FieldDeclaration checkForVariableAccess(Node parent, String statement, boolean validateAccess)
 	{
+		if (!(parent instanceof Identifier))
+		{
+			return null;
+		}
+		
 		Identifier id = null;
 		
 		if (parent instanceof Variable)
 		{
-			id = ((Variable)parent).getDeclaration();
+			id = ((Variable)parent).getTypeClass();
 		}
 		else if (parent instanceof MethodCall)
 		{
@@ -892,19 +991,25 @@ public class SyntaxTree
 		
 		if (id != null)
 		{
-			FieldDeclaration field = id.getTypeClass().getField(statement);
+			ClassDeclaration clazz = id.getTypeClass();
+			FieldDeclaration field = clazz.getField(statement);
 			
-			return validateFieldAccess(parent, id, field);
+			if (validateAccess)
+			{
+				return validateFieldAccess(parent, clazz, field);
+			}
+			
+			return field;
 		}
 		
 		return null;
 	}
 	
-	private static FieldDeclaration validateFieldAccess(Node parent, Identifier accessor, FieldDeclaration field)
+	private static FieldDeclaration validateFieldAccess(Node parent, ClassDeclaration accessingClass, FieldDeclaration field)
 	{
 		if (field != null)
 		{
-			if (SyntaxUtils.isVisible(accessor, field))
+			if (SyntaxUtils.isVisible(accessingClass, field))
 			{
 				return field;
 			}
