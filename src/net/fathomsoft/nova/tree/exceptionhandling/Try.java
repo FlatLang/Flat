@@ -3,6 +3,7 @@ package net.fathomsoft.nova.tree.exceptionhandling;
 import java.util.ArrayList;
 
 import net.fathomsoft.nova.TestContext;
+import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.tree.Node;
 import net.fathomsoft.nova.tree.SyntaxTree;
 import net.fathomsoft.nova.util.Location;
@@ -16,7 +17,7 @@ import net.fathomsoft.nova.util.Regex;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Mar 22, 2014 at 4:01:38 PM
- * @version	v0.2.32 Sep 26, 2014 at 12:17:33 PM
+ * @version	v0.2.35 Oct 5, 2014 at 11:22:42 PM
  */
 public class Try extends ExceptionHandler
 {
@@ -96,49 +97,55 @@ public class Try extends ExceptionHandler
 	 * @see net.fathomsoft.nova.tree.Node#validate(int)
 	 */
 	@Override
-	public Node validate(int phase)
+	public ValidationResult validate(int phase)
 	{
-		if (phase != SyntaxTree.PHASE_METHOD_CONTENTS)
+		ValidationResult result = super.validate(phase);
+		
+		if (result.errorOccurred)
 		{
-			return this;
+			return result;
 		}
 		
-		Node parent = getParent();
-		
-		for (int i = 0; i < parent.getNumChildren(); i++)
+		if (phase == SyntaxTree.PHASE_METHOD_CONTENTS)
 		{
-			Node child = parent.getChild(i);
+			Node parent = getParent();
 			
-			if (child == this)
+			for (int i = 0; i < parent.getNumChildren(); i++)
 			{
-				if (++i < parent.getNumChildren())
-				{
-					child = parent.getChild(i);
-				}
+				Node child = parent.getChild(i);
 				
-				while (child instanceof Catch)
+				if (child == this)
 				{
 					if (++i < parent.getNumChildren())
 					{
 						child = parent.getChild(i);
 					}
-					else
+					
+					while (child instanceof Catch)
 					{
-						child = null;
+						if (++i < parent.getNumChildren())
+						{
+							child = parent.getChild(i);
+						}
+						else
+						{
+							child = null;
+						}
 					}
+					
+					if (!(child instanceof Finally))
+					{
+						Finally finallyNode = new Finally(parent, null);
+						
+						parent.addChild(i, finallyNode);
+					}
+					
+					return result;
 				}
-				
-				if (!(child instanceof Finally))
-				{
-					Finally finallyNode = new Finally(parent, null);
-					parent.addChild(i, finallyNode);
-				}
-				
-				return this;
 			}
 		}
 		
-		return this;
+		return result;
 	}
 	
 	/**
