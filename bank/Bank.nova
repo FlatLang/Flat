@@ -6,15 +6,17 @@ import "nova/standard/time/Date"
 
 public class Bank
 {
+	external void system(char s[])
+	
 	public static main(String args[])
 	{
 		Console.write("Enter username: ")
 		String username = Console.readLine()
 		
-//		String password = Console.readPassword("Enter password: ")
-
 		Console.write("Enter password: ")
-		String password = Console.readLine()
+		String password = Console.readPassword()
+		
+		Console.clearScreen()
 		
 		DBConnector connection = new DBConnector()
 		
@@ -32,7 +34,7 @@ public class Bank
 		
 		Console.writeLine("Welcome, Braden!")
 		
-		char answer = 'y'
+		Char answer = 'y'
 		
 		while (answer == 'y' || answer == 'Y')
 		{
@@ -45,13 +47,13 @@ public class Bank
 			Console.writeLine("  (4) Record a deposit.")
 			
 			Date d = new Date()
-			String date = d.formatDate("%d/%d/%d %d:%02d:%02d", d.year, d.month, d.day, d.hour, d.minute, d.second)
+			String date = d.formatDate("%d/%02d/%02d %02d:%02d:%02d", d.year, d.month, d.day, d.hour, d.minute, d.second)
 			
-			int choice = Console.readInt()
+			Int choice = Console.readInt()
 			
 			if (choice == 1)
 			{
-				double balance = getBalance(connection)
+				Double balance = getBalance(connection)
 				
 				Console.writeLine("Your current balance is: $" + balance)
 			}
@@ -59,7 +61,7 @@ public class Bank
 			{
 				Console.writeLine("How many past transactions would you like to see?")
 				
-				int num = Console.readInt()
+				Int num = Console.readInt()
 				
 				
 			}
@@ -72,7 +74,7 @@ public class Bank
 				String desc = Console.readLine()
 				
 				Console.write("Enter the withdrawal amount: ")
-				double amount = Console.readDouble()
+				Double amount = Console.readDouble()
 				
 				insertQuery(connection, date, item, desc, false, amount)
 			}
@@ -85,7 +87,7 @@ public class Bank
 				String desc = Console.readLine()
 				
 				Console.write("Enter the deposit amount: ")
-				double amount = Console.readDouble()
+				Double amount = Console.readDouble()
 				
 				insertQuery(connection, date, from, desc, true, amount)
 			}
@@ -100,16 +102,18 @@ public class Bank
 				
 				answer = Console.readChar()
 			}
+			
+			Console.clearScreen()
 		}
 		
 		Console.writeLine("Bye!")
 	}
 	
-	static getBalance(DBConnector connection) -> double
+	static getBalance(DBConnector connection) -> Double
 	{
 		ResultSet result = connection.query("SELECT balance FROM register ORDER BY date DESC LIMIT 1;")
 		
-		double balance = 0
+		Double balance = 0
 		
 		if (result.numRows > 0)
 		{
@@ -119,11 +123,11 @@ public class Bank
 		return balance
 	}
 	
-	static insertQuery(DBConnector connection, String date, String item, String desc, bool deposit, double amount)
+	static insertQuery(DBConnector connection, String date, String item, String desc, Bool deposit, Double amount)
 	{
 		String deposited
 		
-		double balance = getBalance(connection)
+		Double balance = getBalance(connection)
 		
 		if (deposit)
 		{
