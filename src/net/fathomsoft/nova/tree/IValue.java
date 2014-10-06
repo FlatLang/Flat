@@ -2,7 +2,6 @@ package net.fathomsoft.nova.tree;
 
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.util.Location;
-import net.fathomsoft.nova.util.SyntaxUtils;
 
 /**
  * Node extension that represents something that returns a value.
@@ -11,7 +10,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.2.4 May 2, 2014 at 11:14:37 PM
- * @version	v0.2.29 Aug 29, 2014 at 3:17:45 PM
+ * @version	v0.2.35 Oct 5, 2014 at 11:22:42 PM
  */
 public class IValue extends Value
 {
@@ -31,29 +30,6 @@ public class IValue extends Value
 		super(temporaryParent, locationIn);
 		
 		setDataType(VALUE);
-	}
-	
-	/**
-	 * Generate a IValue instance from the given type.
-	 * 
-	 * @param temporaryParent The temporary parent of the new Node.
-	 * @param locationIn The location of the new Node.
-	 * @param type The type to set for the Value.
-	 * @param require Whether or not a successful decode is required.
-	 * @return The generated IValue instance.
-	 */
-	public static IValue generateFromType(Node temporaryParent, Location locationIn, String type, boolean require)
-	{
-		IValue value = new IValue(temporaryParent, locationIn);
-		
-		if (!value.setType(type, require, true))
-		{
-			// We already know that it is not required because if it was,
-			// it would have thrown an exception and never reached here.
-			return null;
-		}
-		
-		return value;
 	}
 	
 	/**
@@ -87,41 +63,12 @@ public class IValue extends Value
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.Value#setType(java.lang.String, boolean, boolean, boolean)
+	 * @see net.fathomsoft.nova.tree.AbstractValue#setTypeValue(java.lang.String)
 	 */
 	@Override
-	// Dont forget about IIdentifier!!!!
-	public boolean setType(String type, boolean require, boolean checkType, boolean checkDataType)
+	public void setTypeValue(String type)
 	{
-		// Dont forget about IIdentifier.setType()!!!!
-		if (checkType)
-		{
-			if (!checkType(type, require))
-			{
-				return false;
-			}
-			
-			type = SyntaxUtils.getValidType(this, type);
-		}
-		
 		this.type = type;
-		
-		if (checkDataType)
-		{
-			if (isExternalType())
-			{
-				if (getAncestorOfType(ExternalMethodDeclaration.class) == null)
-				{
-					setDataType(POINTER);
-				}
-			}
-			else if (!SyntaxUtils.isPrimitiveType(type))
-			{
-				setDataType(POINTER);
-			}
-		}
-		
-		return true;
 	}
 	
 	/**
