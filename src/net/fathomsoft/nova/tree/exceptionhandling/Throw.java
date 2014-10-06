@@ -17,7 +17,7 @@ import net.fathomsoft.nova.util.Regex;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Mar 22, 2014 at 11:02:52 PM
- * @version	v0.2.33 Sep 29, 2014 at 10:29:33 AM
+ * @version	v0.2.35 Oct 5, 2014 at 11:22:42 PM
  */
 public class Throw extends ExceptionHandler
 {
@@ -50,6 +50,12 @@ public class Throw extends ExceptionHandler
 		return (Exception)getChild(super.getNumDefaultChildren() + 0);
 	}
 	
+	/**
+	 * Get the Exception Object Instance that is being thrown by the
+	 * specified Throw instance.
+	 * 
+	 * @return The Exception Object Instance that is being thrown.
+	 */
 	public Identifier getExceptionInstance()
 	{
 		return (Identifier)getChild(super.getNumDefaultChildren() + 1);
