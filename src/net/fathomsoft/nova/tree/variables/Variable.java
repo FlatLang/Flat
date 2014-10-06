@@ -16,7 +16,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:02:42 PM
- * @version	v0.2.34 Oct 1, 2014 at 9:51:33 PM
+ * @version	v0.2.35 Oct 5, 2014 at 11:22:42 PM
  */
 public class Variable extends Identifier
 {
@@ -192,6 +192,11 @@ public class Variable extends Identifier
 	@Override
 	public int getArrayDimensions()
 	{
+		if (declaration == null)
+		{
+			return 0;
+		}
+		
 		return declaration.getArrayDimensions();
 	}
 	
@@ -211,6 +216,15 @@ public class Variable extends Identifier
 	public String getType()
 	{
 		return declaration.getType();
+	}
+	
+	/**
+	 * @see net.fathomsoft.nova.tree.AbstractValue#setTypeValue(java.lang.String)
+	 */
+	@Override
+	public void setTypeValue(String type)
+	{
+		declaration.setTypeValue(type);
 	}
 	
 	/**
@@ -262,6 +276,11 @@ public class Variable extends Identifier
 	@Override
 	public GenericType getGenericType()
 	{
+		if (declaration == null)
+		{
+			return null;
+		}
+		
 		return declaration.getGenericType();
 	}
 	
