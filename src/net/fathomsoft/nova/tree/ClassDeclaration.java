@@ -4,6 +4,7 @@ import java.util.ArrayList;
 
 import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.TestContext;
+import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.tree.MethodList.SearchFilter;
 import net.fathomsoft.nova.tree.variables.FieldDeclaration;
@@ -24,7 +25,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:15:51 PM
- * @version	v0.2.34 Oct 1, 2014 at 9:51:33 PM
+ * @version	v0.2.35 Oct 5, 2014 at 11:22:42 PM
  */
 public class ClassDeclaration extends InstanceDeclaration
 {
@@ -321,7 +322,7 @@ public class ClassDeclaration extends InstanceDeclaration
 			clazz = clazz.getExtendedClass();
 		}
 		
-		if (SyntaxUtils.arePrimitiveTypesCompatible(SyntaxUtils.getWrapperClassPrimitiveName(node.getType()), SyntaxUtils.getWrapperClassPrimitiveName(getType())))
+		if (SyntaxUtils.arePrimitiveTypesCompatible(node.getType(), getType()))
 		{
 			return true;
 		}
@@ -1383,8 +1384,15 @@ public class ClassDeclaration extends InstanceDeclaration
 	/**
 	 * @see net.fathomsoft.nova.tree.Node#validate(int)
 	 */
-	public Node validate(int phase)
+	public ValidationResult validate(int phase)
 	{
+		ValidationResult result = super.validate(phase);
+		
+		if (result.errorOccurred)
+		{
+			return result;
+		}
+		
 		if (phase == SyntaxTree.PHASE_CLASS_DECLARATION)
 		{
 			getStaticBlockList().addChild(StaticBlock.generateEmptyBlock(getStaticBlockList(), Location.INVALID));
@@ -1399,11 +1407,13 @@ public class ClassDeclaration extends InstanceDeclaration
 				
 				if (!file.getName().equals(getName()))
 				{
-					SyntaxMessage.error("The name of the class '" + getName() + "' must be the same as the file that it is contained within", this);//, false);
+					SyntaxMessage.error("The name of the class '" + getName() + "' must be the same as the file that it is contained within", this, false);
 					
 //					getParent().getParent().removeChild(getParent());
 					
-					return null;
+					result.errorOccurred = true;
+					
+					return result;
 				}
 			}
 			
@@ -1417,8 +1427,18 @@ public class ClassDeclaration extends InstanceDeclaration
 			validateFields(phase);
 			validateMethods(phase);
 		}
+		else if (phase == SyntaxTree.PHASE_PRE_GENERATION)
+		{
+			if (isPrimitiveType())
+			{
+				InstanceFieldList publicFields  = getFieldList().getPublicFieldList();
+				InstanceFieldList privateFields = getFieldList().getPrivateFieldList();
+				
+				publicFields.inheritChildren(privateFields);
+			}
+		}
 		
-		return this;
+		return result;
 	}
 	
 	/**

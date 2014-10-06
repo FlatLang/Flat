@@ -3,6 +3,7 @@ package net.fathomsoft.nova.tree;
 import java.util.HashMap;
 
 import net.fathomsoft.nova.TestContext;
+import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.tree.variables.ArrayAccess;
 import net.fathomsoft.nova.tree.variables.Variable;
@@ -18,7 +19,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 10:00:11 PM
- * @version	v0.2.33 Sep 29, 2014 at 10:29:33 AM
+ * @version	v0.2.35 Oct 5, 2014 at 11:22:42 PM
  */
 public class UnaryOperation extends IValue
 {
@@ -397,14 +398,21 @@ public class UnaryOperation extends IValue
 	 * @see net.fathomsoft.nova.tree.Node#validate(int)
 	 */
 	@Override
-	public Node validate(int phase)
+	public ValidationResult validate(int phase)
 	{
+		ValidationResult result = super.validate(phase);
+		
+		if (result.errorOccurred)
+		{
+			return result;
+		}
+		
 		if (getValue() instanceof Variable)
 		{
 			SyntaxUtils.checkVolatile((Variable)getValue());
 		}
 		
-		return this;
+		return result;
 	}
 	
 	/**

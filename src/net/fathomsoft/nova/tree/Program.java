@@ -4,6 +4,7 @@ import java.util.HashMap;
 
 import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.TestContext;
+import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.util.Location;
 import net.fathomsoft.nova.util.SyntaxUtils;
 
@@ -15,7 +16,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.2 Apr 14, 2014 at 11:52:33 PM
- * @version	v0.2.32 Sep 26, 2014 at 12:17:33 PM
+ * @version	v0.2.35 Oct 5, 2014 at 11:22:42 PM
  */
 public class Program extends Node
 {
@@ -231,7 +232,7 @@ public class Program extends Node
 	}
 	
 	@Override
-	public Node validate(int phase)
+	public ValidationResult validate(int phase)
 	{
 		if (phase == SyntaxTree.PHASE_CLASS_DECLARATION)
 		{

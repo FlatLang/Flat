@@ -5,6 +5,7 @@ import java.util.ArrayList;
 
 import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.TestContext;
+import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.util.FileUtils;
 import net.fathomsoft.nova.util.Location;
@@ -17,7 +18,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Feb 18, 2014 at 8:57:00 PM
- * @version	v0.2.33 Sep 29, 2014 at 10:29:33 AM
+ * @version	v0.2.35 Oct 5, 2014 at 11:22:42 PM
  */
 public class FileDeclaration extends Node
 {
@@ -361,14 +362,21 @@ public class FileDeclaration extends Node
 	 * @see net.fathomsoft.nova.tree.Node#validate(int)
 	 */
 	@Override
-	public Node validate(int phase)
+	public ValidationResult validate(int phase)
 	{
+		ValidationResult result = super.validate(phase);
+		
+		if (result.errorOccurred)
+		{
+			return result;
+		}
+		
 		if (phase == SyntaxTree.PHASE_METHOD_CONTENTS)
 		{
 			validateImports();
 		}
 		
-		return this;
+		return result;
 	}
 	
 	private void validateImports()

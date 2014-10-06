@@ -3,6 +3,7 @@ package net.fathomsoft.nova.tree;
 import java.util.ArrayList;
 
 import net.fathomsoft.nova.TestContext;
+import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.tree.MethodList.SearchFilter;
 import net.fathomsoft.nova.util.Bounds;
@@ -19,7 +20,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.2.21 Jul 30, 2014 at 1:45:00 PM
- * @version	v0.2.33 Sep 29, 2014 at 10:29:33 AM
+ * @version	v0.2.35 Oct 5, 2014 at 11:22:42 PM
  */
 public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAncestor
 {
@@ -530,34 +531,46 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 	 * @see net.fathomsoft.nova.tree.Node#validate(int)
 	 */
 	@Override
-	public Node validate(int phase)
+	public ValidationResult validate(int phase)
 	{
-		NovaMethodDeclaration methodDeclaration = getOverriddenMethod();
+		ValidationResult result = super.validate(phase);
 		
-		if (methodDeclaration != null && methodDeclaration.isStatic() == isStatic())
+		if (result.errorOccurred)
 		{
-			if (!containsOverridingMethod(methodDeclaration))
+			return result;
+		}
+		
+		if (phase == SyntaxTree.PHASE_INSTANCE_DECLARATIONS)
+		{
+			getParameterList().validate(phase);
+		}
+		else if (phase == SyntaxTree.PHASE_METHOD_CONTENTS)
+		{
+			NovaMethodDeclaration methodDeclaration = getOverriddenMethod();
+			
+			if (methodDeclaration != null && methodDeclaration.isStatic() == isStatic())
 			{
-				methodDeclaration.overridingMethods.add(this);
+				if (!containsOverridingMethod(methodDeclaration))
+				{
+					methodDeclaration.overridingMethods.add(this);
+				}
+			}
+			
+			if (overloadID < 0)
+			{
+				SearchFilter filter = new SearchFilter();
+				filter.checkConstructors = false;
+				
+				MethodDeclaration methods[] = getParentClass().getMethods(getName(), filter);
+				
+				if (methods.length > 1)
+				{
+					setOverloadIDs(methods);
+				}
 			}
 		}
 		
-		if (overloadID < 0)
-		{
-			SearchFilter filter = new SearchFilter();
-			filter.checkConstructors = false;
-			
-			MethodDeclaration methods[] = getParentClass().getMethods(getName(), filter);
-			
-			if (methods.length > 1)
-			{
-				setOverloadIDs(methods);
-			}
-		}
-		
-		getParameterList().validate(phase);
-		
-		return super.validate(phase);
+		return result;
 	}
 	
 	/**

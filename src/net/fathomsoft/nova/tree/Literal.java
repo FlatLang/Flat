@@ -1,6 +1,7 @@
 package net.fathomsoft.nova.tree;
 
 import net.fathomsoft.nova.TestContext;
+import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.util.Location;
 import net.fathomsoft.nova.util.SyntaxUtils;
@@ -11,7 +12,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 10:34:30 PM
- * @version	v0.2.34 Oct 1, 2014 at 9:51:33 PM
+ * @version	v0.2.35 Oct 5, 2014 at 11:22:42 PM
  */
 public class Literal extends IValue
 {
@@ -228,7 +229,7 @@ public class Literal extends IValue
 	 * @see net.fathomsoft.nova.tree.Node#validate(int)
 	 */
 	@Override
-	public Node validate(int phase)
+	public ValidationResult validate(int phase)
 	{
 		if (value.equals(NULL_IDENTIFIER))
 		{

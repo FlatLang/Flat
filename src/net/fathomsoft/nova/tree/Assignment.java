@@ -2,6 +2,7 @@ package net.fathomsoft.nova.tree;
 
 import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.TestContext;
+import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.tree.variables.FieldDeclaration;
 import net.fathomsoft.nova.tree.variables.Variable;
@@ -17,7 +18,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:19:44 PM
- * @version	v0.2.34 Oct 1, 2014 at 9:51:33 PM
+ * @version	v0.2.35 Oct 5, 2014 at 11:22:42 PM
  */
 public class Assignment extends Node
 {
@@ -257,14 +258,21 @@ public class Assignment extends Node
 	 * @see net.fathomsoft.nova.tree.Node#validate(int)
 	 */
 	@Override
-	public Node validate(int phase)
+	public ValidationResult validate(int phase)
 	{
+		ValidationResult result = super.validate(phase);
+		
+		if (result.errorOccurred)
+		{
+			return result;
+		}
+		
 		if (getAssigneeNode() instanceof Variable)
 		{
 			SyntaxUtils.checkVolatile((Variable)getAssigneeNode());
 		}
 		
-		return this;
+		return result;
 	}
 	
 	@Override

@@ -1,7 +1,7 @@
 package net.fathomsoft.nova.tree;
 
 import net.fathomsoft.nova.TestContext;
-import net.fathomsoft.nova.error.SyntaxErrorException;
+import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.util.Location;
 import net.fathomsoft.nova.util.Patterns;
@@ -14,7 +14,7 @@ import net.fathomsoft.nova.util.Regex;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 13, 2014 at 7:56:24 PM
- * @version	v0.2.32 Sep 26, 2014 at 12:17:33 PM
+ * @version	v0.2.35 Oct 5, 2014 at 11:22:42 PM
  */
 public class Import extends Node
 {
@@ -230,8 +230,15 @@ public class Import extends Node
 	 * @see net.fathomsoft.nova.tree.Node#validate(int)
 	 */
 	@Override
-	public Node validate(int phase)
+	public ValidationResult validate(int phase)
 	{
+		ValidationResult result = super.validate(phase);
+		
+		if (result.errorOccurred)
+		{
+			return result;
+		}
+		
 		if (!isExternal())
 		{
 			Identifier location = getLocationNode();
@@ -242,16 +249,13 @@ public class Import extends Node
 			
 			if (clazz == null)
 			{
-				try
-				{
-					SyntaxMessage.error("Unknown import location '" + location.getName() + "'", this);
-				}
-				catch (SyntaxErrorException e)
-				{
+					SyntaxMessage.error("Unknown import location '" + location.getName() + "'", this, false);
+					
 					getParent().removeChild(this);
 					
-					return null;
-				}
+					result.errorOccurred = true;
+					
+					return result;
 			}
 			
 			IIdentifier node = new IIdentifier(this, location.getLocationIn());
@@ -261,7 +265,7 @@ public class Import extends Node
 			//replace(location, location);
 		}
 		
-		return this;
+		return result;
 	}
 	
 	/**

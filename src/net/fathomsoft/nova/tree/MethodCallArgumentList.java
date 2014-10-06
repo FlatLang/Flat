@@ -1,6 +1,8 @@
 package net.fathomsoft.nova.tree;
 
+import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.TestContext;
+import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.tree.exceptionhandling.Exception;
 import net.fathomsoft.nova.tree.variables.Variable;
 import net.fathomsoft.nova.util.Location;
@@ -14,7 +16,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.2.14 Jun 19, 2014 at 12:14:53 PM
- * @version	v0.2.26 Aug 6, 2014 at 2:48:50 PM
+ * @version	v0.2.35 Oct 5, 2014 at 11:22:42 PM
  */
 public class MethodCallArgumentList extends ArgumentList
 {
@@ -197,8 +199,8 @@ public class MethodCallArgumentList extends ArgumentList
 	 */
 	private boolean isSameType(Value value1, Value value2)
 	{
-		String type1 = SyntaxUtils.getPrimitiveWrapperClassName(value1.getType());
-		String type2 = SyntaxUtils.getPrimitiveWrapperClassName(value2.getType());
+		String type1 = value1.getType();
+		String type2 = value2.getType();
 		
 		if (type1 == null)
 		{
@@ -233,6 +235,37 @@ public class MethodCallArgumentList extends ArgumentList
 	private Identifier getMethodCallContext()
 	{
 		return getMethodCall().getRootReferenceNode();
+	}
+	
+	/**
+	 * @see net.fathomsoft.nova.tree.Node#validate(int)
+	 */
+	@Override
+	public ValidationResult validate(int phase)
+	{
+		ValidationResult result = super.validate(phase);
+		
+		if (result.errorOccurred)
+		{
+			return result;
+		}
+		
+		if (phase == SyntaxTree.PHASE_PRE_GENERATION)
+		{
+			for (int i = 0; i < getNumVisibleChildren(); i++)
+			{
+				Value value = (Value)getVisibleChild(i);
+				
+				if (value.isPrimitive() && getMethodCall().getCorrespondingParameter(i).isGenericType())
+				{
+					Instantiation newValue = SyntaxUtils.autoboxPrimitive(value);
+					
+					replace(value, newValue);
+				}
+			}
+		}
+		
+		return result;
 	}
 	
 	/**

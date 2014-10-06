@@ -2,6 +2,7 @@ package net.fathomsoft.nova.tree;
 
 import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.TestContext;
+import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.util.Bounds;
 import net.fathomsoft.nova.util.Location;
@@ -14,7 +15,7 @@ import net.fathomsoft.nova.util.Stack;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:50:47 PM
- * @version	v0.2.32 Sep 26, 2014 at 12:17:33 PM
+ * @version	v0.2.35 Oct 5, 2014 at 11:22:42 PM
  */
 public class Constructor extends BodyMethodDeclaration
 {
@@ -39,6 +40,15 @@ public class Constructor extends BodyMethodDeclaration
 	public boolean isInstance()
 	{
 		return true;
+	}
+	
+	/**
+	 * @see net.fathomsoft.nova.tree.Value#generateCTypeName(java.lang.StringBuilder)
+	 */
+	@Override
+	public StringBuilder generateCTypeName(StringBuilder builder)
+	{
+		return generateCTypeClassName(builder);
 	}
 	
 	/**
@@ -191,6 +201,7 @@ public class Constructor extends BodyMethodDeclaration
 			n.setName(IDENTIFIER);
 			n.setType(n.getParentClass().getName(), true, false);
 			n.setStatic(true);
+			n.setDataType(POINTER);
 			
 			return n;
 		}
@@ -215,8 +226,15 @@ public class Constructor extends BodyMethodDeclaration
 	 * @see net.fathomsoft.nova.tree.NovaMethodDeclaration#validate(int)
 	 */
 	@Override
-	public Node validate(int phase)
+	public ValidationResult validate(int phase)
 	{
+		ValidationResult result = super.validate(phase);
+		
+		if (result.errorOccurred)
+		{
+			return result;
+		}
+		
 		if (phase == SyntaxTree.PHASE_METHOD_CONTENTS)
 		{
 			initMethod.getScope().inheritChildren(getScope());
@@ -226,10 +244,12 @@ public class Constructor extends BodyMethodDeclaration
 			MethodCall init = MethodCall.decodeStatement(this, "this(" + args + ")", Location.INVALID, true);
 			addChild(init);
 			
-			return initMethod;
+			result.returnedNode = initMethod;
+			
+			return result;
 		}
 		
-		return super.validate(phase);
+		return result;
 	}
 	
 	private void addSuperCallFor(Stack<MethodCall> constructorCalls, Constructor current)
