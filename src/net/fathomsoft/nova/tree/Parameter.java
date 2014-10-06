@@ -2,7 +2,6 @@ package net.fathomsoft.nova.tree;
 
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.error.SyntaxMessage;
-import net.fathomsoft.nova.tree.variables.Variable;
 import net.fathomsoft.nova.tree.variables.VariableDeclaration;
 import net.fathomsoft.nova.util.Location;
 
@@ -13,7 +12,7 @@ import net.fathomsoft.nova.util.Location;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:52:01 PM
- * @version	v0.2.31 Sep 24, 2014 at 4:41:04 PM
+ * @version	v0.2.35 Oct 5, 2014 at 11:22:42 PM
  */
 public class Parameter extends LocalDeclaration
 {
@@ -25,6 +24,11 @@ public class Parameter extends LocalDeclaration
 	public Parameter(Node temporaryParent, Location locationIn)
 	{
 		super(temporaryParent, locationIn);
+	}
+	
+	public boolean isObjectReference()
+	{
+		return getName().equals(ParameterList.OBJECT_REFERENCE_IDENTIFIER);
 	}
 	
 	/**
@@ -49,6 +53,20 @@ public class Parameter extends LocalDeclaration
 	public void setDefaultValue(Node defaultValue)
 	{
 		this.defaultValue = defaultValue;
+	}
+	
+	/**
+	 * @see net.fathomsoft.nova.tree.Value#generateCTypeName(java.lang.StringBuilder)
+	 */
+	@Override
+	public StringBuilder generateCTypeName(StringBuilder builder)
+	{
+		if (isObjectReference() && getType() != null)
+		{
+			return generateCTypeClassName(builder);
+		}
+		
+		return super.generateCTypeName(builder);
 	}
 	
 	/**
