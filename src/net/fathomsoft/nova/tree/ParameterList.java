@@ -12,7 +12,7 @@ import net.fathomsoft.nova.util.Location;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:56:34 PM
- * @version	v0.2.33 Sep 29, 2014 at 10:29:33 AM
+ * @version	v0.2.35 Oct 5, 2014 at 11:22:42 PM
  */
 public class ParameterList<E extends Value> extends TypeList<E>
 {
@@ -65,6 +65,7 @@ public class ParameterList<E extends Value> extends TypeList<E>
 		Parameter reference = new Parameter(this, getLocationIn());
 		reference.setType(getParentClass().getName());
 		reference.setName(OBJECT_REFERENCE_IDENTIFIER, true);
+		reference.setDataType(Value.POINTER);
 		
 		GenericType types[] = getParentClass().getGenericParameterNames();
 		
