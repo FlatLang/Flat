@@ -7,7 +7,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.2.14 Jul 1, 2014 at 11:41:22 PM
- * @version	v0.2.30 Sep 2, 2014 at 7:58:20 PM
+ * @version	v0.2.35 Oct 5, 2014 at 11:22:42 PM
  */
 public interface CallableMethod
 {
@@ -83,6 +83,11 @@ public interface CallableMethod
 	 * 		Method.
 	 */
 	public ParameterList getParameterList();
+	
+	/**
+	 * @see net.fathomsoft.nova.tree.Value#getGenericType()
+	 */
+	public GenericType getGenericType();
 	
 	/**
 	 * Check to see if the given types are compatible with the Method's
