@@ -2,6 +2,7 @@ package net.fathomsoft.nova.tree;
 
 import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.TestContext;
+import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.util.Location;
 
 /**
@@ -9,7 +10,7 @@ import net.fathomsoft.nova.util.Location;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Mar 16, 2014 at 1:13:49 AM
- * @version	v0.2.32 Sep 26, 2014 at 12:17:33 PM
+ * @version	v0.2.35 Oct 5, 2014 at 11:22:42 PM
  */
 public class VTable extends IIdentifier
 {
@@ -118,8 +119,15 @@ public class VTable extends IIdentifier
 	 * @see net.fathomsoft.nova.tree.Node#validate(int)
 	 */
 	@Override
-	public Node validate(int phase)
+	public ValidationResult validate(int phase)
 	{
+		ValidationResult result = super.validate(phase);
+		
+		if (result.errorOccurred)
+		{
+			return result;
+		}
+		
 		if (phase != SyntaxTree.PHASE_CLASS_DECLARATION)
 		{
 			String type = Nova.LANGUAGE_NAME.toLowerCase() + "_VTable_" + getParentClass().generateCSourceName();
@@ -128,7 +136,7 @@ public class VTable extends IIdentifier
 			setName(type + "_val", true);
 		}
 		
-		return this;
+		return result;
 	}
 	
 	/**
