@@ -12,7 +12,7 @@ import net.fathomsoft.nova.util.Location;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 10:29:22 PM
- * @version	v0.2.29 Aug 29, 2014 at 3:17:45 PM
+ * @version	v0.2.35 Oct 5, 2014 at 11:22:42 PM
  */
 public class MethodList extends List
 {
@@ -206,9 +206,9 @@ public class MethodList extends List
 	 */
 	public static class SearchFilter
 	{
-		public boolean	checkAncestor, checkStatic, staticValue, checkConstructors;
+		public boolean checkAncestor, checkStatic, staticValue, checkConstructors;
 		
-		public static final SearchFilter	DEFAULT = new SearchFilter();
+		public static final SearchFilter DEFAULT = new SearchFilter();
 		
 		public SearchFilter()
 		{
