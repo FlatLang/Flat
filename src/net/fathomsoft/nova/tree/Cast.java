@@ -15,7 +15,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.2.25 Aug 3, 2014 at 1:52:00 PM
- * @version	v0.2.28 Aug 20, 2014 at 12:10:45 AM
+ * @version	v0.2.35 Oct 5, 2014 at 11:22:42 PM
  */
 public class Cast extends IValue
 {
@@ -228,7 +228,7 @@ public class Cast extends IValue
 		Cast   node      = null;
 		String statement = null;
 		
-		statement = "(int)5.2";
+		statement = "(Int)5.2";
 		node      = decodeStatement(context.method, statement, Location.INVALID, true);
 		
 		if (node != null)
