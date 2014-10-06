@@ -18,7 +18,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Apr 3, 2014 at 7:53:35 PM
- * @version	v0.2.34 Oct 1, 2014 at 9:51:33 PM
+ * @version	v0.2.35 Oct 5, 2014 at 11:22:42 PM
  */
 public class Instantiation extends IIdentifier implements GenericCompatible
 {
@@ -32,6 +32,15 @@ public class Instantiation extends IIdentifier implements GenericCompatible
 		super(temporaryParent, locationIn);
 		
 		genericTypes = new GenericType[0];
+	}
+	
+	/**
+	 * @see net.fathomsoft.nova.tree.IIdentifier#getArrayDimensions()
+	 */
+	@Override
+	public int getArrayDimensions()
+	{
+		return getIdentifier().getArrayDimensions();
 	}
 	
 	/**
@@ -96,15 +105,6 @@ public class Instantiation extends IIdentifier implements GenericCompatible
 		}
 	}
 	
-//	/**
-//	 * @see net.fathomsoft.nova.tree.Identifier#isDecodingAccessedNode(net.fathomsoft.nova.tree.Node)
-//	 */
-//	@Override
-//	public boolean isDecodingAccessedNode(Node node)
-//	{
-//		return true;
-//	}
-	
 	/**
 	 * @see net.fathomsoft.nova.tree.Identifier#getAccessedNode()
 	 */
@@ -162,6 +162,33 @@ public class Instantiation extends IIdentifier implements GenericCompatible
 	 */
 	public static Instantiation decodeStatement(Node parent, String statement, Location location, boolean require)
 	{
+		return decodeStatement(parent, statement, location, require, true);
+	}
+	
+	/**
+	 * Decode the given statement into an Instantiation instance, if
+	 * possible. If it is not possible, this method returns null.<br>
+	 * Instantiations always begin with the 'new' keyword.
+	 * <br>
+	 * Example inputs include:<br>
+	 * <ul>
+	 * 	<li>new Person("Joe")</li>
+	 * 	<li>new Armadillo()</li>
+	 * 	<li>new String("asdf")</li>
+	 * </ul>
+	 * 
+	 * @param parent The parent node of the statement.
+	 * @param statement The statement to try to decode into a
+	 * 		Instantiation instance.
+	 * @param location The location of the statement in the source code.
+	 * @param require Whether or not to throw an error if anything goes wrong.
+	 * @param validateAccess Whether or not to check if method call can be
+	 * 		accessed legally.
+	 * @return The generated node, if it was possible to translated it
+	 * 		into a Instantiation.
+	 */
+	public static Instantiation decodeStatement(Node parent, String statement, Location location, boolean require, boolean validateAccess)
+	{
 		if (!SyntaxUtils.isInstantiation(statement))
 		{
 			return null;
@@ -176,7 +203,7 @@ public class Instantiation extends IIdentifier implements GenericCompatible
 		
 		String instantiation = statement.substring(startIndex);
 		
-		return n.decodeInstantiation(instantiation, newLoc, require);
+		return n.decodeInstantiation(instantiation, newLoc, require, validateAccess);
 	}
 	
 	/**
@@ -188,9 +215,11 @@ public class Instantiation extends IIdentifier implements GenericCompatible
 	 * @param location The location that the instantiation occurred.
 	 * @param require Whether or not the given statement is the beginning of
 	 * 		a scope.
+	 * @param validateAccess Whether or not to check if method call can be
+	 * 		accessed legally.
 	 * @return The generated Instantiation.
 	 */
-	private Instantiation decodeInstantiation(String instantiation, Location location, boolean require)
+	private Instantiation decodeInstantiation(String instantiation, Location location, boolean require, boolean validateAccess)
 	{
 		Identifier child  = null;
 		String     params = null;
@@ -211,7 +240,7 @@ public class Instantiation extends IIdentifier implements GenericCompatible
 		
 		if (SyntaxUtils.isMethodCall(instantiation))
 		{
-			MethodCall methodCall = MethodCall.decodeStatement(getParent(), instantiation, location, require);
+			MethodCall methodCall = MethodCall.decodeStatement(getParent(), instantiation, location, require, validateAccess);
 			
 			if (methodCall == null)
 			{
@@ -233,6 +262,8 @@ public class Instantiation extends IIdentifier implements GenericCompatible
 		setName(child.getName());
 		setType(child.getType());
 		addChild(child);
+		
+		setDataType(child.getDataType());
 		
 		return this;
 	}
