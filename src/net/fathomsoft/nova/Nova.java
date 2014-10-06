@@ -74,7 +74,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:00:04 PM
- * @version	v0.2.34 Oct 1, 2014 at 9:51:33 PM
+ * @version	v0.2.35 Oct 5, 2014 at 11:22:42 PM
  */
 public class Nova
 {
@@ -128,7 +128,7 @@ public class Nova
 	public static final int		LINUX         = 3;
 	
 	public static final String	LANGUAGE_NAME = "Nova";
-	public static final String	VERSION       = "v0.2.34";
+	public static final String	VERSION       = "v0.2.35";
 	
 	/**
 	 * Find out which operating system the compiler is running on.
@@ -258,7 +258,7 @@ public class Nova
 				formatPath(stability + "StabilityExceptionHandler.nova"),
 				formatPath(stability + "ThreadImplementation.nova"),
 				formatPath(stability + "UnstableException.nova"),
-//				formatPath(directory + "GenericDemo.nova"),
+				formatPath(directory + "GenericDemo.nova"),
 //				formatPath(directory + "database/DatabaseDemo.nova"),
 //				formatPath(root      + "bank/Bank.nova"),
 //				formatPath(directory + "Lab.nova"),
@@ -322,10 +322,11 @@ public class Nova
 			
 			formatPath(standard  + "process/Process.nova"),
 			
-			formatPath(standard  + "primitive/Char.nova"),
 			formatPath(standard  + "primitive/Bool.nova"),
 			formatPath(standard  + "primitive/Null.nova"),
+			formatPath(standard  + "primitive/Primitive.nova"),
 			
+			formatPath(standard  + "primitive/number/Char.nova"),
 			formatPath(standard  + "primitive/number/Byte.nova"),
 			formatPath(standard  + "primitive/number/Short.nova"),
 			formatPath(standard  + "primitive/number/Int.nova"),
@@ -615,10 +616,11 @@ public class Nova
 		{
 //			FileDeclaration file = mainMethod.getFileDeclaration();
 //			file.addChild(Import.decodeStatement(file, "import \"GC\"", file.getLocationIn(), true, false));
-			Identifier gcInit = (Identifier)SyntaxTree.decodeScopeContents(mainMethod, "GC.init()", mainMethod.getLocationIn(), false);
-			Identifier enter  = (Identifier)SyntaxTree.decodeScopeContents(mainMethod, "Console.waitForEnter()", mainMethod.getLocationIn(), false);
+			Identifier gcInit = SyntaxTree.decodeIdentifierAccess(mainMethod, "GC.init()", mainMethod.getLocationIn(), true);
+			Identifier enter  = SyntaxTree.decodeIdentifierAccess(mainMethod, "Console.waitForEnter()", mainMethod.getLocationIn(), true);
 			
-			Instantiation nullConstructor = (Instantiation)SyntaxTree.decodeScopeContents(mainMethod, "new Null()", mainMethod.getLocationIn());
+			Instantiation nullConstructor = Instantiation.decodeStatement(mainMethod, "new Null()", mainMethod.getLocationIn(), true);
+			Constructor   strConstructor  = (Constructor)((MethodCall)Instantiation.decodeStatement(mainMethod, "new String(new Char[0])", mainMethod.getLocationIn(), true).getIdentifier()).getDeclaration();
 			
 			StringBuilder mainMethodText = new StringBuilder();
 			
@@ -640,7 +642,7 @@ public class Nova
 			mainMethodText.append	("{").append('\n');
 			mainMethodText.append		("char* str = (char*)NOVA_MALLOC(sizeof(char) * strlen(argvs[i]) + 1);").append('\n');
 			mainMethodText.append		("copy_string(str, argvs[i]);").append('\n');
-			mainMethodText.append		("args[i] = nova_standard_NovaString_Novaconstruct(0, 0, str);").append('\n');
+			mainMethodText.append		("args[i] = ").append(strConstructor.generateCSourceName()).append("(0, 0, str);").append('\n');
 			mainMethodText.append	("}").append('\n');
 			mainMethodText.append	('\n');
 			mainMethodText.append	("TRY").append('\n');
