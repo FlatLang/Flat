@@ -20,7 +20,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.2 Mar 24, 2014 at 10:45:29 PM
- * @version	v0.2.34 Oct 1, 2014 at 9:51:33 PM
+ * @version	v0.2.35 Oct 5, 2014 at 11:22:42 PM
  */
 public class ArrayAccess extends Variable implements ArrayCompatible
 {
@@ -34,6 +34,15 @@ public class ArrayAccess extends Variable implements ArrayCompatible
 		Dimensions dimensions = new Dimensions(this, locationIn);
 		
 		addChild(dimensions);
+	}
+	
+	/**
+	 * @see net.fathomsoft.nova.tree.variables.Variable#getArrayDimensions()
+	 */
+	@Override
+	public int getArrayDimensions()
+	{
+		return getDeclaration().getArrayDimensions() - getNumDimensions();
 	}
 	
 	@Override
@@ -52,10 +61,10 @@ public class ArrayAccess extends Variable implements ArrayCompatible
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.Value#generateCType(java.lang.StringBuilder)
+	 * @see net.fathomsoft.nova.tree.Value#generateCType(java.lang.StringBuilder, boolean)
 	 */
 	@Override
-	public StringBuilder generateCType(StringBuilder builder)
+	public StringBuilder generateCType(StringBuilder builder, boolean checkArray)
 	{
 		return super.generateCType(builder, false);
 	}
