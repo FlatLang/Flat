@@ -1,6 +1,7 @@
 package net.fathomsoft.nova.tree.variables;
 
 import net.fathomsoft.nova.TestContext;
+import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.tree.Assignment;
 import net.fathomsoft.nova.tree.BinaryOperation;
@@ -31,7 +32,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Mar 16, 2014 at 1:13:49 AM
- * @version	v0.2.33 Sep 29, 2014 at 10:29:33 AM
+ * @version	v0.2.35 Oct 5, 2014 at 11:22:42 PM
  */
 public class Array extends VariableDeclaration implements ArrayCompatible
 {
@@ -94,6 +95,14 @@ public class Array extends VariableDeclaration implements ArrayCompatible
 		return super.getNumDecodedChildren() + 1;
 	}
 	
+	/**
+	 * Get the TypeList that contains all of the values that the Array
+	 * will be initialized to. If the Array was not assigned to an array
+	 * initializer, then the result of this method will be null.
+	 * 
+	 * @return The TypeList containing the values of the array initializer
+	 * 		if an array initializer was used. Null if not.
+	 */
 	public TypeList<Value> getInitializerValues()
 	{
 		if (getNumChildren() <= super.getNumDefaultChildren() + 1 ||
@@ -253,6 +262,14 @@ public class Array extends VariableDeclaration implements ArrayCompatible
 		return isInitializer(statement);
 	}
 	
+	/**
+	 * Get whether or not the given String is an Array Initializer
+	 * or not.
+	 * 
+	 * @param statement The statement to check.
+	 * @return Whether or not the statement represents an Array
+	 * 		Initializer.
+	 */
 	public static boolean isInitializer(String statement)
 	{
 		return getInitializerContents(statement) != null;
@@ -298,7 +315,7 @@ public class Array extends VariableDeclaration implements ArrayCompatible
 			{
 				return SyntaxMessage.queryError("Cannot decode value '" + value + "'", this, require);
 			}
-			else if (!SyntaxUtils.isTypeCompatible(getArrayDeclaration(), val))
+			else if (!SyntaxUtils.isTypeCompatible(getArrayDeclaration(), val, true, 1))
 			{
 				return SyntaxMessage.queryError("Type '" + val.getType() + "' is not compatible with array type '" + getArrayDeclaration().getType() + "'", this, require);
 			}
@@ -380,8 +397,15 @@ public class Array extends VariableDeclaration implements ArrayCompatible
 	}
 	
 	@Override
-	public Node validate(int phase)
+	public ValidationResult validate(int phase)
 	{
+		ValidationResult result = super.validate(phase);
+		
+		if (result.errorOccurred)
+		{
+			return result;
+		}
+		
 		if (phase == SyntaxTree.PHASE_METHOD_CONTENTS)
 		{
 			TypeList<Value> initValues = getInitializerValues();
@@ -401,7 +425,7 @@ public class Array extends VariableDeclaration implements ArrayCompatible
 			}
 		}
 		
-		return super.validate(phase);
+		return result;
 	}
 	
 	/**
