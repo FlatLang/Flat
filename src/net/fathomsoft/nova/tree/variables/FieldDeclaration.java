@@ -1,6 +1,7 @@
 package net.fathomsoft.nova.tree.variables;
 
 import net.fathomsoft.nova.TestContext;
+import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.tree.Assignment;
 import net.fathomsoft.nova.tree.InstanceDeclaration;
 import net.fathomsoft.nova.tree.LocalDeclaration;
@@ -19,7 +20,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:12:04 PM
- * @version	v0.2.34 Oct 1, 2014 at 9:51:33 PM
+ * @version	v0.2.35 Oct 5, 2014 at 11:22:42 PM
  */
 public class FieldDeclaration extends InstanceDeclaration
 {
@@ -171,6 +172,7 @@ public class FieldDeclaration extends InstanceDeclaration
 		var.cloneTo(n);
 		
 		n.iterateWords(preStatement, data, require);
+		n.setLocationIn(location);
 		
 		return n;
 	}
@@ -256,8 +258,15 @@ public class FieldDeclaration extends InstanceDeclaration
 	 * @see net.fathomsoft.nova.tree.variables.VariableDeclaration#validate(int)
 	 */
 	@Override
-	public Node validate(int phase)
+	public ValidationResult validate(int phase)
 	{
+		ValidationResult result = super.validate(phase);
+		
+		if (result.errorOccurred)
+		{
+			return result;
+		}
+		
 		if (phase == SyntaxTree.PHASE_INSTANCE_DECLARATIONS)
 		{
 			if (initializationValue != null)
@@ -267,8 +276,15 @@ public class FieldDeclaration extends InstanceDeclaration
 				getParentClass().addFieldInitialization(assignment);
 			}
 		}
+		else if (phase == SyntaxTree.PHASE_PRE_GENERATION)
+		{
+			if (getParentClass().isPrimitiveType())
+			{
+				setVisibility(PUBLIC);
+			}
+		}
 		
-		return super.validate(phase);
+		return result;
 	}
 	
 	/**
