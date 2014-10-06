@@ -1,8 +1,10 @@
 package net.fathomsoft.nova.tree;
 
 import net.fathomsoft.nova.TestContext;
+import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.error.SyntaxErrorException;
 import net.fathomsoft.nova.error.SyntaxMessage;
+import net.fathomsoft.nova.tree.MethodList.SearchFilter;
 import net.fathomsoft.nova.tree.variables.Variable;
 import net.fathomsoft.nova.tree.variables.VariableDeclaration;
 import net.fathomsoft.nova.util.Bounds;
@@ -18,12 +20,10 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 10:04:31 PM
- * @version	v0.2.33 Sep 29, 2014 at 10:29:33 AM
+ * @version	v0.2.35 Oct 5, 2014 at 11:22:42 PM
  */
-public class MethodCall extends IIdentifier
+public class MethodCall extends Variable
 {
-	private boolean	externalCall;
-	
 	/**
 	 * Instantiate a new MethodCall and initialize the default values.
 	 * 
@@ -103,31 +103,6 @@ public class MethodCall extends IIdentifier
 	}
 	
 	/**
-	 * Get whether or not the method is called externally.
-	 * A method is external if it begins with an externally imported
-	 * C file's name. For example:<br>
-	 * <blockquote><pre>
-	 * import "externalFile.h";
-	 * 
-	 * ...
-	 * 
-	 * public static void main(String args[])
-	 * {
-	 *	// This is the external method call.
-	 * 	externalFile.cFunctionName();
-	 * }</pre></blockquote>
-	 * In this example, 'externalFile' is the C header file that is
-	 * imported. 'cFunctionName()' is the name of a function that
-	 * is contained within the imported header file.<br>
-	 * 
-	 * @return Whether or not the method is called externally.
-	 */
-	public boolean isExternal()
-	{
-		return externalCall;
-	}
-	
-	/**
 	 * @see net.fathomsoft.nova.tree.Node#isSpecial()
 	 */
 	@Override
@@ -178,30 +153,53 @@ public class MethodCall extends IIdentifier
 	 * @return The Method instance that this MethodCall is
 	 * 		calling.
 	 */
-	public VariableDeclaration getMethodDeclaration()
+	private VariableDeclaration searchMethodDeclaration()
 	{
-		VariableDeclaration closure = getClosureDeclaration();
+		ClosureDeclaration closure = searchClosureDeclaration(getName());
 		
 		if (closure != null)
 		{
 			return closure;
 		}
 		
-		return  getDeclaringClass().getMethod(getName(), getArgumentList().getTypes());
+		return getDeclaringClass().getMethod(getName(), getArgumentList().getTypes());
+	}
+		
+	/**
+	 * Get the Method instance that this MethodCall is calling.
+	 * 
+	 * @return The Method instance that this MethodCall is
+	 * 		calling.
+	 */
+	public VariableDeclaration getMethodDeclaration()
+	{
+		return (VariableDeclaration)getDeclaration();
 	}
 	
-	private VariableDeclaration getClosureDeclaration()
+	private ClosureDeclaration searchClosureDeclaration(String name)
 	{
 		if (getParentMethod() == null)
 		{
 			return null;
 		}
 		
-		Parameter param = getParentMethod().getParameter(getName());
+		Parameter param = getParentMethod().getParameter(name);
 		
 		if (param instanceof ClosureDeclaration)
 		{
-			return param;
+			return (ClosureDeclaration)param;
+		}
+		
+		return null;
+	}
+
+	private ClosureDeclaration getClosureDeclaration()
+	{
+		VariableDeclaration declaration = getDeclaration();
+		
+		if (declaration instanceof ClosureDeclaration)
+		{
+			return (ClosureDeclaration)declaration;
 		}
 		
 		return null;
@@ -394,6 +392,20 @@ public class MethodCall extends IIdentifier
 	}
 	
 	/**
+	 * @see net.fathomsoft.nova.tree.Value#generateCTypeName(java.lang.StringBuilder)
+	 */
+	@Override
+	public StringBuilder generateCTypeName(StringBuilder builder)
+	{
+		if (isPrimitiveGenericType())
+		{
+			return generateCTypeClassName(builder);
+		}
+		
+		return super.generateCTypeName(builder);
+	}
+	
+	/**
 	 * Generate the representation of when the method call is being used
 	 * in action.
 	 * 
@@ -438,15 +450,6 @@ public class MethodCall extends IIdentifier
 		}
 		
 		return builder;
-	}
-	
-	/**
-	 * @see net.fathomsoft.nova.tree.Value#getGenericType()
-	 */
-	@Override
-	public GenericType getGenericType()
-	{
-		return getMethodDeclaration().getGenericType();
 	}
 	
 	@Override
@@ -499,6 +502,20 @@ public class MethodCall extends IIdentifier
 	}
 	
 	/**
+	 * @see net.fathomsoft.nova.tree.variables.Variable#getName()
+	 */
+	@Override
+	public String getName()
+	{
+		if (super.getName().equals(Constructor.IDENTIFIER))
+		{
+			return getDeclaration().getParentClass().getName();
+		}
+		
+		return super.getName();
+	}
+	
+	/**
 	 * Decode the given statement into a MethodCall instance, if
 	 * possible. If it is not possible, this method returns null.<br>
 	 * To determine whether or not a method is called externally,
@@ -522,13 +539,60 @@ public class MethodCall extends IIdentifier
 	 */
 	public static MethodCall decodeStatement(Node parent, String statement, Location location, boolean require)
 	{
+		return decodeStatement(parent, statement, location, require, true);
+	}
+	
+	/**
+	 * Decode the given statement into a MethodCall instance, if
+	 * possible. If it is not possible, this method returns null.<br>
+	 * To determine whether or not a method is called externally,
+	 * refer to {@link #isExternal()} for more details on what an
+	 * external call looks like.
+	 * <br>
+	 * Example inputs include:<br>
+	 * <ul>
+	 * 	<li>methodName(5, varName, methodThatReturnsAValue(), "arg1")</li>
+	 * 	<li>externalFile.cFunctionName()</li>
+	 * 	<li>methodName('q', 5 * (2 / 3))</li>
+	 * </ul>
+	 * 
+	 * @param parent The parent node of the statement.
+	 * @param statement The statement to try to decode into a
+	 * 		MethodCall instance.
+	 * @param location The location of the statement in the source code.
+	 * @param require Whether or not to throw an error if anything goes wrong.
+	 * @param validateAccess Whether or not to check if method call can be
+	 * 		accessed legally.
+	 * @return The generated node, if it was possible to translated it
+	 * 		into a MethodCall.
+	 */
+	public static MethodCall decodeStatement(Node parent, String statement, Location location, boolean require, boolean validateAccess)
+	{
 		if (SyntaxUtils.isMethodCall(statement))
 		{
 			MethodCall n  = new MethodCall(parent, location);
 			
 			Bounds bounds = SyntaxUtils.findInnerParenthesesBounds(n, statement);
+
+			MethodData data = new MethodData();
 			
-			if (!n.decodeMethodName(statement, bounds, require) || !n.decodeArguments(statement, bounds, require))
+			if (!n.decodeMethodName(statement, bounds, data, require))
+			{
+				return null;
+			}
+			
+			VariableDeclaration temp = new VariableDeclaration(null, null);
+			temp.setName(data.name);
+			n.setDeclaration(temp);
+			
+			if (!n.decodeArguments(statement, bounds, require))
+			{
+				return null;
+			}
+			
+			n.setDeclaration(n.searchMethodDeclaration());
+			
+			if (!n.validateArguments(n.getFileDeclaration(), n.getLocationIn(), require))
 			{
 				return null;
 			}
@@ -540,13 +604,10 @@ public class MethodCall extends IIdentifier
 				SyntaxMessage.error("Undeclared method '" + n.getName() + "'", n);
 			}
 			
-			n.validateAccess(method);
-			
-			// Align the data with the method declaration.
-			n.setDataType(method.getDataType());
-			n.setType(method.getType());
-			n.setArrayDimensions(method.getArrayDimensions());
-			n.externalCall = method.isExternal();
+			if (validateAccess)
+			{
+				n.validateAccess(method);
+			}
 			
 			return n;
 		}
@@ -563,7 +624,7 @@ public class MethodCall extends IIdentifier
 	 * @param require Whether or not to throw an error if anything goes wrong.
 	 * @return Whether or not the method name decoded correctly.
 	 */
-	private boolean decodeMethodName(String statement, Bounds bounds, boolean require)
+	private boolean decodeMethodName(String statement, Bounds bounds, MethodData data, boolean require)
 	{
 		// Parenthesis index
 		int    parenIndex = StringUtils.findNextNonWhitespaceIndex(statement, bounds.getStart() - 1, -1);
@@ -573,7 +634,7 @@ public class MethodCall extends IIdentifier
 		
 		try
 		{
-			String error = iterateWords(methodCall, Patterns.IDENTIFIER_BOUNDARIES, require).error;
+			String error = iterateWords(methodCall, Patterns.IDENTIFIER_BOUNDARIES, data, require).error;
 			
 			if (error != null)
 			{
@@ -640,7 +701,7 @@ public class MethodCall extends IIdentifier
 		
 		addArguments(arguments, argsLocation);
 		
-		return validateArguments(getFileDeclaration(), getLocationIn(), require);
+		return true;
 	}
 	
 	/**
@@ -649,9 +710,11 @@ public class MethodCall extends IIdentifier
 	@Override
 	public void interactWord(String word, Bounds bounds, String leftDelimiter, String rightDelimiter, ExtraData extra)
 	{
+		MethodData data = (MethodData)extra;
+		
 		if (extra.isLastWord() && leftDelimiter.length() == 0)
 		{
-			setName(word);
+			data.name = word;
 		}
 		else
 		{
@@ -818,42 +881,102 @@ public class MethodCall extends IIdentifier
 	 * @param phase The phase that the node is being validated in.
 	 */
 	@Override
-	public Node validate(int phase)
+	public ValidationResult validate(int phase)
 	{
-		Identifier reference = getReferenceNode();
+		ValidationResult result = super.validate(phase);
 		
-		if (reference instanceof Variable)
+		if (result.errorOccurred)
 		{
-			Variable var = (Variable)reference;
+			return result;
+		}
+		
+		if (phase == SyntaxTree.PHASE_METHOD_CONTENTS)
+		{
+			Identifier returned = this;
 			
-			if (var.isPrimitiveType())
+			Identifier reference = returned.getReferenceNode();
+			Identifier accessing = returned.getAccessingNode();
+			Identifier accessed  = returned.getAccessedNode();
+			
+			if (isPrimitiveGenericType())
 			{
-				Instantiation instantiation = SyntaxUtils.autoboxPrimitive(var);
+				String input = returned.generateNovaInputUntil(accessed) + ".value";
 				
-				var.getParent().replace(var, instantiation);
+				Identifier value = (Identifier)SyntaxTree.decodeIdentifierAccess(getParent(), input, getLocationIn(), false, false);
+				
+				if (value == null)
+				{
+					return result.errorOccurred();
+				}
+				
+				returned.getParent().replace(returned, value);
+				
+				result.returnedNode = value;
+				
+				return result;
+				
+//				setDataType(VALUE);
 			}
-		}
-		
-		if (localDeclarationRequired())
-		{
-			if (reference instanceof Instantiation)
+			
+			if (accessing instanceof Variable)
 			{
-				reference = reference.getAccessedNode();
+				Variable var = (Variable)accessing;
+				
+				if (var.isPrimitiveType())
+				{
+					SearchFilter filter  = new SearchFilter();
+					filter.checkAncestor = false;
+					
+					if (var.getTypeClass().getMethods(getName(), filter).length > 0)
+					{
+						Value staticCall = SyntaxUtils.replaceWithPrimitiveFacade(this);
+	
+						if (staticCall == null)
+						{
+							return result.errorOccurred();
+						}
+						
+						result.returnedNode = staticCall;
+					}
+					else if (!(var.getParent() instanceof Instantiation))
+					{
+						Instantiation instantiation = SyntaxUtils.replaceWithAutoboxPrimitive(var);
+						
+						result.returnedNode = instantiation;
+					}
+					
+					return result;
+				}
 			}
 			
-			MethodCall calling   = (MethodCall)reference;
-			
-			Variable replacement = getAncestorWithScope().getScope().registerLocalVariable(calling);
-			Node     replacing   = calling.getRootReferenceNode(true);
-			
-			replacing.getParent().replace(replacing, replacement);
-			
-			replacement.setAccessedNode(this);
-			
-			return replacement.getAccessedNode();
+			if (localDeclarationRequired())
+			{
+				if (reference instanceof Instantiation)
+				{
+					reference = reference.getAccessedNode();
+				}
+				
+				MethodCall calling   = (MethodCall)reference;
+				
+				Variable replacement = returned.getAncestorWithScope().getScope().registerLocalVariable(calling);
+				Node     replacing   = calling.getRootReferenceNode(true);
+				
+				if (replacement == null)
+				{
+					return result.errorOccurred();
+				}
+				
+				replacing.getParent().replace(replacing, replacement);
+				
+				replacement.setAccessedNode(this);
+				
+				result.returnedNode = replacement.getAccessedNode();
+				
+				return result;
+			}
 		}
 		
-		return this;
+		return result;
 	}
 	
 	/**
@@ -890,8 +1013,6 @@ public class MethodCall extends IIdentifier
 	{
 		super.cloneTo(node);
 		
-		node.externalCall = externalCall;
-		
 		return node;
 	}
 	
@@ -907,5 +1028,17 @@ public class MethodCall extends IIdentifier
 		
 		
 		return null;
+	}
+	
+	/**
+	 * Implementation of the ExtraData for this class.
+	 * 
+	 * @author	Braden Steffaniak
+	 * @since	v0.2.29 Aug 28, 2014 at 6:56:45 PM
+	 * @version	v0.2.29 Aug 28, 2014 at 6:56:45 PM
+	 */
+	public static class MethodData extends ExtraData
+	{
+		private String name;
 	}
 }
