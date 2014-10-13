@@ -4,6 +4,7 @@
 
 nova_VTable_stabilitytest_NovaThreadImplementation nova_VTable_stabilitytest_NovaThreadImplementation_val =
 {
+	nova_standard_NovaObject_Nova0_getHashCodeLong,
 	nova_standard_NovaObject_Nova0_toString,
 	nova_standard_NovaObject_Nova0_equals,
 	stabilitytest_NovaThreadImplementation_Novarun,

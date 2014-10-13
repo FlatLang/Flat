@@ -4,6 +4,7 @@
 
 nova_VTable_nova_standard_primitive_NovaNull nova_VTable_nova_standard_primitive_NovaNull_val =
 {
+	nova_standard_NovaObject_Nova0_getHashCodeLong,
 	nova_standard_primitive_NovaNull_NovatoString,
 	nova_standard_NovaString_Novaequals,
 	nova_standard_primitive_NovaNull_Novaconcat,

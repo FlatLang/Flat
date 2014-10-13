@@ -6,6 +6,7 @@ typedef nova_standard_NovaString* (*l0_Nova2_closure)(void*, nova_standard_excep
 
 nova_VTable_stabilitytest_NovaPolymorphismStability nova_VTable_stabilitytest_NovaPolymorphismStability_val =
 {
+	nova_standard_NovaObject_Nova0_getHashCodeLong,
 	nova_standard_NovaObject_Nova0_toString,
 	nova_standard_NovaObject_Nova0_equals,
 };

@@ -4,6 +4,7 @@
 
 nova_VTable_nova_standard_datastruct_NovaStack nova_VTable_nova_standard_datastruct_NovaStack_val =
 {
+	nova_standard_NovaObject_Nova0_getHashCodeLong,
 	nova_standard_NovaObject_Nova0_toString,
 	nova_standard_NovaObject_Nova0_equals,
 };
@@ -43,6 +44,7 @@ void nova_del_Stack(nova_standard_datastruct_NovaStack** this, nova_standard_exc
 	nova_del_ListNode(&(*this)->prv->nova_standard_datastruct_NovaStack_Novatop, exceptionData);
 	NOVA_FREE((*this)->prv);
 	
+	
 	{
 	}
 	NOVA_FREE(*this);
@@ -55,6 +57,7 @@ void nova_standard_datastruct_NovaStack_Novapush(nova_standard_datastruct_NovaSt
 	l1_Novanode = nova_standard_datastruct_NovaListNode_Novaconstruct(0, exceptionData, l0_Novadata);
 	l1_Novanode->nova_standard_datastruct_NovaListNode_Novanext = this->prv->nova_standard_datastruct_NovaStack_Novatop;
 	this->prv->nova_standard_datastruct_NovaStack_Novatop = l1_Novanode;
+	this->nova_standard_datastruct_NovaStack_Novasize++;
 }
 
 nova_standard_NovaObject* nova_standard_datastruct_NovaStack_Novapop(nova_standard_datastruct_NovaStack* this, nova_standard_exception_NovaExceptionData* exceptionData)
@@ -67,12 +70,13 @@ nova_standard_NovaObject* nova_standard_datastruct_NovaStack_Novapop(nova_standa
 	}
 	l1_Novadata = this->prv->nova_standard_datastruct_NovaStack_Novatop->nova_standard_datastruct_NovaListNode_Novadata;
 	this->prv->nova_standard_datastruct_NovaStack_Novatop = this->prv->nova_standard_datastruct_NovaStack_Novatop->nova_standard_datastruct_NovaListNode_Novanext;
+	this->nova_standard_datastruct_NovaStack_Novasize--;
 	return l1_Novadata;
 }
 
 char nova_standard_datastruct_NovaStack_NovaisEmpty(nova_standard_datastruct_NovaStack* this, nova_standard_exception_NovaExceptionData* exceptionData)
 {
-	return this->prv->nova_standard_datastruct_NovaStack_Novatop == (nova_standard_datastruct_NovaListNode*)nova_null;
+	return this->nova_standard_datastruct_NovaStack_Novasize <= 0;
 }
 
 void nova_standard_datastruct_NovaStack_Novathis(nova_standard_datastruct_NovaStack* this, nova_standard_exception_NovaExceptionData* exceptionData)
@@ -81,5 +85,6 @@ void nova_standard_datastruct_NovaStack_Novathis(nova_standard_datastruct_NovaSt
 
 void nova_standard_datastruct_NovaStack_Novasuper(nova_standard_datastruct_NovaStack* this, nova_standard_exception_NovaExceptionData* exceptionData)
 {
+	this->nova_standard_datastruct_NovaStack_Novasize = 0;
 	this->prv->nova_standard_datastruct_NovaStack_Novatop = (nova_standard_datastruct_NovaListNode*)nova_null;
 }

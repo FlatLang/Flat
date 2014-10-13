@@ -13,4 +13,38 @@ public class Char extends Number
 	{
 		return new String(c)
 	}
+	
+	public toString() -> String
+	{
+		return toString(value)
+	}
+	
+	public toLowerCase() -> Char
+	{
+		return 0
+	}
+	
+	public static toLowerCase(Char c) -> Char
+	{
+		Int id = (Int)c
+		
+		if (id >= 65 && id <= 90)
+		{
+			return (Char)(id + 32)
+		}
+		
+		return c
+	}
+	
+	public static toUpperCase(Char c) -> Char
+	{
+		Int id = (Int)c
+		
+		if (id >= 97 && id <= 122)
+		{
+			return (Char)(id - 32)
+		}
+		
+		return c
+	}
 }

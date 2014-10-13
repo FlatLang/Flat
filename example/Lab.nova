@@ -3,28 +3,43 @@ package "example"
 import "nova/standard/logic/WFF"
 import "nova/standard/logic/InvalidFormulaException"
 import "nova/standard/logic/StatementLetter"
+import "nova/standard/datastruct/HashMap"
+import "nova/standard/network/ServerSocket"
 
 public class Lab
 {
-	public static main(String args[])
+	public static main(String[] args)
 	{
-//		String s = "This is a test lol test"
-//		
-//		int i = s.indexOf("test")
-//		
-//		String sub = s.substring(0, i)
-//		
-//		Console.writeLine("Index of 'test' is: " + i)
-//		Console.writeLine("Last index of 'test' is: " + s.lastIndexOf("test"))
-//		Console.writeLine("Substring: \"" + sub + "\"")
-//		Console.writeLine("This is the end...")
+		ServerSocket s = new ServerSocket()
 		
-		StatementLetter letters[] = new StatementLetter[4]
+		s.start(4343)
 		
-		letters[0] = new StatementLetter("A", "McDonald's is open")
-		letters[1] = new StatementLetter("B", "Sally is awake")
-		letters[2] = new StatementLetter("C", "Sally is at McDonald's")
-		letters[4] = new StatementLetter("D", "Sally is fat")
+		Console.waitForEnter()
+		
+		Array a = new Array(5)
+		
+		a.array[0] = new Array(8)
+		
+		Array b = (Array)a.array[0];
+		
+		b.array[5] = 56
+		
+		((Array)a.array[0]).array[5] = 53;
+		
+		for (Int i = 0; i < b.length; i++)
+		{
+			Console.write((Int)b.array[i] + ", ")
+		}
+		
+		Console.writeLine("")
+		
+		StatementLetter[] letters =
+		[
+			new StatementLetter("A", "McDonald's is open"),
+			new StatementLetter("B", "Sally is awake"),
+			new StatementLetter("C", "McDonald's has food"),
+			new StatementLetter("D", "Sally is fat")
+		]
 		
 		WFF f = new WFF("A & B & C -> D", letters)
 		

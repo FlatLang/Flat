@@ -22,24 +22,44 @@ public class DBConnector
 	external long nova_num_rows()
 	external long nova_num_cols()
 	
+	visible String error
+	
+	public construct()
+	{
+		error = ""
+	}
+	
 	public connect(String host, String user, String password)
 	{
 		nova_db_connect1(host.toCharArray(), user.toCharArray(), password.toCharArray())
+		
+		updateError()
 	}
 	
 	public connect(String host, String user, String password, String database)
 	{
 		nova_db_connect2(host.toCharArray(), user.toCharArray(), password.toCharArray(), database.toCharArray())
+		
+		updateError()
 	}
 	
 	public connect(String host, String user, String password, String database, Int port, String unixSocket, Int clientFlag)
 	{
 		nova_db_connect3(host.toCharArray(), user.toCharArray(), password.toCharArray(), database.toCharArray(), port, unixSocket.toCharArray(), clientFlag)
+		
+		updateError()
+	}
+	
+	public updateError()
+	{
+		error = new String(nova_db_error())
 	}
 	
 	public changeUser(String username, String password, String database)
 	{
 		nova_user_select(username.toCharArray(), password.toCharArray(), database.toCharArray())
+		
+		updateError()
 	}
 	
 	public query(String query) -> ResultSet
@@ -65,8 +85,12 @@ public class DBConnector
 			
 			ResultSet result = new ResultSet(rows, numRows, numCols)
 			
+			updateError()
+			
 			return result
 		}
+		
+		updateError()
 		
 		return null
 	}
@@ -74,10 +98,7 @@ public class DBConnector
 	public close()
 	{
 		nova_db_close()
-	}
-	
-	public getError() -> String
-	{
-		return new String(nova_db_error())
+		
+		updateError()
 	}
 }

@@ -4,6 +4,7 @@ import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.error.SyntaxMessage;
+import net.fathomsoft.nova.tree.ClassDeclaration;
 import net.fathomsoft.nova.tree.GenericCompatible;
 import net.fathomsoft.nova.tree.GenericType;
 import net.fathomsoft.nova.tree.IIdentifier;
@@ -20,7 +21,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.2.4 May 2, 2014 at 11:14:37 PM
- * @version	v0.2.35 Oct 5, 2014 at 11:22:42 PM
+ * @version	v0.2.36 Oct 13, 2014 at 12:16:42 AM
  */
 public class VariableDeclaration extends IIdentifier implements GenericCompatible
 {
@@ -37,7 +38,13 @@ public class VariableDeclaration extends IIdentifier implements GenericCompatibl
 		
 		genericTypes = new GenericType[0];
 	}
-
+	
+	@Override
+	public ClassDeclaration getDeclaringClass()
+	{
+		return getParentClass();
+	}
+	
 	/**
 	 * @see net.fathomsoft.nova.tree.GenericCompatible#getGenericParameterNames()
 	 */
@@ -452,10 +459,8 @@ public class VariableDeclaration extends IIdentifier implements GenericCompatibl
 		
 		if (phase == SyntaxTree.PHASE_INSTANCE_DECLARATIONS)
 		{
-			if (getType() != null && !setType(getType(), false, true))
+			if (!validateType())
 			{
-				SyntaxMessage.error("Type '" + getType() + "' does not exist", this, false);
-				
 				result.errorOccurred = true;
 				
 				return result;
@@ -463,6 +468,18 @@ public class VariableDeclaration extends IIdentifier implements GenericCompatibl
 		}
 		
 		return result;
+	}
+	
+	public boolean validateType()
+	{
+		if (getType() != null && !setType(getType(), false, true))
+		{
+			SyntaxMessage.error("Type '" + getType() + "' does not exist", this, false);
+			
+			return false;
+		}
+		
+		return true;
 	}
 	
 	/**

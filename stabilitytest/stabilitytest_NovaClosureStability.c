@@ -10,6 +10,7 @@ typedef void (*l0_Nova6_closure)(void*, nova_standard_exception_NovaExceptionDat
 
 nova_VTable_stabilitytest_NovaClosureStability nova_VTable_stabilitytest_NovaClosureStability_val =
 {
+	nova_standard_NovaObject_Nova0_getHashCodeLong,
 	nova_standard_NovaObject_Nova0_toString,
 	nova_standard_NovaObject_Nova0_equals,
 };

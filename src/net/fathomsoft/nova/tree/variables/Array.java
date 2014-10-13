@@ -32,7 +32,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Mar 16, 2014 at 1:13:49 AM
- * @version	v0.2.35 Oct 5, 2014 at 11:22:42 PM
+ * @version	v0.2.36 Oct 13, 2014 at 12:16:42 AM
  */
 public class Array extends VariableDeclaration implements ArrayCompatible
 {
@@ -137,10 +137,20 @@ public class Array extends VariableDeclaration implements ArrayCompatible
 			builder.append("nova_gen_array(");
 		}
 		
-		builder.append("NOVA_MALLOC(sizeof(").append(generateCTypeClassName());
+		builder.append("NOVA_MALLOC(sizeof(").append(generateCTypeClassName()).append('*');
 		
 		Dimensions dim = getDimensions();
 		
+//		dim.getVisibleChild(0).generateCSourceFragment(builder);
+//		for (int i = 0; i < dim.getNumVisibleChildren(); i++)
+//		{
+//			if (i > 0)
+//			{
+//				builder.append(" * ");
+//			}
+//			
+//			dim.getVisibleChild(i).generateCSourceFragment(builder);
+//		}
 		dim.generateCSourceFragment(builder);
 		
 		builder.append(')');
@@ -287,7 +297,7 @@ public class Array extends VariableDeclaration implements ArrayCompatible
 	
 	private VariableDeclaration getArrayDeclaration()
 	{
-		return ((Assignment)getParent()).getAssigneeNode().getDeclaration();
+		return ((Assignment)getAncestorOfType(Assignment.class)).getAssignedNode().getDeclaration();
 	}
 	
 	private boolean decodeInitializer(String statement, boolean require)

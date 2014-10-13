@@ -18,7 +18,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Feb 18, 2014 at 8:57:00 PM
- * @version	v0.2.35 Oct 5, 2014 at 11:22:42 PM
+ * @version	v0.2.36 Oct 13, 2014 at 12:16:42 AM
  */
 public class FileDeclaration extends Node
 {
@@ -58,6 +58,7 @@ public class FileDeclaration extends Node
 			Nova.getClassLocation("Null"),
 			Nova.getClassLocation("Char"),
 			Nova.getClassLocation("Bool"),
+			Nova.getClassLocation("Array"),
 			Nova.getClassLocation("GC"),
 			Nova.getClassLocation("Object"),
 			Nova.getClassLocation("String"),

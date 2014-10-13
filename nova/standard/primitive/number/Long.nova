@@ -58,4 +58,9 @@ public class Long extends Number
 		
 		return new String(data)
 	}
+	
+	public toString() -> String
+	{
+		return toString(value)
+	}
 }

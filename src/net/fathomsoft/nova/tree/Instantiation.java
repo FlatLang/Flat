@@ -18,7 +18,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Apr 3, 2014 at 7:53:35 PM
- * @version	v0.2.35 Oct 5, 2014 at 11:22:42 PM
+ * @version	v0.2.36 Oct 13, 2014 at 12:16:42 AM
  */
 public class Instantiation extends IIdentifier implements GenericCompatible
 {
@@ -258,10 +258,10 @@ public class Instantiation extends IIdentifier implements GenericCompatible
 		{
 			SyntaxMessage.error("Unable to parse instantiation of '" + instantiation + "'", this);
 		}
-		
+
+		addChild(child);
 		setName(child.getName());
 		setType(child.getType());
-		addChild(child);
 		
 		setDataType(child.getDataType());
 		

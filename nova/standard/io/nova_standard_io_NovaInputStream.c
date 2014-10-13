@@ -4,8 +4,11 @@
 
 nova_VTable_nova_standard_io_NovaInputStream nova_VTable_nova_standard_io_NovaInputStream_val =
 {
+	nova_standard_NovaObject_Nova0_getHashCodeLong,
 	nova_standard_NovaObject_Nova0_toString,
 	nova_standard_NovaObject_Nova0_equals,
+	nova_standard_io_NovaInputStream_Nova0_readString,
+	nova_standard_io_NovaInputStream_Nova0_readBytes,
 };
 CCLASS_PRIVATE
 (
@@ -18,7 +21,7 @@ void nova_standard_io_NovaInputStreamNova_init_static(nova_standard_exception_No
 	}
 }
 
-nova_standard_io_NovaInputStream* nova_standard_io_NovaInputStream_Nova0_construct(nova_standard_io_NovaInputStream* this, nova_standard_exception_NovaExceptionData* exceptionData)
+nova_standard_io_NovaInputStream* nova_standard_io_NovaInputStream_Nova2_construct(nova_standard_io_NovaInputStream* this, nova_standard_exception_NovaExceptionData* exceptionData)
 {
 	CCLASS_NEW(nova_standard_io_NovaInputStream, this);
 	this->vtable = &nova_VTable_nova_standard_io_NovaInputStream_val;
@@ -48,8 +51,8 @@ void nova_del_InputStream(nova_standard_io_NovaInputStream** this, nova_standard
 	NOVA_FREE(*this);
 }
 
-
-
+nova_standard_NovaString* nova_standard_io_NovaInputStream_Nova0_readString(nova_standard_io_NovaInputStream* this, nova_standard_exception_NovaExceptionData* exceptionData){}
+char* nova_standard_io_NovaInputStream_Nova0_readBytes(nova_standard_io_NovaInputStream* this, nova_standard_exception_NovaExceptionData* exceptionData){}
 void nova_standard_io_NovaInputStream_Novathis(nova_standard_io_NovaInputStream* this, nova_standard_exception_NovaExceptionData* exceptionData)
 {
 }

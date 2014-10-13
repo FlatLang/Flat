@@ -1,0 +1,80 @@
+package "nova/standard/network"
+
+import "nova/standard/io/InputStream"
+import "nova/standard/io/OutputStream"
+import "nova/standard/datastruct/Queue"
+
+public class ConnectionSocket extends Socket
+{
+	visible Bool connected
+	
+	external char[] nova_socket_receive(SOCKET_ID_TYPE socket)
+	external int nova_socket_send(SOCKET_ID_TYPE socket, char message[])
+	
+	visible InputStream  in
+	visible OutputStream out
+	
+	Queue<String> inputBuffer = new Queue()
+	
+	external type SOCKET_ID_TYPE
+	
+	SOCKET_ID_TYPE socket
+	
+	public construct(SOCKET_ID_TYPE socket)
+	{
+		this.socket = socket
+		
+		in  = new NetworkInputStream(this)
+		out = new NetworkOutputStream(this)
+		
+		connected = true
+	}
+	
+	public validateConnection() -> Bool
+	{
+		if (!connected)
+		{
+			return connected
+		}
+		
+		String message = readString(false)
+		
+		if (connected)
+		{
+			inputBuffer.enqueue(message)
+		}
+		
+		return connected
+	}
+	
+	public readString() -> String
+	{
+		return readString(true)
+	}
+	
+	readString(Bool checkBuffer) -> String
+	{
+		if (!checkBuffer || inputBuffer.isEmpty())
+		{
+			Char[] data = nova_socket_receive(socket)
+			
+			if (data == 0)
+			{
+				connected = false
+				
+				return null
+			}
+			
+			return new String(data)
+		}
+		
+		return inputBuffer.dequeue()
+	}
+	
+	public write(String data) -> Bool
+	{
+		Bool success = nova_socket_send(socket, data.toCharArray()) == 1
+		
+		return success
+	}
+}

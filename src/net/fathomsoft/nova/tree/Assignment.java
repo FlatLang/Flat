@@ -4,6 +4,7 @@ import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.error.SyntaxMessage;
+import net.fathomsoft.nova.tree.variables.ArrayAccess;
 import net.fathomsoft.nova.tree.variables.FieldDeclaration;
 import net.fathomsoft.nova.tree.variables.Variable;
 import net.fathomsoft.nova.tree.variables.VariableDeclaration;
@@ -18,7 +19,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:19:44 PM
- * @version	v0.2.35 Oct 5, 2014 at 11:22:42 PM
+ * @version	v0.2.36 Oct 13, 2014 at 12:16:42 AM
  */
 public class Assignment extends Node
 {
@@ -39,9 +40,35 @@ public class Assignment extends Node
 	 * @return The node that represents the variable that is being
 	 * 		assigned.
 	 */
-	public Variable getAssigneeNode()
+	public Value getAssigneeNode()
 	{
-		return (Variable)getChild(0);
+		return (Value)getChild(0);
+	}
+	
+	/**
+	 * Get the node that is having its value modified. In other words,
+	 * the left hand value of the equation. For instance, in the
+	 * statement: "<code>int j = 35</code>" <u><code>int j</code></u> is
+	 * the left hand value of the equation.
+	 * 
+	 * @return The node that represents the variable that is being
+	 * 		assigned.
+	 */
+	public Accessible getAssignee()
+	{
+		return (Accessible)getChild(0);
+	}
+	
+	public Variable getAssignedNode()
+	{
+		Identifier last = getAssignee().getLastAccessedNode();
+		
+		if (last == null)
+		{
+			last = (Identifier)getAssigneeNode();
+		}
+		
+		return (Variable)last;
 	}
 	
 	/**
@@ -102,14 +129,14 @@ public class Assignment extends Node
 	 */
 	private StringBuilder generateCAssignmentSource(StringBuilder builder)
 	{
-		boolean sameType = getAssignmentNode().getReturnedNode().getType().equals(getAssigneeNode().getReturnedNode().getType());
+		boolean sameType = getAssignmentNode().getReturnedNode().getType().equals(getAssignedNode().getType());
 		
 		if (!sameType)
 		{
-			getAssigneeNode().getReturnedNode().generateCTypeCast(builder).append('(');
+			getAssignedNode().generateCTypeCast(builder).append('(');
 		}
 		
-		builder.append(getAssignmentNode().generateDataTypeOutput(getAssigneeNode().getDataType())).append(getAssignmentNode().generateCSourceFragment());
+		builder.append(getAssignmentNode().generateDataTypeOutput(getAssignedNode().getDataType())).append(getAssignmentNode().generateCSourceFragment());
 		
 		if (!sameType)
 		{
@@ -184,7 +211,7 @@ public class Assignment extends Node
 		Location varLoc      = location.asNew();
 		varLoc.getBounds().setEnd(varLoc.getStart() + endIndex);
 		
-		Identifier varNode = (Identifier)SyntaxTree.decodeScopeContents(n, variable, varLoc, require);
+		Value varNode = (Value)SyntaxTree.decodeScopeContents(n, variable, varLoc, require);
 		
 		if (varNode == null)
 		{
@@ -193,9 +220,9 @@ public class Assignment extends Node
 			return null;
 		}
 		
-		if (varNode instanceof Variable)
+		if (varNode.getReturnedNode() instanceof Variable)
 		{
-			n.validateAuthorization((Variable)varNode);
+			n.validateAuthorization((Variable)varNode.getReturnedNode());
 		}
 		else if (addDeclaration)
 		{
@@ -238,15 +265,11 @@ public class Assignment extends Node
 		
 		if (!Literal.isNullLiteral(returnedRight) && !returnedRight.getType().equals(returnedLeft.getType()))
 		{
-			if (returnedRight.getTypeClass() == null || !returnedRight.getTypeClass().isOfType(returnedLeft.getTypeClass()))
+			ClassDeclaration left  = returnedLeft.getTypeClass();
+			ClassDeclaration right = returnedRight.getTypeClass();
+			
+			if (!returnedLeft.isExternalType() && !returnedRight.isExternalType() && (left == null || right == null || !right.isOfType(left)))
 			{
-				if (returnedRight.getType().equals("Type"))
-				{
-					Nova.debuggingBreakpoint(true);
-					
-					returnedRight.getTypeClass().isOfType(returnedLeft.getTypeClass());
-				}
-				
 				SyntaxMessage.error("Type '" + returnedRight.getType() + "' is not compatible with type '" + returnedLeft.getType() + "'", this, location);
 			}
 		}
@@ -310,7 +333,7 @@ public class Assignment extends Node
 					ClassDeclaration declaringClass = field.getParentClass();
 					ClassDeclaration thisClass      = getParentClass();
 					
-					if (declaringClass != thisClass)
+					if (declaringClass != thisClass && !(id instanceof ArrayAccess))
 					{
 						SyntaxMessage.error("The value of the field '" + field.getName() + "' cannot be modified", id);
 					}
@@ -359,9 +382,14 @@ public class Assignment extends Node
 	
 	private void removeDeclaration()
 	{
+		if (!(getAssigneeNode() instanceof Identifier))
+		{
+			return;
+		}
+		
 		VariableDeclarationList list = getParent().getAncestorWithScope().getScope().getVariableList();
 		
-		list.removeChildWithName(getAssigneeNode().getName());
+		list.removeChildWithName(((Identifier)getAssigneeNode()).getName());
 	}
 	
 	/**

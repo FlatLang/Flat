@@ -8,7 +8,7 @@ import java.util.regex.Pattern;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Apr 5, 2014 at 3:53:04 PM
- * @version	v0.2.19 Jul 26, 2014 at 12:30:24 AM
+ * @version	v0.2.36 Oct 13, 2014 at 12:16:42 AM
  */
 public class Patterns
 {
@@ -240,7 +240,7 @@ public class Patterns
 	 * For example:<br>
 	 * "person.getAge()" would return the output of "person.getAge"
 	 */
-	public static final Pattern PRE_METHOD_CALL			= Pattern.compile("\\S+?\\s*\\(");
+	public static final Pattern PRE_METHOD_CALL			= Pattern.compile("\\w+?\\s*\\(");
 
 //	/**
 //	 * Pattern that searches for 

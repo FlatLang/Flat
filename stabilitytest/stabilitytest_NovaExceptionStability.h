@@ -20,6 +20,7 @@ typedef struct stabilitytest_NovaExceptionStability stabilitytest_NovaExceptionS
 #include <nova/standard/primitive/nova_standard_primitive_NovaNull.h>
 #include <nova/standard/primitive/number/nova_standard_primitive_number_NovaChar.h>
 #include <nova/standard/primitive/nova_standard_primitive_NovaBool.h>
+#include <nova/standard/datastruct/nova_standard_datastruct_NovaArray.h>
 #include <nova/standard/gc/nova_standard_gc_NovaGC.h>
 #include <nova/standard/nova_standard_NovaObject.h>
 #include <nova/standard/nova_standard_NovaString.h>
@@ -30,6 +31,7 @@ typedef struct stabilitytest_NovaExceptionStability stabilitytest_NovaExceptionS
 
 typedef struct nova_VTable_stabilitytest_NovaExceptionStability
 {
+	long (*nova_standard_NovaObject_Novavirtual0_getHashCodeLong)(nova_standard_NovaObject*, nova_standard_exception_NovaExceptionData*);
 	nova_standard_NovaString* (*nova_standard_NovaObject_Novavirtual0_toString)(nova_standard_NovaObject*, nova_standard_exception_NovaExceptionData*);
 	char (*nova_standard_NovaObject_Novavirtual0_equals)(nova_standard_NovaObject*, nova_standard_exception_NovaExceptionData*, nova_standard_NovaObject*);
 } nova_VTable_stabilitytest_NovaExceptionStability;

@@ -2,6 +2,8 @@ package "nova/standard/datastruct"
 
 public class Stack<E>
 {
+	visible Int size
+	
 	ListNode<E> top
 	
 	public push(E data)
@@ -10,6 +12,8 @@ public class Stack<E>
 		
 		node.next = top
 		top       = node
+		
+		size++
 	}
 	
 	public pop() -> E
@@ -23,11 +27,13 @@ public class Stack<E>
 		
 		top = top.next
 		
+		size--
+		
 		return data
 	}
 	
 	public isEmpty() -> Bool
 	{
-		return top == null
+		return size <= 0
 	}
 }

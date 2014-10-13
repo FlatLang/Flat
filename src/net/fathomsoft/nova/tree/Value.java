@@ -14,7 +14,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.2.4 May 2, 2014 at 11:14:37 PM
- * @version	v0.2.35 Oct 5, 2014 at 11:22:42 PM
+ * @version	v0.2.36 Oct 13, 2014 at 12:16:42 AM
  */
 public abstract class Value extends Node implements AbstractValue
 {
@@ -346,7 +346,7 @@ public abstract class Value extends Node implements AbstractValue
 		
 		if (this instanceof Identifier)
 		{
-			Identifier id = (Identifier)this;
+			Accessible id = (Identifier)this;
 			
 			if (id.isAccessed())
 			{
@@ -355,7 +355,7 @@ public abstract class Value extends Node implements AbstractValue
 					id = id.getAccessingNode();
 				}
 				
-				file = id.getReferenceNode().getDeclaringClass().getFileDeclaration();
+				file = ((Value)id.getReferenceNode()).getTypeClass().getFileDeclaration();
 			}
 		}
 		
@@ -416,7 +416,7 @@ public abstract class Value extends Node implements AbstractValue
 		else if (parent instanceof Assignment)
 		{
 			Assignment assignment = (Assignment)parent;
-			Variable   assignee   = (Variable)assignment.getAssigneeNode();
+			Variable   assignee   = assignment.getAssignedNode();
 			
 			if (this instanceof Variable == false || !((Variable)this).isSameVariable(assignee))
 			{
@@ -724,6 +724,10 @@ public abstract class Value extends Node implements AbstractValue
 		if (checkArray && isArray())
 		{
 			builder.append(generateNovaArrayText());
+		}
+		if (isExternalType() && isPointer())
+		{
+			builder.append('*');
 		}
 		
 		return builder;

@@ -5,6 +5,7 @@ typedef void (*l0_Nova1_run)(void*, nova_standard_exception_NovaExceptionData*);
 
 nova_VTable_nova_standard_thread_NovaThread nova_VTable_nova_standard_thread_NovaThread_val =
 {
+	nova_standard_NovaObject_Nova0_getHashCodeLong,
 	nova_standard_NovaObject_Nova0_toString,
 	nova_standard_NovaObject_Nova0_equals,
 	nova_standard_thread_NovaThread_Nova0_run,

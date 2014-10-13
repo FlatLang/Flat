@@ -4,10 +4,10 @@
 
 nova_VTable_nova_standard_primitive_number_NovaLong nova_VTable_nova_standard_primitive_number_NovaLong_val =
 {
-	nova_standard_NovaObject_Nova0_toString,
+	nova_standard_NovaObject_Nova0_getHashCodeLong,
+	nova_standard_primitive_number_NovaLong_Nova2_toString,
 	nova_standard_NovaObject_Nova0_equals,
 	nova_standard_primitive_number_NovaLong_static_Nova0_numDigits,
-	nova_standard_primitive_number_NovaLong_static_Nova0_toString,
 };
 void nova_standard_primitive_number_NovaLongNova_init_static(nova_standard_exception_NovaExceptionData* exceptionData)
 {
@@ -70,7 +70,7 @@ int nova_standard_primitive_number_NovaLong_static_Nova0_numDigits(nova_standard
 	return l1_Novasize;
 }
 
-nova_standard_NovaString* nova_standard_primitive_number_NovaLong_static_Nova0_toString(nova_standard_primitive_number_NovaLong* this, nova_standard_exception_NovaExceptionData* exceptionData, long l0_Novavalue)
+nova_standard_NovaString* nova_standard_primitive_number_NovaLong_static_Nova1_toString(nova_standard_primitive_number_NovaLong* this, nova_standard_exception_NovaExceptionData* exceptionData, long l0_Novavalue)
 {
 	int l1_NovacharOffset;
 	int l1_Novadigits;
@@ -81,7 +81,7 @@ nova_standard_NovaString* nova_standard_primitive_number_NovaLong_static_Nova0_t
 	
 	l1_NovacharOffset = (int)('0');
 	l1_Novadigits = nova_standard_primitive_number_NovaLong_static_Nova0_numDigits((nova_standard_primitive_number_NovaLong*)nova_null, exceptionData, l0_Novavalue);
-	l1_Novadata = (char*)NOVA_MALLOC(sizeof(nova_standard_primitive_number_NovaChar[l1_Novadigits + 1]));
+	l1_Novadata = (char*)NOVA_MALLOC(sizeof(nova_standard_primitive_number_NovaChar*[l1_Novadigits + 1]));
 	l1_Novadata[l1_Novadigits] = '\0';
 	l1_Novaoffset = 0;
 	if (l0_Novavalue < 0)
@@ -98,6 +98,11 @@ nova_standard_NovaString* nova_standard_primitive_number_NovaLong_static_Nova0_t
 		l0_Novavalue = l0_Novavalue / 10;
 	}
 	return nova_standard_NovaString_Nova1_construct(0, exceptionData, l1_Novadata);
+}
+
+nova_standard_NovaString* nova_standard_primitive_number_NovaLong_Nova2_toString(nova_standard_primitive_number_NovaLong* this, nova_standard_exception_NovaExceptionData* exceptionData)
+{
+	return nova_standard_primitive_number_NovaLong_static_Nova1_toString(this, exceptionData, this->nova_standard_primitive_number_NovaLong_Novavalue);
 }
 
 void nova_standard_primitive_number_NovaLong_Novasuper(nova_standard_primitive_number_NovaLong* this, nova_standard_exception_NovaExceptionData* exceptionData)

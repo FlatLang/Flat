@@ -209,6 +209,46 @@ public class String
 		return false
 	}
 	
+	public toLowerCase() -> String
+	{
+		return changeCase(Char.toLowerCase)
+	}
+	
+	public toUpperCase() -> String
+	{
+		return changeCase(Char.toUpperCase)
+	}
+	
+	changeCase(transform(Char) -> Char) -> String
+	{
+		Char newData[] = new Char[length]
+		
+		for (Int i = 0; i < length; i++)
+		{
+			newData[i] = transform(data[i])
+		}
+		
+		return new String(newData)
+	}
+	
+	public getDataBetween(String before, String after) -> String
+	{
+		return getDataBetween(before, after, 0)
+	}
+	
+	public getDataBetween(String before, String after, Int start) -> String
+	{
+		Int s = indexOf(before, start)
+		Int e = indexOf(after, s + 1)
+		
+		if (s >= 0 && e > 0)
+		{
+			return substring(s + before.length, e)
+		}
+		
+		return ""
+	}
+	
 	public toString() -> String
 	{
 		return this

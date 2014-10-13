@@ -2,12 +2,21 @@ package "nova/standard/datastruct"
 
 public class Array
 {
-	//external type void
-	
 	visible Int length
 	
-	public construct()//(void** data, int length)
+	external type void
+	
+	visible void* array[]
+	
+	public construct(Int length)
 	{
+		this.length = length
 		
+		array = new void[length]
+		
+//		for (Int i = 0; i < length; i++)
+//		{
+//			array[i] = 0
+//		}
 	}
 }

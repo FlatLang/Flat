@@ -1,5 +1,6 @@
 package net.fathomsoft.nova.tree;
 
+import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.tree.exceptionhandling.Exception;
@@ -15,7 +16,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.2.14 Jun 19, 2014 at 12:14:53 PM
- * @version	v0.2.35 Oct 5, 2014 at 11:22:42 PM
+ * @version	v0.2.36 Oct 13, 2014 at 12:16:42 AM
  */
 public class MethodCallArgumentList extends ArgumentList
 {
@@ -66,6 +67,8 @@ public class MethodCallArgumentList extends ArgumentList
 			Value child = (Value)getChild(i);
 			
 			Value param = getMethodCall().getCorrespondingParameter(child);
+
+			Nova.debuggingBreakpoint(child.generateNovaInput().toString().equals("Int.getHashCodeLong(n)"));
 			
 			boolean sameType = isSameType(child.getReturnedNode(), param);
 			
@@ -168,8 +171,8 @@ public class MethodCallArgumentList extends ArgumentList
 				builder.append('&');
 			}
 			
-			Identifier context  = getMethodCallContext();
-			boolean    sameType = isSameType(getMethodCall().getReferenceNode(), method.getParentClass());
+			Accessible context  = getMethodCallContext();
+			boolean    sameType = isSameType((Value)getMethodCall().getReferenceNode(), method.getParentClass());
 			
 			if (!sameType)
 			{
@@ -231,7 +234,7 @@ public class MethodCallArgumentList extends ArgumentList
 	 * 
 	 * @return The Identifier that is calling the method.
 	 */
-	private Identifier getMethodCallContext()
+	private Accessible getMethodCallContext()
 	{
 		return getMethodCall().getRootReferenceNode();
 	}

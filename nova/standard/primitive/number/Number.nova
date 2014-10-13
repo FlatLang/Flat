@@ -9,8 +9,8 @@ public class Number extends Primitive
 		return -1
 	}
 	
-	public static toString(Number value) -> String
-	{
-		return "[Unimplemented]"
-	}
+//	public static toString(Number value) -> String
+//	{
+//		return "[Unimplemented]"
+//	}
 }

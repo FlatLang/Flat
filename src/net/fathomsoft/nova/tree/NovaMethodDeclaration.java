@@ -2,6 +2,7 @@ package net.fathomsoft.nova.tree;
 
 import java.util.ArrayList;
 
+import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.error.SyntaxMessage;
@@ -20,7 +21,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.2.21 Jul 30, 2014 at 1:45:00 PM
- * @version	v0.2.35 Oct 5, 2014 at 11:22:42 PM
+ * @version	v0.2.36 Oct 13, 2014 at 12:16:42 AM
  */
 public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAncestor
 {
@@ -567,6 +568,13 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 				{
 					setOverloadIDs(methods);
 				}
+			}
+		}
+		else if (phase == SyntaxTree.PHASE_PRE_GENERATION)
+		{
+			if (getParentClass().isPrimitiveType())
+			{
+				setVisibility(PUBLIC);
 			}
 		}
 		

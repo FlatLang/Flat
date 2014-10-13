@@ -11,6 +11,11 @@ public class Int extends Number
 		this.value = value
 	}
 	
+	public getHashCodeLong() -> Long
+	{
+		return value
+	}
+	
 	public static numDigits(Int number) -> Int
 	{
 		return Long.numDigits(number)
@@ -19,6 +24,11 @@ public class Int extends Number
 	public static toString(Int value) -> String
 	{
 		return Long.toString(value)
+	}
+	
+	public toString() -> String
+	{
+		return toString(value)
 	}
 	
 	public static parseInt(String num) -> Int

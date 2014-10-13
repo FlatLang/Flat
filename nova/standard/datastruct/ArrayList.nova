@@ -27,6 +27,51 @@ public class ArrayList<E>
 		data[size++] = element
 	}
 	
+	public add(Int index, E element)
+	{
+		add(element)
+		
+		shiftRight(index, size)
+		
+		data[index] = element
+	}
+	
+	public remove(Int index) -> E
+	{
+		E element = data[index]
+		
+		shiftLeft(index + 1, size--)
+		
+		return element
+	}
+	
+	shiftRight(Int left, Int right)
+	{
+		for (Int i = right - 1; i > left; i--)
+		{
+			data[i] = data[i - 1]
+		}
+		
+		data[left] = null
+	}
+	
+	shiftLeft(Int left, Int right)
+	{
+		for (Int i = left - 1; i < right - 1; i++)
+		{
+			data[i] = data[i + 1]
+		}
+		
+		data[right - 1] = null
+	}
+	
+	public swap(Int index1, Int index2)
+	{
+		E temp = data[index1]
+		data[index1] = data[index2]
+		data[index2] = temp
+	}
+	
 	public increaseSize()
 	{
 		bufferSize = bufferSize + 3

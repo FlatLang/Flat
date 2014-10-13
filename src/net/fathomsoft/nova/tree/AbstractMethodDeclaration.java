@@ -11,7 +11,7 @@ import net.fathomsoft.nova.util.Patterns;
  * 
  * @author	Braden Steffaniak
  * @since	v0.2.19 Jul 26, 2014 at 12:30:24 AM
- * @version	v0.2.26 Aug 6, 2014 at 2:48:50 PM
+ * @version	v0.2.36 Oct 13, 2014 at 12:16:42 AM
  */
 public class AbstractMethodDeclaration extends NovaMethodDeclaration
 {
@@ -30,6 +30,18 @@ public class AbstractMethodDeclaration extends NovaMethodDeclaration
 	public boolean containsBody()
 	{
 		return false;
+	}
+	
+	@Override
+	public StringBuilder generateCHeaderFragment(StringBuilder builder)
+	{
+		return generateCSourcePrototype(builder);
+	}
+	
+	@Override
+	public StringBuilder generateCSourceFragment(StringBuilder builder)
+	{
+		return generateCSourceSignature(builder).append("{}");
 	}
 	
 	/**

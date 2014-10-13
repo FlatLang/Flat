@@ -1,5 +1,6 @@
 package net.fathomsoft.nova.tree;
 
+import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.error.SyntaxMessage;
@@ -16,7 +17,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:55:15 PM
- * @version	v0.2.35 Oct 5, 2014 at 11:22:42 PM
+ * @version	v0.2.36 Oct 13, 2014 at 12:16:42 AM
  */
 public class ForLoop extends Loop
 {
@@ -289,16 +290,11 @@ public class ForLoop extends Loop
 		 * 	return true
 		 */
 		
-		Node condition = BinaryOperation.decodeStatement(getArgumentList(), argument, location, require);
+		Node condition = SyntaxTree.decodeValue(getArgumentList(), argument, location, require);
 		
 		if (condition == null)
 		{
-			condition = SyntaxTree.getUsableExistingNode(getArgumentList(), argument, location);
-			
-			if (condition == null)
-			{
-				return false;
-			}
+			return false;
 		}
 		
 		getArgumentList().addChild(condition);
@@ -346,10 +342,10 @@ public class ForLoop extends Loop
 	{
 		ValidationResult result = super.validate(phase);
 		
-		if (phase == SyntaxTree.PHASE_METHOD_CONTENTS)
+		if (phase == SyntaxTree.PHASE_PRE_GENERATION)
 		{
-			Variable   var      = getLoopInitialization().getAssigneeNode();
-			Identifier existing = var.getDeclaration();SyntaxTree.findDeclaration(getArgumentList(), var.getName());
+			Variable   var      = getLoopInitialization().getAssignedNode();
+			Identifier existing = var.getDeclaration();
 			
 			if (var.getLocationIn().getBounds().equals(existing.getLocationIn().getBounds()))
 			{

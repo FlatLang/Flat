@@ -8,7 +8,7 @@ public class ExceptionData
 	
 	external void jump(buffer buf, int code)
 	
-	buffer					buf
+	buffer*					buf
 	
 	ExceptionData			parent
 	
@@ -16,7 +16,7 @@ public class ExceptionData
 	
 	visible ArrayList<Int>	codes
 	
-	public construct(buffer buf)
+	public construct(buffer* buf)
 	{
 		this.buf = buf
 		codes    = new ArrayList()
@@ -27,7 +27,7 @@ public class ExceptionData
 		codes.add(code)
 	}
 	
-	public getBuffer() -> buffer
+	public getBuffer() -> buffer*
 	{
 		return buf
 	}
@@ -59,7 +59,7 @@ public class ExceptionData
 		return 0
 	}
 	
-	public getCorrectBuffer(Int code) -> buffer
+	public getCorrectBuffer(Int code) -> buffer*
 	{
 		ExceptionData data = getCorrectData(code)
 		
@@ -80,7 +80,7 @@ public class ExceptionData
 			code = 1
 		}
 		
-		buffer b = data.getBuffer()
+		buffer* b = data.getBuffer()
 		
 		jump(b, code)
 	}

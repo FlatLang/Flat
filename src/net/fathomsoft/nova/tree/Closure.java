@@ -15,7 +15,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.2.14 Jul 5, 2014 at 9:02:42 PM
- * @version	v0.2.35 Oct 5, 2014 at 11:22:42 PM
+ * @version	v0.2.36 Oct 13, 2014 at 12:16:42 AM
  */
 public class Closure extends Variable
 {
@@ -97,7 +97,7 @@ public class Closure extends Variable
 			return (ClosureDeclaration)getMethodCall().getCallableDeclaration().getParameterList().getParameter(argNum);
 		}
 		
-		return (ClosureDeclaration)getMethodCall().getCorrespondingParameter(getRootNode());
+		return (ClosureDeclaration)getMethodCall().getCorrespondingParameter((Value)getRootNode());
 	}
 	
 	/**
@@ -132,7 +132,7 @@ public class Closure extends Variable
 	 */
 	private NovaMethodDeclaration getMethodDeclaration(String name)
 	{
-		return (NovaMethodDeclaration)getReferenceNode().getTypeClass().getMethod(name, getClosureDeclaration().getParameterList().getTypes());
+		return (NovaMethodDeclaration)((Value)getReferenceNode()).getTypeClass().getMethod(name, getClosureDeclaration().getParameterList().getTypes());
 	}
 	
 	/**
@@ -186,7 +186,7 @@ public class Closure extends Variable
 		
 //		MethodDeclaration declaration = getMethodDeclaration(name);
 //		
-		declarations = getReferenceNode().getTypeClass().getMethods(name);
+		declarations = ((Value)getReferenceNode()).getTypeClass().getMethods(name);
 		
 		if (declarations.length <= 0)
 		{

@@ -20,6 +20,7 @@ typedef struct nova_standard_NovaString nova_standard_NovaString;
 #include <nova/standard/primitive/nova_standard_primitive_NovaNull.h>
 #include <nova/standard/primitive/number/nova_standard_primitive_number_NovaChar.h>
 #include <nova/standard/primitive/nova_standard_primitive_NovaBool.h>
+#include <nova/standard/datastruct/nova_standard_datastruct_NovaArray.h>
 #include <nova/standard/gc/nova_standard_gc_NovaGC.h>
 #include <nova/standard/nova_standard_NovaObject.h>
 #include <nova/standard/nova_standard_NovaString.h>
@@ -28,6 +29,7 @@ typedef struct nova_standard_NovaString nova_standard_NovaString;
 
 typedef struct nova_VTable_nova_standard_NovaString
 {
+	long (*nova_standard_NovaObject_Novavirtual0_getHashCodeLong)(nova_standard_NovaObject*, nova_standard_exception_NovaExceptionData*);
 	nova_standard_NovaString* (*nova_standard_NovaString_Novavirtual0_toString)(nova_standard_NovaString*, nova_standard_exception_NovaExceptionData*);
 	char (*nova_standard_NovaString_Novavirtual_equals)(nova_standard_NovaString*, nova_standard_exception_NovaExceptionData*, nova_standard_NovaString*);
 	nova_standard_NovaString* (*nova_standard_NovaString_Novavirtual0_concat)(nova_standard_NovaString*, nova_standard_exception_NovaExceptionData*, nova_standard_NovaString*);
@@ -59,6 +61,10 @@ nova_standard_NovaString* nova_standard_NovaString_Nova1_substring(nova_standard
 char nova_standard_NovaString_NovalastChar(nova_standard_NovaString* this, nova_standard_exception_NovaExceptionData* exceptionData);
 char nova_standard_NovaString_NovaCharAt(nova_standard_NovaString* this, nova_standard_exception_NovaExceptionData* exceptionData, int l0_Novaindex);
 nova_standard_NovaString* nova_standard_NovaString_Novatrim(nova_standard_NovaString* this, nova_standard_exception_NovaExceptionData* exceptionData);
+nova_standard_NovaString* nova_standard_NovaString_NovatoLowerCase(nova_standard_NovaString* this, nova_standard_exception_NovaExceptionData* exceptionData);
+nova_standard_NovaString* nova_standard_NovaString_NovatoUpperCase(nova_standard_NovaString* this, nova_standard_exception_NovaExceptionData* exceptionData);
+nova_standard_NovaString* nova_standard_NovaString_Nova0_getDataBetween(nova_standard_NovaString* this, nova_standard_exception_NovaExceptionData* exceptionData, nova_standard_NovaString* l0_Novabefore, nova_standard_NovaString* l0_Novaafter);
+nova_standard_NovaString* nova_standard_NovaString_Nova1_getDataBetween(nova_standard_NovaString* this, nova_standard_exception_NovaExceptionData* exceptionData, nova_standard_NovaString* l0_Novabefore, nova_standard_NovaString* l0_Novaafter, int l0_Novastart);
 nova_standard_NovaString* nova_standard_NovaString_Nova0_toString(nova_standard_NovaString* this, nova_standard_exception_NovaExceptionData* exceptionData);
 void nova_standard_NovaString_Novasuper(nova_standard_NovaString* this, nova_standard_exception_NovaExceptionData* exceptionData);
 

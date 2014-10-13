@@ -1,0 +1,36 @@
+package "example/network"
+
+import "nova/standard/network/ClientSocket"
+import "nova/standard/network/ConnectionSocket"
+import "nova/standard/datastruct/ArrayList"
+
+public class ClientDemo
+{
+	public static main(String[] args)
+	{
+		ClientSocket socket = new ClientSocket()
+		
+		Console.writeLine("Attempting to connect to localhost:25560")
+		Bool connected = socket.connect("10.0.53.118", 25560)
+		
+		if (connected)
+		{
+			ConnectionThread thread = new ConnectionThread(socket.connection)
+			
+			thread.start()
+			
+			Console.writeLine("Connected!")
+			
+			while (true)
+			{
+				String message = Console.readLine()
+				
+				socket.connection.out.write(message)
+				
+				
+			}
+		}
+		
+		Console.waitForEnter()
+	}
+}

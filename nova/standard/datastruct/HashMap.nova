@@ -11,7 +11,7 @@ public class HashMap<K, V>
 	external V hashmapGet(hashmap* map, long key)
 	external void hashmapDelete(hashmap* map)
 	
-	hashmap map
+	hashmap* map
 	
 	public construct()
 	{
@@ -20,11 +20,14 @@ public class HashMap<K, V>
 	
 	public put(K key, V value)
 	{
+		Console.writeLine("HashCode for(" + key + "): " + key.getHashCodeLong())
+		
 		hashmapInsert(map, value, key.getHashCodeLong())
 	}
 	
 	public get(K key) -> V
 	{
+		Console.writeLine("HashCode gfor(" + key + "): " + key.getHashCodeLong())
 		return hashmapGet(map, key.getHashCodeLong())
 	}
 }

@@ -21,7 +21,7 @@ import net.fathomsoft.nova.util.Location;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Apr 5, 2014 at 10:54:20 PM
- * @version	v0.2.35 Oct 5, 2014 at 11:22:42 PM
+ * @version	v0.2.36 Oct 13, 2014 at 12:16:42 AM
  */
 public class Scope extends Node
 {
@@ -84,13 +84,42 @@ public class Scope extends Node
 	 */
 	public Variable registerLocalVariable(MethodCall virtual)
 	{
+		return registerLocalVariable(virtual, true);
+	}
+	
+	/**
+	 * Register a local variable to take the place of the virtual method
+	 * call so that the method call is not called twice.
+	 * 
+	 * @param virtual The method call to convert into a local variable.
+	 * @param require Whether or not to throw an error if anything goes
+	 * 		wrong.
+	 * @return The newly generated local variable representing the old
+	 * 		virtual method call.
+	 */
+	public Variable registerLocalVariable(MethodCall virtual, boolean require)
+	{
+		String type = virtual.getType();
+		
+		if (virtual.isGenericType())
+		{
+			type = virtual.getGenericReturnType();
+		}
+		
 		String     value  = virtual.getRootReferenceNode(true).generateNovaInputUntil(virtual).toString();
 		Node       base   = virtual.getBaseNode();
-		String     decl   = virtual.getType() + " nova_local_" + localVariableID++ + " = " + value;
-		Assignment assign = Assignment.decodeStatement(this, decl, getLocationIn(), true, true);
+		String     decl   = type + " nova_local_" + getParentMethod().getScope().localVariableID++ + " = " + value;
+		Assignment assign = Assignment.decodeStatement(this, decl, getLocationIn(), require);
+		
+		if (assign == null)
+		{
+			return null;
+		}
+		
 		Variable   var    = (Variable)assign.getAssigneeNode();
 		
 		var.setForceOriginalName(true);
+		var.getDeclaration().validateType();
 		
 		base.getParent().addChildBefore(base, assign);
 		

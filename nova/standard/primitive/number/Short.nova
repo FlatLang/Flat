@@ -18,4 +18,9 @@ public class Short extends Number
 	{
 		return Long.toString(value)
 	}
+	
+	public toString() -> String
+	{
+		return toString(value)
+	}
 }

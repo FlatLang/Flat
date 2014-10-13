@@ -11,7 +11,7 @@ import net.fathomsoft.nova.util.Location;
  * 
  * @author	Braden Steffaniak
  * @since	v0.2.29 Aug 25, 2014 at 6:11:02 PM
- * @version	v0.2.33 Sep 29, 2014 at 10:29:33 AM
+ * @version	v0.2.36 Oct 13, 2014 at 12:16:42 AM
  */
 public class GenericType extends IValue implements GenericCompatible
 {
@@ -69,6 +69,11 @@ public class GenericType extends IValue implements GenericCompatible
 	@Override
 	public String getGenericReturnType()
 	{
+		if (isGenericType())
+		{
+			return getDefaultType();
+		}
+		
 		return getType();
 	}
 	

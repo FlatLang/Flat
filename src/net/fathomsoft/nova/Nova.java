@@ -74,7 +74,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:00:04 PM
- * @version	v0.2.35 Oct 5, 2014 at 11:22:42 PM
+ * @version	v0.2.36 Oct 13, 2014 at 12:16:42 AM
  */
 public class Nova
 {
@@ -128,7 +128,7 @@ public class Nova
 	public static final int		LINUX         = 3;
 	
 	public static final String	LANGUAGE_NAME = "Nova";
-	public static final String	VERSION       = "v0.2.35";
+	public static final String	VERSION       = "v0.2.36";
 	
 	/**
 	 * Find out which operating system the compiler is running on.
@@ -244,24 +244,28 @@ public class Nova
 			
 			args = new String[]
 			{
-				formatPath(stability + "StabilityTest.nova"),
-				formatPath(stability + "TimeStability.nova"),
-				formatPath(stability + "FileStability.nova"),
-				formatPath(stability + "ThreadStability.nova"),
-				formatPath(stability + "ExceptionStability.nova"),
-				formatPath(stability + "SyntaxStability.nova"),
-				formatPath(stability + "ClosureStability.nova"),
-				formatPath(stability + "PolymorphismStability.nova"),
-				formatPath(stability + "PolymorphicSuperClass.nova"),
-				formatPath(stability + "PolymorphicSubClass.nova"),
-				formatPath(stability + "StabilityTestException.nova"),
-				formatPath(stability + "StabilityExceptionHandler.nova"),
-				formatPath(stability + "ThreadImplementation.nova"),
-				formatPath(stability + "UnstableException.nova"),
-				formatPath(directory + "GenericDemo.nova"),
+//				formatPath(stability + "StabilityTest.nova"),
+//				formatPath(stability + "TimeStability.nova"),
+//				formatPath(stability + "FileStability.nova"),
+//				formatPath(stability + "ThreadStability.nova"),
+//				formatPath(stability + "ExceptionStability.nova"),
+//				formatPath(stability + "SyntaxStability.nova"),
+//				formatPath(stability + "ClosureStability.nova"),
+//				formatPath(stability + "PolymorphismStability.nova"),
+//				formatPath(stability + "PolymorphicSuperClass.nova"),
+//				formatPath(stability + "PolymorphicSubClass.nova"),
+//				formatPath(stability + "StabilityTestException.nova"),
+//				formatPath(stability + "StabilityExceptionHandler.nova"),
+//				formatPath(stability + "ThreadImplementation.nova"),
+//				formatPath(stability + "UnstableException.nova"),
+//				formatPath(stability + "NetworkStability.nova"),
+//				formatPath(stability + "ClientThread.nova"),
+				formatPath(directory + "network/ConnectionThread.nova"),
+//				formatPath(directory + "network/ServerDemo.nova"),
+				formatPath(directory + "network/ClientDemo.nova"),
+//				formatPath(directory + "GenericDemo.nova"),
 //				formatPath(directory + "database/DatabaseDemo.nova"),
 //				formatPath(root      + "bank/Bank.nova"),
-//				formatPath(directory + "Lab.nova"),
 //				formatPath(directory + "MathDemo.nova"),
 //				formatPath(directory + "ThreadDemo.nova"),
 //				formatPath(directory + "ThreadDemoImplementation.nova"),
@@ -270,6 +274,7 @@ public class Nova
 //				formatPath(directory + "Spider.nova"),
 //				formatPath(directory + "Dog.nova"),
 //				formatPath(directory + "ArrayListDemo.nova"),
+//				formatPath(directory + "QueueDemo.nova"),
 //				formatPath(directory + "IntegerTest.nova"),
 //				formatPath(directory + "FileTest.nova"),
 //				formatPath(directory + "SVGTest.nova"),
@@ -309,6 +314,13 @@ public class Nova
 			
 			formatPath(standard  + "database/DBConnector.nova"),
 			formatPath(standard  + "database/ResultSet.nova"),
+			
+			formatPath(standard  + "network/Socket.nova"),
+			formatPath(standard  + "network/ServerSocket.nova"),
+			formatPath(standard  + "network/ClientSocket.nova"),
+			formatPath(standard  + "network/ConnectionSocket.nova"),
+			formatPath(standard  + "network/NetworkInputStream.nova"),
+			formatPath(standard  + "network/NetworkOutputStream.nova"),
 			
 			formatPath(standard  + "logic/Conclusion.nova"),
 			formatPath(standard  + "logic/Hypothesis.nova"),
@@ -361,6 +373,7 @@ public class Nova
 			formatPath(standard  + "exception/Exception.nova"),
 			
 			formatPath(standard  + "datastruct/ArrayList.nova"),
+			formatPath(standard  + "datastruct/Queue.nova"),
 			formatPath(standard  + "datastruct/List.nova"),
 			formatPath(standard  + "datastruct/ListNode.nova"),
 			formatPath(standard  + "datastruct/Array.nova"),
@@ -616,8 +629,8 @@ public class Nova
 		{
 //			FileDeclaration file = mainMethod.getFileDeclaration();
 //			file.addChild(Import.decodeStatement(file, "import \"GC\"", file.getLocationIn(), true, false));
-			Identifier gcInit = SyntaxTree.decodeIdentifierAccess(mainMethod, "GC.init()", mainMethod.getLocationIn(), true);
-			Identifier enter  = SyntaxTree.decodeIdentifierAccess(mainMethod, "Console.waitForEnter()", mainMethod.getLocationIn(), true);
+			Value gcInit = (Value)SyntaxTree.decodeIdentifierAccess(mainMethod, "GC.init()", mainMethod.getLocationIn(), true);
+			Value enter  = (Value)SyntaxTree.decodeIdentifierAccess(mainMethod, "Console.waitForEnter()", mainMethod.getLocationIn(), true);
 			
 			Instantiation nullConstructor = Instantiation.decodeStatement(mainMethod, "new Null()", mainMethod.getLocationIn(), true);
 			Constructor   strConstructor  = (Constructor)((MethodCall)Instantiation.decodeStatement(mainMethod, "new String(new Char[0])", mainMethod.getLocationIn(), true).getIdentifier()).getDeclaration();
@@ -731,8 +744,6 @@ public class Nova
 			cmd.append("clang ");
 		}
 		
-		cmd.append("-L\"bin/\" -lmysql ");
-		
 		if (!isFlagEnabled(NO_GC))
 		{
 			cmd.append("-DUSE_GC -lgc ");
@@ -779,13 +790,19 @@ public class Nova
 		}
 		
 		cmd.append("-o ").append('"').append(outputFile.getAbsolutePath()).append('"').append(' ');
+
+		cmd.append("-L\"bin/\" -lmysql ");
 		
 //		cmd.append("-Ofast ");
 //		cmd.append("-s ");
 		
 		if (OS == LINUX)
 		{
-			cmd.append("-lm -lpthread -ldl");
+			cmd.append("-lm -lpthread -ldl ");
+		}
+		else if (OS == WINDOWS)
+		{
+			cmd.append("-lws2_32 ");
 		}
 		
 		if (isFlagEnabled(C_ARGS))

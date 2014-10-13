@@ -4,6 +4,7 @@
 
 nova_VTable_nova_standard_io_NovaConsole nova_VTable_nova_standard_io_NovaConsole_val =
 {
+	nova_standard_NovaObject_Nova0_getHashCodeLong,
 	nova_standard_NovaObject_Nova0_toString,
 	nova_standard_NovaObject_Nova0_equals,
 };
@@ -55,37 +56,37 @@ void nova_standard_io_NovaConsole_static_Nova1_writeLine(nova_standard_io_NovaCo
 
 void nova_standard_io_NovaConsole_static_Nova2_writeLine(nova_standard_io_NovaConsole* this, nova_standard_exception_NovaExceptionData* exceptionData, double l0_Novanum)
 {
-	nova_standard_io_NovaConsole_static_Nova0_writeLine((nova_standard_io_NovaConsole*)nova_null, exceptionData, nova_standard_primitive_number_NovaDouble_static_Nova0_toString(0, exceptionData, l0_Novanum));
+	nova_standard_io_NovaConsole_static_Nova0_writeLine((nova_standard_io_NovaConsole*)nova_null, exceptionData, nova_standard_primitive_number_NovaDouble_static_Nova1_toString(0, exceptionData, l0_Novanum));
 }
 
 void nova_standard_io_NovaConsole_static_Nova3_writeLine(nova_standard_io_NovaConsole* this, nova_standard_exception_NovaExceptionData* exceptionData, float l0_Novanum)
 {
-	nova_standard_io_NovaConsole_static_Nova0_writeLine((nova_standard_io_NovaConsole*)nova_null, exceptionData, nova_standard_primitive_number_NovaDouble_static_Nova0_toString(0, exceptionData, (double)(l0_Novanum)));
+	nova_standard_io_NovaConsole_static_Nova0_writeLine((nova_standard_io_NovaConsole*)nova_null, exceptionData, nova_standard_primitive_number_NovaDouble_static_Nova1_toString(0, exceptionData, (double)(l0_Novanum)));
 }
 
 void nova_standard_io_NovaConsole_static_Nova4_writeLine(nova_standard_io_NovaConsole* this, nova_standard_exception_NovaExceptionData* exceptionData, long l0_Novanum)
 {
-	nova_standard_io_NovaConsole_static_Nova0_writeLine((nova_standard_io_NovaConsole*)nova_null, exceptionData, nova_standard_primitive_number_NovaLong_static_Nova0_toString(0, exceptionData, l0_Novanum));
+	nova_standard_io_NovaConsole_static_Nova0_writeLine((nova_standard_io_NovaConsole*)nova_null, exceptionData, nova_standard_primitive_number_NovaLong_static_Nova1_toString(0, exceptionData, l0_Novanum));
 }
 
 void nova_standard_io_NovaConsole_static_Nova5_writeLine(nova_standard_io_NovaConsole* this, nova_standard_exception_NovaExceptionData* exceptionData, int l0_Novanum)
 {
-	nova_standard_io_NovaConsole_static_Nova0_writeLine((nova_standard_io_NovaConsole*)nova_null, exceptionData, nova_standard_primitive_number_NovaInt_static_Nova0_toString(0, exceptionData, l0_Novanum));
+	nova_standard_io_NovaConsole_static_Nova0_writeLine((nova_standard_io_NovaConsole*)nova_null, exceptionData, nova_standard_primitive_number_NovaInt_static_Nova1_toString(0, exceptionData, l0_Novanum));
 }
 
 void nova_standard_io_NovaConsole_static_Nova6_writeLine(nova_standard_io_NovaConsole* this, nova_standard_exception_NovaExceptionData* exceptionData, short l0_Novanum)
 {
-	nova_standard_io_NovaConsole_static_Nova0_writeLine((nova_standard_io_NovaConsole*)nova_null, exceptionData, nova_standard_primitive_number_NovaInt_static_Nova0_toString(0, exceptionData, (int)(l0_Novanum)));
+	nova_standard_io_NovaConsole_static_Nova0_writeLine((nova_standard_io_NovaConsole*)nova_null, exceptionData, nova_standard_primitive_number_NovaInt_static_Nova1_toString(0, exceptionData, (int)(l0_Novanum)));
 }
 
 void nova_standard_io_NovaConsole_static_Nova7_writeLine(nova_standard_io_NovaConsole* this, nova_standard_exception_NovaExceptionData* exceptionData, char l0_Novanum)
 {
-	nova_standard_io_NovaConsole_static_Nova0_writeLine((nova_standard_io_NovaConsole*)nova_null, exceptionData, nova_standard_primitive_number_NovaByte_static_Nova0_toString(0, exceptionData, l0_Novanum));
+	nova_standard_io_NovaConsole_static_Nova0_writeLine((nova_standard_io_NovaConsole*)nova_null, exceptionData, nova_standard_primitive_number_NovaByte_static_Nova1_toString(0, exceptionData, l0_Novanum));
 }
 
 void nova_standard_io_NovaConsole_static_Nova8_writeLine(nova_standard_io_NovaConsole* this, nova_standard_exception_NovaExceptionData* exceptionData, char l0_Novac)
 {
-	nova_standard_io_NovaConsole_static_Nova0_writeLine((nova_standard_io_NovaConsole*)nova_null, exceptionData, nova_standard_primitive_number_NovaChar_static_NovatoString(0, exceptionData, l0_Novac));
+	nova_standard_io_NovaConsole_static_Nova0_writeLine((nova_standard_io_NovaConsole*)nova_null, exceptionData, nova_standard_primitive_number_NovaChar_static_Nova1_toString(0, exceptionData, l0_Novac));
 }
 
 void nova_standard_io_NovaConsole_static_Nova0_write(nova_standard_io_NovaConsole* this, nova_standard_exception_NovaExceptionData* exceptionData, nova_standard_NovaString* l0_Novatext)
@@ -103,37 +104,37 @@ void nova_standard_io_NovaConsole_static_Nova1_write(nova_standard_io_NovaConsol
 
 void nova_standard_io_NovaConsole_static_Nova2_write(nova_standard_io_NovaConsole* this, nova_standard_exception_NovaExceptionData* exceptionData, double l0_Novanum)
 {
-	nova_standard_io_NovaConsole_static_Nova0_write((nova_standard_io_NovaConsole*)nova_null, exceptionData, nova_standard_primitive_number_NovaDouble_static_Nova0_toString(0, exceptionData, l0_Novanum));
+	nova_standard_io_NovaConsole_static_Nova0_write((nova_standard_io_NovaConsole*)nova_null, exceptionData, nova_standard_primitive_number_NovaDouble_static_Nova1_toString(0, exceptionData, l0_Novanum));
 }
 
 void nova_standard_io_NovaConsole_static_Nova3_write(nova_standard_io_NovaConsole* this, nova_standard_exception_NovaExceptionData* exceptionData, float l0_Novanum)
 {
-	nova_standard_io_NovaConsole_static_Nova0_write((nova_standard_io_NovaConsole*)nova_null, exceptionData, nova_standard_primitive_number_NovaDouble_static_Nova0_toString(0, exceptionData, (double)(l0_Novanum)));
+	nova_standard_io_NovaConsole_static_Nova0_write((nova_standard_io_NovaConsole*)nova_null, exceptionData, nova_standard_primitive_number_NovaDouble_static_Nova1_toString(0, exceptionData, (double)(l0_Novanum)));
 }
 
 void nova_standard_io_NovaConsole_static_Nova4_write(nova_standard_io_NovaConsole* this, nova_standard_exception_NovaExceptionData* exceptionData, long l0_Novanum)
 {
-	nova_standard_io_NovaConsole_static_Nova0_write((nova_standard_io_NovaConsole*)nova_null, exceptionData, nova_standard_primitive_number_NovaLong_static_Nova0_toString(0, exceptionData, l0_Novanum));
+	nova_standard_io_NovaConsole_static_Nova0_write((nova_standard_io_NovaConsole*)nova_null, exceptionData, nova_standard_primitive_number_NovaLong_static_Nova1_toString(0, exceptionData, l0_Novanum));
 }
 
 void nova_standard_io_NovaConsole_static_Nova5_write(nova_standard_io_NovaConsole* this, nova_standard_exception_NovaExceptionData* exceptionData, int l0_Novanum)
 {
-	nova_standard_io_NovaConsole_static_Nova0_write((nova_standard_io_NovaConsole*)nova_null, exceptionData, nova_standard_primitive_number_NovaInt_static_Nova0_toString(0, exceptionData, l0_Novanum));
+	nova_standard_io_NovaConsole_static_Nova0_write((nova_standard_io_NovaConsole*)nova_null, exceptionData, nova_standard_primitive_number_NovaInt_static_Nova1_toString(0, exceptionData, l0_Novanum));
 }
 
 void nova_standard_io_NovaConsole_static_Nova6_write(nova_standard_io_NovaConsole* this, nova_standard_exception_NovaExceptionData* exceptionData, short l0_Novanum)
 {
-	nova_standard_io_NovaConsole_static_Nova0_write((nova_standard_io_NovaConsole*)nova_null, exceptionData, nova_standard_primitive_number_NovaInt_static_Nova0_toString(0, exceptionData, (int)(l0_Novanum)));
+	nova_standard_io_NovaConsole_static_Nova0_write((nova_standard_io_NovaConsole*)nova_null, exceptionData, nova_standard_primitive_number_NovaInt_static_Nova1_toString(0, exceptionData, (int)(l0_Novanum)));
 }
 
 void nova_standard_io_NovaConsole_static_Nova7_write(nova_standard_io_NovaConsole* this, nova_standard_exception_NovaExceptionData* exceptionData, char l0_Novanum)
 {
-	nova_standard_io_NovaConsole_static_Nova0_write((nova_standard_io_NovaConsole*)nova_null, exceptionData, nova_standard_primitive_number_NovaByte_static_Nova0_toString(0, exceptionData, l0_Novanum));
+	nova_standard_io_NovaConsole_static_Nova0_write((nova_standard_io_NovaConsole*)nova_null, exceptionData, nova_standard_primitive_number_NovaByte_static_Nova1_toString(0, exceptionData, l0_Novanum));
 }
 
 void nova_standard_io_NovaConsole_static_Nova8_write(nova_standard_io_NovaConsole* this, nova_standard_exception_NovaExceptionData* exceptionData, char l0_Novac)
 {
-	nova_standard_io_NovaConsole_static_Nova0_write((nova_standard_io_NovaConsole*)nova_null, exceptionData, nova_standard_primitive_number_NovaChar_static_NovatoString(0, exceptionData, l0_Novac));
+	nova_standard_io_NovaConsole_static_Nova0_write((nova_standard_io_NovaConsole*)nova_null, exceptionData, nova_standard_primitive_number_NovaChar_static_Nova1_toString(0, exceptionData, l0_Novac));
 }
 
 int nova_standard_io_NovaConsole_static_NovareadInt(nova_standard_io_NovaConsole* this, nova_standard_exception_NovaExceptionData* exceptionData)
@@ -202,7 +203,7 @@ void nova_standard_io_NovaConsole_static_NovawaitForEnter(nova_standard_io_NovaC
 	char* l1_Novac;
 	
 	nova_standard_io_NovaConsole_static_Novaflush((nova_standard_io_NovaConsole*)nova_null, exceptionData);
-	l1_Novac = (char*)NOVA_MALLOC(sizeof(nova_standard_primitive_number_NovaChar[2]));
+	l1_Novac = (char*)NOVA_MALLOC(sizeof(nova_standard_primitive_number_NovaChar*[2]));
 	fgets((char*)(l1_Novac), (int)(2), stdin);
 }
 

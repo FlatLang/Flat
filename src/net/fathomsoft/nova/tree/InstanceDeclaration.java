@@ -1,5 +1,6 @@
 package net.fathomsoft.nova.tree;
 
+import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.tree.variables.VariableDeclaration;
 import net.fathomsoft.nova.util.Location;
@@ -11,7 +12,7 @@ import net.fathomsoft.nova.util.Location;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:10:49 PM
- * @version	v0.2.26 Aug 6, 2014 at 2:48:50 PM
+ * @version	v0.2.36 Oct 13, 2014 at 12:16:42 AM
  */
 public class InstanceDeclaration extends VariableDeclaration
 {
@@ -168,6 +169,7 @@ public class InstanceDeclaration extends VariableDeclaration
 	 */
 	public void setVisibility(int visibility)
 	{
+		Nova.debuggingBreakpoint(getName() != null && getName().equals("shift"));
 		this.visibility = visibility;
 	}
 	

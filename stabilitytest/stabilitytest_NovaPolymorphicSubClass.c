@@ -4,6 +4,7 @@
 
 nova_VTable_stabilitytest_NovaPolymorphicSubClass nova_VTable_stabilitytest_NovaPolymorphicSubClass_val =
 {
+	nova_standard_NovaObject_Nova0_getHashCodeLong,
 	stabilitytest_NovaPolymorphicSubClass_Nova0_toString,
 	nova_standard_NovaObject_Nova0_equals,
 };

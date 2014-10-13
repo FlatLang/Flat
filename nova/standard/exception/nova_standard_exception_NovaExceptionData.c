@@ -4,6 +4,7 @@
 
 nova_VTable_nova_standard_exception_NovaExceptionData nova_VTable_nova_standard_exception_NovaExceptionData_val =
 {
+	nova_standard_NovaObject_Nova0_getHashCodeLong,
 	nova_standard_NovaObject_Nova0_toString,
 	nova_standard_NovaObject_Nova0_equals,
 };
@@ -60,7 +61,7 @@ void nova_standard_exception_NovaExceptionData_Novathis(nova_standard_exception_
 
 void nova_standard_exception_NovaExceptionData_NovaaddCode(nova_standard_exception_NovaExceptionData* this, nova_standard_exception_NovaExceptionData* exceptionData, int l0_Novacode)
 {
-	nova_standard_datastruct_NovaArrayList_Novaadd(this->nova_standard_exception_NovaExceptionData_Novacodes, exceptionData, (nova_standard_NovaObject*)(nova_standard_primitive_number_NovaInt_Novaconstruct(0, exceptionData, l0_Novacode)));
+	nova_standard_datastruct_NovaArrayList_Nova0_add(this->nova_standard_exception_NovaExceptionData_Novacodes, exceptionData, (nova_standard_NovaObject*)(nova_standard_primitive_number_NovaInt_Novaconstruct(0, exceptionData, l0_Novacode)));
 }
 
 buffer* nova_standard_exception_NovaExceptionData_NovagetBuffer(nova_standard_exception_NovaExceptionData* this, nova_standard_exception_NovaExceptionData* exceptionData)

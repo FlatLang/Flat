@@ -4,6 +4,7 @@
 
 nova_VTable_nova_standard_exception_NovaException nova_VTable_nova_standard_exception_NovaException_val =
 {
+	nova_standard_NovaObject_Nova0_getHashCodeLong,
 	nova_standard_NovaObject_Nova0_toString,
 	nova_standard_NovaObject_Nova0_equals,
 };

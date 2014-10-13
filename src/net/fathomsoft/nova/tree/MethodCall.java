@@ -1,5 +1,6 @@
 package net.fathomsoft.nova.tree;
 
+import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.error.SyntaxErrorException;
@@ -20,7 +21,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 10:04:31 PM
- * @version	v0.2.35 Oct 5, 2014 at 11:22:42 PM
+ * @version	v0.2.36 Oct 13, 2014 at 12:16:42 AM
  */
 public class MethodCall extends Variable
 {
@@ -110,7 +111,7 @@ public class MethodCall extends Variable
 	{
 		if (getCallableDeclaration().isVirtual())
 		{
-			if (isAccessed() && getAccessingNode().isVirtualTypeKnown())
+			if (isAccessed() && ((Value)getAccessingNode()).isVirtualTypeKnown())
 			{
 				return true;
 			}
@@ -224,7 +225,7 @@ public class MethodCall extends Variable
 			return SyntaxUtils.getImportedClass(getFileDeclaration(), getName());
 		}
 		
-		return getReferenceNode().getTypeClass();
+		return ((Value)getReferenceNode()).getTypeClass();
 	}
 	
 	/**
@@ -258,13 +259,13 @@ public class MethodCall extends Variable
 	 * @see net.fathomsoft.nova.tree.Identifier#getReferenceNode()
 	 */
 	@Override
-	public Identifier getReferenceNode()
+	public Accessible getReferenceNode()
 	{
-		Identifier ref = super.getReferenceNode();
+		Accessible ref = super.getReferenceNode();
 		
 		if (ref.getParent() instanceof Instantiation)
 		{
-			return (Identifier)ref.getParent();
+			return (Instantiation)ref.getParent();
 		}
 		
 		return ref;
@@ -338,7 +339,7 @@ public class MethodCall extends Variable
 		// TODO: there is a better way.
 		if (getCallableDeclaration().isVirtual() && isAccessed() && !isVirtualTypeKnown())
 		{
-			Identifier node = getAccessingNode().getLastAccessingOfType(new Class<?>[] { MethodCall.class, Closure.class }, true);
+			Accessible node = getAccessingNode().getLastAccessingOfType(new Class<?>[] { MethodCall.class, Closure.class }, true);
 			
 			if (node != null)
 			{
@@ -419,7 +420,7 @@ public class MethodCall extends Variable
 	{
 		VariableDeclaration method   = getMethodDeclaration();
 		CallableMethod      callable = (CallableMethod)method;
-		
+		Nova.debuggingBreakpoint(getName().equals("concat") && isAccessed() && ((Identifier)getAccessingNode()).getName().equals("toString") && getAccessingNode().isAccessed() && ((Identifier)getAccessingNode().getAccessingNode()).getName().equals("Long"));
 		if (isGenericType())
 		{
 			builder.append('(');
@@ -467,10 +468,15 @@ public class MethodCall extends Variable
 		}
 		if (assign != null)
 		{
-			return assign.getAssigneeNode().getDeclaration();
+			Value val = assign.getAssigneeNode();
+			
+			if (val instanceof Variable)
+			{
+				return ((Variable)val).getDeclaration();
+			}
 		}
 		
-		Identifier identifier = getReferenceNode();
+		Accessible identifier = getReferenceNode();
 		
 		if (identifier instanceof Variable)
 		{
@@ -495,7 +501,7 @@ public class MethodCall extends Variable
 		
 		if (generic != null)
 		{
-			return generic.getGenericParameterInstance(method.getType()).getType();
+			return generic.getGenericParameterInstance(method.getType()).getGenericReturnType();
 		}
 		
 		return super.getGenericReturnType();
@@ -584,7 +590,7 @@ public class MethodCall extends Variable
 			VariableDeclaration temp = new VariableDeclaration(null, null);
 			temp.setName(data.name);
 			n.setDeclaration(temp);
-			
+			Nova.debuggingBreakpoint(statement.equals("nova_socket_receive(clientSocket)"));
 			if (!n.decodeArguments(statement, bounds, require))
 			{
 				return null;
@@ -592,16 +598,16 @@ public class MethodCall extends Variable
 			
 			n.setDeclaration(n.searchMethodDeclaration());
 			
-			if (!n.validateArguments(n.getFileDeclaration(), n.getLocationIn(), require))
-			{
-				return null;
-			}
-			
 			CallableMethod method = n.getCallableDeclaration();
 			
 			if (method == null)
 			{
-				SyntaxMessage.error("Undeclared method '" + n.getName() + "'", n);
+				SyntaxMessage.error("Undeclared method '" + temp.getName() + "'", n);
+			}
+			
+			if (!n.validateArguments(n.getFileDeclaration(), n.getLocationIn(), require))
+			{
+				return null;
 			}
 			
 			if (validateAccess)
@@ -798,6 +804,7 @@ public class MethodCall extends Variable
 				
 				if (arg == null)
 				{
+					Nova.debuggingBreakpoint(argument.equals("s.length != NetworkStability.receive.length || !s.equals(NetworkStability.received)"));
 					arg = BinaryOperation.decodeStatement(parent, argument, location, false);
 					
 					if (arg == null)
@@ -889,18 +896,31 @@ public class MethodCall extends Variable
 		{
 			return result;
 		}
+
+		Identifier returned  = this;
+		
+		Accessible reference = returned.getReferenceNode();
+		Accessible accessing = returned.getAccessingNode();
+		Identifier accessed  = returned.getAccessedNode();
 		
 		if (phase == SyntaxTree.PHASE_METHOD_CONTENTS)
 		{
-			Identifier returned = this;
-			
-			Identifier reference = returned.getReferenceNode();
-			Identifier accessing = returned.getAccessingNode();
-			Identifier accessed  = returned.getAccessedNode();
-			
 			if (isPrimitiveGenericType())
 			{
-				String input = returned.generateNovaInputUntil(accessed) + ".value";
+				if (accessed instanceof Variable)
+				{
+					if (accessed.getName().equals("value"))
+					{
+						return result;
+					}
+				}
+				
+				String input = returned.generateNovaInputUntil(returned) + ".value";
+				
+				if (accessed != null)
+				{
+					input += "." + accessed.generateNovaInput();
+				}
 				
 				Identifier value = (Identifier)SyntaxTree.decodeIdentifierAccess(getParent(), input, getLocationIn(), false, false);
 				
@@ -926,11 +946,13 @@ public class MethodCall extends Variable
 				{
 					SearchFilter filter  = new SearchFilter();
 					filter.checkAncestor = false;
+					filter.checkStatic   = true;
+					filter.staticValue   = true;
 					
 					if (var.getTypeClass().getMethods(getName(), filter).length > 0)
 					{
 						Value staticCall = SyntaxUtils.replaceWithPrimitiveFacade(this);
-	
+						
 						if (staticCall == null)
 						{
 							return result.errorOccurred();
@@ -948,7 +970,9 @@ public class MethodCall extends Variable
 					return result;
 				}
 			}
-			
+		}
+		else if (phase == SyntaxTree.PHASE_PRE_GENERATION)
+		{
 			if (localDeclarationRequired())
 			{
 				if (reference instanceof Instantiation)
@@ -958,8 +982,8 @@ public class MethodCall extends Variable
 				
 				MethodCall calling   = (MethodCall)reference;
 				
-				Variable replacement = returned.getAncestorWithScope().getScope().registerLocalVariable(calling);
-				Node     replacing   = calling.getRootReferenceNode(true);
+				Variable replacement = returned.getAncestorWithScope().getScope().registerLocalVariable(calling, false);
+				Node     replacing   = (Node)calling.getRootReferenceNode(true);
 				
 				if (replacement == null)
 				{

@@ -8,7 +8,7 @@ import net.fathomsoft.nova.tree.Node;
  * 
  * @author	Braden Steffaniak
  * @since	v0.2.35 Oct 4, 2014 at 12:37:45 AM
- * @version	v0.2.35 Oct 5, 2014 at 11:22:42 PM
+ * @version	v0.2.36 Oct 13, 2014 at 12:16:42 AM
  */
 public class ValidationResult
 {
@@ -16,6 +16,7 @@ public class ValidationResult
 	
 	public boolean errorOccurred;
 	public boolean continueValidation;
+	public boolean skipCycle;
 	
 	/**
 	 * Create a new ValidationResult that has the expectation to return
@@ -30,6 +31,7 @@ public class ValidationResult
 		
 		this.continueValidation = true;
 		this.errorOccurred      = false;
+		this.skipCycle          = false;
 	}
 	
 	/**
@@ -40,6 +42,13 @@ public class ValidationResult
 	public ValidationResult errorOccurred()
 	{
 		errorOccurred = true;
+		
+		return this;
+	}
+	
+	public ValidationResult skippedCycle()
+	{
+		skipCycle = false;
 		
 		return this;
 	}

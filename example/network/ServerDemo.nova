@@ -1,0 +1,49 @@
+package "example/network"
+
+import "nova/standard/network/ServerSocket"
+import "nova/standard/network/ConnectionSocket"
+import "nova/standard/datastruct/ArrayList"
+
+public class ServerDemo
+{
+	public static main(String[] args)
+	{
+		ArrayList<ConnectionSocket> connections = new ArrayList()
+		
+		ServerSocket socket = new ServerSocket()
+		
+		socket.start(25560)
+		
+		Console.writeLine("Started server on port " + 25560)
+		Console.writeLine("Waiting on client...")
+		
+		ConnectionSocket request = socket.acceptClient()
+		
+		while (request != null)
+		{
+			connections.add(request)
+			
+			ConnectionThread thread = new ConnectionThread(request)
+			
+			thread.start()
+			
+			while (true)
+			{
+				String message = Console.readLine()
+				
+				if (request.out.write(message))
+				{
+					
+				}
+				else
+				{
+					Console.writeLine("Failed to send data")
+				}
+			}
+			
+			request = socket.acceptClient()
+		}
+		
+		Console.waitForEnter()
+	}
+}

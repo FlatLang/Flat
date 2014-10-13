@@ -125,6 +125,11 @@ public class Double extends Number
 		return genString(buffer, lastIndex)
 	}
 	
+	public toString() -> String
+	{
+		return toString(value)
+	}
+	
 	public static parseDouble(String str) -> Double
 	{
 		Char pEnd[]

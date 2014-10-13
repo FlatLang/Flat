@@ -1,9 +1,12 @@
 #include <precompiled.h>
 #include <nova/standard/nova_standard_NovaString.h>
 
+typedef char (*l0_Nova1_transform)(void*, nova_standard_exception_NovaExceptionData*, char);
+typedef char (*l0_Nova2_transform)(void*, nova_standard_exception_NovaExceptionData*, char);
 
 nova_VTable_nova_standard_NovaString nova_VTable_nova_standard_NovaString_val =
 {
+	nova_standard_NovaObject_Nova0_getHashCodeLong,
 	nova_standard_NovaString_Nova0_toString,
 	nova_standard_NovaString_Novaequals,
 	nova_standard_NovaString_Nova0_concat,
@@ -17,13 +20,14 @@ CCLASS_PRIVATE
 int nova_standard_NovaString_NovacalculateLength(nova_standard_NovaString* this, nova_standard_exception_NovaExceptionData* exceptionData);
 int nova_standard_NovaString_Nova0_indexOf(nova_standard_NovaString* this, nova_standard_exception_NovaExceptionData* exceptionData, nova_standard_NovaString* l0_Novasearch, int l0_Novastart, int l0_Novadirection);
 char nova_standard_NovaString_static_NovacontainsChar(nova_standard_NovaString* this, nova_standard_exception_NovaExceptionData* exceptionData, char l0_Novaneedle, char* l0_NovaChars, int l0_Novalength);
+nova_standard_NovaString* nova_standard_NovaString_NovachangeCase(nova_standard_NovaString* this, nova_standard_exception_NovaExceptionData* exceptionData, l0_Nova2_transform l0_Novatransform, void* l0_Novaref_transform);
 int nova_standard_NovaString_static_NovawhitespaceLength;
 char* nova_standard_NovaString_static_Novawhitespace;
 void nova_standard_NovaStringNova_init_static(nova_standard_exception_NovaExceptionData* exceptionData)
 {
 	{
 		nova_standard_NovaString_static_NovawhitespaceLength = 4;
-		nova_standard_NovaString_static_Novawhitespace = (char*)NOVA_MALLOC(sizeof(nova_standard_primitive_number_NovaChar[4]));
+		nova_standard_NovaString_static_Novawhitespace = (char*)NOVA_MALLOC(sizeof(nova_standard_primitive_number_NovaChar*[4]));
 		nova_standard_NovaString_static_Novawhitespace[0] = ' ';
 		nova_standard_NovaString_static_Novawhitespace[1] = '\t';
 		nova_standard_NovaString_static_Novawhitespace[2] = '\n';
@@ -81,7 +85,7 @@ void nova_standard_NovaString_Nova0_this(nova_standard_NovaString* this, nova_st
 {
 	char* l2_Novadata;
 	
-	l2_Novadata = (char*)NOVA_MALLOC(sizeof(nova_standard_primitive_number_NovaChar[2]));
+	l2_Novadata = (char*)NOVA_MALLOC(sizeof(nova_standard_primitive_number_NovaChar*[2]));
 	l2_Novadata[0] = l0_Novac;
 	l2_Novadata[1] = '\0';
 	nova_standard_NovaString_Nova1_this(this, exceptionData, l2_Novadata);
@@ -111,7 +115,7 @@ nova_standard_NovaString* nova_standard_NovaString_Nova0_concat(nova_standard_No
 	
 	l0_Novastr = l0_Novastr->vtable->nova_standard_NovaString_Novavirtual0_toString(l0_Novastr, exceptionData);
 	l1_Novasize = l0_Novastr->nova_standard_NovaString_Novalength + this->nova_standard_NovaString_Novalength + 1;
-	l1_NovanewData = (char*)NOVA_MALLOC(sizeof(nova_standard_primitive_number_NovaChar[l1_Novasize]));
+	l1_NovanewData = (char*)NOVA_MALLOC(sizeof(nova_standard_primitive_number_NovaChar*[l1_Novasize]));
 	strcpy((char*)(l1_NovanewData), (char*)(this->prv->nova_standard_NovaString_Novadata));
 	strcat((char*)(l1_NovanewData), (char*)(nova_standard_NovaString_NovatoCharArray(l0_Novastr, exceptionData)));
 	l1_NovanewData[l1_Novasize - 1] = '\0';
@@ -192,7 +196,7 @@ nova_standard_NovaString* nova_standard_NovaString_Nova0_substring(nova_standard
 	{
 		THROW(1, nova_standard_exception_NovaException_Nova0_construct(0, exceptionData));
 	}
-	l1_Novabuf = (char*)NOVA_MALLOC(sizeof(nova_standard_primitive_number_NovaChar[l0_Novaend - l0_Novastart + 1]));
+	l1_Novabuf = (char*)NOVA_MALLOC(sizeof(nova_standard_primitive_number_NovaChar*[l0_Novaend - l0_Novastart + 1]));
 	memcpy((char*)(l1_Novabuf), (char**)&(this->prv->nova_standard_NovaString_Novadata[l0_Novastart]), (int)(l0_Novaend - l0_Novastart));
 	l1_Novabuf[l0_Novaend - l0_Novastart] = '\0';
 	return nova_standard_NovaString_Nova1_construct(0, exceptionData, l1_Novabuf);
@@ -252,6 +256,49 @@ char nova_standard_NovaString_static_NovacontainsChar(nova_standard_NovaString* 
 		}
 	}
 	return 0;
+}
+
+nova_standard_NovaString* nova_standard_NovaString_NovatoLowerCase(nova_standard_NovaString* this, nova_standard_exception_NovaExceptionData* exceptionData)
+{
+	return nova_standard_NovaString_NovachangeCase(this, exceptionData, (l0_Nova2_transform)&nova_standard_primitive_number_NovaChar_static_Nova1_toLowerCase, 0);
+}
+
+nova_standard_NovaString* nova_standard_NovaString_NovatoUpperCase(nova_standard_NovaString* this, nova_standard_exception_NovaExceptionData* exceptionData)
+{
+	return nova_standard_NovaString_NovachangeCase(this, exceptionData, (l0_Nova2_transform)&nova_standard_primitive_number_NovaChar_static_NovatoUpperCase, 0);
+}
+
+nova_standard_NovaString* nova_standard_NovaString_NovachangeCase(nova_standard_NovaString* this, nova_standard_exception_NovaExceptionData* exceptionData, l0_Nova2_transform l0_Novatransform, void* l0_Novaref_transform)
+{
+	char* l1_NovanewData;
+	int l2_Novai;
+	
+	l1_NovanewData = (char*)NOVA_MALLOC(sizeof(nova_standard_primitive_number_NovaChar*[this->nova_standard_NovaString_Novalength]));
+	l2_Novai = 0;
+	for (; l2_Novai < this->nova_standard_NovaString_Novalength; l2_Novai++)
+	{
+		l1_NovanewData[l2_Novai] = l0_Novatransform(this, exceptionData, this->prv->nova_standard_NovaString_Novadata[l2_Novai]);
+	}
+	return nova_standard_NovaString_Nova1_construct(0, exceptionData, l1_NovanewData);
+}
+
+nova_standard_NovaString* nova_standard_NovaString_Nova0_getDataBetween(nova_standard_NovaString* this, nova_standard_exception_NovaExceptionData* exceptionData, nova_standard_NovaString* l0_Novabefore, nova_standard_NovaString* l0_Novaafter)
+{
+	return nova_standard_NovaString_Nova1_getDataBetween(this, exceptionData, l0_Novabefore, l0_Novaafter, 0);
+}
+
+nova_standard_NovaString* nova_standard_NovaString_Nova1_getDataBetween(nova_standard_NovaString* this, nova_standard_exception_NovaExceptionData* exceptionData, nova_standard_NovaString* l0_Novabefore, nova_standard_NovaString* l0_Novaafter, int l0_Novastart)
+{
+	int l1_Novas;
+	int l1_Novae;
+	
+	l1_Novas = nova_standard_NovaString_Nova2_indexOf(this, exceptionData, l0_Novabefore, l0_Novastart);
+	l1_Novae = nova_standard_NovaString_Nova2_indexOf(this, exceptionData, l0_Novaafter, l1_Novas + 1);
+	if (l1_Novas >= 0 && l1_Novae > 0)
+	{
+		return nova_standard_NovaString_Nova0_substring(this, exceptionData, l1_Novas + l0_Novabefore->nova_standard_NovaString_Novalength, l1_Novae);
+	}
+	return nova_standard_NovaString_Nova1_construct(0, exceptionData, "");
 }
 
 nova_standard_NovaString* nova_standard_NovaString_Nova0_toString(nova_standard_NovaString* this, nova_standard_exception_NovaExceptionData* exceptionData)

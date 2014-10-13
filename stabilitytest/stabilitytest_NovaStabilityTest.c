@@ -4,6 +4,7 @@
 
 nova_VTable_stabilitytest_NovaStabilityTest nova_VTable_stabilitytest_NovaStabilityTest_val =
 {
+		nova_standard_NovaObject_Nova0_getHashCodeLong,
 		nova_standard_NovaObject_Nova0_toString,
 		nova_standard_NovaObject_Nova0_equals,
 };
@@ -47,16 +48,13 @@ void stabilitytest_NovaStabilityTest_static_Novamain(stabilitytest_NovaStability
 		long l1_Novastart;
 		int l1_Novaresult;
 		long l1_Novatime;
-		nova_standard_NovaString* l1_Novas;
 		nova_standard_NovaString* nova_local_0;
 		
 		l1_Novatest = stabilitytest_NovaStabilityTest_Nova0_construct(0, exceptionData);
 		l1_Novastart = nova_standard_time_NovaTime_static_NovacurrentTimeMillis(0, exceptionData);
 		l1_Novaresult = stabilitytest_NovaStabilityTest_NovarunTests(l1_Novatest, exceptionData);
 		l1_Novatime = nova_standard_time_NovaTime_static_NovacurrentTimeMillis(0, exceptionData) - l1_Novastart;
-		l1_Novas = nova_standard_NovaObject_NovagetHashCode((nova_standard_NovaObject*)(nova_standard_primitive_number_NovaInt_Novaconstruct(0, exceptionData, l1_Novaresult)), exceptionData);
-		nova_standard_io_NovaConsole_static_Nova0_writeLine(0, exceptionData, nova_standard_NovaString_Nova0_concat(nova_standard_NovaString_Nova1_construct(0, exceptionData, "!!!"), exceptionData, l1_Novas));
-		nova_local_0 = nova_standard_primitive_number_NovaLong_static_Nova0_toString(0, exceptionData, l1_Novatime);
+		nova_local_0 = nova_standard_primitive_number_NovaLong_static_Nova1_toString(0, exceptionData, l1_Novatime);
 		nova_standard_io_NovaConsole_static_Nova0_writeLine(0, exceptionData, nova_standard_NovaString_Nova0_concat(nova_standard_NovaString_Nova1_construct(0, exceptionData, "Took "), exceptionData, nova_local_0->vtable->nova_standard_NovaString_Novavirtual0_concat(nova_local_0, exceptionData, nova_standard_NovaString_Nova1_construct(0, exceptionData, "ms"))));
 		nova_standard_io_NovaConsole_static_NovawaitForEnter(0, exceptionData);
 }
@@ -75,6 +73,7 @@ int stabilitytest_NovaStabilityTest_NovarunTests(stabilitytest_NovaStabilityTest
 						stabilitytest_NovaSyntaxStability_static_Novatest(0, exceptionData, this);
 						stabilitytest_NovaClosureStability_static_Novatest(0, exceptionData, this);
 						stabilitytest_NovaPolymorphismStability_static_Novatest(0, exceptionData, this);
+						stabilitytest_NovaNetworkStability_static_Novatest(0, exceptionData, this);
 						nova_standard_io_NovaConsole_static_Nova0_writeLine(0, exceptionData, nova_standard_NovaString_Nova1_construct(0, exceptionData, "All OK"));
 						return 0;
 				}
@@ -130,6 +129,12 @@ int main(int argc, char** argvs)
 		nova_standard_NovaSystemNova_init_static(exceptionData);
 		nova_standard_database_NovaDBConnectorNova_init_static(exceptionData);
 		nova_standard_database_NovaResultSetNova_init_static(exceptionData);
+		nova_standard_network_NovaSocketNova_init_static(exceptionData);
+		nova_standard_network_NovaServerSocketNova_init_static(exceptionData);
+		nova_standard_network_NovaClientSocketNova_init_static(exceptionData);
+		nova_standard_network_NovaConnectionSocketNova_init_static(exceptionData);
+		nova_standard_network_NovaNetworkInputStreamNova_init_static(exceptionData);
+		nova_standard_network_NovaNetworkOutputStreamNova_init_static(exceptionData);
 		nova_standard_logic_NovaConclusionNova_init_static(exceptionData);
 		nova_standard_logic_NovaHypothesisNova_init_static(exceptionData);
 		nova_standard_logic_NovaLogicalConnectiveNova_init_static(exceptionData);
@@ -171,6 +176,7 @@ int main(int argc, char** argvs)
 		nova_standard_exception_NovaDivideByZeroExceptionNova_init_static(exceptionData);
 		nova_standard_exception_NovaExceptionNova_init_static(exceptionData);
 		nova_standard_datastruct_NovaArrayListNova_init_static(exceptionData);
+		nova_standard_datastruct_NovaQueueNova_init_static(exceptionData);
 		nova_standard_datastruct_NovaListNova_init_static(exceptionData);
 		nova_standard_datastruct_NovaListNodeNova_init_static(exceptionData);
 		nova_standard_datastruct_NovaArrayNova_init_static(exceptionData);
@@ -192,7 +198,8 @@ int main(int argc, char** argvs)
 		stabilitytest_NovaStabilityExceptionHandlerNova_init_static(exceptionData);
 		stabilitytest_NovaThreadImplementationNova_init_static(exceptionData);
 		stabilitytest_NovaUnstableExceptionNova_init_static(exceptionData);
-		example_NovaGenericDemoNova_init_static(exceptionData);
+		stabilitytest_NovaNetworkStabilityNova_init_static(exceptionData);
+		stabilitytest_NovaClientThreadNova_init_static(exceptionData);
 		
 		args = (nova_standard_NovaString**)NOVA_MALLOC(argc * sizeof(nova_standard_NovaString));
 		

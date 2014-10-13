@@ -1,0 +1,63 @@
+package "stabilitytest"
+
+import "nova/standard/network/ServerSocket"
+import "nova/standard/network/ClientSocket"
+import "nova/standard/network/ConnectionSocket"
+
+public class NetworkStability
+{
+	visible static String received = "THIS IS THE STRING THAT SHOULD BE RECEIVEDTHIS IS THE STRING THAT SHOULD BE RECEIVEDTHIS IS THE STRING THAT SHOULD BE RECEIVEDTHIS IS THE STRING THAT SHOULD BE RECEIVEDTHIS IS THE STRING THAT SHOULD BE RECEIVEDTHIS IS THE STRING THAT SHOULD BE RECEIVEDTHIS IS THE STRING THAT SHOULD BE RECEIVED"
+	
+	public static test(StabilityTest program)
+	{
+		Console.write("Checking network stability... ")
+		
+		Int port = 24243
+		
+		ServerSocket server = createServer(program, port)
+		
+		ClientThread thread = new ClientThread(program, port)
+		
+		thread.start()
+		
+		ConnectionSocket connection = server.acceptClient()
+		
+		if (connection == null)
+		{
+			program.fail("Failed to accept the client")
+		}
+		
+		if (!connection.out.write(received))
+		{
+			program.fail("Server unable to send data to client")
+		}
+		
+		String s = connection.in.readString()
+		
+		if (s.length != received.length || !s.equals(received))
+		{
+			program.fail("Server unable to receive correct message from client")
+		}
+		
+		if (!server.close())
+		{
+			program.fail("Unable to close server")
+		}
+		
+		thread.join()
+		
+		Console.writeLine("OK")
+	}
+	
+	static createServer(StabilityTest program, Int port) -> ServerSocket
+	{
+		ServerSocket server = new ServerSocket()
+		
+		if (!server.start(port))
+		{
+			program.fail("Unable to start server on port " + port)
+		}
+		
+		return server
+	}
+}

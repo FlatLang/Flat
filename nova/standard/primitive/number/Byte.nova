@@ -19,6 +19,11 @@ public class Byte extends Number
 		return Long.toString(value)
 	}
 	
+	public toString() -> String
+	{
+		return toString(value)
+	}
+	
 //	public static getHashCode(Byte value) -> String
 //	{
 //		return new String(hashCode(this))

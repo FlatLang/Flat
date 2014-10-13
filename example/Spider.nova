@@ -2,12 +2,12 @@ package "example"
 
 public class Spider extends Animal
 {
-	public getNumLegs() -> int
+	public getNumLegs() -> Int
 	{
 		return 8
 	}
 	
-	public getNumEyes() -> int
+	public getNumEyes() -> Int
 	{
 		return 9000
 	}

@@ -23,7 +23,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:20:35 PM
- * @version	v0.2.35 Oct 5, 2014 at 11:22:42 PM
+ * @version	v0.2.36 Oct 13, 2014 at 12:16:42 AM
  */
 public class BinaryOperation extends IValue
 {
@@ -768,12 +768,13 @@ public class BinaryOperation extends IValue
 	private Value generateStringOutput(Value nonString)
 	{
 		Value old = nonString;
+		Value ret = nonString.getReturnedNode();
 		
 		String methodCall = null;
 		
-		if (nonString.isPrimitiveType())
+		if (ret.isPrimitiveType())
 		{
-			methodCall = nonString.getTypeClassName() + ".toString(" + nonString.generateNovaInput() + ")";
+			methodCall = ret.getTypeClassName() + ".toString(" + nonString.generateNovaInput() + ")";
 		}
 		else
 		{

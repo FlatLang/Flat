@@ -23,7 +23,7 @@ import net.fathomsoft.nova.util.StringUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:00:11 PM
- * @version	v0.2.35 Oct 5, 2014 at 11:22:42 PM
+ * @version	v0.2.36 Oct 13, 2014 at 12:16:42 AM
  */
 public abstract class Node
 {
@@ -1062,7 +1062,8 @@ public abstract class Node
 	 */
 	public StringBuilder generateCHeader(StringBuilder builder)
 	{
-		throw new UnimplementedOperationException("The C Header implementation for " + this.getClass().getName() + " has not been implemented yet.");
+		return generateCHeaderFragment(builder).append('\n');
+		//throw new UnimplementedOperationException("The C Header implementation for " + this.getClass().getName() + " has not been implemented yet.");
 	}
 	
 	/**
@@ -1088,7 +1089,8 @@ public abstract class Node
 	 */
 	public StringBuilder generateCSource(StringBuilder builder)
 	{
-		throw new UnimplementedOperationException("The C Source implementation for " + this.getClass().getName() + " has not been implemented yet.");
+		return generateCSourceFragment(builder).append('\n');
+		//throw new UnimplementedOperationException("The C Source implementation for " + this.getClass().getName() + " has not been implemented yet.");
 	}
 	
 	/**

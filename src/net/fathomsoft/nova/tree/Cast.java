@@ -1,5 +1,6 @@
 package net.fathomsoft.nova.tree;
 
+import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.error.SyntaxErrorException;
 import net.fathomsoft.nova.error.SyntaxMessage;
@@ -15,7 +16,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.2.25 Aug 3, 2014 at 1:52:00 PM
- * @version	v0.2.35 Oct 5, 2014 at 11:22:42 PM
+ * @version	v0.2.36 Oct 13, 2014 at 12:16:42 AM
  */
 public class Cast extends IValue
 {
@@ -92,7 +93,7 @@ public class Cast extends IValue
 			Bounds bounds   = SyntaxUtils.findParenthesesBounds(n, statement);
 			String contents = StringUtils.removeSurroundingParenthesis(statement, bounds).extractString(statement);
 			String value    = statement.substring(bounds.getEnd()).trim();
-			
+			Nova.debuggingBreakpoint(statement.equals("(Int)a.array[0]"));
 			if (contents != null && n.decodeType(contents, require) && n.decodeValue(value, bounds, require))
 			{
 				return n;
@@ -171,7 +172,7 @@ public class Cast extends IValue
 			return false;
 		}
 		
-		if (!getTypeClass().isRelatedTo(node.getTypeClass()))
+		if (!getTypeClass().isRelatedTo(node.getReturnedNode().getTypeClass()))
 		{
 			SyntaxMessage.error("Cannot cast from type '" + node.getTypeClassName() + "' to type '" + getTypeClassName() + "'", this);
 		}

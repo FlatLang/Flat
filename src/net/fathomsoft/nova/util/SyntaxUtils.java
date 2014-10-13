@@ -5,6 +5,7 @@ import java.util.regex.Matcher;
 import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.error.UnimplementedOperationException;
+import net.fathomsoft.nova.tree.Accessible;
 import net.fathomsoft.nova.tree.BodyMethodDeclaration;
 import net.fathomsoft.nova.tree.ClassDeclaration;
 import net.fathomsoft.nova.tree.Closure;
@@ -34,7 +35,7 @@ import net.fathomsoft.nova.tree.variables.VariableDeclaration;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Mar 15, 2014 at 7:55:00 PM
- * @version	v0.2.35 Oct 5, 2014 at 11:22:42 PM
+ * @version	v0.2.36 Oct 13, 2014 at 12:16:42 AM
  */
 public class SyntaxUtils
 {
@@ -631,7 +632,7 @@ public class SyntaxUtils
 	 */
 	public static boolean isNumber(String value)
 	{
-		return isInteger(value) || isDouble(value);
+		return value.length() > 0 && (isInteger(value) || isDouble(value));
 	}
 	
 	/**
@@ -1137,7 +1138,7 @@ public class SyntaxUtils
 	 * @param parent The parent to use as the context for the error,
 	 * 		if one happens.
 	 */
-	public static void validateMethodAccess(Identifier accessor, MethodDeclaration accessed, Node parent)
+	public static void validateMethodAccess(Accessible accessor, MethodDeclaration accessed, Node parent)
 	{
 		if (!accessed.isExternal() && !accessed.isStatic())
 		{
@@ -1146,7 +1147,7 @@ public class SyntaxUtils
 				SyntaxMessage.error("Cannot call a non-static method from a static context", parent);
 			}
 		}
-		else if (!isAccessibleFrom(accessor.getTypeClass(), accessed))
+		else if (!isAccessibleFrom(((Value)accessor).getTypeClass(), accessed))
 		{
 			SyntaxMessage.error("Method '" + accessed.getName() + "' is not visible", parent);
 		}
@@ -1357,11 +1358,11 @@ public class SyntaxUtils
 	
 	public static Identifier generatePrimitiveFacade(MethodCall call)
 	{
-		Identifier accessing = call.getAccessingNode();
+		Accessible accessing = call.getAccessingNode();
 		
-		Identifier id = accessing.getRootAccessNode();
+		Accessible id = accessing.getRootAccessNode();
 		
-		String input = accessing.getTypeClassName() + "." + call.getName() + "(" + id.generateNovaInputUntil(accessing);
+		String input = ((Value)accessing).getTypeClassName() + "." + call.getName() + "(" + id.generateNovaInputUntil(accessing);
 		
 		String params = call.getArgumentList().generateNovaInput().toString();
 		
@@ -1379,11 +1380,11 @@ public class SyntaxUtils
 	
 	public static Identifier replaceWithPrimitiveFacade(MethodCall call)
 	{
-		Identifier accessing = call.getAccessingNode().getRootAccessNode();
+		Accessible accessing = call.getAccessingNode().getRootAccessNode();
 		
 		Identifier output = generatePrimitiveFacade(call);
 		
-		accessing.getParent().replace(accessing, output);
+		accessing.getParent().replace((Node)accessing, output);
 		
 		return output;
 	}
@@ -1825,7 +1826,7 @@ public class SyntaxUtils
 		{
 			return true;
 		}
-		if (given.isWithinExternalContext() && getPrimitiveExternalType(given.getType()).equals(required.getType()))
+		if (given.isWithinExternalContext() && given.getType() != null && getPrimitiveExternalType(given.getType()).equals(required.getType()))
 		{
 			return true;
 		}
@@ -1865,7 +1866,7 @@ public class SyntaxUtils
 		{
 			return true;
 		}
-		else if (/*given.isPrimitiveType() ^ required.isPrimitiveType() == false && */given.getTypeClass().isOfType(required.getTypeClass()))
+		else if (/*given.isPrimitiveType() ^ required.isPrimitiveType() == false && */given.getTypeClass() != null && given.getTypeClass().isOfType(required.getTypeClass()))
 		{
 			return true;
 		}

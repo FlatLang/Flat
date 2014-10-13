@@ -11,6 +11,7 @@ import net.fathomsoft.nova.tree.variables.FieldDeclaration;
 import net.fathomsoft.nova.tree.variables.FieldList;
 import net.fathomsoft.nova.tree.variables.InstanceFieldList;
 import net.fathomsoft.nova.tree.variables.StaticFieldList;
+import net.fathomsoft.nova.tree.variables.Variable;
 import net.fathomsoft.nova.util.Bounds;
 import net.fathomsoft.nova.util.Location;
 import net.fathomsoft.nova.util.Patterns;
@@ -25,7 +26,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:15:51 PM
- * @version	v0.2.35 Oct 5, 2014 at 11:22:42 PM
+ * @version	v0.2.36 Oct 13, 2014 at 12:16:42 AM
  */
 public class ClassDeclaration extends InstanceDeclaration
 {
@@ -291,7 +292,7 @@ public class ClassDeclaration extends InstanceDeclaration
 	
 	public boolean isRelatedTo(ClassDeclaration node)
 	{
-		return isOfType(node) || node.isOfType(this);
+		return isOfType(node) || node == null || node.isOfType(this);
 	}
 	
 	/**
@@ -506,7 +507,7 @@ public class ClassDeclaration extends InstanceDeclaration
 	
 	public void addFieldInitialization(Assignment assignment)
 	{
-		FieldDeclaration field = (FieldDeclaration)assignment.getAssigneeNode().getDeclaration();
+		FieldDeclaration field = (FieldDeclaration)assignment.getAssignedNode().getDeclaration();
 		
 		if (field.isStatic())
 		{

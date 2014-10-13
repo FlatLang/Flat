@@ -2,12 +2,12 @@ package "example"
 
 public class Animal
 {
-	public getNumLegs() -> int
+	public getNumLegs() -> Int
 	{
 		return 0
 	}
 	
-	public getNumEyes() -> int
+	public getNumEyes() -> Int
 	{
 		return 0
 	}

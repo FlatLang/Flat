@@ -12,7 +12,7 @@ import net.fathomsoft.nova.util.Location;
  * 
  * @author	Braden Steffaniak
  * @since	v0.2.21 Jul 30, 2014 at 1:45:00 PM
- * @version	v0.2.35 Oct 5, 2014 at 11:22:42 PM
+ * @version	v0.2.36 Oct 13, 2014 at 12:16:42 AM
  */
 public class BodyMethodDeclaration extends NovaMethodDeclaration
 {
@@ -65,6 +65,7 @@ public class BodyMethodDeclaration extends NovaMethodDeclaration
 	@Override
 	public StringBuilder generateCHeader(StringBuilder builder)
 	{
+		Nova.debuggingBreakpoint(getName().equals("shift"));
 		if (isVisibilityValid())
 		{
 			if (getVisibility() == InstanceDeclaration.PRIVATE)

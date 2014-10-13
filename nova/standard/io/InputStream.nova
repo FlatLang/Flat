@@ -19,5 +19,5 @@ public class InputStream
 	
 	public abstract readString() -> String
 	
-	public abstract readBytes()
+	public abstract readBytes() -> Byte[]
 }

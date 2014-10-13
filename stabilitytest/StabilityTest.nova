@@ -33,6 +33,7 @@ public class StabilityTest
 			SyntaxStability.test(this)
 			ClosureStability.test(this)
 			PolymorphismStability.test(this)
+			NetworkStability.test(this)
 			
 			Console.writeLine("All OK")
 			

@@ -11,7 +11,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:19:40 PM
- * @version	v0.2.35 Oct 5, 2014 at 11:22:42 PM
+ * @version	v0.2.36 Oct 13, 2014 at 12:16:42 AM
  */
 public class Operator extends IValue
 {
@@ -144,7 +144,17 @@ public class Operator extends IValue
 		}
 		else if (!isDecoding())
 		{
-			String type = SyntaxUtils.getTypeInCommon(getLeftOperand().getReturnedNode(), getRightOperand().getReturnedNode()).getType();
+			Value l = getLeftOperand().getReturnedNode();
+			Value r = getRightOperand().getReturnedNode();
+			
+			ClassDeclaration common = SyntaxUtils.getTypeInCommon(l, r);
+			
+			if (common == null)
+			{
+				SyntaxMessage.error("Type '" + l.getType() + "' is not compatible with type '" + r.getType() + "'", this);
+			}
+			
+			String type = common.getType();
 			
 			if (getLeftOperand().getReturnedNode().isPrimitive() && getRightOperand().getReturnedNode().isPrimitive())
 			{

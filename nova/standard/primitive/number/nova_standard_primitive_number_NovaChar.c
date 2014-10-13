@@ -4,10 +4,10 @@
 
 nova_VTable_nova_standard_primitive_number_NovaChar nova_VTable_nova_standard_primitive_number_NovaChar_val =
 {
-	nova_standard_NovaObject_Nova0_toString,
+	nova_standard_NovaObject_Nova0_getHashCodeLong,
+	nova_standard_primitive_number_NovaChar_Nova2_toString,
 	nova_standard_NovaObject_Nova0_equals,
 	nova_standard_primitive_number_NovaNumber_static_Nova0_numDigits,
-	nova_standard_primitive_number_NovaChar_static_NovatoString,
 };
 void nova_standard_primitive_number_NovaCharNova_init_static(nova_standard_exception_NovaExceptionData* exceptionData)
 {
@@ -53,9 +53,43 @@ void nova_standard_primitive_number_NovaChar_Novathis(nova_standard_primitive_nu
 	this->nova_standard_primitive_number_NovaChar_Novavalue = l0_Novavalue;
 }
 
-nova_standard_NovaString* nova_standard_primitive_number_NovaChar_static_NovatoString(nova_standard_primitive_number_NovaChar* this, nova_standard_exception_NovaExceptionData* exceptionData, char l0_Novac)
+nova_standard_NovaString* nova_standard_primitive_number_NovaChar_static_Nova1_toString(nova_standard_primitive_number_NovaChar* this, nova_standard_exception_NovaExceptionData* exceptionData, char l0_Novac)
 {
 	return nova_standard_NovaString_Nova0_construct(0, exceptionData, l0_Novac);
+}
+
+nova_standard_NovaString* nova_standard_primitive_number_NovaChar_Nova2_toString(nova_standard_primitive_number_NovaChar* this, nova_standard_exception_NovaExceptionData* exceptionData)
+{
+	return nova_standard_primitive_number_NovaChar_static_Nova1_toString(this, exceptionData, this->nova_standard_primitive_number_NovaChar_Novavalue);
+}
+
+char nova_standard_primitive_number_NovaChar_Nova0_toLowerCase(nova_standard_primitive_number_NovaChar* this, nova_standard_exception_NovaExceptionData* exceptionData)
+{
+	return 0;
+}
+
+char nova_standard_primitive_number_NovaChar_static_Nova1_toLowerCase(nova_standard_primitive_number_NovaChar* this, nova_standard_exception_NovaExceptionData* exceptionData, char l0_Novac)
+{
+	int l1_Novaid;
+	
+	l1_Novaid = (int)l0_Novac;
+	if (l1_Novaid >= 65 && l1_Novaid <= 90)
+	{
+		return (char)(l1_Novaid + 32);
+	}
+	return l0_Novac;
+}
+
+char nova_standard_primitive_number_NovaChar_static_NovatoUpperCase(nova_standard_primitive_number_NovaChar* this, nova_standard_exception_NovaExceptionData* exceptionData, char l0_Novac)
+{
+	int l1_Novaid;
+	
+	l1_Novaid = (int)l0_Novac;
+	if (l1_Novaid >= 97 && l1_Novaid <= 122)
+	{
+		return (char)(l1_Novaid - 32);
+	}
+	return l0_Novac;
 }
 
 void nova_standard_primitive_number_NovaChar_Novasuper(nova_standard_primitive_number_NovaChar* this, nova_standard_exception_NovaExceptionData* exceptionData)

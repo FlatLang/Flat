@@ -30,7 +30,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:00:15 PM
- * @version	v0.2.35 Oct 5, 2014 at 11:22:42 PM
+ * @version	v0.2.36 Oct 13, 2014 at 12:16:42 AM
  */
 public class SyntaxTree
 {
@@ -55,10 +55,10 @@ public class SyntaxTree
 	
 	private static final Class<?>	SCOPE_CHILD_DECODE[] = new Class<?>[]
 	{
-		ExceptionHandler.class, Assignment.class, Instantiation.class,
-		ArrayAccess.class, ElseStatement.class, IfStatement.class, Until.class,
-		Loop.class, Array.class, UnaryOperation.class, Cast.class,
-		MethodCall.class, LocalDeclaration.class
+		Break.class, Continue.class, ExceptionHandler.class, Assignment.class,
+		Instantiation.class, ArrayAccess.class, ElseStatement.class,
+		IfStatement.class, Until.class, Loop.class, Array.class,
+		UnaryOperation.class, Cast.class, MethodCall.class, LocalDeclaration.class
 	};
 	
 	public static final Class<?>	FIRST_PASS_CLASSES[] = new Class<?>[]
@@ -292,15 +292,17 @@ public class SyntaxTree
 	 * 
 	 * @param root The Node to validate, then validate the children.
 	 */
-	public boolean validateNodes(Node root)
+	public ValidationResult validateNodes(Node root)
 	{
+		ValidationResult result = null;
+		
 		try
 		{
-			ValidationResult result = root.validate(phase);
+			result = root.validate(phase);
 			
-			if (!result.continueValidation)
+			if (!result.continueValidation || result.skipCycle)
 			{
-				return false;
+				return result.skippedCycle();
 			}
 			
 			root = result.returnedNode;
@@ -309,9 +311,11 @@ public class SyntaxTree
 			{
 				Node child = root.getChild(i);
 				
-				if (!validateNodes(child))
+				result = validateNodes(child);
+				
+				if (!result.continueValidation)
 				{
-					return false;
+					return result;
 				}
 			}
 		}
@@ -320,7 +324,7 @@ public class SyntaxTree
 			
 		}
 		
-		return true;
+		return result;
 	}
 	
 	/**
@@ -463,6 +467,8 @@ public class SyntaxTree
 				else if (node == null && type == Array.class) node = Array.decodeStatement(parent, statement, location, require);
 				else if (node == null && type == Cast.class) node = Cast.decodeStatement(parent, statement, location, require);
 				else if (node == null && type == BinaryOperation.class) node = BinaryOperation.decodeStatement(parent, statement, location, require);
+				else if (node == null && type == Break.class) node = Break.decodeStatement(parent, statement, location, require);
+				else if (node == null && type == Continue.class) node = Continue.decodeStatement(parent, statement, location, require);
 				else if (node == null && type == MethodCall.class) node = MethodCall.decodeStatement(parent, statement, location, require);
 				else if (node == null && type == ClassDeclaration.class) node = ClassDeclaration.decodeStatement(parent, statement, location, require);
 				else if (node == null && type == Constructor.class) node = Constructor.decodeStatement(parent, statement, location, require);
@@ -549,6 +555,8 @@ public class SyntaxTree
 		else if (type.isAssignableFrom(Assignment.class) && (node = Assignment.decodeStatement(parent, statement, location, require)) != null);
 		else if (type.isAssignableFrom(Array.class) && (node = Array.decodeStatement(parent, statement, location, require)) != null);
 //		else if (type.isAssignableFrom(Bool.class) && (node = Bool.decodeStatement(parent, statement, location, require)) != null);
+		else if (type.isAssignableFrom(Break.class) && (node = Break.decodeStatement(parent, statement, location, require)) != null);
+		else if (type.isAssignableFrom(Continue.class) && (node = Continue.decodeStatement(parent, statement, location, require)) != null);
 		else if (type.isAssignableFrom(BinaryOperation.class) && (node = BinaryOperation.decodeStatement(parent, statement, location, require)) != null);
 		else if (type.isAssignableFrom(ClassDeclaration.class) && (node = ClassDeclaration.decodeStatement(parent, statement, location, require)) != null);
 		else if (type.isAssignableFrom(Constructor.class) && (node = Constructor.decodeStatement(parent, statement, location, require)) != null);
@@ -643,6 +651,11 @@ public class SyntaxTree
 	 */
 	public static Node decodeScopeContents(Node parent, String statement, Location location, boolean require)
 	{
+		if (statement.length() <= 0)
+		{
+			return null;
+		}
+		
 		Node node = Literal.decodeStatement(parent, statement, location, require, true);
 		
 		if (node == null)
@@ -651,7 +664,7 @@ public class SyntaxTree
 			
 			if (node == null)
 			{
-				node = decodeIdentifierAccess(parent, statement, location, false);
+				node = (Node)decodeIdentifierAccess(parent, statement, location, false);
 				
 				if (node == null)
 				{
@@ -687,7 +700,7 @@ public class SyntaxTree
 	 * @param location The location in the source where this statement is.
 	 * @param require Whether or not to throw an error if anything goes wrong.
 	 */
-	public static Identifier decodeIdentifierAccess(Node parent, String statement, Location location, boolean require)
+	public static Accessible decodeIdentifierAccess(Node parent, String statement, Location location, boolean require)
 	{
 		return decodeIdentifierAccess(parent, statement, location, require, true);
 	}
@@ -708,10 +721,10 @@ public class SyntaxTree
 	 * @param validateAccess Whether or not to check if method call can be
 	 * 		accessed legally.
 	 */
-	public static Identifier decodeIdentifierAccess(Node parent, String statement, Location location, boolean require, boolean validateAccess)
+	public static Accessible decodeIdentifierAccess(Node parent, String statement, Location location, boolean require, boolean validateAccess)
 	{
-		Identifier root = null;
-		Identifier node = null;
+		Accessible root = null;
+		Accessible node = null;
 		
 		int offset = 0;
 		int index  = SyntaxUtils.findDotOperator(statement);
@@ -725,7 +738,7 @@ public class SyntaxTree
 		
 		while (current != null)
 		{
-			node = decodeVariable(parent, current, location, validateAccess);
+			node = decodeAccessible(parent, current, location, require, validateAccess);
 			
 			if (node == null)
 			{
@@ -745,11 +758,11 @@ public class SyntaxTree
 			{
 				root = node;
 				
-				node.setLocationIn(location);
+				((Node)node).setLocationIn(location);
 			}
 			else
 			{
-				parent.addChild(node);
+				parent.addChild((Node)node);
 				
 				if (index < 0)
 				{
@@ -758,7 +771,7 @@ public class SyntaxTree
 			}
 			
 			location = location.asNew();
-			parent   = node;
+			parent   = ((Node)node);
 			offset   = index + 1;
 			index    = SyntaxUtils.findDotOperator(statement, offset);
 			
@@ -825,6 +838,18 @@ public class SyntaxTree
 			}
 			
 			node = (Identifier)n;
+		}
+		
+		return node;
+	}
+	
+	private static Accessible decodeAccessible(Node parent, String statement, Location location, boolean require, boolean validateAccess)
+	{
+		Accessible node = decodeVariable(parent, statement, location, validateAccess);
+		
+		if (node == null)
+		{
+			node = (Accessible)decodeStatementOfType(parent, statement, location, require, Priority.class);
 		}
 		
 		return node;
@@ -969,29 +994,35 @@ public class SyntaxTree
 	 */
 	private static FieldDeclaration checkForVariableAccess(Node parent, String statement, boolean validateAccess)
 	{
-		if (!(parent instanceof Identifier))
+		if (!(parent instanceof Accessible) || !((Accessible)parent).canAccess())
 		{
 			return null;
 		}
 		
-		Identifier id = null;
+		Accessible id = (Accessible)parent;
 		
-		if (parent instanceof Variable)
-		{
-			id = ((Variable)parent).getTypeClass();
-		}
-		else if (parent instanceof MethodCall)
-		{
-			id = (MethodCall)parent;
-		}
-		else if (parent instanceof StaticClassReference)
-		{
-			id = (StaticClassReference)parent;
-		}
+//		if (parent instanceof Variable)
+//		{
+//			id = ((Variable)parent).getTypeClass();
+//		}
+//		else if (parent instanceof MethodCall)
+//		{
+//			id = (MethodCall)parent;
+//		}
+//		else if (parent instanceof StaticClassReference)
+//		{
+//			id = (StaticClassReference)parent;
+//		}
 		
 		if (id != null)
 		{
-			ClassDeclaration clazz = id.getTypeClass();
+			ClassDeclaration clazz = ((Value)id).getTypeClass();
+			
+			if (clazz == null)
+			{
+				return null;
+			}
+			
 			FieldDeclaration field = clazz.getField(statement);
 			
 			if (validateAccess)

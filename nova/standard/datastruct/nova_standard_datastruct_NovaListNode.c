@@ -4,6 +4,7 @@
 
 nova_VTable_nova_standard_datastruct_NovaListNode nova_VTable_nova_standard_datastruct_NovaListNode_val =
 {
+	nova_standard_NovaObject_Nova0_getHashCodeLong,
 	nova_standard_NovaObject_Nova0_toString,
 	nova_standard_NovaObject_Nova0_equals,
 };

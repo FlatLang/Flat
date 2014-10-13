@@ -1,7 +1,9 @@
 package net.fathomsoft.nova.tree;
 
+import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.error.SyntaxMessage;
+import net.fathomsoft.nova.tree.variables.Variable;
 import net.fathomsoft.nova.util.Location;
 import net.fathomsoft.nova.util.Patterns;
 import net.fathomsoft.nova.util.Regex;
@@ -15,7 +17,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:58:29 PM
- * @version	v0.2.26 Aug 6, 2014 at 2:48:50 PM
+ * @version	v0.2.36 Oct 13, 2014 at 12:16:42 AM
  */
 public class Return extends IValue
 {
@@ -179,6 +181,7 @@ public class Return extends IValue
 	{
 		Value value = SyntaxTree.decodeValue(this, statement, location, false);
 		
+		Nova.debuggingBreakpoint(value instanceof Variable && ((Variable)value).getName().equals("data") && !SyntaxUtils.validateCompatibleTypes(method, value.getReturnedNode()));
 		if (value == null)
 		{
 			SyntaxMessage.error("Could not decode return statement '" + statement + "'", this, location);

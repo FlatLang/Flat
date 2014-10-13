@@ -1,6 +1,7 @@
 package net.fathomsoft.nova.tree.variables;
 
 import net.fathomsoft.nova.TestContext;
+import net.fathomsoft.nova.tree.Accessible;
 import net.fathomsoft.nova.tree.ClassDeclaration;
 import net.fathomsoft.nova.tree.FileDeclaration;
 import net.fathomsoft.nova.tree.GenericType;
@@ -16,7 +17,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:02:42 PM
- * @version	v0.2.35 Oct 5, 2014 at 11:22:42 PM
+ * @version	v0.2.36 Oct 13, 2014 at 12:16:42 AM
  */
 public class Variable extends Identifier
 {
@@ -35,7 +36,7 @@ public class Variable extends Identifier
 	{
 		if (isGenericType())
 		{
-			Identifier ref = getReferenceNode();
+			Accessible ref = getReferenceNode();
 			
 			if (ref instanceof Variable)
 			{
@@ -91,29 +92,36 @@ public class Variable extends Identifier
 	 * 
 	 * @return The ClassDeclaration instance that declared this variable.
 	 */
-	public ClassDeclaration getDeclaringClass()
-	{
-		VariableDeclaration var = getDeclaration();
-		
-		Identifier ref = getReferenceNode();
-		FileDeclaration file = null;
-		
-		if (getParent() == ref.getParent())//ref.getName().equals(ParameterList.OBJECT_REFERENCE_IDENTIFIER))
-		{
-			file = getFileDeclaration();
-		}
-		else
-		{
-			file = ref.getDeclaringClass().getFileDeclaration();
-		}
-		
-		if (var.isGenericType())
-		{
-			return SyntaxUtils.getImportedClass(file, var.getGenericReturnType());
-		}
-		
-		return SyntaxUtils.getImportedClass(file, var.getType());
-	}
+//	public ClassDeclaration getDeclaringClass()
+//	{
+//		VariableDeclaration var = getDeclaration();
+//		
+//		Accessible ref = getReferenceNode();
+//		FileDeclaration file = null;
+//		
+//		if (getParent() == ref.getParent())//ref.getName().equals(ParameterList.OBJECT_REFERENCE_IDENTIFIER))
+//		{
+//			file = getFileDeclaration();
+//		}
+//		else
+//		{
+//			file = ref.getDeclaringClass().getFileDeclaration();
+//		}
+//		
+//		if (var.isGenericType())
+//		{
+//			return SyntaxUtils.getImportedClass(file, var.getGenericReturnType());
+//		}
+//		
+//		ClassDeclaration clazz = SyntaxUtils.getImportedClass(file, var.getType());
+//		
+//		if (clazz == null)
+//		{
+//			return super.getDeclaringClass();
+//		}
+//		
+//		return clazz;
+//	}
 	
 	/**
 	 * Get the Instance/LocalDeclaration that declares the

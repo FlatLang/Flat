@@ -7,7 +7,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.2.35 Oct 4, 2014 at 3:36:34 PM
- * @version	v0.2.35 Oct 5, 2014 at 11:22:42 PM
+ * @version	v0.2.36 Oct 13, 2014 at 12:16:42 AM
  */
 public interface AbstractValue
 {
@@ -45,16 +45,16 @@ public interface AbstractValue
 		
 		if (checkDataType)
 		{
-			if (n.isExternalType())
+			/*if (n.isExternalType())
 			{
 				if (n.getAncestorOfType(ExternalMethodDeclaration.class) == null)
 				{
 					setDataType(Value.POINTER);
 				}
 			}
-			else if (!SyntaxUtils.isPrimitiveType(type))
+			else */if (!SyntaxUtils.isPrimitiveType(type) && !SyntaxUtils.isExternalPrimitiveType(type))
 			{
-				if (!n.isWithinExternalContext() || !SyntaxUtils.isExternalPrimitiveType(type))
+				if (!n.isExternalType())//!n.isWithinExternalContext())// || !SyntaxUtils.isExternalPrimitiveType(type))
 				{
 					setDataType(Value.POINTER);
 				}

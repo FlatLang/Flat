@@ -6,8 +6,6 @@ import "nova/standard/time/Date"
 
 public class Bank
 {
-	external void system(char s[])
-	
 	public static main(String args[])
 	{
 		Console.write("Enter username: ")
@@ -17,20 +15,24 @@ public class Bank
 		String password = Console.readPassword()
 		
 		Console.clearScreen()
+		Console.writeLine("Connecting...")
 		
 		DBConnector connection = new DBConnector()
 		
 		connection.connect("localhost", username, password, "bank")
 		
-		if (connection.getError().length > 0)
+		password = null
+		
+		Console.clearScreen()
+		
+		if (connection.error.length > 0)
 		{
+			Console.writeLine(connection.error)
 			Console.writeLine("YOU IMPOSTER!")
 			
 			Console.waitForEnter()
 			System.exit(1)
 		}
-		
-//		password = null
 		
 		Console.writeLine("Welcome, Braden!")
 		

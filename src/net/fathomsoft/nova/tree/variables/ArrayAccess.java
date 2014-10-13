@@ -1,5 +1,6 @@
 package net.fathomsoft.nova.tree.variables;
 
+import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.tree.Dimensions;
@@ -20,7 +21,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.2 Mar 24, 2014 at 10:45:29 PM
- * @version	v0.2.35 Oct 5, 2014 at 11:22:42 PM
+ * @version	v0.2.36 Oct 13, 2014 at 12:16:42 AM
  */
 public class ArrayAccess extends Variable implements ArrayCompatible
 {
@@ -91,7 +92,7 @@ public class ArrayAccess extends Variable implements ArrayCompatible
 	{
 		super.generateNovaInput(builder, false).append(getDimensions().generateNovaInput());
 		
-		if (doesAccess())
+		if (outputChildren && doesAccess())
 		{
 			builder.append('.').append(getAccessedNode().generateNovaInput());
 		}

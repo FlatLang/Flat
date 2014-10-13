@@ -1,0 +1,49 @@
+package "nova/standard/datastruct"
+
+public class Queue<E>
+{
+	visible Int size
+	
+	ArrayList<E> data
+	
+	public construct()
+	{
+		data = new ArrayList()
+	}
+	
+	public dequeue() -> E
+	{
+		size--
+		
+		return data.remove(0)
+	}
+	
+	public enqueue(E element)
+	{
+		data.add(element)
+		
+		size++
+	}
+	
+	public isEmpty() -> Bool
+	{
+		return size <= 0
+	}
+	
+	public toString() -> String
+	{
+		String s = ""
+		
+		for (Int i = size - 1; i >= 0; i--)
+		{
+			if (i < size - 1)
+			{
+				s = s + ", "
+			}
+			
+			s = s + data.get(i)
+		}
+		
+		return s
+	}
+}

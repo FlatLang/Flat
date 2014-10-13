@@ -4,8 +4,11 @@
 
 nova_VTable_nova_standard_io_NovaStreamReader nova_VTable_nova_standard_io_NovaStreamReader_val =
 {
+	nova_standard_NovaObject_Nova0_getHashCodeLong,
 	nova_standard_NovaObject_Nova0_toString,
 	nova_standard_NovaObject_Nova0_equals,
+	nova_standard_io_NovaInputStream_Nova0_readString,
+	nova_standard_io_NovaInputStream_Nova0_readBytes,
 };
 CCLASS_PRIVATE
 (

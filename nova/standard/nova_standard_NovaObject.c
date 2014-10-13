@@ -4,6 +4,7 @@
 
 nova_VTable_nova_standard_NovaObject nova_VTable_nova_standard_NovaObject_val =
 {
+	nova_standard_NovaObject_Nova0_getHashCodeLong,
 	nova_standard_NovaObject_Nova0_toString,
 	nova_standard_NovaObject_Nova0_equals,
 };
@@ -44,14 +45,17 @@ nova_standard_NovaString* nova_standard_NovaObject_NovagetHashCode(nova_standard
 	return nova_standard_NovaString_Nova1_construct(0, exceptionData, (char*)(hashCode(this)));
 }
 
-long nova_standard_NovaObject_NovagetHashCodeLong(nova_standard_NovaObject* this, nova_standard_exception_NovaExceptionData* exceptionData)
+long nova_standard_NovaObject_Nova0_getHashCodeLong(nova_standard_NovaObject* this, nova_standard_exception_NovaExceptionData* exceptionData)
 {
 	return strtol(hashCode(this), (int)(0), (int)(16));
 }
 
 nova_standard_NovaString* nova_standard_NovaObject_Nova0_toString(nova_standard_NovaObject* this, nova_standard_exception_NovaExceptionData* exceptionData)
 {
-	return nova_standard_NovaString_Nova0_concat(nova_standard_NovaString_Nova1_construct(0, exceptionData, "[Object @"), exceptionData, nova_standard_NovaObject_NovagetHashCode(this, exceptionData)->vtable->nova_standard_NovaString_Novavirtual0_concat(nova_standard_NovaObject_NovagetHashCode(this, exceptionData), exceptionData, nova_standard_NovaString_Nova1_construct(0, exceptionData, "]")));
+	nova_standard_NovaString* nova_local_0;
+	
+	nova_local_0 = nova_standard_NovaObject_NovagetHashCode(this, exceptionData);
+	return nova_standard_NovaString_Nova0_concat(nova_standard_NovaString_Nova1_construct(0, exceptionData, "[Object @"), exceptionData, nova_local_0->vtable->nova_standard_NovaString_Novavirtual0_concat(nova_local_0, exceptionData, nova_standard_NovaString_Nova1_construct(0, exceptionData, "]")));
 }
 
 char nova_standard_NovaObject_Nova0_equals(nova_standard_NovaObject* this, nova_standard_exception_NovaExceptionData* exceptionData, nova_standard_NovaObject* l0_Novaanother)

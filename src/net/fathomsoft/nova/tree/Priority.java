@@ -10,9 +10,9 @@ import net.fathomsoft.nova.util.StringUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.2.10 May 29, 2014 at 1:50:25 PM
- * @version	v0.2.26 Aug 6, 2014 at 2:48:50 PM
+ * @version	v0.2.36 Oct 13, 2014 at 12:16:42 AM
  */
-public class Priority extends IValue
+public class Priority extends IValue implements Accessible
 {
 	/**
 	 * @see net.fathomsoft.nova.tree.Node#Node(Node, Location)
@@ -20,6 +20,12 @@ public class Priority extends IValue
 	public Priority(Node temporaryParent, Location locationIn)
 	{
 		super(temporaryParent, locationIn);
+	}
+	
+	@Override
+	public int getNumDecodedChildren()
+	{
+		return super.getNumDecodedChildren() + 1;
 	}
 	
 	/**
@@ -39,14 +45,11 @@ public class Priority extends IValue
 	{
 		return (Value)getChild(0);
 	}
-	
-	/**
-	 * @see net.fathomsoft.nova.tree.Value#getReturnedNode()
-	 */
+
 	@Override
 	public Value getReturnedNode()
 	{
-		return getContents().getReturnedNode();
+		return Accessible.super.getReturnedNode();
 	}
 	
 	/**
@@ -55,7 +58,14 @@ public class Priority extends IValue
 	@Override
 	public StringBuilder generateNovaInput(StringBuilder builder, boolean outputChildren)
 	{
-		return builder.append('(').append(getContents().generateNovaInput(outputChildren)).append(')');
+		builder.append('(').append(getContents().generateNovaInput(outputChildren)).append(')');
+		
+		if (outputChildren && doesAccess())
+		{
+			builder.append('.').append(getAccessedNode().generateNovaInput());
+		}
+		
+		return builder;
 	}
 	
 	/**
@@ -73,7 +83,7 @@ public class Priority extends IValue
 	@Override
 	public StringBuilder generateCSourceFragment(StringBuilder builder)
 	{
-		return builder.append('(').append(getContents().generateCSourceFragment()).append(')');
+		return builder.append('(').append(getContents().generateCSourceFragment()).append(')').append(generateChildrenCSourceFragment());
 	}
 	
 	/**
@@ -178,27 +188,29 @@ public class Priority extends IValue
 //		
 //		return true
 		
-		node = Literal.decodeStatement(this, contents, location, true, true);
+		node = SyntaxTree.decodeValue(this, contents, location, require);
 		
-		if (node == null)
-		{
-			node = UnaryOperation.decodeStatement(this, contents, location, require);
-			
-			if (node == null)
-			{
-				node = BinaryOperation.decodeStatement(this, contents, location, require);
-				
-				if (node == null)
-				{
-					node = SyntaxTree.getUsableExistingNode(this, contents, location);
+//		node = Literal.decodeStatement(this, contents, location, true, true);
+//		
+//		if (node == null)
+//		{
+//			node = UnaryOperation.decodeStatement(this, contents, location, require);
+//			
+//			if (node == null)
+//			{
+//				node = BinaryOperation.decodeStatement(this, contents, location, require);
+//				
+//				if (node == null)
+//				{
+//					node = SyntaxTree.getUsableExistingNode(this, contents, location);
 					
 					if (node == null)
 					{
 						return SyntaxMessage.queryError("Could not decode contents '" + contents + "'", this, require);
 					}
-				}
-			}
-		}
+//				}
+//			}
+//		}
 		
 		addChild(node);
 		

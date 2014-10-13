@@ -1,5 +1,6 @@
 package net.fathomsoft.nova.tree;
 
+import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.tree.variables.VariableDeclaration;
@@ -15,7 +16,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.2.4 Jan 5, 2014 at 9:10:49 PM
- * @version	v0.2.34 Oct 1, 2014 at 9:51:33 PM
+ * @version	v0.2.36 Oct 13, 2014 at 12:16:42 AM
  */
 public class LocalDeclaration extends VariableDeclaration
 {
@@ -194,11 +195,11 @@ public class LocalDeclaration extends VariableDeclaration
 		{
 			if (leftDelimiter.equals("*"))
 			{
-				setDataType(IValue.POINTER);
+				setDataType(Value.POINTER);
 			}
 			else if (leftDelimiter.equals("&"))
 			{
-				setDataType(IValue.REFERENCE);
+				setDataType(Value.REFERENCE);
 			}
 		}
 		

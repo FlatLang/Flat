@@ -4,10 +4,10 @@
 
 nova_VTable_nova_standard_primitive_number_NovaNumber nova_VTable_nova_standard_primitive_number_NovaNumber_val =
 {
+	nova_standard_NovaObject_Nova0_getHashCodeLong,
 	nova_standard_NovaObject_Nova0_toString,
 	nova_standard_NovaObject_Nova0_equals,
 	nova_standard_primitive_number_NovaNumber_static_Nova0_numDigits,
-	nova_standard_primitive_number_NovaNumber_static_Nova0_toString,
 };
 void nova_standard_primitive_number_NovaNumberNova_init_static(nova_standard_exception_NovaExceptionData* exceptionData)
 {
@@ -48,11 +48,6 @@ void nova_del_Number(nova_standard_primitive_number_NovaNumber** this, nova_stan
 int nova_standard_primitive_number_NovaNumber_static_Nova0_numDigits(nova_standard_primitive_number_NovaNumber* this, nova_standard_exception_NovaExceptionData* exceptionData, nova_standard_primitive_number_NovaNumber* l0_Novanumber)
 {
 	return -1;
-}
-
-nova_standard_NovaString* nova_standard_primitive_number_NovaNumber_static_Nova0_toString(nova_standard_primitive_number_NovaNumber* this, nova_standard_exception_NovaExceptionData* exceptionData, nova_standard_primitive_number_NovaNumber* l0_Novavalue)
-{
-	return nova_standard_NovaString_Nova1_construct(0, exceptionData, "[Unimplemented]");
 }
 
 void nova_standard_primitive_number_NovaNumber_Novathis(nova_standard_primitive_number_NovaNumber* this, nova_standard_exception_NovaExceptionData* exceptionData)
