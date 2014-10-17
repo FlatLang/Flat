@@ -420,7 +420,7 @@ public class MethodCall extends Variable
 	{
 		VariableDeclaration method   = getMethodDeclaration();
 		CallableMethod      callable = (CallableMethod)method;
-		Nova.debuggingBreakpoint(getName().equals("concat") && isAccessed() && ((Identifier)getAccessingNode()).getName().equals("toString") && getAccessingNode().isAccessed() && ((Identifier)getAccessingNode().getAccessingNode()).getName().equals("Long"));
+		
 		if (isGenericType())
 		{
 			builder.append('(');
