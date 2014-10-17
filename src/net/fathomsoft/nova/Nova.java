@@ -74,7 +74,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:00:04 PM
- * @version	v0.2.36 Oct 13, 2014 at 12:16:42 AM
+ * @version	v0.2.37 Oct 16, 2014 at 11:38:42 PM
  */
 public class Nova
 {
@@ -128,7 +128,7 @@ public class Nova
 	public static final int		LINUX         = 3;
 	
 	public static final String	LANGUAGE_NAME = "Nova";
-	public static final String	VERSION       = "v0.2.36";
+	public static final String	VERSION       = "v0.2.37";
 	
 	/**
 	 * Find out which operating system the compiler is running on.
@@ -260,12 +260,19 @@ public class Nova
 //				formatPath(stability + "UnstableException.nova"),
 //				formatPath(stability + "NetworkStability.nova"),
 //				formatPath(stability + "ClientThread.nova"),
-				formatPath(directory + "network/ConnectionThread.nova"),
+//				formatPath(directory + "network/OutputThread.nova"),
+//				formatPath(directory + "network/ConnectionThread.nova"),
 //				formatPath(directory + "network/ServerDemo.nova"),
-				formatPath(directory + "network/ClientDemo.nova"),
+//				formatPath(directory + "network/ClientDemo.nova"),
 //				formatPath(directory + "GenericDemo.nova"),
 //				formatPath(directory + "database/DatabaseDemo.nova"),
+				formatPath(root      + "bank/BankQueryException.nova"),
 //				formatPath(root      + "bank/Bank.nova"),
+//				formatPath(root      + "bank/ConnectionThread.nova"),
+//				formatPath(root      + "bank/ServerOutputThread.nova"),
+				formatPath(root      + "bank/BankClient.nova"),
+				formatPath(root      + "bank/ClientConnectionThread.nova"),
+				formatPath(root      + "bank/ClientInputThread.nova"),
 //				formatPath(directory + "MathDemo.nova"),
 //				formatPath(directory + "ThreadDemo.nova"),
 //				formatPath(directory + "ThreadDemoImplementation.nova"),
@@ -347,8 +354,6 @@ public class Nova
 			formatPath(standard  + "primitive/number/Double.nova"),
 			formatPath(standard  + "primitive/number/Number.nova"),
 			
-			formatPath(standard  + "gc/GC.nova"),
-			
 			formatPath(standard  + "time/Time.nova"),
 			formatPath(standard  + "time/Date.nova"),
 			
@@ -381,6 +386,10 @@ public class Nova
 			formatPath(standard  + "datastruct/EmptyStackException.nova"),
 			formatPath(standard  + "datastruct/HashMap.nova"),
 			formatPath(standard  + "datastruct/Bounds.nova"),
+
+			formatPath(standard  + "security/MD5.nova"),
+			
+			formatPath(standard  + "gc/GC.nova"),
 		};
 		
 		String postArgs[] = new String[]
@@ -400,7 +409,14 @@ public class Nova
 		
 		for (String classLocation : standardFiles)
 		{
-			String location = classLocation.substring(getWorkingDirectoryPath().length() + 1, classLocation.lastIndexOf('.'));
+			if (classLocation.length() <= 0)
+			{
+				continue;
+			}
+			
+			int slash = getWorkingDirectoryPath().endsWith("/") ? 0 : 1;
+			
+			String location = classLocation.substring(getWorkingDirectoryPath().length() + slash, classLocation.lastIndexOf('.'));
 			String name     = SyntaxUtils.getClassName(location);
 			
 			CLASS_LOCATIONS.put(name, location);
@@ -425,6 +441,15 @@ public class Nova
 	
 	public static final String getClassLocation(String className)
 	{
+//		if(className.equals("GC"))
+//		{
+//			return "";
+//		}
+//		if (CLASS_LOCATIONS.containsKey(className))
+//		{
+//			return "";
+//		}
+		
 		return CLASS_LOCATIONS.get(className);
 	}
 	
@@ -630,6 +655,7 @@ public class Nova
 //			FileDeclaration file = mainMethod.getFileDeclaration();
 //			file.addChild(Import.decodeStatement(file, "import \"GC\"", file.getLocationIn(), true, false));
 			Value gcInit = (Value)SyntaxTree.decodeIdentifierAccess(mainMethod, "GC.init()", mainMethod.getLocationIn(), true);
+			Value gcColl = (Value)SyntaxTree.decodeIdentifierAccess(mainMethod, "GC.collect()", mainMethod.getLocationIn(), true);
 			Value enter  = (Value)SyntaxTree.decodeIdentifierAccess(mainMethod, "Console.waitForEnter()", mainMethod.getLocationIn(), true);
 			
 			Instantiation nullConstructor = Instantiation.decodeStatement(mainMethod, "new Null()", mainMethod.getLocationIn(), true);
@@ -674,7 +700,7 @@ public class Nova
 			mainMethodText.append	('}').append('\n');
 			mainMethodText.append	("END_TRY;").append('\n');
 			mainMethodText.append	("NOVA_FREE(args);").append('\n');
-			mainMethodText.append	("GC_gcollect();").append('\n');
+			mainMethodText.append	(gcColl.generateCSource()).append('\n');
 			mainMethodText.append	('\n');
 			mainMethodText.append	("return 0;").append('\n');
 			mainMethodText.append("}");
@@ -722,7 +748,12 @@ public class Nova
 		{
 			compilerDir = workingDir;
 			
-			cmd.append("gcc -pipe -Wl,--enable-stdcall-fixup ");
+			cmd.append("gcc -pipe ");
+			
+			if (OS == WINDOWS)
+			{
+				cmd.append("-Wl,--enable-stdcall-fixup ");
+			}
 			
 			if (isFlagEnabled(SMALL_BIN))
 			{
@@ -746,7 +777,7 @@ public class Nova
 		
 		if (!isFlagEnabled(NO_GC))
 		{
-			cmd.append("-DUSE_GC -lgc ");
+			cmd.append("-DUSE_GC ");
 		}
 		
 		if (isFlagEnabled(SMALL_BIN))
@@ -765,7 +796,7 @@ public class Nova
 			cmd.append("-I").append(dir).append(' ');
 		}
 		
-		String libDir    = workingDir + "/bin/";
+		String libDir    = workingDir + "/bin";
 		String incDir    = workingDir + "../include/";
 		
 //		String libNova   = formatPath(libDir + "libNova" + DYNAMIC_LIB_EXT);
@@ -791,18 +822,28 @@ public class Nova
 		
 		cmd.append("-o ").append('"').append(outputFile.getAbsolutePath()).append('"').append(' ');
 
-		cmd.append("-L\"bin/\" -lmysql ");
+		if (OS == LINUX)
+		{
+			cmd.append("-L/usr/include/openssl ");
+		}
+		
+		cmd.append("-L" + libDir + " -lcrypto ");
 		
 //		cmd.append("-Ofast ");
 //		cmd.append("-s ");
+
+		if (!isFlagEnabled(NO_GC))
+		{
+			cmd.append("-lgc -Wl,-R -Wl," + libDir + " ");
+		}
 		
 		if (OS == LINUX)
 		{
-			cmd.append("-lm -lpthread -ldl ");
+			cmd.append("-lm -lpthread -ldl -lc -lmysqlclient ");
 		}
 		else if (OS == WINDOWS)
 		{
-			cmd.append("-lws2_32 ");
+			cmd.append("-lws2_32 -lmysql ");
 		}
 		
 		if (isFlagEnabled(C_ARGS))
@@ -854,7 +895,7 @@ public class Nova
 				}
 				else if (compiler == GCC)
 				{
-					if (message.contains("\nerror: ") || message.contains(": error: "))
+					if (message.contains("\nerror: ") || message.contains(": error: ") || message.contains(": fatal error: "))
 					{
 						failed = true;
 					}
@@ -1087,6 +1128,11 @@ public class Nova
 			
 			if (arg.length() <= 0)
 			{
+				if (lastInput == i - 1)
+				{
+					lastInput = i;
+				}
+				
 				continue;
 			}
 			
