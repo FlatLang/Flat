@@ -18,7 +18,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Feb 18, 2014 at 8:57:00 PM
- * @version	v0.2.36 Oct 13, 2014 at 12:16:42 AM
+ * @version	v0.2.37 Oct 16, 2014 at 11:38:42 PM
  */
 public class FileDeclaration extends Node
 {
@@ -531,7 +531,10 @@ public class FileDeclaration extends Node
 	{
 		for (String importLoc : DEFAULT_IMPORTS)
 		{
-			addImport(importLoc).markUsed();
+			if (importLoc.length() > 0)
+			{
+				addImport(importLoc).markUsed();
+			}
 		}
 	}
 	
