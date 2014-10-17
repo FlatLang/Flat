@@ -1412,9 +1412,7 @@ public class ClassDeclaration extends InstanceDeclaration
 					
 //					getParent().getParent().removeChild(getParent());
 					
-					result.errorOccurred = true;
-					
-					return result;
+					return result.errorOccurred();
 				}
 			}
 			
