@@ -30,7 +30,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:00:15 PM
- * @version	v0.2.36 Oct 13, 2014 at 12:16:42 AM
+ * @version	v0.2.37 Oct 16, 2014 at 11:38:42 PM
  */
 public class SyntaxTree
 {
@@ -321,7 +321,7 @@ public class SyntaxTree
 		}
 		catch (SyntaxErrorException e)
 		{
-			
+			result = new ValidationResult(root).errorOccurred();
 		}
 		
 		return result;
