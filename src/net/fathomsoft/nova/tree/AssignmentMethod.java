@@ -1,7 +1,7 @@
 package net.fathomsoft.nova.tree;
 
-import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.TestContext;
+import net.fathomsoft.nova.tree.exceptionhandling.Exception;
 import net.fathomsoft.nova.tree.variables.FieldDeclaration;
 import net.fathomsoft.nova.tree.variables.FieldList;
 import net.fathomsoft.nova.tree.variables.InstanceFieldList;
@@ -12,7 +12,7 @@ import net.fathomsoft.nova.util.Location;
  * 
  * @author	Braden Steffaniak
  * @since	v0.2.28 Aug 12, 2014 at 1:54:08 AM
- * @version	v0.2.28 Aug 20, 2014 at 12:10:45 AM
+ * @version	v0.2.37 Oct 16, 2014 at 11:38:42 PM
  */
 public class AssignmentMethod extends BodyMethodDeclaration
 {
@@ -89,7 +89,7 @@ public class AssignmentMethod extends BodyMethodDeclaration
 		
 		builder.append(ParameterList.OBJECT_REFERENCE_IDENTIFIER);
 		
-		return builder.append(", 0);\n");
+		return builder.append(", ").append(Exception.EXCEPTION_DATA_IDENTIFIER).append(");\n");
 	}
 	
 	/**
@@ -129,7 +129,7 @@ public class AssignmentMethod extends BodyMethodDeclaration
 			{
 				field.generateCUseOutput(builder).append(" = ");
 				
-				if (!field.isPrimitiveType())
+				if (!field.isPrimitiveType() && !field.isExternalType())
 				{
 					field.generateCNullOutput(builder);
 				}
