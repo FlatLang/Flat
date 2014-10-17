@@ -15,7 +15,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:55:59 PM
- * @version	v0.2.33 Sep 29, 2014 at 10:29:33 AM
+ * @version	v0.2.37 Oct 16, 2014 at 11:38:42 PM
  */
 public class WhileLoop extends Loop
 {
@@ -133,27 +133,7 @@ public class WhileLoop extends Loop
 	 */
 	private boolean decodeCondition(String contents, Location location)
 	{
-		Value condition = BinaryOperation.decodeStatement(this, contents, location, true);
-		
-		if (condition == null)
-		{
-			condition = SyntaxTree.getUsableExistingNode(this, contents, location);
-			
-			if (condition == null)
-			{
-				condition = Literal.decodeStatement(this, contents, location, true, true);
-				
-				if (condition == null)
-				{
-					condition = checkMethodCallCondition(contents, location);
-					
-					if (condition == null)
-					{
-						return false;
-					}
-				}
-			}
-		}
+		Value condition = SyntaxTree.decodeValue(this, contents, location, true);
 		
 		addChild(condition, this);
 		
