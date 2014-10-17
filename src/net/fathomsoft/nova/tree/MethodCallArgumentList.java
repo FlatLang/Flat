@@ -1,6 +1,5 @@
 package net.fathomsoft.nova.tree;
 
-import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.tree.exceptionhandling.Exception;
@@ -16,7 +15,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.2.14 Jun 19, 2014 at 12:14:53 PM
- * @version	v0.2.36 Oct 13, 2014 at 12:16:42 AM
+ * @version	v0.2.37 Oct 16, 2014 at 11:38:42 PM
  */
 public class MethodCallArgumentList extends ArgumentList
 {
@@ -67,8 +66,6 @@ public class MethodCallArgumentList extends ArgumentList
 			Value child = (Value)getChild(i);
 			
 			Value param = getMethodCall().getCorrespondingParameter(child);
-
-			Nova.debuggingBreakpoint(child.generateNovaInput().toString().equals("Int.getHashCodeLong(n)"));
 			
 			boolean sameType = isSameType(child.getReturnedNode(), param);
 			
@@ -159,10 +156,16 @@ public class MethodCallArgumentList extends ArgumentList
 	private StringBuilder checkReference(StringBuilder builder)
 	{
 		CallableMethod method = getMethodCall().getCallableDeclaration();
-
+		
 		if (method instanceof Constructor)
 		{
 			builder.append(0);
+		}
+		else if (method instanceof ClosureDeclaration)
+		{
+			ClosureDeclaration closure = (ClosureDeclaration)method;
+			
+			closure.generateCObjectReferenceIdentifier(builder);
 		}
 		else
 		{
@@ -204,9 +207,13 @@ public class MethodCallArgumentList extends ArgumentList
 		String type1 = value1.getType();
 		String type2 = value2.getType();
 		
-		if (type1 == null)
+		if (value1 instanceof Closure || value2 instanceof Closure)
 		{
-			return type2 == null;
+			return true;
+		}
+		else if (type1 == null || type2 == null)
+		{
+			return type1 == null && type2 == null;
 		}
 		else if (type1.equals("String") && value2.getArrayDimensions() == 1 && type2.equals("Char"))
 		{
