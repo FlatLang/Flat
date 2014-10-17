@@ -16,7 +16,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.2.14 Jul 5, 2014 at 9:02:42 PM
- * @version	v0.2.35 Oct 5, 2014 at 11:22:42 PM
+ * @version	v0.2.37 Oct 16, 2014 at 11:38:42 PM
  */
 public class ClosureDeclaration extends Parameter implements CallableMethod
 {
@@ -121,9 +121,15 @@ public class ClosureDeclaration extends Parameter implements CallableMethod
 	public StringBuilder generateCSourceFragment(StringBuilder builder)
 	{
 		builder.append(generateCType()).append(' ').append(generateCSourceName()).append(", ");
-		getParameterList().getObjectReference().generateCType(builder).append(' ').append(generateCSourceName("ref"));
+		getParameterList().getObjectReference().generateCType(builder).append(' ');
+		generateCObjectReferenceIdentifier(builder);
 		
 		return builder;
+	}
+	
+	public StringBuilder generateCObjectReferenceIdentifier(StringBuilder builder)
+	{
+		return builder.append(generateCSourceName("ref"));
 	}
 	
 	/**
