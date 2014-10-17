@@ -18,9 +18,9 @@ nova_standard_datastruct_NovaBounds* nova_standard_datastruct_NovaBounds_Novacon
 {
 	CCLASS_NEW(nova_standard_datastruct_NovaBounds, this,);
 	this->vtable = &nova_VTable_nova_standard_datastruct_NovaBounds_val;
-	nova_standard_NovaObject_Novasuper((nova_standard_NovaObject*)this, 0);
+	nova_standard_NovaObject_Novasuper((nova_standard_NovaObject*)this, exceptionData);
 	nova_standard_NovaObject_Novathis((nova_standard_NovaObject*)(this), exceptionData);
-	nova_standard_datastruct_NovaBounds_Novasuper(this, 0);
+	nova_standard_datastruct_NovaBounds_Novasuper(this, exceptionData);
 	
 	{
 		nova_standard_datastruct_NovaBounds_Novathis(this, exceptionData, l0_Novastart, l0_Novaend);

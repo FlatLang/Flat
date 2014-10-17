@@ -21,7 +21,6 @@ typedef struct example_network_NovaServerDemo example_network_NovaServerDemo;
 #include <nova/standard/primitive/number/nova_standard_primitive_number_NovaChar.h>
 #include <nova/standard/primitive/nova_standard_primitive_NovaBool.h>
 #include <nova/standard/datastruct/nova_standard_datastruct_NovaArray.h>
-#include <nova/standard/gc/nova_standard_gc_NovaGC.h>
 #include <nova/standard/nova_standard_NovaObject.h>
 #include <nova/standard/nova_standard_NovaString.h>
 #include <nova/standard/nova_standard_NovaSystem.h>
@@ -29,6 +28,7 @@ typedef struct example_network_NovaServerDemo example_network_NovaServerDemo;
 #include <nova/standard/network/nova_standard_network_NovaServerSocket.h>
 #include <nova/standard/network/nova_standard_network_NovaConnectionSocket.h>
 #include <nova/standard/datastruct/nova_standard_datastruct_NovaArrayList.h>
+#include <example/network/example_network_NovaOutputThread.h>
 #include <example/network/example_network_NovaConnectionThread.h>
 
 typedef struct nova_VTable_example_network_NovaServerDemo

@@ -21,7 +21,7 @@ SOCKET_ID_TYPE nova_clientsocket_connect(char* ipAddress, int port)
 
 	if (s == INVALID_SOCKET)
 	{
-		printf("Could not create socket: %d\n", WSAGetLastError());
+		//printf("Could not create socket: %d\n", WSAGetLastError());
 
 		return 0;
 	}
@@ -34,8 +34,6 @@ SOCKET_ID_TYPE nova_clientsocket_connect(char* ipAddress, int port)
 
 	if (result < 0)
 	{
-		printf("Failed to connect");
-
 		return 0;
 	}
 
@@ -43,7 +41,7 @@ SOCKET_ID_TYPE nova_clientsocket_connect(char* ipAddress, int port)
 #else
 	int sockfd = 0;
 	int result = 0;
-	struct sockaddr_in server_addr;
+	struct sockaddr_in serv_addr;
 
 	sockfd = socket(AF_INET, SOCK_STREAM, 0);
 
@@ -57,7 +55,7 @@ SOCKET_ID_TYPE nova_clientsocket_connect(char* ipAddress, int port)
 	serv_addr.sin_addr.s_addr = inet_addr(ipAddress);
 
 	result = connect(sockfd, (struct sockaddr*)&serv_addr, sizeof(struct sockaddr_in));
-
+	
 	if (result < 0)
 	{
 		return 0;

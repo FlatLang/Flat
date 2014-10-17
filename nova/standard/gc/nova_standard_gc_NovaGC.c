@@ -18,9 +18,9 @@ nova_standard_gc_NovaGC* nova_standard_gc_NovaGC_Nova0_construct(nova_standard_g
 {
 	CCLASS_NEW(nova_standard_gc_NovaGC, this,);
 	this->vtable = &nova_VTable_nova_standard_gc_NovaGC_val;
-	nova_standard_NovaObject_Novasuper((nova_standard_NovaObject*)this, 0);
+	nova_standard_NovaObject_Novasuper((nova_standard_NovaObject*)this, exceptionData);
 	nova_standard_NovaObject_Novathis((nova_standard_NovaObject*)(this), exceptionData);
-	nova_standard_gc_NovaGC_Novasuper(this, 0);
+	nova_standard_gc_NovaGC_Novasuper(this, exceptionData);
 	
 	{
 		nova_standard_gc_NovaGC_Novathis(this, exceptionData);
@@ -44,42 +44,42 @@ void nova_del_GC(nova_standard_gc_NovaGC** this, nova_standard_exception_NovaExc
 
 void nova_standard_gc_NovaGC_static_Novainit(nova_standard_gc_NovaGC* this, nova_standard_exception_NovaExceptionData* exceptionData)
 {
-	GC_INIT();
+	nova_gc_init();
 }
 
 long nova_standard_gc_NovaGC_static_NovagetFreeBytes(nova_standard_gc_NovaGC* this, nova_standard_exception_NovaExceptionData* exceptionData)
 {
-	return GC_get_free_bytes();
+	return nova_gc_getFreeBytes();
 }
 
 long nova_standard_gc_NovaGC_static_NovagetTotalBytes(nova_standard_gc_NovaGC* this, nova_standard_exception_NovaExceptionData* exceptionData)
 {
-	return GC_get_total_bytes();
+	return nova_gc_getTotalBytes();
 }
 
 long nova_standard_gc_NovaGC_static_NovagetHeapSize(nova_standard_gc_NovaGC* this, nova_standard_exception_NovaExceptionData* exceptionData)
 {
-	return GC_get_heap_size();
+	return nova_gc_getHeapSize();
 }
 
 long nova_standard_gc_NovaGC_static_NovagetBytesSinceGC(nova_standard_gc_NovaGC* this, nova_standard_exception_NovaExceptionData* exceptionData)
 {
-	return GC_get_bytes_since_gc();
+	return nova_gc_getBytesSinceGC();
 }
 
 void nova_standard_gc_NovaGC_static_Novacollect(nova_standard_gc_NovaGC* this, nova_standard_exception_NovaExceptionData* exceptionData)
 {
-	GC_gcollect();
+	nova_gc_collect();
 }
 
 void nova_standard_gc_NovaGC_static_NovaenableIncremental(nova_standard_gc_NovaGC* this, nova_standard_exception_NovaExceptionData* exceptionData)
 {
-	GC_enable_incremental();
+	nova_gc_enableIncremental();
 }
 
 void nova_standard_gc_NovaGC_static_Novadump(nova_standard_gc_NovaGC* this, nova_standard_exception_NovaExceptionData* exceptionData)
 {
-	GC_dump();
+	nova_gc_dump();
 }
 
 void nova_standard_gc_NovaGC_Novathis(nova_standard_gc_NovaGC* this, nova_standard_exception_NovaExceptionData* exceptionData)

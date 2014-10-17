@@ -5,24 +5,25 @@ import "nova/standard/database/NativeDBConnector.h"
 public class DBConnector
 {
 	external type MYSQL
-	
-	external MYSQL mysql
+	external type MYSQL_RES
 	
 	// Add a space after void and watch it BREAK!!!
-	external void nova_db_init()
-	external void nova_db_connect1(char host[], char user[], char password[])
-	external void nova_db_connect2(char host[], char user[], char password[], char database[])
-	external void nova_db_connect3(char host[], char user[], char password[], char database[], int port, char unix_socket[], int client_flag)
-	external void nova_db_close()
-	external void nova_db_select_db(char database[])
-	external void nova_user_select(char username[], char password[], char database[])
-	external char[] nova_db_error()
-	external void nova_exec_query(char command[])
-	external char[][][] nova_get_results()
-	external long nova_num_rows()
-	external long nova_num_cols()
+	external MYSQL* nova_db_connect1(char host[], char user[], char password[])
+	external MYSQL* nova_db_connect2(char host[], char user[], char password[], char database[])
+	external MYSQL* nova_db_connect3(char host[], char user[], char password[], char database[], int port, char unix_socket[], int client_flag)
+	external void nova_db_close(MYSQL* m)
+	external void nova_db_select_db(MYSQL* m, char database[])
+	external void nova_user_select(MYSQL* m, char username[], char password[], char database[])
+	external char[] nova_db_error(MYSQL* m)
+	external MYSQL_RES* nova_exec_query(MYSQL* m, char command[])
+	external char[][][] nova_get_results(MYSQL* m, MYSQL_RES* res)
+	external long nova_num_rows(MYSQL* m)
+	external long nova_num_cols(MYSQL_RES* res)
 	
 	visible String error
+	
+	MYSQL*     mysql
+	MYSQL_RES* result
 	
 	public construct()
 	{
@@ -31,47 +32,54 @@ public class DBConnector
 	
 	public connect(String host, String user, String password)
 	{
-		nova_db_connect1(host.toCharArray(), user.toCharArray(), password.toCharArray())
+		mysql = nova_db_connect1(host.toCharArray(), user.toCharArray(), password.toCharArray())
 		
 		updateError()
 	}
 	
 	public connect(String host, String user, String password, String database)
 	{
-		nova_db_connect2(host.toCharArray(), user.toCharArray(), password.toCharArray(), database.toCharArray())
+		mysql = nova_db_connect2(host.toCharArray(), user.toCharArray(), password.toCharArray(), database.toCharArray())
 		
 		updateError()
 	}
 	
 	public connect(String host, String user, String password, String database, Int port, String unixSocket, Int clientFlag)
 	{
-		nova_db_connect3(host.toCharArray(), user.toCharArray(), password.toCharArray(), database.toCharArray(), port, unixSocket.toCharArray(), clientFlag)
+		mysql = nova_db_connect3(host.toCharArray(), user.toCharArray(), password.toCharArray(), database.toCharArray(), port, unixSocket.toCharArray(), clientFlag)
 		
 		updateError()
 	}
 	
 	public updateError()
 	{
-		error = new String(nova_db_error())
+		error = new String(nova_db_error(mysql))
 	}
 	
 	public changeUser(String username, String password, String database)
 	{
-		nova_user_select(username.toCharArray(), password.toCharArray(), database.toCharArray())
+		nova_user_select(mysql, username.toCharArray(), password.toCharArray(), database.toCharArray())
 		
 		updateError()
 	}
 	
 	public query(String query) -> ResultSet
 	{
-		nova_exec_query(query.toCharArray())
+		result = nova_exec_query(mysql, query.toCharArray())
 		
-		Char arrays[][][] = nova_get_results()
+		if (result == 0)
+		{
+			updateError()
+			
+			return null
+		}
+		
+		Char arrays[][][] = nova_get_results(mysql, result)
 		
 		if (arrays != 0)
 		{
-			Int numRows = (Int)nova_num_rows()
-			Int numCols = (Int)nova_num_cols()
+			Int numRows = (Int)nova_num_rows(mysql)
+			Int numCols = (Int)nova_num_cols(result)
 			
 			String rows[][] = new String[numRows][numCols]
 			
@@ -83,11 +91,11 @@ public class DBConnector
 				}
 			}
 			
-			ResultSet result = new ResultSet(rows, numRows, numCols)
+			ResultSet r = new ResultSet(rows, numRows, numCols)
 			
 			updateError()
 			
-			return result
+			return r
 		}
 		
 		updateError()
@@ -97,7 +105,7 @@ public class DBConnector
 	
 	public close()
 	{
-		nova_db_close()
+		nova_db_close(mysql)
 		
 		updateError()
 	}

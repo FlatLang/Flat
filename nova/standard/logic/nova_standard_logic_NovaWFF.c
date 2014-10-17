@@ -43,9 +43,9 @@ nova_standard_logic_NovaWFF* nova_standard_logic_NovaWFF_Novaconstruct(nova_stan
 {
 	CCLASS_NEW(nova_standard_logic_NovaWFF, this);
 	this->vtable = &nova_VTable_nova_standard_logic_NovaWFF_val;
-	nova_standard_NovaObject_Novasuper((nova_standard_NovaObject*)this, 0);
+	nova_standard_NovaObject_Novasuper((nova_standard_NovaObject*)this, exceptionData);
 	nova_standard_NovaObject_Novathis((nova_standard_NovaObject*)(this), exceptionData);
-	nova_standard_logic_NovaWFF_Novasuper(this, 0);
+	nova_standard_logic_NovaWFF_Novasuper(this, exceptionData);
 	
 	{
 		nova_standard_logic_NovaWFF_Novathis(this, exceptionData, l0_NovawellFormedFormula, l0_Novaletters);
@@ -195,7 +195,7 @@ int nova_standard_logic_NovaWFF_static_Nova1_nextWhitespaceIndex(nova_standard_l
 	{
 		char l2_Novac;
 		
-		l2_Novac = nova_standard_NovaString_NovaCharAt(l0_Novawff, exceptionData, l2_Novai);
+		l2_Novac = nova_standard_NovaString_NovacharAt(l0_Novawff, exceptionData, l2_Novai);
 		if (nova_standard_logic_NovaWFF_static_NovacontainsChar((nova_standard_logic_NovaWFF*)nova_null, exceptionData, l2_Novac, nova_standard_logic_NovaWFF_static_Novawhitespace, 4) != l0_Novaopposite)
 		{
 			return l2_Novai;
@@ -238,7 +238,7 @@ int nova_standard_logic_NovaWFF_static_NovafindEndingMatch(nova_standard_logic_N
 	{
 		char l3_Novac;
 		
-		l3_Novac = nova_standard_NovaString_NovaCharAt(l0_Novawff, exceptionData, l3_Novai);
+		l3_Novac = nova_standard_NovaString_NovacharAt(l0_Novawff, exceptionData, l3_Novai);
 		if (l3_Novac == l0_Novastart)
 		{
 			l1_Novascope++;

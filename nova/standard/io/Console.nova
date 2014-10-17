@@ -21,6 +21,7 @@ public class Console
 	external char[] ufgets(FILE* stream)
 	external void nova_setEcho(Bool echo)
 	external void nova_clearScreen()
+	external void fflush(FILE* stream)
 	
 	public static writeLine(String text)
 	{
@@ -72,6 +73,7 @@ public class Console
 		Char cText[] = text.toCharArray()
 		
 		fputs(cText, stdout)
+		fflush(stdout)
 	}
 	
 	public static write(Object obj)

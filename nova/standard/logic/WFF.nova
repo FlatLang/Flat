@@ -134,7 +134,7 @@ public class WFF
 	{
 		for (Int i = index; i < wff.length && i >= 0; i = i + direction)
 		{
-			Char c = wff.CharAt(i)
+			Char c = wff.charAt(i)
 			
 			if (containsChar(c, whitespace, 4) != opposite)
 			{
@@ -171,7 +171,7 @@ public class WFF
 		
 		for (Int i = index; i < wff.length && i >= 0; i = i + direction)
 		{
-			Char c = wff.CharAt(i)
+			Char c = wff.charAt(i)
 			
 			if (c == start)
 			{

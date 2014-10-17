@@ -1,0 +1,9 @@
+package "bank"
+
+public class BankQueryException extends Exception
+{
+	public construct(String message)
+	{
+		super(message)
+	}
+}

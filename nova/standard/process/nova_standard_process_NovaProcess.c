@@ -18,9 +18,9 @@ nova_standard_process_NovaProcess* nova_standard_process_NovaProcess_Novaconstru
 {
 	CCLASS_NEW(nova_standard_process_NovaProcess, this,);
 	this->vtable = &nova_VTable_nova_standard_process_NovaProcess_val;
-	nova_standard_NovaObject_Novasuper((nova_standard_NovaObject*)this, 0);
+	nova_standard_NovaObject_Novasuper((nova_standard_NovaObject*)this, exceptionData);
 	nova_standard_NovaObject_Novathis((nova_standard_NovaObject*)(this), exceptionData);
-	nova_standard_process_NovaProcess_Novasuper(this, 0);
+	nova_standard_process_NovaProcess_Novasuper(this, exceptionData);
 	
 	{
 		nova_standard_process_NovaProcess_Novathis(this, exceptionData, l0_Novareader);

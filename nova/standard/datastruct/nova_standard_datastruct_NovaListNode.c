@@ -18,9 +18,9 @@ nova_standard_datastruct_NovaListNode* nova_standard_datastruct_NovaListNode_Nov
 {
 	CCLASS_NEW(nova_standard_datastruct_NovaListNode, this,);
 	this->vtable = &nova_VTable_nova_standard_datastruct_NovaListNode_val;
-	nova_standard_NovaObject_Novasuper((nova_standard_NovaObject*)this, 0);
+	nova_standard_NovaObject_Novasuper((nova_standard_NovaObject*)this, exceptionData);
 	nova_standard_NovaObject_Novathis((nova_standard_NovaObject*)(this), exceptionData);
-	nova_standard_datastruct_NovaListNode_Novasuper(this, 0);
+	nova_standard_datastruct_NovaListNode_Novasuper(this, exceptionData);
 	
 	{
 		nova_standard_datastruct_NovaListNode_Novathis(this, exceptionData, l0_Novadata);

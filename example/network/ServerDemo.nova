@@ -12,36 +12,39 @@ public class ServerDemo
 		
 		ServerSocket socket = new ServerSocket()
 		
-		socket.start(25560)
+		Int port = 25560
 		
-		Console.writeLine("Started server on port " + 25560)
-		Console.writeLine("Waiting on client...")
-		
-		ConnectionSocket request = socket.acceptClient()
-		
-		while (request != null)
+		if (!socket.start(port))
 		{
-			connections.add(request)
+			Console.writeLine("Failed to start server")
+		}
+		else
+		{
+			Console.writeLine("Started server on port " + port)
+			Console.writeLine("Waiting on client...")
 			
-			ConnectionThread thread = new ConnectionThread(request)
+			ConnectionSocket request = socket.acceptClient()
 			
-			thread.start()
-			
-			while (true)
+			if (request == null)
 			{
-				String message = Console.readLine()
-				
-				if (request.out.write(message))
-				{
-					
-				}
-				else
-				{
-					Console.writeLine("Failed to send data")
-				}
+				Console.writeLine("Failed to accept client")
 			}
 			
-			request = socket.acceptClient()
+			while (request != null)
+			{
+				connections.add(request)
+				
+				ConnectionThread thread = new ConnectionThread(request)
+				
+				thread.start()
+				
+				OutputThread othread = new OutputThread(socket, request)
+				
+				othread.start()
+				Console.writeLine("Waiting on anoter")
+				request = socket.acceptClient()
+			}
+			Console.writeLine("Exiting")
 		}
 		
 		Console.waitForEnter()

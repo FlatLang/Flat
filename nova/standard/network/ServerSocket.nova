@@ -18,11 +18,13 @@ public class ServerSocket extends Socket
 	
 	SOCKET_ID_TYPE serverSocket
 	
+	visible Bool open
+	
 	visible ArrayList<ConnectionSocket> requests = new ArrayList()
 	
 	public construct()
 	{
-		
+		open = false
 	}
 	
 	public start(Int port) -> Bool
@@ -33,6 +35,8 @@ public class ServerSocket extends Socket
 		{
 			return false
 		}
+		
+		open = true
 		
 		return true
 	}
@@ -45,6 +49,8 @@ public class ServerSocket extends Socket
 		{
 			return false
 		}
+		
+		open = false
 		
 		return true
 	}

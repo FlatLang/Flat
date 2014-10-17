@@ -24,9 +24,9 @@ nova_standard_exception_NovaExceptionData* nova_standard_exception_NovaException
 {
 	CCLASS_NEW(nova_standard_exception_NovaExceptionData, this);
 	this->vtable = &nova_VTable_nova_standard_exception_NovaExceptionData_val;
-	nova_standard_NovaObject_Novasuper((nova_standard_NovaObject*)this, 0);
+	nova_standard_NovaObject_Novasuper((nova_standard_NovaObject*)this, exceptionData);
 	nova_standard_NovaObject_Novathis((nova_standard_NovaObject*)(this), exceptionData);
-	nova_standard_exception_NovaExceptionData_Novasuper(this, 0);
+	nova_standard_exception_NovaExceptionData_Novasuper(this, exceptionData);
 	
 	{
 		nova_standard_exception_NovaExceptionData_Novathis(this, exceptionData, l0_Novabuf);
@@ -137,6 +137,6 @@ void nova_standard_exception_NovaExceptionData_Novasuper(nova_standard_exception
 {
 	this->nova_standard_exception_NovaExceptionData_NovathrownException = (nova_standard_exception_NovaException*)nova_null;
 	this->nova_standard_exception_NovaExceptionData_Novacodes = (nova_standard_datastruct_NovaArrayList*)nova_null;
-	this->prv->nova_standard_exception_NovaExceptionData_Novabuf = (buffer*)nova_null;
+	this->prv->nova_standard_exception_NovaExceptionData_Novabuf = 0;
 	this->prv->nova_standard_exception_NovaExceptionData_Novaparent = (nova_standard_exception_NovaExceptionData*)nova_null;
 }

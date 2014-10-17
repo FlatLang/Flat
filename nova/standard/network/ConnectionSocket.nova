@@ -10,6 +10,7 @@ public class ConnectionSocket extends Socket
 	
 	external char[] nova_socket_receive(SOCKET_ID_TYPE socket)
 	external int nova_socket_send(SOCKET_ID_TYPE socket, char message[])
+	external void nova_socket_close(SOCKET_ID_TYPE s)
 	
 	visible InputStream  in
 	visible OutputStream out
@@ -28,6 +29,13 @@ public class ConnectionSocket extends Socket
 		out = new NetworkOutputStream(this)
 		
 		connected = true
+	}
+	
+	public close()
+	{
+		connected = false
+		
+		nova_socket_close(socket)
 	}
 	
 	public validateConnection() -> Bool

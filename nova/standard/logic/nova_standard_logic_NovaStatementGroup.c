@@ -18,9 +18,9 @@ nova_standard_logic_NovaStatementGroup* nova_standard_logic_NovaStatementGroup_N
 {
 	CCLASS_NEW(nova_standard_logic_NovaStatementGroup, this,);
 	this->vtable = &nova_VTable_nova_standard_logic_NovaStatementGroup_val;
-	nova_standard_NovaObject_Novasuper((nova_standard_NovaObject*)this, 0);
+	nova_standard_NovaObject_Novasuper((nova_standard_NovaObject*)this, exceptionData);
 	nova_standard_NovaObject_Novathis((nova_standard_NovaObject*)(this), exceptionData);
-	nova_standard_logic_NovaStatementGroup_Novasuper(this, 0);
+	nova_standard_logic_NovaStatementGroup_Novasuper(this, exceptionData);
 	
 	{
 		nova_standard_logic_NovaStatementGroup_Novathis(this, exceptionData, l0_Novastatement, l0_Novabounds);

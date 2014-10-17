@@ -18,9 +18,9 @@ nova_standard_svg_NovaSVGComponentList* nova_standard_svg_NovaSVGComponentList_N
 {
 	CCLASS_NEW(nova_standard_svg_NovaSVGComponentList, this,);
 	this->vtable = &nova_VTable_nova_standard_svg_NovaSVGComponentList_val;
-	nova_standard_NovaObject_Novasuper((nova_standard_NovaObject*)this, 0);
+	nova_standard_NovaObject_Novasuper((nova_standard_NovaObject*)this, exceptionData);
 	nova_standard_NovaObject_Novathis((nova_standard_NovaObject*)(this), exceptionData);
-	nova_standard_svg_NovaSVGComponentList_Novasuper(this, 0);
+	nova_standard_svg_NovaSVGComponentList_Novasuper(this, exceptionData);
 	
 	{
 		nova_standard_svg_NovaSVGComponentList_Novathis(this, exceptionData);

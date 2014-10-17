@@ -26,7 +26,7 @@ typedef struct nova_standard_gc_NovaGC nova_standard_gc_NovaGC;
 #include <nova/standard/nova_standard_NovaString.h>
 #include <nova/standard/nova_standard_NovaSystem.h>
 #include <nova/standard/nova_standard_NovaMath.h>
-#include <gc.h>
+#include <nova/standard/gc/NativeGC.h>
 
 typedef struct nova_VTable_nova_standard_gc_NovaGC
 {

@@ -20,9 +20,9 @@ nova_standard_io_NovaConsole* nova_standard_io_NovaConsole_Nova0_construct(nova_
 {
 	CCLASS_NEW(nova_standard_io_NovaConsole, this,);
 	this->vtable = &nova_VTable_nova_standard_io_NovaConsole_val;
-	nova_standard_NovaObject_Novasuper((nova_standard_NovaObject*)this, 0);
+	nova_standard_NovaObject_Novasuper((nova_standard_NovaObject*)this, exceptionData);
 	nova_standard_NovaObject_Novathis((nova_standard_NovaObject*)(this), exceptionData);
-	nova_standard_io_NovaConsole_Novasuper(this, 0);
+	nova_standard_io_NovaConsole_Novasuper(this, exceptionData);
 	
 	{
 		nova_standard_io_NovaConsole_Novathis(this, exceptionData);
@@ -95,6 +95,7 @@ void nova_standard_io_NovaConsole_static_Nova0_write(nova_standard_io_NovaConsol
 	
 	l1_NovacText = nova_standard_NovaString_NovatoCharArray(l0_Novatext, exceptionData);
 	fputs((char*)(l1_NovacText), stdout);
+	fflush(stdout);
 }
 
 void nova_standard_io_NovaConsole_static_Nova1_write(nova_standard_io_NovaConsole* this, nova_standard_exception_NovaExceptionData* exceptionData, nova_standard_NovaObject* l0_Novaobj)

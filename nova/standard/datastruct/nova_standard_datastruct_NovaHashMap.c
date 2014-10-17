@@ -23,9 +23,9 @@ nova_standard_datastruct_NovaHashMap* nova_standard_datastruct_NovaHashMap_Nova0
 {
 	CCLASS_NEW(nova_standard_datastruct_NovaHashMap, this);
 	this->vtable = &nova_VTable_nova_standard_datastruct_NovaHashMap_val;
-	nova_standard_NovaObject_Novasuper((nova_standard_NovaObject*)this, 0);
+	nova_standard_NovaObject_Novasuper((nova_standard_NovaObject*)this, exceptionData);
 	nova_standard_NovaObject_Novathis((nova_standard_NovaObject*)(this), exceptionData);
-	nova_standard_datastruct_NovaHashMap_Novasuper(this, 0);
+	nova_standard_datastruct_NovaHashMap_Novasuper(this, exceptionData);
 	
 	{
 		nova_standard_datastruct_NovaHashMap_Novathis(this, exceptionData);
@@ -74,5 +74,5 @@ nova_standard_NovaObject* nova_standard_datastruct_NovaHashMap_Novaget(nova_stan
 
 void nova_standard_datastruct_NovaHashMap_Novasuper(nova_standard_datastruct_NovaHashMap* this, nova_standard_exception_NovaExceptionData* exceptionData)
 {
-	this->prv->nova_standard_datastruct_NovaHashMap_Novamap = (hashmap*)nova_null;
+	this->prv->nova_standard_datastruct_NovaHashMap_Novamap = 0;
 }

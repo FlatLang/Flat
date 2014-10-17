@@ -18,11 +18,11 @@ nova_standard_logic_NovaInvalidFormulaException* nova_standard_logic_NovaInvalid
 {
 	CCLASS_NEW(nova_standard_logic_NovaInvalidFormulaException, this,);
 	this->vtable = &nova_VTable_nova_standard_logic_NovaInvalidFormulaException_val;
-	nova_standard_NovaObject_Novasuper((nova_standard_NovaObject*)this, 0);
-	nova_standard_exception_NovaException_Novasuper((nova_standard_exception_NovaException*)this, 0);
+	nova_standard_NovaObject_Novasuper((nova_standard_NovaObject*)this, exceptionData);
+	nova_standard_exception_NovaException_Novasuper((nova_standard_exception_NovaException*)this, exceptionData);
 	nova_standard_NovaObject_Novathis((nova_standard_NovaObject*)(this), exceptionData);
 	nova_standard_exception_NovaException_Nova0_this((nova_standard_exception_NovaException*)(this), exceptionData, l0_Novamessage);
-	nova_standard_logic_NovaInvalidFormulaException_Novasuper(this, 0);
+	nova_standard_logic_NovaInvalidFormulaException_Novasuper(this, exceptionData);
 	
 	{
 		nova_standard_logic_NovaInvalidFormulaException_Novathis(this, exceptionData, l0_Novamessage);

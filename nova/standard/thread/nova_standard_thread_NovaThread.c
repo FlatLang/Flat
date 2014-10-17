@@ -27,9 +27,9 @@ nova_standard_thread_NovaThread* nova_standard_thread_NovaThread_Nova0_construct
 {
 	CCLASS_NEW(nova_standard_thread_NovaThread, this);
 	this->vtable = &nova_VTable_nova_standard_thread_NovaThread_val;
-	nova_standard_NovaObject_Novasuper((nova_standard_NovaObject*)this, 0);
+	nova_standard_NovaObject_Novasuper((nova_standard_NovaObject*)this, exceptionData);
 	nova_standard_NovaObject_Novathis((nova_standard_NovaObject*)(this), exceptionData);
-	nova_standard_thread_NovaThread_Novasuper(this, 0);
+	nova_standard_thread_NovaThread_Novasuper(this, exceptionData);
 	
 	{
 		nova_standard_thread_NovaThread_Novathis(this, exceptionData);
@@ -61,6 +61,11 @@ void nova_standard_thread_NovaThread_Novastart(nova_standard_thread_NovaThread* 
 void nova_standard_thread_NovaThread_Novajoin(nova_standard_thread_NovaThread* this, nova_standard_exception_NovaExceptionData* exceptionData)
 {
 	lib_nova_thread_join(*this->prv->nova_standard_thread_NovaThread_Novahandle);
+}
+
+void nova_standard_thread_NovaThread_Novakill(nova_standard_thread_NovaThread* this, nova_standard_exception_NovaExceptionData* exceptionData)
+{
+	lib_nova_thread_cancel(*this->prv->nova_standard_thread_NovaThread_Novahandle);
 }
 
 void nova_standard_thread_NovaThread_static_Novasleep(nova_standard_thread_NovaThread* this, nova_standard_exception_NovaExceptionData* exceptionData, long l0_Novamillis)
@@ -101,5 +106,5 @@ void nova_standard_thread_NovaThread_Novathis(nova_standard_thread_NovaThread* t
 
 void nova_standard_thread_NovaThread_Novasuper(nova_standard_thread_NovaThread* this, nova_standard_exception_NovaExceptionData* exceptionData)
 {
-	this->prv->nova_standard_thread_NovaThread_Novahandle = (NOVA_THREAD_HANDLE*)nova_null;
+	this->prv->nova_standard_thread_NovaThread_Novahandle = 0;
 }

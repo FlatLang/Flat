@@ -25,12 +25,12 @@ void lib_nova_thread_create(NOVA_THREAD_HANDLE* handle, NOVA_THREAD_FUNC_TYPE fu
 	*/
 
 	*handle = (NOVA_THREAD_HANDLE*)new_thread_method(0, 0, *func, arg, 0, &id);
-#elif DEFINED(__APPLE__, __linux__)
+#elif defined(__APPLE__) || defined(__linux__)
 	new_thread_method(handle, NULL, func, arg);
 #endif
 }
 
-#if DEFINED(__APPLE__, __linux__)
+#if defined(__APPLE__) || defined(__linux__)
 
 void thread_nanosleep2(struct timespec req);
 

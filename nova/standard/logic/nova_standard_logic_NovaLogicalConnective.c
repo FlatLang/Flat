@@ -18,11 +18,11 @@ nova_standard_logic_NovaLogicalConnective* nova_standard_logic_NovaLogicalConnec
 {
 	CCLASS_NEW(nova_standard_logic_NovaLogicalConnective, this,);
 	this->vtable = &nova_VTable_nova_standard_logic_NovaLogicalConnective_val;
-	nova_standard_NovaObject_Novasuper((nova_standard_NovaObject*)this, 0);
-	nova_standard_logic_NovaStatementComponent_Novasuper((nova_standard_logic_NovaStatementComponent*)this, 0);
+	nova_standard_NovaObject_Novasuper((nova_standard_NovaObject*)this, exceptionData);
+	nova_standard_logic_NovaStatementComponent_Novasuper((nova_standard_logic_NovaStatementComponent*)this, exceptionData);
 	nova_standard_NovaObject_Novathis((nova_standard_NovaObject*)(this), exceptionData);
 	nova_standard_logic_NovaStatementComponent_Novathis((nova_standard_logic_NovaStatementComponent*)(this), exceptionData);
-	nova_standard_logic_NovaLogicalConnective_Novasuper(this, 0);
+	nova_standard_logic_NovaLogicalConnective_Novasuper(this, exceptionData);
 	
 	{
 		nova_standard_logic_NovaLogicalConnective_Novathis(this, exceptionData);

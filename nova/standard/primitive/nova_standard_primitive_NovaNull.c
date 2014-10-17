@@ -24,10 +24,10 @@ nova_standard_primitive_NovaNull* nova_standard_primitive_NovaNull_Nova0_constru
 {
 	CCLASS_NEW(nova_standard_primitive_NovaNull, this);
 	this->vtable = &nova_VTable_nova_standard_primitive_NovaNull_val;
-	nova_standard_NovaObject_Novasuper((nova_standard_NovaObject*)this, 0);
-	nova_standard_NovaString_Novasuper((nova_standard_NovaString*)this, 0);
+	nova_standard_NovaObject_Novasuper((nova_standard_NovaObject*)this, exceptionData);
+	nova_standard_NovaString_Novasuper((nova_standard_NovaString*)this, exceptionData);
 	nova_standard_NovaObject_Novathis((nova_standard_NovaObject*)(this), exceptionData);
-	nova_standard_primitive_NovaNull_Novasuper(this, 0);
+	nova_standard_primitive_NovaNull_Novasuper(this, exceptionData);
 	
 	{
 		nova_standard_primitive_NovaNull_Novathis(this, exceptionData);

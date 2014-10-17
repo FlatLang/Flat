@@ -18,9 +18,9 @@ nova_standard_thread_NovaUncaughtExceptionHandler* nova_standard_thread_NovaUnca
 {
 	CCLASS_NEW(nova_standard_thread_NovaUncaughtExceptionHandler, this,);
 	this->vtable = &nova_VTable_nova_standard_thread_NovaUncaughtExceptionHandler_val;
-	nova_standard_NovaObject_Novasuper((nova_standard_NovaObject*)this, 0);
+	nova_standard_NovaObject_Novasuper((nova_standard_NovaObject*)this, exceptionData);
 	nova_standard_NovaObject_Novathis((nova_standard_NovaObject*)(this), exceptionData);
-	nova_standard_thread_NovaUncaughtExceptionHandler_Novasuper(this, 0);
+	nova_standard_thread_NovaUncaughtExceptionHandler_Novasuper(this, exceptionData);
 	
 	{
 		nova_standard_thread_NovaUncaughtExceptionHandler_Novathis(this, exceptionData);

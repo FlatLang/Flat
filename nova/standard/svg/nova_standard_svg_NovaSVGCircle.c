@@ -19,11 +19,11 @@ nova_standard_svg_NovaSVGCircle* nova_standard_svg_NovaSVGCircle_Novaconstruct(n
 {
 	CCLASS_NEW(nova_standard_svg_NovaSVGCircle, this,);
 	this->vtable = &nova_VTable_nova_standard_svg_NovaSVGCircle_val;
-	nova_standard_NovaObject_Novasuper((nova_standard_NovaObject*)this, 0);
-	nova_standard_svg_NovaSVGComponent_Novasuper((nova_standard_svg_NovaSVGComponent*)this, 0);
+	nova_standard_NovaObject_Novasuper((nova_standard_NovaObject*)this, exceptionData);
+	nova_standard_svg_NovaSVGComponent_Novasuper((nova_standard_svg_NovaSVGComponent*)this, exceptionData);
 	nova_standard_NovaObject_Novathis((nova_standard_NovaObject*)(this), exceptionData);
 	nova_standard_svg_NovaSVGComponent_Novathis((nova_standard_svg_NovaSVGComponent*)(this), exceptionData);
-	nova_standard_svg_NovaSVGCircle_Novasuper(this, 0);
+	nova_standard_svg_NovaSVGCircle_Novasuper(this, exceptionData);
 	
 	{
 		nova_standard_svg_NovaSVGCircle_Novathis(this, exceptionData, l0_Novax, l0_Novay, l0_Novar);

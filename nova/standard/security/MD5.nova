@@ -1,0 +1,20 @@
+package "nova/standard/security"
+
+import "nova/standard/security/NativeMD5.h"
+
+public class MD5
+{
+	external char[] nova_md5(char[] input)
+	
+	public static encrypt(String str) -> String
+	{
+		Char[] data = nova_md5(str.toCharArray())
+		
+		if (data == 0)
+		{
+			return null
+		}
+		
+		return new String(data)
+	}
+}

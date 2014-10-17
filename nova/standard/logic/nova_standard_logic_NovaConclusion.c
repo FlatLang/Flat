@@ -24,11 +24,11 @@ nova_standard_logic_NovaConclusion* nova_standard_logic_NovaConclusion_Novaconst
 {
 	CCLASS_NEW(nova_standard_logic_NovaConclusion, this);
 	this->vtable = &nova_VTable_nova_standard_logic_NovaConclusion_val;
-	nova_standard_NovaObject_Novasuper((nova_standard_NovaObject*)this, 0);
-	nova_standard_logic_NovaStatement_Novasuper((nova_standard_logic_NovaStatement*)this, 0);
+	nova_standard_NovaObject_Novasuper((nova_standard_NovaObject*)this, exceptionData);
+	nova_standard_logic_NovaStatement_Novasuper((nova_standard_logic_NovaStatement*)this, exceptionData);
 	nova_standard_NovaObject_Novathis((nova_standard_NovaObject*)(this), exceptionData);
 	nova_standard_logic_NovaStatement_Novathis((nova_standard_logic_NovaStatement*)(this), exceptionData, l0_Novastatement);
-	nova_standard_logic_NovaConclusion_Novasuper(this, 0);
+	nova_standard_logic_NovaConclusion_Novasuper(this, exceptionData);
 	
 	{
 		nova_standard_logic_NovaConclusion_Novathis(this, exceptionData, l0_Novastatement);

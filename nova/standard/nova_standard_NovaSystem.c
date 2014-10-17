@@ -19,9 +19,9 @@ nova_standard_NovaSystem* nova_standard_NovaSystem_Nova0_construct(nova_standard
 {
 	CCLASS_NEW(nova_standard_NovaSystem, this,);
 	this->vtable = &nova_VTable_nova_standard_NovaSystem_val;
-	nova_standard_NovaObject_Novasuper((nova_standard_NovaObject*)this, 0);
+	nova_standard_NovaObject_Novasuper((nova_standard_NovaObject*)this, exceptionData);
 	nova_standard_NovaObject_Novathis((nova_standard_NovaObject*)(this), exceptionData);
-	nova_standard_NovaSystem_Novasuper(this, 0);
+	nova_standard_NovaSystem_Novasuper(this, exceptionData);
 	
 	{
 		nova_standard_NovaSystem_Novathis(this, exceptionData);

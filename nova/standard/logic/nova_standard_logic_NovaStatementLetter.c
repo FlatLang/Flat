@@ -24,11 +24,11 @@ nova_standard_logic_NovaStatementLetter* nova_standard_logic_NovaStatementLetter
 {
 	CCLASS_NEW(nova_standard_logic_NovaStatementLetter, this);
 	this->vtable = &nova_VTable_nova_standard_logic_NovaStatementLetter_val;
-	nova_standard_NovaObject_Novasuper((nova_standard_NovaObject*)this, 0);
-	nova_standard_logic_NovaStatementComponent_Novasuper((nova_standard_logic_NovaStatementComponent*)this, 0);
+	nova_standard_NovaObject_Novasuper((nova_standard_NovaObject*)this, exceptionData);
+	nova_standard_logic_NovaStatementComponent_Novasuper((nova_standard_logic_NovaStatementComponent*)this, exceptionData);
 	nova_standard_NovaObject_Novathis((nova_standard_NovaObject*)(this), exceptionData);
 	nova_standard_logic_NovaStatementComponent_Novathis((nova_standard_logic_NovaStatementComponent*)(this), exceptionData);
-	nova_standard_logic_NovaStatementLetter_Novasuper(this, 0);
+	nova_standard_logic_NovaStatementLetter_Novasuper(this, exceptionData);
 	
 	{
 		nova_standard_logic_NovaStatementLetter_Novathis(this, exceptionData, l0_Novaletter, l0_Novarepresentation);

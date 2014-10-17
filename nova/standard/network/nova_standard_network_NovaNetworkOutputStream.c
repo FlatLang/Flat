@@ -27,11 +27,11 @@ nova_standard_network_NovaNetworkOutputStream* nova_standard_network_NovaNetwork
 {
 	CCLASS_NEW(nova_standard_network_NovaNetworkOutputStream, this);
 	this->vtable = &nova_VTable_nova_standard_network_NovaNetworkOutputStream_val;
-	nova_standard_NovaObject_Novasuper((nova_standard_NovaObject*)this, 0);
-	nova_standard_io_NovaOutputStream_Novasuper((nova_standard_io_NovaOutputStream*)this, 0);
+	nova_standard_NovaObject_Novasuper((nova_standard_NovaObject*)this, exceptionData);
+	nova_standard_io_NovaOutputStream_Novasuper((nova_standard_io_NovaOutputStream*)this, exceptionData);
 	nova_standard_NovaObject_Novathis((nova_standard_NovaObject*)(this), exceptionData);
 	nova_standard_io_NovaOutputStream_Novathis((nova_standard_io_NovaOutputStream*)(this), exceptionData);
-	nova_standard_network_NovaNetworkOutputStream_Novasuper(this, 0);
+	nova_standard_network_NovaNetworkOutputStream_Novasuper(this, exceptionData);
 	
 	{
 		nova_standard_network_NovaNetworkOutputStream_Novathis(this, exceptionData, l0_Novasocket);

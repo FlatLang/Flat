@@ -16,14 +16,26 @@ void nova_setEcho(char echo)
 		SetConsoleMode(hStdin, mode & (~ENABLE_ECHO_INPUT));
 	}
 #else
+	/*struct sgttyb state;
+	ioctl(0, (int)TIOCGETP, (char*)&state);
+	
 	if (echo)
 	{
-		system("echo on");
+		state.sg_flags |= ECHO;
 	}
 	else
 	{
-		system("echo off");
+		state.sg_flags &= ~ECHO;
 	}
+	
+	ioctl(0, (int)TIOCSETP, (char*)&state);*/
+	struct termios tattr;
+	tcgetattr (STDIN_FILENO, &tattr);
+	if (echo)
+	tattr.c_lflag |= (ICANON | ECHO);
+	else
+	tattr.c_lflag &= ~(ICANON | ECHO);
+	tcsetattr (STDIN_FILENO, TCSAFLUSH, &tattr);
 #endif
 }
 

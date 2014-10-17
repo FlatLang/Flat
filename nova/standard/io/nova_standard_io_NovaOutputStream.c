@@ -25,9 +25,9 @@ nova_standard_io_NovaOutputStream* nova_standard_io_NovaOutputStream_Nova2_const
 {
 	CCLASS_NEW(nova_standard_io_NovaOutputStream, this);
 	this->vtable = &nova_VTable_nova_standard_io_NovaOutputStream_val;
-	nova_standard_NovaObject_Novasuper((nova_standard_NovaObject*)this, 0);
+	nova_standard_NovaObject_Novasuper((nova_standard_NovaObject*)this, exceptionData);
 	nova_standard_NovaObject_Novathis((nova_standard_NovaObject*)(this), exceptionData);
-	nova_standard_io_NovaOutputStream_Novasuper(this, 0);
+	nova_standard_io_NovaOutputStream_Novasuper(this, exceptionData);
 	
 	{
 		nova_standard_io_NovaOutputStream_Novathis(this, exceptionData);

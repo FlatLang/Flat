@@ -24,7 +24,7 @@ public class String
 		this(data)
 	}
 	
-	public construct(Char data[])
+	public construct(Char[] data)
 	{
 		this.data = data
 		
@@ -40,6 +40,11 @@ public class String
 //			
 //			this.data = newData
 //		}
+		
+		if (data[length] != '\0')
+		{
+			data[length] = '\0'
+		}
 	}
 	
 	calculateLength() -> Int
@@ -160,10 +165,10 @@ public class String
 	
 	public lastChar() -> Char
 	{
-		return CharAt(length - 1)
+		return charAt(length - 1)
 	}
 	
-	public CharAt(Int index) -> Char
+	public charAt(Int index) -> Char
 	{
 		return data[index]
 	}

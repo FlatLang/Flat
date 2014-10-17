@@ -1,23 +1,23 @@
 package "nova/standard/gc"
 
-import "gc.h"
+import "nova/standard/gc/NativeGC.h"
 
 public class GC
 {
-	external void GC_INIT()
-	external void GC_gcollect()
-	external void GC_enable_incremental()
-	external void GC_dump()
-	external long GC_get_free_bytes()
-	external long GC_get_total_bytes()
-	external long GC_get_heap_size()
-	external long GC_get_bytes_since_gc()
+	external void nova_gc_init()
+	external void nova_gc_collect()
+	external void nova_gc_enableIncremental()
+	external void nova_gc_dump()
+	external long nova_gc_getFreeBytes()
+	external long nova_gc_getTotalBytes()
+	external long nova_gc_getHeapSize()
+	external long nova_gc_getBytesSinceGC()
 	
 //	external int GC_free_space_divisor
 	
 	public static init()
 	{
-		GC_INIT()
+		nova_gc_init()
 		
 //		enableIncremental()
 //		
@@ -26,22 +26,22 @@ public class GC
 	
 	public static getFreeBytes() -> Long
 	{
-		return GC_get_free_bytes()
+		return nova_gc_getFreeBytes()
 	}
 	
 	public static getTotalBytes() -> Long
 	{
-		return GC_get_total_bytes()
+		return nova_gc_getTotalBytes()
 	}
 	
 	public static getHeapSize() -> Long
 	{
-		return GC_get_heap_size()
+		return nova_gc_getHeapSize()
 	}
 	
 	public static getBytesSinceGC() -> Long
 	{
-		return GC_get_bytes_since_gc()
+		return nova_gc_getBytesSinceGC()
 	}
 	
 //	public static setFreeSpaceDivisor(Int divisor)
@@ -51,16 +51,16 @@ public class GC
 	
 	public static collect()
 	{
-		GC_gcollect()
+		nova_gc_collect()
 	}
 	
 	public static enableIncremental()
 	{
-		GC_enable_incremental()
+		nova_gc_enableIncremental()
 	}
 	
 	public static dump()
 	{
-		GC_dump()
+		nova_gc_dump()
 	}
 }

@@ -18,9 +18,9 @@ nova_standard_time_NovaDate* nova_standard_time_NovaDate_Nova0_construct(nova_st
 {
 	CCLASS_NEW(nova_standard_time_NovaDate, this,);
 	this->vtable = &nova_VTable_nova_standard_time_NovaDate_val;
-	nova_standard_NovaObject_Novasuper((nova_standard_NovaObject*)this, 0);
+	nova_standard_NovaObject_Novasuper((nova_standard_NovaObject*)this, exceptionData);
 	nova_standard_NovaObject_Novathis((nova_standard_NovaObject*)(this), exceptionData);
-	nova_standard_time_NovaDate_Novasuper(this, 0);
+	nova_standard_time_NovaDate_Novasuper(this, exceptionData);
 	
 	{
 		nova_standard_time_NovaDate_Novathis(this, exceptionData);

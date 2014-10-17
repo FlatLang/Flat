@@ -45,11 +45,15 @@ void nova_del_ClientDemo(example_network_NovaClientDemo** this, nova_standard_ex
 void example_network_NovaClientDemo_static_Novamain(example_network_NovaClientDemo* this, nova_standard_exception_NovaExceptionData* exceptionData, nova_standard_NovaString** l0_Novaargs)
 {
 		nova_standard_network_NovaClientSocket* l1_Novasocket;
+		nova_standard_NovaString* l1_Novaip;
+		int l1_Novaport;
 		char l1_Novaconnected;
 		
 		l1_Novasocket = nova_standard_network_NovaClientSocket_Nova0_construct(0, exceptionData);
-		nova_standard_io_NovaConsole_static_Nova0_writeLine(0, exceptionData, nova_standard_NovaString_Nova1_construct(0, exceptionData, "Attempting to connect to localhost:25560"));
-		l1_Novaconnected = nova_standard_network_NovaClientSocket_Novaconnect(l1_Novasocket, exceptionData, nova_standard_NovaString_Nova1_construct(0, exceptionData, "10.0.53.118"), 25560);
+		l1_Novaip = nova_standard_NovaString_Nova1_construct(0, exceptionData, "127.0.0.1");
+		l1_Novaport = 5675;
+		nova_standard_io_NovaConsole_static_Nova0_writeLine(0, exceptionData, nova_standard_NovaString_Nova0_concat(nova_standard_NovaString_Nova1_construct(0, exceptionData, "Attempting to connect to "), exceptionData, l1_Novaip->vtable->nova_standard_NovaString_Novavirtual0_concat(l1_Novaip, exceptionData, nova_standard_NovaString_Nova0_concat(nova_standard_NovaString_Nova1_construct(0, exceptionData, ":"), exceptionData, nova_standard_primitive_number_NovaInt_static_Nova1_toString(0, exceptionData, l1_Novaport)))));
+		l1_Novaconnected = nova_standard_network_NovaClientSocket_Novaconnect(l1_Novasocket, exceptionData, l1_Novaip, l1_Novaport);
 		if (l1_Novaconnected)
 		{
 				example_network_NovaConnectionThread* l2_Novathread;
@@ -57,15 +61,25 @@ void example_network_NovaClientDemo_static_Novamain(example_network_NovaClientDe
 				l2_Novathread = example_network_NovaConnectionThread_Novaconstruct(0, exceptionData, l1_Novasocket->nova_standard_network_NovaClientSocket_Novaconnection);
 				nova_standard_thread_NovaThread_Novastart((nova_standard_thread_NovaThread*)(l2_Novathread), exceptionData);
 				nova_standard_io_NovaConsole_static_Nova0_writeLine(0, exceptionData, nova_standard_NovaString_Nova1_construct(0, exceptionData, "Connected!"));
-				while (1)
+				while (l1_Novasocket->nova_standard_network_NovaClientSocket_Novaconnection->nova_standard_network_NovaConnectionSocket_Novaconnected)
 				{
 						nova_standard_NovaString* l3_Novamessage;
 						
 						l3_Novamessage = nova_standard_io_NovaConsole_static_NovareadLine(0, exceptionData);
+						if (l3_Novamessage->vtable->nova_standard_NovaString_Novavirtual_equals(l3_Novamessage, exceptionData, nova_standard_NovaString_Nova1_construct(0, exceptionData, "q")))
+						{
+								nova_standard_network_NovaClientSocket_Novaclose(l1_Novasocket, exceptionData);
+								break;
+						}
 						l1_Novasocket->nova_standard_network_NovaClientSocket_Novaconnection->nova_standard_network_NovaConnectionSocket_Novaout->vtable->nova_standard_io_NovaOutputStream_Novavirtual1_write(l1_Novasocket->nova_standard_network_NovaClientSocket_Novaconnection->nova_standard_network_NovaConnectionSocket_Novaout, exceptionData, l3_Novamessage);
 				}
+				nova_standard_network_NovaClientSocket_Novaclose(l1_Novasocket, exceptionData);
 		}
-		nova_standard_io_NovaConsole_static_NovawaitForEnter(0, exceptionData);
+		else
+		{
+				nova_standard_io_NovaConsole_static_Nova0_writeLine(0, exceptionData, nova_standard_NovaString_Nova1_construct(0, exceptionData, "Failed to connect"));
+				nova_standard_io_NovaConsole_static_NovawaitForEnter(0, exceptionData);
+		}
 }
 
 void example_network_NovaClientDemo_Novathis(example_network_NovaClientDemo* this, nova_standard_exception_NovaExceptionData* exceptionData)
@@ -87,8 +101,6 @@ int main(int argc, char** argvs)
 		nova_standard_exception_NovaExceptionData* exceptionData = 0;
 		srand(currentTimeMillis());
 		nova_null = nova_standard_primitive_NovaNull_Nova0_construct(0, exceptionData);
-		nova_standard_gc_NovaGC_static_Novainit(0, exceptionData);
-		
 		nova_standard_NovaStringNova_init_static(exceptionData);
 		nova_standard_NovaMathNova_init_static(exceptionData);
 		nova_standard_NovaObjectNova_init_static(exceptionData);
@@ -122,7 +134,6 @@ int main(int argc, char** argvs)
 		nova_standard_primitive_number_NovaFloatNova_init_static(exceptionData);
 		nova_standard_primitive_number_NovaDoubleNova_init_static(exceptionData);
 		nova_standard_primitive_number_NovaNumberNova_init_static(exceptionData);
-		nova_standard_gc_NovaGCNova_init_static(exceptionData);
 		nova_standard_time_NovaTimeNova_init_static(exceptionData);
 		nova_standard_time_NovaDateNova_init_static(exceptionData);
 		nova_standard_thread_NovaThreadNova_init_static(exceptionData);
@@ -150,6 +161,7 @@ int main(int argc, char** argvs)
 		nova_standard_datastruct_NovaEmptyStackExceptionNova_init_static(exceptionData);
 		nova_standard_datastruct_NovaHashMapNova_init_static(exceptionData);
 		nova_standard_datastruct_NovaBoundsNova_init_static(exceptionData);
+		nova_standard_security_NovaMD5Nova_init_static(exceptionData);
 		example_network_NovaConnectionThreadNova_init_static(exceptionData);
 		example_network_NovaClientDemoNova_init_static(exceptionData);
 		
@@ -179,7 +191,6 @@ int main(int argc, char** argvs)
 		}
 		END_TRY;
 		NOVA_FREE(args);
-		GC_gcollect();
 		
 		return 0;
 }

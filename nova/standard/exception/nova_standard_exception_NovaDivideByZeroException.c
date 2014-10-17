@@ -18,11 +18,11 @@ nova_standard_exception_NovaDivideByZeroException* nova_standard_exception_NovaD
 {
 	CCLASS_NEW(nova_standard_exception_NovaDivideByZeroException, this,);
 	this->vtable = &nova_VTable_nova_standard_exception_NovaDivideByZeroException_val;
-	nova_standard_NovaObject_Novasuper((nova_standard_NovaObject*)this, 0);
-	nova_standard_exception_NovaException_Novasuper((nova_standard_exception_NovaException*)this, 0);
+	nova_standard_NovaObject_Novasuper((nova_standard_NovaObject*)this, exceptionData);
+	nova_standard_exception_NovaException_Novasuper((nova_standard_exception_NovaException*)this, exceptionData);
 	nova_standard_NovaObject_Novathis((nova_standard_NovaObject*)(this), exceptionData);
 	nova_standard_exception_NovaException_Novathis((nova_standard_exception_NovaException*)(this), exceptionData);
-	nova_standard_exception_NovaDivideByZeroException_Novasuper(this, 0);
+	nova_standard_exception_NovaDivideByZeroException_Novasuper(this, exceptionData);
 	
 	{
 		nova_standard_exception_NovaDivideByZeroException_Novathis(this, exceptionData);

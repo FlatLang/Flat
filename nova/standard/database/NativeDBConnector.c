@@ -1,95 +1,86 @@
 #include <precompiled.h>
 #include "NativeDBConnector.h"
 
-MYSQL mysql;
-
-MYSQL_RES* result;
-
-char inited = 0;
-
-void nova_db_init()
+MYSQL* nova_db_init()
 {
-	if (inited)
-	{
-		return;
-	}
+	MYSQL* mysql = NOVA_MALLOC(sizeof(MYSQL));
+	
+	mysql_init(mysql);
 
-	mysql_init(&mysql);
-
-	inited = 1;
+	return mysql;
 }
 
-void nova_db_connect1(char* host, char* user, char* password)
+MYSQL* nova_db_connect1(char* host, char* user, char* password)
 {
-	nova_db_connect2(host, user, password, 0);
+	return nova_db_connect2(host, user, password, 0);
 }
 
-void nova_db_connect2(char* host, char* user, char* password, char* database)
+MYSQL* nova_db_connect2(char* host, char* user, char* password, char* database)
 {
-	nova_db_connect3(host, user, password, database, 0, NULL, 0);
+	return nova_db_connect3(host, user, password, database, 0, NULL, 0);
 }
 
-void nova_db_connect3(char* host, char* user, char* password, char* database, int port, char* unix_socket, unsigned long/*Nova int*/ client_flag)
+MYSQL* nova_db_connect3(char* host, char* user, char* password, char* database, int port, char* unix_socket, unsigned long/*Nova int*/ client_flag)
 {
-	nova_db_init();
+	MYSQL* mysql = nova_db_init();
 
-	mysql_real_connect(&mysql, host, user, password, database, port, unix_socket, client_flag);
+	mysql_real_connect(mysql, host, user, password, database, port, unix_socket, client_flag);
+	
+	return mysql;
 }
 
-void nova_db_close()
+void nova_db_close(MYSQL* mysql)
 {
-	mysql_close(&mysql);
+	mysql_close(mysql);
 }
 
-char* nova_db_error()
+char* nova_db_error(MYSQL* mysql)
 {
-	return (char*)mysql_error(&mysql);
+	return (char*)mysql_error(mysql);
 }
 
-void nova_db_select_db(char* database)
+void nova_db_select_db(MYSQL* mysql, char* database)
 {
-	mysql_select_db(&mysql, database);
+	mysql_select_db(mysql, database);
 }
 
-long nova_num_rows()
+long nova_num_rows(MYSQL* mysql)
 {
-	return (long)mysql_affected_rows(&mysql);
+	return (long)mysql_affected_rows(mysql);
 }
 
-long nova_num_cols()
+long nova_num_cols(MYSQL_RES* result)
 {
 	return (long)mysql_num_fields(result);
 }
 
-void nova_exec_query(char* command)
+MYSQL_RES* nova_exec_query(MYSQL* mysql, char* command)
 {
-	if (mysql_query(&mysql, command))
+	if (mysql_query(mysql, command))
 	{
-		printf("MySQL query error: %s\n", mysql_error(&mysql));
-
-		exit(1);
+		return 0;
 	}
 
-	result = mysql_store_result(&mysql);
+	return mysql_store_result(mysql);
 }
 
-char** nova_getRow()
+char** nova_getRow(MYSQL_RES* result)
 {
 	return mysql_fetch_row(result);
 }
 
-char*** nova_get_results()
+char*** nova_get_results(MYSQL* mysql, MYSQL_RES* result)
 {
 	if (result)
 	{
-		long numRows = nova_num_rows();
-		long numCols = nova_num_cols();
+		long numRows = nova_num_rows(mysql);
+		long numCols = nova_num_cols(result);
 
 		long    id   = 0;
 		char*** rows = malloc(sizeof(char[numRows][numCols]));
 		char**  row;
 
-		while ((row = nova_getRow()))
+		while ((row = nova_getRow(result)))
 		{
 			rows[id++] = row;
 		}
@@ -102,7 +93,7 @@ char*** nova_get_results()
 	return 0;
 }
 
-void nova_user_select(char* username, char* password, char* database)
+void nova_user_select(MYSQL* mysql, char* username, char* password, char* database)
 {
-	mysql_change_user(&mysql, username, password, database);
+	mysql_change_user(mysql, username, password, database);
 }

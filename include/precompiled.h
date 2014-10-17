@@ -30,7 +30,7 @@
 #	define THREAD_LOCAL_ALLOC
 #	ifdef _WIN32
 #		define GC_THREADS
-#	elif DEFINED(__APPLE__, __linux__)
+#	elif defined(__APPLE__) || defined( __linux__)
 #		define GC_PTHREADS
 #	endif
 #	include <gc.h>

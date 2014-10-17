@@ -8,7 +8,7 @@ void setMaxOpenFiles(int num)
 		getrlimit(RLIMIT_NOFILE, &rlp);
 		rlp.rlim_cur = num;
 		setrlimit(RLIMIT_NOFILE, &rlp);
-	#else
+	#elif defined(_WIN32)
 		_setmaxstdio(num);
 	#endif
 }
@@ -21,7 +21,9 @@ int getMaxOpenFiles()
 		getrlimit(RLIMIT_NOFILE, &rlp);
 		
 		return rlp.rlim_max;
-	#else
+	#elif defined(_WIN32)
 		return _getmaxstdio();
 	#endif
+	
+	return 100;
 }

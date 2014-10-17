@@ -24,9 +24,9 @@ nova_standard_io_NovaFile* nova_standard_io_NovaFile_Nova1_construct(nova_standa
 {
 	CCLASS_NEW(nova_standard_io_NovaFile, this);
 	this->vtable = &nova_VTable_nova_standard_io_NovaFile_val;
-	nova_standard_NovaObject_Novasuper((nova_standard_NovaObject*)this, 0);
+	nova_standard_NovaObject_Novasuper((nova_standard_NovaObject*)this, exceptionData);
 	nova_standard_NovaObject_Novathis((nova_standard_NovaObject*)(this), exceptionData);
-	nova_standard_io_NovaFile_Novasuper(this, 0);
+	nova_standard_io_NovaFile_Novasuper(this, exceptionData);
 	
 	{
 		nova_standard_io_NovaFile_Nova0_this(this, exceptionData, l0_Novalocation);
@@ -39,9 +39,9 @@ nova_standard_io_NovaFile* nova_standard_io_NovaFile_Nova2_construct(nova_standa
 {
 	CCLASS_NEW(nova_standard_io_NovaFile, this);
 	this->vtable = &nova_VTable_nova_standard_io_NovaFile_val;
-	nova_standard_NovaObject_Novasuper((nova_standard_NovaObject*)this, 0);
+	nova_standard_NovaObject_Novasuper((nova_standard_NovaObject*)this, exceptionData);
 	nova_standard_NovaObject_Novathis((nova_standard_NovaObject*)(this), exceptionData);
-	nova_standard_io_NovaFile_Novasuper(this, 0);
+	nova_standard_io_NovaFile_Novasuper(this, exceptionData);
 	
 	{
 		nova_standard_io_NovaFile_Nova1_this(this, exceptionData, l0_Novafp);
@@ -237,6 +237,6 @@ void nova_standard_io_NovaFile_static_NovasetMaxOpenFiles(nova_standard_io_NovaF
 
 void nova_standard_io_NovaFile_Novasuper(nova_standard_io_NovaFile* this, nova_standard_exception_NovaExceptionData* exceptionData)
 {
-	this->prv->nova_standard_io_NovaFile_Novafp = (FILE*)nova_null;
+	this->prv->nova_standard_io_NovaFile_Novafp = 0;
 	this->prv->nova_standard_io_NovaFile_Novalocation = (nova_standard_NovaString*)nova_null;
 }

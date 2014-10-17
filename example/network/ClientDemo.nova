@@ -10,8 +10,11 @@ public class ClientDemo
 	{
 		ClientSocket socket = new ClientSocket()
 		
-		Console.writeLine("Attempting to connect to localhost:25560")
-		Bool connected = socket.connect("10.0.53.118", 25560)
+		String ip = "127.0.0.1"
+		Int port = 5675
+		
+		Console.writeLine("Attempting to connect to " + ip + ":" + port)
+		Bool connected = socket.connect(ip, port)
 		
 		if (connected)
 		{
@@ -21,16 +24,27 @@ public class ClientDemo
 			
 			Console.writeLine("Connected!")
 			
-			while (true)
+			while (socket.connection.connected)
 			{
 				String message = Console.readLine()
 				
+				if (message.equals("q"))
+				{
+					socket.close()
+					
+					break
+				}
+				
 				socket.connection.out.write(message)
-				
-				
 			}
+			
+			socket.close()
 		}
-		
-		Console.waitForEnter()
+		else
+		{
+			Console.writeLine("Failed to connect")
+			
+			Console.waitForEnter()
+		}
 	}
 }

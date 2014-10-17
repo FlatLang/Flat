@@ -18,9 +18,9 @@ nova_standard_database_NovaResultSet* nova_standard_database_NovaResultSet_Novac
 {
 	CCLASS_NEW(nova_standard_database_NovaResultSet, this,);
 	this->vtable = &nova_VTable_nova_standard_database_NovaResultSet_val;
-	nova_standard_NovaObject_Novasuper((nova_standard_NovaObject*)this, 0);
+	nova_standard_NovaObject_Novasuper((nova_standard_NovaObject*)this, exceptionData);
 	nova_standard_NovaObject_Novathis((nova_standard_NovaObject*)(this), exceptionData);
-	nova_standard_database_NovaResultSet_Novasuper(this, 0);
+	nova_standard_database_NovaResultSet_Novasuper(this, exceptionData);
 	
 	{
 		nova_standard_database_NovaResultSet_Novathis(this, exceptionData, l0_Novarows, l0_NovanumRows, l0_NovanumCols);

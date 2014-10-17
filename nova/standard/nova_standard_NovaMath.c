@@ -20,9 +20,9 @@ nova_standard_NovaMath* nova_standard_NovaMath_Novaconstruct(nova_standard_NovaM
 {
 	CCLASS_NEW(nova_standard_NovaMath, this,);
 	this->vtable = &nova_VTable_nova_standard_NovaMath_val;
-	nova_standard_NovaObject_Novasuper((nova_standard_NovaObject*)this, 0);
+	nova_standard_NovaObject_Novasuper((nova_standard_NovaObject*)this, exceptionData);
 	nova_standard_NovaObject_Novathis((nova_standard_NovaObject*)(this), exceptionData);
-	nova_standard_NovaMath_Novasuper(this, 0);
+	nova_standard_NovaMath_Novasuper(this, exceptionData);
 	
 	{
 		nova_standard_NovaMath_Novathis(this, exceptionData);

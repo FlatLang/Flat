@@ -27,11 +27,11 @@ nova_standard_io_NovaStreamReader* nova_standard_io_NovaStreamReader_Novaconstru
 {
 	CCLASS_NEW(nova_standard_io_NovaStreamReader, this);
 	this->vtable = &nova_VTable_nova_standard_io_NovaStreamReader_val;
-	nova_standard_NovaObject_Novasuper((nova_standard_NovaObject*)this, 0);
-	nova_standard_io_NovaInputStream_Novasuper((nova_standard_io_NovaInputStream*)this, 0);
+	nova_standard_NovaObject_Novasuper((nova_standard_NovaObject*)this, exceptionData);
+	nova_standard_io_NovaInputStream_Novasuper((nova_standard_io_NovaInputStream*)this, exceptionData);
 	nova_standard_NovaObject_Novathis((nova_standard_NovaObject*)(this), exceptionData);
 	nova_standard_io_NovaInputStream_Novathis((nova_standard_io_NovaInputStream*)(this), exceptionData);
-	nova_standard_io_NovaStreamReader_Novasuper(this, 0);
+	nova_standard_io_NovaStreamReader_Novasuper(this, exceptionData);
 	
 	{
 		nova_standard_io_NovaStreamReader_Novathis(this, exceptionData, l0_Novafile);

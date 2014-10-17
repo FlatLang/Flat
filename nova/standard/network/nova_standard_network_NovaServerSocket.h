@@ -46,6 +46,7 @@ CCLASS_CLASS
 	nova_VTable_nova_standard_network_NovaServerSocket* vtable;
 	nova_standard_NovaString* nova_standard_network_NovaSocket_Novaip;
 	int nova_standard_network_NovaSocket_Novaport;
+	char nova_standard_network_NovaServerSocket_Novaopen;
 	nova_standard_datastruct_NovaArrayList* nova_standard_network_NovaServerSocket_Novarequests;
 	struct Private* prv;
 )

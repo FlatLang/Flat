@@ -19,11 +19,11 @@ nova_standard_primitive_number_NovaNumber* nova_standard_primitive_number_NovaNu
 {
 	CCLASS_NEW(nova_standard_primitive_number_NovaNumber, this,);
 	this->vtable = &nova_VTable_nova_standard_primitive_number_NovaNumber_val;
-	nova_standard_NovaObject_Novasuper((nova_standard_NovaObject*)this, 0);
-	nova_standard_primitive_NovaPrimitive_Novasuper((nova_standard_primitive_NovaPrimitive*)this, 0);
+	nova_standard_NovaObject_Novasuper((nova_standard_NovaObject*)this, exceptionData);
+	nova_standard_primitive_NovaPrimitive_Novasuper((nova_standard_primitive_NovaPrimitive*)this, exceptionData);
 	nova_standard_NovaObject_Novathis((nova_standard_NovaObject*)(this), exceptionData);
 	nova_standard_primitive_NovaPrimitive_Novathis((nova_standard_primitive_NovaPrimitive*)(this), exceptionData);
-	nova_standard_primitive_number_NovaNumber_Novasuper(this, 0);
+	nova_standard_primitive_number_NovaNumber_Novasuper(this, exceptionData);
 	
 	{
 		nova_standard_primitive_number_NovaNumber_Novathis(this, exceptionData);
