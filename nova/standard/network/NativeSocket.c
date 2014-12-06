@@ -1,5 +1,7 @@
 #include "NativeSocket.h"
 
+int bufSize = 128;
+
 int numDigits(int number)
 {
 	int size;
@@ -21,7 +23,7 @@ char nova_socket_send(SOCKET_ID_TYPE sendTo, char* message)
 
 	len = strlen(message);
 
-	if (len >= 128)
+	//if (len >= bufSize)
 	{
 		char* new;
 		int digits;
@@ -48,7 +50,6 @@ char nova_socket_send(SOCKET_ID_TYPE sendTo, char* message)
 	
 	if (result < 0)
 #endif
-
 	{
 		//printf("Failed to send data... %d\n", WSAGetLastError());
 
@@ -73,16 +74,16 @@ char* nova_socket_receive(SOCKET_ID_TYPE socket)
 
 	do
 	{
-		messageLength += 128;
+		messageLength += bufSize;
 
 		message = NOVA_REALLOC(message, sizeof(char) * messageLength);
 
 #ifdef _WIN32
-		length = recv(socket, &message[messageLength - 128 - 1], 128, 0);
+		length = recv(socket, &message[messageLength - bufSize - 1], bufSize, 0);
 
 		if (length == SOCKET_ERROR)
 #else
-		length = read(socket, &message[messageLength - 128 - 1], 128);
+		length = read(socket, &message[messageLength - bufSize - 1], bufSize);
 		
 		if (length <= 0)
 #endif
@@ -90,7 +91,7 @@ char* nova_socket_receive(SOCKET_ID_TYPE socket)
 			return 0;
 		}
 
-		if (count++ == 0 && length >= 128)
+		if (count++ == 0)// && length >= bufSize)
 		{
 //			if (message[0] == 'c')
 //			{
@@ -104,14 +105,14 @@ char* nova_socket_receive(SOCKET_ID_TYPE socket)
 			for (offset = 1; message[offset - 1] != ' '; offset++);
 		}
 		
-		/*char buffer[129];
+		/*char buffer[bufSize + 1];
 		
 #ifdef _WIN32
-		length = recv(socket, buffer, 128, 0);
+		length = recv(socket, buffer, bufSize, 0);
 
 		if (length == SOCKET_ERROR)
 #else
-		length = read(socket, buffer, 128);
+		length = read(socket, buffer, bufSize);
 		
 		if (length <= 0)
 #endif
@@ -145,9 +146,9 @@ char* nova_socket_receive(SOCKET_ID_TYPE socket)
 			strcat(message, buffer);
 		}*/
 	}
-	while (length >= 128 && messageLength - offset - 1 != total);
+	while (length >= bufSize && messageLength - offset - 1 != total);
 
-	size = messageLength - (128 - length);
+	size = messageLength - (bufSize - length);
 	
 	message[size - 1] = '\0';//strlen(message)] = '\0';
 	

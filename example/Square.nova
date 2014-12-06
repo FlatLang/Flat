@@ -1,0 +1,21 @@
+package "example"
+
+public class Square implements Polygon
+{
+	public Int sideLength
+	
+	public construct(Int sideLength)
+	{
+		this.sideLength = sideLength
+	}
+	
+	public numberSides() -> Int
+	{
+		return 4
+	}
+	
+	public calculateArea() -> Double
+	{
+		return sideLength * sideLength
+	}
+}

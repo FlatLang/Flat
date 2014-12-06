@@ -13,7 +13,7 @@ public class BankClient
 		String[] ips  = [ "192.168.1.139", "192.168.1.101", "10.0.53.54", "127.0.0.1" ]
 		Int      port = 5675
 		
-		for (Int i = 0; i < 3; i++)
+		for (Int i = 0; i < 4; i++)
 		{
 			String ip = ips[i]
 			
@@ -50,8 +50,6 @@ public class BankClient
 				
 				while (true)
 				{
-		//			Console.write(socket.connection.in.readString())
-					
 					input = Console.readLine()
 					
 					if (!socket.connection.connected)

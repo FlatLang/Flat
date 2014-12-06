@@ -1,0 +1,11 @@
+package "nova/standard/math/calculus"
+
+import "nova/standard/math/NumericStatement"
+
+public class Calculus
+{
+	public static NumericStatement derivative(NumericStatement statement)
+	{
+		
+	}
+}

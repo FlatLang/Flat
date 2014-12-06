@@ -10,7 +10,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Apr 2, 2014 at 8:49:52 PM
- * @version	v0.2.35 Oct 5, 2014 at 11:22:42 PM
+ * @version	v0.2.38 Dec 6, 2014 at 5:19:17 PM
  */
 public class ImportList extends List
 {
@@ -54,6 +54,18 @@ public class ImportList extends List
 	 */
 	public Import getImport(String importLocation, boolean absoluteLocation)
 	{
+		return getImport(importLocation, true, true);
+	}
+	
+	/**
+	 * Get the Import node with the given import location, if it exists.
+	 * 
+	 * @param importLocation The location of the import.
+	 * @return The Import with the specified import location, if it
+	 * 		exists.
+	 */
+	public Import getImport(String importLocation, boolean absoluteLocation, boolean aliased)
+	{
 		if (importLocation == null)
 		{
 			return null;
@@ -63,7 +75,7 @@ public class ImportList extends List
 		{
 			Import child = (Import)getChild(i);
 			
-			String location = child.getLocationNode().getName();
+			String location = child.getClassLocation(aliased);
 			
 			if (!absoluteLocation)
 			{
@@ -80,8 +92,13 @@ public class ImportList extends List
 		
 		return null;
 	}
-	
+
 	public String getAbsoluteClassLocation(String className)
+	{
+		return getAbsoluteClassLocation(className, false);
+	}
+	
+	public String getAbsoluteClassLocation(String className, boolean aliased)
 	{
 		if (SyntaxUtils.isAbsoluteClassLocation(className))
 		{
@@ -95,14 +112,14 @@ public class ImportList extends List
 			return clazz.getClassLocation();
 		}
 		
-		Import i = getImport(className, false);
+		Import i = getImport(className, false, true);
 		
 		if (i == null)
 		{
 			return null;
 		}
 		
-		return i.getLocationNode().getName();
+		return i.getClassLocation(aliased);
 	}
 	
 	/**
@@ -116,7 +133,7 @@ public class ImportList extends List
 		{
 			Import child = (Import)getChild(i);
 			
-			if (child.isExternal() && child.getLocationNode().getName().equals(importLocation))
+			if (child.isExternal() && child.getClassLocation().equals(importLocation))
 			{
 				return true;
 			}

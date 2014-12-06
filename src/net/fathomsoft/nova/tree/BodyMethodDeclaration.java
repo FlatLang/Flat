@@ -12,7 +12,7 @@ import net.fathomsoft.nova.util.Location;
  * 
  * @author	Braden Steffaniak
  * @since	v0.2.21 Jul 30, 2014 at 1:45:00 PM
- * @version	v0.2.36 Oct 13, 2014 at 12:16:42 AM
+ * @version	v0.2.38 Dec 6, 2014 at 5:19:17 PM
  */
 public class BodyMethodDeclaration extends NovaMethodDeclaration
 {
@@ -65,17 +65,12 @@ public class BodyMethodDeclaration extends NovaMethodDeclaration
 	@Override
 	public StringBuilder generateCHeader(StringBuilder builder)
 	{
-		Nova.debuggingBreakpoint(getName().equals("shift"));
 		if (isVisibilityValid())
 		{
 			if (getVisibility() == InstanceDeclaration.PRIVATE)
 			{
 				return builder;
 			}
-		}
-		if (isConstant())
-		{
-			SyntaxMessage.error("Const methods are not supported in the C implementation yet", this);
 		}
 		
 		generateCSourcePrototype(builder).append('\n');

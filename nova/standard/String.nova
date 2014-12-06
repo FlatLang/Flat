@@ -2,59 +2,54 @@ package "nova/standard"
 
 public class String
 {
-	visible Int   length
+	visible Int    length
 	
-	Char[]        data
+	visible Char[] chars
 	
-	static Int    whitespaceLength = 4
-	static Char[] whitespace       = [ ' ', '\t', '\n', '\r' ]
+	static Int     whitespaceLength = 4
+	static Char[]  whitespace       = [ ' ', '\t', '\n', '\r' ]
 	
 	external void strcpy(char dst[], char src[])
 	external void strcat(char dst[], char src[])
-	external int strlen(char data[])
+	external int strlen(char chars[])
 	external void memcpy(char dst[], char* src[], int length)
 	
 	public construct(Char c)
 	{
-		Char data[] = new Char[2]
+		Char chars[] = new Char[2]
 		
-		data[0] = c
-		data[1] = '\0'
+		chars[0] = c
+		chars[1] = '\0'
 		
-		this(data)
+		this(chars)
 	}
 	
-	public construct(Char[] data)
+	public construct(Char[] chars)
 	{
-		this.data = data
+		this.chars = chars
 		
 		length = calculateLength()
 		
-//		if (data[length] != '\0')
+//		if (chars[length] != '\0')
 //		{
 //			char newData[] = new char[length + 1]
 //			
-//			strcpy(newData, data)
+//			strcpy(newData, chars)
 //			
 //			newData[length] = '\0'
 //			
-//			this.data = newData
+//			this.chars = newData
 //		}
 		
-		if (data[length] != '\0')
+		if (chars[length] != '\0')
 		{
-			data[length] = '\0'
+			chars[length] = '\0'
 		}
 	}
 	
 	calculateLength() -> Int
 	{
-		return strlen(data)
-	}
-	
-	public toCharArray() -> Char[]
-	{
-		return data
+		return strlen(chars)
 	}
 	
 	public concat(String str) -> String
@@ -65,8 +60,8 @@ public class String
 		
 		Char newData[] = new Char[size]
 		
-		strcpy(newData, data)
-		strcat(newData, str.toCharArray())
+		strcpy(newData, chars)
+		strcat(newData, str.chars)
 		
 		newData[size - 1] = '\0'
 		
@@ -84,7 +79,7 @@ public class String
 		
 		for (Int i = 0; i < length; i++)
 		{
-			if (data[i] != other.data[i])
+			if (chars[i] != other.chars[i])
 			{
 				return false
 			}
@@ -101,7 +96,7 @@ public class String
 					
 			for (Int j = 0; j < search.length && i + j < length && found; j++)
 			{
-				if (search.data[j] != data[i + j])
+				if (search.chars[j] != chars[i + j])
 				{
 					found = false
 				}
@@ -146,12 +141,12 @@ public class String
 		}
 		else if (end - start < 0)
 		{
-			throw new Exception()
+			throw new Exception("Substring bounds of [" + start + ", " + end + "] are invalid")
 		}
 		
 		Char buf[] = new Char[end - start + 1]
 		
-		memcpy(buf, data[start], end - start)
+		memcpy(buf, chars[start], end - start)
 		
 		buf[end - start] = '\0'
 		
@@ -170,7 +165,7 @@ public class String
 	
 	public charAt(Int index) -> Char
 	{
-		return data[index]
+		return chars[index]
 	}
 	
 	public trim() -> String
@@ -178,12 +173,12 @@ public class String
 		Int start = 0
 		Int end   = length - 1
 		
-		while (start < length && containsChar(data[start], whitespace, whitespaceLength))
+		while (start < length && containsChar(chars[start], whitespace, whitespaceLength))
 		{
 			start++
 		}
 		
-		while (end >= 0 && containsChar(data[end], whitespace, whitespaceLength))
+		while (end >= 0 && containsChar(chars[end], whitespace, whitespaceLength))
 		{
 			end--
 		}
@@ -230,7 +225,7 @@ public class String
 		
 		for (Int i = 0; i < length; i++)
 		{
-			newData[i] = transform(data[i])
+			newData[i] = transform(chars[i])
 		}
 		
 		return new String(newData)

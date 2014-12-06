@@ -33,10 +33,10 @@ typedef struct stabilitytest_NovaClientThread stabilitytest_NovaClientThread;
 
 typedef struct nova_VTable_stabilitytest_NovaClientThread
 {
-	long (*nova_standard_NovaObject_Novavirtual0_getHashCodeLong)(nova_standard_NovaObject*, nova_standard_exception_NovaExceptionData*);
-	nova_standard_NovaString* (*nova_standard_NovaObject_Novavirtual0_toString)(nova_standard_NovaObject*, nova_standard_exception_NovaExceptionData*);
-	char (*nova_standard_NovaObject_Novavirtual0_equals)(nova_standard_NovaObject*, nova_standard_exception_NovaExceptionData*, nova_standard_NovaObject*);
-	void (*stabilitytest_NovaClientThread_Novavirtual0_run)(stabilitytest_NovaClientThread*, nova_standard_exception_NovaExceptionData*);
+	long (*nova_standard_NovaObject_virtual0_NovagetHashCodeLong)(nova_standard_NovaObject*, nova_standard_exception_NovaExceptionData*);
+	nova_standard_NovaString* (*nova_standard_NovaObject_virtual0_NovatoString)(nova_standard_NovaObject*, nova_standard_exception_NovaExceptionData*);
+	char (*nova_standard_NovaObject_virtual0_Novaequals)(nova_standard_NovaObject*, nova_standard_exception_NovaExceptionData*, nova_standard_NovaObject*);
+	void (*stabilitytest_NovaClientThread_virtual0_Novarun)(stabilitytest_NovaClientThread*, nova_standard_exception_NovaExceptionData*);
 } nova_VTable_stabilitytest_NovaClientThread;
 
 CCLASS_CLASS
@@ -51,7 +51,7 @@ void stabilitytest_NovaClientThreadNova_init_static(nova_standard_exception_Nova
 stabilitytest_NovaClientThread* stabilitytest_NovaClientThread_Novaconstruct(stabilitytest_NovaClientThread* this, nova_standard_exception_NovaExceptionData* exceptionData, stabilitytest_NovaStabilityTest* l0_Novaprogram, int l0_Novaport);
 void nova_del_ClientThread(stabilitytest_NovaClientThread** this, nova_standard_exception_NovaExceptionData* exceptionData);
 void stabilitytest_NovaClientThread_Novathis(stabilitytest_NovaClientThread* this, nova_standard_exception_NovaExceptionData* exceptionData, stabilitytest_NovaStabilityTest* l0_Novaprogram, int l0_Novaport);
-void stabilitytest_NovaClientThread_Nova0_run(stabilitytest_NovaClientThread* this, nova_standard_exception_NovaExceptionData* exceptionData);
+void stabilitytest_NovaClientThread_0_Novarun(stabilitytest_NovaClientThread* this, nova_standard_exception_NovaExceptionData* exceptionData);
 void stabilitytest_NovaClientThread_Novasuper(stabilitytest_NovaClientThread* this, nova_standard_exception_NovaExceptionData* exceptionData);
 
 #endif

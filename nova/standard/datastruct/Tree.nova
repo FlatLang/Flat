@@ -1,0 +1,11 @@
+package "nova/standard/datastruct"
+
+public class Tree
+{
+	public Node root
+	
+	public preorder() -> String
+	{
+		return root.preorder()
+	}
+}

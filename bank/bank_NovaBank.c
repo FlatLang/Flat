@@ -491,7 +491,8 @@ int main(int argc, char** argvs)
 		}
 		END_TRY;
 		NOVA_FREE(args);
-		GC_gcollect();
+		nova_standard_gc_NovaGC_static_Novacollect(0, exceptionData);
+		
 		
 		return 0;
 }

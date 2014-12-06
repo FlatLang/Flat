@@ -23,7 +23,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:20:35 PM
- * @version	v0.2.36 Oct 13, 2014 at 12:16:42 AM
+ * @version	v0.2.38 Dec 6, 2014 at 5:19:17 PM
  */
 public class BinaryOperation extends IValue
 {
@@ -43,6 +43,12 @@ public class BinaryOperation extends IValue
 	public boolean isConjunction()
 	{
 		return getOperator().isConjunction();
+	}
+	
+	@Override
+	public String getGenericReturnType()
+	{
+		return getType();
 	}
 	
 	/**
@@ -325,8 +331,14 @@ public class BinaryOperation extends IValue
 			if (common == null)
 			{
 				ClassDeclaration integerClass = parent.getProgram().getClassDeclaration(Nova.getClassLocation("Int"));
+
+				Value returnedLeft  = lhn.getReturnedNode();
+				Value returnedRight = rhn.getReturnedNode();
 				
-				if (operatorType == null || !operatorType.equals("Bool") || !lhn.getReturnedNode().getTypeClass().isOfType(integerClass) && !rhn.getReturnedNode().getTypeClass().isOfType(integerClass))
+				ClassDeclaration leftClass  = returnedLeft.getTypeClass();
+				ClassDeclaration rightClass = returnedRight.getTypeClass();
+				
+				if (operatorType == null || !operatorType.equals("Bool") || rightClass != null && !rightClass.isOfType(integerClass) && !rightClass.isOfType(integerClass))
 				{
 					SyntaxMessage.error("Type '" + lhn.getType() + "' and '" + rhn.getType() + "' are not compatible", this);
 				}

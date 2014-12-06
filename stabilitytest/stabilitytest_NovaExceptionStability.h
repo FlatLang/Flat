@@ -31,9 +31,9 @@ typedef struct stabilitytest_NovaExceptionStability stabilitytest_NovaExceptionS
 
 typedef struct nova_VTable_stabilitytest_NovaExceptionStability
 {
-	long (*nova_standard_NovaObject_Novavirtual0_getHashCodeLong)(nova_standard_NovaObject*, nova_standard_exception_NovaExceptionData*);
-	nova_standard_NovaString* (*nova_standard_NovaObject_Novavirtual0_toString)(nova_standard_NovaObject*, nova_standard_exception_NovaExceptionData*);
-	char (*nova_standard_NovaObject_Novavirtual0_equals)(nova_standard_NovaObject*, nova_standard_exception_NovaExceptionData*, nova_standard_NovaObject*);
+	long (*nova_standard_NovaObject_virtual0_NovagetHashCodeLong)(nova_standard_NovaObject*, nova_standard_exception_NovaExceptionData*);
+	nova_standard_NovaString* (*nova_standard_NovaObject_virtual0_NovatoString)(nova_standard_NovaObject*, nova_standard_exception_NovaExceptionData*);
+	char (*nova_standard_NovaObject_virtual0_Novaequals)(nova_standard_NovaObject*, nova_standard_exception_NovaExceptionData*, nova_standard_NovaObject*);
 } nova_VTable_stabilitytest_NovaExceptionStability;
 
 CCLASS_CLASS
@@ -44,7 +44,7 @@ CCLASS_CLASS
 )
 
 void stabilitytest_NovaExceptionStabilityNova_init_static(nova_standard_exception_NovaExceptionData* exceptionData);
-stabilitytest_NovaExceptionStability* stabilitytest_NovaExceptionStability_Nova0_construct(stabilitytest_NovaExceptionStability* this, nova_standard_exception_NovaExceptionData* exceptionData);
+stabilitytest_NovaExceptionStability* stabilitytest_NovaExceptionStability_0_Novaconstruct(stabilitytest_NovaExceptionStability* this, nova_standard_exception_NovaExceptionData* exceptionData);
 void nova_del_ExceptionStability(stabilitytest_NovaExceptionStability** this, nova_standard_exception_NovaExceptionData* exceptionData);
 void stabilitytest_NovaExceptionStability_static_Novatest(stabilitytest_NovaExceptionStability* this, nova_standard_exception_NovaExceptionData* exceptionData, stabilitytest_NovaStabilityTest* l0_Novaprogram);
 void stabilitytest_NovaExceptionStability_Novathis(stabilitytest_NovaExceptionStability* this, nova_standard_exception_NovaExceptionData* exceptionData);

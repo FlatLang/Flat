@@ -6,6 +6,168 @@ public class SyntaxStability
 	{
 		checkLoops(program)
 		checkUntil(program)
+		checkSwitchStatements(program)
+		checkMultipleReturnValues(program)
+	}
+	
+	static checkSwitchStatements(StabilityTest program)
+	{
+		Console.write("Checking simple switch statement... ")
+		
+		Int  num    = 3
+		Bool worked = false
+		
+		switch (num)
+		{
+			case 1 program.fail("Switch accepted incorrect case")
+			case 2 program.fail("Switch accepted incorrect case")
+			case 3 worked = true
+			case 4 program.fail("Switch accepted incorrect case")
+			default program.fail("Switch failed to accept the correct case")
+		}
+		
+		if (!worked)
+		{
+			program.fail("FAIL")
+		}
+		
+		Console.writeLine("OK")
+		
+		Console.write("Checking simple switch statement with indentation... ")
+		
+		num    = 3
+		worked = false
+		
+		switch (num)
+			case 1
+				program.fail("Switch accepted incorrect case")
+			case 2	program.fail("Switch accepted incorrect case")
+			case 3
+				worked = true
+			case 4
+				program.fail("Switch accepted incorrect case")
+			default
+				program.fail("Switch failed to accept the correct case")
+		
+		if (!worked)
+		{
+			program.fail("FAIL")
+		}
+		
+		Console.writeLine("OK")
+		
+		Console.write("Checking simple switch statement with scopes... ")
+		
+		num    = 3
+		worked = false
+		
+		switch (num)
+		{
+			case 1
+			{
+				program.fail("Switch accepted incorrect case")
+			}
+			case 2
+			{
+				program.fail("Switch accepted incorrect case")
+			}
+			case 3
+			{
+				worked = true
+			}
+			case 4
+			{
+				program.fail("Switch accepted incorrect case")
+			}
+			default
+			{
+				program.fail("Switch failed to accept the correct case")
+			}
+		}
+		
+		if (!worked)
+		{
+			program.fail("FAIL")
+		}
+		
+		Console.writeLine("OK")
+		
+		Console.write("Checking switch statement with variable case values... ")
+		
+		Int val = 1
+		num     = 3
+		worked  = false
+		
+		switch (num)
+		{
+			case (val++)
+			{
+				program.fail("Switch accepted incorrect case")
+			}
+			case val++
+			{
+				program.fail("Switch accepted incorrect case")
+			}
+			case (val++)
+			{
+				worked = true
+			}
+			case val++
+			{
+				program.fail("Switch accepted incorrect case")
+			}
+			default
+			{
+				program.fail("Switch failed to accept the correct case")
+			}
+		}
+		
+		if (!worked)
+		{
+			program.fail("FAIL")
+		}
+		
+		Console.writeLine("OK")
+		
+		Console.write("Checking switch statement with variable case values and fallthrough... ")
+		
+		val    = 1
+		num    = 3
+		worked = false
+		
+		Bool worked2 = false
+		
+		switch (num++)
+		{
+			case val++
+			{
+				program.fail("Switch accepted incorrect case")
+			}
+			case val++
+			{
+				program.fail("Switch accepted incorrect case")
+			}
+			case val++
+			{
+				worked = true
+				fallthrough
+			}
+			case val++
+			{
+				worked2 = true
+			}
+			default
+			{
+				program.fail("Switch failed to accept the correct case")
+			}
+		}
+		
+		if (!worked || !worked2)
+		{
+			program.fail("FAIL")
+		}
+		
+		Console.writeLine("OK")
 	}
 	
 	static checkLoops(StabilityTest program)
@@ -123,5 +285,57 @@ public class SyntaxStability
 	static test3() -> Object
 	{
 		return new Object()
+	}
+	
+	static checkMultipleReturnValues(StabilityTest program)
+	{
+		Console.write("Checking methods with multiple return values... ")
+		
+		Int ret1 = 1
+		Int ret2 = 2
+		
+		ret1, ret2 = ret2()
+		
+		if (ret1 != 5 || ret2 != 2)
+		{
+			program.fail("Failed to pass over second return value")
+		}
+		
+		ret1 = 1
+		ret2 = 2
+		
+		ret1, ret2 = swap(ret1, ret2)
+		
+		if (ret1 != 2 || ret2 != 1)
+		{
+			program.fail("Failed to swap primitive values with multiple return values")
+		}
+		
+		String s1 = "hello"
+		String s2 = "world"
+		
+		s1, s2 = swap2(s1, s2)
+		
+		if (!s1.equals("world") || !s2.equals("hello"))
+		{
+			program.fail("Failed to swap String values with multiple return values")
+		}
+		
+		Console.writeLine("OK")
+	}
+	
+	static ret2() -> Int, Int
+	{
+		return 5
+	}
+	
+	static swap(Int a, Int b) -> Int, Int
+	{
+		return b, a
+	}
+	
+	static swap2(String a, String b) -> String, String
+	{
+		return b, a
 	}
 }

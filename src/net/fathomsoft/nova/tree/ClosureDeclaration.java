@@ -1,5 +1,6 @@
 package net.fathomsoft.nova.tree;
 
+import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.util.Bounds;
@@ -16,7 +17,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.2.14 Jul 5, 2014 at 9:02:42 PM
- * @version	v0.2.37 Oct 16, 2014 at 11:38:42 PM
+ * @version	v0.2.38 Dec 6, 2014 at 5:19:17 PM
  */
 public class ClosureDeclaration extends Parameter implements CallableMethod
 {
@@ -82,20 +83,6 @@ public class ClosureDeclaration extends Parameter implements CallableMethod
 		return true;
 	}
 	
-	/**
-	 * @see net.fathomsoft.nova.tree.variables.VariableDeclaration#setAttribute(java.lang.String, int)
-	 */
-	@Override
-	public boolean setAttribute(String attribute, int argNum)
-	{
-		if (super.setAttribute(attribute, argNum))
-		{
-			return !attribute.equals(getConstantText());
-		}
-		
-		return false;
-	}
-
 	/**
 	 * @see net.fathomsoft.nova.tree.Node#generateCHeader(StringBuilder)
 	 */
@@ -218,7 +205,7 @@ public class ClosureDeclaration extends Parameter implements CallableMethod
 	{
 		int firstParenthIndex = statement.indexOf('(');
 		
-		return firstParenthIndex >= 0 && !Regex.startsWith(statement, Patterns.EXTERNAL);
+		return firstParenthIndex >= 0 && !StringUtils.startsWithWord(statement, ExternalMethodDeclaration.PREFIX);
 	}
 	
 	/**

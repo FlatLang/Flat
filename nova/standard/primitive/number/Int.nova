@@ -1,10 +1,15 @@
 package "nova/standard/primitive/number"
 
-public class Int extends Number
+import "nova/standard/datastruct/Comparable"
+
+public class Int extends Number implements Comparable<Int>
 {
 	external int atoi(char str[])
 	
 	Int value
+	
+	visible static Int MAX_VALUE =  2147483647
+	visible static Int MIN_VALUE = -2147483648
 	
 	construct(Int value)
 	{
@@ -33,6 +38,11 @@ public class Int extends Number
 	
 	public static parseInt(String num) -> Int
 	{
-		return atoi(num.toCharArray())
+		return atoi(num.chars)
+	}
+	
+	public compareTo(Int other) -> Int
+	{
+		return value - other
 	}
 }

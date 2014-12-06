@@ -1,6 +1,8 @@
 package net.fathomsoft.nova.tree;
 
+import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.TestContext;
+import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.tree.exceptionhandling.Exception;
 import net.fathomsoft.nova.tree.variables.FieldDeclaration;
 import net.fathomsoft.nova.tree.variables.FieldList;
@@ -12,7 +14,7 @@ import net.fathomsoft.nova.util.Location;
  * 
  * @author	Braden Steffaniak
  * @since	v0.2.28 Aug 12, 2014 at 1:54:08 AM
- * @version	v0.2.37 Oct 16, 2014 at 11:38:42 PM
+ * @version	v0.2.38 Dec 6, 2014 at 5:19:17 PM
  */
 public class AssignmentMethod extends BodyMethodDeclaration
 {
@@ -28,6 +30,12 @@ public class AssignmentMethod extends BodyMethodDeclaration
 		NovaMethodDeclaration method = decodeStatement(temporaryParent, "public " + IDENTIFIER + "()", Location.INVALID, true);
 		
 		method.cloneTo(this);
+	}
+	
+	@Override
+	public boolean isUserMade()
+	{
+		return false;
 	}
 	
 	/**

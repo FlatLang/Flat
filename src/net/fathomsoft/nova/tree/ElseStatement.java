@@ -1,10 +1,12 @@
 package net.fathomsoft.nova.tree;
 
 import net.fathomsoft.nova.TestContext;
+import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.util.Bounds;
 import net.fathomsoft.nova.util.Location;
 import net.fathomsoft.nova.util.Patterns;
 import net.fathomsoft.nova.util.Regex;
+import net.fathomsoft.nova.util.StringUtils;
 
 /**
  * Node extension that represents the declaration of an "else
@@ -13,10 +15,12 @@ import net.fathomsoft.nova.util.Regex;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:57:13 PM
- * @version	v0.2.26 Aug 6, 2014 at 2:48:50 PM
+ * @version	v0.2.38 Dec 6, 2014 at 5:19:17 PM
  */
-public class ElseStatement extends Node
+public class ElseStatement extends ControlStatement
 {
+	public static final String IDENTIFIER = "else";
+	
 	/**
 	 * Instantiate a new ElseStatement and initialize the default
 	 * values.
@@ -26,28 +30,6 @@ public class ElseStatement extends Node
 	public ElseStatement(Node temporaryParent, Location locationIn)
 	{
 		super(temporaryParent, locationIn);
-		
-		Scope scope = new Scope(this, locationIn);
-		
-		setScope(scope);
-	}
-	
-	/**
-	 * @see net.fathomsoft.nova.tree.Node#pendingScopeFragment()
-	 */
-	@Override
-	public boolean pendingScopeFragment()
-	{
-		return getScope().getNumChildren() == 1;
-	}
-	
-	/**
-	 * @see net.fathomsoft.nova.tree.Node#getScope()
-	 */
-	@Override
-	public Scope getScope()
-	{
-		return (Scope)getChild(super.getNumDefaultChildren());
 	}
 	
 	/**
@@ -97,16 +79,21 @@ public class ElseStatement extends Node
 	 */
 	public static ElseStatement decodeStatement(Node parent, String statement, Location location, boolean require)
 	{
-		Bounds bounds = Regex.boundsOf(statement, Patterns.ELSE);
-		
-		if (bounds.getStart() == 0)
+		if (StringUtils.startsWithWord(statement, IDENTIFIER))
 		{
 			ElseStatement n = new ElseStatement(parent, location);
 			
-			String   ending = statement.substring(bounds.getEnd());
+			int end = StringUtils.findNextNonWhitespaceIndex(statement, IDENTIFIER.length() + 1);
+			
+			if (end < 0)
+			{
+				end = statement.length();
+			}
+			
+			String ending = statement.substring(end);
 			
 			Location newLocation = location.asNew();
-			newLocation.setBounds(location.getStart() + bounds.getEnd(), location.getStart() + statement.length());
+			newLocation.setBounds(location.getStart() + end, location.getStart() + statement.length());
 			
 			if (ending.length() > 0)
 			{
@@ -115,6 +102,12 @@ public class ElseStatement extends Node
 				if (contents != null)
 				{
 					n.addChild(contents, n);
+				}
+				else
+				{
+					SyntaxMessage.queryError("Unable to decode syntax '" + ending + "'", n, require);
+					
+					return null;
 				}
 			}
 			

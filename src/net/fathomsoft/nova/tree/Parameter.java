@@ -12,7 +12,7 @@ import net.fathomsoft.nova.util.Location;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:52:01 PM
- * @version	v0.2.35 Oct 5, 2014 at 11:22:42 PM
+ * @version	v0.2.38 Dec 6, 2014 at 5:19:17 PM
  */
 public class Parameter extends LocalDeclaration
 {
@@ -110,7 +110,34 @@ public class Parameter extends LocalDeclaration
 	 */
 	public static Parameter decodeStatement(Node parent, String statement, Location location, boolean require)
 	{
-		VariableDeclaration node = LocalDeclaration.decodeStatement(parent, statement, location, require);
+		return decodeStatement(parent, statement, location, require, true);
+	}
+	
+	/**
+	 * Decode the given statement into a Parameter instance, if
+	 * possible. If it is not possible, this method returns null.
+	 * A parameter node is essentially a variable declaration, but in
+	 * the context of a method declaration.<br>
+	 * <br>
+	 * Example inputs include:<br>
+	 * <ul>
+	 * 	<li>String name</li>
+	 * 	<li>int age</li>
+	 * 	<li>Node parent</li>
+	 * </ul>
+	 * 
+	 * @param parent The parent node of the statement.
+	 * @param statement The statement to try to decode into a
+	 * 		Parameter instance.
+	 * @param location The location of the statement in the source code.
+	 * @param require Whether or not to throw an error if anything goes wrong.
+	 * @param checkName Whether or not to check for naming conflicts.
+	 * @return The generated node, if it was possible to translated it
+	 * 		into a Parameter.
+	 */
+	public static Parameter decodeStatement(Node parent, String statement, Location location, boolean require, boolean checkName)
+	{
+		VariableDeclaration node = LocalDeclaration.decodeStatement(parent, statement, location, require, checkName);
 		
 		if (node == null)
 		{

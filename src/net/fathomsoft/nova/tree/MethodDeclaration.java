@@ -2,6 +2,7 @@ package net.fathomsoft.nova.tree;
 
 import java.util.regex.Pattern;
 
+import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.util.Bounds;
@@ -15,7 +16,7 @@ import net.fathomsoft.nova.util.StringUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:10:53 PM
- * @version	v0.2.30 Sep 2, 2014 at 7:58:20 PM
+ * @version	v0.2.38 Dec 6, 2014 at 5:19:17 PM
  */
 public abstract class MethodDeclaration extends InstanceDeclaration implements CallableMethod
 {
@@ -103,9 +104,9 @@ public abstract class MethodDeclaration extends InstanceDeclaration implements C
 	 * @return The ParameterList that represents the parameters of the
 	 * 		method.
 	 */
-	public ParameterList<Value> getParameterList()
+	public ParameterList<Parameter> getParameterList()
 	{
-		return (ParameterList<Value>)getChild(super.getNumDefaultChildren());
+		return (ParameterList<Parameter>)getChild(super.getNumDefaultChildren());
 	}
 	
 	/**
@@ -165,6 +166,37 @@ public abstract class MethodDeclaration extends InstanceDeclaration implements C
 		return builder;
 	}
 	
+	public StringBuilder generateCSourceNativeName(StringBuilder builder, boolean declaration)
+	{
+		if (declaration)
+		{
+			return generateCSourceName(builder, "native");
+		}
+		
+		return builder.append(getName());
+////		String location = getFileDeclaration().getPackage().getLocation().replace('/', '_');
+//		String prefix   = "";
+//		
+//		if (declaration)
+//		{
+//			prefix = "native";
+//			
+////			if (location.length() > 0)
+////			{
+////				prefix += '_';
+////			}
+//		}
+//		
+////		if (location.length() > 0)
+////		{
+////			location = location + '_';
+////		}
+//		
+//		builder.append(prefix).append(getName());
+//		
+//		return builder;
+	}
+	
 	/**
 	 * Generate the C prototype for the method header.<br>
 	 * <br>
@@ -205,7 +237,6 @@ public abstract class MethodDeclaration extends InstanceDeclaration implements C
 	public StringBuilder generateCSourceSignature(StringBuilder builder)
 	{
 		generateCModifiersSource(builder).append(' ');
-		
 		generateCSourceName(builder).append('(');
 		
 		getParameterList().generateCSource(builder);
@@ -232,10 +263,10 @@ public abstract class MethodDeclaration extends InstanceDeclaration implements C
 	 * statement String.
 	 * 
 	 * @param statement The String containing the method signature.
-	 * @param pattern The Pattern to remove from the statement.
+	 * @param remove The Bounds to remove from the statement.
 	 * @return The signature for the bodyless method to decode.
 	 */
-	public static String findMethodSignature(String statement, Pattern pattern)
+	public static String findMethodSignature(String statement, Bounds remove)
 	{
 		int paren = statement.indexOf('(');
 		
@@ -245,16 +276,15 @@ public abstract class MethodDeclaration extends InstanceDeclaration implements C
 		}
 		
 		String signature = NovaMethodDeclaration.findMethodSignature(statement);
-		Bounds bounds    = Regex.boundsOf(signature, pattern);
 		
-		if (!bounds.isValid())
+		if (!remove.isValid())
 		{
 			return null;
 		}
 		
-		paren -= bounds.length();
+		paren -= remove.length();
 		
-		return statement.substring(0, bounds.getStart()) + statement.substring(bounds.getEnd(), statement.length());
+		return remove.extractPreString(statement) + remove.extractPostString(statement);
 	}
 	
 	/**

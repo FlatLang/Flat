@@ -2,6 +2,7 @@ package net.fathomsoft.nova.tree;
 
 import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.TestContext;
+import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.error.SyntaxErrorException;
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.util.Bounds;
@@ -16,7 +17,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.2.25 Aug 3, 2014 at 1:52:00 PM
- * @version	v0.2.36 Oct 13, 2014 at 12:16:42 AM
+ * @version	v0.2.38 Dec 6, 2014 at 5:19:17 PM
  */
 public class Cast extends IValue
 {
@@ -72,7 +73,7 @@ public class Cast extends IValue
 	 * <br>
 	 * Example inputs include:<br>
 	 * <ul>
-	 * 	<li>(int)5.2</li>
+	 * 	<li>(Int)5.2</li>
 	 * 	<li>(Value)getChild(getNumChildren())</li>
 	 * 	<li>(String[])array</li>
 	 * </ul>
@@ -93,7 +94,7 @@ public class Cast extends IValue
 			Bounds bounds   = SyntaxUtils.findParenthesesBounds(n, statement);
 			String contents = StringUtils.removeSurroundingParenthesis(statement, bounds).extractString(statement);
 			String value    = statement.substring(bounds.getEnd()).trim();
-			Nova.debuggingBreakpoint(statement.equals("(Int)a.array[0]"));
+			
 			if (contents != null && n.decodeType(contents, require) && n.decodeValue(value, bounds, require))
 			{
 				return n;

@@ -7,7 +7,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.2.35 Oct 4, 2014 at 3:36:34 PM
- * @version	v0.2.36 Oct 13, 2014 at 12:16:42 AM
+ * @version	v0.2.38 Dec 6, 2014 at 5:19:17 PM
  */
 public interface AbstractValue
 {
@@ -54,7 +54,7 @@ public interface AbstractValue
 			}
 			else */if (!SyntaxUtils.isPrimitiveType(type) && !SyntaxUtils.isExternalPrimitiveType(type))
 			{
-				if (!n.isExternalType())//!n.isWithinExternalContext())// || !SyntaxUtils.isExternalPrimitiveType(type))
+				if (!n.isExternalType() && getDataType() != Value.DOUBLE_POINTER)//!n.isWithinExternalContext())// || !SyntaxUtils.isExternalPrimitiveType(type))
 				{
 					setDataType(Value.POINTER);
 				}
@@ -62,6 +62,11 @@ public interface AbstractValue
 		}
 		
 		return true;
+	}
+	
+	public default Value[] getTypes()
+	{
+		return new Value[] { ((Value)this).getReturnedNode() };//((Value)this).getProgram().getClassDeclaration(getType()) };
 	}
 	
 	/**

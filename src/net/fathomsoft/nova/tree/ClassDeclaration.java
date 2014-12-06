@@ -26,13 +26,15 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:15:51 PM
- * @version	v0.2.36 Oct 13, 2014 at 12:16:42 AM
+ * @version	v0.2.38 Dec 6, 2014 at 5:19:17 PM
  */
 public class ClassDeclaration extends InstanceDeclaration
 {
 	private String	extendedClass;
 	
 	private	String	implementedClasses[];
+	
+	public static final String IDENTIFIER = "class";
 	
 	/**
 	 * Instantiate and initialize default values for a class node.
@@ -47,19 +49,23 @@ public class ClassDeclaration extends InstanceDeclaration
 		
 		setType("class");
 		
-		FieldList             fields         = new FieldList(this, Location.INVALID);
-		MethodList            constructors   = new MethodList(this, Location.INVALID);
-		MethodList            destructors    = new MethodList(this, Location.INVALID);
-		MethodList            methods        = new MethodList(this, Location.INVALID);
-		ExternalTypeList      externalTypes  = new ExternalTypeList(this, Location.INVALID);
-		FieldList             externalFields = new FieldList(this, Location.INVALID);
-		TypeList<StaticBlock> staticBlocks   = new TypeList<StaticBlock>(this, Location.INVALID);
-		VTable                vtable         = new VTable(this, Location.INVALID);
+		FieldList             fields          = new FieldList(this, Location.INVALID);
+		MethodList            constructors    = new MethodList(this, Location.INVALID);
+		MethodList            destructors     = new MethodList(this, Location.INVALID);
+		MethodList            methods         = new MethodList(this, Location.INVALID);
+		MethodList            propertyMethods = new MethodList(this, Location.INVALID);
+		MethodList            hiddenMethods   = new MethodList(this, Location.INVALID);
+		ExternalTypeList      externalTypes   = new ExternalTypeList(this, Location.INVALID);
+		FieldList             externalFields  = new FieldList(this, Location.INVALID);
+		TypeList<StaticBlock> staticBlocks    = new TypeList<StaticBlock>(this, Location.INVALID);
+		VTable                vtable          = new VTable(this, Location.INVALID);
 		
 		addChild(fields, this);
 		addChild(constructors, this);
 		addChild(destructors, this);
 		addChild(methods, this);
+		addChild(propertyMethods, this);
+		addChild(hiddenMethods, this);
 		addChild(externalTypes, this);
 		addChild(externalFields, this);
 		addChild(staticBlocks, this);
@@ -72,7 +78,7 @@ public class ClassDeclaration extends InstanceDeclaration
 	@Override
 	public int getNumDefaultChildren()
 	{
-		return super.getNumDefaultChildren() + 8;
+		return super.getNumDefaultChildren() + 10;
 	}
 	
 	/**
@@ -108,6 +114,11 @@ public class ClassDeclaration extends InstanceDeclaration
 		return (MethodList)getChild(super.getNumDefaultChildren() + 2);
 	}
 	
+	public Destructor getDestructor()
+	{
+		return (Destructor)getDestructorList().getVisibleChild(0);
+	}
+	
 	/**
 	 * Get the MethodList instance that contains the list of methods
 	 * that this class node contains.
@@ -120,6 +131,28 @@ public class ClassDeclaration extends InstanceDeclaration
 	}
 	
 	/**
+	 * Get the MethodList instance that contains the list of methods
+	 * that this class node contains.
+	 * 
+	 * @return The MethodList for this class node.
+	 */
+	public MethodList getPropertyMethodList()
+	{
+		return (MethodList)getChild(super.getNumDefaultChildren() + 4);
+	}
+	
+	/**
+	 * Get the MethodList instance that contains the list of methods
+	 * that this class node contains.
+	 * 
+	 * @return The MethodList for this class node.
+	 */
+	public MethodList getHiddenMethodList()
+	{
+		return (MethodList)getChild(super.getNumDefaultChildren() + 5);
+	}
+	
+	/**
 	 * Get the ExternalTypeList instance that contains the list of
 	 * external types that this class node contains.
 	 * 
@@ -127,7 +160,7 @@ public class ClassDeclaration extends InstanceDeclaration
 	 */
 	public ExternalTypeList getExternalTypeListNode()
 	{
-		return (ExternalTypeList)getChild(super.getNumDefaultChildren() + 4);
+		return (ExternalTypeList)getChild(super.getNumDefaultChildren() + 6);
 	}
 	
 	/**
@@ -138,7 +171,7 @@ public class ClassDeclaration extends InstanceDeclaration
 	 */
 	public FieldList getExternalFieldsListNode()
 	{
-		return (FieldList)getChild(super.getNumDefaultChildren() + 5);
+		return (FieldList)getChild(super.getNumDefaultChildren() + 7);
 	}
 	
 	/**
@@ -149,7 +182,7 @@ public class ClassDeclaration extends InstanceDeclaration
 	 */
 	public AssignmentMethod getAssignmentMethodNode()
 	{
-		return (AssignmentMethod)getMethodList().getChild(getMethodList().getNumChildren() - 1);
+		return (AssignmentMethod)getHiddenMethodList().getChild(getHiddenMethodList().getNumChildren() - 1);
 	}
 	
 	public StaticBlock getStaticAssignmentBlock()
@@ -165,7 +198,7 @@ public class ClassDeclaration extends InstanceDeclaration
 	 */
 	public TypeList<StaticBlock> getStaticBlockList()
 	{
-		return (TypeList<StaticBlock>)getChild(super.getNumDefaultChildren() + 6);
+		return (TypeList<StaticBlock>)getChild(super.getNumDefaultChildren() + 8);
 	}
 	
 	/**
@@ -177,7 +210,7 @@ public class ClassDeclaration extends InstanceDeclaration
 	 */
 	public VTable getVTableNode()
 	{
-		return (VTable)getChild(super.getNumDefaultChildren() + 7);
+		return (VTable)getChild(super.getNumDefaultChildren() + 9);
 	}
 	
 	/**
@@ -219,13 +252,17 @@ public class ClassDeclaration extends InstanceDeclaration
 	 */
 	private void addVirtualMethods(ArrayList<NovaMethodDeclaration> methods, ClassDeclaration context)
 	{
-		if (getExtendedClassName() != null)
+		if (getExtendedClassLocation() != null)
 		{
 			getExtendedClass().addVirtualMethods(methods, this);
 		}
 		
-		MethodList list = getMethodList();
-		
+		addVirtualMethods(methods, getMethodList());
+		addVirtualMethods(methods, getPropertyMethodList());
+	}
+	
+	private void addVirtualMethods(ArrayList<NovaMethodDeclaration> methods, MethodList list)
+	{
 		for (int i = 0; i < list.getNumVisibleChildren(); i++)
 		{
 			MethodDeclaration m = (MethodDeclaration)list.getChild(i);
@@ -296,6 +333,40 @@ public class ClassDeclaration extends InstanceDeclaration
 	}
 	
 	/**
+	 * Get the Interfaces that this class node implements.<br>
+	 * <br>
+	 * For instance: "public class ClassName implements Interface1, Interface2"
+	 * The "Interface1" and "Interface2" are the names of the interfaces that the
+	 * "ClassName" class implements.<br>
+	 * 
+	 * @return The Interfaces instances that the class implements.
+	 */
+	public Interface[] getImplementedClasses()
+	{
+		Interface[] array = new Interface[implementedClasses.length];
+		
+		for (int i = 0; i < array.length; i++)
+		{
+			array[i] = (Interface)SyntaxUtils.getImportedClass(getFileDeclaration(), implementedClasses[i]);
+		}
+		
+		return array;
+	}
+	
+	public boolean implementsInterface(ClassDeclaration clazz)
+	{
+		for (Interface i : getImplementedClasses())
+		{
+			if (clazz == i)
+			{
+				return true;
+			}
+		}
+		
+		return false;
+	}
+	
+	/**
 	 * Check whether or not the specified ClassDeclaration extends the given
 	 * ClassDeclaration.
 	 * 
@@ -315,7 +386,7 @@ public class ClassDeclaration extends InstanceDeclaration
 		
 		while (clazz != null)
 		{
-			if (clazz == node)
+			if (clazz == node || clazz.implementsInterface(node))
 			{
 				return true;
 			}
@@ -331,6 +402,176 @@ public class ClassDeclaration extends InstanceDeclaration
 		return false;
 	}
 	
+	public boolean doesOverrideMethod(NovaMethodDeclaration method)
+	{
+		return getOverridingMethod(method) != null;
+	}
+	
+	public boolean doesOverrideMethod(NovaMethodDeclaration method, boolean checkAncestor)
+	{
+		return getOverridingMethod(method, checkAncestor) != null;
+	}
+	
+	public NovaMethodDeclaration getOverridingMethod(NovaMethodDeclaration method)
+	{
+		return getOverridingMethod(method, true);
+	}
+	
+	public NovaMethodDeclaration getOverridingMethod(NovaMethodDeclaration method, boolean checkAncestor)
+	{
+		for (NovaMethodDeclaration m : getMethods())
+		{
+			if (m.getOverriddenMethod() == method)
+			{
+				return m;
+			}
+		}
+		
+		if (checkAncestor && doesExtendClass())
+		{
+			return getExtendedClass().getOverridingMethod(method, checkAncestor);
+		}
+		
+		return null;
+	}
+	
+	public AbstractMethodDeclaration[] getAbstractMethods()
+	{
+		return getAbstractMethods(true, true);
+	}
+	
+	public AbstractMethodDeclaration[] getAbstractMethods(boolean checkInterfaces, boolean checkAncestor)
+	{
+		ArrayList<AbstractMethodDeclaration> methods = new ArrayList<AbstractMethodDeclaration>();
+		
+		addAbstractMethods(methods, checkInterfaces, checkAncestor);
+		
+		return methods.toArray(new AbstractMethodDeclaration[0]);
+	}
+	
+	private void addAbstractMethods(ArrayList<AbstractMethodDeclaration> methods, boolean checkInterfaces, boolean checkAncestor)
+	{
+		MethodList list = getMethodList();
+		
+		for (int i = 0; i < list.getNumVisibleChildren(); i++)
+		{
+			MethodDeclaration method = (MethodDeclaration)list.getChild(i);
+			
+			if (method instanceof AbstractMethodDeclaration)
+			{
+				methods.add((AbstractMethodDeclaration)method);
+			}
+		}
+		
+		if (checkInterfaces)
+		{
+			for (ClassDeclaration i : getImplementedClasses())
+			{
+				i.addAbstractMethods(methods, checkInterfaces, checkAncestor);
+			}
+		}
+		if (checkAncestor)
+		{
+			if (doesExtendClass())
+			{
+				getExtendedClass().addAbstractMethods(methods, checkInterfaces, checkAncestor);
+			}
+		}
+	}
+	
+	public BodyMethodDeclaration[] getBodyMethods()
+	{
+		return getBodyMethods(true, true);
+	}
+	
+	public BodyMethodDeclaration[] getBodyMethods(boolean checkInterfaces, boolean checkAncestor)
+	{
+		ArrayList<BodyMethodDeclaration> methods = new ArrayList<BodyMethodDeclaration>();
+		
+		addBodyMethods(methods, checkInterfaces, checkAncestor);
+		
+		return methods.toArray(new BodyMethodDeclaration[0]);
+	}
+	
+	private void addBodyMethods(ArrayList<BodyMethodDeclaration> methods, boolean checkInterfaces, boolean checkAncestor)
+	{
+		MethodList list = getMethodList();
+		
+		for (int i = 0; i < list.getNumVisibleChildren(); i++)
+		{
+			MethodDeclaration method = (MethodDeclaration)list.getChild(i);
+			
+			if (method instanceof BodyMethodDeclaration)
+			{
+				methods.add((BodyMethodDeclaration)method);
+			}
+		}
+		
+		if (checkInterfaces)
+		{
+			for (ClassDeclaration i : getImplementedClasses())
+			{
+				i.addBodyMethods(methods, checkInterfaces, checkAncestor);
+			}
+		}
+		if (checkAncestor)
+		{
+			if (doesExtendClass())
+			{
+				getExtendedClass().addBodyMethods(methods, checkInterfaces, checkAncestor);
+			}
+		}
+	}
+	
+	public NovaMethodDeclaration[] getMethods()
+	{
+		return getMethods(true, true);
+	}
+	
+	public NovaMethodDeclaration[] getMethods(boolean checkInterfaces, boolean checkAncestor)
+	{
+		ArrayList<NovaMethodDeclaration> methods = new ArrayList<NovaMethodDeclaration>();
+		
+		addMethods(methods, checkInterfaces, checkAncestor);
+		
+		return methods.toArray(new NovaMethodDeclaration[0]);
+	}
+	
+	private void addMethods(ArrayList<NovaMethodDeclaration> methods, boolean checkInterfaces, boolean checkAncestor)
+	{
+		MethodList list = getMethodList();
+		
+		for (int i = 0; i < list.getNumVisibleChildren(); i++)
+		{
+			MethodDeclaration method = (MethodDeclaration)list.getChild(i);
+			
+			if (method instanceof NovaMethodDeclaration)
+			{
+				methods.add((NovaMethodDeclaration)method);
+			}
+		}
+		
+		if (checkInterfaces)
+		{
+			for (ClassDeclaration i : getImplementedClasses())
+			{
+				i.addMethods(methods, checkInterfaces, checkAncestor);
+			}
+		}
+		if (checkAncestor)
+		{
+			if (doesExtendClass())
+			{
+				getExtendedClass().addMethods(methods, checkInterfaces, checkAncestor);
+			}
+		}
+	}
+	
+	public boolean doesExtendClass()
+	{
+		return getExtendedClassLocation() != null;
+	}
+	
 	/**
 	 * Get the class that this class node extends.<br>
 	 * <br>
@@ -344,20 +585,25 @@ public class ClassDeclaration extends InstanceDeclaration
 	 */
 	public ClassDeclaration getExtendedClass()
 	{
-		if (getExtendedClassName() == null)
+		if (getExtendedClassLocation() == null)
 		{
 			return null;
 		}
 		
-		return SyntaxUtils.getImportedClass(getFileDeclaration(), getExtendedClassName());
+		return SyntaxUtils.getImportedClass(getFileDeclaration(), getExtendedClassLocation());
+	}
+	
+	public String getExtendedClassName()
+	{
+		return SyntaxUtils.getClassName(getExtendedClassLocation());
 	}
 	
 	/**
-	 * Get the name of the class that this node extends.
+	 * Get the location of the class that this node extends.
 	 * 
-	 * @return The name of the class that this node extends.
+	 * @return The location of the class that this node extends.
 	 */
-	public String getExtendedClassName()
+	public String getExtendedClassLocation()
 	{
 		return extendedClass;
 	}
@@ -377,31 +623,6 @@ public class ClassDeclaration extends InstanceDeclaration
 	public void setExtendedClass(String extendedClass)
 	{
 		this.extendedClass = extendedClass;
-	}
-	
-	/**
-	 * Get the class that this class node extends.<br>
-	 * <br>
-	 * For instance: "public class ClassName extends SuperClass"
-	 * The "SuperClass" is a name of the class that the "ClassName" class
-	 * extends.<br>
-	 * <br>
-	 * A class node can only extend one class.
-	 * 
-	 * @return The ClassDeclaration instance of the class that is extended.
-	 */
-	public ClassDeclaration[] getImplementedClasses()
-	{
-		Program program = getProgram();
-		
-		ClassDeclaration classes[] = new ClassDeclaration[implementedClasses.length];
-		
-		for (int i = 0; i < classes.length; i++)
-		{
-			classes[i] = program.getClassDeclaration(implementedClasses[i]);
-		}
-		
-		return classes;
 	}
 	
 	/**
@@ -560,7 +781,7 @@ public class ClassDeclaration extends InstanceDeclaration
 		{
 			field = getExternalFieldsListNode().getField(fieldName);
 		
-			if (field == null && checkAncestor && getExtendedClassName() != null)
+			if (field == null && checkAncestor && getExtendedClassLocation() != null)
 			{
 				field = getExtendedClass().getField(fieldName);
 			}
@@ -722,11 +943,16 @@ public class ClassDeclaration extends InstanceDeclaration
 	 */
 	public MethodDeclaration[] getMethods(String methodName, SearchFilter filter)
 	{
+		if (methodName == null)
+		{
+			return new MethodDeclaration[0];
+		}
+		
 		ArrayList<MethodDeclaration> output = new ArrayList<MethodDeclaration>();
 		
 		if (methodName.equals(InitializationMethod.SUPER_IDENTIFIER))
 		{
-			if (filter.checkAncestor && getExtendedClassName() != null)
+			if (filter.checkAncestor && getExtendedClassLocation() != null)
 			{
 				addMethods(output, getExtendedClass().getMethods(InitializationMethod.IDENTIFIER));
 			}
@@ -735,6 +961,11 @@ public class ClassDeclaration extends InstanceDeclaration
 		}
 		
 		addMethods(output, getMethodList().getMethods(methodName, filter));
+		
+		if (filter.checkProperties)
+		{
+			addMethods(output, getPropertyMethodList().getMethods(methodName, filter));
+		}
 		
 		if (filter.checkConstructors && methodName.equals(getName()))
 		{
@@ -745,9 +976,14 @@ public class ClassDeclaration extends InstanceDeclaration
 			addMethods(output, getConstructorList().getMethods(methodName, filter));
 		}
 		
-		if (filter.checkAncestor && getExtendedClassName() != null)
+		if (filter.checkAncestor && getExtendedClassLocation() != null)
 		{
 			addMethods(output, getExtendedClass().getMethods(methodName));
+		}
+		
+		for (Interface inter : getImplementedClasses())
+		{
+			addMethods(output, inter.getMethods(methodName, filter));
 		}
 		
 		return output.toArray(new MethodDeclaration[0]);
@@ -891,6 +1127,14 @@ public class ClassDeclaration extends InstanceDeclaration
 			{
 				getDestructorList().addChild(child);
 			}
+			else if (child instanceof AssignmentMethod)
+			{
+				getHiddenMethodList().addChild(child);
+			}
+			else if (child instanceof PropertyMethod)
+			{
+				getPropertyMethodList().addChild(child);
+			}
 			else
 			{
 				getMethodList().addChild(child);
@@ -978,7 +1222,7 @@ public class ClassDeclaration extends InstanceDeclaration
 			return true;
 		}
 		
-		if (checkAncestor && getExtendedClassName() != null)
+		if (checkAncestor && getExtendedClassLocation() != null)
 		{
 			return getExtendedClass().containsStaticPrivateData();
 		}
@@ -1026,7 +1270,7 @@ public class ClassDeclaration extends InstanceDeclaration
 			return true;
 		}
 		
-		if (checkAncestor && getExtendedClassName() != null)
+		if (checkAncestor && getExtendedClassLocation() != null)
 		{
 			return getExtendedClass().containsNonStaticPrivateData();
 		}
@@ -1060,12 +1304,117 @@ public class ClassDeclaration extends InstanceDeclaration
 			return true;
 		}
 		
-		if (checkAncestor && getExtendedClassName() != null)
+		if (checkAncestor && getExtendedClassLocation() != null)
 		{
 			return getExtendedClass().containsNonStaticData();
 		}
 		
 		return false;
+	}
+	
+	public MethodDeclaration[] getVisibleNativeMethods()
+	{
+		ArrayList<MethodDeclaration> methods = new ArrayList<MethodDeclaration>();
+		
+		MethodList lists[] = new MethodList[] { getMethodList(), getConstructorList() };
+		
+		for (MethodList list : lists)
+		{
+			for (int i = 0; i < list.getNumVisibleChildren(); i++)
+			{
+				MethodDeclaration method = (MethodDeclaration)list.getVisibleChild(i);
+				
+				if (!method.isExternal() && !(method instanceof AssignmentMethod) &&
+						!(method instanceof InitializationMethod) &&
+						method.getVisibility() == PUBLIC)
+				{
+					methods.add(method);
+				}
+			}
+		}
+		
+		return methods.toArray(new MethodDeclaration[0]);
+	}
+	
+	public String getNativeLocation()
+	{
+		String location = getPackage().getLocation().replace('/', '_');
+		
+		if (location.length() > 0)
+		{
+			location += "_";
+		}
+		
+		location += getName();
+		
+		return location;
+	}
+	
+	public StringBuilder generateCHeaderNativeInterface(StringBuilder builder)
+	{
+		MethodDeclaration[] methods = getVisibleNativeMethods();
+		
+		if (methods.length <= 0)
+		{
+			return builder;
+		}
+
+		String name = generateCSourceName("native").toString();
+		
+		for (MethodDeclaration method : methods)
+		{
+			builder.append("typedef " + method.generateCType() + " (*");
+			
+			method.generateCSourceNativeName(builder, true).append(")(");
+			
+			method.getParameterList().generateCHeader(builder).append(");\n");
+		}
+		
+		builder.append("\ntypedef struct " + name + "\n");
+		builder.append("{\n");
+		
+		for (MethodDeclaration method : methods)
+		{
+			method.generateCSourceNativeName(builder, true).append(" ");
+			method.generateCSourceNativeName(builder, false).append(";\n");
+		}
+		
+		builder.append("} " + name + ";\n");
+		
+		return builder;
+	}
+	
+	public StringBuilder generateCSourceNativeInterface(StringBuilder builder)
+	{
+//		String name = generateCSourceName("native").toString();
+		
+		MethodDeclaration[] methods = getVisibleNativeMethods();
+		
+//		builder.append('\n');
+		
+//		builder.append("struct " + name + "\n");
+		builder.append("{\n");
+		
+		for (MethodDeclaration method : methods)
+		{
+			String value = "&" + method.generateCSourceName();
+			
+			if (method instanceof NovaMethodDeclaration)
+			{
+				NovaMethodDeclaration n = (NovaMethodDeclaration)method;
+				
+				if (n.isOverridden() && !(n instanceof Constructor))
+				{
+					value = "0";//getVTableNode().getName() + "." + n.generateCVirtualMethodName();
+				}
+			}
+			
+			builder.append(value + ",\n");
+		}
+		
+		builder.append("},\n");
+		
+		return builder;
 	}
 
 	/**
@@ -1109,11 +1458,10 @@ public class ClassDeclaration extends InstanceDeclaration
 		MethodList constructors = getConstructorList();
 		constructors.generateCHeader(builder);
 		
-		MethodList destructors = getDestructorList();
-		destructors.generateCHeader(builder);
-		
-		MethodList methods = getMethodList();
-		methods.generateCHeader(builder);
+		getDestructorList().generateCHeader(builder);
+		getMethodList().generateCHeader(builder);
+		getPropertyMethodList().generateCHeader(builder);
+		getHiddenMethodList().generateCHeader(builder);
 		
 		return builder;
 	}
@@ -1149,6 +1497,8 @@ public class ClassDeclaration extends InstanceDeclaration
 		getConstructorList().generateCSource(builder);
 		getDestructorList().generateCSource(builder);
 		getMethodList().generateCSource(builder);
+		getPropertyMethodList().generateCSource(builder);
+		getHiddenMethodList().generateCSource(builder);
 		
 		return builder;
 	}
@@ -1194,7 +1544,7 @@ public class ClassDeclaration extends InstanceDeclaration
 	 */
 	private StringBuilder generateCPrivateFieldsSource(StringBuilder builder)
 	{
-		if (getExtendedClassName() != null)
+		if (getExtendedClassLocation() != null)
 		{
 			getExtendedClass().generateCPrivateFieldsSource(builder);
 		}
@@ -1224,7 +1574,7 @@ public class ClassDeclaration extends InstanceDeclaration
 	public static ClassDeclaration decodeStatement(Node parent, String statement, Location location, boolean require)
 	{
 		// If contains 'class' in the statement.
-		if (Regex.indexOf(statement, Patterns.PRE_CLASS) >= 0)
+		if (StringUtils.containsWord(statement, IDENTIFIER))
 		{
 			ClassDeclaration n = new ClassDeclaration(parent, location);
 			
@@ -1245,7 +1595,7 @@ public class ClassDeclaration extends InstanceDeclaration
 			}
 			
 			// TODO: Check for the standard library version of Object.
-			if (n.getExtendedClassName() == null && !n.getClassLocation().equals(Nova.getClassLocation("Object")))
+			if (n.getExtendedClassLocation() == null && !n.getClassLocation().equals(Nova.getClassLocation("Object")))
 			{
 				n.setExtendedClass(Nova.getClassLocation("Object"));
 			}
@@ -1350,7 +1700,12 @@ public class ClassDeclaration extends InstanceDeclaration
 	@Override
 	public StringBuilder generateCSourceName(StringBuilder builder, String uniquePrefix)
 	{
-		return generateUniquePrefix(builder).append(Nova.LANGUAGE_NAME).append(getName());
+		if (uniquePrefix == null)
+		{
+			uniquePrefix = Nova.LANGUAGE_NAME;
+		}
+		
+		return generateUniquePrefix(builder).append(uniquePrefix).append("_").append(getName());
 	}
 	
 	/**
@@ -1362,17 +1717,8 @@ public class ClassDeclaration extends InstanceDeclaration
 	{
 		StringBuilder  builder = new StringBuilder();
 		
-		MethodList methods = getMethodList();
-		
-		for (int i = 0; i < methods.getNumChildren(); i++)
-		{
-			MethodDeclaration methodDeclaration = (MethodDeclaration)methods.getChild(i);
-			
-			if (methodDeclaration.getVisibility() == InstanceDeclaration.PRIVATE)
-			{
-				methodDeclaration.generateCSourcePrototype(builder).append('\n');
-			}
-		}
+		generatePrototypes(builder, getMethodList());
+		generatePrototypes(builder, getPropertyMethodList());
 		
 		if (builder.length() > 0)
 		{
@@ -1382,6 +1728,19 @@ public class ClassDeclaration extends InstanceDeclaration
 		return builder.toString();
 	}
 	
+	private void generatePrototypes(StringBuilder builder, MethodList methods)
+	{
+		for (int i = 0; i < methods.getNumChildren(); i++)
+		{
+			MethodDeclaration methodDeclaration = (MethodDeclaration)methods.getChild(i);
+			
+			if (methodDeclaration.getVisibility() == InstanceDeclaration.PRIVATE)
+			{
+				methodDeclaration.generateCSourcePrototype(builder).append('\n');
+			}
+		}
+	}
+	
 	/**
 	 * @see net.fathomsoft.nova.tree.Node#validate(int)
 	 */
@@ -1389,7 +1748,7 @@ public class ClassDeclaration extends InstanceDeclaration
 	{
 		ValidationResult result = super.validate(phase);
 		
-		if (result.errorOccurred)
+		if (result.skipValidation())
 		{
 			return result;
 		}
@@ -1416,9 +1775,9 @@ public class ClassDeclaration extends InstanceDeclaration
 				}
 			}
 			
-			if (getExtendedClassName() != null && getFileDeclaration().containsImport(getExtendedClassName()))
+			if (getExtendedClassLocation() != null && getFileDeclaration().containsImport(getExtendedClassLocation()))
 			{
-				getFileDeclaration().getImport(getExtendedClassName()).markUsed();
+				getFileDeclaration().getImport(getExtendedClassLocation()).markUsed();
 			}
 		}
 		else if (phase == SyntaxTree.PHASE_INSTANCE_DECLARATIONS)
@@ -1475,19 +1834,40 @@ public class ClassDeclaration extends InstanceDeclaration
 		
 		if (!containsDestructor())
 		{
-			Destructor defaultDestructor = new Destructor(this, Location.INVALID);
-			defaultDestructor.setName(getName());
-			defaultDestructor.setVisibility(FieldDeclaration.PUBLIC);
-			
-			addChild(defaultDestructor);
+			addChild(Destructor.decodeStatement(this, "public destroy()", Location.INVALID, true));
 		}
 		
 		getMethodList().validate(phase);
+		getHiddenMethodList().validate(phase);
+		getPropertyMethodList().validate(phase);
 		getConstructorList().validate(phase);
 		getDestructorList().validate(phase);
 		
 		AssignmentMethod assignments = new AssignmentMethod(this, Location.INVALID);
 		addChild(assignments);
+		
+		if (doesExtendClass())
+		{
+			ArrayList<AbstractMethodDeclaration> errors = new ArrayList<AbstractMethodDeclaration>();
+			
+			for (AbstractMethodDeclaration method : getExtendedClass().getAbstractMethods())
+			{
+				if (!doesOverrideMethod(method))
+				{
+					errors.add(method);
+				}
+			}
+			
+			if (errors.size() > 0)
+			{
+				for (int i = 0; i < errors.size(); i++)
+				{
+					AbstractMethodDeclaration method = errors.get(i);
+					
+					SyntaxMessage.error("Class " + getName() + " must implement abstract method " + method.getName(), this, i == errors.size() - 1);
+				}
+			}
+		}
 	}
 	
 	/**
@@ -1513,12 +1893,6 @@ public class ClassDeclaration extends InstanceDeclaration
 			
 			SyntaxMessage.error("Class '" + tempName + "' not declared", this);
 		}
-		else if (clazz.isConstant())
-		{
-			extendedClass = null;
-			
-			SyntaxMessage.error("Class '" + tempName + "' not is constant and cannot be extended", this);
-		}
 	}
 	
 	/**
@@ -1529,15 +1903,13 @@ public class ClassDeclaration extends InstanceDeclaration
 	 */
 	private void validateImplementations(int phase)
 	{
-		Program program = getProgram();
-		
 		for (String implementedClass : implementedClasses)
 		{
-			ClassDeclaration clazz = program.getClassDeclaration(implementedClass);
+			ClassDeclaration clazz = SyntaxUtils.getImportedClass(getFileDeclaration(), implementedClass);
 			
 			if (clazz == null)
 			{
-				SyntaxMessage.error("Class '" + implementedClass + "' not declared", getController());
+				SyntaxMessage.error("Class '" + implementedClass + "' not declared", this);
 			}
 		}
 	}
@@ -1587,7 +1959,7 @@ public class ClassDeclaration extends InstanceDeclaration
 	 */
 	public boolean containsDestructor()
 	{
-		return containsMethod("~" + getName(), true, null);
+		return containsMethod(Destructor.IDENTIFIER, true, null);
 	}
 	
 	/**
@@ -1654,6 +2026,13 @@ public class ClassDeclaration extends InstanceDeclaration
 		f.addChild(clazz);
 		
 		return clazz;
+	}
+	
+	public StringBuilder generateClassClass(StringBuilder builder)
+	{
+		
+		
+		return builder;
 	}
 	
 	/**

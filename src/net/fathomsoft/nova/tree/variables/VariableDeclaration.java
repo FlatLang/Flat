@@ -11,7 +11,9 @@ import net.fathomsoft.nova.tree.IIdentifier;
 import net.fathomsoft.nova.tree.Node;
 import net.fathomsoft.nova.tree.SyntaxTree;
 import net.fathomsoft.nova.tree.exceptionhandling.Exception;
+import net.fathomsoft.nova.util.Bounds;
 import net.fathomsoft.nova.util.Location;
+import net.fathomsoft.nova.util.StringUtils;
 import net.fathomsoft.nova.util.SyntaxUtils;
 
 /**
@@ -21,13 +23,15 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.2.4 May 2, 2014 at 11:14:37 PM
- * @version	v0.2.37 Oct 16, 2014 at 11:38:42 PM
+ * @version	v0.2.38 Dec 6, 2014 at 5:19:17 PM
  */
 public class VariableDeclaration extends IIdentifier implements GenericCompatible
 {
-	private boolean		constantVal, volatileVal, external;
+	private boolean		volatileVal, external;
 	
 	private GenericType	genericTypes[];
+	
+	public String[]     extraDeclarations;
 	
 	/**
 	 * @see net.fathomsoft.nova.tree.Node#Node(Node, Location)
@@ -36,7 +40,39 @@ public class VariableDeclaration extends IIdentifier implements GenericCompatibl
 	{
 		super(temporaryParent, locationIn);
 		
-		genericTypes = new GenericType[0];
+		genericTypes      = new GenericType[0];
+		extraDeclarations = new String[0];
+	}
+	
+	public Bounds findExtraDeclarations(String statement)
+	{
+		String declarations[] = StringUtils.splitCommas(statement);
+		
+		if (declarations.length > 1)
+		{
+			extraDeclarations = new String[declarations.length - 1];
+			
+			System.arraycopy(declarations, 1, extraDeclarations, 0, declarations.length - 1);
+			
+			return new Bounds(declarations[0].length(), statement.length());
+		}
+		
+		return Bounds.EMPTY;
+	}
+	
+	public boolean isTangible()
+	{
+		return isAccessible();
+	}
+	
+	public boolean isAccessible()
+	{
+		return true;
+	}
+	
+	public boolean isSettable()
+	{
+		return true;
 	}
 	
 	@Override
@@ -140,43 +176,6 @@ public class VariableDeclaration extends IIdentifier implements GenericCompatibl
 		
 		setForceOriginalName(true);
 	}
-	
-	/**
-	 * Get whether or not the variable's value is constant. To
-	 * see more detail, look at {@link #setConstant(boolean)}.
-	 * 
-	 * @return Whether or not the variable's value is constant.
-	 */
-	public boolean isConstant()
-	{
-		return constantVal;
-	}
-	
-	/**
-	 * Get the C equivalent of the 'constant' keyword.
-	 * 
-	 * @return The C equivalent of the 'constant' keyword.
-	 */
-	public String getConstantText()
-	{
-		return "const";
-	}
-	
-	/**
-	 * Set whether or not the variable's value is constant.<br>
-	 * <br>
-	 * For example:
-	 * <blockquote><pre>
-	 * private constant int MAX_PEOPLE = 10;</pre></blockquote>
-	 * This variable is constant, as defined by the 'constant' keyword.
-	 * 
-	 * @param constVal Whether or not the variable's value
-	 * 		is constant.
-	 */
-	public void setConstant(boolean constVal)
-	{
-		this.constantVal = constVal;
-	}
 
 	/**
 	 * Get whether or not the variable's value is volatile. This is used
@@ -259,16 +258,7 @@ public class VariableDeclaration extends IIdentifier implements GenericCompatibl
 	 */
 	public boolean setAttribute(String attribute, int argNum)
 	{
-		if (attribute.equals(getConstantText()))
-		{
-			setConstant(true);
-		}
-		else
-		{
-			return false;
-		}
-		
-		return true;
+		return false;
 	}
 	
 	/**
@@ -337,11 +327,6 @@ public class VariableDeclaration extends IIdentifier implements GenericCompatibl
 			builder.append(getVolatileText()).append(' ');
 		}
 		
-		if (isConstant())
-		{
-			builder.append(getConstantText()).append(' ');
-		}
-		
 		generateCType(builder);
 		
 		return builder;
@@ -381,7 +366,7 @@ public class VariableDeclaration extends IIdentifier implements GenericCompatibl
 		}
 		else
 		{
-			builder.append(Nova.LANGUAGE_NAME.toLowerCase()).append("_del_").append(getType()).append('(').append('&');
+			getTypeClass().getDestructor().generateCSourceName(builder).append('(').append('&');
 			
 			generateCUseOutput(builder, true).append(", ").append(Exception.EXCEPTION_DATA_IDENTIFIER).append(");\n");
 		}
@@ -452,7 +437,7 @@ public class VariableDeclaration extends IIdentifier implements GenericCompatibl
 	{
 		ValidationResult result = super.validate(phase);
 		
-		if (result.errorOccurred)
+		if (result.skipValidation())
 		{
 			return result;
 		}
@@ -462,6 +447,18 @@ public class VariableDeclaration extends IIdentifier implements GenericCompatibl
 			if (!validateType())
 			{
 				return result.errorOccurred();
+			}
+		}
+		else if (phase == SyntaxTree.PHASE_PRE_GENERATION)
+		{
+			if (!isTangible())
+			{
+				getParent().removeChild(this);
+				
+				result.skipCycle = true;
+				result.nextIncrement = 0;
+				
+				return result;
 			}
 		}
 		
@@ -501,12 +498,18 @@ public class VariableDeclaration extends IIdentifier implements GenericCompatibl
 	public VariableDeclaration cloneTo(VariableDeclaration node)
 	{
 		super.cloneTo(node);
-
-		node.constantVal  = constantVal;
+		
 		node.external     = external;
 		node.volatileVal  = volatileVal;
 		
 		node.genericTypes = cloneGenericTypes(node);
+
+		node.extraDeclarations = new String[extraDeclarations.length];
+		
+		for (int i = 0; i < extraDeclarations.length; i++)
+		{
+			node.extraDeclarations[i] = extraDeclarations[i];
+		}
 		
 		return node;
 	}

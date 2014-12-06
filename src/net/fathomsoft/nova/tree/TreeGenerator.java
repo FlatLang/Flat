@@ -6,6 +6,8 @@ import java.util.regex.Matcher;
 import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.error.SyntaxErrorException;
+import net.fathomsoft.nova.error.SyntaxMessage;
+import net.fathomsoft.nova.tree.variables.FieldDeclaration;
 import net.fathomsoft.nova.util.Bounds;
 import net.fathomsoft.nova.util.FileUtils;
 import net.fathomsoft.nova.util.Location;
@@ -20,7 +22,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.2.1 Apr 29, 2014 at 8:04:48 PM
- * @version	v0.2.35 Oct 5, 2014 at 11:22:42 PM
+ * @version	v0.2.38 Dec 6, 2014 at 5:19:17 PM
  */
 public class TreeGenerator implements Runnable
 {
@@ -41,7 +43,7 @@ public class TreeGenerator implements Runnable
 	private Stack<Node>		parentStack;
 	private Stack<Node>		pendingScopeFragment;
 	
-	private static final char		EITHER_STATEMENT_END_CHARS[] = new char[] { '\n', ';', '{', '}' };
+	private static final char EITHER_STATEMENT_END_CHARS[] = new char[] { '\n', ';', '{', '}' };
 	
 	/**
 	 * Create a tree generator instance with the given filename and
@@ -192,6 +194,11 @@ public class TreeGenerator implements Runnable
 		}
 		
 		traverseCode(node, contentStart, SyntaxTree.SECOND_PASS_CLASSES, true);
+		
+		decodeScopeContents(node.getFieldList().getPrivateFieldList(), false, SyntaxTree.FIELD_SCOPE_CHILD_DECODE, true);
+		decodeScopeContents(node.getFieldList().getPrivateStaticFieldList(), false, SyntaxTree.FIELD_SCOPE_CHILD_DECODE, true);
+		decodeScopeContents(node.getFieldList().getPublicFieldList(), false, SyntaxTree.FIELD_SCOPE_CHILD_DECODE, true);
+		decodeScopeContents(node.getFieldList().getPublicStaticFieldList(), false, SyntaxTree.FIELD_SCOPE_CHILD_DECODE, true);
 	}
 	
 	/**
@@ -208,10 +215,13 @@ public class TreeGenerator implements Runnable
 		
 		ClassDeclaration classDeclaration = fileDeclaration.getClassDeclaration();
 		
-		decodeScopeContents(classDeclaration.getMethodList());
-		decodeScopeContents(classDeclaration.getConstructorList());
-		decodeScopeContents(classDeclaration.getDestructorList());
-		decodeScopeContents(classDeclaration.getStaticBlockList());
+		boolean requireScope = !(classDeclaration instanceof Interface);
+		
+		decodeScopeContents(classDeclaration.getPropertyMethodList(), requireScope);
+		decodeScopeContents(classDeclaration.getMethodList(), requireScope);
+		decodeScopeContents(classDeclaration.getConstructorList(), requireScope);
+		decodeScopeContents(classDeclaration.getDestructorList(), requireScope);
+		decodeScopeContents(classDeclaration.getStaticBlockList(), requireScope);
 	}
 	
 	/**
@@ -220,13 +230,24 @@ public class TreeGenerator implements Runnable
 	 * @param methods The list of methods to decode.
 	 * @param source The source text to decode.
 	 */
-	private void decodeScopeContents(List scopeAncestors)
+	private void decodeScopeContents(List scopeAncestors, boolean requiresScope)
+	{
+		decodeScopeContents(scopeAncestors, requiresScope, null, false);
+	}
+	
+	/**
+	 * Decode all of the Scope's contents.
+	 * 
+	 * @param methods The list of methods to decode.
+	 * @param source The source text to decode.
+	 */
+	private void decodeScopeContents(List scopeAncestors, boolean requiresScope, Class<?>[] searchTypes, boolean skipScopes)
 	{
 		for (int i = 0; i < scopeAncestors.getNumChildren(); i++)
 		{
 			Node node = scopeAncestors.getChild(i);
 			
-			if (node.getLocationIn().getBounds().isValid() && node.containsScope())
+			if (node.getLocationIn().getBounds().isValid() && (!requiresScope || node.containsScope()))
 			{
 				int startingIndex = StringUtils.findNextNonWhitespaceIndex(source, node.getLocationIn().getEnd());
 				int endingIndex   = StringUtils.findEndingMatch(source, startingIndex, '{', '}');
@@ -234,9 +255,22 @@ public class TreeGenerator implements Runnable
 				int contentStart  = StringUtils.findNextNonWhitespaceIndex(source, startingIndex + 1);
 				int contentEnd    = StringUtils.findNextNonWhitespaceIndex(source, endingIndex - 1, -1) + 1;
 				
+				if (startingIndex >= 0 && source.charAt(startingIndex) != '{')
+				{
+					if (requiresScope)
+					{
+						if (!(node instanceof PropertyMethod) || !((PropertyMethod)node).isDisabled())
+						{
+							SyntaxMessage.error("Scope expected after this statement", node, false);
+						}
+					}
+					
+					continue;
+				}
+				
 				if (contentStart < contentEnd)
 				{
-					traverseCode(node, contentStart, null, false);
+					traverseCode(node, contentStart, searchTypes, skipScopes);
 				}
 			}
 		}
@@ -316,6 +350,7 @@ public class TreeGenerator implements Runnable
 			
 			Node node = decodeStatementAndCheck(statement, location, scope, searchTypes, skipScopes);
 			
+			checkPendingScopeFragment(node);
 			checkScopeFragment(node, endChar, scope);
 			
 			updateLineNumber(statementStartIndex, newStatementStartIndex);
@@ -329,10 +364,10 @@ public class TreeGenerator implements Runnable
 			}
 			else if (skipScopes)
 			{
-				statementStartIndex = oldStatementStartIndex;
+//				statementStartIndex = oldStatementStartIndex;
 			}
 			
-			updateParents();
+			updateParents(node);
 		}
 		
 		return null;
@@ -439,7 +474,7 @@ public class TreeGenerator implements Runnable
 			return;
 		}
 		
-		if (node.pendingScopeFragment())
+		if (node.pendingScopeFragment(null))
 		{
 			pendingScopeFragment.push(node);
 		}
@@ -510,7 +545,7 @@ public class TreeGenerator implements Runnable
 			return;
 		}
 		
-		if (skipScopes && (node.containsScope() || node instanceof ClassDeclaration))
+		if (skipScopes && (node.containsScope() || node instanceof FieldDeclaration || node instanceof ClassDeclaration))
 		{
 			skipScope();
 		}
@@ -520,12 +555,12 @@ public class TreeGenerator implements Runnable
 			parentStack.peek().addChild(node);
 		}
 		
-		if ((statementEndIndex >= 0 && statementEndIndex < source.length() && !skipScopes && source.charAt(statementEndIndex) == '{') || (pendingScopeFragment.check() == node && node.pendingScopeFragment()))
+		if ((statementEndIndex >= 0 && statementEndIndex < source.length() && !skipScopes && source.charAt(statementEndIndex) == '{') || (pendingScopeFragment.check() == node && node.pendingScopeFragment(null)))
 		{
 			parentStack.push(node);
 		}
 		
-		updateParents();
+		updateParents(node);
 	}
 	
 	/**
@@ -534,28 +569,52 @@ public class TreeGenerator implements Runnable
 	private void skipScope()
 	{
 		int contentIndex = StringUtils.findNextNonWhitespaceIndex(source, statementEndIndex + 1);
+		
+		if (source.charAt(statementEndIndex) != '{')
+		{
+			return;
+		}
+		
 		int endingIndex  = StringUtils.findNextNonWhitespaceIndex(source, StringUtils.findEndingMatch(source, statementEndIndex, '{', '}') + 1);
+		int end          = endingIndex;
+		int temp         = end;
 		
-		updateLineNumber(contentIndex, endingIndex);
+		while (end >= 0 && source.charAt(end) == '}')
+		{
+			end  = StringUtils.findNextNonWhitespaceIndex(source, end + 1);
+			
+			if (end < 0)
+			{
+				break;
+			}
+			
+			temp = end;
+		}
 		
-		statementStartIndex = endingIndex;
+		end = temp;
+		
+		updateLineNumber(contentIndex, end);
+		
+		statementStartIndex = end;
 		
 		if (statementStartIndex < 0)
 		{
 			statementStartIndex = source.length();
+			end = statementStartIndex;
+			endingIndex = end;
 		}
 		
-		oldStatementStartIndex = statementStartIndex;
-		statementEndIndex      = statementStartIndex;
+		oldStatementStartIndex = endingIndex;
+		statementEndIndex      = end;
 	}
 	
 	/**
 	 * Check to see if an ending curly brace has been parsed. If so,
 	 * pop the last parent off the stack.
 	 */
-	private void updateParents()
+	private void updateParents(Node current)
 	{
-		updateParents(oldStatementStartIndex, statementStartIndex);
+		updateParents(oldStatementStartIndex, statementStartIndex, current);
 	}
 	
 	/**
@@ -565,23 +624,39 @@ public class TreeGenerator implements Runnable
 	 * @param start The index to start the search at.
 	 * @param statementStart The index to end the search at.
 	 */
-	private void updateParents(int start, int statementStart)
+	private void updateParents(int start, int statementStart, Node current)
 	{
 		if (parentStack.isEmpty())
 		{
 			return;
 		}
 		
-		if (!checkPendingScopeFragment())
+		checkPendingScopeFragment(current);
+		
+		if (start < statementStart)
 		{
-			for (int i = start; i < statementStart; i++)
+			String sub = source.substring(start, statementStart);
+			
+			int index = -1;
+			
+			while (true)
 			{
-				if (source.charAt(i) == '}')
+				index = SyntaxUtils.findCharInBaseScope(sub, '}', index + 1);
+				
+				if (index < 0)
 				{
-					parentStack.pop();
-					
-					checkPendingScopeFragment();
+					break;
 				}
+				
+				if (!parentStack.isEmpty())
+				{
+					while (parentStack.pop().equals(pendingScopeFragment.check()))
+					{
+						pendingScopeFragment.pop();
+					}
+				}
+				
+				checkPendingScopeFragment(current);
 			}
 		}
 	}
@@ -591,24 +666,25 @@ public class TreeGenerator implements Runnable
 	 * 
 	 * @return Whether or not a pending scope fragment has been completed.
 	 */
-	private boolean checkPendingScopeFragment()
+	private void checkPendingScopeFragment(Node current)
 	{
 		if (!pendingScopeFragment.isEmpty())
 		{
 			Node node = pendingScopeFragment.peek();
 			
-			if (!node.pendingScopeFragment() && node == parentStack.peek())
+			if (node == current)
+			{
+				current = null;				
+			}
+			
+			if (!node.pendingScopeFragment(current) && node == parentStack.peek())
 			{
 				parentStack.pop();
 				pendingScopeFragment.pop();
 				
-				checkPendingScopeFragment();
-				
-				return true;
+				checkPendingScopeFragment(current);
 			}
 		}
-		
-		return false;
 	}
 	
 	/**

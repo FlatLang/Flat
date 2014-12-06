@@ -1,0 +1,6 @@
+package "nova/standard/math/logic"
+
+public class LogicalConnective extends StatementComponent
+{
+	
+}

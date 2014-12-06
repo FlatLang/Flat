@@ -1,0 +1,73 @@
+package "nova/standard/datastruct"
+
+public class BinaryNode<E> extends Node
+{
+	public BinaryNode<E> left
+	{
+		get
+		{
+			return (BinaryNode)children.get(0)
+		}
+		
+		set(BinaryNode<E> data)
+		{
+			children.set(0, data)
+		}
+	}
+	
+	public BinaryNode<E> right
+	{
+		get
+		{
+			return (BinaryNode)children.get(1)
+		}
+		
+		set(BinaryNode<E> data)
+		{
+			children.set(1, data)
+		}
+	}
+	
+	public construct()
+	{
+		this(null)
+	}
+	
+	public construct(E data)
+	{
+		this(data, 2)
+	}
+	
+	construct(E data, Int size)
+	{
+		super(data, size)
+	}
+	
+	public addChild(E data)
+	{
+		Comparable<Int> temp = (Comparable)this.data
+		
+		if (temp.compareTo((Int)data) < 0)
+		{
+			if (left == null)
+			{
+				left = new BinaryNode(data)
+			}
+			else
+			{
+				left.addChild(data)
+			}
+		}
+		else
+		{
+			if (right == null)
+			{
+				right = new BinaryNode(data)
+			}
+			else
+			{
+				right.addChild(data)
+			}
+		}
+	}
+}

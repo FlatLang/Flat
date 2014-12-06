@@ -10,7 +10,7 @@ import net.fathomsoft.nova.util.StringUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.2.10 May 29, 2014 at 1:50:25 PM
- * @version	v0.2.36 Oct 13, 2014 at 12:16:42 AM
+ * @version	v0.2.38 Dec 6, 2014 at 5:19:17 PM
  */
 public class Priority extends IValue implements Accessible
 {
@@ -26,6 +26,18 @@ public class Priority extends IValue implements Accessible
 	public int getNumDecodedChildren()
 	{
 		return super.getNumDecodedChildren() + 1;
+	}
+	
+	@Override
+	public boolean isConstant()
+	{
+		return getContents().isConstant();
+	}
+	
+	@Override
+	public boolean isConsistent()
+	{
+		return getContents().isConsistent();
 	}
 	
 	/**

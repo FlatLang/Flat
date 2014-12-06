@@ -1,0 +1,11 @@
+package "nova/standard/math"
+
+public class ArithmeticSequence extends Sequence
+{
+	
+	
+	public construct(D)
+	{
+		
+	}
+}

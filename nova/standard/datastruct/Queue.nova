@@ -3,6 +3,14 @@ package "nova/standard/datastruct"
 public class Queue<E>
 {
 	visible Int size
+	{
+		get
+		{
+			return data.size
+		}
+		
+		no set
+	}
 	
 	ArrayList<E> data
 	
@@ -13,16 +21,12 @@ public class Queue<E>
 	
 	public dequeue() -> E
 	{
-		size--
-		
 		return data.remove(0)
 	}
 	
 	public enqueue(E element)
 	{
 		data.add(element)
-		
-		size++
 	}
 	
 	public isEmpty() -> Bool

@@ -17,10 +17,12 @@ import net.fathomsoft.nova.util.StringUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:50:43 PM
- * @version	v0.2.34 Oct 1, 2014 at 9:51:33 PM
+ * @version	v0.2.38 Dec 6, 2014 at 5:19:17 PM
  */
 public class Destructor extends BodyMethodDeclaration
 {
+	public static final String IDENTIFIER = "destroy";
+	
 	/**
 	 * @see net.fathomsoft.nova.tree.Node#Node(Node, Location)
 	 */
@@ -38,28 +40,6 @@ public class Destructor extends BodyMethodDeclaration
 		return true;
 	}
 	
-	/**
-	 * @see net.fathomsoft.nova.tree.Node#generateCHeader(StringBuilder)
-	 */
-	@Override
-	public StringBuilder generateCHeader(StringBuilder builder)
-	{
-		if (isVisibilityValid())
-		{
-			if (getVisibility() == InstanceDeclaration.PRIVATE)
-			{
-				SyntaxMessage.error("Destructor must be public", this);
-			}
-		}
-		
-		if (isConstant())
-		{
-			SyntaxMessage.error("Destructor cannot be const", this);
-		}
-		
-		return generateCSourcePrototype(builder).append('\n');
-	}
-
 	/**
 	 * @see net.fathomsoft.nova.tree.Node#generateCSource(StringBuilder)
 	 */
@@ -167,7 +147,7 @@ public class Destructor extends BodyMethodDeclaration
 			}
 			else
 			{
-				builder.append(Nova.LANGUAGE_NAME.toLowerCase()).append("_del_").append(field.getType()).append('(').append('&');
+				field.getTypeClass().getDestructor().generateCSourceName(builder).append('(').append('&');
 				
 				field.generateCUseOutput(builder, true).append(", ").append(Exception.EXCEPTION_DATA_IDENTIFIER).append(");");
 			}
@@ -188,29 +168,28 @@ public class Destructor extends BodyMethodDeclaration
 		return builder.append("NOVA_FREE((*").append(ParameterList.OBJECT_REFERENCE_IDENTIFIER).append(")->").append(name).append(");");
 	}
 	
-	/**
-	 * @see net.fathomsoft.nova.tree.MethodDeclaration#generateCSourcePrototype(StringBuilder)
-	 */
-	@Override
-	public StringBuilder generateCSourcePrototype(StringBuilder builder)
-	{
-		return generateCSourceSignature(builder).append(";");
-	}
-	
-	/**
-	 * @see net.fathomsoft.nova.tree.MethodDeclaration#generateCSourceSignature(StringBuilder)
-	 */
-	@Override
-	public StringBuilder generateCSourceSignature(StringBuilder builder)
-	{
-		ClassDeclaration classDeclaration = getParentClass();
-		
-		generateCType(builder).append(' ');
-		builder.append(Nova.LANGUAGE_NAME.toLowerCase()).append("_del_");
-		builder.append(classDeclaration.getName()).append('(').append(getParameterList().generateCSource()).append(')');
-		
-		return builder;
-	}
+//	/**
+//	 * @see net.fathomsoft.nova.tree.MethodDeclaration#generateCSourcePrototype(StringBuilder)
+//	 */
+//	@Override
+//	public StringBuilder generateCSourcePrototype(StringBuilder builder)
+//	{
+//		return generateCSourceSignature(builder).append(";");
+//	}
+//	
+//	/**
+//	 * @see net.fathomsoft.nova.tree.MethodDeclaration#generateCSourceSignature(StringBuilder)
+//	 */
+//	@Override
+//	public StringBuilder generateCSourceSignature(StringBuilder builder)
+//	{
+//		ClassDeclaration classDeclaration = getParentClass();
+//		
+//		generateCType(builder).append(' ');
+//		generateCSourceName(builder).append('(').append(getParameterList().generateCSource()).append(')');
+//		
+//		return builder;
+//	}
 	
 	/**
 	 * Decode the given statement into a Destructor instance, if
@@ -233,41 +212,28 @@ public class Destructor extends BodyMethodDeclaration
 	 */
 	public static Destructor decodeStatement(Node parent, String statement, Location location, boolean require)
 	{
-		int firstParenthIndex = statement.indexOf('(');
+		NovaMethodDeclaration m = NovaMethodDeclaration.decodeStatement(parent, statement, location, require);
 		
-		if (firstParenthIndex >= 0)
+		if (m != null)
 		{
 			Destructor n = new Destructor(parent, location);
-
-			int lastParenthIndex = StringUtils.findEndingMatch(statement, firstParenthIndex, '(', ')');
 			
-			if (lastParenthIndex < 0)
+			m.cloneTo(n);
+			
+			if (n.checkName() && n.validateParameters(require))
 			{
-				SyntaxMessage.error("Expected a ')' ending parenthesis", n);
-			}
-			
-			String signature = statement.substring(0, firstParenthIndex);
-			
-			n.iterateWords(signature, require);
-			
-			if (n.getName() == null)
-			{
-				return null;
-			}
-			
-			String parameterList = statement.substring(firstParenthIndex + 1, lastParenthIndex);
-			
-			n.validateParameters(parameterList);
-			
-			ClassDeclaration classDeclaration = n.getParentClass();
-			
-			if (classDeclaration.getName().equals(n.getName()))
-			{
+				n.getParameterList().getObjectReference().setDataType(DOUBLE_POINTER);
+				
 				return n;
 			}
 		}
 		
 		return null;
+	}
+	
+	private boolean checkName()
+	{
+		return getName().equals(IDENTIFIER);
 	}
 	
 	/**
@@ -276,34 +242,14 @@ public class Destructor extends BodyMethodDeclaration
 	 * 
 	 * @param parameterList The String containing the parameters.
 	 */
-	private void validateParameters(String parameterList)
+	private boolean validateParameters(boolean require)
 	{
-		String parameters[]  = StringUtils.splitCommas(parameterList);
-		
-		if (parameters.length > 0)
+		if (getParameterList().getNumVisibleChildren() > 0)
 		{
-			SyntaxMessage.error("Destructors cannot have any parameters", this);
+			return SyntaxMessage.queryError("Destructors cannot have any parameters", this, require);
 		}
-	}
-	
-	/**
-	 * @see net.fathomsoft.nova.tree.Node#interactWord(java.lang.String, net.fathomsoft.nova.util.Bounds, java.lang.String, java.lang.String, net.fathomsoft.nova.tree.Node.ExtraData)
-	 */
-	@Override
-	public void interactWord(String word, Bounds bounds, String leftDelimiter, String rightDelimiter, ExtraData extra)
-	{
-		setAttribute(word, extra.getWordNumber());
 		
-		if (extra.isLastWord())
-		{
-			if (bounds.getStart() > 0)
-			{
-				if (leftDelimiter.equals("~"))
-				{
-					setName(word);
-				}
-			}
-		}
+		return true;
 	}
 	
 	/**

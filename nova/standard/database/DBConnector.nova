@@ -32,21 +32,21 @@ public class DBConnector
 	
 	public connect(String host, String user, String password)
 	{
-		mysql = nova_db_connect1(host.toCharArray(), user.toCharArray(), password.toCharArray())
+		mysql = nova_db_connect1(host.chars, user.chars, password.chars)
 		
 		updateError()
 	}
 	
 	public connect(String host, String user, String password, String database)
 	{
-		mysql = nova_db_connect2(host.toCharArray(), user.toCharArray(), password.toCharArray(), database.toCharArray())
+		mysql = nova_db_connect2(host.chars, user.chars, password.chars, database.chars)
 		
 		updateError()
 	}
 	
 	public connect(String host, String user, String password, String database, Int port, String unixSocket, Int clientFlag)
 	{
-		mysql = nova_db_connect3(host.toCharArray(), user.toCharArray(), password.toCharArray(), database.toCharArray(), port, unixSocket.toCharArray(), clientFlag)
+		mysql = nova_db_connect3(host.chars, user.chars, password.chars, database.chars, port, unixSocket.chars, clientFlag)
 		
 		updateError()
 	}
@@ -58,14 +58,14 @@ public class DBConnector
 	
 	public changeUser(String username, String password, String database)
 	{
-		nova_user_select(mysql, username.toCharArray(), password.toCharArray(), database.toCharArray())
+		nova_user_select(mysql, username.chars, password.chars, database.chars)
 		
 		updateError()
 	}
 	
 	public query(String query) -> ResultSet
 	{
-		result = nova_exec_query(mysql, query.toCharArray())
+		result = nova_exec_query(mysql, query.chars)
 		
 		if (result == 0)
 		{

@@ -25,6 +25,7 @@ import net.fathomsoft.nova.tree.ParameterList;
 import net.fathomsoft.nova.tree.Program;
 import net.fathomsoft.nova.tree.Return;
 import net.fathomsoft.nova.tree.SyntaxTree;
+import net.fathomsoft.nova.tree.UnaryOperation;
 import net.fathomsoft.nova.tree.Value;
 import net.fathomsoft.nova.tree.variables.FieldDeclaration;
 import net.fathomsoft.nova.tree.variables.Variable;
@@ -35,7 +36,7 @@ import net.fathomsoft.nova.tree.variables.VariableDeclaration;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Mar 15, 2014 at 7:55:00 PM
- * @version	v0.2.36 Oct 13, 2014 at 12:16:42 AM
+ * @version	v0.2.38 Dec 6, 2014 at 5:19:17 PM
  */
 public class SyntaxUtils
 {
@@ -750,7 +751,7 @@ public class SyntaxUtils
 	 * <br>
 	 * For example:
 	 * <blockquote><pre>
-	 * variable_NAME1 = (getSize() + 5) / array[index]</pre></blockquote>
+	 * variable_NAME1 = (calculateSize() + 5) / array[index]</pre></blockquote>
 	 * 
 	 * @param statement The String of text to validate.
 	 * @return Whether or not the given String is a valid variable
@@ -1057,9 +1058,9 @@ public class SyntaxUtils
 	 */
 	public static boolean isMainMethod(BodyMethodDeclaration methodDeclaration)
 	{
-		if (methodDeclaration.getName().equals("main") && methodDeclaration.isStatic() && methodDeclaration.getType() == null && methodDeclaration.getVisibility() == FieldDeclaration.PUBLIC)
+		if (methodDeclaration.getName() != null && methodDeclaration.getName().equals("main") && methodDeclaration.isStatic() && methodDeclaration.getType() == null && methodDeclaration.getVisibility() == FieldDeclaration.PUBLIC)
 		{
-			ParameterList<Value> params = methodDeclaration.getParameterList();
+			ParameterList<Parameter> params = methodDeclaration.getParameterList();
 			
 			if (params.getNumVisibleChildren() == 1)
 			{
@@ -1103,7 +1104,7 @@ public class SyntaxUtils
 	 */
 	public static boolean isInstantiation(String statement)
 	{
-		return Regex.indexOf(statement, Patterns.PRE_INSTANTIATION) == 0;
+		return StringUtils.startsWithWord(statement, Instantiation.IDENTIFIER);
 	}
 	
 	/**
@@ -1750,11 +1751,42 @@ public class SyntaxUtils
 		return null;
 	}
 	
+	/**
+	 * Check to see if the given clazz is an instanceof any of the
+	 * classes in the given type array.
+	 * 
+	 * @param types The types to check against.
+	 * @param clazz The type to check for.
+	 * @return Whether or not the given clazz is an instanceof any of
+	 * 		the classes in the given array.
+	 */
+	public static boolean checkTypes(Class<?> types[], Class<?> clazz)
+	{
+		for (Class<?> type : types)
+		{
+			if (type.isAssignableFrom(clazz))
+			{
+				return true;
+			}
+		}
+		
+		return false;
+	}
+	
 	public static ClassDeclaration getParameterGenericReturnType(Parameter required, Value given)
 	{
+		GenericCompatible gen = null;
+		
 		MethodCall call = (MethodCall)given.getAncestorOfType(MethodCall.class);
-
-		GenericCompatible gen = call.getGenericDeclaration();
+		
+		if (call != null)
+		{
+			gen = call.getGenericDeclaration();
+		}
+		else
+		{
+			gen = given.getParentClass();//given.getParentMethod();
+		}
 		
 		String name = gen.getGenericParameterType(required.getType());
 		
@@ -1788,6 +1820,37 @@ public class SyntaxUtils
 	public static boolean isTypeCompatible(Value required, Value given)
 	{
 		return isTypeCompatible(required, given, true);
+	}
+	
+	public static boolean areTypesCompatible(Program context, String[] required, String[] given)
+	{
+		for (int i = 0; i < required.length && i < given.length; i++)
+		{
+			if (!isTypeCompatible(context, required[i], given[i]))
+			{
+				return false;
+			}
+		}
+		
+		return true;
+	}
+	
+	public static boolean areTypesCompatible(Value[] required, Value[] given)
+	{
+		return areTypesCompatible(required, given, true);
+	}
+	
+	public static boolean areTypesCompatible(Value[] required, Value[] given, boolean searchGenerics)
+	{
+		for (int i = 0; i < required.length && i < given.length; i++)
+		{
+			if (!isTypeCompatible(required[i], given[i], searchGenerics))
+			{
+				return false;
+			}
+		}
+		
+		return true;
 	}
 	
 	/**
@@ -1832,7 +1895,7 @@ public class SyntaxUtils
 		}
 		else if (required.getArrayDimensions() - given.getArrayDimensions() - arrayDifference != 0)
 		{
-			if (required.getTypeClassLocation().equals(Nova.getClassLocation("Char")) && required.getArrayDimensions() == 1 && given.getTypeClassLocation().equals(Nova.getClassLocation("String")))
+			if (required.getTypeClassLocation().equals(Nova.getClassLocation("Char")) && required.getArrayDimensions() == 1 && given.getTypeClassLocation() != null && given.getTypeClassLocation().equals(Nova.getClassLocation("String")))
 			{
 				return true;
 			}
@@ -1847,7 +1910,9 @@ public class SyntaxUtils
 				throw new UnimplementedOperationException("The validation of generic type " + required.getClass().getName() + " is not implemented.");
 			}
 			
-			Value value = getParameterGenericReturnType((Parameter)required, given);
+			Parameter param = (Parameter)required;
+			
+			Value value = getParameterGenericReturnType(param, given);
 			
 			if (!Literal.isNullLiteral(given) && !isTypeCompatible(value, given, false))
 			{
@@ -1927,6 +1992,18 @@ public class SyntaxUtils
 	{
 		if (node.getProgram().getClassDeclaration(clazz) != null)
 		{
+			ClassDeclaration c = node.getParentClass(true);
+			
+			while (c != null)
+			{
+				if (c.getClassLocation().equals(clazz))
+				{
+					return true;
+				}
+				
+				c = c.getParentClass();
+			}
+			
 			if (!isImported(node.getFileDeclaration(), clazz))
 			{
 				throwImportException(node, clazz, location);
@@ -1989,6 +2066,18 @@ public class SyntaxUtils
 		return location.contains("/");
 	}
 	
+	public static String getClassParentLocation(String classLocation)
+	{
+		if (classLocation == null)
+		{
+			return null;
+		}
+		
+		int lastIndex = classLocation.lastIndexOf('/');
+		
+		return classLocation.substring(0, lastIndex);
+	}
+	
 	public static String getClassName(String classLocation)
 	{
 		if (classLocation == null)
@@ -2006,5 +2095,116 @@ public class SyntaxUtils
 		String location = file.getImportList().getAbsoluteClassLocation(className);
 		
 		return file.getProgram().getClassDeclaration(location);
+	}
+	
+	public static Bounds findValueBounds(String source, int start)
+	{
+		Bounds bounds = findIdentifierBounds(source, start, true, true);
+		
+		if (bounds != null)
+		{
+			return bounds;
+		}
+		
+		char c = source.charAt(start);
+		
+		switch (c)
+		{
+			case '\'':
+			case '"':
+				bounds = new Bounds(start, start);
+				bounds.setEnd(StringUtils.findEndingChar(source, c, start, 1) + 1);
+				return bounds;
+			case '-':
+				bounds = new Bounds(start, start);
+				bounds.setEnd(StringUtils.findNextWhitespaceIndex(source, start + 1));
+				return bounds;
+			default:
+				return Bounds.EMPTY;
+		}
+	}
+	
+	public static Bounds findIdentifierBounds(String source, int start)
+	{
+		return findIdentifierBounds(source, start, false, false);
+	}
+	
+	public static Bounds findIdentifierBounds(String source, int start, boolean includeGroupings, boolean includeUnary)
+	{
+		start = StringUtils.findNextNonWhitespaceIndex(source, start);
+		
+		if (!includeGroupings)
+		{
+			start = StringUtils.findNextLetterIndex(source, start, 1);
+		}
+		else if (StringUtils.findEndingMatch(source, start, source.charAt(start)) > 0)
+		{
+			return checkIdentifierUnary(source, start, StringUtils.findEndingMatch(source, start, source.charAt(start)) + 1, includeUnary);
+		}
+		
+		int current = start;
+		
+		while (true)
+		{
+			Bounds word = StringUtils.findNextWordBounds(source, current);
+			
+			if (word.isValid())
+			{
+				int prev = word.getEnd();
+				current  = StringUtils.findNextNonWhitespaceIndex(source, word.getEnd());
+				int temp = 0;
+				
+				if (current >= 0)
+				{
+					temp = StringUtils.findEndingMatch(source, current, source.charAt(current)) + 1;
+					
+					if (temp > 0)
+					{
+						current = temp;
+					}
+				}
+				if (temp <= 0)
+				{
+					current = prev;
+				}
+				
+				int next = StringUtils.findNextNonWhitespaceIndex(source, current);
+				
+				if (current < 0 || next < 0)
+				{
+					return checkIdentifierUnary(source, start, word.getEnd(), includeUnary);
+				}
+				else if (source.charAt(next) != '.')
+				{
+					return checkIdentifierUnary(source, start, current, includeUnary);
+				}
+				
+				current = StringUtils.findNextNonWhitespaceIndex(source, next + 1);
+			}
+			else
+			{
+				if (current <= start)
+				{
+					return Bounds.EMPTY;
+				}
+				
+				return checkIdentifierUnary(source, start, current, includeUnary);
+			}
+		}
+	}
+	
+	private static Bounds checkIdentifierUnary(String source, int start, int end, boolean includeUnary)
+	{
+		if (includeUnary)
+		{
+			String symbols = StringUtils.findGroupedSymbols(source, end);
+			
+			if (symbols.length() > 0 && UnaryOperation.isCompatibleOnRight(symbols))
+			{
+				end = StringUtils.findNextNonWhitespaceIndex(source, end) + symbols.length();
+			}
+		}
+		
+		return new Bounds(start, end);
 	}
 }

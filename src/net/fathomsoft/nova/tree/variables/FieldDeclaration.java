@@ -1,12 +1,17 @@
 package net.fathomsoft.nova.tree.variables;
 
+import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.ValidationResult;
+import net.fathomsoft.nova.tree.AccessorMethod;
 import net.fathomsoft.nova.tree.Assignment;
 import net.fathomsoft.nova.tree.InstanceDeclaration;
 import net.fathomsoft.nova.tree.LocalDeclaration;
+import net.fathomsoft.nova.tree.MethodDeclaration;
+import net.fathomsoft.nova.tree.MutatorMethod;
 import net.fathomsoft.nova.tree.Node;
 import net.fathomsoft.nova.tree.SyntaxTree;
+import net.fathomsoft.nova.tree.MethodList.SearchFilter;
 import net.fathomsoft.nova.util.Bounds;
 import net.fathomsoft.nova.util.Location;
 import net.fathomsoft.nova.util.Patterns;
@@ -20,12 +25,13 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:12:04 PM
- * @version	v0.2.35 Oct 5, 2014 at 11:22:42 PM
+ * @version	v0.2.38 Dec 6, 2014 at 5:19:17 PM
  */
 public class FieldDeclaration extends InstanceDeclaration
 {
+	private boolean  tangible;
+	
 	private String   initializationValue;
-	private String[] extraDeclarations;
 	
 	/**
 	 * Declares that a variable can be viewed from anywhere, but not
@@ -40,7 +46,60 @@ public class FieldDeclaration extends InstanceDeclaration
 	{
 		super(temporaryParent, locationIn);
 		
-		extraDeclarations = new String[0];
+		tangible = true;
+	}
+	
+	@Override
+	public boolean isTangible()
+	{
+		return tangible && super.isTangible();
+	}
+	
+	private boolean containsInstance(Node parent)
+	{
+		for (int i = 0; i < parent.getNumChildren(); i++)
+		{
+			Node child = parent.getChild(i);
+			
+			if (child instanceof Variable)
+			{
+				Variable var = (Variable)child;
+				
+				if (var.getDeclaration() == this)
+				{
+					return true;
+				}
+			}
+			
+			if (containsInstance(child))
+			{
+				return true;
+			}
+		}
+		
+		return false;
+	}
+	
+	@Override
+	public boolean isAccessible()
+	{
+		if (containsAccessorMethod() && getAccessorMethod().isDisabled())
+		{
+			return false;
+		}
+		
+		return super.isAccessible();
+	}
+	
+	@Override
+	public boolean isSettable()
+	{
+		if (containsMutatorMethod() && getMutatorMethod().isDisabled())
+		{
+			return false;
+		}
+		
+		return super.isSettable();
 	}
 	
 	/**
@@ -99,7 +158,7 @@ public class FieldDeclaration extends InstanceDeclaration
 		
 		return true;
 	}
-
+	
 	/**
 	 * @see net.fathomsoft.nova.tree.Node#generateCHeader(StringBuilder)
 	 */
@@ -169,6 +228,7 @@ public class FieldDeclaration extends InstanceDeclaration
 			return null;
 		}
 		
+		var.extraDeclarations = n.extraDeclarations;
 		var.cloneTo(n);
 		
 		n.iterateWords(preStatement, data, require);
@@ -192,22 +252,6 @@ public class FieldDeclaration extends InstanceDeclaration
 				data.localDeclaration.setStart(bounds.getStart());
 			}
 		}
-	}
-
-	private Bounds findExtraDeclarations(String statement)
-	{
-		String declarations[] = StringUtils.splitCommas(statement);
-		
-		if (declarations.length > 1)
-		{
-			extraDeclarations = new String[declarations.length - 1];
-			
-			System.arraycopy(declarations, 1, extraDeclarations, 0, declarations.length - 1);
-			
-			return new Bounds(declarations[0].length(), statement.length());
-		}
-		
-		return Bounds.EMPTY;
 	}
 	
 	private Bounds findPreAssignment(String statement)
@@ -246,12 +290,80 @@ public class FieldDeclaration extends InstanceDeclaration
 			
 			FieldDeclaration field = FieldDeclaration.decodeStatement(getParent(), generateNovaType() + " " + name, getLocationIn(), true);
 			
+			field.setVisibility(getVisibility());
+			field.setVolatile(isVolatile());
+			field.setStatic(isStatic());
+			
 			parent.addChildAfter(previous, field);
 			
 			previous = field;
 		}
 		
+		extraDeclarations = new String[0];
+		
 		super.onAdded(parent);
+	}
+	
+	public boolean containsAccessorMethod()
+	{
+		return getAccessorMethod() != null;
+	}
+	
+	public AccessorMethod getAccessorMethod()
+	{
+		for (int i = 0; i < getNumVisibleChildren(); i++)
+		{
+			if (getVisibleChild(i) instanceof AccessorMethod)
+			{
+				return (AccessorMethod)getVisibleChild(i);
+			}
+		}
+		
+		MethodDeclaration methods[] = getParentClass().getPropertyMethodList().getMethods(getName(), SearchFilter.DEFAULT);
+		
+		if (methods.length > 0)
+		{
+			for (MethodDeclaration method : methods)
+			{
+				if (method instanceof AccessorMethod)
+				{
+					return (AccessorMethod)method;
+				}
+			}
+		}
+		
+		return null;
+	}
+	
+	public boolean containsMutatorMethod()
+	{
+		return getMutatorMethod() != null;
+	}
+	
+	public MutatorMethod getMutatorMethod()
+	{
+		for (int i = 0; i < getNumVisibleChildren(); i++)
+		{
+			if (getVisibleChild(i) instanceof MutatorMethod)
+			{
+				return (MutatorMethod)getVisibleChild(i);
+			}
+		}
+		
+		MethodDeclaration methods[] = getParentClass().getPropertyMethodList().getMethods(getName(), SearchFilter.DEFAULT);
+		
+		if (methods.length > 0)
+		{
+			for (MethodDeclaration method : methods)
+			{
+				if (method instanceof MutatorMethod)
+				{
+					return (MutatorMethod)method;
+				}
+			}
+		}
+		
+		return null;
 	}
 	
 	/**
@@ -262,7 +374,7 @@ public class FieldDeclaration extends InstanceDeclaration
 	{
 		ValidationResult result = super.validate(phase);
 		
-		if (result.errorOccurred)
+		if (result.skipValidation())
 		{
 			return result;
 		}
@@ -274,6 +386,28 @@ public class FieldDeclaration extends InstanceDeclaration
 				Assignment assignment = Assignment.decodeStatement(getParentClass().getAssignmentMethodNode(), getName() + " = " + initializationValue, getLocationIn(), true);
 				
 				getParentClass().addFieldInitialization(assignment);
+			}
+			
+			AccessorMethod accessor = getAccessorMethod();
+			MutatorMethod  mutator  = getMutatorMethod();
+			
+			if (accessor != null)
+			{
+				getParentClass().addChild(accessor);
+			}
+			if (mutator != null)
+			{
+				getParentClass().addChild(mutator);
+			}
+		}
+		else if (phase == SyntaxTree.PHASE_METHOD_CONTENTS)
+		{
+			if (containsAccessorMethod())
+			{
+				if (!containsInstance(getAccessorMethod()))
+				{
+					tangible = false;
+				}
 			}
 		}
 		else if (phase == SyntaxTree.PHASE_PRE_GENERATION)
@@ -308,6 +442,9 @@ public class FieldDeclaration extends InstanceDeclaration
 	public FieldDeclaration cloneTo(FieldDeclaration node)
 	{
 		super.cloneTo(node);
+		
+		node.tangible = tangible;
+		node.initializationValue = initializationValue;
 		
 		return node;
 	}

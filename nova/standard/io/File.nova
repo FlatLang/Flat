@@ -28,16 +28,49 @@ public class File
 	
 	String location
 	
-	/*static
+	static
 	{
 		File exitLog = new File("log" + Time.currentTimeMillis())
-	}*/
+	}
+	
+	visible Bool exists
+	{
+		get
+		{
+			return fp != 0
+		}
+		
+		no set
+	}
+	
+	public Int maxOpenFiles
+	{
+		get
+		{
+			return extGetMaxOpenFiles()
+		}
+		
+		set
+		{
+			Short min = (Short)20
+			Short max = (Short)2048
+			
+			if (value > max || value < min)
+			{
+				Console.writeLine("Invalid max number of open files: " + value + "\nValid values include " + min + "-" + max)
+			}
+			else
+			{
+				extSetMaxOpenFiles(value)
+			}
+		}
+	}
 	
 	public construct(String location)
 	{
 		this.location = location
 		
-		fp = fopen(location.toCharArray(), "r+")
+		fp = fopen(location.chars, "r+")
 	}
 	
 	public construct(FILE* fp)
@@ -49,14 +82,14 @@ public class File
 	{
 		close()
 		
-		return remove(location.toCharArray()) == 0
+		return remove(location.chars) == 0
 	}
 	
 	public reopen()
 	{
 		close()
 		
-		fp = fopen(location.toCharArray(), "r+")
+		fp = fopen(location.chars, "r+")
 	}
 	
 	public rewind()
@@ -64,26 +97,21 @@ public class File
 		extRewind(fp)
 	}
 	
-	public exists() -> Bool
-	{
-		return fp != 0
-	}
-	
 	public clearContents()
 	{
-		if (exists())
+		if (exists)
 		{
-			fp = fopen(location.toCharArray(), "w")
+			fp = fopen(location.chars, "w")
 		}
 	}
 	
 	public create() -> Bool
 	{
-		if (!exists())
+		if (!exists)
 		{
-			fp = fopen(location.toCharArray(), "w")
+			fp = fopen(location.chars, "w")
 			
-			if (!exists())
+			if (!exists)
 			{
 				perror("fopen")
 				
@@ -92,7 +120,7 @@ public class File
 			
 			reopen()
 			
-			if (!exists())
+			if (!exists)
 			{
 				perror("fopen")
 				
@@ -177,7 +205,7 @@ public class File
 	
 	public write(String data)
 	{
-		fputs(data.toCharArray(), fp)
+		fputs(data.chars, fp)
 		flush()
 	}
 	
@@ -188,29 +216,9 @@ public class File
 	
 	public close()
 	{
-		if (exists())
+		if (exists)
 		{
 			fclose(fp)
-		}
-	}
-	
-	public static getMaxOpenFiles() -> Int
-	{
-		return extGetMaxOpenFiles()
-	}
-	
-	public static setMaxOpenFiles(Int num)
-	{
-		Short min = (Short)20
-		Short max = (Short)2048
-		
-		if (num > max || num < min)
-		{
-			Console.writeLine("Invalid max number of open files: " + num + "\nValid values include " + min + "-" + max)
-		}
-		else
-		{
-			extSetMaxOpenFiles(num)
 		}
 	}
 }

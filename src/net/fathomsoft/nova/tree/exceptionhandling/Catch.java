@@ -11,6 +11,8 @@ import net.fathomsoft.nova.util.Bounds;
 import net.fathomsoft.nova.util.Location;
 import net.fathomsoft.nova.util.Patterns;
 import net.fathomsoft.nova.util.Regex;
+import net.fathomsoft.nova.util.StringUtils;
+import net.fathomsoft.nova.util.SyntaxUtils;
 
 /**
  * ExceptionHandler extension that represents the declaration of a
@@ -19,10 +21,12 @@ import net.fathomsoft.nova.util.Regex;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Mar 22, 2014 at 4:01:44 PM
- * @version	v0.2.33 Sep 29, 2014 at 10:29:33 AM
+ * @version	v0.2.38 Dec 6, 2014 at 5:19:17 PM
  */
 public class Catch extends ExceptionHandler
 {
+	public static final String IDENTIFIER = "catch";
+	
 	/**
 	 * @see net.fathomsoft.nova.tree.Node#Node(Node, Location)
 	 */
@@ -124,7 +128,7 @@ public class Catch extends ExceptionHandler
 	 */
 	public static Catch decodeStatement(Node parent, String statement, Location location, boolean require)
 	{
-		if (Regex.matches(statement, 0, Patterns.PRE_CATCH))
+		if (StringUtils.startsWithWord(statement, IDENTIFIER))
 		{
 			Catch    n        = new Catch(parent, location);
 			Location newLoc   = location.asNew();
@@ -152,7 +156,7 @@ public class Catch extends ExceptionHandler
 	 */
 	private Bounds calculateCatchContents(String statement)
 	{
-		Bounds bounds = Regex.boundsOf(statement, Patterns.POST_CATCH);
+		Bounds bounds = SyntaxUtils.findInnerParenthesesBounds(this, statement);
 		
 		if (!bounds.isValid())
 		{

@@ -1,0 +1,29 @@
+package "nova/standard/datastruct"
+
+public class BinaryTree extends Tree
+{
+	public BinaryNode<Object> root
+	{
+		get
+		{
+			return super.root
+		}
+		
+		set(BinaryNode node)
+		{
+			super.root = node
+		}
+	}
+	
+	public addNode(Object data)
+	{
+		if (root == null)
+		{
+			root = new BinaryNode(data)
+		}
+		else
+		{
+			root.addChild(data)
+		}
+	}
+}

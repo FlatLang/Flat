@@ -1,14 +1,18 @@
 package net.fathomsoft.nova.tree.variables;
 
+import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.TestContext;
+import net.fathomsoft.nova.ValidationResult;
+import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.tree.Accessible;
+import net.fathomsoft.nova.tree.AccessorMethod;
 import net.fathomsoft.nova.tree.ClassDeclaration;
-import net.fathomsoft.nova.tree.FileDeclaration;
 import net.fathomsoft.nova.tree.GenericType;
 import net.fathomsoft.nova.tree.Identifier;
+import net.fathomsoft.nova.tree.MethodCall;
 import net.fathomsoft.nova.tree.Node;
+import net.fathomsoft.nova.tree.SyntaxTree;
 import net.fathomsoft.nova.util.Location;
-import net.fathomsoft.nova.util.SyntaxUtils;
 
 /**
  * Identifier extension that represents the use of a variable
@@ -17,7 +21,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:02:42 PM
- * @version	v0.2.36 Oct 13, 2014 at 12:16:42 AM
+ * @version	v0.2.38 Dec 6, 2014 at 5:19:17 PM
  */
 public class Variable extends Identifier
 {
@@ -32,6 +36,24 @@ public class Variable extends Identifier
 	}
 	
 	@Override
+	public boolean isConstant()
+	{
+		return false;
+	}
+	
+	@Override
+	public boolean isConsistent()
+	{
+		return true;
+	}
+	
+	@Override
+	public boolean isValid()
+	{
+		return super.isValid() && getDeclaration() != null && getDeclaration().isValid();
+	}
+	
+	@Override
 	public String getGenericReturnType()
 	{
 		if (isGenericType())
@@ -42,7 +64,7 @@ public class Variable extends Identifier
 			{
 				VariableDeclaration decl = ((Variable)ref).getDeclaration();
 				
-				GenericType type = decl.getGenericParameterInstance(getType());
+				GenericType type = decl.getGenericParameterInstance(getType(), this);
 				
 				if (type.isGenericType())
 				{
@@ -84,7 +106,7 @@ public class Variable extends Identifier
 	 */
 	public boolean isLocal()
 	{
-		return getDeclaration().getParentMethod() != null;
+		return isValid() && getDeclaration().getParentMethod() != null;
 	}
 	
 	/**
@@ -132,7 +154,18 @@ public class Variable extends Identifier
 	 */
 	public VariableDeclaration getDeclaration()
 	{
-		return declaration;
+		if (declaration != null)
+		{
+			return declaration;
+		}
+		
+		return null;
+	}
+	
+	@Override
+	public ClassDeclaration getDeclaringClass()
+	{
+		return getDeclaration().getParentClass();
 	}
 	
 	/**
@@ -297,6 +330,52 @@ public class Variable extends Identifier
 		return getDeclaration().getGenericParameterNames().length > 0;
 	}
 	
+	@Override
+	public ValidationResult validate(int phase)
+	{
+		ValidationResult result = super.validate(phase);
+		
+		if (result.skipValidation())
+		{
+			return result;
+		}
+		
+		if (phase == SyntaxTree.PHASE_METHOD_CONTENTS)
+		{
+			if (getDeclaration() != null)
+			{
+				if (!getDeclaration().isAccessible())
+				{
+					SyntaxMessage.error("The field '" + getName() + "' is not accessible", this, false);
+					
+					getParent().removeChild(this);
+					
+					return result.errorOccurred();
+				}
+			}
+			
+			if (getDeclaration() instanceof FieldDeclaration)
+			{
+				FieldDeclaration field    = (FieldDeclaration)getDeclaration();
+				AccessorMethod   accessor = field.getAccessorMethod();
+//				Nova.debuggingBreakpoint(field.getName().equals("exists"));
+				
+				if (accessor != null && !accessor.isDisabled())
+				{
+					MethodCall access = MethodCall.decodeStatement(getParent(), getName() + "()", getLocationIn(), true, false, accessor);
+					
+					getParent().replace(this, access);
+					
+					result.returnedNode = access;
+					
+					return result;
+				}
+			}
+		}
+		
+		return result;
+	}
+	
 	/**
 	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location, boolean)
 	 */
@@ -317,9 +396,9 @@ public class Variable extends Identifier
 	 */
 	public Variable cloneTo(Variable node)
 	{
-		super.cloneTo(node);
-		
 		node.declaration = declaration;
+		
+		super.cloneTo(node);
 		
 		return node;
 	}

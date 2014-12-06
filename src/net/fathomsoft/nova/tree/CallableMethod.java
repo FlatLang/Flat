@@ -7,7 +7,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.2.14 Jul 1, 2014 at 11:41:22 PM
- * @version	v0.2.35 Oct 5, 2014 at 11:22:42 PM
+ * @version	v0.2.38 Dec 6, 2014 at 5:19:17 PM
  */
 public interface CallableMethod
 {
@@ -114,20 +114,12 @@ public interface CallableMethod
 	 */
 	public default boolean areCompatibleParameterTypes(boolean searchGeneric, Value ... types)
 	{
-		if (types.length != getParameterList().getNumVisibleChildren())
+		if (getParameterList().getNumVisibleChildren() != types.length)
 		{
 			return false;
 		}
 		
-		for (int i = 0; i < types.length; i++)
-		{
-			if (!SyntaxUtils.isTypeCompatible(getParameterList().getParameter(i), types[i], searchGeneric))
-			{
-				return false;
-			}
-		}
-		
-		return true;
+		return SyntaxUtils.areTypesCompatible(getParameterList().getTypes(), types, searchGeneric);
 	}
 	
 	public boolean isGenericType();

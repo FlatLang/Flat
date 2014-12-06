@@ -1,5 +1,6 @@
 package net.fathomsoft.nova.tree;
 
+import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.tree.exceptionhandling.Exception;
@@ -15,7 +16,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.2.14 Jun 19, 2014 at 12:14:53 PM
- * @version	v0.2.37 Oct 16, 2014 at 11:38:42 PM
+ * @version	v0.2.38 Dec 6, 2014 at 5:19:17 PM
  */
 public class MethodCallArgumentList extends ArgumentList
 {
@@ -56,7 +57,7 @@ public class MethodCallArgumentList extends ArgumentList
 		
 		generateDefaultArguments(builder);
 		
-		for (int i = 0; i < getNumChildren(); i++)
+		for (int i = 0; i < getNumVisibleChildren(); i++)
 		{
 			if (i > 0)
 			{
@@ -64,7 +65,6 @@ public class MethodCallArgumentList extends ArgumentList
 			}
 			
 			Value child = (Value)getChild(i);
-			
 			Value param = getMethodCall().getCorrespondingParameter(child);
 			
 			boolean sameType = isSameType(child.getReturnedNode(), param);
@@ -254,18 +254,62 @@ public class MethodCallArgumentList extends ArgumentList
 	{
 		ValidationResult result = super.validate(phase);
 		
-		if (result.errorOccurred)
+		if (result.skipValidation())
 		{
 			return result;
 		}
 		
 		if (phase == SyntaxTree.PHASE_PRE_GENERATION)
 		{
-			for (int i = 0; i < getNumVisibleChildren(); i++)
+			int numRet = 0;
+			
+			if (getMethodDeclaration() instanceof NovaMethodDeclaration)
+			{
+				NovaMethodDeclaration novaMethod = (NovaMethodDeclaration)getMethodDeclaration();
+				
+				numRet = novaMethod.getParameterList().getNumReturnParameters();
+				
+				Node base = getBaseNode();
+				
+				if (base instanceof Assignment)
+				{
+					Assignment assignment = (Assignment)base;
+					
+					numRet -= assignment.getNumAssignees() - 1;
+					
+					for (int i = 1; i < assignment.getNumAssignees(); i++)
+					{
+						addChild(assignment.getAssigneeNodes().getVisibleChild(i));
+					}
+				}
+				
+				for (int i = numRet; i > 0; i--)
+				{
+					Literal l = new Literal(this, getLocationIn().asNew());
+					l.setValue(Literal.GARBAGE_IDENTIFIER);
+					l.setType("void");
+					l.setDataType(Value.VALUE);
+					
+					addChild(l);
+				}
+				
+				if (base instanceof Assignment)
+				{
+					Assignment assignment = (Assignment)base;
+					
+					numRet = assignment.getNumAssignees();
+				}
+				else
+				{
+					numRet = 0;
+				}
+			}
+			
+			for (int i = 0; i < getNumVisibleChildren() - numRet; i++)
 			{
 				Value value = (Value)getVisibleChild(i);
 				
-				if (value.isPrimitive() && getMethodCall().getCorrespondingParameter(i).isGenericType())
+				if (value.getReturnedNode().isPrimitive() && !getMethodCall().getCorrespondingParameter(i).isPrimitive())//.isGenericType())
 				{
 					Instantiation newValue = SyntaxUtils.autoboxPrimitive(value);
 					
@@ -275,6 +319,11 @@ public class MethodCallArgumentList extends ArgumentList
 		}
 		
 		return result;
+	}
+	
+	public CallableMethod getMethodDeclaration()
+	{
+		return (CallableMethod)getMethodCall().getMethodDeclaration();
 	}
 	
 	/**

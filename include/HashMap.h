@@ -19,6 +19,8 @@ extern void* hashmapRemove(hashmap*, unsigned long key);
 /** Returns the element for the key. */
 extern void* hashmapGet(hashmap*, unsigned long key);
 
+char hashmapContains(hashmap* hash, unsigned long key);
+
 /** Returns the number of saved elements. */
 extern long hashmapCount(hashmap*);
 

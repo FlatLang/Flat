@@ -1,6 +1,6 @@
 #pragma once
-#ifndef FILE_Animal_NOVA
-#define FILE_Animal_NOVA
+#ifndef FILE_example_NovaAnimal_NOVA
+#define FILE_example_NovaAnimal_NOVA
 
 typedef struct example_NovaAnimal example_NovaAnimal;
 
@@ -25,16 +25,16 @@ typedef struct example_NovaAnimal example_NovaAnimal;
 #include <nova/standard/nova_standard_NovaObject.h>
 #include <nova/standard/nova_standard_NovaString.h>
 #include <nova/standard/nova_standard_NovaSystem.h>
-#include <nova/standard/nova_standard_NovaMath.h>
+#include <nova/standard/math/nova_standard_math_NovaMath.h>
 
 typedef struct nova_VTable_example_NovaAnimal
 {
-	long (*nova_standard_NovaObject_Novavirtual0_getHashCodeLong)(nova_standard_NovaObject*, nova_standard_exception_NovaExceptionData*);
-	nova_standard_NovaString* (*example_NovaAnimal_Novavirtual0_toString)(example_NovaAnimal*, nova_standard_exception_NovaExceptionData*);
-	char (*nova_standard_NovaObject_Novavirtual0_equals)(nova_standard_NovaObject*, nova_standard_exception_NovaExceptionData*, nova_standard_NovaObject*);
-	int (*example_NovaAnimal_Novavirtual0_getNumLegs)(example_NovaAnimal*, nova_standard_exception_NovaExceptionData*);
-	int (*example_NovaAnimal_Novavirtual0_getNumEyes)(example_NovaAnimal*, nova_standard_exception_NovaExceptionData*);
-	nova_standard_NovaString* (*example_NovaAnimal_Novavirtual0_getDescription)(example_NovaAnimal*, nova_standard_exception_NovaExceptionData*);
+	long (*nova_standard_NovaObject_virtual0_NovagetHashCodeLong)(nova_standard_NovaObject*, nova_standard_exception_NovaExceptionData*);
+	nova_standard_NovaString* (*example_NovaAnimal_virtual0_NovatoString)(example_NovaAnimal*, nova_standard_exception_NovaExceptionData*);
+	char (*nova_standard_NovaObject_virtual0_Novaequals)(nova_standard_NovaObject*, nova_standard_exception_NovaExceptionData*, nova_standard_NovaObject*);
+	int (*example_NovaAnimal_virtual0_NovagetNumLegs)(example_NovaAnimal*, nova_standard_exception_NovaExceptionData*);
+	int (*example_NovaAnimal_virtual0_NovagetNumEyes)(example_NovaAnimal*, nova_standard_exception_NovaExceptionData*);
+	nova_standard_NovaString* (*example_NovaAnimal_virtual0_NovagetDescription)(example_NovaAnimal*, nova_standard_exception_NovaExceptionData*);
 } nova_VTable_example_NovaAnimal;
 
 CCLASS_CLASS
@@ -45,12 +45,12 @@ CCLASS_CLASS
 )
 
 void example_NovaAnimalNova_init_static(nova_standard_exception_NovaExceptionData* exceptionData);
-example_NovaAnimal* example_NovaAnimal_Nova0_construct(example_NovaAnimal* this, nova_standard_exception_NovaExceptionData* exceptionData);
-void nova_del_Animal(example_NovaAnimal** this, nova_standard_exception_NovaExceptionData* exceptionData);
-int example_NovaAnimal_Nova0_getNumLegs(example_NovaAnimal* this, nova_standard_exception_NovaExceptionData* exceptionData);
-int example_NovaAnimal_Nova0_getNumEyes(example_NovaAnimal* this, nova_standard_exception_NovaExceptionData* exceptionData);
-nova_standard_NovaString* example_NovaAnimal_Nova0_getDescription(example_NovaAnimal* this, nova_standard_exception_NovaExceptionData* exceptionData);
-nova_standard_NovaString* example_NovaAnimal_Nova0_toString(example_NovaAnimal* this, nova_standard_exception_NovaExceptionData* exceptionData);
+example_NovaAnimal* example_NovaAnimal_0_Novaconstruct(example_NovaAnimal* this, nova_standard_exception_NovaExceptionData* exceptionData);
+void example_NovaAnimal_Novadestroy(example_NovaAnimal** this, nova_standard_exception_NovaExceptionData* exceptionData);
+int example_NovaAnimal_0_NovagetNumLegs(example_NovaAnimal* this, nova_standard_exception_NovaExceptionData* exceptionData);
+int example_NovaAnimal_0_NovagetNumEyes(example_NovaAnimal* this, nova_standard_exception_NovaExceptionData* exceptionData);
+nova_standard_NovaString* example_NovaAnimal_0_NovagetDescription(example_NovaAnimal* this, nova_standard_exception_NovaExceptionData* exceptionData);
+nova_standard_NovaString* example_NovaAnimal_0_NovatoString(example_NovaAnimal* this, nova_standard_exception_NovaExceptionData* exceptionData);
 void example_NovaAnimal_Novathis(example_NovaAnimal* this, nova_standard_exception_NovaExceptionData* exceptionData);
 void example_NovaAnimal_Novasuper(example_NovaAnimal* this, nova_standard_exception_NovaExceptionData* exceptionData);
 

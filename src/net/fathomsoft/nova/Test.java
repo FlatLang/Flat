@@ -7,7 +7,9 @@ import java.util.ArrayList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import net.fathomsoft.nova.util.Bounds;
 import net.fathomsoft.nova.util.Patterns;
+import net.fathomsoft.nova.util.SyntaxUtils;
 
 public class Test
 {
@@ -82,11 +84,99 @@ public class Test
 		list.add(4);
 	}
 	
+	private static class T1
+	{
+		public static int getI()
+		{
+			return 1;
+		}
+	}
+	
+	private static class T2 extends T1
+	{
+		public static int getI()
+		{
+			return 2;
+		}
+	}
+	
 	public static void main(String args[])
 	{
-		Console console = System.console();
-		String username = console.readLine("Username: ");
-		char[] password = console.readPassword("Password: ");
+		T1 t1  = new T2();
+		T2 t2  = new T2();
+		T1 t11 = new T1();
+		
+		int a1 = t1.getI();
+		int a2 = t2.getI();
+		int a11 = t11.getI();
+		
+		System.out.println(a1 + ", " + a2 + ", " + a11);
+		
+		
+		int aa = 3;
+		
+		switch (aa)
+		{
+			case 3:
+				System.out.println("in 3");
+			case 4:
+				System.out.println("in 4");
+				break;
+			case 5:
+				System.out.println("in 5");
+				break;
+			case 6:
+				System.out.println("in 6");
+			case 7:
+				System.out.println("in 7");
+				break;
+		}
+		
+		boolean fall = false;
+		
+		do
+		{
+			if (aa == 3)
+			{
+				System.out.println("2 in 3");
+				
+				fall = true;
+			}
+			if (fall || aa == 4)
+			{
+				System.out.println("2 in 4");
+				
+				break;
+			}
+			else if (aa == 5)
+			{
+				System.out.println("2 in 5");
+			}
+			else if (aa == 6)
+			{
+				System.out.println("2 in 6");
+				
+				fall = true;
+			}
+			if (fall || aa == 7)
+			{
+				System.out.println("2 in 7");
+				
+				break;
+			}
+			else if (aa == 8)
+			{
+				System.out.println("2 in 8");
+			}
+			System.out.println("At end");
+		}
+		while (false);
+		
+		String q = "case test.num.charAt(4)++ num++";
+		
+		Bounds b = SyntaxUtils.findIdentifierBounds(q, 5, true, true);
+		
+		System.out.println(b.extractString(q));
 		
 		System.exit(0);
 		
@@ -241,5 +331,16 @@ public class Test
 		System.out.println("run: " + findTime + " " + count);
 		
 		System.out.println("Done");
+	}
+	
+	private static class Com implements Comparable<Com>
+	{
+
+		@Override
+		public int compareTo(Com arg0)
+		{
+			return 0;
+		}
+		
 	}
 }

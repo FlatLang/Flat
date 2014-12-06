@@ -6,6 +6,7 @@ import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.error.SyntaxErrorException;
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.tree.MethodList.SearchFilter;
+import net.fathomsoft.nova.tree.exceptionhandling.Throw;
 import net.fathomsoft.nova.tree.variables.Variable;
 import net.fathomsoft.nova.tree.variables.VariableDeclaration;
 import net.fathomsoft.nova.util.Bounds;
@@ -21,7 +22,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 10:04:31 PM
- * @version	v0.2.36 Oct 13, 2014 at 12:16:42 AM
+ * @version	v0.2.38 Dec 6, 2014 at 5:19:17 PM
  */
 public class MethodCall extends Variable
 {
@@ -88,11 +89,16 @@ public class MethodCall extends Variable
 		
 		if (isDecoding())
 		{
-			MethodDeclaration methods[] = getDeclaringClass().getMethods(getName());
+			ClassDeclaration declaring = getDeclaringClass();
 			
-			if (methods.length > 0)
+			if (declaring != null)
 			{
-				method = methods[0];
+				MethodDeclaration methods[] = declaring.getMethods(getName());
+				
+				if (methods.length > 0)
+				{
+					method = methods[0];
+				}
 			}
 		}
 		else
@@ -101,6 +107,18 @@ public class MethodCall extends Variable
 		}
 		
 		return method != null && method.isExternal() || super.isWithinExternalContext();
+	}
+	
+	@Override
+	public boolean isConstant()
+	{
+		return false;
+	}
+	
+	@Override
+	public boolean isConsistent()
+	{
+		return false;
 	}
 	
 	/**
@@ -163,7 +181,19 @@ public class MethodCall extends Variable
 			return closure;
 		}
 		
-		return getDeclaringClass().getMethod(getName(), getArgumentList().getTypes());
+		ClassDeclaration declaring = getDeclaringClass();
+		
+		if (declaring == null)
+		{
+			return null;
+		}
+		
+		if (getFileDeclaration().getImportList().getAbsoluteClassLocation(getName()) != null)
+		{
+			setName(getFileDeclaration().getImportedClass(declaring, getName()).getName());
+		}
+		
+		return declaring.getMethod(getName(), getArgumentList().getTypes());
 	}
 		
 	/**
@@ -456,23 +486,38 @@ public class MethodCall extends Variable
 	@Override
 	public GenericCompatible getGenericDeclaration()
 	{
-		Assignment assign = null;
+		Node last = getLastAncestorOfType(new Class[] { MethodCallArgumentList.class, Variable.class, Instantiation.class }, false);
 		
-		if (getParent() instanceof Assignment)
+		if (last instanceof Variable)
 		{
-			assign = (Assignment)getParent();
-		}
-		if (getParent() instanceof Instantiation && getParent().getParent() instanceof Assignment)
-		{
-			assign = (Assignment)getParent().getParent();
-		}
-		if (assign != null)
-		{
-			Value val = assign.getAssigneeNode();
+			Variable var = (Variable)last;
 			
-			if (val instanceof Variable)
+			if (var.getDeclaration() instanceof MutatorMethod)
 			{
-				return ((Variable)val).getDeclaration();
+				return var.getDeclaringClass().getField(var.getName());
+			}
+		}
+		
+//		if (!(this instanceof MethodCall))
+		{
+			Assignment assign = null;
+			
+//			if (getParent() instanceof Assignment)
+//			{
+//				assign = (Assignment)getParent();
+//			}
+			if (getParent() instanceof Instantiation && getParent().getParent() instanceof Assignment)
+			{
+				assign = (Assignment)getParent().getParent();
+			}
+			if (assign != null)
+			{
+				Value val = assign.getAssigneeNode();
+				
+				if (val instanceof Variable)
+				{
+					return ((Variable)val).getDeclaration();
+				}
 			}
 		}
 		
@@ -519,6 +564,11 @@ public class MethodCall extends Variable
 		}
 		
 		return super.getName();
+	}
+	
+	public Value[] getTypes()
+	{
+		return getMethodDeclaration().getTypes();
 	}
 	
 	/**
@@ -574,6 +624,35 @@ public class MethodCall extends Variable
 	 */
 	public static MethodCall decodeStatement(Node parent, String statement, Location location, boolean require, boolean validateAccess)
 	{
+		return decodeStatement(parent, statement, location, require, validateAccess, null);
+	}
+	
+	/**
+	 * Decode the given statement into a MethodCall instance, if
+	 * possible. If it is not possible, this method returns null.<br>
+	 * To determine whether or not a method is called externally,
+	 * refer to {@link #isExternal()} for more details on what an
+	 * external call looks like.
+	 * <br>
+	 * Example inputs include:<br>
+	 * <ul>
+	 * 	<li>methodName(5, varName, methodThatReturnsAValue(), "arg1")</li>
+	 * 	<li>externalFile.cFunctionName()</li>
+	 * 	<li>methodName('q', 5 * (2 / 3))</li>
+	 * </ul>
+	 * 
+	 * @param parent The parent node of the statement.
+	 * @param statement The statement to try to decode into a
+	 * 		MethodCall instance.
+	 * @param location The location of the statement in the source code.
+	 * @param require Whether or not to throw an error if anything goes wrong.
+	 * @param validateAccess Whether or not to check if method call can be
+	 * 		accessed legally.
+	 * @return The generated node, if it was possible to translated it
+	 * 		into a MethodCall.
+	 */
+	public static MethodCall decodeStatement(Node parent, String statement, Location location, boolean require, boolean validateAccess, CallableMethod callableMethod)
+	{
 		if (SyntaxUtils.isMethodCall(statement))
 		{
 			MethodCall n  = new MethodCall(parent, location);
@@ -587,16 +666,30 @@ public class MethodCall extends Variable
 				return null;
 			}
 			
-			VariableDeclaration temp = new VariableDeclaration(null, null);
-			temp.setName(data.name);
-			n.setDeclaration(temp);
-			Nova.debuggingBreakpoint(statement.equals("nova_socket_receive(clientSocket)"));
+			VariableDeclaration temp = null;
+			
+			if (callableMethod == null)
+			{
+				temp = new VariableDeclaration(null, null);
+				temp.setName(data.name);
+				n.setDeclaration(temp);
+			}
+			else
+			{
+				n.setDeclaration((VariableDeclaration)callableMethod);
+			}
+			
 			if (!n.decodeArguments(statement, bounds, require))
 			{
 				return null;
 			}
 			
-			n.setDeclaration(n.searchMethodDeclaration());
+			if (callableMethod == null)
+			{
+				callableMethod = (CallableMethod)n.searchMethodDeclaration();
+			}
+			
+			n.setDeclaration((VariableDeclaration)callableMethod);
 			
 			CallableMethod method = n.getCallableDeclaration();
 			
@@ -804,7 +897,6 @@ public class MethodCall extends Variable
 				
 				if (arg == null)
 				{
-					Nova.debuggingBreakpoint(argument.equals("s.length != NetworkStability.receive.length || !s.equals(NetworkStability.received)"));
 					arg = BinaryOperation.decodeStatement(parent, argument, location, false);
 					
 					if (arg == null)
@@ -813,8 +905,6 @@ public class MethodCall extends Variable
 						
 						if (arg == null)
 						{
-							validateCharacters(parent, argument, location);
-							
 							if (parent.isWithinExternalContext())
 							{
 								arg = Literal.decodeStatement(parent, argument, location, true);
@@ -822,6 +912,8 @@ public class MethodCall extends Variable
 							
 							if (arg == null)
 							{
+								validateCharacters(parent, argument, location);
+								
 								SyntaxMessage.error("Could not decode argument '" + argument + "'", parent, location);
 							}
 						}
@@ -892,7 +984,7 @@ public class MethodCall extends Variable
 	{
 		ValidationResult result = super.validate(phase);
 		
-		if (result.errorOccurred)
+		if (result.skipValidation())
 		{
 			return result;
 		}

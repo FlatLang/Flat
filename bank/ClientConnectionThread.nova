@@ -14,18 +14,11 @@ public class ClientConnectionThread extends Thread
 	
 	public run()
 	{
-		while (true)
+		while (socket.validateConnection())
 		{
-			if (!socket.validateConnection())
-			{
-				Console.writeLine("Disconnected.")
-				
-				break
-			}
-			
-			String message = socket.in.readString()
-			
-			Console.write(message)
+			Console.write(socket.in.readString())
 		}
+		
+		Console.writeLine("Disconnected.")
 	}
 }

@@ -1,11 +1,14 @@
 package net.fathomsoft.nova.tree;
 
+import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.util.Location;
 import net.fathomsoft.nova.util.Patterns;
 import net.fathomsoft.nova.util.Regex;
+import net.fathomsoft.nova.util.StringUtils;
+import net.fathomsoft.nova.util.SyntaxUtils;
 
 /**
  * Node extension that represents the declaration of an
@@ -14,12 +17,18 @@ import net.fathomsoft.nova.util.Regex;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 13, 2014 at 7:56:24 PM
- * @version	v0.2.35 Oct 5, 2014 at 11:22:42 PM
+ * @version	v0.2.38 Dec 6, 2014 at 5:19:17 PM
  */
 public class Import extends Node
 {
 	private boolean used;
 	private boolean	external;
+	
+	private String  alias;
+	private String  location;
+	
+	public static final String IDENTIFIER    = "import";
+	public static final String AS_IDENTIFIER = "as";
 	
 	/**
 	 * @see net.fathomsoft.nova.tree.Node#Node(Node, Location)
@@ -69,15 +78,25 @@ public class Import extends Node
 	{
 		this.external = external;
 	}
-	
-	/**
-	 * Get the Identifier containing the location of the import.
-	 * 
-	 * @return The Identifier containing the location of the import.
-	 */
-	public Identifier getLocationNode()
+
+	public String getClassLocation()
 	{
-		return (Identifier)getChild(0);
+		return getClassLocation(false);
+	}
+	
+	public String getClassLocation(boolean aliased)
+	{
+		if (aliased && alias != null)
+		{
+			return SyntaxUtils.getClassParentLocation(location) + "/" + alias;
+		}
+		
+		return location;
+	}
+	
+	public ClassDeclaration getClassDeclaration()
+	{
+		return getProgram().getClassDeclaration(getClassLocation());
 	}
 	
 	/**
@@ -92,10 +111,10 @@ public class Import extends Node
 	{
 		if (isExternal())
 		{
-			return getLocationNode().getName() + ".h";
+			return location + ".h";
 		}
 		
-		ClassDeclaration node = getProgram().getClassDeclaration(getLocationNode().getName());
+		ClassDeclaration node = getProgram().getClassDeclaration(location);
 		
 		return node.getFileDeclaration().generateCHeaderName();
 	}
@@ -106,7 +125,7 @@ public class Import extends Node
 	@Override
 	public StringBuilder generateNovaInput(StringBuilder builder, boolean outputChildren)
 	{
-		return builder.append(getLocationNode().getName());
+		return builder.append(location);
 	}
 	
 	/**
@@ -126,7 +145,7 @@ public class Import extends Node
 	{
 		builder.append("#include ");
 		
-		if (isExternal() || !getFileDeclaration().getName().equals(getLocationNode().getName()))
+		if (isExternal() || !getFileDeclaration().getName().equals(location))
 		{
 			return builder.append('<').append(getLocation()).append('>').append('\n');
 		}
@@ -159,39 +178,63 @@ public class Import extends Node
 	 */
 	public static Import decodeStatement(Node parent, String statement, Location location, boolean require)
 	{
-		if (Regex.indexOf(statement, Patterns.PRE_IMPORT) == 0)
+		if (StringUtils.findNextWord(statement).equals(IDENTIFIER))
 		{
 			Import n = new Import(parent, location);
 			
-			int importStartIndex = Regex.indexOf(statement, Patterns.POST_IMPORT);
+			int quoteStart = StringUtils.findNextNonWhitespaceIndex(statement, IDENTIFIER.length());
 			
-			if (importStartIndex >= 0)
+			if (quoteStart < 0 || statement.charAt(quoteStart) != '"')
 			{
-				int endIndex = statement.length() - 1;
-				
-				if (statement.charAt(endIndex) != '"')
-				{
-					SyntaxMessage.error("Import statement missing ending quotation", n);
-				}
-				
-				String importLocation = statement.substring(importStartIndex + 1, endIndex);
-				
-				importLocation = n.validateExtension(importLocation);
-				
-				IIdentifier node = new IIdentifier(n, location);
-				node.setName(importLocation);
-				
-				n.addChild(node);
-			}
-			else
-			{
-				SyntaxMessage.error("Import statement must specify the location of the file", n);
+				return null;
 			}
 			
-			return n;
+			int quoteEnd = StringUtils.findEndingChar(statement, '"', quoteStart, 1);
+			
+			if (quoteEnd < 0)
+			{
+				SyntaxMessage.error("Missing ending quotation for import statement", n);
+			}
+			
+			String importLocation = statement.substring(quoteStart + 1, quoteEnd);
+			String alias          = statement.substring(quoteEnd + 1).trim();
+			
+			if (n.validateImportLocation(importLocation) && n.validateAlias(alias, require))
+			{
+				return n;
+			}
 		}
 		
 		return null;
+	}
+	
+	private boolean validateImportLocation(String importLocation)
+	{
+		location = validateExtension(importLocation);
+		
+		return true;
+	}
+	
+	private boolean validateAlias(String alias, boolean require)
+	{
+		if (alias.length() > 0)
+		{
+			if (!StringUtils.findNextWord(alias).equals(AS_IDENTIFIER))
+			{
+				return SyntaxMessage.queryError("Unable to decode import statement '" + alias + "'", this, require);
+			}
+			
+			alias = alias.substring(AS_IDENTIFIER.length() + 1).trim();
+			
+			if (!SyntaxUtils.isValidIdentifier(alias))
+			{
+				return SyntaxMessage.queryError("Invalid import alias identifier '" + alias + "'", this, require);
+			}
+			
+			this.alias = alias;
+		}
+		
+		return true;
 	}
 	
 	/**
@@ -234,35 +277,25 @@ public class Import extends Node
 	{
 		ValidationResult result = super.validate(phase);
 		
-		if (result.errorOccurred)
+		if (result.skipValidation())
 		{
 			return result;
 		}
 		
 		if (!isExternal())
 		{
-			Identifier location = getLocationNode();
-			
 			Program    program  = getProgram();
 			
-			ClassDeclaration clazz = program.getClassDeclaration(location.getName());
+			ClassDeclaration clazz = program.getClassDeclaration(location);
 			
 			if (clazz == null)
 			{
-					SyntaxMessage.error("Unknown import location '" + location.getName() + "'", this, false);
+					SyntaxMessage.error("Unknown import location '" + location + "'", this, false);
 					
 					getParent().removeChild(this);
 					
-					result.errorOccurred = true;
-					
-					return result;
+					return result.errorOccurred();
 			}
-			
-			IIdentifier node = new IIdentifier(this, location.getLocationIn());
-			
-			location.cloneTo(node);
-			
-			//replace(location, location);
 		}
 		
 		return result;

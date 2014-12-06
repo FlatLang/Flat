@@ -13,6 +13,7 @@ import net.fathomsoft.nova.util.Bounds;
 import net.fathomsoft.nova.util.Location;
 import net.fathomsoft.nova.util.Patterns;
 import net.fathomsoft.nova.util.StringUtils;
+import net.fathomsoft.nova.util.SyntaxUtils;
 
 /**
  * Class that is the parent of all Nodes on the Tree. Keeps the basic
@@ -23,9 +24,9 @@ import net.fathomsoft.nova.util.StringUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:00:11 PM
- * @version	v0.2.36 Oct 13, 2014 at 12:16:42 AM
+ * @version	v0.2.38 Dec 6, 2014 at 5:19:17 PM
  */
-public abstract class Node
+public abstract class Node implements Listenable
 {
 	private Location		locationIn;
 	
@@ -117,7 +118,7 @@ public abstract class Node
 	 * @return Whether or not the specified Node is waiting for a
 	 * 		single statement to add as a child.
 	 */
-	public boolean pendingScopeFragment()
+	public boolean pendingScopeFragment(Node next)
 	{
 		return false;
 	}
@@ -415,6 +416,46 @@ public abstract class Node
 		return children.get(index);
 	}
 	
+	public Node getFirstChild()
+	{
+		if (getNumChildren() <= 0)
+		{
+			return null;
+		}
+		
+		return getChild(0);
+	}
+	
+	public Node getLastChild()
+	{
+		if (getNumChildren() <= 0)
+		{
+			return null;
+		}
+		
+		return getChild(getNumChildren() - 1);
+	}
+	
+	public Node getFirstVisibleChild()
+	{
+		if (getNumVisibleChildren() <= 0)
+		{
+			return null;
+		}
+		
+		return getVisibleChild(0);
+	}
+	
+	public Node getLastVisibleChild()
+	{
+		if (getNumVisibleChildren() <= 0)
+		{
+			return null;
+		}
+		
+		return getVisibleChild(getNumVisibleChildren() - 1);
+	}
+	
 	/**
 	 * Get the number of children that have been added to the specified
 	 * Node after the Node has been decoded.
@@ -606,7 +647,7 @@ public abstract class Node
 	
 	public void onAdded(Node parent)
 	{
-		
+		Listenable.super.onAdded(parent);
 	}
 	
 	public void onRemoved(Node parent)
@@ -660,7 +701,7 @@ public abstract class Node
 		
 		Node from = parent;
 		
-		if (parent.getNumChildren() > 0 && parent.containsScope())
+		if (parent.getNumChildren() > 0 && !parent.containsChild(this) && parent.containsScope())
 		{
 			from = parent.getScope();
 		}
@@ -694,7 +735,15 @@ public abstract class Node
 		
 		old.detach();
 		
-		addChild(index, replacement);
+		addChild(index, replacement, this);
+	}
+	
+	/**
+	 * @see Node#slaughterEveryLastChild(int)
+	 */
+	public void slaughterEveryLastChild()
+	{
+		slaughterEveryLastChild(getNumChildren());
 	}
 	
 	/**
@@ -968,7 +1017,7 @@ public abstract class Node
 	 */
 	public boolean isWithinStaticContext()
 	{
-		return !getParentMethod().isInstance();
+		return getParentMethod() == null || !getParentMethod().isInstance();
 	}
 	
 	/**
@@ -990,6 +1039,20 @@ public abstract class Node
 		}
 		
 		return false;
+	}
+	
+	public Node getLastAncestorOfType(Class<?>[] classes, boolean opposite)
+	{
+		Node prev    = null;
+		Node current = this;
+		
+		while (SyntaxUtils.checkTypes(classes, current.getClass()) != opposite)
+		{
+			prev    = current;
+			current = current.parent;
+		}
+		
+		return prev;
 	}
 	
 	/**
@@ -1187,6 +1250,11 @@ public abstract class Node
 		}
 	}
 	
+	public boolean isValid()
+	{
+		return parent != null;
+	}
+	
 	/**
 	 * Generate a String containing information of where the Node is
 	 * located in reference to the source input files.
@@ -1377,6 +1445,32 @@ public abstract class Node
 		addChild(node);
 		
 		return true;
+	}
+	
+	/**
+	 * Get the Node that is highest on the tree, up until a scope is hit.
+	 * (The Node that is returned will have a scope as a parent)
+	 * 
+	 * @return The Node that is the highest on the tree up until a scope
+	 * 		is found.
+	 */
+	public Node getBaseNode()
+	{
+		Node prev    = this;
+		Node current = getParent();
+		
+		while (!current.containsScope() && !(current instanceof Scope))
+		{
+			prev    = current;
+			current = current.getParent();
+		}
+		
+		if (current.containsChild(this) && !(current instanceof Scope))
+		{
+			return current;
+		}
+		
+		return prev;
 	}
 	
 	/**

@@ -188,6 +188,33 @@ void* hashmapGet(hashmap* hash, unsigned long key)
 	return 0;
 }
 
+char hashmapContains(hashmap* hash, unsigned long key)
+{
+	if (hash->count)
+	{
+		long index, i, step;
+		index = key % hash->size;
+		step = (key % (hash->size-2)) + 1;
+
+		for (i = 0; i < hash->size; i++)
+		{
+			if (hash->table[index].key == key)
+			{
+				if (hash->table[index].flags & ACTIVE)
+					return 1;
+				break;
+			}
+			else
+				if (!hash->table[index].data)
+					break;
+
+			index = (index + step) % hash->size;
+		}
+	}
+
+	return 0;
+}
+
 long hashmapCount(hashmap* hash)
 {
 	return hash->count;

@@ -12,6 +12,11 @@ public class Bounds
 	public Int start
 	public Int end
 	
+	public construct()
+	{
+		this(0, 0)
+	}
+	
 	/**
 	 * Create a Bounds instance with the specified start and
 	 * end location.

@@ -16,11 +16,13 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:10:53 PM
- * @version	v0.2.35 Oct 5, 2014 at 11:22:42 PM
+ * @version	v0.2.38 Dec 6, 2014 at 5:19:17 PM
  */
 public class ExternalMethodDeclaration extends MethodDeclaration
 {
 	private String	alias;
+	
+	public static final String PREFIX = "external";
 	
 	/**
 	 * @see net.fathomsoft.nova.tree.Node#Node(Node, Location)
@@ -97,7 +99,7 @@ public class ExternalMethodDeclaration extends MethodDeclaration
 	 */
 	public static ExternalMethodDeclaration decodeStatement(Node parent, String statement, Location location, boolean require)
 	{
-		String methodSignature = findMethodSignature(statement, Patterns.EXTERNAL);
+		String methodSignature = findMethodSignature(statement, StringUtils.findWordBounds(statement, ExternalMethodDeclaration.PREFIX));
 		
 		if (methodSignature != null && methodSignature.length() > 0)
 		{
@@ -278,7 +280,7 @@ public class ExternalMethodDeclaration extends MethodDeclaration
 	{
 		ValidationResult result = super.validate(phase);
 		
-		if (result.errorOccurred)
+		if (result.skipValidation())
 		{
 			return result;
 		}
@@ -289,9 +291,7 @@ public class ExternalMethodDeclaration extends MethodDeclaration
 		{
 			SyntaxMessage.error("Non-external method with name '" + alias + "' already exists", this, false);
 			
-			result.errorOccurred = true;
-			
-			return result;
+			return result.errorOccurred();
 		}
 		
 		return result;

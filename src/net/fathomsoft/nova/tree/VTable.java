@@ -10,7 +10,7 @@ import net.fathomsoft.nova.util.Location;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Mar 16, 2014 at 1:13:49 AM
- * @version	v0.2.35 Oct 5, 2014 at 11:22:42 PM
+ * @version	v0.2.38 Dec 6, 2014 at 5:19:17 PM
  */
 public class VTable extends IIdentifier
 {
@@ -22,6 +22,12 @@ public class VTable extends IIdentifier
 	public VTable(Node temporaryParent, Location locationIn)
 	{
 		super(temporaryParent, locationIn);
+	}
+	
+	@Override
+	public StringBuilder generateCType(StringBuilder builder, boolean checkArray)
+	{
+		return builder.append(getType());
 	}
 	
 	/**
@@ -40,7 +46,9 @@ public class VTable extends IIdentifier
 		builder.append("typedef struct ").append(generateCType()).append('\n');
 		builder.append("{\n");
 		generateVirtualMethodDeclarations(builder, methods);
-		builder.append("} ").append(generateCType()).append(";\n");
+		builder.append("} ").append(generateCType()).append(";\n\n");
+		
+		builder.append("extern ").append(generateCType()).append(' ').append(generateCSourceName()).append(";\n");
 		
 		return builder;
 	}
@@ -123,7 +131,7 @@ public class VTable extends IIdentifier
 	{
 		ValidationResult result = super.validate(phase);
 		
-		if (result.errorOccurred)
+		if (result.skipValidation())
 		{
 			return result;
 		}

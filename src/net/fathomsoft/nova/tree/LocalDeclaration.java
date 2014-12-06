@@ -3,6 +3,7 @@ package net.fathomsoft.nova.tree;
 import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.error.SyntaxMessage;
+import net.fathomsoft.nova.tree.variables.FieldDeclaration;
 import net.fathomsoft.nova.tree.variables.VariableDeclaration;
 import net.fathomsoft.nova.util.Bounds;
 import net.fathomsoft.nova.util.Location;
@@ -16,7 +17,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.2.4 Jan 5, 2014 at 9:10:49 PM
- * @version	v0.2.36 Oct 13, 2014 at 12:16:42 AM
+ * @version	v0.2.38 Dec 6, 2014 at 5:19:17 PM
  */
 public class LocalDeclaration extends VariableDeclaration
 {
@@ -50,6 +51,38 @@ public class LocalDeclaration extends VariableDeclaration
 	{
 		this.scopeID = scopeID;
 	}
+	
+	/**
+	 * @see net.fathomsoft.nova.tree.Node#onAdded(Node)
+	 */
+	@Override
+	public void onAdded(Node parent)
+	{
+		LocalDeclaration previous = this;
+		
+		for (int i = 0; i < extraDeclarations.length; i++)
+		{
+			String name = extraDeclarations[i];
+			String type = "";
+			
+			if (!StringUtils.containsMultipleWords(name))
+			{
+				type = previous.generateNovaType() + "";
+			}
+			
+			LocalDeclaration local = LocalDeclaration.decodeStatement(getParent(), type + " " + name, getLocationIn(), true);
+			
+			local.setVolatile(isVolatile());
+			
+			parent.addChildAfter(previous, local);
+			
+			previous = local;
+		}
+		
+		extraDeclarations = new String[0];
+		
+		super.onAdded(parent);
+	}
 
 	/**
 	 * Decode the given statement into a LocalDeclaration instance, if
@@ -72,9 +105,42 @@ public class LocalDeclaration extends VariableDeclaration
 	 */
 	public static LocalDeclaration decodeStatement(Node parent, String statement, Location location, boolean require)
 	{
+		return decodeStatement(parent, statement, location, require, true);
+	}
+	
+	/**
+	 * Decode the given statement into a LocalDeclaration instance, if
+	 * possible. If it is not possible, this method returns null.
+	 * <br>
+	 * Example inputs include:<br>
+	 * <ul>
+	 * 	<li>int index</li>
+	 * 	<li>constant char c</li>
+	 * 	<li>String name</li>
+	 * </ul>
+	 * 
+	 * @param parent The parent node of the statement.
+	 * @param statement The statement to try to decode into a
+	 * 		LocalDeclaration instance.
+	 * @param location The location of the statement in the source code.
+	 * @param require Whether or not to throw an error if anything goes wrong.
+	 * @param checkName Whether or not to check for naming conflicts.
+	 * @return The generated node, if it was possible to translated it
+	 * 		into a LocalDeclaration.
+	 */
+	public static LocalDeclaration decodeStatement(Node parent, String statement, Location location, boolean require, boolean checkName)
+	{
+		LocalDeclaration n = new LocalDeclaration(parent, location);
+		
+		Bounds extraDeclarations = n.findExtraDeclarations(statement);
+		
+		if (extraDeclarations.isValid())
+		{
+			statement = extraDeclarations.extractPreString(statement);
+		}
+		
 		if (!SyntaxUtils.isLiteral(statement) && StringUtils.containsMultipleWords(statement) && !StringUtils.containsChar(statement, StringUtils.INVALID_DECLARATION_CHARS))// || !Regex.matches(statement, Patterns.IDENTIFIER_DECLARATION))
 		{
-			LocalDeclaration n    = new LocalDeclaration(parent, location);
 			DeclarationData  data = new DeclarationData();
 			
 			n.searchGenericParameters(statement, data);
@@ -90,7 +156,7 @@ public class LocalDeclaration extends VariableDeclaration
 			
 			n.checkExternal();
 			
-			if (n.validateDeclaration())
+			if (!checkName || n.validateDeclaration())
 			{
 				for (GenericType type : n.getGenericParameterNames())
 				{

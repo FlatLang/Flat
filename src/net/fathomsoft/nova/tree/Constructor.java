@@ -15,7 +15,7 @@ import net.fathomsoft.nova.util.Stack;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:50:47 PM
- * @version	v0.2.35 Oct 5, 2014 at 11:22:42 PM
+ * @version	v0.2.38 Dec 6, 2014 at 5:19:17 PM
  */
 public class Constructor extends BodyMethodDeclaration
 {
@@ -63,10 +63,6 @@ public class Constructor extends BodyMethodDeclaration
 			{
 				return builder;
 			}
-		}
-		if (isConstant())
-		{
-			SyntaxMessage.error("Constructor cannot be const", this);
 		}
 		
 		if (isReference())
@@ -230,7 +226,7 @@ public class Constructor extends BodyMethodDeclaration
 	{
 		ValidationResult result = super.validate(phase);
 		
-		if (result.errorOccurred)
+		if (result.skipValidation())
 		{
 			return result;
 		}
@@ -273,7 +269,7 @@ public class Constructor extends BodyMethodDeclaration
 			}
 		}
 		
-		String args = generateParameterOutput(c);
+		String args = generateParameterOutput(this, c);
 		
 		MethodCall sup = MethodCall.decodeStatement(current, "super(" + args + ")", Location.INVALID, true);
 		
@@ -284,16 +280,24 @@ public class Constructor extends BodyMethodDeclaration
 	
 	private String generateParameterOutput(NovaMethodDeclaration method)
 	{
+		return generateParameterOutput(method, null);
+	}
+	
+	private String generateParameterOutput(NovaMethodDeclaration method, Constructor inherited)
+	{
 		StringBuilder args = new StringBuilder();
 		
-		for (int i = 0; i < method.getParameterList().getNumVisibleChildren(); i++)
+		if (inherited == null || method.areCompatibleParameterTypes(inherited.getParameterList().getTypes()))
 		{
-			if (i > 0)
+			for (int i = 0; i < method.getParameterList().getNumVisibleChildren(); i++)
 			{
-				args.append(", ");
+				if (i > 0)
+				{
+					args.append(", ");
+				}
+				
+				args.append(method.getParameter(i).getName());
 			}
-			
-			args.append(method.getParameter(i).getName());
 		}
 		
 		return args.toString();

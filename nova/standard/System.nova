@@ -47,11 +47,11 @@ public class System
 	
 	public static execute(String command) -> Process
 	{
-		FILE* pipe = getPipe(command.toCharArray(), exit)
+		FILE* pipe = getPipe(command.chars, exit)
 		
 		File f = new File(pipe)
 		
-		if (!f.exists())
+		if (!f.exists)
 		{
 			exit(1, "Unable to open pipe")
 		}

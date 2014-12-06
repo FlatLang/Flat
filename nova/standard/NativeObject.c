@@ -1,7 +1,7 @@
 #include <precompiled.h>
 #include "NativeObject.h"
 
-char* hashCode(nova_standard_NovaObject* obj)
+char* hashCode(nova_standard_Nova_Object* obj)
 {
 	char* code = (char*)malloc(10 + 1);
 

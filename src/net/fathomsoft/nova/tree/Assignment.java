@@ -6,6 +6,7 @@ import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.tree.variables.ArrayAccess;
 import net.fathomsoft.nova.tree.variables.FieldDeclaration;
+import net.fathomsoft.nova.tree.variables.Super;
 import net.fathomsoft.nova.tree.variables.Variable;
 import net.fathomsoft.nova.tree.variables.VariableDeclaration;
 import net.fathomsoft.nova.tree.variables.VariableDeclarationList;
@@ -19,7 +20,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:19:44 PM
- * @version	v0.2.36 Oct 13, 2014 at 12:16:42 AM
+ * @version	v0.2.38 Dec 6, 2014 at 5:19:17 PM
  */
 public class Assignment extends Node
 {
@@ -29,6 +30,31 @@ public class Assignment extends Node
 	public Assignment(Node temporaryParent, Location locationIn)
 	{
 		super(temporaryParent, locationIn);
+		
+		ArgumentList assignees = new ArgumentList(this, locationIn.asNew());
+		
+		addChild(assignees);
+	}
+	
+	@Override
+	public int getNumDefaultChildren()
+	{
+		return super.getNumDefaultChildren() + 1;
+	}
+	
+	public ArgumentList getAssigneeNodes()
+	{
+		return (ArgumentList)getChild(super.getNumDefaultChildren() + 0);
+	}
+	
+	public int getNumAssignees()
+	{
+		return getAssigneeNodes().getNumVisibleChildren();
+	}
+	
+	public boolean containsMultipleAssignees()
+	{
+		return getNumAssignees() > 1;
 	}
 	
 	/**
@@ -42,7 +68,19 @@ public class Assignment extends Node
 	 */
 	public Value getAssigneeNode()
 	{
-		return (Value)getChild(0);
+		return (Value)getAssigneeNodes().getVisibleChild(0);
+	}
+	
+	public void setAssigneeNode(Value assignee)
+	{
+		if (getNumAssignees() <= 0)
+		{
+			getAssigneeNodes().addChild(assignee);
+		}
+		else
+		{
+			getAssigneeNodes().replace(getAssigneeNode(), assignee);
+		}
 	}
 	
 	/**
@@ -56,7 +94,7 @@ public class Assignment extends Node
 	 */
 	public Accessible getAssignee()
 	{
-		return (Accessible)getChild(0);
+		return (Accessible)getAssigneeNode();
 	}
 	
 	public Variable getAssignedNode()
@@ -82,7 +120,7 @@ public class Assignment extends Node
 	 */
 	public Value getAssignmentNode()
 	{
-		return (Value)getChild(1);
+		return (Value)getChild(super.getNumDefaultChildren() + 1);
 	}
 	
 	/**
@@ -100,6 +138,14 @@ public class Assignment extends Node
 	@Override
 	public StringBuilder generateCSourceFragment(StringBuilder builder)
 	{
+		if (getAssignedNode().getDataType() == Value.POINTER &&
+				getAssignmentNode().getReturnedNode().getDataType() == Value.VALUE ||
+				getAssignedNode().getDataType() == Value.DOUBLE_POINTER &&
+				getAssignmentNode().getReturnedNode().getDataType() == Value.POINTER)
+		{
+			builder.append('*');
+		}
+		
 		return getAssigneeNode().generateCSourceFragment(builder).append(" = ").append(generateCAssignmentSource());
 	}
 	
@@ -152,11 +198,11 @@ public class Assignment extends Node
 	 * <br>
 	 * Example inputs include:<br>
 	 * <ul>
-	 * 	<li>int variableName = 45</li>
+	 * 	<li>Int variableName = 45</li>
 	 * 	<li>personsName = "Bob"</li>
 	 * 	<li>Person myPeep = new Person(54)</li>
 	 * 	<li>area = width * height / 2</li>
-	 * 	<li>int newSize = array.getSize() + 5</li>
+	 * 	<li>Int newSize = array.getSize() + 5</li>
 	 * </ul>
 	 * 
 	 * @param parent The parent of the current statement.
@@ -177,11 +223,11 @@ public class Assignment extends Node
 	 * <br>
 	 * Example inputs include:<br>
 	 * <ul>
-	 * 	<li>int variableName = 45</li>
+	 * 	<li>Int variableName = 45</li>
 	 * 	<li>personsName = "Bob"</li>
 	 * 	<li>Person myPeep = new Person(54)</li>
 	 * 	<li>area = width * height / 2</li>
-	 * 	<li>int newSize = array.getSize() + 5</li>
+	 * 	<li>Int newSize = array.getSize() + 5</li>
 	 * </ul>
 	 * 
 	 * @param parent The parent of the current statement.
@@ -201,35 +247,30 @@ public class Assignment extends Node
 			return null;
 		}
 		
-		Assignment n         = new Assignment(parent, location);
+		Assignment n    = new Assignment(parent, location);
 		
-		int      equalsIndex = SyntaxUtils.findCharInBaseScope(statement, '=');
-		int      endIndex    = StringUtils.findNextNonWhitespaceIndex(statement, equalsIndex - 1, -1) + 1;
+		int equalsIndex = SyntaxUtils.findCharInBaseScope(statement, '=');
+		int endIndex    = StringUtils.findNextNonWhitespaceIndex(statement, equalsIndex - 1, -1) + 1;
 		
-		String   variable    = statement.substring(0, endIndex);
+		String variable = statement.substring(0, endIndex);
 		
-		Location varLoc      = location.asNew();
+		Location varLoc = location.asNew();
 		varLoc.getBounds().setEnd(varLoc.getStart() + endIndex);
 		
-		Value varNode = (Value)SyntaxTree.decodeScopeContents(n, variable, varLoc, require);
+		String[] assignees = StringUtils.splitCommas(variable);
 		
-		if (varNode == null)
-		{
-			SyntaxMessage.queryError("Undeclared variable '" + variable + "'", parent, location, require);
-			
-			return null;
-		}
+//		if (!n.decodeAssignee(assignees[0], varLoc, require, addDeclaration))
+//		{
+//			return null;
+//		}
 		
-		if (varNode.getReturnedNode() instanceof Variable)
+		for (int i = 0; i < assignees.length; i++)
 		{
-			n.validateAuthorization((Variable)varNode.getReturnedNode());
+			if (!n.decodeAssignee(assignees[i], varLoc, require, addDeclaration))
+			{
+				return null;
+			}
 		}
-		else if (addDeclaration)
-		{
-			varNode = n.addDeclaration((VariableDeclaration)varNode);
-		}
-		
-		n.addChild(varNode);
 		
 		int rhsIndex = StringUtils.findNextNonWhitespaceIndex(statement, equalsIndex + 1);
 		
@@ -258,12 +299,39 @@ public class Assignment extends Node
 		return n;
 	}
 	
+	private boolean decodeAssignee(String assignee, Location loc, boolean require, boolean addDeclaration)
+	{
+		Value varNode = (Value)SyntaxTree.decodeScopeContents(this, assignee, loc, require);
+		
+		if (varNode == null)
+		{
+			return SyntaxMessage.queryError("Undeclared variable '" + assignee + "'", this, loc, require);
+		}
+		
+		if (varNode.getReturnedNode() instanceof VariableDeclaration && addDeclaration)
+		{
+			varNode = addDeclaration((VariableDeclaration)varNode);
+		}
+		else if (varNode.getReturnedNode() instanceof Variable)
+		{
+			validateAuthorization((Variable)varNode.getReturnedNode());
+		}
+		
+		getAssigneeNodes().addChild(varNode);
+		
+		return true;
+	}
+	
 	private boolean validateCompatible(Location location)
 	{
+		Nova.debuggingBreakpoint(getAssigneeNode().getReturnedNode() instanceof Super);
 		Value returnedLeft  = getAssigneeNode().getReturnedNode();
 		Value returnedRight = getAssignmentNode().getReturnedNode();
 		
-		if (!Literal.isNullLiteral(returnedRight) && !returnedRight.getType().equals(returnedLeft.getType()))
+		String leftType  = returnedLeft.getType();
+		String rightType = returnedRight.getType();
+		
+		if (!Literal.isNullLiteral(returnedRight) && rightType != null && !rightType.equals(leftType))
 		{
 			ClassDeclaration left  = returnedLeft.getTypeClass();
 			ClassDeclaration right = returnedRight.getTypeClass();
@@ -285,14 +353,75 @@ public class Assignment extends Node
 	{
 		ValidationResult result = super.validate(phase);
 		
-		if (result.errorOccurred)
+		if (result.skipValidation())
 		{
 			return result;
 		}
 		
-		if (getAssigneeNode() instanceof Variable)
+		if (phase == SyntaxTree.PHASE_METHOD_CONTENTS)
 		{
-			SyntaxUtils.checkVolatile((Variable)getAssigneeNode());
+			if (containsMultipleAssignees())
+			{
+				Value assignment = getAssignmentNode().getReturnedNode();
+				
+				if (!(assignment instanceof MethodCall))
+				{
+					SyntaxMessage.error("Multiple assignments to single value is not implemented yet", this, false);
+					
+					return result.errorOccurred(this);
+				}
+				
+				if (!SyntaxUtils.areTypesCompatible(assignment.getTypes(), getAssigneeNodes().getTypes()))
+				{
+					SyntaxMessage.error("Invalid types to be assigned from method call", this, false);
+
+					return result.errorOccurred(this);
+				}
+			}
+			
+			Value returned = getAssigneeNode().getReturnedNode();
+			
+			if (returned instanceof Variable)
+			{
+				Variable var = (Variable)returned;
+				
+				if (var.getDeclaration() instanceof FieldDeclaration)
+				{
+					FieldDeclaration field   = (FieldDeclaration)var.getDeclaration();
+					MutatorMethod    mutator = field.getMutatorMethod();
+					
+					if (mutator != null)
+					{
+						if (!mutator.isDisabled())
+						{
+							String text = field.getName() + "(" + getAssignmentNode().generateNovaInput() + ")";
+							
+							MethodCall call = MethodCall.decodeStatement(getParent(), text, getLocationIn(), true, false, mutator);
+							
+							getParent().replace(this, call);
+							
+							result.returnedNode = call;
+							
+							return result;
+						}
+						else
+						{
+							SyntaxMessage.error("The field '" + field.getName() + "' is not settable", this, false);
+							
+							getParent().removeChild(this);
+							
+							result.skipCycle = true;
+							
+							return result.errorOccurred();
+						}
+					}
+				}
+			}
+			
+			if (getAssigneeNode() instanceof Variable)
+			{
+				SyntaxUtils.checkVolatile((Variable)getAssigneeNode());
+			}
 		}
 		
 		return result;

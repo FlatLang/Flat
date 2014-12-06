@@ -1,5 +1,6 @@
 package net.fathomsoft.nova.tree;
 
+import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.tree.variables.Array;
@@ -18,11 +19,13 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Apr 3, 2014 at 7:53:35 PM
- * @version	v0.2.36 Oct 13, 2014 at 12:16:42 AM
+ * @version	v0.2.38 Dec 6, 2014 at 5:19:17 PM
  */
 public class Instantiation extends IIdentifier implements GenericCompatible
 {
 	private GenericType	genericTypes[];
+	
+	public static final String IDENTIFIER = "new";
 	
 	/**
 	 * @see net.fathomsoft.nova.tree.Node#Node(Node, Location)
@@ -196,7 +199,7 @@ public class Instantiation extends IIdentifier implements GenericCompatible
 		
 		Instantiation n = new Instantiation(parent, location);
 		
-		int startIndex  = Regex.indexOf(statement, Patterns.POST_INSTANTIATION);
+		int startIndex  = StringUtils.findNextNonWhitespaceIndex(statement, IDENTIFIER.length() + 1);
 		
 		Location newLoc = location.asNew();
 		newLoc.addBounds(startIndex, statement.length());
@@ -238,9 +241,17 @@ public class Instantiation extends IIdentifier implements GenericCompatible
 			decodeGenericParameters(params);
 		}
 		
+		String className = null;
+		
 		if (SyntaxUtils.isMethodCall(instantiation))
 		{
-			MethodCall methodCall = MethodCall.decodeStatement(getParent(), instantiation, location, require, validateAccess);
+			className = StringUtils.findNextWord(instantiation);
+			
+//			ClassDeclaration clazz = getFileDeclaration().getImportedClass(this, className);
+//			
+//			instantiation = clazz.getName() + instantiation.substring(className.length());
+//			
+			MethodCall methodCall = MethodCall.decodeStatement(this, instantiation, location, require, validateAccess);
 			
 			if (methodCall == null)
 			{
@@ -258,10 +269,18 @@ public class Instantiation extends IIdentifier implements GenericCompatible
 		{
 			SyntaxMessage.error("Unable to parse instantiation of '" + instantiation + "'", this);
 		}
-
+		
 		addChild(child);
 		setName(child.getName());
-		setType(child.getType());
+		
+		if (className != null)
+		{
+			setType(className);
+		}
+		else
+		{
+			setType(child.getType());
+		}
 		
 		setDataType(child.getDataType());
 		

@@ -1,0 +1,193 @@
+package "nova/standard/math/logic"
+
+import "nova/standard/datastruct/ArrayList"
+import "nova/standard/datastruct/Bounds"
+
+public class WFF
+{
+	StatementLetter[]     letters
+	
+	ArrayList<Hypothesis> hypotheses
+	
+	Conclusion            conclusion
+	
+	String                wff
+	
+	static Char[]         whitespace = [ ' ', '\t', '\n', '\r' ]
+	
+	public construct(String wellFormedFormula, StatementLetter[] letters)
+	{
+		this.wff     = wellFormedFormula.trim()
+		this.letters = letters
+		
+		hypotheses = new ArrayList()
+		
+		decodeFormula()
+	}
+	
+	decodeFormula()
+	{
+		StatementGroup<Conclusion> conclusionGroup = searchForConclusion(wff)
+		
+		if (conclusionGroup == null)
+		{
+			throw new InvalidFormulaException("No valid conclusion found")
+		}
+		
+		Conclusion conclusion = conclusionGroup.statement
+		
+		Console.writeLine("Conclusion: " + conclusion)
+		
+		wff = conclusionGroup.bounds.extractPreString(wff)
+		
+		ArrayList<StatementGroup<Hypothesis>> statements = decodeHypotheses(wff)
+		
+		for (Int i = 0; i < statements.size; i++)
+		{
+			StatementGroup<Hypothesis> group = statements.get(i)
+			
+			hypotheses.add(group.statement)
+		}
+		for (Int n = 0; n < hypotheses.size; n++)
+		{
+			Console.writeLine(hypotheses.get(n))
+		}
+	}
+	
+	searchForConclusion(String wff) -> StatementGroup<Conclusion>
+	{
+		Int index = wff.lastIndexOf("->")
+		
+		if (index < 0)
+		{
+			return null
+		}
+		
+		if (wff.lastChar() == ')')
+		{
+			Int first = findEndingMatch(wff, '(', ')', wff.length - 1, -1)
+			
+			
+		}
+		
+		Int conclusionStart = nextNonWhitespaceIndex(wff, index + 2, 1)
+		
+		Bounds bounds = new Bounds(conclusionStart, wff.length)
+		
+		Conclusion conclusion = new Conclusion(bounds.extractString(wff))
+		
+		bounds.start = nextNonWhitespaceIndex(wff, index - 1, -1) + 1
+		
+		StatementGroup<Conclusion> group = new StatementGroup(conclusion, bounds)
+		
+		return group
+	}
+	
+	decodeHypotheses(String wff) -> ArrayList<StatementGroup<Hypothesis>>
+	{
+		ArrayList<StatementGroup<Hypothesis>> list = new ArrayList()
+		
+		Int next = 0
+		Int prev = 0
+		
+		for (Int index = wff.indexOf("&"); index >= 0; index = wff.indexOf("&", prev + 1))
+		{
+			next = nextNonWhitespaceIndex(wff, index - 1, -1)
+			//next = nextWhitespaceIndex(wff, next + 1, 1)
+			
+			list.add(generateHypothesis(wff, prev, next + 1))
+			
+			prev = nextNonWhitespaceIndex(wff, index + 1, 1)
+		}
+		
+		list.add(generateHypothesis(wff, prev, wff.length))
+		
+		return list
+	}
+	
+	generateHypothesis(String wff, Int start, Int end) -> StatementGroup<Hypothesis>
+	{
+		Bounds bounds = new Bounds(start, end)
+		Hypothesis h  = new Hypothesis(bounds.extractString(wff))
+		
+		StatementGroup<Hypothesis> group = new StatementGroup(h, bounds)
+		
+		return group
+	}
+	
+	searchForStatement(String wff) -> StatementGroup<Statement>
+	{
+		return null
+	}
+	
+	static nextNonWhitespaceIndex(String wff, Int index, Int direction) -> Int
+	{
+		return nextWhitespaceIndex(wff, index, direction, true)
+	}
+	
+	static nextWhitespaceIndex(String wff, Int index, Int direction) -> Int
+	{
+		return nextWhitespaceIndex(wff, index, direction, false)
+	}
+	
+	static nextWhitespaceIndex(String wff, Int index, Int direction, Bool opposite) -> Int
+	{
+		for (Int i = index; i < wff.length && i >= 0; i = i + direction)
+		{
+			Char c = wff.charAt(i)
+			
+			if (containsChar(c, whitespace, 4) != opposite)
+			{
+				return i
+			}
+		}
+		
+		return -1
+	}
+	
+	static containsChar(Char needle, Char Chars[], Int length) -> Bool
+	{
+		for (Int i = 0; i < length; i++)
+		{
+			if (needle == Chars[i])
+			{
+				return true
+			}
+		}
+		
+		return false
+	}
+	
+	static findEndingMatch(String wff, Char start, Char end, Int index, Int direction) -> Int
+	{
+		if (direction < 0)
+		{
+			Char temp = start
+			start     = end
+			end       = temp
+		}
+		
+		Int scope = 0
+		
+		for (Int i = index; i < wff.length && i >= 0; i = i + direction)
+		{
+			Char c = wff.charAt(i)
+			
+			if (c == start)
+			{
+				scope++
+			}
+			else if (c == end)
+			{
+				scope--
+			}
+			
+			if (scope == 0)
+			{
+				return i
+			}
+		}
+		
+		return -1
+	}
+}

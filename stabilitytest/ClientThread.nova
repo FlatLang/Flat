@@ -19,10 +19,18 @@ public class ClientThread extends Thread
 	{
 		ClientSocket client = new ClientSocket()
 		
-		if (!client.connect("127.0.0.1", port))
+		String ip = "127.0.0.1"
+		
+		Console.write("ClientSocket attempting to connect to " + ip + ":" + port + "... ")
+		
+		if (!client.connect(ip, port))
 		{
 			program.fail("Failed to connect to localhost server")
 		}
+		
+		Console.writeLine("OK")
+		
+		Console.writeLine("Waiting for String from ServerSocket... ")
 		
 		String s = client.connection.in.readString()
 		
@@ -31,11 +39,19 @@ public class ClientThread extends Thread
 			program.fail("Client unable to receive the correct message from server")
 		}
 		
+		Console.write("Attempting to send String to ServerSocket... ")
+		
 		client.connection.out.write(NetworkStability.received)
+		
+		Console.writeLine("OK")
+		
+		Console.write("Attempting to close ClientSocket... ")
 		
 		if (!client.close())
 		{
 			program.fail("Unable to close Client connection")
 		}
+		
+		Console.writeLine("OK")
 	}
 }

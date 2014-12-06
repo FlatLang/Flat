@@ -30,10 +30,10 @@ typedef struct stabilitytest_NovaThreadImplementation stabilitytest_NovaThreadIm
 
 typedef struct nova_VTable_stabilitytest_NovaThreadImplementation
 {
-	long (*nova_standard_NovaObject_Novavirtual0_getHashCodeLong)(nova_standard_NovaObject*, nova_standard_exception_NovaExceptionData*);
-	nova_standard_NovaString* (*nova_standard_NovaObject_Novavirtual0_toString)(nova_standard_NovaObject*, nova_standard_exception_NovaExceptionData*);
-	char (*nova_standard_NovaObject_Novavirtual0_equals)(nova_standard_NovaObject*, nova_standard_exception_NovaExceptionData*, nova_standard_NovaObject*);
-	void (*stabilitytest_NovaThreadImplementation_Novavirtual_run)(stabilitytest_NovaThreadImplementation*, nova_standard_exception_NovaExceptionData*);
+	long (*nova_standard_NovaObject_virtual0_NovagetHashCodeLong)(nova_standard_NovaObject*, nova_standard_exception_NovaExceptionData*);
+	nova_standard_NovaString* (*nova_standard_NovaObject_virtual0_NovatoString)(nova_standard_NovaObject*, nova_standard_exception_NovaExceptionData*);
+	char (*nova_standard_NovaObject_virtual0_Novaequals)(nova_standard_NovaObject*, nova_standard_exception_NovaExceptionData*, nova_standard_NovaObject*);
+	void (*stabilitytest_NovaThreadImplementation_virtual_Novarun)(stabilitytest_NovaThreadImplementation*, nova_standard_exception_NovaExceptionData*);
 } nova_VTable_stabilitytest_NovaThreadImplementation;
 
 CCLASS_CLASS

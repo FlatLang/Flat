@@ -2,6 +2,7 @@
 #define NOVA_NATIVE_SOCKET
 
 #include <MacroLib.h>
+#include <stdlib.h>
 
 #ifdef _WIN32
 #	include <io.h>
@@ -16,7 +17,6 @@
 #	include <netdb.h>
 #	include <stdio.h>
 #	include <string.h>
-#	include <stdlib.h>
 #	include <unistd.h>
 #	include <errno.h>
 #	include <arpa/inet.h>

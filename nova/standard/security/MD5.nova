@@ -8,7 +8,7 @@ public class MD5
 	
 	public static encrypt(String str) -> String
 	{
-		Char[] data = nova_md5(str.toCharArray())
+		Char[] data = nova_md5(str.chars)
 		
 		if (data == 0)
 		{

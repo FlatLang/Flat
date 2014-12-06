@@ -46,6 +46,7 @@ import net.fathomsoft.nova.tree.MethodCallArgumentList;
 import net.fathomsoft.nova.tree.MethodDeclaration;
 import net.fathomsoft.nova.tree.MethodList;
 import net.fathomsoft.nova.tree.Node;
+import net.fathomsoft.nova.tree.NovaMethodDeclaration;
 import net.fathomsoft.nova.tree.Operator;
 import net.fathomsoft.nova.tree.Parameter;
 import net.fathomsoft.nova.tree.ParameterList;
@@ -63,6 +64,7 @@ import net.fathomsoft.nova.tree.VTable;
 import net.fathomsoft.nova.tree.Value;
 import net.fathomsoft.nova.tree.WhileLoop;
 import net.fathomsoft.nova.tree.exceptionhandling.Exception;
+import net.fathomsoft.nova.tree.switches.Switch;
 import net.fathomsoft.nova.util.Command;
 import net.fathomsoft.nova.util.CommandListener;
 import net.fathomsoft.nova.util.FileUtils;
@@ -70,11 +72,11 @@ import net.fathomsoft.nova.util.StringUtils;
 import net.fathomsoft.nova.util.SyntaxUtils;
 
 /**
- * File used for the compilation process.
+ * Class used for the compilation process.
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:00:04 PM
- * @version	v0.2.37 Oct 16, 2014 at 11:38:42 PM
+ * @version	v0.2.38 Dec 6, 2014 at 5:19:17 PM
  */
 public class Nova
 {
@@ -86,6 +88,7 @@ public class Nova
 	private long				startTime, endTime;
 	
 	private File				outputFile, workingDir;
+	private File				nativeInterfaceSource, nativeInterfaceHeader;
 	
 	private SyntaxTree			tree;
 	
@@ -98,6 +101,8 @@ public class Nova
 	private static final int	OS;
 	
 	private static final String	OUTPUT_EXTENSION, DYNAMIC_LIB_EXT;
+	private static final String NATIVE_INTERFACE_FILE_NAME = "NovaNativeInterface";
+	private static final String ENVIRONMENT_VAR            = "novaEnv";
 	
 	private static final HashMap<String, String>	CLASS_LOCATIONS = new HashMap<String, String>();
 	
@@ -106,18 +111,18 @@ public class Nova
 	
 	// Set to 0 to not benchmark.
 	public static final int		BENCHMARK     = 0;
-	
-	public static final long	CSOURCE       = 0x00000000001l;
-	public static final long	FORMATC       = 0x00000000010l;
-	public static final long	VERBOSE       = 0x00000000100l;
-	public static final long	DRY_RUN       = 0x00000001000l;
-	public static final long	KEEP_C        = 0x00000010000l;
-	public static final long	C_ARGS        = 0x00000100000l;
-	public static final long	RUNTIME       = 0x00001000000l;
-	public static final long	LIBRARY       = 0x00010000000l;
-	public static final long	NO_GC         = 0x00100000000l;
-	public static final long	SMALL_BIN     = 0x01000000000l;
+
 	public static final long	SINGLE_THREAD = 0x10000000000l;
+	public static final long	SMALL_BIN     = 0x01000000000l;
+	public static final long	NO_GC         = 0x00100000000l;
+	public static final long	LIBRARY       = 0x00010000000l;
+	public static final long	RUNTIME       = 0x00001000000l;
+	public static final long	C_ARGS        = 0x00000100000l;
+	public static final long	KEEP_C        = 0x00000010000l;
+	public static final long	DRY_RUN       = 0x00000001000l;
+	public static final long	VERBOSE       = 0x00000000100l;
+	public static final long	FORMATC       = 0x00000000010l;
+	public static final long	CSOURCE       = 0x00000000001l;
 	
 	public static final int		GCC           = 1;
 	public static final int		TCC           = 2;
@@ -128,7 +133,7 @@ public class Nova
 	public static final int		LINUX         = 3;
 	
 	public static final String	LANGUAGE_NAME = "Nova";
-	public static final String	VERSION       = "v0.2.37";
+	public static final String	VERSION       = "v0.2.38";
 	
 	/**
 	 * Find out which operating system the compiler is running on.
@@ -176,6 +181,7 @@ public class Nova
 		
 		nova.compile(args, true);
 		nova.formatOutput();
+		nova.generateNativeInterface();
 		nova.writeFiles();
 		nova.compileC();
 	}
@@ -266,13 +272,18 @@ public class Nova
 //				formatPath(directory + "network/ClientDemo.nova"),
 //				formatPath(directory + "GenericDemo.nova"),
 //				formatPath(directory + "database/DatabaseDemo.nova"),
-				formatPath(root      + "bank/BankQueryException.nova"),
+//				formatPath(root      + "bank/BankQueryException.nova"),
 //				formatPath(root      + "bank/Bank.nova"),
 //				formatPath(root      + "bank/ConnectionThread.nova"),
 //				formatPath(root      + "bank/ServerOutputThread.nova"),
-				formatPath(root      + "bank/BankClient.nova"),
-				formatPath(root      + "bank/ClientConnectionThread.nova"),
-				formatPath(root      + "bank/ClientInputThread.nova"),
+//				formatPath(root      + "bank/BankClient.nova"),
+//				formatPath(root      + "bank/ClientConnectionThread.nova"),
+//				formatPath(root      + "bank/ClientInputThread.nova"),
+//				formatPath(directory + "ackermann/Ackermann.nova"),
+				formatPath(directory + "Lab.nova"),
+//				formatPath(directory + "copy/Dog.nova"),
+//				formatPath(directory + "T1.nova"),
+//				formatPath(directory + "T2.nova"),
 //				formatPath(directory + "MathDemo.nova"),
 //				formatPath(directory + "ThreadDemo.nova"),
 //				formatPath(directory + "ThreadDemoImplementation.nova"),
@@ -290,6 +301,8 @@ public class Nova
 //				formatPath(directory + "ClosureDemo.nova"),
 //				formatPath(directory + "Person.nova"),
 //				formatPath(directory + "BodyBuilder.nova"),
+				formatPath(directory + "Polygon.nova"),
+				formatPath(directory + "Square.nova"),
 				"-o",   formatPath(directory + "bin/Executable" + OUTPUT_EXTENSION),
 				"-dir", formatPath(directory + "../example"),
 				"-dir", formatPath(directory + "../stabilitytest"),
@@ -315,7 +328,6 @@ public class Nova
 		String standardFiles[] = new String[]
 		{
 			formatPath(standard  + "String.nova"),
-			formatPath(standard  + "Math.nova"),
 			formatPath(standard  + "Object.nova"),
 			formatPath(standard  + "System.nova"),
 			
@@ -329,15 +341,24 @@ public class Nova
 			formatPath(standard  + "network/NetworkInputStream.nova"),
 			formatPath(standard  + "network/NetworkOutputStream.nova"),
 			
-			formatPath(standard  + "logic/Conclusion.nova"),
-			formatPath(standard  + "logic/Hypothesis.nova"),
-			formatPath(standard  + "logic/LogicalConnective.nova"),
-			formatPath(standard  + "logic/Statement.nova"),
-			formatPath(standard  + "logic/StatementComponent.nova"),
-			formatPath(standard  + "logic/StatementLetter.nova"),
-			formatPath(standard  + "logic/WFF.nova"),
-			formatPath(standard  + "logic/StatementGroup.nova"),
-			formatPath(standard  + "logic/InvalidFormulaException.nova"),
+			formatPath(standard  + "math/Math.nova"),
+			formatPath(standard  + "math/Statement.nova"),
+			formatPath(standard  + "math/NumericStatement.nova"),
+			formatPath(standard  + "math/NumericTree.nova"),
+			formatPath(standard  + "math/NumericOperation.nova"),
+			formatPath(standard  + "math/NumericOperand.nova"),
+			formatPath(standard  + "math/StatementComponent.nova"),
+			formatPath(standard  + "math/InvalidNumericStatementException.nova"),
+			
+			formatPath(standard  + "math/logic/Conclusion.nova"),
+			formatPath(standard  + "math/logic/Hypothesis.nova"),
+			formatPath(standard  + "math/logic/LogicalConnective.nova"),
+			formatPath(standard  + "math/logic/StatementComponent.nova"),
+			formatPath(standard  + "math/logic/StatementLetter.nova"),
+			formatPath(standard  + "math/logic/WFF.nova"),
+			formatPath(standard  + "math/logic/StatementGroup.nova"),
+			formatPath(standard  + "math/logic/LogicalStatement.nova"),
+			formatPath(standard  + "math/logic/InvalidFormulaException.nova"),
 			
 			formatPath(standard  + "process/Process.nova"),
 			
@@ -386,8 +407,16 @@ public class Nova
 			formatPath(standard  + "datastruct/EmptyStackException.nova"),
 			formatPath(standard  + "datastruct/HashMap.nova"),
 			formatPath(standard  + "datastruct/Bounds.nova"),
+			formatPath(standard  + "datastruct/Tree.nova"),
+			formatPath(standard  + "datastruct/BinaryTree.nova"),
+			formatPath(standard  + "datastruct/Node.nova"),
+			formatPath(standard  + "datastruct/BinaryNode.nova"),
+			formatPath(standard  + "datastruct/Comparable.nova"),
 
 			formatPath(standard  + "security/MD5.nova"),
+
+			formatPath(standard  + "star/Window.nova"),
+			formatPath(standard  + "star/WindowThread.nova"),
 			
 			formatPath(standard  + "gc/GC.nova"),
 		};
@@ -397,6 +426,7 @@ public class Nova
 			"-dir", formatPath(directory + "../include"),
 			"-dir", formatPath(directory + "../include/gc"),
 			"-dir", formatPath(directory + "../include/nova_mysql"),
+			"-dir", formatPath(directory + "../include/nova_openssl"),
 			"-dir", formatPath(directory + ".."),
 		};
 		
@@ -414,9 +444,19 @@ public class Nova
 				continue;
 			}
 			
-			int slash = getWorkingDirectoryPath().endsWith("/") ? 0 : 1;
+			String dir = getWorkingDirectoryPath();
 			
-			String location = classLocation.substring(getWorkingDirectoryPath().length() + slash, classLocation.lastIndexOf('.'));
+			int offset = classLocation.indexOf(dir);
+			int slash  = dir.replace('\\', '/').endsWith("/") ? 0 : 1;
+			
+			if (offset < 0)
+			{
+				error("Unable to find location " + classLocation);
+				
+				completed();
+			}
+			
+			String location = classLocation.substring(dir.length() + offset + slash, classLocation.lastIndexOf('.'));
 			String name     = SyntaxUtils.getClassName(location);
 			
 			CLASS_LOCATIONS.put(name, location);
@@ -437,6 +477,92 @@ public class Nova
 		startTimer();
 		
 		createSyntaxTree(generateCode);
+	}
+	
+	private void generateNativeInterface()
+	{
+		generateNativeInterfaceHeader();
+		generateNativeInterfaceSource();
+	}
+	
+	private void generateNativeInterfaceHeader()
+	{
+		StringBuilder nativeInterface = new StringBuilder();
+		
+		nativeInterface.append("#ifndef NOVA_NATIVE_INTERFACE\n");
+		nativeInterface.append("#define NOVA_NATIVE_INTERFACE\n\n");
+		
+		for (FileDeclaration file : tree.getFiles())
+		{
+			nativeInterface.append("#include <" + file.generateCHeaderName() + ">\n");
+		}
+		
+		nativeInterface.append('\n');
+
+		for (FileDeclaration file : tree.getFiles())
+		{
+			file.generateCHeaderNativeInterface(nativeInterface).append("\n");
+		}
+		
+		nativeInterface.append("\ntypedef struct nova_env\n");
+		nativeInterface.append("{\n");
+		
+		for (FileDeclaration file : tree.getFiles())
+		{
+			for (ClassDeclaration clazz : file.getClassDeclarations())
+			{
+				clazz.generateCSourceName(nativeInterface, "native").append(" ").append(clazz.getNativeLocation()).append(";\n");
+			}
+		}
+		
+		nativeInterface.append("} nova_env;\n\n");
+		
+		nativeInterface.append("extern nova_env " + ENVIRONMENT_VAR + ";\n\n");
+		
+		nativeInterface.append("\n#endif\n");
+		
+		try
+		{
+			File include = new File(StringUtils.removeSurroundingQuotes(getIncludeDir()));
+			
+			nativeInterfaceHeader = FileUtils.writeFile(NATIVE_INTERFACE_FILE_NAME + ".h", include, nativeInterface.toString());
+		}
+		catch (IOException e)
+		{
+			e.printStackTrace();
+		}
+		
+//		lingeringFiles.add(nativeInterfaceHeader);
+	}
+	
+	private void generateNativeInterfaceSource()
+	{
+		StringBuilder nativeInterface = new StringBuilder();
+
+		nativeInterface.append("#include <precompiled.h>\n");
+		nativeInterface.append("#include \"" + NATIVE_INTERFACE_FILE_NAME + ".h\"\n\n");
+		
+		nativeInterface.append("nova_env " + ENVIRONMENT_VAR + " = {\n");
+		
+		for (FileDeclaration file : tree.getFiles())
+		{
+			file.generateCSourceNativeInterface(nativeInterface).append('\n');
+		}
+		
+		nativeInterface.append("};\n");
+		
+		try
+		{
+			File include = new File(StringUtils.removeSurroundingQuotes(getIncludeDir()));
+			
+			nativeInterfaceSource = FileUtils.writeFile(NATIVE_INTERFACE_FILE_NAME + ".c", include, nativeInterface.toString());
+		}
+		catch (IOException e)
+		{
+			e.printStackTrace();
+		}
+		
+//		lingeringFiles.add(nativeInterfaceSource);
 	}
 	
 	public static final String getClassLocation(String className)
@@ -626,6 +752,38 @@ public class Nova
 		log("Done writing files.");
 	}
 	
+	private StringBuilder generateNativeVirtualMethodAssignments()
+	{
+		StringBuilder builder = new StringBuilder();
+		
+		Program root = tree.getRoot();
+		
+		for (int i = 0; i < root.getNumVisibleChildren(); i++)
+		{
+			FileDeclaration  file  = (FileDeclaration)root.getVisibleChild(i);
+			
+			for (ClassDeclaration clazz : file.getClassDeclarations())
+			{
+				MethodDeclaration[] methods = clazz.getVisibleNativeMethods();
+				
+				for (MethodDeclaration method : methods)
+				{
+					if (method instanceof NovaMethodDeclaration)
+					{
+						NovaMethodDeclaration n = (NovaMethodDeclaration)method;
+						
+						if (n.isOverridden() && !(n instanceof Constructor))
+						{
+							builder.append(ENVIRONMENT_VAR + "." + clazz.getNativeLocation() + "." + n.generateCSourceNativeName(new StringBuilder(), false) + " = " + clazz.getVTableNode().getName() + "." + n.generateCVirtualMethodName() + ";\n");
+						}
+					}
+				}
+			}
+		}
+		
+		return builder;
+	}
+	
 	/**
 	 * Insert the main method into the correct file. Also set up the
 	 * initialization for the program within the main method.
@@ -646,7 +804,8 @@ public class Nova
 			return;
 		}
 		
-		StringBuilder staticBlockCalls = generateStaticBlockCalls();
+		StringBuilder staticBlockCalls  = generateStaticBlockCalls();
+		StringBuilder nativeAssignments = generateNativeVirtualMethodAssignments();
 		
 		FileDeclaration fileDeclaration = mainMethod.getFileDeclaration();
 		
@@ -664,18 +823,24 @@ public class Nova
 			StringBuilder mainMethodText = new StringBuilder();
 			
 			mainMethodText.append('\n').append('\n');
-			mainMethodText.append("nova_standard_primitive_NovaNull* nova_null;").append('\n');
+			mainMethodText.append("nova_standard_primitive_Nova_Null* nova_null;").append('\n');
+			mainMethodText.append("void* ").append(Literal.GARBAGE_IDENTIFIER).append(';').append('\n');
 			mainMethodText.append('\n');
 			mainMethodText.append("int main(int argc, char** argvs)").append('\n');
 			mainMethodText.append("{").append('\n');
-			mainMethodText.append	("nova_standard_NovaString** args;").append('\n');
+			mainMethodText.append	("nova_standard_Nova_String** args;").append('\n');
 			mainMethodText.append	("int      i;").append('\n').append('\n');
-			mainMethodText.append	("nova_standard_exception_NovaExceptionData* ").append(Exception.EXCEPTION_DATA_IDENTIFIER).append(" = 0;").append('\n');
+			mainMethodText.append	("nova_standard_exception_Nova_ExceptionData* ").append(Exception.EXCEPTION_DATA_IDENTIFIER).append(" = 0;").append('\n');
+//			mainMethodText.append	("ShowWindow(FindWindowA(\"ConsoleWindowClass\", NULL), 0);").append('\n');
+//			mainMethodText.append	("FreeConsole();").append('\n');
+//			mainMethodText.append	("AllocConsole();").append('\n');
 			mainMethodText.append	("srand(currentTimeMillis());").append('\n');
 			mainMethodText.append	("nova_null = ").append(nullConstructor.generateCSourceFragment()).append(';').append('\n');
+			mainMethodText.append	(Literal.GARBAGE_IDENTIFIER).append(" = malloc(sizeof(void*));").append('\n');
 			mainMethodText.append	(gcInit.generateCSource()).append('\n');
+			mainMethodText.append	(nativeAssignments).append('\n');
 			mainMethodText.append	(staticBlockCalls).append('\n');
-			mainMethodText.append	("args = (nova_standard_NovaString**)NOVA_MALLOC(argc * sizeof(nova_standard_NovaString));").append('\n');
+			mainMethodText.append	("args = (nova_standard_Nova_String**)NOVA_MALLOC(argc * sizeof(nova_standard_Nova_String));").append('\n');
 			mainMethodText.append	('\n');
 			mainMethodText.append	("for (i = 0; i < argc; i++)").append('\n');
 			mainMethodText.append	("{").append('\n');
@@ -690,8 +855,8 @@ public class Nova
 			mainMethodText.append	('}').append('\n');
 			mainMethodText.append	("CATCH (1)").append('\n');
 			mainMethodText.append	('{').append('\n');
-			mainMethodText.append		("nova_standard_exception_NovaException* base = (nova_standard_exception_NovaException*)").append(Exception.EXCEPTION_DATA_IDENTIFIER).append("->nova_standard_exception_NovaExceptionData_NovathrownException;").append('\n');
-			mainMethodText.append		("printf(\"Exception in Thread 'main': %s\", nova_standard_NovaString_NovatoCharArray(base->nova_standard_exception_NovaException_Novamessage, 0));").append('\n');
+			mainMethodText.append		("nova_standard_exception_Nova_Exception* base = (nova_standard_exception_Nova_Exception*)").append(Exception.EXCEPTION_DATA_IDENTIFIER).append("->nova_standard_exception_Nova_ExceptionData_Nova_thrownException;").append('\n');
+			mainMethodText.append		("printf(\"Exception in Thread 'main': %s\", base->nova_standard_exception_Nova_Exception_Nova_message->nova_standard_Nova_String_Nova_chars);").append('\n');
 			mainMethodText.append		(enter.generateCSource()).append('\n');
 			mainMethodText.append	('}').append('\n');
 			mainMethodText.append	("FINALLY").append('\n');
@@ -699,11 +864,12 @@ public class Nova
 			mainMethodText.append		('\n');
 			mainMethodText.append	('}').append('\n');
 			mainMethodText.append	("END_TRY;").append('\n');
+			mainMethodText.append	("FreeConsole();").append('\n');
 			mainMethodText.append	("NOVA_FREE(args);").append('\n');
 			mainMethodText.append	(gcColl.generateCSource()).append('\n');
 			mainMethodText.append	('\n');
 			mainMethodText.append	("return 0;").append('\n');
-			mainMethodText.append("}");
+			mainMethodText.append("}\n");
 			
 			String newSource = fileDeclaration.generateCSource() + mainMethodText.toString();
 			
@@ -722,13 +888,15 @@ public class Nova
 		for (int i = 0; i < root.getNumVisibleChildren(); i++)
 		{
 			FileDeclaration  file  = (FileDeclaration)root.getVisibleChild(i);
-			ClassDeclaration clazz = file.getClassDeclaration();
 			
-			TypeList<StaticBlock> blocks = clazz.getStaticBlockList();
-			
-			for (int j = 0; j < blocks.getNumVisibleChildren(); j++)
+			for (ClassDeclaration clazz : file.getClassDeclarations())
 			{
-				StaticBlock.generateCMethodCall(builder, clazz).append(';').append('\n');
+				TypeList<StaticBlock> blocks = clazz.getStaticBlockList();
+				
+				for (int j = 0; j < blocks.getNumVisibleChildren(); j++)
+				{
+					StaticBlock.generateCMethodCall(builder, clazz).append(';').append('\n');
+				}
 			}
 		}
 		
@@ -748,7 +916,7 @@ public class Nova
 		{
 			compilerDir = workingDir;
 			
-			cmd.append("gcc -pipe ");
+			cmd.append("gcc -pipe -mwindows -mconsole ");
 			
 			if (OS == WINDOWS)
 			{
@@ -807,6 +975,7 @@ public class Nova
 //		cmd.append(libThread).append(' ');
 //		cmd.append(libGC).append(' ');
 		
+		cmd.append(formatPath(nativeInterfaceSource.getAbsolutePath())).append(' ');
 		cmd.append(formatPath(incDir + "Nova.c")).append(' ');
 //		cmd.append(formatPath(incDir + "LibNovaThread.c")).append(' ');
 		
@@ -991,6 +1160,16 @@ public class Nova
 	private String getLibraryDir()
 	{
 		return formatPath(workingDir + "/../lib");
+	}
+	
+	/**
+	 * Get the directory that holds the Nova include files.
+	 * 
+	 * @return The location of the directory that holds the include files.
+	 */
+	private String getIncludeDir()
+	{
+		return formatPath(workingDir + "/../include");
 	}
 	
 	/**
@@ -1753,10 +1932,15 @@ public class Nova
 																																																		if (error == null)
 																																																		{
 																																																			error = GenericCompatible.test(context);
-																																																			
+
 																																																			if (error == null)
 																																																			{
 																																																				error = WhileLoop.test(context);
+																																																				
+																																																				if (error == null)
+																																																				{
+																																																					error = Switch.test(context);
+																																																				}
 																																																			}
 																																																		}
 																																																	}

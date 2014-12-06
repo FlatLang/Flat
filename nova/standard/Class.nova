@@ -1,0 +1,8 @@
+package "nova/standard"
+
+public class Class
+{
+	Int id
+	
+	
+}

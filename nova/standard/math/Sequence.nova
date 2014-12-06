@@ -1,0 +1,31 @@
+package "nova/standard/math"
+
+public class Sequence
+{
+	visible static Int INFINITE = -1
+	
+	visible Double[] values
+	
+	public construct(Double[] values)
+	{
+		this.values = values
+	}
+	
+	public construct(Double first, )
+	{
+		
+	}
+	
+	//sum [public static] (Double[] values, Int num) -> Double
+	public static sum(Int num) -> Double
+	{
+		Double value = 0
+		
+		for (Int i = 0; i < num; i++)
+		{
+			value += values[i]
+		}
+		
+		return value
+	}
+}

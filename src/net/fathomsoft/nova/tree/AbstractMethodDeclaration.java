@@ -3,6 +3,7 @@ package net.fathomsoft.nova.tree;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.util.Location;
 import net.fathomsoft.nova.util.Patterns;
+import net.fathomsoft.nova.util.StringUtils;
 
 /**
  * {@link NovaMethodDeclaration} extension that represents the declaration of an
@@ -11,10 +12,12 @@ import net.fathomsoft.nova.util.Patterns;
  * 
  * @author	Braden Steffaniak
  * @since	v0.2.19 Jul 26, 2014 at 12:30:24 AM
- * @version	v0.2.36 Oct 13, 2014 at 12:16:42 AM
+ * @version	v0.2.38 Dec 6, 2014 at 5:19:17 PM
  */
 public class AbstractMethodDeclaration extends NovaMethodDeclaration
 {
+	public static final String IDENTIFIER = "abstract";
+	
 	/**
 	 * @see net.fathomsoft.nova.tree.Node#Node(Node, Location)
 	 */
@@ -66,22 +69,27 @@ public class AbstractMethodDeclaration extends NovaMethodDeclaration
 	 */
 	public static AbstractMethodDeclaration decodeStatement(Node parent, String statement, Location location, boolean require)
 	{
-		String methodSignature = findMethodSignature(statement, Patterns.ABSTRACT);
+		String methodSignature = findMethodSignature(statement, StringUtils.findWordBounds(statement, IDENTIFIER));
 		
 		if (methodSignature != null && methodSignature.length() > 0)
 		{
 			AbstractMethodDeclaration n      = new AbstractMethodDeclaration(parent, location);
-			MethodDeclaration         method = NovaMethodDeclaration.decodeStatement(n, methodSignature, location.asNew(), require);
+			NovaMethodDeclaration     method = NovaMethodDeclaration.decodeStatement(n, methodSignature, location.asNew(), require);
 			
 			if (method != null)
 			{
-				method.cloneTo(n);
-				
-				return n;
+				return n.createFrom(method);
 			}
 		}
 		
 		return null;
+	}
+	
+	public AbstractMethodDeclaration createFrom(NovaMethodDeclaration method)
+	{
+		method.cloneTo(this);
+		
+		return this;
 	}
 	
 	/**

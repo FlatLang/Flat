@@ -2,6 +2,7 @@ package net.fathomsoft.nova.tree;
 
 import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.TestContext;
+import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.tree.variables.Variable;
 import net.fathomsoft.nova.util.Location;
@@ -17,16 +18,48 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:58:29 PM
- * @version	v0.2.36 Oct 13, 2014 at 12:16:42 AM
+ * @version	v0.2.38 Dec 6, 2014 at 5:19:17 PM
  */
 public class Return extends IValue
 {
+	public static final String IDENTIFIER = "return";
+	
 	/**
 	 * @see net.fathomsoft.nova.tree.Node#Node(Node, Location)
 	 */
 	public Return(Node temporaryParent, Location locationIn)
 	{
 		super(temporaryParent, locationIn);
+		
+		ArgumentList returnValues = new ArgumentList(this, locationIn.asNew());
+		
+		addChild(returnValues);
+	}
+	
+	@Override
+	public int getNumDefaultChildren()
+	{
+		return super.getNumDefaultChildren() + 1;
+	}
+	
+	public ArgumentList getReturnValues()
+	{
+		return (ArgumentList)getChild(super.getNumDefaultChildren() + 0);
+	}
+	
+	public int getNumReturnValues()
+	{
+		return getReturnValues().getNumVisibleChildren();
+	}
+	
+	public boolean containsMultipleReturnValues()
+	{
+		return getNumReturnValues() > 1;
+	}
+	
+	public Value[] getTypes()
+	{
+		return getReturnValues().getTypes();
 	}
 	
 	/**
@@ -36,12 +69,12 @@ public class Return extends IValue
 	 */
 	public Value getValueNode()
 	{
-		if (getNumChildren() <= 0)
+		if (getNumReturnValues() <= 0)
 		{
 			return null;
 		}
 		
-		return (Value)getChild(0);
+		return (Value)getReturnValues().getVisibleChild(0);
 	}
 
 	/**
@@ -63,7 +96,14 @@ public class Return extends IValue
 		
 		if (getValueNode() != null)
 		{
-			builder.append(' ').append(getValueNode().generateCSourceFragment());
+			builder.append(' ');
+			
+			if (!getParentMethod().getType().equals(getValueNode().getReturnedNode().getType()))
+			{
+				getParentMethod().generateCTypeCast(builder);
+			}
+			
+			builder.append(getValueNode().generateCSourceFragment());
 		}
 		
 		return builder;
@@ -108,7 +148,7 @@ public class Return extends IValue
 	 */
 	public static Return decodeStatement(Node parent, String statement, Location location, boolean require)
 	{
-		if (Regex.startsWith(statement, Patterns.PRE_RETURN))
+		if (StringUtils.startsWithWord(statement, IDENTIFIER))
 		{
 			Return n = new Return(parent, location);
 			
@@ -144,16 +184,21 @@ public class Return extends IValue
 		
 		if (postReturn != null)
 		{
+			String values[] = StringUtils.splitCommas(postReturn);
+			
 			Location newLoc = location.asNew();
 			newLoc.addBounds(statement.indexOf(postReturn), statement.length());
-		
-			Value abstractValue = decodeReturnValue(postReturn, getParentMethod(), newLoc);
 			
-			addChild(abstractValue);
+			for (String v : values)
+			{
+				Value value = decodeReturnValue(v, getParentMethod(), newLoc);
+				
+				getReturnValues().addChild(value);
+			}
 		}
 		else if (getParentMethod().getType() != null)
 		{
-			return SyntaxMessage.queryError("Method '" + getParentMethod().getName() + "' must return a type of '" + getParentMethod().getType() + "'", this, require);
+			return queryReturnError(getParentMethod(), require);
 		}
 		
 		setType(getParentMethod().getType());
@@ -181,17 +226,31 @@ public class Return extends IValue
 	{
 		Value value = SyntaxTree.decodeValue(this, statement, location, false);
 		
-		Nova.debuggingBreakpoint(value instanceof Variable && ((Variable)value).getName().equals("data") && !SyntaxUtils.validateCompatibleTypes(method, value.getReturnedNode()));
 		if (value == null)
 		{
 			SyntaxMessage.error("Could not decode return statement '" + statement + "'", this, location);
 		}
 		else if (!SyntaxUtils.validateCompatibleTypes(method, value.getReturnedNode()))
 		{
-			SyntaxMessage.error("Method '" + method.getName() + "' must return a type of '" + method.getType() + "'", this, location);
+			queryReturnError(method, true);
 		}
 		
 		return value;
+	}
+	
+	private boolean queryReturnError(MethodDeclaration method, boolean require)
+	{
+		String expected = method.getType();
+		String name     = method.getName();
+		
+		if (expected == null)
+		{
+			return SyntaxMessage.queryError("Method '" + name + "' cannot return a value", this, require);
+		}
+		else
+		{
+			return SyntaxMessage.queryError("Method '" + name + "' must return a type of '" + expected + "'", this, require);
+		}
 	}
 	
 	/**
@@ -218,6 +277,51 @@ public class Return extends IValue
 		}
 		
 		return statement.substring(index);
+	}
+	
+	@Override
+	public ValidationResult validate(int phase)
+	{
+		ValidationResult result = super.validate(phase);
+		
+		if (result.skipValidation())
+		{
+			return result;
+		}
+		
+		if (phase == SyntaxTree.PHASE_METHOD_CONTENTS)
+		{
+			if (containsMultipleReturnValues())
+			{
+				if (!SyntaxUtils.areTypesCompatible(getParentMethod().getTypes(), getTypes()))
+				{
+					SyntaxMessage.error("Invalid return values", this, false);
+					
+					return result.errorOccurred(this);
+				}
+				
+				Variable temp = getAncestorWithScope().getScope().registerLocalVariable(getValueNode());
+				getReturnValues().replace(getValueNode(), temp);
+				
+				for (int i = 1; i < getNumReturnValues(); i++)
+				{
+					Parameter param  = (Parameter)getParentMethod().getParameterList().getReturnTypes()[i - 1];
+					Node      retVal = getReturnValues().getVisibleChild(i);
+					
+					String statement = param.generateNovaType() + " " + getParentMethod().generateTemporaryVariableName() + " = " + retVal.generateNovaInput();
+					
+					Assignment assignment = Assignment.decodeStatement(getAncestorWithScope(), statement, getLocationIn().asNew(), true, false);
+					
+					assignment.setAssigneeNode(param.generateUsableVariable(this, getLocationIn().asNew()));
+					
+					getParent().addChildBefore(this, assignment);
+				}
+				
+				result.nextIncrement += getNumReturnValues();
+			}
+		}
+		
+		return result;
 	}
 	
 	/**

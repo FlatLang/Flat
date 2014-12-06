@@ -1,18 +1,18 @@
 #include <precompiled.h>
 #include <stabilitytest/stabilitytest_NovaClosureStability.h>
 
-typedef int (*l0_Nova1_closure)(void*, nova_standard_exception_NovaExceptionData*, int, int);
-typedef int (*l0_Nova2_closure)(void*, nova_standard_exception_NovaExceptionData*, int, int);
-typedef double (*l0_Nova3_closure)(void*, nova_standard_exception_NovaExceptionData*, double);
-typedef double (*l0_Nova4_closure)(void*, nova_standard_exception_NovaExceptionData*, double);
-typedef void (*l0_Nova5_closure)(void*, nova_standard_exception_NovaExceptionData*);
-typedef void (*l0_Nova6_closure)(void*, nova_standard_exception_NovaExceptionData*);
+typedef int (*l0_1_Novaclosure)(void*, nova_standard_exception_NovaExceptionData*, int, int);
+typedef int (*l0_2_Novaclosure)(void*, nova_standard_exception_NovaExceptionData*, int, int);
+typedef double (*l0_3_Novaclosure)(void*, nova_standard_exception_NovaExceptionData*, double);
+typedef double (*l0_4_Novaclosure)(void*, nova_standard_exception_NovaExceptionData*, double);
+typedef void (*l0_5_Novaclosure)(void*, nova_standard_exception_NovaExceptionData*);
+typedef void (*l0_6_Novaclosure)(void*, nova_standard_exception_NovaExceptionData*);
 
 nova_VTable_stabilitytest_NovaClosureStability nova_VTable_stabilitytest_NovaClosureStability_val =
 {
-	nova_standard_NovaObject_Nova0_getHashCodeLong,
-	nova_standard_NovaObject_Nova0_toString,
-	nova_standard_NovaObject_Nova0_equals,
+	nova_standard_NovaObject_0_NovagetHashCodeLong,
+	nova_standard_NovaObject_0_NovatoString,
+	nova_standard_NovaObject_0_Novaequals,
 };
 CCLASS_PRIVATE
 (
@@ -24,9 +24,9 @@ void stabilitytest_NovaClosureStability_NovaincrementNumber(stabilitytest_NovaCl
 void stabilitytest_NovaClosureStability_static_NovatestClosures(stabilitytest_NovaClosureStability* this, nova_standard_exception_NovaExceptionData* exceptionData, stabilitytest_NovaStabilityTest* l0_Novaprogram);
 void stabilitytest_NovaClosureStability_static_NovatestMathClosures(stabilitytest_NovaClosureStability* this, nova_standard_exception_NovaExceptionData* exceptionData, stabilitytest_NovaStabilityTest* l0_Novaprogram);
 void stabilitytest_NovaClosureStability_static_NovatestInstanceClosure(stabilitytest_NovaClosureStability* this, nova_standard_exception_NovaExceptionData* exceptionData, stabilitytest_NovaStabilityTest* l0_Novaprogram);
-int stabilitytest_NovaClosureStability_static_NovacallClosure(stabilitytest_NovaClosureStability* this, nova_standard_exception_NovaExceptionData* exceptionData, l0_Nova2_closure l0_Novaclosure, void* l0_Novaref_closure, int l0_Novaa, int l0_Novab);
-double stabilitytest_NovaClosureStability_static_NovamathClosure(stabilitytest_NovaClosureStability* this, nova_standard_exception_NovaExceptionData* exceptionData, l0_Nova4_closure l0_Novaclosure, void* l0_Novaref_closure, double l0_Novavalue);
-void stabilitytest_NovaClosureStability_static_NovainstanceClosure(stabilitytest_NovaClosureStability* this, nova_standard_exception_NovaExceptionData* exceptionData, l0_Nova6_closure l0_Novaclosure, void* l0_Novaref_closure);
+int stabilitytest_NovaClosureStability_static_NovacallClosure(stabilitytest_NovaClosureStability* this, nova_standard_exception_NovaExceptionData* exceptionData, l0_2_Novaclosure l0_Novaclosure, void* l0_ref_Novaclosure, int l0_Novaa, int l0_Novab);
+double stabilitytest_NovaClosureStability_static_NovamathClosure(stabilitytest_NovaClosureStability* this, nova_standard_exception_NovaExceptionData* exceptionData, l0_4_Novaclosure l0_Novaclosure, void* l0_ref_Novaclosure, double l0_Novavalue);
+void stabilitytest_NovaClosureStability_static_NovainstanceClosure(stabilitytest_NovaClosureStability* this, nova_standard_exception_NovaExceptionData* exceptionData, l0_6_Novaclosure l0_Novaclosure, void* l0_ref_Novaclosure);
 int stabilitytest_NovaClosureStability_static_Novamultiply(stabilitytest_NovaClosureStability* this, nova_standard_exception_NovaExceptionData* exceptionData, int l0_Novavalue1, int l0_Novavalue2);
 int stabilitytest_NovaClosureStability_static_Novapow(stabilitytest_NovaClosureStability* this, nova_standard_exception_NovaExceptionData* exceptionData, int l0_Novabase, int l0_Novapow);
 double stabilitytest_NovaClosureStability_static_NovaTOLERANCE;
@@ -36,13 +36,13 @@ void stabilitytest_NovaClosureStabilityNova_init_static(nova_standard_exception_
 	}
 }
 
-stabilitytest_NovaClosureStability* stabilitytest_NovaClosureStability_Nova0_construct(stabilitytest_NovaClosureStability* this, nova_standard_exception_NovaExceptionData* exceptionData)
+stabilitytest_NovaClosureStability* stabilitytest_NovaClosureStability_0_Novaconstruct(stabilitytest_NovaClosureStability* this, nova_standard_exception_NovaExceptionData* exceptionData)
 {
 	CCLASS_NEW(stabilitytest_NovaClosureStability, this);
 	this->vtable = &nova_VTable_stabilitytest_NovaClosureStability_val;
-	nova_standard_NovaObject_Novasuper((nova_standard_NovaObject*)this, 0);
+	nova_standard_NovaObject_Novasuper((nova_standard_NovaObject*)this, exceptionData);
 	nova_standard_NovaObject_Novathis((nova_standard_NovaObject*)(this), exceptionData);
-	stabilitytest_NovaClosureStability_Novasuper(this, 0);
+	stabilitytest_NovaClosureStability_Novasuper(this, exceptionData);
 	
 	{
 		stabilitytest_NovaClosureStability_Novathis(this, exceptionData);
@@ -79,7 +79,7 @@ void stabilitytest_NovaClosureStability_static_Novatest(stabilitytest_NovaClosur
 
 void stabilitytest_NovaClosureStability_static_NovatestClosures(stabilitytest_NovaClosureStability* this, nova_standard_exception_NovaExceptionData* exceptionData, stabilitytest_NovaStabilityTest* l0_Novaprogram)
 {
-	nova_standard_io_NovaConsole_static_Nova0_writeLine(0, exceptionData, nova_standard_NovaString_Nova1_construct(0, exceptionData, "Testing closures..."));
+	nova_standard_io_NovaConsole_static_0_NovawriteLine(0, exceptionData, nova_standard_NovaString_1_Novaconstruct(0, exceptionData, "Testing closures..."));
 	stabilitytest_NovaClosureStability_static_NovatestMathClosures((stabilitytest_NovaClosureStability*)nova_null, exceptionData, l0_Novaprogram);
 	stabilitytest_NovaClosureStability_static_NovatestInstanceClosure((stabilitytest_NovaClosureStability*)nova_null, exceptionData, l0_Novaprogram);
 }
@@ -90,58 +90,58 @@ void stabilitytest_NovaClosureStability_static_NovatestMathClosures(stabilitytes
 	int l1_Novab;
 	double l1_Novavalue;
 	
-	nova_standard_io_NovaConsole_static_Nova0_write(0, exceptionData, nova_standard_NovaString_Nova1_construct(0, exceptionData, "Testing static math closures... "));
+	nova_standard_io_NovaConsole_static_0_Novawrite(0, exceptionData, nova_standard_NovaString_1_Novaconstruct(0, exceptionData, "Testing static math closures... "));
 	l1_Novaa = 5;
 	l1_Novab = 3;
 	l1_Novavalue = 0.5;
-	if (stabilitytest_NovaClosureStability_static_NovacallClosure((stabilitytest_NovaClosureStability*)nova_null, exceptionData, (l0_Nova2_closure)&stabilitytest_NovaClosureStability_static_Novamultiply, (stabilitytest_NovaClosureStability*)nova_null, l1_Novaa, l1_Novab) != stabilitytest_NovaClosureStability_static_Novamultiply((stabilitytest_NovaClosureStability*)nova_null, exceptionData, l1_Novaa, l1_Novab))
+	if (stabilitytest_NovaClosureStability_static_NovacallClosure((stabilitytest_NovaClosureStability*)nova_null, exceptionData, (l0_2_Novaclosure)&stabilitytest_NovaClosureStability_static_Novamultiply, (stabilitytest_NovaClosureStability*)nova_null, l1_Novaa, l1_Novab) != stabilitytest_NovaClosureStability_static_Novamultiply((stabilitytest_NovaClosureStability*)nova_null, exceptionData, l1_Novaa, l1_Novab))
 	{
-		stabilitytest_NovaStabilityTest_Nova1_fail(l0_Novaprogram, exceptionData, nova_standard_NovaString_Nova1_construct(0, exceptionData, "Failed to call multiply(Int, Int) closure"));
+		stabilitytest_NovaStabilityTest_1_Novafail(l0_Novaprogram, exceptionData, nova_standard_NovaString_1_Novaconstruct(0, exceptionData, "Failed to call multiply(Int, Int) closure"));
 	}
-	if (stabilitytest_NovaClosureStability_static_NovacallClosure((stabilitytest_NovaClosureStability*)nova_null, exceptionData, (l0_Nova2_closure)&stabilitytest_NovaClosureStability_static_Novapow, (stabilitytest_NovaClosureStability*)nova_null, l1_Novaa, l1_Novab) != stabilitytest_NovaClosureStability_static_Novapow((stabilitytest_NovaClosureStability*)nova_null, exceptionData, l1_Novaa, l1_Novab))
+	if (stabilitytest_NovaClosureStability_static_NovacallClosure((stabilitytest_NovaClosureStability*)nova_null, exceptionData, (l0_2_Novaclosure)&stabilitytest_NovaClosureStability_static_Novapow, (stabilitytest_NovaClosureStability*)nova_null, l1_Novaa, l1_Novab) != stabilitytest_NovaClosureStability_static_Novapow((stabilitytest_NovaClosureStability*)nova_null, exceptionData, l1_Novaa, l1_Novab))
 	{
-		stabilitytest_NovaStabilityTest_Nova1_fail(l0_Novaprogram, exceptionData, nova_standard_NovaString_Nova1_construct(0, exceptionData, "Failed to call pow(Int, Int) closure"));
+		stabilitytest_NovaStabilityTest_1_Novafail(l0_Novaprogram, exceptionData, nova_standard_NovaString_1_Novaconstruct(0, exceptionData, "Failed to call pow(Int, Int) closure"));
 	}
-	if (stabilitytest_NovaClosureStability_static_NovamathClosure((stabilitytest_NovaClosureStability*)nova_null, exceptionData, (l0_Nova4_closure)&nova_standard_NovaMath_static_Novasin, 0, l1_Novavalue) - nova_standard_NovaMath_static_Novasin(0, exceptionData, l1_Novavalue) >= stabilitytest_NovaClosureStability_static_NovaTOLERANCE)
+	if (stabilitytest_NovaClosureStability_static_NovamathClosure((stabilitytest_NovaClosureStability*)nova_null, exceptionData, (l0_4_Novaclosure)&nova_standard_NovaMath_static_Novasin, 0, l1_Novavalue) - nova_standard_NovaMath_static_Novasin(0, exceptionData, l1_Novavalue) >= stabilitytest_NovaClosureStability_static_NovaTOLERANCE)
 	{
-		stabilitytest_NovaStabilityTest_Nova1_fail(l0_Novaprogram, exceptionData, nova_standard_NovaString_Nova1_construct(0, exceptionData, "Failed to call Math.sin(Double) closure"));
+		stabilitytest_NovaStabilityTest_1_Novafail(l0_Novaprogram, exceptionData, nova_standard_NovaString_1_Novaconstruct(0, exceptionData, "Failed to call Math.sin(Double) closure"));
 	}
-	if (stabilitytest_NovaClosureStability_static_NovamathClosure((stabilitytest_NovaClosureStability*)nova_null, exceptionData, (l0_Nova4_closure)&nova_standard_NovaMath_static_Novatan, 0, l1_Novavalue) - nova_standard_NovaMath_static_Novatan(0, exceptionData, l1_Novavalue) >= stabilitytest_NovaClosureStability_static_NovaTOLERANCE)
+	if (stabilitytest_NovaClosureStability_static_NovamathClosure((stabilitytest_NovaClosureStability*)nova_null, exceptionData, (l0_4_Novaclosure)&nova_standard_NovaMath_static_Novatan, 0, l1_Novavalue) - nova_standard_NovaMath_static_Novatan(0, exceptionData, l1_Novavalue) >= stabilitytest_NovaClosureStability_static_NovaTOLERANCE)
 	{
-		stabilitytest_NovaStabilityTest_Nova1_fail(l0_Novaprogram, exceptionData, nova_standard_NovaString_Nova1_construct(0, exceptionData, "Failed to call Math.tan(Double) closure"));
+		stabilitytest_NovaStabilityTest_1_Novafail(l0_Novaprogram, exceptionData, nova_standard_NovaString_1_Novaconstruct(0, exceptionData, "Failed to call Math.tan(Double) closure"));
 	}
-	nova_standard_io_NovaConsole_static_Nova0_writeLine(0, exceptionData, nova_standard_NovaString_Nova1_construct(0, exceptionData, "OK"));
+	nova_standard_io_NovaConsole_static_0_NovawriteLine(0, exceptionData, nova_standard_NovaString_1_Novaconstruct(0, exceptionData, "OK"));
 }
 
 void stabilitytest_NovaClosureStability_static_NovatestInstanceClosure(stabilitytest_NovaClosureStability* this, nova_standard_exception_NovaExceptionData* exceptionData, stabilitytest_NovaStabilityTest* l0_Novaprogram)
 {
 	stabilitytest_NovaClosureStability* l1_Novac;
 	
-	nova_standard_io_NovaConsole_static_Nova0_write(0, exceptionData, nova_standard_NovaString_Nova1_construct(0, exceptionData, "Testing instance closures... "));
-	l1_Novac = stabilitytest_NovaClosureStability_Nova0_construct(0, exceptionData);
-	stabilitytest_NovaClosureStability_static_NovainstanceClosure((stabilitytest_NovaClosureStability*)nova_null, exceptionData, (l0_Nova6_closure)&stabilitytest_NovaClosureStability_NovaincrementNumber, l1_Novac);
+	nova_standard_io_NovaConsole_static_0_Novawrite(0, exceptionData, nova_standard_NovaString_1_Novaconstruct(0, exceptionData, "Testing instance closures... "));
+	l1_Novac = stabilitytest_NovaClosureStability_0_Novaconstruct(0, exceptionData);
+	stabilitytest_NovaClosureStability_static_NovainstanceClosure((stabilitytest_NovaClosureStability*)nova_null, exceptionData, (l0_6_Novaclosure)&stabilitytest_NovaClosureStability_NovaincrementNumber, l1_Novac);
 	if (l1_Novac->prv->stabilitytest_NovaClosureStability_Novanumber == 0)
 	{
-		stabilitytest_NovaStabilityTest_Nova1_fail(l0_Novaprogram, exceptionData, nova_standard_NovaString_Nova1_construct(0, exceptionData, "Failed to call incrementNumber() instance closure"));
+		stabilitytest_NovaStabilityTest_1_Novafail(l0_Novaprogram, exceptionData, nova_standard_NovaString_1_Novaconstruct(0, exceptionData, "Failed to call incrementNumber() instance closure"));
 	}
-	stabilitytest_NovaClosureStability_static_NovainstanceClosure((stabilitytest_NovaClosureStability*)nova_null, exceptionData, (l0_Nova6_closure)&stabilitytest_NovaClosureStability_NovaincrementNumber, stabilitytest_NovaClosureStability_Nova0_construct(0, exceptionData));
-	stabilitytest_NovaClosureStability_static_NovainstanceClosure((stabilitytest_NovaClosureStability*)nova_null, exceptionData, (l0_Nova6_closure)&stabilitytest_NovaClosureStability_NovaincrementNumber, l1_Novac);
-	nova_standard_io_NovaConsole_static_Nova0_writeLine(0, exceptionData, nova_standard_NovaString_Nova1_construct(0, exceptionData, "OK"));
+	stabilitytest_NovaClosureStability_static_NovainstanceClosure((stabilitytest_NovaClosureStability*)nova_null, exceptionData, (l0_6_Novaclosure)&stabilitytest_NovaClosureStability_NovaincrementNumber, stabilitytest_NovaClosureStability_0_Novaconstruct(0, exceptionData));
+	stabilitytest_NovaClosureStability_static_NovainstanceClosure((stabilitytest_NovaClosureStability*)nova_null, exceptionData, (l0_6_Novaclosure)&stabilitytest_NovaClosureStability_NovaincrementNumber, l1_Novac);
+	nova_standard_io_NovaConsole_static_0_NovawriteLine(0, exceptionData, nova_standard_NovaString_1_Novaconstruct(0, exceptionData, "OK"));
 }
 
-int stabilitytest_NovaClosureStability_static_NovacallClosure(stabilitytest_NovaClosureStability* this, nova_standard_exception_NovaExceptionData* exceptionData, l0_Nova2_closure l0_Novaclosure, void* l0_Novaref_closure, int l0_Novaa, int l0_Novab)
+int stabilitytest_NovaClosureStability_static_NovacallClosure(stabilitytest_NovaClosureStability* this, nova_standard_exception_NovaExceptionData* exceptionData, l0_2_Novaclosure l0_Novaclosure, void* l0_ref_Novaclosure, int l0_Novaa, int l0_Novab)
 {
-	return l0_Novaclosure(l0_Novaref_closure, exceptionData, l0_Novaa, l0_Novab);
+	return l0_Novaclosure(l0_ref_Novaclosure, exceptionData, l0_Novaa, l0_Novab);
 }
 
-double stabilitytest_NovaClosureStability_static_NovamathClosure(stabilitytest_NovaClosureStability* this, nova_standard_exception_NovaExceptionData* exceptionData, l0_Nova4_closure l0_Novaclosure, void* l0_Novaref_closure, double l0_Novavalue)
+double stabilitytest_NovaClosureStability_static_NovamathClosure(stabilitytest_NovaClosureStability* this, nova_standard_exception_NovaExceptionData* exceptionData, l0_4_Novaclosure l0_Novaclosure, void* l0_ref_Novaclosure, double l0_Novavalue)
 {
-	return l0_Novaclosure(l0_Novaref_closure, exceptionData, l0_Novavalue);
+	return l0_Novaclosure(l0_ref_Novaclosure, exceptionData, l0_Novavalue);
 }
 
-void stabilitytest_NovaClosureStability_static_NovainstanceClosure(stabilitytest_NovaClosureStability* this, nova_standard_exception_NovaExceptionData* exceptionData, l0_Nova6_closure l0_Novaclosure, void* l0_Novaref_closure)
+void stabilitytest_NovaClosureStability_static_NovainstanceClosure(stabilitytest_NovaClosureStability* this, nova_standard_exception_NovaExceptionData* exceptionData, l0_6_Novaclosure l0_Novaclosure, void* l0_ref_Novaclosure)
 {
-	l0_Novaclosure(l0_Novaref_closure, exceptionData);
+	l0_Novaclosure(l0_ref_Novaclosure, exceptionData);
 }
 
 int stabilitytest_NovaClosureStability_static_Novamultiply(stabilitytest_NovaClosureStability* this, nova_standard_exception_NovaExceptionData* exceptionData, int l0_Novavalue1, int l0_Novavalue2)

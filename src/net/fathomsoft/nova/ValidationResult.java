@@ -8,7 +8,7 @@ import net.fathomsoft.nova.tree.Node;
  * 
  * @author	Braden Steffaniak
  * @since	v0.2.35 Oct 4, 2014 at 12:37:45 AM
- * @version	v0.2.36 Oct 13, 2014 at 12:16:42 AM
+ * @version	v0.2.38 Dec 6, 2014 at 5:19:17 PM
  */
 public class ValidationResult
 {
@@ -17,6 +17,8 @@ public class ValidationResult
 	public boolean errorOccurred;
 	public boolean continueValidation;
 	public boolean skipCycle;
+	
+	public int     nextIncrement;
 	
 	/**
 	 * Create a new ValidationResult that has the expectation to return
@@ -32,16 +34,38 @@ public class ValidationResult
 		this.continueValidation = true;
 		this.errorOccurred      = false;
 		this.skipCycle          = false;
+		
+		this.nextIncrement      = 1;
+	}
+	
+	public boolean skipValidation()
+	{
+		return errorOccurred || skipCycle || !continueValidation;
 	}
 	
 	/**
 	 * Declare that the ValidationResult has had an error occur.
 	 * 
-	 * @param The ValidationResult that the error occurred on.0
+	 * @param remove The Node to remove from the tree.
+	 * @return The ValidationResult that the error occurred on.
+	 */
+	public ValidationResult errorOccurred(Node remove)
+	{
+		remove.detach();
+		
+		return errorOccurred();
+	}
+	
+	/**
+	 * Declare that the ValidationResult has had an error occur.
+	 * 
+	 * @return The ValidationResult that the error occurred on.
 	 */
 	public ValidationResult errorOccurred()
 	{
 		errorOccurred = true;
+		skipCycle     = true;
+		returnedNode  = null;
 		
 		return this;
 	}
@@ -51,5 +75,14 @@ public class ValidationResult
 		skipCycle = false;
 		
 		return this;
+	}
+	
+	public int increment()
+	{
+		int temp = nextIncrement;
+		
+		nextIncrement = 1;
+		
+		return temp;
 	}
 }

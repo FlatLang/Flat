@@ -1,48 +1,64 @@
 package "example"
 
-import "nova/standard/logic/WFF"
-import "nova/standard/logic/InvalidFormulaException"
-import "nova/standard/logic/StatementLetter"
+import "nova/standard/math/logic/WFF"
+import "nova/standard/math/logic/InvalidFormulaException"
+import "nova/standard/math/logic/StatementLetter"
 import "nova/standard/datastruct/HashMap"
 import "nova/standard/network/ServerSocket"
+import "nova/standard/star/Window"
+import "nova/standard/math/NumericStatement"
+import "nova/standard/datastruct/BinaryTree"
 
 public class Lab
 {
 	public static main(String[] args)
 	{
-		ServerSocket s = new ServerSocket()
+		BinaryTree tree = new BinaryTree()
 		
-		s.start(4343)
+		tree.addNode(5)
+		tree.addNode(7)
+		tree.addNode(3)
+		
+		Console.writeLine(tree.preorder())
+		
+		Square sq = new Square(4)
+		
+		Console.writeLine(getArea(sq))
+		
+		NumericStatement s = new NumericStatement("5a + (3 * 2)")
+		
+		Console.writeLine(s)
+		
+//		for (Int i = 0; i < 20; i++)
+//		{
+//			Window w = new Window()
+//			
+//			w.width = 300
+//			w.height = 200
+//			w.x = (i % 5) * w.width
+//			w.y = (i / 5) * w.height
+//			w.title = "Window(" + i + ") at (" + w.x + ", " + w.y + ")"
+//			
+//			w.create()
+//		}
+		
+//		Console.writeLine("")
+//		
+//		StatementLetter[] letters =
+//		[
+//			new StatementLetter("A", "McDonald's is open"),
+//			new StatementLetter("B", "Sally is awake"),
+//			new StatementLetter("C", "McDonald's has food"),
+//			new StatementLetter("D", "Sally is fat")
+//		]
+//		
+//		WFF f = new WFF("A & B & C -> D", letters)
 		
 		Console.waitForEnter()
-		
-		Array a = new Array(5)
-		
-		a.array[0] = new Array(8)
-		
-		Array b = (Array)a.array[0];
-		
-		b.array[5] = 56
-		
-		((Array)a.array[0]).array[5] = 53;
-		
-		for (Int i = 0; i < b.length; i++)
-		{
-			Console.write((Int)b.array[i] + ", ")
-		}
-		
-		Console.writeLine("")
-		
-		StatementLetter[] letters =
-		[
-			new StatementLetter("A", "McDonald's is open"),
-			new StatementLetter("B", "Sally is awake"),
-			new StatementLetter("C", "McDonald's has food"),
-			new StatementLetter("D", "Sally is fat")
-		]
-		
-		WFF f = new WFF("A & B & C -> D", letters)
-		
-		Console.waitForEnter()
+	}
+	
+	static getArea(Polygon p) -> Double
+	{
+		return p.calculateArea()
 	}
 }

@@ -12,7 +12,7 @@ import net.fathomsoft.nova.util.Location;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 10:29:22 PM
- * @version	v0.2.35 Oct 5, 2014 at 11:22:42 PM
+ * @version	v0.2.38 Dec 6, 2014 at 5:19:17 PM
  */
 public class MethodList extends List
 {
@@ -77,7 +77,7 @@ public class MethodList extends List
 		{
 			MethodDeclaration method = (MethodDeclaration)getChild(i);
 			
-			if (method.getName().equals(methodName) && (!filter.checkStatic || filter.staticValue == method.isStatic()))
+			if (method.getName() != null && method.getName().equals(methodName) && (!filter.checkStatic || filter.staticValue == method.isStatic()))
 			{
 				methods.add(method);
 			}
@@ -206,7 +206,7 @@ public class MethodList extends List
 	 */
 	public static class SearchFilter
 	{
-		public boolean checkAncestor, checkStatic, staticValue, checkConstructors;
+		public boolean checkAncestor, checkStatic, staticValue, checkConstructors, checkProperties;
 		
 		public static final SearchFilter DEFAULT = new SearchFilter();
 		
@@ -215,6 +215,7 @@ public class MethodList extends List
 			checkAncestor     = true;
 			checkStatic       = false;
 			checkConstructors = true;
+			checkProperties   = false;
 		}
 		
 		public void checkStatic(boolean staticValue)

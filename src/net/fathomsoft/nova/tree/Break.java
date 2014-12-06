@@ -1,6 +1,7 @@
 package net.fathomsoft.nova.tree;
 
 import net.fathomsoft.nova.TestContext;
+import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.util.Location;
 
 /**
@@ -8,7 +9,7 @@ import net.fathomsoft.nova.util.Location;
  * 
  * @author	Braden Steffaniak
  * @since	v0.2.36 Oct 13, 2014 at 12:16:42 AM
- * @version	v0.2.36 Oct 13, 2014 at 12:16:42 AM
+ * @version	v0.2.38 Dec 6, 2014 at 5:19:17 PM
  */
 public class Break extends Node
 {
@@ -20,6 +21,17 @@ public class Break extends Node
 	public Break(Node temporaryParent, Location locationIn)
 	{
 		super(temporaryParent, locationIn);
+	}
+	
+	@Override
+	public void onAdded(Node parent)
+	{
+		if (getAncestorOfType(Loop.class) == null)
+		{
+			SyntaxMessage.error("'" + IDENTIFIER + "' statement must be within a loop", this);
+		}
+		
+		super.onAdded(parent);
 	}
 	
 	@Override

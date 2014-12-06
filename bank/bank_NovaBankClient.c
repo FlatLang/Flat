@@ -57,7 +57,7 @@ void bank_NovaBankClient_static_Novamain(bank_NovaBankClient* this, nova_standar
 		l1_Novaips[3] = nova_standard_NovaString_Nova1_construct(0, exceptionData, "127.0.0.1");
 		l1_Novaport = 5675;
 		l2_Novai = 0;
-		for (; l2_Novai < 3; l2_Novai++)
+		for (; l2_Novai < 4; l2_Novai++)
 		{
 				nova_standard_NovaString* l2_Novaip;
 				
@@ -216,7 +216,8 @@ int main(int argc, char** argvs)
 		}
 		END_TRY;
 		NOVA_FREE(args);
-		GC_gcollect();
+		nova_standard_gc_NovaGC_static_Novacollect(0, exceptionData);
+		
 		
 		return 0;
 }

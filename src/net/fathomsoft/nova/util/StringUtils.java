@@ -9,15 +9,15 @@ import java.util.regex.Matcher;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Mar 13, 2014 at 9:38:42 PM
- * @version	v0.2.33 Sep 29, 2014 at 10:29:33 AM
+ * @version	v0.2.38 Dec 6, 2014 at 5:19:17 PM
  */
 public class StringUtils
 {
 	public static final char	WHITESPACE[]                = new char[] { ' ', '\n', '\t', '\r' };
-	public static final char	SYMBOLS_CHARS[]             = new char[] { '-', '+', '~', '!', '=', '%', '^', '&', '|', '*', '/', '>', '<', ',', '"', '\'', '[', ']', '{', '}', ';', '(', ')' };
-	public static final char	STMT_PRE_CONT_CHARS[]       = new char[] { '-', '+', '~', '!', '=', '%', '^', '&', '|', '*', '/', '>', '<', ',', '.' };
-	public static final char	STMT_POST_CONT_CHARS[]      = new char[] { '-', '+', '~', '!', '=', '%', '^', '&', '|', '*', '/', '>', '<', ',', '.', '"' };
-	public static final char	INVALID_DECLARATION_CHARS[] = new char[] { '-', '+', '~', '!', '=', '%', '^', '|', '/', '"', '\'', '{', '}', ';', '(', ')' };
+	public static final char	SYMBOLS_CHARS[]             = new char[] { '-', '+', '~', '!', '=', '%', '^', '&', '|', '*', '/', '\\', '>', '<', ',', '"', '\'', '[', ']', '{', '}', ';', '(', ')' };
+	public static final char	STMT_PRE_CONT_CHARS[]       = new char[] { '-', '+', '~', '!', '=', '%', '^', '&', '|', '*', '/', '\\', '>', '<', ',', '.', '[' };
+	public static final char	STMT_POST_CONT_CHARS[]      = new char[] { '-', '+', '~', '!', '=', '%', '^', '&', '|', '*', '/', '\\', '>', '<', ',', '.', ']', '"' };
+	public static final char	INVALID_DECLARATION_CHARS[] = new char[] { '-', '+', '~', '!', '=', '%', '^', '|', '/', '\\', '"', '\'', '{', '}', ';', '(', ')' };
 	
 	public static final String	SYMBOLS[];
 	
@@ -364,6 +364,37 @@ public class StringUtils
 		}
 	}
 	
+	public static boolean startsWithWord(CharSequence source, String word)
+	{
+		Bounds bounds = findNextWordBounds(source);
+		
+		return bounds.isValid() && bounds.getStart() == 0 && bounds.extractString(source.toString()).equals(word);
+	}
+	
+	public static Bounds findWordBounds(CharSequence source, String word)
+	{
+		String s = source.toString();
+		
+		Bounds bounds = findNextWordBounds(s);
+		
+		while (bounds.isValid())
+		{
+			if (bounds.extractString(s).equals(word))
+			{
+				return bounds;
+			}
+			
+			bounds = findNextWordBounds(s, bounds.getEnd() + 1);
+		}
+		
+		return Bounds.EMPTY;
+	}
+	
+	public static boolean containsWord(CharSequence source, String word)
+	{
+		return findWordBounds(source, word).isValid();
+	}
+	
 	/**
 	 * Find the next word in the given source starting at the beginning
 	 * of the String. If there are no words available, an empty String is
@@ -479,6 +510,9 @@ public class StringUtils
 	/**
 	 * Find the next index in which a letter resides, starting at the
 	 * given index. If there are no letters available, -1 is returned.<br>
+	 * <br>
+	 * A letter is anything besides whitespace and symbols.<br>
+	 * <br>
 	 * For example:
 	 * <blockquote><pre>
 	 * // Scenario 1
@@ -505,6 +539,9 @@ public class StringUtils
 	 * given index. If there are no letters available, -1 is returned.
 	 * However, if the <u>opposite</u> param is true, then the opposite
 	 * of what was stated above is done.<br>
+	 * <br>
+	 * A letter is anything besides whitespace and symbols.<br>
+	 * <br>
 	 * For example:
 	 * <blockquote><pre>
 	 * // Scenario 1
@@ -536,6 +573,9 @@ public class StringUtils
 	 * parameter makes sure that -1 is never returned (It will return the
 	 * end-point of whichever direction that the method was searching
 	 * in).<br>
+	 * <br>
+	 * A letter is anything besides whitespace and symbols.<br>
+	 * <br>
 	 * For example:
 	 * <blockquote><pre>
 	 * // Scenario 1
@@ -580,6 +620,34 @@ public class StringUtils
 		}
 		
 		return -1;
+	}
+	
+	public static int findEndingMatch(CharSequence str, int index, char startChar)
+	{
+		char endChar = 0;
+		
+		if (startChar == '(')
+		{
+			endChar = ')';
+		}
+		else if (startChar == '[')
+		{
+			endChar = ']';
+		}
+		else if (startChar == '\'')
+		{
+			endChar = '\'';
+		}
+		else if (startChar == '"')
+		{
+			endChar = '"';
+		}
+		else
+		{
+			return -1;
+		}
+		
+		return findEndingMatch(str, index, startChar, endChar);
 	}
 	
 	/**
@@ -772,7 +840,7 @@ public class StringUtils
 					}
 				}
 			}
-			else if (StringUtils.containsString(str, start, index) && (direction > 0 || index > 0 && str.charAt(index - 1) != escapeChar))
+			else if (StringUtils.containsString(str, start, index) && (direction > 0 || index > 0 && str.charAt(index - 1) != escapeChar) && (!start.equals(end) || scope == 0))
 			{
 				scope++;
 			}
@@ -788,6 +856,11 @@ public class StringUtils
 			else if (c == '"' || c == '\'')
 			{
 				index = findEndingChar(str, c, index, direction);
+				
+				if (index < 0)
+				{
+					break;
+				}
 			}
 			
 			index += direction;
@@ -844,7 +917,7 @@ public class StringUtils
 		{
 			if (value.charAt(start) == c)
 			{
-				if (start == 0 || value.charAt(start - 1) != '\\')
+				if (start == 0 || (value.charAt(start - 1) != '\\' || start < 2 || value.charAt(start - 2) == '\\'))
 				{
 					return start;
 				}
@@ -999,37 +1072,56 @@ public class StringUtils
 	 */
 	public static Bounds findStrings(CharSequence value, String strings[], int start, int direction)
 	{
+		return findStrings(value, strings, start, direction, true);
+	}
+	
+	/**
+	 * Search through the given value for any match within the strings
+	 * array.
+	 * 
+	 * @param value The String to search through.
+	 * @param strings The array to search through.
+	 * @param start The index to start the search at.
+	 * @param direction The direction to search in.
+	 * @return A Bounds instance with the end points of the found String.
+	 * 		If a String is not found, [-1, -1] is returned.
+	 */
+	public static Bounds findStrings(CharSequence value, String strings[], int start, int direction, boolean checkBaseScope)
+	{
 		while (start >= 0 && start < value.length())
 		{
 			char c = value.charAt(start);
 			
-			if (c == '"')
+			if (checkBaseScope)
 			{
-				start = findEndingQuote(value, start, direction) + direction;
-				
-				continue;
-			}
-			else if (c == '(' && direction > 0 || c == ')' && direction < 0)
-			{
-				start = findEndingMatch(value, start, '(', ')', direction) + direction;
-				
-				if (start <= 0 || start >= value.length())
+				if (c == '"' || c == '\'')
 				{
-					return Bounds.EMPTY;
+					start = findEndingChar(value, c, start, direction) + direction;// findEndingQuote(value, start, direction) + direction;
+					
+					continue;
 				}
-				
-				continue;
-			}
-			else if (c == '[' && direction > 0 || c == ']' && direction < 0)
-			{
-				start = findEndingMatch(value, start, '[', ']', direction) + direction;
-				
-				if (start == 0)
+				else if (c == '(' && direction > 0 || c == ')' && direction < 0)
 				{
-					return Bounds.EMPTY;
+					start = findEndingMatch(value, start, '(', ')', direction) + direction;
+					
+					if (start <= 0 || start >= value.length())
+					{
+						return Bounds.EMPTY;
+					}
+					
+					continue;
 				}
-				
-				continue;
+				else if (c == '[' && direction > 0 || c == ']' && direction < 0)
+				{
+					start = findEndingMatch(value, start, '[', ']', direction) + direction;
+					
+					if (start == 0)
+					{
+						return Bounds.EMPTY;
+					}
+					
+					continue;
+				}
 			}
 			
 			for (String str : strings)
@@ -1151,6 +1243,30 @@ public class StringUtils
 		}
 		
 		return lines;
+	}
+	
+	public static char findNextNonWhitespaceChar(CharSequence str, int index)
+	{
+		index = findNextNonWhitespaceIndex(str, index);
+		
+		if (index < 0)
+		{
+			return '\0';
+		}
+		
+		return str.charAt(index);
+	}
+	
+	public static char findNextWhitespaceChar(CharSequence str, int index)
+	{
+		index = findNextWhitespaceIndex(str, index);
+		
+		if (index < 0)
+		{
+			return '\0';
+		}
+		
+		return str.charAt(index);
 	}
 	
 	/**

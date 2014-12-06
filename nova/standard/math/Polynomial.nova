@@ -1,0 +1,75 @@
+package "nova/standard/math"
+
+public class Polynomial
+{
+	visible Double[] coefficients
+	visible Double[] degrees
+	visible Byte[]   signs
+	
+	static Int symbolsLength = 23
+	static Char[] SYMBOLS_CHARS = [ '-', '+', '~', '!', '=', '%', '^', '&', '|', '*', '/', '>', '<', ',', '"', '\'', '[', ']', '{', '}', ';', '(', ')' ]
+	
+	static Int whitespaceLength = 4
+	static Char[] WHITESPACE_CHARS = [ ' ', '\n', '\r', '\t' ]
+	
+	public construct(String polynomial)
+	{
+		Int start = 0
+		Bool reading = false
+		
+		ArrayList<Double> coeffs  = new ArrayList()
+		ArrayList<Double> degrees = new ArrayList()
+		ArrayList<Byte>   signs   = new ArrayList()
+		
+		for (Int i = 0; i < polynomial.length; i++)
+		{
+			if (!isLetter(polynomial.data[i]))
+			{
+				reading = false
+				
+				
+			}
+			else if (!reading)
+			{
+				start   = i
+				reading = true
+			}
+			else
+			{
+				
+			}
+		}
+		
+		this.coefficients = coeffs.toArray()
+		this.degrees      = degrees.toArray()
+		this.signs        = signs.toArray()
+	}
+	
+	static isLetter(Char c)
+	{
+		return !isSymbol(c) && !isWhitespace(c)
+	}
+	
+	static isSymbol(Char c) -> Bool
+	{
+		return contains(SYMBOLS_CHARS, c, symbolsLength)
+	}
+	
+	static isWhitespace(Char c) -> Bool
+	{
+		return contains(WHITESPACE_CHARS, c, whitespaceLength)
+	}
+	
+	static contains(Char[] array, Char c, Int length) -> Bool
+	{
+		for (Int i = 0; i < length; i++)
+		{
+			if (c == array[i])
+			{
+				return true
+			}
+		}
+		
+		return false
+	}
+}

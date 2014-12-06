@@ -19,14 +19,14 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 10:00:11 PM
- * @version	v0.2.35 Oct 5, 2014 at 11:22:42 PM
+ * @version	v0.2.38 Dec 6, 2014 at 5:19:17 PM
  */
 public class UnaryOperation extends IValue
 {
-	private static final int	LEFT = -1, EITHER = 0, RIGHT = 1;
+	private static final int LEFT = -1, EITHER = 0, RIGHT = 1;
 	
-	private static final HashMap<String, Integer>	SIDES;
-	private static final HashMap<String, Boolean>	REQUIRE_VARIABLE;
+	private static final HashMap<String, Integer> SIDES;
+	private static final HashMap<String, Boolean> REQUIRE_VARIABLE;
 	
 	/**
 	 * Initialize the SIDES HashMap.
@@ -47,12 +47,34 @@ public class UnaryOperation extends IValue
 		REQUIRE_VARIABLE.put("!",  false);
 	}
 	
+	public static boolean isCompatibleOnLeft(String operator)
+	{
+		return SIDES.containsKey(operator) && SIDES.get(operator) != RIGHT;
+	}
+	
+	public static boolean isCompatibleOnRight(String operator)
+	{
+		return SIDES.containsKey(operator) && SIDES.get(operator) != LEFT;
+	}
+	
 	/**
 	 * @see net.fathomsoft.nova.tree.Node#Node(Node, Location)
 	 */
 	public UnaryOperation(Node temporaryParent, Location locationIn)
 	{
 		super(temporaryParent, locationIn);
+	}
+	
+	@Override
+	public boolean isConstant()
+	{
+		return false;
+	}
+	
+	@Override
+	public boolean isConsistent()
+	{
+		return false;
 	}
 	
 	/**
@@ -402,7 +424,7 @@ public class UnaryOperation extends IValue
 	{
 		ValidationResult result = super.validate(phase);
 		
-		if (result.errorOccurred)
+		if (result.skipValidation())
 		{
 			return result;
 		}

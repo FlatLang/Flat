@@ -1,5 +1,6 @@
 #include <precompiled.h>
 #include "Nova.h"
+
 /**
  * Similar to fgets(), but handles automatic reallocation of the buffer.
  * Only parameter is the input stream.
@@ -107,7 +108,7 @@ void** nova_gen_array(void** array, int* dimensionSizes, int dimension, int dime
 	return array;
 }
 
-void nova_free_array(void** array, int* dimensionSizes, int dimension, int dimensions, del_function function, nova_standard_exception_NovaExceptionData* exceptionData)
+void nova_free_array(void** array, int* dimensionSizes, int dimension, int dimensions, del_function function, nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
 	int i;
 

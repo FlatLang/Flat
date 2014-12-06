@@ -1,8 +1,10 @@
 package net.fathomsoft.nova.tree;
 
+import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.error.UnimplementedOperationException;
+import net.fathomsoft.nova.tree.variables.Super;
 import net.fathomsoft.nova.tree.variables.Variable;
 import net.fathomsoft.nova.util.Location;
 import net.fathomsoft.nova.util.SyntaxUtils;
@@ -14,11 +16,11 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.2.4 May 2, 2014 at 11:14:37 PM
- * @version	v0.2.36 Oct 13, 2014 at 12:16:42 AM
+ * @version	v0.2.38 Dec 6, 2014 at 5:19:17 PM
  */
 public abstract class Value extends Node implements AbstractValue
 {
-	public static final byte	VALUE = 1, POINTER = 2, REFERENCE = 3;
+	public static final byte	VALUE = 1, POINTER = 2, REFERENCE = 3, DOUBLE_POINTER = 4;
 	
 	public static final String NULL_IDENTIFIER = "nova_null";
 	
@@ -186,7 +188,7 @@ public abstract class Value extends Node implements AbstractValue
 	 */
 	public boolean isPrimitive()
 	{
-		return isPrimitiveType() && !isArray();
+		return (isPrimitiveType() || isWithinExternalContext() && SyntaxUtils.isExternalPrimitiveType(getType())) && !isArray();
 	}
 	
 	/**
@@ -482,13 +484,20 @@ public abstract class Value extends Node implements AbstractValue
 		}
 		else if (required == POINTER)
 		{
-			if (dataType == VALUE)
+			if (dataType == VALUE || dataType == DOUBLE_POINTER)
 			{
 				return "&";
 			}
 			else if (dataType == REFERENCE)
 			{
 				return "*";
+			}
+		}
+		else if (required == DOUBLE_POINTER)
+		{
+			if (dataType == POINTER)
+			{
+				return "&";
 			}
 		}
 		
@@ -537,15 +546,6 @@ public abstract class Value extends Node implements AbstractValue
 	@Override
 	public StringBuilder generateCSourceFragment(StringBuilder builder)
 	{
-//		Value required  = null;
-//		
-//		boolean sameType = getType().equals(required.getType());
-//		
-//		if (!sameType)
-//		{
-//			required.generateCTypeCast(builder);
-//		}
-		
 		return generateCType(builder);
 	}
 	
@@ -584,14 +584,21 @@ public abstract class Value extends Node implements AbstractValue
 			type = getGenericReturnType();
 		}
 		
-		ClassDeclaration clazz = SyntaxUtils.getImportedClass(getFileDeclaration(), type);
-		
-		if (clazz == null)
+		if (isExternalType() || SyntaxUtils.isExternalPrimitiveType(type))
 		{
 			builder.append(type);
 		}
 		else
 		{
+			FileDeclaration file = getFileDeclaration();
+			
+			if (this instanceof Identifier && !isGenericType())
+			{
+				file = ((Identifier)this).getDeclaringClass().getFileDeclaration();
+			}
+			
+			ClassDeclaration clazz = SyntaxUtils.getImportedClass(file, type);
+			
 			clazz.generateCSourceName(builder);
 		}
 		
@@ -638,21 +645,14 @@ public abstract class Value extends Node implements AbstractValue
 		{
 			builder.append('*');
 		}
+		else if (getDataType() == Value.DOUBLE_POINTER)
+		{
+			builder.append("**");
+		}
 		if (checkArray && isArray())
 		{
 			builder.append(generateArrayText());
 		}
-		if (getParentMethod() instanceof Destructor && this instanceof Identifier)
-		{
-			if (((Identifier)this).getName().equals(ParameterList.OBJECT_REFERENCE_IDENTIFIER))
-			{
-				builder.append('*');
-			}
-		}
-//		if (!isPrimitiveType() && !isExternalType())
-//		{
-//			builder.append('*');
-//		}
 		
 		return builder;
 	}
@@ -660,6 +660,11 @@ public abstract class Value extends Node implements AbstractValue
 	public StringBuilder generateCTypeName(StringBuilder builder)
 	{
 		String type = getType();
+		
+		if (isGenericType())
+		{
+			type = getGenericReturnType();
+		}
 		
 		if (type == null)
 		{
@@ -790,6 +795,16 @@ public abstract class Value extends Node implements AbstractValue
 		return generateCUseOutput(builder);
 	}
 	
+	public boolean isConstant()
+	{
+		return true;
+	}
+	
+	public boolean isConsistent()
+	{
+		return true;
+	}
+	
 	/**
 	 * Get whether or not the specified Node's type can be determined NOT
 	 * to be virtual or not at compilation time, i.e. If the program
@@ -832,6 +847,24 @@ public abstract class Value extends Node implements AbstractValue
 	public GenericCompatible getGenericDeclaration()
 	{
 		throw new UnimplementedOperationException("The getGenericDeclaration() method must be implemented by class " + this.getClass().getName());
+	}
+	
+	/**
+	 * Fill the given {@link Value} with the data that is in the
+	 * specified node.
+	 * 
+	 * @param node The node to copy the data into.
+	 * @return The cloned node.
+	 */
+	public Value cloneTo(Value node)
+	{
+		super.cloneTo(node);
+		
+		node.setArrayDimensions(getArrayDimensions());
+		node.setType(getType(), true, false, false);
+		node.setDataType(getDataType());
+		
+		return node;
 	}
 	
 	/**

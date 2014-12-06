@@ -15,6 +15,46 @@ public class GC
 	
 //	external int GC_free_space_divisor
 	
+	visible Int freeBytes
+	{
+		get
+		{
+			return nova_gc_getFreeBytes()
+		}
+		
+		no set
+	}
+	
+	visible Int totalBytes
+	{
+		get
+		{
+			return nova_gc_getTotalBytes()
+		}
+		
+		no set
+	}
+	
+	visible Int heapSize
+	{
+		get
+		{
+			return nova_gc_getHeapSize()
+		}
+		
+		no set
+	}
+	
+	visible Int bytesSinceGC
+	{
+		get
+		{
+			return nova_gc_getBytesSinceGC()
+		}
+		
+		no set
+	}
+	
 	public static init()
 	{
 		nova_gc_init()
@@ -22,26 +62,6 @@ public class GC
 //		enableIncremental()
 //		
 //		setFreeSpaceDivisor(1)
-	}
-	
-	public static getFreeBytes() -> Long
-	{
-		return nova_gc_getFreeBytes()
-	}
-	
-	public static getTotalBytes() -> Long
-	{
-		return nova_gc_getTotalBytes()
-	}
-	
-	public static getHeapSize() -> Long
-	{
-		return nova_gc_getHeapSize()
-	}
-	
-	public static getBytesSinceGC() -> Long
-	{
-		return nova_gc_getBytesSinceGC()
 	}
 	
 //	public static setFreeSpaceDivisor(Int divisor)

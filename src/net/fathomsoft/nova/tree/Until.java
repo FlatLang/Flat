@@ -15,7 +15,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.2.14 Jul 5, 2014 at 12:29:23 AM
- * @version	v0.2.35 Oct 5, 2014 at 11:22:42 PM
+ * @version	v0.2.38 Dec 6, 2014 at 5:19:17 PM
  */
 public class Until extends IfStatement
 {
@@ -28,10 +28,10 @@ public class Until extends IfStatement
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.IfStatement#pendingScopeFragment()
+	 * @see net.fathomsoft.nova.tree.IfStatement#pendingScopeFragment(Node)
 	 */
 	@Override
-	public boolean pendingScopeFragment()
+	public boolean pendingScopeFragment(Node node)
 	{
 		return false;
 	}
@@ -138,7 +138,7 @@ public class Until extends IfStatement
 	{
 		ValidationResult result = super.validate(phase);
 		
-		if (result.errorOccurred)
+		if (result.skipValidation())
 		{
 			return result;
 		}

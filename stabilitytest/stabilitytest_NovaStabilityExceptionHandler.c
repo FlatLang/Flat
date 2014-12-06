@@ -4,9 +4,9 @@
 
 nova_VTable_stabilitytest_NovaStabilityExceptionHandler nova_VTable_stabilitytest_NovaStabilityExceptionHandler_val =
 {
-	nova_standard_NovaObject_Nova0_getHashCodeLong,
-	nova_standard_NovaObject_Nova0_toString,
-	nova_standard_NovaObject_Nova0_equals,
+	nova_standard_NovaObject_0_NovagetHashCodeLong,
+	nova_standard_NovaObject_0_NovatoString,
+	nova_standard_NovaObject_0_Novaequals,
 	stabilitytest_NovaStabilityExceptionHandler_NovauncaughtException,
 };
 CCLASS_PRIVATE
@@ -24,11 +24,11 @@ stabilitytest_NovaStabilityExceptionHandler* stabilitytest_NovaStabilityExceptio
 {
 	CCLASS_NEW(stabilitytest_NovaStabilityExceptionHandler, this);
 	this->vtable = &nova_VTable_stabilitytest_NovaStabilityExceptionHandler_val;
-	nova_standard_NovaObject_Novasuper((nova_standard_NovaObject*)this, 0);
-	nova_standard_thread_NovaUncaughtExceptionHandler_Novasuper((nova_standard_thread_NovaUncaughtExceptionHandler*)this, 0);
+	nova_standard_NovaObject_Novasuper((nova_standard_NovaObject*)this, exceptionData);
+	nova_standard_thread_NovaUncaughtExceptionHandler_Novasuper((nova_standard_thread_NovaUncaughtExceptionHandler*)this, exceptionData);
 	nova_standard_NovaObject_Novathis((nova_standard_NovaObject*)(this), exceptionData);
 	nova_standard_thread_NovaUncaughtExceptionHandler_Novathis((nova_standard_thread_NovaUncaughtExceptionHandler*)(this), exceptionData);
-	stabilitytest_NovaStabilityExceptionHandler_Novasuper(this, 0);
+	stabilitytest_NovaStabilityExceptionHandler_Novasuper(this, exceptionData);
 	
 	{
 		stabilitytest_NovaStabilityExceptionHandler_Novathis(this, exceptionData, l0_Novaprogram);
@@ -59,7 +59,7 @@ void stabilitytest_NovaStabilityExceptionHandler_Novathis(stabilitytest_NovaStab
 
 void stabilitytest_NovaStabilityExceptionHandler_NovauncaughtException(stabilitytest_NovaStabilityExceptionHandler* this, nova_standard_exception_NovaExceptionData* exceptionData, nova_standard_thread_NovaThread* l0_Novathread, nova_standard_exception_NovaException* l0_Novaexception)
 {
-	stabilitytest_NovaStabilityTest_Nova0_fail(this->prv->stabilitytest_NovaStabilityExceptionHandler_Novaprogram, exceptionData);
+	stabilitytest_NovaStabilityTest_0_Novafail(this->prv->stabilitytest_NovaStabilityExceptionHandler_Novaprogram, exceptionData);
 }
 
 void stabilitytest_NovaStabilityExceptionHandler_Novasuper(stabilitytest_NovaStabilityExceptionHandler* this, nova_standard_exception_NovaExceptionData* exceptionData)

@@ -7,7 +7,7 @@ import java.util.ArrayList;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jun 7, 2013 at 9:03:38 PM
- * @version	v0.2.14 Jul 19, 2014 at 7:33:13 PM
+ * @version	v0.2.38 Dec 6, 2014 at 5:19:17 PM
  */
 public class Stack<E>
 {
@@ -148,6 +148,11 @@ public class Stack<E>
 	public boolean isEmpty()
 	{
 		return stack.size() <= 0;
+	}
+	
+	public void empty()
+	{
+		stack = new ArrayList<E>();
 	}
 	
 	/**

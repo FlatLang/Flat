@@ -12,9 +12,12 @@ public class ArrayList<E>
 	
 	public construct()
 	{
-		size = 0
-		bufferSize = 0
-		increaseSize()
+		this(10)
+	}
+	
+	public construct(Int size)
+	{
+		increaseSize(size)
 	}
 	
 	public add(E element)
@@ -72,13 +75,18 @@ public class ArrayList<E>
 		data[index2] = temp
 	}
 	
-	public increaseSize()
+	increaseSize()
 	{
-		bufferSize = bufferSize + 3
+		increaseSize(bufferSize + 3)
+	}
+	
+	increaseSize(Int size)
+	{
+		bufferSize = size
 		
 		E tmp[] = new E[bufferSize]
 		
-		arrayCopy(tmp, 0, data, 0, size, bufferSize, 4)
+		arrayCopy(tmp, 0, data, 0, this.size, bufferSize, 4)
 		
 		data = tmp
 	}
@@ -86,5 +94,20 @@ public class ArrayList<E>
 	public get(Int index) -> E
 	{
 		return data[index]
+	}
+	
+	public set(Int index, E value)
+	{
+		data[index] = value
+	}
+	
+	public toArray() -> E[]
+	{
+		E[] array = new E[size]
+		
+		for (Int i = 0; i < size; i++)
+		{
+			array[i] = data[i]
+		}
 	}
 }

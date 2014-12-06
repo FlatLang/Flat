@@ -30,9 +30,9 @@ typedef struct stabilitytest_NovaClosureStability stabilitytest_NovaClosureStabi
 
 typedef struct nova_VTable_stabilitytest_NovaClosureStability
 {
-	long (*nova_standard_NovaObject_Novavirtual0_getHashCodeLong)(nova_standard_NovaObject*, nova_standard_exception_NovaExceptionData*);
-	nova_standard_NovaString* (*nova_standard_NovaObject_Novavirtual0_toString)(nova_standard_NovaObject*, nova_standard_exception_NovaExceptionData*);
-	char (*nova_standard_NovaObject_Novavirtual0_equals)(nova_standard_NovaObject*, nova_standard_exception_NovaExceptionData*, nova_standard_NovaObject*);
+	long (*nova_standard_NovaObject_virtual0_NovagetHashCodeLong)(nova_standard_NovaObject*, nova_standard_exception_NovaExceptionData*);
+	nova_standard_NovaString* (*nova_standard_NovaObject_virtual0_NovatoString)(nova_standard_NovaObject*, nova_standard_exception_NovaExceptionData*);
+	char (*nova_standard_NovaObject_virtual0_Novaequals)(nova_standard_NovaObject*, nova_standard_exception_NovaExceptionData*, nova_standard_NovaObject*);
 } nova_VTable_stabilitytest_NovaClosureStability;
 
 CCLASS_CLASS
@@ -44,7 +44,7 @@ CCLASS_CLASS
 )
 
 void stabilitytest_NovaClosureStabilityNova_init_static(nova_standard_exception_NovaExceptionData* exceptionData);
-stabilitytest_NovaClosureStability* stabilitytest_NovaClosureStability_Nova0_construct(stabilitytest_NovaClosureStability* this, nova_standard_exception_NovaExceptionData* exceptionData);
+stabilitytest_NovaClosureStability* stabilitytest_NovaClosureStability_0_Novaconstruct(stabilitytest_NovaClosureStability* this, nova_standard_exception_NovaExceptionData* exceptionData);
 void nova_del_ClosureStability(stabilitytest_NovaClosureStability** this, nova_standard_exception_NovaExceptionData* exceptionData);
 void stabilitytest_NovaClosureStability_static_Novatest(stabilitytest_NovaClosureStability* this, nova_standard_exception_NovaExceptionData* exceptionData, stabilitytest_NovaStabilityTest* l0_Novaprogram);
 void stabilitytest_NovaClosureStability_Novathis(stabilitytest_NovaClosureStability* this, nova_standard_exception_NovaExceptionData* exceptionData);

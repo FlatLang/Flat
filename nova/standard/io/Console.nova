@@ -70,7 +70,7 @@ public class Console
 	
 	public static write(String text)
 	{
-		Char cText[] = text.toCharArray()
+		Char cText[] = text.chars
 		
 		fputs(cText, stdout)
 		fflush(stdout)

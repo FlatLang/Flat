@@ -29,9 +29,9 @@ typedef struct stabilitytest_NovaUnstableException stabilitytest_NovaUnstableExc
 
 typedef struct nova_VTable_stabilitytest_NovaUnstableException
 {
-	long (*nova_standard_NovaObject_Novavirtual0_getHashCodeLong)(nova_standard_NovaObject*, nova_standard_exception_NovaExceptionData*);
-	nova_standard_NovaString* (*nova_standard_NovaObject_Novavirtual0_toString)(nova_standard_NovaObject*, nova_standard_exception_NovaExceptionData*);
-	char (*nova_standard_NovaObject_Novavirtual0_equals)(nova_standard_NovaObject*, nova_standard_exception_NovaExceptionData*, nova_standard_NovaObject*);
+	long (*nova_standard_NovaObject_virtual0_NovagetHashCodeLong)(nova_standard_NovaObject*, nova_standard_exception_NovaExceptionData*);
+	nova_standard_NovaString* (*nova_standard_NovaObject_virtual0_NovatoString)(nova_standard_NovaObject*, nova_standard_exception_NovaExceptionData*);
+	char (*nova_standard_NovaObject_virtual0_Novaequals)(nova_standard_NovaObject*, nova_standard_exception_NovaExceptionData*, nova_standard_NovaObject*);
 } nova_VTable_stabilitytest_NovaUnstableException;
 
 CCLASS_CLASS
@@ -43,7 +43,7 @@ CCLASS_CLASS
 )
 
 void stabilitytest_NovaUnstableExceptionNova_init_static(nova_standard_exception_NovaExceptionData* exceptionData);
-stabilitytest_NovaUnstableException* stabilitytest_NovaUnstableException_Nova0_construct(stabilitytest_NovaUnstableException* this, nova_standard_exception_NovaExceptionData* exceptionData);
+stabilitytest_NovaUnstableException* stabilitytest_NovaUnstableException_0_Novaconstruct(stabilitytest_NovaUnstableException* this, nova_standard_exception_NovaExceptionData* exceptionData);
 void nova_del_UnstableException(stabilitytest_NovaUnstableException** this, nova_standard_exception_NovaExceptionData* exceptionData);
 void stabilitytest_NovaUnstableException_Novathis(stabilitytest_NovaUnstableException* this, nova_standard_exception_NovaExceptionData* exceptionData);
 void stabilitytest_NovaUnstableException_Novasuper(stabilitytest_NovaUnstableException* this, nova_standard_exception_NovaExceptionData* exceptionData);

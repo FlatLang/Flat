@@ -4,7 +4,7 @@ public class ExceptionStability
 {
 	public static test(StabilityTest program)
 	{
-		Console.write("Checking Exception handling... ")
+		Console.writeLine("Checking Exception handling...")
 		
 		Bool worked = false
 		
@@ -21,8 +21,6 @@ public class ExceptionStability
 		{
 			program.fail("Failed; uncaught Exception")
 		}
-		
-		Console.writeLine("OK")
 	}
 	
 	static testException(StabilityTest program)
@@ -31,6 +29,8 @@ public class ExceptionStability
 		
 		try
 		{
+			Console.write("Checking DivideByZeroException... ")
+			
 			try
 			{
 				Int den = 0
@@ -38,10 +38,16 @@ public class ExceptionStability
 			}
 			catch (DivideByZeroException e)
 			{
+				Console.write("ASDF")
 				worked = true
+				
+				Console.writeLine("OK")
+				Console.write("Checking StabilityTestException... ")
 				
 				throw new StabilityTestException()
 			}
+			
+			program.fail("Failed to catch DivideByZeroException")
 		}
 		catch (StabilityTestException e)
 		{
@@ -49,6 +55,8 @@ public class ExceptionStability
 			{
 				program.fail("Failed; uncaught DivideByZeroException")
 			}
+			
+			Console.writeLine("OK")
 			
 			throw new Exception()
 		}

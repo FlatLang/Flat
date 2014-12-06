@@ -12,15 +12,17 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 10:34:30 PM
- * @version	v0.2.35 Oct 5, 2014 at 11:22:42 PM
+ * @version	v0.2.38 Dec 6, 2014 at 5:19:17 PM
  */
 public class Literal extends IValue
 {
 	private String	value;
 	
-	public static final String	NULL_IDENTIFIER		= "null";
-	public static final String	TRUE_IDENTIFIER		= "true";
-	public static final String	FALSE_IDENTIFIER	= "false";
+	public static final String	NULL_IDENTIFIER     = "null";
+	public static final String	TRUE_IDENTIFIER     = "true";
+	public static final String	FALSE_IDENTIFIER    = "false";
+	
+	public static final String  GARBAGE_IDENTIFIER  = "nova_garbageData";
 	
 //	public static final String	C_NULL_OUTPUT		= "(Object*)0";
 	
@@ -30,6 +32,17 @@ public class Literal extends IValue
 	public Literal(Node temporaryParent, Location locationIn)
 	{
 		super(temporaryParent, locationIn);
+	}
+	
+	@Override
+	public String getGenericReturnType()
+	{
+		if (isGenericType())
+		{
+			return getGenericType().getDefaultType();
+		}
+		
+		return getType();
 	}
 	
 	/**
@@ -96,9 +109,9 @@ public class Literal extends IValue
 	{
 		if (SyntaxUtils.isStringLiteral(value))
 		{
-			if (getParent() instanceof ArgumentList)
+			if (getParent() instanceof MethodCallArgumentList)
 			{
-				MethodCall node = (MethodCall)getParent().getParent();
+				MethodCall node = (MethodCall)getAncestorOfType(MethodCall.class);
 				
 				if (node.getName().equals("String"))
 				{
@@ -145,7 +158,7 @@ public class Literal extends IValue
 		{
 			Instantiation str = Instantiation.decodeStatement(getParent(), "new String(" + value + ")", getLocationIn(), true);
 			
-			return str.generateCSourceFragment(builder);//builder.append(Nova.LANGUAGE_NAME.toLowerCase()).append("_String_String(0, ").append(Exception.EXCEPTION_DATA_IDENTIFIER).append(", ").append(value).append(")");
+			return str.generateCSourceFragment(builder);
 		}
 		else if (isNullLiteral(this))
 		{
@@ -158,6 +171,13 @@ public class Literal extends IValue
 		else if (value.equals(FALSE_IDENTIFIER))
 		{
 			return builder.append(0);
+		}
+		else if (SyntaxUtils.isInteger(value))
+		{
+			if (Integer.parseInt(value) <= Integer.MIN_VALUE)
+			{
+				return builder.append(value).append("LL");
+			}
 		}
 		
 		return builder.append(value);
@@ -260,9 +280,9 @@ public class Literal extends IValue
 					}
 				}
 				
-				setType(side.getType());
+				setType(side.getReturnedNode().getType());
 			}
-			else if (getParent() instanceof Return)
+			else if (getAncestorOfType(Return.class) != null)
 			{
 				setType(getParentMethod().getType());
 			}

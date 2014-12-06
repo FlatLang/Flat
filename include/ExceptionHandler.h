@@ -14,15 +14,14 @@
 		buffer buf;\
 		int exception_code;\
 		\
-		nova_standard_exception_NovaExceptionData* newData = nova_standard_exception_NovaExceptionData_Novaconstruct(0, exceptionData, &buf);\
+		nova_standard_exception_Nova_ExceptionData* newData = novaEnv.nova_standard_exception_ExceptionData.construct(0, exceptionData, &buf);\
 		\
 		if (exceptionData != 0)\
 		{\
-			nova_standard_exception_NovaExceptionData_NovasetParent(newData, exceptionData, exceptionData);\
+			novaEnv.nova_standard_exception_ExceptionData.setParent(newData, exceptionData, exceptionData);\
 		}\
 		\
-		exceptionData = newData;\
-		\
+		exceptionData  = newData;\
 		exception_code = setJump(buf);\
 		\
 		if (exception_code == 0)
@@ -34,8 +33,8 @@
 
 #define END_TRY \
 		{\
-			nova_standard_exception_NovaExceptionData* oldData = exceptionData;\
-			nova_standard_exception_NovaExceptionData* newData = nova_standard_exception_NovaExceptionData_NovagetParent(exceptionData, 0);\
+			nova_standard_exception_Nova_ExceptionData* oldData = exceptionData;\
+			nova_standard_exception_Nova_ExceptionData* newData = novaEnv.nova_standard_exception_ExceptionData.getParent(exceptionData, 0);\
 			if (newData != 0)\
 			{\
 				exceptionData = newData;\
@@ -52,7 +51,10 @@
 	while(0)
 
 #define THROW(x, exception) \
-	exceptionData->nova_standard_exception_NovaExceptionData_NovathrownException = (nova_standard_exception_NovaException*)exception;\
-	nova_standard_exception_NovaExceptionData_NovajumpToBuffer(exceptionData, 0, x);
+	printf("Bef");\
+	exceptionData->nova_standard_exception_Nova_ExceptionData_Nova_thrownException = (nova_standard_exception_Nova_Exception*)exception;\
+	printf("Aft");\
+	novaEnv.nova_standard_exception_ExceptionData.jumpToBuffer(exceptionData, 0, x);\
+	printf("Aft2");
 
 #endif

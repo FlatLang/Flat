@@ -18,7 +18,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Feb 18, 2014 at 8:57:00 PM
- * @version	v0.2.37 Oct 16, 2014 at 11:38:42 PM
+ * @version	v0.2.38 Dec 6, 2014 at 5:19:17 PM
  */
 public class FileDeclaration extends Node
 {
@@ -162,7 +162,7 @@ public class FileDeclaration extends Node
 	 */
 	public boolean containsImport(String importLocation, boolean absoluteLocation)
 	{
-		return getImport(importLocation, absoluteLocation) != null;
+		return getImport(importLocation, absoluteLocation, false) != null;
 	}
 	
 	/**
@@ -181,14 +181,26 @@ public class FileDeclaration extends Node
 	 * Get the Import node with the given import location, if it exists.
 	 * 
 	 * @param importLocation The location of the import.
-	 * @param absoluteLocation Whether or not the importLocation is an
-	 * 		package relative path (true), or just a class name (false).
 	 * @return The Import with the specified import location, if it
 	 * 		exists.
 	 */
 	public Import getImport(String importLocation, boolean absoluteLocation)
 	{
-		Import node = getImportList().getImport(importLocation, absoluteLocation);
+		return getImport(importLocation, absoluteLocation, true);
+	}
+	
+	/**
+	 * Get the Import node with the given import location, if it exists.
+	 * 
+	 * @param importLocation The location of the import.
+	 * @param absoluteLocation Whether or not the importLocation is an
+	 * 		package relative path (true), or just a class name (false).
+	 * @return The Import with the specified import location, if it
+	 * 		exists.
+	 */
+	public Import getImport(String importLocation, boolean absoluteLocation, boolean aliased)
+	{
+		Import node = getImportList().getImport(importLocation, absoluteLocation, aliased);
 		
 		if (node != null)
 		{
@@ -196,6 +208,23 @@ public class FileDeclaration extends Node
 		}
 		
 		return node;
+	}
+	
+	public ClassDeclaration getImportedClass(Node from, String className)
+	{
+		ClassDeclaration clazz = from.getParentClass(true);
+		
+		while (clazz != null)
+		{
+			if (clazz.getName().equals(className))
+			{
+				return clazz;
+			}
+			
+			clazz = clazz.getParentClass();
+		}
+		
+		return getImport(className, false, true).getClassDeclaration();
 	}
 	
 	/**
@@ -261,6 +290,11 @@ public class FileDeclaration extends Node
 		}
 		
 		return null;
+	}
+	
+	public ClassDeclaration[] getClassDeclarations()
+	{
+		return new ClassDeclaration[] { getClassDeclaration() };
 	}
 	
 	public Package getPackage()
@@ -367,7 +401,7 @@ public class FileDeclaration extends Node
 	{
 		ValidationResult result = super.validate(phase);
 		
-		if (result.errorOccurred)
+		if (result.skipValidation())
 		{
 			return result;
 		}
@@ -441,7 +475,7 @@ public class FileDeclaration extends Node
 	{
 		if (header == null)
 		{
-			String definitionName = "FILE_" + getName() + "_" + Nova.LANGUAGE_NAME.toUpperCase();
+			String definitionName = "FILE_" + getClassDeclaration().generateCSourceName() + "_" + Nova.LANGUAGE_NAME.toUpperCase();
 			
 			builder.append("#pragma once").append('\n');
 			builder.append("#ifndef ").append(definitionName).append('\n');
@@ -465,7 +499,7 @@ public class FileDeclaration extends Node
 				}
 			}
 			
-			builder.append('\n').append("#endif");
+			builder.append('\n').append("#endif").append('\n');
 			
 			header = builder;
 		}
@@ -496,7 +530,7 @@ public class FileDeclaration extends Node
 				}
 			}
 			
-			source = builder;
+			source = builder.append('\n');
 		}
 		
 		return source;
@@ -536,6 +570,26 @@ public class FileDeclaration extends Node
 				addImport(importLoc).markUsed();
 			}
 		}
+	}
+	
+	public StringBuilder generateCHeaderNativeInterface(StringBuilder builder)
+	{
+		for (ClassDeclaration clazz : getClassDeclarations())
+		{
+			clazz.generateCHeaderNativeInterface(builder);
+		}
+		
+		return builder;
+	}
+	
+	public StringBuilder generateCSourceNativeInterface(StringBuilder builder)
+	{
+		for (ClassDeclaration clazz : getClassDeclarations())
+		{
+			clazz.generateCSourceNativeInterface(builder);
+		}
+		
+		return builder;
 	}
 	
 	/**

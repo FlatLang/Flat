@@ -15,7 +15,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.2.14 Jul 5, 2014 at 9:02:42 PM
- * @version	v0.2.36 Oct 13, 2014 at 12:16:42 AM
+ * @version	v0.2.38 Dec 6, 2014 at 5:19:17 PM
  */
 public class Closure extends Variable
 {
@@ -206,7 +206,7 @@ public class Closure extends Variable
 	{
 		ValidationResult result = super.validate(phase);
 		
-		if (result.errorOccurred)
+		if (result.skipValidation())
 		{
 			return result;
 		}
@@ -219,7 +219,7 @@ public class Closure extends Variable
 			{
 				SyntaxMessage.error("Method '" + declarations[0].getName() + "' is not compatible", this);
 				
-				result.errorOccurred = true;
+				return result.errorOccurred();
 			}
 			
 			setDeclaration(declaration);
@@ -264,8 +264,8 @@ public class Closure extends Variable
 	 */
 	private void validateParameters(ClosureDeclaration declaration, MethodDeclaration method)
 	{
-		ParameterList<Value> list1 = declaration.getParameterList();
-		ParameterList<Value> list2 = method.getParameterList();
+		ParameterList<Value>     list1 = declaration.getParameterList();
+		ParameterList<Parameter> list2 = method.getParameterList();
 		
 		validateNumParameters(method, list1, list2);
 		validateIndividualParameters(method, list1, list2);
@@ -281,7 +281,7 @@ public class Closure extends Variable
 	 * @param list1 The ParameterList of the ClosureDeclaration.
 	 * @param list2 The ParameterList of the MethodDeclaration.
 	 */
-	private void validateNumParameters(MethodDeclaration method, ParameterList<Value> list1, ParameterList<Value> list2)
+	private void validateNumParameters(MethodDeclaration method, ParameterList<Value> list1, ParameterList<Parameter> list2)
 	{
 		if (list1.getNumVisibleChildren() != list2.getNumVisibleChildren())
 		{
@@ -306,7 +306,7 @@ public class Closure extends Variable
 	 * @param list1 The ParameterList of the ClosureDeclaration.
 	 * @param list2 The ParameterList of the MethodDeclaration.
 	 */
-	private void validateIndividualParameters(MethodDeclaration method, ParameterList<Value> list1, ParameterList<Value> list2)
+	private void validateIndividualParameters(MethodDeclaration method, ParameterList<Value> list1, ParameterList<Parameter> list2)
 	{
 		for (int i = 0; i < list1.getNumVisibleChildren(); i++)
 		{

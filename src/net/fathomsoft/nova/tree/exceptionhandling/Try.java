@@ -9,6 +9,7 @@ import net.fathomsoft.nova.tree.SyntaxTree;
 import net.fathomsoft.nova.util.Location;
 import net.fathomsoft.nova.util.Patterns;
 import net.fathomsoft.nova.util.Regex;
+import net.fathomsoft.nova.util.StringUtils;
 
 /**
  * ExceptionHandler extension that represents the declaration of a
@@ -17,11 +18,13 @@ import net.fathomsoft.nova.util.Regex;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Mar 22, 2014 at 4:01:38 PM
- * @version	v0.2.35 Oct 5, 2014 at 11:22:42 PM
+ * @version	v0.2.38 Dec 6, 2014 at 5:19:17 PM
  */
 public class Try extends ExceptionHandler
 {
 	private ArrayList<Integer>	codes;
+	
+	public static final String IDENTIFIER = "try";
 	
 	/**
 	 * Instantiate and initialize default data.
@@ -79,7 +82,7 @@ public class Try extends ExceptionHandler
 	 */
 	public static Try decodeStatement(Node parent, String statement, Location location, boolean require)
 	{
-		if (Regex.matches(statement, 0, Patterns.TRY))
+		if (statement.equals(IDENTIFIER))
 		{
 			Try n = new Try(parent, location);
 			
@@ -101,7 +104,7 @@ public class Try extends ExceptionHandler
 	{
 		ValidationResult result = super.validate(phase);
 		
-		if (result.errorOccurred)
+		if (result.skipValidation())
 		{
 			return result;
 		}
@@ -162,7 +165,7 @@ public class Try extends ExceptionHandler
 		{
 			int code = codes.get(i);
 			
-			builder.append("nova_standard_exception_NovaExceptionData_NovaaddCode(").append(variableName).append(", ").append(variableName).append(", ").append(code).append(");").append('\n');
+			builder.append("novaEnv.nova_standard_exception_ExceptionData.addCode(").append(variableName).append(", ").append(variableName).append(", ").append(code).append(");").append('\n');
 		}
 		
 		return builder;

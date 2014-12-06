@@ -32,10 +32,10 @@ typedef struct stabilitytest_NovaStabilityExceptionHandler stabilitytest_NovaSta
 
 typedef struct nova_VTable_stabilitytest_NovaStabilityExceptionHandler
 {
-	long (*nova_standard_NovaObject_Novavirtual0_getHashCodeLong)(nova_standard_NovaObject*, nova_standard_exception_NovaExceptionData*);
-	nova_standard_NovaString* (*nova_standard_NovaObject_Novavirtual0_toString)(nova_standard_NovaObject*, nova_standard_exception_NovaExceptionData*);
-	char (*nova_standard_NovaObject_Novavirtual0_equals)(nova_standard_NovaObject*, nova_standard_exception_NovaExceptionData*, nova_standard_NovaObject*);
-	void (*stabilitytest_NovaStabilityExceptionHandler_Novavirtual_uncaughtException)(stabilitytest_NovaStabilityExceptionHandler*, nova_standard_exception_NovaExceptionData*, nova_standard_thread_NovaThread*, nova_standard_exception_NovaException*);
+	long (*nova_standard_NovaObject_virtual0_NovagetHashCodeLong)(nova_standard_NovaObject*, nova_standard_exception_NovaExceptionData*);
+	nova_standard_NovaString* (*nova_standard_NovaObject_virtual0_NovatoString)(nova_standard_NovaObject*, nova_standard_exception_NovaExceptionData*);
+	char (*nova_standard_NovaObject_virtual0_Novaequals)(nova_standard_NovaObject*, nova_standard_exception_NovaExceptionData*, nova_standard_NovaObject*);
+	void (*stabilitytest_NovaStabilityExceptionHandler_virtual_NovauncaughtException)(stabilitytest_NovaStabilityExceptionHandler*, nova_standard_exception_NovaExceptionData*, nova_standard_thread_NovaThread*, nova_standard_exception_NovaException*);
 } nova_VTable_stabilitytest_NovaStabilityExceptionHandler;
 
 CCLASS_CLASS

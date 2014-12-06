@@ -6,6 +6,7 @@ import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.error.SyntaxMessage;
+import net.fathomsoft.nova.error.UnimplementedOperationException;
 import net.fathomsoft.nova.tree.MethodList.SearchFilter;
 import net.fathomsoft.nova.util.Bounds;
 import net.fathomsoft.nova.util.Location;
@@ -21,11 +22,13 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.2.21 Jul 30, 2014 at 1:45:00 PM
- * @version	v0.2.36 Oct 13, 2014 at 12:16:42 AM
+ * @version	v0.2.38 Dec 6, 2014 at 5:19:17 PM
  */
 public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAncestor
 {
 	private int	uniqueID, overloadID;
+	
+	private String[] types;
 	
 	private ArrayList<NovaMethodDeclaration>	overridingMethods;
 	
@@ -38,7 +41,12 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 		
 		uniqueID          = 0;
 		overloadID        = -1;
+		types             = new String[0];
 		overridingMethods = new ArrayList<NovaMethodDeclaration>();
+		
+		NovaParameterList parameters = new NovaParameterList(this, locationIn.asNew());
+		
+		replace(super.getParameterList(), parameters);
 	}
 	
 	/**
@@ -142,8 +150,26 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 		
 		SearchFilter filter = new SearchFilter();
 		filter.checkStatic(isStatic());
+		filter.checkProperties = true;
 		
-		return (NovaMethodDeclaration)extension.getMethod(getName(), getParameterList().getTypes());
+		NovaMethodDeclaration method = (NovaMethodDeclaration)extension.getMethod(getName(), filter, getParameterList().getTypes());
+		
+		if (method != null)
+		{
+			return method;
+		}
+		
+		for (Interface inter : getParentClass().getImplementedClasses())
+		{
+			method = (NovaMethodDeclaration)inter.getMethod(getName(), filter, getParameterList().getTypes());
+			
+			if (method != null)
+			{
+				return method;
+			}
+		}
+		
+		return null;
 	}
 	
 	/**
@@ -165,7 +191,7 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 	 * @return The Method instance that overrides this Method, if
 	 * 		any exists.
 	 */
-	public NovaMethodDeclaration[] getOverridingMethod()
+	public NovaMethodDeclaration[] getOverridingMethods()
 	{
 		return overridingMethods.toArray(new NovaMethodDeclaration[0]);
 	}
@@ -265,6 +291,72 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 		}
 	}
 	
+	public boolean isOverloaded()
+	{
+		return overloadID != -1;
+	}
+	
+	@Override
+	public StringBuilder generateCSourceNativeName(StringBuilder builder, boolean declaration)
+	{
+		super.generateCSourceNativeName(builder, declaration);
+		
+		if (!declaration && isOverloaded())
+		{
+			if (getParameterList().getNumParameters() > 0)
+			{
+				builder.append('_');
+			}
+			
+			for (int i = 0; i < getParameterList().getNumParameters(); i++)
+			{
+				Parameter param = getParameter(i);
+				
+				String location = null;
+				
+				if (param.isExternalType())
+				{
+					location = param.getType();
+				}
+				else
+				{
+					ClassDeclaration clazz = param.getTypeClass();
+					
+					location = clazz.getFileDeclaration().getPackage().getLocation().replace('/', '_');
+					
+					if (location.length() > 0)
+					{
+						location += '_';
+					}
+					
+					location += clazz.getName();
+				}
+				
+				builder.append('_');
+				
+				if (param.isArray())
+				{
+					builder.append("Array" + param.getArrayDimensions() + "d_");
+				}
+				
+				builder.append(location);
+				
+				if (i < getParameterList().getNumVisibleChildren() - 1)
+				{
+					builder.append('_');
+				}
+			}
+		}
+		
+		return builder;
+	}
+	
+	@Override
+	public NovaParameterList getParameterList()
+	{
+		return (NovaParameterList)super.getParameterList();
+	}
+	
 	/**
 	 * Get the identifier for the virtual abstract method in the vtable.
 	 * 
@@ -308,6 +400,14 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 	@Override
 	public StringBuilder generateCSourceName(StringBuilder builder, String uniquePrefix)
 	{
+		return generateCSourceName(builder, uniquePrefix, true);
+	}
+	
+	/**
+	 * @see net.fathomsoft.nova.tree.Identifier#generateCSourceName(java.lang.StringBuilder, String)
+	 */
+	public StringBuilder generateCSourceName(StringBuilder builder, String uniquePrefix, boolean outputOverload)
+	{
 		if (overloadID == -1)
 		{
 			return super.generateCSourceName(builder, uniquePrefix);
@@ -317,8 +417,36 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 		{
 			uniquePrefix = "";
 		}
+		if (outputOverload)
+		{
+			uniquePrefix += overloadID;
+		}
 		
-		return super.generateCSourceName(builder, uniquePrefix + overloadID + "");
+		return super.generateCSourceName(builder, uniquePrefix);
+	}
+	
+	@Override
+	public StringBuilder generateNovaInput(StringBuilder builder, boolean outputChildren)
+	{
+		builder.append(getVisibilityText());
+		
+		if (!isInstance())
+		{
+			builder.append(' ').append(getStaticText());
+		}
+		
+		builder.append(' ').append(getName());
+		
+		builder.append('(');
+		getParameterList().generateNovaInput(builder, true);
+		builder.append(')').append('\n');
+		
+		if (outputChildren)
+		{
+			getScope().generateNovaInput(builder, true);
+		}
+		
+		return builder;
 	}
 	
 	/**
@@ -372,7 +500,17 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 	{
 		int firstParenthIndex = statement.indexOf('(');
 		
-		return firstParenthIndex >= 0 && !Regex.startsWith(statement, Patterns.EXTERNAL);
+		if (StringUtils.findNextCharacter(statement, StringUtils.SYMBOLS_CHARS, 0, 1) < firstParenthIndex)
+		{
+			return false;
+		}
+		
+		return firstParenthIndex >= 0 && !StringUtils.findNextWord(statement).equals(ExternalMethodDeclaration.PREFIX);
+	}
+	
+	public boolean isUserMade()
+	{
+		return true;
 	}
 	
 	/**
@@ -430,7 +568,7 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 	/**
 	 * Decode the method signature.<br>
 	 * <br>
-	 * For example: "<u><code>public static void main</code></u>"
+	 * For example: "<u><code>public static calculateArea -> Int</code></u>"
 	 * 
 	 * @param statement The statement to decode the signature from.
 	 * @param require Whether or not to throw an error if anything goes
@@ -440,8 +578,7 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 	public boolean decodeSignature(String statement, boolean require)
 	{
 		String signature = findMethodSignature(statement);
-		
-		MethodData data = new MethodData(signature);
+		MethodData data  = new MethodData(signature);
 		
 		searchGenericParameters(signature, data);
 		
@@ -465,35 +602,64 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 	 */
 	public boolean decodeParameters(String parameterList, boolean require)
 	{
-		if (parameterList.length() <= 0)
+		if (parameterList.length() > 0)
 		{
-			return true;
+			String parameters[] = StringUtils.splitCommas(parameterList);
+			
+			Location location = new Location(getLocationIn());
+			
+			for (int i = 0; i < parameters.length; i++)
+			{
+				if (parameters[i].length() > 0)
+				{
+					Parameter param = Parameter.decodeStatement(this, parameters[i], location, require);
+					
+					if (param == null)
+					{
+						return SyntaxMessage.queryError("Incorrect parameter definition", this, require);
+					}
+					
+					getParameterList().addChild(param);
+				}
+				else
+				{
+					SyntaxMessage.error("Expected a parameter definition", this);
+				}
+			}
 		}
 		
-		String parameters[] = StringUtils.splitCommas(parameterList);
-		
-		Location location = new Location(getLocationIn());
-		
-		for (int i = 0; i < parameters.length; i++)
+		for (String type : types)
 		{
-			if (parameters[i].length() > 0)
-			{
-				Parameter param = Parameter.decodeStatement(this, parameters[i], location, require);
-				
-				if (param == null)
-				{
-					return SyntaxMessage.queryError("Incorrect parameter definition", this, require);
-				}
-				
-				getParameterList().addChild(param);
-			}
-			else
-			{
-				SyntaxMessage.error("Expected a parameter definition", this);
-			}
+			getParameterList().addReturnParameter(type);
 		}
 		
 		return true;
+	}
+	
+	public int getNumReturnValues()
+	{
+		if (getType() == null)
+		{
+			return 0;
+		}
+		
+		return 1 + getParameterList().getNumReturnParameters();
+	}
+	
+	public Value[] getTypes()
+	{
+		Value[] types = new Value[getNumReturnValues()];
+		
+		types[0] = getTypeClass();
+		
+		Value[] ret = getParameterList().getReturnTypes();
+		
+		for (int i = 0; i < ret.length; i++)
+		{
+			types[i + 1] = ret[i];
+		}
+		
+		return types;
 	}
 	
 	/**
@@ -506,9 +672,9 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 		
 		if (data.error != null || !setAttribute(word, extra.getWordNumber()))
 		{
-			if (leftDelimiter.equals("->"))
+			if (leftDelimiter.equals("->") || (getType() != null && leftDelimiter.equals(",")))
 			{
-				setType(word, true, false);
+				addType(word);
 				
 				checkArray(data.signature, bounds.getEnd(), rightDelimiter);
 			}
@@ -525,6 +691,23 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 		}
 	}
 	
+	public void addType(String type)
+	{
+		if (getType() == null)
+		{
+			setType(type, true, false);
+		}
+		else
+		{
+			String[] temp = new String[types.length + 1];
+			System.arraycopy(types, 0, temp, 0, types.length);
+			
+			temp[types.length] = type;
+			
+			types = temp;
+		}
+	}
+	
 	/**
 	 * Validate the parameters of the method header.
 	 * 
@@ -536,7 +719,7 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 	{
 		ValidationResult result = super.validate(phase);
 		
-		if (result.errorOccurred)
+		if (result.skipValidation())
 		{
 			return result;
 		}
@@ -544,19 +727,19 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 		if (phase == SyntaxTree.PHASE_INSTANCE_DECLARATIONS)
 		{
 			getParameterList().validate(phase);
-		}
-		else if (phase == SyntaxTree.PHASE_METHOD_CONTENTS)
-		{
+			
 			NovaMethodDeclaration methodDeclaration = getOverriddenMethod();
 			
-			if (methodDeclaration != null && methodDeclaration.isStatic() == isStatic())
+			if (methodDeclaration != null)
 			{
 				if (!containsOverridingMethod(methodDeclaration))
 				{
 					methodDeclaration.overridingMethods.add(this);
 				}
 			}
-			
+		}
+		else if (phase == SyntaxTree.PHASE_METHOD_CONTENTS)
+		{
 			if (overloadID < 0)
 			{
 				SearchFilter filter = new SearchFilter();
@@ -606,6 +789,15 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 		for (NovaMethodDeclaration child : overridingMethods)
 		{
 			node.overridingMethods.add((NovaMethodDeclaration)child.clone(node, child.getLocationIn()));
+		}
+		
+		node.types = new String[types.length];
+		
+		int i = 0;
+		
+		for (String type : types)
+		{
+			node.types[i++] = type;
 		}
 		
 		return node;

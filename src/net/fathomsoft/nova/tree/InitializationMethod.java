@@ -8,7 +8,7 @@ import net.fathomsoft.nova.util.Location;
  * 
  * @author	Braden Steffaniak
  * @since	v0.2.27 Aug 6, 2014 at 5:12:43 PM
- * @version	v0.2.28 Aug 20, 2014 at 12:10:45 AM
+ * @version	v0.2.38 Dec 6, 2014 at 5:19:17 PM
  */
 public class InitializationMethod extends BodyMethodDeclaration
 {
@@ -49,6 +49,12 @@ public class InitializationMethod extends BodyMethodDeclaration
 	 */
 	@Override
 	public boolean isVirtual()
+	{
+		return false;
+	}
+	
+	@Override
+	public boolean isUserMade()
 	{
 		return false;
 	}

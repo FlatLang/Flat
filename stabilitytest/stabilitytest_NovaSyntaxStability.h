@@ -30,9 +30,9 @@ typedef struct stabilitytest_NovaSyntaxStability stabilitytest_NovaSyntaxStabili
 
 typedef struct nova_VTable_stabilitytest_NovaSyntaxStability
 {
-	long (*nova_standard_NovaObject_Novavirtual0_getHashCodeLong)(nova_standard_NovaObject*, nova_standard_exception_NovaExceptionData*);
-	nova_standard_NovaString* (*nova_standard_NovaObject_Novavirtual0_toString)(nova_standard_NovaObject*, nova_standard_exception_NovaExceptionData*);
-	char (*nova_standard_NovaObject_Novavirtual0_equals)(nova_standard_NovaObject*, nova_standard_exception_NovaExceptionData*, nova_standard_NovaObject*);
+	long (*nova_standard_NovaObject_virtual0_NovagetHashCodeLong)(nova_standard_NovaObject*, nova_standard_exception_NovaExceptionData*);
+	nova_standard_NovaString* (*nova_standard_NovaObject_virtual0_NovatoString)(nova_standard_NovaObject*, nova_standard_exception_NovaExceptionData*);
+	char (*nova_standard_NovaObject_virtual0_Novaequals)(nova_standard_NovaObject*, nova_standard_exception_NovaExceptionData*, nova_standard_NovaObject*);
 } nova_VTable_stabilitytest_NovaSyntaxStability;
 
 CCLASS_CLASS
@@ -43,7 +43,7 @@ CCLASS_CLASS
 )
 
 void stabilitytest_NovaSyntaxStabilityNova_init_static(nova_standard_exception_NovaExceptionData* exceptionData);
-stabilitytest_NovaSyntaxStability* stabilitytest_NovaSyntaxStability_Nova0_construct(stabilitytest_NovaSyntaxStability* this, nova_standard_exception_NovaExceptionData* exceptionData);
+stabilitytest_NovaSyntaxStability* stabilitytest_NovaSyntaxStability_0_Novaconstruct(stabilitytest_NovaSyntaxStability* this, nova_standard_exception_NovaExceptionData* exceptionData);
 void nova_del_SyntaxStability(stabilitytest_NovaSyntaxStability** this, nova_standard_exception_NovaExceptionData* exceptionData);
 void stabilitytest_NovaSyntaxStability_static_Novatest(stabilitytest_NovaSyntaxStability* this, nova_standard_exception_NovaExceptionData* exceptionData, stabilitytest_NovaStabilityTest* l0_Novaprogram);
 void stabilitytest_NovaSyntaxStability_Novathis(stabilitytest_NovaSyntaxStability* this, nova_standard_exception_NovaExceptionData* exceptionData);

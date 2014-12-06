@@ -13,9 +13,14 @@ import net.fathomsoft.nova.tree.exceptionhandling.ExceptionHandler;
 import net.fathomsoft.nova.tree.exceptionhandling.Finally;
 import net.fathomsoft.nova.tree.exceptionhandling.Throw;
 import net.fathomsoft.nova.tree.exceptionhandling.Try;
+import net.fathomsoft.nova.tree.switches.Case;
+import net.fathomsoft.nova.tree.switches.Default;
+import net.fathomsoft.nova.tree.switches.Fallthrough;
+import net.fathomsoft.nova.tree.switches.Switch;
 import net.fathomsoft.nova.tree.variables.Array;
 import net.fathomsoft.nova.tree.variables.ArrayAccess;
 import net.fathomsoft.nova.tree.variables.FieldDeclaration;
+import net.fathomsoft.nova.tree.variables.Super;
 import net.fathomsoft.nova.tree.variables.Variable;
 import net.fathomsoft.nova.tree.variables.VariableDeclaration;
 import net.fathomsoft.nova.tree.variables.VariableDeclarationList;
@@ -30,7 +35,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:00:15 PM
- * @version	v0.2.37 Oct 16, 2014 at 11:38:42 PM
+ * @version	v0.2.38 Dec 6, 2014 at 5:19:17 PM
  */
 public class SyntaxTree
 {
@@ -47,26 +52,33 @@ public class SyntaxTree
 	public static final int			PHASE_CLASS_DECLARATION = 1, PHASE_INSTANCE_DECLARATIONS = 2,
 									PHASE_METHOD_CONTENTS = 3, PHASE_PRE_GENERATION = 4;
 	
-	private static final Class<?>	PRE_VALUE_DECODE[] = new Class<?>[]
+	private static final Class<?> PRE_VALUE_DECODE[] = new Class<?>[]
 	{
-		IfStatement.class, ElseStatement.class, Priority.class, Return.class,
-		Assignment.class, BinaryOperation.class
+		IfStatement.class, ElseStatement.class, Loop.class, Case.class,
+		Switch.class, Default.class, Fallthrough.class, Priority.class,
+		Return.class, Assignment.class, BinaryOperation.class, Super.class
 	};
 	
-	private static final Class<?>	SCOPE_CHILD_DECODE[] = new Class<?>[]
+	private static final Class<?> SCOPE_CHILD_DECODE[] = new Class<?>[]
 	{
-		Break.class, Continue.class, ExceptionHandler.class, Assignment.class,
-		Instantiation.class, ArrayAccess.class, ElseStatement.class,
-		IfStatement.class, Until.class, Loop.class, Array.class,
-		UnaryOperation.class, Cast.class, MethodCall.class, LocalDeclaration.class
+		Break.class, Case.class, Switch.class, Default.class, Fallthrough.class,
+		Continue.class, ExceptionHandler.class, Assignment.class, Instantiation.class,
+		ArrayAccess.class, ElseStatement.class, IfStatement.class, Until.class,
+		Loop.class, Array.class, UnaryOperation.class, Cast.class,
+		MethodCall.class, LocalDeclaration.class
 	};
 	
-	public static final Class<?>	FIRST_PASS_CLASSES[] = new Class<?>[]
+	public static final Class<?> FIELD_SCOPE_CHILD_DECODE[] = new Class<?>[]
 	{
-		Import.class, ClassDeclaration.class, Package.class
+		AccessorMethod.class, MutatorMethod.class
 	};
 	
-	public static final Class<?>	SECOND_PASS_CLASSES[] = new Class<?>[]
+	public static final Class<?> FIRST_PASS_CLASSES[] = new Class<?>[]
+	{
+		Import.class, ClassDeclaration.class, Interface.class, Package.class
+	};
+	
+	public static final Class<?> SECOND_PASS_CLASSES[] = new Class<?>[]
 	{
 		StaticBlock.class, AbstractMethodDeclaration.class, ExternalMethodDeclaration.class,
 		Destructor.class, Constructor.class, BodyMethodDeclaration.class, ExternalType.class,
@@ -305,9 +317,13 @@ public class SyntaxTree
 				return result.skippedCycle();
 			}
 			
+			int temp = result.nextIncrement;
+			
 			root = result.returnedNode;
 			
-			for (int i = 0; i < root.getNumChildren(); i++)
+			int i = 0;
+			
+			while (i < root.getNumChildren())
 			{
 				Node child = root.getChild(i);
 				
@@ -317,7 +333,11 @@ public class SyntaxTree
 				{
 					return result;
 				}
+				
+				i += result.increment();
 			}
+			
+			result.nextIncrement = temp;
 		}
 		catch (SyntaxErrorException e)
 		{
@@ -365,7 +385,7 @@ public class SyntaxTree
 		
 		while (start >= 0)
 		{
-			int end = StringUtils.findStrings(source, ends, start).getEnd();
+			int end = StringUtils.findStrings(source, ends, start, 1, false).getEnd();
 			
 			if (end < 0)
 			{
@@ -462,9 +482,11 @@ public class SyntaxTree
 				if      (type == LocalDeclaration.class) node = LocalDeclaration.decodeStatement(parent, statement, location, require);
 				else if (node == null && type == ElseStatement.class) node = ElseStatement.decodeStatement(parent, statement, location, require);
 				else if (node == null && type == AbstractMethodDeclaration.class) node = AbstractMethodDeclaration.decodeStatement(parent, statement, location, require);
+				else if (node == null && type == AccessorMethod.class) node = AccessorMethod.decodeStatement(parent, statement, location, require);
 				else if (node == null && type == ArrayAccess.class) node = ArrayAccess.decodeStatement(parent, statement, location, require);
 				else if (node == null && type == Assignment.class) node = Assignment.decodeStatement(parent, statement, location, require);
 				else if (node == null && type == Array.class) node = Array.decodeStatement(parent, statement, location, require);
+				else if (node == null && type == Case.class) node = Case.decodeStatement(parent, statement, location, require);
 				else if (node == null && type == Cast.class) node = Cast.decodeStatement(parent, statement, location, require);
 				else if (node == null && type == BinaryOperation.class) node = BinaryOperation.decodeStatement(parent, statement, location, require);
 				else if (node == null && type == Break.class) node = Break.decodeStatement(parent, statement, location, require);
@@ -472,24 +494,30 @@ public class SyntaxTree
 				else if (node == null && type == MethodCall.class) node = MethodCall.decodeStatement(parent, statement, location, require);
 				else if (node == null && type == ClassDeclaration.class) node = ClassDeclaration.decodeStatement(parent, statement, location, require);
 				else if (node == null && type == Constructor.class) node = Constructor.decodeStatement(parent, statement, location, require);
+				else if (node == null && type == Default.class) node = Default.decodeStatement(parent, statement, location, require);
 				else if (node == null && type == Destructor.class) node = Destructor.decodeStatement(parent, statement, location, require);
 				else if (node == null && type == ExternalMethodDeclaration.class) node = ExternalMethodDeclaration.decodeStatement(parent, statement, location, require);
 				else if (node == null && type == ExternalType.class) node = ExternalType.decodeStatement(parent, statement, location, require);
 				else if (node == null && type == IfStatement.class) node = IfStatement.decodeStatement(parent, statement, location, require);
 				else if (node == null && type == Import.class) node = Import.decodeStatement(parent, statement, location, require);
 				else if (node == null && type == Instantiation.class) node = Instantiation.decodeStatement(parent, statement, location, require);
+				else if (node == null && type == Interface.class) node = Interface.decodeStatement(parent, statement, location, require);
 				else if (node == null && type == Literal.class) node = Literal.decodeStatement(parent, statement, location, require);
 				else if (node == null && type == Loop.class) node = Loop.decodeStatement(parent, statement, location, require);
+				else if (node == null && type == MutatorMethod.class) node = MutatorMethod.decodeStatement(parent, statement, location, require);
 				else if (node == null && type == BodyMethodDeclaration.class) node = BodyMethodDeclaration.decodeStatement(parent, statement, location, require);
 				else if (node == null && type == Package.class) node = Package.decodeStatement(parent, statement, location, require);
 				else if (node == null && type == Priority.class) node = Priority.decodeStatement(parent, statement, location, require);
 				else if (node == null && type == Return.class) node = Return.decodeStatement(parent, statement, location, require);
 				else if (node == null && type == UnaryOperation.class) node = UnaryOperation.decodeStatement(parent, statement, location, require);
+				else if (node == null && type == Fallthrough.class) node = Fallthrough.decodeStatement(parent, statement, location, require);
 				else if (node == null && type == FieldDeclaration.class) node = FieldDeclaration.decodeStatement(parent, statement, location, require);
 				else if (node == null && type == Catch.class) node = Catch.decodeStatement(parent, statement, location, require);
 				else if (node == null && type == ExceptionHandler.class) node = ExceptionHandler.decodeStatement(parent, statement, location, require);
 				else if (node == null && type == Finally.class) node = Finally.decodeStatement(parent, statement, location, require);
 				else if (node == null && type == StaticBlock.class) node = StaticBlock.decodeStatement(parent, statement, location, require);
+				else if (node == null && type == Super.class) node = Super.decodeStatement(parent, statement, location, require);
+				else if (node == null && type == Switch.class) node = Switch.decodeStatement(parent, statement, location, require);
 				else if (node == null && type == Throw.class) node = Throw.decodeStatement(parent, statement, location, require);
 				else if (node == null && type == Try.class) node = Try.decodeStatement(parent, statement, location, require);
 				else if (node == null && type == Until.class) node = Until.decodeStatement(parent, statement, location, require);
@@ -556,15 +584,19 @@ public class SyntaxTree
 		else if (type.isAssignableFrom(Array.class) && (node = Array.decodeStatement(parent, statement, location, require)) != null);
 //		else if (type.isAssignableFrom(Bool.class) && (node = Bool.decodeStatement(parent, statement, location, require)) != null);
 		else if (type.isAssignableFrom(Break.class) && (node = Break.decodeStatement(parent, statement, location, require)) != null);
+		else if (type.isAssignableFrom(Case.class) && (node = Case.decodeStatement(parent, statement, location, require)) != null);
 		else if (type.isAssignableFrom(Continue.class) && (node = Continue.decodeStatement(parent, statement, location, require)) != null);
 		else if (type.isAssignableFrom(BinaryOperation.class) && (node = BinaryOperation.decodeStatement(parent, statement, location, require)) != null);
 		else if (type.isAssignableFrom(ClassDeclaration.class) && (node = ClassDeclaration.decodeStatement(parent, statement, location, require)) != null);
 		else if (type.isAssignableFrom(Constructor.class) && (node = Constructor.decodeStatement(parent, statement, location, require)) != null);
+		else if (type.isAssignableFrom(Default.class) && (node = Default.decodeStatement(parent, statement, location, require)) != null);
 		else if (type.isAssignableFrom(Destructor.class) && (node = Destructor.decodeStatement(parent, statement, location, require)) != null);
 		else if (type.isAssignableFrom(ElseStatement.class) && (node = ElseStatement.decodeStatement(parent, statement, location, require)) != null);
 		else if (type.isAssignableFrom(ExternalMethodDeclaration.class) && (node = ExternalMethodDeclaration.decodeStatement(parent, statement, location, require)) != null);
 		else if (type.isAssignableFrom(ExternalType.class) && (node = ExternalType.decodeStatement(parent, statement, location, require)) != null);
+		else if (type.isAssignableFrom(Fallthrough.class) && (node = Fallthrough.decodeStatement(parent, statement, location, require)) != null);
 		else if (type.isAssignableFrom(Import.class) && (node = Import.decodeStatement(parent, statement, location, require)) != null);
+		else if (type.isAssignableFrom(Interface.class) && (node = Interface.decodeStatement(parent, statement, location, require)) != null);
 		else if (type.isAssignableFrom(Literal.class) && (node = Literal.decodeStatement(parent, statement, location, require)) != null);
 		else if (type.isAssignableFrom(LocalDeclaration.class) && (node = LocalDeclaration.decodeStatement(parent, statement, location, require)) != null);
 //		else if (type.isAssignableFrom(Null.class) && (node = Null.decodeStatement(parent, statement, location, require)) != null);
@@ -578,6 +610,8 @@ public class SyntaxTree
 		else if (type.isAssignableFrom(ExceptionHandler.class) && (node = ExceptionHandler.decodeStatement(parent, statement, location, require)) != null);
 		else if (type.isAssignableFrom(Finally.class) && (node = Finally.decodeStatement(parent, statement, location, require)) != null);
 		else if (type.isAssignableFrom(StaticBlock.class) && (node = StaticBlock.decodeStatement(parent, statement, location, require)) != null);
+		else if (type.isAssignableFrom(Super.class) && (node = Super.decodeStatement(parent, statement, location, require)) != null);
+		else if (type.isAssignableFrom(Switch.class) && (node = Switch.decodeStatement(parent, statement, location, require)) != null);
 		else if (type.isAssignableFrom(Throw.class) && (node = Throw.decodeStatement(parent, statement, location, require)) != null);
 		else if (type.isAssignableFrom(Try.class) && (node = Try.decodeStatement(parent, statement, location, require)) != null);
 		else if (type.isAssignableFrom(Until.class) && (node = Until.decodeStatement(parent, statement, location, require)) != null);
@@ -845,11 +879,16 @@ public class SyntaxTree
 	
 	private static Accessible decodeAccessible(Node parent, String statement, Location location, boolean require, boolean validateAccess)
 	{
-		Accessible node = decodeVariable(parent, statement, location, validateAccess);
+		Accessible node = (Accessible)decodeStatementOfType(parent, statement, location, require, Super.class);
 		
 		if (node == null)
 		{
-			node = (Accessible)decodeStatementOfType(parent, statement, location, require, Priority.class);
+			node = decodeVariable(parent, statement, location, validateAccess);
+			
+			if (node == null)
+			{
+				node = (Accessible)decodeStatementOfType(parent, statement, location, require, Priority.class);
+			}
 		}
 		
 		return node;
@@ -867,33 +906,38 @@ public class SyntaxTree
 	 */
 	public static Identifier decodeIdentifier(Node parent, String statement, Location location, boolean validateAccess)
 	{
-		Identifier node = SyntaxTree.getUsableExistingNode(parent, statement, location, validateAccess);
-		
-		if (node == null)
-		{
-			if (parent instanceof ExternalType)
+//		Identifier node = Super.decodeStatement(parent, statement, location, false);
+//		
+//		if (node == null)
+//		{
+			Identifier node = SyntaxTree.getUsableExistingNode(parent, statement, location, validateAccess);
+			
+			if (node == null)
 			{
-				ExternalType type = (ExternalType)parent;
-				
-				type.setType(statement);
-				
-				IIdentifier id = new IIdentifier(type, type.getLocationIn());
-				id.setName(statement);
-				
-				node = id;
-			}
-			else if (parent.getFileDeclaration().containsImport(statement, false) || parent.getFileDeclaration().containsClass(statement))
-			{
-				ClassDeclaration clazz = SyntaxUtils.getImportedClass(parent.getFileDeclaration(), statement);
-				
-				if (clazz != null)
+				if (parent instanceof ExternalType)
 				{
-					StaticClassReference reference = StaticClassReference.decodeStatement(parent, statement, location, true);
+					ExternalType type = (ExternalType)parent;
 					
-					node = reference;
+					type.setType(statement);
+					
+					IIdentifier id = new IIdentifier(type, type.getLocationIn());
+					id.setName(statement);
+					
+					node = id;
+				}
+				else if (parent.getFileDeclaration().containsImport(statement, false) || parent.getFileDeclaration().containsClass(statement))
+				{
+					ClassDeclaration clazz = SyntaxUtils.getImportedClass(parent.getFileDeclaration(), statement);
+					
+					if (clazz != null)
+					{
+						StaticClassReference reference = StaticClassReference.decodeStatement(parent, statement, location, true);
+						
+						node = reference;
+					}
 				}
 			}
-		}
+//		}
 		
 		return node;
 	}

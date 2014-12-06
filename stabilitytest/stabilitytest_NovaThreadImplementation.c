@@ -4,9 +4,9 @@
 
 nova_VTable_stabilitytest_NovaThreadImplementation nova_VTable_stabilitytest_NovaThreadImplementation_val =
 {
-	nova_standard_NovaObject_Nova0_getHashCodeLong,
-	nova_standard_NovaObject_Nova0_toString,
-	nova_standard_NovaObject_Nova0_equals,
+	nova_standard_NovaObject_0_NovagetHashCodeLong,
+	nova_standard_NovaObject_0_NovatoString,
+	nova_standard_NovaObject_0_Novaequals,
 	stabilitytest_NovaThreadImplementation_Novarun,
 };
 CCLASS_PRIVATE
@@ -27,11 +27,11 @@ stabilitytest_NovaThreadImplementation* stabilitytest_NovaThreadImplementation_N
 {
 	CCLASS_NEW(stabilitytest_NovaThreadImplementation, this);
 	this->vtable = &nova_VTable_stabilitytest_NovaThreadImplementation_val;
-	nova_standard_NovaObject_Novasuper((nova_standard_NovaObject*)this, 0);
-	nova_standard_thread_NovaThread_Novasuper((nova_standard_thread_NovaThread*)this, 0);
+	nova_standard_NovaObject_Novasuper((nova_standard_NovaObject*)this, exceptionData);
+	nova_standard_thread_NovaThread_Novasuper((nova_standard_thread_NovaThread*)this, exceptionData);
 	nova_standard_NovaObject_Novathis((nova_standard_NovaObject*)(this), exceptionData);
 	nova_standard_thread_NovaThread_Novathis((nova_standard_thread_NovaThread*)(this), exceptionData);
-	stabilitytest_NovaThreadImplementation_Novasuper(this, 0);
+	stabilitytest_NovaThreadImplementation_Novasuper(this, exceptionData);
 	
 	{
 		stabilitytest_NovaThreadImplementation_Novathis(this, exceptionData, l0_Novatimes, l0_Novamillis);

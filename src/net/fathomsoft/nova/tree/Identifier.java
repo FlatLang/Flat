@@ -19,7 +19,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:00:19 PM
- * @version	v0.2.36 Oct 13, 2014 at 12:16:42 AM
+ * @version	v0.2.38 Dec 6, 2014 at 5:19:17 PM
  */
 public abstract class Identifier extends Value implements Accessible
 {
@@ -89,27 +89,6 @@ public abstract class Identifier extends Value implements Accessible
 	public boolean isDeclaration()
 	{
 		return false;
-	}
-	
-	/**
-	 * Get the Node that is highest on the tree, up until a scope is hit.
-	 * (The Node that is returned will have a scope as a parent)
-	 * 
-	 * @return The Node that is the highest on the tree up until a scope
-	 * 		is found.
-	 */
-	public Node getBaseNode()
-	{
-		Node prev    = this;
-		Node current = getParent();
-		
-		while (!current.containsScope() && !(current instanceof Scope))
-		{
-			prev    = current;
-			current = current.getParent();
-		}
-		
-		return prev;
 	}
 	
 	/**
@@ -407,18 +386,18 @@ public abstract class Identifier extends Value implements Accessible
 			existing.getParentClass().generateCSourceName(builder).append('_');
 		}
 		
-		if (existing instanceof InstanceDeclaration)
-		{
-			InstanceDeclaration node = (InstanceDeclaration)existing;
-			
-			if (node.isStatic())
-			{
-				if (!(node instanceof MethodDeclaration && ((MethodDeclaration)node).isInstance()))
-				{
-					builder.append("static_");
-				}
-			}
-		}
+//		if (existing instanceof InstanceDeclaration)
+//		{
+//			InstanceDeclaration node = (InstanceDeclaration)existing;
+//			
+//			if (node.isStatic())
+//			{
+//				if (!(node instanceof MethodDeclaration && ((MethodDeclaration)node).isInstance()))
+//				{
+//					builder.append("static_");
+//				}
+//			}
+//		}
 		
 		if (existing instanceof LocalDeclaration)
 		{
@@ -426,13 +405,13 @@ public abstract class Identifier extends Value implements Accessible
 			
 			builder.append('l').append(declaration.getScopeID()).append('_');
 		}
-		
-		builder.append(Nova.LANGUAGE_NAME);
 
 		if (uniquePrefix != null)
 		{
 			builder.append(uniquePrefix).append('_');
 		}
+		
+		builder.append(Nova.LANGUAGE_NAME).append("_");
 		
 		return builder.append(name);
 	}

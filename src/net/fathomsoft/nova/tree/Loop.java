@@ -10,7 +10,7 @@ import net.fathomsoft.nova.util.Location;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:55:18 PM
- * @version	v0.2.28 Aug 20, 2014 at 12:10:45 AM
+ * @version	v0.2.38 Dec 6, 2014 at 5:19:17 PM
  */
 public class Loop extends Node
 {
@@ -29,10 +29,10 @@ public class Loop extends Node
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.Node#pendingScopeFragment()
+	 * @see net.fathomsoft.nova.tree.Node#pendingScopeFragment(Node)
 	 */
 	@Override
-	public boolean pendingScopeFragment()
+	public boolean pendingScopeFragment(Node node)
 	{
 		return getScope().isEmpty();
 	}

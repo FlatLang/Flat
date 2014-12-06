@@ -4,11 +4,13 @@ import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.tree.Identifier;
 import net.fathomsoft.nova.tree.Node;
+import net.fathomsoft.nova.tree.Scope;
 import net.fathomsoft.nova.tree.SyntaxTree;
 import net.fathomsoft.nova.util.Bounds;
 import net.fathomsoft.nova.util.Location;
 import net.fathomsoft.nova.util.Patterns;
 import net.fathomsoft.nova.util.Regex;
+import net.fathomsoft.nova.util.StringUtils;
 
 /**
  * ExceptionHandler extension that represents the declaration of a
@@ -17,16 +19,24 @@ import net.fathomsoft.nova.util.Regex;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Mar 22, 2014 at 11:02:52 PM
- * @version	v0.2.35 Oct 5, 2014 at 11:22:42 PM
+ * @version	v0.2.38 Dec 6, 2014 at 5:19:17 PM
  */
 public class Throw extends ExceptionHandler
 {
+	public static final String IDENTIFIER = "throw";
+	
 	/**
 	 * @see net.fathomsoft.nova.tree.Node#Node(Node, Location)
 	 */
 	public Throw(Node temporaryParent, Location locationIn)
 	{
 		super(temporaryParent, locationIn);
+	}
+	
+	@Override
+	public Scope getScope()
+	{
+		return null;
 	}
 	
 	/**
@@ -94,7 +104,7 @@ public class Throw extends ExceptionHandler
 	 */
 	public static Throw decodeStatement(Node parent, String statement, Location location, boolean require)
 	{
-		if (Regex.startsWith(statement, Patterns.PRE_THROW))
+		if (StringUtils.startsWithWord(statement, IDENTIFIER))
 		{
 			Throw    n      = new Throw(parent, location);
 			Location newLoc = location.asNew();
@@ -122,7 +132,7 @@ public class Throw extends ExceptionHandler
 	 */
 	private Bounds calculateThrowContents(String statement)
 	{
-		Bounds bounds = Regex.boundsOf(statement, Patterns.POST_THROW);
+		Bounds bounds = new Bounds(StringUtils.findNextNonWhitespaceIndex(statement, IDENTIFIER.length() + 1), statement.length());
 		
 		if (!bounds.isValid())
 		{
@@ -152,7 +162,6 @@ public class Throw extends ExceptionHandler
 		}
 		
 		Identifier node      = (Identifier)thrownNode;
-		
 		Exception  exception = new Exception(this, location);
 		exception.setType(node.getName());
 		

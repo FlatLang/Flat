@@ -32,9 +32,9 @@ typedef struct stabilitytest_NovaTimeStability stabilitytest_NovaTimeStability;
 
 typedef struct nova_VTable_stabilitytest_NovaTimeStability
 {
-	long (*nova_standard_NovaObject_Novavirtual0_getHashCodeLong)(nova_standard_NovaObject*, nova_standard_exception_NovaExceptionData*);
-	nova_standard_NovaString* (*nova_standard_NovaObject_Novavirtual0_toString)(nova_standard_NovaObject*, nova_standard_exception_NovaExceptionData*);
-	char (*nova_standard_NovaObject_Novavirtual0_equals)(nova_standard_NovaObject*, nova_standard_exception_NovaExceptionData*, nova_standard_NovaObject*);
+	long (*nova_standard_NovaObject_virtual0_NovagetHashCodeLong)(nova_standard_NovaObject*, nova_standard_exception_NovaExceptionData*);
+	nova_standard_NovaString* (*nova_standard_NovaObject_virtual0_NovatoString)(nova_standard_NovaObject*, nova_standard_exception_NovaExceptionData*);
+	char (*nova_standard_NovaObject_virtual0_Novaequals)(nova_standard_NovaObject*, nova_standard_exception_NovaExceptionData*, nova_standard_NovaObject*);
 } nova_VTable_stabilitytest_NovaTimeStability;
 
 CCLASS_CLASS
@@ -45,7 +45,7 @@ CCLASS_CLASS
 )
 
 void stabilitytest_NovaTimeStabilityNova_init_static(nova_standard_exception_NovaExceptionData* exceptionData);
-stabilitytest_NovaTimeStability* stabilitytest_NovaTimeStability_Nova0_construct(stabilitytest_NovaTimeStability* this, nova_standard_exception_NovaExceptionData* exceptionData);
+stabilitytest_NovaTimeStability* stabilitytest_NovaTimeStability_0_Novaconstruct(stabilitytest_NovaTimeStability* this, nova_standard_exception_NovaExceptionData* exceptionData);
 void nova_del_TimeStability(stabilitytest_NovaTimeStability** this, nova_standard_exception_NovaExceptionData* exceptionData);
 void stabilitytest_NovaTimeStability_static_Novatest(stabilitytest_NovaTimeStability* this, nova_standard_exception_NovaExceptionData* exceptionData, stabilitytest_NovaStabilityTest* l0_Novaprogram);
 void stabilitytest_NovaTimeStability_Novathis(stabilitytest_NovaTimeStability* this, nova_standard_exception_NovaExceptionData* exceptionData);

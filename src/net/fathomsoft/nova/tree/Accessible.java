@@ -1,11 +1,13 @@
 package net.fathomsoft.nova.tree;
 
+import net.fathomsoft.nova.util.SyntaxUtils;
+
 /**
  * 
  * 
  * @author	Braden Steffaniak
  * @since	v0.2.36 Oct 6, 2014 at 9:58:16 PM
- * @version	v0.2.36 Oct 13, 2014 at 12:16:42 AM
+ * @version	v0.2.38 Dec 6, 2014 at 5:19:17 PM
  */
 public interface Accessible
 {
@@ -48,7 +50,7 @@ public interface Accessible
 	{
 		Accessible current = getAccessingNode();
 		
-		while (current != null && checkTypes(types, current.getClass()) == opposite)
+		while (current != null && SyntaxUtils.checkTypes(types, current.getClass()) == opposite)
 		{
 			current = current.getAccessingNode();
 		}
@@ -90,35 +92,13 @@ public interface Accessible
 		Accessible previous = null;
 		Accessible current  = this;
 		
-		while (current != null && checkTypes(types, current.getClass()) != opposite)
+		while (current != null && SyntaxUtils.checkTypes(types, current.getClass()) != opposite)
 		{
 			previous = current;
 			current  = current.getAccessingNode();
 		}
 		
 		return previous;
-	}
-	
-	/**
-	 * Check to see if the given clazz is an instanceof any of the
-	 * classes in the given type array.
-	 * 
-	 * @param types The types to check against.
-	 * @param clazz The type to check for.
-	 * @return Whether or not the given clazz is an instanceof any of
-	 * 		the classes in the given array.
-	 */
-	public default boolean checkTypes(Class<?> types[], Class<?> clazz)
-	{
-		for (Class<?> type : types)
-		{
-			if (type.isAssignableFrom(clazz))
-			{
-				return true;
-			}
-		}
-		
-		return false;
 	}
 	
 	/**
@@ -146,7 +126,7 @@ public interface Accessible
 	{
 		Identifier current = getAccessedNode();
 		
-		while (current != null && !checkTypes(types, current.getClass()))
+		while (current != null && !SyntaxUtils.checkTypes(types, current.getClass()))
 		{
 			current = current.getAccessedNode();
 		}
@@ -478,7 +458,7 @@ public interface Accessible
 	{
 		Value n = (Value)this;
 		
-		return n.getParentMethod() != null;
+		return n.getAncestorWithScope() != null;
 	}
 	
 	/**

@@ -12,7 +12,7 @@ import net.fathomsoft.nova.util.Location;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:56:34 PM
- * @version	v0.2.35 Oct 5, 2014 at 11:22:42 PM
+ * @version	v0.2.38 Dec 6, 2014 at 5:19:17 PM
  */
 public class ParameterList<E extends Value> extends TypeList<E>
 {
@@ -106,7 +106,12 @@ public class ParameterList<E extends Value> extends TypeList<E>
 	 */
 	public E getVisibleChild(int index)
 	{
-		return (E)getChild(index + getParameterOffset());
+		return (E)getChild(super.getNumDefaultChildren() + index + getParameterOffset());
+	}
+	
+	public int getNumParameters()
+	{
+		return getNumVisibleChildren();
 	}
 	
 	/**
@@ -138,7 +143,7 @@ public class ParameterList<E extends Value> extends TypeList<E>
 	 */
 	public Parameter getObjectReference()
 	{
-		return (Parameter)getChild(0);
+		return (Parameter)getChild(super.getNumDefaultChildren() + 0);
 	}
 	
 	/**
@@ -149,7 +154,7 @@ public class ParameterList<E extends Value> extends TypeList<E>
 	 */
 	public Parameter getExceptionData()
 	{
-		return (Parameter)getChild(1);
+		return (Parameter)getChild(super.getNumDefaultChildren() + 1);
 	}
 	
 	/**

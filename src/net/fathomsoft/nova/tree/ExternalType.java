@@ -14,10 +14,13 @@ import net.fathomsoft.nova.util.StringUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.2.4 May 8, 2014 at 6:55:51 PM
- * @version	v0.2.35 Oct 5, 2014 at 11:22:42 PM
+ * @version	v0.2.38 Dec 6, 2014 at 5:19:17 PM
  */
 public class ExternalType extends IValue
 {
+	public static final String PREFIX     = "external";
+	public static final String IDENTIFIER = "type";
+	
 	/**
 	 * @see net.fathomsoft.nova.tree.Node#Node(Node, Location)
 	 */
@@ -49,29 +52,32 @@ public class ExternalType extends IValue
 	 */
 	public static ExternalType decodeStatement(Node parent, String statement, Location location, boolean require)
 	{
-		Bounds bounds = Regex.boundsOf(statement, Patterns.EXTERNAL_TYPE);
-		
-		if (bounds.getStart() == 0)
+		if (StringUtils.startsWithWord(statement, PREFIX))
 		{
-			ExternalType n = new ExternalType(parent, location);
+			Bounds bounds = StringUtils.findWordBounds(statement, IDENTIFIER);
 			
-			int start = StringUtils.findNextNonWhitespaceIndex(statement, bounds.getEnd());
-			
-			if (start < 0)
+			if (bounds.isValid())
 			{
-				SyntaxMessage.error("Unfinished external type declaration", n);
+				ExternalType n = new ExternalType(parent, location);
+				
+				int start = StringUtils.findNextNonWhitespaceIndex(statement, bounds.getEnd());
+				
+				if (start < 0)
+				{
+					SyntaxMessage.error("Unfinished external type declaration", n);
+				}
+				
+				String type = statement.substring(start);
+				
+				if (StringUtils.findNextWhitespaceIndex(type, 0) > 0)
+				{
+					SyntaxMessage.error("Could not decode type declaration '" + type + "'", n);
+				}
+				
+				n.setType(type);
+				
+				return n;
 			}
-			
-			String type = statement.substring(start);
-			
-			if (StringUtils.findNextWhitespaceIndex(type, 0) > 0)
-			{
-				SyntaxMessage.error("Could not decode type declaration '" + type + "'", n);
-			}
-			
-			n.setType(type);
-			
-			return n;
 		}
 		
 		return null;

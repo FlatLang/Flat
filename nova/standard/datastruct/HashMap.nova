@@ -9,9 +9,22 @@ public class HashMap<K, V>
 	external hashmap* hashmapCreate(int size)
 	external void hashmapInsert(hashmap* map, V data, long key)
 	external V hashmapGet(hashmap* map, long key)
+	external Bool hashmapContains(hashmap* hash, long key)
 	external void hashmapDelete(hashmap* map)
+	external void hashmapRemove(hashmap* map, long key)
+	external long hashmapCount(hashmap* map)
 	
 	hashmap* map
+
+	visible Int size
+	{
+		get
+		{
+			return hashmapCount(map)
+		}
+		
+		no set
+	}
 	
 	public construct()
 	{
@@ -20,14 +33,35 @@ public class HashMap<K, V>
 	
 	public put(K key, V value)
 	{
-		Console.writeLine("HashCode for(" + key + "): " + key.getHashCodeLong())
+		if (containsKey(key))
+		{
+			return
+		}
 		
 		hashmapInsert(map, value, key.getHashCodeLong())
 	}
 	
 	public get(K key) -> V
 	{
-		Console.writeLine("HashCode gfor(" + key + "): " + key.getHashCodeLong())
 		return hashmapGet(map, key.getHashCodeLong())
+	}
+	
+	public remove(K key) -> V
+	{
+		if (!containsKey(key))
+		{
+			return null
+		}
+		
+		V val = get(key)
+		
+		hashmapRemove(map, key.getHashCodeLong())
+		
+		return val
+	}
+	
+	public containsKey(K key) -> Bool
+	{
+		return hashmapContains(map, key.getHashCodeLong())
 	}
 }

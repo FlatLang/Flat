@@ -1,0 +1,53 @@
+package "nova/standard/datastruct"
+
+public class Node<E>
+{
+	public E data
+	
+	visible ArrayList<Node>	children
+	
+	public construct()
+	{
+		this(null)
+	}
+	
+	public construct(E data)
+	{
+		children = new ArrayList()
+		
+		this.data = data
+	}
+	
+	public construct(Int numChildren)
+	{
+		this(null, numChildren)
+	}
+	
+	public construct(E data, Int numChildren)
+	{
+		children = new ArrayList(numChildren)
+		
+		this.data = data
+	}
+	
+	public preorder() -> String
+	{
+		String str = ""
+		
+		str = str + data
+		
+		if (children.size > 0)
+		{
+			str = str + ", "
+		}
+		
+		for (Int i = 0; i < children.size; i++)
+		{
+			Node child = children.get(i)
+			
+			str = str + child.preorder() + ", "
+		}
+		
+		return str
+	}
+}

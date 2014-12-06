@@ -61,18 +61,11 @@ void bank_NovaClientConnectionThread_Novathis(bank_NovaClientConnectionThread* t
 
 void bank_NovaClientConnectionThread_Novarun(bank_NovaClientConnectionThread* this, nova_standard_exception_NovaExceptionData* exceptionData)
 {
-	while (1)
+	while (nova_standard_network_NovaConnectionSocket_NovavalidateConnection(this->prv->bank_NovaClientConnectionThread_Novasocket, exceptionData))
 	{
-		nova_standard_NovaString* l2_Novamessage;
-		
-		if (!nova_standard_network_NovaConnectionSocket_NovavalidateConnection(this->prv->bank_NovaClientConnectionThread_Novasocket, exceptionData))
-		{
-			nova_standard_io_NovaConsole_static_Nova0_writeLine(0, exceptionData, nova_standard_NovaString_Nova1_construct(0, exceptionData, "Disconnected."));
-			break;
-		}
-		l2_Novamessage = this->prv->bank_NovaClientConnectionThread_Novasocket->nova_standard_network_NovaConnectionSocket_Novain->vtable->nova_standard_io_NovaInputStream_Novavirtual0_readString(this->prv->bank_NovaClientConnectionThread_Novasocket->nova_standard_network_NovaConnectionSocket_Novain, exceptionData);
-		nova_standard_io_NovaConsole_static_Nova0_write(0, exceptionData, l2_Novamessage);
+		nova_standard_io_NovaConsole_static_Nova0_write(0, exceptionData, this->prv->bank_NovaClientConnectionThread_Novasocket->nova_standard_network_NovaConnectionSocket_Novain->vtable->nova_standard_io_NovaInputStream_Novavirtual0_readString(this->prv->bank_NovaClientConnectionThread_Novasocket->nova_standard_network_NovaConnectionSocket_Novain, exceptionData));
 	}
+	nova_standard_io_NovaConsole_static_Nova0_writeLine(0, exceptionData, nova_standard_NovaString_Nova1_construct(0, exceptionData, "Disconnected."));
 }
 
 void bank_NovaClientConnectionThread_Novasuper(bank_NovaClientConnectionThread* this, nova_standard_exception_NovaExceptionData* exceptionData)

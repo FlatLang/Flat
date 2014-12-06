@@ -1,0 +1,9 @@
+package "nova/standard/math/logic"
+
+public class Conclusion extends LogicalStatement
+{
+	public construct(String statement)
+	{
+		super(statement)
+	}
+}

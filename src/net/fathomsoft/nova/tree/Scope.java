@@ -1,5 +1,7 @@
 package net.fathomsoft.nova.tree;
 
+import java.util.ArrayList;
+
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.tree.variables.Variable;
 import net.fathomsoft.nova.tree.variables.VariableDeclarationList;
@@ -21,11 +23,13 @@ import net.fathomsoft.nova.util.Location;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Apr 5, 2014 at 10:54:20 PM
- * @version	v0.2.36 Oct 13, 2014 at 12:16:42 AM
+ * @version	v0.2.38 Dec 6, 2014 at 5:19:17 PM
  */
 public class Scope extends Node
 {
 	private int	id, localVariableID;
+	
+	private ArrayList<Listener> listeners;
 	
 	/**
 	 * Instantiate and initialize the default values.
@@ -36,11 +40,19 @@ public class Scope extends Node
 	{
 		super(temporaryParent, locationIn);
 		
+		listeners = new ArrayList<Listener>();
+		
 		VariableDeclarationList variablesNode = new VariableDeclarationList(this, locationIn);
 		
 		addChild(variablesNode, this);
 		
 		id = getNextScopeAncestor(false).generateUniqueID();
+	}
+	
+	@Override
+	public ArrayList<Listener> getListeners()
+	{
+		return listeners;
 	}
 	
 	/**
@@ -82,7 +94,7 @@ public class Scope extends Node
 	 * @return The newly generated local variable representing the old
 	 * 		virtual method call.
 	 */
-	public Variable registerLocalVariable(MethodCall virtual)
+	public Variable registerLocalVariable(Value virtual)
 	{
 		return registerLocalVariable(virtual, true);
 	}
@@ -97,7 +109,7 @@ public class Scope extends Node
 	 * @return The newly generated local variable representing the old
 	 * 		virtual method call.
 	 */
-	public Variable registerLocalVariable(MethodCall virtual, boolean require)
+	public Variable registerLocalVariable(Value virtual, boolean require)
 	{
 		String type = virtual.getType();
 		
@@ -106,17 +118,29 @@ public class Scope extends Node
 			type = virtual.getGenericReturnType();
 		}
 		
-		String     value  = virtual.getRootReferenceNode(true).generateNovaInputUntil(virtual).toString();
-		Node       base   = virtual.getBaseNode();
+		String value = null;
+		Node   base  = virtual.getBaseNode();
+		
+		if (virtual instanceof Accessible)
+		{
+			Accessible accessible = (Accessible)virtual;
+			
+			value = accessible.getRootReferenceNode(true).generateNovaInputUntil(accessible).toString();
+		}
+		else
+		{
+			value = virtual.generateNovaInput().toString();
+		}
+		
 		String     decl   = type + " nova_local_" + getParentMethod().getScope().localVariableID++ + " = " + value;
-		Assignment assign = Assignment.decodeStatement(this, decl, getLocationIn(), require);
+		Assignment assign = Assignment.decodeStatement(base.getParent(), decl, getLocationIn(), require);
 		
 		if (assign == null)
 		{
 			return null;
 		}
 		
-		Variable   var    = (Variable)assign.getAssigneeNode();
+		Variable var = (Variable)assign.getAssigneeNode();
 		
 		var.setForceOriginalName(true);
 		var.getDeclaration().validateType();

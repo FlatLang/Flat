@@ -15,7 +15,7 @@ import net.fathomsoft.nova.util.StringUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.2.29 Aug 28, 2014 at 11:51:16 PM
- * @version	v0.2.34 Oct 1, 2014 at 9:51:33 PM
+ * @version	v0.2.38 Dec 6, 2014 at 5:19:17 PM
  */
 public interface GenericCompatible
 {
@@ -79,9 +79,14 @@ public interface GenericCompatible
 	
 	public default GenericType getGenericParameter(int index)
 	{
-		if (index >= getGenericParameterNames().length)
+		return getGenericParameter(index, (Node)this);
+	}
+	
+	public default GenericType getGenericParameter(int index, Node value)
+	{
+		if (index < 0 || index >= getGenericParameterNames().length)
 		{
-			SyntaxMessage.error("Missing generic type declaration", (Node)this);
+			SyntaxMessage.error("Missing generic type declaration", value);
 		}
 		
 		return getGenericParameterNames()[index];
@@ -101,12 +106,17 @@ public interface GenericCompatible
 	
 	public default GenericType getGenericParameterInstance(String parameterName)
 	{
+		return getGenericParameterInstance(parameterName, (Node)this);
+	}
+	
+	public default GenericType getGenericParameterInstance(String parameterName, Node value)
+	{
 		VariableDeclaration decl  = (VariableDeclaration)this;
 		ClassDeclaration    clazz = decl.getTypeClass();
 		
 		int index = clazz.getGenericParameterIndex(parameterName);
 		
-		return getGenericParameter(index);
+		return getGenericParameter(index, value);
 	}
 	
 	public default GenericType getGenericParameterDeclaration(String parameterName)

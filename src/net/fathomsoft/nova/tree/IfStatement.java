@@ -6,6 +6,7 @@ import net.fathomsoft.nova.util.Bounds;
 import net.fathomsoft.nova.util.Location;
 import net.fathomsoft.nova.util.Patterns;
 import net.fathomsoft.nova.util.Regex;
+import net.fathomsoft.nova.util.StringUtils;
 import net.fathomsoft.nova.util.SyntaxUtils;
 
 /**
@@ -15,10 +16,12 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:57:13 PM
- * @version	v0.2.29 Aug 29, 2014 at 3:17:45 PM
+ * @version	v0.2.38 Dec 6, 2014 at 5:19:17 PM
  */
-public class IfStatement extends Node
+public class IfStatement extends ControlStatement
 {
+	public static final String IDENTIFIER = "if";
+	
 	/**
 	 * Instantiate a new IfStatement and initialize the default
 	 * values.
@@ -26,19 +29,6 @@ public class IfStatement extends Node
 	public IfStatement(Node temporaryParent, Location locationIn)
 	{
 		super(temporaryParent, locationIn);
-		
-		Scope scope = new Scope(this, locationIn.asNew());
-		
-		setScope(scope);
-	}
-	
-	/**
-	 * @see net.fathomsoft.nova.tree.Node#getNumDefaultChildren()
-	 */
-	@Override
-	public int getNumDefaultChildren()
-	{
-		return super.getNumDefaultChildren() + 1;
 	}
 	
 	/**
@@ -51,24 +41,6 @@ public class IfStatement extends Node
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.Node#pendingScopeFragment()
-	 */
-	@Override
-	public boolean pendingScopeFragment()
-	{
-		return getScope().isEmpty();
-	}
-	
-	/**
-	 * @see net.fathomsoft.nova.tree.Node#getScope()
-	 */
-	@Override
-	public Scope getScope()
-	{
-		return (Scope)getChild(super.getNumDefaultChildren());
-	}
-	
-	/**
 	 * Get the ArgumentList that contains the condition for the if
 	 * statement.
 	 * 
@@ -76,7 +48,7 @@ public class IfStatement extends Node
 	 */
 	public Value getCondition()
 	{
-		return (Value)getChild(super.getNumDefaultChildren() + 1);
+		return (Value)getChild(super.getNumDefaultChildren() + 0);
 	}
 	
 	/**
@@ -140,7 +112,7 @@ public class IfStatement extends Node
 	 */
 	public static IfStatement decodeStatement(Node parent, String statement, Location location, boolean require)
 	{
-		if (Regex.matches(statement, 0, Patterns.PRE_IF))
+		if (StringUtils.startsWithWord(statement, IDENTIFIER))
 		{
 			IfStatement n = new IfStatement(parent, location);
 			
