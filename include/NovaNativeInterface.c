@@ -228,7 +228,7 @@ nova_env novaEnv = {
 &nova_standard_primitive_number_Nova_Int_2_Nova_toString,
 &nova_standard_primitive_number_Nova_Int_Nova_parseInt,
 &nova_standard_primitive_number_Nova_Int_Nova_compareTo,
-&nova_standard_primitive_number_Nova_Int_7_Nova_construct,
+&nova_standard_primitive_number_Nova_Int_Nova_construct,
 },
 
 {
@@ -286,7 +286,7 @@ nova_env novaEnv = {
 
 {
 &nova_standard_thread_Nova_UncaughtExceptionHandler_Nova_UncaughtExceptionHandler,
-&nova_standard_thread_Nova_UncaughtExceptionHandler_Nova_uncaughtException,
+0,
 &nova_standard_thread_Nova_UncaughtExceptionHandler_2_Nova_construct,
 },
 
@@ -503,8 +503,8 @@ nova_env novaEnv = {
 },
 
 {
-0,
-&nova_standard_datastruct_Nova_Comparable_8_Nova_construct,
+&nova_standard_datastruct_Nova_Comparable_Nova_compareTo,
+&nova_standard_datastruct_Nova_Comparable_2_Nova_construct,
 },
 
 {
@@ -531,8 +531,85 @@ nova_env novaEnv = {
 },
 
 {
-&example_Nova_Lab_Nova_main,
-&example_Nova_Lab_2_Nova_construct,
+&stabilitytest_Nova_StabilityTest_Nova_main,
+&stabilitytest_Nova_StabilityTest_Nova_runTests,
+&stabilitytest_Nova_StabilityTest_0_Nova_fail,
+&stabilitytest_Nova_StabilityTest_1_Nova_fail,
+&stabilitytest_Nova_StabilityTest_2_Nova_construct,
+},
+
+{
+&stabilitytest_Nova_TimeStability_Nova_test,
+&stabilitytest_Nova_TimeStability_2_Nova_construct,
+},
+
+{
+&stabilitytest_Nova_FileStability_Nova_test,
+&stabilitytest_Nova_FileStability_2_Nova_construct,
+},
+
+{
+&stabilitytest_Nova_ThreadStability_Nova_test,
+&stabilitytest_Nova_ThreadStability_2_Nova_construct,
+},
+
+{
+&stabilitytest_Nova_ExceptionStability_Nova_test,
+&stabilitytest_Nova_ExceptionStability_2_Nova_construct,
+},
+
+{
+&stabilitytest_Nova_SyntaxStability_Nova_test,
+&stabilitytest_Nova_SyntaxStability_2_Nova_construct,
+},
+
+{
+&stabilitytest_Nova_ClosureStability_Nova_test,
+&stabilitytest_Nova_ClosureStability_2_Nova_construct,
+},
+
+{
+&stabilitytest_Nova_PolymorphismStability_Nova_test,
+&stabilitytest_Nova_PolymorphismStability_2_Nova_construct,
+},
+
+{
+&stabilitytest_Nova_PolymorphicSuperClass_Nova_giveBirth,
+0,
+&stabilitytest_Nova_PolymorphicSuperClass_2_Nova_construct,
+},
+
+{
+&stabilitytest_Nova_PolymorphicSubClass_0_Nova_toString,
+&stabilitytest_Nova_PolymorphicSubClass_2_Nova_construct,
+},
+
+{
+&stabilitytest_Nova_StabilityTestException_0_Nova_construct,
+},
+
+{
+&stabilitytest_Nova_StabilityExceptionHandler_Nova_uncaughtException,
+&stabilitytest_Nova_StabilityExceptionHandler_Nova_construct,
+},
+
+{
+&stabilitytest_Nova_ThreadImplementation_0_Nova_run,
+&stabilitytest_Nova_ThreadImplementation_Nova_construct,
+},
+
+{
+&stabilitytest_Nova_UnstableException_0_Nova_construct,
+},
+
+{
+&stabilitytest_Nova_NetworkStability_Nova_test,
+&stabilitytest_Nova_NetworkStability_2_Nova_construct,
+},
+
+{
+&stabilitytest_Nova_ClientThread_0_Nova_run,
+&stabilitytest_Nova_ClientThread_Nova_construct,
 },
 
 {

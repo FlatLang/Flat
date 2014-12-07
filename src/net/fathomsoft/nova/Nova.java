@@ -76,7 +76,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:00:04 PM
- * @version	v0.2.39 Dec 7, 2014 at 3:17:17 AM
+ * @version	v0.2.40 Dec 7, 2014 at 4:23:17 PM
  */
 public class Nova
 {
@@ -133,7 +133,7 @@ public class Nova
 	public static final int		LINUX         = 3;
 	
 	public static final String	LANGUAGE_NAME = "Nova";
-	public static final String	VERSION       = "v0.2.39";
+	public static final String	VERSION       = "v0.2.40";
 	
 	/**
 	 * Find out which operating system the compiler is running on.
@@ -250,22 +250,22 @@ public class Nova
 			
 			args = new String[]
 			{
-//				formatPath(stability + "StabilityTest.nova"),
-//				formatPath(stability + "TimeStability.nova"),
-//				formatPath(stability + "FileStability.nova"),
-//				formatPath(stability + "ThreadStability.nova"),
-//				formatPath(stability + "ExceptionStability.nova"),
-//				formatPath(stability + "SyntaxStability.nova"),
-//				formatPath(stability + "ClosureStability.nova"),
-//				formatPath(stability + "PolymorphismStability.nova"),
-//				formatPath(stability + "PolymorphicSuperClass.nova"),
-//				formatPath(stability + "PolymorphicSubClass.nova"),
-//				formatPath(stability + "StabilityTestException.nova"),
-//				formatPath(stability + "StabilityExceptionHandler.nova"),
-//				formatPath(stability + "ThreadImplementation.nova"),
-//				formatPath(stability + "UnstableException.nova"),
-//				formatPath(stability + "NetworkStability.nova"),
-//				formatPath(stability + "ClientThread.nova"),
+				formatPath(stability + "StabilityTest.nova"),
+				formatPath(stability + "TimeStability.nova"),
+				formatPath(stability + "FileStability.nova"),
+				formatPath(stability + "ThreadStability.nova"),
+				formatPath(stability + "ExceptionStability.nova"),
+				formatPath(stability + "SyntaxStability.nova"),
+				formatPath(stability + "ClosureStability.nova"),
+				formatPath(stability + "PolymorphismStability.nova"),
+				formatPath(stability + "PolymorphicSuperClass.nova"),
+				formatPath(stability + "PolymorphicSubClass.nova"),
+				formatPath(stability + "StabilityTestException.nova"),
+				formatPath(stability + "StabilityExceptionHandler.nova"),
+				formatPath(stability + "ThreadImplementation.nova"),
+				formatPath(stability + "UnstableException.nova"),
+				formatPath(stability + "NetworkStability.nova"),
+				formatPath(stability + "ClientThread.nova"),
 //				formatPath(directory + "network/OutputThread.nova"),
 //				formatPath(directory + "network/ConnectionThread.nova"),
 //				formatPath(directory + "network/ServerDemo.nova"),
@@ -280,7 +280,7 @@ public class Nova
 //				formatPath(root      + "bank/ClientConnectionThread.nova"),
 //				formatPath(root      + "bank/ClientInputThread.nova"),
 //				formatPath(directory + "ackermann/Ackermann.nova"),
-				formatPath(directory + "Lab.nova"),
+//				formatPath(directory + "Lab.nova"),
 //				formatPath(directory + "copy/Dog.nova"),
 //				formatPath(directory + "T1.nova"),
 //				formatPath(directory + "T2.nova"),
@@ -961,7 +961,7 @@ public class Nova
 		{
 			String dir = includeDirectories.get(i);
 			
-			cmd.append("-I").append(dir).append(' ');
+			cmd.append("-I").append(formatPath(dir)).append(' ');
 		}
 		
 		String libDir    = workingDir + "/bin";
@@ -996,14 +996,14 @@ public class Nova
 			cmd.append("-L/usr/include/openssl ");
 		}
 		
-		cmd.append("-L" + libDir + " -lcrypto ");
+		cmd.append("-L" + formatPath(libDir) + " -lcrypto ");
 		
 //		cmd.append("-Ofast ");
 //		cmd.append("-s ");
 
 		if (!isFlagEnabled(NO_GC))
 		{
-			cmd.append("-lgc -Wl,-R -Wl," + libDir + " ");
+			cmd.append("-lgc -Wl,-R -Wl," + formatPath(libDir) + " ");
 		}
 		
 		if (OS == LINUX)
@@ -1144,6 +1144,8 @@ public class Nova
 		
 		if (OS == WINDOWS)
 		{
+			path = StringUtils.removeSurroundingQuotes(path);
+			
 			return '"' + path + '"';
 		}
 		else
