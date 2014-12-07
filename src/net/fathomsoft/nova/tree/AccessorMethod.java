@@ -1,6 +1,5 @@
 package net.fathomsoft.nova.tree;
 
-import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.util.Location;
 import net.fathomsoft.nova.util.StringUtils;
@@ -10,12 +9,12 @@ import net.fathomsoft.nova.util.StringUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.2.37 Oct 18, 2014 at 9:00:50 PM
- * @version	v0.2.38 Dec 6, 2014 at 5:19:17 PM
+ * @version	v0.2.39 Dec 7, 2014 at 3:17:17 AM
  */
 public class AccessorMethod extends PropertyMethod
 {
 	public static final String DISABLED_IDENTIFIER = "no";
-	public static final String IDENTIFIER = "get";
+	public static final String IDENTIFIER          = "get";
 	
 	/**
 	 * @see net.fathomsoft.nova.tree.Node#Node(Node, Location)
@@ -26,7 +25,7 @@ public class AccessorMethod extends PropertyMethod
 	}
 	
 	@Override
-	public String getMethodPostfix()
+	public String getMethodPrefix()
 	{
 		return "Accessor";
 	}
