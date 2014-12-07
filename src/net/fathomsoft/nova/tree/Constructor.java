@@ -1,6 +1,5 @@
 package net.fathomsoft.nova.tree;
 
-import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.error.SyntaxMessage;
@@ -15,7 +14,7 @@ import net.fathomsoft.nova.util.Stack;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:50:47 PM
- * @version	v0.2.38 Dec 6, 2014 at 5:19:17 PM
+ * @version	v0.2.39 Dec 7, 2014 at 3:17:17 AM
  */
 public class Constructor extends BodyMethodDeclaration
 {
@@ -214,6 +213,7 @@ public class Constructor extends BodyMethodDeclaration
 		initMethod = new InitializationMethod(getParent(), Location.INVALID);
 		
 		initMethod.createFrom(this);
+		initMethod.setLocationIn(Location.INVALID);
 		
 		getParentClass().addChild(initMethod);
 	}
@@ -234,6 +234,7 @@ public class Constructor extends BodyMethodDeclaration
 		if (phase == SyntaxTree.PHASE_METHOD_CONTENTS)
 		{
 			initMethod.getScope().inheritChildren(getScope());
+			initMethod.setLocationIn(getLocationIn());
 			
 			String args = generateParameterOutput(this);
 			
