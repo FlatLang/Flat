@@ -1,6 +1,5 @@
 package net.fathomsoft.nova.tree;
 
-import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.tree.variables.FieldDeclaration;
 import net.fathomsoft.nova.util.Location;
@@ -10,7 +9,7 @@ import net.fathomsoft.nova.util.Location;
  * 
  * @author	Braden Steffaniak
  * @since	v0.2.37 Oct 18, 2014 at 9:00:50 PM
- * @version	v0.2.38 Dec 6, 2014 at 5:19:17 PM
+ * @version	v0.2.39 Dec 7, 2014 at 3:17:17 AM
  */
 public abstract class PropertyMethod extends BodyMethodDeclaration
 {
@@ -23,10 +22,8 @@ public abstract class PropertyMethod extends BodyMethodDeclaration
 	 */
 	public PropertyMethod(Node temporaryParent, Location locationIn)
 	{
-		super(temporaryParent, locationIn);
+		super(temporaryParent, new Location(locationIn.getLineNumber() + temporaryParent.getLocationIn().getLineNumber(), locationIn.getOffset(), locationIn.getStart(), locationIn.getEnd()));
 	}
-	
-	public abstract String getMethodPostfix();
 	
 	public FieldDeclaration getParentField()
 	{
@@ -68,7 +65,7 @@ public abstract class PropertyMethod extends BodyMethodDeclaration
 	@Override
 	public StringBuilder generateCSourceName(StringBuilder builder, String uniquePrefix)
 	{
-		return super.generateCSourceName(builder, getMethodPostfix());
+		return super.generateCSourceName(builder, getMethodPrefix());
 	}
 	
 	@Override
@@ -133,4 +130,6 @@ public abstract class PropertyMethod extends BodyMethodDeclaration
 		
 		return null;
 	}
+	
+	public abstract String getMethodPrefix();
 }
