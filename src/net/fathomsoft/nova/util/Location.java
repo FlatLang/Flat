@@ -7,7 +7,7 @@ package net.fathomsoft.nova.util;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 7, 2014 at 10:11:40 AM
- * @version	v0.2.26 Aug 6, 2014 at 2:48:50 PM
+ * @version	v0.2.39 Dec 7, 2014 at 3:17:17 AM
  */
 public class Location
 {
@@ -289,5 +289,10 @@ public class Location
 	public Location asNew()
 	{
 		return new Location(this);
+	}
+	
+	public String toString()
+	{
+		return "Line " + lineNumber + " " + bounds;
 	}
 }
