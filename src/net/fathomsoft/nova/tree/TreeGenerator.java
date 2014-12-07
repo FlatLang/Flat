@@ -745,6 +745,7 @@ public class TreeGenerator implements Runnable
 			scope = parentStack.peek(i);
 			
 			if ((phase == SyntaxTree.PHASE_METHOD_CONTENTS && scope instanceof MethodDeclaration) ||
+					(phase == SyntaxTree.PHASE_INSTANCE_DECLARATIONS && node instanceof PropertyMethod) ||
 					(phase == SyntaxTree.PHASE_INSTANCE_DECLARATIONS && scope instanceof ClassDeclaration) ||
 					(phase == SyntaxTree.PHASE_CLASS_DECLARATION && scope instanceof FileDeclaration))
 			{
