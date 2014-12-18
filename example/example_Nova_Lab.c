@@ -4,7 +4,7 @@
 
 nova_VTable_example_Nova_Lab nova_VTable_example_Nova_Lab_val =
 {
-		nova_standard_Nova_Object_0_Nova_getHashCodeLong,
+		nova_standard_Nova_Object_1_Nova_getHashCodeLong,
 		nova_standard_Nova_Object_0_Nova_toString,
 		nova_standard_Nova_Object_0_Nova_equals,
 };
@@ -21,11 +21,11 @@ example_Nova_Lab* example_Nova_Lab_2_Nova_construct(example_Nova_Lab* this, nova
 		CCLASS_NEW(example_Nova_Lab, this,);
 		this->vtable = &nova_VTable_example_Nova_Lab_val;
 		nova_standard_Nova_Object_Nova_super((nova_standard_Nova_Object*)this, exceptionData);
-		nova_standard_Nova_Object_Nova_this((nova_standard_Nova_Object*)(this), exceptionData);
+		nova_standard_Nova_Object_2_Nova_this((nova_standard_Nova_Object*)(this), exceptionData);
 		example_Nova_Lab_Nova_super(this, exceptionData);
 		
 		{
-				example_Nova_Lab_Nova_this(this, exceptionData);
+				example_Nova_Lab_2_Nova_this(this, exceptionData);
 		}
 		
 		return this;
@@ -39,8 +39,6 @@ void example_Nova_Lab_Nova_destroy(example_Nova_Lab** this, nova_standard_except
 		}
 		
 		
-		{
-		}
 		NOVA_FREE(*this);
 }
 
@@ -51,10 +49,18 @@ void example_Nova_Lab_Nova_main(example_Nova_Lab* this, nova_standard_exception_
 		nova_standard_math_Nova_NumericStatement* l1_Nova_s;
 		
 		l1_Nova_tree = nova_standard_datastruct_Nova_BinaryTree_2_Nova_construct(0, exceptionData);
-		nova_standard_datastruct_Nova_BinaryTree_Nova_addNode(l1_Nova_tree, exceptionData, (nova_standard_Nova_Object*)(nova_standard_primitive_number_Nova_Int_Nova_construct(0, exceptionData, 5)));
-		nova_standard_datastruct_Nova_BinaryTree_Nova_addNode(l1_Nova_tree, exceptionData, (nova_standard_Nova_Object*)(nova_standard_primitive_number_Nova_Int_Nova_construct(0, exceptionData, 7)));
-		nova_standard_datastruct_Nova_BinaryTree_Nova_addNode(l1_Nova_tree, exceptionData, (nova_standard_Nova_Object*)(nova_standard_primitive_number_Nova_Int_Nova_construct(0, exceptionData, 3)));
-		nova_standard_io_Nova_Console_0_Nova_writeLine(0, exceptionData, nova_standard_datastruct_Nova_Tree_Nova_preorder((nova_standard_datastruct_Nova_Tree*)(l1_Nova_tree), exceptionData));
+		nova_standard_datastruct_Nova_BinaryTree_Nova_addNode(l1_Nova_tree, exceptionData, (nova_standard_Nova_Object*)(nova_standard_primitive_number_Nova_Char_5_Nova_construct(0, exceptionData, 'F')));
+		nova_standard_datastruct_Nova_BinaryTree_Nova_addNode(l1_Nova_tree, exceptionData, (nova_standard_Nova_Object*)(nova_standard_primitive_number_Nova_Char_5_Nova_construct(0, exceptionData, 'B')));
+		nova_standard_datastruct_Nova_BinaryTree_Nova_addNode(l1_Nova_tree, exceptionData, (nova_standard_Nova_Object*)(nova_standard_primitive_number_Nova_Char_5_Nova_construct(0, exceptionData, 'A')));
+		nova_standard_datastruct_Nova_BinaryTree_Nova_addNode(l1_Nova_tree, exceptionData, (nova_standard_Nova_Object*)(nova_standard_primitive_number_Nova_Char_5_Nova_construct(0, exceptionData, 'D')));
+		nova_standard_datastruct_Nova_BinaryTree_Nova_addNode(l1_Nova_tree, exceptionData, (nova_standard_Nova_Object*)(nova_standard_primitive_number_Nova_Char_5_Nova_construct(0, exceptionData, 'C')));
+		nova_standard_datastruct_Nova_BinaryTree_Nova_addNode(l1_Nova_tree, exceptionData, (nova_standard_Nova_Object*)(nova_standard_primitive_number_Nova_Char_5_Nova_construct(0, exceptionData, 'E')));
+		nova_standard_datastruct_Nova_BinaryTree_Nova_addNode(l1_Nova_tree, exceptionData, (nova_standard_Nova_Object*)(nova_standard_primitive_number_Nova_Char_5_Nova_construct(0, exceptionData, 'G')));
+		nova_standard_datastruct_Nova_BinaryTree_Nova_addNode(l1_Nova_tree, exceptionData, (nova_standard_Nova_Object*)(nova_standard_primitive_number_Nova_Char_5_Nova_construct(0, exceptionData, 'I')));
+		nova_standard_datastruct_Nova_BinaryTree_Nova_addNode(l1_Nova_tree, exceptionData, (nova_standard_Nova_Object*)(nova_standard_primitive_number_Nova_Char_5_Nova_construct(0, exceptionData, 'H')));
+		nova_standard_io_Nova_Console_0_Nova_writeLine(0, exceptionData, nova_standard_Nova_String_0_Nova_concat(nova_standard_Nova_String_1_Nova_construct(0, exceptionData, "Preorder: "), exceptionData, nova_standard_datastruct_Nova_Tree_Nova_preorder((nova_standard_datastruct_Nova_Tree*)(l1_Nova_tree), exceptionData)));
+		nova_standard_io_Nova_Console_0_Nova_writeLine(0, exceptionData, nova_standard_Nova_String_0_Nova_concat(nova_standard_Nova_String_1_Nova_construct(0, exceptionData, "Inorder: "), exceptionData, nova_standard_datastruct_Nova_Tree_Nova_inorder((nova_standard_datastruct_Nova_Tree*)(l1_Nova_tree), exceptionData)));
+		nova_standard_io_Nova_Console_0_Nova_writeLine(0, exceptionData, nova_standard_Nova_String_0_Nova_concat(nova_standard_Nova_String_1_Nova_construct(0, exceptionData, "Postorder: "), exceptionData, nova_standard_datastruct_Nova_Tree_Nova_postorder((nova_standard_datastruct_Nova_Tree*)(l1_Nova_tree), exceptionData)));
 		l1_Nova_sq = example_Nova_Square_Nova_construct(0, exceptionData, 4);
 		nova_standard_io_Nova_Console_1_Nova_writeLine(0, exceptionData, (nova_standard_Nova_Object*)(nova_standard_primitive_number_Nova_Double_Nova_construct(0, exceptionData, example_Nova_Lab_Nova_getArea((example_Nova_Lab*)nova_null, exceptionData, (example_Nova_Polygon*)(l1_Nova_sq)))));
 		l1_Nova_s = nova_standard_math_Nova_NumericStatement_Nova_construct(0, exceptionData, nova_standard_Nova_String_1_Nova_construct(0, exceptionData, "5a + (3 * 2)"));
@@ -67,7 +73,7 @@ double example_Nova_Lab_Nova_getArea(example_Nova_Lab* this, nova_standard_excep
 		return l0_Nova_p->vtable->example_Nova_Polygon_virtual0_Nova_calculateArea(l0_Nova_p, exceptionData);
 }
 
-void example_Nova_Lab_Nova_this(example_Nova_Lab* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
+void example_Nova_Lab_2_Nova_this(example_Nova_Lab* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
 }
 
@@ -93,7 +99,7 @@ int main(int argc, char** argvs)
 		
 		novaEnv.nova_standard_String.concat__nova_standard_String = nova_VTable_nova_standard_Nova_String_val.nova_standard_Nova_String_virtual0_Nova_concat;
 		novaEnv.nova_standard_String.toString = nova_VTable_nova_standard_Nova_String_val.nova_standard_Nova_String_virtual0_Nova_toString;
-		novaEnv.nova_standard_Object.getHashCodeLong = nova_VTable_nova_standard_Nova_Object_val.nova_standard_Nova_Object_virtual0_Nova_getHashCodeLong;
+		novaEnv.nova_standard_Object.getHashCodeLong = nova_VTable_nova_standard_Nova_Object_val.nova_standard_Nova_Object_virtual1_Nova_getHashCodeLong;
 		novaEnv.nova_standard_Object.toString = nova_VTable_nova_standard_Nova_Object_val.nova_standard_Nova_Object_virtual0_Nova_toString;
 		novaEnv.nova_standard_Object.equals__nova_standard_Object = nova_VTable_nova_standard_Nova_Object_val.nova_standard_Nova_Object_virtual0_Nova_equals;
 		novaEnv.nova_standard_math_NumericOperand.toString = nova_VTable_nova_standard_math_Nova_NumericOperand_val.nova_standard_math_Nova_NumericOperand_virtual0_Nova_toString;
@@ -104,6 +110,10 @@ int main(int argc, char** argvs)
 		novaEnv.nova_standard_io_OutputStream.write__nova_standard_String = nova_VTable_nova_standard_io_Nova_OutputStream_val.nova_standard_io_Nova_OutputStream_virtual1_Nova_write;
 		novaEnv.nova_standard_io_OutputStream.write__nova_standard_Object = nova_VTable_nova_standard_io_Nova_OutputStream_val.nova_standard_io_Nova_OutputStream_virtual2_Nova_write;
 		novaEnv.nova_standard_svg_SVGComponent.generateOutput__nova_standard_io_File = nova_VTable_nova_standard_svg_Nova_SVGComponent_val.nova_standard_svg_Nova_SVGComponent_virtual0_Nova_generateOutput;
+		novaEnv.nova_standard_datastruct_Node.preorder = nova_VTable_nova_standard_datastruct_Nova_Node_val.nova_standard_datastruct_Nova_Node_virtual0_Nova_preorder;
+		novaEnv.nova_standard_datastruct_Node.inorder = nova_VTable_nova_standard_datastruct_Nova_Node_val.nova_standard_datastruct_Nova_Node_virtual0_Nova_inorder;
+		novaEnv.nova_standard_datastruct_Node.postorder = nova_VTable_nova_standard_datastruct_Nova_Node_val.nova_standard_datastruct_Nova_Node_virtual0_Nova_postorder;
+		novaEnv.nova_standard_datastruct_Comparable.compareTo__nova_standard_Object = nova_VTable_nova_standard_datastruct_Nova_Comparable_val.nova_standard_datastruct_Nova_Comparable_virtual0_Nova_compareTo;
 		novaEnv.example_Polygon.numberSides = nova_VTable_example_Nova_Polygon_val.example_Nova_Polygon_virtual0_Nova_numberSides;
 		novaEnv.example_Polygon.calculateArea = nova_VTable_example_Nova_Polygon_val.example_Nova_Polygon_virtual0_Nova_calculateArea;
 		

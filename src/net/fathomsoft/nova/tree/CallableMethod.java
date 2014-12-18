@@ -1,5 +1,6 @@
 package net.fathomsoft.nova.tree;
 
+import net.fathomsoft.nova.tree.generics.GenericParameter;
 import net.fathomsoft.nova.util.SyntaxUtils;
 
 /**
@@ -7,7 +8,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.2.14 Jul 1, 2014 at 11:41:22 PM
- * @version	v0.2.38 Dec 6, 2014 at 5:19:17 PM
+ * @version	v0.2.41 Dec 17, 2014 at 7:48:17 PM
  */
 public interface CallableMethod
 {
@@ -85,9 +86,9 @@ public interface CallableMethod
 	public ParameterList getParameterList();
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.Value#getGenericType()
+	 * @see net.fathomsoft.nova.tree.Value#getGenericParameter()
 	 */
-	public GenericType getGenericType();
+	public GenericParameter getGenericParameter();
 	
 	/**
 	 * Check to see if the given types are compatible with the Method's

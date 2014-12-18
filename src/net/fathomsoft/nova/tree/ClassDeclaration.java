@@ -7,6 +7,8 @@ import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.tree.MethodList.SearchFilter;
+import net.fathomsoft.nova.tree.generics.GenericDeclaration;
+import net.fathomsoft.nova.tree.generics.GenericParameter;
 import net.fathomsoft.nova.tree.variables.FieldDeclaration;
 import net.fathomsoft.nova.tree.variables.FieldList;
 import net.fathomsoft.nova.tree.variables.InstanceFieldList;
@@ -26,7 +28,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:15:51 PM
- * @version	v0.2.38 Dec 6, 2014 at 5:19:17 PM
+ * @version	v0.2.41 Dec 17, 2014 at 7:48:17 PM
  */
 public class ClassDeclaration extends InstanceDeclaration
 {
@@ -59,6 +61,7 @@ public class ClassDeclaration extends InstanceDeclaration
 		FieldList             externalFields  = new FieldList(this, Location.INVALID);
 		TypeList<StaticBlock> staticBlocks    = new TypeList<StaticBlock>(this, Location.INVALID);
 		VTable                vtable          = new VTable(this, Location.INVALID);
+		GenericDeclaration    declaration     = new GenericDeclaration(this, Location.INVALID);
 		
 		addChild(fields, this);
 		addChild(constructors, this);
@@ -70,6 +73,7 @@ public class ClassDeclaration extends InstanceDeclaration
 		addChild(externalFields, this);
 		addChild(staticBlocks, this);
 		addChild(vtable, this);
+		addChild(declaration, this);
 	}
 	
 	/**
@@ -78,7 +82,7 @@ public class ClassDeclaration extends InstanceDeclaration
 	@Override
 	public int getNumDefaultChildren()
 	{
-		return super.getNumDefaultChildren() + 10;
+		return super.getNumDefaultChildren() + 11;
 	}
 	
 	/**
@@ -1161,6 +1165,10 @@ public class ClassDeclaration extends InstanceDeclaration
 		{
 			getStaticBlockList().addChild(child);
 		}
+		else if (child instanceof GenericDeclaration)
+		{
+			super.addChild(child);
+		}
 		else
 		{
 			SyntaxMessage.error("Unexpected node type of '" + child.getClass().getSimpleName() + "' within class " + getName(), child);
@@ -1580,7 +1588,7 @@ public class ClassDeclaration extends InstanceDeclaration
 			
 			ClassData data = new ClassData();
 			
-			n.searchGenericParameters(statement, data);
+			GenericDeclaration.searchGenericTypes(statement, data);
 			
 			n.iterateWords(statement, data, require);
 			
@@ -1641,7 +1649,7 @@ public class ClassDeclaration extends InstanceDeclaration
 			
 			if (data.getRightAdjacentSkipBounds() != null)
 			{
-				decodeGenericParameters(data.statement, data.getRightAdjacentSkipBounds());
+				decodeGenericArguments(data.statement, data.getRightAdjacentSkipBounds());
 				
 				data.decrementGenericsRemaining();
 			}
@@ -1667,13 +1675,47 @@ public class ClassDeclaration extends InstanceDeclaration
 					
 					if (data.getRightAdjacentSkipBounds() != null)
 					{
-						decodeGenericParameters(data.statement, data.getRightAdjacentSkipBounds());
+						getGenericDeclaration().decodeGenericParameters(data.statement, data.getRightAdjacentSkipBounds());
+						decodeGenericArguments(data.statement, data.getRightAdjacentSkipBounds());
 						
 						data.decrementGenericsRemaining();
 					}
 				}
 			}
 		}
+	}
+	
+	public boolean containsGenericParameter(String parameterName)
+	{
+		return getGenericDeclaration().containsParameter(parameterName);
+	}
+	
+	public int getGenericParameterIndex(String parameterName)
+	{
+		return getGenericDeclaration().getParameterIndex(parameterName);
+	}
+	
+	private GenericDeclaration getGenericDeclarationNode()
+	{
+		return (GenericDeclaration)getChild(super.getNumDefaultChildren() + 10);
+	}
+	
+	public GenericDeclaration getGenericDeclaration()
+	{
+		return getGenericDeclarationNode();
+	}
+	
+	public GenericParameter getGenericParameter(String parameterName)
+	{
+		for (GenericParameter param : getGenericDeclaration())
+		{
+			if (param.getName().equals(parameterName))
+			{
+				return param;
+			}
+		}
+		
+		return null;
 	}
 	
 	public String generateTemporaryMethodName()

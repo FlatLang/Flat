@@ -11,7 +11,6 @@ import net.fathomsoft.nova.tree.ClassDeclaration;
 import net.fathomsoft.nova.tree.Closure;
 import net.fathomsoft.nova.tree.FileDeclaration;
 import net.fathomsoft.nova.tree.GenericCompatible;
-import net.fathomsoft.nova.tree.GenericType;
 import net.fathomsoft.nova.tree.Identifier;
 import net.fathomsoft.nova.tree.InstanceDeclaration;
 import net.fathomsoft.nova.tree.Instantiation;
@@ -27,6 +26,7 @@ import net.fathomsoft.nova.tree.Return;
 import net.fathomsoft.nova.tree.SyntaxTree;
 import net.fathomsoft.nova.tree.UnaryOperation;
 import net.fathomsoft.nova.tree.Value;
+import net.fathomsoft.nova.tree.generics.GenericArgument;
 import net.fathomsoft.nova.tree.variables.FieldDeclaration;
 import net.fathomsoft.nova.tree.variables.Variable;
 import net.fathomsoft.nova.tree.variables.VariableDeclaration;
@@ -36,7 +36,7 @@ import net.fathomsoft.nova.tree.variables.VariableDeclaration;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Mar 15, 2014 at 7:55:00 PM
- * @version	v0.2.38 Dec 6, 2014 at 5:19:17 PM
+ * @version	v0.2.41 Dec 17, 2014 at 7:48:17 PM
  */
 public class SyntaxUtils
 {
@@ -1533,6 +1533,7 @@ public class SyntaxUtils
 			}
 		}
 		
+		// TODO: Check this after generic declarations??
 		ClassDeclaration clazz = value.getParentClass();
 		
 		while (clazz != null)
@@ -1554,18 +1555,18 @@ public class SyntaxUtils
 				Identifier id = (Identifier)original;
 				
 				genericCheck = (Variable)id.getAccessingNode();
-			}
-			
-			if (genericCheck != null && genericCheck.doesUseGenericTypes())
-			{
-				String genericName = value.getType();
 				
-				GenericType generic = getCorrespondingGenericType(genericCheck.getTypeClass(), genericCheck.getDeclaration(), genericName);
-
-				return generic.getType();
+				if (genericCheck.doesUseGenericTypes())
+				{
+					String genericName = value.getType();
+					
+					GenericArgument generic = getCorrespondingGenericType(genericCheck.getTypeClass(), genericCheck.getDeclaration(), genericName);
+	
+					return generic.getType();
+				}
 			}
 			
-			return value.getParentClass().getGenericParameter(type).getType();//.getDefaultType();
+			return value.getParentClass().getGenericParameter(type).getDefaultType();
 		}
 		
 		String location = value.getFileDeclaration().getImportList().getAbsoluteClassLocation(type);
@@ -1590,16 +1591,16 @@ public class SyntaxUtils
 		return null;
 	}
 	
-	public static GenericType getCorrespondingGenericType(ClassDeclaration genericDeclaration, GenericCompatible genericUse, String genericName)
+	public static GenericArgument getCorrespondingGenericType(ClassDeclaration genericDeclaration, GenericCompatible genericUse, String genericName)
 	{
-		int index = genericDeclaration.getGenericParameterIndex(genericName);
+		int index = genericDeclaration.getGenericArgumentIndex(genericName);
 		
 		if (index < 0)
 		{
 			SyntaxMessage.error("Could not find the corresponding generic for generic type '" + genericName + "'", (Node)genericUse);
 		}
 		
-		return genericUse.getGenericParameterNames()[index];
+		return genericUse.getGenericArgument(index);
 	}
 	
 	/**
@@ -1781,14 +1782,14 @@ public class SyntaxUtils
 		
 		if (call != null)
 		{
-			gen = call.getGenericDeclaration();
+			gen = call.getGenericCompatible();
 		}
 		else
 		{
 			gen = given.getParentClass();//given.getParentMethod();
 		}
 		
-		String name = gen.getGenericParameterType(required.getType());
+		String name = gen.getGenericArgumentType(required.getType(), given);
 		
 		return SyntaxUtils.getImportedClass(given.getFileDeclaration(), name);
 	}
@@ -1895,6 +1896,7 @@ public class SyntaxUtils
 		}
 		else if (required.getArrayDimensions() - given.getArrayDimensions() - arrayDifference != 0)
 		{
+			Nova.debuggingBreakpoint(required.getTypeClassLocation() == null);
 			if (required.getTypeClassLocation().equals(Nova.getClassLocation("Char")) && required.getArrayDimensions() == 1 && given.getTypeClassLocation() != null && given.getTypeClassLocation().equals(Nova.getClassLocation("String")))
 			{
 				return true;

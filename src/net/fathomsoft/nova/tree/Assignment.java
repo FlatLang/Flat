@@ -20,7 +20,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:19:44 PM
- * @version	v0.2.38 Dec 6, 2014 at 5:19:17 PM
+ * @version	v0.2.41 Dec 17, 2014 at 7:48:17 PM
  */
 public class Assignment extends Node
 {
@@ -242,6 +242,34 @@ public class Assignment extends Node
 	 */
 	public static Assignment decodeStatement(Node parent, String statement, Location location, boolean require, boolean addDeclaration)
 	{
+		return decodeStatement(parent, statement, location, require, addDeclaration, null, null);
+	}
+	
+	/**
+	 * Decode the given statement into an Assignment if possible. If
+	 * it is not possible, then null is returned.<br>
+	 * <br>
+	 * Example inputs include:<br>
+	 * <ul>
+	 * 	<li>Int variableName = 45</li>
+	 * 	<li>personsName = "Bob"</li>
+	 * 	<li>Person myPeep = new Person(54)</li>
+	 * 	<li>area = width * height / 2</li>
+	 * 	<li>Int newSize = array.getSize() + 5</li>
+	 * </ul>
+	 * 
+	 * @param parent The parent of the current statement.
+	 * @param statement The statement to decode into an Assignment.
+	 * @param location The location of the statement in the source code.
+	 * @param require Whether or not to throw an error if anything goes wrong.
+	 * @param addDeclaration Whether or not to add the declaration to the
+	 * 		nearest scope, if the left hand value of the equation is a
+	 * 		variable declaration.
+	 * @return The new Assignment if it decodes properly. If not,
+	 * 		it returns null.
+	 */
+	public static Assignment decodeStatement(Node parent, String statement, Location location, boolean require, boolean addDeclaration, Value[] assignees, Node assignment)
+	{
 		if (!SyntaxUtils.isVariableAssignment(statement))
 		{
 			return null;
@@ -257,16 +285,16 @@ public class Assignment extends Node
 		Location varLoc = location.asNew();
 		varLoc.getBounds().setEnd(varLoc.getStart() + endIndex);
 		
-		String[] assignees = StringUtils.splitCommas(variable);
+		String[] assigneesStr = StringUtils.splitCommas(variable);
 		
 //		if (!n.decodeAssignee(assignees[0], varLoc, require, addDeclaration))
 //		{
 //			return null;
 //		}
 		
-		for (int i = 0; i < assignees.length; i++)
+		for (int i = 0; i < assigneesStr.length; i++)
 		{
-			if (!n.decodeAssignee(assignees[i], varLoc, require, addDeclaration))
+			if (!n.decodeAssignee(assigneesStr[i], varLoc, require, addDeclaration, assignees))
 			{
 				return null;
 			}
@@ -280,9 +308,12 @@ public class Assignment extends Node
 		Location newLoc = location.asNew();
 		newLoc.setBounds(location.getStart() + rhsIndex, location.getStart() + statement.length());
 		
-		Node child = n.decodeRightHandSide(n, rhs, newLoc, require);
+		if (assignment == null)
+		{
+			assignment = n.decodeRightHandSide(n, rhs, newLoc, require);
+		}
 		
-		if (child == null)
+		if (assignment == null)
 		{
 			if (addDeclaration)
 			{
@@ -292,39 +323,48 @@ public class Assignment extends Node
 			return null;
 		}
 		
-		n.addChild(child);
+		n.addChild(assignment);
 		
 		n.validateCompatible(newLoc);
 		
 		return n;
 	}
 	
-	private boolean decodeAssignee(String assignee, Location loc, boolean require, boolean addDeclaration)
+	private boolean decodeAssignee(String assignee, Location loc, boolean require, boolean addDeclaration, Value[] assignees)
 	{
-		Value varNode = (Value)SyntaxTree.decodeScopeContents(this, assignee, loc, require);
-		
-		if (varNode == null)
+		if (assignees == null || assignees.length <= 0)
 		{
-			return SyntaxMessage.queryError("Undeclared variable '" + assignee + "'", this, loc, require);
+			Value varNode = (Value)SyntaxTree.decodeScopeContents(this, assignee, loc, require);
+			
+			if (varNode == null)
+			{
+				return SyntaxMessage.queryError("Undeclared variable '" + assignee + "'", this, loc, require);
+			}
+			
+			if (varNode.getReturnedNode() instanceof VariableDeclaration && addDeclaration)
+			{
+				varNode = addDeclaration((VariableDeclaration)varNode);
+			}
+			else if (varNode.getReturnedNode() instanceof Variable)
+			{
+				validateAuthorization((Variable)varNode.getReturnedNode());
+			}
+			
+			getAssigneeNodes().addChild(varNode);
 		}
-		
-		if (varNode.getReturnedNode() instanceof VariableDeclaration && addDeclaration)
+		else
 		{
-			varNode = addDeclaration((VariableDeclaration)varNode);
+			for (Value assign : assignees)
+			{
+				getAssigneeNodes().addChild(assign);
+			}
 		}
-		else if (varNode.getReturnedNode() instanceof Variable)
-		{
-			validateAuthorization((Variable)varNode.getReturnedNode());
-		}
-		
-		getAssigneeNodes().addChild(varNode);
 		
 		return true;
 	}
 	
 	private boolean validateCompatible(Location location)
 	{
-		Nova.debuggingBreakpoint(getAssigneeNode().getReturnedNode() instanceof Super);
 		Value returnedLeft  = getAssigneeNode().getReturnedNode();
 		Value returnedRight = getAssignmentNode().getReturnedNode();
 		

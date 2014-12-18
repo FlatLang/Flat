@@ -4,7 +4,7 @@
 
 nova_VTable_example_Nova_Square nova_VTable_example_Nova_Square_val =
 {
-	nova_standard_Nova_Object_0_Nova_getHashCodeLong,
+	nova_standard_Nova_Object_1_Nova_getHashCodeLong,
 	nova_standard_Nova_Object_0_Nova_toString,
 	nova_standard_Nova_Object_0_Nova_equals,
 	example_Nova_Square_Nova_numberSides,
@@ -21,7 +21,7 @@ example_Nova_Square* example_Nova_Square_Nova_construct(example_Nova_Square* thi
 	CCLASS_NEW(example_Nova_Square, this,);
 	this->vtable = &nova_VTable_example_Nova_Square_val;
 	nova_standard_Nova_Object_Nova_super((nova_standard_Nova_Object*)this, exceptionData);
-	nova_standard_Nova_Object_Nova_this((nova_standard_Nova_Object*)(this), exceptionData);
+	nova_standard_Nova_Object_2_Nova_this((nova_standard_Nova_Object*)(this), exceptionData);
 	example_Nova_Square_Nova_super(this, exceptionData);
 	
 	{
@@ -40,8 +40,6 @@ void example_Nova_Square_Nova_destroy(example_Nova_Square** this, nova_standard_
 	
 	
 	
-	{
-	}
 	NOVA_FREE(*this);
 }
 

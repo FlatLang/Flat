@@ -24,7 +24,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:00:11 PM
- * @version	v0.2.38 Dec 6, 2014 at 5:19:17 PM
+ * @version	v0.2.41 Dec 17, 2014 at 7:48:17 PM
  */
 public abstract class Node implements Listenable
 {
@@ -735,7 +735,10 @@ public abstract class Node implements Listenable
 		
 		old.detach();
 		
-		addChild(index, replacement, this);
+		if (replacement != null)
+		{
+			addChild(index, replacement, this);
+		}
 	}
 	
 	/**

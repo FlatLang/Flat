@@ -6,12 +6,24 @@ public class BinaryNode<E> extends Node
 	{
 		get
 		{
+			if (children.empty)
+			{
+				return null
+			}
+			
 			return (BinaryNode)children.get(0)
 		}
 		
 		set(BinaryNode<E> data)
 		{
-			children.set(0, data)
+			if (children.empty)
+			{
+				children.add(0, data)
+			}
+			else
+			{
+				children.set(0, data)
+			}
 		}
 	}
 	
@@ -19,12 +31,24 @@ public class BinaryNode<E> extends Node
 	{
 		get
 		{
+			if (children.size <= 1)
+			{
+				return null
+			}
+			
 			return (BinaryNode)children.get(1)
 		}
 		
 		set(BinaryNode<E> data)
 		{
-			children.set(1, data)
+			if (children.size <= 1)
+			{
+				children.add(1, data)
+			}
+			else
+			{
+				children.set(1, data)
+			}
 		}
 	}
 	
@@ -45,9 +69,9 @@ public class BinaryNode<E> extends Node
 	
 	public addChild(E data)
 	{
-		Comparable<Int> temp = (Comparable)this.data
+		Comparable<Char> temp = (Comparable)this.data
 		
-		if (temp.compareTo((Int)data) < 0)
+		if (temp.compareTo((Char)data) < 0)
 		{
 			if (left == null)
 			{
@@ -69,5 +93,60 @@ public class BinaryNode<E> extends Node
 				right.addChild(data)
 			}
 		}
+	}
+	
+	public preorder() -> String
+	{
+		String str = ""
+		
+		str = str + data
+		
+		if (left != null)
+		{
+			str = str + ", " + left.preorder()
+		}
+		if (right != null)
+		{
+			str = str + ", " + right.preorder()
+		}
+		
+		return str
+	}
+	
+	public inorder() -> String
+	{
+		String str = ""
+		
+		if (left != null)
+		{
+			str = str + left.inorder() + ", "
+		}
+		
+		str = str + data
+		
+		if (right != null)
+		{
+			str = str + ", " + right.inorder()
+		}
+		
+		return str
+	}
+	
+	public postorder() -> String
+	{
+		String str = ""
+		
+		if (left != null)
+		{
+			str = str + ", " + left.preorder()
+		}
+		if (right != null)
+		{
+			str = str + ", " + right.preorder()
+		}
+		
+		str = str + data
+		
+		return str
 	}
 }

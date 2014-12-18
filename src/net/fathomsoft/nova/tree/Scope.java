@@ -2,6 +2,7 @@ package net.fathomsoft.nova.tree;
 
 import java.util.ArrayList;
 
+import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.tree.variables.Variable;
 import net.fathomsoft.nova.tree.variables.VariableDeclarationList;
@@ -23,7 +24,7 @@ import net.fathomsoft.nova.util.Location;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Apr 5, 2014 at 10:54:20 PM
- * @version	v0.2.38 Dec 6, 2014 at 5:19:17 PM
+ * @version	v0.2.41 Dec 17, 2014 at 7:48:17 PM
  */
 public class Scope extends Node
 {
@@ -111,29 +112,42 @@ public class Scope extends Node
 	 */
 	public Variable registerLocalVariable(Value virtual, boolean require)
 	{
-		String type = virtual.getType();
-		
-		if (virtual.isGenericType())
-		{
-			type = virtual.getGenericReturnType();
-		}
-		
-		String value = null;
-		Node   base  = virtual.getBaseNode();
+		Node base = virtual.getBaseNode();
 		
 		if (virtual instanceof Accessible)
 		{
 			Accessible accessible = (Accessible)virtual;
 			
-			value = accessible.getRootReferenceNode(true).generateNovaInputUntil(accessible).toString();
-		}
-		else
-		{
-			value = virtual.generateNovaInput().toString();
+			virtual = (Value)accessible.getRootReferenceNode(true);
+			
+			Value clone = (Value)virtual.clone(virtual.getParent(), virtual.getLocationIn());
+			
+			Value current = ((Accessible)virtual).getAccessedNode();
+			Value cloneC  = ((Accessible)clone).getAccessedNode();
+			
+			while (current != accessible && current != null)
+			{
+				current = ((Accessible)current).getAccessedNode();
+				cloneC  = ((Accessible)cloneC).getAccessedNode();
+			}
+			
+			if (cloneC != null)
+			{
+				((Accessible)cloneC).setAccessedNode(null);
+			}
+			
+			virtual = clone;
 		}
 		
-		String     decl   = type + " nova_local_" + getParentMethod().getScope().localVariableID++ + " = " + value;
-		Assignment assign = Assignment.decodeStatement(base.getParent(), decl, getLocationIn(), require);
+		String type = virtual.getReturnedNode().getType();
+		
+		if (virtual.getReturnedNode().isGenericType())
+		{
+			type = virtual.getReturnedNode().getGenericReturnType();
+		}
+		
+		String     decl   = type + " nova_local_" + getParentMethod().getScope().localVariableID++ + " = null";
+		Assignment assign = Assignment.decodeStatement(base.getParent(), decl, getLocationIn(), require, true, null, virtual);
 		
 		if (assign == null)
 		{

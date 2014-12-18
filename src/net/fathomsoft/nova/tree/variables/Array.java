@@ -33,7 +33,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Mar 16, 2014 at 1:13:49 AM
- * @version	v0.2.38 Dec 6, 2014 at 5:19:17 PM
+ * @version	v0.2.41 Dec 17, 2014 at 7:48:17 PM
  */
 public class Array extends VariableDeclaration implements ArrayCompatible
 {
@@ -138,7 +138,7 @@ public class Array extends VariableDeclaration implements ArrayCompatible
 			builder.append("nova_gen_array(");
 		}
 		
-		builder.append("NOVA_MALLOC(sizeof(").append(generateCTypeClassName()).append('*');
+		builder.append("NOVA_MALLOC(sizeof(").append(generateCTypeClassName()).append(")");
 		
 		Dimensions dim = getDimensions();
 		
@@ -152,9 +152,9 @@ public class Array extends VariableDeclaration implements ArrayCompatible
 //			
 //			dim.getVisibleChild(i).generateCSourceFragment(builder);
 //		}
-		dim.generateCSourceFragment(builder);
+		dim.generateCSourceFragment(builder, " * ", "");
 		
-		builder.append(')');
+//		builder.append(')');
 		
 		if (getNumDimensions() > 1)
 		{

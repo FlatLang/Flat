@@ -30,7 +30,7 @@ typedef struct nova_standard_thread_Nova_Thread nova_standard_thread_Nova_Thread
 
 typedef struct nova_VTable_nova_standard_thread_Nova_Thread
 {
-	long (*nova_standard_Nova_Object_virtual0_Nova_getHashCodeLong)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*);
+	long (*nova_standard_Nova_Object_virtual1_Nova_getHashCodeLong)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*);
 	nova_standard_Nova_String* (*nova_standard_Nova_Object_virtual0_Nova_toString)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*);
 	char (*nova_standard_Nova_Object_virtual0_Nova_equals)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*);
 	void (*nova_standard_thread_Nova_Thread_virtual0_Nova_run)(nova_standard_thread_Nova_Thread*, nova_standard_exception_Nova_ExceptionData*);
@@ -54,7 +54,7 @@ void nova_standard_thread_Nova_Thread_Nova_join(nova_standard_thread_Nova_Thread
 void nova_standard_thread_Nova_Thread_Nova_kill(nova_standard_thread_Nova_Thread* this, nova_standard_exception_Nova_ExceptionData* exceptionData);
 void nova_standard_thread_Nova_Thread_Nova_sleep(nova_standard_thread_Nova_Thread* this, nova_standard_exception_Nova_ExceptionData* exceptionData, long l0_Nova_millis);
 void nova_standard_thread_Nova_Thread_0_Nova_run(nova_standard_thread_Nova_Thread* this, nova_standard_exception_Nova_ExceptionData* exceptionData);
-void nova_standard_thread_Nova_Thread_Nova_this(nova_standard_thread_Nova_Thread* this, nova_standard_exception_Nova_ExceptionData* exceptionData);
+void nova_standard_thread_Nova_Thread_2_Nova_this(nova_standard_thread_Nova_Thread* this, nova_standard_exception_Nova_ExceptionData* exceptionData);
 void nova_standard_thread_Nova_Thread_Nova_super(nova_standard_thread_Nova_Thread* this, nova_standard_exception_Nova_ExceptionData* exceptionData);
 
 #endif

@@ -3,6 +3,7 @@ package net.fathomsoft.nova.tree;
 import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.error.SyntaxMessage;
+import net.fathomsoft.nova.tree.generics.GenericImplementation;
 import net.fathomsoft.nova.tree.variables.Array;
 import net.fathomsoft.nova.tree.variables.VariableDeclaration;
 import net.fathomsoft.nova.util.Bounds;
@@ -19,12 +20,10 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Apr 3, 2014 at 7:53:35 PM
- * @version	v0.2.38 Dec 6, 2014 at 5:19:17 PM
+ * @version	v0.2.41 Dec 17, 2014 at 7:48:17 PM
  */
 public class Instantiation extends IIdentifier implements GenericCompatible
 {
-	private GenericType	genericTypes[];
-	
 	public static final String IDENTIFIER = "new";
 	
 	/**
@@ -34,7 +33,17 @@ public class Instantiation extends IIdentifier implements GenericCompatible
 	{
 		super(temporaryParent, locationIn);
 		
-		genericTypes = new GenericType[0];
+		GenericImplementation implementation = new GenericImplementation(temporaryParent, locationIn.asNew());
+		addChild(implementation);
+	}
+	
+	/**
+	 * @see net.fathomsoft.nova.tree.Node#getNumDefaultChildren()
+	 */
+	@Override
+	public int getNumDefaultChildren()
+	{
+		return super.getNumDefaultChildren() + 1;
 	}
 	
 	/**
@@ -50,18 +59,9 @@ public class Instantiation extends IIdentifier implements GenericCompatible
 	 * @see net.fathomsoft.nova.tree.GenericCompatible#getGenericParameterNames()
 	 */
 	@Override
-	public GenericType[] getGenericParameterNames()
+	public GenericImplementation getGenericImplementation()
 	{
-		return genericTypes;
-	}
-
-	/**
-	 * @see net.fathomsoft.nova.tree.GenericCompatible#setGenericTypes(net.fathomsoft.nova.tree.GenericType[])
-	 */
-	@Override
-	public void setGenericTypes(GenericType[] types)
-	{
-		this.genericTypes = types;
+		return (GenericImplementation)getChild(super.getNumDefaultChildren() + 0);
 	}
 	
 	@Override
@@ -89,7 +89,7 @@ public class Instantiation extends IIdentifier implements GenericCompatible
 	 */
 	public Identifier getIdentifier()
 	{
-		return (Identifier)getChild(0);
+		return (Identifier)getChild(super.getNumDefaultChildren() + 1);
 	}
 	
 	/**
@@ -98,7 +98,7 @@ public class Instantiation extends IIdentifier implements GenericCompatible
 	@Override
 	public void addChild(Node child)
 	{
-		if (getNumChildren() == 0)
+		if (getNumChildren() < getNumDecodedChildren())
 		{
 			super.addChild(child);
 		}
@@ -238,7 +238,7 @@ public class Instantiation extends IIdentifier implements GenericCompatible
 		
 		if (bounds.isValid())
 		{
-			decodeGenericParameters(params);
+			decodeGenericArguments(params);
 		}
 		
 		String className = null;
@@ -326,8 +326,6 @@ public class Instantiation extends IIdentifier implements GenericCompatible
 	public Instantiation cloneTo(Instantiation node)
 	{
 		super.cloneTo(node);
-		
-		node.genericTypes = cloneGenericTypes(node);
 		
 		return node;
 	}

@@ -4,7 +4,7 @@
 
 nova_VTable_nova_standard_math_Nova_NumericTree nova_VTable_nova_standard_math_Nova_NumericTree_val =
 {
-	nova_standard_Nova_Object_0_Nova_getHashCodeLong,
+	nova_standard_Nova_Object_1_Nova_getHashCodeLong,
 	nova_standard_math_Nova_NumericTree_0_Nova_toString,
 	nova_standard_Nova_Object_0_Nova_equals,
 };
@@ -24,7 +24,7 @@ nova_standard_math_Nova_NumericTree* nova_standard_math_Nova_NumericTree_Nova_co
 	CCLASS_NEW(nova_standard_math_Nova_NumericTree, this);
 	this->vtable = &nova_VTable_nova_standard_math_Nova_NumericTree_val;
 	nova_standard_Nova_Object_Nova_super((nova_standard_Nova_Object*)this, exceptionData);
-	nova_standard_Nova_Object_Nova_this((nova_standard_Nova_Object*)(this), exceptionData);
+	nova_standard_Nova_Object_2_Nova_this((nova_standard_Nova_Object*)(this), exceptionData);
 	nova_standard_math_Nova_NumericTree_Nova_super(this, exceptionData);
 	
 	{
@@ -44,8 +44,6 @@ void nova_standard_math_Nova_NumericTree_Nova_destroy(nova_standard_math_Nova_Nu
 	nova_standard_math_Nova_NumericOperation_Nova_destroy(&(*this)->prv->nova_standard_math_Nova_NumericTree_Nova_root, exceptionData);
 	NOVA_FREE((*this)->prv);
 	
-	{
-	}
 	NOVA_FREE(*this);
 }
 

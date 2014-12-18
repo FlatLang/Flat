@@ -5,7 +5,7 @@ typedef void (*l0_1_Nova_exit)(void*, nova_standard_exception_Nova_ExceptionData
 
 nova_VTable_nova_standard_Nova_System nova_VTable_nova_standard_Nova_System_val =
 {
-	nova_standard_Nova_Object_0_Nova_getHashCodeLong,
+	nova_standard_Nova_Object_1_Nova_getHashCodeLong,
 	nova_standard_Nova_Object_0_Nova_toString,
 	nova_standard_Nova_Object_0_Nova_equals,
 };
@@ -20,11 +20,11 @@ nova_standard_Nova_System* nova_standard_Nova_System_2_Nova_construct(nova_stand
 	CCLASS_NEW(nova_standard_Nova_System, this,);
 	this->vtable = &nova_VTable_nova_standard_Nova_System_val;
 	nova_standard_Nova_Object_Nova_super((nova_standard_Nova_Object*)this, exceptionData);
-	nova_standard_Nova_Object_Nova_this((nova_standard_Nova_Object*)(this), exceptionData);
+	nova_standard_Nova_Object_2_Nova_this((nova_standard_Nova_Object*)(this), exceptionData);
 	nova_standard_Nova_System_Nova_super(this, exceptionData);
 	
 	{
-		nova_standard_Nova_System_Nova_this(this, exceptionData);
+		nova_standard_Nova_System_2_Nova_this(this, exceptionData);
 	}
 	
 	return this;
@@ -38,8 +38,6 @@ void nova_standard_Nova_System_Nova_destroy(nova_standard_Nova_System** this, no
 	}
 	
 	
-	{
-	}
 	NOVA_FREE(*this);
 }
 
@@ -57,14 +55,14 @@ void nova_standard_Nova_System_2_Nova_exit(nova_standard_Nova_System* this, nova
 {
 	if (l0_Nova_log)
 	{
-		nova_standard_io_Nova_File* l2_Nova_f;
+		nova_standard_io_Nova_File* l1_Nova_f;
 		nova_standard_Nova_String* nova_local_0;
 		
 		nova_local_0 = nova_standard_primitive_number_Nova_Long_1_Nova_toString(0, exceptionData, nova_standard_time_Nova_Time_Nova_currentTimeMillis(0, exceptionData));
-		l2_Nova_f = nova_standard_io_Nova_File_3_Nova_construct(0, exceptionData, nova_standard_Nova_String_0_Nova_concat(nova_standard_Nova_String_1_Nova_construct(0, exceptionData, "Log"), exceptionData, nova_local_0->vtable->nova_standard_Nova_String_virtual0_Nova_concat(nova_local_0, exceptionData, nova_standard_Nova_String_1_Nova_construct(0, exceptionData, ".txt"))));
-		if (nova_standard_io_Nova_File_Nova_create(l2_Nova_f, exceptionData))
+		l1_Nova_f = nova_standard_io_Nova_File_3_Nova_construct(0, exceptionData, nova_standard_Nova_String_0_Nova_concat(nova_standard_Nova_String_1_Nova_construct(0, exceptionData, "Log"), exceptionData, nova_local_0->vtable->nova_standard_Nova_String_virtual0_Nova_concat(nova_local_0, exceptionData, nova_standard_Nova_String_1_Nova_construct(0, exceptionData, ".txt"))));
+		if (nova_standard_io_Nova_File_Nova_create(l1_Nova_f, exceptionData))
 		{
-			nova_standard_io_Nova_File_Nova_writeLine(l2_Nova_f, exceptionData, l0_Nova_message);
+			nova_standard_io_Nova_File_Nova_writeLine(l1_Nova_f, exceptionData, l0_Nova_message);
 		}
 	}
 	nova_standard_io_Nova_Console_0_Nova_writeLine(0, exceptionData, l0_Nova_message);
@@ -89,7 +87,7 @@ nova_standard_process_Nova_Process* nova_standard_Nova_System_Nova_execute(nova_
 	return l1_Nova_process;
 }
 
-void nova_standard_Nova_System_Nova_this(nova_standard_Nova_System* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
+void nova_standard_Nova_System_2_Nova_this(nova_standard_Nova_System* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
 }
 

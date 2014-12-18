@@ -4,7 +4,7 @@
 
 nova_VTable_nova_standard_network_Nova_ServerSocket nova_VTable_nova_standard_network_Nova_ServerSocket_val =
 {
-	nova_standard_Nova_Object_0_Nova_getHashCodeLong,
+	nova_standard_Nova_Object_1_Nova_getHashCodeLong,
 	nova_standard_Nova_Object_0_Nova_toString,
 	nova_standard_Nova_Object_0_Nova_equals,
 };
@@ -25,12 +25,12 @@ nova_standard_network_Nova_ServerSocket* nova_standard_network_Nova_ServerSocket
 	this->vtable = &nova_VTable_nova_standard_network_Nova_ServerSocket_val;
 	nova_standard_Nova_Object_Nova_super((nova_standard_Nova_Object*)this, exceptionData);
 	nova_standard_network_Nova_Socket_Nova_super((nova_standard_network_Nova_Socket*)this, exceptionData);
-	nova_standard_Nova_Object_Nova_this((nova_standard_Nova_Object*)(this), exceptionData);
-	nova_standard_network_Nova_Socket_Nova_this((nova_standard_network_Nova_Socket*)(this), exceptionData);
-	nova_standard_network_Nova_ServerSocket_Nova_super(this, exceptionData);
+	nova_standard_Nova_Object_2_Nova_this((nova_standard_Nova_Object*)(this), exceptionData);
+	nova_standard_network_Nova_Socket_2_Nova_this((nova_standard_network_Nova_Socket*)(this), exceptionData);
+	nova_standard_network_Nova_ServerSocket_2_Nova_super(this, exceptionData);
 	
 	{
-		nova_standard_network_Nova_ServerSocket_Nova_this(this, exceptionData);
+		nova_standard_network_Nova_ServerSocket_2_Nova_this(this, exceptionData);
 	}
 	
 	return this;
@@ -48,12 +48,10 @@ void nova_standard_network_Nova_ServerSocket_Nova_destroy(nova_standard_network_
 	
 	nova_standard_datastruct_Nova_ArrayList_Nova_destroy(&(*this)->nova_standard_network_Nova_ServerSocket_Nova_requests, exceptionData);
 	
-	{
-	}
 	NOVA_FREE(*this);
 }
 
-void nova_standard_network_Nova_ServerSocket_Nova_this(nova_standard_network_Nova_ServerSocket* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
+void nova_standard_network_Nova_ServerSocket_2_Nova_this(nova_standard_network_Nova_ServerSocket* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
 	this->nova_standard_network_Nova_ServerSocket_Nova_open = 0;
 }
@@ -96,7 +94,7 @@ nova_standard_network_Nova_ConnectionSocket* nova_standard_network_Nova_ServerSo
 	return l1_Nova_socket;
 }
 
-void nova_standard_network_Nova_ServerSocket_Nova_super(nova_standard_network_Nova_ServerSocket* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
+void nova_standard_network_Nova_ServerSocket_2_Nova_super(nova_standard_network_Nova_ServerSocket* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
 	this->nova_standard_network_Nova_ServerSocket_Nova_open = 0;
 	this->nova_standard_network_Nova_ServerSocket_Nova_requests = (nova_standard_datastruct_Nova_ArrayList*)nova_null;

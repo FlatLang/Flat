@@ -19,7 +19,7 @@ import net.fathomsoft.nova.util.StringUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Mar 22, 2014 at 11:02:52 PM
- * @version	v0.2.38 Dec 6, 2014 at 5:19:17 PM
+ * @version	v0.2.41 Dec 17, 2014 at 7:48:17 PM
  */
 public class Throw extends ExceptionHandler
 {
@@ -81,6 +81,15 @@ public class Throw extends ExceptionHandler
 		getExceptionInstance().generateCSourceFragment(builder).append(')').append(';').append('\n');
 		
 		return builder;
+	}
+	
+	/**
+	 * @see net.fathomsoft.nova.tree.Node#generateNovaInput(java.lang.StringBuilder, boolean)
+	 */
+	@Override
+	public StringBuilder generateNovaInput(StringBuilder builder, boolean outputChildren)
+	{
+		return builder.append(IDENTIFIER).append(" ").append(getExceptionInstance().generateNovaInput());
 	}
 	
 	/**

@@ -30,7 +30,7 @@ typedef struct nova_standard_math_Nova_NumericTree nova_standard_math_Nova_Numer
 
 typedef struct nova_VTable_nova_standard_math_Nova_NumericTree
 {
-	long (*nova_standard_Nova_Object_virtual0_Nova_getHashCodeLong)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*);
+	long (*nova_standard_Nova_Object_virtual1_Nova_getHashCodeLong)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*);
 	nova_standard_Nova_String* (*nova_standard_math_Nova_NumericTree_virtual0_Nova_toString)(nova_standard_math_Nova_NumericTree*, nova_standard_exception_Nova_ExceptionData*);
 	char (*nova_standard_Nova_Object_virtual0_Nova_equals)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*);
 } nova_VTable_nova_standard_math_Nova_NumericTree;

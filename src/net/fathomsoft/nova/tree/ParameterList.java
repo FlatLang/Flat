@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.tree.exceptionhandling.Exception;
+import net.fathomsoft.nova.tree.generics.GenericArgument;
 import net.fathomsoft.nova.util.Location;
 
 /**
@@ -12,7 +13,7 @@ import net.fathomsoft.nova.util.Location;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:56:34 PM
- * @version	v0.2.38 Dec 6, 2014 at 5:19:17 PM
+ * @version	v0.2.41 Dec 17, 2014 at 7:48:17 PM
  */
 public class ParameterList<E extends Value> extends TypeList<E>
 {
@@ -67,11 +68,11 @@ public class ParameterList<E extends Value> extends TypeList<E>
 		reference.setName(OBJECT_REFERENCE_IDENTIFIER, true);
 		reference.setDataType(Value.POINTER);
 		
-		GenericType types[] = getParentClass().getGenericParameterNames();
-		
-		for (GenericType type : types)
+		for (int i = 0; i < getParentClass().getNumGenericArguments(); i++)
 		{
-			reference.addGenericParameterNames(type.getDefaultType());
+			GenericArgument type = getParentClass().getGenericArgument(i);
+			
+			reference.addGenericArgumentName(type.getDefaultType());
 		}
 		
 		return reference;
@@ -171,17 +172,44 @@ public class ParameterList<E extends Value> extends TypeList<E>
 	 */
 	public E getParameter(String parameterName)
 	{
+		int index = getParameterIndex(parameterName);
+		
+		if (index < 0)
+		{
+			return null;
+		}
+		
+		return (E)getChild(index);
+	}
+	
+	public int getParameterIndex(String parameterName)
+	{
 		for (int i = 0; i < getNumChildren(); i++)
 		{
 			Parameter parameter = (Parameter)getChild(i);
 			
 			if (parameter.getName().equals(parameterName))
 			{
-				return (E)parameter;
+				return i;
 			}
 		}
 		
-		return null;
+		return -1;
+	}
+	
+	public int getVisibleParameterIndex(String parameterName)
+	{
+		for (int i = 0; i < getNumVisibleChildren(); i++)
+		{
+			Parameter parameter = (Parameter)getVisibleChild(i);
+			
+			if (parameter.getName().equals(parameterName))
+			{
+				return i;
+			}
+		}
+		
+		return -1;
 	}
 	
 	/**

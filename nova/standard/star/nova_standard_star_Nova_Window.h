@@ -31,7 +31,7 @@ typedef struct nova_standard_star_Nova_Window nova_standard_star_Nova_Window;
 
 typedef struct nova_VTable_nova_standard_star_Nova_Window
 {
-	long (*nova_standard_Nova_Object_virtual0_Nova_getHashCodeLong)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*);
+	long (*nova_standard_Nova_Object_virtual1_Nova_getHashCodeLong)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*);
 	nova_standard_Nova_String* (*nova_standard_Nova_Object_virtual0_Nova_toString)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*);
 	char (*nova_standard_Nova_Object_virtual0_Nova_equals)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*);
 } nova_VTable_nova_standard_star_Nova_Window;
@@ -54,7 +54,7 @@ void nova_standard_star_Nova_WindowNova_init_static(nova_standard_exception_Nova
 nova_standard_star_Nova_Window* nova_standard_star_Nova_Window_2_Nova_construct(nova_standard_star_Nova_Window* this, nova_standard_exception_Nova_ExceptionData* exceptionData);
 void nova_standard_star_Nova_Window_Nova_destroy(nova_standard_star_Nova_Window** this, nova_standard_exception_Nova_ExceptionData* exceptionData);
 void nova_standard_star_Nova_Window_Nova_create(nova_standard_star_Nova_Window* this, nova_standard_exception_Nova_ExceptionData* exceptionData);
-void nova_standard_star_Nova_Window_Nova_this(nova_standard_star_Nova_Window* this, nova_standard_exception_Nova_ExceptionData* exceptionData);
+void nova_standard_star_Nova_Window_2_Nova_this(nova_standard_star_Nova_Window* this, nova_standard_exception_Nova_ExceptionData* exceptionData);
 void nova_standard_star_Nova_Window_Nova_super(nova_standard_star_Nova_Window* this, nova_standard_exception_Nova_ExceptionData* exceptionData);
 
 #endif

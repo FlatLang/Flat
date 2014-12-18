@@ -7,6 +7,7 @@ import net.fathomsoft.nova.error.SyntaxErrorException;
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.tree.MethodList.SearchFilter;
 import net.fathomsoft.nova.tree.exceptionhandling.Throw;
+import net.fathomsoft.nova.tree.generics.GenericDeclaration;
 import net.fathomsoft.nova.tree.variables.Variable;
 import net.fathomsoft.nova.tree.variables.VariableDeclaration;
 import net.fathomsoft.nova.util.Bounds;
@@ -22,7 +23,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 10:04:31 PM
- * @version	v0.2.38 Dec 6, 2014 at 5:19:17 PM
+ * @version	v0.2.41 Dec 17, 2014 at 7:48:17 PM
  */
 public class MethodCall extends Variable
 {
@@ -484,7 +485,24 @@ public class MethodCall extends Variable
 	}
 	
 	@Override
-	public GenericCompatible getGenericDeclaration()
+	public GenericDeclaration getGenericDeclaration()
+	{
+		GenericCompatible gen = getGenericCompatible(false);
+		
+		if (gen == null || !(gen instanceof Value))
+		{
+			return null;
+		}
+		
+		return ((Value)gen).getGenericDeclaration();
+	}
+	
+	public GenericCompatible getGenericCompatible()
+	{
+		return getGenericCompatible(true);
+	}
+	
+	private GenericCompatible getGenericCompatible(boolean throwException)
 	{
 		Node last = getLastAncestorOfType(new Class[] { MethodCallArgumentList.class, Variable.class, Instantiation.class }, false);
 		
@@ -498,26 +516,19 @@ public class MethodCall extends Variable
 			}
 		}
 		
-//		if (!(this instanceof MethodCall))
+		Assignment assign = null;
+		
+		if (getParent() instanceof Instantiation && getParent().getParent() instanceof Assignment)
 		{
-			Assignment assign = null;
+			assign = (Assignment)getParent().getParent();
+		}
+		if (assign != null)
+		{
+			Value val = assign.getAssigneeNode();
 			
-//			if (getParent() instanceof Assignment)
-//			{
-//				assign = (Assignment)getParent();
-//			}
-			if (getParent() instanceof Instantiation && getParent().getParent() instanceof Assignment)
+			if (val instanceof Variable)
 			{
-				assign = (Assignment)getParent().getParent();
-			}
-			if (assign != null)
-			{
-				Value val = assign.getAssigneeNode();
-				
-				if (val instanceof Variable)
-				{
-					return ((Variable)val).getDeclaration();
-				}
+				return ((Variable)val).getDeclaration();
 			}
 		}
 		
@@ -529,11 +540,19 @@ public class MethodCall extends Variable
 			
 			if (decl != null)
 			{
+				if (decl instanceof Parameter && ((Parameter)decl).isObjectReference())
+				{
+					return decl.getTypeClass();
+				}
+				
 				return decl;
 			}
 		}
 		
-		SyntaxMessage.error("Unable to determine generic type declaration for method call '" + getName() + "'", this);
+		if (throwException)
+		{
+			SyntaxMessage.error("Unable to determine generic type declaration for method call '" + getName() + "'", this);
+		}
 		
 		return null;
 	}
@@ -542,11 +561,11 @@ public class MethodCall extends Variable
 	public String getGenericReturnType()
 	{
 		VariableDeclaration method  = getMethodDeclaration();
-		GenericCompatible   generic = getGenericDeclaration();
+		GenericCompatible   generic = getGenericCompatible();
 		
-		if (generic != null)
+		if (method.isGenericType())
 		{
-			return generic.getGenericParameterInstance(method.getType()).getGenericReturnType();
+			return generic.getGenericArgumentInstance(method.getType()).getGenericReturnType();
 		}
 		
 		return super.getGenericReturnType();
@@ -670,7 +689,7 @@ public class MethodCall extends Variable
 			
 			if (callableMethod == null)
 			{
-				temp = new VariableDeclaration(null, null);
+				temp = new VariableDeclaration(null, Location.INVALID);
 				temp.setName(data.name);
 				n.setDeclaration(temp);
 			}
@@ -1075,12 +1094,13 @@ public class MethodCall extends Variable
 				MethodCall calling   = (MethodCall)reference;
 				
 				Variable replacement = returned.getAncestorWithScope().getScope().registerLocalVariable(calling, false);
-				Node     replacing   = (Node)calling.getRootReferenceNode(true);
 				
 				if (replacement == null)
 				{
 					return result.errorOccurred();
 				}
+				
+				Node replacing = (Node)calling.getRootReferenceNode(true);
 				
 				replacing.getParent().replace(replacing, replacement);
 				

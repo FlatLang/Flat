@@ -1,5 +1,6 @@
 package net.fathomsoft.nova.tree;
 
+import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.error.SyntaxMessage;
@@ -14,7 +15,7 @@ import net.fathomsoft.nova.util.Stack;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:50:47 PM
- * @version	v0.2.39 Dec 7, 2014 at 3:17:17 AM
+ * @version	v0.2.41 Dec 17, 2014 at 7:48:17 PM
  */
 public class Constructor extends BodyMethodDeclaration
 {
@@ -143,15 +144,7 @@ public class Constructor extends BodyMethodDeclaration
 		
 		builder.append('\n');
 		
-		for (int i = 0; i < getNumChildren(); i++)
-		{
-			Node child = getChild(i);
-			
-			if (child != getParameterList())
-			{
-				child.generateCSource(builder);
-			}
-		}
+		getScope().generateCSource(builder);
 		
 		builder.append('\n');
 		

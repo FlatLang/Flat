@@ -4,7 +4,7 @@
 
 nova_VTable_nova_standard_io_Nova_Console nova_VTable_nova_standard_io_Nova_Console_val =
 {
-	nova_standard_Nova_Object_0_Nova_getHashCodeLong,
+	nova_standard_Nova_Object_1_Nova_getHashCodeLong,
 	nova_standard_Nova_Object_0_Nova_toString,
 	nova_standard_Nova_Object_0_Nova_equals,
 };
@@ -21,11 +21,11 @@ nova_standard_io_Nova_Console* nova_standard_io_Nova_Console_2_Nova_construct(no
 	CCLASS_NEW(nova_standard_io_Nova_Console, this,);
 	this->vtable = &nova_VTable_nova_standard_io_Nova_Console_val;
 	nova_standard_Nova_Object_Nova_super((nova_standard_Nova_Object*)this, exceptionData);
-	nova_standard_Nova_Object_Nova_this((nova_standard_Nova_Object*)(this), exceptionData);
+	nova_standard_Nova_Object_2_Nova_this((nova_standard_Nova_Object*)(this), exceptionData);
 	nova_standard_io_Nova_Console_Nova_super(this, exceptionData);
 	
 	{
-		nova_standard_io_Nova_Console_Nova_this(this, exceptionData);
+		nova_standard_io_Nova_Console_2_Nova_this(this, exceptionData);
 	}
 	
 	return this;
@@ -39,8 +39,6 @@ void nova_standard_io_Nova_Console_Nova_destroy(nova_standard_io_Nova_Console** 
 	}
 	
 	
-	{
-	}
 	NOVA_FREE(*this);
 }
 
@@ -204,11 +202,11 @@ void nova_standard_io_Nova_Console_Nova_waitForEnter(nova_standard_io_Nova_Conso
 	char* l1_Nova_c;
 	
 	nova_standard_io_Nova_Console_Nova_flush((nova_standard_io_Nova_Console*)nova_null, exceptionData);
-	l1_Nova_c = (char*)NOVA_MALLOC(sizeof(nova_standard_primitive_number_Nova_Char*[2]));
+	l1_Nova_c = (char*)NOVA_MALLOC(sizeof(nova_standard_primitive_number_Nova_Char) * 2);
 	fgets((char*)(l1_Nova_c), (int)(2), stdin);
 }
 
-void nova_standard_io_Nova_Console_Nova_this(nova_standard_io_Nova_Console* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
+void nova_standard_io_Nova_Console_2_Nova_this(nova_standard_io_Nova_Console* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
 }
 

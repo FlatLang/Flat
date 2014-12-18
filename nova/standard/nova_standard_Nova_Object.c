@@ -4,7 +4,7 @@
 
 nova_VTable_nova_standard_Nova_Object nova_VTable_nova_standard_Nova_Object_val =
 {
-	nova_standard_Nova_Object_0_Nova_getHashCodeLong,
+	nova_standard_Nova_Object_1_Nova_getHashCodeLong,
 	nova_standard_Nova_Object_0_Nova_toString,
 	nova_standard_Nova_Object_0_Nova_equals,
 };
@@ -21,7 +21,7 @@ nova_standard_Nova_Object* nova_standard_Nova_Object_2_Nova_construct(nova_stand
 	nova_standard_Nova_Object_Nova_super(this, exceptionData);
 	
 	{
-		nova_standard_Nova_Object_Nova_this(this, exceptionData);
+		nova_standard_Nova_Object_2_Nova_this(this, exceptionData);
 	}
 	
 	return this;
@@ -35,8 +35,6 @@ void nova_standard_Nova_Object_Nova_destroy(nova_standard_Nova_Object** this, no
 	}
 	
 	
-	{
-	}
 	NOVA_FREE(*this);
 }
 
@@ -45,7 +43,7 @@ nova_standard_Nova_String* nova_standard_Nova_Object_Nova_getHashCode(nova_stand
 	return nova_standard_Nova_String_1_Nova_construct(0, exceptionData, (char*)(hashCode(this)));
 }
 
-long nova_standard_Nova_Object_0_Nova_getHashCodeLong(nova_standard_Nova_Object* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
+long nova_standard_Nova_Object_1_Nova_getHashCodeLong(nova_standard_Nova_Object* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
 	return (long)strtol(hashCode(this), (int)(0), (int)(16));
 }
@@ -54,7 +52,7 @@ nova_standard_Nova_String* nova_standard_Nova_Object_0_Nova_toString(nova_standa
 {
 	nova_standard_Nova_String* nova_local_0;
 	
-	nova_local_0 = nova_standard_Nova_Object_Nova_getHashCode(this, exceptionData);
+	nova_local_0 = nova_standard_Nova_Object_Nova_getHashCode(this, exceptionData)->vtable->nova_standard_Nova_String_virtual0_Nova_concat(nova_standard_Nova_Object_Nova_getHashCode(this, exceptionData), exceptionData, nova_standard_Nova_String_1_Nova_construct(0, exceptionData, "]"));
 	return nova_standard_Nova_String_0_Nova_concat(nova_standard_Nova_String_1_Nova_construct(0, exceptionData, "[Object @"), exceptionData, nova_local_0->vtable->nova_standard_Nova_String_virtual0_Nova_concat(nova_local_0, exceptionData, nova_standard_Nova_String_1_Nova_construct(0, exceptionData, "]")));
 }
 
@@ -63,7 +61,7 @@ char nova_standard_Nova_Object_0_Nova_equals(nova_standard_Nova_Object* this, no
 	return this == l0_Nova_another;
 }
 
-void nova_standard_Nova_Object_Nova_this(nova_standard_Nova_Object* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
+void nova_standard_Nova_Object_2_Nova_this(nova_standard_Nova_Object* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
 }
 

@@ -1,17 +1,17 @@
 package net.fathomsoft.nova.tree.variables;
 
-import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.tree.Accessible;
 import net.fathomsoft.nova.tree.AccessorMethod;
 import net.fathomsoft.nova.tree.ClassDeclaration;
-import net.fathomsoft.nova.tree.GenericType;
 import net.fathomsoft.nova.tree.Identifier;
 import net.fathomsoft.nova.tree.MethodCall;
 import net.fathomsoft.nova.tree.Node;
 import net.fathomsoft.nova.tree.SyntaxTree;
+import net.fathomsoft.nova.tree.generics.GenericArgument;
+import net.fathomsoft.nova.tree.generics.GenericParameter;
 import net.fathomsoft.nova.util.Location;
 
 /**
@@ -21,7 +21,7 @@ import net.fathomsoft.nova.util.Location;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:02:42 PM
- * @version	v0.2.38 Dec 6, 2014 at 5:19:17 PM
+ * @version	v0.2.41 Dec 17, 2014 at 7:48:17 PM
  */
 public class Variable extends Identifier
 {
@@ -64,7 +64,7 @@ public class Variable extends Identifier
 			{
 				VariableDeclaration decl = ((Variable)ref).getDeclaration();
 				
-				GenericType type = decl.getGenericParameterInstance(getType(), this);
+				GenericArgument type = decl.getGenericArgumentInstance(getType(), this);
 				
 				if (type.isGenericType())
 				{
@@ -74,7 +74,7 @@ public class Variable extends Identifier
 				return type.getType();
 			}
 			
-			return getGenericType().getDefaultType();
+			return getGenericParameter().getDefaultType();
 		}
 		
 		return super.getGenericReturnType();
@@ -312,22 +312,22 @@ public class Variable extends Identifier
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.Value#getGenericType()
+	 * @see net.fathomsoft.nova.tree.Value#getGenericParameter()
 	 */
 	@Override
-	public GenericType getGenericType()
+	public GenericParameter getGenericParameter()
 	{
 		if (declaration == null)
 		{
 			return null;
 		}
 		
-		return declaration.getGenericType();
+		return declaration.getGenericParameter();
 	}
 	
 	public boolean doesUseGenericTypes()
 	{
-		return getDeclaration().getGenericParameterNames().length > 0;
+		return getDeclaration().getGenericDeclaration().getNumParameters() > 0;
 	}
 	
 	@Override
@@ -358,13 +358,14 @@ public class Variable extends Identifier
 			{
 				FieldDeclaration field    = (FieldDeclaration)getDeclaration();
 				AccessorMethod   accessor = field.getAccessorMethod();
-//				Nova.debuggingBreakpoint(field.getName().equals("exists"));
 				
 				if (accessor != null && !accessor.isDisabled())
 				{
 					MethodCall access = MethodCall.decodeStatement(getParent(), getName() + "()", getLocationIn(), true, false, accessor);
 					
 					getParent().replace(this, access);
+					
+					access.inheritChildren(this);
 					
 					result.returnedNode = access;
 					

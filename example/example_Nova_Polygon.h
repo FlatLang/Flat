@@ -29,7 +29,7 @@ typedef struct example_Nova_Polygon example_Nova_Polygon;
 
 typedef struct nova_VTable_example_Nova_Polygon
 {
-	long (*nova_standard_Nova_Object_virtual0_Nova_getHashCodeLong)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*);
+	long (*nova_standard_Nova_Object_virtual1_Nova_getHashCodeLong)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*);
 	nova_standard_Nova_String* (*nova_standard_Nova_Object_virtual0_Nova_toString)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*);
 	char (*nova_standard_Nova_Object_virtual0_Nova_equals)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*);
 	int (*example_Nova_Polygon_virtual0_Nova_numberSides)(example_Nova_Polygon*, nova_standard_exception_Nova_ExceptionData*);
@@ -48,7 +48,7 @@ CCLASS_CLASS
 void example_Nova_PolygonNova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData);
 example_Nova_Polygon* example_Nova_Polygon_2_Nova_construct(example_Nova_Polygon* this, nova_standard_exception_Nova_ExceptionData* exceptionData);
 void example_Nova_Polygon_Nova_destroy(example_Nova_Polygon** this, nova_standard_exception_Nova_ExceptionData* exceptionData);
-int example_Nova_Polygon_0_Nova_numberSides(example_Nova_Polygon* this, nova_standard_exception_Nova_ExceptionData* exceptionData);double example_Nova_Polygon_0_Nova_calculateArea(example_Nova_Polygon* this, nova_standard_exception_Nova_ExceptionData* exceptionData);void example_Nova_Polygon_Nova_this(example_Nova_Polygon* this, nova_standard_exception_Nova_ExceptionData* exceptionData);
+int example_Nova_Polygon_0_Nova_numberSides(example_Nova_Polygon* this, nova_standard_exception_Nova_ExceptionData* exceptionData);double example_Nova_Polygon_0_Nova_calculateArea(example_Nova_Polygon* this, nova_standard_exception_Nova_ExceptionData* exceptionData);void example_Nova_Polygon_2_Nova_this(example_Nova_Polygon* this, nova_standard_exception_Nova_ExceptionData* exceptionData);
 void example_Nova_Polygon_Nova_super(example_Nova_Polygon* this, nova_standard_exception_Nova_ExceptionData* exceptionData);
 
 #endif

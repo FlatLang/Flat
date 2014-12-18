@@ -10,6 +10,16 @@ public class ArrayList<E>
 	
 	E[] data
 	
+	visible Bool empty
+	{
+		get
+		{
+			return size <= 0
+		}
+		
+		no set
+	}
+	
 	public construct()
 	{
 		this(10)
@@ -32,7 +42,12 @@ public class ArrayList<E>
 	
 	public add(Int index, E element)
 	{
-		add(element)
+		if (index >= bufferSize)
+		{
+			increaseSize(index + 1)
+		}
+		
+		add(null)
 		
 		shiftRight(index, size)
 		

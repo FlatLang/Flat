@@ -4,7 +4,7 @@
 
 nova_VTable_nova_standard_svg_Nova_SVGCircle nova_VTable_nova_standard_svg_Nova_SVGCircle_val =
 {
-	nova_standard_Nova_Object_0_Nova_getHashCodeLong,
+	nova_standard_Nova_Object_1_Nova_getHashCodeLong,
 	nova_standard_svg_Nova_SVGCircle_0_Nova_toString,
 	nova_standard_Nova_Object_0_Nova_equals,
 	nova_standard_svg_Nova_SVGCircle_0_Nova_generateOutput,
@@ -21,9 +21,9 @@ nova_standard_svg_Nova_SVGCircle* nova_standard_svg_Nova_SVGCircle_Nova_construc
 	this->vtable = &nova_VTable_nova_standard_svg_Nova_SVGCircle_val;
 	nova_standard_Nova_Object_Nova_super((nova_standard_Nova_Object*)this, exceptionData);
 	nova_standard_svg_Nova_SVGComponent_Nova_super((nova_standard_svg_Nova_SVGComponent*)this, exceptionData);
-	nova_standard_Nova_Object_Nova_this((nova_standard_Nova_Object*)(this), exceptionData);
-	nova_standard_svg_Nova_SVGComponent_Nova_this((nova_standard_svg_Nova_SVGComponent*)(this), exceptionData);
-	nova_standard_svg_Nova_SVGCircle_Nova_super(this, exceptionData);
+	nova_standard_Nova_Object_2_Nova_this((nova_standard_Nova_Object*)(this), exceptionData);
+	nova_standard_svg_Nova_SVGComponent_2_Nova_this((nova_standard_svg_Nova_SVGComponent*)(this), exceptionData);
+	nova_standard_svg_Nova_SVGCircle_2_Nova_super(this, exceptionData);
 	
 	{
 		nova_standard_svg_Nova_SVGCircle_Nova_this(this, exceptionData, l0_Nova_x, l0_Nova_y, l0_Nova_r);
@@ -43,8 +43,6 @@ void nova_standard_svg_Nova_SVGCircle_Nova_destroy(nova_standard_svg_Nova_SVGCir
 	
 	
 	
-	{
-	}
 	NOVA_FREE(*this);
 }
 
@@ -79,7 +77,7 @@ nova_standard_Nova_String* nova_standard_svg_Nova_SVGCircle_0_Nova_toString(nova
 	return nova_standard_Nova_String_0_Nova_concat(nova_standard_Nova_String_1_Nova_construct(0, exceptionData, "[Circle at ("), exceptionData, nova_local_0->vtable->nova_standard_Nova_String_virtual0_Nova_concat(nova_local_0, exceptionData, nova_standard_Nova_String_0_Nova_concat(nova_standard_Nova_String_1_Nova_construct(0, exceptionData, ", "), exceptionData, nova_local_1->vtable->nova_standard_Nova_String_virtual0_Nova_concat(nova_local_1, exceptionData, nova_standard_Nova_String_0_Nova_concat(nova_standard_Nova_String_1_Nova_construct(0, exceptionData, ") with a radius of "), exceptionData, nova_local_2->vtable->nova_standard_Nova_String_virtual0_Nova_concat(nova_local_2, exceptionData, nova_standard_Nova_String_1_Nova_construct(0, exceptionData, "]")))))));
 }
 
-void nova_standard_svg_Nova_SVGCircle_Nova_super(nova_standard_svg_Nova_SVGCircle* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
+void nova_standard_svg_Nova_SVGCircle_2_Nova_super(nova_standard_svg_Nova_SVGCircle* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
 	this->nova_standard_svg_Nova_SVGCircle_Nova_x = 0;
 	this->nova_standard_svg_Nova_SVGCircle_Nova_y = 0;

@@ -1,8 +1,6 @@
 #ifndef NATIVE_CONSOLE
 #define NATIVE_CONSOLE
 
-#include <unistd.h>
-
 #ifdef _WIN32
 	#include <windows.h>
 #else

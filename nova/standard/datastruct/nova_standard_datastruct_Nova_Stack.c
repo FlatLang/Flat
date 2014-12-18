@@ -4,7 +4,7 @@
 
 nova_VTable_nova_standard_datastruct_Nova_Stack nova_VTable_nova_standard_datastruct_Nova_Stack_val =
 {
-	nova_standard_Nova_Object_0_Nova_getHashCodeLong,
+	nova_standard_Nova_Object_1_Nova_getHashCodeLong,
 	nova_standard_Nova_Object_0_Nova_toString,
 	nova_standard_Nova_Object_0_Nova_equals,
 };
@@ -24,11 +24,11 @@ nova_standard_datastruct_Nova_Stack* nova_standard_datastruct_Nova_Stack_2_Nova_
 	CCLASS_NEW(nova_standard_datastruct_Nova_Stack, this);
 	this->vtable = &nova_VTable_nova_standard_datastruct_Nova_Stack_val;
 	nova_standard_Nova_Object_Nova_super((nova_standard_Nova_Object*)this, exceptionData);
-	nova_standard_Nova_Object_Nova_this((nova_standard_Nova_Object*)(this), exceptionData);
+	nova_standard_Nova_Object_2_Nova_this((nova_standard_Nova_Object*)(this), exceptionData);
 	nova_standard_datastruct_Nova_Stack_Nova_super(this, exceptionData);
 	
 	{
-		nova_standard_datastruct_Nova_Stack_Nova_this(this, exceptionData);
+		nova_standard_datastruct_Nova_Stack_2_Nova_this(this, exceptionData);
 	}
 	
 	return this;
@@ -45,8 +45,6 @@ void nova_standard_datastruct_Nova_Stack_Nova_destroy(nova_standard_datastruct_N
 	NOVA_FREE((*this)->prv);
 	
 	
-	{
-	}
 	NOVA_FREE(*this);
 }
 
@@ -68,10 +66,10 @@ nova_standard_Nova_Object* nova_standard_datastruct_Nova_Stack_Nova_pop(nova_sta
 	{
 		THROW(4, nova_standard_datastruct_Nova_EmptyStackException_0_Nova_construct(0, exceptionData));
 	}
-	l1_Nova_data = this->prv->nova_standard_datastruct_Nova_Stack_Nova_top->nova_standard_datastruct_Nova_ListNode_Nova_data;
+	l1_Nova_data = (nova_standard_Nova_Object*)(this->prv->nova_standard_datastruct_Nova_Stack_Nova_top->nova_standard_datastruct_Nova_ListNode_Nova_data);
 	this->prv->nova_standard_datastruct_Nova_Stack_Nova_top = this->prv->nova_standard_datastruct_Nova_Stack_Nova_top->nova_standard_datastruct_Nova_ListNode_Nova_next;
 	this->nova_standard_datastruct_Nova_Stack_Nova_size--;
-	return l1_Nova_data;
+	return (nova_standard_Nova_Object*)l1_Nova_data;
 }
 
 char nova_standard_datastruct_Nova_Stack_Nova_isEmpty(nova_standard_datastruct_Nova_Stack* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
@@ -79,7 +77,7 @@ char nova_standard_datastruct_Nova_Stack_Nova_isEmpty(nova_standard_datastruct_N
 	return (char)this->nova_standard_datastruct_Nova_Stack_Nova_size <= 0;
 }
 
-void nova_standard_datastruct_Nova_Stack_Nova_this(nova_standard_datastruct_Nova_Stack* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
+void nova_standard_datastruct_Nova_Stack_2_Nova_this(nova_standard_datastruct_Nova_Stack* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
 }
 

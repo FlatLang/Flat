@@ -8,6 +8,7 @@ import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.error.UnimplementedOperationException;
 import net.fathomsoft.nova.tree.MethodList.SearchFilter;
+import net.fathomsoft.nova.tree.generics.GenericDeclaration;
 import net.fathomsoft.nova.util.Bounds;
 import net.fathomsoft.nova.util.Location;
 import net.fathomsoft.nova.util.Patterns;
@@ -22,7 +23,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.2.21 Jul 30, 2014 at 1:45:00 PM
- * @version	v0.2.38 Dec 6, 2014 at 5:19:17 PM
+ * @version	v0.2.41 Dec 17, 2014 at 7:48:17 PM
  */
 public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAncestor
 {
@@ -105,6 +106,7 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 	 */
 	public void setOverloadID(int id)
 	{
+		Nova.debuggingBreakpoint(getFileDeclaration().getName().equals("Exception"));
 		this.overloadID = id;
 	}
 	
@@ -259,12 +261,12 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 							SyntaxMessage.error("Duplicate method '" + getName() + "'", this);
 						}
 						
-						list.add(method);
+//						list.add(method);
 					}
-					else if (method.isVirtual())
-					{
+//					else if (method.isVirtual())
+//					{
 						list.add(method);
-					}
+//					}
 				}
 				else if (max < method.overloadID)
 				{
@@ -300,17 +302,12 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 	public StringBuilder generateCSourceNativeName(StringBuilder builder, boolean declaration)
 	{
 		super.generateCSourceNativeName(builder, declaration);
-		
+		Nova.debuggingBreakpoint(!declaration && getFileDeclaration().getName().equals("Exception"));
 		if (!declaration && isOverloaded())
 		{
-			if (getParameterList().getNumParameters() > 0)
+			for (Parameter param : getParameterList())
 			{
 				builder.append('_');
-			}
-			
-			for (int i = 0; i < getParameterList().getNumParameters(); i++)
-			{
-				Parameter param = getParameter(i);
 				
 				String location = null;
 				
@@ -340,11 +337,6 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 				}
 				
 				builder.append(location);
-				
-				if (i < getParameterList().getNumVisibleChildren() - 1)
-				{
-					builder.append('_');
-				}
 			}
 		}
 		
@@ -439,7 +431,14 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 		
 		builder.append('(');
 		getParameterList().generateNovaInput(builder, true);
-		builder.append(')').append('\n');
+		builder.append(')');
+		
+		if (getType() != null)
+		{
+			builder.append(" -> ").append(getType());
+		}
+		
+		builder.append('\n');
 		
 		if (outputChildren)
 		{
@@ -580,7 +579,7 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 		String signature = findMethodSignature(statement);
 		MethodData data  = new MethodData(signature);
 		
-		searchGenericParameters(signature, data);
+		GenericDeclaration.searchGenericTypes(signature, data);
 		
 		iterateWords(signature, Patterns.IDENTIFIER_BOUNDARIES, data, require);
 		
@@ -785,6 +784,9 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 	public NovaMethodDeclaration cloneTo(NovaMethodDeclaration node)
 	{
 		super.cloneTo(node);
+		
+		node.overloadID = overloadID;
+		node.uniqueID   = uniqueID;
 		
 		for (NovaMethodDeclaration child : overridingMethods)
 		{

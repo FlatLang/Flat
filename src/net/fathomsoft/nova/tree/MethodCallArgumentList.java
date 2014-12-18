@@ -16,7 +16,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.2.14 Jun 19, 2014 at 12:14:53 PM
- * @version	v0.2.38 Dec 6, 2014 at 5:19:17 PM
+ * @version	v0.2.41 Dec 17, 2014 at 7:48:17 PM
  */
 public class MethodCallArgumentList extends ArgumentList
 {
@@ -225,11 +225,11 @@ public class MethodCallArgumentList extends ArgumentList
 		}
 		if (value1.isGenericType())
 		{
-			type1 = value1.getGenericType().getDefaultType();
+			type1 = value1.getGenericParameter().getDefaultType();
 		}
 		if (value2.isGenericType())
 		{
-			type2 = value2.getGenericType().getDefaultType();
+			type2 = value2.getGenericParameter().getDefaultType();
 		}
 		
 		return type1.equals(type2);

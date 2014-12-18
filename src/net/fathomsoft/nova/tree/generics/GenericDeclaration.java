@@ -1,22 +1,26 @@
 package net.fathomsoft.nova.tree.generics;
 
+import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.TestContext;
+import net.fathomsoft.nova.tree.GenericCompatible;
 import net.fathomsoft.nova.tree.Node;
+import net.fathomsoft.nova.tree.TypeList;
+import net.fathomsoft.nova.tree.variables.VariableDeclaration.DeclarationData;
+import net.fathomsoft.nova.util.Bounds;
 import net.fathomsoft.nova.util.Location;
+import net.fathomsoft.nova.util.StringUtils;
 
 /**
- * {@link Node} extension that represents a generic type declaration.
+ * {@link TypeList} extension that represents a generic type declaration.
  * Contains the information of a generic type declaration.
  * Contains all of the generic type parameter names.
  * 
  * @author	Braden Steffaniak
  * @since	v0.2.40 Dec 7, 2014 at 4:05:23 PM
- * @version	v0.2.40 Dec 7, 2014 at 4:23:17 PM
+ * @version	v0.2.41 Dec 17, 2014 at 7:48:17 PM
  */
-public class GenericDeclaration extends Node
+public class GenericDeclaration extends TypeList<GenericParameter>
 {
-	private String[] names;
-	
 	/**
 	 * @see net.fathomsoft.nova.tree.Node#Node(Node, Location)
 	 */
@@ -25,14 +29,138 @@ public class GenericDeclaration extends Node
 		super(temporaryParent, locationIn);
 	}
 	
-	public String[] getNames()
+	public int getNumParameters()
 	{
-		return names;
+		return getNumVisibleChildren();
 	}
 	
-	public void setNames(String[] names)
+	public boolean containsParameter(String parameterName)
 	{
-		this.names = names;
+		return getParameterIndex(parameterName) >= 0;
+	}
+	
+	public GenericParameter getParameter(int index)
+	{
+		return getVisibleChild(index);
+	}
+	
+	public GenericParameter getParameter(String parameterName)
+	{
+		int index = getParameterIndex(parameterName);
+		
+		if (index < 0)
+		{
+			return null;
+		}
+		
+		return getParameter(index);
+	}
+	
+	public int getParameterIndex(String parameterName)
+	{
+		for (int i = 0; i < getNumParameters(); i++)
+		{
+			GenericParameter param = getParameter(i);
+			Nova.debuggingBreakpoint(param == null);
+			getParameter(i);
+			
+			if (param.getName().equals(parameterName))
+			{
+				return i;
+			}
+		}
+		
+		return -1;
+	}
+	
+	public void decodeGenericParameters(String statement, Bounds genericBounds)
+	{
+		decodeGenericParameters(statement, genericBounds, true);
+	}
+	
+	public void decodeGenericParameters(String statement, Bounds genericBounds, boolean endingsIncluded)
+	{
+		Bounds clone = genericBounds.clone();
+		
+		if (endingsIncluded)
+		{
+			clone.setStart(genericBounds.getStart() + GenericCompatible.GENERIC_START.length());
+			clone.setEnd(genericBounds.getEnd() - GenericCompatible.GENERIC_END.length());
+		}
+		
+		String params = clone.extractString(statement);
+		
+		decodeGenericParameters(params);
+	}
+	
+	private void addGenericParameterName(String parameterName)
+	{
+		GenericParameter type = new GenericParameter((Node)this, Location.INVALID);
+		type.setName(parameterName);
+
+		DeclarationData data = new DeclarationData();
+		
+		searchGenericTypes(parameterName, data);
+		type.iterateWords(parameterName, data, true);
+		
+		if (data.containsSkipBounds())
+		{
+			type.setName(data.getSkipBounds(0).trimString(parameterName));
+		}
+		
+		addChild(type);
+	}
+	
+	public void decodeGenericParameters(String params)
+	{
+		String paramsList[] = StringUtils.splitCommas(params);
+		
+		for (String param : paramsList)
+		{
+			addGenericParameterName(param);
+		}
+	}
+	
+	public void searchGenericParameters(String statement, DeclarationData data)
+	{
+		int    index  = 0;
+		Bounds bounds = null;
+		
+		do
+		{
+			bounds = StringUtils.findContentBoundsWithin(statement, GenericCompatible.GENERIC_START, GenericCompatible.GENERIC_END, index);
+			
+			if (bounds.isValid())
+			{
+				index = bounds.getEnd();
+				
+				data.addSkipBounds(bounds);
+			}
+		}
+		while (bounds.isValid());
+		
+		data.setGenericsRemaining(data.getNumSkipBounds());
+	}
+	
+	public static void searchGenericTypes(String statement, DeclarationData data)
+	{
+		int    index  = 0;
+		Bounds bounds = null;
+		
+		do
+		{
+			bounds = StringUtils.findContentBoundsWithin(statement, GenericCompatible.GENERIC_START, GenericCompatible.GENERIC_END, index);
+			
+			if (bounds.isValid())
+			{
+				index = bounds.getEnd();
+				
+				data.addSkipBounds(bounds);
+			}
+		}
+		while (bounds.isValid());
+		
+		data.setGenericsRemaining(data.getNumSkipBounds());
 	}
 	
 	/**

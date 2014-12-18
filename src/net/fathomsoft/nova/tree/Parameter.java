@@ -1,6 +1,8 @@
 package net.fathomsoft.nova.tree;
 
+import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.TestContext;
+import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.tree.variables.VariableDeclaration;
 import net.fathomsoft.nova.util.Location;
@@ -12,7 +14,7 @@ import net.fathomsoft.nova.util.Location;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:52:01 PM
- * @version	v0.2.38 Dec 6, 2014 at 5:19:17 PM
+ * @version	v0.2.41 Dec 17, 2014 at 7:48:17 PM
  */
 public class Parameter extends LocalDeclaration
 {
@@ -160,6 +162,44 @@ public class Parameter extends LocalDeclaration
 		node.cloneTo(n);
 		
 		return n;
+	}
+	
+	/**
+	 * @see net.fathomsoft.nova.tree.variables.VariableDeclaration#validate(int)
+	 */
+	@Override
+	public ValidationResult validate(int phase)
+	{
+		ValidationResult result = super.validate(phase);
+		
+		if (result.skipValidation())
+		{
+			return result;
+		}
+		
+		if (phase == SyntaxTree.PHASE_INSTANCE_DECLARATIONS)
+		{
+//			if (getParentMethod() != null)
+//			{
+//				int index = ((NovaParameterList)getAncestorOfType(NovaParameterList.class)).getVisibleParameterIndex(getName());
+//				
+//				NovaMethodDeclaration current = getParentMethod().getOverriddenMethod(); 
+//				
+//				while (current != null)
+//				{
+//					if (current.getParameter(index).isGenericType())
+//					{
+//						setPrimitiveWrapperType();
+//						
+//						break;
+//					}
+//					
+//					current = current.getOverriddenMethod();
+//				}
+//			}
+		}
+		
+		return result;
 	}
 	
 	/**

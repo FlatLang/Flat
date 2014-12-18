@@ -12,7 +12,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 10:34:30 PM
- * @version	v0.2.38 Dec 6, 2014 at 5:19:17 PM
+ * @version	v0.2.41 Dec 17, 2014 at 7:48:17 PM
  */
 public class Literal extends IValue
 {
@@ -39,7 +39,7 @@ public class Literal extends IValue
 	{
 		if (isGenericType())
 		{
-			return getGenericType().getDefaultType();
+			return getGenericParameter().getDefaultType();
 		}
 		
 		return getType();

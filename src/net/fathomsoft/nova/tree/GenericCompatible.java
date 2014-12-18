@@ -4,6 +4,9 @@ import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.error.SyntaxErrorException;
 import net.fathomsoft.nova.error.SyntaxMessage;
+import net.fathomsoft.nova.tree.generics.GenericArgument;
+import net.fathomsoft.nova.tree.generics.GenericDeclaration;
+import net.fathomsoft.nova.tree.generics.GenericImplementation;
 import net.fathomsoft.nova.tree.variables.VariableDeclaration;
 import net.fathomsoft.nova.tree.variables.VariableDeclaration.DeclarationData;
 import net.fathomsoft.nova.util.Bounds;
@@ -15,7 +18,7 @@ import net.fathomsoft.nova.util.StringUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.2.29 Aug 28, 2014 at 11:51:16 PM
- * @version	v0.2.38 Dec 6, 2014 at 5:19:17 PM
+ * @version	v0.2.41 Dec 17, 2014 at 7:48:17 PM
  */
 public interface GenericCompatible
 {
@@ -36,20 +39,25 @@ public interface GenericCompatible
 	 * 
 	 * @return A String array containing the names of the generic parameters.
 	 */
-	public GenericType[] getGenericParameterNames();
+	public GenericImplementation getGenericImplementation();
 	
-	public void setGenericTypes(GenericType types[]);
+	public default int getNumGenericArguments()
+	{
+		return getGenericImplementation().getNumVisibleChildren();
+	}
 	
-	public default int getGenericParameterIndex(String parameterName)
+	public default int getGenericArgumentIndex(String parameterName)
 	{
 		if (parameterName == null)
 		{
 			return -1;
 		}
 		
-		for (int i = 0; i < getGenericParameterNames().length; i++)
+		GenericImplementation implementation = getGenericImplementation();
+		
+		for (int i = 0; i < getNumGenericArguments(); i++)
 		{
-			GenericType type = getGenericParameterNames()[i];
+			IValue type = implementation.getVisibleChild(i);
 			
 			if (type.getType().equals(parameterName))
 			{
@@ -60,41 +68,46 @@ public interface GenericCompatible
 		return -1;
 	}
 	
-	public default boolean containsGenericParameter(String parameterName)
+	public default boolean containsGenericArgument(String parameterName)
 	{
-		return getGenericParameter(parameterName) != null;
+		return getGenericArgument(parameterName) != null;
 	}
 	
-	public default GenericType getGenericParameter(String parameterName)
+	public default GenericArgument getGenericArgument(String parameterName)
 	{
-		int index = getGenericParameterIndex(parameterName);
+		int index = getGenericArgumentIndex(parameterName);
 		
 		if (index < 0)
 		{
 			return null;
 		}
 		
-		return getGenericParameter(index);
+		return getGenericArgument(index);
 	}
 	
-	public default GenericType getGenericParameter(int index)
+	public default GenericArgument getGenericArgument(int index)
 	{
-		return getGenericParameter(index, (Node)this);
+		return getGenericArgument(index, (Node)this);
 	}
 	
-	public default GenericType getGenericParameter(int index, Node value)
+	public default GenericArgument getGenericArgument(int index, Node value)
 	{
-		if (index < 0 || index >= getGenericParameterNames().length)
+		if (index < 0 || index >= getNumGenericArguments())
 		{
 			SyntaxMessage.error("Missing generic type declaration", value);
 		}
 		
-		return getGenericParameterNames()[index];
+		return getGenericImplementation().getVisibleChild(index);
 	}
 	
-	public default String getGenericParameterType(String parameterName)
+	public default String getGenericArgumentType(String parameterName)
 	{
-		GenericType type = getGenericParameterInstance(parameterName);
+		return getGenericArgumentType(parameterName, (Value)this);
+	}
+	
+	public default String getGenericArgumentType(String parameterName, Value value)
+	{
+		GenericArgument type = getGenericArgumentInstance(parameterName, value);
 		
 		if (type.isGenericType())
 		{
@@ -104,30 +117,39 @@ public interface GenericCompatible
 		return type.getType();
 	}
 	
-	public default GenericType getGenericParameterInstance(String parameterName)
+	public default GenericArgument getGenericArgumentInstance(String parameterName)
 	{
-		return getGenericParameterInstance(parameterName, (Node)this);
+		return getGenericArgumentInstance(parameterName, (Node)this);
 	}
 	
-	public default GenericType getGenericParameterInstance(String parameterName, Node value)
+	public default GenericArgument getGenericArgumentInstance(String parameterName, Node value)
 	{
 		VariableDeclaration decl  = (VariableDeclaration)this;
-		ClassDeclaration    clazz = decl.getTypeClass();
+		ClassDeclaration    clazz = null;
+		
+		if (!decl.isGenericType())
+		{
+			clazz = decl.getTypeClass();
+		}
+		else
+		{
+			clazz = decl.getDeclaringClass();
+		}
 		
 		int index = clazz.getGenericParameterIndex(parameterName);
 		
-		return getGenericParameter(index, value);
+		return getGenericArgument(index, value);
 	}
 	
-	public default GenericType getGenericParameterDeclaration(String parameterName)
+	public default GenericArgument getGenericArgumentDeclaration(String parameterName)
 	{
 		VariableDeclaration decl = (VariableDeclaration)this;
 		
-		int index = decl.getGenericParameterIndex(parameterName);
+		int index = decl.getGenericArgumentIndex(parameterName);
 		
 		ClassDeclaration clazz = decl.getTypeClass();
 		
-		return clazz.getGenericParameter(index);
+		return clazz.getGenericArgument(index);
 	}
 	
 	/**
@@ -137,13 +159,14 @@ public interface GenericCompatible
 	 * 
 	 * @param parameterName The name of the generic parameter to add.
 	 */
-	public default void addGenericParameterNames(String parameterName)
+	public default void addGenericArgumentName(String parameterName)
 	{
-		GenericType type = new GenericType((Node)this, Location.INVALID, parameterName);
+		GenericArgument type = new GenericArgument((Node)this, Location.INVALID);
+		type.setType(parameterName, true, false, false);
 
 		DeclarationData data = new DeclarationData();
 		
-		type.searchGenericParameters(parameterName, data);
+		GenericDeclaration.searchGenericTypes(parameterName, data);
 		type.iterateWords(parameterName, data, true);
 		
 		if (data.containsSkipBounds())
@@ -151,15 +174,15 @@ public interface GenericCompatible
 			type.setType(data.getSkipBounds(0).trimString(parameterName), true, false);
 		}
 		
-		setGenericTypes(StringUtils.appendElement(getGenericParameterNames(), new GenericType[getGenericParameterNames().length + 1], type));
+		getGenericImplementation().addChild(type);
 	}
 
-	public default void decodeGenericParameters(String statement, Bounds genericBounds)
+	public default void decodeGenericArguments(String statement, Bounds genericBounds)
 	{
-		decodeGenericParameters(statement, genericBounds, true);
+		decodeGenericArguments(statement, genericBounds, true);
 	}
 	
-	public default void decodeGenericParameters(String statement, Bounds genericBounds, boolean endingsIncluded)
+	public default void decodeGenericArguments(String statement, Bounds genericBounds, boolean endingsIncluded)
 	{
 		Bounds clone = genericBounds.clone();
 		
@@ -171,51 +194,17 @@ public interface GenericCompatible
 		
 		String params = clone.extractString(statement);
 		
-		decodeGenericParameters(params);
+		decodeGenericArguments(params);
 	}
 	
-	public default void decodeGenericParameters(String params)
+	public default void decodeGenericArguments(String params)
 	{
 		String paramsList[] = StringUtils.splitCommas(params);
 		
 		for (String param : paramsList)
 		{
-			addGenericParameterNames(param);
+			addGenericArgumentName(param);
 		}
-	}
-	
-	public default void searchGenericParameters(String statement, DeclarationData data)
-	{
-		int    index  = 0;
-		Bounds bounds = null;
-		
-		do
-		{
-			bounds = StringUtils.findContentBoundsWithin(statement, GENERIC_START, GENERIC_END, index);
-			
-			if (bounds.isValid())
-			{
-				index = bounds.getEnd();
-				
-				data.addSkipBounds(bounds);
-			}
-		}
-		while (bounds.isValid());
-		
-		data.setGenericsRemaining(data.getNumSkipBounds());
-	}
-	
-	public default GenericType[] cloneGenericTypes(Node parent)
-	{
-		GenericType genericTypes[] = getGenericParameterNames();
-		GenericType types[] = new GenericType[genericTypes.length];
-		
-		for (int i = 0; i < genericTypes.length; i++)
-		{
-			types[i] = (GenericType)genericTypes[i].clone(parent, Location.INVALID);
-		}
-		
-		return types;
 	}
 	
 	/**

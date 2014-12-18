@@ -4,7 +4,7 @@
 
 nova_VTable_nova_standard_time_Nova_Date nova_VTable_nova_standard_time_Nova_Date_val =
 {
-	nova_standard_Nova_Object_0_Nova_getHashCodeLong,
+	nova_standard_Nova_Object_1_Nova_getHashCodeLong,
 	nova_standard_Nova_Object_0_Nova_toString,
 	nova_standard_Nova_Object_0_Nova_equals,
 };
@@ -19,11 +19,11 @@ nova_standard_time_Nova_Date* nova_standard_time_Nova_Date_2_Nova_construct(nova
 	CCLASS_NEW(nova_standard_time_Nova_Date, this,);
 	this->vtable = &nova_VTable_nova_standard_time_Nova_Date_val;
 	nova_standard_Nova_Object_Nova_super((nova_standard_Nova_Object*)this, exceptionData);
-	nova_standard_Nova_Object_Nova_this((nova_standard_Nova_Object*)(this), exceptionData);
+	nova_standard_Nova_Object_2_Nova_this((nova_standard_Nova_Object*)(this), exceptionData);
 	nova_standard_time_Nova_Date_Nova_super(this, exceptionData);
 	
 	{
-		nova_standard_time_Nova_Date_Nova_this(this, exceptionData);
+		nova_standard_time_Nova_Date_2_Nova_this(this, exceptionData);
 	}
 	
 	return this;
@@ -43,12 +43,10 @@ void nova_standard_time_Nova_Date_Nova_destroy(nova_standard_time_Nova_Date** th
 	
 	
 	
-	{
-	}
 	NOVA_FREE(*this);
 }
 
-void nova_standard_time_Nova_Date_Nova_this(nova_standard_time_Nova_Date* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
+void nova_standard_time_Nova_Date_2_Nova_this(nova_standard_time_Nova_Date* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
 	nova_standard_time_Nova_Date_Nova_updateTime(this, exceptionData);
 }

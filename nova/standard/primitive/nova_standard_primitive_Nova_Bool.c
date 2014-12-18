@@ -4,7 +4,7 @@
 
 nova_VTable_nova_standard_primitive_Nova_Bool nova_VTable_nova_standard_primitive_Nova_Bool_val =
 {
-	nova_standard_Nova_Object_0_Nova_getHashCodeLong,
+	nova_standard_Nova_Object_1_Nova_getHashCodeLong,
 	nova_standard_primitive_Nova_Bool_2_Nova_toString,
 	nova_standard_Nova_Object_0_Nova_equals,
 };
@@ -20,12 +20,12 @@ nova_standard_primitive_Nova_Bool* nova_standard_primitive_Nova_Bool_3_Nova_cons
 	this->vtable = &nova_VTable_nova_standard_primitive_Nova_Bool_val;
 	nova_standard_Nova_Object_Nova_super((nova_standard_Nova_Object*)this, exceptionData);
 	nova_standard_primitive_Nova_Primitive_Nova_super((nova_standard_primitive_Nova_Primitive*)this, exceptionData);
-	nova_standard_Nova_Object_Nova_this((nova_standard_Nova_Object*)(this), exceptionData);
-	nova_standard_primitive_Nova_Primitive_Nova_this((nova_standard_primitive_Nova_Primitive*)(this), exceptionData);
-	nova_standard_primitive_Nova_Bool_Nova_super(this, exceptionData);
+	nova_standard_Nova_Object_2_Nova_this((nova_standard_Nova_Object*)(this), exceptionData);
+	nova_standard_primitive_Nova_Primitive_4_Nova_this((nova_standard_primitive_Nova_Primitive*)(this), exceptionData);
+	nova_standard_primitive_Nova_Bool_2_Nova_super(this, exceptionData);
 	
 	{
-		nova_standard_primitive_Nova_Bool_Nova_this(this, exceptionData, l0_Nova_value);
+		nova_standard_primitive_Nova_Bool_3_Nova_this(this, exceptionData, l0_Nova_value);
 	}
 	
 	return this;
@@ -40,12 +40,10 @@ void nova_standard_primitive_Nova_Bool_Nova_destroy(nova_standard_primitive_Nova
 	
 	
 	
-	{
-	}
 	NOVA_FREE(*this);
 }
 
-void nova_standard_primitive_Nova_Bool_Nova_this(nova_standard_primitive_Nova_Bool* this, nova_standard_exception_Nova_ExceptionData* exceptionData, char l0_Nova_value)
+void nova_standard_primitive_Nova_Bool_3_Nova_this(nova_standard_primitive_Nova_Bool* this, nova_standard_exception_Nova_ExceptionData* exceptionData, char l0_Nova_value)
 {
 	this->nova_standard_primitive_Nova_Bool_Nova_value = l0_Nova_value;
 }
@@ -64,7 +62,7 @@ nova_standard_Nova_String* nova_standard_primitive_Nova_Bool_2_Nova_toString(nov
 	return nova_standard_primitive_Nova_Bool_1_Nova_toString(this, exceptionData, this->nova_standard_primitive_Nova_Bool_Nova_value);
 }
 
-void nova_standard_primitive_Nova_Bool_Nova_super(nova_standard_primitive_Nova_Bool* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
+void nova_standard_primitive_Nova_Bool_2_Nova_super(nova_standard_primitive_Nova_Bool* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
 	this->nova_standard_primitive_Nova_Bool_Nova_value = 0;
 }

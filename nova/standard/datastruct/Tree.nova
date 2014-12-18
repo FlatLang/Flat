@@ -8,4 +8,14 @@ public class Tree
 	{
 		return root.preorder()
 	}
+	
+	public inorder() -> String
+	{
+		return root.inorder()
+	}
+	
+	public postorder() -> String
+	{
+		return root.postorder()
+	}
 }

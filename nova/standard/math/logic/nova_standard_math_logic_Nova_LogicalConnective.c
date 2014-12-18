@@ -4,7 +4,7 @@
 
 nova_VTable_nova_standard_math_logic_Nova_LogicalConnective nova_VTable_nova_standard_math_logic_Nova_LogicalConnective_val =
 {
-	nova_standard_Nova_Object_0_Nova_getHashCodeLong,
+	nova_standard_Nova_Object_1_Nova_getHashCodeLong,
 	nova_standard_Nova_Object_0_Nova_toString,
 	nova_standard_Nova_Object_0_Nova_equals,
 };
@@ -20,9 +20,9 @@ nova_standard_math_logic_Nova_LogicalConnective* nova_standard_math_logic_Nova_L
 	this->vtable = &nova_VTable_nova_standard_math_logic_Nova_LogicalConnective_val;
 	nova_standard_Nova_Object_Nova_super((nova_standard_Nova_Object*)this, exceptionData);
 	nova_standard_math_logic_Nova_StatementComponent_Nova_super((nova_standard_math_logic_Nova_StatementComponent*)this, exceptionData);
-	nova_standard_Nova_Object_Nova_this((nova_standard_Nova_Object*)(this), exceptionData);
-	nova_standard_math_logic_Nova_StatementComponent_Nova_this((nova_standard_math_logic_Nova_StatementComponent*)(this), exceptionData);
-	nova_standard_math_logic_Nova_LogicalConnective_Nova_super(this, exceptionData);
+	nova_standard_Nova_Object_2_Nova_this((nova_standard_Nova_Object*)(this), exceptionData);
+	nova_standard_math_logic_Nova_StatementComponent_0_Nova_this((nova_standard_math_logic_Nova_StatementComponent*)(this), exceptionData);
+	nova_standard_math_logic_Nova_LogicalConnective_2_Nova_super(this, exceptionData);
 	
 	{
 		nova_standard_math_logic_Nova_LogicalConnective_Nova_this(this, exceptionData);
@@ -39,8 +39,6 @@ void nova_standard_math_logic_Nova_LogicalConnective_Nova_destroy(nova_standard_
 	}
 	
 	
-	{
-	}
 	NOVA_FREE(*this);
 }
 
@@ -48,7 +46,7 @@ void nova_standard_math_logic_Nova_LogicalConnective_Nova_this(nova_standard_mat
 {
 }
 
-void nova_standard_math_logic_Nova_LogicalConnective_Nova_super(nova_standard_math_logic_Nova_LogicalConnective* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
+void nova_standard_math_logic_Nova_LogicalConnective_2_Nova_super(nova_standard_math_logic_Nova_LogicalConnective* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
 }
 

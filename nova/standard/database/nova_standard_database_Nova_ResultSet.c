@@ -4,7 +4,7 @@
 
 nova_VTable_nova_standard_database_Nova_ResultSet nova_VTable_nova_standard_database_Nova_ResultSet_val =
 {
-	nova_standard_Nova_Object_0_Nova_getHashCodeLong,
+	nova_standard_Nova_Object_1_Nova_getHashCodeLong,
 	nova_standard_Nova_Object_0_Nova_toString,
 	nova_standard_Nova_Object_0_Nova_equals,
 };
@@ -19,7 +19,7 @@ nova_standard_database_Nova_ResultSet* nova_standard_database_Nova_ResultSet_Nov
 	CCLASS_NEW(nova_standard_database_Nova_ResultSet, this,);
 	this->vtable = &nova_VTable_nova_standard_database_Nova_ResultSet_val;
 	nova_standard_Nova_Object_Nova_super((nova_standard_Nova_Object*)this, exceptionData);
-	nova_standard_Nova_Object_Nova_this((nova_standard_Nova_Object*)(this), exceptionData);
+	nova_standard_Nova_Object_2_Nova_this((nova_standard_Nova_Object*)(this), exceptionData);
 	nova_standard_database_Nova_ResultSet_Nova_super(this, exceptionData);
 	
 	{
@@ -40,8 +40,6 @@ void nova_standard_database_Nova_ResultSet_Nova_destroy(nova_standard_database_N
 	
 	NOVA_FREE((*this)->nova_standard_database_Nova_ResultSet_Nova_rows);
 	
-	{
-	}
 	NOVA_FREE(*this);
 }
 

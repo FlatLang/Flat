@@ -4,7 +4,7 @@
 
 nova_VTable_nova_standard_svg_Nova_SVG nova_VTable_nova_standard_svg_Nova_SVG_val =
 {
-	nova_standard_Nova_Object_0_Nova_getHashCodeLong,
+	nova_standard_Nova_Object_1_Nova_getHashCodeLong,
 	nova_standard_Nova_Object_0_Nova_toString,
 	nova_standard_Nova_Object_0_Nova_equals,
 };
@@ -19,11 +19,11 @@ nova_standard_svg_Nova_SVG* nova_standard_svg_Nova_SVG_2_Nova_construct(nova_sta
 	CCLASS_NEW(nova_standard_svg_Nova_SVG, this,);
 	this->vtable = &nova_VTable_nova_standard_svg_Nova_SVG_val;
 	nova_standard_Nova_Object_Nova_super((nova_standard_Nova_Object*)this, exceptionData);
-	nova_standard_Nova_Object_Nova_this((nova_standard_Nova_Object*)(this), exceptionData);
+	nova_standard_Nova_Object_2_Nova_this((nova_standard_Nova_Object*)(this), exceptionData);
 	nova_standard_svg_Nova_SVG_Nova_super(this, exceptionData);
 	
 	{
-		nova_standard_svg_Nova_SVG_Nova_this(this, exceptionData);
+		nova_standard_svg_Nova_SVG_2_Nova_this(this, exceptionData);
 	}
 	
 	return this;
@@ -38,12 +38,10 @@ void nova_standard_svg_Nova_SVG_Nova_destroy(nova_standard_svg_Nova_SVG** this, 
 	
 	nova_standard_svg_Nova_SVGMainComponent_Nova_destroy(&(*this)->nova_standard_svg_Nova_SVG_Nova_root, exceptionData);
 	
-	{
-	}
 	NOVA_FREE(*this);
 }
 
-void nova_standard_svg_Nova_SVG_Nova_this(nova_standard_svg_Nova_SVG* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
+void nova_standard_svg_Nova_SVG_2_Nova_this(nova_standard_svg_Nova_SVG* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
 	this->nova_standard_svg_Nova_SVG_Nova_root = nova_standard_svg_Nova_SVGMainComponent_2_Nova_construct(0, exceptionData);
 }

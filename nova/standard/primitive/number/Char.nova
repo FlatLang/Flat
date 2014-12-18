@@ -1,6 +1,8 @@
 package "nova/standard/primitive/number"
 
-public class Char extends Number
+import "nova/standard/datastruct/Comparable"
+
+public class Char extends Number implements Comparable<Char>
 {
 	Char value
 	
@@ -46,5 +48,10 @@ public class Char extends Number
 		}
 		
 		return c
+	}
+	
+	public compareTo(Char other) -> Int
+	{
+		return (Int)value - (Int)other
 	}
 }

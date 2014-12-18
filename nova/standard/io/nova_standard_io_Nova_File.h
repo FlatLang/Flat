@@ -31,7 +31,7 @@ typedef struct nova_standard_io_Nova_File nova_standard_io_Nova_File;
 
 typedef struct nova_VTable_nova_standard_io_Nova_File
 {
-	long (*nova_standard_Nova_Object_virtual0_Nova_getHashCodeLong)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*);
+	long (*nova_standard_Nova_Object_virtual1_Nova_getHashCodeLong)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*);
 	nova_standard_Nova_String* (*nova_standard_Nova_Object_virtual0_Nova_toString)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*);
 	char (*nova_standard_Nova_Object_virtual0_Nova_equals)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*);
 } nova_VTable_nova_standard_io_Nova_File;
@@ -50,8 +50,8 @@ void nova_standard_io_Nova_FileNova_init_static(nova_standard_exception_Nova_Exc
 nova_standard_io_Nova_File* nova_standard_io_Nova_File_3_Nova_construct(nova_standard_io_Nova_File* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_Nova_String* l0_Nova_location);
 nova_standard_io_Nova_File* nova_standard_io_Nova_File_4_Nova_construct(nova_standard_io_Nova_File* this, nova_standard_exception_Nova_ExceptionData* exceptionData, FILE* l0_Nova_fp);
 void nova_standard_io_Nova_File_Nova_destroy(nova_standard_io_Nova_File** this, nova_standard_exception_Nova_ExceptionData* exceptionData);
-void nova_standard_io_Nova_File_0_Nova_this(nova_standard_io_Nova_File* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_Nova_String* l0_Nova_location);
-void nova_standard_io_Nova_File_1_Nova_this(nova_standard_io_Nova_File* this, nova_standard_exception_Nova_ExceptionData* exceptionData, FILE* l0_Nova_fp);
+void nova_standard_io_Nova_File_3_Nova_this(nova_standard_io_Nova_File* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_Nova_String* l0_Nova_location);
+void nova_standard_io_Nova_File_4_Nova_this(nova_standard_io_Nova_File* this, nova_standard_exception_Nova_ExceptionData* exceptionData, FILE* l0_Nova_fp);
 char nova_standard_io_Nova_File_Nova_delete(nova_standard_io_Nova_File* this, nova_standard_exception_Nova_ExceptionData* exceptionData);
 void nova_standard_io_Nova_File_Nova_reopen(nova_standard_io_Nova_File* this, nova_standard_exception_Nova_ExceptionData* exceptionData);
 void nova_standard_io_Nova_File_Nova_rewind(nova_standard_io_Nova_File* this, nova_standard_exception_Nova_ExceptionData* exceptionData);

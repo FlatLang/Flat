@@ -36,17 +36,51 @@ public class Node<E>
 		
 		str = str + data
 		
-		if (children.size > 0)
+		for (Int i = 0; i < children.size; i++)
 		{
-			str = str + ", "
+			Node child = children.get(i)
+			
+			str = str + ", " + child.preorder()
 		}
+		
+		return str
+	}
+	
+	public inorder() -> String
+	{
+		String str = ""
+		
+		for (Int i = 0; i < children.size / 2; i++)
+		{
+			Node child = children.get(i)
+			
+			str = str + child.inorder() + ", "
+		}
+		
+		str = str + data
+		
+		for (Int i = children.size / 2; i < children.size; i++)
+		{
+			Node child = children.get(i)
+			
+			str = str + ", " + child.inorder()
+		}
+		
+		return str
+	}
+	
+	public postorder() -> String
+	{
+		String str = ""
 		
 		for (Int i = 0; i < children.size; i++)
 		{
 			Node child = children.get(i)
 			
-			str = str + child.preorder() + ", "
+			str = str + child.postorder() + ", "
 		}
+		
+		str = str + data
 		
 		return str
 	}

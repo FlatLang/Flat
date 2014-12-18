@@ -4,6 +4,8 @@ import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.error.UnimplementedOperationException;
+import net.fathomsoft.nova.tree.generics.GenericDeclaration;
+import net.fathomsoft.nova.tree.generics.GenericParameter;
 import net.fathomsoft.nova.tree.variables.Super;
 import net.fathomsoft.nova.tree.variables.Variable;
 import net.fathomsoft.nova.util.Location;
@@ -16,7 +18,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.2.4 May 2, 2014 at 11:14:37 PM
- * @version	v0.2.38 Dec 6, 2014 at 5:19:17 PM
+ * @version	v0.2.41 Dec 17, 2014 at 7:48:17 PM
  */
 public abstract class Value extends Node implements AbstractValue
 {
@@ -189,6 +191,14 @@ public abstract class Value extends Node implements AbstractValue
 	public boolean isPrimitive()
 	{
 		return (isPrimitiveType() || isWithinExternalContext() && SyntaxUtils.isExternalPrimitiveType(getType())) && !isArray();
+	}
+	
+	public void setPrimitiveWrapperType()
+	{
+		if (isPrimitiveType())
+		{
+			setDataType(POINTER);
+		}
 	}
 	
 	/**
@@ -682,7 +692,7 @@ public abstract class Value extends Node implements AbstractValue
 		{
 			builder.append("char");
 		}
-		else if (SyntaxUtils.isPrimitiveType(type))
+		else if (SyntaxUtils.isPrimitiveType(type) && getDataType() == VALUE)
 		{
 			builder.append(SyntaxUtils.getPrimitiveExternalType(type));
 		}
@@ -818,7 +828,7 @@ public abstract class Value extends Node implements AbstractValue
 		return false;
 	}
 	
-	public GenericType getGenericType()
+	public GenericParameter getGenericParameter()
 	{
 		if (getParentClass() == null)
 		{
@@ -830,7 +840,7 @@ public abstract class Value extends Node implements AbstractValue
 	
 	public final boolean isGenericType()
 	{
-		return getGenericType() != null;
+		return getGenericParameter() != null;
 	}
 	
 	public boolean isPrimitiveGenericType()
@@ -841,12 +851,12 @@ public abstract class Value extends Node implements AbstractValue
 	public String getGenericReturnType()
 	{
 		throw new UnimplementedOperationException("The getGenericReturnType() method must be implemented by class " + this.getClass().getName());
-//		return getGenericType();
 	}
 	
-	public GenericCompatible getGenericDeclaration()
+	public GenericDeclaration getGenericDeclaration()
 	{
-		throw new UnimplementedOperationException("The getGenericDeclaration() method must be implemented by class " + this.getClass().getName());
+		return getParentClass().getGenericDeclaration();
+//		throw new UnimplementedOperationException("The getGenericDeclaration() method must be implemented by class " + this.getClass().getName());
 	}
 	
 	/**

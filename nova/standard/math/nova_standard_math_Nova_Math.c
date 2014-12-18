@@ -4,7 +4,7 @@
 
 nova_VTable_nova_standard_math_Nova_Math nova_VTable_nova_standard_math_Nova_Math_val =
 {
-	nova_standard_Nova_Object_0_Nova_getHashCodeLong,
+	nova_standard_Nova_Object_1_Nova_getHashCodeLong,
 	nova_standard_Nova_Object_0_Nova_toString,
 	nova_standard_Nova_Object_0_Nova_equals,
 };
@@ -21,11 +21,11 @@ nova_standard_math_Nova_Math* nova_standard_math_Nova_Math_2_Nova_construct(nova
 	CCLASS_NEW(nova_standard_math_Nova_Math, this,);
 	this->vtable = &nova_VTable_nova_standard_math_Nova_Math_val;
 	nova_standard_Nova_Object_Nova_super((nova_standard_Nova_Object*)this, exceptionData);
-	nova_standard_Nova_Object_Nova_this((nova_standard_Nova_Object*)(this), exceptionData);
+	nova_standard_Nova_Object_2_Nova_this((nova_standard_Nova_Object*)(this), exceptionData);
 	nova_standard_math_Nova_Math_Nova_super(this, exceptionData);
 	
 	{
-		nova_standard_math_Nova_Math_Nova_this(this, exceptionData);
+		nova_standard_math_Nova_Math_2_Nova_this(this, exceptionData);
 	}
 	
 	return this;
@@ -39,8 +39,6 @@ void nova_standard_math_Nova_Math_Nova_destroy(nova_standard_math_Nova_Math** th
 	}
 	
 	
-	{
-	}
 	NOVA_FREE(*this);
 }
 
@@ -109,7 +107,7 @@ long nova_standard_math_Nova_Math_Nova_ceil(nova_standard_math_Nova_Math* this, 
 	return (long)ceil((double)(l0_Nova_number));
 }
 
-void nova_standard_math_Nova_Math_Nova_this(nova_standard_math_Nova_Math* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
+void nova_standard_math_Nova_Math_2_Nova_this(nova_standard_math_Nova_Math* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
 }
 

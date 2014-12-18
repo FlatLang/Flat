@@ -7,7 +7,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.2.36 Oct 6, 2014 at 9:58:16 PM
- * @version	v0.2.38 Dec 6, 2014 at 5:19:17 PM
+ * @version	v0.2.41 Dec 17, 2014 at 7:48:17 PM
  */
 public interface Accessible
 {
@@ -437,7 +437,7 @@ public interface Accessible
 		{
 			n.replace(getAccessedNode(), node);
 		}
-		else
+		else if (node != null)
 		{
 			n.addChild(node);
 		}

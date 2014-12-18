@@ -4,7 +4,7 @@
 
 nova_VTable_nova_standard_math_logic_Nova_LogicalStatement nova_VTable_nova_standard_math_logic_Nova_LogicalStatement_val =
 {
-	nova_standard_Nova_Object_0_Nova_getHashCodeLong,
+	nova_standard_Nova_Object_1_Nova_getHashCodeLong,
 	nova_standard_math_logic_Nova_LogicalStatement_0_Nova_toString,
 	nova_standard_Nova_Object_0_Nova_equals,
 };
@@ -26,12 +26,12 @@ nova_standard_math_logic_Nova_LogicalStatement* nova_standard_math_logic_Nova_Lo
 	this->vtable = &nova_VTable_nova_standard_math_logic_Nova_LogicalStatement_val;
 	nova_standard_Nova_Object_Nova_super((nova_standard_Nova_Object*)this, exceptionData);
 	nova_standard_math_Nova_Statement_Nova_super((nova_standard_math_Nova_Statement*)this, exceptionData);
-	nova_standard_Nova_Object_Nova_this((nova_standard_Nova_Object*)(this), exceptionData);
-	nova_standard_math_Nova_Statement_Nova_this((nova_standard_math_Nova_Statement*)(this), exceptionData);
-	nova_standard_math_logic_Nova_LogicalStatement_Nova_super(this, exceptionData);
+	nova_standard_Nova_Object_2_Nova_this((nova_standard_Nova_Object*)(this), exceptionData);
+	nova_standard_math_Nova_Statement_2_Nova_this((nova_standard_math_Nova_Statement*)(this), exceptionData);
+	nova_standard_math_logic_Nova_LogicalStatement_2_Nova_super(this, exceptionData);
 	
 	{
-		nova_standard_math_logic_Nova_LogicalStatement_Nova_this(this, exceptionData, l0_Nova_statement);
+		nova_standard_math_logic_Nova_LogicalStatement_0_Nova_this(this, exceptionData, l0_Nova_statement);
 	}
 	
 	return this;
@@ -48,12 +48,10 @@ void nova_standard_math_logic_Nova_LogicalStatement_Nova_destroy(nova_standard_m
 	nova_standard_datastruct_Nova_ArrayList_Nova_destroy(&(*this)->prv->nova_standard_math_logic_Nova_LogicalStatement_Nova_components, exceptionData);
 	NOVA_FREE((*this)->prv);
 	
-	{
-	}
 	NOVA_FREE(*this);
 }
 
-void nova_standard_math_logic_Nova_LogicalStatement_Nova_this(nova_standard_math_logic_Nova_LogicalStatement* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_Nova_String* l0_Nova_statement)
+void nova_standard_math_logic_Nova_LogicalStatement_0_Nova_this(nova_standard_math_logic_Nova_LogicalStatement* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_Nova_String* l0_Nova_statement)
 {
 	this->prv->nova_standard_math_logic_Nova_LogicalStatement_Nova_statement = l0_Nova_statement;
 	this->prv->nova_standard_math_logic_Nova_LogicalStatement_Nova_components = nova_standard_datastruct_Nova_ArrayList_2_Nova_construct(0, exceptionData);
@@ -64,7 +62,7 @@ nova_standard_Nova_String* nova_standard_math_logic_Nova_LogicalStatement_0_Nova
 	return this->prv->nova_standard_math_logic_Nova_LogicalStatement_Nova_statement;
 }
 
-void nova_standard_math_logic_Nova_LogicalStatement_Nova_super(nova_standard_math_logic_Nova_LogicalStatement* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
+void nova_standard_math_logic_Nova_LogicalStatement_2_Nova_super(nova_standard_math_logic_Nova_LogicalStatement* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
 	this->prv->nova_standard_math_logic_Nova_LogicalStatement_Nova_statement = (nova_standard_Nova_String*)nova_null;
 	this->prv->nova_standard_math_logic_Nova_LogicalStatement_Nova_components = (nova_standard_datastruct_Nova_ArrayList*)nova_null;

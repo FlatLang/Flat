@@ -33,7 +33,7 @@ typedef struct example_Nova_Lab example_Nova_Lab;
 
 typedef struct nova_VTable_example_Nova_Lab
 {
-	long (*nova_standard_Nova_Object_virtual0_Nova_getHashCodeLong)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*);
+	long (*nova_standard_Nova_Object_virtual1_Nova_getHashCodeLong)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*);
 	nova_standard_Nova_String* (*nova_standard_Nova_Object_virtual0_Nova_toString)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*);
 	char (*nova_standard_Nova_Object_virtual0_Nova_equals)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*);
 } nova_VTable_example_Nova_Lab;
@@ -51,7 +51,7 @@ void example_Nova_LabNova_init_static(nova_standard_exception_Nova_ExceptionData
 example_Nova_Lab* example_Nova_Lab_2_Nova_construct(example_Nova_Lab* this, nova_standard_exception_Nova_ExceptionData* exceptionData);
 void example_Nova_Lab_Nova_destroy(example_Nova_Lab** this, nova_standard_exception_Nova_ExceptionData* exceptionData);
 void example_Nova_Lab_Nova_main(example_Nova_Lab* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_Nova_String** l0_Nova_args);
-void example_Nova_Lab_Nova_this(example_Nova_Lab* this, nova_standard_exception_Nova_ExceptionData* exceptionData);
+void example_Nova_Lab_2_Nova_this(example_Nova_Lab* this, nova_standard_exception_Nova_ExceptionData* exceptionData);
 void example_Nova_Lab_Nova_super(example_Nova_Lab* this, nova_standard_exception_Nova_ExceptionData* exceptionData);
 
 #endif

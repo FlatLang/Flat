@@ -4,7 +4,7 @@
 
 nova_VTable_nova_standard_io_Nova_File nova_VTable_nova_standard_io_Nova_File_val =
 {
-	nova_standard_Nova_Object_0_Nova_getHashCodeLong,
+	nova_standard_Nova_Object_1_Nova_getHashCodeLong,
 	nova_standard_Nova_Object_0_Nova_toString,
 	nova_standard_Nova_Object_0_Nova_equals,
 };
@@ -33,11 +33,11 @@ nova_standard_io_Nova_File* nova_standard_io_Nova_File_3_Nova_construct(nova_sta
 	CCLASS_NEW(nova_standard_io_Nova_File, this);
 	this->vtable = &nova_VTable_nova_standard_io_Nova_File_val;
 	nova_standard_Nova_Object_Nova_super((nova_standard_Nova_Object*)this, exceptionData);
-	nova_standard_Nova_Object_Nova_this((nova_standard_Nova_Object*)(this), exceptionData);
+	nova_standard_Nova_Object_2_Nova_this((nova_standard_Nova_Object*)(this), exceptionData);
 	nova_standard_io_Nova_File_Nova_super(this, exceptionData);
 	
 	{
-		nova_standard_io_Nova_File_0_Nova_this(this, exceptionData, l0_Nova_location);
+		nova_standard_io_Nova_File_3_Nova_this(this, exceptionData, l0_Nova_location);
 	}
 	
 	return this;
@@ -48,11 +48,11 @@ nova_standard_io_Nova_File* nova_standard_io_Nova_File_4_Nova_construct(nova_sta
 	CCLASS_NEW(nova_standard_io_Nova_File, this);
 	this->vtable = &nova_VTable_nova_standard_io_Nova_File_val;
 	nova_standard_Nova_Object_Nova_super((nova_standard_Nova_Object*)this, exceptionData);
-	nova_standard_Nova_Object_Nova_this((nova_standard_Nova_Object*)(this), exceptionData);
+	nova_standard_Nova_Object_2_Nova_this((nova_standard_Nova_Object*)(this), exceptionData);
 	nova_standard_io_Nova_File_Nova_super(this, exceptionData);
 	
 	{
-		nova_standard_io_Nova_File_1_Nova_this(this, exceptionData, l0_Nova_fp);
+		nova_standard_io_Nova_File_4_Nova_this(this, exceptionData, l0_Nova_fp);
 	}
 	
 	return this;
@@ -69,18 +69,16 @@ void nova_standard_io_Nova_File_Nova_destroy(nova_standard_io_Nova_File** this, 
 	nova_standard_Nova_String_Nova_destroy(&(*this)->prv->nova_standard_io_Nova_File_Nova_location, exceptionData);
 	NOVA_FREE((*this)->prv);
 	
-	{
-	}
 	NOVA_FREE(*this);
 }
 
-void nova_standard_io_Nova_File_0_Nova_this(nova_standard_io_Nova_File* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_Nova_String* l0_Nova_location)
+void nova_standard_io_Nova_File_3_Nova_this(nova_standard_io_Nova_File* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_Nova_String* l0_Nova_location)
 {
 	this->prv->nova_standard_io_Nova_File_Nova_location = l0_Nova_location;
 	this->prv->nova_standard_io_Nova_File_Nova_fp = fopen((char*)(l0_Nova_location->nova_standard_Nova_String_Nova_chars), (char*)("r+"));
 }
 
-void nova_standard_io_Nova_File_1_Nova_this(nova_standard_io_Nova_File* this, nova_standard_exception_Nova_ExceptionData* exceptionData, FILE* l0_Nova_fp)
+void nova_standard_io_Nova_File_4_Nova_this(nova_standard_io_Nova_File* this, nova_standard_exception_Nova_ExceptionData* exceptionData, FILE* l0_Nova_fp)
 {
 	this->prv->nova_standard_io_Nova_File_Nova_fp = l0_Nova_fp;
 }
@@ -160,7 +158,7 @@ nova_standard_Nova_String* nova_standard_io_Nova_File_Nova_readLine(nova_standar
 	
 	l1_Nova_buf = 5;
 	l1_Nova_size = l1_Nova_buf;
-	l1_Nova_line = (char*)NOVA_MALLOC(sizeof(nova_standard_primitive_number_Nova_Char*[l1_Nova_size]));
+	l1_Nova_line = (char*)NOVA_MALLOC(sizeof(nova_standard_primitive_number_Nova_Char) * l1_Nova_size);
 	l1_Nova_c = (char)(getc(this->prv->nova_standard_io_Nova_File_Nova_fp));
 	if (l1_Nova_c == EOF)
 	{

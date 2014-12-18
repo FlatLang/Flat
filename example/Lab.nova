@@ -15,11 +15,19 @@ public class Lab
 	{
 		BinaryTree tree = new BinaryTree()
 		
-		tree.addNode(5)
-		tree.addNode(7)
-		tree.addNode(3)
+		tree.addNode('F')
+		tree.addNode('B')
+		tree.addNode('A')
+		tree.addNode('D')
+		tree.addNode('C')
+		tree.addNode('E')
+		tree.addNode('G')
+		tree.addNode('I')
+		tree.addNode('H')
 		
-		Console.writeLine(tree.preorder())
+		Console.writeLine("Preorder: " + tree.preorder())
+		Console.writeLine("Inorder: " + tree.inorder())
+		Console.writeLine("Postorder: " + tree.postorder())
 		
 		Square sq = new Square(4)
 		

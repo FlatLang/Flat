@@ -4,7 +4,7 @@
 
 nova_VTable_nova_standard_datastruct_Nova_List nova_VTable_nova_standard_datastruct_Nova_List_val =
 {
-	nova_standard_Nova_Object_0_Nova_getHashCodeLong,
+	nova_standard_Nova_Object_1_Nova_getHashCodeLong,
 	nova_standard_Nova_Object_0_Nova_toString,
 	nova_standard_Nova_Object_0_Nova_equals,
 };
@@ -25,11 +25,11 @@ nova_standard_datastruct_Nova_List* nova_standard_datastruct_Nova_List_2_Nova_co
 	CCLASS_NEW(nova_standard_datastruct_Nova_List, this);
 	this->vtable = &nova_VTable_nova_standard_datastruct_Nova_List_val;
 	nova_standard_Nova_Object_Nova_super((nova_standard_Nova_Object*)this, exceptionData);
-	nova_standard_Nova_Object_Nova_this((nova_standard_Nova_Object*)(this), exceptionData);
+	nova_standard_Nova_Object_2_Nova_this((nova_standard_Nova_Object*)(this), exceptionData);
 	nova_standard_datastruct_Nova_List_Nova_super(this, exceptionData);
 	
 	{
-		nova_standard_datastruct_Nova_List_Nova_this(this, exceptionData);
+		nova_standard_datastruct_Nova_List_2_Nova_this(this, exceptionData);
 	}
 	
 	return this;
@@ -46,8 +46,6 @@ void nova_standard_datastruct_Nova_List_Nova_destroy(nova_standard_datastruct_No
 	nova_standard_datastruct_Nova_ListNode_Nova_destroy(&(*this)->prv->nova_standard_datastruct_Nova_List_Nova_current, exceptionData);
 	NOVA_FREE((*this)->prv);
 	
-	{
-	}
 	NOVA_FREE(*this);
 }
 
@@ -86,10 +84,10 @@ void nova_standard_datastruct_Nova_List_Nova_remove(nova_standard_datastruct_Nov
 	l1_Nova_cur = this->prv->nova_standard_datastruct_Nova_List_Nova_start->nova_standard_datastruct_Nova_ListNode_Nova_next;
 	while (l1_Nova_cur != (nova_standard_datastruct_Nova_ListNode*)nova_null)
 	{
-		nova_standard_Nova_Object* l3_Nova_d;
+		nova_standard_Nova_Object* l2_Nova_d;
 		
-		l3_Nova_d = l1_Nova_cur->nova_standard_datastruct_Nova_ListNode_Nova_data;
-		if (l3_Nova_d == l0_Nova_data)
+		l2_Nova_d = (nova_standard_Nova_Object*)(l1_Nova_cur->nova_standard_datastruct_Nova_ListNode_Nova_data);
+		if (l2_Nova_d == l0_Nova_data)
 		{
 			l1_Nova_prev->nova_standard_datastruct_Nova_ListNode_Nova_next = l1_Nova_cur->nova_standard_datastruct_Nova_ListNode_Nova_next;
 		}
@@ -97,7 +95,7 @@ void nova_standard_datastruct_Nova_List_Nova_remove(nova_standard_datastruct_Nov
 	}
 }
 
-void nova_standard_datastruct_Nova_List_Nova_this(nova_standard_datastruct_Nova_List* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
+void nova_standard_datastruct_Nova_List_2_Nova_this(nova_standard_datastruct_Nova_List* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
 }
 

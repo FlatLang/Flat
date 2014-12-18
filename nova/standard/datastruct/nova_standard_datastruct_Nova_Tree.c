@@ -4,7 +4,7 @@
 
 nova_VTable_nova_standard_datastruct_Nova_Tree nova_VTable_nova_standard_datastruct_Nova_Tree_val =
 {
-	nova_standard_Nova_Object_0_Nova_getHashCodeLong,
+	nova_standard_Nova_Object_1_Nova_getHashCodeLong,
 	nova_standard_Nova_Object_0_Nova_toString,
 	nova_standard_Nova_Object_0_Nova_equals,
 };
@@ -19,11 +19,11 @@ nova_standard_datastruct_Nova_Tree* nova_standard_datastruct_Nova_Tree_2_Nova_co
 	CCLASS_NEW(nova_standard_datastruct_Nova_Tree, this,);
 	this->vtable = &nova_VTable_nova_standard_datastruct_Nova_Tree_val;
 	nova_standard_Nova_Object_Nova_super((nova_standard_Nova_Object*)this, exceptionData);
-	nova_standard_Nova_Object_Nova_this((nova_standard_Nova_Object*)(this), exceptionData);
+	nova_standard_Nova_Object_2_Nova_this((nova_standard_Nova_Object*)(this), exceptionData);
 	nova_standard_datastruct_Nova_Tree_Nova_super(this, exceptionData);
 	
 	{
-		nova_standard_datastruct_Nova_Tree_Nova_this(this, exceptionData);
+		nova_standard_datastruct_Nova_Tree_2_Nova_this(this, exceptionData);
 	}
 	
 	return this;
@@ -38,17 +38,25 @@ void nova_standard_datastruct_Nova_Tree_Nova_destroy(nova_standard_datastruct_No
 	
 	nova_standard_datastruct_Nova_Node_Nova_destroy(&(*this)->nova_standard_datastruct_Nova_Tree_Nova_root, exceptionData);
 	
-	{
-	}
 	NOVA_FREE(*this);
 }
 
 nova_standard_Nova_String* nova_standard_datastruct_Nova_Tree_Nova_preorder(nova_standard_datastruct_Nova_Tree* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
-	return nova_standard_datastruct_Nova_Node_Nova_preorder(this->nova_standard_datastruct_Nova_Tree_Nova_root, exceptionData);
+	return this->nova_standard_datastruct_Nova_Tree_Nova_root->vtable->nova_standard_datastruct_Nova_Node_virtual0_Nova_preorder(this->nova_standard_datastruct_Nova_Tree_Nova_root, exceptionData);
 }
 
-void nova_standard_datastruct_Nova_Tree_Nova_this(nova_standard_datastruct_Nova_Tree* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
+nova_standard_Nova_String* nova_standard_datastruct_Nova_Tree_Nova_inorder(nova_standard_datastruct_Nova_Tree* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
+{
+	return this->nova_standard_datastruct_Nova_Tree_Nova_root->vtable->nova_standard_datastruct_Nova_Node_virtual0_Nova_inorder(this->nova_standard_datastruct_Nova_Tree_Nova_root, exceptionData);
+}
+
+nova_standard_Nova_String* nova_standard_datastruct_Nova_Tree_Nova_postorder(nova_standard_datastruct_Nova_Tree* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
+{
+	return this->nova_standard_datastruct_Nova_Tree_Nova_root->vtable->nova_standard_datastruct_Nova_Node_virtual0_Nova_postorder(this->nova_standard_datastruct_Nova_Tree_Nova_root, exceptionData);
+}
+
+void nova_standard_datastruct_Nova_Tree_2_Nova_this(nova_standard_datastruct_Nova_Tree* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
 }
 

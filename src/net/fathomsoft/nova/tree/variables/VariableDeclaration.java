@@ -6,11 +6,11 @@ import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.tree.ClassDeclaration;
 import net.fathomsoft.nova.tree.GenericCompatible;
-import net.fathomsoft.nova.tree.GenericType;
 import net.fathomsoft.nova.tree.IIdentifier;
 import net.fathomsoft.nova.tree.Node;
 import net.fathomsoft.nova.tree.SyntaxTree;
 import net.fathomsoft.nova.tree.exceptionhandling.Exception;
+import net.fathomsoft.nova.tree.generics.GenericImplementation;
 import net.fathomsoft.nova.util.Bounds;
 import net.fathomsoft.nova.util.Location;
 import net.fathomsoft.nova.util.StringUtils;
@@ -23,15 +23,13 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.2.4 May 2, 2014 at 11:14:37 PM
- * @version	v0.2.38 Dec 6, 2014 at 5:19:17 PM
+ * @version	v0.2.41 Dec 17, 2014 at 7:48:17 PM
  */
 public class VariableDeclaration extends IIdentifier implements GenericCompatible
 {
-	private boolean		volatileVal, external;
+	private boolean               volatileVal, external;
 	
-	private GenericType	genericTypes[];
-	
-	public String[]     extraDeclarations;
+	public  String[]              extraDeclarations;
 	
 	/**
 	 * @see net.fathomsoft.nova.tree.Node#Node(Node, Location)
@@ -40,8 +38,19 @@ public class VariableDeclaration extends IIdentifier implements GenericCompatibl
 	{
 		super(temporaryParent, locationIn);
 		
-		genericTypes      = new GenericType[0];
+		GenericImplementation implementation = new GenericImplementation(this, locationIn.asNew());
+		addChild(implementation, this);
+		
 		extraDeclarations = new String[0];
+	}
+	
+	/**
+	 * @see net.fathomsoft.nova.tree.Node#getNumDefaultChildren()
+	 */
+	@Override
+	public int getNumDefaultChildren()
+	{
+		return super.getNumDefaultChildren() + 1;
 	}
 	
 	public Bounds findExtraDeclarations(String statement)
@@ -81,22 +90,9 @@ public class VariableDeclaration extends IIdentifier implements GenericCompatibl
 		return getParentClass();
 	}
 	
-	/**
-	 * @see net.fathomsoft.nova.tree.GenericCompatible#getGenericParameterNames()
-	 */
-	@Override
-	public GenericType[] getGenericParameterNames()
+	public GenericImplementation getGenericImplementation()
 	{
-		return genericTypes;
-	}
-	
-	/**
-	 * @see net.fathomsoft.nova.tree.GenericCompatible#setGenericTypes(net.fathomsoft.nova.tree.GenericType[])
-	 */
-	@Override
-	public void setGenericTypes(GenericType[] types)
-	{
-		this.genericTypes = types;
+		return (GenericImplementation)getChild(super.getNumDefaultChildren() + 0);
 	}
 	
 	/**
@@ -105,7 +101,7 @@ public class VariableDeclaration extends IIdentifier implements GenericCompatibl
 	@Override
 	public String getGenericReturnType()
 	{
-		return getGenericType().getDefaultType();
+		return getGenericParameter().getDefaultType();
 	}
 	
 	/**
@@ -467,7 +463,7 @@ public class VariableDeclaration extends IIdentifier implements GenericCompatibl
 	
 	public boolean validateType()
 	{
-		if (getType() != null && !setType(getType(), false, true))
+		if (getType() != null && !setType(getType(), false, !isGenericType()))
 		{
 			SyntaxMessage.error("Type '" + getType() + "' does not exist", this, false);
 			
@@ -502,8 +498,6 @@ public class VariableDeclaration extends IIdentifier implements GenericCompatibl
 		node.external     = external;
 		node.volatileVal  = volatileVal;
 		
-		node.genericTypes = cloneGenericTypes(node);
-
 		node.extraDeclarations = new String[extraDeclarations.length];
 		
 		for (int i = 0; i < extraDeclarations.length; i++)

@@ -30,7 +30,7 @@ typedef struct nova_standard_gc_Nova_GC nova_standard_gc_Nova_GC;
 
 typedef struct nova_VTable_nova_standard_gc_Nova_GC
 {
-	long (*nova_standard_Nova_Object_virtual0_Nova_getHashCodeLong)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*);
+	long (*nova_standard_Nova_Object_virtual1_Nova_getHashCodeLong)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*);
 	nova_standard_Nova_String* (*nova_standard_Nova_Object_virtual0_Nova_toString)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*);
 	char (*nova_standard_Nova_Object_virtual0_Nova_equals)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*);
 } nova_VTable_nova_standard_gc_Nova_GC;
@@ -51,7 +51,7 @@ void nova_standard_gc_Nova_GC_Nova_init(nova_standard_gc_Nova_GC* this, nova_sta
 void nova_standard_gc_Nova_GC_Nova_collect(nova_standard_gc_Nova_GC* this, nova_standard_exception_Nova_ExceptionData* exceptionData);
 void nova_standard_gc_Nova_GC_Nova_enableIncremental(nova_standard_gc_Nova_GC* this, nova_standard_exception_Nova_ExceptionData* exceptionData);
 void nova_standard_gc_Nova_GC_Nova_dump(nova_standard_gc_Nova_GC* this, nova_standard_exception_Nova_ExceptionData* exceptionData);
-void nova_standard_gc_Nova_GC_Nova_this(nova_standard_gc_Nova_GC* this, nova_standard_exception_Nova_ExceptionData* exceptionData);
+void nova_standard_gc_Nova_GC_2_Nova_this(nova_standard_gc_Nova_GC* this, nova_standard_exception_Nova_ExceptionData* exceptionData);
 int nova_standard_gc_Nova_GC_Accessor_Nova_freeBytes(nova_standard_gc_Nova_GC* this, nova_standard_exception_Nova_ExceptionData* exceptionData);
 int nova_standard_gc_Nova_GC_Accessor_Nova_totalBytes(nova_standard_gc_Nova_GC* this, nova_standard_exception_Nova_ExceptionData* exceptionData);
 int nova_standard_gc_Nova_GC_Accessor_Nova_heapSize(nova_standard_gc_Nova_GC* this, nova_standard_exception_Nova_ExceptionData* exceptionData);

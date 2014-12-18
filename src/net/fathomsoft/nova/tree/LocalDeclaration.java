@@ -3,6 +3,8 @@ package net.fathomsoft.nova.tree;
 import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.error.SyntaxMessage;
+import net.fathomsoft.nova.tree.generics.GenericArgument;
+import net.fathomsoft.nova.tree.generics.GenericDeclaration;
 import net.fathomsoft.nova.tree.variables.FieldDeclaration;
 import net.fathomsoft.nova.tree.variables.VariableDeclaration;
 import net.fathomsoft.nova.util.Bounds;
@@ -17,7 +19,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.2.4 Jan 5, 2014 at 9:10:49 PM
- * @version	v0.2.38 Dec 6, 2014 at 5:19:17 PM
+ * @version	v0.2.41 Dec 17, 2014 at 7:48:17 PM
  */
 public class LocalDeclaration extends VariableDeclaration
 {
@@ -143,7 +145,7 @@ public class LocalDeclaration extends VariableDeclaration
 		{
 			DeclarationData  data = new DeclarationData();
 			
-			n.searchGenericParameters(statement, data);
+			GenericDeclaration.searchGenericTypes(statement, data);
 			
 			n.iterateWords(statement, Patterns.IDENTIFIER_BOUNDARIES, data, require);
 		
@@ -158,8 +160,10 @@ public class LocalDeclaration extends VariableDeclaration
 			
 			if (!checkName || n.validateDeclaration())
 			{
-				for (GenericType type : n.getGenericParameterNames())
+				for (int i = 0; i < n.getNumGenericArguments(); i++)
 				{
+					GenericArgument type = n.getGenericArgument(i);
+					
 					if (!type.isGenericType() && !SyntaxUtils.validateImported(n, type.getTypeClassLocation()))
 					{
 						return null;
@@ -271,7 +275,7 @@ public class LocalDeclaration extends VariableDeclaration
 		
 		if (extra.getLeftAdjacentSkipBounds() != null)
 		{
-			decodeGenericParameters(extra.statement, extra.getLeftAdjacentSkipBounds());
+			decodeGenericArguments(extra.statement, extra.getLeftAdjacentSkipBounds());
 			
 			extra.decrementGenericsRemaining();
 		}

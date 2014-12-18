@@ -9,7 +9,7 @@
 char* ufgets(FILE* stream)
 {
     unsigned int maxlen = 128, size = 128;
-    char* buffer = (char*)NOVA_MALLOC(sizeof(char[maxlen]));
+    char* buffer = (char*)NOVA_MALLOC(sizeof(char) * maxlen);
     
     if (buffer != NULL) /* NULL if malloc() fails */
     {
