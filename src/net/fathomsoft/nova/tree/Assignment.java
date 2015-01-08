@@ -376,7 +376,10 @@ public class Assignment extends Node
 			ClassDeclaration left  = returnedLeft.getTypeClass();
 			ClassDeclaration right = returnedRight.getTypeClass();
 			
-			if (!returnedLeft.isExternalType() && !returnedRight.isExternalType() && (left == null || right == null || !right.isOfType(left)))
+			if (!returnedLeft.isExternalType() && !returnedRight.isExternalType() &&
+					(left == null || right == null ||
+					(returnedLeft.isPrimitive() && (!left.isOfType(right) && !SyntaxUtils.arePrimitiveTypesCompatible(leftType, rightType)) ||
+					!returnedLeft.isPrimitive() && !right.isOfType(left))))
 			{
 				SyntaxMessage.error("Type '" + returnedRight.getType() + "' is not compatible with type '" + returnedLeft.getType() + "'", this, location);
 			}
@@ -609,7 +612,15 @@ public class Assignment extends Node
 	{
 		Assignment node = new Assignment(temporaryParent, locationIn);
 		
-		return cloneTo(node);
+		return cloneTo(node, cloneChildren);
+	}
+	
+	/**
+	 * @see net.fathomsoft.nova.tree.Node#cloneTo(Node)
+	 */
+	public Assignment cloneTo(Assignment node)
+	{
+		return cloneTo(node, true);
 	}
 	
 	/**
@@ -619,9 +630,9 @@ public class Assignment extends Node
 	 * @param node The node to copy the data into.
 	 * @return The cloned node.
 	 */
-	public Assignment cloneTo(Assignment node)
+	public Assignment cloneTo(Assignment node, boolean cloneChildren)
 	{
-		super.cloneTo(node);
+		super.cloneTo(node, cloneChildren);
 		
 		return node;
 	}

@@ -81,7 +81,7 @@ int nova_standard_primitive_number_Nova_Int_Nova_parseInt(nova_standard_primitiv
 	return (int)atoi((char*)(l0_Nova_num->nova_standard_Nova_String_Nova_chars));
 }
 
-int nova_standard_primitive_number_Nova_Int_0_Nova_compareTo(nova_standard_primitive_number_Nova_Int* this, nova_standard_exception_Nova_ExceptionData* exceptionData, int l0_Nova_other)
+int nova_standard_primitive_number_Nova_Int_0_Nova_compareTo(nova_standard_primitive_number_Nova_Int* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_primitive_number_Nova_Int* l0_Nova_other)
 {
 	return this->nova_standard_primitive_number_Nova_Int_Nova_value - l0_Nova_other;
 }

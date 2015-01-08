@@ -56,6 +56,11 @@ nova_standard_Nova_String* nova_standard_datastruct_Nova_Tree_Nova_postorder(nov
 	return this->nova_standard_datastruct_Nova_Tree_Nova_root->vtable->nova_standard_datastruct_Nova_Node_virtual0_Nova_postorder(this->nova_standard_datastruct_Nova_Tree_Nova_root, exceptionData);
 }
 
+nova_standard_Nova_String* nova_standard_datastruct_Nova_Tree_Nova_levelorder(nova_standard_datastruct_Nova_Tree* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
+{
+	THROW(5, nova_standard_exception_Nova_UnimplementedOperationException_1_Nova_construct(0, exceptionData, nova_standard_Nova_String_1_Nova_construct(0, exceptionData, "Level order has not been implemented yet... hold on.")));
+}
+
 void nova_standard_datastruct_Nova_Tree_2_Nova_this(nova_standard_datastruct_Nova_Tree* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
 }

@@ -445,7 +445,15 @@ public class UnaryOperation extends IValue
 	{
 		UnaryOperation node = new UnaryOperation(temporaryParent, locationIn);
 		
-		return cloneTo(node);
+		return cloneTo(node, cloneChildren);
+	}
+	
+	/**
+	 * @see net.fathomsoft.nova.tree.Node#cloneTo(Node)
+	 */
+	public UnaryOperation cloneTo(UnaryOperation node)
+	{
+		return cloneTo(node, true);
 	}
 	
 	/**
@@ -455,9 +463,9 @@ public class UnaryOperation extends IValue
 	 * @param node The node to copy the data into.
 	 * @return The cloned node.
 	 */
-	public UnaryOperation cloneTo(UnaryOperation node)
+	public UnaryOperation cloneTo(UnaryOperation node, boolean cloneChildren)
 	{
-		super.cloneTo(node);
+		super.cloneTo(node, cloneChildren);
 		
 		return node;
 	}

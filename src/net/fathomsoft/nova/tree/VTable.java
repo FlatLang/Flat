@@ -155,7 +155,15 @@ public class VTable extends IIdentifier
 	{
 		VTable node = new VTable(temporaryParent, locationIn);
 		
-		return cloneTo(node);
+		return cloneTo(node, cloneChildren);
+	}
+	
+	/**
+	 * @see net.fathomsoft.nova.tree.Node#cloneTo(Node)
+	 */
+	public VTable cloneTo(VTable node)
+	{
+		return cloneTo(node, true);
 	}
 	
 	/**
@@ -165,9 +173,9 @@ public class VTable extends IIdentifier
 	 * @param node The node to copy the data into.
 	 * @return The cloned node.
 	 */
-	public VTable cloneTo(VTable node)
+	public VTable cloneTo(VTable node, boolean cloneChildren)
 	{
-		super.cloneTo(node);
+		super.cloneTo(node, cloneChildren);
 		
 		return node;
 	}

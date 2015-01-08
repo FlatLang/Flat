@@ -305,7 +305,15 @@ public class ExternalMethodDeclaration extends MethodDeclaration
 	{
 		ExternalMethodDeclaration node = new ExternalMethodDeclaration(temporaryParent, locationIn);
 		
-		return cloneTo(node);
+		return cloneTo(node, cloneChildren);
+	}
+	
+	/**
+	 * @see net.fathomsoft.nova.tree.Node#cloneTo(Node)
+	 */
+	public ExternalMethodDeclaration cloneTo(ExternalMethodDeclaration node)
+	{
+		return cloneTo(node, true);
 	}
 	
 	/**
@@ -315,9 +323,9 @@ public class ExternalMethodDeclaration extends MethodDeclaration
 	 * @param node The node to copy the data into.
 	 * @return The cloned node.
 	 */
-	public ExternalMethodDeclaration cloneTo(ExternalMethodDeclaration node)
+	public ExternalMethodDeclaration cloneTo(ExternalMethodDeclaration node, boolean cloneChildren)
 	{
-		super.cloneTo(node);
+		super.cloneTo(node, cloneChildren);
 		
 		return node;
 	}

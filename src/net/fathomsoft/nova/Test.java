@@ -100,8 +100,82 @@ public class Test
 		}
 	}
 	
+	private static int numb(int rows)
+	{
+		return rows * (rows + 1) / 2;//((rows + 1) / 2) * (1 - rows % 2 + rows);
+	}
+	
+	private static void floydsTri(int rows)
+	{
+		int num = 0;
+		
+		for (int i = 0; i < rows; i++)
+		{
+			for (int j = 0; j < i; j++)
+			{
+//				System.out.print(++num + "\t");
+			}
+//			System.out.println();
+		}
+	}
+	
+	private static void floydsTri2(int rows)
+	{
+		if (rows <= 0)
+		{
+			return;
+		}
+		
+		System.out.println(1 + "\t");
+		
+		int row = 2;
+		
+		for (int i = 2; (row * (row + 1) / 2) <= (rows * (rows + 1) / 2); i++)
+		{
+			System.out.print(i + "\t");
+			
+			if (i == row * (row + 1) / 2)
+			{
+				System.out.println();
+				
+				row++;
+			}
+		}
+	}
+	
+	private static void floydsTri3(int rows)
+	{
+		int num = 0;
+		
+		for (int i = 0; i < numb(rows); i++)
+		{
+			System.out.print(i + "\t");
+			
+//			if (i == row * (row + 1) / 2)
+//			{
+//				System.out.println();
+//				
+//				row++;
+//			}
+		}
+	}
+	
 	public static void main(String args[])
 	{
+		int times = 9999;
+		
+		long s1 = System.currentTimeMillis();
+		floydsTri(times);
+		long e1 = System.currentTimeMillis();
+		System.out.println(e1 - s1);
+		
+		s1 = System.currentTimeMillis();
+		floydsTri2(times);
+		e1 = System.currentTimeMillis();
+		System.out.println(e1 - s1);
+		
+		System.exit(0);
+		
 		T1 t1  = new T2();
 		T2 t2  = new T2();
 		T1 t11 = new T1();

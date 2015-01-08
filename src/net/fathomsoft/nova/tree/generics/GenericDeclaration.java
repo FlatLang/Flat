@@ -2,6 +2,7 @@ package net.fathomsoft.nova.tree.generics;
 
 import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.TestContext;
+import net.fathomsoft.nova.tree.AccessorMethod;
 import net.fathomsoft.nova.tree.GenericCompatible;
 import net.fathomsoft.nova.tree.Node;
 import net.fathomsoft.nova.tree.TypeList;
@@ -197,7 +198,15 @@ public class GenericDeclaration extends TypeList<GenericParameter>
 	{
 		GenericDeclaration node = new GenericDeclaration(temporaryParent, locationIn);
 		
-		return cloneTo(node);
+		return cloneTo(node, cloneChildren);
+	}
+	
+	/**
+	 * @see net.fathomsoft.nova.tree.Node#cloneTo(Node)
+	 */
+	public GenericDeclaration cloneTo(GenericDeclaration node)
+	{
+		return cloneTo(node, true);
 	}
 	
 	/**
@@ -207,9 +216,9 @@ public class GenericDeclaration extends TypeList<GenericParameter>
 	 * @param node The node to copy the data into.
 	 * @return The cloned node.
 	 */
-	public GenericDeclaration cloneTo(GenericDeclaration node)
+	public GenericDeclaration cloneTo(GenericDeclaration node, boolean cloneChildren)
 	{
-		super.cloneTo(node);
+		super.cloneTo(node, cloneChildren);
 		
 		return node;
 	}

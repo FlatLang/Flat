@@ -139,7 +139,15 @@ public class StaticBlock extends Node implements ScopeAncestor
 	{
 		StaticBlock node = new StaticBlock(temporaryParent, locationIn);
 		
-		return cloneTo(node);
+		return cloneTo(node, cloneChildren);
+	}
+	
+	/**
+	 * @see net.fathomsoft.nova.tree.Node#cloneTo(Node)
+	 */
+	public StaticBlock cloneTo(StaticBlock node)
+	{
+		return cloneTo(node, true);
 	}
 	
 	/**
@@ -149,9 +157,9 @@ public class StaticBlock extends Node implements ScopeAncestor
 	 * @param node The node to copy the data into.
 	 * @return The cloned node.
 	 */
-	public StaticBlock cloneTo(StaticBlock node)
+	public StaticBlock cloneTo(StaticBlock node, boolean cloneChildren)
 	{
-		super.cloneTo(node);
+		super.cloneTo(node, cloneChildren);
 		
 		return node;
 	}

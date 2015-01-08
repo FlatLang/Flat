@@ -309,7 +309,15 @@ public class Import extends Node
 	{
 		Import node = new Import(temporaryParent, locationIn);
 		
-		return cloneTo(node);
+		return cloneTo(node, cloneChildren);
+	}
+	
+	/**
+	 * @see net.fathomsoft.nova.tree.Node#cloneTo(Node)
+	 */
+	public Import cloneTo(Import node)
+	{
+		return cloneTo(node, true);
 	}
 	
 	/**
@@ -319,9 +327,9 @@ public class Import extends Node
 	 * @param node The node to copy the data into.
 	 * @return The cloned node.
 	 */
-	public Import cloneTo(Import node)
+	public Import cloneTo(Import node, boolean cloneChildren)
 	{
-		super.cloneTo(node);
+		super.cloneTo(node, cloneChildren);
 		
 		node.external = external;
 		

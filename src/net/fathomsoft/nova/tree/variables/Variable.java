@@ -5,6 +5,7 @@ import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.tree.Accessible;
 import net.fathomsoft.nova.tree.AccessorMethod;
+import net.fathomsoft.nova.tree.Assignment;
 import net.fathomsoft.nova.tree.ClassDeclaration;
 import net.fathomsoft.nova.tree.Identifier;
 import net.fathomsoft.nova.tree.MethodCall;
@@ -385,7 +386,15 @@ public class Variable extends Identifier
 	{
 		Variable node = new Variable(temporaryParent, locationIn);
 		
-		return cloneTo(node);
+		return cloneTo(node, cloneChildren);
+	}
+	
+	/**
+	 * @see net.fathomsoft.nova.tree.Node#cloneTo(Node)
+	 */
+	public Variable cloneTo(Variable node)
+	{
+		return cloneTo(node, true);
 	}
 	
 	/**
@@ -395,11 +404,11 @@ public class Variable extends Identifier
 	 * @param node The node to copy the data into.
 	 * @return The cloned node.
 	 */
-	public Variable cloneTo(Variable node)
+	public Variable cloneTo(Variable node, boolean cloneChildren)
 	{
 		node.declaration = declaration;
 		
-		super.cloneTo(node);
+		super.cloneTo(node, cloneChildren);
 		
 		return node;
 	}

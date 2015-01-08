@@ -403,6 +403,10 @@ nova_env novaEnv = {
 },
 
 {
+&nova_standard_exception_Nova_UnimplementedOperationException_1_Nova_construct,
+},
+
+{
 &nova_standard_exception_Nova_Exception_0_Nova_construct,
 &nova_standard_exception_Nova_Exception_1_Nova_construct,
 },
@@ -483,6 +487,7 @@ nova_env novaEnv = {
 &nova_standard_datastruct_Nova_Tree_Nova_preorder,
 &nova_standard_datastruct_Nova_Tree_Nova_inorder,
 &nova_standard_datastruct_Nova_Tree_Nova_postorder,
+&nova_standard_datastruct_Nova_Tree_Nova_levelorder,
 &nova_standard_datastruct_Nova_Tree_2_Nova_construct,
 },
 

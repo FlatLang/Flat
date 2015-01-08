@@ -188,7 +188,15 @@ public class Package extends Node
 	{
 		Package node = new Package(temporaryParent, locationIn);
 		
-		return cloneTo(node);
+		return cloneTo(node, cloneChildren);
+	}
+	
+	/**
+	 * @see net.fathomsoft.nova.tree.Node#cloneTo(Node)
+	 */
+	public Package cloneTo(Package node)
+	{
+		return cloneTo(node, true);
 	}
 	
 	/**
@@ -198,9 +206,9 @@ public class Package extends Node
 	 * @param node The node to copy the data into.
 	 * @return The cloned node.
 	 */
-	public Package cloneTo(Package node)
+	public Package cloneTo(Package node, boolean cloneChildren)
 	{
-		super.cloneTo(node);
+		super.cloneTo(node, cloneChildren);
 		
 		return node;
 	}

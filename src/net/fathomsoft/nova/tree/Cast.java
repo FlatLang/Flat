@@ -201,7 +201,15 @@ public class Cast extends IValue
 	{
 		Cast node = new Cast(temporaryParent, locationIn);
 		
-		return cloneTo(node);
+		return cloneTo(node, cloneChildren);
+	}
+	
+	/**
+	 * @see net.fathomsoft.nova.tree.Node#cloneTo(Node)
+	 */
+	public Cast cloneTo(Cast node)
+	{
+		return cloneTo(node, true);
 	}
 	
 	/**
@@ -211,9 +219,9 @@ public class Cast extends IValue
 	 * @param node The node to copy the data into.
 	 * @return The cloned node.
 	 */
-	public Cast cloneTo(Cast node)
+	public Cast cloneTo(Cast node, boolean cloneChildren)
 	{
-		super.cloneTo(node);
+		super.cloneTo(node, cloneChildren);
 		
 		return node;
 	}

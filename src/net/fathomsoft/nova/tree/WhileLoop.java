@@ -168,7 +168,15 @@ public class WhileLoop extends Loop
 	{
 		WhileLoop node = new WhileLoop(temporaryParent, locationIn);
 		
-		return cloneTo(node);
+		return cloneTo(node, cloneChildren);
+	}
+	
+	/**
+	 * @see net.fathomsoft.nova.tree.Node#cloneTo(Node)
+	 */
+	public WhileLoop cloneTo(WhileLoop node)
+	{
+		return cloneTo(node, true);
 	}
 	
 	/**
@@ -178,9 +186,9 @@ public class WhileLoop extends Loop
 	 * @param node The node to copy the data into.
 	 * @return The cloned node.
 	 */
-	public WhileLoop cloneTo(WhileLoop node)
+	public WhileLoop cloneTo(WhileLoop node, boolean cloneChildren)
 	{
-		super.cloneTo(node);
+		super.cloneTo(node, cloneChildren);
 		
 		return node;
 	}

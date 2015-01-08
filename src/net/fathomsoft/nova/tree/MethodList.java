@@ -166,7 +166,15 @@ public class MethodList extends List
 	{
 		MethodList node = new MethodList(temporaryParent, locationIn);
 		
-		return cloneTo(node);
+		return cloneTo(node, cloneChildren);
+	}
+	
+	/**
+	 * @see net.fathomsoft.nova.tree.Node#cloneTo(Node)
+	 */
+	public MethodList cloneTo(MethodList node)
+	{
+		return cloneTo(node, true);
 	}
 	
 	/**
@@ -176,9 +184,9 @@ public class MethodList extends List
 	 * @param node The node to copy the data into.
 	 * @return The cloned node.
 	 */
-	public MethodList cloneTo(MethodList node)
+	public MethodList cloneTo(MethodList node, boolean cloneChildren)
 	{
-		super.cloneTo(node);
+		super.cloneTo(node, cloneChildren);
 		
 		return node;
 	}

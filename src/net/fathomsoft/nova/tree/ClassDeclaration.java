@@ -2085,7 +2085,15 @@ public class ClassDeclaration extends InstanceDeclaration
 	{
 		ClassDeclaration node = new ClassDeclaration(temporaryParent, locationIn);
 		
-		return cloneTo(node);
+		return cloneTo(node, cloneChildren);
+	}
+	
+	/**
+	 * @see net.fathomsoft.nova.tree.Node#cloneTo(Node)
+	 */
+	public ClassDeclaration cloneTo(ClassDeclaration node)
+	{
+		return cloneTo(node, true);
 	}
 	
 	/**
@@ -2095,9 +2103,9 @@ public class ClassDeclaration extends InstanceDeclaration
 	 * @param node The node to copy the data into.
 	 * @return The cloned node.
 	 */
-	public ClassDeclaration cloneTo(ClassDeclaration node)
+	public ClassDeclaration cloneTo(ClassDeclaration node, boolean cloneChildren)
 	{
-		super.cloneTo(node);
+		super.cloneTo(node, cloneChildren);
 		
 		node.extendedClass = extendedClass;
 		

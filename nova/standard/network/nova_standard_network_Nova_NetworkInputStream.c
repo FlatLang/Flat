@@ -63,7 +63,7 @@ nova_standard_Nova_String* nova_standard_network_Nova_NetworkInputStream_Nova_re
 
 char* nova_standard_network_Nova_NetworkInputStream_Nova_readBytes(nova_standard_network_Nova_NetworkInputStream* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
-	return (nova_standard_primitive_number_Nova_Byte*)nova_null;
+	return (char*)nova_null;
 }
 
 void nova_standard_network_Nova_NetworkInputStream_2_Nova_super(nova_standard_network_Nova_NetworkInputStream* this, nova_standard_exception_Nova_ExceptionData* exceptionData)

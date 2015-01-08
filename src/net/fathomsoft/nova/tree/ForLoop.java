@@ -368,7 +368,15 @@ public class ForLoop extends Loop
 	{
 		ForLoop node = new ForLoop(temporaryParent, locationIn);
 		
-		return cloneTo(node);
+		return cloneTo(node, cloneChildren);
+	}
+	
+	/**
+	 * @see net.fathomsoft.nova.tree.Node#cloneTo(Node)
+	 */
+	public ForLoop cloneTo(ForLoop node)
+	{
+		return cloneTo(node, true);
 	}
 	
 	/**
@@ -378,9 +386,9 @@ public class ForLoop extends Loop
 	 * @param node The node to copy the data into.
 	 * @return The cloned node.
 	 */
-	public ForLoop cloneTo(ForLoop node)
+	public ForLoop cloneTo(ForLoop node, boolean cloneChildren)
 	{
-		super.cloneTo(node);
+		super.cloneTo(node, cloneChildren);
 		
 		return node;
 	}

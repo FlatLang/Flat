@@ -179,24 +179,37 @@ public class Parameter extends LocalDeclaration
 		
 		if (phase == SyntaxTree.PHASE_INSTANCE_DECLARATIONS)
 		{
-//			if (getParentMethod() != null)
-//			{
-//				int index = ((NovaParameterList)getAncestorOfType(NovaParameterList.class)).getVisibleParameterIndex(getName());
-//				
-//				NovaMethodDeclaration current = getParentMethod().getOverriddenMethod(); 
-//				
-//				while (current != null)
-//				{
-//					if (current.getParameter(index).isGenericType())
-//					{
-//						setPrimitiveWrapperType();
-//						
-//						break;
-//					}
-//					
-//					current = current.getOverriddenMethod();
-//				}
-//			}
+			if (isPrimitiveType() && getParentMethod() != null)
+			{
+				int index = ((NovaParameterList)getAncestorOfType(NovaParameterList.class)).getVisibleParameterIndex(getName());
+				
+				if (index >= 0)
+				{
+					NovaMethodDeclaration current = getParentMethod().getOverriddenMethod(); 
+					
+					while (current != null)
+					{
+						if (!current.getParameter(index).isPrimitiveType())//.isGenericType())
+						{
+							setPrimitiveWrapperType();
+							
+							Value assignee = LocalDeclaration.decodeStatement(getParentMethod(), getType() + " " + getParentMethod().generateTemporaryVariableName("prim"),
+									Location.INVALID, true);
+							
+							Assignment assign = Assignment.decodeStatement(getParentMethod(), "a = 5", Location.INVALID, true, true,
+									new Value[] { assignee }, null);
+							
+							getParentMethod().addChild(assign);
+							
+							current = null;
+						}
+						else
+						{
+							current = current.getOverriddenMethod();
+						}
+					}
+				}
+			}
 		}
 		
 		return result;
@@ -210,7 +223,15 @@ public class Parameter extends LocalDeclaration
 	{
 		Parameter node = new Parameter(temporaryParent, locationIn);
 		
-		return cloneTo(node);
+		return cloneTo(node, cloneChildren);
+	}
+	
+	/**
+	 * @see net.fathomsoft.nova.tree.Node#cloneTo(Node)
+	 */
+	public Parameter cloneTo(Parameter node)
+	{
+		return cloneTo(node, true);
 	}
 	
 	/**
@@ -220,9 +241,9 @@ public class Parameter extends LocalDeclaration
 	 * @param node The node to copy the data into.
 	 * @return The cloned node.
 	 */
-	public Parameter cloneTo(Parameter node)
+	public Parameter cloneTo(Parameter node, boolean cloneChildren)
 	{
-		super.cloneTo(node);
+		super.cloneTo(node, cloneChildren);
 		
 		node.defaultValue = defaultValue;
 		

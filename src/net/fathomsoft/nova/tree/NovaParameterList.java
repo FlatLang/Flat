@@ -94,7 +94,15 @@ public class NovaParameterList extends ParameterList<Parameter>
 	{
 		NovaParameterList node = new NovaParameterList(temporaryParent, locationIn);
 		
-		return cloneTo(node);
+		return cloneTo(node, cloneChildren);
+	}
+	
+	/**
+	 * @see net.fathomsoft.nova.tree.Node#cloneTo(Node)
+	 */
+	public NovaParameterList cloneTo(NovaParameterList node)
+	{
+		return cloneTo(node, true);
 	}
 	
 	/**
@@ -104,9 +112,9 @@ public class NovaParameterList extends ParameterList<Parameter>
 	 * @param node The node to copy the data into.
 	 * @return The cloned node.
 	 */
-	public NovaParameterList cloneTo(NovaParameterList node)
+	public NovaParameterList cloneTo(NovaParameterList node, boolean cloneChildren)
 	{
-		super.cloneTo(node);
+		super.cloneTo(node, cloneChildren);
 		
 		node.returnParameters = returnParameters.clone(node, getLocationIn().asNew(), true);
 		
@@ -127,7 +135,15 @@ public class NovaParameterList extends ParameterList<Parameter>
 		return null;
 	}
 	
-	private static class ReturnParameterList extends ParameterList<Parameter>
+	/**
+	 * ParameterList extension that represents the extraneous return
+	 * values that the method returns.
+	 * 
+	 * @author	Braden Steffaniak
+	 * @since	v0.2.42 Dec 26, 2014 at 4:14:42 PM
+	 * @version	v0.2.42 Dec 26, 2014 at 4:14:42 PM
+	 */
+	public static class ReturnParameterList extends ParameterList<Parameter>
 	{
 		public ReturnParameterList(Node temporaryParent, Location locationIn)
 		{
@@ -150,7 +166,15 @@ public class NovaParameterList extends ParameterList<Parameter>
 		{
 			ReturnParameterList node = new ReturnParameterList(temporaryParent, locationIn);
 			
-			return cloneTo(node);
+			return cloneTo(node, cloneChildren);
+		}
+		
+		/**
+		 * @see net.fathomsoft.nova.tree.Node#cloneTo(Node)
+		 */
+		public ReturnParameterList cloneTo(ReturnParameterList node)
+		{
+			return cloneTo(node, true);
 		}
 		
 		/**
@@ -160,9 +184,9 @@ public class NovaParameterList extends ParameterList<Parameter>
 		 * @param node The node to copy the data into.
 		 * @return The cloned node.
 		 */
-		public ReturnParameterList cloneTo(ReturnParameterList node)
+		public ReturnParameterList cloneTo(ReturnParameterList node, boolean cloneChildren)
 		{
-			super.cloneTo(node);
+			super.cloneTo(node, cloneChildren);
 			
 			return node;
 		}

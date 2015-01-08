@@ -1,6 +1,7 @@
 package net.fathomsoft.nova.tree.generics;
 
 import net.fathomsoft.nova.TestContext;
+import net.fathomsoft.nova.tree.Assignment;
 import net.fathomsoft.nova.tree.Node;
 import net.fathomsoft.nova.util.Location;
 
@@ -60,7 +61,15 @@ public class GenericParameter extends Node
 	{
 		GenericParameter node = new GenericParameter(temporaryParent, locationIn);
 		
-		return cloneTo(node);
+		return cloneTo(node, cloneChildren);
+	}
+	
+	/**
+	 * @see net.fathomsoft.nova.tree.Node#cloneTo(Node)
+	 */
+	public GenericParameter cloneTo(GenericParameter node)
+	{
+		return cloneTo(node, true);
 	}
 	
 	/**
@@ -70,9 +79,9 @@ public class GenericParameter extends Node
 	 * @param node The node to copy the data into.
 	 * @return The cloned node.
 	 */
-	public GenericParameter cloneTo(GenericParameter node)
+	public GenericParameter cloneTo(GenericParameter node, boolean cloneChildren)
 	{
-		super.cloneTo(node);
+		super.cloneTo(node, cloneChildren);
 		
 		node.name        = name;
 		node.defaultType = defaultType;

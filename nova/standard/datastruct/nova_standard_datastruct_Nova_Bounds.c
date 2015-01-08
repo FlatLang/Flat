@@ -103,7 +103,7 @@ nova_standard_Nova_String* nova_standard_datastruct_Nova_Bounds_Nova_trimString(
 	{
 		return l0_Nova_source;
 	}
-	nova_local_0 = nova_standard_datastruct_Nova_Bounds_Nova_extractPreString(this, exceptionData, l0_Nova_source)->vtable->nova_standard_Nova_String_virtual0_Nova_concat(nova_standard_datastruct_Nova_Bounds_Nova_extractPreString(this, exceptionData, l0_Nova_source), exceptionData, nova_standard_datastruct_Nova_Bounds_Nova_extractPostString(this, exceptionData, l0_Nova_source));
+	nova_local_0 = nova_standard_datastruct_Nova_Bounds_Nova_extractPreString(this, exceptionData, l0_Nova_source);
 	return nova_local_0->vtable->nova_standard_Nova_String_virtual0_Nova_concat(nova_local_0, exceptionData, nova_standard_datastruct_Nova_Bounds_Nova_extractPostString(this, exceptionData, l0_Nova_source));
 }
 

@@ -302,7 +302,7 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 	public StringBuilder generateCSourceNativeName(StringBuilder builder, boolean declaration)
 	{
 		super.generateCSourceNativeName(builder, declaration);
-		Nova.debuggingBreakpoint(!declaration && getFileDeclaration().getName().equals("Exception"));
+		
 		if (!declaration && isOverloaded())
 		{
 			for (Parameter param : getParameterList())
@@ -725,6 +725,7 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 		
 		if (phase == SyntaxTree.PHASE_INSTANCE_DECLARATIONS)
 		{
+			//TODO: Is this necessary?
 			getParameterList().validate(phase);
 			
 			NovaMethodDeclaration methodDeclaration = getOverriddenMethod();
@@ -771,7 +772,15 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 	{
 		NovaMethodDeclaration node = new NovaMethodDeclaration(temporaryParent, locationIn);
 		
-		return cloneTo(node);
+		return cloneTo(node, cloneChildren);
+	}
+	
+	/**
+	 * @see net.fathomsoft.nova.tree.Node#cloneTo(Node)
+	 */
+	public NovaMethodDeclaration cloneTo(NovaMethodDeclaration node)
+	{
+		return cloneTo(node, true);
 	}
 	
 	/**
@@ -781,9 +790,9 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 	 * @param node The node to copy the data into.
 	 * @return The cloned node.
 	 */
-	public NovaMethodDeclaration cloneTo(NovaMethodDeclaration node)
+	public NovaMethodDeclaration cloneTo(NovaMethodDeclaration node, boolean cloneChildren)
 	{
-		super.cloneTo(node);
+		super.cloneTo(node, cloneChildren);
 		
 		node.overloadID = overloadID;
 		node.uniqueID   = uniqueID;

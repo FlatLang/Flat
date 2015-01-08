@@ -58,7 +58,15 @@ public class ControlStatement extends Node
 	{
 		ControlStatement node = new ControlStatement(temporaryParent, locationIn);
 		
-		return cloneTo(node);
+		return cloneTo(node, cloneChildren);
+	}
+	
+	/**
+	 * @see net.fathomsoft.nova.tree.Node#cloneTo(Node)
+	 */
+	public ControlStatement cloneTo(ControlStatement node)
+	{
+		return cloneTo(node, true);
 	}
 	
 	/**
@@ -68,9 +76,9 @@ public class ControlStatement extends Node
 	 * @param node The node to copy the data into.
 	 * @return The cloned node.
 	 */
-	public ControlStatement cloneTo(ControlStatement node)
+	public ControlStatement cloneTo(ControlStatement node, boolean cloneChildren)
 	{
-		super.cloneTo(node);
+		super.cloneTo(node, cloneChildren);
 		
 		return node;
 	}

@@ -1,6 +1,7 @@
 package net.fathomsoft.nova.tree.generics;
 
 import net.fathomsoft.nova.TestContext;
+import net.fathomsoft.nova.tree.AccessorMethod;
 import net.fathomsoft.nova.tree.GenericCompatible;
 import net.fathomsoft.nova.tree.IValue;
 import net.fathomsoft.nova.tree.Node;
@@ -69,7 +70,15 @@ public class GenericArgument extends IValue implements GenericCompatible
 	{
 		GenericArgument node = new GenericArgument(temporaryParent, locationIn);
 		
-		return cloneTo(node);
+		return cloneTo(node, cloneChildren);
+	}
+	
+	/**
+	 * @see net.fathomsoft.nova.tree.Node#cloneTo(Node)
+	 */
+	public GenericArgument cloneTo(GenericArgument node)
+	{
+		return cloneTo(node, true);
 	}
 	
 	/**
@@ -79,9 +88,9 @@ public class GenericArgument extends IValue implements GenericCompatible
 	 * @param node The node to copy the data into.
 	 * @return The cloned node.
 	 */
-	public GenericArgument cloneTo(GenericArgument node)
+	public GenericArgument cloneTo(GenericArgument node, boolean cloneChildren)
 	{
-		super.cloneTo(node);
+		super.cloneTo(node, cloneChildren);
 		
 		return node;
 	}

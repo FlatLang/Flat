@@ -842,7 +842,15 @@ public class BinaryOperation extends IValue
 	{
 		BinaryOperation node = new BinaryOperation(temporaryParent, locationIn);
 		
-		return cloneTo(node);
+		return cloneTo(node, cloneChildren);
+	}
+	
+	/**
+	 * @see net.fathomsoft.nova.tree.Node#cloneTo(Node)
+	 */
+	public BinaryOperation cloneTo(BinaryOperation node)
+	{
+		return cloneTo(node, true);
 	}
 	
 	/**
@@ -852,9 +860,9 @@ public class BinaryOperation extends IValue
 	 * @param node The node to copy the data into.
 	 * @return The cloned node.
 	 */
-	public BinaryOperation cloneTo(BinaryOperation node)
+	public BinaryOperation cloneTo(BinaryOperation node, boolean cloneChildren)
 	{
-		super.cloneTo(node);
+		super.cloneTo(node, cloneChildren);
 		
 		return node;
 	}

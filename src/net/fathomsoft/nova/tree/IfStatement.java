@@ -170,7 +170,15 @@ public class IfStatement extends ControlStatement
 	{
 		IfStatement node = new IfStatement(temporaryParent, locationIn);
 		
-		return cloneTo(node);
+		return cloneTo(node, cloneChildren);
+	}
+	
+	/**
+	 * @see net.fathomsoft.nova.tree.Node#cloneTo(Node)
+	 */
+	public IfStatement cloneTo(IfStatement node)
+	{
+		return cloneTo(node, true);
 	}
 	
 	/**
@@ -180,9 +188,9 @@ public class IfStatement extends ControlStatement
 	 * @param node The node to copy the data into.
 	 * @return The cloned node.
 	 */
-	public IfStatement cloneTo(IfStatement node)
+	public IfStatement cloneTo(IfStatement node, boolean cloneChildren)
 	{
-		super.cloneTo(node);
+		super.cloneTo(node, cloneChildren);
 		
 		return node;
 	}

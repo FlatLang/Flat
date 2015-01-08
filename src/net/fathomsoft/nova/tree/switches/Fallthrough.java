@@ -2,6 +2,7 @@ package net.fathomsoft.nova.tree.switches;
 
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.error.SyntaxMessage;
+import net.fathomsoft.nova.tree.Assignment;
 import net.fathomsoft.nova.tree.Node;
 import net.fathomsoft.nova.tree.variables.Variable;
 import net.fathomsoft.nova.util.Location;
@@ -84,7 +85,15 @@ public class Fallthrough extends Node implements SwitchChild
 	{
 		Fallthrough node = new Fallthrough(temporaryParent, locationIn);
 		
-		return cloneTo(node);
+		return cloneTo(node, cloneChildren);
+	}
+	
+	/**
+	 * @see net.fathomsoft.nova.tree.Node#cloneTo(Node)
+	 */
+	public Fallthrough cloneTo(Fallthrough node)
+	{
+		return cloneTo(node, true);
 	}
 	
 	/**
@@ -94,9 +103,9 @@ public class Fallthrough extends Node implements SwitchChild
 	 * @param node The node to copy the data into.
 	 * @return The cloned node.
 	 */
-	public Fallthrough cloneTo(Fallthrough node)
+	public Fallthrough cloneTo(Fallthrough node, boolean cloneChildren)
 	{
-		super.cloneTo(node);
+		super.cloneTo(node, cloneChildren);
 		
 		return node;
 	}

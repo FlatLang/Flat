@@ -120,10 +120,10 @@ public class Scope extends Node
 			
 			virtual = (Value)accessible.getRootReferenceNode(true);
 			
-			Value clone = (Value)virtual.clone(virtual.getParent(), virtual.getLocationIn());
+			Value clone   = (Value)virtual.clone(virtual.getParent(), virtual.getLocationIn());
 			
-			Value current = ((Accessible)virtual).getAccessedNode();
-			Value cloneC  = ((Accessible)clone).getAccessedNode();
+			Value current = (virtual);//.getAccessedNode();
+			Value cloneC  = (clone);//.getAccessedNode();
 			
 			while (current != accessible && current != null)
 			{
@@ -282,7 +282,15 @@ public class Scope extends Node
 	{
 		Scope node = new Scope(temporaryParent, locationIn);
 		
-		return cloneTo(node);
+		return cloneTo(node, cloneChildren);
+	}
+	
+	/**
+	 * @see net.fathomsoft.nova.tree.Node#cloneTo(Node)
+	 */
+	public Scope cloneTo(Scope node)
+	{
+		return cloneTo(node, true);
 	}
 	
 	/**
@@ -292,9 +300,9 @@ public class Scope extends Node
 	 * @param node The node to copy the data into.
 	 * @return The cloned node.
 	 */
-	public Scope cloneTo(Scope node)
+	public Scope cloneTo(Scope node, boolean cloneChildren)
 	{
-		super.cloneTo(node);
+		super.cloneTo(node, cloneChildren);
 		
 		return node;
 	}

@@ -1,6 +1,7 @@
 package net.fathomsoft.nova.tree.exceptionhandling;
 
 import net.fathomsoft.nova.TestContext;
+import net.fathomsoft.nova.tree.Assignment;
 import net.fathomsoft.nova.tree.Node;
 import net.fathomsoft.nova.tree.Scope;
 import net.fathomsoft.nova.util.Location;
@@ -96,7 +97,15 @@ public class ExceptionHandler extends Node
 	{
 		ExceptionHandler node = new ExceptionHandler(temporaryParent, locationIn);
 		
-		return cloneTo(node);
+		return cloneTo(node, cloneChildren);
+	}
+	
+	/**
+	 * @see net.fathomsoft.nova.tree.Node#cloneTo(Node)
+	 */
+	public ExceptionHandler cloneTo(ExceptionHandler node)
+	{
+		return cloneTo(node, true);
 	}
 	
 	/**
@@ -106,9 +115,9 @@ public class ExceptionHandler extends Node
 	 * @param node The node to copy the data into.
 	 * @return The cloned node.
 	 */
-	public ExceptionHandler cloneTo(ExceptionHandler node)
+	public ExceptionHandler cloneTo(ExceptionHandler node, boolean cloneChildren)
 	{
-		super.cloneTo(node);
+		super.cloneTo(node, cloneChildren);
 		
 		return node;
 	}

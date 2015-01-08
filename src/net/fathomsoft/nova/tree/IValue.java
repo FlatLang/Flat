@@ -99,7 +99,15 @@ public class IValue extends Value
 	{
 		IValue node = new IValue(temporaryParent, locationIn);
 		
-		return cloneTo(node);
+		return cloneTo(node, cloneChildren);
+	}
+	
+	/**
+	 * @see net.fathomsoft.nova.tree.Node#cloneTo(Node)
+	 */
+	public IValue cloneTo(IValue node)
+	{
+		return cloneTo(node, true);
 	}
 	
 	/**
@@ -109,9 +117,9 @@ public class IValue extends Value
 	 * @param node The node to copy the data into.
 	 * @return The cloned node.
 	 */
-	public IValue cloneTo(IValue node)
+	public IValue cloneTo(IValue node, boolean cloneChildren)
 	{
-		super.cloneTo(node);
+		super.cloneTo(node, cloneChildren);
 		
 		node.arrayDimensions = arrayDimensions;
 		node.type            = type;

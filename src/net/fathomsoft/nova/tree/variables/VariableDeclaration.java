@@ -4,6 +4,7 @@ import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.error.SyntaxMessage;
+import net.fathomsoft.nova.tree.Assignment;
 import net.fathomsoft.nova.tree.ClassDeclaration;
 import net.fathomsoft.nova.tree.GenericCompatible;
 import net.fathomsoft.nova.tree.IIdentifier;
@@ -481,7 +482,15 @@ public class VariableDeclaration extends IIdentifier implements GenericCompatibl
 	{
 		VariableDeclaration node = new VariableDeclaration(temporaryParent, locationIn);
 		
-		return cloneTo(node);
+		return cloneTo(node, cloneChildren);
+	}
+	
+	/**
+	 * @see net.fathomsoft.nova.tree.Node#cloneTo(Node)
+	 */
+	public VariableDeclaration cloneTo(VariableDeclaration node)
+	{
+		return cloneTo(node, true);
 	}
 	
 	/**
@@ -491,9 +500,9 @@ public class VariableDeclaration extends IIdentifier implements GenericCompatibl
 	 * @param node The node to copy the data into.
 	 * @return The cloned node.
 	 */
-	public VariableDeclaration cloneTo(VariableDeclaration node)
+	public VariableDeclaration cloneTo(VariableDeclaration node, boolean cloneChildren)
 	{
-		super.cloneTo(node);
+		super.cloneTo(node, cloneChildren);
 		
 		node.external     = external;
 		node.volatileVal  = volatileVal;

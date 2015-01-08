@@ -1,6 +1,7 @@
 package net.fathomsoft.nova.tree.generics;
 
 import net.fathomsoft.nova.TestContext;
+import net.fathomsoft.nova.tree.AccessorMethod;
 import net.fathomsoft.nova.tree.IValue;
 import net.fathomsoft.nova.tree.Node;
 import net.fathomsoft.nova.tree.TypeList;
@@ -60,7 +61,15 @@ public class GenericImplementation extends TypeList<GenericArgument>
 	{
 		GenericImplementation node = new GenericImplementation(temporaryParent, locationIn);
 		
-		return cloneTo(node);
+		return cloneTo(node, cloneChildren);
+	}
+	
+	/**
+	 * @see net.fathomsoft.nova.tree.Node#cloneTo(Node)
+	 */
+	public GenericImplementation cloneTo(GenericImplementation node)
+	{
+		return cloneTo(node, true);
 	}
 	
 	/**
@@ -70,9 +79,9 @@ public class GenericImplementation extends TypeList<GenericArgument>
 	 * @param node The node to copy the data into.
 	 * @return The cloned node.
 	 */
-	public GenericImplementation cloneTo(GenericImplementation node)
+	public GenericImplementation cloneTo(GenericImplementation node, boolean cloneChildren)
 	{
-		super.cloneTo(node);
+		super.cloneTo(node, cloneChildren);
 		
 		return node;
 	}

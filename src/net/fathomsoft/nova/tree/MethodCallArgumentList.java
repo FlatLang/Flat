@@ -334,7 +334,15 @@ public class MethodCallArgumentList extends ArgumentList
 	{
 		MethodCallArgumentList node = new MethodCallArgumentList(temporaryParent, locationIn);
 		
-		return cloneTo(node);
+		return cloneTo(node, cloneChildren);
+	}
+	
+	/**
+	 * @see net.fathomsoft.nova.tree.Node#cloneTo(Node)
+	 */
+	public MethodCallArgumentList cloneTo(MethodCallArgumentList node)
+	{
+		return cloneTo(node, true);
 	}
 	
 	/**
@@ -344,9 +352,9 @@ public class MethodCallArgumentList extends ArgumentList
 	 * @param node The node to copy the data into.
 	 * @return The cloned node.
 	 */
-	public MethodCallArgumentList cloneTo(MethodCallArgumentList node)
+	public MethodCallArgumentList cloneTo(MethodCallArgumentList node, boolean cloneChildren)
 	{
-		super.cloneTo(node);
+		super.cloneTo(node, cloneChildren);
 		
 		return node;
 	}

@@ -1,5 +1,7 @@
 package "nova/standard/datastruct"
 
+import "nova/standard/exception/UnimplementedOperationException"
+
 public class Tree
 {
 	public Node root
@@ -17,5 +19,10 @@ public class Tree
 	public postorder() -> String
 	{
 		return root.postorder()
+	}
+	
+	public levelorder() -> String
+	{
+		throw new UnimplementedOperationException("Level order has not been implemented yet... hold on.")
 	}
 }

@@ -284,7 +284,7 @@ public class Literal extends IValue
 			}
 			else if (getAncestorOfType(Return.class) != null)
 			{
-				setType(getParentMethod().getType());
+				getParentMethod().cloneTo(this, false);
 			}
 		}
 		
@@ -299,7 +299,15 @@ public class Literal extends IValue
 	{
 		Literal node = new Literal(temporaryParent, locationIn);
 		
-		return cloneTo(node);
+		return cloneTo(node, cloneChildren);
+	}
+	
+	/**
+	 * @see net.fathomsoft.nova.tree.Node#cloneTo(Node)
+	 */
+	public Literal cloneTo(Literal node)
+	{
+		return cloneTo(node, true);
 	}
 	
 	/**
@@ -309,9 +317,9 @@ public class Literal extends IValue
 	 * @param node The node to copy the data into.
 	 * @return The cloned node.
 	 */
-	public Literal cloneTo(Literal node)
+	public Literal cloneTo(Literal node, boolean cloneChildren)
 	{
-		super.cloneTo(node);
+		super.cloneTo(node, cloneChildren);
 		
 		node.value = value;
 		

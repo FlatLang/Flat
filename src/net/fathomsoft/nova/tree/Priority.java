@@ -237,7 +237,15 @@ public class Priority extends IValue implements Accessible
 	{
 		Priority node = new Priority(temporaryParent, locationIn);
 		
-		return cloneTo(node);
+		return cloneTo(node, cloneChildren);
+	}
+	
+	/**
+	 * @see net.fathomsoft.nova.tree.Node#cloneTo(Node)
+	 */
+	public Priority cloneTo(Priority node)
+	{
+		return cloneTo(node, true);
 	}
 	
 	/**
@@ -247,9 +255,9 @@ public class Priority extends IValue implements Accessible
 	 * @param node The node to copy the data into.
 	 * @return The cloned node.
 	 */
-	public Priority cloneTo(Priority node)
+	public Priority cloneTo(Priority node, boolean cloneChildren)
 	{
-		super.cloneTo(node);
+		super.cloneTo(node, cloneChildren);
 		
 		return node;
 	}

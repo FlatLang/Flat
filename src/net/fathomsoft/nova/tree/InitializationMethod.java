@@ -78,7 +78,15 @@ public class InitializationMethod extends BodyMethodDeclaration
 	{
 		InitializationMethod node = new InitializationMethod(temporaryParent, locationIn);
 		
-		return cloneTo(node);
+		return cloneTo(node, cloneChildren);
+	}
+	
+	/**
+	 * @see net.fathomsoft.nova.tree.Node#cloneTo(Node)
+	 */
+	public InitializationMethod cloneTo(InitializationMethod node)
+	{
+		return cloneTo(node, true);
 	}
 	
 	/**
@@ -88,9 +96,9 @@ public class InitializationMethod extends BodyMethodDeclaration
 	 * @param node The node to copy the data into.
 	 * @return The cloned node.
 	 */
-	public InitializationMethod cloneTo(InitializationMethod node)
+	public InitializationMethod cloneTo(InitializationMethod node, boolean cloneChildren)
 	{
-		super.cloneTo(node);
+		super.cloneTo(node, cloneChildren);
 		
 		return node;
 	}

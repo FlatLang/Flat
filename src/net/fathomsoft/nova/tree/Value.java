@@ -4,6 +4,7 @@ import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.error.UnimplementedOperationException;
+import net.fathomsoft.nova.tree.NovaParameterList.ReturnParameterList;
 import net.fathomsoft.nova.tree.generics.GenericDeclaration;
 import net.fathomsoft.nova.tree.generics.GenericParameter;
 import net.fathomsoft.nova.tree.variables.Super;
@@ -165,6 +166,11 @@ public abstract class Value extends Node implements AbstractValue
 		return false;
 	}
 	
+	public boolean isReturnParameter()
+	{
+		return getAncestorOfType(ReturnParameterList.class) != null;
+	}
+	
 	/**
 	 * Get whether a variable's type is a primitive type or not.<br>
 	 * <br>
@@ -175,7 +181,7 @@ public abstract class Value extends Node implements AbstractValue
 	 */
 	public boolean isPrimitiveType()
 	{
-		return SyntaxUtils.isPrimitiveType(getType());
+		return SyntaxUtils.isPrimitiveType(getType()) || getType() != null && getType().equals("Number");
 	}
 	
 	/**
@@ -692,7 +698,7 @@ public abstract class Value extends Node implements AbstractValue
 		{
 			builder.append("char");
 		}
-		else if (SyntaxUtils.isPrimitiveType(type) && getDataType() == VALUE)
+		else if (SyntaxUtils.isPrimitiveType(type) && (getDataType() == VALUE || (isReturnParameter() && getDataType() == POINTER)))
 		{
 			builder.append(SyntaxUtils.getPrimitiveExternalType(type));
 		}
@@ -866,9 +872,9 @@ public abstract class Value extends Node implements AbstractValue
 	 * @param node The node to copy the data into.
 	 * @return The cloned node.
 	 */
-	public Value cloneTo(Value node)
+	public Value cloneTo(Value node, boolean cloneChildren)
 	{
-		super.cloneTo(node);
+		super.cloneTo(node, cloneChildren);
 		
 		node.setArrayDimensions(getArrayDimensions());
 		node.setType(getType(), true, false, false);

@@ -69,9 +69,9 @@ public class BinaryNode<E> extends Node
 	
 	public addChild(E data)
 	{
-		Comparable<Char> temp = (Comparable)this.data
+		Comparable<E> temp = (Comparable)this.data
 		
-		if (temp.compareTo((Char)data) < 0)
+		if (temp.compareTo(data) < 0)
 		{
 			if (left == null)
 			{
@@ -138,11 +138,11 @@ public class BinaryNode<E> extends Node
 		
 		if (left != null)
 		{
-			str = str + ", " + left.preorder()
+			str = str + left.preorder() + ", "
 		}
 		if (right != null)
 		{
-			str = str + ", " + right.preorder()
+			str = str + right.preorder() + ", "
 		}
 		
 		str = str + data

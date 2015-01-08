@@ -3,6 +3,7 @@ package net.fathomsoft.nova.tree.exceptionhandling;
 import java.util.HashMap;
 
 import net.fathomsoft.nova.TestContext;
+import net.fathomsoft.nova.tree.Assignment;
 import net.fathomsoft.nova.tree.Node;
 import net.fathomsoft.nova.util.Location;
 
@@ -97,7 +98,15 @@ public class Exception extends Node
 	{
 		Exception node = new Exception(temporaryParent, locationIn);
 		
-		return cloneTo(node);
+		return cloneTo(node, cloneChildren);
+	}
+	
+	/**
+	 * @see net.fathomsoft.nova.tree.Node#cloneTo(Node)
+	 */
+	public Exception cloneTo(Exception node)
+	{
+		return cloneTo(node, true);
 	}
 	
 	/**
@@ -107,9 +116,9 @@ public class Exception extends Node
 	 * @param node The node to copy the data into.
 	 * @return The cloned node.
 	 */
-	public Exception cloneTo(Exception node)
+	public Exception cloneTo(Exception node, boolean cloneChildren)
 	{
-		super.cloneTo(node);
+		super.cloneTo(node, cloneChildren);
 		
 		node.id = id;
 		

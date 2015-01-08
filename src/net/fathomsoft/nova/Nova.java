@@ -76,7 +76,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:00:04 PM
- * @version	v0.2.41 Dec 17, 2014 at 7:48:17 PM
+ * @version	v0.2.42 Jan 7, 2015 at 10:30:17 PM
  */
 public class Nova
 {
@@ -133,7 +133,7 @@ public class Nova
 	public static final int		LINUX         = 3;
 	
 	public static final String	LANGUAGE_NAME = "Nova";
-	public static final String	VERSION       = "v0.2.41";
+	public static final String	VERSION       = "v0.2.42";
 	
 	/**
 	 * Find out which operating system the compiler is running on.
@@ -397,6 +397,7 @@ public class Nova
 			
 			formatPath(standard  + "exception/ExceptionData.nova"),
 			formatPath(standard  + "exception/DivideByZeroException.nova"),
+			formatPath(standard  + "exception/UnimplementedOperationException.nova"),
 			formatPath(standard  + "exception/Exception.nova"),
 			
 			formatPath(standard  + "datastruct/ArrayList.nova"),

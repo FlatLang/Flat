@@ -177,7 +177,15 @@ public class ImportList extends List
 	{
 		ImportList node = new ImportList(temporaryParent, locationIn);
 		
-		return cloneTo(node);
+		return cloneTo(node, cloneChildren);
+	}
+	
+	/**
+	 * @see net.fathomsoft.nova.tree.Node#cloneTo(Node)
+	 */
+	public ImportList cloneTo(ImportList node)
+	{
+		return cloneTo(node, true);
 	}
 	
 	/**
@@ -187,9 +195,9 @@ public class ImportList extends List
 	 * @param node The node to copy the data into.
 	 * @return The cloned node.
 	 */
-	public ImportList cloneTo(ImportList node)
+	public ImportList cloneTo(ImportList node, boolean cloneChildren)
 	{
-		super.cloneTo(node);
+		super.cloneTo(node, cloneChildren);
 		
 		return node;
 	}

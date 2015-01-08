@@ -91,7 +91,7 @@ char nova_standard_primitive_number_Nova_Char_Nova_toUpperCase(nova_standard_pri
 	return l0_Nova_c;
 }
 
-int nova_standard_primitive_number_Nova_Char_Nova_compareTo(nova_standard_primitive_number_Nova_Char* this, nova_standard_exception_Nova_ExceptionData* exceptionData, char l0_Nova_other)
+int nova_standard_primitive_number_Nova_Char_Nova_compareTo(nova_standard_primitive_number_Nova_Char* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_primitive_number_Nova_Char* l0_Nova_other)
 {
 	return (int)this->nova_standard_primitive_number_Nova_Char_Nova_value - (int)l0_Nova_other;
 }

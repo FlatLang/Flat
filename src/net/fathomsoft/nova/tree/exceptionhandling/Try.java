@@ -4,6 +4,7 @@ import java.util.ArrayList;
 
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.ValidationResult;
+import net.fathomsoft.nova.tree.AccessorMethod;
 import net.fathomsoft.nova.tree.Node;
 import net.fathomsoft.nova.tree.SyntaxTree;
 import net.fathomsoft.nova.util.Location;
@@ -179,7 +180,15 @@ public class Try extends ExceptionHandler
 	{
 		Try node = new Try(temporaryParent, locationIn);
 		
-		return cloneTo(node);
+		return cloneTo(node, cloneChildren);
+	}
+	
+	/**
+	 * @see net.fathomsoft.nova.tree.Node#cloneTo(Node)
+	 */
+	public Try cloneTo(Try node)
+	{
+		return cloneTo(node, true);
 	}
 	
 	/**
@@ -189,9 +198,9 @@ public class Try extends ExceptionHandler
 	 * @param node The node to copy the data into.
 	 * @return The cloned node.
 	 */
-	public Try cloneTo(Try node)
+	public Try cloneTo(Try node, boolean cloneChildren)
 	{
-		super.cloneTo(node);
+		super.cloneTo(node, cloneChildren);
 		
 		node.codes = new ArrayList<Integer>();
 		

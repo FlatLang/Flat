@@ -109,7 +109,7 @@
 //	{
 //		GenericType node = new GenericType(temporaryParent, locationIn);
 //		
-//		return cloneTo(node);
+//		return cloneTo(node, cloneChildren);
 //	}
 //	
 //	/**
@@ -121,7 +121,7 @@
 //	 */
 //	public GenericType cloneTo(GenericType node)
 //	{
-//		super.cloneTo(node);
+//		super.cloneTo(node, cloneChildren);
 //		
 //		node.defaultType  = defaultType;
 //		node.genericTypes = cloneGenericTypes(node);

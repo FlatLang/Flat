@@ -175,6 +175,7 @@ int main(int argc, char** argvs)
 		nova_standard_svg_Nova_SVGCircleNova_init_static(exceptionData);
 		nova_standard_exception_Nova_ExceptionDataNova_init_static(exceptionData);
 		nova_standard_exception_Nova_DivideByZeroExceptionNova_init_static(exceptionData);
+		nova_standard_exception_Nova_UnimplementedOperationExceptionNova_init_static(exceptionData);
 		nova_standard_exception_Nova_ExceptionNova_init_static(exceptionData);
 		nova_standard_datastruct_Nova_ArrayListNova_init_static(exceptionData);
 		nova_standard_datastruct_Nova_QueueNova_init_static(exceptionData);

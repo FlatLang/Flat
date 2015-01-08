@@ -77,7 +77,15 @@ public class Continue extends Node
 	{
 		Continue node = new Continue(temporaryParent, locationIn);
 		
-		return cloneTo(node);
+		return cloneTo(node, cloneChildren);
+	}
+	
+	/**
+	 * @see net.fathomsoft.nova.tree.Node#cloneTo(Node)
+	 */
+	public Continue cloneTo(Continue node)
+	{
+		return cloneTo(node, true);
 	}
 	
 	/**
@@ -87,9 +95,9 @@ public class Continue extends Node
 	 * @param node The node to copy the data into.
 	 * @return The cloned node.
 	 */
-	public Continue cloneTo(Continue node)
+	public Continue cloneTo(Continue node, boolean cloneChildren)
 	{
-		super.cloneTo(node);
+		super.cloneTo(node, cloneChildren);
 		
 		return node;
 	}

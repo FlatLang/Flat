@@ -52,7 +52,7 @@ nova_standard_Nova_String* nova_standard_Nova_Object_0_Nova_toString(nova_standa
 {
 	nova_standard_Nova_String* nova_local_0;
 	
-	nova_local_0 = nova_standard_Nova_Object_Nova_getHashCode(this, exceptionData)->vtable->nova_standard_Nova_String_virtual0_Nova_concat(nova_standard_Nova_Object_Nova_getHashCode(this, exceptionData), exceptionData, nova_standard_Nova_String_1_Nova_construct(0, exceptionData, "]"));
+	nova_local_0 = nova_standard_Nova_Object_Nova_getHashCode(this, exceptionData);
 	return nova_standard_Nova_String_0_Nova_concat(nova_standard_Nova_String_1_Nova_construct(0, exceptionData, "[Object @"), exceptionData, nova_local_0->vtable->nova_standard_Nova_String_virtual0_Nova_concat(nova_local_0, exceptionData, nova_standard_Nova_String_1_Nova_construct(0, exceptionData, "]")));
 }
 

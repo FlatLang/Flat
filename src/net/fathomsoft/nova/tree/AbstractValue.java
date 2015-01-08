@@ -52,7 +52,7 @@ public interface AbstractValue
 					setDataType(Value.POINTER);
 				}
 			}
-			else */if (!SyntaxUtils.isPrimitiveType(type) && !SyntaxUtils.isExternalPrimitiveType(type))
+			else */if (type != null && !SyntaxUtils.isPrimitiveType(type) && !SyntaxUtils.isExternalPrimitiveType(type))
 			{
 				if (!n.isExternalType() && getDataType() != Value.DOUBLE_POINTER)//!n.isWithinExternalContext())// || !SyntaxUtils.isExternalPrimitiveType(type))
 				{

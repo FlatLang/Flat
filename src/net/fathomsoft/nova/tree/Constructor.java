@@ -349,7 +349,15 @@ public class Constructor extends BodyMethodDeclaration
 	{
 		Constructor node = new Constructor(temporaryParent, locationIn);
 		
-		return cloneTo(node);
+		return cloneTo(node, cloneChildren);
+	}
+	
+	/**
+	 * @see net.fathomsoft.nova.tree.Node#cloneTo(Node)
+	 */
+	public Constructor cloneTo(Constructor node)
+	{
+		return cloneTo(node, true);
 	}
 	
 	/**
@@ -359,9 +367,9 @@ public class Constructor extends BodyMethodDeclaration
 	 * @param node The node to copy the data into.
 	 * @return The cloned node.
 	 */
-	public Constructor cloneTo(Constructor node)
+	public Constructor cloneTo(Constructor node, boolean cloneChildren)
 	{
-		super.cloneTo(node);
+		super.cloneTo(node, cloneChildren);
 		
 		return node;
 	}

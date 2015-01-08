@@ -259,7 +259,15 @@ public class Program extends Node
 	{
 		Program node = new Program(controller, tree);
 		
-		return cloneTo(node);
+		return cloneTo(node, cloneChildren);
+	}
+	
+	/**
+	 * @see net.fathomsoft.nova.tree.Node#cloneTo(Node)
+	 */
+	public Program cloneTo(Program node)
+	{
+		return cloneTo(node, true);
 	}
 	
 	/**
@@ -269,9 +277,9 @@ public class Program extends Node
 	 * @param node The node to copy the data into.
 	 * @return The cloned node.
 	 */
-	public Program cloneTo(Program node)
+	public Program cloneTo(Program node, boolean cloneChildren)
 	{
-		super.cloneTo(node);
+		super.cloneTo(node, cloneChildren);
 		
 		node.controller = controller;
 		

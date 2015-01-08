@@ -150,7 +150,15 @@ public class VariableDeclarationList extends List
 	{
 		VariableDeclarationList node = new VariableDeclarationList(temporaryParent, locationIn);
 		
-		return cloneTo(node);
+		return cloneTo(node, cloneChildren);
+	}
+	
+	/**
+	 * @see net.fathomsoft.nova.tree.Node#cloneTo(Node)
+	 */
+	public VariableDeclarationList cloneTo(VariableDeclarationList node)
+	{
+		return cloneTo(node, true);
 	}
 	
 	/**
@@ -160,9 +168,9 @@ public class VariableDeclarationList extends List
 	 * @param node The node to copy the data into.
 	 * @return The cloned node.
 	 */
-	public VariableDeclarationList cloneTo(VariableDeclarationList node)
+	public VariableDeclarationList cloneTo(VariableDeclarationList node, boolean cloneChildren)
 	{
-		super.cloneTo(node);
+		super.cloneTo(node, cloneChildren);
 		
 		return node;
 	}

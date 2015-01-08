@@ -3,6 +3,7 @@ package net.fathomsoft.nova.tree.switches;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.error.SyntaxMessage;
+import net.fathomsoft.nova.tree.AccessorMethod;
 import net.fathomsoft.nova.tree.ControlStatement;
 import net.fathomsoft.nova.tree.Literal;
 import net.fathomsoft.nova.tree.Node;
@@ -297,7 +298,15 @@ public class Switch extends ControlStatement
 	{
 		Switch node = new Switch(temporaryParent, locationIn);
 		
-		return cloneTo(node);
+		return cloneTo(node, cloneChildren);
+	}
+	
+	/**
+	 * @see net.fathomsoft.nova.tree.Node#cloneTo(Node)
+	 */
+	public Switch cloneTo(Switch node)
+	{
+		return cloneTo(node, true);
 	}
 	
 	/**
@@ -307,9 +316,9 @@ public class Switch extends ControlStatement
 	 * @param node The node to copy the data into.
 	 * @return The cloned node.
 	 */
-	public Switch cloneTo(Switch node)
+	public Switch cloneTo(Switch node, boolean cloneChildren)
 	{
-		super.cloneTo(node);
+		super.cloneTo(node, cloneChildren);
 		
 		return node;
 	}

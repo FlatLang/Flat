@@ -254,7 +254,15 @@ public class InstanceDeclaration extends VariableDeclaration
 	{
 		InstanceDeclaration node = new InstanceDeclaration(temporaryParent, locationIn);
 		
-		return cloneTo(node);
+		return cloneTo(node, cloneChildren);
+	}
+	
+	/**
+	 * @see net.fathomsoft.nova.tree.Node#cloneTo(Node)
+	 */
+	public InstanceDeclaration cloneTo(InstanceDeclaration node)
+	{
+		return cloneTo(node, true);
 	}
 	
 	/**
@@ -264,9 +272,9 @@ public class InstanceDeclaration extends VariableDeclaration
 	 * @param node The node to copy the data into.
 	 * @return The cloned node.
 	 */
-	public InstanceDeclaration cloneTo(InstanceDeclaration node)
+	public InstanceDeclaration cloneTo(InstanceDeclaration node, boolean cloneChildren)
 	{
-		super.cloneTo(node);
+		super.cloneTo(node, cloneChildren);
 		
 		node.staticVal  = staticVal;
 		node.visibility = visibility;

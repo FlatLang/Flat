@@ -82,7 +82,15 @@ public class TypeList<E extends Node> extends List implements Iterator<E>, Itera
 	{
 		TypeList<E> node = new TypeList<E>(temporaryParent, locationIn);
 		
-		return cloneTo(node);
+		return cloneTo(node, cloneChildren);
+	}
+	
+	/**
+	 * @see net.fathomsoft.nova.tree.Node#cloneTo(Node)
+	 */
+	public TypeList<E> cloneTo(TypeList<E> node)
+	{
+		return cloneTo(node, true);
 	}
 	
 	/**
@@ -92,9 +100,9 @@ public class TypeList<E extends Node> extends List implements Iterator<E>, Itera
 	 * @param node The node to copy the data into.
 	 * @return The cloned node.
 	 */
-	public TypeList<E> cloneTo(TypeList<E> node)
+	public TypeList<E> cloneTo(TypeList<E> node, boolean cloneChildren)
 	{
-		super.cloneTo(node);
+		super.cloneTo(node, cloneChildren);
 		
 		return node;
 	}

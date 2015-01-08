@@ -2,6 +2,7 @@ package net.fathomsoft.nova.tree.switches;
 
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.error.SyntaxMessage;
+import net.fathomsoft.nova.tree.Assignment;
 import net.fathomsoft.nova.tree.Node;
 import net.fathomsoft.nova.tree.Scope;
 import net.fathomsoft.nova.util.Bounds;
@@ -102,7 +103,15 @@ public class Default extends SwitchCase
 	{
 		Default node = new Default(temporaryParent, locationIn);
 		
-		return cloneTo(node);
+		return cloneTo(node, cloneChildren);
+	}
+	
+	/**
+	 * @see net.fathomsoft.nova.tree.Node#cloneTo(Node)
+	 */
+	public Default cloneTo(Default node)
+	{
+		return cloneTo(node, true);
 	}
 	
 	/**
@@ -112,9 +121,9 @@ public class Default extends SwitchCase
 	 * @param node The node to copy the data into.
 	 * @return The cloned node.
 	 */
-	public Default cloneTo(Default node)
+	public Default cloneTo(Default node, boolean cloneChildren)
 	{
-		super.cloneTo(node);
+		super.cloneTo(node, cloneChildren);
 		
 		return node;
 	}

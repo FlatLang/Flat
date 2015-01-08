@@ -4,6 +4,7 @@ import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.error.SyntaxMessage;
+import net.fathomsoft.nova.tree.AccessorMethod;
 import net.fathomsoft.nova.tree.Assignment;
 import net.fathomsoft.nova.tree.BinaryOperation;
 import net.fathomsoft.nova.tree.Dimensions;
@@ -447,7 +448,15 @@ public class Array extends VariableDeclaration implements ArrayCompatible
 	{
 		Array node = new Array(temporaryParent, locationIn);
 		
-		return cloneTo(node);
+		return cloneTo(node, cloneChildren);
+	}
+	
+	/**
+	 * @see net.fathomsoft.nova.tree.Node#cloneTo(Node)
+	 */
+	public Array cloneTo(Array node)
+	{
+		return cloneTo(node, true);
 	}
 	
 	/**
@@ -457,9 +466,9 @@ public class Array extends VariableDeclaration implements ArrayCompatible
 	 * @param node The node to copy the data into.
 	 * @return The cloned node.
 	 */
-	public Array cloneTo(Array node)
+	public Array cloneTo(Array node, boolean cloneChildren)
 	{
-		super.cloneTo(node);
+		super.cloneTo(node, cloneChildren);
 		
 		return node;
 	}

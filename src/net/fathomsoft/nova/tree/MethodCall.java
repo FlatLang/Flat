@@ -1102,11 +1102,11 @@ public class MethodCall extends Variable
 				
 				Node replacing = (Node)calling.getRootReferenceNode(true);
 				
-				replacing.getParent().replace(replacing, replacement);
+				replacing.replaceWith(replacement);
 				
 				replacement.setAccessedNode(this);
 				
-				result.returnedNode = replacement.getAccessedNode();
+				result.returnedNode = this;
 				
 				return result;
 			}
@@ -1135,7 +1135,15 @@ public class MethodCall extends Variable
 	{
 		MethodCall node = new MethodCall(temporaryParent, locationIn);
 		
-		return cloneTo(node);
+		return cloneTo(node, cloneChildren);
+	}
+	
+	/**
+	 * @see net.fathomsoft.nova.tree.Node#cloneTo(Node)
+	 */
+	public MethodCall cloneTo(MethodCall node)
+	{
+		return cloneTo(node, true);
 	}
 	
 	/**
@@ -1145,9 +1153,9 @@ public class MethodCall extends Variable
 	 * @param node The node to copy the data into.
 	 * @return The cloned node.
 	 */
-	public MethodCall cloneTo(MethodCall node)
+	public MethodCall cloneTo(MethodCall node, boolean cloneChildren)
 	{
-		super.cloneTo(node);
+		super.cloneTo(node, cloneChildren);
 		
 		return node;
 	}

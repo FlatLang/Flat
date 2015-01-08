@@ -100,7 +100,7 @@ public class AbstractMethodDeclaration extends NovaMethodDeclaration
 	{
 		AbstractMethodDeclaration node = new AbstractMethodDeclaration(temporaryParent, locationIn);
 		
-		return cloneTo(node);
+		return cloneTo(node, cloneChildren);
 	}
 	
 	/**
@@ -110,9 +110,9 @@ public class AbstractMethodDeclaration extends NovaMethodDeclaration
 	 * @param node The node to copy the data into.
 	 * @return The cloned node.
 	 */
-	public AbstractMethodDeclaration cloneTo(AbstractMethodDeclaration node)
+	public AbstractMethodDeclaration cloneTo(AbstractMethodDeclaration node, boolean cloneChildren)
 	{
-		super.cloneTo(node);
+		super.cloneTo(node, cloneChildren);
 		
 		return node;
 	}

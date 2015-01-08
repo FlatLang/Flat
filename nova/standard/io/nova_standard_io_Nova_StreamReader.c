@@ -58,7 +58,7 @@ void nova_standard_io_Nova_StreamReader_Nova_this(nova_standard_io_Nova_StreamRe
 
 char* nova_standard_io_Nova_StreamReader_0_Nova_readBytes(nova_standard_io_Nova_StreamReader* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
-	return (nova_standard_primitive_number_Nova_Byte*)nova_null;
+	return (char*)nova_null;
 }
 
 nova_standard_Nova_String* nova_standard_io_Nova_StreamReader_0_Nova_readString(nova_standard_io_Nova_StreamReader* this, nova_standard_exception_Nova_ExceptionData* exceptionData)

@@ -724,10 +724,10 @@ public abstract class Node implements Listenable
 	}
 	
 	/**
-	 * Replace the given old node with the specified replacement.
+	 * Replace the given old Node with the specified replacement.
 	 * 
-	 * @param old The node to replace.
-	 * @param replacement The replacement node.
+	 * @param old The Node to replace.
+	 * @param replacement The replacement Node.
 	 */
 	public void replace(Node old, Node replacement)
 	{
@@ -739,6 +739,16 @@ public abstract class Node implements Listenable
 		{
 			addChild(index, replacement, this);
 		}
+	}
+	
+	/**
+	 * Replace the specified Node with the given Node.
+	 * 
+	 * @param replacement The Node to replace the specified one with.
+	 */
+	public void replaceWith(Node replacement)
+	{
+		getParent().replace(this, replacement);
 	}
 	
 	/**
@@ -1485,7 +1495,7 @@ public abstract class Node implements Listenable
 	 * @param locationIn The Location instance holding the information.
 	 * @return A clone of the specified Node.
 	 */
-	public Node clone(Node temporaryParent, Location locationIn)
+	public final Node clone(Node temporaryParent, Location locationIn)
 	{
 		return clone(temporaryParent, locationIn, true); 
 	}
@@ -1512,7 +1522,9 @@ public abstract class Node implements Listenable
 	 */
 	public Node cloneTo(Node node)
 	{
-		return cloneTo(node, true);
+		throw new UnsupportedOperationException("Class " + this.getClass().getName() + " must implement cloneTo(Node, boolean)");
+		
+//		return cloneTo(node, true);
 	}
 	
 	/**

@@ -2,6 +2,7 @@ package net.fathomsoft.nova.tree.exceptionhandling;
 
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.error.SyntaxMessage;
+import net.fathomsoft.nova.tree.AccessorMethod;
 import net.fathomsoft.nova.tree.Identifier;
 import net.fathomsoft.nova.tree.Node;
 import net.fathomsoft.nova.tree.Scope;
@@ -188,7 +189,15 @@ public class Throw extends ExceptionHandler
 	{
 		Throw node = new Throw(temporaryParent, locationIn);
 		
-		return cloneTo(node);
+		return cloneTo(node, cloneChildren);
+	}
+	
+	/**
+	 * @see net.fathomsoft.nova.tree.Node#cloneTo(Node)
+	 */
+	public Throw cloneTo(Throw node)
+	{
+		return cloneTo(node, true);
 	}
 	
 	/**
@@ -198,9 +207,9 @@ public class Throw extends ExceptionHandler
 	 * @param node The node to copy the data into.
 	 * @return The cloned node.
 	 */
-	public Throw cloneTo(Throw node)
+	public Throw cloneTo(Throw node, boolean cloneChildren)
 	{
-		super.cloneTo(node);
+		super.cloneTo(node, cloneChildren);
 		
 		return node;
 	}

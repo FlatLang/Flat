@@ -107,7 +107,12 @@ public class SyntaxUtils
 	
 	/**
 	 * Check to see if the given primitive is compatible with the required
-	 * primitive type.
+	 * primitive type.<br>
+	 * <br>
+	 * For example:<br>
+	 * <blockquote><pre>Int abc = 'a'</pre></blockquote>
+	 * In the previous code sample, Int is the required type and Char is
+	 * the given type.
 	 * 
 	 * @param required The required primitive type.
 	 * @param given The given primitive type to check against the required

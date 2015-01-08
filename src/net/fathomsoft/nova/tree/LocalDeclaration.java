@@ -289,7 +289,15 @@ public class LocalDeclaration extends VariableDeclaration
 	{
 		LocalDeclaration node = new LocalDeclaration(temporaryParent, locationIn);
 		
-		return cloneTo(node);
+		return cloneTo(node, cloneChildren);
+	}
+	
+	/**
+	 * @see net.fathomsoft.nova.tree.Node#cloneTo(Node)
+	 */
+	public LocalDeclaration cloneTo(LocalDeclaration node)
+	{
+		return cloneTo(node, true);
 	}
 	
 	/**
@@ -299,9 +307,9 @@ public class LocalDeclaration extends VariableDeclaration
 	 * @param node The node to copy the data into.
 	 * @return The cloned node.
 	 */
-	public LocalDeclaration cloneTo(LocalDeclaration node)
+	public LocalDeclaration cloneTo(LocalDeclaration node, boolean cloneChildren)
 	{
-		super.cloneTo(node);
+		super.cloneTo(node, cloneChildren);
 		
 		return node;
 	}

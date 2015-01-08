@@ -3,6 +3,7 @@ package net.fathomsoft.nova.tree.variables;
 import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.error.SyntaxMessage;
+import net.fathomsoft.nova.tree.AccessorMethod;
 import net.fathomsoft.nova.tree.Dimensions;
 import net.fathomsoft.nova.tree.Literal;
 import net.fathomsoft.nova.tree.Node;
@@ -182,7 +183,15 @@ public class ArrayAccess extends Variable implements ArrayCompatible
 	{
 		ArrayAccess node = new ArrayAccess(temporaryParent, locationIn);
 		
-		return cloneTo(node);
+		return cloneTo(node, cloneChildren);
+	}
+	
+	/**
+	 * @see net.fathomsoft.nova.tree.Node#cloneTo(Node)
+	 */
+	public ArrayAccess cloneTo(ArrayAccess node)
+	{
+		return cloneTo(node, true);
 	}
 	
 	/**
@@ -192,9 +201,9 @@ public class ArrayAccess extends Variable implements ArrayCompatible
 	 * @param node The node to copy the data into.
 	 * @return The cloned node.
 	 */
-	public ArrayAccess cloneTo(ArrayAccess node)
+	public ArrayAccess cloneTo(ArrayAccess node, boolean cloneChildren)
 	{
-		super.cloneTo(node);
+		super.cloneTo(node, cloneChildren);
 		
 		return node;
 	}

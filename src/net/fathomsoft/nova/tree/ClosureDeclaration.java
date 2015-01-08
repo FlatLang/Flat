@@ -337,7 +337,15 @@ public class ClosureDeclaration extends Parameter implements CallableMethod
 	{
 		ClosureDeclaration node = new ClosureDeclaration(temporaryParent, locationIn);
 		
-		return cloneTo(node);
+		return cloneTo(node, cloneChildren);
+	}
+	
+	/**
+	 * @see net.fathomsoft.nova.tree.Node#cloneTo(Node)
+	 */
+	public ClosureDeclaration cloneTo(ClosureDeclaration node)
+	{
+		return cloneTo(node, true);
 	}
 	
 	/**
@@ -347,9 +355,9 @@ public class ClosureDeclaration extends Parameter implements CallableMethod
 	 * @param node The node to copy the data into.
 	 * @return The cloned node.
 	 */
-	public ClosureDeclaration cloneTo(ClosureDeclaration node)
+	public ClosureDeclaration cloneTo(ClosureDeclaration node, boolean cloneChildren)
 	{
-		super.cloneTo(node);
+		super.cloneTo(node, cloneChildren);
 		
 		node.id = id;
 		

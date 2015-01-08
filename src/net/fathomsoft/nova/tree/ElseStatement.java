@@ -125,7 +125,15 @@ public class ElseStatement extends ControlStatement
 	{
 		ElseStatement node = new ElseStatement(temporaryParent, locationIn);
 		
-		return cloneTo(node);
+		return cloneTo(node, cloneChildren);
+	}
+	
+	/**
+	 * @see net.fathomsoft.nova.tree.Node#cloneTo(Node)
+	 */
+	public ElseStatement cloneTo(ElseStatement node)
+	{
+		return cloneTo(node, true);
 	}
 	
 	/**
@@ -135,9 +143,9 @@ public class ElseStatement extends ControlStatement
 	 * @param node The node to copy the data into.
 	 * @return The cloned node.
 	 */
-	public ElseStatement cloneTo(ElseStatement node)
+	public ElseStatement cloneTo(ElseStatement node, boolean cloneChildren)
 	{
-		super.cloneTo(node);
+		super.cloneTo(node, cloneChildren);
 		
 		return node;
 	}

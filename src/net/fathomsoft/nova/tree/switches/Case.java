@@ -3,6 +3,7 @@ package net.fathomsoft.nova.tree.switches;
 import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.error.SyntaxMessage;
+import net.fathomsoft.nova.tree.Assignment;
 import net.fathomsoft.nova.tree.Node;
 import net.fathomsoft.nova.tree.Return;
 import net.fathomsoft.nova.tree.Scope;
@@ -211,7 +212,15 @@ public class Case extends SwitchCase
 	{
 		Case node = new Case(temporaryParent, locationIn);
 		
-		return cloneTo(node);
+		return cloneTo(node, cloneChildren);
+	}
+	
+	/**
+	 * @see net.fathomsoft.nova.tree.Node#cloneTo(Node)
+	 */
+	public Case cloneTo(Case node)
+	{
+		return cloneTo(node, true);
 	}
 	
 	/**
@@ -221,9 +230,9 @@ public class Case extends SwitchCase
 	 * @param node The node to copy the data into.
 	 * @return The cloned node.
 	 */
-	public Case cloneTo(Case node)
+	public Case cloneTo(Case node, boolean cloneChildren)
 	{
-		super.cloneTo(node);
+		super.cloneTo(node, cloneChildren);
 		
 		return node;
 	}

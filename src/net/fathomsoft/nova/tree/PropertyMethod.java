@@ -102,15 +102,23 @@ public abstract class PropertyMethod extends BodyMethodDeclaration
 	}
 	
 	/**
+	 * @see net.fathomsoft.nova.tree.Node#cloneTo(Node)
+	 */
+	public PropertyMethod cloneTo(PropertyMethod node)
+	{
+		return cloneTo(node, true);
+	}
+	
+	/**
 	 * Fill the given {@link PropertyMethod} with the data that is in the
 	 * specified node.
 	 * 
 	 * @param node The node to copy the data into.
 	 * @return The cloned node.
 	 */
-	public PropertyMethod cloneTo(PropertyMethod node)
+	public PropertyMethod cloneTo(PropertyMethod node, boolean cloneChildren)
 	{
-		super.cloneTo(node);
+		super.cloneTo(node, cloneChildren);
 		
 		node.disabled = disabled;
 		

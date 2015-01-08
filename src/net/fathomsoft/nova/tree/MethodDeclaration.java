@@ -329,15 +329,23 @@ public abstract class MethodDeclaration extends InstanceDeclaration implements C
 	}
 	
 	/**
+	 * @see net.fathomsoft.nova.tree.Node#cloneTo(Node)
+	 */
+	public MethodDeclaration cloneTo(MethodDeclaration node)
+	{
+		return cloneTo(node, true);
+	}
+	
+	/**
 	 * Fill the given {@link MethodDeclaration} with the data that is in the
 	 * specified node.
 	 * 
 	 * @param node The node to copy the data into.
 	 * @return The cloned node.
 	 */
-	public MethodDeclaration cloneTo(MethodDeclaration node)
+	public MethodDeclaration cloneTo(MethodDeclaration node, boolean cloneChildren)
 	{
-		super.cloneTo(node);
+		super.cloneTo(node, cloneChildren);
 		
 		return node;
 	}
