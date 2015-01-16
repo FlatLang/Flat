@@ -4,6 +4,7 @@ import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.error.SyntaxMessage;
+import net.fathomsoft.nova.tree.variables.Variable;
 import net.fathomsoft.nova.tree.variables.VariableDeclaration;
 import net.fathomsoft.nova.util.Location;
 
@@ -14,7 +15,7 @@ import net.fathomsoft.nova.util.Location;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:52:01 PM
- * @version	v0.2.41 Dec 17, 2014 at 7:48:17 PM
+ * @version	v0.2.43 Jan 16, 2015 at 11:59:17 AM
  */
 public class Parameter extends LocalDeclaration
 {
@@ -193,13 +194,19 @@ public class Parameter extends LocalDeclaration
 						{
 							setPrimitiveWrapperType();
 							
-							Value assignee = LocalDeclaration.decodeStatement(getParentMethod(), getType() + " " + getParentMethod().generateTemporaryVariableName("prim"),
+							LocalDeclaration decl = LocalDeclaration.decodeStatement(getParentMethod(), getType() + " " + getParentMethod().generateTemporaryVariableName("prim"),
 									Location.INVALID, true);
 							
-							Assignment assign = Assignment.decodeStatement(getParentMethod(), "a = 5", Location.INVALID, true, true,
+							getParentMethod().addChild(decl);
+							
+							Variable assignee = decl.generateUsableVariable(getParentMethod(), getLocationIn());
+							
+							Assignment assign = Assignment.decodeStatement(getParentMethod(), assignee.getName() + " = " + getName() + ".value", Location.INVALID, true, true,
 									new Value[] { assignee }, null);
 							
 							getParentMethod().addChild(assign);
+							
+							swapNames(decl);
 							
 							current = null;
 						}
