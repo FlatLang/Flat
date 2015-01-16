@@ -28,20 +28,20 @@ typedef struct nova_standard_datastruct_Nova_List nova_standard_datastruct_Nova_
 #include <nova/standard/math/nova_standard_math_Nova_Math.h>
 #include <nova/standard/datastruct/nova_standard_datastruct_Nova_ListNode.h>
 
-typedef struct nova_VTable_nova_standard_datastruct_Nova_List
+typedef struct nova_standard_datastruct_VTable_List
 {
 	long (*nova_standard_Nova_Object_virtual1_Nova_getHashCodeLong)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*);
 	nova_standard_Nova_String* (*nova_standard_Nova_Object_virtual0_Nova_toString)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*);
 	char (*nova_standard_Nova_Object_virtual0_Nova_equals)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*);
-} nova_VTable_nova_standard_datastruct_Nova_List;
+} nova_standard_datastruct_VTable_List;
 
-extern nova_VTable_nova_standard_datastruct_Nova_List nova_VTable_nova_standard_datastruct_Nova_List_val;
+extern nova_standard_datastruct_VTable_List nova_standard_datastruct_VTable_List_val;
 
 CCLASS_CLASS
 (
 	nova_standard_datastruct_Nova_List, 
 	
-	nova_VTable_nova_standard_datastruct_Nova_List* vtable;
+	nova_standard_datastruct_VTable_List* vtable;
 	struct Private* prv;
 )
 

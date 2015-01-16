@@ -2,7 +2,7 @@
 #include <nova/standard/primitive/nova_standard_primitive_Nova_Bool.h>
 
 
-nova_VTable_nova_standard_primitive_Nova_Bool nova_VTable_nova_standard_primitive_Nova_Bool_val =
+nova_standard_primitive_VTable_Bool nova_standard_primitive_VTable_Bool_val =
 {
 	nova_standard_Nova_Object_1_Nova_getHashCodeLong,
 	nova_standard_primitive_Nova_Bool_2_Nova_toString,
@@ -17,7 +17,7 @@ void nova_standard_primitive_Nova_BoolNova_init_static(nova_standard_exception_N
 nova_standard_primitive_Nova_Bool* nova_standard_primitive_Nova_Bool_3_Nova_construct(nova_standard_primitive_Nova_Bool* this, nova_standard_exception_Nova_ExceptionData* exceptionData, char l0_Nova_value)
 {
 	CCLASS_NEW(nova_standard_primitive_Nova_Bool, this,);
-	this->vtable = &nova_VTable_nova_standard_primitive_Nova_Bool_val;
+	this->vtable = &nova_standard_primitive_VTable_Bool_val;
 	nova_standard_Nova_Object_Nova_super((nova_standard_Nova_Object*)this, exceptionData);
 	nova_standard_primitive_Nova_Primitive_Nova_super((nova_standard_primitive_Nova_Primitive*)this, exceptionData);
 	nova_standard_Nova_Object_2_Nova_this((nova_standard_Nova_Object*)(this), exceptionData);

@@ -2,7 +2,7 @@
 #include <nova/standard/primitive/number/nova_standard_primitive_number_Nova_Number.h>
 
 
-nova_VTable_nova_standard_primitive_number_Nova_Number nova_VTable_nova_standard_primitive_number_Nova_Number_val =
+nova_standard_primitive_number_VTable_Number nova_standard_primitive_number_VTable_Number_val =
 {
 	nova_standard_Nova_Object_1_Nova_getHashCodeLong,
 	nova_standard_Nova_Object_0_Nova_toString,
@@ -18,7 +18,7 @@ void nova_standard_primitive_number_Nova_NumberNova_init_static(nova_standard_ex
 nova_standard_primitive_number_Nova_Number* nova_standard_primitive_number_Nova_Number_6_Nova_construct(nova_standard_primitive_number_Nova_Number* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
 	CCLASS_NEW(nova_standard_primitive_number_Nova_Number, this,);
-	this->vtable = &nova_VTable_nova_standard_primitive_number_Nova_Number_val;
+	this->vtable = &nova_standard_primitive_number_VTable_Number_val;
 	nova_standard_Nova_Object_Nova_super((nova_standard_Nova_Object*)this, exceptionData);
 	nova_standard_primitive_Nova_Primitive_Nova_super((nova_standard_primitive_Nova_Primitive*)this, exceptionData);
 	nova_standard_Nova_Object_2_Nova_this((nova_standard_Nova_Object*)(this), exceptionData);

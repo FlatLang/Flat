@@ -27,20 +27,20 @@ typedef struct nova_standard_database_Nova_ResultSet nova_standard_database_Nova
 #include <nova/standard/nova_standard_Nova_System.h>
 #include <nova/standard/math/nova_standard_math_Nova_Math.h>
 
-typedef struct nova_VTable_nova_standard_database_Nova_ResultSet
+typedef struct nova_standard_database_VTable_ResultSet
 {
 	long (*nova_standard_Nova_Object_virtual1_Nova_getHashCodeLong)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*);
 	nova_standard_Nova_String* (*nova_standard_Nova_Object_virtual0_Nova_toString)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*);
 	char (*nova_standard_Nova_Object_virtual0_Nova_equals)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*);
-} nova_VTable_nova_standard_database_Nova_ResultSet;
+} nova_standard_database_VTable_ResultSet;
 
-extern nova_VTable_nova_standard_database_Nova_ResultSet nova_VTable_nova_standard_database_Nova_ResultSet_val;
+extern nova_standard_database_VTable_ResultSet nova_standard_database_VTable_ResultSet_val;
 
 CCLASS_CLASS
 (
 	nova_standard_database_Nova_ResultSet, 
 	
-	nova_VTable_nova_standard_database_Nova_ResultSet* vtable;
+	nova_standard_database_VTable_ResultSet* vtable;
 	int nova_standard_database_Nova_ResultSet_Nova_numRows;
 	int nova_standard_database_Nova_ResultSet_Nova_numCols;
 	nova_standard_Nova_String*** nova_standard_database_Nova_ResultSet_Nova_rows;

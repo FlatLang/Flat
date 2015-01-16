@@ -3,7 +3,7 @@
 
 typedef void (*l0_1_Nova_exit)(void*, nova_standard_exception_Nova_ExceptionData*, int, nova_standard_Nova_String*, char);
 
-nova_VTable_nova_standard_Nova_System nova_VTable_nova_standard_Nova_System_val =
+nova_standard_VTable_System nova_standard_VTable_System_val =
 {
 	nova_standard_Nova_Object_1_Nova_getHashCodeLong,
 	nova_standard_Nova_Object_0_Nova_toString,
@@ -18,7 +18,7 @@ void nova_standard_Nova_SystemNova_init_static(nova_standard_exception_Nova_Exce
 nova_standard_Nova_System* nova_standard_Nova_System_2_Nova_construct(nova_standard_Nova_System* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
 	CCLASS_NEW(nova_standard_Nova_System, this,);
-	this->vtable = &nova_VTable_nova_standard_Nova_System_val;
+	this->vtable = &nova_standard_VTable_System_val;
 	nova_standard_Nova_Object_Nova_super((nova_standard_Nova_Object*)this, exceptionData);
 	nova_standard_Nova_Object_2_Nova_this((nova_standard_Nova_Object*)(this), exceptionData);
 	nova_standard_Nova_System_Nova_super(this, exceptionData);

@@ -33,20 +33,20 @@ typedef struct nova_standard_network_Nova_ConnectionSocket nova_standard_network
 #include <nova/standard/network/nova_standard_network_Nova_NetworkInputStream.h>
 #include <nova/standard/network/nova_standard_network_Nova_NetworkOutputStream.h>
 
-typedef struct nova_VTable_nova_standard_network_Nova_ConnectionSocket
+typedef struct nova_standard_network_VTable_ConnectionSocket
 {
 	long (*nova_standard_Nova_Object_virtual1_Nova_getHashCodeLong)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*);
 	nova_standard_Nova_String* (*nova_standard_Nova_Object_virtual0_Nova_toString)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*);
 	char (*nova_standard_Nova_Object_virtual0_Nova_equals)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*);
-} nova_VTable_nova_standard_network_Nova_ConnectionSocket;
+} nova_standard_network_VTable_ConnectionSocket;
 
-extern nova_VTable_nova_standard_network_Nova_ConnectionSocket nova_VTable_nova_standard_network_Nova_ConnectionSocket_val;
+extern nova_standard_network_VTable_ConnectionSocket nova_standard_network_VTable_ConnectionSocket_val;
 
 CCLASS_CLASS
 (
 	nova_standard_network_Nova_ConnectionSocket, 
 	
-	nova_VTable_nova_standard_network_Nova_ConnectionSocket* vtable;
+	nova_standard_network_VTable_ConnectionSocket* vtable;
 	nova_standard_Nova_String* nova_standard_network_Nova_Socket_Nova_ip;
 	int nova_standard_network_Nova_Socket_Nova_port;
 	char nova_standard_network_Nova_ConnectionSocket_Nova_connected;

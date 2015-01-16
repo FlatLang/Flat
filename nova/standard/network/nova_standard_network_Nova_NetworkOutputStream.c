@@ -2,7 +2,7 @@
 #include <nova/standard/network/nova_standard_network_Nova_NetworkOutputStream.h>
 
 
-nova_VTable_nova_standard_network_Nova_NetworkOutputStream nova_VTable_nova_standard_network_Nova_NetworkOutputStream_val =
+nova_standard_network_VTable_NetworkOutputStream nova_standard_network_VTable_NetworkOutputStream_val =
 {
 	nova_standard_Nova_Object_1_Nova_getHashCodeLong,
 	nova_standard_Nova_Object_0_Nova_toString,
@@ -26,7 +26,7 @@ void nova_standard_network_Nova_NetworkOutputStreamNova_init_static(nova_standar
 nova_standard_network_Nova_NetworkOutputStream* nova_standard_network_Nova_NetworkOutputStream_3_Nova_construct(nova_standard_network_Nova_NetworkOutputStream* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_network_Nova_ConnectionSocket* l0_Nova_socket)
 {
 	CCLASS_NEW(nova_standard_network_Nova_NetworkOutputStream, this);
-	this->vtable = &nova_VTable_nova_standard_network_Nova_NetworkOutputStream_val;
+	this->vtable = &nova_standard_network_VTable_NetworkOutputStream_val;
 	nova_standard_Nova_Object_Nova_super((nova_standard_Nova_Object*)this, exceptionData);
 	nova_standard_io_Nova_OutputStream_Nova_super((nova_standard_io_Nova_OutputStream*)this, exceptionData);
 	nova_standard_Nova_Object_2_Nova_this((nova_standard_Nova_Object*)(this), exceptionData);

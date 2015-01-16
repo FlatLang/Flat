@@ -28,20 +28,20 @@ typedef struct nova_standard_security_Nova_MD5 nova_standard_security_Nova_MD5;
 #include <nova/standard/math/nova_standard_math_Nova_Math.h>
 #include <nova/standard/security/NativeMD5.h>
 
-typedef struct nova_VTable_nova_standard_security_Nova_MD5
+typedef struct nova_standard_security_VTable_MD5
 {
 	long (*nova_standard_Nova_Object_virtual1_Nova_getHashCodeLong)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*);
 	nova_standard_Nova_String* (*nova_standard_Nova_Object_virtual0_Nova_toString)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*);
 	char (*nova_standard_Nova_Object_virtual0_Nova_equals)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*);
-} nova_VTable_nova_standard_security_Nova_MD5;
+} nova_standard_security_VTable_MD5;
 
-extern nova_VTable_nova_standard_security_Nova_MD5 nova_VTable_nova_standard_security_Nova_MD5_val;
+extern nova_standard_security_VTable_MD5 nova_standard_security_VTable_MD5_val;
 
 CCLASS_CLASS
 (
 	nova_standard_security_Nova_MD5, 
 	
-	nova_VTable_nova_standard_security_Nova_MD5* vtable;
+	nova_standard_security_VTable_MD5* vtable;
 )
 
 void nova_standard_security_Nova_MD5Nova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData);

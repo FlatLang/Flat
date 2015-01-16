@@ -5,7 +5,7 @@ typedef char (*l0_1_Nova_transform)(void*, nova_standard_exception_Nova_Exceptio
 typedef char (*l0_2_Nova_transform)(void*, nova_standard_exception_Nova_ExceptionData*, char);
 typedef char (*l0_3_Nova_transform)(void*, nova_standard_exception_Nova_ExceptionData*, char);
 
-nova_VTable_nova_standard_Nova_String nova_VTable_nova_standard_Nova_String_val =
+nova_standard_VTable_String nova_standard_VTable_String_val =
 {
 	nova_standard_Nova_Object_1_Nova_getHashCodeLong,
 	nova_standard_Nova_String_0_Nova_toString,
@@ -34,7 +34,7 @@ void nova_standard_Nova_StringNova_init_static(nova_standard_exception_Nova_Exce
 nova_standard_Nova_String* nova_standard_Nova_String_0_Nova_construct(nova_standard_Nova_String* this, nova_standard_exception_Nova_ExceptionData* exceptionData, char l0_Nova_c)
 {
 	CCLASS_NEW(nova_standard_Nova_String, this,);
-	this->vtable = &nova_VTable_nova_standard_Nova_String_val;
+	this->vtable = &nova_standard_VTable_String_val;
 	nova_standard_Nova_Object_Nova_super((nova_standard_Nova_Object*)this, exceptionData);
 	nova_standard_Nova_Object_2_Nova_this((nova_standard_Nova_Object*)(this), exceptionData);
 	nova_standard_Nova_String_Nova_super(this, exceptionData);
@@ -49,7 +49,7 @@ nova_standard_Nova_String* nova_standard_Nova_String_0_Nova_construct(nova_stand
 nova_standard_Nova_String* nova_standard_Nova_String_1_Nova_construct(nova_standard_Nova_String* this, nova_standard_exception_Nova_ExceptionData* exceptionData, char* l0_Nova_chars)
 {
 	CCLASS_NEW(nova_standard_Nova_String, this,);
-	this->vtable = &nova_VTable_nova_standard_Nova_String_val;
+	this->vtable = &nova_standard_VTable_String_val;
 	nova_standard_Nova_Object_Nova_super((nova_standard_Nova_Object*)this, exceptionData);
 	nova_standard_Nova_Object_2_Nova_this((nova_standard_Nova_Object*)(this), exceptionData);
 	nova_standard_Nova_String_Nova_super(this, exceptionData);

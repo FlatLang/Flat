@@ -27,20 +27,20 @@ typedef struct nova_standard_exception_Nova_DivideByZeroException nova_standard_
 #include <nova/standard/nova_standard_Nova_System.h>
 #include <nova/standard/math/nova_standard_math_Nova_Math.h>
 
-typedef struct nova_VTable_nova_standard_exception_Nova_DivideByZeroException
+typedef struct nova_standard_exception_VTable_DivideByZeroException
 {
 	long (*nova_standard_Nova_Object_virtual1_Nova_getHashCodeLong)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*);
 	nova_standard_Nova_String* (*nova_standard_Nova_Object_virtual0_Nova_toString)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*);
 	char (*nova_standard_Nova_Object_virtual0_Nova_equals)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*);
-} nova_VTable_nova_standard_exception_Nova_DivideByZeroException;
+} nova_standard_exception_VTable_DivideByZeroException;
 
-extern nova_VTable_nova_standard_exception_Nova_DivideByZeroException nova_VTable_nova_standard_exception_Nova_DivideByZeroException_val;
+extern nova_standard_exception_VTable_DivideByZeroException nova_standard_exception_VTable_DivideByZeroException_val;
 
 CCLASS_CLASS
 (
 	nova_standard_exception_Nova_DivideByZeroException, 
 	
-	nova_VTable_nova_standard_exception_Nova_DivideByZeroException* vtable;
+	nova_standard_exception_VTable_DivideByZeroException* vtable;
 	nova_standard_Nova_String* nova_standard_exception_Nova_Exception_Nova_message;
 )
 

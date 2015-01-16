@@ -2,7 +2,7 @@
 #include <nova/standard/svg/nova_standard_svg_Nova_SVGCircle.h>
 
 
-nova_VTable_nova_standard_svg_Nova_SVGCircle nova_VTable_nova_standard_svg_Nova_SVGCircle_val =
+nova_standard_svg_VTable_SVGCircle nova_standard_svg_VTable_SVGCircle_val =
 {
 	nova_standard_Nova_Object_1_Nova_getHashCodeLong,
 	nova_standard_svg_Nova_SVGCircle_0_Nova_toString,
@@ -18,7 +18,7 @@ void nova_standard_svg_Nova_SVGCircleNova_init_static(nova_standard_exception_No
 nova_standard_svg_Nova_SVGCircle* nova_standard_svg_Nova_SVGCircle_Nova_construct(nova_standard_svg_Nova_SVGCircle* this, nova_standard_exception_Nova_ExceptionData* exceptionData, double l0_Nova_x, double l0_Nova_y, int l0_Nova_r)
 {
 	CCLASS_NEW(nova_standard_svg_Nova_SVGCircle, this,);
-	this->vtable = &nova_VTable_nova_standard_svg_Nova_SVGCircle_val;
+	this->vtable = &nova_standard_svg_VTable_SVGCircle_val;
 	nova_standard_Nova_Object_Nova_super((nova_standard_Nova_Object*)this, exceptionData);
 	nova_standard_svg_Nova_SVGComponent_Nova_super((nova_standard_svg_Nova_SVGComponent*)this, exceptionData);
 	nova_standard_Nova_Object_2_Nova_this((nova_standard_Nova_Object*)(this), exceptionData);

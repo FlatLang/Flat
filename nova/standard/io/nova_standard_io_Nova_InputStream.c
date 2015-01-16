@@ -2,7 +2,7 @@
 #include <nova/standard/io/nova_standard_io_Nova_InputStream.h>
 
 
-nova_VTable_nova_standard_io_Nova_InputStream nova_VTable_nova_standard_io_Nova_InputStream_val =
+nova_standard_io_VTable_InputStream nova_standard_io_VTable_InputStream_val =
 {
 	nova_standard_Nova_Object_1_Nova_getHashCodeLong,
 	nova_standard_Nova_Object_0_Nova_toString,
@@ -19,7 +19,7 @@ void nova_standard_io_Nova_InputStreamNova_init_static(nova_standard_exception_N
 nova_standard_io_Nova_InputStream* nova_standard_io_Nova_InputStream_4_Nova_construct(nova_standard_io_Nova_InputStream* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
 	CCLASS_NEW(nova_standard_io_Nova_InputStream, this,);
-	this->vtable = &nova_VTable_nova_standard_io_Nova_InputStream_val;
+	this->vtable = &nova_standard_io_VTable_InputStream_val;
 	nova_standard_Nova_Object_Nova_super((nova_standard_Nova_Object*)this, exceptionData);
 	nova_standard_Nova_Object_2_Nova_this((nova_standard_Nova_Object*)(this), exceptionData);
 	nova_standard_io_Nova_InputStream_Nova_super(this, exceptionData);

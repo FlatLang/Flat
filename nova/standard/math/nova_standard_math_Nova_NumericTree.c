@@ -2,7 +2,7 @@
 #include <nova/standard/math/nova_standard_math_Nova_NumericTree.h>
 
 
-nova_VTable_nova_standard_math_Nova_NumericTree nova_VTable_nova_standard_math_Nova_NumericTree_val =
+nova_standard_math_VTable_NumericTree nova_standard_math_VTable_NumericTree_val =
 {
 	nova_standard_Nova_Object_1_Nova_getHashCodeLong,
 	nova_standard_math_Nova_NumericTree_0_Nova_toString,
@@ -22,7 +22,7 @@ void nova_standard_math_Nova_NumericTreeNova_init_static(nova_standard_exception
 nova_standard_math_Nova_NumericTree* nova_standard_math_Nova_NumericTree_Nova_construct(nova_standard_math_Nova_NumericTree* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_Nova_String* l0_Nova_statement)
 {
 	CCLASS_NEW(nova_standard_math_Nova_NumericTree, this);
-	this->vtable = &nova_VTable_nova_standard_math_Nova_NumericTree_val;
+	this->vtable = &nova_standard_math_VTable_NumericTree_val;
 	nova_standard_Nova_Object_Nova_super((nova_standard_Nova_Object*)this, exceptionData);
 	nova_standard_Nova_Object_2_Nova_this((nova_standard_Nova_Object*)(this), exceptionData);
 	nova_standard_math_Nova_NumericTree_Nova_super(this, exceptionData);

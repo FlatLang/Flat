@@ -28,20 +28,20 @@ typedef struct nova_standard_math_logic_Nova_Hypothesis nova_standard_math_logic
 #include <nova/standard/math/nova_standard_math_Nova_Math.h>
 #include <nova/standard/math/logic/nova_standard_math_logic_Nova_LogicalStatement.h>
 
-typedef struct nova_VTable_nova_standard_math_logic_Nova_Hypothesis
+typedef struct nova_standard_math_logic_VTable_Hypothesis
 {
 	long (*nova_standard_Nova_Object_virtual1_Nova_getHashCodeLong)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*);
 	nova_standard_Nova_String* (*nova_standard_math_logic_Nova_LogicalStatement_virtual0_Nova_toString)(nova_standard_math_logic_Nova_LogicalStatement*, nova_standard_exception_Nova_ExceptionData*);
 	char (*nova_standard_Nova_Object_virtual0_Nova_equals)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*);
-} nova_VTable_nova_standard_math_logic_Nova_Hypothesis;
+} nova_standard_math_logic_VTable_Hypothesis;
 
-extern nova_VTable_nova_standard_math_logic_Nova_Hypothesis nova_VTable_nova_standard_math_logic_Nova_Hypothesis_val;
+extern nova_standard_math_logic_VTable_Hypothesis nova_standard_math_logic_VTable_Hypothesis_val;
 
 CCLASS_CLASS
 (
 	nova_standard_math_logic_Nova_Hypothesis, 
 	
-	nova_VTable_nova_standard_math_logic_Nova_Hypothesis* vtable;
+	nova_standard_math_logic_VTable_Hypothesis* vtable;
 	struct Private* prv;
 )
 

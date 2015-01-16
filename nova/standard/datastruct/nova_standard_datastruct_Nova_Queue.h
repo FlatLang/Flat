@@ -28,20 +28,20 @@ typedef struct nova_standard_datastruct_Nova_Queue nova_standard_datastruct_Nova
 #include <nova/standard/math/nova_standard_math_Nova_Math.h>
 #include <nova/standard/datastruct/nova_standard_datastruct_Nova_ArrayList.h>
 
-typedef struct nova_VTable_nova_standard_datastruct_Nova_Queue
+typedef struct nova_standard_datastruct_VTable_Queue
 {
 	long (*nova_standard_Nova_Object_virtual1_Nova_getHashCodeLong)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*);
 	nova_standard_Nova_String* (*nova_standard_datastruct_Nova_Queue_virtual0_Nova_toString)(nova_standard_datastruct_Nova_Queue*, nova_standard_exception_Nova_ExceptionData*);
 	char (*nova_standard_Nova_Object_virtual0_Nova_equals)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*);
-} nova_VTable_nova_standard_datastruct_Nova_Queue;
+} nova_standard_datastruct_VTable_Queue;
 
-extern nova_VTable_nova_standard_datastruct_Nova_Queue nova_VTable_nova_standard_datastruct_Nova_Queue_val;
+extern nova_standard_datastruct_VTable_Queue nova_standard_datastruct_VTable_Queue_val;
 
 CCLASS_CLASS
 (
 	nova_standard_datastruct_Nova_Queue, 
 	
-	nova_VTable_nova_standard_datastruct_Nova_Queue* vtable;
+	nova_standard_datastruct_VTable_Queue* vtable;
 	struct Private* prv;
 )
 

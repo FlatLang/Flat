@@ -27,20 +27,20 @@ typedef struct nova_standard_datastruct_Nova_EmptyStackException nova_standard_d
 #include <nova/standard/nova_standard_Nova_System.h>
 #include <nova/standard/math/nova_standard_math_Nova_Math.h>
 
-typedef struct nova_VTable_nova_standard_datastruct_Nova_EmptyStackException
+typedef struct nova_standard_datastruct_VTable_EmptyStackException
 {
 	long (*nova_standard_Nova_Object_virtual1_Nova_getHashCodeLong)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*);
 	nova_standard_Nova_String* (*nova_standard_Nova_Object_virtual0_Nova_toString)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*);
 	char (*nova_standard_Nova_Object_virtual0_Nova_equals)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*);
-} nova_VTable_nova_standard_datastruct_Nova_EmptyStackException;
+} nova_standard_datastruct_VTable_EmptyStackException;
 
-extern nova_VTable_nova_standard_datastruct_Nova_EmptyStackException nova_VTable_nova_standard_datastruct_Nova_EmptyStackException_val;
+extern nova_standard_datastruct_VTable_EmptyStackException nova_standard_datastruct_VTable_EmptyStackException_val;
 
 CCLASS_CLASS
 (
 	nova_standard_datastruct_Nova_EmptyStackException, 
 	
-	nova_VTable_nova_standard_datastruct_Nova_EmptyStackException* vtable;
+	nova_standard_datastruct_VTable_EmptyStackException* vtable;
 	nova_standard_Nova_String* nova_standard_exception_Nova_Exception_Nova_message;
 )
 

@@ -28,20 +28,20 @@ typedef struct nova_standard_math_logic_Nova_StatementLetter nova_standard_math_
 #include <nova/standard/math/nova_standard_math_Nova_Math.h>
 #include <nova/standard/math/logic/nova_standard_math_logic_Nova_StatementComponent.h>
 
-typedef struct nova_VTable_nova_standard_math_logic_Nova_StatementLetter
+typedef struct nova_standard_math_logic_VTable_StatementLetter
 {
 	long (*nova_standard_Nova_Object_virtual1_Nova_getHashCodeLong)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*);
 	nova_standard_Nova_String* (*nova_standard_Nova_Object_virtual0_Nova_toString)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*);
 	char (*nova_standard_Nova_Object_virtual0_Nova_equals)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*);
-} nova_VTable_nova_standard_math_logic_Nova_StatementLetter;
+} nova_standard_math_logic_VTable_StatementLetter;
 
-extern nova_VTable_nova_standard_math_logic_Nova_StatementLetter nova_VTable_nova_standard_math_logic_Nova_StatementLetter_val;
+extern nova_standard_math_logic_VTable_StatementLetter nova_standard_math_logic_VTable_StatementLetter_val;
 
 CCLASS_CLASS
 (
 	nova_standard_math_logic_Nova_StatementLetter, 
 	
-	nova_VTable_nova_standard_math_logic_Nova_StatementLetter* vtable;
+	nova_standard_math_logic_VTable_StatementLetter* vtable;
 	struct Private* prv;
 )
 

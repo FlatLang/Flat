@@ -28,7 +28,7 @@ typedef struct nova_standard_datastruct_Nova_Node nova_standard_datastruct_Nova_
 #include <nova/standard/math/nova_standard_math_Nova_Math.h>
 #include <nova/standard/datastruct/nova_standard_datastruct_Nova_ArrayList.h>
 
-typedef struct nova_VTable_nova_standard_datastruct_Nova_Node
+typedef struct nova_standard_datastruct_VTable_Node
 {
 	long (*nova_standard_Nova_Object_virtual1_Nova_getHashCodeLong)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*);
 	nova_standard_Nova_String* (*nova_standard_Nova_Object_virtual0_Nova_toString)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*);
@@ -36,15 +36,15 @@ typedef struct nova_VTable_nova_standard_datastruct_Nova_Node
 	nova_standard_Nova_String* (*nova_standard_datastruct_Nova_Node_virtual0_Nova_preorder)(nova_standard_datastruct_Nova_Node*, nova_standard_exception_Nova_ExceptionData*);
 	nova_standard_Nova_String* (*nova_standard_datastruct_Nova_Node_virtual0_Nova_inorder)(nova_standard_datastruct_Nova_Node*, nova_standard_exception_Nova_ExceptionData*);
 	nova_standard_Nova_String* (*nova_standard_datastruct_Nova_Node_virtual0_Nova_postorder)(nova_standard_datastruct_Nova_Node*, nova_standard_exception_Nova_ExceptionData*);
-} nova_VTable_nova_standard_datastruct_Nova_Node;
+} nova_standard_datastruct_VTable_Node;
 
-extern nova_VTable_nova_standard_datastruct_Nova_Node nova_VTable_nova_standard_datastruct_Nova_Node_val;
+extern nova_standard_datastruct_VTable_Node nova_standard_datastruct_VTable_Node_val;
 
 CCLASS_CLASS
 (
 	nova_standard_datastruct_Nova_Node, 
 	
-	nova_VTable_nova_standard_datastruct_Nova_Node* vtable;
+	nova_standard_datastruct_VTable_Node* vtable;
 	nova_standard_Nova_Object* nova_standard_datastruct_Nova_Node_Nova_data;
 	nova_standard_datastruct_Nova_ArrayList* nova_standard_datastruct_Nova_Node_Nova_children;
 )

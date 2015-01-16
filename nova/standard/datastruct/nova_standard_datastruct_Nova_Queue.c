@@ -2,7 +2,7 @@
 #include <nova/standard/datastruct/nova_standard_datastruct_Nova_Queue.h>
 
 
-nova_VTable_nova_standard_datastruct_Nova_Queue nova_VTable_nova_standard_datastruct_Nova_Queue_val =
+nova_standard_datastruct_VTable_Queue nova_standard_datastruct_VTable_Queue_val =
 {
 	nova_standard_Nova_Object_1_Nova_getHashCodeLong,
 	nova_standard_datastruct_Nova_Queue_0_Nova_toString,
@@ -24,7 +24,7 @@ void nova_standard_datastruct_Nova_QueueNova_init_static(nova_standard_exception
 nova_standard_datastruct_Nova_Queue* nova_standard_datastruct_Nova_Queue_2_Nova_construct(nova_standard_datastruct_Nova_Queue* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
 	CCLASS_NEW(nova_standard_datastruct_Nova_Queue, this);
-	this->vtable = &nova_VTable_nova_standard_datastruct_Nova_Queue_val;
+	this->vtable = &nova_standard_datastruct_VTable_Queue_val;
 	nova_standard_Nova_Object_Nova_super((nova_standard_Nova_Object*)this, exceptionData);
 	nova_standard_Nova_Object_2_Nova_this((nova_standard_Nova_Object*)(this), exceptionData);
 	nova_standard_datastruct_Nova_Queue_Nova_super(this, exceptionData);

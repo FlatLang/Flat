@@ -27,20 +27,20 @@ typedef struct nova_standard_network_Nova_Socket nova_standard_network_Nova_Sock
 #include <nova/standard/nova_standard_Nova_System.h>
 #include <nova/standard/math/nova_standard_math_Nova_Math.h>
 
-typedef struct nova_VTable_nova_standard_network_Nova_Socket
+typedef struct nova_standard_network_VTable_Socket
 {
 	long (*nova_standard_Nova_Object_virtual1_Nova_getHashCodeLong)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*);
 	nova_standard_Nova_String* (*nova_standard_Nova_Object_virtual0_Nova_toString)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*);
 	char (*nova_standard_Nova_Object_virtual0_Nova_equals)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*);
-} nova_VTable_nova_standard_network_Nova_Socket;
+} nova_standard_network_VTable_Socket;
 
-extern nova_VTable_nova_standard_network_Nova_Socket nova_VTable_nova_standard_network_Nova_Socket_val;
+extern nova_standard_network_VTable_Socket nova_standard_network_VTable_Socket_val;
 
 CCLASS_CLASS
 (
 	nova_standard_network_Nova_Socket, 
 	
-	nova_VTable_nova_standard_network_Nova_Socket* vtable;
+	nova_standard_network_VTable_Socket* vtable;
 	nova_standard_Nova_String* nova_standard_network_Nova_Socket_Nova_ip;
 	int nova_standard_network_Nova_Socket_Nova_port;
 )

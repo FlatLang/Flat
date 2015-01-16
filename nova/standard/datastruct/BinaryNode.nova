@@ -4,52 +4,14 @@ public class BinaryNode<E> extends Node
 {
 	public BinaryNode<E> left
 	{
-		get
-		{
-			if (children.empty)
-			{
-				return null
-			}
-			
-			return (BinaryNode)children.get(0)
-		}
-		
-		set(BinaryNode<E> data)
-		{
-			if (children.empty)
-			{
-				children.add(0, data)
-			}
-			else
-			{
-				children.set(0, data)
-			}
-		}
+		get { return getNode(0) }
+		set { setNode(0, value) }
 	}
 	
 	public BinaryNode<E> right
 	{
-		get
-		{
-			if (children.size <= 1)
-			{
-				return null
-			}
-			
-			return (BinaryNode)children.get(1)
-		}
-		
-		set(BinaryNode<E> data)
-		{
-			if (children.size <= 1)
-			{
-				children.add(1, data)
-			}
-			else
-			{
-				children.set(1, data)
-			}
-		}
+		get { return getNode(1) }
+		set { setNode(1, value) }
 	}
 	
 	public construct()
@@ -65,6 +27,28 @@ public class BinaryNode<E> extends Node
 	construct(E data, Int size)
 	{
 		super(data, size)
+	}
+	
+	getNode(Int index) -> BinaryNode<E>
+	{
+		if (children.size <= index)
+		{
+			return null
+		}
+		
+		return (BinaryNode)children.get(index)
+	}
+	
+	setNode(Int index, BinaryNode<E> data)
+	{
+		if (children.size <= index)
+		{
+			children.add(index, data)
+		}
+		else
+		{
+			children.set(index, data)
+		}
 	}
 	
 	public addChild(E data)

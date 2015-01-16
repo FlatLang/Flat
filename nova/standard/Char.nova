@@ -1,0 +1,25 @@
+package "nova/standard"
+
+public class Char extends Number
+{
+	visible char value
+	
+	public construct(char value)
+	{
+		this.value = value
+	}
+	
+	public toString(char c) -> String
+	{
+		char chars[] = new char[1]
+		
+		chars[0] = c
+		
+		return new String(chars)
+	}
+	
+	public toString() -> String
+	{
+		return toString(value)
+	}
+}

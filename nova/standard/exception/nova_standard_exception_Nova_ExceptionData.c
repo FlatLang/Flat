@@ -2,7 +2,7 @@
 #include <nova/standard/exception/nova_standard_exception_Nova_ExceptionData.h>
 
 
-nova_VTable_nova_standard_exception_Nova_ExceptionData nova_VTable_nova_standard_exception_Nova_ExceptionData_val =
+nova_standard_exception_VTable_ExceptionData nova_standard_exception_VTable_ExceptionData_val =
 {
 	nova_standard_Nova_Object_1_Nova_getHashCodeLong,
 	nova_standard_Nova_Object_0_Nova_toString,
@@ -23,7 +23,7 @@ void nova_standard_exception_Nova_ExceptionDataNova_init_static(nova_standard_ex
 nova_standard_exception_Nova_ExceptionData* nova_standard_exception_Nova_ExceptionData_Nova_construct(nova_standard_exception_Nova_ExceptionData* this, nova_standard_exception_Nova_ExceptionData* exceptionData, buffer* l0_Nova_buf)
 {
 	CCLASS_NEW(nova_standard_exception_Nova_ExceptionData, this);
-	this->vtable = &nova_VTable_nova_standard_exception_Nova_ExceptionData_val;
+	this->vtable = &nova_standard_exception_VTable_ExceptionData_val;
 	nova_standard_Nova_Object_Nova_super((nova_standard_Nova_Object*)this, exceptionData);
 	nova_standard_Nova_Object_2_Nova_this((nova_standard_Nova_Object*)(this), exceptionData);
 	nova_standard_exception_Nova_ExceptionData_Nova_super(this, exceptionData);

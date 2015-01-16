@@ -30,22 +30,22 @@ typedef struct nova_standard_network_Nova_NetworkOutputStream nova_standard_netw
 #include <nova/standard/io/nova_standard_io_Nova_OutputStream.h>
 #include <nova/standard/network/nova_standard_network_Nova_ConnectionSocket.h>
 
-typedef struct nova_VTable_nova_standard_network_Nova_NetworkOutputStream
+typedef struct nova_standard_network_VTable_NetworkOutputStream
 {
 	long (*nova_standard_Nova_Object_virtual1_Nova_getHashCodeLong)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*);
 	nova_standard_Nova_String* (*nova_standard_Nova_Object_virtual0_Nova_toString)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*);
 	char (*nova_standard_Nova_Object_virtual0_Nova_equals)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*);
 	char (*nova_standard_network_Nova_NetworkOutputStream_virtual_Nova_write)(nova_standard_network_Nova_NetworkOutputStream*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_String*);
 	char (*nova_standard_network_Nova_NetworkOutputStream_virtual0_Nova_write)(nova_standard_network_Nova_NetworkOutputStream*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*);
-} nova_VTable_nova_standard_network_Nova_NetworkOutputStream;
+} nova_standard_network_VTable_NetworkOutputStream;
 
-extern nova_VTable_nova_standard_network_Nova_NetworkOutputStream nova_VTable_nova_standard_network_Nova_NetworkOutputStream_val;
+extern nova_standard_network_VTable_NetworkOutputStream nova_standard_network_VTable_NetworkOutputStream_val;
 
 CCLASS_CLASS
 (
 	nova_standard_network_Nova_NetworkOutputStream, 
 	
-	nova_VTable_nova_standard_network_Nova_NetworkOutputStream* vtable;
+	nova_standard_network_VTable_NetworkOutputStream* vtable;
 	struct Private* prv;
 )
 

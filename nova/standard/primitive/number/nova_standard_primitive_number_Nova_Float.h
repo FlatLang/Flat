@@ -27,21 +27,21 @@ typedef struct nova_standard_primitive_number_Nova_Float nova_standard_primitive
 #include <nova/standard/nova_standard_Nova_System.h>
 #include <nova/standard/math/nova_standard_math_Nova_Math.h>
 
-typedef struct nova_VTable_nova_standard_primitive_number_Nova_Float
+typedef struct nova_standard_primitive_number_VTable_Float
 {
 	long (*nova_standard_Nova_Object_virtual1_Nova_getHashCodeLong)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*);
 	nova_standard_Nova_String* (*nova_standard_primitive_number_Nova_Float_virtual2_Nova_toString)(nova_standard_primitive_number_Nova_Float*, nova_standard_exception_Nova_ExceptionData*);
 	char (*nova_standard_Nova_Object_virtual0_Nova_equals)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*);
 	int (*nova_standard_primitive_number_Nova_Float_virtual0_Nova_numDigits)(nova_standard_primitive_number_Nova_Float*, nova_standard_exception_Nova_ExceptionData*, float);
-} nova_VTable_nova_standard_primitive_number_Nova_Float;
+} nova_standard_primitive_number_VTable_Float;
 
-extern nova_VTable_nova_standard_primitive_number_Nova_Float nova_VTable_nova_standard_primitive_number_Nova_Float_val;
+extern nova_standard_primitive_number_VTable_Float nova_standard_primitive_number_VTable_Float_val;
 
 CCLASS_CLASS
 (
 	nova_standard_primitive_number_Nova_Float, 
 	
-	nova_VTable_nova_standard_primitive_number_Nova_Float* vtable;
+	nova_standard_primitive_number_VTable_Float* vtable;
 	float nova_standard_primitive_number_Nova_Float_Nova_value;
 )
 

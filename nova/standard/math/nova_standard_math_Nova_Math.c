@@ -2,7 +2,7 @@
 #include <nova/standard/math/nova_standard_math_Nova_Math.h>
 
 
-nova_VTable_nova_standard_math_Nova_Math nova_VTable_nova_standard_math_Nova_Math_val =
+nova_standard_math_VTable_Math nova_standard_math_VTable_Math_val =
 {
 	nova_standard_Nova_Object_1_Nova_getHashCodeLong,
 	nova_standard_Nova_Object_0_Nova_toString,
@@ -19,7 +19,7 @@ void nova_standard_math_Nova_MathNova_init_static(nova_standard_exception_Nova_E
 nova_standard_math_Nova_Math* nova_standard_math_Nova_Math_2_Nova_construct(nova_standard_math_Nova_Math* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
 	CCLASS_NEW(nova_standard_math_Nova_Math, this,);
-	this->vtable = &nova_VTable_nova_standard_math_Nova_Math_val;
+	this->vtable = &nova_standard_math_VTable_Math_val;
 	nova_standard_Nova_Object_Nova_super((nova_standard_Nova_Object*)this, exceptionData);
 	nova_standard_Nova_Object_2_Nova_this((nova_standard_Nova_Object*)(this), exceptionData);
 	nova_standard_math_Nova_Math_Nova_super(this, exceptionData);

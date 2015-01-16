@@ -27,20 +27,20 @@ typedef struct nova_standard_math_Nova_NumericOperand nova_standard_math_Nova_Nu
 #include <nova/standard/nova_standard_Nova_System.h>
 #include <nova/standard/math/nova_standard_math_Nova_Math.h>
 
-typedef struct nova_VTable_nova_standard_math_Nova_NumericOperand
+typedef struct nova_standard_math_VTable_NumericOperand
 {
 	long (*nova_standard_Nova_Object_virtual1_Nova_getHashCodeLong)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*);
 	nova_standard_Nova_String* (*nova_standard_math_Nova_NumericOperand_virtual0_Nova_toString)(nova_standard_math_Nova_NumericOperand*, nova_standard_exception_Nova_ExceptionData*);
 	char (*nova_standard_Nova_Object_virtual0_Nova_equals)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*);
-} nova_VTable_nova_standard_math_Nova_NumericOperand;
+} nova_standard_math_VTable_NumericOperand;
 
-extern nova_VTable_nova_standard_math_Nova_NumericOperand nova_VTable_nova_standard_math_Nova_NumericOperand_val;
+extern nova_standard_math_VTable_NumericOperand nova_standard_math_VTable_NumericOperand_val;
 
 CCLASS_CLASS
 (
 	nova_standard_math_Nova_NumericOperand, 
 	
-	nova_VTable_nova_standard_math_Nova_NumericOperand* vtable;
+	nova_standard_math_VTable_NumericOperand* vtable;
 	struct Private* prv;
 )
 

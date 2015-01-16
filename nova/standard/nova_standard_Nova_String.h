@@ -27,21 +27,21 @@ typedef struct nova_standard_Nova_String nova_standard_Nova_String;
 #include <nova/standard/nova_standard_Nova_System.h>
 #include <nova/standard/math/nova_standard_math_Nova_Math.h>
 
-typedef struct nova_VTable_nova_standard_Nova_String
+typedef struct nova_standard_VTable_String
 {
 	long (*nova_standard_Nova_Object_virtual1_Nova_getHashCodeLong)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*);
 	nova_standard_Nova_String* (*nova_standard_Nova_String_virtual0_Nova_toString)(nova_standard_Nova_String*, nova_standard_exception_Nova_ExceptionData*);
 	char (*nova_standard_Nova_String_virtual_Nova_equals)(nova_standard_Nova_String*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_String*);
 	nova_standard_Nova_String* (*nova_standard_Nova_String_virtual0_Nova_concat)(nova_standard_Nova_String*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_String*);
-} nova_VTable_nova_standard_Nova_String;
+} nova_standard_VTable_String;
 
-extern nova_VTable_nova_standard_Nova_String nova_VTable_nova_standard_Nova_String_val;
+extern nova_standard_VTable_String nova_standard_VTable_String_val;
 
 CCLASS_CLASS
 (
 	nova_standard_Nova_String, 
 	
-	nova_VTable_nova_standard_Nova_String* vtable;
+	nova_standard_VTable_String* vtable;
 	int nova_standard_Nova_String_Nova_length;
 	char* nova_standard_Nova_String_Nova_chars;
 )

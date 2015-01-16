@@ -27,22 +27,22 @@ typedef struct nova_standard_io_Nova_InputStream nova_standard_io_Nova_InputStre
 #include <nova/standard/nova_standard_Nova_System.h>
 #include <nova/standard/math/nova_standard_math_Nova_Math.h>
 
-typedef struct nova_VTable_nova_standard_io_Nova_InputStream
+typedef struct nova_standard_io_VTable_InputStream
 {
 	long (*nova_standard_Nova_Object_virtual1_Nova_getHashCodeLong)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*);
 	nova_standard_Nova_String* (*nova_standard_Nova_Object_virtual0_Nova_toString)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*);
 	char (*nova_standard_Nova_Object_virtual0_Nova_equals)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*);
 	nova_standard_Nova_String* (*nova_standard_io_Nova_InputStream_virtual0_Nova_readString)(nova_standard_io_Nova_InputStream*, nova_standard_exception_Nova_ExceptionData*);
 	char* (*nova_standard_io_Nova_InputStream_virtual0_Nova_readBytes)(nova_standard_io_Nova_InputStream*, nova_standard_exception_Nova_ExceptionData*);
-} nova_VTable_nova_standard_io_Nova_InputStream;
+} nova_standard_io_VTable_InputStream;
 
-extern nova_VTable_nova_standard_io_Nova_InputStream nova_VTable_nova_standard_io_Nova_InputStream_val;
+extern nova_standard_io_VTable_InputStream nova_standard_io_VTable_InputStream_val;
 
 CCLASS_CLASS
 (
 	nova_standard_io_Nova_InputStream, 
 	
-	nova_VTable_nova_standard_io_Nova_InputStream* vtable;
+	nova_standard_io_VTable_InputStream* vtable;
 )
 
 void nova_standard_io_Nova_InputStreamNova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData);

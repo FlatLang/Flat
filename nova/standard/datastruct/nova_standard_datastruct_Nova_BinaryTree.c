@@ -2,7 +2,7 @@
 #include <nova/standard/datastruct/nova_standard_datastruct_Nova_BinaryTree.h>
 
 
-nova_VTable_nova_standard_datastruct_Nova_BinaryTree nova_VTable_nova_standard_datastruct_Nova_BinaryTree_val =
+nova_standard_datastruct_VTable_BinaryTree nova_standard_datastruct_VTable_BinaryTree_val =
 {
 	nova_standard_Nova_Object_1_Nova_getHashCodeLong,
 	nova_standard_Nova_Object_0_Nova_toString,
@@ -19,7 +19,7 @@ void nova_standard_datastruct_Nova_BinaryTreeNova_init_static(nova_standard_exce
 nova_standard_datastruct_Nova_BinaryTree* nova_standard_datastruct_Nova_BinaryTree_2_Nova_construct(nova_standard_datastruct_Nova_BinaryTree* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
 	CCLASS_NEW(nova_standard_datastruct_Nova_BinaryTree, this,);
-	this->vtable = &nova_VTable_nova_standard_datastruct_Nova_BinaryTree_val;
+	this->vtable = &nova_standard_datastruct_VTable_BinaryTree_val;
 	nova_standard_Nova_Object_Nova_super((nova_standard_Nova_Object*)this, exceptionData);
 	nova_standard_datastruct_Nova_Tree_Nova_super((nova_standard_datastruct_Nova_Tree*)this, exceptionData);
 	nova_standard_Nova_Object_2_Nova_this((nova_standard_Nova_Object*)(this), exceptionData);

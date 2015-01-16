@@ -27,20 +27,20 @@ typedef struct nova_standard_datastruct_Nova_Bounds nova_standard_datastruct_Nov
 #include <nova/standard/nova_standard_Nova_System.h>
 #include <nova/standard/math/nova_standard_math_Nova_Math.h>
 
-typedef struct nova_VTable_nova_standard_datastruct_Nova_Bounds
+typedef struct nova_standard_datastruct_VTable_Bounds
 {
 	long (*nova_standard_Nova_Object_virtual1_Nova_getHashCodeLong)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*);
 	nova_standard_Nova_String* (*nova_standard_datastruct_Nova_Bounds_virtual0_Nova_toString)(nova_standard_datastruct_Nova_Bounds*, nova_standard_exception_Nova_ExceptionData*);
 	char (*nova_standard_datastruct_Nova_Bounds_virtual0_Nova_equals)(nova_standard_datastruct_Nova_Bounds*, nova_standard_exception_Nova_ExceptionData*, nova_standard_datastruct_Nova_Bounds*);
-} nova_VTable_nova_standard_datastruct_Nova_Bounds;
+} nova_standard_datastruct_VTable_Bounds;
 
-extern nova_VTable_nova_standard_datastruct_Nova_Bounds nova_VTable_nova_standard_datastruct_Nova_Bounds_val;
+extern nova_standard_datastruct_VTable_Bounds nova_standard_datastruct_VTable_Bounds_val;
 
 CCLASS_CLASS
 (
 	nova_standard_datastruct_Nova_Bounds, 
 	
-	nova_VTable_nova_standard_datastruct_Nova_Bounds* vtable;
+	nova_standard_datastruct_VTable_Bounds* vtable;
 	int nova_standard_datastruct_Nova_Bounds_Nova_start;
 	int nova_standard_datastruct_Nova_Bounds_Nova_end;
 )

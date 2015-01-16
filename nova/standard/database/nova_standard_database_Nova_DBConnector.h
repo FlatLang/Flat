@@ -29,20 +29,20 @@ typedef struct nova_standard_database_Nova_DBConnector nova_standard_database_No
 #include <nova/standard/database/NativeDBConnector.h>
 #include <nova/standard/database/nova_standard_database_Nova_ResultSet.h>
 
-typedef struct nova_VTable_nova_standard_database_Nova_DBConnector
+typedef struct nova_standard_database_VTable_DBConnector
 {
 	long (*nova_standard_Nova_Object_virtual1_Nova_getHashCodeLong)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*);
 	nova_standard_Nova_String* (*nova_standard_Nova_Object_virtual0_Nova_toString)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*);
 	char (*nova_standard_Nova_Object_virtual0_Nova_equals)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*);
-} nova_VTable_nova_standard_database_Nova_DBConnector;
+} nova_standard_database_VTable_DBConnector;
 
-extern nova_VTable_nova_standard_database_Nova_DBConnector nova_VTable_nova_standard_database_Nova_DBConnector_val;
+extern nova_standard_database_VTable_DBConnector nova_standard_database_VTable_DBConnector_val;
 
 CCLASS_CLASS
 (
 	nova_standard_database_Nova_DBConnector, 
 	
-	nova_VTable_nova_standard_database_Nova_DBConnector* vtable;
+	nova_standard_database_VTable_DBConnector* vtable;
 	nova_standard_Nova_String* nova_standard_database_Nova_DBConnector_Nova_error;
 	struct Private* prv;
 )

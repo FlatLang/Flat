@@ -2,7 +2,7 @@
 #include <nova/standard/math/nova_standard_math_Nova_NumericOperand.h>
 
 
-nova_VTable_nova_standard_math_Nova_NumericOperand nova_VTable_nova_standard_math_Nova_NumericOperand_val =
+nova_standard_math_VTable_NumericOperand nova_standard_math_VTable_NumericOperand_val =
 {
 	nova_standard_Nova_Object_1_Nova_getHashCodeLong,
 	nova_standard_math_Nova_NumericOperand_0_Nova_toString,
@@ -22,7 +22,7 @@ void nova_standard_math_Nova_NumericOperandNova_init_static(nova_standard_except
 nova_standard_math_Nova_NumericOperand* nova_standard_math_Nova_NumericOperand_2_Nova_construct(nova_standard_math_Nova_NumericOperand* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_Nova_Object* l0_Nova_data)
 {
 	CCLASS_NEW(nova_standard_math_Nova_NumericOperand, this);
-	this->vtable = &nova_VTable_nova_standard_math_Nova_NumericOperand_val;
+	this->vtable = &nova_standard_math_VTable_NumericOperand_val;
 	nova_standard_Nova_Object_Nova_super((nova_standard_Nova_Object*)this, exceptionData);
 	nova_standard_Nova_Object_2_Nova_this((nova_standard_Nova_Object*)(this), exceptionData);
 	nova_standard_math_Nova_NumericOperand_Nova_super(this, exceptionData);

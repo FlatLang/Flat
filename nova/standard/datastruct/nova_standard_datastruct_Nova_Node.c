@@ -2,7 +2,7 @@
 #include <nova/standard/datastruct/nova_standard_datastruct_Nova_Node.h>
 
 
-nova_VTable_nova_standard_datastruct_Nova_Node nova_VTable_nova_standard_datastruct_Nova_Node_val =
+nova_standard_datastruct_VTable_Node nova_standard_datastruct_VTable_Node_val =
 {
 	nova_standard_Nova_Object_1_Nova_getHashCodeLong,
 	nova_standard_Nova_Object_0_Nova_toString,
@@ -20,7 +20,7 @@ void nova_standard_datastruct_Nova_NodeNova_init_static(nova_standard_exception_
 nova_standard_datastruct_Nova_Node* nova_standard_datastruct_Nova_Node_2_Nova_construct(nova_standard_datastruct_Nova_Node* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
 	CCLASS_NEW(nova_standard_datastruct_Nova_Node, this,);
-	this->vtable = &nova_VTable_nova_standard_datastruct_Nova_Node_val;
+	this->vtable = &nova_standard_datastruct_VTable_Node_val;
 	nova_standard_Nova_Object_Nova_super((nova_standard_Nova_Object*)this, exceptionData);
 	nova_standard_Nova_Object_2_Nova_this((nova_standard_Nova_Object*)(this), exceptionData);
 	nova_standard_datastruct_Nova_Node_Nova_super(this, exceptionData);
@@ -35,7 +35,7 @@ nova_standard_datastruct_Nova_Node* nova_standard_datastruct_Nova_Node_2_Nova_co
 nova_standard_datastruct_Nova_Node* nova_standard_datastruct_Nova_Node_3_Nova_construct(nova_standard_datastruct_Nova_Node* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_Nova_Object* l0_Nova_data)
 {
 	CCLASS_NEW(nova_standard_datastruct_Nova_Node, this,);
-	this->vtable = &nova_VTable_nova_standard_datastruct_Nova_Node_val;
+	this->vtable = &nova_standard_datastruct_VTable_Node_val;
 	nova_standard_Nova_Object_Nova_super((nova_standard_Nova_Object*)this, exceptionData);
 	nova_standard_Nova_Object_2_Nova_this((nova_standard_Nova_Object*)(this), exceptionData);
 	nova_standard_datastruct_Nova_Node_Nova_super(this, exceptionData);
@@ -50,7 +50,7 @@ nova_standard_datastruct_Nova_Node* nova_standard_datastruct_Nova_Node_3_Nova_co
 nova_standard_datastruct_Nova_Node* nova_standard_datastruct_Nova_Node_4_Nova_construct(nova_standard_datastruct_Nova_Node* this, nova_standard_exception_Nova_ExceptionData* exceptionData, int l0_Nova_numChildren)
 {
 	CCLASS_NEW(nova_standard_datastruct_Nova_Node, this,);
-	this->vtable = &nova_VTable_nova_standard_datastruct_Nova_Node_val;
+	this->vtable = &nova_standard_datastruct_VTable_Node_val;
 	nova_standard_Nova_Object_Nova_super((nova_standard_Nova_Object*)this, exceptionData);
 	nova_standard_Nova_Object_2_Nova_this((nova_standard_Nova_Object*)(this), exceptionData);
 	nova_standard_datastruct_Nova_Node_Nova_super(this, exceptionData);
@@ -65,7 +65,7 @@ nova_standard_datastruct_Nova_Node* nova_standard_datastruct_Nova_Node_4_Nova_co
 nova_standard_datastruct_Nova_Node* nova_standard_datastruct_Nova_Node_5_Nova_construct(nova_standard_datastruct_Nova_Node* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_Nova_Object* l0_Nova_data, int l0_Nova_numChildren)
 {
 	CCLASS_NEW(nova_standard_datastruct_Nova_Node, this,);
-	this->vtable = &nova_VTable_nova_standard_datastruct_Nova_Node_val;
+	this->vtable = &nova_standard_datastruct_VTable_Node_val;
 	nova_standard_Nova_Object_Nova_super((nova_standard_Nova_Object*)this, exceptionData);
 	nova_standard_Nova_Object_2_Nova_this((nova_standard_Nova_Object*)(this), exceptionData);
 	nova_standard_datastruct_Nova_Node_Nova_super(this, exceptionData);

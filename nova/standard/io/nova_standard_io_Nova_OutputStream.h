@@ -28,22 +28,22 @@ typedef struct nova_standard_io_Nova_OutputStream nova_standard_io_Nova_OutputSt
 #include <nova/standard/math/nova_standard_math_Nova_Math.h>
 #include <nova/standard/io/nova_standard_io_Nova_File.h>
 
-typedef struct nova_VTable_nova_standard_io_Nova_OutputStream
+typedef struct nova_standard_io_VTable_OutputStream
 {
 	long (*nova_standard_Nova_Object_virtual1_Nova_getHashCodeLong)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*);
 	nova_standard_Nova_String* (*nova_standard_Nova_Object_virtual0_Nova_toString)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*);
 	char (*nova_standard_Nova_Object_virtual0_Nova_equals)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*);
 	char (*nova_standard_io_Nova_OutputStream_virtual1_Nova_write)(nova_standard_io_Nova_OutputStream*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_String*);
 	char (*nova_standard_io_Nova_OutputStream_virtual2_Nova_write)(nova_standard_io_Nova_OutputStream*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*);
-} nova_VTable_nova_standard_io_Nova_OutputStream;
+} nova_standard_io_VTable_OutputStream;
 
-extern nova_VTable_nova_standard_io_Nova_OutputStream nova_VTable_nova_standard_io_Nova_OutputStream_val;
+extern nova_standard_io_VTable_OutputStream nova_standard_io_VTable_OutputStream_val;
 
 CCLASS_CLASS
 (
 	nova_standard_io_Nova_OutputStream, 
 	
-	nova_VTable_nova_standard_io_Nova_OutputStream* vtable;
+	nova_standard_io_VTable_OutputStream* vtable;
 	struct Private* prv;
 )
 

@@ -31,20 +31,20 @@ typedef struct example_Nova_Lab example_Nova_Lab;
 #include <example/example_Nova_Polygon.h>
 #include <example/example_Nova_Square.h>
 
-typedef struct nova_VTable_example_Nova_Lab
+typedef struct example_VTable_Lab
 {
 	long (*nova_standard_Nova_Object_virtual1_Nova_getHashCodeLong)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*);
 	nova_standard_Nova_String* (*nova_standard_Nova_Object_virtual0_Nova_toString)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*);
 	char (*nova_standard_Nova_Object_virtual0_Nova_equals)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*);
-} nova_VTable_example_Nova_Lab;
+} example_VTable_Lab;
 
-extern nova_VTable_example_Nova_Lab nova_VTable_example_Nova_Lab_val;
+extern example_VTable_Lab example_VTable_Lab_val;
 
 CCLASS_CLASS
 (
 	example_Nova_Lab, 
 	
-	nova_VTable_example_Nova_Lab* vtable;
+	example_VTable_Lab* vtable;
 )
 
 void example_Nova_LabNova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData);

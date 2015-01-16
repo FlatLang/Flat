@@ -27,21 +27,21 @@ typedef struct nova_standard_datastruct_Nova_Comparable nova_standard_datastruct
 #include <nova/standard/nova_standard_Nova_System.h>
 #include <nova/standard/math/nova_standard_math_Nova_Math.h>
 
-typedef struct nova_VTable_nova_standard_datastruct_Nova_Comparable
+typedef struct nova_standard_datastruct_VTable_Comparable
 {
 	long (*nova_standard_Nova_Object_virtual1_Nova_getHashCodeLong)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*);
 	nova_standard_Nova_String* (*nova_standard_Nova_Object_virtual0_Nova_toString)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*);
 	char (*nova_standard_Nova_Object_virtual0_Nova_equals)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*);
 	int (*nova_standard_datastruct_Nova_Comparable_virtual0_Nova_compareTo)(nova_standard_datastruct_Nova_Comparable*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*);
-} nova_VTable_nova_standard_datastruct_Nova_Comparable;
+} nova_standard_datastruct_VTable_Comparable;
 
-extern nova_VTable_nova_standard_datastruct_Nova_Comparable nova_VTable_nova_standard_datastruct_Nova_Comparable_val;
+extern nova_standard_datastruct_VTable_Comparable nova_standard_datastruct_VTable_Comparable_val;
 
 CCLASS_CLASS
 (
 	nova_standard_datastruct_Nova_Comparable, 
 	
-	nova_VTable_nova_standard_datastruct_Nova_Comparable* vtable;
+	nova_standard_datastruct_VTable_Comparable* vtable;
 )
 
 void nova_standard_datastruct_Nova_ComparableNova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData);

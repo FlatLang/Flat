@@ -28,22 +28,22 @@ typedef struct example_Nova_Square example_Nova_Square;
 #include <nova/standard/math/nova_standard_math_Nova_Math.h>
 #include <example/example_Nova_Polygon.h>
 
-typedef struct nova_VTable_example_Nova_Square
+typedef struct example_VTable_Square
 {
 	long (*nova_standard_Nova_Object_virtual1_Nova_getHashCodeLong)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*);
 	nova_standard_Nova_String* (*nova_standard_Nova_Object_virtual0_Nova_toString)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*);
 	char (*nova_standard_Nova_Object_virtual0_Nova_equals)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*);
 	int (*example_Nova_Square_virtual_Nova_numberSides)(example_Nova_Square*, nova_standard_exception_Nova_ExceptionData*);
 	double (*example_Nova_Square_virtual_Nova_calculateArea)(example_Nova_Square*, nova_standard_exception_Nova_ExceptionData*);
-} nova_VTable_example_Nova_Square;
+} example_VTable_Square;
 
-extern nova_VTable_example_Nova_Square nova_VTable_example_Nova_Square_val;
+extern example_VTable_Square example_VTable_Square_val;
 
 CCLASS_CLASS
 (
 	example_Nova_Square, 
 	
-	nova_VTable_example_Nova_Square* vtable;
+	example_VTable_Square* vtable;
 	int example_Nova_Square_Nova_sideLength;
 )
 

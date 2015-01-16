@@ -29,20 +29,20 @@ typedef struct nova_standard_svg_Nova_SVG nova_standard_svg_Nova_SVG;
 #include <nova/standard/io/nova_standard_io_Nova_File.h>
 #include <nova/standard/svg/nova_standard_svg_Nova_SVGMainComponent.h>
 
-typedef struct nova_VTable_nova_standard_svg_Nova_SVG
+typedef struct nova_standard_svg_VTable_SVG
 {
 	long (*nova_standard_Nova_Object_virtual1_Nova_getHashCodeLong)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*);
 	nova_standard_Nova_String* (*nova_standard_Nova_Object_virtual0_Nova_toString)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*);
 	char (*nova_standard_Nova_Object_virtual0_Nova_equals)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*);
-} nova_VTable_nova_standard_svg_Nova_SVG;
+} nova_standard_svg_VTable_SVG;
 
-extern nova_VTable_nova_standard_svg_Nova_SVG nova_VTable_nova_standard_svg_Nova_SVG_val;
+extern nova_standard_svg_VTable_SVG nova_standard_svg_VTable_SVG_val;
 
 CCLASS_CLASS
 (
 	nova_standard_svg_Nova_SVG, 
 	
-	nova_VTable_nova_standard_svg_Nova_SVG* vtable;
+	nova_standard_svg_VTable_SVG* vtable;
 	nova_standard_svg_Nova_SVGMainComponent* nova_standard_svg_Nova_SVG_Nova_root;
 )
 

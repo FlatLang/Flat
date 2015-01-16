@@ -1,0 +1,216 @@
+package "nova/standard"
+
+import "nova/standard/NativeFile.h"
+import "nova/standard/Time"
+
+public class File
+{
+	external type FILE
+	
+	FILE* fp
+	
+	external FILE* fopen(char location[], char operation[])
+	external void perror(char name[])
+	external FILE* freopen(char location[], char operation[], FILE* fp)
+	external void fprintf(FILE* fp, char data[])
+	external void fputs(char str[], FILE* stream)
+	external void fflush(FILE* fp)
+	external int fclose(FILE* fp)
+	external void fgets(char buffer[], int size, FILE* fp)
+	external char[] realloc(char buffer[], int size)
+	external char getc(FILE* fp)
+	external void rewind(FILE* fp) as extRewind
+	external int remove(char name[])
+	external int getMaxOpenFiles() as extGetMaxOpenFiles
+	external void setMaxOpenFiles(int max) as extSetMaxOpenFiles
+	
+	external char EOF
+	
+	String location
+	
+	/*static
+	{
+		File exitLog = new File("log" + Time.currentTimeMillis())
+	}*/
+	
+	public construct(String location)
+	{
+		this.location = location
+		
+		fp = fopen(location.toCharArray(), "r+")
+	}
+	
+	public construct(FILE* fp)
+	{
+		this.fp = fp
+	}
+	
+	public delete() -> bool
+	{
+		close()
+		
+		return remove(location.toCharArray()) == 0
+	}
+	
+	public reopen()
+	{
+		close()
+		
+		fp = fopen(location.toCharArray(), "r+")
+	}
+	
+	public rewind()
+	{
+		extRewind(fp)
+	}
+	
+	public exists() -> bool
+	{
+		return fp != 0
+	}
+	
+	public clearContents()
+	{
+		if (exists())
+		{
+			fp = fopen(location.toCharArray(), "w")
+		}
+	}
+	
+	public create() -> bool
+	{
+		if (!exists())
+		{
+			fp = fopen(location.toCharArray(), "w")
+			
+			if (!exists())
+			{
+				perror("fopen")
+				
+				return false
+			}
+			
+			reopen()
+			
+			if (!exists())
+			{
+				perror("fopen")
+				
+				return false
+			}
+			
+			return true
+		}
+		
+		return false
+	}
+	
+	public readAllContents() -> String
+	{
+		String data = ""
+		
+		String line = readLine()
+		
+		while (line != null)
+		{
+			if (data.length > 0)
+			{
+				data = data + "\n"
+			}
+			
+			data = data + line
+			
+			line = readLine()
+		}
+		
+		return data
+	}
+	
+	public readLine() -> String
+	{
+		int buf  = 5
+		int size = buf
+		
+		char line[] = new char[size]
+		
+		char c = getc(fp)
+		
+		if (c == EOF)
+		{
+			return null
+		}
+		
+		int index = 0
+		
+		while (c != '\n' && c != EOF)
+		{
+			if (index >= size)
+			{
+				size = size + buf
+				
+				line = realloc(line, size)
+			}
+			
+			line[index++] = c
+			
+			c = getc(fp)
+		}
+		
+		if (index >= size)
+		{
+			size++
+			
+			line = realloc(line, size)
+		}
+		
+		line[index++] = '\0'
+		
+		line = realloc(line, index)
+		
+		return new String(line)
+	}
+	
+	public writeLine(String line)
+	{
+		write(line + "\n")
+	}
+	
+	public write(String data)
+	{
+		fputs(data.toCharArray(), fp)
+		flush()
+	}
+	
+	public flush()
+	{
+		fflush(fp)
+	}
+	
+	public close()
+	{
+		if (exists())
+		{
+			fclose(fp)
+		}
+	}
+	
+	public static getMaxOpenFiles() -> int
+	{
+		return extGetMaxOpenFiles()
+	}
+	
+	public static setMaxOpenFiles(int num)
+	{
+		short min = (short)20
+		short max = (short)2048
+		
+		if (num > max || num < min)
+		{
+			Console.writeLine("Invalid max number of open files: " + num + "\nValid values include " + min + "-" + max)
+		}
+		else
+		{
+			extSetMaxOpenFiles(num)
+		}
+	}
+}

@@ -30,21 +30,21 @@ typedef struct nova_standard_star_Nova_WindowThread nova_standard_star_Nova_Wind
 #include <nova/standard/star/NativeWindow.h>
 #include <nova/standard/star/nova_standard_star_Nova_Window.h>
 
-typedef struct nova_VTable_nova_standard_star_Nova_WindowThread
+typedef struct nova_standard_star_VTable_WindowThread
 {
 	long (*nova_standard_Nova_Object_virtual1_Nova_getHashCodeLong)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*);
 	nova_standard_Nova_String* (*nova_standard_Nova_Object_virtual0_Nova_toString)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*);
 	char (*nova_standard_Nova_Object_virtual0_Nova_equals)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*);
 	void (*nova_standard_star_Nova_WindowThread_virtual_Nova_run)(nova_standard_star_Nova_WindowThread*, nova_standard_exception_Nova_ExceptionData*);
-} nova_VTable_nova_standard_star_Nova_WindowThread;
+} nova_standard_star_VTable_WindowThread;
 
-extern nova_VTable_nova_standard_star_Nova_WindowThread nova_VTable_nova_standard_star_Nova_WindowThread_val;
+extern nova_standard_star_VTable_WindowThread nova_standard_star_VTable_WindowThread_val;
 
 CCLASS_CLASS
 (
 	nova_standard_star_Nova_WindowThread, 
 	
-	nova_VTable_nova_standard_star_Nova_WindowThread* vtable;
+	nova_standard_star_VTable_WindowThread* vtable;
 	struct Private* prv;
 )
 

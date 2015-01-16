@@ -34,20 +34,20 @@ typedef struct nova_standard_math_logic_Nova_WFF nova_standard_math_logic_Nova_W
 #include <nova/standard/math/logic/nova_standard_math_logic_Nova_StatementGroup.h>
 #include <nova/standard/math/logic/nova_standard_math_logic_Nova_InvalidFormulaException.h>
 
-typedef struct nova_VTable_nova_standard_math_logic_Nova_WFF
+typedef struct nova_standard_math_logic_VTable_WFF
 {
 	long (*nova_standard_Nova_Object_virtual1_Nova_getHashCodeLong)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*);
 	nova_standard_Nova_String* (*nova_standard_Nova_Object_virtual0_Nova_toString)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*);
 	char (*nova_standard_Nova_Object_virtual0_Nova_equals)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*);
-} nova_VTable_nova_standard_math_logic_Nova_WFF;
+} nova_standard_math_logic_VTable_WFF;
 
-extern nova_VTable_nova_standard_math_logic_Nova_WFF nova_VTable_nova_standard_math_logic_Nova_WFF_val;
+extern nova_standard_math_logic_VTable_WFF nova_standard_math_logic_VTable_WFF_val;
 
 CCLASS_CLASS
 (
 	nova_standard_math_logic_Nova_WFF, 
 	
-	nova_VTable_nova_standard_math_logic_Nova_WFF* vtable;
+	nova_standard_math_logic_VTable_WFF* vtable;
 	struct Private* prv;
 )
 

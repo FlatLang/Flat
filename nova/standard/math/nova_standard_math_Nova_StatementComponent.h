@@ -27,20 +27,20 @@ typedef struct nova_standard_math_Nova_StatementComponent nova_standard_math_Nov
 #include <nova/standard/nova_standard_Nova_System.h>
 #include <nova/standard/math/nova_standard_math_Nova_Math.h>
 
-typedef struct nova_VTable_nova_standard_math_Nova_StatementComponent
+typedef struct nova_standard_math_VTable_StatementComponent
 {
 	long (*nova_standard_Nova_Object_virtual1_Nova_getHashCodeLong)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*);
 	nova_standard_Nova_String* (*nova_standard_math_Nova_StatementComponent_virtual0_Nova_toString)(nova_standard_math_Nova_StatementComponent*, nova_standard_exception_Nova_ExceptionData*);
 	char (*nova_standard_Nova_Object_virtual0_Nova_equals)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*);
-} nova_VTable_nova_standard_math_Nova_StatementComponent;
+} nova_standard_math_VTable_StatementComponent;
 
-extern nova_VTable_nova_standard_math_Nova_StatementComponent nova_VTable_nova_standard_math_Nova_StatementComponent_val;
+extern nova_standard_math_VTable_StatementComponent nova_standard_math_VTable_StatementComponent_val;
 
 CCLASS_CLASS
 (
 	nova_standard_math_Nova_StatementComponent, 
 	
-	nova_VTable_nova_standard_math_Nova_StatementComponent* vtable;
+	nova_standard_math_VTable_StatementComponent* vtable;
 	nova_standard_Nova_Object* nova_standard_math_Nova_StatementComponent_Nova_data;
 	nova_standard_math_Nova_StatementComponent* nova_standard_math_Nova_StatementComponent_Nova_next;
 )

@@ -2,7 +2,7 @@
 #include <nova/standard/datastruct/nova_standard_datastruct_Nova_EmptyStackException.h>
 
 
-nova_VTable_nova_standard_datastruct_Nova_EmptyStackException nova_VTable_nova_standard_datastruct_Nova_EmptyStackException_val =
+nova_standard_datastruct_VTable_EmptyStackException nova_standard_datastruct_VTable_EmptyStackException_val =
 {
 	nova_standard_Nova_Object_1_Nova_getHashCodeLong,
 	nova_standard_Nova_Object_0_Nova_toString,
@@ -17,7 +17,7 @@ void nova_standard_datastruct_Nova_EmptyStackExceptionNova_init_static(nova_stan
 nova_standard_datastruct_Nova_EmptyStackException* nova_standard_datastruct_Nova_EmptyStackException_0_Nova_construct(nova_standard_datastruct_Nova_EmptyStackException* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
 	CCLASS_NEW(nova_standard_datastruct_Nova_EmptyStackException, this,);
-	this->vtable = &nova_VTable_nova_standard_datastruct_Nova_EmptyStackException_val;
+	this->vtable = &nova_standard_datastruct_VTable_EmptyStackException_val;
 	nova_standard_Nova_Object_Nova_super((nova_standard_Nova_Object*)this, exceptionData);
 	nova_standard_exception_Nova_Exception_Nova_super((nova_standard_exception_Nova_Exception*)this, exceptionData);
 	nova_standard_Nova_Object_2_Nova_this((nova_standard_Nova_Object*)(this), exceptionData);

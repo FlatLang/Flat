@@ -2,7 +2,7 @@
 #include <nova/standard/security/nova_standard_security_Nova_MD5.h>
 
 
-nova_VTable_nova_standard_security_Nova_MD5 nova_VTable_nova_standard_security_Nova_MD5_val =
+nova_standard_security_VTable_MD5 nova_standard_security_VTable_MD5_val =
 {
 	nova_standard_Nova_Object_1_Nova_getHashCodeLong,
 	nova_standard_Nova_Object_0_Nova_toString,
@@ -17,7 +17,7 @@ void nova_standard_security_Nova_MD5Nova_init_static(nova_standard_exception_Nov
 nova_standard_security_Nova_MD5* nova_standard_security_Nova_MD5_2_Nova_construct(nova_standard_security_Nova_MD5* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
 	CCLASS_NEW(nova_standard_security_Nova_MD5, this,);
-	this->vtable = &nova_VTable_nova_standard_security_Nova_MD5_val;
+	this->vtable = &nova_standard_security_VTable_MD5_val;
 	nova_standard_Nova_Object_Nova_super((nova_standard_Nova_Object*)this, exceptionData);
 	nova_standard_Nova_Object_2_Nova_this((nova_standard_Nova_Object*)(this), exceptionData);
 	nova_standard_security_Nova_MD5_Nova_super(this, exceptionData);

@@ -28,20 +28,20 @@ typedef struct nova_standard_time_Nova_Date nova_standard_time_Nova_Date;
 #include <nova/standard/math/nova_standard_math_Nova_Math.h>
 #include <nova/standard/time/NativeDate.h>
 
-typedef struct nova_VTable_nova_standard_time_Nova_Date
+typedef struct nova_standard_time_VTable_Date
 {
 	long (*nova_standard_Nova_Object_virtual1_Nova_getHashCodeLong)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*);
 	nova_standard_Nova_String* (*nova_standard_Nova_Object_virtual0_Nova_toString)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*);
 	char (*nova_standard_Nova_Object_virtual0_Nova_equals)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*);
-} nova_VTable_nova_standard_time_Nova_Date;
+} nova_standard_time_VTable_Date;
 
-extern nova_VTable_nova_standard_time_Nova_Date nova_VTable_nova_standard_time_Nova_Date_val;
+extern nova_standard_time_VTable_Date nova_standard_time_VTable_Date_val;
 
 CCLASS_CLASS
 (
 	nova_standard_time_Nova_Date, 
 	
-	nova_VTable_nova_standard_time_Nova_Date* vtable;
+	nova_standard_time_VTable_Date* vtable;
 	int nova_standard_time_Nova_Date_Nova_year;
 	int nova_standard_time_Nova_Date_Nova_month;
 	int nova_standard_time_Nova_Date_Nova_day;
