@@ -22,7 +22,7 @@ import net.fathomsoft.nova.util.Location;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:02:42 PM
- * @version	v0.2.41 Dec 17, 2014 at 7:48:17 PM
+ * @version	v0.2.43 Jan 16, 2015 at 11:59:17 AM
  */
 public class Variable extends Identifier
 {
@@ -200,12 +200,12 @@ public class Variable extends Identifier
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.Identifier#willForceOriginalName()
+	 * @see net.fathomsoft.nova.tree.Identifier#doesForceOriginalName()
 	 */
 	@Override
-	public boolean willForceOriginalName()
+	public boolean doesForceOriginalName()
 	{
-		return declaration.willForceOriginalName() || isExternal();
+		return declaration.doesForceOriginalName() || isExternal();
 	}
 	
 	/**
@@ -249,6 +249,16 @@ public class Variable extends Identifier
 	public void setArrayDimensions(int arrayDimensions)
 	{
 		declaration.setArrayDimensions(arrayDimensions);
+	}
+	
+	public void swapNames(Variable other)
+	{
+		swapNames(other.getDeclaration());
+	}
+	
+	public void swapNames(VariableDeclaration other)
+	{
+		getDeclaration().swapNames(other);
 	}
 	
 	/**

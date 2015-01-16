@@ -24,7 +24,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.2.4 May 2, 2014 at 11:14:37 PM
- * @version	v0.2.41 Dec 17, 2014 at 7:48:17 PM
+ * @version	v0.2.43 Jan 16, 2015 at 11:59:17 AM
  */
 public class VariableDeclaration extends IIdentifier implements GenericCompatible
 {
@@ -256,6 +256,20 @@ public class VariableDeclaration extends IIdentifier implements GenericCompatibl
 	public boolean setAttribute(String attribute, int argNum)
 	{
 		return false;
+	}
+	
+	public void swapNames(Variable other)
+	{
+		swapNames(other.getDeclaration());
+	}
+	
+	public void swapNames(VariableDeclaration other)
+	{
+		String  temp  = getName();
+		boolean force = doesForceOriginalName();
+		
+		setName(other.getName(), other.doesForceOriginalName());
+		other.setName(temp, force);
 	}
 	
 	/**
