@@ -56,9 +56,9 @@ public class IIdentifier extends Identifier
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.Identifier#willForceOriginalName()
+	 * @see net.fathomsoft.nova.tree.Identifier#doesForceOriginalName()
 	 */
-	public boolean willForceOriginalName()
+	public boolean doesForceOriginalName()
 	{
 		return forceOriginal;
 	}

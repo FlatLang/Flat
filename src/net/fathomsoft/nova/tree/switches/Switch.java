@@ -278,7 +278,7 @@ public class Switch extends ControlStatement
 				
 				addChild(localFallthrough, this);
 			}
-			if (!getControlValue().isConsistent() && (!(getControlValue() instanceof Variable) || !((Variable)getControlValue()).willForceOriginalName()))
+			if (!getControlValue().isConsistent() && (!(getControlValue() instanceof Variable) || !((Variable)getControlValue()).doesForceOriginalName()))
 			{
 //				Assignment decl = Assignment.decodeStatement(getParent(), , location, require)
 				Variable var = getAncestorWithScope().getScope().registerLocalVariable(getControlValue(), true);

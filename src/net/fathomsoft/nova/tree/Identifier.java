@@ -363,7 +363,7 @@ public abstract class Identifier extends Value implements Accessible
 	{
 		String name = getName();
 		
-		if (willForceOriginalName())
+		if (doesForceOriginalName())
 		{
 			return builder.append(name);
 		}
@@ -465,7 +465,7 @@ public abstract class Identifier extends Value implements Accessible
 	 * @return Whether or not the name will be output in the C code
 	 * 		verbatim.
 	 */
-	public abstract boolean willForceOriginalName();
+	public abstract boolean doesForceOriginalName();
 	
 	/**
 	 * Whether or not you want the output in the C language to be the
