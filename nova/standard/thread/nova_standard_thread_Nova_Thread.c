@@ -3,13 +3,32 @@
 
 typedef void (*l0_1_Nova_run)(void*, nova_standard_exception_Nova_ExceptionData*);
 
-nova_standard_thread_VTable_Thread nova_standard_thread_VTable_Thread_val =
+nova_standard_thread_Extension_VTable_Thread nova_standard_thread_Extension_VTable_Thread_val =
 {
-	nova_standard_Nova_Object_1_Nova_getHashCodeLong,
+	{
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+	},
+	nova_standard_Nova_Object_3_Nova_getHashCodeLong,
 	nova_standard_Nova_Object_0_Nova_toString,
 	nova_standard_Nova_Object_0_Nova_equals,
 	nova_standard_thread_Nova_Thread_0_Nova_run,
 };
+
+
 CCLASS_PRIVATE
 (
 	NOVA_THREAD_HANDLE* nova_standard_thread_Nova_Thread_Nova_handle;
@@ -26,7 +45,7 @@ void nova_standard_thread_Nova_ThreadNova_init_static(nova_standard_exception_No
 nova_standard_thread_Nova_Thread* nova_standard_thread_Nova_Thread_2_Nova_construct(nova_standard_thread_Nova_Thread* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
 	CCLASS_NEW(nova_standard_thread_Nova_Thread, this);
-	this->vtable = &nova_standard_thread_VTable_Thread_val;
+	this->vtable = &nova_standard_thread_Extension_VTable_Thread_val;
 	nova_standard_Nova_Object_Nova_super((nova_standard_Nova_Object*)this, exceptionData);
 	nova_standard_Nova_Object_2_Nova_this((nova_standard_Nova_Object*)(this), exceptionData);
 	nova_standard_thread_Nova_Thread_Nova_super(this, exceptionData);

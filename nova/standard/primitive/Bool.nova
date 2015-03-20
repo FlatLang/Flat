@@ -1,6 +1,8 @@
 package "nova/standard/primitive"
 
-public class Bool extends Primitive
+import "nova/standard/datastruct/Comparable"
+
+public class Bool extends Primitive implements Comparable<Bool>
 {
 	Bool value
 	
@@ -22,5 +24,10 @@ public class Bool extends Primitive
 	public toString() -> String
 	{
 		return toString(value)
+	}
+	
+	public compareTo(Bool other) -> Bool
+	{
+		return value == other
 	}
 }

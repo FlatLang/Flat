@@ -6,6 +6,7 @@ typedef struct stabilitytest_Nova_StabilityExceptionHandler stabilitytest_Nova_S
 
 #include <Nova.h>
 #include <ExceptionHandler.h>
+#include <InterfaceVTable.h>
 #include <nova/standard/exception/nova_standard_exception_Nova_ExceptionData.h>
 #include <nova/standard/exception/nova_standard_exception_Nova_Exception.h>
 #include <nova/standard/exception/nova_standard_exception_Nova_DivideByZeroException.h>
@@ -30,21 +31,25 @@ typedef struct stabilitytest_Nova_StabilityExceptionHandler stabilitytest_Nova_S
 #include <nova/standard/thread/nova_standard_thread_Nova_Thread.h>
 #include <stabilitytest/stabilitytest_Nova_StabilityTest.h>
 
-typedef struct nova_VTable_stabilitytest_Nova_StabilityExceptionHandler
+
+typedef struct stabilitytest_Extension_VTable_StabilityExceptionHandler stabilitytest_Extension_VTable_StabilityExceptionHandler;
+struct stabilitytest_Extension_VTable_StabilityExceptionHandler
 {
-	long (*nova_standard_Nova_Object_virtual0_Nova_getHashCodeLong)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*);
+	nova_Interface_VTable itable;
+	long (*nova_standard_Nova_Object_virtual1_Nova_getHashCodeLong)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*);
 	nova_standard_Nova_String* (*nova_standard_Nova_Object_virtual0_Nova_toString)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*);
 	char (*nova_standard_Nova_Object_virtual0_Nova_equals)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*);
 	void (*stabilitytest_Nova_StabilityExceptionHandler_virtual_Nova_uncaughtException)(stabilitytest_Nova_StabilityExceptionHandler*, nova_standard_exception_Nova_ExceptionData*, nova_standard_thread_Nova_Thread*, nova_standard_exception_Nova_Exception*);
-} nova_VTable_stabilitytest_Nova_StabilityExceptionHandler;
+};
 
-extern nova_VTable_stabilitytest_Nova_StabilityExceptionHandler nova_VTable_stabilitytest_Nova_StabilityExceptionHandler_val;
+extern stabilitytest_Extension_VTable_StabilityExceptionHandler stabilitytest_Extension_VTable_StabilityExceptionHandler_val;
+
 
 CCLASS_CLASS
 (
 	stabilitytest_Nova_StabilityExceptionHandler, 
 	
-	nova_VTable_stabilitytest_Nova_StabilityExceptionHandler* vtable;
+	stabilitytest_Extension_VTable_StabilityExceptionHandler* vtable;
 	struct Private* prv;
 )
 
@@ -53,6 +58,6 @@ stabilitytest_Nova_StabilityExceptionHandler* stabilitytest_Nova_StabilityExcept
 void stabilitytest_Nova_StabilityExceptionHandler_Nova_destroy(stabilitytest_Nova_StabilityExceptionHandler** this, nova_standard_exception_Nova_ExceptionData* exceptionData);
 void stabilitytest_Nova_StabilityExceptionHandler_Nova_this(stabilitytest_Nova_StabilityExceptionHandler* this, nova_standard_exception_Nova_ExceptionData* exceptionData, stabilitytest_Nova_StabilityTest* l0_Nova_program);
 void stabilitytest_Nova_StabilityExceptionHandler_Nova_uncaughtException(stabilitytest_Nova_StabilityExceptionHandler* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_thread_Nova_Thread* l0_Nova_thread, nova_standard_exception_Nova_Exception* l0_Nova_exception);
-void stabilitytest_Nova_StabilityExceptionHandler_Nova_super(stabilitytest_Nova_StabilityExceptionHandler* this, nova_standard_exception_Nova_ExceptionData* exceptionData);
+void stabilitytest_Nova_StabilityExceptionHandler_2_Nova_super(stabilitytest_Nova_StabilityExceptionHandler* this, nova_standard_exception_Nova_ExceptionData* exceptionData);
 
 #endif

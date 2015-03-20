@@ -22,8 +22,6 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  */
 public class FileDeclaration extends Node
 {
-	//TODO: package name here?
-	
 	private StringBuilder	header, source;
 	
 	private File			file;
@@ -44,6 +42,7 @@ public class FileDeclaration extends Node
 		{
 			"Nova.h",
 			"ExceptionHandler.h",
+			"InterfaceVTable.h",
 			Nova.getClassLocation("ExceptionData"),
 			Nova.getClassLocation("Exception"),
 			Nova.getClassLocation("DivideByZeroException"),
@@ -79,14 +78,13 @@ public class FileDeclaration extends Node
 		closures  = new ArrayList<ClosureDeclaration>();
 		this.file = file;
 		
-		ImportList imports = new ImportList(this, locationIn);
+		Package p = Package.generateDefaultPackage(this, Location.INVALID);
+		addChild(p, this);
 		
+		ImportList imports = new ImportList(this, locationIn);
 		addChild(imports, this);
 		
 		addDefaultImports();
-		
-		Package p = Package.generateDefaultPackage(this, Location.INVALID);
-		setPackage(p);
 	}
 	
 	/**
@@ -95,7 +93,7 @@ public class FileDeclaration extends Node
 	@Override
 	public int getNumDefaultChildren()
 	{
-		return super.getNumDefaultChildren() + 1;
+		return super.getNumDefaultChildren() + 2;
 	}
 	
 	/**
@@ -299,22 +297,12 @@ public class FileDeclaration extends Node
 	
 	public Package getPackage()
 	{
-		if (getNumChildren() > getNumDecodedChildren() && getChild(getNumDecodedChildren()) instanceof Package)
-		{
-			return (Package)getChild(getNumDecodedChildren());
-		}
-		
-		return null;
+		return (Package)getChild(super.getNumDefaultChildren() + 0);
 	}
 	
 	private void setPackage(Package n)
 	{
-		if (getPackage() != null)
-		{
-			removeChild(getNumDecodedChildren());
-		}
-		
-		addChild(getNumDecodedChildren(), n);
+		getPackage().replaceWith(n);
 	}
 	
 	/**
@@ -330,7 +318,7 @@ public class FileDeclaration extends Node
 			
 			if (getPackage() != null)
 			{
-				if (getNumChildren() <= getNumDecodedChildren() + 1)
+				if (getNumChildren() < getNumDecodedChildren() + 1)
 				{
 					SyntaxMessage.error("Missing class declaration", this);
 				}
@@ -435,7 +423,7 @@ public class FileDeclaration extends Node
 	 */
 	public ImportList getImportList()
 	{
-		return (ImportList)getChild(0);
+		return (ImportList)getChild(super.getNumDefaultChildren() + 1);
 	}
 	
 	/**

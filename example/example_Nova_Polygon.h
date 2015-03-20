@@ -6,6 +6,7 @@ typedef struct example_Nova_Polygon example_Nova_Polygon;
 
 #include <Nova.h>
 #include <ExceptionHandler.h>
+#include <InterfaceVTable.h>
 #include <nova/standard/exception/nova_standard_exception_Nova_ExceptionData.h>
 #include <nova/standard/exception/nova_standard_exception_Nova_Exception.h>
 #include <nova/standard/exception/nova_standard_exception_Nova_DivideByZeroException.h>
@@ -27,22 +28,24 @@ typedef struct example_Nova_Polygon example_Nova_Polygon;
 #include <nova/standard/nova_standard_Nova_System.h>
 #include <nova/standard/math/nova_standard_math_Nova_Math.h>
 
-typedef struct example_VTable_Polygon
+
+typedef struct example_Extension_VTable_Polygon example_Extension_VTable_Polygon;
+struct example_Extension_VTable_Polygon
 {
-	long (*nova_standard_Nova_Object_virtual1_Nova_getHashCodeLong)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*);
+	nova_Interface_VTable itable;
+	long (*nova_standard_Nova_Object_virtual3_Nova_getHashCodeLong)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*);
 	nova_standard_Nova_String* (*nova_standard_Nova_Object_virtual0_Nova_toString)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*);
 	char (*nova_standard_Nova_Object_virtual0_Nova_equals)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*);
-	int (*example_Nova_Polygon_virtual0_Nova_numberSides)(example_Nova_Polygon*, nova_standard_exception_Nova_ExceptionData*);
-	double (*example_Nova_Polygon_virtual0_Nova_calculateArea)(example_Nova_Polygon*, nova_standard_exception_Nova_ExceptionData*);
-} example_VTable_Polygon;
+};
 
-extern example_VTable_Polygon example_VTable_Polygon_val;
+extern example_Extension_VTable_Polygon example_Extension_VTable_Polygon_val;
+
 
 CCLASS_CLASS
 (
 	example_Nova_Polygon, 
 	
-	example_VTable_Polygon* vtable;
+	example_Extension_VTable_Polygon* vtable;
 )
 
 void example_Nova_PolygonNova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData);

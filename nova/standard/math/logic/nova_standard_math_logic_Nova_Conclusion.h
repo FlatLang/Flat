@@ -6,6 +6,7 @@ typedef struct nova_standard_math_logic_Nova_Conclusion nova_standard_math_logic
 
 #include <Nova.h>
 #include <ExceptionHandler.h>
+#include <InterfaceVTable.h>
 #include <nova/standard/exception/nova_standard_exception_Nova_ExceptionData.h>
 #include <nova/standard/exception/nova_standard_exception_Nova_Exception.h>
 #include <nova/standard/exception/nova_standard_exception_Nova_DivideByZeroException.h>
@@ -28,20 +29,24 @@ typedef struct nova_standard_math_logic_Nova_Conclusion nova_standard_math_logic
 #include <nova/standard/math/nova_standard_math_Nova_Math.h>
 #include <nova/standard/math/logic/nova_standard_math_logic_Nova_LogicalStatement.h>
 
-typedef struct nova_standard_math_logic_VTable_Conclusion
+
+typedef struct nova_standard_math_logic_Extension_VTable_Conclusion nova_standard_math_logic_Extension_VTable_Conclusion;
+struct nova_standard_math_logic_Extension_VTable_Conclusion
 {
-	long (*nova_standard_Nova_Object_virtual1_Nova_getHashCodeLong)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*);
+	nova_Interface_VTable itable;
+	long (*nova_standard_Nova_Object_virtual3_Nova_getHashCodeLong)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*);
 	nova_standard_Nova_String* (*nova_standard_math_logic_Nova_LogicalStatement_virtual0_Nova_toString)(nova_standard_math_logic_Nova_LogicalStatement*, nova_standard_exception_Nova_ExceptionData*);
 	char (*nova_standard_Nova_Object_virtual0_Nova_equals)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*);
-} nova_standard_math_logic_VTable_Conclusion;
+};
 
-extern nova_standard_math_logic_VTable_Conclusion nova_standard_math_logic_VTable_Conclusion_val;
+extern nova_standard_math_logic_Extension_VTable_Conclusion nova_standard_math_logic_Extension_VTable_Conclusion_val;
+
 
 CCLASS_CLASS
 (
 	nova_standard_math_logic_Nova_Conclusion, 
 	
-	nova_standard_math_logic_VTable_Conclusion* vtable;
+	nova_standard_math_logic_Extension_VTable_Conclusion* vtable;
 	struct Private* prv;
 )
 

@@ -15,7 +15,7 @@ public class BinaryTree extends Tree
 		}
 	}
 	
-	public addNode(Object data)
+	public addNode(Comparable<BinaryNode<Object>> data)
 	{
 		if (root == null)
 		{

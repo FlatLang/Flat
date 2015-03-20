@@ -6,6 +6,7 @@ typedef struct stabilitytest_Nova_UnstableException stabilitytest_Nova_UnstableE
 
 #include <Nova.h>
 #include <ExceptionHandler.h>
+#include <InterfaceVTable.h>
 #include <nova/standard/exception/nova_standard_exception_Nova_ExceptionData.h>
 #include <nova/standard/exception/nova_standard_exception_Nova_Exception.h>
 #include <nova/standard/exception/nova_standard_exception_Nova_DivideByZeroException.h>
@@ -27,27 +28,31 @@ typedef struct stabilitytest_Nova_UnstableException stabilitytest_Nova_UnstableE
 #include <nova/standard/nova_standard_Nova_System.h>
 #include <nova/standard/math/nova_standard_math_Nova_Math.h>
 
-typedef struct nova_VTable_stabilitytest_Nova_UnstableException
+
+typedef struct stabilitytest_Extension_VTable_UnstableException stabilitytest_Extension_VTable_UnstableException;
+struct stabilitytest_Extension_VTable_UnstableException
 {
-	long (*nova_standard_Nova_Object_virtual0_Nova_getHashCodeLong)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*);
+	nova_Interface_VTable itable;
+	long (*nova_standard_Nova_Object_virtual1_Nova_getHashCodeLong)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*);
 	nova_standard_Nova_String* (*nova_standard_Nova_Object_virtual0_Nova_toString)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*);
 	char (*nova_standard_Nova_Object_virtual0_Nova_equals)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*);
-} nova_VTable_stabilitytest_Nova_UnstableException;
+};
 
-extern nova_VTable_stabilitytest_Nova_UnstableException nova_VTable_stabilitytest_Nova_UnstableException_val;
+extern stabilitytest_Extension_VTable_UnstableException stabilitytest_Extension_VTable_UnstableException_val;
+
 
 CCLASS_CLASS
 (
 	stabilitytest_Nova_UnstableException, 
 	
-	nova_VTable_stabilitytest_Nova_UnstableException* vtable;
+	stabilitytest_Extension_VTable_UnstableException* vtable;
 	nova_standard_Nova_String* nova_standard_exception_Nova_Exception_Nova_message;
 )
 
 void stabilitytest_Nova_UnstableExceptionNova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData);
 stabilitytest_Nova_UnstableException* stabilitytest_Nova_UnstableException_0_Nova_construct(stabilitytest_Nova_UnstableException* this, nova_standard_exception_Nova_ExceptionData* exceptionData);
 void stabilitytest_Nova_UnstableException_Nova_destroy(stabilitytest_Nova_UnstableException** this, nova_standard_exception_Nova_ExceptionData* exceptionData);
-void stabilitytest_Nova_UnstableException_Nova_this(stabilitytest_Nova_UnstableException* this, nova_standard_exception_Nova_ExceptionData* exceptionData);
-void stabilitytest_Nova_UnstableException_Nova_super(stabilitytest_Nova_UnstableException* this, nova_standard_exception_Nova_ExceptionData* exceptionData);
+void stabilitytest_Nova_UnstableException_0_Nova_this(stabilitytest_Nova_UnstableException* this, nova_standard_exception_Nova_ExceptionData* exceptionData);
+void stabilitytest_Nova_UnstableException_2_Nova_super(stabilitytest_Nova_UnstableException* this, nova_standard_exception_Nova_ExceptionData* exceptionData);
 
 #endif

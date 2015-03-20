@@ -84,4 +84,9 @@ public class Node<E>
 		
 		return str
 	}
+	
+	public toString() -> String
+	{
+		return data.toString()
+	}
 }

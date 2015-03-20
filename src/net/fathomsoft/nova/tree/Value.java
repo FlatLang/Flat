@@ -181,7 +181,7 @@ public abstract class Value extends Node implements AbstractValue
 	 */
 	public boolean isPrimitiveType()
 	{
-		return SyntaxUtils.isPrimitiveType(getType()) || getType() != null && getType().equals("Number");
+		return SyntaxUtils.isPrimitiveType(getType()) || (isWithinExternalContext() && SyntaxUtils.isExternalPrimitiveType(getType())) || getType() != null && getType().equals("Number");
 	}
 	
 	/**
@@ -615,7 +615,14 @@ public abstract class Value extends Node implements AbstractValue
 			
 			ClassDeclaration clazz = SyntaxUtils.getImportedClass(file, type);
 			
-			clazz.generateCSourceName(builder);
+			if (clazz != null)
+			{
+				clazz.generateCSourceName(builder);
+			}
+			else
+			{
+				builder.append(type);
+			}
 		}
 		
 		return builder;
@@ -671,6 +678,11 @@ public abstract class Value extends Node implements AbstractValue
 		}
 		
 		return builder;
+	}
+	
+	public StringBuilder generateCTypeName()
+	{
+		return generateCTypeName(new StringBuilder());
 	}
 	
 	public StringBuilder generateCTypeName(StringBuilder builder)
@@ -832,6 +844,16 @@ public abstract class Value extends Node implements AbstractValue
 	public boolean isVirtualTypeKnown()
 	{
 		return false;
+	}
+	
+	public String getInstanceType()
+	{
+		if (isGenericType())
+		{
+			return getGenericReturnType();
+		}
+		
+		return getType();
 	}
 	
 	public GenericParameter getGenericParameter()

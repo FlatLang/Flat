@@ -1,6 +1,9 @@
 package "nova/standard/primitive/number"
 
-public class Double extends Number
+import "nova/standard/datastruct/Comparable"
+import "nova/standard/operators/Multipliable"
+
+public class Double extends Number implements Comparable<Double>, Multipliable<Double>
 {
 	external void sprintf(char buffer[], char format[], double value)
 	external char[] realloc(char buffer[], int size)
@@ -135,5 +138,15 @@ public class Double extends Number
 		Char pEnd[]
 		
 		return strtod(str.chars, pEnd)
+	}
+	
+	public compareTo(Double other) -> Double
+	{
+		return value - other
+	}
+	
+	public multiply(Double value) -> Double
+	{
+		return this.value * value
 	}
 }

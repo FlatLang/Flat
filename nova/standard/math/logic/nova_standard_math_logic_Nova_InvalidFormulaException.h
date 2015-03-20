@@ -6,6 +6,7 @@ typedef struct nova_standard_math_logic_Nova_InvalidFormulaException nova_standa
 
 #include <Nova.h>
 #include <ExceptionHandler.h>
+#include <InterfaceVTable.h>
 #include <nova/standard/exception/nova_standard_exception_Nova_ExceptionData.h>
 #include <nova/standard/exception/nova_standard_exception_Nova_Exception.h>
 #include <nova/standard/exception/nova_standard_exception_Nova_DivideByZeroException.h>
@@ -27,20 +28,24 @@ typedef struct nova_standard_math_logic_Nova_InvalidFormulaException nova_standa
 #include <nova/standard/nova_standard_Nova_System.h>
 #include <nova/standard/math/nova_standard_math_Nova_Math.h>
 
-typedef struct nova_standard_math_logic_VTable_InvalidFormulaException
+
+typedef struct nova_standard_math_logic_Extension_VTable_InvalidFormulaException nova_standard_math_logic_Extension_VTable_InvalidFormulaException;
+struct nova_standard_math_logic_Extension_VTable_InvalidFormulaException
 {
-	long (*nova_standard_Nova_Object_virtual1_Nova_getHashCodeLong)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*);
+	nova_Interface_VTable itable;
+	long (*nova_standard_Nova_Object_virtual3_Nova_getHashCodeLong)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*);
 	nova_standard_Nova_String* (*nova_standard_Nova_Object_virtual0_Nova_toString)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*);
 	char (*nova_standard_Nova_Object_virtual0_Nova_equals)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*);
-} nova_standard_math_logic_VTable_InvalidFormulaException;
+};
 
-extern nova_standard_math_logic_VTable_InvalidFormulaException nova_standard_math_logic_VTable_InvalidFormulaException_val;
+extern nova_standard_math_logic_Extension_VTable_InvalidFormulaException nova_standard_math_logic_Extension_VTable_InvalidFormulaException_val;
+
 
 CCLASS_CLASS
 (
 	nova_standard_math_logic_Nova_InvalidFormulaException, 
 	
-	nova_standard_math_logic_VTable_InvalidFormulaException* vtable;
+	nova_standard_math_logic_Extension_VTable_InvalidFormulaException* vtable;
 	nova_standard_Nova_String* nova_standard_exception_Nova_Exception_Nova_message;
 )
 

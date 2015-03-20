@@ -1,6 +1,8 @@
 package net.fathomsoft.nova.tree;
 
 import net.fathomsoft.nova.TestContext;
+import net.fathomsoft.nova.ValidationResult;
+import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.util.Location;
 import net.fathomsoft.nova.util.Patterns;
 import net.fathomsoft.nova.util.StringUtils;
@@ -90,6 +92,32 @@ public class AbstractMethodDeclaration extends NovaMethodDeclaration
 		method.cloneTo(this);
 		
 		return this;
+	}
+	
+	/**
+	 * @see net.fathomsoft.nova.tree.NovaMethodDeclaration#validate(int)
+	 */
+	@Override
+	public ValidationResult validate(int phase)
+	{
+		ValidationResult result = super.validate(phase);
+		
+		if (result.skipValidation())
+		{
+			return result;
+		}
+		
+		if (phase == SyntaxTree.PHASE_INSTANCE_DECLARATIONS)
+		{
+			if (!getParentClass().isAbstract())
+			{
+				result.errorOccurred();
+				
+				SyntaxMessage.error("The class '" + getParentClass().getName() + "' must be " + IDENTIFIER + " to contain the " + IDENTIFIER + " method " + getName(), this, false);
+			}
+		}
+		
+		return result;
 	}
 	
 	/**

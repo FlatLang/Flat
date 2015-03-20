@@ -1,0 +1,6 @@
+package "nova/standard/operators"
+
+public interface Multipliable<E>
+{
+	public multiply(E value) -> E
+}

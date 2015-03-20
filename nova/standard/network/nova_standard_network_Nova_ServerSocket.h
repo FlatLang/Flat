@@ -6,6 +6,7 @@ typedef struct nova_standard_network_Nova_ServerSocket nova_standard_network_Nov
 
 #include <Nova.h>
 #include <ExceptionHandler.h>
+#include <InterfaceVTable.h>
 #include <nova/standard/exception/nova_standard_exception_Nova_ExceptionData.h>
 #include <nova/standard/exception/nova_standard_exception_Nova_Exception.h>
 #include <nova/standard/exception/nova_standard_exception_Nova_DivideByZeroException.h>
@@ -32,20 +33,24 @@ typedef struct nova_standard_network_Nova_ServerSocket nova_standard_network_Nov
 #include <nova/standard/network/nova_standard_network_Nova_Socket.h>
 #include <nova/standard/network/nova_standard_network_Nova_ConnectionSocket.h>
 
-typedef struct nova_standard_network_VTable_ServerSocket
+
+typedef struct nova_standard_network_Extension_VTable_ServerSocket nova_standard_network_Extension_VTable_ServerSocket;
+struct nova_standard_network_Extension_VTable_ServerSocket
 {
-	long (*nova_standard_Nova_Object_virtual1_Nova_getHashCodeLong)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*);
+	nova_Interface_VTable itable;
+	long (*nova_standard_Nova_Object_virtual3_Nova_getHashCodeLong)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*);
 	nova_standard_Nova_String* (*nova_standard_Nova_Object_virtual0_Nova_toString)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*);
 	char (*nova_standard_Nova_Object_virtual0_Nova_equals)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*);
-} nova_standard_network_VTable_ServerSocket;
+};
 
-extern nova_standard_network_VTable_ServerSocket nova_standard_network_VTable_ServerSocket_val;
+extern nova_standard_network_Extension_VTable_ServerSocket nova_standard_network_Extension_VTable_ServerSocket_val;
+
 
 CCLASS_CLASS
 (
 	nova_standard_network_Nova_ServerSocket, 
 	
-	nova_standard_network_VTable_ServerSocket* vtable;
+	nova_standard_network_Extension_VTable_ServerSocket* vtable;
 	nova_standard_Nova_String* nova_standard_network_Nova_Socket_Nova_ip;
 	int nova_standard_network_Nova_Socket_Nova_port;
 	char nova_standard_network_Nova_ServerSocket_Nova_open;

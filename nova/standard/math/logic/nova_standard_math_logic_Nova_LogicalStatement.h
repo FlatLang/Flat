@@ -6,6 +6,7 @@ typedef struct nova_standard_math_logic_Nova_LogicalStatement nova_standard_math
 
 #include <Nova.h>
 #include <ExceptionHandler.h>
+#include <InterfaceVTable.h>
 #include <nova/standard/exception/nova_standard_exception_Nova_ExceptionData.h>
 #include <nova/standard/exception/nova_standard_exception_Nova_Exception.h>
 #include <nova/standard/exception/nova_standard_exception_Nova_DivideByZeroException.h>
@@ -30,20 +31,24 @@ typedef struct nova_standard_math_logic_Nova_LogicalStatement nova_standard_math
 #include <nova/standard/math/nova_standard_math_Nova_Statement.h>
 #include <nova/standard/math/logic/nova_standard_math_logic_Nova_StatementComponent.h>
 
-typedef struct nova_standard_math_logic_VTable_LogicalStatement
+
+typedef struct nova_standard_math_logic_Extension_VTable_LogicalStatement nova_standard_math_logic_Extension_VTable_LogicalStatement;
+struct nova_standard_math_logic_Extension_VTable_LogicalStatement
 {
-	long (*nova_standard_Nova_Object_virtual1_Nova_getHashCodeLong)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*);
+	nova_Interface_VTable itable;
+	long (*nova_standard_Nova_Object_virtual3_Nova_getHashCodeLong)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*);
 	nova_standard_Nova_String* (*nova_standard_math_logic_Nova_LogicalStatement_virtual0_Nova_toString)(nova_standard_math_logic_Nova_LogicalStatement*, nova_standard_exception_Nova_ExceptionData*);
 	char (*nova_standard_Nova_Object_virtual0_Nova_equals)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*);
-} nova_standard_math_logic_VTable_LogicalStatement;
+};
 
-extern nova_standard_math_logic_VTable_LogicalStatement nova_standard_math_logic_VTable_LogicalStatement_val;
+extern nova_standard_math_logic_Extension_VTable_LogicalStatement nova_standard_math_logic_Extension_VTable_LogicalStatement_val;
+
 
 CCLASS_CLASS
 (
 	nova_standard_math_logic_Nova_LogicalStatement, 
 	
-	nova_standard_math_logic_VTable_LogicalStatement* vtable;
+	nova_standard_math_logic_Extension_VTable_LogicalStatement* vtable;
 	struct Private* prv;
 )
 

@@ -6,6 +6,7 @@ typedef struct nova_standard_math_Nova_NumericTree nova_standard_math_Nova_Numer
 
 #include <Nova.h>
 #include <ExceptionHandler.h>
+#include <InterfaceVTable.h>
 #include <nova/standard/exception/nova_standard_exception_Nova_ExceptionData.h>
 #include <nova/standard/exception/nova_standard_exception_Nova_Exception.h>
 #include <nova/standard/exception/nova_standard_exception_Nova_DivideByZeroException.h>
@@ -28,20 +29,24 @@ typedef struct nova_standard_math_Nova_NumericTree nova_standard_math_Nova_Numer
 #include <nova/standard/math/nova_standard_math_Nova_Math.h>
 #include <nova/standard/math/nova_standard_math_Nova_NumericOperation.h>
 
-typedef struct nova_standard_math_VTable_NumericTree
+
+typedef struct nova_standard_math_Extension_VTable_NumericTree nova_standard_math_Extension_VTable_NumericTree;
+struct nova_standard_math_Extension_VTable_NumericTree
 {
-	long (*nova_standard_Nova_Object_virtual1_Nova_getHashCodeLong)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*);
+	nova_Interface_VTable itable;
+	long (*nova_standard_Nova_Object_virtual3_Nova_getHashCodeLong)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*);
 	nova_standard_Nova_String* (*nova_standard_math_Nova_NumericTree_virtual0_Nova_toString)(nova_standard_math_Nova_NumericTree*, nova_standard_exception_Nova_ExceptionData*);
 	char (*nova_standard_Nova_Object_virtual0_Nova_equals)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*);
-} nova_standard_math_VTable_NumericTree;
+};
 
-extern nova_standard_math_VTable_NumericTree nova_standard_math_VTable_NumericTree_val;
+extern nova_standard_math_Extension_VTable_NumericTree nova_standard_math_Extension_VTable_NumericTree_val;
+
 
 CCLASS_CLASS
 (
 	nova_standard_math_Nova_NumericTree, 
 	
-	nova_standard_math_VTable_NumericTree* vtable;
+	nova_standard_math_Extension_VTable_NumericTree* vtable;
 	struct Private* prv;
 )
 

@@ -6,6 +6,7 @@ typedef struct nova_standard_Nova_System nova_standard_Nova_System;
 
 #include <Nova.h>
 #include <ExceptionHandler.h>
+#include <InterfaceVTable.h>
 #include <nova/standard/exception/nova_standard_exception_Nova_ExceptionData.h>
 #include <nova/standard/exception/nova_standard_exception_Nova_Exception.h>
 #include <nova/standard/exception/nova_standard_exception_Nova_DivideByZeroException.h>
@@ -32,20 +33,24 @@ typedef struct nova_standard_Nova_System nova_standard_Nova_System;
 #include <nova/standard/process/nova_standard_process_Nova_Process.h>
 #include <nova/standard/NativeSystem.h>
 
-typedef struct nova_standard_VTable_System
+
+typedef struct nova_standard_Extension_VTable_System nova_standard_Extension_VTable_System;
+struct nova_standard_Extension_VTable_System
 {
-	long (*nova_standard_Nova_Object_virtual1_Nova_getHashCodeLong)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*);
+	nova_Interface_VTable itable;
+	long (*nova_standard_Nova_Object_virtual3_Nova_getHashCodeLong)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*);
 	nova_standard_Nova_String* (*nova_standard_Nova_Object_virtual0_Nova_toString)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*);
 	char (*nova_standard_Nova_Object_virtual0_Nova_equals)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*);
-} nova_standard_VTable_System;
+};
 
-extern nova_standard_VTable_System nova_standard_VTable_System_val;
+extern nova_standard_Extension_VTable_System nova_standard_Extension_VTable_System_val;
+
 
 CCLASS_CLASS
 (
 	nova_standard_Nova_System, 
 	
-	nova_standard_VTable_System* vtable;
+	nova_standard_Extension_VTable_System* vtable;
 )
 
 void nova_standard_Nova_SystemNova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData);

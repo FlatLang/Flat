@@ -6,6 +6,7 @@ typedef struct nova_standard_thread_Nova_UncaughtExceptionHandler nova_standard_
 
 #include <Nova.h>
 #include <ExceptionHandler.h>
+#include <InterfaceVTable.h>
 #include <nova/standard/exception/nova_standard_exception_Nova_ExceptionData.h>
 #include <nova/standard/exception/nova_standard_exception_Nova_Exception.h>
 #include <nova/standard/exception/nova_standard_exception_Nova_DivideByZeroException.h>
@@ -28,20 +29,24 @@ typedef struct nova_standard_thread_Nova_UncaughtExceptionHandler nova_standard_
 #include <nova/standard/math/nova_standard_math_Nova_Math.h>
 #include <nova/standard/thread/nova_standard_thread_Nova_Thread.h>
 
-typedef struct nova_standard_thread_VTable_UncaughtExceptionHandler
+
+typedef struct nova_standard_thread_Extension_VTable_UncaughtExceptionHandler nova_standard_thread_Extension_VTable_UncaughtExceptionHandler;
+struct nova_standard_thread_Extension_VTable_UncaughtExceptionHandler
 {
-	long (*nova_standard_Nova_Object_virtual1_Nova_getHashCodeLong)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*);
+	nova_Interface_VTable itable;
+	long (*nova_standard_Nova_Object_virtual3_Nova_getHashCodeLong)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*);
 	nova_standard_Nova_String* (*nova_standard_Nova_Object_virtual0_Nova_toString)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*);
 	char (*nova_standard_Nova_Object_virtual0_Nova_equals)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*);
-} nova_standard_thread_VTable_UncaughtExceptionHandler;
+};
 
-extern nova_standard_thread_VTable_UncaughtExceptionHandler nova_standard_thread_VTable_UncaughtExceptionHandler_val;
+extern nova_standard_thread_Extension_VTable_UncaughtExceptionHandler nova_standard_thread_Extension_VTable_UncaughtExceptionHandler_val;
+
 
 CCLASS_CLASS
 (
 	nova_standard_thread_Nova_UncaughtExceptionHandler, 
 	
-	nova_standard_thread_VTable_UncaughtExceptionHandler* vtable;
+	nova_standard_thread_Extension_VTable_UncaughtExceptionHandler* vtable;
 )
 
 void nova_standard_thread_Nova_UncaughtExceptionHandlerNova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData);

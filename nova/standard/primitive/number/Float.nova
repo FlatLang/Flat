@@ -1,6 +1,9 @@
 package "nova/standard/primitive/number"
 
-public class Float extends Number
+import "nova/standard/datastruct/Comparable"
+import "nova/standard/operators/Multipliable"
+
+public class Float extends Number implements Comparable<Float>, Multipliable<Float>
 {
 	Float value
 	
@@ -22,5 +25,15 @@ public class Float extends Number
 	public toString() -> String
 	{
 		return toString(value)
+	}
+	
+	public compareTo(Float other) -> Float
+	{
+		return value - other
+	}
+	
+	public multiply(Float value) -> Float
+	{
+		return this.value * value
 	}
 }

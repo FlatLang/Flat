@@ -11,12 +11,26 @@ typedef void (*l0_7_Nova_closure)(void*, nova_standard_exception_Nova_ExceptionD
 typedef void (*l0_8_Nova_closure)(void*, nova_standard_exception_Nova_ExceptionData*);
 typedef void (*l0_9_Nova_closure)(void*, nova_standard_exception_Nova_ExceptionData*);
 
-nova_VTable_stabilitytest_Nova_ClosureStability nova_VTable_stabilitytest_Nova_ClosureStability_val =
+stabilitytest_Extension_VTable_ClosureStability stabilitytest_Extension_VTable_ClosureStability_val =
 {
-	nova_standard_Nova_Object_0_Nova_getHashCodeLong,
+	{
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+	},
+	nova_standard_Nova_Object_1_Nova_getHashCodeLong,
 	nova_standard_Nova_Object_0_Nova_toString,
 	nova_standard_Nova_Object_0_Nova_equals,
 };
+
+
 CCLASS_PRIVATE
 (
 	int stabilitytest_Nova_ClosureStability_Nova_number;
@@ -42,13 +56,13 @@ void stabilitytest_Nova_ClosureStabilityNova_init_static(nova_standard_exception
 stabilitytest_Nova_ClosureStability* stabilitytest_Nova_ClosureStability_2_Nova_construct(stabilitytest_Nova_ClosureStability* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
 	CCLASS_NEW(stabilitytest_Nova_ClosureStability, this);
-	this->vtable = &nova_VTable_stabilitytest_Nova_ClosureStability_val;
+	this->vtable = &stabilitytest_Extension_VTable_ClosureStability_val;
 	nova_standard_Nova_Object_Nova_super((nova_standard_Nova_Object*)this, exceptionData);
-	nova_standard_Nova_Object_Nova_this((nova_standard_Nova_Object*)(this), exceptionData);
+	nova_standard_Nova_Object_2_Nova_this((nova_standard_Nova_Object*)(this), exceptionData);
 	stabilitytest_Nova_ClosureStability_Nova_super(this, exceptionData);
 	
 	{
-		stabilitytest_Nova_ClosureStability_Nova_this(this, exceptionData);
+		stabilitytest_Nova_ClosureStability_2_Nova_this(this, exceptionData);
 	}
 	
 	return this;
@@ -64,8 +78,6 @@ void stabilitytest_Nova_ClosureStability_Nova_destroy(stabilitytest_Nova_Closure
 	
 	NOVA_FREE((*this)->prv);
 	
-	{
-	}
 	NOVA_FREE(*this);
 }
 
@@ -155,18 +167,18 @@ int stabilitytest_Nova_ClosureStability_Nova_multiply(stabilitytest_Nova_Closure
 int stabilitytest_Nova_ClosureStability_Nova_pow(stabilitytest_Nova_ClosureStability* this, nova_standard_exception_Nova_ExceptionData* exceptionData, int l0_Nova_base, int l0_Nova_pow)
 {
 	int l1_Nova_value;
-	int l2_Nova_i;
+	int l1_Nova_i;
 	
 	l1_Nova_value = l0_Nova_base;
-	l2_Nova_i = 0;
-	for (; l2_Nova_i < l0_Nova_pow - 1; l2_Nova_i++)
+	l1_Nova_i = 0;
+	for (; l1_Nova_i < l0_Nova_pow - 1; l1_Nova_i++)
 	{
 		l1_Nova_value = l1_Nova_value * l0_Nova_base;
 	}
 	return l1_Nova_value;
 }
 
-void stabilitytest_Nova_ClosureStability_Nova_this(stabilitytest_Nova_ClosureStability* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
+void stabilitytest_Nova_ClosureStability_2_Nova_this(stabilitytest_Nova_ClosureStability* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
 }
 

@@ -52,6 +52,11 @@ public class ArrayList<E>
 		shiftRight(index, size)
 		
 		data[index] = element
+		
+		if (index >= size - 1)
+		{
+			size = index + 1;
+		}
 	}
 	
 	public remove(Int index) -> E

@@ -186,12 +186,49 @@ public abstract class Identifier extends Value implements Accessible
 	@Override
 	public StringBuilder generateCSourceFragment(StringBuilder builder)
 	{
-		if (isSpecialFragment())
+		Node base = getBaseNode();
+		
+//		boolean leftHandVariable = base instanceof Assignment && ((Assignment)base).getAssigneeNode() == this;
+		
+		if (!isAccessed())
 		{
-			return generateSpecialFragment(builder);
+			Identifier accessed = this;
+			
+			while (accessed != null && accessed.doesAccess())
+			{
+				if (accessed.isGenericType())
+				{
+					builder.append("(").append(accessed.generateCTypeCast());
+				}
+				
+				accessed = accessed.getAccessedNode();
+			}
 		}
 		
-		return generateCUseOutput(builder).append(generateChildrenCSourceFragment());
+//		boolean requireCast = !isAccessed() && !leftHandVariable && getReturnedNode().isGenericType();
+		
+//		if (requireCast)
+//		{
+//			getReturnedNode().generateCTypeCast(builder);
+//			
+//			builder.append('(');
+//		}
+		
+		if (isSpecialFragment())
+		{
+			generateSpecialFragment(builder);
+		}
+		else
+		{
+			generateCUseOutput(builder).append(generateChildrenCSourceFragment());
+		}
+		
+//		if (requireCast)
+//		{
+//			builder.append(')');
+//		}
+		
+		return builder;
 	}
 	
 	/**
@@ -307,7 +344,14 @@ public abstract class Identifier extends Value implements Accessible
 			}
 		}
 		
-		return generateCSourceName(builder);
+		generateCSourceName(builder);
+		
+		if (isGenericType() && doesAccess())
+		{
+			builder.append(')');
+		}
+		
+		return builder;
 	}
 	
 	/**

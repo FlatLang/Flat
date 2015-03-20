@@ -6,6 +6,7 @@ typedef struct nova_standard_svg_Nova_SVGMainComponent nova_standard_svg_Nova_SV
 
 #include <Nova.h>
 #include <ExceptionHandler.h>
+#include <InterfaceVTable.h>
 #include <nova/standard/exception/nova_standard_exception_Nova_ExceptionData.h>
 #include <nova/standard/exception/nova_standard_exception_Nova_Exception.h>
 #include <nova/standard/exception/nova_standard_exception_Nova_DivideByZeroException.h>
@@ -30,21 +31,25 @@ typedef struct nova_standard_svg_Nova_SVGMainComponent nova_standard_svg_Nova_SV
 #include <nova/standard/svg/nova_standard_svg_Nova_SVGComponent.h>
 #include <nova/standard/svg/nova_standard_svg_Nova_SVGComponentList.h>
 
-typedef struct nova_standard_svg_VTable_SVGMainComponent
+
+typedef struct nova_standard_svg_Extension_VTable_SVGMainComponent nova_standard_svg_Extension_VTable_SVGMainComponent;
+struct nova_standard_svg_Extension_VTable_SVGMainComponent
 {
-	long (*nova_standard_Nova_Object_virtual1_Nova_getHashCodeLong)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*);
+	nova_Interface_VTable itable;
+	long (*nova_standard_Nova_Object_virtual3_Nova_getHashCodeLong)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*);
 	nova_standard_Nova_String* (*nova_standard_Nova_Object_virtual0_Nova_toString)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*);
 	char (*nova_standard_Nova_Object_virtual0_Nova_equals)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*);
 	void (*nova_standard_svg_Nova_SVGMainComponent_virtual_Nova_generateOutput)(nova_standard_svg_Nova_SVGMainComponent*, nova_standard_exception_Nova_ExceptionData*, nova_standard_io_Nova_File*);
-} nova_standard_svg_VTable_SVGMainComponent;
+};
 
-extern nova_standard_svg_VTable_SVGMainComponent nova_standard_svg_VTable_SVGMainComponent_val;
+extern nova_standard_svg_Extension_VTable_SVGMainComponent nova_standard_svg_Extension_VTable_SVGMainComponent_val;
+
 
 CCLASS_CLASS
 (
 	nova_standard_svg_Nova_SVGMainComponent, 
 	
-	nova_standard_svg_VTable_SVGMainComponent* vtable;
+	nova_standard_svg_Extension_VTable_SVGMainComponent* vtable;
 	nova_standard_svg_Nova_SVGComponentList* nova_standard_svg_Nova_SVGComponent_Nova_children;
 )
 

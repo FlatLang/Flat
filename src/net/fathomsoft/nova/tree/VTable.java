@@ -12,7 +12,7 @@ import net.fathomsoft.nova.util.Location;
  * @since	v0.1 Mar 16, 2014 at 1:13:49 AM
  * @version	v0.2.43 Jan 16, 2015 at 11:59:17 AM
  */
-public class VTable extends IIdentifier
+public abstract class VTable extends IIdentifier
 {
 	public static final String	IDENTIFIER = "vtable";
 	
@@ -22,12 +22,11 @@ public class VTable extends IIdentifier
 	public VTable(Node temporaryParent, Location locationIn)
 	{
 		super(temporaryParent, locationIn);
-	}
-	
-	@Override
-	public StringBuilder generateCType(StringBuilder builder, boolean checkArray)
-	{
-		return builder.append(getType());
+		
+		String type = "" + getParentClass().generateCSourceName(getVTableType() + "_VTable");
+		setType(type, true, false, false);
+		
+		setName(type + "_val", true);
 	}
 	
 	/**
@@ -36,19 +35,26 @@ public class VTable extends IIdentifier
 	@Override
 	public StringBuilder generateCHeader(StringBuilder builder)
 	{
-		NovaMethodDeclaration methods[] = getParentClass().getVirtualMethods();
+		NovaMethodDeclaration methods[] = getVirtualMethods();
+		
+		builder.append("typedef struct ").append(generateCTypeName()).append(' ').append(generateCTypeName()).append(";\n");
 		
 		if (methods.length <= 0)
 		{
 			return builder;
 		}
 		
-		builder.append("typedef struct ").append(generateCType()).append('\n');
-		builder.append("{\n");
-		generateVirtualMethodDeclarations(builder, methods);
-		builder.append("} ").append(generateCType()).append(";\n\n");
+		builder.append("struct ").append(generateCTypeName()).append("\n{\n");
 		
-		builder.append("extern ").append(generateCType()).append(' ').append(generateCSourceName()).append(";\n");
+		for (int i = 0; i < getNumChildren(); i++)
+		{
+			Node child = getChild(i);
+			
+			child.generateCHeaderFragment(builder).append(";\n");
+		}
+		
+		generateVirtualMethodDeclarations(builder, methods);
+		builder.append("}").append(";\n\n");
 		
 		return builder;
 	}
@@ -59,17 +65,26 @@ public class VTable extends IIdentifier
 	@Override
 	public StringBuilder generateCSource(StringBuilder builder)
 	{
-		NovaMethodDeclaration methods[] = getParentClass().getVirtualMethods();
-
+		NovaMethodDeclaration methods[] = getVirtualMethods();
+		
 		if (methods.length <= 0)
 		{
 			return builder;
 		}
 		
 		generateCType(builder).append(' ').append(generateCSourceName()).append(" =\n");
+		
 		builder.append("{\n");
+		
+		for (int i = 0; i < getNumChildren(); i++)
+		{
+			Node child = getChild(i);
+			
+			child.generateCSourceFragment(builder).append(",\n");
+		}
+		
 		generateVirtualMethodValues(builder, methods);
-		builder.append("};");
+		builder.append("};\n");
 		
 		return builder;
 	}
@@ -115,9 +130,19 @@ public class VTable extends IIdentifier
 	 */
 	public StringBuilder generateVirtualMethodValues(StringBuilder builder, NovaMethodDeclaration methods[])
 	{
-		for (MethodDeclaration method : methods)
+		for (NovaMethodDeclaration method : methods)
 		{
-			method.generateCSourceName(builder).append(",\n");
+			if (method != null)
+			{
+//				method.generateCVirtualMethodName(builder);
+				method.generateCSourceName(builder);
+			}
+			else
+			{
+				builder.append(0);
+			}
+			
+			builder.append(",\n");
 		}
 		
 		return builder;
@@ -138,24 +163,10 @@ public class VTable extends IIdentifier
 		
 		if (phase != SyntaxTree.PHASE_CLASS_DECLARATION)
 		{
-			String type = "" + getParentClass().generateCSourceName("VTable");
-			setType(type, true, false, false);
 			
-			setName(type + "_val", true);
 		}
 		
 		return result;
-	}
-	
-	/**
-	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location, boolean)
-	 */
-	@Override
-	public VTable clone(Node temporaryParent, Location locationIn, boolean cloneChildren)
-	{
-		VTable node = new VTable(temporaryParent, locationIn);
-		
-		return cloneTo(node, cloneChildren);
 	}
 	
 	/**
@@ -193,4 +204,8 @@ public class VTable extends IIdentifier
 		
 		return null;
 	}
+	
+	public abstract String getVTableType();
+	
+	public abstract NovaMethodDeclaration[] getVirtualMethods();
 }

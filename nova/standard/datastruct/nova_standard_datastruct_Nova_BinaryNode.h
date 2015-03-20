@@ -6,6 +6,7 @@ typedef struct nova_standard_datastruct_Nova_BinaryNode nova_standard_datastruct
 
 #include <Nova.h>
 #include <ExceptionHandler.h>
+#include <InterfaceVTable.h>
 #include <nova/standard/exception/nova_standard_exception_Nova_ExceptionData.h>
 #include <nova/standard/exception/nova_standard_exception_Nova_Exception.h>
 #include <nova/standard/exception/nova_standard_exception_Nova_DivideByZeroException.h>
@@ -30,23 +31,27 @@ typedef struct nova_standard_datastruct_Nova_BinaryNode nova_standard_datastruct
 #include <nova/standard/datastruct/nova_standard_datastruct_Nova_Node.h>
 #include <nova/standard/datastruct/nova_standard_datastruct_Nova_Comparable.h>
 
-typedef struct nova_standard_datastruct_VTable_BinaryNode
+
+typedef struct nova_standard_datastruct_Extension_VTable_BinaryNode nova_standard_datastruct_Extension_VTable_BinaryNode;
+struct nova_standard_datastruct_Extension_VTable_BinaryNode
 {
-	long (*nova_standard_Nova_Object_virtual1_Nova_getHashCodeLong)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*);
-	nova_standard_Nova_String* (*nova_standard_Nova_Object_virtual0_Nova_toString)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*);
+	nova_Interface_VTable itable;
+	long (*nova_standard_Nova_Object_virtual3_Nova_getHashCodeLong)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*);
+	nova_standard_Nova_String* (*nova_standard_datastruct_Nova_Node_virtual0_Nova_toString)(nova_standard_datastruct_Nova_Node*, nova_standard_exception_Nova_ExceptionData*);
 	char (*nova_standard_Nova_Object_virtual0_Nova_equals)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*);
 	nova_standard_Nova_String* (*nova_standard_datastruct_Nova_BinaryNode_virtual_Nova_preorder)(nova_standard_datastruct_Nova_BinaryNode*, nova_standard_exception_Nova_ExceptionData*);
 	nova_standard_Nova_String* (*nova_standard_datastruct_Nova_BinaryNode_virtual_Nova_inorder)(nova_standard_datastruct_Nova_BinaryNode*, nova_standard_exception_Nova_ExceptionData*);
 	nova_standard_Nova_String* (*nova_standard_datastruct_Nova_BinaryNode_virtual_Nova_postorder)(nova_standard_datastruct_Nova_BinaryNode*, nova_standard_exception_Nova_ExceptionData*);
-} nova_standard_datastruct_VTable_BinaryNode;
+};
 
-extern nova_standard_datastruct_VTable_BinaryNode nova_standard_datastruct_VTable_BinaryNode_val;
+extern nova_standard_datastruct_Extension_VTable_BinaryNode nova_standard_datastruct_Extension_VTable_BinaryNode_val;
+
 
 CCLASS_CLASS
 (
 	nova_standard_datastruct_Nova_BinaryNode, 
 	
-	nova_standard_datastruct_VTable_BinaryNode* vtable;
+	nova_standard_datastruct_Extension_VTable_BinaryNode* vtable;
 	nova_standard_Nova_Object* nova_standard_datastruct_Nova_Node_Nova_data;
 	nova_standard_datastruct_Nova_ArrayList* nova_standard_datastruct_Nova_Node_Nova_children;
 )

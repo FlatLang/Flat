@@ -2,12 +2,31 @@
 #include <nova/standard/math/nova_standard_math_Nova_InvalidNumericStatementException.h>
 
 
-nova_standard_math_VTable_InvalidNumericStatementException nova_standard_math_VTable_InvalidNumericStatementException_val =
+nova_standard_math_Extension_VTable_InvalidNumericStatementException nova_standard_math_Extension_VTable_InvalidNumericStatementException_val =
 {
-	nova_standard_Nova_Object_1_Nova_getHashCodeLong,
+	{
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+	},
+	nova_standard_Nova_Object_3_Nova_getHashCodeLong,
 	nova_standard_Nova_Object_0_Nova_toString,
 	nova_standard_Nova_Object_0_Nova_equals,
 };
+
+
 void nova_standard_math_Nova_InvalidNumericStatementExceptionNova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
 	{
@@ -17,7 +36,7 @@ void nova_standard_math_Nova_InvalidNumericStatementExceptionNova_init_static(no
 nova_standard_math_Nova_InvalidNumericStatementException* nova_standard_math_Nova_InvalidNumericStatementException_Nova_construct(nova_standard_math_Nova_InvalidNumericStatementException* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_Nova_String* l0_Nova_message)
 {
 	CCLASS_NEW(nova_standard_math_Nova_InvalidNumericStatementException, this,);
-	this->vtable = &nova_standard_math_VTable_InvalidNumericStatementException_val;
+	this->vtable = &nova_standard_math_Extension_VTable_InvalidNumericStatementException_val;
 	nova_standard_Nova_Object_Nova_super((nova_standard_Nova_Object*)this, exceptionData);
 	nova_standard_exception_Nova_Exception_Nova_super((nova_standard_exception_Nova_Exception*)this, exceptionData);
 	nova_standard_Nova_Object_2_Nova_this((nova_standard_Nova_Object*)(this), exceptionData);

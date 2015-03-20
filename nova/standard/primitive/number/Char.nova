@@ -50,9 +50,8 @@ public class Char extends Number implements Comparable<Char>
 		return c
 	}
 	
-	public compareTo(Char other) -> Int
+	public compareTo(Char other) -> Char
 	{
-		Console.write("[" + value + "-" + other + "]")
-		return (Int)value - (Int)other
+		return value - other
 	}
 }

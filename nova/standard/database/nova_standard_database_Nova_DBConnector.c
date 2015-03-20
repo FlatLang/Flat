@@ -2,12 +2,31 @@
 #include <nova/standard/database/nova_standard_database_Nova_DBConnector.h>
 
 
-nova_standard_database_VTable_DBConnector nova_standard_database_VTable_DBConnector_val =
+nova_standard_database_Extension_VTable_DBConnector nova_standard_database_Extension_VTable_DBConnector_val =
 {
-	nova_standard_Nova_Object_1_Nova_getHashCodeLong,
+	{
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+	},
+	nova_standard_Nova_Object_3_Nova_getHashCodeLong,
 	nova_standard_Nova_Object_0_Nova_toString,
 	nova_standard_Nova_Object_0_Nova_equals,
 };
+
+
 CCLASS_PRIVATE
 (
 	MYSQL* nova_standard_database_Nova_DBConnector_Nova_mysql;
@@ -23,7 +42,7 @@ void nova_standard_database_Nova_DBConnectorNova_init_static(nova_standard_excep
 nova_standard_database_Nova_DBConnector* nova_standard_database_Nova_DBConnector_2_Nova_construct(nova_standard_database_Nova_DBConnector* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
 	CCLASS_NEW(nova_standard_database_Nova_DBConnector, this);
-	this->vtable = &nova_standard_database_VTable_DBConnector_val;
+	this->vtable = &nova_standard_database_Extension_VTable_DBConnector_val;
 	nova_standard_Nova_Object_Nova_super((nova_standard_Nova_Object*)this, exceptionData);
 	nova_standard_Nova_Object_2_Nova_this((nova_standard_Nova_Object*)(this), exceptionData);
 	nova_standard_database_Nova_DBConnector_Nova_super(this, exceptionData);

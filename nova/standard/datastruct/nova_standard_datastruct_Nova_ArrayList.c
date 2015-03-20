@@ -2,12 +2,31 @@
 #include <nova/standard/datastruct/nova_standard_datastruct_Nova_ArrayList.h>
 
 
-nova_standard_datastruct_VTable_ArrayList nova_standard_datastruct_VTable_ArrayList_val =
+nova_standard_datastruct_Extension_VTable_ArrayList nova_standard_datastruct_Extension_VTable_ArrayList_val =
 {
-	nova_standard_Nova_Object_1_Nova_getHashCodeLong,
+	{
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+	},
+	nova_standard_Nova_Object_3_Nova_getHashCodeLong,
 	nova_standard_Nova_Object_0_Nova_toString,
 	nova_standard_Nova_Object_0_Nova_equals,
 };
+
+
 CCLASS_PRIVATE
 (
 	int nova_standard_datastruct_Nova_ArrayList_Nova_bufferSize;
@@ -29,7 +48,7 @@ void nova_standard_datastruct_Nova_ArrayListNova_init_static(nova_standard_excep
 nova_standard_datastruct_Nova_ArrayList* nova_standard_datastruct_Nova_ArrayList_2_Nova_construct(nova_standard_datastruct_Nova_ArrayList* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
 	CCLASS_NEW(nova_standard_datastruct_Nova_ArrayList, this);
-	this->vtable = &nova_standard_datastruct_VTable_ArrayList_val;
+	this->vtable = &nova_standard_datastruct_Extension_VTable_ArrayList_val;
 	nova_standard_Nova_Object_Nova_super((nova_standard_Nova_Object*)this, exceptionData);
 	nova_standard_Nova_Object_2_Nova_this((nova_standard_Nova_Object*)(this), exceptionData);
 	nova_standard_datastruct_Nova_ArrayList_Nova_super(this, exceptionData);
@@ -44,7 +63,7 @@ nova_standard_datastruct_Nova_ArrayList* nova_standard_datastruct_Nova_ArrayList
 nova_standard_datastruct_Nova_ArrayList* nova_standard_datastruct_Nova_ArrayList_3_Nova_construct(nova_standard_datastruct_Nova_ArrayList* this, nova_standard_exception_Nova_ExceptionData* exceptionData, int l0_Nova_size)
 {
 	CCLASS_NEW(nova_standard_datastruct_Nova_ArrayList, this);
-	this->vtable = &nova_standard_datastruct_VTable_ArrayList_val;
+	this->vtable = &nova_standard_datastruct_Extension_VTable_ArrayList_val;
 	nova_standard_Nova_Object_Nova_super((nova_standard_Nova_Object*)this, exceptionData);
 	nova_standard_Nova_Object_2_Nova_this((nova_standard_Nova_Object*)(this), exceptionData);
 	nova_standard_datastruct_Nova_ArrayList_Nova_super(this, exceptionData);
@@ -99,6 +118,10 @@ void nova_standard_datastruct_Nova_ArrayList_1_Nova_add(nova_standard_datastruct
 	nova_standard_datastruct_Nova_ArrayList_0_Nova_add(this, exceptionData, (nova_standard_Nova_Object*)nova_null);
 	nova_standard_datastruct_Nova_ArrayList_Nova_shiftRight(this, exceptionData, l0_Nova_index, this->nova_standard_datastruct_Nova_ArrayList_Nova_size);
 	this->prv->nova_standard_datastruct_Nova_ArrayList_Nova_data[l0_Nova_index] = l0_Nova_element;
+	if (l0_Nova_index >= this->nova_standard_datastruct_Nova_ArrayList_Nova_size - 1)
+	{
+		this->nova_standard_datastruct_Nova_ArrayList_Nova_size = l0_Nova_index + 1;
+	}
 }
 
 nova_standard_Nova_Object* nova_standard_datastruct_Nova_ArrayList_Nova_remove(nova_standard_datastruct_Nova_ArrayList* this, nova_standard_exception_Nova_ExceptionData* exceptionData, int l0_Nova_index)

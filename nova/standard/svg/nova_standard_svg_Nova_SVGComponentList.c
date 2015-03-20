@@ -2,12 +2,31 @@
 #include <nova/standard/svg/nova_standard_svg_Nova_SVGComponentList.h>
 
 
-nova_standard_svg_VTable_SVGComponentList nova_standard_svg_VTable_SVGComponentList_val =
+nova_standard_svg_Extension_VTable_SVGComponentList nova_standard_svg_Extension_VTable_SVGComponentList_val =
 {
-	nova_standard_Nova_Object_1_Nova_getHashCodeLong,
+	{
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+	},
+	nova_standard_Nova_Object_3_Nova_getHashCodeLong,
 	nova_standard_Nova_Object_0_Nova_toString,
 	nova_standard_Nova_Object_0_Nova_equals,
 };
+
+
 void nova_standard_svg_Nova_SVGComponentListNova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
 	{
@@ -17,7 +36,7 @@ void nova_standard_svg_Nova_SVGComponentListNova_init_static(nova_standard_excep
 nova_standard_svg_Nova_SVGComponentList* nova_standard_svg_Nova_SVGComponentList_2_Nova_construct(nova_standard_svg_Nova_SVGComponentList* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
 	CCLASS_NEW(nova_standard_svg_Nova_SVGComponentList, this,);
-	this->vtable = &nova_standard_svg_VTable_SVGComponentList_val;
+	this->vtable = &nova_standard_svg_Extension_VTable_SVGComponentList_val;
 	nova_standard_Nova_Object_Nova_super((nova_standard_Nova_Object*)this, exceptionData);
 	nova_standard_Nova_Object_2_Nova_this((nova_standard_Nova_Object*)(this), exceptionData);
 	nova_standard_svg_Nova_SVGComponentList_Nova_super(this, exceptionData);

@@ -2,12 +2,26 @@
 #include <stabilitytest/stabilitytest_Nova_TimeStability.h>
 
 
-nova_VTable_stabilitytest_Nova_TimeStability nova_VTable_stabilitytest_Nova_TimeStability_val =
+stabilitytest_Extension_VTable_TimeStability stabilitytest_Extension_VTable_TimeStability_val =
 {
-	nova_standard_Nova_Object_0_Nova_getHashCodeLong,
+	{
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+	},
+	nova_standard_Nova_Object_1_Nova_getHashCodeLong,
 	nova_standard_Nova_Object_0_Nova_toString,
 	nova_standard_Nova_Object_0_Nova_equals,
 };
+
+
 void stabilitytest_Nova_TimeStabilityNova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
 	{
@@ -17,13 +31,13 @@ void stabilitytest_Nova_TimeStabilityNova_init_static(nova_standard_exception_No
 stabilitytest_Nova_TimeStability* stabilitytest_Nova_TimeStability_2_Nova_construct(stabilitytest_Nova_TimeStability* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
 	CCLASS_NEW(stabilitytest_Nova_TimeStability, this,);
-	this->vtable = &nova_VTable_stabilitytest_Nova_TimeStability_val;
+	this->vtable = &stabilitytest_Extension_VTable_TimeStability_val;
 	nova_standard_Nova_Object_Nova_super((nova_standard_Nova_Object*)this, exceptionData);
-	nova_standard_Nova_Object_Nova_this((nova_standard_Nova_Object*)(this), exceptionData);
+	nova_standard_Nova_Object_2_Nova_this((nova_standard_Nova_Object*)(this), exceptionData);
 	stabilitytest_Nova_TimeStability_Nova_super(this, exceptionData);
 	
 	{
-		stabilitytest_Nova_TimeStability_Nova_this(this, exceptionData);
+		stabilitytest_Nova_TimeStability_2_Nova_this(this, exceptionData);
 	}
 	
 	return this;
@@ -37,8 +51,6 @@ void stabilitytest_Nova_TimeStability_Nova_destroy(stabilitytest_Nova_TimeStabil
 	}
 	
 	
-	{
-	}
 	NOVA_FREE(*this);
 }
 
@@ -64,7 +76,7 @@ void stabilitytest_Nova_TimeStability_Nova_test(stabilitytest_Nova_TimeStability
 	}
 }
 
-void stabilitytest_Nova_TimeStability_Nova_this(stabilitytest_Nova_TimeStability* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
+void stabilitytest_Nova_TimeStability_2_Nova_this(stabilitytest_Nova_TimeStability* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
 }
 

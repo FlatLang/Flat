@@ -6,6 +6,7 @@ typedef struct nova_standard_datastruct_Nova_Tree nova_standard_datastruct_Nova_
 
 #include <Nova.h>
 #include <ExceptionHandler.h>
+#include <InterfaceVTable.h>
 #include <nova/standard/exception/nova_standard_exception_Nova_ExceptionData.h>
 #include <nova/standard/exception/nova_standard_exception_Nova_Exception.h>
 #include <nova/standard/exception/nova_standard_exception_Nova_DivideByZeroException.h>
@@ -29,20 +30,24 @@ typedef struct nova_standard_datastruct_Nova_Tree nova_standard_datastruct_Nova_
 #include <nova/standard/exception/nova_standard_exception_Nova_UnimplementedOperationException.h>
 #include <nova/standard/datastruct/nova_standard_datastruct_Nova_Node.h>
 
-typedef struct nova_standard_datastruct_VTable_Tree
+
+typedef struct nova_standard_datastruct_Extension_VTable_Tree nova_standard_datastruct_Extension_VTable_Tree;
+struct nova_standard_datastruct_Extension_VTable_Tree
 {
-	long (*nova_standard_Nova_Object_virtual1_Nova_getHashCodeLong)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*);
+	nova_Interface_VTable itable;
+	long (*nova_standard_Nova_Object_virtual3_Nova_getHashCodeLong)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*);
 	nova_standard_Nova_String* (*nova_standard_Nova_Object_virtual0_Nova_toString)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*);
 	char (*nova_standard_Nova_Object_virtual0_Nova_equals)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*);
-} nova_standard_datastruct_VTable_Tree;
+};
 
-extern nova_standard_datastruct_VTable_Tree nova_standard_datastruct_VTable_Tree_val;
+extern nova_standard_datastruct_Extension_VTable_Tree nova_standard_datastruct_Extension_VTable_Tree_val;
+
 
 CCLASS_CLASS
 (
 	nova_standard_datastruct_Nova_Tree, 
 	
-	nova_standard_datastruct_VTable_Tree* vtable;
+	nova_standard_datastruct_Extension_VTable_Tree* vtable;
 	nova_standard_datastruct_Nova_Node* nova_standard_datastruct_Nova_Tree_Nova_root;
 )
 

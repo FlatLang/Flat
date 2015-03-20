@@ -22,7 +22,6 @@ __Pre-requisites__
 
   * The early version of the compiler uses Java 1.8 or later.
   * Pretty much any machine that has a GCC C compiler.
-  * Patience. (There will be bugs)
 
 
 

@@ -28,32 +28,6 @@ public class GenericImplementation extends TypeList<GenericArgument>
 	}
 	
 	/**
-	 * Decode the given statement into a {@link GenericImplementation} instance, if
-	 * possible. If it is not possible, this method returns null.<br>
-	 * <br>
-	 * Example inputs include:<br>
-	 * <ul>
-	 * 	<li></li>
-	 * 	<li></li>
-	 * 	<li></li>
-	 * </ul>
-	 * 
-	 * @param parent The parent node of the statement.
-	 * @param statement The statement to try to decode into a
-	 * 		{@link GenericImplementation} instance.
-	 * @param location The location of the statement in the source code.
-	 * @param require Whether or not to throw an error if anything goes wrong.
-	 * @return The generated node, if it was possible to translated it
-	 * 		into a {@link GenericImplementation}.
-	 */
-	public static GenericImplementation decodeStatement(Node parent, String statement, Location location, boolean require)
-	{
-		
-		
-		return null;
-	}
-	
-	/**
 	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location, boolean)
 	 */
 	@Override

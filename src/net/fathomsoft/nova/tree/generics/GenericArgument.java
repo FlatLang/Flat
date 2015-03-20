@@ -1,11 +1,13 @@
 package net.fathomsoft.nova.tree.generics;
 
+import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.tree.AccessorMethod;
 import net.fathomsoft.nova.tree.GenericCompatible;
 import net.fathomsoft.nova.tree.IValue;
 import net.fathomsoft.nova.tree.Node;
 import net.fathomsoft.nova.tree.TypeList;
+import net.fathomsoft.nova.tree.Value;
 import net.fathomsoft.nova.tree.variables.VariableDeclaration;
 import net.fathomsoft.nova.util.Location;
 
@@ -38,14 +40,38 @@ public class GenericArgument extends IValue implements GenericCompatible
 		return (GenericImplementation)getParent();
 	}
 	
-	public String getDefaultType()
+	public int getArgumentIndex()
 	{
-		return "Object";
+		GenericImplementation implementation = getGenericImplementation();
+		
+		for (int i = 0; i < implementation.getNumVisibleChildren(); i++)
+		{
+			if (implementation.getVisibleChild(i) == this)
+			{
+				return i;
+			}
+		}
+		
+		return -1;
 	}
 	
-	public VariableDeclaration getDeclaration()
+	/**
+	 * @see net.fathomsoft.nova.tree.IValue#setTypeValue(java.lang.String)
+	 */
+	@Override
+	public void setTypeValue(String type)
 	{
-		return (VariableDeclaration)getGenericImplementation().getParent();
+		super.setTypeValue(type);
+	}
+	
+	public String getDefaultType()
+	{
+		return getValue().getTypeClass().getGenericDeclaration().getParameter(getArgumentIndex()).getDefaultType();
+	}
+	
+	public Value getValue()
+	{
+		return (Value)getGenericImplementation().getParent();
 	}
 	
 	/**
@@ -54,7 +80,7 @@ public class GenericArgument extends IValue implements GenericCompatible
 	@Override
 	public String getGenericReturnType()
 	{
-		if (getDeclaration().getGenericDeclaration().containsParameter(getType()))
+		if (getValue().getGenericDeclaration().containsParameter(getType()))
 		{
 			return getDefaultType();
 		}

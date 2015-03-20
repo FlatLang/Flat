@@ -1,6 +1,9 @@
 package "nova/standard/primitive/number"
 
-public class Long extends Number
+import "nova/standard/datastruct/Comparable"
+import "nova/standard/operators/Multipliable"
+
+public class Long extends Number implements Comparable<Long>, Multipliable<Long>
 {
 	Long value
 	
@@ -62,5 +65,15 @@ public class Long extends Number
 	public toString() -> String
 	{
 		return toString(value)
+	}
+	
+	public compareTo(Long other) -> Long
+	{
+		return value - other
+	}
+	
+	public multiply(Long value) -> Long
+	{
+		return this.value * value
 	}
 }

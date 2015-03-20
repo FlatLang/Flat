@@ -78,7 +78,7 @@ public class Variable extends Identifier
 			return getGenericParameter().getDefaultType();
 		}
 		
-		return super.getGenericReturnType();
+		throw new RuntimeException("Generic return type requested from non-generic type.");
 	}
 	
 	/**

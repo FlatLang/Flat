@@ -44,7 +44,43 @@ public class TypeList<E extends Node> extends List implements Iterator<E>, Itera
 	{
 		return (E)super.getVisibleChild(index);
 	}
-
+	
+	/**
+	 * @see net.fathomsoft.nova.tree.Node#getLastChild()
+	 */
+	@Override
+	public E getLastChild()
+	{
+		return (E)super.getLastChild();
+	}
+	
+	/**
+	 * @see net.fathomsoft.nova.tree.Node#getFirstChild()
+	 */
+	@Override
+	public E getFirstChild()
+	{
+		return (E)super.getFirstChild();
+	}
+	
+	/**
+	 * @see net.fathomsoft.nova.tree.Node#getLastVisibleChild()
+	 */
+	@Override
+	public E getLastVisibleChild()
+	{
+		return (E)super.getLastVisibleChild();
+	}
+	
+	/**
+	 * @see net.fathomsoft.nova.tree.Node#getFirstVisibleChild()
+	 */
+	@Override
+	public E getFirstVisibleChild()
+	{
+		return (E)super.getFirstVisibleChild();
+	}
+	
 	/**
 	 * @see java.util.Iterator#hasNext()
 	 */
@@ -72,6 +108,34 @@ public class TypeList<E extends Node> extends List implements Iterator<E>, Itera
 		currentIndex = 0;
 		
 		return this;
+	}
+	
+	/**
+	 * @see net.fathomsoft.nova.tree.Node#generateCHeaderFragment(java.lang.StringBuilder)
+	 */
+	@Override
+	public StringBuilder generateCHeaderFragment(StringBuilder builder)
+	{
+		for (E child : this)
+		{
+			child.generateCHeader(builder);
+		}
+		
+		return builder;
+	}
+	
+	/**
+	 * @see net.fathomsoft.nova.tree.Node#generateCSourceFragment(java.lang.StringBuilder)
+	 */
+	@Override
+	public StringBuilder generateCSourceFragment(StringBuilder builder)
+	{
+		for (E child : this)
+		{
+			child.generateCSource(builder);
+		}
+		
+		return builder;
 	}
 	
 	/**

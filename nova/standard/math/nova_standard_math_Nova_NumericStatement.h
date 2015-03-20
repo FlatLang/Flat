@@ -6,6 +6,7 @@ typedef struct nova_standard_math_Nova_NumericStatement nova_standard_math_Nova_
 
 #include <Nova.h>
 #include <ExceptionHandler.h>
+#include <InterfaceVTable.h>
 #include <nova/standard/exception/nova_standard_exception_Nova_ExceptionData.h>
 #include <nova/standard/exception/nova_standard_exception_Nova_Exception.h>
 #include <nova/standard/exception/nova_standard_exception_Nova_DivideByZeroException.h>
@@ -29,20 +30,24 @@ typedef struct nova_standard_math_Nova_NumericStatement nova_standard_math_Nova_
 #include <nova/standard/math/nova_standard_math_Nova_Statement.h>
 #include <nova/standard/math/nova_standard_math_Nova_NumericTree.h>
 
-typedef struct nova_standard_math_VTable_NumericStatement
+
+typedef struct nova_standard_math_Extension_VTable_NumericStatement nova_standard_math_Extension_VTable_NumericStatement;
+struct nova_standard_math_Extension_VTable_NumericStatement
 {
-	long (*nova_standard_Nova_Object_virtual1_Nova_getHashCodeLong)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*);
+	nova_Interface_VTable itable;
+	long (*nova_standard_Nova_Object_virtual3_Nova_getHashCodeLong)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*);
 	nova_standard_Nova_String* (*nova_standard_math_Nova_NumericStatement_virtual0_Nova_toString)(nova_standard_math_Nova_NumericStatement*, nova_standard_exception_Nova_ExceptionData*);
 	char (*nova_standard_Nova_Object_virtual0_Nova_equals)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*);
-} nova_standard_math_VTable_NumericStatement;
+};
 
-extern nova_standard_math_VTable_NumericStatement nova_standard_math_VTable_NumericStatement_val;
+extern nova_standard_math_Extension_VTable_NumericStatement nova_standard_math_Extension_VTable_NumericStatement_val;
+
 
 CCLASS_CLASS
 (
 	nova_standard_math_Nova_NumericStatement, 
 	
-	nova_standard_math_VTable_NumericStatement* vtable;
+	nova_standard_math_Extension_VTable_NumericStatement* vtable;
 	struct Private* prv;
 )
 

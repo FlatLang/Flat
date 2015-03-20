@@ -6,6 +6,7 @@ typedef struct nova_standard_network_Nova_NetworkInputStream nova_standard_netwo
 
 #include <Nova.h>
 #include <ExceptionHandler.h>
+#include <InterfaceVTable.h>
 #include <nova/standard/exception/nova_standard_exception_Nova_ExceptionData.h>
 #include <nova/standard/exception/nova_standard_exception_Nova_Exception.h>
 #include <nova/standard/exception/nova_standard_exception_Nova_DivideByZeroException.h>
@@ -30,22 +31,24 @@ typedef struct nova_standard_network_Nova_NetworkInputStream nova_standard_netwo
 #include <nova/standard/io/nova_standard_io_Nova_InputStream.h>
 #include <nova/standard/network/nova_standard_network_Nova_ConnectionSocket.h>
 
-typedef struct nova_standard_network_VTable_NetworkInputStream
+
+typedef struct nova_standard_network_Extension_VTable_NetworkInputStream nova_standard_network_Extension_VTable_NetworkInputStream;
+struct nova_standard_network_Extension_VTable_NetworkInputStream
 {
-	long (*nova_standard_Nova_Object_virtual1_Nova_getHashCodeLong)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*);
+	nova_Interface_VTable itable;
+	long (*nova_standard_Nova_Object_virtual3_Nova_getHashCodeLong)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*);
 	nova_standard_Nova_String* (*nova_standard_Nova_Object_virtual0_Nova_toString)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*);
 	char (*nova_standard_Nova_Object_virtual0_Nova_equals)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*);
-	nova_standard_Nova_String* (*nova_standard_network_Nova_NetworkInputStream_virtual_Nova_readString)(nova_standard_network_Nova_NetworkInputStream*, nova_standard_exception_Nova_ExceptionData*);
-	char* (*nova_standard_network_Nova_NetworkInputStream_virtual_Nova_readBytes)(nova_standard_network_Nova_NetworkInputStream*, nova_standard_exception_Nova_ExceptionData*);
-} nova_standard_network_VTable_NetworkInputStream;
+};
 
-extern nova_standard_network_VTable_NetworkInputStream nova_standard_network_VTable_NetworkInputStream_val;
+extern nova_standard_network_Extension_VTable_NetworkInputStream nova_standard_network_Extension_VTable_NetworkInputStream_val;
+
 
 CCLASS_CLASS
 (
 	nova_standard_network_Nova_NetworkInputStream, 
 	
-	nova_standard_network_VTable_NetworkInputStream* vtable;
+	nova_standard_network_Extension_VTable_NetworkInputStream* vtable;
 	struct Private* prv;
 )
 

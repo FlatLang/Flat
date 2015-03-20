@@ -205,13 +205,15 @@ nova_env novaEnv = {
 &nova_standard_primitive_number_Nova_Char_1_Nova_toLowerCase,
 &nova_standard_primitive_number_Nova_Char_Nova_toUpperCase,
 &nova_standard_primitive_number_Nova_Char_Nova_compareTo,
-&nova_standard_primitive_number_Nova_Char_5_Nova_construct,
+&nova_standard_primitive_number_Nova_Char_6_Nova_construct,
 },
 
 {
 &nova_standard_primitive_number_Nova_Byte_Nova_numDigits,
 &nova_standard_primitive_number_Nova_Byte_1_Nova_toString,
 &nova_standard_primitive_number_Nova_Byte_2_Nova_toString,
+&nova_standard_primitive_number_Nova_Byte_0_Nova_compareTo,
+&nova_standard_primitive_number_Nova_Byte_Nova_multiply,
 &nova_standard_primitive_number_Nova_Byte_Nova_construct,
 },
 
@@ -219,6 +221,8 @@ nova_env novaEnv = {
 &nova_standard_primitive_number_Nova_Short_0_Nova_numDigits,
 &nova_standard_primitive_number_Nova_Short_1_Nova_toString,
 &nova_standard_primitive_number_Nova_Short_2_Nova_toString,
+&nova_standard_primitive_number_Nova_Short_0_Nova_compareTo,
+&nova_standard_primitive_number_Nova_Short_1_Nova_multiply,
 &nova_standard_primitive_number_Nova_Short_Nova_construct,
 },
 
@@ -229,6 +233,7 @@ nova_env novaEnv = {
 &nova_standard_primitive_number_Nova_Int_2_Nova_toString,
 &nova_standard_primitive_number_Nova_Int_Nova_parseInt,
 &nova_standard_primitive_number_Nova_Int_0_Nova_compareTo,
+&nova_standard_primitive_number_Nova_Int_1_Nova_multiply,
 &nova_standard_primitive_number_Nova_Int_Nova_construct,
 },
 
@@ -236,6 +241,8 @@ nova_env novaEnv = {
 &nova_standard_primitive_number_Nova_Long_0_Nova_numDigits,
 &nova_standard_primitive_number_Nova_Long_1_Nova_toString,
 &nova_standard_primitive_number_Nova_Long_2_Nova_toString,
+&nova_standard_primitive_number_Nova_Long_0_Nova_compareTo,
+&nova_standard_primitive_number_Nova_Long_1_Nova_multiply,
 &nova_standard_primitive_number_Nova_Long_Nova_construct,
 },
 
@@ -260,7 +267,12 @@ nova_env novaEnv = {
 
 {
 0,
-&nova_standard_primitive_number_Nova_Number_6_Nova_construct,
+&nova_standard_primitive_number_Nova_Number_7_Nova_construct,
+},
+
+{
+0,
+&nova_standard_operators_Nova_Multipliable_8_Nova_construct,
 },
 
 {
@@ -500,6 +512,7 @@ nova_env novaEnv = {
 0,
 0,
 0,
+&nova_standard_datastruct_Nova_Node_0_Nova_toString,
 &nova_standard_datastruct_Nova_Node_2_Nova_construct,
 &nova_standard_datastruct_Nova_Node_3_Nova_construct,
 &nova_standard_datastruct_Nova_Node_4_Nova_construct,
@@ -517,7 +530,7 @@ nova_env novaEnv = {
 
 {
 0,
-&nova_standard_datastruct_Nova_Comparable_7_Nova_construct,
+&nova_standard_datastruct_Nova_Comparable_5_Nova_construct,
 },
 
 {

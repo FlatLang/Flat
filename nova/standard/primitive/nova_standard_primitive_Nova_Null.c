@@ -2,13 +2,32 @@
 #include <nova/standard/primitive/nova_standard_primitive_Nova_Null.h>
 
 
-nova_standard_primitive_VTable_Null nova_standard_primitive_VTable_Null_val =
+nova_standard_primitive_Extension_VTable_Null nova_standard_primitive_Extension_VTable_Null_val =
 {
-	nova_standard_Nova_Object_1_Nova_getHashCodeLong,
+	{
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+	},
+	nova_standard_Nova_Object_3_Nova_getHashCodeLong,
 	nova_standard_primitive_Nova_Null_Nova_toString,
 	nova_standard_Nova_String_Nova_equals,
 	nova_standard_primitive_Nova_Null_Nova_concat,
 };
+
+
 void nova_standard_primitive_Nova_NullNova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
 	{
@@ -18,7 +37,7 @@ void nova_standard_primitive_Nova_NullNova_init_static(nova_standard_exception_N
 nova_standard_primitive_Nova_Null* nova_standard_primitive_Nova_Null_2_Nova_construct(nova_standard_primitive_Nova_Null* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
 	CCLASS_NEW(nova_standard_primitive_Nova_Null, this,);
-	this->vtable = &nova_standard_primitive_VTable_Null_val;
+	this->vtable = &nova_standard_primitive_Extension_VTable_Null_val;
 	nova_standard_Nova_Object_Nova_super((nova_standard_Nova_Object*)this, exceptionData);
 	nova_standard_Nova_String_Nova_super((nova_standard_Nova_String*)this, exceptionData);
 	nova_standard_Nova_Object_2_Nova_this((nova_standard_Nova_Object*)(this), exceptionData);

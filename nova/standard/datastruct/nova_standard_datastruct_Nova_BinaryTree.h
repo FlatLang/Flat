@@ -6,6 +6,7 @@ typedef struct nova_standard_datastruct_Nova_BinaryTree nova_standard_datastruct
 
 #include <Nova.h>
 #include <ExceptionHandler.h>
+#include <InterfaceVTable.h>
 #include <nova/standard/exception/nova_standard_exception_Nova_ExceptionData.h>
 #include <nova/standard/exception/nova_standard_exception_Nova_Exception.h>
 #include <nova/standard/exception/nova_standard_exception_Nova_DivideByZeroException.h>
@@ -29,20 +30,24 @@ typedef struct nova_standard_datastruct_Nova_BinaryTree nova_standard_datastruct
 #include <nova/standard/datastruct/nova_standard_datastruct_Nova_Tree.h>
 #include <nova/standard/datastruct/nova_standard_datastruct_Nova_BinaryNode.h>
 
-typedef struct nova_standard_datastruct_VTable_BinaryTree
+
+typedef struct nova_standard_datastruct_Extension_VTable_BinaryTree nova_standard_datastruct_Extension_VTable_BinaryTree;
+struct nova_standard_datastruct_Extension_VTable_BinaryTree
 {
-	long (*nova_standard_Nova_Object_virtual1_Nova_getHashCodeLong)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*);
+	nova_Interface_VTable itable;
+	long (*nova_standard_Nova_Object_virtual3_Nova_getHashCodeLong)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*);
 	nova_standard_Nova_String* (*nova_standard_Nova_Object_virtual0_Nova_toString)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*);
 	char (*nova_standard_Nova_Object_virtual0_Nova_equals)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*);
-} nova_standard_datastruct_VTable_BinaryTree;
+};
 
-extern nova_standard_datastruct_VTable_BinaryTree nova_standard_datastruct_VTable_BinaryTree_val;
+extern nova_standard_datastruct_Extension_VTable_BinaryTree nova_standard_datastruct_Extension_VTable_BinaryTree_val;
+
 
 CCLASS_CLASS
 (
 	nova_standard_datastruct_Nova_BinaryTree, 
 	
-	nova_standard_datastruct_VTable_BinaryTree* vtable;
+	nova_standard_datastruct_Extension_VTable_BinaryTree* vtable;
 	nova_standard_datastruct_Nova_Node* nova_standard_datastruct_Nova_Tree_Nova_root;
 )
 

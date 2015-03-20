@@ -2,14 +2,34 @@
 #include <nova/standard/io/nova_standard_io_Nova_Console.h>
 
 
-nova_standard_io_VTable_Console nova_standard_io_VTable_Console_val =
+nova_standard_io_Extension_VTable_Console nova_standard_io_Extension_VTable_Console_val =
 {
-	nova_standard_Nova_Object_1_Nova_getHashCodeLong,
+	{
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+	},
+	nova_standard_Nova_Object_3_Nova_getHashCodeLong,
 	nova_standard_Nova_Object_0_Nova_toString,
 	nova_standard_Nova_Object_0_Nova_equals,
 };
 
-void nova_standard_io_Nova_Console_Nova_flush(nova_standard_io_Nova_Console* this, nova_standard_exception_Nova_ExceptionData* exceptionData);
+
+
+void nova_standard_io_Nova_Console_Nova_flushInput(nova_standard_io_Nova_Console* this, nova_standard_exception_Nova_ExceptionData* exceptionData);
+void nova_standard_io_Nova_Console_Nova_flushOutput(nova_standard_io_Nova_Console* this, nova_standard_exception_Nova_ExceptionData* exceptionData);
 void nova_standard_io_Nova_ConsoleNova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
 	{
@@ -19,7 +39,7 @@ void nova_standard_io_Nova_ConsoleNova_init_static(nova_standard_exception_Nova_
 nova_standard_io_Nova_Console* nova_standard_io_Nova_Console_2_Nova_construct(nova_standard_io_Nova_Console* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
 	CCLASS_NEW(nova_standard_io_Nova_Console, this,);
-	this->vtable = &nova_standard_io_VTable_Console_val;
+	this->vtable = &nova_standard_io_Extension_VTable_Console_val;
 	nova_standard_Nova_Object_Nova_super((nova_standard_Nova_Object*)this, exceptionData);
 	nova_standard_Nova_Object_2_Nova_this((nova_standard_Nova_Object*)(this), exceptionData);
 	nova_standard_io_Nova_Console_Nova_super(this, exceptionData);
@@ -93,7 +113,7 @@ void nova_standard_io_Nova_Console_0_Nova_write(nova_standard_io_Nova_Console* t
 	
 	l1_Nova_cText = l0_Nova_text->nova_standard_Nova_String_Nova_chars;
 	fputs((char*)(l1_Nova_cText), stdout);
-	fflush(stdout);
+	nova_standard_io_Nova_Console_Nova_flushOutput((nova_standard_io_Nova_Console*)nova_null, exceptionData);
 }
 
 void nova_standard_io_Nova_Console_1_Nova_write(nova_standard_io_Nova_Console* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_Nova_Object* l0_Nova_obj)
@@ -157,13 +177,18 @@ char nova_standard_io_Nova_Console_Nova_readChar(nova_standard_io_Nova_Console* 
 	char l1_Nova_c;
 	
 	l1_Nova_c = (char)(getchar());
-	nova_standard_io_Nova_Console_Nova_flush((nova_standard_io_Nova_Console*)nova_null, exceptionData);
+	nova_standard_io_Nova_Console_Nova_flushInput((nova_standard_io_Nova_Console*)nova_null, exceptionData);
 	return l1_Nova_c;
 }
 
-void nova_standard_io_Nova_Console_Nova_flush(nova_standard_io_Nova_Console* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
+void nova_standard_io_Nova_Console_Nova_flushInput(nova_standard_io_Nova_Console* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
 	fseek(stdin, (int)(0), SEEK_END);
+}
+
+void nova_standard_io_Nova_Console_Nova_flushOutput(nova_standard_io_Nova_Console* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
+{
+	fflush(stdout);
 }
 
 nova_standard_Nova_String* nova_standard_io_Nova_Console_Nova_readLine(nova_standard_io_Nova_Console* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
@@ -201,7 +226,7 @@ void nova_standard_io_Nova_Console_Nova_waitForEnter(nova_standard_io_Nova_Conso
 {
 	char* l1_Nova_c;
 	
-	nova_standard_io_Nova_Console_Nova_flush((nova_standard_io_Nova_Console*)nova_null, exceptionData);
+	nova_standard_io_Nova_Console_Nova_flushInput((nova_standard_io_Nova_Console*)nova_null, exceptionData);
 	l1_Nova_c = (char*)NOVA_MALLOC(sizeof(nova_standard_primitive_number_Nova_Char) * 2);
 	fgets((char*)(l1_Nova_c), (int)(2), stdin);
 }

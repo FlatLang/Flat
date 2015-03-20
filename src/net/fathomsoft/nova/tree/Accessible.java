@@ -416,7 +416,7 @@ public interface Accessible
 	{
 		Node n = (Node)this;
 		
-		if (n.getNumVisibleChildren() <= 0)
+		if (n.getNumVisibleChildren() <= 0 || n.getVisibleChild(0) instanceof Identifier == false)
 		{
 			return null;
 		}
@@ -513,25 +513,11 @@ public interface Accessible
 	{
 		Value n = (Value)this;
 		
-		if (this instanceof ClassDeclaration && callingMethod instanceof MethodCall)
-		{
-			CallableMethod declaration = ((MethodCall)callingMethod).getCallableDeclaration();
-			
-			if (declaration.isStatic() || declaration instanceof Constructor)
-			{
-				return declaration.getParameterList().getObjectReference().generateCNullOutput(builder);
-			}
-			else if (declaration instanceof ClosureDeclaration)
-			{
-				ClosureDeclaration closure = (ClosureDeclaration)declaration;
-				
-				return closure.generateCSourceName(builder, "ref");
-			}
-		}
-		
 		n.generateCUseOutput(builder);
+
+		generateChildrenCSourceFragment(builder, true, callingMethod);
 		
-		return generateChildrenCSourceFragment(builder, true, callingMethod);
+		return builder;
 	}
 	
 	/**

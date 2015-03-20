@@ -4,6 +4,7 @@ import "nova/standard/math/logic/WFF"
 import "nova/standard/math/logic/InvalidFormulaException"
 import "nova/standard/math/logic/StatementLetter"
 import "nova/standard/datastruct/HashMap"
+//import "nova/standard/datastruct/Vector2D"
 import "nova/standard/network/ServerSocket"
 import "nova/standard/star/Window"
 import "nova/standard/math/NumericStatement"
@@ -13,29 +14,39 @@ public class Lab
 {
 	public static main(String[] args)
 	{
-		BinaryTree tree = new BinaryTree()
+		//Vector2D<Int> v = new Vector2D(2, 3)
 		
-		tree.addNode('F')
-		tree.addNode('B')
-		tree.addNode('A')
-		tree.addNode('D')
-		tree.addNode('C')
-		tree.addNode('E')
-		tree.addNode('G')
-		tree.addNode('I')
-		tree.addNode('H')
+		//Console.writeLine(v.x + ", " + v.y)
 		
-		Console.writeLine("Preorder: " + tree.preorder())
-		Console.writeLine("Inorder: " + tree.inorder())
-		Console.writeLine("Postorder: " + tree.postorder())
+		Int i = 5
 		
-		Square sq = new Square(4)
+		Long l = i.multiply(7)
 		
-		Console.writeLine(getArea(sq))
+		Console.writeLine(l)
 		
-		NumericStatement s = new NumericStatement("5a + (3 * 2)")
-		
-		Console.writeLine(s)
+//		BinaryTree tree = new BinaryTree()
+//		
+//		tree.addNode('F')
+//		tree.addNode('B')
+//		tree.addNode('A')
+//		tree.addNode('D')
+//		tree.addNode('C')
+//		tree.addNode('E')
+//		tree.addNode('G')
+//		tree.addNode('I')
+//		tree.addNode('H')
+//		
+//		Console.writeLine("Preorder: " + tree.preorder())
+//		Console.writeLine("Inorder: " + tree.inorder())
+//		Console.writeLine("Postorder: " + tree.postorder())
+//		
+//		Square sq = new Square(4)
+//		
+//		Console.writeLine(getArea(sq))
+//		
+//		NumericStatement s = new NumericStatement("5a + (3 * 2)")
+//		
+//		Console.writeLine(s)
 		
 //		for (Int i = 0; i < 20; i++)
 //		{

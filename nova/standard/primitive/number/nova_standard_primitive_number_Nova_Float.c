@@ -2,13 +2,32 @@
 #include <nova/standard/primitive/number/nova_standard_primitive_number_Nova_Float.h>
 
 
-nova_standard_primitive_number_VTable_Float nova_standard_primitive_number_VTable_Float_val =
+nova_standard_primitive_number_Extension_VTable_Float nova_standard_primitive_number_Extension_VTable_Float_val =
 {
-	nova_standard_Nova_Object_1_Nova_getHashCodeLong,
+	{
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+	},
+	nova_standard_Nova_Object_3_Nova_getHashCodeLong,
 	nova_standard_primitive_number_Nova_Float_2_Nova_toString,
 	nova_standard_Nova_Object_0_Nova_equals,
 	nova_standard_primitive_number_Nova_Float_0_Nova_numDigits,
 };
+
+
 void nova_standard_primitive_number_Nova_FloatNova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
 	{
@@ -18,13 +37,13 @@ void nova_standard_primitive_number_Nova_FloatNova_init_static(nova_standard_exc
 nova_standard_primitive_number_Nova_Float* nova_standard_primitive_number_Nova_Float_Nova_construct(nova_standard_primitive_number_Nova_Float* this, nova_standard_exception_Nova_ExceptionData* exceptionData, int l0_Nova_value)
 {
 	CCLASS_NEW(nova_standard_primitive_number_Nova_Float, this,);
-	this->vtable = &nova_standard_primitive_number_VTable_Float_val;
+	this->vtable = &nova_standard_primitive_number_Extension_VTable_Float_val;
 	nova_standard_Nova_Object_Nova_super((nova_standard_Nova_Object*)this, exceptionData);
 	nova_standard_primitive_Nova_Primitive_Nova_super((nova_standard_primitive_Nova_Primitive*)this, exceptionData);
 	nova_standard_primitive_number_Nova_Number_2_Nova_super((nova_standard_primitive_number_Nova_Number*)this, exceptionData);
 	nova_standard_Nova_Object_2_Nova_this((nova_standard_Nova_Object*)(this), exceptionData);
 	nova_standard_primitive_Nova_Primitive_4_Nova_this((nova_standard_primitive_Nova_Primitive*)(this), exceptionData);
-	nova_standard_primitive_number_Nova_Number_6_Nova_this((nova_standard_primitive_number_Nova_Number*)(this), exceptionData);
+	nova_standard_primitive_number_Nova_Number_7_Nova_this((nova_standard_primitive_number_Nova_Number*)(this), exceptionData);
 	nova_standard_primitive_number_Nova_Float_4_Nova_super(this, exceptionData);
 	
 	{

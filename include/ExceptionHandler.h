@@ -51,10 +51,7 @@
 	while(0)
 
 #define THROW(x, exception) \
-	printf("Bef");\
 	exceptionData->nova_standard_exception_Nova_ExceptionData_Nova_thrownException = (nova_standard_exception_Nova_Exception*)exception;\
-	printf("Aft");\
-	novaEnv.nova_standard_exception_ExceptionData.jumpToBuffer(exceptionData, 0, x);\
-	printf("Aft2");
+	novaEnv.nova_standard_exception_ExceptionData.jumpToBuffer(exceptionData, 0, x);
 
 #endif

@@ -2,14 +2,31 @@
 #include <example/example_Nova_Square.h>
 
 
-example_VTable_Square example_VTable_Square_val =
+example_Extension_VTable_Square example_Extension_VTable_Square_val =
 {
-	nova_standard_Nova_Object_1_Nova_getHashCodeLong,
+	{
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		(int(*)(example_Nova_Polygon*, nova_standard_exception_Nova_ExceptionData*))example_Nova_Square_Nova_numberSides,
+		(double(*)(example_Nova_Polygon*, nova_standard_exception_Nova_ExceptionData*))example_Nova_Square_Nova_calculateArea,
+		0,
+	},
+	nova_standard_Nova_Object_3_Nova_getHashCodeLong,
 	nova_standard_Nova_Object_0_Nova_toString,
 	nova_standard_Nova_Object_0_Nova_equals,
-	example_Nova_Square_Nova_numberSides,
-	example_Nova_Square_Nova_calculateArea,
 };
+
+
 void example_Nova_SquareNova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
 	{
@@ -19,7 +36,7 @@ void example_Nova_SquareNova_init_static(nova_standard_exception_Nova_ExceptionD
 example_Nova_Square* example_Nova_Square_Nova_construct(example_Nova_Square* this, nova_standard_exception_Nova_ExceptionData* exceptionData, int l0_Nova_sideLength)
 {
 	CCLASS_NEW(example_Nova_Square, this,);
-	this->vtable = &example_VTable_Square_val;
+	this->vtable = &example_Extension_VTable_Square_val;
 	nova_standard_Nova_Object_Nova_super((nova_standard_Nova_Object*)this, exceptionData);
 	nova_standard_Nova_Object_2_Nova_this((nova_standard_Nova_Object*)(this), exceptionData);
 	example_Nova_Square_Nova_super(this, exceptionData);

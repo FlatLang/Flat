@@ -452,12 +452,6 @@ public class MethodCall extends Variable
 		VariableDeclaration method   = getMethodDeclaration();
 		CallableMethod      callable = (CallableMethod)method;
 		
-		if (isGenericType())
-		{
-			builder.append('(');
-			generateCTypeCast(builder);
-		}
-		
 		if (callable.isVirtual() && !isVirtualTypeKnown())
 		{
 			NovaMethodDeclaration novaMethod = (NovaMethodDeclaration)method;
@@ -467,7 +461,14 @@ public class MethodCall extends Variable
 				builder.append(ParameterList.OBJECT_REFERENCE_IDENTIFIER).append("->");
 			}
 			
-			builder.append(VTable.IDENTIFIER).append("->").append(novaMethod.generateCVirtualMethodName());
+			builder.append(VTable.IDENTIFIER).append("->");
+			
+			if (method.getParentClass() instanceof Interface)
+			{
+				builder.append(InterfaceVTable.IDENTIFIER).append(".");
+			}
+			
+			builder.append(novaMethod.generateCVirtualMethodName());
 		}
 		else
 		{
@@ -476,7 +477,7 @@ public class MethodCall extends Variable
 		
 		builder.append(getArgumentList().generateCSource());
 		
-		if (isGenericType())
+		if (isGenericType() && doesAccess())
 		{
 			builder.append(')');
 		}
@@ -502,6 +503,13 @@ public class MethodCall extends Variable
 		return getGenericCompatible(true);
 	}
 	
+	/**
+	 * 
+	 * 
+	 * @param throwException Whether or not to throw an exception if a
+	 * 		generic type cannot be found.
+	 * @return The 
+	 */
 	private GenericCompatible getGenericCompatible(boolean throwException)
 	{
 		Node last = getLastAncestorOfType(new Class[] { MethodCallArgumentList.class, Variable.class, Instantiation.class }, false);
@@ -538,15 +546,12 @@ public class MethodCall extends Variable
 		{
 			VariableDeclaration decl = ((Variable)identifier).getDeclaration();
 			
-			if (decl != null)
+			if (decl instanceof Parameter && ((Parameter)decl).isObjectReference())
 			{
-				if (decl instanceof Parameter && ((Parameter)decl).isObjectReference())
-				{
-					return decl.getTypeClass();
-				}
-				
-				return decl;
+				return decl.getTypeClass();
 			}
+			
+			return decl;
 		}
 		
 		if (throwException)
@@ -1113,6 +1118,16 @@ public class MethodCall extends Variable
 		}
 		
 		return result;
+	}
+	
+	public CallableMethod getRootDeclaration()
+	{
+		if (getDeclaration() instanceof NovaMethodDeclaration)
+		{
+			return ((NovaMethodDeclaration)getDeclaration()).getRootDeclaration();
+		}
+		
+		return (CallableMethod)getDeclaration();
 	}
 	
 	/**

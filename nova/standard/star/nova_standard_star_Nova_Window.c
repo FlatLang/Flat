@@ -2,12 +2,31 @@
 #include <nova/standard/star/nova_standard_star_Nova_Window.h>
 
 
-nova_standard_star_VTable_Window nova_standard_star_VTable_Window_val =
+nova_standard_star_Extension_VTable_Window nova_standard_star_Extension_VTable_Window_val =
 {
-	nova_standard_Nova_Object_1_Nova_getHashCodeLong,
+	{
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+	},
+	nova_standard_Nova_Object_3_Nova_getHashCodeLong,
 	nova_standard_Nova_Object_0_Nova_toString,
 	nova_standard_Nova_Object_0_Nova_equals,
 };
+
+
 void nova_standard_star_Nova_WindowNova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
 	{
@@ -17,7 +36,7 @@ void nova_standard_star_Nova_WindowNova_init_static(nova_standard_exception_Nova
 nova_standard_star_Nova_Window* nova_standard_star_Nova_Window_2_Nova_construct(nova_standard_star_Nova_Window* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
 	CCLASS_NEW(nova_standard_star_Nova_Window, this,);
-	this->vtable = &nova_standard_star_VTable_Window_val;
+	this->vtable = &nova_standard_star_Extension_VTable_Window_val;
 	nova_standard_Nova_Object_Nova_super((nova_standard_Nova_Object*)this, exceptionData);
 	nova_standard_Nova_Object_2_Nova_this((nova_standard_Nova_Object*)(this), exceptionData);
 	nova_standard_star_Nova_Window_Nova_super(this, exceptionData);

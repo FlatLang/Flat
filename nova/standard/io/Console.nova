@@ -73,7 +73,7 @@ public class Console
 		Char cText[] = text.chars
 		
 		fputs(cText, stdout)
-		fflush(stdout)
+		flushOutput()
 	}
 	
 	public static write(Object obj)
@@ -128,7 +128,7 @@ public class Console
 //		Double num
 		
 //		scanf("%lf", num)
-//		flush()
+//		flushInput()
 		String s = readLine()
 		return Double.parseDouble(s)
 	}
@@ -137,14 +137,20 @@ public class Console
 	{
 		Char c = getchar()
 		
-		flush()
+		flushInput()
 		
 		return c
 	}
 	
-	static flush()
+	static flushInput()
 	{
 		fseek(stdin, 0, SEEK_END)
+	}
+	
+	static flushOutput()
+	{
+//		fseek(stdout, 0, SEEK_END)
+		fflush(stdout)
 	}
 	
 	public static readLine() -> String
@@ -181,7 +187,7 @@ public class Console
 	
 	public static waitForEnter()
 	{
-		flush()
+		flushInput()
 		
 		Char c[] = new Char[2]
 		

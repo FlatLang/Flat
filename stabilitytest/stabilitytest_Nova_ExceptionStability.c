@@ -2,12 +2,26 @@
 #include <stabilitytest/stabilitytest_Nova_ExceptionStability.h>
 
 
-nova_VTable_stabilitytest_Nova_ExceptionStability nova_VTable_stabilitytest_Nova_ExceptionStability_val =
+stabilitytest_Extension_VTable_ExceptionStability stabilitytest_Extension_VTable_ExceptionStability_val =
 {
-	nova_standard_Nova_Object_0_Nova_getHashCodeLong,
+	{
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+	},
+	nova_standard_Nova_Object_1_Nova_getHashCodeLong,
 	nova_standard_Nova_Object_0_Nova_toString,
 	nova_standard_Nova_Object_0_Nova_equals,
 };
+
+
 
 void stabilitytest_Nova_ExceptionStability_Nova_testException(stabilitytest_Nova_ExceptionStability* this, nova_standard_exception_Nova_ExceptionData* exceptionData, stabilitytest_Nova_StabilityTest* l0_Nova_program);
 void stabilitytest_Nova_ExceptionStabilityNova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData)
@@ -19,13 +33,13 @@ void stabilitytest_Nova_ExceptionStabilityNova_init_static(nova_standard_excepti
 stabilitytest_Nova_ExceptionStability* stabilitytest_Nova_ExceptionStability_2_Nova_construct(stabilitytest_Nova_ExceptionStability* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
 	CCLASS_NEW(stabilitytest_Nova_ExceptionStability, this,);
-	this->vtable = &nova_VTable_stabilitytest_Nova_ExceptionStability_val;
+	this->vtable = &stabilitytest_Extension_VTable_ExceptionStability_val;
 	nova_standard_Nova_Object_Nova_super((nova_standard_Nova_Object*)this, exceptionData);
-	nova_standard_Nova_Object_Nova_this((nova_standard_Nova_Object*)(this), exceptionData);
+	nova_standard_Nova_Object_2_Nova_this((nova_standard_Nova_Object*)(this), exceptionData);
 	stabilitytest_Nova_ExceptionStability_Nova_super(this, exceptionData);
 	
 	{
-		stabilitytest_Nova_ExceptionStability_Nova_this(this, exceptionData);
+		stabilitytest_Nova_ExceptionStability_2_Nova_this(this, exceptionData);
 	}
 	
 	return this;
@@ -39,8 +53,6 @@ void stabilitytest_Nova_ExceptionStability_Nova_destroy(stabilitytest_Nova_Excep
 	}
 	
 	
-	{
-	}
 	NOVA_FREE(*this);
 }
 
@@ -60,9 +72,9 @@ void stabilitytest_Nova_ExceptionStability_Nova_test(stabilitytest_Nova_Exceptio
 	}
 	CATCH (1)
 	{
-		nova_standard_exception_Nova_Exception* l3_Nova_e;
+		nova_standard_exception_Nova_Exception* l2_Nova_e;
 		
-		l3_Nova_e = exceptionData->nova_standard_exception_Nova_ExceptionData_Nova_thrownException;
+		l2_Nova_e = exceptionData->nova_standard_exception_Nova_ExceptionData_Nova_thrownException;
 		l1_Nova_worked = 1;
 	}
 	FINALLY
@@ -82,38 +94,37 @@ void stabilitytest_Nova_ExceptionStability_Nova_testException(stabilitytest_Nova
 	l1_Nova_worked = 0;
 	TRY
 	{
-		novaEnv.nova_standard_exception_ExceptionData.addCode(exceptionData, exceptionData, 7);
+		novaEnv.nova_standard_exception_ExceptionData.addCode(exceptionData, exceptionData, 8);
 		
 		{
 			nova_standard_io_Nova_Console_0_Nova_write(0, exceptionData, nova_standard_Nova_String_1_Nova_construct(0, exceptionData, "Checking DivideByZeroException... "));
 			TRY
 			{
-				novaEnv.nova_standard_exception_ExceptionData.addCode(exceptionData, exceptionData, 6);
+				novaEnv.nova_standard_exception_ExceptionData.addCode(exceptionData, exceptionData, 7);
 				
 				{
-					int l3_Nova_den;
-					int l3_Nova_i;
-					int nova_zero_check4;
+					int l2_Nova_den;
+					int l2_Nova_i;
+					int nova_zero_check3;
 					
-					l3_Nova_den = 0;
-					nova_zero_check4 = l3_Nova_den;
-					if (nova_zero_check4 == 0)
+					l2_Nova_den = 0;
+					nova_zero_check3 = l2_Nova_den;
+					if (nova_zero_check3 == 0)
 					{
-						THROW(6, nova_standard_exception_Nova_DivideByZeroException_0_Nova_construct(0, exceptionData));
+						THROW(7, nova_standard_exception_Nova_DivideByZeroException_0_Nova_construct(0, exceptionData));
 					}
-					l3_Nova_i = 43 / nova_zero_check4;
+					l2_Nova_i = 43 / nova_zero_check3;
 				}
 			}
-			CATCH (6)
+			CATCH (7)
 			{
-				nova_standard_exception_Nova_DivideByZeroException* l7_Nova_e;
+				nova_standard_exception_Nova_DivideByZeroException* l6_Nova_e;
 				
-				l7_Nova_e = (nova_standard_exception_Nova_DivideByZeroException*)(exceptionData->nova_standard_exception_Nova_ExceptionData_Nova_thrownException);
-				nova_standard_io_Nova_Console_0_Nova_write(0, exceptionData, nova_standard_Nova_String_1_Nova_construct(0, exceptionData, "ASDF"));
+				l6_Nova_e = (nova_standard_exception_Nova_DivideByZeroException*)(exceptionData->nova_standard_exception_Nova_ExceptionData_Nova_thrownException);
 				l1_Nova_worked = 1;
 				nova_standard_io_Nova_Console_0_Nova_writeLine(0, exceptionData, nova_standard_Nova_String_1_Nova_construct(0, exceptionData, "OK"));
 				nova_standard_io_Nova_Console_0_Nova_write(0, exceptionData, nova_standard_Nova_String_1_Nova_construct(0, exceptionData, "Checking StabilityTestException... "));
-				THROW(7, stabilitytest_Nova_StabilityTestException_0_Nova_construct(0, exceptionData));
+				THROW(8, stabilitytest_Nova_StabilityTestException_0_Nova_construct(0, exceptionData));
 			}
 			FINALLY
 			{
@@ -122,11 +133,11 @@ void stabilitytest_Nova_ExceptionStability_Nova_testException(stabilitytest_Nova
 			stabilitytest_Nova_StabilityTest_1_Nova_fail(l0_Nova_program, exceptionData, nova_standard_Nova_String_1_Nova_construct(0, exceptionData, "Failed to catch DivideByZeroException"));
 		}
 	}
-	CATCH (7)
+	CATCH (8)
 	{
-		stabilitytest_Nova_StabilityTestException* l9_Nova_e;
+		stabilitytest_Nova_StabilityTestException* l8_Nova_e;
 		
-		l9_Nova_e = (stabilitytest_Nova_StabilityTestException*)(exceptionData->nova_standard_exception_Nova_ExceptionData_Nova_thrownException);
+		l8_Nova_e = (stabilitytest_Nova_StabilityTestException*)(exceptionData->nova_standard_exception_Nova_ExceptionData_Nova_thrownException);
 		if (!l1_Nova_worked)
 		{
 			stabilitytest_Nova_StabilityTest_1_Nova_fail(l0_Nova_program, exceptionData, nova_standard_Nova_String_1_Nova_construct(0, exceptionData, "Failed; uncaught DivideByZeroException"));
@@ -144,7 +155,7 @@ void stabilitytest_Nova_ExceptionStability_Nova_testException(stabilitytest_Nova
 	}
 }
 
-void stabilitytest_Nova_ExceptionStability_Nova_this(stabilitytest_Nova_ExceptionStability* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
+void stabilitytest_Nova_ExceptionStability_2_Nova_this(stabilitytest_Nova_ExceptionStability* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
 }
 

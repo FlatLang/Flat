@@ -25,6 +25,24 @@ public class Interface extends ClassDeclaration
 	}
 	
 	/**
+	 * @see net.fathomsoft.nova.tree.ClassDeclaration#isAbstract()
+	 */
+	@Override
+	public boolean isAbstract()
+	{
+		return true;
+	}
+	
+	/**
+	 * @see net.fathomsoft.nova.tree.ClassDeclaration#getExtendedClassLocation()
+	 */
+	@Override
+	public String getExtendedClassLocation()
+	{
+		return null;
+	}
+	
+	/**
 	 * Decode the given statement into a {@link Interface} instance, if
 	 * possible. If it is not possible, this method returns null.<br>
 	 * <br>

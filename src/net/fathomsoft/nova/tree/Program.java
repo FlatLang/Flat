@@ -1,10 +1,12 @@
 package net.fathomsoft.nova.tree;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 
 import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.ValidationResult;
+import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.util.Location;
 import net.fathomsoft.nova.util.SyntaxUtils;
 
@@ -20,9 +22,11 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  */
 public class Program extends Node
 {
-	private SyntaxTree	tree;
+	private SyntaxTree tree;
 	
-	private Nova		controller;
+	private Nova       controller;
+	
+	private NovaMethodDeclaration[] interfaceMethods;
 	
 	private final HashMap<String, Integer>	files = new HashMap<String, Integer>();
 	
@@ -55,6 +59,39 @@ public class Program extends Node
 		super.addChild(child);
 	}
 	
+	public NovaMethodDeclaration[] getInterfaceMethods()
+	{
+		if (interfaceMethods != null)
+		{
+			return interfaceMethods;
+		}
+		
+		ArrayList<NovaMethodDeclaration> methods = new ArrayList<NovaMethodDeclaration>();
+		
+		for (FileDeclaration file : tree.getFiles())
+		{
+			for (ClassDeclaration clazz : file.getClassDeclarations())
+			{
+				if (clazz instanceof Interface)
+				{
+					NovaMethodDeclaration methodArray[] = clazz.getMethods();
+					
+					for (NovaMethodDeclaration method : methodArray)
+					{
+						if (!methods.contains(method))
+						{
+							methods.add(method);
+						}
+					}
+				}
+			}
+		}
+		
+		interfaceMethods = methods.toArray(new NovaMethodDeclaration[0]);
+		
+		return interfaceMethods;
+	}
+	
 	/**
 	 * Add Imports for all of the classes within the same package as the
 	 * given FileDeclaration.
@@ -85,7 +122,12 @@ public class Program extends Node
 			
 			if (file != child && dir.equals(child.getFile().getParent()))
 			{
-				file.addImport(child.getClassDeclaration().getClassLocation());
+				ClassDeclaration clazz = child.getClassDeclaration();
+				
+				if (clazz != null)
+				{
+					file.addImport(clazz.getClassLocation());
+				}
 			}
 		}
 	}
@@ -242,9 +284,14 @@ public class Program extends Node
 				
 				FileDeclaration file = (FileDeclaration)child;
 				
-				String location = file.getClassDeclaration().getClassLocation();
+				ClassDeclaration clazz = file.getClassDeclaration();
 				
-				files.put(location, i);
+				if (clazz != null)
+				{
+					String location = clazz.getClassLocation();
+					
+					files.put(location, i);
+				}
 			}
 		}
 		

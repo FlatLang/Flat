@@ -2,10 +2,12 @@ package net.fathomsoft.nova.tree;
 
 import java.util.ArrayList;
 
+import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.tree.exceptionhandling.Exception;
 import net.fathomsoft.nova.tree.generics.GenericArgument;
+import net.fathomsoft.nova.tree.generics.GenericParameter;
 import net.fathomsoft.nova.util.Location;
 
 /**
@@ -70,7 +72,7 @@ public class ParameterList<E extends Value> extends TypeList<E>
 		
 		for (int i = 0; i < getParentClass().getNumGenericArguments(); i++)
 		{
-			GenericArgument type = getParentClass().getGenericArgument(i);
+			GenericParameter type = getParentClass().getGenericParameter(i);
 			
 			reference.addGenericArgumentName(type.getDefaultType());
 		}

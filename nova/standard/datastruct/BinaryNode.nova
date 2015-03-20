@@ -1,13 +1,19 @@
 package "nova/standard/datastruct"
 
-public class BinaryNode<E> extends Node
+public class BinaryNode<E extends Comparable<BinaryNode>> extends Node
 {
+	/**
+	 * The left child of the BinaryNode instance.
+	 */
 	public BinaryNode<E> left
 	{
 		get { return getNode(0) }
 		set { setNode(0, value) }
 	}
 	
+	/**
+	 * The right child of the BinaryNode instance.
+	 */
 	public BinaryNode<E> right
 	{
 		get { return getNode(1) }
@@ -32,9 +38,7 @@ public class BinaryNode<E> extends Node
 	getNode(Int index) -> BinaryNode<E>
 	{
 		if (children.size <= index)
-		{
 			return null
-		}
 		
 		return (BinaryNode)children.get(index)
 	}
@@ -42,40 +46,26 @@ public class BinaryNode<E> extends Node
 	setNode(Int index, BinaryNode<E> data)
 	{
 		if (children.size <= index)
-		{
 			children.add(index, data)
-		}
 		else
-		{
 			children.set(index, data)
-		}
 	}
 	
 	public addChild(E data)
 	{
-		Comparable<E> temp = (Comparable)this.data
-		
-		if (temp.compareTo(data) < 0)
+		if (data.compareTo(this.data) < 0)
 		{
 			if (left == null)
-			{
 				left = new BinaryNode(data)
-			}
 			else
-			{
 				left.addChild(data)
-			}
 		}
 		else
 		{
 			if (right == null)
-			{
 				right = new BinaryNode(data)
-			}
 			else
-			{
 				right.addChild(data)
-			}
 		}
 	}
 	
@@ -86,13 +76,9 @@ public class BinaryNode<E> extends Node
 		str = str + data
 		
 		if (left != null)
-		{
 			str = str + ", " + left.preorder()
-		}
 		if (right != null)
-		{
 			str = str + ", " + right.preorder()
-		}
 		
 		return str
 	}
@@ -102,16 +88,12 @@ public class BinaryNode<E> extends Node
 		String str = ""
 		
 		if (left != null)
-		{
 			str = str + left.inorder() + ", "
-		}
 		
 		str = str + data
 		
 		if (right != null)
-		{
 			str = str + ", " + right.inorder()
-		}
 		
 		return str
 	}
@@ -121,13 +103,9 @@ public class BinaryNode<E> extends Node
 		String str = ""
 		
 		if (left != null)
-		{
-			str = str + left.preorder() + ", "
-		}
+			str = str + left.postorder() + ", "
 		if (right != null)
-		{
-			str = str + right.preorder() + ", "
-		}
+			str = str + right.postorder() + ", "
 		
 		str = str + data
 		

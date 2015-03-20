@@ -6,6 +6,7 @@ typedef struct stabilitytest_Nova_ClientThread stabilitytest_Nova_ClientThread;
 
 #include <Nova.h>
 #include <ExceptionHandler.h>
+#include <InterfaceVTable.h>
 #include <nova/standard/exception/nova_standard_exception_Nova_ExceptionData.h>
 #include <nova/standard/exception/nova_standard_exception_Nova_Exception.h>
 #include <nova/standard/exception/nova_standard_exception_Nova_DivideByZeroException.h>
@@ -31,21 +32,25 @@ typedef struct stabilitytest_Nova_ClientThread stabilitytest_Nova_ClientThread;
 #include <stabilitytest/stabilitytest_Nova_StabilityTest.h>
 #include <stabilitytest/stabilitytest_Nova_NetworkStability.h>
 
-typedef struct nova_VTable_stabilitytest_Nova_ClientThread
+
+typedef struct stabilitytest_Extension_VTable_ClientThread stabilitytest_Extension_VTable_ClientThread;
+struct stabilitytest_Extension_VTable_ClientThread
 {
-	long (*nova_standard_Nova_Object_virtual0_Nova_getHashCodeLong)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*);
+	nova_Interface_VTable itable;
+	long (*nova_standard_Nova_Object_virtual1_Nova_getHashCodeLong)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*);
 	nova_standard_Nova_String* (*nova_standard_Nova_Object_virtual0_Nova_toString)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*);
 	char (*nova_standard_Nova_Object_virtual0_Nova_equals)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*);
 	void (*stabilitytest_Nova_ClientThread_virtual0_Nova_run)(stabilitytest_Nova_ClientThread*, nova_standard_exception_Nova_ExceptionData*);
-} nova_VTable_stabilitytest_Nova_ClientThread;
+};
 
-extern nova_VTable_stabilitytest_Nova_ClientThread nova_VTable_stabilitytest_Nova_ClientThread_val;
+extern stabilitytest_Extension_VTable_ClientThread stabilitytest_Extension_VTable_ClientThread_val;
+
 
 CCLASS_CLASS
 (
 	stabilitytest_Nova_ClientThread, 
 	
-	nova_VTable_stabilitytest_Nova_ClientThread* vtable;
+	stabilitytest_Extension_VTable_ClientThread* vtable;
 	struct Private* prv;
 )
 
@@ -54,6 +59,6 @@ stabilitytest_Nova_ClientThread* stabilitytest_Nova_ClientThread_Nova_construct(
 void stabilitytest_Nova_ClientThread_Nova_destroy(stabilitytest_Nova_ClientThread** this, nova_standard_exception_Nova_ExceptionData* exceptionData);
 void stabilitytest_Nova_ClientThread_Nova_this(stabilitytest_Nova_ClientThread* this, nova_standard_exception_Nova_ExceptionData* exceptionData, stabilitytest_Nova_StabilityTest* l0_Nova_program, int l0_Nova_port);
 void stabilitytest_Nova_ClientThread_0_Nova_run(stabilitytest_Nova_ClientThread* this, nova_standard_exception_Nova_ExceptionData* exceptionData);
-void stabilitytest_Nova_ClientThread_Nova_super(stabilitytest_Nova_ClientThread* this, nova_standard_exception_Nova_ExceptionData* exceptionData);
+void stabilitytest_Nova_ClientThread_2_Nova_super(stabilitytest_Nova_ClientThread* this, nova_standard_exception_Nova_ExceptionData* exceptionData);
 
 #endif

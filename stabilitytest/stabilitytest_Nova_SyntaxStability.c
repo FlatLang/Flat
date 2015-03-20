@@ -2,12 +2,26 @@
 #include <stabilitytest/stabilitytest_Nova_SyntaxStability.h>
 
 
-nova_VTable_stabilitytest_Nova_SyntaxStability nova_VTable_stabilitytest_Nova_SyntaxStability_val =
+stabilitytest_Extension_VTable_SyntaxStability stabilitytest_Extension_VTable_SyntaxStability_val =
 {
-	nova_standard_Nova_Object_0_Nova_getHashCodeLong,
+	{
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+	},
+	nova_standard_Nova_Object_1_Nova_getHashCodeLong,
 	nova_standard_Nova_Object_0_Nova_toString,
 	nova_standard_Nova_Object_0_Nova_equals,
 };
+
+
 
 void stabilitytest_Nova_SyntaxStability_Nova_checkSwitchStatements(stabilitytest_Nova_SyntaxStability* this, nova_standard_exception_Nova_ExceptionData* exceptionData, stabilitytest_Nova_StabilityTest* l0_Nova_program);
 void stabilitytest_Nova_SyntaxStability_Nova_checkLoops(stabilitytest_Nova_SyntaxStability* this, nova_standard_exception_Nova_ExceptionData* exceptionData, stabilitytest_Nova_StabilityTest* l0_Nova_program);
@@ -30,13 +44,13 @@ void stabilitytest_Nova_SyntaxStabilityNova_init_static(nova_standard_exception_
 stabilitytest_Nova_SyntaxStability* stabilitytest_Nova_SyntaxStability_2_Nova_construct(stabilitytest_Nova_SyntaxStability* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
 	CCLASS_NEW(stabilitytest_Nova_SyntaxStability, this,);
-	this->vtable = &nova_VTable_stabilitytest_Nova_SyntaxStability_val;
+	this->vtable = &stabilitytest_Extension_VTable_SyntaxStability_val;
 	nova_standard_Nova_Object_Nova_super((nova_standard_Nova_Object*)this, exceptionData);
-	nova_standard_Nova_Object_Nova_this((nova_standard_Nova_Object*)(this), exceptionData);
+	nova_standard_Nova_Object_2_Nova_this((nova_standard_Nova_Object*)(this), exceptionData);
 	stabilitytest_Nova_SyntaxStability_Nova_super(this, exceptionData);
 	
 	{
-		stabilitytest_Nova_SyntaxStability_Nova_this(this, exceptionData);
+		stabilitytest_Nova_SyntaxStability_2_Nova_this(this, exceptionData);
 	}
 	
 	return this;
@@ -50,8 +64,6 @@ void stabilitytest_Nova_SyntaxStability_Nova_destroy(stabilitytest_Nova_SyntaxSt
 	}
 	
 	
-	{
-	}
 	NOVA_FREE(*this);
 }
 
@@ -263,26 +275,26 @@ void stabilitytest_Nova_SyntaxStability_Nova_checkForLoops(stabilitytest_Nova_Sy
 	int l1_Nova_num;
 	int l1_Nova_num2;
 	int l1_Nova_num3;
+	int l1_Nova_i;
 	int l2_Nova_i;
 	int l3_Nova_i;
-	int l4_Nova_i;
 	
 	nova_standard_io_Nova_Console_0_Nova_write(0, exceptionData, nova_standard_Nova_String_1_Nova_construct(0, exceptionData, "Checking inline for loop... "));
 	l1_Nova_num = 0;
 	l1_Nova_num2 = 0;
 	l1_Nova_num3 = 0;
-	l2_Nova_i = 0;
-	for (; l2_Nova_i < 100; l2_Nova_i++)
+	l1_Nova_i = 0;
+	for (; l1_Nova_i < 100; l1_Nova_i++)
 	{
 		l1_Nova_num++;
 	}
-	l3_Nova_i = 0;
-	for (; l3_Nova_i < 100; l3_Nova_i++)
+	l2_Nova_i = 0;
+	for (; l2_Nova_i < 100; l2_Nova_i++)
 	{
 		l1_Nova_num2++;
 	}
-	l4_Nova_i = 0;
-	for (; l4_Nova_i < 100; l4_Nova_i++)
+	l3_Nova_i = 0;
+	for (; l3_Nova_i < 100; l3_Nova_i++)
 	{
 		if (1)
 		{
@@ -398,7 +410,7 @@ nova_standard_Nova_String* stabilitytest_Nova_SyntaxStability_Nova_swap2(stabili
 	return nova_local_0;
 }
 
-void stabilitytest_Nova_SyntaxStability_Nova_this(stabilitytest_Nova_SyntaxStability* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
+void stabilitytest_Nova_SyntaxStability_2_Nova_this(stabilitytest_Nova_SyntaxStability* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
 }
 

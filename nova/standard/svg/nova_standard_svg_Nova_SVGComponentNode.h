@@ -6,6 +6,7 @@ typedef struct nova_standard_svg_Nova_SVGComponentNode nova_standard_svg_Nova_SV
 
 #include <Nova.h>
 #include <ExceptionHandler.h>
+#include <InterfaceVTable.h>
 #include <nova/standard/exception/nova_standard_exception_Nova_ExceptionData.h>
 #include <nova/standard/exception/nova_standard_exception_Nova_Exception.h>
 #include <nova/standard/exception/nova_standard_exception_Nova_DivideByZeroException.h>
@@ -28,20 +29,24 @@ typedef struct nova_standard_svg_Nova_SVGComponentNode nova_standard_svg_Nova_SV
 #include <nova/standard/math/nova_standard_math_Nova_Math.h>
 #include <nova/standard/svg/nova_standard_svg_Nova_SVGComponent.h>
 
-typedef struct nova_standard_svg_VTable_SVGComponentNode
+
+typedef struct nova_standard_svg_Extension_VTable_SVGComponentNode nova_standard_svg_Extension_VTable_SVGComponentNode;
+struct nova_standard_svg_Extension_VTable_SVGComponentNode
 {
-	long (*nova_standard_Nova_Object_virtual1_Nova_getHashCodeLong)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*);
+	nova_Interface_VTable itable;
+	long (*nova_standard_Nova_Object_virtual3_Nova_getHashCodeLong)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*);
 	nova_standard_Nova_String* (*nova_standard_Nova_Object_virtual0_Nova_toString)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*);
 	char (*nova_standard_Nova_Object_virtual0_Nova_equals)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*);
-} nova_standard_svg_VTable_SVGComponentNode;
+};
 
-extern nova_standard_svg_VTable_SVGComponentNode nova_standard_svg_VTable_SVGComponentNode_val;
+extern nova_standard_svg_Extension_VTable_SVGComponentNode nova_standard_svg_Extension_VTable_SVGComponentNode_val;
+
 
 CCLASS_CLASS
 (
 	nova_standard_svg_Nova_SVGComponentNode, 
 	
-	nova_standard_svg_VTable_SVGComponentNode* vtable;
+	nova_standard_svg_Extension_VTable_SVGComponentNode* vtable;
 	nova_standard_svg_Nova_SVGComponentNode* nova_standard_svg_Nova_SVGComponentNode_Nova_next;
 	nova_standard_svg_Nova_SVGComponent* nova_standard_svg_Nova_SVGComponentNode_Nova_component;
 )

@@ -6,6 +6,7 @@ typedef struct nova_standard_Nova_Object nova_standard_Nova_Object;
 
 #include <Nova.h>
 #include <ExceptionHandler.h>
+#include <InterfaceVTable.h>
 #include <nova/standard/exception/nova_standard_exception_Nova_ExceptionData.h>
 #include <nova/standard/exception/nova_standard_exception_Nova_Exception.h>
 #include <nova/standard/exception/nova_standard_exception_Nova_DivideByZeroException.h>
@@ -28,27 +29,31 @@ typedef struct nova_standard_Nova_Object nova_standard_Nova_Object;
 #include <nova/standard/math/nova_standard_math_Nova_Math.h>
 #include <nova/standard/NativeObject.h>
 
-typedef struct nova_standard_VTable_Object
+
+typedef struct nova_standard_Extension_VTable_Object nova_standard_Extension_VTable_Object;
+struct nova_standard_Extension_VTable_Object
 {
-	long (*nova_standard_Nova_Object_virtual1_Nova_getHashCodeLong)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*);
+	nova_Interface_VTable itable;
+	long (*nova_standard_Nova_Object_virtual3_Nova_getHashCodeLong)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*);
 	nova_standard_Nova_String* (*nova_standard_Nova_Object_virtual0_Nova_toString)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*);
 	char (*nova_standard_Nova_Object_virtual0_Nova_equals)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*);
-} nova_standard_VTable_Object;
+};
 
-extern nova_standard_VTable_Object nova_standard_VTable_Object_val;
+extern nova_standard_Extension_VTable_Object nova_standard_Extension_VTable_Object_val;
+
 
 CCLASS_CLASS
 (
 	nova_standard_Nova_Object, 
 	
-	nova_standard_VTable_Object* vtable;
+	nova_standard_Extension_VTable_Object* vtable;
 )
 
 void nova_standard_Nova_ObjectNova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData);
 nova_standard_Nova_Object* nova_standard_Nova_Object_2_Nova_construct(nova_standard_Nova_Object* this, nova_standard_exception_Nova_ExceptionData* exceptionData);
 void nova_standard_Nova_Object_Nova_destroy(nova_standard_Nova_Object** this, nova_standard_exception_Nova_ExceptionData* exceptionData);
 nova_standard_Nova_String* nova_standard_Nova_Object_Nova_getHashCode(nova_standard_Nova_Object* this, nova_standard_exception_Nova_ExceptionData* exceptionData);
-long nova_standard_Nova_Object_1_Nova_getHashCodeLong(nova_standard_Nova_Object* this, nova_standard_exception_Nova_ExceptionData* exceptionData);
+long nova_standard_Nova_Object_3_Nova_getHashCodeLong(nova_standard_Nova_Object* this, nova_standard_exception_Nova_ExceptionData* exceptionData);
 nova_standard_Nova_String* nova_standard_Nova_Object_0_Nova_toString(nova_standard_Nova_Object* this, nova_standard_exception_Nova_ExceptionData* exceptionData);
 char nova_standard_Nova_Object_0_Nova_equals(nova_standard_Nova_Object* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_Nova_Object* l0_Nova_another);
 void nova_standard_Nova_Object_2_Nova_this(nova_standard_Nova_Object* this, nova_standard_exception_Nova_ExceptionData* exceptionData);

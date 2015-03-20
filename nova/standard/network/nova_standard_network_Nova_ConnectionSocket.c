@@ -2,12 +2,31 @@
 #include <nova/standard/network/nova_standard_network_Nova_ConnectionSocket.h>
 
 
-nova_standard_network_VTable_ConnectionSocket nova_standard_network_VTable_ConnectionSocket_val =
+nova_standard_network_Extension_VTable_ConnectionSocket nova_standard_network_Extension_VTable_ConnectionSocket_val =
 {
-	nova_standard_Nova_Object_1_Nova_getHashCodeLong,
+	{
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+	},
+	nova_standard_Nova_Object_3_Nova_getHashCodeLong,
 	nova_standard_Nova_Object_0_Nova_toString,
 	nova_standard_Nova_Object_0_Nova_equals,
 };
+
+
 CCLASS_PRIVATE
 (
 	nova_standard_datastruct_Nova_Queue* nova_standard_network_Nova_ConnectionSocket_Nova_inputBuffer;
@@ -25,7 +44,7 @@ void nova_standard_network_Nova_ConnectionSocketNova_init_static(nova_standard_e
 nova_standard_network_Nova_ConnectionSocket* nova_standard_network_Nova_ConnectionSocket_Nova_construct(nova_standard_network_Nova_ConnectionSocket* this, nova_standard_exception_Nova_ExceptionData* exceptionData, SOCKET_ID_TYPE l0_Nova_socket)
 {
 	CCLASS_NEW(nova_standard_network_Nova_ConnectionSocket, this);
-	this->vtable = &nova_standard_network_VTable_ConnectionSocket_val;
+	this->vtable = &nova_standard_network_Extension_VTable_ConnectionSocket_val;
 	nova_standard_Nova_Object_Nova_super((nova_standard_Nova_Object*)this, exceptionData);
 	nova_standard_network_Nova_Socket_Nova_super((nova_standard_network_Nova_Socket*)this, exceptionData);
 	nova_standard_Nova_Object_2_Nova_this((nova_standard_Nova_Object*)(this), exceptionData);
@@ -105,7 +124,7 @@ nova_standard_Nova_String* nova_standard_network_Nova_ConnectionSocket_1_Nova_re
 		}
 		return nova_standard_Nova_String_1_Nova_construct(0, exceptionData, l1_Nova_data);
 	}
-	return (nova_standard_Nova_String*)((nova_standard_Nova_String*)nova_standard_datastruct_Nova_Queue_Nova_dequeue(this->prv->nova_standard_network_Nova_ConnectionSocket_Nova_inputBuffer, exceptionData));
+	return (nova_standard_Nova_String*)nova_standard_datastruct_Nova_Queue_Nova_dequeue(this->prv->nova_standard_network_Nova_ConnectionSocket_Nova_inputBuffer, exceptionData);
 }
 
 char nova_standard_network_Nova_ConnectionSocket_Nova_write(nova_standard_network_Nova_ConnectionSocket* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_Nova_String* l0_Nova_data)

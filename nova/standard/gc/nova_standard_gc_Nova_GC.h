@@ -6,6 +6,7 @@ typedef struct nova_standard_gc_Nova_GC nova_standard_gc_Nova_GC;
 
 #include <Nova.h>
 #include <ExceptionHandler.h>
+#include <InterfaceVTable.h>
 #include <nova/standard/exception/nova_standard_exception_Nova_ExceptionData.h>
 #include <nova/standard/exception/nova_standard_exception_Nova_Exception.h>
 #include <nova/standard/exception/nova_standard_exception_Nova_DivideByZeroException.h>
@@ -28,20 +29,24 @@ typedef struct nova_standard_gc_Nova_GC nova_standard_gc_Nova_GC;
 #include <nova/standard/math/nova_standard_math_Nova_Math.h>
 #include <nova/standard/gc/NativeGC.h>
 
-typedef struct nova_standard_gc_VTable_GC
+
+typedef struct nova_standard_gc_Extension_VTable_GC nova_standard_gc_Extension_VTable_GC;
+struct nova_standard_gc_Extension_VTable_GC
 {
-	long (*nova_standard_Nova_Object_virtual1_Nova_getHashCodeLong)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*);
+	nova_Interface_VTable itable;
+	long (*nova_standard_Nova_Object_virtual3_Nova_getHashCodeLong)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*);
 	nova_standard_Nova_String* (*nova_standard_Nova_Object_virtual0_Nova_toString)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*);
 	char (*nova_standard_Nova_Object_virtual0_Nova_equals)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*);
-} nova_standard_gc_VTable_GC;
+};
 
-extern nova_standard_gc_VTable_GC nova_standard_gc_VTable_GC_val;
+extern nova_standard_gc_Extension_VTable_GC nova_standard_gc_Extension_VTable_GC_val;
+
 
 CCLASS_CLASS
 (
 	nova_standard_gc_Nova_GC, 
 	
-	nova_standard_gc_VTable_GC* vtable;
+	nova_standard_gc_Extension_VTable_GC* vtable;
 )
 
 void nova_standard_gc_Nova_GCNova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData);

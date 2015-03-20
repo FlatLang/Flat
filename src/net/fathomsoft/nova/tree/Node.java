@@ -569,6 +569,11 @@ public abstract class Node implements Listenable
 		}
 	}
 	
+	public void addVisibleChild(int index, Node node)
+	{
+		addChild(getNumChildren() - getNumVisibleChildren() + index, node, this);
+	}
+	
 	/**
 	 * Add the specific Node under the given 'toNode' Node as a
 	 * child.

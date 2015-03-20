@@ -24,11 +24,25 @@ public class StaticClassReference extends IIdentifier
 	}
 	
 	/**
+	 * @see net.fathomsoft.nova.tree.Identifier#generateCUseOutput(java.lang.StringBuilder, boolean)
+	 */
+	@Override
+	public StringBuilder generateCUseOutput(StringBuilder builder, boolean pointer)
+	{
+		return builder.append(0);
+	}
+	
+	/**
 	 * @see net.fathomsoft.nova.tree.Identifier#generateCSourceFragment(java.lang.StringBuilder)
 	 */
 	@Override
 	public StringBuilder generateCSourceFragment(StringBuilder builder)
 	{
+		if (!doesAccess())
+		{
+			return generateCUseOutput(builder);
+		}
+		
 		return getAccessedNode().generateCSourceFragment(builder);
 	}
 	

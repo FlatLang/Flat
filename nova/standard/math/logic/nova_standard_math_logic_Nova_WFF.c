@@ -2,12 +2,31 @@
 #include <nova/standard/math/logic/nova_standard_math_logic_Nova_WFF.h>
 
 
-nova_standard_math_logic_VTable_WFF nova_standard_math_logic_VTable_WFF_val =
+nova_standard_math_logic_Extension_VTable_WFF nova_standard_math_logic_Extension_VTable_WFF_val =
 {
-	nova_standard_Nova_Object_1_Nova_getHashCodeLong,
+	{
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+	},
+	nova_standard_Nova_Object_3_Nova_getHashCodeLong,
 	nova_standard_Nova_Object_0_Nova_toString,
 	nova_standard_Nova_Object_0_Nova_equals,
 };
+
+
 CCLASS_PRIVATE
 (
 	nova_standard_math_logic_Nova_StatementLetter** nova_standard_math_logic_Nova_WFF_Nova_letters;
@@ -42,7 +61,7 @@ void nova_standard_math_logic_Nova_WFFNova_init_static(nova_standard_exception_N
 nova_standard_math_logic_Nova_WFF* nova_standard_math_logic_Nova_WFF_Nova_construct(nova_standard_math_logic_Nova_WFF* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_Nova_String* l0_Nova_wellFormedFormula, nova_standard_math_logic_Nova_StatementLetter** l0_Nova_letters)
 {
 	CCLASS_NEW(nova_standard_math_logic_Nova_WFF, this);
-	this->vtable = &nova_standard_math_logic_VTable_WFF_val;
+	this->vtable = &nova_standard_math_logic_Extension_VTable_WFF_val;
 	nova_standard_Nova_Object_Nova_super((nova_standard_Nova_Object*)this, exceptionData);
 	nova_standard_Nova_Object_2_Nova_this((nova_standard_Nova_Object*)(this), exceptionData);
 	nova_standard_math_logic_Nova_WFF_Nova_super(this, exceptionData);
@@ -100,13 +119,13 @@ void nova_standard_math_logic_Nova_WFF_Nova_decodeFormula(nova_standard_math_log
 	{
 		nova_standard_math_logic_Nova_StatementGroup* l3_Nova_group;
 		
-		l3_Nova_group = (nova_standard_math_logic_Nova_StatementGroup*)(((nova_standard_math_logic_Nova_StatementGroup*)nova_standard_datastruct_Nova_ArrayList_Nova_get(l1_Nova_statements, exceptionData, l3_Nova_i)));
-		nova_standard_datastruct_Nova_ArrayList_0_Nova_add(this->prv->nova_standard_math_logic_Nova_WFF_Nova_hypotheses, exceptionData, l3_Nova_group->nova_standard_math_logic_Nova_StatementGroup_Nova_statement);
+		l3_Nova_group = (nova_standard_math_logic_Nova_StatementGroup*)(nova_standard_datastruct_Nova_ArrayList_Nova_get(l1_Nova_statements, exceptionData, l3_Nova_i));
+		nova_standard_datastruct_Nova_ArrayList_0_Nova_add(this->prv->nova_standard_math_logic_Nova_WFF_Nova_hypotheses, exceptionData, (nova_standard_Nova_Object*)(l3_Nova_group->nova_standard_math_logic_Nova_StatementGroup_Nova_statement));
 	}
 	l4_Nova_n = 0;
 	for (; l4_Nova_n < this->prv->nova_standard_math_logic_Nova_WFF_Nova_hypotheses->nova_standard_datastruct_Nova_ArrayList_Nova_size; l4_Nova_n++)
 	{
-		nova_standard_io_Nova_Console_1_Nova_writeLine(0, exceptionData, ((nova_standard_math_logic_Nova_Hypothesis*)nova_standard_datastruct_Nova_ArrayList_Nova_get(this->prv->nova_standard_math_logic_Nova_WFF_Nova_hypotheses, exceptionData, l4_Nova_n)));
+		nova_standard_io_Nova_Console_1_Nova_writeLine(0, exceptionData, (nova_standard_Nova_Object*)(nova_standard_datastruct_Nova_ArrayList_Nova_get(this->prv->nova_standard_math_logic_Nova_WFF_Nova_hypotheses, exceptionData, l4_Nova_n)));
 	}
 }
 

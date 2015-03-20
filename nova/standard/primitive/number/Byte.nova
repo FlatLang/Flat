@@ -1,6 +1,9 @@
 package "nova/standard/primitive/number"
 
-public class Byte extends Number
+import "nova/standard/datastruct/Comparable"
+import "nova/standard/operators/Multipliable"
+
+public class Byte extends Number implements Comparable<Byte>, Multipliable<Byte>
 {
 	Byte value
 	
@@ -43,4 +46,14 @@ public class Byte extends Number
 //	{
 //		return this == another
 //	}
+	
+	public compareTo(Byte other) -> Byte
+	{
+		return value - other
+	}
+	
+	public multiply(Byte value) -> Byte
+	{
+		return this.value * value
+	}
 }

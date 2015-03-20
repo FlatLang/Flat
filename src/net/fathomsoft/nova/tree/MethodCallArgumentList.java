@@ -175,14 +175,36 @@ public class MethodCallArgumentList extends ArgumentList
 			}
 			
 			Accessible context  = getMethodCallContext();
-			boolean    sameType = isSameType((Value)getMethodCall().getReferenceNode(), method.getParentClass());
+			Accessible clone    = context;
+			MethodCall call     = getMethodCall();
+			boolean    sameType = isSameType((Value)call.getReferenceNode(), method.getParentClass());
 			
 			if (!sameType)
 			{
 				method.getParentClass().generateCTypeCast(builder).append('(');
 			}
 			
-			context.generateCArgumentReference(builder, getMethodCall());
+			// Chop off the method call so it does not get cloned over.
+			Accessible accessible = context;
+			
+			if (accessible.doesAccess())
+			{
+				Accessible accessed = context.getAccessedNode();
+				
+				while (accessed != null && accessed != call)
+				{
+					accessible = accessible.getAccessedNode();
+					accessed   = accessible.getAccessedNode();
+				}
+				
+				accessible.setAccessedNode(null);
+				
+				clone = (Accessible)((Value)context).clone(context.getParent(), Location.INVALID, true);
+				
+				accessible.setAccessedNode(call);
+			}
+			
+			clone.generateCArgumentReference(builder, call);//.generateCArgumentReference(builder, getMethodCall());
 			
 			if (!sameType)
 			{
@@ -204,8 +226,8 @@ public class MethodCallArgumentList extends ArgumentList
 	 */
 	private boolean isSameType(Value value1, Value value2)
 	{
-		String type1 = value1.getType();
-		String type2 = value2.getType();
+		String type1 = value1.getInstanceType();
+		String type2 = value2.getInstanceType();
 		
 		if (value1 instanceof Closure || value2 instanceof Closure)
 		{
@@ -222,14 +244,6 @@ public class MethodCallArgumentList extends ArgumentList
 		else if (type2.equals("String") && value1.getArrayDimensions() == 1 && type1.equals("Char"))
 		{
 			return value2 instanceof Literal;
-		}
-		if (value1.isGenericType())
-		{
-			type1 = value1.getGenericParameter().getDefaultType();
-		}
-		if (value2.isGenericType())
-		{
-			type2 = value2.getGenericParameter().getDefaultType();
 		}
 		
 		return type1.equals(type2);
@@ -269,7 +283,7 @@ public class MethodCallArgumentList extends ArgumentList
 				
 				numRet = novaMethod.getParameterList().getNumReturnParameters();
 				
-				Node base = getBaseNode();
+				Node base = getMethodCall().getParent();
 				
 				if (base instanceof Assignment)
 				{
@@ -308,8 +322,9 @@ public class MethodCallArgumentList extends ArgumentList
 			for (int i = 0; i < getNumVisibleChildren() - numRet; i++)
 			{
 				Value value = (Value)getVisibleChild(i);
+				Value param = getMethodCall().getRootDeclaration().getParameterList().getParameter(i);
 				
-				if (value.getReturnedNode().isPrimitive() && !getMethodCall().getCorrespondingParameter(i).isPrimitive())//.isGenericType())
+				if (value.getReturnedNode().isPrimitive() && !param.isPrimitiveType())
 				{
 					Instantiation newValue = SyntaxUtils.autoboxPrimitive(value);
 					

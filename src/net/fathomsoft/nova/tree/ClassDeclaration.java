@@ -13,11 +13,8 @@ import net.fathomsoft.nova.tree.variables.FieldDeclaration;
 import net.fathomsoft.nova.tree.variables.FieldList;
 import net.fathomsoft.nova.tree.variables.InstanceFieldList;
 import net.fathomsoft.nova.tree.variables.StaticFieldList;
-import net.fathomsoft.nova.tree.variables.Variable;
 import net.fathomsoft.nova.util.Bounds;
 import net.fathomsoft.nova.util.Location;
-import net.fathomsoft.nova.util.Patterns;
-import net.fathomsoft.nova.util.Regex;
 import net.fathomsoft.nova.util.StringUtils;
 import net.fathomsoft.nova.util.SyntaxUtils;
 
@@ -32,11 +29,12 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  */
 public class ClassDeclaration extends InstanceDeclaration
 {
+	private boolean abstractValue;
+	
 	private String	extendedClass;
 	
-	private	String	implementedClasses[];
-	
-	public static final String IDENTIFIER = "class";
+	public static final String IDENTIFIER          = "class";
+	public static final String ABSTRACT_IDENTIFIER = "abstract";
 	
 	/**
 	 * Instantiate and initialize default values for a class node.
@@ -47,21 +45,20 @@ public class ClassDeclaration extends InstanceDeclaration
 	{
 		super(temporaryParent, locationIn);
 		
-		implementedClasses = new String[0];
-		
 		setType("class");
 		
-		FieldList             fields          = new FieldList(this, Location.INVALID);
-		MethodList            constructors    = new MethodList(this, Location.INVALID);
-		MethodList            destructors     = new MethodList(this, Location.INVALID);
-		MethodList            methods         = new MethodList(this, Location.INVALID);
-		MethodList            propertyMethods = new MethodList(this, Location.INVALID);
-		MethodList            hiddenMethods   = new MethodList(this, Location.INVALID);
-		ExternalTypeList      externalTypes   = new ExternalTypeList(this, Location.INVALID);
-		FieldList             externalFields  = new FieldList(this, Location.INVALID);
-		TypeList<StaticBlock> staticBlocks    = new TypeList<StaticBlock>(this, Location.INVALID);
-		VTable                vtable          = new VTable(this, Location.INVALID);
-		GenericDeclaration    declaration     = new GenericDeclaration(this, Location.INVALID);
+		FieldList                         fields          = new FieldList(this, Location.INVALID);
+		MethodList                        constructors    = new MethodList(this, Location.INVALID);
+		MethodList                        destructors     = new MethodList(this, Location.INVALID);
+		MethodList                        methods         = new MethodList(this, Location.INVALID);
+		MethodList                        propertyMethods = new MethodList(this, Location.INVALID);
+		MethodList                        hiddenMethods   = new MethodList(this, Location.INVALID);
+		ExternalTypeList                  externalTypes   = new ExternalTypeList(this, Location.INVALID);
+		FieldList                         externalFields  = new FieldList(this, Location.INVALID);
+		TypeList<StaticBlock>             staticBlocks    = new TypeList<StaticBlock>(this, Location.INVALID);
+		VTableList                        vtables         = new VTableList(this, Location.INVALID);
+		GenericDeclaration                declaration     = new GenericDeclaration(this, Location.INVALID);
+		TypeList<InterfaceImplementation> interfaces      = new TypeList<InterfaceImplementation>(this, locationIn);
 		
 		addChild(fields, this);
 		addChild(constructors, this);
@@ -72,8 +69,9 @@ public class ClassDeclaration extends InstanceDeclaration
 		addChild(externalTypes, this);
 		addChild(externalFields, this);
 		addChild(staticBlocks, this);
-		addChild(vtable, this);
+		addChild(vtables, this);
 		addChild(declaration, this);
+		addChild(interfaces, this);
 	}
 	
 	/**
@@ -82,7 +80,7 @@ public class ClassDeclaration extends InstanceDeclaration
 	@Override
 	public int getNumDefaultChildren()
 	{
-		return super.getNumDefaultChildren() + 11;
+		return super.getNumDefaultChildren() + 12;
 	}
 	
 	/**
@@ -212,9 +210,24 @@ public class ClassDeclaration extends InstanceDeclaration
 	 * 
 	 * @return The VTableNode for this class node.
 	 */
-	public VTable getVTableNode()
+	public VTableList getVTableNodes()
 	{
-		return (VTable)getChild(super.getNumDefaultChildren() + 9);
+		return (VTableList)getChild(super.getNumDefaultChildren() + 9);
+	}
+	
+	private GenericDeclaration getGenericDeclarationNode()
+	{
+		return (GenericDeclaration)getChild(super.getNumDefaultChildren() + 10);
+	}
+	
+	public GenericDeclaration getGenericDeclaration()
+	{
+		return getGenericDeclarationNode();
+	}
+	
+	public TypeList<InterfaceImplementation> getInterfacesImplementationList()
+	{
+		return (TypeList<InterfaceImplementation>)getChild(super.getNumDefaultChildren() + 11);
 	}
 	
 	/**
@@ -242,30 +255,83 @@ public class ClassDeclaration extends InstanceDeclaration
 	{
 		ArrayList<NovaMethodDeclaration> methods = new ArrayList<NovaMethodDeclaration>();
 		
-		addVirtualMethods(methods, this);
+		addInterfaceVirtualMethods(methods, this);
+		addExtensionVirtualMethods(methods, this);
 		
 		return methods.toArray(new NovaMethodDeclaration[0]);
 	}
 	
 	/**
-	 * Add all of the virtual methods that the specified class contains
+	 * Get an array containing all of the virtual methods that this class
+	 * implements. For more information on what virtual methods are, see
+	 * {@link #getVirtualMethods()}
+	 * 
+	 * @return An array containing all of the virtual methods that the
+	 * 		class and its ancestors contain.
+	 */
+	public NovaMethodDeclaration[] getInterfaceVirtualMethods()
+	{
+		ArrayList<NovaMethodDeclaration> methods = new ArrayList<NovaMethodDeclaration>();
+		
+		addInterfaceVirtualMethods(methods, this);
+		
+		return methods.toArray(new NovaMethodDeclaration[0]);
+	}
+	
+	/**
+	 * Get an array containing all of the virtual methods that this class
+	 * and its extensions contain. For more information on what virtual
+	 * methods are, see {@link #getVirtualMethods()}
+	 * 
+	 * @return An array containing all of the virtual methods that the
+	 * 		class and its ancestors contain.
+	 */
+	public NovaMethodDeclaration[] getExtensionVirtualMethods()
+	{
+		ArrayList<NovaMethodDeclaration> methods = new ArrayList<NovaMethodDeclaration>();
+		
+		addExtensionVirtualMethods(methods, this);
+		
+		return methods.toArray(new NovaMethodDeclaration[0]);
+	}
+	
+	/**
+	 * Add all of the virtual methods that the specified class implements
 	 * to the given method list.
 	 * 
 	 * @param methods The list of methods to add the found virtual method
 	 * 		data to.
 	 */
-	private void addVirtualMethods(ArrayList<NovaMethodDeclaration> methods, ClassDeclaration context)
+	private void addInterfaceVirtualMethods(ArrayList<NovaMethodDeclaration> methods, ClassDeclaration context)
 	{
 		if (getExtendedClassLocation() != null)
 		{
-			getExtendedClass().addVirtualMethods(methods, this);
+			getExtendedClass().addInterfaceVirtualMethods(methods, this);
 		}
 		
-		addVirtualMethods(methods, getMethodList());
-		addVirtualMethods(methods, getPropertyMethodList());
+		addVirtualMethods(methods, getMethodList(), true);
+		addVirtualMethods(methods, getPropertyMethodList(), true);
 	}
 	
-	private void addVirtualMethods(ArrayList<NovaMethodDeclaration> methods, MethodList list)
+	/**
+	 * Add all of the virtual methods that the specified class and its
+	 * extensions contain to the given method list.
+	 * 
+	 * @param methods The list of methods to add the found virtual method
+	 * 		data to.
+	 */
+	private void addExtensionVirtualMethods(ArrayList<NovaMethodDeclaration> methods, ClassDeclaration context)
+	{
+		if (getExtendedClassLocation() != null)
+		{
+			getExtendedClass().addExtensionVirtualMethods(methods, this);
+		}
+		
+		addVirtualMethods(methods, getMethodList(), false);
+		addVirtualMethods(methods, getPropertyMethodList(), false);
+	}
+	
+	private void addVirtualMethods(ArrayList<NovaMethodDeclaration> methods, MethodList list, boolean interfaceOnly)
 	{
 		for (int i = 0; i < list.getNumVisibleChildren(); i++)
 		{
@@ -277,17 +343,20 @@ public class ClassDeclaration extends InstanceDeclaration
 				
 				if (method.getParentClass() == this && method.isVirtual())
 				{
-					NovaMethodDeclaration existing = getMethod(method, methods);
-					
-					if (existing != null)
+					if (interfaceOnly == method.getRootDeclaration().getParentClass() instanceof Interface)
 					{
-						int index = methods.indexOf(existing);
+						NovaMethodDeclaration existing = getMethod(method, methods);
 						
-						methods.set(index, method);
-					}
-					else
-					{
-						methods.add(method);
+						if (existing != null)
+						{
+							int index = methods.indexOf(existing);
+							
+							methods.set(index, method);
+						}
+						else
+						{
+							methods.add(method);
+						}
 					}
 				}
 			}
@@ -322,6 +391,11 @@ public class ClassDeclaration extends InstanceDeclaration
 		return null;
 	}
 	
+	public boolean isAbstract()
+	{
+		return abstractValue;
+	}
+	
 	/**
 	 * @see net.fathomsoft.nova.tree.Value#isExternalType()
 	 */
@@ -347,11 +421,15 @@ public class ClassDeclaration extends InstanceDeclaration
 	 */
 	public Interface[] getImplementedClasses()
 	{
-		Interface[] array = new Interface[implementedClasses.length];
+		TypeList<InterfaceImplementation> list = getInterfacesImplementationList();
+		
+		Interface[] array = new Interface[list.getNumVisibleChildren()];
 		
 		for (int i = 0; i < array.length; i++)
 		{
-			array[i] = (Interface)SyntaxUtils.getImportedClass(getFileDeclaration(), implementedClasses[i]);
+			String type = list.getVisibleChild(i).getType();
+			
+			array[i] = (Interface)SyntaxUtils.getImportedClass(getFileDeclaration(), type);
 		}
 		
 		return array;
@@ -404,6 +482,37 @@ public class ClassDeclaration extends InstanceDeclaration
 		}
 		
 		return false;
+	}
+	
+	/**
+	 * Generate the C output for when this value node is being used
+	 * as an argument for a method call.
+	 * 
+	 * @param builder The StringBuilder to append the data to.
+	 * @param callingMethod The method that is being called by the
+	 * 		specified Identifier.
+	 * @return The C output for when this value node is being used
+	 * 		as an argument for a method call.
+	 */
+	public StringBuilder generateCArgumentReference(StringBuilder builder, Identifier callingMethod)
+	{
+		if (callingMethod instanceof MethodCall)
+		{
+			CallableMethod declaration = ((MethodCall)callingMethod).getCallableDeclaration();
+			
+			if (declaration.isStatic() || declaration instanceof Constructor)
+			{
+				return declaration.getParameterList().getObjectReference().generateCNullOutput(builder);
+			}
+			else if (declaration instanceof ClosureDeclaration)
+			{
+				ClosureDeclaration closure = (ClosureDeclaration)declaration;
+				
+				return closure.generateCSourceName(builder, "ref");
+			}
+		}
+		
+		return super.generateCArgumentReference(builder, callingMethod);
 	}
 	
 	public boolean doesOverrideMethod(NovaMethodDeclaration method)
@@ -637,25 +746,16 @@ public class ClassDeclaration extends InstanceDeclaration
 	 */
 	public String[] getImplementedClassNames()
 	{
+		TypeList<InterfaceImplementation> list = getInterfacesImplementationList();
+		
+		String[] implementedClasses = new String[list.getNumVisibleChildren()];
+		
+		for (int i = 0; i < implementedClasses.length; i++)
+		{
+			implementedClasses[i] = list.getVisibleChild(i).getType();
+		}
+		
 		return implementedClasses;
-	}
-	
-	/**
-	 * Add a class to the list of implemented classes of this class
-	 * instance.<br>
-	 * <br>
-	 * For instance: "public class ClassName implements InterfaceName"
-	 * The "InterfaceName" is an interface that is implemented by
-	 * the "ClassName" class.<br>
-	 * <br>
-	 * A class node can implement as many interfaces as it needs to.
-	 * 
-	 * @param implementedClass The name of the class that is to be
-	 * 		implemented.
-	 */
-	public void addImplementedClass(String implementedClass)
-	{
-		implementedClasses = StringUtils.appendString(implementedClasses, implementedClass);
 	}
 	
 	/**
@@ -1103,9 +1203,15 @@ public class ClassDeclaration extends InstanceDeclaration
 			return true;
 		}
 		
-		if (attribute.equals("class"))
+		if (attribute.equals(IDENTIFIER))
 		{
 			return false;
+		}
+		else if (attribute.equals(ABSTRACT_IDENTIFIER))
+		{
+			abstractValue = true;
+			
+			return true;
 		}
 		else
 		{
@@ -1431,7 +1537,7 @@ public class ClassDeclaration extends InstanceDeclaration
 	@Override
 	public StringBuilder generateCHeader(StringBuilder builder)
 	{
-		getVTableNode().generateCHeader(builder).append('\n');
+		getVTableNodes().generateCHeader(builder).append('\n');
 		
 		if (containsNonStaticData() || containsVirtualMethods())
 		{
@@ -1439,12 +1545,9 @@ public class ClassDeclaration extends InstanceDeclaration
 			
 			generateCSourceName(builder).append(", ").append('\n').append('\n');
 			
-			if (containsVirtualMethods())
-			{
-				VTable table = getVTableNode();
-				
-				builder.append(table.generateCType()).append("* ").append(VTable.IDENTIFIER).append(";\n");
-			}
+			VTable extension = getVTableNodes().getExtensionVTable();
+			
+			builder.append(extension.generateCType()).append("* ").append(VTable.IDENTIFIER).append(";\n");
 			
 			getFieldList().generateNonStaticCHeader(builder);
 			
@@ -1480,7 +1583,7 @@ public class ClassDeclaration extends InstanceDeclaration
 	@Override
 	public StringBuilder generateCSource(StringBuilder builder)
 	{
-		getVTableNode().generateCSource(builder).append('\n');
+		getVTableNodes().generateCSource(builder).append('\n');
 		
 		if (containsNonStaticPrivateData())
 		{
@@ -1629,29 +1732,48 @@ public class ClassDeclaration extends InstanceDeclaration
 				setExtendedClass(word);
 				
 				data.extending = false;
+				
+				if (data.getRightAdjacentSkipBounds() != null)
+				{
+					decodeGenericArguments(data.statement, data.getRightAdjacentSkipBounds());
+					
+					data.decrementGenericsRemaining();
+				}
 			}
 			else
 			{
 				if (word.startsWith(","))
 				{
 					word = word.substring(1);
+					throw new RuntimeException();
+					// TODO: delete this
 				}
 				if (word.endsWith(","))
 				{
 					word = word.substring(0, word.length() - 1);
+					throw new RuntimeException();
+					// TODO: delete this
 				}
 				
 				if (word.length() > 0)
 				{
-					addImplementedClass(word);
+					Location loc = new Location(0, 0, bounds.getStart(), bounds.getEnd());
+					
+					InterfaceImplementation i = InterfaceImplementation.decodeStatement(this, word, loc, extra.require);
+					
+					getInterfacesImplementationList().addChild(i);
+					
+					if (data.getRightAdjacentSkipBounds() != null)
+					{
+						i.decodeGenericArguments(data.statement, data.getRightAdjacentSkipBounds());
+						
+						data.decrementGenericsRemaining();
+					}
 				}
-			}
-			
-			if (data.getRightAdjacentSkipBounds() != null)
-			{
-				decodeGenericArguments(data.statement, data.getRightAdjacentSkipBounds());
-				
-				data.decrementGenericsRemaining();
+				else
+				{
+					
+				}
 			}
 		}
 		else
@@ -1676,9 +1798,15 @@ public class ClassDeclaration extends InstanceDeclaration
 					if (data.getRightAdjacentSkipBounds() != null)
 					{
 						getGenericDeclaration().decodeGenericParameters(data.statement, data.getRightAdjacentSkipBounds());
-						decodeGenericArguments(data.statement, data.getRightAdjacentSkipBounds());
+//						getGenericDeclaration().decodeGenericParameters(data.statement, data.getRightAdjacentSkipBounds());
+//						decodeGenericArguments(data.statement, data.getRightAdjacentSkipBounds());
 						
-						data.decrementGenericsRemaining();
+						for (GenericParameter param : getGenericDeclaration())
+						{
+							decodeGenericArguments(param.getName());
+							
+							data.decrementGenericsRemaining();
+						}
 					}
 				}
 			}
@@ -1695,16 +1823,6 @@ public class ClassDeclaration extends InstanceDeclaration
 		return getGenericDeclaration().getParameterIndex(parameterName);
 	}
 	
-	private GenericDeclaration getGenericDeclarationNode()
-	{
-		return (GenericDeclaration)getChild(super.getNumDefaultChildren() + 10);
-	}
-	
-	public GenericDeclaration getGenericDeclaration()
-	{
-		return getGenericDeclarationNode();
-	}
-	
 	public GenericParameter getGenericParameter(String parameterName)
 	{
 		for (GenericParameter param : getGenericDeclaration())
@@ -1716,6 +1834,11 @@ public class ClassDeclaration extends InstanceDeclaration
 		}
 		
 		return null;
+	}
+	
+	public GenericParameter getGenericParameter(int index)
+	{
+		return getGenericDeclaration().getVisibleChild(index);
 	}
 	
 	public String generateTemporaryMethodName()
@@ -1821,6 +1944,16 @@ public class ClassDeclaration extends InstanceDeclaration
 			{
 				getFileDeclaration().getImport(getExtendedClassLocation()).markUsed();
 			}
+			
+			for (GenericParameter param : getGenericDeclaration())
+			{
+				ClassDeclaration typeClass = SyntaxUtils.getImportedClass(getFileDeclaration(), param.getDefaultType());
+				
+				if (typeClass.isPrimitive())
+				{
+					
+				}
+			}
 		}
 		else if (phase == SyntaxTree.PHASE_INSTANCE_DECLARATIONS)
 		{
@@ -1888,10 +2021,10 @@ public class ClassDeclaration extends InstanceDeclaration
 		AssignmentMethod assignments = new AssignmentMethod(this, Location.INVALID);
 		addChild(assignments);
 		
+		ArrayList<NovaMethodDeclaration> errors = new ArrayList<NovaMethodDeclaration>();
+		
 		if (doesExtendClass())
 		{
-			ArrayList<AbstractMethodDeclaration> errors = new ArrayList<AbstractMethodDeclaration>();
-			
 			for (AbstractMethodDeclaration method : getExtendedClass().getAbstractMethods())
 			{
 				if (!doesOverrideMethod(method))
@@ -1899,15 +2032,52 @@ public class ClassDeclaration extends InstanceDeclaration
 					errors.add(method);
 				}
 			}
+		}
+		
+		if (!isAbstract())
+		{
+			ClassDeclaration clazz = this;
 			
-			if (errors.size() > 0)
+			while (clazz != null)
 			{
-				for (int i = 0; i < errors.size(); i++)
+				TypeList<InterfaceImplementation> interfaces = clazz.getInterfacesImplementationList();
+				
+				if (interfaces.getNumVisibleChildren() > 0)
 				{
-					AbstractMethodDeclaration method = errors.get(i);
-					
-					SyntaxMessage.error("Class " + getName() + " must implement abstract method " + method.getName(), this, i == errors.size() - 1);
+					for (InterfaceImplementation inter : interfaces)
+					{
+						for (NovaMethodDeclaration method : inter.getTypeClass().getMethods())
+						{
+							if (method.isUserMade() && !doesOverrideMethod(method))
+							{
+								errors.add(method);
+							}
+						}
+					}
 				}
+				
+				clazz = clazz.getParentClass();
+			}
+		}
+		
+		if (errors.size() > 0)
+		{
+			for (int i = 0; i < errors.size(); i++)
+			{
+				NovaMethodDeclaration method = errors.get(i);
+				
+				String type = null;
+				
+				if (method instanceof AbstractMethodDeclaration)
+				{
+					type = "abstract";
+				}
+				else
+				{
+					type = "interface";
+				}
+				
+				SyntaxMessage.error("Class " + getName() + " must implement " + type + " method " + method.getName(), this, i == errors.size() - 1);
 			}
 		}
 	}
@@ -1945,7 +2115,7 @@ public class ClassDeclaration extends InstanceDeclaration
 	 */
 	private void validateImplementations(int phase)
 	{
-		for (String implementedClass : implementedClasses)
+		for (String implementedClass : getImplementedClassNames())
 		{
 			ClassDeclaration clazz = SyntaxUtils.getImportedClass(getFileDeclaration(), implementedClass);
 			
@@ -2108,13 +2278,7 @@ public class ClassDeclaration extends InstanceDeclaration
 		super.cloneTo(node, cloneChildren);
 		
 		node.extendedClass = extendedClass;
-		
-		for (int i = 0; i < implementedClasses.length; i++)
-		{
-			String implementedClass = implementedClasses[i];
-			
-			node.addImplementedClass(implementedClass);
-		}
+		node.abstractValue = abstractValue;
 		
 		return node;
 	}

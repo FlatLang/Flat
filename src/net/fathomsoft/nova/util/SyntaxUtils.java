@@ -6,6 +6,7 @@ import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.error.UnimplementedOperationException;
 import net.fathomsoft.nova.tree.Accessible;
+import net.fathomsoft.nova.tree.ArgumentList;
 import net.fathomsoft.nova.tree.BodyMethodDeclaration;
 import net.fathomsoft.nova.tree.ClassDeclaration;
 import net.fathomsoft.nova.tree.Closure;
@@ -40,7 +41,7 @@ import net.fathomsoft.nova.tree.variables.VariableDeclaration;
  */
 public class SyntaxUtils
 {
-	private static final int CHAR = 1, BYTE = 1, SHORT = 2, INT = 3, LONG = 4, FLOAT = 5, DOUBLE = 6;
+	private static final int CHAR = 1, BYTE = 1, SHORT = 2, INT = 3, LONG = 4, FLOAT = 5, DOUBLE = 6, NUMBER = 6;
 	
 	/**
 	 * Get the rank of the given primitive type in terms of assignment
@@ -79,6 +80,10 @@ public class SyntaxUtils
 		else if (primitiveType.equals("Double"))
 		{
 			return DOUBLE;
+		}
+		else if (primitiveType.equals("Number"))
+		{
+			return NUMBER;
 		}
 		
 		return 0;
@@ -186,6 +191,31 @@ public class SyntaxUtils
 				return "char";
 			default:
 				return type;
+		}
+	}
+	
+	public static String getPrimitiveDefaultValue(String type)
+	{
+		switch (type)
+		{
+			case "Int":
+				return "0";
+			case "Char":
+				return "'\0'";
+			case "Long":
+				return "0";
+			case "Float":
+				return "0";
+			case "Double":
+				return "0";
+			case "Bool":
+				return "false";
+			case "Short":
+				return "0";
+			case "Byte":
+				return "0";
+			default:
+				return null;
 		}
 	}
 	
@@ -1413,11 +1443,17 @@ public class SyntaxUtils
 		
 		if (returned.isPrimitiveType())
 		{
-			String className = returned.getType();
-			
-			String instantiation = "new " + className + '(' + primitive.generateNovaInput() + ')';
+			String className     = returned.getType();
+			String defaultValue  = SyntaxUtils.getPrimitiveDefaultValue(className);
+			String instantiation = "new " + className + '(' + defaultValue + ')';
 			
 			node = Instantiation.decodeStatement(primitive.getParent(), instantiation, primitive.getLocationIn(), true, false);
+			
+			MethodCall   call = (MethodCall)node.getIdentifier();
+			ArgumentList list = call.getArgumentList();
+			
+			list.removeVisibleChild(0);
+			list.addChild(primitive.clone(node, primitive.getLocationIn()));
 		}
 		
 		return node;
@@ -1901,7 +1937,6 @@ public class SyntaxUtils
 		}
 		else if (required.getArrayDimensions() - given.getArrayDimensions() - arrayDifference != 0)
 		{
-			Nova.debuggingBreakpoint(required.getTypeClassLocation() == null);
 			if (required.getTypeClassLocation().equals(Nova.getClassLocation("Char")) && required.getArrayDimensions() == 1 && given.getTypeClassLocation() != null && given.getTypeClassLocation().equals(Nova.getClassLocation("String")))
 			{
 				return true;
@@ -1923,6 +1958,8 @@ public class SyntaxUtils
 			
 			if (!Literal.isNullLiteral(given) && !isTypeCompatible(value, given, false))
 			{
+				getParameterGenericReturnType(param, given);
+				
 				SyntaxMessage.error("Incorrect type '" + given.getType() + "' given for required generic type of '" + value.getType() + "' type", given);
 				
 				return false;

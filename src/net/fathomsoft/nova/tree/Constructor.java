@@ -103,12 +103,9 @@ public class Constructor extends BodyMethodDeclaration
 		
 		builder.append('\n');
 		
-		if (getParentClass().containsVirtualMethods())
-		{
-			VTable table = getParentClass().getVTableNode();
-			
-			builder.append(ParameterList.OBJECT_REFERENCE_IDENTIFIER).append("->").append(VTable.IDENTIFIER).append(" = &").append(table.generateCSourceName()).append(";\n");
-		}
+		VTable extension = getParentClass().getVTableNodes().getExtensionVTable();
+		
+		builder.append(ParameterList.OBJECT_REFERENCE_IDENTIFIER).append("->").append(VTable.IDENTIFIER).append(" = &").append(extension.generateCSourceName()).append(";\n");
 		
 		{
 			Stack<AssignmentMethod> calls = new Stack<AssignmentMethod>();

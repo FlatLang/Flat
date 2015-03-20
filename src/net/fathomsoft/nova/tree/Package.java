@@ -2,7 +2,11 @@ package net.fathomsoft.nova.tree;
 
 import java.io.File;
 
+import javax.swing.JOptionPane;
+
+import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.TestContext;
+import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.util.Location;
 import net.fathomsoft.nova.util.StringUtils;
@@ -68,6 +72,11 @@ public class Package extends Node
 	
 	public StringBuilder generateCLocation(StringBuilder builder)
 	{
+		if (!validLocation())
+		{
+			return builder;
+		}
+		
 		String output = location.replace('/', '_');
 		
 		return builder.append(output);
@@ -144,6 +153,38 @@ public class Package extends Node
 		}
 		
 		return null;
+	}
+	
+	/**
+	 * @see net.fathomsoft.nova.tree.Node#validate(int)
+	 */
+	@Override
+	public ValidationResult validate(int phase)
+	{
+		ValidationResult result = super.validate(phase);
+		
+		if (result.skipValidation())
+		{
+			return result;
+		}
+		
+		if (phase == SyntaxTree.PHASE_CLASS_DECLARATION)
+		{
+			if (!validLocation())
+			{
+				result.errorOccurred();
+				result.continueValidation = false;
+				
+				SyntaxMessage.error("Undefined package location", this, false);
+			}
+		}
+		
+		return result;
+	}
+	
+	public boolean validLocation()
+	{
+		return location != null;
 	}
 	
 	private boolean validatePackageExists(boolean require)

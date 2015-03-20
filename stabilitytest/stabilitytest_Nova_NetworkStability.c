@@ -2,12 +2,26 @@
 #include <stabilitytest/stabilitytest_Nova_NetworkStability.h>
 
 
-nova_VTable_stabilitytest_Nova_NetworkStability nova_VTable_stabilitytest_Nova_NetworkStability_val =
+stabilitytest_Extension_VTable_NetworkStability stabilitytest_Extension_VTable_NetworkStability_val =
 {
-	nova_standard_Nova_Object_0_Nova_getHashCodeLong,
+	{
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+	},
+	nova_standard_Nova_Object_1_Nova_getHashCodeLong,
 	nova_standard_Nova_Object_0_Nova_toString,
 	nova_standard_Nova_Object_0_Nova_equals,
 };
+
+
 
 nova_standard_network_Nova_ServerSocket* stabilitytest_Nova_NetworkStability_Nova_createServer(stabilitytest_Nova_NetworkStability* this, nova_standard_exception_Nova_ExceptionData* exceptionData, stabilitytest_Nova_StabilityTest* l0_Nova_program, int l0_Nova_port);
 nova_standard_Nova_String* stabilitytest_Nova_NetworkStability_Nova_received;
@@ -21,13 +35,13 @@ void stabilitytest_Nova_NetworkStabilityNova_init_static(nova_standard_exception
 stabilitytest_Nova_NetworkStability* stabilitytest_Nova_NetworkStability_2_Nova_construct(stabilitytest_Nova_NetworkStability* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
 	CCLASS_NEW(stabilitytest_Nova_NetworkStability, this,);
-	this->vtable = &nova_VTable_stabilitytest_Nova_NetworkStability_val;
+	this->vtable = &stabilitytest_Extension_VTable_NetworkStability_val;
 	nova_standard_Nova_Object_Nova_super((nova_standard_Nova_Object*)this, exceptionData);
-	nova_standard_Nova_Object_Nova_this((nova_standard_Nova_Object*)(this), exceptionData);
+	nova_standard_Nova_Object_2_Nova_this((nova_standard_Nova_Object*)(this), exceptionData);
 	stabilitytest_Nova_NetworkStability_Nova_super(this, exceptionData);
 	
 	{
-		stabilitytest_Nova_NetworkStability_Nova_this(this, exceptionData);
+		stabilitytest_Nova_NetworkStability_2_Nova_this(this, exceptionData);
 	}
 	
 	return this;
@@ -41,8 +55,6 @@ void stabilitytest_Nova_NetworkStability_Nova_destroy(stabilitytest_Nova_Network
 	}
 	
 	
-	{
-	}
 	NOVA_FREE(*this);
 }
 
@@ -71,7 +83,7 @@ void stabilitytest_Nova_NetworkStability_Nova_test(stabilitytest_Nova_NetworkSta
 		stabilitytest_Nova_StabilityTest_1_Nova_fail(l0_Nova_program, exceptionData, nova_standard_Nova_String_1_Nova_construct(0, exceptionData, "Server unable to send data to client"));
 	}
 	nova_standard_io_Nova_Console_0_Nova_writeLine(0, exceptionData, nova_standard_Nova_String_1_Nova_construct(0, exceptionData, "Waiting for String from ClientSocket... "));
-	l1_Nova_s = l1_Nova_connection->nova_standard_network_Nova_ConnectionSocket_Nova_in->vtable->nova_standard_io_Nova_InputStream_virtual0_Nova_readString(l1_Nova_connection->nova_standard_network_Nova_ConnectionSocket_Nova_in, exceptionData);
+	l1_Nova_s = l1_Nova_connection->nova_standard_network_Nova_ConnectionSocket_Nova_in->vtable->itable.nova_standard_io_Nova_InputStream_virtual0_Nova_readString(l1_Nova_connection->nova_standard_network_Nova_ConnectionSocket_Nova_in, exceptionData);
 	if (l1_Nova_s->nova_standard_Nova_String_Nova_length != stabilitytest_Nova_NetworkStability_Nova_received->nova_standard_Nova_String_Nova_length || !l1_Nova_s->vtable->nova_standard_Nova_String_virtual_Nova_equals(l1_Nova_s, exceptionData, stabilitytest_Nova_NetworkStability_Nova_received))
 	{
 		stabilitytest_Nova_StabilityTest_1_Nova_fail(l0_Nova_program, exceptionData, nova_standard_Nova_String_1_Nova_construct(0, exceptionData, "Server unable to receive correct message from client"));
@@ -101,7 +113,7 @@ nova_standard_network_Nova_ServerSocket* stabilitytest_Nova_NetworkStability_Nov
 	return l1_Nova_server;
 }
 
-void stabilitytest_Nova_NetworkStability_Nova_this(stabilitytest_Nova_NetworkStability* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
+void stabilitytest_Nova_NetworkStability_2_Nova_this(stabilitytest_Nova_NetworkStability* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
 }
 

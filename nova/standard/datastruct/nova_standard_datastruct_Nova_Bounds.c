@@ -2,12 +2,31 @@
 #include <nova/standard/datastruct/nova_standard_datastruct_Nova_Bounds.h>
 
 
-nova_standard_datastruct_VTable_Bounds nova_standard_datastruct_VTable_Bounds_val =
+nova_standard_datastruct_Extension_VTable_Bounds nova_standard_datastruct_Extension_VTable_Bounds_val =
 {
-	nova_standard_Nova_Object_1_Nova_getHashCodeLong,
+	{
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+	},
+	nova_standard_Nova_Object_3_Nova_getHashCodeLong,
 	nova_standard_datastruct_Nova_Bounds_0_Nova_toString,
 	nova_standard_datastruct_Nova_Bounds_0_Nova_equals,
 };
+
+
 void nova_standard_datastruct_Nova_BoundsNova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
 	{
@@ -17,7 +36,7 @@ void nova_standard_datastruct_Nova_BoundsNova_init_static(nova_standard_exceptio
 nova_standard_datastruct_Nova_Bounds* nova_standard_datastruct_Nova_Bounds_2_Nova_construct(nova_standard_datastruct_Nova_Bounds* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
 	CCLASS_NEW(nova_standard_datastruct_Nova_Bounds, this,);
-	this->vtable = &nova_standard_datastruct_VTable_Bounds_val;
+	this->vtable = &nova_standard_datastruct_Extension_VTable_Bounds_val;
 	nova_standard_Nova_Object_Nova_super((nova_standard_Nova_Object*)this, exceptionData);
 	nova_standard_Nova_Object_2_Nova_this((nova_standard_Nova_Object*)(this), exceptionData);
 	nova_standard_datastruct_Nova_Bounds_Nova_super(this, exceptionData);
@@ -32,7 +51,7 @@ nova_standard_datastruct_Nova_Bounds* nova_standard_datastruct_Nova_Bounds_2_Nov
 nova_standard_datastruct_Nova_Bounds* nova_standard_datastruct_Nova_Bounds_3_Nova_construct(nova_standard_datastruct_Nova_Bounds* this, nova_standard_exception_Nova_ExceptionData* exceptionData, int l0_Nova_start, int l0_Nova_end)
 {
 	CCLASS_NEW(nova_standard_datastruct_Nova_Bounds, this,);
-	this->vtable = &nova_standard_datastruct_VTable_Bounds_val;
+	this->vtable = &nova_standard_datastruct_Extension_VTable_Bounds_val;
 	nova_standard_Nova_Object_Nova_super((nova_standard_Nova_Object*)this, exceptionData);
 	nova_standard_Nova_Object_2_Nova_this((nova_standard_Nova_Object*)(this), exceptionData);
 	nova_standard_datastruct_Nova_Bounds_Nova_super(this, exceptionData);

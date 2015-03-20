@@ -38,7 +38,6 @@ public class ExceptionStability
 			}
 			catch (DivideByZeroException e)
 			{
-				Console.write("ASDF")
 				worked = true
 				
 				Console.writeLine("OK")

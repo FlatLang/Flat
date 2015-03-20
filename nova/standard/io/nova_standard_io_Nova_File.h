@@ -6,6 +6,7 @@ typedef struct nova_standard_io_Nova_File nova_standard_io_Nova_File;
 
 #include <Nova.h>
 #include <ExceptionHandler.h>
+#include <InterfaceVTable.h>
 #include <nova/standard/exception/nova_standard_exception_Nova_ExceptionData.h>
 #include <nova/standard/exception/nova_standard_exception_Nova_Exception.h>
 #include <nova/standard/exception/nova_standard_exception_Nova_DivideByZeroException.h>
@@ -29,20 +30,24 @@ typedef struct nova_standard_io_Nova_File nova_standard_io_Nova_File;
 #include <nova/standard/io/NativeFile.h>
 #include <nova/standard/time/nova_standard_time_Nova_Time.h>
 
-typedef struct nova_standard_io_VTable_File
+
+typedef struct nova_standard_io_Extension_VTable_File nova_standard_io_Extension_VTable_File;
+struct nova_standard_io_Extension_VTable_File
 {
-	long (*nova_standard_Nova_Object_virtual1_Nova_getHashCodeLong)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*);
+	nova_Interface_VTable itable;
+	long (*nova_standard_Nova_Object_virtual3_Nova_getHashCodeLong)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*);
 	nova_standard_Nova_String* (*nova_standard_Nova_Object_virtual0_Nova_toString)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*);
 	char (*nova_standard_Nova_Object_virtual0_Nova_equals)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*);
-} nova_standard_io_VTable_File;
+};
 
-extern nova_standard_io_VTable_File nova_standard_io_VTable_File_val;
+extern nova_standard_io_Extension_VTable_File nova_standard_io_Extension_VTable_File_val;
+
 
 CCLASS_CLASS
 (
 	nova_standard_io_Nova_File, 
 	
-	nova_standard_io_VTable_File* vtable;
+	nova_standard_io_Extension_VTable_File* vtable;
 	struct Private* prv;
 )
 

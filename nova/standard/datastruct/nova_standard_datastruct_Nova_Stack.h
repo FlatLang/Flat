@@ -6,6 +6,7 @@ typedef struct nova_standard_datastruct_Nova_Stack nova_standard_datastruct_Nova
 
 #include <Nova.h>
 #include <ExceptionHandler.h>
+#include <InterfaceVTable.h>
 #include <nova/standard/exception/nova_standard_exception_Nova_ExceptionData.h>
 #include <nova/standard/exception/nova_standard_exception_Nova_Exception.h>
 #include <nova/standard/exception/nova_standard_exception_Nova_DivideByZeroException.h>
@@ -29,20 +30,24 @@ typedef struct nova_standard_datastruct_Nova_Stack nova_standard_datastruct_Nova
 #include <nova/standard/datastruct/nova_standard_datastruct_Nova_ListNode.h>
 #include <nova/standard/datastruct/nova_standard_datastruct_Nova_EmptyStackException.h>
 
-typedef struct nova_standard_datastruct_VTable_Stack
+
+typedef struct nova_standard_datastruct_Extension_VTable_Stack nova_standard_datastruct_Extension_VTable_Stack;
+struct nova_standard_datastruct_Extension_VTable_Stack
 {
-	long (*nova_standard_Nova_Object_virtual1_Nova_getHashCodeLong)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*);
+	nova_Interface_VTable itable;
+	long (*nova_standard_Nova_Object_virtual3_Nova_getHashCodeLong)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*);
 	nova_standard_Nova_String* (*nova_standard_Nova_Object_virtual0_Nova_toString)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*);
 	char (*nova_standard_Nova_Object_virtual0_Nova_equals)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*);
-} nova_standard_datastruct_VTable_Stack;
+};
 
-extern nova_standard_datastruct_VTable_Stack nova_standard_datastruct_VTable_Stack_val;
+extern nova_standard_datastruct_Extension_VTable_Stack nova_standard_datastruct_Extension_VTable_Stack_val;
+
 
 CCLASS_CLASS
 (
 	nova_standard_datastruct_Nova_Stack, 
 	
-	nova_standard_datastruct_VTable_Stack* vtable;
+	nova_standard_datastruct_Extension_VTable_Stack* vtable;
 	int nova_standard_datastruct_Nova_Stack_Nova_size;
 	struct Private* prv;
 )

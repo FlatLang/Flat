@@ -6,6 +6,7 @@ typedef struct stabilitytest_Nova_PolymorphicSubClass stabilitytest_Nova_Polymor
 
 #include <Nova.h>
 #include <ExceptionHandler.h>
+#include <InterfaceVTable.h>
 #include <nova/standard/exception/nova_standard_exception_Nova_ExceptionData.h>
 #include <nova/standard/exception/nova_standard_exception_Nova_Exception.h>
 #include <nova/standard/exception/nova_standard_exception_Nova_DivideByZeroException.h>
@@ -28,20 +29,24 @@ typedef struct stabilitytest_Nova_PolymorphicSubClass stabilitytest_Nova_Polymor
 #include <nova/standard/math/nova_standard_math_Nova_Math.h>
 #include <stabilitytest/stabilitytest_Nova_PolymorphicSuperClass.h>
 
-typedef struct nova_VTable_stabilitytest_Nova_PolymorphicSubClass
+
+typedef struct stabilitytest_Extension_VTable_PolymorphicSubClass stabilitytest_Extension_VTable_PolymorphicSubClass;
+struct stabilitytest_Extension_VTable_PolymorphicSubClass
 {
-	long (*nova_standard_Nova_Object_virtual0_Nova_getHashCodeLong)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*);
+	nova_Interface_VTable itable;
+	long (*nova_standard_Nova_Object_virtual1_Nova_getHashCodeLong)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*);
 	nova_standard_Nova_String* (*stabilitytest_Nova_PolymorphicSubClass_virtual0_Nova_toString)(stabilitytest_Nova_PolymorphicSubClass*, nova_standard_exception_Nova_ExceptionData*);
 	char (*nova_standard_Nova_Object_virtual0_Nova_equals)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*);
-} nova_VTable_stabilitytest_Nova_PolymorphicSubClass;
+};
 
-extern nova_VTable_stabilitytest_Nova_PolymorphicSubClass nova_VTable_stabilitytest_Nova_PolymorphicSubClass_val;
+extern stabilitytest_Extension_VTable_PolymorphicSubClass stabilitytest_Extension_VTable_PolymorphicSubClass_val;
+
 
 CCLASS_CLASS
 (
 	stabilitytest_Nova_PolymorphicSubClass, 
 	
-	nova_VTable_stabilitytest_Nova_PolymorphicSubClass* vtable;
+	stabilitytest_Extension_VTable_PolymorphicSubClass* vtable;
 	stabilitytest_Nova_PolymorphicSubClass* stabilitytest_Nova_PolymorphicSuperClass_Nova_child;
 )
 
@@ -49,7 +54,7 @@ void stabilitytest_Nova_PolymorphicSubClassNova_init_static(nova_standard_except
 stabilitytest_Nova_PolymorphicSubClass* stabilitytest_Nova_PolymorphicSubClass_2_Nova_construct(stabilitytest_Nova_PolymorphicSubClass* this, nova_standard_exception_Nova_ExceptionData* exceptionData);
 void stabilitytest_Nova_PolymorphicSubClass_Nova_destroy(stabilitytest_Nova_PolymorphicSubClass** this, nova_standard_exception_Nova_ExceptionData* exceptionData);
 nova_standard_Nova_String* stabilitytest_Nova_PolymorphicSubClass_0_Nova_toString(stabilitytest_Nova_PolymorphicSubClass* this, nova_standard_exception_Nova_ExceptionData* exceptionData);
-void stabilitytest_Nova_PolymorphicSubClass_Nova_this(stabilitytest_Nova_PolymorphicSubClass* this, nova_standard_exception_Nova_ExceptionData* exceptionData);
-void stabilitytest_Nova_PolymorphicSubClass_Nova_super(stabilitytest_Nova_PolymorphicSubClass* this, nova_standard_exception_Nova_ExceptionData* exceptionData);
+void stabilitytest_Nova_PolymorphicSubClass_2_Nova_this(stabilitytest_Nova_PolymorphicSubClass* this, nova_standard_exception_Nova_ExceptionData* exceptionData);
+void stabilitytest_Nova_PolymorphicSubClass_2_Nova_super(stabilitytest_Nova_PolymorphicSubClass* this, nova_standard_exception_Nova_ExceptionData* exceptionData);
 
 #endif

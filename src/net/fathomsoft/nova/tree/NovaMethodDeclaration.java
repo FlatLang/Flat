@@ -122,6 +122,16 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 		return isOverridden() || doesOverride();
 	}
 	
+	public NovaMethodDeclaration getRootDeclaration()
+	{
+		if (doesOverride())
+		{
+			return getOverriddenMethod().getRootDeclaration();
+		}
+		
+		return this;
+	}
+	
 	/**
 	 * Get whether or not the specified Method has overridden a method
 	 * from a super class

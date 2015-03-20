@@ -6,6 +6,7 @@ typedef struct nova_standard_process_Nova_Process nova_standard_process_Nova_Pro
 
 #include <Nova.h>
 #include <ExceptionHandler.h>
+#include <InterfaceVTable.h>
 #include <nova/standard/exception/nova_standard_exception_Nova_ExceptionData.h>
 #include <nova/standard/exception/nova_standard_exception_Nova_Exception.h>
 #include <nova/standard/exception/nova_standard_exception_Nova_DivideByZeroException.h>
@@ -28,20 +29,24 @@ typedef struct nova_standard_process_Nova_Process nova_standard_process_Nova_Pro
 #include <nova/standard/math/nova_standard_math_Nova_Math.h>
 #include <nova/standard/io/nova_standard_io_Nova_StreamReader.h>
 
-typedef struct nova_standard_process_VTable_Process
+
+typedef struct nova_standard_process_Extension_VTable_Process nova_standard_process_Extension_VTable_Process;
+struct nova_standard_process_Extension_VTable_Process
 {
-	long (*nova_standard_Nova_Object_virtual1_Nova_getHashCodeLong)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*);
+	nova_Interface_VTable itable;
+	long (*nova_standard_Nova_Object_virtual3_Nova_getHashCodeLong)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*);
 	nova_standard_Nova_String* (*nova_standard_Nova_Object_virtual0_Nova_toString)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*);
 	char (*nova_standard_Nova_Object_virtual0_Nova_equals)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*);
-} nova_standard_process_VTable_Process;
+};
 
-extern nova_standard_process_VTable_Process nova_standard_process_VTable_Process_val;
+extern nova_standard_process_Extension_VTable_Process nova_standard_process_Extension_VTable_Process_val;
+
 
 CCLASS_CLASS
 (
 	nova_standard_process_Nova_Process, 
 	
-	nova_standard_process_VTable_Process* vtable;
+	nova_standard_process_Extension_VTable_Process* vtable;
 	nova_standard_io_Nova_StreamReader* nova_standard_process_Nova_Process_Nova_reader;
 )
 

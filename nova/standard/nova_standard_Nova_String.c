@@ -5,13 +5,32 @@ typedef char (*l0_1_Nova_transform)(void*, nova_standard_exception_Nova_Exceptio
 typedef char (*l0_2_Nova_transform)(void*, nova_standard_exception_Nova_ExceptionData*, char);
 typedef char (*l0_3_Nova_transform)(void*, nova_standard_exception_Nova_ExceptionData*, char);
 
-nova_standard_VTable_String nova_standard_VTable_String_val =
+nova_standard_Extension_VTable_String nova_standard_Extension_VTable_String_val =
 {
-	nova_standard_Nova_Object_1_Nova_getHashCodeLong,
+	{
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+	},
+	nova_standard_Nova_Object_3_Nova_getHashCodeLong,
 	nova_standard_Nova_String_0_Nova_toString,
 	nova_standard_Nova_String_Nova_equals,
 	nova_standard_Nova_String_0_Nova_concat,
 };
+
+
 
 int nova_standard_Nova_String_Nova_calculateLength(nova_standard_Nova_String* this, nova_standard_exception_Nova_ExceptionData* exceptionData);
 int nova_standard_Nova_String_0_Nova_indexOf(nova_standard_Nova_String* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_Nova_String* l0_Nova_search, int l0_Nova_start, int l0_Nova_direction);
@@ -34,7 +53,7 @@ void nova_standard_Nova_StringNova_init_static(nova_standard_exception_Nova_Exce
 nova_standard_Nova_String* nova_standard_Nova_String_0_Nova_construct(nova_standard_Nova_String* this, nova_standard_exception_Nova_ExceptionData* exceptionData, char l0_Nova_c)
 {
 	CCLASS_NEW(nova_standard_Nova_String, this,);
-	this->vtable = &nova_standard_VTable_String_val;
+	this->vtable = &nova_standard_Extension_VTable_String_val;
 	nova_standard_Nova_Object_Nova_super((nova_standard_Nova_Object*)this, exceptionData);
 	nova_standard_Nova_Object_2_Nova_this((nova_standard_Nova_Object*)(this), exceptionData);
 	nova_standard_Nova_String_Nova_super(this, exceptionData);
@@ -49,7 +68,7 @@ nova_standard_Nova_String* nova_standard_Nova_String_0_Nova_construct(nova_stand
 nova_standard_Nova_String* nova_standard_Nova_String_1_Nova_construct(nova_standard_Nova_String* this, nova_standard_exception_Nova_ExceptionData* exceptionData, char* l0_Nova_chars)
 {
 	CCLASS_NEW(nova_standard_Nova_String, this,);
-	this->vtable = &nova_standard_VTable_String_val;
+	this->vtable = &nova_standard_Extension_VTable_String_val;
 	nova_standard_Nova_Object_Nova_super((nova_standard_Nova_Object*)this, exceptionData);
 	nova_standard_Nova_Object_2_Nova_this((nova_standard_Nova_Object*)(this), exceptionData);
 	nova_standard_Nova_String_Nova_super(this, exceptionData);
@@ -194,7 +213,7 @@ nova_standard_Nova_String* nova_standard_Nova_String_0_Nova_substring(nova_stand
 		THROW(1, nova_standard_exception_Nova_Exception_1_Nova_construct(0, exceptionData, nova_standard_Nova_String_0_Nova_concat(nova_standard_Nova_String_1_Nova_construct(0, exceptionData, "Substring bounds of ["), exceptionData, nova_local_0->vtable->nova_standard_Nova_String_virtual0_Nova_concat(nova_local_0, exceptionData, nova_standard_Nova_String_0_Nova_concat(nova_standard_Nova_String_1_Nova_construct(0, exceptionData, ", "), exceptionData, nova_local_1->vtable->nova_standard_Nova_String_virtual0_Nova_concat(nova_local_1, exceptionData, nova_standard_Nova_String_1_Nova_construct(0, exceptionData, "] are invalid")))))));
 	}
 	l1_Nova_buf = (char*)NOVA_MALLOC(sizeof(nova_standard_primitive_number_Nova_Char) * l0_Nova_end - l0_Nova_start + 1);
-	memcpy((char*)(l1_Nova_buf), (char**)(nova_standard_primitive_number_Nova_Char_5_Nova_construct(0, exceptionData, this->nova_standard_Nova_String_Nova_chars[l0_Nova_start])), (int)(l0_Nova_end - l0_Nova_start));
+	memcpy((char*)(l1_Nova_buf), (char**)&(this->nova_standard_Nova_String_Nova_chars[l0_Nova_start]), (int)(l0_Nova_end - l0_Nova_start));
 	l1_Nova_buf[l0_Nova_end - l0_Nova_start] = '\0';
 	return nova_standard_Nova_String_1_Nova_construct(0, exceptionData, l1_Nova_buf);
 }

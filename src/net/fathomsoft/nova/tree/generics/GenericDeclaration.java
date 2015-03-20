@@ -2,6 +2,7 @@ package net.fathomsoft.nova.tree.generics;
 
 import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.TestContext;
+import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.tree.AccessorMethod;
 import net.fathomsoft.nova.tree.GenericCompatible;
 import net.fathomsoft.nova.tree.Node;
@@ -22,6 +23,8 @@ import net.fathomsoft.nova.util.StringUtils;
  */
 public class GenericDeclaration extends TypeList<GenericParameter>
 {
+	public static final String EXTENDS_IDENTIFIER = "extends";
+	
 	/**
 	 * @see net.fathomsoft.nova.tree.Node#Node(Node, Location)
 	 */
@@ -97,8 +100,38 @@ public class GenericDeclaration extends TypeList<GenericParameter>
 	private void addGenericParameterName(String parameterName)
 	{
 		GenericParameter type = new GenericParameter((Node)this, Location.INVALID);
+		
+		int numWords = StringUtils.findNumWords(parameterName);
+		
+		if (numWords > 1)
+		{
+			boolean failed = true;
+			
+			if (numWords == 3)
+			{
+				Bounds bounds     = StringUtils.findNextWordBounds(parameterName);
+				Bounds nextBounds = StringUtils.findNextWordBounds(parameterName, bounds.getEnd());
+				
+				if (nextBounds.extractString(parameterName).equals(EXTENDS_IDENTIFIER))
+				{
+					String defaultType = StringUtils.findNextWord(parameterName, nextBounds.getEnd());
+					
+					type.setDefaultType(defaultType);
+					
+					parameterName = bounds.extractString(parameterName);
+					
+					failed = false;
+				}
+			}
+			
+			if (failed)
+			{
+				SyntaxMessage.error("Could not decode Generic Parameter Declaration '" + parameterName + "'", this);
+			}
+		}
+		
 		type.setName(parameterName);
-
+		
 		DeclarationData data = new DeclarationData();
 		
 		searchGenericTypes(parameterName, data);

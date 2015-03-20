@@ -1,6 +1,6 @@
 package "nova/standard/io"
 
-public class OutputStream
+public abstract class OutputStream
 {
 	external type FILE
 	

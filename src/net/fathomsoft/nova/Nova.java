@@ -36,6 +36,8 @@ import net.fathomsoft.nova.tree.Import;
 import net.fathomsoft.nova.tree.ImportList;
 import net.fathomsoft.nova.tree.InstanceDeclaration;
 import net.fathomsoft.nova.tree.Instantiation;
+import net.fathomsoft.nova.tree.Interface;
+import net.fathomsoft.nova.tree.InterfaceVTable;
 import net.fathomsoft.nova.tree.Literal;
 import net.fathomsoft.nova.tree.LocalDeclaration;
 import net.fathomsoft.nova.tree.Loop;
@@ -89,6 +91,7 @@ public class Nova
 	
 	private File				outputFile, workingDir;
 	private File				nativeInterfaceSource, nativeInterfaceHeader;
+	private File				interfaceVTableHeader;
 	
 	private SyntaxTree			tree;
 	
@@ -102,6 +105,7 @@ public class Nova
 	
 	private static final String	OUTPUT_EXTENSION, DYNAMIC_LIB_EXT;
 	private static final String NATIVE_INTERFACE_FILE_NAME = "NovaNativeInterface";
+	private static final String INTERFACE_VTABLE_FILE_NAME = "InterfaceVTable";
 	private static final String ENVIRONMENT_VAR            = "novaEnv";
 	
 	private static final HashMap<String, String>	CLASS_LOCATIONS = new HashMap<String, String>();
@@ -182,6 +186,7 @@ public class Nova
 		nova.compile(args, true);
 		nova.formatOutput();
 		nova.generateNativeInterface();
+		nova.generateInterfaceVTable();
 		nova.writeFiles();
 		nova.compileC();
 	}
@@ -376,6 +381,8 @@ public class Nova
 			formatPath(standard  + "primitive/number/Double.nova"),
 			formatPath(standard  + "primitive/number/Number.nova"),
 			
+			formatPath(standard  + "operators/Multipliable.nova"),
+			
 			formatPath(standard  + "time/Time.nova"),
 			formatPath(standard  + "time/Date.nova"),
 			
@@ -414,6 +421,8 @@ public class Nova
 			formatPath(standard  + "datastruct/Node.nova"),
 			formatPath(standard  + "datastruct/BinaryNode.nova"),
 			formatPath(standard  + "datastruct/Comparable.nova"),
+//			formatPath(standard  + "datastruct/Vector2D.nova"),
+//			formatPath(standard  + "datastruct/Vector.nova"),
 
 			formatPath(standard  + "security/MD5.nova"),
 
@@ -479,6 +488,77 @@ public class Nova
 		startTimer();
 		
 		createSyntaxTree(generateCode);
+	}
+	
+	private void generateInterfaceVTable()
+	{
+		String header = generateInterfaceVTableHeader();
+		
+		try
+		{
+			File include = new File(StringUtils.removeSurroundingQuotes(getIncludeDir()));
+			
+			interfaceVTableHeader = FileUtils.writeFile(INTERFACE_VTABLE_FILE_NAME + ".h", include, header);
+		}
+		catch (IOException e)
+		{
+			e.printStackTrace();
+		}
+	}
+	
+	private void generateTypeDefinition(StringBuilder builder, Value value, ArrayList<String> types)
+	{
+		String type = value.generateCTypeName(new StringBuilder()).toString();
+			
+		if (!value.isPrimitiveType() && !types.contains(type))
+		{
+			builder.append("typedef struct ").append(type).append(" ").append(type).append(";\n");
+			
+			types.add(type.toString());
+		}
+	}
+	
+	private String generateInterfaceVTableHeader()
+	{
+		StringBuilder builder = new StringBuilder();
+		
+		NovaMethodDeclaration[] methods = tree.getRoot().getProgram().getInterfaceMethods();
+		
+		builder.append("#ifndef NOVA_INTERFACE_VTABLE\n");
+		builder.append("#define NOVA_INTERFACE_VTABLE\n\n");
+		
+		ArrayList<String> types = new ArrayList<String>();
+		
+		for (NovaMethodDeclaration method : methods)
+		{
+			generateTypeDefinition(builder, method.getParentClass(), types);
+			generateTypeDefinition(builder, method, types);
+			
+			ParameterList<Parameter> list = method.getParameterList();
+			
+			int numParameters = list.getNumParameters();
+			
+			for (int i = 0; i < numParameters; i++)
+			{
+				generateTypeDefinition(builder, list.getParameter(i), types);
+			}
+		}
+		
+		builder.append("\n");
+		builder.append("typedef struct ").append(InterfaceVTable.TYPE).append("\n");
+		builder.append("{\n");
+		
+		for (NovaMethodDeclaration method : methods)
+		{
+			method.generateCType(builder).append(" (*").append(method.generateCVirtualMethodName()).append(")(").append(method.getParameterList().generateCHeader()).append(");\n");
+		}
+		
+		builder.append("} ").append(InterfaceVTable.TYPE).append(";\n");
+		
+		builder.append("\n");
+		builder.append("#endif\n");
+		
+		return builder.toString();
 	}
 	
 	private void generateNativeInterface()
@@ -774,7 +854,14 @@ public class Nova
 						
 						if (n.isOverridden() && !(n instanceof Constructor))
 						{
-							builder.append(ENVIRONMENT_VAR + "." + clazz.getNativeLocation() + "." + n.generateCSourceNativeName(new StringBuilder(), false) + " = " + clazz.getVTableNode().getName() + "." + n.generateCVirtualMethodName() + ";\n");
+							String itable = "";
+							
+							if (n.getParentClass() instanceof Interface)
+							{
+								itable = InterfaceVTable.IDENTIFIER + ".";
+							}
+							
+							builder.append(ENVIRONMENT_VAR + "." + clazz.getNativeLocation() + "." + n.generateCSourceNativeName(new StringBuilder(), false) + " = " + clazz.getVTableNodes().getExtensionVTable().getName() + "." + itable + n.generateCVirtualMethodName() + ";\n");
 						}
 					}
 				}
