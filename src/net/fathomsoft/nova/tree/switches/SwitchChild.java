@@ -13,6 +13,11 @@ import net.fathomsoft.nova.util.Location;
  */
 public interface SwitchChild
 {
+	/**
+	 * Get the {@link Switch Switch} that contains the specified SwitchChild.
+	 * 
+	 * @return The Switch statement that contains the specified SwitchChild.
+	 */
 	public default Switch getParentSwitch()
 	{
 		return (Switch)((Node)this).getAncestorOfType(Switch.class);

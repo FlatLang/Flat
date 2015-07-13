@@ -40,6 +40,12 @@ public class GenericArgument extends IValue implements GenericCompatible
 		return (GenericImplementation)getParent();
 	}
 	
+	/**
+	 * Get the index that the specified argument can be accessed by
+	 * at the declaration of the parameters.
+	 * 
+	 * @return The index.
+	 */
 	public int getArgumentIndex()
 	{
 		GenericImplementation implementation = getGenericImplementation();
@@ -64,11 +70,22 @@ public class GenericArgument extends IValue implements GenericCompatible
 		super.setTypeValue(type);
 	}
 	
+	/**
+	 * Get the default type that this generic type extends.
+	 * @see net.fathomsoft.nova.tree.generics.GenericParameter#getDefaultType()
+	 * 
+	 * @return The type that the generic type extends by default.
+	 */
 	public String getDefaultType()
 	{
 		return getValue().getTypeClass().getGenericDeclaration().getParameter(getArgumentIndex()).getDefaultType();
 	}
 	
+	/**
+	 * Get the Value instance that this generic argument is manifested as.
+	 * 
+	 * @return The Value instance.
+	 */
 	public Value getValue()
 	{
 		return (Value)getGenericImplementation().getParent();

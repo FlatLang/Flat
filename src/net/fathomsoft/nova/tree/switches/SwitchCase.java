@@ -29,6 +29,17 @@ public abstract class SwitchCase extends Node implements SwitchChild
 		setScope(s);
 	}
 	
+	/**
+	 * Get the String that is used to identify the specified SwitchCase.<br>
+	 * <br>
+	 * Example outputs:
+	 * <ul>
+	 * 	<li>case</li>
+	 * 	<li>default</li>
+	 * </ul>
+	 * 
+	 * @return The String used to identify the SwitchCase in the source code.
+	 */
 	public abstract String getIdentifier();
 	
 	/**

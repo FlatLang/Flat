@@ -51,6 +51,16 @@ public class Switch extends ControlStatement
 		return ancestor instanceof SwitchCase;
 	}
 	
+	/**
+	 * Whether or not the specified switch case can be translated into
+	 * a conventional switch statement in C. Essentially if the values
+	 * in the case statements are constants, then it is a traditional
+	 * switch. Otherwise the switch is converted into an if-else statement
+	 * at compile time.
+	 * 
+	 * @return Whether or not the specified switch case is a valid
+	 * switch statement in the C language.
+	 */
 	public boolean isConventionalSwitch()
 	{
 		return conventional;
@@ -62,11 +72,34 @@ public class Switch extends ControlStatement
 		return super.getNumDecodedChildren() + 1;
 	}
 	
+	/**
+	 * Get the value that is being switched over.<br>
+	 * <br>
+	 * For example:<br>
+	 * <blockquote><pre>
+	 * switch (num)
+	 * 	case (value) ...
+	 * 	default ...</pre></blockquote> 
+	 * On the line '<code>switch (num)</code>' in the above switch statement, the
+	 * '<code><i>num</i></code>' component of the case statement is the
+	 * {@link net.fathomsoft.nova.tree.Value Value} Node that is returned from
+	 * this method.
+	 * 
+	 * @return The value that is being switched over.
+	 */
 	public Value getControlValue()
 	{
 		return (Value)getChild(super.getNumDefaultChildren() + 0);
 	}
 	
+	/**
+	 * Get the {@link net.fathomsoft.nova.tree.variables.Variable Variable} that
+	 * allows the if-else structure to work like a traditional switch statement
+	 * in that it allows fallthroughs.
+	 * 
+	 * @return Get the {@link net.fathomsoft.nova.tree.variables.Variable Variable}
+	 * 		that is used to generate fallthrough scenarios.
+	 */
 	public Variable getLocalFallthrough()
 	{
 		if (getNumVisibleChildren() > 0)
@@ -138,6 +171,16 @@ public class Switch extends ControlStatement
 		return builder;
 	}
 	
+	/**
+	 * Get whether or not the specified switch statement requires a fallthrough
+	 * facade to be generated. This occurs when the switch statement has to be
+	 * generated as an if-else statement and there are fallthroughs that are
+	 * needed to make the switch statement function correctly.
+	 * 
+	 * @return Whether or not the specified switch statement requires
+	 * 		a fallthrough variable to make the if-else statement
+	 * 		emulate a traditional switch statement.
+	 */
 	public boolean requiresLocalFallthroughVariable()
 	{
 		if (isConventionalSwitch())
@@ -172,6 +215,14 @@ public class Switch extends ControlStatement
 		return false;
 	}
 	
+	/**
+	 * Get whether or not the switch statement requires a loop facade
+	 * to allow the switch to break out of the switch and skip the remaining
+	 * case statements. This is required when the switch statement is
+	 * emulated by an if-else statement.
+	 * 
+	 * @return Whether or not the switch statement requires a loop facade.
+	 */
 	public boolean requiresLoopFacade()
 	{
 		boolean waitingForFall = false;
@@ -244,6 +295,13 @@ public class Switch extends ControlStatement
 		return null;
 	}
 	
+	/**
+	 * Decode the value that the switch statement will be switching over.
+	 * 
+	 * @param contents The String containing the value to switch over.
+	 * @param require Whether or not to throw an error if anything goes wrong.
+	 * @return Whether or not the control value was decoded successfully.
+	 */
 	private boolean decodeControlValue(String contents, boolean require)
 	{
 		Value value = SyntaxTree.decodeValue(getParent(), contents, getLocationIn().asNew(), require);

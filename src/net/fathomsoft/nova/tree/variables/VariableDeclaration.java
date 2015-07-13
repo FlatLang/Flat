@@ -54,6 +54,21 @@ public class VariableDeclaration extends IIdentifier implements GenericCompatibl
 		return super.getNumDefaultChildren() + 1;
 	}
 	
+	/**
+	 * Get the Bounds that contains the extra field declarations.<br>
+	 * <br>
+	 * For example:<br>
+	 * <blockquote><pre>
+	 * public String firstName, lastName, middleI</pre></blockquote>
+	 * In the above Field Declaration, the '<code><i>lastName, middleI</i></code>' part of
+	 * the declaration is classified as an 'extra' declaration. The Bounds would start
+	 * before the comma after '<code><i>firstName</i></code>' and end after
+	 * '<code><i>lastName, middleI</i></code>' section.
+	 * 
+	 * @param statement The statement to search for the extra declarations in.
+	 * @return The Bounds containing the extra declarations. If there are no
+	 * 		extra declarations, then Bounds.EMPTY is returned.
+	 */
 	public Bounds findExtraDeclarations(String statement)
 	{
 		String declarations[] = StringUtils.splitCommas(statement);

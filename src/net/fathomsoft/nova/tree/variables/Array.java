@@ -56,6 +56,12 @@ public class Array extends VariableDeclaration implements ArrayCompatible
 		return super.getNumDefaultChildren() + 1 + getChildrenOffset();
 	}
 	
+	/**
+	 * Get the offset in the array of children that indicates the start
+	 * location of the {@link #getAccessedNode() Accessed Node}.
+	 * 
+	 * @return The offset in the array of children.
+	 */
 	private int getChildrenOffset()
 	{
 		int offset = 0;
@@ -264,6 +270,14 @@ public class Array extends VariableDeclaration implements ArrayCompatible
 		return null;
 	}
 	
+	/**
+	 * Get whether or not the specified String represents an array initializer.
+	 * 
+	 * @param parent The parent of the current statement.
+	 * @param statement The statement check whether or not is an array initializer.
+	 * @param require Whether or not to throw an error if anything goes wrong.
+	 * @return Whether or not the given statement is an array initializer.
+	 */
 	private boolean isInitializer(Node parent, String statement, boolean require)
 	{
 		if (!(parent instanceof Assignment))
@@ -287,6 +301,14 @@ public class Array extends VariableDeclaration implements ArrayCompatible
 		return getInitializerContents(statement) != null;
 	}
 	
+	/**
+	 * Get the contents within the brackets of an array initializer (If the
+	 * string is an array initializer, otherwise null is returned)
+	 * 
+	 * @param statement The String to get the initializer contents from.
+	 * @return If the String is an initializer, than the initializer without
+	 * 		the brackets, otherwise null is returned.
+	 */
 	private static String getInitializerContents(String statement)
 	{
 		if (statement.length() > 2 && statement.charAt(0) == '[' && statement.charAt(statement.length() - 1) == ']')
@@ -297,11 +319,13 @@ public class Array extends VariableDeclaration implements ArrayCompatible
 		return null;
 	}
 	
-	private VariableDeclaration getArrayDeclaration()
-	{
-		return ((Assignment)getAncestorOfType(Assignment.class)).getAssignedNode().getDeclaration();
-	}
-	
+	/**
+	 * Decode the array initializer from the given statement String.
+	 * 
+	 * @param statement The String that contains the array initializer code.
+	 * @param require Whether or not to throw an error if anything goes wrong.
+	 * @return Whether or not the given statement decoded successfully.
+	 */
 	private boolean decodeInitializer(String statement, boolean require)
 	{
 		String contents = getInitializerContents(statement);
@@ -342,6 +366,17 @@ public class Array extends VariableDeclaration implements ArrayCompatible
 		addChild(initValues);
 		
 		return true;
+	}
+	
+	/**
+	 * Get the {@link VariableDeclaration Variable Declaration} Node that was used
+	 * to declare this array.
+	 * 
+	 * @return The {@link VariableDeclaration Variable Declaration} Node.
+	 */
+	private VariableDeclaration getArrayDeclaration()
+	{
+		return ((Assignment)getAncestorOfType(Assignment.class)).getAssignedNode().getDeclaration();
 	}
 	
 	/**

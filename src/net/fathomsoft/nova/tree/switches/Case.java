@@ -39,6 +39,12 @@ public class Case extends SwitchCase
 		return IDENTIFIER;
 	}
 	
+	/**
+	 * Get the {@link net.fathomsoft.nova.tree.switches.Fallthrough Fallthrough}
+	 * instance that is paired with this switch case (if a fallthrough exists)
+	 * 
+	 * @return The Fallthrough instance.
+	 */
 	public Fallthrough getFallthrough()
 	{
 		if (getScope().getLastVisibleChild() instanceof Fallthrough)
@@ -49,11 +55,25 @@ public class Case extends SwitchCase
 		return null;
 	}
 	
+	/**
+	 * Get whether or not the specified switch case contains a fallthrough.
+	 * 
+	 * @return Whether or not it contains a fallthrough.
+	 */
 	public boolean containsFallthrough()
 	{
 		return getFallthrough() != null;
 	}
 	
+	/**
+	 * Get whether or not the specified switch case requires a break
+	 * statement in order to function properly. The only cases when this
+	 * method returns false is when the case contains a fallthrough or 
+	 * return statement.
+	 * 
+	 * @return Whether or not the case requires a break statement to
+	 * 		function correctly.
+	 */
 	public boolean requiresBreak()
 	{
 		return !containsFallthrough() && !(getScope().getLastChild() instanceof Return);
@@ -70,6 +90,21 @@ public class Case extends SwitchCase
 		super.addChild(node);
 	}
 	
+	/**
+	 * Get the value that the specified switch case occurs on.<br>
+	 * <br>
+	 * For example:<br>
+	 * <blockquote><pre>
+	 * switch (num)
+	 * 	case (value) ...
+	 * 	default ...</pre></blockquote>
+	 * On the line '<code>case (value)</code>' in the above switch statement, the
+	 * '<code><i>value</i></code>' component of the case statement is the
+	 * {@link net.fathomsoft.nova.tree.Value Value} Node that is returned from
+	 * this method.
+	 * 
+	 * @return The value that the specified case occurs on.
+	 */
 	public Value getValue()
 	{
 		return (Value)getChild(super.getNumDefaultChildren() + 0);
@@ -190,6 +225,14 @@ public class Case extends SwitchCase
 		return null;
 	}
 	
+	/**
+	 * Decode the Value that the switch case occurs on. For more
+	 * information on what the Value is, see {@link #getValue()}
+	 * 
+	 * @param contents The String containing the value to decode.
+	 * @param require Whether or not to throw an error if anything goes wrong.
+	 * @return Whether or not the contents were decoded successfully.
+	 */
 	public boolean decodeContents(String contents, boolean require)
 	{
 		Value value = SyntaxTree.decodeValue(getParent(), contents, getLocationIn().asNew(), require);
