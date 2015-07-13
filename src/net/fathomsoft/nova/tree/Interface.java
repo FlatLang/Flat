@@ -10,7 +10,7 @@ import net.fathomsoft.nova.util.StringUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.2.38 Nov 26, 2014 at 7:17:45 PM
- * @version	v0.2.38 Dec 6, 2014 at 5:19:17 PM
+ * @version	v0.2.44 Jul 13, 2015 at 1:28:17 AM
  */
 public class Interface extends ClassDeclaration
 {
@@ -40,6 +40,15 @@ public class Interface extends ClassDeclaration
 	public String getExtendedClassLocation()
 	{
 		return null;
+	}
+	
+	/**
+	 * @see net.fathomsoft.nova.tree.ClassDeclaration#generateCSource(java.lang.StringBuilder)
+	 */
+	@Override
+	public StringBuilder generateCSource(StringBuilder builder)
+	{
+		return super.generateCSource(builder);
 	}
 	
 	/**
