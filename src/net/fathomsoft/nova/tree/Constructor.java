@@ -15,7 +15,7 @@ import net.fathomsoft.nova.util.Stack;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:50:47 PM
- * @version	v0.2.41 Dec 17, 2014 at 7:48:17 PM
+ * @version	v0.2.44 Jul 13, 2015 at 1:28:17 AM
  */
 public class Constructor extends BodyMethodDeclaration
 {
@@ -40,6 +40,15 @@ public class Constructor extends BodyMethodDeclaration
 	public boolean isInstance()
 	{
 		return true;
+	}
+	
+	/**
+	 * @see net.fathomsoft.nova.tree.NovaMethodDeclaration#generateNovaInput(java.lang.StringBuilder, boolean)
+	 */
+	@Override
+	public StringBuilder generateNovaInput(StringBuilder builder, boolean outputChildren)
+	{
+		return super.generateNovaInput(builder, outputChildren, false);
 	}
 	
 	/**
