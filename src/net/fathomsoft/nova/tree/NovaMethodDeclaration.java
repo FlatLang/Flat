@@ -23,7 +23,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.2.21 Jul 30, 2014 at 1:45:00 PM
- * @version	v0.2.41 Dec 17, 2014 at 7:48:17 PM
+ * @version	v0.2.44 Jul 13, 2015 at 1:28:17 AM
  */
 public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAncestor
 {
@@ -430,6 +430,11 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 	@Override
 	public StringBuilder generateNovaInput(StringBuilder builder, boolean outputChildren)
 	{
+		return generateNovaInput(builder, outputChildren);
+	}
+	
+	public StringBuilder generateNovaInput(StringBuilder builder, boolean outputChildren, boolean outputType)
+	{
 		builder.append(getVisibilityText());
 		
 		if (!isInstance())
@@ -443,7 +448,7 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 		getParameterList().generateNovaInput(builder, true);
 		builder.append(')');
 		
-		if (getType() != null)
+		if (outputType && getType() != null)
 		{
 			builder.append(" -> ").append(getType());
 		}
