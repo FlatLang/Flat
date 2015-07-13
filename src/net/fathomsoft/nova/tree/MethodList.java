@@ -12,9 +12,9 @@ import net.fathomsoft.nova.util.Location;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 10:29:22 PM
- * @version	v0.2.38 Dec 6, 2014 at 5:19:17 PM
+ * @version	v0.2.44 Jul 13, 2015 at 1:28:17 AM
  */
-public class MethodList extends List
+public class MethodList extends TypeList<MethodDeclaration>
 {
 	/**
 	 * @see net.fathomsoft.nova.tree.Node#Node(Node, Location)
@@ -216,7 +216,9 @@ public class MethodList extends List
 	{
 		public boolean checkAncestor, checkStatic, staticValue, checkConstructors, checkProperties;
 		
-		public static final SearchFilter DEFAULT = new SearchFilter();
+		public String  className;
+		
+		private static final SearchFilter DEFAULT = new SearchFilter();
 		
 		public SearchFilter()
 		{
@@ -224,6 +226,13 @@ public class MethodList extends List
 			checkStatic       = false;
 			checkConstructors = true;
 			checkProperties   = false;
+		}
+		
+		public static final SearchFilter getDefault()
+		{
+			DEFAULT.className = null;
+			
+			return DEFAULT;
 		}
 		
 		public void checkStatic(boolean staticValue)
