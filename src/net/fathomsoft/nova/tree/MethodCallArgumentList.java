@@ -56,7 +56,7 @@ public class MethodCallArgumentList extends ArgumentList
 		builder.append('(');
 		
 		generateDefaultArguments(builder);
-		
+
 		for (int i = 0; i < getNumVisibleChildren(); i++)
 		{
 			if (i > 0)
@@ -80,7 +80,7 @@ public class MethodCallArgumentList extends ArgumentList
 			{
 				builder.append('(');
 			}
-			
+			Nova.debuggingBreakpoint(builder.toString().contains(" exceptionData, l0_Nova_end), exceptionData, nova_standard_Nova_String_1_Nova_construct(0, exceptionData"));
 			child.generateCSourceFragment(builder);
 			
 			if (!sameType)

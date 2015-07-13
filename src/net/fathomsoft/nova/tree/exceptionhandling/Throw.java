@@ -2,15 +2,12 @@ package net.fathomsoft.nova.tree.exceptionhandling;
 
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.error.SyntaxMessage;
-import net.fathomsoft.nova.tree.AccessorMethod;
 import net.fathomsoft.nova.tree.Identifier;
 import net.fathomsoft.nova.tree.Node;
 import net.fathomsoft.nova.tree.Scope;
 import net.fathomsoft.nova.tree.SyntaxTree;
 import net.fathomsoft.nova.util.Bounds;
 import net.fathomsoft.nova.util.Location;
-import net.fathomsoft.nova.util.Patterns;
-import net.fathomsoft.nova.util.Regex;
 import net.fathomsoft.nova.util.StringUtils;
 
 /**

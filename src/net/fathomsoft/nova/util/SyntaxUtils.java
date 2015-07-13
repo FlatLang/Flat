@@ -1958,8 +1958,6 @@ public class SyntaxUtils
 			
 			if (!Literal.isNullLiteral(given) && !isTypeCompatible(value, given, false))
 			{
-				getParameterGenericReturnType(param, given);
-				
 				SyntaxMessage.error("Incorrect type '" + given.getType() + "' given for required generic type of '" + value.getType() + "' type", given);
 				
 				return false;

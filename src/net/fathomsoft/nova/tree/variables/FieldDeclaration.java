@@ -319,7 +319,7 @@ public class FieldDeclaration extends InstanceDeclaration
 			}
 		}
 		
-		MethodDeclaration methods[] = getParentClass().getPropertyMethodList().getMethods(getName(), SearchFilter.DEFAULT);
+		MethodDeclaration methods[] = getParentClass().getPropertyMethodList().getMethods(getName(), SearchFilter.getDefault());
 		
 		if (methods.length > 0)
 		{
@@ -350,7 +350,7 @@ public class FieldDeclaration extends InstanceDeclaration
 			}
 		}
 		
-		MethodDeclaration methods[] = getParentClass().getPropertyMethodList().getMethods(getName(), SearchFilter.DEFAULT);
+		MethodDeclaration methods[] = getParentClass().getPropertyMethodList().getMethods(getName(), SearchFilter.getDefault());
 		
 		if (methods.length > 0)
 		{

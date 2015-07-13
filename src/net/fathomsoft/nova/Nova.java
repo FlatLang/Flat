@@ -78,7 +78,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:00:04 PM
- * @version	v0.2.43 Jan 16, 2015 at 11:59:17 AM
+ * @version	v0.2.44 Jul 13, 2015 at 1:28:17 AM
  */
 public class Nova
 {
@@ -137,7 +137,7 @@ public class Nova
 	public static final int		LINUX         = 3;
 	
 	public static final String	LANGUAGE_NAME = "Nova";
-	public static final String	VERSION       = "v0.2.43";
+	public static final String	VERSION       = "v0.2.44";
 	
 	/**
 	 * Find out which operating system the compiler is running on.
@@ -255,22 +255,23 @@ public class Nova
 			
 			args = new String[]
 			{
-//				formatPath(stability + "StabilityTest.nova"),
-//				formatPath(stability + "TimeStability.nova"),
-//				formatPath(stability + "FileStability.nova"),
-//				formatPath(stability + "ThreadStability.nova"),
-//				formatPath(stability + "ExceptionStability.nova"),
-//				formatPath(stability + "SyntaxStability.nova"),
-//				formatPath(stability + "ClosureStability.nova"),
-//				formatPath(stability + "PolymorphismStability.nova"),
-//				formatPath(stability + "PolymorphicSuperClass.nova"),
-//				formatPath(stability + "PolymorphicSubClass.nova"),
-//				formatPath(stability + "StabilityTestException.nova"),
-//				formatPath(stability + "StabilityExceptionHandler.nova"),
-//				formatPath(stability + "ThreadImplementation.nova"),
-//				formatPath(stability + "UnstableException.nova"),
-//				formatPath(stability + "NetworkStability.nova"),
-//				formatPath(stability + "ClientThread.nova"),
+				formatPath(stability + "StabilityTest.nova"),
+				formatPath(stability + "TimeStability.nova"),
+				formatPath(stability + "FileStability.nova"),
+				formatPath(stability + "ThreadStability.nova"),
+				formatPath(stability + "ExceptionStability.nova"),
+				formatPath(stability + "SyntaxStability.nova"),
+				formatPath(stability + "ClosureStability.nova"),
+				formatPath(stability + "PolymorphismStability.nova"),
+				formatPath(stability + "PolymorphicSuperClass.nova"),
+				formatPath(stability + "PolymorphicSubClass.nova"),
+				formatPath(stability + "StabilityTestException.nova"),
+				formatPath(stability + "StabilityExceptionHandler.nova"),
+				formatPath(stability + "ThreadImplementation.nova"),
+				formatPath(stability + "UnstableException.nova"),
+				formatPath(stability + "NetworkStability.nova"),
+				formatPath(stability + "ClientThread.nova"),
+				formatPath(stability + "StabilityTestCase.nova"),
 //				formatPath(directory + "network/OutputThread.nova"),
 //				formatPath(directory + "network/ConnectionThread.nova"),
 //				formatPath(directory + "network/ServerDemo.nova"),
@@ -285,7 +286,7 @@ public class Nova
 //				formatPath(root      + "bank/ClientConnectionThread.nova"),
 //				formatPath(root      + "bank/ClientInputThread.nova"),
 //				formatPath(directory + "ackermann/Ackermann.nova"),
-				formatPath(directory + "Lab.nova"),
+//				formatPath(directory + "Lab.nova"),
 //				formatPath(directory + "copy/Dog.nova"),
 //				formatPath(directory + "T1.nova"),
 //				formatPath(directory + "T2.nova"),
