@@ -23,7 +23,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 10:04:31 PM
- * @version	v0.2.41 Dec 17, 2014 at 7:48:17 PM
+ * @version	v0.2.44 Jul 13, 2015 at 1:28:17 AM
  */
 public class MethodCall extends Variable
 {
@@ -451,7 +451,7 @@ public class MethodCall extends Variable
 	{
 		VariableDeclaration method   = getMethodDeclaration();
 		CallableMethod      callable = (CallableMethod)method;
-		
+		Nova.debuggingBreakpoint(getName().equals("test"));
 		if (callable.isVirtual() && !isVirtualTypeKnown())
 		{
 			NovaMethodDeclaration novaMethod = (NovaMethodDeclaration)method;
@@ -460,6 +460,8 @@ public class MethodCall extends Variable
 			{
 				builder.append(ParameterList.OBJECT_REFERENCE_IDENTIFIER).append("->");
 			}
+			
+			if(getParent() instanceof Variable)((Variable)getParent()).isSpecialFragment();
 			
 			builder.append(VTable.IDENTIFIER).append("->");
 			
@@ -476,7 +478,7 @@ public class MethodCall extends Variable
 		}
 		
 		builder.append(getArgumentList().generateCSource());
-		
+		Nova.debuggingBreakpoint(builder.toString().equals("(nova_standard_Nova_String_1_Nova_construct(0, exceptionData, \", \"), exceptionData, nova_standard_Nova_String_0_Nova_concat(nova_standard_primitive_number_Nova_Int_1_Nova_toString(0, exceptionData, l0_Nova_end), exceptionData, nova_standard_Nova_String_1_Nova_construct(0, exceptionData, \"] are invalid\"))"));
 		if (isGenericType() && doesAccess())
 		{
 			builder.append(')');
@@ -1058,7 +1060,7 @@ public class MethodCall extends Variable
 			{
 				Variable var = (Variable)accessing;
 				
-				if (var.isPrimitiveType())
+				if (var.isPrimitiveType() && var.getTypeClass() != null)
 				{
 					SearchFilter filter  = new SearchFilter();
 					filter.checkAncestor = false;
