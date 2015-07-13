@@ -18,7 +18,7 @@ import net.fathomsoft.nova.util.StringUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.2.29 Aug 28, 2014 at 11:51:16 PM
- * @version	v0.2.41 Dec 17, 2014 at 7:48:17 PM
+ * @version	v0.2.44 Jul 13, 2015 at 1:28:17 AM
  */
 public interface GenericCompatible
 {
@@ -30,7 +30,7 @@ public interface GenericCompatible
 	 * declarations.<br>
 	 * For example:
 	 * <blockquote><pre>
-	 * public class Map<Key, Value>
+	 * public class Map&lt;Key, Value&gt;
 	 * {
 	 * 	
 	 * }</pre></blockquote>
