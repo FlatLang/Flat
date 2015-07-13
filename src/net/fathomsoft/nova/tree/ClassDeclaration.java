@@ -25,7 +25,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:15:51 PM
- * @version	v0.2.41 Dec 17, 2014 at 7:48:17 PM
+ * @version	v0.2.44 Jul 13, 2015 at 1:28:17 AM
  */
 public class ClassDeclaration extends InstanceDeclaration
 {
@@ -343,7 +343,7 @@ public class ClassDeclaration extends InstanceDeclaration
 				
 				if (method.getParentClass() == this && method.isVirtual())
 				{
-					if (interfaceOnly == method.getRootDeclaration().getParentClass() instanceof Interface)
+					if (!interfaceOnly || method.getRootDeclaration().getParentClass() instanceof Interface)
 					{
 						NovaMethodDeclaration existing = getMethod(method, methods);
 						
@@ -462,6 +462,10 @@ public class ClassDeclaration extends InstanceDeclaration
 		if (node == null)
 		{
 			return false;
+		}
+		else if (node.getClassLocation().equals(Nova.getClassLocation("Object")))
+		{
+			return true;
 		}
 		
 		ClassDeclaration clazz = this;
@@ -906,7 +910,7 @@ public class ClassDeclaration extends InstanceDeclaration
 	 */
 	public MethodDeclaration getMethod(String methodName, Value ... parameterTypes)
 	{
-		return getMethod(methodName, SearchFilter.DEFAULT, parameterTypes);
+		return getMethod(methodName, SearchFilter.getDefault(), parameterTypes);
 	}
 	
 	/**
@@ -946,7 +950,7 @@ public class ClassDeclaration extends InstanceDeclaration
 	 */
 	public MethodDeclaration[] getMethods(String methodName, int numParams)
 	{
-		return getMethods(methodName, numParams, SearchFilter.DEFAULT);
+		return getMethods(methodName, numParams, SearchFilter.getDefault());
 	}
 	
 	/**
@@ -1023,7 +1027,7 @@ public class ClassDeclaration extends InstanceDeclaration
 	 */
 	public MethodDeclaration[] getMethods(String methodName)
 	{
-		return getMethods(methodName, SearchFilter.DEFAULT);
+		return getMethods(methodName, SearchFilter.getDefault());
 	}
 	
 	/**
@@ -1052,6 +1056,8 @@ public class ClassDeclaration extends InstanceDeclaration
 			return new MethodDeclaration[0];
 		}
 		
+		if (filter.className == null) filter.className = getName();
+		
 		ArrayList<MethodDeclaration> output = new ArrayList<MethodDeclaration>();
 		
 		if (methodName.equals(InitializationMethod.SUPER_IDENTIFIER))
@@ -1071,7 +1077,7 @@ public class ClassDeclaration extends InstanceDeclaration
 			addMethods(output, getPropertyMethodList().getMethods(methodName, filter));
 		}
 		
-		if (filter.checkConstructors && methodName.equals(getName()))
+		if (filter.checkConstructors && methodName.equals(filter.className))
 		{
 			addMethods(output, getConstructorList().getMethods(Constructor.IDENTIFIER, filter));
 		}
@@ -1082,7 +1088,7 @@ public class ClassDeclaration extends InstanceDeclaration
 		
 		if (filter.checkAncestor && getExtendedClassLocation() != null)
 		{
-			addMethods(output, getExtendedClass().getMethods(methodName));
+			addMethods(output, getExtendedClass().getMethods(methodName, filter));
 		}
 		
 		for (Interface inter : getImplementedClasses())
@@ -1448,6 +1454,52 @@ public class ClassDeclaration extends InstanceDeclaration
 		}
 		
 		return methods.toArray(new MethodDeclaration[0]);
+	}
+	
+	public boolean containsComplexConstructors()
+	{
+		for (MethodDeclaration c : getConstructorList())
+		{
+			if (c.getParameterList().getNumParameters() > 0)
+			{
+				return true;
+			}
+		}
+		
+		return false;
+	}
+	
+	public Constructor[] getComplexConstructors()
+	{
+		ArrayList<Constructor> cs = new ArrayList<Constructor>();
+		
+		for (MethodDeclaration c : getConstructorList())
+		{
+			if (c.getParameterList().getNumParameters() > 0)
+			{
+				cs.add((Constructor)c);
+			}
+		}
+		
+		return cs.toArray(new Constructor[0]);
+	}
+	
+	public boolean containsSimilarConstructor(Constructor c, boolean checkAncestors)
+	{
+		for (MethodDeclaration m : getConstructorList())
+		{
+			if (m.areCompatibleParameterTypes(c.getParameterList().getTypes()))
+			{
+				return true;
+			}
+		}
+		
+		if (checkAncestors && doesExtendClass())
+		{
+			return getExtendedClass().containsSimilarConstructor(c, checkAncestors);
+		}
+		
+		return false;
 	}
 	
 	public String getNativeLocation()
@@ -1995,6 +2047,55 @@ public class ClassDeclaration extends InstanceDeclaration
 		
 	}
 	
+	private void validateConstructors(int phase)
+	{
+		if (doesExtendClass() && getExtendedClass().containsComplexConstructors())
+		{
+			Constructor[] cs = getExtendedClass().getComplexConstructors();
+			
+			for (Constructor c : cs)
+			{
+				if (!containsSimilarConstructor(c, false))
+				{
+					Value[] types = c.getParameterList().getTypes();
+					
+					for (Value type : types)
+					{
+						if (!getFileDeclaration().containsImport(type.getTypeClassLocation()))
+						{
+							getFileDeclaration().addImport(type.getTypeClassLocation());
+						}
+					}
+					
+					Constructor con = Constructor.decodeStatement(this, c.generateNovaInput(false).toString(), Location.INVALID, true);
+					//con.setVisibility(PRIVATE);
+					
+					for (int i = 0; i < c.getParameterList().getNumParameters(); i++)
+					{
+						Parameter param = c.getParameter(i);
+						
+						if (param.isGenericType())
+						{
+							con.getParameter(i).setType(param.getGenericReturnType());
+						}
+					}
+					
+					addChild(con);
+				}
+			}
+			
+//			if (!containsConstructor())
+//			{
+//				SyntaxMessage.error("Must define a constructor for class '" + getName() + "' because it's super class '" + getExtendedClassName() + "' contains a complex constructor.", this);
+//			}
+		}
+		
+		if (!containsConstructor())
+		{
+			addChild(Constructor.decodeStatement(this, "public construct()", Location.INVALID, true));
+		}
+	}
+	
 	/**
 	 * Make sure that the methods are all valid
 	 * 
@@ -2002,10 +2103,7 @@ public class ClassDeclaration extends InstanceDeclaration
 	 */
 	private void validateMethods(int phase)
 	{
-		if (!containsConstructor())
-		{
-			addChild(Constructor.decodeStatement(this, "public construct()", Location.INVALID, true));
-		}
+		validateConstructors(phase);
 		
 		if (!containsDestructor())
 		{
