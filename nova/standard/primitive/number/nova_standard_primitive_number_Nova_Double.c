@@ -5,26 +5,23 @@
 nova_standard_primitive_number_Extension_VTable_Double nova_standard_primitive_number_Extension_VTable_Double_val =
 {
 	{
+		(nova_standard_Nova_Object*(*)(nova_standard_operators_Nova_Multipliable*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*))nova_standard_primitive_number_Nova_Double_1_Nova_multiply,
 		0,
 		0,
 		0,
 		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
+		(nova_standard_Nova_Object*(*)(nova_standard_datastruct_Nova_Comparable*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*))nova_standard_primitive_number_Nova_Double_0_Nova_compareTo,
 		0,
 		0,
 		0,
 		0,
 	},
-	nova_standard_Nova_Object_3_Nova_getHashCodeLong,
+	nova_standard_Nova_Object_0_Nova_getHashCodeLong,
 	nova_standard_primitive_number_Nova_Double_2_Nova_toString,
 	nova_standard_Nova_Object_0_Nova_equals,
 	nova_standard_primitive_number_Nova_Double_0_Nova_numDigits,
+	nova_standard_primitive_number_Nova_Double_0_Nova_compareTo,
+	nova_standard_primitive_number_Nova_Double_1_Nova_multiply,
 };
 
 
@@ -184,6 +181,22 @@ double nova_standard_primitive_number_Nova_Double_Nova_parseDouble(nova_standard
 	char* l1_Nova_pEnd;
 	
 	return (double)strtod((char*)(l0_Nova_str->nova_standard_Nova_String_Nova_chars), (char**)&(l1_Nova_pEnd));
+}
+
+double nova_standard_primitive_number_Nova_Double_0_Nova_compareTo(nova_standard_primitive_number_Nova_Double* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_primitive_number_Nova_Double* l0_Nova_prim)
+{
+	double l1_Nova_other;
+	
+	l1_Nova_other = l0_Nova_prim->nova_standard_primitive_number_Nova_Double_Nova_value;
+	return this->nova_standard_primitive_number_Nova_Double_Nova_value - l1_Nova_other;
+}
+
+double nova_standard_primitive_number_Nova_Double_1_Nova_multiply(nova_standard_primitive_number_Nova_Double* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_primitive_number_Nova_Double* l0_Nova_prim)
+{
+	double l1_Nova_value;
+	
+	l1_Nova_value = l0_Nova_prim->nova_standard_primitive_number_Nova_Double_Nova_value;
+	return this->nova_standard_primitive_number_Nova_Double_Nova_value * l1_Nova_value;
 }
 
 void nova_standard_primitive_number_Nova_Double_4_Nova_super(nova_standard_primitive_number_Nova_Double* this, nova_standard_exception_Nova_ExceptionData* exceptionData)

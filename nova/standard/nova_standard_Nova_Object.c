@@ -15,13 +15,8 @@ nova_standard_Extension_VTable_Object nova_standard_Extension_VTable_Object_val 
 		0,
 		0,
 		0,
-		0,
-		0,
-		0,
-		0,
-		0,
 	},
-	nova_standard_Nova_Object_3_Nova_getHashCodeLong,
+	nova_standard_Nova_Object_0_Nova_getHashCodeLong,
 	nova_standard_Nova_Object_0_Nova_toString,
 	nova_standard_Nova_Object_0_Nova_equals,
 };
@@ -62,7 +57,7 @@ nova_standard_Nova_String* nova_standard_Nova_Object_Nova_getHashCode(nova_stand
 	return nova_standard_Nova_String_1_Nova_construct(0, exceptionData, (char*)(hashCode(this)));
 }
 
-long nova_standard_Nova_Object_3_Nova_getHashCodeLong(nova_standard_Nova_Object* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
+long nova_standard_Nova_Object_0_Nova_getHashCodeLong(nova_standard_Nova_Object* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
 	return (long)strtol(hashCode(this), (int)(0), (int)(16));
 }

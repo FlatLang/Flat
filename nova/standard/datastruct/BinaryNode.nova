@@ -1,6 +1,6 @@
 package "nova/standard/datastruct"
 
-public class BinaryNode<E extends Comparable<BinaryNode>> extends Node
+public class BinaryNode<E> extends Node
 {
 	/**
 	 * The left child of the BinaryNode instance.
@@ -53,7 +53,9 @@ public class BinaryNode<E extends Comparable<BinaryNode>> extends Node
 	
 	public addChild(E data)
 	{
-		if (data.compareTo(this.data) < 0)
+		Comparable<E> temp = (Comparable)this.data
+		
+		if (temp.compareTo(data) < 0)
 		{
 			if (left == null)
 				left = new BinaryNode(data)

@@ -2,6 +2,7 @@ Line counter regex: (^|\n)[\t\r ]*[A-Za-z0-9_]
 Comment counter regex: \n[\t\r ]*[/]?[*]+[^/][^\n]*[\S]+
 Total line number count: ((^|\n)[\t\r ]*[A-Za-z0-9_])|(\n[\t\r ]*[/]?[*]+[^/][^\n]*[\S]+)
 Whitespace count: (^|\n)([{}/*\s]*?(\n|$))
+Required comment regex: (\})\s+(private|public)\s+
 
 Pre v0.2.13:
 Code: 6687 - 56%

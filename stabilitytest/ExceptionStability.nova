@@ -1,8 +1,8 @@
 package "stabilitytest"
 
-public class ExceptionStability
+public class ExceptionStability extends StabilityTestCase
 {
-	public static test(StabilityTest program)
+	public test()
 	{
 		Console.writeLine("Checking Exception handling...")
 		
@@ -10,7 +10,7 @@ public class ExceptionStability
 		
 		try
 		{
-			testException(program)
+			testException()
 		}
 		catch (Exception e)
 		{
@@ -23,7 +23,7 @@ public class ExceptionStability
 		}
 	}
 	
-	static testException(StabilityTest program)
+	testException()
 	{
 		Bool worked = false
 		

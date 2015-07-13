@@ -33,9 +33,7 @@ typedef struct nova_standard_operators_Extension_VTable_Multipliable nova_standa
 struct nova_standard_operators_Extension_VTable_Multipliable
 {
 	nova_Interface_VTable itable;
-	long (*nova_standard_Nova_Object_virtual3_Nova_getHashCodeLong)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*);
-	nova_standard_Nova_String* (*nova_standard_Nova_Object_virtual0_Nova_toString)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*);
-	char (*nova_standard_Nova_Object_virtual0_Nova_equals)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*);
+	nova_standard_Nova_Object* (*nova_standard_operators_Nova_Multipliable_virtual1_Nova_multiply)(nova_standard_operators_Nova_Multipliable*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*);
 };
 
 extern nova_standard_operators_Extension_VTable_Multipliable nova_standard_operators_Extension_VTable_Multipliable_val;

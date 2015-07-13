@@ -2,22 +2,22 @@ package "stabilitytest"
 
 import "nova/standard/thread/Thread"
 
-public class ThreadStability
+public class ThreadStability extends StabilityTestCase
 {
-	public static test(StabilityTest program)
+	public test()
 	{
 		Console.writeLine("Checking Thread.nova with 20 Threads... ")
 		
 		ThreadImplementation threads[] = new ThreadImplementation[20]
 		
-		createThreads(program, threads, 20)
+		createThreads(threads, 20)
 		
 		checkMemoryAccess()
 		
 		joinThreads(threads, 20)
 	}
 	
-	static createThreads(StabilityTest program, ThreadImplementation threads[], Int amount)
+	createThreads(ThreadImplementation threads[], Int amount)
 	{
 		StabilityExceptionHandler handler = new StabilityExceptionHandler(program)
 		

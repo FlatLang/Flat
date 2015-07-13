@@ -36,7 +36,7 @@ typedef struct nova_standard_datastruct_Extension_VTable_BinaryNode nova_standar
 struct nova_standard_datastruct_Extension_VTable_BinaryNode
 {
 	nova_Interface_VTable itable;
-	long (*nova_standard_Nova_Object_virtual3_Nova_getHashCodeLong)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*);
+	long (*nova_standard_Nova_Object_virtual0_Nova_getHashCodeLong)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*);
 	nova_standard_Nova_String* (*nova_standard_datastruct_Nova_Node_virtual0_Nova_toString)(nova_standard_datastruct_Nova_Node*, nova_standard_exception_Nova_ExceptionData*);
 	char (*nova_standard_Nova_Object_virtual0_Nova_equals)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*);
 	nova_standard_Nova_String* (*nova_standard_datastruct_Nova_BinaryNode_virtual_Nova_preorder)(nova_standard_datastruct_Nova_BinaryNode*, nova_standard_exception_Nova_ExceptionData*);

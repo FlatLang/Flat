@@ -15,13 +15,8 @@ example_Extension_VTable_Lab example_Extension_VTable_Lab_val =
 				0,
 				0,
 				0,
-				0,
-				0,
-				0,
-				0,
-				0,
 		},
-		nova_standard_Nova_Object_3_Nova_getHashCodeLong,
+		nova_standard_Nova_Object_0_Nova_getHashCodeLong,
 		nova_standard_Nova_Object_0_Nova_toString,
 		nova_standard_Nova_Object_0_Nova_equals,
 };
@@ -103,7 +98,7 @@ int main(int argc, char** argvs)
 		
 		novaEnv.nova_standard_String.concat__nova_standard_String = nova_standard_Extension_VTable_String_val.nova_standard_Nova_String_virtual0_Nova_concat;
 		novaEnv.nova_standard_String.toString = nova_standard_Extension_VTable_String_val.nova_standard_Nova_String_virtual0_Nova_toString;
-		novaEnv.nova_standard_Object.getHashCodeLong = nova_standard_Extension_VTable_Object_val.nova_standard_Nova_Object_virtual3_Nova_getHashCodeLong;
+		novaEnv.nova_standard_Object.getHashCodeLong = nova_standard_Extension_VTable_Object_val.nova_standard_Nova_Object_virtual0_Nova_getHashCodeLong;
 		novaEnv.nova_standard_Object.toString = nova_standard_Extension_VTable_Object_val.nova_standard_Nova_Object_virtual0_Nova_toString;
 		novaEnv.nova_standard_Object.equals__nova_standard_Object = nova_standard_Extension_VTable_Object_val.nova_standard_Nova_Object_virtual0_Nova_equals;
 		novaEnv.nova_standard_math_NumericOperand.toString = nova_standard_math_Extension_VTable_NumericOperand_val.nova_standard_math_Nova_NumericOperand_virtual0_Nova_toString;

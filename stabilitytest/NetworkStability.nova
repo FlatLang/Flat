@@ -4,17 +4,17 @@ import "nova/standard/network/ServerSocket"
 import "nova/standard/network/ClientSocket"
 import "nova/standard/network/ConnectionSocket"
 
-public class NetworkStability
+public class NetworkStability extends StabilityTestCase
 {
 	visible static String received = "THIS IS THE STRING THAT SHOULD BE RECEIVEDTHIS IS THE STRING THAT SHOULD BE RECEIVEDTHIS IS THE STRING THAT SHOULD BE RECEIVEDTHIS IS THE STRING THAT SHOULD BE RECEIVEDTHIS IS THE STRING THAT SHOULD BE RECEIVEDTHIS IS THE STRING THAT SHOULD BE RECEIVEDTHIS IS THE STRING THAT SHOULD BE RECEIVED"
 	
-	public static test(StabilityTest program)
+	public test()
 	{
 		Console.writeLine("Checking network stability...")
 		
 		Int port = 24243
 		
-		ServerSocket server = createServer(program, port)
+		ServerSocket server = createServer( port)
 		
 		ClientThread thread = new ClientThread(program, port)
 		
@@ -57,7 +57,7 @@ public class NetworkStability
 		Console.writeLine("OK")
 	}
 	
-	static createServer(StabilityTest program, Int port) -> ServerSocket
+	createServer(Int port) -> ServerSocket
 	{
 		ServerSocket server = new ServerSocket()
 		

@@ -10,12 +10,7 @@ nova_standard_primitive_number_Extension_VTable_Int nova_standard_primitive_numb
 		0,
 		0,
 		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		(int(*)(nova_standard_datastruct_Nova_Comparable*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*))nova_standard_primitive_number_Nova_Int_0_Nova_compareTo,
+		(nova_standard_Nova_Object*(*)(nova_standard_datastruct_Nova_Comparable*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*))nova_standard_primitive_number_Nova_Int_0_Nova_compareTo,
 		0,
 		0,
 		0,
@@ -25,6 +20,8 @@ nova_standard_primitive_number_Extension_VTable_Int nova_standard_primitive_numb
 	nova_standard_primitive_number_Nova_Int_2_Nova_toString,
 	nova_standard_Nova_Object_0_Nova_equals,
 	nova_standard_primitive_number_Nova_Int_0_Nova_numDigits,
+	nova_standard_primitive_number_Nova_Int_0_Nova_compareTo,
+	nova_standard_primitive_number_Nova_Int_1_Nova_multiply,
 };
 
 

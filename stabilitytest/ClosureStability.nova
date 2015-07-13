@@ -1,6 +1,6 @@
 package "stabilitytest"
 
-public class ClosureStability
+public class ClosureStability extends StabilityTestCase
 {
 	static Double TOLERANCE
 	
@@ -11,22 +11,22 @@ public class ClosureStability
 		number++
 	}
 	
-	public static test(StabilityTest program)
+	public test()
 	{
 		TOLERANCE = 0.0000000001
 		
-		testClosures(program)
+		testClosures()
 	}
 	
-	static testClosures(StabilityTest program)
+	testClosures()
 	{
 		Console.writeLine("Testing closures...")
 		
-		testMathClosures(program)
-		testInstanceClosure(program)
+		testMathClosures()
+		testInstanceClosure()
 	}
 	
-	static testMathClosures(StabilityTest program)
+	testMathClosures()
 	{
 		Console.write("Testing static math closures... ")
 		
@@ -50,11 +50,11 @@ public class ClosureStability
 		Console.writeLine("OK")
 	}
 	
-	static testInstanceClosure(StabilityTest program)
+	testInstanceClosure()
 	{
 		Console.write("Testing instance closures... ")
 		
-		ClosureStability c = new ClosureStability()
+		ClosureStability c = new ClosureStability(program)
 		
 		instanceClosure(c.incrementNumber)
 		
@@ -63,7 +63,7 @@ public class ClosureStability
 			program.fail("Failed to call incrementNumber() instance closure")
 		}
 		
-		instanceClosure(new ClosureStability().incrementNumber)
+		instanceClosure(new ClosureStability(program).incrementNumber)
 		instanceClosure(c.incrementNumber)
 		
 		Console.writeLine("OK")

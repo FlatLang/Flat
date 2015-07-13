@@ -1,16 +1,16 @@
 package "stabilitytest"
 
-public class PolymorphismStability
+public class PolymorphismStability extends StabilityTestCase
 {
-	public static test(StabilityTest program)
+	public test()
 	{
 		Console.writeLine("Checking Polymorphism stability...")
 		
-		testCalls(program)
-		testClosure(program)
+		testCalls()
+		testClosure()
 	}
 	
-	static testCalls(StabilityTest program)
+	testCalls()
 	{
 		Console.write("Checking polymorphic method calls... ")
 		
@@ -30,7 +30,7 @@ public class PolymorphismStability
 		return obj.toString().equals("sub class")
 	}
 	
-	static testClosure(StabilityTest program)
+	testClosure()
 	{
 		Console.write("Checking polymorphic closure method calls... ")
 		

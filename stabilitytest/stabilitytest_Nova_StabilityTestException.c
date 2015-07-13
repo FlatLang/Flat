@@ -16,7 +16,7 @@ stabilitytest_Extension_VTable_StabilityTestException stabilitytest_Extension_VT
 		0,
 		0,
 	},
-	nova_standard_Nova_Object_1_Nova_getHashCodeLong,
+	nova_standard_Nova_Object_0_Nova_getHashCodeLong,
 	nova_standard_Nova_Object_0_Nova_toString,
 	nova_standard_Nova_Object_0_Nova_equals,
 };

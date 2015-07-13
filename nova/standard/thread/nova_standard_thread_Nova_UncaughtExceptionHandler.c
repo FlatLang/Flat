@@ -15,15 +15,11 @@ nova_standard_thread_Extension_VTable_UncaughtExceptionHandler nova_standard_thr
 		0,
 		0,
 		0,
-		0,
-		0,
-		0,
-		0,
-		0,
 	},
-	nova_standard_Nova_Object_3_Nova_getHashCodeLong,
+	nova_standard_Nova_Object_0_Nova_getHashCodeLong,
 	nova_standard_Nova_Object_0_Nova_toString,
 	nova_standard_Nova_Object_0_Nova_equals,
+	nova_standard_thread_Nova_UncaughtExceptionHandler_0_Nova_uncaughtException,
 };
 
 
@@ -63,7 +59,7 @@ void nova_standard_thread_Nova_UncaughtExceptionHandler_Nova_UncaughtExceptionHa
 {
 }
 
-void nova_standard_thread_Nova_UncaughtExceptionHandler_Nova_uncaughtException(nova_standard_thread_Nova_UncaughtExceptionHandler* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_thread_Nova_Thread* l0_Nova_thread, nova_standard_exception_Nova_Exception* l0_Nova_exception)
+void nova_standard_thread_Nova_UncaughtExceptionHandler_0_Nova_uncaughtException(nova_standard_thread_Nova_UncaughtExceptionHandler* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_thread_Nova_Thread* l0_Nova_thread, nova_standard_exception_Nova_Exception* l0_Nova_exception)
 {
 }
 

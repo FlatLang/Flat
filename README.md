@@ -7,7 +7,7 @@ The Nova programming language is a C-based language that compiles into portable 
 
 __Aim__
 
-  * Manage abstraction at a high level without a large performance hit.
+  * Manage abstraction at a high level without a noticeable performance hit.
   * Engineer an easy-to-integrate architecture for using C code within a project.
   * Ensure a smooth transition between running code on various operating systems.
   * Deliver a uniform exception handling environment.
@@ -45,7 +45,7 @@ __An Example command to compile a source__
 
 __Optional arguments to the Compiler Include__
 
-  * `-csource` Output the compiled C source files during compilation.
+  * `-csource` Output the compiled C source files to the console during compilation. Verbose must be enabled.
   * `-verbose` or `-v` Output debugging messages during compilation.
   * `-dir` Used to specify the directory in which to include in the compilation.
   * `-dry` Perform a dry-run of the compilation. Do not compile into an executable.

@@ -10,20 +10,13 @@ nova_standard_datastruct_Extension_VTable_Comparable nova_standard_datastruct_Ex
 		0,
 		0,
 		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		(int(*)(nova_standard_datastruct_Nova_Comparable*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*))nova_standard_datastruct_Nova_Comparable_0_Nova_compareTo,
+		(nova_standard_Nova_Object*(*)(nova_standard_datastruct_Nova_Comparable*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*))nova_standard_datastruct_Nova_Comparable_0_Nova_compareTo,
 		0,
 		0,
 		0,
 		0,
 	},
-	nova_standard_Nova_Object_3_Nova_getHashCodeLong,
-	nova_standard_Nova_Object_0_Nova_toString,
-	nova_standard_Nova_Object_0_Nova_equals,
+	nova_standard_datastruct_Nova_Comparable_0_Nova_compareTo,
 };
 
 
@@ -37,8 +30,6 @@ nova_standard_datastruct_Nova_Comparable* nova_standard_datastruct_Nova_Comparab
 {
 	CCLASS_NEW(nova_standard_datastruct_Nova_Comparable, this,);
 	this->vtable = &nova_standard_datastruct_Extension_VTable_Comparable_val;
-	nova_standard_Nova_Object_Nova_super((nova_standard_Nova_Object*)this, exceptionData);
-	nova_standard_Nova_Object_2_Nova_this((nova_standard_Nova_Object*)(this), exceptionData);
 	nova_standard_datastruct_Nova_Comparable_Nova_super(this, exceptionData);
 	
 	{
@@ -59,7 +50,7 @@ void nova_standard_datastruct_Nova_Comparable_Nova_destroy(nova_standard_datastr
 	NOVA_FREE(*this);
 }
 
-int nova_standard_datastruct_Nova_Comparable_0_Nova_compareTo(nova_standard_datastruct_Nova_Comparable* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_Nova_Object* l0_Nova_other){}
+nova_standard_Nova_Object* nova_standard_datastruct_Nova_Comparable_0_Nova_compareTo(nova_standard_datastruct_Nova_Comparable* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_Nova_Object* l0_Nova_other){}
 void nova_standard_datastruct_Nova_Comparable_5_Nova_this(nova_standard_datastruct_Nova_Comparable* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
 }

@@ -15,15 +15,8 @@ nova_standard_operators_Extension_VTable_Multipliable nova_standard_operators_Ex
 		0,
 		0,
 		0,
-		0,
-		0,
-		0,
-		0,
-		0,
 	},
-	nova_standard_Nova_Object_3_Nova_getHashCodeLong,
-	nova_standard_Nova_Object_0_Nova_toString,
-	nova_standard_Nova_Object_0_Nova_equals,
+	nova_standard_operators_Nova_Multipliable_1_Nova_multiply,
 };
 
 
@@ -37,8 +30,6 @@ nova_standard_operators_Nova_Multipliable* nova_standard_operators_Nova_Multipli
 {
 	CCLASS_NEW(nova_standard_operators_Nova_Multipliable, this,);
 	this->vtable = &nova_standard_operators_Extension_VTable_Multipliable_val;
-	nova_standard_Nova_Object_Nova_super((nova_standard_Nova_Object*)this, exceptionData);
-	nova_standard_Nova_Object_2_Nova_this((nova_standard_Nova_Object*)(this), exceptionData);
 	nova_standard_operators_Nova_Multipliable_Nova_super(this, exceptionData);
 	
 	{

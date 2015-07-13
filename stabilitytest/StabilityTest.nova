@@ -4,44 +4,49 @@ import "nova/standard/time/Time"
 import "nova/standard/thread/Thread"
 import "nova/standard/io/File"
 
-public class StabilityTest
+public class StabilityTest extends StabilityTestCase
 {
 	public static main(String args[])
 	{
-		StabilityTest test = new StabilityTest()
+		StabilityTest n = null
+		StabilityTest test = new StabilityTest(n)
 		
-		Long start  = Time.currentTimeMillis()
-		Int  result = test.runTests()
-		Long time   = Time.currentTimeMillis() - start
+		Long start = Time.currentTimeMillis()
+		
+		test.test()
+		
+		Long time = Time.currentTimeMillis() - start
 		
 //		if (args[1].equals("test"))
 //		System.execute("Executable.exe a")
 		
-		Console.writeLine("Took " + time + "ms")
+		Console.writeLine("Took " + time + "ms with " + millisOverhead + "ms overhead")
 		
 		Console.waitForEnter()
 	}
 	
-	public runTests() -> Int
+	public construct(StabilityTest program)
+	{
+		super(program)
+	}
+	
+	public test()
 	{
 		try
 		{
-			ExceptionStability.test(this)
-			TimeStability.test(this)
-			ThreadStability.test(this)
-			FileStability.test(this)
-			SyntaxStability.test(this)
-			ClosureStability.test(this)
-			PolymorphismStability.test(this)
-			NetworkStability.test(this)
+			new ExceptionStability(this).test()
+			new TimeStability(this).test()
+			new ThreadStability(this).test()
+			new FileStability(this).test()
+			new SyntaxStability(this).test()
+			new ClosureStability(this).test()
+			new PolymorphismStability(this).test()
+			new NetworkStability(this).test()
 			
 			Console.writeLine("All OK")
-			
-			return 0
 		}
 		catch (UnstableException e)
 		{
-			return 1
 		}
 	}
 	

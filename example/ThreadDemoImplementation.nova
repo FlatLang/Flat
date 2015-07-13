@@ -4,11 +4,11 @@ import "Thread"
 
 public class ThreadDemoImplementation extends Thread
 {
-	long	millis
+	Long	millis
 	
 	String	word
 	
-	public construct(long millis, String word)
+	public construct(Long millis, String word)
 	{
 		this.millis = millis
 		this.word   = word
@@ -16,7 +16,7 @@ public class ThreadDemoImplementation extends Thread
 	
 	public run()
 	{
-		for (int i = 0; i < 10; i++)
+		for (Int i = 0; i < 10; i++)
 		{
 			Console.writeLine(word)
 			

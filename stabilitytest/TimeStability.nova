@@ -3,9 +3,9 @@ package "stabilitytest"
 import "nova/standard/time/Time";
 import "nova/standard/thread/Thread";
 
-public class TimeStability
+public class TimeStability extends StabilityTestCase
 {
-	public static test(StabilityTest program)
+	public test()
 	{
 		Console.write("Checking Time.nova... ")
 		

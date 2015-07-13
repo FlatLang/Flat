@@ -3,13 +3,13 @@ package "stabilitytest"
 import "nova/standard/io/File"
 import "nova/standard/time/Time"
 
-public class FileStability
+public class FileStability extends StabilityTestCase
 {
 	static String inputString
 	
 	static Int lines
 	
-	public static test(StabilityTest program)
+	public test()
 	{
 		Console.writeLine("Checking File IO...")
 		
@@ -20,10 +20,10 @@ public class FileStability
 		{
 			File f = new File("temp" + Time.currentTimeMillis())
 			
-			createFile(program, f)
-			writeToFile(program, f)
-			readFromFile(program, f)
-			deleteFile(program, f)
+			createFile(f)
+			writeToFile(f)
+			readFromFile( f)
+			deleteFile(f)
 		}
 		catch (Exception e)
 		{
@@ -31,7 +31,7 @@ public class FileStability
 		}
 	}
 	
-	static createFile(StabilityTest program, File f)
+	createFile(File f)
 	{
 		Console.write("Creating file... ")
 		
@@ -43,7 +43,7 @@ public class FileStability
 		Console.writeLine("OK")
 	}
 	
-	static writeToFile(StabilityTest program, File f)
+	writeToFile(File f)
 	{
 		Console.write("Writing " + lines + " lines of data to file... ")
 		
@@ -55,7 +55,7 @@ public class FileStability
 		Console.writeLine("OK")
 	}
 	
-	static readFromFile(StabilityTest program, File f)
+	readFromFile(File f)
 	{
 		Console.write("Reading lines from file... ")
 		
@@ -84,7 +84,7 @@ public class FileStability
 		Console.writeLine("OK")
 	}
 	
-	static deleteFile(StabilityTest program, File f)
+	deleteFile(File f)
 	{
 		Console.write("Deleting file... ")
 		

@@ -34,9 +34,11 @@ typedef struct example_Extension_VTable_Square example_Extension_VTable_Square;
 struct example_Extension_VTable_Square
 {
 	nova_Interface_VTable itable;
-	long (*nova_standard_Nova_Object_virtual3_Nova_getHashCodeLong)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*);
+	long (*nova_standard_Nova_Object_virtual0_Nova_getHashCodeLong)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*);
 	nova_standard_Nova_String* (*nova_standard_Nova_Object_virtual0_Nova_toString)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*);
 	char (*nova_standard_Nova_Object_virtual0_Nova_equals)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*);
+	int (*example_Nova_Square_virtual_Nova_numberSides)(example_Nova_Square*, nova_standard_exception_Nova_ExceptionData*);
+	double (*example_Nova_Square_virtual_Nova_calculateArea)(example_Nova_Square*, nova_standard_exception_Nova_ExceptionData*);
 };
 
 extern example_Extension_VTable_Square example_Extension_VTable_Square_val;
@@ -51,9 +53,9 @@ CCLASS_CLASS
 )
 
 void example_Nova_SquareNova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData);
-example_Nova_Square* example_Nova_Square_Nova_construct(example_Nova_Square* this, nova_standard_exception_Nova_ExceptionData* exceptionData, int l0_Nova_sideLength);
+example_Nova_Square* example_Nova_Square_3_Nova_construct(example_Nova_Square* this, nova_standard_exception_Nova_ExceptionData* exceptionData, int l0_Nova_sideLength);
 void example_Nova_Square_Nova_destroy(example_Nova_Square** this, nova_standard_exception_Nova_ExceptionData* exceptionData);
-void example_Nova_Square_Nova_this(example_Nova_Square* this, nova_standard_exception_Nova_ExceptionData* exceptionData, int l0_Nova_sideLength);
+void example_Nova_Square_3_Nova_this(example_Nova_Square* this, nova_standard_exception_Nova_ExceptionData* exceptionData, int l0_Nova_sideLength);
 int example_Nova_Square_Nova_numberSides(example_Nova_Square* this, nova_standard_exception_Nova_ExceptionData* exceptionData);
 double example_Nova_Square_Nova_calculateArea(example_Nova_Square* this, nova_standard_exception_Nova_ExceptionData* exceptionData);
 void example_Nova_Square_Nova_super(example_Nova_Square* this, nova_standard_exception_Nova_ExceptionData* exceptionData);

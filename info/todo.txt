@@ -18,6 +18,7 @@ X Make sure there are no external method name collisions.
 * Check Java for inner-class inheritence of generic parameters.
 * Add support for virtual destructor calls. (For generic types)
 * Optimize UnaryOperation.containsUnaryOperator()
+* Fix embedded inline if statements.
 
 Remove the '0' exception in SyntaxUtils.validateCompatibleTypes()
 

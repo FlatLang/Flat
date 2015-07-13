@@ -1,16 +1,16 @@
 package "stabilitytest"
 
-public class SyntaxStability
+public class SyntaxStability extends StabilityTestCase
 {
-	public static test(StabilityTest program)
+	public test()
 	{
-		checkLoops(program)
-		checkUntil(program)
-		checkSwitchStatements(program)
-		checkMultipleReturnValues(program)
+		checkLoops()
+		checkUntil()
+		checkSwitchStatements()
+		checkMultipleReturnValues()
 	}
 	
-	static checkSwitchStatements(StabilityTest program)
+	checkSwitchStatements()
 	{
 		Console.write("Checking simple switch statement... ")
 		
@@ -170,13 +170,13 @@ public class SyntaxStability
 		Console.writeLine("OK")
 	}
 	
-	static checkLoops(StabilityTest program)
+	checkLoops()
 	{
-		checkWhileLoops(program)
-		checkForLoops(program)
+		checkWhileLoops()
+		checkForLoops()
 	}
 	
-	static checkWhileLoops(StabilityTest program)
+	checkWhileLoops()
 	{
 		Console.write("Checking inline while loop... ")
 		
@@ -204,7 +204,7 @@ public class SyntaxStability
 		Console.writeLine("OK")
 	}
 	
-	static checkForLoops(StabilityTest program)
+	checkForLoops()
 	{
 		Console.write("Checking inline for loop... ")
 		
@@ -232,7 +232,7 @@ public class SyntaxStability
 		Console.writeLine("OK")
 	}
 	
-	static checkUntil(StabilityTest program)
+	checkUntil()
 	{
 		Console.write("Checking until statement... ")
 		
@@ -287,7 +287,7 @@ public class SyntaxStability
 		return new Object()
 	}
 	
-	static checkMultipleReturnValues(StabilityTest program)
+	checkMultipleReturnValues()
 	{
 		Console.write("Checking methods with multiple return values... ")
 		

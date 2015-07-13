@@ -34,7 +34,7 @@ typedef struct stabilitytest_Extension_VTable_PolymorphicSuperClass stabilitytes
 struct stabilitytest_Extension_VTable_PolymorphicSuperClass
 {
 	nova_Interface_VTable itable;
-	long (*nova_standard_Nova_Object_virtual1_Nova_getHashCodeLong)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*);
+	long (*nova_standard_Nova_Object_virtual0_Nova_getHashCodeLong)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*);
 	nova_standard_Nova_String* (*stabilitytest_Nova_PolymorphicSuperClass_virtual0_Nova_toString)(stabilitytest_Nova_PolymorphicSuperClass*, nova_standard_exception_Nova_ExceptionData*);
 	char (*nova_standard_Nova_Object_virtual0_Nova_equals)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*);
 };
