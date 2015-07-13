@@ -17,7 +17,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.2.25 Aug 3, 2014 at 1:52:00 PM
- * @version	v0.2.38 Dec 6, 2014 at 5:19:17 PM
+ * @version	v0.2.44 Jul 13, 2015 at 1:28:17 AM
  */
 public class Cast extends IValue
 {
@@ -175,7 +175,7 @@ public class Cast extends IValue
 		
 		if (!getTypeClass().isRelatedTo(node.getReturnedNode().getTypeClass()))
 		{
-			SyntaxMessage.error("Cannot cast from type '" + node.getTypeClassName() + "' to type '" + getTypeClassName() + "'", this);
+			SyntaxMessage.error("Cannot cast from type '" + node.getReturnedNode().getTypeClassName() + "' to type '" + getTypeClassName() + "'", this);
 		}
 		
 		addChild(node);
