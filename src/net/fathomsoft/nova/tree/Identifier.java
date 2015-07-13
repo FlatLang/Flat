@@ -3,7 +3,6 @@ package net.fathomsoft.nova.tree;
 import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.error.SyntaxMessage;
-import net.fathomsoft.nova.error.UnimplementedOperationException;
 import net.fathomsoft.nova.tree.variables.Array;
 import net.fathomsoft.nova.tree.variables.FieldDeclaration;
 import net.fathomsoft.nova.tree.variables.Variable;
@@ -19,7 +18,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:00:19 PM
- * @version	v0.2.38 Dec 6, 2014 at 5:19:17 PM
+ * @version	v0.2.44 Jul 13, 2015 at 1:28:17 AM
  */
 public abstract class Identifier extends Value implements Accessible
 {
@@ -118,7 +117,7 @@ public abstract class Identifier extends Value implements Accessible
 		{
 			current = current.getAccessingNode();
 		}
-		
+
 		return ((Value)current).generateCSourceFragment(builder);
 	}
 	
@@ -187,7 +186,6 @@ public abstract class Identifier extends Value implements Accessible
 	public StringBuilder generateCSourceFragment(StringBuilder builder)
 	{
 		Node base = getBaseNode();
-		
 //		boolean leftHandVariable = base instanceof Assignment && ((Assignment)base).getAssigneeNode() == this;
 		
 		if (!isAccessed())
@@ -460,12 +458,15 @@ public abstract class Identifier extends Value implements Accessible
 		return builder.append(name);
 	}
 	
+	static int a;
+	
 	/**
 	 * @see net.fathomsoft.nova.tree.Value#isVirtualTypeKnown()
 	 */
 	@Override
 	public boolean isVirtualTypeKnown()
 	{
+		Nova.debuggingBreakpoint(a++ > 1029);
 		if (isAccessedWithinStaticContext())
 		{
 			return true;
@@ -475,7 +476,9 @@ public abstract class Identifier extends Value implements Accessible
 		{
 			if (getAccessingNode() instanceof Identifier)
 			{
-				return !((Identifier)getAccessingNode()).isInstance();
+				Identifier id = (Identifier)getAccessingNode();
+				
+				return !id.isInstance();
 			}
 		}
 		
