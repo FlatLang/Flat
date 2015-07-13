@@ -20,7 +20,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.1 Apr 3, 2014 at 7:53:35 PM
- * @version	v0.2.41 Dec 17, 2014 at 7:48:17 PM
+ * @version	v0.2.44 Jul 13, 2015 at 1:28:17 AM
  */
 public class Instantiation extends IIdentifier implements GenericCompatible
 {
@@ -131,6 +131,8 @@ public class Instantiation extends IIdentifier implements GenericCompatible
 	@Override
 	public StringBuilder generateCSourceFragment(StringBuilder builder)
 	{
+		Nova.debuggingBreakpoint(getName().equals("StabilityTestCase"));
+		
 		return getIdentifier().generateCSourceFragment(builder);
 	}
 	
