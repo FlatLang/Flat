@@ -251,11 +251,15 @@ public class BinaryOperation extends IValue
 			return preTest;
 		}
 		
-		Bounds operatorLoc = StringUtils.findStrings(statement, Operator.LOGICAL_OPERATORS);
+		Location operatorLoc    = new Location(location);
+		Bounds   operatorBounds = StringUtils.findStrings(statement, Operator.LOGICAL_OPERATORS);
+		
+		operatorLoc.setBounds(operatorBounds);
+		operatorLoc.setLineNumber(location.getLineNumber());
 		
 		try
 		{
-			if (operatorLoc.isValid())
+			if (operatorBounds.isValid())
 			{
 				BinaryOperation n = new BinaryOperation(parent, location);
 				
@@ -281,15 +285,15 @@ public class BinaryOperation extends IValue
 	 * 
 	 * @param statement The statement to translate into a BinaryOperation
 	 * 		if possible.
-	 * @param operatorLoc The Bounds of the operator in the operation.
+	 * @param operatorLoc The Location of the operator in the operation.
 	 * @param matcher The matcher for the statement.
 	 * @param require Whether or not to throw an error if anything goes wrong.
 	 */
-	private void decodeOperands(String statement, Bounds operatorLoc, Matcher matcher, boolean require)
+	private void decodeOperands(String statement, Location operatorLoc, Matcher matcher, boolean require)
 	{
 		Value lhn = decodeLeftOperand(statement, operatorLoc);
 		
-		if (!operatorLoc.isValid())
+		if (!operatorLoc.getBounds().isValid())
 		{
 			throw new BinarySyntaxException("Could not decode operation.");
 		}
@@ -457,10 +461,10 @@ public class BinaryOperation extends IValue
 	 * 
 	 * @param statement The statement to translate into a BinaryOperation
 	 * 		if possible.
-	 * @param operatorLoc The Bounds of the operator in the operation.
+	 * @param operatorLoc The Location of the operator in the operation.
 	 * @return The left hand operand.
 	 */
-	private Value decodeLeftOperand(String statement, Bounds operatorLoc)
+	private Value decodeLeftOperand(String statement, Location operatorLoc)
 	{
 		Value  lhn = null;
 		Bounds lhb = new Bounds(0, StringUtils.findNextNonWhitespaceIndex(statement, operatorLoc.getStart() - 1, -1) + 1);
@@ -480,12 +484,13 @@ public class BinaryOperation extends IValue
 			
 			int offset = lhn.getLocationIn().getEnd() - location.getStart();
 			
-			StringUtils.findStrings(statement, Operator.LOGICAL_OPERATORS, offset).cloneTo(operatorLoc);
+			operatorLoc.setBounds(StringUtils.findStrings(statement, Operator.LOGICAL_OPERATORS, offset));
 		}
 		else
 		{
 			Location lhl = location.asNew();
 			lhl.setBounds(lhb);
+			lhl.setLineNumber(operatorLoc.getLineNumber());
 			
 			// The left-hand value.
 			String lhv = lhb.extractString(statement);
@@ -518,12 +523,12 @@ public class BinaryOperation extends IValue
 	 * 
 	 * @param statement The statement to translate into a BinaryOperation
 	 * 		if possible.
-	 * @param operatorLoc The Bounds of the operator in the operation.
+	 * @param operatorLoc The Location of the operator in the operation.
 	 * @param matcher The matcher for the statement.
 	 * @param require Whether or not to throw an error if anything goes wrong.
 	 * @return The right operand.
 	 */
-	private Value decodeRightOperand(String statement, Bounds operatorLoc, Matcher matcher, boolean require)
+	private Value decodeRightOperand(String statement, Location operatorLoc, Matcher matcher, boolean require)
 	{
 		int rhIndex = StringUtils.findNextNonWhitespaceIndex(statement, operatorLoc.getEnd());
 		
@@ -567,7 +572,10 @@ public class BinaryOperation extends IValue
 	 */
 	private static Value createNode(Node parent, String statement, Location location)
 	{
-		Value node = SyntaxTree.decodeValue(parent, statement, location.asNew(), false);
+		Location loc = location.asNew();
+		loc.setLineNumber(location.getLineNumber());
+		
+		Value node = SyntaxTree.decodeValue(parent, statement, loc, false);
 		
 		if (node instanceof Value == false)
 		{
