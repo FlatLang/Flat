@@ -354,14 +354,32 @@ public class Test
 		System.out.println("Done");
 	}
 	
-	private static class Com implements Comparable<Comparable<Com>>
+	private static class Com<E>
 	{
 
-		@Override
-		public int compareTo(Comparable<Com> arg0)
+		public Com(E e)
 		{
-			return 0;
 		}
+		
+		public Com(int j)
+		{
+			
+		}
+	}
+	
+	private static class A extends Com
+	{
+
+		/**
+		 * @param e
+		 */
+		public A(Object e)
+		{
+			super(e);
+			
+			A a = new A(5);
+		}
+		
 		
 	}
 }
