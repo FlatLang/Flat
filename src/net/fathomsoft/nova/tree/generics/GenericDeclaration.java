@@ -19,7 +19,7 @@ import net.fathomsoft.nova.util.StringUtils;
  * 
  * @author	Braden Steffaniak
  * @since	v0.2.40 Dec 7, 2014 at 4:05:23 PM
- * @version	v0.2.41 Dec 17, 2014 at 7:48:17 PM
+ * @version	v0.2.44 Jul 13, 2015 at 1:28:17 AM
  */
 public class GenericDeclaration extends TypeList<GenericParameter>
 {
@@ -107,21 +107,23 @@ public class GenericDeclaration extends TypeList<GenericParameter>
 		{
 			boolean failed = true;
 			
-			if (numWords == 3)
+			Bounds bounds     = StringUtils.findNextWordBounds(parameterName);
+			Bounds nextBounds = StringUtils.findNextWordBounds(parameterName, bounds.getEnd());
+			
+			if (nextBounds.extractString(parameterName).equals(EXTENDS_IDENTIFIER))
 			{
-				Bounds bounds     = StringUtils.findNextWordBounds(parameterName);
-				Bounds nextBounds = StringUtils.findNextWordBounds(parameterName, bounds.getEnd());
-				
-				if (nextBounds.extractString(parameterName).equals(EXTENDS_IDENTIFIER))
+				if (numWords == 3)
 				{
 					String defaultType = StringUtils.findNextWord(parameterName, nextBounds.getEnd());
 					
 					type.setDefaultType(defaultType);
 					
 					parameterName = bounds.extractString(parameterName);
-					
-					failed = false;
 				}
+				
+				
+				
+				failed = false;
 			}
 			
 			if (failed)
