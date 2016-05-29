@@ -7,14 +7,14 @@ The Nova programming language is a C-based language that compiles into portable 
 
 __Aim__
 
-  * Manage abstraction at a high level without a noticeable performance hit.
+  * Restore the intuitive nature of Object Oriented Programming by reducing the use of conventions.
+  * Include support for clear and concise documentation of code.
+  * Increase code reusability.
+  * Manage abstraction at a high level without a performance hit.
   * Engineer an easy-to-integrate architecture for using C code within a project.
   * Ensure a smooth transition between running code on various operating systems.
   * Deliver a uniform exception handling environment.
   * Simplify common tasks and concepts.
-  * Restore the intuitive nature of Object Oriented Programming by reducing the use of conventions.
-  * Include support for clear and concise documentation of code.
-  * Increase the ability to reuse code in future instances.
 
 
 
