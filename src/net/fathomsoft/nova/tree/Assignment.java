@@ -1,9 +1,12 @@
 package net.fathomsoft.nova.tree;
 
+import java.util.ArrayList;
+
 import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.error.SyntaxMessage;
+import net.fathomsoft.nova.error.UnimplementedOperationException;
 import net.fathomsoft.nova.tree.variables.ArrayAccess;
 import net.fathomsoft.nova.tree.variables.FieldDeclaration;
 import net.fathomsoft.nova.tree.variables.Super;
@@ -414,7 +417,27 @@ public class Assignment extends Node
 					return result.errorOccurred(this);
 				}
 				
-				if (!SyntaxUtils.areTypesCompatible(assignment.getTypes(), getAssigneeNodes().getTypes()))
+				ArrayList<GenericCompatible> contexts = new ArrayList<GenericCompatible>();
+				
+				for (int i = 0; i < getAssigneeNodes().getNumVisibleChildren(); i++)
+				{
+					Node node = getAssigneeNodes().getVisibleChild(i);
+					
+					if (node instanceof Variable)
+					{
+						contexts.add(((Variable)node).getDeclaration());
+					}
+					else if (node instanceof GenericCompatible)
+					{
+						contexts.add((GenericCompatible)node);
+					}
+					else
+					{
+						throw new UnimplementedOperationException("type not implemented.");
+					}
+				}
+				
+				if (!SyntaxUtils.areTypesCompatible(contexts.toArray(new GenericCompatible[0]), assignment.getTypes(), getAssigneeNodes().getTypes()))
 				{
 					SyntaxMessage.error("Invalid types to be assigned from method call", this, false);
 
