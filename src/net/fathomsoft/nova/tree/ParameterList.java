@@ -6,8 +6,9 @@ import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.tree.exceptionhandling.Exception;
-import net.fathomsoft.nova.tree.generics.GenericArgument;
-import net.fathomsoft.nova.tree.generics.GenericParameter;
+import net.fathomsoft.nova.tree.generics.GenericTypeArgument;
+import net.fathomsoft.nova.tree.generics.GenericTypeArgumentList;
+import net.fathomsoft.nova.tree.generics.GenericTypeParameter;
 import net.fathomsoft.nova.util.Location;
 
 /**
@@ -70,11 +71,11 @@ public class ParameterList<E extends Value> extends TypeList<E>
 		reference.setName(OBJECT_REFERENCE_IDENTIFIER, true);
 		reference.setDataType(Value.POINTER);
 		
-		for (int i = 0; i < getParentClass().getNumGenericArguments(); i++)
+		for (int i = 0; i < getParentClass().getGenericTypeParameterDeclaration().getNumVisibleChildren(); i++)
 		{
-			GenericParameter type = getParentClass().getGenericParameter(i);
+			GenericTypeParameter type = getParentClass().getGenericTypeParameter(i);
 			
-			reference.addGenericArgumentName(type.getDefaultType());
+			reference.addGenericTypeArgumentName(type.getDefaultType());
 		}
 		
 		return reference;
@@ -221,6 +222,17 @@ public class ParameterList<E extends Value> extends TypeList<E>
 	 * 		an argument list.
 	 */
 	public Value[] getTypes()
+	{
+		return getTypes(null);
+	}
+	
+	/**
+	 * Get the types that the parameter list contains.
+	 * 
+	 * @return The list of types that the parameter list requires from
+	 * 		an argument list.
+	 */
+	public Value[] getTypes(GenericTypeArgumentList generic)
 	{
 		ArrayList<Value> types = new ArrayList<Value>();
 		

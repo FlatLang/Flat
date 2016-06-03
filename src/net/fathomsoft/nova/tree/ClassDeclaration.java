@@ -7,8 +7,8 @@ import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.tree.MethodList.SearchFilter;
-import net.fathomsoft.nova.tree.generics.GenericDeclaration;
-import net.fathomsoft.nova.tree.generics.GenericParameter;
+import net.fathomsoft.nova.tree.generics.GenericTypeParameterDeclaration;
+import net.fathomsoft.nova.tree.generics.GenericTypeParameter;
 import net.fathomsoft.nova.tree.variables.FieldDeclaration;
 import net.fathomsoft.nova.tree.variables.FieldList;
 import net.fathomsoft.nova.tree.variables.InstanceFieldList;
@@ -57,7 +57,7 @@ public class ClassDeclaration extends InstanceDeclaration
 		FieldList                         externalFields  = new FieldList(this, Location.INVALID);
 		TypeList<StaticBlock>             staticBlocks    = new TypeList<StaticBlock>(this, Location.INVALID);
 		VTableList                        vtables         = new VTableList(this, Location.INVALID);
-		GenericDeclaration                declaration     = new GenericDeclaration(this, Location.INVALID);
+		GenericTypeParameterDeclaration   declaration     = new GenericTypeParameterDeclaration(this, Location.INVALID);
 		TypeList<InterfaceImplementation> interfaces      = new TypeList<InterfaceImplementation>(this, locationIn);
 		
 		addChild(fields, this);
@@ -215,14 +215,14 @@ public class ClassDeclaration extends InstanceDeclaration
 		return (VTableList)getChild(super.getNumDefaultChildren() + 9);
 	}
 	
-	private GenericDeclaration getGenericDeclarationNode()
+	private GenericTypeParameterDeclaration getGenericTypeParameterDeclarationNode()
 	{
-		return (GenericDeclaration)getChild(super.getNumDefaultChildren() + 10);
+		return (GenericTypeParameterDeclaration)getChild(super.getNumDefaultChildren() + 10);
 	}
 	
-	public GenericDeclaration getGenericDeclaration()
+	public GenericTypeParameterDeclaration getGenericTypeParameterDeclaration()
 	{
-		return getGenericDeclarationNode();
+		return getGenericTypeParameterDeclarationNode();
 	}
 	
 	public TypeList<InterfaceImplementation> getInterfacesImplementationList()
@@ -382,7 +382,7 @@ public class ClassDeclaration extends InstanceDeclaration
 		for (NovaMethodDeclaration m : methods)
 		{
 			// TODO: need to make this more strict.
-			if (m.getName().equals(method.getName()) && m.areCompatibleParameterTypes(false, method.getParameterList().getTypes()))// method.areCompatibleParameterTypes(m.getParameterList().getTypes()))
+			if (m.getName().equals(method.getName()) && m.areCompatibleParameterTypes(null, false, method.getParameterList().getTypes()))// method.areCompatibleParameterTypes(m.getParameterList().getTypes()))
 			{
 				return m;
 			}
@@ -908,9 +908,9 @@ public class ClassDeclaration extends InstanceDeclaration
 	 * 		searching method must be compatible with.
 	 * @return The compatible method with the given method name.
 	 */
-	public MethodDeclaration getMethod(String methodName, Value ... parameterTypes)
+	public MethodDeclaration getMethod(GenericCompatible[] contexts, String methodName, Value ... parameterTypes)
 	{
-		return getMethod(methodName, SearchFilter.getDefault(), parameterTypes);
+		return getMethod(contexts, methodName, SearchFilter.getDefault(), parameterTypes);
 	}
 	
 	/**
@@ -923,13 +923,13 @@ public class ClassDeclaration extends InstanceDeclaration
 	 * 		searching method must be compatible with.
 	 * @return The compatible method with the given method name.
 	 */
-	public MethodDeclaration getMethod(String methodName, SearchFilter filter, Value ... parameterTypes)
+	public MethodDeclaration getMethod(GenericCompatible[] contexts, String methodName, SearchFilter filter, Value ... parameterTypes)
 	{
 		MethodDeclaration methods[] = getMethods(methodName, parameterTypes.length, filter);
 		
 		for (MethodDeclaration method : methods)
 		{
-			if (method.areCompatibleParameterTypes(false, parameterTypes))// && SyntaxUtils.isTypeCompatible(getProgram(), method.getType(), returnType))
+			if (method.areCompatibleParameterTypes(contexts, false, parameterTypes))// && SyntaxUtils.isTypeCompatible(getProgram(), method.getType(), returnType))
 			{
 				return method;
 			}
@@ -1277,7 +1277,7 @@ public class ClassDeclaration extends InstanceDeclaration
 		{
 			getStaticBlockList().addChild(child);
 		}
-		else if (child instanceof GenericDeclaration)
+		else if (child instanceof GenericTypeParameterDeclaration)
 		{
 			super.addChild(child);
 		}
@@ -1488,7 +1488,7 @@ public class ClassDeclaration extends InstanceDeclaration
 	{
 		for (MethodDeclaration m : getConstructorList())
 		{
-			if (m.areCompatibleParameterTypes(c.getParameterList().getTypes()))
+			if (m.areCompatibleParameterTypes(null, c.getParameterList().getTypes()))
 			{
 				return true;
 			}
@@ -1743,7 +1743,7 @@ public class ClassDeclaration extends InstanceDeclaration
 			
 			ClassData data = new ClassData();
 			
-			GenericDeclaration.searchGenericTypes(statement, data);
+			GenericTypeParameterDeclaration.searchGenerics(statement, data);
 			
 			n.iterateWords(statement, data, require);
 			
@@ -1787,7 +1787,7 @@ public class ClassDeclaration extends InstanceDeclaration
 				
 				if (data.getRightAdjacentSkipBounds() != null)
 				{
-					decodeGenericArguments(data.statement, data.getRightAdjacentSkipBounds());
+					decodeGenericTypeArguments(data.statement, data.getRightAdjacentSkipBounds());
 					
 					data.decrementGenericsRemaining();
 				}
@@ -1817,7 +1817,7 @@ public class ClassDeclaration extends InstanceDeclaration
 					
 					if (data.getRightAdjacentSkipBounds() != null)
 					{
-						i.decodeGenericArguments(data.statement, data.getRightAdjacentSkipBounds());
+						i.decodeGenericTypeArguments(data.statement, data.getRightAdjacentSkipBounds());
 						
 						data.decrementGenericsRemaining();
 					}
@@ -1849,13 +1849,13 @@ public class ClassDeclaration extends InstanceDeclaration
 					
 					if (data.getRightAdjacentSkipBounds() != null)
 					{
-						getGenericDeclaration().decodeGenericParameters(data.statement, data.getRightAdjacentSkipBounds());
-//						getGenericDeclaration().decodeGenericParameters(data.statement, data.getRightAdjacentSkipBounds());
+						getGenericTypeParameterDeclaration().decodeGenericTypeParameters(data.statement, data.getRightAdjacentSkipBounds());
+//						getGenericTypeParameterDeclaration().decodeGenericTypeParameters(data.statement, data.getRightAdjacentSkipBounds());
 //						decodeGenericArguments(data.statement, data.getRightAdjacentSkipBounds());
 						
-						for (GenericParameter param : getGenericDeclaration())
+						for (GenericTypeParameter param : getGenericTypeParameterDeclaration())
 						{
-							decodeGenericArguments(param.getName());
+							decodeGenericTypeArguments(param.getName());
 							
 							data.decrementGenericsRemaining();
 						}
@@ -1865,19 +1865,19 @@ public class ClassDeclaration extends InstanceDeclaration
 		}
 	}
 	
-	public boolean containsGenericParameter(String parameterName)
+	public boolean containsGenericTypeParameter(String parameterName)
 	{
-		return getGenericDeclaration().containsParameter(parameterName);
+		return getGenericTypeParameterDeclaration().containsParameter(parameterName);
 	}
 	
-	public int getGenericParameterIndex(String parameterName)
+	public int getGenericTypeParameterIndex(String parameterName)
 	{
-		return getGenericDeclaration().getParameterIndex(parameterName);
+		return getGenericTypeParameterDeclaration().getParameterIndex(parameterName);
 	}
 	
-	public GenericParameter getGenericParameter(String parameterName)
+	public GenericTypeParameter getGenericTypeParameter(String parameterName)
 	{
-		for (GenericParameter param : getGenericDeclaration())
+		for (GenericTypeParameter param : getGenericTypeParameterDeclaration())
 		{
 			if (param.getName().equals(parameterName))
 			{
@@ -1888,9 +1888,9 @@ public class ClassDeclaration extends InstanceDeclaration
 		return null;
 	}
 	
-	public GenericParameter getGenericParameter(int index)
+	public GenericTypeParameter getGenericTypeParameter(int index)
 	{
-		return getGenericDeclaration().getVisibleChild(index);
+		return getGenericTypeParameterDeclaration().getVisibleChild(index);
 	}
 	
 	public String generateTemporaryMethodName()
@@ -1997,7 +1997,7 @@ public class ClassDeclaration extends InstanceDeclaration
 				getFileDeclaration().getImport(getExtendedClassLocation()).markUsed();
 			}
 			
-			for (GenericParameter param : getGenericDeclaration())
+			for (GenericTypeParameter param : getGenericTypeParameterDeclaration())
 			{
 				ClassDeclaration typeClass = SyntaxUtils.getImportedClass(getFileDeclaration(), param.getDefaultType());
 				

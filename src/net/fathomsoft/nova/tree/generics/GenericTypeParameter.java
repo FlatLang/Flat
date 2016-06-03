@@ -11,38 +11,41 @@ import net.fathomsoft.nova.util.Location;
  */
 public class GenericTypeParameter extends Node
 {
+	private String name, defaultType;
+	
 	/**
 	 * @see net.fathomsoft.nova.tree.Node#Node(Node, Location)
 	 */
 	public GenericTypeParameter(Node temporaryParent, Location locationIn)
 	{
 		super(temporaryParent, locationIn);
+		
+		defaultType = "Object";
 	}
 	
-	/**
-	 * Decode the given statement into a {@link GenericTypeParameter} instance, if
-	 * possible. If it is not possible, this method returns null.<br>
-	 * <br>
-	 * Example inputs include:<br>
-	 * <ul>
-	 * 	<li></li>
-	 * 	<li></li>
-	 * 	<li></li>
-	 * </ul>
-	 * 
-	 * @param parent The parent node of the statement.
-	 * @param statement The statement to try to decode into a
-	 * 		{@link GenericTypeParameter} instance.
-	 * @param location The location of the statement in the source code.
-	 * @param require Whether or not to throw an error if anything goes wrong.
-	 * @return The generated node, if it was possible to translated it
-	 * 		into a {@link GenericTypeParameter}.
-	 */
-	public static GenericTypeParameter decodeStatement(Node parent, String statement, Location location, boolean require)
+	public String getName()
 	{
-		
-		
-		return null;
+		return name;
+	}
+	
+	public void setName(String name)
+	{
+		this.name = name;
+	}
+	
+	public String getDefaultType()
+	{
+		return defaultType;
+	}
+	
+	public void setDefaultType(String type)
+	{
+		this.defaultType = type;
+	}
+	
+	public GenericTypeParameterDeclaration getGenericDeclaration()
+	{
+		return (GenericTypeParameterDeclaration)getParent();
 	}
 	
 	/**
@@ -74,6 +77,9 @@ public class GenericTypeParameter extends Node
 	public GenericTypeParameter cloneTo(GenericTypeParameter node, boolean cloneChildren)
 	{
 		super.cloneTo(node, cloneChildren);
+		
+		node.name = this.name;
+		node.defaultType = this.defaultType;
 		
 		return node;
 	}

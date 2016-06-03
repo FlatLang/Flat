@@ -1,15 +1,24 @@
 package net.fathomsoft.nova.tree.generics;
 
 import net.fathomsoft.nova.TestContext;
+import net.fathomsoft.nova.error.UnimplementedOperationException;
+import net.fathomsoft.nova.tree.GenericCompatible;
+import net.fathomsoft.nova.tree.IValue;
 import net.fathomsoft.nova.tree.Node;
+import net.fathomsoft.nova.tree.Value;
 import net.fathomsoft.nova.util.Location;
 
 /**
- * {@link Node} extension that represents
+ * {@link IValue} extension that represents a generic type implementation.
+ * Contains the information of a generic type implementation.
+ * Contains all of the types that are being implemented into a generic
+ * declaration.
  * 
  * @author	Braden Steffaniak
+ * @since	v0.2.41 Dec 7, 2014 at 10:22:46 PM
+ * @version	v0.2.41 Dec 17, 2014 at 7:48:17 PM
  */
-public class GenericTypeArgument extends Node
+public class GenericTypeArgument extends IValue implements GenericCompatible
 {
 	/**
 	 * @see net.fathomsoft.nova.tree.Node#Node(Node, Location)
@@ -18,29 +27,117 @@ public class GenericTypeArgument extends Node
 	{
 		super(temporaryParent, locationIn);
 	}
+
+	/**
+	 * @see net.fathomsoft.nova.tree.GenericCompatible#getGenericTypeArgumentList()
+	 */
+	@Override
+	public GenericTypeArgumentList getGenericTypeArgumentList()
+	{
+		return (GenericTypeArgumentList)getParent();
+	}
 	
 	/**
-	 * Decode the given statement into a {@link GenericTypeArgument} instance, if
-	 * possible. If it is not possible, this method returns null.<br>
-	 * <br>
-	 * Example inputs include:<br>
-	 * <ul>
-	 * 	<li></li>
-	 * 	<li></li>
-	 * 	<li></li>
-	 * </ul>
+	 * Get the index that the specified argument can be accessed by
+	 * at the declaration of the parameters.
 	 * 
-	 * @param parent The parent node of the statement.
-	 * @param statement The statement to try to decode into a
-	 * 		{@link GenericTypeArgument} instance.
-	 * @param location The location of the statement in the source code.
-	 * @param require Whether or not to throw an error if anything goes wrong.
-	 * @return The generated node, if it was possible to translated it
-	 * 		into a {@link GenericTypeArgument}.
+	 * @return The index.
 	 */
-	public static GenericTypeArgument decodeStatement(Node parent, String statement, Location location, boolean require)
+	public int getArgumentIndex()
 	{
+		GenericTypeArgumentList implementation = getGenericTypeArgumentList();
 		
+		for (int i = 0; i < implementation.getNumVisibleChildren(); i++)
+		{
+			if (implementation.getVisibleChild(i) == this)
+			{
+				return i;
+			}
+		}
+		
+		return -1;
+	}
+	
+	/**
+	 * @see net.fathomsoft.nova.tree.IValue#setTypeValue(java.lang.String)
+	 */
+	@Override
+	public void setTypeValue(String type)
+	{
+		super.setTypeValue(type);
+	}
+	
+	/**
+	 * Get the default type that this generic type extends.
+	 * @see net.fathomsoft.nova.tree.generics.GenericParameter#getDefaultType()
+	 * 
+	 * @return The type that the generic type extends by default.
+	 */
+	public String getDefaultType()
+	{
+		return getValue().getTypeClass().getGenericTypeParameterDeclaration().getParameter(getArgumentIndex()).getDefaultType();
+	}
+	
+	/**
+	 * Get the Value instance that this generic argument is manifested as.
+	 * 
+	 * @return The Value instance.
+	 */
+	public Value getValue()
+	{
+		return (Value)getGenericTypeArgumentList().getParent();
+	}
+	
+	/**
+	 * @see net.fathomsoft.nova.tree.Value#getGenericReturnType()
+	 */
+	@Override
+	public String getGenericReturnType()
+	{
+		if (getValue().getGenericTypeParameterDeclaration().containsParameter(getType()))
+		{
+			return getDefaultType();
+		}
+		
+		return getType();
+	}
+	
+	public static String searchGenericType(String str, int start, boolean backwards)
+	{
+		if (backwards)
+		{
+			int stack = 0;
+			int index = 0;
+			
+			for (int i = start; i >= 0; i--)
+			{
+				String c = str.charAt(i) + "";
+				
+				if (c.equals(GENERIC_END))
+				{
+					index = stack == 0 ? i : index;
+					stack++;
+				}
+				else if (c.equals(GENERIC_START))
+				{
+					stack--;
+				}
+				
+				if (stack == 0)
+				{
+					if (index > 0)
+					{
+						return str.substring(i + 1, index);
+					}
+					
+					return null;
+				}
+			}
+		}
+		else
+		{
+			throw new UnimplementedOperationException("forwards checking not implemented yet... Looks like its time to do that.");
+		}
 		
 		return null;
 	}

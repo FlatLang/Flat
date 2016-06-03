@@ -8,7 +8,7 @@ import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.error.UnimplementedOperationException;
 import net.fathomsoft.nova.tree.MethodList.SearchFilter;
-import net.fathomsoft.nova.tree.generics.GenericDeclaration;
+import net.fathomsoft.nova.tree.generics.GenericTypeParameterDeclaration;
 import net.fathomsoft.nova.util.Bounds;
 import net.fathomsoft.nova.util.Location;
 import net.fathomsoft.nova.util.Patterns;
@@ -164,7 +164,7 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 		filter.checkStatic(isStatic());
 		filter.checkProperties = true;
 		
-		NovaMethodDeclaration method = (NovaMethodDeclaration)extension.getMethod(getName(), filter, getParameterList().getTypes());
+		NovaMethodDeclaration method = (NovaMethodDeclaration)extension.getMethod(null, getName(), filter, getParameterList().getTypes());
 		
 		if (method != null)
 		{
@@ -173,7 +173,7 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 		
 		for (Interface inter : getParentClass().getImplementedClasses())
 		{
-			method = (NovaMethodDeclaration)inter.getMethod(getName(), filter, getParameterList().getTypes());
+			method = (NovaMethodDeclaration)inter.getMethod(null, getName(), filter, getParameterList().getTypes());
 			
 			if (method != null)
 			{
@@ -594,7 +594,7 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 		String signature = findMethodSignature(statement);
 		MethodData data  = new MethodData(signature);
 		
-		GenericDeclaration.searchGenericTypes(signature, data);
+		GenericTypeParameterDeclaration.searchGenerics(signature, data);
 		
 		iterateWords(signature, Patterns.IDENTIFIER_BOUNDARIES, data, require);
 		

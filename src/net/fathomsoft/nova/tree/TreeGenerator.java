@@ -7,6 +7,7 @@ import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.error.SyntaxErrorException;
 import net.fathomsoft.nova.error.SyntaxMessage;
+import net.fathomsoft.nova.tree.generics.GenericTypeArgument;
 import net.fathomsoft.nova.tree.variables.FieldDeclaration;
 import net.fathomsoft.nova.util.Bounds;
 import net.fathomsoft.nova.util.FileUtils;
@@ -449,6 +450,15 @@ public class TreeGenerator implements Runnable
 		
 		// Whether or not the current statement needs the next line to complete the statement
 		boolean pendingCompletion  = StringUtils.containsChar(source, StringUtils.STMT_PRE_CONT_CHARS, prevCharIndex) && !UnaryOperation.containsUnaryOperator(source, prevCharIndex, prevWordBounds.getEnd(), -1);
+		
+		if (pendingCompletion && (source.charAt(prevCharIndex) + "").equals(GenericTypeArgument.GENERIC_END))
+		{
+			if (GenericTypeArgument.searchGenericType(source, prevCharIndex, true) != null)
+			{
+				pendingCompletion = false;
+			}
+		}
+		
 		// Whether or not the next statement needs a fragment before it to complete the statement
 		boolean requiresCompletion = StringUtils.containsChar(source, StringUtils.STMT_POST_CONT_CHARS, nextCharIndex) && (!UnaryOperation.containsUnaryOperator(source, nextCharIndex, nextNextCharIndex) || StringUtils.findGroupedSymbols(source, nextCharIndex).equals("-"));
 		

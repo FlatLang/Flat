@@ -10,9 +10,11 @@ import net.fathomsoft.nova.tree.ArgumentList;
 import net.fathomsoft.nova.tree.BodyMethodDeclaration;
 import net.fathomsoft.nova.tree.ClassDeclaration;
 import net.fathomsoft.nova.tree.Closure;
+import net.fathomsoft.nova.tree.Constructor;
 import net.fathomsoft.nova.tree.FileDeclaration;
 import net.fathomsoft.nova.tree.GenericCompatible;
 import net.fathomsoft.nova.tree.Identifier;
+import net.fathomsoft.nova.tree.InitializationMethod;
 import net.fathomsoft.nova.tree.InstanceDeclaration;
 import net.fathomsoft.nova.tree.Instantiation;
 import net.fathomsoft.nova.tree.Literal;
@@ -27,7 +29,7 @@ import net.fathomsoft.nova.tree.Return;
 import net.fathomsoft.nova.tree.SyntaxTree;
 import net.fathomsoft.nova.tree.UnaryOperation;
 import net.fathomsoft.nova.tree.Value;
-import net.fathomsoft.nova.tree.generics.GenericArgument;
+import net.fathomsoft.nova.tree.generics.GenericTypeArgument;
 import net.fathomsoft.nova.tree.variables.FieldDeclaration;
 import net.fathomsoft.nova.tree.variables.Variable;
 import net.fathomsoft.nova.tree.variables.VariableDeclaration;
@@ -1525,7 +1527,7 @@ public class SyntaxUtils
 	
 	private static boolean checkGenericType(Value value, String type)
 	{
-		return value.getParentClass(true).containsGenericParameter(type);
+		return value.getParentClass(true).containsGenericTypeParameter(type);
 	}
 	
 	private static Value getValidValue(Value value)
@@ -1601,13 +1603,13 @@ public class SyntaxUtils
 				{
 					String genericName = value.getType();
 					
-					GenericArgument generic = getCorrespondingGenericType(genericCheck.getTypeClass(), genericCheck.getDeclaration(), genericName);
+					GenericTypeArgument generic = getCorrespondingGenericType(genericCheck.getTypeClass(), genericCheck.getDeclaration(), genericName);
 	
 					return generic.getType();
 				}
 			}
 			
-			return value.getParentClass().getGenericParameter(type).getDefaultType();
+			return type;//value.getParentClass().getGenericTypeParameter(type).getDefaultType();
 		}
 		
 		String location = value.getFileDeclaration().getImportList().getAbsoluteClassLocation(type);
@@ -1632,16 +1634,16 @@ public class SyntaxUtils
 		return null;
 	}
 	
-	public static GenericArgument getCorrespondingGenericType(ClassDeclaration genericDeclaration, GenericCompatible genericUse, String genericName)
+	public static GenericTypeArgument getCorrespondingGenericType(ClassDeclaration genericDeclaration, GenericCompatible genericUse, String genericName)
 	{
-		int index = genericDeclaration.getGenericArgumentIndex(genericName);
+		int index = genericDeclaration.getGenericTypeArgumentIndex(genericName);
 		
 		if (index < 0)
 		{
 			SyntaxMessage.error("Could not find the corresponding generic for generic type '" + genericName + "'", (Node)genericUse);
 		}
 		
-		return genericUse.getGenericArgument(index);
+		return genericUse.getGenericTypeArgument(index);
 	}
 	
 	/**
@@ -1815,7 +1817,7 @@ public class SyntaxUtils
 		return false;
 	}
 	
-	public static ClassDeclaration getParameterGenericReturnType(Parameter required, Value given)
+	public static ClassDeclaration getParameterGenericReturnType(String type, Value given)
 	{
 		GenericCompatible gen = null;
 		
@@ -1823,14 +1825,21 @@ public class SyntaxUtils
 		
 		if (call != null)
 		{
-			gen = call.getGenericCompatible();
+			if (call.getMethodDeclaration() instanceof InitializationMethod)
+			{
+				gen = call.getMethodDeclaration().getParentClass();
+			}
+			else
+			{
+				gen = call.getGenericCompatible();
+			}
 		}
 		else
 		{
 			gen = given.getParentClass();//given.getParentMethod();
 		}
 		
-		String name = gen.getGenericArgumentType(required.getType(), given);
+		String name = gen.getGenericTypeArgumentType(type, given);
 		
 		return SyntaxUtils.getImportedClass(given.getFileDeclaration(), name);
 	}
@@ -1847,7 +1856,7 @@ public class SyntaxUtils
 	 */
 	public static boolean isTypeCompatible(Program context, String required, String given)
 	{
-		return isTypeCompatible(context.getClassDeclaration(given), context.getClassDeclaration(required));
+		return isTypeCompatible(context.getClassDeclaration(given), context.getClassDeclaration(given), context.getClassDeclaration(required));
 	}
 	
 	/**
@@ -1859,9 +1868,9 @@ public class SyntaxUtils
 	 * @param given The given type to check against the required type.
 	 * @return Whether or not the two types are compatible.
 	 */
-	public static boolean isTypeCompatible(Value required, Value given)
+	public static boolean isTypeCompatible(GenericCompatible context, Value required, Value given)
 	{
-		return isTypeCompatible(required, given, true);
+		return isTypeCompatible(context, required, given, true);
 	}
 	
 	public static boolean areTypesCompatible(Program context, String[] required, String[] given)
@@ -1877,16 +1886,16 @@ public class SyntaxUtils
 		return true;
 	}
 	
-	public static boolean areTypesCompatible(Value[] required, Value[] given)
+	public static boolean areTypesCompatible(GenericCompatible[] contexts, Value[] required, Value[] given)
 	{
-		return areTypesCompatible(required, given, true);
+		return areTypesCompatible(contexts, required, given, true);
 	}
 	
-	public static boolean areTypesCompatible(Value[] required, Value[] given, boolean searchGenerics)
+	public static boolean areTypesCompatible(GenericCompatible[] contexts, Value[] required, Value[] given, boolean searchGenerics)
 	{
 		for (int i = 0; i < required.length && i < given.length; i++)
 		{
-			if (!isTypeCompatible(required[i], given[i], searchGenerics))
+			if (!isTypeCompatible(contexts == null ? null : (contexts.length > i ? contexts[i] : contexts[contexts.length - 1]), required[i], given[i], searchGenerics))
 			{
 				return false;
 			}
@@ -1906,9 +1915,9 @@ public class SyntaxUtils
 	 * 		return type.
 	 * @return Whether or not the two types are compatible.
 	 */
-	public static boolean isTypeCompatible(Value required, Value given, boolean searchGeneric)
+	public static boolean isTypeCompatible(GenericCompatible context, Value required, Value given, boolean searchGeneric)
 	{
-		return isTypeCompatible(required, given, searchGeneric, 0);
+		return isTypeCompatible(context, required, given, searchGeneric, 0);
 	}
 	
 	/**
@@ -1925,8 +1934,22 @@ public class SyntaxUtils
 	 * 		required.dimensions - given.dimensions.
 	 * @return Whether or not the two types are compatible.
 	 */
-	public static boolean isTypeCompatible(Value required, Value given, boolean searchGeneric, int arrayDifference)
+	public static boolean isTypeCompatible(GenericCompatible context, Value required, Value given, boolean searchGeneric, int arrayDifference)
 	{
+		if (context != null && given.isGenericType())
+		{
+			int genIndex = given.getParentClass().getGenericTypeParameterIndex(given.getType());
+			
+			GenericTypeArgument arg = context.getGenericTypeArgument(genIndex);
+			
+			//SyntaxUtils.getImportedClass(given.getFileDeclaration(), arg.getType());
+			
+			if (isTypeCompatible(context, required, arg, false))
+			{
+				return true;
+			}
+		}
+		
 		if (given instanceof Closure)
 		{
 			return true;
@@ -1947,16 +1970,16 @@ public class SyntaxUtils
 		
 		if (searchGeneric && required.isGenericType())
 		{
-			if (!(required instanceof Parameter))
+			if (!(required instanceof Value))
 			{
 				throw new UnimplementedOperationException("The validation of generic type " + required.getClass().getName() + " is not implemented.");
 			}
 			
-			Parameter param = (Parameter)required;
+			Value param = (Value)required;
 			
-			Value value = getParameterGenericReturnType(param, given);
+			Value value = getParameterGenericReturnType(param.getType(), given);
 			
-			if (!Literal.isNullLiteral(given) && !isTypeCompatible(value, given, false))
+			if (!Literal.isNullLiteral(given) && !isTypeCompatible(context, value, given, false))
 			{
 				SyntaxMessage.error("Incorrect type '" + given.getType() + "' given for required generic type of '" + value.getType() + "' type", given);
 				
@@ -1965,6 +1988,7 @@ public class SyntaxUtils
 			
 			return true;
 		}
+		
 		if (given.isExternalType() ^ required.isExternalType())
 		{
 			return false;

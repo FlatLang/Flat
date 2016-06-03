@@ -1,6 +1,6 @@
 package net.fathomsoft.nova.tree;
 
-import net.fathomsoft.nova.tree.generics.GenericParameter;
+import net.fathomsoft.nova.tree.generics.GenericTypeParameter;
 import net.fathomsoft.nova.util.SyntaxUtils;
 
 /**
@@ -86,9 +86,9 @@ public interface CallableMethod
 	public ParameterList getParameterList();
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.Value#getGenericParameter()
+	 * @see net.fathomsoft.nova.tree.Value#getGenericTypeParameter()
 	 */
-	public GenericParameter getGenericParameter();
+	public GenericTypeParameter getGenericTypeParameter();
 	
 	/**
 	 * Check to see if the given types are compatible with the Method's
@@ -98,9 +98,9 @@ public interface CallableMethod
 	 * @return Whether or not the types are compatible with the
 	 * 		parameters.
 	 */
-	public default boolean areCompatibleParameterTypes(Value ... types)
+	public default boolean areCompatibleParameterTypes(GenericCompatible[] contexts, Value ... types)
 	{
-		return areCompatibleParameterTypes(true, types);
+		return areCompatibleParameterTypes(contexts, true, types);
 	}
 	
 	/**
@@ -113,14 +113,14 @@ public interface CallableMethod
 	 * @return Whether or not the types are compatible with the
 	 * 		parameters.
 	 */
-	public default boolean areCompatibleParameterTypes(boolean searchGeneric, Value ... types)
+	public default boolean areCompatibleParameterTypes(GenericCompatible[] contexts, boolean searchGeneric, Value ... types)
 	{
 		if (getParameterList().getNumVisibleChildren() != types.length)
 		{
 			return false;
 		}
 		
-		return SyntaxUtils.areTypesCompatible(getParameterList().getTypes(), types, searchGeneric);
+		return SyntaxUtils.areTypesCompatible(contexts, getParameterList().getTypes(), types, searchGeneric);
 	}
 	
 	public boolean isGenericType();
