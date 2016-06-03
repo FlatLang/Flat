@@ -27,6 +27,7 @@ public class Program extends Node
 	private Nova       controller;
 	
 	private NovaMethodDeclaration[] interfaceMethods;
+	private ClosureDeclaration[]	closures;
 	
 	private final HashMap<String, Integer>	files = new HashMap<String, Integer>();
 	
@@ -90,6 +91,30 @@ public class Program extends Node
 		interfaceMethods = methods.toArray(new NovaMethodDeclaration[0]);
 		
 		return interfaceMethods;
+	}
+	
+	public ClosureDeclaration[] getPublicClosures()
+	{
+		if (closures != null)
+		{
+			return closures;
+		}
+		
+		ArrayList<ClosureDeclaration> list = new ArrayList<ClosureDeclaration>();
+		
+		for (FileDeclaration file : tree.getFiles())
+		{
+			ClosureDeclaration array[] = file.getPublicClosures();
+			
+			for (ClosureDeclaration c : array)
+			{
+				list.add(c);
+			}
+		}
+		
+		closures = list.toArray(new ClosureDeclaration[0]);
+		
+		return closures;
 	}
 	
 	/**
