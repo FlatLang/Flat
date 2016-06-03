@@ -1,5 +1,6 @@
 package net.fathomsoft.nova.tree;
 
+import net.fathomsoft.nova.tree.variables.VariableDeclaration;
 import net.fathomsoft.nova.util.SyntaxUtils;
 
 /**
@@ -12,6 +13,8 @@ import net.fathomsoft.nova.util.SyntaxUtils;
 public interface Accessible
 {
 	public Node getParent();
+	
+	public GenericCompatible getContext();
 	
 	/**
 	 * Get the next accessed node that is of the given class type.

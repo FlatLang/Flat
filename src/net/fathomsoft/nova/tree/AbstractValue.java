@@ -1,5 +1,7 @@
 package net.fathomsoft.nova.tree;
 
+import net.fathomsoft.nova.tree.generics.GenericTypeParameterDeclaration;
+import net.fathomsoft.nova.tree.variables.VariableDeclaration.DeclarationData;
 import net.fathomsoft.nova.util.SyntaxUtils;
 
 /**
@@ -9,7 +11,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * @since	v0.2.35 Oct 4, 2014 at 3:36:34 PM
  * @version	v0.2.38 Dec 6, 2014 at 5:19:17 PM
  */
-public interface AbstractValue
+public interface AbstractValue extends GenericCompatible
 {
 	/**
 	 * Set the type that this statement returns.<br>
@@ -30,6 +32,15 @@ public interface AbstractValue
 	public default boolean setType(String type, boolean require, boolean checkType, boolean checkDataType)
 	{
 		Value n = (Value)this;
+		
+		DeclarationData data = new DeclarationData();
+		
+		GenericTypeParameterDeclaration.searchGenerics(type, data);
+		
+		if (data.getGenericsRemaining() > 0)
+		{
+			//data.
+		}
 		
 		if (checkType)
 		{
