@@ -4,6 +4,7 @@
 
 typedef struct nova_standard_math_logic_Nova_WFF nova_standard_math_logic_Nova_WFF;
 
+
 #include <Nova.h>
 #include <ExceptionHandler.h>
 #include <InterfaceVTable.h>

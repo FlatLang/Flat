@@ -4,6 +4,7 @@
 
 typedef struct stabilitytest_Nova_UnstableException stabilitytest_Nova_UnstableException;
 
+
 #include <Nova.h>
 #include <ExceptionHandler.h>
 #include <InterfaceVTable.h>
@@ -50,9 +51,9 @@ CCLASS_CLASS
 )
 
 void stabilitytest_Nova_UnstableExceptionNova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData);
-stabilitytest_Nova_UnstableException* stabilitytest_Nova_UnstableException_0_Nova_construct(stabilitytest_Nova_UnstableException* this, nova_standard_exception_Nova_ExceptionData* exceptionData);
+stabilitytest_Nova_UnstableException* stabilitytest_Nova_UnstableException_1_Nova_construct(stabilitytest_Nova_UnstableException* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_Nova_String* l0_Nova_message);
 void stabilitytest_Nova_UnstableException_Nova_destroy(stabilitytest_Nova_UnstableException** this, nova_standard_exception_Nova_ExceptionData* exceptionData);
-void stabilitytest_Nova_UnstableException_0_Nova_this(stabilitytest_Nova_UnstableException* this, nova_standard_exception_Nova_ExceptionData* exceptionData);
+void stabilitytest_Nova_UnstableException_1_Nova_this(stabilitytest_Nova_UnstableException* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_Nova_String* l0_Nova_message);
 void stabilitytest_Nova_UnstableException_2_Nova_super(stabilitytest_Nova_UnstableException* this, nova_standard_exception_Nova_ExceptionData* exceptionData);
 
 #endif

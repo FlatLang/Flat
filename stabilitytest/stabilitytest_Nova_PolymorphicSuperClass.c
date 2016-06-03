@@ -15,6 +15,8 @@ stabilitytest_Extension_VTable_PolymorphicSuperClass stabilitytest_Extension_VTa
 		0,
 		0,
 		0,
+		0,
+		0,
 	},
 	nova_standard_Nova_Object_0_Nova_getHashCodeLong,
 	stabilitytest_Nova_PolymorphicSuperClass_0_Nova_toString,

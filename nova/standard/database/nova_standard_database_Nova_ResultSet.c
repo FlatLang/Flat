@@ -15,6 +15,8 @@ nova_standard_database_Extension_VTable_ResultSet nova_standard_database_Extensi
 		0,
 		0,
 		0,
+		0,
+		0,
 	},
 	nova_standard_Nova_Object_0_Nova_getHashCodeLong,
 	nova_standard_Nova_Object_0_Nova_toString,

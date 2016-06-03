@@ -4,6 +4,7 @@
 
 typedef struct nova_standard_math_Nova_NumericStatement nova_standard_math_Nova_NumericStatement;
 
+
 #include <Nova.h>
 #include <ExceptionHandler.h>
 #include <InterfaceVTable.h>

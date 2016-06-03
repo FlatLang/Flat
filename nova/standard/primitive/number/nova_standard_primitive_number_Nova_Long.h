@@ -4,6 +4,7 @@
 
 typedef struct nova_standard_primitive_number_Nova_Long nova_standard_primitive_number_Nova_Long;
 
+
 #include <Nova.h>
 #include <ExceptionHandler.h>
 #include <InterfaceVTable.h>

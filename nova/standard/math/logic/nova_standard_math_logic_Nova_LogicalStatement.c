@@ -15,6 +15,8 @@ nova_standard_math_logic_Extension_VTable_LogicalStatement nova_standard_math_lo
 		0,
 		0,
 		0,
+		0,
+		0,
 	},
 	nova_standard_Nova_Object_0_Nova_getHashCodeLong,
 	nova_standard_math_logic_Nova_LogicalStatement_0_Nova_toString,

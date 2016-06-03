@@ -4,6 +4,7 @@
 
 typedef struct nova_standard_database_Nova_DBConnector nova_standard_database_Nova_DBConnector;
 
+
 #include <Nova.h>
 #include <ExceptionHandler.h>
 #include <InterfaceVTable.h>

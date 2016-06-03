@@ -4,6 +4,7 @@
 
 typedef struct nova_standard_exception_Nova_UnimplementedOperationException nova_standard_exception_Nova_UnimplementedOperationException;
 
+
 #include <Nova.h>
 #include <ExceptionHandler.h>
 #include <InterfaceVTable.h>

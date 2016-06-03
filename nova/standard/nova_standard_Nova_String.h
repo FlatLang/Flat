@@ -4,6 +4,7 @@
 
 typedef struct nova_standard_Nova_String nova_standard_Nova_String;
 
+
 #include <Nova.h>
 #include <ExceptionHandler.h>
 #include <InterfaceVTable.h>

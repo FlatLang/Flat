@@ -4,6 +4,7 @@
 
 typedef struct nova_standard_math_Nova_NumericOperand nova_standard_math_Nova_NumericOperand;
 
+
 #include <Nova.h>
 #include <ExceptionHandler.h>
 #include <InterfaceVTable.h>
@@ -50,9 +51,9 @@ CCLASS_CLASS
 )
 
 void nova_standard_math_Nova_NumericOperandNova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData);
-nova_standard_math_Nova_NumericOperand* nova_standard_math_Nova_NumericOperand_2_Nova_construct(nova_standard_math_Nova_NumericOperand* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_Nova_Object* l0_Nova_data);
+nova_standard_math_Nova_NumericOperand* nova_standard_math_Nova_NumericOperand_3_Nova_construct(nova_standard_math_Nova_NumericOperand* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_Nova_Object* l0_Nova_data);
 void nova_standard_math_Nova_NumericOperand_Nova_destroy(nova_standard_math_Nova_NumericOperand** this, nova_standard_exception_Nova_ExceptionData* exceptionData);
-void nova_standard_math_Nova_NumericOperand_2_Nova_this(nova_standard_math_Nova_NumericOperand* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_Nova_Object* l0_Nova_data);
+void nova_standard_math_Nova_NumericOperand_3_Nova_this(nova_standard_math_Nova_NumericOperand* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_Nova_Object* l0_Nova_data);
 nova_standard_Nova_String* nova_standard_math_Nova_NumericOperand_0_Nova_toString(nova_standard_math_Nova_NumericOperand* this, nova_standard_exception_Nova_ExceptionData* exceptionData);
 void nova_standard_math_Nova_NumericOperand_Nova_super(nova_standard_math_Nova_NumericOperand* this, nova_standard_exception_Nova_ExceptionData* exceptionData);
 

@@ -4,6 +4,7 @@
 
 typedef struct nova_standard_process_Nova_Process nova_standard_process_Nova_Process;
 
+
 #include <Nova.h>
 #include <ExceptionHandler.h>
 #include <InterfaceVTable.h>

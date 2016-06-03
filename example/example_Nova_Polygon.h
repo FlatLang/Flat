@@ -4,6 +4,7 @@
 
 typedef struct example_Nova_Polygon example_Nova_Polygon;
 
+
 #include <Nova.h>
 #include <ExceptionHandler.h>
 #include <InterfaceVTable.h>

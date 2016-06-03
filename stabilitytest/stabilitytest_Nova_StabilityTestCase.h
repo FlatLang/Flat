@@ -4,6 +4,7 @@
 
 typedef struct stabilitytest_Nova_StabilityTestCase stabilitytest_Nova_StabilityTestCase;
 
+
 #include <Nova.h>
 #include <ExceptionHandler.h>
 #include <InterfaceVTable.h>
@@ -49,7 +50,6 @@ CCLASS_CLASS
 	
 	stabilitytest_Extension_VTable_StabilityTestCase* vtable;
 	stabilitytest_Nova_StabilityTest* stabilitytest_Nova_StabilityTestCase_Nova_program;
-	int stabilitytest_Nova_StabilityTestCase_Nova_millisOverhead;
 )
 
 void stabilitytest_Nova_StabilityTestCaseNova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData);

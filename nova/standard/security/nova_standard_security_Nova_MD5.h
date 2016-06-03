@@ -4,6 +4,7 @@
 
 typedef struct nova_standard_security_Nova_MD5 nova_standard_security_Nova_MD5;
 
+
 #include <Nova.h>
 #include <ExceptionHandler.h>
 #include <InterfaceVTable.h>

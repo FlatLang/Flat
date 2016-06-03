@@ -4,6 +4,7 @@
 
 typedef struct nova_standard_primitive_Nova_Bool nova_standard_primitive_Nova_Bool;
 
+
 #include <Nova.h>
 #include <ExceptionHandler.h>
 #include <InterfaceVTable.h>

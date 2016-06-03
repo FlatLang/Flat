@@ -4,6 +4,7 @@
 
 typedef struct nova_standard_io_Nova_StreamReader nova_standard_io_Nova_StreamReader;
 
+
 #include <Nova.h>
 #include <ExceptionHandler.h>
 #include <InterfaceVTable.h>

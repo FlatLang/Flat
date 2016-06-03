@@ -10,7 +10,9 @@ nova_standard_primitive_number_Extension_VTable_Char nova_standard_primitive_num
 		0,
 		0,
 		0,
-		(nova_standard_Nova_Object*(*)(nova_standard_datastruct_Nova_Comparable*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*))nova_standard_primitive_number_Nova_Char_0_Nova_compareTo,
+		0,
+		0,
+		(int(*)(nova_standard_datastruct_Nova_Comparable*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*))nova_standard_primitive_number_Nova_Char_0_Nova_compareTo,
 		0,
 		0,
 		0,
@@ -105,12 +107,12 @@ char nova_standard_primitive_number_Nova_Char_Nova_toUpperCase(nova_standard_pri
 	return l0_Nova_c;
 }
 
-char nova_standard_primitive_number_Nova_Char_0_Nova_compareTo(nova_standard_primitive_number_Nova_Char* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_primitive_number_Nova_Char* l0_Nova_prim)
+int nova_standard_primitive_number_Nova_Char_0_Nova_compareTo(nova_standard_primitive_number_Nova_Char* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_primitive_number_Nova_Char* l0_Nova_prim)
 {
 	char l1_Nova_other;
 	
 	l1_Nova_other = l0_Nova_prim->nova_standard_primitive_number_Nova_Char_Nova_value;
-	return this->nova_standard_primitive_number_Nova_Char_Nova_value - l1_Nova_other;
+	return (int)this->nova_standard_primitive_number_Nova_Char_Nova_value - l1_Nova_other;
 }
 
 void nova_standard_primitive_number_Nova_Char_4_Nova_super(nova_standard_primitive_number_Nova_Char* this, nova_standard_exception_Nova_ExceptionData* exceptionData)

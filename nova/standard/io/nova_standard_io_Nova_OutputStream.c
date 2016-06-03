@@ -15,6 +15,8 @@ nova_standard_io_Extension_VTable_OutputStream nova_standard_io_Extension_VTable
 		0,
 		0,
 		0,
+		0,
+		0,
 	},
 	nova_standard_Nova_Object_0_Nova_getHashCodeLong,
 	nova_standard_Nova_Object_0_Nova_toString,

@@ -5,8 +5,15 @@ typedef struct nova_standard_operators_Nova_Multipliable nova_standard_operators
 typedef struct nova_standard_Nova_Object nova_standard_Nova_Object;
 typedef struct nova_standard_io_Nova_InputStream nova_standard_io_Nova_InputStream;
 typedef struct nova_standard_Nova_String nova_standard_Nova_String;
+typedef struct nova_standard_datastruct_Nova_Enumerable nova_standard_datastruct_Nova_Enumerable;
 typedef struct nova_standard_datastruct_Nova_Comparable nova_standard_datastruct_Nova_Comparable;
 typedef struct example_Nova_Polygon example_Nova_Polygon;
+typedef char (*l0_1_Nova_filterFunc)(void*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*);
+typedef char (*l0_2_Nova_filterFunc)(void*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*);
+typedef char (*l0_3_Nova_filterFunc)(void*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*);
+typedef char (*l0_1_Nova_filterFunc)(void*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*);
+typedef char (*l0_2_Nova_filterFunc)(void*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*);
+typedef char (*l0_3_Nova_filterFunc)(void*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*);
 
 typedef struct nova_Interface_VTable
 {
@@ -15,7 +22,11 @@ void (*nova_standard_operators_Nova_Multipliable_virtual8_Nova_this)(nova_standa
 nova_standard_Nova_String* (*nova_standard_io_Nova_InputStream_virtual0_Nova_readString)(nova_standard_io_Nova_InputStream*, nova_standard_exception_Nova_ExceptionData*);
 char* (*nova_standard_io_Nova_InputStream_virtual0_Nova_readBytes)(nova_standard_io_Nova_InputStream*, nova_standard_exception_Nova_ExceptionData*);
 void (*nova_standard_io_Nova_InputStream_virtual1_Nova_this)(nova_standard_io_Nova_InputStream*, nova_standard_exception_Nova_ExceptionData*);
-nova_standard_Nova_Object* (*nova_standard_datastruct_Nova_Comparable_virtual0_Nova_compareTo)(nova_standard_datastruct_Nova_Comparable*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*);
+nova_standard_datastruct_Nova_Enumerable* (*nova_standard_datastruct_Nova_Enumerable_virtual0_Nova_filter)(nova_standard_datastruct_Nova_Enumerable*, nova_standard_exception_Nova_ExceptionData*, l0_3_Nova_filterFunc l0_Nova_filterFunc, void* l0_ref_Nova_filterFunc);
+nova_standard_datastruct_Nova_Enumerable* (*nova_standard_datastruct_Nova_Enumerable_virtual0_Nova_take)(nova_standard_datastruct_Nova_Enumerable*, nova_standard_exception_Nova_ExceptionData*, int);
+nova_standard_datastruct_Nova_Enumerable* (*nova_standard_datastruct_Nova_Enumerable_virtual0_Nova_skip)(nova_standard_datastruct_Nova_Enumerable*, nova_standard_exception_Nova_ExceptionData*, int);
+void (*nova_standard_datastruct_Nova_Enumerable_virtual4_Nova_this)(nova_standard_datastruct_Nova_Enumerable*, nova_standard_exception_Nova_ExceptionData*);
+int (*nova_standard_datastruct_Nova_Comparable_virtual0_Nova_compareTo)(nova_standard_datastruct_Nova_Comparable*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*);
 void (*nova_standard_datastruct_Nova_Comparable_virtual5_Nova_this)(nova_standard_datastruct_Nova_Comparable*, nova_standard_exception_Nova_ExceptionData*);
 int (*example_Nova_Polygon_virtual0_Nova_numberSides)(example_Nova_Polygon*, nova_standard_exception_Nova_ExceptionData*);
 double (*example_Nova_Polygon_virtual0_Nova_calculateArea)(example_Nova_Polygon*, nova_standard_exception_Nova_ExceptionData*);

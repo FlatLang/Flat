@@ -15,6 +15,8 @@ stabilitytest_Extension_VTable_TimeStability stabilitytest_Extension_VTable_Time
 		0,
 		0,
 		0,
+		0,
+		0,
 	},
 	nova_standard_Nova_Object_0_Nova_getHashCodeLong,
 	nova_standard_Nova_Object_0_Nova_toString,
@@ -57,11 +59,6 @@ void stabilitytest_Nova_TimeStability_Nova_destroy(stabilitytest_Nova_TimeStabil
 	NOVA_FREE(*this);
 }
 
-void stabilitytest_Nova_TimeStability_0_Nova_this(stabilitytest_Nova_TimeStability* this, nova_standard_exception_Nova_ExceptionData* exceptionData, stabilitytest_Nova_StabilityTest* l0_Nova_program)
-{
-	stabilitytest_Nova_StabilityTestCase_0_Nova_this((stabilitytest_Nova_StabilityTestCase*)(this), exceptionData, l0_Nova_program);
-}
-
 void stabilitytest_Nova_TimeStability_0_Nova_test(stabilitytest_Nova_TimeStability* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
 	long l1_Nova_start;
@@ -82,6 +79,10 @@ void stabilitytest_Nova_TimeStability_0_Nova_test(stabilitytest_Nova_TimeStabili
 		nova_local_0 = nova_standard_primitive_number_Nova_Long_1_Nova_toString(0, exceptionData, l1_Nova_time);
 		stabilitytest_Nova_StabilityTest_1_Nova_fail(this->stabilitytest_Nova_StabilityTestCase_Nova_program, exceptionData, nova_standard_Nova_String_0_Nova_concat(nova_standard_Nova_String_1_Nova_construct(0, exceptionData, "Failed; expected 100ms, found "), exceptionData, nova_local_0->vtable->nova_standard_Nova_String_virtual0_Nova_concat(nova_local_0, exceptionData, nova_standard_Nova_String_1_Nova_construct(0, exceptionData, "ms"))));
 	}
+}
+
+void stabilitytest_Nova_TimeStability_0_Nova_this(stabilitytest_Nova_TimeStability* this, nova_standard_exception_Nova_ExceptionData* exceptionData, stabilitytest_Nova_StabilityTest* l0_Nova_program)
+{
 }
 
 void stabilitytest_Nova_TimeStability_2_Nova_super(stabilitytest_Nova_TimeStability* this, nova_standard_exception_Nova_ExceptionData* exceptionData)

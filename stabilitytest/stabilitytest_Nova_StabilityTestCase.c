@@ -15,6 +15,8 @@ stabilitytest_Extension_VTable_StabilityTestCase stabilitytest_Extension_VTable_
 		0,
 		0,
 		0,
+		0,
+		0,
 	},
 	nova_standard_Nova_Object_0_Nova_getHashCodeLong,
 	nova_standard_Nova_Object_0_Nova_toString,
@@ -53,7 +55,6 @@ void stabilitytest_Nova_StabilityTestCase_Nova_destroy(stabilitytest_Nova_Stabil
 	
 	stabilitytest_Nova_StabilityTest_Nova_destroy(&(*this)->stabilitytest_Nova_StabilityTestCase_Nova_program, exceptionData);
 	
-	
 	NOVA_FREE(*this);
 }
 
@@ -66,6 +67,5 @@ void stabilitytest_Nova_StabilityTestCase_0_Nova_test(stabilitytest_Nova_Stabili
 void stabilitytest_Nova_StabilityTestCase_Nova_super(stabilitytest_Nova_StabilityTestCase* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
 	this->stabilitytest_Nova_StabilityTestCase_Nova_program = (stabilitytest_Nova_StabilityTest*)nova_null;
-	this->stabilitytest_Nova_StabilityTestCase_Nova_millisOverhead = 0;
 }
 

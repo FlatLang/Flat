@@ -4,6 +4,7 @@
 
 typedef struct nova_standard_datastruct_Nova_BinaryNode nova_standard_datastruct_Nova_BinaryNode;
 
+
 #include <Nova.h>
 #include <ExceptionHandler.h>
 #include <InterfaceVTable.h>

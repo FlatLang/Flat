@@ -4,6 +4,7 @@
 
 typedef struct stabilitytest_Nova_StabilityExceptionHandler stabilitytest_Nova_StabilityExceptionHandler;
 
+
 #include <Nova.h>
 #include <ExceptionHandler.h>
 #include <InterfaceVTable.h>

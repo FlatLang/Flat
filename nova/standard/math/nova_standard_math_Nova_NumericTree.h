@@ -4,6 +4,7 @@
 
 typedef struct nova_standard_math_Nova_NumericTree nova_standard_math_Nova_NumericTree;
 
+
 #include <Nova.h>
 #include <ExceptionHandler.h>
 #include <InterfaceVTable.h>

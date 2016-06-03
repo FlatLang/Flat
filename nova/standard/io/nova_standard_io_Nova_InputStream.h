@@ -4,6 +4,7 @@
 
 typedef struct nova_standard_io_Nova_InputStream nova_standard_io_Nova_InputStream;
 
+
 #include <Nova.h>
 #include <ExceptionHandler.h>
 #include <InterfaceVTable.h>

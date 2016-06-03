@@ -4,6 +4,7 @@
 
 typedef struct nova_standard_math_logic_Nova_Conclusion nova_standard_math_logic_Nova_Conclusion;
 
+
 #include <Nova.h>
 #include <ExceptionHandler.h>
 #include <InterfaceVTable.h>

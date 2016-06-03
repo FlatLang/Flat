@@ -15,6 +15,8 @@ stabilitytest_Extension_VTable_NetworkStability stabilitytest_Extension_VTable_N
 		0,
 		0,
 		0,
+		0,
+		0,
 	},
 	nova_standard_Nova_Object_0_Nova_getHashCodeLong,
 	nova_standard_Nova_Object_0_Nova_toString,
@@ -59,11 +61,6 @@ void stabilitytest_Nova_NetworkStability_Nova_destroy(stabilitytest_Nova_Network
 	
 	
 	NOVA_FREE(*this);
-}
-
-void stabilitytest_Nova_NetworkStability_0_Nova_this(stabilitytest_Nova_NetworkStability* this, nova_standard_exception_Nova_ExceptionData* exceptionData, stabilitytest_Nova_StabilityTest* l0_Nova_program)
-{
-	stabilitytest_Nova_StabilityTestCase_0_Nova_this((stabilitytest_Nova_StabilityTestCase*)(this), exceptionData, l0_Nova_program);
 }
 
 void stabilitytest_Nova_NetworkStability_0_Nova_test(stabilitytest_Nova_NetworkStability* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
@@ -119,6 +116,10 @@ nova_standard_network_Nova_ServerSocket* stabilitytest_Nova_NetworkStability_Nov
 	}
 	nova_standard_io_Nova_Console_0_Nova_writeLine(0, exceptionData, nova_standard_Nova_String_1_Nova_construct(0, exceptionData, "OK"));
 	return l1_Nova_server;
+}
+
+void stabilitytest_Nova_NetworkStability_0_Nova_this(stabilitytest_Nova_NetworkStability* this, nova_standard_exception_Nova_ExceptionData* exceptionData, stabilitytest_Nova_StabilityTest* l0_Nova_program)
+{
 }
 
 void stabilitytest_Nova_NetworkStability_2_Nova_super(stabilitytest_Nova_NetworkStability* this, nova_standard_exception_Nova_ExceptionData* exceptionData)

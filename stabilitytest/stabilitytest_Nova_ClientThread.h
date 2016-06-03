@@ -4,6 +4,7 @@
 
 typedef struct stabilitytest_Nova_ClientThread stabilitytest_Nova_ClientThread;
 
+
 #include <Nova.h>
 #include <ExceptionHandler.h>
 #include <InterfaceVTable.h>

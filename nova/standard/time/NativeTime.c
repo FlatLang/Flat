@@ -4,7 +4,7 @@
 long_long currentTimeMillis()
 {
 	struct timeb tmb;
-	unsigned_long_long value;
+	long_long value;
 
 	ftime(&tmb);
 	/*printf("tmb.time     = %ld (seconds)\n", tmb.time);

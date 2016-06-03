@@ -1,19 +1,12 @@
 #include <precompiled.h>
 #include <stabilitytest/stabilitytest_Nova_ClosureStability.h>
 
-typedef int (*l0_1_Nova_closure)(void*, nova_standard_exception_Nova_ExceptionData*, int, int);
-typedef int (*l0_2_Nova_closure)(void*, nova_standard_exception_Nova_ExceptionData*, int, int);
-typedef int (*l0_3_Nova_closure)(void*, nova_standard_exception_Nova_ExceptionData*, int, int);
-typedef double (*l0_4_Nova_closure)(void*, nova_standard_exception_Nova_ExceptionData*, double);
-typedef double (*l0_5_Nova_closure)(void*, nova_standard_exception_Nova_ExceptionData*, double);
-typedef double (*l0_6_Nova_closure)(void*, nova_standard_exception_Nova_ExceptionData*, double);
-typedef void (*l0_7_Nova_closure)(void*, nova_standard_exception_Nova_ExceptionData*);
-typedef void (*l0_8_Nova_closure)(void*, nova_standard_exception_Nova_ExceptionData*);
-typedef void (*l0_9_Nova_closure)(void*, nova_standard_exception_Nova_ExceptionData*);
 
 stabilitytest_Extension_VTable_ClosureStability stabilitytest_Extension_VTable_ClosureStability_val =
 {
 	{
+		0,
+		0,
 		0,
 		0,
 		0,
@@ -87,11 +80,6 @@ void stabilitytest_Nova_ClosureStability_Nova_destroy(stabilitytest_Nova_Closure
 void stabilitytest_Nova_ClosureStability_Nova_incrementNumber(stabilitytest_Nova_ClosureStability* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
 	this->prv->stabilitytest_Nova_ClosureStability_Nova_number++;
-}
-
-void stabilitytest_Nova_ClosureStability_0_Nova_this(stabilitytest_Nova_ClosureStability* this, nova_standard_exception_Nova_ExceptionData* exceptionData, stabilitytest_Nova_StabilityTest* l0_Nova_program)
-{
-	stabilitytest_Nova_StabilityTestCase_0_Nova_this((stabilitytest_Nova_StabilityTestCase*)(this), exceptionData, l0_Nova_program);
 }
 
 void stabilitytest_Nova_ClosureStability_0_Nova_test(stabilitytest_Nova_ClosureStability* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
@@ -184,6 +172,10 @@ int stabilitytest_Nova_ClosureStability_Nova_pow(stabilitytest_Nova_ClosureStabi
 		l1_Nova_value = l1_Nova_value * l0_Nova_base;
 	}
 	return l1_Nova_value;
+}
+
+void stabilitytest_Nova_ClosureStability_0_Nova_this(stabilitytest_Nova_ClosureStability* this, nova_standard_exception_Nova_ExceptionData* exceptionData, stabilitytest_Nova_StabilityTest* l0_Nova_program)
+{
 }
 
 void stabilitytest_Nova_ClosureStability_2_Nova_super(stabilitytest_Nova_ClosureStability* this, nova_standard_exception_Nova_ExceptionData* exceptionData)

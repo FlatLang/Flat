@@ -4,6 +4,7 @@
 
 typedef struct nova_standard_time_Nova_Time nova_standard_time_Nova_Time;
 
+
 #include <Nova.h>
 #include <ExceptionHandler.h>
 #include <InterfaceVTable.h>

@@ -4,6 +4,7 @@
 
 typedef struct nova_standard_gc_Nova_GC nova_standard_gc_Nova_GC;
 
+
 #include <Nova.h>
 #include <ExceptionHandler.h>
 #include <InterfaceVTable.h>

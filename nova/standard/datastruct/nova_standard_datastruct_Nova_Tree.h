@@ -4,6 +4,7 @@
 
 typedef struct nova_standard_datastruct_Nova_Tree nova_standard_datastruct_Nova_Tree;
 
+
 #include <Nova.h>
 #include <ExceptionHandler.h>
 #include <InterfaceVTable.h>
@@ -27,7 +28,6 @@ typedef struct nova_standard_datastruct_Nova_Tree nova_standard_datastruct_Nova_
 #include <nova/standard/nova_standard_Nova_String.h>
 #include <nova/standard/nova_standard_Nova_System.h>
 #include <nova/standard/math/nova_standard_math_Nova_Math.h>
-#include <nova/standard/exception/nova_standard_exception_Nova_UnimplementedOperationException.h>
 #include <nova/standard/datastruct/nova_standard_datastruct_Nova_Node.h>
 
 

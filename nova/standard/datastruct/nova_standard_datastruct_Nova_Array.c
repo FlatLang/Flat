@@ -15,6 +15,8 @@ nova_standard_datastruct_Extension_VTable_Array nova_standard_datastruct_Extensi
 		0,
 		0,
 		0,
+		0,
+		0,
 	},
 	nova_standard_Nova_Object_0_Nova_getHashCodeLong,
 	nova_standard_Nova_Object_0_Nova_toString,

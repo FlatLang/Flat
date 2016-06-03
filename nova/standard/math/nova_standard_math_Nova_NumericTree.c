@@ -15,6 +15,8 @@ nova_standard_math_Extension_VTable_NumericTree nova_standard_math_Extension_VTa
 		0,
 		0,
 		0,
+		0,
+		0,
 	},
 	nova_standard_Nova_Object_0_Nova_getHashCodeLong,
 	nova_standard_math_Nova_NumericTree_0_Nova_toString,
