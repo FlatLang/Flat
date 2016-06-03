@@ -4,6 +4,7 @@ import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.tree.InstanceDeclaration;
 import net.fathomsoft.nova.tree.List;
+import net.fathomsoft.nova.tree.MethodDeclaration;
 import net.fathomsoft.nova.tree.Node;
 import net.fathomsoft.nova.util.Location;
 
@@ -305,5 +306,29 @@ public class FieldList extends List
 		
 		
 		return null;
+	}
+	
+	public String toString()
+	{
+		if (getNumVisibleChildren() == 0)
+		{
+			return "(none)";
+		}
+		
+		String str = "";
+		
+		for (int i = 0; i < getNumVisibleChildren(); i++)
+		{
+			FieldDeclaration field = (FieldDeclaration)getVisibleChild(i);
+			
+			if (str.length() > 0)
+			{
+				str += "\n";
+			}
+			
+			str += field.generateNovaInput();
+		}
+		
+		return str;
 	}
 }
