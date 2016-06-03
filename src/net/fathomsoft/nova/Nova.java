@@ -116,17 +116,18 @@ public class Nova
 	// Set to 0 to not benchmark.
 	public static final int		BENCHMARK     = 0;
 
-	public static final long	SINGLE_THREAD = 0x10000000000l;
-	public static final long	SMALL_BIN     = 0x01000000000l;
-	public static final long	NO_GC         = 0x00100000000l;
-	public static final long	LIBRARY       = 0x00010000000l;
-	public static final long	RUNTIME       = 0x00001000000l;
-	public static final long	C_ARGS        = 0x00000100000l;
-	public static final long	KEEP_C        = 0x00000010000l;
-	public static final long	DRY_RUN       = 0x00000001000l;
-	public static final long	VERBOSE       = 0x00000000100l;
-	public static final long	FORMATC       = 0x00000000010l;
-	public static final long	CSOURCE       = 0x00000000001l;
+	public static final long	SINGLE_THREAD = 0x100000000000l;
+	public static final long	SMALL_BIN     = 0x010000000000l;
+	public static final long	NO_GC         = 0x001000000000l;
+	public static final long	LIBRARY       = 0x000100000000l;
+	public static final long	RUNTIME       = 0x000010000000l;
+	public static final long	C_ARGS        = 0x000001000000l;
+	public static final long	KEEP_C        = 0x000000100000l;
+	public static final long	DRY_RUN       = 0x000000010000l;
+	public static final long	VERBOSE       = 0x000000001000l;
+	public static final long	FORMATC       = 0x000000000100l;
+	public static final long	CSOURCE       = 0x000000000010l;
+	public static final long	NO_FILE_WRITE = 0x000000000001l;
 	
 	public static final int		GCC           = 1;
 	public static final int		TCC           = 2;
@@ -184,10 +185,12 @@ public class Nova
 		Nova nova = new Nova();
 		
 		nova.compile(args, true);
+		
 		nova.formatOutput();
 		nova.generateNativeInterface();
 		nova.generateInterfaceVTable();
 		nova.writeFiles();
+		
 		nova.compileC();
 	}
 	
@@ -255,23 +258,23 @@ public class Nova
 			
 			args = new String[]
 			{
-				formatPath(stability + "StabilityTest.nova"),
-				formatPath(stability + "TimeStability.nova"),
-				formatPath(stability + "FileStability.nova"),
-				formatPath(stability + "ThreadStability.nova"),
-				formatPath(stability + "ExceptionStability.nova"),
-				formatPath(stability + "SyntaxStability.nova"),
-				formatPath(stability + "ClosureStability.nova"),
-				formatPath(stability + "PolymorphismStability.nova"),
-				formatPath(stability + "PolymorphicSuperClass.nova"),
-				formatPath(stability + "PolymorphicSubClass.nova"),
-				formatPath(stability + "StabilityTestException.nova"),
-				formatPath(stability + "StabilityExceptionHandler.nova"),
-				formatPath(stability + "ThreadImplementation.nova"),
-				formatPath(stability + "UnstableException.nova"),
-				formatPath(stability + "NetworkStability.nova"),
-				formatPath(stability + "ClientThread.nova"),
-				formatPath(stability + "StabilityTestCase.nova"),
+//				formatPath(stability + "StabilityTest.nova"),
+//				formatPath(stability + "TimeStability.nova"),
+//				formatPath(stability + "FileStability.nova"),
+//				formatPath(stability + "ThreadStability.nova"),
+//				formatPath(stability + "ExceptionStability.nova"),
+//				formatPath(stability + "SyntaxStability.nova"),
+//				formatPath(stability + "ClosureStability.nova"),
+//				formatPath(stability + "PolymorphismStability.nova"),
+//				formatPath(stability + "PolymorphicSuperClass.nova"),
+//				formatPath(stability + "PolymorphicSubClass.nova"),
+//				formatPath(stability + "StabilityTestException.nova"),
+//				formatPath(stability + "StabilityExceptionHandler.nova"),
+//				formatPath(stability + "ThreadImplementation.nova"),
+//				formatPath(stability + "UnstableException.nova"),
+//				formatPath(stability + "NetworkStability.nova"),
+//				formatPath(stability + "ClientThread.nova"),
+//				formatPath(stability + "StabilityTestCase.nova"),
 //				formatPath(directory + "network/OutputThread.nova"),
 //				formatPath(directory + "network/ConnectionThread.nova"),
 //				formatPath(directory + "network/ServerDemo.nova"),
@@ -286,7 +289,7 @@ public class Nova
 //				formatPath(root      + "bank/ClientConnectionThread.nova"),
 //				formatPath(root      + "bank/ClientInputThread.nova"),
 //				formatPath(directory + "ackermann/Ackermann.nova"),
-//				formatPath(directory + "Lab.nova"),
+				formatPath(directory + "Lab.nova"),
 //				formatPath(directory + "copy/Dog.nova"),
 //				formatPath(directory + "T1.nova"),
 //				formatPath(directory + "T2.nova"),
@@ -323,6 +326,7 @@ public class Nova
 				"-keepc",
 				"-single-thread",
 //				"-nogc",
+				"-no-file-write",
 //				"-dry"
 				"-library",
 			};
@@ -407,8 +411,9 @@ public class Nova
 			formatPath(standard  + "exception/DivideByZeroException.nova"),
 			formatPath(standard  + "exception/UnimplementedOperationException.nova"),
 			formatPath(standard  + "exception/Exception.nova"),
-			
+
 			formatPath(standard  + "datastruct/ArrayList.nova"),
+			formatPath(standard  + "datastruct/Enumerable.nova"),
 			formatPath(standard  + "datastruct/Queue.nova"),
 			formatPath(standard  + "datastruct/List.nova"),
 			formatPath(standard  + "datastruct/ListNode.nova"),
@@ -522,8 +527,9 @@ public class Nova
 	private String generateInterfaceVTableHeader()
 	{
 		StringBuilder builder = new StringBuilder();
-		
+
 		NovaMethodDeclaration[] methods = tree.getRoot().getProgram().getInterfaceMethods();
+		ClosureDeclaration[] closures = tree.getRoot().getProgram().getPublicClosures();
 		
 		builder.append("#ifndef NOVA_INTERFACE_VTABLE\n");
 		builder.append("#define NOVA_INTERFACE_VTABLE\n\n");
@@ -543,6 +549,11 @@ public class Nova
 			{
 				generateTypeDefinition(builder, list.getParameter(i), types);
 			}
+		}
+		
+		for (ClosureDeclaration c : closures)
+		{
+			c.generateCClosureDefinition(builder);
 		}
 		
 		builder.append("\n");
@@ -779,7 +790,10 @@ public class Nova
 			}
 		}
 		
-		log("Writing files...");
+		if (!isFlagEnabled(NO_FILE_WRITE))
+		{
+			log("Writing files...");
+		}
 		
 		StringBuilder allHeaders = new StringBuilder();
 		StringBuilder includes   = new StringBuilder();
@@ -805,16 +819,19 @@ public class Nova
 			
 			try
 			{
-				File headerFile = FileUtils.writeFile(file.generateCHeaderName(), parent, header);
-				File sourceFile = FileUtils.writeFile(file.generateCSourceName(), parent, source);
-				
-				cHeaderFiles.add(headerFile);
-				cSourceFiles.add(sourceFile);
-				
-				if (!isFlagEnabled(KEEP_C))
+				if (!isFlagEnabled(NO_FILE_WRITE))
 				{
-					lingeringFiles.add(headerFile);
-					lingeringFiles.add(sourceFile);
+					File headerFile = FileUtils.writeFile(file.generateCHeaderName(), parent, header);
+					File sourceFile = FileUtils.writeFile(file.generateCSourceName(), parent, source);
+				
+					cHeaderFiles.add(headerFile);
+					cSourceFiles.add(sourceFile);
+					
+					if (!isFlagEnabled(KEEP_C))
+					{
+						lingeringFiles.add(headerFile);
+						lingeringFiles.add(sourceFile);
+					}
 				}
 			}
 			catch (IOException e)
@@ -830,7 +847,10 @@ public class Nova
 		
 		allHeaders.append("#endif");
 		
-		log("Done writing files.");
+		if (!isFlagEnabled(NO_FILE_WRITE))
+		{
+			log("Done writing files.");
+		}
 	}
 	
 	private StringBuilder generateNativeVirtualMethodAssignments()
@@ -1067,9 +1087,11 @@ public class Nova
 		cmd.append(formatPath(incDir + "Nova.c")).append(' ');
 //		cmd.append(formatPath(incDir + "LibNovaThread.c")).append(' ');
 		
-		for (File sourceFile : cSourceFiles)
+		FileDeclaration[] files = tree.getFiles();
+		
+		for (FileDeclaration sourceFile : files)
 		{
-			cmd.append(formatPath(sourceFile.getAbsolutePath())).append(' ');
+			cmd.append(formatPath(sourceFile.getPackage().getParentFile() + "/" + sourceFile.generateCSourceName())).append(' ');
 		}
 		
 		for (String external : externalImports)
@@ -1433,6 +1455,10 @@ public class Nova
 			else if (arg.equals("-nogc"))
 			{
 				enableFlag(NO_GC);
+			}
+			else if (arg.equals("-no-file-write"))
+			{
+				enableFlag(NO_FILE_WRITE);
 			}
 			// If the user wants to view the c source output.
 			else if (arg.equals("-csource"))
