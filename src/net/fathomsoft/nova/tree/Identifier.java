@@ -458,15 +458,12 @@ public abstract class Identifier extends Value implements Accessible
 		return builder.append(name);
 	}
 	
-	static int a;
-	
 	/**
 	 * @see net.fathomsoft.nova.tree.Value#isVirtualTypeKnown()
 	 */
 	@Override
 	public boolean isVirtualTypeKnown()
 	{
-		Nova.debuggingBreakpoint(a++ > 1029);
 		if (isAccessedWithinStaticContext())
 		{
 			return true;

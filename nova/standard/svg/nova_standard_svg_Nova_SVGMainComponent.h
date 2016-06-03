@@ -4,6 +4,7 @@
 
 typedef struct nova_standard_svg_Nova_SVGMainComponent nova_standard_svg_Nova_SVGMainComponent;
 
+
 #include <Nova.h>
 #include <ExceptionHandler.h>
 #include <InterfaceVTable.h>

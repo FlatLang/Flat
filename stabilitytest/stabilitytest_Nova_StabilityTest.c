@@ -15,6 +15,8 @@ stabilitytest_Extension_VTable_StabilityTest stabilitytest_Extension_VTable_Stab
 				0,
 				0,
 				0,
+				0,
+				0,
 		},
 		nova_standard_Nova_Object_0_Nova_getHashCodeLong,
 		nova_standard_Nova_Object_0_Nova_toString,
@@ -64,16 +66,14 @@ void stabilitytest_Nova_StabilityTest_Nova_main(stabilitytest_Nova_StabilityTest
 		long l1_Nova_start;
 		long l1_Nova_time;
 		nova_standard_Nova_String* nova_local_0;
-		nova_standard_Nova_String* nova_local_1;
 		
 		l1_Nova_n = (stabilitytest_Nova_StabilityTest*)((nova_standard_Nova_Object*)nova_null);
 		l1_Nova_test = stabilitytest_Nova_StabilityTest_Nova_construct(0, exceptionData, l1_Nova_n);
 		l1_Nova_start = nova_standard_time_Nova_Time_Nova_currentTimeMillis(0, exceptionData);
-		vtable->stabilitytest_Nova_StabilityTest_virtual_Nova_test(l1_Nova_test, exceptionData);
+		l1_Nova_test->vtable->stabilitytest_Nova_StabilityTest_virtual_Nova_test(l1_Nova_test, exceptionData);
 		l1_Nova_time = nova_standard_time_Nova_Time_Nova_currentTimeMillis(0, exceptionData) - l1_Nova_start;
 		nova_local_0 = nova_standard_primitive_number_Nova_Long_1_Nova_toString(0, exceptionData, l1_Nova_time);
-		nova_local_1 = nova_standard_primitive_number_Nova_Int_1_Nova_toString(0, exceptionData, this->stabilitytest_Nova_StabilityTestCase_Nova_millisOverhead);
-		nova_standard_io_Nova_Console_0_Nova_writeLine(0, exceptionData, nova_standard_Nova_String_0_Nova_concat(nova_standard_Nova_String_1_Nova_construct(0, exceptionData, "Took "), exceptionData, nova_local_0->vtable->nova_standard_Nova_String_virtual0_Nova_concat(nova_local_0, exceptionData, nova_standard_Nova_String_0_Nova_concat(nova_standard_Nova_String_1_Nova_construct(0, exceptionData, "ms with "), exceptionData, nova_local_1->vtable->nova_standard_Nova_String_virtual0_Nova_concat(nova_local_1, exceptionData, nova_standard_Nova_String_1_Nova_construct(0, exceptionData, "ms overhead"))))));
+		nova_standard_io_Nova_Console_0_Nova_writeLine(0, exceptionData, nova_standard_Nova_String_0_Nova_concat(nova_standard_Nova_String_1_Nova_construct(0, exceptionData, "Took "), exceptionData, nova_local_0->vtable->nova_standard_Nova_String_virtual0_Nova_concat(nova_local_0, exceptionData, nova_standard_Nova_String_1_Nova_construct(0, exceptionData, "ms"))));
 		nova_standard_io_Nova_Console_Nova_waitForEnter(0, exceptionData);
 }
 
@@ -86,7 +86,7 @@ void stabilitytest_Nova_StabilityTest_Nova_test(stabilitytest_Nova_StabilityTest
 {
 		TRY
 		{
-				novaEnv.nova_standard_exception_ExceptionData.addCode(exceptionData, exceptionData, 6);
+				novaEnv.nova_standard_exception_ExceptionData.addCode(exceptionData, exceptionData, 4);
 				
 				{
 						stabilitytest_Nova_ExceptionStability_0_Nova_test(stabilitytest_Nova_ExceptionStability_0_Nova_construct(0, exceptionData, this), exceptionData);
@@ -100,11 +100,12 @@ void stabilitytest_Nova_StabilityTest_Nova_test(stabilitytest_Nova_StabilityTest
 						nova_standard_io_Nova_Console_0_Nova_writeLine(0, exceptionData, nova_standard_Nova_String_1_Nova_construct(0, exceptionData, "All OK"));
 				}
 		}
-		CATCH (6)
+		CATCH (4)
 		{
 				stabilitytest_Nova_UnstableException* l2_Nova_e;
 				
 				l2_Nova_e = (stabilitytest_Nova_UnstableException*)(exceptionData->nova_standard_exception_Nova_ExceptionData_Nova_thrownException);
+				nova_standard_io_Nova_Console_0_Nova_writeLine(0, exceptionData, nova_standard_Nova_String_0_Nova_concat(nova_standard_Nova_String_1_Nova_construct(0, exceptionData, "Unstable exception thrown: "), exceptionData, l2_Nova_e->nova_standard_exception_Nova_Exception_Nova_message));
 		}
 		FINALLY
 		{
@@ -120,7 +121,7 @@ void stabilitytest_Nova_StabilityTest_0_Nova_fail(stabilitytest_Nova_StabilityTe
 void stabilitytest_Nova_StabilityTest_1_Nova_fail(stabilitytest_Nova_StabilityTest* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_Nova_String* l0_Nova_message)
 {
 		nova_standard_io_Nova_Console_0_Nova_writeLine(0, exceptionData, l0_Nova_message);
-		THROW(6, stabilitytest_Nova_UnstableException_0_Nova_construct(0, exceptionData));
+		THROW(1, nova_standard_exception_Nova_Exception_0_Nova_construct(0, exceptionData));
 }
 
 void stabilitytest_Nova_StabilityTest_2_Nova_super(stabilitytest_Nova_StabilityTest* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
@@ -158,6 +159,7 @@ int main(int argc, char** argvs)
 		novaEnv.nova_standard_io_OutputStream.write__nova_standard_String = nova_standard_io_Extension_VTable_OutputStream_val.nova_standard_io_Nova_OutputStream_virtual1_Nova_write;
 		novaEnv.nova_standard_io_OutputStream.write__nova_standard_Object = nova_standard_io_Extension_VTable_OutputStream_val.nova_standard_io_Nova_OutputStream_virtual2_Nova_write;
 		novaEnv.nova_standard_svg_SVGComponent.generateOutput__nova_standard_io_File = nova_standard_svg_Extension_VTable_SVGComponent_val.nova_standard_svg_Nova_SVGComponent_virtual0_Nova_generateOutput;
+		novaEnv.nova_standard_datastruct_Enumerable.filter__nova_standard_primitive_Bool = nova_standard_datastruct_Extension_VTable_Enumerable_val.itable.nova_standard_datastruct_Nova_Enumerable_virtual0_Nova_filter;
 		novaEnv.nova_standard_datastruct_Node.preorder = nova_standard_datastruct_Extension_VTable_Node_val.nova_standard_datastruct_Nova_Node_virtual0_Nova_preorder;
 		novaEnv.nova_standard_datastruct_Node.inorder = nova_standard_datastruct_Extension_VTable_Node_val.nova_standard_datastruct_Nova_Node_virtual0_Nova_inorder;
 		novaEnv.nova_standard_datastruct_Node.postorder = nova_standard_datastruct_Extension_VTable_Node_val.nova_standard_datastruct_Nova_Node_virtual0_Nova_postorder;
@@ -229,6 +231,7 @@ int main(int argc, char** argvs)
 		nova_standard_exception_Nova_UnimplementedOperationExceptionNova_init_static(exceptionData);
 		nova_standard_exception_Nova_ExceptionNova_init_static(exceptionData);
 		nova_standard_datastruct_Nova_ArrayListNova_init_static(exceptionData);
+		nova_standard_datastruct_Nova_EnumerableNova_init_static(exceptionData);
 		nova_standard_datastruct_Nova_QueueNova_init_static(exceptionData);
 		nova_standard_datastruct_Nova_ListNova_init_static(exceptionData);
 		nova_standard_datastruct_Nova_ListNodeNova_init_static(exceptionData);

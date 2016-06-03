@@ -4,6 +4,7 @@
 
 typedef struct nova_standard_operators_Nova_Multipliable nova_standard_operators_Nova_Multipliable;
 
+
 #include <Nova.h>
 #include <ExceptionHandler.h>
 #include <InterfaceVTable.h>

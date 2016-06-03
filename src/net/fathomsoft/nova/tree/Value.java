@@ -5,8 +5,9 @@ import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.error.UnimplementedOperationException;
 import net.fathomsoft.nova.tree.NovaParameterList.ReturnParameterList;
-import net.fathomsoft.nova.tree.generics.GenericDeclaration;
-import net.fathomsoft.nova.tree.generics.GenericParameter;
+import net.fathomsoft.nova.tree.generics.GenericTypeArgumentList;
+import net.fathomsoft.nova.tree.generics.GenericTypeParameter;
+import net.fathomsoft.nova.tree.generics.GenericTypeParameterDeclaration;
 import net.fathomsoft.nova.tree.variables.Super;
 import net.fathomsoft.nova.tree.variables.Variable;
 import net.fathomsoft.nova.util.Location;
@@ -33,6 +34,16 @@ public abstract class Value extends Node implements AbstractValue
 	public Value(Node temporaryParent, Location locationIn)
 	{
 		super(temporaryParent, locationIn);
+	}
+	
+	public GenericCompatible getContext()
+	{
+		return this;
+	}
+
+	public GenericTypeArgumentList getGenericTypeArgumentList()
+	{
+		return (GenericTypeArgumentList)getChild(super.getNumDefaultChildren() + 0);
 	}
 	
 	/**
@@ -351,9 +362,9 @@ public abstract class Value extends Node implements AbstractValue
 	{
 		String type = null;
 		
-		if (isGenericType() && getGenericReturnType() != null)//getParentClass(true).containsGenericParameter(getType()))
+		if (isGenericType() && getGenericReturnType() != null)//getParentClass(true).containsGenericTypeParameter(getType()))
 		{
-			type = getGenericReturnType();//getParentClass().getGenericParameter(getType()).getDefaultType();
+			type = getGenericReturnType();//getParentClass().getGenericTypeParameter(getType()).getDefaultType();
 		}
 		else
 		{
@@ -856,19 +867,19 @@ public abstract class Value extends Node implements AbstractValue
 		return getType();
 	}
 	
-	public GenericParameter getGenericParameter()
+	public GenericTypeParameter getGenericTypeParameter()
 	{
 		if (getParentClass() == null)
 		{
 			return null;
 		}
 		
-		return getParentClass().getGenericParameter(getType());
+		return getParentClass().getGenericTypeParameter(getType());
 	}
 	
 	public final boolean isGenericType()
 	{
-		return getGenericParameter() != null;
+		return getGenericTypeParameter() != null;
 	}
 	
 	public boolean isPrimitiveGenericType()
@@ -878,12 +889,13 @@ public abstract class Value extends Node implements AbstractValue
 	
 	public String getGenericReturnType()
 	{
-		throw new UnimplementedOperationException("The getGenericReturnType() method must be implemented by class " + this.getClass().getName());
+		return getParentClass().getGenericTypeParameter(getType()).getDefaultType();
+		//throw new UnimplementedOperationException("The getGenericReturnType() method must be implemented by class " + this.getClass().getName());
 	}
 	
-	public GenericDeclaration getGenericDeclaration()
+	public GenericTypeParameterDeclaration getGenericTypeParameterDeclaration()
 	{
-		return getParentClass().getGenericDeclaration();
+		return getParentClass().getGenericTypeParameterDeclaration();
 //		throw new UnimplementedOperationException("The getGenericDeclaration() method must be implemented by class " + this.getClass().getName());
 	}
 	

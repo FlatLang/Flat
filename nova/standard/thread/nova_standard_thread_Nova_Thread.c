@@ -16,6 +16,8 @@ nova_standard_thread_Extension_VTable_Thread nova_standard_thread_Extension_VTab
 		0,
 		0,
 		0,
+		0,
+		0,
 	},
 	nova_standard_Nova_Object_0_Nova_getHashCodeLong,
 	nova_standard_Nova_Object_0_Nova_toString,

@@ -4,6 +4,7 @@
 
 typedef struct nova_standard_io_Nova_Console nova_standard_io_Nova_Console;
 
+
 #include <Nova.h>
 #include <ExceptionHandler.h>
 #include <InterfaceVTable.h>

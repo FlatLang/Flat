@@ -4,6 +4,7 @@
 
 typedef struct nova_standard_datastruct_Nova_Node nova_standard_datastruct_Nova_Node;
 
+
 #include <Nova.h>
 #include <ExceptionHandler.h>
 #include <InterfaceVTable.h>
@@ -28,6 +29,7 @@ typedef struct nova_standard_datastruct_Nova_Node nova_standard_datastruct_Nova_
 #include <nova/standard/nova_standard_Nova_System.h>
 #include <nova/standard/math/nova_standard_math_Nova_Math.h>
 #include <nova/standard/datastruct/nova_standard_datastruct_Nova_ArrayList.h>
+#include <nova/standard/datastruct/nova_standard_datastruct_Nova_Queue.h>
 
 
 typedef struct nova_standard_datastruct_Extension_VTable_Node nova_standard_datastruct_Extension_VTable_Node;
@@ -67,6 +69,7 @@ void nova_standard_datastruct_Nova_Node_5_Nova_this(nova_standard_datastruct_Nov
 nova_standard_Nova_String* nova_standard_datastruct_Nova_Node_0_Nova_preorder(nova_standard_datastruct_Nova_Node* this, nova_standard_exception_Nova_ExceptionData* exceptionData);
 nova_standard_Nova_String* nova_standard_datastruct_Nova_Node_0_Nova_inorder(nova_standard_datastruct_Nova_Node* this, nova_standard_exception_Nova_ExceptionData* exceptionData);
 nova_standard_Nova_String* nova_standard_datastruct_Nova_Node_0_Nova_postorder(nova_standard_datastruct_Nova_Node* this, nova_standard_exception_Nova_ExceptionData* exceptionData);
+nova_standard_Nova_String* nova_standard_datastruct_Nova_Node_Nova_levelorder(nova_standard_datastruct_Nova_Node* this, nova_standard_exception_Nova_ExceptionData* exceptionData);
 nova_standard_Nova_String* nova_standard_datastruct_Nova_Node_0_Nova_toString(nova_standard_datastruct_Nova_Node* this, nova_standard_exception_Nova_ExceptionData* exceptionData);
 void nova_standard_datastruct_Nova_Node_Nova_super(nova_standard_datastruct_Nova_Node* this, nova_standard_exception_Nova_ExceptionData* exceptionData);
 

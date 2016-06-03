@@ -15,6 +15,8 @@ nova_standard_datastruct_Extension_VTable_List nova_standard_datastruct_Extensio
 		0,
 		0,
 		0,
+		0,
+		0,
 	},
 	nova_standard_Nova_Object_0_Nova_getHashCodeLong,
 	nova_standard_Nova_Object_0_Nova_toString,
@@ -100,7 +102,7 @@ void nova_standard_datastruct_Nova_List_Nova_remove(nova_standard_datastruct_Nov
 	{
 		nova_standard_Nova_Object* l2_Nova_d;
 		
-		l2_Nova_d = (nova_standard_Nova_Object*)(l1_Nova_cur->nova_standard_datastruct_Nova_ListNode_Nova_data);
+		l2_Nova_d = l1_Nova_cur->nova_standard_datastruct_Nova_ListNode_Nova_data;
 		if (l2_Nova_d == l0_Nova_data)
 		{
 			l1_Nova_prev->nova_standard_datastruct_Nova_ListNode_Nova_next = l1_Nova_cur->nova_standard_datastruct_Nova_ListNode_Nova_next;

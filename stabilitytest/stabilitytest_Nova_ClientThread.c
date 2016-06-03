@@ -15,6 +15,8 @@ stabilitytest_Extension_VTable_ClientThread stabilitytest_Extension_VTable_Clien
 		0,
 		0,
 		0,
+		0,
+		0,
 	},
 	nova_standard_Nova_Object_0_Nova_getHashCodeLong,
 	nova_standard_Nova_Object_0_Nova_toString,

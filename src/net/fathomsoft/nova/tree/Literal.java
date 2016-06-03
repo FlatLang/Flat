@@ -39,7 +39,7 @@ public class Literal extends IValue
 	{
 		if (isGenericType())
 		{
-			return getGenericParameter().getDefaultType();
+			return getGenericTypeParameter().getDefaultType();
 		}
 		
 		return getType();

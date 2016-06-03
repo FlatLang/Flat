@@ -1,6 +1,6 @@
 package "nova/standard/datastruct"
 
-public class ArrayList<E>
+public class ArrayList<E> implements Enumerable<E>
 {
 	external void arrayCopy(E dest[], int dIndex, E src[], int sIndex, int len, int destArrLen, int size)
 	
@@ -102,6 +102,8 @@ public class ArrayList<E>
 	
 	increaseSize(Int size)
 	{
+		Int offset = size - bufferSize
+		
 		bufferSize = size
 		
 		E tmp[] = new E[bufferSize]
@@ -109,6 +111,11 @@ public class ArrayList<E>
 		arrayCopy(tmp, 0, data, 0, this.size, bufferSize, 4)
 		
 		data = tmp
+		
+		for (Int i = bufferSize - offset; i < bufferSize; i++)
+		{
+			data[i] = null
+		}
 	}
 	
 	public get(Int index) -> E
@@ -129,5 +136,57 @@ public class ArrayList<E>
 		{
 			array[i] = data[i]
 		}
+	}
+	
+	public forEach(func(E, Int, ArrayList<E>))
+	{
+		for (Int i = 0; i < size; i++)
+		{
+			func(data[i], i, this)
+		}
+	}
+	
+	public filter(filterFunc(E) -> Bool) -> ArrayList<E>
+	{
+		ArrayList<E> filtered = new ArrayList()
+		
+		for (Int i = 0; i < size; i++)
+		{
+			if (filterFunc(data[i]))
+			{
+				filtered.add(data[i])
+			}
+		}
+		
+		return filtered
+	}
+	
+	public take(Int howMany) -> ArrayList<E>
+	{
+		if (howMany > size)
+		{
+			howMany = size
+		}
+		
+		ArrayList<E> list = new ArrayList()
+		
+		for (Int i = 0; i < howMany; i++)
+		{
+			list.add(data[i])
+		}
+		
+		return list
+	}
+	
+	public skip(Int howMany) -> ArrayList<E>
+	{
+		ArrayList<E> list = new ArrayList()
+		
+		for (Int i = howMany; i < size; i++)
+		{
+			list.add(data[i])
+		}
+		
+		return list
 	}
 }

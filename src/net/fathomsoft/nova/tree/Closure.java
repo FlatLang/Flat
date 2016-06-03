@@ -1,8 +1,13 @@
 package net.fathomsoft.nova.tree;
 
+import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.error.SyntaxMessage;
+import net.fathomsoft.nova.tree.generics.GenericTypeArgument;
+import net.fathomsoft.nova.tree.generics.GenericTypeArgumentList;
+import net.fathomsoft.nova.tree.generics.GenericTypeParameter;
+import net.fathomsoft.nova.tree.generics.GenericTypeParameterDeclaration;
 import net.fathomsoft.nova.tree.variables.Variable;
 import net.fathomsoft.nova.util.Location;
 import net.fathomsoft.nova.util.StringUtils;
@@ -55,6 +60,7 @@ public class Closure extends Variable
 	{
 		getClosureDeclaration().generateCTypeCast(builder);
 		
+		Nova.debuggingBreakpoint(getMethodDeclaration() == null);
 		if (getMethodDeclaration().isVirtual() && !isVirtualTypeKnown())
 		{
 			getRootReferenceNode().generateCArgumentReference(builder, this).append("->").append(VTable.IDENTIFIER).append("->");
@@ -119,7 +125,7 @@ public class Closure extends Variable
 	 */
 	public NovaMethodDeclaration getMethodDeclaration()
 	{
-		return getMethodDeclaration(getName());
+		return getMethodDeclaration(getMethodCall().getReferenceNode().getContext(), getName());
 	}
 	
 	/**
@@ -132,7 +138,17 @@ public class Closure extends Variable
 	 */
 	private NovaMethodDeclaration getMethodDeclaration(String name)
 	{
-		return (NovaMethodDeclaration)((Value)getReferenceNode()).getTypeClass().getMethod(name, getClosureDeclaration().getParameterList().getTypes());
+		return getMethodDeclaration((GenericCompatible)null, name);
+	}
+	
+	private NovaMethodDeclaration getMethodDeclaration(GenericCompatible context, String name)
+	{
+		return getMethodDeclaration(context == null ? null : new GenericCompatible[] { context }, name);
+	}
+	
+	private NovaMethodDeclaration getMethodDeclaration(GenericCompatible[] contexts, String name)
+	{
+		return (NovaMethodDeclaration)((Value)getReferenceNode()).getTypeClass().getMethod(contexts, name, getClosureDeclaration().getParameterList().getTypes());
 	}
 	
 	/**
@@ -213,10 +229,22 @@ public class Closure extends Variable
 		
 		if (phase == SyntaxTree.PHASE_METHOD_CONTENTS)
 		{
-			MethodDeclaration declaration = getMethodDeclaration(declarations[0].getName());
+			MethodDeclaration declaration = getMethodDeclaration(getMethodCall().getReferenceNode().getContext(), declarations[0].getName());
 			
 			if (declaration == null)
 			{
+				Variable a = (Variable)getMethodCall().getReferenceNode();
+				
+				String s = a.getType();
+				
+				GenericTypeParameter p = a.getGenericTypeParameter();
+				
+				GenericTypeParameterDeclaration aa = a.getGenericTypeParameterDeclaration();
+				
+				GenericTypeArgumentList aaa = a.getDeclaration().getGenericTypeArgumentList();
+				
+				getMethodDeclaration(new GenericCompatible[] { a.getDeclaration() }, declarations[0].getName());
+				
 				SyntaxMessage.error("Method '" + declarations[0].getName() + "' is not compatible", this);
 				
 				return result.errorOccurred();
@@ -315,7 +343,23 @@ public class Closure extends Variable
 			
 			if (!value1.getTypeClass().isOfType(value2.getTypeClass()))
 			{
-				SyntaxMessage.error("Argument " + (i + 1) + " of the method '" + method.getName() + "()' of type '" + value2.getType() + "' is not applicable for required closure type of '" + value1.getType() + "'", this);
+				boolean valid = false;
+				
+				if (value1.isGenericType())
+				{
+					GenericCompatible context = getMethodCall().getReferenceNode().getContext();
+					
+					int index = ((Value)context).getTypeClass().getGenericTypeParameterIndex(value1.getType());
+					
+					GenericTypeArgument arg = context.getGenericTypeArgument(index);
+					
+					valid = arg.getTypeClass().isOfType(value2.getTypeClass());
+				}
+				
+				if (!valid)
+				{
+					SyntaxMessage.error("Argument " + (i + 1) + " of the method '" + method.getName() + "()' of type '" + value2.getType() + "' is not applicable for required closure type of '" + value1.getType() + "'", this);
+				}
 			}
 		}
 	}

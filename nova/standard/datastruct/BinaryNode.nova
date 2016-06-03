@@ -55,7 +55,7 @@ public class BinaryNode<E> extends Node
 	{
 		Comparable<E> temp = (Comparable)this.data
 		
-		if (temp.compareTo(data) < 0)
+		if (temp.compareTo(data) >= 0)
 		{
 			if (left == null)
 				left = new BinaryNode(data)

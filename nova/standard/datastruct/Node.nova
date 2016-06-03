@@ -85,6 +85,38 @@ public class Node<E>
 		return str
 	}
 	
+	public levelorder() -> String
+	{
+		String str = ""
+		
+		Queue<Node> queue = new Queue()
+		queue.enqueue(this)
+		
+		while (!queue.isEmpty())
+		{
+			Node<E> current = queue.dequeue()
+			
+			if (str.length > 0)
+			{
+				str = str + ", "
+			}
+			
+			str = str + current.data
+			
+			for (Int i = 0; i < current.children.size; i++)
+			{
+				Node node = current.children.get(i)
+				
+				if (node != null)
+				{
+					queue.enqueue(node)
+				}
+			}
+		}
+		
+		return str
+	}
+	
 	public toString() -> String
 	{
 		return data.toString()

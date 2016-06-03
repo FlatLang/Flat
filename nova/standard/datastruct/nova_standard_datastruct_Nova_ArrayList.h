@@ -3,6 +3,12 @@
 #define FILE_nova_standard_datastruct_Nova_ArrayList_NOVA
 
 typedef struct nova_standard_datastruct_Nova_ArrayList nova_standard_datastruct_Nova_ArrayList;
+typedef struct nova_standard_Nova_Object nova_standard_Nova_Object;
+typedef struct nova_standard_exception_Nova_ExceptionData nova_standard_exception_Nova_ExceptionData;
+
+typedef char (*l0_1_Nova_filterFunc)(void*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*);
+typedef char (*l0_2_Nova_filterFunc)(void*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*);
+typedef char (*l0_3_Nova_filterFunc)(void*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*);
 
 #include <Nova.h>
 #include <ExceptionHandler.h>
@@ -27,6 +33,7 @@ typedef struct nova_standard_datastruct_Nova_ArrayList nova_standard_datastruct_
 #include <nova/standard/nova_standard_Nova_String.h>
 #include <nova/standard/nova_standard_Nova_System.h>
 #include <nova/standard/math/nova_standard_math_Nova_Math.h>
+#include <nova/standard/datastruct/nova_standard_datastruct_Nova_Enumerable.h>
 
 
 typedef struct nova_standard_datastruct_Extension_VTable_ArrayList nova_standard_datastruct_Extension_VTable_ArrayList;
@@ -36,6 +43,7 @@ struct nova_standard_datastruct_Extension_VTable_ArrayList
 	long (*nova_standard_Nova_Object_virtual0_Nova_getHashCodeLong)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*);
 	nova_standard_Nova_String* (*nova_standard_Nova_Object_virtual0_Nova_toString)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*);
 	char (*nova_standard_Nova_Object_virtual0_Nova_equals)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*);
+	nova_standard_datastruct_Nova_ArrayList* (*nova_standard_datastruct_Nova_ArrayList_virtual_Nova_filter)(nova_standard_datastruct_Nova_ArrayList*, nova_standard_exception_Nova_ExceptionData*, l0_3_Nova_filterFunc l0_Nova_filterFunc, void* l0_ref_Nova_filterFunc);
 };
 
 extern nova_standard_datastruct_Extension_VTable_ArrayList nova_standard_datastruct_Extension_VTable_ArrayList_val;
@@ -63,6 +71,7 @@ void nova_standard_datastruct_Nova_ArrayList_Nova_swap(nova_standard_datastruct_
 nova_standard_Nova_Object* nova_standard_datastruct_Nova_ArrayList_Nova_get(nova_standard_datastruct_Nova_ArrayList* this, nova_standard_exception_Nova_ExceptionData* exceptionData, int l0_Nova_index);
 void nova_standard_datastruct_Nova_ArrayList_Nova_set(nova_standard_datastruct_Nova_ArrayList* this, nova_standard_exception_Nova_ExceptionData* exceptionData, int l0_Nova_index, nova_standard_Nova_Object* l0_Nova_value);
 nova_standard_Nova_Object** nova_standard_datastruct_Nova_ArrayList_Nova_toArray(nova_standard_datastruct_Nova_ArrayList* this, nova_standard_exception_Nova_ExceptionData* exceptionData);
+nova_standard_datastruct_Nova_ArrayList* nova_standard_datastruct_Nova_ArrayList_Nova_filter(nova_standard_datastruct_Nova_ArrayList* this, nova_standard_exception_Nova_ExceptionData* exceptionData, l0_3_Nova_filterFunc l0_Nova_filterFunc, void* l0_ref_Nova_filterFunc);
 char nova_standard_datastruct_Nova_ArrayList_Accessor_Nova_empty(nova_standard_datastruct_Nova_ArrayList* this, nova_standard_exception_Nova_ExceptionData* exceptionData);
 void nova_standard_datastruct_Nova_ArrayList_Nova_super(nova_standard_datastruct_Nova_ArrayList* this, nova_standard_exception_Nova_ExceptionData* exceptionData);
 

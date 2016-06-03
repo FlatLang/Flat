@@ -4,6 +4,7 @@
 
 typedef struct nova_standard_datastruct_Nova_HashMap nova_standard_datastruct_Nova_HashMap;
 
+
 #include <Nova.h>
 #include <ExceptionHandler.h>
 #include <InterfaceVTable.h>

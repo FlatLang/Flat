@@ -4,6 +4,7 @@
 
 typedef struct stabilitytest_Nova_PolymorphicSuperClass stabilitytest_Nova_PolymorphicSuperClass;
 
+
 #include <Nova.h>
 #include <ExceptionHandler.h>
 #include <InterfaceVTable.h>

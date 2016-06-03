@@ -7,7 +7,7 @@ import net.fathomsoft.nova.error.SyntaxErrorException;
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.tree.MethodList.SearchFilter;
 import net.fathomsoft.nova.tree.exceptionhandling.Throw;
-import net.fathomsoft.nova.tree.generics.GenericDeclaration;
+import net.fathomsoft.nova.tree.generics.GenericTypeParameterDeclaration;
 import net.fathomsoft.nova.tree.variables.Variable;
 import net.fathomsoft.nova.tree.variables.VariableDeclaration;
 import net.fathomsoft.nova.util.Bounds;
@@ -130,7 +130,7 @@ public class MethodCall extends Variable
 	{
 		if (getCallableDeclaration().isVirtual())
 		{
-			if (isAccessed() && ((Value)getAccessingNode()).isVirtualTypeKnown())
+			if (isVirtualTypeKnown())//isAccessed() && ((Value)getAccessingNode()).isVirtualTypeKnown())
 			{
 				return true;
 			}
@@ -194,7 +194,7 @@ public class MethodCall extends Variable
 			setName(getFileDeclaration().getImportedClass(declaring, getName()).getName());
 		}
 		
-		return declaring.getMethod(getName(), getArgumentList().getTypes());
+		return declaring.getMethod(null, getName(), getArgumentList().getTypes());
 	}
 		
 	/**
@@ -451,7 +451,7 @@ public class MethodCall extends Variable
 	{
 		VariableDeclaration method   = getMethodDeclaration();
 		CallableMethod      callable = (CallableMethod)method;
-		Nova.debuggingBreakpoint(getName().equals("test"));
+		
 		if (callable.isVirtual() && !isVirtualTypeKnown())
 		{
 			NovaMethodDeclaration novaMethod = (NovaMethodDeclaration)method;
@@ -461,7 +461,10 @@ public class MethodCall extends Variable
 				builder.append(ParameterList.OBJECT_REFERENCE_IDENTIFIER).append("->");
 			}
 			
-			if(getParent() instanceof Variable)((Variable)getParent()).isSpecialFragment();
+			if (getParent() instanceof Variable)
+			{
+				//((Variable)getParent()).generateCUseOutput(builder).append("->");
+			}
 			
 			builder.append(VTable.IDENTIFIER).append("->");
 			
@@ -478,7 +481,7 @@ public class MethodCall extends Variable
 		}
 		
 		builder.append(getArgumentList().generateCSource());
-		Nova.debuggingBreakpoint(builder.toString().equals("(nova_standard_Nova_String_1_Nova_construct(0, exceptionData, \", \"), exceptionData, nova_standard_Nova_String_0_Nova_concat(nova_standard_primitive_number_Nova_Int_1_Nova_toString(0, exceptionData, l0_Nova_end), exceptionData, nova_standard_Nova_String_1_Nova_construct(0, exceptionData, \"] are invalid\"))"));
+		
 		if (isGenericType() && doesAccess())
 		{
 			builder.append(')');
@@ -488,7 +491,7 @@ public class MethodCall extends Variable
 	}
 	
 	@Override
-	public GenericDeclaration getGenericDeclaration()
+	public GenericTypeParameterDeclaration getGenericTypeParameterDeclaration()
 	{
 		GenericCompatible gen = getGenericCompatible(false);
 		
@@ -497,7 +500,7 @@ public class MethodCall extends Variable
 			return null;
 		}
 		
-		return ((Value)gen).getGenericDeclaration();
+		return ((Value)gen).getGenericTypeParameterDeclaration();
 	}
 	
 	public GenericCompatible getGenericCompatible()
@@ -572,7 +575,7 @@ public class MethodCall extends Variable
 		
 		if (method.isGenericType())
 		{
-			return generic.getGenericArgumentInstance(method.getType()).getGenericReturnType();
+			return generic.getGenericTypeArgumentInstance(method.getType()).getGenericReturnType();
 		}
 		
 		return super.getGenericReturnType();
@@ -899,7 +902,7 @@ public class MethodCall extends Variable
 			}
 		}
 		
-		return methodDeclaration.areCompatibleParameterTypes(arguments.getTypes());
+		return methodDeclaration.areCompatibleParameterTypes(null, arguments.getTypes());
 	}
 	
 	/**

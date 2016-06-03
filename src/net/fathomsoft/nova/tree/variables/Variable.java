@@ -7,12 +7,13 @@ import net.fathomsoft.nova.tree.Accessible;
 import net.fathomsoft.nova.tree.AccessorMethod;
 import net.fathomsoft.nova.tree.Assignment;
 import net.fathomsoft.nova.tree.ClassDeclaration;
+import net.fathomsoft.nova.tree.GenericCompatible;
 import net.fathomsoft.nova.tree.Identifier;
 import net.fathomsoft.nova.tree.MethodCall;
 import net.fathomsoft.nova.tree.Node;
 import net.fathomsoft.nova.tree.SyntaxTree;
-import net.fathomsoft.nova.tree.generics.GenericArgument;
-import net.fathomsoft.nova.tree.generics.GenericParameter;
+import net.fathomsoft.nova.tree.generics.GenericTypeArgument;
+import net.fathomsoft.nova.tree.generics.GenericTypeParameter;
 import net.fathomsoft.nova.util.Location;
 
 /**
@@ -65,7 +66,7 @@ public class Variable extends Identifier
 			{
 				VariableDeclaration decl = ((Variable)ref).getDeclaration();
 				
-				GenericArgument type = decl.getGenericArgumentInstance(getType(), this);
+				GenericTypeArgument type = decl.getGenericTypeArgumentInstance(getType(), this);
 				
 				if (type.isGenericType())
 				{
@@ -75,7 +76,7 @@ public class Variable extends Identifier
 				return type.getType();
 			}
 			
-			return getGenericParameter().getDefaultType();
+			return getGenericTypeParameter().getDefaultType();
 		}
 		
 		throw new RuntimeException("Generic return type requested from non-generic type.");
@@ -145,6 +146,11 @@ public class Variable extends Identifier
 //		
 //		return clazz;
 //	}
+	
+	public GenericCompatible getContext()
+	{
+		return getDeclaration().getContext();
+	}
 	
 	/**
 	 * Get the Instance/LocalDeclaration that declares the
@@ -323,22 +329,22 @@ public class Variable extends Identifier
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.Value#getGenericParameter()
+	 * @see net.fathomsoft.nova.tree.Value#getGenericTypeParameter()
 	 */
 	@Override
-	public GenericParameter getGenericParameter()
+	public GenericTypeParameter getGenericTypeParameter()
 	{
 		if (declaration == null)
 		{
 			return null;
 		}
 		
-		return declaration.getGenericParameter();
+		return declaration.getGenericTypeParameter();
 	}
 	
 	public boolean doesUseGenericTypes()
 	{
-		return getDeclaration().getGenericDeclaration().getNumParameters() > 0;
+		return getDeclaration().getGenericTypeParameterDeclaration().getNumParameters() > 0;
 	}
 	
 	@Override
@@ -370,7 +376,7 @@ public class Variable extends Identifier
 				FieldDeclaration field    = (FieldDeclaration)getDeclaration();
 				AccessorMethod   accessor = field.getAccessorMethod();
 				
-				if (accessor != null && !accessor.isDisabled())
+				if (accessor != null && !accessor.isDisabled() && getParentMethod() != accessor)
 				{
 					MethodCall access = MethodCall.decodeStatement(getParent(), getName() + "()", getLocationIn(), true, false, accessor);
 					

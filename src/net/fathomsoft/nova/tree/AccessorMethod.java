@@ -58,6 +58,7 @@ public class AccessorMethod extends PropertyMethod
 			{
 				AccessorMethod n = new AccessorMethod(parent, location);
 				n.setName(n.getParentField().getName());
+				n.setType(n.getParentField().getType());
 				n.setDisabled(true);
 				
 				return n;

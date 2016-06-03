@@ -23,6 +23,6 @@ public class Tree
 	
 	public levelorder() -> String
 	{
-		throw new UnimplementedOperationException("Level order has not been implemented yet... hold on.")
+		return root.levelorder()
 	}
 }

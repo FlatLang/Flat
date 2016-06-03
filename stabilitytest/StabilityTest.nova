@@ -20,7 +20,7 @@ public class StabilityTest extends StabilityTestCase
 //		if (args[1].equals("test"))
 //		System.execute("Executable.exe a")
 		
-		Console.writeLine("Took " + time + "ms with " + millisOverhead + "ms overhead")
+		Console.writeLine("Took " + time + "ms")
 		
 		Console.waitForEnter()
 	}
@@ -47,6 +47,7 @@ public class StabilityTest extends StabilityTestCase
 		}
 		catch (UnstableException e)
 		{
+			Console.writeLine("Unstable exception thrown: " + e.message)
 		}
 	}
 	

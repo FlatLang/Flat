@@ -3,7 +3,7 @@ package net.fathomsoft.nova.tree;
 import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.error.SyntaxMessage;
-import net.fathomsoft.nova.tree.generics.GenericImplementation;
+import net.fathomsoft.nova.tree.generics.GenericTypeArgumentList;
 import net.fathomsoft.nova.tree.variables.Array;
 import net.fathomsoft.nova.tree.variables.VariableDeclaration;
 import net.fathomsoft.nova.util.Bounds;
@@ -33,7 +33,7 @@ public class Instantiation extends IIdentifier implements GenericCompatible
 	{
 		super(temporaryParent, locationIn);
 		
-		GenericImplementation implementation = new GenericImplementation(temporaryParent, locationIn.asNew());
+		GenericTypeArgumentList implementation = new GenericTypeArgumentList(temporaryParent, locationIn.asNew());
 		addChild(implementation);
 	}
 	
@@ -59,9 +59,9 @@ public class Instantiation extends IIdentifier implements GenericCompatible
 	 * @see net.fathomsoft.nova.tree.GenericCompatible#getGenericParameterNames()
 	 */
 	@Override
-	public GenericImplementation getGenericImplementation()
+	public GenericTypeArgumentList getGenericTypeArgumentList()
 	{
-		return (GenericImplementation)getChild(super.getNumDefaultChildren() + 0);
+		return (GenericTypeArgumentList)getChild(super.getNumDefaultChildren() + 0);
 	}
 	
 	@Override
@@ -240,7 +240,7 @@ public class Instantiation extends IIdentifier implements GenericCompatible
 		
 		if (bounds.isValid())
 		{
-			decodeGenericArguments(params);
+			decodeGenericTypeArguments(params);
 		}
 		
 		String className = null;

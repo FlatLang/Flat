@@ -95,9 +95,9 @@ public class BodyMethodDeclaration extends NovaMethodDeclaration
 	 * <br>
 	 * Example inputs include:<br>
 	 * <ul>
-	 * 	<li>public Person findPerson(String name, int age)</li>
-	 * 	<li>private int calculateArea(int width, int height)</li>
-	 * 	<li>public void doNothing()</li>
+	 * 	<li>public findPerson(String name, Int age) -&gt; Person</li>
+	 * 	<li>private calculateArea(Int width, Int height) -&gt; Int</li>
+	 * 	<li>public doNothing()</li>
 	 * </ul>
 	 * 
 	 * @param parent The parent node of the statement.

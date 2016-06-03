@@ -24,7 +24,7 @@ public class MathDemo
 			}
 		}
 		
-		long time = Time.currentTimeMillis() - start;
+		long time = Time.currentTimeMillis() - start
 		
 		Console.writeLine(iterations + " iterations of Math.sin() in " + time + "ms")
 		

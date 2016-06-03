@@ -3,7 +3,7 @@ package net.fathomsoft.nova.tree;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.tree.ClassDeclaration.ClassData;
-import net.fathomsoft.nova.tree.generics.GenericImplementation;
+import net.fathomsoft.nova.tree.generics.GenericTypeArgumentList;
 import net.fathomsoft.nova.tree.variables.VariableDeclaration.DeclarationData;
 import net.fathomsoft.nova.util.Location;
 import net.fathomsoft.nova.util.StringUtils;
@@ -22,7 +22,7 @@ public class InterfaceImplementation extends IValue implements GenericCompatible
 	{
 		super(temporaryParent, locationIn);
 		
-		GenericImplementation implementation = new GenericImplementation(this, locationIn.asNew());
+		GenericTypeArgumentList implementation = new GenericTypeArgumentList(this, locationIn.asNew());
 		addChild(implementation, this);
 	}
 	
@@ -36,12 +36,12 @@ public class InterfaceImplementation extends IValue implements GenericCompatible
 	}
 
 	/**
-	 * @see net.fathomsoft.nova.tree.GenericCompatible#getGenericImplementation()
+	 * @see net.fathomsoft.nova.tree.GenericCompatible#getGenericTypeArgumentList()
 	 */
 	@Override
-	public GenericImplementation getGenericImplementation()
+	public GenericTypeArgumentList getGenericTypeArgumentList()
 	{
-		return (GenericImplementation)getChild(super.getNumDefaultChildren() + 0);
+		return (GenericTypeArgumentList)getChild(super.getNumDefaultChildren() + 0);
 	}
 	
 	/**

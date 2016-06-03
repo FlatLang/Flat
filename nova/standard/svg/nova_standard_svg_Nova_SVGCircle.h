@@ -4,6 +4,7 @@
 
 typedef struct nova_standard_svg_Nova_SVGCircle nova_standard_svg_Nova_SVGCircle;
 
+
 #include <Nova.h>
 #include <ExceptionHandler.h>
 #include <InterfaceVTable.h>

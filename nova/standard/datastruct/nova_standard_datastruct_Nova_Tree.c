@@ -15,6 +15,8 @@ nova_standard_datastruct_Extension_VTable_Tree nova_standard_datastruct_Extensio
 		0,
 		0,
 		0,
+		0,
+		0,
 	},
 	nova_standard_Nova_Object_0_Nova_getHashCodeLong,
 	nova_standard_Nova_Object_0_Nova_toString,
@@ -72,7 +74,7 @@ nova_standard_Nova_String* nova_standard_datastruct_Nova_Tree_Nova_postorder(nov
 
 nova_standard_Nova_String* nova_standard_datastruct_Nova_Tree_Nova_levelorder(nova_standard_datastruct_Nova_Tree* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
-	THROW(5, nova_standard_exception_Nova_UnimplementedOperationException_1_Nova_construct(0, exceptionData, nova_standard_Nova_String_1_Nova_construct(0, exceptionData, "Level order has not been implemented yet... hold on.")));
+	return nova_standard_datastruct_Nova_Node_Nova_levelorder(this->nova_standard_datastruct_Nova_Tree_Nova_root, exceptionData);
 }
 
 void nova_standard_datastruct_Nova_Tree_2_Nova_this(nova_standard_datastruct_Nova_Tree* this, nova_standard_exception_Nova_ExceptionData* exceptionData)

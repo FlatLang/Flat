@@ -3,7 +3,7 @@ package "nova/standard/math"
 import "nova/standard/datastruct/Bounds"
 import "nova/standard/datastruct/ArrayList"
 
-public class NumericOperation extends NumericOperand
+public class NumericOperation extends NumericOperand<Object>
 {
 	NumericOperand leftOperand
 	NumericOperand rightOperand

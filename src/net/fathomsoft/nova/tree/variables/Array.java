@@ -351,7 +351,7 @@ public class Array extends VariableDeclaration implements ArrayCompatible
 			{
 				return SyntaxMessage.queryError("Cannot decode value '" + value + "'", this, require);
 			}
-			else if (!SyntaxUtils.isTypeCompatible(getArrayDeclaration(), val, true, 1))
+			else if (!SyntaxUtils.isTypeCompatible(null, getArrayDeclaration(), val, true, 1))
 			{
 				return SyntaxMessage.queryError("Type '" + val.getType() + "' is not compatible with array type '" + getArrayDeclaration().getType() + "'", this, require);
 			}

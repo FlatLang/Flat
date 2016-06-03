@@ -1,14 +1,11 @@
 package net.fathomsoft.nova.tree.generics;
 
-import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.TestContext;
-import net.fathomsoft.nova.tree.AccessorMethod;
+import net.fathomsoft.nova.error.UnimplementedOperationException;
 import net.fathomsoft.nova.tree.GenericCompatible;
 import net.fathomsoft.nova.tree.IValue;
 import net.fathomsoft.nova.tree.Node;
-import net.fathomsoft.nova.tree.TypeList;
 import net.fathomsoft.nova.tree.Value;
-import net.fathomsoft.nova.tree.variables.VariableDeclaration;
 import net.fathomsoft.nova.util.Location;
 
 /**
@@ -21,23 +18,23 @@ import net.fathomsoft.nova.util.Location;
  * @since	v0.2.41 Dec 7, 2014 at 10:22:46 PM
  * @version	v0.2.41 Dec 17, 2014 at 7:48:17 PM
  */
-public class GenericArgument extends IValue implements GenericCompatible
+public class GenericTypeArgument extends IValue implements GenericCompatible
 {
 	/**
 	 * @see net.fathomsoft.nova.tree.Node#Node(Node, Location)
 	 */
-	public GenericArgument(Node temporaryParent, Location locationIn)
+	public GenericTypeArgument(Node temporaryParent, Location locationIn)
 	{
 		super(temporaryParent, locationIn);
 	}
 
 	/**
-	 * @see net.fathomsoft.nova.tree.GenericCompatible#getGenericImplementation()
+	 * @see net.fathomsoft.nova.tree.GenericCompatible#getGenericTypeArgumentList()
 	 */
 	@Override
-	public GenericImplementation getGenericImplementation()
+	public GenericTypeArgumentList getGenericTypeArgumentList()
 	{
-		return (GenericImplementation)getParent();
+		return (GenericTypeArgumentList)getParent();
 	}
 	
 	/**
@@ -48,7 +45,7 @@ public class GenericArgument extends IValue implements GenericCompatible
 	 */
 	public int getArgumentIndex()
 	{
-		GenericImplementation implementation = getGenericImplementation();
+		GenericTypeArgumentList implementation = getGenericTypeArgumentList();
 		
 		for (int i = 0; i < implementation.getNumVisibleChildren(); i++)
 		{
@@ -78,7 +75,7 @@ public class GenericArgument extends IValue implements GenericCompatible
 	 */
 	public String getDefaultType()
 	{
-		return getValue().getTypeClass().getGenericDeclaration().getParameter(getArgumentIndex()).getDefaultType();
+		return getValue().getTypeClass().getGenericTypeParameterDeclaration().getParameter(getArgumentIndex()).getDefaultType();
 	}
 	
 	/**
@@ -88,7 +85,7 @@ public class GenericArgument extends IValue implements GenericCompatible
 	 */
 	public Value getValue()
 	{
-		return (Value)getGenericImplementation().getParent();
+		return (Value)getGenericTypeArgumentList().getParent();
 	}
 	
 	/**
@@ -97,7 +94,7 @@ public class GenericArgument extends IValue implements GenericCompatible
 	@Override
 	public String getGenericReturnType()
 	{
-		if (getValue().getGenericDeclaration().containsParameter(getType()))
+		if (getValue().getGenericTypeParameterDeclaration().containsParameter(getType()))
 		{
 			return getDefaultType();
 		}
@@ -105,13 +102,53 @@ public class GenericArgument extends IValue implements GenericCompatible
 		return getType();
 	}
 	
+	public static String searchGenericType(String str, int start, boolean backwards)
+	{
+		if (backwards)
+		{
+			int stack = 0;
+			int index = 0;
+			
+			for (int i = start; i >= 0; i--)
+			{
+				String c = str.charAt(i) + "";
+				
+				if (c.equals(GENERIC_END))
+				{
+					index = stack == 0 ? i : index;
+					stack++;
+				}
+				else if (c.equals(GENERIC_START))
+				{
+					stack--;
+				}
+				
+				if (stack == 0)
+				{
+					if (index > 0)
+					{
+						return str.substring(i + 1, index);
+					}
+					
+					return null;
+				}
+			}
+		}
+		else
+		{
+			throw new UnimplementedOperationException("forwards checking not implemented yet... Looks like its time to do that.");
+		}
+		
+		return null;
+	}
+	
 	/**
 	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location, boolean)
 	 */
 	@Override
-	public GenericArgument clone(Node temporaryParent, Location locationIn, boolean cloneChildren)
+	public GenericTypeArgument clone(Node temporaryParent, Location locationIn, boolean cloneChildren)
 	{
-		GenericArgument node = new GenericArgument(temporaryParent, locationIn);
+		GenericTypeArgument node = new GenericTypeArgument(temporaryParent, locationIn);
 		
 		return cloneTo(node, cloneChildren);
 	}
@@ -119,19 +156,19 @@ public class GenericArgument extends IValue implements GenericCompatible
 	/**
 	 * @see net.fathomsoft.nova.tree.Node#cloneTo(Node)
 	 */
-	public GenericArgument cloneTo(GenericArgument node)
+	public GenericTypeArgument cloneTo(GenericTypeArgument node)
 	{
 		return cloneTo(node, true);
 	}
 	
 	/**
-	 * Fill the given {@link GenericArgument} with the data that is in the
+	 * Fill the given {@link GenericTypeArgument} with the data that is in the
 	 * specified node.
 	 * 
 	 * @param node The node to copy the data into.
 	 * @return The cloned node.
 	 */
-	public GenericArgument cloneTo(GenericArgument node, boolean cloneChildren)
+	public GenericTypeArgument cloneTo(GenericTypeArgument node, boolean cloneChildren)
 	{
 		super.cloneTo(node, cloneChildren);
 		
@@ -139,7 +176,7 @@ public class GenericArgument extends IValue implements GenericCompatible
 	}
 	
 	/**
-	 * Test the {@link GenericArgument} class type to make sure everything
+	 * Test the {@link GenericTypeArgument} class type to make sure everything
 	 * is working properly.
 	 * 
 	 * @return The error output, if there was an error. If the test was

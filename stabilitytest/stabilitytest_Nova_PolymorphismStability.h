@@ -4,6 +4,7 @@
 
 typedef struct stabilitytest_Nova_PolymorphismStability stabilitytest_Nova_PolymorphismStability;
 
+
 #include <Nova.h>
 #include <ExceptionHandler.h>
 #include <InterfaceVTable.h>
@@ -52,14 +53,13 @@ CCLASS_CLASS
 	
 	stabilitytest_Extension_VTable_PolymorphismStability* vtable;
 	stabilitytest_Nova_StabilityTest* stabilitytest_Nova_StabilityTestCase_Nova_program;
-	int stabilitytest_Nova_StabilityTestCase_Nova_millisOverhead;
 )
 
 void stabilitytest_Nova_PolymorphismStabilityNova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData);
 stabilitytest_Nova_PolymorphismStability* stabilitytest_Nova_PolymorphismStability_0_Nova_construct(stabilitytest_Nova_PolymorphismStability* this, nova_standard_exception_Nova_ExceptionData* exceptionData, stabilitytest_Nova_StabilityTest* l0_Nova_program);
 void stabilitytest_Nova_PolymorphismStability_Nova_destroy(stabilitytest_Nova_PolymorphismStability** this, nova_standard_exception_Nova_ExceptionData* exceptionData);
-void stabilitytest_Nova_PolymorphismStability_0_Nova_this(stabilitytest_Nova_PolymorphismStability* this, nova_standard_exception_Nova_ExceptionData* exceptionData, stabilitytest_Nova_StabilityTest* l0_Nova_program);
 void stabilitytest_Nova_PolymorphismStability_0_Nova_test(stabilitytest_Nova_PolymorphismStability* this, nova_standard_exception_Nova_ExceptionData* exceptionData);
+void stabilitytest_Nova_PolymorphismStability_0_Nova_this(stabilitytest_Nova_PolymorphismStability* this, nova_standard_exception_Nova_ExceptionData* exceptionData, stabilitytest_Nova_StabilityTest* l0_Nova_program);
 void stabilitytest_Nova_PolymorphismStability_2_Nova_super(stabilitytest_Nova_PolymorphismStability* this, nova_standard_exception_Nova_ExceptionData* exceptionData);
 
 #endif

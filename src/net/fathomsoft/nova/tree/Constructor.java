@@ -256,11 +256,11 @@ public class Constructor extends BodyMethodDeclaration
 			return;
 		}
 		
-		Constructor c = (Constructor)clazz.getMethod(IDENTIFIER, getParameterList().getTypes());
+		Constructor c = (Constructor)clazz.getMethod(null, IDENTIFIER, getParameterList().getTypes());
 		
 		if (c == null)
 		{
-			c = (Constructor)clazz.getMethod(IDENTIFIER);
+			c = (Constructor)clazz.getMethod(null, IDENTIFIER);
 			
 			if (c == null)
 			{
@@ -286,7 +286,7 @@ public class Constructor extends BodyMethodDeclaration
 	{
 		StringBuilder args = new StringBuilder();
 		
-		if (inherited == null || method.areCompatibleParameterTypes(inherited.getParameterList().getTypes()))
+		if (inherited == null || method.areCompatibleParameterTypes(null, inherited.getParameterList().getTypes()))
 		{
 			for (int i = 0; i < method.getParameterList().getNumVisibleChildren(); i++)
 			{

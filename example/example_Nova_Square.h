@@ -4,6 +4,7 @@
 
 typedef struct example_Nova_Square example_Nova_Square;
 
+
 #include <Nova.h>
 #include <ExceptionHandler.h>
 #include <InterfaceVTable.h>

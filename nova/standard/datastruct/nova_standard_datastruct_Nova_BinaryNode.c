@@ -15,6 +15,8 @@ nova_standard_datastruct_Extension_VTable_BinaryNode nova_standard_datastruct_Ex
 		0,
 		0,
 		0,
+		0,
+		0,
 	},
 	nova_standard_Nova_Object_0_Nova_getHashCodeLong,
 	nova_standard_datastruct_Nova_Node_0_Nova_toString,
@@ -28,8 +30,8 @@ nova_standard_datastruct_Extension_VTable_BinaryNode nova_standard_datastruct_Ex
 
 nova_standard_datastruct_Nova_BinaryNode* nova_standard_datastruct_Nova_BinaryNode_Nova_getNode(nova_standard_datastruct_Nova_BinaryNode* this, nova_standard_exception_Nova_ExceptionData* exceptionData, int l0_Nova_index);
 void nova_standard_datastruct_Nova_BinaryNode_Nova_setNode(nova_standard_datastruct_Nova_BinaryNode* this, nova_standard_exception_Nova_ExceptionData* exceptionData, int l0_Nova_index, nova_standard_datastruct_Nova_BinaryNode* l0_Nova_data);
-void nova_standard_datastruct_Nova_BinaryNode_Mutator_Nova_left(nova_standard_datastruct_Nova_BinaryNode* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_datastruct_Nova_BinaryNode* l0_Nova_value);
-void nova_standard_datastruct_Nova_BinaryNode_Mutator_Nova_right(nova_standard_datastruct_Nova_BinaryNode* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_datastruct_Nova_BinaryNode* l0_Nova_value);
+nova_standard_datastruct_Nova_BinaryNode* nova_standard_datastruct_Nova_BinaryNode_Mutator_Nova_left(nova_standard_datastruct_Nova_BinaryNode* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_datastruct_Nova_BinaryNode* l0_Nova_value);
+nova_standard_datastruct_Nova_BinaryNode* nova_standard_datastruct_Nova_BinaryNode_Mutator_Nova_right(nova_standard_datastruct_Nova_BinaryNode* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_datastruct_Nova_BinaryNode* l0_Nova_value);
 void nova_standard_datastruct_Nova_BinaryNodeNova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
 	{
@@ -139,7 +141,7 @@ void nova_standard_datastruct_Nova_BinaryNode_Nova_addChild(nova_standard_datast
 	nova_standard_datastruct_Nova_Comparable* l1_Nova_temp;
 	
 	l1_Nova_temp = (nova_standard_datastruct_Nova_Comparable*)this->nova_standard_datastruct_Nova_Node_Nova_data;
-	if (l1_Nova_temp->vtable->itable.nova_standard_datastruct_Nova_Comparable_virtual0_Nova_compareTo(l1_Nova_temp, exceptionData, l0_Nova_data) < 0)
+	if (l1_Nova_temp->vtable->itable.nova_standard_datastruct_Nova_Comparable_virtual0_Nova_compareTo(l1_Nova_temp, exceptionData, l0_Nova_data) >= 0)
 	{
 		if (nova_standard_datastruct_Nova_BinaryNode_Accessor_Nova_left(this, exceptionData) == (nova_standard_datastruct_Nova_BinaryNode*)nova_null)
 		{
@@ -243,7 +245,7 @@ nova_standard_datastruct_Nova_BinaryNode* nova_standard_datastruct_Nova_BinaryNo
 	return nova_standard_datastruct_Nova_BinaryNode_Nova_getNode(this, exceptionData, 0);
 }
 
-void nova_standard_datastruct_Nova_BinaryNode_Mutator_Nova_left(nova_standard_datastruct_Nova_BinaryNode* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_datastruct_Nova_BinaryNode* l0_Nova_value)
+nova_standard_datastruct_Nova_BinaryNode* nova_standard_datastruct_Nova_BinaryNode_Mutator_Nova_left(nova_standard_datastruct_Nova_BinaryNode* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_datastruct_Nova_BinaryNode* l0_Nova_value)
 {
 	nova_standard_datastruct_Nova_BinaryNode_Nova_setNode(this, exceptionData, 0, l0_Nova_value);
 }
@@ -253,7 +255,7 @@ nova_standard_datastruct_Nova_BinaryNode* nova_standard_datastruct_Nova_BinaryNo
 	return nova_standard_datastruct_Nova_BinaryNode_Nova_getNode(this, exceptionData, 1);
 }
 
-void nova_standard_datastruct_Nova_BinaryNode_Mutator_Nova_right(nova_standard_datastruct_Nova_BinaryNode* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_datastruct_Nova_BinaryNode* l0_Nova_value)
+nova_standard_datastruct_Nova_BinaryNode* nova_standard_datastruct_Nova_BinaryNode_Mutator_Nova_right(nova_standard_datastruct_Nova_BinaryNode* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_datastruct_Nova_BinaryNode* l0_Nova_value)
 {
 	nova_standard_datastruct_Nova_BinaryNode_Nova_setNode(this, exceptionData, 1, l0_Nova_value);
 }

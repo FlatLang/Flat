@@ -4,6 +4,7 @@
 
 typedef struct example_Nova_Lab example_Nova_Lab;
 
+
 #include <Nova.h>
 #include <ExceptionHandler.h>
 #include <InterfaceVTable.h>
@@ -27,6 +28,8 @@ typedef struct example_Nova_Lab example_Nova_Lab;
 #include <nova/standard/nova_standard_Nova_String.h>
 #include <nova/standard/nova_standard_Nova_System.h>
 #include <nova/standard/math/nova_standard_math_Nova_Math.h>
+#include <nova/standard/datastruct/nova_standard_datastruct_Nova_BinaryTree.h>
+#include <nova/standard/datastruct/nova_standard_datastruct_Nova_ArrayList.h>
 #include <example/example_Nova_Polygon.h>
 
 

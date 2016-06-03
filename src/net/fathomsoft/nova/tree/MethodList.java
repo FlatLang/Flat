@@ -2,6 +2,7 @@ package net.fathomsoft.nova.tree;
 
 import java.util.ArrayList;
 
+import sun.security.util.Length;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.util.Location;
 
@@ -241,5 +242,27 @@ public class MethodList extends TypeList<MethodDeclaration>
 			
 			checkStatic = true;
 		}
+	}
+	
+	public String toString()
+	{
+		if (getNumVisibleChildren() == 0)
+		{
+			return "(none)";
+		}
+		
+		String str = "";
+		
+		for (MethodDeclaration method : this)
+		{
+			if (str.length() > 0)
+			{
+				str += "\n";
+			}
+			
+			str += method.generateNovaSignature();
+		}
+		
+		return str;
 	}
 }

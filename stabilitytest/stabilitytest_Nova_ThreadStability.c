@@ -15,6 +15,8 @@ stabilitytest_Extension_VTable_ThreadStability stabilitytest_Extension_VTable_Th
 		0,
 		0,
 		0,
+		0,
+		0,
 	},
 	nova_standard_Nova_Object_0_Nova_getHashCodeLong,
 	nova_standard_Nova_Object_0_Nova_toString,
@@ -59,11 +61,6 @@ void stabilitytest_Nova_ThreadStability_Nova_destroy(stabilitytest_Nova_ThreadSt
 	
 	
 	NOVA_FREE(*this);
-}
-
-void stabilitytest_Nova_ThreadStability_0_Nova_this(stabilitytest_Nova_ThreadStability* this, nova_standard_exception_Nova_ExceptionData* exceptionData, stabilitytest_Nova_StabilityTest* l0_Nova_program)
-{
-	stabilitytest_Nova_StabilityTestCase_0_Nova_this((stabilitytest_Nova_StabilityTestCase*)(this), exceptionData, l0_Nova_program);
 }
 
 void stabilitytest_Nova_ThreadStability_0_Nova_test(stabilitytest_Nova_ThreadStability* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
@@ -116,6 +113,10 @@ void stabilitytest_Nova_ThreadStability_Nova_joinThreads(stabilitytest_Nova_Thre
 	{
 		nova_standard_thread_Nova_Thread_Nova_join((nova_standard_thread_Nova_Thread*)(l0_Nova_threads[l1_Nova_i]), exceptionData);
 	}
+}
+
+void stabilitytest_Nova_ThreadStability_0_Nova_this(stabilitytest_Nova_ThreadStability* this, nova_standard_exception_Nova_ExceptionData* exceptionData, stabilitytest_Nova_StabilityTest* l0_Nova_program)
+{
 }
 
 void stabilitytest_Nova_ThreadStability_2_Nova_super(stabilitytest_Nova_ThreadStability* this, nova_standard_exception_Nova_ExceptionData* exceptionData)

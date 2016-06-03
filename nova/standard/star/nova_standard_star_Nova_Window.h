@@ -4,6 +4,7 @@
 
 typedef struct nova_standard_star_Nova_Window nova_standard_star_Nova_Window;
 
+
 #include <Nova.h>
 #include <ExceptionHandler.h>
 #include <InterfaceVTable.h>

@@ -293,7 +293,14 @@ public class Return extends IValue
 		{
 			if (containsMultipleReturnValues())
 			{
-				if (!SyntaxUtils.areTypesCompatible(getParentMethod().getTypes(), getTypes()))
+				GenericCompatible[] contexts = new GenericCompatible[getTypes().length];
+				
+				for (int i = 0; i < contexts.length; i++)
+				{
+					contexts[i] = getParentMethod();
+				}
+				
+				if (!SyntaxUtils.areTypesCompatible(contexts, getParentMethod().getTypes(), getTypes()))
 				{
 					SyntaxMessage.error("Invalid return values", this, false);
 					

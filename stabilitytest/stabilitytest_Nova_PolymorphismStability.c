@@ -1,13 +1,12 @@
 #include <precompiled.h>
 #include <stabilitytest/stabilitytest_Nova_PolymorphismStability.h>
 
-typedef nova_standard_Nova_String* (*l0_1_Nova_closure)(void*, nova_standard_exception_Nova_ExceptionData*);
-typedef nova_standard_Nova_String* (*l0_2_Nova_closure)(void*, nova_standard_exception_Nova_ExceptionData*);
-typedef nova_standard_Nova_String* (*l0_3_Nova_closure)(void*, nova_standard_exception_Nova_ExceptionData*);
 
 stabilitytest_Extension_VTable_PolymorphismStability stabilitytest_Extension_VTable_PolymorphismStability_val =
 {
 	{
+		0,
+		0,
 		0,
 		0,
 		0,
@@ -63,11 +62,6 @@ void stabilitytest_Nova_PolymorphismStability_Nova_destroy(stabilitytest_Nova_Po
 	
 	
 	NOVA_FREE(*this);
-}
-
-void stabilitytest_Nova_PolymorphismStability_0_Nova_this(stabilitytest_Nova_PolymorphismStability* this, nova_standard_exception_Nova_ExceptionData* exceptionData, stabilitytest_Nova_StabilityTest* l0_Nova_program)
-{
-	stabilitytest_Nova_StabilityTestCase_0_Nova_this((stabilitytest_Nova_StabilityTestCase*)(this), exceptionData, l0_Nova_program);
 }
 
 void stabilitytest_Nova_PolymorphismStability_0_Nova_test(stabilitytest_Nova_PolymorphismStability* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
@@ -128,6 +122,10 @@ char stabilitytest_Nova_PolymorphismStability_Nova_callPolymorphicClosure(stabil
 	
 	nova_local_0 = l0_Nova_closure(l0_ref_Nova_closure, exceptionData);
 	return nova_local_0->vtable->nova_standard_Nova_String_virtual_Nova_equals(nova_local_0, exceptionData, nova_standard_Nova_String_1_Nova_construct(0, exceptionData, "sub class"));
+}
+
+void stabilitytest_Nova_PolymorphismStability_0_Nova_this(stabilitytest_Nova_PolymorphismStability* this, nova_standard_exception_Nova_ExceptionData* exceptionData, stabilitytest_Nova_StabilityTest* l0_Nova_program)
+{
 }
 
 void stabilitytest_Nova_PolymorphismStability_2_Nova_super(stabilitytest_Nova_PolymorphismStability* this, nova_standard_exception_Nova_ExceptionData* exceptionData)

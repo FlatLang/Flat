@@ -1,8 +1,6 @@
 package net.fathomsoft.nova.tree.generics;
 
 import net.fathomsoft.nova.TestContext;
-import net.fathomsoft.nova.tree.AccessorMethod;
-import net.fathomsoft.nova.tree.IValue;
 import net.fathomsoft.nova.tree.Node;
 import net.fathomsoft.nova.tree.TypeList;
 import net.fathomsoft.nova.util.Location;
@@ -17,12 +15,12 @@ import net.fathomsoft.nova.util.Location;
  * @since	v0.2.41 Dec 7, 2014 at 9:49:27 PM
  * @version	v0.2.41 Dec 17, 2014 at 7:48:17 PM
  */
-public class GenericImplementation extends TypeList<GenericArgument>
+public class GenericTypeArgumentList extends TypeList<GenericTypeArgument>
 {
 	/**
 	 * @see net.fathomsoft.nova.tree.Node#Node(Node, Location)
 	 */
-	public GenericImplementation(Node temporaryParent, Location locationIn)
+	public GenericTypeArgumentList(Node temporaryParent, Location locationIn)
 	{
 		super(temporaryParent, locationIn);
 	}
@@ -31,9 +29,9 @@ public class GenericImplementation extends TypeList<GenericArgument>
 	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location, boolean)
 	 */
 	@Override
-	public GenericImplementation clone(Node temporaryParent, Location locationIn, boolean cloneChildren)
+	public GenericTypeArgumentList clone(Node temporaryParent, Location locationIn, boolean cloneChildren)
 	{
-		GenericImplementation node = new GenericImplementation(temporaryParent, locationIn);
+		GenericTypeArgumentList node = new GenericTypeArgumentList(temporaryParent, locationIn);
 		
 		return cloneTo(node, cloneChildren);
 	}
@@ -41,19 +39,19 @@ public class GenericImplementation extends TypeList<GenericArgument>
 	/**
 	 * @see net.fathomsoft.nova.tree.Node#cloneTo(Node)
 	 */
-	public GenericImplementation cloneTo(GenericImplementation node)
+	public GenericTypeArgumentList cloneTo(GenericTypeArgumentList node)
 	{
 		return cloneTo(node, true);
 	}
 	
 	/**
-	 * Fill the given {@link GenericImplementation} with the data that is in the
+	 * Fill the given {@link GenericTypeArgumentList} with the data that is in the
 	 * specified node.
 	 * 
 	 * @param node The node to copy the data into.
 	 * @return The cloned node.
 	 */
-	public GenericImplementation cloneTo(GenericImplementation node, boolean cloneChildren)
+	public GenericTypeArgumentList cloneTo(GenericTypeArgumentList node, boolean cloneChildren)
 	{
 		super.cloneTo(node, cloneChildren);
 		
@@ -61,7 +59,7 @@ public class GenericImplementation extends TypeList<GenericArgument>
 	}
 	
 	/**
-	 * Test the {@link GenericImplementation} class type to make sure everything
+	 * Test the {@link GenericTypeArgumentList} class type to make sure everything
 	 * is working properly.
 	 * 
 	 * @return The error output, if there was an error. If the test was

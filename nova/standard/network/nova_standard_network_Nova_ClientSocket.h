@@ -4,6 +4,7 @@
 
 typedef struct nova_standard_network_Nova_ClientSocket nova_standard_network_Nova_ClientSocket;
 
+
 #include <Nova.h>
 #include <ExceptionHandler.h>
 #include <InterfaceVTable.h>

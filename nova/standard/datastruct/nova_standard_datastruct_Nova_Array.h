@@ -4,6 +4,7 @@
 
 typedef struct nova_standard_datastruct_Nova_Array nova_standard_datastruct_Nova_Array;
 
+
 #include <Nova.h>
 #include <ExceptionHandler.h>
 #include <InterfaceVTable.h>

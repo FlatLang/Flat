@@ -15,6 +15,8 @@ nova_standard_datastruct_Extension_VTable_Node nova_standard_datastruct_Extensio
 		0,
 		0,
 		0,
+		0,
+		0,
 	},
 	nova_standard_Nova_Object_0_Nova_getHashCodeLong,
 	nova_standard_datastruct_Nova_Node_0_Nova_toString,
@@ -190,6 +192,40 @@ nova_standard_Nova_String* nova_standard_datastruct_Nova_Node_0_Nova_postorder(n
 		l1_Nova_str = l1_Nova_str->vtable->nova_standard_Nova_String_virtual0_Nova_concat(l1_Nova_str, exceptionData, nova_local_0->vtable->nova_standard_Nova_String_virtual0_Nova_concat(nova_local_0, exceptionData, nova_standard_Nova_String_1_Nova_construct(0, exceptionData, ", ")));
 	}
 	l1_Nova_str = l1_Nova_str->vtable->nova_standard_Nova_String_virtual0_Nova_concat(l1_Nova_str, exceptionData, ((nova_standard_Nova_Object*)this->nova_standard_datastruct_Nova_Node_Nova_data)->vtable->nova_standard_Nova_Object_virtual0_Nova_toString(this->nova_standard_datastruct_Nova_Node_Nova_data, exceptionData));
+	return l1_Nova_str;
+}
+
+nova_standard_Nova_String* nova_standard_datastruct_Nova_Node_Nova_levelorder(nova_standard_datastruct_Nova_Node* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
+{
+	nova_standard_Nova_String* l1_Nova_str;
+	nova_standard_datastruct_Nova_Queue* l1_Nova_queue;
+	
+	l1_Nova_str = nova_standard_Nova_String_1_Nova_construct(0, exceptionData, "");
+	l1_Nova_queue = nova_standard_datastruct_Nova_Queue_2_Nova_construct(0, exceptionData);
+	nova_standard_datastruct_Nova_Queue_Nova_enqueue(l1_Nova_queue, exceptionData, (nova_standard_Nova_Object*)(this));
+	while (!nova_standard_datastruct_Nova_Queue_Nova_isEmpty(l1_Nova_queue, exceptionData))
+	{
+		nova_standard_datastruct_Nova_Node* l1_Nova_current;
+		int l3_Nova_i;
+		
+		l1_Nova_current = (nova_standard_datastruct_Nova_Node*)(nova_standard_datastruct_Nova_Queue_Nova_dequeue(l1_Nova_queue, exceptionData));
+		if (l1_Nova_str->nova_standard_Nova_String_Nova_length > 0)
+		{
+			l1_Nova_str = l1_Nova_str->vtable->nova_standard_Nova_String_virtual0_Nova_concat(l1_Nova_str, exceptionData, nova_standard_Nova_String_1_Nova_construct(0, exceptionData, ", "));
+		}
+		l1_Nova_str = l1_Nova_str->vtable->nova_standard_Nova_String_virtual0_Nova_concat(l1_Nova_str, exceptionData, ((nova_standard_Nova_Object*)l1_Nova_current->nova_standard_datastruct_Nova_Node_Nova_data)->vtable->nova_standard_Nova_Object_virtual0_Nova_toString(l1_Nova_current->nova_standard_datastruct_Nova_Node_Nova_data, exceptionData));
+		l3_Nova_i = 0;
+		for (; l3_Nova_i < l1_Nova_current->nova_standard_datastruct_Nova_Node_Nova_children->nova_standard_datastruct_Nova_ArrayList_Nova_size; l3_Nova_i++)
+		{
+			nova_standard_datastruct_Nova_Node* l3_Nova_node;
+			
+			l3_Nova_node = (nova_standard_datastruct_Nova_Node*)(nova_standard_datastruct_Nova_ArrayList_Nova_get(l1_Nova_current->nova_standard_datastruct_Nova_Node_Nova_children, exceptionData, l3_Nova_i));
+			if (l3_Nova_node != (nova_standard_datastruct_Nova_Node*)nova_null)
+			{
+				nova_standard_datastruct_Nova_Queue_Nova_enqueue(l1_Nova_queue, exceptionData, (nova_standard_Nova_Object*)(l3_Nova_node));
+			}
+		}
+	}
 	return l1_Nova_str;
 }
 

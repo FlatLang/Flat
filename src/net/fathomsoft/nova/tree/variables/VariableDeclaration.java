@@ -11,7 +11,7 @@ import net.fathomsoft.nova.tree.IIdentifier;
 import net.fathomsoft.nova.tree.Node;
 import net.fathomsoft.nova.tree.SyntaxTree;
 import net.fathomsoft.nova.tree.exceptionhandling.Exception;
-import net.fathomsoft.nova.tree.generics.GenericImplementation;
+import net.fathomsoft.nova.tree.generics.GenericTypeArgumentList;
 import net.fathomsoft.nova.util.Bounds;
 import net.fathomsoft.nova.util.Location;
 import net.fathomsoft.nova.util.StringUtils;
@@ -26,7 +26,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * @since	v0.2.4 May 2, 2014 at 11:14:37 PM
  * @version	v0.2.43 Jan 16, 2015 at 11:59:17 AM
  */
-public class VariableDeclaration extends IIdentifier implements GenericCompatible
+public class VariableDeclaration extends IIdentifier
 {
 	private boolean               volatileVal, external;
 	
@@ -39,7 +39,7 @@ public class VariableDeclaration extends IIdentifier implements GenericCompatibl
 	{
 		super(temporaryParent, locationIn);
 		
-		GenericImplementation implementation = new GenericImplementation(this, locationIn.asNew());
+		GenericTypeArgumentList implementation = new GenericTypeArgumentList(this, locationIn.asNew());
 		addChild(implementation, this);
 		
 		extraDeclarations = new String[0];
@@ -106,18 +106,13 @@ public class VariableDeclaration extends IIdentifier implements GenericCompatibl
 		return getParentClass();
 	}
 	
-	public GenericImplementation getGenericImplementation()
-	{
-		return (GenericImplementation)getChild(super.getNumDefaultChildren() + 0);
-	}
-	
 	/**
 	 * @see net.fathomsoft.nova.tree.Value#getGenericReturnType()
 	 */
 	@Override
 	public String getGenericReturnType()
 	{
-		return getGenericParameter().getDefaultType();
+		return getGenericTypeParameter().getDefaultType();
 	}
 	
 	/**
@@ -496,6 +491,8 @@ public class VariableDeclaration extends IIdentifier implements GenericCompatibl
 		if (getType() != null && !setType(getType(), false, !isGenericType()))
 		{
 			SyntaxMessage.error("Type '" + getType() + "' does not exist", this, false);
+			
+			isGenericType();
 			
 			return false;
 		}
