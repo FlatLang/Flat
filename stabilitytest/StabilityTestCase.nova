@@ -4,8 +4,6 @@ public abstract class StabilityTestCase
 {
 	visible StabilityTest program
 	
-	public  Int millisOverhead
-	
 	public construct(StabilityTest program)
 	{
 		this.program = program
