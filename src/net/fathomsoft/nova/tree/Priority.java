@@ -22,6 +22,11 @@ public class Priority extends IValue implements Accessible
 		super(temporaryParent, locationIn);
 	}
 	
+	public GenericCompatible getContext()
+	{
+		return null;
+	}
+	
 	@Override
 	public int getNumDecodedChildren()
 	{
