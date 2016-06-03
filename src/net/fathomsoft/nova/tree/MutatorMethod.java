@@ -59,6 +59,7 @@ public class MutatorMethod extends PropertyMethod
 			{
 				MutatorMethod n = new MutatorMethod(parent, location);
 				n.setName(n.getParentField().getName());
+				n.setType(n.getParentField().getType());
 				n.setDisabled(true);
 				
 				return n;
@@ -67,6 +68,9 @@ public class MutatorMethod extends PropertyMethod
 		else if (StringUtils.findNextWord(statement).equals(IDENTIFIER))
 		{
 			MutatorMethod n = new MutatorMethod(parent, location);
+
+			n.setName(n.getParentField().getName());
+			n.setType(n.getParentField().getType());
 			
 			if (StringUtils.findNextNonWhitespaceChar(statement, IDENTIFIER.length()) == '(')
 			{
@@ -81,8 +85,6 @@ public class MutatorMethod extends PropertyMethod
 			{
 				n.addDefaultParameter();
 			}
-			
-			n.setName(n.getParentField().getName());
 			
 			return n;
 		}
