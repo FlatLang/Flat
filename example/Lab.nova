@@ -9,9 +9,15 @@ import "nova/standard/network/ServerSocket"
 import "nova/standard/star/Window"
 import "nova/standard/math/NumericStatement"
 import "nova/standard/datastruct/BinaryTree"
+import "nova/standard/datastruct/ArrayList"
 
 public class Lab
 {
+	static myFilterFunc(String i) -> Bool
+	{
+		return i.length >= 4
+	}
+	
 	public static main(String[] args)
 	{
 		//Vector2D<Int> v = new Vector2D(2, 3)
@@ -24,22 +30,42 @@ public class Lab
 		
 		Console.writeLine(l)
 		
-//		BinaryTree tree = new BinaryTree()
-//		
-//		tree.addNode('F')
-//		tree.addNode('B')
-//		tree.addNode('A')
-//		tree.addNode('D')
-//		tree.addNode('C')
-//		tree.addNode('E')
-//		tree.addNode('G')
-//		tree.addNode('I')
-//		tree.addNode('H')
-//		
-//		Console.writeLine("Preorder: " + tree.preorder())
-//		Console.writeLine("Inorder: " + tree.inorder())
-//		Console.writeLine("Postorder: " + tree.postorder())
-//		
+		BinaryTree tree = new BinaryTree()
+		
+		tree.addNode('F')
+		tree.addNode('B')
+		tree.addNode('A')
+		tree.addNode('D')
+		tree.addNode('C')
+		tree.addNode('E')
+		tree.addNode('G')
+		tree.addNode('I')
+		tree.addNode('H')
+		
+		Console.writeLine("Preorder: " + tree.preorder())
+		Console.writeLine("Inorder: " + tree.inorder())
+		Console.writeLine("Postorder: " + tree.postorder())
+		Console.writeLine("Levelorder: " + tree.levelorder())
+		
+		ArrayList<String> list = new ArrayList()
+		
+		list.add("this")
+		list.add("is")
+		list.add("a")
+		list.add("test")
+		list.add("to")
+		list.add("see")
+		list.add("what shows up")
+		
+		ArrayList<String> list2 = list.filter(myFilterFunc)
+		
+		for (Int n = 0; n < list2.size; n++)
+		{
+			Console.write(list2.get(n) + ", ")
+		}
+		
+		Console.writeLine("")
+		
 //		Square sq = new Square(4)
 //		
 //		Console.writeLine(getArea(sq))
