@@ -125,6 +125,21 @@ public class FileDeclaration extends Node
 		return importNode;
 	}
 	
+	public ClosureDeclaration[] getPublicClosures()
+	{
+		ArrayList<ClosureDeclaration> closures = new ArrayList<>();
+		
+		for (ClosureDeclaration c : this.closures)
+		{
+			if (c.isPublic())
+			{
+				closures.add(c);
+			}
+		}
+		
+		return closures.toArray(new ClosureDeclaration[0]);
+	}
+	
 	/**
 	 * Register the ClosureDeclaration so that the FileDeclaration
 	 * can define the closure type during generation.
@@ -470,6 +485,8 @@ public class FileDeclaration extends Node
 			builder.append("#define ").append(definitionName).append("\n\n");
 			
 			generateDummyTypes(builder).append('\n');
+
+			generateClosureDefinitions(builder, true).append('\n');
 			
 			ImportList imports = getImportList();
 			
@@ -494,7 +511,7 @@ public class FileDeclaration extends Node
 		
 		return header;
 	}
-
+	
 	/**
 	 * @see net.fathomsoft.nova.tree.Identifier#generateCSource(StringBuilder)
 	 */
@@ -506,7 +523,7 @@ public class FileDeclaration extends Node
 			builder.append("#include <precompiled.h>\n");
 			getImportList().generateCSource(builder).append('\n');
 			
-			generateClosureDefinitions(builder).append('\n');
+			generateClosureDefinitions(builder, false).append('\n');
 			
 			for (int i = 0; i < getNumChildren(); i++)
 			{
@@ -627,13 +644,18 @@ public class FileDeclaration extends Node
 	 * file.
 	 * 
 	 * @param builder The StringBuilder to append the data to.
+	 * @param publicClosures Whether to generate the definitions for the
+	 * 		public closures, or the private ones.
 	 * @return The StringBuilder with the appended data.
 	 */
-	private StringBuilder generateClosureDefinitions(StringBuilder builder)
+	private StringBuilder generateClosureDefinitions(StringBuilder builder, boolean publicClosures)
 	{
 		for (ClosureDeclaration closure : closures)
 		{
-			closure.generateCClosureDefinition(builder);
+			if (closure.isPublic() == publicClosures)
+			{
+				closure.generateCClosureDefinition(builder);
+			}
 		}
 		
 		return builder;
