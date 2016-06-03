@@ -363,4 +363,28 @@ public abstract class MethodDeclaration extends InstanceDeclaration implements C
 		
 		return null;
 	}
+	
+	public String generateNovaSignature()
+	{
+		String signature = "";
+		
+		if (getVisibility() != 0)
+		{
+			signature += getVisibilityText() + " ";
+		}
+		if (isStatic())
+		{
+			signature += getStaticText() + " ";
+		}
+		
+		signature += getName();
+		signature += '(' + getParameterList().generateNovaInput().toString() + ')';
+		
+		if (getType() != null)
+		{
+			signature += " -> " + getType();
+		}
+		
+		return signature;
+	}
 }
