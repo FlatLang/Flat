@@ -38,6 +38,13 @@ public class ClosureDeclaration extends Parameter implements CallableMethod
 		parameterList.getObjectReference().setDataType(POINTER);
 	}
 	
+	public boolean isPublic()
+	{
+		NovaMethodDeclaration method = (NovaMethodDeclaration)this.getAncestorOfType(NovaMethodDeclaration.class);
+		
+		return method.getVisibility() != InstanceDeclaration.PRIVATE;
+	}
+	
 	/**
 	 * @see net.fathomsoft.nova.tree.CallableMethod#isVirtual()
 	 */
@@ -159,9 +166,9 @@ public class ClosureDeclaration extends Parameter implements CallableMethod
 	 * <br>
 	 * Example inputs include:<br>
 	 * <ul>
-	 * 	<li>Person findPerson(String, int)</li>
-	 * 	<li>int calculateArea(int, int)</li>
-	 * 	<li>void callback()</li>
+	 * 	<li>findPerson(String, Int) -> Person</li>
+	 * 	<li>calculateArea(Int, Int) -> Int</li>
+	 * 	<li>callback()</li>
 	 * </ul>
 	 * 
 	 * @param parent The parent node of the statement.
@@ -285,6 +292,8 @@ public class ClosureDeclaration extends Parameter implements CallableMethod
 			if (parameters[i].length() > 0)
 			{
 				Value param = Value.generateFromType(this, location, parameters[i], require);
+				
+				
 				
 				if (param == null)
 				{
