@@ -5,6 +5,7 @@ nova_standard_io_Extension_VTable_InputStream nova_standard_io_Extension_VTable_
 {
 	{
 		0,
+		0,
 		(nova_standard_Nova_String*(*)(nova_standard_io_Nova_InputStream*, nova_standard_exception_Nova_ExceptionData*))nova_standard_io_Nova_InputStream_0_Nova_readString,
 		(char*(*)(nova_standard_io_Nova_InputStream*, nova_standard_exception_Nova_ExceptionData*))nova_standard_io_Nova_InputStream_0_Nova_readBytes,
 		0,

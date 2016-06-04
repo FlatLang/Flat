@@ -14,6 +14,7 @@ nova_standard_operators_Extension_VTable_Multipliable nova_standard_operators_Ex
 		0,
 		0,
 		0,
+		0,
 	},
 	nova_standard_operators_Nova_Multipliable_1_Nova_multiply,
 };

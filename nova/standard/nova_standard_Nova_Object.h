@@ -29,6 +29,7 @@ typedef struct nova_standard_Nova_Object nova_standard_Nova_Object;
 #include <nova/standard/nova_standard_Nova_System.h>
 #include <nova/standard/math/nova_standard_math_Nova_Math.h>
 #include <nova/standard/NativeObject.h>
+#include <nova/standard/operators/nova_standard_operators_Nova_Equals.h>
 
 
 typedef struct nova_standard_Extension_VTable_Object nova_standard_Extension_VTable_Object;

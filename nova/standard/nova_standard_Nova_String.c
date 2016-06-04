@@ -10,6 +10,7 @@ nova_standard_Extension_VTable_String nova_standard_Extension_VTable_String_val 
 {
 	{
 		0,
+		(char(*)(nova_standard_operators_Nova_Equals*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*))nova_standard_Nova_String_Nova_equals,
 		0,
 		0,
 		0,
@@ -28,16 +29,16 @@ nova_standard_Extension_VTable_String nova_standard_Extension_VTable_String_val 
 
 
 
-int nova_standard_Nova_String_Nova_calculatesize(nova_standard_Nova_String* this, nova_standard_exception_Nova_ExceptionData* exceptionData);
+int nova_standard_Nova_String_Nova_calculateSize(nova_standard_Nova_String* this, nova_standard_exception_Nova_ExceptionData* exceptionData);
 int nova_standard_Nova_String_0_Nova_indexOf(nova_standard_Nova_String* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_Nova_String* nova_standard_Nova_String_Nova_search, int nova_standard_Nova_String_Nova_start, int nova_standard_Nova_String_Nova_direction);
 char nova_standard_Nova_String_Nova_containsChar(nova_standard_Nova_String* this, nova_standard_exception_Nova_ExceptionData* exceptionData, char nova_standard_Nova_String_Nova_needle, char* nova_standard_Nova_String_Nova_Chars, int nova_standard_Nova_String_Nova_size);
 nova_standard_Nova_String* nova_standard_Nova_String_Nova_changeCase(nova_standard_Nova_String* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_Nova_String_closure3_Nova_transform nova_standard_Nova_String_Nova_transform, void* nova_standard_Nova_String_ref_Nova_transform);
-int nova_standard_Nova_String_Nova_whitespacesize;
+int nova_standard_Nova_String_Nova_whitespaceSize;
 char* nova_standard_Nova_String_Nova_whitespace;
 void nova_standard_Nova_StringNova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
 	{
-		nova_standard_Nova_String_Nova_whitespacesize = 4;
+		nova_standard_Nova_String_Nova_whitespaceSize = 4;
 		nova_standard_Nova_String_Nova_whitespace = (char*)NOVA_MALLOC(sizeof(nova_standard_primitive_number_Nova_Char) * 4);
 		nova_standard_Nova_String_Nova_whitespace[0] = ' ';
 		nova_standard_Nova_String_Nova_whitespace[1] = '\t';
@@ -102,14 +103,14 @@ void nova_standard_Nova_String_0_Nova_this(nova_standard_Nova_String* this, nova
 void nova_standard_Nova_String_1_Nova_this(nova_standard_Nova_String* this, nova_standard_exception_Nova_ExceptionData* exceptionData, char* nova_standard_Nova_String_Nova_chars)
 {
 	this->nova_standard_Nova_String_Nova_chars = nova_standard_Nova_String_Nova_chars;
-	this->nova_standard_Nova_String_Nova_size = nova_standard_Nova_String_Nova_calculatesize(this, exceptionData);
+	this->nova_standard_Nova_String_Nova_size = nova_standard_Nova_String_Nova_calculateSize(this, exceptionData);
 	if (nova_standard_Nova_String_Nova_chars[this->nova_standard_Nova_String_Nova_size] != '\0')
 	{
 		nova_standard_Nova_String_Nova_chars[this->nova_standard_Nova_String_Nova_size] = '\0';
 	}
 }
 
-int nova_standard_Nova_String_Nova_calculatesize(nova_standard_Nova_String* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
+int nova_standard_Nova_String_Nova_calculateSize(nova_standard_Nova_String* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
 	return (int)strlen((char*)(this->nova_standard_Nova_String_Nova_chars));
 }
@@ -236,11 +237,11 @@ nova_standard_Nova_String* nova_standard_Nova_String_Nova_trim(nova_standard_Nov
 	
 	l1_Nova_start = 0;
 	l1_Nova_end = this->nova_standard_Nova_String_Nova_size - 1;
-	while (l1_Nova_start < this->nova_standard_Nova_String_Nova_size && nova_standard_Nova_String_Nova_containsChar(this, exceptionData, this->nova_standard_Nova_String_Nova_chars[l1_Nova_start], nova_standard_Nova_String_Nova_whitespace, nova_standard_Nova_String_Nova_whitespacesize))
+	while (l1_Nova_start < this->nova_standard_Nova_String_Nova_size && nova_standard_Nova_String_Nova_containsChar(this, exceptionData, this->nova_standard_Nova_String_Nova_chars[l1_Nova_start], nova_standard_Nova_String_Nova_whitespace, nova_standard_Nova_String_Nova_whitespaceSize))
 	{
 		l1_Nova_start++;
 	}
-	while (l1_Nova_end >= 0 && nova_standard_Nova_String_Nova_containsChar(this, exceptionData, this->nova_standard_Nova_String_Nova_chars[l1_Nova_end], nova_standard_Nova_String_Nova_whitespace, nova_standard_Nova_String_Nova_whitespacesize))
+	while (l1_Nova_end >= 0 && nova_standard_Nova_String_Nova_containsChar(this, exceptionData, this->nova_standard_Nova_String_Nova_chars[l1_Nova_end], nova_standard_Nova_String_Nova_whitespace, nova_standard_Nova_String_Nova_whitespaceSize))
 	{
 		l1_Nova_end--;
 	}

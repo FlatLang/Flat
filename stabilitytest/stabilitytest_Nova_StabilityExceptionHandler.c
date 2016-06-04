@@ -1,13 +1,11 @@
 #include <precompiled.h>
 #include <stabilitytest/stabilitytest_Nova_StabilityExceptionHandler.h>
 
-
 stabilitytest_Extension_VTable_StabilityExceptionHandler stabilitytest_Extension_VTable_StabilityExceptionHandler_val =
 {
 	{
 		0,
-		0,
-		0,
+		(char(*)(nova_standard_operators_Nova_Equals*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*))nova_standard_Nova_Object_0_Nova_equals,
 		0,
 		0,
 		0,
@@ -36,7 +34,7 @@ void stabilitytest_Nova_StabilityExceptionHandlerNova_init_static(nova_standard_
 	}
 }
 
-stabilitytest_Nova_StabilityExceptionHandler* stabilitytest_Nova_StabilityExceptionHandler_Nova_construct(stabilitytest_Nova_StabilityExceptionHandler* this, nova_standard_exception_Nova_ExceptionData* exceptionData, stabilitytest_Nova_StabilityTest* l0_Nova_program)
+stabilitytest_Nova_StabilityExceptionHandler* stabilitytest_Nova_StabilityExceptionHandler_Nova_construct(stabilitytest_Nova_StabilityExceptionHandler* this, nova_standard_exception_Nova_ExceptionData* exceptionData, stabilitytest_Nova_StabilityTest* stabilitytest_Nova_StabilityExceptionHandler_Nova_program)
 {
 	CCLASS_NEW(stabilitytest_Nova_StabilityExceptionHandler, this);
 	this->vtable = &stabilitytest_Extension_VTable_StabilityExceptionHandler_val;
@@ -47,7 +45,7 @@ stabilitytest_Nova_StabilityExceptionHandler* stabilitytest_Nova_StabilityExcept
 	stabilitytest_Nova_StabilityExceptionHandler_2_Nova_super(this, exceptionData);
 	
 	{
-		stabilitytest_Nova_StabilityExceptionHandler_Nova_this(this, exceptionData, l0_Nova_program);
+		stabilitytest_Nova_StabilityExceptionHandler_Nova_this(this, exceptionData, stabilitytest_Nova_StabilityExceptionHandler_Nova_program);
 	}
 	
 	return this;
@@ -66,12 +64,12 @@ void stabilitytest_Nova_StabilityExceptionHandler_Nova_destroy(stabilitytest_Nov
 	NOVA_FREE(*this);
 }
 
-void stabilitytest_Nova_StabilityExceptionHandler_Nova_this(stabilitytest_Nova_StabilityExceptionHandler* this, nova_standard_exception_Nova_ExceptionData* exceptionData, stabilitytest_Nova_StabilityTest* l0_Nova_program)
+void stabilitytest_Nova_StabilityExceptionHandler_Nova_this(stabilitytest_Nova_StabilityExceptionHandler* this, nova_standard_exception_Nova_ExceptionData* exceptionData, stabilitytest_Nova_StabilityTest* stabilitytest_Nova_StabilityExceptionHandler_Nova_program)
 {
-	this->prv->stabilitytest_Nova_StabilityExceptionHandler_Nova_program = l0_Nova_program;
+	this->prv->stabilitytest_Nova_StabilityExceptionHandler_Nova_program = stabilitytest_Nova_StabilityExceptionHandler_Nova_program;
 }
 
-void stabilitytest_Nova_StabilityExceptionHandler_Nova_uncaughtException(stabilitytest_Nova_StabilityExceptionHandler* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_thread_Nova_Thread* l0_Nova_thread, nova_standard_exception_Nova_Exception* l0_Nova_exception)
+void stabilitytest_Nova_StabilityExceptionHandler_Nova_uncaughtException(stabilitytest_Nova_StabilityExceptionHandler* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_thread_Nova_Thread* stabilitytest_Nova_StabilityExceptionHandler_Nova_thread, nova_standard_exception_Nova_Exception* stabilitytest_Nova_StabilityExceptionHandler_Nova_exception)
 {
 	stabilitytest_Nova_StabilityTest_0_Nova_fail(this->prv->stabilitytest_Nova_StabilityExceptionHandler_Nova_program, exceptionData);
 }

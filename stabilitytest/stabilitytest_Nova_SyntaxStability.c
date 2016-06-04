@@ -1,13 +1,11 @@
 #include <precompiled.h>
 #include <stabilitytest/stabilitytest_Nova_SyntaxStability.h>
 
-
 stabilitytest_Extension_VTable_SyntaxStability stabilitytest_Extension_VTable_SyntaxStability_val =
 {
 	{
 		0,
-		0,
-		0,
+		(char(*)(nova_standard_operators_Nova_Equals*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*))nova_standard_Nova_Object_0_Nova_equals,
 		0,
 		0,
 		0,
@@ -36,26 +34,26 @@ nova_standard_Nova_Object* stabilitytest_Nova_SyntaxStability_Nova_test2(stabili
 nova_standard_Nova_Object* stabilitytest_Nova_SyntaxStability_Nova_test3(stabilitytest_Nova_SyntaxStability* this, nova_standard_exception_Nova_ExceptionData* exceptionData);
 void stabilitytest_Nova_SyntaxStability_Nova_checkMultipleReturnValues(stabilitytest_Nova_SyntaxStability* this, nova_standard_exception_Nova_ExceptionData* exceptionData);
 int stabilitytest_Nova_SyntaxStability_Nova_ret2(stabilitytest_Nova_SyntaxStability* this, nova_standard_exception_Nova_ExceptionData* exceptionData, int* ret1);
-int stabilitytest_Nova_SyntaxStability_Nova_swap(stabilitytest_Nova_SyntaxStability* this, nova_standard_exception_Nova_ExceptionData* exceptionData, int l0_Nova_a, int l0_Nova_b, int* ret1);
-nova_standard_Nova_String* stabilitytest_Nova_SyntaxStability_Nova_swap2(stabilitytest_Nova_SyntaxStability* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_Nova_String* l0_Nova_a, nova_standard_Nova_String* l0_Nova_b, nova_standard_Nova_String** ret1);
+int stabilitytest_Nova_SyntaxStability_Nova_swap(stabilitytest_Nova_SyntaxStability* this, nova_standard_exception_Nova_ExceptionData* exceptionData, int stabilitytest_Nova_SyntaxStability_Nova_a, int stabilitytest_Nova_SyntaxStability_Nova_b, int* ret1);
+nova_standard_Nova_String* stabilitytest_Nova_SyntaxStability_Nova_swap2(stabilitytest_Nova_SyntaxStability* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_Nova_String* stabilitytest_Nova_SyntaxStability_Nova_a, nova_standard_Nova_String* stabilitytest_Nova_SyntaxStability_Nova_b, nova_standard_Nova_String** ret1);
 void stabilitytest_Nova_SyntaxStabilityNova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
 	{
 	}
 }
 
-stabilitytest_Nova_SyntaxStability* stabilitytest_Nova_SyntaxStability_0_Nova_construct(stabilitytest_Nova_SyntaxStability* this, nova_standard_exception_Nova_ExceptionData* exceptionData, stabilitytest_Nova_StabilityTest* l0_Nova_program)
+stabilitytest_Nova_SyntaxStability* stabilitytest_Nova_SyntaxStability_0_Nova_construct(stabilitytest_Nova_SyntaxStability* this, nova_standard_exception_Nova_ExceptionData* exceptionData, stabilitytest_Nova_StabilityTest* stabilitytest_Nova_SyntaxStability_Nova_program)
 {
 	CCLASS_NEW(stabilitytest_Nova_SyntaxStability, this,);
 	this->vtable = &stabilitytest_Extension_VTable_SyntaxStability_val;
 	nova_standard_Nova_Object_Nova_super((nova_standard_Nova_Object*)this, exceptionData);
 	stabilitytest_Nova_StabilityTestCase_Nova_super((stabilitytest_Nova_StabilityTestCase*)this, exceptionData);
 	nova_standard_Nova_Object_2_Nova_this((nova_standard_Nova_Object*)(this), exceptionData);
-	stabilitytest_Nova_StabilityTestCase_0_Nova_this((stabilitytest_Nova_StabilityTestCase*)(this), exceptionData, l0_Nova_program);
+	stabilitytest_Nova_StabilityTestCase_0_Nova_this((stabilitytest_Nova_StabilityTestCase*)(this), exceptionData, stabilitytest_Nova_SyntaxStability_Nova_program);
 	stabilitytest_Nova_SyntaxStability_2_Nova_super(this, exceptionData);
 	
 	{
-		stabilitytest_Nova_SyntaxStability_0_Nova_this(this, exceptionData, l0_Nova_program);
+		stabilitytest_Nova_SyntaxStability_0_Nova_this(this, exceptionData, stabilitytest_Nova_SyntaxStability_Nova_program);
 	}
 	
 	return this;
@@ -397,25 +395,25 @@ int stabilitytest_Nova_SyntaxStability_Nova_ret2(stabilitytest_Nova_SyntaxStabil
 	return 5;
 }
 
-int stabilitytest_Nova_SyntaxStability_Nova_swap(stabilitytest_Nova_SyntaxStability* this, nova_standard_exception_Nova_ExceptionData* exceptionData, int l0_Nova_a, int l0_Nova_b, int* ret1)
+int stabilitytest_Nova_SyntaxStability_Nova_swap(stabilitytest_Nova_SyntaxStability* this, nova_standard_exception_Nova_ExceptionData* exceptionData, int stabilitytest_Nova_SyntaxStability_Nova_a, int stabilitytest_Nova_SyntaxStability_Nova_b, int* ret1)
 {
 	int nova_local_0;
 	
-	nova_local_0 = l0_Nova_b;
-	*ret1 = l0_Nova_a;
+	nova_local_0 = stabilitytest_Nova_SyntaxStability_Nova_b;
+	*ret1 = stabilitytest_Nova_SyntaxStability_Nova_a;
 	return nova_local_0;
 }
 
-nova_standard_Nova_String* stabilitytest_Nova_SyntaxStability_Nova_swap2(stabilitytest_Nova_SyntaxStability* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_Nova_String* l0_Nova_a, nova_standard_Nova_String* l0_Nova_b, nova_standard_Nova_String** ret1)
+nova_standard_Nova_String* stabilitytest_Nova_SyntaxStability_Nova_swap2(stabilitytest_Nova_SyntaxStability* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_Nova_String* stabilitytest_Nova_SyntaxStability_Nova_a, nova_standard_Nova_String* stabilitytest_Nova_SyntaxStability_Nova_b, nova_standard_Nova_String** ret1)
 {
 	nova_standard_Nova_String* nova_local_0;
 	
-	nova_local_0 = l0_Nova_b;
-	*ret1 = l0_Nova_a;
+	nova_local_0 = stabilitytest_Nova_SyntaxStability_Nova_b;
+	*ret1 = stabilitytest_Nova_SyntaxStability_Nova_a;
 	return nova_local_0;
 }
 
-void stabilitytest_Nova_SyntaxStability_0_Nova_this(stabilitytest_Nova_SyntaxStability* this, nova_standard_exception_Nova_ExceptionData* exceptionData, stabilitytest_Nova_StabilityTest* l0_Nova_program)
+void stabilitytest_Nova_SyntaxStability_0_Nova_this(stabilitytest_Nova_SyntaxStability* this, nova_standard_exception_Nova_ExceptionData* exceptionData, stabilitytest_Nova_StabilityTest* stabilitytest_Nova_SyntaxStability_Nova_program)
 {
 }
 

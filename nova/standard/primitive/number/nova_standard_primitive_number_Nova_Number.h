@@ -29,7 +29,7 @@ typedef struct nova_standard_primitive_number_Nova_Number nova_standard_primitiv
 #include <nova/standard/nova_standard_Nova_System.h>
 #include <nova/standard/math/nova_standard_math_Nova_Math.h>
 #include <nova/standard/primitive/nova_standard_primitive_Nova_Primitive.h>
-#include <nova/standard/operators/nova_standard_operators_Nova_Multipliable.h>
+#include <nova/standard/operators/nova_standard_operators_Nova_Multiply.h>
 
 
 typedef struct nova_standard_primitive_number_Extension_VTable_Number nova_standard_primitive_number_Extension_VTable_Number;

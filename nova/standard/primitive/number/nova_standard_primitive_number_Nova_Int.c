@@ -4,7 +4,8 @@
 nova_standard_primitive_number_Extension_VTable_Int nova_standard_primitive_number_Extension_VTable_Int_val =
 {
 	{
-		(nova_standard_Nova_Object*(*)(nova_standard_operators_Nova_Multipliable*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*))nova_standard_primitive_number_Nova_Int_1_Nova_multiply,
+		(nova_standard_Nova_Object*(*)(nova_standard_operators_Nova_Multiply*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*))nova_standard_primitive_number_Nova_Int_0_Nova_multiply,
+		(char(*)(nova_standard_operators_Nova_Equals*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*))nova_standard_Nova_Object_0_Nova_equals,
 		0,
 		0,
 		0,
@@ -20,7 +21,7 @@ nova_standard_primitive_number_Extension_VTable_Int nova_standard_primitive_numb
 	nova_standard_Nova_Object_0_Nova_equals,
 	nova_standard_primitive_number_Nova_Int_0_Nova_numDigits,
 	nova_standard_primitive_number_Nova_Int_0_Nova_compareTo,
-	nova_standard_primitive_number_Nova_Int_1_Nova_multiply,
+	nova_standard_primitive_number_Nova_Int_0_Nova_multiply,
 };
 
 
@@ -103,7 +104,7 @@ int nova_standard_primitive_number_Nova_Int_0_Nova_compareTo(nova_standard_primi
 	return this->nova_standard_primitive_number_Nova_Int_Nova_value - l1_Nova_other;
 }
 
-int nova_standard_primitive_number_Nova_Int_1_Nova_multiply(nova_standard_primitive_number_Nova_Int* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_primitive_number_Nova_Int* nova_standard_primitive_number_Nova_Int_Nova_prim)
+int nova_standard_primitive_number_Nova_Int_0_Nova_multiply(nova_standard_primitive_number_Nova_Int* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_primitive_number_Nova_Int* nova_standard_primitive_number_Nova_Int_Nova_prim)
 {
 	int l1_Nova_value;
 	
