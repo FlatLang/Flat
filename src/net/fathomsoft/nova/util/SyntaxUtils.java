@@ -1,5 +1,6 @@
 package net.fathomsoft.nova.util;
 
+import java.util.ArrayList;
 import java.util.regex.Matcher;
 
 import net.fathomsoft.nova.Nova;
@@ -10,9 +11,11 @@ import net.fathomsoft.nova.tree.ArgumentList;
 import net.fathomsoft.nova.tree.BodyMethodDeclaration;
 import net.fathomsoft.nova.tree.ClassDeclaration;
 import net.fathomsoft.nova.tree.Closure;
+import net.fathomsoft.nova.tree.ClosureDeclaration;
 import net.fathomsoft.nova.tree.Constructor;
 import net.fathomsoft.nova.tree.FileDeclaration;
 import net.fathomsoft.nova.tree.GenericCompatible;
+import net.fathomsoft.nova.tree.IValue;
 import net.fathomsoft.nova.tree.Identifier;
 import net.fathomsoft.nova.tree.InitializationMethod;
 import net.fathomsoft.nova.tree.InstanceDeclaration;
@@ -1982,6 +1985,9 @@ public class SyntaxUtils
 			
 			Value value = getParameterGenericReturnType(param.getType(), given);
 			
+			value = value.cloneTo(new IValue(value, value.getLocationIn()), false);
+			value.setArrayDimensions(required.getArrayDimensions());
+			
 			if (!Literal.isNullLiteral(given) && !isTypeCompatible(context, value, given, false))
 			{
 				SyntaxMessage.error("Incorrect type '" + given.getType() + "' given for required generic type of '" + value.getType() + "' type", given);
@@ -1992,6 +1998,34 @@ public class SyntaxUtils
 			return true;
 		}
 		
+		if (given instanceof ClosureDeclaration && required instanceof ClosureDeclaration)
+		{
+			ClassDeclaration requiredClass = required.getTypeClass();
+			ClassDeclaration givenClass = given.getTypeClass();
+			
+			if (!((givenClass == null && requiredClass == null) || (requiredClass != null && givenClass != null && requiredClass.isAncestorOf(givenClass, true))))
+			{
+				return false;
+			}
+			
+			ClosureDeclaration r = (ClosureDeclaration)required;
+			ClosureDeclaration g = (ClosureDeclaration)given;
+			
+			if (r.getParameterList().getNumParameters() != g.getParameterList().getNumParameters())
+			{
+				return false;
+			}
+			
+			for (int i = 0; i < r.getParameterList().getNumParameters(); i++)
+			{
+				if (!isTypeCompatible(context, r.getParameterList().getParameter(i), g.getParameterList().getParameter(i)))
+				{
+					return false;
+				}
+			}
+			
+			return true;
+		}
 		if (given.isExternalType() ^ required.isExternalType())
 		{
 			return false;
@@ -2275,5 +2309,36 @@ public class SyntaxUtils
 		}
 		
 		return new Bounds(start, end);
+	}
+	
+	public static void generateTypeDefinition(StringBuilder builder, Value value, ArrayList<String> types)
+	{
+		String type = value.generateCTypeName(new StringBuilder()).toString();
+		
+		if (!value.isPrimitiveType() && !types.contains(type))
+		{
+			builder.append("typedef struct ").append(type).append(" ").append(type).append(";\n");
+			
+			types.add(type.toString());
+		}
+	}
+	
+	public static void addParametersToTypeList(StringBuilder builder, ParameterList list, ArrayList<String> types)
+	{
+		int numParameters = list.getNumParameters();
+		
+		generateTypeDefinition(builder, list.getExceptionData(), types);
+		
+		for (int i = 0; i < numParameters; i++)
+		{
+			generateTypeDefinition(builder, list.getParameter(i), types);
+			
+			if (list.getParameter(i) instanceof ClosureDeclaration)
+			{
+				ClosureDeclaration c = (ClosureDeclaration)list.getParameter(i);
+				
+				addParametersToTypeList(builder, c.getParameterList(), types);
+			}
+		}
 	}
 }
