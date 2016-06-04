@@ -423,7 +423,7 @@ public abstract class Identifier extends Value implements Accessible
 			SyntaxMessage.queryError("Unable to find declaration for variable '" + name + "'", this, existing == null);
 		}
 		
-		if (!(existing instanceof LocalDeclaration))
+		if (!(existing instanceof LocalDeclaration && existing instanceof Parameter == false))
 		{
 			existing.getParentClass().generateCSourceName(builder).append('_');
 		}
@@ -441,7 +441,7 @@ public abstract class Identifier extends Value implements Accessible
 //			}
 //		}
 		
-		if (existing instanceof LocalDeclaration)
+		if (existing instanceof LocalDeclaration && existing instanceof Parameter == false)
 		{
 			LocalDeclaration declaration = (LocalDeclaration)existing;
 			
