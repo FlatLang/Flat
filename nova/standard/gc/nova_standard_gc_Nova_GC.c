@@ -1,12 +1,9 @@
 #include <precompiled.h>
 #include <nova/standard/gc/nova_standard_gc_Nova_GC.h>
 
-
 nova_standard_gc_Extension_VTable_GC nova_standard_gc_Extension_VTable_GC_val =
 {
 	{
-		0,
-		0,
 		0,
 		0,
 		0,

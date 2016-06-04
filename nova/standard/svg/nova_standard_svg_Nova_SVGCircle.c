@@ -1,12 +1,9 @@
 #include <precompiled.h>
 #include <nova/standard/svg/nova_standard_svg_Nova_SVGCircle.h>
 
-
 nova_standard_svg_Extension_VTable_SVGCircle nova_standard_svg_Extension_VTable_SVGCircle_val =
 {
 	{
-		0,
-		0,
 		0,
 		0,
 		0,
@@ -31,7 +28,7 @@ void nova_standard_svg_Nova_SVGCircleNova_init_static(nova_standard_exception_No
 	}
 }
 
-nova_standard_svg_Nova_SVGCircle* nova_standard_svg_Nova_SVGCircle_Nova_construct(nova_standard_svg_Nova_SVGCircle* this, nova_standard_exception_Nova_ExceptionData* exceptionData, double l0_Nova_x, double l0_Nova_y, int l0_Nova_r)
+nova_standard_svg_Nova_SVGCircle* nova_standard_svg_Nova_SVGCircle_Nova_construct(nova_standard_svg_Nova_SVGCircle* this, nova_standard_exception_Nova_ExceptionData* exceptionData, double nova_standard_svg_Nova_SVGCircle_Nova_x, double nova_standard_svg_Nova_SVGCircle_Nova_y, int nova_standard_svg_Nova_SVGCircle_Nova_r)
 {
 	CCLASS_NEW(nova_standard_svg_Nova_SVGCircle, this,);
 	this->vtable = &nova_standard_svg_Extension_VTable_SVGCircle_val;
@@ -42,7 +39,7 @@ nova_standard_svg_Nova_SVGCircle* nova_standard_svg_Nova_SVGCircle_Nova_construc
 	nova_standard_svg_Nova_SVGCircle_2_Nova_super(this, exceptionData);
 	
 	{
-		nova_standard_svg_Nova_SVGCircle_Nova_this(this, exceptionData, l0_Nova_x, l0_Nova_y, l0_Nova_r);
+		nova_standard_svg_Nova_SVGCircle_Nova_this(this, exceptionData, nova_standard_svg_Nova_SVGCircle_Nova_x, nova_standard_svg_Nova_SVGCircle_Nova_y, nova_standard_svg_Nova_SVGCircle_Nova_r);
 	}
 	
 	return this;
@@ -62,14 +59,14 @@ void nova_standard_svg_Nova_SVGCircle_Nova_destroy(nova_standard_svg_Nova_SVGCir
 	NOVA_FREE(*this);
 }
 
-void nova_standard_svg_Nova_SVGCircle_Nova_this(nova_standard_svg_Nova_SVGCircle* this, nova_standard_exception_Nova_ExceptionData* exceptionData, double l0_Nova_x, double l0_Nova_y, int l0_Nova_r)
+void nova_standard_svg_Nova_SVGCircle_Nova_this(nova_standard_svg_Nova_SVGCircle* this, nova_standard_exception_Nova_ExceptionData* exceptionData, double nova_standard_svg_Nova_SVGCircle_Nova_x, double nova_standard_svg_Nova_SVGCircle_Nova_y, int nova_standard_svg_Nova_SVGCircle_Nova_r)
 {
-	this->nova_standard_svg_Nova_SVGCircle_Nova_x = l0_Nova_x;
-	this->nova_standard_svg_Nova_SVGCircle_Nova_y = l0_Nova_y;
-	this->nova_standard_svg_Nova_SVGCircle_Nova_r = l0_Nova_r;
+	this->nova_standard_svg_Nova_SVGCircle_Nova_x = nova_standard_svg_Nova_SVGCircle_Nova_x;
+	this->nova_standard_svg_Nova_SVGCircle_Nova_y = nova_standard_svg_Nova_SVGCircle_Nova_y;
+	this->nova_standard_svg_Nova_SVGCircle_Nova_r = nova_standard_svg_Nova_SVGCircle_Nova_r;
 }
 
-void nova_standard_svg_Nova_SVGCircle_0_Nova_generateOutput(nova_standard_svg_Nova_SVGCircle* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_io_Nova_File* l0_Nova_file)
+void nova_standard_svg_Nova_SVGCircle_0_Nova_generateOutput(nova_standard_svg_Nova_SVGCircle* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_io_Nova_File* nova_standard_svg_Nova_SVGCircle_Nova_file)
 {
 	nova_standard_Nova_String* nova_local_0;
 	nova_standard_Nova_String* nova_local_1;
@@ -78,7 +75,7 @@ void nova_standard_svg_Nova_SVGCircle_0_Nova_generateOutput(nova_standard_svg_No
 	nova_local_0 = nova_standard_primitive_number_Nova_Double_1_Nova_toString(0, exceptionData, this->nova_standard_svg_Nova_SVGCircle_Nova_x);
 	nova_local_1 = nova_standard_primitive_number_Nova_Double_1_Nova_toString(0, exceptionData, this->nova_standard_svg_Nova_SVGCircle_Nova_y);
 	nova_local_2 = nova_standard_primitive_number_Nova_Int_1_Nova_toString(0, exceptionData, this->nova_standard_svg_Nova_SVGCircle_Nova_r);
-	nova_standard_io_Nova_File_Nova_write(l0_Nova_file, exceptionData, nova_standard_Nova_String_0_Nova_concat(nova_standard_Nova_String_1_Nova_construct(0, exceptionData, "<circle cx=\""), exceptionData, nova_local_0->vtable->nova_standard_Nova_String_virtual0_Nova_concat(nova_local_0, exceptionData, nova_standard_Nova_String_0_Nova_concat(nova_standard_Nova_String_1_Nova_construct(0, exceptionData, "\" cy=\""), exceptionData, nova_local_1->vtable->nova_standard_Nova_String_virtual0_Nova_concat(nova_local_1, exceptionData, nova_standard_Nova_String_0_Nova_concat(nova_standard_Nova_String_1_Nova_construct(0, exceptionData, "\" r=\""), exceptionData, nova_local_2->vtable->nova_standard_Nova_String_virtual0_Nova_concat(nova_local_2, exceptionData, nova_standard_Nova_String_1_Nova_construct(0, exceptionData, "\" stroke=\"false\" fill=\"black\"/>\n"))))))));
+	nova_standard_io_Nova_File_Nova_write(nova_standard_svg_Nova_SVGCircle_Nova_file, exceptionData, nova_standard_Nova_String_0_Nova_concat(nova_standard_Nova_String_1_Nova_construct(0, exceptionData, "<circle cx=\""), exceptionData, nova_local_0->vtable->nova_standard_Nova_String_virtual0_Nova_concat(nova_local_0, exceptionData, nova_standard_Nova_String_0_Nova_concat(nova_standard_Nova_String_1_Nova_construct(0, exceptionData, "\" cy=\""), exceptionData, nova_local_1->vtable->nova_standard_Nova_String_virtual0_Nova_concat(nova_local_1, exceptionData, nova_standard_Nova_String_0_Nova_concat(nova_standard_Nova_String_1_Nova_construct(0, exceptionData, "\" r=\""), exceptionData, nova_local_2->vtable->nova_standard_Nova_String_virtual0_Nova_concat(nova_local_2, exceptionData, nova_standard_Nova_String_1_Nova_construct(0, exceptionData, "\" stroke=\"false\" fill=\"black\"/>\n"))))))));
 }
 
 nova_standard_Nova_String* nova_standard_svg_Nova_SVGCircle_0_Nova_toString(nova_standard_svg_Nova_SVGCircle* this, nova_standard_exception_Nova_ExceptionData* exceptionData)

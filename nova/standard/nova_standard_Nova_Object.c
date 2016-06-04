@@ -1,12 +1,9 @@
 #include <precompiled.h>
 #include <nova/standard/nova_standard_Nova_Object.h>
 
-
 nova_standard_Extension_VTable_Object nova_standard_Extension_VTable_Object_val =
 {
 	{
-		0,
-		0,
 		0,
 		0,
 		0,
@@ -72,9 +69,9 @@ nova_standard_Nova_String* nova_standard_Nova_Object_0_Nova_toString(nova_standa
 	return nova_standard_Nova_String_0_Nova_concat(nova_standard_Nova_String_1_Nova_construct(0, exceptionData, "[Object @"), exceptionData, nova_local_0->vtable->nova_standard_Nova_String_virtual0_Nova_concat(nova_local_0, exceptionData, nova_standard_Nova_String_1_Nova_construct(0, exceptionData, "]")));
 }
 
-char nova_standard_Nova_Object_0_Nova_equals(nova_standard_Nova_Object* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_Nova_Object* l0_Nova_another)
+char nova_standard_Nova_Object_0_Nova_equals(nova_standard_Nova_Object* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_Nova_Object* nova_standard_Nova_Object_Nova_another)
 {
-	return this == l0_Nova_another;
+	return this == nova_standard_Nova_Object_Nova_another;
 }
 
 void nova_standard_Nova_Object_2_Nova_this(nova_standard_Nova_Object* this, nova_standard_exception_Nova_ExceptionData* exceptionData)

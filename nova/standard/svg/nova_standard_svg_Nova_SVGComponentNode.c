@@ -1,12 +1,9 @@
 #include <precompiled.h>
 #include <nova/standard/svg/nova_standard_svg_Nova_SVGComponentNode.h>
 
-
 nova_standard_svg_Extension_VTable_SVGComponentNode nova_standard_svg_Extension_VTable_SVGComponentNode_val =
 {
 	{
-		0,
-		0,
 		0,
 		0,
 		0,

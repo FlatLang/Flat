@@ -1,12 +1,9 @@
 #include <precompiled.h>
 #include <nova/standard/network/nova_standard_network_Nova_ConnectionSocket.h>
 
-
 nova_standard_network_Extension_VTable_ConnectionSocket nova_standard_network_Extension_VTable_ConnectionSocket_val =
 {
 	{
-		0,
-		0,
 		0,
 		0,
 		0,
@@ -31,14 +28,14 @@ CCLASS_PRIVATE
 	
 )
 
-nova_standard_Nova_String* nova_standard_network_Nova_ConnectionSocket_1_Nova_readString(nova_standard_network_Nova_ConnectionSocket* this, nova_standard_exception_Nova_ExceptionData* exceptionData, char l0_Nova_checkBuffer);
+nova_standard_Nova_String* nova_standard_network_Nova_ConnectionSocket_1_Nova_readString(nova_standard_network_Nova_ConnectionSocket* this, nova_standard_exception_Nova_ExceptionData* exceptionData, char nova_standard_network_Nova_ConnectionSocket_Nova_checkBuffer);
 void nova_standard_network_Nova_ConnectionSocketNova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
 	{
 	}
 }
 
-nova_standard_network_Nova_ConnectionSocket* nova_standard_network_Nova_ConnectionSocket_Nova_construct(nova_standard_network_Nova_ConnectionSocket* this, nova_standard_exception_Nova_ExceptionData* exceptionData, SOCKET_ID_TYPE l0_Nova_socket)
+nova_standard_network_Nova_ConnectionSocket* nova_standard_network_Nova_ConnectionSocket_Nova_construct(nova_standard_network_Nova_ConnectionSocket* this, nova_standard_exception_Nova_ExceptionData* exceptionData, SOCKET_ID_TYPE nova_standard_network_Nova_ConnectionSocket_Nova_socket)
 {
 	CCLASS_NEW(nova_standard_network_Nova_ConnectionSocket, this);
 	this->vtable = &nova_standard_network_Extension_VTable_ConnectionSocket_val;
@@ -49,7 +46,7 @@ nova_standard_network_Nova_ConnectionSocket* nova_standard_network_Nova_Connecti
 	nova_standard_network_Nova_ConnectionSocket_2_Nova_super(this, exceptionData);
 	
 	{
-		nova_standard_network_Nova_ConnectionSocket_Nova_this(this, exceptionData, l0_Nova_socket);
+		nova_standard_network_Nova_ConnectionSocket_Nova_this(this, exceptionData, nova_standard_network_Nova_ConnectionSocket_Nova_socket);
 	}
 	
 	return this;
@@ -66,16 +63,16 @@ void nova_standard_network_Nova_ConnectionSocket_Nova_destroy(nova_standard_netw
 	
 	NOVA_FREE((*this)->prv);
 	
-	nova_standard_io_Nova_InputStream_Nova_destroy(&(*this)->nova_standard_network_Nova_ConnectionSocket_Nova_in, exceptionData);
+	
 	nova_standard_io_Nova_OutputStream_Nova_destroy(&(*this)->nova_standard_network_Nova_ConnectionSocket_Nova_out, exceptionData);
 	
 	NOVA_FREE(*this);
 }
 
-void nova_standard_network_Nova_ConnectionSocket_Nova_this(nova_standard_network_Nova_ConnectionSocket* this, nova_standard_exception_Nova_ExceptionData* exceptionData, SOCKET_ID_TYPE l0_Nova_socket)
+void nova_standard_network_Nova_ConnectionSocket_Nova_this(nova_standard_network_Nova_ConnectionSocket* this, nova_standard_exception_Nova_ExceptionData* exceptionData, SOCKET_ID_TYPE nova_standard_network_Nova_ConnectionSocket_Nova_socket)
 {
-	this->prv->nova_standard_network_Nova_ConnectionSocket_Nova_socket = l0_Nova_socket;
-	this->nova_standard_network_Nova_ConnectionSocket_Nova_in = (nova_standard_io_Nova_InputStream*)(nova_standard_network_Nova_NetworkInputStream_0_Nova_construct(0, exceptionData, this));
+	this->prv->nova_standard_network_Nova_ConnectionSocket_Nova_socket = nova_standard_network_Nova_ConnectionSocket_Nova_socket;
+	this->nova_standard_network_Nova_ConnectionSocket_Nova_in = (nova_standard_io_Nova_InputStream*)(nova_standard_network_Nova_NetworkInputStream_Nova_construct(0, exceptionData, this));
 	this->nova_standard_network_Nova_ConnectionSocket_Nova_out = (nova_standard_io_Nova_OutputStream*)(nova_standard_network_Nova_NetworkOutputStream_3_Nova_construct(0, exceptionData, this));
 	this->nova_standard_network_Nova_ConnectionSocket_Nova_connected = 1;
 }
@@ -107,9 +104,9 @@ nova_standard_Nova_String* nova_standard_network_Nova_ConnectionSocket_0_Nova_re
 	return nova_standard_network_Nova_ConnectionSocket_1_Nova_readString(this, exceptionData, 1);
 }
 
-nova_standard_Nova_String* nova_standard_network_Nova_ConnectionSocket_1_Nova_readString(nova_standard_network_Nova_ConnectionSocket* this, nova_standard_exception_Nova_ExceptionData* exceptionData, char l0_Nova_checkBuffer)
+nova_standard_Nova_String* nova_standard_network_Nova_ConnectionSocket_1_Nova_readString(nova_standard_network_Nova_ConnectionSocket* this, nova_standard_exception_Nova_ExceptionData* exceptionData, char nova_standard_network_Nova_ConnectionSocket_Nova_checkBuffer)
 {
-	if (!l0_Nova_checkBuffer || nova_standard_datastruct_Nova_Queue_Nova_isEmpty(this->prv->nova_standard_network_Nova_ConnectionSocket_Nova_inputBuffer, exceptionData))
+	if (!nova_standard_network_Nova_ConnectionSocket_Nova_checkBuffer || nova_standard_datastruct_Nova_Queue_Nova_isEmpty(this->prv->nova_standard_network_Nova_ConnectionSocket_Nova_inputBuffer, exceptionData))
 	{
 		char* l1_Nova_data;
 		
@@ -124,11 +121,11 @@ nova_standard_Nova_String* nova_standard_network_Nova_ConnectionSocket_1_Nova_re
 	return (nova_standard_Nova_String*)nova_standard_datastruct_Nova_Queue_Nova_dequeue(this->prv->nova_standard_network_Nova_ConnectionSocket_Nova_inputBuffer, exceptionData);
 }
 
-char nova_standard_network_Nova_ConnectionSocket_Nova_write(nova_standard_network_Nova_ConnectionSocket* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_Nova_String* l0_Nova_data)
+char nova_standard_network_Nova_ConnectionSocket_Nova_write(nova_standard_network_Nova_ConnectionSocket* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_Nova_String* nova_standard_network_Nova_ConnectionSocket_Nova_data)
 {
 	char l1_Nova_success;
 	
-	l1_Nova_success = nova_socket_send(this->prv->nova_standard_network_Nova_ConnectionSocket_Nova_socket, (char*)(l0_Nova_data->nova_standard_Nova_String_Nova_chars)) == 1;
+	l1_Nova_success = nova_socket_send(this->prv->nova_standard_network_Nova_ConnectionSocket_Nova_socket, (char*)(nova_standard_network_Nova_ConnectionSocket_Nova_data->nova_standard_Nova_String_Nova_chars)) == 1;
 	return l1_Nova_success;
 }
 

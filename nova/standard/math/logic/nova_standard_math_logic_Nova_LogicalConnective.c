@@ -1,12 +1,9 @@
 #include <precompiled.h>
 #include <nova/standard/math/logic/nova_standard_math_logic_Nova_LogicalConnective.h>
 
-
 nova_standard_math_logic_Extension_VTable_LogicalConnective nova_standard_math_logic_Extension_VTable_LogicalConnective_val =
 {
 	{
-		0,
-		0,
 		0,
 		0,
 		0,

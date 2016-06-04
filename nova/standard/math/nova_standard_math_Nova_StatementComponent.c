@@ -1,12 +1,9 @@
 #include <precompiled.h>
 #include <nova/standard/math/nova_standard_math_Nova_StatementComponent.h>
 
-
 nova_standard_math_Extension_VTable_StatementComponent nova_standard_math_Extension_VTable_StatementComponent_val =
 {
 	{
-		0,
-		0,
 		0,
 		0,
 		0,
@@ -30,7 +27,7 @@ void nova_standard_math_Nova_StatementComponentNova_init_static(nova_standard_ex
 	}
 }
 
-nova_standard_math_Nova_StatementComponent* nova_standard_math_Nova_StatementComponent_Nova_construct(nova_standard_math_Nova_StatementComponent* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_Nova_Object* l0_Nova_data)
+nova_standard_math_Nova_StatementComponent* nova_standard_math_Nova_StatementComponent_Nova_construct(nova_standard_math_Nova_StatementComponent* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_Nova_Object* nova_standard_math_Nova_StatementComponent_Nova_data)
 {
 	CCLASS_NEW(nova_standard_math_Nova_StatementComponent, this,);
 	this->vtable = &nova_standard_math_Extension_VTable_StatementComponent_val;
@@ -39,7 +36,7 @@ nova_standard_math_Nova_StatementComponent* nova_standard_math_Nova_StatementCom
 	nova_standard_math_Nova_StatementComponent_Nova_super(this, exceptionData);
 	
 	{
-		nova_standard_math_Nova_StatementComponent_Nova_this(this, exceptionData, l0_Nova_data);
+		nova_standard_math_Nova_StatementComponent_Nova_this(this, exceptionData, nova_standard_math_Nova_StatementComponent_Nova_data);
 	}
 	
 	return this;
@@ -58,9 +55,9 @@ void nova_standard_math_Nova_StatementComponent_Nova_destroy(nova_standard_math_
 	NOVA_FREE(*this);
 }
 
-void nova_standard_math_Nova_StatementComponent_Nova_this(nova_standard_math_Nova_StatementComponent* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_Nova_Object* l0_Nova_data)
+void nova_standard_math_Nova_StatementComponent_Nova_this(nova_standard_math_Nova_StatementComponent* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_Nova_Object* nova_standard_math_Nova_StatementComponent_Nova_data)
 {
-	this->nova_standard_math_Nova_StatementComponent_Nova_data = l0_Nova_data;
+	this->nova_standard_math_Nova_StatementComponent_Nova_data = nova_standard_math_Nova_StatementComponent_Nova_data;
 }
 
 nova_standard_Nova_String* nova_standard_math_Nova_StatementComponent_0_Nova_toString(nova_standard_math_Nova_StatementComponent* this, nova_standard_exception_Nova_ExceptionData* exceptionData)

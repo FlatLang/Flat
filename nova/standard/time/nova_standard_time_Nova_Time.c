@@ -1,12 +1,9 @@
 #include <precompiled.h>
 #include <nova/standard/time/nova_standard_time_Nova_Time.h>
 
-
 nova_standard_time_Extension_VTable_Time nova_standard_time_Extension_VTable_Time_val =
 {
 	{
-		0,
-		0,
 		0,
 		0,
 		0,

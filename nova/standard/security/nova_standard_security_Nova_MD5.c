@@ -1,12 +1,9 @@
 #include <precompiled.h>
 #include <nova/standard/security/nova_standard_security_Nova_MD5.h>
 
-
 nova_standard_security_Extension_VTable_MD5 nova_standard_security_Extension_VTable_MD5_val =
 {
 	{
-		0,
-		0,
 		0,
 		0,
 		0,
@@ -56,11 +53,11 @@ void nova_standard_security_Nova_MD5_Nova_destroy(nova_standard_security_Nova_MD
 	NOVA_FREE(*this);
 }
 
-nova_standard_Nova_String* nova_standard_security_Nova_MD5_Nova_encrypt(nova_standard_security_Nova_MD5* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_Nova_String* l0_Nova_str)
+nova_standard_Nova_String* nova_standard_security_Nova_MD5_Nova_encrypt(nova_standard_security_Nova_MD5* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_Nova_String* nova_standard_security_Nova_MD5_Nova_str)
 {
 	char* l1_Nova_data;
 	
-	l1_Nova_data = (char*)(nova_md5((char*)(l0_Nova_str->nova_standard_Nova_String_Nova_chars)));
+	l1_Nova_data = (char*)(nova_md5((char*)(nova_standard_security_Nova_MD5_Nova_str->nova_standard_Nova_String_Nova_chars)));
 	if (l1_Nova_data == 0)
 	{
 		return (nova_standard_Nova_String*)nova_null;

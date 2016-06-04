@@ -1,12 +1,9 @@
 #include <precompiled.h>
 #include <nova/standard/math/nova_standard_math_Nova_Statement.h>
 
-
 nova_standard_math_Extension_VTable_Statement nova_standard_math_Extension_VTable_Statement_val =
 {
 	{
-		0,
-		0,
 		0,
 		0,
 		0,

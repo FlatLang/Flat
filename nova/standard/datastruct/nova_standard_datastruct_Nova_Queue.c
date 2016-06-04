@@ -1,12 +1,9 @@
 #include <precompiled.h>
 #include <nova/standard/datastruct/nova_standard_datastruct_Nova_Queue.h>
 
-
 nova_standard_datastruct_Extension_VTable_Queue nova_standard_datastruct_Extension_VTable_Queue_val =
 {
 	{
-		0,
-		0,
 		0,
 		0,
 		0,
@@ -26,7 +23,7 @@ nova_standard_datastruct_Extension_VTable_Queue nova_standard_datastruct_Extensi
 
 CCLASS_PRIVATE
 (
-	nova_standard_datastruct_Nova_ArrayList* nova_standard_datastruct_Nova_Queue_Nova_data;
+	nova_standard_datastruct_Nova_Array* nova_standard_datastruct_Nova_Queue_Nova_data;
 	
 )
 
@@ -59,7 +56,7 @@ void nova_standard_datastruct_Nova_Queue_Nova_destroy(nova_standard_datastruct_N
 		return;
 	}
 	
-	nova_standard_datastruct_Nova_ArrayList_Nova_destroy(&(*this)->prv->nova_standard_datastruct_Nova_Queue_Nova_data, exceptionData);
+	nova_standard_datastruct_Nova_Array_Nova_destroy(&(*this)->prv->nova_standard_datastruct_Nova_Queue_Nova_data, exceptionData);
 	NOVA_FREE((*this)->prv);
 	
 	NOVA_FREE(*this);
@@ -67,17 +64,17 @@ void nova_standard_datastruct_Nova_Queue_Nova_destroy(nova_standard_datastruct_N
 
 void nova_standard_datastruct_Nova_Queue_2_Nova_this(nova_standard_datastruct_Nova_Queue* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
-	this->prv->nova_standard_datastruct_Nova_Queue_Nova_data = nova_standard_datastruct_Nova_ArrayList_2_Nova_construct(0, exceptionData);
+	this->prv->nova_standard_datastruct_Nova_Queue_Nova_data = nova_standard_datastruct_Nova_Array_2_Nova_construct(0, exceptionData);
 }
 
 nova_standard_Nova_Object* nova_standard_datastruct_Nova_Queue_Nova_dequeue(nova_standard_datastruct_Nova_Queue* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
-	return nova_standard_datastruct_Nova_ArrayList_Nova_remove(this->prv->nova_standard_datastruct_Nova_Queue_Nova_data, exceptionData, 0);
+	return nova_standard_datastruct_Nova_Array_Nova_remove(this->prv->nova_standard_datastruct_Nova_Queue_Nova_data, exceptionData, 0);
 }
 
-void nova_standard_datastruct_Nova_Queue_Nova_enqueue(nova_standard_datastruct_Nova_Queue* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_Nova_Object* l0_Nova_element)
+void nova_standard_datastruct_Nova_Queue_Nova_enqueue(nova_standard_datastruct_Nova_Queue* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_Nova_Object* nova_standard_datastruct_Nova_Queue_Nova_element)
 {
-	nova_standard_datastruct_Nova_ArrayList_0_Nova_add(this->prv->nova_standard_datastruct_Nova_Queue_Nova_data, exceptionData, l0_Nova_element);
+	nova_standard_datastruct_Nova_Array_0_Nova_add(this->prv->nova_standard_datastruct_Nova_Queue_Nova_data, exceptionData, nova_standard_datastruct_Nova_Queue_Nova_element);
 }
 
 char nova_standard_datastruct_Nova_Queue_Nova_isEmpty(nova_standard_datastruct_Nova_Queue* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
@@ -100,7 +97,7 @@ nova_standard_Nova_String* nova_standard_datastruct_Nova_Queue_0_Nova_toString(n
 		{
 			l1_Nova_s = l1_Nova_s->vtable->nova_standard_Nova_String_virtual0_Nova_concat(l1_Nova_s, exceptionData, nova_standard_Nova_String_1_Nova_construct(0, exceptionData, ", "));
 		}
-		nova_local_0 = (nova_standard_Nova_Object*)(nova_standard_datastruct_Nova_ArrayList_Nova_get(this->prv->nova_standard_datastruct_Nova_Queue_Nova_data, exceptionData, l1_Nova_i));
+		nova_local_0 = (nova_standard_Nova_Object*)(nova_standard_datastruct_Nova_Array_Nova_get(this->prv->nova_standard_datastruct_Nova_Queue_Nova_data, exceptionData, l1_Nova_i));
 		l1_Nova_s = l1_Nova_s->vtable->nova_standard_Nova_String_virtual0_Nova_concat(l1_Nova_s, exceptionData, nova_local_0->vtable->nova_standard_Nova_Object_virtual0_Nova_toString(nova_local_0, exceptionData));
 	}
 	return l1_Nova_s;
@@ -108,12 +105,12 @@ nova_standard_Nova_String* nova_standard_datastruct_Nova_Queue_0_Nova_toString(n
 
 int nova_standard_datastruct_Nova_Queue_Accessor_Nova_size(nova_standard_datastruct_Nova_Queue* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
-	return this->prv->nova_standard_datastruct_Nova_Queue_Nova_data->nova_standard_datastruct_Nova_ArrayList_Nova_size;
+	return this->prv->nova_standard_datastruct_Nova_Queue_Nova_data->nova_standard_datastruct_Nova_Array_Nova_size;
 }
 
 
 void nova_standard_datastruct_Nova_Queue_Nova_super(nova_standard_datastruct_Nova_Queue* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
-	this->prv->nova_standard_datastruct_Nova_Queue_Nova_data = (nova_standard_datastruct_Nova_ArrayList*)nova_null;
+	this->prv->nova_standard_datastruct_Nova_Queue_Nova_data = (nova_standard_datastruct_Nova_Array*)nova_null;
 }
 

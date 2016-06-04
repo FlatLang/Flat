@@ -1,12 +1,9 @@
 #include <precompiled.h>
 #include <nova/standard/time/nova_standard_time_Nova_Date.h>
 
-
 nova_standard_time_Extension_VTable_Date nova_standard_time_Extension_VTable_Date_val =
 {
 	{
-		0,
-		0,
 		0,
 		0,
 		0,
@@ -67,7 +64,7 @@ void nova_standard_time_Nova_Date_2_Nova_this(nova_standard_time_Nova_Date* this
 	nova_standard_time_Nova_Date_Nova_updateTime(this, exceptionData);
 }
 
-void nova_standard_time_Nova_Date_Nova_decodeDate(nova_standard_time_Nova_Date* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_Nova_String* l0_Nova_prototype, nova_standard_Nova_String* l0_Nova_date)
+void nova_standard_time_Nova_Date_Nova_decodeDate(nova_standard_time_Nova_Date* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_Nova_String* nova_standard_time_Nova_Date_Nova_prototype, nova_standard_Nova_String* nova_standard_time_Nova_Date_Nova_date)
 {
 }
 
@@ -82,16 +79,16 @@ void nova_standard_time_Nova_Date_Nova_updateTime(nova_standard_time_Nova_Date* 
 	this->nova_standard_time_Nova_Date_Nova_second = (int)(nova_getSecond());
 }
 
-nova_standard_Nova_String* nova_standard_time_Nova_Date_0_Nova_formatDate(nova_standard_time_Nova_Date* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_Nova_String* l0_Nova_str)
+nova_standard_Nova_String* nova_standard_time_Nova_Date_0_Nova_formatDate(nova_standard_time_Nova_Date* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_Nova_String* nova_standard_time_Nova_Date_Nova_str)
 {
-	nova_standard_time_Nova_Date_1_Nova_formatDate(this, exceptionData, l0_Nova_str, this->nova_standard_time_Nova_Date_Nova_month, this->nova_standard_time_Nova_Date_Nova_day, this->nova_standard_time_Nova_Date_Nova_year, this->nova_standard_time_Nova_Date_Nova_hour, this->nova_standard_time_Nova_Date_Nova_minute, this->nova_standard_time_Nova_Date_Nova_second);
+	nova_standard_time_Nova_Date_1_Nova_formatDate(this, exceptionData, nova_standard_time_Nova_Date_Nova_str, this->nova_standard_time_Nova_Date_Nova_month, this->nova_standard_time_Nova_Date_Nova_day, this->nova_standard_time_Nova_Date_Nova_year, this->nova_standard_time_Nova_Date_Nova_hour, this->nova_standard_time_Nova_Date_Nova_minute, this->nova_standard_time_Nova_Date_Nova_second);
 }
 
-nova_standard_Nova_String* nova_standard_time_Nova_Date_1_Nova_formatDate(nova_standard_time_Nova_Date* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_Nova_String* l0_Nova_str, int l0_Nova_first, int l0_Nova_second, int l0_Nova_third, int l0_Nova_fourth, int l0_Nova_fifth, int l0_Nova_sixth)
+nova_standard_Nova_String* nova_standard_time_Nova_Date_1_Nova_formatDate(nova_standard_time_Nova_Date* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_Nova_String* nova_standard_time_Nova_Date_Nova_str, int nova_standard_time_Nova_Date_Nova_first, int nova_standard_time_Nova_Date_Nova_second, int nova_standard_time_Nova_Date_Nova_third, int nova_standard_time_Nova_Date_Nova_fourth, int nova_standard_time_Nova_Date_Nova_fifth, int nova_standard_time_Nova_Date_Nova_sixth)
 {
 	char* l1_Nova_data;
 	
-	l1_Nova_data = (char*)(nova_formatDate((char*)(l0_Nova_str->nova_standard_Nova_String_Nova_chars), (int)(l0_Nova_first), (int)(l0_Nova_second), (int)(l0_Nova_third), (int)(l0_Nova_fourth), (int)(l0_Nova_fifth), (int)(l0_Nova_sixth)));
+	l1_Nova_data = (char*)(nova_formatDate((char*)(nova_standard_time_Nova_Date_Nova_str->nova_standard_Nova_String_Nova_chars), (int)(nova_standard_time_Nova_Date_Nova_first), (int)(nova_standard_time_Nova_Date_Nova_second), (int)(nova_standard_time_Nova_Date_Nova_third), (int)(nova_standard_time_Nova_Date_Nova_fourth), (int)(nova_standard_time_Nova_Date_Nova_fifth), (int)(nova_standard_time_Nova_Date_Nova_sixth)));
 	return nova_standard_Nova_String_1_Nova_construct(0, exceptionData, l1_Nova_data);
 }
 

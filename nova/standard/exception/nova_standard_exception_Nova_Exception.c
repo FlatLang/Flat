@@ -1,12 +1,9 @@
 #include <precompiled.h>
 #include <nova/standard/exception/nova_standard_exception_Nova_Exception.h>
 
-
 nova_standard_exception_Extension_VTable_Exception nova_standard_exception_Extension_VTable_Exception_val =
 {
 	{
-		0,
-		0,
 		0,
 		0,
 		0,
@@ -45,7 +42,7 @@ nova_standard_exception_Nova_Exception* nova_standard_exception_Nova_Exception_0
 	return this;
 }
 
-nova_standard_exception_Nova_Exception* nova_standard_exception_Nova_Exception_1_Nova_construct(nova_standard_exception_Nova_Exception* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_Nova_String* l0_Nova_message)
+nova_standard_exception_Nova_Exception* nova_standard_exception_Nova_Exception_1_Nova_construct(nova_standard_exception_Nova_Exception* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_Nova_String* nova_standard_exception_Nova_Exception_Nova_message)
 {
 	CCLASS_NEW(nova_standard_exception_Nova_Exception, this,);
 	this->vtable = &nova_standard_exception_Extension_VTable_Exception_val;
@@ -54,7 +51,7 @@ nova_standard_exception_Nova_Exception* nova_standard_exception_Nova_Exception_1
 	nova_standard_exception_Nova_Exception_Nova_super(this, exceptionData);
 	
 	{
-		nova_standard_exception_Nova_Exception_1_Nova_this(this, exceptionData, l0_Nova_message);
+		nova_standard_exception_Nova_Exception_1_Nova_this(this, exceptionData, nova_standard_exception_Nova_Exception_Nova_message);
 	}
 	
 	return this;
@@ -77,9 +74,9 @@ void nova_standard_exception_Nova_Exception_0_Nova_this(nova_standard_exception_
 	nova_standard_exception_Nova_Exception_1_Nova_this(this, exceptionData, nova_standard_Nova_String_1_Nova_construct(0, exceptionData, ""));
 }
 
-void nova_standard_exception_Nova_Exception_1_Nova_this(nova_standard_exception_Nova_Exception* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_Nova_String* l0_Nova_message)
+void nova_standard_exception_Nova_Exception_1_Nova_this(nova_standard_exception_Nova_Exception* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_Nova_String* nova_standard_exception_Nova_Exception_Nova_message)
 {
-	this->nova_standard_exception_Nova_Exception_Nova_message = l0_Nova_message;
+	this->nova_standard_exception_Nova_Exception_Nova_message = nova_standard_exception_Nova_Exception_Nova_message;
 }
 
 void nova_standard_exception_Nova_Exception_Nova_super(nova_standard_exception_Nova_Exception* this, nova_standard_exception_Nova_ExceptionData* exceptionData)

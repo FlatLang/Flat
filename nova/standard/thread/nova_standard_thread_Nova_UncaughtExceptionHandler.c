@@ -1,12 +1,9 @@
 #include <precompiled.h>
 #include <nova/standard/thread/nova_standard_thread_Nova_UncaughtExceptionHandler.h>
 
-
 nova_standard_thread_Extension_VTable_UncaughtExceptionHandler nova_standard_thread_Extension_VTable_UncaughtExceptionHandler_val =
 {
 	{
-		0,
-		0,
 		0,
 		0,
 		0,
@@ -60,7 +57,7 @@ void nova_standard_thread_Nova_UncaughtExceptionHandler_Nova_UncaughtExceptionHa
 {
 }
 
-void nova_standard_thread_Nova_UncaughtExceptionHandler_Nova_uncaughtException(nova_standard_thread_Nova_UncaughtExceptionHandler* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_thread_Nova_Thread* l0_Nova_thread, nova_standard_exception_Nova_Exception* l0_Nova_exception)
+void nova_standard_thread_Nova_UncaughtExceptionHandler_Nova_uncaughtException(nova_standard_thread_Nova_UncaughtExceptionHandler* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_thread_Nova_Thread* nova_standard_thread_Nova_UncaughtExceptionHandler_Nova_thread, nova_standard_exception_Nova_Exception* nova_standard_thread_Nova_UncaughtExceptionHandler_Nova_exception)
 {
 }
 

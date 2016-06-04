@@ -1,12 +1,9 @@
 #include <precompiled.h>
 #include <nova/standard/datastruct/nova_standard_datastruct_Nova_Stack.h>
 
-
 nova_standard_datastruct_Extension_VTable_Stack nova_standard_datastruct_Extension_VTable_Stack_val =
 {
 	{
-		0,
-		0,
 		0,
 		0,
 		0,
@@ -64,11 +61,11 @@ void nova_standard_datastruct_Nova_Stack_Nova_destroy(nova_standard_datastruct_N
 	NOVA_FREE(*this);
 }
 
-void nova_standard_datastruct_Nova_Stack_Nova_push(nova_standard_datastruct_Nova_Stack* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_Nova_Object* l0_Nova_data)
+void nova_standard_datastruct_Nova_Stack_Nova_push(nova_standard_datastruct_Nova_Stack* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_Nova_Object* nova_standard_datastruct_Nova_Stack_Nova_data)
 {
 	nova_standard_datastruct_Nova_ListNode* l1_Nova_node;
 	
-	l1_Nova_node = nova_standard_datastruct_Nova_ListNode_Nova_construct(0, exceptionData, l0_Nova_data);
+	l1_Nova_node = nova_standard_datastruct_Nova_ListNode_Nova_construct(0, exceptionData, nova_standard_datastruct_Nova_Stack_Nova_data);
 	l1_Nova_node->nova_standard_datastruct_Nova_ListNode_Nova_next = this->prv->nova_standard_datastruct_Nova_Stack_Nova_top;
 	this->prv->nova_standard_datastruct_Nova_Stack_Nova_top = l1_Nova_node;
 	this->nova_standard_datastruct_Nova_Stack_Nova_size++;

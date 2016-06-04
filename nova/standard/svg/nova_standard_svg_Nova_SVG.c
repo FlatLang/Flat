@@ -1,12 +1,9 @@
 #include <precompiled.h>
 #include <nova/standard/svg/nova_standard_svg_Nova_SVG.h>
 
-
 nova_standard_svg_Extension_VTable_SVG nova_standard_svg_Extension_VTable_SVG_val =
 {
 	{
-		0,
-		0,
 		0,
 		0,
 		0,
@@ -62,16 +59,16 @@ void nova_standard_svg_Nova_SVG_2_Nova_this(nova_standard_svg_Nova_SVG* this, no
 	this->nova_standard_svg_Nova_SVG_Nova_root = nova_standard_svg_Nova_SVGMainComponent_2_Nova_construct(0, exceptionData);
 }
 
-void nova_standard_svg_Nova_SVG_Nova_generateOutput(nova_standard_svg_Nova_SVG* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_io_Nova_File* l0_Nova_file)
+void nova_standard_svg_Nova_SVG_Nova_generateOutput(nova_standard_svg_Nova_SVG* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_io_Nova_File* nova_standard_svg_Nova_SVG_Nova_file)
 {
-	this->nova_standard_svg_Nova_SVG_Nova_root->vtable->nova_standard_svg_Nova_SVGMainComponent_virtual_Nova_generateOutput(this->nova_standard_svg_Nova_SVG_Nova_root, exceptionData, l0_Nova_file);
+	this->nova_standard_svg_Nova_SVG_Nova_root->vtable->nova_standard_svg_Nova_SVGMainComponent_virtual_Nova_generateOutput(this->nova_standard_svg_Nova_SVG_Nova_root, exceptionData, nova_standard_svg_Nova_SVG_Nova_file);
 }
 
-void nova_standard_svg_Nova_SVG_Nova_generateHTMLOutput(nova_standard_svg_Nova_SVG* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_io_Nova_File* l0_Nova_file)
+void nova_standard_svg_Nova_SVG_Nova_generateHTMLOutput(nova_standard_svg_Nova_SVG* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_io_Nova_File* nova_standard_svg_Nova_SVG_Nova_file)
 {
-	nova_standard_io_Nova_File_Nova_write(l0_Nova_file, exceptionData, nova_standard_Nova_String_1_Nova_construct(0, exceptionData, "<html>\n"));
-	nova_standard_svg_Nova_SVG_Nova_generateOutput(this, exceptionData, l0_Nova_file);
-	nova_standard_io_Nova_File_Nova_write(l0_Nova_file, exceptionData, nova_standard_Nova_String_1_Nova_construct(0, exceptionData, "</html>"));
+	nova_standard_io_Nova_File_Nova_write(nova_standard_svg_Nova_SVG_Nova_file, exceptionData, nova_standard_Nova_String_1_Nova_construct(0, exceptionData, "<html>\n"));
+	nova_standard_svg_Nova_SVG_Nova_generateOutput(this, exceptionData, nova_standard_svg_Nova_SVG_Nova_file);
+	nova_standard_io_Nova_File_Nova_write(nova_standard_svg_Nova_SVG_Nova_file, exceptionData, nova_standard_Nova_String_1_Nova_construct(0, exceptionData, "</html>"));
 }
 
 void nova_standard_svg_Nova_SVG_Nova_super(nova_standard_svg_Nova_SVG* this, nova_standard_exception_Nova_ExceptionData* exceptionData)

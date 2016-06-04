@@ -1,12 +1,9 @@
 #include <precompiled.h>
 #include <nova/standard/math/nova_standard_math_Nova_NumericStatement.h>
 
-
 nova_standard_math_Extension_VTable_NumericStatement nova_standard_math_Extension_VTable_NumericStatement_val =
 {
 	{
-		0,
-		0,
 		0,
 		0,
 		0,
@@ -35,7 +32,7 @@ void nova_standard_math_Nova_NumericStatementNova_init_static(nova_standard_exce
 	}
 }
 
-nova_standard_math_Nova_NumericStatement* nova_standard_math_Nova_NumericStatement_Nova_construct(nova_standard_math_Nova_NumericStatement* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_Nova_String* l0_Nova_statement)
+nova_standard_math_Nova_NumericStatement* nova_standard_math_Nova_NumericStatement_Nova_construct(nova_standard_math_Nova_NumericStatement* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_Nova_String* nova_standard_math_Nova_NumericStatement_Nova_statement)
 {
 	CCLASS_NEW(nova_standard_math_Nova_NumericStatement, this);
 	this->vtable = &nova_standard_math_Extension_VTable_NumericStatement_val;
@@ -46,7 +43,7 @@ nova_standard_math_Nova_NumericStatement* nova_standard_math_Nova_NumericStateme
 	nova_standard_math_Nova_NumericStatement_2_Nova_super(this, exceptionData);
 	
 	{
-		nova_standard_math_Nova_NumericStatement_Nova_this(this, exceptionData, l0_Nova_statement);
+		nova_standard_math_Nova_NumericStatement_Nova_this(this, exceptionData, nova_standard_math_Nova_NumericStatement_Nova_statement);
 	}
 	
 	return this;
@@ -65,9 +62,9 @@ void nova_standard_math_Nova_NumericStatement_Nova_destroy(nova_standard_math_No
 	NOVA_FREE(*this);
 }
 
-void nova_standard_math_Nova_NumericStatement_Nova_this(nova_standard_math_Nova_NumericStatement* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_Nova_String* l0_Nova_statement)
+void nova_standard_math_Nova_NumericStatement_Nova_this(nova_standard_math_Nova_NumericStatement* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_Nova_String* nova_standard_math_Nova_NumericStatement_Nova_statement)
 {
-	this->prv->nova_standard_math_Nova_NumericStatement_Nova_tree = nova_standard_math_Nova_NumericTree_Nova_construct(0, exceptionData, nova_standard_Nova_String_Nova_trim(l0_Nova_statement, exceptionData));
+	this->prv->nova_standard_math_Nova_NumericStatement_Nova_tree = nova_standard_math_Nova_NumericTree_Nova_construct(0, exceptionData, nova_standard_Nova_String_Nova_trim(nova_standard_math_Nova_NumericStatement_Nova_statement, exceptionData));
 }
 
 nova_standard_Nova_String* nova_standard_math_Nova_NumericStatement_0_Nova_toString(nova_standard_math_Nova_NumericStatement* this, nova_standard_exception_Nova_ExceptionData* exceptionData)

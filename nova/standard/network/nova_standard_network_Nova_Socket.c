@@ -1,12 +1,9 @@
 #include <precompiled.h>
 #include <nova/standard/network/nova_standard_network_Nova_Socket.h>
 
-
 nova_standard_network_Extension_VTable_Socket nova_standard_network_Extension_VTable_Socket_val =
 {
 	{
-		0,
-		0,
 		0,
 		0,
 		0,

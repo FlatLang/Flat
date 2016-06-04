@@ -1,12 +1,9 @@
 #include <precompiled.h>
 #include <nova/standard/io/nova_standard_io_Nova_OutputStream.h>
 
-
 nova_standard_io_Extension_VTable_OutputStream nova_standard_io_Extension_VTable_OutputStream_val =
 {
 	{
-		0,
-		0,
 		0,
 		0,
 		0,
@@ -65,8 +62,8 @@ void nova_standard_io_Nova_OutputStream_Nova_destroy(nova_standard_io_Nova_Outpu
 	NOVA_FREE(*this);
 }
 
-char nova_standard_io_Nova_OutputStream_1_Nova_write(nova_standard_io_Nova_OutputStream* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_Nova_String* l0_Nova_data){}
-char nova_standard_io_Nova_OutputStream_2_Nova_write(nova_standard_io_Nova_OutputStream* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_Nova_Object* l0_Nova_data){}
+char nova_standard_io_Nova_OutputStream_1_Nova_write(nova_standard_io_Nova_OutputStream* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_Nova_String* nova_standard_io_Nova_OutputStream_Nova_data){}
+char nova_standard_io_Nova_OutputStream_2_Nova_write(nova_standard_io_Nova_OutputStream* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_Nova_Object* nova_standard_io_Nova_OutputStream_Nova_data){}
 void nova_standard_io_Nova_OutputStream_4_Nova_this(nova_standard_io_Nova_OutputStream* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
 }

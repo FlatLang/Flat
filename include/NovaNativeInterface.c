@@ -81,7 +81,7 @@ nova_env novaEnv = {
 {
 &nova_standard_network_Nova_NetworkInputStream_Nova_readString,
 &nova_standard_network_Nova_NetworkInputStream_Nova_readBytes,
-&nova_standard_network_Nova_NetworkInputStream_0_Nova_construct,
+&nova_standard_network_Nova_NetworkInputStream_Nova_construct,
 },
 
 {
@@ -209,7 +209,7 @@ nova_env novaEnv = {
 &nova_standard_primitive_number_Nova_Char_1_Nova_toLowerCase,
 &nova_standard_primitive_number_Nova_Char_Nova_toUpperCase,
 &nova_standard_primitive_number_Nova_Char_0_Nova_compareTo,
-&nova_standard_primitive_number_Nova_Char_6_Nova_construct,
+&nova_standard_primitive_number_Nova_Char_5_Nova_construct,
 },
 
 {
@@ -275,12 +275,11 @@ nova_env novaEnv = {
 
 {
 0,
-&nova_standard_primitive_number_Nova_Number_7_Nova_construct,
+&nova_standard_primitive_number_Nova_Number_6_Nova_construct,
 },
 
 {
 0,
-&nova_standard_operators_Nova_Multipliable_8_Nova_construct,
 },
 
 {
@@ -314,7 +313,6 @@ nova_env novaEnv = {
 {
 0,
 0,
-&nova_standard_io_Nova_InputStream_1_Nova_construct,
 },
 
 {
@@ -432,26 +430,10 @@ nova_env novaEnv = {
 },
 
 {
-&nova_standard_datastruct_Nova_ArrayList_0_Nova_add,
-&nova_standard_datastruct_Nova_ArrayList_1_Nova_add,
-&nova_standard_datastruct_Nova_ArrayList_Nova_remove,
-&nova_standard_datastruct_Nova_ArrayList_Nova_swap,
-&nova_standard_datastruct_Nova_ArrayList_Nova_get,
-&nova_standard_datastruct_Nova_ArrayList_Nova_set,
-&nova_standard_datastruct_Nova_ArrayList_Nova_toArray,
-&nova_standard_datastruct_Nova_ArrayList_Nova_filter,
-&nova_standard_datastruct_Nova_ArrayList_Nova_take,
-&nova_standard_datastruct_Nova_ArrayList_Nova_skip,
-&nova_standard_datastruct_Nova_ArrayList_2_Nova_construct,
-&nova_standard_datastruct_Nova_ArrayList_3_Nova_construct,
-&nova_standard_datastruct_Nova_ArrayList_4_Nova_construct,
-},
-
-{
 0,
 0,
 0,
-&nova_standard_datastruct_Nova_Enumerable_5_Nova_construct,
+0,
 },
 
 {
@@ -474,7 +456,20 @@ nova_env novaEnv = {
 },
 
 {
-&nova_standard_datastruct_Nova_Array_Nova_construct,
+&nova_standard_datastruct_Nova_Array_0_Nova_add,
+&nova_standard_datastruct_Nova_Array_1_Nova_add,
+&nova_standard_datastruct_Nova_Array_Nova_remove,
+&nova_standard_datastruct_Nova_Array_Nova_swap,
+&nova_standard_datastruct_Nova_Array_Nova_get,
+&nova_standard_datastruct_Nova_Array_Nova_set,
+&nova_standard_datastruct_Nova_Array_Nova_toArray,
+&nova_standard_datastruct_Nova_Array_Nova_forEach,
+&nova_standard_datastruct_Nova_Array_Nova_filter,
+&nova_standard_datastruct_Nova_Array_Nova_take,
+&nova_standard_datastruct_Nova_Array_Nova_skip,
+&nova_standard_datastruct_Nova_Array_2_Nova_construct,
+&nova_standard_datastruct_Nova_Array_3_Nova_construct,
+&nova_standard_datastruct_Nova_Array_4_Nova_construct,
 },
 
 {
@@ -550,7 +545,6 @@ nova_env novaEnv = {
 
 {
 0,
-&nova_standard_datastruct_Nova_Comparable_5_Nova_construct,
 },
 
 {
@@ -584,13 +578,12 @@ nova_env novaEnv = {
 {
 0,
 0,
-&example_Nova_Polygon_4_Nova_construct,
 },
 
 {
 &example_Nova_Square_Nova_numberSides,
 &example_Nova_Square_Nova_calculateArea,
-&example_Nova_Square_3_Nova_construct,
+&example_Nova_Square_Nova_construct,
 },
 
 };

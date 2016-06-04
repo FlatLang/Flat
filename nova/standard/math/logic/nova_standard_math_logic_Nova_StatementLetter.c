@@ -1,12 +1,9 @@
 #include <precompiled.h>
 #include <nova/standard/math/logic/nova_standard_math_logic_Nova_StatementLetter.h>
 
-
 nova_standard_math_logic_Extension_VTable_StatementLetter nova_standard_math_logic_Extension_VTable_StatementLetter_val =
 {
 	{
-		0,
-		0,
 		0,
 		0,
 		0,
@@ -36,7 +33,7 @@ void nova_standard_math_logic_Nova_StatementLetterNova_init_static(nova_standard
 	}
 }
 
-nova_standard_math_logic_Nova_StatementLetter* nova_standard_math_logic_Nova_StatementLetter_Nova_construct(nova_standard_math_logic_Nova_StatementLetter* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_Nova_String* l0_Nova_letter, nova_standard_Nova_String* l0_Nova_representation)
+nova_standard_math_logic_Nova_StatementLetter* nova_standard_math_logic_Nova_StatementLetter_Nova_construct(nova_standard_math_logic_Nova_StatementLetter* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_Nova_String* nova_standard_math_logic_Nova_StatementLetter_Nova_letter, nova_standard_Nova_String* nova_standard_math_logic_Nova_StatementLetter_Nova_representation)
 {
 	CCLASS_NEW(nova_standard_math_logic_Nova_StatementLetter, this);
 	this->vtable = &nova_standard_math_logic_Extension_VTable_StatementLetter_val;
@@ -47,7 +44,7 @@ nova_standard_math_logic_Nova_StatementLetter* nova_standard_math_logic_Nova_Sta
 	nova_standard_math_logic_Nova_StatementLetter_2_Nova_super(this, exceptionData);
 	
 	{
-		nova_standard_math_logic_Nova_StatementLetter_Nova_this(this, exceptionData, l0_Nova_letter, l0_Nova_representation);
+		nova_standard_math_logic_Nova_StatementLetter_Nova_this(this, exceptionData, nova_standard_math_logic_Nova_StatementLetter_Nova_letter, nova_standard_math_logic_Nova_StatementLetter_Nova_representation);
 	}
 	
 	return this;
@@ -67,10 +64,10 @@ void nova_standard_math_logic_Nova_StatementLetter_Nova_destroy(nova_standard_ma
 	NOVA_FREE(*this);
 }
 
-void nova_standard_math_logic_Nova_StatementLetter_Nova_this(nova_standard_math_logic_Nova_StatementLetter* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_Nova_String* l0_Nova_letter, nova_standard_Nova_String* l0_Nova_representation)
+void nova_standard_math_logic_Nova_StatementLetter_Nova_this(nova_standard_math_logic_Nova_StatementLetter* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_Nova_String* nova_standard_math_logic_Nova_StatementLetter_Nova_letter, nova_standard_Nova_String* nova_standard_math_logic_Nova_StatementLetter_Nova_representation)
 {
-	this->prv->nova_standard_math_logic_Nova_StatementLetter_Nova_letter = l0_Nova_letter;
-	this->prv->nova_standard_math_logic_Nova_StatementLetter_Nova_representation = l0_Nova_representation;
+	this->prv->nova_standard_math_logic_Nova_StatementLetter_Nova_letter = nova_standard_math_logic_Nova_StatementLetter_Nova_letter;
+	this->prv->nova_standard_math_logic_Nova_StatementLetter_Nova_representation = nova_standard_math_logic_Nova_StatementLetter_Nova_representation;
 }
 
 void nova_standard_math_logic_Nova_StatementLetter_2_Nova_super(nova_standard_math_logic_Nova_StatementLetter* this, nova_standard_exception_Nova_ExceptionData* exceptionData)

@@ -1,12 +1,9 @@
 #include <precompiled.h>
 #include <nova/standard/datastruct/nova_standard_datastruct_Nova_List.h>
 
-
 nova_standard_datastruct_Extension_VTable_List nova_standard_datastruct_Extension_VTable_List_val =
 {
 	{
-		0,
-		0,
 		0,
 		0,
 		0,
@@ -70,11 +67,11 @@ nova_standard_datastruct_Nova_ListNode* nova_standard_datastruct_Nova_List_Nova_
 	return this->prv->nova_standard_datastruct_Nova_List_Nova_start;
 }
 
-void nova_standard_datastruct_Nova_List_Nova_add(nova_standard_datastruct_Nova_List* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_Nova_Object* l0_Nova_data)
+void nova_standard_datastruct_Nova_List_Nova_add(nova_standard_datastruct_Nova_List* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_Nova_Object* nova_standard_datastruct_Nova_List_Nova_data)
 {
 	nova_standard_datastruct_Nova_ListNode* l1_Nova_node;
 	
-	l1_Nova_node = nova_standard_datastruct_Nova_ListNode_Nova_construct(0, exceptionData, l0_Nova_data);
+	l1_Nova_node = nova_standard_datastruct_Nova_ListNode_Nova_construct(0, exceptionData, nova_standard_datastruct_Nova_List_Nova_data);
 	if (this->prv->nova_standard_datastruct_Nova_List_Nova_start == (nova_standard_datastruct_Nova_ListNode*)nova_null)
 	{
 		this->prv->nova_standard_datastruct_Nova_List_Nova_start = l1_Nova_node;
@@ -87,12 +84,12 @@ void nova_standard_datastruct_Nova_List_Nova_add(nova_standard_datastruct_Nova_L
 	this->prv->nova_standard_datastruct_Nova_List_Nova_current = l1_Nova_node;
 }
 
-void nova_standard_datastruct_Nova_List_Nova_remove(nova_standard_datastruct_Nova_List* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_Nova_Object* l0_Nova_data)
+void nova_standard_datastruct_Nova_List_Nova_remove(nova_standard_datastruct_Nova_List* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_Nova_Object* nova_standard_datastruct_Nova_List_Nova_data)
 {
 	nova_standard_datastruct_Nova_ListNode* l1_Nova_prev;
 	nova_standard_datastruct_Nova_ListNode* l1_Nova_cur;
 	
-	if (this->prv->nova_standard_datastruct_Nova_List_Nova_start->nova_standard_datastruct_Nova_ListNode_Nova_data == l0_Nova_data)
+	if (this->prv->nova_standard_datastruct_Nova_List_Nova_start->nova_standard_datastruct_Nova_ListNode_Nova_data == nova_standard_datastruct_Nova_List_Nova_data)
 	{
 		this->prv->nova_standard_datastruct_Nova_List_Nova_start = this->prv->nova_standard_datastruct_Nova_List_Nova_start->nova_standard_datastruct_Nova_ListNode_Nova_next;
 	}
@@ -103,7 +100,7 @@ void nova_standard_datastruct_Nova_List_Nova_remove(nova_standard_datastruct_Nov
 		nova_standard_Nova_Object* l2_Nova_d;
 		
 		l2_Nova_d = l1_Nova_cur->nova_standard_datastruct_Nova_ListNode_Nova_data;
-		if (l2_Nova_d == l0_Nova_data)
+		if (l2_Nova_d == nova_standard_datastruct_Nova_List_Nova_data)
 		{
 			l1_Nova_prev->nova_standard_datastruct_Nova_ListNode_Nova_next = l1_Nova_cur->nova_standard_datastruct_Nova_ListNode_Nova_next;
 		}

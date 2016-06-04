@@ -1,12 +1,9 @@
 #include <precompiled.h>
 #include <nova/standard/network/nova_standard_network_Nova_ServerSocket.h>
 
-
 nova_standard_network_Extension_VTable_ServerSocket nova_standard_network_Extension_VTable_ServerSocket_val =
 {
 	{
-		0,
-		0,
 		0,
 		0,
 		0,
@@ -62,7 +59,7 @@ void nova_standard_network_Nova_ServerSocket_Nova_destroy(nova_standard_network_
 	
 	NOVA_FREE((*this)->prv);
 	
-	nova_standard_datastruct_Nova_ArrayList_Nova_destroy(&(*this)->nova_standard_network_Nova_ServerSocket_Nova_requests, exceptionData);
+	nova_standard_datastruct_Nova_Array_Nova_destroy(&(*this)->nova_standard_network_Nova_ServerSocket_Nova_requests, exceptionData);
 	
 	NOVA_FREE(*this);
 }
@@ -72,9 +69,9 @@ void nova_standard_network_Nova_ServerSocket_2_Nova_this(nova_standard_network_N
 	this->nova_standard_network_Nova_ServerSocket_Nova_open = 0;
 }
 
-char nova_standard_network_Nova_ServerSocket_Nova_start(nova_standard_network_Nova_ServerSocket* this, nova_standard_exception_Nova_ExceptionData* exceptionData, int l0_Nova_port)
+char nova_standard_network_Nova_ServerSocket_Nova_start(nova_standard_network_Nova_ServerSocket* this, nova_standard_exception_Nova_ExceptionData* exceptionData, int nova_standard_network_Nova_ServerSocket_Nova_port)
 {
-	this->prv->nova_standard_network_Nova_ServerSocket_Nova_serverSocket = nova_serversocket_start((int)(l0_Nova_port));
+	this->prv->nova_standard_network_Nova_ServerSocket_Nova_serverSocket = nova_serversocket_start((int)(nova_standard_network_Nova_ServerSocket_Nova_port));
 	if (this->prv->nova_standard_network_Nova_ServerSocket_Nova_serverSocket == 0)
 	{
 		return 0;
@@ -113,8 +110,8 @@ nova_standard_network_Nova_ConnectionSocket* nova_standard_network_Nova_ServerSo
 void nova_standard_network_Nova_ServerSocket_2_Nova_super(nova_standard_network_Nova_ServerSocket* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
 	this->nova_standard_network_Nova_ServerSocket_Nova_open = 0;
-	this->nova_standard_network_Nova_ServerSocket_Nova_requests = (nova_standard_datastruct_Nova_ArrayList*)nova_null;
+	this->nova_standard_network_Nova_ServerSocket_Nova_requests = (nova_standard_datastruct_Nova_Array*)nova_null;
 	this->prv->nova_standard_network_Nova_ServerSocket_Nova_serverSocket = 0;
-	this->nova_standard_network_Nova_ServerSocket_Nova_requests = nova_standard_datastruct_Nova_ArrayList_2_Nova_construct(0, exceptionData);
+	this->nova_standard_network_Nova_ServerSocket_Nova_requests = nova_standard_datastruct_Nova_Array_2_Nova_construct(0, exceptionData);
 }
 

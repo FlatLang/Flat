@@ -1,12 +1,9 @@
 #include <precompiled.h>
 #include <nova/standard/svg/nova_standard_svg_Nova_SVGComponent.h>
 
-
 nova_standard_svg_Extension_VTable_SVGComponent nova_standard_svg_Extension_VTable_SVGComponent_val =
 {
 	{
-		0,
-		0,
 		0,
 		0,
 		0,
@@ -63,7 +60,7 @@ void nova_standard_svg_Nova_SVGComponent_2_Nova_this(nova_standard_svg_Nova_SVGC
 	this->nova_standard_svg_Nova_SVGComponent_Nova_children = nova_standard_svg_Nova_SVGComponentList_2_Nova_construct(0, exceptionData);
 }
 
-void nova_standard_svg_Nova_SVGComponent_0_Nova_generateOutput(nova_standard_svg_Nova_SVGComponent* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_io_Nova_File* l0_Nova_file)
+void nova_standard_svg_Nova_SVGComponent_0_Nova_generateOutput(nova_standard_svg_Nova_SVGComponent* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_io_Nova_File* nova_standard_svg_Nova_SVGComponent_Nova_file)
 {
 	nova_standard_io_Nova_Console_0_Nova_writeLine(0, exceptionData, nova_standard_Nova_String_1_Nova_construct(0, exceptionData, "This is wrong"));
 }

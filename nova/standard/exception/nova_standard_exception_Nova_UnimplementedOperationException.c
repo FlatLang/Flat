@@ -1,12 +1,9 @@
 #include <precompiled.h>
 #include <nova/standard/exception/nova_standard_exception_Nova_UnimplementedOperationException.h>
 
-
 nova_standard_exception_Extension_VTable_UnimplementedOperationException nova_standard_exception_Extension_VTable_UnimplementedOperationException_val =
 {
 	{
-		0,
-		0,
 		0,
 		0,
 		0,
@@ -30,18 +27,18 @@ void nova_standard_exception_Nova_UnimplementedOperationExceptionNova_init_stati
 	}
 }
 
-nova_standard_exception_Nova_UnimplementedOperationException* nova_standard_exception_Nova_UnimplementedOperationException_1_Nova_construct(nova_standard_exception_Nova_UnimplementedOperationException* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_Nova_String* l0_Nova_message)
+nova_standard_exception_Nova_UnimplementedOperationException* nova_standard_exception_Nova_UnimplementedOperationException_1_Nova_construct(nova_standard_exception_Nova_UnimplementedOperationException* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_Nova_String* nova_standard_exception_Nova_UnimplementedOperationException_Nova_message)
 {
 	CCLASS_NEW(nova_standard_exception_Nova_UnimplementedOperationException, this,);
 	this->vtable = &nova_standard_exception_Extension_VTable_UnimplementedOperationException_val;
 	nova_standard_Nova_Object_Nova_super((nova_standard_Nova_Object*)this, exceptionData);
 	nova_standard_exception_Nova_Exception_Nova_super((nova_standard_exception_Nova_Exception*)this, exceptionData);
 	nova_standard_Nova_Object_2_Nova_this((nova_standard_Nova_Object*)(this), exceptionData);
-	nova_standard_exception_Nova_Exception_1_Nova_this((nova_standard_exception_Nova_Exception*)(this), exceptionData, l0_Nova_message);
+	nova_standard_exception_Nova_Exception_1_Nova_this((nova_standard_exception_Nova_Exception*)(this), exceptionData, nova_standard_exception_Nova_UnimplementedOperationException_Nova_message);
 	nova_standard_exception_Nova_UnimplementedOperationException_2_Nova_super(this, exceptionData);
 	
 	{
-		nova_standard_exception_Nova_UnimplementedOperationException_1_Nova_this(this, exceptionData, l0_Nova_message);
+		nova_standard_exception_Nova_UnimplementedOperationException_1_Nova_this(this, exceptionData, nova_standard_exception_Nova_UnimplementedOperationException_Nova_message);
 	}
 	
 	return this;
@@ -58,9 +55,9 @@ void nova_standard_exception_Nova_UnimplementedOperationException_Nova_destroy(n
 	NOVA_FREE(*this);
 }
 
-void nova_standard_exception_Nova_UnimplementedOperationException_1_Nova_this(nova_standard_exception_Nova_UnimplementedOperationException* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_Nova_String* l0_Nova_message)
+void nova_standard_exception_Nova_UnimplementedOperationException_1_Nova_this(nova_standard_exception_Nova_UnimplementedOperationException* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_Nova_String* nova_standard_exception_Nova_UnimplementedOperationException_Nova_message)
 {
-	nova_standard_exception_Nova_Exception_1_Nova_this((nova_standard_exception_Nova_Exception*)(this), exceptionData, l0_Nova_message);
+	nova_standard_exception_Nova_Exception_1_Nova_this((nova_standard_exception_Nova_Exception*)(this), exceptionData, nova_standard_exception_Nova_UnimplementedOperationException_Nova_message);
 }
 
 void nova_standard_exception_Nova_UnimplementedOperationException_2_Nova_super(nova_standard_exception_Nova_UnimplementedOperationException* this, nova_standard_exception_Nova_ExceptionData* exceptionData)

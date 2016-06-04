@@ -1,12 +1,9 @@
 #include <precompiled.h>
 #include <nova/standard/primitive/nova_standard_primitive_Nova_Primitive.h>
 
-
 nova_standard_primitive_Extension_VTable_Primitive nova_standard_primitive_Extension_VTable_Primitive_val =
 {
 	{
-		0,
-		0,
 		0,
 		0,
 		0,
