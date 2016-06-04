@@ -2,6 +2,6 @@ package "example"
 
 public interface Polygon
 {
-	public numberSides() -> Int
-	public calculateArea() -> Double
+	numberSides() -> Int
+	calculateArea() -> Double
 }

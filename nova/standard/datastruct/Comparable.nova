@@ -2,5 +2,5 @@ package "nova/standard/datastruct"
 
 public interface Comparable<E>
 {
-	public compareTo(E other) -> Int
+	compareTo(E other) -> Int
 }

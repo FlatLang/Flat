@@ -2,5 +2,5 @@ package "nova/standard/operators"
 
 public interface Multipliable<E>
 {
-	public multiply(E value) -> E
+	multiply(E value) -> E
 }
