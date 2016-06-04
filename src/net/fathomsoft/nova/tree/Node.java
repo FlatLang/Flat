@@ -536,7 +536,28 @@ public abstract class Node implements Listenable
 	 */
 	public boolean containsChild(Node child)
 	{
-		return children.contains(child);
+		return containsChild(child, false);
+	}
+	
+	public boolean containsChild(Node child, boolean recursive)
+	{
+		if (children.contains(child))
+		{
+			return true;
+		}
+		
+		if (recursive)
+		{
+			for (Node n : children)
+			{
+				if (n.containsChild(child, recursive))
+				{
+					return true;
+				}
+			}
+		}
+		
+		return false;
 	}
 	
 	/**
