@@ -4,6 +4,7 @@ import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.error.UnimplementedOperationException;
 import net.fathomsoft.nova.tree.GenericCompatible;
 import net.fathomsoft.nova.tree.IValue;
+import net.fathomsoft.nova.tree.List;
 import net.fathomsoft.nova.tree.Node;
 import net.fathomsoft.nova.tree.Value;
 import net.fathomsoft.nova.util.Location;
@@ -45,7 +46,7 @@ public class GenericTypeArgument extends IValue implements GenericCompatible
 	 */
 	public int getArgumentIndex()
 	{
-		GenericTypeArgumentList implementation = getGenericTypeArgumentList();
+		List implementation = (List)getParent();//getGenericTypeArgumentList();
 		
 		for (int i = 0; i < implementation.getNumVisibleChildren(); i++)
 		{
@@ -75,7 +76,7 @@ public class GenericTypeArgument extends IValue implements GenericCompatible
 	 */
 	public String getDefaultType()
 	{
-		return getValue().getTypeClass().getGenericTypeParameterDeclaration().getParameter(getArgumentIndex()).getDefaultType();
+		return ((Value)getContext()).getTypeClass().getGenericTypeParameterDeclaration().getParameter(getArgumentIndex()).getDefaultType();
 	}
 	
 	/**
@@ -94,12 +95,17 @@ public class GenericTypeArgument extends IValue implements GenericCompatible
 	@Override
 	public String getGenericReturnType()
 	{
-		if (getValue().getGenericTypeParameterDeclaration().containsParameter(getType()))
+		if (((Value)getContext()).getGenericTypeParameterDeclaration().containsParameter(getType()))
 		{
 			return getDefaultType();
 		}
 		
 		return getType();
+	}
+	
+	public GenericCompatible getContext()
+	{
+		return getParentClass();
 	}
 	
 	public static String searchGenericType(String str, int start, boolean backwards)
