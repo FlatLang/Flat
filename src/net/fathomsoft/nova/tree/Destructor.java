@@ -145,7 +145,7 @@ public class Destructor extends BodyMethodDeclaration
 //				builder.append("nova_free_array(" + field.generateCUseOutput(new StringBuilder(), true) + ", );");
 				builder.append("NOVA_FREE(" + field.generateCUseOutput(new StringBuilder(), true) + ");");
 			}
-			else
+			else if (field.getTypeClass().getDestructor() != null)
 			{
 				field.getTypeClass().getDestructor().generateCSourceName(builder).append('(').append('&');
 				
