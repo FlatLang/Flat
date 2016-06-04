@@ -1,5 +1,7 @@
 package net.fathomsoft.nova.tree;
 
+import java.util.ArrayList;
+
 import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.error.SyntaxErrorException;
@@ -161,6 +163,13 @@ public interface GenericCompatible
 	 */
 	public default void addGenericTypeArgumentName(String parameterName)
 	{
+		GenericTypeArgument type = getGenericTypeArgumentName(parameterName);
+		
+		getGenericTypeArgumentList().addChild(type);
+	}
+	
+	public default GenericTypeArgument getGenericTypeArgumentName(String parameterName)
+	{
 		GenericTypeArgument type = new GenericTypeArgument((Node)this, Location.INVALID);
 		type.setType(parameterName, true, false, false);
 
@@ -174,7 +183,7 @@ public interface GenericCompatible
 			type.setType(data.getSkipBounds(0).trimString(parameterName), true, false);
 		}
 		
-		getGenericTypeArgumentList().addChild(type);
+		return type;
 	}
 
 	public default void decodeGenericTypeArguments(String statement, Bounds genericBounds)
@@ -199,12 +208,26 @@ public interface GenericCompatible
 	
 	public default void decodeGenericTypeArguments(String params)
 	{
+		GenericTypeArgument[] args = getGenericTypeArguments(params);
+		
+		for (GenericTypeArgument arg : args)
+		{
+			getGenericTypeArgumentList().addChild(arg);
+		}
+	}
+	
+	public default GenericTypeArgument[] getGenericTypeArguments(String params)
+	{
 		String paramsList[] = StringUtils.splitCommas(params);
+		
+		ArrayList<GenericTypeArgument> args = new ArrayList<>();
 		
 		for (String param : paramsList)
 		{
-			addGenericTypeArgumentName(param);
+			args.add(getGenericTypeArgumentName(param));
 		}
+		
+		return args.toArray(new GenericTypeArgument[0]);
 	}
 	
 	/**
