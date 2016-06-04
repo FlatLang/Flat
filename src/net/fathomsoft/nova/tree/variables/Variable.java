@@ -193,7 +193,7 @@ public class Variable extends Identifier
 	@Override
 	public String getName()
 	{
-		return declaration.getName();
+		return declaration == null ? null : declaration.getName();
 	}
 	
 	/**
