@@ -41,6 +41,11 @@ public class IIdentifier extends Identifier
 	
 	public GenericCompatible getContext()
 	{
+		if (isInstance())
+		{
+			return super.getContext();
+		}
+		
 		return null;
 	}
 	
