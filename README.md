@@ -3,8 +3,6 @@ Nova Programming Language
 
 The Nova programming language is a C-based language that compiles into portable C code. The Java-like syntax makes Nova a great choice for those who are not looking to spend countless hours learning new concepts. The main idea behind Nova is to make cross-platform code run natively on a multitude of devices.
 
-
-
 __Aim__
 
   * Restore the intuitive nature of Object Oriented Programming by reducing the use of conventions.
@@ -16,32 +14,40 @@ __Aim__
   * Deliver a uniform exception handling environment.
   * Simplify common tasks and concepts.
 
-
+Getting Started
+===============
 
 __Pre-requisites__
 
   * The early version of the compiler uses Java 1.8 or later.
-  * Pretty much any machine that has a GCC C compiler.
+  * A windows/mac/or linux machine
+  * A GCC compiler installed
 
+__Installation__
 
+* Install GCC from https://gcc.gnu.org/install
+* Add GCC to system path http://stackoverflow.com/questions/5733220/how-to-add-mingw-bin-directory-to-my-system-path
+* Restart your IDE and/or terminal to make path changes take place
 
-__Instructions of Use__
+__Instructions of Use for IDE__
+
+* Open this repository as a project
+* Run it
+* Hope for the best
+
+__Instructions of Use for the Jar__
 
   * To run the compiler, first locate the Nova.jar file.
   * In command line or terminal run the jar file with the required arguments.
   * The required arguments include: The input files and the output destination.
 
-
-
-__An Example command to compile a source__
+__An Example command to compile a source from the Jar__
 
 `java -jar Nova.jar SourceFile1.nova SourceFile2.nova -o OutputExecutable.exe`
 
   * The `java -jar Nova.jar` component of the command is needed to run the compiler program.
   * The `SourceFile.nova SourceFile2.nova` components of the command are the input files to compile. There is no limit to how many source files can be compiled at a time, however at least one is required.
   * The `-o OutputExecutable.exe` component of the command specifies the name of the executable to produce. The extension of the executable will vary depending on the operating system you are compiling for.
-
-
 
 __Optional arguments to the Compiler Include__
 
