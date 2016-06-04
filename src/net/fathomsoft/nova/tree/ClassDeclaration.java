@@ -118,7 +118,7 @@ public class ClassDeclaration extends InstanceDeclaration
 	
 	public Destructor getDestructor()
 	{
-		return (Destructor)getDestructorList().getVisibleChild(0);
+		return getDestructorList().getNumVisibleChildren() > 0 ? (Destructor)getDestructorList().getVisibleChild(0) : null;
 	}
 	
 	/**
@@ -184,7 +184,7 @@ public class ClassDeclaration extends InstanceDeclaration
 	 */
 	public AssignmentMethod getAssignmentMethodNode()
 	{
-		return (AssignmentMethod)getHiddenMethodList().getChild(getHiddenMethodList().getNumChildren() - 1);
+		return getHiddenMethodList().getNumVisibleChildren() > 0 ? (AssignmentMethod)getHiddenMethodList().getChild(getHiddenMethodList().getNumChildren() - 1) : null;
 	}
 	
 	public StaticBlock getStaticAssignmentBlock()
@@ -908,6 +908,11 @@ public class ClassDeclaration extends InstanceDeclaration
 	 * 		searching method must be compatible with.
 	 * @return The compatible method with the given method name.
 	 */
+	public MethodDeclaration getMethod(GenericCompatible context, String methodName, Value ... parameterTypes)
+	{
+		return getMethod(new GenericCompatible[] { context }, methodName, parameterTypes);
+	}
+	
 	public MethodDeclaration getMethod(GenericCompatible[] contexts, String methodName, Value ... parameterTypes)
 	{
 		return getMethod(contexts, methodName, SearchFilter.getDefault(), parameterTypes);
@@ -923,6 +928,11 @@ public class ClassDeclaration extends InstanceDeclaration
 	 * 		searching method must be compatible with.
 	 * @return The compatible method with the given method name.
 	 */
+	public MethodDeclaration getMethod(GenericCompatible context, String methodName, SearchFilter filter, Value ... parameterTypes)
+	{
+		return getMethod(new GenericCompatible[] { context }, methodName, parameterTypes);
+	}
+	
 	public MethodDeclaration getMethod(GenericCompatible[] contexts, String methodName, SearchFilter filter, Value ... parameterTypes)
 	{
 		MethodDeclaration methods[] = getMethods(methodName, parameterTypes.length, filter);
@@ -2092,8 +2102,24 @@ public class ClassDeclaration extends InstanceDeclaration
 		
 		if (!containsConstructor())
 		{
-			addChild(Constructor.decodeStatement(this, "public construct()", Location.INVALID, true));
+			addDefaultConstructor();
 		}
+	}
+	
+	public void addDefaultConstructor()
+	{
+		addChild(Constructor.decodeStatement(this, "public construct()", Location.INVALID, true));
+	}
+	
+	public void addDefaultDestructor()
+	{
+		addChild(Destructor.decodeStatement(this, "public destroy()", Location.INVALID, true));
+	}
+	
+	public void addAssignmentMethods()
+	{
+		AssignmentMethod assignments = new AssignmentMethod(this, Location.INVALID);
+		addChild(assignments);
 	}
 	
 	/**
@@ -2107,7 +2133,7 @@ public class ClassDeclaration extends InstanceDeclaration
 		
 		if (!containsDestructor())
 		{
-			addChild(Destructor.decodeStatement(this, "public destroy()", Location.INVALID, true));
+			addDefaultDestructor();
 		}
 		
 		getMethodList().validate(phase);
@@ -2116,8 +2142,7 @@ public class ClassDeclaration extends InstanceDeclaration
 		getConstructorList().validate(phase);
 		getDestructorList().validate(phase);
 		
-		AssignmentMethod assignments = new AssignmentMethod(this, Location.INVALID);
-		addChild(assignments);
+		addAssignmentMethods();
 		
 		ArrayList<NovaMethodDeclaration> errors = new ArrayList<NovaMethodDeclaration>();
 		
