@@ -113,7 +113,7 @@ public class Literal extends IValue
 			{
 				MethodCall node = (MethodCall)getAncestorOfType(MethodCall.class);
 				
-				if (node.getName().equals("String"))
+				if ("String".equals(node.getName()))
 				{
 					return false;
 				}
