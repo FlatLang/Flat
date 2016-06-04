@@ -2,6 +2,7 @@ package net.fathomsoft.nova.tree;
 
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.tree.variables.FieldDeclaration;
+import net.fathomsoft.nova.tree.variables.VariableDeclaration;
 import net.fathomsoft.nova.util.Location;
 
 /**
@@ -23,6 +24,39 @@ public abstract class PropertyMethod extends BodyMethodDeclaration
 	public PropertyMethod(Node temporaryParent, Location locationIn)
 	{
 		super(temporaryParent, new Location(locationIn.getLineNumber() + temporaryParent.getLocationIn().getLineNumber(), locationIn.getOffset(), locationIn.getStart(), locationIn.getEnd()));
+	}
+	
+	public VariableDeclaration getDeclaration()
+	{
+		Node n = getParent().getAncestorWithScopeOrClass();
+		
+		while (n != null)
+		{
+			if (n instanceof ClassDeclaration)
+			{
+				ClassDeclaration c = (ClassDeclaration)n;
+				
+				FieldDeclaration f = c.getField(getName());
+				
+				if (f != null)
+				{
+					return f;
+				}
+			}
+			else if (n.getScope() != null)
+			{
+				LocalDeclaration d = n.getScope().getVariableList().getVariable(getName(), n.getScope().getID());
+				
+				if (d != null)
+				{
+					return d;
+				}
+			}
+			
+			n = getParent().getAncestorWithScopeOrClass();
+		}
+		
+		return null;
 	}
 	
 	public FieldDeclaration getParentField()
