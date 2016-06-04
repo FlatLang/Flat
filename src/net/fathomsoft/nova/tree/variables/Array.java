@@ -10,6 +10,7 @@ import net.fathomsoft.nova.tree.BinaryOperation;
 import net.fathomsoft.nova.tree.Dimensions;
 import net.fathomsoft.nova.tree.Identifier;
 import net.fathomsoft.nova.tree.Literal;
+import net.fathomsoft.nova.tree.MethodCallArgumentList;
 import net.fathomsoft.nova.tree.Node;
 import net.fathomsoft.nova.tree.Priority;
 import net.fathomsoft.nova.tree.SyntaxTree;
@@ -259,9 +260,29 @@ public class Array extends VariableDeclaration implements ArrayCompatible
 			{
 				VariableDeclaration declaration = n.getArrayDeclaration();
 				
-				n.setName(declaration.getType());
-				n.setType(n.getName());
-				n.setArrayDimensions(declaration.getArrayDimensions());
+				if (declaration != n && declaration.getArrayDimensions() > 0)
+				{
+					n.setName(declaration.getType());
+					n.setType(n.getName());
+					n.setArrayDimensions(declaration.getArrayDimensions());
+				}
+				else if (n.getInitializerValues().getNumVisibleChildren() == 0)
+				{
+					n.setType("Object");
+					n.setArrayDimensions(1);
+				}
+				else
+				{
+					Value type = n.getInitializerValues().getVisibleChild(0);
+					
+					for (int i = 1; i < n.getInitializerValues().getNumVisibleChildren(); i++)
+					{
+						type = SyntaxUtils.getTypeInCommon(type, n.getInitializerValues().getVisibleChild(i));
+					}
+					
+					n.setType(type.getType());
+					n.setArrayDimensions(1);
+				}
 				
 				return n;
 			}
@@ -280,7 +301,7 @@ public class Array extends VariableDeclaration implements ArrayCompatible
 	 */
 	private boolean isInitializer(Node parent, String statement, boolean require)
 	{
-		if (!(parent instanceof Assignment))
+		if (!(parent instanceof Assignment) && !(parent instanceof MethodCallArgumentList))
 		{
 			return SyntaxMessage.queryError("Array initializer is only valid during an assignment", this, require);
 		}
@@ -334,7 +355,7 @@ public class Array extends VariableDeclaration implements ArrayCompatible
 		{
 			return false;
 		}
-		else if (!getArrayDeclaration().isArray())
+		else if (!isDecoding() && !getArrayDeclaration().isArray())
 		{
 			return SyntaxMessage.queryError("Array initializer can only be assigned to arrays", this, require);
 		}
@@ -351,7 +372,7 @@ public class Array extends VariableDeclaration implements ArrayCompatible
 			{
 				return SyntaxMessage.queryError("Cannot decode value '" + value + "'", this, require);
 			}
-			else if (!SyntaxUtils.isTypeCompatible(null, getArrayDeclaration(), val, true, 1))
+			else if (!isDecoding() && !SyntaxUtils.isTypeCompatible(null, getArrayDeclaration(), val, true, 1))
 			{
 				return SyntaxMessage.queryError("Type '" + val.getType() + "' is not compatible with array type '" + getArrayDeclaration().getType() + "'", this, require);
 			}
@@ -376,7 +397,7 @@ public class Array extends VariableDeclaration implements ArrayCompatible
 	 */
 	private VariableDeclaration getArrayDeclaration()
 	{
-		return ((Assignment)getAncestorOfType(Assignment.class)).getAssignedNode().getDeclaration();
+		return ((Assignment)getAncestorOfType(Assignment.class)).getAssignedNode().getDeclaration();//(VariableDeclaration)getContext();
 	}
 	
 	/**
@@ -504,6 +525,8 @@ public class Array extends VariableDeclaration implements ArrayCompatible
 	public Array cloneTo(Array node, boolean cloneChildren)
 	{
 		super.cloneTo(node, cloneChildren);
+		
+		node.setArrayDimensions(getArrayDimensions());
 		
 		return node;
 	}
