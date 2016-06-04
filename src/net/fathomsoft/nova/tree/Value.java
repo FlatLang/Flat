@@ -10,6 +10,7 @@ import net.fathomsoft.nova.tree.generics.GenericTypeParameter;
 import net.fathomsoft.nova.tree.generics.GenericTypeParameterDeclaration;
 import net.fathomsoft.nova.tree.variables.Super;
 import net.fathomsoft.nova.tree.variables.Variable;
+import net.fathomsoft.nova.tree.variables.VariableDeclaration;
 import net.fathomsoft.nova.util.Location;
 import net.fathomsoft.nova.util.SyntaxUtils;
 
@@ -50,9 +51,11 @@ public abstract class Value extends Node implements AbstractValue
 		{
 			MethodCallArgumentList args = (MethodCallArgumentList)getParent();
 			
-			if (args.getMethodCall().getDeclaration() instanceof MutatorMethod)
+			VariableDeclaration d = args.getMethodCall().getMethodDeclaration();
+			
+			if (d instanceof MutatorMethod)
 			{
-				MutatorMethod m = (MutatorMethod)args.getMethodCall().getDeclaration();
+				MutatorMethod m = (MutatorMethod)d;
 				
 				return m.getDeclaration();
 			}
@@ -281,6 +284,28 @@ public abstract class Value extends Node implements AbstractValue
 		}
 		
 		return text;
+	}
+	
+	public String generateGenericType()
+	{
+		String s = "";
+		
+		if (isGenericType())
+		{
+			GenericTypeArgumentList args = getGenericTypeArgumentList();
+			
+			for (int i = 0; i < args.getNumVisibleChildren(); i++)
+			{
+				if (i > 0)
+				{
+					s += ", ";
+				}
+				
+				s += args.getVisibleChild(i).getType();
+			}
+		}
+		
+		return s;
 	}
 	
 	/**
@@ -793,6 +818,8 @@ public abstract class Value extends Node implements AbstractValue
 		{
 			builder.append('*');
 		}
+		
+		builder.append(generateGenericType());
 		
 		return builder;
 	}
