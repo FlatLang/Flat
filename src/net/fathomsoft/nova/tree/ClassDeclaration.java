@@ -1488,7 +1488,7 @@ public class ClassDeclaration extends InstanceDeclaration
 	{
 		for (MethodDeclaration m : getConstructorList())
 		{
-			if (m.areCompatibleParameterTypes(null, c.getParameterList().getTypes()))
+			if (m.areCompatibleParameterTypes(getContext(), c.getParameterList().getTypes()))
 			{
 				return true;
 			}

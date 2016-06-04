@@ -286,7 +286,7 @@ public class Constructor extends BodyMethodDeclaration
 	{
 		StringBuilder args = new StringBuilder();
 		
-		if (inherited == null || method.areCompatibleParameterTypes(null, inherited.getParameterList().getTypes()))
+		if (inherited == null || method.areCompatibleParameterTypes(getContext(), inherited.getParameterList().getTypes()))
 		{
 			for (int i = 0; i < method.getParameterList().getNumVisibleChildren(); i++)
 			{
