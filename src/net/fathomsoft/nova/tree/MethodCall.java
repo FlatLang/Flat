@@ -302,6 +302,18 @@ public class MethodCall extends Variable
 		return ref;
 	}
 	
+	/*public Accessible getAccessingNode()
+	{
+		Accessible a = super.getAccessingNode();
+		
+		if (a instanceof Instantiation)
+		{
+			return null;
+		}
+		
+		return a;
+	}*/
+	
 	/**
 	 * Get the Parameter that the given argument represents.<br>
 	 * <br>
@@ -598,6 +610,12 @@ public class MethodCall extends Variable
 	public Value[] getTypes()
 	{
 		return getMethodDeclaration().getTypes();
+	}
+	
+	@Override
+	public GenericCompatible getContext()
+	{
+		return getReferenceNode().getContext();
 	}
 	
 	/**
@@ -902,7 +920,7 @@ public class MethodCall extends Variable
 			}
 		}
 		
-		return methodDeclaration.areCompatibleParameterTypes(null, arguments.getTypes());
+		return methodDeclaration.areCompatibleParameterTypes(getContext(), arguments.getTypes());
 	}
 	
 	/**
