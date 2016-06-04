@@ -47,7 +47,7 @@ public class Lab
 		Console.writeLine("Postorder: " + tree.postorder())
 		Console.writeLine("Levelorder: " + tree.levelorder())
 		
-		ArrayList<String> list = new ArrayList()
+		ArrayList<String> list = new ArrayList()//[ "this", "is", "a", "test", "to", "see", "what shows up" ])
 		
 		list.add("this")
 		list.add("is")
