@@ -130,7 +130,12 @@ public class Constructor extends BodyMethodDeclaration
 			
 			while (!calls.isEmpty())
 			{
-				calls.pop().generateCMethodCall(builder, true);
+				AssignmentMethod method = calls.pop();
+				
+				if (method != null)
+				{
+					method.generateCMethodCall(builder, true);
+				}
 			}
 		}
 		
@@ -256,25 +261,28 @@ public class Constructor extends BodyMethodDeclaration
 			return;
 		}
 		
-		Constructor c = (Constructor)clazz.getMethod(null, IDENTIFIER, getParameterList().getTypes());
+		Constructor c = (Constructor)clazz.getMethod(getContext(), IDENTIFIER, getParameterList().getTypes());
 		
 		if (c == null)
 		{
-			c = (Constructor)clazz.getMethod(null, IDENTIFIER);
+			c = (Constructor)clazz.getMethod(getContext(), IDENTIFIER);
 			
 			if (c == null)
 			{
-				SyntaxMessage.error("Cant", this);
+				//SyntaxMessage.error("Cant", this);
 			}
 		}
 		
-		String args = generateParameterOutput(this, c);
-		
-		MethodCall sup = MethodCall.decodeStatement(current, "super(" + args + ")", Location.INVALID, true);
-		
-		constructorCalls.push(sup);
-		
-		addSuperCallFor(constructorCalls, c);
+		if (c != null)
+		{
+			String args = generateParameterOutput(this, c);
+			
+			MethodCall sup = MethodCall.decodeStatement(current, "super(" + args + ")", Location.INVALID, true);
+			
+			constructorCalls.push(sup);
+			
+			addSuperCallFor(constructorCalls, c);
+		}
 	}
 	
 	private String generateParameterOutput(NovaMethodDeclaration method)
