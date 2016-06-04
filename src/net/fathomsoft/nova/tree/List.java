@@ -66,4 +66,21 @@ public class List extends Node
 		
 		return null;
 	}
+	
+	public String toString()
+	{
+		String s = "";
+		
+		for (int i = 0; i < getNumVisibleChildren(); i++)
+		{
+			if (i > 0)
+			{
+				s += "\n";
+			}
+			
+			s += getVisibleChild(i).toString();
+		}
+		
+		return s;
+	}
 }

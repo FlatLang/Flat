@@ -3,6 +3,7 @@ package net.fathomsoft.nova.tree;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.tree.generics.GenericTypeArgument;
+import net.fathomsoft.nova.tree.generics.GenericTypeArgumentList;
 import net.fathomsoft.nova.tree.generics.GenericTypeParameterDeclaration;
 import net.fathomsoft.nova.tree.variables.VariableDeclaration;
 import net.fathomsoft.nova.util.Bounds;
@@ -324,5 +325,49 @@ public class LocalDeclaration extends VariableDeclaration
 		
 		
 		return null;
+	}
+	
+	public String generateArrayBrackets()
+	{
+		String s = "";
+		
+		for (int i = 0; i < getArrayDimensions(); i++)
+		{
+			s += "[]";
+		}
+		
+		return s;
+	}
+	
+	public String generateGenericType()
+	{
+		String s = "";
+		
+		if (isGenericType())
+		{
+			GenericTypeArgumentList args = getGenericTypeArgumentList();
+			
+			for (int i = 0; i < args.getNumVisibleChildren(); i++)
+			{
+				if (i > 0)
+				{
+					s += ", ";
+				}
+				
+				s += args.getVisibleChild(i).getType();
+			}
+		}
+		
+		return s;
+	}
+	
+	@Override
+	public StringBuilder generateNovaInput(StringBuilder builder, boolean outputChildren) {
+		return builder.append(getType()).append(generateGenericType()).append(generateArrayBrackets()).append(' ').append(getName());
+	}
+	
+	public String toString()
+	{
+		return generateNovaInput().toString();
 	}
 }

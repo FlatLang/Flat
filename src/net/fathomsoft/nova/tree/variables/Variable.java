@@ -442,4 +442,9 @@ public class Variable extends Identifier
 		
 		return null;
 	}
+	
+	public String toString()
+	{
+		return generateNovaInput() + " of type " + getDeclaration().generateNovaType();
+	}
 }
