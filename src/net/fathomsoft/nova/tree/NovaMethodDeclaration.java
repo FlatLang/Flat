@@ -163,27 +163,25 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 	 */
 	public NovaMethodDeclaration getOverriddenMethod()
 	{
-		ClassDeclaration extension = getParentClass().getExtendedClass();
-		
-		if (extension == null)
-		{
-			return null;
-		}
-		
 		SearchFilter filter = new SearchFilter();
 		filter.checkStatic(isStatic());
 		filter.checkProperties = true;
 		
-		NovaMethodDeclaration method = (NovaMethodDeclaration)extension.getMethod(getContext(), getName(), filter, getParameterList().getTypes());
+		ClassDeclaration extension = getParentClass().getExtendedClass();
 		
-		if (method != null)
+		if (extension != null)
 		{
-			return method;
+			NovaMethodDeclaration method = (NovaMethodDeclaration)extension.getMethod(getContext(), getName(), filter, getParameterList().getTypes());
+			
+			if (method != null)
+			{
+				return method;
+			}
 		}
 		
 		for (Interface inter : getParentClass().getImplementedClasses())
 		{
-			method = (NovaMethodDeclaration)inter.getMethod(getContext(), getName(), filter, getParameterList().getTypes());
+			NovaMethodDeclaration method = (NovaMethodDeclaration)inter.getMethod(getContext(), getName(), filter, getParameterList().getTypes());
 			
 			if (method != null)
 			{
