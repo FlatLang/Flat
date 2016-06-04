@@ -521,7 +521,7 @@ public class FileDeclaration extends Node
 		if (source == null)
 		{
 			builder.append("#include <precompiled.h>\n");
-			getImportList().generateCSource(builder).append('\n');
+			getImportList().generateCSource(builder);
 			
 			generateClosureDefinitions(builder, false).append('\n');
 			
@@ -650,6 +650,21 @@ public class FileDeclaration extends Node
 	 */
 	private StringBuilder generateClosureDefinitions(StringBuilder builder, boolean publicClosures)
 	{
+		ArrayList<String> types = new ArrayList<>();
+		
+		for (ClosureDeclaration closure : closures)
+		{
+			if (closure.isPublic() == publicClosures)
+			{
+				SyntaxUtils.addParametersToTypeList(builder, closure.getParameterList(), types);
+			}
+		}
+		
+		if (types.size() > 0)
+		{
+			builder.append('\n');
+		}
+		
 		for (ClosureDeclaration closure : closures)
 		{
 			if (closure.isPublic() == publicClosures)
