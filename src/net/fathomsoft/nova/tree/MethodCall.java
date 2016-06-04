@@ -8,6 +8,7 @@ import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.tree.MethodList.SearchFilter;
 import net.fathomsoft.nova.tree.exceptionhandling.Throw;
 import net.fathomsoft.nova.tree.generics.GenericTypeParameterDeclaration;
+import net.fathomsoft.nova.tree.variables.Array;
 import net.fathomsoft.nova.tree.variables.Variable;
 import net.fathomsoft.nova.tree.variables.VariableDeclaration;
 import net.fathomsoft.nova.util.Bounds;
@@ -175,7 +176,12 @@ public class MethodCall extends Variable
 	 */
 	private VariableDeclaration searchMethodDeclaration()
 	{
-		ClosureDeclaration closure = searchClosureDeclaration(getName());
+		return searchMethodDeclaration(getName());
+	}
+	
+	private VariableDeclaration searchMethodDeclaration(String name)
+	{
+		ClosureDeclaration closure = searchClosureDeclaration(name);
 		
 		if (closure != null)
 		{
@@ -189,12 +195,12 @@ public class MethodCall extends Variable
 			return null;
 		}
 		
-		if (getFileDeclaration().getImportList().getAbsoluteClassLocation(getName()) != null)
+		if (getFileDeclaration().getImportList().getAbsoluteClassLocation(name) != null)
 		{
-			setName(getFileDeclaration().getImportedClass(declaring, getName()).getName());
+			setName(getFileDeclaration().getImportedClass(declaring, name).getName());
 		}
 		
-		return declaring.getMethod(null, getName(), getArgumentList().getTypes());
+		return declaring.getMethod(getContext(), name, getArgumentList().getTypes());
 	}
 		
 	/**
@@ -599,7 +605,7 @@ public class MethodCall extends Variable
 	@Override
 	public String getName()
 	{
-		if (super.getName().equals(Constructor.IDENTIFIER))
+		if (Constructor.IDENTIFIER.equals(super.getName()))
 		{
 			return getDeclaration().getParentClass().getName();
 		}
@@ -733,7 +739,7 @@ public class MethodCall extends Variable
 			
 			if (callableMethod == null)
 			{
-				callableMethod = (CallableMethod)n.searchMethodDeclaration();
+				callableMethod = (CallableMethod)n.searchMethodDeclaration(data.name);
 			}
 			
 			n.setDeclaration((VariableDeclaration)callableMethod);
@@ -952,16 +958,21 @@ public class MethodCall extends Variable
 						
 						if (arg == null)
 						{
-							if (parent.isWithinExternalContext())
-							{
-								arg = Literal.decodeStatement(parent, argument, location, true);
-							}
-							
 							if (arg == null)
 							{
-								validateCharacters(parent, argument, location);
+								arg = Array.decodeStatement(parent, argument, location, false);
 								
-								SyntaxMessage.error("Could not decode argument '" + argument + "'", parent, location);
+								if (parent.isWithinExternalContext())
+								{
+									arg = Literal.decodeStatement(parent, argument, location, true);
+								}
+								
+								if (arg == null)
+								{
+									validateCharacters(parent, argument, location);
+									
+									SyntaxMessage.error("Could not decode argument '" + argument + "'", parent, location);
+								}
 							}
 						}
 					}
