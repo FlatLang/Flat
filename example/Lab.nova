@@ -9,13 +9,23 @@ import "nova/standard/network/ServerSocket"
 import "nova/standard/star/Window"
 import "nova/standard/math/NumericStatement"
 import "nova/standard/datastruct/BinaryTree"
-import "nova/standard/datastruct/ArrayList"
+import "nova/standard/datastruct/Array"
 
 public class Lab
 {
 	static myFilterFunc(String i) -> Bool
 	{
-		return i.length >= 4
+		return i.size >= 4
+	}
+	
+	static myforeach(String i, Int index, Array list)
+	{
+		if (index > 0)
+		{
+			Console.write(", ")
+		}
+		
+		Console.write(i)
 	}
 	
 	public static main(String[] args)
@@ -23,12 +33,6 @@ public class Lab
 		//Vector2D<Int> v = new Vector2D(2, 3)
 		
 		//Console.writeLine(v.x + ", " + v.y)
-		
-		Int i = 5
-		
-		Long l = i.multiply(7)
-		
-		Console.writeLine(l)
 		
 		BinaryTree tree = new BinaryTree()
 		
@@ -47,17 +51,16 @@ public class Lab
 		Console.writeLine("Postorder: " + tree.postorder())
 		Console.writeLine("Levelorder: " + tree.levelorder())
 		
-		ArrayList<String> list = new ArrayList()//[ "this", "is", "a", "test", "to", "see", "what shows up" ])
+		String[] a = [ "this", "is", "a", "test", "to", "see", "what shows up" ]
 		
-		list.add("this")
-		list.add("is")
-		list.add("a")
-		list.add("test")
-		list.add("to")
-		list.add("see")
-		list.add("what shows up")
+		Array<String> list = new Array(a, 7)
+		Array<String> list2 = list.filter(myFilterFunc)
 		
-		ArrayList<String> list2 = list.filter(myFilterFunc)
+		Console.writeLine("With foreach:")
+		
+		list2.forEach(myforeach)
+		
+		Console.writeLine("")
 		
 		for (Int n = 0; n < list2.size; n++)
 		{
