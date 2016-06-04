@@ -192,7 +192,7 @@ public class Bank
 					
 					if (str == null) break
 					
-					if (str.length <= 0)
+					if (str.size <= 0)
 					{
 						continue
 					}
@@ -248,7 +248,7 @@ public class Bank
 		
 		password = null
 		
-		if (connection.error.length > 0)
+		if (connection.error.size > 0)
 		{
 			return false
 		}
@@ -260,7 +260,7 @@ public class Bank
 	{
 		ResultSet result = connection.query("SELECT balance FROM register ORDER BY date DESC LIMIT 1;")
 		
-		if (connection.error.length > 0)
+		if (connection.error.size > 0)
 		{
 			throw new BankQueryException(connection.error)
 		}
@@ -294,7 +294,7 @@ public class Bank
 		
 		connection.query("INSERT INTO register VALUES('" + date + "', '" + item + "', '" + desc + "', '" + deposited + "', " + amount + ", " + balance + ");")
 		
-		if (connection.error.length > 0)
+		if (connection.error.size > 0)
 		{
 			throw new BankQueryException(connection.error)
 		}

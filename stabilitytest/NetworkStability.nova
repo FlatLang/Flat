@@ -40,7 +40,7 @@ public class NetworkStability extends StabilityTestCase
 		
 		String s = connection.in.readString()
 		
-		if (s.length != received.length || !s.equals(received))
+		if (s.size != received.size || !s.equals(received))
 		{
 			program.fail("Server unable to receive correct message from client")
 		}

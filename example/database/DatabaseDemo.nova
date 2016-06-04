@@ -40,7 +40,7 @@ public class DatabaseDemo
 		
 		String error = connection.getError()
 		
-		if (error.length > 0)
+		if (error.size > 0)
 		{
 			Console.writeLine("Error: " + error)
 		}
