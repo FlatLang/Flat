@@ -3,6 +3,7 @@ package net.fathomsoft.nova.tree;
 import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.error.SyntaxMessage;
+import net.fathomsoft.nova.tree.generics.GenericTypeArgument;
 import net.fathomsoft.nova.util.Bounds;
 import net.fathomsoft.nova.util.Location;
 import net.fathomsoft.nova.util.Patterns;
@@ -132,7 +133,7 @@ public class ClosureDeclaration extends Parameter implements CallableMethod
 	@Override
 	public StringBuilder generateCType(StringBuilder builder, boolean checkArray)
 	{
-		return builder.append(generateCSourceName(id + ""));
+		return builder.append(generateCSourceName("closure" + id));
 	}
 	
 	/**
@@ -154,7 +155,7 @@ public class ClosureDeclaration extends Parameter implements CallableMethod
 	{
 		builder.append("typedef ");
 		
-		super.generateCType(builder, true).append(" (*").append(generateCSourceName(id + "")).append(')');
+		super.generateCType(builder, true).append(" (*").append(generateCSourceName("closure" + id)).append(')');
 		builder.append('(').append(getParameterList().generateCHeader()).append(')').append(";\n");
 		
 		return builder;
@@ -291,9 +292,15 @@ public class ClosureDeclaration extends Parameter implements CallableMethod
 		{
 			if (parameters[i].length() > 0)
 			{
-				Value param = Value.generateFromType(this, location, parameters[i], require);
+				GenericTypeArgument arg = getGenericTypeArgumentName(parameters[i]);
 				
+				IValue param = arg;//Value.generateFromType(this, location, parameters[i], require);
 				
+				if (!SyntaxUtils.isPrimitiveType(param.getType()) && !param.isExternalType())
+				{
+					param.setDataType(POINTER);
+				}
+				//arg.cloneTo(param, true);
 				
 				if (param == null)
 				{
