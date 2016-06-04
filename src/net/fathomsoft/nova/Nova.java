@@ -127,7 +127,7 @@ public class Nova
 	public static final long	VERBOSE       = 0x000000001000l;
 	public static final long	FORMATC       = 0x000000000100l;
 	public static final long	CSOURCE       = 0x000000000010l;
-	public static final long	NO_FILE_WRITE = 0x000000000001l;
+	public static final long	NO_C_OUTPUT   = 0x000000000001l;
 	
 	public static final int		GCC           = 1;
 	public static final int		TCC           = 2;
@@ -326,7 +326,7 @@ public class Nova
 				"-keepc",
 				"-single-thread",
 //				"-nogc",
-				"-no-file-write",
+//				"-no-c-output",
 //				"-dry"
 				"-library",
 			};
@@ -412,7 +412,6 @@ public class Nova
 			formatPath(standard  + "exception/UnimplementedOperationException.nova"),
 			formatPath(standard  + "exception/Exception.nova"),
 
-			formatPath(standard  + "datastruct/ArrayList.nova"),
 			formatPath(standard  + "datastruct/Enumerable.nova"),
 			formatPath(standard  + "datastruct/Queue.nova"),
 			formatPath(standard  + "datastruct/List.nova"),
@@ -512,18 +511,6 @@ public class Nova
 		}
 	}
 	
-	private void generateTypeDefinition(StringBuilder builder, Value value, ArrayList<String> types)
-	{
-		String type = value.generateCTypeName(new StringBuilder()).toString();
-			
-		if (!value.isPrimitiveType() && !types.contains(type))
-		{
-			builder.append("typedef struct ").append(type).append(" ").append(type).append(";\n");
-			
-			types.add(type.toString());
-		}
-	}
-	
 	private String generateInterfaceVTableHeader()
 	{
 		StringBuilder builder = new StringBuilder();
@@ -538,21 +525,16 @@ public class Nova
 		
 		for (NovaMethodDeclaration method : methods)
 		{
-			generateTypeDefinition(builder, method.getParentClass(), types);
-			generateTypeDefinition(builder, method, types);
+			SyntaxUtils.generateTypeDefinition(builder, method.getParentClass(), types);
+			SyntaxUtils.generateTypeDefinition(builder, method, types);
 			
-			ParameterList<Parameter> list = method.getParameterList();
-			
-			int numParameters = list.getNumParameters();
-			
-			for (int i = 0; i < numParameters; i++)
-			{
-				generateTypeDefinition(builder, list.getParameter(i), types);
-			}
+			SyntaxUtils.addParametersToTypeList(builder, method.getParameterList(), types);
 		}
 		
 		for (ClosureDeclaration c : closures)
 		{
+			SyntaxUtils.addParametersToTypeList(builder, c.getParameterList(), types);
+			
 			c.generateCClosureDefinition(builder);
 		}
 		
@@ -790,7 +772,7 @@ public class Nova
 			}
 		}
 		
-		if (!isFlagEnabled(NO_FILE_WRITE))
+		if (!isFlagEnabled(NO_C_OUTPUT))
 		{
 			log("Writing files...");
 		}
@@ -819,7 +801,7 @@ public class Nova
 			
 			try
 			{
-				if (!isFlagEnabled(NO_FILE_WRITE))
+				if (!isFlagEnabled(NO_C_OUTPUT))
 				{
 					File headerFile = FileUtils.writeFile(file.generateCHeaderName(), parent, header);
 					File sourceFile = FileUtils.writeFile(file.generateCSourceName(), parent, source);
@@ -847,7 +829,7 @@ public class Nova
 		
 		allHeaders.append("#endif");
 		
-		if (!isFlagEnabled(NO_FILE_WRITE))
+		if (!isFlagEnabled(NO_C_OUTPUT))
 		{
 			log("Done writing files.");
 		}
@@ -1456,9 +1438,9 @@ public class Nova
 			{
 				enableFlag(NO_GC);
 			}
-			else if (arg.equals("-no-file-write"))
+			else if (arg.equals("-no-c-output"))
 			{
-				enableFlag(NO_FILE_WRITE);
+				enableFlag(NO_C_OUTPUT);
 			}
 			// If the user wants to view the c source output.
 			else if (arg.equals("-csource"))
