@@ -38,6 +38,17 @@ public class ArrayAccess extends Variable implements ArrayCompatible
 		addChild(dimensions);
 	}
 	
+	@Override
+	public String getType()
+	{
+		if ("Array".equals(getDeclaration().getType()))
+		{
+			return getDeclaration().getGenericTypeArgument(0).getType();
+		}
+		
+		return super.getType();
+	}
+	
 	/**
 	 * @see net.fathomsoft.nova.tree.variables.Variable#getArrayDimensions()
 	 */
