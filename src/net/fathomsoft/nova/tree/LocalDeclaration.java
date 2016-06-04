@@ -237,6 +237,11 @@ public class LocalDeclaration extends VariableDeclaration
 				{
 					extra.error = "Type '" + leftDelimiter + word + "' does not exist";
 				}
+				
+				if (rightDelimiter.equals("*"))
+				{
+					setDataType(POINTER);
+				}
 			}
 		}
 		
@@ -325,45 +330,6 @@ public class LocalDeclaration extends VariableDeclaration
 		
 		
 		return null;
-	}
-	
-	public String generateArrayBrackets()
-	{
-		String s = "";
-		
-		for (int i = 0; i < getArrayDimensions(); i++)
-		{
-			s += "[]";
-		}
-		
-		return s;
-	}
-	
-	public String generateGenericType()
-	{
-		String s = "";
-		
-		if (isGenericType())
-		{
-			GenericTypeArgumentList args = getGenericTypeArgumentList();
-			
-			for (int i = 0; i < args.getNumVisibleChildren(); i++)
-			{
-				if (i > 0)
-				{
-					s += ", ";
-				}
-				
-				s += args.getVisibleChild(i).getType();
-			}
-		}
-		
-		return s;
-	}
-	
-	@Override
-	public StringBuilder generateNovaInput(StringBuilder builder, boolean outputChildren) {
-		return builder.append(getType()).append(generateGenericType()).append(generateArrayBrackets()).append(' ').append(getName());
 	}
 	
 	public String toString()
