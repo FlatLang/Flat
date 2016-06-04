@@ -50,6 +50,16 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 		replace(super.getParameterList(), parameters);
 	}
 	
+	public GenericCompatible getContext()
+	{
+		if (isInstance())
+		{
+			return getParentClass();
+		}
+		
+		return null;
+	}
+	
 	/**
 	 * @see net.fathomsoft.nova.tree.CallableMethod#isInstance()
 	 */
@@ -164,7 +174,7 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 		filter.checkStatic(isStatic());
 		filter.checkProperties = true;
 		
-		NovaMethodDeclaration method = (NovaMethodDeclaration)extension.getMethod(null, getName(), filter, getParameterList().getTypes());
+		NovaMethodDeclaration method = (NovaMethodDeclaration)extension.getMethod(getContext(), getName(), filter, getParameterList().getTypes());
 		
 		if (method != null)
 		{
@@ -173,7 +183,7 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 		
 		for (Interface inter : getParentClass().getImplementedClasses())
 		{
-			method = (NovaMethodDeclaration)inter.getMethod(null, getName(), filter, getParameterList().getTypes());
+			method = (NovaMethodDeclaration)inter.getMethod(getContext(), getName(), filter, getParameterList().getTypes());
 			
 			if (method != null)
 			{
@@ -329,14 +339,21 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 				{
 					ClassDeclaration clazz = param.getTypeClass();
 					
-					location = clazz.getFileDeclaration().getPackage().getLocation().replace('/', '_');
-					
-					if (location.length() > 0)
+					if (clazz != null)
 					{
-						location += '_';
+						location = clazz.getFileDeclaration().getPackage().getLocation().replace('/', '_');
+						
+						if (location.length() > 0)
+						{
+							location += '_';
+						}
+						
+						location += clazz.getName();
 					}
-					
-					location += clazz.getName();
+					else
+					{
+						location = "void";
+					}
 				}
 				
 				builder.append('_');
@@ -489,6 +506,16 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 			if (n.decodeSignature(statement, require) && n.validateDeclaration(statement, bounds, require))
 			{
 				n.checkExternalType();
+				
+				if (parent.getParentClass(true) instanceof Interface)
+				{
+					if (n.getVisibility() != PRIVATE)
+					{
+						SyntaxMessage.error("Interface functions cannot have visibility modifiers", n);
+					}
+					
+					n.setVisibility(PUBLIC);
+				}
 				
 				return n;
 			}
@@ -852,5 +879,10 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 		
 		
 		return null;
+	}
+	
+	public String toString()
+	{
+		return generateNovaSignature();
 	}
 }
