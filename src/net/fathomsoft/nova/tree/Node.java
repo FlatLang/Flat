@@ -359,6 +359,18 @@ public abstract class Node implements Listenable
 		return node;
 	}
 	
+	public Node getAncestorWithScopeOrClass()
+	{
+		Node node = getAncestorWithScope();
+		
+		if (node == null)
+		{
+			node = getParentClass();
+		}
+		
+		return node;
+	}
+	
 	/**
 	 * Get whether or not the specified node is an ancestor of the given
 	 * node.
