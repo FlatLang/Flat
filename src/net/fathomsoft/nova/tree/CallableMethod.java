@@ -98,6 +98,11 @@ public interface CallableMethod
 	 * @return Whether or not the types are compatible with the
 	 * 		parameters.
 	 */
+	public default boolean areCompatibleParameterTypes(GenericCompatible context, Value ... types)
+	{
+		return areCompatibleParameterTypes(new GenericCompatible[] { context }, types);
+	}
+	
 	public default boolean areCompatibleParameterTypes(GenericCompatible[] contexts, Value ... types)
 	{
 		return areCompatibleParameterTypes(contexts, true, types);
