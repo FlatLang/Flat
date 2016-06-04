@@ -1,13 +1,12 @@
 package "nova/standard/math/logic"
 
-import "nova/standard/datastruct/ArrayList"
 import "nova/standard/datastruct/Bounds"
 
 public class WFF
 {
 	StatementLetter[]     letters
 	
-	ArrayList<Hypothesis> hypotheses
+	Array<Hypothesis> hypotheses
 	
 	Conclusion            conclusion
 	
@@ -20,7 +19,7 @@ public class WFF
 		this.wff     = wellFormedFormula.trim()
 		this.letters = letters
 		
-		hypotheses = new ArrayList()
+		hypotheses = new Array()
 		
 		decodeFormula()
 	}
@@ -40,7 +39,7 @@ public class WFF
 		
 		wff = conclusionGroup.bounds.extractPreString(wff)
 		
-		ArrayList<StatementGroup<Hypothesis>> statements = decodeHypotheses(wff)
+		Array<StatementGroup<Hypothesis>> statements = decodeHypotheses(wff)
 		
 		for (Int i = 0; i < statements.size; i++)
 		{
@@ -65,14 +64,14 @@ public class WFF
 		
 		if (wff.lastChar() == ')')
 		{
-			Int first = findEndingMatch(wff, '(', ')', wff.length - 1, -1)
+			Int first = findEndingMatch(wff, '(', ')', wff.size - 1, -1)
 			
 			
 		}
 		
 		Int conclusionStart = nextNonWhitespaceIndex(wff, index + 2, 1)
 		
-		Bounds bounds = new Bounds(conclusionStart, wff.length)
+		Bounds bounds = new Bounds(conclusionStart, wff.size)
 		
 		Conclusion conclusion = new Conclusion(bounds.extractString(wff))
 		
@@ -83,9 +82,9 @@ public class WFF
 		return group
 	}
 	
-	decodeHypotheses(String wff) -> ArrayList<StatementGroup<Hypothesis>>
+	decodeHypotheses(String wff) -> Array<StatementGroup<Hypothesis>>
 	{
-		ArrayList<StatementGroup<Hypothesis>> list = new ArrayList()
+		Array<StatementGroup<Hypothesis>> list = new Array()
 		
 		Int next = 0
 		Int prev = 0
@@ -100,7 +99,7 @@ public class WFF
 			prev = nextNonWhitespaceIndex(wff, index + 1, 1)
 		}
 		
-		list.add(generateHypothesis(wff, prev, wff.length))
+		list.add(generateHypothesis(wff, prev, wff.size))
 		
 		return list
 	}
@@ -132,7 +131,7 @@ public class WFF
 	
 	static nextWhitespaceIndex(String wff, Int index, Int direction, Bool opposite) -> Int
 	{
-		for (Int i = index; i < wff.length && i >= 0; i = i + direction)
+		for (Int i = index; i < wff.size && i >= 0; i = i + direction)
 		{
 			Char c = wff.charAt(i)
 			
@@ -169,7 +168,7 @@ public class WFF
 		
 		Int scope = 0
 		
-		for (Int i = index; i < wff.length && i >= 0; i = i + direction)
+		for (Int i = index; i < wff.size && i >= 0; i = i + direction)
 		{
 			Char c = wff.charAt(i)
 			

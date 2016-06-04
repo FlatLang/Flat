@@ -2,17 +2,17 @@ package "nova/standard"
 
 public class String
 {
-	visible Int    length
+	visible Int    size
 	
 	visible Char[] chars
 	
-	static Int     whitespaceLength = 4
+	static Int     whitespaceSize = 4
 	static Char[]  whitespace       = [ ' ', '\t', '\n', '\r' ]
 	
 	external void strcpy(char dst[], char src[])
 	external void strcat(char dst[], char src[])
 	external int strlen(char chars[])
-	external void memcpy(char dst[], char* src[], int length)
+	external void memcpy(char dst[], char* src[], int size)
 	
 	public construct(Char c)
 	{
@@ -28,26 +28,26 @@ public class String
 	{
 		this.chars = chars
 		
-		length = calculateLength()
+		size = calculateSize()
 		
-//		if (chars[length] != '\0')
+//		if (chars[size] != '\0')
 //		{
-//			char newData[] = new char[length + 1]
+//			char newData[] = new char[size + 1]
 //			
 //			strcpy(newData, chars)
 //			
-//			newData[length] = '\0'
+//			newData[size] = '\0'
 //			
 //			this.chars = newData
 //		}
 		
-		if (chars[length] != '\0')
+		if (chars[size] != '\0')
 		{
-			chars[length] = '\0'
+			chars[size] = '\0'
 		}
 	}
 	
-	calculateLength() -> Int
+	calculateSize() -> Int
 	{
 		return strlen(chars)
 	}
@@ -56,14 +56,14 @@ public class String
 	{
 		str = str.toString()
 		
-		Int size = str.length + length + 1
+		Int sz = str.size + size + 1
 		
-		Char newData[] = new Char[size]
+		Char newData[] = new Char[sz]
 		
 		strcpy(newData, chars)
 		strcat(newData, str.chars)
 		
-		newData[size - 1] = '\0'
+		newData[sz - 1] = '\0'
 		
 		String newStr = new String(newData)
 		
@@ -72,12 +72,12 @@ public class String
 	
 	public equals(String other) -> Bool
 	{
-		if (length != other.length)
+		if (size != other.size)
 		{
 			return false
 		}
 		
-		for (Int i = 0; i < length; i++)
+		for (Int i = 0; i < size; i++)
 		{
 			if (chars[i] != other.chars[i])
 			{
@@ -90,11 +90,11 @@ public class String
 	
 	indexOf(String search, Int start, Int direction) -> Int
 	{
-		for (Int i = start; i < length && i >= 0; i = i + direction)
+		for (Int i = start; i < size && i >= 0; i = i + direction)
 		{
 			Bool found = true
 					
-			for (Int j = 0; j < search.length && i + j < length && found; j++)
+			for (Int j = 0; j < search.size && i + j < size && found; j++)
 			{
 				if (search.chars[j] != chars[i + j])
 				{
@@ -110,7 +110,7 @@ public class String
 //				}
 //				else
 //				{
-//					return i - search.length + 1
+//					return i - search.size + 1
 //				}
 			}
 		}
@@ -130,7 +130,7 @@ public class String
 	
 	public lastIndexOf(String search) -> Int
 	{
-		return indexOf(search, length - 1, -1)
+		return indexOf(search, size - 1, -1)
 	}
 	
 	public substring(Int start, Int end) -> String
@@ -155,12 +155,12 @@ public class String
 	
 	public substring(Int start) -> String
 	{
-		return substring(start, length)
+		return substring(start, size)
 	}
 	
 	public lastChar() -> Char
 	{
-		return charAt(length - 1)
+		return charAt(size - 1)
 	}
 	
 	public charAt(Int index) -> Char
@@ -171,14 +171,14 @@ public class String
 	public trim() -> String
 	{
 		Int start = 0
-		Int end   = length - 1
+		Int end   = size - 1
 		
-		while (start < length && containsChar(chars[start], whitespace, whitespaceLength))
+		while (start < size && containsChar(chars[start], whitespace, whitespaceSize))
 		{
 			start++
 		}
 		
-		while (end >= 0 && containsChar(chars[end], whitespace, whitespaceLength))
+		while (end >= 0 && containsChar(chars[end], whitespace, whitespaceSize))
 		{
 			end--
 		}
@@ -188,7 +188,7 @@ public class String
 			return ""
 		}
 		
-		if (start == 0 && end == length - 1)
+		if (start == 0 && end == size - 1)
 		{
 			return this
 		}
@@ -196,9 +196,9 @@ public class String
 		return substring(start, end + 1)
 	}
 	
-	static containsChar(Char needle, Char Chars[], Int length) -> Bool
+	static containsChar(Char needle, Char Chars[], Int size) -> Bool
 	{
-		for (Int i = 0; i < length; i++)
+		for (Int i = 0; i < size; i++)
 		{
 			if (needle == Chars[i])
 			{
@@ -221,9 +221,9 @@ public class String
 	
 	changeCase(transform(Char) -> Char) -> String
 	{
-		Char newData[] = new Char[length]
+		Char newData[] = new Char[size]
 		
-		for (Int i = 0; i < length; i++)
+		for (Int i = 0; i < size; i++)
 		{
 			newData[i] = transform(chars[i])
 		}
@@ -243,7 +243,7 @@ public class String
 		
 		if (s >= 0 && e > 0)
 		{
-			return substring(s + before.length, e)
+			return substring(s + before.size, e)
 		}
 		
 		return ""

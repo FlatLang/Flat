@@ -2,7 +2,7 @@ package "nova/standard/io"
 
 public interface InputStream
 {
-	public readString() -> String
+	readString() -> String
 	
-	public readBytes() -> Byte[]
+	readBytes() -> Byte[]
 }

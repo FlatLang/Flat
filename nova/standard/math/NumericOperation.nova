@@ -1,7 +1,6 @@
 package "nova/standard/math"
 
 import "nova/standard/datastruct/Bounds"
-import "nova/standard/datastruct/ArrayList"
 
 public class NumericOperation extends NumericOperand<Object>
 {
@@ -64,7 +63,7 @@ public class NumericOperation extends NumericOperand<Object>
 			rh      = bounds3.extractString(operation)
 		}
 		
-		if (bounds3.end != operation.length)
+		if (bounds3.end != operation.size)
 		{
 			
 		}
@@ -101,7 +100,7 @@ public class NumericOperation extends NumericOperand<Object>
 	
 	static getType(String s) -> Int
 	{
-		if (s.length <= 0)
+		if (s.size <= 0)
 		{
 			return 0
 		}
@@ -133,7 +132,7 @@ public class NumericOperation extends NumericOperand<Object>
 	
 	static searchNextType(String str, Int start) -> Bounds, Int
 	{
-		ArrayList<Int> operators = new ArrayList()
+		Array<Int> operators = new Array()
 		
 		Int minIndex = Int.MAX_VALUE
 		Int minRank  = Int.MIN_VALUE
@@ -154,7 +153,7 @@ public class NumericOperation extends NumericOperand<Object>
 			index = nextOperator(str, index + 1)
 		}
 		
-		if (minIndex >= str.length)
+		if (minIndex >= str.size)
 		{
 			return null
 		}
@@ -166,7 +165,7 @@ public class NumericOperation extends NumericOperand<Object>
 	
 	static nextOperator(String str, Int start) -> Int
 	{
-		for (Int i = start; i < str.length; i++)
+		for (Int i = start; i < str.size; i++)
 		{
 			if (isOperator(str.chars[i]))
 			{
@@ -192,9 +191,9 @@ public class NumericOperation extends NumericOperand<Object>
 	
 	static nextNonWhitespaceIndex(String str, Int start, Int direction) -> Int
 	{
-		while (start >= 0 && start < str.length && isWhitespace(str.chars[start])) start = start + direction
+		while (start >= 0 && start < str.size && isWhitespace(str.chars[start])) start = start + direction
 		
-		if (start < 0 || start >= str.length)
+		if (start < 0 || start >= str.size)
 			return -1
 		else
 			return start - direction
