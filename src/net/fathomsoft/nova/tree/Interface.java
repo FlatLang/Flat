@@ -2,6 +2,7 @@ package net.fathomsoft.nova.tree;
 
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.ValidationResult;
+import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.util.Location;
 import net.fathomsoft.nova.util.StringUtils;
 
@@ -92,6 +93,24 @@ public class Interface extends ClassDeclaration
 	}
 	
 	@Override
+	public void addDefaultConstructor()
+	{
+		
+	}
+	
+	@Override
+	public void addDefaultDestructor()
+	{
+		
+	}
+	
+	@Override
+	public void addAssignmentMethods()
+	{
+		
+	}
+	
+	@Override
 	public ValidationResult validate(int phase)
 	{
 		ValidationResult result = super.validate(phase);
@@ -105,12 +124,15 @@ public class Interface extends ClassDeclaration
 		{
 			for (NovaMethodDeclaration method : getMethods(false, false))
 			{
-				if (method.isUserMade() && !(method instanceof AbstractMethodDeclaration))
+				if (method.isUserMade())
 				{
-					AbstractMethodDeclaration abst = new AbstractMethodDeclaration(this, method.getLocationIn());
-					abst.createFrom(method);
-					
-					getMethodList().replace(method, abst);
+					if (!(method instanceof AbstractMethodDeclaration))
+					{
+						AbstractMethodDeclaration abst = new AbstractMethodDeclaration(this, method.getLocationIn());
+						abst.createFrom(method);
+						
+						getMethodList().replace(method, abst);
+					}
 				}
 			}
 		}
