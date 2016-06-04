@@ -15,7 +15,7 @@ public class BinaryTree extends Tree
 		}
 	}
 	
-	public addNode(Object data)
+	public addNode(Object data) -> BinaryTree
 	{
 		if (root == null)
 		{
@@ -25,5 +25,7 @@ public class BinaryTree extends Tree
 		{
 			root.addChild(data)
 		}
+		
+		return this
 	}
 }
