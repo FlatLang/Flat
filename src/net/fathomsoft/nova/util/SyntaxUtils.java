@@ -1936,17 +1936,20 @@ public class SyntaxUtils
 	 */
 	public static boolean isTypeCompatible(GenericCompatible context, Value required, Value given, boolean searchGeneric, int arrayDifference)
 	{
-		if (context != null && given.isGenericType())
+		if (context != null && given.isGenericType() && context instanceof Constructor == false)
 		{
-			int genIndex = given.getParentClass().getGenericTypeParameterIndex(given.getType());
+			int genIndex = /*required.getParentClass(true)*/((Value)context).getTypeClass().getGenericTypeParameterIndex(given.getType());
 			
-			GenericTypeArgument arg = context.getGenericTypeArgument(genIndex);
-			
-			//SyntaxUtils.getImportedClass(given.getFileDeclaration(), arg.getType());
-			
-			if (isTypeCompatible(context, required, arg, false))
+			if (genIndex >= 0)
 			{
-				return true;
+				GenericTypeArgument arg = context.getGenericTypeArgument(genIndex);
+				
+				//SyntaxUtils.getImportedClass(given.getFileDeclaration(), arg.getType());
+				
+				if (isTypeCompatible((GenericCompatible)null, required, arg, false))
+				{
+					return true;
+				}
 			}
 		}
 		
