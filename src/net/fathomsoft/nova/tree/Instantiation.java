@@ -116,6 +116,16 @@ public class Instantiation extends IIdentifier implements GenericCompatible
 		return getIdentifier().getAccessedNode();
 	}
 	
+	public String getType()
+	{
+		if (getNumVisibleChildren() < 2)
+		{
+			return super.getType();
+		}
+		
+		return getIdentifier().getType();
+	}
+	
 	/**
 	 * @see net.fathomsoft.nova.tree.Node#generateCSource(StringBuilder)
 	 */
@@ -154,7 +164,7 @@ public class Instantiation extends IIdentifier implements GenericCompatible
 	 * <ul>
 	 * 	<li>new Person("Joe")</li>
 	 * 	<li>new Armadillo()</li>
-	 * 	<li>new String("asdf")</li>
+	 * 	<li>new String("asdf", 32)</li>
 	 * </ul>
 	 * 
 	 * @param parent The parent node of the statement.
@@ -179,7 +189,7 @@ public class Instantiation extends IIdentifier implements GenericCompatible
 	 * <ul>
 	 * 	<li>new Person("Joe")</li>
 	 * 	<li>new Armadillo()</li>
-	 * 	<li>new String("asdf")</li>
+	 * 	<li>new String("asdf", 32)</li>
 	 * </ul>
 	 * 
 	 * @param parent The parent node of the statement.
@@ -248,6 +258,8 @@ public class Instantiation extends IIdentifier implements GenericCompatible
 		if (SyntaxUtils.isMethodCall(instantiation))
 		{
 			className = StringUtils.findNextWord(instantiation);
+			
+			setTypeValue(className);
 			
 //			ClassDeclaration clazz = getFileDeclaration().getImportedClass(this, className);
 //			
