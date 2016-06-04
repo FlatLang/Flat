@@ -1,19 +1,18 @@
 package "nova/standard/math/logic"
 
-import "nova/standard/datastruct/ArrayList"
 import "nova/standard/math/Statement"
 
 public class LogicalStatement extends Statement
 {
 	String statement
 	
-	ArrayList<StatementComponent> components
+	Array<StatementComponent> components
 	
 	public construct(String statement)
 	{
 		this.statement = statement
 		
-		components = new ArrayList()
+		components = new Array()
 	}
 	
 	public toString() -> String

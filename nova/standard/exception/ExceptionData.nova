@@ -1,7 +1,5 @@
 package "nova/standard/exception"
 
-import "nova/standard/datastruct/ArrayList"
-
 public class ExceptionData
 {
 	external type buffer
@@ -14,12 +12,12 @@ public class ExceptionData
 	
 	public Exception		thrownException
 	
-	visible ArrayList<Int>	codes
+	visible Array<Int>	codes
 	
 	public construct(buffer* buf)
 	{
 		this.buf = buf
-		codes    = new ArrayList()
+		codes    = new Array()
 	}
 	
 	public addCode(Int code)
@@ -38,7 +36,7 @@ public class ExceptionData
 		
 		while (data != null)
 		{
-			ArrayList<Int> list = data.codes
+			Array<Int> list = data.codes
 			
 			for (Int i = 0; i < list.size; i++)
 			{

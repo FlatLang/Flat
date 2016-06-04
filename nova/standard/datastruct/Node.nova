@@ -4,7 +4,7 @@ public class Node<E>
 {
 	public E data
 	
-	visible ArrayList<Node>	children
+	visible Array<Node>	children
 	
 	public construct()
 	{
@@ -13,7 +13,7 @@ public class Node<E>
 	
 	public construct(E data)
 	{
-		children = new ArrayList()
+		children = new Array()
 		
 		this.data = data
 	}
@@ -25,7 +25,7 @@ public class Node<E>
 	
 	public construct(E data, Int numChildren)
 	{
-		children = new ArrayList(numChildren)
+		children = new Array(numChildren)
 		
 		this.data = data
 	}
@@ -96,7 +96,7 @@ public class Node<E>
 		{
 			Node<E> current = queue.dequeue()
 			
-			if (str.length > 0)
+			if (str.size > 0)
 			{
 				str = str + ", "
 			}

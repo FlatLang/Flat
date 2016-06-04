@@ -12,11 +12,11 @@ public class Queue<E>
 		no set
 	}
 	
-	ArrayList<E> data
+	Array<E> data
 	
 	public construct()
 	{
-		data = new ArrayList()
+		data = new Array()
 	}
 	
 	public dequeue() -> E

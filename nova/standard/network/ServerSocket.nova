@@ -2,7 +2,6 @@ package "nova/standard/network"
 
 import "nova/standard/network/NativeServerSocket.h"
 import "nova/standard/network/NativeSocket.h"
-import "nova/standard/datastruct/ArrayList"
 import "nova/standard/io/InputStream"
 import "nova/standard/io/OutputStream"
 
@@ -20,7 +19,7 @@ public class ServerSocket extends Socket
 	
 	visible Bool open
 	
-	visible ArrayList<ConnectionSocket> requests = new ArrayList()
+	visible Array<ConnectionSocket> requests = new Array()
 	
 	public construct()
 	{
