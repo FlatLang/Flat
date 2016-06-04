@@ -444,13 +444,14 @@ nova_env novaEnv = {
 &nova_standard_datastruct_Nova_ArrayList_Nova_skip,
 &nova_standard_datastruct_Nova_ArrayList_2_Nova_construct,
 &nova_standard_datastruct_Nova_ArrayList_3_Nova_construct,
+&nova_standard_datastruct_Nova_ArrayList_4_Nova_construct,
 },
 
 {
 0,
 0,
 0,
-&nova_standard_datastruct_Nova_Enumerable_4_Nova_construct,
+&nova_standard_datastruct_Nova_Enumerable_5_Nova_construct,
 },
 
 {
