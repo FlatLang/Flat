@@ -1,9 +1,8 @@
 package "nova/standard/primitive/number"
 
 import "nova/standard/datastruct/Comparable"
-import "nova/standard/operators/Multipliable"
 
-public class Short extends Number implements Comparable<Short>, Multipliable<Short>
+public class Short extends Number implements Comparable<Short>
 {
 	Short value
 	

@@ -1,9 +1,8 @@
 package "nova/standard/primitive/number"
 
 import "nova/standard/datastruct/Comparable"
-import "nova/standard/operators/Multipliable"
 
-public class Int extends Number implements Comparable<Int>, Multipliable<Int>
+public class Int extends Number implements Comparable<Int>
 {
 	external int atoi(char str[])
 	

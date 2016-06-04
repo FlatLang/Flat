@@ -1,9 +1,9 @@
 package "nova/standard/primitive/number"
 
 import "nova/standard/primitive/Primitive"
-import "nova/standard/operators/Multipliable"
+import "nova/standard/operators/Multiply"
 
-public abstract class Number extends Primitive implements Multipliable<Number>
+public abstract class Number extends Primitive implements Multiply<Number>
 {
 	public static numDigits(Number number) -> Int
 	{

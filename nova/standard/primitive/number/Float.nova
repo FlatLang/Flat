@@ -1,9 +1,8 @@
 package "nova/standard/primitive/number"
 
 import "nova/standard/datastruct/Comparable"
-import "nova/standard/operators/Multipliable"
 
-public class Float extends Number implements Comparable<Float>, Multipliable<Float>
+public class Float extends Number implements Comparable<Float>
 {
 	Float value
 	

@@ -1,9 +1,8 @@
 package "nova/standard/primitive/number"
 
 import "nova/standard/datastruct/Comparable"
-import "nova/standard/operators/Multipliable"
 
-public class Byte extends Number implements Comparable<Byte>, Multipliable<Byte>
+public class Byte extends Number implements Comparable<Byte>
 {
 	Byte value
 	
