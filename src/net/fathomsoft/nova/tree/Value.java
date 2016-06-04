@@ -38,6 +38,26 @@ public abstract class Value extends Node implements AbstractValue
 	
 	public GenericCompatible getContext()
 	{
+		if (getParent() instanceof Assignment)
+		{
+			return ((Assignment)getParent()).getAssignee().getContext();
+		}
+		else if (getParent() instanceof Return)
+		{
+			return getParentMethod();
+		}
+		else if (getParent() instanceof MethodCallArgumentList)
+		{
+			MethodCallArgumentList args = (MethodCallArgumentList)getParent();
+			
+			if (args.getMethodCall().getDeclaration() instanceof MutatorMethod)
+			{
+				MutatorMethod m = (MutatorMethod)args.getMethodCall().getDeclaration();
+				
+				return m.getDeclaration();
+			}
+		}
+		
 		return this;
 	}
 
