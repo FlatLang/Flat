@@ -67,4 +67,4 @@ The default C compiler for Windows is GCC because it is more stable.
 
 
 
-© 2014 Fathomsoft
+© 2014-2016 Fathomsoft
