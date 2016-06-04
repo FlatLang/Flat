@@ -1,8 +1,9 @@
 package "nova/standard"
 
 import "nova/standard/NativeObject.h"
+import "nova/standard/operators/Equals"
 
-public class Object
+public class Object implements Equals
 {
 	external char[] hashCode(Object obj)
 	/*char** endptr*/
