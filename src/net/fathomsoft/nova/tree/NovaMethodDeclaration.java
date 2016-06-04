@@ -427,12 +427,6 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 		return super.generateCSourceName(builder, uniquePrefix);
 	}
 	
-	@Override
-	public StringBuilder generateNovaInput(StringBuilder builder, boolean outputChildren)
-	{
-		return generateNovaInput(builder, outputChildren);
-	}
-	
 	public StringBuilder generateNovaInput(StringBuilder builder, boolean outputChildren, boolean outputType)
 	{
 		builder.append(getVisibilityText());
