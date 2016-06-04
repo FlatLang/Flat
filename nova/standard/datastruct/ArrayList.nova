@@ -30,6 +30,16 @@ public class ArrayList<E> implements Enumerable<E>
 		increaseSize(size)
 	}
 	
+	public construct(E data[])
+	{
+		this(data.size)
+		
+		for (Int i = 0; i < data.size; i++)
+		{
+			add(data[i])
+		}
+	}
+	
 	public add(E element)
 	{
 		if (size >= bufferSize)
@@ -138,13 +148,13 @@ public class ArrayList<E> implements Enumerable<E>
 		}
 	}
 	
-	public forEach(func(E, Int, ArrayList<E>))
+	/*public forEach(func(E, Int, ArrayList<E>))
 	{
 		for (Int i = 0; i < size; i++)
 		{
 			func(data[i], i, this)
 		}
-	}
+	}*/
 	
 	public filter(filterFunc(E) -> Bool) -> ArrayList<E>
 	{
