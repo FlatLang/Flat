@@ -31,6 +31,13 @@ public interface AbstractValue extends GenericCompatible
 	 */
 	public default boolean setType(String type, boolean require, boolean checkType, boolean checkDataType)
 	{
+		if (type == null)
+		{
+			setTypeValue(type);
+			
+			return true;
+		}
+		
 		Value n = (Value)this;
 		
 		DeclarationData data = new DeclarationData();
