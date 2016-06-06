@@ -1,29 +1,14 @@
 * Make arguments and parameters more strict.
 * Make BlockNode for the parent of all Method-based blocks in order to declare local variables.
-* Use RAII variable initialization when possible.
-* Make a nice missing ending } error message.
-* Possibly add === operator.
-* Allow field initialization
-* Add generic support
-* Add scopes within until statement in SyntaxStability
-* Add swift-style switch statements
 * Sub-classes must initialize default values to the super-class variables too.
-X Rename Integer to Int
 * Fix the conflict between data type output and polymorphic type casts.
 * Can Constructor use generateCNameOutput()?
-X Fix the setScope() method to not break sub-classing.
-X Make sure there are no external method name collisions.
 * Do we need generateCVirtualMethodName()?
-* Fix single line comment on first line.
 * Check Java for inner-class inheritence of generic parameters.
 * Add support for virtual destructor calls. (For generic types)
 * Optimize UnaryOperation.containsUnaryOperator()
-* Fix embedded inline if statements.
-
-Remove the '0' exception in SyntaxUtils.validateCompatibleTypes()
 
 In-depth compiler error checking:
-- Make sure that the static class's methods/variables are called rightfully.
 - Include the caller of a method and variable and such.
 
 Test cases:
@@ -33,22 +18,12 @@ Test cases:
   Multi-dimensional arrays
 	
 Things to fix:
-  Return node - more careful
   DivideByZeroException checker
   MethDecl decodeParams
   IIdentifier.setType
 
 Things to improve:
   Clean up File validation methods.
-  Make Values actually hold Values for their types (instead of Strings).
-
-
-Default Exceptions to Implement:
-  CastException
-  ArrayAccessException
-
-Create 'or' & 'and' keywords.
-
 
 Document:
   Lots
@@ -59,11 +34,7 @@ rename:
 
 
 
-until (#condition) {
 
-if \(#condition\) #fragment?? #skip : {
-
-#visibility? #modifier? #final? #name \(#declaration @rep-1( , )\) (-> #type)? {
 
 Projects to consider:
   Memory efficient Nova
