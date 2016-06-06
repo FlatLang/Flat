@@ -139,12 +139,7 @@ public class Scope extends Node
 			virtual = clone;
 		}
 		
-		String type = virtual.getReturnedNode().getType();
-		
-		if (virtual.getReturnedNode().isGenericType())
-		{
-			type = virtual.getReturnedNode().getGenericReturnType();
-		}
+		String type = virtual.getReturnedNode().generateNovaType().toString();
 		
 		String     decl   = type + " nova_local_" + getParentMethod().getScope().localVariableID++ + " = null";
 		Assignment assign = Assignment.decodeStatement(base.getParent(), decl, getLocationIn(), require, true, null, virtual);
