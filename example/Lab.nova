@@ -28,30 +28,47 @@ public class Lab
 		Console.write(i)
 	}
 	
+	static printForEach(String item, Int i, Array<String> array)
+	{
+		String str = ""
+		
+		if (i > 0)
+		{
+			str = str + ", "
+		}
+		
+		str = str + item
+		
+		Console.write(str)
+	}
+	
 	public static main(String[] args)
 	{
 		//Vector2D<Int> v = new Vector2D(2, 3)
 		
 		//Console.writeLine(v.x + ", " + v.y)
 		
-		BinaryTree tree = new BinaryTree()
+		BinaryTree<String> tree = new BinaryTree()
 		
-		tree.addNode('F')
-		tree.addNode('B')
-		tree.addNode('A')
-		tree.addNode('D')
-		tree.addNode('C')
-		tree.addNode('E')
-		tree.addNode('G')
-		tree.addNode('I')
-		tree.addNode('H')
+		tree.addNode("F")
+		tree.addNode("B")
+		tree.addNode("A")
+		tree.addNode("D")
+		tree.addNode("C")
+		tree.addNode("E")
+		tree.addNode("G")
+		tree.addNode("I")
+		tree.addNode("H")
 		
-		Console.writeLine("Preorder: " + tree.preorder())
+		//Console.write("Preorder: " + tree.preorder().map(Object.toString).join(", "))
+		Console.write("Preorder: ")
+		tree.preorder().forEach(printForEach)
+		Console.writeLine("")
 		Console.writeLine("Inorder: " + tree.inorder())
 		Console.writeLine("Postorder: " + tree.postorder())
 		Console.writeLine("Levelorder: " + tree.levelorder())
 		
-		String[] a = [ "this", "is", "a", "test", "to", "see", "what shows up" ]
+		String[] a = ["this", "is", "a", "test", "to", "see", "what shows up"]
 		
 		Array<String> list = new Array(a, 7)
 		Array<String> list2 = list.filter(myFilterFunc)
