@@ -4,7 +4,7 @@ public class Node<E>
 {
 	public E data
 	
-	visible Array<Node>	children
+	visible Array<Node<E>>	children
 	
 	public construct()
 	{
@@ -30,20 +30,28 @@ public class Node<E>
 		this.data = data
 	}
 	
-	public preorder() -> String
+	public preorder() -> Array<E>
 	{
-		String str = ""
+		Array<E> array = new Array()
 		
-		str = str + data
+		preorder(array)
+		
+		return array
+	}
+	
+	preorder(Array<E> array)
+	{
+		array.add(data)
 		
 		for (Int i = 0; i < children.size; i++)
 		{
-			Node child = children.get(i)
+			Node<E> child = children.get(i);
 			
-			str = str + ", " + child.preorder()
+			if (child != null && child != 0)
+			{
+				child.preorder(array)
+			}
 		}
-		
-		return str
 	}
 	
 	public inorder() -> String
@@ -89,7 +97,7 @@ public class Node<E>
 	{
 		String str = ""
 		
-		Queue<Node> queue = new Queue()
+		Queue<Node<E>> queue = new Queue()
 		queue.enqueue(this)
 		
 		while (!queue.isEmpty())
