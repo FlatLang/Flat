@@ -1,6 +1,6 @@
 package "nova/standard/datastruct"
 
-public class BinaryNode<E> extends Node
+public class BinaryNode<E> extends Node<E>
 {
 	/**
 	 * The left child of the BinaryNode instance.
@@ -69,20 +69,6 @@ public class BinaryNode<E> extends Node
 			else
 				right.addChild(data)
 		}
-	}
-	
-	public preorder() -> String
-	{
-		String str = ""
-		
-		str = str + data
-		
-		if (left != null)
-			str = str + ", " + left.preorder()
-		if (right != null)
-			str = str + ", " + right.preorder()
-		
-		return str
 	}
 	
 	public inorder() -> String
