@@ -15,6 +15,7 @@ nova_env novaEnv = {
 &nova_standard_Nova_String_Nova_trim,
 &nova_standard_Nova_String_Nova_toLowerCase,
 &nova_standard_Nova_String_Nova_toUpperCase,
+&nova_standard_Nova_String_Nova_transform,
 &nova_standard_Nova_String_0_Nova_getDataBetween,
 &nova_standard_Nova_String_1_Nova_getDataBetween,
 &nova_standard_Nova_String_Nova_compareTo,

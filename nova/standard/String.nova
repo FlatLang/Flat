@@ -213,15 +213,15 @@ public class String implements Comparable<String>
 	
 	public toLowerCase() -> String
 	{
-		return changeCase(Char.toLowerCase)
+		return transform(Char.toLowerCase)
 	}
 	
 	public toUpperCase() -> String
 	{
-		return changeCase(Char.toUpperCase)
+		return transform(Char.toUpperCase)
 	}
 	
-	changeCase(transform(Char) -> Char) -> String
+	public transform(transform(Char) -> Char) -> String
 	{
 		Char newData[] = new Char[size]
 		
