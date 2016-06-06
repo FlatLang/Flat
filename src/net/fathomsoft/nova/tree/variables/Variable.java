@@ -13,6 +13,7 @@ import net.fathomsoft.nova.tree.MethodCall;
 import net.fathomsoft.nova.tree.Node;
 import net.fathomsoft.nova.tree.SyntaxTree;
 import net.fathomsoft.nova.tree.generics.GenericTypeArgument;
+import net.fathomsoft.nova.tree.generics.GenericTypeArgumentList;
 import net.fathomsoft.nova.tree.generics.GenericTypeParameter;
 import net.fathomsoft.nova.util.Location;
 
@@ -56,24 +57,48 @@ public class Variable extends Identifier
 	}
 	
 	@Override
+	public GenericTypeArgumentList getGenericTypeArgumentList()
+	{
+		return getDeclaration().getGenericTypeArgumentList();
+	}
+	
+	@Override
 	public String getGenericReturnType()
 	{
 		if (isGenericType())
 		{
 			Accessible ref = getReferenceNode();
 			
-			if (ref instanceof Variable)
+			GenericTypeArgument type = null;
+			
+			boolean tried = false;
+			
+			while (ref != null && type == null)
 			{
-				VariableDeclaration decl = ((Variable)ref).getDeclaration();
+				if (ref instanceof Variable)
+				{
+					VariableDeclaration decl = ((Variable)ref).getDeclaration();
+					
+					type = decl.getGenericTypeArgumentInstance(getType(), this);
+					
+					tried = true;
+				}
 				
-				GenericTypeArgument type = decl.getGenericTypeArgumentInstance(getType(), this);
-				
+				ref = ref.getReferenceNode();
+			}
+			
+			if (type != null)
+			{
 				if (type.isGenericType())
 				{
 					return type.getDefaultType();
 				}
 				
 				return type.getType();
+			}
+			else if (tried)
+			{
+				GenericCompatible.throwMissingGenericTypeError(this);
 			}
 			
 			return getGenericTypeParameter().getDefaultType();
