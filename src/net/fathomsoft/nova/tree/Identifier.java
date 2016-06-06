@@ -416,11 +416,18 @@ public abstract class Identifier extends Value implements Accessible
 		{
 			existing = (VariableDeclaration)this;
 		}
+		else if (this instanceof Variable)
+		{
+			existing = ((Variable)this).getDeclaration();
+		}
 		else
 		{
 			existing = SyntaxTree.findDeclaration(getParent(), name, false);
 			
-			SyntaxMessage.queryError("Unable to find declaration for variable '" + name + "'", this, existing == null);
+			if (existing == null)
+			{
+				SyntaxMessage.error("Unable to find declaration for variable '" + name + "'", this);
+			}
 		}
 		
 		if (!(existing instanceof LocalDeclaration && existing instanceof Parameter == false))
