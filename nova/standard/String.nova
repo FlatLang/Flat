@@ -1,6 +1,8 @@
 package "nova/standard"
 
-public class String
+import "nova/standard/datastruct/Comparable"
+
+public class String implements Comparable<String>
 {
 	visible Int    size
 	
@@ -247,6 +249,21 @@ public class String
 		}
 		
 		return ""
+	}
+	
+	public compareTo(String other) -> Int
+	{
+		//return value - other
+		
+		for (Int i = 0; i < size; i++)
+		{
+			if (chars[i] - other.chars[i] != 0)
+			{
+				return Math.sign(chars[i] - other.chars[i])
+			}
+		}
+		
+		return 0
 	}
 	
 	public toString() -> String
