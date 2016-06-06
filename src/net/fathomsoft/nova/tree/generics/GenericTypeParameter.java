@@ -97,4 +97,26 @@ public class GenericTypeParameter extends Node
 		
 		return null;
 	}
+	
+	public String toString(boolean carets)
+	{
+		String str = getName();
+		
+		if (!getDefaultType().equals("Object"))
+		{
+			str += " " + getDefaultType();
+		}
+		
+		if (carets)
+		{
+			str = "<" + str + ">";
+		}
+		
+		return str;
+	}
+	
+	public String toString()
+	{
+		return toString(true);
+	}
 }
