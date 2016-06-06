@@ -1,6 +1,7 @@
 package net.fathomsoft.nova.tree.generics;
 
 import net.fathomsoft.nova.TestContext;
+import net.fathomsoft.nova.tree.GenericCompatible;
 import net.fathomsoft.nova.tree.Node;
 import net.fathomsoft.nova.tree.TypeList;
 import net.fathomsoft.nova.util.Location;
@@ -23,6 +24,32 @@ public class GenericTypeArgumentList extends TypeList<GenericTypeArgument>
 	public GenericTypeArgumentList(Node temporaryParent, Location locationIn)
 	{
 		super(temporaryParent, locationIn);
+	}
+	
+	@Override
+	public StringBuilder generateNovaInput(StringBuilder builder, boolean outputChildren)
+	{
+		if (getNumVisibleChildren() > 0)
+		{
+			builder.append(GenericCompatible.GENERIC_START);
+		}
+		
+		for (int i = 0; i < getNumVisibleChildren(); i++)
+		{
+			if (i > 0)
+			{
+				builder.append(", ");
+			}
+			
+			getVisibleChild(i).generateNovaInput(builder);
+		}
+		
+		if (getNumVisibleChildren() > 0)
+		{
+			builder.append(GenericCompatible.GENERIC_END);
+		}
+		
+		return builder;
 	}
 	
 	/**
