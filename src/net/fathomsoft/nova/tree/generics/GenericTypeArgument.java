@@ -148,6 +148,12 @@ public class GenericTypeArgument extends IValue implements GenericCompatible
 		return null;
 	}
 	
+	@Override
+	public StringBuilder generateNovaInput(StringBuilder builder, boolean outputChildren)
+	{
+		return builder.append(getType());// + (getDefaultType() != "Object" ? " extends " + getDefaultType() : ""));
+	}
+	
 	/**
 	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location, boolean)
 	 */
@@ -193,5 +199,22 @@ public class GenericTypeArgument extends IValue implements GenericCompatible
 		
 		
 		return null;
+	}
+	
+	public String toString(boolean carets)
+	{
+		String str = getType();
+		
+		if (carets)
+		{
+			str = "<" + str + ">";
+		}
+		
+		return str;
+	}
+	
+	public String toString()
+	{
+		return toString(true);
 	}
 }
