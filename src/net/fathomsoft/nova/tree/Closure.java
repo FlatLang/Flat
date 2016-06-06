@@ -209,7 +209,33 @@ public class Closure extends Variable
 			return SyntaxMessage.queryError("Method '" + name + "' not found", this, require);
 		}
 		
-//		setDeclaration(declaration);
+		return true;
+	}
+	
+	@Override
+	public boolean onAfterDecoded()
+	{
+		return findDeclaration();
+	}
+	
+	private boolean findDeclaration()
+	{
+		MethodDeclaration declaration = getMethodDeclaration(getMethodCall().getReferenceNode().getContext(), declarations[0].getName());
+		
+		if (declaration == null)
+		{
+			SyntaxMessage.error("Method '" + declarations[0].getName() + "' is not compatible", this);
+			
+			return false;
+		}
+		
+		setDeclaration(declaration);
+		validateType(declaration);
+		
+		if (declaration.isInstance())
+		{
+			SyntaxUtils.validateMethodAccess(getReferenceNode(), declaration, this);
+		}
 		
 		return true;
 	}
@@ -229,34 +255,7 @@ public class Closure extends Variable
 		
 		if (phase == SyntaxTree.PHASE_METHOD_CONTENTS)
 		{
-			MethodDeclaration declaration = getMethodDeclaration(getMethodCall().getReferenceNode().getContext(), declarations[0].getName());
 			
-			if (declaration == null)
-			{
-				Variable a = (Variable)getMethodCall().getReferenceNode();
-				
-				String s = a.getType();
-				
-				GenericTypeParameter p = a.getGenericTypeParameter();
-				
-				GenericTypeParameterDeclaration aa = a.getGenericTypeParameterDeclaration();
-				
-				GenericTypeArgumentList aaa = a.getDeclaration().getGenericTypeArgumentList();
-				
-				getMethodDeclaration(new GenericCompatible[] { a.getDeclaration() }, declarations[0].getName());
-				
-				SyntaxMessage.error("Method '" + declarations[0].getName() + "' is not compatible", this);
-				
-				return result.errorOccurred();
-			}
-			
-			setDeclaration(declaration);
-			validateType(declaration);
-			
-			if (declaration.isInstance())
-			{
-				SyntaxUtils.validateMethodAccess(getReferenceNode(), declaration, this);
-			}
 		}
 		
 		return result;
