@@ -66,7 +66,12 @@ public abstract class Value extends Node implements AbstractValue
 
 	public GenericTypeArgumentList getGenericTypeArgumentList()
 	{
-		return (GenericTypeArgumentList)getChild(super.getNumDefaultChildren() + 0);
+		if (getNumChildren() > super.getNumDefaultChildren() + 0 && getChild(super.getNumDefaultChildren() + 0) instanceof GenericTypeArgumentList)
+		{
+			return (GenericTypeArgumentList)getChild(super.getNumDefaultChildren() + 0);
+		}
+		
+		return null;
 	}
 	
 	/**
@@ -288,7 +293,14 @@ public abstract class Value extends Node implements AbstractValue
 	
 	public String generateGenericType()
 	{
-		return getGenericTypeArgumentList().generateNovaInput().toString();
+		GenericTypeArgumentList args = getGenericTypeArgumentList();
+		
+		if (args != null)
+		{
+			return args.generateNovaInput().toString();
+		}
+		
+		return "";
 	}
 	
 	/**
