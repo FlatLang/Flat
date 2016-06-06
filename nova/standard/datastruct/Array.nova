@@ -195,4 +195,33 @@ public class Array<E> implements Enumerable<E>
 		
 		return list
 	}
+	
+	/*public sum<E extends Int>() -> Int
+    {
+    	Int sum = 0
+    	
+    	for (Int i = 0; i < size; i++)
+    	{
+    		sum += data[i]
+    	}
+    	
+        return sum
+    }
+    
+    public join<E extends String>(String delimiter) -> String
+    {
+    	String str = ""
+    	
+    	for (Int i = 0; i < size; i++)
+    	{
+    		if (i > 0)
+    		{
+    			str += delimiter
+    		}
+    		
+    		str += data[i]
+    	}
+    	
+    	return str
+    }*/
 }
