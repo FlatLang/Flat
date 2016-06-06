@@ -244,7 +244,7 @@ public class SyntaxStability extends StabilityTestCase
 			obj = test2()
 			obj = test3()
 			
-			program.fail("Failed to stop after correct condition");
+			program.fail("Failed to stop after correct condition")
 		}
 		
 //		if (obj == null)
