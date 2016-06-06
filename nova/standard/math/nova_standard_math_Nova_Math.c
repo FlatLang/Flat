@@ -56,6 +56,19 @@ void nova_standard_math_Nova_Math_Nova_destroy(nova_standard_math_Nova_Math** th
 	NOVA_FREE(*this);
 }
 
+char nova_standard_math_Nova_Math_Nova_sign(nova_standard_math_Nova_Math* this, nova_standard_exception_Nova_ExceptionData* exceptionData, long nova_standard_math_Nova_Math_Nova_num)
+{
+	if (nova_standard_math_Nova_Math_Nova_num > 0)
+	{
+		return (char)1;
+	}
+	else if (nova_standard_math_Nova_Math_Nova_num < 0)
+	{
+		return (char)-1;
+	}
+	return (char)0;
+}
+
 int nova_standard_math_Nova_Math_Nova_random(nova_standard_math_Nova_Math* this, nova_standard_exception_Nova_ExceptionData* exceptionData, long nova_standard_math_Nova_Math_Nova_range)
 {
 	return (int)rand() % nova_standard_math_Nova_Math_Nova_range;

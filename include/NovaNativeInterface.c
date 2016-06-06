@@ -17,6 +17,7 @@ nova_env novaEnv = {
 &nova_standard_Nova_String_Nova_toUpperCase,
 &nova_standard_Nova_String_0_Nova_getDataBetween,
 &nova_standard_Nova_String_1_Nova_getDataBetween,
+&nova_standard_Nova_String_Nova_compareTo,
 0,
 &nova_standard_Nova_String_0_Nova_construct,
 &nova_standard_Nova_String_1_Nova_construct,
@@ -91,6 +92,7 @@ nova_env novaEnv = {
 },
 
 {
+&nova_standard_math_Nova_Math_Nova_sign,
 &nova_standard_math_Nova_Math_Nova_random,
 &nova_standard_math_Nova_Math_Nova_abs,
 &nova_standard_math_Nova_Math_Nova_sqrt,
@@ -186,7 +188,7 @@ nova_env novaEnv = {
 {
 &nova_standard_primitive_Nova_Bool_1_Nova_toString,
 &nova_standard_primitive_Nova_Bool_2_Nova_toString,
-&nova_standard_primitive_Nova_Bool_Nova_compareTo,
+&nova_standard_primitive_Nova_Bool_0_Nova_compareTo,
 &nova_standard_primitive_Nova_Bool_3_Nova_construct,
 },
 
@@ -310,7 +312,7 @@ nova_env novaEnv = {
 
 {
 &nova_standard_thread_Nova_UncaughtExceptionHandler_Nova_UncaughtExceptionHandler,
-0,
+&nova_standard_thread_Nova_UncaughtExceptionHandler_Nova_uncaughtException,
 &nova_standard_thread_Nova_UncaughtExceptionHandler_2_Nova_construct,
 },
 
@@ -523,7 +525,7 @@ nova_env novaEnv = {
 },
 
 {
-0,
+&nova_standard_datastruct_Nova_Node_0_Nova_preorder,
 0,
 0,
 &nova_standard_datastruct_Nova_Node_Nova_levelorder,
@@ -536,7 +538,6 @@ nova_env novaEnv = {
 
 {
 &nova_standard_datastruct_Nova_BinaryNode_Nova_addChild,
-&nova_standard_datastruct_Nova_BinaryNode_Nova_preorder,
 &nova_standard_datastruct_Nova_BinaryNode_Nova_inorder,
 &nova_standard_datastruct_Nova_BinaryNode_Nova_postorder,
 &nova_standard_datastruct_Nova_BinaryNode_2_Nova_construct,
@@ -571,90 +572,8 @@ nova_env novaEnv = {
 },
 
 {
-&stabilitytest_Nova_StabilityTest_Nova_main,
-&stabilitytest_Nova_StabilityTest_Nova_test,
-&stabilitytest_Nova_StabilityTest_0_Nova_fail,
-&stabilitytest_Nova_StabilityTest_1_Nova_fail,
-&stabilitytest_Nova_StabilityTest_Nova_construct,
-},
-
-{
-&stabilitytest_Nova_TimeStability_0_Nova_test,
-&stabilitytest_Nova_TimeStability_0_Nova_construct,
-},
-
-{
-&stabilitytest_Nova_FileStability_0_Nova_test,
-&stabilitytest_Nova_FileStability_0_Nova_construct,
-},
-
-{
-&stabilitytest_Nova_ThreadStability_0_Nova_test,
-&stabilitytest_Nova_ThreadStability_0_Nova_construct,
-},
-
-{
-&stabilitytest_Nova_ExceptionStability_0_Nova_test,
-&stabilitytest_Nova_ExceptionStability_0_Nova_construct,
-},
-
-{
-&stabilitytest_Nova_SyntaxStability_0_Nova_test,
-&stabilitytest_Nova_SyntaxStability_0_Nova_construct,
-},
-
-{
-&stabilitytest_Nova_ClosureStability_0_Nova_test,
-&stabilitytest_Nova_ClosureStability_0_Nova_construct,
-},
-
-{
-&stabilitytest_Nova_PolymorphismStability_0_Nova_test,
-&stabilitytest_Nova_PolymorphismStability_0_Nova_construct,
-},
-
-{
-&stabilitytest_Nova_PolymorphicSuperClass_Nova_giveBirth,
-0,
-&stabilitytest_Nova_PolymorphicSuperClass_2_Nova_construct,
-},
-
-{
-&stabilitytest_Nova_PolymorphicSubClass_0_Nova_toString,
-&stabilitytest_Nova_PolymorphicSubClass_2_Nova_construct,
-},
-
-{
-&stabilitytest_Nova_StabilityTestException_1_Nova_construct,
-},
-
-{
-&stabilitytest_Nova_StabilityExceptionHandler_Nova_uncaughtException,
-&stabilitytest_Nova_StabilityExceptionHandler_Nova_construct,
-},
-
-{
-&stabilitytest_Nova_ThreadImplementation_0_Nova_run,
-&stabilitytest_Nova_ThreadImplementation_Nova_construct,
-},
-
-{
-&stabilitytest_Nova_UnstableException_1_Nova_construct,
-},
-
-{
-&stabilitytest_Nova_NetworkStability_0_Nova_test,
-&stabilitytest_Nova_NetworkStability_0_Nova_construct,
-},
-
-{
-&stabilitytest_Nova_ClientThread_0_Nova_run,
-&stabilitytest_Nova_ClientThread_Nova_construct,
-},
-
-{
-0,
-&stabilitytest_Nova_StabilityTestCase_0_Nova_construct,
+&example_Nova_Lab_Nova_main,
+&example_Nova_Lab_2_Nova_construct,
 },
 
 {

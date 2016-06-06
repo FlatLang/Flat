@@ -12,7 +12,7 @@ nova_standard_primitive_Extension_VTable_Null nova_standard_primitive_Extension_
 		0,
 		0,
 		0,
-		0,
+		(int(*)(nova_standard_datastruct_Nova_Comparable*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*))nova_standard_Nova_String_Nova_compareTo,
 		0,
 		0,
 	},
@@ -20,6 +20,7 @@ nova_standard_primitive_Extension_VTable_Null nova_standard_primitive_Extension_
 	nova_standard_primitive_Nova_Null_Nova_toString,
 	nova_standard_Nova_String_Nova_equals,
 	nova_standard_primitive_Nova_Null_Nova_concat,
+	nova_standard_Nova_String_Nova_compareTo,
 };
 
 

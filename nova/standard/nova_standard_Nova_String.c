@@ -17,7 +17,7 @@ nova_standard_Extension_VTable_String nova_standard_Extension_VTable_String_val 
 		0,
 		0,
 		0,
-		0,
+		(int(*)(nova_standard_datastruct_Nova_Comparable*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*))nova_standard_Nova_String_Nova_compareTo,
 		0,
 		0,
 	},
@@ -25,6 +25,7 @@ nova_standard_Extension_VTable_String nova_standard_Extension_VTable_String_val 
 	nova_standard_Nova_String_0_Nova_toString,
 	nova_standard_Nova_String_Nova_equals,
 	nova_standard_Nova_String_0_Nova_concat,
+	nova_standard_Nova_String_Nova_compareTo,
 };
 
 
@@ -312,6 +313,21 @@ nova_standard_Nova_String* nova_standard_Nova_String_1_Nova_getDataBetween(nova_
 		return nova_standard_Nova_String_0_Nova_substring(this, exceptionData, l1_Nova_s + nova_standard_Nova_String_Nova_before->nova_standard_Nova_String_Nova_size, l1_Nova_e);
 	}
 	return nova_standard_Nova_String_1_Nova_construct(0, exceptionData, "");
+}
+
+int nova_standard_Nova_String_Nova_compareTo(nova_standard_Nova_String* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_Nova_String* nova_standard_Nova_String_Nova_other)
+{
+	int l1_Nova_i;
+	
+	l1_Nova_i = 0;
+	for (; l1_Nova_i < this->nova_standard_Nova_String_Nova_size; l1_Nova_i++)
+	{
+		if (this->nova_standard_Nova_String_Nova_chars[l1_Nova_i] - nova_standard_Nova_String_Nova_other->nova_standard_Nova_String_Nova_chars[l1_Nova_i] != 0)
+		{
+			return (int)nova_standard_math_Nova_Math_Nova_sign(0, exceptionData, (long)(this->nova_standard_Nova_String_Nova_chars[l1_Nova_i] - nova_standard_Nova_String_Nova_other->nova_standard_Nova_String_Nova_chars[l1_Nova_i]));
+		}
+	}
+	return 0;
 }
 
 nova_standard_Nova_String* nova_standard_Nova_String_0_Nova_toString(nova_standard_Nova_String* this, nova_standard_exception_Nova_ExceptionData* exceptionData)

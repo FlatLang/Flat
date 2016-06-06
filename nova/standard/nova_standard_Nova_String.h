@@ -28,6 +28,7 @@ typedef struct nova_standard_Nova_String nova_standard_Nova_String;
 #include <nova/standard/nova_standard_Nova_String.h>
 #include <nova/standard/nova_standard_Nova_System.h>
 #include <nova/standard/math/nova_standard_math_Nova_Math.h>
+#include <nova/standard/datastruct/nova_standard_datastruct_Nova_Comparable.h>
 
 
 typedef struct nova_standard_Extension_VTable_String nova_standard_Extension_VTable_String;
@@ -38,6 +39,7 @@ struct nova_standard_Extension_VTable_String
 	nova_standard_Nova_String* (*nova_standard_Nova_String_virtual0_Nova_toString)(nova_standard_Nova_String*, nova_standard_exception_Nova_ExceptionData*);
 	char (*nova_standard_Nova_String_virtual_Nova_equals)(nova_standard_Nova_String*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_String*);
 	nova_standard_Nova_String* (*nova_standard_Nova_String_virtual0_Nova_concat)(nova_standard_Nova_String*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_String*);
+	int (*nova_standard_Nova_String_virtual_Nova_compareTo)(nova_standard_Nova_String*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_String*);
 };
 
 extern nova_standard_Extension_VTable_String nova_standard_Extension_VTable_String_val;
@@ -72,6 +74,7 @@ nova_standard_Nova_String* nova_standard_Nova_String_Nova_toLowerCase(nova_stand
 nova_standard_Nova_String* nova_standard_Nova_String_Nova_toUpperCase(nova_standard_Nova_String* this, nova_standard_exception_Nova_ExceptionData* exceptionData);
 nova_standard_Nova_String* nova_standard_Nova_String_0_Nova_getDataBetween(nova_standard_Nova_String* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_Nova_String* nova_standard_Nova_String_Nova_before, nova_standard_Nova_String* nova_standard_Nova_String_Nova_after);
 nova_standard_Nova_String* nova_standard_Nova_String_1_Nova_getDataBetween(nova_standard_Nova_String* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_Nova_String* nova_standard_Nova_String_Nova_before, nova_standard_Nova_String* nova_standard_Nova_String_Nova_after, int nova_standard_Nova_String_Nova_start);
+int nova_standard_Nova_String_Nova_compareTo(nova_standard_Nova_String* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_Nova_String* nova_standard_Nova_String_Nova_other);
 nova_standard_Nova_String* nova_standard_Nova_String_0_Nova_toString(nova_standard_Nova_String* this, nova_standard_exception_Nova_ExceptionData* exceptionData);
 void nova_standard_Nova_String_Nova_super(nova_standard_Nova_String* this, nova_standard_exception_Nova_ExceptionData* exceptionData);
 

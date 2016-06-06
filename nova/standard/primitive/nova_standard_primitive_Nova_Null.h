@@ -38,6 +38,7 @@ struct nova_standard_primitive_Extension_VTable_Null
 	nova_standard_Nova_String* (*nova_standard_primitive_Nova_Null_virtual_Nova_toString)(nova_standard_primitive_Nova_Null*, nova_standard_exception_Nova_ExceptionData*);
 	char (*nova_standard_Nova_String_virtual_Nova_equals)(nova_standard_Nova_String*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_String*);
 	nova_standard_Nova_String* (*nova_standard_primitive_Nova_Null_virtual_Nova_concat)(nova_standard_primitive_Nova_Null*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_String*);
+	int (*nova_standard_Nova_String_virtual_Nova_compareTo)(nova_standard_Nova_String*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_String*);
 };
 
 extern nova_standard_primitive_Extension_VTable_Null nova_standard_primitive_Extension_VTable_Null_val;
