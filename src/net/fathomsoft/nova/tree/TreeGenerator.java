@@ -297,7 +297,7 @@ public class TreeGenerator implements Runnable
 		Node currentNode = getNextStatement(null, offset, searchTypes, skipScopes);
 		
 		// Decode all of the statements in the source text.
-		while (currentNode != null)
+		while (currentNode != null && currentNode.onAfterDecoded())
 		{
 			updateTree(currentNode, skipScopes);
 			
