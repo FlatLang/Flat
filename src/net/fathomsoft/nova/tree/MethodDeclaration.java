@@ -385,6 +385,8 @@ public abstract class MethodDeclaration extends InstanceDeclaration implements C
 			signature += " -> " + getType();
 		}
 		
+		signature += getGenericTypeArgumentList().generateNovaInput();
+		
 		return signature;
 	}
 }
