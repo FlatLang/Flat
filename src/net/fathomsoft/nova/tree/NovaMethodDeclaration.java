@@ -8,6 +8,8 @@ import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.error.UnimplementedOperationException;
 import net.fathomsoft.nova.tree.MethodList.SearchFilter;
+import net.fathomsoft.nova.tree.generics.GenericTypeArgumentList;
+import net.fathomsoft.nova.tree.generics.GenericTypeParameter;
 import net.fathomsoft.nova.tree.generics.GenericTypeParameterDeclaration;
 import net.fathomsoft.nova.util.Bounds;
 import net.fathomsoft.nova.util.Location;
@@ -708,6 +710,11 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 			if (leftDelimiter.equals("->") || (getType() != null && leftDelimiter.equals(",")))
 			{
 				addType(word);
+				
+				if (rightDelimiter.startsWith(GENERIC_START) && rightDelimiter.endsWith(GENERIC_END))
+				{
+					addGenericTypeArgumentName(rightDelimiter.substring(GENERIC_START.length(), rightDelimiter.length() - GENERIC_END.length()));
+				}
 				
 				checkArray(data.signature, bounds.getEnd(), rightDelimiter);
 			}
