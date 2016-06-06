@@ -200,8 +200,6 @@ public class Closure extends Variable
 			return false;
 		}
 		
-//		MethodDeclaration declaration = getMethodDeclaration(name);
-//		
 		declarations = ((Value)getReferenceNode()).getTypeClass().getMethods(name);
 		
 		if (declarations.length <= 0)
@@ -251,11 +249,6 @@ public class Closure extends Variable
 		if (result.skipValidation())
 		{
 			return result;
-		}
-		
-		if (phase == SyntaxTree.PHASE_METHOD_CONTENTS)
-		{
-			
 		}
 		
 		return result;
