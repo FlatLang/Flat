@@ -976,6 +976,7 @@ public abstract class Node implements Listenable
 	{
 		int index    = 0;
 		int oldIndex = 0;
+		int lastValidIndex = 0;
 		
 		for (boolean end = false; matcher.find(); end = !end)
 		{
@@ -990,6 +991,8 @@ public abstract class Node implements Listenable
 				{
 					delim = bounds.extractString(statement);
 					delim = StringUtils.trimSurroundingWhitespace(delim);
+					
+					lastValidIndex = matcher.start();
 				}
 				
 				oldIndex = matcher.start();
@@ -1012,7 +1015,7 @@ public abstract class Node implements Listenable
 		}
 		
 		// Don't forget the last delimiter.
-		extra.delims.add(statement.substring(oldIndex, statement.length()));
+		extra.delims.add(statement.substring(lastValidIndex));
 	}
 	
 	private void trimBounds(Bounds bounds, ExtraData extra)
@@ -1276,6 +1279,19 @@ public abstract class Node implements Listenable
 	public StringBuilder generateNovaInput(StringBuilder builder, boolean outputChildren)
 	{
 		throw new UnimplementedOperationException("The Nova input implementation for this feature has not been implemented yet.");
+	}
+	
+	public boolean onAfterDecoded()
+	{
+		for (Node n : children)
+		{
+			if (!n.onAfterDecoded())
+			{
+				return false;
+			}
+		}
+		
+		return true;
 	}
 	
 	/**
