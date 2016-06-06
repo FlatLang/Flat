@@ -288,24 +288,7 @@ public abstract class Value extends Node implements AbstractValue
 	
 	public String generateGenericType()
 	{
-		String s = "";
-		
-		if (isGenericType())
-		{
-			GenericTypeArgumentList args = getGenericTypeArgumentList();
-			
-			for (int i = 0; i < args.getNumVisibleChildren(); i++)
-			{
-				if (i > 0)
-				{
-					s += ", ";
-				}
-				
-				s += args.getVisibleChild(i).getType();
-			}
-		}
-		
-		return s;
+		return getGenericTypeArgumentList().generateNovaInput().toString();
 	}
 	
 	/**
@@ -808,7 +791,7 @@ public abstract class Value extends Node implements AbstractValue
 	 */
 	public StringBuilder generateNovaType(StringBuilder builder, boolean checkArray)
 	{
-		builder.append(getType());
+		builder.append(getNovaType());
 		
 		if (checkArray && isArray())
 		{
@@ -822,6 +805,11 @@ public abstract class Value extends Node implements AbstractValue
 		builder.append(generateGenericType());
 		
 		return builder;
+	}
+	
+	public String getNovaType()
+	{
+		return getType();
 	}
 	
 	/**
