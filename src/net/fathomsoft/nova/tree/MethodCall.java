@@ -7,6 +7,8 @@ import net.fathomsoft.nova.error.SyntaxErrorException;
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.tree.MethodList.SearchFilter;
 import net.fathomsoft.nova.tree.exceptionhandling.Throw;
+import net.fathomsoft.nova.tree.generics.GenericTypeArgument;
+import net.fathomsoft.nova.tree.generics.GenericTypeArgumentList;
 import net.fathomsoft.nova.tree.generics.GenericTypeParameterDeclaration;
 import net.fathomsoft.nova.tree.variables.Array;
 import net.fathomsoft.nova.tree.variables.Variable;
@@ -195,6 +197,7 @@ public class MethodCall extends Variable
 			return null;
 		}
 		
+		// If constructor
 		if (getFileDeclaration().getImportList().getAbsoluteClassLocation(name) != null)
 		{
 			setName(getFileDeclaration().getImportedClass(declaring, name).getName());
@@ -379,13 +382,90 @@ public class MethodCall extends Variable
 		return getCallableDeclaration().getParameterList().getParameter(argIndex);
 	}
 	
+	@Override
+	public String generateGenericType()
+	{
+		StringBuilder builder = new StringBuilder();
+		
+		GenericTypeArgumentList args = getGenericTypeArgumentList();
+		
+		if (args.getNumVisibleChildren() > 0)
+		{
+			builder.append(GenericCompatible.GENERIC_START);
+			
+			for (int i = 0; i < args.getNumVisibleChildren(); i++)
+			{
+				if (i > 0)
+				{
+					builder.append(", ");
+				}
+				
+				GenericTypeArgument arg = args.getVisibleChild(i);
+				
+				GenericTypeArgument extractedType = getGenericTypeArgumentFromParameter(arg.getType());
+				
+				if (extractedType != null)
+				{
+					extractedType.generateNovaInput(builder);
+				}
+				else
+				{
+					arg.generateNovaInput(builder);
+				}
+			}
+			
+			builder.append(GenericCompatible.GENERIC_END);
+		}
+		else
+		{
+			return super.generateGenericType();
+		}
+		
+		return builder.toString();
+	}
+	
+	private GenericTypeArgument getGenericTypeArgumentFromParameter(String type)
+	{
+		int index = getDeclaration().getGenericTypeParameterDeclaration().getParameterIndex(type);
+		
+		if (index >= 0)
+		{
+			Value ref = (Value)getReferenceNode();
+			
+			if (ref instanceof Variable)
+			{
+				ref = ((Variable)ref).getDeclaration();
+			}
+			
+			return ref.getGenericTypeArgument(index);
+		}
+		
+		return null;
+	}
+	
+	@Override
+	public String getNovaType()
+	{
+		if (isGenericType())
+		{
+			GenericTypeArgument extractedType = getGenericTypeArgumentFromParameter(getType());
+			
+			if (extractedType != null)
+			{
+				return extractedType.generateNovaInput().toString();
+			}
+		}
+		
+		return super.getNovaType();
+	}
+	
 	/**
 	 * @see net.fathomsoft.nova.tree.Identifier#generateCArgumentReference(StringBuilder, Identifier)
 	 */
 	@Override
 	public StringBuilder generateCArgumentReference(StringBuilder builder, Identifier callingMethod)
 	{
-		// TODO: there is a better way.
+		// TODO: there is a better way. <-- i'll get to it in the re-write
 		if (getCallableDeclaration().isVirtual() && isAccessed() && !isVirtualTypeKnown())
 		{
 			Accessible node = getAccessingNode().getLastAccessingOfType(new Class<?>[] { MethodCall.class, Closure.class }, true);
