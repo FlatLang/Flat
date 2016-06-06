@@ -2,11 +2,11 @@ package "nova/standard/datastruct"
 
 import "nova/standard/exception/UnimplementedOperationException"
 
-public class Tree
+public class Tree<E>
 {
-	public Node root
+	public Node<E> root
 	
-	public preorder() -> String
+	public preorder() -> Array<E>
 	{
 		return root.preorder()
 	}
