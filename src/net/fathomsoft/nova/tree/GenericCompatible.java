@@ -92,11 +92,28 @@ public interface GenericCompatible
 		return getGenericTypeArgument(index, (Node)this);
 	}
 	
+	public static void throwMissingGenericTypeError(Node value)
+	{
+		throwMissingGenericTypeError(value, true);
+	}
+	
+	public static boolean throwMissingGenericTypeError(Node value, boolean require)
+	{
+		return SyntaxMessage.queryError("Missing generic type declaration", value, require);
+	}
+	
 	public default GenericTypeArgument getGenericTypeArgument(int index, Node value)
+	{
+		return getGenericTypeArgument(index, value, true);
+	}
+	
+	public default GenericTypeArgument getGenericTypeArgument(int index, Node value, boolean require)
 	{
 		if (index < 0 || index >= getNumGenericTypeArguments())
 		{
-			SyntaxMessage.error("Missing generic type declaration", value);
+ 			throwMissingGenericTypeError(value, require);
+ 			
+ 			return null;
 		}
 		
 		return getGenericTypeArgumentList().getVisibleChild(index);
@@ -126,6 +143,11 @@ public interface GenericCompatible
 	
 	public default GenericTypeArgument getGenericTypeArgumentInstance(String parameterName, Node value)
 	{
+		return getGenericTypeArgumentInstance(parameterName, value, true);
+	}
+	
+	public default GenericTypeArgument getGenericTypeArgumentInstance(String parameterName, Node value, boolean require)
+	{
 		VariableDeclaration decl  = (VariableDeclaration)this;
 		ClassDeclaration    clazz = null;
 		
@@ -140,7 +162,7 @@ public interface GenericCompatible
 		
 		int index = clazz.getGenericTypeParameterIndex(parameterName);
 		
-		return getGenericTypeArgument(index, value);
+		return getGenericTypeArgument(index, value, require);
 	}
 	
 	public default GenericTypeArgument getGenericTypeArgumentDeclaration(String parameterName)
