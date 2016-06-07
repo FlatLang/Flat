@@ -1,6 +1,6 @@
 package "nova/standard/datastruct"
 
-public class Array<E> implements Enumerable<E>
+public class Array<E> implements List<E>
 {
 	external void arrayCopy(E dest[], int dIndex, E src[], int sIndex, int len, int destArrLen, int size)
 	

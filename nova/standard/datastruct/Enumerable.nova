@@ -1,9 +1,0 @@
-package "nova/standard/datastruct"
-
-public interface Enumerable<Type>
-{
-	forEach(func(Type, Int, Enumerable<Type>))
-	filter(filterFunc(Type) -> Bool) -> Enumerable<Type>
-	take(Int howMany) -> Enumerable<Type>
-	skip(Int howMany) -> Enumerable<Type>
-}

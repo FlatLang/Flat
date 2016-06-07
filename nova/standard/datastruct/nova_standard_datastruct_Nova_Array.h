@@ -38,7 +38,7 @@ typedef char (*nova_standard_datastruct_Nova_Array_closure6_Nova_filterFunc)(voi
 #include <nova/standard/nova_standard_Nova_String.h>
 #include <nova/standard/nova_standard_Nova_System.h>
 #include <nova/standard/math/nova_standard_math_Nova_Math.h>
-#include <nova/standard/datastruct/nova_standard_datastruct_Nova_Enumerable.h>
+#include <nova/standard/datastruct/nova_standard_datastruct_Nova_List.h>
 
 
 typedef struct nova_standard_datastruct_Extension_VTable_Array nova_standard_datastruct_Extension_VTable_Array;
