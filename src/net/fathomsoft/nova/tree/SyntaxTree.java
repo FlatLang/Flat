@@ -428,7 +428,7 @@ public class SyntaxTree
 			start   = StringUtils.findStrings(builder, starts, start).getStart();
 		}
 		
-		return builder.toString();
+		return builder.toString().trim();
 	}
 	
 	/**
