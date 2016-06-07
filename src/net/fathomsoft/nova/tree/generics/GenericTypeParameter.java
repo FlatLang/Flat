@@ -5,9 +5,13 @@ import net.fathomsoft.nova.tree.Node;
 import net.fathomsoft.nova.util.Location;
 
 /**
- * {@link Node} extension that represents
+ * {@link Node} extension that represents a generic type parameter.
+ * Contains the information of a generic type parameter. Information
+ * such as the name of the parameter and the default type.
  * 
  * @author	Braden Steffaniak
+ * @since	v0.2.41 Dec 7, 2014 at 11:01:21 PM
+ * @version	v0.2.41 Dec 17, 2014 at 7:48:17 PM
  */
 public class GenericTypeParameter extends Node
 {

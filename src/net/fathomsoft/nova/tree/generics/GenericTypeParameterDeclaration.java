@@ -9,6 +9,15 @@ import net.fathomsoft.nova.util.Bounds;
 import net.fathomsoft.nova.util.Location;
 import net.fathomsoft.nova.util.StringUtils;
 
+/**
+ * {@link TypeList} extension that represents a generic type declaration.
+ * Contains the information of a generic type declaration.
+ * Contains all of the generic type parameter names.
+ * 
+ * @author	Braden Steffaniak
+ * @since	v0.2.40 Dec 7, 2014 at 4:05:23 PM
+ * @version	v0.2.44 Jul 13, 2015 at 1:28:17 AM
+ */
 public class GenericTypeParameterDeclaration extends TypeList<GenericTypeParameter>
 {
 	public static final String EXTENDS_IDENTIFIER = "extends";
