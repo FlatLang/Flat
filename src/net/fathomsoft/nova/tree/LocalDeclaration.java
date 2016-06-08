@@ -106,7 +106,7 @@ public class LocalDeclaration extends VariableDeclaration
 	 */
 	public static LocalDeclaration decodeStatement(Node parent, String statement, Location location, boolean require)
 	{
-		return decodeStatement(parent, statement, location, require, true);
+		return decodeStatement(parent, statement, location, require, true, true);
 	}
 	
 	/**
@@ -129,7 +129,7 @@ public class LocalDeclaration extends VariableDeclaration
 	 * @return The generated node, if it was possible to translated it
 	 * 		into a LocalDeclaration.
 	 */
-	public static LocalDeclaration decodeStatement(Node parent, String statement, Location location, boolean require, boolean checkName)
+	public static LocalDeclaration decodeStatement(Node parent, String statement, Location location, boolean require, boolean checkName, boolean checkType)
 	{
 		LocalDeclaration n = new LocalDeclaration(parent, location);
 		
@@ -143,6 +143,8 @@ public class LocalDeclaration extends VariableDeclaration
 		if (!SyntaxUtils.isLiteral(statement) && StringUtils.containsMultipleWords(statement) && !StringUtils.containsChar(statement, StringUtils.INVALID_DECLARATION_CHARS))// || !Regex.matches(statement, Patterns.IDENTIFIER_DECLARATION))
 		{
 			DeclarationData  data = new DeclarationData();
+			
+			data.checkType = checkType;
 			
 			GenericTypeParameterDeclaration.searchGenerics(statement, data);
 			
@@ -182,7 +184,7 @@ public class LocalDeclaration extends VariableDeclaration
 	 * 
 	 * @return Whether or not the specified declaration is valid.
 	 */
-	private boolean validateDeclaration()
+	public boolean validateDeclaration()
 	{
 		if (getType() == null || getName() == null)
 		{
@@ -231,9 +233,9 @@ public class LocalDeclaration extends VariableDeclaration
 			}
 			else
 			{
-				setType(leftDelimiter + word, true, false, getProgram().getPhase() == SyntaxTree.PHASE_METHOD_CONTENTS);
+				setType(leftDelimiter + word, true, false, extra.checkType || getProgram().getPhase() == SyntaxTree.PHASE_METHOD_CONTENTS);
 				
-				if (getProgram().getPhase() == SyntaxTree.PHASE_METHOD_CONTENTS && !setType(getType(), false))
+				if (getProgram().getPhase() == SyntaxTree.PHASE_METHOD_CONTENTS && !setType(getType(), false, extra.checkType))
 				{
 					extra.error = "Type '" + leftDelimiter + word + "' does not exist";
 				}
