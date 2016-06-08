@@ -273,6 +273,11 @@ public class Assignment extends Node
 	 */
 	public static Assignment decodeStatement(Node parent, String statement, Location location, boolean require, boolean addDeclaration, Value[] assignees, Node assignment)
 	{
+		return decodeStatement(parent, statement, location, require, addDeclaration, assignees, assignment, true);
+	}
+	
+	public static Assignment decodeStatement(Node parent, String statement, Location location, boolean require, boolean addDeclaration, Value[] assignees, Node assignment, boolean checkType)
+	{
 		if (!SyntaxUtils.isVariableAssignment(statement))
 		{
 			return null;
@@ -297,7 +302,7 @@ public class Assignment extends Node
 		
 		for (int i = 0; i < assigneesStr.length; i++)
 		{
-			if (!n.decodeAssignee(assigneesStr[i], varLoc, require, addDeclaration, assignees))
+			if (!n.decodeAssignee(assigneesStr[i], varLoc, require, addDeclaration, assignees, checkType))
 			{
 				return null;
 			}
@@ -333,11 +338,11 @@ public class Assignment extends Node
 		return n;
 	}
 	
-	private boolean decodeAssignee(String assignee, Location loc, boolean require, boolean addDeclaration, Value[] assignees)
+	private boolean decodeAssignee(String assignee, Location loc, boolean require, boolean addDeclaration, Value[] assignees, boolean checkType)
 	{
 		if (assignees == null || assignees.length <= 0)
 		{
-			Value varNode = (Value)SyntaxTree.decodeScopeContents(this, assignee, loc, require);
+			Value varNode = (Value)SyntaxTree.decodeScopeContents(this, assignee, loc, require, checkType);
 			
 			if (varNode == null)
 			{
@@ -371,8 +376,8 @@ public class Assignment extends Node
 		Value returnedLeft  = getAssigneeNode().getReturnedNode();
 		Value returnedRight = getAssignmentNode().getReturnedNode();
 		
-		String leftType  = returnedLeft.getType();
-		String rightType = returnedRight.getType();
+		String leftType  = returnedLeft.getNovaType();
+		String rightType = returnedRight.getNovaType();
 		
 		if (!Literal.isNullLiteral(returnedRight) && rightType != null && !rightType.equals(leftType))
 		{
