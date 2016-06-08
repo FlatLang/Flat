@@ -5,7 +5,9 @@ import java.util.ArrayList;
 import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.tree.variables.Variable;
+import net.fathomsoft.nova.tree.variables.VariableDeclaration;
 import net.fathomsoft.nova.tree.variables.VariableDeclarationList;
+import net.fathomsoft.nova.tree.variables.VirtualLocalDeclaration;
 import net.fathomsoft.nova.util.Location;
 
 /**
@@ -112,8 +114,11 @@ public class Scope extends Node
 	 */
 	public Variable registerLocalVariable(Value virtual, boolean require)
 	{
-		Node base = virtual.getBaseNode();
-		
+		return registerLocalVariable(virtual, virtual.getBaseNode(), require);
+	}
+	
+	public Variable registerLocalVariable(Value virtual, Node addBefore, boolean require)
+	{
 		if (virtual instanceof Accessible)
 		{
 			Accessible accessible = (Accessible)virtual;
@@ -139,22 +144,36 @@ public class Scope extends Node
 			virtual = clone;
 		}
 		
-		String type = virtual.getReturnedNode().generateNovaType().toString();
+		Value returned = virtual.getReturnedNode();
+		
+		String type = returned.generateNovaType().toString();
 		
 		String     decl   = type + " nova_local_" + getParentMethod().getScope().localVariableID++ + " = null";
-		Assignment assign = Assignment.decodeStatement(base.getParent(), decl, getLocationIn(), require, true, null, virtual);
+		Assignment assign = Assignment.decodeStatement(addBefore.getParent(), decl, getLocationIn(), require, true, null, virtual, false);
 		
 		if (assign == null)
 		{
 			return null;
 		}
 		
+		Variable assignee = (Variable)assign.getAssigneeNode();
+		VariableDeclaration assigneeDecl = assignee.getDeclaration();
+		
+		VirtualLocalDeclaration localDecl = new VirtualLocalDeclaration(assigneeDecl.getParent(), assigneeDecl.getLocationIn());
+		assigneeDecl.cloneTo(localDecl);
+		localDecl.setReference(returned instanceof Accessible ? (Value)((Accessible)returned).getReferenceNode() : returned);
+		localDecl.setType(localDecl.getType(), require);
+		
+		assign.setAssigneeNode(localDecl.generateUsableVariable(assignee.getParent(), assignee.getLocationIn()));
+		
+		assigneeDecl.getParent().replace(assigneeDecl, localDecl);
+		
 		Variable var = (Variable)assign.getAssigneeNode();
 		
 		var.setForceOriginalName(true);
-		var.getDeclaration().validateType();
+		//var.getDeclaration().validateType();
 		
-		base.getParent().addChildBefore(base, assign);
+		addBefore.getParent().addChildBefore(addBefore, assign);
 		
 		return (Variable)var.clone(this, getLocationIn());
 	}
