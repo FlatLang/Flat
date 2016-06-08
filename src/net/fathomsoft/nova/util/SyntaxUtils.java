@@ -1639,13 +1639,13 @@ public class SyntaxUtils
 			return type;//value.getParentClass().getGenericTypeParameter(type).getDefaultType();
 		}
 		
-		String location = value.getFileDeclaration().getImportList().getAbsoluteClassLocation(type);
+		String location = value.getReferenceFile().getImportList().getAbsoluteClassLocation(type);
 		
 		clazz = value.getProgram().getClassDeclaration(location);
 		
 		if (clazz != null)
 		{
-			if (SyntaxUtils.validateImported(value, location))
+			if (true)//SyntaxUtils.validateImported(value, location))
 			{
 				return type;
 			}
