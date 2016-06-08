@@ -10,6 +10,7 @@ import net.fathomsoft.nova.tree.exceptionhandling.Throw;
 import net.fathomsoft.nova.tree.generics.GenericTypeArgument;
 import net.fathomsoft.nova.tree.generics.GenericTypeArgumentList;
 import net.fathomsoft.nova.tree.generics.GenericTypeParameterDeclaration;
+import net.fathomsoft.nova.tree.lambda.LambdaExpression;
 import net.fathomsoft.nova.tree.variables.Array;
 import net.fathomsoft.nova.tree.variables.Variable;
 import net.fathomsoft.nova.tree.variables.VariableDeclaration;
@@ -1026,32 +1027,37 @@ public class MethodCall extends Variable
 			
 			if (argument.length() > 0)
 			{
-				Node arg = Literal.decodeStatement(parent, argument, location, true, true);
+				Node arg = LambdaExpression.decodeStatement(parent, argument, location, false);
 				
 				if (arg == null)
 				{
-					arg = BinaryOperation.decodeStatement(parent, argument, location, false);
+					arg = Literal.decodeStatement(parent, argument, location, true, true);
 					
 					if (arg == null)
 					{
-						arg = SyntaxTree.decodeScopeContents(parent, argument, location, false);
+						arg = BinaryOperation.decodeStatement(parent, argument, location, false);
 						
 						if (arg == null)
 						{
+							arg = SyntaxTree.decodeScopeContents(parent, argument, location, false);
+							
 							if (arg == null)
 							{
-								arg = Array.decodeStatement(parent, argument, location, false);
-								
-								if (parent.isWithinExternalContext())
-								{
-									arg = Literal.decodeStatement(parent, argument, location, true);
-								}
-								
 								if (arg == null)
 								{
-									validateCharacters(parent, argument, location);
+									arg = Array.decodeStatement(parent, argument, location, false);
 									
-									SyntaxMessage.error("Could not decode argument '" + argument + "'", parent, location);
+									if (parent.isWithinExternalContext())
+									{
+										arg = Literal.decodeStatement(parent, argument, location, true);
+									}
+									
+									if (arg == null)
+									{
+										validateCharacters(parent, argument, location);
+										
+										SyntaxMessage.error("Could not decode argument '" + argument + "'", parent, location);
+									}
 								}
 							}
 						}
