@@ -116,18 +116,19 @@ public class Nova
 	// Set to 0 to not benchmark.
 	public static final int		BENCHMARK     = 0;
 
-	public static final long	SINGLE_THREAD = 0x100000000000l;
-	public static final long	SMALL_BIN     = 0x010000000000l;
-	public static final long	NO_GC         = 0x001000000000l;
-	public static final long	LIBRARY       = 0x000100000000l;
-	public static final long	RUNTIME       = 0x000010000000l;
-	public static final long	C_ARGS        = 0x000001000000l;
-	public static final long	KEEP_C        = 0x000000100000l;
-	public static final long	DRY_RUN       = 0x000000010000l;
-	public static final long	VERBOSE       = 0x000000001000l;
-	public static final long	FORMATC       = 0x000000000100l;
-	public static final long	CSOURCE       = 0x000000000010l;
-	public static final long	NO_C_OUTPUT   = 0x000000000001l;
+	public static final long	SINGLE_THREAD = 0x1000000000000l;
+	public static final long	SMALL_BIN     = 0x0100000000000l;
+	public static final long	NO_GC         = 0x0010000000000l;
+	public static final long	LIBRARY       = 0x0001000000000l;
+	public static final long	RUNTIME       = 0x0000100000000l;
+	public static final long	C_ARGS        = 0x0000010000000l;
+	public static final long	KEEP_C        = 0x0000001000000l;
+	public static final long	DRY_RUN       = 0x0000000100000l;
+	public static final long	VERBOSE       = 0x0000000010000l;
+	public static final long	FORMATC       = 0x0000000001000l;
+	public static final long	CSOURCE       = 0x0000000000100l;
+	public static final long	NO_C_OUTPUT   = 0x0000000000010l;
+	public static final long	NO_OPTIMIZE   = 0x0000000000001l;
 	
 	public static final int		GCC           = 1;
 	public static final int		TCC           = 2;
@@ -258,23 +259,23 @@ public class Nova
 			
 			args = new String[]
 			{
-				formatPath(stability + "StabilityTest.nova"),
-				formatPath(stability + "TimeStability.nova"),
-				formatPath(stability + "FileStability.nova"),
-				formatPath(stability + "ThreadStability.nova"),
-				formatPath(stability + "ExceptionStability.nova"),
-				formatPath(stability + "SyntaxStability.nova"),
-				formatPath(stability + "ClosureStability.nova"),
-				formatPath(stability + "PolymorphismStability.nova"),
-				formatPath(stability + "PolymorphicSuperClass.nova"),
-				formatPath(stability + "PolymorphicSubClass.nova"),
-				formatPath(stability + "StabilityTestException.nova"),
-				formatPath(stability + "StabilityExceptionHandler.nova"),
-				formatPath(stability + "ThreadImplementation.nova"),
-				formatPath(stability + "UnstableException.nova"),
-				formatPath(stability + "NetworkStability.nova"),
-				formatPath(stability + "ClientThread.nova"),
-				formatPath(stability + "StabilityTestCase.nova"),
+//				formatPath(stability + "StabilityTest.nova"),
+//				formatPath(stability + "TimeStability.nova"),
+//				formatPath(stability + "FileStability.nova"),
+//				formatPath(stability + "ThreadStability.nova"),
+//				formatPath(stability + "ExceptionStability.nova"),
+//				formatPath(stability + "SyntaxStability.nova"),
+//				formatPath(stability + "ClosureStability.nova"),
+//				formatPath(stability + "PolymorphismStability.nova"),
+//				formatPath(stability + "PolymorphicSuperClass.nova"),
+//				formatPath(stability + "PolymorphicSubClass.nova"),
+//				formatPath(stability + "StabilityTestException.nova"),
+//				formatPath(stability + "StabilityExceptionHandler.nova"),
+//				formatPath(stability + "ThreadImplementation.nova"),
+//				formatPath(stability + "UnstableException.nova"),
+//				formatPath(stability + "NetworkStability.nova"),
+//				formatPath(stability + "ClientThread.nova"),
+//				formatPath(stability + "StabilityTestCase.nova"),
 //				formatPath(directory + "network/OutputThread.nova"),
 //				formatPath(directory + "network/ConnectionThread.nova"),
 //				formatPath(directory + "network/ServerDemo.nova"),
@@ -289,7 +290,7 @@ public class Nova
 //				formatPath(root      + "bank/ClientConnectionThread.nova"),
 //				formatPath(root      + "bank/ClientInputThread.nova"),
 //				formatPath(directory + "ackermann/Ackermann.nova"),
-//				formatPath(directory + "Lab.nova"),
+				formatPath(directory + "Lab.nova"),
 //				formatPath(directory + "copy/Dog.nova"),
 //				formatPath(directory + "T1.nova"),
 //				formatPath(directory + "T2.nova"),
@@ -328,6 +329,7 @@ public class Nova
 //				"-nogc",
 //				"-no-c-output",
 //				"-dry"
+				"-no-optimize",
 				"-library",
 			};
 		}
@@ -1019,13 +1021,16 @@ public class Nova
 				cmd.append("-Wl,--enable-stdcall-fixup ");
 			}
 			
-			if (isFlagEnabled(SMALL_BIN))
+			if (!isFlagEnabled(NO_OPTIMIZE))
 			{
-				cmd.append("-ffast-math ");
-			}
-			else
-			{
-				cmd.append("-march=native -fomit-frame-pointer ");
+				if (isFlagEnabled(SMALL_BIN))
+				{
+					cmd.append("-ffast-math ");
+				}
+				else
+				{
+					cmd.append("-march=native -fomit-frame-pointer ");
+				}
 			}
 		}
 		else if (compiler == TCC)
@@ -1048,7 +1053,7 @@ public class Nova
 		{
 			cmd.append("-Os -s ");
 		}
-		else
+		else if (!isFlagEnabled(NO_OPTIMIZE))
 		{
 			cmd.append("-O2 ");
 		}
@@ -1447,6 +1452,10 @@ public class Nova
 			else if (arg.equals("-no-c-output"))
 			{
 				enableFlag(NO_C_OUTPUT);
+			}
+			else if (arg.equals("-no-optimize"))
+			{
+				enableFlag(NO_OPTIMIZE);
 			}
 			// If the user wants to view the c source output.
 			else if (arg.equals("-csource"))
