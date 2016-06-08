@@ -85,7 +85,7 @@ public class ParameterList<E extends Value> extends TypeList<E>
 	{
 		Parameter exceptionData = new Parameter(this, locationIn);
 		exceptionData.setName(Exception.EXCEPTION_DATA_IDENTIFIER, true);
-		exceptionData.setType("ExceptionData");
+		exceptionData.setType("ExceptionData", true, false);
 		
 		return exceptionData;
 	}
