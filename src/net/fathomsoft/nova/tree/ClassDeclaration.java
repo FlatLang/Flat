@@ -930,7 +930,7 @@ public class ClassDeclaration extends InstanceDeclaration
 	 */
 	public MethodDeclaration getMethod(GenericCompatible context, String methodName, SearchFilter filter, Value ... parameterTypes)
 	{
-		return getMethod(new GenericCompatible[] { context }, methodName, parameterTypes);
+		return getMethod(new GenericCompatible[] { context }, methodName, filter, parameterTypes);
 	}
 	
 	public MethodDeclaration getMethod(GenericCompatible[] contexts, String methodName, SearchFilter filter, Value ... parameterTypes)
@@ -1530,10 +1530,10 @@ public class ClassDeclaration extends InstanceDeclaration
 	{
 		MethodDeclaration[] methods = getVisibleNativeMethods();
 		
-		if (methods.length <= 0)
+		/*if (methods.length <= 0)
 		{
 			return builder;
-		}
+		}*/
 
 		String name = generateCSourceName("native").toString();
 		
@@ -2173,6 +2173,7 @@ public class ClassDeclaration extends InstanceDeclaration
 						{
 							if (method.isUserMade() && !doesOverrideMethod(method))
 							{
+								doesOverrideMethod(method);
 								errors.add(method);
 							}
 						}
