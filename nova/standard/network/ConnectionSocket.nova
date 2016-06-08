@@ -8,6 +8,8 @@ public class ConnectionSocket extends Socket
 {
 	visible Bool connected
 	
+	external type SOCKET_ID_TYPE
+	
 	external char[] nova_socket_receive(SOCKET_ID_TYPE socket)
 	external int nova_socket_send(SOCKET_ID_TYPE socket, char message[])
 	external void nova_socket_close(SOCKET_ID_TYPE s)
@@ -16,8 +18,6 @@ public class ConnectionSocket extends Socket
 	visible OutputStream out
 	
 	Queue<String> inputBuffer = new Queue()
-	
-	external type SOCKET_ID_TYPE
 	
 	SOCKET_ID_TYPE socket
 	
