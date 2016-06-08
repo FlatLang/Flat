@@ -212,11 +212,16 @@ public interface Accessible
 	 */
 	public default Accessible getReferenceNode()
 	{
+		return getReferenceNode(false);
+	}
+	
+	public default Accessible getReferenceNode(boolean requireAccessingNode)
+	{
 		Value n = (Value)this;
 		
 		Accessible accessing = getAccessingNode();
 		
-		if (accessing != null)
+		if (accessing != null || requireAccessingNode)
 		{
 			return accessing;
 		}
