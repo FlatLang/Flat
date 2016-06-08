@@ -1007,6 +1007,10 @@ public abstract class Node implements Listenable
 					extra.bounds.add(bounds);
 					extra.words.add(statement.substring(index, oldIndex));
 				}
+				else
+				{
+					lastValidIndex = matcher.start();
+				}
 			}
 			else
 			{
