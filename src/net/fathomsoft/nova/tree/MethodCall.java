@@ -401,18 +401,7 @@ public class MethodCall extends Variable
 					builder.append(", ");
 				}
 				
-				GenericTypeArgument arg = args.getVisibleChild(i);
-				
-				GenericTypeArgument extractedType = getGenericTypeArgumentFromParameter(arg.getType());
-				
-				if (extractedType != null)
-				{
-					extractedType.generateNovaInput(builder);
-				}
-				else
-				{
-					arg.generateNovaInput(builder);
-				}
+				getIntelligentGenericTypeArgument(i).generateNovaInput(builder);
 			}
 			
 			builder.append(GenericCompatible.GENERIC_END);
@@ -423,41 +412,6 @@ public class MethodCall extends Variable
 		}
 		
 		return builder.toString();
-	}
-	
-	private GenericTypeArgument getGenericTypeArgumentFromParameter(String type)
-	{
-		int index = getDeclaration().getGenericTypeParameterDeclaration().getParameterIndex(type);
-		
-		if (index >= 0)
-		{
-			Value ref = (Value)getReferenceNode();
-			
-			if (ref instanceof Variable)
-			{
-				ref = ((Variable)ref).getDeclaration();
-			}
-			
-			return ref.getGenericTypeArgument(index);
-		}
-		
-		return null;
-	}
-	
-	@Override
-	public String getNovaType()
-	{
-		if (isGenericType())
-		{
-			GenericTypeArgument extractedType = getGenericTypeArgumentFromParameter(getType());
-			
-			if (extractedType != null)
-			{
-				return extractedType.generateNovaInput().toString();
-			}
-		}
-		
-		return super.getNovaType();
 	}
 	
 	/**
