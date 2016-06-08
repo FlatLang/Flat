@@ -75,9 +75,12 @@ public class Interface extends ClassDeclaration
 	{
 		if (StringUtils.containsWord(statement, IDENTIFIER))
 		{
+			// TODO: Would replace all "interface" instances. e.g. "public interface interfaceThing" would be "public class classThing" 
 			statement = statement.replace(IDENTIFIER, ClassDeclaration.IDENTIFIER);
 			
-			ClassDeclaration clazz = ClassDeclaration.decodeStatement(parent, statement, location, require);
+			ClassData data = new ClassData(false, false, true);
+			
+			ClassDeclaration clazz = ClassDeclaration.decodeStatement(parent, statement, location, require, data);
 			
 			if (clazz != null)
 			{
