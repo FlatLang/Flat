@@ -135,9 +135,6 @@ public class ForEachLoop extends Loop
 		getIteratorAssignment().generateCSource(builder);
 		
 		builder.append("while (").append(getHasNextCheck().generateCSourceFragment()).append(')').append('\n');
-
-		VariableDeclaration v = getIterator().getDeclaration();
-		v.generateCSource();
 		
 		for (int i = 0; i < getNumChildren(); i++)
 		{
@@ -176,7 +173,7 @@ public class ForEachLoop extends Loop
 		if (StringUtils.findNextWord(statement).equals(IDENTIFIER))
 		{
 			ForEachLoop n      = new ForEachLoop(parent, location);
-			Bounds  bounds = SyntaxUtils.findParenthesesBounds(n, statement);
+			Bounds      bounds = SyntaxUtils.findParenthesesBounds(n, statement);
 			
 			if (!bounds.extractPreString(statement).trim().equals(IDENTIFIER))
 			{
@@ -220,14 +217,14 @@ public class ForEachLoop extends Loop
 	private boolean decodeHasNextCheck(boolean require)
 	{
 		Identifier node = SyntaxTree.decodeIdentifier(getIterator(), "hasNext", getIterator().getLocationIn().asNew(), false);
-		Identifier hasNext = getIterator().getDeclaration().generateUsableVariable(getIterator().getParent(), getIterator().getLocationIn().asNew());
-		hasNext.setAccessedNode(node);
-		//Value hasNext = SyntaxTree.decodeValue(getArgumentList(), getIterator().generateNovaInput() + ".hasNext", getIterator().getLocationIn().asNew(), require);
 		
-		if (hasNext == null)
+		if (node == null)
 		{
 			return SyntaxMessage.queryError("Could not decode hasNext portion of Iterator for foreach loop", this, require);
 		}
+		
+		Identifier hasNext = getIterator().getDeclaration().generateUsableVariable(getIterator().getParent(), getIterator().getLocationIn().asNew());
+		hasNext.setAccessedNode(node);
 		
 		getArgumentList().addChild(hasNext);
 		
