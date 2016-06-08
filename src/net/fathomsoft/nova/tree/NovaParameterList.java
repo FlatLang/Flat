@@ -30,7 +30,7 @@ public class NovaParameterList extends ParameterList<Parameter>
 	
 	public void addReturnParameter(String type)
 	{
-		Parameter p = Parameter.decodeStatement(this, type + " ret" + (returnParameters.getNumVisibleChildren() + 1), getLocationIn().asNew(), true, false);
+		Parameter p = Parameter.decodeStatement(this, type + " ret" + (returnParameters.getNumVisibleChildren() + 1), getLocationIn().asNew(), true, false, true);
 		p.setForceOriginalName(true);
 		p.validateType();
 		
