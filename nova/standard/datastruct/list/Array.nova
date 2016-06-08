@@ -1,0 +1,240 @@
+package "nova/standard/datastruct/list"
+
+public class Array<E> implements List<E, Int>
+{
+	external void arrayCopy(E dest[], int dIndex, E src[], int sIndex, int len, int destArrLen, int size)
+	
+	Int	bufferSize
+	
+	visible Int	size
+	
+	E[] data
+	
+	visible Bool empty
+	{
+		get { return size <= 0 }
+		no set
+	}
+	
+	visible ArrayIterator<E> iterator
+	{
+		get
+		{
+			return new ArrayIterator(this)
+		}
+		
+		no set
+	}
+	
+	public construct()
+	{
+		this(10)
+	}
+	
+	public construct(Int size)
+	{
+		increaseSize(size)
+	}
+	
+	public construct(E data[], Int size)
+	{
+		this(size)
+		
+		for (Int i = 0; i < size; i++)
+		{
+			add(data[i])
+		}
+	}
+	
+	public add(E element)
+	{
+		if (size >= bufferSize)
+		{
+			increaseSize()
+		}
+		
+		data[size++] = element
+	}
+	
+	public add(Int index, E element)
+	{
+		if (index >= bufferSize)
+		{
+			increaseSize(index + 1)
+		}
+		
+		add(null)
+		
+		shiftRight(index, size)
+		
+		data[index] = element
+		
+		if (index >= size - 1)
+		{
+			size = index + 1;
+		}
+	}
+	
+	public remove(Int index) -> E
+	{
+		E element = data[index]
+		
+		shiftLeft(index + 1, size--)
+		
+		return element
+	}
+	
+	shiftRight(Int left, Int right)
+	{
+		for (Int i = right - 1; i > left; i--)
+		{
+			data[i] = data[i - 1]
+		}
+		
+		data[left] = null
+	}
+	
+	shiftLeft(Int left, Int right)
+	{
+		for (Int i = left - 1; i < right - 1; i++)
+		{
+			data[i] = data[i + 1]
+		}
+		
+		data[right - 1] = null
+	}
+	
+	public swap(Int index1, Int index2)
+	{
+		E temp = data[index1]
+		data[index1] = data[index2]
+		data[index2] = temp
+	}
+	
+	increaseSize()
+	{
+		increaseSize(bufferSize + 3)
+	}
+	
+	increaseSize(Int size)
+	{
+		Int offset = size - bufferSize
+		
+		bufferSize = size
+		
+		E tmp[] = new E[bufferSize]
+		
+		arrayCopy(tmp, 0, data, 0, this.size, bufferSize, 4)
+		
+		data = tmp
+		
+		for (Int i = bufferSize - offset; i < bufferSize; i++)
+		{
+			data[i] = null
+		}
+	}
+	
+	public get(Int index) -> E
+	{
+		return data[index]
+	}
+	
+	public set(Int index, E value)
+	{
+		data[index] = value
+	}
+	
+	public toArray() -> E[]
+	{
+		E[] array = new E[size]
+		
+		for (Int i = 0; i < size; i++)
+		{
+			array[i] = data[i]
+		}
+	}
+	
+	public forEach(func(E, Int, Array<E>))
+	{
+		for (Int i = 0; i < size; i++)
+		{
+			func(data[i], i, this)
+		}
+	}
+	
+	public filter(filterFunc(E) -> Bool) -> Array<E>
+	{
+		Array<E> filtered = new Array()
+		
+		for (Int i = 0; i < size; i++)
+		{
+			if (filterFunc(data[i]))
+			{
+				filtered.add(data[i])
+			}
+		}
+		
+		return filtered
+	}
+	
+	public take(Int howMany) -> Array<E>
+	{
+		if (howMany > size)
+		{
+			howMany = size
+		}
+		
+		Array<E> list = new Array()
+		
+		for (Int i = 0; i < howMany; i++)
+		{
+			list.add(data[i])
+		}
+		
+		return list
+	}
+	
+	public skip(Int howMany) -> Array<E>
+	{
+		Array<E> list = new Array()
+		
+		for (Int i = howMany; i < size; i++)
+		{
+			list.add(data[i])
+		}
+		
+		return list
+	}
+	
+	/*
+	@RequireGenericType(extends Int)
+	public sum() -> Int
+    {
+    	Int sum = 0
+    	
+    	for (Int i = 0; i < size; i++)
+    	{
+    		sum += data[i]
+    	}
+    	
+        return sum
+    }
+    
+    @RequireGenericType(extends String)
+    public join(String delimiter) -> String
+    {
+    	String str = ""
+    	
+    	for (Int i = 0; i < size; i++)
+    	{
+    		if (i > 0)
+    		{
+    			str += delimiter
+    		}
+    		
+    		str += data[i]
+    	}
+    	
+    	return str
+    }*/
+}
