@@ -1422,6 +1422,11 @@ public class StringUtils
 	 */
 	public static String[] splitCommas(String src)
 	{
+		return splitCommas(src, false);
+	}
+	
+	public static String[] splitCommas(String src, boolean searchGenerics)
+	{
 		ArrayList<String> strs = new ArrayList<String>();
 		
 		int oldIndex =  0;
@@ -1429,7 +1434,7 @@ public class StringUtils
 		
 		StringBuilder builder = new StringBuilder();
 		
-		while ((index = SyntaxUtils.findCharInBaseScope(src, ',', index + 1)) >= 0)//(index = Regex.indexOf(src, index + 1, ',', new char[] { '(' }, new char[] { ')' }, new char[] { '"' }, new boolean[] { false }, new boolean[] { false }, new boolean[] { true })) > 0)
+		while ((index = SyntaxUtils.findCharInBaseScope(src, ',', index + 1, searchGenerics)) >= 0)//(index = Regex.indexOf(src, index + 1, ',', new char[] { '(' }, new char[] { ')' }, new char[] { '"' }, new boolean[] { false }, new boolean[] { false }, new boolean[] { true })) > 0)
 		{
 			builder = new StringBuilder(src.substring(oldIndex, index));
 			
