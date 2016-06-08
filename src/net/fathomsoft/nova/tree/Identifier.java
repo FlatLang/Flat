@@ -185,7 +185,7 @@ public abstract class Identifier extends Value implements Accessible
 	@Override
 	public StringBuilder generateCSourceFragment(StringBuilder builder)
 	{
-		Node base = getBaseNode();
+		//Node base = getBaseNode();
 //		boolean leftHandVariable = base instanceof Assignment && ((Assignment)base).getAssigneeNode() == this;
 		
 		if (!isAccessed())
@@ -271,6 +271,11 @@ public abstract class Identifier extends Value implements Accessible
 	 */
 	public StringBuilder generateCUseOutput(StringBuilder builder, boolean pointer)
 	{
+		return generateCUseOutput(builder, pointer, true);
+	}
+	
+	public StringBuilder generateCUseOutput(StringBuilder builder, boolean pointer, boolean checkAccesses)
+	{
 //		if (!isSpecialFragment())
 //		{
 //			builder.append(generateDataTypeOutput());
@@ -344,7 +349,7 @@ public abstract class Identifier extends Value implements Accessible
 		
 		generateCSourceName(builder);
 		
-		if (isGenericType() && doesAccess())
+		if (checkAccesses && isGenericType() && doesAccess())
 		{
 			builder.append(')');
 		}

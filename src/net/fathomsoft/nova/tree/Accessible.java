@@ -521,9 +521,16 @@ public interface Accessible
 	{
 		Value n = (Value)this;
 		
-		n.generateCUseOutput(builder);
+		if (n instanceof Identifier)
+		{
+			((Identifier)n).generateCUseOutput(builder, false, false);
+		}
+		else
+		{
+			n.generateCUseOutput(builder);
+		}
 
-		generateChildrenCSourceFragment(builder, true, callingMethod);
+		generateChildrenCSourceFragment(builder, true, callingMethod, false);
 		
 		return builder;
 	}
@@ -600,6 +607,11 @@ public interface Accessible
 	 */
 	public default StringBuilder generateChildrenCSourceFragment(StringBuilder builder, boolean reference, Identifier stopBefore)
 	{
+		return generateChildrenCSourceFragment(builder, reference, stopBefore, true);
+	}
+	
+	public default StringBuilder generateChildrenCSourceFragment(StringBuilder builder, boolean reference, Identifier stopBefore, boolean checkAccesses)
+	{
 		Identifier child = getAccessedNode();
 		
 		if (child == null)
@@ -607,7 +619,7 @@ public interface Accessible
 			return builder;
 		}
 		
-		StringBuilder output = child.generateChildCSourceFragment(reference, stopBefore);
+		StringBuilder output = child.generateChildCSourceFragment(reference, stopBefore, checkAccesses);
 		
 		if (output.length() > 0 && reference)
 		{
@@ -627,6 +639,11 @@ public interface Accessible
 	 */
 	public default StringBuilder generateChildCSourceFragment(boolean reference, Identifier stopBefore)
 	{
+		return generateChildCSourceFragment(reference, stopBefore, true);
+	}
+	
+	public default StringBuilder generateChildCSourceFragment(boolean reference, Identifier stopBefore, boolean checkAccesses)
+	{
 		Value n = (Value)this;
 		
 		StringBuilder builder = new StringBuilder();
@@ -639,7 +656,18 @@ public interface Accessible
 				return builder;
 			}
 			
-			return n.generateCUseOutput(builder).append(generateChildrenCSourceFragment(true, stopBefore));
+			StringBuilder use = null;
+			
+			if (n instanceof Identifier)
+			{
+				use = ((Identifier)n).generateCUseOutput(builder, false, checkAccesses);
+			}
+			else
+			{
+				use = n.generateCUseOutput(builder);
+			}
+			
+			return use.append(generateChildrenCSourceFragment(true, stopBefore));
 		}
 		
 		if (n instanceof Identifier)

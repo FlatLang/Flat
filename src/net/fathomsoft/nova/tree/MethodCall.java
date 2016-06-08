@@ -500,7 +500,7 @@ public class MethodCall extends Variable
 	 * 		action.
 	 */
 	@Override
-	public StringBuilder generateCUseOutput(StringBuilder builder, boolean pointer)
+	public StringBuilder generateCUseOutput(StringBuilder builder, boolean pointer, boolean checkAccesses)
 	{
 		VariableDeclaration method   = getMethodDeclaration();
 		CallableMethod      callable = (CallableMethod)method;
@@ -535,7 +535,7 @@ public class MethodCall extends Variable
 		
 		builder.append(getArgumentList().generateCSource());
 		
-		if (isGenericType() && doesAccess())
+		if (checkAccesses && isGenericType() && doesAccess())
 		{
 			builder.append(')');
 		}

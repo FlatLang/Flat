@@ -147,12 +147,12 @@ public class Instantiation extends IIdentifier implements GenericCompatible
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.Identifier#generateCUseOutput(java.lang.StringBuilder, boolean)
+	 * @see net.fathomsoft.nova.tree.Identifier#generateCUseOutput(java.lang.StringBuilder, boolean, boolean)
 	 */
 	@Override
-	public StringBuilder generateCUseOutput(StringBuilder builder, boolean pointer)
+	public StringBuilder generateCUseOutput(StringBuilder builder, boolean pointer, boolean checkAccesses)
 	{
-		return getIdentifier().generateCUseOutput(builder, pointer);
+		return getIdentifier().generateCUseOutput(builder, pointer, checkAccesses);
 	}
 	
 	/**

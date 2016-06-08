@@ -24,10 +24,10 @@ public class StaticClassReference extends IIdentifier
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.Identifier#generateCUseOutput(java.lang.StringBuilder, boolean)
+	 * @see net.fathomsoft.nova.tree.Identifier#generateCUseOutput(java.lang.StringBuilder, boolean, boolean)
 	 */
 	@Override
-	public StringBuilder generateCUseOutput(StringBuilder builder, boolean pointer)
+	public StringBuilder generateCUseOutput(StringBuilder builder, boolean pointer, boolean checkAccesses)
 	{
 		return builder.append(0);
 	}

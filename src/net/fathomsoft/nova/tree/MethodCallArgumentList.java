@@ -204,7 +204,7 @@ public class MethodCallArgumentList extends ArgumentList
 				accessible.setAccessedNode(call);
 			}
 			
-			clone.generateCArgumentReference(builder, call);//.generateCArgumentReference(builder, getMethodCall());
+			/*clone*/context.generateCArgumentReference(builder, call);//.generateCArgumentReference(builder, getMethodCall());
 			
 			if (!sameType)
 			{
