@@ -218,7 +218,8 @@ public class ForLoop extends Loop
 		
 		String arguments[] = contents.split("\\s*;\\s*");
 		
-		return decodeInitialization(arguments[0], newLoc, require) &&
+		return arguments.length >= 3 &&
+				decodeInitialization(arguments[0], newLoc, require) &&
 				decodeCondition(arguments[1], newLoc, require) &&
 				decodeUpdate(arguments[2], newLoc, require);
 	}
