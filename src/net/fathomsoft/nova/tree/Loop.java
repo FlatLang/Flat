@@ -81,7 +81,11 @@ public class Loop extends Node
 	{
 		Loop node = null;
 		
-		if ((node = ForLoop.decodeStatement(parent, statement, location, require)) != null)
+		if ((node = ForEachLoop.decodeStatement(parent, statement, location, require)) != null)
+		{
+			return node;
+		}
+		else if ((node = ForLoop.decodeStatement(parent, statement, location, require)) != null)
 		{
 			return node;
 		}
