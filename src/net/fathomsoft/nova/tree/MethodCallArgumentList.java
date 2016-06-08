@@ -67,7 +67,7 @@ public class MethodCallArgumentList extends ArgumentList
 			Value child = (Value)getChild(i);
 			Value param = getMethodCall().getCorrespondingParameter(child);
 			
-			boolean sameType = isSameType(child.getReturnedNode(), param);
+			boolean sameType = isSameType(child.getReturnedNode(), param, false);
 			
 			if (!sameType)
 			{
@@ -226,8 +226,13 @@ public class MethodCallArgumentList extends ArgumentList
 	 */
 	private boolean isSameType(Value value1, Value value2)
 	{
-		String type1 = value1.getInstanceType();
-		String type2 = value2.getInstanceType();
+		return isSameType(value1, value2, true);
+	}
+	
+	private boolean isSameType(Value value1, Value value2, boolean checkGeneric)
+	{
+		String type1 = value1.getInstanceType(checkGeneric);
+		String type2 = value2.getInstanceType(checkGeneric);
 		
 		if (value1 instanceof Closure || value2 instanceof Closure)
 		{

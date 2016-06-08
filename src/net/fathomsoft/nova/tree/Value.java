@@ -906,7 +906,12 @@ public abstract class Value extends Node implements AbstractValue
 	
 	public String getInstanceType()
 	{
-		if (isGenericType())
+		return getInstanceType(true);
+	}
+	
+	public String getInstanceType(boolean checkGeneric)
+	{
+		if (checkGeneric && isGenericType())
 		{
 			return getGenericReturnType();
 		}
