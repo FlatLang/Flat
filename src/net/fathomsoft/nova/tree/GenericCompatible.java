@@ -194,7 +194,7 @@ public interface GenericCompatible
 	{
 		GenericTypeArgument type = new GenericTypeArgument((Node)this, Location.INVALID);
 		type.setType(parameterName, true, false, false);
-
+		
 		DeclarationData data = new DeclarationData();
 		
 		GenericTypeParameterDeclaration.searchGenerics(parameterName, data);
