@@ -2,7 +2,7 @@ package "nova/standard/network"
 
 import "nova/standard/io/InputStream"
 import "nova/standard/io/OutputStream"
-import "nova/standard/datastruct/Queue"
+import "nova/standard/datastruct/list/Queue"
 
 public class ConnectionSocket extends Socket
 {
@@ -62,7 +62,7 @@ public class ConnectionSocket extends Socket
 	
 	readString(Bool checkBuffer) -> String
 	{
-		if (!checkBuffer || inputBuffer.isEmpty())
+		if (!checkBuffer || inputBuffer.empty)
 		{
 			Char[] data = nova_socket_receive(socket)
 			
