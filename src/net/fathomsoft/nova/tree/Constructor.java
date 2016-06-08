@@ -261,7 +261,7 @@ public class Constructor extends BodyMethodDeclaration
 			return;
 		}
 		
-		Constructor c = (Constructor)clazz.getMethod(getContext(), IDENTIFIER, getParameterList().getTypes());
+		/*Constructor c = (Constructor)clazz.getMethod(getContext(), IDENTIFIER, getParameterList().getTypes());
 		
 		if (c == null)
 		{
@@ -282,7 +282,7 @@ public class Constructor extends BodyMethodDeclaration
 			constructorCalls.push(sup);
 			
 			addSuperCallFor(constructorCalls, c);
-		}
+		}*/
 	}
 	
 	private String generateParameterOutput(NovaMethodDeclaration method)
