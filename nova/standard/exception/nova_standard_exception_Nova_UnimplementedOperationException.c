@@ -56,6 +56,8 @@ void nova_standard_exception_Nova_UnimplementedOperationException_Nova_destroy(n
 	}
 	
 	
+	{
+	}
 	NOVA_FREE(*this);
 }
 

@@ -61,6 +61,8 @@ void nova_standard_time_Nova_Date_Nova_destroy(nova_standard_time_Nova_Date** th
 	
 	
 	
+	{
+	}
 	NOVA_FREE(*this);
 }
 

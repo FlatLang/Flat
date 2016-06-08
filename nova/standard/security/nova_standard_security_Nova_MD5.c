@@ -55,6 +55,8 @@ void nova_standard_security_Nova_MD5_Nova_destroy(nova_standard_security_Nova_MD
 	}
 	
 	
+	{
+	}
 	NOVA_FREE(*this);
 }
 

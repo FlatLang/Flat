@@ -54,6 +54,8 @@ void nova_standard_Nova_Object_Nova_destroy(nova_standard_Nova_Object** this, no
 	}
 	
 	
+	{
+	}
 	NOVA_FREE(*this);
 }
 

@@ -64,6 +64,8 @@ void nova_standard_math_logic_Nova_Hypothesis_Nova_destroy(nova_standard_math_lo
 	
 	NOVA_FREE((*this)->prv);
 	
+	{
+	}
 	NOVA_FREE(*this);
 }
 

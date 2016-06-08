@@ -61,6 +61,8 @@ void nova_standard_primitive_number_Nova_Long_Nova_destroy(nova_standard_primiti
 	
 	
 	
+	{
+	}
 	NOVA_FREE(*this);
 }
 
@@ -93,7 +95,7 @@ nova_standard_Nova_String* nova_standard_primitive_number_Nova_Long_1_Nova_toStr
 	char* l1_Nova_data;
 	int l1_Nova_offset;
 	int l1_Nova_nums;
-	int l2_Nova_index;
+	int l3_Nova_index;
 	
 	l1_Nova_charOffset = (int)('0');
 	l1_Nova_digits = nova_standard_primitive_number_Nova_Long_0_Nova_numDigits((nova_standard_primitive_number_Nova_Long*)nova_null, exceptionData, nova_standard_primitive_number_Nova_Long_Nova_value);
@@ -107,10 +109,10 @@ nova_standard_Nova_String* nova_standard_primitive_number_Nova_Long_1_Nova_toStr
 		l1_Nova_offset = 1;
 	}
 	l1_Nova_nums = l1_Nova_digits-- - l1_Nova_offset;
-	l2_Nova_index = 0;
-	for (; l2_Nova_index < l1_Nova_nums; l2_Nova_index++)
+	l3_Nova_index = 0;
+	for (; l3_Nova_index < l1_Nova_nums; l3_Nova_index++)
 	{
-		l1_Nova_data[l1_Nova_digits - l2_Nova_index] = (char)(l1_Nova_charOffset + nova_standard_primitive_number_Nova_Long_Nova_value % 10);
+		l1_Nova_data[l1_Nova_digits - l3_Nova_index] = (char)(l1_Nova_charOffset + nova_standard_primitive_number_Nova_Long_Nova_value % 10);
 		nova_standard_primitive_number_Nova_Long_Nova_value = nova_standard_primitive_number_Nova_Long_Nova_value / 10;
 	}
 	return nova_standard_Nova_String_1_Nova_construct(0, exceptionData, l1_Nova_data);

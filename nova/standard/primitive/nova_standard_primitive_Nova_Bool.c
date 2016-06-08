@@ -58,6 +58,8 @@ void nova_standard_primitive_Nova_Bool_Nova_destroy(nova_standard_primitive_Nova
 	
 	
 	
+	{
+	}
 	NOVA_FREE(*this);
 }
 

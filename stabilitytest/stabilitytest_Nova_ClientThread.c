@@ -68,6 +68,8 @@ void stabilitytest_Nova_ClientThread_Nova_destroy(stabilitytest_Nova_ClientThrea
 	stabilitytest_Nova_StabilityTest_Nova_destroy(&(*this)->prv->stabilitytest_Nova_ClientThread_Nova_program, exceptionData);
 	NOVA_FREE((*this)->prv);
 	
+	{
+	}
 	NOVA_FREE(*this);
 }
 

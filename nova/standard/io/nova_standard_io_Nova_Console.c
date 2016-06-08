@@ -58,6 +58,8 @@ void nova_standard_io_Nova_Console_Nova_destroy(nova_standard_io_Nova_Console** 
 	}
 	
 	
+	{
+	}
 	NOVA_FREE(*this);
 }
 

@@ -64,6 +64,8 @@ void nova_standard_datastruct_Nova_HashMap_Nova_destroy(nova_standard_datastruct
 	
 	NOVA_FREE((*this)->prv);
 	
+	{
+	}
 	NOVA_FREE(*this);
 }
 

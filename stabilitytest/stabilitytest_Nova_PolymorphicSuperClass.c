@@ -59,6 +59,8 @@ void stabilitytest_Nova_PolymorphicSuperClass_Nova_destroy(stabilitytest_Nova_Po
 	
 	stabilitytest_Nova_PolymorphicSubClass_Nova_destroy(&(*this)->stabilitytest_Nova_PolymorphicSuperClass_Nova_child, exceptionData);
 	
+	{
+	}
 	NOVA_FREE(*this);
 }
 

@@ -66,6 +66,8 @@ void nova_standard_star_Nova_WindowThread_Nova_destroy(nova_standard_star_Nova_W
 	nova_standard_star_Nova_Window_Nova_destroy(&(*this)->prv->nova_standard_star_Nova_WindowThread_Nova_window, exceptionData);
 	NOVA_FREE((*this)->prv);
 	
+	{
+	}
 	NOVA_FREE(*this);
 }
 

@@ -68,6 +68,8 @@ void stabilitytest_Nova_ThreadImplementation_Nova_destroy(stabilitytest_Nova_Thr
 	
 	NOVA_FREE((*this)->prv);
 	
+	{
+	}
 	NOVA_FREE(*this);
 }
 
@@ -79,10 +81,10 @@ void stabilitytest_Nova_ThreadImplementation_Nova_this(stabilitytest_Nova_Thread
 
 void stabilitytest_Nova_ThreadImplementation_0_Nova_run(stabilitytest_Nova_ThreadImplementation* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
-	int l1_Nova_i;
+	int l2_Nova_i;
 	
-	l1_Nova_i = 0;
-	for (; l1_Nova_i < this->prv->stabilitytest_Nova_ThreadImplementation_Nova_times; l1_Nova_i++)
+	l2_Nova_i = 0;
+	for (; l2_Nova_i < this->prv->stabilitytest_Nova_ThreadImplementation_Nova_times; l2_Nova_i++)
 	{
 		nova_standard_thread_Nova_Thread_Nova_sleep(0, exceptionData, (long)(this->prv->stabilitytest_Nova_ThreadImplementation_Nova_millis));
 	}

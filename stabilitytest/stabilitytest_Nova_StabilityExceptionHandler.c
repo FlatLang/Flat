@@ -64,6 +64,8 @@ void stabilitytest_Nova_StabilityExceptionHandler_Nova_destroy(stabilitytest_Nov
 	stabilitytest_Nova_StabilityTest_Nova_destroy(&(*this)->prv->stabilitytest_Nova_StabilityExceptionHandler_Nova_program, exceptionData);
 	NOVA_FREE((*this)->prv);
 	
+	{
+	}
 	NOVA_FREE(*this);
 }
 

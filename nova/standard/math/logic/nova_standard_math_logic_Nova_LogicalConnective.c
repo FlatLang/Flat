@@ -56,6 +56,8 @@ void nova_standard_math_logic_Nova_LogicalConnective_Nova_destroy(nova_standard_
 	}
 	
 	
+	{
+	}
 	NOVA_FREE(*this);
 }
 

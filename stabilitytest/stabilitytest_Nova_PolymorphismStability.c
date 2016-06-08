@@ -68,6 +68,8 @@ void stabilitytest_Nova_PolymorphismStability_Nova_destroy(stabilitytest_Nova_Po
 	}
 	
 	
+	{
+	}
 	NOVA_FREE(*this);
 }
 

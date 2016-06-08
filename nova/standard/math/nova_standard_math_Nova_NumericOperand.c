@@ -62,6 +62,8 @@ void nova_standard_math_Nova_NumericOperand_Nova_destroy(nova_standard_math_Nova
 	
 	NOVA_FREE((*this)->prv);
 	
+	{
+	}
 	NOVA_FREE(*this);
 }
 

@@ -57,6 +57,8 @@ void stabilitytest_Nova_StabilityTestCase_Nova_destroy(stabilitytest_Nova_Stabil
 	
 	stabilitytest_Nova_StabilityTest_Nova_destroy(&(*this)->stabilitytest_Nova_StabilityTestCase_Nova_program, exceptionData);
 	
+	{
+	}
 	NOVA_FREE(*this);
 }
 

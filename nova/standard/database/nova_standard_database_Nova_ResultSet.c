@@ -58,6 +58,8 @@ void nova_standard_database_Nova_ResultSet_Nova_destroy(nova_standard_database_N
 	
 	NOVA_FREE((*this)->nova_standard_database_Nova_ResultSet_Nova_rows);
 	
+	{
+	}
 	NOVA_FREE(*this);
 }
 

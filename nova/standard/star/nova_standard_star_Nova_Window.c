@@ -60,6 +60,8 @@ void nova_standard_star_Nova_Window_Nova_destroy(nova_standard_star_Nova_Window*
 	
 	nova_standard_Nova_String_Nova_destroy(&(*this)->nova_standard_star_Nova_Window_Nova_title, exceptionData);
 	
+	{
+	}
 	NOVA_FREE(*this);
 }
 

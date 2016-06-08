@@ -61,6 +61,8 @@ void nova_standard_primitive_number_Nova_Byte_Nova_destroy(nova_standard_primiti
 	
 	
 	
+	{
+	}
 	NOVA_FREE(*this);
 }
 

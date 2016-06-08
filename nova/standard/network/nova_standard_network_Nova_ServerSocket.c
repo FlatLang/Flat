@@ -65,6 +65,8 @@ void nova_standard_network_Nova_ServerSocket_Nova_destroy(nova_standard_network_
 	
 	nova_standard_datastruct_list_Nova_Array_Nova_destroy(&(*this)->nova_standard_network_Nova_ServerSocket_Nova_requests, exceptionData);
 	
+	{
+	}
 	NOVA_FREE(*this);
 }
 

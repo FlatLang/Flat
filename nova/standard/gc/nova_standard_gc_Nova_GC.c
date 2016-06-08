@@ -60,6 +60,8 @@ void nova_standard_gc_Nova_GC_Nova_destroy(nova_standard_gc_Nova_GC** this, nova
 	}
 	
 	
+	{
+	}
 	NOVA_FREE(*this);
 }
 

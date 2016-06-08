@@ -86,6 +86,8 @@ void nova_standard_io_Nova_File_Nova_destroy(nova_standard_io_Nova_File** this, 
 	nova_standard_Nova_String_Nova_destroy(&(*this)->prv->nova_standard_io_Nova_File_Nova_location, exceptionData);
 	NOVA_FREE((*this)->prv);
 	
+	{
+	}
 	NOVA_FREE(*this);
 }
 

@@ -60,6 +60,8 @@ void nova_standard_svg_Nova_SVGCircle_Nova_destroy(nova_standard_svg_Nova_SVGCir
 	
 	
 	
+	{
+	}
 	NOVA_FREE(*this);
 }
 

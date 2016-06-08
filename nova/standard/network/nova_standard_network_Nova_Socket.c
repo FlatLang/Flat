@@ -57,6 +57,8 @@ void nova_standard_network_Nova_Socket_Nova_destroy(nova_standard_network_Nova_S
 	nova_standard_Nova_String_Nova_destroy(&(*this)->nova_standard_network_Nova_Socket_Nova_ip, exceptionData);
 	
 	
+	{
+	}
 	NOVA_FREE(*this);
 }
 

@@ -58,6 +58,8 @@ void example_Nova_Square_Nova_destroy(example_Nova_Square** this, nova_standard_
 	
 	
 	
+	{
+	}
 	NOVA_FREE(*this);
 }
 

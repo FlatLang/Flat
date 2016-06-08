@@ -62,6 +62,8 @@ void nova_standard_math_Nova_NumericTree_Nova_destroy(nova_standard_math_Nova_Nu
 	nova_standard_math_Nova_NumericOperation_Nova_destroy(&(*this)->prv->nova_standard_math_Nova_NumericTree_Nova_root, exceptionData);
 	NOVA_FREE((*this)->prv);
 	
+	{
+	}
 	NOVA_FREE(*this);
 }
 

@@ -86,6 +86,8 @@ void stabilitytest_Nova_ClosureStability_Nova_destroy(stabilitytest_Nova_Closure
 	
 	NOVA_FREE((*this)->prv);
 	
+	{
+	}
 	NOVA_FREE(*this);
 }
 
@@ -175,11 +177,11 @@ int stabilitytest_Nova_ClosureStability_Nova_multiply(stabilitytest_Nova_Closure
 int stabilitytest_Nova_ClosureStability_Nova_pow(stabilitytest_Nova_ClosureStability* this, nova_standard_exception_Nova_ExceptionData* exceptionData, int stabilitytest_Nova_ClosureStability_Nova_base, int stabilitytest_Nova_ClosureStability_Nova_pow)
 {
 	int l1_Nova_value;
-	int l1_Nova_i;
+	int l2_Nova_i;
 	
 	l1_Nova_value = stabilitytest_Nova_ClosureStability_Nova_base;
-	l1_Nova_i = 0;
-	for (; l1_Nova_i < stabilitytest_Nova_ClosureStability_Nova_pow - 1; l1_Nova_i++)
+	l2_Nova_i = 0;
+	for (; l2_Nova_i < stabilitytest_Nova_ClosureStability_Nova_pow - 1; l2_Nova_i++)
 	{
 		l1_Nova_value = l1_Nova_value * stabilitytest_Nova_ClosureStability_Nova_base;
 	}

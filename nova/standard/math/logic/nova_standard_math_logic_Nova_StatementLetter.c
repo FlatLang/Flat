@@ -65,6 +65,8 @@ void nova_standard_math_logic_Nova_StatementLetter_Nova_destroy(nova_standard_ma
 	nova_standard_Nova_String_Nova_destroy(&(*this)->prv->nova_standard_math_logic_Nova_StatementLetter_Nova_representation, exceptionData);
 	NOVA_FREE((*this)->prv);
 	
+	{
+	}
 	NOVA_FREE(*this);
 }
 

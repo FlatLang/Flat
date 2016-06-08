@@ -56,6 +56,8 @@ void nova_standard_math_logic_Nova_InvalidFormulaException_Nova_destroy(nova_sta
 	}
 	
 	
+	{
+	}
 	NOVA_FREE(*this);
 }
 

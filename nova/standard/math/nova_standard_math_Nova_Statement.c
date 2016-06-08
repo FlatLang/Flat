@@ -55,6 +55,8 @@ void nova_standard_math_Nova_Statement_Nova_destroy(nova_standard_math_Nova_Stat
 	}
 	
 	
+	{
+	}
 	NOVA_FREE(*this);
 }
 

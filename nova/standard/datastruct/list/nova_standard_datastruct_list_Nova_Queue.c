@@ -65,6 +65,8 @@ void nova_standard_datastruct_list_Nova_Queue_Nova_destroy(nova_standard_datastr
 	nova_standard_datastruct_list_Nova_Array_Nova_destroy(&(*this)->prv->nova_standard_datastruct_list_Nova_Queue_Nova_data, exceptionData);
 	NOVA_FREE((*this)->prv);
 	
+	{
+	}
 	NOVA_FREE(*this);
 }
 
@@ -86,19 +88,19 @@ void nova_standard_datastruct_list_Nova_Queue_Nova_enqueue(nova_standard_datastr
 nova_standard_Nova_String* nova_standard_datastruct_list_Nova_Queue_0_Nova_toString(nova_standard_datastruct_list_Nova_Queue* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
 	nova_standard_Nova_String* l1_Nova_s;
-	int l1_Nova_i;
+	int l2_Nova_i;
 	
 	l1_Nova_s = nova_standard_Nova_String_1_Nova_construct(0, exceptionData, "");
-	l1_Nova_i = nova_standard_datastruct_list_Nova_Queue_Accessor_Nova_size(this, exceptionData) - 1;
-	for (; l1_Nova_i >= 0; l1_Nova_i--)
+	l2_Nova_i = nova_standard_datastruct_list_Nova_Queue_Accessor_Nova_size(this, exceptionData) - 1;
+	for (; l2_Nova_i >= 0; l2_Nova_i--)
 	{
 		nova_standard_Nova_Object* nova_local_0;
 		
-		if (l1_Nova_i < nova_standard_datastruct_list_Nova_Queue_Accessor_Nova_size(this, exceptionData) - 1)
+		if (l2_Nova_i < nova_standard_datastruct_list_Nova_Queue_Accessor_Nova_size(this, exceptionData) - 1)
 		{
 			l1_Nova_s = l1_Nova_s->vtable->nova_standard_Nova_String_virtual0_Nova_concat(l1_Nova_s, exceptionData, nova_standard_Nova_String_1_Nova_construct(0, exceptionData, ", "));
 		}
-		nova_local_0 = nova_standard_datastruct_list_Nova_Array_Nova_get(this->prv->nova_standard_datastruct_list_Nova_Queue_Nova_data, exceptionData, l1_Nova_i);
+		nova_local_0 = nova_standard_datastruct_list_Nova_Array_Nova_get(this->prv->nova_standard_datastruct_list_Nova_Queue_Nova_data, exceptionData, l2_Nova_i);
 		l1_Nova_s = l1_Nova_s->vtable->nova_standard_Nova_String_virtual0_Nova_concat(l1_Nova_s, exceptionData, ((nova_standard_Nova_Object*)nova_local_0)->vtable->nova_standard_Nova_Object_virtual0_Nova_toString(nova_local_0, exceptionData));
 	}
 	return l1_Nova_s;

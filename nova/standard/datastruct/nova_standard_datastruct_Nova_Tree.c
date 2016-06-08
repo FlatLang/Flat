@@ -56,6 +56,8 @@ void nova_standard_datastruct_Nova_Tree_Nova_destroy(nova_standard_datastruct_No
 	
 	nova_standard_datastruct_Nova_Node_Nova_destroy(&(*this)->nova_standard_datastruct_Nova_Tree_Nova_root, exceptionData);
 	
+	{
+	}
 	NOVA_FREE(*this);
 }
 

@@ -65,6 +65,8 @@ void nova_standard_math_logic_Nova_LogicalStatement_Nova_destroy(nova_standard_m
 	nova_standard_datastruct_list_Nova_Array_Nova_destroy(&(*this)->prv->nova_standard_math_logic_Nova_LogicalStatement_Nova_components, exceptionData);
 	NOVA_FREE((*this)->prv);
 	
+	{
+	}
 	NOVA_FREE(*this);
 }
 

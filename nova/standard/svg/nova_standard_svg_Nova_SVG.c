@@ -56,6 +56,8 @@ void nova_standard_svg_Nova_SVG_Nova_destroy(nova_standard_svg_Nova_SVG** this, 
 	
 	nova_standard_svg_Nova_SVGMainComponent_Nova_destroy(&(*this)->nova_standard_svg_Nova_SVG_Nova_root, exceptionData);
 	
+	{
+	}
 	NOVA_FREE(*this);
 }
 

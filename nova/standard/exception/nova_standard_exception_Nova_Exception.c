@@ -70,6 +70,8 @@ void nova_standard_exception_Nova_Exception_Nova_destroy(nova_standard_exception
 	
 	nova_standard_Nova_String_Nova_destroy(&(*this)->nova_standard_exception_Nova_Exception_Nova_message, exceptionData);
 	
+	{
+	}
 	NOVA_FREE(*this);
 }
 

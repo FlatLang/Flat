@@ -59,6 +59,8 @@ void stabilitytest_Nova_PolymorphicSubClass_Nova_destroy(stabilitytest_Nova_Poly
 	}
 	
 	
+	{
+	}
 	NOVA_FREE(*this);
 }
 

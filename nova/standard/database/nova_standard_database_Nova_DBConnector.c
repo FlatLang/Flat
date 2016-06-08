@@ -65,6 +65,8 @@ void nova_standard_database_Nova_DBConnector_Nova_destroy(nova_standard_database
 	NOVA_FREE((*this)->prv);
 	nova_standard_Nova_String_Nova_destroy(&(*this)->nova_standard_database_Nova_DBConnector_Nova_error, exceptionData);
 	
+	{
+	}
 	NOVA_FREE(*this);
 }
 
@@ -119,20 +121,20 @@ nova_standard_database_Nova_ResultSet* nova_standard_database_Nova_DBConnector_N
 		int l2_Nova_numCols;
 		nova_standard_Nova_String*** l2_Nova_rows;
 		nova_standard_database_Nova_ResultSet* l2_Nova_r;
-		int l3_Nova_i;
+		int l4_Nova_i;
 		
 		l2_Nova_numRows = (int)nova_num_rows(this->prv->nova_standard_database_Nova_DBConnector_Nova_mysql);
 		l2_Nova_numCols = (int)nova_num_cols(this->prv->nova_standard_database_Nova_DBConnector_Nova_result);
 		l2_Nova_rows = (nova_standard_Nova_String***)nova_gen_array(NOVA_MALLOC(sizeof(nova_standard_Nova_String) * l2_Nova_numRows * l2_Nova_numCols), (int[]) { l2_Nova_numRows, l2_Nova_numCols }, 0, 1, sizeof(nova_standard_Nova_String));
-		l3_Nova_i = 0;
-		for (; l3_Nova_i < l2_Nova_numRows; l3_Nova_i++)
+		l4_Nova_i = 0;
+		for (; l4_Nova_i < l2_Nova_numRows; l4_Nova_i++)
 		{
-			int l4_Nova_j;
+			int l6_Nova_j;
 			
-			l4_Nova_j = 0;
-			for (; l4_Nova_j < l2_Nova_numCols; l4_Nova_j++)
+			l6_Nova_j = 0;
+			for (; l6_Nova_j < l2_Nova_numCols; l6_Nova_j++)
 			{
-				l2_Nova_rows[l3_Nova_i][l4_Nova_j] = nova_standard_Nova_String_1_Nova_construct(0, exceptionData, l1_Nova_arrays[l3_Nova_i][l4_Nova_j]);
+				l2_Nova_rows[l4_Nova_i][l6_Nova_j] = nova_standard_Nova_String_1_Nova_construct(0, exceptionData, l1_Nova_arrays[l4_Nova_i][l6_Nova_j]);
 			}
 		}
 		l2_Nova_r = nova_standard_database_Nova_ResultSet_Nova_construct(0, exceptionData, l2_Nova_rows, l2_Nova_numRows, l2_Nova_numCols);

@@ -76,6 +76,8 @@ void nova_standard_datastruct_Nova_Bounds_Nova_destroy(nova_standard_datastruct_
 	
 	
 	
+	{
+	}
 	NOVA_FREE(*this);
 }
 

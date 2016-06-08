@@ -64,6 +64,8 @@ void stabilitytest_Nova_FileStability_Nova_destroy(stabilitytest_Nova_FileStabil
 	}
 	
 	
+	{
+	}
 	NOVA_FREE(*this);
 }
 
@@ -112,12 +114,12 @@ void stabilitytest_Nova_FileStability_Nova_createFile(stabilitytest_Nova_FileSta
 void stabilitytest_Nova_FileStability_Nova_writeToFile(stabilitytest_Nova_FileStability* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_io_Nova_File* stabilitytest_Nova_FileStability_Nova_f)
 {
 	nova_standard_Nova_String* nova_local_0;
-	int l1_Nova_i;
+	int l2_Nova_i;
 	
 	nova_local_0 = nova_standard_primitive_number_Nova_Int_1_Nova_toString(0, exceptionData, stabilitytest_Nova_FileStability_Nova_lines);
 	nova_standard_io_Nova_Console_0_Nova_write(0, exceptionData, nova_standard_Nova_String_0_Nova_concat(nova_standard_Nova_String_1_Nova_construct(0, exceptionData, "Writing "), exceptionData, nova_local_0->vtable->nova_standard_Nova_String_virtual0_Nova_concat(nova_local_0, exceptionData, nova_standard_Nova_String_1_Nova_construct(0, exceptionData, " lines of data to file... "))));
-	l1_Nova_i = 0;
-	for (; l1_Nova_i < stabilitytest_Nova_FileStability_Nova_lines; l1_Nova_i++)
+	l2_Nova_i = 0;
+	for (; l2_Nova_i < stabilitytest_Nova_FileStability_Nova_lines; l2_Nova_i++)
 	{
 		nova_standard_io_Nova_File_Nova_writeLine(stabilitytest_Nova_FileStability_Nova_f, exceptionData, stabilitytest_Nova_FileStability_Nova_inputString);
 	}

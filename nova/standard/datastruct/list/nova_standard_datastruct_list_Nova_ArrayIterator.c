@@ -69,6 +69,8 @@ void nova_standard_datastruct_list_Nova_ArrayIterator_Nova_destroy(nova_standard
 	NOVA_FREE((*this)->prv);
 	
 	
+	{
+	}
 	NOVA_FREE(*this);
 }
 

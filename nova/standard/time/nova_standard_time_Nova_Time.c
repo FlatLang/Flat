@@ -55,6 +55,8 @@ void nova_standard_time_Nova_Time_Nova_destroy(nova_standard_time_Nova_Time** th
 	}
 	
 	
+	{
+	}
 	NOVA_FREE(*this);
 }
 

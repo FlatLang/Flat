@@ -61,6 +61,8 @@ void stabilitytest_Nova_NetworkStability_Nova_destroy(stabilitytest_Nova_Network
 	}
 	
 	
+	{
+	}
 	NOVA_FREE(*this);
 }
 

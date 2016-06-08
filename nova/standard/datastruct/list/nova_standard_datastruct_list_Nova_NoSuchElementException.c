@@ -71,6 +71,8 @@ void nova_standard_datastruct_list_Nova_NoSuchElementException_Nova_destroy(nova
 	}
 	
 	
+	{
+	}
 	NOVA_FREE(*this);
 }
 

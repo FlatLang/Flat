@@ -68,6 +68,8 @@ void nova_standard_thread_Nova_Thread_Nova_destroy(nova_standard_thread_Nova_Thr
 	
 	NOVA_FREE((*this)->prv);
 	
+	{
+	}
 	NOVA_FREE(*this);
 }
 

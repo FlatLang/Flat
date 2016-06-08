@@ -67,6 +67,8 @@ void nova_standard_network_Nova_NetworkOutputStream_Nova_destroy(nova_standard_n
 	nova_standard_network_Nova_ConnectionSocket_Nova_destroy(&(*this)->prv->nova_standard_network_Nova_NetworkOutputStream_Nova_socket, exceptionData);
 	NOVA_FREE((*this)->prv);
 	
+	{
+	}
 	NOVA_FREE(*this);
 }
 

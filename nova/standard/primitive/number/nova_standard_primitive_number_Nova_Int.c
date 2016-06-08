@@ -65,6 +65,8 @@ void nova_standard_primitive_number_Nova_Int_Nova_destroy(nova_standard_primitiv
 	
 	
 	
+	{
+	}
 	NOVA_FREE(*this);
 }
 

@@ -57,6 +57,8 @@ void nova_standard_math_Nova_StatementComponent_Nova_destroy(nova_standard_math_
 	
 	nova_standard_math_Nova_StatementComponent_Nova_destroy(&(*this)->nova_standard_math_Nova_StatementComponent_Nova_next, exceptionData);
 	
+	{
+	}
 	NOVA_FREE(*this);
 }
 

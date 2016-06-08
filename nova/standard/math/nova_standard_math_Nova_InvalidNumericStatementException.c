@@ -56,6 +56,8 @@ void nova_standard_math_Nova_InvalidNumericStatementException_Nova_destroy(nova_
 	}
 	
 	
+	{
+	}
 	NOVA_FREE(*this);
 }
 

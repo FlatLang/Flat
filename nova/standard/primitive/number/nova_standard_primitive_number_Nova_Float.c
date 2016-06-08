@@ -61,6 +61,8 @@ void nova_standard_primitive_number_Nova_Float_Nova_destroy(nova_standard_primit
 	
 	
 	
+	{
+	}
 	NOVA_FREE(*this);
 }
 

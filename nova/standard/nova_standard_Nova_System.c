@@ -59,6 +59,8 @@ void nova_standard_Nova_System_Nova_destroy(nova_standard_Nova_System** this, no
 	}
 	
 	
+	{
+	}
 	NOVA_FREE(*this);
 }
 

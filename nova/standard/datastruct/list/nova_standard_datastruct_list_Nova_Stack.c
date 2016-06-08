@@ -65,6 +65,8 @@ void nova_standard_datastruct_list_Nova_Stack_Nova_destroy(nova_standard_datastr
 	NOVA_FREE((*this)->prv);
 	
 	
+	{
+	}
 	NOVA_FREE(*this);
 }
 

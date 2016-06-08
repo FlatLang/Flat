@@ -73,6 +73,8 @@ void nova_standard_datastruct_list_Nova_EmptyStackException_Nova_destroy(nova_st
 	}
 	
 	
+	{
+	}
 	NOVA_FREE(*this);
 }
 

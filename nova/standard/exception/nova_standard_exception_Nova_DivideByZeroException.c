@@ -56,6 +56,8 @@ void nova_standard_exception_Nova_DivideByZeroException_Nova_destroy(nova_standa
 	}
 	
 	
+	{
+	}
 	NOVA_FREE(*this);
 }
 

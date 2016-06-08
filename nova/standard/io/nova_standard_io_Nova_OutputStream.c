@@ -64,6 +64,8 @@ void nova_standard_io_Nova_OutputStream_Nova_destroy(nova_standard_io_Nova_Outpu
 	nova_standard_io_Nova_File_Nova_destroy(&(*this)->prv->nova_standard_io_Nova_OutputStream_Nova_stream, exceptionData);
 	NOVA_FREE((*this)->prv);
 	
+	{
+	}
 	NOVA_FREE(*this);
 }
 
