@@ -8,6 +8,7 @@ public class PolymorphismStability extends StabilityTestCase
 		
 		testCalls()
 		testClosure()
+		testProperty()
 	}
 	
 	testCalls()
@@ -56,5 +57,24 @@ public class PolymorphismStability extends StabilityTestCase
 	static callPolymorphicClosure(closure() -> String) -> Bool
 	{
 		return closure().equals("sub class")
+	}
+	
+	testProperty()
+	{
+		Console.write("Checking polymorphic properties... ")
+		
+		PolymorphicSuperClass obj1 = new PolymorphicSuperClass()
+		PolymorphicSuperClass obj2 = new PolymorphicSubClass()
+		
+		if (obj1.myProperty != 1)
+		{
+			program.fail("Did not call super polymorphic property accessor correctly")
+		}
+		if (obj2.myProperty != 2)
+		{
+			program.fail("Did not call sub polymorphic property accessor correctly")
+		}
+		
+		Console.writeLine("OK")
 	}
 }
