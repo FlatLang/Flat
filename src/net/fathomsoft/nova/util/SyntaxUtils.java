@@ -335,7 +335,12 @@ public class SyntaxUtils
 	 */
 	public static int findCharInBaseScope(String haystack, char needle, int start)
 	{
-		return findCharInBaseScope(haystack, new char[] { needle }, start);
+		return findCharInBaseScope(haystack, needle, start, false);
+	}
+	
+	public static int findCharInBaseScope(String haystack, char needle, int start, boolean searchGenerics)
+	{
+		return findCharInBaseScope(haystack, new char[] { needle }, start, searchGenerics);
 	}
 	
 	/**
@@ -351,7 +356,12 @@ public class SyntaxUtils
 	 */
 	public static int findCharInBaseScope(String haystack, char needles[], int start)
 	{
-		return findStringInBaseScope(haystack, StringUtils.toString(needles), start);
+		return findCharInBaseScope(haystack, needles, start, false);
+	}
+	
+	public static int findCharInBaseScope(String haystack, char needles[], int start, boolean searchGenerics)
+	{
+		return findStringInBaseScope(haystack, StringUtils.toString(needles), start, searchGenerics);
 	}
 	
 	/**
@@ -398,6 +408,11 @@ public class SyntaxUtils
 	 */
 	public static int findStringInBaseScope(String haystack, String needles[], int start)
 	{
+		return findStringInBaseScope(haystack, needles, start, false);
+	}
+	
+	public static int findStringInBaseScope(String haystack, String needles[], int start, boolean searchGenerics)
+	{
 		while (start < haystack.length())
 		{
 			char c = haystack.charAt(start);
@@ -426,6 +441,15 @@ public class SyntaxUtils
 			else if (c == '[')
 			{
 				start = StringUtils.findEndingMatch(haystack, start, '[', ']') + 1;
+				
+				if (start <= 0)
+				{
+					return -1;
+				}
+			}
+			else if (searchGenerics && c == '<')
+			{
+				start = StringUtils.findEndingMatch(haystack, start, '<', '>') + 1;
 				
 				if (start <= 0)
 				{
