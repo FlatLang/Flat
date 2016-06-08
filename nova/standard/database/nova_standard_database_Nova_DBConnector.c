@@ -15,6 +15,11 @@ nova_standard_database_Extension_VTable_DBConnector nova_standard_database_Exten
 		0,
 		0,
 		0,
+		0,
+		0,
+		0,
+		0,
+		0,
 	},
 	nova_standard_Nova_Object_0_Nova_getHashCodeLong,
 	nova_standard_Nova_Object_0_Nova_toString,
@@ -39,7 +44,6 @@ nova_standard_database_Nova_DBConnector* nova_standard_database_Nova_DBConnector
 	CCLASS_NEW(nova_standard_database_Nova_DBConnector, this);
 	this->vtable = &nova_standard_database_Extension_VTable_DBConnector_val;
 	nova_standard_Nova_Object_Nova_super((nova_standard_Nova_Object*)this, exceptionData);
-	nova_standard_Nova_Object_2_Nova_this((nova_standard_Nova_Object*)(this), exceptionData);
 	nova_standard_database_Nova_DBConnector_Nova_super(this, exceptionData);
 	
 	{

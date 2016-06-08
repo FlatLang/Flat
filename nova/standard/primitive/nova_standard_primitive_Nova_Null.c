@@ -12,6 +12,11 @@ nova_standard_primitive_Extension_VTable_Null nova_standard_primitive_Extension_
 		0,
 		0,
 		0,
+		0,
+		0,
+		0,
+		0,
+		0,
 		(int(*)(nova_standard_datastruct_Nova_Comparable*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*))nova_standard_Nova_String_Nova_compareTo,
 		0,
 		0,
@@ -36,7 +41,6 @@ nova_standard_primitive_Nova_Null* nova_standard_primitive_Nova_Null_2_Nova_cons
 	this->vtable = &nova_standard_primitive_Extension_VTable_Null_val;
 	nova_standard_Nova_Object_Nova_super((nova_standard_Nova_Object*)this, exceptionData);
 	nova_standard_Nova_String_Nova_super((nova_standard_Nova_String*)this, exceptionData);
-	nova_standard_Nova_Object_2_Nova_this((nova_standard_Nova_Object*)(this), exceptionData);
 	nova_standard_primitive_Nova_Null_2_Nova_super(this, exceptionData);
 	
 	{
@@ -52,8 +56,6 @@ nova_standard_primitive_Nova_Null* nova_standard_primitive_Nova_Null_3_Nova_cons
 	this->vtable = &nova_standard_primitive_Extension_VTable_Null_val;
 	nova_standard_Nova_Object_Nova_super((nova_standard_Nova_Object*)this, exceptionData);
 	nova_standard_Nova_String_Nova_super((nova_standard_Nova_String*)this, exceptionData);
-	nova_standard_Nova_Object_2_Nova_this((nova_standard_Nova_Object*)(this), exceptionData);
-	nova_standard_Nova_String_0_Nova_this((nova_standard_Nova_String*)(this), exceptionData, nova_standard_primitive_Nova_Null_Nova_c);
 	nova_standard_primitive_Nova_Null_2_Nova_super(this, exceptionData);
 	
 	{
@@ -69,8 +71,6 @@ nova_standard_primitive_Nova_Null* nova_standard_primitive_Nova_Null_4_Nova_cons
 	this->vtable = &nova_standard_primitive_Extension_VTable_Null_val;
 	nova_standard_Nova_Object_Nova_super((nova_standard_Nova_Object*)this, exceptionData);
 	nova_standard_Nova_String_Nova_super((nova_standard_Nova_String*)this, exceptionData);
-	nova_standard_Nova_Object_2_Nova_this((nova_standard_Nova_Object*)(this), exceptionData);
-	nova_standard_Nova_String_1_Nova_this((nova_standard_Nova_String*)(this), exceptionData, nova_standard_primitive_Nova_Null_Nova_chars);
 	nova_standard_primitive_Nova_Null_2_Nova_super(this, exceptionData);
 	
 	{

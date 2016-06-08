@@ -22,7 +22,7 @@ typedef struct nova_standard_network_Nova_ConnectionSocket nova_standard_network
 #include <nova/standard/primitive/nova_standard_primitive_Nova_Null.h>
 #include <nova/standard/primitive/number/nova_standard_primitive_number_Nova_Char.h>
 #include <nova/standard/primitive/nova_standard_primitive_Nova_Bool.h>
-#include <nova/standard/datastruct/nova_standard_datastruct_Nova_Array.h>
+#include <nova/standard/datastruct/list/nova_standard_datastruct_list_Nova_Array.h>
 #include <nova/standard/gc/nova_standard_gc_Nova_GC.h>
 #include <nova/standard/nova_standard_Nova_Object.h>
 #include <nova/standard/nova_standard_Nova_String.h>
@@ -30,7 +30,7 @@ typedef struct nova_standard_network_Nova_ConnectionSocket nova_standard_network
 #include <nova/standard/math/nova_standard_math_Nova_Math.h>
 #include <nova/standard/io/nova_standard_io_Nova_InputStream.h>
 #include <nova/standard/io/nova_standard_io_Nova_OutputStream.h>
-#include <nova/standard/datastruct/nova_standard_datastruct_Nova_Queue.h>
+#include <nova/standard/datastruct/list/nova_standard_datastruct_list_Nova_Queue.h>
 #include <nova/standard/network/nova_standard_network_Nova_Socket.h>
 #include <nova/standard/network/nova_standard_network_Nova_NetworkInputStream.h>
 #include <nova/standard/network/nova_standard_network_Nova_NetworkOutputStream.h>

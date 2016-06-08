@@ -15,6 +15,11 @@ nova_standard_datastruct_Extension_VTable_Bounds nova_standard_datastruct_Extens
 		0,
 		0,
 		0,
+		0,
+		0,
+		0,
+		0,
+		0,
 	},
 	nova_standard_Nova_Object_0_Nova_getHashCodeLong,
 	nova_standard_datastruct_Nova_Bounds_0_Nova_toString,
@@ -38,7 +43,6 @@ nova_standard_datastruct_Nova_Bounds* nova_standard_datastruct_Nova_Bounds_2_Nov
 	CCLASS_NEW(nova_standard_datastruct_Nova_Bounds, this,);
 	this->vtable = &nova_standard_datastruct_Extension_VTable_Bounds_val;
 	nova_standard_Nova_Object_Nova_super((nova_standard_Nova_Object*)this, exceptionData);
-	nova_standard_Nova_Object_2_Nova_this((nova_standard_Nova_Object*)(this), exceptionData);
 	nova_standard_datastruct_Nova_Bounds_Nova_super(this, exceptionData);
 	
 	{
@@ -53,7 +57,6 @@ nova_standard_datastruct_Nova_Bounds* nova_standard_datastruct_Nova_Bounds_3_Nov
 	CCLASS_NEW(nova_standard_datastruct_Nova_Bounds, this,);
 	this->vtable = &nova_standard_datastruct_Extension_VTable_Bounds_val;
 	nova_standard_Nova_Object_Nova_super((nova_standard_Nova_Object*)this, exceptionData);
-	nova_standard_Nova_Object_2_Nova_this((nova_standard_Nova_Object*)(this), exceptionData);
 	nova_standard_datastruct_Nova_Bounds_Nova_super(this, exceptionData);
 	
 	{

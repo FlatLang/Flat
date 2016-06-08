@@ -15,11 +15,19 @@ stabilitytest_Extension_VTable_PolymorphicSuperClass stabilitytest_Extension_VTa
 		0,
 		0,
 		0,
+		0,
+		0,
+		0,
+		0,
+		0,
 	},
 	nova_standard_Nova_Object_0_Nova_getHashCodeLong,
 	stabilitytest_Nova_PolymorphicSuperClass_0_Nova_toString,
 	nova_standard_Nova_Object_0_Nova_equals,
+	stabilitytest_Nova_PolymorphicSuperClass_Accessor_Nova_myProperty,
 };
+
+
 
 
 void stabilitytest_Nova_PolymorphicSuperClassNova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData)
@@ -33,7 +41,6 @@ stabilitytest_Nova_PolymorphicSuperClass* stabilitytest_Nova_PolymorphicSuperCla
 	CCLASS_NEW(stabilitytest_Nova_PolymorphicSuperClass, this,);
 	this->vtable = &stabilitytest_Extension_VTable_PolymorphicSuperClass_val;
 	nova_standard_Nova_Object_Nova_super((nova_standard_Nova_Object*)this, exceptionData);
-	nova_standard_Nova_Object_2_Nova_this((nova_standard_Nova_Object*)(this), exceptionData);
 	stabilitytest_Nova_PolymorphicSuperClass_Nova_super(this, exceptionData);
 	
 	{
@@ -68,6 +75,12 @@ nova_standard_Nova_String* stabilitytest_Nova_PolymorphicSuperClass_0_Nova_toStr
 void stabilitytest_Nova_PolymorphicSuperClass_2_Nova_this(stabilitytest_Nova_PolymorphicSuperClass* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
 }
+
+int stabilitytest_Nova_PolymorphicSuperClass_Accessor_Nova_myProperty(stabilitytest_Nova_PolymorphicSuperClass* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
+{
+	return 1;
+}
+
 
 void stabilitytest_Nova_PolymorphicSuperClass_Nova_super(stabilitytest_Nova_PolymorphicSuperClass* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
 {

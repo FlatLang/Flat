@@ -15,6 +15,11 @@ nova_standard_math_Extension_VTable_NumericTree nova_standard_math_Extension_VTa
 		0,
 		0,
 		0,
+		0,
+		0,
+		0,
+		0,
+		0,
 	},
 	nova_standard_Nova_Object_0_Nova_getHashCodeLong,
 	nova_standard_math_Nova_NumericTree_0_Nova_toString,
@@ -38,7 +43,6 @@ nova_standard_math_Nova_NumericTree* nova_standard_math_Nova_NumericTree_Nova_co
 	CCLASS_NEW(nova_standard_math_Nova_NumericTree, this);
 	this->vtable = &nova_standard_math_Extension_VTable_NumericTree_val;
 	nova_standard_Nova_Object_Nova_super((nova_standard_Nova_Object*)this, exceptionData);
-	nova_standard_Nova_Object_2_Nova_this((nova_standard_Nova_Object*)(this), exceptionData);
 	nova_standard_math_Nova_NumericTree_Nova_super(this, exceptionData);
 	
 	{

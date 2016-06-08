@@ -15,6 +15,11 @@ stabilitytest_Extension_VTable_StabilityTestCase stabilitytest_Extension_VTable_
 		0,
 		0,
 		0,
+		0,
+		0,
+		0,
+		0,
+		0,
 	},
 	nova_standard_Nova_Object_0_Nova_getHashCodeLong,
 	nova_standard_Nova_Object_0_Nova_toString,
@@ -34,7 +39,6 @@ stabilitytest_Nova_StabilityTestCase* stabilitytest_Nova_StabilityTestCase_0_Nov
 	CCLASS_NEW(stabilitytest_Nova_StabilityTestCase, this,);
 	this->vtable = &stabilitytest_Extension_VTable_StabilityTestCase_val;
 	nova_standard_Nova_Object_Nova_super((nova_standard_Nova_Object*)this, exceptionData);
-	nova_standard_Nova_Object_2_Nova_this((nova_standard_Nova_Object*)(this), exceptionData);
 	stabilitytest_Nova_StabilityTestCase_Nova_super(this, exceptionData);
 	
 	{

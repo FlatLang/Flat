@@ -15,6 +15,11 @@ stabilitytest_Extension_VTable_NetworkStability stabilitytest_Extension_VTable_N
 		0,
 		0,
 		0,
+		0,
+		0,
+		0,
+		0,
+		0,
 	},
 	nova_standard_Nova_Object_0_Nova_getHashCodeLong,
 	nova_standard_Nova_Object_0_Nova_toString,
@@ -39,8 +44,6 @@ stabilitytest_Nova_NetworkStability* stabilitytest_Nova_NetworkStability_0_Nova_
 	this->vtable = &stabilitytest_Extension_VTable_NetworkStability_val;
 	nova_standard_Nova_Object_Nova_super((nova_standard_Nova_Object*)this, exceptionData);
 	stabilitytest_Nova_StabilityTestCase_Nova_super((stabilitytest_Nova_StabilityTestCase*)this, exceptionData);
-	nova_standard_Nova_Object_2_Nova_this((nova_standard_Nova_Object*)(this), exceptionData);
-	stabilitytest_Nova_StabilityTestCase_0_Nova_this((stabilitytest_Nova_StabilityTestCase*)(this), exceptionData, stabilitytest_Nova_NetworkStability_Nova_program);
 	stabilitytest_Nova_NetworkStability_2_Nova_super(this, exceptionData);
 	
 	{

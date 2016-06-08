@@ -15,6 +15,11 @@ nova_standard_datastruct_Extension_VTable_BinaryNode nova_standard_datastruct_Ex
 		0,
 		0,
 		0,
+		0,
+		0,
+		0,
+		0,
+		0,
 	},
 	nova_standard_Nova_Object_0_Nova_getHashCodeLong,
 	nova_standard_datastruct_Nova_Node_0_Nova_toString,
@@ -41,8 +46,6 @@ nova_standard_datastruct_Nova_BinaryNode* nova_standard_datastruct_Nova_BinaryNo
 	this->vtable = &nova_standard_datastruct_Extension_VTable_BinaryNode_val;
 	nova_standard_Nova_Object_Nova_super((nova_standard_Nova_Object*)this, exceptionData);
 	nova_standard_datastruct_Nova_Node_Nova_super((nova_standard_datastruct_Nova_Node*)this, exceptionData);
-	nova_standard_Nova_Object_2_Nova_this((nova_standard_Nova_Object*)(this), exceptionData);
-	nova_standard_datastruct_Nova_Node_2_Nova_this((nova_standard_datastruct_Nova_Node*)(this), exceptionData);
 	nova_standard_datastruct_Nova_BinaryNode_2_Nova_super(this, exceptionData);
 	
 	{
@@ -58,8 +61,6 @@ nova_standard_datastruct_Nova_BinaryNode* nova_standard_datastruct_Nova_BinaryNo
 	this->vtable = &nova_standard_datastruct_Extension_VTable_BinaryNode_val;
 	nova_standard_Nova_Object_Nova_super((nova_standard_Nova_Object*)this, exceptionData);
 	nova_standard_datastruct_Nova_Node_Nova_super((nova_standard_datastruct_Nova_Node*)this, exceptionData);
-	nova_standard_Nova_Object_2_Nova_this((nova_standard_Nova_Object*)(this), exceptionData);
-	nova_standard_datastruct_Nova_Node_3_Nova_this((nova_standard_datastruct_Nova_Node*)(this), exceptionData, nova_standard_datastruct_Nova_BinaryNode_Nova_data);
 	nova_standard_datastruct_Nova_BinaryNode_2_Nova_super(this, exceptionData);
 	
 	{
@@ -75,8 +76,6 @@ nova_standard_datastruct_Nova_BinaryNode* nova_standard_datastruct_Nova_BinaryNo
 	this->vtable = &nova_standard_datastruct_Extension_VTable_BinaryNode_val;
 	nova_standard_Nova_Object_Nova_super((nova_standard_Nova_Object*)this, exceptionData);
 	nova_standard_datastruct_Nova_Node_Nova_super((nova_standard_datastruct_Nova_Node*)this, exceptionData);
-	nova_standard_Nova_Object_2_Nova_this((nova_standard_Nova_Object*)(this), exceptionData);
-	nova_standard_datastruct_Nova_Node_5_Nova_this((nova_standard_datastruct_Nova_Node*)(this), exceptionData, nova_standard_datastruct_Nova_BinaryNode_Nova_data, nova_standard_datastruct_Nova_BinaryNode_Nova_size);
 	nova_standard_datastruct_Nova_BinaryNode_2_Nova_super(this, exceptionData);
 	
 	{
@@ -114,22 +113,22 @@ void nova_standard_datastruct_Nova_BinaryNode_4_Nova_this(nova_standard_datastru
 
 nova_standard_datastruct_Nova_BinaryNode* nova_standard_datastruct_Nova_BinaryNode_Nova_getNode(nova_standard_datastruct_Nova_BinaryNode* this, nova_standard_exception_Nova_ExceptionData* exceptionData, int nova_standard_datastruct_Nova_BinaryNode_Nova_index)
 {
-	if (this->nova_standard_datastruct_Nova_Node_Nova_children->nova_standard_datastruct_Nova_Array_Nova_size <= nova_standard_datastruct_Nova_BinaryNode_Nova_index)
+	if (this->nova_standard_datastruct_Nova_Node_Nova_children->nova_standard_datastruct_list_Nova_Array_Nova_size <= nova_standard_datastruct_Nova_BinaryNode_Nova_index)
 	{
 		return (nova_standard_datastruct_Nova_BinaryNode*)nova_null;
 	}
-	return (nova_standard_datastruct_Nova_BinaryNode*)nova_standard_datastruct_Nova_Array_Nova_get(this->nova_standard_datastruct_Nova_Node_Nova_children, exceptionData, nova_standard_datastruct_Nova_BinaryNode_Nova_index);
+	return (nova_standard_datastruct_Nova_BinaryNode*)nova_standard_datastruct_list_Nova_Array_Nova_get(this->nova_standard_datastruct_Nova_Node_Nova_children, exceptionData, nova_standard_datastruct_Nova_BinaryNode_Nova_index);
 }
 
 void nova_standard_datastruct_Nova_BinaryNode_Nova_setNode(nova_standard_datastruct_Nova_BinaryNode* this, nova_standard_exception_Nova_ExceptionData* exceptionData, int nova_standard_datastruct_Nova_BinaryNode_Nova_index, nova_standard_datastruct_Nova_BinaryNode* nova_standard_datastruct_Nova_BinaryNode_Nova_data)
 {
-	if (this->nova_standard_datastruct_Nova_Node_Nova_children->nova_standard_datastruct_Nova_Array_Nova_size <= nova_standard_datastruct_Nova_BinaryNode_Nova_index)
+	if (this->nova_standard_datastruct_Nova_Node_Nova_children->nova_standard_datastruct_list_Nova_Array_Nova_size <= nova_standard_datastruct_Nova_BinaryNode_Nova_index)
 	{
-		nova_standard_datastruct_Nova_Array_1_Nova_add(this->nova_standard_datastruct_Nova_Node_Nova_children, exceptionData, nova_standard_datastruct_Nova_BinaryNode_Nova_index, (nova_standard_Nova_Object*)(nova_standard_datastruct_Nova_BinaryNode_Nova_data));
+		nova_standard_datastruct_list_Nova_Array_1_Nova_add(this->nova_standard_datastruct_Nova_Node_Nova_children, exceptionData, nova_standard_datastruct_Nova_BinaryNode_Nova_index, (nova_standard_Nova_Object*)(nova_standard_datastruct_Nova_BinaryNode_Nova_data));
 	}
 	else
 	{
-		nova_standard_datastruct_Nova_Array_Nova_set(this->nova_standard_datastruct_Nova_Node_Nova_children, exceptionData, nova_standard_datastruct_Nova_BinaryNode_Nova_index, (nova_standard_Nova_Object*)(nova_standard_datastruct_Nova_BinaryNode_Nova_data));
+		nova_standard_datastruct_list_Nova_Array_Nova_set(this->nova_standard_datastruct_Nova_Node_Nova_children, exceptionData, nova_standard_datastruct_Nova_BinaryNode_Nova_index, (nova_standard_Nova_Object*)(nova_standard_datastruct_Nova_BinaryNode_Nova_data));
 	}
 }
 

@@ -12,6 +12,11 @@ nova_standard_primitive_Extension_VTable_Bool nova_standard_primitive_Extension_
 		0,
 		0,
 		0,
+		0,
+		0,
+		0,
+		0,
+		0,
 		(int(*)(nova_standard_datastruct_Nova_Comparable*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*))nova_standard_primitive_Nova_Bool_0_Nova_compareTo,
 		0,
 		0,
@@ -35,8 +40,6 @@ nova_standard_primitive_Nova_Bool* nova_standard_primitive_Nova_Bool_3_Nova_cons
 	this->vtable = &nova_standard_primitive_Extension_VTable_Bool_val;
 	nova_standard_Nova_Object_Nova_super((nova_standard_Nova_Object*)this, exceptionData);
 	nova_standard_primitive_Nova_Primitive_Nova_super((nova_standard_primitive_Nova_Primitive*)this, exceptionData);
-	nova_standard_Nova_Object_2_Nova_this((nova_standard_Nova_Object*)(this), exceptionData);
-	nova_standard_primitive_Nova_Primitive_4_Nova_this((nova_standard_primitive_Nova_Primitive*)(this), exceptionData);
 	nova_standard_primitive_Nova_Bool_2_Nova_super(this, exceptionData);
 	
 	{

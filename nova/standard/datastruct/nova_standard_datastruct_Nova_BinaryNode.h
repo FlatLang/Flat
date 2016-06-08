@@ -22,7 +22,7 @@ typedef struct nova_standard_datastruct_Nova_BinaryNode nova_standard_datastruct
 #include <nova/standard/primitive/nova_standard_primitive_Nova_Null.h>
 #include <nova/standard/primitive/number/nova_standard_primitive_number_Nova_Char.h>
 #include <nova/standard/primitive/nova_standard_primitive_Nova_Bool.h>
-#include <nova/standard/datastruct/nova_standard_datastruct_Nova_Array.h>
+#include <nova/standard/datastruct/list/nova_standard_datastruct_list_Nova_Array.h>
 #include <nova/standard/gc/nova_standard_gc_Nova_GC.h>
 #include <nova/standard/nova_standard_Nova_Object.h>
 #include <nova/standard/nova_standard_Nova_String.h>
@@ -52,7 +52,7 @@ CCLASS_CLASS
 	
 	nova_standard_datastruct_Extension_VTable_BinaryNode* vtable;
 	nova_standard_Nova_Object* nova_standard_datastruct_Nova_Node_Nova_data;
-	nova_standard_datastruct_Nova_Array* nova_standard_datastruct_Nova_Node_Nova_children;
+	nova_standard_datastruct_list_Nova_Array* nova_standard_datastruct_Nova_Node_Nova_children;
 )
 
 void nova_standard_datastruct_Nova_BinaryNodeNova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData);

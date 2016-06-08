@@ -15,6 +15,11 @@ nova_standard_security_Extension_VTable_MD5 nova_standard_security_Extension_VTa
 		0,
 		0,
 		0,
+		0,
+		0,
+		0,
+		0,
+		0,
 	},
 	nova_standard_Nova_Object_0_Nova_getHashCodeLong,
 	nova_standard_Nova_Object_0_Nova_toString,
@@ -33,7 +38,6 @@ nova_standard_security_Nova_MD5* nova_standard_security_Nova_MD5_2_Nova_construc
 	CCLASS_NEW(nova_standard_security_Nova_MD5, this,);
 	this->vtable = &nova_standard_security_Extension_VTable_MD5_val;
 	nova_standard_Nova_Object_Nova_super((nova_standard_Nova_Object*)this, exceptionData);
-	nova_standard_Nova_Object_2_Nova_this((nova_standard_Nova_Object*)(this), exceptionData);
 	nova_standard_security_Nova_MD5_Nova_super(this, exceptionData);
 	
 	{

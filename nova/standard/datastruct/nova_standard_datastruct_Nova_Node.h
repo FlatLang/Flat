@@ -22,13 +22,13 @@ typedef struct nova_standard_datastruct_Nova_Node nova_standard_datastruct_Nova_
 #include <nova/standard/primitive/nova_standard_primitive_Nova_Null.h>
 #include <nova/standard/primitive/number/nova_standard_primitive_number_Nova_Char.h>
 #include <nova/standard/primitive/nova_standard_primitive_Nova_Bool.h>
-#include <nova/standard/datastruct/nova_standard_datastruct_Nova_Array.h>
+#include <nova/standard/datastruct/list/nova_standard_datastruct_list_Nova_Array.h>
 #include <nova/standard/gc/nova_standard_gc_Nova_GC.h>
 #include <nova/standard/nova_standard_Nova_Object.h>
 #include <nova/standard/nova_standard_Nova_String.h>
 #include <nova/standard/nova_standard_Nova_System.h>
 #include <nova/standard/math/nova_standard_math_Nova_Math.h>
-#include <nova/standard/datastruct/nova_standard_datastruct_Nova_Queue.h>
+#include <nova/standard/datastruct/list/nova_standard_datastruct_list_Nova_Queue.h>
 
 
 typedef struct nova_standard_datastruct_Extension_VTable_Node nova_standard_datastruct_Extension_VTable_Node;
@@ -51,7 +51,7 @@ CCLASS_CLASS
 	
 	nova_standard_datastruct_Extension_VTable_Node* vtable;
 	nova_standard_Nova_Object* nova_standard_datastruct_Nova_Node_Nova_data;
-	nova_standard_datastruct_Nova_Array* nova_standard_datastruct_Nova_Node_Nova_children;
+	nova_standard_datastruct_list_Nova_Array* nova_standard_datastruct_Nova_Node_Nova_children;
 )
 
 void nova_standard_datastruct_Nova_NodeNova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData);
@@ -64,7 +64,7 @@ void nova_standard_datastruct_Nova_Node_2_Nova_this(nova_standard_datastruct_Nov
 void nova_standard_datastruct_Nova_Node_3_Nova_this(nova_standard_datastruct_Nova_Node* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_Nova_Object* nova_standard_datastruct_Nova_Node_Nova_data);
 void nova_standard_datastruct_Nova_Node_4_Nova_this(nova_standard_datastruct_Nova_Node* this, nova_standard_exception_Nova_ExceptionData* exceptionData, int nova_standard_datastruct_Nova_Node_Nova_numChildren);
 void nova_standard_datastruct_Nova_Node_5_Nova_this(nova_standard_datastruct_Nova_Node* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_Nova_Object* nova_standard_datastruct_Nova_Node_Nova_data, int nova_standard_datastruct_Nova_Node_Nova_numChildren);
-nova_standard_datastruct_Nova_Array* nova_standard_datastruct_Nova_Node_0_Nova_preorder(nova_standard_datastruct_Nova_Node* this, nova_standard_exception_Nova_ExceptionData* exceptionData);
+nova_standard_datastruct_list_Nova_Array* nova_standard_datastruct_Nova_Node_0_Nova_preorder(nova_standard_datastruct_Nova_Node* this, nova_standard_exception_Nova_ExceptionData* exceptionData);
 nova_standard_Nova_String* nova_standard_datastruct_Nova_Node_0_Nova_inorder(nova_standard_datastruct_Nova_Node* this, nova_standard_exception_Nova_ExceptionData* exceptionData);
 nova_standard_Nova_String* nova_standard_datastruct_Nova_Node_0_Nova_postorder(nova_standard_datastruct_Nova_Node* this, nova_standard_exception_Nova_ExceptionData* exceptionData);
 nova_standard_Nova_String* nova_standard_datastruct_Nova_Node_Nova_levelorder(nova_standard_datastruct_Nova_Node* this, nova_standard_exception_Nova_ExceptionData* exceptionData);

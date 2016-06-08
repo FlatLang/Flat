@@ -15,6 +15,11 @@ nova_standard_network_Extension_VTable_ServerSocket nova_standard_network_Extens
 		0,
 		0,
 		0,
+		0,
+		0,
+		0,
+		0,
+		0,
 	},
 	nova_standard_Nova_Object_0_Nova_getHashCodeLong,
 	nova_standard_Nova_Object_0_Nova_toString,
@@ -39,8 +44,6 @@ nova_standard_network_Nova_ServerSocket* nova_standard_network_Nova_ServerSocket
 	this->vtable = &nova_standard_network_Extension_VTable_ServerSocket_val;
 	nova_standard_Nova_Object_Nova_super((nova_standard_Nova_Object*)this, exceptionData);
 	nova_standard_network_Nova_Socket_Nova_super((nova_standard_network_Nova_Socket*)this, exceptionData);
-	nova_standard_Nova_Object_2_Nova_this((nova_standard_Nova_Object*)(this), exceptionData);
-	nova_standard_network_Nova_Socket_2_Nova_this((nova_standard_network_Nova_Socket*)(this), exceptionData);
 	nova_standard_network_Nova_ServerSocket_2_Nova_super(this, exceptionData);
 	
 	{
@@ -60,7 +63,7 @@ void nova_standard_network_Nova_ServerSocket_Nova_destroy(nova_standard_network_
 	
 	NOVA_FREE((*this)->prv);
 	
-	nova_standard_datastruct_Nova_Array_Nova_destroy(&(*this)->nova_standard_network_Nova_ServerSocket_Nova_requests, exceptionData);
+	nova_standard_datastruct_list_Nova_Array_Nova_destroy(&(*this)->nova_standard_network_Nova_ServerSocket_Nova_requests, exceptionData);
 	
 	NOVA_FREE(*this);
 }
@@ -111,8 +114,8 @@ nova_standard_network_Nova_ConnectionSocket* nova_standard_network_Nova_ServerSo
 void nova_standard_network_Nova_ServerSocket_2_Nova_super(nova_standard_network_Nova_ServerSocket* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
 	this->nova_standard_network_Nova_ServerSocket_Nova_open = 0;
-	this->nova_standard_network_Nova_ServerSocket_Nova_requests = (nova_standard_datastruct_Nova_Array*)nova_null;
+	this->nova_standard_network_Nova_ServerSocket_Nova_requests = (nova_standard_datastruct_list_Nova_Array*)nova_null;
 	this->prv->nova_standard_network_Nova_ServerSocket_Nova_serverSocket = 0;
-	this->nova_standard_network_Nova_ServerSocket_Nova_requests = nova_standard_datastruct_Nova_Array_2_Nova_construct(0, exceptionData);
+	this->nova_standard_network_Nova_ServerSocket_Nova_requests = nova_standard_datastruct_list_Nova_Array_2_Nova_construct(0, exceptionData);
 }
 

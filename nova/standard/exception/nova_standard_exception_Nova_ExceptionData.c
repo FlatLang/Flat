@@ -15,6 +15,11 @@ nova_standard_exception_Extension_VTable_ExceptionData nova_standard_exception_E
 		0,
 		0,
 		0,
+		0,
+		0,
+		0,
+		0,
+		0,
 	},
 	nova_standard_Nova_Object_0_Nova_getHashCodeLong,
 	nova_standard_Nova_Object_0_Nova_toString,
@@ -39,7 +44,6 @@ nova_standard_exception_Nova_ExceptionData* nova_standard_exception_Nova_Excepti
 	CCLASS_NEW(nova_standard_exception_Nova_ExceptionData, this);
 	this->vtable = &nova_standard_exception_Extension_VTable_ExceptionData_val;
 	nova_standard_Nova_Object_Nova_super((nova_standard_Nova_Object*)this, exceptionData);
-	nova_standard_Nova_Object_2_Nova_this((nova_standard_Nova_Object*)(this), exceptionData);
 	nova_standard_exception_Nova_ExceptionData_Nova_super(this, exceptionData);
 	
 	{
@@ -60,7 +64,7 @@ void nova_standard_exception_Nova_ExceptionData_Nova_destroy(nova_standard_excep
 	nova_standard_exception_Nova_ExceptionData_Nova_destroy(&(*this)->prv->nova_standard_exception_Nova_ExceptionData_Nova_parent, exceptionData);
 	NOVA_FREE((*this)->prv);
 	nova_standard_exception_Nova_Exception_Nova_destroy(&(*this)->nova_standard_exception_Nova_ExceptionData_Nova_thrownException, exceptionData);
-	nova_standard_datastruct_Nova_Array_Nova_destroy(&(*this)->nova_standard_exception_Nova_ExceptionData_Nova_codes, exceptionData);
+	nova_standard_datastruct_list_Nova_Array_Nova_destroy(&(*this)->nova_standard_exception_Nova_ExceptionData_Nova_codes, exceptionData);
 	
 	NOVA_FREE(*this);
 }
@@ -68,12 +72,12 @@ void nova_standard_exception_Nova_ExceptionData_Nova_destroy(nova_standard_excep
 void nova_standard_exception_Nova_ExceptionData_Nova_this(nova_standard_exception_Nova_ExceptionData* this, nova_standard_exception_Nova_ExceptionData* exceptionData, buffer* nova_standard_exception_Nova_ExceptionData_Nova_buf)
 {
 	this->prv->nova_standard_exception_Nova_ExceptionData_Nova_buf = nova_standard_exception_Nova_ExceptionData_Nova_buf;
-	this->nova_standard_exception_Nova_ExceptionData_Nova_codes = nova_standard_datastruct_Nova_Array_2_Nova_construct(0, exceptionData);
+	this->nova_standard_exception_Nova_ExceptionData_Nova_codes = nova_standard_datastruct_list_Nova_Array_2_Nova_construct(0, exceptionData);
 }
 
 void nova_standard_exception_Nova_ExceptionData_Nova_addCode(nova_standard_exception_Nova_ExceptionData* this, nova_standard_exception_Nova_ExceptionData* exceptionData, int nova_standard_exception_Nova_ExceptionData_Nova_code)
 {
-	nova_standard_datastruct_Nova_Array_0_Nova_add(this->nova_standard_exception_Nova_ExceptionData_Nova_codes, exceptionData, (nova_standard_Nova_Object*)(nova_standard_primitive_number_Nova_Int_Nova_construct(0, exceptionData, nova_standard_exception_Nova_ExceptionData_Nova_code)));
+	nova_standard_datastruct_list_Nova_Array_0_Nova_add(this->nova_standard_exception_Nova_ExceptionData_Nova_codes, exceptionData, (nova_standard_Nova_Object*)(nova_standard_primitive_number_Nova_Int_Nova_construct(0, exceptionData, nova_standard_exception_Nova_ExceptionData_Nova_code)));
 }
 
 buffer* nova_standard_exception_Nova_ExceptionData_Nova_getBuffer(nova_standard_exception_Nova_ExceptionData* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
@@ -88,14 +92,14 @@ nova_standard_exception_Nova_ExceptionData* nova_standard_exception_Nova_Excepti
 	l1_Nova_data = this;
 	while (l1_Nova_data != (nova_standard_exception_Nova_ExceptionData*)nova_null)
 	{
-		nova_standard_datastruct_Nova_Array* l1_Nova_list;
+		nova_standard_datastruct_list_Nova_Array* l1_Nova_list;
 		int l2_Nova_i;
 		
 		l1_Nova_list = l1_Nova_data->nova_standard_exception_Nova_ExceptionData_Nova_codes;
 		l2_Nova_i = 0;
-		for (; l2_Nova_i < l1_Nova_list->nova_standard_datastruct_Nova_Array_Nova_size; l2_Nova_i++)
+		for (; l2_Nova_i < l1_Nova_list->nova_standard_datastruct_list_Nova_Array_Nova_size; l2_Nova_i++)
 		{
-			if (((nova_standard_primitive_number_Nova_Int*)nova_standard_datastruct_Nova_Array_Nova_get(l1_Nova_list, exceptionData, l2_Nova_i))->nova_standard_primitive_number_Nova_Int_Nova_value == nova_standard_exception_Nova_ExceptionData_Nova_code)
+			if (((nova_standard_primitive_number_Nova_Int*)nova_standard_datastruct_list_Nova_Array_Nova_get(l1_Nova_list, exceptionData, l2_Nova_i))->nova_standard_primitive_number_Nova_Int_Nova_value == nova_standard_exception_Nova_ExceptionData_Nova_code)
 			{
 				return l1_Nova_data;
 			}
@@ -148,7 +152,7 @@ void nova_standard_exception_Nova_ExceptionData_Nova_setParent(nova_standard_exc
 void nova_standard_exception_Nova_ExceptionData_Nova_super(nova_standard_exception_Nova_ExceptionData* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
 	this->nova_standard_exception_Nova_ExceptionData_Nova_thrownException = (nova_standard_exception_Nova_Exception*)nova_null;
-	this->nova_standard_exception_Nova_ExceptionData_Nova_codes = (nova_standard_datastruct_Nova_Array*)nova_null;
+	this->nova_standard_exception_Nova_ExceptionData_Nova_codes = (nova_standard_datastruct_list_Nova_Array*)nova_null;
 	this->prv->nova_standard_exception_Nova_ExceptionData_Nova_buf = 0;
 	this->prv->nova_standard_exception_Nova_ExceptionData_Nova_parent = (nova_standard_exception_Nova_ExceptionData*)nova_null;
 }

@@ -15,6 +15,11 @@ nova_standard_math_logic_Extension_VTable_InvalidFormulaException nova_standard_
 		0,
 		0,
 		0,
+		0,
+		0,
+		0,
+		0,
+		0,
 	},
 	nova_standard_Nova_Object_0_Nova_getHashCodeLong,
 	nova_standard_Nova_Object_0_Nova_toString,
@@ -34,8 +39,6 @@ nova_standard_math_logic_Nova_InvalidFormulaException* nova_standard_math_logic_
 	this->vtable = &nova_standard_math_logic_Extension_VTable_InvalidFormulaException_val;
 	nova_standard_Nova_Object_Nova_super((nova_standard_Nova_Object*)this, exceptionData);
 	nova_standard_exception_Nova_Exception_Nova_super((nova_standard_exception_Nova_Exception*)this, exceptionData);
-	nova_standard_Nova_Object_2_Nova_this((nova_standard_Nova_Object*)(this), exceptionData);
-	nova_standard_exception_Nova_Exception_1_Nova_this((nova_standard_exception_Nova_Exception*)(this), exceptionData, nova_standard_math_logic_Nova_InvalidFormulaException_Nova_message);
 	nova_standard_math_logic_Nova_InvalidFormulaException_2_Nova_super(this, exceptionData);
 	
 	{

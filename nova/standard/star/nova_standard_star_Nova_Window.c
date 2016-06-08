@@ -15,6 +15,11 @@ nova_standard_star_Extension_VTable_Window nova_standard_star_Extension_VTable_W
 		0,
 		0,
 		0,
+		0,
+		0,
+		0,
+		0,
+		0,
 	},
 	nova_standard_Nova_Object_0_Nova_getHashCodeLong,
 	nova_standard_Nova_Object_0_Nova_toString,
@@ -33,7 +38,6 @@ nova_standard_star_Nova_Window* nova_standard_star_Nova_Window_2_Nova_construct(
 	CCLASS_NEW(nova_standard_star_Nova_Window, this,);
 	this->vtable = &nova_standard_star_Extension_VTable_Window_val;
 	nova_standard_Nova_Object_Nova_super((nova_standard_Nova_Object*)this, exceptionData);
-	nova_standard_Nova_Object_2_Nova_this((nova_standard_Nova_Object*)(this), exceptionData);
 	nova_standard_star_Nova_Window_Nova_super(this, exceptionData);
 	
 	{

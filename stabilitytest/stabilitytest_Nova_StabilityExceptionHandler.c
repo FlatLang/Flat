@@ -15,6 +15,11 @@ stabilitytest_Extension_VTable_StabilityExceptionHandler stabilitytest_Extension
 		0,
 		0,
 		0,
+		0,
+		0,
+		0,
+		0,
+		0,
 	},
 	nova_standard_Nova_Object_0_Nova_getHashCodeLong,
 	nova_standard_Nova_Object_0_Nova_toString,
@@ -40,8 +45,6 @@ stabilitytest_Nova_StabilityExceptionHandler* stabilitytest_Nova_StabilityExcept
 	this->vtable = &stabilitytest_Extension_VTable_StabilityExceptionHandler_val;
 	nova_standard_Nova_Object_Nova_super((nova_standard_Nova_Object*)this, exceptionData);
 	nova_standard_thread_Nova_UncaughtExceptionHandler_Nova_super((nova_standard_thread_Nova_UncaughtExceptionHandler*)this, exceptionData);
-	nova_standard_Nova_Object_2_Nova_this((nova_standard_Nova_Object*)(this), exceptionData);
-	nova_standard_thread_Nova_UncaughtExceptionHandler_2_Nova_this((nova_standard_thread_Nova_UncaughtExceptionHandler*)(this), exceptionData);
 	stabilitytest_Nova_StabilityExceptionHandler_2_Nova_super(this, exceptionData);
 	
 	{

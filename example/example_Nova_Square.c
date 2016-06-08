@@ -13,6 +13,11 @@ example_Extension_VTable_Square example_Extension_VTable_Square_val =
 		0,
 		0,
 		0,
+		0,
+		0,
+		0,
+		0,
+		0,
 		(int(*)(example_Nova_Polygon*, nova_standard_exception_Nova_ExceptionData*))example_Nova_Square_Nova_numberSides,
 		(double(*)(example_Nova_Polygon*, nova_standard_exception_Nova_ExceptionData*))example_Nova_Square_Nova_calculateArea,
 	},
@@ -35,7 +40,6 @@ example_Nova_Square* example_Nova_Square_Nova_construct(example_Nova_Square* thi
 	CCLASS_NEW(example_Nova_Square, this,);
 	this->vtable = &example_Extension_VTable_Square_val;
 	nova_standard_Nova_Object_Nova_super((nova_standard_Nova_Object*)this, exceptionData);
-	nova_standard_Nova_Object_2_Nova_this((nova_standard_Nova_Object*)(this), exceptionData);
 	example_Nova_Square_Nova_super(this, exceptionData);
 	
 	{

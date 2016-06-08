@@ -20,6 +20,11 @@ stabilitytest_Extension_VTable_PolymorphismStability stabilitytest_Extension_VTa
 		0,
 		0,
 		0,
+		0,
+		0,
+		0,
+		0,
+		0,
 	},
 	nova_standard_Nova_Object_0_Nova_getHashCodeLong,
 	nova_standard_Nova_Object_0_Nova_toString,
@@ -33,6 +38,7 @@ void stabilitytest_Nova_PolymorphismStability_Nova_testCalls(stabilitytest_Nova_
 char stabilitytest_Nova_PolymorphismStability_Nova_testSubCall(stabilitytest_Nova_PolymorphismStability* this, nova_standard_exception_Nova_ExceptionData* exceptionData, stabilitytest_Nova_PolymorphicSuperClass* stabilitytest_Nova_PolymorphismStability_Nova_obj);
 void stabilitytest_Nova_PolymorphismStability_Nova_testClosure(stabilitytest_Nova_PolymorphismStability* this, nova_standard_exception_Nova_ExceptionData* exceptionData);
 char stabilitytest_Nova_PolymorphismStability_Nova_callPolymorphicClosure(stabilitytest_Nova_PolymorphismStability* this, nova_standard_exception_Nova_ExceptionData* exceptionData, stabilitytest_Nova_PolymorphismStability_closure3_Nova_closure stabilitytest_Nova_PolymorphismStability_Nova_closure, void* stabilitytest_Nova_PolymorphismStability_ref_Nova_closure);
+void stabilitytest_Nova_PolymorphismStability_Nova_testProperty(stabilitytest_Nova_PolymorphismStability* this, nova_standard_exception_Nova_ExceptionData* exceptionData);
 void stabilitytest_Nova_PolymorphismStabilityNova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
 	{
@@ -45,8 +51,6 @@ stabilitytest_Nova_PolymorphismStability* stabilitytest_Nova_PolymorphismStabili
 	this->vtable = &stabilitytest_Extension_VTable_PolymorphismStability_val;
 	nova_standard_Nova_Object_Nova_super((nova_standard_Nova_Object*)this, exceptionData);
 	stabilitytest_Nova_StabilityTestCase_Nova_super((stabilitytest_Nova_StabilityTestCase*)this, exceptionData);
-	nova_standard_Nova_Object_2_Nova_this((nova_standard_Nova_Object*)(this), exceptionData);
-	stabilitytest_Nova_StabilityTestCase_0_Nova_this((stabilitytest_Nova_StabilityTestCase*)(this), exceptionData, stabilitytest_Nova_PolymorphismStability_Nova_program);
 	stabilitytest_Nova_PolymorphismStability_2_Nova_super(this, exceptionData);
 	
 	{
@@ -72,6 +76,7 @@ void stabilitytest_Nova_PolymorphismStability_0_Nova_test(stabilitytest_Nova_Pol
 	nova_standard_io_Nova_Console_0_Nova_writeLine(0, exceptionData, nova_standard_Nova_String_1_Nova_construct(0, exceptionData, "Checking Polymorphism stability..."));
 	stabilitytest_Nova_PolymorphismStability_Nova_testCalls(this, exceptionData);
 	stabilitytest_Nova_PolymorphismStability_Nova_testClosure(this, exceptionData);
+	stabilitytest_Nova_PolymorphismStability_Nova_testProperty(this, exceptionData);
 }
 
 void stabilitytest_Nova_PolymorphismStability_Nova_testCalls(stabilitytest_Nova_PolymorphismStability* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
@@ -125,6 +130,25 @@ char stabilitytest_Nova_PolymorphismStability_Nova_callPolymorphicClosure(stabil
 	
 	nova_local_0 = stabilitytest_Nova_PolymorphismStability_Nova_closure(stabilitytest_Nova_PolymorphismStability_ref_Nova_closure, exceptionData);
 	return nova_local_0->vtable->nova_standard_Nova_String_virtual_Nova_equals(nova_local_0, exceptionData, nova_standard_Nova_String_1_Nova_construct(0, exceptionData, "sub class"));
+}
+
+void stabilitytest_Nova_PolymorphismStability_Nova_testProperty(stabilitytest_Nova_PolymorphismStability* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
+{
+	stabilitytest_Nova_PolymorphicSuperClass* l1_Nova_obj1;
+	stabilitytest_Nova_PolymorphicSuperClass* l1_Nova_obj2;
+	
+	nova_standard_io_Nova_Console_0_Nova_write(0, exceptionData, nova_standard_Nova_String_1_Nova_construct(0, exceptionData, "Checking polymorphic properties... "));
+	l1_Nova_obj1 = stabilitytest_Nova_PolymorphicSuperClass_2_Nova_construct(0, exceptionData);
+	l1_Nova_obj2 = (stabilitytest_Nova_PolymorphicSuperClass*)(stabilitytest_Nova_PolymorphicSubClass_2_Nova_construct(0, exceptionData));
+	if (l1_Nova_obj1->vtable->stabilitytest_Nova_PolymorphicSuperClass_Accessor_Nova_myProperty(l1_Nova_obj1, exceptionData) != 1)
+	{
+		stabilitytest_Nova_StabilityTest_1_Nova_fail(this->stabilitytest_Nova_StabilityTestCase_Nova_program, exceptionData, nova_standard_Nova_String_1_Nova_construct(0, exceptionData, "Did not call super polymorphic property accessor correctly"));
+	}
+	if (l1_Nova_obj2->vtable->stabilitytest_Nova_PolymorphicSuperClass_Accessor_Nova_myProperty(l1_Nova_obj2, exceptionData) != 2)
+	{
+		stabilitytest_Nova_StabilityTest_1_Nova_fail(this->stabilitytest_Nova_StabilityTestCase_Nova_program, exceptionData, nova_standard_Nova_String_1_Nova_construct(0, exceptionData, "Did not call sub polymorphic property accessor correctly"));
+	}
+	nova_standard_io_Nova_Console_0_Nova_writeLine(0, exceptionData, nova_standard_Nova_String_1_Nova_construct(0, exceptionData, "OK"));
 }
 
 void stabilitytest_Nova_PolymorphismStability_0_Nova_this(stabilitytest_Nova_PolymorphismStability* this, nova_standard_exception_Nova_ExceptionData* exceptionData, stabilitytest_Nova_StabilityTest* stabilitytest_Nova_PolymorphismStability_Nova_program)

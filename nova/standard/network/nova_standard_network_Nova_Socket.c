@@ -15,6 +15,11 @@ nova_standard_network_Extension_VTable_Socket nova_standard_network_Extension_VT
 		0,
 		0,
 		0,
+		0,
+		0,
+		0,
+		0,
+		0,
 	},
 	nova_standard_Nova_Object_0_Nova_getHashCodeLong,
 	nova_standard_Nova_Object_0_Nova_toString,
@@ -33,7 +38,6 @@ nova_standard_network_Nova_Socket* nova_standard_network_Nova_Socket_2_Nova_cons
 	CCLASS_NEW(nova_standard_network_Nova_Socket, this,);
 	this->vtable = &nova_standard_network_Extension_VTable_Socket_val;
 	nova_standard_Nova_Object_Nova_super((nova_standard_Nova_Object*)this, exceptionData);
-	nova_standard_Nova_Object_2_Nova_this((nova_standard_Nova_Object*)(this), exceptionData);
 	nova_standard_network_Nova_Socket_Nova_super(this, exceptionData);
 	
 	{

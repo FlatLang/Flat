@@ -15,6 +15,11 @@ nova_standard_io_Extension_VTable_File nova_standard_io_Extension_VTable_File_va
 		0,
 		0,
 		0,
+		0,
+		0,
+		0,
+		0,
+		0,
 	},
 	nova_standard_Nova_Object_0_Nova_getHashCodeLong,
 	nova_standard_Nova_Object_0_Nova_toString,
@@ -47,7 +52,6 @@ nova_standard_io_Nova_File* nova_standard_io_Nova_File_3_Nova_construct(nova_sta
 	CCLASS_NEW(nova_standard_io_Nova_File, this);
 	this->vtable = &nova_standard_io_Extension_VTable_File_val;
 	nova_standard_Nova_Object_Nova_super((nova_standard_Nova_Object*)this, exceptionData);
-	nova_standard_Nova_Object_2_Nova_this((nova_standard_Nova_Object*)(this), exceptionData);
 	nova_standard_io_Nova_File_Nova_super(this, exceptionData);
 	
 	{
@@ -62,7 +66,6 @@ nova_standard_io_Nova_File* nova_standard_io_Nova_File_4_Nova_construct(nova_sta
 	CCLASS_NEW(nova_standard_io_Nova_File, this);
 	this->vtable = &nova_standard_io_Extension_VTable_File_val;
 	nova_standard_Nova_Object_Nova_super((nova_standard_Nova_Object*)this, exceptionData);
-	nova_standard_Nova_Object_2_Nova_this((nova_standard_Nova_Object*)(this), exceptionData);
 	nova_standard_io_Nova_File_Nova_super(this, exceptionData);
 	
 	{

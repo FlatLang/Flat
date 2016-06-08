@@ -15,6 +15,11 @@ nova_standard_star_Extension_VTable_WindowThread nova_standard_star_Extension_VT
 		0,
 		0,
 		0,
+		0,
+		0,
+		0,
+		0,
+		0,
 	},
 	nova_standard_Nova_Object_0_Nova_getHashCodeLong,
 	nova_standard_Nova_Object_0_Nova_toString,
@@ -42,8 +47,6 @@ nova_standard_star_Nova_WindowThread* nova_standard_star_Nova_WindowThread_Nova_
 	this->vtable = &nova_standard_star_Extension_VTable_WindowThread_val;
 	nova_standard_Nova_Object_Nova_super((nova_standard_Nova_Object*)this, exceptionData);
 	nova_standard_thread_Nova_Thread_Nova_super((nova_standard_thread_Nova_Thread*)this, exceptionData);
-	nova_standard_Nova_Object_2_Nova_this((nova_standard_Nova_Object*)(this), exceptionData);
-	nova_standard_thread_Nova_Thread_2_Nova_this((nova_standard_thread_Nova_Thread*)(this), exceptionData);
 	nova_standard_star_Nova_WindowThread_2_Nova_super(this, exceptionData);
 	
 	{

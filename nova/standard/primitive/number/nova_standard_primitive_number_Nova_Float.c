@@ -12,6 +12,11 @@ nova_standard_primitive_number_Extension_VTable_Float nova_standard_primitive_nu
 		0,
 		0,
 		0,
+		0,
+		0,
+		0,
+		0,
+		0,
 		(int(*)(nova_standard_datastruct_Nova_Comparable*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*))nova_standard_primitive_number_Nova_Float_0_Nova_compareTo,
 		0,
 		0,
@@ -38,9 +43,6 @@ nova_standard_primitive_number_Nova_Float* nova_standard_primitive_number_Nova_F
 	nova_standard_Nova_Object_Nova_super((nova_standard_Nova_Object*)this, exceptionData);
 	nova_standard_primitive_Nova_Primitive_Nova_super((nova_standard_primitive_Nova_Primitive*)this, exceptionData);
 	nova_standard_primitive_number_Nova_Number_2_Nova_super((nova_standard_primitive_number_Nova_Number*)this, exceptionData);
-	nova_standard_Nova_Object_2_Nova_this((nova_standard_Nova_Object*)(this), exceptionData);
-	nova_standard_primitive_Nova_Primitive_4_Nova_this((nova_standard_primitive_Nova_Primitive*)(this), exceptionData);
-	nova_standard_primitive_number_Nova_Number_6_Nova_this((nova_standard_primitive_number_Nova_Number*)(this), exceptionData);
 	nova_standard_primitive_number_Nova_Float_4_Nova_super(this, exceptionData);
 	
 	{

@@ -22,7 +22,7 @@ typedef struct nova_standard_datastruct_Nova_Tree nova_standard_datastruct_Nova_
 #include <nova/standard/primitive/nova_standard_primitive_Nova_Null.h>
 #include <nova/standard/primitive/number/nova_standard_primitive_number_Nova_Char.h>
 #include <nova/standard/primitive/nova_standard_primitive_Nova_Bool.h>
-#include <nova/standard/datastruct/nova_standard_datastruct_Nova_Array.h>
+#include <nova/standard/datastruct/list/nova_standard_datastruct_list_Nova_Array.h>
 #include <nova/standard/gc/nova_standard_gc_Nova_GC.h>
 #include <nova/standard/nova_standard_Nova_Object.h>
 #include <nova/standard/nova_standard_Nova_String.h>
@@ -54,7 +54,7 @@ CCLASS_CLASS
 void nova_standard_datastruct_Nova_TreeNova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData);
 nova_standard_datastruct_Nova_Tree* nova_standard_datastruct_Nova_Tree_2_Nova_construct(nova_standard_datastruct_Nova_Tree* this, nova_standard_exception_Nova_ExceptionData* exceptionData);
 void nova_standard_datastruct_Nova_Tree_Nova_destroy(nova_standard_datastruct_Nova_Tree** this, nova_standard_exception_Nova_ExceptionData* exceptionData);
-nova_standard_datastruct_Nova_Array* nova_standard_datastruct_Nova_Tree_Nova_preorder(nova_standard_datastruct_Nova_Tree* this, nova_standard_exception_Nova_ExceptionData* exceptionData);
+nova_standard_datastruct_list_Nova_Array* nova_standard_datastruct_Nova_Tree_Nova_preorder(nova_standard_datastruct_Nova_Tree* this, nova_standard_exception_Nova_ExceptionData* exceptionData);
 nova_standard_Nova_String* nova_standard_datastruct_Nova_Tree_Nova_inorder(nova_standard_datastruct_Nova_Tree* this, nova_standard_exception_Nova_ExceptionData* exceptionData);
 nova_standard_Nova_String* nova_standard_datastruct_Nova_Tree_Nova_postorder(nova_standard_datastruct_Nova_Tree* this, nova_standard_exception_Nova_ExceptionData* exceptionData);
 nova_standard_Nova_String* nova_standard_datastruct_Nova_Tree_Nova_levelorder(nova_standard_datastruct_Nova_Tree* this, nova_standard_exception_Nova_ExceptionData* exceptionData);

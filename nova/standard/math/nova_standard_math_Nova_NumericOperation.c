@@ -15,6 +15,11 @@ nova_standard_math_Extension_VTable_NumericOperation nova_standard_math_Extensio
 		0,
 		0,
 		0,
+		0,
+		0,
+		0,
+		0,
+		0,
 	},
 	nova_standard_Nova_Object_0_Nova_getHashCodeLong,
 	nova_standard_math_Nova_NumericOperation_Nova_toString,
@@ -138,8 +143,6 @@ nova_standard_math_Nova_NumericOperation* nova_standard_math_Nova_NumericOperati
 	this->vtable = &nova_standard_math_Extension_VTable_NumericOperation_val;
 	nova_standard_Nova_Object_Nova_super((nova_standard_Nova_Object*)this, exceptionData);
 	nova_standard_math_Nova_NumericOperand_Nova_super((nova_standard_math_Nova_NumericOperand*)this, exceptionData);
-	nova_standard_Nova_Object_2_Nova_this((nova_standard_Nova_Object*)(this), exceptionData);
-	nova_standard_Nova_Object_2_Nova_this((nova_standard_Nova_Object*)(this), exceptionData);
 	nova_standard_math_Nova_NumericOperation_2_Nova_super(this, exceptionData);
 	
 	{
@@ -155,7 +158,6 @@ nova_standard_math_Nova_NumericOperation* nova_standard_math_Nova_NumericOperati
 	this->vtable = &nova_standard_math_Extension_VTable_NumericOperation_val;
 	nova_standard_Nova_Object_Nova_super((nova_standard_Nova_Object*)this, exceptionData);
 	nova_standard_math_Nova_NumericOperand_Nova_super((nova_standard_math_Nova_NumericOperand*)this, exceptionData);
-	nova_standard_Nova_Object_2_Nova_this((nova_standard_Nova_Object*)(this), exceptionData);
 	nova_standard_math_Nova_NumericOperation_2_Nova_super(this, exceptionData);
 	
 	{
@@ -171,7 +173,6 @@ nova_standard_math_Nova_NumericOperation* nova_standard_math_Nova_NumericOperati
 	this->vtable = &nova_standard_math_Extension_VTable_NumericOperation_val;
 	nova_standard_Nova_Object_Nova_super((nova_standard_Nova_Object*)this, exceptionData);
 	nova_standard_math_Nova_NumericOperand_Nova_super((nova_standard_math_Nova_NumericOperand*)this, exceptionData);
-	nova_standard_Nova_Object_2_Nova_this((nova_standard_Nova_Object*)(this), exceptionData);
 	nova_standard_math_Nova_NumericOperation_2_Nova_super(this, exceptionData);
 	
 	{
@@ -187,8 +188,6 @@ nova_standard_math_Nova_NumericOperation* nova_standard_math_Nova_NumericOperati
 	this->vtable = &nova_standard_math_Extension_VTable_NumericOperation_val;
 	nova_standard_Nova_Object_Nova_super((nova_standard_Nova_Object*)this, exceptionData);
 	nova_standard_math_Nova_NumericOperand_Nova_super((nova_standard_math_Nova_NumericOperand*)this, exceptionData);
-	nova_standard_Nova_Object_2_Nova_this((nova_standard_Nova_Object*)(this), exceptionData);
-	nova_standard_math_Nova_NumericOperand_3_Nova_this((nova_standard_math_Nova_NumericOperand*)(this), exceptionData, nova_standard_math_Nova_NumericOperation_Nova_data);
 	nova_standard_math_Nova_NumericOperation_2_Nova_super(this, exceptionData);
 	
 	{
@@ -320,13 +319,13 @@ int nova_standard_math_Nova_NumericOperation_1_Nova_getType(nova_standard_math_N
 
 nova_standard_datastruct_Nova_Bounds* nova_standard_math_Nova_NumericOperation_Nova_searchNextType(nova_standard_math_Nova_NumericOperation* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_Nova_String* nova_standard_math_Nova_NumericOperation_Nova_str, int nova_standard_math_Nova_NumericOperation_Nova_start, int* ret1)
 {
-	nova_standard_datastruct_Nova_Array* l1_Nova_operators;
+	nova_standard_datastruct_list_Nova_Array* l1_Nova_operators;
 	int l1_Nova_minIndex;
 	int l1_Nova_minRank;
 	int l1_Nova_index;
 	nova_standard_datastruct_Nova_Bounds* nova_local_0;
 	
-	l1_Nova_operators = nova_standard_datastruct_Nova_Array_2_Nova_construct(0, exceptionData);
+	l1_Nova_operators = nova_standard_datastruct_list_Nova_Array_2_Nova_construct(0, exceptionData);
 	l1_Nova_minIndex = nova_standard_primitive_number_Nova_Int_Nova_MAX_VALUE;
 	l1_Nova_minRank = nova_standard_primitive_number_Nova_Int_Nova_MIN_VALUE;
 	l1_Nova_index = nova_standard_math_Nova_NumericOperation_Nova_nextOperator((nova_standard_math_Nova_NumericOperation*)nova_null, exceptionData, nova_standard_math_Nova_NumericOperation_Nova_str, nova_standard_math_Nova_NumericOperation_Nova_start);

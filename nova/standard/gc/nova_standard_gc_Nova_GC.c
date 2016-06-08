@@ -15,6 +15,11 @@ nova_standard_gc_Extension_VTable_GC nova_standard_gc_Extension_VTable_GC_val =
 		0,
 		0,
 		0,
+		0,
+		0,
+		0,
+		0,
+		0,
 	},
 	nova_standard_Nova_Object_0_Nova_getHashCodeLong,
 	nova_standard_Nova_Object_0_Nova_toString,
@@ -38,7 +43,6 @@ nova_standard_gc_Nova_GC* nova_standard_gc_Nova_GC_2_Nova_construct(nova_standar
 	CCLASS_NEW(nova_standard_gc_Nova_GC, this,);
 	this->vtable = &nova_standard_gc_Extension_VTable_GC_val;
 	nova_standard_Nova_Object_Nova_super((nova_standard_Nova_Object*)this, exceptionData);
-	nova_standard_Nova_Object_2_Nova_this((nova_standard_Nova_Object*)(this), exceptionData);
 	nova_standard_gc_Nova_GC_Nova_super(this, exceptionData);
 	
 	{
