@@ -71,7 +71,7 @@ public class VariableDeclaration extends IIdentifier
 	 */
 	public Bounds findExtraDeclarations(String statement)
 	{
-		String declarations[] = StringUtils.splitCommas(statement);
+		String declarations[] = StringUtils.splitCommas(statement, true);
 		
 		if (declarations.length > 1)
 		{
