@@ -166,11 +166,11 @@ public class Array<E> implements List<E, Int>
 	{
 		Array<E> filtered = new Array()
 		
-		for (Int i = 0; i < size; i++)
+		for (element in this)
 		{
-			if (filterFunc(data[i]))
+			if (filterFunc(element))
 			{
-				filtered.add(data[i])
+				filtered.add(element)
 			}
 		}
 		
@@ -207,34 +207,39 @@ public class Array<E> implements List<E, Int>
 	}
 	
 	/*
-	@RequireGenericType(extends Int)
-	public sum() -> Int
+	@RequireGenericType(E extends Number)
+	public sum() -> Long
     {
-    	Int sum = 0
+    	Long sum = 0
     	
-    	for (Int i = 0; i < size; i++)
+    	for (value in this)
     	{
-    		sum += data[i]
+    		sum += value
     	}
     	
         return sum
-    }
+    }*/
     
-    @RequireGenericType(extends String)
     public join(String delimiter) -> String
     {
     	String str = ""
     	
-    	for (Int i = 0; i < size; i++)
+    	Bool passed = false
+    	
+    	for (element in this)
     	{
-    		if (i > 0)
+    		if (passed)
     		{
-    			str += delimiter
+    			str = str + delimiter
+    		}
+    		else
+    		{
+    			passed = true
     		}
     		
-    		str += data[i]
+    		str = str + element.toString()
     	}
     	
     	return str
-    }*/
+    }
 }
