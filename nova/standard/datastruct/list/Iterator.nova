@@ -1,0 +1,18 @@
+package "nova/standard/datastruct/list"
+
+public interface Iterator<E, PositionType>
+{
+	visible PositionType position
+	visible Bool hasNext
+	{
+		get { return false }
+		no set
+	}
+	visible E next
+	{
+		get { return null }
+		no set
+	}
+	
+	reset() -> Iterator<E>
+}
