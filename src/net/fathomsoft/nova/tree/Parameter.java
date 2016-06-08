@@ -113,7 +113,7 @@ public class Parameter extends LocalDeclaration
 	 */
 	public static Parameter decodeStatement(Node parent, String statement, Location location, boolean require)
 	{
-		return decodeStatement(parent, statement, location, require, true);
+		return decodeStatement(parent, statement, location, require, true, true);
 	}
 	
 	/**
@@ -138,9 +138,9 @@ public class Parameter extends LocalDeclaration
 	 * @return The generated node, if it was possible to translated it
 	 * 		into a Parameter.
 	 */
-	public static Parameter decodeStatement(Node parent, String statement, Location location, boolean require, boolean checkName)
+	public static Parameter decodeStatement(Node parent, String statement, Location location, boolean require, boolean checkName, boolean checkType)
 	{
-		VariableDeclaration node = LocalDeclaration.decodeStatement(parent, statement, location, require, checkName);
+		VariableDeclaration node = LocalDeclaration.decodeStatement(parent, statement, location, require, checkName, checkType);
 		
 		if (node == null)
 		{
