@@ -1,4 +1,4 @@
-package "nova/standard/datastruct"
+package "nova/standard/datastruct/list"
 
 public class ListNode<E>
 {

@@ -1,9 +1,0 @@
-package "nova/standard/datastruct"
-
-public interface List<Type>
-{
-	forEach(func(Type, Int, List<Type>))
-	filter(filterFunc(Type) -> Bool) -> List<Type>
-	take(Int howMany) -> List<Type>
-	skip(Int howMany) -> List<Type>
-}

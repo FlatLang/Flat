@@ -1,10 +1,16 @@
-package "nova/standard/datastruct"
+package "nova/standard/datastruct/list"
 
 public class Stack<E>
 {
 	visible Int size
 	
 	ListNode<E> top
+	
+	visible Bool empty //=> size <= 0
+	{
+		get { return size <= 0 }
+		no set
+	}
 	
 	public push(E data)
 	{
@@ -18,7 +24,7 @@ public class Stack<E>
 	
 	public pop() -> E
 	{
-		if (isEmpty())
+		if (empty)
 		{
 			throw new EmptyStackException()
 		}
@@ -30,10 +36,5 @@ public class Stack<E>
 		size--
 		
 		return data
-	}
-	
-	public isEmpty() -> Bool
-	{
-		return size <= 0
 	}
 }

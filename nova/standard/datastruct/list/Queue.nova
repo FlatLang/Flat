@@ -1,4 +1,4 @@
-package "nova/standard/datastruct"
+package "nova/standard/datastruct/list"
 
 public class Queue<E>
 {
@@ -9,6 +9,12 @@ public class Queue<E>
 			return data.size
 		}
 		
+		no set
+	}
+	
+	visible Bool empty //=> size <= 0
+	{
+		get { return size <= 0 }
 		no set
 	}
 	
@@ -27,11 +33,6 @@ public class Queue<E>
 	public enqueue(E element)
 	{
 		data.add(element)
-	}
-	
-	public isEmpty() -> Bool
-	{
-		return size <= 0
 	}
 	
 	public toString() -> String

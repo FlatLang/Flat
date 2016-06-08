@@ -1,6 +1,0 @@
-package "nova/standard/datastruct"
-
-public class EmptyStackException extends Exception
-{
-	
-}

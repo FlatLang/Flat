@@ -1,0 +1,72 @@
+package "nova/standard/datastruct/list"
+
+public interface List<Type, PositionType> extends Iterable<Type, PositionType>
+{
+	//visible Int size
+	/*[Int index]
+	{
+		get
+		{
+			return this.get(index)
+		}
+		
+		set
+		{
+			this.set(index, value)
+		}
+	}
+	*/
+	
+	forEach(func(Type, Int, List<Type, PositionType>))
+	/*{
+		for (value in this)
+		{
+			func(value, $index, this)
+		}
+	}*/
+	
+	filter(filterFunc(Type) -> Bool) -> List<Type, PositionType>
+	/*{
+		List<Type> list = clone()
+		
+		for (value in this)
+		{
+			if (filterFunc(value, $index, this))
+			{
+				list.add(value)
+			}
+		}
+		
+		return list
+	}*/
+	
+	take(Int howMany) -> List<Type, PositionType>
+	/*{
+		List<Type> list = clone()
+		
+		do (Math.min(howMany, size))
+		{
+			list.add(this[$index])
+		}
+		
+		return list
+	}*/
+	
+	skip(Int howMany) -> List<Type, PositionType>
+	/*{
+		List<Type> list = clone()
+		
+		do (size - howMany)
+		{
+			list.add(this[howMany + $index])
+		}
+		
+		return list
+	}*/
+	
+	//get(Int index) -> Type
+	//set(Int index, Type value) -> List<Type, PositionType>
+	//add(Type value) -> List<Type, PositionType>
+	//remove(Type value) -> List<Type, PositionType>
+	//clone() -> List<Type, PositionType>
+}
