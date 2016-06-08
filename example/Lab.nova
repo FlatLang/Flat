@@ -1,3 +1,4 @@
+// Testing single line comment on first line.
 package "example"
 
 import "nova/standard/math/logic/WFF"
@@ -9,7 +10,8 @@ import "nova/standard/network/ServerSocket"
 import "nova/standard/star/Window"
 import "nova/standard/math/NumericStatement"
 import "nova/standard/datastruct/BinaryTree"
-import "nova/standard/datastruct/Array"
+import "nova/standard/datastruct/list/Array"
+import "nova/standard/datastruct/list/Iterator"
 
 public class Lab
 {
@@ -60,13 +62,15 @@ public class Lab
 		tree.addNode("I")
 		tree.addNode("H")
 		
-		//Console.write("Preorder: " + tree.preorder().map(Object.toString).join(", "))
+		//Console.write("Preorder: " + tree.preorder().join(", "))
 		Console.write("Preorder: ")
-		tree.preorder().forEach(printForEach)
+		//tree.preorder().forEach(x -> Console.write(x))
 		Console.writeLine("")
 		Console.writeLine("Inorder: " + tree.inorder())
 		Console.writeLine("Postorder: " + tree.postorder())
 		Console.writeLine("Levelorder: " + tree.levelorder())
+		
+		//"test".size
 		
 		String[] a = ["this", "is", "a", "test", "to", "see", "what shows up"]
 		
@@ -86,6 +90,24 @@ public class Lab
 		
 		Console.writeLine("")
 		
+		Console.writeLine("Using iterator:")
+		
+		Iterator<String, Int> iter = list.iterator
+		
+		while (iter.hasNext)
+		{
+			if (iter.position > 0)
+			{
+				Console.write(", ")
+			}
+			
+			Console.write(iter.next)
+		}
+		
+		Console.writeLine("")
+		
+		Console.writeLine("With foreach loop")
+		
 //		Square sq = new Square(4)
 //		
 //		Console.writeLine(getArea(sq))
@@ -93,7 +115,7 @@ public class Lab
 //		NumericStatement s = new NumericStatement("5a + (3 * 2)")
 //		
 //		Console.writeLine(s)
-		
+//		
 //		for (Int i = 0; i < 20; i++)
 //		{
 //			Window w = new Window()
@@ -106,7 +128,7 @@ public class Lab
 //			
 //			w.create()
 //		}
-		
+//		
 //		Console.writeLine("")
 //		
 //		StatementLetter[] letters =
