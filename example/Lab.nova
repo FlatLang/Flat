@@ -30,20 +30,6 @@ public class Lab
 		Console.write(i)
 	}
 	
-	static printForEach(String item, Int i, Array<String> array)
-	{
-		String str = ""
-		
-		if (i > 0)
-		{
-			str = str + ", "
-		}
-		
-		str = str + item
-		
-		Console.write(str)
-	}
-	
 	public static main(String[] args)
 	{
 		//Vector2D<Int> v = new Vector2D(2, 3)
@@ -52,20 +38,9 @@ public class Lab
 		
 		BinaryTree<String> tree = new BinaryTree()
 		
-		tree.addNode("F")
-		tree.addNode("B")
-		tree.addNode("A")
-		tree.addNode("D")
-		tree.addNode("C")
-		tree.addNode("E")
-		tree.addNode("G")
-		tree.addNode("I")
-		tree.addNode("H")
+		tree.addNode("F").addNode("B").addNode("A").addNode("D").addNode("C").addNode("E").addNode("G").addNode("I").addNode("H")
 		
-		//Console.write("Preorder: " + tree.preorder().join(", "))
-		Console.write("Preorder: ")
-		//tree.preorder().forEach(x -> Console.write(x))
-		Console.writeLine("")
+		Console.writeLine("Preorder: " + tree.preorder().join(", "))
 		Console.writeLine("Inorder: " + tree.inorder())
 		Console.writeLine("Postorder: " + tree.postorder())
 		Console.writeLine("Levelorder: " + tree.levelorder())
