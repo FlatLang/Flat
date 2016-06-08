@@ -108,7 +108,7 @@ void nova_standard_datastruct_Nova_Node_Nova_destroy(nova_standard_datastruct_No
 
 void nova_standard_datastruct_Nova_Node_2_Nova_this(nova_standard_datastruct_Nova_Node* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
-	nova_standard_datastruct_Nova_Node_3_Nova_this(this, exceptionData, (nova_standard_Nova_Object*)nova_null);
+	nova_standard_datastruct_Nova_Node_3_Nova_this(this, exceptionData, (nova_standard_Nova_Object*)((nova_standard_Nova_Object*)nova_null));
 }
 
 void nova_standard_datastruct_Nova_Node_3_Nova_this(nova_standard_datastruct_Nova_Node* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_Nova_Object* nova_standard_datastruct_Nova_Node_Nova_data)
@@ -119,7 +119,7 @@ void nova_standard_datastruct_Nova_Node_3_Nova_this(nova_standard_datastruct_Nov
 
 void nova_standard_datastruct_Nova_Node_4_Nova_this(nova_standard_datastruct_Nova_Node* this, nova_standard_exception_Nova_ExceptionData* exceptionData, int nova_standard_datastruct_Nova_Node_Nova_numChildren)
 {
-	nova_standard_datastruct_Nova_Node_5_Nova_this(this, exceptionData, (nova_standard_Nova_Object*)nova_null, nova_standard_datastruct_Nova_Node_Nova_numChildren);
+	nova_standard_datastruct_Nova_Node_5_Nova_this(this, exceptionData, (nova_standard_Nova_Object*)((nova_standard_Nova_Object*)nova_null), nova_standard_datastruct_Nova_Node_Nova_numChildren);
 }
 
 void nova_standard_datastruct_Nova_Node_5_Nova_this(nova_standard_datastruct_Nova_Node* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_Nova_Object* nova_standard_datastruct_Nova_Node_Nova_data, int nova_standard_datastruct_Nova_Node_Nova_numChildren)

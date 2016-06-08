@@ -98,7 +98,7 @@ void nova_standard_datastruct_Nova_BinaryNode_Nova_destroy(nova_standard_datastr
 
 void nova_standard_datastruct_Nova_BinaryNode_2_Nova_this(nova_standard_datastruct_Nova_BinaryNode* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
-	nova_standard_datastruct_Nova_BinaryNode_3_Nova_this(this, exceptionData, (nova_standard_Nova_Object*)nova_null);
+	nova_standard_datastruct_Nova_BinaryNode_3_Nova_this(this, exceptionData, (nova_standard_Nova_Object*)((nova_standard_Nova_Object*)nova_null));
 }
 
 void nova_standard_datastruct_Nova_BinaryNode_3_Nova_this(nova_standard_datastruct_Nova_BinaryNode* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_Nova_Object* nova_standard_datastruct_Nova_BinaryNode_Nova_data)

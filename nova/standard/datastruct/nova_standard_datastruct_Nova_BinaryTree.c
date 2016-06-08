@@ -65,11 +65,11 @@ nova_standard_datastruct_Nova_BinaryTree* nova_standard_datastruct_Nova_BinaryTr
 {
 	if (nova_standard_datastruct_Nova_BinaryTree_Accessor_Nova_root(this, exceptionData) == (nova_standard_datastruct_Nova_BinaryNode*)nova_null)
 	{
-		nova_standard_datastruct_Nova_BinaryTree_Mutator_Nova_root(this, exceptionData, nova_standard_datastruct_Nova_BinaryNode_3_Nova_construct(0, exceptionData, nova_standard_datastruct_Nova_BinaryTree_Nova_data));
+		nova_standard_datastruct_Nova_BinaryTree_Mutator_Nova_root(this, exceptionData, nova_standard_datastruct_Nova_BinaryNode_3_Nova_construct(0, exceptionData, (nova_standard_Nova_Object*)(nova_standard_datastruct_Nova_BinaryTree_Nova_data)));
 	}
 	else
 	{
-		nova_standard_datastruct_Nova_BinaryNode_Nova_addChild(nova_standard_datastruct_Nova_BinaryTree_Accessor_Nova_root(this, exceptionData), exceptionData, nova_standard_datastruct_Nova_BinaryTree_Nova_data);
+		nova_standard_datastruct_Nova_BinaryNode_Nova_addChild(nova_standard_datastruct_Nova_BinaryTree_Accessor_Nova_root(this, exceptionData), exceptionData, (nova_standard_Nova_Object*)(nova_standard_datastruct_Nova_BinaryTree_Nova_data));
 	}
 	return this;
 }

@@ -146,7 +146,7 @@ void example_Nova_Lab_Nova_main(example_Nova_Lab* this, nova_standard_exception_
 				{
 						nova_standard_io_Nova_Console_0_Nova_write(0, exceptionData, nova_standard_Nova_String_1_Nova_construct(0, exceptionData, ", "));
 				}
-				nova_standard_io_Nova_Console_0_Nova_write(0, exceptionData, l1_Nova_iter->vtable->itable.nova_standard_datastruct_list_Nova_Iterator_Accessor_Nova_next(l1_Nova_iter, exceptionData));
+				nova_standard_io_Nova_Console_0_Nova_write(0, exceptionData, (nova_standard_Nova_String*)(l1_Nova_iter->vtable->itable.nova_standard_datastruct_list_Nova_Iterator_Accessor_Nova_next(l1_Nova_iter, exceptionData)));
 		}
 		nova_standard_io_Nova_Console_0_Nova_writeLine(0, exceptionData, nova_standard_Nova_String_1_Nova_construct(0, exceptionData, ""));
 		nova_standard_io_Nova_Console_0_Nova_writeLine(0, exceptionData, nova_standard_Nova_String_1_Nova_construct(0, exceptionData, "With foreach loop"));
