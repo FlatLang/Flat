@@ -159,6 +159,18 @@ public class MethodList extends TypeList<MethodDeclaration>
 		return builder;
 	}
 	
+	public NovaMethodDeclaration[] getMethods()
+	{
+		ArrayList<NovaMethodDeclaration> methods = new ArrayList<>();
+		
+		for (int i = 0; i < getNumVisibleChildren(); i++)
+		{
+			methods.add((NovaMethodDeclaration)getVisibleChild(i));
+		}
+		
+		return methods.toArray(new NovaMethodDeclaration[0]);
+	}
+	
 	/**
 	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location, boolean)
 	 */
