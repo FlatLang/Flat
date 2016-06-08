@@ -75,13 +75,16 @@ public class Program extends Node
 			{
 				if (clazz instanceof Interface)
 				{
-					NovaMethodDeclaration methodArray[] = clazz.getMethods();
+					NovaMethodDeclaration[][] methodLists = new NovaMethodDeclaration[][] { clazz.getMethods(), clazz.getPropertyMethodList().getMethods() }; 
 					
-					for (NovaMethodDeclaration method : methodArray)
+					for (NovaMethodDeclaration[] list : methodLists)
 					{
-						if (!methods.contains(method))
+						for (NovaMethodDeclaration method : list)
 						{
-							methods.add(method);
+							if (!methods.contains(method))
+							{
+								methods.add(method);
+							}
 						}
 					}
 				}
