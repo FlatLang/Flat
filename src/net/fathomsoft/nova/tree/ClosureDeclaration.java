@@ -39,6 +39,11 @@ public class ClosureDeclaration extends Parameter implements CallableMethod
 		parameterList.getObjectReference().setDataType(POINTER);
 	}
 	
+	public void register()
+	{
+		id = getFileDeclaration().registerClosure(this);
+	}
+	
 	public boolean isPublic()
 	{
 		NovaMethodDeclaration method = (NovaMethodDeclaration)this.getAncestorOfType(NovaMethodDeclaration.class);
@@ -193,7 +198,7 @@ public class ClosureDeclaration extends Parameter implements CallableMethod
 			if (n.decodeSignature(statement, require) && n.validateDeclaration(statement, bounds, require))
 			{
 				n.checkExternalType();
-				n.id = n.getFileDeclaration().registerClosure(n);
+				n.register();
 				
 				return n;
 			}
@@ -284,7 +289,7 @@ public class ClosureDeclaration extends Parameter implements CallableMethod
 			return true;
 		}
 		
-		String parameters[] = StringUtils.splitCommas(parameterList);
+		String parameters[] = StringUtils.splitCommas(parameterList, true);
 		
 		Location location = new Location(getLocationIn());
 		
@@ -392,5 +397,18 @@ public class ClosureDeclaration extends Parameter implements CallableMethod
 		
 		
 		return null;
+	}
+	
+	@Override
+	public String toString()
+	{
+		String s = getName() + "(" + getParameterList().generateNovaInput() + ")";
+		
+		if (getType() != null)
+		{
+			s += " -> " + generateNovaType();
+		}
+		
+		return s;
 	}
 }
