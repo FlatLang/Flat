@@ -1,5 +1,6 @@
 package net.fathomsoft.nova.tree.variables;
 
+import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.error.SyntaxMessage;
@@ -12,6 +13,7 @@ import net.fathomsoft.nova.tree.Identifier;
 import net.fathomsoft.nova.tree.MethodCall;
 import net.fathomsoft.nova.tree.Node;
 import net.fathomsoft.nova.tree.SyntaxTree;
+import net.fathomsoft.nova.tree.Value;
 import net.fathomsoft.nova.tree.generics.GenericTypeArgument;
 import net.fathomsoft.nova.tree.generics.GenericTypeArgumentList;
 import net.fathomsoft.nova.tree.generics.GenericTypeParameter;
@@ -351,6 +353,99 @@ public class Variable extends Identifier
 	public void setVolatile(boolean volatileVal)
 	{
 		declaration.setVolatile(volatileVal);
+	}
+	
+	public GenericTypeArgument getIntelligentGenericTypeArgument(int index)
+	{
+		GenericTypeArgument arg = getGenericTypeArgumentList().getVisibleChild(index);
+		
+		GenericTypeArgument extractedType = getGenericTypeArgumentFromParameter(arg.getType());
+		
+		if (extractedType != null)
+		{
+			return extractedType;
+		}
+		
+		return arg;
+	}
+	
+	public GenericTypeArgument getGenericTypeArgumentFromParameter(String type)
+	{
+		int index = getDeclaration().getGenericTypeParameterDeclaration().getParameterIndex(type);
+		
+		GenericTypeArgument arg = null;
+		
+		if (index >= 0)
+		{
+			Accessible lastRef = null;
+			Accessible ref = this;
+			
+			while (ref != lastRef && ref instanceof Accessible && index >= 0 && ref.getReferenceNode(true) != null)
+			{
+				lastRef = ref;
+				ref = ref.getReferenceNode(true);
+				
+				Accessible current = ref;
+				
+				if (current instanceof Variable)
+				{
+					current = ((Variable)ref).getDeclaration();
+				}
+				
+				arg = ((Value)current).getGenericTypeArgument(index);
+				
+				if (current instanceof Variable)
+				{
+					index = ((VariableDeclaration)current).getGenericTypeParameterDeclaration().getParameterIndex(arg.getType());
+				}
+			}
+		}
+		
+		return arg;
+	}
+	
+	public String generateGenericType()
+	{
+		GenericTypeArgumentList args = getGenericTypeArgumentList();
+		
+		if (args != null && args.getNumVisibleChildren() > 0)
+		{
+			String s = GENERIC_START;
+			
+			for (int i = 0; i < args.getNumVisibleChildren(); i++)
+			{
+				if (i > 0)
+				{
+					s += ", ";
+				}
+				
+				GenericTypeArgument arg = getGenericTypeArgumentFromParameter(args.getVisibleChild(i).getType());
+				
+				s += arg.getType();
+			}
+			
+			s += GENERIC_END;
+			
+			return s;
+		}
+		
+		return "";
+	}
+	
+	@Override
+	public String getNovaType()
+	{
+		if (isGenericType())
+		{
+			GenericTypeArgument extractedType = getGenericTypeArgumentFromParameter(getType());
+			
+			if (extractedType != null)
+			{
+				return extractedType.generateNovaInput().toString();
+			}
+		}
+		
+		return super.getNovaType();
 	}
 	
 	/**
