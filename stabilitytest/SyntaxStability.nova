@@ -1,5 +1,7 @@
 package "stabilitytest"
 
+import "nova/standard/datastruct/list/Iterator"
+
 public class SyntaxStability extends StabilityTestCase
 {
 	public test()
@@ -8,6 +10,7 @@ public class SyntaxStability extends StabilityTestCase
 		checkUntil()
 		checkSwitchStatements()
 		checkMultipleReturnValues()
+		checkIterators()
 	}
 	
 	checkSwitchStatements()
@@ -337,5 +340,73 @@ public class SyntaxStability extends StabilityTestCase
 	static swap2(String a, String b) -> String, String
 	{
 		return b, a
+	}
+	
+	static filterFunc(String i) -> Bool
+	{
+		return i.size >= 4
+	}
+	
+	static foreachClosure(String s, Int i, Array<String> list)
+	{
+		if (s.size < 4)
+		{
+			throw new UnstableException()
+		}
+	}
+	
+	checkIterators()
+	{
+		String[] a = ["this", "is", "a", "test", "to", "see", "what shows up"]
+		
+		Console.write("Testing filter functionality... ")
+		
+		Array<String> list = new Array(a, 7)
+		Array<String> list2 = list.filter(filterFunc)
+		
+		try
+		{
+			list2.forEach(foreachClosure)
+		}
+		catch (UnstableException e)
+		{
+			program.fail("Failed to filter data correctly")
+		}
+		
+		for (Int n = 0; n < list2.size; n++)
+		{
+			if (list2.get(n).size < 4)
+			{
+				program.fail("Failed to filter data correctly")
+			}
+		}
+		
+		Console.writeLine("OK")
+		
+		Console.write("Testing iterator functionality... ")
+		
+		Iterator<String, Int> iter = list2.iterator
+		
+		while (iter.hasNext)
+		{
+			if (iter.next.size < 4)
+			{
+				program.fail("Failed to run iterator")
+			}
+		}
+		
+		Console.writeLine("OK")
+		
+		Console.write("Testing foreach loop functionality... ")
+		
+		for (string in list2)
+		{
+			if (string.size < 4)
+			{
+				program.fail("Failed to run foreach loop")
+			}
+		}
+		
+		Console.writeLine("OK")
 	}
 }
