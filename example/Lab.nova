@@ -108,6 +108,11 @@ public class Lab
 		
 		Console.writeLine("With foreach loop")
 		
+		for (string in list)
+		{
+			Console.write(string + ", ")
+		}
+		
 //		Square sq = new Square(4)
 //		
 //		Console.writeLine(getArea(sq))
