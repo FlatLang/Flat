@@ -423,16 +423,24 @@ public class ClassDeclaration extends InstanceDeclaration
 	{
 		TypeList<InterfaceImplementation> list = getInterfacesImplementationList();
 		
-		Interface[] array = new Interface[list.getNumVisibleChildren()];
+		ArrayList<Interface> array = new ArrayList<Interface>();
 		
-		for (int i = 0; i < array.length; i++)
+		for (int i = 0; i < list.getNumVisibleChildren(); i++)
 		{
 			String type = list.getVisibleChild(i).getType();
 			
-			array[i] = (Interface)SyntaxUtils.getImportedClass(getFileDeclaration(), type);
+			array.add((Interface)SyntaxUtils.getImportedClass(getFileDeclaration(), type));
 		}
 		
-		return array;
+		for (int i = array.size() - 1; i >= 0; i--)
+		{
+			for (Interface inter : array.get(i).getImplementedClasses())
+			{
+				array.add(inter);
+			}
+		}
+		
+		return array.toArray(new Interface[0]);
 	}
 	
 	public boolean implementsInterface(ClassDeclaration clazz)
@@ -1746,12 +1754,15 @@ public class ClassDeclaration extends InstanceDeclaration
 	 */
 	public static ClassDeclaration decodeStatement(Node parent, String statement, Location location, boolean require)
 	{
+		return decodeStatement(parent, statement, location, require, new ClassData());
+	}
+	
+	public static ClassDeclaration decodeStatement(Node parent, String statement, Location location, boolean require, ClassData data)
+	{
 		// If contains 'class' in the statement.
 		if (StringUtils.containsWord(statement, IDENTIFIER))
 		{
 			ClassDeclaration n = new ClassDeclaration(parent, location);
-			
-			ClassData data = new ClassData();
 			
 			GenericTypeParameterDeclaration.searchGenerics(statement, data);
 			
@@ -1789,7 +1800,7 @@ public class ClassDeclaration extends InstanceDeclaration
 		
 		if (data.extending || data.implementing)
 		{
-			if (data.extending)
+			if (data.extending && !data.isInterface)
 			{
 				setExtendedClass(word);
 				
@@ -2416,7 +2427,19 @@ public class ClassDeclaration extends InstanceDeclaration
 	 */
 	public static class ClassData extends DeclarationData
 	{
-		private boolean	extending, implementing;
+		private boolean	extending, implementing, isInterface;
+		
+		public ClassData()
+		{
+			this(false, false, false);
+		}
+		
+		public ClassData(boolean extending, boolean implementing, boolean isInterface)
+		{
+			this.extending = extending;
+			this.implementing = implementing;
+			this.isInterface = isInterface;
+		}
 	}
 	
 	/**
