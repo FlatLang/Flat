@@ -169,7 +169,6 @@ public class InstanceDeclaration extends VariableDeclaration
 	 */
 	public void setVisibility(int visibility)
 	{
-		Nova.debuggingBreakpoint(getName() != null && getName().equals("shift"));
 		this.visibility = visibility;
 	}
 	
