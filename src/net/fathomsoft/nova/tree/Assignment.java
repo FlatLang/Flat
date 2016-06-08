@@ -288,7 +288,7 @@ public class Assignment extends Node
 		Location varLoc = location.asNew();
 		varLoc.getBounds().setEnd(varLoc.getStart() + endIndex);
 		
-		String[] assigneesStr = StringUtils.splitCommas(variable);
+		String[] assigneesStr = StringUtils.splitCommas(variable, true);
 		
 //		if (!n.decodeAssignee(assignees[0], varLoc, require, addDeclaration))
 //		{
