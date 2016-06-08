@@ -467,6 +467,11 @@ public class SyntaxTree
 	 */
 	public static Node decodeStatement(Node parent, String statement, Location location, boolean require, Class<?> types[])
 	{
+		return decodeStatement(parent, statement, location, require, types, true);
+	}
+	
+	public static Node decodeStatement(Node parent, String statement, Location location, boolean require, Class<?> types[], boolean checkType)
+	{
 		Node node = null;
 		
 //		try
@@ -479,7 +484,7 @@ public class SyntaxTree
 //				
 //				node = (Node)m.invoke(a, parent, statement, location);
 				
-				if      (type == LocalDeclaration.class) node = LocalDeclaration.decodeStatement(parent, statement, location, require);
+				if      (type == LocalDeclaration.class) node = LocalDeclaration.decodeStatement(parent, statement, location, require, true, checkType);
 				else if (node == null && type == ElseStatement.class) node = ElseStatement.decodeStatement(parent, statement, location, require);
 				else if (node == null && type == AbstractMethodDeclaration.class) node = AbstractMethodDeclaration.decodeStatement(parent, statement, location, require);
 				else if (node == null && type == AccessorMethod.class) node = AccessorMethod.decodeStatement(parent, statement, location, require);
@@ -685,6 +690,11 @@ public class SyntaxTree
 	 */
 	public static Node decodeScopeContents(Node parent, String statement, Location location, boolean require)
 	{
+		return decodeScopeContents(parent, statement, location, require, true);
+	}
+	
+	public static Node decodeScopeContents(Node parent, String statement, Location location, boolean require, boolean checkType)
+	{
 		if (statement.length() <= 0)
 		{
 			return null;
@@ -702,7 +712,7 @@ public class SyntaxTree
 				
 				if (node == null)
 				{
-					node = decodeStatement(parent, statement, location, false, SCOPE_CHILD_DECODE);
+					node = decodeStatement(parent, statement, location, false, SCOPE_CHILD_DECODE, checkType);
 					
 					if (node == null)
 					{
@@ -757,13 +767,18 @@ public class SyntaxTree
 	 */
 	public static Accessible decodeIdentifierAccess(Node parent, String statement, Location location, boolean require, boolean validateAccess)
 	{
+		return decodeIdentifierAccess(parent, statement, location, require, validateAccess, true);
+	}
+	
+	public static Accessible decodeIdentifierAccess(Node parent, String statement, Location location, boolean require, boolean validateAccess, boolean requireDot)
+	{
 		Accessible root = null;
 		Accessible node = null;
 		
 		int offset = 0;
 		int index  = SyntaxUtils.findDotOperator(statement);
 		
-		if (index < 0)
+		if (requireDot && index < 0)
 		{
 			return null;
 		}
