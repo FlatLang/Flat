@@ -5,12 +5,14 @@ import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.error.UnimplementedOperationException;
 import net.fathomsoft.nova.tree.NovaParameterList.ReturnParameterList;
+import net.fathomsoft.nova.tree.generics.GenericTypeArgument;
 import net.fathomsoft.nova.tree.generics.GenericTypeArgumentList;
 import net.fathomsoft.nova.tree.generics.GenericTypeParameter;
 import net.fathomsoft.nova.tree.generics.GenericTypeParameterDeclaration;
 import net.fathomsoft.nova.tree.variables.Super;
 import net.fathomsoft.nova.tree.variables.Variable;
 import net.fathomsoft.nova.tree.variables.VariableDeclaration;
+import net.fathomsoft.nova.tree.variables.VirtualLocalDeclaration;
 import net.fathomsoft.nova.util.Location;
 import net.fathomsoft.nova.util.SyntaxUtils;
 
@@ -170,6 +172,7 @@ public abstract class Value extends Node implements AbstractValue
 	{
 		if (!SyntaxUtils.isValidType(this, type))
 		{
+			SyntaxUtils.isValidType(this, type);
 			return SyntaxMessage.queryError("Type '" + type + "' does not exist", this, require);
 		}
 		
@@ -415,17 +418,7 @@ public abstract class Value extends Node implements AbstractValue
 		
 		if (this instanceof Identifier)
 		{
-			Accessible id = (Identifier)this;
-			
-			if (id.isAccessed())
-			{
-				if (isGenericType())
-				{
-					id = id.getAccessingNode();
-				}
-				
-				file = ((Value)id.getReferenceNode()).getTypeClass().getFileDeclaration();
-			}
+			file = getReferenceFile();
 		}
 		
 		String location = file.getImportList().getAbsoluteClassLocation(type);
@@ -436,6 +429,34 @@ public abstract class Value extends Node implements AbstractValue
 //		}
 		
 		return location;
+	}
+	
+	public FileDeclaration getReferenceFile()
+	{
+		if (this instanceof Accessible)
+		{
+			Accessible id = (Accessible)this;
+			
+			if (id.isAccessed())
+			{
+				if (isGenericType())
+				{
+					id = id.getAccessingNode();
+				}
+				
+				return ((Value)id.getReferenceNode()).getTypeClass().getFileDeclaration();
+			}
+		}
+		if (this instanceof Variable && ((Variable)this).getDeclaration() instanceof VirtualLocalDeclaration)
+		{
+			return ((VirtualLocalDeclaration)((Variable)this).getDeclaration()).getReference().getTypeClass().getFileDeclaration();
+		}
+		else if (this instanceof VirtualLocalDeclaration)
+		{
+			return ((VirtualLocalDeclaration)this).getReference().getTypeClass().getFileDeclaration();
+		}
+		
+		return getFileDeclaration();
 	}
 	
 	/**
@@ -657,12 +678,12 @@ public abstract class Value extends Node implements AbstractValue
 		}
 		else
 		{
-			FileDeclaration file = getFileDeclaration();
+			FileDeclaration file = getReferenceFile();//getFileDeclaration();
 			
-			if (this instanceof Identifier && !isGenericType())
+			/*if (this instanceof Identifier && !isGenericType())
 			{
 				file = ((Identifier)this).getDeclaringClass().getFileDeclaration();
-			}
+			}*/
 			
 			ClassDeclaration clazz = SyntaxUtils.getImportedClass(file, type);
 			
@@ -949,6 +970,23 @@ public abstract class Value extends Node implements AbstractValue
 	{
 		return getParentClass().getGenericTypeParameterDeclaration();
 //		throw new UnimplementedOperationException("The getGenericDeclaration() method must be implemented by class " + this.getClass().getName());
+	}
+	
+	public void setType(Value value)
+	{
+		setArrayDimensions(value.getArrayDimensions());
+		setTypeValue(value.getType());
+		setDataType(value.getDataType());
+		
+		GenericTypeArgumentList args = value.getGenericTypeArgumentList();
+		GenericTypeArgumentList thisArgs = getGenericTypeArgumentList();
+		
+		for (int i = 0; i < args.getNumVisibleChildren(); i++)
+		{
+			GenericTypeArgument arg = args.getVisibleChild(i);
+			
+			thisArgs.addChild(arg.clone(thisArgs, arg.getLocationIn().asNew()));
+		}
 	}
 	
 	/**
