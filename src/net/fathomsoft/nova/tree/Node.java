@@ -1660,7 +1660,7 @@ public abstract class Node implements Listenable
 	 */
 	public static class ExtraData
 	{
-		public  boolean require;
+		public  boolean require, checkType;
 		
 		private int		wordNumber;
 		
