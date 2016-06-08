@@ -59,6 +59,11 @@ public class GenericTypeArgument extends IValue implements GenericCompatible
 		return -1;
 	}
 	
+	public String generateGenericType()
+	{
+		return "";
+	}
+	
 	/**
 	 * @see net.fathomsoft.nova.tree.IValue#setTypeValue(java.lang.String)
 	 */
