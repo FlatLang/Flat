@@ -1,5 +1,7 @@
 package "nova/standard/datastruct"
 
+import "nova/standard/datastruct/list/Queue"
+
 public class Node<E>
 {
 	public E data
@@ -100,7 +102,7 @@ public class Node<E>
 		Queue<Node<E>> queue = new Queue()
 		queue.enqueue(this)
 		
-		while (!queue.isEmpty())
+		while (!queue.empty)
 		{
 			Node<E> current = queue.dequeue()
 			
