@@ -27,6 +27,8 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  */
 public class BinaryOperation extends IValue
 {
+	private static int uniqueID = 0;
+	
 	/**
 	 * @see net.fathomsoft.nova.tree.Node#Node(Node, Location)
 	 */
@@ -420,7 +422,7 @@ public class BinaryOperation extends IValue
 			return null;
 		}
 		
-		int checkId = parent.getParentMethod(true).generateUniqueID();
+		int checkId = ++uniqueID;
 		
 		String denominatorVar = Nova.LANGUAGE_NAME.toLowerCase() + "_zero_check" + checkId++;
 		
