@@ -1398,6 +1398,16 @@ public class StringUtils
 		return output.toString();
 	}
 	
+	public static String removeSurroundingParenthesis(String source)
+	{
+		while (source.startsWith("(") && source.endsWith(")"))
+		{
+			source = source.substring(1, source.length() - 1);
+		}
+		
+		return source;
+	}
+	
 	public static Bounds removeSurroundingParenthesis(String source, Bounds bounds)
 	{
 		if (!bounds.isValid())
