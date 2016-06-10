@@ -126,9 +126,9 @@ public class Program extends Node
 	 */
 	public void addAutoImports()
 	{
-		for (int i = 0; i < getNumChildren(); i++)
+		for (int i = 0; i < getNumVisibleChildren(); i++)
 		{
-			FileDeclaration child = (FileDeclaration)getChild(i);
+			FileDeclaration child = (FileDeclaration)getVisibleChild(i);
 			
 			child.addAutoImports();
 		}
@@ -144,9 +144,9 @@ public class Program extends Node
 	{
 		String dir = file.getFile().getParent();
 		
-		for (int i = 0; i < getNumChildren(); i++)
+		for (int i = 0; i < getNumVisibleChildren(); i++)
 		{
-			FileDeclaration child = (FileDeclaration)getChild(i);
+			FileDeclaration child = (FileDeclaration)getVisibleChild(i);
 			
 			if (file != child && dir.equals(child.getFile().getParent()))
 			{
@@ -198,7 +198,7 @@ public class Program extends Node
 		
 		int index = files.get(classLocation);
 		
-		FileDeclaration node = (FileDeclaration)getChild(index);
+		FileDeclaration node = (FileDeclaration)getVisibleChild(index);
 		
 		String className = SyntaxUtils.getClassName(classLocation);
 		
@@ -306,9 +306,9 @@ public class Program extends Node
 	{
 		if (phase == SyntaxTree.PHASE_CLASS_DECLARATION)
 		{
-			for (int i = 0; i < getNumChildren(); i++)
+			for (int i = 0; i < getNumVisibleChildren(); i++)
 			{
-				Node child = getChild(i);
+				Node child = getVisibleChild(i);
 				
 				FileDeclaration file = (FileDeclaration)child;
 				
