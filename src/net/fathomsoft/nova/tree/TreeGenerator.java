@@ -299,6 +299,8 @@ public class TreeGenerator implements Runnable
 		// Decode all of the statements in the source text.
 		while (currentNode != null && currentNode.onAfterDecoded())
 		{
+			Node previous = currentNode;
+			
 			updateTree(currentNode, skipScopes);
 			
 			if (parentStack.isEmpty())
@@ -307,6 +309,8 @@ public class TreeGenerator implements Runnable
 			}
 			
 			currentNode = getNextStatement(currentNode, offset, searchTypes, skipScopes);
+			
+			previous.onNextStatementDecoded(currentNode);
 		}
 	}
 	
