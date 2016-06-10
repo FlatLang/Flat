@@ -359,7 +359,7 @@ public class SyntaxStability extends StabilityTestCase
 	{
 		String[] a = ["this", "is", "a", "test", "to", "see", "what shows up"]
 		
-		Console.write("Testing filter functionality... ")
+		Console.write("Checking filter functionality... ")
 		
 		Array<String> list = new Array(a, 7)
 		Array<String> list2 = list.filter(filterFunc)
@@ -381,9 +381,18 @@ public class SyntaxStability extends StabilityTestCase
 			}
 		}
 		
+		/*if (list2.any(x -> x.size < 4))
+		{
+			program.fail("Failed to filter data correctly")
+		}
+		if (!list2.all(x -> x.size >= 4))
+		{
+			program.fail("Failed to filter data correctly")
+		}*/
+		
 		Console.writeLine("OK")
 		
-		Console.write("Testing iterator functionality... ")
+		Console.write("Checking iterator functionality... ")
 		
 		Iterator<String, Int> iter = list2.iterator
 		
@@ -397,7 +406,7 @@ public class SyntaxStability extends StabilityTestCase
 		
 		Console.writeLine("OK")
 		
-		Console.write("Testing foreach loop functionality... ")
+		Console.write("Checking foreach loop functionality... ")
 		
 		for (string in list2)
 		{

@@ -20,7 +20,7 @@ public class ClosureStability extends StabilityTestCase
 	
 	testClosures()
 	{
-		Console.writeLine("Testing closures...")
+		Console.writeLine("Checking closures...")
 		
 		testMathClosures()
 		testInstanceClosure()
@@ -28,7 +28,7 @@ public class ClosureStability extends StabilityTestCase
 	
 	testMathClosures()
 	{
-		Console.write("Testing static math closures... ")
+		Console.write("Checking static math closures... ")
 		
 		Int a = 5
 		Int b = 3
@@ -52,7 +52,7 @@ public class ClosureStability extends StabilityTestCase
 	
 	testInstanceClosure()
 	{
-		Console.write("Testing instance closures... ")
+		Console.write("Checking instance closures... ")
 		
 		ClosureStability c = new ClosureStability(program)
 		
