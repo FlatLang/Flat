@@ -86,11 +86,11 @@ public class ArrayAccess extends Variable implements ArrayCompatible
 	 * @see net.fathomsoft.nova.tree.variables.Variable#generateCUseOutput(StringBuilder)
 	 */
 	@Override
-	public StringBuilder generateCUseOutput(StringBuilder builder)
+	public StringBuilder generateCUseOutput(StringBuilder builder, boolean pointer, boolean checkAccesses)
 	{
 		Dimensions dimensions = getDimensions();
 		
-		super.generateCUseOutput(builder);
+		super.generateCUseOutput(builder, pointer, checkAccesses);
 		dimensions.generateCSourceFragment(builder);
 		
 		return builder;
