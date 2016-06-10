@@ -1,9 +1,12 @@
 package net.fathomsoft.nova.tree.variables;
 
+import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.tree.List;
 import net.fathomsoft.nova.tree.LocalDeclaration;
 import net.fathomsoft.nova.tree.Node;
+import net.fathomsoft.nova.tree.NovaMethodDeclaration;
+import net.fathomsoft.nova.tree.Scope;
 import net.fathomsoft.nova.util.Location;
 
 /**
@@ -31,9 +34,9 @@ public class VariableDeclarationList extends List
 	 * @return Whether or not there is a Variable within the list with
 	 * 		the given name.
 	 */
-	public boolean containsVariable(String variableName, int scopeID)
+	public boolean containsVariable(String variableName, Scope scope)
 	{
-		return getVariable(variableName, scopeID) != null;
+		return getVariable(variableName, scope) != null;
 	}
 	
 	/**
@@ -43,15 +46,22 @@ public class VariableDeclarationList extends List
 	 * @param variableName The name of the variable to get.
 	 * @return The Variable with the given name.
 	 */
-	public LocalDeclaration getVariable(String variableName, int scopeID)
+	public LocalDeclaration getVariable(String variableName, Scope scope)
 	{
 		LocalDeclaration valid = null;
 		
-		for (int i = 0; i < getNumChildren(); i++)
+		for (int i = getNumChildren() - 1; i >= 0; i--)
 		{
 			LocalDeclaration variable = (LocalDeclaration)getChild(i);
 			
-			if (variable.getName().equals(variableName) && scopeID >= variable.getScopeID())
+			/*Scope declScope = variable.getParentScopeAncestor().getScope(variable.getScopeID());
+			
+			if (declScope == null)
+			{
+				declScope = variable.getAncestorWithScope().getScope();
+			}*/
+			
+			if (variable.getName().equals(variableName) && scope.getID() >= variable.getScopeID())//declScope.isAncestorOf(scope, true))
 			{
 				valid = variable;
 			}
@@ -62,12 +72,12 @@ public class VariableDeclarationList extends List
 	
 	public void removeChildWithName(String variableName)
 	{
-		removeChildWithName(variableName, getAncestorWithScope().getScope().getID());
+		removeChildWithName(variableName, getAncestorWithScope().getScope());
 	}
 	
-	public void removeChildWithName(String variableName, int scopeID)
+	public void removeChildWithName(String variableName, Scope scope)
 	{
-		VariableDeclaration var = getVariable(variableName, scopeID);
+		VariableDeclaration var = getVariable(variableName, scope);
 		
 		if (var != null)
 		{
