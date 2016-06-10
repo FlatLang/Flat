@@ -17,6 +17,8 @@ nova_standard_primitive_number_Extension_VTable_Char nova_standard_primitive_num
 		0,
 		0,
 		0,
+		0,
+		0,
 		(int(*)(nova_standard_datastruct_Nova_Comparable*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*))nova_standard_primitive_number_Nova_Char_0_Nova_compareTo,
 		0,
 		0,

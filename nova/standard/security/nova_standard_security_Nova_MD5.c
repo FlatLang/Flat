@@ -20,6 +20,8 @@ nova_standard_security_Extension_VTable_MD5 nova_standard_security_Extension_VTa
 		0,
 		0,
 		0,
+		0,
+		0,
 	},
 	nova_standard_Nova_Object_0_Nova_getHashCodeLong,
 	nova_standard_Nova_Object_0_Nova_toString,

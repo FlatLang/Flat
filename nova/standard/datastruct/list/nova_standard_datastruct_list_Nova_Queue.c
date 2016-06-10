@@ -20,6 +20,8 @@ nova_standard_datastruct_list_Extension_VTable_Queue nova_standard_datastruct_li
 		0,
 		0,
 		0,
+		0,
+		0,
 	},
 	nova_standard_Nova_Object_0_Nova_getHashCodeLong,
 	nova_standard_datastruct_list_Nova_Queue_0_Nova_toString,

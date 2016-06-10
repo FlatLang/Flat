@@ -12,6 +12,8 @@ nova_standard_datastruct_list_Extension_VTable_ArrayIterator nova_standard_datas
 		0,
 		0,
 		0,
+		0,
+		0,
 		(nova_standard_datastruct_list_Nova_Iterator*(*)(nova_standard_datastruct_list_Nova_Iterator*, nova_standard_exception_Nova_ExceptionData*))nova_standard_datastruct_list_Nova_ArrayIterator_Nova_reset,
 		(char(*)(nova_standard_datastruct_list_Nova_Iterator*, nova_standard_exception_Nova_ExceptionData*))nova_standard_datastruct_list_Nova_ArrayIterator_Accessor_Nova_hasNext,
 		0,

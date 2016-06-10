@@ -31,6 +31,8 @@ stabilitytest_Extension_VTable_ClosureStability stabilitytest_Extension_VTable_C
 		0,
 		0,
 		0,
+		0,
+		0,
 	},
 	nova_standard_Nova_Object_0_Nova_getHashCodeLong,
 	nova_standard_Nova_Object_0_Nova_toString,
@@ -104,7 +106,7 @@ void stabilitytest_Nova_ClosureStability_0_Nova_test(stabilitytest_Nova_ClosureS
 
 void stabilitytest_Nova_ClosureStability_Nova_testClosures(stabilitytest_Nova_ClosureStability* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
-	nova_standard_io_Nova_Console_0_Nova_writeLine(0, exceptionData, nova_standard_Nova_String_1_Nova_construct(0, exceptionData, "Testing closures..."));
+	nova_standard_io_Nova_Console_0_Nova_writeLine(0, exceptionData, nova_standard_Nova_String_1_Nova_construct(0, exceptionData, "Checking closures..."));
 	stabilitytest_Nova_ClosureStability_Nova_testMathClosures(this, exceptionData);
 	stabilitytest_Nova_ClosureStability_Nova_testInstanceClosure(this, exceptionData);
 }
@@ -115,7 +117,7 @@ void stabilitytest_Nova_ClosureStability_Nova_testMathClosures(stabilitytest_Nov
 	int l1_Nova_b;
 	double l1_Nova_value;
 	
-	nova_standard_io_Nova_Console_0_Nova_write(0, exceptionData, nova_standard_Nova_String_1_Nova_construct(0, exceptionData, "Testing static math closures... "));
+	nova_standard_io_Nova_Console_0_Nova_write(0, exceptionData, nova_standard_Nova_String_1_Nova_construct(0, exceptionData, "Checking static math closures... "));
 	l1_Nova_a = 5;
 	l1_Nova_b = 3;
 	l1_Nova_value = 0.5;
@@ -142,7 +144,7 @@ void stabilitytest_Nova_ClosureStability_Nova_testInstanceClosure(stabilitytest_
 {
 	stabilitytest_Nova_ClosureStability* l1_Nova_c;
 	
-	nova_standard_io_Nova_Console_0_Nova_write(0, exceptionData, nova_standard_Nova_String_1_Nova_construct(0, exceptionData, "Testing instance closures... "));
+	nova_standard_io_Nova_Console_0_Nova_write(0, exceptionData, nova_standard_Nova_String_1_Nova_construct(0, exceptionData, "Checking instance closures... "));
 	l1_Nova_c = stabilitytest_Nova_ClosureStability_0_Nova_construct(0, exceptionData, this->stabilitytest_Nova_StabilityTestCase_Nova_program);
 	stabilitytest_Nova_ClosureStability_Nova_instanceClosure(this, exceptionData, (stabilitytest_Nova_ClosureStability_closure9_Nova_closure)&stabilitytest_Nova_ClosureStability_Nova_incrementNumber, l1_Nova_c);
 	if (l1_Nova_c->prv->stabilitytest_Nova_ClosureStability_Nova_number == 0)

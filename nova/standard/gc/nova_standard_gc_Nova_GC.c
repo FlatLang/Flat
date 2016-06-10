@@ -20,6 +20,8 @@ nova_standard_gc_Extension_VTable_GC nova_standard_gc_Extension_VTable_GC_val =
 		0,
 		0,
 		0,
+		0,
+		0,
 	},
 	nova_standard_Nova_Object_0_Nova_getHashCodeLong,
 	nova_standard_Nova_Object_0_Nova_toString,

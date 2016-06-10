@@ -20,6 +20,8 @@ stabilitytest_Extension_VTable_FileStability stabilitytest_Extension_VTable_File
 		0,
 		0,
 		0,
+		0,
+		0,
 	},
 	nova_standard_Nova_Object_0_Nova_getHashCodeLong,
 	nova_standard_Nova_Object_0_Nova_toString,
@@ -81,7 +83,7 @@ void stabilitytest_Nova_FileStability_0_Nova_test(stabilitytest_Nova_FileStabili
 		{
 			nova_standard_io_Nova_File* l1_Nova_f;
 			
-			l1_Nova_f = nova_standard_io_Nova_File_3_Nova_construct(0, exceptionData, nova_standard_Nova_String_0_Nova_concat(nova_standard_Nova_String_1_Nova_construct(0, exceptionData, "temp"), exceptionData, nova_standard_primitive_number_Nova_Long_1_Nova_toString(0, exceptionData, nova_standard_time_Nova_Time_Nova_currentTimeMillis(0, exceptionData))));
+			l1_Nova_f = nova_standard_io_Nova_File_3_Nova_construct(0, exceptionData, nova_standard_Nova_String_0_Nova_concat(nova_standard_Nova_String_1_Nova_construct(0, exceptionData, "temp"), exceptionData, nova_standard_primitive_number_Nova_Long_1_Nova_toString(0, exceptionData, nova_standard_time_Nova_Time_Accessor_Nova_currentTimeMillis(0, exceptionData))));
 			stabilitytest_Nova_FileStability_Nova_createFile(this, exceptionData, l1_Nova_f);
 			stabilitytest_Nova_FileStability_Nova_writeToFile(this, exceptionData, l1_Nova_f);
 			stabilitytest_Nova_FileStability_Nova_readFromFile(this, exceptionData, l1_Nova_f);

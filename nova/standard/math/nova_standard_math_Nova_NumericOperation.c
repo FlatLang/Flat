@@ -20,6 +20,8 @@ nova_standard_math_Extension_VTable_NumericOperation nova_standard_math_Extensio
 		0,
 		0,
 		0,
+		0,
+		0,
 	},
 	nova_standard_Nova_Object_0_Nova_getHashCodeLong,
 	nova_standard_math_Nova_NumericOperation_Nova_toString,

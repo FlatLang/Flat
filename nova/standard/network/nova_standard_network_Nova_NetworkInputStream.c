@@ -20,6 +20,8 @@ nova_standard_network_Extension_VTable_NetworkInputStream nova_standard_network_
 		0,
 		0,
 		0,
+		0,
+		0,
 	},
 	nova_standard_network_Nova_NetworkInputStream_Nova_readString,
 	nova_standard_network_Nova_NetworkInputStream_Nova_readBytes,

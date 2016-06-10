@@ -20,6 +20,8 @@ nova_standard_svg_Extension_VTable_SVGCircle nova_standard_svg_Extension_VTable_
 		0,
 		0,
 		0,
+		0,
+		0,
 	},
 	nova_standard_Nova_Object_0_Nova_getHashCodeLong,
 	nova_standard_svg_Nova_SVGCircle_0_Nova_toString,

@@ -20,12 +20,12 @@ nova_standard_datastruct_Extension_VTable_BinaryNode nova_standard_datastruct_Ex
 		0,
 		0,
 		0,
+		0,
+		0,
 	},
 	nova_standard_Nova_Object_0_Nova_getHashCodeLong,
 	nova_standard_datastruct_Nova_Node_0_Nova_toString,
 	nova_standard_Nova_Object_0_Nova_equals,
-	nova_standard_datastruct_Nova_BinaryNode_Nova_inorder,
-	nova_standard_datastruct_Nova_BinaryNode_Nova_postorder,
 };
 
 
@@ -161,58 +161,6 @@ void nova_standard_datastruct_Nova_BinaryNode_Nova_addChild(nova_standard_datast
 			nova_standard_datastruct_Nova_BinaryNode_Nova_addChild(nova_standard_datastruct_Nova_BinaryNode_Accessor_Nova_right(this, exceptionData), exceptionData, nova_standard_datastruct_Nova_BinaryNode_Nova_data);
 		}
 	}
-}
-
-nova_standard_Nova_String* nova_standard_datastruct_Nova_BinaryNode_Nova_inorder(nova_standard_datastruct_Nova_BinaryNode* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
-{
-	nova_standard_Nova_String* l1_Nova_str;
-	
-	l1_Nova_str = nova_standard_Nova_String_1_Nova_construct(0, exceptionData, "");
-	if (nova_standard_datastruct_Nova_BinaryNode_Accessor_Nova_left(this, exceptionData) != (nova_standard_datastruct_Nova_BinaryNode*)nova_null)
-	{
-		nova_standard_datastruct_Nova_BinaryNode* nova_local_0;
-		nova_standard_Nova_String* nova_local_1;
-		
-		nova_local_0 = nova_standard_datastruct_Nova_BinaryNode_Accessor_Nova_left(this, exceptionData);
-		nova_local_1 = nova_local_0->vtable->nova_standard_datastruct_Nova_BinaryNode_virtual_Nova_inorder(nova_local_0, exceptionData);
-		l1_Nova_str = l1_Nova_str->vtable->nova_standard_Nova_String_virtual0_Nova_concat(l1_Nova_str, exceptionData, nova_local_1->vtable->nova_standard_Nova_String_virtual0_Nova_concat(nova_local_1, exceptionData, nova_standard_Nova_String_1_Nova_construct(0, exceptionData, ", ")));
-	}
-	l1_Nova_str = l1_Nova_str->vtable->nova_standard_Nova_String_virtual0_Nova_concat(l1_Nova_str, exceptionData, ((nova_standard_Nova_Object*)this->nova_standard_datastruct_Nova_Node_Nova_data)->vtable->nova_standard_Nova_Object_virtual0_Nova_toString(this->nova_standard_datastruct_Nova_Node_Nova_data, exceptionData));
-	if (nova_standard_datastruct_Nova_BinaryNode_Accessor_Nova_right(this, exceptionData) != (nova_standard_datastruct_Nova_BinaryNode*)nova_null)
-	{
-		nova_standard_datastruct_Nova_BinaryNode* nova_local_2;
-		
-		nova_local_2 = nova_standard_datastruct_Nova_BinaryNode_Accessor_Nova_right(this, exceptionData);
-		l1_Nova_str = l1_Nova_str->vtable->nova_standard_Nova_String_virtual0_Nova_concat(l1_Nova_str, exceptionData, nova_standard_Nova_String_0_Nova_concat(nova_standard_Nova_String_1_Nova_construct(0, exceptionData, ", "), exceptionData, nova_local_2->vtable->nova_standard_datastruct_Nova_BinaryNode_virtual_Nova_inorder(nova_local_2, exceptionData)));
-	}
-	return l1_Nova_str;
-}
-
-nova_standard_Nova_String* nova_standard_datastruct_Nova_BinaryNode_Nova_postorder(nova_standard_datastruct_Nova_BinaryNode* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
-{
-	nova_standard_Nova_String* l1_Nova_str;
-	
-	l1_Nova_str = nova_standard_Nova_String_1_Nova_construct(0, exceptionData, "");
-	if (nova_standard_datastruct_Nova_BinaryNode_Accessor_Nova_left(this, exceptionData) != (nova_standard_datastruct_Nova_BinaryNode*)nova_null)
-	{
-		nova_standard_datastruct_Nova_BinaryNode* nova_local_0;
-		nova_standard_Nova_String* nova_local_1;
-		
-		nova_local_0 = nova_standard_datastruct_Nova_BinaryNode_Accessor_Nova_left(this, exceptionData);
-		nova_local_1 = nova_local_0->vtable->nova_standard_datastruct_Nova_BinaryNode_virtual_Nova_postorder(nova_local_0, exceptionData);
-		l1_Nova_str = l1_Nova_str->vtable->nova_standard_Nova_String_virtual0_Nova_concat(l1_Nova_str, exceptionData, nova_local_1->vtable->nova_standard_Nova_String_virtual0_Nova_concat(nova_local_1, exceptionData, nova_standard_Nova_String_1_Nova_construct(0, exceptionData, ", ")));
-	}
-	if (nova_standard_datastruct_Nova_BinaryNode_Accessor_Nova_right(this, exceptionData) != (nova_standard_datastruct_Nova_BinaryNode*)nova_null)
-	{
-		nova_standard_datastruct_Nova_BinaryNode* nova_local_2;
-		nova_standard_Nova_String* nova_local_3;
-		
-		nova_local_2 = nova_standard_datastruct_Nova_BinaryNode_Accessor_Nova_right(this, exceptionData);
-		nova_local_3 = nova_local_2->vtable->nova_standard_datastruct_Nova_BinaryNode_virtual_Nova_postorder(nova_local_2, exceptionData);
-		l1_Nova_str = l1_Nova_str->vtable->nova_standard_Nova_String_virtual0_Nova_concat(l1_Nova_str, exceptionData, nova_local_3->vtable->nova_standard_Nova_String_virtual0_Nova_concat(nova_local_3, exceptionData, nova_standard_Nova_String_1_Nova_construct(0, exceptionData, ", ")));
-	}
-	l1_Nova_str = l1_Nova_str->vtable->nova_standard_Nova_String_virtual0_Nova_concat(l1_Nova_str, exceptionData, ((nova_standard_Nova_Object*)this->nova_standard_datastruct_Nova_Node_Nova_data)->vtable->nova_standard_Nova_Object_virtual0_Nova_toString(this->nova_standard_datastruct_Nova_Node_Nova_data, exceptionData));
-	return l1_Nova_str;
 }
 
 nova_standard_datastruct_Nova_BinaryNode* nova_standard_datastruct_Nova_BinaryNode_Accessor_Nova_left(nova_standard_datastruct_Nova_BinaryNode* this, nova_standard_exception_Nova_ExceptionData* exceptionData)

@@ -20,6 +20,8 @@ nova_standard_primitive_Extension_VTable_Primitive nova_standard_primitive_Exten
 		0,
 		0,
 		0,
+		0,
+		0,
 	},
 	nova_standard_Nova_Object_0_Nova_getHashCodeLong,
 	nova_standard_Nova_Object_0_Nova_toString,

@@ -20,6 +20,8 @@ nova_standard_Extension_VTable_Object nova_standard_Extension_VTable_Object_val 
 		0,
 		0,
 		0,
+		0,
+		0,
 	},
 	nova_standard_Nova_Object_0_Nova_getHashCodeLong,
 	nova_standard_Nova_Object_0_Nova_toString,

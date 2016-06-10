@@ -20,6 +20,8 @@ nova_standard_datastruct_Extension_VTable_Tree nova_standard_datastruct_Extensio
 		0,
 		0,
 		0,
+		0,
+		0,
 	},
 	nova_standard_Nova_Object_0_Nova_getHashCodeLong,
 	nova_standard_Nova_Object_0_Nova_toString,
@@ -66,19 +68,19 @@ nova_standard_datastruct_list_Nova_Array* nova_standard_datastruct_Nova_Tree_Nov
 	return nova_standard_datastruct_Nova_Node_0_Nova_preorder(this->nova_standard_datastruct_Nova_Tree_Nova_root, exceptionData);
 }
 
-nova_standard_Nova_String* nova_standard_datastruct_Nova_Tree_Nova_inorder(nova_standard_datastruct_Nova_Tree* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
+nova_standard_datastruct_list_Nova_Array* nova_standard_datastruct_Nova_Tree_Nova_inorder(nova_standard_datastruct_Nova_Tree* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
-	return this->nova_standard_datastruct_Nova_Tree_Nova_root->vtable->nova_standard_datastruct_Nova_Node_virtual0_Nova_inorder(this->nova_standard_datastruct_Nova_Tree_Nova_root, exceptionData);
+	return nova_standard_datastruct_Nova_Node_0_Nova_inorder(this->nova_standard_datastruct_Nova_Tree_Nova_root, exceptionData);
 }
 
-nova_standard_Nova_String* nova_standard_datastruct_Nova_Tree_Nova_postorder(nova_standard_datastruct_Nova_Tree* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
+nova_standard_datastruct_list_Nova_Array* nova_standard_datastruct_Nova_Tree_Nova_postorder(nova_standard_datastruct_Nova_Tree* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
-	return this->nova_standard_datastruct_Nova_Tree_Nova_root->vtable->nova_standard_datastruct_Nova_Node_virtual0_Nova_postorder(this->nova_standard_datastruct_Nova_Tree_Nova_root, exceptionData);
+	return nova_standard_datastruct_Nova_Node_0_Nova_postorder(this->nova_standard_datastruct_Nova_Tree_Nova_root, exceptionData);
 }
 
-nova_standard_Nova_String* nova_standard_datastruct_Nova_Tree_Nova_levelorder(nova_standard_datastruct_Nova_Tree* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
+nova_standard_datastruct_list_Nova_Array* nova_standard_datastruct_Nova_Tree_Nova_levelorder(nova_standard_datastruct_Nova_Tree* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
-	return nova_standard_datastruct_Nova_Node_Nova_levelorder(this->nova_standard_datastruct_Nova_Tree_Nova_root, exceptionData);
+	return nova_standard_datastruct_Nova_Node_0_Nova_levelorder(this->nova_standard_datastruct_Nova_Tree_Nova_root, exceptionData);
 }
 
 void nova_standard_datastruct_Nova_Tree_2_Nova_this(nova_standard_datastruct_Nova_Tree* this, nova_standard_exception_Nova_ExceptionData* exceptionData)

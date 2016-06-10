@@ -17,6 +17,8 @@ nova_standard_datastruct_Extension_VTable_Comparable nova_standard_datastruct_Ex
 		0,
 		0,
 		0,
+		0,
+		0,
 		(int(*)(nova_standard_datastruct_Nova_Comparable*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*))nova_standard_datastruct_Nova_Comparable_0_Nova_compareTo,
 		0,
 		0,

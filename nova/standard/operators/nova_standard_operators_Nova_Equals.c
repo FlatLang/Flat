@@ -20,6 +20,8 @@ nova_standard_operators_Extension_VTable_Equals nova_standard_operators_Extensio
 		0,
 		0,
 		0,
+		0,
+		0,
 	},
 	nova_standard_operators_Nova_Equals_1_Nova_equals,
 };

@@ -20,6 +20,8 @@ nova_standard_network_Extension_VTable_NetworkOutputStream nova_standard_network
 		0,
 		0,
 		0,
+		0,
+		0,
 	},
 	nova_standard_Nova_Object_0_Nova_getHashCodeLong,
 	nova_standard_Nova_Object_0_Nova_toString,

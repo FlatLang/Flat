@@ -24,6 +24,8 @@ nova_standard_Extension_VTable_System nova_standard_Extension_VTable_System_val 
 		0,
 		0,
 		0,
+		0,
+		0,
 	},
 	nova_standard_Nova_Object_0_Nova_getHashCodeLong,
 	nova_standard_Nova_Object_0_Nova_toString,
@@ -81,7 +83,7 @@ void nova_standard_Nova_System_2_Nova_exit(nova_standard_Nova_System* this, nova
 		nova_standard_io_Nova_File* l1_Nova_f;
 		nova_standard_Nova_String* nova_local_0;
 		
-		nova_local_0 = nova_standard_primitive_number_Nova_Long_1_Nova_toString(0, exceptionData, nova_standard_time_Nova_Time_Nova_currentTimeMillis(0, exceptionData));
+		nova_local_0 = nova_standard_primitive_number_Nova_Long_1_Nova_toString(0, exceptionData, nova_standard_time_Nova_Time_Accessor_Nova_currentTimeMillis(0, exceptionData));
 		l1_Nova_f = nova_standard_io_Nova_File_3_Nova_construct(0, exceptionData, nova_standard_Nova_String_0_Nova_concat(nova_standard_Nova_String_1_Nova_construct(0, exceptionData, "Log"), exceptionData, nova_local_0->vtable->nova_standard_Nova_String_virtual0_Nova_concat(nova_local_0, exceptionData, nova_standard_Nova_String_1_Nova_construct(0, exceptionData, ".txt"))));
 		if (nova_standard_io_Nova_File_Nova_create(l1_Nova_f, exceptionData))
 		{
