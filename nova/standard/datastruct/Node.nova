@@ -32,6 +32,11 @@ public class Node<E>
 		this.data = data
 	}
 	
+	static notNull(Node<E> value) -> Bool
+	{
+		return value != null && value != 0
+	}
+	
 	public preorder() -> Array<E>
 	{
 		Array<E> array = new Array()
@@ -45,10 +50,8 @@ public class Node<E>
 	{
 		array.add(data)
 		
-		for (Int i = 0; i < children.size; i++)
+		for (child in children)
 		{
-			Node<E> child = children.get(i);
-			
 			if (child != null && child != 0)
 			{
 				child.preorder(array)
@@ -56,49 +59,62 @@ public class Node<E>
 		}
 	}
 	
-	public inorder() -> String
+	public inorder() -> Array<E>
 	{
-		String str = ""
+		Array<E> array = new Array()
 		
-		for (Int i = 0; i < children.size / 2; i++)
-		{
-			Node child = children.get(i)
-			
-			str = str + child.inorder() + ", "
-		}
-		
-		str = str + data
-		
-		for (Int i = children.size / 2; i < children.size; i++)
-		{
-			Node child = children.get(i)
-			
-			str = str + ", " + child.inorder()
-		}
-		
-		return str
+		return inorder(array)
 	}
 	
-	public postorder() -> String
+	inorder(Array<E> array) -> Array<E>
 	{
-		String str = ""
+		Int half = Math.ceil(children.size / 2.0)
 		
-		for (Int i = 0; i < children.size; i++)
+		for (child1 in children.take(half).filter(notNull))
 		{
-			Node child = children.get(i)
-			
-			str = str + child.postorder() + ", "
+			child1.inorder(array)
 		}
 		
-		str = str + data
+		array.add(data)
 		
-		return str
+		for (child in children.skip(half).filter(notNull))
+		{
+			child.inorder(array)
+		}
+		
+		return array
 	}
 	
-	public levelorder() -> String
+	public postorder() -> Array<E>
 	{
-		String str = ""
+		Array<E> array = new Array()
 		
+		postorder(array)
+		
+		return array
+	}
+	
+	postorder(Array<E> array)
+	{
+		for (child in children.filter(notNull))
+		{
+			child.postorder(array)
+		}
+		
+		array.add(data)
+	}
+	
+	public levelorder() -> Array<E>
+	{
+		Array<E> array = new Array()
+		
+		levelorder(array)
+		
+		return array
+	}
+	
+	levelorder(Array<E> array)
+	{
 		Queue<Node<E>> queue = new Queue()
 		queue.enqueue(this)
 		
@@ -106,25 +122,13 @@ public class Node<E>
 		{
 			Node<E> current = queue.dequeue()
 			
-			if (str.size > 0)
-			{
-				str = str + ", "
-			}
+			array.add(current.data)
 			
-			str = str + current.data
-			
-			for (Int i = 0; i < current.children.size; i++)
+			for (child in current.children.filter(notNull))
 			{
-				Node node = current.children.get(i)
-				
-				if (node != null)
-				{
-					queue.enqueue(node)
-				}
+				queue.enqueue(child)
 			}
 		}
-		
-		return str
 	}
 	
 	public toString() -> String
