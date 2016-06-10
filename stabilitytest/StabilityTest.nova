@@ -1,6 +1,6 @@
 package "stabilitytest"
 
-import "nova/standard/time/Time"
+import "nova/standard/time/Timer"
 import "nova/standard/thread/Thread"
 import "nova/standard/io/File"
 
@@ -11,16 +11,16 @@ public class StabilityTest extends StabilityTestCase
 		StabilityTest n = null
 		StabilityTest test = new StabilityTest(n)
 		
-		Long start = Time.currentTimeMillis()
+		Timer timer = new Timer().start()
 		
 		test.test()
 		
-		Long time = Time.currentTimeMillis() - start
+		timer.stop()
 		
 //		if (args[1].equals("test"))
 //		System.execute("Executable.exe a")
 		
-		Console.writeLine("Took " + time + "ms")
+		Console.writeLine("Took " + timer.duration + "ms")
 		
 		Console.waitForEnter()
 	}

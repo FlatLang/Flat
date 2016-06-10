@@ -1,0 +1,32 @@
+package "nova/standard/time"
+
+public class Timer
+{
+	visible Long startTime, endTime
+	
+	visible Long duration
+	{
+		get { return endTime - startTime }
+		no set
+	} 
+	
+	public construct()
+	{
+		
+	}
+	
+	public start() -> Timer
+	{
+		startTime = Time.currentTimeMillis
+		endTime = 0
+		
+		return this
+	}
+	
+	public stop() -> Timer
+	{
+		endTime = Time.currentTimeMillis
+		
+		return this
+	}
+}
