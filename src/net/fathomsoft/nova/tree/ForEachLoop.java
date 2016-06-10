@@ -88,9 +88,9 @@ public class ForEachLoop extends Loop
 	 * Get the variable declaration that was first decoded in order to
 	 * transform it into the variable.
 	 */
-	private VariableDeclaration getVariableDeclaration()
+	private LocalDeclaration getVariableDeclaration()
 	{
-		return (VariableDeclaration)getArgumentList().getChild(0);
+		return (LocalDeclaration)getArgumentList().getChild(0);
 	}
 	
 	/**
@@ -103,22 +103,22 @@ public class ForEachLoop extends Loop
 	 */
 	public Variable getIterator()
 	{
-		return (Variable)getArgumentList().getChild(2);
+		return (Variable)getArgumentList().getChild(1);
 	}
 	
 	public Variable getIteratorValue()
 	{
-		return (Variable)getArgumentList().getChild(1);
+		return (Variable)getVisibleChild(0);
 	}
 	
 	public Value getHasNextCheck()
 	{
-		return (Value)getArgumentList().getChild(3);
+		return (Value)getArgumentList().getChild(2);
 	}
 	
 	public Assignment getIteratorAssignment()
 	{
-		return (Assignment)getArgumentList().getChild(4);
+		return (Assignment)getParent().getAncestorWithScope().getScope().getChildBefore(this);
 	}
 	
 	public Assignment getNextAssignment()
@@ -130,9 +130,9 @@ public class ForEachLoop extends Loop
 	 * @see net.fathomsoft.nova.tree.Node#generateCSource(StringBuilder)
 	 */
 	@Override
-	public StringBuilder generateCSource(StringBuilder builder)
+	public StringBuilder generateCSource(StringBuilder builde)
 	{
-		getIteratorAssignment().generateCSource(builder);
+		StringBuilder builder = new StringBuilder();
 		
 		builder.append("while (").append(getHasNextCheck().generateCSourceFragment()).append(')').append('\n');
 		
@@ -146,7 +146,7 @@ public class ForEachLoop extends Loop
 			}
 		}
 		
-		return builder;
+		return builde.append(builder);
 	}
 	
 	/**
@@ -198,6 +198,8 @@ public class ForEachLoop extends Loop
 							{
 								if (n.decodeIteratorAssignment(require))
 								{
+									n.removeChild(n.getIteratorValue());
+									
 									return n;
 								}
 							}
@@ -247,27 +249,36 @@ public class ForEachLoop extends Loop
 	
 	private boolean decodeIteratorAssignment(boolean require)
 	{
-		Assignment assignment = Assignment.decodeStatement(getScope(), getIterator().generateNovaInput() + " = " + getIteratorValue().generateNovaInput(), getIterator().getLocationIn().asNew(), require);
+		Assignment assignment = Assignment.decodeStatement(getParent().getAncestorWithScope().getScope(),
+				getIterator().generateNovaInput() + " = " + getIteratorValue().generateNovaInput(),
+				getIterator().getLocationIn().asNew(),
+				require);
 		
 		if (assignment == null)
 		{
 			return SyntaxMessage.queryError("Could not decode assignment portion of Iterator for foreach loop", this, require);
 		}
 		
-		getArgumentList().addChild(assignment);
+		getParent().getAncestorWithScope().getScope().addChild(assignment);
+		
+		//getArgumentList().addChild(assignment);
+		
+		//getParent().getAncestorWithScope().getScope().getVariableList().addChild(assignment.getAssignedNode().getDeclaration());
 		
 		return true;
 	}
 	
 	private boolean setupVariables()
 	{
-		VariableDeclaration decl = getVariableDeclaration();
+		LocalDeclaration decl = getVariableDeclaration();
 		
 		getArgumentList().replace(decl, decl.generateUsableVariable(getArgumentList(), decl.getLocationIn()));
 		
 		VariableDeclarationList variables = getParent().getAncestorWithScope().getScope().getVariableList();
 		
 		variables.addChild(decl);
+		
+		decl.setScopeID(getScope().getID());
 		//variables.addChild(getIterator().getDeclaration());
 		
 		return true;
@@ -315,11 +326,11 @@ public class ForEachLoop extends Loop
 		
 		ClassDeclaration iterator = getProgram().getClassDeclaration(Nova.getClassLocation("Iterator"));
 
-		if (!value.getTypeClass().isOfType(iterator))
+		if (!value.getReturnedNode().getTypeClass().isOfType(iterator))
 		{
 			ClassDeclaration iterable = getProgram().getClassDeclaration(Nova.getClassLocation("Iterable"));
 			
-			if (!value.getTypeClass().isOfType(iterable))
+			if (!value.getReturnedNode().getTypeClass().isOfType(iterable))
 			{
 				return SyntaxMessage.queryError("Type of '" + argument + "' must be Iterable or Iterator", this, require);
 			}
@@ -327,7 +338,7 @@ public class ForEachLoop extends Loop
 			value = SyntaxTree.decodeValue(this, argument + ".iterator", location, require);
 		}
 		
-		getArgumentList().addChild(value);
+		addChild(value, this);
 		
 		GenericTypeArgument arg = ((Variable)value.getReturnedNode()).getIntelligentGenericTypeArgument(0);
 		
@@ -404,5 +415,14 @@ public class ForEachLoop extends Loop
 		
 		
 		return null;
+	}
+	
+	public String toString()
+	{
+		String s = "for (" + getVariable().getName() + " in " + getIterator().generateNovaInput() + ")";
+		
+		
+		
+		return s;
 	}
 }
