@@ -71,9 +71,9 @@ public class ImportList extends List
 			return null;
 		}
 		
-		for (int i = 0; i < getNumChildren(); i++)
+		for (int i = 0; i < getNumVisibleChildren(); i++)
 		{
-			Import child = (Import)getChild(i);
+			Import child = (Import)getVisibleChild(i);
 			
 			String location = child.getClassLocation(aliased);
 			

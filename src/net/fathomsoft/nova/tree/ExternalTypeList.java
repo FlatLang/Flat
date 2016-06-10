@@ -64,9 +64,9 @@ public class ExternalTypeList extends List
 	 */
 	public ExternalType getType(String typeName)
 	{
-		for (int i = 0; i < getNumChildren(); i++)
+		for (int i = 0; i < getNumVisibleChildren(); i++)
 		{
-			ExternalType type = (ExternalType)getChild(i);
+			ExternalType type = (ExternalType)getVisibleChild(i);
 			
 			if (type.getType().equals(typeName))
 			{
