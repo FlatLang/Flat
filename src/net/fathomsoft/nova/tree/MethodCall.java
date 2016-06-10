@@ -796,6 +796,11 @@ public class MethodCall extends Variable
 				n.validateAccess(method);
 			}
 			
+			for (int i = 0; i < n.getArgumentList().getNumVisibleChildren(); i++)
+			{
+				n.getArgumentList().getVisibleChild(i).onAfterDecoded();
+			}
+			
 			return n;
 		}
 		
@@ -1171,8 +1176,23 @@ public class MethodCall extends Variable
 				}
 				
 				MethodCall calling   = (MethodCall)reference;
+				Node ancestor = returned.getAncestorWithScope();
+				Node addBefore = calling.getBaseNode();
 				
-				Variable replacement = returned.getAncestorWithScope().getScope().registerLocalVariable(calling, false);
+				/*if (ancestor instanceof ForEachLoop)
+				{
+					ForEachLoop loop = (ForEachLoop)ancestor;
+					
+					Accessible root = getContextNode();
+					
+					if (loop.getIteratorValue() == root)
+					{
+						ancestor = ancestor.getParent().getAncestorWithScope();
+						addBefore = loop;
+					}
+				}*/
+				
+				Variable replacement = ancestor.getScope().registerLocalVariable(calling, addBefore, false);
 				
 				if (replacement == null)
 				{
