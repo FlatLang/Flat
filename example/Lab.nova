@@ -41,9 +41,9 @@ public class Lab
 		tree.addNode("F").addNode("B").addNode("A").addNode("D").addNode("C").addNode("E").addNode("G").addNode("I").addNode("H")
 		
 		Console.writeLine("Preorder: " + tree.preorder().join(", "))
-		Console.writeLine("Inorder: " + tree.inorder())
-		Console.writeLine("Postorder: " + tree.postorder())
-		Console.writeLine("Levelorder: " + tree.levelorder())
+		Console.writeLine("Inorder: " + tree.inorder().join(", "))
+		Console.writeLine("Postorder: " + tree.postorder().join(", "))
+		Console.writeLine("Levelorder: " + tree.levelorder().join(", "))
 		
 		//"test".size
 		
