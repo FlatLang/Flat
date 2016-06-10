@@ -8,6 +8,8 @@ import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.error.UnimplementedOperationException;
+import net.fathomsoft.nova.tree.annotations.Annotatable;
+import net.fathomsoft.nova.tree.annotations.Annotation;
 import net.fathomsoft.nova.tree.exceptionhandling.Try;
 import net.fathomsoft.nova.util.Bounds;
 import net.fathomsoft.nova.util.Location;
@@ -26,13 +28,14 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * @since	v0.1 Jan 5, 2014 at 9:00:11 PM
  * @version	v0.2.41 Dec 17, 2014 at 7:48:17 PM
  */
-public abstract class Node implements Listenable
+public abstract class Node implements Listenable, Annotatable
 {
 	private Location		locationIn;
 	
 	private Node			parent;
-	
+
 	private ArrayList<Node>	children;
+	private ArrayList<Annotation>	annotations;
 	
 	/**
 	 * Create a new Node. Initializes the data.
@@ -70,6 +73,38 @@ public abstract class Node implements Listenable
 	public int getNumDefaultChildren()
 	{
 		return 0;
+	}
+	
+	public int getNumAnnotations()
+	{
+		return annotations != null ? annotations.size() : 0;
+	}
+	
+	@Override
+	public ArrayList<Annotation> getAnnotations()
+	{
+		return annotations;
+	}
+
+	@Override
+	public void addAnnotation(Annotation annotation)
+	{
+		if (annotations == null)
+		{
+			annotations = new ArrayList<Annotation>();
+		}
+		
+		annotations.add(annotation);
+		
+		annotation.setTemporaryParent(this);
+	}
+	
+	public void removeAnnotation(Annotation annotation)
+	{
+		if (annotations != null)
+		{
+			annotations.remove(annotation);
+		}
 	}
 	
 	/**
@@ -178,6 +213,11 @@ public abstract class Node implements Listenable
 	public Node getParent()
 	{
 		return parent;
+	}
+	
+	public ScopeAncestor getParentScopeAncestor()
+	{
+		return (ScopeAncestor)getAncestorOfType(ScopeAncestor.class);
 	}
 	
 	/**
@@ -560,6 +600,11 @@ public abstract class Node implements Listenable
 		return false;
 	}
 	
+	public void addReference(Node node)
+	{
+		addChild(getNumChildren(), node, this, false);
+	}
+	
 	/**
 	 * Add the specific Node under the current Node as a child.
 	 * 
@@ -617,13 +662,25 @@ public abstract class Node implements Listenable
 	 */
 	public void addChild(int index, Node node, Node toNode)
 	{
-		// If the node already belongs to a parent, remove it from its old parent.
-		node.detach();
-		
-		toNode.children.add(index, node);
-		
-		// Set this instance as the new parent.
-		node.parent = this;
+		addChild(index, node, toNode, true);
+	}
+	
+	public void addChild(int index, Node node, Node toNode, boolean detach)
+	{
+		if (detach)
+		{
+			// If the node already belongs to a parent, remove it from its old parent.
+			node.detach();
+			
+			// Set this instance as the new parent.
+			node.parent = this;
+
+			toNode.children.add(index, node);
+		}
+		else
+		{
+			toNode.children.set(index, node);
+		}
 		
 		node.onAdded(toNode);
 	}
@@ -769,13 +826,21 @@ public abstract class Node implements Listenable
 	 */
 	public void replace(Node old, Node replacement)
 	{
+		replace(old, replacement, true);
+	}
+	
+	public void replace(Node old, Node replacement, boolean detach)
+	{
 		int index = children.indexOf(old);
 		
-		old.detach();
+		if (detach)
+		{
+			old.detach();
+		}
 		
 		if (replacement != null)
 		{
-			addChild(index, replacement, this);
+			addChild(index, replacement, this, detach);
 		}
 	}
 	
@@ -1298,6 +1363,19 @@ public abstract class Node implements Listenable
 		return true;
 	}
 	
+	public boolean onNextStatementDecoded(Node next)
+	{
+		for (Node n : children)
+		{
+			if (!n.onNextStatementDecoded(next))
+			{
+				return false;
+			}
+		}
+		
+		return true;
+	}
+	
 	/**
 	 * Validate the node to make last minute changes or error checking.
 	 * 
@@ -1306,6 +1384,19 @@ public abstract class Node implements Listenable
 	 */
 	public ValidationResult validate(int phase)
 	{
+		if (getNumAnnotations() > 0)
+		{
+			for (int i = annotations.size() - 1; i >= 0; i--)
+			{
+				ValidationResult result = annotations.get(i).validate(phase);
+				
+				if (result.skipValidation())
+				{
+					return result;
+				}
+			}
+		}
+		
 		return new ValidationResult(this);
 	}
 	
