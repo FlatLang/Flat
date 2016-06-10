@@ -70,33 +70,4 @@ public class BinaryNode<E> extends Node<E>
 				right.addChild(data)
 		}
 	}
-	
-	public inorder() -> String
-	{
-		String str = ""
-		
-		if (left != null)
-			str = str + left.inorder() + ", "
-		
-		str = str + data
-		
-		if (right != null)
-			str = str + ", " + right.inorder()
-		
-		return str
-	}
-	
-	public postorder() -> String
-	{
-		String str = ""
-		
-		if (left != null)
-			str = str + left.postorder() + ", "
-		if (right != null)
-			str = str + right.postorder() + ", "
-		
-		str = str + data
-		
-		return str
-	}
 }
