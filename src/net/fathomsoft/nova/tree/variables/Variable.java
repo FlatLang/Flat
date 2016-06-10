@@ -188,12 +188,7 @@ public class Variable extends Identifier
 	 */
 	public VariableDeclaration getDeclaration()
 	{
-		if (declaration != null)
-		{
-			return declaration;
-		}
-		
-		return null;
+		return declaration;
 	}
 	
 	@Override
