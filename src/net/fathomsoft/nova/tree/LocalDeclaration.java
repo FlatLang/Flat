@@ -196,6 +196,7 @@ public class LocalDeclaration extends VariableDeclaration
 		// If a local variable with the same name has already been declared.
 		if (node instanceof LocalDeclaration)
 		{
+			SyntaxTree.findDeclaration(getParent(), getName());
 			SyntaxMessage.error("Local variable '" + getName() + "' has already been declared", this);
 		}
 		
