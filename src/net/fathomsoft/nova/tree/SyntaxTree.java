@@ -8,6 +8,7 @@ import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.error.SyntaxErrorException;
 import net.fathomsoft.nova.error.SyntaxMessage;
+import net.fathomsoft.nova.tree.annotations.Annotation;
 import net.fathomsoft.nova.tree.exceptionhandling.Catch;
 import net.fathomsoft.nova.tree.exceptionhandling.ExceptionHandler;
 import net.fathomsoft.nova.tree.exceptionhandling.Finally;
@@ -56,15 +57,16 @@ public class SyntaxTree
 	{
 		IfStatement.class, ElseStatement.class, Loop.class, Case.class,
 		Switch.class, Default.class, Fallthrough.class, Priority.class,
-		Return.class, Assignment.class, BinaryOperation.class, Super.class
+		Return.class, Assignment.class, BinaryOperation.class, Super.class,
+		Annotation.class
 	};
 	
 	private static final Class<?> SCOPE_CHILD_DECODE[] = new Class<?>[]
 	{
-		Break.class, Case.class, Switch.class, Default.class, Fallthrough.class,
-		Continue.class, ExceptionHandler.class, Assignment.class, Instantiation.class,
-		ArrayAccess.class, ElseStatement.class, IfStatement.class, Until.class,
-		Loop.class, Array.class, UnaryOperation.class, Cast.class,
+		Annotation.class, Break.class, Case.class, Switch.class, Default.class,
+		Fallthrough.class, Continue.class, ExceptionHandler.class, Assignment.class,
+		Instantiation.class, ArrayAccess.class, ElseStatement.class, IfStatement.class,
+		Until.class, Loop.class, Array.class, UnaryOperation.class, Cast.class,
 		MethodCall.class, LocalDeclaration.class
 	};
 	
@@ -75,14 +77,14 @@ public class SyntaxTree
 	
 	public static final Class<?> FIRST_PASS_CLASSES[] = new Class<?>[]
 	{
-		Import.class, ClassDeclaration.class, Interface.class, Package.class
+		Annotation.class, Import.class, ClassDeclaration.class, Interface.class, Package.class
 	};
 	
 	public static final Class<?> SECOND_PASS_CLASSES[] = new Class<?>[]
 	{
-		StaticBlock.class, AbstractMethodDeclaration.class, ExternalMethodDeclaration.class,
-		Destructor.class, Constructor.class, BodyMethodDeclaration.class, ExternalType.class,
-		FieldDeclaration.class
+		Annotation.class, StaticBlock.class, AbstractMethodDeclaration.class,
+		ExternalMethodDeclaration.class, Destructor.class, Constructor.class,
+		BodyMethodDeclaration.class, ExternalType.class, FieldDeclaration.class
 	};
 	
 	/**
@@ -526,6 +528,7 @@ public class SyntaxTree
 				else if (node == null && type == Throw.class) node = Throw.decodeStatement(parent, statement, location, require);
 				else if (node == null && type == Try.class) node = Try.decodeStatement(parent, statement, location, require);
 				else if (node == null && type == Until.class) node = Until.decodeStatement(parent, statement, location, require);
+				else if (node == null && type == Annotation.class) node = Annotation.decodeStatement(parent, statement, location, require);
 				
 				if (node != null)
 				{
@@ -1129,7 +1132,7 @@ public class SyntaxTree
 			return null;
 		}
 		
-		return checkForLocalVariable(parent, statement, node.getScope().getID());
+		return checkForLocalVariable(parent, statement, node.getScope());
 	}
 	
 	/**
@@ -1137,18 +1140,18 @@ public class SyntaxTree
 	 * 
 	 * @param parent The parent of the given statement
 	 * @param statement The statement containing the variable name.
-	 * @param scopeID The scope to search for the variable from.
+	 * @param scope The scope to search for the variable from.
 	 * @return The found local variable declaration. If the local
 	 * 		variable was not found, null is returned.
 	 */
-	private static VariableDeclaration checkForLocalVariable(Node parent, String statement, int scopeID)
+	private static VariableDeclaration checkForLocalVariable(Node parent, String statement, Scope scope)
 	{
 		Node scopeNode = parent.getAncestorWithScope();
 		
 		while (scopeNode != null)
 		{
 			VariableDeclarationList variables = scopeNode.getScope().getVariableList();
-			VariableDeclaration     variable  = variables.getVariable(statement, scopeID);
+			VariableDeclaration     variable  = variables.getVariable(statement, scope);
 			
 			if (variable != null)
 			{
