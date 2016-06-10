@@ -7,6 +7,7 @@ import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.tree.MethodList.SearchFilter;
+import net.fathomsoft.nova.tree.annotations.Annotation;
 import net.fathomsoft.nova.tree.generics.GenericTypeParameterDeclaration;
 import net.fathomsoft.nova.tree.generics.GenericTypeParameter;
 import net.fathomsoft.nova.tree.variables.FieldDeclaration;
@@ -1298,6 +1299,10 @@ public class ClassDeclaration extends InstanceDeclaration
 		else if (child instanceof GenericTypeParameterDeclaration)
 		{
 			super.addChild(child);
+		}
+		else if (child instanceof Annotation)
+		{
+			
 		}
 		else
 		{
