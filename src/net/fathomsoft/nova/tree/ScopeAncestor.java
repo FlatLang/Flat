@@ -15,7 +15,9 @@ public interface ScopeAncestor
 	 * 
 	 * @return A unique identifier for local variables.
 	 */
-	public int generateUniqueID();
+	public int generateUniqueID(Scope scope);
+	
+	public Scope getScope(int id);
 	
 	public Scope getScope();
 	

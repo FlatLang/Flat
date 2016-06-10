@@ -1,6 +1,8 @@
 package net.fathomsoft.nova.tree;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
 
 import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.TestContext;
@@ -34,6 +36,8 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 	private String[] types;
 	
 	private ArrayList<NovaMethodDeclaration>	overridingMethods;
+	
+	private static HashMap<Integer, Scope> scopes = new HashMap<>(); 
 	
 	/**
 	 * @see net.fathomsoft.nova.tree.InstanceDeclaration#InstanceDeclaration(Node, Location)
@@ -94,9 +98,18 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 	 * @see net.fathomsoft.nova.tree.ScopeAncestor#generateUniqueID()
 	 */
 	@Override
-	public int generateUniqueID()
+	public int generateUniqueID(Scope scope)
 	{
-		return ++uniqueID;
+		int id = ++uniqueID;
+		
+		scopes.put(id, scope);
+		
+		return id;
+	}
+	
+	public Scope getScope(int id)
+	{
+		return scopes.get(id);
 	}
 	
 	/**
@@ -627,6 +640,19 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 		if (data.error != null)
 		{
 			return SyntaxMessage.queryError(data.error, this, require);
+		}
+		
+		while (data.getGenericsRemaining() > 0)
+		{
+			Bounds bounds = data.getSkipBounds(data.getGenericsRemaining() - 1);
+			
+			String arg = bounds.extractString(signature);
+			
+			arg = arg.substring(GENERIC_START.length(), arg.length() - GENERIC_END.length());
+			
+			Arrays.stream(StringUtils.splitCommas(arg)).forEach(x -> addGenericTypeArgumentName(x));
+			
+			data.decrementGenericsRemaining();
 		}
 		
 		return true;

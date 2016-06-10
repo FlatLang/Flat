@@ -46,7 +46,7 @@ public abstract class PropertyMethod extends BodyMethodDeclaration
 			}
 			else if (n.getScope() != null)
 			{
-				LocalDeclaration d = n.getScope().getVariableList().getVariable(getName(), n.getScope().getID());
+				LocalDeclaration d = n.getScope().getVariableList().getVariable(getName(), n.getScope());
 				
 				if (d != null)
 				{

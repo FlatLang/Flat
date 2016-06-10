@@ -1,6 +1,7 @@
 package net.fathomsoft.nova.tree;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.TestContext;
@@ -49,7 +50,7 @@ public class Scope extends Node
 		
 		addChild(variablesNode, this);
 		
-		id = getNextScopeAncestor(false).generateUniqueID();
+		id = getNextScopeAncestor(false).generateUniqueID(this);
 	}
 	
 	@Override
@@ -148,6 +149,7 @@ public class Scope extends Node
 		
 		String type = returned.generateNovaType().toString();
 		
+		//Nova.debuggingBreakpoint(addBefore.getParentClass().getName().equals("Node") && getParentMethod().getName().equals("inorder"));
 		String     decl   = type + " nova_local_" + getParentMethod().getScope().localVariableID++ + " = null";
 		Assignment assign = Assignment.decodeStatement(addBefore.getParent(), decl, getLocationIn(), require, true, null, virtual, false);
 		

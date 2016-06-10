@@ -1,5 +1,7 @@
 package net.fathomsoft.nova.tree;
 
+import java.util.HashMap;
+
 import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.util.Location;
@@ -15,6 +17,8 @@ import net.fathomsoft.nova.tree.exceptionhandling.Exception;
 public class StaticBlock extends Node implements ScopeAncestor
 {
 	private int	uniqueID;
+	
+	private static HashMap<Integer, Scope> scopes = new HashMap<>();
 	
 	private static final String	C_PREFIX   = Nova.LANGUAGE_NAME + "_init_";
 	
@@ -49,9 +53,18 @@ public class StaticBlock extends Node implements ScopeAncestor
 	 * @see net.fathomsoft.nova.tree.ScopeAncestor#generateUniqueID()
 	 */
 	@Override
-	public int generateUniqueID()
+	public int generateUniqueID(Scope scope)
 	{
-		return ++uniqueID;
+		int id = ++uniqueID;
+		
+		scopes.put(id, scope);
+		
+		return id;
+	}
+	
+	public Scope getScope(int id)
+	{
+		return scopes.get(id);
 	}
 	
 	public ParameterList getParameterList()
