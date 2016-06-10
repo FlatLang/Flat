@@ -162,6 +162,32 @@ public class Array<E> implements List<E, Int>
 		}
 	}
 	
+	public any(anyFunc(E) -> Bool) -> Bool
+	{
+		for (element in this)
+		{
+			if (anyFunc(element))
+			{
+				return true
+			}
+		}
+		
+		return false
+	}
+	
+	public all(allFunc(E) -> Bool) -> Bool
+	{
+		for (element in this)
+		{
+			if (!allFunc(element))
+			{
+				return false
+			}
+		}
+		
+		return true
+	}
+	
 	public filter(filterFunc(E) -> Bool) -> Array<E>
 	{
 		Array<E> filtered = new Array()
@@ -206,19 +232,19 @@ public class Array<E> implements List<E, Int>
 		return list
 	}
 	
-	/*
+	
 	@RequireGenericType(E extends Number)
 	public sum() -> Long
     {
     	Long sum = 0
     	
-    	for (value in this)
+    	/*for (value in this)
     	{
     		sum += value
-    	}
+    	}*/
     	
         return sum
-    }*/
+    }
     
     public join(String delimiter) -> String
     {

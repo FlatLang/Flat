@@ -25,6 +25,11 @@ public interface List<Type, PositionType> extends Iterable<Type, PositionType>
 		}
 	}*/
 	
+	//map<E>(mapFunc(Type) -> E) -> List<E, PositionType>
+	
+	any(anyFunc(Type) -> Bool) -> Bool
+	all(allFunc(Type) -> Bool) -> Bool
+	
 	filter(filterFunc(Type) -> Bool) -> List<Type, PositionType>
 	/*{
 		List<Type> list = clone()
