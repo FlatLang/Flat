@@ -11,17 +11,17 @@ public class Tree<E>
 		return root.preorder()
 	}
 	
-	public inorder() -> String
+	public inorder() -> Array<E>
 	{
 		return root.inorder()
 	}
 	
-	public postorder() -> String
+	public postorder() -> Array<E>
 	{
 		return root.postorder()
 	}
 	
-	public levelorder() -> String
+	public levelorder() -> Array<E>
 	{
 		return root.levelorder()
 	}
