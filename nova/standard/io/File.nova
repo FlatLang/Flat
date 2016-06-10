@@ -30,7 +30,7 @@ public class File
 	
 	static
 	{
-		File exitLog = new File("log" + Time.currentTimeMillis())
+		File exitLog = new File("log" + Time.currentTimeMillis)
 	}
 	
 	visible Bool exists

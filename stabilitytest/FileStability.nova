@@ -18,7 +18,7 @@ public class FileStability extends StabilityTestCase
 		
 		try
 		{
-			File f = new File("temp" + Time.currentTimeMillis())
+			File f = new File("temp" + Time.currentTimeMillis)
 			
 			createFile(f)
 			writeToFile(f)

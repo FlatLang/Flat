@@ -32,7 +32,7 @@ public class System
 	{
 		if (log)
 		{
-			File f = new File("Log" + Time.currentTimeMillis() + ".txt")
+			File f = new File("Log" + Time.currentTimeMillis + ".txt")
 			
 			if (f.create())
 			{
