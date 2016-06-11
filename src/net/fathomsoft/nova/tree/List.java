@@ -1,5 +1,7 @@
 package net.fathomsoft.nova.tree;
 
+import java.util.ArrayList;
+
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.util.Location;
 
@@ -18,6 +20,18 @@ public class List extends Node
 	public List(Node temporaryParent, Location locationIn)
 	{
 		super(temporaryParent, locationIn);
+	}
+	
+	public ArrayList<Node> toArray()
+	{
+		ArrayList<Node> nodes = new ArrayList<>();
+		
+		for (int i = 0; i < getNumVisibleChildren(); i++)
+		{
+			nodes.add(getVisibleChild(i));
+		}
+		
+		return nodes;
 	}
 	
 	/**

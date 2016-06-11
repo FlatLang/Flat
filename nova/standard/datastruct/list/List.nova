@@ -69,6 +69,22 @@ public interface List<Type, PositionType> extends Iterable<Type, PositionType>
 		return list
 	}*/
 	
+	first() -> Type
+	last() -> Type
+	
+	firstWhere(func(Type) -> Bool) -> Type
+	/*{
+		for (element in this)
+		{
+			if (func(element))
+			{
+				return element
+			}
+		}
+		
+		return null
+	}*/
+	
 	//get(Int index) -> Type
 	//set(Int index, Type value) -> List<Type, PositionType>
 	//add(Type value) -> List<Type, PositionType>

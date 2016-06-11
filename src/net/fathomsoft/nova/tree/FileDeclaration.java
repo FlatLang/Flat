@@ -254,7 +254,9 @@ public class FileDeclaration extends Node
 			clazz = clazz.getParentClass();
 		}
 		
-		return getImport(className, false, true).getClassDeclaration();
+		Import i = getImport(className, false, true);
+		
+		return i != null ? i.getClassDeclaration() : null;
 	}
 	
 	/**

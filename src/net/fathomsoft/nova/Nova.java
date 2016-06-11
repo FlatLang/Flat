@@ -1532,6 +1532,18 @@ public class Nova
 			{
 				enableFlag(NO_ERRORS);
 			}
+			else if (arg.equals("-no-notes"))
+			{
+				enableFlag(NO_NOTES);
+			}
+			else if (arg.equals("-no-warnings"))
+			{
+				enableFlag(NO_WARNINGS);
+			}
+			else if (arg.equals("-no-errors"))
+			{
+				enableFlag(NO_ERRORS);
+			}
 			// If the user wants to view the c source output.
 			else if (arg.equals("-csource"))
 			{

@@ -1679,7 +1679,7 @@ public class ClassDeclaration extends InstanceDeclaration
 		getFieldList().generateNonStaticCSource(builder);
 		
 		generateStaticBlocksSource(builder);
-		
+		Nova.debuggingBreakpoint(getName().equals("Multiply"));
 		getConstructorList().generateCSource(builder);
 		getDestructorList().generateCSource(builder);
 		getMethodList().generateCSource(builder);
@@ -1876,8 +1876,6 @@ public class ClassDeclaration extends InstanceDeclaration
 					if (data.getRightAdjacentSkipBounds() != null)
 					{
 						getGenericTypeParameterDeclaration().decodeGenericTypeParameters(data.statement, data.getRightAdjacentSkipBounds());
-//						getGenericTypeParameterDeclaration().decodeGenericTypeParameters(data.statement, data.getRightAdjacentSkipBounds());
-//						decodeGenericArguments(data.statement, data.getRightAdjacentSkipBounds());
 						
 						for (GenericTypeParameter param : getGenericTypeParameterDeclaration())
 						{

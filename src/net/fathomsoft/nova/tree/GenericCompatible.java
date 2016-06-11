@@ -14,6 +14,7 @@ import net.fathomsoft.nova.tree.variables.VariableDeclaration.DeclarationData;
 import net.fathomsoft.nova.util.Bounds;
 import net.fathomsoft.nova.util.Location;
 import net.fathomsoft.nova.util.StringUtils;
+import net.fathomsoft.nova.util.SyntaxUtils;
 
 /**
  * 
@@ -189,23 +190,10 @@ public interface GenericCompatible
 		
 		getGenericTypeArgumentList().addChild(type);
 	}
-	
+
 	public default GenericTypeArgument getGenericTypeArgumentName(String parameterName)
 	{
-		GenericTypeArgument type = new GenericTypeArgument((Node)this, Location.INVALID);
-		type.setType(parameterName, true, false, false);
-		
-		DeclarationData data = new DeclarationData();
-		
-		GenericTypeParameterDeclaration.searchGenerics(parameterName, data);
-		type.iterateWords(parameterName, data, true);
-		
-		if (data.containsSkipBounds())
-		{
-			type.setType(data.getSkipBounds(0).trimString(parameterName), true, false);
-		}
-		
-		return type;
+		return SyntaxUtils.getGenericTypeArgumentName((Node)this, parameterName);
 	}
 
 	public default void decodeGenericTypeArguments(String statement, Bounds genericBounds)
@@ -237,19 +225,10 @@ public interface GenericCompatible
 			getGenericTypeArgumentList().addChild(arg);
 		}
 	}
-	
+
 	public default GenericTypeArgument[] getGenericTypeArguments(String params)
 	{
-		String paramsList[] = StringUtils.splitCommas(params);
-		
-		ArrayList<GenericTypeArgument> args = new ArrayList<>();
-		
-		for (String param : paramsList)
-		{
-			args.add(getGenericTypeArgumentName(param));
-		}
-		
-		return args.toArray(new GenericTypeArgument[0]);
+		return SyntaxUtils.getGenericTypeArguments((Node)this, params);
 	}
 	
 	/**
