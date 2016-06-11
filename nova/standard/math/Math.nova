@@ -4,7 +4,8 @@ import "math.h"
 
 public class Math
 {
-	external double abs(double number) as extAbs
+	external double llabs(long number) as extAbs
+	external double fabs(double number) as extFabs
 	external double sqrt(double number) as extSqrt
 	external double pow(double base, double power) as extPow
 	external double sin(double number) as extSin
@@ -37,10 +38,15 @@ public class Math
 	{
 		return extRand() % range
 	}
+
+	public static abs(Long number) -> Long
+	{
+	    return extAbs(number)
+	}
 	
 	public static abs(Double number) -> Double
 	{
-		return extAbs(number)
+		return extFabs(number)
 	}
 	
 	public static sqrt(Double number) -> Double
