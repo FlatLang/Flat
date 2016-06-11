@@ -46,7 +46,18 @@ public class AbstractMethodDeclaration extends NovaMethodDeclaration
 	@Override
 	public StringBuilder generateCSourceFragment(StringBuilder builder)
 	{
-		return generateCSourceSignature(builder).append("{}");
+		generateCSourceSignature(builder);
+		
+		if (getType() == null)
+		{
+			builder.append("{}");
+		}
+		else
+		{
+			builder.append("{return 0;}");
+		}
+		
+		return builder;
 	}
 	
 	/**
