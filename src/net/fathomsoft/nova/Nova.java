@@ -68,11 +68,9 @@ import net.fathomsoft.nova.tree.Value;
 import net.fathomsoft.nova.tree.WhileLoop;
 import net.fathomsoft.nova.tree.exceptionhandling.Exception;
 import net.fathomsoft.nova.tree.switches.Switch;
-import net.fathomsoft.nova.util.Command;
-import net.fathomsoft.nova.util.CommandListener;
-import net.fathomsoft.nova.util.FileUtils;
-import net.fathomsoft.nova.util.StringUtils;
-import net.fathomsoft.nova.util.SyntaxUtils;
+import net.fathomsoft.nova.util.*;
+
+import static java.util.Arrays.stream;
 
 /**
  * Class used for the compilation process.
@@ -89,7 +87,7 @@ public class Nova
 	
 	private long				flags;
 	private long				startTime, endTime;
-	
+
 	private File				outputFile, workingDir;
 	private File				nativeInterfaceSource, nativeInterfaceHeader;
 	private File				interfaceVTableHeader;
@@ -101,6 +99,8 @@ public class Nova
 	private ArrayList<File>		inputFiles, cSourceFiles, cHeaderFiles;
 	
 	private List<File>			lingeringFiles;
+
+	private String[]            visibleCompilerMessages;
 	
 	private static final int	OS;
 	
@@ -117,19 +117,22 @@ public class Nova
 	// Set to 0 to not benchmark.
 	public static final int		BENCHMARK     = 0;
 
-	public static final long	SINGLE_THREAD = 0x1000000000000l;
-	public static final long	SMALL_BIN     = 0x0100000000000l;
-	public static final long	NO_GC         = 0x0010000000000l;
-	public static final long	LIBRARY       = 0x0001000000000l;
-	public static final long	RUNTIME       = 0x0000100000000l;
-	public static final long	C_ARGS        = 0x0000010000000l;
-	public static final long	KEEP_C        = 0x0000001000000l;
-	public static final long	DRY_RUN       = 0x0000000100000l;
-	public static final long	VERBOSE       = 0x0000000010000l;
-	public static final long	FORMATC       = 0x0000000001000l;
-	public static final long	CSOURCE       = 0x0000000000100l;
-	public static final long	NO_C_OUTPUT   = 0x0000000000010l;
-	public static final long	NO_OPTIMIZE   = 0x0000000000001l;
+	public static final long	SINGLE_THREAD = 0x1000000000000000l;
+	public static final long	SMALL_BIN     = 0x0100000000000000l;
+	public static final long	NO_GC         = 0x0010000000000000l;
+	public static final long	LIBRARY       = 0x0001000000000000l;
+	public static final long	RUNTIME       = 0x0000100000000000l;
+	public static final long	C_ARGS        = 0x0000010000000000l;
+	public static final long	KEEP_C        = 0x0000001000000000l;
+	public static final long	DRY_RUN       = 0x0000000100000000l;
+	public static final long	VERBOSE       = 0x0000000010000000l;
+	public static final long	FORMATC       = 0x0000000001000000l;
+	public static final long	CSOURCE       = 0x0000000000100000l;
+	public static final long	NO_C_OUTPUT   = 0x0000000000010000l;
+	public static final long	NO_OPTIMIZE   = 0x0000000000001000l;
+	public static final long	NO_ERRORS     = 0x0000000000000100l;
+	public static final long	NO_WARNINGS   = 0x0000000000000010l;
+	public static final long	NO_NOTES      = 0x0000000000000001l;
 	
 	public static final int		GCC           = 1;
 	public static final int		TCC           = 2;
@@ -331,6 +334,9 @@ public class Nova
 //				"-nogc",
 //				"-no-c-output",
 //				"-dry"
+//				"-no-notes",
+//				"-no-warnings",
+//				"-no-errors",
 				"-no-optimize",
 				"-library",
 			};
@@ -495,6 +501,24 @@ public class Nova
 		args = appendArguments(args, postArgs);
 		
 		parseArguments(args);
+
+		ArrayList<String> compileMessages = new ArrayList<>();
+
+		if (!isFlagEnabled(NO_NOTES))
+		{
+			compileMessages.add("note");
+		}
+		if (!isFlagEnabled(NO_WARNINGS))
+		{
+			compileMessages.add("warning");
+		}
+		if (!isFlagEnabled(NO_ERRORS))
+		{
+			compileMessages.add("error");
+			compileMessages.add("fatal error");
+		}
+
+		visibleCompilerMessages = compileMessages.toArray(new String[0]);
 		
 //		log("Nova " + VERSION + " Copyright (C) 2014  Braden Steffaniak <BradenSteffaniak@gmail.com>\n" +
 //				"This program comes with ABSOLUTELY NO WARRANTY\n" + //; for details type show w." +
@@ -940,9 +964,9 @@ public class Nova
 //			mainMethodText.append	("FreeConsole();").append('\n');
 //			mainMethodText.append	("AllocConsole();").append('\n');
 			mainMethodText.append	("srand(currentTimeMillis());").append('\n');
-			mainMethodText.append	("nova_null = ").append(nullConstructor.generateCSourceFragment()).append(';').append('\n');
 			mainMethodText.append	(Literal.GARBAGE_IDENTIFIER).append(" = malloc(sizeof(void*));").append('\n');
 			mainMethodText.append	(gcInit.generateCSource()).append('\n');
+			mainMethodText.append	("nova_null = ").append(nullConstructor.generateCSourceFragment()).append(';').append('\n');
 			mainMethodText.append	(nativeAssignments).append('\n');
 			mainMethodText.append	(staticBlockCalls).append('\n');
 			mainMethodText.append	("args = (nova_standard_Nova_String**)NOVA_MALLOC(argc * sizeof(nova_standard_Nova_String));").append('\n');
@@ -969,8 +993,13 @@ public class Nova
 			mainMethodText.append		('\n');
 			mainMethodText.append	('}').append('\n');
 			mainMethodText.append	("END_TRY;").append('\n');
-			mainMethodText.append	("FreeConsole();").append('\n');
-			mainMethodText.append	("NOVA_FREE(args);").append('\n');
+
+			if (OS == WINDOWS)
+			{
+				mainMethodText.append("FreeConsole();").append('\n');
+			}
+
+			mainMethodText.append   ("NOVA_FREE(args);").append('\n');
 			mainMethodText.append	(gcColl.generateCSource()).append('\n');
 			mainMethodText.append	('\n');
 			mainMethodText.append	("return 0;").append('\n');
@@ -1071,7 +1100,7 @@ public class Nova
 			
 			cmd.append("-I").append(formatPath(dir)).append(' ');
 		}
-		
+
 		String libDir    = workingDir + "/bin";
 		String incDir    = workingDir + "../include/";
 		
@@ -1113,10 +1142,15 @@ public class Nova
 
 		if (!isFlagEnabled(NO_GC))
 		{
-			cmd.append("-lgc -Wl,-R -Wl," + formatPath(libDir) + " ");
+			cmd.append("-lgc -Wl,-L" + formatPath(libDir) + " ");
+
+			if (OS != MACOSX)
+			{
+				cmd.append("-Wl,-R ");
+			}
 		}
 		
-		if (OS == LINUX)
+		if (OS == LINUX)// || OS == MACOSX)
 		{
 			cmd.append("-lm -lpthread -ldl -lc -lmysqlclient ");
 		}
@@ -1142,10 +1176,17 @@ public class Nova
 		command.addCommandListener(new CommandListener()
 		{
 			boolean failed = false;
+
+			String currentMessage = "";
 			
 			@Override
 			public void resultReceived(int result)
 			{
+				if (stream(visibleCompilerMessages).anyMatch(x -> currentMessage.contains(x + ":")))
+				{
+					System.err.println(currentMessage.trim());
+				}
+
 				if (!failed)
 				{
 				//	log("Compilation succeeded.");
@@ -1183,8 +1224,23 @@ public class Nova
 				{
 					failed = true;
 				}
-				
-				System.err.println(message);
+
+				currentMessage += message;
+
+				if (message.trim().equals("^"))
+				{
+					//"(.+?(:\\s*?(\\d+:[\\n\\r]|((warning|error):[^^]+))))+"
+					if (stream(visibleCompilerMessages).anyMatch(x -> currentMessage.contains(x + ":")))
+					{
+						System.err.println(currentMessage);
+					}
+
+					currentMessage = "";
+				}
+				else
+				{
+					currentMessage += "\n";
+				}
 			}
 			
 			@Override
@@ -1463,6 +1519,18 @@ public class Nova
 			else if (arg.equals("-no-optimize"))
 			{
 				enableFlag(NO_OPTIMIZE);
+			}
+			else if (arg.equals("-no-notes"))
+			{
+				enableFlag(NO_NOTES);
+			}
+			else if (arg.equals("-no-warnings"))
+			{
+				enableFlag(NO_WARNINGS);
+			}
+			else if (arg.equals("-no-errors"))
+			{
+				enableFlag(NO_ERRORS);
 			}
 			// If the user wants to view the c source output.
 			else if (arg.equals("-csource"))
