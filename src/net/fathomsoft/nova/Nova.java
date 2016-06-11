@@ -264,23 +264,23 @@ public class Nova
 			
 			args = new String[]
 			{
-//				formatPath(stability + "StabilityTest.nova"),
-//				formatPath(stability + "TimeStability.nova"),
-//				formatPath(stability + "FileStability.nova"),
-//				formatPath(stability + "ThreadStability.nova"),
-//				formatPath(stability + "ExceptionStability.nova"),
-//				formatPath(stability + "SyntaxStability.nova"),
-//				formatPath(stability + "ClosureStability.nova"),
-//				formatPath(stability + "PolymorphismStability.nova"),
-//				formatPath(stability + "PolymorphicSuperClass.nova"),
-//				formatPath(stability + "PolymorphicSubClass.nova"),
-//				formatPath(stability + "StabilityTestException.nova"),
-//				formatPath(stability + "StabilityExceptionHandler.nova"),
-//				formatPath(stability + "ThreadImplementation.nova"),
-//				formatPath(stability + "UnstableException.nova"),
-//				formatPath(stability + "NetworkStability.nova"),
-//				formatPath(stability + "ClientThread.nova"),
-//				formatPath(stability + "StabilityTestCase.nova"),
+				formatPath(stability + "StabilityTest.nova"),
+				formatPath(stability + "TimeStability.nova"),
+				formatPath(stability + "FileStability.nova"),
+				formatPath(stability + "ThreadStability.nova"),
+				formatPath(stability + "ExceptionStability.nova"),
+				formatPath(stability + "SyntaxStability.nova"),
+				formatPath(stability + "ClosureStability.nova"),
+				formatPath(stability + "PolymorphismStability.nova"),
+				formatPath(stability + "PolymorphicSuperClass.nova"),
+				formatPath(stability + "PolymorphicSubClass.nova"),
+				formatPath(stability + "StabilityTestException.nova"),
+				formatPath(stability + "StabilityExceptionHandler.nova"),
+				formatPath(stability + "ThreadImplementation.nova"),
+				formatPath(stability + "UnstableException.nova"),
+				formatPath(stability + "NetworkStability.nova"),
+				formatPath(stability + "ClientThread.nova"),
+				formatPath(stability + "StabilityTestCase.nova"),
 //				formatPath(directory + "network/OutputThread.nova"),
 //				formatPath(directory + "network/ConnectionThread.nova"),
 //				formatPath(directory + "network/ServerDemo.nova"),
@@ -295,7 +295,7 @@ public class Nova
 //				formatPath(root      + "bank/ClientConnectionThread.nova"),
 //				formatPath(root      + "bank/ClientInputThread.nova"),
 //				formatPath(directory + "ackermann/Ackermann.nova"),
-				formatPath(directory + "Lab.nova"),
+//				formatPath(directory + "Lab.nova"),
 //				formatPath(directory + "copy/Dog.nova"),
 //				formatPath(directory + "T1.nova"),
 //				formatPath(directory + "T2.nova"),
@@ -1149,10 +1149,14 @@ public class Nova
 				cmd.append("-Wl,-R ");
 			}
 		}
-		
+
+		if (OS == LINUX || OS == MACOSX)
+		{
+			cmd.append("-lpthread ");
+		}
 		if (OS == LINUX)// || OS == MACOSX)
 		{
-			cmd.append("-lm -lpthread -ldl -lc -lmysqlclient ");
+			cmd.append("-lm -ldl -lc -lmysqlclient ");
 		}
 		else if (OS == WINDOWS)
 		{
