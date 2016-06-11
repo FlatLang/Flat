@@ -40,7 +40,7 @@ CCLASS_PRIVATE
 )
 
 
-int nova_standard_io_Nova_File_Mutator_Nova_maxOpenFiles(nova_standard_io_Nova_File* this, nova_standard_exception_Nova_ExceptionData* exceptionData, int nova_standard_io_Nova_File_Nova_value);
+void nova_standard_io_Nova_File_Mutator_Nova_maxOpenFiles(nova_standard_io_Nova_File* this, nova_standard_exception_Nova_ExceptionData* exceptionData, int nova_standard_io_Nova_File_Nova_value);
 void nova_standard_io_Nova_FileNova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
 	{
@@ -244,7 +244,7 @@ int nova_standard_io_Nova_File_Accessor_Nova_maxOpenFiles(nova_standard_io_Nova_
 	return (int)getMaxOpenFiles();
 }
 
-int nova_standard_io_Nova_File_Mutator_Nova_maxOpenFiles(nova_standard_io_Nova_File* this, nova_standard_exception_Nova_ExceptionData* exceptionData, int nova_standard_io_Nova_File_Nova_value)
+void nova_standard_io_Nova_File_Mutator_Nova_maxOpenFiles(nova_standard_io_Nova_File* this, nova_standard_exception_Nova_ExceptionData* exceptionData, int nova_standard_io_Nova_File_Nova_value)
 {
 	short l1_Nova_min;
 	short l1_Nova_max;

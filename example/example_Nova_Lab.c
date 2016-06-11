@@ -22,6 +22,9 @@ example_Extension_VTable_Lab example_Extension_VTable_Lab_val =
 				0,
 				0,
 				0,
+				0,
+				0,
+				0,
 		},
 		nova_standard_Nova_Object_0_Nova_getHashCodeLong,
 		nova_standard_Nova_Object_0_Nova_toString,
@@ -84,8 +87,10 @@ void example_Nova_Lab_Nova_main(example_Nova_Lab* this, nova_standard_exception_
 {
 		nova_standard_datastruct_Nova_BinaryTree* l1_Nova_tree;
 		nova_standard_Nova_String** l1_Nova_a;
+		int* l1_Nova_b;
 		nova_standard_datastruct_list_Nova_Array* l1_Nova_list;
 		nova_standard_datastruct_list_Nova_Array* l1_Nova_list2;
+		nova_standard_datastruct_list_Nova_Array* l1_Nova_list3;
 		nova_standard_datastruct_list_Nova_Iterator* l1_Nova_iter;
 		nova_standard_datastruct_list_Nova_ArrayIterator* nova_local_0;
 		nova_standard_Nova_String* l5_Nova_string;
@@ -105,8 +110,19 @@ void example_Nova_Lab_Nova_main(example_Nova_Lab* this, nova_standard_exception_
 		l1_Nova_a[4] = nova_standard_Nova_String_1_Nova_construct(0, exceptionData, "to");
 		l1_Nova_a[5] = nova_standard_Nova_String_1_Nova_construct(0, exceptionData, "see");
 		l1_Nova_a[6] = nova_standard_Nova_String_1_Nova_construct(0, exceptionData, "what shows up");
+		l1_Nova_b = (int*)NOVA_MALLOC(sizeof(nova_standard_primitive_number_Nova_Int) * 7);
+		l1_Nova_b[0] = 1;
+		l1_Nova_b[1] = 2;
+		l1_Nova_b[2] = 3;
+		l1_Nova_b[3] = 4;
+		l1_Nova_b[4] = 5;
+		l1_Nova_b[5] = 6;
+		l1_Nova_b[6] = 7;
 		l1_Nova_list = nova_standard_datastruct_list_Nova_Array_4_Nova_construct(0, exceptionData, (nova_standard_Nova_Object**)(l1_Nova_a), 7);
 		l1_Nova_list2 = l1_Nova_list->vtable->nova_standard_datastruct_list_Nova_Array_virtual_Nova_filter(l1_Nova_list, exceptionData, (nova_standard_datastruct_list_Nova_Array_closure12_Nova_filterFunc)&example_Nova_Lab_Nova_myFilterFunc, (example_Nova_Lab*)nova_null);
+		l1_Nova_list3 = nova_standard_datastruct_list_Nova_Array_4_Nova_construct(0, exceptionData, (nova_standard_Nova_Object**)&(l1_Nova_b), 7);
+		nova_standard_io_Nova_Console_1_Nova_writeLine(0, exceptionData, (nova_standard_Nova_Object*)(nova_standard_primitive_number_Nova_Long_Nova_construct(0, exceptionData, nova_standard_datastruct_list_Nova_Array_Nova_sumSize(l1_Nova_list2, exceptionData))));
+		nova_standard_io_Nova_Console_0_Nova_writeLine(0, exceptionData, l1_Nova_list2->nova_standard_datastruct_list_Nova_Array_Nova_stringsOnly);
 		nova_standard_io_Nova_Console_0_Nova_writeLine(0, exceptionData, nova_standard_Nova_String_1_Nova_construct(0, exceptionData, "With foreach:"));
 		l1_Nova_list2->vtable->nova_standard_datastruct_list_Nova_Array_virtual_Nova_forEach(l1_Nova_list2, exceptionData, (nova_standard_datastruct_list_Nova_Array_closure3_Nova_func)&example_Nova_Lab_Nova_myforeach, (example_Nova_Lab*)nova_null);
 		nova_standard_io_Nova_Console_0_Nova_writeLine(0, exceptionData, nova_standard_Nova_String_1_Nova_construct(0, exceptionData, ""));
@@ -167,10 +183,10 @@ int main(int argc, char** argvs)
 		
 		nova_standard_exception_Nova_ExceptionData* exceptionData = 0;
 		srand(currentTimeMillis());
-		nova_null = nova_standard_primitive_Nova_Null_2_Nova_construct(0, exceptionData);
 		nova_garbageData = malloc(sizeof(void*));
 		nova_standard_gc_Nova_GC_Nova_init(0, exceptionData);
 		
+		nova_null = nova_standard_primitive_Nova_Null_2_Nova_construct(0, exceptionData);
 		novaEnv.nova_standard_String.concat__nova_standard_String = nova_standard_Extension_VTable_String_val.nova_standard_Nova_String_virtual0_Nova_concat;
 		novaEnv.nova_standard_String.toString = nova_standard_Extension_VTable_String_val.nova_standard_Nova_String_virtual0_Nova_toString;
 		novaEnv.nova_standard_Object.getHashCodeLong = nova_standard_Extension_VTable_Object_val.nova_standard_Nova_Object_virtual0_Nova_getHashCodeLong;
@@ -192,6 +208,9 @@ int main(int argc, char** argvs)
 		novaEnv.nova_standard_datastruct_list_List.filter__nova_standard_primitive_Bool = nova_standard_datastruct_list_Extension_VTable_List_val.itable.nova_standard_datastruct_list_Nova_List_virtual0_Nova_filter;
 		novaEnv.nova_standard_datastruct_list_List.take__nova_standard_primitive_number_Int = nova_standard_datastruct_list_Extension_VTable_List_val.itable.nova_standard_datastruct_list_Nova_List_virtual0_Nova_take;
 		novaEnv.nova_standard_datastruct_list_List.skip__nova_standard_primitive_number_Int = nova_standard_datastruct_list_Extension_VTable_List_val.itable.nova_standard_datastruct_list_Nova_List_virtual0_Nova_skip;
+		novaEnv.nova_standard_datastruct_list_List.first = nova_standard_datastruct_list_Extension_VTable_List_val.itable.nova_standard_datastruct_list_Nova_List_virtual0_Nova_first;
+		novaEnv.nova_standard_datastruct_list_List.last = nova_standard_datastruct_list_Extension_VTable_List_val.itable.nova_standard_datastruct_list_Nova_List_virtual0_Nova_last;
+		novaEnv.nova_standard_datastruct_list_List.firstWhere__nova_standard_primitive_Bool = nova_standard_datastruct_list_Extension_VTable_List_val.itable.nova_standard_datastruct_list_Nova_List_virtual0_Nova_firstWhere;
 		novaEnv.nova_standard_datastruct_list_Iterator.reset = nova_standard_datastruct_list_Extension_VTable_Iterator_val.itable.nova_standard_datastruct_list_Nova_Iterator_virtual0_Nova_reset;
 		novaEnv.nova_standard_datastruct_Comparable.compareTo__nova_standard_Object = nova_standard_datastruct_Extension_VTable_Comparable_val.itable.nova_standard_datastruct_Nova_Comparable_virtual0_Nova_compareTo;
 		novaEnv.example_Polygon.numberSides = example_Extension_VTable_Polygon_val.itable.example_Nova_Polygon_virtual0_Nova_numberSides;
@@ -237,6 +256,8 @@ int main(int argc, char** argvs)
 		nova_standard_primitive_number_Nova_FloatNova_init_static(exceptionData);
 		nova_standard_primitive_number_Nova_DoubleNova_init_static(exceptionData);
 		nova_standard_primitive_number_Nova_NumberNova_init_static(exceptionData);
+		nova_standard_primitive_number_Nova_IntegerNova_init_static(exceptionData);
+		nova_standard_primitive_number_Nova_RealNumberNova_init_static(exceptionData);
 		nova_standard_operators_Nova_MultiplyNova_init_static(exceptionData);
 		nova_standard_operators_Nova_EqualsNova_init_static(exceptionData);
 		nova_standard_time_Nova_TimeNova_init_static(exceptionData);
@@ -311,6 +332,7 @@ int main(int argc, char** argvs)
 				
 		}
 		END_TRY;
+		NOVA_FREE(args);
 		nova_standard_gc_Nova_GC_Nova_collect(0, exceptionData);
 		
 		

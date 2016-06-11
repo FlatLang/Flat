@@ -22,6 +22,9 @@ stabilitytest_Extension_VTable_StabilityTest stabilitytest_Extension_VTable_Stab
 				0,
 				0,
 				0,
+				0,
+				0,
+				0,
 		},
 		nova_standard_Nova_Object_0_Nova_getHashCodeLong,
 		nova_standard_Nova_Object_0_Nova_toString,
@@ -170,6 +173,9 @@ int main(int argc, char** argvs)
 		novaEnv.nova_standard_datastruct_list_List.filter__nova_standard_primitive_Bool = nova_standard_datastruct_list_Extension_VTable_List_val.itable.nova_standard_datastruct_list_Nova_List_virtual0_Nova_filter;
 		novaEnv.nova_standard_datastruct_list_List.take__nova_standard_primitive_number_Int = nova_standard_datastruct_list_Extension_VTable_List_val.itable.nova_standard_datastruct_list_Nova_List_virtual0_Nova_take;
 		novaEnv.nova_standard_datastruct_list_List.skip__nova_standard_primitive_number_Int = nova_standard_datastruct_list_Extension_VTable_List_val.itable.nova_standard_datastruct_list_Nova_List_virtual0_Nova_skip;
+		novaEnv.nova_standard_datastruct_list_List.first = nova_standard_datastruct_list_Extension_VTable_List_val.itable.nova_standard_datastruct_list_Nova_List_virtual0_Nova_first;
+		novaEnv.nova_standard_datastruct_list_List.last = nova_standard_datastruct_list_Extension_VTable_List_val.itable.nova_standard_datastruct_list_Nova_List_virtual0_Nova_last;
+		novaEnv.nova_standard_datastruct_list_List.firstWhere__nova_standard_primitive_Bool = nova_standard_datastruct_list_Extension_VTable_List_val.itable.nova_standard_datastruct_list_Nova_List_virtual0_Nova_firstWhere;
 		novaEnv.nova_standard_datastruct_list_Iterator.reset = nova_standard_datastruct_list_Extension_VTable_Iterator_val.itable.nova_standard_datastruct_list_Nova_Iterator_virtual0_Nova_reset;
 		novaEnv.nova_standard_datastruct_Comparable.compareTo__nova_standard_Object = nova_standard_datastruct_Extension_VTable_Comparable_val.itable.nova_standard_datastruct_Nova_Comparable_virtual0_Nova_compareTo;
 		novaEnv.stabilitytest_PolymorphicSuperClass.toString = stabilitytest_Extension_VTable_PolymorphicSuperClass_val.stabilitytest_Nova_PolymorphicSuperClass_virtual0_Nova_toString;
@@ -217,6 +223,8 @@ int main(int argc, char** argvs)
 		nova_standard_primitive_number_Nova_FloatNova_init_static(exceptionData);
 		nova_standard_primitive_number_Nova_DoubleNova_init_static(exceptionData);
 		nova_standard_primitive_number_Nova_NumberNova_init_static(exceptionData);
+		nova_standard_primitive_number_Nova_IntegerNova_init_static(exceptionData);
+		nova_standard_primitive_number_Nova_RealNumberNova_init_static(exceptionData);
 		nova_standard_operators_Nova_MultiplyNova_init_static(exceptionData);
 		nova_standard_operators_Nova_EqualsNova_init_static(exceptionData);
 		nova_standard_time_Nova_TimeNova_init_static(exceptionData);
