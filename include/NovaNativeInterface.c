@@ -95,7 +95,8 @@ nova_env novaEnv = {
 {
 &nova_standard_math_Nova_Math_Nova_sign,
 &nova_standard_math_Nova_Math_Nova_random,
-&nova_standard_math_Nova_Math_Nova_abs,
+&nova_standard_math_Nova_Math_0_Nova_abs,
+&nova_standard_math_Nova_Math_1_Nova_abs,
 &nova_standard_math_Nova_Math_Nova_sqrt,
 &nova_standard_math_Nova_Math_Nova_pow,
 &nova_standard_math_Nova_Math_Nova_sin,

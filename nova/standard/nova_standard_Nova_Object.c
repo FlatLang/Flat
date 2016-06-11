@@ -68,7 +68,7 @@ nova_standard_Nova_String* nova_standard_Nova_Object_Nova_getHashCode(nova_stand
 
 long nova_standard_Nova_Object_0_Nova_getHashCodeLong(nova_standard_Nova_Object* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
-	return (long)strtol(hashCode(this), (int)(0), (int)(16));
+	return (long)strtol(hashCode(this), NULL, (int)(16));
 }
 
 nova_standard_Nova_String* nova_standard_Nova_Object_0_Nova_toString(nova_standard_Nova_Object* this, nova_standard_exception_Nova_ExceptionData* exceptionData)

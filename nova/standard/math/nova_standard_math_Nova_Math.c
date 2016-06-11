@@ -82,9 +82,14 @@ int nova_standard_math_Nova_Math_Nova_random(nova_standard_math_Nova_Math* this,
 	return (int)rand() % nova_standard_math_Nova_Math_Nova_range;
 }
 
-double nova_standard_math_Nova_Math_Nova_abs(nova_standard_math_Nova_Math* this, nova_standard_exception_Nova_ExceptionData* exceptionData, double nova_standard_math_Nova_Math_Nova_number)
+long nova_standard_math_Nova_Math_0_Nova_abs(nova_standard_math_Nova_Math* this, nova_standard_exception_Nova_ExceptionData* exceptionData, long nova_standard_math_Nova_Math_Nova_number)
 {
-	return (double)abs((double)(nova_standard_math_Nova_Math_Nova_number));
+	return (long)llabs((long_long)(nova_standard_math_Nova_Math_Nova_number));
+}
+
+double nova_standard_math_Nova_Math_1_Nova_abs(nova_standard_math_Nova_Math* this, nova_standard_exception_Nova_ExceptionData* exceptionData, double nova_standard_math_Nova_Math_Nova_number)
+{
+	return (double)fabs((double)(nova_standard_math_Nova_Math_Nova_number));
 }
 
 double nova_standard_math_Nova_Math_Nova_sqrt(nova_standard_math_Nova_Math* this, nova_standard_exception_Nova_ExceptionData* exceptionData, double nova_standard_math_Nova_Math_Nova_number)

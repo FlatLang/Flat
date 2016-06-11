@@ -276,7 +276,8 @@ nova_standard_network_Nova_NetworkOutputStream_native3_Nova_construct construct_
 
 typedef char (*nova_standard_math_Nova_Math_native_Nova_sign)(nova_standard_math_Nova_Math*, nova_standard_exception_Nova_ExceptionData*, long);
 typedef int (*nova_standard_math_Nova_Math_native_Nova_random)(nova_standard_math_Nova_Math*, nova_standard_exception_Nova_ExceptionData*, long);
-typedef double (*nova_standard_math_Nova_Math_native_Nova_abs)(nova_standard_math_Nova_Math*, nova_standard_exception_Nova_ExceptionData*, double);
+typedef long (*nova_standard_math_Nova_Math_native0_Nova_abs)(nova_standard_math_Nova_Math*, nova_standard_exception_Nova_ExceptionData*, long);
+typedef double (*nova_standard_math_Nova_Math_native1_Nova_abs)(nova_standard_math_Nova_Math*, nova_standard_exception_Nova_ExceptionData*, double);
 typedef double (*nova_standard_math_Nova_Math_native_Nova_sqrt)(nova_standard_math_Nova_Math*, nova_standard_exception_Nova_ExceptionData*, double);
 typedef double (*nova_standard_math_Nova_Math_native_Nova_pow)(nova_standard_math_Nova_Math*, nova_standard_exception_Nova_ExceptionData*, double, double);
 typedef double (*nova_standard_math_Nova_Math_native_Nova_sin)(nova_standard_math_Nova_Math*, nova_standard_exception_Nova_ExceptionData*, double);
@@ -294,7 +295,8 @@ typedef struct nova_standard_math_native_Math
 {
 nova_standard_math_Nova_Math_native_Nova_sign sign;
 nova_standard_math_Nova_Math_native_Nova_random random;
-nova_standard_math_Nova_Math_native_Nova_abs abs;
+nova_standard_math_Nova_Math_native0_Nova_abs abs__nova_standard_primitive_number_Long;
+nova_standard_math_Nova_Math_native1_Nova_abs abs__nova_standard_primitive_number_Double;
 nova_standard_math_Nova_Math_native_Nova_sqrt sqrt;
 nova_standard_math_Nova_Math_native_Nova_pow pow;
 nova_standard_math_Nova_Math_native_Nova_sin sin;
