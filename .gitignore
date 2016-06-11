@@ -13,4 +13,6 @@
 /bin/*/*/*/*/*/*/*
 /bin/*/*/*/*/*/*/*/*
 /bin/
-/.idea
+/.idea/
+/.idea/*
+/Nova.iml
