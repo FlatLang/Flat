@@ -2,7 +2,7 @@ package "nova/standard/primitive/number"
 
 import "nova/standard/datastruct/Comparable"
 
-public class Short extends Number implements Comparable<Short>
+public class Short extends Number implements Comparable<Short>, Integer
 {
 	Short value
 	

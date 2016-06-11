@@ -3,6 +3,7 @@ package net.fathomsoft.nova.tree.generics;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.tree.Node;
 import net.fathomsoft.nova.util.Location;
+import net.fathomsoft.nova.util.SyntaxUtils;
 
 /**
  * {@link Node} extension that represents a generic type parameter.
@@ -44,7 +45,14 @@ public class GenericTypeParameter extends Node
 	
 	public void setDefaultType(String type)
 	{
-		this.defaultType = type;
+		if (SyntaxUtils.validateImported(this, type, false))
+		{
+			this.defaultType = type;
+		}
+		else
+		{
+			SyntaxUtils.throwImportException(this, type, getLocationIn());
+		}
 	}
 	
 	public GenericTypeParameterDeclaration getGenericDeclaration()

@@ -2,7 +2,7 @@ package "nova/standard/primitive/number"
 
 import "nova/standard/datastruct/Comparable"
 
-public class Byte extends Number implements Comparable<Byte>
+public class Byte extends Number implements Comparable<Byte>, Integer
 {
 	Byte value
 	

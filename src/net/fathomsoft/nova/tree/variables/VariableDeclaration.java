@@ -1,5 +1,7 @@
 package net.fathomsoft.nova.tree.variables;
 
+import java.util.ArrayList;
+
 import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.ValidationResult;
@@ -28,9 +30,11 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  */
 public class VariableDeclaration extends IIdentifier
 {
-	private boolean               volatileVal, external;
+	private boolean            volatileVal, external;
 	
-	public  String[]              extraDeclarations;
+	public  String[]           extraDeclarations;
+	
+	public ArrayList<Variable> references = new ArrayList<>();
 	
 	/**
 	 * @see net.fathomsoft.nova.tree.Node#Node(Node, Location)

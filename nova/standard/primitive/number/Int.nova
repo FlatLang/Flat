@@ -2,7 +2,7 @@ package "nova/standard/primitive/number"
 
 import "nova/standard/datastruct/Comparable"
 
-public class Int extends Number implements Comparable<Int>
+public class Int extends Number implements Comparable<Int>, Integer
 {
 	external int atoi(char str[])
 	

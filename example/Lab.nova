@@ -48,9 +48,17 @@ public class Lab
 		//"test".size
 		
 		String[] a = ["this", "is", "a", "test", "to", "see", "what shows up"]
+		Int[] b = [1, 2, 3, 4, 5, 6, 7]
 		
 		Array<String> list = new Array(a, 7)
 		Array<String> list2 = list.filter(myFilterFunc)
+		Array<Int> list3 = new Array(b, 7)
+		
+		
+		
+		Console.writeLine(list2.sumSize())
+		
+		Console.writeLine(list2.stringsOnly)
 		
 		Console.writeLine("With foreach:")
 		

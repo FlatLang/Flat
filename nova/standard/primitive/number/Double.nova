@@ -2,7 +2,7 @@ package "nova/standard/primitive/number"
 
 import "nova/standard/datastruct/Comparable"
 
-public class Double extends Number implements Comparable<Double>
+public class Double extends Number implements Comparable<Double>, RealNumber
 {
 	external void sprintf(char buffer[], char format[], double value)
 	external char[] realloc(char buffer[], int size)

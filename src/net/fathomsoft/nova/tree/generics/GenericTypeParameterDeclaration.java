@@ -137,8 +137,6 @@ public class GenericTypeParameterDeclaration extends TypeList<GenericTypeParamet
 					parameterName = bounds.extractString(parameterName);
 				}
 				
-				
-				
 				failed = false;
 			}
 			

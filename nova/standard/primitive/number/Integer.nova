@@ -1,0 +1,6 @@
+package "nova/standard/primitive/number"
+
+public interface Integer
+{
+	
+}

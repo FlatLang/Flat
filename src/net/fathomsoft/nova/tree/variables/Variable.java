@@ -350,10 +350,21 @@ public class Variable extends Identifier
 		declaration.setVolatile(volatileVal);
 	}
 	
+	@Override
+	public boolean onAfterDecoded()
+	{
+		declaration.references.add(this);
+		
+		return super.onAfterDecoded();
+	}
+	
 	public GenericTypeArgument getIntelligentGenericTypeArgument(int index)
 	{
-		GenericTypeArgument arg = getGenericTypeArgumentList().getVisibleChild(index);
-		
+		return getIntelligentGenericTypeArgument(getGenericTypeArgumentList().getVisibleChild(index));
+	}
+	
+	public GenericTypeArgument getIntelligentGenericTypeArgument(GenericTypeArgument arg)
+	{
 		GenericTypeArgument extractedType = getGenericTypeArgumentFromParameter(arg.getType());
 		
 		if (extractedType != null)

@@ -461,6 +461,11 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 		
 		return super.generateCSourceName(builder, uniquePrefix);
 	}
+
+	public StringBuilder generateNovaInput(StringBuilder builder, boolean outputChildren)
+	{
+		return generateNovaInput(builder, outputChildren, true);
+	}
 	
 	public StringBuilder generateNovaInput(StringBuilder builder, boolean outputChildren, boolean outputType)
 	{

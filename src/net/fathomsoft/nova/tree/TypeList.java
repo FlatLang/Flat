@@ -1,5 +1,6 @@
 package net.fathomsoft.nova.tree;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 
 import net.fathomsoft.nova.TestContext;
@@ -13,18 +14,26 @@ import net.fathomsoft.nova.util.Location;
  * @since	v0.2.29 Aug 21, 2014 at 11:00:40 PM
  * @version	v0.2.41 Dec 17, 2014 at 7:48:17 PM
  */
-public class TypeList<E extends Node> extends List implements Iterator<E>, Iterable<E>
+public class TypeList<E extends Node> extends List implements Iterable<E>
 {
-	private int currentIndex;
-	
 	/**
 	 * Instantiate and initialize default data.
 	 */
 	public TypeList(Node temporaryParent, Location locationIn)
 	{
 		super(temporaryParent, locationIn);
+	}
+	
+	public ArrayList<E> toTypeArray()
+	{
+		ArrayList<E> nodes = new ArrayList<>();
 		
-		currentIndex = 0;
+		for (int i = 0; i < getNumVisibleChildren(); i++)
+		{
+			nodes.add(getVisibleChild(i));
+		}
+		
+		return nodes;
 	}
 	
 	/**
@@ -80,34 +89,26 @@ public class TypeList<E extends Node> extends List implements Iterator<E>, Itera
 	{
 		return (E)super.getFirstVisibleChild();
 	}
-	
-	/**
-	 * @see java.util.Iterator#hasNext()
-	 */
-	@Override
-	public boolean hasNext()
-	{
-		return currentIndex < getNumVisibleChildren();
-	}
 
-	/**
-	 * @see java.util.Iterator#next()
-	 */
-	@Override
-	public E next()
-	{
-		return getVisibleChild(currentIndex++);
-	}
-
-	/**
-	 * @see java.lang.Iterable#iterator()
-	 */
 	@Override
 	public Iterator<E> iterator()
 	{
-		currentIndex = 0;
-		
-		return this;
+		return new Iterator<E>()
+		{
+			private int i = 0;
+			
+			@Override
+			public boolean hasNext()
+			{
+				return i < getNumVisibleChildren();
+			}
+
+			@Override
+			public E next()
+			{
+				return getVisibleChild(i++);
+			}
+		};
 	}
 	
 	/**

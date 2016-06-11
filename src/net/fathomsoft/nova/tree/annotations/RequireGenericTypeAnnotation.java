@@ -2,9 +2,17 @@ package net.fathomsoft.nova.tree.annotations;
 
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.ValidationResult;
+import net.fathomsoft.nova.error.SyntaxMessage;
+import net.fathomsoft.nova.tree.Identifier;
 import net.fathomsoft.nova.tree.Node;
+import net.fathomsoft.nova.tree.generics.GenericTypeArgument;
+import net.fathomsoft.nova.tree.generics.GenericTypeArgumentList;
+import net.fathomsoft.nova.tree.generics.GenericTypeParameter;
+import net.fathomsoft.nova.tree.generics.GenericTypeParameterDeclaration;
+import net.fathomsoft.nova.tree.variables.Variable;
 import net.fathomsoft.nova.tree.variables.VariableDeclaration;
 import net.fathomsoft.nova.util.Location;
+import net.fathomsoft.nova.util.SyntaxUtils;
 
 /**
  * {@link Annotation} extension that represents
@@ -19,6 +27,19 @@ public class RequireGenericTypeAnnotation extends Annotation
 	public RequireGenericTypeAnnotation(Node temporaryParent, Location locationIn)
 	{
 		super(temporaryParent, locationIn);
+		
+		addChild(new GenericTypeParameterDeclaration(this, locationIn));
+	}
+	
+	@Override
+	public int getNumDefaultChildren()
+	{
+		return super.getNumDefaultChildren() + 1;
+	}
+	
+	public GenericTypeParameterDeclaration getGenericTypeParameterDeclaration()
+	{
+		return (GenericTypeParameterDeclaration)getChild(super.getNumDefaultChildren() + 0);
 	}
 	
 	/**
@@ -53,6 +74,8 @@ public class RequireGenericTypeAnnotation extends Annotation
 				return null;
 			}
 			
+			n.getGenericTypeParameterDeclaration().decodeGenericTypeParameters(parameters);
+			
 			return n;
 		}
 		
@@ -74,6 +97,25 @@ public class RequireGenericTypeAnnotation extends Annotation
 		if (node instanceof VariableDeclaration == false)
 		{
 			invalidExpression(this, true);
+		}
+		
+		VariableDeclaration decl = (VariableDeclaration)node;
+		
+		for (Variable reference : decl.references)
+		{
+			Variable v = (Variable)reference.getReferenceNode();
+			
+			for (GenericTypeParameter required : getGenericTypeParameterDeclaration())
+			{ 
+				int index = v.getDeclaration().getTypeClass().getGenericTypeParameterDeclaration().getParameterIndex(required.getName());
+				
+				GenericTypeArgument given = v.getIntelligentGenericTypeArgument(index);
+				
+				if (!SyntaxUtils.isTypeCompatible(v.getContext(), getFileDeclaration().getImportedClass(this, required.getDefaultType()), given.getTypeClass()))
+				{
+					SyntaxMessage.error("Method call on method '" + v.getName() + "' requires a generic type of '" + required.getDefaultType() + "'", v, false);
+				}
+			}
 		}
 		
 		return result;

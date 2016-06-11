@@ -33,9 +33,11 @@ import net.fathomsoft.nova.tree.SyntaxTree;
 import net.fathomsoft.nova.tree.UnaryOperation;
 import net.fathomsoft.nova.tree.Value;
 import net.fathomsoft.nova.tree.generics.GenericTypeArgument;
+import net.fathomsoft.nova.tree.generics.GenericTypeParameterDeclaration;
 import net.fathomsoft.nova.tree.variables.FieldDeclaration;
 import net.fathomsoft.nova.tree.variables.Variable;
 import net.fathomsoft.nova.tree.variables.VariableDeclaration;
+import net.fathomsoft.nova.tree.variables.VariableDeclaration.DeclarationData;
 
 /**
  * Class used for getting information about the Syntax of Nova.
@@ -2101,7 +2103,12 @@ public class SyntaxUtils
 	 */
 	public static boolean validateImported(Node node, String clazz)
 	{
-		return validateImported(node, clazz, node.getLocationIn());
+		return validateImported(node, clazz, true);
+	}
+	
+	public static boolean validateImported(Node node, String clazz, boolean fullPath)
+	{
+		return validateImported(node, clazz, fullPath, node.getLocationIn());
 	}
 	
 	/**
@@ -2117,26 +2124,43 @@ public class SyntaxUtils
 	 */
 	public static boolean validateImported(Node node, String clazz, Location location)
 	{
-		if (node.getProgram().getClassDeclaration(clazz) != null)
+		return validateImported(node, clazz, true, location);
+	}
+	
+	public static boolean validateImported(Node node, String clazz, boolean fullPath, Location location)
+	{
+		if (!fullPath)
 		{
-			ClassDeclaration c = node.getParentClass(true);
+			ClassDeclaration c = node.getFileDeclaration().getImportedClass(node, clazz);
 			
-			while (c != null)
+			if (c != null)
 			{
-				if (c.getClassLocation().equals(clazz))
+				return true;
+			}
+		}
+		else
+		{
+			if (node.getProgram().getClassDeclaration(clazz) != null)
+			{
+				ClassDeclaration c = node.getParentClass(true);
+				
+				while (c != null)
 				{
-					return true;
+					if (c.getClassLocation().equals(clazz))
+					{
+						return true;
+					}
+					
+					c = c.getParentClass();
 				}
 				
-				c = c.getParentClass();
+				if (!isImported(node.getFileDeclaration(), clazz))
+				{
+					throwImportException(node, clazz, location);
+				}
+				
+				return true;
 			}
-			
-			if (!isImported(node.getFileDeclaration(), clazz))
-			{
-				throwImportException(node, clazz, location);
-			}
-			
-			return true;
 		}
 		
 		return false;
@@ -2364,5 +2388,37 @@ public class SyntaxUtils
 				addParametersToTypeList(builder, c.getParameterList(), types);
 			}
 		}
+	}
+	
+	public static GenericTypeArgument[] getGenericTypeArguments(Node parent, String params)
+	{
+		String paramsList[] = StringUtils.splitCommas(params);
+		
+		ArrayList<GenericTypeArgument> args = new ArrayList<>();
+		
+		for (String param : paramsList)
+		{
+			args.add(getGenericTypeArgumentName(parent, param));
+		}
+		
+		return args.toArray(new GenericTypeArgument[0]);
+	}
+	
+	public static GenericTypeArgument getGenericTypeArgumentName(Node parent, String parameterName)
+	{
+		GenericTypeArgument type = new GenericTypeArgument(parent, Location.INVALID);
+		type.setType(parameterName, true, false, false);
+		
+		DeclarationData data = new DeclarationData();
+		
+		GenericTypeParameterDeclaration.searchGenerics(parameterName, data);
+		type.iterateWords(parameterName, data, true);
+		
+		if (data.containsSkipBounds())
+		{
+			type.setType(data.getSkipBounds(0).trimString(parameterName), true, false);
+		}
+		
+		return type;
 	}
 }

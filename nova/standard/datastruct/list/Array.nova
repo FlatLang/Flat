@@ -1,5 +1,7 @@
 package "nova/standard/datastruct/list"
 
+import "nova/standard/primitive/number/Integer"
+
 public class Array<E> implements List<E, Int>
 {
 	external void arrayCopy(E dest[], int dIndex, E src[], int sIndex, int len, int destArrLen, int size)
@@ -9,6 +11,9 @@ public class Array<E> implements List<E, Int>
 	visible Int	size
 	
 	E[] data
+	
+	@RequireGenericType(E extends String)
+	visible String stringsOnly = "hey"
 	
 	visible Bool empty
 	{
@@ -232,19 +237,77 @@ public class Array<E> implements List<E, Int>
 		return list
 	}
 	
+	public first() -> E
+	{
+		if (size > 0)
+		{
+			return data[0]
+		}
+		
+		return null
+	}
 	
-	@RequireGenericType(E extends Number)
+	public last() -> E
+	{
+		if (size > 0)
+		{
+			return data[size - 1]
+		}
+		
+		return null
+	}
+	
+	public firstWhere(func(E) -> Bool) -> E
+	{
+		for (element in this)
+		{
+			if (func(element))
+			{
+				return element
+			}
+		}
+		
+		return null
+	}
+	
+	@RequireGenericType(E extends String)
+	public sumSize() -> Long
+    {
+    	Long sum = 0
+    	
+    	for (value in this)
+    	{
+    		sum = sum + ((String)value).size
+    	}
+    	
+        return sum
+    }
+	
+	/*@RequireGenericType(E extends Integer)
 	public sum() -> Long
     {
     	Long sum = 0
     	
-    	/*for (value in this)
+    	for (value in this)
     	{
-    		sum += value
-    	}*/
+    		sum = sum + (Long)value
+    	}
     	
         return sum
     }
+	
+	@RequireGenericType(E extends RealNumber)
+	public sum() -> Double
+    {
+    	Double sum = 0
+    	
+    	for (value in this)
+    	{
+    		sum += value
+    	}
+    	
+        return sum
+    }*/
     
     public join(String delimiter) -> String
     {
