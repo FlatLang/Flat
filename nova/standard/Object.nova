@@ -7,7 +7,10 @@ public class Object implements Equals
 {
 	external char[] hashCode(Object obj)
 	/*char** endptr*/
-	external long strtol(char str[], int a, int base)
+
+	external char* NULL
+
+	external long strtol(char str[], char* a, int base)
 	
 	public getHashCode() -> String
 	{
@@ -16,7 +19,7 @@ public class Object implements Equals
 	
 	public getHashCodeLong() -> Long
 	{
-		return strtol(hashCode(this), 0, 16)
+		return strtol(hashCode(this), NULL, 16)
 	}
 	
 	public toString() -> String
