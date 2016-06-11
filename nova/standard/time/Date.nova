@@ -46,7 +46,7 @@ public class Date
 	
 	public formatDate(String str) -> String
 	{
-		formatDate(str, month, day, year, hour, minute, second)
+		return formatDate(str, month, day, year, hour, minute, second)
 	}
 	
 	public formatDate(String str, Int first, Int second, Int third, Int fourth, Int fifth, Int sixth) -> String
