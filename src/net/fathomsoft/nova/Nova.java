@@ -1221,7 +1221,7 @@ public class Nova
 
 				currentMessage += message;
 
-				if (message.trim().equals("^"))
+				if (message.trim().startsWith("^"))
 				{
 					//"(.+?(:\\s*?(\\d+:[\\n\\r]|((warning|error):[^^]+))))+"
 					if (stream(visibleCompilerMessages).anyMatch(x -> currentMessage.contains(x + ":")))
