@@ -84,5 +84,7 @@ FILE* getPipe(char command[], error_func func, void* ref)
 	{
 		printf("%s\n", buf);
 	}
+
+	return 0;//pipefd[0];
 }
 #endif

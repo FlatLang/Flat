@@ -157,6 +157,8 @@ public class Array<E> implements List<E, Int>
 		{
 			array[i] = data[i]
 		}
+
+		return array
 	}
 	
 	public forEach(func(E, Int, Array<E>))

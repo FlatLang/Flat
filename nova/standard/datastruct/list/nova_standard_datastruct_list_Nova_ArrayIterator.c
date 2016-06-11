@@ -104,6 +104,7 @@ nova_standard_Nova_Object* nova_standard_datastruct_list_Nova_ArrayIterator_Acce
 		return nova_standard_datastruct_list_Nova_Array_Nova_get(this->prv->nova_standard_datastruct_list_Nova_ArrayIterator_Nova_array, exceptionData, this->nova_standard_datastruct_list_Nova_ArrayIterator_Nova_position++);
 	}
 	THROW(4, nova_standard_datastruct_list_Nova_NoSuchElementException_0_Nova_construct(0, exceptionData));
+	return (nova_standard_Nova_Object*)nova_null;
 }
 
 

@@ -252,6 +252,7 @@ nova_standard_Nova_Object** nova_standard_datastruct_list_Nova_Array_Nova_toArra
 	{
 		l1_Nova_array[l2_Nova_i] = this->prv->nova_standard_datastruct_list_Nova_Array_Nova_data[l2_Nova_i];
 	}
+	return l1_Nova_array;
 }
 
 void nova_standard_datastruct_list_Nova_Array_Nova_forEach(nova_standard_datastruct_list_Nova_Array* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_datastruct_list_Nova_Array_closure3_Nova_func nova_standard_datastruct_list_Nova_Array_Nova_func, void* nova_standard_datastruct_list_Nova_Array_ref_Nova_func)
