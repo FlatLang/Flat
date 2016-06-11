@@ -19,6 +19,10 @@
 //void mysql_free_result(MYSQL_RES* result);
 //void mysql_change_user(MYSQL* mysql, char* username, char* password, char* database);
 
+#ifdef _WIN32
+
+#endif
+
 MYSQL* nova_db_connect1(char* host, char* user, char* password);
 MYSQL* nova_db_connect2(char* host, char* user, char* password, char* database);
 MYSQL* nova_db_connect3(char* host, char* user, char* password, char* database, int port, char* unix_socket, unsigned long/*Nova int*/ client_flag);

@@ -1,5 +1,6 @@
 #include "NativeWindow.h"
 
+#ifdef _WIN32
 void DrawPixels(HWND hwnd)
 {
 	PAINTSTRUCT ps;
@@ -36,8 +37,11 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 	return DefWindowProcW(hwnd, msg, wParam, lParam);
 }
 
+#endif
+
 WINDOW_ID_TYPE nova_createWindow(int x, int y, int width, int height, char* title)
 {
+#ifdef _WIN32
 	MSG  msg;
 	HWND hwnd;
 	WNDCLASSW wc;
@@ -72,4 +76,7 @@ WINDOW_ID_TYPE nova_createWindow(int x, int y, int width, int height, char* titl
 	}
 
 	return hwnd;
+#else
+    return 0;
+#endif
 }
