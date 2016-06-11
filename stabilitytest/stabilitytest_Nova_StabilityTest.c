@@ -144,10 +144,10 @@ int main(int argc, char** argvs)
 		
 		nova_standard_exception_Nova_ExceptionData* exceptionData = 0;
 		srand(currentTimeMillis());
-		nova_null = nova_standard_primitive_Nova_Null_2_Nova_construct(0, exceptionData);
 		nova_garbageData = malloc(sizeof(void*));
 		nova_standard_gc_Nova_GC_Nova_init(0, exceptionData);
 		
+		nova_null = nova_standard_primitive_Nova_Null_2_Nova_construct(0, exceptionData);
 		novaEnv.nova_standard_String.concat__nova_standard_String = nova_standard_Extension_VTable_String_val.nova_standard_Nova_String_virtual0_Nova_concat;
 		novaEnv.nova_standard_String.toString = nova_standard_Extension_VTable_String_val.nova_standard_Nova_String_virtual0_Nova_toString;
 		novaEnv.nova_standard_Object.getHashCodeLong = nova_standard_Extension_VTable_Object_val.nova_standard_Nova_Object_virtual0_Nova_getHashCodeLong;
@@ -307,7 +307,6 @@ int main(int argc, char** argvs)
 				
 		}
 		END_TRY;
-		FreeConsole();
 		NOVA_FREE(args);
 		nova_standard_gc_Nova_GC_Nova_collect(0, exceptionData);
 		

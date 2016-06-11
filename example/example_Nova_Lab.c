@@ -20,6 +20,8 @@ example_Extension_VTable_Lab example_Extension_VTable_Lab_val =
 				0,
 				0,
 				0,
+				0,
+				0,
 		},
 		nova_standard_Nova_Object_0_Nova_getHashCodeLong,
 		nova_standard_Nova_Object_0_Nova_toString,
@@ -104,7 +106,7 @@ void example_Nova_Lab_Nova_main(example_Nova_Lab* this, nova_standard_exception_
 		l1_Nova_a[5] = nova_standard_Nova_String_1_Nova_construct(0, exceptionData, "see");
 		l1_Nova_a[6] = nova_standard_Nova_String_1_Nova_construct(0, exceptionData, "what shows up");
 		l1_Nova_list = nova_standard_datastruct_list_Nova_Array_4_Nova_construct(0, exceptionData, (nova_standard_Nova_Object**)(l1_Nova_a), 7);
-		l1_Nova_list2 = l1_Nova_list->vtable->nova_standard_datastruct_list_Nova_Array_virtual_Nova_filter(l1_Nova_list, exceptionData, (nova_standard_datastruct_list_Nova_Array_closure6_Nova_filterFunc)&example_Nova_Lab_Nova_myFilterFunc, (example_Nova_Lab*)nova_null);
+		l1_Nova_list2 = l1_Nova_list->vtable->nova_standard_datastruct_list_Nova_Array_virtual_Nova_filter(l1_Nova_list, exceptionData, (nova_standard_datastruct_list_Nova_Array_closure12_Nova_filterFunc)&example_Nova_Lab_Nova_myFilterFunc, (example_Nova_Lab*)nova_null);
 		nova_standard_io_Nova_Console_0_Nova_writeLine(0, exceptionData, nova_standard_Nova_String_1_Nova_construct(0, exceptionData, "With foreach:"));
 		l1_Nova_list2->vtable->nova_standard_datastruct_list_Nova_Array_virtual_Nova_forEach(l1_Nova_list2, exceptionData, (nova_standard_datastruct_list_Nova_Array_closure3_Nova_func)&example_Nova_Lab_Nova_myforeach, (example_Nova_Lab*)nova_null);
 		nova_standard_io_Nova_Console_0_Nova_writeLine(0, exceptionData, nova_standard_Nova_String_1_Nova_construct(0, exceptionData, ""));
@@ -185,6 +187,8 @@ int main(int argc, char** argvs)
 		novaEnv.nova_standard_io_OutputStream.write__nova_standard_Object = nova_standard_io_Extension_VTable_OutputStream_val.nova_standard_io_Nova_OutputStream_virtual2_Nova_write;
 		novaEnv.nova_standard_svg_SVGComponent.generateOutput__nova_standard_io_File = nova_standard_svg_Extension_VTable_SVGComponent_val.nova_standard_svg_Nova_SVGComponent_virtual0_Nova_generateOutput;
 		novaEnv.nova_standard_datastruct_list_List.forEach__void = nova_standard_datastruct_list_Extension_VTable_List_val.itable.nova_standard_datastruct_list_Nova_List_virtual0_Nova_forEach;
+		novaEnv.nova_standard_datastruct_list_List.any__nova_standard_primitive_Bool = nova_standard_datastruct_list_Extension_VTable_List_val.itable.nova_standard_datastruct_list_Nova_List_virtual0_Nova_any;
+		novaEnv.nova_standard_datastruct_list_List.all__nova_standard_primitive_Bool = nova_standard_datastruct_list_Extension_VTable_List_val.itable.nova_standard_datastruct_list_Nova_List_virtual0_Nova_all;
 		novaEnv.nova_standard_datastruct_list_List.filter__nova_standard_primitive_Bool = nova_standard_datastruct_list_Extension_VTable_List_val.itable.nova_standard_datastruct_list_Nova_List_virtual0_Nova_filter;
 		novaEnv.nova_standard_datastruct_list_List.take__nova_standard_primitive_number_Int = nova_standard_datastruct_list_Extension_VTable_List_val.itable.nova_standard_datastruct_list_Nova_List_virtual0_Nova_take;
 		novaEnv.nova_standard_datastruct_list_List.skip__nova_standard_primitive_number_Int = nova_standard_datastruct_list_Extension_VTable_List_val.itable.nova_standard_datastruct_list_Nova_List_virtual0_Nova_skip;
@@ -307,8 +311,6 @@ int main(int argc, char** argvs)
 				
 		}
 		END_TRY;
-		FreeConsole();
-		NOVA_FREE(args);
 		nova_standard_gc_Nova_GC_Nova_collect(0, exceptionData);
 		
 		
