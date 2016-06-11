@@ -100,7 +100,13 @@ public class MutatorMethod extends PropertyMethod
 		
 		getParameterList().addChild(p);
 	}
-	
+
+	@Override
+	public StringBuilder generateCType(StringBuilder builder, boolean checkArray)
+	{
+		return builder.append("void");
+	}
+
 	/**
 	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location, boolean)
 	 */
