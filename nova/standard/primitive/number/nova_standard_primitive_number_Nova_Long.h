@@ -29,6 +29,7 @@ typedef struct nova_standard_primitive_number_Nova_Long nova_standard_primitive_
 #include <nova/standard/nova_standard_Nova_System.h>
 #include <nova/standard/math/nova_standard_math_Nova_Math.h>
 #include <nova/standard/datastruct/nova_standard_datastruct_Nova_Comparable.h>
+#include <nova/standard/primitive/number/nova_standard_primitive_number_Nova_Integer.h>
 
 
 typedef struct nova_standard_primitive_number_Extension_VTable_Long nova_standard_primitive_number_Extension_VTable_Long;
