@@ -30,11 +30,11 @@
 #	define lib_nova_thread_join(_HANDLE_) pthread_join(_HANDLE_, NULL)
 #	define lib_nova_thread_cancel(_HANDLE_) pthread_cancel(_HANDLE_)
 #	define lib_nova_thread_sleep(_MILLIS_) thread_nanosleep(_MILLIS_ * 1000000)
-#	ifdef USE_GC
-#		define new_thread_method GC_pthread_create
-#	else
+//#	ifdef USE_GC
+//#		define new_thread_method GC_pthread_create
+//#	else
 #		define new_thread_method pthread_create
-#	endif
+//#	endif
 #endif
 
 void lib_nova_thread_create(NOVA_THREAD_HANDLE* handle, NOVA_THREAD_FUNC_TYPE func, NOVA_THREAD_FUNC_ARG arg);
