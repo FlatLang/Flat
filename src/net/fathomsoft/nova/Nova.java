@@ -2,6 +2,7 @@ package net.fathomsoft.nova;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -95,7 +96,7 @@ public class Nova
 	
 	private SyntaxTree			tree;
 	
-	private ArrayList<String>	includeDirectories, externalImports, errors, messages;
+	private ArrayList<String>	includeDirectories, externalImports, errors, warnings, messages;
 	
 	private ArrayList<File>		inputFiles, cSourceFiles, cHeaderFiles;
 	
@@ -226,6 +227,7 @@ public class Nova
 		includeDirectories = new ArrayList<String>();
 		externalImports    = new ArrayList<String>();
 		errors             = new ArrayList<String>();
+		warnings           = new ArrayList<String>();
 		messages           = new ArrayList<String>();
 		
 		testClasses = BENCHMARK <= 0;
@@ -259,23 +261,23 @@ public class Nova
 			
 			args = new String[]
 			{
-				formatPath(stability + "StabilityTest.nova"),
-				formatPath(stability + "TimeStability.nova"),
-				formatPath(stability + "FileStability.nova"),
-				formatPath(stability + "ThreadStability.nova"),
-				formatPath(stability + "ExceptionStability.nova"),
-				formatPath(stability + "SyntaxStability.nova"),
-				formatPath(stability + "ClosureStability.nova"),
-				formatPath(stability + "PolymorphismStability.nova"),
-				formatPath(stability + "PolymorphicSuperClass.nova"),
-				formatPath(stability + "PolymorphicSubClass.nova"),
-				formatPath(stability + "StabilityTestException.nova"),
-				formatPath(stability + "StabilityExceptionHandler.nova"),
-				formatPath(stability + "ThreadImplementation.nova"),
-				formatPath(stability + "UnstableException.nova"),
-				formatPath(stability + "NetworkStability.nova"),
-				formatPath(stability + "ClientThread.nova"),
-				formatPath(stability + "StabilityTestCase.nova"),
+//				formatPath(stability + "StabilityTest.nova"),
+//				formatPath(stability + "TimeStability.nova"),
+//				formatPath(stability + "FileStability.nova"),
+//				formatPath(stability + "ThreadStability.nova"),
+//				formatPath(stability + "ExceptionStability.nova"),
+//				formatPath(stability + "SyntaxStability.nova"),
+//				formatPath(stability + "ClosureStability.nova"),
+//				formatPath(stability + "PolymorphismStability.nova"),
+//				formatPath(stability + "PolymorphicSuperClass.nova"),
+//				formatPath(stability + "PolymorphicSubClass.nova"),
+//				formatPath(stability + "StabilityTestException.nova"),
+//				formatPath(stability + "StabilityExceptionHandler.nova"),
+//				formatPath(stability + "ThreadImplementation.nova"),
+//				formatPath(stability + "UnstableException.nova"),
+//				formatPath(stability + "NetworkStability.nova"),
+//				formatPath(stability + "ClientThread.nova"),
+//				formatPath(stability + "StabilityTestCase.nova"),
 //				formatPath(directory + "network/OutputThread.nova"),
 //				formatPath(directory + "network/ConnectionThread.nova"),
 //				formatPath(directory + "network/ServerDemo.nova"),
@@ -290,7 +292,7 @@ public class Nova
 //				formatPath(root      + "bank/ClientConnectionThread.nova"),
 //				formatPath(root      + "bank/ClientInputThread.nova"),
 //				formatPath(directory + "ackermann/Ackermann.nova"),
-//				formatPath(directory + "Lab.nova"),
+				formatPath(directory + "Lab.nova"),
 //				formatPath(directory + "copy/Dog.nova"),
 //				formatPath(directory + "T1.nova"),
 //				formatPath(directory + "T2.nova"),
@@ -387,6 +389,8 @@ public class Nova
 			formatPath(standard  + "primitive/number/Float.nova"),
 			formatPath(standard  + "primitive/number/Double.nova"),
 			formatPath(standard  + "primitive/number/Number.nova"),
+			formatPath(standard  + "primitive/number/Integer.nova"),
+			formatPath(standard  + "primitive/number/RealNumber.nova"),
 
 			formatPath(standard  + "operators/Multiply.nova"),
 			formatPath(standard  + "operators/Equals.nova"),
@@ -740,6 +744,8 @@ public class Nova
 		long   time = System.currentTimeMillis() - startTime;
 		
 		String str  = LANGUAGE_NAME + " compile time: " + time + "ms";
+		
+		outputMessages();
 		
 		if (BENCHMARK > 0)
 		{
@@ -1142,7 +1148,7 @@ public class Nova
 			{
 				if (!failed)
 				{
-					log("Compilation succeeded.");
+				//	log("Compilation succeeded.");
 				}
 				else
 				{
@@ -1309,7 +1315,7 @@ public class Nova
 	 */
 	public void warning(String message)
 	{
-		errors.add("Warning: " + message);
+		warnings.add("Warning: " + message);
 	}
 	
 	/**
@@ -1610,6 +1616,8 @@ public class Nova
 			startTimer();
 			stopTimer();
 			
+			outputMessages();
+			
 			completed();
 		}
 	}
@@ -1735,12 +1743,32 @@ public class Nova
 		{
 			System.out.println(s);
 		}
+
+		String status = "succeeded";
+		String errorsText = "";
+		String warningsText = "";
 		
+		if (warnings.size() > 0)
+		{
+			warningsText = " " + warnings.size() + " warnings" + (warnings.size() > 1 ? "s" : "");
+		}
 		if (errors.size() > 0)
 		{
-			System.err.println("Compilation failed with " + errors.size() + " error" + (errors.size() > 1 ? "s" : "") + ".");
+			status = "failed";
+			
+			errorsText = " " + errors.size() + " error" + (errors.size() > 1 ? "s" : "");
 		}
 		
+		String with = errorsText.length() + warningsText.length() > 0 ? " with" : "";
+		
+		PrintStream stream = status.equals("succeeded") ? System.out : System.err;
+		
+		stream.println("Compilation " + status + with + errorsText + warningsText);
+		
+		for (String s : warnings)
+		{
+			System.out.println(s);
+		}
 		for (String s : errors)
 		{
 			System.err.println(s);
