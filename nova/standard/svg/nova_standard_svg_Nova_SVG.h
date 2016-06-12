@@ -37,7 +37,7 @@ struct nova_standard_svg_Extension_VTable_SVG
 {
 	nova_Interface_VTable itable;
 	long (*nova_standard_Nova_Object_virtual0_Nova_getHashCodeLong)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*);
-	nova_standard_Nova_String* (*nova_standard_Nova_Object_virtual0_Nova_toString)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*);
+	nova_standard_Nova_String* (*nova_standard_Nova_Object_virtual1_Nova_toString)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*);
 	char (*nova_standard_Nova_Object_virtual0_Nova_equals)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*);
 };
 
@@ -53,9 +53,9 @@ CCLASS_CLASS
 )
 
 void nova_standard_svg_Nova_SVGNova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData);
-nova_standard_svg_Nova_SVG* nova_standard_svg_Nova_SVG_2_Nova_construct(nova_standard_svg_Nova_SVG* this, nova_standard_exception_Nova_ExceptionData* exceptionData);
+nova_standard_svg_Nova_SVG* nova_standard_svg_Nova_SVG_0_Nova_construct(nova_standard_svg_Nova_SVG* this, nova_standard_exception_Nova_ExceptionData* exceptionData);
 void nova_standard_svg_Nova_SVG_Nova_destroy(nova_standard_svg_Nova_SVG** this, nova_standard_exception_Nova_ExceptionData* exceptionData);
-void nova_standard_svg_Nova_SVG_2_Nova_this(nova_standard_svg_Nova_SVG* this, nova_standard_exception_Nova_ExceptionData* exceptionData);
+void nova_standard_svg_Nova_SVG_0_Nova_this(nova_standard_svg_Nova_SVG* this, nova_standard_exception_Nova_ExceptionData* exceptionData);
 void nova_standard_svg_Nova_SVG_Nova_generateOutput(nova_standard_svg_Nova_SVG* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_io_Nova_File* nova_standard_svg_Nova_SVG_Nova_file);
 void nova_standard_svg_Nova_SVG_Nova_generateHTMLOutput(nova_standard_svg_Nova_SVG* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_io_Nova_File* nova_standard_svg_Nova_SVG_Nova_file);
 void nova_standard_svg_Nova_SVG_Nova_super(nova_standard_svg_Nova_SVG* this, nova_standard_exception_Nova_ExceptionData* exceptionData);

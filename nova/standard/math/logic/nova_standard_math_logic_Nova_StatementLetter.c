@@ -5,29 +5,29 @@ nova_standard_math_logic_Extension_VTable_StatementLetter nova_standard_math_log
 {
 	{
 		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
 		(char(*)(nova_standard_operators_Nova_Equals*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*))nova_standard_Nova_Object_0_Nova_equals,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
 		0,
 		0,
 		0,
 	},
 	nova_standard_Nova_Object_0_Nova_getHashCodeLong,
-	nova_standard_Nova_Object_0_Nova_toString,
+	nova_standard_Nova_Object_1_Nova_toString,
 	nova_standard_Nova_Object_0_Nova_equals,
 };
 
@@ -50,7 +50,7 @@ nova_standard_math_logic_Nova_StatementLetter* nova_standard_math_logic_Nova_Sta
 	this->vtable = &nova_standard_math_logic_Extension_VTable_StatementLetter_val;
 	nova_standard_Nova_Object_Nova_super((nova_standard_Nova_Object*)this, exceptionData);
 	nova_standard_math_logic_Nova_StatementComponent_Nova_super((nova_standard_math_logic_Nova_StatementComponent*)this, exceptionData);
-	nova_standard_math_logic_Nova_StatementLetter_2_Nova_super(this, exceptionData);
+	nova_standard_math_logic_Nova_StatementLetter_0_Nova_super(this, exceptionData);
 	
 	{
 		nova_standard_math_logic_Nova_StatementLetter_Nova_this(this, exceptionData, nova_standard_math_logic_Nova_StatementLetter_Nova_letter, nova_standard_math_logic_Nova_StatementLetter_Nova_representation);
@@ -81,7 +81,7 @@ void nova_standard_math_logic_Nova_StatementLetter_Nova_this(nova_standard_math_
 	this->prv->nova_standard_math_logic_Nova_StatementLetter_Nova_representation = nova_standard_math_logic_Nova_StatementLetter_Nova_representation;
 }
 
-void nova_standard_math_logic_Nova_StatementLetter_2_Nova_super(nova_standard_math_logic_Nova_StatementLetter* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
+void nova_standard_math_logic_Nova_StatementLetter_0_Nova_super(nova_standard_math_logic_Nova_StatementLetter* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
 	this->prv->nova_standard_math_logic_Nova_StatementLetter_Nova_letter = (nova_standard_Nova_String*)nova_null;
 	this->prv->nova_standard_math_logic_Nova_StatementLetter_Nova_representation = (nova_standard_Nova_String*)nova_null;

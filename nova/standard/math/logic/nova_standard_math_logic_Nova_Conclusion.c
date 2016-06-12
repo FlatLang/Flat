@@ -5,29 +5,29 @@ nova_standard_math_logic_Extension_VTable_Conclusion nova_standard_math_logic_Ex
 {
 	{
 		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
 		(char(*)(nova_standard_operators_Nova_Equals*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*))nova_standard_Nova_Object_0_Nova_equals,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
 		0,
 		0,
 		0,
 	},
 	nova_standard_Nova_Object_0_Nova_getHashCodeLong,
-	nova_standard_math_logic_Nova_LogicalStatement_0_Nova_toString,
+	nova_standard_math_logic_Nova_LogicalStatement_1_Nova_toString,
 	nova_standard_Nova_Object_0_Nova_equals,
 };
 
@@ -50,7 +50,7 @@ nova_standard_math_logic_Nova_Conclusion* nova_standard_math_logic_Nova_Conclusi
 	this->vtable = &nova_standard_math_logic_Extension_VTable_Conclusion_val;
 	nova_standard_Nova_Object_Nova_super((nova_standard_Nova_Object*)this, exceptionData);
 	nova_standard_math_Nova_Statement_Nova_super((nova_standard_math_Nova_Statement*)this, exceptionData);
-	nova_standard_math_logic_Nova_LogicalStatement_2_Nova_super((nova_standard_math_logic_Nova_LogicalStatement*)this, exceptionData);
+	nova_standard_math_logic_Nova_LogicalStatement_0_Nova_super((nova_standard_math_logic_Nova_LogicalStatement*)this, exceptionData);
 	nova_standard_math_logic_Nova_Conclusion_2_Nova_super(this, exceptionData);
 	
 	{

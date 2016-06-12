@@ -5,29 +5,29 @@ example_network_Extension_VTable_ConnectionThread example_network_Extension_VTab
 {
 	{
 		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
 		(char(*)(nova_standard_operators_Nova_Equals*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*))nova_standard_Nova_Object_0_Nova_equals,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
 		0,
 		0,
 		0,
 	},
 	nova_standard_Nova_Object_0_Nova_getHashCodeLong,
-	nova_standard_Nova_Object_0_Nova_toString,
+	nova_standard_Nova_Object_1_Nova_toString,
 	nova_standard_Nova_Object_0_Nova_equals,
 	example_network_Nova_ConnectionThread_0_Nova_run,
 };
@@ -52,7 +52,7 @@ example_network_Nova_ConnectionThread* example_network_Nova_ConnectionThread_Nov
 	this->vtable = &example_network_Extension_VTable_ConnectionThread_val;
 	nova_standard_Nova_Object_Nova_super((nova_standard_Nova_Object*)this, exceptionData);
 	nova_standard_thread_Nova_Thread_Nova_super((nova_standard_thread_Nova_Thread*)this, exceptionData);
-	example_network_Nova_ConnectionThread_2_Nova_super(this, exceptionData);
+	example_network_Nova_ConnectionThread_0_Nova_super(this, exceptionData);
 	
 	{
 		example_network_Nova_ConnectionThread_Nova_this(this, exceptionData, example_network_Nova_ConnectionThread_Nova_socket);
@@ -89,15 +89,15 @@ void example_network_Nova_ConnectionThread_0_Nova_run(example_network_Nova_Conne
 		
 		if (!nova_standard_network_Nova_ConnectionSocket_Nova_validateConnection(this->prv->example_network_Nova_ConnectionThread_Nova_socket, exceptionData))
 		{
-			nova_standard_io_Nova_Console_0_Nova_writeLine(0, exceptionData, nova_standard_Nova_String_1_Nova_construct(0, exceptionData, "Disconnected."));
+			nova_standard_io_Nova_Console_0_Nova_writeLine(0, exceptionData, nova_standard_Nova_String_2_Nova_construct(0, exceptionData, "Disconnected."));
 			break;
 		}
 		l1_Nova_message = this->prv->example_network_Nova_ConnectionThread_Nova_socket->nova_standard_network_Nova_ConnectionSocket_Nova_in->vtable->itable.nova_standard_io_Nova_InputStream_virtual0_Nova_readString(this->prv->example_network_Nova_ConnectionThread_Nova_socket->nova_standard_network_Nova_ConnectionSocket_Nova_in, exceptionData);
-		nova_standard_io_Nova_Console_0_Nova_writeLine(0, exceptionData, nova_standard_Nova_String_0_Nova_concat(nova_standard_Nova_String_1_Nova_construct(0, exceptionData, "HE SAYS: "), exceptionData, l1_Nova_message));
+		nova_standard_io_Nova_Console_0_Nova_writeLine(0, exceptionData, nova_standard_Nova_String_0_Nova_concat(nova_standard_Nova_String_2_Nova_construct(0, exceptionData, "HE SAYS: "), exceptionData, l1_Nova_message));
 	}
 }
 
-void example_network_Nova_ConnectionThread_2_Nova_super(example_network_Nova_ConnectionThread* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
+void example_network_Nova_ConnectionThread_0_Nova_super(example_network_Nova_ConnectionThread* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
 	this->prv->example_network_Nova_ConnectionThread_Nova_socket = (nova_standard_network_Nova_ConnectionSocket*)nova_null;
 }

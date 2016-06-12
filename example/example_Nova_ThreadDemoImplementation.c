@@ -5,29 +5,29 @@ example_Extension_VTable_ThreadDemoImplementation example_Extension_VTable_Threa
 {
 	{
 		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
 		(char(*)(nova_standard_operators_Nova_Equals*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*))nova_standard_Nova_Object_0_Nova_equals,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
 		0,
 		0,
 		0,
 	},
 	nova_standard_Nova_Object_0_Nova_getHashCodeLong,
-	nova_standard_Nova_Object_0_Nova_toString,
+	nova_standard_Nova_Object_1_Nova_toString,
 	nova_standard_Nova_Object_0_Nova_equals,
 	example_Nova_ThreadDemoImplementation_0_Nova_run,
 };
@@ -53,7 +53,7 @@ example_Nova_ThreadDemoImplementation* example_Nova_ThreadDemoImplementation_Nov
 	this->vtable = &example_Extension_VTable_ThreadDemoImplementation_val;
 	nova_standard_Nova_Object_Nova_super((nova_standard_Nova_Object*)this, exceptionData);
 	nova_standard_thread_Nova_Thread_Nova_super((nova_standard_thread_Nova_Thread*)this, exceptionData);
-	example_Nova_ThreadDemoImplementation_2_Nova_super(this, exceptionData);
+	example_Nova_ThreadDemoImplementation_0_Nova_super(this, exceptionData);
 	
 	{
 		example_Nova_ThreadDemoImplementation_Nova_this(this, exceptionData, example_Nova_ThreadDemoImplementation_Nova_millis, example_Nova_ThreadDemoImplementation_Nova_word);
@@ -96,7 +96,7 @@ void example_Nova_ThreadDemoImplementation_0_Nova_run(example_Nova_ThreadDemoImp
 	}
 }
 
-void example_Nova_ThreadDemoImplementation_2_Nova_super(example_Nova_ThreadDemoImplementation* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
+void example_Nova_ThreadDemoImplementation_0_Nova_super(example_Nova_ThreadDemoImplementation* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
 	this->prv->example_Nova_ThreadDemoImplementation_Nova_millis = 0;
 	this->prv->example_Nova_ThreadDemoImplementation_Nova_word = (nova_standard_Nova_String*)nova_null;

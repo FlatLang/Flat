@@ -37,7 +37,7 @@ struct example_network_Extension_VTable_ClientDemo
 {
 	nova_Interface_VTable itable;
 	long (*nova_standard_Nova_Object_virtual0_Nova_getHashCodeLong)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*);
-	nova_standard_Nova_String* (*nova_standard_Nova_Object_virtual0_Nova_toString)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*);
+	nova_standard_Nova_String* (*nova_standard_Nova_Object_virtual1_Nova_toString)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*);
 	char (*nova_standard_Nova_Object_virtual0_Nova_equals)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*);
 };
 
@@ -52,10 +52,10 @@ CCLASS_CLASS
 )
 
 void example_network_Nova_ClientDemoNova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData);
-example_network_Nova_ClientDemo* example_network_Nova_ClientDemo_2_Nova_construct(example_network_Nova_ClientDemo* this, nova_standard_exception_Nova_ExceptionData* exceptionData);
+example_network_Nova_ClientDemo* example_network_Nova_ClientDemo_0_Nova_construct(example_network_Nova_ClientDemo* this, nova_standard_exception_Nova_ExceptionData* exceptionData);
 void example_network_Nova_ClientDemo_Nova_destroy(example_network_Nova_ClientDemo** this, nova_standard_exception_Nova_ExceptionData* exceptionData);
 void example_network_Nova_ClientDemo_Nova_main(example_network_Nova_ClientDemo* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_Nova_String** example_network_Nova_ClientDemo_Nova_args);
-void example_network_Nova_ClientDemo_2_Nova_this(example_network_Nova_ClientDemo* this, nova_standard_exception_Nova_ExceptionData* exceptionData);
+void example_network_Nova_ClientDemo_0_Nova_this(example_network_Nova_ClientDemo* this, nova_standard_exception_Nova_ExceptionData* exceptionData);
 void example_network_Nova_ClientDemo_Nova_super(example_network_Nova_ClientDemo* this, nova_standard_exception_Nova_ExceptionData* exceptionData);
 
 #endif

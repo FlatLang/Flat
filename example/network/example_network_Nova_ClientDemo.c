@@ -5,29 +5,29 @@ example_network_Extension_VTable_ClientDemo example_network_Extension_VTable_Cli
 {
 	{
 		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
 		(char(*)(nova_standard_operators_Nova_Equals*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*))nova_standard_Nova_Object_0_Nova_equals,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
 		0,
 		0,
 		0,
 	},
 	nova_standard_Nova_Object_0_Nova_getHashCodeLong,
-	nova_standard_Nova_Object_0_Nova_toString,
+	nova_standard_Nova_Object_1_Nova_toString,
 	nova_standard_Nova_Object_0_Nova_equals,
 };
 
@@ -38,7 +38,7 @@ void example_network_Nova_ClientDemoNova_init_static(nova_standard_exception_Nov
 	}
 }
 
-example_network_Nova_ClientDemo* example_network_Nova_ClientDemo_2_Nova_construct(example_network_Nova_ClientDemo* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
+example_network_Nova_ClientDemo* example_network_Nova_ClientDemo_0_Nova_construct(example_network_Nova_ClientDemo* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
 	CCLASS_NEW(example_network_Nova_ClientDemo, this,);
 	this->vtable = &example_network_Extension_VTable_ClientDemo_val;
@@ -46,7 +46,7 @@ example_network_Nova_ClientDemo* example_network_Nova_ClientDemo_2_Nova_construc
 	example_network_Nova_ClientDemo_Nova_super(this, exceptionData);
 	
 	{
-		example_network_Nova_ClientDemo_2_Nova_this(this, exceptionData);
+		example_network_Nova_ClientDemo_0_Nova_this(this, exceptionData);
 	}
 	
 	return this;
@@ -72,10 +72,10 @@ void example_network_Nova_ClientDemo_Nova_main(example_network_Nova_ClientDemo* 
 	int l1_Nova_port;
 	char l1_Nova_connected;
 	
-	l1_Nova_socket = nova_standard_network_Nova_ClientSocket_2_Nova_construct(0, exceptionData);
-	l1_Nova_ip = nova_standard_Nova_String_1_Nova_construct(0, exceptionData, "127.0.0.1");
+	l1_Nova_socket = nova_standard_network_Nova_ClientSocket_Nova_construct(0, exceptionData);
+	l1_Nova_ip = nova_standard_Nova_String_2_Nova_construct(0, exceptionData, "127.0.0.1");
 	l1_Nova_port = 5675;
-	nova_standard_io_Nova_Console_0_Nova_writeLine(0, exceptionData, nova_standard_Nova_String_0_Nova_concat(nova_standard_Nova_String_1_Nova_construct(0, exceptionData, "Attempting to connect to "), exceptionData, l1_Nova_ip->vtable->nova_standard_Nova_String_virtual0_Nova_concat(l1_Nova_ip, exceptionData, nova_standard_Nova_String_0_Nova_concat(nova_standard_Nova_String_1_Nova_construct(0, exceptionData, ":"), exceptionData, nova_standard_primitive_number_Nova_Int_1_Nova_toString(0, exceptionData, l1_Nova_port)))));
+	nova_standard_io_Nova_Console_0_Nova_writeLine(0, exceptionData, nova_standard_Nova_String_0_Nova_concat(nova_standard_Nova_String_2_Nova_construct(0, exceptionData, "Attempting to connect to "), exceptionData, l1_Nova_ip->vtable->nova_standard_Nova_String_virtual0_Nova_concat(l1_Nova_ip, exceptionData, nova_standard_Nova_String_0_Nova_concat(nova_standard_Nova_String_2_Nova_construct(0, exceptionData, ":"), exceptionData, nova_standard_primitive_number_Nova_Int_2_Nova_toString(0, exceptionData, l1_Nova_port)))));
 	l1_Nova_connected = nova_standard_network_Nova_ClientSocket_Nova_connect(l1_Nova_socket, exceptionData, l1_Nova_ip, l1_Nova_port);
 	if (l1_Nova_connected)
 	{
@@ -83,29 +83,29 @@ void example_network_Nova_ClientDemo_Nova_main(example_network_Nova_ClientDemo* 
 		
 		l1_Nova_thread = example_network_Nova_ConnectionThread_Nova_construct(0, exceptionData, l1_Nova_socket->nova_standard_network_Nova_ClientSocket_Nova_connection);
 		nova_standard_thread_Nova_Thread_Nova_start((nova_standard_thread_Nova_Thread*)(l1_Nova_thread), exceptionData);
-		nova_standard_io_Nova_Console_0_Nova_writeLine(0, exceptionData, nova_standard_Nova_String_1_Nova_construct(0, exceptionData, "Connected!"));
+		nova_standard_io_Nova_Console_0_Nova_writeLine(0, exceptionData, nova_standard_Nova_String_2_Nova_construct(0, exceptionData, "Connected!"));
 		while (l1_Nova_socket->nova_standard_network_Nova_ClientSocket_Nova_connection->nova_standard_network_Nova_ConnectionSocket_Nova_connected)
 		{
 			nova_standard_Nova_String* l2_Nova_message;
 			
 			l2_Nova_message = nova_standard_io_Nova_Console_Nova_readLine(0, exceptionData);
-			if (l2_Nova_message->vtable->nova_standard_Nova_String_virtual_Nova_equals(l2_Nova_message, exceptionData, nova_standard_Nova_String_1_Nova_construct(0, exceptionData, "q")))
+			if (l2_Nova_message->vtable->nova_standard_Nova_String_virtual_Nova_equals(l2_Nova_message, exceptionData, nova_standard_Nova_String_2_Nova_construct(0, exceptionData, "q")))
 			{
 				nova_standard_network_Nova_ClientSocket_Nova_close(l1_Nova_socket, exceptionData);
 				break;
 			}
-			l1_Nova_socket->nova_standard_network_Nova_ClientSocket_Nova_connection->nova_standard_network_Nova_ConnectionSocket_Nova_out->vtable->nova_standard_io_Nova_OutputStream_virtual1_Nova_write(l1_Nova_socket->nova_standard_network_Nova_ClientSocket_Nova_connection->nova_standard_network_Nova_ConnectionSocket_Nova_out, exceptionData, l2_Nova_message);
+			l1_Nova_socket->nova_standard_network_Nova_ClientSocket_Nova_connection->nova_standard_network_Nova_ConnectionSocket_Nova_out->vtable->nova_standard_io_Nova_OutputStream_virtual0_Nova_write(l1_Nova_socket->nova_standard_network_Nova_ClientSocket_Nova_connection->nova_standard_network_Nova_ConnectionSocket_Nova_out, exceptionData, l2_Nova_message);
 		}
 		nova_standard_network_Nova_ClientSocket_Nova_close(l1_Nova_socket, exceptionData);
 	}
 	else
 	{
-		nova_standard_io_Nova_Console_0_Nova_writeLine(0, exceptionData, nova_standard_Nova_String_1_Nova_construct(0, exceptionData, "Failed to connect"));
+		nova_standard_io_Nova_Console_0_Nova_writeLine(0, exceptionData, nova_standard_Nova_String_2_Nova_construct(0, exceptionData, "Failed to connect"));
 		nova_standard_io_Nova_Console_Nova_waitForEnter(0, exceptionData);
 	}
 }
 
-void example_network_Nova_ClientDemo_2_Nova_this(example_network_Nova_ClientDemo* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
+void example_network_Nova_ClientDemo_0_Nova_this(example_network_Nova_ClientDemo* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
 }
 

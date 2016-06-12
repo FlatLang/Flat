@@ -38,7 +38,7 @@ struct example_Extension_VTable_PolymorphismDemo
 {
 	nova_Interface_VTable itable;
 	long (*nova_standard_Nova_Object_virtual0_Nova_getHashCodeLong)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*);
-	nova_standard_Nova_String* (*nova_standard_Nova_Object_virtual0_Nova_toString)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*);
+	nova_standard_Nova_String* (*nova_standard_Nova_Object_virtual1_Nova_toString)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*);
 	char (*nova_standard_Nova_Object_virtual0_Nova_equals)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*);
 };
 
@@ -53,10 +53,10 @@ CCLASS_CLASS
 )
 
 void example_Nova_PolymorphismDemoNova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData);
-example_Nova_PolymorphismDemo* example_Nova_PolymorphismDemo_2_Nova_construct(example_Nova_PolymorphismDemo* this, nova_standard_exception_Nova_ExceptionData* exceptionData);
+example_Nova_PolymorphismDemo* example_Nova_PolymorphismDemo_0_Nova_construct(example_Nova_PolymorphismDemo* this, nova_standard_exception_Nova_ExceptionData* exceptionData);
 void example_Nova_PolymorphismDemo_Nova_destroy(example_Nova_PolymorphismDemo** this, nova_standard_exception_Nova_ExceptionData* exceptionData);
 void example_Nova_PolymorphismDemo_Nova_main(example_Nova_PolymorphismDemo* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_Nova_String** example_Nova_PolymorphismDemo_Nova_args);
-void example_Nova_PolymorphismDemo_2_Nova_this(example_Nova_PolymorphismDemo* this, nova_standard_exception_Nova_ExceptionData* exceptionData);
+void example_Nova_PolymorphismDemo_0_Nova_this(example_Nova_PolymorphismDemo* this, nova_standard_exception_Nova_ExceptionData* exceptionData);
 void example_Nova_PolymorphismDemo_Nova_super(example_Nova_PolymorphismDemo* this, nova_standard_exception_Nova_ExceptionData* exceptionData);
 
 #endif

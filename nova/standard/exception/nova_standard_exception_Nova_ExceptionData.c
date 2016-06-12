@@ -5,29 +5,29 @@ nova_standard_exception_Extension_VTable_ExceptionData nova_standard_exception_E
 {
 	{
 		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
 		(char(*)(nova_standard_operators_Nova_Equals*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*))nova_standard_Nova_Object_0_Nova_equals,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
 		0,
 		0,
 		0,
 	},
 	nova_standard_Nova_Object_0_Nova_getHashCodeLong,
-	nova_standard_Nova_Object_0_Nova_toString,
+	nova_standard_Nova_Object_1_Nova_toString,
 	nova_standard_Nova_Object_0_Nova_equals,
 };
 
@@ -79,7 +79,7 @@ void nova_standard_exception_Nova_ExceptionData_Nova_destroy(nova_standard_excep
 void nova_standard_exception_Nova_ExceptionData_Nova_this(nova_standard_exception_Nova_ExceptionData* this, nova_standard_exception_Nova_ExceptionData* exceptionData, buffer* nova_standard_exception_Nova_ExceptionData_Nova_buf)
 {
 	this->prv->nova_standard_exception_Nova_ExceptionData_Nova_buf = nova_standard_exception_Nova_ExceptionData_Nova_buf;
-	this->nova_standard_exception_Nova_ExceptionData_Nova_codes = nova_standard_datastruct_list_Nova_Array_2_Nova_construct(0, exceptionData);
+	this->nova_standard_exception_Nova_ExceptionData_Nova_codes = nova_standard_datastruct_list_Nova_Array_0_Nova_construct(0, exceptionData);
 }
 
 void nova_standard_exception_Nova_ExceptionData_Nova_addCode(nova_standard_exception_Nova_ExceptionData* this, nova_standard_exception_Nova_ExceptionData* exceptionData, int nova_standard_exception_Nova_ExceptionData_Nova_code)

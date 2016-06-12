@@ -36,7 +36,7 @@ struct nova_standard_time_Extension_VTable_Timer
 {
 	nova_Interface_VTable itable;
 	long (*nova_standard_Nova_Object_virtual0_Nova_getHashCodeLong)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*);
-	nova_standard_Nova_String* (*nova_standard_Nova_Object_virtual0_Nova_toString)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*);
+	nova_standard_Nova_String* (*nova_standard_Nova_Object_virtual1_Nova_toString)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*);
 	char (*nova_standard_Nova_Object_virtual0_Nova_equals)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*);
 };
 
@@ -53,9 +53,9 @@ CCLASS_CLASS
 )
 
 void nova_standard_time_Nova_TimerNova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData);
-nova_standard_time_Nova_Timer* nova_standard_time_Nova_Timer_2_Nova_construct(nova_standard_time_Nova_Timer* this, nova_standard_exception_Nova_ExceptionData* exceptionData);
+nova_standard_time_Nova_Timer* nova_standard_time_Nova_Timer_0_Nova_construct(nova_standard_time_Nova_Timer* this, nova_standard_exception_Nova_ExceptionData* exceptionData);
 void nova_standard_time_Nova_Timer_Nova_destroy(nova_standard_time_Nova_Timer** this, nova_standard_exception_Nova_ExceptionData* exceptionData);
-void nova_standard_time_Nova_Timer_2_Nova_this(nova_standard_time_Nova_Timer* this, nova_standard_exception_Nova_ExceptionData* exceptionData);
+void nova_standard_time_Nova_Timer_0_Nova_this(nova_standard_time_Nova_Timer* this, nova_standard_exception_Nova_ExceptionData* exceptionData);
 nova_standard_time_Nova_Timer* nova_standard_time_Nova_Timer_Nova_start(nova_standard_time_Nova_Timer* this, nova_standard_exception_Nova_ExceptionData* exceptionData);
 nova_standard_time_Nova_Timer* nova_standard_time_Nova_Timer_Nova_stop(nova_standard_time_Nova_Timer* this, nova_standard_exception_Nova_ExceptionData* exceptionData);
 long nova_standard_time_Nova_Timer_Accessor_Nova_duration(nova_standard_time_Nova_Timer* this, nova_standard_exception_Nova_ExceptionData* exceptionData);

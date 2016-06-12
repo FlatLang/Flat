@@ -31,9 +31,9 @@ typedef struct nova_standard_network_Nova_ConnectionSocket nova_standard_network
 #include <nova/standard/io/nova_standard_io_Nova_InputStream.h>
 #include <nova/standard/io/nova_standard_io_Nova_OutputStream.h>
 #include <nova/standard/datastruct/list/nova_standard_datastruct_list_Nova_Queue.h>
-#include <nova/standard/network/nova_standard_network_Nova_Socket.h>
 #include <nova/standard/network/nova_standard_network_Nova_NetworkInputStream.h>
 #include <nova/standard/network/nova_standard_network_Nova_NetworkOutputStream.h>
+#include <nova/standard/network/nova_standard_network_Nova_Socket.h>
 
 
 typedef struct nova_standard_network_Extension_VTable_ConnectionSocket nova_standard_network_Extension_VTable_ConnectionSocket;
@@ -41,7 +41,7 @@ struct nova_standard_network_Extension_VTable_ConnectionSocket
 {
 	nova_Interface_VTable itable;
 	long (*nova_standard_Nova_Object_virtual0_Nova_getHashCodeLong)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*);
-	nova_standard_Nova_String* (*nova_standard_Nova_Object_virtual0_Nova_toString)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*);
+	nova_standard_Nova_String* (*nova_standard_Nova_Object_virtual1_Nova_toString)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*);
 	char (*nova_standard_Nova_Object_virtual0_Nova_equals)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*);
 };
 
@@ -69,6 +69,6 @@ void nova_standard_network_Nova_ConnectionSocket_Nova_close(nova_standard_networ
 char nova_standard_network_Nova_ConnectionSocket_Nova_validateConnection(nova_standard_network_Nova_ConnectionSocket* this, nova_standard_exception_Nova_ExceptionData* exceptionData);
 nova_standard_Nova_String* nova_standard_network_Nova_ConnectionSocket_0_Nova_readString(nova_standard_network_Nova_ConnectionSocket* this, nova_standard_exception_Nova_ExceptionData* exceptionData);
 char nova_standard_network_Nova_ConnectionSocket_Nova_write(nova_standard_network_Nova_ConnectionSocket* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_Nova_String* nova_standard_network_Nova_ConnectionSocket_Nova_data);
-void nova_standard_network_Nova_ConnectionSocket_2_Nova_super(nova_standard_network_Nova_ConnectionSocket* this, nova_standard_exception_Nova_ExceptionData* exceptionData);
+void nova_standard_network_Nova_ConnectionSocket_0_Nova_super(nova_standard_network_Nova_ConnectionSocket* this, nova_standard_exception_Nova_ExceptionData* exceptionData);
 
 #endif
