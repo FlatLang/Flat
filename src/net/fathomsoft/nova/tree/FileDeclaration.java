@@ -373,7 +373,7 @@ public class FileDeclaration extends Node
 	 */
 	public File getFile()
 	{
-		return file;
+		return file.getAbsoluteFile();
 	}
 	
 	/**

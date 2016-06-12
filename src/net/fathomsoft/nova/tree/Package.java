@@ -198,6 +198,7 @@ public class Package extends Node
 		
 		if (getParentFile() == null)
 		{
+			getParentFile();
 			throwIncorrectPackageException();
 		}
 		
