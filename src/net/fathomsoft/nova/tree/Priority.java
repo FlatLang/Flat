@@ -45,6 +45,12 @@ public class Priority extends IValue implements Accessible
 		return getContents().isConsistent();
 	}
 	
+	@Override
+	public Accessible getAccessingNode()
+	{
+		return null;
+	}
+	
 	/**
 	 * Get the Value that represents the contents inside the
 	 * parentheses.<br>
