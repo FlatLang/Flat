@@ -200,7 +200,21 @@ public class Closure extends Variable
 			return false;
 		}
 		
-		declarations = ((Value)getReferenceNode()).getTypeClass().getMethods(name);
+		Value reference = (Value)getReferenceNode();
+		
+		if (reference == null)
+		{
+			return false;
+		}
+		
+		ClassDeclaration type = reference.getTypeClass();
+		
+		if (type == null)
+		{
+			return false;
+		}
+		
+		declarations = type.getMethods(name);
 		
 		if (declarations.length <= 0)
 		{

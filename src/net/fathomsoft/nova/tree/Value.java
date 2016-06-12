@@ -173,7 +173,7 @@ public abstract class Value extends Node implements AbstractValue
 		if (!SyntaxUtils.isValidType(this, type))
 		{
 			SyntaxUtils.isValidType(this, type);
-			return SyntaxMessage.queryError("Type '" + type + "' does not exist", this, require);
+			return SyntaxUtils.invalidType(this, type, require);
 		}
 		
 		return true;
@@ -444,16 +444,25 @@ public abstract class Value extends Node implements AbstractValue
 					id = id.getAccessingNode();
 				}
 				
-				return ((Value)id.getReferenceNode()).getTypeClass().getFileDeclaration();
+				Value reference = (Value)id.getReferenceNode();
+				
+				ClassDeclaration type = reference.getTypeClass();
+				
+				if (type == null)
+				{
+					SyntaxUtils.invalidType(reference, reference.getType(), true);
+				}
+				
+				return type.getFileDeclaration();
 			}
 		}
 		if (this instanceof Variable && ((Variable)this).getDeclaration() instanceof VirtualLocalDeclaration)
 		{
-			return ((VirtualLocalDeclaration)((Variable)this).getDeclaration()).getReference().getTypeClass().getFileDeclaration();
+			return ((VirtualLocalDeclaration)((Variable)this).getDeclaration()).getReference().getReturnedNode().getTypeClass().getFileDeclaration();
 		}
 		else if (this instanceof VirtualLocalDeclaration)
 		{
-			return ((VirtualLocalDeclaration)this).getReference().getTypeClass().getFileDeclaration();
+			return ((VirtualLocalDeclaration)this).getReference().getReturnedNode().getTypeClass().getFileDeclaration();
 		}
 		
 		return getFileDeclaration();
@@ -999,7 +1008,7 @@ public abstract class Value extends Node implements AbstractValue
 	public Value cloneTo(Value node, boolean cloneChildren)
 	{
 		super.cloneTo(node, cloneChildren);
-		
+
 		node.setArrayDimensions(getArrayDimensions());
 		node.setType(getType(), true, false, false);
 		node.setDataType(getDataType());
