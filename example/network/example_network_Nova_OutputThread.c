@@ -15,6 +15,16 @@ example_network_Extension_VTable_OutputThread example_network_Extension_VTable_O
 		0,
 		0,
 		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
 	},
 	nova_standard_Nova_Object_0_Nova_getHashCodeLong,
 	nova_standard_Nova_Object_0_Nova_toString,
@@ -43,8 +53,6 @@ example_network_Nova_OutputThread* example_network_Nova_OutputThread_Nova_constr
 	this->vtable = &example_network_Extension_VTable_OutputThread_val;
 	nova_standard_Nova_Object_Nova_super((nova_standard_Nova_Object*)this, exceptionData);
 	nova_standard_thread_Nova_Thread_Nova_super((nova_standard_thread_Nova_Thread*)this, exceptionData);
-	nova_standard_Nova_Object_2_Nova_this((nova_standard_Nova_Object*)(this), exceptionData);
-	nova_standard_thread_Nova_Thread_2_Nova_this((nova_standard_thread_Nova_Thread*)(this), exceptionData);
 	example_network_Nova_OutputThread_2_Nova_super(this, exceptionData);
 	
 	{
@@ -65,6 +73,8 @@ void example_network_Nova_OutputThread_Nova_destroy(example_network_Nova_OutputT
 	nova_standard_network_Nova_ConnectionSocket_Nova_destroy(&(*this)->prv->example_network_Nova_OutputThread_Nova_socket, exceptionData);
 	NOVA_FREE((*this)->prv);
 	
+	{
+	}
 	NOVA_FREE(*this);
 }
 

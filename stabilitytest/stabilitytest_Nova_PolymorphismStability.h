@@ -28,9 +28,9 @@ typedef struct stabilitytest_Nova_PolymorphismStability stabilitytest_Nova_Polym
 #include <nova/standard/nova_standard_Nova_String.h>
 #include <nova/standard/nova_standard_Nova_System.h>
 #include <nova/standard/math/nova_standard_math_Nova_Math.h>
-#include <stabilitytest/stabilitytest_Nova_StabilityTest.h>
-#include <stabilitytest/stabilitytest_Nova_PolymorphicSuperClass.h>
 #include <stabilitytest/stabilitytest_Nova_PolymorphicSubClass.h>
+#include <stabilitytest/stabilitytest_Nova_PolymorphicSuperClass.h>
+#include <stabilitytest/stabilitytest_Nova_StabilityTest.h>
 #include <stabilitytest/stabilitytest_Nova_StabilityTestCase.h>
 
 

@@ -23,13 +23,11 @@ stabilitytest_Extension_VTable_StabilityTest stabilitytest_Extension_VTable_Stab
 				0,
 				0,
 				0,
-				0,
-				0,
 		},
 		nova_standard_Nova_Object_0_Nova_getHashCodeLong,
 		nova_standard_Nova_Object_0_Nova_toString,
 		nova_standard_Nova_Object_0_Nova_equals,
-		stabilitytest_Nova_StabilityTest_Nova_test,
+		stabilitytest_Nova_StabilityTest_0_Nova_test,
 };
 
 
@@ -39,7 +37,7 @@ void stabilitytest_Nova_StabilityTestNova_init_static(nova_standard_exception_No
 		}
 }
 
-stabilitytest_Nova_StabilityTest* stabilitytest_Nova_StabilityTest_Nova_construct(stabilitytest_Nova_StabilityTest* this, nova_standard_exception_Nova_ExceptionData* exceptionData, stabilitytest_Nova_StabilityTest* stabilitytest_Nova_StabilityTest_Nova_program)
+stabilitytest_Nova_StabilityTest* stabilitytest_Nova_StabilityTest_0_Nova_construct(stabilitytest_Nova_StabilityTest* this, nova_standard_exception_Nova_ExceptionData* exceptionData, stabilitytest_Nova_StabilityTest* stabilitytest_Nova_StabilityTest_Nova_program)
 {
 		CCLASS_NEW(stabilitytest_Nova_StabilityTest, this,);
 		this->vtable = &stabilitytest_Extension_VTable_StabilityTest_val;
@@ -48,7 +46,7 @@ stabilitytest_Nova_StabilityTest* stabilitytest_Nova_StabilityTest_Nova_construc
 		stabilitytest_Nova_StabilityTest_2_Nova_super(this, exceptionData);
 		
 		{
-				stabilitytest_Nova_StabilityTest_Nova_this(this, exceptionData, stabilitytest_Nova_StabilityTest_Nova_program);
+				stabilitytest_Nova_StabilityTest_0_Nova_this(this, exceptionData, stabilitytest_Nova_StabilityTest_Nova_program);
 		}
 		
 		return this;
@@ -75,25 +73,25 @@ void stabilitytest_Nova_StabilityTest_Nova_main(stabilitytest_Nova_StabilityTest
 		nova_standard_Nova_String* nova_local_0;
 		
 		l1_Nova_n = (stabilitytest_Nova_StabilityTest*)((nova_standard_Nova_Object*)nova_null);
-		l1_Nova_test = stabilitytest_Nova_StabilityTest_Nova_construct(0, exceptionData, l1_Nova_n);
+		l1_Nova_test = stabilitytest_Nova_StabilityTest_0_Nova_construct(0, exceptionData, l1_Nova_n);
 		l1_Nova_timer = nova_standard_time_Nova_Timer_Nova_start(nova_standard_time_Nova_Timer_2_Nova_construct(0, exceptionData), exceptionData);
-		l1_Nova_test->vtable->stabilitytest_Nova_StabilityTest_virtual_Nova_test(l1_Nova_test, exceptionData);
+		l1_Nova_test->vtable->stabilitytest_Nova_StabilityTest_virtual0_Nova_test(l1_Nova_test, exceptionData);
 		nova_standard_time_Nova_Timer_Nova_stop(l1_Nova_timer, exceptionData);
 		nova_local_0 = nova_standard_primitive_number_Nova_Long_1_Nova_toString(0, exceptionData, nova_standard_time_Nova_Timer_Accessor_Nova_duration(l1_Nova_timer, exceptionData));
 		nova_standard_io_Nova_Console_0_Nova_writeLine(0, exceptionData, nova_standard_Nova_String_0_Nova_concat(nova_standard_Nova_String_1_Nova_construct(0, exceptionData, "Took "), exceptionData, nova_local_0->vtable->nova_standard_Nova_String_virtual0_Nova_concat(nova_local_0, exceptionData, nova_standard_Nova_String_1_Nova_construct(0, exceptionData, "ms"))));
 		nova_standard_io_Nova_Console_Nova_waitForEnter(0, exceptionData);
 }
 
-void stabilitytest_Nova_StabilityTest_Nova_this(stabilitytest_Nova_StabilityTest* this, nova_standard_exception_Nova_ExceptionData* exceptionData, stabilitytest_Nova_StabilityTest* stabilitytest_Nova_StabilityTest_Nova_program)
+void stabilitytest_Nova_StabilityTest_0_Nova_this(stabilitytest_Nova_StabilityTest* this, nova_standard_exception_Nova_ExceptionData* exceptionData, stabilitytest_Nova_StabilityTest* stabilitytest_Nova_StabilityTest_Nova_program)
 {
 		stabilitytest_Nova_StabilityTestCase_0_Nova_this((stabilitytest_Nova_StabilityTestCase*)(this), exceptionData, stabilitytest_Nova_StabilityTest_Nova_program);
 }
 
-void stabilitytest_Nova_StabilityTest_Nova_test(stabilitytest_Nova_StabilityTest* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
+void stabilitytest_Nova_StabilityTest_0_Nova_test(stabilitytest_Nova_StabilityTest* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
 		TRY
 		{
-				novaEnv.nova_standard_exception_ExceptionData.addCode(exceptionData, exceptionData, 6);
+				novaEnv.nova_standard_exception_ExceptionData.addCode(exceptionData, exceptionData, 8);
 				
 				{
 						stabilitytest_Nova_ExceptionStability_0_Nova_test(stabilitytest_Nova_ExceptionStability_0_Nova_construct(0, exceptionData, this), exceptionData);
@@ -101,13 +99,13 @@ void stabilitytest_Nova_StabilityTest_Nova_test(stabilitytest_Nova_StabilityTest
 						stabilitytest_Nova_ThreadStability_0_Nova_test(stabilitytest_Nova_ThreadStability_0_Nova_construct(0, exceptionData, this), exceptionData);
 						stabilitytest_Nova_FileStability_0_Nova_test(stabilitytest_Nova_FileStability_0_Nova_construct(0, exceptionData, this), exceptionData);
 						stabilitytest_Nova_SyntaxStability_0_Nova_test(stabilitytest_Nova_SyntaxStability_0_Nova_construct(0, exceptionData, this), exceptionData);
-						stabilitytest_Nova_ClosureStability_0_Nova_test(stabilitytest_Nova_ClosureStability_0_Nova_construct(0, exceptionData, this), exceptionData);
+						stabilitytest_Nova_ClosureStability_Nova_test(stabilitytest_Nova_ClosureStability_Nova_construct(0, exceptionData, this), exceptionData);
 						stabilitytest_Nova_PolymorphismStability_0_Nova_test(stabilitytest_Nova_PolymorphismStability_0_Nova_construct(0, exceptionData, this), exceptionData);
 						stabilitytest_Nova_NetworkStability_0_Nova_test(stabilitytest_Nova_NetworkStability_0_Nova_construct(0, exceptionData, this), exceptionData);
 						nova_standard_io_Nova_Console_0_Nova_writeLine(0, exceptionData, nova_standard_Nova_String_1_Nova_construct(0, exceptionData, "All OK"));
 				}
 		}
-		CATCH (6)
+		CATCH (8)
 		{
 				stabilitytest_Nova_UnstableException* l2_Nova_e;
 				
@@ -180,8 +178,6 @@ int main(int argc, char** argvs)
 		novaEnv.nova_standard_datastruct_Comparable.compareTo__nova_standard_Object = nova_standard_datastruct_Extension_VTable_Comparable_val.itable.nova_standard_datastruct_Nova_Comparable_virtual0_Nova_compareTo;
 		novaEnv.stabilitytest_PolymorphicSuperClass.toString = stabilitytest_Extension_VTable_PolymorphicSuperClass_val.stabilitytest_Nova_PolymorphicSuperClass_virtual0_Nova_toString;
 		novaEnv.stabilitytest_StabilityTestCase.test = stabilitytest_Extension_VTable_StabilityTestCase_val.stabilitytest_Nova_StabilityTestCase_virtual0_Nova_test;
-		novaEnv.example_Polygon.numberSides = example_Extension_VTable_Polygon_val.itable.example_Nova_Polygon_virtual0_Nova_numberSides;
-		novaEnv.example_Polygon.calculateArea = example_Extension_VTable_Polygon_val.itable.example_Nova_Polygon_virtual0_Nova_calculateArea;
 		
 		nova_standard_Nova_StringNova_init_static(exceptionData);
 		nova_standard_Nova_ObjectNova_init_static(exceptionData);
@@ -270,25 +266,23 @@ int main(int argc, char** argvs)
 		nova_standard_star_Nova_WindowNova_init_static(exceptionData);
 		nova_standard_star_Nova_WindowThreadNova_init_static(exceptionData);
 		nova_standard_gc_Nova_GCNova_init_static(exceptionData);
-		stabilitytest_Nova_StabilityTestNova_init_static(exceptionData);
-		stabilitytest_Nova_TimeStabilityNova_init_static(exceptionData);
-		stabilitytest_Nova_FileStabilityNova_init_static(exceptionData);
-		stabilitytest_Nova_ThreadStabilityNova_init_static(exceptionData);
-		stabilitytest_Nova_ExceptionStabilityNova_init_static(exceptionData);
-		stabilitytest_Nova_SyntaxStabilityNova_init_static(exceptionData);
-		stabilitytest_Nova_ClosureStabilityNova_init_static(exceptionData);
-		stabilitytest_Nova_PolymorphismStabilityNova_init_static(exceptionData);
-		stabilitytest_Nova_PolymorphicSuperClassNova_init_static(exceptionData);
-		stabilitytest_Nova_PolymorphicSubClassNova_init_static(exceptionData);
-		stabilitytest_Nova_StabilityTestExceptionNova_init_static(exceptionData);
-		stabilitytest_Nova_StabilityExceptionHandlerNova_init_static(exceptionData);
-		stabilitytest_Nova_ThreadImplementationNova_init_static(exceptionData);
-		stabilitytest_Nova_UnstableExceptionNova_init_static(exceptionData);
-		stabilitytest_Nova_NetworkStabilityNova_init_static(exceptionData);
 		stabilitytest_Nova_ClientThreadNova_init_static(exceptionData);
+		stabilitytest_Nova_ClosureStabilityNova_init_static(exceptionData);
+		stabilitytest_Nova_ExceptionStabilityNova_init_static(exceptionData);
+		stabilitytest_Nova_FileStabilityNova_init_static(exceptionData);
+		stabilitytest_Nova_NetworkStabilityNova_init_static(exceptionData);
+		stabilitytest_Nova_PolymorphicSubClassNova_init_static(exceptionData);
+		stabilitytest_Nova_PolymorphicSuperClassNova_init_static(exceptionData);
+		stabilitytest_Nova_PolymorphismStabilityNova_init_static(exceptionData);
+		stabilitytest_Nova_StabilityExceptionHandlerNova_init_static(exceptionData);
+		stabilitytest_Nova_StabilityTestNova_init_static(exceptionData);
 		stabilitytest_Nova_StabilityTestCaseNova_init_static(exceptionData);
-		example_Nova_PolygonNova_init_static(exceptionData);
-		example_Nova_SquareNova_init_static(exceptionData);
+		stabilitytest_Nova_StabilityTestExceptionNova_init_static(exceptionData);
+		stabilitytest_Nova_SyntaxStabilityNova_init_static(exceptionData);
+		stabilitytest_Nova_ThreadImplementationNova_init_static(exceptionData);
+		stabilitytest_Nova_ThreadStabilityNova_init_static(exceptionData);
+		stabilitytest_Nova_TimeStabilityNova_init_static(exceptionData);
+		stabilitytest_Nova_UnstableExceptionNova_init_static(exceptionData);
 		
 		args = (nova_standard_Nova_String**)NOVA_MALLOC(argc * sizeof(nova_standard_Nova_String));
 		

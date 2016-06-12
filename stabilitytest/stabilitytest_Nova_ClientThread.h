@@ -30,8 +30,8 @@ typedef struct stabilitytest_Nova_ClientThread stabilitytest_Nova_ClientThread;
 #include <nova/standard/math/nova_standard_math_Nova_Math.h>
 #include <nova/standard/network/nova_standard_network_Nova_ClientSocket.h>
 #include <nova/standard/thread/nova_standard_thread_Nova_Thread.h>
-#include <stabilitytest/stabilitytest_Nova_StabilityTest.h>
 #include <stabilitytest/stabilitytest_Nova_NetworkStability.h>
+#include <stabilitytest/stabilitytest_Nova_StabilityTest.h>
 
 
 typedef struct stabilitytest_Extension_VTable_ClientThread stabilitytest_Extension_VTable_ClientThread;

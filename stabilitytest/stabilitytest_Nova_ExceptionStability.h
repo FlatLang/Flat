@@ -29,8 +29,8 @@ typedef struct stabilitytest_Nova_ExceptionStability stabilitytest_Nova_Exceptio
 #include <nova/standard/nova_standard_Nova_System.h>
 #include <nova/standard/math/nova_standard_math_Nova_Math.h>
 #include <stabilitytest/stabilitytest_Nova_StabilityTest.h>
-#include <stabilitytest/stabilitytest_Nova_StabilityTestException.h>
 #include <stabilitytest/stabilitytest_Nova_StabilityTestCase.h>
+#include <stabilitytest/stabilitytest_Nova_StabilityTestException.h>
 
 
 typedef struct stabilitytest_Extension_VTable_ExceptionStability stabilitytest_Extension_VTable_ExceptionStability;

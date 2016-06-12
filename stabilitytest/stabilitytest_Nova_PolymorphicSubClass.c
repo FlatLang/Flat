@@ -23,11 +23,9 @@ stabilitytest_Extension_VTable_PolymorphicSubClass stabilitytest_Extension_VTabl
 		0,
 		0,
 		0,
-		0,
-		0,
 	},
 	nova_standard_Nova_Object_0_Nova_getHashCodeLong,
-	stabilitytest_Nova_PolymorphicSubClass_0_Nova_toString,
+	stabilitytest_Nova_PolymorphicSubClass_Nova_toString,
 	nova_standard_Nova_Object_0_Nova_equals,
 	stabilitytest_Nova_PolymorphicSubClass_Accessor_Nova_myProperty,
 };
@@ -41,7 +39,7 @@ void stabilitytest_Nova_PolymorphicSubClassNova_init_static(nova_standard_except
 	}
 }
 
-stabilitytest_Nova_PolymorphicSubClass* stabilitytest_Nova_PolymorphicSubClass_2_Nova_construct(stabilitytest_Nova_PolymorphicSubClass* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
+stabilitytest_Nova_PolymorphicSubClass* stabilitytest_Nova_PolymorphicSubClass_Nova_construct(stabilitytest_Nova_PolymorphicSubClass* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
 	CCLASS_NEW(stabilitytest_Nova_PolymorphicSubClass, this,);
 	this->vtable = &stabilitytest_Extension_VTable_PolymorphicSubClass_val;
@@ -50,7 +48,7 @@ stabilitytest_Nova_PolymorphicSubClass* stabilitytest_Nova_PolymorphicSubClass_2
 	stabilitytest_Nova_PolymorphicSubClass_2_Nova_super(this, exceptionData);
 	
 	{
-		stabilitytest_Nova_PolymorphicSubClass_2_Nova_this(this, exceptionData);
+		stabilitytest_Nova_PolymorphicSubClass_Nova_this(this, exceptionData);
 	}
 	
 	return this;
@@ -69,12 +67,12 @@ void stabilitytest_Nova_PolymorphicSubClass_Nova_destroy(stabilitytest_Nova_Poly
 	NOVA_FREE(*this);
 }
 
-nova_standard_Nova_String* stabilitytest_Nova_PolymorphicSubClass_0_Nova_toString(stabilitytest_Nova_PolymorphicSubClass* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
+nova_standard_Nova_String* stabilitytest_Nova_PolymorphicSubClass_Nova_toString(stabilitytest_Nova_PolymorphicSubClass* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
 	return nova_standard_Nova_String_1_Nova_construct(0, exceptionData, "sub class");
 }
 
-void stabilitytest_Nova_PolymorphicSubClass_2_Nova_this(stabilitytest_Nova_PolymorphicSubClass* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
+void stabilitytest_Nova_PolymorphicSubClass_Nova_this(stabilitytest_Nova_PolymorphicSubClass* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
 }
 

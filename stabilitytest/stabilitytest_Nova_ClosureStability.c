@@ -34,13 +34,11 @@ stabilitytest_Extension_VTable_ClosureStability stabilitytest_Extension_VTable_C
 		0,
 		0,
 		0,
-		0,
-		0,
 	},
 	nova_standard_Nova_Object_0_Nova_getHashCodeLong,
 	nova_standard_Nova_Object_0_Nova_toString,
 	nova_standard_Nova_Object_0_Nova_equals,
-	stabilitytest_Nova_ClosureStability_0_Nova_test,
+	stabilitytest_Nova_ClosureStability_Nova_test,
 };
 
 
@@ -66,7 +64,7 @@ void stabilitytest_Nova_ClosureStabilityNova_init_static(nova_standard_exception
 	}
 }
 
-stabilitytest_Nova_ClosureStability* stabilitytest_Nova_ClosureStability_0_Nova_construct(stabilitytest_Nova_ClosureStability* this, nova_standard_exception_Nova_ExceptionData* exceptionData, stabilitytest_Nova_StabilityTest* stabilitytest_Nova_ClosureStability_Nova_program)
+stabilitytest_Nova_ClosureStability* stabilitytest_Nova_ClosureStability_Nova_construct(stabilitytest_Nova_ClosureStability* this, nova_standard_exception_Nova_ExceptionData* exceptionData, stabilitytest_Nova_StabilityTest* stabilitytest_Nova_ClosureStability_Nova_program)
 {
 	CCLASS_NEW(stabilitytest_Nova_ClosureStability, this);
 	this->vtable = &stabilitytest_Extension_VTable_ClosureStability_val;
@@ -75,7 +73,7 @@ stabilitytest_Nova_ClosureStability* stabilitytest_Nova_ClosureStability_0_Nova_
 	stabilitytest_Nova_ClosureStability_2_Nova_super(this, exceptionData);
 	
 	{
-		stabilitytest_Nova_ClosureStability_0_Nova_this(this, exceptionData, stabilitytest_Nova_ClosureStability_Nova_program);
+		stabilitytest_Nova_ClosureStability_Nova_this(this, exceptionData, stabilitytest_Nova_ClosureStability_Nova_program);
 	}
 	
 	return this;
@@ -101,7 +99,7 @@ void stabilitytest_Nova_ClosureStability_Nova_incrementNumber(stabilitytest_Nova
 	this->prv->stabilitytest_Nova_ClosureStability_Nova_number++;
 }
 
-void stabilitytest_Nova_ClosureStability_0_Nova_test(stabilitytest_Nova_ClosureStability* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
+void stabilitytest_Nova_ClosureStability_Nova_test(stabilitytest_Nova_ClosureStability* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
 	stabilitytest_Nova_ClosureStability_Nova_TOLERANCE = 0.0000000001;
 	stabilitytest_Nova_ClosureStability_Nova_testClosures(this, exceptionData);
@@ -148,13 +146,13 @@ void stabilitytest_Nova_ClosureStability_Nova_testInstanceClosure(stabilitytest_
 	stabilitytest_Nova_ClosureStability* l1_Nova_c;
 	
 	nova_standard_io_Nova_Console_0_Nova_write(0, exceptionData, nova_standard_Nova_String_1_Nova_construct(0, exceptionData, "Checking instance closures... "));
-	l1_Nova_c = stabilitytest_Nova_ClosureStability_0_Nova_construct(0, exceptionData, this->stabilitytest_Nova_StabilityTestCase_Nova_program);
+	l1_Nova_c = stabilitytest_Nova_ClosureStability_Nova_construct(0, exceptionData, this->stabilitytest_Nova_StabilityTestCase_Nova_program);
 	stabilitytest_Nova_ClosureStability_Nova_instanceClosure(this, exceptionData, (stabilitytest_Nova_ClosureStability_closure9_Nova_closure)&stabilitytest_Nova_ClosureStability_Nova_incrementNumber, l1_Nova_c);
 	if (l1_Nova_c->prv->stabilitytest_Nova_ClosureStability_Nova_number == 0)
 	{
 		stabilitytest_Nova_StabilityTest_1_Nova_fail(this->stabilitytest_Nova_StabilityTestCase_Nova_program, exceptionData, nova_standard_Nova_String_1_Nova_construct(0, exceptionData, "Failed to call incrementNumber() instance closure"));
 	}
-	stabilitytest_Nova_ClosureStability_Nova_instanceClosure(this, exceptionData, (stabilitytest_Nova_ClosureStability_closure9_Nova_closure)&stabilitytest_Nova_ClosureStability_Nova_incrementNumber, stabilitytest_Nova_ClosureStability_0_Nova_construct(0, exceptionData, this->stabilitytest_Nova_StabilityTestCase_Nova_program));
+	stabilitytest_Nova_ClosureStability_Nova_instanceClosure(this, exceptionData, (stabilitytest_Nova_ClosureStability_closure9_Nova_closure)&stabilitytest_Nova_ClosureStability_Nova_incrementNumber, stabilitytest_Nova_ClosureStability_Nova_construct(0, exceptionData, this->stabilitytest_Nova_StabilityTestCase_Nova_program));
 	stabilitytest_Nova_ClosureStability_Nova_instanceClosure(this, exceptionData, (stabilitytest_Nova_ClosureStability_closure9_Nova_closure)&stabilitytest_Nova_ClosureStability_Nova_incrementNumber, l1_Nova_c);
 	nova_standard_io_Nova_Console_0_Nova_writeLine(0, exceptionData, nova_standard_Nova_String_1_Nova_construct(0, exceptionData, "OK"));
 }
@@ -193,7 +191,7 @@ int stabilitytest_Nova_ClosureStability_Nova_pow(stabilitytest_Nova_ClosureStabi
 	return l1_Nova_value;
 }
 
-void stabilitytest_Nova_ClosureStability_0_Nova_this(stabilitytest_Nova_ClosureStability* this, nova_standard_exception_Nova_ExceptionData* exceptionData, stabilitytest_Nova_StabilityTest* stabilitytest_Nova_ClosureStability_Nova_program)
+void stabilitytest_Nova_ClosureStability_Nova_this(stabilitytest_Nova_ClosureStability* this, nova_standard_exception_Nova_ExceptionData* exceptionData, stabilitytest_Nova_StabilityTest* stabilitytest_Nova_ClosureStability_Nova_program)
 {
 }
 

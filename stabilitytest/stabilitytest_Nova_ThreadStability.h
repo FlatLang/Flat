@@ -29,10 +29,10 @@ typedef struct stabilitytest_Nova_ThreadStability stabilitytest_Nova_ThreadStabi
 #include <nova/standard/nova_standard_Nova_System.h>
 #include <nova/standard/math/nova_standard_math_Nova_Math.h>
 #include <nova/standard/thread/nova_standard_thread_Nova_Thread.h>
-#include <stabilitytest/stabilitytest_Nova_StabilityTest.h>
 #include <stabilitytest/stabilitytest_Nova_StabilityExceptionHandler.h>
-#include <stabilitytest/stabilitytest_Nova_ThreadImplementation.h>
+#include <stabilitytest/stabilitytest_Nova_StabilityTest.h>
 #include <stabilitytest/stabilitytest_Nova_StabilityTestCase.h>
+#include <stabilitytest/stabilitytest_Nova_ThreadImplementation.h>
 
 
 typedef struct stabilitytest_Extension_VTable_ThreadStability stabilitytest_Extension_VTable_ThreadStability;

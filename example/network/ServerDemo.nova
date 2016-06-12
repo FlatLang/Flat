@@ -2,13 +2,12 @@ package "example/network"
 
 import "nova/standard/network/ServerSocket"
 import "nova/standard/network/ConnectionSocket"
-import "nova/standard/datastruct/ArrayList"
 
 public class ServerDemo
 {
 	public static main(String[] args)
 	{
-		ArrayList<ConnectionSocket> connections = new ArrayList()
+		Array<ConnectionSocket> connections = new Array()
 		
 		ServerSocket socket = new ServerSocket()
 		
@@ -44,6 +43,7 @@ public class ServerDemo
 				Console.writeLine("Waiting on anoter")
 				request = socket.acceptClient()
 			}
+			
 			Console.writeLine("Exiting")
 		}
 		

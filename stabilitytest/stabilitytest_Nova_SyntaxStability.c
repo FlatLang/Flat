@@ -23,8 +23,6 @@ stabilitytest_Extension_VTable_SyntaxStability stabilitytest_Extension_VTable_Sy
 		0,
 		0,
 		0,
-		0,
-		0,
 	},
 	nova_standard_Nova_Object_0_Nova_getHashCodeLong,
 	nova_standard_Nova_Object_0_Nova_toString,
@@ -463,13 +461,13 @@ void stabilitytest_Nova_SyntaxStability_Nova_checkIterators(stabilitytest_Nova_S
 	l1_Nova_list2 = l1_Nova_list->vtable->nova_standard_datastruct_list_Nova_Array_virtual_Nova_filter(l1_Nova_list, exceptionData, (nova_standard_datastruct_list_Nova_Array_closure12_Nova_filterFunc)&stabilitytest_Nova_SyntaxStability_Nova_filterFunc, this);
 	TRY
 	{
-		novaEnv.nova_standard_exception_ExceptionData.addCode(exceptionData, exceptionData, 6);
+		novaEnv.nova_standard_exception_ExceptionData.addCode(exceptionData, exceptionData, 8);
 		
 		{
 			l1_Nova_list2->vtable->nova_standard_datastruct_list_Nova_Array_virtual_Nova_forEach(l1_Nova_list2, exceptionData, (nova_standard_datastruct_list_Nova_Array_closure3_Nova_func)&stabilitytest_Nova_SyntaxStability_Nova_foreachClosure, this);
 		}
 	}
-	CATCH (6)
+	CATCH (8)
 	{
 		stabilitytest_Nova_UnstableException* l2_Nova_e;
 		

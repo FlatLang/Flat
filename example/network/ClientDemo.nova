@@ -2,7 +2,6 @@ package "example/network"
 
 import "nova/standard/network/ClientSocket"
 import "nova/standard/network/ConnectionSocket"
-import "nova/standard/datastruct/ArrayList"
 
 public class ClientDemo
 {

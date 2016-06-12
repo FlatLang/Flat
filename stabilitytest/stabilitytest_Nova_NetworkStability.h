@@ -30,8 +30,8 @@ typedef struct stabilitytest_Nova_NetworkStability stabilitytest_Nova_NetworkSta
 #include <nova/standard/math/nova_standard_math_Nova_Math.h>
 #include <nova/standard/network/nova_standard_network_Nova_ServerSocket.h>
 #include <nova/standard/network/nova_standard_network_Nova_ConnectionSocket.h>
-#include <stabilitytest/stabilitytest_Nova_StabilityTest.h>
 #include <stabilitytest/stabilitytest_Nova_ClientThread.h>
+#include <stabilitytest/stabilitytest_Nova_StabilityTest.h>
 #include <stabilitytest/stabilitytest_Nova_StabilityTestCase.h>
 
 
