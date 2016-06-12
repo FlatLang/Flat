@@ -2171,6 +2171,11 @@ public class SyntaxUtils
 		SyntaxMessage.error("Type '" + type + "' is not imported", parent, location);
 	}
 	
+	public static boolean invalidType(Node parent, String type, boolean require)
+	{
+		return SyntaxMessage.queryError("Type '" + type + "' does not exist", parent, require);
+	}
+	
 	/**
 	 * Check to see if the type is a basic type and does not
 	 * have a class to represent it.
