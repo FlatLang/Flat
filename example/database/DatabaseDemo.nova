@@ -1,7 +1,7 @@
 package "example/database"
 
 import "nova/standard/database/DBConnector"
-import "nova/standard/database/SQLResult"
+import "nova/standard/database/ResultSet"
 
 public class DatabaseDemo
 {
@@ -9,13 +9,13 @@ public class DatabaseDemo
 	{
 		DBConnector connection = connect()
 		
-		SQLResult result = connection.query("select * from market")
+		ResultSet result = connection.query("select * from market")
 		
-		for (int row = 0; row < result.numRows; row++)
+		for (Int row = 0; row < result.numRows; row++)
 		{
 			Console.write("Found (" + row + "): " + result.rows[row][0])
 			
-			for (int col = 1; col < result.numCols; col++)
+			for (Int col = 1; col < result.numCols; col++)
 			{
 				Console.write(", " + result.rows[row][col])
 			}
@@ -23,7 +23,7 @@ public class DatabaseDemo
 			Console.writeLine("")
 		}
 		
-		int id = Int.parseInt(result.rows[result.numRows - 1][0]) + 1
+		Int id = Int.parseInt(result.rows[result.numRows - 1][0]) + 1
 		
 		connection.query("insert into market values(" + id + ", 6, 634, 3);")
 		
@@ -36,9 +36,11 @@ public class DatabaseDemo
 	{
 		Console.writeLine("Connecting...")
 		
-		DBConnector connection = new DBConnector("localhost", "root", "server", "test")
+		DBConnector connection = new DBConnector()
 		
-		String error = connection.getError()
+		connection.connect("localhost", "root", "server", "test")
+		
+		String error = connection.error
 		
 		if (error.size > 0)
 		{
@@ -48,6 +50,8 @@ public class DatabaseDemo
 		{
 			Console.writeLine("Connected.")
 		}
+		
+		return connection
 	}
 	
 	static close(DBConnector connection)
