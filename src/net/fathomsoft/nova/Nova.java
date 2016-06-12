@@ -281,7 +281,7 @@ public class Nova
 				"-keepc",
 				"-single-thread",
 				"-main",
-				"example/ArrayDemo",
+				"example/Lab",
 //				"-nogc",
 //				"-no-c-output",
 //				"-dry"
@@ -448,7 +448,7 @@ public class Nova
 			CLASS_LOCATIONS.put(name, location);
 		}
 		
-		args = prependArguments(args, standardFiles);
+		args = prependArguments(args, new String[] { "nova" });
 		args = appendArguments(args, postArgs);
 		
 		parseArguments(args);
