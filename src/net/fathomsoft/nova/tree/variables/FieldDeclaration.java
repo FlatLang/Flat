@@ -50,6 +50,19 @@ public class FieldDeclaration extends InstanceDeclaration
 	}
 	
 	@Override
+	public void addChild(Node node)
+	{
+		if (node instanceof AccessorMethod || node instanceof MutatorMethod)
+		{
+			getParentClass().addChild(node);
+		}
+		else
+		{
+			super.addChild(node);
+		}
+	}
+	
+	@Override
 	public boolean isTangible()
 	{
 		return tangible && super.isTangible();
@@ -386,18 +399,6 @@ public class FieldDeclaration extends InstanceDeclaration
 				Assignment assignment = Assignment.decodeStatement(getParentClass().getAssignmentMethodNode(), getName() + " = " + initializationValue, getLocationIn(), true);
 				
 				getParentClass().addFieldInitialization(assignment);
-			}
-			
-			AccessorMethod accessor = getAccessorMethod();
-			MutatorMethod  mutator  = getMutatorMethod();
-			
-			if (accessor != null)
-			{
-				getParentClass().addChild(accessor);
-			}
-			if (mutator != null)
-			{
-				getParentClass().addChild(mutator);
 			}
 		}
 		else if (phase == SyntaxTree.PHASE_METHOD_CONTENTS)
