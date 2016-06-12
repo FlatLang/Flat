@@ -315,6 +315,7 @@ int main(int argc, char** argvs)
 				
 		}
 		END_TRY;
+		FreeConsole();
 		NOVA_FREE(args);
 		nova_standard_gc_Nova_GC_Nova_collect(0, exceptionData);
 		
