@@ -276,7 +276,7 @@ public class Variable extends Identifier
 	@Override
 	public void setArrayDimensions(int arrayDimensions)
 	{
-		declaration.setArrayDimensions(arrayDimensions);
+		//declaration.setArrayDimensions(arrayDimensions);
 	}
 	
 	public void swapNames(Variable other)
