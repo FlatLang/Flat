@@ -6,6 +6,6 @@ public class Calculus
 {
 	public static derivative(NumericStatement statement) -> NumericStatement
 	{
-		
+		return null
 	}
 }

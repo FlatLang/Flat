@@ -97,6 +97,7 @@ nova_standard_Nova_String* example_Nova_PolymorphismDemo_Nova_getDescriptionOfAn
 			return example_Nova_PolymorphismDemo_Nova_animals[l2_Nova_i]->vtable->example_Nova_Animal_virtual0_Nova_getDescription(example_Nova_PolymorphismDemo_Nova_animals[l2_Nova_i], exceptionData);
 		}
 	}
+	return (nova_standard_Nova_String*)nova_null;
 }
 
 void example_Nova_PolymorphismDemo_0_Nova_this(example_Nova_PolymorphismDemo* this, nova_standard_exception_Nova_ExceptionData* exceptionData)

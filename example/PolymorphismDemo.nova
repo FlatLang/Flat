@@ -29,5 +29,7 @@ public class PolymorphismDemo
 				return animals[i].getDescription()
 			}
 		}
+
+		return null
 	}
 }
