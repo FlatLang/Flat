@@ -277,7 +277,7 @@ public class Nova
 //				"-gcc",
 //				"-tcc",
 //				"-small",
-				"-cargs",
+//				"-cargs",
 				"-keepc",
 				"-single-thread",
 				"-main",
@@ -1836,10 +1836,7 @@ public class Nova
 		}
 		
 		String with = errorsText.length() + warningsText.length() > 0 ? " with" : "";
-		
-		PrintStream stream = status.equals("succeeded") ? System.out : System.err;
-		
-		stream.println("Compilation " + status + with + errorsText + warningsText);
+		String message = "Compilation " + status + with + errorsText + warningsText;
 		
 		for (String s : warnings)
 		{
@@ -1848,6 +1845,15 @@ public class Nova
 		for (String s : errors)
 		{
 			System.err.println(s);
+		}
+		
+		if (status.equals("succeeded"))
+		{
+			log(message);
+		}
+		else
+		{
+			System.err.println(message);
 		}
 	}
 	
