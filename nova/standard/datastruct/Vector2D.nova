@@ -1,8 +1,10 @@
 package "nova/standard/datastruct"
 
-public class Vector2D<E extends Number>// extends Vector<E>
+import "nova/standard/primitive/number/Number"
+
+public class Vector2D//<E extends Number>// extends Vector<E>
 {
-	public E x
+	/*public E x
 	public E y
 	
 	visible E magnitude
@@ -48,5 +50,5 @@ public class Vector2D<E extends Number>// extends Vector<E>
 		cross.y = y * vector.x
 		
 		return cross
-	}
+	}*/
 }

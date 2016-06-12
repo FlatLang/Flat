@@ -1,8 +1,11 @@
 package "nova/standard/math"
 
+import "nova/standard/datastruct/ReversibleHashMap"
+import "nova/standard/datastruct/Node"
+
 public class Graph
 {
-	Matrix matrix
+	/*Matrix matrix
 	
 	ReversibleHashMap<Node, Int> map
 	
@@ -19,13 +22,13 @@ public class Graph
 		
 		matrix = new Matrix(numNodes, numNodes)
 	}
-	
+	*/
 	/**
 	 * 
 	 * 
 	 * @return The ID of the added node.
 	 */
-	public addNode(Number val) -> Node
+	/*public addNode(Number val) -> Node
 	{
 		Node node = new Node(val)
 		
@@ -64,8 +67,6 @@ public class Graph
 	
 	updateMatrix()
 	{
-		map.length
-	}
-	
-	public shortestPath
+		map.size
+	}*/
 }

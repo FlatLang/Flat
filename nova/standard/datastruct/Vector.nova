@@ -1,8 +1,10 @@
 package "nova/standard/datastruct"
 
-public class Vector<E extends Number>
+import "nova/standard/primitive/number/Number"
+
+public class Vector//<E extends Number>
 {
-	visible E magnitude
+	/*visible E magnitude
 	{
 		no get
 		
@@ -18,5 +20,5 @@ public class Vector<E extends Number>
 		return v1.crossProduct(v2)
 	}
 	
-	public abstract crossProduct(Vector vector) -> Vector
+	public abstract crossProduct(Vector vector) -> Vector*/
 }
