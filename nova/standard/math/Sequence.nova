@@ -11,11 +11,6 @@ public class Sequence
 		this.values = values
 	}
 	
-	public construct(Double first, )
-	{
-		
-	}
-	
 	//sum [public static] (Double[] values, Int num) -> Double
 	public static sum(Int num) -> Double
 	{
@@ -23,7 +18,7 @@ public class Sequence
 		
 		for (Int i = 0; i < num; i++)
 		{
-			value += values[i]
+			value = value + values[i]
 		}
 		
 		return value

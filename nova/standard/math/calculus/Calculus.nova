@@ -4,7 +4,7 @@ import "nova/standard/math/NumericStatement"
 
 public class Calculus
 {
-	public static NumericStatement derivative(NumericStatement statement)
+	public static derivative(NumericStatement statement) -> NumericStatement
 	{
 		
 	}

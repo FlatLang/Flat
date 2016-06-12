@@ -54,4 +54,9 @@ public class Char extends Number implements Comparable<Char>, Integer
 	{
 		return value - other
 	}
+	
+	public multiply(Char value) -> Char
+	{
+		return this.value * value
+	}
 }

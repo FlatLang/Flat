@@ -17,13 +17,13 @@ public class Polynomial
 		Int start = 0
 		Bool reading = false
 		
-		ArrayList<Double> coeffs  = new ArrayList()
-		ArrayList<Double> degrees = new ArrayList()
-		ArrayList<Byte>   signs   = new ArrayList()
+		Array<Double> coeffs  = new Array()
+		Array<Double> degrees = new Array()
+		Array<Byte>   signs   = new Array()
 		
-		for (Int i = 0; i < polynomial.length; i++)
+		for (Int i = 0; i < polynomial.size; i++)
 		{
-			if (!isLetter(polynomial.data[i]))
+			if (!isLetter(polynomial.chars[i]))
 			{
 				reading = false
 				
@@ -40,12 +40,12 @@ public class Polynomial
 			}
 		}
 		
-		this.coefficients = coeffs.toArray()
+		/*this.coefficients = coeffs.toArray()
 		this.degrees      = degrees.toArray()
-		this.signs        = signs.toArray()
+		this.signs        = signs.toArray()*/
 	}
 	
-	static isLetter(Char c)
+	static isLetter(Char c) -> Bool
 	{
 		return !isSymbol(c) && !isWhitespace(c)
 	}
