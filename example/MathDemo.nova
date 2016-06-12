@@ -1,6 +1,6 @@
 package "example"
 
-import "Time"
+import "nova/standard/time/Timer"
 
 public class MathDemo
 {
@@ -8,11 +8,11 @@ public class MathDemo
 	{
 		Console.writeLine("Beginning benchmark...")
 		
-		int iterations = 999999
+		Int iterations = 999999
 		
-		long start = Time.currentTimeMillis()
+		Timer timer = new Timer().start()
 		
-		for (int i = 0; i < iterations; i++)
+		for (Int i = 0; i < iterations; i++)
 		{
 			try
 			{
@@ -24,9 +24,9 @@ public class MathDemo
 			}
 		}
 		
-		long time = Time.currentTimeMillis() - start
+		Timer.stop()
 		
-		Console.writeLine(iterations + " iterations of Math.sin() in " + time + "ms")
+		Console.writeLine(iterations + " iterations of Math.sin() in " + timer.duration + "ms")
 		
 		Console.waitForEnter()
 	}

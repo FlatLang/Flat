@@ -1,20 +1,20 @@
 package "example"
 
-import "Thread"
-import "Time"
+import "nova/standard/thread/Thread"
+import "nova/standard/time/Timer"
 
 public class ThreadDemo
 {
 	public static main(String args[])
 	{
-		char c = 'y'
+		Char c = 'y'
 		
 		while (c == 'y' || c == 'Y')
 		{
 			Thread thread  = new ThreadDemoImplementation(100, "Thread1")
 			Thread thread2 = new ThreadDemoImplementation(100, "Thread2")
 			
-			long start = Time.currentTimeMillis()
+			Timer timer = new Timer().start()
 			
 			thread.start()
 			thread2.start()
@@ -22,9 +22,9 @@ public class ThreadDemo
 			thread.join()
 			thread2.join()
 			
-			long end = Time.currentTimeMillis()
+			timer.stop()
 			
-			Console.writeLine("Time taken: " + (end - start) + "ms")
+			Console.writeLine("Time taken: " + timer.duration + "ms")
 			
 			Console.write("Run again? (Y/N) ")
 			

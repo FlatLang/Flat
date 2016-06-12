@@ -1,7 +1,7 @@
 package "example"
 
-import "File"
-import "Thread"
+import "nova/standard/io/File"
+import "nova/standard/thread/Thread"
 
 public class FileTest
 {
@@ -9,7 +9,7 @@ public class FileTest
 	{
 		File f = new File("C:/Users/Braden Steffaniak/test3.txt")
 		
-		if (f.exists())
+		if (f.exists)
 		{
 			Console.writeLine("Your file exists!")
 			

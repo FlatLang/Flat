@@ -2,11 +2,11 @@ package "example"
 
 public class Person
 {
-	public int		age
+	public Int		age
 	
 	public String	name
 	
-	public construct(String name, int age)
+	public construct(String name, Int age)
 	{
 		this.name = name
 		this.age  = age

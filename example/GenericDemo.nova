@@ -1,6 +1,6 @@
 package "example"
 
-import "nova/standard/datastruct/Stack"
+import "nova/standard/datastruct/list/Stack"
 import "nova/standard/datastruct/HashMap"
 
 public class GenericDemo
@@ -29,7 +29,7 @@ public class GenericDemo
 //		Object o = new Object()
 //		strs.push(o)
 		
-		while (false == strs.isEmpty())
+		while (!strs.empty)
 		{
 			String popped = strs.pop()
 			

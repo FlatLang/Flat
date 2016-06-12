@@ -2,9 +2,9 @@ package "example"
 
 public class BodyBuilder extends Person
 {
-	visible int weightClass
+	visible Int weightClass
 	
-	public construct(int weightClass, String name)
+	public construct(Int weightClass, String name)
 	{
 		age = 5
 		

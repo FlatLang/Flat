@@ -20,9 +20,9 @@ public class PolymorphismDemo
 		Console.waitForEnter()
 	}
 	
-	static getDescriptionOfAnimalWithNumberOfLegs(Animal animals[], int numLegs) -> String
+	static getDescriptionOfAnimalWithNumberOfLegs(Animal animals[], Int numLegs) -> String
 	{
-		for (int i = 0; i < 2; i++)
+		for (Int i = 0; i < 2; i++)
 		{
 			if (animals[i].getNumLegs() == numLegs)
 			{

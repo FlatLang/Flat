@@ -1,6 +1,6 @@
 package "example"
 
-import "nova/standard/datastruct/Stack"
+import "nova/standard/datastruct/list/Stack"
 
 public class Test
 {
@@ -12,7 +12,7 @@ public class Test
 		s.push("Larry")
 		s.push("Hello")
 		
-		while (!s.isEmpty())
+		while (!s.empty)
 		{
 			Console.writeLine(s.pop())
 		}

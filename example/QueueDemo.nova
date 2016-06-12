@@ -1,6 +1,6 @@
 package "example"
 
-import "nova/standard/datastruct/Queue"
+import "nova/standard/datastruct/list/Queue"
 
 public class QueueDemo
 {

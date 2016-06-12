@@ -1,36 +1,36 @@
 package "example"
 
-import "Time";
-import "Thread";
-import "List";
-import "ListNode";
-import "GC";
+import "nova/standard/time/Timer"
+import "nova/standard/thread/Thread"
+import "nova/standard/datastruct/list/LinkedList"
+import "nova/standard/datastruct/list/ListNode"
+import "nova/standard/gc/GC"
 
 public class IntegerTest
 {
 	public static main(String args[])
 	{
-		char c = 'y';
+		Char c = 'y'
 		
 		while (c == 'y' || c == 'Y')
 		{
-			long start = Time.currentTimeMillis();
+			Timer timer = new Timer().start()
 			
-			for (int i = 0; i < 999999; i++)
+			for (Int i = 0; i < 999999; i++)
 			{
-				Long.toString(i);
+				Long.toString(i)
 			}
 			
-			long end = Time.currentTimeMillis();
+			timer.stop()
 			
-			Console.writeLine("Time taken: " + (end - start) + "ms");
+			Console.writeLine("Time taken: " + timer.duration + "ms")
 			
-			Console.write("Run again? (Y/N) ");
+			Console.write("Run again? (Y/N) ")
 			
-			c = Console.readChar();
+			c = Console.readChar()
 		}
 		
-		Console.writeLine("\nFinished");
-		Console.waitForEnter();
+		Console.writeLine("\nFinished")
+		Console.waitForEnter()
 	}
 }

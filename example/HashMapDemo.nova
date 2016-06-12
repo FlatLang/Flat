@@ -1,19 +1,21 @@
 package "example"
 
+import "nova/standard/datastruct/HashMap"
+
 public class HashMapDemo
 {
 	public static main(String args[])
 	{
 		HashMap<Int, String> words = new HashMap()
 		
-		Int nums[] = new Int[6]
+		Int[] nums = new Int[6]
 		
-		nums[0] = new Int(0)
-		nums[1] = new Int(1)
-		nums[2] = new Int(2)
-		nums[3] = new Int(3)
-		nums[4] = new Int(4)
-		nums[5] = new Int(5)
+		nums[0] = 0
+		nums[1] = 1
+		nums[2] = 2
+		nums[3] = 3
+		nums[4] = 4
+		nums[5] = 5
 		
 		words.put(nums[0], "Zero")
 		words.put(nums[1], "One")
@@ -23,12 +25,12 @@ public class HashMapDemo
 		words.put(nums[5], "Five")
 		words.put(nums[5], null)
 		
-		for (int i = 0; i <= 5; i++)
+		/*for (Int i = 0; i <= 5; i++)
 		{
 			Int index = nums[Math.random(6)]
 			
 			Console.writeLine("Getting value at index " + index + " " + words.get(index))
-		}
+		}*/
 		
 		Console.waitForEnter()
 	}

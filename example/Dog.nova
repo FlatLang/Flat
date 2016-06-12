@@ -4,7 +4,7 @@ public class Dog extends Animal
 {
 	public construct()
 	{
-		Console.writeLine("Regular dog")
+		
 	}
 	
 	public getNumLegs() -> Int
