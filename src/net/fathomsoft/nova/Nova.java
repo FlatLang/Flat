@@ -87,7 +87,9 @@ public class Nova
 	
 	private long				flags;
 	private long				startTime, endTime;
-
+	
+	private String				mainClass;
+	
 	private File				outputFile, workingDir;
 	private File				nativeInterfaceSource, nativeInterfaceHeader;
 	private File				interfaceVTableHeader;
@@ -264,61 +266,7 @@ public class Nova
 			
 			args = new String[]
 			{
-				formatPath(stability + "StabilityTest.nova"),
-				formatPath(stability + "TimeStability.nova"),
-				formatPath(stability + "FileStability.nova"),
-				formatPath(stability + "ThreadStability.nova"),
-				formatPath(stability + "ExceptionStability.nova"),
-				formatPath(stability + "SyntaxStability.nova"),
-				formatPath(stability + "ClosureStability.nova"),
-				formatPath(stability + "PolymorphismStability.nova"),
-				formatPath(stability + "PolymorphicSuperClass.nova"),
-				formatPath(stability + "PolymorphicSubClass.nova"),
-				formatPath(stability + "StabilityTestException.nova"),
-				formatPath(stability + "StabilityExceptionHandler.nova"),
-				formatPath(stability + "ThreadImplementation.nova"),
-				formatPath(stability + "UnstableException.nova"),
-				formatPath(stability + "NetworkStability.nova"),
-				formatPath(stability + "ClientThread.nova"),
-				formatPath(stability + "StabilityTestCase.nova"),
-//				formatPath(directory + "network/OutputThread.nova"),
-//				formatPath(directory + "network/ConnectionThread.nova"),
-//				formatPath(directory + "network/ServerDemo.nova"),
-//				formatPath(directory + "network/ClientDemo.nova"),
-//				formatPath(directory + "GenericDemo.nova"),
-//				formatPath(directory + "database/DatabaseDemo.nova"),
-//				formatPath(root      + "bank/BankQueryException.nova"),
-//				formatPath(root      + "bank/Bank.nova"),
-//				formatPath(root      + "bank/ConnectionThread.nova"),
-//				formatPath(root      + "bank/ServerOutputThread.nova"),
-//				formatPath(root      + "bank/BankClient.nova"),
-//				formatPath(root      + "bank/ClientConnectionThread.nova"),
-//				formatPath(root      + "bank/ClientInputThread.nova"),
-//				formatPath(directory + "ackermann/Ackermann.nova"),
-//				formatPath(directory + "Lab.nova"),
-//				formatPath(directory + "copy/Dog.nova"),
-//				formatPath(directory + "T1.nova"),
-//				formatPath(directory + "T2.nova"),
-//				formatPath(directory + "MathDemo.nova"),
-//				formatPath(directory + "ThreadDemo.nova"),
-//				formatPath(directory + "ThreadDemoImplementation.nova"),
-//				formatPath(directory + "PolymorphismDemo.nova"),
-//				formatPath(directory + "Animal.nova"),
-//				formatPath(directory + "Spider.nova"),
-//				formatPath(directory + "Dog.nova"),
-//				formatPath(directory + "ArrayListDemo.nova"),
-//				formatPath(directory + "QueueDemo.nova"),
-//				formatPath(directory + "IntegerTest.nova"),
-//				formatPath(directory + "FileTest.nova"),
-//				formatPath(directory + "SVGTest.nova"),
-//				formatPath(directory + "ExceptionHandlingDemo.nova"),
-//				formatPath(directory + "NonWholeDivisionException.nova"),
-//				formatPath(directory + "ClosureDemo.nova"),
-//				formatPath(directory + "Person.nova"),
-//				formatPath(directory + "BodyBuilder.nova"),
-				formatPath(directory + "Polygon.nova"),
-				formatPath(directory + "Square.nova"),
-//				formatPath(directory + "Test.nova"),
+				"example",
 				"-o",   formatPath(directory + "bin/Executable" + OUTPUT_EXTENSION),
 				"-dir", formatPath(directory + "../example"),
 				"-dir", formatPath(directory + "../stabilitytest"),
@@ -327,10 +275,13 @@ public class Nova
 				"-formatc",
 				testClasses ? "-v" : "",
 //				"-gcc",
+//				"-tcc",
 //				"-small",
-//				"-cargs",
+				"-cargs",
 				"-keepc",
 				"-single-thread",
+				"-main",
+				"example/ArrayDemo",
 //				"-nogc",
 //				"-no-c-output",
 //				"-dry"
@@ -338,7 +289,7 @@ public class Nova
 //				"-no-warnings",
 //				"-no-errors",
 				"-no-optimize",
-				"-library",
+//				"-library",
 			};
 		}
 		if (ANDROID_DEBUG)
@@ -919,13 +870,20 @@ public class Nova
 	 */
 	private void insertMainMethod()
 	{
-		MethodDeclaration mainMethod = tree.getMainMethod();
+		MethodDeclaration mainMethod = tree.getMainMethod(mainClass);
 		
 		if (mainMethod == null)
 		{
 			if (!isFlagEnabled(LIBRARY))
 			{
-				SyntaxMessage.error("No main method found in program", this);
+				if (mainClass != null)
+				{
+					SyntaxMessage.error("No main method found in class '" + mainClass + "'", this);
+				}
+				else
+				{
+					SyntaxMessage.error("No main method found in program", this);
+				}
 				
 				completed();
 			}
@@ -1142,11 +1100,13 @@ public class Nova
 
 		if (!isFlagEnabled(NO_GC))
 		{
-			cmd.append("-lgc -Wl,-L" + formatPath(libDir) + " ");
+			String l = "-L";//OS == WINDOWS ? "" : "-L";
+			
+			cmd.append("-lgc ");//-Wl," + l + formatPath(libDir) + " ");
 
 			if (OS != MACOSX)
 			{
-				cmd.append("-Wl,-R ");
+			//	cmd.append("-Wl,-R ");
 			}
 		}
 
@@ -1469,6 +1429,7 @@ public class Nova
 		// type of input at the current argument.
 		boolean expectingOutputFile       = false;
 		boolean expectingIncludeDirectory = false;
+		boolean expectingMainClass        = false;
 		
 		// Iterate through all of the arguments.
 		for (int i = 0; i < args.length; i++)
@@ -1547,6 +1508,10 @@ public class Nova
 			else if (arg.equals("-no-errors"))
 			{
 				enableFlag(NO_ERRORS);
+			}
+			else if (arg.equals("-main"))
+			{
+				expectingMainClass = true;
 			}
 			// If the user wants to view the c source output.
 			else if (arg.equals("-csource"))
@@ -1646,6 +1611,10 @@ public class Nova
 				{
 					includeDirectories.add(formatPath(args[i]));
 				}
+				else if (expectingMainClass)
+				{
+					mainClass = args[i];
+				}
 				else
 				{
 					error("Unknown argument '" + args[i] + "'");
@@ -1664,6 +1633,12 @@ public class Nova
 //		}
 	}
 	
+	private void addFilesFromDirectory(File directory)
+	{
+		stream(directory.listFiles()).filter(x -> x.getName().toLowerCase().endsWith(".nova")).forEach(x -> inputFiles.add(x));
+		stream(directory.listFiles()).filter(x -> x.isDirectory()).forEach(this::addFilesFromDirectory);
+	}
+	
 	/**
 	 * Validate that the input files end with .fat. If any of them
 	 * do not, an error will be output. Also outputs an error if the
@@ -1673,9 +1648,24 @@ public class Nova
 	{
 		boolean working = true;
 		
-		for (File f : inputFiles)
+		for (int i = 0; i < inputFiles.size(); i++)
 		{
-			if (!f.getName().toLowerCase().endsWith(".nova"))
+			File f = inputFiles.get(i);
+			
+			if (!f.isFile())
+			{
+				if (f.isDirectory())
+				{
+					addFilesFromDirectory(f);
+				}
+				else
+				{
+					working = false;
+					
+					error("Input file '" + f.getAbsolutePath() + "' is not a file.");
+				}
+			}
+			else if (!f.getName().toLowerCase().endsWith(".nova"))
 			{
 				working = false;
 				
@@ -1687,11 +1677,13 @@ public class Nova
 				
 				error("Input file '" + f.getAbsolutePath() + "' does not exist.");
 			}
-			else if (!f.isFile())
+		}
+		
+		for (int i = inputFiles.size() - 1; i >= 0; i--)
+		{
+			if (inputFiles.get(i).isDirectory())
 			{
-				working = false;
-				
-				error("Input file '" + f.getAbsolutePath() + "' is not a file.");
+				inputFiles.remove(i);
 			}
 		}
 		
