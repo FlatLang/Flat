@@ -266,8 +266,10 @@ public class SyntaxTree
 	 * 
 	 * @return The Method representation of the main method.
 	 */
-	public MethodDeclaration getMainMethod()
+	public MethodDeclaration getMainMethod(String mainClass)
 	{
+		MethodDeclaration main = null;
+		
 		for (int i = 0; i < root.getNumChildren(); i++)
 		{
 			Node child = root.getChild(i);
@@ -290,7 +292,15 @@ public class SyntaxTree
 						{
 							if (SyntaxUtils.isMainMethod((BodyMethodDeclaration)methodDeclaration))
 							{
-								return methodDeclaration;
+								if (mainClass == null || methodDeclaration.getParentClass().getClassLocation().equals(mainClass))
+								{
+									if (main != null)
+									{
+										SyntaxMessage.error("Multiple main methods found. Please specify which one you want to run by passing a -main argument to the compiler", main);
+									}
+									
+									main = methodDeclaration;
+								}
 							}
 						}
 					}
@@ -298,7 +308,7 @@ public class SyntaxTree
 			}
 		}
 		
-		return null;
+		return main;
 	}
 	
 	/**
