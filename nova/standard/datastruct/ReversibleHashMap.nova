@@ -11,8 +11,8 @@ public class ReversibleHashMap<K, V> extends HashMap<K, V>
 	
 	public put(K key, V value)
 	{
-		super.put(key, value)
-		rev.put(value, key)
+		/*super.put(key, value)
+		rev.put(value, key)*/
 	}
 	
 	public getKey(V value) -> K
