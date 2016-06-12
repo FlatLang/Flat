@@ -1,6 +1,6 @@
 package "nova/standard/datastruct/list"
 
-public class ArrayIterator<E> implements Iterator<E, Int>
+public class ArrayIterator<E> implements Iterator<E>
 {
 	Array<E> array
 	

@@ -1,6 +1,6 @@
 package "nova/standard/datastruct/list"
 
-public interface List<Type, PositionType> extends Iterable<Type, PositionType>
+public interface List<Type> extends Iterable<Type>
 {
 	//visible Int size
 	/*[Int index]

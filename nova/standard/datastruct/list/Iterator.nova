@@ -1,8 +1,7 @@
 package "nova/standard/datastruct/list"
 
-public interface Iterator<E, PositionType>
+public interface Iterator<E>
 {
-	visible PositionType position
 	visible Bool hasNext
 	{
 		get { return false }

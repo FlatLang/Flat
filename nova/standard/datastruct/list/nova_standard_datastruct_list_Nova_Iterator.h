@@ -47,7 +47,6 @@ CCLASS_CLASS
 	nova_standard_datastruct_list_Nova_Iterator, 
 	
 	nova_standard_datastruct_list_Extension_VTable_Iterator* vtable;
-	nova_standard_Nova_Object* nova_standard_datastruct_list_Nova_Iterator_Nova_position;
 )
 
 void nova_standard_datastruct_list_Nova_IteratorNova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData);

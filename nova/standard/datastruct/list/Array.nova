@@ -2,7 +2,7 @@ package "nova/standard/datastruct/list"
 
 import "nova/standard/primitive/number/Integer"
 
-public class Array<E> implements List<E, Int>
+public class Array<E> implements List<E>
 {
 	external void arrayCopy(E dest[], int dIndex, E src[], int sIndex, int len, int destArrLen, int size)
 	

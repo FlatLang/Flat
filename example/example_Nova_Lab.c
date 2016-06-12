@@ -93,7 +93,7 @@ void example_Nova_Lab_Nova_main(example_Nova_Lab* this, nova_standard_exception_
 		nova_standard_datastruct_list_Nova_Array* l1_Nova_list3;
 		nova_standard_datastruct_list_Nova_Iterator* l1_Nova_iter;
 		nova_standard_datastruct_list_Nova_ArrayIterator* nova_local_0;
-		nova_standard_Nova_String* l5_Nova_string;
+		nova_standard_Nova_String* l4_Nova_string;
 		int l2_Nova_n;
 		
 		l1_Nova_tree = nova_standard_datastruct_Nova_BinaryTree_Nova_construct(0, exceptionData);
@@ -141,19 +141,20 @@ void example_Nova_Lab_Nova_main(example_Nova_Lab* this, nova_standard_exception_
 		l1_Nova_iter = (nova_standard_datastruct_list_Nova_Iterator*)(nova_standard_datastruct_list_Nova_Array_Accessor_Nova_iterator(l1_Nova_list, exceptionData));
 		while (l1_Nova_iter->vtable->itable.nova_standard_datastruct_list_Nova_Iterator_Accessor_Nova_hasNext(l1_Nova_iter, exceptionData))
 		{
-				if (l1_Nova_iter->nova_standard_datastruct_list_Nova_Iterator_Nova_position > 0)
-				{
-						nova_standard_io_Nova_Console_0_Nova_write(0, exceptionData, nova_standard_Nova_String_2_Nova_construct(0, exceptionData, ", "));
-				}
-				nova_standard_io_Nova_Console_0_Nova_write(0, exceptionData, (nova_standard_Nova_String*)(l1_Nova_iter->vtable->itable.nova_standard_datastruct_list_Nova_Iterator_Accessor_Nova_next(l1_Nova_iter, exceptionData)));
+				nova_standard_Nova_String* nova_local_3;
+				nova_standard_Nova_String* nova_local_4;
+				
+				nova_local_3 = (nova_standard_Nova_String*)(l1_Nova_iter->vtable->itable.nova_standard_datastruct_list_Nova_Iterator_Accessor_Nova_next(l1_Nova_iter, exceptionData));
+				nova_local_4 = nova_local_3->vtable->nova_standard_Nova_String_virtual0_Nova_toString(nova_local_3, exceptionData);
+				nova_standard_io_Nova_Console_0_Nova_write(0, exceptionData, nova_local_4->vtable->nova_standard_Nova_String_virtual0_Nova_concat(nova_local_4, exceptionData, nova_standard_Nova_String_2_Nova_construct(0, exceptionData, ", ")));
 		}
 		nova_standard_io_Nova_Console_0_Nova_writeLine(0, exceptionData, nova_standard_Nova_String_2_Nova_construct(0, exceptionData, ""));
 		nova_standard_io_Nova_Console_0_Nova_writeLine(0, exceptionData, nova_standard_Nova_String_2_Nova_construct(0, exceptionData, "With foreach loop"));
 		nova_local_0 = nova_standard_datastruct_list_Nova_Array_Accessor_Nova_iterator(l1_Nova_list, exceptionData);
 		while (nova_local_0->vtable->nova_standard_datastruct_list_Nova_ArrayIterator_Accessor_Nova_hasNext(nova_local_0, exceptionData))
 		{
-				l5_Nova_string = (nova_standard_Nova_String*)(nova_local_0->vtable->nova_standard_datastruct_list_Nova_ArrayIterator_Accessor_Nova_next(nova_local_0, exceptionData));
-				nova_standard_io_Nova_Console_0_Nova_write(0, exceptionData, l5_Nova_string->vtable->nova_standard_Nova_String_virtual0_Nova_concat(l5_Nova_string, exceptionData, nova_standard_Nova_String_2_Nova_construct(0, exceptionData, ", ")));
+				l4_Nova_string = (nova_standard_Nova_String*)(nova_local_0->vtable->nova_standard_datastruct_list_Nova_ArrayIterator_Accessor_Nova_next(nova_local_0, exceptionData));
+				nova_standard_io_Nova_Console_0_Nova_write(0, exceptionData, l4_Nova_string->vtable->nova_standard_Nova_String_virtual0_Nova_concat(l4_Nova_string, exceptionData, nova_standard_Nova_String_2_Nova_construct(0, exceptionData, ", ")));
 		}
 		nova_standard_io_Nova_Console_Nova_waitForEnter(0, exceptionData);
 }

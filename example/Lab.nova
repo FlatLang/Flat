@@ -79,12 +79,7 @@ public class Lab
 		
 		while (iter.hasNext)
 		{
-			if (iter.position > 0)
-			{
-				Console.write(", ")
-			}
-			
-			Console.write(iter.next)
+			Console.write(iter.next + ", ")
 		}
 		
 		Console.writeLine("")

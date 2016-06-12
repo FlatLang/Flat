@@ -1,6 +1,6 @@
 package "nova/standard/datastruct/list"
 
-public interface Iterable<E, PositionType>
+public interface Iterable<E>
 {
-	visible Iterator<E, PositionType> iterator
+	visible Iterator<E> iterator
 }
