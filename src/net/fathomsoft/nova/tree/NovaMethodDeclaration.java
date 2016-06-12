@@ -547,6 +547,19 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 		return null;
 	}
 	
+	private void checkOverrides()
+	{
+		NovaMethodDeclaration methodDeclaration = getOverriddenMethod();
+		
+		if (methodDeclaration != null)
+		{
+			if (!containsOverridingMethod(methodDeclaration))
+			{
+				methodDeclaration.overridingMethods.add(this);
+			}
+		}
+	}
+	
 	/**
 	 * Validate that the given statement is a method declaration.
 	 * 
@@ -805,15 +818,8 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 			//TODO: Is this necessary?
 			getParameterList().validate(phase);
 			
-			NovaMethodDeclaration methodDeclaration = getOverriddenMethod();
-			
-			if (methodDeclaration != null)
-			{
-				if (!containsOverridingMethod(methodDeclaration))
-				{
-					methodDeclaration.overridingMethods.add(this);
-				}
-			}
+			Nova.debuggingBreakpoint(getParentClass().getName().equals("PolymorphicSubClass") && this instanceof AccessorMethod);
+			checkOverrides();
 		}
 		else if (phase == SyntaxTree.PHASE_METHOD_CONTENTS)
 		{
