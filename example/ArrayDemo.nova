@@ -1,8 +1,6 @@
 package "example"
 
-import "nova/standard/datastruct/ArrayList"
-
-public class ArrayListDemo
+public class ArrayDemo
 {
 	public static main(String[] args)
 	{
@@ -10,7 +8,7 @@ public class ArrayListDemo
 		
 		while (c == 'y' || c == 'Y')
 		{
-			ArrayList<Animal> list = new ArrayList()
+			Array<Animal> list = new Array()
 			
 			list.add(new Dog())
 			list.add(new Dog())
