@@ -1679,7 +1679,6 @@ public class ClassDeclaration extends InstanceDeclaration
 		getFieldList().generateNonStaticCSource(builder);
 		
 		generateStaticBlocksSource(builder);
-		Nova.debuggingBreakpoint(getName().equals("Multiply"));
 		getConstructorList().generateCSource(builder);
 		getDestructorList().generateCSource(builder);
 		getMethodList().generateCSource(builder);
