@@ -818,7 +818,6 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 			//TODO: Is this necessary?
 			getParameterList().validate(phase);
 			
-			Nova.debuggingBreakpoint(getParentClass().getName().equals("PolymorphicSubClass") && this instanceof AccessorMethod);
 			checkOverrides();
 		}
 		else if (phase == SyntaxTree.PHASE_METHOD_CONTENTS)
