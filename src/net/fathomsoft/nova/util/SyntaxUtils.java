@@ -1848,29 +1848,109 @@ public class SyntaxUtils
 	
 	public static ClassDeclaration getParameterGenericReturnType(String type, Value given)
 	{
-		GenericCompatible gen = null;
+		//Variable var = null;
+		//GenericCompatible gen = null;
 		
 		MethodCall call = (MethodCall)given.getAncestorOfType(MethodCall.class);
 		
+//		if (call != null)
+//		{
+//			if (call.getMethodDeclaration() instanceof InitializationMethod)
+//			{
+//				gen = call.getMethodDeclaration().getParentClass();
+//			}
+//			else
+//			{
+//				gen = call.getGenericCompatibleDeclaration();
+//			}
+//		}
+//		else
+//		/*{
+//		if (given instanceof Accessible)
+//		{
+//			gen = ((Node)((Accessible)given).getReferenceNode()).getParentClass();
+//		}
+//		else*/
+//		{
+//			gen = /*((Node)given.getContext())*/given.getParentClass();//given.getParentMethod();
+//		}
+
+		GenericCompatible gen = null;
+		
 		if (call != null)
 		{
+			Accessible ref = call.getReferenceNode();
+			Variable reference = null;
+			VariableDeclaration decl = null;
+			
+			if (ref instanceof Variable)
+			{
+				if (ref instanceof Instantiation)
+				{
+					ref = (Accessible)((Instantiation)ref).getReferenceNode();
+					reference = (Variable)ref;
+					decl = call.getDeclaration();
+				}
+				else
+				{
+					reference = (Variable)ref;
+					decl = reference.getDeclaration();
+				}
+				
+				int index = /*decl.getParentClass()*/reference.getTypeClass().getGenericTypeParameterIndex(type);
+				
+				if (reference.isGenericType())
+				{
+					GenericTypeArgument arg = reference.getGenericTypeArgumentFromParameter(reference.getType());
+					
+					return arg.getTypeClass();
+				}
+				else
+				{
+					//ClassDeclaration d = reference.getTypeClass();//.getReferenceNode().toValue().getTypeClass();
+					
+					//reference.getIntelligentGenericTypeArgument(index);
+				}
+				
+				return decl.getGenericTypeArgument(index).getNovaTypeClass();//d.getGenericTypeParameter(index).getNovaTypeClass();
+			}
+			
 			if (call.getMethodDeclaration() instanceof InitializationMethod)
 			{
 				gen = call.getMethodDeclaration().getParentClass();
 			}
 			else
 			{
-				gen = call.getGenericCompatible();
+				gen = call.getGenericCompatibleDeclaration();
 			}
 		}
 		else
 		{
-			gen = given.getParentClass();//given.getParentMethod();
+			gen = /*((Node)given.getContext())*/given.getParentClass();//given.getParentMethod();
 		}
 		
 		String name = gen.getGenericTypeArgumentType(type, given);
 		
 		return SyntaxUtils.getImportedClass(given.getFileDeclaration(), name);
+	}
+	
+	public static String getTypeClassLocation(Node node, String type)
+	{
+		FileDeclaration file = node.getFileDeclaration();
+		
+		if (node instanceof Identifier)
+		{
+			file = ((Identifier)node).getReferenceFile();
+		}
+		
+		String location = file.getImportList().getAbsoluteClassLocation(type);
+		
+//		if (location == null)
+//		{
+//			SyntaxUtils.throwImportException(this, type, getLocationIn());
+//		}
+		
+		return location;
 	}
 	
 	/**
@@ -2016,6 +2096,7 @@ public class SyntaxUtils
 			
 			if (!Literal.isNullLiteral(given) && !isTypeCompatible(context, value, given, false))
 			{
+				getParameterGenericReturnType(param.getType(), given);
 				SyntaxMessage.error("Incorrect type '" + given.getType() + "' given for required generic type of '" + value.getType() + "' type", given);
 				
 				return false;
@@ -2168,12 +2249,22 @@ public class SyntaxUtils
 	
 	public static void throwImportException(Node parent, String type, Location location)
 	{
-		SyntaxMessage.error("Type '" + type + "' is not imported", parent, location);
+		throwImportException(parent, type, location, true);
+	}
+
+	public static void throwImportException(Node parent, String type, Location location, boolean throwException)
+	{
+		SyntaxMessage.error("Type '" + type + "' is not imported", parent, location, throwException);
 	}
 	
 	public static boolean invalidType(Node parent, String type, boolean require)
 	{
 		return SyntaxMessage.queryError("Type '" + type + "' does not exist", parent, require);
+	}
+	
+	public static boolean invalidType(Node parent, String type, boolean require, boolean throwException)
+	{
+		return SyntaxMessage.queryError("Type '" + type + "' does not exist", parent, throwException, require);
 	}
 	
 	/**
