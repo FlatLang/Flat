@@ -271,6 +271,13 @@ public class Instantiation extends IIdentifier implements GenericCompatible
 			{
 				return null;
 			}
+			else if (!methodCall.getTypeClass().isOfType(getTypeClass()) && getTypeClass().getConstructorList().getNumVisibleChildren() > 0)
+			{
+				MethodCall.decodeStatement(this, instantiation, location, require, validateAccess);
+				SyntaxMessage.queryError("Incompatible arguments given to " + getName() + " constructor", this, require);
+				
+				return null;
+			}
 			
 			child = methodCall;
 		}
