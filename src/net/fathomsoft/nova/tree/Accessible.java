@@ -16,6 +16,11 @@ public interface Accessible
 	
 	public GenericCompatible getContext();
 	
+	public default Value toValue()
+	{
+		return (Value)this;
+	}
+	
 	/**
 	 * Get the next accessed node that is of the given class type.
 	 * 
