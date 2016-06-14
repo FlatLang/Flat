@@ -12,7 +12,7 @@ public class Array<E> implements List<E>
 	
 	E[] data
 	
-	@RequireGenericType(E extends String)
+	@RequireGenericType E extends String
 	visible String stringsOnly = "hey"
 	
 	visible Bool empty
@@ -272,7 +272,7 @@ public class Array<E> implements List<E>
 		return null
 	}
 	
-	@RequireGenericType(E extends String)
+	@RequireGenericType E extends String
 	public sumSize() -> Long
     {
     	Long sum = 0
@@ -285,7 +285,7 @@ public class Array<E> implements List<E>
         return sum
     }
 	
-	/*@RequireGenericType(E extends Integer)
+	/*@RequireGenericType E extends Integer
 	public sum() -> Long
     {
     	Long sum = 0
@@ -298,7 +298,7 @@ public class Array<E> implements List<E>
         return sum
     }
 	
-	@RequireGenericType(E extends RealNumber)
+	@RequireGenericType E extends RealNumber
 	public sum() -> Double
     {
     	Double sum = 0
