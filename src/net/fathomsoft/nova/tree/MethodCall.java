@@ -546,7 +546,7 @@ public class MethodCall extends Variable
 	@Override
 	public GenericTypeParameterDeclaration getGenericTypeParameterDeclaration()
 	{
-		GenericCompatible gen = getGenericCompatible(false);
+		GenericCompatible gen = getGenericCompatibleDeclaration(false);
 		
 		if (gen == null || !(gen instanceof Value))
 		{
@@ -556,7 +556,12 @@ public class MethodCall extends Variable
 		return ((Value)gen).getGenericTypeParameterDeclaration();
 	}
 	
-	public GenericCompatible getGenericCompatible()
+	public GenericCompatible getGenericCompatibleDeclaration()
+	{
+		return getGenericCompatibleDeclaration(true);
+	}
+	
+	public Variable getGenericCompatible()
 	{
 		return getGenericCompatible(true);
 	}
@@ -568,7 +573,12 @@ public class MethodCall extends Variable
 	 * 		generic type cannot be found.
 	 * @return The 
 	 */
-	private GenericCompatible getGenericCompatible(boolean throwException)
+	private GenericCompatible getGenericCompatibleDeclaration(boolean throwException)
+	{
+		return getGenericCompatible(throwException).getDeclaration();
+	}
+	
+	private Variable getGenericCompatible(boolean throwException)
 	{
 		Node last = getLastAncestorOfType(new Class[] { MethodCallArgumentList.class, Variable.class, Instantiation.class }, false);
 		
@@ -578,7 +588,7 @@ public class MethodCall extends Variable
 			
 			if (var.getDeclaration() instanceof MutatorMethod)
 			{
-				return var.getDeclaringClass().getField(var.getName());
+				return var;//.getDeclaringClass().getField(var.getName());
 			}
 		}
 		
@@ -594,7 +604,7 @@ public class MethodCall extends Variable
 			
 			if (val instanceof Variable)
 			{
-				return ((Variable)val).getDeclaration();
+				return ((Variable)val);//.getDeclaration();
 			}
 		}
 		
@@ -602,14 +612,14 @@ public class MethodCall extends Variable
 		
 		if (identifier instanceof Variable)
 		{
-			VariableDeclaration decl = ((Variable)identifier).getDeclaration();
+			/*VariableDeclaration decl = ((Variable)identifier).getDeclaration();
 			
 			if (decl instanceof Parameter && ((Parameter)decl).isObjectReference())
 			{
 				return decl.getTypeClass();
-			}
+			}*/
 			
-			return decl;
+			return (Variable)identifier;//decl;
 		}
 		
 		if (throwException)
@@ -624,7 +634,7 @@ public class MethodCall extends Variable
 	public String getGenericReturnType()
 	{
 		VariableDeclaration method  = getMethodDeclaration();
-		GenericCompatible   generic = getGenericCompatible();
+		GenericCompatible   generic = getGenericCompatibleDeclaration();
 		
 		if (method.isGenericType())
 		{
@@ -954,9 +964,9 @@ public class MethodCall extends Variable
 		ParameterList<Value> parameters = methodDeclaration.getParameterList();
 		ArgumentList         arguments  = getArgumentList();
 		
-		if (parameters.getNumVisibleChildren() != arguments.getNumChildren())
+		if (parameters.getNumVisibleChildren() != arguments.getNumVisibleChildren())
 		{
-			if (parameters.getNumVisibleChildren() > arguments.getNumChildren())
+			if (parameters.getNumVisibleChildren() > arguments.getNumVisibleChildren())
 			{
 				SyntaxMessage.error("Too few arguments to method call '" + getName() + "'", this);
 			}
