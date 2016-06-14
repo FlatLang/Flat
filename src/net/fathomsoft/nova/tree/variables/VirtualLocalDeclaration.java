@@ -33,6 +33,12 @@ public class VirtualLocalDeclaration extends LocalDeclaration
 		this.reference = reference;
 	}
 	
+	@Override
+	public void addDefaultGenericTypeArguments()
+	{
+		
+	}
+	
 	/**
 	 * @see net.fathomsoft.nova.tree.Node#cloneTo(Node)
 	 */
