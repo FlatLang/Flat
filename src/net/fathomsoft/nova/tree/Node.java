@@ -1473,12 +1473,12 @@ public abstract class Node implements Listenable, Annotatable
 	 */
 	public Program getProgram()
 	{
-		if (parent != null)
+		if (parent != null && parent != this)
 		{
 			return parent.getProgram();
 		}
 		
-		return (Program)this;
+		return this instanceof Program ? (Program)this : null;
 	}
 	
 	/**
