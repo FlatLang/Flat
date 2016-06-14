@@ -17,7 +17,7 @@ public interface List<Type> extends Iterable<Type>
 	}
 	*/
 	
-	forEach(func(Type, Int, List<Type, PositionType>))
+	forEach(func(Type, Int, List<Type>))
 	/*{
 		for (value in this)
 		{
@@ -25,12 +25,12 @@ public interface List<Type> extends Iterable<Type>
 		}
 	}*/
 	
-	//map<E>(mapFunc(Type) -> E) -> List<E, PositionType>
+	//map<E>(mapFunc(Type) -> E) -> List<E>
 	
 	any(anyFunc(Type) -> Bool) -> Bool
 	all(allFunc(Type) -> Bool) -> Bool
 	
-	filter(filterFunc(Type) -> Bool) -> List<Type, PositionType>
+	filter(filterFunc(Type) -> Bool) -> List<Type>
 	/*{
 		List<Type> list = clone()
 		
@@ -45,7 +45,7 @@ public interface List<Type> extends Iterable<Type>
 		return list
 	}*/
 	
-	take(Int howMany) -> List<Type, PositionType>
+	take(Int howMany) -> List<Type>
 	/*{
 		List<Type> list = clone()
 		
@@ -57,7 +57,7 @@ public interface List<Type> extends Iterable<Type>
 		return list
 	}*/
 	
-	skip(Int howMany) -> List<Type, PositionType>
+	skip(Int howMany) -> List<Type>
 	/*{
 		List<Type> list = clone()
 		
@@ -86,8 +86,8 @@ public interface List<Type> extends Iterable<Type>
 	}*/
 	
 	//get(Int index) -> Type
-	//set(Int index, Type value) -> List<Type, PositionType>
-	//add(Type value) -> List<Type, PositionType>
-	//remove(Type value) -> List<Type, PositionType>
-	//clone() -> List<Type, PositionType>
+	//set(Int index, Type value) -> List<Type>
+	//add(Type value) -> List<Type>
+	//remove(Type value) -> List<Type>
+	//clone() -> List<Type>
 }
