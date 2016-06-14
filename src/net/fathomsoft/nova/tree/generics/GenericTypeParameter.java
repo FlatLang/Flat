@@ -1,7 +1,11 @@
 package net.fathomsoft.nova.tree.generics;
 
 import net.fathomsoft.nova.TestContext;
+import net.fathomsoft.nova.ValidationResult;
+import net.fathomsoft.nova.error.SyntaxErrorException;
+import net.fathomsoft.nova.tree.IValue;
 import net.fathomsoft.nova.tree.Node;
+import net.fathomsoft.nova.tree.SyntaxTree;
 import net.fathomsoft.nova.util.Location;
 import net.fathomsoft.nova.util.SyntaxUtils;
 
@@ -14,9 +18,9 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * @since	v0.2.41 Dec 7, 2014 at 11:01:21 PM
  * @version	v0.2.41 Dec 17, 2014 at 7:48:17 PM
  */
-public class GenericTypeParameter extends Node
+public class GenericTypeParameter extends IValue
 {
-	private String name, defaultType;
+	private String defaultType;
 	
 	/**
 	 * @see net.fathomsoft.nova.tree.Node#Node(Node, Location)
@@ -30,12 +34,12 @@ public class GenericTypeParameter extends Node
 	
 	public String getName()
 	{
-		return name;
+		return getType();
 	}
 	
 	public void setName(String name)
 	{
-		this.name = name;
+		setTypeValue(name);
 	}
 	
 	public String getDefaultType()
@@ -45,19 +49,55 @@ public class GenericTypeParameter extends Node
 	
 	public void setDefaultType(String type)
 	{
-		if (SyntaxUtils.validateImported(this, type, false))
-		{
-			this.defaultType = type;
-		}
-		else
-		{
-			SyntaxUtils.throwImportException(this, type, getLocationIn());
-		}
+		this.defaultType = type;
 	}
 	
 	public GenericTypeParameterDeclaration getGenericDeclaration()
 	{
 		return (GenericTypeParameterDeclaration)getParent();
+	}
+	
+	@Override
+	public ValidationResult validate(int phase)
+	{
+		ValidationResult result = super.validate(phase);
+		
+		if (result.skipValidation())
+		{
+			return result;
+		}
+		
+		if (phase == SyntaxTree.PHASE_CLASS_DECLARATION || (getParentMethod() != null && phase == SyntaxTree.PHASE_INSTANCE_DECLARATIONS))
+		{
+			if (!getDefaultType().equals("Object") && !SyntaxUtils.validateImported(this, getDefaultType(), false))
+			{
+				SyntaxUtils.validateImported(this, getDefaultType(), false);
+				SyntaxUtils.throwImportException(this, getDefaultType(), getLocationIn(), false);
+				
+				result = result.errorOccurred(this);
+			}
+		}
+		
+		/*GenericTypeArgumentList args = getGenericTypeArgumentList();
+		GenericTypeParameterDeclaration decl = getProgram().getClassDeclaration(SyntaxUtils.getTypeClassLocation(this, getDefaultType())).getGenericTypeParameterDeclaration();
+		
+		for (int i = args.getNumVisibleChildren(); i < decl.getNumParameters(); i++)
+		{
+			args.addChild(SyntaxUtils.getGenericTypeArgumentName(this, decl.getParameter(i).getDefaultType()));
+		}*/
+		
+		return result;
+	}
+	
+	@Override
+	public String getNovaType()
+	{
+		if (isGenericType())
+		{
+			return getDefaultType();
+		}
+		
+		return super.getNovaType();
 	}
 	
 	/**
@@ -90,7 +130,6 @@ public class GenericTypeParameter extends Node
 	{
 		super.cloneTo(node, cloneChildren);
 		
-		node.name = this.name;
 		node.defaultType = this.defaultType;
 		
 		return node;
