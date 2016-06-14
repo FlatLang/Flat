@@ -159,6 +159,17 @@ public class GenericTypeArgument extends IValue implements GenericCompatible
 		return builder.append(getType());// + (getDefaultType() != "Object" ? " extends " + getDefaultType() : ""));
 	}
 	
+	@Override
+	public String getNovaType()
+	{
+		if (isGenericType())
+		{
+			return getDefaultType();
+		}
+		
+		return super.getNovaType();
+	}
+	
 	/**
 	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location, boolean)
 	 */
