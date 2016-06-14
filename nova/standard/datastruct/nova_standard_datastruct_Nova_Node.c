@@ -23,8 +23,6 @@ nova_standard_datastruct_Extension_VTable_Node nova_standard_datastruct_Extensio
 		0,
 		(char(*)(nova_standard_operators_Nova_Equals*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*))nova_standard_Nova_Object_0_Nova_equals,
 		0,
-		0,
-		0,
 	},
 	nova_standard_Nova_Object_0_Nova_getHashCodeLong,
 	nova_standard_datastruct_Nova_Node_1_Nova_toString,
@@ -247,22 +245,22 @@ void nova_standard_datastruct_Nova_Node_1_Nova_levelorder(nova_standard_datastru
 	{
 		nova_standard_datastruct_Nova_Node* l1_Nova_current;
 		nova_standard_datastruct_list_Nova_ArrayIterator* nova_local_0;
-		nova_standard_Nova_Object* l2_Nova_child;
+		nova_standard_datastruct_Nova_Node* l2_Nova_child;
 		
 		l1_Nova_current = (nova_standard_datastruct_Nova_Node*)(nova_standard_datastruct_list_Nova_Queue_Nova_dequeue(l1_Nova_queue, exceptionData));
 		nova_standard_datastruct_list_Nova_Array_0_Nova_add(nova_standard_datastruct_Nova_Node_Nova_array, exceptionData, l1_Nova_current->nova_standard_datastruct_Nova_Node_Nova_data);
 		nova_local_0 = nova_standard_datastruct_list_Nova_Array_Accessor_Nova_iterator(l1_Nova_current->nova_standard_datastruct_Nova_Node_Nova_children->vtable->nova_standard_datastruct_list_Nova_Array_virtual_Nova_filter(l1_Nova_current->nova_standard_datastruct_Nova_Node_Nova_children, exceptionData, (nova_standard_datastruct_list_Nova_Array_closure12_Nova_filterFunc)&nova_standard_datastruct_Nova_Node_Nova_notNull, this), exceptionData);
 		while (nova_local_0->vtable->nova_standard_datastruct_list_Nova_ArrayIterator_Accessor_Nova_hasNext(nova_local_0, exceptionData))
 		{
-			l2_Nova_child = nova_local_0->vtable->nova_standard_datastruct_list_Nova_ArrayIterator_Accessor_Nova_next(nova_local_0, exceptionData);
-			nova_standard_datastruct_list_Nova_Queue_Nova_enqueue(l1_Nova_queue, exceptionData, l2_Nova_child);
+			l2_Nova_child = (nova_standard_datastruct_Nova_Node*)(nova_local_0->vtable->nova_standard_datastruct_list_Nova_ArrayIterator_Accessor_Nova_next(nova_local_0, exceptionData));
+			nova_standard_datastruct_list_Nova_Queue_Nova_enqueue(l1_Nova_queue, exceptionData, (nova_standard_Nova_Object*)(l2_Nova_child));
 		}
 	}
 }
 
 nova_standard_Nova_String* nova_standard_datastruct_Nova_Node_1_Nova_toString(nova_standard_datastruct_Nova_Node* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
-	return ((nova_standard_Nova_Object*)this->nova_standard_datastruct_Nova_Node_Nova_data)->vtable->nova_standard_Nova_Object_virtual1_Nova_toString(this->nova_standard_datastruct_Nova_Node_Nova_data, exceptionData);
+	return ((nova_standard_Nova_Object*)this->nova_standard_datastruct_Nova_Node_Nova_data)->vtable->nova_standard_Nova_Object_virtual1_Nova_toString((nova_standard_Nova_Object*)(this->nova_standard_datastruct_Nova_Node_Nova_data), exceptionData);
 }
 
 void nova_standard_datastruct_Nova_Node_Nova_super(nova_standard_datastruct_Nova_Node* this, nova_standard_exception_Nova_ExceptionData* exceptionData)

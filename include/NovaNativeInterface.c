@@ -9,7 +9,6 @@ nova_env novaEnv = {
 {
 &nova_standard_Nova_Null_Nova_toString,
 &nova_standard_Nova_Null_Nova_concat,
-&nova_standard_Nova_Null_Nova_construct,
 &nova_standard_Nova_Null_0_Nova_construct,
 },
 
@@ -225,7 +224,7 @@ nova_env novaEnv = {
 },
 
 {
-&nova_standard_exception_Nova_DivideByZeroException_4_Nova_construct,
+&nova_standard_exception_Nova_DivideByZeroException_3_Nova_construct,
 },
 
 {
@@ -321,7 +320,6 @@ nova_env novaEnv = {
 
 {
 &nova_standard_math_Nova_ArithmeticSequence_0_Nova_construct,
-&nova_standard_math_Nova_ArithmeticSequence_1_Nova_construct,
 },
 
 {
@@ -366,14 +364,13 @@ nova_env novaEnv = {
 
 {
 0,
-&nova_standard_math_Nova_NumericOperand_3_Nova_construct,
+&nova_standard_math_Nova_NumericOperand_2_Nova_construct,
 },
 
 {
 &nova_standard_math_Nova_NumericOperation_1_Nova_toString,
 &nova_standard_math_Nova_NumericOperation_Nova_construct,
 &nova_standard_math_Nova_NumericOperation_0_Nova_construct,
-&nova_standard_math_Nova_NumericOperation_2_Nova_construct,
 },
 
 {
@@ -392,7 +389,7 @@ nova_env novaEnv = {
 
 {
 &nova_standard_math_Nova_Sequence_Nova_sum,
-&nova_standard_math_Nova_Sequence_2_Nova_construct,
+&nova_standard_math_Nova_Sequence_1_Nova_construct,
 },
 
 {
@@ -510,8 +507,6 @@ nova_env novaEnv = {
 &nova_standard_primitive_Nova_Null_0_Nova_toString,
 &nova_standard_primitive_Nova_Null_0_Nova_concat,
 &nova_standard_primitive_Nova_Null_0_Nova_construct,
-&nova_standard_primitive_Nova_Null_1_Nova_construct,
-&nova_standard_primitive_Nova_Null_2_Nova_construct,
 },
 
 {
@@ -663,7 +658,7 @@ nova_env novaEnv = {
 
 {
 &nova_standard_thread_Nova_UncaughtExceptionHandler_Nova_UncaughtExceptionHandler,
-&nova_standard_thread_Nova_UncaughtExceptionHandler_Nova_uncaughtException,
+0,
 &nova_standard_thread_Nova_UncaughtExceptionHandler_0_Nova_construct,
 },
 
@@ -686,170 +681,90 @@ nova_env novaEnv = {
 },
 
 {
+&stabilitytest_Nova_ClientThread_0_Nova_run,
+&stabilitytest_Nova_ClientThread_Nova_construct,
+},
+
+{
+&stabilitytest_Nova_ClosureStability_Nova_test,
+&stabilitytest_Nova_ClosureStability_Nova_construct,
+},
+
+{
+&stabilitytest_Nova_ExceptionStability_0_Nova_test,
+&stabilitytest_Nova_ExceptionStability_0_Nova_construct,
+},
+
+{
+&stabilitytest_Nova_FileStability_0_Nova_test,
+&stabilitytest_Nova_FileStability_0_Nova_construct,
+},
+
+{
+&stabilitytest_Nova_NetworkStability_0_Nova_test,
+&stabilitytest_Nova_NetworkStability_0_Nova_construct,
+},
+
+{
+&stabilitytest_Nova_PolymorphicSubClass_Nova_toString,
+&stabilitytest_Nova_PolymorphicSubClass_Nova_construct,
+},
+
+{
+&stabilitytest_Nova_PolymorphicSuperClass_Nova_giveBirth,
 0,
-0,
-0,
-&example_Nova_Animal_1_Nova_toString,
-&example_Nova_Animal_0_Nova_construct,
+&stabilitytest_Nova_PolymorphicSuperClass_0_Nova_construct,
 },
 
 {
-&example_Nova_ArrayDemo_Nova_main,
-&example_Nova_ArrayDemo_0_Nova_construct,
+&stabilitytest_Nova_PolymorphismStability_0_Nova_test,
+&stabilitytest_Nova_PolymorphismStability_0_Nova_construct,
 },
 
 {
-&example_Nova_BodyBuilder_Nova_sayHello,
-&example_Nova_BodyBuilder_1_Nova_construct,
-&example_Nova_BodyBuilder_2_Nova_construct,
+&stabilitytest_Nova_StabilityExceptionHandler_Nova_uncaughtException,
+&stabilitytest_Nova_StabilityExceptionHandler_Nova_construct,
 },
 
 {
-&example_Nova_ClosureDemo_Nova_main,
-&example_Nova_ClosureDemo_0_Nova_construct,
-},
-
-{
-&example_Nova_Dog_Nova_getNumLegs,
-&example_Nova_Dog_Nova_getNumEyes,
-&example_Nova_Dog_Nova_getDescription,
-&example_Nova_Dog_0_Nova_construct,
-},
-
-{
-&example_Nova_ExceptionHandlingDemo_Nova_main,
-&example_Nova_ExceptionHandlingDemo_0_Nova_construct,
-},
-
-{
-&example_Nova_FileTest_Nova_main,
-&example_Nova_FileTest_0_Nova_construct,
-},
-
-{
-&example_Nova_GenericDemo_Nova_main,
-&example_Nova_GenericDemo_0_Nova_construct,
-},
-
-{
-&example_Nova_HashMapDemo_Nova_main,
-&example_Nova_HashMapDemo_0_Nova_construct,
-},
-
-{
-&example_Nova_IntegerTest_Nova_main,
-&example_Nova_IntegerTest_0_Nova_construct,
-},
-
-{
-&example_Nova_Lab_Nova_main,
-&example_Nova_Lab_0_Nova_construct,
-},
-
-{
-&example_Nova_MathDemo_Nova_main,
-&example_Nova_MathDemo_0_Nova_construct,
-},
-
-{
-&example_Nova_NonWholeDivisionException_4_Nova_construct,
+&stabilitytest_Nova_StabilityTest_Nova_main,
+&stabilitytest_Nova_StabilityTest_0_Nova_test,
+&stabilitytest_Nova_StabilityTest_0_Nova_fail,
+&stabilitytest_Nova_StabilityTest_1_Nova_fail,
+&stabilitytest_Nova_StabilityTest_0_Nova_construct,
 },
 
 {
 0,
-&example_Nova_Person_3_Nova_construct,
+&stabilitytest_Nova_StabilityTestCase_0_Nova_construct,
 },
 
 {
-0,
-0,
+&stabilitytest_Nova_StabilityTestException_3_Nova_construct,
 },
 
 {
-&example_Nova_PolymorphismDemo_Nova_main,
-&example_Nova_PolymorphismDemo_0_Nova_construct,
+&stabilitytest_Nova_SyntaxStability_0_Nova_test,
+&stabilitytest_Nova_SyntaxStability_0_Nova_construct,
 },
 
 {
-&example_Nova_QueueDemo_Nova_main,
-&example_Nova_QueueDemo_0_Nova_construct,
+&stabilitytest_Nova_ThreadImplementation_0_Nova_run,
+&stabilitytest_Nova_ThreadImplementation_Nova_construct,
 },
 
 {
-&example_Nova_Spider_0_Nova_getNumLegs,
-&example_Nova_Spider_0_Nova_getNumEyes,
-&example_Nova_Spider_0_Nova_getDescription,
-&example_Nova_Spider_0_Nova_construct,
+&stabilitytest_Nova_ThreadStability_0_Nova_test,
+&stabilitytest_Nova_ThreadStability_0_Nova_construct,
 },
 
 {
-&example_Nova_Square_Nova_numberSides,
-&example_Nova_Square_Nova_calculateArea,
-&example_Nova_Square_Nova_construct,
+&stabilitytest_Nova_TimeStability_0_Nova_test,
+&stabilitytest_Nova_TimeStability_0_Nova_construct,
 },
 
 {
-&example_Nova_SVGTest_Nova_main,
-&example_Nova_SVGTest_0_Nova_construct,
-},
-
-{
-&example_Nova_T1_0_Nova_construct,
-},
-
-{
-&example_Nova_T2_0_Nova_construct,
-},
-
-{
-&example_Nova_Test_Nova_main,
-&example_Nova_Test_0_Nova_construct,
-},
-
-{
-&example_Nova_ThreadDemo_Nova_main,
-&example_Nova_ThreadDemo_0_Nova_construct,
-},
-
-{
-&example_Nova_ThreadDemoImplementation_0_Nova_run,
-&example_Nova_ThreadDemoImplementation_Nova_construct,
-},
-
-{
-&example_ackermann_Nova_Ackermann_Nova_main,
-&example_ackermann_Nova_Ackermann_Nova_run,
-&example_ackermann_Nova_Ackermann_Nova_run2,
-&example_ackermann_Nova_Ackermann_0_Nova_construct,
-},
-
-{
-&example_copy_Nova_Dog_Nova_construct,
-},
-
-{
-&example_database_Nova_DatabaseDemo_Nova_main,
-&example_database_Nova_DatabaseDemo_0_Nova_construct,
-},
-
-{
-&example_network_Nova_ClientDemo_Nova_main,
-&example_network_Nova_ClientDemo_0_Nova_construct,
-},
-
-{
-&example_network_Nova_ConnectionThread_0_Nova_run,
-&example_network_Nova_ConnectionThread_Nova_construct,
-},
-
-{
-&example_network_Nova_OutputThread_0_Nova_run,
-&example_network_Nova_OutputThread_Nova_construct,
-},
-
-{
-&example_network_Nova_ServerDemo_Nova_main,
-&example_network_Nova_ServerDemo_0_Nova_construct,
+&stabilitytest_Nova_UnstableException_3_Nova_construct,
 },
 
 };

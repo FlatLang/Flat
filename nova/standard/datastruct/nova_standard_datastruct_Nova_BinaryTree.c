@@ -23,8 +23,6 @@ nova_standard_datastruct_Extension_VTable_BinaryTree nova_standard_datastruct_Ex
 		0,
 		(char(*)(nova_standard_operators_Nova_Equals*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*))nova_standard_Nova_Object_0_Nova_equals,
 		0,
-		0,
-		0,
 	},
 	nova_standard_Nova_Object_0_Nova_getHashCodeLong,
 	nova_standard_Nova_Object_1_Nova_toString,
@@ -68,15 +66,15 @@ void nova_standard_datastruct_Nova_BinaryTree_Nova_destroy(nova_standard_datastr
 	NOVA_FREE(*this);
 }
 
-nova_standard_datastruct_Nova_BinaryTree* nova_standard_datastruct_Nova_BinaryTree_Nova_addNode(nova_standard_datastruct_Nova_BinaryTree* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_Nova_Object* nova_standard_datastruct_Nova_BinaryTree_Nova_data)
+nova_standard_datastruct_Nova_BinaryTree* nova_standard_datastruct_Nova_BinaryTree_Nova_addNode(nova_standard_datastruct_Nova_BinaryTree* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_datastruct_Nova_Comparable* nova_standard_datastruct_Nova_BinaryTree_Nova_data)
 {
 	if (nova_standard_datastruct_Nova_BinaryTree_Accessor_Nova_root(this, exceptionData) == (nova_standard_datastruct_Nova_BinaryNode*)nova_null)
 	{
-		nova_standard_datastruct_Nova_BinaryTree_Mutator_Nova_root(this, exceptionData, nova_standard_datastruct_Nova_BinaryNode_0_Nova_construct(0, exceptionData, (nova_standard_Nova_Object*)(nova_standard_datastruct_Nova_BinaryTree_Nova_data)));
+		nova_standard_datastruct_Nova_BinaryTree_Mutator_Nova_root(this, exceptionData, nova_standard_datastruct_Nova_BinaryNode_0_Nova_construct(0, exceptionData, (nova_standard_datastruct_Nova_Comparable*)(nova_standard_datastruct_Nova_BinaryTree_Nova_data)));
 	}
 	else
 	{
-		nova_standard_datastruct_Nova_BinaryNode_Nova_addChild(nova_standard_datastruct_Nova_BinaryTree_Accessor_Nova_root(this, exceptionData), exceptionData, (nova_standard_Nova_Object*)(nova_standard_datastruct_Nova_BinaryTree_Nova_data));
+		nova_standard_datastruct_Nova_BinaryNode_Nova_addChild(nova_standard_datastruct_Nova_BinaryTree_Accessor_Nova_root(this, exceptionData), exceptionData, (nova_standard_datastruct_Nova_Comparable*)(nova_standard_datastruct_Nova_BinaryTree_Nova_data));
 	}
 	return this;
 }

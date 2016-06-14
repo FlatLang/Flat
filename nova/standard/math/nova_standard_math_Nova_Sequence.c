@@ -23,8 +23,6 @@ nova_standard_math_Extension_VTable_Sequence nova_standard_math_Extension_VTable
 		0,
 		(char(*)(nova_standard_operators_Nova_Equals*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*))nova_standard_Nova_Object_0_Nova_equals,
 		0,
-		0,
-		0,
 	},
 	nova_standard_Nova_Object_0_Nova_getHashCodeLong,
 	nova_standard_Nova_Object_1_Nova_toString,
@@ -40,7 +38,7 @@ void nova_standard_math_Nova_SequenceNova_init_static(nova_standard_exception_No
 	}
 }
 
-nova_standard_math_Nova_Sequence* nova_standard_math_Nova_Sequence_2_Nova_construct(nova_standard_math_Nova_Sequence* this, nova_standard_exception_Nova_ExceptionData* exceptionData, double* nova_standard_math_Nova_Sequence_Nova_values)
+nova_standard_math_Nova_Sequence* nova_standard_math_Nova_Sequence_1_Nova_construct(nova_standard_math_Nova_Sequence* this, nova_standard_exception_Nova_ExceptionData* exceptionData, double* nova_standard_math_Nova_Sequence_Nova_values)
 {
 	CCLASS_NEW(nova_standard_math_Nova_Sequence, this,);
 	this->vtable = &nova_standard_math_Extension_VTable_Sequence_val;
@@ -48,7 +46,7 @@ nova_standard_math_Nova_Sequence* nova_standard_math_Nova_Sequence_2_Nova_constr
 	nova_standard_math_Nova_Sequence_Nova_super(this, exceptionData);
 	
 	{
-		nova_standard_math_Nova_Sequence_2_Nova_this(this, exceptionData, nova_standard_math_Nova_Sequence_Nova_values);
+		nova_standard_math_Nova_Sequence_1_Nova_this(this, exceptionData, nova_standard_math_Nova_Sequence_Nova_values);
 	}
 	
 	return this;
@@ -68,7 +66,7 @@ void nova_standard_math_Nova_Sequence_Nova_destroy(nova_standard_math_Nova_Seque
 	NOVA_FREE(*this);
 }
 
-void nova_standard_math_Nova_Sequence_2_Nova_this(nova_standard_math_Nova_Sequence* this, nova_standard_exception_Nova_ExceptionData* exceptionData, double* nova_standard_math_Nova_Sequence_Nova_values)
+void nova_standard_math_Nova_Sequence_1_Nova_this(nova_standard_math_Nova_Sequence* this, nova_standard_exception_Nova_ExceptionData* exceptionData, double* nova_standard_math_Nova_Sequence_Nova_values)
 {
 	this->nova_standard_math_Nova_Sequence_Nova_values = nova_standard_math_Nova_Sequence_Nova_values;
 }

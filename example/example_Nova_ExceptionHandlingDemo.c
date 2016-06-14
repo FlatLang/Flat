@@ -104,12 +104,12 @@ int example_Nova_ExceptionHandlingDemo_Nova_divide(example_Nova_ExceptionHandlin
 	
 	if (example_Nova_ExceptionHandlingDemo_Nova_num % example_Nova_ExceptionHandlingDemo_Nova_den != 0)
 	{
-		THROW(1, nova_standard_exception_Nova_Exception_3_Nova_construct(0, exceptionData));
+		THROW(6, example_Nova_NonWholeDivisionException_3_Nova_construct(0, exceptionData));
 	}
 	nova_zero_check3 = example_Nova_ExceptionHandlingDemo_Nova_den;
 	if (nova_zero_check3 == 0)
 	{
-		THROW(1, nova_standard_exception_Nova_Exception_3_Nova_construct(0, exceptionData));
+		THROW(7, nova_standard_exception_Nova_DivideByZeroException_3_Nova_construct(0, exceptionData));
 	}
 	return example_Nova_ExceptionHandlingDemo_Nova_num / nova_zero_check3;
 }

@@ -23,8 +23,6 @@ nova_standard_datastruct_list_Extension_VTable_List nova_standard_datastruct_lis
 		0,
 		0,
 		0,
-		0,
-		0,
 	},
 	nova_standard_datastruct_list_Nova_List_0_Nova_forEach,
 	nova_standard_datastruct_list_Nova_List_0_Nova_any,

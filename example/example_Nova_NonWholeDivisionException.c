@@ -38,7 +38,7 @@ void example_Nova_NonWholeDivisionExceptionNova_init_static(nova_standard_except
 	}
 }
 
-example_Nova_NonWholeDivisionException* example_Nova_NonWholeDivisionException_4_Nova_construct(example_Nova_NonWholeDivisionException* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_Nova_String* example_Nova_NonWholeDivisionException_Nova_message)
+example_Nova_NonWholeDivisionException* example_Nova_NonWholeDivisionException_3_Nova_construct(example_Nova_NonWholeDivisionException* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
 	CCLASS_NEW(example_Nova_NonWholeDivisionException, this,);
 	this->vtable = &example_Extension_VTable_NonWholeDivisionException_val;
@@ -47,7 +47,7 @@ example_Nova_NonWholeDivisionException* example_Nova_NonWholeDivisionException_4
 	example_Nova_NonWholeDivisionException_0_Nova_super(this, exceptionData);
 	
 	{
-		example_Nova_NonWholeDivisionException_4_Nova_this(this, exceptionData, example_Nova_NonWholeDivisionException_Nova_message);
+		example_Nova_NonWholeDivisionException_3_Nova_this(this, exceptionData);
 	}
 	
 	return this;
@@ -66,7 +66,7 @@ void example_Nova_NonWholeDivisionException_Nova_destroy(example_Nova_NonWholeDi
 	NOVA_FREE(*this);
 }
 
-void example_Nova_NonWholeDivisionException_4_Nova_this(example_Nova_NonWholeDivisionException* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_Nova_String* example_Nova_NonWholeDivisionException_Nova_message)
+void example_Nova_NonWholeDivisionException_3_Nova_this(example_Nova_NonWholeDivisionException* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
 }
 

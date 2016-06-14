@@ -23,8 +23,6 @@ nova_standard_network_Extension_VTable_NetworkInputStream nova_standard_network_
 		(char*(*)(nova_standard_io_Nova_InputStream*, nova_standard_exception_Nova_ExceptionData*))nova_standard_network_Nova_NetworkInputStream_0_Nova_readBytes,
 		0,
 		0,
-		0,
-		0,
 	},
 	nova_standard_network_Nova_NetworkInputStream_0_Nova_readString,
 	nova_standard_network_Nova_NetworkInputStream_0_Nova_readBytes,

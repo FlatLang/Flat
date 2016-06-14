@@ -23,8 +23,6 @@ nova_standard_io_Extension_VTable_StreamReader nova_standard_io_Extension_VTable
 		(char*(*)(nova_standard_io_Nova_InputStream*, nova_standard_exception_Nova_ExceptionData*))nova_standard_io_Nova_StreamReader_Nova_readBytes,
 		0,
 		0,
-		0,
-		0,
 	},
 	nova_standard_io_Nova_StreamReader_Nova_readString,
 	nova_standard_io_Nova_StreamReader_Nova_readBytes,
