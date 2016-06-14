@@ -1,6 +1,6 @@
 package "nova/standard/datastruct"
 
-public class BinaryTree<E> extends Tree<E>
+public class BinaryTree<E extends Comparable> extends Tree<E>
 {
 	public BinaryNode<E> root
 	{
@@ -15,7 +15,7 @@ public class BinaryTree<E> extends Tree<E>
 		}
 	}
 	
-	public addNode(Object data) -> BinaryTree<E>
+	public addNode(Comparable data) -> BinaryTree<E>
 	{
 		if (root == null)
 		{
