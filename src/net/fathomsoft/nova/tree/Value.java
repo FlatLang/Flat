@@ -414,21 +414,7 @@ public abstract class Value extends Node implements AbstractValue
 			type = SyntaxUtils.getPrimitiveNovaType(getType());
 		}
 		
-		FileDeclaration file = getFileDeclaration();
-		
-		if (this instanceof Identifier)
-		{
-			file = getReferenceFile();
-		}
-		
-		String location = file.getImportList().getAbsoluteClassLocation(type);
-		
-//		if (location == null)
-//		{
-//			SyntaxUtils.throwImportException(this, type, getLocationIn());
-//		}
-		
-		return location;
+		return SyntaxUtils.getTypeClassLocation(this, type);
 	}
 	
 	public FileDeclaration getReferenceFile()
@@ -852,6 +838,11 @@ public abstract class Value extends Node implements AbstractValue
 	public String getNovaType()
 	{
 		return getType();
+	}
+	
+	public ClassDeclaration getNovaTypeClass()
+	{
+		return getProgram().getClassDeclaration(SyntaxUtils.getTypeClassLocation(this, getNovaType()));
 	}
 	
 	/**
