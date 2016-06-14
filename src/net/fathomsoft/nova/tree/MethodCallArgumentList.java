@@ -177,7 +177,7 @@ public class MethodCallArgumentList extends ArgumentList
 			Accessible context  = getMethodCallContext();
 			Accessible clone    = context;
 			MethodCall call     = getMethodCall();
-			boolean    sameType = isSameType((Value)call.getReferenceNode(), method.getParentClass());
+			boolean    sameType = isSameType((Value)call.getReferenceNode(), method.getParentClass(), false);
 			
 			if (!sameType)
 			{
@@ -233,6 +233,18 @@ public class MethodCallArgumentList extends ArgumentList
 	{
 		String type1 = value1.getInstanceType(checkGeneric);
 		String type2 = value2.getInstanceType(checkGeneric);
+		
+		if (type1 != null && type1.equals(type2))
+		{
+			if (value1.isGenericType())
+			{
+				type1 = value1.getGenericReturnType();
+			}
+			if (value2.isGenericType())
+			{
+				type2 = value2.getGenericReturnType();
+			}
+		}
 		
 		if (value1 instanceof Closure || value2 instanceof Closure)
 		{
