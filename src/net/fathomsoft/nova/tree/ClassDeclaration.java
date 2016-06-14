@@ -2072,7 +2072,7 @@ public class ClassDeclaration extends InstanceDeclaration
 	
 	private void validateConstructors(int phase)
 	{
-		if (doesExtendClass() && getExtendedClass().containsComplexConstructors())
+		/*if (doesExtendClass() && getExtendedClass().containsComplexConstructors())
 		{
 			Constructor[] cs = getExtendedClass().getComplexConstructors();
 			
@@ -2111,7 +2111,7 @@ public class ClassDeclaration extends InstanceDeclaration
 //			{
 //				SyntaxMessage.error("Must define a constructor for class '" + getName() + "' because it's super class '" + getExtendedClassName() + "' contains a complex constructor.", this);
 //			}
-		}
+		}*/
 		
 		if (!containsConstructor())
 		{
@@ -2290,6 +2290,7 @@ public class ClassDeclaration extends InstanceDeclaration
 		{
 			Constructor method = (Constructor)constructors.getChild(i);
 			
+			// TODO: this is a fragile way of checking.
 			if (method.getParameterList().getNumChildren() == 1)
 			{
 				return true;
