@@ -4,6 +4,11 @@ import "nova/standard/datastruct/list/Iterator"
 
 public class SyntaxStability extends StabilityTestCase
 {
+	public construct(StabilityTest program)
+	{
+		super(program)
+	}
+	
 	public test()
 	{
 		checkLoops()

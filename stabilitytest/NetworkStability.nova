@@ -8,6 +8,11 @@ public class NetworkStability extends StabilityTestCase
 {
 	visible static String received = "THIS IS THE STRING THAT SHOULD BE RECEIVEDTHIS IS THE STRING THAT SHOULD BE RECEIVEDTHIS IS THE STRING THAT SHOULD BE RECEIVEDTHIS IS THE STRING THAT SHOULD BE RECEIVEDTHIS IS THE STRING THAT SHOULD BE RECEIVEDTHIS IS THE STRING THAT SHOULD BE RECEIVEDTHIS IS THE STRING THAT SHOULD BE RECEIVED"
 	
+	public construct(StabilityTest program)
+	{
+		super(program)
+	}
+	
 	public test()
 	{
 		Console.writeLine("Checking network stability...")

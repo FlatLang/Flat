@@ -9,6 +9,11 @@ public class FileStability extends StabilityTestCase
 	
 	static Int lines
 	
+	public construct(StabilityTest program)
+	{
+		super(program)
+	}
+	
 	public test()
 	{
 		Console.writeLine("Checking File IO...")

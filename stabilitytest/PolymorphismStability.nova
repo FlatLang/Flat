@@ -2,6 +2,11 @@ package "stabilitytest"
 
 public class PolymorphismStability extends StabilityTestCase
 {
+	public construct(StabilityTest program)
+	{
+		super(program)
+	}
+	
 	public test()
 	{
 		Console.writeLine("Checking Polymorphism stability...")

@@ -4,6 +4,11 @@ import "nova/standard/thread/Thread"
 
 public class ThreadStability extends StabilityTestCase
 {
+	public construct(StabilityTest program)
+	{
+		super(program)
+	}
+	
 	public test()
 	{
 		Console.writeLine("Checking Thread.nova with 20 Threads... ")

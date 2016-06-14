@@ -6,6 +6,11 @@ public class ClosureStability extends StabilityTestCase
 	
 	Int	number
 	
+	public construct(StabilityTest program)
+	{
+		super(program)
+	}
+	
 	incrementNumber()
 	{
 		number++
