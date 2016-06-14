@@ -400,6 +400,11 @@ public class Variable extends Identifier
 				
 				arg = ((Value)current).getGenericTypeArgument(index);
 				
+				if (!arg.isGenericType())
+				{
+					return arg;
+				}
+				
 				if (current instanceof Variable)
 				{
 					index = ((VariableDeclaration)current).getGenericTypeParameterDeclaration().getParameterIndex(arg.getType());
