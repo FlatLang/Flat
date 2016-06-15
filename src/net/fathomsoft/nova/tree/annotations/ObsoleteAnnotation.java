@@ -7,6 +7,7 @@ import net.fathomsoft.nova.tree.Identifier;
 import net.fathomsoft.nova.tree.Literal;
 import net.fathomsoft.nova.tree.MethodDeclaration;
 import net.fathomsoft.nova.tree.Node;
+import net.fathomsoft.nova.tree.NovaMethodDeclaration;
 import net.fathomsoft.nova.tree.SyntaxTree;
 import net.fathomsoft.nova.tree.generics.GenericTypeArgument;
 import net.fathomsoft.nova.tree.generics.GenericTypeArgumentList;
@@ -148,7 +149,7 @@ public class ObsoleteAnnotation extends Annotation
 	@Override
 	public boolean onNextStatementDecoded(Node next)
 	{
-		if (next instanceof FieldDeclaration || next instanceof MethodDeclaration)
+		if (next instanceof FieldDeclaration || next instanceof NovaMethodDeclaration)
 		{
 			next.addAnnotation(this);
 			
@@ -165,7 +166,7 @@ public class ObsoleteAnnotation extends Annotation
 			}
 			else
 			{
-				output = ((MethodDeclaration)decl).generateNovaSignature();
+				output = ((NovaMethodDeclaration)decl).generateNovaSignature();
 				
 				type = "Method";
 			}
