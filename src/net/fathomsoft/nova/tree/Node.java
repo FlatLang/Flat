@@ -1536,7 +1536,7 @@ public abstract class Node implements Listenable, Annotatable
 	 * 
 	 * @return The nearest Method instance that contains this node.
 	 */
-	public final BodyMethodDeclaration getParentMethod()
+	public final NovaMethodDeclaration getParentMethod()
 	{
 		return getParentMethod(false);
 	}
@@ -1548,9 +1548,9 @@ public abstract class Node implements Listenable, Annotatable
 	 * 		Node to see if it is a MethodDeclaration.
 	 * @return The nearest Method instance that contains this node.
 	 */
-	public final BodyMethodDeclaration getParentMethod(boolean inclusive)
+	public final NovaMethodDeclaration getParentMethod(boolean inclusive)
 	{
-		return (BodyMethodDeclaration)getAncestorOfType(BodyMethodDeclaration.class, inclusive);
+		return (NovaMethodDeclaration)getAncestorOfType(NovaMethodDeclaration.class, inclusive);
 	}
 	
 	/**
