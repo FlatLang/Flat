@@ -28,6 +28,9 @@ public interface GenericCompatible
 	public static final String	GENERIC_START = "<";
 	public static final String	GENERIC_END   = ">";
 	
+	public static final char	GENERIC_START_CHAR = GENERIC_START.charAt(0);
+	public static final char	GENERIC_END_CHAR   = GENERIC_END.charAt(0);
+	
 	/**
 	 * Get the list of names that the ClassDeclaration accepts as generic
 	 * declarations.<br>
@@ -186,9 +189,14 @@ public interface GenericCompatible
 	 */
 	public default void addGenericTypeArgumentName(String parameterName)
 	{
+		addGenericTypeArgumentName(getGenericTypeArgumentList(), parameterName);
+	}
+	
+	public default void addGenericTypeArgumentName(GenericTypeArgumentList list, String parameterName)
+	{
 		GenericTypeArgument type = getGenericTypeArgumentName(parameterName);
 		
-		getGenericTypeArgumentList().addChild(type);
+		list.addChild(type);
 	}
 
 	public default GenericTypeArgument getGenericTypeArgumentName(String parameterName)
