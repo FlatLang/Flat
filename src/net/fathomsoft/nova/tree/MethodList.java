@@ -272,7 +272,7 @@ public class MethodList extends TypeList<MethodDeclaration>
 				str += "\n";
 			}
 			
-			str += method.generateNovaSignature();
+			str += method.toString();
 		}
 		
 		return str;
