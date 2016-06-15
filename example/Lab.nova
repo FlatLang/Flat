@@ -12,6 +12,7 @@ import "nova/standard/math/NumericStatement"
 import "nova/standard/datastruct/BinaryTree"
 import "nova/standard/datastruct/list/Array"
 import "nova/standard/datastruct/list/Iterator"
+import "nova/standard/datastruct/list/LinkedList"
 
 public class Lab
 {
@@ -28,6 +29,16 @@ public class Lab
 		}
 		
 		Console.write(i)
+	}
+	
+	static mapper(String input) -> String
+	{
+		return input + "!"
+	}
+	
+	static mapper2(Int input) -> String
+	{
+		return input + "!"
 	}
 	
 	public static main(String[] args)
@@ -54,7 +65,39 @@ public class Lab
 		Array<String> list2 = list.filter(myFilterFunc)
 		Array<Int> list3 = new Array(b, 7)
 		
+		Array<String> mapped = list2.map(mapper)
+		Array<String> mapped2 = list3.map(mapper2)
 		
+		Console.write("Mapped: ")
+		
+		for (str in mapped)
+		{
+			Console.write(str + ", ")
+		}
+		
+		Console.writeLine("")
+		
+		Console.write("Mapped2: ")
+		
+		for (str2 in mapped2)
+		{
+			Console.write(str2 + ", ")
+		}
+		
+		Console.writeLine("")
+		
+		LinkedList<String> linked = new LinkedList()
+		
+		linked.add("test").add("test2").add("test3")
+		
+		Console.write("LinkedList iterator: ")
+		
+		for (test in linked)
+		{
+			Console.write(test + ", ")
+		}
+		
+		Console.writeLine("")
 		
 		Console.writeLine(list2.sumSize())
 		
