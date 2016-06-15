@@ -100,6 +100,19 @@ public class GenericTypeParameter extends IValue
 		return super.getNovaType();
 	}
 	
+	@Override
+	public StringBuilder generateNovaInput(StringBuilder builder, boolean outputChildren)
+	{
+		builder.append(getName());
+		
+		if (!getDefaultType().equals("Object"))
+		{
+			builder.append(" extends ").append(getDefaultType());
+		}
+		
+		return builder;
+	}
+	
 	/**
 	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location, boolean)
 	 */

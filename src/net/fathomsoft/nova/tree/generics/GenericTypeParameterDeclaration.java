@@ -171,6 +171,33 @@ public class GenericTypeParameterDeclaration extends TypeList<GenericTypeParamet
 		}
 	}
 	
+	@Override
+	public StringBuilder generateNovaInput(StringBuilder builder, boolean outputChildren)
+	{
+		if (getNumVisibleChildren() > 0)
+		{
+			builder.append(GenericCompatible.GENERIC_START);
+			
+			boolean comma = false;
+			
+			for (GenericTypeParameter param : this)
+			{
+				if (comma)
+				{
+					builder.append(", ");
+				}
+				
+				comma = true;
+				
+				builder.append(param.generateNovaInput());
+			}
+			
+			builder.append(GenericCompatible.GENERIC_END);
+		}
+		
+		return builder;
+	}
+	
 	/**
 	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location, boolean)
 	 */
