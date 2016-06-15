@@ -25,7 +25,7 @@ public interface List<Type> extends Iterable<Type>
 		}
 	}*/
 	
-	//map<E>(mapFunc(Type) -> E) -> List<E>
+	map<Out>(mapFunc(Type) -> Out) -> List<Out>
 	
 	any(anyFunc(Type) -> Bool) -> Bool
 	all(allFunc(Type) -> Bool) -> Bool
