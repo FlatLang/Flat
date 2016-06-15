@@ -942,6 +942,15 @@ public abstract class Value extends Node implements AbstractValue
 	
 	public GenericTypeParameter getGenericTypeParameter()
 	{
+		if (getParentMethod() != null)
+		{
+			GenericTypeParameter param = getParentMethod().getGenericTypeParameter(getType());
+			
+			if (param != null)
+			{
+				return param;
+			}
+		}
 		if (getParentClass() == null)
 		{
 			return null;
