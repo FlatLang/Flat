@@ -29,10 +29,6 @@ public class Destructor extends BodyMethodDeclaration
 	public Destructor(Node temporaryParent, Location locationIn)
 	{
 		super(temporaryParent, locationIn);
-		
-		Scope scope = new Scope(this, locationIn.asNew());
-		
-		setScope(scope);
 	}
 	
 	/**
