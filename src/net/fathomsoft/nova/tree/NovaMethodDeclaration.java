@@ -54,6 +54,42 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 		NovaParameterList parameters = new NovaParameterList(this, locationIn.asNew());
 		
 		replace(super.getParameterList(), parameters);
+		
+		GenericTypeParameterDeclaration methodParams = new GenericTypeParameterDeclaration(this, locationIn.asNew());
+		addChild(methodParams, this);
+	}
+	
+	@Override
+	public int getNumDefaultChildren()
+	{
+		return super.getNumDefaultChildren() + 1;
+	}
+	
+	public GenericTypeParameterDeclaration getMethodGenericTypeParameterDeclaration()
+	{
+		if (getNumChildren() > super.getNumDefaultChildren())// && super.getChild(super.getNumDefaultChildren() + 0) instanceof GenericTypeParameterDeclaration)
+		{
+			return (GenericTypeParameterDeclaration)super.getChild(super.getNumDefaultChildren() + 0);
+		}
+		
+		return null;
+	}
+	
+	public boolean containsGenericTypeParameter(String name)
+	{
+		return getGenericTypeParameter(name) != null;
+	}
+	
+	public GenericTypeParameter getGenericTypeParameter(String name)
+	{
+		GenericTypeParameterDeclaration decl = getMethodGenericTypeParameterDeclaration();
+		
+		if (decl != null)
+		{
+			return decl.getParameter(name);
+		}
+		
+		return null;
 	}
 	
 	public GenericCompatible getContext()
@@ -570,8 +606,47 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 	private static boolean validateMethodDeclaration(String statement)
 	{
 		int firstParenthIndex = statement.indexOf('(');
+		int endBound = StringUtils.findNextCharacter(statement, StringUtils.SYMBOLS_CHARS, firstParenthIndex - 1, -1);
+		int startBound = 0;
+		//Bounds bounds = StringUtils.findNextWordBounds(statement, firstParenthIndex, -1);
 		
-		if (StringUtils.findNextCharacter(statement, StringUtils.SYMBOLS_CHARS, 0, 1) < firstParenthIndex)
+		if (endBound >= 0)
+		{
+			if (statement.charAt(endBound) != GENERIC_END_CHAR)
+			{
+				return false;
+			}
+			
+			int stack = 1;
+			
+			for (startBound = endBound - 1; startBound >= 0; startBound--)
+			{
+				if (statement.charAt(startBound) == GENERIC_START_CHAR)
+				{
+					stack--;
+				}
+				else if (statement.charAt(startBound) == GENERIC_END_CHAR)
+				{
+					stack++;
+				}
+				
+				if (stack == 0)
+				{
+					break;
+				}
+			}
+			
+			if (stack != 0)
+			{
+				return false;
+			}
+		}
+		else
+		{
+			endBound = 0;
+		}
+		
+		if (StringUtils.findNextCharacter(statement.substring(0, startBound) + statement.substring(endBound), StringUtils.SYMBOLS_CHARS, 0, 1) < firstParenthIndex - (endBound - startBound) - 1)
 		{
 			return false;
 		}
@@ -660,15 +735,24 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 			return SyntaxMessage.queryError(data.error, this, require);
 		}
 		
+		int returnIndex = signature.indexOf("->");
+		
 		while (data.getGenericsRemaining() > 0)
 		{
 			Bounds bounds = data.getSkipBounds(data.getGenericsRemaining() - 1);
-			
+
 			String arg = bounds.extractString(signature);
 			
 			arg = arg.substring(GENERIC_START.length(), arg.length() - GENERIC_END.length());
 			
-			Arrays.stream(StringUtils.splitCommas(arg)).forEach(x -> addGenericTypeArgumentName(x));
+			if (bounds.getStart() > returnIndex)
+			{
+				Arrays.stream(StringUtils.splitCommas(arg)).forEach(x -> addGenericTypeArgumentName(x));
+			}
+			else
+			{
+				getMethodGenericTypeParameterDeclaration().decodeGenericTypeParameters(arg);
+			}
 			
 			data.decrementGenericsRemaining();
 		}
@@ -795,6 +879,32 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 			
 			types = temp;
 		}
+	}
+	
+	public String generateNovaSignature()
+	{
+		String signature = "";
+		
+		if (getVisibility() != 0)
+		{
+			signature += getVisibilityText() + " ";
+		}
+		if (isStatic())
+		{
+			signature += getStaticText() + " ";
+		}
+		
+		signature += getName() + getMethodGenericTypeParameterDeclaration().generateNovaInput();
+		signature += '(' + getParameterList().generateNovaInput().toString() + ')';
+		
+		if (getType() != null)
+		{
+			signature += " -> " + getType();
+		}
+		
+		signature += getGenericTypeArgumentList().generateNovaInput();
+		
+		return signature;
 	}
 	
 	/**

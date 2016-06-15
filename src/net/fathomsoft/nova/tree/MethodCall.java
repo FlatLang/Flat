@@ -638,7 +638,20 @@ public class MethodCall extends Variable
 		
 		if (method.isGenericType())
 		{
-			return generic.getGenericTypeArgumentInstance(method.getType()).getGenericReturnType();
+			GenericTypeArgument arg = generic.getGenericTypeArgumentInstance(method.getType(), this, false);
+			
+			if (arg != null)
+			{
+				return arg.getGenericReturnType();
+			}
+			else if (getParentMethod().containsGenericTypeParameter(method.getType()))
+			{
+				return getParentMethod().getGenericTypeParameter(method.getType()).getDefaultType();
+			}
+			else
+			{
+				SyntaxMessage.error("Invalid generic type '" + method.getType() + "'", this);
+			}
 		}
 		
 		return super.getGenericReturnType();
