@@ -1,16 +1,27 @@
 package "nova/standard/datastruct/list"
 
-public class LinkedList<E>
+public class LinkedList<E> implements Iterable<E>
 {
 	ListNode<E>	start
 	ListNode<E>	current
 	
-	public getFirst() -> ListNode<E>
+	visible LinkedListIterator<E> iterator
 	{
-		return start
+		get
+		{
+			return new LinkedListIterator(this)
+		}
+		
+		no set
 	}
 	
-	public add(E data)
+	visible ListNode<E> first
+	{
+		get { return start }
+		no set
+	}
+	
+	public add(E data) -> LinkedList<E>
 	{
 		ListNode<E> node = new ListNode(data)
 		
@@ -25,9 +36,11 @@ public class LinkedList<E>
 		}
 		
 		current = node
+		
+		return this
 	}
 	
-	public remove(E data)
+	public remove(E data) -> LinkedList<E>
 	{
 		if (start.data == data)
 		{
@@ -48,5 +61,7 @@ public class LinkedList<E>
 			
 			cur = cur.next
 		}
+		
+		return this
 	}
 }
