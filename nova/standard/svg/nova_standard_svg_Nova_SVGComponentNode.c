@@ -21,7 +21,10 @@ nova_standard_svg_Extension_VTable_SVGComponentNode nova_standard_svg_Extension_
 		0,
 		0,
 		0,
+		0,
 		(char(*)(nova_standard_operators_Nova_Equals*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*))nova_standard_Nova_Object_0_Nova_equals,
+		0,
+		0,
 		0,
 	},
 	nova_standard_Nova_Object_0_Nova_getHashCodeLong,
@@ -60,8 +63,6 @@ void nova_standard_svg_Nova_SVGComponentNode_Nova_destroy(nova_standard_svg_Nova
 	nova_standard_svg_Nova_SVGComponentNode_Nova_destroy(&(*this)->nova_standard_svg_Nova_SVGComponentNode_Nova_next, exceptionData);
 	nova_standard_svg_Nova_SVGComponent_Nova_destroy(&(*this)->nova_standard_svg_Nova_SVGComponentNode_Nova_component, exceptionData);
 	
-	{
-	}
 	NOVA_FREE(*this);
 }
 

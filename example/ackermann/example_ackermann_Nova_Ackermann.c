@@ -21,6 +21,7 @@ example_ackermann_Extension_VTable_Ackermann example_ackermann_Extension_VTable_
 		0,
 		0,
 		0,
+		0,
 		(char(*)(nova_standard_operators_Nova_Equals*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*))nova_standard_Nova_Object_0_Nova_equals,
 		0,
 		0,
@@ -60,8 +61,6 @@ void example_ackermann_Nova_Ackermann_Nova_destroy(example_ackermann_Nova_Ackerm
 	}
 	
 	
-	{
-	}
 	NOVA_FREE(*this);
 }
 

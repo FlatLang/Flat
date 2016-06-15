@@ -21,7 +21,10 @@ nova_standard_process_Extension_VTable_Process nova_standard_process_Extension_V
 		0,
 		0,
 		0,
+		0,
 		(char(*)(nova_standard_operators_Nova_Equals*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*))nova_standard_Nova_Object_0_Nova_equals,
+		0,
+		0,
 		0,
 	},
 	nova_standard_Nova_Object_0_Nova_getHashCodeLong,
@@ -59,8 +62,6 @@ void nova_standard_process_Nova_Process_Nova_destroy(nova_standard_process_Nova_
 	
 	nova_standard_io_Nova_StreamReader_Nova_destroy(&(*this)->nova_standard_process_Nova_Process_Nova_reader, exceptionData);
 	
-	{
-	}
 	NOVA_FREE(*this);
 }
 

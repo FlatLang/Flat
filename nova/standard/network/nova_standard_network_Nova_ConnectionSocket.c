@@ -21,7 +21,10 @@ nova_standard_network_Extension_VTable_ConnectionSocket nova_standard_network_Ex
 		0,
 		0,
 		0,
+		0,
 		(char(*)(nova_standard_operators_Nova_Equals*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*))nova_standard_Nova_Object_0_Nova_equals,
+		0,
+		0,
 		0,
 	},
 	nova_standard_Nova_Object_0_Nova_getHashCodeLong,
@@ -73,8 +76,6 @@ void nova_standard_network_Nova_ConnectionSocket_Nova_destroy(nova_standard_netw
 	
 	nova_standard_io_Nova_OutputStream_Nova_destroy(&(*this)->nova_standard_network_Nova_ConnectionSocket_Nova_out, exceptionData);
 	
-	{
-	}
 	NOVA_FREE(*this);
 }
 

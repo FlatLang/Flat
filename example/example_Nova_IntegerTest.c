@@ -21,6 +21,7 @@ example_Extension_VTable_IntegerTest example_Extension_VTable_IntegerTest_val =
 		0,
 		0,
 		0,
+		0,
 		(char(*)(nova_standard_operators_Nova_Equals*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*))nova_standard_Nova_Object_0_Nova_equals,
 		0,
 		0,
@@ -60,8 +61,6 @@ void example_Nova_IntegerTest_Nova_destroy(example_Nova_IntegerTest** this, nova
 	}
 	
 	
-	{
-	}
 	NOVA_FREE(*this);
 }
 

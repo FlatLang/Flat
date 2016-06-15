@@ -21,6 +21,7 @@ example_database_Extension_VTable_DatabaseDemo example_database_Extension_VTable
 		0,
 		0,
 		0,
+		0,
 		(char(*)(nova_standard_operators_Nova_Equals*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*))nova_standard_Nova_Object_0_Nova_equals,
 		0,
 		0,
@@ -63,8 +64,6 @@ void example_database_Nova_DatabaseDemo_Nova_destroy(example_database_Nova_Datab
 	}
 	
 	
-	{
-	}
 	NOVA_FREE(*this);
 }
 

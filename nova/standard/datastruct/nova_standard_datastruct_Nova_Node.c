@@ -21,7 +21,10 @@ nova_standard_datastruct_Extension_VTable_Node nova_standard_datastruct_Extensio
 		0,
 		0,
 		0,
+		0,
 		(char(*)(nova_standard_operators_Nova_Equals*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*))nova_standard_Nova_Object_0_Nova_equals,
+		0,
+		0,
 		0,
 	},
 	nova_standard_Nova_Object_0_Nova_getHashCodeLong,
@@ -108,8 +111,6 @@ void nova_standard_datastruct_Nova_Node_Nova_destroy(nova_standard_datastruct_No
 	
 	nova_standard_datastruct_list_Nova_Array_Nova_destroy(&(*this)->nova_standard_datastruct_Nova_Node_Nova_children, exceptionData);
 	
-	{
-	}
 	NOVA_FREE(*this);
 }
 
@@ -186,7 +187,7 @@ nova_standard_datastruct_list_Nova_Array* nova_standard_datastruct_Nova_Node_1_N
 	
 	l1_Nova_half = (int)(nova_standard_math_Nova_Math_Nova_ceil(0, exceptionData, this->nova_standard_datastruct_Nova_Node_Nova_children->nova_standard_datastruct_list_Nova_Array_Nova_size / 2.0));
 	nova_local_2 = this->nova_standard_datastruct_Nova_Node_Nova_children->vtable->nova_standard_datastruct_list_Nova_Array_virtual_Nova_take(this->nova_standard_datastruct_Nova_Node_Nova_children, exceptionData, l1_Nova_half);
-	nova_local_0 = nova_standard_datastruct_list_Nova_Array_Accessor_Nova_iterator(nova_local_2->vtable->nova_standard_datastruct_list_Nova_Array_virtual_Nova_filter(nova_local_2, exceptionData, (nova_standard_datastruct_list_Nova_Array_closure12_Nova_filterFunc)&nova_standard_datastruct_Nova_Node_Nova_notNull, this), exceptionData);
+	nova_local_0 = nova_standard_datastruct_list_Nova_Array_Accessor_Nova_iterator(nova_local_2->vtable->nova_standard_datastruct_list_Nova_Array_virtual_Nova_filter(nova_local_2, exceptionData, (nova_standard_datastruct_list_Nova_Array_closure15_Nova_filterFunc)&nova_standard_datastruct_Nova_Node_Nova_notNull, this), exceptionData);
 	while (nova_local_0->vtable->nova_standard_datastruct_list_Nova_ArrayIterator_Accessor_Nova_hasNext(nova_local_0, exceptionData))
 	{
 		l1_Nova_child1 = (nova_standard_datastruct_Nova_Node*)(nova_local_0->vtable->nova_standard_datastruct_list_Nova_ArrayIterator_Accessor_Nova_next(nova_local_0, exceptionData));
@@ -194,7 +195,7 @@ nova_standard_datastruct_list_Nova_Array* nova_standard_datastruct_Nova_Node_1_N
 	}
 	nova_standard_datastruct_list_Nova_Array_0_Nova_add(nova_standard_datastruct_Nova_Node_Nova_array, exceptionData, this->nova_standard_datastruct_Nova_Node_Nova_data);
 	nova_local_3 = this->nova_standard_datastruct_Nova_Node_Nova_children->vtable->nova_standard_datastruct_list_Nova_Array_virtual_Nova_skip(this->nova_standard_datastruct_Nova_Node_Nova_children, exceptionData, l1_Nova_half);
-	nova_local_1 = nova_standard_datastruct_list_Nova_Array_Accessor_Nova_iterator(nova_local_3->vtable->nova_standard_datastruct_list_Nova_Array_virtual_Nova_filter(nova_local_3, exceptionData, (nova_standard_datastruct_list_Nova_Array_closure12_Nova_filterFunc)&nova_standard_datastruct_Nova_Node_Nova_notNull, this), exceptionData);
+	nova_local_1 = nova_standard_datastruct_list_Nova_Array_Accessor_Nova_iterator(nova_local_3->vtable->nova_standard_datastruct_list_Nova_Array_virtual_Nova_filter(nova_local_3, exceptionData, (nova_standard_datastruct_list_Nova_Array_closure15_Nova_filterFunc)&nova_standard_datastruct_Nova_Node_Nova_notNull, this), exceptionData);
 	while (nova_local_1->vtable->nova_standard_datastruct_list_Nova_ArrayIterator_Accessor_Nova_hasNext(nova_local_1, exceptionData))
 	{
 		l2_Nova_child = (nova_standard_datastruct_Nova_Node*)(nova_local_1->vtable->nova_standard_datastruct_list_Nova_ArrayIterator_Accessor_Nova_next(nova_local_1, exceptionData));
@@ -217,7 +218,7 @@ void nova_standard_datastruct_Nova_Node_1_Nova_postorder(nova_standard_datastruc
 	nova_standard_datastruct_list_Nova_ArrayIterator* nova_local_0;
 	nova_standard_datastruct_Nova_Node* l1_Nova_child;
 	
-	nova_local_0 = nova_standard_datastruct_list_Nova_Array_Accessor_Nova_iterator(this->nova_standard_datastruct_Nova_Node_Nova_children->vtable->nova_standard_datastruct_list_Nova_Array_virtual_Nova_filter(this->nova_standard_datastruct_Nova_Node_Nova_children, exceptionData, (nova_standard_datastruct_list_Nova_Array_closure12_Nova_filterFunc)&nova_standard_datastruct_Nova_Node_Nova_notNull, this), exceptionData);
+	nova_local_0 = nova_standard_datastruct_list_Nova_Array_Accessor_Nova_iterator(this->nova_standard_datastruct_Nova_Node_Nova_children->vtable->nova_standard_datastruct_list_Nova_Array_virtual_Nova_filter(this->nova_standard_datastruct_Nova_Node_Nova_children, exceptionData, (nova_standard_datastruct_list_Nova_Array_closure15_Nova_filterFunc)&nova_standard_datastruct_Nova_Node_Nova_notNull, this), exceptionData);
 	while (nova_local_0->vtable->nova_standard_datastruct_list_Nova_ArrayIterator_Accessor_Nova_hasNext(nova_local_0, exceptionData))
 	{
 		l1_Nova_child = (nova_standard_datastruct_Nova_Node*)(nova_local_0->vtable->nova_standard_datastruct_list_Nova_ArrayIterator_Accessor_Nova_next(nova_local_0, exceptionData));
@@ -249,7 +250,7 @@ void nova_standard_datastruct_Nova_Node_1_Nova_levelorder(nova_standard_datastru
 		
 		l1_Nova_current = (nova_standard_datastruct_Nova_Node*)(nova_standard_datastruct_list_Nova_Queue_Nova_dequeue(l1_Nova_queue, exceptionData));
 		nova_standard_datastruct_list_Nova_Array_0_Nova_add(nova_standard_datastruct_Nova_Node_Nova_array, exceptionData, l1_Nova_current->nova_standard_datastruct_Nova_Node_Nova_data);
-		nova_local_0 = nova_standard_datastruct_list_Nova_Array_Accessor_Nova_iterator(l1_Nova_current->nova_standard_datastruct_Nova_Node_Nova_children->vtable->nova_standard_datastruct_list_Nova_Array_virtual_Nova_filter(l1_Nova_current->nova_standard_datastruct_Nova_Node_Nova_children, exceptionData, (nova_standard_datastruct_list_Nova_Array_closure12_Nova_filterFunc)&nova_standard_datastruct_Nova_Node_Nova_notNull, this), exceptionData);
+		nova_local_0 = nova_standard_datastruct_list_Nova_Array_Accessor_Nova_iterator(l1_Nova_current->nova_standard_datastruct_Nova_Node_Nova_children->vtable->nova_standard_datastruct_list_Nova_Array_virtual_Nova_filter(l1_Nova_current->nova_standard_datastruct_Nova_Node_Nova_children, exceptionData, (nova_standard_datastruct_list_Nova_Array_closure15_Nova_filterFunc)&nova_standard_datastruct_Nova_Node_Nova_notNull, this), exceptionData);
 		while (nova_local_0->vtable->nova_standard_datastruct_list_Nova_ArrayIterator_Accessor_Nova_hasNext(nova_local_0, exceptionData))
 		{
 			l2_Nova_child = (nova_standard_datastruct_Nova_Node*)(nova_local_0->vtable->nova_standard_datastruct_list_Nova_ArrayIterator_Accessor_Nova_next(nova_local_0, exceptionData));

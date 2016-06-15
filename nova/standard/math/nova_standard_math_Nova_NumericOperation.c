@@ -21,7 +21,10 @@ nova_standard_math_Extension_VTable_NumericOperation nova_standard_math_Extensio
 		0,
 		0,
 		0,
+		0,
 		(char(*)(nova_standard_operators_Nova_Equals*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*))nova_standard_Nova_Object_0_Nova_equals,
+		0,
+		0,
 		0,
 	},
 	nova_standard_Nova_Object_0_Nova_getHashCodeLong,
@@ -197,8 +200,6 @@ void nova_standard_math_Nova_NumericOperation_Nova_destroy(nova_standard_math_No
 	nova_standard_Nova_String_Nova_destroy(&(*this)->prv->nova_standard_math_Nova_NumericOperation_Nova_operator, exceptionData);
 	NOVA_FREE((*this)->prv);
 	
-	{
-	}
 	NOVA_FREE(*this);
 }
 
@@ -234,7 +235,7 @@ void nova_standard_math_Nova_NumericOperation_Nova_this(nova_standard_math_Nova_
 	{
 		if (l2_Nova_type1 == nova_standard_math_Nova_NumericOperation_Nova_OPERATOR)
 		{
-			THROW(4, nova_standard_math_Nova_InvalidNumericStatementException_4_Nova_construct(0, exceptionData, nova_standard_Nova_String_0_Nova_concat(nova_standard_Nova_String_2_Nova_construct(0, exceptionData, "Missing left hand operand in operation '"), exceptionData, nova_standard_math_Nova_NumericOperation_Nova_operation->vtable->nova_standard_Nova_String_virtual0_Nova_concat(nova_standard_math_Nova_NumericOperation_Nova_operation, exceptionData, nova_standard_Nova_String_2_Nova_construct(0, exceptionData, "'")))));
+			THROW(5, nova_standard_math_Nova_InvalidNumericStatementException_4_Nova_construct(0, exceptionData, nova_standard_Nova_String_0_Nova_concat(nova_standard_Nova_String_2_Nova_construct(0, exceptionData, "Missing left hand operand in operation '"), exceptionData, nova_standard_math_Nova_NumericOperation_Nova_operation->vtable->nova_standard_Nova_String_virtual0_Nova_concat(nova_standard_math_Nova_NumericOperation_Nova_operation, exceptionData, nova_standard_Nova_String_2_Nova_construct(0, exceptionData, "'")))));
 		}
 		l2_Nova_rh = l2_Nova_op;
 		l2_Nova_op = nova_standard_Nova_String_2_Nova_construct(0, exceptionData, "*");

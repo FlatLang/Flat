@@ -21,7 +21,10 @@ nova_standard_database_Extension_VTable_ResultSet nova_standard_database_Extensi
 		0,
 		0,
 		0,
+		0,
 		(char(*)(nova_standard_operators_Nova_Equals*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*))nova_standard_Nova_Object_0_Nova_equals,
+		0,
+		0,
 		0,
 	},
 	nova_standard_Nova_Object_0_Nova_getHashCodeLong,
@@ -61,8 +64,6 @@ void nova_standard_database_Nova_ResultSet_Nova_destroy(nova_standard_database_N
 	
 	NOVA_FREE((*this)->nova_standard_database_Nova_ResultSet_Nova_rows);
 	
-	{
-	}
 	NOVA_FREE(*this);
 }
 

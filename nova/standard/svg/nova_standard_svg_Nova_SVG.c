@@ -21,7 +21,10 @@ nova_standard_svg_Extension_VTable_SVG nova_standard_svg_Extension_VTable_SVG_va
 		0,
 		0,
 		0,
+		0,
 		(char(*)(nova_standard_operators_Nova_Equals*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*))nova_standard_Nova_Object_0_Nova_equals,
+		0,
+		0,
 		0,
 	},
 	nova_standard_Nova_Object_0_Nova_getHashCodeLong,
@@ -59,8 +62,6 @@ void nova_standard_svg_Nova_SVG_Nova_destroy(nova_standard_svg_Nova_SVG** this, 
 	
 	nova_standard_svg_Nova_SVGMainComponent_Nova_destroy(&(*this)->nova_standard_svg_Nova_SVG_Nova_root, exceptionData);
 	
-	{
-	}
 	NOVA_FREE(*this);
 }
 

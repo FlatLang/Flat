@@ -1,8 +1,8 @@
 #pragma once
-#ifndef FILE_example_Nova_Lab_NOVA
-#define FILE_example_Nova_Lab_NOVA
+#ifndef FILE_nova_standard_io_Nova_FileNotFoundException_NOVA
+#define FILE_nova_standard_io_Nova_FileNotFoundException_NOVA
 
-typedef struct example_Nova_Lab example_Nova_Lab;
+typedef struct nova_standard_io_Nova_FileNotFoundException nova_standard_io_Nova_FileNotFoundException;
 
 
 #include <Nova.h>
@@ -28,14 +28,11 @@ typedef struct example_Nova_Lab example_Nova_Lab;
 #include <nova/standard/nova_standard_Nova_String.h>
 #include <nova/standard/nova_standard_Nova_System.h>
 #include <nova/standard/math/nova_standard_math_Nova_Math.h>
-#include <nova/standard/datastruct/nova_standard_datastruct_Nova_BinaryTree.h>
-#include <nova/standard/datastruct/list/nova_standard_datastruct_list_Nova_Iterator.h>
-#include <nova/standard/datastruct/list/nova_standard_datastruct_list_Nova_LinkedList.h>
-#include <example/example_Nova_Polygon.h>
+#include <nova/standard/io/nova_standard_io_Nova_File.h>
 
 
-typedef struct example_Extension_VTable_Lab example_Extension_VTable_Lab;
-struct example_Extension_VTable_Lab
+typedef struct nova_standard_io_Extension_VTable_FileNotFoundException nova_standard_io_Extension_VTable_FileNotFoundException;
+struct nova_standard_io_Extension_VTable_FileNotFoundException
 {
 	nova_Interface_VTable itable;
 	long (*nova_standard_Nova_Object_virtual0_Nova_getHashCodeLong)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*);
@@ -43,21 +40,21 @@ struct example_Extension_VTable_Lab
 	char (*nova_standard_Nova_Object_virtual0_Nova_equals)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*);
 };
 
-extern example_Extension_VTable_Lab example_Extension_VTable_Lab_val;
+extern nova_standard_io_Extension_VTable_FileNotFoundException nova_standard_io_Extension_VTable_FileNotFoundException_val;
 
 
 CCLASS_CLASS
 (
-	example_Nova_Lab, 
+	nova_standard_io_Nova_FileNotFoundException, 
 	
-	example_Extension_VTable_Lab* vtable;
+	nova_standard_io_Extension_VTable_FileNotFoundException* vtable;
+	nova_standard_Nova_String* nova_standard_exception_Nova_Exception_Nova_message;
 )
 
-void example_Nova_LabNova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData);
-example_Nova_Lab* example_Nova_Lab_0_Nova_construct(example_Nova_Lab* this, nova_standard_exception_Nova_ExceptionData* exceptionData);
-void example_Nova_Lab_Nova_destroy(example_Nova_Lab** this, nova_standard_exception_Nova_ExceptionData* exceptionData);
-void example_Nova_Lab_Nova_main(example_Nova_Lab* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_Nova_String** example_Nova_Lab_Nova_args);
-void example_Nova_Lab_0_Nova_this(example_Nova_Lab* this, nova_standard_exception_Nova_ExceptionData* exceptionData);
-void example_Nova_Lab_Nova_super(example_Nova_Lab* this, nova_standard_exception_Nova_ExceptionData* exceptionData);
+void nova_standard_io_Nova_FileNotFoundExceptionNova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData);
+nova_standard_io_Nova_FileNotFoundException* nova_standard_io_Nova_FileNotFoundException_Nova_construct(nova_standard_io_Nova_FileNotFoundException* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_io_Nova_File* nova_standard_io_Nova_FileNotFoundException_Nova_file);
+void nova_standard_io_Nova_FileNotFoundException_Nova_destroy(nova_standard_io_Nova_FileNotFoundException** this, nova_standard_exception_Nova_ExceptionData* exceptionData);
+void nova_standard_io_Nova_FileNotFoundException_Nova_this(nova_standard_io_Nova_FileNotFoundException* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_io_Nova_File* nova_standard_io_Nova_FileNotFoundException_Nova_file);
+void nova_standard_io_Nova_FileNotFoundException_0_Nova_super(nova_standard_io_Nova_FileNotFoundException* this, nova_standard_exception_Nova_ExceptionData* exceptionData);
 
 #endif

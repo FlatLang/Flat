@@ -21,7 +21,10 @@ nova_standard_exception_Extension_VTable_Exception nova_standard_exception_Exten
 		0,
 		0,
 		0,
+		0,
 		(char(*)(nova_standard_operators_Nova_Equals*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*))nova_standard_Nova_Object_0_Nova_equals,
+		0,
+		0,
 		0,
 	},
 	nova_standard_Nova_Object_0_Nova_getHashCodeLong,
@@ -73,8 +76,6 @@ void nova_standard_exception_Nova_Exception_Nova_destroy(nova_standard_exception
 	
 	nova_standard_Nova_String_Nova_destroy(&(*this)->nova_standard_exception_Nova_Exception_Nova_message, exceptionData);
 	
-	{
-	}
 	NOVA_FREE(*this);
 }
 

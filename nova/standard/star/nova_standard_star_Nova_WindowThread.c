@@ -21,7 +21,10 @@ nova_standard_star_Extension_VTable_WindowThread nova_standard_star_Extension_VT
 		0,
 		0,
 		0,
+		0,
 		(char(*)(nova_standard_operators_Nova_Equals*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*))nova_standard_Nova_Object_0_Nova_equals,
+		0,
+		0,
 		0,
 	},
 	nova_standard_Nova_Object_0_Nova_getHashCodeLong,
@@ -69,8 +72,6 @@ void nova_standard_star_Nova_WindowThread_Nova_destroy(nova_standard_star_Nova_W
 	nova_standard_star_Nova_Window_Nova_destroy(&(*this)->prv->nova_standard_star_Nova_WindowThread_Nova_window, exceptionData);
 	NOVA_FREE((*this)->prv);
 	
-	{
-	}
 	NOVA_FREE(*this);
 }
 

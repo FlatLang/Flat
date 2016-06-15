@@ -21,6 +21,7 @@ example_network_Extension_VTable_ConnectionThread example_network_Extension_VTab
 		0,
 		0,
 		0,
+		0,
 		(char(*)(nova_standard_operators_Nova_Equals*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*))nova_standard_Nova_Object_0_Nova_equals,
 		0,
 		0,
@@ -71,8 +72,6 @@ void example_network_Nova_ConnectionThread_Nova_destroy(example_network_Nova_Con
 	nova_standard_network_Nova_ConnectionSocket_Nova_destroy(&(*this)->prv->example_network_Nova_ConnectionThread_Nova_socket, exceptionData);
 	NOVA_FREE((*this)->prv);
 	
-	{
-	}
 	NOVA_FREE(*this);
 }
 

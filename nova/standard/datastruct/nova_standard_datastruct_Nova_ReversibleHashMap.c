@@ -21,7 +21,10 @@ nova_standard_datastruct_Extension_VTable_ReversibleHashMap nova_standard_datast
 		0,
 		0,
 		0,
+		0,
 		(char(*)(nova_standard_operators_Nova_Equals*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*))nova_standard_Nova_Object_0_Nova_equals,
+		0,
+		0,
 		0,
 	},
 	nova_standard_Nova_Object_0_Nova_getHashCodeLong,
@@ -69,8 +72,6 @@ void nova_standard_datastruct_Nova_ReversibleHashMap_Nova_destroy(nova_standard_
 	nova_standard_datastruct_Nova_HashMap_Nova_destroy(&(*this)->prv->nova_standard_datastruct_Nova_ReversibleHashMap_Nova_rev, exceptionData);
 	NOVA_FREE((*this)->prv);
 	
-	{
-	}
 	NOVA_FREE(*this);
 }
 

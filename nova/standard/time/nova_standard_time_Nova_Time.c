@@ -21,7 +21,10 @@ nova_standard_time_Extension_VTable_Time nova_standard_time_Extension_VTable_Tim
 		0,
 		0,
 		0,
+		0,
 		(char(*)(nova_standard_operators_Nova_Equals*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*))nova_standard_Nova_Object_0_Nova_equals,
+		0,
+		0,
 		0,
 	},
 	nova_standard_Nova_Object_0_Nova_getHashCodeLong,
@@ -60,8 +63,6 @@ void nova_standard_time_Nova_Time_Nova_destroy(nova_standard_time_Nova_Time** th
 	}
 	
 	
-	{
-	}
 	NOVA_FREE(*this);
 }
 

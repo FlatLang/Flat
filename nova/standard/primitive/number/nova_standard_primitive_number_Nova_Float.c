@@ -21,8 +21,11 @@ nova_standard_primitive_number_Extension_VTable_Float nova_standard_primitive_nu
 		0,
 		0,
 		0,
+		0,
 		(char(*)(nova_standard_operators_Nova_Equals*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*))nova_standard_Nova_Object_0_Nova_equals,
 		(nova_standard_Nova_Object*(*)(nova_standard_operators_Nova_Multiply*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*))nova_standard_primitive_number_Nova_Float_0_Nova_multiply,
+		0,
+		0,
 	},
 	nova_standard_Nova_Object_0_Nova_getHashCodeLong,
 	nova_standard_primitive_number_Nova_Float_3_Nova_toString,
@@ -64,8 +67,6 @@ void nova_standard_primitive_number_Nova_Float_Nova_destroy(nova_standard_primit
 	
 	
 	
-	{
-	}
 	NOVA_FREE(*this);
 }
 

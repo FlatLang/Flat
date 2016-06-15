@@ -21,6 +21,7 @@ example_Extension_VTable_Square example_Extension_VTable_Square_val =
 		0,
 		0,
 		0,
+		0,
 		(char(*)(nova_standard_operators_Nova_Equals*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*))nova_standard_Nova_Object_0_Nova_equals,
 		0,
 		(int(*)(example_Nova_Polygon*, nova_standard_exception_Nova_ExceptionData*))example_Nova_Square_Nova_numberSides,
@@ -63,8 +64,6 @@ void example_Nova_Square_Nova_destroy(example_Nova_Square** this, nova_standard_
 	
 	
 	
-	{
-	}
 	NOVA_FREE(*this);
 }
 

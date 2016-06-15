@@ -21,7 +21,10 @@ nova_standard_datastruct_list_Extension_VTable_EmptyStackException nova_standard
 		0,
 		0,
 		0,
+		0,
 		(char(*)(nova_standard_operators_Nova_Equals*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*))nova_standard_Nova_Object_0_Nova_equals,
+		0,
+		0,
 		0,
 	},
 	nova_standard_Nova_Object_0_Nova_getHashCodeLong,
@@ -76,8 +79,6 @@ void nova_standard_datastruct_list_Nova_EmptyStackException_Nova_destroy(nova_st
 	}
 	
 	
-	{
-	}
 	NOVA_FREE(*this);
 }
 

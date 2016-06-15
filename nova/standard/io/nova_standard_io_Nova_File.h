@@ -30,6 +30,7 @@ typedef struct nova_standard_io_Nova_File nova_standard_io_Nova_File;
 #include <nova/standard/math/nova_standard_math_Nova_Math.h>
 #include <nova/standard/io/NativeFile.h>
 #include <nova/standard/time/nova_standard_time_Nova_Time.h>
+#include <nova/standard/io/nova_standard_io_Nova_FileNotFoundException.h>
 
 
 typedef struct nova_standard_io_Extension_VTable_File nova_standard_io_Extension_VTable_File;
@@ -49,6 +50,7 @@ CCLASS_CLASS
 	nova_standard_io_Nova_File, 
 	
 	nova_standard_io_Extension_VTable_File* vtable;
+	nova_standard_Nova_String* nova_standard_io_Nova_File_Nova_location;
 	struct Private* prv;
 )
 

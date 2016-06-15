@@ -21,7 +21,10 @@ nova_standard_math_logic_Extension_VTable_StatementLetter nova_standard_math_log
 		0,
 		0,
 		0,
+		0,
 		(char(*)(nova_standard_operators_Nova_Equals*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*))nova_standard_Nova_Object_0_Nova_equals,
+		0,
+		0,
 		0,
 	},
 	nova_standard_Nova_Object_0_Nova_getHashCodeLong,
@@ -68,8 +71,6 @@ void nova_standard_math_logic_Nova_StatementLetter_Nova_destroy(nova_standard_ma
 	nova_standard_Nova_String_Nova_destroy(&(*this)->prv->nova_standard_math_logic_Nova_StatementLetter_Nova_representation, exceptionData);
 	NOVA_FREE((*this)->prv);
 	
-	{
-	}
 	NOVA_FREE(*this);
 }
 

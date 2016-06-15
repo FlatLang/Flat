@@ -21,7 +21,10 @@ nova_standard_io_Extension_VTable_File nova_standard_io_Extension_VTable_File_va
 		0,
 		0,
 		0,
+		0,
 		(char(*)(nova_standard_operators_Nova_Equals*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*))nova_standard_Nova_Object_0_Nova_equals,
+		0,
+		0,
 		0,
 	},
 	nova_standard_Nova_Object_0_Nova_getHashCodeLong,
@@ -33,7 +36,6 @@ nova_standard_io_Extension_VTable_File nova_standard_io_Extension_VTable_File_va
 CCLASS_PRIVATE
 (
 	FILE* nova_standard_io_Nova_File_Nova_fp;
-	nova_standard_Nova_String* nova_standard_io_Nova_File_Nova_location;
 	
 )
 
@@ -86,17 +88,15 @@ void nova_standard_io_Nova_File_Nova_destroy(nova_standard_io_Nova_File** this, 
 	}
 	
 	
-	nova_standard_Nova_String_Nova_destroy(&(*this)->prv->nova_standard_io_Nova_File_Nova_location, exceptionData);
 	NOVA_FREE((*this)->prv);
+	nova_standard_Nova_String_Nova_destroy(&(*this)->nova_standard_io_Nova_File_Nova_location, exceptionData);
 	
-	{
-	}
 	NOVA_FREE(*this);
 }
 
 void nova_standard_io_Nova_File_1_Nova_this(nova_standard_io_Nova_File* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_Nova_String* nova_standard_io_Nova_File_Nova_location)
 {
-	this->prv->nova_standard_io_Nova_File_Nova_location = nova_standard_io_Nova_File_Nova_location;
+	this->nova_standard_io_Nova_File_Nova_location = nova_standard_io_Nova_File_Nova_location;
 	this->prv->nova_standard_io_Nova_File_Nova_fp = fopen((char*)(nova_standard_io_Nova_File_Nova_location->nova_standard_Nova_String_Nova_chars), (char*)("r+"));
 }
 
@@ -108,13 +108,13 @@ void nova_standard_io_Nova_File_2_Nova_this(nova_standard_io_Nova_File* this, no
 char nova_standard_io_Nova_File_Nova_delete(nova_standard_io_Nova_File* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
 	nova_standard_io_Nova_File_Nova_close(this, exceptionData);
-	return remove((char*)(this->prv->nova_standard_io_Nova_File_Nova_location->nova_standard_Nova_String_Nova_chars)) == 0;
+	return remove((char*)(this->nova_standard_io_Nova_File_Nova_location->nova_standard_Nova_String_Nova_chars)) == 0;
 }
 
 void nova_standard_io_Nova_File_Nova_reopen(nova_standard_io_Nova_File* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
 	nova_standard_io_Nova_File_Nova_close(this, exceptionData);
-	this->prv->nova_standard_io_Nova_File_Nova_fp = fopen((char*)(this->prv->nova_standard_io_Nova_File_Nova_location->nova_standard_Nova_String_Nova_chars), (char*)("r+"));
+	this->prv->nova_standard_io_Nova_File_Nova_fp = fopen((char*)(this->nova_standard_io_Nova_File_Nova_location->nova_standard_Nova_String_Nova_chars), (char*)("r+"));
 }
 
 void nova_standard_io_Nova_File_Nova_rewind(nova_standard_io_Nova_File* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
@@ -126,7 +126,7 @@ void nova_standard_io_Nova_File_Nova_clearContents(nova_standard_io_Nova_File* t
 {
 	if (nova_standard_io_Nova_File_Accessor_Nova_exists(this, exceptionData))
 	{
-		this->prv->nova_standard_io_Nova_File_Nova_fp = fopen((char*)(this->prv->nova_standard_io_Nova_File_Nova_location->nova_standard_Nova_String_Nova_chars), (char*)("w"));
+		this->prv->nova_standard_io_Nova_File_Nova_fp = fopen((char*)(this->nova_standard_io_Nova_File_Nova_location->nova_standard_Nova_String_Nova_chars), (char*)("w"));
 	}
 }
 
@@ -134,16 +134,16 @@ char nova_standard_io_Nova_File_Nova_create(nova_standard_io_Nova_File* this, no
 {
 	if (!nova_standard_io_Nova_File_Accessor_Nova_exists(this, exceptionData))
 	{
-		this->prv->nova_standard_io_Nova_File_Nova_fp = fopen((char*)(this->prv->nova_standard_io_Nova_File_Nova_location->nova_standard_Nova_String_Nova_chars), (char*)("w"));
+		this->prv->nova_standard_io_Nova_File_Nova_fp = fopen((char*)(this->nova_standard_io_Nova_File_Nova_location->nova_standard_Nova_String_Nova_chars), (char*)("w"));
 		if (!nova_standard_io_Nova_File_Accessor_Nova_exists(this, exceptionData))
 		{
-			perror((char*)("fopen"));
+			THROW(4, nova_standard_io_Nova_FileNotFoundException_Nova_construct(0, exceptionData, this));
 			return 0;
 		}
 		nova_standard_io_Nova_File_Nova_reopen(this, exceptionData);
 		if (!nova_standard_io_Nova_File_Accessor_Nova_exists(this, exceptionData))
 		{
-			perror((char*)("fopen"));
+			THROW(4, nova_standard_io_Nova_FileNotFoundException_Nova_construct(0, exceptionData, this));
 			return 0;
 		}
 		return 1;
@@ -266,7 +266,7 @@ void nova_standard_io_Nova_File_Mutator_Nova_maxOpenFiles(nova_standard_io_Nova_
 
 void nova_standard_io_Nova_File_Nova_super(nova_standard_io_Nova_File* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
+	this->nova_standard_io_Nova_File_Nova_location = (nova_standard_Nova_String*)nova_null;
 	this->prv->nova_standard_io_Nova_File_Nova_fp = 0;
-	this->prv->nova_standard_io_Nova_File_Nova_location = (nova_standard_Nova_String*)nova_null;
 }
 
