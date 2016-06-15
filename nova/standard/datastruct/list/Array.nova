@@ -161,6 +161,18 @@ public class Array<E> implements List<E>
 		return array
 	}
 	
+	public map<Out>(mapFunc(E) -> Out) -> Array<Out>
+	{
+		Array<Out> array = new Array()
+		
+		for (element in this)
+		{
+			array.add(mapFunc(element))
+		}
+		
+		return array
+	}
+	
 	public forEach(func(E, Int, Array<E>))
 	{
 		for (Int i = 0; i < size; i++)
