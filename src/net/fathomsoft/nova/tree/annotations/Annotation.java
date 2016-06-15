@@ -46,9 +46,10 @@ public class Annotation extends Node
 	 * <br>
 	 * Example inputs include:<br>
 	 * <ul>
-	 * 	<li>@RequireGenericType(E extends Number)</li>
-	 * 	<li>@SomeAnnotation</li>
-	 * 	<li>@SomethingWithParams(values=["thing1", "Thing2"], size=5)</li>
+	 * 	<li>[RequireGenericType(E extends Number)]</li>
+	 * 	<li>[RequireGenericType E extends Number]</li>
+	 * 	<li>[SomeAnnotation]</li>
+	 * 	<li>[SomethingWithParams(values=["thing1", "Thing2"], size=5)]</li>
 	 * </ul>
 	 * 
 	 * @param parent The parent node of the statement.
@@ -61,9 +62,9 @@ public class Annotation extends Node
 	 */
 	public static Annotation decodeStatement(Node parent, String statement, Location location, boolean require)
 	{
-		if (statement.startsWith("@"))
+		if (statement.startsWith("[") && statement.endsWith("]"))
 		{
-			statement = statement.substring(1).trim();
+			statement = statement.substring(1, statement.length() - 1).trim();
 			
 			String name = StringUtils.findNextWord(statement);
 			String arguments = statement.substring(name.length());
