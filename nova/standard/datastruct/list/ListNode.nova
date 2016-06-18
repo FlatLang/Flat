@@ -10,4 +10,12 @@ public class ListNode<E>
 	{
 		this.data = data
 	}
+	
+	public clone() -> ListNode<E>
+	{
+		ListNode<E> clone = new ListNode(data)
+		clone.next = next
+		
+		return clone
+	}
 }
