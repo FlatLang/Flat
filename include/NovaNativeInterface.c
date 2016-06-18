@@ -197,6 +197,7 @@ nova_env novaEnv = {
 &nova_standard_datastruct_list_Nova_LinkedList_0_Nova_first,
 &nova_standard_datastruct_list_Nova_LinkedList_0_Nova_last,
 &nova_standard_datastruct_list_Nova_LinkedList_0_Nova_firstWhere,
+&nova_standard_datastruct_list_Nova_LinkedList_0_Nova_join,
 &nova_standard_datastruct_list_Nova_LinkedList_0_Nova_construct,
 },
 
@@ -206,6 +207,7 @@ nova_env novaEnv = {
 },
 
 {
+0,
 0,
 0,
 0,
