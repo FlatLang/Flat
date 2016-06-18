@@ -1481,6 +1481,11 @@ public abstract class Node implements Listenable, Annotatable
 		return this instanceof Program ? (Program)this : null;
 	}
 	
+	public FileDeclaration getReferenceFile()
+	{
+		return getFileDeclaration();
+	}
+	
 	/**
 	 * Get the FileDeclaration of this Node, if it exists.
 	 * 
