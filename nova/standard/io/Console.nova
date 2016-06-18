@@ -23,6 +23,11 @@ public class Console
 	external void nova_clearScreen()
 	external void fflush(FILE* stream)
 	
+	public static writeLine()
+	{
+		writeLine("")
+	}
+	
 	public static writeLine(String text)
 	{
 		write(text + "\n")
