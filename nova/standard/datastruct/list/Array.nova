@@ -161,13 +161,15 @@ public class Array<E> implements List<E>
 		return array
 	}
 	
-	public map<Out>(mapFunc(E) -> Out) -> Array<Out>
+	public map<Out>(mapFunc(E, Int, Array<E>) -> Out) -> Array<Out>
 	{
 		Array<Out> array = new Array()
-		
+
+		Int i = 0
+
 		for (element in this)
 		{
-			array.add(mapFunc(element))
+			array.add(mapFunc(element, i++, this))
 		}
 		
 		return array

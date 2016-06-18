@@ -85,13 +85,15 @@ public class LinkedList<E> implements List<E>
 		return array
 	}
 	
-	public map<Out>(mapFunc(E) -> Out) -> LinkedList<Out>
+	public map<Out>(mapFunc(E, Int, LinkedList<E>) -> Out) -> LinkedList<Out>
 	{
 		LinkedList<Out> array = new LinkedList()
-		
+
+		Int i = 0
+
 		for (element in this)
 		{
-			array.add(mapFunc(element))
+			array.add(mapFunc(element, i++, this))
 		}
 		
 		return array
