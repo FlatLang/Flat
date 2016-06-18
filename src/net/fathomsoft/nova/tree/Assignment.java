@@ -379,18 +379,28 @@ public class Assignment extends Node
 		String leftType  = returnedLeft.getNovaType();
 		String rightType = returnedRight.getNovaType();
 		
-		if (!Literal.isNullLiteral(returnedRight) && rightType != null && !rightType.equals(leftType))
+		if (!Literal.isNullLiteral(returnedRight))
 		{
-			ClassDeclaration left  = returnedLeft.getTypeClass();
-			ClassDeclaration right = returnedRight.getTypeClass();
-			
-			if (!returnedLeft.isExternalType() && !returnedRight.isExternalType() &&
-					(left == null || right == null ||
-					(returnedLeft.isPrimitive() && (!left.isOfType(right) && !SyntaxUtils.arePrimitiveTypesCompatible(leftType, rightType)) ||
-					!returnedLeft.isPrimitive() && !right.isOfType(left))))
+			if (rightType != null && !rightType.equals(leftType))
 			{
-				SyntaxMessage.error("Type '" + returnedRight.getType() + "' is not compatible with type '" + returnedLeft.getType() + "'", this, location);
+				ClassDeclaration left  = returnedLeft.getTypeClass();
+				ClassDeclaration right = returnedRight.getTypeClass();
+				
+				if (!returnedLeft.isExternalType() && !returnedRight.isExternalType() &&
+						(left == null || right == null ||
+						(returnedLeft.isPrimitive() && (!left.isOfType(right) && !SyntaxUtils.arePrimitiveTypesCompatible(leftType, rightType)) ||
+						!returnedLeft.isPrimitive() && !right.isOfType(left))))
+				{
+					SyntaxMessage.error("Type '" + returnedRight.getType() + "' is not compatible with type '" + returnedLeft.getType() + "'", this, location);
+				}
 			}
+			
+			/*if (!SyntaxUtils.isTypeCompatible(returnedRight.getContext(), returnedLeft, returnedRight, true))
+			{
+				SyntaxUtils.isTypeCompatible(returnedRight.getContext(), returnedLeft, returnedRight, true);
+			}
+			
+			return SyntaxUtils.isTypeCompatible(returnedRight.getContext(), returnedLeft, returnedRight, true);*/
 		}
 		
 		return true;
