@@ -33,6 +33,7 @@ import net.fathomsoft.nova.tree.SyntaxTree;
 import net.fathomsoft.nova.tree.UnaryOperation;
 import net.fathomsoft.nova.tree.Value;
 import net.fathomsoft.nova.tree.generics.GenericTypeArgument;
+import net.fathomsoft.nova.tree.generics.GenericTypeArgumentList;
 import net.fathomsoft.nova.tree.generics.GenericTypeParameterDeclaration;
 import net.fathomsoft.nova.tree.variables.FieldDeclaration;
 import net.fathomsoft.nova.tree.variables.Variable;
@@ -1931,7 +1932,7 @@ public class SyntaxUtils
 		}
 		else
 		{
-			gen = /*((Node)given.getContext())*/given.getParentClass();//given.getParentMethod();
+			gen = /*((Node)given.getContext())*/given.getContext();//.getParentClass();//given.getParentMethod();
 		}
 		
 		String name = gen.getGenericTypeArgumentType(type, given);
@@ -1941,7 +1942,7 @@ public class SyntaxUtils
 	
 	public static String getTypeClassLocation(Node node, String type)
 	{
-		FileDeclaration file = node.getFileDeclaration();
+		FileDeclaration file = node.getReferenceFile();
 		
 		if (node instanceof Identifier)
 		{
@@ -2058,14 +2059,48 @@ public class SyntaxUtils
 			{
 				GenericTypeArgument arg = context.getGenericTypeArgument(genIndex);
 				
+				Value newContext = (Value)((Accessible)context).getReferenceNode();
+				
+				if (newContext instanceof Variable == false)
+				{
+					newContext = null;
+				}
+				
 				//SyntaxUtils.getImportedClass(given.getFileDeclaration(), arg.getType());
 				
-				if (isTypeCompatible((GenericCompatible)null, required, arg, false))
+				if (isTypeCompatible((GenericCompatible)newContext, required, arg, false))
 				{
 					return true;
 				}
 			}
 		}
+
+//		if (given instanceof Instantiation == false)
+//		{
+//			GenericTypeArgumentList requiredArgs = required.getGenericTypeArgumentList();
+//			GenericTypeArgumentList givenArgs = given.getGenericTypeArgumentList();
+//			
+//			if (requiredArgs != null && givenArgs != null)
+//			{
+//				if (requiredArgs.getNumVisibleChildren() != givenArgs.getNumVisibleChildren())
+//				{
+//					return false;
+//				}
+//				else if (requiredArgs.getNumVisibleChildren() > 0)
+//				{
+//					for (int i = 0; i < requiredArgs.getNumVisibleChildren(); i++)
+//					{
+//						GenericTypeArgument requiredArg = requiredArgs.getVisibleChild(i);
+//						GenericTypeArgument givenArg = givenArgs.getVisibleChild(i);
+//						
+//						/*if (requiredArg != required && givenArg != given && !isTypeCompatible(givenArg.getContext(), requiredArg, givenArg))
+//						{
+//							return false;
+//						}*/
+//					}
+//				}
+//			}
+//		}
 		
 		if (given instanceof Closure)
 		{
@@ -2130,7 +2165,10 @@ public class SyntaxUtils
 			
 			for (int i = 0; i < r.getParameterList().getNumParameters(); i++)
 			{
-				if (!isTypeCompatible(context, r.getParameterList().getParameter(i), g.getParameterList().getParameter(i)))
+				Value requiredParam = r.getParameterList().getParameter(i);
+				Value givenParam = g.getParameterList().getParameter(i);
+				
+				if (givenParam.getTypeClass() == null || !givenParam.getTypeClass().isOfType(requiredParam.getTypeClass()))//!isTypeCompatible(/*givenParam.getContext()*/null, requiredParam, givenParam))
 				{
 					return false;
 				}
@@ -2142,6 +2180,7 @@ public class SyntaxUtils
 		{
 			return false;
 		}
+		// TODO: Does this check array dimensions?
 		else if (given.isExternalType() && given.getType().equals(required.getType()))
 		{
 			return true;
