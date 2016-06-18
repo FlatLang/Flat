@@ -4,6 +4,7 @@ import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.error.SyntaxMessage;
+import net.fathomsoft.nova.tree.MethodList.SearchFilter;
 import net.fathomsoft.nova.tree.generics.GenericTypeArgument;
 import net.fathomsoft.nova.tree.generics.GenericTypeArgumentList;
 import net.fathomsoft.nova.tree.generics.GenericTypeParameter;
@@ -24,7 +25,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  */
 public class Closure extends Variable
 {
-	private MethodDeclaration[] declarations;
+	public MethodDeclaration[] declarations;
 	
 	/**
 	 * @see net.fathomsoft.nova.tree.Node#Node(Node, Location)
@@ -148,7 +149,11 @@ public class Closure extends Variable
 	
 	private NovaMethodDeclaration getMethodDeclaration(GenericCompatible[] contexts, String name)
 	{
-		return (NovaMethodDeclaration)((Value)getReferenceNode()).getTypeClass().getMethod(contexts, name, getClosureDeclaration().getParameterList().getTypes());
+		SearchFilter filter = new SearchFilter();
+		filter.staticValue = true;
+		filter.allowMoreParameters = true;
+		
+		return (NovaMethodDeclaration)((Value)getReferenceNode()).getTypeClass().getMethod(contexts, name, filter, getClosureDeclaration().getParameterList().getTypes());
 	}
 	
 	/**
@@ -232,10 +237,11 @@ public class Closure extends Variable
 	
 	private boolean findDeclaration()
 	{
-		MethodDeclaration declaration = getMethodDeclaration(getMethodCall().getReferenceNode().getContext(), declarations[0].getName());
+		MethodDeclaration declaration = getMethodDeclaration(getMethodCall().getReferenceNode().toValue()/*.getContext()/*getReferenceNode().toValue()*/, declarations[0].getName());
 		
 		if (declaration == null)
 		{
+			getMethodDeclaration(getMethodCall().getReferenceNode().toValue(), declarations[0].getName());
 			SyntaxMessage.error("Method '" + declarations[0].getName() + "' is not compatible", this);
 			
 			return false;
@@ -317,17 +323,17 @@ public class Closure extends Variable
 	 */
 	private void validateNumParameters(MethodDeclaration method, ParameterList<Value> list1, ParameterList<Parameter> list2)
 	{
-		if (list1.getNumVisibleChildren() != list2.getNumVisibleChildren())
-		{
+//		if (list1.getNumVisibleChildren() != list2.getNumVisibleChildren())
+//		{
 			if (list1.getNumVisibleChildren() < list2.getNumVisibleChildren())
 			{
 				SyntaxMessage.error("The method '" + method.getName() + "()' contains too many parameters for the closure", this);
 			}
-			else
-			{
-				SyntaxMessage.error("The method '" + method.getName() + "()' contains not enough parameters for the closure", this);
-			}
-		}
+//			else
+//			{
+//				SyntaxMessage.error("The method '" + method.getName() + "()' contains not enough parameters for the closure", this);
+//			}
+//		}
 	}
 	
 	/**
@@ -342,7 +348,7 @@ public class Closure extends Variable
 	 */
 	private void validateIndividualParameters(MethodDeclaration method, ParameterList<Value> list1, ParameterList<Parameter> list2)
 	{
-		for (int i = 0; i < list1.getNumVisibleChildren(); i++)
+		for (int i = 0; i < list2.getNumVisibleChildren(); i++)
 		{
 			Value value1 = list1.getParameter(i);
 			Value value2 = list2.getParameter(i);
