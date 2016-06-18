@@ -806,6 +806,7 @@ public class MethodCall extends Variable
 			
 			if (method == null)
 			{
+				n.searchMethodDeclaration(data.name);
 				SyntaxMessage.error("Undeclared method '" + temp.getName() + "'", n);
 			}
 			
