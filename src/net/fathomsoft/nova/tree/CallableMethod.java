@@ -1,5 +1,6 @@
 package net.fathomsoft.nova.tree;
 
+import net.fathomsoft.nova.tree.MethodList.SearchFilter;
 import net.fathomsoft.nova.tree.generics.GenericTypeParameter;
 import net.fathomsoft.nova.util.SyntaxUtils;
 
@@ -120,9 +121,14 @@ public interface CallableMethod
 	 */
 	public default boolean areCompatibleParameterTypes(GenericCompatible[] contexts, boolean searchGeneric, Value ... types)
 	{
+		return areCompatibleParameterTypes(contexts, searchGeneric, null, types);
+	}
+	
+	public default boolean areCompatibleParameterTypes(GenericCompatible[] contexts, boolean searchGeneric, SearchFilter filter, Value ... types)
+	{
 		if (getParameterList().getNumVisibleChildren() != types.length)
 		{
-			return false;
+			return filter != null && filter.allowMoreParameters && getParameterList().getNumVisibleChildren() < types.length;
 		}
 		
 		return SyntaxUtils.areTypesCompatible(contexts, getParameterList().getTypes(), types, searchGeneric);
