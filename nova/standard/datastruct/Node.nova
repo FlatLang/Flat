@@ -70,6 +70,7 @@ public class Node<E>
 	{
 		Int half = Math.ceil(children.size / 2.0)
 		
+		//children.take(half).filter(notNull).forEach(x -> x.inorder(array))
 		for (child1 in children.take(half).filter(notNull))
 		{
 			child1.inorder(array)
@@ -77,6 +78,7 @@ public class Node<E>
 		
 		array.add(data)
 		
+		//children.skip(half).filter(notNull).forEach(x -> x.inorder(array))
 		for (child in children.skip(half).filter(notNull))
 		{
 			child.inorder(array)
