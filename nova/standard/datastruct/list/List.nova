@@ -90,4 +90,6 @@ public interface List<Type> extends Iterable<Type>
 	//add(Type value) -> List<Type>
 	//remove(Type value) -> List<Type>
 	//clone() -> List<Type>
+	
+    join(String delimiter) -> String
 }

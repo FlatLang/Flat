@@ -203,4 +203,27 @@ public class LinkedList<E> implements List<E>
 		
 		return null
 	}
+    
+    public join(String delimiter) -> String
+    {
+    	String str = ""
+    	
+    	Bool passed = false
+    	
+    	for (element in this)
+    	{
+    		if (passed)
+    		{
+    			str = str + delimiter
+    		}
+    		else
+    		{
+    			passed = true
+    		}
+    		
+    		str = str + element.toString()
+    	}
+    	
+    	return str
+    }
 }
