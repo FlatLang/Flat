@@ -25,6 +25,7 @@ example_Extension_VTable_Polygon example_Extension_VTable_Polygon_val =
 		0,
 		0,
 		0,
+		0,
 		(int(*)(example_Nova_Polygon*, nova_standard_exception_Nova_ExceptionData*))example_Nova_Polygon_0_Nova_numberSides,
 		(double(*)(example_Nova_Polygon*, nova_standard_exception_Nova_ExceptionData*))example_Nova_Polygon_0_Nova_calculateArea,
 	},

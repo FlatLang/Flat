@@ -20,6 +20,7 @@ nova_standard_datastruct_list_Extension_VTable_Array nova_standard_datastruct_li
 		(nova_standard_Nova_Object*(*)(nova_standard_datastruct_list_Nova_List*, nova_standard_exception_Nova_ExceptionData*))nova_standard_datastruct_list_Nova_Array_Nova_first,
 		(nova_standard_Nova_Object*(*)(nova_standard_datastruct_list_Nova_List*, nova_standard_exception_Nova_ExceptionData*))nova_standard_datastruct_list_Nova_Array_Nova_last,
 		(nova_standard_Nova_Object*(*)(nova_standard_datastruct_list_Nova_List*, nova_standard_exception_Nova_ExceptionData*, nova_standard_datastruct_list_Nova_List_closure18_Nova_func nova_standard_datastruct_list_Nova_List_Nova_func, void* nova_standard_datastruct_list_Nova_List_ref_Nova_func))nova_standard_datastruct_list_Nova_Array_Nova_firstWhere,
+		(nova_standard_datastruct_list_Nova_List*(*)(nova_standard_datastruct_list_Nova_List*, nova_standard_exception_Nova_ExceptionData*))nova_standard_datastruct_list_Nova_Array_Nova_reverse,
 		(nova_standard_Nova_String*(*)(nova_standard_datastruct_list_Nova_List*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_String*))nova_standard_datastruct_list_Nova_Array_Nova_join,
 		0,
 		0,
@@ -41,6 +42,7 @@ nova_standard_datastruct_list_Extension_VTable_Array nova_standard_datastruct_li
 	nova_standard_datastruct_list_Nova_Array_Nova_first,
 	nova_standard_datastruct_list_Nova_Array_Nova_last,
 	nova_standard_datastruct_list_Nova_Array_Nova_firstWhere,
+	nova_standard_datastruct_list_Nova_Array_Nova_reverse,
 	nova_standard_datastruct_list_Nova_Array_Nova_join,
 };
 
@@ -418,6 +420,24 @@ long nova_standard_datastruct_list_Nova_Array_Nova_sumSize(nova_standard_datastr
 		l1_Nova_sum = l1_Nova_sum + ((nova_standard_Nova_String*)l1_Nova_value)->nova_standard_Nova_String_Nova_size;
 	}
 	return l1_Nova_sum;
+}
+
+nova_standard_datastruct_list_Nova_Array* nova_standard_datastruct_list_Nova_Array_Nova_reverse(nova_standard_datastruct_list_Nova_Array* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
+{
+	nova_standard_datastruct_list_Nova_Array* l1_Nova_array;
+	int l1_Nova_i;
+	nova_standard_datastruct_list_Nova_ArrayIterator* nova_local_0;
+	nova_standard_Nova_Object* l1_Nova_element;
+	
+	l1_Nova_array = nova_standard_datastruct_list_Nova_Array_1_Nova_construct(0, exceptionData, this->nova_standard_datastruct_list_Nova_Array_Nova_size);
+	l1_Nova_i = 0;
+	nova_local_0 = nova_standard_datastruct_list_Nova_Array_Accessor_Nova_iterator(l1_Nova_array, exceptionData);
+	while (nova_local_0->vtable->nova_standard_datastruct_list_Nova_ArrayIterator_Accessor_Nova_hasNext(nova_local_0, exceptionData))
+	{
+		l1_Nova_element = (nova_standard_Nova_Object*)(nova_local_0->vtable->nova_standard_datastruct_list_Nova_ArrayIterator_Accessor_Nova_next(nova_local_0, exceptionData));
+		l1_Nova_array->prv->nova_standard_datastruct_list_Nova_Array_Nova_data[this->nova_standard_datastruct_list_Nova_Array_Nova_size - ++l1_Nova_i] = (nova_standard_Nova_Object*)(l1_Nova_element);
+	}
+	return l1_Nova_array;
 }
 
 nova_standard_Nova_String* nova_standard_datastruct_list_Nova_Array_Nova_join(nova_standard_datastruct_list_Nova_Array* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_Nova_String* nova_standard_datastruct_list_Nova_Array_Nova_delimiter)

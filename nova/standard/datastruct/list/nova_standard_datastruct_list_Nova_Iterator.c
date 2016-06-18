@@ -27,6 +27,7 @@ nova_standard_datastruct_list_Extension_VTable_Iterator nova_standard_datastruct
 		0,
 		0,
 		0,
+		0,
 	},
 	nova_standard_datastruct_list_Nova_Iterator_0_Nova_reset,
 	nova_standard_datastruct_list_Nova_Iterator_Accessor_Nova_hasNext,
