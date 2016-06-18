@@ -101,18 +101,18 @@ void example_Nova_ExceptionHandlingDemo_Nova_main(example_Nova_ExceptionHandling
 
 int example_Nova_ExceptionHandlingDemo_Nova_divide(example_Nova_ExceptionHandlingDemo* this, nova_standard_exception_Nova_ExceptionData* exceptionData, int example_Nova_ExceptionHandlingDemo_Nova_num, int example_Nova_ExceptionHandlingDemo_Nova_den)
 {
-	int nova_zero_check4;
+	int nova_zero_check3;
 	
 	if (example_Nova_ExceptionHandlingDemo_Nova_num % example_Nova_ExceptionHandlingDemo_Nova_den != 0)
 	{
 		THROW(7, example_Nova_NonWholeDivisionException_3_Nova_construct(0, exceptionData));
 	}
-	nova_zero_check4 = example_Nova_ExceptionHandlingDemo_Nova_den;
-	if (nova_zero_check4 == 0)
+	nova_zero_check3 = example_Nova_ExceptionHandlingDemo_Nova_den;
+	if (nova_zero_check3 == 0)
 	{
 		THROW(8, nova_standard_exception_Nova_DivideByZeroException_3_Nova_construct(0, exceptionData));
 	}
-	return example_Nova_ExceptionHandlingDemo_Nova_num / nova_zero_check4;
+	return example_Nova_ExceptionHandlingDemo_Nova_num / nova_zero_check3;
 }
 
 void example_Nova_ExceptionHandlingDemo_0_Nova_this(example_Nova_ExceptionHandlingDemo* this, nova_standard_exception_Nova_ExceptionData* exceptionData)

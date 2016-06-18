@@ -100,14 +100,14 @@ void example_Nova_SVGTest_Nova_main(example_Nova_SVGTest* this, nova_standard_ex
 	for (; l2_Nova_i < l1_Nova_numVerts; l2_Nova_i++)
 	{
 		double l2_Nova_rad;
-		double nova_zero_check5;
+		double nova_zero_check4;
 		
-		nova_zero_check5 = (l1_Nova_numVerts * 1.0);
-		if (nova_zero_check5 == 0)
+		nova_zero_check4 = (l1_Nova_numVerts * 1.0);
+		if (nova_zero_check4 == 0)
 		{
 			THROW(8, nova_standard_exception_Nova_DivideByZeroException_3_Nova_construct(0, exceptionData));
 		}
-		l2_Nova_rad = l1_Nova_pi2 * (l2_Nova_i / nova_zero_check5) + l1_Nova_offset;
+		l2_Nova_rad = l1_Nova_pi2 * (l2_Nova_i / nova_zero_check4) + l1_Nova_offset;
 		l1_Nova_points[l2_Nova_i * 2 + 0] = l1_Nova_radius * nova_standard_math_Nova_Math_Nova_cos(0, exceptionData, l2_Nova_rad) + l1_Nova_radius + 10;
 		l1_Nova_points[l2_Nova_i * 2 + 1] = l1_Nova_radius * nova_standard_math_Nova_Math_Nova_sin(0, exceptionData, l2_Nova_rad) + l1_Nova_radius + 10;
 	}

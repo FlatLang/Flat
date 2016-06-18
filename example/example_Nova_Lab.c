@@ -38,7 +38,7 @@ example_Extension_VTable_Lab example_Extension_VTable_Lab_val =
 
 double example_Nova_Lab_Nova_getArea(example_Nova_Lab* this, nova_standard_exception_Nova_ExceptionData* exceptionData, example_Nova_Polygon* example_Nova_Lab_Nova_p);
 char example_Nova_Lab_Nova_testLambda4(example_Nova_Lab* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_Nova_String* example_Nova_Lab_Nova_x);
-nova_standard_Nova_Object* example_Nova_Lab_Nova_testLambda5(example_Nova_Lab* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_Nova_String* example_Nova_Lab_Nova_x);
+nova_standard_Nova_Object* example_Nova_Lab_Nova_testLambda5(example_Nova_Lab* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_Nova_String* example_Nova_Lab_Nova_x, int example_Nova_Lab_Nova_i);
 nova_standard_Nova_Object* example_Nova_Lab_Nova_testLambda6(example_Nova_Lab* this, nova_standard_exception_Nova_ExceptionData* exceptionData, int example_Nova_Lab_Nova_x);
 void example_Nova_LabNova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
@@ -139,9 +139,12 @@ char example_Nova_Lab_Nova_testLambda4(example_Nova_Lab* this, nova_standard_exc
 		return (char)example_Nova_Lab_Nova_x->nova_standard_Nova_String_Nova_size >= 4;
 }
 
-nova_standard_Nova_Object* example_Nova_Lab_Nova_testLambda5(example_Nova_Lab* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_Nova_String* example_Nova_Lab_Nova_x)
+nova_standard_Nova_Object* example_Nova_Lab_Nova_testLambda5(example_Nova_Lab* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_Nova_String* example_Nova_Lab_Nova_x, int example_Nova_Lab_Nova_i)
 {
-		return (nova_standard_Nova_Object*)example_Nova_Lab_Nova_x->vtable->nova_standard_Nova_String_virtual0_Nova_concat(example_Nova_Lab_Nova_x, exceptionData, nova_standard_Nova_String_2_Nova_construct(0, exceptionData, "?"));
+		nova_standard_Nova_String* nova_local_0;
+		
+		nova_local_0 = nova_standard_primitive_number_Nova_Int_2_Nova_toString(0, exceptionData, example_Nova_Lab_Nova_i);
+		return (nova_standard_Nova_Object*)nova_local_0->vtable->nova_standard_Nova_String_virtual0_Nova_concat(nova_local_0, exceptionData, nova_standard_Nova_String_0_Nova_concat(nova_standard_Nova_String_2_Nova_construct(0, exceptionData, ": "), exceptionData, example_Nova_Lab_Nova_x->vtable->nova_standard_Nova_String_virtual0_Nova_concat(example_Nova_Lab_Nova_x, exceptionData, nova_standard_Nova_String_2_Nova_construct(0, exceptionData, "?"))));
 }
 
 nova_standard_Nova_Object* example_Nova_Lab_Nova_testLambda6(example_Nova_Lab* this, nova_standard_exception_Nova_ExceptionData* exceptionData, int example_Nova_Lab_Nova_x)
@@ -202,15 +205,12 @@ int main(int argc, char** argvs)
 		novaEnv.nova_standard_primitive_number_Number.numDigits__nova_standard_primitive_number_Number = nova_standard_primitive_number_Extension_VTable_Number_val.nova_standard_primitive_number_Nova_Number_virtual0_Nova_numDigits;
 		novaEnv.nova_standard_svg_SVGComponent.generateOutput__nova_standard_io_File = nova_standard_svg_Extension_VTable_SVGComponent_val.nova_standard_svg_Nova_SVGComponent_virtual0_Nova_generateOutput;
 		novaEnv.nova_standard_thread_Thread.run = nova_standard_thread_Extension_VTable_Thread_val.nova_standard_thread_Nova_Thread_virtual0_Nova_run;
-		novaEnv.nova_standard_thread_UncaughtExceptionHandler.uncaughtException__nova_standard_thread_Thread__nova_standard_exception_Exception = nova_standard_thread_Extension_VTable_UncaughtExceptionHandler_val.nova_standard_thread_Nova_UncaughtExceptionHandler_virtual0_Nova_uncaughtException;
 		novaEnv.example_Animal.getNumLegs = example_Extension_VTable_Animal_val.example_Nova_Animal_virtual0_Nova_getNumLegs;
 		novaEnv.example_Animal.getNumEyes = example_Extension_VTable_Animal_val.example_Nova_Animal_virtual0_Nova_getNumEyes;
 		novaEnv.example_Animal.getDescription = example_Extension_VTable_Animal_val.example_Nova_Animal_virtual0_Nova_getDescription;
 		novaEnv.example_Person.sayHello = example_Extension_VTable_Person_val.example_Nova_Person_virtual0_Nova_sayHello;
 		novaEnv.example_Polygon.numberSides = example_Extension_VTable_Polygon_val.itable.example_Nova_Polygon_virtual0_Nova_numberSides;
 		novaEnv.example_Polygon.calculateArea = example_Extension_VTable_Polygon_val.itable.example_Nova_Polygon_virtual0_Nova_calculateArea;
-		novaEnv.stabilitytest_PolymorphicSuperClass.toString = stabilitytest_Extension_VTable_PolymorphicSuperClass_val.stabilitytest_Nova_PolymorphicSuperClass_virtual0_Nova_toString;
-		novaEnv.stabilitytest_StabilityTestCase.test = stabilitytest_Extension_VTable_StabilityTestCase_val.stabilitytest_Nova_StabilityTestCase_virtual0_Nova_test;
 		
 		nova_standard_Nova_ClassNova_init_static(exceptionData);
 		nova_standard_Nova_NullNova_init_static(exceptionData);
@@ -349,23 +349,6 @@ int main(int argc, char** argvs)
 		example_network_Nova_ConnectionThreadNova_init_static(exceptionData);
 		example_network_Nova_OutputThreadNova_init_static(exceptionData);
 		example_network_Nova_ServerDemoNova_init_static(exceptionData);
-		stabilitytest_Nova_ClientThreadNova_init_static(exceptionData);
-		stabilitytest_Nova_ClosureStabilityNova_init_static(exceptionData);
-		stabilitytest_Nova_ExceptionStabilityNova_init_static(exceptionData);
-		stabilitytest_Nova_FileStabilityNova_init_static(exceptionData);
-		stabilitytest_Nova_NetworkStabilityNova_init_static(exceptionData);
-		stabilitytest_Nova_PolymorphicSubClassNova_init_static(exceptionData);
-		stabilitytest_Nova_PolymorphicSuperClassNova_init_static(exceptionData);
-		stabilitytest_Nova_PolymorphismStabilityNova_init_static(exceptionData);
-		stabilitytest_Nova_StabilityExceptionHandlerNova_init_static(exceptionData);
-		stabilitytest_Nova_StabilityTestNova_init_static(exceptionData);
-		stabilitytest_Nova_StabilityTestCaseNova_init_static(exceptionData);
-		stabilitytest_Nova_StabilityTestExceptionNova_init_static(exceptionData);
-		stabilitytest_Nova_SyntaxStabilityNova_init_static(exceptionData);
-		stabilitytest_Nova_ThreadImplementationNova_init_static(exceptionData);
-		stabilitytest_Nova_ThreadStabilityNova_init_static(exceptionData);
-		stabilitytest_Nova_TimeStabilityNova_init_static(exceptionData);
-		stabilitytest_Nova_UnstableExceptionNova_init_static(exceptionData);
 		
 		args = (nova_standard_Nova_String**)NOVA_MALLOC(argc * sizeof(nova_standard_Nova_String));
 		

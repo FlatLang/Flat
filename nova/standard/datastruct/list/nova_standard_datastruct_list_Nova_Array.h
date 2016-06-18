@@ -8,9 +8,9 @@ typedef struct nova_standard_exception_Nova_ExceptionData nova_standard_exceptio
 typedef struct nova_standard_Nova_Object nova_standard_Nova_Object;
 typedef struct nova_standard_datastruct_list_Nova_Array nova_standard_datastruct_list_Nova_Array;
 
-typedef nova_standard_Nova_Object* (*nova_standard_datastruct_list_Nova_Array_closure1_Nova_mapFunc)(void*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*);
-typedef nova_standard_Nova_Object* (*nova_standard_datastruct_list_Nova_Array_closure2_Nova_mapFunc)(void*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*);
-typedef nova_standard_Nova_Object* (*nova_standard_datastruct_list_Nova_Array_closure3_Nova_mapFunc)(void*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*);
+typedef nova_standard_Nova_Object* (*nova_standard_datastruct_list_Nova_Array_closure1_Nova_mapFunc)(void*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*, int, nova_standard_datastruct_list_Nova_Array*);
+typedef nova_standard_Nova_Object* (*nova_standard_datastruct_list_Nova_Array_closure2_Nova_mapFunc)(void*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*, int, nova_standard_datastruct_list_Nova_Array*);
+typedef nova_standard_Nova_Object* (*nova_standard_datastruct_list_Nova_Array_closure3_Nova_mapFunc)(void*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*, int, nova_standard_datastruct_list_Nova_Array*);
 typedef void (*nova_standard_datastruct_list_Nova_Array_closure4_Nova_func)(void*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*, int, nova_standard_datastruct_list_Nova_Array*);
 typedef void (*nova_standard_datastruct_list_Nova_Array_closure5_Nova_func)(void*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*, int, nova_standard_datastruct_list_Nova_Array*);
 typedef void (*nova_standard_datastruct_list_Nova_Array_closure6_Nova_func)(void*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*, int, nova_standard_datastruct_list_Nova_Array*);

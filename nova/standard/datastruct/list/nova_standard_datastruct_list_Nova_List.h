@@ -11,9 +11,9 @@ typedef struct nova_standard_datastruct_list_Nova_List nova_standard_datastruct_
 typedef void (*nova_standard_datastruct_list_Nova_List_closure1_Nova_func)(void*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*, int, nova_standard_datastruct_list_Nova_List*);
 typedef void (*nova_standard_datastruct_list_Nova_List_closure2_Nova_func)(void*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*, int, nova_standard_datastruct_list_Nova_List*);
 typedef void (*nova_standard_datastruct_list_Nova_List_closure3_Nova_func)(void*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*, int, nova_standard_datastruct_list_Nova_List*);
-typedef nova_standard_Nova_Object* (*nova_standard_datastruct_list_Nova_List_closure4_Nova_mapFunc)(void*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*);
-typedef nova_standard_Nova_Object* (*nova_standard_datastruct_list_Nova_List_closure5_Nova_mapFunc)(void*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*);
-typedef nova_standard_Nova_Object* (*nova_standard_datastruct_list_Nova_List_closure6_Nova_mapFunc)(void*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*);
+typedef nova_standard_Nova_Object* (*nova_standard_datastruct_list_Nova_List_closure4_Nova_mapFunc)(void*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*, int, nova_standard_datastruct_list_Nova_List*);
+typedef nova_standard_Nova_Object* (*nova_standard_datastruct_list_Nova_List_closure5_Nova_mapFunc)(void*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*, int, nova_standard_datastruct_list_Nova_List*);
+typedef nova_standard_Nova_Object* (*nova_standard_datastruct_list_Nova_List_closure6_Nova_mapFunc)(void*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*, int, nova_standard_datastruct_list_Nova_List*);
 typedef char (*nova_standard_datastruct_list_Nova_List_closure7_Nova_anyFunc)(void*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*);
 typedef char (*nova_standard_datastruct_list_Nova_List_closure8_Nova_anyFunc)(void*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*);
 typedef char (*nova_standard_datastruct_list_Nova_List_closure9_Nova_anyFunc)(void*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*);
