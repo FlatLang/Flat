@@ -2,11 +2,15 @@ package net.fathomsoft.nova.tree.generics;
 
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.error.UnimplementedOperationException;
+import net.fathomsoft.nova.tree.ClosureDeclaration;
 import net.fathomsoft.nova.tree.GenericCompatible;
 import net.fathomsoft.nova.tree.IValue;
 import net.fathomsoft.nova.tree.List;
+import net.fathomsoft.nova.tree.MethodCall;
 import net.fathomsoft.nova.tree.Node;
+import net.fathomsoft.nova.tree.NovaMethodDeclaration;
 import net.fathomsoft.nova.tree.Value;
+import net.fathomsoft.nova.tree.variables.VariableDeclaration;
 import net.fathomsoft.nova.util.Location;
 
 /**
@@ -35,7 +39,7 @@ public class GenericTypeArgument extends IValue implements GenericCompatible
 	@Override
 	public GenericTypeArgumentList getGenericTypeArgumentList()
 	{
-		return (GenericTypeArgumentList)getParent();
+		return getParent() instanceof GenericTypeArgumentList ? (GenericTypeArgumentList)getParent() : null;
 	}
 	
 	/**
@@ -81,6 +85,13 @@ public class GenericTypeArgument extends IValue implements GenericCompatible
 	 */
 	public String getDefaultType()
 	{
+		NovaMethodDeclaration method = getParentMethod();
+		
+		if (method != null && method.containsGenericTypeParameter(getType()))
+		{
+			return method.getGenericTypeParameter(getType()).getDefaultType();
+		}
+		
 		return ((Value)getContext()).getTypeClass().getGenericTypeParameterDeclaration().getParameter(getArgumentIndex()).getDefaultType();
 	}
 	
@@ -102,7 +113,7 @@ public class GenericTypeArgument extends IValue implements GenericCompatible
 	{
 		if (((Value)getContext()).getGenericTypeParameterDeclaration().containsParameter(getType()))
 		{
-			return getDefaultType();
+			return getNovaType(this);//getDefaultType();
 		}
 		
 		return getType();
@@ -110,6 +121,30 @@ public class GenericTypeArgument extends IValue implements GenericCompatible
 	
 	public GenericCompatible getContext()
 	{
+//		VariableDeclaration ancestor = (VariableDeclaration)getAncestorOfType(VariableDeclaration.class);
+//		
+//		/*while (ancestor instanceof ClosureDeclaration)
+//		{
+//			ancestor = (VariableDeclaration)ancestor.getAncestorOfType(VariableDeclaration.class);
+//		}*/
+//		
+//		if (ancestor != null)
+//		{
+//			if (ancestor instanceof ClosureDeclaration)
+//			{
+//				return ancestor.getParentMethod();
+//			}
+//			
+//			return ancestor.getTypeClass();
+//		}
+		
+		if (getAncestorOfType(MethodCall.class) != null)
+		{
+			MethodCall call = (MethodCall)getAncestorOfType(MethodCall.class);
+			
+			return call.getReferenceNode().toValue().getTypeClass();
+		}
+		
 		return getParentClass();
 	}
 	
@@ -160,14 +195,28 @@ public class GenericTypeArgument extends IValue implements GenericCompatible
 	}
 	
 	@Override
-	public String getNovaType()
+	public String getNovaType(Value context)
 	{
 		if (isGenericType())
 		{
+//			GenericTypeArgument extractedType = getGenericTypeArgumentFromParameter(getType());
+//			
+//			if (extractedType != null)
+//			{
+//				return extractedType.generateNovaInput().toString();
+//			}
+			
+			if (context != null && context.getAncestorOfType(MethodCall.class, true) != null)
+			{
+				MethodCall call = (MethodCall)context.getAncestorOfType(MethodCall.class, true);
+				
+				return call.getIntelligentGenericTypeArgument(this).getType();
+			}
+			
 			return getDefaultType();
 		}
 		
-		return super.getNovaType();
+		return super.getNovaType(context);
 	}
 	
 	/**
