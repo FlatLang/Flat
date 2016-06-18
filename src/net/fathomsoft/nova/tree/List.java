@@ -34,6 +34,19 @@ public class List extends Node
 		return nodes;
 	}
 	
+	public int getVisibleIndex(Node node)
+	{
+		for (int i = 0; i < getNumVisibleChildren(); i++)
+		{
+			if (getVisibleChild(i) == node)
+			{
+				return i;
+			}
+		}
+		
+		return -1;
+	}
+	
 	/**
 	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location, boolean)
 	 */
