@@ -1,9 +1,11 @@
 package "nova/standard/datastruct/list"
 
-public class LinkedList<E> implements Iterable<E>
+public class LinkedList<E> implements List<E>
 {
 	ListNode<E>	start
 	ListNode<E>	current
+	
+	visible Int size
 	
 	visible LinkedListIterator<E> iterator
 	{
@@ -37,6 +39,8 @@ public class LinkedList<E> implements Iterable<E>
 		
 		current = node
 		
+		size++
+		
 		return this
 	}
 	
@@ -57,11 +61,146 @@ public class LinkedList<E> implements Iterable<E>
 			if (d == data)
 			{
 				prev.next = cur.next
+				
+				size--
 			}
 			
 			cur = cur.next
 		}
 		
 		return this
+	}
+	
+	public toArray() -> E[]
+	{
+		E[] array = new E[size]
+		
+		Int i = 0
+		
+		for (element in this)
+		{
+			array[i++] = element
+		}
+
+		return array
+	}
+	
+	public map<Out>(mapFunc(E) -> Out) -> LinkedList<Out>
+	{
+		LinkedList<Out> array = new LinkedList()
+		
+		for (element in this)
+		{
+			array.add(mapFunc(element))
+		}
+		
+		return array
+	}
+	
+	public forEach(func(E, Int, LinkedList<E>))
+	{
+		Int i = 0
+		
+		for (element in this)
+		{
+			func(element, i++, this)
+		}
+	}
+	
+	public any(anyFunc(E) -> Bool) -> Bool
+	{
+		for (element in this)
+		{
+			if (anyFunc(element))
+			{
+				return true
+			}
+		}
+		
+		return false
+	}
+	
+	public all(allFunc(E) -> Bool) -> Bool
+	{
+		for (element in this)
+		{
+			if (!allFunc(element))
+			{
+				return false
+			}
+		}
+		
+		return true
+	}
+	
+	public filter(filterFunc(E) -> Bool) -> LinkedList<E>
+	{
+		LinkedList<E> filtered = new LinkedList()
+		
+		for (element in this)
+		{
+			if (filterFunc(element))
+			{
+				filtered.add(element)
+			}
+		}
+		
+		return filtered
+	}
+	
+	public take(Int howMany) -> LinkedList<E>
+	{
+		if (howMany > size)
+		{
+			howMany = size
+		}
+		
+		LinkedList<E> list = new LinkedList()
+		
+		for (element in this)
+		{
+			if (list.size == howMany) break
+			
+			list.add(element)
+		}
+		
+		return list
+	}
+	
+	public skip(Int howMany) -> LinkedList<E>
+	{
+		Array<E> list = new Array()
+		
+		Int i = 0
+		
+		for (element in this)
+		{
+			if (i++ > howMany) list.add(element)
+		}
+		
+		return list
+	}
+	
+	public first() -> E
+	{
+		return first
+	}
+	
+	public last() -> E
+	{
+		return current
+	}
+	
+	public firstWhere(func(E) -> Bool) -> E
+	{
+		for (element in this)
+		{
+			if (func(element))
+			{
+				return element
+			}
+		}
+		
+		return null
 	}
 }
