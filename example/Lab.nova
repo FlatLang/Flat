@@ -37,19 +37,18 @@ public class Lab
 		Int[] b = [1, 2, 3, 4, 5, 6, 7]
 		
 		Array<String> list = new Array(a, 7)
-		Array<String> list2 = list.filter(x -> x.size >= 4)
-		Array<Int> list3 = new Array(b, 7)
+		Array<Int> list2 = new Array(b, 7)
 		
-		Array<String> mapped2 = list3.map(x -> x + "!")
-		
-		Console.writeLine("Mapped: " + list2.map(x -> x + "?").join(", "))
-		Console.writeLine("Mapped2: " + mapped2.join(", "))
+		Console.writeLine("Mapped: " + list.filter(x -> x.size >= 4).map(x -> x + "?").join(", "))
+		//Console.writeLine("Mapped backwards: " + list.filter(x -> x.size >= 4).map(x -> x + "?").reverse().join(", "))
+		Console.writeLine("Mapped2: " + list2.map(x -> x + "!").join(", "))
 		
 		LinkedList<String> linked = new LinkedList()
 		
 		linked.add("test").add("test2").add("test3")
 		
-		Console.writeLine("Linked list: " + linked.join(", "))
+		Console.writeLine("Linked list backwards: " + linked.reverse().join(", "))
+		Console.writeLine("Linked list forwards: " + linked.join(", "))
 		
 //		Square sq = new Square(4)
 //		
