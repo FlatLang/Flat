@@ -338,6 +338,8 @@ public class ForEachLoop extends Loop
 			value = SyntaxTree.decodeValue(this, argument + ".iterator", location, require);
 		}
 		
+		getFileDeclaration().addImport(value.getReturnedNode().getTypeClassLocation());
+		
 		addChild(value, this);
 		
 		GenericTypeArgument arg = ((Variable)value.getReturnedNode()).getIntelligentGenericTypeArgument(0);
