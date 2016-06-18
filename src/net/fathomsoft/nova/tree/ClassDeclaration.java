@@ -1,6 +1,7 @@
 package net.fathomsoft.nova.tree;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
 import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.TestContext;
@@ -948,7 +949,7 @@ public class ClassDeclaration extends InstanceDeclaration
 		
 		for (MethodDeclaration method : methods)
 		{
-			if (method.areCompatibleParameterTypes(contexts, false, parameterTypes))// && SyntaxUtils.isTypeCompatible(getProgram(), method.getType(), returnType))
+			if (method.areCompatibleParameterTypes(contexts, false, filter, parameterTypes))// && SyntaxUtils.isTypeCompatible(getProgram(), method.getType(), returnType))
 			{
 				return method;
 			}
@@ -984,19 +985,9 @@ public class ClassDeclaration extends InstanceDeclaration
 	 */
 	public MethodDeclaration[] getMethods(String methodName, int numParams, SearchFilter filter)
 	{
-		ArrayList<MethodDeclaration> output = new ArrayList<MethodDeclaration>();
-		
-		MethodDeclaration methods[] = getMethods(methodName, filter);
-		
-		for (MethodDeclaration method : methods)
-		{
-			if (method.getParameterList().getNumVisibleChildren() == numParams)
-			{
-				output.add(method);
-			}
-		}
-		
-		return output.toArray(new MethodDeclaration[0]);
+		return Arrays.stream(getMethods(methodName, filter))
+				.filter(method -> method.getParameterList().getNumVisibleChildren() == numParams ||
+				(filter.allowMoreParameters && numParams > method.getParameterList().getNumVisibleChildren())).toArray(MethodDeclaration[]::new);
 	}
 	
 	/**
