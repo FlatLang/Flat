@@ -61,7 +61,7 @@ public class Variable extends Identifier
 	@Override
 	public GenericTypeArgumentList getGenericTypeArgumentList()
 	{
-		return getDeclaration().getGenericTypeArgumentList();
+		return getDeclaration() != null ? getDeclaration().getGenericTypeArgumentList() : null;
 	}
 	
 	@Override
@@ -377,7 +377,7 @@ public class Variable extends Identifier
 	
 	public GenericTypeArgument getGenericTypeArgumentFromParameter(String type)
 	{
-		int index = getDeclaration().getGenericTypeParameterDeclaration().getParameterIndex(type);
+		int index = /*getDeclaration()*/getReferenceNode().toValue().getTypeClass().getGenericTypeParameterDeclaration().getParameterIndex(type);
 		
 		GenericTypeArgument arg = null;
 		
@@ -444,7 +444,7 @@ public class Variable extends Identifier
 	}
 	
 	@Override
-	public String getNovaType()
+	public String getNovaType(Value context)
 	{
 		if (isGenericType())
 		{
@@ -456,7 +456,7 @@ public class Variable extends Identifier
 			}
 		}
 		
-		return super.getNovaType();
+		return super.getNovaType(context);
 	}
 	
 	/**
