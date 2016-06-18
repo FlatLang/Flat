@@ -262,7 +262,10 @@ public class TreeGenerator implements Runnable
 					{
 						if (!(node instanceof PropertyMethod) || !((PropertyMethod)node).isDisabled())
 						{
-							SyntaxMessage.error("Scope expected after this statement", node, false);
+							if (node.getScope() == null || node.getScope().getNumVisibleChildren() <= 0)
+							{
+								SyntaxMessage.error("Scope expected after this statement", node, false);
+							}
 						}
 					}
 					
