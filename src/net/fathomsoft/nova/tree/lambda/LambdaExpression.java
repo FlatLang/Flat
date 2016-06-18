@@ -65,12 +65,12 @@ public class LambdaExpression extends Value
 	{
 		String[] variables = null;
 		int endingIndex = 0;
-		
+
 		if (statement.startsWith("("))
 		{
-			endingIndex = StringUtils.findEndingMatch(statement, 0, '(', ')');
+			endingIndex = StringUtils.findEndingMatch(statement, 0, '(', ')') + 1;
 			
-			variables = StringUtils.splitCommas(statement.substring(1, endingIndex));
+			variables = StringUtils.splitCommas(statement.substring(1, endingIndex - 1));
 		}
 		else
 		{
@@ -93,6 +93,7 @@ public class LambdaExpression extends Value
 				
 				final String[] finalVars = variables;
 				final int index = call.getArgumentList().getNumVisibleChildren();
+				Nova.debuggingBreakpoint(statement.equals("(x, i) -> x + i + \"?\""));
 				
 				BodyMethodDeclaration[] validMethods = Arrays.stream(methods)
 						.filter(x -> {
