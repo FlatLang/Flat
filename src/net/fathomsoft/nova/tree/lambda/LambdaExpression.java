@@ -1,7 +1,18 @@
 package net.fathomsoft.nova.tree.lambda;
 
+import java.util.Arrays;
+
+import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.TestContext;
+import net.fathomsoft.nova.ValidationResult;
+import net.fathomsoft.nova.tree.BodyMethodDeclaration;
+import net.fathomsoft.nova.tree.Closure;
+import net.fathomsoft.nova.tree.ClosureDeclaration;
+import net.fathomsoft.nova.tree.Identifier;
+import net.fathomsoft.nova.tree.MethodCall;
+import net.fathomsoft.nova.tree.MethodDeclaration;
 import net.fathomsoft.nova.tree.Node;
+import net.fathomsoft.nova.tree.SyntaxTree;
 import net.fathomsoft.nova.tree.Value;
 import net.fathomsoft.nova.util.Location;
 import net.fathomsoft.nova.util.StringUtils;
@@ -16,9 +27,11 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  */
 public class LambdaExpression extends Value
 {
-	private int id;
+	public String[] variables; 
 	
 	public static final String OPERATOR = "->";
+	
+	private static int id = 1;
 	
 	/**
 	 * @see net.fathomsoft.nova.tree.Node#Node(Node, Location)
@@ -26,11 +39,6 @@ public class LambdaExpression extends Value
 	public LambdaExpression(Node temporaryParent, Location locationIn)
 	{
 		super(temporaryParent, locationIn);
-	}
-	
-	public void register()
-	{
-		id = getFileDeclaration().registerLambda(this);
 	}
 	
 	/**
@@ -42,6 +50,7 @@ public class LambdaExpression extends Value
 	 * 	<li>x -> x + 1</li>
 	 * 	<li>(x, i) -> Console.writeLine(x * i)</li>
 	 * 	<li>asdf -> asdf.doSomething()</li>
+	 * 	<li>{ Console.writeLine("In parameterless lambda") }</li>
 	 * </ul>
 	 * 
 	 * @param parent The parent node of the statement.
@@ -52,7 +61,7 @@ public class LambdaExpression extends Value
 	 * @return The generated node, if it was possible to translated it
 	 * 		into a {@link LambdaExpression}.
 	 */
-	public static LambdaExpression decodeStatement(Node parent, String statement, Location location, boolean require)
+	public static Value decodeStatement(Node parent, String statement, Location location, boolean require)
 	{
 		String[] variables = null;
 		int endingIndex = 0;
@@ -78,14 +87,91 @@ public class LambdaExpression extends Value
 			{
 				operation = operation.substring(OPERATOR.length()).trim();
 				
-				LambdaExpression lambda = new LambdaExpression(parent, location);
-				lambda.register();
+				MethodCall call = (MethodCall)parent.getAncestorOfType(MethodCall.class);
 				
-				return lambda;
+				MethodDeclaration[] methods = ((Value)call.getReferenceNode()).getTypeClass().getMethods(call.getName());
+				
+				final String[] finalVars = variables;
+				final int index = call.getArgumentList().getNumVisibleChildren();
+				
+				BodyMethodDeclaration[] validMethods = Arrays.stream(methods)
+						.filter(x -> {
+							
+							if (x instanceof BodyMethodDeclaration &&
+									x.getParameterList().getNumVisibleChildren() > index &&
+									x.getParameter(index) instanceof ClosureDeclaration)
+							{
+								ClosureDeclaration closure = (ClosureDeclaration)x.getParameter(index);
+								
+								if (closure.getParameterList().getNumVisibleChildren() >= finalVars.length)
+								{
+									return true;
+								}
+							}
+							
+							return false;
+						})
+						.toArray(BodyMethodDeclaration[]::new);
+				
+				for (BodyMethodDeclaration method : validMethods)
+				{
+					call.setDeclaration(method);
+					
+					
+				}
+				
+				if (validMethods.length > 0)
+				{
+					final int[] i = new int[] { 0 };
+					
+					ClosureDeclaration closure = (ClosureDeclaration)((BodyMethodDeclaration)call.getDeclaration()).getParameter(index);
+					
+					String parameters = String.join(", ", Arrays.stream(variables).map(x -> {
+						return closure.getParameterList().getParameter(i[0]++).generateNovaType(call) + " " + x;
+					}).toArray(String[]::new));
+					
+					String methodDeclaration = "static testLambda" + id++ + "(" + parameters + ")";
+					
+					if (closure.getType() != null)
+					{
+						methodDeclaration += " -> " + closure.generateNovaType(call);
+					}
+					
+					BodyMethodDeclaration method = BodyMethodDeclaration.decodeStatement(parent.getParentClass(true), methodDeclaration, location.asNew(), require); 
+					method.getParentClass().addChild(method);
+					
+					if (method.getType() != null)
+					{
+						operation = "return " + operation;
+					}
+					
+					Node node = SyntaxTree.decodeScopeContents(method, operation, location.asNew());
+					method.addChild(node);
+					
+					Closure methodReference = Closure.decodeStatement(parent, method.generateNovaClosureReference(method.getParentClass()), location.asNew(), require);
+					methodReference.onAfterDecoded();
+					
+//					return closure;
+					
+					return methodReference;
+				}
 			}
 		}
 		
 		return null;
+	}
+	
+	@Override
+	public ValidationResult validate(int phase)
+	{
+		ValidationResult result = super.validate(phase);
+		
+		if (result.skipValidation())
+		{
+			return result;
+		}
+		
+		return result;
 	}
 	
 	/**
