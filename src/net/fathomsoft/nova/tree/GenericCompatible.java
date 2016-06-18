@@ -103,6 +103,7 @@ public interface GenericCompatible
 	
 	public static boolean throwMissingGenericTypeError(Node value, boolean require)
 	{
+		Nova.debuggingBreakpoint(require);
 		return SyntaxMessage.queryError("Missing generic type declaration", value, require);
 	}
 	
