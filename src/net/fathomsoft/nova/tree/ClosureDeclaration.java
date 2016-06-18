@@ -60,6 +60,24 @@ public class ClosureDeclaration extends Parameter implements CallableMethod
 		return false;
 	}
 	
+	@Override
+	public String getNovaType(Value context)
+	{
+		if (isGenericType())
+		{
+			if (getParentMethod() != null && getParentMethod().containsGenericTypeParameter(getType()))
+			{
+				return getParentMethod().getGenericTypeParameter(getType()).generateNovaType().toString();
+			}
+			if (getParentClass().containsGenericTypeParameter(getType()))
+			{
+				return getParentClass().getGenericTypeParameter(getType()).generateNovaType().toString();
+			}
+		}
+		
+		return super.getNovaType(context);
+	}
+	
 	/**
 	 * @see net.fathomsoft.nova.tree.Node#getNumDefaultChildren()
 	 */
