@@ -6,6 +6,7 @@ import net.fathomsoft.nova.error.SyntaxErrorException;
 import net.fathomsoft.nova.tree.IValue;
 import net.fathomsoft.nova.tree.Node;
 import net.fathomsoft.nova.tree.SyntaxTree;
+import net.fathomsoft.nova.tree.Value;
 import net.fathomsoft.nova.util.Location;
 import net.fathomsoft.nova.util.SyntaxUtils;
 
@@ -90,14 +91,14 @@ public class GenericTypeParameter extends IValue
 	}
 	
 	@Override
-	public String getNovaType()
+	public String getNovaType(Value context)
 	{
 		if (isGenericType())
 		{
 			return getDefaultType();
 		}
 		
-		return super.getNovaType();
+		return super.getNovaType(context);
 	}
 	
 	@Override
