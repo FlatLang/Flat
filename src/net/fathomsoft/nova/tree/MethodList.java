@@ -227,7 +227,7 @@ public class MethodList extends TypeList<MethodDeclaration>
 	 */
 	public static class SearchFilter
 	{
-		public boolean checkAncestor, checkStatic, staticValue, checkConstructors, checkProperties;
+		public boolean checkAncestor, checkStatic, staticValue, checkConstructors, checkProperties, allowMoreParameters;
 		
 		public String  className;
 		
@@ -235,10 +235,11 @@ public class MethodList extends TypeList<MethodDeclaration>
 		
 		public SearchFilter()
 		{
-			checkAncestor     = true;
-			checkStatic       = false;
-			checkConstructors = true;
-			checkProperties   = false;
+			checkAncestor       = true;
+			checkStatic         = false;
+			checkConstructors   = true;
+			checkProperties     = false;
+			allowMoreParameters = false;
 		}
 		
 		public static final SearchFilter getDefault()
