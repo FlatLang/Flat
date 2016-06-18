@@ -881,6 +881,15 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 		}
 	}
 	
+	public String generateNovaClosureReference(Identifier context)
+	{
+		String reference = "";
+		
+		reference += /*context.getName() + "." +*/ getName();
+		
+		return reference;
+	}
+	
 	public String generateNovaSignature()
 	{
 		String signature = "";
