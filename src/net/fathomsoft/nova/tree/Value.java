@@ -417,6 +417,7 @@ public abstract class Value extends Node implements AbstractValue
 		return SyntaxUtils.getTypeClassLocation(this, type);
 	}
 	
+	@Override
 	public FileDeclaration getReferenceFile()
 	{
 		if (this instanceof Accessible)
@@ -796,7 +797,12 @@ public abstract class Value extends Node implements AbstractValue
 	 */
 	public StringBuilder generateNovaType()
 	{
-		return generateNovaType(new StringBuilder());
+		return generateNovaType((Value)null);
+	}
+	
+	public StringBuilder generateNovaType(Value context)
+	{
+		return generateNovaType(new StringBuilder(), context);
 	}
 	
 	/**
@@ -807,7 +813,12 @@ public abstract class Value extends Node implements AbstractValue
 	 */
 	public StringBuilder generateNovaType(StringBuilder builder)
 	{
-		return generateNovaType(builder, true);
+		return generateNovaType(builder, null);
+	}
+	
+	public StringBuilder generateNovaType(StringBuilder builder, Value context)
+	{
+		return generateNovaType(builder, context, true);
 	}
 	
 	/**
@@ -817,9 +828,9 @@ public abstract class Value extends Node implements AbstractValue
 	 * @param checkArray Whether or not to check if the type is an array.
 	 * @return The Nova syntax for the type of the Value.
 	 */
-	public StringBuilder generateNovaType(StringBuilder builder, boolean checkArray)
+	public StringBuilder generateNovaType(StringBuilder builder, Value context, boolean checkArray)
 	{
-		builder.append(getNovaType());
+		builder.append(getNovaType(context));
 		
 		if (checkArray && isArray())
 		{
@@ -836,6 +847,11 @@ public abstract class Value extends Node implements AbstractValue
 	}
 	
 	public String getNovaType()
+	{
+		return getNovaType(null);
+	}
+	
+	public String getNovaType(Value context)
 	{
 		return getType();
 	}
@@ -945,6 +961,18 @@ public abstract class Value extends Node implements AbstractValue
 		if (getParentMethod() != null)
 		{
 			GenericTypeParameter param = getParentMethod().getGenericTypeParameter(getType());
+			
+			if (param != null)
+			{
+				return param;
+			}
+		}
+		if (getAncestorOfType(MethodCall.class) != null)
+		{
+			MethodCall call = (MethodCall)getAncestorOfType(MethodCall.class);
+			
+			// TODO: Need to check Method generic type parameters first.
+			GenericTypeParameter param = call.getReferenceNode().toValue().getTypeClass().getGenericTypeParameter(getType());
 			
 			if (param != null)
 			{
