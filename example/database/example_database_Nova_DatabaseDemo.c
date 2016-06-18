@@ -90,7 +90,7 @@ void example_database_Nova_DatabaseDemo_Nova_main(example_database_Nova_Database
 		{
 			nova_standard_io_Nova_Console_0_Nova_write(0, exceptionData, nova_standard_Nova_String_0_Nova_concat(nova_standard_Nova_String_2_Nova_construct(0, exceptionData, ", "), exceptionData, l1_Nova_result->nova_standard_database_Nova_ResultSet_Nova_rows[l2_Nova_row][l4_Nova_col]));
 		}
-		nova_standard_io_Nova_Console_0_Nova_writeLine(0, exceptionData, nova_standard_Nova_String_2_Nova_construct(0, exceptionData, ""));
+		nova_standard_io_Nova_Console_1_Nova_writeLine(0, exceptionData, nova_standard_Nova_String_2_Nova_construct(0, exceptionData, ""));
 	}
 	l1_Nova_id = nova_standard_primitive_number_Nova_Int_Nova_parseInt(0, exceptionData, l1_Nova_result->nova_standard_database_Nova_ResultSet_Nova_rows[l1_Nova_result->nova_standard_database_Nova_ResultSet_Nova_numRows - 1][0]) + 1;
 	nova_local_1 = nova_standard_primitive_number_Nova_Int_2_Nova_toString(0, exceptionData, l1_Nova_id);
@@ -104,26 +104,26 @@ nova_standard_database_Nova_DBConnector* example_database_Nova_DatabaseDemo_Nova
 	nova_standard_database_Nova_DBConnector* l1_Nova_connection;
 	nova_standard_Nova_String* l1_Nova_error;
 	
-	nova_standard_io_Nova_Console_0_Nova_writeLine(0, exceptionData, nova_standard_Nova_String_2_Nova_construct(0, exceptionData, "Connecting..."));
+	nova_standard_io_Nova_Console_1_Nova_writeLine(0, exceptionData, nova_standard_Nova_String_2_Nova_construct(0, exceptionData, "Connecting..."));
 	l1_Nova_connection = nova_standard_database_Nova_DBConnector_0_Nova_construct(0, exceptionData);
 	nova_standard_database_Nova_DBConnector_1_Nova_connect(l1_Nova_connection, exceptionData, nova_standard_Nova_String_2_Nova_construct(0, exceptionData, "localhost"), nova_standard_Nova_String_2_Nova_construct(0, exceptionData, "root"), nova_standard_Nova_String_2_Nova_construct(0, exceptionData, "server"), nova_standard_Nova_String_2_Nova_construct(0, exceptionData, "test"));
 	l1_Nova_error = l1_Nova_connection->nova_standard_database_Nova_DBConnector_Nova_error;
 	if (l1_Nova_error->nova_standard_Nova_String_Nova_size > 0)
 	{
-		nova_standard_io_Nova_Console_0_Nova_writeLine(0, exceptionData, nova_standard_Nova_String_0_Nova_concat(nova_standard_Nova_String_2_Nova_construct(0, exceptionData, "Error: "), exceptionData, l1_Nova_error));
+		nova_standard_io_Nova_Console_1_Nova_writeLine(0, exceptionData, nova_standard_Nova_String_0_Nova_concat(nova_standard_Nova_String_2_Nova_construct(0, exceptionData, "Error: "), exceptionData, l1_Nova_error));
 	}
 	else
 	{
-		nova_standard_io_Nova_Console_0_Nova_writeLine(0, exceptionData, nova_standard_Nova_String_2_Nova_construct(0, exceptionData, "Connected."));
+		nova_standard_io_Nova_Console_1_Nova_writeLine(0, exceptionData, nova_standard_Nova_String_2_Nova_construct(0, exceptionData, "Connected."));
 	}
 	return l1_Nova_connection;
 }
 
 void example_database_Nova_DatabaseDemo_Nova_close(example_database_Nova_DatabaseDemo* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_database_Nova_DBConnector* example_database_Nova_DatabaseDemo_Nova_connection)
 {
-	nova_standard_io_Nova_Console_0_Nova_writeLine(0, exceptionData, nova_standard_Nova_String_2_Nova_construct(0, exceptionData, "Closing..."));
+	nova_standard_io_Nova_Console_1_Nova_writeLine(0, exceptionData, nova_standard_Nova_String_2_Nova_construct(0, exceptionData, "Closing..."));
 	nova_standard_database_Nova_DBConnector_Nova_close(example_database_Nova_DatabaseDemo_Nova_connection, exceptionData);
-	nova_standard_io_Nova_Console_0_Nova_writeLine(0, exceptionData, nova_standard_Nova_String_2_Nova_construct(0, exceptionData, "Closed"));
+	nova_standard_io_Nova_Console_1_Nova_writeLine(0, exceptionData, nova_standard_Nova_String_2_Nova_construct(0, exceptionData, "Closed"));
 }
 
 void example_database_Nova_DatabaseDemo_0_Nova_this(example_database_Nova_DatabaseDemo* this, nova_standard_exception_Nova_ExceptionData* exceptionData)

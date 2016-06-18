@@ -75,18 +75,18 @@ void example_network_Nova_ServerDemo_Nova_main(example_network_Nova_ServerDemo* 
 	l1_Nova_port = 25560;
 	if (!nova_standard_network_Nova_ServerSocket_Nova_start(l1_Nova_socket, exceptionData, l1_Nova_port))
 	{
-		nova_standard_io_Nova_Console_0_Nova_writeLine(0, exceptionData, nova_standard_Nova_String_2_Nova_construct(0, exceptionData, "Failed to start server"));
+		nova_standard_io_Nova_Console_1_Nova_writeLine(0, exceptionData, nova_standard_Nova_String_2_Nova_construct(0, exceptionData, "Failed to start server"));
 	}
 	else
 	{
 		nova_standard_network_Nova_ConnectionSocket* l2_Nova_request;
 		
-		nova_standard_io_Nova_Console_0_Nova_writeLine(0, exceptionData, nova_standard_Nova_String_0_Nova_concat(nova_standard_Nova_String_2_Nova_construct(0, exceptionData, "Started server on port "), exceptionData, nova_standard_primitive_number_Nova_Int_2_Nova_toString(0, exceptionData, l1_Nova_port)));
-		nova_standard_io_Nova_Console_0_Nova_writeLine(0, exceptionData, nova_standard_Nova_String_2_Nova_construct(0, exceptionData, "Waiting on client..."));
+		nova_standard_io_Nova_Console_1_Nova_writeLine(0, exceptionData, nova_standard_Nova_String_0_Nova_concat(nova_standard_Nova_String_2_Nova_construct(0, exceptionData, "Started server on port "), exceptionData, nova_standard_primitive_number_Nova_Int_2_Nova_toString(0, exceptionData, l1_Nova_port)));
+		nova_standard_io_Nova_Console_1_Nova_writeLine(0, exceptionData, nova_standard_Nova_String_2_Nova_construct(0, exceptionData, "Waiting on client..."));
 		l2_Nova_request = nova_standard_network_Nova_ServerSocket_Nova_acceptClient(l1_Nova_socket, exceptionData);
 		if (l2_Nova_request == (nova_standard_network_Nova_ConnectionSocket*)nova_null)
 		{
-			nova_standard_io_Nova_Console_0_Nova_writeLine(0, exceptionData, nova_standard_Nova_String_2_Nova_construct(0, exceptionData, "Failed to accept client"));
+			nova_standard_io_Nova_Console_1_Nova_writeLine(0, exceptionData, nova_standard_Nova_String_2_Nova_construct(0, exceptionData, "Failed to accept client"));
 		}
 		while (l2_Nova_request != (nova_standard_network_Nova_ConnectionSocket*)nova_null)
 		{
@@ -98,10 +98,10 @@ void example_network_Nova_ServerDemo_Nova_main(example_network_Nova_ServerDemo* 
 			nova_standard_thread_Nova_Thread_Nova_start((nova_standard_thread_Nova_Thread*)(l4_Nova_thread), exceptionData);
 			l4_Nova_othread = example_network_Nova_OutputThread_Nova_construct(0, exceptionData, l1_Nova_socket, l2_Nova_request);
 			nova_standard_thread_Nova_Thread_Nova_start((nova_standard_thread_Nova_Thread*)(l4_Nova_othread), exceptionData);
-			nova_standard_io_Nova_Console_0_Nova_writeLine(0, exceptionData, nova_standard_Nova_String_2_Nova_construct(0, exceptionData, "Waiting on anoter"));
+			nova_standard_io_Nova_Console_1_Nova_writeLine(0, exceptionData, nova_standard_Nova_String_2_Nova_construct(0, exceptionData, "Waiting on anoter"));
 			l2_Nova_request = nova_standard_network_Nova_ServerSocket_Nova_acceptClient(l1_Nova_socket, exceptionData);
 		}
-		nova_standard_io_Nova_Console_0_Nova_writeLine(0, exceptionData, nova_standard_Nova_String_2_Nova_construct(0, exceptionData, "Exiting"));
+		nova_standard_io_Nova_Console_1_Nova_writeLine(0, exceptionData, nova_standard_Nova_String_2_Nova_construct(0, exceptionData, "Exiting"));
 	}
 	nova_standard_io_Nova_Console_Nova_waitForEnter(0, exceptionData);
 }

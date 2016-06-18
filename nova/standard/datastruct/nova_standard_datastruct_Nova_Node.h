@@ -29,6 +29,7 @@ typedef struct nova_standard_datastruct_Nova_Node nova_standard_datastruct_Nova_
 #include <nova/standard/nova_standard_Nova_System.h>
 #include <nova/standard/math/nova_standard_math_Nova_Math.h>
 #include <nova/standard/datastruct/list/nova_standard_datastruct_list_Nova_Queue.h>
+#include <nova/standard/datastruct/list/nova_standard_datastruct_list_Nova_ArrayIterator.h>
 
 
 typedef struct nova_standard_datastruct_Extension_VTable_Node nova_standard_datastruct_Extension_VTable_Node;

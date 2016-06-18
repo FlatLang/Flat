@@ -21,7 +21,10 @@ stabilitytest_Extension_VTable_ThreadStability stabilitytest_Extension_VTable_Th
 		0,
 		0,
 		0,
+		0,
 		(char(*)(nova_standard_operators_Nova_Equals*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*))nova_standard_Nova_Object_0_Nova_equals,
+		0,
+		0,
 		0,
 	},
 	nova_standard_Nova_Object_0_Nova_getHashCodeLong,
@@ -64,8 +67,6 @@ void stabilitytest_Nova_ThreadStability_Nova_destroy(stabilitytest_Nova_ThreadSt
 	}
 	
 	
-	{
-	}
 	NOVA_FREE(*this);
 }
 
@@ -78,7 +79,7 @@ void stabilitytest_Nova_ThreadStability_0_Nova_test(stabilitytest_Nova_ThreadSta
 {
 	stabilitytest_Nova_ThreadImplementation** l1_Nova_threads;
 	
-	nova_standard_io_Nova_Console_0_Nova_writeLine(0, exceptionData, nova_standard_Nova_String_2_Nova_construct(0, exceptionData, "Checking Thread.nova with 20 Threads... "));
+	nova_standard_io_Nova_Console_1_Nova_writeLine(0, exceptionData, nova_standard_Nova_String_2_Nova_construct(0, exceptionData, "Checking Thread.nova with 20 Threads... "));
 	l1_Nova_threads = (stabilitytest_Nova_ThreadImplementation**)NOVA_MALLOC(sizeof(stabilitytest_Nova_ThreadImplementation) * 20);
 	stabilitytest_Nova_ThreadStability_Nova_createThreads(this, exceptionData, l1_Nova_threads, 20);
 	stabilitytest_Nova_ThreadStability_Nova_checkMemoryAccess(this, exceptionData);
@@ -112,7 +113,7 @@ void stabilitytest_Nova_ThreadStability_Nova_checkMemoryAccess(stabilitytest_Nov
 		
 		l2_Nova_s = nova_standard_primitive_number_Nova_Int_2_Nova_toString(0, exceptionData, l2_Nova_i);
 	}
-	nova_standard_io_Nova_Console_0_Nova_writeLine(0, exceptionData, nova_standard_Nova_String_2_Nova_construct(0, exceptionData, "OK"));
+	nova_standard_io_Nova_Console_1_Nova_writeLine(0, exceptionData, nova_standard_Nova_String_2_Nova_construct(0, exceptionData, "OK"));
 }
 
 void stabilitytest_Nova_ThreadStability_Nova_joinThreads(stabilitytest_Nova_ThreadStability* this, nova_standard_exception_Nova_ExceptionData* exceptionData, stabilitytest_Nova_ThreadImplementation** stabilitytest_Nova_ThreadStability_Nova_threads, int stabilitytest_Nova_ThreadStability_Nova_amount)

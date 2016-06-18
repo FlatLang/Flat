@@ -76,9 +76,9 @@ void example_Nova_ExceptionHandlingDemo_Nova_main(example_Nova_ExceptionHandling
 			int l1_Nova_result;
 			
 			l1_Nova_result = example_Nova_ExceptionHandlingDemo_Nova_divide((example_Nova_ExceptionHandlingDemo*)nova_null, exceptionData, 100, 5);
-			nova_standard_io_Nova_Console_0_Nova_writeLine(0, exceptionData, nova_standard_Nova_String_0_Nova_concat(nova_standard_Nova_String_2_Nova_construct(0, exceptionData, "After working example: "), exceptionData, nova_standard_primitive_number_Nova_Int_2_Nova_toString(0, exceptionData, l1_Nova_result)));
+			nova_standard_io_Nova_Console_1_Nova_writeLine(0, exceptionData, nova_standard_Nova_String_0_Nova_concat(nova_standard_Nova_String_2_Nova_construct(0, exceptionData, "After working example: "), exceptionData, nova_standard_primitive_number_Nova_Int_2_Nova_toString(0, exceptionData, l1_Nova_result)));
 			l1_Nova_result = example_Nova_ExceptionHandlingDemo_Nova_divide((example_Nova_ExceptionHandlingDemo*)nova_null, exceptionData, 100, 3);
-			nova_standard_io_Nova_Console_0_Nova_writeLine(0, exceptionData, nova_standard_Nova_String_2_Nova_construct(0, exceptionData, "this output will not show."));
+			nova_standard_io_Nova_Console_1_Nova_writeLine(0, exceptionData, nova_standard_Nova_String_2_Nova_construct(0, exceptionData, "this output will not show."));
 		}
 	}
 	CATCH (7)
@@ -86,31 +86,31 @@ void example_Nova_ExceptionHandlingDemo_Nova_main(example_Nova_ExceptionHandling
 		example_Nova_NonWholeDivisionException* l2_Nova_e;
 		
 		l2_Nova_e = (example_Nova_NonWholeDivisionException*)(exceptionData->nova_standard_exception_Nova_ExceptionData_Nova_thrownException);
-		nova_standard_io_Nova_Console_0_Nova_writeLine(0, exceptionData, nova_standard_Nova_String_2_Nova_construct(0, exceptionData, "You used the divide() method incorrectly."));
+		nova_standard_io_Nova_Console_1_Nova_writeLine(0, exceptionData, nova_standard_Nova_String_2_Nova_construct(0, exceptionData, "You used the divide() method incorrectly."));
 	}
 	FINALLY
 	{
-		nova_standard_io_Nova_Console_0_Nova_writeLine(0, exceptionData, nova_standard_Nova_String_2_Nova_construct(0, exceptionData, "Exiting the try block."));
+		nova_standard_io_Nova_Console_1_Nova_writeLine(0, exceptionData, nova_standard_Nova_String_2_Nova_construct(0, exceptionData, "Exiting the try block."));
 	}
 	END_TRY;
-	nova_standard_io_Nova_Console_0_Nova_writeLine(0, exceptionData, nova_standard_Nova_String_2_Nova_construct(0, exceptionData, "After the try block."));
+	nova_standard_io_Nova_Console_1_Nova_writeLine(0, exceptionData, nova_standard_Nova_String_2_Nova_construct(0, exceptionData, "After the try block."));
 	nova_standard_io_Nova_Console_Nova_waitForEnter(0, exceptionData);
 }
 
 int example_Nova_ExceptionHandlingDemo_Nova_divide(example_Nova_ExceptionHandlingDemo* this, nova_standard_exception_Nova_ExceptionData* exceptionData, int example_Nova_ExceptionHandlingDemo_Nova_num, int example_Nova_ExceptionHandlingDemo_Nova_den)
 {
-	int nova_zero_check3;
+	int nova_zero_check4;
 	
 	if (example_Nova_ExceptionHandlingDemo_Nova_num % example_Nova_ExceptionHandlingDemo_Nova_den != 0)
 	{
 		THROW(7, example_Nova_NonWholeDivisionException_3_Nova_construct(0, exceptionData));
 	}
-	nova_zero_check3 = example_Nova_ExceptionHandlingDemo_Nova_den;
-	if (nova_zero_check3 == 0)
+	nova_zero_check4 = example_Nova_ExceptionHandlingDemo_Nova_den;
+	if (nova_zero_check4 == 0)
 	{
 		THROW(8, nova_standard_exception_Nova_DivideByZeroException_3_Nova_construct(0, exceptionData));
 	}
-	return example_Nova_ExceptionHandlingDemo_Nova_num / nova_zero_check3;
+	return example_Nova_ExceptionHandlingDemo_Nova_num / nova_zero_check4;
 }
 
 void example_Nova_ExceptionHandlingDemo_0_Nova_this(example_Nova_ExceptionHandlingDemo* this, nova_standard_exception_Nova_ExceptionData* exceptionData)

@@ -21,7 +21,10 @@ stabilitytest_Extension_VTable_ClientThread stabilitytest_Extension_VTable_Clien
 		0,
 		0,
 		0,
+		0,
 		(char(*)(nova_standard_operators_Nova_Equals*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*))nova_standard_Nova_Object_0_Nova_equals,
+		0,
+		0,
 		0,
 	},
 	nova_standard_Nova_Object_0_Nova_getHashCodeLong,
@@ -71,8 +74,6 @@ void stabilitytest_Nova_ClientThread_Nova_destroy(stabilitytest_Nova_ClientThrea
 	stabilitytest_Nova_StabilityTest_Nova_destroy(&(*this)->prv->stabilitytest_Nova_ClientThread_Nova_program, exceptionData);
 	NOVA_FREE((*this)->prv);
 	
-	{
-	}
 	NOVA_FREE(*this);
 }
 
@@ -97,8 +98,8 @@ void stabilitytest_Nova_ClientThread_0_Nova_run(stabilitytest_Nova_ClientThread*
 	{
 		stabilitytest_Nova_StabilityTest_1_Nova_fail(this->prv->stabilitytest_Nova_ClientThread_Nova_program, exceptionData, nova_standard_Nova_String_2_Nova_construct(0, exceptionData, "Failed to connect to localhost server"));
 	}
-	nova_standard_io_Nova_Console_0_Nova_writeLine(0, exceptionData, nova_standard_Nova_String_2_Nova_construct(0, exceptionData, "OK"));
-	nova_standard_io_Nova_Console_0_Nova_writeLine(0, exceptionData, nova_standard_Nova_String_2_Nova_construct(0, exceptionData, "Waiting for String from ServerSocket... "));
+	nova_standard_io_Nova_Console_1_Nova_writeLine(0, exceptionData, nova_standard_Nova_String_2_Nova_construct(0, exceptionData, "OK"));
+	nova_standard_io_Nova_Console_1_Nova_writeLine(0, exceptionData, nova_standard_Nova_String_2_Nova_construct(0, exceptionData, "Waiting for String from ServerSocket... "));
 	l1_Nova_s = l1_Nova_client->nova_standard_network_Nova_ClientSocket_Nova_connection->nova_standard_network_Nova_ConnectionSocket_Nova_in->vtable->itable.nova_standard_io_Nova_InputStream_virtual0_Nova_readString(l1_Nova_client->nova_standard_network_Nova_ClientSocket_Nova_connection->nova_standard_network_Nova_ConnectionSocket_Nova_in, exceptionData);
 	if (l1_Nova_s->nova_standard_Nova_String_Nova_size != stabilitytest_Nova_NetworkStability_Nova_received->nova_standard_Nova_String_Nova_size || !l1_Nova_s->vtable->nova_standard_Nova_String_virtual_Nova_equals(l1_Nova_s, exceptionData, stabilitytest_Nova_NetworkStability_Nova_received))
 	{
@@ -106,13 +107,13 @@ void stabilitytest_Nova_ClientThread_0_Nova_run(stabilitytest_Nova_ClientThread*
 	}
 	nova_standard_io_Nova_Console_0_Nova_write(0, exceptionData, nova_standard_Nova_String_2_Nova_construct(0, exceptionData, "Attempting to send String to ServerSocket... "));
 	l1_Nova_client->nova_standard_network_Nova_ClientSocket_Nova_connection->nova_standard_network_Nova_ConnectionSocket_Nova_out->vtable->nova_standard_io_Nova_OutputStream_virtual0_Nova_write(l1_Nova_client->nova_standard_network_Nova_ClientSocket_Nova_connection->nova_standard_network_Nova_ConnectionSocket_Nova_out, exceptionData, stabilitytest_Nova_NetworkStability_Nova_received);
-	nova_standard_io_Nova_Console_0_Nova_writeLine(0, exceptionData, nova_standard_Nova_String_2_Nova_construct(0, exceptionData, "OK"));
+	nova_standard_io_Nova_Console_1_Nova_writeLine(0, exceptionData, nova_standard_Nova_String_2_Nova_construct(0, exceptionData, "OK"));
 	nova_standard_io_Nova_Console_0_Nova_write(0, exceptionData, nova_standard_Nova_String_2_Nova_construct(0, exceptionData, "Attempting to close ClientSocket... "));
 	if (!nova_standard_network_Nova_ClientSocket_Nova_close(l1_Nova_client, exceptionData))
 	{
 		stabilitytest_Nova_StabilityTest_1_Nova_fail(this->prv->stabilitytest_Nova_ClientThread_Nova_program, exceptionData, nova_standard_Nova_String_2_Nova_construct(0, exceptionData, "Unable to close Client connection"));
 	}
-	nova_standard_io_Nova_Console_0_Nova_writeLine(0, exceptionData, nova_standard_Nova_String_2_Nova_construct(0, exceptionData, "OK"));
+	nova_standard_io_Nova_Console_1_Nova_writeLine(0, exceptionData, nova_standard_Nova_String_2_Nova_construct(0, exceptionData, "OK"));
 }
 
 void stabilitytest_Nova_ClientThread_0_Nova_super(stabilitytest_Nova_ClientThread* this, nova_standard_exception_Nova_ExceptionData* exceptionData)

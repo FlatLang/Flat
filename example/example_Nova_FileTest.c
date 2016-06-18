@@ -73,19 +73,19 @@ void example_Nova_FileTest_Nova_main(example_Nova_FileTest* this, nova_standard_
 	{
 		nova_standard_Nova_String* l1_Nova_data;
 		
-		nova_standard_io_Nova_Console_0_Nova_writeLine(0, exceptionData, nova_standard_Nova_String_2_Nova_construct(0, exceptionData, "Your file exists!"));
+		nova_standard_io_Nova_Console_1_Nova_writeLine(0, exceptionData, nova_standard_Nova_String_2_Nova_construct(0, exceptionData, "Your file exists!"));
 		nova_standard_io_Nova_File_Nova_writeLine(l1_Nova_f, exceptionData, nova_standard_Nova_String_2_Nova_construct(0, exceptionData, "Entering data.."));
 		nova_standard_io_Nova_File_Nova_writeLine(l1_Nova_f, exceptionData, nova_standard_Nova_String_2_Nova_construct(0, exceptionData, "asdfasdf thing."));
 		nova_standard_io_Nova_File_Nova_reopen(l1_Nova_f, exceptionData);
 		l1_Nova_data = nova_standard_io_Nova_File_Nova_readAllContents(l1_Nova_f, exceptionData);
-		nova_standard_io_Nova_Console_0_Nova_writeLine(0, exceptionData, l1_Nova_data);
+		nova_standard_io_Nova_Console_1_Nova_writeLine(0, exceptionData, l1_Nova_data);
 	}
 	else
 	{
-		nova_standard_io_Nova_Console_0_Nova_writeLine(0, exceptionData, nova_standard_Nova_String_2_Nova_construct(0, exceptionData, "Your file does not exist.."));
+		nova_standard_io_Nova_Console_1_Nova_writeLine(0, exceptionData, nova_standard_Nova_String_2_Nova_construct(0, exceptionData, "Your file does not exist.."));
 	}
 	nova_standard_io_Nova_File_Nova_close(l1_Nova_f, exceptionData);
-	nova_standard_io_Nova_Console_0_Nova_writeLine(0, exceptionData, nova_standard_Nova_String_2_Nova_construct(0, exceptionData, "Press enter to exit..."));
+	nova_standard_io_Nova_Console_1_Nova_writeLine(0, exceptionData, nova_standard_Nova_String_2_Nova_construct(0, exceptionData, "Press enter to exit..."));
 	nova_standard_io_Nova_Console_Nova_waitForEnter(0, exceptionData);
 }
 

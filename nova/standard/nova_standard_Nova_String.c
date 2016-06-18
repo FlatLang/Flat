@@ -263,7 +263,7 @@ char nova_standard_Nova_String_Nova_containsChar(nova_standard_Nova_String* this
 
 nova_standard_Nova_String* nova_standard_Nova_String_Nova_toLowerCase(nova_standard_Nova_String* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
-	return nova_standard_Nova_String_Nova_transform(this, exceptionData, (nova_standard_Nova_String_closure3_Nova_transform)&nova_standard_primitive_number_Nova_Char_1_Nova_toLowerCase, 0);
+	return nova_standard_Nova_String_Nova_transform(this, exceptionData, (nova_standard_Nova_String_closure3_Nova_transform)&nova_standard_primitive_number_Nova_Char_0_Nova_toLowerCase, 0);
 }
 
 nova_standard_Nova_String* nova_standard_Nova_String_Nova_toUpperCase(nova_standard_Nova_String* this, nova_standard_exception_Nova_ExceptionData* exceptionData)

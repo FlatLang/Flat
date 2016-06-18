@@ -79,8 +79,8 @@ void example_Nova_PolymorphismDemo_Nova_main(example_Nova_PolymorphismDemo* this
 	l1_Nova_animals[0] = (example_Nova_Animal*)(l1_Nova_dog);
 	l1_Nova_animals[1] = (example_Nova_Animal*)(l1_Nova_spider);
 	l1_Nova_description = example_Nova_PolymorphismDemo_Nova_getDescriptionOfAnimalWithNumberOfLegs((example_Nova_PolymorphismDemo*)nova_null, exceptionData, l1_Nova_animals, 8);
-	nova_standard_io_Nova_Console_0_Nova_writeLine(0, exceptionData, nova_standard_Nova_String_2_Nova_construct(0, exceptionData, "Searched for animal with 8 legs and found:"));
-	nova_standard_io_Nova_Console_0_Nova_writeLine(0, exceptionData, l1_Nova_description);
+	nova_standard_io_Nova_Console_1_Nova_writeLine(0, exceptionData, nova_standard_Nova_String_2_Nova_construct(0, exceptionData, "Searched for animal with 8 legs and found:"));
+	nova_standard_io_Nova_Console_1_Nova_writeLine(0, exceptionData, l1_Nova_description);
 	nova_standard_io_Nova_Console_Nova_waitForEnter(0, exceptionData);
 }
 

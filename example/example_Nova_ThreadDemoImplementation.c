@@ -90,7 +90,7 @@ void example_Nova_ThreadDemoImplementation_0_Nova_run(example_Nova_ThreadDemoImp
 	l2_Nova_i = 0;
 	for (; l2_Nova_i < 10; l2_Nova_i++)
 	{
-		nova_standard_io_Nova_Console_0_Nova_writeLine(0, exceptionData, this->prv->example_Nova_ThreadDemoImplementation_Nova_word);
+		nova_standard_io_Nova_Console_1_Nova_writeLine(0, exceptionData, this->prv->example_Nova_ThreadDemoImplementation_Nova_word);
 		nova_standard_thread_Nova_Thread_Nova_sleep((nova_standard_thread_Nova_Thread*)(this), exceptionData, this->prv->example_Nova_ThreadDemoImplementation_Nova_millis);
 	}
 }

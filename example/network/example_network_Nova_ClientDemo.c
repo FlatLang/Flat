@@ -74,7 +74,7 @@ void example_network_Nova_ClientDemo_Nova_main(example_network_Nova_ClientDemo* 
 	l1_Nova_socket = nova_standard_network_Nova_ClientSocket_Nova_construct(0, exceptionData);
 	l1_Nova_ip = nova_standard_Nova_String_2_Nova_construct(0, exceptionData, "127.0.0.1");
 	l1_Nova_port = 5675;
-	nova_standard_io_Nova_Console_0_Nova_writeLine(0, exceptionData, nova_standard_Nova_String_0_Nova_concat(nova_standard_Nova_String_2_Nova_construct(0, exceptionData, "Attempting to connect to "), exceptionData, l1_Nova_ip->vtable->nova_standard_Nova_String_virtual0_Nova_concat(l1_Nova_ip, exceptionData, nova_standard_Nova_String_0_Nova_concat(nova_standard_Nova_String_2_Nova_construct(0, exceptionData, ":"), exceptionData, nova_standard_primitive_number_Nova_Int_2_Nova_toString(0, exceptionData, l1_Nova_port)))));
+	nova_standard_io_Nova_Console_1_Nova_writeLine(0, exceptionData, nova_standard_Nova_String_0_Nova_concat(nova_standard_Nova_String_2_Nova_construct(0, exceptionData, "Attempting to connect to "), exceptionData, l1_Nova_ip->vtable->nova_standard_Nova_String_virtual0_Nova_concat(l1_Nova_ip, exceptionData, nova_standard_Nova_String_0_Nova_concat(nova_standard_Nova_String_2_Nova_construct(0, exceptionData, ":"), exceptionData, nova_standard_primitive_number_Nova_Int_2_Nova_toString(0, exceptionData, l1_Nova_port)))));
 	l1_Nova_connected = nova_standard_network_Nova_ClientSocket_Nova_connect(l1_Nova_socket, exceptionData, l1_Nova_ip, l1_Nova_port);
 	if (l1_Nova_connected)
 	{
@@ -82,7 +82,7 @@ void example_network_Nova_ClientDemo_Nova_main(example_network_Nova_ClientDemo* 
 		
 		l1_Nova_thread = example_network_Nova_ConnectionThread_Nova_construct(0, exceptionData, l1_Nova_socket->nova_standard_network_Nova_ClientSocket_Nova_connection);
 		nova_standard_thread_Nova_Thread_Nova_start((nova_standard_thread_Nova_Thread*)(l1_Nova_thread), exceptionData);
-		nova_standard_io_Nova_Console_0_Nova_writeLine(0, exceptionData, nova_standard_Nova_String_2_Nova_construct(0, exceptionData, "Connected!"));
+		nova_standard_io_Nova_Console_1_Nova_writeLine(0, exceptionData, nova_standard_Nova_String_2_Nova_construct(0, exceptionData, "Connected!"));
 		while (l1_Nova_socket->nova_standard_network_Nova_ClientSocket_Nova_connection->nova_standard_network_Nova_ConnectionSocket_Nova_connected)
 		{
 			nova_standard_Nova_String* l2_Nova_message;
@@ -99,7 +99,7 @@ void example_network_Nova_ClientDemo_Nova_main(example_network_Nova_ClientDemo* 
 	}
 	else
 	{
-		nova_standard_io_Nova_Console_0_Nova_writeLine(0, exceptionData, nova_standard_Nova_String_2_Nova_construct(0, exceptionData, "Failed to connect"));
+		nova_standard_io_Nova_Console_1_Nova_writeLine(0, exceptionData, nova_standard_Nova_String_2_Nova_construct(0, exceptionData, "Failed to connect"));
 		nova_standard_io_Nova_Console_Nova_waitForEnter(0, exceptionData);
 	}
 }

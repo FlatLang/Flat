@@ -75,10 +75,10 @@ void example_Nova_Test_Nova_main(example_Nova_Test* this, nova_standard_exceptio
 	nova_standard_datastruct_list_Nova_Stack_Nova_push(l1_Nova_s, exceptionData, (nova_standard_Nova_Object*)(nova_standard_Nova_String_2_Nova_construct(0, exceptionData, "Hello")));
 	while (!nova_standard_datastruct_list_Nova_Stack_Accessor_Nova_empty(l1_Nova_s, exceptionData))
 	{
-		nova_standard_io_Nova_Console_0_Nova_writeLine(0, exceptionData, (nova_standard_Nova_String*)(nova_standard_datastruct_list_Nova_Stack_Nova_pop(l1_Nova_s, exceptionData)));
+		nova_standard_io_Nova_Console_1_Nova_writeLine(0, exceptionData, (nova_standard_Nova_String*)(nova_standard_datastruct_list_Nova_Stack_Nova_pop(l1_Nova_s, exceptionData)));
 	}
 	l1_Nova_d = 5;
-	nova_standard_io_Nova_Console_0_Nova_writeLine(0, exceptionData, nova_standard_Nova_String_0_Nova_concat(nova_standard_Nova_String_2_Nova_construct(0, exceptionData, "Comparison: "), exceptionData, nova_standard_primitive_number_Nova_Int_2_Nova_toString(0, exceptionData, nova_standard_primitive_number_Nova_Int_0_Nova_compareTo(nova_standard_primitive_number_Nova_Int_Nova_construct(0, exceptionData, l1_Nova_d), exceptionData, nova_standard_primitive_number_Nova_Int_Nova_construct(0, exceptionData, 3)))));
+	nova_standard_io_Nova_Console_1_Nova_writeLine(0, exceptionData, nova_standard_Nova_String_0_Nova_concat(nova_standard_Nova_String_2_Nova_construct(0, exceptionData, "Comparison: "), exceptionData, nova_standard_primitive_number_Nova_Int_2_Nova_toString(0, exceptionData, nova_standard_primitive_number_Nova_Int_0_Nova_compareTo(nova_standard_primitive_number_Nova_Int_Nova_construct(0, exceptionData, l1_Nova_d), exceptionData, nova_standard_primitive_number_Nova_Int_Nova_construct(0, exceptionData, 3)))));
 	nova_standard_io_Nova_Console_Nova_waitForEnter(0, exceptionData);
 }
 

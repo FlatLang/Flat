@@ -116,7 +116,7 @@ void nova_standard_math_logic_Nova_WFF_Nova_decodeFormula(nova_standard_math_log
 		THROW(6, nova_standard_math_logic_Nova_InvalidFormulaException_4_Nova_construct(0, exceptionData, nova_standard_Nova_String_2_Nova_construct(0, exceptionData, "No valid conclusion found")));
 	}
 	l1_Nova_conclusion = (nova_standard_math_logic_Nova_Conclusion*)(l1_Nova_conclusionGroup->nova_standard_math_logic_Nova_StatementGroup_Nova_statement);
-	nova_standard_io_Nova_Console_0_Nova_writeLine(0, exceptionData, nova_standard_Nova_String_0_Nova_concat(nova_standard_Nova_String_2_Nova_construct(0, exceptionData, "Conclusion: "), exceptionData, l1_Nova_conclusion->vtable->nova_standard_math_logic_Nova_LogicalStatement_virtual1_Nova_toString((nova_standard_math_logic_Nova_LogicalStatement*)(l1_Nova_conclusion), exceptionData)));
+	nova_standard_io_Nova_Console_1_Nova_writeLine(0, exceptionData, nova_standard_Nova_String_0_Nova_concat(nova_standard_Nova_String_2_Nova_construct(0, exceptionData, "Conclusion: "), exceptionData, l1_Nova_conclusion->vtable->nova_standard_math_logic_Nova_LogicalStatement_virtual1_Nova_toString((nova_standard_math_logic_Nova_LogicalStatement*)(l1_Nova_conclusion), exceptionData)));
 	this->prv->nova_standard_math_logic_Nova_WFF_Nova_wff = nova_standard_datastruct_Nova_Bounds_Nova_extractPreString(l1_Nova_conclusionGroup->nova_standard_math_logic_Nova_StatementGroup_Nova_bounds, exceptionData, this->prv->nova_standard_math_logic_Nova_WFF_Nova_wff);
 	l1_Nova_statements = nova_standard_math_logic_Nova_WFF_Nova_decodeHypotheses(this, exceptionData, this->prv->nova_standard_math_logic_Nova_WFF_Nova_wff);
 	l4_Nova_i = 0;
@@ -130,7 +130,7 @@ void nova_standard_math_logic_Nova_WFF_Nova_decodeFormula(nova_standard_math_log
 	l6_Nova_n = 0;
 	for (; l6_Nova_n < this->prv->nova_standard_math_logic_Nova_WFF_Nova_hypotheses->nova_standard_datastruct_list_Nova_Array_Nova_size; l6_Nova_n++)
 	{
-		nova_standard_io_Nova_Console_1_Nova_writeLine(0, exceptionData, (nova_standard_Nova_Object*)(nova_standard_datastruct_list_Nova_Array_Nova_get(this->prv->nova_standard_math_logic_Nova_WFF_Nova_hypotheses, exceptionData, l6_Nova_n)));
+		nova_standard_io_Nova_Console_2_Nova_writeLine(0, exceptionData, (nova_standard_Nova_Object*)(nova_standard_datastruct_list_Nova_Array_Nova_get(this->prv->nova_standard_math_logic_Nova_WFF_Nova_hypotheses, exceptionData, l6_Nova_n)));
 	}
 }
 

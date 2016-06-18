@@ -26,7 +26,10 @@ stabilitytest_Extension_VTable_PolymorphismStability stabilitytest_Extension_VTa
 		0,
 		0,
 		0,
+		0,
 		(char(*)(nova_standard_operators_Nova_Equals*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*))nova_standard_Nova_Object_0_Nova_equals,
+		0,
+		0,
 		0,
 	},
 	nova_standard_Nova_Object_0_Nova_getHashCodeLong,
@@ -71,8 +74,6 @@ void stabilitytest_Nova_PolymorphismStability_Nova_destroy(stabilitytest_Nova_Po
 	}
 	
 	
-	{
-	}
 	NOVA_FREE(*this);
 }
 
@@ -83,7 +84,7 @@ void stabilitytest_Nova_PolymorphismStability_0_Nova_this(stabilitytest_Nova_Pol
 
 void stabilitytest_Nova_PolymorphismStability_0_Nova_test(stabilitytest_Nova_PolymorphismStability* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
-	nova_standard_io_Nova_Console_0_Nova_writeLine(0, exceptionData, nova_standard_Nova_String_2_Nova_construct(0, exceptionData, "Checking Polymorphism stability..."));
+	nova_standard_io_Nova_Console_1_Nova_writeLine(0, exceptionData, nova_standard_Nova_String_2_Nova_construct(0, exceptionData, "Checking Polymorphism stability..."));
 	stabilitytest_Nova_PolymorphismStability_Nova_testCalls(this, exceptionData);
 	stabilitytest_Nova_PolymorphismStability_Nova_testClosure(this, exceptionData);
 	stabilitytest_Nova_PolymorphismStability_Nova_testProperty(this, exceptionData);
@@ -101,7 +102,7 @@ void stabilitytest_Nova_PolymorphismStability_Nova_testCalls(stabilitytest_Nova_
 	{
 		stabilitytest_Nova_StabilityTest_1_Nova_fail(this->stabilitytest_Nova_StabilityTestCase_Nova_program, exceptionData, nova_standard_Nova_String_2_Nova_construct(0, exceptionData, "Did not call sub class method"));
 	}
-	nova_standard_io_Nova_Console_0_Nova_writeLine(0, exceptionData, nova_standard_Nova_String_2_Nova_construct(0, exceptionData, "OK"));
+	nova_standard_io_Nova_Console_1_Nova_writeLine(0, exceptionData, nova_standard_Nova_String_2_Nova_construct(0, exceptionData, "OK"));
 }
 
 char stabilitytest_Nova_PolymorphismStability_Nova_testSubCall(stabilitytest_Nova_PolymorphismStability* this, nova_standard_exception_Nova_ExceptionData* exceptionData, stabilitytest_Nova_PolymorphicSuperClass* stabilitytest_Nova_PolymorphismStability_Nova_obj)
@@ -131,7 +132,7 @@ void stabilitytest_Nova_PolymorphismStability_Nova_testClosure(stabilitytest_Nov
 	{
 		stabilitytest_Nova_StabilityTest_1_Nova_fail(this->stabilitytest_Nova_StabilityTestCase_Nova_program, exceptionData, nova_standard_Nova_String_2_Nova_construct(0, exceptionData, "Did not call sub class method as closure"));
 	}
-	nova_standard_io_Nova_Console_0_Nova_writeLine(0, exceptionData, nova_standard_Nova_String_2_Nova_construct(0, exceptionData, "OK"));
+	nova_standard_io_Nova_Console_1_Nova_writeLine(0, exceptionData, nova_standard_Nova_String_2_Nova_construct(0, exceptionData, "OK"));
 }
 
 char stabilitytest_Nova_PolymorphismStability_Nova_callPolymorphicClosure(stabilitytest_Nova_PolymorphismStability* this, nova_standard_exception_Nova_ExceptionData* exceptionData, stabilitytest_Nova_PolymorphismStability_closure3_Nova_closure stabilitytest_Nova_PolymorphismStability_Nova_closure, void* stabilitytest_Nova_PolymorphismStability_ref_Nova_closure)
@@ -158,7 +159,7 @@ void stabilitytest_Nova_PolymorphismStability_Nova_testProperty(stabilitytest_No
 	{
 		stabilitytest_Nova_StabilityTest_1_Nova_fail(this->stabilitytest_Nova_StabilityTestCase_Nova_program, exceptionData, nova_standard_Nova_String_2_Nova_construct(0, exceptionData, "Did not call sub polymorphic property accessor correctly"));
 	}
-	nova_standard_io_Nova_Console_0_Nova_writeLine(0, exceptionData, nova_standard_Nova_String_2_Nova_construct(0, exceptionData, "OK"));
+	nova_standard_io_Nova_Console_1_Nova_writeLine(0, exceptionData, nova_standard_Nova_String_2_Nova_construct(0, exceptionData, "OK"));
 }
 
 void stabilitytest_Nova_PolymorphismStability_0_Nova_super(stabilitytest_Nova_PolymorphismStability* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
