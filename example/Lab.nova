@@ -5,7 +5,7 @@ import "nova/standard/math/logic/WFF"
 import "nova/standard/math/logic/InvalidFormulaException"
 import "nova/standard/math/logic/StatementLetter"
 import "nova/standard/datastruct/HashMap"
-//import "nova/standard/datastruct/Vector2D"
+import "nova/standard/datastruct/Vector2D"
 import "nova/standard/network/ServerSocket"
 import "nova/standard/star/Window"
 import "nova/standard/math/NumericStatement"
@@ -16,31 +16,6 @@ import "nova/standard/datastruct/list/LinkedList"
 
 public class Lab
 {
-	static myFilterFunc(String i) -> Bool
-	{
-		return i.size >= 4
-	}
-	
-	static myforeach(String i, Int index, Array list)
-	{
-		if (index > 0)
-		{
-			Console.write(", ")
-		}
-		
-		Console.write(i)
-	}
-	
-	static mapper(String input) -> String
-	{
-		return input + "!"
-	}
-	
-	static mapper2(Int input) -> String
-	{
-		return input + "!"
-	}
-	
 	public static main(String[] args)
 	{
 		//Vector2D<Int> v = new Vector2D(2, 3)
@@ -62,77 +37,19 @@ public class Lab
 		Int[] b = [1, 2, 3, 4, 5, 6, 7]
 		
 		Array<String> list = new Array(a, 7)
-		Array<String> list2 = list.filter(myFilterFunc)
+		Array<String> list2 = list.filter(x -> x.size >= 4)
 		Array<Int> list3 = new Array(b, 7)
 		
-		Array<String> mapped = list2.map(mapper)
-		Array<String> mapped2 = list3.map(mapper2)
+		Array<String> mapped2 = list3.map(x -> x + "!")
 		
-		Console.write("Mapped: ")
-		
-		for (str in mapped)
-		{
-			Console.write(str + ", ")
-		}
-		
-		Console.writeLine("")
-		
-		Console.write("Mapped2: ")
-		
-		for (str2 in mapped2)
-		{
-			Console.write(str2 + ", ")
-		}
-		
-		Console.writeLine("")
+		Console.writeLine("Mapped: " + list2.map(x -> x + "?").join(", "))
+		Console.writeLine("Mapped2: " + mapped2.join(", "))
 		
 		LinkedList<String> linked = new LinkedList()
 		
 		linked.add("test").add("test2").add("test3")
 		
-		Console.write("LinkedList iterator: ")
-		
-		for (test in linked)
-		{
-			Console.write(test + ", ")
-		}
-		
-		Console.writeLine("")
-		
-		Console.writeLine(list2.sumSize())
-		
-		Console.writeLine(list2.stringsOnly)
-		
-		Console.writeLine("With foreach:")
-		
-		list2.forEach(myforeach)
-		
-		Console.writeLine("")
-		
-		for (Int n = 0; n < list2.size; n++)
-		{
-			Console.write(list2.get(n) + ", ")
-		}
-		
-		Console.writeLine("")
-		
-		Console.writeLine("Using iterator:")
-		
-		Iterator<String, Int> iter = list.iterator
-		
-		while (iter.hasNext)
-		{
-			Console.write(iter.next + ", ")
-		}
-		
-		Console.writeLine("")
-		
-		Console.writeLine("With foreach loop")
-		
-		for (string in list)
-		{
-			Console.write(string + ", ")
-		}
+		Console.writeLine("Linked list: " + linked.join(", "))
 		
 //		Square sq = new Square(4)
 //		
