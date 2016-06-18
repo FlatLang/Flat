@@ -2,7 +2,7 @@ package "nova/standard/datastruct/list"
 
 public interface List<Type> extends Iterable<Type>
 {
-	//visible Int size
+	visible Int size
 	/*[Int index]
 	{
 		get
@@ -90,6 +90,7 @@ public interface List<Type> extends Iterable<Type>
 	//add(Type value) -> List<Type>
 	//remove(Type value) -> List<Type>
 	//clone() -> List<Type>
+	reverse() -> List<Type>
 	
     join(String delimiter) -> String
 }

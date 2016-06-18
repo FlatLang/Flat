@@ -203,6 +203,36 @@ public class LinkedList<E> implements List<E>
 		
 		return null
 	}
+	
+	public reverse() -> LinkedList<E>
+	{
+		LinkedList<E> list = new LinkedList()
+		
+		ListNode<E> prev = null
+		ListNode<E> current = null
+		ListNode<E> next = null
+		
+		if (start != null)
+		{
+			current = start.clone()
+		}
+		
+		while (current != null)
+		{
+			next = current.next
+			current.next = null
+			
+			if (next != null) next = next.clone()
+			if (prev != null) current.next = prev.clone()
+			
+			prev = current
+			current = next
+		}
+		
+		list.start = prev
+		
+		return list
+	}
     
     public join(String delimiter) -> String
     {

@@ -323,6 +323,20 @@ public class Array<E> implements List<E>
         return sum
     }*/
     
+    public reverse() -> Array<E>
+    {
+    	Array<E> array = new Array(size)
+    	
+    	Int i = 0
+    	
+    	for (element in array)
+    	{
+    		array.data[size - ++i] = element
+    	}
+    	
+    	return array
+    }
+    
     public join(String delimiter) -> String
     {
     	String str = ""
