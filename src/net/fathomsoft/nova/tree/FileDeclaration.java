@@ -28,7 +28,6 @@ public class FileDeclaration extends Node
 	private File			file;
 
 	private ArrayList<ClosureDeclaration> closures;
-	private ArrayList<LambdaExpression> lambdas;
 	
 	/**
 	 * The default imports that each file uses.
@@ -78,7 +77,7 @@ public class FileDeclaration extends Node
 		super(temporaryParent, locationIn);
 
 		closures  = new ArrayList<ClosureDeclaration>();
-		lambdas   = new ArrayList<LambdaExpression>();
+		
 		this.file = file;
 		
 		Package p = Package.generateDefaultPackage(this, Location.INVALID);
@@ -155,20 +154,6 @@ public class FileDeclaration extends Node
 		closures.add(closure);
 		
 		return closures.size();
-	}
-	
-	/**
-	 * Register the LambdaExpression so that the FileDeclaration
-	 * can define the lambda function during generation.
-	 * 
-	 * @param closure The LambdaExpression to register.
-	 * @return The id of the registered LambdaExpression.
-	 */
-	public int registerLambda(LambdaExpression lambda)
-	{
-		lambdas.add(lambda);
-		
-		return lambdas.size();
 	}
 	
 	/**
