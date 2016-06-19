@@ -48,6 +48,7 @@ public class AbstractMethodDeclaration extends NovaMethodDeclaration
 	{
 		generateCSourceSignature(builder);
 		
+		/*
 		if (getType() == null)
 		{
 			builder.append("{}");
@@ -56,8 +57,33 @@ public class AbstractMethodDeclaration extends NovaMethodDeclaration
 		{
 			builder.append("{return 0;}");
 		}
+		*/
 		
-		return builder;
+		builder.append("{\n");
+		
+		if (getType() != null)
+		{
+			builder.append("return ");
+		}
+		
+		getParameterList().getObjectReference().generateCSourceFragment(builder).append("->");
+		
+		builder.append(VTable.IDENTIFIER).append("->");
+		builder.append(InterfaceVTable.IDENTIFIER).append(".");
+		
+		builder.append(generateCVirtualMethodName()).append("(");
+		
+		for (int i = 0; i < getParameterList().getNumChildren(); i++)
+		{
+			if (i > 0)
+			{
+				builder.append(", ");
+			}
+			
+			builder.append(getParameterList().getChild(i).generateCSourceName());
+		}
+		
+		return builder.append(");\n}");
 	}
 	
 	/**
