@@ -225,15 +225,15 @@ public class Nova
 			enableFlag(DRY_RUN);
 		}
 		
-		lingeringFiles     = new LinkedList<File>();
-		inputFiles         = new ArrayList<File>();
-		cSourceFiles       = new ArrayList<File>();
-		cHeaderFiles       = new ArrayList<File>();
-		includeDirectories = new ArrayList<String>();
-		externalImports    = new ArrayList<String>();
-		errors             = new ArrayList<String>();
-		warnings           = new ArrayList<String>();
-		messages           = new ArrayList<String>();
+		lingeringFiles     = new LinkedList<>();
+		inputFiles         = new ArrayList<>();
+		cSourceFiles       = new ArrayList<>();
+		cHeaderFiles       = new ArrayList<>();
+		includeDirectories = new ArrayList<>();
+		externalImports    = new ArrayList<>();
+		errors             = new ArrayList<>();
+		warnings           = new ArrayList<>();
+		messages           = new ArrayList<>();
 		
 		testClasses = BENCHMARK <= 0;
 	}
@@ -267,6 +267,7 @@ public class Nova
 			args = new String[]
 			{
 				"example",
+				"stabilitytest",
 				"-o",   formatPath(directory + "bin/Executable" + OUTPUT_EXTENSION),
 				"-dir", formatPath(directory + "../example"),
 				"-dir", formatPath(directory + "../stabilitytest"),
@@ -281,7 +282,8 @@ public class Nova
 				"-keepc",
 				"-single-thread",
 				"-main",
-				"example/Lab",
+//				"example/Lab",
+				"stabilitytest/StabilityTest",
 //				"-nogc",
 //				"-no-c-output",
 //				"-dry"
@@ -299,112 +301,112 @@ public class Nova
 		
 		String standardFiles[] = new String[]
 		{
-			formatPath(standard  + "String.nova"),
-			formatPath(standard  + "Object.nova"),
-			formatPath(standard  + "System.nova"),
+			formatPath(standard + "String.nova"),
+			formatPath(standard + "Object.nova"),
+			formatPath(standard + "System.nova"),
 			
-			formatPath(standard  + "database/DBConnector.nova"),
-			formatPath(standard  + "database/ResultSet.nova"),
+			formatPath(standard + "database/DBConnector.nova"),
+			formatPath(standard + "database/ResultSet.nova"),
 			
-			formatPath(standard  + "network/Socket.nova"),
-			formatPath(standard  + "network/ServerSocket.nova"),
-			formatPath(standard  + "network/ClientSocket.nova"),
-			formatPath(standard  + "network/ConnectionSocket.nova"),
-			formatPath(standard  + "network/NetworkInputStream.nova"),
-			formatPath(standard  + "network/NetworkOutputStream.nova"),
+			formatPath(standard + "network/Socket.nova"),
+			formatPath(standard + "network/ServerSocket.nova"),
+			formatPath(standard + "network/ClientSocket.nova"),
+			formatPath(standard + "network/ConnectionSocket.nova"),
+			formatPath(standard + "network/NetworkInputStream.nova"),
+			formatPath(standard + "network/NetworkOutputStream.nova"),
 			
-			formatPath(standard  + "math/Math.nova"),
-			formatPath(standard  + "math/Statement.nova"),
-			formatPath(standard  + "math/NumericStatement.nova"),
-			formatPath(standard  + "math/NumericTree.nova"),
-			formatPath(standard  + "math/NumericOperation.nova"),
-			formatPath(standard  + "math/NumericOperand.nova"),
-			formatPath(standard  + "math/StatementComponent.nova"),
-			formatPath(standard  + "math/InvalidNumericStatementException.nova"),
+			formatPath(standard + "math/Math.nova"),
+			formatPath(standard + "math/Statement.nova"),
+			formatPath(standard + "math/NumericStatement.nova"),
+			formatPath(standard + "math/NumericTree.nova"),
+			formatPath(standard + "math/NumericOperation.nova"),
+			formatPath(standard + "math/NumericOperand.nova"),
+			formatPath(standard + "math/StatementComponent.nova"),
+			formatPath(standard + "math/InvalidNumericStatementException.nova"),
 			
-			formatPath(standard  + "math/logic/Conclusion.nova"),
-			formatPath(standard  + "math/logic/Hypothesis.nova"),
-			formatPath(standard  + "math/logic/LogicalConnective.nova"),
-			formatPath(standard  + "math/logic/StatementComponent.nova"),
-			formatPath(standard  + "math/logic/StatementLetter.nova"),
-			formatPath(standard  + "math/logic/WFF.nova"),
-			formatPath(standard  + "math/logic/StatementGroup.nova"),
-			formatPath(standard  + "math/logic/LogicalStatement.nova"),
-			formatPath(standard  + "math/logic/InvalidFormulaException.nova"),
+			formatPath(standard + "math/logic/Conclusion.nova"),
+			formatPath(standard + "math/logic/Hypothesis.nova"),
+			formatPath(standard + "math/logic/LogicalConnective.nova"),
+			formatPath(standard + "math/logic/StatementComponent.nova"),
+			formatPath(standard + "math/logic/StatementLetter.nova"),
+			formatPath(standard + "math/logic/WFF.nova"),
+			formatPath(standard + "math/logic/StatementGroup.nova"),
+			formatPath(standard + "math/logic/LogicalStatement.nova"),
+			formatPath(standard + "math/logic/InvalidFormulaException.nova"),
 			
-			formatPath(standard  + "process/Process.nova"),
+			formatPath(standard + "process/Process.nova"),
 			
-			formatPath(standard  + "primitive/Bool.nova"),
-			formatPath(standard  + "primitive/Null.nova"),
-			formatPath(standard  + "primitive/Primitive.nova"),
+			formatPath(standard + "primitive/Bool.nova"),
+			formatPath(standard + "primitive/Null.nova"),
+			formatPath(standard + "primitive/Primitive.nova"),
 			
-			formatPath(standard  + "primitive/number/Char.nova"),
-			formatPath(standard  + "primitive/number/Byte.nova"),
-			formatPath(standard  + "primitive/number/Short.nova"),
-			formatPath(standard  + "primitive/number/Int.nova"),
-			formatPath(standard  + "primitive/number/Long.nova"),
-			formatPath(standard  + "primitive/number/Float.nova"),
-			formatPath(standard  + "primitive/number/Double.nova"),
-			formatPath(standard  + "primitive/number/Number.nova"),
-			formatPath(standard  + "primitive/number/Integer.nova"),
-			formatPath(standard  + "primitive/number/RealNumber.nova"),
+			formatPath(standard + "primitive/number/Char.nova"),
+			formatPath(standard + "primitive/number/Byte.nova"),
+			formatPath(standard + "primitive/number/Short.nova"),
+			formatPath(standard + "primitive/number/Int.nova"),
+			formatPath(standard + "primitive/number/Long.nova"),
+			formatPath(standard + "primitive/number/Float.nova"),
+			formatPath(standard + "primitive/number/Double.nova"),
+			formatPath(standard + "primitive/number/Number.nova"),
+			formatPath(standard + "primitive/number/Integer.nova"),
+			formatPath(standard + "primitive/number/RealNumber.nova"),
 
-			formatPath(standard  + "operators/Multiply.nova"),
-			formatPath(standard  + "operators/Equals.nova"),
+			formatPath(standard + "operators/Multiply.nova"),
+			formatPath(standard + "operators/Equals.nova"),
 			
-			formatPath(standard  + "time/Time.nova"),
-			formatPath(standard  + "time/Timer.nova"),
-			formatPath(standard  + "time/Date.nova"),
+			formatPath(standard + "time/Time.nova"),
+			formatPath(standard + "time/Timer.nova"),
+			formatPath(standard + "time/Date.nova"),
 			
-			formatPath(standard  + "thread/Thread.nova"),
-			formatPath(standard  + "thread/UncaughtExceptionHandler.nova"),
+			formatPath(standard + "thread/Thread.nova"),
+			formatPath(standard + "thread/UncaughtExceptionHandler.nova"),
 			
-			formatPath(standard  + "io/InputStream.nova"),
-			formatPath(standard  + "io/OutputStream.nova"),
-			formatPath(standard  + "io/StreamReader.nova"),
-			formatPath(standard  + "io/File.nova"),
-			formatPath(standard  + "io/Console.nova"),
+			formatPath(standard + "io/InputStream.nova"),
+			formatPath(standard + "io/OutputStream.nova"),
+			formatPath(standard + "io/StreamReader.nova"),
+			formatPath(standard + "io/File.nova"),
+			formatPath(standard + "io/Console.nova"),
 			
-			formatPath(standard  + "svg/SVG.nova"),
-			formatPath(standard  + "svg/SVGComponent.nova"),
-			formatPath(standard  + "svg/SVGComponentList.nova"),
-			formatPath(standard  + "svg/SVGComponentNode.nova"),
-			formatPath(standard  + "svg/SVGMainComponent.nova"),
-			formatPath(standard  + "svg/SVGCircle.nova"),
+			formatPath(standard + "svg/SVG.nova"),
+			formatPath(standard + "svg/SVGComponent.nova"),
+			formatPath(standard + "svg/SVGComponentList.nova"),
+			formatPath(standard + "svg/SVGComponentNode.nova"),
+			formatPath(standard + "svg/SVGMainComponent.nova"),
+			formatPath(standard + "svg/SVGCircle.nova"),
 			
-			formatPath(standard  + "exception/ExceptionData.nova"),
-			formatPath(standard  + "exception/DivideByZeroException.nova"),
-			formatPath(standard  + "exception/UnimplementedOperationException.nova"),
-			formatPath(standard  + "exception/Exception.nova"),
+			formatPath(standard + "exception/ExceptionData.nova"),
+			formatPath(standard + "exception/DivideByZeroException.nova"),
+			formatPath(standard + "exception/UnimplementedOperationException.nova"),
+			formatPath(standard + "exception/Exception.nova"),
 
-			formatPath(standard  + "datastruct/list/List.nova"),
-			formatPath(standard  + "datastruct/list/LinkedList.nova"),
-			formatPath(standard  + "datastruct/list/ListNode.nova"),
-			formatPath(standard  + "datastruct/list/Array.nova"),
-			formatPath(standard  + "datastruct/list/Iterable.nova"),
-			formatPath(standard  + "datastruct/list/Iterator.nova"),
-			formatPath(standard  + "datastruct/list/ArrayIterator.nova"),
-			formatPath(standard  + "datastruct/list/NoSuchElementException.nova"),
-			formatPath(standard  + "datastruct/list/Queue.nova"),
-			formatPath(standard  + "datastruct/list/Stack.nova"),
-			formatPath(standard  + "datastruct/list/EmptyStackException.nova"),
+			formatPath(standard + "datastruct/list/List.nova"),
+			formatPath(standard + "datastruct/list/LinkedList.nova"),
+			formatPath(standard + "datastruct/list/ListNode.nova"),
+			formatPath(standard + "datastruct/list/Array.nova"),
+			formatPath(standard + "datastruct/list/Iterable.nova"),
+			formatPath(standard + "datastruct/list/Iterator.nova"),
+			formatPath(standard + "datastruct/list/ArrayIterator.nova"),
+			formatPath(standard + "datastruct/list/NoSuchElementException.nova"),
+			formatPath(standard + "datastruct/list/Queue.nova"),
+			formatPath(standard + "datastruct/list/Stack.nova"),
+			formatPath(standard + "datastruct/list/EmptyStackException.nova"),
 			
-			formatPath(standard  + "datastruct/HashMap.nova"),
-			formatPath(standard  + "datastruct/Bounds.nova"),
-			formatPath(standard  + "datastruct/Tree.nova"),
-			formatPath(standard  + "datastruct/BinaryTree.nova"),
-			formatPath(standard  + "datastruct/Node.nova"),
-			formatPath(standard  + "datastruct/BinaryNode.nova"),
-			formatPath(standard  + "datastruct/Comparable.nova"),
-//			formatPath(standard  + "datastruct/Vector2D.nova"),
-//			formatPath(standard  + "datastruct/Vector.nova"),
+			formatPath(standard + "datastruct/HashMap.nova"),
+			formatPath(standard + "datastruct/Bounds.nova"),
+			formatPath(standard + "datastruct/Tree.nova"),
+			formatPath(standard + "datastruct/BinaryTree.nova"),
+			formatPath(standard + "datastruct/Node.nova"),
+			formatPath(standard + "datastruct/BinaryNode.nova"),
+			formatPath(standard + "datastruct/Comparable.nova"),
+			formatPath(standard + "datastruct/Vector2D.nova"),
+			formatPath(standard + "datastruct/Vector.nova"),
 
-			formatPath(standard  + "security/MD5.nova"),
+			formatPath(standard + "security/MD5.nova"),
 
-			formatPath(standard  + "star/Window.nova"),
-			formatPath(standard  + "star/WindowThread.nova"),
+			formatPath(standard + "star/Window.nova"),
+			formatPath(standard + "star/WindowThread.nova"),
 			
-			formatPath(standard  + "gc/GC.nova"),
+			formatPath(standard + "gc/GC.nova"),
 		};
 		
 		String postArgs[] = new String[]
@@ -439,7 +441,7 @@ public class Nova
 			{
 				error("Unable to find location " + classLocation);
 				
-				completed();
+				completed(false);
 			}
 			
 			String location = classLocation.substring(dir.length() + offset + slash, classLocation.lastIndexOf('.'));
@@ -684,7 +686,7 @@ public class Nova
 					if (containsErrors())
 					{
 						enableFlag(DRY_RUN);
-						completed();
+						completed(false);
 					}
 					if (generateCode)
 					{
@@ -704,7 +706,7 @@ public class Nova
 			catch (SyntaxErrorException e)
 			{
 				enableFlag(DRY_RUN);
-				completed();
+				completed(false);
 			}
 		}
 		catch (IOException e1)
@@ -713,7 +715,7 @@ public class Nova
 			
 			e1.printStackTrace();
 			
-			completed();
+			completed(false);
 		}
 		
 		long   time = System.currentTimeMillis() - startTime;
@@ -810,7 +812,7 @@ public class Nova
 			{
 				e.printStackTrace();
 				
-				completed();
+				completed(false);
 			}
 		}
 		
@@ -885,7 +887,7 @@ public class Nova
 					SyntaxMessage.error("No main method found in program", this);
 				}
 				
-				completed();
+				completed(true);
 			}
 			
 			return;
@@ -1130,7 +1132,7 @@ public class Nova
 		
 		if (isFlagEnabled(DRY_RUN))
 		{
-			completed();
+			completed(true);
 		}
 		
 		log("Compiling C sources...");
@@ -1157,7 +1159,7 @@ public class Nova
 				}
 				else
 				{
-					System.err.println("Compilation failed.");
+					//System.err.println("Compilation failed.");
 				}
 			}
 			
@@ -1214,7 +1216,7 @@ public class Nova
 				{
 					command.terminate();
 					
-					completed();
+					completed(!failed);
 				}
 				catch (InterruptedException e)
 				{
@@ -1618,7 +1620,7 @@ public class Nova
 				else
 				{
 					error("Unknown argument '" + args[i] + "'");
-					completed();
+					completed(false);
 				}
 			}
 		}
@@ -1694,7 +1696,7 @@ public class Nova
 			
 			outputMessages();
 			
-			completed();
+			completed(false);
 		}
 	}
 	
@@ -1815,12 +1817,17 @@ public class Nova
 	 */
 	private void outputMessages()
 	{
+		outputMessages(true);
+	}
+	
+	private void outputMessages(boolean success)
+	{
 		for (String s : messages)
 		{
 			System.out.println(s);
 		}
 
-		String status = "succeeded";
+		String status = success ? "succeeded" : "failed";
 		String errorsText = "";
 		String warningsText = "";
 		
@@ -1860,7 +1867,7 @@ public class Nova
 	/**
 	 * Method called whenever the compilation sequence has completed.
 	 */
-	public void completed()
+	public void completed(boolean success)
 	{
 		stopTimer();
 		
@@ -1868,7 +1875,7 @@ public class Nova
 		
 		deleteLingeringFiles();
 		
-		outputMessages();
+		outputMessages(success);
 		
 		if (isFlagEnabled(RUNTIME))
 		{
@@ -2220,7 +2227,7 @@ public class Nova
 				System.err.println("Pre-compilation class tests failed:");
 				System.err.println(error);
 				
-				completed();
+				completed(true);
 			}
 			
 			System.out.println("Done testing classes");
