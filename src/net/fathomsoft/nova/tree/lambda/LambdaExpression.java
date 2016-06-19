@@ -65,12 +65,18 @@ public class LambdaExpression extends Value
 	{
 		String[] variables = null;
 		int endingIndex = 0;
-
+		
 		if (statement.startsWith("("))
 		{
 			endingIndex = StringUtils.findEndingMatch(statement, 0, '(', ')') + 1;
 			
 			variables = StringUtils.splitCommas(statement.substring(1, endingIndex - 1));
+		}
+		else if (statement.startsWith("{"))
+		{
+			variables = new String[0];
+			
+			endingIndex = StringUtils.findEndingMatch(statement, 0, '{', '}'); 
 		}
 		else
 		{
@@ -81,11 +87,23 @@ public class LambdaExpression extends Value
 		
 		if (endingIndex > 0)
 		{
-			String operation = statement.substring(endingIndex).trim();
+			String operation = null;
 			
-			if (operation.startsWith(OPERATOR))
+			if (variables.length > 0)
 			{
-				operation = operation.substring(OPERATOR.length()).trim();
+				operation = statement.substring(endingIndex).trim();
+			}
+			else
+			{
+				operation = statement.substring(1, endingIndex).trim();
+			}
+			
+			if (operation.startsWith(OPERATOR) || variables.length == 0)
+			{
+				if (operation.startsWith(OPERATOR))
+				{
+					operation = operation.substring(OPERATOR.length()).trim();
+				}
 				
 				MethodCall call = (MethodCall)parent.getAncestorOfType(MethodCall.class);
 				
