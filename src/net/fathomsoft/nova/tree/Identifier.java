@@ -143,7 +143,7 @@ public abstract class Identifier extends Value implements Accessible
 		
 		while (current != this && current != null)
 		{
-			if (((Value)current).isSpecial())
+			if (current.toValue().isSpecial())
 			{
 				return true;
 			}
@@ -187,31 +187,31 @@ public abstract class Identifier extends Value implements Accessible
 	{
 		//Node base = getBaseNode();
 //		boolean leftHandVariable = base instanceof Assignment && ((Assignment)base).getAssigneeNode() == this;
-		
+		Nova.debuggingBreakpoint(this.getName().equals("list") && doesAccess() && getAccessedNode().getName().equals("filter") && getParentClass().getName().equals("LambdaStability"));
 		if (!isAccessed())
 		{
 			Identifier accessed = this;
 			
 			while (accessed != null && accessed.doesAccess())
 			{
-				if (accessed.isGenericType())
+				/*if (accessed.isGenericType())
 				{
 					builder.append("(").append(accessed.generateCTypeCast());
-				}
-				
+				}*/
+
 				accessed = accessed.getAccessedNode();
 			}
 		}
 		
 //		boolean requireCast = !isAccessed() && !leftHandVariable && getReturnedNode().isGenericType();
 		
-//		if (requireCast)
-//		{
-//			getReturnedNode().generateCTypeCast(builder);
-//			
-//			builder.append('(');
-//		}
-		
+		if (isGenericType() && doesAccess())//isGenericType())//requireCast)
+		{
+			getReturnedNode().generateCTypeCast(builder);
+
+			builder.append('(');
+		}
+
 		if (isSpecialFragment())
 		{
 			generateSpecialFragment(builder);
@@ -219,6 +219,11 @@ public abstract class Identifier extends Value implements Accessible
 		else
 		{
 			generateCUseOutput(builder).append(generateChildrenCSourceFragment());
+		}
+
+		if (isGenericType() && doesAccess())//isGenericType())//requireCast)
+		{
+			builder.append(')');
 		}
 		
 //		if (requireCast)

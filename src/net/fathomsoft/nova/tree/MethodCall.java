@@ -506,6 +506,12 @@ public class MethodCall extends Variable
 	{
 		VariableDeclaration method   = getMethodDeclaration();
 		CallableMethod      callable = (CallableMethod)method;
+
+		if (checkAccesses && isGenericType() && doesAccess())
+		{
+			builder.append('(');
+			generateCTypeCast(builder);
+		}
 		
 		/*if (callable.isVirtual() && !isVirtualTypeKnown())
 		{
@@ -537,10 +543,10 @@ public class MethodCall extends Variable
 		
 		builder.append(getArgumentList().generateCSource());
 		
-		/*if (checkAccesses && isGenericType() && doesAccess())
+		if (checkAccesses && isGenericType() && doesAccess())
 		{
 			builder.append(')');
-		}*/
+		}
 		
 		return builder;
 	}
