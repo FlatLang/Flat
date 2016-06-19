@@ -42,6 +42,12 @@ public class Constructor extends BodyMethodDeclaration
 		return true;
 	}
 	
+	@Override
+	public boolean isSpecial()
+	{
+		return true;
+	}
+	
 	/**
 	 * @see net.fathomsoft.nova.tree.NovaMethodDeclaration#generateNovaInput(java.lang.StringBuilder, boolean)
 	 */
