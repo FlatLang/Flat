@@ -20,6 +20,8 @@ import net.fathomsoft.nova.util.Patterns;
 import net.fathomsoft.nova.util.StringUtils;
 import net.fathomsoft.nova.util.SyntaxUtils;
 
+import java.lang.reflect.Method;
+
 /**
  * Value extension that represents the declaration of a method
  * call node type. See {@link #decodeStatement(Node, String, Location, boolean)}
@@ -132,7 +134,7 @@ public class MethodCall extends Variable
 	@Override
 	public boolean isSpecial()
 	{
-		if (getCallableDeclaration().isVirtual())
+		/*if (getCallableDeclaration().isVirtual())
 		{
 			if (isVirtualTypeKnown())//isAccessed() && ((Value)getAccessingNode()).isVirtualTypeKnown())
 			{
@@ -140,7 +142,7 @@ public class MethodCall extends Variable
 			}
 			
 			return false;
-		}
+		}*/
 		
 		return true;
 	}
@@ -151,12 +153,12 @@ public class MethodCall extends Variable
 	@Override
 	public boolean isSpecialFragment()
 	{
-		if (getCallableDeclaration().isVirtual() && !isVirtualTypeKnown())
+		/*if (getCallableDeclaration().isVirtual() && !isVirtualTypeKnown())
 		{
 			return false;
-		}
+		}*/
 		
-		return super.isSpecialFragment();
+		return /*doesAccess() && getAccessedNode() instanceof MethodCall;*/super.isSpecialFragment();
 	}
 	
 	/**
@@ -505,7 +507,7 @@ public class MethodCall extends Variable
 		VariableDeclaration method   = getMethodDeclaration();
 		CallableMethod      callable = (CallableMethod)method;
 		
-		if (callable.isVirtual() && !isVirtualTypeKnown())
+		/*if (callable.isVirtual() && !isVirtualTypeKnown())
 		{
 			NovaMethodDeclaration novaMethod = (NovaMethodDeclaration)method;
 			
@@ -528,17 +530,17 @@ public class MethodCall extends Variable
 			
 			builder.append(novaMethod.generateCVirtualMethodName());
 		}
-		else
+		else*/
 		{
 			method.generateCSourceName(builder);
 		}
 		
 		builder.append(getArgumentList().generateCSource());
 		
-		if (checkAccesses && isGenericType() && doesAccess())
+		/*if (checkAccesses && isGenericType() && doesAccess())
 		{
 			builder.append(')');
-		}
+		}*/
 		
 		return builder;
 	}
@@ -1257,7 +1259,7 @@ public class MethodCall extends Variable
 	 */
 	private boolean localDeclarationRequired()
 	{
-		return getCallableDeclaration().isVirtual() && !isVirtualTypeKnown() && isAccessed() && getAccessingNode() instanceof MethodCall;// && !getAccessingNode().isVirtualTypeKnown();
+		return false;//getCallableDeclaration().isVirtual() && !isVirtualTypeKnown() && isAccessed() && getAccessingNode() instanceof MethodCall;// && !getAccessingNode().isVirtualTypeKnown();
 	}
 	
 	/**
