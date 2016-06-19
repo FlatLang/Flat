@@ -527,8 +527,7 @@ public interface Accessible
 	public default StringBuilder generateCArgumentReference(StringBuilder builder, Identifier callingMethod)
 	{
 		Value n = (Value)this;
-		
-		Nova.debuggingBreakpoint(n instanceof Variable && ((Variable)n).getName().equals("leftOperand") && ((Variable)n).getParentMethod().getName().equals("toString"));
+
 		if (n instanceof Identifier)
 		{
 			((Identifier)n).generateCUseOutput(builder, false, false);
@@ -621,7 +620,7 @@ public interface Accessible
 	public default StringBuilder generateChildrenCSourceFragment(StringBuilder builder, boolean reference, Identifier stopBefore, boolean checkAccesses)
 	{
 		Identifier child = getAccessedNode();
-		Nova.debuggingBreakpoint(this instanceof Variable && ((Variable)this).getName().equals("leftOperand"));
+
 		if (child == null)
 		{
 			return builder;
