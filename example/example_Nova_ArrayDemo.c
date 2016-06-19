@@ -92,7 +92,7 @@ void example_Nova_ArrayDemo_Nova_main(example_Nova_ArrayDemo* this, nova_standar
 			nova_standard_io_Nova_Console_1_Nova_writeLine(0, exceptionData, nova_standard_Nova_String_0_Nova_concat(nova_standard_Nova_String_2_Nova_construct(0, exceptionData, "Contains: "), exceptionData, example_Nova_Animal_1_Nova_toString((example_Nova_Animal*)(nova_standard_datastruct_list_Nova_Array_Nova_get(l1_Nova_list, exceptionData, l3_Nova_i)), exceptionData)));
 		}
 		l1_Nova_animal = (example_Nova_Animal*)(nova_standard_datastruct_list_Nova_Array_Nova_remove(l1_Nova_list, exceptionData, 2));
-		nova_standard_io_Nova_Console_1_Nova_writeLine(0, exceptionData, nova_standard_Nova_String_0_Nova_concat(nova_standard_Nova_String_2_Nova_construct(0, exceptionData, "--------- Removed: "), exceptionData, nova_standard_Nova_String_0_Nova_concat(l1_Nova_animal->example_Nova_Animal_1_Nova_toString(l1_Nova_animal, exceptionData), exceptionData, nova_standard_Nova_String_2_Nova_construct(0, exceptionData, " ----------"))));
+		nova_standard_io_Nova_Console_1_Nova_writeLine(0, exceptionData, nova_standard_Nova_String_0_Nova_concat(nova_standard_Nova_String_2_Nova_construct(0, exceptionData, "--------- Removed: "), exceptionData, nova_standard_Nova_String_0_Nova_concat(example_Nova_Animal_1_Nova_toString(l1_Nova_animal, exceptionData), exceptionData, nova_standard_Nova_String_2_Nova_construct(0, exceptionData, " ----------"))));
 		l5_Nova_i = 0;
 		for (; l5_Nova_i < l1_Nova_list->nova_standard_datastruct_list_Nova_Array_Nova_size; l5_Nova_i++)
 		{

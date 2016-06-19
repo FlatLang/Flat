@@ -80,7 +80,7 @@ void nova_standard_math_Nova_NumericOperand_2_Nova_this(nova_standard_math_Nova_
 
 nova_standard_Nova_String* nova_standard_math_Nova_NumericOperand_1_Nova_toString(nova_standard_math_Nova_NumericOperand* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
-	return nova_standard_Nova_Object_1_Nova_toString((nova_standard_Nova_Object*)(this->prv->nova_standard_math_Nova_NumericOperand_Nova_data), exceptionData);
+	return (nova_standard_Nova_String*)(nova_standard_Nova_Object_1_Nova_toString((nova_standard_Nova_Object*)(this->prv->nova_standard_math_Nova_NumericOperand_Nova_data), exceptionData));
 }
 
 void nova_standard_math_Nova_NumericOperand_Nova_super(nova_standard_math_Nova_NumericOperand* this, nova_standard_exception_Nova_ExceptionData* exceptionData)

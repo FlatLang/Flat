@@ -77,7 +77,7 @@ void example_Nova_QueueDemo_Nova_main(example_Nova_QueueDemo* this, nova_standar
 	nova_standard_datastruct_list_Nova_Queue_Nova_enqueue(l1_Nova_q, exceptionData, (nova_standard_Nova_Object*)(nova_standard_primitive_number_Nova_Int_Nova_construct(0, exceptionData, 3)));
 	nova_standard_datastruct_list_Nova_Queue_Nova_enqueue(l1_Nova_q, exceptionData, (nova_standard_Nova_Object*)(nova_standard_primitive_number_Nova_Int_Nova_construct(0, exceptionData, 10)));
 	nova_standard_io_Nova_Console_1_Nova_writeLine(0, exceptionData, nova_standard_Nova_String_0_Nova_concat(nova_standard_Nova_String_2_Nova_construct(0, exceptionData, "Queue: "), exceptionData, nova_standard_datastruct_list_Nova_Queue_1_Nova_toString(l1_Nova_q, exceptionData)));
-	l1_Nova_num = nova_standard_datastruct_list_Nova_Queue_Nova_dequeue(l1_Nova_q, exceptionData)->nova_standard_primitive_number_Nova_Int_Nova_value;
+	l1_Nova_num = (int)(((nova_standard_primitive_number_Nova_Int*)nova_standard_datastruct_list_Nova_Queue_Nova_dequeue(l1_Nova_q, exceptionData))->nova_standard_primitive_number_Nova_Int_Nova_value);
 	nova_standard_io_Nova_Console_1_Nova_writeLine(0, exceptionData, nova_standard_Nova_String_0_Nova_concat(nova_standard_Nova_String_2_Nova_construct(0, exceptionData, "Dequeued: "), exceptionData, nova_standard_primitive_number_Nova_Int_2_Nova_toString(0, exceptionData, l1_Nova_num)));
 	nova_standard_io_Nova_Console_1_Nova_writeLine(0, exceptionData, nova_standard_Nova_String_0_Nova_concat(nova_standard_Nova_String_2_Nova_construct(0, exceptionData, "Queue: "), exceptionData, nova_standard_datastruct_list_Nova_Queue_1_Nova_toString(l1_Nova_q, exceptionData)));
 	nova_standard_io_Nova_Console_Nova_waitForEnter(0, exceptionData);
