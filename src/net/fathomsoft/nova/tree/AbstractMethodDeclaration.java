@@ -1,5 +1,6 @@
 package net.fathomsoft.nova.tree;
 
+import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.error.SyntaxMessage;
@@ -26,8 +27,24 @@ public class AbstractMethodDeclaration extends NovaMethodDeclaration
 	public AbstractMethodDeclaration(Node temporaryParent, Location locationIn)
 	{
 		super(temporaryParent, locationIn);
+
+		Scope scope = new Scope(this, locationIn.asNew());
+
+		setScope(scope);
 	}
-	
+
+	@Override
+	public int getNumDefaultChildren()
+	{
+		return super.getNumDefaultChildren() + 1;
+	}
+
+	@Override
+	public Scope getScope()
+	{
+		return (Scope)getChild(super.getNumDefaultChildren() + 0);
+	}
+
 	/**
 	 * @see net.fathomsoft.nova.tree.MethodDeclaration#containsBody()
 	 */
@@ -69,21 +86,30 @@ public class AbstractMethodDeclaration extends NovaMethodDeclaration
 		getParameterList().getObjectReference().generateCSourceFragment(builder).append("->");
 		
 		builder.append(VTable.IDENTIFIER).append("->");
-		builder.append(InterfaceVTable.IDENTIFIER).append(".");
+
+		if (getParentClass() instanceof Interface)
+		{
+			builder.append(InterfaceVTable.IDENTIFIER).append(".");
+		}
+
+		String call = getName() + "(";
 		
-		builder.append(generateCVirtualMethodName()).append("(");
-		
-		for (int i = 0; i < getParameterList().getNumChildren(); i++)
+		for (int i = 0; i < getParameterList().getNumVisibleChildren(); i++)
 		{
 			if (i > 0)
 			{
 				builder.append(", ");
 			}
 			
-			builder.append(getParameterList().getChild(i).generateCSourceName());
+			call += getParameterList().getVisibleChild(i).getName();
 		}
+
+		Nova.debuggingBreakpoint(getName().equals("forEach"));
+		MethodCall output = MethodCall.decodeStatement(getScope(), call + ")", getLocationIn().asNew(), true, true, this);
+
+		output.generateCSourceFragment(builder);
 		
-		return builder.append(");\n}");
+		return builder.append(";\n}");
 	}
 	
 	/**
