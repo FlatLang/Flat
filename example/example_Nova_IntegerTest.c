@@ -75,7 +75,6 @@ void example_Nova_IntegerTest_Nova_main(example_Nova_IntegerTest* this, nova_sta
 	{
 		nova_standard_time_Nova_Timer* l1_Nova_timer;
 		int l3_Nova_i;
-		nova_standard_Nova_String* nova_local_0;
 		
 		l1_Nova_timer = nova_standard_time_Nova_Timer_Nova_start(nova_standard_time_Nova_Timer_0_Nova_construct(0, exceptionData), exceptionData);
 		l3_Nova_i = 0;
@@ -84,8 +83,7 @@ void example_Nova_IntegerTest_Nova_main(example_Nova_IntegerTest* this, nova_sta
 			nova_standard_primitive_number_Nova_Long_2_Nova_toString(0, exceptionData, (long)(l3_Nova_i));
 		}
 		nova_standard_time_Nova_Timer_Nova_stop(l1_Nova_timer, exceptionData);
-		nova_local_0 = nova_standard_primitive_number_Nova_Long_2_Nova_toString(0, exceptionData, nova_standard_time_Nova_Timer_Accessor_Nova_duration(l1_Nova_timer, exceptionData));
-		nova_standard_io_Nova_Console_1_Nova_writeLine(0, exceptionData, nova_standard_Nova_String_0_Nova_concat(nova_standard_Nova_String_2_Nova_construct(0, exceptionData, "Time taken: "), exceptionData, nova_local_0->vtable->nova_standard_Nova_String_virtual0_Nova_concat(nova_local_0, exceptionData, nova_standard_Nova_String_2_Nova_construct(0, exceptionData, "ms"))));
+		nova_standard_io_Nova_Console_1_Nova_writeLine(0, exceptionData, nova_standard_Nova_String_0_Nova_concat(nova_standard_Nova_String_2_Nova_construct(0, exceptionData, "Time taken: "), exceptionData, nova_standard_Nova_String_0_Nova_concat(nova_standard_primitive_number_Nova_Long_2_Nova_toString(0, exceptionData, nova_standard_time_Nova_Timer_Accessor_Nova_duration(l1_Nova_timer, exceptionData)), exceptionData, nova_standard_Nova_String_2_Nova_construct(0, exceptionData, "ms"))));
 		nova_standard_io_Nova_Console_0_Nova_write(0, exceptionData, nova_standard_Nova_String_2_Nova_construct(0, exceptionData, "Run again? (Y/N) "));
 		l1_Nova_c = nova_standard_io_Nova_Console_Nova_readChar(0, exceptionData);
 	}

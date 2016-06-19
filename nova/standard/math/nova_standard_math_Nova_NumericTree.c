@@ -80,7 +80,7 @@ void nova_standard_math_Nova_NumericTree_Nova_this(nova_standard_math_Nova_Numer
 
 nova_standard_Nova_String* nova_standard_math_Nova_NumericTree_1_Nova_toString(nova_standard_math_Nova_NumericTree* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
-	return this->prv->nova_standard_math_Nova_NumericTree_Nova_root->vtable->nova_standard_math_Nova_NumericOperation_virtual1_Nova_toString(this->prv->nova_standard_math_Nova_NumericTree_Nova_root, exceptionData);
+	return nova_standard_math_Nova_NumericOperation_1_Nova_toString(this->prv->nova_standard_math_Nova_NumericTree_Nova_root, exceptionData);
 }
 
 void nova_standard_math_Nova_NumericTree_Nova_super(nova_standard_math_Nova_NumericTree* this, nova_standard_exception_Nova_ExceptionData* exceptionData)

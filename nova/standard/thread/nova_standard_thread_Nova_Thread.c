@@ -110,7 +110,7 @@ void nova_standard_thread_Nova_Thread_Nova_startRun(nova_standard_thread_Nova_Th
 		novaEnv.nova_standard_exception_ExceptionData.addCode(exceptionData, exceptionData, 1);
 		
 		{
-			this->vtable->nova_standard_thread_Nova_Thread_virtual0_Nova_run(this, exceptionData);
+			nova_standard_thread_Nova_Thread_0_Nova_run(this, exceptionData);
 		}
 	}
 	CATCH (1)

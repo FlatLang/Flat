@@ -127,7 +127,7 @@ nova_standard_Nova_String* nova_standard_Nova_String_0_Nova_concat(nova_standard
 	char* l1_Nova_newData;
 	nova_standard_Nova_String* l1_Nova_newStr;
 	
-	nova_standard_Nova_String_Nova_str = nova_standard_Nova_String_Nova_str->vtable->nova_standard_Nova_String_virtual0_Nova_toString(nova_standard_Nova_String_Nova_str, exceptionData);
+	nova_standard_Nova_String_Nova_str = nova_standard_Nova_String_0_Nova_toString(nova_standard_Nova_String_Nova_str, exceptionData);
 	l1_Nova_sz = nova_standard_Nova_String_Nova_str->nova_standard_Nova_String_Nova_size + this->nova_standard_Nova_String_Nova_size + 1;
 	l1_Nova_newData = (char*)NOVA_MALLOC(sizeof(nova_standard_primitive_number_Nova_Char) * l1_Nova_sz);
 	strcpy((char*)(l1_Nova_newData), (char*)(this->nova_standard_Nova_String_Nova_chars));
@@ -139,7 +139,7 @@ nova_standard_Nova_String* nova_standard_Nova_String_0_Nova_concat(nova_standard
 
 char nova_standard_Nova_String_Nova_equals(nova_standard_Nova_String* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_Nova_String* nova_standard_Nova_String_Nova_other)
 {
-	return this->vtable->nova_standard_Nova_String_virtual_Nova_compareTo(this, exceptionData, nova_standard_Nova_String_Nova_other) == 0;
+	return nova_standard_Nova_String_Nova_compareTo(this, exceptionData, nova_standard_Nova_String_Nova_other) == 0;
 }
 
 int nova_standard_Nova_String_0_Nova_indexOf(nova_standard_Nova_String* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_Nova_String* nova_standard_Nova_String_Nova_search, int nova_standard_Nova_String_Nova_start, int nova_standard_Nova_String_Nova_direction)
@@ -194,12 +194,7 @@ nova_standard_Nova_String* nova_standard_Nova_String_0_Nova_substring(nova_stand
 	}
 	else if (nova_standard_Nova_String_Nova_end - nova_standard_Nova_String_Nova_start < 0)
 	{
-		nova_standard_Nova_String* nova_local_0;
-		nova_standard_Nova_String* nova_local_1;
-		
-		nova_local_0 = nova_standard_primitive_number_Nova_Int_2_Nova_toString(0, exceptionData, nova_standard_Nova_String_Nova_start);
-		nova_local_1 = nova_standard_primitive_number_Nova_Int_2_Nova_toString(0, exceptionData, nova_standard_Nova_String_Nova_end);
-		THROW(1, nova_standard_exception_Nova_Exception_4_Nova_construct(0, exceptionData, nova_standard_Nova_String_0_Nova_concat(nova_standard_Nova_String_2_Nova_construct(0, exceptionData, "Substring bounds of ["), exceptionData, nova_local_0->vtable->nova_standard_Nova_String_virtual0_Nova_concat(nova_local_0, exceptionData, nova_standard_Nova_String_0_Nova_concat(nova_standard_Nova_String_2_Nova_construct(0, exceptionData, ", "), exceptionData, nova_local_1->vtable->nova_standard_Nova_String_virtual0_Nova_concat(nova_local_1, exceptionData, nova_standard_Nova_String_2_Nova_construct(0, exceptionData, "] are invalid")))))));
+		THROW(1, nova_standard_exception_Nova_Exception_4_Nova_construct(0, exceptionData, nova_standard_Nova_String_0_Nova_concat(nova_standard_Nova_String_2_Nova_construct(0, exceptionData, "Substring bounds of ["), exceptionData, nova_standard_Nova_String_0_Nova_concat(nova_standard_primitive_number_Nova_Int_2_Nova_toString(0, exceptionData, nova_standard_Nova_String_Nova_start), exceptionData, nova_standard_Nova_String_0_Nova_concat(nova_standard_Nova_String_2_Nova_construct(0, exceptionData, ", "), exceptionData, nova_standard_Nova_String_0_Nova_concat(nova_standard_primitive_number_Nova_Int_2_Nova_toString(0, exceptionData, nova_standard_Nova_String_Nova_end), exceptionData, nova_standard_Nova_String_2_Nova_construct(0, exceptionData, "] are invalid")))))));
 	}
 	l1_Nova_buf = (char*)NOVA_MALLOC(sizeof(nova_standard_primitive_number_Nova_Char) * nova_standard_Nova_String_Nova_end - nova_standard_Nova_String_Nova_start + 1);
 	memcpy((char*)(l1_Nova_buf), (char**)&(this->nova_standard_Nova_String_Nova_chars[nova_standard_Nova_String_Nova_start]), (int)(nova_standard_Nova_String_Nova_end - nova_standard_Nova_String_Nova_start));

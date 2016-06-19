@@ -40,5 +40,9 @@ void example_Nova_PolygonNova_init_static(nova_standard_exception_Nova_Exception
 	}
 }
 
-int example_Nova_Polygon_0_Nova_numberSides(example_Nova_Polygon* this, nova_standard_exception_Nova_ExceptionData* exceptionData){return 0;}
-double example_Nova_Polygon_0_Nova_calculateArea(example_Nova_Polygon* this, nova_standard_exception_Nova_ExceptionData* exceptionData){return 0;}
+int example_Nova_Polygon_0_Nova_numberSides(example_Nova_Polygon* this, nova_standard_exception_Nova_ExceptionData* exceptionData){
+	return this->vtable->itable.example_Nova_Polygon_virtual0_Nova_numberSides(this, exceptionData);
+}
+double example_Nova_Polygon_0_Nova_calculateArea(example_Nova_Polygon* this, nova_standard_exception_Nova_ExceptionData* exceptionData){
+	return this->vtable->itable.example_Nova_Polygon_virtual0_Nova_calculateArea(this, exceptionData);
+}

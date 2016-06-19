@@ -71,8 +71,6 @@ void example_Nova_MathDemo_Nova_main(example_Nova_MathDemo* this, nova_standard_
 	int l1_Nova_iterations;
 	nova_standard_time_Nova_Timer* l1_Nova_timer;
 	int l2_Nova_i;
-	nova_standard_Nova_String* nova_local_0;
-	nova_standard_Nova_String* nova_local_1;
 	
 	nova_standard_io_Nova_Console_1_Nova_writeLine(0, exceptionData, nova_standard_Nova_String_2_Nova_construct(0, exceptionData, "Beginning benchmark..."));
 	l1_Nova_iterations = 999999;
@@ -100,9 +98,7 @@ void example_Nova_MathDemo_Nova_main(example_Nova_MathDemo* this, nova_standard_
 		END_TRY;
 	}
 	nova_standard_time_Nova_Timer_Nova_stop(0, exceptionData);
-	nova_local_0 = nova_standard_primitive_number_Nova_Int_2_Nova_toString(0, exceptionData, l1_Nova_iterations);
-	nova_local_1 = nova_standard_primitive_number_Nova_Long_2_Nova_toString(0, exceptionData, nova_standard_time_Nova_Timer_Accessor_Nova_duration(l1_Nova_timer, exceptionData));
-	nova_standard_io_Nova_Console_1_Nova_writeLine(0, exceptionData, nova_local_0->vtable->nova_standard_Nova_String_virtual0_Nova_concat(nova_local_0, exceptionData, nova_standard_Nova_String_0_Nova_concat(nova_standard_Nova_String_2_Nova_construct(0, exceptionData, " iterations of Math.sin() in "), exceptionData, nova_local_1->vtable->nova_standard_Nova_String_virtual0_Nova_concat(nova_local_1, exceptionData, nova_standard_Nova_String_2_Nova_construct(0, exceptionData, "ms")))));
+	nova_standard_io_Nova_Console_1_Nova_writeLine(0, exceptionData, nova_standard_Nova_String_0_Nova_concat(nova_standard_primitive_number_Nova_Int_2_Nova_toString(0, exceptionData, l1_Nova_iterations), exceptionData, nova_standard_Nova_String_0_Nova_concat(nova_standard_Nova_String_2_Nova_construct(0, exceptionData, " iterations of Math.sin() in "), exceptionData, nova_standard_Nova_String_0_Nova_concat(nova_standard_primitive_number_Nova_Long_2_Nova_toString(0, exceptionData, nova_standard_time_Nova_Timer_Accessor_Nova_duration(l1_Nova_timer, exceptionData)), exceptionData, nova_standard_Nova_String_2_Nova_construct(0, exceptionData, "ms")))));
 	nova_standard_io_Nova_Console_Nova_waitForEnter(0, exceptionData);
 }
 

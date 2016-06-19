@@ -88,7 +88,7 @@ void example_Nova_GenericDemo_Nova_main(example_Nova_GenericDemo* this, nova_sta
 		l1_Nova_popped = (nova_standard_Nova_String*)(nova_standard_datastruct_list_Nova_Stack_Nova_pop(l1_Nova_strs, exceptionData));
 		if (l1_Nova_popped != (nova_standard_Nova_String*)nova_null)
 		{
-			l1_Nova_popped = nova_standard_Nova_String_0_Nova_concat(nova_standard_Nova_String_2_Nova_construct(0, exceptionData, "\""), exceptionData, l1_Nova_popped->vtable->nova_standard_Nova_String_virtual0_Nova_concat(l1_Nova_popped, exceptionData, nova_standard_Nova_String_2_Nova_construct(0, exceptionData, "\"")));
+			l1_Nova_popped = nova_standard_Nova_String_0_Nova_concat(nova_standard_Nova_String_2_Nova_construct(0, exceptionData, "\""), exceptionData, nova_standard_Nova_String_0_Nova_concat(l1_Nova_popped, exceptionData, nova_standard_Nova_String_2_Nova_construct(0, exceptionData, "\"")));
 		}
 		nova_standard_io_Nova_Console_1_Nova_writeLine(0, exceptionData, nova_standard_Nova_String_0_Nova_concat(nova_standard_Nova_String_2_Nova_construct(0, exceptionData, "Popping: "), exceptionData, l1_Nova_popped));
 	}

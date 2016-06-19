@@ -86,7 +86,7 @@ nova_standard_Nova_String* example_Nova_Animal_0_Nova_getDescription(example_Nov
 
 nova_standard_Nova_String* example_Nova_Animal_1_Nova_toString(example_Nova_Animal* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
-	return this->vtable->example_Nova_Animal_virtual0_Nova_getDescription(this, exceptionData);
+	return example_Nova_Animal_0_Nova_getDescription(this, exceptionData);
 }
 
 void example_Nova_Animal_0_Nova_this(example_Nova_Animal* this, nova_standard_exception_Nova_ExceptionData* exceptionData)

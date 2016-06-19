@@ -77,10 +77,7 @@ long nova_standard_Nova_Object_0_Nova_getHashCodeLong(nova_standard_Nova_Object*
 
 nova_standard_Nova_String* nova_standard_Nova_Object_1_Nova_toString(nova_standard_Nova_Object* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
-	nova_standard_Nova_String* nova_local_0;
-	
-	nova_local_0 = nova_standard_Nova_Object_Nova_getHashCode(this, exceptionData);
-	return nova_standard_Nova_String_0_Nova_concat(nova_standard_Nova_String_2_Nova_construct(0, exceptionData, "[Object @"), exceptionData, nova_local_0->vtable->nova_standard_Nova_String_virtual0_Nova_concat(nova_local_0, exceptionData, nova_standard_Nova_String_2_Nova_construct(0, exceptionData, "]")));
+	return nova_standard_Nova_String_0_Nova_concat(nova_standard_Nova_String_2_Nova_construct(0, exceptionData, "[Object @"), exceptionData, nova_standard_Nova_String_0_Nova_concat(nova_standard_Nova_Object_Nova_getHashCode(this, exceptionData), exceptionData, nova_standard_Nova_String_2_Nova_construct(0, exceptionData, "]")));
 }
 
 char nova_standard_Nova_Object_0_Nova_equals(nova_standard_Nova_Object* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_Nova_Object* nova_standard_Nova_Object_Nova_another)

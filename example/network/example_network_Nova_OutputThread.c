@@ -92,7 +92,7 @@ void example_network_Nova_OutputThread_0_Nova_run(example_network_Nova_OutputThr
 		nova_standard_Nova_String* l1_Nova_message;
 		
 		l1_Nova_message = nova_standard_io_Nova_Console_Nova_readLine(0, exceptionData);
-		if (l1_Nova_message->vtable->nova_standard_Nova_String_virtual_Nova_equals(l1_Nova_message, exceptionData, nova_standard_Nova_String_2_Nova_construct(0, exceptionData, "q")))
+		if (nova_standard_Nova_String_Nova_equals(l1_Nova_message, exceptionData, nova_standard_Nova_String_2_Nova_construct(0, exceptionData, "q")))
 		{
 			nova_standard_network_Nova_ServerSocket_Nova_close(this->prv->example_network_Nova_OutputThread_Nova_serverSocket, exceptionData);
 			break;
@@ -101,7 +101,7 @@ void example_network_Nova_OutputThread_0_Nova_run(example_network_Nova_OutputThr
 		{
 			break;
 		}
-		this->prv->example_network_Nova_OutputThread_Nova_socket->nova_standard_network_Nova_ConnectionSocket_Nova_out->vtable->nova_standard_io_Nova_OutputStream_virtual0_Nova_write(this->prv->example_network_Nova_OutputThread_Nova_socket->nova_standard_network_Nova_ConnectionSocket_Nova_out, exceptionData, l1_Nova_message);
+		nova_standard_io_Nova_OutputStream_0_Nova_write(this->prv->example_network_Nova_OutputThread_Nova_socket->nova_standard_network_Nova_ConnectionSocket_Nova_out, exceptionData, l1_Nova_message);
 	}
 }
 

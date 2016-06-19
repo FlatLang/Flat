@@ -78,7 +78,7 @@ void example_Nova_BodyBuilder_1_Nova_this(example_Nova_BodyBuilder* this, nova_s
 
 void example_Nova_BodyBuilder_Nova_sayHello(example_Nova_BodyBuilder* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
-	nova_standard_io_Nova_Console_1_Nova_writeLine(0, exceptionData, nova_standard_Nova_String_0_Nova_concat(nova_standard_Nova_String_2_Nova_construct(0, exceptionData, "Hello from "), exceptionData, this->example_Nova_Person_Nova_name->vtable->nova_standard_Nova_String_virtual0_Nova_concat(this->example_Nova_Person_Nova_name, exceptionData, nova_standard_Nova_String_2_Nova_construct(0, exceptionData, " the BodyBuilder"))));
+	nova_standard_io_Nova_Console_1_Nova_writeLine(0, exceptionData, nova_standard_Nova_String_0_Nova_concat(nova_standard_Nova_String_2_Nova_construct(0, exceptionData, "Hello from "), exceptionData, nova_standard_Nova_String_0_Nova_concat(this->example_Nova_Person_Nova_name, exceptionData, nova_standard_Nova_String_2_Nova_construct(0, exceptionData, " the BodyBuilder"))));
 }
 
 void example_Nova_BodyBuilder_0_Nova_super(example_Nova_BodyBuilder* this, nova_standard_exception_Nova_ExceptionData* exceptionData)

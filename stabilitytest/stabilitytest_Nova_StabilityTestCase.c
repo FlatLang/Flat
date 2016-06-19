@@ -73,7 +73,9 @@ void stabilitytest_Nova_StabilityTestCase_0_Nova_this(stabilitytest_Nova_Stabili
 	this->stabilitytest_Nova_StabilityTestCase_Nova_program = stabilitytest_Nova_StabilityTestCase_Nova_program;
 }
 
-void stabilitytest_Nova_StabilityTestCase_0_Nova_test(stabilitytest_Nova_StabilityTestCase* this, nova_standard_exception_Nova_ExceptionData* exceptionData){}
+void stabilitytest_Nova_StabilityTestCase_0_Nova_test(stabilitytest_Nova_StabilityTestCase* this, nova_standard_exception_Nova_ExceptionData* exceptionData){
+	this->vtable->itable.stabilitytest_Nova_StabilityTestCase_virtual0_Nova_test(this, exceptionData);
+}
 void stabilitytest_Nova_StabilityTestCase_Nova_super(stabilitytest_Nova_StabilityTestCase* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
 	this->stabilitytest_Nova_StabilityTestCase_Nova_program = (stabilitytest_Nova_StabilityTest*)nova_null;

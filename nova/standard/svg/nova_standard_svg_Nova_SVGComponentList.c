@@ -74,7 +74,7 @@ void nova_standard_svg_Nova_SVGComponentList_Nova_generateOutput(nova_standard_s
 	l1_Nova_current = this->nova_standard_svg_Nova_SVGComponentList_Nova_start;
 	while (l1_Nova_current != (nova_standard_svg_Nova_SVGComponentNode*)nova_null)
 	{
-		l1_Nova_current->nova_standard_svg_Nova_SVGComponentNode_Nova_component->vtable->nova_standard_svg_Nova_SVGComponent_virtual0_Nova_generateOutput(l1_Nova_current->nova_standard_svg_Nova_SVGComponentNode_Nova_component, exceptionData, nova_standard_svg_Nova_SVGComponentList_Nova_file);
+		nova_standard_svg_Nova_SVGComponent_0_Nova_generateOutput(l1_Nova_current->nova_standard_svg_Nova_SVGComponentNode_Nova_component, exceptionData, nova_standard_svg_Nova_SVGComponentList_Nova_file);
 		l1_Nova_current = l1_Nova_current->nova_standard_svg_Nova_SVGComponentNode_Nova_next;
 	}
 }

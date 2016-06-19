@@ -32,6 +32,7 @@ typedef struct stabilitytest_Nova_StabilityTest stabilitytest_Nova_StabilityTest
 #include <stabilitytest/stabilitytest_Nova_ClosureStability.h>
 #include <stabilitytest/stabilitytest_Nova_ExceptionStability.h>
 #include <stabilitytest/stabilitytest_Nova_FileStability.h>
+#include <stabilitytest/stabilitytest_Nova_LambdaStability.h>
 #include <stabilitytest/stabilitytest_Nova_NetworkStability.h>
 #include <stabilitytest/stabilitytest_Nova_PolymorphismStability.h>
 #include <stabilitytest/stabilitytest_Nova_StabilityTestCase.h>

@@ -44,7 +44,9 @@ void nova_standard_datastruct_list_Nova_IteratorNova_init_static(nova_standard_e
 	}
 }
 
-nova_standard_datastruct_list_Nova_Iterator* nova_standard_datastruct_list_Nova_Iterator_0_Nova_reset(nova_standard_datastruct_list_Nova_Iterator* this, nova_standard_exception_Nova_ExceptionData* exceptionData){return 0;}
+nova_standard_datastruct_list_Nova_Iterator* nova_standard_datastruct_list_Nova_Iterator_0_Nova_reset(nova_standard_datastruct_list_Nova_Iterator* this, nova_standard_exception_Nova_ExceptionData* exceptionData){
+	return this->vtable->itable.nova_standard_datastruct_list_Nova_Iterator_virtual0_Nova_reset(this, exceptionData);
+}
 char nova_standard_datastruct_list_Nova_Iterator_Accessor_Nova_hasNext(nova_standard_datastruct_list_Nova_Iterator* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
 	return 0;

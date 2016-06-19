@@ -93,9 +93,9 @@ nova_standard_Nova_String* example_Nova_PolymorphismDemo_Nova_getDescriptionOfAn
 	l2_Nova_i = 0;
 	for (; l2_Nova_i < 2; l2_Nova_i++)
 	{
-		if (example_Nova_PolymorphismDemo_Nova_animals[l2_Nova_i]->vtable->example_Nova_Animal_virtual0_Nova_getNumLegs(example_Nova_PolymorphismDemo_Nova_animals[l2_Nova_i], exceptionData) == example_Nova_PolymorphismDemo_Nova_numLegs)
+		if (example_Nova_Animal_0_Nova_getNumLegs(example_Nova_PolymorphismDemo_Nova_animals[l2_Nova_i], exceptionData) == example_Nova_PolymorphismDemo_Nova_numLegs)
 		{
-			return example_Nova_PolymorphismDemo_Nova_animals[l2_Nova_i]->vtable->example_Nova_Animal_virtual0_Nova_getDescription(example_Nova_PolymorphismDemo_Nova_animals[l2_Nova_i], exceptionData);
+			return example_Nova_Animal_0_Nova_getDescription(example_Nova_PolymorphismDemo_Nova_animals[l2_Nova_i], exceptionData);
 		}
 	}
 	return (nova_standard_Nova_String*)nova_null;

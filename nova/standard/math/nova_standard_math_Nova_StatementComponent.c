@@ -75,7 +75,7 @@ void nova_standard_math_Nova_StatementComponent_Nova_this(nova_standard_math_Nov
 
 nova_standard_Nova_String* nova_standard_math_Nova_StatementComponent_1_Nova_toString(nova_standard_math_Nova_StatementComponent* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
-	return ((nova_standard_Nova_Object*)this->nova_standard_math_Nova_StatementComponent_Nova_data)->vtable->nova_standard_Nova_Object_virtual1_Nova_toString((nova_standard_Nova_Object*)(this->nova_standard_math_Nova_StatementComponent_Nova_data), exceptionData);
+	return nova_standard_Nova_Object_1_Nova_toString((nova_standard_Nova_Object*)(this->nova_standard_math_Nova_StatementComponent_Nova_data), exceptionData);
 }
 
 void nova_standard_math_Nova_StatementComponent_Nova_super(nova_standard_math_Nova_StatementComponent* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
