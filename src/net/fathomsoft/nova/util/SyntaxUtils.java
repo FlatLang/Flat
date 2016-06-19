@@ -2144,19 +2144,22 @@ public class SyntaxUtils
 			
 			return true;
 		}
-		
-		if (given instanceof ClosureDeclaration && required instanceof ClosureDeclaration)
+
+		VariableDeclaration givenDeclaration = given instanceof VariableDeclaration ? (VariableDeclaration)given : (given instanceof  Variable ? ((Variable)given).getDeclaration() : null);
+		VariableDeclaration requiredDeclaration = required instanceof VariableDeclaration ? (VariableDeclaration)required : (required instanceof  Variable ? ((Variable)required).getDeclaration() : null);
+
+		if (givenDeclaration instanceof ClosureDeclaration && requiredDeclaration instanceof ClosureDeclaration)
 		{
-			ClassDeclaration requiredClass = required.getTypeClass();
-			ClassDeclaration givenClass = given.getTypeClass();
+			ClassDeclaration requiredClass = requiredDeclaration.getTypeClass();
+			ClassDeclaration givenClass = givenDeclaration.getTypeClass();
 			
 			if (!((givenClass == null && requiredClass == null) || (requiredClass != null && givenClass != null && requiredClass.isAncestorOf(givenClass, true))))
 			{
 				return false;
 			}
 			
-			ClosureDeclaration r = (ClosureDeclaration)required;
-			ClosureDeclaration g = (ClosureDeclaration)given;
+			ClosureDeclaration r = (ClosureDeclaration)requiredDeclaration;
+			ClosureDeclaration g = (ClosureDeclaration)givenDeclaration;
 			
 			if (r.getParameterList().getNumParameters() != g.getParameterList().getNumParameters())
 			{
