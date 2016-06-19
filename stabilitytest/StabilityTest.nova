@@ -42,6 +42,7 @@ public class StabilityTest extends StabilityTestCase
 			new ClosureStability(this).test()
 			new PolymorphismStability(this).test()
 			new NetworkStability(this).test()
+			new LambdaStability(this).test()
 			
 			Console.writeLine("All OK")
 		}
