@@ -258,7 +258,7 @@ public class TreeGenerator implements Runnable
 				
 				if (startingIndex >= 0 && source.charAt(startingIndex) != '{')
 				{
-					if (requiresScope)
+					if (requiresScope && node instanceof AbstractMethodDeclaration == false)
 					{
 						if (!(node instanceof PropertyMethod) || !((PropertyMethod)node).isDisabled())
 						{
