@@ -2,6 +2,7 @@ package net.fathomsoft.nova.tree;
 
 import java.util.HashMap;
 
+import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.error.SyntaxMessage;
@@ -412,6 +413,8 @@ public class UnaryOperation extends IValue
 		}
 		
 		setType(value.getType());
+		
+		value.onAfterDecoded();
 		
 		return true;
 	}
