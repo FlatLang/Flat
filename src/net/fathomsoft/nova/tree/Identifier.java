@@ -187,21 +187,21 @@ public abstract class Identifier extends Value implements Accessible
 	{
 		//Node base = getBaseNode();
 //		boolean leftHandVariable = base instanceof Assignment && ((Assignment)base).getAssigneeNode() == this;
-		Nova.debuggingBreakpoint(this.getName().equals("list") && doesAccess() && getAccessedNode().getName().equals("filter") && getParentClass().getName().equals("LambdaStability"));
-		if (!isAccessed())
-		{
-			Identifier accessed = this;
-			
-			while (accessed != null && accessed.doesAccess())
-			{
-				/*if (accessed.isGenericType())
-				{
-					builder.append("(").append(accessed.generateCTypeCast());
-				}*/
-
-				accessed = accessed.getAccessedNode();
-			}
-		}
+		
+//		if (!isAccessed())
+//		{
+//			Identifier accessed = this;
+//			
+//			while (accessed != null && accessed.doesAccess())
+//			{
+//				/*if (accessed.isGenericType())
+//				{
+//					builder.append("(").append(accessed.generateCTypeCast());
+//				}*/
+//
+//				accessed = accessed.getAccessedNode();
+//			}
+//		}
 		
 //		boolean requireCast = !isAccessed() && !leftHandVariable && getReturnedNode().isGenericType();
 		
