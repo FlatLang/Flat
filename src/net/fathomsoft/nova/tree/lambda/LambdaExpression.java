@@ -157,22 +157,24 @@ public class LambdaExpression extends Value
 					}
 					
 					BodyMethodDeclaration method = BodyMethodDeclaration.decodeStatement(parent.getParentClass(true), methodDeclaration, location.asNew(), require); 
-					method.getParentClass().addChild(method);
 					
-					if (method.getType() != null)
+					if (method != null)
 					{
-						operation = "return " + operation;
+						method.getParentClass().addChild(method);
+						
+						if (method.getType() != null)
+						{
+							operation = "return " + operation;
+						}
+						
+						Node node = SyntaxTree.decodeScopeContents(method, operation, location.asNew());
+						method.addChild(node);
+						
+						Closure methodReference = Closure.decodeStatement(parent, method.generateNovaClosureReference(method.getParentClass()), location.asNew(), require);
+						methodReference.onAfterDecoded();
+						
+						return methodReference;
 					}
-					
-					Node node = SyntaxTree.decodeScopeContents(method, operation, location.asNew());
-					method.addChild(node);
-					
-					Closure methodReference = Closure.decodeStatement(parent, method.generateNovaClosureReference(method.getParentClass()), location.asNew(), require);
-					methodReference.onAfterDecoded();
-					
-//					return closure;
-					
-					return methodReference;
 				}
 			}
 		}
