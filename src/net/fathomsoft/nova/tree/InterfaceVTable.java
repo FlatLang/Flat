@@ -53,7 +53,7 @@ public class InterfaceVTable extends VTable
 			
 			for (NovaMethodDeclaration method2 : interfaceMethods)
 			{
-				if (method2.getRootDeclaration() == method)
+				if (method2.getVirtualMethod() == method)
 				{
 					m = method2;
 				}
@@ -106,10 +106,7 @@ public class InterfaceVTable extends VTable
 		{
 			if (method != null)
 			{
-				NovaMethodDeclaration root = method.getRootDeclaration();
-				
-				builder.append("(").append(root.generateCType()).append("(*)(").append(root.getParameterList().generateCHeader()).append("))");
-				method.generateCSourceName(builder);
+				method.generateCInterfaceVTableSource(builder);
 			}
 			else
 			{
