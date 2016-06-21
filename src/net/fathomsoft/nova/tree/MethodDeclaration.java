@@ -237,13 +237,19 @@ public abstract class MethodDeclaration extends InstanceDeclaration implements C
 	public StringBuilder generateCSourceSignature(StringBuilder builder)
 	{
 		generateCModifiersSource(builder).append(' ');
-		generateCSourceName(builder).append('(');
+		generateCSourceName(builder);
+		generateCParameterOutput(builder);
+		
+		return builder;
+	}
+	
+	public StringBuilder generateCParameterOutput(StringBuilder builder)
+	{
+		builder.append('(');
 		
 		getParameterList().generateCSource(builder);
 		
-		builder.append(')');
-		
-		return builder;
+		return builder.append(')');
 	}
 	
 	/**
