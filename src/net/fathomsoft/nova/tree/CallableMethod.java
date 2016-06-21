@@ -70,6 +70,8 @@ public interface CallableMethod
 	 */
 	public boolean isVirtual();
 	
+	public boolean isVirtualTypeKnown();
+	
 	/**
 	 * @see net.fathomsoft.nova.tree.Node#getParentClass()
 	 * 
