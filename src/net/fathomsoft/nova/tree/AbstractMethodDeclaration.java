@@ -27,24 +27,8 @@ public class AbstractMethodDeclaration extends NovaMethodDeclaration
 	public AbstractMethodDeclaration(Node temporaryParent, Location locationIn)
 	{
 		super(temporaryParent, locationIn);
-
-		Scope scope = new Scope(this, locationIn.asNew());
-
-		setScope(scope);
 	}
-
-	@Override
-	public int getNumDefaultChildren()
-	{
-		return super.getNumDefaultChildren() + 1;
-	}
-
-	@Override
-	public Scope getScope()
-	{
-		return (Scope)getChild(super.getNumDefaultChildren() + 0);
-	}
-
+	
 	/**
 	 * @see net.fathomsoft.nova.tree.MethodDeclaration#containsBody()
 	 */
@@ -55,61 +39,27 @@ public class AbstractMethodDeclaration extends NovaMethodDeclaration
 	}
 	
 	@Override
+	public boolean isVirtualMethodDeclaration()
+	{
+		return true;
+	}
+	
+	@Override
 	public StringBuilder generateCHeaderFragment(StringBuilder builder)
 	{
 		return generateCSourcePrototype(builder);
 	}
 	
 	@Override
-	public StringBuilder generateCSourceFragment(StringBuilder builder)
+	public StringBuilder generateCSource(StringBuilder builder)
 	{
-		generateCSourceSignature(builder);
-		
-		/*
-		if (getType() == null)
-		{
-			builder.append("{}");
-		}
-		else
-		{
-			builder.append("{return 0;}");
-		}
-		*/
-		
-		builder.append("{\n");
-		
-		if (getType() != null)
-		{
-			builder.append("return ");
-		}
-		
-		getParameterList().getObjectReference().generateCSourceFragment(builder).append("->");
-		
-		builder.append(VTable.IDENTIFIER).append("->");
-
-		if (getParentClass() instanceof Interface)
-		{
-			builder.append(InterfaceVTable.IDENTIFIER).append(".");
-		}
-
-		String call = getName() + "(";
-		
-		for (int i = 0; i < getParameterList().getNumVisibleChildren(); i++)
-		{
-			if (i > 0)
-			{
-				builder.append(", ");
-			}
-			
-			call += getParameterList().getVisibleChild(i).getName();
-		}
-
-		Nova.debuggingBreakpoint(getName().equals("forEach"));
-		MethodCall output = MethodCall.decodeStatement(getScope(), call + ")", getLocationIn().asNew(), true, true, this);
-
-		output.generateCSourceFragment(builder);
-		
-		return builder.append(";\n}");
+		return builder;
+	}
+	
+	@Override
+	public StringBuilder generateCInterfaceVTableSource(StringBuilder builder)
+	{
+		return builder.append(0);
 	}
 	
 	/**
@@ -178,6 +128,8 @@ public class AbstractMethodDeclaration extends NovaMethodDeclaration
 				
 				SyntaxMessage.error("The class '" + getParentClass().getName() + "' must be " + IDENTIFIER + " to contain the " + IDENTIFIER + " method " + getName(), this, false);
 			}
+			
+			//searchVirtualMethodDeclaration();
 		}
 		
 		return result;
