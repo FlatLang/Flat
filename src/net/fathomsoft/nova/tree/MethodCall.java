@@ -6,7 +6,6 @@ import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.error.SyntaxErrorException;
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.tree.MethodList.SearchFilter;
-import net.fathomsoft.nova.tree.exceptionhandling.Throw;
 import net.fathomsoft.nova.tree.generics.GenericTypeArgument;
 import net.fathomsoft.nova.tree.generics.GenericTypeArgumentList;
 import net.fathomsoft.nova.tree.generics.GenericTypeParameterDeclaration;
@@ -19,8 +18,6 @@ import net.fathomsoft.nova.util.Location;
 import net.fathomsoft.nova.util.Patterns;
 import net.fathomsoft.nova.util.StringUtils;
 import net.fathomsoft.nova.util.SyntaxUtils;
-
-import java.lang.reflect.Method;
 
 /**
  * Value extension that represents the declaration of a method
@@ -43,8 +40,10 @@ public class MethodCall extends Variable
 		super(temporaryParent, locationIn);
 		
 		MethodCallArgumentList arguments = new MethodCallArgumentList(this, new Location(locationIn));
+		GenericTypeArgumentList genericArguments = new GenericTypeArgumentList(this, locationIn.asNew());
 		
 		addChild(arguments);
+		addChild(genericArguments);
 	}
 	
 	/**
@@ -53,7 +52,7 @@ public class MethodCall extends Variable
 	@Override
 	public int getNumDefaultChildren()
 	{
-		return super.getNumDefaultChildren() + 1;
+		return super.getNumDefaultChildren() + 2;
 	}
 	
 	/**
@@ -71,7 +70,12 @@ public class MethodCall extends Variable
 	 */
 	public MethodCallArgumentList getArgumentList()
 	{
-		return (MethodCallArgumentList)getChild(0);
+		return (MethodCallArgumentList)getChild(super.getNumDefaultChildren() + 0);
+	}
+	
+	public GenericTypeArgumentList getMethodGenericTypeArgumentList()
+	{
+		return (GenericTypeArgumentList)getChild(super.getNumDefaultChildren() + 1);
 	}
 	
 	/**
@@ -81,6 +85,16 @@ public class MethodCall extends Variable
 	public boolean isVirtualTypeKnown()
 	{
 		return getParent() instanceof Instantiation || super.isVirtualTypeKnown();
+	}
+	
+	public boolean isVirtual()
+	{
+		if (getDeclaration() instanceof NovaMethodDeclaration)
+		{
+			return ((NovaMethodDeclaration)getDeclaration()).isVirtual();
+		}
+		
+		return false;
 	}
 	
 	/**
@@ -110,7 +124,7 @@ public class MethodCall extends Variable
 		}
 		else
 		{
-			method = getCallableDeclaration();
+			method = getInferredDeclaration();
 		}
 		
 		return method != null && method.isExternal() || super.isWithinExternalContext();
@@ -134,7 +148,7 @@ public class MethodCall extends Variable
 	@Override
 	public boolean isSpecial()
 	{
-		/*if (getCallableDeclaration().isVirtual())
+		/*if (getInferredDeclaration().isVirtual())
 		{
 			if (isVirtualTypeKnown())//isAccessed() && ((Value)getAccessingNode()).isVirtualTypeKnown())
 			{
@@ -153,7 +167,7 @@ public class MethodCall extends Variable
 	@Override
 	public boolean isSpecialFragment()
 	{
-		/*if (getCallableDeclaration().isVirtual() && !isVirtualTypeKnown())
+		/*if (getInferredDeclaration().isVirtual() && !isVirtualTypeKnown())
 		{
 			return false;
 		}*/
@@ -168,9 +182,26 @@ public class MethodCall extends Variable
 	 * @return The Method instance that this MethodCall is
 	 * 		calling.
 	 */
-	public CallableMethod getCallableDeclaration()
+	public CallableMethod getInferredDeclaration()
 	{
 		return (CallableMethod)getMethodDeclaration();
+	}
+	
+	public CallableMethod getCallableDeclaration()
+	{
+		CallableMethod method = getInferredDeclaration();
+		
+		if (method.isVirtual() && !isVirtualTypeKnown())
+		{
+			VirtualMethodDeclaration virtual = ((NovaMethodDeclaration)method).getVirtualMethod();
+			
+			if (virtual != null)
+			{
+				return virtual;
+			}
+		}
+		
+		return method;
 	}
 	
 	/**
@@ -281,7 +312,7 @@ public class MethodCall extends Variable
 	 */
 	public String getObjectReferenceIdentifier()
 	{
-		return getObjectReferenceIdentifier(getCallableDeclaration());
+		return getObjectReferenceIdentifier(getInferredDeclaration());
 	}
 	
 	/**
@@ -295,7 +326,7 @@ public class MethodCall extends Variable
 	 */
 	public Value getObjectReferenceValue()
 	{
-		return getObjectReferenceNode(getCallableDeclaration());
+		return getObjectReferenceNode(getInferredDeclaration());
 	}
 	
 	/**
@@ -382,6 +413,7 @@ public class MethodCall extends Variable
 	 */
 	public Value getCorrespondingParameter(int argIndex)
 	{
+		Nova.debuggingBreakpoint(getCallableDeclaration() == null);
 		return getCallableDeclaration().getParameterList().getParameter(argIndex);
 	}
 	
@@ -423,7 +455,7 @@ public class MethodCall extends Variable
 	public StringBuilder generateCArgumentReference(StringBuilder builder, Identifier callingMethod)
 	{
 		// TODO: there is a better way. <-- i'll get to it in the re-write
-		if (getCallableDeclaration().isVirtual() && isAccessed() && !isVirtualTypeKnown())
+		/*if (getInferredDeclaration().isVirtual() && isAccessed() && !isVirtualTypeKnown())
 		{
 			Accessible node = getAccessingNode().getLastAccessingOfType(new Class<?>[] { MethodCall.class, Closure.class }, true);
 			
@@ -431,7 +463,7 @@ public class MethodCall extends Variable
 			{
 				node.generateCSourceUntil(builder, "->", this);
 			}
-		}
+		}*/
 		
 		return super.generateCArgumentReference(builder, callingMethod);
 	}
@@ -513,11 +545,11 @@ public class MethodCall extends Variable
 			generateCTypeCast(builder);
 		}
 		
-		/*if (callable.isVirtual() && !isVirtualTypeKnown())
+		if (callable.isVirtual() && ((NovaMethodDeclaration)method).getVirtualMethod() != null && !isVirtualTypeKnown())
 		{
 			NovaMethodDeclaration novaMethod = (NovaMethodDeclaration)method;
 			
-			if (!isAccessed())
+			/*if (!isAccessed())
 			{
 				builder.append(ParameterList.OBJECT_REFERENCE_IDENTIFIER).append("->");
 			}
@@ -532,11 +564,11 @@ public class MethodCall extends Variable
 			if (method.getParentClass() instanceof Interface)
 			{
 				builder.append(InterfaceVTable.IDENTIFIER).append(".");
-			}
+			}*/
 			
-			builder.append(novaMethod.generateCVirtualMethodName());
+			novaMethod.getVirtualMethod().generateCSourceName(builder);
 		}
-		else*/
+		else
 		{
 			method.generateCSourceName(builder);
 		}
@@ -548,6 +580,12 @@ public class MethodCall extends Variable
 			builder.append(')');
 		}
 		
+		return builder;
+	}
+	
+	@Override
+	public StringBuilder generateCObjectReferenceIdentifier(StringBuilder builder)
+	{
 		return builder;
 	}
 	
@@ -810,13 +848,15 @@ public class MethodCall extends Variable
 			
 			n.setDeclaration((VariableDeclaration)callableMethod);
 			
-			CallableMethod method = n.getCallableDeclaration();
+			CallableMethod method = n.getInferredDeclaration();
 			
 			if (method == null)
 			{
 				n.searchMethodDeclaration(data.name);
 				SyntaxMessage.error("Undeclared method '" + temp.getName() + "'", n);
 			}
+			
+			n.addDefaultGenericTypeArguments();
 			
 			if (!n.validateArguments(n.getFileDeclaration(), n.getLocationIn(), require))
 			{
@@ -976,7 +1016,7 @@ public class MethodCall extends Variable
 	 */
 	private boolean validateArguments(FileDeclaration fileDeclaration, Location location, boolean require)
 	{
-		CallableMethod methodDeclaration = getCallableDeclaration();
+		CallableMethod methodDeclaration = getInferredDeclaration();
 		
 		if (methodDeclaration == null)
 		{
@@ -1107,6 +1147,25 @@ public class MethodCall extends Variable
 		}
 		
 		return builder;
+	}
+	
+	public void addDefaultGenericTypeArguments()
+	{
+		if (getMethodDeclaration() instanceof NovaMethodDeclaration)
+		{
+			NovaMethodDeclaration decl = (NovaMethodDeclaration)getMethodDeclaration();
+			
+			GenericTypeParameterDeclaration params = decl.getMethodGenericTypeParameterDeclaration();
+			GenericTypeArgumentList args = getMethodGenericTypeArgumentList();
+			
+			for (int i = args.getNumVisibleChildren(); i < params.getNumVisibleChildren(); i++)
+			{
+				GenericTypeArgument arg = new GenericTypeArgument(args, getLocationIn().asNew());
+				arg.setTypeValue(params.getVisibleChild(i).getNovaType(this));
+				
+				args.addChild(arg, args);
+			}
+		}
 	}
 	
 	/**
@@ -1265,7 +1324,7 @@ public class MethodCall extends Variable
 	 */
 	private boolean localDeclarationRequired()
 	{
-		return false;//getCallableDeclaration().isVirtual() && !isVirtualTypeKnown() && isAccessed() && getAccessingNode() instanceof MethodCall;// && !getAccessingNode().isVirtualTypeKnown();
+		return false;//getInferredDeclaration().isVirtual() && !isVirtualTypeKnown() && isAccessed() && getAccessingNode() instanceof MethodCall;// && !getAccessingNode().isVirtualTypeKnown();
 	}
 	
 	/**
