@@ -6,9 +6,6 @@ import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.tree.MethodList.SearchFilter;
 import net.fathomsoft.nova.tree.generics.GenericTypeArgument;
-import net.fathomsoft.nova.tree.generics.GenericTypeArgumentList;
-import net.fathomsoft.nova.tree.generics.GenericTypeParameter;
-import net.fathomsoft.nova.tree.generics.GenericTypeParameterDeclaration;
 import net.fathomsoft.nova.tree.variables.Variable;
 import net.fathomsoft.nova.util.Location;
 import net.fathomsoft.nova.util.StringUtils;
@@ -27,6 +24,10 @@ public class Closure extends Variable
 {
 	public MethodDeclaration[] declarations;
 	
+	public ClosureDeclaration closureDeclaration;
+	
+	public Variable variable;
+	
 	/**
 	 * @see net.fathomsoft.nova.tree.Node#Node(Node, Location)
 	 */
@@ -34,6 +35,20 @@ public class Closure extends Variable
 	{
 		super(temporaryParent, locationIn);
 	}
+	
+	/*public Closure(Variable variable)
+	{
+		this(variable.getParent(), variable.getLocationIn());
+		
+		setDeclaration(variable.getDeclaration());
+		
+		if (variable.getDeclaration() instanceof ClosureDeclaration)
+		{
+			closureDeclaration = (ClosureDeclaration)variable.getDeclaration();
+		}
+		
+		this.variable = variable;
+	}*/
 	
 	/**
 	 * @see net.fathomsoft.nova.tree.Node#isSpecial()
@@ -61,16 +76,15 @@ public class Closure extends Variable
 	{
 		getClosureDeclaration().generateCTypeCast(builder);
 		
-		Nova.debuggingBreakpoint(getMethodDeclaration() == null);
 		if (getMethodDeclaration().isVirtual() && !isVirtualTypeKnown())
 		{
 			getRootReferenceNode().generateCArgumentReference(builder, this).append("->").append(VTable.IDENTIFIER).append("->");
 			
-			builder.append(getMethodDeclaration().generateCVirtualMethodName());
+			builder.append(getMethodDeclaration().getVirtualMethod().generateCVirtualMethodName());
 		}
 		else
 		{
-			builder.append('&').append(getMethodDeclaration().generateCSourceName());
+			builder.append('&').append(getDeclaration().generateCSourceName());
 		}
 		
 		builder.append(", ");
@@ -101,10 +115,10 @@ public class Closure extends Variable
 		{
 			int argNum = getMethodCall().getArgumentList().getNumChildren();
 			
-			return (ClosureDeclaration)getMethodCall().getCallableDeclaration().getParameterList().getParameter(argNum);
+			return (ClosureDeclaration)getMethodCall().getInferredDeclaration().getParameterList().getParameter(argNum);
 		}
 		
-		return (ClosureDeclaration)getMethodCall().getCorrespondingParameter((Value)getRootNode());
+		return closureDeclaration;//(ClosureDeclaration)getMethodCall().getCorrespondingParameter((Value)getRootNode());
 	}
 	
 	/**
@@ -126,6 +140,11 @@ public class Closure extends Variable
 	 */
 	public NovaMethodDeclaration getMethodDeclaration()
 	{
+		if (getDeclaration() != null)
+		{
+			return (NovaMethodDeclaration)getDeclaration();
+		}
+		
 		return getMethodDeclaration(getMethodCall().getReferenceNode().getContext(), getName());
 	}
 	
@@ -229,6 +248,11 @@ public class Closure extends Variable
 		return true;
 	}
 	
+	public ClosureDeclaration searchClosureDeclaration()
+	{
+		return (ClosureDeclaration)getMethodCall().getCorrespondingParameter((Value)getRootNode());
+	}
+	
 	@Override
 	public boolean onAfterDecoded()
 	{
@@ -237,6 +261,16 @@ public class Closure extends Variable
 	
 	private boolean findDeclaration()
 	{
+		if (closureDeclaration == null)
+		{
+			closureDeclaration = searchClosureDeclaration();
+		}
+		
+		if (getDeclaration() != null)
+		{
+			return true;
+		}
+		
 		MethodDeclaration declaration = getMethodDeclaration(getMethodCall().getReferenceNode().toValue()/*.getContext()/*getReferenceNode().toValue()*/, declarations[0].getName());
 		
 		if (declaration == null)
@@ -269,6 +303,18 @@ public class Closure extends Variable
 		if (result.skipValidation())
 		{
 			return result;
+		}
+		
+		if (variable != null && !variable.isDecoding())
+		{
+			variable.getParent().replace(variable, this);
+			
+			variable = null;
+		}
+		
+		if (phase == SyntaxTree.PHASE_PRE_GENERATION)
+		{
+			closureDeclaration = searchClosureDeclaration();
 		}
 		
 		return result;
