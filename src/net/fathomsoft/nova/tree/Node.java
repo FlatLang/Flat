@@ -1692,7 +1692,7 @@ public abstract class Node implements Listenable, Annotatable
 	 */
 	public Node cloneTo(Node node, boolean cloneChildren)
 	{
-		if (getNumDefaultChildren() > 0)
+		if (getNumDefaultChildren() > 0 && cloneChildren)
 		{
 			node.slaughterEveryLastChild(getNumDefaultChildren());
 		}
