@@ -178,14 +178,26 @@ public class Assignment extends Node
 	 */
 	private StringBuilder generateCAssignmentSource(StringBuilder builder)
 	{
-		boolean sameType = getAssignmentNode().getReturnedNode().getType().equals(getAssignedNode().getType());
+		Value assignment = getAssignmentNode();
+		
+		boolean sameType = assignment.getReturnedNode().getType().equals(getAssignedNode().getType());
+		
+		if (sameType && assignment instanceof Identifier)
+		{
+			MethodCall call = (MethodCall)((Identifier)assignment).getLastAccessedOfType(MethodCall.class, false);
+			
+			if (call != null)
+			{
+				sameType = !call.isVirtual();
+			}
+		}
 		
 		if (!sameType)
 		{
 			getAssignedNode().generateCTypeCast(builder).append('(');
 		}
 		
-		builder.append(getAssignmentNode().generateDataTypeOutput(getAssignedNode().getDataType())).append(getAssignmentNode().generateCSourceFragment());
+		builder.append(assignment.generateDataTypeOutput(getAssignedNode().getDataType())).append(getAssignmentNode().generateCSourceFragment());
 		
 		if (!sameType)
 		{
