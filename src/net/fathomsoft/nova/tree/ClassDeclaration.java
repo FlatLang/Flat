@@ -55,6 +55,7 @@ public class ClassDeclaration extends InstanceDeclaration
 		MethodList                        methods         = new MethodList(this, Location.INVALID);
 		MethodList                        propertyMethods = new MethodList(this, Location.INVALID);
 		MethodList                        hiddenMethods   = new MethodList(this, Location.INVALID);
+		MethodList                        virtualMethods  = new MethodList(this, Location.INVALID);
 		ExternalTypeList                  externalTypes   = new ExternalTypeList(this, Location.INVALID);
 		FieldList                         externalFields  = new FieldList(this, Location.INVALID);
 		TypeList<StaticBlock>             staticBlocks    = new TypeList<StaticBlock>(this, Location.INVALID);
@@ -68,6 +69,7 @@ public class ClassDeclaration extends InstanceDeclaration
 		addChild(methods, this);
 		addChild(propertyMethods, this);
 		addChild(hiddenMethods, this);
+		addChild(virtualMethods, this);
 		addChild(externalTypes, this);
 		addChild(externalFields, this);
 		addChild(staticBlocks, this);
@@ -82,7 +84,7 @@ public class ClassDeclaration extends InstanceDeclaration
 	@Override
 	public int getNumDefaultChildren()
 	{
-		return super.getNumDefaultChildren() + 12;
+		return super.getNumDefaultChildren() + 13;
 	}
 	
 	/**
@@ -148,12 +150,23 @@ public class ClassDeclaration extends InstanceDeclaration
 	/**
 	 * Get the MethodList instance that contains the list of methods
 	 * that this class node contains.
-	 * 
+	 *
 	 * @return The MethodList for this class node.
 	 */
 	public MethodList getHiddenMethodList()
 	{
 		return (MethodList)getChild(super.getNumDefaultChildren() + 5);
+	}
+	
+	/**
+	 * Get the MethodList instance that contains the list of methods
+	 * that this class node contains.
+	 *
+	 * @return The MethodList for this class node.
+	 */
+	public MethodList getVirtualMethodList()
+	{
+		return (MethodList)getChild(super.getNumDefaultChildren() + 6);
 	}
 	
 	/**
@@ -164,7 +177,7 @@ public class ClassDeclaration extends InstanceDeclaration
 	 */
 	public ExternalTypeList getExternalTypeListNode()
 	{
-		return (ExternalTypeList)getChild(super.getNumDefaultChildren() + 6);
+		return (ExternalTypeList)getChild(super.getNumDefaultChildren() + 7);
 	}
 	
 	/**
@@ -175,7 +188,7 @@ public class ClassDeclaration extends InstanceDeclaration
 	 */
 	public FieldList getExternalFieldsListNode()
 	{
-		return (FieldList)getChild(super.getNumDefaultChildren() + 7);
+		return (FieldList)getChild(super.getNumDefaultChildren() + 8);
 	}
 	
 	/**
@@ -186,7 +199,15 @@ public class ClassDeclaration extends InstanceDeclaration
 	 */
 	public AssignmentMethod getAssignmentMethodNode()
 	{
-		return getHiddenMethodList().getNumVisibleChildren() > 0 ? (AssignmentMethod)getHiddenMethodList().getChild(getHiddenMethodList().getNumChildren() - 1) : null;
+		for (MethodDeclaration method : getHiddenMethodList())
+		{
+			if (method instanceof AssignmentMethod)
+			{
+				return (AssignmentMethod)method;
+			}
+		}
+		
+		return null;
 	}
 	
 	public StaticBlock getStaticAssignmentBlock()
@@ -202,7 +223,7 @@ public class ClassDeclaration extends InstanceDeclaration
 	 */
 	public TypeList<StaticBlock> getStaticBlockList()
 	{
-		return (TypeList<StaticBlock>)getChild(super.getNumDefaultChildren() + 8);
+		return (TypeList<StaticBlock>)getChild(super.getNumDefaultChildren() + 9);
 	}
 	
 	/**
@@ -214,12 +235,12 @@ public class ClassDeclaration extends InstanceDeclaration
 	 */
 	public VTableList getVTableNodes()
 	{
-		return (VTableList)getChild(super.getNumDefaultChildren() + 9);
+		return (VTableList)getChild(super.getNumDefaultChildren() + 10);
 	}
 	
 	private GenericTypeParameterDeclaration getGenericTypeParameterDeclarationNode()
 	{
-		return (GenericTypeParameterDeclaration)getChild(super.getNumDefaultChildren() + 10);
+		return (GenericTypeParameterDeclaration)getChild(super.getNumDefaultChildren() + 11);
 	}
 	
 	public GenericTypeParameterDeclaration getGenericTypeParameterDeclaration()
@@ -229,7 +250,7 @@ public class ClassDeclaration extends InstanceDeclaration
 	
 	public TypeList<InterfaceImplementation> getInterfacesImplementationList()
 	{
-		return (TypeList<InterfaceImplementation>)getChild(super.getNumDefaultChildren() + 11);
+		return (TypeList<InterfaceImplementation>)getChild(super.getNumDefaultChildren() + 12);
 	}
 	
 	/**
@@ -337,7 +358,7 @@ public class ClassDeclaration extends InstanceDeclaration
 	{
 		for (int i = 0; i < list.getNumVisibleChildren(); i++)
 		{
-			MethodDeclaration m = (MethodDeclaration)list.getChild(i);
+			MethodDeclaration m = list.getChild(i);
 			
 			if (!m.isExternal())
 			{
@@ -345,6 +366,11 @@ public class ClassDeclaration extends InstanceDeclaration
 				
 				if (method.getParentClass() == this && method.isVirtual())
 				{
+					/*if (interfaceOnly)
+					{
+						method = method.getVirtualMethod();
+					}*/
+					
 					if (!interfaceOnly || method.getRootDeclaration().getParentClass() instanceof Interface)
 					{
 						NovaMethodDeclaration existing = getMethod(method, methods);
@@ -512,7 +538,7 @@ public class ClassDeclaration extends InstanceDeclaration
 	{
 		if (callingMethod instanceof MethodCall)
 		{
-			CallableMethod declaration = ((MethodCall)callingMethod).getCallableDeclaration();
+			CallableMethod declaration = ((MethodCall)callingMethod).getInferredDeclaration();
 			
 			if (declaration.isStatic() || declaration instanceof Constructor)
 			{
@@ -1081,6 +1107,7 @@ public class ClassDeclaration extends InstanceDeclaration
 		}
 		
 		addMethods(output, getMethodList().getMethods(methodName, filter));
+		addMethods(output, getVirtualMethodList().getMethods(methodName, filter));
 		
 		if (filter.checkProperties)
 		{
@@ -1256,6 +1283,10 @@ public class ClassDeclaration extends InstanceDeclaration
 			else if (child instanceof AssignmentMethod)
 			{
 				getHiddenMethodList().addChild(child);
+			}
+			else if (child instanceof VirtualMethodDeclaration)
+			{
+				getVirtualMethodList().addChild(child);
 			}
 			else if (child instanceof PropertyMethod)
 			{
@@ -1639,6 +1670,7 @@ public class ClassDeclaration extends InstanceDeclaration
 		getMethodList().generateCHeader(builder);
 		getPropertyMethodList().generateCHeader(builder);
 		getHiddenMethodList().generateCHeader(builder);
+		getVirtualMethodList().generateCHeader(builder);
 		
 		return builder;
 	}
@@ -1675,6 +1707,7 @@ public class ClassDeclaration extends InstanceDeclaration
 		getMethodList().generateCSource(builder);
 		getPropertyMethodList().generateCSource(builder);
 		getHiddenMethodList().generateCSource(builder);
+		getVirtualMethodList().generateCSource(builder);
 		
 		return builder;
 	}
@@ -2142,6 +2175,7 @@ public class ClassDeclaration extends InstanceDeclaration
 		
 		getMethodList().validate(phase);
 		getHiddenMethodList().validate(phase);
+		getVirtualMethodList().validate(phase);
 		getPropertyMethodList().validate(phase);
 		getConstructorList().validate(phase);
 		getDestructorList().validate(phase);
