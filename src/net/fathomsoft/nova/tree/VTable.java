@@ -117,7 +117,7 @@ public abstract class VTable extends IIdentifier
 	 */
 	public StringBuilder generateVirtualMethodDeclaration(StringBuilder builder, NovaMethodDeclaration method)
 	{
-		return method.generateCType(builder).append(" (*").append(method.generateCVirtualMethodName()).append(")(").append(method.getParameterList().generateCHeader()).append(");\n");
+		return method.generateCType(builder).append(" (*").append(method.getVirtualMethod().generateCVirtualMethodName()).append(")(").append(method.getParameterList().generateCHeader()).append(");\n");
 	}
 	
 	/**
@@ -135,6 +135,11 @@ public abstract class VTable extends IIdentifier
 			if (method != null)
 			{
 //				method.generateCVirtualMethodName(builder);
+				if (method instanceof AbstractMethodDeclaration)
+				{
+					method = method.getVirtualMethod();
+				}
+				
 				method.generateCSourceName(builder);
 			}
 			else
