@@ -20,6 +20,13 @@ public class Math
 	
 	visible static Double PI = 3.141592653
 	
+	public static max(Long a, Long b) -> Long
+	{
+	    if (a > b) return a
+	    
+	    return b
+	}
+	
 	public static sign(Long num) -> Byte
 	{
 		if (num > 0)
