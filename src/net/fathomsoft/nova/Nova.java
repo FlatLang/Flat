@@ -534,7 +534,7 @@ public class Nova
 		
 		for (NovaMethodDeclaration method : methods)
 		{
-			method.generateCType(builder).append(" (*").append(method.generateCVirtualMethodName()).append(")(").append(method.getParameterList().generateCHeader()).append(");\n");
+			method.getVirtualMethod().generateCInterfaceVTableHeader(builder);
 		}
 		
 		builder.append("} ").append(InterfaceVTable.TYPE).append(";\n");
@@ -849,6 +849,8 @@ public class Nova
 						
 						if (n.isOverridden() && !(n instanceof Constructor))
 						{
+							//n = n.getVirtualMethod();
+							
 							String itable = "";
 							
 							if (n.getParentClass() instanceof Interface)
@@ -856,7 +858,7 @@ public class Nova
 								itable = InterfaceVTable.IDENTIFIER + ".";
 							}
 							
-							builder.append(ENVIRONMENT_VAR + "." + clazz.getNativeLocation() + "." + n.generateCSourceNativeName(new StringBuilder(), false) + " = " + clazz.getVTableNodes().getExtensionVTable().getName() + "." + itable + n.generateCVirtualMethodName() + ";\n");
+							builder.append(ENVIRONMENT_VAR + "." + clazz.getNativeLocation() + "." + n.generateCSourceNativeName(new StringBuilder(), false) + " = " + clazz.getVTableNodes().getExtensionVTable().getName() + "." + itable + n.getVirtualMethod().generateCVirtualMethodName() + ";\n");
 						}
 					}
 				}
@@ -1142,6 +1144,8 @@ public class Nova
 		command.addCommandListener(new CommandListener()
 		{
 			boolean failed = false;
+			
+			int errorCount, warningCount;
 
 			String currentMessage = "";
 			
@@ -1196,8 +1200,17 @@ public class Nova
 				if (message.trim().startsWith("^"))
 				{
 					//"(.+?(:\\s*?(\\d+:[\\n\\r]|((warning|error):[^^]+))))+"
-					if (stream(visibleCompilerMessages).anyMatch(x -> currentMessage.contains(x + ":")))
+					String[] matches = stream(visibleCompilerMessages).filter(x -> currentMessage.contains(x + ":")).toArray(String[]::new);
+					
+					if (matches.length > 0)
 					{
+						stream(matches).map(String::toLowerCase).forEach(x -> {
+							if (x.contains("error"))
+								errorCount++;
+							else if (x.contains("warning"))
+								warningCount++;
+						});
+						
 						System.err.println(currentMessage);
 					}
 
@@ -1216,7 +1229,7 @@ public class Nova
 				{
 					command.terminate();
 					
-					completed(!failed);
+					completed(!failed, warningCount, errorCount);
 				}
 				catch (InterruptedException e)
 				{
@@ -1822,6 +1835,11 @@ public class Nova
 	
 	private void outputMessages(boolean success)
 	{
+		outputMessages(success, warnings.size(), errors.size());
+	}
+	
+	private void outputMessages(boolean success, int warningCount, int errorCount)
+	{
 		for (String s : messages)
 		{
 			System.out.println(s);
@@ -1831,15 +1849,15 @@ public class Nova
 		String errorsText = "";
 		String warningsText = "";
 		
-		if (warnings.size() > 0)
+		if (warningCount > 0)
 		{
-			warningsText = " " + warnings.size() + " warnings" + (warnings.size() > 1 ? "s" : "");
+			warningsText = " " + warningCount + " warning" + (warningCount > 1 ? "s" : "");
 		}
-		if (errors.size() > 0)
+		if (errorCount > 0)
 		{
 			status = "failed";
 			
-			errorsText = " " + errors.size() + " error" + (errors.size() > 1 ? "s" : "");
+			errorsText = " " + errorCount + " error" + (errorCount > 1 ? "s" : "");
 		}
 		
 		String with = errorsText.length() + warningsText.length() > 0 ? " with" : "";
@@ -1869,13 +1887,18 @@ public class Nova
 	 */
 	public void completed(boolean success)
 	{
+		completed(success, warnings.size(), errors.size());
+	}
+	
+	public void completed(boolean success, int warningCount, int errorCount)
+	{
 		stopTimer();
 		
 		log("Compile time: " + getCompileTime() + "ms");
 		
 		deleteLingeringFiles();
 		
-		outputMessages(success);
+		outputMessages(success, warningCount, errorCount);
 		
 		if (isFlagEnabled(RUNTIME))
 		{
