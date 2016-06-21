@@ -111,6 +111,29 @@ public interface Accessible
 		return previous;
 	}
 	
+	public default Accessible getLastAccessedOfType(Class<?> type, boolean opposite)
+	{
+		return getLastAccessedOfType(new Class<?>[] { type }, opposite);
+	}
+	
+	public default Accessible getLastAccessedOfType(Class<?> types[], boolean opposite)
+	{
+		Accessible previous = null;
+		Accessible current  = this;
+		
+		while (current != null)
+		{
+			if (SyntaxUtils.checkTypes(types, current.getClass()) != opposite)
+			{
+				previous = current;
+			}
+			
+			current  = current.getAccessedNode();
+		}
+		
+		return previous;
+	}
+	
 	/**
 	 * Get the next node that this node accesses that is of the given
 	 * type.
