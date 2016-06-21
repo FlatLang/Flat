@@ -33,6 +33,12 @@ public class Constructor extends BodyMethodDeclaration
 		super(temporaryParent, locationIn);
 	}
 	
+	@Override
+	public void searchVirtualMethodDeclaration()
+	{
+		
+	}
+	
 	/**
 	 * @see net.fathomsoft.nova.tree.MethodDeclaration#isInstance()
 	 */
