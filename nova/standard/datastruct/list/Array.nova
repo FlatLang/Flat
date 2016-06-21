@@ -6,9 +6,10 @@ public class Array<E> implements List<E>
 {
 	external void arrayCopy(E dest[], int dIndex, E src[], int sIndex, int len, int destArrLen, int size)
 	
-	Int	bufferSize
+	visible Int capacity
 	
 	visible Int	size
+	visible Int position
 	
 	E[] data
 	
@@ -38,6 +39,10 @@ public class Array<E> implements List<E>
 	
 	public construct(Int size)
 	{
+	    this.size = 0
+	    this.position = 0
+	    this.capacity = 0
+	    
 		increaseSize(size)
 	}
 	
@@ -53,38 +58,42 @@ public class Array<E> implements List<E>
 	
 	public add(E element)
 	{
-		if (size >= bufferSize)
+		if (position >= capacity)
 		{
 			increaseSize()
 		}
 		
-		data[size++] = element
+		data[position++] = element
+		
+		size = Math.max(position, size)
 	}
 	
 	public add(Int index, E element)
 	{
-		if (index >= bufferSize)
+		if (index >= capacity)
 		{
 			increaseSize(index + 1)
 		}
 		
 		add(null)
 		
-		shiftRight(index, size)
+		shiftRight(index, position)
 		
 		data[index] = element
 		
-		if (index >= size - 1)
+		if (index >= position - 1)
 		{
-			size = index + 1;
+			position = index + 1;
 		}
+		
+		size = Math.max(position, size)
 	}
 	
 	public remove(Int index) -> E
 	{
 		E element = data[index]
 		
-		shiftLeft(index + 1, size--)
+		shiftLeft(index + 1, position--)
 		
 		return element
 	}
@@ -118,22 +127,22 @@ public class Array<E> implements List<E>
 	
 	increaseSize()
 	{
-		increaseSize(bufferSize + 3)
+		increaseSize(capacity + 3)
 	}
 	
 	increaseSize(Int size)
 	{
-		Int offset = size - bufferSize
+		Int offset = size - capacity
 		
-		bufferSize = size
+		capacity = size
 		
-		E tmp[] = new E[bufferSize]
+		E tmp[] = new E[capacity]
 		
-		arrayCopy(tmp, 0, data, 0, this.size, bufferSize, 4)
+		arrayCopy(tmp, 0, data, 0, this.size, capacity, 4)
 		
 		data = tmp
 		
-		for (Int i = bufferSize - offset; i < bufferSize; i++)
+		for (Int i = capacity - offset; i < capacity; i++)
 		{
 			data[i] = null
 		}
@@ -328,10 +337,11 @@ public class Array<E> implements List<E>
     public reverse() -> Array<E>
     {
     	Array<E> array = new Array(size)
+    	array.size = size
     	
     	Int i = 0
     	
-    	for (element in array)
+    	for (element in this)
     	{
     		array.data[size - ++i] = element
     	}
