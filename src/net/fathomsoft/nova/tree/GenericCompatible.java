@@ -7,6 +7,7 @@ import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.error.SyntaxErrorException;
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.tree.generics.GenericTypeArgument;
+import net.fathomsoft.nova.tree.generics.GenericTypeParameter;
 import net.fathomsoft.nova.tree.generics.GenericTypeParameterDeclaration;
 import net.fathomsoft.nova.tree.generics.GenericTypeArgumentList;
 import net.fathomsoft.nova.tree.variables.VariableDeclaration;
@@ -165,9 +166,34 @@ public interface GenericCompatible
 			clazz = decl.getDeclaringClass();
 		}
 		
-		int index = clazz.getGenericTypeParameterIndex(parameterName);
-		
-		return getGenericTypeArgument(index, value, require);
+		if (decl instanceof Parameter && decl.getParentMethod().getMethodGenericTypeParameterDeclaration().containsParameter(parameterName))
+		{
+			int index = decl.getParentMethod().getMethodGenericTypeParameterDeclaration().getParameterIndex(parameterName);
+			
+			if (value instanceof MethodCall)
+			{
+				GenericTypeArgumentList args = ((MethodCall) value).getMethodGenericTypeArgumentList();
+				
+				if (args.getNumVisibleChildren() > index)
+				{
+					return args.getVisibleChild(index);
+				}
+			}
+			
+			GenericTypeParameter param = decl.getParentMethod().getMethodGenericTypeParameterDeclaration().getParameter(parameterName);
+			
+			// TODO: needs to support arrays
+			GenericTypeArgument arg = new GenericTypeArgument((Node)this, ((Node)this).getLocationIn().asNew());
+			arg.setTypeValue(param.getDefaultType());
+			
+			return arg;
+		}
+		else
+		{
+			int index = clazz.getGenericTypeParameterIndex(parameterName);
+			
+			return getGenericTypeArgument(index, value, require);
+		}
 	}
 	
 	public default GenericTypeArgument getGenericTypeArgumentDeclaration(String parameterName)
