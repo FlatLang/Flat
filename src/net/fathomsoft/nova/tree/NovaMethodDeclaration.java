@@ -37,7 +37,9 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 	
 	private ArrayList<NovaMethodDeclaration>	overridingMethods;
 	
-	private static HashMap<Integer, Scope> scopes = new HashMap<>(); 
+	private static HashMap<Integer, Scope> scopes = new HashMap<>();
+	
+	public VirtualMethodDeclaration virtualMethod;
 	
 	/**
 	 * @see net.fathomsoft.nova.tree.InstanceDeclaration#InstanceDeclaration(Node, Location)
@@ -57,6 +59,19 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 		
 		GenericTypeParameterDeclaration methodParams = new GenericTypeParameterDeclaration(this, locationIn.asNew());
 		addChild(methodParams, this);
+	}
+	
+	public VirtualMethodDeclaration getVirtualMethod()
+	{
+		return virtualMethod == null && doesOverride() ? getOverriddenMethod().getVirtualMethod() : virtualMethod;
+	}
+	
+	public StringBuilder generateCInterfaceVTableSource(StringBuilder builder)
+	{
+		NovaMethodDeclaration root = getVirtualMethod();//.getRootDeclaration();
+		
+		builder.append("(").append(root.generateCType()).append("(*)(").append(root.getParameterList().generateCHeader()).append("))");
+		return generateCSourceName(builder);
 	}
 	
 	@Override
@@ -131,7 +146,7 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.ScopeAncestor#generateUniqueID()
+	 * @see net.fathomsoft.nova.tree.ScopeAncestor#generateUniqueID(Scope scope)
 	 */
 	@Override
 	public int generateUniqueID(Scope scope)
@@ -309,7 +324,7 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 	 * 
 	 * @param methods The methods to generate overload IDs for.
 	 */
-	private void setOverloadIDs(MethodDeclaration methods[])
+	public void setOverloadIDs(MethodDeclaration methods[])
 	{
 		ArrayList<NovaMethodDeclaration> list = new ArrayList<NovaMethodDeclaration>();
 		
@@ -430,25 +445,9 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 		return (NovaParameterList)super.getParameterList();
 	}
 	
-	/**
-	 * Get the identifier for the virtual abstract method in the vtable.
-	 * 
-	 * @return The identifier for the virtual method in the vtable.
-	 */
-	public StringBuilder generateCVirtualMethodName()
+	public StringBuilder generateCInterfaceVTableHeader(StringBuilder builder)
 	{
-		return generateCVirtualMethodName(new StringBuilder());
-	}
-	
-	/**
-	 * Get the identifier for the virtual abstract method in the vtable.
-	 * 
-	 * @param builder The StringBuilder to append the data to.
-	 * @return The identifier for the virtual method in the vtable.
-	 */
-	public StringBuilder generateCVirtualMethodName(StringBuilder builder)
-	{
-		return generateCSourceName(builder, "virtual");
+		return generateCType(builder).append(" (*").append(getVirtualMethod().generateCVirtualMethodName()).append(")(").append(getParameterList().generateCHeader()).append(");\n");
 	}
 	
 	/**
@@ -461,7 +460,7 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 	{
 		if (isVirtual())
 		{
-			return generateCVirtualMethodName(builder);
+			return getVirtualMethod().generateCVirtualMethodName(builder);
 		}
 		
 		return super.generateCMethodCall(builder);
@@ -916,6 +915,24 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 		return signature;
 	}
 	
+	public boolean isVirtualMethodDeclaration()
+	{
+		return isOverridden() && !doesOverride();
+	}
+	
+	public void searchVirtualMethodDeclaration()
+	{
+		if (virtualMethod == null && isVirtualMethodDeclaration())
+		{
+			virtualMethod = new VirtualMethodDeclaration(getParentClass(), getLocationIn().asNew());
+			virtualMethod.base = this;
+			
+			this.cloneTo(virtualMethod, false);
+			
+			getParentClass().addChild(virtualMethod);
+		}
+	}
+	
 	/**
 	 * Validate the parameters of the method header.
 	 * 
@@ -953,6 +970,8 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 					setOverloadIDs(methods);
 				}
 			}
+			
+			searchVirtualMethodDeclaration();
 		}
 		else if (phase == SyntaxTree.PHASE_PRE_GENERATION)
 		{
