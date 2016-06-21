@@ -1,6 +1,5 @@
 package net.fathomsoft.nova.tree;
 
-import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.tree.exceptionhandling.Exception;
@@ -64,10 +63,24 @@ public class MethodCallArgumentList extends ArgumentList
 				builder.append(", ");
 			}
 			
-			Value child = (Value)getChild(i);
-			Value param = getMethodCall().getCorrespondingParameter(child);
+			MethodCall call = getMethodCall();
 			
-			boolean sameType = isSameType(child.getReturnedNode(), param, false);
+			Value child = (Value)getChild(i);
+			Value param = call.getCorrespondingParameter(child);
+			
+			CallableMethod method = call.getInferredDeclaration();
+			
+			if (method.isVirtual() && !call.isVirtualTypeKnown())
+			{
+				VirtualMethodDeclaration virtual = ((NovaMethodDeclaration)method).getVirtualMethod();
+				
+				if (virtual != null)
+				{
+					param = virtual.getParameter(i);
+				}
+			}
+			
+			boolean sameType = isSameType(child.getReturnedNode(), param, false) || param.isPrimitiveType() && child.isPrimitiveType();
 			
 			if (!sameType)
 			{
@@ -127,7 +140,7 @@ public class MethodCallArgumentList extends ArgumentList
 	 */
 	private StringBuilder generateCArgumentPrefix(StringBuilder builder, Value child, int argNum)
 	{
-		Value parameter = getMethodCall().getCallableDeclaration().getParameterList().getParameter(argNum);
+		Value parameter = getMethodCall().getInferredDeclaration().getParameterList().getParameter(argNum);
 		
 		if (child instanceof Variable)
 		{
@@ -149,15 +162,13 @@ public class MethodCallArgumentList extends ArgumentList
 	 * then generate the required argument.
 	 * 
 	 * @param builder The StringBuilder to append to.
-	 * @param call The MethodCall instance that this argument list is
-	 * 		contained within.
 	 * @return The appended StringBuilder instance.
 	 */
 	private StringBuilder checkReference(StringBuilder builder)
 	{
-		CallableMethod method = getMethodCall().getCallableDeclaration();
+		CallableMethod method = getMethodCall().getInferredDeclaration();
 		
-		if (method instanceof Constructor)
+		if (method instanceof Constructor || !getMethodCall().getDeclaration().isInstance())
 		{
 			builder.append(0);
 		}
@@ -175,13 +186,23 @@ public class MethodCallArgumentList extends ArgumentList
 			}
 			
 			Accessible context  = getMethodCallContext();
-			Accessible clone    = context;
 			MethodCall call     = getMethodCall();
-			boolean    sameType = isSameType((Value)call.getReferenceNode(), method.getParentClass(), false);
+			ClassDeclaration castClass = null;
 			
-			if (!sameType)
+			boolean sameType = isSameType((Value)call.getReferenceNode(), method.getParentClass(), false);
+			
+			if (method.isVirtual() && !call.isVirtualTypeKnown())
 			{
-				method.getParentClass().generateCTypeCast(builder).append('(');
+				castClass = ((NovaMethodDeclaration)method).getVirtualMethod().getParentClass();
+			}
+			else if (!sameType)
+			{
+				castClass = method.getParentClass();
+			}
+			
+			if (castClass != null)
+			{
+				castClass.generateCTypeCast(builder).append('(');
 			}
 			
 			// Chop off the method call so it does not get cloned over.
@@ -199,14 +220,12 @@ public class MethodCallArgumentList extends ArgumentList
 				
 				accessible.setAccessedNode(null);
 				
-				clone = (Accessible)((Value)context).clone(context.getParent(), Location.INVALID, true);
-				
 				accessible.setAccessedNode(call);
 			}
 			
-			/*clone*/context.generateCArgumentReference(builder, call);//.generateCArgumentReference(builder, getMethodCall());
+			context.generateCArgumentReference(builder, call);
 			
-			if (!sameType)
+			if (castClass != null)
 			{
 				builder.append(')');
 			}
