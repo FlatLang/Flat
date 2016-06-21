@@ -23,7 +23,6 @@ nova_standard_svg_Extension_VTable_SVGComponent nova_standard_svg_Extension_VTab
 		0,
 		0,
 		0,
-		0,
 		(char(*)(nova_standard_operators_Nova_Equals*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*))nova_standard_Nova_Object_0_Nova_equals,
 		0,
 		0,
@@ -81,5 +80,10 @@ void nova_standard_svg_Nova_SVGComponent_0_Nova_generateOutput(nova_standard_svg
 void nova_standard_svg_Nova_SVGComponent_Nova_super(nova_standard_svg_Nova_SVGComponent* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
 	this->nova_standard_svg_Nova_SVGComponent_Nova_children = (nova_standard_svg_Nova_SVGComponentList*)nova_null;
+}
+
+void nova_standard_svg_Nova_SVGComponent_virtual0_Nova_generateOutput(nova_standard_svg_Nova_SVGComponent* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_io_Nova_File* nova_standard_svg_Nova_SVGComponent_Nova_file)
+{
+	this->vtable->nova_standard_svg_Nova_SVGComponent_virtual0_Nova_generateOutput((nova_standard_svg_Nova_SVGComponent*)(this), exceptionData, nova_standard_svg_Nova_SVGComponent_Nova_file);
 }
 

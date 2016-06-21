@@ -23,7 +23,6 @@ stabilitytest_Extension_VTable_ThreadStability stabilitytest_Extension_VTable_Th
 		0,
 		0,
 		0,
-		0,
 		(char(*)(nova_standard_operators_Nova_Equals*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*))nova_standard_Nova_Object_0_Nova_equals,
 		0,
 		0,
@@ -84,8 +83,8 @@ void stabilitytest_Nova_ThreadStability_0_Nova_test(stabilitytest_Nova_ThreadSta
 	nova_standard_io_Nova_Console_1_Nova_writeLine(0, exceptionData, nova_standard_Nova_String_2_Nova_construct(0, exceptionData, "Checking Thread.nova with 20 Threads... "));
 	l1_Nova_threads = (stabilitytest_Nova_ThreadImplementation**)NOVA_MALLOC(sizeof(stabilitytest_Nova_ThreadImplementation) * 20);
 	stabilitytest_Nova_ThreadStability_Nova_createThreads(this, exceptionData, l1_Nova_threads, 20);
-	stabilitytest_Nova_ThreadStability_Nova_checkMemoryAccess(this, exceptionData);
-	stabilitytest_Nova_ThreadStability_Nova_joinThreads(this, exceptionData, l1_Nova_threads, 20);
+	stabilitytest_Nova_ThreadStability_Nova_checkMemoryAccess(0, exceptionData);
+	stabilitytest_Nova_ThreadStability_Nova_joinThreads(0, exceptionData, l1_Nova_threads, 20);
 }
 
 void stabilitytest_Nova_ThreadStability_Nova_createThreads(stabilitytest_Nova_ThreadStability* this, nova_standard_exception_Nova_ExceptionData* exceptionData, stabilitytest_Nova_ThreadImplementation** stabilitytest_Nova_ThreadStability_Nova_threads, int stabilitytest_Nova_ThreadStability_Nova_amount)
@@ -106,7 +105,7 @@ void stabilitytest_Nova_ThreadStability_Nova_checkMemoryAccess(stabilitytest_Nov
 {
 	int l2_Nova_i;
 	
-	nova_standard_thread_Nova_Thread_Nova_sleep(0, exceptionData, (long)(30));
+	nova_standard_thread_Nova_Thread_Nova_sleep(0, exceptionData, 30);
 	nova_standard_io_Nova_Console_0_Nova_write(0, exceptionData, nova_standard_Nova_String_2_Nova_construct(0, exceptionData, "Checking memory access with multi-threading... "));
 	l2_Nova_i = 0;
 	for (; l2_Nova_i < 1000; l2_Nova_i++)

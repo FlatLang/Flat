@@ -23,7 +23,6 @@ nova_standard_math_calculus_Extension_VTable_Calculus nova_standard_math_calculu
 		0,
 		0,
 		0,
-		0,
 		(char(*)(nova_standard_operators_Nova_Equals*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*))nova_standard_Nova_Object_0_Nova_equals,
 		0,
 		0,

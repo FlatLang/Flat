@@ -23,7 +23,6 @@ example_Extension_VTable_PolymorphismDemo example_Extension_VTable_PolymorphismD
 		0,
 		0,
 		0,
-		0,
 		(char(*)(nova_standard_operators_Nova_Equals*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*))nova_standard_Nova_Object_0_Nova_equals,
 		0,
 		0,
@@ -80,7 +79,7 @@ void example_Nova_PolymorphismDemo_Nova_main(example_Nova_PolymorphismDemo* this
 	l1_Nova_spider = example_Nova_Spider_0_Nova_construct(0, exceptionData);
 	l1_Nova_animals[0] = (example_Nova_Animal*)(l1_Nova_dog);
 	l1_Nova_animals[1] = (example_Nova_Animal*)(l1_Nova_spider);
-	l1_Nova_description = example_Nova_PolymorphismDemo_Nova_getDescriptionOfAnimalWithNumberOfLegs((example_Nova_PolymorphismDemo*)nova_null, exceptionData, l1_Nova_animals, 8);
+	l1_Nova_description = example_Nova_PolymorphismDemo_Nova_getDescriptionOfAnimalWithNumberOfLegs(0, exceptionData, l1_Nova_animals, 8);
 	nova_standard_io_Nova_Console_1_Nova_writeLine(0, exceptionData, nova_standard_Nova_String_2_Nova_construct(0, exceptionData, "Searched for animal with 8 legs and found:"));
 	nova_standard_io_Nova_Console_1_Nova_writeLine(0, exceptionData, l1_Nova_description);
 	nova_standard_io_Nova_Console_Nova_waitForEnter(0, exceptionData);
@@ -93,9 +92,9 @@ nova_standard_Nova_String* example_Nova_PolymorphismDemo_Nova_getDescriptionOfAn
 	l2_Nova_i = 0;
 	for (; l2_Nova_i < 2; l2_Nova_i++)
 	{
-		if (example_Nova_Animal_0_Nova_getNumLegs(example_Nova_PolymorphismDemo_Nova_animals[l2_Nova_i], exceptionData) == example_Nova_PolymorphismDemo_Nova_numLegs)
+		if (example_Nova_Animal_virtual1_Nova_getNumLegs((example_Nova_Animal*)(example_Nova_PolymorphismDemo_Nova_animals[l2_Nova_i]), exceptionData) == example_Nova_PolymorphismDemo_Nova_numLegs)
 		{
-			return example_Nova_Animal_0_Nova_getDescription(example_Nova_PolymorphismDemo_Nova_animals[l2_Nova_i], exceptionData);
+			return example_Nova_Animal_virtual1_Nova_getDescription((example_Nova_Animal*)(example_Nova_PolymorphismDemo_Nova_animals[l2_Nova_i]), exceptionData);
 		}
 	}
 	return (nova_standard_Nova_String*)nova_null;

@@ -36,9 +36,9 @@ typedef struct nova_standard_Extension_VTable_Object nova_standard_Extension_VTa
 struct nova_standard_Extension_VTable_Object
 {
 	nova_Interface_VTable itable;
-	long (*nova_standard_Nova_Object_virtual0_Nova_getHashCodeLong)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*);
+	long (*nova_standard_Nova_Object_virtual1_Nova_getHashCodeLong)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*);
 	nova_standard_Nova_String* (*nova_standard_Nova_Object_virtual1_Nova_toString)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*);
-	char (*nova_standard_Nova_Object_virtual0_Nova_equals)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*);
+	char (*nova_standard_operators_Nova_Equals_virtual0_Nova_equals)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*);
 };
 
 extern nova_standard_Extension_VTable_Object nova_standard_Extension_VTable_Object_val;
@@ -60,5 +60,7 @@ nova_standard_Nova_String* nova_standard_Nova_Object_1_Nova_toString(nova_standa
 char nova_standard_Nova_Object_0_Nova_equals(nova_standard_Nova_Object* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_Nova_Object* nova_standard_Nova_Object_Nova_another);
 void nova_standard_Nova_Object_0_Nova_this(nova_standard_Nova_Object* this, nova_standard_exception_Nova_ExceptionData* exceptionData);
 void nova_standard_Nova_Object_Nova_super(nova_standard_Nova_Object* this, nova_standard_exception_Nova_ExceptionData* exceptionData);
+long nova_standard_Nova_Object_virtual1_Nova_getHashCodeLong(nova_standard_Nova_Object* this, nova_standard_exception_Nova_ExceptionData* exceptionData);
+nova_standard_Nova_String* nova_standard_Nova_Object_virtual1_Nova_toString(nova_standard_Nova_Object* this, nova_standard_exception_Nova_ExceptionData* exceptionData);
 
 #endif

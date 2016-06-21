@@ -23,7 +23,6 @@ nova_standard_datastruct_Extension_VTable_BinaryNode nova_standard_datastruct_Ex
 		0,
 		0,
 		0,
-		0,
 		(char(*)(nova_standard_operators_Nova_Equals*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*))nova_standard_Nova_Object_0_Nova_equals,
 		0,
 		0,
@@ -140,7 +139,7 @@ void nova_standard_datastruct_Nova_BinaryNode_Nova_setNode(nova_standard_datastr
 
 void nova_standard_datastruct_Nova_BinaryNode_Nova_addChild(nova_standard_datastruct_Nova_BinaryNode* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_datastruct_Nova_Comparable* nova_standard_datastruct_Nova_BinaryNode_Nova_data)
 {
-	if (nova_standard_datastruct_Nova_Comparable_0_Nova_compareTo((nova_standard_datastruct_Nova_Comparable*)(this->nova_standard_datastruct_Nova_Node_Nova_data), exceptionData, (nova_standard_Nova_Object*)(nova_standard_datastruct_Nova_BinaryNode_Nova_data)) >= 0)
+	if (nova_standard_datastruct_Nova_Comparable_virtual0_Nova_compareTo((nova_standard_datastruct_Nova_Comparable*)(this->nova_standard_datastruct_Nova_Node_Nova_data), exceptionData, (nova_standard_Nova_Object*)(nova_standard_datastruct_Nova_BinaryNode_Nova_data)) >= 0)
 	{
 		if (nova_standard_datastruct_Nova_BinaryNode_Accessor_Nova_left(this, exceptionData) == (nova_standard_datastruct_Nova_BinaryNode*)nova_null)
 		{

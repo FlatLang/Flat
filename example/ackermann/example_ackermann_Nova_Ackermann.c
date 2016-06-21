@@ -23,7 +23,6 @@ example_ackermann_Extension_VTable_Ackermann example_ackermann_Extension_VTable_
 		0,
 		0,
 		0,
-		0,
 		(char(*)(nova_standard_operators_Nova_Equals*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*))nova_standard_Nova_Object_0_Nova_equals,
 		0,
 		0,
@@ -68,7 +67,7 @@ void example_ackermann_Nova_Ackermann_Nova_destroy(example_ackermann_Nova_Ackerm
 
 void example_ackermann_Nova_Ackermann_Nova_main(example_ackermann_Nova_Ackermann* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_Nova_String** example_ackermann_Nova_Ackermann_Nova_args)
 {
-	nova_standard_io_Nova_Console_1_Nova_writeLine(0, exceptionData, nova_standard_Nova_String_0_Nova_concat(nova_standard_Nova_String_2_Nova_construct(0, exceptionData, "Ackermann: "), exceptionData, nova_standard_primitive_number_Nova_Int_2_Nova_toString(0, exceptionData, example_ackermann_Nova_Ackermann_Nova_run((example_ackermann_Nova_Ackermann*)nova_null, exceptionData, 4, 1))));
+	nova_standard_io_Nova_Console_1_Nova_writeLine(0, exceptionData, nova_standard_Nova_String_0_Nova_concat(nova_standard_Nova_String_2_Nova_construct(0, exceptionData, "Ackermann: "), exceptionData, nova_standard_primitive_number_Nova_Int_2_Nova_toString(0, exceptionData, example_ackermann_Nova_Ackermann_Nova_run(0, exceptionData, 4, 1))));
 	nova_standard_io_Nova_Console_Nova_waitForEnter(0, exceptionData);
 }
 
@@ -82,11 +81,11 @@ int example_ackermann_Nova_Ackermann_Nova_run(example_ackermann_Nova_Ackermann* 
 	{
 		if (example_ackermann_Nova_Ackermann_Nova_n == 0)
 		{
-			return example_ackermann_Nova_Ackermann_Nova_run((example_ackermann_Nova_Ackermann*)nova_null, exceptionData, example_ackermann_Nova_Ackermann_Nova_m - 1, 1);
+			return example_ackermann_Nova_Ackermann_Nova_run(0, exceptionData, example_ackermann_Nova_Ackermann_Nova_m - 1, 1);
 		}
 		else if (example_ackermann_Nova_Ackermann_Nova_n > 0)
 		{
-			return example_ackermann_Nova_Ackermann_Nova_run((example_ackermann_Nova_Ackermann*)nova_null, exceptionData, example_ackermann_Nova_Ackermann_Nova_m - 1, example_ackermann_Nova_Ackermann_Nova_run((example_ackermann_Nova_Ackermann*)nova_null, exceptionData, example_ackermann_Nova_Ackermann_Nova_m, example_ackermann_Nova_Ackermann_Nova_n - 1));
+			return example_ackermann_Nova_Ackermann_Nova_run(0, exceptionData, example_ackermann_Nova_Ackermann_Nova_m - 1, example_ackermann_Nova_Ackermann_Nova_run(0, exceptionData, example_ackermann_Nova_Ackermann_Nova_m, example_ackermann_Nova_Ackermann_Nova_n - 1));
 		}
 	}
 	return 0;
@@ -102,11 +101,11 @@ int example_ackermann_Nova_Ackermann_Nova_run2(example_ackermann_Nova_Ackermann*
 	{
 		if (example_ackermann_Nova_Ackermann_Nova_n == 0)
 		{
-			return example_ackermann_Nova_Ackermann_Nova_run((example_ackermann_Nova_Ackermann*)nova_null, exceptionData, example_ackermann_Nova_Ackermann_Nova_m - 1, 1);
+			return example_ackermann_Nova_Ackermann_Nova_run(0, exceptionData, example_ackermann_Nova_Ackermann_Nova_m - 1, 1);
 		}
 		else if (example_ackermann_Nova_Ackermann_Nova_n > 0)
 		{
-			return example_ackermann_Nova_Ackermann_Nova_run((example_ackermann_Nova_Ackermann*)nova_null, exceptionData, example_ackermann_Nova_Ackermann_Nova_m - 1, example_ackermann_Nova_Ackermann_Nova_run((example_ackermann_Nova_Ackermann*)nova_null, exceptionData, example_ackermann_Nova_Ackermann_Nova_m, example_ackermann_Nova_Ackermann_Nova_n - 1));
+			return example_ackermann_Nova_Ackermann_Nova_run(0, exceptionData, example_ackermann_Nova_Ackermann_Nova_m - 1, example_ackermann_Nova_Ackermann_Nova_run(0, exceptionData, example_ackermann_Nova_Ackermann_Nova_m, example_ackermann_Nova_Ackermann_Nova_n - 1));
 		}
 	}
 	return 0;

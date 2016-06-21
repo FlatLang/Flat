@@ -5,11 +5,10 @@ nova_standard_datastruct_list_Extension_VTable_ArrayIterator nova_standard_datas
 {
 	{
 		0,
+		0,
 		(nova_standard_datastruct_list_Nova_Iterator*(*)(nova_standard_datastruct_list_Nova_Iterator*, nova_standard_exception_Nova_ExceptionData*))nova_standard_datastruct_list_Nova_ArrayIterator_Nova_reset,
 		(char(*)(nova_standard_datastruct_list_Nova_Iterator*, nova_standard_exception_Nova_ExceptionData*))nova_standard_datastruct_list_Nova_ArrayIterator_Accessor_Nova_hasNext,
-		0,
 		(nova_standard_Nova_Object*(*)(nova_standard_datastruct_list_Nova_Iterator*, nova_standard_exception_Nova_ExceptionData*))nova_standard_datastruct_list_Nova_ArrayIterator_Accessor_Nova_next,
-		0,
 		0,
 		0,
 		0,
@@ -83,7 +82,7 @@ void nova_standard_datastruct_list_Nova_ArrayIterator_Nova_destroy(nova_standard
 void nova_standard_datastruct_list_Nova_ArrayIterator_Nova_this(nova_standard_datastruct_list_Nova_ArrayIterator* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_datastruct_list_Nova_Array* nova_standard_datastruct_list_Nova_ArrayIterator_Nova_array)
 {
 	this->prv->nova_standard_datastruct_list_Nova_ArrayIterator_Nova_array = nova_standard_datastruct_list_Nova_ArrayIterator_Nova_array;
-	nova_standard_datastruct_list_Nova_ArrayIterator_Nova_reset(this, exceptionData);
+	nova_standard_datastruct_list_Nova_Iterator_virtual0_Nova_reset((nova_standard_datastruct_list_Nova_Iterator*)(this), exceptionData);
 }
 
 nova_standard_datastruct_list_Nova_Iterator* nova_standard_datastruct_list_Nova_ArrayIterator_Nova_reset(nova_standard_datastruct_list_Nova_ArrayIterator* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
@@ -100,7 +99,7 @@ char nova_standard_datastruct_list_Nova_ArrayIterator_Accessor_Nova_hasNext(nova
 
 nova_standard_Nova_Object* nova_standard_datastruct_list_Nova_ArrayIterator_Accessor_Nova_next(nova_standard_datastruct_list_Nova_ArrayIterator* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
-	if (nova_standard_datastruct_list_Nova_ArrayIterator_Accessor_Nova_hasNext(this, exceptionData))
+	if (nova_standard_datastruct_list_Nova_Iterator_virtual_Accessor_Nova_hasNext((nova_standard_datastruct_list_Nova_Iterator*)(this), exceptionData))
 	{
 		return nova_standard_datastruct_list_Nova_Array_Nova_get(this->prv->nova_standard_datastruct_list_Nova_ArrayIterator_Nova_array, exceptionData, this->nova_standard_datastruct_list_Nova_ArrayIterator_Nova_position++);
 	}

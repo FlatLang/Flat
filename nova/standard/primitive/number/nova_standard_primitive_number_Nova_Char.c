@@ -23,7 +23,6 @@ nova_standard_primitive_number_Extension_VTable_Char nova_standard_primitive_num
 		0,
 		0,
 		0,
-		0,
 		(char(*)(nova_standard_operators_Nova_Equals*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*))nova_standard_Nova_Object_0_Nova_equals,
 		(nova_standard_Nova_Object*(*)(nova_standard_operators_Nova_Multiply*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*))nova_standard_primitive_number_Nova_Char_0_Nova_multiply,
 		0,
@@ -84,7 +83,7 @@ nova_standard_Nova_String* nova_standard_primitive_number_Nova_Char_2_Nova_toStr
 
 nova_standard_Nova_String* nova_standard_primitive_number_Nova_Char_3_Nova_toString(nova_standard_primitive_number_Nova_Char* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
-	return nova_standard_primitive_number_Nova_Char_2_Nova_toString(this, exceptionData, this->nova_standard_primitive_number_Nova_Char_Nova_value);
+	return nova_standard_primitive_number_Nova_Char_2_Nova_toString(0, exceptionData, this->nova_standard_primitive_number_Nova_Char_Nova_value);
 }
 
 char nova_standard_primitive_number_Nova_Char_0_Nova_toLowerCase(nova_standard_primitive_number_Nova_Char* this, nova_standard_exception_Nova_ExceptionData* exceptionData)

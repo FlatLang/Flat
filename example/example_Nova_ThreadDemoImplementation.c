@@ -23,7 +23,6 @@ example_Extension_VTable_ThreadDemoImplementation example_Extension_VTable_Threa
 		0,
 		0,
 		0,
-		0,
 		(char(*)(nova_standard_operators_Nova_Equals*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*))nova_standard_Nova_Object_0_Nova_equals,
 		0,
 		0,
@@ -93,7 +92,7 @@ void example_Nova_ThreadDemoImplementation_0_Nova_run(example_Nova_ThreadDemoImp
 	for (; l2_Nova_i < 10; l2_Nova_i++)
 	{
 		nova_standard_io_Nova_Console_1_Nova_writeLine(0, exceptionData, this->prv->example_Nova_ThreadDemoImplementation_Nova_word);
-		nova_standard_thread_Nova_Thread_Nova_sleep((nova_standard_thread_Nova_Thread*)(this), exceptionData, this->prv->example_Nova_ThreadDemoImplementation_Nova_millis);
+		nova_standard_thread_Nova_Thread_Nova_sleep(0, exceptionData, this->prv->example_Nova_ThreadDemoImplementation_Nova_millis);
 	}
 }
 

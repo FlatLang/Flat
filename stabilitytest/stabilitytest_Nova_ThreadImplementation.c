@@ -23,7 +23,6 @@ stabilitytest_Extension_VTable_ThreadImplementation stabilitytest_Extension_VTab
 		0,
 		0,
 		0,
-		0,
 		(char(*)(nova_standard_operators_Nova_Equals*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*))nova_standard_Nova_Object_0_Nova_equals,
 		0,
 		0,
@@ -92,7 +91,7 @@ void stabilitytest_Nova_ThreadImplementation_0_Nova_run(stabilitytest_Nova_Threa
 	l2_Nova_i = 0;
 	for (; l2_Nova_i < this->prv->stabilitytest_Nova_ThreadImplementation_Nova_times; l2_Nova_i++)
 	{
-		nova_standard_thread_Nova_Thread_Nova_sleep(0, exceptionData, (long)(this->prv->stabilitytest_Nova_ThreadImplementation_Nova_millis));
+		nova_standard_thread_Nova_Thread_Nova_sleep(0, exceptionData, this->prv->stabilitytest_Nova_ThreadImplementation_Nova_millis);
 	}
 }
 

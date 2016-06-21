@@ -23,7 +23,6 @@ example_Extension_VTable_ExceptionHandlingDemo example_Extension_VTable_Exceptio
 		0,
 		0,
 		0,
-		0,
 		(char(*)(nova_standard_operators_Nova_Equals*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*))nova_standard_Nova_Object_0_Nova_equals,
 		0,
 		0,
@@ -77,9 +76,9 @@ void example_Nova_ExceptionHandlingDemo_Nova_main(example_Nova_ExceptionHandling
 		{
 			int l1_Nova_result;
 			
-			l1_Nova_result = example_Nova_ExceptionHandlingDemo_Nova_divide((example_Nova_ExceptionHandlingDemo*)nova_null, exceptionData, 100, 5);
+			l1_Nova_result = example_Nova_ExceptionHandlingDemo_Nova_divide(0, exceptionData, 100, 5);
 			nova_standard_io_Nova_Console_1_Nova_writeLine(0, exceptionData, nova_standard_Nova_String_0_Nova_concat(nova_standard_Nova_String_2_Nova_construct(0, exceptionData, "After working example: "), exceptionData, nova_standard_primitive_number_Nova_Int_2_Nova_toString(0, exceptionData, l1_Nova_result)));
-			l1_Nova_result = example_Nova_ExceptionHandlingDemo_Nova_divide((example_Nova_ExceptionHandlingDemo*)nova_null, exceptionData, 100, 3);
+			l1_Nova_result = example_Nova_ExceptionHandlingDemo_Nova_divide(0, exceptionData, 100, 3);
 			nova_standard_io_Nova_Console_1_Nova_writeLine(0, exceptionData, nova_standard_Nova_String_2_Nova_construct(0, exceptionData, "this output will not show."));
 		}
 	}

@@ -23,7 +23,6 @@ nova_standard_time_Extension_VTable_Date nova_standard_time_Extension_VTable_Dat
 		0,
 		0,
 		0,
-		0,
 		(char(*)(nova_standard_operators_Nova_Equals*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*))nova_standard_Nova_Object_0_Nova_equals,
 		0,
 		0,
@@ -101,7 +100,7 @@ nova_standard_Nova_String* nova_standard_time_Nova_Date_1_Nova_formatDate(nova_s
 {
 	char* l1_Nova_data;
 	
-	l1_Nova_data = (char*)(nova_formatDate((char*)(nova_standard_time_Nova_Date_Nova_str->nova_standard_Nova_String_Nova_chars), (int)(nova_standard_time_Nova_Date_Nova_first), (int)(nova_standard_time_Nova_Date_Nova_second), (int)(nova_standard_time_Nova_Date_Nova_third), (int)(nova_standard_time_Nova_Date_Nova_fourth), (int)(nova_standard_time_Nova_Date_Nova_fifth), (int)(nova_standard_time_Nova_Date_Nova_sixth)));
+	l1_Nova_data = (char*)(nova_formatDate((char*)(nova_standard_time_Nova_Date_Nova_str->nova_standard_Nova_String_Nova_chars), nova_standard_time_Nova_Date_Nova_first, nova_standard_time_Nova_Date_Nova_second, nova_standard_time_Nova_Date_Nova_third, nova_standard_time_Nova_Date_Nova_fourth, nova_standard_time_Nova_Date_Nova_fifth, nova_standard_time_Nova_Date_Nova_sixth));
 	return nova_standard_Nova_String_2_Nova_construct(0, exceptionData, l1_Nova_data);
 }
 

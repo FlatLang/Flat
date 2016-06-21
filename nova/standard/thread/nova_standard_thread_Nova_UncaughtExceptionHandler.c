@@ -23,7 +23,6 @@ nova_standard_thread_Extension_VTable_UncaughtExceptionHandler nova_standard_thr
 		0,
 		0,
 		0,
-		0,
 		(char(*)(nova_standard_operators_Nova_Equals*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*))nova_standard_Nova_Object_0_Nova_equals,
 		0,
 		0,
@@ -81,5 +80,10 @@ void nova_standard_thread_Nova_UncaughtExceptionHandler_0_Nova_this(nova_standar
 
 void nova_standard_thread_Nova_UncaughtExceptionHandler_Nova_super(nova_standard_thread_Nova_UncaughtExceptionHandler* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
+}
+
+void nova_standard_thread_Nova_UncaughtExceptionHandler_virtual1_Nova_uncaughtException(nova_standard_thread_Nova_UncaughtExceptionHandler* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_thread_Nova_Thread* nova_standard_thread_Nova_UncaughtExceptionHandler_Nova_thread, nova_standard_exception_Nova_Exception* nova_standard_thread_Nova_UncaughtExceptionHandler_Nova_exception)
+{
+	this->vtable->nova_standard_thread_Nova_UncaughtExceptionHandler_virtual1_Nova_uncaughtException((nova_standard_thread_Nova_UncaughtExceptionHandler*)(this), exceptionData, nova_standard_thread_Nova_UncaughtExceptionHandler_Nova_thread, nova_standard_thread_Nova_UncaughtExceptionHandler_Nova_exception);
 }
 

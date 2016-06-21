@@ -34,8 +34,8 @@ typedef struct example_Extension_VTable_Polygon example_Extension_VTable_Polygon
 struct example_Extension_VTable_Polygon
 {
 	nova_Interface_VTable itable;
-	int (*example_Nova_Polygon_virtual0_Nova_numberSides)(example_Nova_Polygon*, nova_standard_exception_Nova_ExceptionData*);
-	double (*example_Nova_Polygon_virtual0_Nova_calculateArea)(example_Nova_Polygon*, nova_standard_exception_Nova_ExceptionData*);
+	int (*example_Nova_Polygon_virtual1_Nova_numberSides)(example_Nova_Polygon*, nova_standard_exception_Nova_ExceptionData*);
+	double (*example_Nova_Polygon_virtual1_Nova_calculateArea)(example_Nova_Polygon*, nova_standard_exception_Nova_ExceptionData*);
 };
 
 extern example_Extension_VTable_Polygon example_Extension_VTable_Polygon_val;
@@ -49,5 +49,7 @@ CCLASS_CLASS
 )
 
 void example_Nova_PolygonNova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData);
-int example_Nova_Polygon_0_Nova_numberSides(example_Nova_Polygon* this, nova_standard_exception_Nova_ExceptionData* exceptionData);double example_Nova_Polygon_0_Nova_calculateArea(example_Nova_Polygon* this, nova_standard_exception_Nova_ExceptionData* exceptionData);
+int example_Nova_Polygon_0_Nova_numberSides(example_Nova_Polygon* this, nova_standard_exception_Nova_ExceptionData* exceptionData);double example_Nova_Polygon_0_Nova_calculateArea(example_Nova_Polygon* this, nova_standard_exception_Nova_ExceptionData* exceptionData);int example_Nova_Polygon_virtual1_Nova_numberSides(example_Nova_Polygon* this, nova_standard_exception_Nova_ExceptionData* exceptionData);
+double example_Nova_Polygon_virtual1_Nova_calculateArea(example_Nova_Polygon* this, nova_standard_exception_Nova_ExceptionData* exceptionData);
+
 #endif

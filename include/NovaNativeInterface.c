@@ -367,6 +367,7 @@ nova_env novaEnv = {
 },
 
 {
+&nova_standard_math_Nova_Math_Nova_max,
 &nova_standard_math_Nova_Math_Nova_sign,
 &nova_standard_math_Nova_Math_Nova_random,
 &nova_standard_math_Nova_Math_0_Nova_abs,

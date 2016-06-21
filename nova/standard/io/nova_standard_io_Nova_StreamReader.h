@@ -36,8 +36,8 @@ typedef struct nova_standard_io_Extension_VTable_StreamReader nova_standard_io_E
 struct nova_standard_io_Extension_VTable_StreamReader
 {
 	nova_Interface_VTable itable;
-	nova_standard_Nova_String* (*nova_standard_io_Nova_StreamReader_virtual_Nova_readString)(nova_standard_io_Nova_StreamReader*, nova_standard_exception_Nova_ExceptionData*);
-	char* (*nova_standard_io_Nova_StreamReader_virtual_Nova_readBytes)(nova_standard_io_Nova_StreamReader*, nova_standard_exception_Nova_ExceptionData*);
+	nova_standard_Nova_String* (*nova_standard_io_Nova_InputStream_virtual1_Nova_readString)(nova_standard_io_Nova_StreamReader*, nova_standard_exception_Nova_ExceptionData*);
+	char* (*nova_standard_io_Nova_InputStream_virtual1_Nova_readBytes)(nova_standard_io_Nova_StreamReader*, nova_standard_exception_Nova_ExceptionData*);
 };
 
 extern nova_standard_io_Extension_VTable_StreamReader nova_standard_io_Extension_VTable_StreamReader_val;

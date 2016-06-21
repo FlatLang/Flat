@@ -26,7 +26,6 @@ nova_standard_thread_Extension_VTable_Thread nova_standard_thread_Extension_VTab
 		0,
 		0,
 		0,
-		0,
 		(char(*)(nova_standard_operators_Nova_Equals*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*))nova_standard_Nova_Object_0_Nova_equals,
 		0,
 		0,
@@ -96,7 +95,7 @@ void nova_standard_thread_Nova_Thread_Nova_kill(nova_standard_thread_Nova_Thread
 
 void nova_standard_thread_Nova_Thread_Nova_sleep(nova_standard_thread_Nova_Thread* this, nova_standard_exception_Nova_ExceptionData* exceptionData, long nova_standard_thread_Nova_Thread_Nova_millis)
 {
-	lib_nova_thread_sleep((long_long)(nova_standard_thread_Nova_Thread_Nova_millis));
+	lib_nova_thread_sleep(nova_standard_thread_Nova_Thread_Nova_millis);
 }
 
 void nova_standard_thread_Nova_Thread_0_Nova_run(nova_standard_thread_Nova_Thread* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
@@ -110,7 +109,7 @@ void nova_standard_thread_Nova_Thread_Nova_startRun(nova_standard_thread_Nova_Th
 		novaEnv.nova_standard_exception_ExceptionData.addCode(exceptionData, exceptionData, 1);
 		
 		{
-			nova_standard_thread_Nova_Thread_0_Nova_run(this, exceptionData);
+			nova_standard_thread_Nova_Thread_virtual0_Nova_run((nova_standard_thread_Nova_Thread*)(this), exceptionData);
 		}
 	}
 	CATCH (1)
@@ -133,5 +132,10 @@ void nova_standard_thread_Nova_Thread_2_Nova_this(nova_standard_thread_Nova_Thre
 void nova_standard_thread_Nova_Thread_Nova_super(nova_standard_thread_Nova_Thread* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
 	this->prv->nova_standard_thread_Nova_Thread_Nova_handle = 0;
+}
+
+void nova_standard_thread_Nova_Thread_virtual0_Nova_run(nova_standard_thread_Nova_Thread* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
+{
+	this->vtable->nova_standard_thread_Nova_Thread_virtual0_Nova_run((nova_standard_thread_Nova_Thread*)(this), exceptionData);
 }
 

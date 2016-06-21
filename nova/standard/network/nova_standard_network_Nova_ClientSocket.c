@@ -23,7 +23,6 @@ nova_standard_network_Extension_VTable_ClientSocket nova_standard_network_Extens
 		0,
 		0,
 		0,
-		0,
 		(char(*)(nova_standard_operators_Nova_Equals*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*))nova_standard_Nova_Object_0_Nova_equals,
 		0,
 		0,
@@ -81,7 +80,7 @@ void nova_standard_network_Nova_ClientSocket_Nova_this(nova_standard_network_Nov
 
 char nova_standard_network_Nova_ClientSocket_Nova_connect(nova_standard_network_Nova_ClientSocket* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_Nova_String* nova_standard_network_Nova_ClientSocket_Nova_ipAddress, int nova_standard_network_Nova_ClientSocket_Nova_port)
 {
-	this->prv->nova_standard_network_Nova_ClientSocket_Nova_socket = nova_clientsocket_connect((char*)(nova_standard_network_Nova_ClientSocket_Nova_ipAddress->nova_standard_Nova_String_Nova_chars), (int)(nova_standard_network_Nova_ClientSocket_Nova_port));
+	this->prv->nova_standard_network_Nova_ClientSocket_Nova_socket = nova_clientsocket_connect((char*)(nova_standard_network_Nova_ClientSocket_Nova_ipAddress->nova_standard_Nova_String_Nova_chars), nova_standard_network_Nova_ClientSocket_Nova_port);
 	if (this->prv->nova_standard_network_Nova_ClientSocket_Nova_socket == 0)
 	{
 		return 0;

@@ -23,7 +23,6 @@ stabilitytest_Extension_VTable_TimeStability stabilitytest_Extension_VTable_Time
 		0,
 		0,
 		0,
-		0,
 		(char(*)(nova_standard_operators_Nova_Equals*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*))nova_standard_Nova_Object_0_Nova_equals,
 		0,
 		0,
@@ -80,7 +79,7 @@ void stabilitytest_Nova_TimeStability_0_Nova_test(stabilitytest_Nova_TimeStabili
 	nova_standard_io_Nova_Console_0_Nova_write(0, exceptionData, nova_standard_Nova_String_2_Nova_construct(0, exceptionData, "Checking Time.nova... "));
 	l1_Nova_timer = nova_standard_time_Nova_Timer_0_Nova_construct(0, exceptionData);
 	nova_standard_time_Nova_Timer_Nova_start(l1_Nova_timer, exceptionData);
-	nova_standard_thread_Nova_Thread_Nova_sleep(0, exceptionData, (long)(100));
+	nova_standard_thread_Nova_Thread_Nova_sleep(0, exceptionData, 100);
 	nova_standard_time_Nova_Timer_Nova_stop(l1_Nova_timer, exceptionData);
 	if (nova_standard_time_Nova_Timer_Accessor_Nova_duration(l1_Nova_timer, exceptionData) >= 100 && nova_standard_time_Nova_Timer_Accessor_Nova_duration(l1_Nova_timer, exceptionData) < 130)
 	{
@@ -88,7 +87,7 @@ void stabilitytest_Nova_TimeStability_0_Nova_test(stabilitytest_Nova_TimeStabili
 	}
 	else
 	{
-		stabilitytest_Nova_StabilityTest_1_Nova_fail(this->stabilitytest_Nova_StabilityTestCase_Nova_program, exceptionData, nova_standard_Nova_String_0_Nova_concat(nova_standard_Nova_String_2_Nova_construct(0, exceptionData, "Failed; expected 100ms, found "), exceptionData, nova_standard_Nova_String_0_Nova_concat(nova_standard_primitive_number_Nova_Long_2_Nova_toString(0, exceptionData, nova_standard_time_Nova_Timer_Accessor_Nova_duration(l1_Nova_timer, exceptionData)), exceptionData, nova_standard_Nova_String_2_Nova_construct(0, exceptionData, "ms"))));
+		stabilitytest_Nova_StabilityTest_1_Nova_fail(this->stabilitytest_Nova_StabilityTestCase_Nova_program, exceptionData, nova_standard_Nova_String_0_Nova_concat(nova_standard_Nova_String_2_Nova_construct(0, exceptionData, "Failed; expected 100ms, found "), exceptionData, nova_standard_Nova_String_virtual0_Nova_concat((nova_standard_Nova_String*)(nova_standard_primitive_number_Nova_Long_2_Nova_toString(0, exceptionData, nova_standard_time_Nova_Timer_Accessor_Nova_duration(l1_Nova_timer, exceptionData))), exceptionData, nova_standard_Nova_String_2_Nova_construct(0, exceptionData, "ms"))));
 	}
 }
 

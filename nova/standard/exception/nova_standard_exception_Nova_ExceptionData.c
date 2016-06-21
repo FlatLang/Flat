@@ -23,7 +23,6 @@ nova_standard_exception_Extension_VTable_ExceptionData nova_standard_exception_E
 		0,
 		0,
 		0,
-		0,
 		(char(*)(nova_standard_operators_Nova_Equals*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*))nova_standard_Nova_Object_0_Nova_equals,
 		0,
 		0,
@@ -144,7 +143,7 @@ void nova_standard_exception_Nova_ExceptionData_Nova_jumpToBuffer(nova_standard_
 		nova_standard_exception_Nova_ExceptionData_Nova_code = 1;
 	}
 	l1_Nova_b = nova_standard_exception_Nova_ExceptionData_Nova_getBuffer(l1_Nova_data, exceptionData);
-	jump(*l1_Nova_b, (int)(nova_standard_exception_Nova_ExceptionData_Nova_code));
+	jump(*l1_Nova_b, nova_standard_exception_Nova_ExceptionData_Nova_code);
 }
 
 nova_standard_exception_Nova_ExceptionData* nova_standard_exception_Nova_ExceptionData_Nova_getParent(nova_standard_exception_Nova_ExceptionData* this, nova_standard_exception_Nova_ExceptionData* exceptionData)

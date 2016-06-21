@@ -23,7 +23,6 @@ nova_standard_svg_Extension_VTable_SVGComponentList nova_standard_svg_Extension_
 		0,
 		0,
 		0,
-		0,
 		(char(*)(nova_standard_operators_Nova_Equals*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*))nova_standard_Nova_Object_0_Nova_equals,
 		0,
 		0,
@@ -74,7 +73,7 @@ void nova_standard_svg_Nova_SVGComponentList_Nova_generateOutput(nova_standard_s
 	l1_Nova_current = this->nova_standard_svg_Nova_SVGComponentList_Nova_start;
 	while (l1_Nova_current != (nova_standard_svg_Nova_SVGComponentNode*)nova_null)
 	{
-		nova_standard_svg_Nova_SVGComponent_0_Nova_generateOutput(l1_Nova_current->nova_standard_svg_Nova_SVGComponentNode_Nova_component, exceptionData, nova_standard_svg_Nova_SVGComponentList_Nova_file);
+		nova_standard_svg_Nova_SVGComponent_virtual0_Nova_generateOutput((nova_standard_svg_Nova_SVGComponent*)(l1_Nova_current->nova_standard_svg_Nova_SVGComponentNode_Nova_component), exceptionData, nova_standard_svg_Nova_SVGComponentList_Nova_file);
 		l1_Nova_current = l1_Nova_current->nova_standard_svg_Nova_SVGComponentNode_Nova_next;
 	}
 }

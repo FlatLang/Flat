@@ -23,7 +23,6 @@ nova_standard_primitive_Extension_VTable_Primitive nova_standard_primitive_Exten
 		0,
 		0,
 		0,
-		0,
 		(char(*)(nova_standard_operators_Nova_Equals*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*))nova_standard_Nova_Object_0_Nova_equals,
 		0,
 		0,

@@ -23,7 +23,6 @@ nova_standard_primitive_number_Extension_VTable_Float nova_standard_primitive_nu
 		0,
 		0,
 		0,
-		0,
 		(char(*)(nova_standard_operators_Nova_Equals*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*))nova_standard_Nova_Object_0_Nova_equals,
 		(nova_standard_Nova_Object*(*)(nova_standard_operators_Nova_Multiply*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*))nova_standard_primitive_number_Nova_Float_0_Nova_multiply,
 		0,
@@ -79,17 +78,17 @@ void nova_standard_primitive_number_Nova_Float_Nova_this(nova_standard_primitive
 
 int nova_standard_primitive_number_Nova_Float_0_Nova_numDigits(nova_standard_primitive_number_Nova_Float* this, nova_standard_exception_Nova_ExceptionData* exceptionData, float nova_standard_primitive_number_Nova_Float_Nova_number)
 {
-	return nova_standard_primitive_number_Nova_Double_0_Nova_numDigits(0, exceptionData, (double)(nova_standard_primitive_number_Nova_Float_Nova_number));
+	return nova_standard_primitive_number_Nova_Double_0_Nova_numDigits(0, exceptionData, nova_standard_primitive_number_Nova_Float_Nova_number);
 }
 
 nova_standard_Nova_String* nova_standard_primitive_number_Nova_Float_2_Nova_toString(nova_standard_primitive_number_Nova_Float* this, nova_standard_exception_Nova_ExceptionData* exceptionData, float nova_standard_primitive_number_Nova_Float_Nova_value)
 {
-	return nova_standard_primitive_number_Nova_Double_2_Nova_toString(0, exceptionData, (double)(nova_standard_primitive_number_Nova_Float_Nova_value));
+	return nova_standard_primitive_number_Nova_Double_2_Nova_toString(0, exceptionData, nova_standard_primitive_number_Nova_Float_Nova_value);
 }
 
 nova_standard_Nova_String* nova_standard_primitive_number_Nova_Float_3_Nova_toString(nova_standard_primitive_number_Nova_Float* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
-	return nova_standard_primitive_number_Nova_Float_2_Nova_toString(this, exceptionData, this->nova_standard_primitive_number_Nova_Float_Nova_value);
+	return nova_standard_primitive_number_Nova_Float_2_Nova_toString(0, exceptionData, this->nova_standard_primitive_number_Nova_Float_Nova_value);
 }
 
 float nova_standard_primitive_number_Nova_Float_0_Nova_compareTo(nova_standard_primitive_number_Nova_Float* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_primitive_number_Nova_Float* nova_standard_primitive_number_Nova_Float_Nova_prim)

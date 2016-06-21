@@ -34,12 +34,12 @@ typedef struct example_Extension_VTable_Animal example_Extension_VTable_Animal;
 struct example_Extension_VTable_Animal
 {
 	nova_Interface_VTable itable;
-	long (*nova_standard_Nova_Object_virtual0_Nova_getHashCodeLong)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*);
-	nova_standard_Nova_String* (*example_Nova_Animal_virtual1_Nova_toString)(example_Nova_Animal*, nova_standard_exception_Nova_ExceptionData*);
-	char (*nova_standard_Nova_Object_virtual0_Nova_equals)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*);
-	int (*example_Nova_Animal_virtual0_Nova_getNumLegs)(example_Nova_Animal*, nova_standard_exception_Nova_ExceptionData*);
-	int (*example_Nova_Animal_virtual0_Nova_getNumEyes)(example_Nova_Animal*, nova_standard_exception_Nova_ExceptionData*);
-	nova_standard_Nova_String* (*example_Nova_Animal_virtual0_Nova_getDescription)(example_Nova_Animal*, nova_standard_exception_Nova_ExceptionData*);
+	long (*nova_standard_Nova_Object_virtual1_Nova_getHashCodeLong)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*);
+	nova_standard_Nova_String* (*nova_standard_Nova_Object_virtual1_Nova_toString)(example_Nova_Animal*, nova_standard_exception_Nova_ExceptionData*);
+	char (*nova_standard_operators_Nova_Equals_virtual0_Nova_equals)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*);
+	int (*example_Nova_Animal_virtual1_Nova_getNumLegs)(example_Nova_Animal*, nova_standard_exception_Nova_ExceptionData*);
+	int (*example_Nova_Animal_virtual1_Nova_getNumEyes)(example_Nova_Animal*, nova_standard_exception_Nova_ExceptionData*);
+	nova_standard_Nova_String* (*example_Nova_Animal_virtual1_Nova_getDescription)(example_Nova_Animal*, nova_standard_exception_Nova_ExceptionData*);
 };
 
 extern example_Extension_VTable_Animal example_Extension_VTable_Animal_val;
@@ -61,5 +61,8 @@ nova_standard_Nova_String* example_Nova_Animal_0_Nova_getDescription(example_Nov
 nova_standard_Nova_String* example_Nova_Animal_1_Nova_toString(example_Nova_Animal* this, nova_standard_exception_Nova_ExceptionData* exceptionData);
 void example_Nova_Animal_0_Nova_this(example_Nova_Animal* this, nova_standard_exception_Nova_ExceptionData* exceptionData);
 void example_Nova_Animal_Nova_super(example_Nova_Animal* this, nova_standard_exception_Nova_ExceptionData* exceptionData);
+int example_Nova_Animal_virtual1_Nova_getNumLegs(example_Nova_Animal* this, nova_standard_exception_Nova_ExceptionData* exceptionData);
+int example_Nova_Animal_virtual1_Nova_getNumEyes(example_Nova_Animal* this, nova_standard_exception_Nova_ExceptionData* exceptionData);
+nova_standard_Nova_String* example_Nova_Animal_virtual1_Nova_getDescription(example_Nova_Animal* this, nova_standard_exception_Nova_ExceptionData* exceptionData);
 
 #endif

@@ -34,9 +34,9 @@ typedef struct example_Extension_VTable_Person example_Extension_VTable_Person;
 struct example_Extension_VTable_Person
 {
 	nova_Interface_VTable itable;
-	long (*nova_standard_Nova_Object_virtual0_Nova_getHashCodeLong)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*);
+	long (*nova_standard_Nova_Object_virtual1_Nova_getHashCodeLong)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*);
 	nova_standard_Nova_String* (*nova_standard_Nova_Object_virtual1_Nova_toString)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*);
-	char (*nova_standard_Nova_Object_virtual0_Nova_equals)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*);
+	char (*nova_standard_operators_Nova_Equals_virtual0_Nova_equals)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*);
 	void (*example_Nova_Person_virtual0_Nova_sayHello)(example_Nova_Person*, nova_standard_exception_Nova_ExceptionData*);
 };
 
@@ -58,5 +58,6 @@ void example_Nova_Person_Nova_destroy(example_Nova_Person** this, nova_standard_
 void example_Nova_Person_2_Nova_this(example_Nova_Person* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_Nova_String* example_Nova_Person_Nova_name, int example_Nova_Person_Nova_age);
 void example_Nova_Person_0_Nova_sayHello(example_Nova_Person* this, nova_standard_exception_Nova_ExceptionData* exceptionData);
 void example_Nova_Person_Nova_super(example_Nova_Person* this, nova_standard_exception_Nova_ExceptionData* exceptionData);
+void example_Nova_Person_virtual0_Nova_sayHello(example_Nova_Person* this, nova_standard_exception_Nova_ExceptionData* exceptionData);
 
 #endif

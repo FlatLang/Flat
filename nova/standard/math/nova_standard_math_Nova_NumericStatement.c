@@ -23,7 +23,6 @@ nova_standard_math_Extension_VTable_NumericStatement nova_standard_math_Extensio
 		0,
 		0,
 		0,
-		0,
 		(char(*)(nova_standard_operators_Nova_Equals*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*))nova_standard_Nova_Object_0_Nova_equals,
 		0,
 		0,
@@ -81,7 +80,7 @@ void nova_standard_math_Nova_NumericStatement_1_Nova_this(nova_standard_math_Nov
 
 nova_standard_Nova_String* nova_standard_math_Nova_NumericStatement_1_Nova_toString(nova_standard_math_Nova_NumericStatement* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
-	return nova_standard_math_Nova_NumericTree_1_Nova_toString(this->prv->nova_standard_math_Nova_NumericStatement_Nova_tree, exceptionData);
+	return nova_standard_Nova_Object_virtual1_Nova_toString((nova_standard_Nova_Object*)(this->prv->nova_standard_math_Nova_NumericStatement_Nova_tree), exceptionData);
 }
 
 void nova_standard_math_Nova_NumericStatement_0_Nova_super(nova_standard_math_Nova_NumericStatement* this, nova_standard_exception_Nova_ExceptionData* exceptionData)

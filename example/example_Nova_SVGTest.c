@@ -23,7 +23,6 @@ example_Extension_VTable_SVGTest example_Extension_VTable_SVGTest_val =
 		0,
 		0,
 		0,
-		0,
 		(char(*)(nova_standard_operators_Nova_Equals*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*))nova_standard_Nova_Object_0_Nova_equals,
 		0,
 		0,
@@ -132,7 +131,7 @@ void example_Nova_SVGTest_Nova_main(example_Nova_SVGTest* this, nova_standard_ex
 		double l8_Nova_x;
 		double l8_Nova_y;
 		
-		l8_Nova_rand = nova_standard_math_Nova_Math_Nova_random(0, exceptionData, (long)(l1_Nova_numVerts));
+		l8_Nova_rand = nova_standard_math_Nova_Math_Nova_random(0, exceptionData, l1_Nova_numVerts);
 		l8_Nova_x = l1_Nova_points[l8_Nova_rand * 2 + 0];
 		l8_Nova_y = l1_Nova_points[l8_Nova_rand * 2 + 1];
 		l1_Nova_cx = l1_Nova_cx - (l1_Nova_cx - l8_Nova_x) * l1_Nova_coefficient;

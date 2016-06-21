@@ -35,10 +35,10 @@ typedef struct example_Extension_VTable_T2 example_Extension_VTable_T2;
 struct example_Extension_VTable_T2
 {
 	nova_Interface_VTable itable;
-	long (*nova_standard_Nova_Object_virtual0_Nova_getHashCodeLong)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*);
+	long (*nova_standard_Nova_Object_virtual1_Nova_getHashCodeLong)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*);
 	nova_standard_Nova_String* (*nova_standard_Nova_Object_virtual1_Nova_toString)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*);
-	char (*nova_standard_Nova_Object_virtual0_Nova_equals)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*);
-	int (*example_Nova_T2_Accessor_Nova_ind)(example_Nova_T2*, nova_standard_exception_Nova_ExceptionData*);
+	char (*nova_standard_operators_Nova_Equals_virtual0_Nova_equals)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*);
+	int (*example_Nova_T1_virtual_Accessor_Nova_ind)(example_Nova_T2*, nova_standard_exception_Nova_ExceptionData*);
 };
 
 extern example_Extension_VTable_T2 example_Extension_VTable_T2_val;
