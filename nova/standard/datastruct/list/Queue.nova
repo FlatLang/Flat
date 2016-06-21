@@ -6,7 +6,7 @@ public class Queue<E>
 	{
 		get
 		{
-			return data.size
+			return data.position
 		}
 		
 		no set
