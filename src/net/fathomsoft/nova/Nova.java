@@ -282,8 +282,8 @@ public class Nova
 				"-keepc",
 				"-single-thread",
 				"-main",
-//				"example/Lab",
-				"stabilitytest/StabilityTest",
+				"example/Lab",
+//				"stabilitytest/StabilityTest",
 //				"-nogc",
 //				"-no-c-output",
 //				"-dry"
