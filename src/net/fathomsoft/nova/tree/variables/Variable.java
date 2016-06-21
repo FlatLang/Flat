@@ -4,16 +4,7 @@ import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.error.SyntaxMessage;
-import net.fathomsoft.nova.tree.Accessible;
-import net.fathomsoft.nova.tree.AccessorMethod;
-import net.fathomsoft.nova.tree.Assignment;
-import net.fathomsoft.nova.tree.ClassDeclaration;
-import net.fathomsoft.nova.tree.GenericCompatible;
-import net.fathomsoft.nova.tree.Identifier;
-import net.fathomsoft.nova.tree.MethodCall;
-import net.fathomsoft.nova.tree.Node;
-import net.fathomsoft.nova.tree.SyntaxTree;
-import net.fathomsoft.nova.tree.Value;
+import net.fathomsoft.nova.tree.*;
 import net.fathomsoft.nova.tree.generics.GenericTypeArgument;
 import net.fathomsoft.nova.tree.generics.GenericTypeArgumentList;
 import net.fathomsoft.nova.tree.generics.GenericTypeParameter;
@@ -86,7 +77,11 @@ public class Variable extends Identifier
 					tried = true;
 				}
 				
-				ref = ref.getReferenceNode();
+				Accessible next = ref.getReferenceNode();
+				
+				ref = next == ref ||
+					ref instanceof Variable && ((Variable)ref).getDeclaration() instanceof Parameter && next instanceof Variable && ((Variable)next).getDeclaration() instanceof Parameter
+					? null : ref.getReferenceNode();
 			}
 			
 			if (type != null)
@@ -413,6 +408,30 @@ public class Variable extends Identifier
 		}
 		
 		return arg;
+	}
+	
+	@Override
+	public StringBuilder generateCSourceFragment(StringBuilder builder)
+	{
+		super.generateCSourceFragment(builder);
+		
+		generateCObjectReferenceIdentifier(builder);
+		
+		return builder;
+	}
+	
+	public StringBuilder generateCObjectReferenceIdentifier(StringBuilder builder)
+	{
+		if (getDeclaration() instanceof ClosureDeclaration && getParent() instanceof ArgumentList)
+		{
+			Nova.debuggingBreakpoint(getName().equals("closure"));
+			ClosureDeclaration declaration = (ClosureDeclaration)getDeclaration();
+			
+			builder.append(", ");
+			declaration.generateCObjectReferenceIdentifier(builder);
+		}
+		
+		return builder;
 	}
 	
 	public String generateGenericType()
