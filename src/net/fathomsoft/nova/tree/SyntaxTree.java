@@ -1221,6 +1221,14 @@ public class SyntaxTree
 		
 		Node node = decodeScopeContents(parent, statement, location, require);
 		
+		/*if (node instanceof Variable)
+		{
+			if (((Variable)node).getDeclaration() instanceof ClosureDeclaration)
+			{
+				return new Closure((Variable)node);
+			}
+		}*/
+		
 		if (node instanceof Value)
 		{
 			return (Value)node;
