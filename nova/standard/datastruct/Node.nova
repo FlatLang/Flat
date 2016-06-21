@@ -50,12 +50,9 @@ public class Node<E>
 	{
 		array.add(data)
 		
-		for (child in children)
+		for (child in children.filter(notNull))
 		{
-			if (child != null && child != 0)
-			{
-				child.preorder(array)
-			}
+			child.preorder(array)
 		}
 	}
 	
