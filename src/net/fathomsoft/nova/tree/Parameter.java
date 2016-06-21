@@ -68,6 +68,10 @@ public class Parameter extends LocalDeclaration
 		{
 			return generateCTypeClassName(builder);
 		}
+		else if (getTypeClass() != null && getTypeClass().equals(getProgram().getClassDeclaration(Nova.getClassLocation("Number"))))
+		{
+			return builder.append("long_long");
+		}
 		
 		return super.generateCTypeName(builder);
 	}
@@ -215,6 +219,11 @@ public class Parameter extends LocalDeclaration
 							current = current.getOverriddenMethod();
 						}
 					}
+				}
+				
+				if (!isObjectReference() && getTypeClass() != null && getTypeClass().equals(getProgram().getClassDeclaration(Nova.getClassLocation("Number"))))
+				{
+					setDataType(VALUE);
 				}
 			}
 		}
