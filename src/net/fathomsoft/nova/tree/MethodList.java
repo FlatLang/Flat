@@ -165,7 +165,12 @@ public class MethodList extends TypeList<MethodDeclaration>
 		
 		for (int i = 0; i < getNumVisibleChildren(); i++)
 		{
-			methods.add((NovaMethodDeclaration)getVisibleChild(i));
+			NovaMethodDeclaration method = (NovaMethodDeclaration)getVisibleChild(i); 
+			
+			if (method instanceof PropertyMethod == false || !((PropertyMethod)method).isDisabled())
+			{
+				methods.add(method);
+			}
 		}
 		
 		return methods.toArray(new NovaMethodDeclaration[0]);
