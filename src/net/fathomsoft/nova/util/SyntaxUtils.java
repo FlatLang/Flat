@@ -1903,11 +1903,23 @@ public class SyntaxUtils
 					decl = reference.getDeclaration();
 				}
 				
-				int index = /*decl.getParentClass()*/reference.getTypeClass().getGenericTypeParameterIndex(type);
+				GenericTypeArgument arg = null;
+				int index = -1; 
+				
+				if (reference.getParentMethod() != null && reference.getParentMethod().containsGenericTypeParameter(type))
+				{
+					index = reference.getParentMethod().getMethodGenericTypeParameterDeclaration().getParameterIndex(type);
+					
+					arg = call.getMethodGenericTypeArgumentList().getVisibleChild(index);
+				}
+				if (index < 0)
+				{
+					index = /*decl.getParentClass()*/reference.getTypeClass().getGenericTypeParameterIndex(type);
+				}
 				
 				if (reference.isGenericType())
 				{
-					GenericTypeArgument arg = reference.getGenericTypeArgumentFromParameter(reference.getType());
+					arg = reference.getGenericTypeArgumentFromParameter(reference.getType());
 					
 					return arg.getTypeClass();
 				}
@@ -1917,8 +1929,12 @@ public class SyntaxUtils
 					
 					//reference.getIntelligentGenericTypeArgument(index);
 				}
+				if (arg == null)
+				{
+					arg = decl.getGenericTypeArgument(index);
+				}
 				
-				return decl.getGenericTypeArgument(index).getNovaTypeClass();//d.getGenericTypeParameter(index).getNovaTypeClass();
+				return arg.getNovaTypeClass();//d.getGenericTypeParameter(index).getNovaTypeClass();
 			}
 			
 			if (call.getMethodDeclaration() instanceof InitializationMethod)
@@ -2119,31 +2135,6 @@ public class SyntaxUtils
 			
 			return false;
 		}
-		
-		if (searchGeneric && required.isGenericType())
-		{
-			if (!(required instanceof Value))
-			{
-				throw new UnimplementedOperationException("The validation of generic type " + required.getClass().getName() + " is not implemented.");
-			}
-			
-			Value param = (Value)required;
-			
-			Value value = getParameterGenericReturnType(param.getType(), given);
-			
-			value = value.cloneTo(new IValue(value, value.getLocationIn()), false);
-			value.setArrayDimensions(required.getArrayDimensions());
-			
-			if (!Literal.isNullLiteral(given) && !isTypeCompatible(context, value, given, false))
-			{
-				getParameterGenericReturnType(param.getType(), given);
-				SyntaxMessage.error("Incorrect type '" + given.getType() + "' given for required generic type of '" + value.getType() + "' type", given);
-				
-				return false;
-			}
-			
-			return true;
-		}
 
 		VariableDeclaration givenDeclaration = given instanceof VariableDeclaration ? (VariableDeclaration)given : (given instanceof  Variable ? ((Variable)given).getDeclaration() : null);
 		VariableDeclaration requiredDeclaration = required instanceof VariableDeclaration ? (VariableDeclaration)required : (required instanceof  Variable ? ((Variable)required).getDeclaration() : null);
@@ -2179,6 +2170,32 @@ public class SyntaxUtils
 			
 			return true;
 		}
+		
+		if (searchGeneric && required.isGenericType())
+		{
+			if (!(required instanceof Value))
+			{
+				throw new UnimplementedOperationException("The validation of generic type " + required.getClass().getName() + " is not implemented.");
+			}
+			
+			Value param = (Value)required;
+			
+			Value value = getParameterGenericReturnType(param.getType(), given);
+			
+			value = value.cloneTo(new IValue(value, value.getLocationIn()), false);
+			value.setArrayDimensions(required.getArrayDimensions());
+			
+			if (!Literal.isNullLiteral(given) && !isTypeCompatible(context, value, given, false))
+			{
+				getParameterGenericReturnType(param.getType(), given);
+				SyntaxMessage.error("Incorrect type '" + given.getType() + "' given for required generic type of '" + value.getType() + "' type", given);
+				
+				return false;
+			}
+			
+			return true;
+		}
+		
 		if (given.isExternalType() ^ required.isExternalType())
 		{
 			return false;
