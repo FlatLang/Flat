@@ -81,9 +81,11 @@ public class Program extends Node
 					{
 						for (NovaMethodDeclaration method : list)
 						{
-							if (!methods.contains(method))
+							VirtualMethodDeclaration virtual = method.getVirtualMethod();
+							
+							if (virtual != null && !methods.contains(virtual))
 							{
-								methods.add(method);
+								methods.add(virtual);
 							}
 						}
 					}
