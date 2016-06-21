@@ -40,7 +40,7 @@ public class Lab
 		Array<Int> list2 = new Array(b, 7)
 		
 		Console.writeLine("Mapped: " + list.filter(x -> x.size >= 4).map((x, i) -> i + ": " + x + "?").join(", "))
-		//Console.writeLine("Mapped backwards: " + list.filter(x -> x.size >= 4).map(x -> x + "?").reverse().join(", "))
+		Console.writeLine("Mapped backwards: " + list.filter(x -> x.size >= 4).map(x -> x + "?").reverse().join(", "))
 		Console.writeLine("Mapped2: " + list2.map(x -> x + "!").join(", "))
 		
 		LinkedList<String> linked = new LinkedList()
