@@ -165,6 +165,7 @@ public class Throw extends ExceptionHandler
 		
 		if (!(thrownNode instanceof Identifier))
 		{
+			SyntaxTree.decodeScopeContents(this, thrown, location, require);
 			SyntaxMessage.error("Incorrect form of exception thrown", this);
 		}
 		
