@@ -68,10 +68,10 @@ public class Parameter extends LocalDeclaration
 		{
 			return generateCTypeClassName(builder);
 		}
-		else if (getTypeClass() != null && getTypeClass().equals(getProgram().getClassDeclaration(Nova.getClassLocation("Number"))))
+		/*else if (getTypeClass() != null && getTypeClass().equals(getProgram().getClassDeclaration(Nova.getClassLocation("Number"))))
 		{
 			return builder.append("long_long");
-		}
+		}*/
 		
 		return super.generateCTypeName(builder);
 	}
@@ -196,7 +196,7 @@ public class Parameter extends LocalDeclaration
 					{
 						if (!current.getParameter(index).isPrimitiveType())//.isGenericType())
 						{
-							setPrimitiveWrapperType();
+							/*setPrimitiveWrapperType();
 							
 							LocalDeclaration decl = LocalDeclaration.decodeStatement(getParentMethod(), getType() + " " + getParentMethod().generateTemporaryVariableName("prim"),
 									Location.INVALID, true);
@@ -210,7 +210,7 @@ public class Parameter extends LocalDeclaration
 							
 							getParentMethod().addChild(assign);
 							
-							swapNames(decl);
+							swapNames(decl);*/
 							
 							current = null;
 						}
@@ -221,10 +221,10 @@ public class Parameter extends LocalDeclaration
 					}
 				}
 				
-				if (!isObjectReference() && getTypeClass() != null && getTypeClass().equals(getProgram().getClassDeclaration(Nova.getClassLocation("Number"))))
+				/*if (!isObjectReference() && getTypeClass() != null && getTypeClass().equals(getProgram().getClassDeclaration(Nova.getClassLocation("Number"))))
 				{
 					setDataType(VALUE);
-				}
+				}*/
 			}
 		}
 		
