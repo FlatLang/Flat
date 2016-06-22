@@ -223,7 +223,7 @@ public abstract class Value extends Node implements AbstractValue
 	 */
 	public boolean isPrimitiveType()
 	{
-		return SyntaxUtils.isPrimitiveType(getType()) || (isWithinExternalContext() && SyntaxUtils.isExternalPrimitiveType(getType())) || getType() != null && getType().equals("Number");
+		return SyntaxUtils.isPrimitiveType(getType()) || (isWithinExternalContext() && SyntaxUtils.isExternalPrimitiveType(getType()));// || getType() != null && getType().equals("Number");
 	}
 	
 	/**
@@ -437,10 +437,12 @@ public abstract class Value extends Node implements AbstractValue
 				
 				if (type == null)
 				{
-					SyntaxUtils.invalidType(reference, reference.getType(), true);
+					//SyntaxUtils.invalidType(reference, reference.getType(), true);
 				}
-				
-				return type.getFileDeclaration();
+				else
+				{
+					return type.getFileDeclaration();
+				}
 			}
 		}
 		if (this instanceof Variable && ((Variable)this).getDeclaration() instanceof VirtualLocalDeclaration)
