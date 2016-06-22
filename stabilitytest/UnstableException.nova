@@ -2,5 +2,8 @@ package "stabilitytest"
 
 public class UnstableException extends Exception
 {
-	
+	public construct(String message)
+	{
+	    super(message)
+	}
 }

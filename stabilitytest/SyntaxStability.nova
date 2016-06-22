@@ -356,7 +356,7 @@ public class SyntaxStability extends StabilityTestCase
 	{
 		if (s.size < 4)
 		{
-			throw new UnstableException()
+			throw new UnstableException("filtering failed")
 		}
 	}
 	
