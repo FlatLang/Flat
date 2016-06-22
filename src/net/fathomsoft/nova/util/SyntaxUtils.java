@@ -186,7 +186,7 @@ public class SyntaxUtils
 			case "Char":
 				return "char";
 			case "Long":
-				return "long";
+				return "long_long";
 			case "Float":
 				return "float";
 			case "Double":
@@ -508,7 +508,7 @@ public class SyntaxUtils
 	 * @param literal The literal to find the type name of.
 	 * @return The class name of the type that the literal value implies.
 	 */
-	public static String getLiteralTypeName(String literal)
+	public static String getLiteralTypeName(Node node, String literal)
 	{
 		if (literal.equals(Literal.NULL_IDENTIFIER))
 		{
@@ -530,11 +530,45 @@ public class SyntaxUtils
 		{
 			if (isInteger(literal))
 			{
-				return "Int";
+				long l = Long.parseLong(literal);
+				
+				if (l <= Byte.MAX_VALUE && l >= Byte.MIN_VALUE)
+				{
+					return "Byte";
+				}
+				else if (l <= Short.MAX_VALUE && l >= Short.MIN_VALUE)
+				{
+					return "Short";
+				}
+				else if (l <= Integer.MAX_VALUE && l >= Integer.MIN_VALUE)
+				{
+					return "Int";
+				}
+				else if (l <= Long.MAX_VALUE && l >= Long.MIN_VALUE)
+				{
+					return "Long";
+				}
+				
+				SyntaxMessage.error("Number literal out of primitive number range of [" + Long.MIN_VALUE + ", " + Long.MAX_VALUE + "]", node);
+				
+				return null;
 			}
 			else if (isDouble(literal))
 			{
-				return "Double";
+				double l = Double.parseDouble(literal);
+				
+				if (l <= Float.MAX_VALUE && l >= Float.MIN_VALUE)
+				{
+					return "Float";
+				}
+				else if (l <= Double.MAX_VALUE && l >= Double.MIN_VALUE)
+				{
+					return "Double";
+				}
+				
+				SyntaxMessage.error("Decimal literal out of primitive decimal range of [" + Double.MIN_VALUE + ", " + Double.MAX_VALUE + "]", node);
+				
+				return null;
 			}
 		}
 		
@@ -553,9 +587,9 @@ public class SyntaxUtils
 	 * @param value The String of text to validate.
 	 * @return Whether or not the given String value represents a literal.
 	 */
-	public static boolean isLiteral(String value)
+	public static boolean isLiteral(Node node, String value)
 	{
-		return getLiteralTypeName(value) != null;//isCharLiteral(value) || isStringLiteral(value) || isNumber(value);
+		return getLiteralTypeName(node, value) != null;//isCharLiteral(value) || isStringLiteral(value) || isNumber(value);
 	}
 	
 	/**
