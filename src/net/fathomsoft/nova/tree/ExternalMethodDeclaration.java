@@ -24,6 +24,12 @@ public class ExternalMethodDeclaration extends MethodDeclaration
 	
 	public static final String PREFIX = "external";
 	
+	@Override
+	public NovaMethodDeclaration getRootDeclaration()
+	{
+		return null;
+	}
+	
 	/**
 	 * @see net.fathomsoft.nova.tree.Node#Node(Node, Location)
 	 */

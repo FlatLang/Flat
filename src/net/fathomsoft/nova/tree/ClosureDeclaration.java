@@ -24,6 +24,12 @@ public class ClosureDeclaration extends Parameter implements CallableMethod
 {
 	private int id;
 	
+	@Override
+	public NovaMethodDeclaration getRootDeclaration()
+	{
+		return null;
+	}
+	
 	/**
 	 * @see net.fathomsoft.nova.tree.Node#Node(Node, Location)
 	 */

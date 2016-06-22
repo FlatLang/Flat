@@ -137,4 +137,6 @@ public interface CallableMethod
 	}
 	
 	public boolean isGenericType();
+	
+	public NovaMethodDeclaration getRootDeclaration();
 }
