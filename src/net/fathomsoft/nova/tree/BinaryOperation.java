@@ -170,7 +170,7 @@ public class BinaryOperation extends IValue
 	 */
 	public static Value decodeStatement(Node parent, String statement, Location location, boolean require)
 	{
-		if (!validateStatement(statement))
+		if (!validateStatement(parent, statement))
 		{
 			return null;
 		}
@@ -197,9 +197,9 @@ public class BinaryOperation extends IValue
 	 * @param statement The statement to validate.
 	 * @return Whether or not the statement is valid.
 	 */
-	private static boolean validateStatement(String statement)
+	private static boolean validateStatement(Node node, String statement)
 	{
-		if (SyntaxUtils.isLiteral(statement) || SyntaxUtils.isInstantiationCall(statement))
+		if (SyntaxUtils.isLiteral(node, statement) || SyntaxUtils.isInstantiationCall(statement))
 		{
 			return false;
 		}

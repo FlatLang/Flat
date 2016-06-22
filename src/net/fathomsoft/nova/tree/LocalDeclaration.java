@@ -140,7 +140,7 @@ public class LocalDeclaration extends VariableDeclaration
 			statement = extraDeclarations.extractPreString(statement);
 		}
 		
-		if (!SyntaxUtils.isLiteral(statement) && StringUtils.containsMultipleWords(statement) && !StringUtils.containsChar(statement, StringUtils.INVALID_DECLARATION_CHARS))// || !Regex.matches(statement, Patterns.IDENTIFIER_DECLARATION))
+		if (!SyntaxUtils.isLiteral(n, statement) && StringUtils.containsMultipleWords(statement) && !StringUtils.containsChar(statement, StringUtils.INVALID_DECLARATION_CHARS))// || !Regex.matches(statement, Patterns.IDENTIFIER_DECLARATION))
 		{
 			DeclarationData  data = new DeclarationData();
 			
