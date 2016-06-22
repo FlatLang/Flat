@@ -43,6 +43,7 @@ public class StabilityTest extends StabilityTestCase
 			new PolymorphismStability(this).test()
 			new NetworkStability(this).test()
 			new LambdaStability(this).test()
+			new ToStringStability(this).test()
 			
 			Console.writeLine("All OK")
 		}
@@ -59,8 +60,6 @@ public class StabilityTest extends StabilityTestCase
 	
 	public fail(String message)
 	{
-		Console.writeLine(message)
-		
-		throw new UnstableException();
+		throw new UnstableException(message)
 	}
 }
