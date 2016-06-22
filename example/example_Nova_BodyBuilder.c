@@ -70,7 +70,7 @@ void example_Nova_BodyBuilder_Nova_destroy(example_Nova_BodyBuilder** this, nova
 
 void example_Nova_BodyBuilder_1_Nova_this(example_Nova_BodyBuilder* this, nova_standard_exception_Nova_ExceptionData* exceptionData, int example_Nova_BodyBuilder_Nova_weightClass, nova_standard_Nova_String* example_Nova_BodyBuilder_Nova_name)
 {
-	this->example_Nova_Person_Nova_age = 5;
+	this->example_Nova_Person_Nova_age = (int)(5);
 	this->example_Nova_BodyBuilder_Nova_weightClass = example_Nova_BodyBuilder_Nova_weightClass;
 	this->example_Nova_Person_Nova_name = example_Nova_BodyBuilder_Nova_name;
 }

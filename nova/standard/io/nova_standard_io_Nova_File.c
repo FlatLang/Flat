@@ -179,7 +179,7 @@ nova_standard_Nova_String* nova_standard_io_Nova_File_Nova_readLine(nova_standar
 	char l1_Nova_c;
 	int l1_Nova_index;
 	
-	l1_Nova_buf = 5;
+	l1_Nova_buf = (int)(5);
 	l1_Nova_size = l1_Nova_buf;
 	l1_Nova_line = (char*)NOVA_MALLOC(sizeof(nova_standard_primitive_number_Nova_Char) * l1_Nova_size);
 	l1_Nova_c = (char)(getc(this->prv->nova_standard_io_Nova_File_Nova_fp));
@@ -187,7 +187,7 @@ nova_standard_Nova_String* nova_standard_io_Nova_File_Nova_readLine(nova_standar
 	{
 		return (nova_standard_Nova_String*)nova_null;
 	}
-	l1_Nova_index = 0;
+	l1_Nova_index = (int)(0);
 	while (l1_Nova_c != '\n' && l1_Nova_c != EOF)
 	{
 		if (l1_Nova_index >= l1_Nova_size)

@@ -75,7 +75,7 @@ void example_Nova_Square_Nova_this(example_Nova_Square* this, nova_standard_exce
 
 int example_Nova_Square_Nova_numberSides(example_Nova_Square* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
-	return 4;
+	return (int)4;
 }
 
 double example_Nova_Square_Nova_calculateArea(example_Nova_Square* this, nova_standard_exception_Nova_ExceptionData* exceptionData)

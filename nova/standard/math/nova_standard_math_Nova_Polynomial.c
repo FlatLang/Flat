@@ -46,7 +46,7 @@ char* nova_standard_math_Nova_Polynomial_Nova_WHITESPACE_CHARS;
 void nova_standard_math_Nova_PolynomialNova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
 	{
-		nova_standard_math_Nova_Polynomial_Nova_symbolsLength = 23;
+		nova_standard_math_Nova_Polynomial_Nova_symbolsLength = (int)(23);
 		nova_standard_math_Nova_Polynomial_Nova_SYMBOLS_CHARS = (char*)NOVA_MALLOC(sizeof(nova_standard_primitive_number_Nova_Char) * 23);
 		nova_standard_math_Nova_Polynomial_Nova_SYMBOLS_CHARS[0] = '-';
 		nova_standard_math_Nova_Polynomial_Nova_SYMBOLS_CHARS[1] = '+';
@@ -71,7 +71,7 @@ void nova_standard_math_Nova_PolynomialNova_init_static(nova_standard_exception_
 		nova_standard_math_Nova_Polynomial_Nova_SYMBOLS_CHARS[20] = ';';
 		nova_standard_math_Nova_Polynomial_Nova_SYMBOLS_CHARS[21] = '(';
 		nova_standard_math_Nova_Polynomial_Nova_SYMBOLS_CHARS[22] = ')';
-		nova_standard_math_Nova_Polynomial_Nova_whitespaceLength = 4;
+		nova_standard_math_Nova_Polynomial_Nova_whitespaceLength = (int)(4);
 		nova_standard_math_Nova_Polynomial_Nova_WHITESPACE_CHARS = (char*)NOVA_MALLOC(sizeof(nova_standard_primitive_number_Nova_Char) * 4);
 		nova_standard_math_Nova_Polynomial_Nova_WHITESPACE_CHARS[0] = ' ';
 		nova_standard_math_Nova_Polynomial_Nova_WHITESPACE_CHARS[1] = '\n';
@@ -117,12 +117,12 @@ void nova_standard_math_Nova_Polynomial_Nova_this(nova_standard_math_Nova_Polyno
 	nova_standard_datastruct_list_Nova_Array* l2_Nova_signs;
 	int l4_Nova_i;
 	
-	l2_Nova_start = 0;
+	l2_Nova_start = (int)(0);
 	l2_Nova_reading = 0;
 	l2_Nova_coeffs = nova_standard_datastruct_list_Nova_Array_0_Nova_construct(0, exceptionData);
 	l2_Nova_degrees = nova_standard_datastruct_list_Nova_Array_0_Nova_construct(0, exceptionData);
 	l2_Nova_signs = nova_standard_datastruct_list_Nova_Array_0_Nova_construct(0, exceptionData);
-	l4_Nova_i = 0;
+	l4_Nova_i = (int)(0);
 	for (; l4_Nova_i < nova_standard_math_Nova_Polynomial_Nova_polynomial->nova_standard_Nova_String_Nova_size; l4_Nova_i++)
 	{
 		if (!nova_standard_math_Nova_Polynomial_Nova_isLetter(0, exceptionData, nova_standard_math_Nova_Polynomial_Nova_polynomial->nova_standard_Nova_String_Nova_chars[l4_Nova_i]))
@@ -159,7 +159,7 @@ char nova_standard_math_Nova_Polynomial_Nova_contains(nova_standard_math_Nova_Po
 {
 	int l2_Nova_i;
 	
-	l2_Nova_i = 0;
+	l2_Nova_i = (int)(0);
 	for (; l2_Nova_i < nova_standard_math_Nova_Polynomial_Nova_length; l2_Nova_i++)
 	{
 		if (nova_standard_math_Nova_Polynomial_Nova_c == nova_standard_math_Nova_Polynomial_Nova_array[l2_Nova_i])

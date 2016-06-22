@@ -105,7 +105,7 @@ int example_Nova_ClosureDemo_Nova_pow(example_Nova_ClosureDemo* this, nova_stand
 	
 	nova_standard_io_Nova_Console_1_Nova_writeLine(0, exceptionData, nova_standard_Nova_String_0_Nova_concat(nova_standard_Nova_String_2_Nova_construct(0, exceptionData, "pow was called with "), exceptionData, nova_standard_Nova_String_virtual0_Nova_concat((nova_standard_Nova_String*)(nova_standard_primitive_number_Nova_Int_2_Nova_toString(0, exceptionData, example_Nova_ClosureDemo_Nova_base)), exceptionData, nova_standard_Nova_String_0_Nova_concat(nova_standard_Nova_String_2_Nova_construct(0, exceptionData, " and "), exceptionData, nova_standard_primitive_number_Nova_Int_2_Nova_toString(0, exceptionData, example_Nova_ClosureDemo_Nova_pow)))));
 	l1_Nova_value = example_Nova_ClosureDemo_Nova_base;
-	l2_Nova_i = 0;
+	l2_Nova_i = (int)(0);
 	for (; l2_Nova_i < example_Nova_ClosureDemo_Nova_pow - 1; l2_Nova_i++)
 	{
 		l1_Nova_value = l1_Nova_value * example_Nova_ClosureDemo_Nova_base;

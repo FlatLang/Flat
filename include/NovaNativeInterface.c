@@ -692,6 +692,15 @@ nova_env novaEnv = {
 },
 
 {
+&nova_standard_thread_async_Nova_Async_Nova_execute,
+&nova_standard_thread_async_Nova_Async_0_Nova_construct,
+},
+
+{
+&nova_standard_thread_async_Nova_AsyncResult_0_Nova_construct,
+},
+
+{
 &nova_standard_time_Nova_Date_Nova_decodeDate,
 &nova_standard_time_Nova_Date_Nova_updateTime,
 &nova_standard_time_Nova_Date_0_Nova_formatDate,
@@ -964,7 +973,12 @@ nova_env novaEnv = {
 },
 
 {
-&stabilitytest_Nova_UnstableException_3_Nova_construct,
+&stabilitytest_Nova_ToStringStability_0_Nova_test,
+&stabilitytest_Nova_ToStringStability_0_Nova_construct,
+},
+
+{
+&stabilitytest_Nova_UnstableException_4_Nova_construct,
 },
 
 };

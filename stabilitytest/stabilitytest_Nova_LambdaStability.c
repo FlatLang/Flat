@@ -82,6 +82,8 @@ void stabilitytest_Nova_LambdaStability_0_Nova_test(stabilitytest_Nova_LambdaSta
 	int* l1_Nova_b;
 	nova_standard_datastruct_list_Nova_Array* l1_Nova_list;
 	nova_standard_datastruct_list_Nova_Array* l1_Nova_list2;
+	nova_standard_Nova_String* l1_Nova_mappedOutput;
+	nova_standard_Nova_String* l1_Nova_mappedExpected;
 	nova_standard_datastruct_list_Nova_LinkedList* l1_Nova_linked;
 	nova_standard_datastruct_list_Nova_Array* l1_Nova_repeated;
 	nova_standard_datastruct_list_Nova_ArrayIterator* nova_local_0;
@@ -97,18 +99,20 @@ void stabilitytest_Nova_LambdaStability_0_Nova_test(stabilitytest_Nova_LambdaSta
 	l1_Nova_a[5] = nova_standard_Nova_String_2_Nova_construct(0, exceptionData, "see");
 	l1_Nova_a[6] = nova_standard_Nova_String_2_Nova_construct(0, exceptionData, "what shows up");
 	l1_Nova_b = (int*)NOVA_MALLOC(sizeof(nova_standard_primitive_number_Nova_Int) * 7);
-	l1_Nova_b[0] = 1;
-	l1_Nova_b[1] = 2;
-	l1_Nova_b[2] = 3;
-	l1_Nova_b[3] = 4;
-	l1_Nova_b[4] = 5;
-	l1_Nova_b[5] = 6;
-	l1_Nova_b[6] = 7;
+	l1_Nova_b[0] = (int)(1);
+	l1_Nova_b[1] = (int)(2);
+	l1_Nova_b[2] = (int)(3);
+	l1_Nova_b[3] = (int)(4);
+	l1_Nova_b[4] = (int)(5);
+	l1_Nova_b[5] = (int)(6);
+	l1_Nova_b[6] = (int)(7);
 	l1_Nova_list = nova_standard_datastruct_list_Nova_Array_2_Nova_construct(0, exceptionData, (nova_standard_Nova_Object**)(l1_Nova_a), 7);
 	l1_Nova_list2 = nova_standard_datastruct_list_Nova_Array_2_Nova_construct(0, exceptionData, (nova_standard_Nova_Object**)&(l1_Nova_b), 7);
-	if (!nova_standard_operators_Nova_Equals_virtual0_Nova_equals((nova_standard_operators_Nova_Equals*)(nova_standard_datastruct_list_Nova_List_virtual0_Nova_join((nova_standard_datastruct_list_Nova_List*)(nova_standard_datastruct_list_Nova_List_virtual0_Nova_map((nova_standard_datastruct_list_Nova_List*)(nova_standard_datastruct_list_Nova_List_virtual0_Nova_filter((nova_standard_datastruct_list_Nova_List*)(l1_Nova_list), exceptionData, (nova_standard_datastruct_list_Nova_List_closure15_Nova_filterFunc)&stabilitytest_Nova_LambdaStability_Nova_testLambda14, this)), exceptionData, (nova_standard_datastruct_list_Nova_List_closure6_Nova_mapFunc)&stabilitytest_Nova_LambdaStability_Nova_testLambda15, this)), exceptionData, nova_standard_Nova_String_2_Nova_construct(0, exceptionData, ", "))), exceptionData, (nova_standard_Nova_Object*)(nova_standard_Nova_String_2_Nova_construct(0, exceptionData, "0: this?, 1: test?, 2: what shows up?"))))
+	l1_Nova_mappedOutput = (nova_standard_Nova_String*)(nova_standard_datastruct_list_Nova_List_virtual0_Nova_join((nova_standard_datastruct_list_Nova_List*)(nova_standard_datastruct_list_Nova_List_virtual0_Nova_map((nova_standard_datastruct_list_Nova_List*)(nova_standard_datastruct_list_Nova_List_virtual0_Nova_filter((nova_standard_datastruct_list_Nova_List*)(l1_Nova_list), exceptionData, (nova_standard_datastruct_list_Nova_List_closure15_Nova_filterFunc)&stabilitytest_Nova_LambdaStability_Nova_testLambda14, this)), exceptionData, (nova_standard_datastruct_list_Nova_List_closure6_Nova_mapFunc)&stabilitytest_Nova_LambdaStability_Nova_testLambda15, this)), exceptionData, nova_standard_Nova_String_2_Nova_construct(0, exceptionData, ", ")));
+	l1_Nova_mappedExpected = nova_standard_Nova_String_2_Nova_construct(0, exceptionData, "0: this?, 1: test?, 2: what shows up?");
+	if (!nova_standard_operators_Nova_Equals_virtual0_Nova_equals((nova_standard_operators_Nova_Equals*)(l1_Nova_mappedOutput), exceptionData, (nova_standard_Nova_Object*)(l1_Nova_mappedExpected)))
 	{
-		stabilitytest_Nova_StabilityTest_1_Nova_fail(this->stabilitytest_Nova_StabilityTestCase_Nova_program, exceptionData, nova_standard_Nova_String_2_Nova_construct(0, exceptionData, "Failed first list map with 2 args"));
+		stabilitytest_Nova_StabilityTest_1_Nova_fail(this->stabilitytest_Nova_StabilityTestCase_Nova_program, exceptionData, nova_standard_Nova_String_0_Nova_concat(nova_standard_Nova_String_2_Nova_construct(0, exceptionData, "Failed first list map with 2 args. Expected '"), exceptionData, nova_standard_Nova_String_virtual0_Nova_concat((nova_standard_Nova_String*)(l1_Nova_mappedExpected), exceptionData, nova_standard_Nova_String_0_Nova_concat(nova_standard_Nova_String_2_Nova_construct(0, exceptionData, "' but received '"), exceptionData, nova_standard_Nova_String_virtual0_Nova_concat((nova_standard_Nova_String*)(l1_Nova_mappedOutput), exceptionData, nova_standard_Nova_String_2_Nova_construct(0, exceptionData, "'"))))));
 	}
 	l1_Nova_linked = nova_standard_datastruct_list_Nova_LinkedList_0_Nova_construct(0, exceptionData);
 	nova_standard_datastruct_list_Nova_LinkedList_Nova_add(nova_standard_datastruct_list_Nova_LinkedList_Nova_add(nova_standard_datastruct_list_Nova_LinkedList_Nova_add(l1_Nova_linked, exceptionData, (nova_standard_Nova_Object*)(nova_standard_Nova_String_2_Nova_construct(0, exceptionData, "test"))), exceptionData, (nova_standard_Nova_Object*)(nova_standard_Nova_String_2_Nova_construct(0, exceptionData, "test2"))), exceptionData, (nova_standard_Nova_Object*)(nova_standard_Nova_String_2_Nova_construct(0, exceptionData, "test3")));

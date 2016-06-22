@@ -135,8 +135,8 @@ nova_standard_Nova_String* nova_standard_datastruct_Nova_Bounds_Nova_trimString(
 
 void nova_standard_datastruct_Nova_Bounds_Nova_invalidate(nova_standard_datastruct_Nova_Bounds* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
-	this->nova_standard_datastruct_Nova_Bounds_Nova_start = -1;
-	this->nova_standard_datastruct_Nova_Bounds_Nova_end = -1;
+	this->nova_standard_datastruct_Nova_Bounds_Nova_start = (int)(-1);
+	this->nova_standard_datastruct_Nova_Bounds_Nova_end = (int)(-1);
 }
 
 char nova_standard_datastruct_Nova_Bounds_0_Nova_equals(nova_standard_datastruct_Nova_Bounds* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_datastruct_Nova_Bounds* nova_standard_datastruct_Nova_Bounds_Nova_bounds)

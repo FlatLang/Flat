@@ -93,7 +93,7 @@ void nova_standard_io_Nova_Console_4_Nova_writeLine(nova_standard_io_Nova_Consol
 	nova_standard_io_Nova_Console_1_Nova_writeLine(0, exceptionData, nova_standard_primitive_number_Nova_Double_2_Nova_toString(0, exceptionData, nova_standard_io_Nova_Console_Nova_num));
 }
 
-void nova_standard_io_Nova_Console_5_Nova_writeLine(nova_standard_io_Nova_Console* this, nova_standard_exception_Nova_ExceptionData* exceptionData, long nova_standard_io_Nova_Console_Nova_num)
+void nova_standard_io_Nova_Console_5_Nova_writeLine(nova_standard_io_Nova_Console* this, nova_standard_exception_Nova_ExceptionData* exceptionData, long_long nova_standard_io_Nova_Console_Nova_num)
 {
 	nova_standard_io_Nova_Console_1_Nova_writeLine(0, exceptionData, nova_standard_primitive_number_Nova_Long_2_Nova_toString(0, exceptionData, nova_standard_io_Nova_Console_Nova_num));
 }
@@ -142,7 +142,7 @@ void nova_standard_io_Nova_Console_3_Nova_write(nova_standard_io_Nova_Console* t
 	nova_standard_io_Nova_Console_0_Nova_write(0, exceptionData, nova_standard_primitive_number_Nova_Double_2_Nova_toString(0, exceptionData, nova_standard_io_Nova_Console_Nova_num));
 }
 
-void nova_standard_io_Nova_Console_4_Nova_write(nova_standard_io_Nova_Console* this, nova_standard_exception_Nova_ExceptionData* exceptionData, long nova_standard_io_Nova_Console_Nova_num)
+void nova_standard_io_Nova_Console_4_Nova_write(nova_standard_io_Nova_Console* this, nova_standard_exception_Nova_ExceptionData* exceptionData, long_long nova_standard_io_Nova_Console_Nova_num)
 {
 	nova_standard_io_Nova_Console_0_Nova_write(0, exceptionData, nova_standard_primitive_number_Nova_Long_2_Nova_toString(0, exceptionData, nova_standard_io_Nova_Console_Nova_num));
 }

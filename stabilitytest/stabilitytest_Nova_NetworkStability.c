@@ -85,7 +85,7 @@ void stabilitytest_Nova_NetworkStability_0_Nova_test(stabilitytest_Nova_NetworkS
 	nova_standard_Nova_String* l1_Nova_s;
 	
 	nova_standard_io_Nova_Console_1_Nova_writeLine(0, exceptionData, nova_standard_Nova_String_2_Nova_construct(0, exceptionData, "Checking network stability..."));
-	l1_Nova_port = 24243;
+	l1_Nova_port = (int)(24243);
 	l1_Nova_server = stabilitytest_Nova_NetworkStability_Nova_createServer(this, exceptionData, l1_Nova_port);
 	l1_Nova_thread = stabilitytest_Nova_ClientThread_Nova_construct(0, exceptionData, this->stabilitytest_Nova_StabilityTestCase_Nova_program, l1_Nova_port);
 	nova_standard_thread_Nova_Thread_Nova_start((nova_standard_thread_Nova_Thread*)(l1_Nova_thread), exceptionData);

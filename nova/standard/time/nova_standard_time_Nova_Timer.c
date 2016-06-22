@@ -76,7 +76,7 @@ void nova_standard_time_Nova_Timer_0_Nova_this(nova_standard_time_Nova_Timer* th
 nova_standard_time_Nova_Timer* nova_standard_time_Nova_Timer_Nova_start(nova_standard_time_Nova_Timer* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
 	this->nova_standard_time_Nova_Timer_Nova_startTime = nova_standard_time_Nova_Time_Accessor_Nova_currentTimeMillis(0, exceptionData);
-	this->nova_standard_time_Nova_Timer_Nova_endTime = (long)(0);
+	this->nova_standard_time_Nova_Timer_Nova_endTime = (long_long)(0);
 	return this;
 }
 
@@ -86,7 +86,7 @@ nova_standard_time_Nova_Timer* nova_standard_time_Nova_Timer_Nova_stop(nova_stan
 	return this;
 }
 
-long nova_standard_time_Nova_Timer_Accessor_Nova_duration(nova_standard_time_Nova_Timer* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
+long_long nova_standard_time_Nova_Timer_Accessor_Nova_duration(nova_standard_time_Nova_Timer* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
 	return this->nova_standard_time_Nova_Timer_Nova_endTime - this->nova_standard_time_Nova_Timer_Nova_startTime;
 }

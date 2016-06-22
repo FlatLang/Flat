@@ -71,9 +71,9 @@ void nova_standard_time_Nova_Time_0_Nova_this(nova_standard_time_Nova_Time* this
 {
 }
 
-long nova_standard_time_Nova_Time_Accessor_Nova_currentTimeMillis(nova_standard_time_Nova_Time* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
+long_long nova_standard_time_Nova_Time_Accessor_Nova_currentTimeMillis(nova_standard_time_Nova_Time* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
-	return (long)currentTimeMillis();
+	return (long_long)currentTimeMillis();
 }
 
 

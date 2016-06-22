@@ -87,7 +87,7 @@ void nova_standard_datastruct_list_Nova_ArrayIterator_Nova_this(nova_standard_da
 
 nova_standard_datastruct_list_Nova_Iterator* nova_standard_datastruct_list_Nova_ArrayIterator_Nova_reset(nova_standard_datastruct_list_Nova_ArrayIterator* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
-	this->nova_standard_datastruct_list_Nova_ArrayIterator_Nova_position = 0;
+	this->nova_standard_datastruct_list_Nova_ArrayIterator_Nova_position = (int)(0);
 	return (nova_standard_datastruct_list_Nova_Iterator*)this;
 }
 

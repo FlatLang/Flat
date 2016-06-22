@@ -80,7 +80,7 @@ void stabilitytest_Nova_PolymorphicSubClass_Nova_this(stabilitytest_Nova_Polymor
 
 int stabilitytest_Nova_PolymorphicSubClass_Accessor_Nova_myProperty(stabilitytest_Nova_PolymorphicSubClass* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
-	return 2;
+	return (int)2;
 }
 
 

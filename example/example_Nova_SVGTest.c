@@ -95,11 +95,11 @@ void example_Nova_SVGTest_Nova_main(example_Nova_SVGTest* this, nova_standard_ex
 	l1_Nova_points = (double*)NOVA_MALLOC(sizeof(nova_standard_primitive_number_Nova_Double) * l1_Nova_numVerts * 2);
 	l1_Nova_radius = (double)(450);
 	l1_Nova_offset = l1_Nova_pi2 / 12;
-	l2_Nova_i = 0;
+	l2_Nova_i = (int)(0);
 	for (; l2_Nova_i < l1_Nova_numVerts; l2_Nova_i++)
 	{
 		double l2_Nova_rad;
-		double nova_zero_check5;
+		float nova_zero_check5;
 		
 		nova_zero_check5 = (l1_Nova_numVerts * 1.0);
 		if (nova_zero_check5 == 0)
@@ -110,7 +110,7 @@ void example_Nova_SVGTest_Nova_main(example_Nova_SVGTest* this, nova_standard_ex
 		l1_Nova_points[l2_Nova_i * 2 + 0] = l1_Nova_radius * nova_standard_math_Nova_Math_Nova_cos(0, exceptionData, l2_Nova_rad) + l1_Nova_radius + 10;
 		l1_Nova_points[l2_Nova_i * 2 + 1] = l1_Nova_radius * nova_standard_math_Nova_Math_Nova_sin(0, exceptionData, l2_Nova_rad) + l1_Nova_radius + 10;
 	}
-	l6_Nova_i = 0;
+	l6_Nova_i = (int)(0);
 	for (; l6_Nova_i < l1_Nova_numVerts; l6_Nova_i++)
 	{
 		double l6_Nova_x;
@@ -124,7 +124,7 @@ void example_Nova_SVGTest_Nova_main(example_Nova_SVGTest* this, nova_standard_ex
 	}
 	l1_Nova_cx = l1_Nova_radius + 10;
 	l1_Nova_cy = l1_Nova_radius + 10;
-	l8_Nova_i = 0;
+	l8_Nova_i = (int)(0);
 	for (; l8_Nova_i < l1_Nova_numPoints; l8_Nova_i++)
 	{
 		int l8_Nova_rand;

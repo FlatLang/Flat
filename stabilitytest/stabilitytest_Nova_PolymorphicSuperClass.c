@@ -85,7 +85,7 @@ void stabilitytest_Nova_PolymorphicSuperClass_0_Nova_this(stabilitytest_Nova_Pol
 
 int stabilitytest_Nova_PolymorphicSuperClass_Accessor_Nova_myProperty(stabilitytest_Nova_PolymorphicSuperClass* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
-	return 1;
+	return (int)1;
 }
 
 

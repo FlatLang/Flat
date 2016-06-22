@@ -38,7 +38,7 @@ int nova_standard_math_Nova_Sequence_Nova_INFINITE;
 void nova_standard_math_Nova_SequenceNova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
 	{
-		nova_standard_math_Nova_Sequence_Nova_INFINITE = -1;
+		nova_standard_math_Nova_Sequence_Nova_INFINITE = (int)(-1);
 	}
 }
 
@@ -79,7 +79,7 @@ double nova_standard_math_Nova_Sequence_Nova_sum(nova_standard_math_Nova_Sequenc
 	int l2_Nova_i;
 	
 	l1_Nova_value = (double)(0);
-	l2_Nova_i = 0;
+	l2_Nova_i = (int)(0);
 	for (; l2_Nova_i < nova_standard_math_Nova_Sequence_Nova_num; l2_Nova_i++)
 	{
 		l1_Nova_value = l1_Nova_value + this->nova_standard_math_Nova_Sequence_Nova_values[l2_Nova_i];

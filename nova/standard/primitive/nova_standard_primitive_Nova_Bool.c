@@ -87,12 +87,9 @@ nova_standard_Nova_String* nova_standard_primitive_Nova_Bool_3_Nova_toString(nov
 	return nova_standard_primitive_Nova_Bool_2_Nova_toString(0, exceptionData, this->nova_standard_primitive_Nova_Bool_Nova_value);
 }
 
-char nova_standard_primitive_Nova_Bool_0_Nova_compareTo(nova_standard_primitive_Nova_Bool* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_primitive_Nova_Bool* nova_standard_primitive_Nova_Bool_Nova_prim)
+char nova_standard_primitive_Nova_Bool_0_Nova_compareTo(nova_standard_primitive_Nova_Bool* this, nova_standard_exception_Nova_ExceptionData* exceptionData, char nova_standard_primitive_Nova_Bool_Nova_other)
 {
-	char l1_Nova_other;
-	
-	l1_Nova_other = nova_standard_primitive_Nova_Bool_Nova_prim->nova_standard_primitive_Nova_Bool_Nova_value;
-	return this->nova_standard_primitive_Nova_Bool_Nova_value == l1_Nova_other;
+	return this->nova_standard_primitive_Nova_Bool_Nova_value == nova_standard_primitive_Nova_Bool_Nova_other;
 }
 
 void nova_standard_primitive_Nova_Bool_0_Nova_super(nova_standard_primitive_Nova_Bool* this, nova_standard_exception_Nova_ExceptionData* exceptionData)

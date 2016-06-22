@@ -71,12 +71,12 @@ void example_Nova_Spider_Nova_destroy(example_Nova_Spider** this, nova_standard_
 
 int example_Nova_Spider_0_Nova_getNumLegs(example_Nova_Spider* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
-	return 8;
+	return (int)8;
 }
 
 int example_Nova_Spider_0_Nova_getNumEyes(example_Nova_Spider* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
-	return 9000;
+	return (int)9000;
 }
 
 nova_standard_Nova_String* example_Nova_Spider_0_Nova_getDescription(example_Nova_Spider* this, nova_standard_exception_Nova_ExceptionData* exceptionData)

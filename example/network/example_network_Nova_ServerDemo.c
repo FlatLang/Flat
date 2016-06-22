@@ -73,7 +73,7 @@ void example_network_Nova_ServerDemo_Nova_main(example_network_Nova_ServerDemo* 
 	
 	l1_Nova_connections = nova_standard_datastruct_list_Nova_Array_0_Nova_construct(0, exceptionData);
 	l1_Nova_socket = nova_standard_network_Nova_ServerSocket_0_Nova_construct(0, exceptionData);
-	l1_Nova_port = 25560;
+	l1_Nova_port = (int)(25560);
 	if (!nova_standard_network_Nova_ServerSocket_Nova_start(l1_Nova_socket, exceptionData, l1_Nova_port))
 	{
 		nova_standard_io_Nova_Console_1_Nova_writeLine(0, exceptionData, nova_standard_Nova_String_2_Nova_construct(0, exceptionData, "Failed to start server"));

@@ -108,7 +108,7 @@ void stabilitytest_Nova_ClosureStability_Nova_incrementNumber(stabilitytest_Nova
 
 void stabilitytest_Nova_ClosureStability_Nova_test(stabilitytest_Nova_ClosureStability* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
-	stabilitytest_Nova_ClosureStability_Nova_TOLERANCE = 0.0000000001;
+	stabilitytest_Nova_ClosureStability_Nova_TOLERANCE = (double)(0.0000000001);
 	stabilitytest_Nova_ClosureStability_Nova_testClosures(this, exceptionData);
 }
 
@@ -126,9 +126,9 @@ void stabilitytest_Nova_ClosureStability_Nova_testMathClosures(stabilitytest_Nov
 	double l1_Nova_value;
 	
 	nova_standard_io_Nova_Console_0_Nova_write(0, exceptionData, nova_standard_Nova_String_2_Nova_construct(0, exceptionData, "Checking static math closures... "));
-	l1_Nova_a = 5;
-	l1_Nova_b = 3;
-	l1_Nova_value = 0.5;
+	l1_Nova_a = (int)(5);
+	l1_Nova_b = (int)(3);
+	l1_Nova_value = (double)(0.5);
 	if (stabilitytest_Nova_ClosureStability_Nova_callClosure(0, exceptionData, (stabilitytest_Nova_ClosureStability_closure3_Nova_closure)&stabilitytest_Nova_ClosureStability_Nova_multiply, this, l1_Nova_a, l1_Nova_b) != stabilitytest_Nova_ClosureStability_Nova_multiply(0, exceptionData, l1_Nova_a, l1_Nova_b))
 	{
 		stabilitytest_Nova_StabilityTest_1_Nova_fail(this->stabilitytest_Nova_StabilityTestCase_Nova_program, exceptionData, nova_standard_Nova_String_2_Nova_construct(0, exceptionData, "Failed to call multiply(Int, Int) closure"));
@@ -190,7 +190,7 @@ int stabilitytest_Nova_ClosureStability_Nova_pow(stabilitytest_Nova_ClosureStabi
 	int l2_Nova_i;
 	
 	l1_Nova_value = stabilitytest_Nova_ClosureStability_Nova_base;
-	l2_Nova_i = 0;
+	l2_Nova_i = (int)(0);
 	for (; l2_Nova_i < stabilitytest_Nova_ClosureStability_Nova_pow - 1; l2_Nova_i++)
 	{
 		l1_Nova_value = l1_Nova_value * stabilitytest_Nova_ClosureStability_Nova_base;

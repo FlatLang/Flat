@@ -76,7 +76,7 @@ void example_Nova_IntegerTest_Nova_main(example_Nova_IntegerTest* this, nova_sta
 		int l3_Nova_i;
 		
 		l1_Nova_timer = nova_standard_time_Nova_Timer_Nova_start(nova_standard_time_Nova_Timer_0_Nova_construct(0, exceptionData), exceptionData);
-		l3_Nova_i = 0;
+		l3_Nova_i = (int)(0);
 		for (; l3_Nova_i < 999999; l3_Nova_i++)
 		{
 			nova_standard_primitive_number_Nova_Long_2_Nova_toString(0, exceptionData, l3_Nova_i);

@@ -74,7 +74,7 @@ void example_Nova_MathDemo_Nova_main(example_Nova_MathDemo* this, nova_standard_
 	nova_standard_io_Nova_Console_1_Nova_writeLine(0, exceptionData, nova_standard_Nova_String_2_Nova_construct(0, exceptionData, "Beginning benchmark..."));
 	l1_Nova_iterations = 999999;
 	l1_Nova_timer = nova_standard_time_Nova_Timer_Nova_start(nova_standard_time_Nova_Timer_0_Nova_construct(0, exceptionData), exceptionData);
-	l2_Nova_i = 0;
+	l2_Nova_i = (int)(0);
 	for (; l2_Nova_i < l1_Nova_iterations; l2_Nova_i++)
 	{
 		TRY

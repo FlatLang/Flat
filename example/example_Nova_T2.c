@@ -73,7 +73,7 @@ void example_Nova_T2_0_Nova_this(example_Nova_T2* this, nova_standard_exception_
 
 int example_Nova_T2_Accessor_Nova_ind(example_Nova_T2* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
-	return 2;
+	return (int)2;
 }
 
 void example_Nova_T2_0_Nova_super(example_Nova_T2* this, nova_standard_exception_Nova_ExceptionData* exceptionData)

@@ -93,7 +93,7 @@ void nova_standard_thread_Nova_Thread_Nova_kill(nova_standard_thread_Nova_Thread
 	lib_nova_thread_cancel(*this->prv->nova_standard_thread_Nova_Thread_Nova_handle);
 }
 
-void nova_standard_thread_Nova_Thread_Nova_sleep(nova_standard_thread_Nova_Thread* this, nova_standard_exception_Nova_ExceptionData* exceptionData, long nova_standard_thread_Nova_Thread_Nova_millis)
+void nova_standard_thread_Nova_Thread_Nova_sleep(nova_standard_thread_Nova_Thread* this, nova_standard_exception_Nova_ExceptionData* exceptionData, long_long nova_standard_thread_Nova_Thread_Nova_millis)
 {
 	lib_nova_thread_sleep(nova_standard_thread_Nova_Thread_Nova_millis);
 }

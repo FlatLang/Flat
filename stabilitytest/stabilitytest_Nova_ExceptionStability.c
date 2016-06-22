@@ -126,7 +126,7 @@ void stabilitytest_Nova_ExceptionStability_Nova_testException(stabilitytest_Nova
 					int l2_Nova_i;
 					int nova_zero_check6;
 					
-					l2_Nova_den = 0;
+					l2_Nova_den = (int)(0);
 					nova_zero_check6 = l2_Nova_den;
 					if (nova_zero_check6 == 0)
 					{

@@ -75,12 +75,12 @@ void example_Nova_Dog_0_Nova_this(example_Nova_Dog* this, nova_standard_exceptio
 
 int example_Nova_Dog_Nova_getNumLegs(example_Nova_Dog* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
-	return 4;
+	return (int)4;
 }
 
 int example_Nova_Dog_Nova_getNumEyes(example_Nova_Dog* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
-	return 2;
+	return (int)2;
 }
 
 nova_standard_Nova_String* example_Nova_Dog_Nova_getDescription(example_Nova_Dog* this, nova_standard_exception_Nova_ExceptionData* exceptionData)

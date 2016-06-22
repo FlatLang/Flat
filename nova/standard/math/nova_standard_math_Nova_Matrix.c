@@ -66,7 +66,7 @@ void nova_standard_math_Nova_Matrix_Nova_destroy(nova_standard_math_Nova_Matrix*
 		return;
 	}
 	
-	
+	NOVA_FREE((*this)->prv->nova_standard_math_Nova_Matrix_Nova_matrix);
 	NOVA_FREE((*this)->prv);
 	
 	NOVA_FREE(*this);
@@ -84,6 +84,6 @@ nova_standard_primitive_number_Nova_Number* nova_standard_math_Nova_Matrix_Nova_
 
 void nova_standard_math_Nova_Matrix_Nova_super(nova_standard_math_Nova_Matrix* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
-	this->prv->nova_standard_math_Nova_Matrix_Nova_matrix = 0;
+	this->prv->nova_standard_math_Nova_Matrix_Nova_matrix = (nova_standard_primitive_number_Nova_Number***)nova_null;
 }
 

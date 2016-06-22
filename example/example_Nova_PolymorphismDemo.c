@@ -89,7 +89,7 @@ nova_standard_Nova_String* example_Nova_PolymorphismDemo_Nova_getDescriptionOfAn
 {
 	int l2_Nova_i;
 	
-	l2_Nova_i = 0;
+	l2_Nova_i = (int)(0);
 	for (; l2_Nova_i < 2; l2_Nova_i++)
 	{
 		if (example_Nova_Animal_virtual1_Nova_getNumLegs((example_Nova_Animal*)(example_Nova_PolymorphismDemo_Nova_animals[l2_Nova_i]), exceptionData) == example_Nova_PolymorphismDemo_Nova_numLegs)

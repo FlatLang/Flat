@@ -107,7 +107,7 @@ void stabilitytest_Nova_SyntaxStability_Nova_checkSwitchStatements(stabilitytest
 	int nova_local_1;
 	
 	nova_standard_io_Nova_Console_0_Nova_write(0, exceptionData, nova_standard_Nova_String_2_Nova_construct(0, exceptionData, "Checking simple switch statement... "));
-	l1_Nova_num = 3;
+	l1_Nova_num = (int)(3);
 	l1_Nova_worked = 0;
 	switch ((l1_Nova_num))
 	{
@@ -132,7 +132,7 @@ void stabilitytest_Nova_SyntaxStability_Nova_checkSwitchStatements(stabilitytest
 	}
 	nova_standard_io_Nova_Console_1_Nova_writeLine(0, exceptionData, nova_standard_Nova_String_2_Nova_construct(0, exceptionData, "OK"));
 	nova_standard_io_Nova_Console_0_Nova_write(0, exceptionData, nova_standard_Nova_String_2_Nova_construct(0, exceptionData, "Checking simple switch statement with indentation... "));
-	l1_Nova_num = 3;
+	l1_Nova_num = (int)(3);
 	l1_Nova_worked = 0;
 	switch ((l1_Nova_num))
 	{
@@ -157,7 +157,7 @@ void stabilitytest_Nova_SyntaxStability_Nova_checkSwitchStatements(stabilitytest
 	}
 	nova_standard_io_Nova_Console_1_Nova_writeLine(0, exceptionData, nova_standard_Nova_String_2_Nova_construct(0, exceptionData, "OK"));
 	nova_standard_io_Nova_Console_0_Nova_write(0, exceptionData, nova_standard_Nova_String_2_Nova_construct(0, exceptionData, "Checking simple switch statement with scopes... "));
-	l1_Nova_num = 3;
+	l1_Nova_num = (int)(3);
 	l1_Nova_worked = 0;
 	switch ((l1_Nova_num))
 	{
@@ -182,8 +182,8 @@ void stabilitytest_Nova_SyntaxStability_Nova_checkSwitchStatements(stabilitytest
 	}
 	nova_standard_io_Nova_Console_1_Nova_writeLine(0, exceptionData, nova_standard_Nova_String_2_Nova_construct(0, exceptionData, "OK"));
 	nova_standard_io_Nova_Console_0_Nova_write(0, exceptionData, nova_standard_Nova_String_2_Nova_construct(0, exceptionData, "Checking switch statement with variable case values... "));
-	l1_Nova_val = 1;
-	l1_Nova_num = 3;
+	l1_Nova_val = (int)(1);
+	l1_Nova_num = (int)(3);
 	l1_Nova_worked = 0;
 	if ((l1_Nova_num) == (l1_Nova_val++))
 	{
@@ -211,8 +211,8 @@ void stabilitytest_Nova_SyntaxStability_Nova_checkSwitchStatements(stabilitytest
 	}
 	nova_standard_io_Nova_Console_1_Nova_writeLine(0, exceptionData, nova_standard_Nova_String_2_Nova_construct(0, exceptionData, "OK"));
 	nova_standard_io_Nova_Console_0_Nova_write(0, exceptionData, nova_standard_Nova_String_2_Nova_construct(0, exceptionData, "Checking switch statement with variable case values and fallthrough... "));
-	l1_Nova_val = 1;
-	l1_Nova_num = 3;
+	l1_Nova_val = (int)(1);
+	l1_Nova_num = (int)(3);
 	l1_Nova_worked = 0;
 	l1_Nova_worked2 = 0;
 	nova_local_1 = (l1_Nova_num++);
@@ -264,9 +264,9 @@ void stabilitytest_Nova_SyntaxStability_Nova_checkWhileLoops(stabilitytest_Nova_
 	int l1_Nova_num3;
 	
 	nova_standard_io_Nova_Console_0_Nova_write(0, exceptionData, nova_standard_Nova_String_2_Nova_construct(0, exceptionData, "Checking inline while loop... "));
-	l1_Nova_num = 0;
-	l1_Nova_num2 = 0;
-	l1_Nova_num3 = 0;
+	l1_Nova_num = (int)(0);
+	l1_Nova_num2 = (int)(0);
+	l1_Nova_num3 = (int)(0);
 	while (l1_Nova_num < 100)
 	{
 		l1_Nova_num++;
@@ -302,20 +302,20 @@ void stabilitytest_Nova_SyntaxStability_Nova_checkForLoops(stabilitytest_Nova_Sy
 	int l6_Nova_i;
 	
 	nova_standard_io_Nova_Console_0_Nova_write(0, exceptionData, nova_standard_Nova_String_2_Nova_construct(0, exceptionData, "Checking inline for loop... "));
-	l1_Nova_num = 0;
-	l1_Nova_num2 = 0;
-	l1_Nova_num3 = 0;
-	l2_Nova_i = 0;
+	l1_Nova_num = (int)(0);
+	l1_Nova_num2 = (int)(0);
+	l1_Nova_num3 = (int)(0);
+	l2_Nova_i = (int)(0);
 	for (; l2_Nova_i < 100; l2_Nova_i++)
 	{
 		l1_Nova_num++;
 	}
-	l4_Nova_i = 0;
+	l4_Nova_i = (int)(0);
 	for (; l4_Nova_i < 100; l4_Nova_i++)
 	{
 		l1_Nova_num2++;
 	}
-	l6_Nova_i = 0;
+	l6_Nova_i = (int)(0);
 	for (; l6_Nova_i < 100; l6_Nova_i++)
 	{
 		if (1)
@@ -385,15 +385,15 @@ void stabilitytest_Nova_SyntaxStability_Nova_checkMultipleReturnValues(stability
 	nova_standard_Nova_String* l1_Nova_s2;
 	
 	nova_standard_io_Nova_Console_0_Nova_write(0, exceptionData, nova_standard_Nova_String_2_Nova_construct(0, exceptionData, "Checking methods with multiple return values... "));
-	l1_Nova_ret1 = 1;
-	l1_Nova_ret2 = 2;
+	l1_Nova_ret1 = (int)(1);
+	l1_Nova_ret2 = (int)(2);
 	l1_Nova_ret1 = stabilitytest_Nova_SyntaxStability_Nova_ret2(0, exceptionData, &l1_Nova_ret2);
 	if (l1_Nova_ret1 != 5 || l1_Nova_ret2 != 2)
 	{
 		stabilitytest_Nova_StabilityTest_1_Nova_fail(this->stabilitytest_Nova_StabilityTestCase_Nova_program, exceptionData, nova_standard_Nova_String_2_Nova_construct(0, exceptionData, "Failed to pass over second return value"));
 	}
-	l1_Nova_ret1 = 1;
-	l1_Nova_ret2 = 2;
+	l1_Nova_ret1 = (int)(1);
+	l1_Nova_ret2 = (int)(2);
 	l1_Nova_ret1 = stabilitytest_Nova_SyntaxStability_Nova_swap(0, exceptionData, l1_Nova_ret1, l1_Nova_ret2, &l1_Nova_ret2);
 	if (l1_Nova_ret1 != 2 || l1_Nova_ret2 != 1)
 	{
@@ -411,7 +411,7 @@ void stabilitytest_Nova_SyntaxStability_Nova_checkMultipleReturnValues(stability
 
 int stabilitytest_Nova_SyntaxStability_Nova_ret2(stabilitytest_Nova_SyntaxStability* this, nova_standard_exception_Nova_ExceptionData* exceptionData, int* ret1)
 {
-	return 5;
+	return (int)5;
 }
 
 int stabilitytest_Nova_SyntaxStability_Nova_swap(stabilitytest_Nova_SyntaxStability* this, nova_standard_exception_Nova_ExceptionData* exceptionData, int stabilitytest_Nova_SyntaxStability_Nova_a, int stabilitytest_Nova_SyntaxStability_Nova_b, int* ret1)
@@ -441,7 +441,7 @@ void stabilitytest_Nova_SyntaxStability_Nova_foreachClosure(stabilitytest_Nova_S
 {
 	if (stabilitytest_Nova_SyntaxStability_Nova_s->nova_standard_Nova_String_Nova_size < 4)
 	{
-		THROW(10, stabilitytest_Nova_UnstableException_3_Nova_construct(0, exceptionData));
+		THROW(10, stabilitytest_Nova_UnstableException_4_Nova_construct(0, exceptionData, nova_standard_Nova_String_2_Nova_construct(0, exceptionData, "filtering failed")));
 	}
 }
 
@@ -485,7 +485,7 @@ void stabilitytest_Nova_SyntaxStability_Nova_checkIterators(stabilitytest_Nova_S
 	{
 	}
 	END_TRY;
-	l4_Nova_n = 0;
+	l4_Nova_n = (int)(0);
 	for (; l4_Nova_n < l1_Nova_list2->nova_standard_datastruct_list_Nova_Array_Nova_size; l4_Nova_n++)
 	{
 		if ((int)(((nova_standard_Nova_String*)nova_standard_datastruct_list_Nova_Array_Nova_get(l1_Nova_list2, exceptionData, l4_Nova_n))->nova_standard_Nova_String_Nova_size) < 4)

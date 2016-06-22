@@ -69,9 +69,9 @@ nova_standard_Nova_String* nova_standard_Nova_Object_Nova_getHashCode(nova_stand
 	return nova_standard_Nova_String_2_Nova_construct(0, exceptionData, hashCode(this));
 }
 
-long nova_standard_Nova_Object_0_Nova_getHashCodeLong(nova_standard_Nova_Object* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
+long_long nova_standard_Nova_Object_0_Nova_getHashCodeLong(nova_standard_Nova_Object* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
-	return (long)strtol(hashCode(this), NULL, 16);
+	return (long_long)strtol(hashCode(this), NULL, 16);
 }
 
 nova_standard_Nova_String* nova_standard_Nova_Object_1_Nova_toString(nova_standard_Nova_Object* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
@@ -92,7 +92,7 @@ void nova_standard_Nova_Object_Nova_super(nova_standard_Nova_Object* this, nova_
 {
 }
 
-long nova_standard_Nova_Object_virtual1_Nova_getHashCodeLong(nova_standard_Nova_Object* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
+long_long nova_standard_Nova_Object_virtual1_Nova_getHashCodeLong(nova_standard_Nova_Object* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
 	return this->vtable->nova_standard_Nova_Object_virtual1_Nova_getHashCodeLong((nova_standard_Nova_Object*)(this), exceptionData);
 }

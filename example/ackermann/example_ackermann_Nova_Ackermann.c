@@ -88,7 +88,7 @@ int example_ackermann_Nova_Ackermann_Nova_run(example_ackermann_Nova_Ackermann* 
 			return example_ackermann_Nova_Ackermann_Nova_run(0, exceptionData, example_ackermann_Nova_Ackermann_Nova_m - 1, example_ackermann_Nova_Ackermann_Nova_run(0, exceptionData, example_ackermann_Nova_Ackermann_Nova_m, example_ackermann_Nova_Ackermann_Nova_n - 1));
 		}
 	}
-	return 0;
+	return (int)0;
 }
 
 int example_ackermann_Nova_Ackermann_Nova_run2(example_ackermann_Nova_Ackermann* this, nova_standard_exception_Nova_ExceptionData* exceptionData, int example_ackermann_Nova_Ackermann_Nova_m, int example_ackermann_Nova_Ackermann_Nova_n)
@@ -108,7 +108,7 @@ int example_ackermann_Nova_Ackermann_Nova_run2(example_ackermann_Nova_Ackermann*
 			return example_ackermann_Nova_Ackermann_Nova_run(0, exceptionData, example_ackermann_Nova_Ackermann_Nova_m - 1, example_ackermann_Nova_Ackermann_Nova_run(0, exceptionData, example_ackermann_Nova_Ackermann_Nova_m, example_ackermann_Nova_Ackermann_Nova_n - 1));
 		}
 	}
-	return 0;
+	return (int)0;
 }
 
 void example_ackermann_Nova_Ackermann_0_Nova_this(example_ackermann_Nova_Ackermann* this, nova_standard_exception_Nova_ExceptionData* exceptionData)

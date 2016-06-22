@@ -88,7 +88,7 @@ void stabilitytest_Nova_ThreadImplementation_0_Nova_run(stabilitytest_Nova_Threa
 {
 	int l2_Nova_i;
 	
-	l2_Nova_i = 0;
+	l2_Nova_i = (int)(0);
 	for (; l2_Nova_i < this->prv->stabilitytest_Nova_ThreadImplementation_Nova_times; l2_Nova_i++)
 	{
 		nova_standard_thread_Nova_Thread_Nova_sleep(0, exceptionData, this->prv->stabilitytest_Nova_ThreadImplementation_Nova_millis);

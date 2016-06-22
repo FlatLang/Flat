@@ -38,7 +38,7 @@ double nova_standard_math_Nova_Math_Nova_PI;
 void nova_standard_math_Nova_MathNova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
 	{
-		nova_standard_math_Nova_Math_Nova_PI = 3.141592653;
+		nova_standard_math_Nova_Math_Nova_PI = (double)(3.141592653);
 	}
 }
 
@@ -67,7 +67,7 @@ void nova_standard_math_Nova_Math_Nova_destroy(nova_standard_math_Nova_Math** th
 	NOVA_FREE(*this);
 }
 
-long nova_standard_math_Nova_Math_Nova_max(nova_standard_math_Nova_Math* this, nova_standard_exception_Nova_ExceptionData* exceptionData, long nova_standard_math_Nova_Math_Nova_a, long nova_standard_math_Nova_Math_Nova_b)
+long_long nova_standard_math_Nova_Math_Nova_max(nova_standard_math_Nova_Math* this, nova_standard_exception_Nova_ExceptionData* exceptionData, long_long nova_standard_math_Nova_Math_Nova_a, long_long nova_standard_math_Nova_Math_Nova_b)
 {
 	if (nova_standard_math_Nova_Math_Nova_a > nova_standard_math_Nova_Math_Nova_b)
 	{
@@ -76,27 +76,27 @@ long nova_standard_math_Nova_Math_Nova_max(nova_standard_math_Nova_Math* this, n
 	return nova_standard_math_Nova_Math_Nova_b;
 }
 
-char nova_standard_math_Nova_Math_Nova_sign(nova_standard_math_Nova_Math* this, nova_standard_exception_Nova_ExceptionData* exceptionData, long nova_standard_math_Nova_Math_Nova_num)
+char nova_standard_math_Nova_Math_Nova_sign(nova_standard_math_Nova_Math* this, nova_standard_exception_Nova_ExceptionData* exceptionData, long_long nova_standard_math_Nova_Math_Nova_num)
 {
 	if (nova_standard_math_Nova_Math_Nova_num > 0)
 	{
-		return (char)1;
+		return 1;
 	}
 	else if (nova_standard_math_Nova_Math_Nova_num < 0)
 	{
-		return (char)-1;
+		return -1;
 	}
-	return (char)0;
+	return 0;
 }
 
-int nova_standard_math_Nova_Math_Nova_random(nova_standard_math_Nova_Math* this, nova_standard_exception_Nova_ExceptionData* exceptionData, long nova_standard_math_Nova_Math_Nova_range)
+int nova_standard_math_Nova_Math_Nova_random(nova_standard_math_Nova_Math* this, nova_standard_exception_Nova_ExceptionData* exceptionData, long_long nova_standard_math_Nova_Math_Nova_range)
 {
 	return (int)rand() % nova_standard_math_Nova_Math_Nova_range;
 }
 
-long nova_standard_math_Nova_Math_0_Nova_abs(nova_standard_math_Nova_Math* this, nova_standard_exception_Nova_ExceptionData* exceptionData, long nova_standard_math_Nova_Math_Nova_number)
+long_long nova_standard_math_Nova_Math_0_Nova_abs(nova_standard_math_Nova_Math* this, nova_standard_exception_Nova_ExceptionData* exceptionData, long_long nova_standard_math_Nova_Math_Nova_number)
 {
-	return (long)llabs(nova_standard_math_Nova_Math_Nova_number);
+	return (long_long)llabs(nova_standard_math_Nova_Math_Nova_number);
 }
 
 double nova_standard_math_Nova_Math_1_Nova_abs(nova_standard_math_Nova_Math* this, nova_standard_exception_Nova_ExceptionData* exceptionData, double nova_standard_math_Nova_Math_Nova_number)
@@ -144,19 +144,19 @@ double nova_standard_math_Nova_Math_Nova_atan(nova_standard_math_Nova_Math* this
 	return (double)atan(nova_standard_math_Nova_Math_Nova_number);
 }
 
-long nova_standard_math_Nova_Math_Nova_round(nova_standard_math_Nova_Math* this, nova_standard_exception_Nova_ExceptionData* exceptionData, double nova_standard_math_Nova_Math_Nova_number)
+long_long nova_standard_math_Nova_Math_Nova_round(nova_standard_math_Nova_Math* this, nova_standard_exception_Nova_ExceptionData* exceptionData, double nova_standard_math_Nova_Math_Nova_number)
 {
 	return nova_standard_math_Nova_Math_Nova_floor(0, exceptionData, nova_standard_math_Nova_Math_Nova_number + 0.5);
 }
 
-long nova_standard_math_Nova_Math_Nova_floor(nova_standard_math_Nova_Math* this, nova_standard_exception_Nova_ExceptionData* exceptionData, double nova_standard_math_Nova_Math_Nova_number)
+long_long nova_standard_math_Nova_Math_Nova_floor(nova_standard_math_Nova_Math* this, nova_standard_exception_Nova_ExceptionData* exceptionData, double nova_standard_math_Nova_Math_Nova_number)
 {
-	return (long)floor(nova_standard_math_Nova_Math_Nova_number);
+	return (long_long)floor(nova_standard_math_Nova_Math_Nova_number);
 }
 
-long nova_standard_math_Nova_Math_Nova_ceil(nova_standard_math_Nova_Math* this, nova_standard_exception_Nova_ExceptionData* exceptionData, double nova_standard_math_Nova_Math_Nova_number)
+long_long nova_standard_math_Nova_Math_Nova_ceil(nova_standard_math_Nova_Math* this, nova_standard_exception_Nova_ExceptionData* exceptionData, double nova_standard_math_Nova_Math_Nova_number)
 {
-	return (long)ceil(nova_standard_math_Nova_Math_Nova_number);
+	return (long_long)ceil(nova_standard_math_Nova_Math_Nova_number);
 }
 
 void nova_standard_math_Nova_Math_0_Nova_this(nova_standard_math_Nova_Math* this, nova_standard_exception_Nova_ExceptionData* exceptionData)

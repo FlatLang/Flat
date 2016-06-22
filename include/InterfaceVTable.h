@@ -71,6 +71,9 @@ typedef char (*nova_standard_datastruct_list_Nova_List_closure15_Nova_filterFunc
 typedef char (*nova_standard_datastruct_list_Nova_List_closure16_Nova_func)(void*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*);
 typedef char (*nova_standard_datastruct_list_Nova_List_closure17_Nova_func)(void*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*);
 typedef char (*nova_standard_datastruct_list_Nova_List_closure18_Nova_func)(void*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*);
+typedef void (*nova_standard_thread_async_Nova_Async_closure1_Nova_func)(void*, nova_standard_exception_Nova_ExceptionData*);
+typedef void (*nova_standard_thread_async_Nova_Async_closure2_Nova_func)(void*, nova_standard_exception_Nova_ExceptionData*);
+typedef void (*nova_standard_thread_async_Nova_Async_closure3_Nova_func)(void*, nova_standard_exception_Nova_ExceptionData*);
 
 typedef struct nova_Interface_VTable
 {

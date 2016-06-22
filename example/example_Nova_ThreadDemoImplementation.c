@@ -39,7 +39,7 @@ CCLASS_PRIVATE
 (
 	NOVA_THREAD_HANDLE* nova_standard_thread_Nova_Thread_Nova_handle;
 	
-	long example_Nova_ThreadDemoImplementation_Nova_millis;
+	long_long example_Nova_ThreadDemoImplementation_Nova_millis;
 	nova_standard_Nova_String* example_Nova_ThreadDemoImplementation_Nova_word;
 	
 )
@@ -49,7 +49,7 @@ void example_Nova_ThreadDemoImplementationNova_init_static(nova_standard_excepti
 	}
 }
 
-example_Nova_ThreadDemoImplementation* example_Nova_ThreadDemoImplementation_Nova_construct(example_Nova_ThreadDemoImplementation* this, nova_standard_exception_Nova_ExceptionData* exceptionData, long example_Nova_ThreadDemoImplementation_Nova_millis, nova_standard_Nova_String* example_Nova_ThreadDemoImplementation_Nova_word)
+example_Nova_ThreadDemoImplementation* example_Nova_ThreadDemoImplementation_Nova_construct(example_Nova_ThreadDemoImplementation* this, nova_standard_exception_Nova_ExceptionData* exceptionData, long_long example_Nova_ThreadDemoImplementation_Nova_millis, nova_standard_Nova_String* example_Nova_ThreadDemoImplementation_Nova_word)
 {
 	CCLASS_NEW(example_Nova_ThreadDemoImplementation, this);
 	this->vtable = &example_Extension_VTable_ThreadDemoImplementation_val;
@@ -78,7 +78,7 @@ void example_Nova_ThreadDemoImplementation_Nova_destroy(example_Nova_ThreadDemoI
 	NOVA_FREE(*this);
 }
 
-void example_Nova_ThreadDemoImplementation_Nova_this(example_Nova_ThreadDemoImplementation* this, nova_standard_exception_Nova_ExceptionData* exceptionData, long example_Nova_ThreadDemoImplementation_Nova_millis, nova_standard_Nova_String* example_Nova_ThreadDemoImplementation_Nova_word)
+void example_Nova_ThreadDemoImplementation_Nova_this(example_Nova_ThreadDemoImplementation* this, nova_standard_exception_Nova_ExceptionData* exceptionData, long_long example_Nova_ThreadDemoImplementation_Nova_millis, nova_standard_Nova_String* example_Nova_ThreadDemoImplementation_Nova_word)
 {
 	this->prv->example_Nova_ThreadDemoImplementation_Nova_millis = example_Nova_ThreadDemoImplementation_Nova_millis;
 	this->prv->example_Nova_ThreadDemoImplementation_Nova_word = example_Nova_ThreadDemoImplementation_Nova_word;
@@ -88,7 +88,7 @@ void example_Nova_ThreadDemoImplementation_0_Nova_run(example_Nova_ThreadDemoImp
 {
 	int l2_Nova_i;
 	
-	l2_Nova_i = 0;
+	l2_Nova_i = (int)(0);
 	for (; l2_Nova_i < 10; l2_Nova_i++)
 	{
 		nova_standard_io_Nova_Console_1_Nova_writeLine(0, exceptionData, this->prv->example_Nova_ThreadDemoImplementation_Nova_word);
