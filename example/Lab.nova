@@ -39,6 +39,20 @@ public class Lab
 		Array<String> list = new Array(a, 7)
 		Array<Int> list2 = new Array(b, 7)
 		
+		/*list.filter(x -> x.size > 10).map(x -> getClassByName(x))
+		    .forEach(x -> {
+		        Console.writeLine(x.fields.map(y -> y.name).join(", "))
+		    })*/
+		
+		/*
+		Async.execute({
+		    Thread.sleep(1000)
+		    Console.writeLine("Waited a second")
+		})
+		
+		Console.writeLine("Started async execution")
+		*/
+		
 		Console.writeLine("Mapped: " + list.filter(x -> x.size >= 4).map((x, i) -> i + ": " + x + "?").join(", "))
 		Console.writeLine("Mapped backwards: " + list.filter(x -> x.size >= 4).map(x -> x + "?").reverse().join(", "))
 		Console.writeLine("Mapped2: " + list2.map(x -> x + "!").join(", "))
