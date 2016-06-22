@@ -219,7 +219,14 @@ public class Variable extends Identifier
 	@Override
 	public void setName(String name, boolean forceOriginal)
 	{
-		declaration.setName(name, forceOriginal);
+		if (declaration != null)
+		{
+			declaration.setName(name, forceOriginal);
+		}
+		else
+		{
+			// TODO: need to throw an error here or something
+		}
 	}
 	
 	/**
