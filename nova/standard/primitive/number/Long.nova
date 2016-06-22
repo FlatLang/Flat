@@ -6,6 +6,9 @@ public class Long extends Number implements Comparable<Long>, Integer
 {
 	Long value
 	
+	visible static Long MAX_VALUE =  9223372036854775807
+	visible static Long MIN_VALUE = -9223372036854775808
+	
 	construct(Long value)
 	{
 		this.value = value
@@ -13,18 +16,21 @@ public class Long extends Number implements Comparable<Long>, Integer
 	
 	public static numDigits(Long number) -> Int
 	{
+		Int size = 1 
+		
 		if (number < 0)
 		{
-			return numDigits(-number) + 1
+			//return numDigits(-number) + 1
+			
+			size++
 		}
-		
-		Int size
 		
 		number = number / 10
 		
-		for (size = 1; number > 0; size++)
+		while (number != 0)
 		{
 			number = number / 10
+			size++
 		}
 		
 		return size
@@ -44,8 +50,6 @@ public class Long extends Number implements Comparable<Long>, Integer
 		{
 			data[0] = '-'
 			
-			value  = -value
-			
 			offset = 1
 		}
 		
@@ -53,7 +57,7 @@ public class Long extends Number implements Comparable<Long>, Integer
 		
 		for (Int index = 0; index < nums; index++)
 		{
-			data[digits - index] = (Char)(charOffset + value % 10)
+			data[digits - index] = (Char)(charOffset + Math.abs(value % 10))
 			
 			value = value / 10
 		}
