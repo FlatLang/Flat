@@ -538,7 +538,7 @@ public class MethodCall extends Variable
 	{
 		VariableDeclaration method   = getMethodDeclaration();
 		CallableMethod      callable = (CallableMethod)method;
-
+		
 		if (checkAccesses && isGenericType() && doesAccess())
 		{
 			builder.append('(');
