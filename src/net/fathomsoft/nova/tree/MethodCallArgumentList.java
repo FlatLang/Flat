@@ -1,5 +1,6 @@
 package net.fathomsoft.nova.tree;
 
+import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.tree.exceptionhandling.Exception;
@@ -357,11 +358,25 @@ public class MethodCallArgumentList extends ArgumentList
 			
 			for (int i = 0; i < getNumVisibleChildren() - numRet; i++)
 			{
+				MethodCall call = getMethodCall();
+				CallableMethod method = call.getInferredDeclaration();
+				
+				
 				Value value = (Value)getVisibleChild(i);
-				Value param = getMethodCall().getRootDeclaration().getParameterList().getParameter(i);
+				Value param = null;
+				
+				if (method.isVirtual() && !call.isVirtualTypeKnown())
+				{
+					param = method.getRootDeclaration().getParameterList().getParameter(i);
+				}
+				else
+				{
+					param = method.getParameterList().getParameter(i);
+				}
 				
 				if (value.getReturnedNode().isPrimitive() && !param.isPrimitiveType())
 				{
+					Nova.debuggingBreakpoint(getParentMethod().getName().equals("numDigits") && getParentClass().getName().equals("Int"));
 					Instantiation newValue = SyntaxUtils.autoboxPrimitive(value);
 					
 					replace(value, newValue);
