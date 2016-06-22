@@ -174,7 +174,13 @@ public class Literal extends IValue
 		}
 		else if (SyntaxUtils.isInteger(value))
 		{
-			if (Integer.parseInt(value) <= Integer.MIN_VALUE)
+			long l = Long.parseLong(value);
+			
+			if (l == Long.MIN_VALUE)
+			{
+				return builder.append("(").append(l + 1).append("LL").append(" - 1)");
+			}
+			else if (l > Integer.MAX_VALUE || l <= Integer.MIN_VALUE)
 			{
 				return builder.append(value).append("LL");
 			}
@@ -191,7 +197,7 @@ public class Literal extends IValue
 	 */
 	public static Literal decodeStatement(Node parent, String statement, Location location, boolean require, boolean mustBeLiteral)
 	{
-		if (mustBeLiteral && !SyntaxUtils.isLiteral(statement))
+		if (mustBeLiteral && !SyntaxUtils.isLiteral(parent, statement))
 		{
 			return null;
 		}
@@ -223,7 +229,7 @@ public class Literal extends IValue
 	 */
 	public static Literal decodeStatement(Node parent, String statement, Location location, boolean require)
 	{
-		String literalType = SyntaxUtils.getLiteralTypeName(statement);
+		String literalType = SyntaxUtils.getLiteralTypeName(parent, statement);
 		
 		if (literalType != null || parent.isWithinExternalContext())
 		{
