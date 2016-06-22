@@ -511,6 +511,7 @@ public class VariableDeclaration extends IIdentifier
 	{
 		if (getType() != null && !setType(getType(), false, !isGenericType()))
 		{
+			setType(getType(), false, !isGenericType());
 			SyntaxMessage.error("Type '" + getType() + "' does not exist", this, false);
 			
 			isGenericType();
