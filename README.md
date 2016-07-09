@@ -1,7 +1,7 @@
 Nova Programming Language
 ===========================
 
-> Programming is really simple, but we insist on making it complicated
+> Programming is really simple, but we insist on making it complicated.
 > 
 > &mdash; <cite>Novafucius</cite>
 
