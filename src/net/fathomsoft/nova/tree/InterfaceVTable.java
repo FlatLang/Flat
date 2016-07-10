@@ -24,7 +24,7 @@ public class InterfaceVTable extends VTable
 	{
 		super(temporaryParent, locationIn);
 		
-		setType(TYPE, true, false);
+		setTypeValue(TYPE);
 		setDataType(VALUE);
 	}
 	
