@@ -2,6 +2,7 @@ package net.fathomsoft.nova.tree;
 
 import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.TestContext;
+import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.util.Location;
 
 /**
@@ -84,6 +85,19 @@ public class NovaParameterList extends ParameterList<Parameter>
 		}
 		
 		return param;
+	}
+	
+	@Override
+	public ValidationResult validate(int phase)
+	{
+		ValidationResult result = super.validate(phase);
+		
+		if (result.skipValidation())
+		{
+			return result;
+		}
+		
+		return result;
 	}
 	
 	/**
