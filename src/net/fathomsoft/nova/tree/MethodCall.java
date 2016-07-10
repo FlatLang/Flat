@@ -8,6 +8,7 @@ import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.tree.MethodList.SearchFilter;
 import net.fathomsoft.nova.tree.generics.GenericTypeArgument;
 import net.fathomsoft.nova.tree.generics.GenericTypeArgumentList;
+import net.fathomsoft.nova.tree.generics.GenericTypeParameter;
 import net.fathomsoft.nova.tree.generics.GenericTypeParameterDeclaration;
 import net.fathomsoft.nova.tree.lambda.LambdaExpression;
 import net.fathomsoft.nova.tree.variables.Array;
@@ -679,7 +680,17 @@ public class MethodCall extends Variable
 	@Override
 	public String getGenericReturnType()
 	{
-		VariableDeclaration method  = getMethodDeclaration();
+		GenericTypeParameter param = getGenericTypeParameter();
+		GenericTypeArgument arg = param.getCorrespondingArgument(this.getReferenceNode().toValue());
+		
+		if (arg == null)
+		{
+			return param.getDefaultType();
+		}
+		
+		return arg.getType();
+		
+		/*VariableDeclaration method  = getMethodDeclaration();
 		GenericCompatible   generic = getGenericCompatibleDeclaration();
 		
 		if (method.isGenericType())
@@ -700,7 +711,7 @@ public class MethodCall extends Variable
 			}
 		}
 		
-		return super.getGenericReturnType();
+		return super.getGenericReturnType();*/
 	}
 	
 	/**
@@ -836,6 +847,8 @@ public class MethodCall extends Variable
 				n.setDeclaration((VariableDeclaration)callableMethod);
 			}
 			
+			boolean skipArgumentChecks = callableMethod instanceof PropertyMethod;
+			
 			if (!n.decodeArguments(statement, bounds, require))
 			{
 				return null;
@@ -858,7 +871,7 @@ public class MethodCall extends Variable
 			
 			n.addDefaultGenericTypeArguments();
 			
-			if (!n.validateArguments(n.getFileDeclaration(), n.getLocationIn(), require))
+			if (!skipArgumentChecks && !n.validateArguments(n.getFileDeclaration(), n.getLocationIn(), require))
 			{
 				return null;
 			}
@@ -936,6 +949,7 @@ public class MethodCall extends Variable
 		
 		if (!SyntaxUtils.isVisible(getParentClass(), ((MethodDeclaration)method)))
 		{
+			SyntaxUtils.isVisible(getParentClass(), ((MethodDeclaration)method));
 			SyntaxMessage.error("Method '" + method.getName() + "' is not visible", this);
 		}
 	}
