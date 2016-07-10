@@ -17,6 +17,8 @@ public interface List<Type> extends Iterable<Type>
 	}
 	*/
 	
+	toArray() -> Type[]
+	
 	forEach(func(Type, Int, List<Type>))
 	/*{
 		for (value in this)
