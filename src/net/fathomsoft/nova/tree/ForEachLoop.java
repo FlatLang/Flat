@@ -338,17 +338,27 @@ public class ForEachLoop extends Loop
 			value = SyntaxTree.decodeValue(this, argument + ".iterator", location, require);
 		}
 		
-		getFileDeclaration().addImport(value.getReturnedNode().getTypeClassLocation());
+		Identifier identifier = (Identifier)value;
+		
+		Variable iteratorCall = (Variable)identifier.getReturnedNode();
+		
+		getFileDeclaration().addImport(iteratorCall.getTypeClassLocation());
 		
 		addChild(value, this);
 		
-		GenericTypeArgument arg = ((Variable)value.getReturnedNode()).getIntelligentGenericTypeArgument(0);
+		String s = identifier.getRootAccessNode().toValue().generateNovaInput().toString();
 		
-		String declaration = arg.generateNovaType() + " " + getIdentifier().getName();
+		Variable next = (Variable)SyntaxTree.decodeValue(this, s + ".next", location, require);
+		
+		next = (Variable)next.getLastAccessed();
+		
+		String type = next.getNovaType(next);//.getIntelligentGenericTypeArgument(0);
+		
+		String declaration = type + " " + getIdentifier().getName();
 		
 		LocalDeclaration variable = LocalDeclaration.decodeStatement(this, declaration, location, require);
 		
-		if (!variable.validateDeclaration())
+		if (variable == null || !variable.validateDeclaration())
 		{
 			return false;
 		}
