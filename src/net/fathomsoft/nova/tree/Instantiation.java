@@ -141,8 +141,6 @@ public class Instantiation extends IIdentifier implements GenericCompatible
 	@Override
 	public StringBuilder generateCSourceFragment(StringBuilder builder)
 	{
-		Nova.debuggingBreakpoint(getName().equals("StabilityTestCase"));
-		
 		return getIdentifier().generateCSourceFragment(builder);
 	}
 	
