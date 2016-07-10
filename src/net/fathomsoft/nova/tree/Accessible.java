@@ -1,6 +1,7 @@
 package net.fathomsoft.nova.tree;
 
 import net.fathomsoft.nova.Nova;
+import net.fathomsoft.nova.tree.variables.ObjectReference;
 import net.fathomsoft.nova.tree.variables.Variable;
 import net.fathomsoft.nova.tree.variables.VariableDeclaration;
 import net.fathomsoft.nova.util.SyntaxUtils;
@@ -82,7 +83,12 @@ public interface Accessible
 	 */
 	public default Accessible getLastAccessingOfType(Class<?> type, boolean opposite)
 	{
-		return getLastAccessingOfType(new Class<?>[] { type }, opposite);
+		return getLastAccessingOfType(type, opposite);
+	}
+	
+	public default Accessible getLastAccessingOfType(Class<?> type, boolean opposite, boolean inclusive)
+	{
+		return getLastAccessingOfType(new Class<?>[] { type }, opposite, inclusive);
 	}
 	
 	/**
@@ -99,8 +105,18 @@ public interface Accessible
 	 */
 	public default Accessible getLastAccessingOfType(Class<?> types[], boolean opposite)
 	{
+		return getLastAccessingOfType(types, opposite, false);
+	}
+	
+	public default Accessible getLastAccessingOfType(Class<?> types[], boolean opposite, boolean inclusive)
+	{
 		Accessible previous = null;
 		Accessible current  = this;
+		
+		if (inclusive && SyntaxUtils.checkTypes(types, current.getClass()) != opposite)
+		{
+			return current;
+		}
 		
 		while (current != null && SyntaxUtils.checkTypes(types, current.getClass()) != opposite)
 		{
@@ -129,6 +145,20 @@ public interface Accessible
 			}
 			
 			current  = current.getAccessedNode();
+		}
+		
+		return previous;
+	}
+	
+	public default Accessible getLastAccessed()
+	{
+		Accessible previous = this;
+		Accessible current  = this;
+		
+		while (current != null)
+		{
+			previous = current;
+			current = current.getAccessedNode();
 		}
 		
 		return previous;
@@ -260,7 +290,7 @@ public interface Accessible
 		
 		if (methodDeclaration != null)
 		{
-			Identifier id = n.getObjectReferenceNode(methodDeclaration);
+			ObjectReference id = n.getObjectReferenceNode(methodDeclaration);
 			
 			if (id != null)
 			{
@@ -268,7 +298,7 @@ public interface Accessible
 			}
 		}
 		
-		return n.getParentClass();
+		return n.getParentClass(true);
 	}
 	
 	/**
