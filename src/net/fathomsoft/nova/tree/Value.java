@@ -9,10 +9,7 @@ import net.fathomsoft.nova.tree.generics.GenericTypeArgument;
 import net.fathomsoft.nova.tree.generics.GenericTypeArgumentList;
 import net.fathomsoft.nova.tree.generics.GenericTypeParameter;
 import net.fathomsoft.nova.tree.generics.GenericTypeParameterDeclaration;
-import net.fathomsoft.nova.tree.variables.Super;
-import net.fathomsoft.nova.tree.variables.Variable;
-import net.fathomsoft.nova.tree.variables.VariableDeclaration;
-import net.fathomsoft.nova.tree.variables.VirtualLocalDeclaration;
+import net.fathomsoft.nova.tree.variables.*;
 import net.fathomsoft.nova.util.Location;
 import net.fathomsoft.nova.util.SyntaxUtils;
 
@@ -141,18 +138,9 @@ public abstract class Value extends Node implements AbstractValue
 	 * @param methodDeclaration The method to get the Value from.
 	 * @return The Value that the method was called with.
 	 */
-	public Identifier getObjectReferenceNode(CallableMethod methodDeclaration)
+	public ObjectReference getObjectReferenceNode(CallableMethod methodDeclaration)
 	{
-		Node     method     = ((Node)methodDeclaration);
-		String   identifier = getObjectReferenceIdentifier(methodDeclaration);
-		Variable var        = SyntaxTree.getUsableExistingNode(method, identifier, method.getLocationIn());
-		
-		if (var != null)
-		{
-			return var;
-		}
-		
-		return method.getParentClass();
+		return methodDeclaration.getObjectReference();
 	}
 	
 	/**
@@ -973,8 +961,7 @@ public abstract class Value extends Node implements AbstractValue
 		{
 			MethodCall call = (MethodCall)getAncestorOfType(MethodCall.class);
 			
-			// TODO: Need to check Method generic type parameters first.
-			GenericTypeParameter param = call.getReferenceNode().toValue().getTypeClass().getGenericTypeParameter(getType());
+			GenericTypeParameter param = call.getReferenceNode().toValue().getTypeClass().getGenericTypeParameter(getType(), this);
 			
 			if (param != null)
 			{
@@ -986,7 +973,7 @@ public abstract class Value extends Node implements AbstractValue
 			return null;
 		}
 		
-		return getParentClass().getGenericTypeParameter(getType());
+		return getParentClass().getGenericTypeParameter(getType(), this);
 	}
 	
 	public final boolean isGenericType()
@@ -1001,7 +988,7 @@ public abstract class Value extends Node implements AbstractValue
 	
 	public String getGenericReturnType()
 	{
-		return getParentClass().getGenericTypeParameter(getType()).getDefaultType();
+		return getParentClass().getGenericTypeParameter(getType(), this).getDefaultType();
 		//throw new UnimplementedOperationException("The getGenericReturnType() method must be implemented by class " + this.getClass().getName());
 	}
 	
