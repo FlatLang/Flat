@@ -3,6 +3,9 @@ package net.fathomsoft.nova.tree;
 import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.error.SyntaxMessage;
+import net.fathomsoft.nova.tree.generics.GenericTypeArgument;
+import net.fathomsoft.nova.tree.generics.GenericTypeParameter;
+import net.fathomsoft.nova.tree.generics.GenericTypeParameterDeclaration;
 import net.fathomsoft.nova.tree.variables.Array;
 import net.fathomsoft.nova.tree.variables.FieldDeclaration;
 import net.fathomsoft.nova.tree.variables.Variable;
@@ -362,6 +365,90 @@ public abstract class Identifier extends Value implements Accessible
 		return builder;
 	}
 	
+	public GenericTypeArgument getGenericTypeArgumentFromParameter(GenericTypeParameter param)
+	{
+		return getGenericTypeArgumentFromParameter(param.getType());
+	}
+	
+	public GenericTypeArgument getGenericTypeArgumentFromParameter(String type)
+	{
+		ClassDeclaration typeClass = null;
+		
+		if (isGenericType())
+		{
+			if (getReferenceNode() instanceof Identifier)
+			{
+				return ((Identifier)getReferenceNode()).getGenericTypeArgumentFromParameter(type);
+			}
+		}
+		else
+		{
+			typeClass = getTypeClass();
+		}
+		
+		if (typeClass == null)
+		{
+			return null;
+		}
+		
+		GenericTypeParameterDeclaration params = typeClass.getGenericTypeParameterDeclaration();
+		
+		if (params == null)
+		{
+			return null;
+		}
+		
+		int index = /*getDeclaration()*//*getReferenceNode().toValue().*/params.getParameterIndex(type);
+		
+		if (index >= 0)
+		{
+			Accessible lastRef = null;
+			Accessible ref = getReferenceNode();
+			
+			while (ref != lastRef && ref instanceof Accessible && index >= 0 && ref.getReferenceNode(true) != null)
+			{
+				lastRef = ref;
+				ref = ref.getReferenceNode(true);
+				
+				Accessible current = ref;
+				
+				if (current instanceof Variable)
+				{
+					current = ((Variable)ref).getDeclaration();
+				}
+				
+				GenericTypeArgument arg = ((Value)current).getGenericTypeArgument(index);
+				
+				if (!arg.isGenericType())
+				{
+					return arg;
+				}
+				
+				if (current instanceof Variable)
+				{
+					index = ((VariableDeclaration)current).getGenericTypeParameterDeclaration().getParameterIndex(arg.getType());
+				}
+			}
+			
+			/*if (index >= 0 && this instanceof MethodCall)
+			{
+				return ((Variable)getReferenceNode()).getDeclaration().getGenericTypeArgument(index);
+			}
+			else */if (index >= 0 && !isGenericType())
+			{
+				return getGenericTypeArgument(index);
+			}
+			else if (getBaseNode() instanceof Assignment)
+			{
+				Assignment assignment = (Assignment)getBaseNode();
+				
+				return assignment.getAssignedNode().getDeclaration().getGenericTypeArgument(index);
+			}
+		}
+		
+		return null;
+	}
+	
 	/**
 	 * Generate a variable name that will be used to keep the variables
 	 * in their own "namespace" per-say.
@@ -442,7 +529,7 @@ public abstract class Identifier extends Value implements Accessible
 		
 		if (!(existing instanceof LocalDeclaration && existing instanceof Parameter == false))
 		{
-			existing.getParentClass().generateCSourceName(builder).append('_');
+			existing.getParentClass(true).generateCSourceName(builder).append('_');
 		}
 		
 //		if (existing instanceof InstanceDeclaration)
@@ -537,6 +624,38 @@ public abstract class Identifier extends Value implements Accessible
 	 * 		c code verbatim.
 	 */
 	public abstract void setForceOriginalName(boolean forceOriginal);
+	
+	/**
+	 * Fill the given {@link Identifier} with the data that is in the
+	 * specified node.
+	 *
+	 * @param node The node to copy the data into.
+	 * @return The cloned node.
+	 */
+	public Identifier cloneTo(Identifier node)
+	{
+		return cloneTo(node, true);
+	}
+	
+	/**
+	 * Fill the given {@link Identifier} with the data that is in the
+	 * specified node.
+	 *
+	 * @param node The node to copy the data into.
+	 * @return The cloned node.
+	 */
+	public Identifier cloneTo(Identifier node, boolean cloneChildren)
+	{
+		super.cloneTo(node, cloneChildren);
+		
+		node.setName(getName());
+		node.setForceOriginalName(doesForceOriginalName());
+		node.setArrayDimensions(getArrayDimensions());
+		node.setTypeValue(getType());
+		node.setDataType(getDataType());
+		
+		return node;
+	}
 	
 	/**
 	 * Test the Identifier class type to make sure everything
