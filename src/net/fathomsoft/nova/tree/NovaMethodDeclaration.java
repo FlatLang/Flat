@@ -13,6 +13,7 @@ import net.fathomsoft.nova.tree.MethodList.SearchFilter;
 import net.fathomsoft.nova.tree.generics.GenericTypeArgumentList;
 import net.fathomsoft.nova.tree.generics.GenericTypeParameter;
 import net.fathomsoft.nova.tree.generics.GenericTypeParameterDeclaration;
+import net.fathomsoft.nova.tree.variables.ObjectReference;
 import net.fathomsoft.nova.util.Bounds;
 import net.fathomsoft.nova.util.Location;
 import net.fathomsoft.nova.util.Patterns;
@@ -41,6 +42,8 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 	
 	public VirtualMethodDeclaration virtualMethod;
 	
+	public ObjectReference objectReference;
+	
 	/**
 	 * @see net.fathomsoft.nova.tree.InstanceDeclaration#InstanceDeclaration(Node, Location)
 	 */
@@ -59,6 +62,12 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 		
 		GenericTypeParameterDeclaration methodParams = new GenericTypeParameterDeclaration(this, locationIn.asNew());
 		addChild(methodParams, this);
+	}
+	
+	@Override
+	public ObjectReference getObjectReference()
+	{
+		return objectReference;
 	}
 	
 	public VirtualMethodDeclaration getVirtualMethod()
@@ -947,6 +956,11 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 		if (result.skipValidation())
 		{
 			return result;
+		}
+		
+		if (objectReference == null)
+		{
+			objectReference = new ObjectReference(this);
 		}
 		
 		if (phase == SyntaxTree.PHASE_INSTANCE_DECLARATIONS)
