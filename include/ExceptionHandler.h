@@ -14,7 +14,7 @@
 		buffer buf;\
 		int exception_code;\
 		\
-		nova_standard_exception_Nova_ExceptionData* newData = novaEnv.nova_standard_exception_ExceptionData.construct(0, exceptionData, &buf);\
+		nova_standard_exception_Nova_ExceptionData* newData = novaEnv.nova_standard_exception_ExceptionData.ExceptionData(0, exceptionData, &buf);\
 		\
 		if (exceptionData != 0)\
 		{\
