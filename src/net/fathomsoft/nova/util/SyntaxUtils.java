@@ -6,34 +6,9 @@ import java.util.regex.Matcher;
 import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.error.UnimplementedOperationException;
-import net.fathomsoft.nova.tree.Accessible;
-import net.fathomsoft.nova.tree.ArgumentList;
-import net.fathomsoft.nova.tree.BodyMethodDeclaration;
-import net.fathomsoft.nova.tree.ClassDeclaration;
-import net.fathomsoft.nova.tree.Closure;
-import net.fathomsoft.nova.tree.ClosureDeclaration;
-import net.fathomsoft.nova.tree.Constructor;
-import net.fathomsoft.nova.tree.FileDeclaration;
-import net.fathomsoft.nova.tree.GenericCompatible;
-import net.fathomsoft.nova.tree.IValue;
-import net.fathomsoft.nova.tree.Identifier;
-import net.fathomsoft.nova.tree.InitializationMethod;
-import net.fathomsoft.nova.tree.InstanceDeclaration;
-import net.fathomsoft.nova.tree.Instantiation;
-import net.fathomsoft.nova.tree.Literal;
-import net.fathomsoft.nova.tree.MethodCall;
-import net.fathomsoft.nova.tree.MethodDeclaration;
-import net.fathomsoft.nova.tree.Node;
-import net.fathomsoft.nova.tree.Operator;
-import net.fathomsoft.nova.tree.Parameter;
-import net.fathomsoft.nova.tree.ParameterList;
-import net.fathomsoft.nova.tree.Program;
-import net.fathomsoft.nova.tree.Return;
-import net.fathomsoft.nova.tree.SyntaxTree;
-import net.fathomsoft.nova.tree.UnaryOperation;
-import net.fathomsoft.nova.tree.Value;
+import net.fathomsoft.nova.tree.*;
 import net.fathomsoft.nova.tree.generics.GenericTypeArgument;
-import net.fathomsoft.nova.tree.generics.GenericTypeArgumentList;
+import net.fathomsoft.nova.tree.generics.GenericTypeParameter;
 import net.fathomsoft.nova.tree.generics.GenericTypeParameterDeclaration;
 import net.fathomsoft.nova.tree.variables.FieldDeclaration;
 import net.fathomsoft.nova.tree.variables.Variable;
@@ -1551,11 +1526,14 @@ public class SyntaxUtils
 		return node;
 	}
 	
-	public static Instantiation replaceWithAutoboxPrimitive(Identifier primitive)
+	public static Instantiation replaceWithAutoboxPrimitive(Value primitive)
 	{
 		Instantiation autobox = autoboxPrimitiveOnly(primitive);
 		
-		autobox.setAccessedNode(primitive.getAccessedNode());
+		if (primitive instanceof Accessible && ((Accessible)primitive).getAccessedNode() != null)
+		{
+			autobox.setAccessedNode(((Accessible)primitive).getAccessedNode());
+		}
 		
 		primitive.getParent().replace(primitive, autobox);
 		
@@ -1672,7 +1650,7 @@ public class SyntaxUtils
 				{
 					String genericName = value.getType();
 					
-					GenericTypeArgument generic = getCorrespondingGenericType(genericCheck.getTypeClass(), genericCheck.getDeclaration(), genericName);
+					GenericTypeArgument generic = genericCheck.getTypeClass().getGenericTypeParameter(genericName, value).getCorrespondingArgument(value);//getCorrespondingGenericType(genericCheck.getTypeClass(), genericCheck.getDeclaration(), genericName);
 	
 					return generic.getType();
 				}
@@ -1701,18 +1679,6 @@ public class SyntaxUtils
 		}
 		
 		return null;
-	}
-	
-	public static GenericTypeArgument getCorrespondingGenericType(ClassDeclaration genericDeclaration, GenericCompatible genericUse, String genericName)
-	{
-		int index = genericDeclaration.getGenericTypeArgumentIndex(genericName);
-		
-		if (index < 0)
-		{
-			SyntaxMessage.error("Could not find the corresponding generic for generic type '" + genericName + "'", (Node)genericUse);
-		}
-		
-		return genericUse.getGenericTypeArgument(index);
 	}
 	
 	/**
@@ -1948,7 +1914,14 @@ public class SyntaxUtils
 				}
 				if (index < 0)
 				{
-					index = /*decl.getParentClass()*/reference.getTypeClass().getGenericTypeParameterIndex(type);
+					GenericTypeParameter param = reference.getTypeClass().getGenericTypeParameter(type, call);
+					
+					arg = /*decl.getParentClass()*/param.getCorrespondingArgument(call);
+					
+					if (arg == null)
+					{
+						return getImportedClass(given.getReferenceFile(), param.getDefaultType());
+					}
 				}
 				
 				if (reference.isGenericType())
@@ -1985,7 +1958,7 @@ public class SyntaxUtils
 			gen = /*((Node)given.getContext())*/given.getContext();//.getParentClass();//given.getParentMethod();
 		}
 		
-		String name = gen.getGenericTypeArgumentType(type, given);
+		String name = gen.getGenericTypeArgumentType(type, call);
 		
 		return SyntaxUtils.getImportedClass(given.getFileDeclaration(), name);
 	}
@@ -1993,11 +1966,6 @@ public class SyntaxUtils
 	public static String getTypeClassLocation(Node node, String type)
 	{
 		FileDeclaration file = node.getReferenceFile();
-		
-		if (node instanceof Identifier)
-		{
-			file = ((Identifier)node).getReferenceFile();
-		}
 		
 		String location = file.getImportList().getAbsoluteClassLocation(type);
 		
@@ -2103,12 +2071,12 @@ public class SyntaxUtils
 	{
 		if (context != null && given.isGenericType() && context instanceof Constructor == false)
 		{
-			int genIndex = /*required.getParentClass(true)*/((Value)context).getTypeClass().getGenericTypeParameterIndex(given.getType());
+			GenericTypeParameter param = given.getGenericTypeParameter();//((Value)context).getTypeClass().getGenericTypeParameter(given.getType(), given);
 			
-			if (genIndex >= 0)
+			GenericTypeArgument arg = param.getCorrespondingArgument(context);
+			
+			if (arg != null)
 			{
-				GenericTypeArgument arg = context.getGenericTypeArgument(genIndex);
-				
 				Value newContext = (Value)((Accessible)context).getReferenceNode();
 				
 				if (newContext instanceof Variable == false)
@@ -2207,27 +2175,40 @@ public class SyntaxUtils
 		
 		if (searchGeneric && required.isGenericType())
 		{
+			if (Literal.isNullLiteral(given))
+			{
+				return true;
+			}
+			
 			if (!(required instanceof Value))
 			{
 				throw new UnimplementedOperationException("The validation of generic type " + required.getClass().getName() + " is not implemented.");
 			}
 			
-			Value param = (Value)required;
+			GenericTypeParameter param = required.getGenericTypeParameter();
 			
-			Value value = getParameterGenericReturnType(param.getType(), given);
-			
-			value = value.cloneTo(new IValue(value, value.getLocationIn()), false);
-			value.setArrayDimensions(required.getArrayDimensions());
-			
-			if (!Literal.isNullLiteral(given) && !isTypeCompatible(context, value, given, false))
+			if (param != null)
 			{
-				getParameterGenericReturnType(param.getType(), given);
-				SyntaxMessage.error("Incorrect type '" + given.getType() + "' given for required generic type of '" + value.getType() + "' type", given);
+				GenericTypeArgument arg = param.getCorrespondingArgument(context);
 				
-				return false;
+				if (arg != null)
+				{
+					Value value = arg.cloneTo(new IValue(arg.getParent(), arg.getLocationIn()), false);
+					value.setArrayDimensions(required.getArrayDimensions());
+					
+					if (!isTypeCompatible(context, value, given, false))
+					{
+						isTypeCompatible(context, value, given, false);
+						SyntaxMessage.error("Incorrect type '" + given.getType() + "' given for required generic type of '" + value.getType() + "' type", given);
+						
+						return false;
+					}
+					else
+					{
+						return true;
+					}
+				}
 			}
-			
-			return true;
 		}
 		
 		if (given.isExternalType() ^ required.isExternalType())
@@ -2244,6 +2225,11 @@ public class SyntaxUtils
 			return true;
 		}
 		else if (arePrimitiveTypesCompatible(required.getTypeClassName(), given.getTypeClassName()))
+		{
+			return true;
+		}
+		
+		if (required.isGenericType() && given.isGenericType() && required.getGenericTypeParameter() == given.getGenericTypeParameter())
 		{
 			return true;
 		}
@@ -2555,6 +2541,11 @@ public class SyntaxUtils
 	
 	public static void generateTypeDefinition(StringBuilder builder, Value value, ArrayList<String> types)
 	{
+		if (value == null || value.getType() == null)
+		{
+			return;
+		}
+		
 		String type = value.generateCTypeName(new StringBuilder()).toString();
 		
 		if (!value.isPrimitiveType() && !types.contains(type))
@@ -2565,8 +2556,10 @@ public class SyntaxUtils
 		}
 	}
 	
-	public static void addParametersToTypeList(StringBuilder builder, ParameterList list, ArrayList<String> types)
+	public static void addTypesToTypeList(StringBuilder builder, CallableMethod closure, ArrayList<String> types)
 	{
+		ParameterList list = closure.getParameterList();
+		
 		int numParameters = list.getNumParameters();
 		
 		generateTypeDefinition(builder, list.getExceptionData(), types);
@@ -2579,9 +2572,11 @@ public class SyntaxUtils
 			{
 				ClosureDeclaration c = (ClosureDeclaration)list.getParameter(i);
 				
-				addParametersToTypeList(builder, c.getParameterList(), types);
+				addTypesToTypeList(builder, c, types);
 			}
 		}
+		
+		generateTypeDefinition(builder, closure.getTypeClass(), types);
 	}
 	
 	public static GenericTypeArgument[] getGenericTypeArguments(Node parent, String params)
