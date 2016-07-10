@@ -22,6 +22,7 @@ public class Array<E> implements List<E>
 		no set
 	}
 	
+	[Override]
 	visible ArrayIterator<E> iterator
 	{
 		get
@@ -158,6 +159,7 @@ public class Array<E> implements List<E>
 		data[index] = value
 	}
 	
+	[Override]
 	public toArray() -> E[]
 	{
 		E[] array = new E[size]
@@ -170,6 +172,7 @@ public class Array<E> implements List<E>
 		return array
 	}
 	
+	[Override]
 	public map<Out>(mapFunc(E, Int, Array<E>) -> Out) -> Array<Out>
 	{
 		Array<Out> array = new Array()
@@ -184,6 +187,7 @@ public class Array<E> implements List<E>
 		return array
 	}
 	
+	[Override]
 	public forEach(func(E, Int, Array<E>))
 	{
 		for (Int i = 0; i < size; i++)
@@ -192,6 +196,7 @@ public class Array<E> implements List<E>
 		}
 	}
 	
+	[Override]
 	public any(anyFunc(E) -> Bool) -> Bool
 	{
 		for (element in this)
@@ -205,6 +210,7 @@ public class Array<E> implements List<E>
 		return false
 	}
 	
+	[Override]
 	public all(allFunc(E) -> Bool) -> Bool
 	{
 		for (element in this)
@@ -218,6 +224,7 @@ public class Array<E> implements List<E>
 		return true
 	}
 	
+	[Override]
 	public filter(filterFunc(E) -> Bool) -> Array<E>
 	{
 		Array<E> filtered = new Array()
@@ -233,6 +240,7 @@ public class Array<E> implements List<E>
 		return filtered
 	}
 	
+	[Override]
 	public take(Int howMany) -> Array<E>
 	{
 		if (howMany > size)
@@ -250,6 +258,7 @@ public class Array<E> implements List<E>
 		return list
 	}
 	
+	[Override]
 	public skip(Int howMany) -> Array<E>
 	{
 		Array<E> list = new Array()
@@ -262,6 +271,7 @@ public class Array<E> implements List<E>
 		return list
 	}
 	
+	[Override]
 	public first() -> E
 	{
 		if (size > 0)
@@ -272,6 +282,7 @@ public class Array<E> implements List<E>
 		return null
 	}
 	
+	[Override]
 	public last() -> E
 	{
 		if (size > 0)
@@ -282,6 +293,7 @@ public class Array<E> implements List<E>
 		return null
 	}
 	
+	[Override]
 	public firstWhere(func(E) -> Bool) -> E
 	{
 		for (element in this)
@@ -334,6 +346,7 @@ public class Array<E> implements List<E>
         return sum
     }*/
     
+	[Override]
     public reverse() -> Array<E>
     {
     	Array<E> array = new Array(size)
@@ -349,6 +362,7 @@ public class Array<E> implements List<E>
     	return array
     }
     
+	[Override]
     public join(String delimiter) -> String
     {
     	String str = ""
