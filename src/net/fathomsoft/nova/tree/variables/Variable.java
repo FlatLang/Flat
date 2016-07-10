@@ -60,45 +60,10 @@ public class Variable extends Identifier
 	{
 		if (isGenericType())
 		{
-			Accessible ref = getReferenceNode();
+			GenericTypeParameter param = getGenericTypeParameter();
+			GenericTypeArgument arg = param.getCorrespondingArgument(this);
 			
-			GenericTypeArgument type = null;
-			
-			boolean tried = false;
-			
-			while (ref != null && type == null)
-			{
-				if (ref instanceof Variable)
-				{
-					VariableDeclaration decl = ((Variable)ref).getDeclaration();
-					
-					type = decl.getGenericTypeArgumentInstance(getType(), this);
-					
-					tried = true;
-				}
-				
-				Accessible next = ref.getReferenceNode();
-				
-				ref = next == ref ||
-					ref instanceof Variable && ((Variable)ref).getDeclaration() instanceof Parameter && next instanceof Variable && ((Variable)next).getDeclaration() instanceof Parameter
-					? null : ref.getReferenceNode();
-			}
-			
-			if (type != null)
-			{
-				if (type.isGenericType())
-				{
-					return type.getDefaultType();
-				}
-				
-				return type.getType();
-			}
-			else if (tried)
-			{
-				GenericCompatible.throwMissingGenericTypeError(this);
-			}
-			
-			return getGenericTypeParameter().getDefaultType();
+			return arg != null ? arg.getType() : param.getDefaultType();
 		}
 		
 		throw new RuntimeException("Generic return type requested from non-generic type.");
@@ -360,6 +325,26 @@ public class Variable extends Identifier
 		return super.onAfterDecoded();
 	}
 	
+	@Override
+	public GenericTypeArgument getGenericTypeArgument(int index, Node value, boolean require)
+	{
+		GenericTypeArgument arg = super.getGenericTypeArgument(index, value, require);
+		
+		if (arg.isGenericType() && getReferenceNode() instanceof Variable)
+		{
+			Variable ref = (Variable)getReferenceNode();
+			
+			GenericTypeArgument extracted = ref.getGenericTypeArgumentFromParameter(arg.getType());
+			
+			if (extracted != null)
+			{
+				return extracted;
+			}
+		}
+		
+		return arg;
+	}
+	
 	public GenericTypeArgument getIntelligentGenericTypeArgument(int index)
 	{
 		return getIntelligentGenericTypeArgument(getGenericTypeArgumentList().getVisibleChild(index));
@@ -372,46 +357,6 @@ public class Variable extends Identifier
 		if (extractedType != null)
 		{
 			return extractedType;
-		}
-		
-		return arg;
-	}
-	
-	public GenericTypeArgument getGenericTypeArgumentFromParameter(String type)
-	{
-		int index = /*getDeclaration()*/getReferenceNode().toValue().getTypeClass().getGenericTypeParameterDeclaration().getParameterIndex(type);
-		
-		GenericTypeArgument arg = null;
-		
-		if (index >= 0)
-		{
-			Accessible lastRef = null;
-			Accessible ref = this;
-			
-			while (ref != lastRef && ref instanceof Accessible && index >= 0 && ref.getReferenceNode(true) != null)
-			{
-				lastRef = ref;
-				ref = ref.getReferenceNode(true);
-				
-				Accessible current = ref;
-				
-				if (current instanceof Variable)
-				{
-					current = ((Variable)ref).getDeclaration();
-				}
-				
-				arg = ((Value)current).getGenericTypeArgument(index);
-				
-				if (!arg.isGenericType())
-				{
-					return arg;
-				}
-				
-				if (current instanceof Variable)
-				{
-					index = ((VariableDeclaration)current).getGenericTypeParameterDeclaration().getParameterIndex(arg.getType());
-				}
-			}
 		}
 		
 		return arg;
@@ -494,6 +439,20 @@ public class Variable extends Identifier
 		if (declaration == null)
 		{
 			return null;
+		}
+		
+		Accessible ref = this.getReferenceNode();
+		
+		if (ref != null)
+		{
+			ClassDeclaration type = ref.toValue().getTypeClass();
+			
+			if (type != null && type.isOfType(declaration.getParentClass()))
+			{
+				GenericTypeParameter param = type.getGenericTypeParameter(getType(), this);
+				
+				return param;
+			}
 		}
 		
 		return declaration.getGenericTypeParameter();
@@ -581,7 +540,12 @@ public class Variable extends Identifier
 	{
 		node.declaration = declaration;
 		
-		super.cloneTo(node, cloneChildren);
+		//super.cloneTo(node, cloneChildren);
+		
+		if (cloneChildren)
+		{
+			cloneChildrenTo(node);
+		}
 		
 		return node;
 	}
