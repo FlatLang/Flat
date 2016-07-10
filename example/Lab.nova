@@ -11,8 +11,10 @@ import "nova/standard/star/Window"
 import "nova/standard/math/NumericStatement"
 import "nova/standard/datastruct/BinaryTree"
 import "nova/standard/datastruct/list/Array"
+import "nova/standard/datastruct/list/IntArray"
 import "nova/standard/datastruct/list/Iterator"
 import "nova/standard/datastruct/list/LinkedList"
+import "nova/standard/datastruct/list/List"
 
 public class Lab
 {
@@ -37,7 +39,7 @@ public class Lab
 		Int[] b = [1, 2, 3, 4, 5, 6, 7]
 		
 		Array<String> list = new Array(a, 7)
-		Array<Int> list2 = new Array(b, 7)
+		Array<Int> list2 = new IntArray(b, 7)
 		
 		/*list.filter(x -> x.size > 10).map(x -> getClassByName(x))
 		    .forEach(x -> {
@@ -55,7 +57,10 @@ public class Lab
 		
 		Console.writeLine("Mapped: " + list.filter(x -> x.size >= 4).map((x, i) -> i + ": " + x + "?").join(", "))
 		Console.writeLine("Mapped backwards: " + list.filter(x -> x.size >= 4).map(x -> x + "?").reverse().join(", "))
-		Console.writeLine("Mapped2: " + list2.map(x -> x + "!").join(", "))
+		//Console.writeLine("Mapped2: " + list2.map(x -> x + "!").join(", "))
+		
+		//doSomething(list)
+		//doSomething(list2)
 		
 		LinkedList<String> linked = new LinkedList()
 		
@@ -98,6 +103,11 @@ public class Lab
 //		WFF f = new WFF("A & B & C -> D", letters)
 		
 		Console.waitForEnter()
+	}
+	
+	static doSomething(List list)
+	{
+	    list.map(x -> x + "!!!").forEach(Console.writeLine)
 	}
 	
 	static getArea(Polygon p) -> Double
