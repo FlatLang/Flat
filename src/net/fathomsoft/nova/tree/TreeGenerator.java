@@ -248,35 +248,36 @@ public class TreeGenerator implements Runnable
 		{
 			Node node = scopeAncestors.getChild(i);
 			
-			if (node.getLocationIn().getBounds().isValid() && (!requiresScope || node.containsScope()))
-			{
-				int startingIndex = StringUtils.findNextNonWhitespaceIndex(source, node.getLocationIn().getEnd());
-				int endingIndex   = StringUtils.findEndingMatch(source, startingIndex, '{', '}');
-				
-				int contentStart  = StringUtils.findNextNonWhitespaceIndex(source, startingIndex + 1);
-				int contentEnd    = StringUtils.findNextNonWhitespaceIndex(source, endingIndex - 1, -1) + 1;
-				
-				if (startingIndex >= 0 && source.charAt(startingIndex) != '{')
+			if (node.getLocationIn().getBounds().isValid())
+				if ((!requiresScope || node.containsScope()))
 				{
-					if (requiresScope && node instanceof AbstractMethodDeclaration == false)
+					int startingIndex = StringUtils.findNextNonWhitespaceIndex(source, node.getLocationIn().getEnd());
+					int endingIndex = StringUtils.findEndingMatch(source, startingIndex, '{', '}');
+					
+					int contentStart = StringUtils.findNextNonWhitespaceIndex(source, startingIndex + 1);
+					int contentEnd = StringUtils.findNextNonWhitespaceIndex(source, endingIndex - 1, -1) + 1;
+					
+					if (startingIndex >= 0 && source.charAt(startingIndex) != '{')
 					{
-						if (!(node instanceof PropertyMethod) || !((PropertyMethod)node).isDisabled())
+						if (requiresScope && node instanceof AbstractMethodDeclaration == false)
 						{
-							if (node.getScope() == null || node.getScope().getNumVisibleChildren() <= 0)
+							if (!(node instanceof PropertyMethod) || !((PropertyMethod) node).isDisabled())
 							{
-								SyntaxMessage.error("Scope expected after this statement", node, false);
+								if (node.getScope() == null || node.getScope().getNumVisibleChildren() <= 0)
+								{
+									SyntaxMessage.error("Scope expected after this statement", node, false);
+								}
 							}
 						}
+						
+						continue;
 					}
 					
-					continue;
+					if (contentStart < contentEnd)
+					{
+						traverseCode(node, contentStart, searchTypes, skipScopes);
+					}
 				}
-				
-				if (contentStart < contentEnd)
-				{
-					traverseCode(node, contentStart, searchTypes, skipScopes);
-				}
-			}
 		}
 	}
 	
