@@ -373,6 +373,11 @@ public class ParameterList<E extends Value> extends TypeList<E>
 	{
 		for (int i = 0; i < getNumChildren(); i++)
 		{
+			if (i > 0)
+			{
+				builder.append(", ");
+			}
+			
 			if (header)
 			{
 				getChild(i).generateCHeader(builder);
@@ -380,11 +385,6 @@ public class ParameterList<E extends Value> extends TypeList<E>
 			else
 			{
 				getChild(i).generateCSource(builder);
-			}
-			
-			if (i < getNumChildren() - 1)
-			{
-				builder.append(", ");
 			}
 		}
 		
