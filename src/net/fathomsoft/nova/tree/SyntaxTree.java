@@ -155,6 +155,8 @@ public class SyntaxTree
 			
 			phase = PHASE_PRE_GENERATION;
 			
+			root.prePreGenerationValidation();
+			
 			validateNodes(root);
 		}
 		catch (InterruptedException e)
