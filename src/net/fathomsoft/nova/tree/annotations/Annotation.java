@@ -76,6 +76,11 @@ public class Annotation extends Node
 			if (n == null)
 			{
 				n = ObsoleteAnnotation.decodeStatement(parent, name, arguments, location, require);
+				
+				if (n == null)
+				{
+					n = OverrideAnnotation.decodeStatement(parent, name, arguments, location, require);
+				}
 			}
 			
 			return n;
