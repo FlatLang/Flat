@@ -407,9 +407,9 @@ public class Closure extends Variable
 				{
 					GenericCompatible context = getMethodCall().getReferenceNode().getContext();
 					
-					int index = ((Value)context).getTypeClass().getGenericTypeParameterIndex(value1.getType());
+					GenericTypeArgument arg = ((Value)context).getTypeClass().getGenericTypeParameter(value1.getType(), context).getCorrespondingArgument(context);
 					
-					GenericTypeArgument arg = context.getGenericTypeArgument(index);
+					SyntaxMessage.queryError("Unable to find generic argument", this, arg == null);
 					
 					valid = arg.getTypeClass().isOfType(value2.getTypeClass());
 				}
