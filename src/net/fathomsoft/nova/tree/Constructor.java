@@ -230,6 +230,8 @@ public class Constructor extends BodyMethodDeclaration
 		
 		initMethod.createFrom(this);
 		
+		setName(getParentClass().getName());
+		
 		getParentClass().addChild(initMethod);
 	}
 	
@@ -326,7 +328,7 @@ public class Constructor extends BodyMethodDeclaration
 	 * Validate that the specified statement really is a Constructor
 	 * declaration.
 	 * 
-	 * @param The data that will specify if there was an error.
+	 * @param data The data that will specify if there was an error.
 	 * @param require Whether or not to throw an error if anything goes wrong.
 	 * @return Whether or not the statement is a Constructor declaration.
 	 */
