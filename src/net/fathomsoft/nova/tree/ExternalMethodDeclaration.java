@@ -3,6 +3,7 @@ package net.fathomsoft.nova.tree;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.error.SyntaxMessage;
+import net.fathomsoft.nova.tree.variables.ObjectReference;
 import net.fathomsoft.nova.util.Bounds;
 import net.fathomsoft.nova.util.Location;
 import net.fathomsoft.nova.util.Patterns;
@@ -23,6 +24,12 @@ public class ExternalMethodDeclaration extends MethodDeclaration
 	private String	alias;
 	
 	public static final String PREFIX = "external";
+	
+	@Override
+	public ObjectReference getObjectReference()
+	{
+		return null;
+	}
 	
 	@Override
 	public NovaMethodDeclaration getRootDeclaration()
