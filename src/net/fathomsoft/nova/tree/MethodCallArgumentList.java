@@ -376,7 +376,6 @@ public class MethodCallArgumentList extends ArgumentList
 				
 				if (value.getReturnedNode().isPrimitive() && !param.isPrimitiveType())
 				{
-					Nova.debuggingBreakpoint(getParentMethod().getName().equals("numDigits") && getParentClass().getName().equals("Int"));
 					Instantiation newValue = SyntaxUtils.autoboxPrimitive(value);
 					
 					replace(value, newValue);
