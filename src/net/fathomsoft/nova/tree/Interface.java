@@ -87,6 +87,7 @@ public class Interface extends ClassDeclaration
 				Interface n = new Interface(parent, location);
 				
 				clazz.cloneTo(n);
+				n.setExtendedClass(null);
 				
 				return n;
 			}
