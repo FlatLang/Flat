@@ -3,7 +3,7 @@
 
 void error(int code, char message[], error_func func, void* ref)
 {
-	nova_standard_Nova_String* s = novaEnv.nova_standard_String.construct__Array1d_nova_standard_primitive_number_Char(0, 0, message);
+	nova_standard_Nova_String* s = novaEnv.nova_standard_String.String__Array1d_nova_standard_primitive_number_Char(0, 0, message);
 
 	func(ref, 0, code, s, 1);
 }
