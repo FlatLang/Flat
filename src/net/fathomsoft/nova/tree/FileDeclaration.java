@@ -7,7 +7,6 @@ import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.error.SyntaxMessage;
-import net.fathomsoft.nova.tree.lambda.LambdaExpression;
 import net.fathomsoft.nova.util.FileUtils;
 import net.fathomsoft.nova.util.Location;
 import net.fathomsoft.nova.util.SyntaxUtils;
@@ -660,7 +659,7 @@ public class FileDeclaration extends Node
 		{
 			if (closure.isPublic() == publicClosures)
 			{
-				SyntaxUtils.addParametersToTypeList(builder, closure.getParameterList(), types);
+				SyntaxUtils.addTypesToTypeList(builder, closure, types);
 			}
 		}
 		
