@@ -2,7 +2,6 @@ package net.fathomsoft.nova;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -282,11 +281,11 @@ public class Nova
 				"-keepc",
 				"-single-thread",
 				"-main",
-//				"example/Lab",
-				"stabilitytest/StabilityTest",
+				"example/Lab",
+//				"stabilitytest/StabilityTest",
 //				"-nogc",
 //				"-no-c-output",
-//				"-dry"
+//				"-dry",
 //				"-no-notes",
 //				"-no-warnings",
 //				"-no-errors",
@@ -518,12 +517,12 @@ public class Nova
 			SyntaxUtils.generateTypeDefinition(builder, method.getParentClass(), types);
 			SyntaxUtils.generateTypeDefinition(builder, method, types);
 			
-			SyntaxUtils.addParametersToTypeList(builder, method.getParameterList(), types);
+			SyntaxUtils.addTypesToTypeList(builder, method, types);
 		}
 		
 		for (ClosureDeclaration c : closures)
 		{
-			SyntaxUtils.addParametersToTypeList(builder, c.getParameterList(), types);
+			SyntaxUtils.addTypesToTypeList(builder, c, types);
 			
 			c.generateCClosureDefinition(builder);
 		}
