@@ -2,6 +2,7 @@ package net.fathomsoft.nova.tree;
 
 import net.fathomsoft.nova.tree.MethodList.SearchFilter;
 import net.fathomsoft.nova.tree.generics.GenericTypeParameter;
+import net.fathomsoft.nova.tree.variables.ObjectReference;
 import net.fathomsoft.nova.util.SyntaxUtils;
 
 /**
@@ -13,6 +14,8 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  */
 public interface CallableMethod
 {
+	ClassDeclaration getTypeClass();
+	
 	/**
 	 * Get whether or not a call to the method would need to pass a
 	 * reference to itself to the method as an argument.
@@ -139,4 +142,6 @@ public interface CallableMethod
 	public boolean isGenericType();
 	
 	public NovaMethodDeclaration getRootDeclaration();
+	
+	public ObjectReference getObjectReference();
 }
