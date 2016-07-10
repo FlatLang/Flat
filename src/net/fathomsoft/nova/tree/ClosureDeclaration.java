@@ -4,6 +4,7 @@ import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.tree.generics.GenericTypeArgument;
+import net.fathomsoft.nova.tree.variables.ObjectReference;
 import net.fathomsoft.nova.util.Bounds;
 import net.fathomsoft.nova.util.Location;
 import net.fathomsoft.nova.util.Patterns;
@@ -26,6 +27,12 @@ public class ClosureDeclaration extends Parameter implements CallableMethod
 	
 	@Override
 	public NovaMethodDeclaration getRootDeclaration()
+	{
+		return null;
+	}
+	
+	@Override
+	public ObjectReference getObjectReference()
 	{
 		return null;
 	}
@@ -77,7 +84,7 @@ public class ClosureDeclaration extends Parameter implements CallableMethod
 			}
 			if (getParentClass().containsGenericTypeParameter(getType()))
 			{
-				return getParentClass().getGenericTypeParameter(getType()).generateNovaType().toString();
+				return getParentClass().getGenericTypeParameter(getType(), this).generateNovaType().toString();
 			}
 		}
 		
