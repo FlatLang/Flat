@@ -1,19 +1,13 @@
 package net.fathomsoft.nova.tree.lambda;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.stream.Collectors;
 
 import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.ValidationResult;
-import net.fathomsoft.nova.tree.BodyMethodDeclaration;
-import net.fathomsoft.nova.tree.Closure;
-import net.fathomsoft.nova.tree.ClosureDeclaration;
-import net.fathomsoft.nova.tree.Identifier;
-import net.fathomsoft.nova.tree.MethodCall;
-import net.fathomsoft.nova.tree.MethodDeclaration;
-import net.fathomsoft.nova.tree.Node;
-import net.fathomsoft.nova.tree.SyntaxTree;
-import net.fathomsoft.nova.tree.Value;
+import net.fathomsoft.nova.tree.*;
 import net.fathomsoft.nova.util.Location;
 import net.fathomsoft.nova.util.StringUtils;
 import net.fathomsoft.nova.util.SyntaxUtils;
@@ -111,12 +105,13 @@ public class LambdaExpression extends Value
 				
 				final String[] finalVars = variables;
 				final int index = call.getArgumentList().getNumVisibleChildren();
-				Nova.debuggingBreakpoint(statement.equals("(x, i) -> x + i + \"?\""));
 				
-				BodyMethodDeclaration[] validMethods = Arrays.stream(methods)
+				ArrayList<NovaMethodDeclaration> tempMethods = new ArrayList<>();
+				
+				Arrays.stream(methods)
 						.filter(x -> {
 							
-							if (x instanceof BodyMethodDeclaration &&
+							if (x instanceof NovaMethodDeclaration &&
 									x.getParameterList().getNumVisibleChildren() > index &&
 									x.getParameter(index) instanceof ClosureDeclaration)
 							{
@@ -130,9 +125,25 @@ public class LambdaExpression extends Value
 							
 							return false;
 						})
-						.toArray(BodyMethodDeclaration[]::new);
+						.forEach(x -> tempMethods.add((NovaMethodDeclaration)x));
 				
-				for (BodyMethodDeclaration method : validMethods)
+				ArrayList<NovaMethodDeclaration> clone = new ArrayList<>();
+				
+				for (NovaMethodDeclaration m : tempMethods)
+				{
+					clone.add(m);
+				}
+				for (NovaMethodDeclaration x : clone)
+				{
+					if (x.doesOverride() && tempMethods.contains(x.getOverriddenMethod()))
+					{
+						tempMethods.remove(x.getOverriddenMethod());
+					}
+				}
+				
+				NovaMethodDeclaration[] validMethods = tempMethods.toArray(new NovaMethodDeclaration[0]);
+				
+				for (NovaMethodDeclaration method : validMethods)
 				{
 					call.setDeclaration(method);
 					
@@ -143,10 +154,10 @@ public class LambdaExpression extends Value
 				{
 					final int[] i = new int[] { 0 };
 					
-					ClosureDeclaration closure = (ClosureDeclaration)((BodyMethodDeclaration)call.getDeclaration()).getParameter(index);
+					ClosureDeclaration closure = (ClosureDeclaration)((NovaMethodDeclaration)call.getDeclaration()).getParameter(index);
 					
 					String parameters = String.join(", ", Arrays.stream(variables).map(x -> {
-						return closure.getParameterList().getParameter(i[0]++).generateNovaType(call) + " " + x;
+						return closure.getParameterList().getParameter(i[0]++).generateNovaType(call.getReferenceNode().toValue()) + " " + x;
 					}).toArray(String[]::new));
 					
 					String methodDeclaration = "static testLambda" + id++ + "(" + parameters + ")";
