@@ -63,6 +63,14 @@ public abstract class Node implements Listenable, Annotatable
 		return getNumDefaultChildren();
 	}
 	
+	public void prePreGenerationValidation()
+	{
+		for (Node child : children)
+		{
+			child.prePreGenerationValidation();
+		}
+	}
+	
 	/**
 	 * Get the number of default children that the specified Node has
 	 * right after it is created.
@@ -1626,13 +1634,13 @@ public abstract class Node implements Listenable, Annotatable
 		Node prev    = this;
 		Node current = getParent();
 		
-		while (!current.containsScope() && !(current instanceof Scope))
+		while (current != null && !current.containsScope() && !(current instanceof Scope))
 		{
 			prev    = current;
 			current = current.getParent();
 		}
 		
-		if (current.containsChild(this) && !(current instanceof Scope))
+		if (current != null && current.containsChild(this) && !(current instanceof Scope))
 		{
 			return current;
 		}
@@ -1706,15 +1714,20 @@ public abstract class Node implements Listenable, Annotatable
 		
 		if (cloneChildren)
 		{
-			for (int i = getNumChildren() - 1; i >= 0; i--)
-			{
-				Node child = children.get(i);
-				
-				node.children.add(0, child.clone(node, child.getLocationIn()));
-			}
+			cloneChildrenTo(node);
 		}
 		
 		return node;
+	}
+	
+	public void cloneChildrenTo(Node node)
+	{
+		for (int i = getNumChildren() - 1; i >= 0; i--)
+		{
+			Node child = children.get(i);
+			
+			node.children.add(0, child.clone(node, child.getLocationIn()));
+		}
 	}
 	
 	/**
