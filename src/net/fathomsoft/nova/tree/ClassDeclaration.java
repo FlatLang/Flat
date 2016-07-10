@@ -9,12 +9,11 @@ import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.tree.MethodList.SearchFilter;
 import net.fathomsoft.nova.tree.annotations.Annotation;
+import net.fathomsoft.nova.tree.generics.GenericTypeArgument;
+import net.fathomsoft.nova.tree.generics.GenericTypeArgumentList;
 import net.fathomsoft.nova.tree.generics.GenericTypeParameterDeclaration;
 import net.fathomsoft.nova.tree.generics.GenericTypeParameter;
-import net.fathomsoft.nova.tree.variables.FieldDeclaration;
-import net.fathomsoft.nova.tree.variables.FieldList;
-import net.fathomsoft.nova.tree.variables.InstanceFieldList;
-import net.fathomsoft.nova.tree.variables.StaticFieldList;
+import net.fathomsoft.nova.tree.variables.*;
 import net.fathomsoft.nova.util.Bounds;
 import net.fathomsoft.nova.util.Location;
 import net.fathomsoft.nova.util.StringUtils;
@@ -33,7 +32,7 @@ public class ClassDeclaration extends InstanceDeclaration
 {
 	private boolean abstractValue;
 	
-	private String	extendedClass;
+	private ExtendedClass	extendedClass;
 	
 	public static final String IDENTIFIER          = "class";
 	public static final String ABSTRACT_IDENTIFIER = "abstract";
@@ -457,7 +456,16 @@ public class ClassDeclaration extends InstanceDeclaration
 		{
 			String type = list.getVisibleChild(i).getType();
 			
-			array.add((Interface)SyntaxUtils.getImportedClass(getFileDeclaration(), type));
+			ClassDeclaration clazz = SyntaxUtils.getImportedClass(getFileDeclaration(), type);
+			
+			if (clazz instanceof Interface)
+			{
+				array.add((Interface) clazz);
+			}
+			else
+			{
+				SyntaxMessage.error("Class '" + clazz.getName() + "' is not an interface", this);
+			}
 		}
 		
 		for (int i = array.size() - 1; i >= 0; i--)
@@ -722,7 +730,7 @@ public class ClassDeclaration extends InstanceDeclaration
 	
 	public boolean doesExtendClass()
 	{
-		return getExtendedClassLocation() != null;
+		return extendedClass != null && getExtendedClassLocation() != null;
 	}
 	
 	/**
@@ -738,7 +746,7 @@ public class ClassDeclaration extends InstanceDeclaration
 	 */
 	public ClassDeclaration getExtendedClass()
 	{
-		if (getExtendedClassLocation() == null)
+		if (extendedClass == null || getExtendedClassLocation() == null)
 		{
 			return null;
 		}
@@ -748,7 +756,7 @@ public class ClassDeclaration extends InstanceDeclaration
 	
 	public String getExtendedClassName()
 	{
-		return SyntaxUtils.getClassName(getExtendedClassLocation());
+		return extendedClass.getTypeClassName();
 	}
 	
 	/**
@@ -758,7 +766,7 @@ public class ClassDeclaration extends InstanceDeclaration
 	 */
 	public String getExtendedClassLocation()
 	{
-		return extendedClass;
+		return extendedClass != null ? extendedClass.getTypeClassLocation() : null;
 	}
 	
 	/**
@@ -773,7 +781,7 @@ public class ClassDeclaration extends InstanceDeclaration
 	 * @param extendedClass The name of the class that is to be
 	 * 		extended.
 	 */
-	public void setExtendedClass(String extendedClass)
+	public void setExtendedClass(ExtendedClass extendedClass)
 	{
 		this.extendedClass = extendedClass;
 	}
@@ -925,7 +933,7 @@ public class ClassDeclaration extends InstanceDeclaration
 		{
 			field = getExternalFieldsListNode().getField(fieldName);
 		
-			if (field == null && checkAncestor && getExtendedClassLocation() != null)
+			if (field == null && checkAncestor && getExtendedClass() != null)
 			{
 				field = getExtendedClass().getField(fieldName);
 			}
@@ -1116,14 +1124,14 @@ public class ClassDeclaration extends InstanceDeclaration
 		
 		if (filter.checkConstructors && methodName.equals(filter.className))
 		{
-			addMethods(output, getConstructorList().getMethods(Constructor.IDENTIFIER, filter));
+			addMethods(output, getConstructorList().getMethods(/*Constructor.IDENTIFIER*/methodName, filter));
 		}
 		else
 		{
 			addMethods(output, getConstructorList().getMethods(methodName, filter));
 		}
 		
-		if (filter.checkAncestor && getExtendedClassLocation() != null)
+		if (filter.checkAncestor && getExtendedClass() != null)
 		{
 			addMethods(output, getExtendedClass().getMethods(methodName, filter));
 		}
@@ -1807,9 +1815,11 @@ public class ClassDeclaration extends InstanceDeclaration
 			}
 			
 			// TODO: Check for the standard library version of Object.
-			if (n.getExtendedClassLocation() == null && !n.getClassLocation().equals(Nova.getClassLocation("Object")))
+			if (n.extendedClass == null && !n.getClassLocation().equals(Nova.getClassLocation("Object")))
 			{
-				n.setExtendedClass(Nova.getClassLocation("Object"));
+				ExtendedClass extended = ExtendedClass.decodeStatement(n, "Object", n.getLocationIn().asNew(), require);
+				
+				n.setExtendedClass(extended);
 			}
 			
 			return n;
@@ -1830,13 +1840,22 @@ public class ClassDeclaration extends InstanceDeclaration
 		{
 			if (data.extending && !data.isInterface)
 			{
-				setExtendedClass(word);
+				ExtendedClass extended = ExtendedClass.decodeStatement(this, word, getLocationIn().asNew(), extra.require);
+				
+				if (extended == null)
+				{
+					SyntaxMessage.queryError("Could not decode class extension '" + word + "'", this, extra.require);
+					
+					return;
+				}
+				
+				setExtendedClass(extended);
 				
 				data.extending = false;
 				
 				if (data.getRightAdjacentSkipBounds() != null)
 				{
-					decodeGenericTypeArguments(data.statement, data.getRightAdjacentSkipBounds());
+					extended.decodeGenericTypeArguments(data.statement, data.getRightAdjacentSkipBounds());
 					
 					data.decrementGenericsRemaining();
 				}
@@ -1917,12 +1936,96 @@ public class ClassDeclaration extends InstanceDeclaration
 		return getGenericTypeParameterDeclaration().containsParameter(parameterName);
 	}
 	
-	public int getGenericTypeParameterIndex(String parameterName)
+	public boolean doesExtendClass(ClassDeclaration clazz)
 	{
-		return getGenericTypeParameterDeclaration().getParameterIndex(parameterName);
+		ClassDeclaration extension = getExtendedClass();
+		
+		while (extension != null)
+		{
+			if (extension == clazz)
+			{
+				return true;
+			}
+			
+			extension = extension.getExtendedClass();
+		}
+		
+		return false;
 	}
 	
-	public GenericTypeParameter getGenericTypeParameter(String parameterName)
+	public GenericTypeParameter getGenericTypeParameter(String parameterName, GenericCompatible value)
+	{
+		Node context = (Node)((Value)value).getContext();
+		
+		ClassDeclaration clazz = this;
+		
+		if (context != null)
+		{
+			if (context.getParentMethod() != null)
+			{
+				NovaMethodDeclaration method = context.getParentMethod();
+				
+				GenericTypeParameter param = method.getGenericTypeParameter(parameterName);
+				
+				if (param != null)
+				{
+					return param;
+				}
+			}
+			
+			//clazz = context.getAncestorOfType(VariableDeclaration.class, true).getParentClass(true);
+		}
+		
+		GenericTypeParameter param = getGenericTypeParameter(parameterName);
+		
+		if (param == null)
+		{
+			if (clazz != this && this.isOfType(clazz))
+			{
+				if (this.doesExtendClass(clazz))
+				{
+					return clazz.getGenericTypeParameter(parameterName);
+				}
+				else
+				{
+					for (InterfaceImplementation i : getInterfacesImplementationList())
+					{
+						GenericTypeArgumentList args = i.getGenericTypeArgumentList();
+						
+						for (int index = 0; index < args.getNumVisibleChildren(); index++)
+						{
+							GenericTypeArgument arg = args.getVisibleChild(index);
+							
+							if (arg.getType().equals(parameterName))
+							{
+								return getGenericTypeParameter(parameterName);
+							}
+						}
+					}
+				}
+			}
+			else
+			{
+				if (value instanceof Variable)
+				{
+					ClassDeclaration declClass = ((Variable) value).getDeclaration().getParentClass();
+					
+					if (declClass != this)
+					{
+						return declClass.getGenericTypeParameter(parameterName);
+					}
+				}
+				
+				return clazz.getGenericTypeParameter(parameterName);
+			}
+		}
+		
+		
+		
+		return param;
+	}
+	
+	private GenericTypeParameter getGenericTypeParameter(String parameterName)
 	{
 		for (GenericTypeParameter param : getGenericTypeParameterDeclaration())
 		{
@@ -2039,7 +2142,7 @@ public class ClassDeclaration extends InstanceDeclaration
 				}
 			}
 			
-			if (getExtendedClassLocation() != null && getFileDeclaration().containsImport(getExtendedClassLocation()))
+			if (extendedClass != null && getFileDeclaration().containsImport(getExtendedClassLocation()))
 			{
 				getFileDeclaration().getImport(getExtendedClassLocation()).markUsed();
 			}
@@ -2059,18 +2162,25 @@ public class ClassDeclaration extends InstanceDeclaration
 			validateFields(phase);
 			validateMethods(phase);
 		}
-		else if (phase == SyntaxTree.PHASE_PRE_GENERATION)
-		{
-			if (isPrimitiveType())
-			{
-				InstanceFieldList publicFields  = getFieldList().getPublicFieldList();
-				InstanceFieldList privateFields = getFieldList().getPrivateFieldList();
-				
-				publicFields.inheritChildren(privateFields);
-			}
-		}
 		
 		return result;
+	}
+	
+	@Override
+	public void prePreGenerationValidation()
+	{
+		if (isPrimitiveType())
+		{
+			InstanceFieldList publicFields  = getFieldList().getPublicFieldList();
+			InstanceFieldList privateFields = getFieldList().getPrivateFieldList();
+			
+			publicFields.inheritChildren(privateFields);
+			
+			for (MethodDeclaration method : getConstructorList())
+			{
+				method.setVisibility(PUBLIC);
+			}
+		}
 	}
 	
 	/**
@@ -2080,7 +2190,6 @@ public class ClassDeclaration extends InstanceDeclaration
 	 */
 	private void validateDeclaration(int phase)
 	{
-		validateExtension(phase);
 		validateImplementations(phase);
 	}
 	
@@ -2245,31 +2354,6 @@ public class ClassDeclaration extends InstanceDeclaration
 	}
 	
 	/**
-	 * Validate that the extended class has been declared and that it
-	 * is valid to extend.
-	 * 
-	 * @param phase The phase that the node is being validated in.
-	 */
-	private void validateExtension(int phase)
-	{
-		if (extendedClass == null)
-		{
-			return;
-		}
-		
-		ClassDeclaration clazz = SyntaxUtils.getImportedClass(getFileDeclaration(), extendedClass);
-		
-		String tempName = extendedClass;
-		
-		if (clazz == null)
-		{
-			extendedClass = null;
-			
-			SyntaxMessage.error("Class '" + tempName + "' not declared", this);
-		}
-	}
-	
-	/**
 	 * Validate that all of the implemented classes have been declared
 	 * and that they are valid interfaces.
 	 * 
@@ -2297,7 +2381,7 @@ public class ClassDeclaration extends InstanceDeclaration
 	 */
 	public boolean containsConstructor()
 	{
-		return containsMethod(Constructor.IDENTIFIER, true, getName());
+		return containsMethod(getName(), true, getName());
 	}
 	
 	/**
@@ -2482,5 +2566,16 @@ public class ClassDeclaration extends InstanceDeclaration
 		
 		
 		return null;
+	}
+	
+	public String toString()
+	{
+		String s = "";
+		
+		s += getVisibilityText() + " class " + getName();
+		
+		s += getGenericTypeParameterDeclaration().toString();
+		
+		return s;
 	}
 }
