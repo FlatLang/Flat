@@ -495,7 +495,7 @@ public class VariableDeclaration extends IIdentifier
 	
 	public void addDefaultGenericTypeArguments()
 	{
-		if (getTypeClass() != null)
+		if (getTypeClass() != null && !isGenericType())
 		{
 			GenericTypeArgumentList args = getGenericTypeArgumentList();
 			GenericTypeParameterDeclaration decl = getTypeClass().getGenericTypeParameterDeclaration();
