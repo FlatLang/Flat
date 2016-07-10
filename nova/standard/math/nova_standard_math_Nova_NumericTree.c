@@ -23,6 +23,7 @@ nova_standard_math_Extension_VTable_NumericTree nova_standard_math_Extension_VTa
 		0,
 		0,
 		0,
+		0,
 		(char(*)(nova_standard_operators_Nova_Equals*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*))nova_standard_Nova_Object_0_Nova_equals,
 		0,
 		0,
@@ -45,7 +46,7 @@ void nova_standard_math_Nova_NumericTreeNova_init_static(nova_standard_exception
 	}
 }
 
-nova_standard_math_Nova_NumericTree* nova_standard_math_Nova_NumericTree_Nova_construct(nova_standard_math_Nova_NumericTree* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_Nova_String* nova_standard_math_Nova_NumericTree_Nova_statement)
+nova_standard_math_Nova_NumericTree* nova_standard_math_Nova_NumericTree_Nova_NumericTree(nova_standard_math_Nova_NumericTree* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_Nova_String* nova_standard_math_Nova_NumericTree_Nova_statement)
 {
 	CCLASS_NEW(nova_standard_math_Nova_NumericTree, this);
 	this->vtable = &nova_standard_math_Extension_VTable_NumericTree_val;
@@ -74,7 +75,7 @@ void nova_standard_math_Nova_NumericTree_Nova_destroy(nova_standard_math_Nova_Nu
 
 void nova_standard_math_Nova_NumericTree_Nova_this(nova_standard_math_Nova_NumericTree* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_Nova_String* nova_standard_math_Nova_NumericTree_Nova_statement)
 {
-	this->prv->nova_standard_math_Nova_NumericTree_Nova_root = nova_standard_math_Nova_NumericOperation_Nova_construct(0, exceptionData, nova_standard_math_Nova_NumericTree_Nova_statement);
+	this->prv->nova_standard_math_Nova_NumericTree_Nova_root = nova_standard_math_Nova_NumericOperation_0_Nova_NumericOperation(0, exceptionData, nova_standard_math_Nova_NumericTree_Nova_statement);
 }
 
 nova_standard_Nova_String* nova_standard_math_Nova_NumericTree_1_Nova_toString(nova_standard_math_Nova_NumericTree* this, nova_standard_exception_Nova_ExceptionData* exceptionData)

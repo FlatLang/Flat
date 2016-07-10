@@ -23,6 +23,7 @@ nova_standard_process_Extension_VTable_Process nova_standard_process_Extension_V
 		0,
 		0,
 		0,
+		0,
 		(char(*)(nova_standard_operators_Nova_Equals*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*))nova_standard_Nova_Object_0_Nova_equals,
 		0,
 		0,
@@ -40,7 +41,7 @@ void nova_standard_process_Nova_ProcessNova_init_static(nova_standard_exception_
 	}
 }
 
-nova_standard_process_Nova_Process* nova_standard_process_Nova_Process_Nova_construct(nova_standard_process_Nova_Process* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_io_Nova_StreamReader* nova_standard_process_Nova_Process_Nova_reader)
+nova_standard_process_Nova_Process* nova_standard_process_Nova_Process_Nova_Process(nova_standard_process_Nova_Process* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_io_Nova_StreamReader* nova_standard_process_Nova_Process_Nova_reader)
 {
 	CCLASS_NEW(nova_standard_process_Nova_Process, this,);
 	this->vtable = &nova_standard_process_Extension_VTable_Process_val;

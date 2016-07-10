@@ -23,6 +23,7 @@ nova_standard_thread_async_Extension_VTable_AsyncResult nova_standard_thread_asy
 		0,
 		0,
 		0,
+		0,
 		(char(*)(nova_standard_operators_Nova_Equals*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*))nova_standard_Nova_Object_0_Nova_equals,
 		0,
 		0,
@@ -40,7 +41,7 @@ void nova_standard_thread_async_Nova_AsyncResultNova_init_static(nova_standard_e
 	}
 }
 
-nova_standard_thread_async_Nova_AsyncResult* nova_standard_thread_async_Nova_AsyncResult_0_Nova_construct(nova_standard_thread_async_Nova_AsyncResult* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
+nova_standard_thread_async_Nova_AsyncResult* nova_standard_thread_async_Nova_AsyncResult_Nova_AsyncResult(nova_standard_thread_async_Nova_AsyncResult* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
 	CCLASS_NEW(nova_standard_thread_async_Nova_AsyncResult, this,);
 	this->vtable = &nova_standard_thread_async_Extension_VTable_AsyncResult_val;

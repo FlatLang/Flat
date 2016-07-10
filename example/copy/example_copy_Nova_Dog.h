@@ -50,7 +50,7 @@ CCLASS_CLASS
 )
 
 void example_copy_Nova_DogNova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData);
-example_copy_Nova_Dog* example_copy_Nova_Dog_Nova_construct(example_copy_Nova_Dog* this, nova_standard_exception_Nova_ExceptionData* exceptionData, int example_copy_Nova_Dog_Nova_a, int example_copy_Nova_Dog_Nova_b);
+example_copy_Nova_Dog* example_copy_Nova_Dog_Nova_Dog(example_copy_Nova_Dog* this, nova_standard_exception_Nova_ExceptionData* exceptionData, int example_copy_Nova_Dog_Nova_a, int example_copy_Nova_Dog_Nova_b);
 void example_copy_Nova_Dog_Nova_destroy(example_copy_Nova_Dog** this, nova_standard_exception_Nova_ExceptionData* exceptionData);
 void example_copy_Nova_Dog_Nova_this(example_copy_Nova_Dog* this, nova_standard_exception_Nova_ExceptionData* exceptionData, int example_copy_Nova_Dog_Nova_a, int example_copy_Nova_Dog_Nova_b);
 void example_copy_Nova_Dog_Nova_super(example_copy_Nova_Dog* this, nova_standard_exception_Nova_ExceptionData* exceptionData);

@@ -23,6 +23,7 @@ nova_standard_datastruct_Extension_VTable_Vector2D nova_standard_datastruct_Exte
 		0,
 		0,
 		0,
+		0,
 		(char(*)(nova_standard_operators_Nova_Equals*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*))nova_standard_Nova_Object_0_Nova_equals,
 		0,
 		0,
@@ -40,7 +41,7 @@ void nova_standard_datastruct_Nova_Vector2DNova_init_static(nova_standard_except
 	}
 }
 
-nova_standard_datastruct_Nova_Vector2D* nova_standard_datastruct_Nova_Vector2D_0_Nova_construct(nova_standard_datastruct_Nova_Vector2D* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
+nova_standard_datastruct_Nova_Vector2D* nova_standard_datastruct_Nova_Vector2D_Nova_Vector2D(nova_standard_datastruct_Nova_Vector2D* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
 	CCLASS_NEW(nova_standard_datastruct_Nova_Vector2D, this,);
 	this->vtable = &nova_standard_datastruct_Extension_VTable_Vector2D_val;

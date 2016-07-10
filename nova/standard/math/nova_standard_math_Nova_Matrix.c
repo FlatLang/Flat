@@ -23,6 +23,7 @@ nova_standard_math_Extension_VTable_Matrix nova_standard_math_Extension_VTable_M
 		0,
 		0,
 		0,
+		0,
 		(char(*)(nova_standard_operators_Nova_Equals*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*))nova_standard_Nova_Object_0_Nova_equals,
 		0,
 		0,
@@ -45,7 +46,7 @@ void nova_standard_math_Nova_MatrixNova_init_static(nova_standard_exception_Nova
 	}
 }
 
-nova_standard_math_Nova_Matrix* nova_standard_math_Nova_Matrix_Nova_construct(nova_standard_math_Nova_Matrix* this, nova_standard_exception_Nova_ExceptionData* exceptionData, int nova_standard_math_Nova_Matrix_Nova_rows, int nova_standard_math_Nova_Matrix_Nova_cols)
+nova_standard_math_Nova_Matrix* nova_standard_math_Nova_Matrix_Nova_Matrix(nova_standard_math_Nova_Matrix* this, nova_standard_exception_Nova_ExceptionData* exceptionData, int nova_standard_math_Nova_Matrix_Nova_rows, int nova_standard_math_Nova_Matrix_Nova_cols)
 {
 	CCLASS_NEW(nova_standard_math_Nova_Matrix, this);
 	this->vtable = &nova_standard_math_Extension_VTable_Matrix_val;

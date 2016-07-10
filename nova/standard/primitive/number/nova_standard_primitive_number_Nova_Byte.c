@@ -23,6 +23,7 @@ nova_standard_primitive_number_Extension_VTable_Byte nova_standard_primitive_num
 		0,
 		0,
 		0,
+		0,
 		(char(*)(nova_standard_operators_Nova_Equals*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*))nova_standard_Nova_Object_0_Nova_equals,
 		(nova_standard_Nova_Object*(*)(nova_standard_operators_Nova_Multiply*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*))nova_standard_primitive_number_Nova_Byte_Nova_multiply,
 		0,
@@ -43,7 +44,7 @@ void nova_standard_primitive_number_Nova_ByteNova_init_static(nova_standard_exce
 	}
 }
 
-nova_standard_primitive_number_Nova_Byte* nova_standard_primitive_number_Nova_Byte_3_Nova_construct(nova_standard_primitive_number_Nova_Byte* this, nova_standard_exception_Nova_ExceptionData* exceptionData, char nova_standard_primitive_number_Nova_Byte_Nova_value)
+nova_standard_primitive_number_Nova_Byte* nova_standard_primitive_number_Nova_Byte_Nova_Byte(nova_standard_primitive_number_Nova_Byte* this, nova_standard_exception_Nova_ExceptionData* exceptionData, char nova_standard_primitive_number_Nova_Byte_Nova_value)
 {
 	CCLASS_NEW(nova_standard_primitive_number_Nova_Byte, this,);
 	this->vtable = &nova_standard_primitive_number_Extension_VTable_Byte_val;

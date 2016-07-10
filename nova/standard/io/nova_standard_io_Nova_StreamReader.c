@@ -21,6 +21,7 @@ nova_standard_io_Extension_VTable_StreamReader nova_standard_io_Extension_VTable
 		0,
 		0,
 		0,
+		0,
 		(nova_standard_Nova_String*(*)(nova_standard_io_Nova_InputStream*, nova_standard_exception_Nova_ExceptionData*))nova_standard_io_Nova_StreamReader_Nova_readString,
 		(char*(*)(nova_standard_io_Nova_InputStream*, nova_standard_exception_Nova_ExceptionData*))nova_standard_io_Nova_StreamReader_Nova_readBytes,
 		0,
@@ -44,7 +45,7 @@ void nova_standard_io_Nova_StreamReaderNova_init_static(nova_standard_exception_
 	}
 }
 
-nova_standard_io_Nova_StreamReader* nova_standard_io_Nova_StreamReader_Nova_construct(nova_standard_io_Nova_StreamReader* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_io_Nova_File* nova_standard_io_Nova_StreamReader_Nova_file)
+nova_standard_io_Nova_StreamReader* nova_standard_io_Nova_StreamReader_Nova_StreamReader(nova_standard_io_Nova_StreamReader* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_io_Nova_File* nova_standard_io_Nova_StreamReader_Nova_file)
 {
 	CCLASS_NEW(nova_standard_io_Nova_StreamReader, this);
 	this->vtable = &nova_standard_io_Extension_VTable_StreamReader_val;

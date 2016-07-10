@@ -23,6 +23,7 @@ nova_standard_math_huffman_Extension_VTable_HuffmanTree nova_standard_math_huffm
 		0,
 		0,
 		0,
+		0,
 		(char(*)(nova_standard_operators_Nova_Equals*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*))nova_standard_Nova_Object_0_Nova_equals,
 		0,
 		0,
@@ -40,7 +41,7 @@ void nova_standard_math_huffman_Nova_HuffmanTreeNova_init_static(nova_standard_e
 	}
 }
 
-nova_standard_math_huffman_Nova_HuffmanTree* nova_standard_math_huffman_Nova_HuffmanTree_0_Nova_construct(nova_standard_math_huffman_Nova_HuffmanTree* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
+nova_standard_math_huffman_Nova_HuffmanTree* nova_standard_math_huffman_Nova_HuffmanTree_Nova_HuffmanTree(nova_standard_math_huffman_Nova_HuffmanTree* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
 	CCLASS_NEW(nova_standard_math_huffman_Nova_HuffmanTree, this,);
 	this->vtable = &nova_standard_math_huffman_Extension_VTable_HuffmanTree_val;

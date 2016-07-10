@@ -23,6 +23,7 @@ nova_standard_primitive_number_Extension_VTable_Char nova_standard_primitive_num
 		0,
 		0,
 		0,
+		0,
 		(char(*)(nova_standard_operators_Nova_Equals*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*))nova_standard_Nova_Object_0_Nova_equals,
 		(nova_standard_Nova_Object*(*)(nova_standard_operators_Nova_Multiply*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*))nova_standard_primitive_number_Nova_Char_0_Nova_multiply,
 		0,
@@ -43,7 +44,7 @@ void nova_standard_primitive_number_Nova_CharNova_init_static(nova_standard_exce
 	}
 }
 
-nova_standard_primitive_number_Nova_Char* nova_standard_primitive_number_Nova_Char_Nova_construct(nova_standard_primitive_number_Nova_Char* this, nova_standard_exception_Nova_ExceptionData* exceptionData, char nova_standard_primitive_number_Nova_Char_Nova_value)
+nova_standard_primitive_number_Nova_Char* nova_standard_primitive_number_Nova_Char_Nova_Char(nova_standard_primitive_number_Nova_Char* this, nova_standard_exception_Nova_ExceptionData* exceptionData, char nova_standard_primitive_number_Nova_Char_Nova_value)
 {
 	CCLASS_NEW(nova_standard_primitive_number_Nova_Char, this,);
 	this->vtable = &nova_standard_primitive_number_Extension_VTable_Char_val;
@@ -78,7 +79,7 @@ void nova_standard_primitive_number_Nova_Char_Nova_this(nova_standard_primitive_
 
 nova_standard_Nova_String* nova_standard_primitive_number_Nova_Char_2_Nova_toString(nova_standard_primitive_number_Nova_Char* this, nova_standard_exception_Nova_ExceptionData* exceptionData, char nova_standard_primitive_number_Nova_Char_Nova_c)
 {
-	return nova_standard_Nova_String_1_Nova_construct(0, exceptionData, nova_standard_primitive_number_Nova_Char_Nova_c);
+	return nova_standard_Nova_String_0_Nova_String(0, exceptionData, nova_standard_primitive_number_Nova_Char_Nova_c);
 }
 
 nova_standard_Nova_String* nova_standard_primitive_number_Nova_Char_3_Nova_toString(nova_standard_primitive_number_Nova_Char* this, nova_standard_exception_Nova_ExceptionData* exceptionData)

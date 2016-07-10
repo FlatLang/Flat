@@ -51,7 +51,7 @@ CCLASS_CLASS
 )
 
 void example_Nova_GenericDemoNova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData);
-example_Nova_GenericDemo* example_Nova_GenericDemo_0_Nova_construct(example_Nova_GenericDemo* this, nova_standard_exception_Nova_ExceptionData* exceptionData);
+example_Nova_GenericDemo* example_Nova_GenericDemo_Nova_GenericDemo(example_Nova_GenericDemo* this, nova_standard_exception_Nova_ExceptionData* exceptionData);
 void example_Nova_GenericDemo_Nova_destroy(example_Nova_GenericDemo** this, nova_standard_exception_Nova_ExceptionData* exceptionData);
 void example_Nova_GenericDemo_Nova_main(example_Nova_GenericDemo* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_Nova_String** example_Nova_GenericDemo_Nova_args);
 void example_Nova_GenericDemo_0_Nova_this(example_Nova_GenericDemo* this, nova_standard_exception_Nova_ExceptionData* exceptionData);

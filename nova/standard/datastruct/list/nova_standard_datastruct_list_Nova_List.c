@@ -27,7 +27,9 @@ nova_standard_datastruct_list_Extension_VTable_List nova_standard_datastruct_lis
 		0,
 		0,
 		0,
+		0,
 	},
+	nova_standard_datastruct_list_Nova_List_virtual0_Nova_toArray,
 	nova_standard_datastruct_list_Nova_List_virtual0_Nova_forEach,
 	nova_standard_datastruct_list_Nova_List_virtual0_Nova_map,
 	nova_standard_datastruct_list_Nova_List_virtual0_Nova_any,
@@ -60,6 +62,12 @@ void nova_standard_datastruct_list_Nova_ListNova_init_static(nova_standard_excep
 
 
 
+
+
+nova_standard_Nova_Object** nova_standard_datastruct_list_Nova_List_virtual0_Nova_toArray(nova_standard_datastruct_list_Nova_List* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
+{
+	return this->vtable->itable.nova_standard_datastruct_list_Nova_List_virtual0_Nova_toArray((nova_standard_datastruct_list_Nova_List*)(this), exceptionData);
+}
 
 void nova_standard_datastruct_list_Nova_List_virtual0_Nova_forEach(nova_standard_datastruct_list_Nova_List* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_datastruct_list_Nova_List_closure3_Nova_func nova_standard_datastruct_list_Nova_List_Nova_func, void* nova_standard_datastruct_list_Nova_List_ref_Nova_func)
 {

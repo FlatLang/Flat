@@ -23,6 +23,7 @@ stabilitytest_Extension_VTable_PolymorphicSuperClass stabilitytest_Extension_VTa
 		0,
 		0,
 		0,
+		0,
 		(char(*)(nova_standard_operators_Nova_Equals*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*))nova_standard_Nova_Object_0_Nova_equals,
 		0,
 		0,
@@ -43,7 +44,7 @@ void stabilitytest_Nova_PolymorphicSuperClassNova_init_static(nova_standard_exce
 	}
 }
 
-stabilitytest_Nova_PolymorphicSuperClass* stabilitytest_Nova_PolymorphicSuperClass_0_Nova_construct(stabilitytest_Nova_PolymorphicSuperClass* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
+stabilitytest_Nova_PolymorphicSuperClass* stabilitytest_Nova_PolymorphicSuperClass_Nova_PolymorphicSuperClass(stabilitytest_Nova_PolymorphicSuperClass* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
 	CCLASS_NEW(stabilitytest_Nova_PolymorphicSuperClass, this,);
 	this->vtable = &stabilitytest_Extension_VTable_PolymorphicSuperClass_val;
@@ -71,12 +72,12 @@ void stabilitytest_Nova_PolymorphicSuperClass_Nova_destroy(stabilitytest_Nova_Po
 
 void stabilitytest_Nova_PolymorphicSuperClass_Nova_giveBirth(stabilitytest_Nova_PolymorphicSuperClass* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
-	this->stabilitytest_Nova_PolymorphicSuperClass_Nova_child = stabilitytest_Nova_PolymorphicSubClass_Nova_construct(0, exceptionData);
+	this->stabilitytest_Nova_PolymorphicSuperClass_Nova_child = stabilitytest_Nova_PolymorphicSubClass_Nova_PolymorphicSubClass(0, exceptionData);
 }
 
 nova_standard_Nova_String* stabilitytest_Nova_PolymorphicSuperClass_0_Nova_toString(stabilitytest_Nova_PolymorphicSuperClass* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
-	return nova_standard_Nova_String_2_Nova_construct(0, exceptionData, "super class");
+	return nova_standard_Nova_String_1_Nova_String(0, exceptionData, "super class");
 }
 
 void stabilitytest_Nova_PolymorphicSuperClass_0_Nova_this(stabilitytest_Nova_PolymorphicSuperClass* this, nova_standard_exception_Nova_ExceptionData* exceptionData)

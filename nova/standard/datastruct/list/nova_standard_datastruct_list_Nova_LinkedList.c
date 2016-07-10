@@ -9,6 +9,7 @@ nova_standard_datastruct_list_Extension_VTable_LinkedList nova_standard_datastru
 		0,
 		0,
 		0,
+		(nova_standard_Nova_Object**(*)(nova_standard_datastruct_list_Nova_List*, nova_standard_exception_Nova_ExceptionData*))nova_standard_datastruct_list_Nova_LinkedList_0_Nova_toArray,
 		(void(*)(nova_standard_datastruct_list_Nova_List*, nova_standard_exception_Nova_ExceptionData*, nova_standard_datastruct_list_Nova_List_closure3_Nova_func nova_standard_datastruct_list_Nova_List_Nova_func, void* nova_standard_datastruct_list_Nova_List_ref_Nova_func))nova_standard_datastruct_list_Nova_LinkedList_0_Nova_forEach,
 		(nova_standard_datastruct_list_Nova_List*(*)(nova_standard_datastruct_list_Nova_List*, nova_standard_exception_Nova_ExceptionData*, nova_standard_datastruct_list_Nova_List_closure6_Nova_mapFunc nova_standard_datastruct_list_Nova_List_Nova_mapFunc, void* nova_standard_datastruct_list_Nova_List_ref_Nova_mapFunc))nova_standard_datastruct_list_Nova_LinkedList_0_Nova_map,
 		(char(*)(nova_standard_datastruct_list_Nova_List*, nova_standard_exception_Nova_ExceptionData*, nova_standard_datastruct_list_Nova_List_closure9_Nova_anyFunc nova_standard_datastruct_list_Nova_List_Nova_anyFunc, void* nova_standard_datastruct_list_Nova_List_ref_Nova_anyFunc))nova_standard_datastruct_list_Nova_LinkedList_0_Nova_any,
@@ -31,6 +32,7 @@ nova_standard_datastruct_list_Extension_VTable_LinkedList nova_standard_datastru
 	nova_standard_Nova_Object_0_Nova_getHashCodeLong,
 	nova_standard_Nova_Object_1_Nova_toString,
 	nova_standard_Nova_Object_0_Nova_equals,
+	nova_standard_datastruct_list_Nova_LinkedList_0_Nova_toArray,
 	nova_standard_datastruct_list_Nova_LinkedList_0_Nova_map,
 	nova_standard_datastruct_list_Nova_LinkedList_0_Nova_forEach,
 	nova_standard_datastruct_list_Nova_LinkedList_0_Nova_any,
@@ -62,7 +64,7 @@ void nova_standard_datastruct_list_Nova_LinkedListNova_init_static(nova_standard
 	}
 }
 
-nova_standard_datastruct_list_Nova_LinkedList* nova_standard_datastruct_list_Nova_LinkedList_0_Nova_construct(nova_standard_datastruct_list_Nova_LinkedList* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
+nova_standard_datastruct_list_Nova_LinkedList* nova_standard_datastruct_list_Nova_LinkedList_Nova_LinkedList(nova_standard_datastruct_list_Nova_LinkedList* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
 	CCLASS_NEW(nova_standard_datastruct_list_Nova_LinkedList, this);
 	this->vtable = &nova_standard_datastruct_list_Extension_VTable_LinkedList_val;
@@ -95,7 +97,7 @@ nova_standard_datastruct_list_Nova_LinkedList* nova_standard_datastruct_list_Nov
 {
 	nova_standard_datastruct_list_Nova_ListNode* l1_Nova_node;
 	
-	l1_Nova_node = nova_standard_datastruct_list_Nova_ListNode_Nova_construct(0, exceptionData, nova_standard_datastruct_list_Nova_LinkedList_Nova_data);
+	l1_Nova_node = nova_standard_datastruct_list_Nova_ListNode_Nova_ListNode(0, exceptionData, nova_standard_datastruct_list_Nova_LinkedList_Nova_data);
 	if (this->prv->nova_standard_datastruct_list_Nova_LinkedList_Nova_start == (nova_standard_datastruct_list_Nova_ListNode*)nova_null)
 	{
 		this->prv->nova_standard_datastruct_list_Nova_LinkedList_Nova_start = l1_Nova_node;
@@ -136,7 +138,7 @@ nova_standard_datastruct_list_Nova_LinkedList* nova_standard_datastruct_list_Nov
 	return this;
 }
 
-nova_standard_Nova_Object** nova_standard_datastruct_list_Nova_LinkedList_Nova_toArray(nova_standard_datastruct_list_Nova_LinkedList* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
+nova_standard_Nova_Object** nova_standard_datastruct_list_Nova_LinkedList_0_Nova_toArray(nova_standard_datastruct_list_Nova_LinkedList* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
 	nova_standard_Nova_Object** l1_Nova_array;
 	int l1_Nova_i;
@@ -161,7 +163,7 @@ nova_standard_datastruct_list_Nova_LinkedList* nova_standard_datastruct_list_Nov
 	nova_standard_datastruct_list_Nova_LinkedListIterator* nova_local_0;
 	nova_standard_Nova_Object* l1_Nova_element;
 	
-	l1_Nova_array = nova_standard_datastruct_list_Nova_LinkedList_0_Nova_construct(0, exceptionData);
+	l1_Nova_array = nova_standard_datastruct_list_Nova_LinkedList_Nova_LinkedList(0, exceptionData);
 	l1_Nova_i = (int)(0);
 	nova_local_0 = (nova_standard_datastruct_list_Nova_LinkedListIterator*)(nova_standard_datastruct_list_Nova_Iterable_virtual_Accessor1_Nova_iterator((nova_standard_datastruct_list_Nova_Iterable*)(this), exceptionData));
 	while (nova_standard_datastruct_list_Nova_Iterator_virtual_Accessor_Nova_hasNext((nova_standard_datastruct_list_Nova_Iterator*)(nova_local_0), exceptionData))
@@ -227,7 +229,7 @@ nova_standard_datastruct_list_Nova_LinkedList* nova_standard_datastruct_list_Nov
 	nova_standard_datastruct_list_Nova_LinkedListIterator* nova_local_0;
 	nova_standard_Nova_Object* l1_Nova_element;
 	
-	l1_Nova_filtered = nova_standard_datastruct_list_Nova_LinkedList_0_Nova_construct(0, exceptionData);
+	l1_Nova_filtered = nova_standard_datastruct_list_Nova_LinkedList_Nova_LinkedList(0, exceptionData);
 	nova_local_0 = (nova_standard_datastruct_list_Nova_LinkedListIterator*)(nova_standard_datastruct_list_Nova_Iterable_virtual_Accessor1_Nova_iterator((nova_standard_datastruct_list_Nova_Iterable*)(this), exceptionData));
 	while (nova_standard_datastruct_list_Nova_Iterator_virtual_Accessor_Nova_hasNext((nova_standard_datastruct_list_Nova_Iterator*)(nova_local_0), exceptionData))
 	{
@@ -250,7 +252,7 @@ nova_standard_datastruct_list_Nova_LinkedList* nova_standard_datastruct_list_Nov
 	{
 		nova_standard_datastruct_list_Nova_LinkedList_Nova_howMany = this->nova_standard_datastruct_list_Nova_LinkedList_Nova_size;
 	}
-	l1_Nova_list = nova_standard_datastruct_list_Nova_LinkedList_0_Nova_construct(0, exceptionData);
+	l1_Nova_list = nova_standard_datastruct_list_Nova_LinkedList_Nova_LinkedList(0, exceptionData);
 	nova_local_0 = (nova_standard_datastruct_list_Nova_LinkedListIterator*)(nova_standard_datastruct_list_Nova_Iterable_virtual_Accessor1_Nova_iterator((nova_standard_datastruct_list_Nova_Iterable*)(this), exceptionData));
 	while (nova_standard_datastruct_list_Nova_Iterator_virtual_Accessor_Nova_hasNext((nova_standard_datastruct_list_Nova_Iterator*)(nova_local_0), exceptionData))
 	{
@@ -271,7 +273,7 @@ nova_standard_datastruct_list_Nova_LinkedList* nova_standard_datastruct_list_Nov
 	nova_standard_datastruct_list_Nova_LinkedListIterator* nova_local_0;
 	nova_standard_Nova_Object* l1_Nova_element;
 	
-	l1_Nova_list = nova_standard_datastruct_list_Nova_Array_0_Nova_construct(0, exceptionData);
+	l1_Nova_list = nova_standard_datastruct_list_Nova_Array_0_Nova_Array(0, exceptionData);
 	l1_Nova_i = (int)(0);
 	nova_local_0 = (nova_standard_datastruct_list_Nova_LinkedListIterator*)(nova_standard_datastruct_list_Nova_Iterable_virtual_Accessor1_Nova_iterator((nova_standard_datastruct_list_Nova_Iterable*)(this), exceptionData));
 	while (nova_standard_datastruct_list_Nova_Iterator_virtual_Accessor_Nova_hasNext((nova_standard_datastruct_list_Nova_Iterator*)(nova_local_0), exceptionData))
@@ -319,7 +321,7 @@ nova_standard_datastruct_list_Nova_LinkedList* nova_standard_datastruct_list_Nov
 	nova_standard_datastruct_list_Nova_ListNode* l1_Nova_current;
 	nova_standard_datastruct_list_Nova_ListNode* l1_Nova_next;
 	
-	l1_Nova_list = nova_standard_datastruct_list_Nova_LinkedList_0_Nova_construct(0, exceptionData);
+	l1_Nova_list = nova_standard_datastruct_list_Nova_LinkedList_Nova_LinkedList(0, exceptionData);
 	l1_Nova_prev = (nova_standard_datastruct_list_Nova_ListNode*)((nova_standard_Nova_Object*)nova_null);
 	l1_Nova_current = (nova_standard_datastruct_list_Nova_ListNode*)((nova_standard_Nova_Object*)nova_null);
 	l1_Nova_next = (nova_standard_datastruct_list_Nova_ListNode*)((nova_standard_Nova_Object*)nova_null);
@@ -353,7 +355,7 @@ nova_standard_Nova_String* nova_standard_datastruct_list_Nova_LinkedList_0_Nova_
 	nova_standard_datastruct_list_Nova_LinkedListIterator* nova_local_0;
 	nova_standard_Nova_Object* l1_Nova_element;
 	
-	l1_Nova_str = nova_standard_Nova_String_2_Nova_construct(0, exceptionData, "");
+	l1_Nova_str = nova_standard_Nova_String_1_Nova_String(0, exceptionData, "");
 	l1_Nova_passed = 0;
 	nova_local_0 = (nova_standard_datastruct_list_Nova_LinkedListIterator*)(nova_standard_datastruct_list_Nova_Iterable_virtual_Accessor1_Nova_iterator((nova_standard_datastruct_list_Nova_Iterable*)(this), exceptionData));
 	while (nova_standard_datastruct_list_Nova_Iterator_virtual_Accessor_Nova_hasNext((nova_standard_datastruct_list_Nova_Iterator*)(nova_local_0), exceptionData))
@@ -378,7 +380,7 @@ void nova_standard_datastruct_list_Nova_LinkedList_0_Nova_this(nova_standard_dat
 
 nova_standard_datastruct_list_Nova_LinkedListIterator* nova_standard_datastruct_list_Nova_LinkedList_Accessor_Nova_iterator(nova_standard_datastruct_list_Nova_LinkedList* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
-	return nova_standard_datastruct_list_Nova_LinkedListIterator_Nova_construct(0, exceptionData, this);
+	return nova_standard_datastruct_list_Nova_LinkedListIterator_Nova_LinkedListIterator(0, exceptionData, this);
 }
 
 

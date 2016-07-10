@@ -23,6 +23,7 @@ nova_standard_math_Extension_VTable_NumericStatement nova_standard_math_Extensio
 		0,
 		0,
 		0,
+		0,
 		(char(*)(nova_standard_operators_Nova_Equals*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*))nova_standard_Nova_Object_0_Nova_equals,
 		0,
 		0,
@@ -45,7 +46,7 @@ void nova_standard_math_Nova_NumericStatementNova_init_static(nova_standard_exce
 	}
 }
 
-nova_standard_math_Nova_NumericStatement* nova_standard_math_Nova_NumericStatement_1_Nova_construct(nova_standard_math_Nova_NumericStatement* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_Nova_String* nova_standard_math_Nova_NumericStatement_Nova_statement)
+nova_standard_math_Nova_NumericStatement* nova_standard_math_Nova_NumericStatement_Nova_NumericStatement(nova_standard_math_Nova_NumericStatement* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_Nova_String* nova_standard_math_Nova_NumericStatement_Nova_statement)
 {
 	CCLASS_NEW(nova_standard_math_Nova_NumericStatement, this);
 	this->vtable = &nova_standard_math_Extension_VTable_NumericStatement_val;
@@ -75,7 +76,7 @@ void nova_standard_math_Nova_NumericStatement_Nova_destroy(nova_standard_math_No
 
 void nova_standard_math_Nova_NumericStatement_1_Nova_this(nova_standard_math_Nova_NumericStatement* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_Nova_String* nova_standard_math_Nova_NumericStatement_Nova_statement)
 {
-	this->prv->nova_standard_math_Nova_NumericStatement_Nova_tree = nova_standard_math_Nova_NumericTree_Nova_construct(0, exceptionData, nova_standard_Nova_String_Nova_trim(nova_standard_math_Nova_NumericStatement_Nova_statement, exceptionData));
+	this->prv->nova_standard_math_Nova_NumericStatement_Nova_tree = nova_standard_math_Nova_NumericTree_Nova_NumericTree(0, exceptionData, nova_standard_Nova_String_Nova_trim(nova_standard_math_Nova_NumericStatement_Nova_statement, exceptionData));
 }
 
 nova_standard_Nova_String* nova_standard_math_Nova_NumericStatement_1_Nova_toString(nova_standard_math_Nova_NumericStatement* this, nova_standard_exception_Nova_ExceptionData* exceptionData)

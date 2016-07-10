@@ -23,6 +23,7 @@ stabilitytest_Extension_VTable_ThreadImplementation stabilitytest_Extension_VTab
 		0,
 		0,
 		0,
+		0,
 		(char(*)(nova_standard_operators_Nova_Equals*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*))nova_standard_Nova_Object_0_Nova_equals,
 		0,
 		0,
@@ -49,7 +50,7 @@ void stabilitytest_Nova_ThreadImplementationNova_init_static(nova_standard_excep
 	}
 }
 
-stabilitytest_Nova_ThreadImplementation* stabilitytest_Nova_ThreadImplementation_Nova_construct(stabilitytest_Nova_ThreadImplementation* this, nova_standard_exception_Nova_ExceptionData* exceptionData, int stabilitytest_Nova_ThreadImplementation_Nova_times, int stabilitytest_Nova_ThreadImplementation_Nova_millis)
+stabilitytest_Nova_ThreadImplementation* stabilitytest_Nova_ThreadImplementation_Nova_ThreadImplementation(stabilitytest_Nova_ThreadImplementation* this, nova_standard_exception_Nova_ExceptionData* exceptionData, int stabilitytest_Nova_ThreadImplementation_Nova_times, int stabilitytest_Nova_ThreadImplementation_Nova_millis)
 {
 	CCLASS_NEW(stabilitytest_Nova_ThreadImplementation, this);
 	this->vtable = &stabilitytest_Extension_VTable_ThreadImplementation_val;

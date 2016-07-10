@@ -26,6 +26,7 @@ nova_standard_thread_Extension_VTable_Thread nova_standard_thread_Extension_VTab
 		0,
 		0,
 		0,
+		0,
 		(char(*)(nova_standard_operators_Nova_Equals*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*))nova_standard_Nova_Object_0_Nova_equals,
 		0,
 		0,
@@ -51,7 +52,7 @@ void nova_standard_thread_Nova_ThreadNova_init_static(nova_standard_exception_No
 	}
 }
 
-nova_standard_thread_Nova_Thread* nova_standard_thread_Nova_Thread_2_Nova_construct(nova_standard_thread_Nova_Thread* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
+nova_standard_thread_Nova_Thread* nova_standard_thread_Nova_Thread_Nova_Thread(nova_standard_thread_Nova_Thread* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
 	CCLASS_NEW(nova_standard_thread_Nova_Thread, this);
 	this->vtable = &nova_standard_thread_Extension_VTable_Thread_val;
@@ -117,7 +118,7 @@ void nova_standard_thread_Nova_Thread_Nova_startRun(nova_standard_thread_Nova_Th
 		nova_standard_exception_Nova_Exception* l2_Nova_e;
 		
 		l2_Nova_e = exceptionData->nova_standard_exception_Nova_ExceptionData_Nova_thrownException;
-		nova_standard_io_Nova_Console_1_Nova_writeLine(0, exceptionData, nova_standard_Nova_String_2_Nova_construct(0, exceptionData, "An error has occurred..."));
+		nova_standard_io_Nova_Console_1_Nova_writeLine(0, exceptionData, nova_standard_Nova_String_1_Nova_String(0, exceptionData, "An error has occurred..."));
 	}
 	FINALLY
 	{

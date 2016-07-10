@@ -27,6 +27,7 @@ nova_standard_io_Extension_VTable_InputStream nova_standard_io_Extension_VTable_
 		0,
 		0,
 		0,
+		0,
 	},
 	nova_standard_io_Nova_InputStream_virtual1_Nova_readString,
 	nova_standard_io_Nova_InputStream_virtual1_Nova_readBytes,

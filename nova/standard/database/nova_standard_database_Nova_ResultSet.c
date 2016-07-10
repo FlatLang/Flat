@@ -23,6 +23,7 @@ nova_standard_database_Extension_VTable_ResultSet nova_standard_database_Extensi
 		0,
 		0,
 		0,
+		0,
 		(char(*)(nova_standard_operators_Nova_Equals*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*))nova_standard_Nova_Object_0_Nova_equals,
 		0,
 		0,
@@ -40,7 +41,7 @@ void nova_standard_database_Nova_ResultSetNova_init_static(nova_standard_excepti
 	}
 }
 
-nova_standard_database_Nova_ResultSet* nova_standard_database_Nova_ResultSet_Nova_construct(nova_standard_database_Nova_ResultSet* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_Nova_String*** nova_standard_database_Nova_ResultSet_Nova_rows, int nova_standard_database_Nova_ResultSet_Nova_numRows, int nova_standard_database_Nova_ResultSet_Nova_numCols)
+nova_standard_database_Nova_ResultSet* nova_standard_database_Nova_ResultSet_Nova_ResultSet(nova_standard_database_Nova_ResultSet* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_Nova_String*** nova_standard_database_Nova_ResultSet_Nova_rows, int nova_standard_database_Nova_ResultSet_Nova_numRows, int nova_standard_database_Nova_ResultSet_Nova_numCols)
 {
 	CCLASS_NEW(nova_standard_database_Nova_ResultSet, this,);
 	this->vtable = &nova_standard_database_Extension_VTable_ResultSet_val;

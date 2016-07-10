@@ -23,6 +23,7 @@ nova_standard_datastruct_Extension_VTable_ReversibleHashMap nova_standard_datast
 		0,
 		0,
 		0,
+		0,
 		(char(*)(nova_standard_operators_Nova_Equals*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*))nova_standard_Nova_Object_0_Nova_equals,
 		0,
 		0,
@@ -48,7 +49,7 @@ void nova_standard_datastruct_Nova_ReversibleHashMapNova_init_static(nova_standa
 	}
 }
 
-nova_standard_datastruct_Nova_ReversibleHashMap* nova_standard_datastruct_Nova_ReversibleHashMap_0_Nova_construct(nova_standard_datastruct_Nova_ReversibleHashMap* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
+nova_standard_datastruct_Nova_ReversibleHashMap* nova_standard_datastruct_Nova_ReversibleHashMap_Nova_ReversibleHashMap(nova_standard_datastruct_Nova_ReversibleHashMap* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
 	CCLASS_NEW(nova_standard_datastruct_Nova_ReversibleHashMap, this);
 	this->vtable = &nova_standard_datastruct_Extension_VTable_ReversibleHashMap_val;
@@ -78,7 +79,7 @@ void nova_standard_datastruct_Nova_ReversibleHashMap_Nova_destroy(nova_standard_
 
 void nova_standard_datastruct_Nova_ReversibleHashMap_0_Nova_this(nova_standard_datastruct_Nova_ReversibleHashMap* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
-	this->prv->nova_standard_datastruct_Nova_ReversibleHashMap_Nova_rev = nova_standard_datastruct_Nova_HashMap_0_Nova_construct(0, exceptionData);
+	this->prv->nova_standard_datastruct_Nova_ReversibleHashMap_Nova_rev = nova_standard_datastruct_Nova_HashMap_Nova_HashMap(0, exceptionData);
 }
 
 void nova_standard_datastruct_Nova_ReversibleHashMap_Nova_put(nova_standard_datastruct_Nova_ReversibleHashMap* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_Nova_Object* nova_standard_datastruct_Nova_ReversibleHashMap_Nova_key, nova_standard_Nova_Object* nova_standard_datastruct_Nova_ReversibleHashMap_Nova_value)

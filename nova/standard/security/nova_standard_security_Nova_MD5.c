@@ -23,6 +23,7 @@ nova_standard_security_Extension_VTable_MD5 nova_standard_security_Extension_VTa
 		0,
 		0,
 		0,
+		0,
 		(char(*)(nova_standard_operators_Nova_Equals*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*))nova_standard_Nova_Object_0_Nova_equals,
 		0,
 		0,
@@ -40,7 +41,7 @@ void nova_standard_security_Nova_MD5Nova_init_static(nova_standard_exception_Nov
 	}
 }
 
-nova_standard_security_Nova_MD5* nova_standard_security_Nova_MD5_0_Nova_construct(nova_standard_security_Nova_MD5* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
+nova_standard_security_Nova_MD5* nova_standard_security_Nova_MD5_Nova_MD5(nova_standard_security_Nova_MD5* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
 	CCLASS_NEW(nova_standard_security_Nova_MD5, this,);
 	this->vtable = &nova_standard_security_Extension_VTable_MD5_val;
@@ -74,7 +75,7 @@ nova_standard_Nova_String* nova_standard_security_Nova_MD5_Nova_encrypt(nova_sta
 	{
 		return (nova_standard_Nova_String*)nova_null;
 	}
-	return nova_standard_Nova_String_2_Nova_construct(0, exceptionData, l1_Nova_data);
+	return nova_standard_Nova_String_1_Nova_String(0, exceptionData, l1_Nova_data);
 }
 
 void nova_standard_security_Nova_MD5_0_Nova_this(nova_standard_security_Nova_MD5* this, nova_standard_exception_Nova_ExceptionData* exceptionData)

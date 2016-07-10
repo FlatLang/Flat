@@ -23,6 +23,7 @@ nova_standard_primitive_Extension_VTable_Bool nova_standard_primitive_Extension_
 		0,
 		0,
 		0,
+		0,
 		(char(*)(nova_standard_operators_Nova_Equals*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*))nova_standard_Nova_Object_0_Nova_equals,
 		0,
 		0,
@@ -41,7 +42,7 @@ void nova_standard_primitive_Nova_BoolNova_init_static(nova_standard_exception_N
 	}
 }
 
-nova_standard_primitive_Nova_Bool* nova_standard_primitive_Nova_Bool_1_Nova_construct(nova_standard_primitive_Nova_Bool* this, nova_standard_exception_Nova_ExceptionData* exceptionData, char nova_standard_primitive_Nova_Bool_Nova_value)
+nova_standard_primitive_Nova_Bool* nova_standard_primitive_Nova_Bool_Nova_Bool(nova_standard_primitive_Nova_Bool* this, nova_standard_exception_Nova_ExceptionData* exceptionData, char nova_standard_primitive_Nova_Bool_Nova_value)
 {
 	CCLASS_NEW(nova_standard_primitive_Nova_Bool, this,);
 	this->vtable = &nova_standard_primitive_Extension_VTable_Bool_val;
@@ -77,9 +78,9 @@ nova_standard_Nova_String* nova_standard_primitive_Nova_Bool_2_Nova_toString(nov
 {
 	if (nova_standard_primitive_Nova_Bool_Nova_value)
 	{
-		return nova_standard_Nova_String_2_Nova_construct(0, exceptionData, "true");
+		return nova_standard_Nova_String_1_Nova_String(0, exceptionData, "true");
 	}
-	return nova_standard_Nova_String_2_Nova_construct(0, exceptionData, "false");
+	return nova_standard_Nova_String_1_Nova_String(0, exceptionData, "false");
 }
 
 nova_standard_Nova_String* nova_standard_primitive_Nova_Bool_3_Nova_toString(nova_standard_primitive_Nova_Bool* this, nova_standard_exception_Nova_ExceptionData* exceptionData)

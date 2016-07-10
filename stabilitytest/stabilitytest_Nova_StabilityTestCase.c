@@ -23,6 +23,7 @@ stabilitytest_Extension_VTable_StabilityTestCase stabilitytest_Extension_VTable_
 		0,
 		0,
 		0,
+		0,
 		(char(*)(nova_standard_operators_Nova_Equals*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*))nova_standard_Nova_Object_0_Nova_equals,
 		0,
 		0,
@@ -41,7 +42,7 @@ void stabilitytest_Nova_StabilityTestCaseNova_init_static(nova_standard_exceptio
 	}
 }
 
-stabilitytest_Nova_StabilityTestCase* stabilitytest_Nova_StabilityTestCase_0_Nova_construct(stabilitytest_Nova_StabilityTestCase* this, nova_standard_exception_Nova_ExceptionData* exceptionData, stabilitytest_Nova_StabilityTest* stabilitytest_Nova_StabilityTestCase_Nova_program)
+stabilitytest_Nova_StabilityTestCase* stabilitytest_Nova_StabilityTestCase_Nova_StabilityTestCase(stabilitytest_Nova_StabilityTestCase* this, nova_standard_exception_Nova_ExceptionData* exceptionData, stabilitytest_Nova_StabilityTest* stabilitytest_Nova_StabilityTestCase_Nova_program)
 {
 	CCLASS_NEW(stabilitytest_Nova_StabilityTestCase, this,);
 	this->vtable = &stabilitytest_Extension_VTable_StabilityTestCase_val;

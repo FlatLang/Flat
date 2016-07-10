@@ -23,6 +23,7 @@ example_network_Extension_VTable_OutputThread example_network_Extension_VTable_O
 		0,
 		0,
 		0,
+		0,
 		(char(*)(nova_standard_operators_Nova_Equals*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*))nova_standard_Nova_Object_0_Nova_equals,
 		0,
 		0,
@@ -49,7 +50,7 @@ void example_network_Nova_OutputThreadNova_init_static(nova_standard_exception_N
 	}
 }
 
-example_network_Nova_OutputThread* example_network_Nova_OutputThread_Nova_construct(example_network_Nova_OutputThread* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_network_Nova_ServerSocket* example_network_Nova_OutputThread_Nova_serverSocket, nova_standard_network_Nova_ConnectionSocket* example_network_Nova_OutputThread_Nova_socket)
+example_network_Nova_OutputThread* example_network_Nova_OutputThread_Nova_OutputThread(example_network_Nova_OutputThread* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_network_Nova_ServerSocket* example_network_Nova_OutputThread_Nova_serverSocket, nova_standard_network_Nova_ConnectionSocket* example_network_Nova_OutputThread_Nova_socket)
 {
 	CCLASS_NEW(example_network_Nova_OutputThread, this);
 	this->vtable = &example_network_Extension_VTable_OutputThread_val;
@@ -91,7 +92,7 @@ void example_network_Nova_OutputThread_0_Nova_run(example_network_Nova_OutputThr
 		nova_standard_Nova_String* l1_Nova_message;
 		
 		l1_Nova_message = nova_standard_io_Nova_Console_Nova_readLine(0, exceptionData);
-		if (nova_standard_operators_Nova_Equals_virtual0_Nova_equals((nova_standard_operators_Nova_Equals*)(l1_Nova_message), exceptionData, (nova_standard_Nova_Object*)(nova_standard_Nova_String_2_Nova_construct(0, exceptionData, "q"))))
+		if (nova_standard_operators_Nova_Equals_virtual0_Nova_equals((nova_standard_operators_Nova_Equals*)(l1_Nova_message), exceptionData, (nova_standard_Nova_Object*)(nova_standard_Nova_String_1_Nova_String(0, exceptionData, "q"))))
 		{
 			nova_standard_network_Nova_ServerSocket_Nova_close(this->prv->example_network_Nova_OutputThread_Nova_serverSocket, exceptionData);
 			break;

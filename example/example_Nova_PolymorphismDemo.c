@@ -23,6 +23,7 @@ example_Extension_VTable_PolymorphismDemo example_Extension_VTable_PolymorphismD
 		0,
 		0,
 		0,
+		0,
 		(char(*)(nova_standard_operators_Nova_Equals*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*))nova_standard_Nova_Object_0_Nova_equals,
 		0,
 		0,
@@ -42,7 +43,7 @@ void example_Nova_PolymorphismDemoNova_init_static(nova_standard_exception_Nova_
 	}
 }
 
-example_Nova_PolymorphismDemo* example_Nova_PolymorphismDemo_0_Nova_construct(example_Nova_PolymorphismDemo* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
+example_Nova_PolymorphismDemo* example_Nova_PolymorphismDemo_Nova_PolymorphismDemo(example_Nova_PolymorphismDemo* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
 	CCLASS_NEW(example_Nova_PolymorphismDemo, this,);
 	this->vtable = &example_Extension_VTable_PolymorphismDemo_val;
@@ -75,12 +76,12 @@ void example_Nova_PolymorphismDemo_Nova_main(example_Nova_PolymorphismDemo* this
 	nova_standard_Nova_String* l1_Nova_description;
 	
 	l1_Nova_animals = (example_Nova_Animal**)NOVA_MALLOC(sizeof(example_Nova_Animal) * 2);
-	l1_Nova_dog = example_Nova_Dog_0_Nova_construct(0, exceptionData);
-	l1_Nova_spider = example_Nova_Spider_0_Nova_construct(0, exceptionData);
+	l1_Nova_dog = example_Nova_Dog_Nova_Dog(0, exceptionData);
+	l1_Nova_spider = example_Nova_Spider_Nova_Spider(0, exceptionData);
 	l1_Nova_animals[0] = (example_Nova_Animal*)(l1_Nova_dog);
 	l1_Nova_animals[1] = (example_Nova_Animal*)(l1_Nova_spider);
 	l1_Nova_description = example_Nova_PolymorphismDemo_Nova_getDescriptionOfAnimalWithNumberOfLegs(0, exceptionData, l1_Nova_animals, 8);
-	nova_standard_io_Nova_Console_1_Nova_writeLine(0, exceptionData, nova_standard_Nova_String_2_Nova_construct(0, exceptionData, "Searched for animal with 8 legs and found:"));
+	nova_standard_io_Nova_Console_1_Nova_writeLine(0, exceptionData, nova_standard_Nova_String_1_Nova_String(0, exceptionData, "Searched for animal with 8 legs and found:"));
 	nova_standard_io_Nova_Console_1_Nova_writeLine(0, exceptionData, l1_Nova_description);
 	nova_standard_io_Nova_Console_Nova_waitForEnter(0, exceptionData);
 }

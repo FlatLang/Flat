@@ -23,6 +23,7 @@ nova_standard_math_Extension_VTable_NumericOperand nova_standard_math_Extension_
 		0,
 		0,
 		0,
+		0,
 		(char(*)(nova_standard_operators_Nova_Equals*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*))nova_standard_Nova_Object_0_Nova_equals,
 		0,
 		0,
@@ -45,7 +46,7 @@ void nova_standard_math_Nova_NumericOperandNova_init_static(nova_standard_except
 	}
 }
 
-nova_standard_math_Nova_NumericOperand* nova_standard_math_Nova_NumericOperand_2_Nova_construct(nova_standard_math_Nova_NumericOperand* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_Nova_Object* nova_standard_math_Nova_NumericOperand_Nova_data)
+nova_standard_math_Nova_NumericOperand* nova_standard_math_Nova_NumericOperand_Nova_NumericOperand(nova_standard_math_Nova_NumericOperand* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_Nova_Object* nova_standard_math_Nova_NumericOperand_Nova_data)
 {
 	CCLASS_NEW(nova_standard_math_Nova_NumericOperand, this);
 	this->vtable = &nova_standard_math_Extension_VTable_NumericOperand_val;

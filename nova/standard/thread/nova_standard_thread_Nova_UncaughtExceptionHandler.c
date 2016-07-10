@@ -23,6 +23,7 @@ nova_standard_thread_Extension_VTable_UncaughtExceptionHandler nova_standard_thr
 		0,
 		0,
 		0,
+		0,
 		(char(*)(nova_standard_operators_Nova_Equals*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*))nova_standard_Nova_Object_0_Nova_equals,
 		0,
 		0,
@@ -41,7 +42,7 @@ void nova_standard_thread_Nova_UncaughtExceptionHandlerNova_init_static(nova_sta
 	}
 }
 
-nova_standard_thread_Nova_UncaughtExceptionHandler* nova_standard_thread_Nova_UncaughtExceptionHandler_0_Nova_construct(nova_standard_thread_Nova_UncaughtExceptionHandler* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
+nova_standard_thread_Nova_UncaughtExceptionHandler* nova_standard_thread_Nova_UncaughtExceptionHandler_Nova_UncaughtExceptionHandler(nova_standard_thread_Nova_UncaughtExceptionHandler* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
 	CCLASS_NEW(nova_standard_thread_Nova_UncaughtExceptionHandler, this,);
 	this->vtable = &nova_standard_thread_Extension_VTable_UncaughtExceptionHandler_val;
@@ -66,15 +67,11 @@ void nova_standard_thread_Nova_UncaughtExceptionHandler_Nova_destroy(nova_standa
 	NOVA_FREE(*this);
 }
 
-void nova_standard_thread_Nova_UncaughtExceptionHandler_Nova_UncaughtExceptionHandler(nova_standard_thread_Nova_UncaughtExceptionHandler* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
+void nova_standard_thread_Nova_UncaughtExceptionHandler_0_Nova_this(nova_standard_thread_Nova_UncaughtExceptionHandler* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
 }
 
 void nova_standard_thread_Nova_UncaughtExceptionHandler_0_Nova_uncaughtException(nova_standard_thread_Nova_UncaughtExceptionHandler* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_thread_Nova_Thread* nova_standard_thread_Nova_UncaughtExceptionHandler_Nova_thread, nova_standard_exception_Nova_Exception* nova_standard_thread_Nova_UncaughtExceptionHandler_Nova_exception)
-{
-}
-
-void nova_standard_thread_Nova_UncaughtExceptionHandler_0_Nova_this(nova_standard_thread_Nova_UncaughtExceptionHandler* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
 }
 

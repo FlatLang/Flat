@@ -23,6 +23,7 @@ nova_standard_math_logic_Extension_VTable_Conclusion nova_standard_math_logic_Ex
 		0,
 		0,
 		0,
+		0,
 		(char(*)(nova_standard_operators_Nova_Equals*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*))nova_standard_Nova_Object_0_Nova_equals,
 		0,
 		0,
@@ -46,7 +47,7 @@ void nova_standard_math_logic_Nova_ConclusionNova_init_static(nova_standard_exce
 	}
 }
 
-nova_standard_math_logic_Nova_Conclusion* nova_standard_math_logic_Nova_Conclusion_Nova_construct(nova_standard_math_logic_Nova_Conclusion* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_Nova_String* nova_standard_math_logic_Nova_Conclusion_Nova_statement)
+nova_standard_math_logic_Nova_Conclusion* nova_standard_math_logic_Nova_Conclusion_Nova_Conclusion(nova_standard_math_logic_Nova_Conclusion* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_Nova_String* nova_standard_math_logic_Nova_Conclusion_Nova_statement)
 {
 	CCLASS_NEW(nova_standard_math_logic_Nova_Conclusion, this);
 	this->vtable = &nova_standard_math_logic_Extension_VTable_Conclusion_val;

@@ -53,7 +53,7 @@ CCLASS_CLASS
 )
 
 void example_Nova_AnimalNova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData);
-example_Nova_Animal* example_Nova_Animal_0_Nova_construct(example_Nova_Animal* this, nova_standard_exception_Nova_ExceptionData* exceptionData);
+example_Nova_Animal* example_Nova_Animal_Nova_Animal(example_Nova_Animal* this, nova_standard_exception_Nova_ExceptionData* exceptionData);
 void example_Nova_Animal_Nova_destroy(example_Nova_Animal** this, nova_standard_exception_Nova_ExceptionData* exceptionData);
 int example_Nova_Animal_0_Nova_getNumLegs(example_Nova_Animal* this, nova_standard_exception_Nova_ExceptionData* exceptionData);
 int example_Nova_Animal_0_Nova_getNumEyes(example_Nova_Animal* this, nova_standard_exception_Nova_ExceptionData* exceptionData);

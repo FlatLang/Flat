@@ -23,6 +23,7 @@ nova_standard_thread_async_Extension_VTable_Async nova_standard_thread_async_Ext
 		0,
 		0,
 		0,
+		0,
 		(char(*)(nova_standard_operators_Nova_Equals*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*))nova_standard_Nova_Object_0_Nova_equals,
 		0,
 		0,
@@ -40,7 +41,7 @@ void nova_standard_thread_async_Nova_AsyncNova_init_static(nova_standard_excepti
 	}
 }
 
-nova_standard_thread_async_Nova_Async* nova_standard_thread_async_Nova_Async_0_Nova_construct(nova_standard_thread_async_Nova_Async* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
+nova_standard_thread_async_Nova_Async* nova_standard_thread_async_Nova_Async_Nova_Async(nova_standard_thread_async_Nova_Async* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
 	CCLASS_NEW(nova_standard_thread_async_Nova_Async, this,);
 	this->vtable = &nova_standard_thread_async_Extension_VTable_Async_val;
@@ -70,8 +71,8 @@ nova_standard_thread_async_Nova_AsyncResult* nova_standard_thread_async_Nova_Asy
 	nova_standard_thread_async_Nova_AsyncResult* l1_Nova_result;
 	nova_standard_thread_Nova_Thread* l1_Nova_thread;
 	
-	l1_Nova_result = nova_standard_thread_async_Nova_AsyncResult_0_Nova_construct(0, exceptionData);
-	l1_Nova_thread = nova_standard_thread_Nova_Thread_2_Nova_construct(0, exceptionData);
+	l1_Nova_result = nova_standard_thread_async_Nova_AsyncResult_Nova_AsyncResult(0, exceptionData);
+	l1_Nova_thread = nova_standard_thread_Nova_Thread_Nova_Thread(0, exceptionData);
 	nova_standard_thread_Nova_Thread_Nova_start(l1_Nova_thread, exceptionData);
 	return l1_Nova_result;
 }

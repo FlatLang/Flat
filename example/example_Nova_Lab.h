@@ -29,7 +29,9 @@ typedef struct example_Nova_Lab example_Nova_Lab;
 #include <nova/standard/nova_standard_Nova_System.h>
 #include <nova/standard/math/nova_standard_math_Nova_Math.h>
 #include <nova/standard/datastruct/nova_standard_datastruct_Nova_BinaryTree.h>
+#include <nova/standard/datastruct/list/nova_standard_datastruct_list_Nova_IntArray.h>
 #include <nova/standard/datastruct/list/nova_standard_datastruct_list_Nova_LinkedList.h>
+#include <nova/standard/datastruct/list/nova_standard_datastruct_list_Nova_List.h>
 #include <example/example_Nova_Polygon.h>
 
 
@@ -53,7 +55,7 @@ CCLASS_CLASS
 )
 
 void example_Nova_LabNova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData);
-example_Nova_Lab* example_Nova_Lab_0_Nova_construct(example_Nova_Lab* this, nova_standard_exception_Nova_ExceptionData* exceptionData);
+example_Nova_Lab* example_Nova_Lab_Nova_Lab(example_Nova_Lab* this, nova_standard_exception_Nova_ExceptionData* exceptionData);
 void example_Nova_Lab_Nova_destroy(example_Nova_Lab** this, nova_standard_exception_Nova_ExceptionData* exceptionData);
 void example_Nova_Lab_Nova_main(example_Nova_Lab* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_Nova_String** example_Nova_Lab_Nova_args);
 void example_Nova_Lab_0_Nova_this(example_Nova_Lab* this, nova_standard_exception_Nova_ExceptionData* exceptionData);

@@ -21,6 +21,7 @@ nova_standard_network_Extension_VTable_NetworkInputStream nova_standard_network_
 		0,
 		0,
 		0,
+		0,
 		(nova_standard_Nova_String*(*)(nova_standard_io_Nova_InputStream*, nova_standard_exception_Nova_ExceptionData*))nova_standard_network_Nova_NetworkInputStream_0_Nova_readString,
 		(char*(*)(nova_standard_io_Nova_InputStream*, nova_standard_exception_Nova_ExceptionData*))nova_standard_network_Nova_NetworkInputStream_0_Nova_readBytes,
 		0,
@@ -44,7 +45,7 @@ void nova_standard_network_Nova_NetworkInputStreamNova_init_static(nova_standard
 	}
 }
 
-nova_standard_network_Nova_NetworkInputStream* nova_standard_network_Nova_NetworkInputStream_Nova_construct(nova_standard_network_Nova_NetworkInputStream* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_network_Nova_ConnectionSocket* nova_standard_network_Nova_NetworkInputStream_Nova_socket)
+nova_standard_network_Nova_NetworkInputStream* nova_standard_network_Nova_NetworkInputStream_Nova_NetworkInputStream(nova_standard_network_Nova_NetworkInputStream* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_network_Nova_ConnectionSocket* nova_standard_network_Nova_NetworkInputStream_Nova_socket)
 {
 	CCLASS_NEW(nova_standard_network_Nova_NetworkInputStream, this);
 	this->vtable = &nova_standard_network_Extension_VTable_NetworkInputStream_val;

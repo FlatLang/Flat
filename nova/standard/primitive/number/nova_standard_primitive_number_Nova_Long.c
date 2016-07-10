@@ -23,6 +23,7 @@ nova_standard_primitive_number_Extension_VTable_Long nova_standard_primitive_num
 		0,
 		0,
 		0,
+		0,
 		(char(*)(nova_standard_operators_Nova_Equals*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*))nova_standard_Nova_Object_0_Nova_equals,
 		(nova_standard_Nova_Object*(*)(nova_standard_operators_Nova_Multiply*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*))nova_standard_primitive_number_Nova_Long_0_Nova_multiply,
 		0,
@@ -47,7 +48,7 @@ void nova_standard_primitive_number_Nova_LongNova_init_static(nova_standard_exce
 	}
 }
 
-nova_standard_primitive_number_Nova_Long* nova_standard_primitive_number_Nova_Long_Nova_construct(nova_standard_primitive_number_Nova_Long* this, nova_standard_exception_Nova_ExceptionData* exceptionData, long_long nova_standard_primitive_number_Nova_Long_Nova_value)
+nova_standard_primitive_number_Nova_Long* nova_standard_primitive_number_Nova_Long_Nova_Long(nova_standard_primitive_number_Nova_Long* this, nova_standard_exception_Nova_ExceptionData* exceptionData, long_long nova_standard_primitive_number_Nova_Long_Nova_value)
 {
 	CCLASS_NEW(nova_standard_primitive_number_Nova_Long, this,);
 	this->vtable = &nova_standard_primitive_number_Extension_VTable_Long_val;
@@ -124,7 +125,7 @@ nova_standard_Nova_String* nova_standard_primitive_number_Nova_Long_2_Nova_toStr
 		l1_Nova_data[l1_Nova_digits - l3_Nova_index] = (char)(l1_Nova_charOffset + nova_standard_math_Nova_Math_0_Nova_abs(0, exceptionData, nova_standard_primitive_number_Nova_Long_Nova_value % 10));
 		nova_standard_primitive_number_Nova_Long_Nova_value = nova_standard_primitive_number_Nova_Long_Nova_value / 10;
 	}
-	return nova_standard_Nova_String_2_Nova_construct(0, exceptionData, l1_Nova_data);
+	return nova_standard_Nova_String_1_Nova_String(0, exceptionData, l1_Nova_data);
 }
 
 nova_standard_Nova_String* nova_standard_primitive_number_Nova_Long_3_Nova_toString(nova_standard_primitive_number_Nova_Long* this, nova_standard_exception_Nova_ExceptionData* exceptionData)

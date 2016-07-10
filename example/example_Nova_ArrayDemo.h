@@ -53,7 +53,7 @@ CCLASS_CLASS
 )
 
 void example_Nova_ArrayDemoNova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData);
-example_Nova_ArrayDemo* example_Nova_ArrayDemo_0_Nova_construct(example_Nova_ArrayDemo* this, nova_standard_exception_Nova_ExceptionData* exceptionData);
+example_Nova_ArrayDemo* example_Nova_ArrayDemo_Nova_ArrayDemo(example_Nova_ArrayDemo* this, nova_standard_exception_Nova_ExceptionData* exceptionData);
 void example_Nova_ArrayDemo_Nova_destroy(example_Nova_ArrayDemo** this, nova_standard_exception_Nova_ExceptionData* exceptionData);
 void example_Nova_ArrayDemo_Nova_main(example_Nova_ArrayDemo* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_Nova_String** example_Nova_ArrayDemo_Nova_args);
 void example_Nova_ArrayDemo_0_Nova_this(example_Nova_ArrayDemo* this, nova_standard_exception_Nova_ExceptionData* exceptionData);

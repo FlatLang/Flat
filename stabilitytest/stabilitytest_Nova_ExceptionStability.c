@@ -23,6 +23,7 @@ stabilitytest_Extension_VTable_ExceptionStability stabilitytest_Extension_VTable
 		0,
 		0,
 		0,
+		0,
 		(char(*)(nova_standard_operators_Nova_Equals*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*))nova_standard_Nova_Object_0_Nova_equals,
 		0,
 		0,
@@ -43,7 +44,7 @@ void stabilitytest_Nova_ExceptionStabilityNova_init_static(nova_standard_excepti
 	}
 }
 
-stabilitytest_Nova_ExceptionStability* stabilitytest_Nova_ExceptionStability_0_Nova_construct(stabilitytest_Nova_ExceptionStability* this, nova_standard_exception_Nova_ExceptionData* exceptionData, stabilitytest_Nova_StabilityTest* stabilitytest_Nova_ExceptionStability_Nova_program)
+stabilitytest_Nova_ExceptionStability* stabilitytest_Nova_ExceptionStability_Nova_ExceptionStability(stabilitytest_Nova_ExceptionStability* this, nova_standard_exception_Nova_ExceptionData* exceptionData, stabilitytest_Nova_StabilityTest* stabilitytest_Nova_ExceptionStability_Nova_program)
 {
 	CCLASS_NEW(stabilitytest_Nova_ExceptionStability, this,);
 	this->vtable = &stabilitytest_Extension_VTable_ExceptionStability_val;
@@ -78,7 +79,7 @@ void stabilitytest_Nova_ExceptionStability_0_Nova_test(stabilitytest_Nova_Except
 {
 	char l1_Nova_worked;
 	
-	nova_standard_io_Nova_Console_1_Nova_writeLine(0, exceptionData, nova_standard_Nova_String_2_Nova_construct(0, exceptionData, "Checking Exception handling..."));
+	nova_standard_io_Nova_Console_1_Nova_writeLine(0, exceptionData, nova_standard_Nova_String_1_Nova_String(0, exceptionData, "Checking Exception handling..."));
 	l1_Nova_worked = 0;
 	TRY
 	{
@@ -94,7 +95,7 @@ void stabilitytest_Nova_ExceptionStability_0_Nova_test(stabilitytest_Nova_Except
 		
 		l2_Nova_e = exceptionData->nova_standard_exception_Nova_ExceptionData_Nova_thrownException;
 		l1_Nova_worked = 1;
-		nova_standard_io_Nova_Console_1_Nova_writeLine(0, exceptionData, nova_standard_Nova_String_2_Nova_construct(0, exceptionData, "OK"));
+		nova_standard_io_Nova_Console_1_Nova_writeLine(0, exceptionData, nova_standard_Nova_String_1_Nova_String(0, exceptionData, "OK"));
 	}
 	FINALLY
 	{
@@ -102,7 +103,7 @@ void stabilitytest_Nova_ExceptionStability_0_Nova_test(stabilitytest_Nova_Except
 	END_TRY;
 	if (!l1_Nova_worked)
 	{
-		stabilitytest_Nova_StabilityTest_1_Nova_fail(this->stabilitytest_Nova_StabilityTestCase_Nova_program, exceptionData, nova_standard_Nova_String_2_Nova_construct(0, exceptionData, "Failed; uncaught Exception"));
+		stabilitytest_Nova_StabilityTest_1_Nova_fail(this->stabilitytest_Nova_StabilityTestCase_Nova_program, exceptionData, nova_standard_Nova_String_1_Nova_String(0, exceptionData, "Failed; uncaught Exception"));
 	}
 }
 
@@ -116,7 +117,7 @@ void stabilitytest_Nova_ExceptionStability_Nova_testException(stabilitytest_Nova
 		novaEnv.nova_standard_exception_ExceptionData.addCode(exceptionData, exceptionData, 9);
 		
 		{
-			nova_standard_io_Nova_Console_0_Nova_write(0, exceptionData, nova_standard_Nova_String_2_Nova_construct(0, exceptionData, "Checking DivideByZeroException... "));
+			nova_standard_io_Nova_Console_0_Nova_write(0, exceptionData, nova_standard_Nova_String_1_Nova_String(0, exceptionData, "Checking DivideByZeroException... "));
 			TRY
 			{
 				novaEnv.nova_standard_exception_ExceptionData.addCode(exceptionData, exceptionData, 8);
@@ -130,7 +131,7 @@ void stabilitytest_Nova_ExceptionStability_Nova_testException(stabilitytest_Nova
 					nova_zero_check6 = l2_Nova_den;
 					if (nova_zero_check6 == 0)
 					{
-						THROW(8, nova_standard_exception_Nova_DivideByZeroException_3_Nova_construct(0, exceptionData));
+						THROW(8, nova_standard_exception_Nova_DivideByZeroException_Nova_DivideByZeroException(0, exceptionData));
 					}
 					l2_Nova_i = 43 / nova_zero_check6;
 				}
@@ -141,15 +142,15 @@ void stabilitytest_Nova_ExceptionStability_Nova_testException(stabilitytest_Nova
 				
 				l5_Nova_e = (nova_standard_exception_Nova_DivideByZeroException*)(exceptionData->nova_standard_exception_Nova_ExceptionData_Nova_thrownException);
 				l1_Nova_worked = 1;
-				nova_standard_io_Nova_Console_1_Nova_writeLine(0, exceptionData, nova_standard_Nova_String_2_Nova_construct(0, exceptionData, "OK"));
-				nova_standard_io_Nova_Console_0_Nova_write(0, exceptionData, nova_standard_Nova_String_2_Nova_construct(0, exceptionData, "Checking StabilityTestException... "));
-				THROW(9, stabilitytest_Nova_StabilityTestException_3_Nova_construct(0, exceptionData));
+				nova_standard_io_Nova_Console_1_Nova_writeLine(0, exceptionData, nova_standard_Nova_String_1_Nova_String(0, exceptionData, "OK"));
+				nova_standard_io_Nova_Console_0_Nova_write(0, exceptionData, nova_standard_Nova_String_1_Nova_String(0, exceptionData, "Checking StabilityTestException... "));
+				THROW(9, stabilitytest_Nova_StabilityTestException_Nova_StabilityTestException(0, exceptionData));
 			}
 			FINALLY
 			{
 			}
 			END_TRY;
-			stabilitytest_Nova_StabilityTest_1_Nova_fail(this->stabilitytest_Nova_StabilityTestCase_Nova_program, exceptionData, nova_standard_Nova_String_2_Nova_construct(0, exceptionData, "Failed to catch DivideByZeroException"));
+			stabilitytest_Nova_StabilityTest_1_Nova_fail(this->stabilitytest_Nova_StabilityTestCase_Nova_program, exceptionData, nova_standard_Nova_String_1_Nova_String(0, exceptionData, "Failed to catch DivideByZeroException"));
 		}
 	}
 	CATCH (9)
@@ -159,10 +160,10 @@ void stabilitytest_Nova_ExceptionStability_Nova_testException(stabilitytest_Nova
 		l7_Nova_e = (stabilitytest_Nova_StabilityTestException*)(exceptionData->nova_standard_exception_Nova_ExceptionData_Nova_thrownException);
 		if (!l1_Nova_worked)
 		{
-			stabilitytest_Nova_StabilityTest_1_Nova_fail(this->stabilitytest_Nova_StabilityTestCase_Nova_program, exceptionData, nova_standard_Nova_String_2_Nova_construct(0, exceptionData, "Failed; uncaught DivideByZeroException"));
+			stabilitytest_Nova_StabilityTest_1_Nova_fail(this->stabilitytest_Nova_StabilityTestCase_Nova_program, exceptionData, nova_standard_Nova_String_1_Nova_String(0, exceptionData, "Failed; uncaught DivideByZeroException"));
 		}
-		nova_standard_io_Nova_Console_1_Nova_writeLine(0, exceptionData, nova_standard_Nova_String_2_Nova_construct(0, exceptionData, "OK"));
-		THROW(1, nova_standard_exception_Nova_Exception_3_Nova_construct(0, exceptionData));
+		nova_standard_io_Nova_Console_1_Nova_writeLine(0, exceptionData, nova_standard_Nova_String_1_Nova_String(0, exceptionData, "OK"));
+		THROW(1, nova_standard_exception_Nova_Exception_0_Nova_Exception(0, exceptionData));
 	}
 	FINALLY
 	{
@@ -170,7 +171,7 @@ void stabilitytest_Nova_ExceptionStability_Nova_testException(stabilitytest_Nova
 	END_TRY;
 	if (!l1_Nova_worked)
 	{
-		stabilitytest_Nova_StabilityTest_1_Nova_fail(this->stabilitytest_Nova_StabilityTestCase_Nova_program, exceptionData, nova_standard_Nova_String_2_Nova_construct(0, exceptionData, "Failed; uncaught StabilityTestException"));
+		stabilitytest_Nova_StabilityTest_1_Nova_fail(this->stabilitytest_Nova_StabilityTestCase_Nova_program, exceptionData, nova_standard_Nova_String_1_Nova_String(0, exceptionData, "Failed; uncaught StabilityTestException"));
 	}
 }
 

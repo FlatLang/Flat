@@ -51,7 +51,7 @@ CCLASS_CLASS
 )
 
 void nova_standard_Nova_ClassNova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData);
-nova_standard_Nova_Class* nova_standard_Nova_Class_Nova_construct(nova_standard_Nova_Class* this, nova_standard_exception_Nova_ExceptionData* exceptionData);
+nova_standard_Nova_Class* nova_standard_Nova_Class_Nova_Class(nova_standard_Nova_Class* this, nova_standard_exception_Nova_ExceptionData* exceptionData);
 void nova_standard_Nova_Class_Nova_destroy(nova_standard_Nova_Class** this, nova_standard_exception_Nova_ExceptionData* exceptionData);
 void nova_standard_Nova_Class_Nova_this(nova_standard_Nova_Class* this, nova_standard_exception_Nova_ExceptionData* exceptionData);
 void nova_standard_Nova_Class_Nova_super(nova_standard_Nova_Class* this, nova_standard_exception_Nova_ExceptionData* exceptionData);

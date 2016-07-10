@@ -53,7 +53,7 @@ CCLASS_CLASS
 )
 
 void example_Nova_PersonNova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData);
-example_Nova_Person* example_Nova_Person_2_Nova_construct(example_Nova_Person* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_Nova_String* example_Nova_Person_Nova_name, int example_Nova_Person_Nova_age);
+example_Nova_Person* example_Nova_Person_Nova_Person(example_Nova_Person* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_Nova_String* example_Nova_Person_Nova_name, int example_Nova_Person_Nova_age);
 void example_Nova_Person_Nova_destroy(example_Nova_Person** this, nova_standard_exception_Nova_ExceptionData* exceptionData);
 void example_Nova_Person_2_Nova_this(example_Nova_Person* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_Nova_String* example_Nova_Person_Nova_name, int example_Nova_Person_Nova_age);
 void example_Nova_Person_0_Nova_sayHello(example_Nova_Person* this, nova_standard_exception_Nova_ExceptionData* exceptionData);

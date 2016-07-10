@@ -23,6 +23,7 @@ nova_standard_math_Extension_VTable_Polynomial nova_standard_math_Extension_VTab
 		0,
 		0,
 		0,
+		0,
 		(char(*)(nova_standard_operators_Nova_Equals*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*))nova_standard_Nova_Object_0_Nova_equals,
 		0,
 		0,
@@ -80,7 +81,7 @@ void nova_standard_math_Nova_PolynomialNova_init_static(nova_standard_exception_
 	}
 }
 
-nova_standard_math_Nova_Polynomial* nova_standard_math_Nova_Polynomial_Nova_construct(nova_standard_math_Nova_Polynomial* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_Nova_String* nova_standard_math_Nova_Polynomial_Nova_polynomial)
+nova_standard_math_Nova_Polynomial* nova_standard_math_Nova_Polynomial_Nova_Polynomial(nova_standard_math_Nova_Polynomial* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_Nova_String* nova_standard_math_Nova_Polynomial_Nova_polynomial)
 {
 	CCLASS_NEW(nova_standard_math_Nova_Polynomial, this,);
 	this->vtable = &nova_standard_math_Extension_VTable_Polynomial_val;
@@ -119,9 +120,9 @@ void nova_standard_math_Nova_Polynomial_Nova_this(nova_standard_math_Nova_Polyno
 	
 	l2_Nova_start = (int)(0);
 	l2_Nova_reading = 0;
-	l2_Nova_coeffs = nova_standard_datastruct_list_Nova_Array_0_Nova_construct(0, exceptionData);
-	l2_Nova_degrees = nova_standard_datastruct_list_Nova_Array_0_Nova_construct(0, exceptionData);
-	l2_Nova_signs = nova_standard_datastruct_list_Nova_Array_0_Nova_construct(0, exceptionData);
+	l2_Nova_coeffs = nova_standard_datastruct_list_Nova_Array_0_Nova_Array(0, exceptionData);
+	l2_Nova_degrees = nova_standard_datastruct_list_Nova_Array_0_Nova_Array(0, exceptionData);
+	l2_Nova_signs = nova_standard_datastruct_list_Nova_Array_0_Nova_Array(0, exceptionData);
 	l4_Nova_i = (int)(0);
 	for (; l4_Nova_i < nova_standard_math_Nova_Polynomial_Nova_polynomial->nova_standard_Nova_String_Nova_size; l4_Nova_i++)
 	{

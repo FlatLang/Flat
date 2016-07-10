@@ -23,6 +23,7 @@ example_Extension_VTable_ThreadDemoImplementation example_Extension_VTable_Threa
 		0,
 		0,
 		0,
+		0,
 		(char(*)(nova_standard_operators_Nova_Equals*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*))nova_standard_Nova_Object_0_Nova_equals,
 		0,
 		0,
@@ -49,7 +50,7 @@ void example_Nova_ThreadDemoImplementationNova_init_static(nova_standard_excepti
 	}
 }
 
-example_Nova_ThreadDemoImplementation* example_Nova_ThreadDemoImplementation_Nova_construct(example_Nova_ThreadDemoImplementation* this, nova_standard_exception_Nova_ExceptionData* exceptionData, long_long example_Nova_ThreadDemoImplementation_Nova_millis, nova_standard_Nova_String* example_Nova_ThreadDemoImplementation_Nova_word)
+example_Nova_ThreadDemoImplementation* example_Nova_ThreadDemoImplementation_Nova_ThreadDemoImplementation(example_Nova_ThreadDemoImplementation* this, nova_standard_exception_Nova_ExceptionData* exceptionData, long_long example_Nova_ThreadDemoImplementation_Nova_millis, nova_standard_Nova_String* example_Nova_ThreadDemoImplementation_Nova_word)
 {
 	CCLASS_NEW(example_Nova_ThreadDemoImplementation, this);
 	this->vtable = &example_Extension_VTable_ThreadDemoImplementation_val;

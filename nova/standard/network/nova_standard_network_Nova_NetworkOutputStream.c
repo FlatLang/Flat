@@ -23,6 +23,7 @@ nova_standard_network_Extension_VTable_NetworkOutputStream nova_standard_network
 		0,
 		0,
 		0,
+		0,
 		(char(*)(nova_standard_operators_Nova_Equals*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*))nova_standard_Nova_Object_0_Nova_equals,
 		0,
 		0,
@@ -49,7 +50,7 @@ void nova_standard_network_Nova_NetworkOutputStreamNova_init_static(nova_standar
 	}
 }
 
-nova_standard_network_Nova_NetworkOutputStream* nova_standard_network_Nova_NetworkOutputStream_Nova_construct(nova_standard_network_Nova_NetworkOutputStream* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_network_Nova_ConnectionSocket* nova_standard_network_Nova_NetworkOutputStream_Nova_socket)
+nova_standard_network_Nova_NetworkOutputStream* nova_standard_network_Nova_NetworkOutputStream_Nova_NetworkOutputStream(nova_standard_network_Nova_NetworkOutputStream* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_network_Nova_ConnectionSocket* nova_standard_network_Nova_NetworkOutputStream_Nova_socket)
 {
 	CCLASS_NEW(nova_standard_network_Nova_NetworkOutputStream, this);
 	this->vtable = &nova_standard_network_Extension_VTable_NetworkOutputStream_val;
