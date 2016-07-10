@@ -4,18 +4,7 @@ import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.error.SyntaxMessage;
-import net.fathomsoft.nova.tree.AccessorMethod;
-import net.fathomsoft.nova.tree.Assignment;
-import net.fathomsoft.nova.tree.BinaryOperation;
-import net.fathomsoft.nova.tree.Dimensions;
-import net.fathomsoft.nova.tree.Identifier;
-import net.fathomsoft.nova.tree.Literal;
-import net.fathomsoft.nova.tree.MethodCallArgumentList;
-import net.fathomsoft.nova.tree.Node;
-import net.fathomsoft.nova.tree.Priority;
-import net.fathomsoft.nova.tree.SyntaxTree;
-import net.fathomsoft.nova.tree.TypeList;
-import net.fathomsoft.nova.tree.Value;
+import net.fathomsoft.nova.tree.*;
 import net.fathomsoft.nova.util.Location;
 import net.fathomsoft.nova.util.StringUtils;
 import net.fathomsoft.nova.util.SyntaxUtils;
@@ -377,6 +366,8 @@ public class Array extends VariableDeclaration implements ArrayCompatible
 				return SyntaxMessage.queryError("Type '" + val.getType() + "' is not compatible with array type '" + getArrayDeclaration().getType() + "'", this, require);
 			}
 			
+			val.setTypeValue(getArrayDeclaration().getType());
+			
 			initValues.addChild(val);
 		}
 		
@@ -474,7 +465,7 @@ public class Array extends VariableDeclaration implements ArrayCompatible
 			return result;
 		}
 		
-		if (phase == SyntaxTree.PHASE_METHOD_CONTENTS)
+		if (phase == SyntaxTree.PHASE_PRE_GENERATION)
 		{
 			TypeList<Value> initValues = getInitializerValues();
 			
@@ -486,7 +477,17 @@ public class Array extends VariableDeclaration implements ArrayCompatible
 				{
 					Value value = initValues.getVisibleChild(i);
 					
+					/*if (value.isPrimitiveType())
+					{
+						Nova.debuggingBreakpoint(getParentClass().getName().equals("Lab"));
+						value = SyntaxUtils.replaceWithAutoboxPrimitive(value);
+						
+						
+					}*/
+					
 					Assignment a = Assignment.decodeStatement(this, getArrayDeclaration().getName() + "[" + i + "] = " + value.generateNovaInput(), getLocationIn(), true);
+					
+					//String s = a.generateCSourceFragment().toString();
 					
 					base.getParent().addChildAfter(base, a);
 				}
