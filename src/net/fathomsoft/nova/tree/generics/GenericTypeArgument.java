@@ -2,16 +2,11 @@ package net.fathomsoft.nova.tree.generics;
 
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.error.UnimplementedOperationException;
-import net.fathomsoft.nova.tree.ClosureDeclaration;
-import net.fathomsoft.nova.tree.GenericCompatible;
-import net.fathomsoft.nova.tree.IValue;
-import net.fathomsoft.nova.tree.List;
-import net.fathomsoft.nova.tree.MethodCall;
-import net.fathomsoft.nova.tree.Node;
-import net.fathomsoft.nova.tree.NovaMethodDeclaration;
-import net.fathomsoft.nova.tree.Value;
+import net.fathomsoft.nova.tree.*;
 import net.fathomsoft.nova.tree.variables.VariableDeclaration;
 import net.fathomsoft.nova.util.Location;
+
+import java.lang.reflect.Method;
 
 /**
  * {@link IValue} extension that represents a generic type implementation.
@@ -50,7 +45,16 @@ public class GenericTypeArgument extends IValue implements GenericCompatible
 	 */
 	public int getArgumentIndex()
 	{
-		List implementation = (List)getParent();//getGenericTypeArgumentList();
+		List implementation = null;
+		
+		//if (getParent() instanceof List)
+		{
+			implementation = (List)getParent();//getGenericTypeArgumentList();
+		}
+		/*else
+		{
+			implementation = ((GenericCompatible) getParent()).getGenericTypeArgumentList();
+		}*/
 		
 		for (int i = 0; i < implementation.getNumVisibleChildren(); i++)
 		{
@@ -206,11 +210,37 @@ public class GenericTypeArgument extends IValue implements GenericCompatible
 //				return extractedType.generateNovaInput().toString();
 //			}
 			
-			if (context != null && context.getAncestorOfType(MethodCall.class, true) != null)
+			/*if (context != null)
 			{
-				MethodCall call = (MethodCall)context.getAncestorOfType(MethodCall.class, true);
+				if (context instanceof Accessible)
+				{
+					
+					
+					MethodCall call = (MethodCall)((Accessible)context).getLastAccessingOfType(MethodCall.class, false, true);
+					
+					if (call != null)//.getAncestorOfType(MethodCall.class, true) != null)
+					{
+						return call.getIntelligentGenericTypeArgument(this).getType();
+					}
+				}
 				
-				return call.getIntelligentGenericTypeArgument(this).getType();
+				if (!context.isGenericType())
+				{
+					ClassDeclaration c = context.getTypeClass();
+					
+					if (c.isOfType(getParentClass()))
+					{
+						// TODO: this is not sufficient at all.
+						return c.getGenericTypeArgument(0).getType();
+					}
+				}
+			}*/
+			
+			GenericTypeArgument arg = getGenericTypeParameter().getCorrespondingArgument(context);
+			
+			if (arg != null)
+			{
+				return arg.getType();
 			}
 			
 			return getDefaultType();

@@ -53,45 +53,6 @@ public interface GenericCompatible
 		return getGenericTypeArgumentList().getNumVisibleChildren();
 	}
 	
-	public default int getGenericTypeArgumentIndex(String parameterName)
-	{
-		if (parameterName == null)
-		{
-			return -1;
-		}
-		
-		GenericTypeArgumentList implementation = getGenericTypeArgumentList();
-		
-		for (int i = 0; i < getNumGenericTypeArguments(); i++)
-		{
-			IValue type = implementation.getVisibleChild(i);
-			
-			if (type.getType().equals(parameterName))
-			{
-				return i;
-			}
-		}
-		
-		return -1;
-	}
-	
-	public default boolean containsGenericTypeArgument(String parameterName)
-	{
-		return getGenericTypeArgument(parameterName) != null;
-	}
-	
-	public default GenericTypeArgument getGenericTypeArgument(String parameterName)
-	{
-		int index = getGenericTypeArgumentIndex(parameterName);
-		
-		if (index < 0)
-		{
-			return null;
-		}
-		
-		return getGenericTypeArgument(index);
-	}
-	
 	public default GenericTypeArgument getGenericTypeArgument(int index)
 	{
 		return getGenericTypeArgument(index, (Node)this);
@@ -106,6 +67,11 @@ public interface GenericCompatible
 	{
 		Nova.debuggingBreakpoint(require);
 		return SyntaxMessage.queryError("Missing generic type declaration", value, require);
+	}
+	
+	public default GenericTypeArgument getGenericTypeArgument(int index, boolean require)
+	{
+		return getGenericTypeArgument(index, (Node)this, require);
 	}
 	
 	public default GenericTypeArgument getGenericTypeArgument(int index, Node value)
@@ -132,7 +98,13 @@ public interface GenericCompatible
 	
 	public default String getGenericTypeArgumentType(String parameterName, Value value)
 	{
+		Nova.debuggingBreakpoint(getGenericTypeArgumentInstance(parameterName, value) == null);
 		GenericTypeArgument type = getGenericTypeArgumentInstance(parameterName, value);
+		
+		if (SyntaxMessage.queryError("Unable to find generic argument", (Node)this, type == null))
+		{
+			return null;
+		}
 		
 		if (type.isGenericType())
 		{
@@ -190,21 +162,8 @@ public interface GenericCompatible
 		}
 		else
 		{
-			int index = clazz.getGenericTypeParameterIndex(parameterName);
-			
-			return getGenericTypeArgument(index, value, require);
+			return clazz.getGenericTypeParameter(parameterName, (GenericCompatible)value).getCorrespondingArgument((GenericCompatible)value);
 		}
-	}
-	
-	public default GenericTypeArgument getGenericTypeArgumentDeclaration(String parameterName)
-	{
-		VariableDeclaration decl = (VariableDeclaration)this;
-		
-		int index = decl.getGenericTypeArgumentIndex(parameterName);
-		
-		ClassDeclaration clazz = decl.getTypeClass();
-		
-		return clazz.getGenericTypeArgument(index);
 	}
 	
 	/**
