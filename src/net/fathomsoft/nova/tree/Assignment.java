@@ -180,7 +180,10 @@ public class Assignment extends Node
 	{
 		Value assignment = getAssignmentNode();
 		
-		boolean sameType = assignment.getReturnedNode().getType().equals(getAssignedNode().getType());
+		String assignmentType = assignment.getReturnedNode().getType();
+		String assignedType = getAssignedNode().getType();
+		
+		boolean sameType = assignmentType.equals(assignedType);
 		
 		if (sameType && assignment instanceof Identifier)
 		{
