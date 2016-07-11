@@ -393,4 +393,9 @@ public class Array<E> implements List<E>
     	
     	return str
     }
+    
+    public toString() -> String
+    {
+        return "Array [" + join(", ") + "]"
+    }
 }
