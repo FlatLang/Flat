@@ -17,6 +17,9 @@ public interface List<Type> extends Iterable<Type>
 	}
 	*/
 	
+	Type first
+	Type last
+	
 	toArray() -> Type[]
 	
 	forEach(func(Type, Int, List<Type>))
@@ -70,9 +73,6 @@ public interface List<Type> extends Iterable<Type>
 		
 		return list
 	}*/
-	
-	first() -> Type
-	last() -> Type
 	
 	firstWhere(func(Type) -> Bool) -> Type
 	/*{

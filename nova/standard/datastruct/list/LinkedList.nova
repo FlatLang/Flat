@@ -23,6 +23,12 @@ public class LinkedList<E> implements List<E>
 		no set
 	}
 	
+	visible ListNode<E> last
+	{
+		get { return current }
+		no set
+	}
+	
 	public add(E data) -> LinkedList<E>
 	{
 		ListNode<E> node = new ListNode(data)
@@ -189,18 +195,6 @@ public class LinkedList<E> implements List<E>
 		}
 		
 		return list
-	}
-	
-	[Override]
-	public first() -> E
-	{
-		return first
-	}
-	
-	[Override]
-	public last() -> E
-	{
-		return current
 	}
 	
 	[Override]
