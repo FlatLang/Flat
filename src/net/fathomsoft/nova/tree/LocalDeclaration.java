@@ -1,5 +1,6 @@
 package net.fathomsoft.nova.tree;
 
+import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.tree.generics.GenericTypeArgument;
@@ -22,7 +23,11 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  */
 public class LocalDeclaration extends VariableDeclaration
 {
+	private boolean implicit;
+	
 	private int scopeID;
+	
+	public static final String IMPLICIT_IDENTIFIER = "var";
 	
 	/**
 	 * @see net.fathomsoft.nova.tree.Node#Node(Node, Location)
@@ -51,6 +56,29 @@ public class LocalDeclaration extends VariableDeclaration
 	public void setScopeID(int scopeID)
 	{
 		this.scopeID = scopeID;
+	}
+	
+	public boolean isImplicit()
+	{
+		return implicit;
+	}
+	
+	public void setImplicit(boolean implicit)
+	{
+		this.implicit = implicit;
+	}
+	
+	@Override
+	public boolean setType(String type, boolean require, boolean checkType, boolean checkDataType)
+	{
+		if (IMPLICIT_IDENTIFIER.equals(type))
+		{
+			setImplicit(true);
+			
+			return true;//setType("nova/standard/Object", require, checkType, checkDataType);
+		}
+		
+		return super.setType(type, require, checkType, checkDataType);
 	}
 	
 	/**
@@ -186,7 +214,7 @@ public class LocalDeclaration extends VariableDeclaration
 	 */
 	public boolean validateDeclaration()
 	{
-		if (getType() == null || getName() == null)
+		if ((!isImplicit() && getType() == null) || getName() == null)
 		{
 			return false;
 		}
@@ -228,7 +256,7 @@ public class LocalDeclaration extends VariableDeclaration
 		}
 		else if (!setAttribute(word, extra.getWordNumber()))
 		{
-			if (getType() != null)
+			if (getType() != null || isImplicit())
 			{
 				extra.error = "Invalid syntax '" + leftDelimiter + word + "'";
 			}
@@ -261,7 +289,7 @@ public class LocalDeclaration extends VariableDeclaration
 	 */
 	private void interactName(String word, String leftDelimiter, String rightDelimiter, DeclarationData extra)
 	{
-		if (getType() == null)// || (leftDelimiter.length() != 0 && !StringUtils.containsOnly(leftDelimiter, new char[] { '*', '&' })))
+		if (!isImplicit() && getType() == null)// || (leftDelimiter.length() != 0 && !StringUtils.containsOnly(leftDelimiter, new char[] { '*', '&' })))
 		{
 			return;
 		}
