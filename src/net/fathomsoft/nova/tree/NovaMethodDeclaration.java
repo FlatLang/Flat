@@ -54,7 +54,7 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 		uniqueID          = 0;
 		overloadID        = -1;
 		types             = new String[0];
-		overridingMethods = new ArrayList<NovaMethodDeclaration>();
+		overridingMethods = new ArrayList<>();
 		
 		NovaParameterList parameters = new NovaParameterList(this, locationIn.asNew());
 		
@@ -140,7 +140,7 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 	 */
 	public Parameter getParameter(int parameterIndex)
 	{
-		return (Parameter)getParameterList().getParameter(parameterIndex);
+		return getParameterList().getParameter(parameterIndex);
 	}
 	
 	/**
@@ -151,7 +151,7 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 	 */
 	public Parameter getParameter(String parameterName)
 	{
-		return (Parameter)getParameterList().getParameter(parameterName);
+		return getParameterList().getParameter(parameterName);
 	}
 	
 	/**
@@ -191,7 +191,6 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 	 */
 	public void setOverloadID(int id)
 	{
-		Nova.debuggingBreakpoint(getFileDeclaration().getName().equals("Exception"));
 		this.overloadID = id;
 	}
 	
