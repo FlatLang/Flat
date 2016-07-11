@@ -4,33 +4,31 @@
 stabilitytest_Extension_VTable_SyntaxStability stabilitytest_Extension_VTable_SyntaxStability_val =
 {
 	{
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
 		(char(*)(nova_standard_operators_Nova_Equals*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*))nova_standard_Nova_Object_0_Nova_equals,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
 		0,
 		0,
 		0,
 	},
 	nova_standard_Nova_Object_0_Nova_getHashCodeLong,
-	nova_standard_Nova_Object_1_Nova_toString,
+	nova_standard_Nova_Object_2_Nova_toString,
 	nova_standard_Nova_Object_0_Nova_equals,
 	stabilitytest_Nova_SyntaxStability_0_Nova_test,
 };
@@ -403,7 +401,7 @@ void stabilitytest_Nova_SyntaxStability_Nova_checkMultipleReturnValues(stability
 	l1_Nova_s1 = nova_standard_Nova_String_1_Nova_String(0, exceptionData, "hello");
 	l1_Nova_s2 = nova_standard_Nova_String_1_Nova_String(0, exceptionData, "world");
 	l1_Nova_s1 = stabilitytest_Nova_SyntaxStability_Nova_swap2(0, exceptionData, l1_Nova_s1, l1_Nova_s2, &l1_Nova_s2);
-	if (!nova_standard_operators_Nova_Equals_virtual0_Nova_equals((nova_standard_operators_Nova_Equals*)(l1_Nova_s1), exceptionData, (nova_standard_Nova_Object*)(nova_standard_Nova_String_1_Nova_String(0, exceptionData, "world"))) || !nova_standard_operators_Nova_Equals_virtual0_Nova_equals((nova_standard_operators_Nova_Equals*)(l1_Nova_s2), exceptionData, (nova_standard_Nova_Object*)(nova_standard_Nova_String_1_Nova_String(0, exceptionData, "hello"))))
+	if (!nova_standard_operators_Nova_Equals_virtual2_Nova_equals((nova_standard_operators_Nova_Equals*)(l1_Nova_s1), exceptionData, (nova_standard_Nova_Object*)(nova_standard_Nova_String_1_Nova_String(0, exceptionData, "world"))) || !nova_standard_operators_Nova_Equals_virtual2_Nova_equals((nova_standard_operators_Nova_Equals*)(l1_Nova_s2), exceptionData, (nova_standard_Nova_Object*)(nova_standard_Nova_String_1_Nova_String(0, exceptionData, "hello"))))
 	{
 		stabilitytest_Nova_StabilityTest_1_Nova_fail(this->stabilitytest_Nova_StabilityTestCase_Nova_program, exceptionData, nova_standard_Nova_String_1_Nova_String(0, exceptionData, "Failed to swap String values with multiple return values"));
 	}
@@ -442,7 +440,7 @@ void stabilitytest_Nova_SyntaxStability_Nova_foreachClosure(stabilitytest_Nova_S
 {
 	if (stabilitytest_Nova_SyntaxStability_Nova_s->nova_standard_Nova_String_Nova_size < 4)
 	{
-		THROW(10, stabilitytest_Nova_UnstableException_Nova_UnstableException(0, exceptionData, nova_standard_Nova_String_1_Nova_String(0, exceptionData, "filtering failed")));
+		THROW(5, stabilitytest_Nova_UnstableException_Nova_UnstableException(0, exceptionData, nova_standard_Nova_String_1_Nova_String(0, exceptionData, "filtering failed")));
 	}
 }
 
@@ -466,16 +464,16 @@ void stabilitytest_Nova_SyntaxStability_Nova_checkIterators(stabilitytest_Nova_S
 	l1_Nova_a[6] = nova_standard_Nova_String_1_Nova_String(0, exceptionData, "what shows up");
 	nova_standard_io_Nova_Console_0_Nova_write(0, exceptionData, nova_standard_Nova_String_1_Nova_String(0, exceptionData, "Checking filter functionality... "));
 	l1_Nova_list = nova_standard_datastruct_list_Nova_Array_2_Nova_Array(0, exceptionData, (nova_standard_Nova_Object**)(l1_Nova_a), 7);
-	l1_Nova_list2 = (nova_standard_datastruct_list_Nova_Array*)(nova_standard_datastruct_list_Nova_List_virtual0_Nova_filter((nova_standard_datastruct_list_Nova_List*)(l1_Nova_list), exceptionData, (nova_standard_datastruct_list_Nova_List_closure15_Nova_filterFunc)&stabilitytest_Nova_SyntaxStability_Nova_filterFunc, this));
+	l1_Nova_list2 = (nova_standard_datastruct_list_Nova_Array*)(nova_standard_datastruct_list_Nova_List_virtual1_Nova_filter((nova_standard_datastruct_list_Nova_List*)(l1_Nova_list), exceptionData, (nova_standard_datastruct_list_Nova_List_closure15_Nova_filterFunc)&stabilitytest_Nova_SyntaxStability_Nova_filterFunc, this));
 	TRY
 	{
-		novaEnv.nova_standard_exception_ExceptionData.addCode(exceptionData, exceptionData, 10);
+		novaEnv.nova_standard_exception_ExceptionData.addCode(exceptionData, exceptionData, 5);
 		
 		{
-			nova_standard_datastruct_list_Nova_List_virtual0_Nova_forEach((nova_standard_datastruct_list_Nova_List*)(l1_Nova_list2), exceptionData, (nova_standard_datastruct_list_Nova_List_closure3_Nova_func)&stabilitytest_Nova_SyntaxStability_Nova_foreachClosure, this);
+			nova_standard_datastruct_list_Nova_List_virtual1_Nova_forEach((nova_standard_datastruct_list_Nova_List*)(l1_Nova_list2), exceptionData, (nova_standard_datastruct_list_Nova_List_closure3_Nova_func)&stabilitytest_Nova_SyntaxStability_Nova_foreachClosure, this);
 		}
 	}
-	CATCH (10)
+	CATCH (5)
 	{
 		stabilitytest_Nova_UnstableException* l2_Nova_e;
 		

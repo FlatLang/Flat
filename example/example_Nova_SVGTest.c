@@ -4,33 +4,31 @@
 example_Extension_VTable_SVGTest example_Extension_VTable_SVGTest_val =
 {
 	{
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
 		(char(*)(nova_standard_operators_Nova_Equals*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*))nova_standard_Nova_Object_0_Nova_equals,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
 		0,
 		0,
 		0,
 	},
 	nova_standard_Nova_Object_0_Nova_getHashCodeLong,
-	nova_standard_Nova_Object_1_Nova_toString,
+	nova_standard_Nova_Object_2_Nova_toString,
 	nova_standard_Nova_Object_0_Nova_equals,
 };
 
@@ -105,7 +103,7 @@ void example_Nova_SVGTest_Nova_main(example_Nova_SVGTest* this, nova_standard_ex
 		nova_zero_check5 = (l1_Nova_numVerts * 1.0);
 		if (nova_zero_check5 == 0)
 		{
-			THROW(8, nova_standard_exception_Nova_DivideByZeroException_Nova_DivideByZeroException(0, exceptionData));
+			THROW(2, nova_standard_exception_Nova_DivideByZeroException_Nova_DivideByZeroException(0, exceptionData));
 		}
 		l2_Nova_rad = l1_Nova_pi2 * (l2_Nova_i / nova_zero_check5) + l1_Nova_offset;
 		l1_Nova_points[l2_Nova_i * 2 + 0] = l1_Nova_radius * nova_standard_math_Nova_Math_Nova_cos(0, exceptionData, l2_Nova_rad) + l1_Nova_radius + 10;
@@ -154,7 +152,7 @@ void example_Nova_SVGTest_Nova_main(example_Nova_SVGTest* this, nova_standard_ex
 	nova_standard_io_Nova_File_Nova_clearContents(l1_Nova_f, exceptionData);
 	nova_standard_svg_Nova_SVG_Nova_generateHTMLOutput(l1_Nova_s, exceptionData, l1_Nova_f);
 	nova_standard_time_Nova_Timer_Nova_stop(l1_Nova_timer, exceptionData);
-	nova_standard_io_Nova_Console_0_Nova_write(0, exceptionData, nova_standard_Nova_String_0_Nova_concat(nova_standard_Nova_String_1_Nova_String(0, exceptionData, "Done generating "), exceptionData, nova_standard_primitive_number_Nova_Long_2_Nova_toString(0, exceptionData, nova_standard_time_Nova_Timer_Accessor_Nova_duration(l1_Nova_timer, exceptionData))));
+	nova_standard_io_Nova_Console_0_Nova_write(0, exceptionData, nova_standard_Nova_String_0_Nova_concat(nova_standard_Nova_String_1_Nova_String(0, exceptionData, "Done generating "), exceptionData, nova_standard_primitive_number_Nova_Long_3_Nova_toString(0, exceptionData, nova_standard_time_Nova_Timer_Accessor_Nova_duration(l1_Nova_timer, exceptionData))));
 	nova_standard_io_Nova_Console_Nova_waitForEnter(0, exceptionData);
 }
 

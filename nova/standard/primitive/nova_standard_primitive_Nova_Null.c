@@ -4,36 +4,34 @@
 nova_standard_primitive_Extension_VTable_Null nova_standard_primitive_Extension_VTable_Null_val =
 {
 	{
-		(int(*)(nova_standard_datastruct_Nova_Comparable*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*))nova_standard_Nova_String_Nova_compareTo,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
 		(char(*)(nova_standard_operators_Nova_Equals*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*))nova_standard_Nova_String_Nova_equals,
 		0,
 		0,
 		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		(int(*)(nova_standard_datastruct_Nova_Comparable*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*))nova_standard_Nova_String_0_Nova_compareTo,
+		0,
+		0,
 	},
 	nova_standard_Nova_Object_0_Nova_getHashCodeLong,
-	nova_standard_primitive_Nova_Null_0_Nova_toString,
+	nova_standard_primitive_Nova_Null_Nova_toString,
 	nova_standard_Nova_String_Nova_equals,
-	nova_standard_primitive_Nova_Null_0_Nova_concat,
-	nova_standard_Nova_String_Nova_compareTo,
+	nova_standard_primitive_Nova_Null_Nova_concat,
+	nova_standard_Nova_String_0_Nova_compareTo,
 };
 
 
@@ -73,12 +71,12 @@ void nova_standard_primitive_Nova_Null_0_Nova_this(nova_standard_primitive_Nova_
 {
 }
 
-nova_standard_Nova_String* nova_standard_primitive_Nova_Null_0_Nova_toString(nova_standard_primitive_Nova_Null* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
+nova_standard_Nova_String* nova_standard_primitive_Nova_Null_Nova_toString(nova_standard_primitive_Nova_Null* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
 	return nova_standard_Nova_String_1_Nova_String(0, exceptionData, "null");
 }
 
-nova_standard_Nova_String* nova_standard_primitive_Nova_Null_0_Nova_concat(nova_standard_primitive_Nova_Null* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_Nova_String* nova_standard_primitive_Nova_Null_Nova_other)
+nova_standard_Nova_String* nova_standard_primitive_Nova_Null_Nova_concat(nova_standard_primitive_Nova_Null* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_Nova_String* nova_standard_primitive_Nova_Null_Nova_other)
 {
 	return nova_standard_Nova_String_0_Nova_concat(nova_standard_Nova_String_1_Nova_String(0, exceptionData, "null"), exceptionData, nova_standard_primitive_Nova_Null_Nova_other);
 }

@@ -4,33 +4,31 @@
 stabilitytest_Extension_VTable_FileStability stabilitytest_Extension_VTable_FileStability_val =
 {
 	{
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
 		(char(*)(nova_standard_operators_Nova_Equals*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*))nova_standard_Nova_Object_0_Nova_equals,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
 		0,
 		0,
 		0,
 	},
 	nova_standard_Nova_Object_0_Nova_getHashCodeLong,
-	nova_standard_Nova_Object_1_Nova_toString,
+	nova_standard_Nova_Object_2_Nova_toString,
 	nova_standard_Nova_Object_0_Nova_equals,
 	stabilitytest_Nova_FileStability_0_Nova_test,
 };
@@ -92,7 +90,7 @@ void stabilitytest_Nova_FileStability_0_Nova_test(stabilitytest_Nova_FileStabili
 		{
 			nova_standard_io_Nova_File* l1_Nova_f;
 			
-			l1_Nova_f = nova_standard_io_Nova_File_0_Nova_File(0, exceptionData, nova_standard_Nova_String_0_Nova_concat(nova_standard_Nova_String_1_Nova_String(0, exceptionData, "temp"), exceptionData, nova_standard_primitive_number_Nova_Long_2_Nova_toString(0, exceptionData, nova_standard_time_Nova_Time_Accessor_Nova_currentTimeMillis(0, exceptionData))));
+			l1_Nova_f = nova_standard_io_Nova_File_0_Nova_File(0, exceptionData, nova_standard_Nova_String_0_Nova_concat(nova_standard_Nova_String_1_Nova_String(0, exceptionData, "temp"), exceptionData, nova_standard_primitive_number_Nova_Long_3_Nova_toString(0, exceptionData, nova_standard_time_Nova_Time_Accessor_Nova_currentTimeMillis(0, exceptionData))));
 			stabilitytest_Nova_FileStability_Nova_createFile(this, exceptionData, l1_Nova_f);
 			stabilitytest_Nova_FileStability_Nova_writeToFile(this, exceptionData, l1_Nova_f);
 			stabilitytest_Nova_FileStability_Nova_readFromFile(this, exceptionData, l1_Nova_f);
@@ -126,7 +124,7 @@ void stabilitytest_Nova_FileStability_Nova_writeToFile(stabilitytest_Nova_FileSt
 {
 	int l2_Nova_i;
 	
-	nova_standard_io_Nova_Console_0_Nova_write(0, exceptionData, nova_standard_Nova_String_0_Nova_concat(nova_standard_Nova_String_1_Nova_String(0, exceptionData, "Writing "), exceptionData, nova_standard_Nova_String_virtual0_Nova_concat((nova_standard_Nova_String*)(nova_standard_primitive_number_Nova_Int_2_Nova_toString(0, exceptionData, stabilitytest_Nova_FileStability_Nova_lines)), exceptionData, nova_standard_Nova_String_1_Nova_String(0, exceptionData, " lines of data to file... "))));
+	nova_standard_io_Nova_Console_0_Nova_write(0, exceptionData, nova_standard_Nova_String_0_Nova_concat(nova_standard_Nova_String_1_Nova_String(0, exceptionData, "Writing "), exceptionData, nova_standard_Nova_String_virtual0_Nova_concat((nova_standard_Nova_String*)(nova_standard_primitive_number_Nova_Int_3_Nova_toString(0, exceptionData, stabilitytest_Nova_FileStability_Nova_lines)), exceptionData, nova_standard_Nova_String_1_Nova_String(0, exceptionData, " lines of data to file... "))));
 	l2_Nova_i = (int)(0);
 	for (; l2_Nova_i < stabilitytest_Nova_FileStability_Nova_lines; l2_Nova_i++)
 	{
@@ -146,7 +144,7 @@ void stabilitytest_Nova_FileStability_Nova_readFromFile(stabilitytest_Nova_FileS
 	l1_Nova_line = nova_standard_io_Nova_File_Nova_readLine(stabilitytest_Nova_FileStability_Nova_f, exceptionData);
 	while (l1_Nova_line != (nova_standard_Nova_String*)nova_null)
 	{
-		if (!nova_standard_operators_Nova_Equals_virtual0_Nova_equals((nova_standard_operators_Nova_Equals*)(l1_Nova_line), exceptionData, (nova_standard_Nova_Object*)(stabilitytest_Nova_FileStability_Nova_inputString)))
+		if (!nova_standard_operators_Nova_Equals_virtual2_Nova_equals((nova_standard_operators_Nova_Equals*)(l1_Nova_line), exceptionData, (nova_standard_Nova_Object*)(stabilitytest_Nova_FileStability_Nova_inputString)))
 		{
 			stabilitytest_Nova_StabilityTest_0_Nova_fail(this->stabilitytest_Nova_StabilityTestCase_Nova_program, exceptionData);
 		}
@@ -155,7 +153,7 @@ void stabilitytest_Nova_FileStability_Nova_readFromFile(stabilitytest_Nova_FileS
 	}
 	if (l1_Nova_times != stabilitytest_Nova_FileStability_Nova_lines)
 	{
-		stabilitytest_Nova_StabilityTest_1_Nova_fail(this->stabilitytest_Nova_StabilityTestCase_Nova_program, exceptionData, nova_standard_Nova_String_0_Nova_concat(nova_standard_Nova_String_1_Nova_String(0, exceptionData, "Failed; only read "), exceptionData, nova_standard_Nova_String_virtual0_Nova_concat((nova_standard_Nova_String*)(nova_standard_primitive_number_Nova_Int_2_Nova_toString(0, exceptionData, l1_Nova_times)), exceptionData, nova_standard_Nova_String_0_Nova_concat(nova_standard_Nova_String_1_Nova_String(0, exceptionData, "/"), exceptionData, nova_standard_Nova_String_virtual0_Nova_concat((nova_standard_Nova_String*)(nova_standard_primitive_number_Nova_Byte_2_Nova_toString(0, exceptionData, 100)), exceptionData, nova_standard_Nova_String_1_Nova_String(0, exceptionData, " lines"))))));
+		stabilitytest_Nova_StabilityTest_1_Nova_fail(this->stabilitytest_Nova_StabilityTestCase_Nova_program, exceptionData, nova_standard_Nova_String_0_Nova_concat(nova_standard_Nova_String_1_Nova_String(0, exceptionData, "Failed; only read "), exceptionData, nova_standard_Nova_String_virtual0_Nova_concat((nova_standard_Nova_String*)(nova_standard_primitive_number_Nova_Int_3_Nova_toString(0, exceptionData, l1_Nova_times)), exceptionData, nova_standard_Nova_String_0_Nova_concat(nova_standard_Nova_String_1_Nova_String(0, exceptionData, "/"), exceptionData, nova_standard_Nova_String_virtual0_Nova_concat((nova_standard_Nova_String*)(nova_standard_primitive_number_Nova_Byte_3_Nova_toString(0, exceptionData, 100)), exceptionData, nova_standard_Nova_String_1_Nova_String(0, exceptionData, " lines"))))));
 	}
 	nova_standard_io_Nova_Console_1_Nova_writeLine(0, exceptionData, nova_standard_Nova_String_1_Nova_String(0, exceptionData, "OK"));
 }

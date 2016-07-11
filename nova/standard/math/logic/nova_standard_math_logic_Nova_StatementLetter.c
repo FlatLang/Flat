@@ -4,33 +4,31 @@
 nova_standard_math_logic_Extension_VTable_StatementLetter nova_standard_math_logic_Extension_VTable_StatementLetter_val =
 {
 	{
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
 		(char(*)(nova_standard_operators_Nova_Equals*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*))nova_standard_Nova_Object_0_Nova_equals,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
 		0,
 		0,
 		0,
 	},
 	nova_standard_Nova_Object_0_Nova_getHashCodeLong,
-	nova_standard_Nova_Object_1_Nova_toString,
+	nova_standard_Nova_Object_2_Nova_toString,
 	nova_standard_Nova_Object_0_Nova_equals,
 };
 
@@ -56,7 +54,7 @@ nova_standard_math_logic_Nova_StatementLetter* nova_standard_math_logic_Nova_Sta
 	nova_standard_math_logic_Nova_StatementLetter_0_Nova_super(this, exceptionData);
 	
 	{
-		nova_standard_math_logic_Nova_StatementLetter_Nova_this(this, exceptionData, nova_standard_math_logic_Nova_StatementLetter_Nova_letter, nova_standard_math_logic_Nova_StatementLetter_Nova_representation);
+		nova_standard_math_logic_Nova_StatementLetter_1_Nova_this(this, exceptionData, nova_standard_math_logic_Nova_StatementLetter_Nova_letter, nova_standard_math_logic_Nova_StatementLetter_Nova_representation);
 	}
 	
 	return this;
@@ -76,7 +74,7 @@ void nova_standard_math_logic_Nova_StatementLetter_Nova_destroy(nova_standard_ma
 	NOVA_FREE(*this);
 }
 
-void nova_standard_math_logic_Nova_StatementLetter_Nova_this(nova_standard_math_logic_Nova_StatementLetter* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_Nova_String* nova_standard_math_logic_Nova_StatementLetter_Nova_letter, nova_standard_Nova_String* nova_standard_math_logic_Nova_StatementLetter_Nova_representation)
+void nova_standard_math_logic_Nova_StatementLetter_1_Nova_this(nova_standard_math_logic_Nova_StatementLetter* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_Nova_String* nova_standard_math_logic_Nova_StatementLetter_Nova_letter, nova_standard_Nova_String* nova_standard_math_logic_Nova_StatementLetter_Nova_representation)
 {
 	this->prv->nova_standard_math_logic_Nova_StatementLetter_Nova_letter = nova_standard_math_logic_Nova_StatementLetter_Nova_letter;
 	this->prv->nova_standard_math_logic_Nova_StatementLetter_Nova_representation = nova_standard_math_logic_Nova_StatementLetter_Nova_representation;

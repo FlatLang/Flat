@@ -4,33 +4,31 @@
 stabilitytest_Extension_VTable_StabilityTest stabilitytest_Extension_VTable_StabilityTest_val =
 {
 	{
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
 		(char(*)(nova_standard_operators_Nova_Equals*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*))nova_standard_Nova_Object_0_Nova_equals,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
 		0,
 		0,
 		0,
 	},
 	nova_standard_Nova_Object_0_Nova_getHashCodeLong,
-	nova_standard_Nova_Object_1_Nova_toString,
+	nova_standard_Nova_Object_2_Nova_toString,
 	nova_standard_Nova_Object_0_Nova_equals,
 	stabilitytest_Nova_StabilityTest_0_Nova_test,
 };
@@ -79,7 +77,7 @@ void stabilitytest_Nova_StabilityTest_Nova_main(stabilitytest_Nova_StabilityTest
 	l1_Nova_timer = nova_standard_time_Nova_Timer_Nova_start(nova_standard_time_Nova_Timer_Nova_Timer(0, exceptionData), exceptionData);
 	stabilitytest_Nova_StabilityTestCase_virtual0_Nova_test((stabilitytest_Nova_StabilityTestCase*)(l1_Nova_test), exceptionData);
 	nova_standard_time_Nova_Timer_Nova_stop(l1_Nova_timer, exceptionData);
-	nova_standard_io_Nova_Console_1_Nova_writeLine(0, exceptionData, nova_standard_Nova_String_0_Nova_concat(nova_standard_Nova_String_1_Nova_String(0, exceptionData, "Took "), exceptionData, nova_standard_Nova_String_virtual0_Nova_concat((nova_standard_Nova_String*)(nova_standard_primitive_number_Nova_Long_2_Nova_toString(0, exceptionData, nova_standard_time_Nova_Timer_Accessor_Nova_duration(l1_Nova_timer, exceptionData))), exceptionData, nova_standard_Nova_String_1_Nova_String(0, exceptionData, "ms"))));
+	nova_standard_io_Nova_Console_1_Nova_writeLine(0, exceptionData, nova_standard_Nova_String_0_Nova_concat(nova_standard_Nova_String_1_Nova_String(0, exceptionData, "Took "), exceptionData, nova_standard_Nova_String_virtual0_Nova_concat((nova_standard_Nova_String*)(nova_standard_primitive_number_Nova_Long_3_Nova_toString(0, exceptionData, nova_standard_time_Nova_Timer_Accessor_Nova_duration(l1_Nova_timer, exceptionData))), exceptionData, nova_standard_Nova_String_1_Nova_String(0, exceptionData, "ms"))));
 	nova_standard_io_Nova_Console_Nova_waitForEnter(0, exceptionData);
 }
 
@@ -92,7 +90,7 @@ void stabilitytest_Nova_StabilityTest_0_Nova_test(stabilitytest_Nova_StabilityTe
 {
 	TRY
 	{
-		novaEnv.nova_standard_exception_ExceptionData.addCode(exceptionData, exceptionData, 10);
+		novaEnv.nova_standard_exception_ExceptionData.addCode(exceptionData, exceptionData, 5);
 		
 		{
 			stabilitytest_Nova_ExceptionStability_0_Nova_test(stabilitytest_Nova_ExceptionStability_Nova_ExceptionStability(0, exceptionData, this), exceptionData);
@@ -108,7 +106,7 @@ void stabilitytest_Nova_StabilityTest_0_Nova_test(stabilitytest_Nova_StabilityTe
 			nova_standard_io_Nova_Console_1_Nova_writeLine(0, exceptionData, nova_standard_Nova_String_1_Nova_String(0, exceptionData, "All OK"));
 		}
 	}
-	CATCH (10)
+	CATCH (5)
 	{
 		stabilitytest_Nova_UnstableException* l2_Nova_e;
 		
@@ -128,7 +126,7 @@ void stabilitytest_Nova_StabilityTest_0_Nova_fail(stabilitytest_Nova_StabilityTe
 
 void stabilitytest_Nova_StabilityTest_1_Nova_fail(stabilitytest_Nova_StabilityTest* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_Nova_String* stabilitytest_Nova_StabilityTest_Nova_message)
 {
-	THROW(10, stabilitytest_Nova_UnstableException_Nova_UnstableException(0, exceptionData, stabilitytest_Nova_StabilityTest_Nova_message));
+	THROW(5, stabilitytest_Nova_UnstableException_Nova_UnstableException(0, exceptionData, stabilitytest_Nova_StabilityTest_Nova_message));
 }
 
 void stabilitytest_Nova_StabilityTest_0_Nova_super(stabilitytest_Nova_StabilityTest* this, nova_standard_exception_Nova_ExceptionData* exceptionData)

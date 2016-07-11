@@ -26,8 +26,6 @@ example_Extension_VTable_Polygon example_Extension_VTable_Polygon_val =
 		0,
 		0,
 		0,
-		0,
-		0,
 	},
 	example_Nova_Polygon_virtual1_Nova_numberSides,
 	example_Nova_Polygon_virtual1_Nova_calculateArea,

@@ -4,33 +4,31 @@
 nova_standard_datastruct_Extension_VTable_Bounds nova_standard_datastruct_Extension_VTable_Bounds_val =
 {
 	{
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
 		(char(*)(nova_standard_operators_Nova_Equals*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*))nova_standard_datastruct_Nova_Bounds_0_Nova_equals,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
 		0,
 		0,
 		0,
 	},
 	nova_standard_Nova_Object_0_Nova_getHashCodeLong,
-	nova_standard_datastruct_Nova_Bounds_1_Nova_toString,
+	nova_standard_datastruct_Nova_Bounds_2_Nova_toString,
 	nova_standard_datastruct_Nova_Bounds_0_Nova_equals,
 };
 
@@ -145,9 +143,9 @@ char nova_standard_datastruct_Nova_Bounds_0_Nova_equals(nova_standard_datastruct
 	return nova_standard_datastruct_Nova_Bounds_Nova_bounds != (nova_standard_datastruct_Nova_Bounds*)nova_null && nova_standard_datastruct_Nova_Bounds_Nova_bounds->nova_standard_datastruct_Nova_Bounds_Nova_start == this->nova_standard_datastruct_Nova_Bounds_Nova_start && nova_standard_datastruct_Nova_Bounds_Nova_bounds->nova_standard_datastruct_Nova_Bounds_Nova_end == this->nova_standard_datastruct_Nova_Bounds_Nova_end;
 }
 
-nova_standard_Nova_String* nova_standard_datastruct_Nova_Bounds_1_Nova_toString(nova_standard_datastruct_Nova_Bounds* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
+nova_standard_Nova_String* nova_standard_datastruct_Nova_Bounds_2_Nova_toString(nova_standard_datastruct_Nova_Bounds* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
-	return nova_standard_Nova_String_0_Nova_concat(nova_standard_Nova_String_1_Nova_String(0, exceptionData, "["), exceptionData, nova_standard_Nova_String_virtual0_Nova_concat((nova_standard_Nova_String*)(nova_standard_primitive_number_Nova_Int_2_Nova_toString(0, exceptionData, this->nova_standard_datastruct_Nova_Bounds_Nova_start)), exceptionData, nova_standard_Nova_String_0_Nova_concat(nova_standard_Nova_String_1_Nova_String(0, exceptionData, ", "), exceptionData, nova_standard_Nova_String_virtual0_Nova_concat((nova_standard_Nova_String*)(nova_standard_primitive_number_Nova_Int_2_Nova_toString(0, exceptionData, this->nova_standard_datastruct_Nova_Bounds_Nova_end)), exceptionData, nova_standard_Nova_String_1_Nova_String(0, exceptionData, "]")))));
+	return nova_standard_Nova_String_0_Nova_concat(nova_standard_Nova_String_1_Nova_String(0, exceptionData, "["), exceptionData, nova_standard_Nova_String_virtual0_Nova_concat((nova_standard_Nova_String*)(nova_standard_primitive_number_Nova_Int_3_Nova_toString(0, exceptionData, this->nova_standard_datastruct_Nova_Bounds_Nova_start)), exceptionData, nova_standard_Nova_String_0_Nova_concat(nova_standard_Nova_String_1_Nova_String(0, exceptionData, ", "), exceptionData, nova_standard_Nova_String_virtual0_Nova_concat((nova_standard_Nova_String*)(nova_standard_primitive_number_Nova_Int_3_Nova_toString(0, exceptionData, this->nova_standard_datastruct_Nova_Bounds_Nova_end)), exceptionData, nova_standard_Nova_String_1_Nova_String(0, exceptionData, "]")))));
 }
 
 void nova_standard_datastruct_Nova_Bounds_Nova_cloneTo(nova_standard_datastruct_Nova_Bounds* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_datastruct_Nova_Bounds* nova_standard_datastruct_Nova_Bounds_Nova_bounds)

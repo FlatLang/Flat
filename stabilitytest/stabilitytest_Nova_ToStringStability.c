@@ -4,33 +4,31 @@
 stabilitytest_Extension_VTable_ToStringStability stabilitytest_Extension_VTable_ToStringStability_val =
 {
 	{
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
 		(char(*)(nova_standard_operators_Nova_Equals*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*))nova_standard_Nova_Object_0_Nova_equals,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
 		0,
 		0,
 		0,
 	},
 	nova_standard_Nova_Object_0_Nova_getHashCodeLong,
-	nova_standard_Nova_Object_1_Nova_toString,
+	nova_standard_Nova_Object_2_Nova_toString,
 	nova_standard_Nova_Object_0_Nova_equals,
 	stabilitytest_Nova_ToStringStability_0_Nova_test,
 };
@@ -96,9 +94,9 @@ void stabilitytest_Nova_ToStringStability_0_Nova_test(stabilitytest_Nova_ToStrin
 
 void stabilitytest_Nova_ToStringStability_Nova_checkToString(stabilitytest_Nova_ToStringStability* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_Nova_String* stabilitytest_Nova_ToStringStability_Nova_type, nova_standard_primitive_number_Nova_Number* stabilitytest_Nova_ToStringStability_Nova_number, nova_standard_Nova_String* stabilitytest_Nova_ToStringStability_Nova_expected)
 {
-	if (!nova_standard_operators_Nova_Equals_virtual0_Nova_equals((nova_standard_operators_Nova_Equals*)(nova_standard_Nova_Object_virtual1_Nova_toString((nova_standard_Nova_Object*)(stabilitytest_Nova_ToStringStability_Nova_number), exceptionData)), exceptionData, (nova_standard_Nova_Object*)(stabilitytest_Nova_ToStringStability_Nova_expected)))
+	if (!nova_standard_operators_Nova_Equals_virtual2_Nova_equals((nova_standard_operators_Nova_Equals*)(nova_standard_Nova_Object_virtual2_Nova_toString((nova_standard_Nova_Object*)(stabilitytest_Nova_ToStringStability_Nova_number), exceptionData)), exceptionData, (nova_standard_Nova_Object*)(stabilitytest_Nova_ToStringStability_Nova_expected)))
 	{
-		stabilitytest_Nova_StabilityTest_1_Nova_fail(this->stabilitytest_Nova_StabilityTestCase_Nova_program, exceptionData, nova_standard_Nova_String_virtual0_Nova_concat((nova_standard_Nova_String*)(stabilitytest_Nova_ToStringStability_Nova_type), exceptionData, nova_standard_Nova_String_0_Nova_concat(nova_standard_Nova_String_1_Nova_String(0, exceptionData, ".toString failed. expected "), exceptionData, nova_standard_Nova_String_virtual0_Nova_concat((nova_standard_Nova_String*)(stabilitytest_Nova_ToStringStability_Nova_expected), exceptionData, nova_standard_Nova_String_0_Nova_concat(nova_standard_Nova_String_1_Nova_String(0, exceptionData, " but received "), exceptionData, nova_standard_Nova_Object_virtual1_Nova_toString((nova_standard_Nova_Object*)(stabilitytest_Nova_ToStringStability_Nova_number), exceptionData))))));
+		stabilitytest_Nova_StabilityTest_1_Nova_fail(this->stabilitytest_Nova_StabilityTestCase_Nova_program, exceptionData, nova_standard_Nova_String_virtual0_Nova_concat((nova_standard_Nova_String*)(stabilitytest_Nova_ToStringStability_Nova_type), exceptionData, nova_standard_Nova_String_0_Nova_concat(nova_standard_Nova_String_1_Nova_String(0, exceptionData, ".toString failed. expected "), exceptionData, nova_standard_Nova_String_virtual0_Nova_concat((nova_standard_Nova_String*)(stabilitytest_Nova_ToStringStability_Nova_expected), exceptionData, nova_standard_Nova_String_0_Nova_concat(nova_standard_Nova_String_1_Nova_String(0, exceptionData, " but received "), exceptionData, nova_standard_Nova_Object_virtual2_Nova_toString((nova_standard_Nova_Object*)(stabilitytest_Nova_ToStringStability_Nova_number), exceptionData))))));
 	}
 }
 

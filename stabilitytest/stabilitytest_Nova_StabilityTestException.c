@@ -4,33 +4,31 @@
 stabilitytest_Extension_VTable_StabilityTestException stabilitytest_Extension_VTable_StabilityTestException_val =
 {
 	{
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
 		(char(*)(nova_standard_operators_Nova_Equals*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*))nova_standard_Nova_Object_0_Nova_equals,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
 		0,
 		0,
 		0,
 	},
 	nova_standard_Nova_Object_0_Nova_getHashCodeLong,
-	nova_standard_Nova_Object_1_Nova_toString,
+	nova_standard_Nova_Object_2_Nova_toString,
 	nova_standard_Nova_Object_0_Nova_equals,
 };
 
@@ -50,7 +48,7 @@ stabilitytest_Nova_StabilityTestException* stabilitytest_Nova_StabilityTestExcep
 	stabilitytest_Nova_StabilityTestException_0_Nova_super(this, exceptionData);
 	
 	{
-		stabilitytest_Nova_StabilityTestException_3_Nova_this(this, exceptionData);
+		stabilitytest_Nova_StabilityTestException_0_Nova_this(this, exceptionData);
 	}
 	
 	return this;
@@ -67,7 +65,7 @@ void stabilitytest_Nova_StabilityTestException_Nova_destroy(stabilitytest_Nova_S
 	NOVA_FREE(*this);
 }
 
-void stabilitytest_Nova_StabilityTestException_3_Nova_this(stabilitytest_Nova_StabilityTestException* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
+void stabilitytest_Nova_StabilityTestException_0_Nova_this(stabilitytest_Nova_StabilityTestException* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
 }
 

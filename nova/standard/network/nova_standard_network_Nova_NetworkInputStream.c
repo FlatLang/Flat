@@ -6,6 +6,8 @@ nova_standard_network_Extension_VTable_NetworkInputStream nova_standard_network_
 	{
 		0,
 		0,
+		(nova_standard_Nova_String*(*)(nova_standard_io_Nova_InputStream*, nova_standard_exception_Nova_ExceptionData*))nova_standard_network_Nova_NetworkInputStream_Nova_readString,
+		(char*(*)(nova_standard_io_Nova_InputStream*, nova_standard_exception_Nova_ExceptionData*))nova_standard_network_Nova_NetworkInputStream_Nova_readBytes,
 		0,
 		0,
 		0,
@@ -20,17 +22,13 @@ nova_standard_network_Extension_VTable_NetworkInputStream nova_standard_network_
 		0,
 		0,
 		0,
-		0,
-		0,
-		(nova_standard_Nova_String*(*)(nova_standard_io_Nova_InputStream*, nova_standard_exception_Nova_ExceptionData*))nova_standard_network_Nova_NetworkInputStream_0_Nova_readString,
-		(char*(*)(nova_standard_io_Nova_InputStream*, nova_standard_exception_Nova_ExceptionData*))nova_standard_network_Nova_NetworkInputStream_0_Nova_readBytes,
 		0,
 		0,
 		0,
 		0,
 	},
-	nova_standard_network_Nova_NetworkInputStream_0_Nova_readString,
-	nova_standard_network_Nova_NetworkInputStream_0_Nova_readBytes,
+	nova_standard_network_Nova_NetworkInputStream_Nova_readString,
+	nova_standard_network_Nova_NetworkInputStream_Nova_readBytes,
 };
 
 
@@ -76,12 +74,12 @@ void nova_standard_network_Nova_NetworkInputStream_Nova_this(nova_standard_netwo
 	this->prv->nova_standard_network_Nova_NetworkInputStream_Nova_socket = nova_standard_network_Nova_NetworkInputStream_Nova_socket;
 }
 
-nova_standard_Nova_String* nova_standard_network_Nova_NetworkInputStream_0_Nova_readString(nova_standard_network_Nova_NetworkInputStream* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
+nova_standard_Nova_String* nova_standard_network_Nova_NetworkInputStream_Nova_readString(nova_standard_network_Nova_NetworkInputStream* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
 	return nova_standard_network_Nova_ConnectionSocket_0_Nova_readString(this->prv->nova_standard_network_Nova_NetworkInputStream_Nova_socket, exceptionData);
 }
 
-char* nova_standard_network_Nova_NetworkInputStream_0_Nova_readBytes(nova_standard_network_Nova_NetworkInputStream* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
+char* nova_standard_network_Nova_NetworkInputStream_Nova_readBytes(nova_standard_network_Nova_NetworkInputStream* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
 	return (char*)nova_null;
 }

@@ -29,20 +29,20 @@ typedef struct nova_standard_math_logic_Nova_WFF nova_standard_math_logic_Nova_W
 #include <nova/standard/nova_standard_Nova_System.h>
 #include <nova/standard/math/nova_standard_math_Nova_Math.h>
 #include <nova/standard/datastruct/nova_standard_datastruct_Nova_Bounds.h>
-#include <nova/standard/math/logic/nova_standard_math_logic_Nova_Conclusion.h>
-#include <nova/standard/math/logic/nova_standard_math_logic_Nova_Hypothesis.h>
-#include <nova/standard/math/logic/nova_standard_math_logic_Nova_InvalidFormulaException.h>
 #include <nova/standard/math/logic/nova_standard_math_logic_Nova_StatementGroup.h>
 #include <nova/standard/math/logic/nova_standard_math_logic_Nova_StatementLetter.h>
+#include <nova/standard/math/logic/nova_standard_math_logic_Nova_InvalidFormulaException.h>
+#include <nova/standard/math/logic/nova_standard_math_logic_Nova_Conclusion.h>
+#include <nova/standard/math/logic/nova_standard_math_logic_Nova_Hypothesis.h>
 
 
 typedef struct nova_standard_math_logic_Extension_VTable_WFF nova_standard_math_logic_Extension_VTable_WFF;
 struct nova_standard_math_logic_Extension_VTable_WFF
 {
 	nova_Interface_VTable itable;
-	long_long (*nova_standard_Nova_Object_virtual1_Nova_getHashCodeLong)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*);
-	nova_standard_Nova_String* (*nova_standard_Nova_Object_virtual1_Nova_toString)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*);
-	char (*nova_standard_operators_Nova_Equals_virtual0_Nova_equals)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*);
+	long_long (*nova_standard_Nova_Object_virtual0_Nova_getHashCodeLong)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*);
+	nova_standard_Nova_String* (*nova_standard_Nova_Object_virtual2_Nova_toString)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*);
+	char (*nova_standard_operators_Nova_Equals_virtual2_Nova_equals)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*);
 };
 
 extern nova_standard_math_logic_Extension_VTable_WFF nova_standard_math_logic_Extension_VTable_WFF_val;
