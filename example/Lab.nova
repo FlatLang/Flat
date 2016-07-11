@@ -69,6 +69,19 @@ public class Lab
 		Console.writeLine("Linked list backwards: " + linked.reverse().join(", "))
 		Console.writeLine("Linked list forwards: " + linked.join(", "))
 		
+		var x = "Hey its a string"
+		
+		Console.writeLine(x)
+		
+		takesString(x)
+		
+		x = new Array()
+		
+		//x.add("hey")
+		//x.add("its now an array")
+		
+		Console.writeLine(x)
+		
 //		Square sq = new Square(4)
 //		
 //		Console.writeLine(getArea(sq))
@@ -103,6 +116,11 @@ public class Lab
 //		WFF f = new WFF("A & B & C -> D", letters)
 		
 		Console.waitForEnter()
+	}
+	
+	static takesString(String s)
+	{
+	    Console.writeLine("Received " + s)
 	}
 	
 	static doSomething(List list)
