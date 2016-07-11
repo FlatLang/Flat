@@ -34,6 +34,12 @@ public class Parameter extends LocalDeclaration
 		return getName().equals(ParameterList.OBJECT_REFERENCE_IDENTIFIER);
 	}
 	
+	@Override
+	public void setImplicit(boolean implicit)
+	{
+		SyntaxMessage.queryError("Implicit types are not supported by parameters", this, implicit);
+	}
+	
 	/**
 	 * Get the default value of the parameter, if no value is passed to
 	 * the method.
