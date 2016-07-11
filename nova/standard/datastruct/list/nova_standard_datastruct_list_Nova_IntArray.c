@@ -28,7 +28,7 @@ nova_standard_datastruct_list_Extension_VTable_IntArray nova_standard_datastruct
 		0,
 	},
 	nova_standard_Nova_Object_0_Nova_getHashCodeLong,
-	nova_standard_Nova_Object_0_Nova_toString,
+	nova_standard_datastruct_list_Nova_Array_0_Nova_toString,
 	nova_standard_Nova_Object_0_Nova_equals,
 	nova_standard_datastruct_list_Nova_Array_Nova_toArray,
 	nova_standard_datastruct_list_Nova_IntArray_Nova_map,

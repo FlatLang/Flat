@@ -28,7 +28,7 @@ nova_standard_datastruct_list_Extension_VTable_Array nova_standard_datastruct_li
 		0,
 	},
 	nova_standard_Nova_Object_0_Nova_getHashCodeLong,
-	nova_standard_Nova_Object_0_Nova_toString,
+	nova_standard_datastruct_list_Nova_Array_0_Nova_toString,
 	nova_standard_Nova_Object_0_Nova_equals,
 	nova_standard_datastruct_list_Nova_Array_Nova_toArray,
 	nova_standard_datastruct_list_Nova_Array_0_Nova_map,
@@ -455,6 +455,11 @@ nova_standard_Nova_String* nova_standard_datastruct_list_Nova_Array_0_Nova_join(
 		l1_Nova_str = (nova_standard_Nova_String*)(nova_standard_Nova_String_virtual1_Nova_concat((nova_standard_Nova_String*)(l1_Nova_str), exceptionData, nova_standard_Nova_Object_virtual1_Nova_toString((nova_standard_Nova_Object*)(l1_Nova_element), exceptionData)));
 	}
 	return l1_Nova_str;
+}
+
+nova_standard_Nova_String* nova_standard_datastruct_list_Nova_Array_0_Nova_toString(nova_standard_datastruct_list_Nova_Array* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
+{
+	return nova_standard_Nova_String_0_Nova_concat(nova_standard_Nova_String_1_Nova_String(0, exceptionData, "Array ["), exceptionData, nova_standard_Nova_String_virtual1_Nova_concat((nova_standard_Nova_String*)(nova_standard_datastruct_list_Nova_List_virtual0_Nova_join((nova_standard_datastruct_list_Nova_List*)(this), exceptionData, nova_standard_Nova_String_1_Nova_String(0, exceptionData, ", "))), exceptionData, nova_standard_Nova_String_1_Nova_String(0, exceptionData, "]")));
 }
 
 char nova_standard_datastruct_list_Nova_Array_Accessor_Nova_empty(nova_standard_datastruct_list_Nova_Array* this, nova_standard_exception_Nova_ExceptionData* exceptionData)

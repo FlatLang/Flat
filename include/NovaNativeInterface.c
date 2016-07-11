@@ -150,6 +150,7 @@ nova_env novaEnv = {
 &nova_standard_datastruct_list_Nova_Array_Nova_sumSize,
 0,
 0,
+&nova_standard_datastruct_list_Nova_Array_0_Nova_toString,
 &nova_standard_datastruct_list_Nova_Array_0_Nova_Array,
 &nova_standard_datastruct_list_Nova_Array_1_Nova_Array,
 &nova_standard_datastruct_list_Nova_Array_2_Nova_Array,
