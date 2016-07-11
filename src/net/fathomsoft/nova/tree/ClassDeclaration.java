@@ -434,7 +434,43 @@ public class ClassDeclaration extends InstanceDeclaration
 	
 	public boolean isRelatedTo(ClassDeclaration node)
 	{
-		return isOfType(node) || node == null || node.isOfType(this);
+		return node == null || getClassRelationBase(node) != null;
+	}
+	
+	public ClassDeclaration getClassRelationBase(ClassDeclaration node)
+	{
+		if (isOfType(node))
+		{
+			return node;
+		}
+		else if (node.isOfType(this))
+		{
+			return this;
+		}
+		
+		return null;
+	}
+	
+	public boolean hasCommonAncestor(ClassDeclaration node)
+	{
+		return getCommonAncestor(node) != null;
+	}
+	
+	public ClassDeclaration getCommonAncestor(ClassDeclaration node)
+	{
+		ClassDeclaration current = this;
+		
+		while (current != null)
+		{
+			if (this.isOfType(current) && node.isOfType(current))
+			{
+				return current;
+			}
+			
+			current = current.getExtendedClass();
+		}
+		
+		return null;
 	}
 	
 	/**
