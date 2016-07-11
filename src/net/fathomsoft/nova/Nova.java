@@ -268,9 +268,9 @@ public class Nova
 				"example",
 				"stabilitytest",
 				"-o",   formatPath(directory + "bin/Executable" + OUTPUT_EXTENSION),
-				"-dir", formatPath(directory + "../example"),
-				"-dir", formatPath(directory + "../stabilitytest"),
-				"-run",
+//				"-dir", formatPath(directory + "../example"),
+//				"-dir", formatPath(directory + "../stabilitytest"),
+//				"-run",
 //				"-csource",
 				"-formatc",
 				testClasses ? "-v" : "",
@@ -1671,6 +1671,8 @@ public class Nova
 				if (f.isDirectory())
 				{
 					addFilesFromDirectory(f);
+					
+					includeDirectories.add(f.getAbsolutePath());
 				}
 				else
 				{
