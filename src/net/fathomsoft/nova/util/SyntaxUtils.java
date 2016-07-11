@@ -2130,7 +2130,7 @@ public class SyntaxUtils
 		}
 		else if (required.getArrayDimensions() - given.getArrayDimensions() - arrayDifference != 0)
 		{
-			if (required.getTypeClassLocation().equals(Nova.getClassLocation("Char")) && required.getArrayDimensions() == 1 && given.getTypeClassLocation() != null && given.getTypeClassLocation().equals(Nova.getClassLocation("String")))
+			if (required.getTypeClassLocation().equals("nova/standard/primitive/number/Char") && required.getArrayDimensions() == 1 && given.getTypeClassLocation() != null && given.getTypeClassLocation().equals("nova/standard/String"))
 			{
 				return true;
 			}

@@ -4,31 +4,31 @@
 example_Extension_VTable_GenericDemo example_Extension_VTable_GenericDemo_val =
 {
 	{
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
 		(char(*)(nova_standard_operators_Nova_Equals*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*))nova_standard_Nova_Object_0_Nova_equals,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
 		0,
 		0,
 		0,
 	},
 	nova_standard_Nova_Object_0_Nova_getHashCodeLong,
-	nova_standard_Nova_Object_2_Nova_toString,
+	nova_standard_Nova_Object_0_Nova_toString,
 	nova_standard_Nova_Object_0_Nova_equals,
 };
 
@@ -86,7 +86,7 @@ void example_Nova_GenericDemo_Nova_main(example_Nova_GenericDemo* this, nova_sta
 		l1_Nova_popped = (nova_standard_Nova_String*)(nova_standard_datastruct_list_Nova_Stack_Nova_pop(l1_Nova_strs, exceptionData));
 		if (l1_Nova_popped != (nova_standard_Nova_String*)nova_null)
 		{
-			l1_Nova_popped = (nova_standard_Nova_String*)(nova_standard_Nova_String_0_Nova_concat(nova_standard_Nova_String_1_Nova_String(0, exceptionData, "\""), exceptionData, nova_standard_Nova_String_virtual0_Nova_concat((nova_standard_Nova_String*)(l1_Nova_popped), exceptionData, nova_standard_Nova_String_1_Nova_String(0, exceptionData, "\""))));
+			l1_Nova_popped = (nova_standard_Nova_String*)(nova_standard_Nova_String_0_Nova_concat(nova_standard_Nova_String_1_Nova_String(0, exceptionData, "\""), exceptionData, nova_standard_Nova_String_virtual1_Nova_concat((nova_standard_Nova_String*)(l1_Nova_popped), exceptionData, nova_standard_Nova_String_1_Nova_String(0, exceptionData, "\""))));
 		}
 		nova_standard_io_Nova_Console_1_Nova_writeLine(0, exceptionData, nova_standard_Nova_String_0_Nova_concat(nova_standard_Nova_String_1_Nova_String(0, exceptionData, "Popping: "), exceptionData, l1_Nova_popped));
 	}

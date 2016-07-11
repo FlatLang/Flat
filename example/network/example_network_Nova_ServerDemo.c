@@ -4,31 +4,31 @@
 example_network_Extension_VTable_ServerDemo example_network_Extension_VTable_ServerDemo_val =
 {
 	{
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
 		(char(*)(nova_standard_operators_Nova_Equals*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*))nova_standard_Nova_Object_0_Nova_equals,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
 		0,
 		0,
 		0,
 	},
 	nova_standard_Nova_Object_0_Nova_getHashCodeLong,
-	nova_standard_Nova_Object_2_Nova_toString,
+	nova_standard_Nova_Object_0_Nova_toString,
 	nova_standard_Nova_Object_0_Nova_equals,
 };
 
@@ -81,7 +81,7 @@ void example_network_Nova_ServerDemo_Nova_main(example_network_Nova_ServerDemo* 
 	{
 		nova_standard_network_Nova_ConnectionSocket* l2_Nova_request;
 		
-		nova_standard_io_Nova_Console_1_Nova_writeLine(0, exceptionData, nova_standard_Nova_String_0_Nova_concat(nova_standard_Nova_String_1_Nova_String(0, exceptionData, "Started server on port "), exceptionData, nova_standard_primitive_number_Nova_Int_3_Nova_toString(0, exceptionData, l1_Nova_port)));
+		nova_standard_io_Nova_Console_1_Nova_writeLine(0, exceptionData, nova_standard_Nova_String_0_Nova_concat(nova_standard_Nova_String_1_Nova_String(0, exceptionData, "Started server on port "), exceptionData, nova_standard_primitive_number_Nova_Int_2_Nova_toString(0, exceptionData, l1_Nova_port)));
 		nova_standard_io_Nova_Console_1_Nova_writeLine(0, exceptionData, nova_standard_Nova_String_1_Nova_String(0, exceptionData, "Waiting on client..."));
 		l2_Nova_request = nova_standard_network_Nova_ServerSocket_Nova_acceptClient(l1_Nova_socket, exceptionData);
 		if (l2_Nova_request == (nova_standard_network_Nova_ConnectionSocket*)nova_null)

@@ -34,10 +34,10 @@ typedef struct nova_standard_primitive_Extension_VTable_Null nova_standard_primi
 struct nova_standard_primitive_Extension_VTable_Null
 {
 	nova_Interface_VTable itable;
-	long_long (*nova_standard_Nova_Object_virtual0_Nova_getHashCodeLong)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*);
-	nova_standard_Nova_String* (*nova_standard_Nova_Object_virtual2_Nova_toString)(nova_standard_primitive_Nova_Null*, nova_standard_exception_Nova_ExceptionData*);
-	char (*nova_standard_operators_Nova_Equals_virtual2_Nova_equals)(nova_standard_Nova_String*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_String*);
-	nova_standard_Nova_String* (*nova_standard_Nova_String_virtual0_Nova_concat)(nova_standard_primitive_Nova_Null*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_String*);
+	long_long (*nova_standard_Nova_Object_virtual1_Nova_getHashCodeLong)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*);
+	nova_standard_Nova_String* (*nova_standard_Nova_Object_virtual1_Nova_toString)(nova_standard_primitive_Nova_Null*, nova_standard_exception_Nova_ExceptionData*);
+	char (*nova_standard_operators_Nova_Equals_virtual0_Nova_equals)(nova_standard_Nova_String*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_String*);
+	nova_standard_Nova_String* (*nova_standard_Nova_String_virtual1_Nova_concat)(nova_standard_primitive_Nova_Null*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_String*);
 	int (*nova_standard_datastruct_Nova_Comparable_virtual0_Nova_compareTo)(nova_standard_Nova_String*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_String*);
 };
 

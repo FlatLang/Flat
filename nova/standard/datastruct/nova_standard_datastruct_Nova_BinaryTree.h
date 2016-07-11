@@ -29,17 +29,17 @@ typedef struct nova_standard_datastruct_Nova_BinaryTree nova_standard_datastruct
 #include <nova/standard/nova_standard_Nova_System.h>
 #include <nova/standard/math/nova_standard_math_Nova_Math.h>
 #include <nova/standard/datastruct/nova_standard_datastruct_Nova_BinaryNode.h>
-#include <nova/standard/datastruct/nova_standard_datastruct_Nova_Tree.h>
 #include <nova/standard/datastruct/nova_standard_datastruct_Nova_Comparable.h>
+#include <nova/standard/datastruct/nova_standard_datastruct_Nova_Tree.h>
 
 
 typedef struct nova_standard_datastruct_Extension_VTable_BinaryTree nova_standard_datastruct_Extension_VTable_BinaryTree;
 struct nova_standard_datastruct_Extension_VTable_BinaryTree
 {
 	nova_Interface_VTable itable;
-	long_long (*nova_standard_Nova_Object_virtual0_Nova_getHashCodeLong)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*);
-	nova_standard_Nova_String* (*nova_standard_Nova_Object_virtual2_Nova_toString)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*);
-	char (*nova_standard_operators_Nova_Equals_virtual2_Nova_equals)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*);
+	long_long (*nova_standard_Nova_Object_virtual1_Nova_getHashCodeLong)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*);
+	nova_standard_Nova_String* (*nova_standard_Nova_Object_virtual1_Nova_toString)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*);
+	char (*nova_standard_operators_Nova_Equals_virtual0_Nova_equals)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*);
 };
 
 extern nova_standard_datastruct_Extension_VTable_BinaryTree nova_standard_datastruct_Extension_VTable_BinaryTree_val;

@@ -4,31 +4,31 @@
 example_Extension_VTable_BodyBuilder example_Extension_VTable_BodyBuilder_val =
 {
 	{
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
 		(char(*)(nova_standard_operators_Nova_Equals*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*))nova_standard_Nova_Object_0_Nova_equals,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
 		0,
 		0,
 		0,
 	},
 	nova_standard_Nova_Object_0_Nova_getHashCodeLong,
-	nova_standard_Nova_Object_2_Nova_toString,
+	nova_standard_Nova_Object_0_Nova_toString,
 	nova_standard_Nova_Object_0_Nova_equals,
 	example_Nova_BodyBuilder_Nova_sayHello,
 };
@@ -76,7 +76,7 @@ void example_Nova_BodyBuilder_1_Nova_this(example_Nova_BodyBuilder* this, nova_s
 
 void example_Nova_BodyBuilder_Nova_sayHello(example_Nova_BodyBuilder* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
-	nova_standard_io_Nova_Console_1_Nova_writeLine(0, exceptionData, nova_standard_Nova_String_0_Nova_concat(nova_standard_Nova_String_1_Nova_String(0, exceptionData, "Hello from "), exceptionData, nova_standard_Nova_String_virtual0_Nova_concat((nova_standard_Nova_String*)(this->example_Nova_Person_Nova_name), exceptionData, nova_standard_Nova_String_1_Nova_String(0, exceptionData, " the BodyBuilder"))));
+	nova_standard_io_Nova_Console_1_Nova_writeLine(0, exceptionData, nova_standard_Nova_String_0_Nova_concat(nova_standard_Nova_String_1_Nova_String(0, exceptionData, "Hello from "), exceptionData, nova_standard_Nova_String_virtual1_Nova_concat((nova_standard_Nova_String*)(this->example_Nova_Person_Nova_name), exceptionData, nova_standard_Nova_String_1_Nova_String(0, exceptionData, " the BodyBuilder"))));
 }
 
 void example_Nova_BodyBuilder_0_Nova_super(example_Nova_BodyBuilder* this, nova_standard_exception_Nova_ExceptionData* exceptionData)

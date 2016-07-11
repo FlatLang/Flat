@@ -4,31 +4,31 @@
 example_copy_Extension_VTable_Dog example_copy_Extension_VTable_Dog_val =
 {
 	{
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
 		(char(*)(nova_standard_operators_Nova_Equals*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*))nova_standard_Nova_Object_0_Nova_equals,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
 		0,
 		0,
 		0,
 	},
 	nova_standard_Nova_Object_0_Nova_getHashCodeLong,
-	nova_standard_Nova_Object_2_Nova_toString,
+	nova_standard_Nova_Object_0_Nova_toString,
 	nova_standard_Nova_Object_0_Nova_equals,
 };
 
@@ -66,7 +66,7 @@ void example_copy_Nova_Dog_Nova_destroy(example_copy_Nova_Dog** this, nova_stand
 
 void example_copy_Nova_Dog_Nova_this(example_copy_Nova_Dog* this, nova_standard_exception_Nova_ExceptionData* exceptionData, int example_copy_Nova_Dog_Nova_a, int example_copy_Nova_Dog_Nova_b)
 {
-	nova_standard_io_Nova_Console_1_Nova_writeLine(0, exceptionData, nova_standard_Nova_String_virtual0_Nova_concat((nova_standard_Nova_String*)(nova_standard_primitive_number_Nova_Int_3_Nova_toString(0, exceptionData, example_copy_Nova_Dog_Nova_a)), exceptionData, nova_standard_Nova_String_0_Nova_concat(nova_standard_Nova_String_1_Nova_String(0, exceptionData, ", "), exceptionData, nova_standard_primitive_number_Nova_Int_3_Nova_toString(0, exceptionData, example_copy_Nova_Dog_Nova_b))));
+	nova_standard_io_Nova_Console_1_Nova_writeLine(0, exceptionData, nova_standard_Nova_String_virtual1_Nova_concat((nova_standard_Nova_String*)(nova_standard_primitive_number_Nova_Int_2_Nova_toString(0, exceptionData, example_copy_Nova_Dog_Nova_a)), exceptionData, nova_standard_Nova_String_0_Nova_concat(nova_standard_Nova_String_1_Nova_String(0, exceptionData, ", "), exceptionData, nova_standard_primitive_number_Nova_Int_2_Nova_toString(0, exceptionData, example_copy_Nova_Dog_Nova_b))));
 }
 
 void example_copy_Nova_Dog_Nova_super(example_copy_Nova_Dog* this, nova_standard_exception_Nova_ExceptionData* exceptionData)

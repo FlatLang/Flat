@@ -110,8 +110,6 @@ public class Nova
 	private static final String INTERFACE_VTABLE_FILE_NAME = "InterfaceVTable";
 	private static final String ENVIRONMENT_VAR            = "novaEnv";
 	
-	private static final HashMap<String, String>	CLASS_LOCATIONS = new HashMap<String, String>();
-	
 	public static final boolean	ANDROID_DEBUG = false;
 	public static final boolean	DEBUG         = true;
 	
@@ -298,116 +296,6 @@ public class Nova
 			enableFlag(DRY_RUN);
 		}
 		
-		String standardFiles[] = new String[]
-		{
-			formatPath(standard + "String.nova"),
-			formatPath(standard + "Object.nova"),
-			formatPath(standard + "System.nova"),
-			
-			formatPath(standard + "database/DBConnector.nova"),
-			formatPath(standard + "database/ResultSet.nova"),
-			
-			formatPath(standard + "network/Socket.nova"),
-			formatPath(standard + "network/ServerSocket.nova"),
-			formatPath(standard + "network/ClientSocket.nova"),
-			formatPath(standard + "network/ConnectionSocket.nova"),
-			formatPath(standard + "network/NetworkInputStream.nova"),
-			formatPath(standard + "network/NetworkOutputStream.nova"),
-			
-			formatPath(standard + "math/Math.nova"),
-			formatPath(standard + "math/Statement.nova"),
-			formatPath(standard + "math/NumericStatement.nova"),
-			formatPath(standard + "math/NumericTree.nova"),
-			formatPath(standard + "math/NumericOperation.nova"),
-			formatPath(standard + "math/NumericOperand.nova"),
-			formatPath(standard + "math/StatementComponent.nova"),
-			formatPath(standard + "math/InvalidNumericStatementException.nova"),
-			
-			formatPath(standard + "math/logic/Conclusion.nova"),
-			formatPath(standard + "math/logic/Hypothesis.nova"),
-			formatPath(standard + "math/logic/LogicalConnective.nova"),
-			formatPath(standard + "math/logic/StatementComponent.nova"),
-			formatPath(standard + "math/logic/StatementLetter.nova"),
-			formatPath(standard + "math/logic/WFF.nova"),
-			formatPath(standard + "math/logic/StatementGroup.nova"),
-			formatPath(standard + "math/logic/LogicalStatement.nova"),
-			formatPath(standard + "math/logic/InvalidFormulaException.nova"),
-			
-			formatPath(standard + "process/Process.nova"),
-			
-			formatPath(standard + "primitive/Bool.nova"),
-			formatPath(standard + "primitive/Null.nova"),
-			formatPath(standard + "primitive/Primitive.nova"),
-			
-			formatPath(standard + "primitive/number/Char.nova"),
-			formatPath(standard + "primitive/number/Byte.nova"),
-			formatPath(standard + "primitive/number/Short.nova"),
-			formatPath(standard + "primitive/number/Int.nova"),
-			formatPath(standard + "primitive/number/Long.nova"),
-			formatPath(standard + "primitive/number/Float.nova"),
-			formatPath(standard + "primitive/number/Double.nova"),
-			formatPath(standard + "primitive/number/Number.nova"),
-			formatPath(standard + "primitive/number/Integer.nova"),
-			formatPath(standard + "primitive/number/RealNumber.nova"),
-
-			formatPath(standard + "operators/Multiply.nova"),
-			formatPath(standard + "operators/Equals.nova"),
-			
-			formatPath(standard + "time/Time.nova"),
-			formatPath(standard + "time/Timer.nova"),
-			formatPath(standard + "time/Date.nova"),
-			
-			formatPath(standard + "thread/Thread.nova"),
-			formatPath(standard + "thread/UncaughtExceptionHandler.nova"),
-			
-			formatPath(standard + "io/InputStream.nova"),
-			formatPath(standard + "io/OutputStream.nova"),
-			formatPath(standard + "io/StreamReader.nova"),
-			formatPath(standard + "io/File.nova"),
-			formatPath(standard + "io/Console.nova"),
-			
-			formatPath(standard + "svg/SVG.nova"),
-			formatPath(standard + "svg/SVGComponent.nova"),
-			formatPath(standard + "svg/SVGComponentList.nova"),
-			formatPath(standard + "svg/SVGComponentNode.nova"),
-			formatPath(standard + "svg/SVGMainComponent.nova"),
-			formatPath(standard + "svg/SVGCircle.nova"),
-			
-			formatPath(standard + "exception/ExceptionData.nova"),
-			formatPath(standard + "exception/DivideByZeroException.nova"),
-			formatPath(standard + "exception/UnimplementedOperationException.nova"),
-			formatPath(standard + "exception/Exception.nova"),
-
-			formatPath(standard + "datastruct/list/List.nova"),
-			formatPath(standard + "datastruct/list/LinkedList.nova"),
-			formatPath(standard + "datastruct/list/ListNode.nova"),
-			formatPath(standard + "datastruct/list/Array.nova"),
-			formatPath(standard + "datastruct/list/Iterable.nova"),
-			formatPath(standard + "datastruct/list/Iterator.nova"),
-			formatPath(standard + "datastruct/list/ArrayIterator.nova"),
-			formatPath(standard + "datastruct/list/NoSuchElementException.nova"),
-			formatPath(standard + "datastruct/list/Queue.nova"),
-			formatPath(standard + "datastruct/list/Stack.nova"),
-			formatPath(standard + "datastruct/list/EmptyStackException.nova"),
-			
-			formatPath(standard + "datastruct/HashMap.nova"),
-			formatPath(standard + "datastruct/Bounds.nova"),
-			formatPath(standard + "datastruct/Tree.nova"),
-			formatPath(standard + "datastruct/BinaryTree.nova"),
-			formatPath(standard + "datastruct/Node.nova"),
-			formatPath(standard + "datastruct/BinaryNode.nova"),
-			formatPath(standard + "datastruct/Comparable.nova"),
-			formatPath(standard + "datastruct/Vector2D.nova"),
-			formatPath(standard + "datastruct/Vector.nova"),
-
-			formatPath(standard + "security/MD5.nova"),
-
-			formatPath(standard + "star/Window.nova"),
-			formatPath(standard + "star/WindowThread.nova"),
-			
-			formatPath(standard + "gc/GC.nova"),
-		};
-		
 		String postArgs[] = new String[]
 		{
 			"-dir", formatPath(directory + "../include"),
@@ -423,31 +311,6 @@ public class Nova
 //			
 //			inputFiles.add(new File(location));
 //		}
-		
-		for (String classLocation : standardFiles)
-		{
-			if (classLocation.length() <= 0)
-			{
-				continue;
-			}
-			
-			String dir = getWorkingDirectoryPath();
-			
-			int offset = classLocation.indexOf(dir);
-			int slash  = dir.replace('\\', '/').endsWith("/") ? 0 : 1;
-			
-			if (offset < 0)
-			{
-				error("Unable to find location " + classLocation);
-				
-				completed(false);
-			}
-			
-			String location = classLocation.substring(dir.length() + offset + slash, classLocation.lastIndexOf('.'));
-			String name     = SyntaxUtils.getClassName(location);
-			
-			CLASS_LOCATIONS.put(name, location);
-		}
 		
 		args = prependArguments(args, new String[] { "nova" });
 		args = appendArguments(args, postArgs);
@@ -626,20 +489,6 @@ public class Nova
 		}
 		
 //		lingeringFiles.add(nativeInterfaceSource);
-	}
-	
-	public static final String getClassLocation(String className)
-	{
-//		if(className.equals("GC"))
-//		{
-//			return "";
-//		}
-//		if (CLASS_LOCATIONS.containsKey(className))
-//		{
-//			return "";
-//		}
-		
-		return CLASS_LOCATIONS.get(className);
 	}
 	
 	private String[] prependArguments(String args[], String ... newData)

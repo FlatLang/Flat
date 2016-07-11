@@ -38,18 +38,18 @@ typedef struct stabilitytest_Nova_StabilityTest stabilitytest_Nova_StabilityTest
 #include <stabilitytest/stabilitytest_Nova_StabilityTestCase.h>
 #include <stabilitytest/stabilitytest_Nova_SyntaxStability.h>
 #include <stabilitytest/stabilitytest_Nova_ThreadStability.h>
-#include <stabilitytest/stabilitytest_Nova_UnstableException.h>
-#include <stabilitytest/stabilitytest_Nova_ToStringStability.h>
 #include <stabilitytest/stabilitytest_Nova_TimeStability.h>
+#include <stabilitytest/stabilitytest_Nova_ToStringStability.h>
+#include <stabilitytest/stabilitytest_Nova_UnstableException.h>
 
 
 typedef struct stabilitytest_Extension_VTable_StabilityTest stabilitytest_Extension_VTable_StabilityTest;
 struct stabilitytest_Extension_VTable_StabilityTest
 {
 	nova_Interface_VTable itable;
-	long_long (*nova_standard_Nova_Object_virtual0_Nova_getHashCodeLong)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*);
-	nova_standard_Nova_String* (*nova_standard_Nova_Object_virtual2_Nova_toString)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*);
-	char (*nova_standard_operators_Nova_Equals_virtual2_Nova_equals)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*);
+	long_long (*nova_standard_Nova_Object_virtual1_Nova_getHashCodeLong)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*);
+	nova_standard_Nova_String* (*nova_standard_Nova_Object_virtual1_Nova_toString)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*);
+	char (*nova_standard_operators_Nova_Equals_virtual0_Nova_equals)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*);
 	void (*stabilitytest_Nova_StabilityTestCase_virtual0_Nova_test)(stabilitytest_Nova_StabilityTest*, nova_standard_exception_Nova_ExceptionData*);
 };
 

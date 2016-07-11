@@ -4,31 +4,31 @@
 nova_standard_primitive_number_Extension_VTable_Char nova_standard_primitive_number_Extension_VTable_Char_val =
 {
 	{
+		(int(*)(nova_standard_datastruct_Nova_Comparable*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*))nova_standard_primitive_number_Nova_Char_0_Nova_compareTo,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
 		(char(*)(nova_standard_operators_Nova_Equals*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*))nova_standard_Nova_Object_0_Nova_equals,
 		(nova_standard_Nova_Object*(*)(nova_standard_operators_Nova_Multiply*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*))nova_standard_primitive_number_Nova_Char_0_Nova_multiply,
 		0,
 		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		(int(*)(nova_standard_datastruct_Nova_Comparable*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*))nova_standard_primitive_number_Nova_Char_0_Nova_compareTo,
-		0,
-		0,
 	},
 	nova_standard_Nova_Object_0_Nova_getHashCodeLong,
-	nova_standard_primitive_number_Nova_Char_4_Nova_toString,
+	nova_standard_primitive_number_Nova_Char_3_Nova_toString,
 	nova_standard_Nova_Object_0_Nova_equals,
 	nova_standard_primitive_number_Nova_Number_0_Nova_numDigits,
 	nova_standard_primitive_number_Nova_Char_0_Nova_compareTo,
@@ -75,14 +75,14 @@ void nova_standard_primitive_number_Nova_Char_Nova_this(nova_standard_primitive_
 	this->nova_standard_primitive_number_Nova_Char_Nova_value = nova_standard_primitive_number_Nova_Char_Nova_value;
 }
 
-nova_standard_Nova_String* nova_standard_primitive_number_Nova_Char_3_Nova_toString(nova_standard_primitive_number_Nova_Char* this, nova_standard_exception_Nova_ExceptionData* exceptionData, char nova_standard_primitive_number_Nova_Char_Nova_c)
+nova_standard_Nova_String* nova_standard_primitive_number_Nova_Char_2_Nova_toString(nova_standard_primitive_number_Nova_Char* this, nova_standard_exception_Nova_ExceptionData* exceptionData, char nova_standard_primitive_number_Nova_Char_Nova_c)
 {
 	return nova_standard_Nova_String_0_Nova_String(0, exceptionData, nova_standard_primitive_number_Nova_Char_Nova_c);
 }
 
-nova_standard_Nova_String* nova_standard_primitive_number_Nova_Char_4_Nova_toString(nova_standard_primitive_number_Nova_Char* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
+nova_standard_Nova_String* nova_standard_primitive_number_Nova_Char_3_Nova_toString(nova_standard_primitive_number_Nova_Char* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
-	return nova_standard_primitive_number_Nova_Char_3_Nova_toString(0, exceptionData, this->nova_standard_primitive_number_Nova_Char_Nova_value);
+	return nova_standard_primitive_number_Nova_Char_2_Nova_toString(0, exceptionData, this->nova_standard_primitive_number_Nova_Char_Nova_value);
 }
 
 char nova_standard_primitive_number_Nova_Char_0_Nova_toLowerCase(nova_standard_primitive_number_Nova_Char* this, nova_standard_exception_Nova_ExceptionData* exceptionData)

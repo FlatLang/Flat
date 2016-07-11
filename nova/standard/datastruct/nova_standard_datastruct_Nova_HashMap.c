@@ -4,31 +4,31 @@
 nova_standard_datastruct_Extension_VTable_HashMap nova_standard_datastruct_Extension_VTable_HashMap_val =
 {
 	{
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
 		(char(*)(nova_standard_operators_Nova_Equals*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*))nova_standard_Nova_Object_0_Nova_equals,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
 		0,
 		0,
 		0,
 	},
 	nova_standard_Nova_Object_0_Nova_getHashCodeLong,
-	nova_standard_Nova_Object_2_Nova_toString,
+	nova_standard_Nova_Object_0_Nova_toString,
 	nova_standard_Nova_Object_0_Nova_equals,
 	nova_standard_datastruct_Nova_HashMap_0_Nova_put,
 };
@@ -85,12 +85,12 @@ void nova_standard_datastruct_Nova_HashMap_0_Nova_put(nova_standard_datastruct_N
 	{
 		return;
 	}
-	hashmapInsert(this->prv->nova_standard_datastruct_Nova_HashMap_Nova_map, nova_standard_datastruct_Nova_HashMap_Nova_value, (long_long)((long_long)(nova_standard_Nova_Object_virtual0_Nova_getHashCodeLong((nova_standard_Nova_Object*)(nova_standard_datastruct_Nova_HashMap_Nova_key), exceptionData))));
+	hashmapInsert(this->prv->nova_standard_datastruct_Nova_HashMap_Nova_map, nova_standard_datastruct_Nova_HashMap_Nova_value, (long_long)((long_long)(nova_standard_Nova_Object_virtual1_Nova_getHashCodeLong((nova_standard_Nova_Object*)(nova_standard_datastruct_Nova_HashMap_Nova_key), exceptionData))));
 }
 
 nova_standard_Nova_Object* nova_standard_datastruct_Nova_HashMap_Nova_get(nova_standard_datastruct_Nova_HashMap* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_Nova_Object* nova_standard_datastruct_Nova_HashMap_Nova_key)
 {
-	return hashmapGet(this->prv->nova_standard_datastruct_Nova_HashMap_Nova_map, (long_long)((long_long)(nova_standard_Nova_Object_virtual0_Nova_getHashCodeLong((nova_standard_Nova_Object*)(nova_standard_datastruct_Nova_HashMap_Nova_key), exceptionData))));
+	return hashmapGet(this->prv->nova_standard_datastruct_Nova_HashMap_Nova_map, (long_long)((long_long)(nova_standard_Nova_Object_virtual1_Nova_getHashCodeLong((nova_standard_Nova_Object*)(nova_standard_datastruct_Nova_HashMap_Nova_key), exceptionData))));
 }
 
 nova_standard_Nova_Object* nova_standard_datastruct_Nova_HashMap_Nova_remove(nova_standard_datastruct_Nova_HashMap* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_Nova_Object* nova_standard_datastruct_Nova_HashMap_Nova_key)
@@ -102,13 +102,13 @@ nova_standard_Nova_Object* nova_standard_datastruct_Nova_HashMap_Nova_remove(nov
 		return (nova_standard_Nova_Object*)nova_null;
 	}
 	l1_Nova_val = nova_standard_datastruct_Nova_HashMap_Nova_get(this, exceptionData, nova_standard_datastruct_Nova_HashMap_Nova_key);
-	hashmapRemove(this->prv->nova_standard_datastruct_Nova_HashMap_Nova_map, (long_long)((long_long)(nova_standard_Nova_Object_virtual0_Nova_getHashCodeLong((nova_standard_Nova_Object*)(nova_standard_datastruct_Nova_HashMap_Nova_key), exceptionData))));
+	hashmapRemove(this->prv->nova_standard_datastruct_Nova_HashMap_Nova_map, (long_long)((long_long)(nova_standard_Nova_Object_virtual1_Nova_getHashCodeLong((nova_standard_Nova_Object*)(nova_standard_datastruct_Nova_HashMap_Nova_key), exceptionData))));
 	return l1_Nova_val;
 }
 
 char nova_standard_datastruct_Nova_HashMap_Nova_containsKey(nova_standard_datastruct_Nova_HashMap* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_Nova_Object* nova_standard_datastruct_Nova_HashMap_Nova_key)
 {
-	return hashmapContains(this->prv->nova_standard_datastruct_Nova_HashMap_Nova_map, (long_long)((long_long)(nova_standard_Nova_Object_virtual0_Nova_getHashCodeLong((nova_standard_Nova_Object*)(nova_standard_datastruct_Nova_HashMap_Nova_key), exceptionData))));
+	return hashmapContains(this->prv->nova_standard_datastruct_Nova_HashMap_Nova_map, (long_long)((long_long)(nova_standard_Nova_Object_virtual1_Nova_getHashCodeLong((nova_standard_Nova_Object*)(nova_standard_datastruct_Nova_HashMap_Nova_key), exceptionData))));
 }
 
 int nova_standard_datastruct_Nova_HashMap_Accessor_Nova_size(nova_standard_datastruct_Nova_HashMap* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
@@ -122,8 +122,8 @@ void nova_standard_datastruct_Nova_HashMap_Nova_super(nova_standard_datastruct_N
 	this->prv->nova_standard_datastruct_Nova_HashMap_Nova_map = 0;
 }
 
-void nova_standard_datastruct_Nova_HashMap_virtual0_Nova_put(nova_standard_datastruct_Nova_HashMap* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_Nova_Object* nova_standard_datastruct_Nova_HashMap_Nova_key, nova_standard_Nova_Object* nova_standard_datastruct_Nova_HashMap_Nova_value)
+void nova_standard_datastruct_Nova_HashMap_virtual1_Nova_put(nova_standard_datastruct_Nova_HashMap* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_Nova_Object* nova_standard_datastruct_Nova_HashMap_Nova_key, nova_standard_Nova_Object* nova_standard_datastruct_Nova_HashMap_Nova_value)
 {
-	this->vtable->nova_standard_datastruct_Nova_HashMap_virtual0_Nova_put((nova_standard_datastruct_Nova_HashMap*)(this), exceptionData, nova_standard_datastruct_Nova_HashMap_Nova_key, nova_standard_datastruct_Nova_HashMap_Nova_value);
+	this->vtable->nova_standard_datastruct_Nova_HashMap_virtual1_Nova_put((nova_standard_datastruct_Nova_HashMap*)(this), exceptionData, nova_standard_datastruct_Nova_HashMap_Nova_key, nova_standard_datastruct_Nova_HashMap_Nova_value);
 }
 

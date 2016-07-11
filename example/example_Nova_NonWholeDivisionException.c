@@ -4,31 +4,31 @@
 example_Extension_VTable_NonWholeDivisionException example_Extension_VTable_NonWholeDivisionException_val =
 {
 	{
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
 		(char(*)(nova_standard_operators_Nova_Equals*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*))nova_standard_Nova_Object_0_Nova_equals,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
 		0,
 		0,
 		0,
 	},
 	nova_standard_Nova_Object_0_Nova_getHashCodeLong,
-	nova_standard_Nova_Object_2_Nova_toString,
+	nova_standard_Nova_Object_0_Nova_toString,
 	nova_standard_Nova_Object_0_Nova_equals,
 };
 
@@ -48,7 +48,7 @@ example_Nova_NonWholeDivisionException* example_Nova_NonWholeDivisionException_N
 	example_Nova_NonWholeDivisionException_0_Nova_super(this, exceptionData);
 	
 	{
-		example_Nova_NonWholeDivisionException_0_Nova_this(this, exceptionData);
+		example_Nova_NonWholeDivisionException_3_Nova_this(this, exceptionData);
 	}
 	
 	return this;
@@ -65,7 +65,7 @@ void example_Nova_NonWholeDivisionException_Nova_destroy(example_Nova_NonWholeDi
 	NOVA_FREE(*this);
 }
 
-void example_Nova_NonWholeDivisionException_0_Nova_this(example_Nova_NonWholeDivisionException* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
+void example_Nova_NonWholeDivisionException_3_Nova_this(example_Nova_NonWholeDivisionException* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
 }
 

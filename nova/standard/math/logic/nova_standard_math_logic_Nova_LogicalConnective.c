@@ -4,31 +4,31 @@
 nova_standard_math_logic_Extension_VTable_LogicalConnective nova_standard_math_logic_Extension_VTable_LogicalConnective_val =
 {
 	{
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
 		(char(*)(nova_standard_operators_Nova_Equals*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*))nova_standard_Nova_Object_0_Nova_equals,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
 		0,
 		0,
 		0,
 	},
 	nova_standard_Nova_Object_0_Nova_getHashCodeLong,
-	nova_standard_Nova_Object_2_Nova_toString,
+	nova_standard_Nova_Object_0_Nova_toString,
 	nova_standard_Nova_Object_0_Nova_equals,
 };
 
@@ -48,7 +48,7 @@ nova_standard_math_logic_Nova_LogicalConnective* nova_standard_math_logic_Nova_L
 	nova_standard_math_logic_Nova_LogicalConnective_0_Nova_super(this, exceptionData);
 	
 	{
-		nova_standard_math_logic_Nova_LogicalConnective_2_Nova_this(this, exceptionData);
+		nova_standard_math_logic_Nova_LogicalConnective_Nova_this(this, exceptionData);
 	}
 	
 	return this;
@@ -65,7 +65,7 @@ void nova_standard_math_logic_Nova_LogicalConnective_Nova_destroy(nova_standard_
 	NOVA_FREE(*this);
 }
 
-void nova_standard_math_logic_Nova_LogicalConnective_2_Nova_this(nova_standard_math_logic_Nova_LogicalConnective* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
+void nova_standard_math_logic_Nova_LogicalConnective_Nova_this(nova_standard_math_logic_Nova_LogicalConnective* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
 }
 

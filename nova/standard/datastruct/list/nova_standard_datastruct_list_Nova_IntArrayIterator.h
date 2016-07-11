@@ -28,18 +28,18 @@ typedef struct nova_standard_datastruct_list_Nova_IntArrayIterator nova_standard
 #include <nova/standard/nova_standard_Nova_String.h>
 #include <nova/standard/nova_standard_Nova_System.h>
 #include <nova/standard/math/nova_standard_math_Nova_Math.h>
-#include <nova/standard/datastruct/list/nova_standard_datastruct_list_Nova_NoSuchElementException.h>
-#include <nova/standard/datastruct/list/nova_standard_datastruct_list_Nova_Iterator.h>
 #include <nova/standard/datastruct/list/nova_standard_datastruct_list_Nova_IntArray.h>
+#include <nova/standard/datastruct/list/nova_standard_datastruct_list_Nova_Iterator.h>
+#include <nova/standard/datastruct/list/nova_standard_datastruct_list_Nova_NoSuchElementException.h>
 
 
 typedef struct nova_standard_datastruct_list_Extension_VTable_IntArrayIterator nova_standard_datastruct_list_Extension_VTable_IntArrayIterator;
 struct nova_standard_datastruct_list_Extension_VTable_IntArrayIterator
 {
 	nova_Interface_VTable itable;
-	long_long (*nova_standard_Nova_Object_virtual0_Nova_getHashCodeLong)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*);
-	nova_standard_Nova_String* (*nova_standard_Nova_Object_virtual2_Nova_toString)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*);
-	char (*nova_standard_operators_Nova_Equals_virtual2_Nova_equals)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*);
+	long_long (*nova_standard_Nova_Object_virtual1_Nova_getHashCodeLong)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*);
+	nova_standard_Nova_String* (*nova_standard_Nova_Object_virtual1_Nova_toString)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*);
+	char (*nova_standard_operators_Nova_Equals_virtual0_Nova_equals)(nova_standard_Nova_Object*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*);
 	nova_standard_datastruct_list_Nova_Iterator* (*nova_standard_datastruct_list_Nova_Iterator_virtual0_Nova_reset)(nova_standard_datastruct_list_Nova_IntArrayIterator*, nova_standard_exception_Nova_ExceptionData*);
 	char (*nova_standard_datastruct_list_Nova_Iterator_virtual_Accessor_Nova_hasNext)(nova_standard_datastruct_list_Nova_IntArrayIterator*, nova_standard_exception_Nova_ExceptionData*);
 	int (*nova_standard_datastruct_list_Nova_Iterator_virtual_Accessor_Nova_next)(nova_standard_datastruct_list_Nova_IntArrayIterator*, nova_standard_exception_Nova_ExceptionData*);

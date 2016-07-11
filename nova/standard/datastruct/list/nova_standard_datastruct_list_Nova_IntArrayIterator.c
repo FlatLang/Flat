@@ -4,19 +4,6 @@
 nova_standard_datastruct_list_Extension_VTable_IntArrayIterator nova_standard_datastruct_list_Extension_VTable_IntArrayIterator_val =
 {
 	{
-		(char(*)(nova_standard_operators_Nova_Equals*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*))nova_standard_Nova_Object_0_Nova_equals,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
 		0,
 		0,
 		(nova_standard_datastruct_list_Nova_Iterator*(*)(nova_standard_datastruct_list_Nova_Iterator*, nova_standard_exception_Nova_ExceptionData*))nova_standard_datastruct_list_Nova_IntArrayIterator_0_Nova_reset,
@@ -26,9 +13,22 @@ nova_standard_datastruct_list_Extension_VTable_IntArrayIterator nova_standard_da
 		0,
 		0,
 		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		(char(*)(nova_standard_operators_Nova_Equals*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*))nova_standard_Nova_Object_0_Nova_equals,
+		0,
+		0,
+		0,
 	},
 	nova_standard_Nova_Object_0_Nova_getHashCodeLong,
-	nova_standard_Nova_Object_2_Nova_toString,
+	nova_standard_Nova_Object_0_Nova_toString,
 	nova_standard_Nova_Object_0_Nova_equals,
 	nova_standard_datastruct_list_Nova_IntArrayIterator_0_Nova_reset,
 	nova_standard_datastruct_list_Nova_IntArrayIterator_Accessor_Nova_hasNext,
@@ -102,7 +102,7 @@ int nova_standard_datastruct_list_Nova_IntArrayIterator_Accessor_Nova_next(nova_
 	{
 		return (int)nova_standard_datastruct_list_Nova_Array_Nova_get((nova_standard_datastruct_list_Nova_Array*)(this->prv->nova_standard_datastruct_list_Nova_IntArrayIterator_Nova_array), exceptionData, this->nova_standard_datastruct_list_Nova_IntArrayIterator_Nova_position++);
 	}
-	THROW(6, nova_standard_datastruct_list_Nova_NoSuchElementException_0_Nova_NoSuchElementException(0, exceptionData));
+	THROW(2, nova_standard_datastruct_list_Nova_NoSuchElementException_0_Nova_NoSuchElementException(0, exceptionData));
 	return (int)nova_null;
 }
 

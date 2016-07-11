@@ -4,31 +4,31 @@
 nova_standard_exception_Extension_VTable_UnimplementedOperationException nova_standard_exception_Extension_VTable_UnimplementedOperationException_val =
 {
 	{
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
 		(char(*)(nova_standard_operators_Nova_Equals*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*))nova_standard_Nova_Object_0_Nova_equals,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
 		0,
 		0,
 		0,
 	},
 	nova_standard_Nova_Object_0_Nova_getHashCodeLong,
-	nova_standard_Nova_Object_2_Nova_toString,
+	nova_standard_Nova_Object_0_Nova_toString,
 	nova_standard_Nova_Object_0_Nova_equals,
 };
 
@@ -48,7 +48,7 @@ nova_standard_exception_Nova_UnimplementedOperationException* nova_standard_exce
 	nova_standard_exception_Nova_UnimplementedOperationException_0_Nova_super(this, exceptionData);
 	
 	{
-		nova_standard_exception_Nova_UnimplementedOperationException_1_Nova_this(this, exceptionData, nova_standard_exception_Nova_UnimplementedOperationException_Nova_message);
+		nova_standard_exception_Nova_UnimplementedOperationException_4_Nova_this(this, exceptionData, nova_standard_exception_Nova_UnimplementedOperationException_Nova_message);
 	}
 	
 	return this;
@@ -65,9 +65,9 @@ void nova_standard_exception_Nova_UnimplementedOperationException_Nova_destroy(n
 	NOVA_FREE(*this);
 }
 
-void nova_standard_exception_Nova_UnimplementedOperationException_1_Nova_this(nova_standard_exception_Nova_UnimplementedOperationException* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_Nova_String* nova_standard_exception_Nova_UnimplementedOperationException_Nova_message)
+void nova_standard_exception_Nova_UnimplementedOperationException_4_Nova_this(nova_standard_exception_Nova_UnimplementedOperationException* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_Nova_String* nova_standard_exception_Nova_UnimplementedOperationException_Nova_message)
 {
-	nova_standard_exception_Nova_Exception_1_Nova_this((nova_standard_exception_Nova_Exception*)(this), exceptionData, nova_standard_exception_Nova_UnimplementedOperationException_Nova_message);
+	nova_standard_exception_Nova_Exception_4_Nova_this((nova_standard_exception_Nova_Exception*)(this), exceptionData, nova_standard_exception_Nova_UnimplementedOperationException_Nova_message);
 }
 
 void nova_standard_exception_Nova_UnimplementedOperationException_0_Nova_super(nova_standard_exception_Nova_UnimplementedOperationException* this, nova_standard_exception_Nova_ExceptionData* exceptionData)

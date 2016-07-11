@@ -324,11 +324,11 @@ public class ForEachLoop extends Loop
 			return false;
 		}
 		
-		ClassDeclaration iterator = getProgram().getClassDeclaration(Nova.getClassLocation("Iterator"));
+		ClassDeclaration iterator = getProgram().getClassDeclaration("nova/standard/datastruct/list/Iterator");
 
 		if (!value.getReturnedNode().getTypeClass().isOfType(iterator))
 		{
-			ClassDeclaration iterable = getProgram().getClassDeclaration(Nova.getClassLocation("Iterable"));
+			ClassDeclaration iterable = getProgram().getClassDeclaration("nova/standard/datastruct/list/Iterable");
 			
 			if (!value.getReturnedNode().getTypeClass().isOfType(iterable))
 			{
