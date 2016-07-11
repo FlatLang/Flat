@@ -15,6 +15,36 @@ public class IntArray extends Array<Int>
 		no set
 	}
 	
+	[Override]
+	public Int first
+	{
+		get
+		{
+		    if (size > 0)
+            {
+                return data[0]
+            }
+            
+            return null
+        }
+        
+        no set
+	}
+	
+	[Override]
+	public Int last
+	{
+	    get
+	    {
+            if (size > 0)
+            {
+                return data[size - 1]
+            }
+            
+            return null
+        }
+	}
+	
 	public construct()
 	{
 		super()
@@ -127,28 +157,6 @@ public class IntArray extends Array<Int>
 		}
 		
 		return list
-	}
-	
-	[Override]
-	public first() -> Int
-	{
-		if (size > 0)
-		{
-			return data[0]
-		}
-		
-		return null
-	}
-	
-	[Override]
-	public last() -> Int
-	{
-		if (size > 0)
-		{
-			return data[size - 1]
-		}
-		
-		return null
 	}
 	
 	[Override]

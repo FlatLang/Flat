@@ -33,6 +33,36 @@ public class Array<E> implements List<E>
 		no set
 	}
 	
+	[Override]
+	public E first
+	{
+		get
+		{
+		    if (size > 0)
+            {
+                return data[0]
+            }
+            
+            return null
+        }
+        
+        no set
+	}
+	
+	[Override]
+	public E last
+	{
+	    get
+	    {
+            if (size > 0)
+            {
+                return data[size - 1]
+            }
+            
+            return null
+        }
+	}
+	
 	public construct()
 	{
 		this(10)
@@ -269,28 +299,6 @@ public class Array<E> implements List<E>
 		}
 		
 		return list
-	}
-	
-	[Override]
-	public first() -> E
-	{
-		if (size > 0)
-		{
-			return data[0]
-		}
-		
-		return null
-	}
-	
-	[Override]
-	public last() -> E
-	{
-		if (size > 0)
-		{
-			return data[size - 1]
-		}
-		
-		return null
 	}
 	
 	[Override]
