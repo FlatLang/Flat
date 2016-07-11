@@ -63,7 +63,7 @@ public class Assignment extends Node
 	/**
 	 * Get the node that is having its value modified. In other words,
 	 * the left hand value of the equation. For instance, in the
-	 * statement: "<code>int j = 35</code>" <u><code>int j</code></u> is
+	 * statement: "<code>Int j = 35</code>" <u><code>Int j</code></u> is
 	 * the left hand value of the equation.
 	 * 
 	 * @return The node that represents the variable that is being
@@ -348,7 +348,7 @@ public class Assignment extends Node
 		
 		n.addChild(assignment);
 		
-		n.validateCompatible(newLoc);
+		n.validateCompatible(newLoc, require);
 		
 		return n;
 	}
@@ -386,10 +386,59 @@ public class Assignment extends Node
 		return true;
 	}
 	
-	private boolean validateCompatible(Location location)
+	private boolean checkImplicitType(Value assigned, Value assignment, boolean require)
+	{
+		LocalDeclaration declaration = null;
+		
+		if (assigned instanceof Variable)
+		{
+			if (((Variable)assigned).getDeclaration() instanceof LocalDeclaration)
+			{
+				declaration = (LocalDeclaration)((Variable)assigned).getDeclaration();
+			}
+		}
+		else if (assigned instanceof LocalDeclaration)
+		{
+			declaration = (LocalDeclaration)assigned;
+		}
+		
+		if (declaration != null)
+		{
+			if (declaration.isImplicit())
+			{
+				if (declaration.getType() == null)
+				{
+					declaration.setType(assignment);
+				}
+				else if (declaration.getArrayDimensions() != assignment.getArrayDimensions())
+				{
+					return SyntaxMessage.queryError("Incompatible array assignment. Assigned node has " + declaration.getArrayDimensions() + " dimensions, when assignment has " + assignment.getArrayDimensions() + " dimensions", this, require);
+				}
+				else if (declaration.getTypeClass().hasCommonAncestor(assignment.getTypeClass()))
+				{
+					ClassDeclaration base = declaration.getTypeClass().getCommonAncestor(assignment.getTypeClass());
+					
+					declaration.setType(base.getNovaType());
+				}
+				else
+				{
+					return SyntaxMessage.queryError("Incompatible implicit type '" + declaration.getType() + "' being assigned to type '" + assignment.getType() + "'", this, require);
+				}
+			}
+		}
+		
+		return true;
+	}
+	
+	private boolean validateCompatible(Location location, boolean require)
 	{
 		Value returnedLeft  = getAssigneeNode().getReturnedNode();
 		Value returnedRight = getAssignmentNode().getReturnedNode();
+		
+		if (!checkImplicitType(returnedLeft, returnedRight, true))
+		{
+			return false;
+		}
 		
 		String leftType  = returnedLeft.getNovaType();
 		String rightType = returnedRight.getNovaType();
@@ -584,7 +633,6 @@ public class Assignment extends Node
 	 * include a declaration and therefore simply does nothing in this
 	 * method (Returns the given Variable).
 	 * 
-	 * @param parent The parent of the assignment node.
 	 * @param var The Variable to check whether or not declares a
 	 * 		variable.
 	 * @return If a variable is declared, this returns a clone of the
