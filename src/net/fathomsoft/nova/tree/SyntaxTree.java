@@ -61,7 +61,7 @@ public class SyntaxTree
 		Annotation.class
 	};
 	
-	private static final Class<?> SCOPE_CHILD_DECODE[] = new Class<?>[]
+	public static final Class<?> SCOPE_CHILD_DECODE[] = new Class<?>[]
 	{
 		Annotation.class, Break.class, Case.class, Switch.class, Default.class,
 		Fallthrough.class, Continue.class, ExceptionHandler.class, Assignment.class,
