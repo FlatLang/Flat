@@ -59,6 +59,7 @@ public class LambdaExpression extends Value
 	{
 		String[] variables = null;
 		int endingIndex = 0;
+		boolean block = false;
 		
 		if (statement.startsWith("("))
 		{
@@ -70,7 +71,9 @@ public class LambdaExpression extends Value
 		{
 			variables = new String[0];
 			
-			endingIndex = StringUtils.findEndingMatch(statement, 0, '{', '}'); 
+			endingIndex = StringUtils.findEndingMatch(statement, 0, '{', '}');
+
+			block = true;
 		}
 		else
 		{
@@ -98,6 +101,13 @@ public class LambdaExpression extends Value
 				{
 					operation = operation.substring(OPERATOR.length()).trim();
 				}
+
+				if (operation.startsWith("{"))
+				{
+					block = true;
+
+					operation = operation.substring(1, operation.length() - 1).trim();
+				}
 				
 				MethodCall call = (MethodCall)parent.getAncestorOfType(MethodCall.class);
 				
@@ -110,7 +120,6 @@ public class LambdaExpression extends Value
 				
 				Arrays.stream(methods)
 						.filter(x -> {
-							
 							if (x instanceof NovaMethodDeclaration &&
 									x.getParameterList().getNumVisibleChildren() > index &&
 									x.getParameter(index) instanceof ClosureDeclaration)
@@ -167,19 +176,30 @@ public class LambdaExpression extends Value
 						methodDeclaration += " -> " + closure.generateNovaType(call);
 					}
 					
-					BodyMethodDeclaration method = BodyMethodDeclaration.decodeStatement(parent.getParentClass(true), methodDeclaration, location.asNew(), require); 
-					
+					BodyMethodDeclaration method = BodyMethodDeclaration.decodeStatement(parent.getParentClass(true), methodDeclaration, location.asNew(), require);
+
 					if (method != null)
 					{
 						method.getParentClass().addChild(method);
-						
-						if (method.getType() != null)
+
+						boolean requiresReturn = method.getType() != null && (!block || !operation.contains("\n"));
+
+						if (requiresReturn)
 						{
 							operation = "return " + operation;
 						}
-						
-						Node node = SyntaxTree.decodeScopeContents(method, operation, location.asNew());
-						method.addChild(node);
+
+						if (block)
+						{
+							TreeGenerator generator = new TreeGenerator(null, operation, parent.getProgram().getTree());
+
+							generator.traverseCode(method, 0, null, false);
+						}
+						else
+						{
+							Node node = SyntaxTree.decodeScopeContents(method, operation, location.asNew());
+							method.addChild(node);
+						}
 						
 						Closure methodReference = Closure.decodeStatement(parent, method.generateNovaClosureReference(method.getParentClass()), location.asNew(), require);
 						methodReference.onAfterDecoded();
