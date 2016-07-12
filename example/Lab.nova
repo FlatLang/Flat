@@ -54,7 +54,13 @@ public class Lab
 		
 		Console.writeLine("Started async execution")
 		*/
-		
+
+		list.map(x -> {
+		    var something = 5
+
+		    return something + " " + x
+		}).forEach((x, y, z) -> Console.writeLine(x + "!"))
+
 		Console.writeLine("Mapped: " + list.filter(x -> x.size >= 4).map((x, i) -> i + ": " + x + "?").join(", "))
 		Console.writeLine("Mapped backwards: " + list.filter(x -> x.size >= 4).map(x -> x + "?").reverse().join(", "))
 		//Console.writeLine("Mapped2: " + list2.map(x -> x + "!").join(", "))
