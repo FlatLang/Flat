@@ -290,12 +290,22 @@ public class Array extends VariableDeclaration implements ArrayCompatible
 	 */
 	private boolean isInitializer(Node parent, String statement, boolean require)
 	{
-		if (!(parent instanceof Assignment) && !(parent instanceof MethodCallArgumentList))
+		if (isInitializer(statement))
 		{
-			return SyntaxMessage.queryError("Array initializer is only valid during an assignment", this, require);
+			if (!(parent instanceof Assignment) && !(parent instanceof MethodCallArgumentList))
+			{
+				if (require)
+				{
+					int j = 5;
+				}
+
+				return SyntaxMessage.queryError("Array initializer is only valid during an assignment", this, require);
+			}
+
+			return true;
 		}
 		
-		return isInitializer(statement);
+		return false;
 	}
 	
 	/**
