@@ -240,7 +240,7 @@ public class GenericTypeArgument extends IValue implements GenericCompatible
 			
 			if (arg != null)
 			{
-				return arg.getType();
+				return arg.getNovaType(context);
 			}
 			
 			return getDefaultType();
