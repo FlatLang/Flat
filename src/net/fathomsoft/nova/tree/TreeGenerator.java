@@ -294,7 +294,7 @@ public class TreeGenerator implements Runnable
 	 * @param skipScopes Whether or not to skip the scopes of anything
 	 * 		that contains a scope. If true, only decode the header.
 	 */
-	private void traverseCode(Node parent, int offset, Class<?> searchTypes[], boolean skipScopes)
+	public void traverseCode(Node parent, int offset, Class<?> searchTypes[], boolean skipScopes)
 	{
 		init(parent, offset);
 		
@@ -311,8 +311,15 @@ public class TreeGenerator implements Runnable
 			{
 				break;
 			}
-			
-			currentNode = getNextStatement(currentNode, offset, searchTypes, skipScopes);
+
+			if (statementEndIndex < source.length())
+			{
+				currentNode = getNextStatement(currentNode, offset, searchTypes, skipScopes);
+			}
+			else
+			{
+				currentNode = null;
+			}
 			
 			previous.onNextStatementDecoded(currentNode);
 		}
