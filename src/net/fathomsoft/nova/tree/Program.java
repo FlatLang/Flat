@@ -46,7 +46,12 @@ public class Program extends Node
 		this.controller = controller;
 		this.tree       = tree;
 	}
-	
+
+	public SyntaxTree getTree()
+	{
+		return tree;
+	}
+
 	/**
 	 * Override addChild(Node) method to make it synchronized. Needs
 	 * to be synchronized so that the threads dont try to write their
