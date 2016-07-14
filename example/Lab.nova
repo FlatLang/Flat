@@ -80,11 +80,17 @@ public class Lab
 		Console.writeLine(x)
 		
 		takesString(x)
-		
-		x = new Array()
-		
-		//x.add("hey")
-		//x.add("its now an array")
+
+        if (true)
+		{
+            x = new Array()
+
+            x.add("hey")
+            x.add("its now an array")
+        }
+
+        //sx.add("hey")
+        //x.add("its now an array")
 		
 		Console.writeLine(x)
 		

@@ -1370,6 +1370,14 @@ public abstract class Node implements Listenable, Annotatable
 		
 		return true;
 	}
+
+	public void onStackPopped()
+	{
+		for (Node n : children)
+		{
+			n.onStackPopped();
+		}
+	}
 	
 	public boolean onNextStatementDecoded(Node next)
 	{

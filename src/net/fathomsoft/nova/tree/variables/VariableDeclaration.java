@@ -492,13 +492,23 @@ public class VariableDeclaration extends IIdentifier
 		
 		return result;
 	}
-	
+
 	public void addDefaultGenericTypeArguments()
+	{
+		addDefaultGenericTypeArguments(false);
+	}
+
+	public void addDefaultGenericTypeArguments(boolean clearChildren)
 	{
 		if (getTypeClass() != null && !isGenericType())
 		{
 			GenericTypeArgumentList args = getGenericTypeArgumentList();
 			GenericTypeParameterDeclaration decl = getTypeClass().getGenericTypeParameterDeclaration();
+
+			if (clearChildren && args.getNumVisibleChildren() > 0)
+			{
+				args.slaughterEveryLastChild();
+			}
 			
 			for (int i = args.getNumVisibleChildren(); i < decl.getNumParameters(); i++)
 			{

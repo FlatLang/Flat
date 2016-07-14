@@ -2,6 +2,7 @@ package net.fathomsoft.nova.tree;
 
 import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.TestContext;
+import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.tree.generics.GenericTypeArgument;
 import net.fathomsoft.nova.tree.generics.GenericTypeArgumentList;
@@ -26,6 +27,8 @@ public class LocalDeclaration extends VariableDeclaration
 	private boolean implicit;
 	
 	private int scopeID;
+
+	private Value implicitType;
 	
 	public static final String IMPLICIT_IDENTIFIER = "var";
 	
@@ -315,7 +318,79 @@ public class LocalDeclaration extends VariableDeclaration
 			extra.decrementGenericsRemaining();
 		}
 	}
-	
+
+	public Value getImplicitType()
+	{
+		return implicitType;
+	}
+
+	public void setImplicitType(Value implicitType)
+	{
+		this.implicitType = implicitType;
+	}
+
+	public void setType(Value value)
+	{
+		setArrayDimensions(value.getArrayDimensions());
+		setTypeValue(value.getType());
+		setDataType(value.getDataType());
+
+		GenericTypeArgumentList args = value.getGenericTypeArgumentList();
+		GenericTypeArgumentList thisArgs = getGenericTypeArgumentList();
+
+		if (args != null)
+		{
+			for (int i = 0; i < args.getNumVisibleChildren(); i++)
+			{
+				GenericTypeArgument arg = args.getVisibleChild(i);
+
+				thisArgs.addChild(arg.clone(thisArgs, arg.getLocationIn().asNew()));
+			}
+		}
+	}
+
+	public Value getTypeValue()
+	{
+		Value value = new IValue(this, getLocationIn());
+
+		value.setArrayDimensions(getArrayDimensions());
+		value.setTypeValue(getType());
+		value.setDataType(getDataType());
+
+		GenericTypeArgumentList args = getGenericTypeArgumentList();
+		GenericTypeArgumentList thisArgs = value.getGenericTypeArgumentList();
+
+		if (thisArgs != null)
+		{
+			for (int i = 0; i < args.getNumVisibleChildren(); i++)
+			{
+				GenericTypeArgument arg = args.getVisibleChild(i);
+
+				thisArgs.addChild(arg.clone(thisArgs, arg.getLocationIn().asNew()));
+			}
+		}
+
+		return value;
+	}
+
+	@Override
+	public ValidationResult validate(int phase)
+	{
+		ValidationResult result = super.validate(phase);
+
+		if (result.skipValidation())
+		{
+			return result;
+		}
+
+		if (isImplicit())
+		{
+			setType(implicitType);
+		}
+
+		return result;
+	}
+
 	/**
 	 * @see net.fathomsoft.nova.tree.variables.VariableDeclaration#clone(Node, Location)
 	 */

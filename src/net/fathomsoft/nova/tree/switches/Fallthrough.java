@@ -123,4 +123,9 @@ public class Fallthrough extends Node implements SwitchChild
 		
 		return null;
 	}
+
+	public String toString()
+	{
+		return IDENTIFIER;
+	}
 }

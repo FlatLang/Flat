@@ -3,6 +3,7 @@ package net.fathomsoft.nova.tree;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import javafx.util.Pair;
 import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.tree.variables.Variable;
@@ -34,7 +35,9 @@ public class Scope extends Node
 	private int	id, localVariableID;
 	
 	private ArrayList<Listener> listeners;
-	
+
+	private ArrayList<Pair<LocalDeclaration, Value>> assignedImplicitVariables;
+
 	/**
 	 * Instantiate and initialize the default values.
 	 * 
@@ -52,7 +55,28 @@ public class Scope extends Node
 		
 		id = getNextScopeAncestor(false).generateUniqueID(this);
 	}
-	
+
+	public void addImplicitVariableAssignment(LocalDeclaration var, Value type)
+	{
+		if (assignedImplicitVariables == null)
+		{
+			assignedImplicitVariables = new ArrayList<>();
+		}
+
+		assignedImplicitVariables.add(new Pair<>(var, type));
+	}
+
+	@Override
+	public void onStackPopped()
+	{
+		if (assignedImplicitVariables != null && assignedImplicitVariables.size() > 0)
+		{
+			assignedImplicitVariables.stream().forEach(x -> x.getKey().setType(x.getValue()));
+		}
+
+		super.onStackPopped();
+	}
+
 	@Override
 	public ArrayList<Listener> getListeners()
 	{
@@ -60,7 +84,7 @@ public class Scope extends Node
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.Node#getNumDefaultChildren()
+	 * @see net.fathomsoft.nova.tree.Node#getNumDefaultChildren(p
 	 */
 	@Override
 	public int getNumDefaultChildren()
@@ -214,7 +238,7 @@ public class Scope extends Node
 	 * Set the scope ID of the given variable if it is a valid
 	 * LocalDeclaration and its scope ID has not already been set.
 	 * 
-	 * @param var The LocalDeclaration to set the scope ID of.
+	 * @param declaration The LocalDeclaration to set the scope ID of.
 	 */
 	private void setVariableScopeID(LocalDeclaration declaration)
 	{

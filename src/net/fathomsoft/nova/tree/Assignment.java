@@ -406,19 +406,28 @@ public class Assignment extends Node
 		{
 			if (declaration.isImplicit())
 			{
-				if (declaration.getType() == null)
+				Value previousType = declaration.getTypeValue();
+
+				declaration.setType(assignment);
+
+				if (declaration.getImplicitType() == null)
 				{
-					declaration.setType(assignment);
+					declaration.setImplicitType(assignment);
 				}
-				else if (declaration.getArrayDimensions() != assignment.getArrayDimensions())
+				else if (previousType.getArrayDimensions() != assignment.getArrayDimensions())
 				{
 					return SyntaxMessage.queryError("Incompatible array assignment. Assigned node has " + declaration.getArrayDimensions() + " dimensions, when assignment has " + assignment.getArrayDimensions() + " dimensions", this, require);
 				}
-				else if (declaration.getTypeClass().hasCommonAncestor(assignment.getTypeClass()))
+				else if (previousType.getTypeClass().hasCommonAncestor(assignment.getTypeClass()))
 				{
-					ClassDeclaration base = declaration.getTypeClass().getCommonAncestor(assignment.getTypeClass());
-					
-					declaration.setType(base.getNovaType());
+					ClassDeclaration base = previousType.getTypeClass().getCommonAncestor(assignment.getTypeClass());
+
+					Value value = declaration.getTypeValue();
+					value.setType(base.getNovaType());
+
+					declaration.addDefaultGenericTypeArguments(true);
+
+					getAncestorWithScope().getScope().addImplicitVariableAssignment(declaration, value);
 				}
 				else
 				{

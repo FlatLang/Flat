@@ -675,10 +675,18 @@ public class TreeGenerator implements Runnable
 				
 				if (!parentStack.isEmpty())
 				{
-					while (parentStack.pop().equals(pendingScopeFragment.check()))
+					Node parent = parentStack.pop();
+
+					while (parent.equals(pendingScopeFragment.check()))
 					{
 						pendingScopeFragment.pop();
+
+						parent.onStackPopped();
+
+						parent = parentStack.pop();
 					}
+
+					parent.onStackPopped();
 				}
 				
 				checkPendingScopeFragment(current);
