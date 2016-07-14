@@ -349,12 +349,12 @@ public class SyntaxStability extends StabilityTestCase
 	
 	static filterFunc(String i) -> Bool
 	{
-		return i.size >= 4
+		return i.count >= 4
 	}
 	
 	static foreachClosure(String s, Int i, Array<String> list)
 	{
-		if (s.size < 4)
+		if (s.count < 4)
 		{
 			throw new UnstableException("filtering failed")
 		}
@@ -378,19 +378,19 @@ public class SyntaxStability extends StabilityTestCase
 			program.fail("Failed to filter data correctly")
 		}
 		
-		for (Int n = 0; n < list2.size; n++)
+		for (Int n = 0; n < list2.count; n++)
 		{
-			if (list2.get(n).size < 4)
+			if (list2.get(n).count < 4)
 			{
 				program.fail("Failed to filter data correctly")
 			}
 		}
 		
-		/*if (list2.any(x -> x.size < 4))
+		/*if (list2.any(x -> x.count < 4))
 		{
 			program.fail("Failed to filter data correctly")
 		}
-		if (!list2.all(x -> x.size >= 4))
+		if (!list2.all(x -> x.count >= 4))
 		{
 			program.fail("Failed to filter data correctly")
 		}*/
@@ -403,7 +403,7 @@ public class SyntaxStability extends StabilityTestCase
 		
 		while (iter.hasNext)
 		{
-			if (iter.next.size < 4)
+			if (iter.next.count < 4)
 			{
 				program.fail("Failed to run iterator")
 			}
@@ -415,7 +415,7 @@ public class SyntaxStability extends StabilityTestCase
 		
 		for (string in list2)
 		{
-			if (string.size < 4)
+			if (string.count < 4)
 			{
 				program.fail("Failed to run foreach loop")
 			}

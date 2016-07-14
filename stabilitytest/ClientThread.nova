@@ -34,7 +34,7 @@ public class ClientThread extends Thread
 		
 		String s = client.connection.in.readString()
 		
-		if (s.size != NetworkStability.received.size || !s.equals(NetworkStability.received))
+		if (s.count != NetworkStability.received.count || !s.equals(NetworkStability.received))
 		{
 			program.fail("Client unable to receive the correct message from server")
 		}

@@ -243,10 +243,7 @@ public class Nova
 	 */
 	public void compile(String args[], boolean generateCode)
 	{
-		String root      = getWorkingDirectoryPath();
 		String directory = getWorkingDirectoryPath() + "example/";
-		String stability = getWorkingDirectoryPath() + "stabilitytest/";
-		String standard  = getWorkingDirectoryPath() + "nova/standard/";
 		
 		if (OS == WINDOWS)
 		{
@@ -282,7 +279,7 @@ public class Nova
 				"example/Lab",
 //				"stabilitytest/StabilityTest",
 //				"-nogc",
-//				"-no-c-output",
+				"-no-c-output",
 //				"-dry",
 //				"-no-notes",
 //				"-no-warnings",

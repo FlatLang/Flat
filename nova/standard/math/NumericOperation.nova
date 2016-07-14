@@ -63,7 +63,7 @@ public class NumericOperation extends NumericOperand<Object>
 			rh      = bounds3.extractString(operation)
 		}
 		
-		if (bounds3.end != operation.size)
+		if (bounds3.end != operation.count)
 		{
 			
 		}
@@ -100,7 +100,7 @@ public class NumericOperation extends NumericOperand<Object>
 	
 	static getType(String s) -> Int
 	{
-		if (s.size <= 0)
+		if (s.count <= 0)
 		{
 			return 0
 		}
@@ -153,7 +153,7 @@ public class NumericOperation extends NumericOperand<Object>
 			index = nextOperator(str, index + 1)
 		}
 		
-		if (minIndex >= str.size)
+		if (minIndex >= str.count)
 		{
 			return null
 		}
@@ -165,7 +165,7 @@ public class NumericOperation extends NumericOperand<Object>
 	
 	static nextOperator(String str, Int start) -> Int
 	{
-		for (Int i = start; i < str.size; i++)
+		for (Int i = start; i < str.count; i++)
 		{
 			if (isOperator(str.chars[i]))
 			{
@@ -191,9 +191,9 @@ public class NumericOperation extends NumericOperand<Object>
 	
 	static nextNonWhitespaceIndex(String str, Int start, Int direction) -> Int
 	{
-		while (start >= 0 && start < str.size && isWhitespace(str.chars[start])) start = start + direction
+		while (start >= 0 && start < str.count && isWhitespace(str.chars[start])) start = start + direction
 		
-		if (start < 0 || start >= str.size)
+		if (start < 0 || start >= str.count)
 			return -1
 		else
 			return start - direction

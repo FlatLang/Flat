@@ -20,7 +20,7 @@ public class IntArray extends Array<Int>
 	{
 		get
 		{
-		    if (size > 0)
+		    if (count > 0)
             {
                 return data[0]
             }
@@ -36,9 +36,9 @@ public class IntArray extends Array<Int>
 	{
 	    get
 	    {
-            if (size > 0)
+            if (count > 0)
             {
-                return data[size - 1]
+                return data[count - 1]
             }
             
             return null
@@ -50,14 +50,14 @@ public class IntArray extends Array<Int>
 		super()
 	}
 	
-	public construct(Int size)
+	public construct(Int count)
 	{
-	    super(size)
+	    super(count)
 	}
 	
-	public construct(Int data[], Int size)
+	public construct(Int data[], Int count)
 	{
-		super(data, size)
+		super(data, count)
 	}
 	
 	[Override]
@@ -78,7 +78,7 @@ public class IntArray extends Array<Int>
 	[Override]
 	public forEach(func(Int, Int, IntArray))
 	{
-		for (Int i = 0; i < size; i++)
+		for (Int i = 0; i < count; i++)
 		{
 			func((Int)get(i), i, this)
 		}
@@ -131,9 +131,9 @@ public class IntArray extends Array<Int>
 	[Override]
 	public take(Int howMany) -> IntArray
 	{
-		if (howMany > size)
+		if (howMany > count)
 		{
-			howMany = size
+			howMany = count
 		}
 		
 		IntArray list = new IntArray()
@@ -151,7 +151,7 @@ public class IntArray extends Array<Int>
 	{
 		IntArray list = new IntArray()
 		
-		for (Int i = howMany; i < size; i++)
+		for (Int i = howMany; i < count; i++)
 		{
 			list.add(data[i])
 		}
@@ -176,14 +176,14 @@ public class IntArray extends Array<Int>
 	[Override]
     public reverse() -> IntArray
     {
-    	IntArray array = new IntArray(size)
-    	array.size = size
+    	IntArray array = new IntArray(count)
+    	array.count = count
     	
     	Int i = 0
     	
     	for (element in this)
     	{
-    		array.set(size - ++i, element)
+    		array.set(count - ++i, element)
     	}
     	
     	return array

@@ -141,7 +141,7 @@ public class File
 		
 		while (line != null)
 		{
-			if (data.size > 0)
+			if (data.count > 0)
 			{
 				data = data + "\n"
 			}

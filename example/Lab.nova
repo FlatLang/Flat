@@ -33,7 +33,7 @@ public class Lab
 		Console.writeLine("Postorder: " + tree.postorder().join(", "))
 		Console.writeLine("Levelorder: " + tree.levelorder().join(", "))
 		
-		//"test".size
+		//"test".count
 		
 		String[] a = ["this", "is", "a", "test", "to", "see", "what shows up"]
 		Int[] b = [1, 2, 3, 4, 5, 6, 7]
@@ -41,7 +41,7 @@ public class Lab
 		Array<String> list = new Array(a, 7)
 		Array<Int> list2 = new IntArray(b, 7)
 		
-		/*list.filter(x -> x.size > 10).map(x -> getClassByName(x))
+		/*list.filter(x -> x.count > 10).map(x -> getClassByName(x))
 		    .forEach(x -> {
 		        Console.writeLine(x.fields.map(y -> y.name).join(", "))
 		    })*/
@@ -55,14 +55,14 @@ public class Lab
 		Console.writeLine("Started async execution")
 		*/
 
-		list.map(x -> {
+		Console.writeLine(list.map(x -> {
 		    var something = 5
 
 		    return something + " " + x
-		}).forEach(Console.writeLine)
+		}).join(", "))
 
-		Console.writeLine("Mapped: " + list.filter(x -> x.size >= 4).map((x, i) -> i + ": " + x + "?").join(", "))
-		Console.writeLine("Mapped backwards: " + list.filter(x -> x.size >= 4).map(x -> x + "?").reverse().join(", "))
+		Console.writeLine("Mapped: " + list.filter(x -> x.count >= 4).map((x, i) -> i + ": " + x + "?").join(", "))
+		Console.writeLine("Mapped backwards: " + list.filter(x -> x.count >= 4).map(x -> x + "?").reverse().join(", "))
 		//Console.writeLine("Mapped2: " + list2.map(x -> x + "!").join(", "))
 		
 		//doSomething(list)
@@ -94,24 +94,24 @@ public class Lab
 		
 		Console.writeLine(x)
 		
-//		Square sq = new Square(4)
-//		
-//		Console.writeLine(getArea(sq))
-//		
+		Square sq = new Square(4)
+
+		Console.writeLine(getArea(sq))
+
 //		NumericStatement s = new NumericStatement("5a + (3 * 2)")
-//		
+//
 //		Console.writeLine(s)
-//		
+//
 //		for (Int i = 0; i < 20; i++)
 //		{
 //			Window w = new Window()
-//			
+//
 //			w.width = 300
 //			w.height = 200
 //			w.x = (i % 5) * w.width
 //			w.y = (i / 5) * w.height
 //			w.title = "Window(" + i + ") at (" + w.x + ", " + w.y + ")"
-//			
+//
 //			w.create()
 //		}
 //		

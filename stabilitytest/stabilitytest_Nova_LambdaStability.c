@@ -88,7 +88,7 @@ void stabilitytest_Nova_LambdaStability_0_Nova_test(stabilitytest_Nova_LambdaSta
 	nova_standard_datastruct_list_Nova_ArrayIterator* nova_local_0;
 	nova_standard_Nova_String* l4_Nova_item;
 	
-	nova_standard_io_Nova_Console_0_Nova_write(0, exceptionData, nova_standard_Nova_String_1_Nova_String(0, exceptionData, "Testing lambdas... "));
+	nova_standard_io_Nova_Console_0_Nova_write(0, exceptionData, nova_standard_Nova_String_1_Nova_String(0, exceptionData, "Checking lambdas... "));
 	l1_Nova_a = (nova_standard_Nova_String**)NOVA_MALLOC(sizeof(nova_standard_Nova_String) * 7);
 	l1_Nova_a[0] = nova_standard_Nova_String_1_Nova_String(0, exceptionData, "this");
 	l1_Nova_a[1] = nova_standard_Nova_String_1_Nova_String(0, exceptionData, "is");

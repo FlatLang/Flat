@@ -42,7 +42,7 @@ public class DatabaseDemo
 		
 		String error = connection.error
 		
-		if (error.size > 0)
+		if (error.count > 0)
 		{
 			Console.writeLine("Error: " + error)
 		}

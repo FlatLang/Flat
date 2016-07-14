@@ -37,7 +37,7 @@ public class BinaryNode<E extends Comparable> extends Node<E>
 	
 	getNode(Int index) -> BinaryNode<E>
 	{
-		if (children.size <= index)
+		if (children.count <= index)
 			return null
 		
 		return (BinaryNode)children.get(index)
@@ -45,7 +45,7 @@ public class BinaryNode<E extends Comparable> extends Node<E>
 	
 	setNode(Int index, BinaryNode<E> data)
 	{
-		if (children.size <= index)
+		if (children.count <= index)
 			children.add(index, data)
 		else
 			children.set(index, data)

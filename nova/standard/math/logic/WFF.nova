@@ -41,13 +41,13 @@ public class WFF
 		
 		Array<StatementGroup<Hypothesis>> statements = decodeHypotheses(wff)
 		
-		for (Int i = 0; i < statements.size; i++)
+		for (Int i = 0; i < statements.count; i++)
 		{
 			StatementGroup<Hypothesis> group = statements.get(i)
 			
 			hypotheses.add(group.statement)
 		}
-		for (Int n = 0; n < hypotheses.size; n++)
+		for (Int n = 0; n < hypotheses.count; n++)
 		{
 			Console.writeLine(hypotheses.get(n))
 		}
@@ -64,14 +64,14 @@ public class WFF
 		
 		if (wff.lastChar() == ')')
 		{
-			Int first = findEndingMatch(wff, '(', ')', wff.size - 1, -1)
+			Int first = findEndingMatch(wff, '(', ')', wff.count - 1, -1)
 			
 			
 		}
 		
 		Int conclusionStart = nextNonWhitespaceIndex(wff, index + 2, 1)
 		
-		Bounds bounds = new Bounds(conclusionStart, wff.size)
+		Bounds bounds = new Bounds(conclusionStart, wff.count)
 		
 		Conclusion conclusion = new Conclusion(bounds.extractString(wff))
 		
@@ -99,7 +99,7 @@ public class WFF
 			prev = nextNonWhitespaceIndex(wff, index + 1, 1)
 		}
 		
-		list.add(generateHypothesis(wff, prev, wff.size))
+		list.add(generateHypothesis(wff, prev, wff.count))
 		
 		return list
 	}
@@ -131,7 +131,7 @@ public class WFF
 	
 	static nextWhitespaceIndex(String wff, Int index, Int direction, Bool opposite) -> Int
 	{
-		for (Int i = index; i < wff.size && i >= 0; i = i + direction)
+		for (Int i = index; i < wff.count && i >= 0; i = i + direction)
 		{
 			Char c = wff.charAt(i)
 			
@@ -168,7 +168,7 @@ public class WFF
 		
 		Int scope = 0
 		
-		for (Int i = index; i < wff.size && i >= 0; i = i + direction)
+		for (Int i = index; i < wff.count && i >= 0; i = i + direction)
 		{
 			Char c = wff.charAt(i)
 			

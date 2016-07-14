@@ -4,7 +4,7 @@ import "nova/standard/datastruct/Comparable"
 
 public class String implements Comparable<String>
 {
-	visible Int    size
+	visible Int    count
 	
 	visible Char[] chars
 	
@@ -14,7 +14,7 @@ public class String implements Comparable<String>
 	external void strcpy(char dst[], char src[])
 	external void strcat(char dst[], char src[])
 	external int strlen(char chars[])
-	external void memcpy(char dst[], char* src[], int size)
+	external void memcpy(char dst[], char* src[], int count)
 	
 	public construct(Char c)
 	{
@@ -30,22 +30,22 @@ public class String implements Comparable<String>
 	{
 		this.chars = chars
 		
-		size = calculateSize()
+		count = calculateSize()
 		
-//		if (chars[size] != '\0')
+//		if (chars[count] != '\0')
 //		{
-//			char newData[] = new char[size + 1]
+//			char newData[] = new char[count + 1]
 //			
 //			strcpy(newData, chars)
 //			
-//			newData[size] = '\0'
+//			newData[count] = '\0'
 //			
 //			this.chars = newData
 //		}
 		
-		if (chars[size] != '\0')
+		if (chars[count] != '\0')
 		{
-			chars[size] = '\0'
+			chars[count] = '\0'
 		}
 	}
 	
@@ -58,7 +58,7 @@ public class String implements Comparable<String>
 	{
 		str = str.toString()
 		
-		Int sz = str.size + size + 1
+		Int sz = str.count + count + 1
 		
 		Char newData[] = new Char[sz]
 		
@@ -79,11 +79,11 @@ public class String implements Comparable<String>
 	
 	indexOf(String search, Int start, Int direction) -> Int
 	{
-		for (Int i = start; i < size && i >= 0; i = i + direction)
+		for (Int i = start; i < count && i >= 0; i = i + direction)
 		{
 			Bool found = true
 					
-			for (Int j = 0; j < search.size && i + j < size && found; j++)
+			for (Int j = 0; j < search.count && i + j < count && found; j++)
 			{
 				if (search.chars[j] != chars[i + j])
 				{
@@ -99,7 +99,7 @@ public class String implements Comparable<String>
 //				}
 //				else
 //				{
-//					return i - search.size + 1
+//					return i - search.count + 1
 //				}
 			}
 		}
@@ -119,7 +119,7 @@ public class String implements Comparable<String>
 	
 	public lastIndexOf(String search) -> Int
 	{
-		return indexOf(search, size - 1, -1)
+		return indexOf(search, count - 1, -1)
 	}
 	
 	public substring(Int start, Int end) -> String
@@ -144,12 +144,12 @@ public class String implements Comparable<String>
 	
 	public substring(Int start) -> String
 	{
-		return substring(start, size)
+		return substring(start, count)
 	}
 	
 	public lastChar() -> Char
 	{
-		return charAt(size - 1)
+		return charAt(count - 1)
 	}
 	
 	public charAt(Int index) -> Char
@@ -160,9 +160,9 @@ public class String implements Comparable<String>
 	public trim() -> String
 	{
 		Int start = 0
-		Int end   = size - 1
+		Int end   = count - 1
 		
-		while (start < size && containsChar(chars[start], whitespace, whitespaceSize))
+		while (start < count && containsChar(chars[start], whitespace, whitespaceSize))
 		{
 			start++
 		}
@@ -177,7 +177,7 @@ public class String implements Comparable<String>
 			return ""
 		}
 		
-		if (start == 0 && end == size - 1)
+		if (start == 0 && end == count - 1)
 		{
 			return this
 		}
@@ -185,9 +185,9 @@ public class String implements Comparable<String>
 		return substring(start, end + 1)
 	}
 	
-	static containsChar(Char needle, Char Chars[], Int size) -> Bool
+	static containsChar(Char needle, Char Chars[], Int count) -> Bool
 	{
-		for (Int i = 0; i < size; i++)
+		for (Int i = 0; i < count; i++)
 		{
 			if (needle == Chars[i])
 			{
@@ -210,9 +210,9 @@ public class String implements Comparable<String>
 	
 	public transform(transform(Char) -> Char) -> String
 	{
-		Char newData[] = new Char[size]
+		Char newData[] = new Char[count]
 		
-		for (Int i = 0; i < size; i++)
+		for (Int i = 0; i < count; i++)
 		{
 			newData[i] = transform(chars[i])
 		}
@@ -232,7 +232,7 @@ public class String implements Comparable<String>
 		
 		if (s >= 0 && e > 0)
 		{
-			return substring(s + before.size, e)
+			return substring(s + before.count, e)
 		}
 		
 		return ""
@@ -240,7 +240,7 @@ public class String implements Comparable<String>
 	
 	public compareTo(String other) -> Int
 	{
-		for (Int i = 0; i < size && i < other.size; i++)
+		for (Int i = 0; i < count && i < other.count; i++)
 		{
 			if (chars[i] - other.chars[i] != 0)
 			{
@@ -248,7 +248,7 @@ public class String implements Comparable<String>
 			}
 		}
 		
-		return size - other.size
+		return count - other.count
 	}
 	
 	public toString() -> String

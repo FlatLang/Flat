@@ -21,7 +21,7 @@ public class Polynomial
 		Array<Double> degrees = new Array()
 		Array<Byte>   signs   = new Array()
 		
-		for (Int i = 0; i < polynomial.size; i++)
+		for (Int i = 0; i < polynomial.count; i++)
 		{
 			if (!isLetter(polynomial.chars[i]))
 			{

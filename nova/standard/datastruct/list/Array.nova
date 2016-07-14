@@ -4,11 +4,11 @@ import "nova/standard/primitive/number/Integer"
 
 public class Array<E> implements List<E>
 {
-	external void arrayCopy(E dest[], int dIndex, E src[], int sIndex, int len, int destArrLen, int size)
+	external void arrayCopy(E dest[], int dIndex, E src[], int sIndex, int len, int destArrLen, int count)
 	
 	visible Int capacity
 	
-	visible Int	size
+	visible Int	count
 	visible Int position
 	
 	E[] data
@@ -18,7 +18,7 @@ public class Array<E> implements List<E>
 	
 	visible Bool empty
 	{
-		get { return size <= 0 }
+		get { return count <= 0 }
 		no set
 	}
 	
@@ -38,7 +38,7 @@ public class Array<E> implements List<E>
 	{
 		get
 		{
-		    if (size > 0)
+		    if (count > 0)
             {
                 return data[0]
             }
@@ -54,9 +54,9 @@ public class Array<E> implements List<E>
 	{
 	    get
 	    {
-            if (size > 0)
+            if (count > 0)
             {
-                return data[size - 1]
+                return data[count - 1]
             }
             
             return null
@@ -68,20 +68,20 @@ public class Array<E> implements List<E>
 		this(10)
 	}
 	
-	public construct(Int size)
+	public construct(Int count)
 	{
-	    this.size = 0
+	    this.count = 0
 	    this.position = 0
 	    this.capacity = 0
 	    
-		increaseSize(size)
+		increaseSize(count)
 	}
 	
-	public construct(E data[], Int size)
+	public construct(E data[], Int count)
 	{
-		this(size)
+		this(count)
 		
-		for (Int i = 0; i < size; i++)
+		for (Int i = 0; i < count; i++)
 		{
 			add(data[i])
 		}
@@ -96,7 +96,7 @@ public class Array<E> implements List<E>
 		
 		data[position++] = element
 		
-		size = Math.max(position, size)
+		count = Math.max(position, count)
 	}
 	
 	public add(Int index, E element)
@@ -117,7 +117,7 @@ public class Array<E> implements List<E>
 			position = index + 1;
 		}
 		
-		size = Math.max(position, size)
+		count = Math.max(position, count)
 	}
 	
 	public remove(Int index) -> E
@@ -161,15 +161,15 @@ public class Array<E> implements List<E>
 		increaseSize(capacity + 3)
 	}
 	
-	increaseSize(Int size)
+	increaseSize(Int count)
 	{
-		Int offset = size - capacity
+		Int offset = count - capacity
 		
-		capacity = size
+		capacity = count
 		
 		E tmp[] = new E[capacity]
 		
-		arrayCopy(tmp, 0, data, 0, this.size, capacity, 4)
+		arrayCopy(tmp, 0, data, 0, this.count, capacity, 4)
 		
 		data = tmp
 		
@@ -192,9 +192,9 @@ public class Array<E> implements List<E>
 	[Override]
 	public toArray() -> E[]
 	{
-		E[] array = new E[size]
+		E[] array = new E[count]
 		
-		for (Int i = 0; i < size; i++)
+		for (Int i = 0; i < count; i++)
 		{
 			array[i] = data[i]
 		}
@@ -220,7 +220,7 @@ public class Array<E> implements List<E>
 	[Override]
 	public forEach(func(E, Int, Array<E>))
 	{
-		for (Int i = 0; i < size; i++)
+		for (Int i = 0; i < count; i++)
 		{
 			func(data[i], i, this)
 		}
@@ -273,9 +273,9 @@ public class Array<E> implements List<E>
 	[Override]
 	public take(Int howMany) -> Array<E>
 	{
-		if (howMany > size)
+		if (howMany > count)
 		{
-			howMany = size
+			howMany = count
 		}
 		
 		Array<E> list = new Array()
@@ -293,7 +293,7 @@ public class Array<E> implements List<E>
 	{
 		Array<E> list = new Array()
 		
-		for (Int i = howMany; i < size; i++)
+		for (Int i = howMany; i < count; i++)
 		{
 			list.add(data[i])
 		}
@@ -322,7 +322,7 @@ public class Array<E> implements List<E>
     	
     	for (value in this)
     	{
-    		sum = sum + ((String)value).size
+    		sum = sum + ((String)value).count
     	}
     	
         return sum
@@ -357,14 +357,14 @@ public class Array<E> implements List<E>
 	[Override]
     public reverse() -> Array<E>
     {
-    	Array<E> array = new Array(size)
-    	array.size = size
+    	Array<E> array = new Array(count)
+    	array.count = count
     	
     	Int i = 0
     	
     	for (element in this)
     	{
-    		array.data[size - ++i] = element
+    		array.data[count - ++i] = element
     	}
     	
     	return array

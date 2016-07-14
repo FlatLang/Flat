@@ -33,6 +33,7 @@ typedef struct example_Nova_Lab example_Nova_Lab;
 #include <nova/standard/datastruct/list/nova_standard_datastruct_list_Nova_LinkedList.h>
 #include <nova/standard/datastruct/list/nova_standard_datastruct_list_Nova_List.h>
 #include <example/example_Nova_Polygon.h>
+#include <example/example_Nova_Square.h>
 
 
 typedef struct example_Extension_VTable_Lab example_Extension_VTable_Lab;

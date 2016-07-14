@@ -8,7 +8,7 @@ public class ArrayIterator<E> implements Iterator<E>
 	
 	visible Bool hasNext
 	{
-		get { return array.size > position }
+		get { return array.count > position }
 		no set
 	}
 	

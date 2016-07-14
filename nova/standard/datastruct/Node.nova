@@ -65,7 +65,7 @@ public class Node<E>
 	
 	inorder(Array<E> array) -> Array<E>
 	{
-		Int half = Math.ceil(children.size / 2.0)
+		Int half = Math.ceil(children.count / 2.0)
 		
 		//children.take(half).filter(notNull).forEach(x -> x.inorder(array))
 		for (child1 in children.take(half).filter(notNull))
