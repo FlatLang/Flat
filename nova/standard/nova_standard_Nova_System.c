@@ -101,7 +101,7 @@ nova_standard_process_Nova_Process* nova_standard_Nova_System_Nova_execute(nova_
 	nova_standard_io_Nova_StreamReader* l1_Nova_reader;
 	nova_standard_process_Nova_Process* l1_Nova_process;
 	
-	l1_Nova_pipe = getPipe((char*)(nova_standard_Nova_System_Nova_command->nova_standard_Nova_String_Nova_chars), (nova_standard_Nova_System_closure1_Nova_exit)&nova_standard_Nova_System_0_Nova_exit, nova_standard_Nova_System_Nova_System);
+	l1_Nova_pipe = getPipe((char*)(nova_standard_Nova_System_Nova_command->nova_standard_Nova_String_Nova_chars), (nova_standard_Nova_System_closure1_Nova_exit)&nova_standard_Nova_System_2_Nova_exit, nova_standard_Nova_System_Nova_System);
 	l1_Nova_f = nova_standard_io_Nova_File_1_Nova_File(0, exceptionData, l1_Nova_pipe);
 	if (!nova_standard_io_Nova_File_Accessor_Nova_exists(l1_Nova_f, exceptionData))
 	{

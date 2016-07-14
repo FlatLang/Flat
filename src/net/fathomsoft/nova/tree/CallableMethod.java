@@ -133,7 +133,10 @@ public interface CallableMethod
 	{
 		if (getParameterList().getNumVisibleChildren() != types.length)
 		{
-			return filter != null && filter.allowMoreParameters && getParameterList().getNumVisibleChildren() < types.length;
+			if (filter == null || !filter.allowMoreParameters || getParameterList().getNumVisibleChildren() >= types.length)
+			{
+				return false;
+			}
 		}
 		
 		return SyntaxUtils.areTypesCompatible(contexts, getParameterList().getTypes(), types, searchGeneric);

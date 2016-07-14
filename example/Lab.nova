@@ -59,7 +59,7 @@ public class Lab
 		    var something = 5
 
 		    return something + " " + x
-		}).forEach((x, y, z) -> Console.writeLine(x + "!"))
+		}).forEach(Console.writeLine)
 
 		Console.writeLine("Mapped: " + list.filter(x -> x.size >= 4).map((x, i) -> i + ": " + x + "?").join(", "))
 		Console.writeLine("Mapped backwards: " + list.filter(x -> x.size >= 4).map(x -> x + "?").reverse().join(", "))

@@ -270,9 +270,9 @@ public class Closure extends Variable
 		{
 			return true;
 		}
-		
+
 		MethodDeclaration declaration = getMethodDeclaration(getMethodCall().getReferenceNode().toValue()/*.getContext()/*getReferenceNode().toValue()*/, declarations[0].getName());
-		
+
 		if (declaration == null)
 		{
 			getMethodDeclaration(getMethodCall().getReferenceNode().toValue(), declarations[0].getName());

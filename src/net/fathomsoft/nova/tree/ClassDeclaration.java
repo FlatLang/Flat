@@ -1016,13 +1016,34 @@ public class ClassDeclaration extends InstanceDeclaration
 	public MethodDeclaration getMethod(GenericCompatible[] contexts, String methodName, SearchFilter filter, Value ... parameterTypes)
 	{
 		MethodDeclaration methods[] = getMethods(methodName, parameterTypes.length, filter);
-		
+
+		ArrayList<MethodDeclaration> compatible = new ArrayList<>();
+
 		for (MethodDeclaration method : methods)
 		{
 			if (method.areCompatibleParameterTypes(contexts, false, filter, parameterTypes))// && SyntaxUtils.isTypeCompatible(getProgram(), method.getType(), returnType))
 			{
-				return method;
+				compatible.add(method);
 			}
+		}
+
+		int max = -1;
+		int maxI = -1;
+
+		for (int i = 0; i < compatible.size(); i++)
+		{
+			MethodDeclaration method = compatible.get(i);
+
+			if (method.getParameterList().getNumParameters() > max)
+			{
+				max = method.getParameterList().getNumParameters();
+				maxI = i;
+			}
+		}
+
+		if (maxI >= 0)
+		{
+			return compatible.get(maxI);
 		}
 		
 		return null;
