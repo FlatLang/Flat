@@ -20,8 +20,6 @@ public class ExceptionStability extends StabilityTestCase
 		catch (Exception e)
 		{
 			worked = true
-			
-			Console.writeLine("OK")
 		}
 		
 		if (!worked)
