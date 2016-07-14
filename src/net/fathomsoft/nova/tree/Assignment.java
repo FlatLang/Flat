@@ -425,14 +425,14 @@ public class Assignment extends Node
 					Value value = declaration.getTypeValue();
 					value.setType(base.getNovaType());
 
-					declaration.addDefaultGenericTypeArguments(true);
-
 					getAncestorWithScope().getScope().addImplicitVariableAssignment(declaration, value);
 				}
 				else
 				{
 					return SyntaxMessage.queryError("Incompatible implicit type '" + declaration.getType() + "' being assigned to type '" + assignment.getType() + "'", this, require);
 				}
+
+				declaration.addDefaultGenericTypeArguments(true);
 			}
 		}
 		

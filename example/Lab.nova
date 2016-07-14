@@ -68,7 +68,7 @@ public class Lab
 		//doSomething(list)
 		//doSomething(list2)
 		
-		LinkedList<String> linked = new LinkedList()
+		var linked = new LinkedList()
 		
 		linked.add("test").add("test2").add("test3")
 		
