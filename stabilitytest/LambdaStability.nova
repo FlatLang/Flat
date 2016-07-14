@@ -12,7 +12,7 @@ public class LambdaStability extends StabilityTestCase
 	
 	public test()
 	{
-	    Console.write("Testing lambdas... ")
+	    Console.write("Checking lambdas... ")
 	    
 		String[] a = ["this", "is", "a", "test", "to", "see", "what shows up"]
 		Int[] b = [1, 2, 3, 4, 5, 6, 7]
