@@ -344,7 +344,7 @@ public class TreeGenerator implements Runnable
 		{
 			char endChar = '\0';
 			
-			int newStatementStartIndex = 0;
+			int newStatementStartIndex = statementStartIndex;
 			
 			if (statementEndIndex < source.length())
 			{
