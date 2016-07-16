@@ -433,12 +433,12 @@ nova_standard_Nova_String* stabilitytest_Nova_SyntaxStability_Nova_swap2(stabili
 
 char stabilitytest_Nova_SyntaxStability_Nova_filterFunc(stabilitytest_Nova_SyntaxStability* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_Nova_String* stabilitytest_Nova_SyntaxStability_Nova_i)
 {
-	return (char)stabilitytest_Nova_SyntaxStability_Nova_i->nova_standard_Nova_String_Nova_size >= 4;
+	return (char)stabilitytest_Nova_SyntaxStability_Nova_i->nova_standard_Nova_String_Nova_count >= 4;
 }
 
 void stabilitytest_Nova_SyntaxStability_Nova_foreachClosure(stabilitytest_Nova_SyntaxStability* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_Nova_String* stabilitytest_Nova_SyntaxStability_Nova_s, int stabilitytest_Nova_SyntaxStability_Nova_i, nova_standard_datastruct_list_Nova_Array* stabilitytest_Nova_SyntaxStability_Nova_list)
 {
-	if (stabilitytest_Nova_SyntaxStability_Nova_s->nova_standard_Nova_String_Nova_size < 4)
+	if (stabilitytest_Nova_SyntaxStability_Nova_s->nova_standard_Nova_String_Nova_count < 4)
 	{
 		THROW(10, stabilitytest_Nova_UnstableException_Nova_UnstableException(0, exceptionData, nova_standard_Nova_String_1_Nova_String(0, exceptionData, "filtering failed")));
 	}
@@ -485,9 +485,9 @@ void stabilitytest_Nova_SyntaxStability_Nova_checkIterators(stabilitytest_Nova_S
 	}
 	END_TRY;
 	l4_Nova_n = (int)(0);
-	for (; l4_Nova_n < l1_Nova_list2->nova_standard_datastruct_list_Nova_Array_Nova_size; l4_Nova_n++)
+	for (; l4_Nova_n < l1_Nova_list2->nova_standard_datastruct_list_Nova_Array_Nova_count; l4_Nova_n++)
 	{
-		if ((int)(((nova_standard_Nova_String*)nova_standard_datastruct_list_Nova_Array_Nova_get(l1_Nova_list2, exceptionData, l4_Nova_n))->nova_standard_Nova_String_Nova_size) < 4)
+		if ((int)(((nova_standard_Nova_String*)nova_standard_datastruct_list_Nova_Array_Nova_get(l1_Nova_list2, exceptionData, l4_Nova_n))->nova_standard_Nova_String_Nova_count) < 4)
 		{
 			stabilitytest_Nova_StabilityTest_1_Nova_fail(this->stabilitytest_Nova_StabilityTestCase_Nova_program, exceptionData, nova_standard_Nova_String_1_Nova_String(0, exceptionData, "Failed to filter data correctly"));
 		}
@@ -497,7 +497,7 @@ void stabilitytest_Nova_SyntaxStability_Nova_checkIterators(stabilitytest_Nova_S
 	l1_Nova_iter = (nova_standard_datastruct_list_Nova_Iterator*)(nova_standard_datastruct_list_Nova_Iterable_virtual_Accessor1_Nova_iterator((nova_standard_datastruct_list_Nova_Iterable*)(l1_Nova_list2), exceptionData));
 	while (nova_standard_datastruct_list_Nova_Iterator_virtual_Accessor_Nova_hasNext((nova_standard_datastruct_list_Nova_Iterator*)(l1_Nova_iter), exceptionData))
 	{
-		if ((int)(((nova_standard_Nova_String*)nova_standard_datastruct_list_Nova_Iterator_virtual_Accessor_Nova_next((nova_standard_datastruct_list_Nova_Iterator*)(l1_Nova_iter), exceptionData))->nova_standard_Nova_String_Nova_size) < 4)
+		if ((int)(((nova_standard_Nova_String*)nova_standard_datastruct_list_Nova_Iterator_virtual_Accessor_Nova_next((nova_standard_datastruct_list_Nova_Iterator*)(l1_Nova_iter), exceptionData))->nova_standard_Nova_String_Nova_count) < 4)
 		{
 			stabilitytest_Nova_StabilityTest_1_Nova_fail(this->stabilitytest_Nova_StabilityTestCase_Nova_program, exceptionData, nova_standard_Nova_String_1_Nova_String(0, exceptionData, "Failed to run iterator"));
 		}
@@ -508,7 +508,7 @@ void stabilitytest_Nova_SyntaxStability_Nova_checkIterators(stabilitytest_Nova_S
 	while (nova_standard_datastruct_list_Nova_Iterator_virtual_Accessor_Nova_hasNext((nova_standard_datastruct_list_Nova_Iterator*)(nova_local_0), exceptionData))
 	{
 		l8_Nova_string = (nova_standard_Nova_String*)(nova_standard_datastruct_list_Nova_Iterator_virtual_Accessor_Nova_next((nova_standard_datastruct_list_Nova_Iterator*)(nova_local_0), exceptionData));
-		if (l8_Nova_string->nova_standard_Nova_String_Nova_size < 4)
+		if (l8_Nova_string->nova_standard_Nova_String_Nova_count < 4)
 		{
 			stabilitytest_Nova_StabilityTest_1_Nova_fail(this->stabilitytest_Nova_StabilityTestCase_Nova_program, exceptionData, nova_standard_Nova_String_1_Nova_String(0, exceptionData, "Failed to run foreach loop"));
 		}

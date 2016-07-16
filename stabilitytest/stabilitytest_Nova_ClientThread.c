@@ -99,7 +99,7 @@ void stabilitytest_Nova_ClientThread_0_Nova_run(stabilitytest_Nova_ClientThread*
 	nova_standard_io_Nova_Console_1_Nova_writeLine(0, exceptionData, nova_standard_Nova_String_1_Nova_String(0, exceptionData, "OK"));
 	nova_standard_io_Nova_Console_1_Nova_writeLine(0, exceptionData, nova_standard_Nova_String_1_Nova_String(0, exceptionData, "Waiting for String from ServerSocket... "));
 	l1_Nova_s = (nova_standard_Nova_String*)(nova_standard_io_Nova_InputStream_virtual1_Nova_readString((nova_standard_io_Nova_InputStream*)(l1_Nova_client->nova_standard_network_Nova_ClientSocket_Nova_connection->nova_standard_network_Nova_ConnectionSocket_Nova_in), exceptionData));
-	if (l1_Nova_s->nova_standard_Nova_String_Nova_size != stabilitytest_Nova_NetworkStability_Nova_received->nova_standard_Nova_String_Nova_size || !nova_standard_operators_Nova_Equals_virtual0_Nova_equals((nova_standard_operators_Nova_Equals*)(l1_Nova_s), exceptionData, (nova_standard_Nova_Object*)(stabilitytest_Nova_NetworkStability_Nova_received)))
+	if (l1_Nova_s->nova_standard_Nova_String_Nova_count != stabilitytest_Nova_NetworkStability_Nova_received->nova_standard_Nova_String_Nova_count || !nova_standard_operators_Nova_Equals_virtual0_Nova_equals((nova_standard_operators_Nova_Equals*)(l1_Nova_s), exceptionData, (nova_standard_Nova_Object*)(stabilitytest_Nova_NetworkStability_Nova_received)))
 	{
 		stabilitytest_Nova_StabilityTest_1_Nova_fail(this->prv->stabilitytest_Nova_ClientThread_Nova_program, exceptionData, nova_standard_Nova_String_1_Nova_String(0, exceptionData, "Client unable to receive the correct message from server"));
 	}

@@ -241,7 +241,7 @@ void nova_standard_math_Nova_NumericOperation_Nova_this(nova_standard_math_Nova_
 		l2_Nova_bounds3 = nova_standard_math_Nova_NumericOperation_Nova_searchNextType(0, exceptionData, nova_standard_math_Nova_NumericOperation_Nova_operation, l2_Nova_bounds2->nova_standard_datastruct_Nova_Bounds_Nova_end, (int*)&(nova_garbageData));
 		l2_Nova_rh = nova_standard_datastruct_Nova_Bounds_Nova_extractString(l2_Nova_bounds3, exceptionData, nova_standard_math_Nova_NumericOperation_Nova_operation);
 	}
-	if (l2_Nova_bounds3->nova_standard_datastruct_Nova_Bounds_Nova_end != nova_standard_math_Nova_NumericOperation_Nova_operation->nova_standard_Nova_String_Nova_size)
+	if (l2_Nova_bounds3->nova_standard_datastruct_Nova_Bounds_Nova_end != nova_standard_math_Nova_NumericOperation_Nova_operation->nova_standard_Nova_String_Nova_count)
 	{
 	}
 }
@@ -278,7 +278,7 @@ nova_standard_math_Nova_NumericOperand* nova_standard_math_Nova_NumericOperation
 
 int nova_standard_math_Nova_NumericOperation_0_Nova_getType(nova_standard_math_Nova_NumericOperation* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_Nova_String* nova_standard_math_Nova_NumericOperation_Nova_s)
 {
-	if (nova_standard_math_Nova_NumericOperation_Nova_s->nova_standard_Nova_String_Nova_size <= 0)
+	if (nova_standard_math_Nova_NumericOperation_Nova_s->nova_standard_Nova_String_Nova_count <= 0)
 	{
 		return (int)0;
 	}
@@ -328,7 +328,7 @@ nova_standard_datastruct_Nova_Bounds* nova_standard_math_Nova_NumericOperation_N
 		}
 		l1_Nova_index = nova_standard_math_Nova_NumericOperation_Nova_nextOperator(0, exceptionData, nova_standard_math_Nova_NumericOperation_Nova_str, l1_Nova_index + 1);
 	}
-	if (l1_Nova_minIndex >= nova_standard_math_Nova_NumericOperation_Nova_str->nova_standard_Nova_String_Nova_size)
+	if (l1_Nova_minIndex >= nova_standard_math_Nova_NumericOperation_Nova_str->nova_standard_Nova_String_Nova_count)
 	{
 		return (nova_standard_datastruct_Nova_Bounds*)nova_null;
 	}
@@ -343,7 +343,7 @@ int nova_standard_math_Nova_NumericOperation_Nova_nextOperator(nova_standard_mat
 	int l2_Nova_i;
 	
 	l2_Nova_i = nova_standard_math_Nova_NumericOperation_Nova_start;
-	for (; l2_Nova_i < nova_standard_math_Nova_NumericOperation_Nova_str->nova_standard_Nova_String_Nova_size; l2_Nova_i++)
+	for (; l2_Nova_i < nova_standard_math_Nova_NumericOperation_Nova_str->nova_standard_Nova_String_Nova_count; l2_Nova_i++)
 	{
 		if (nova_standard_math_Nova_NumericOperation_Nova_isOperator(0, exceptionData, nova_standard_math_Nova_NumericOperation_Nova_str->nova_standard_Nova_String_Nova_chars[l2_Nova_i]))
 		{
@@ -375,11 +375,11 @@ int nova_standard_math_Nova_NumericOperation_Nova_getOperatorRank(nova_standard_
 	
 	int nova_standard_math_Nova_NumericOperation_Nova_nextNonWhitespaceIndex(nova_standard_math_Nova_NumericOperation* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_Nova_String* nova_standard_math_Nova_NumericOperation_Nova_str, int nova_standard_math_Nova_NumericOperation_Nova_start, int nova_standard_math_Nova_NumericOperation_Nova_direction)
 	{
-		while (nova_standard_math_Nova_NumericOperation_Nova_start >= 0 && nova_standard_math_Nova_NumericOperation_Nova_start < nova_standard_math_Nova_NumericOperation_Nova_str->nova_standard_Nova_String_Nova_size && nova_standard_math_Nova_NumericOperation_Nova_isWhitespace(0, exceptionData, nova_standard_math_Nova_NumericOperation_Nova_str->nova_standard_Nova_String_Nova_chars[nova_standard_math_Nova_NumericOperation_Nova_start]))
+		while (nova_standard_math_Nova_NumericOperation_Nova_start >= 0 && nova_standard_math_Nova_NumericOperation_Nova_start < nova_standard_math_Nova_NumericOperation_Nova_str->nova_standard_Nova_String_Nova_count && nova_standard_math_Nova_NumericOperation_Nova_isWhitespace(0, exceptionData, nova_standard_math_Nova_NumericOperation_Nova_str->nova_standard_Nova_String_Nova_chars[nova_standard_math_Nova_NumericOperation_Nova_start]))
 		{
 			nova_standard_math_Nova_NumericOperation_Nova_start = nova_standard_math_Nova_NumericOperation_Nova_start + nova_standard_math_Nova_NumericOperation_Nova_direction;
 		}
-		if (nova_standard_math_Nova_NumericOperation_Nova_start < 0 || nova_standard_math_Nova_NumericOperation_Nova_start >= nova_standard_math_Nova_NumericOperation_Nova_str->nova_standard_Nova_String_Nova_size)
+		if (nova_standard_math_Nova_NumericOperation_Nova_start < 0 || nova_standard_math_Nova_NumericOperation_Nova_start >= nova_standard_math_Nova_NumericOperation_Nova_str->nova_standard_Nova_String_Nova_count)
 		{
 			return (int)-1;
 		}

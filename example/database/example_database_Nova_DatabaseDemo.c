@@ -104,7 +104,7 @@ nova_standard_database_Nova_DBConnector* example_database_Nova_DatabaseDemo_Nova
 	l1_Nova_connection = nova_standard_database_Nova_DBConnector_Nova_DBConnector(0, exceptionData);
 	nova_standard_database_Nova_DBConnector_1_Nova_connect(l1_Nova_connection, exceptionData, nova_standard_Nova_String_1_Nova_String(0, exceptionData, "localhost"), nova_standard_Nova_String_1_Nova_String(0, exceptionData, "root"), nova_standard_Nova_String_1_Nova_String(0, exceptionData, "server"), nova_standard_Nova_String_1_Nova_String(0, exceptionData, "test"));
 	l1_Nova_error = l1_Nova_connection->nova_standard_database_Nova_DBConnector_Nova_error;
-	if (l1_Nova_error->nova_standard_Nova_String_Nova_size > 0)
+	if (l1_Nova_error->nova_standard_Nova_String_Nova_count > 0)
 	{
 		nova_standard_io_Nova_Console_1_Nova_writeLine(0, exceptionData, nova_standard_Nova_String_0_Nova_concat(nova_standard_Nova_String_1_Nova_String(0, exceptionData, "Error: "), exceptionData, l1_Nova_error));
 	}

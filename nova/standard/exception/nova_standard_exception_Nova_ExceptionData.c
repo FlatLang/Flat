@@ -103,7 +103,7 @@ nova_standard_exception_Nova_ExceptionData* nova_standard_exception_Nova_Excepti
 		
 		l1_Nova_list = l1_Nova_data->nova_standard_exception_Nova_ExceptionData_Nova_codes;
 		l3_Nova_i = (int)(0);
-		for (; l3_Nova_i < l1_Nova_list->nova_standard_datastruct_list_Nova_Array_Nova_size; l3_Nova_i++)
+		for (; l3_Nova_i < l1_Nova_list->nova_standard_datastruct_list_Nova_Array_Nova_count; l3_Nova_i++)
 		{
 			if ((int)(((nova_standard_primitive_number_Nova_Int*)nova_standard_datastruct_list_Nova_Array_Nova_get(l1_Nova_list, exceptionData, l3_Nova_i))->nova_standard_primitive_number_Nova_Int_Nova_value) == nova_standard_exception_Nova_ExceptionData_Nova_code)
 			{

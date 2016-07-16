@@ -120,7 +120,7 @@ void nova_standard_math_logic_Nova_WFF_Nova_decodeFormula(nova_standard_math_log
 	this->prv->nova_standard_math_logic_Nova_WFF_Nova_wff = nova_standard_datastruct_Nova_Bounds_Nova_extractPreString(l1_Nova_conclusionGroup->nova_standard_math_logic_Nova_StatementGroup_Nova_bounds, exceptionData, this->prv->nova_standard_math_logic_Nova_WFF_Nova_wff);
 	l1_Nova_statements = nova_standard_math_logic_Nova_WFF_Nova_decodeHypotheses(this, exceptionData, this->prv->nova_standard_math_logic_Nova_WFF_Nova_wff);
 	l4_Nova_i = (int)(0);
-	for (; l4_Nova_i < l1_Nova_statements->nova_standard_datastruct_list_Nova_Array_Nova_size; l4_Nova_i++)
+	for (; l4_Nova_i < l1_Nova_statements->nova_standard_datastruct_list_Nova_Array_Nova_count; l4_Nova_i++)
 	{
 		nova_standard_math_logic_Nova_StatementGroup* l4_Nova_group;
 		
@@ -128,7 +128,7 @@ void nova_standard_math_logic_Nova_WFF_Nova_decodeFormula(nova_standard_math_log
 		nova_standard_datastruct_list_Nova_Array_0_Nova_add(this->prv->nova_standard_math_logic_Nova_WFF_Nova_hypotheses, exceptionData, (nova_standard_Nova_Object*)(l4_Nova_group->nova_standard_math_logic_Nova_StatementGroup_Nova_statement));
 	}
 	l6_Nova_n = (int)(0);
-	for (; l6_Nova_n < this->prv->nova_standard_math_logic_Nova_WFF_Nova_hypotheses->nova_standard_datastruct_list_Nova_Array_Nova_size; l6_Nova_n++)
+	for (; l6_Nova_n < this->prv->nova_standard_math_logic_Nova_WFF_Nova_hypotheses->nova_standard_datastruct_list_Nova_Array_Nova_count; l6_Nova_n++)
 	{
 		nova_standard_io_Nova_Console_2_Nova_writeLine(0, exceptionData, (nova_standard_Nova_Object*)(nova_standard_datastruct_list_Nova_Array_Nova_get(this->prv->nova_standard_math_logic_Nova_WFF_Nova_hypotheses, exceptionData, l6_Nova_n)));
 	}
@@ -151,10 +151,10 @@ nova_standard_math_logic_Nova_StatementGroup* nova_standard_math_logic_Nova_WFF_
 {
 	int l2_Nova_first;
 	
-	l2_Nova_first = nova_standard_math_logic_Nova_WFF_Nova_findEndingMatch(0, exceptionData, nova_standard_math_logic_Nova_WFF_Nova_wff, '(', ')', nova_standard_math_logic_Nova_WFF_Nova_wff->nova_standard_Nova_String_Nova_size - 1, -1);
+	l2_Nova_first = nova_standard_math_logic_Nova_WFF_Nova_findEndingMatch(0, exceptionData, nova_standard_math_logic_Nova_WFF_Nova_wff, '(', ')', nova_standard_math_logic_Nova_WFF_Nova_wff->nova_standard_Nova_String_Nova_count - 1, -1);
 }
 l1_Nova_conclusionStart = nova_standard_math_logic_Nova_WFF_Nova_nextNonWhitespaceIndex(0, exceptionData, nova_standard_math_logic_Nova_WFF_Nova_wff, l1_Nova_index + 2, 1);
-l1_Nova_bounds = nova_standard_datastruct_Nova_Bounds_1_Nova_Bounds(0, exceptionData, l1_Nova_conclusionStart, nova_standard_math_logic_Nova_WFF_Nova_wff->nova_standard_Nova_String_Nova_size);
+l1_Nova_bounds = nova_standard_datastruct_Nova_Bounds_1_Nova_Bounds(0, exceptionData, l1_Nova_conclusionStart, nova_standard_math_logic_Nova_WFF_Nova_wff->nova_standard_Nova_String_Nova_count);
 l1_Nova_conclusion = nova_standard_math_logic_Nova_Conclusion_Nova_Conclusion(0, exceptionData, nova_standard_datastruct_Nova_Bounds_Nova_extractString(l1_Nova_bounds, exceptionData, nova_standard_math_logic_Nova_WFF_Nova_wff));
 l1_Nova_bounds->nova_standard_datastruct_Nova_Bounds_Nova_start = nova_standard_math_logic_Nova_WFF_Nova_nextNonWhitespaceIndex(0, exceptionData, nova_standard_math_logic_Nova_WFF_Nova_wff, l1_Nova_index - 1, -1) + 1;
 l1_Nova_group = nova_standard_math_logic_Nova_StatementGroup_Nova_StatementGroup(0, exceptionData, (nova_standard_Nova_Object*)(l1_Nova_conclusion), l1_Nova_bounds);
@@ -177,7 +177,7 @@ nova_standard_datastruct_list_Nova_Array* nova_standard_math_logic_Nova_WFF_Nova
 		nova_standard_datastruct_list_Nova_Array_0_Nova_add(l1_Nova_list, exceptionData, (nova_standard_Nova_Object*)(nova_standard_math_logic_Nova_WFF_Nova_generateHypothesis(this, exceptionData, nova_standard_math_logic_Nova_WFF_Nova_wff, l1_Nova_prev, l1_Nova_next + 1)));
 		l1_Nova_prev = nova_standard_math_logic_Nova_WFF_Nova_nextNonWhitespaceIndex(0, exceptionData, nova_standard_math_logic_Nova_WFF_Nova_wff, l2_Nova_index + 1, 1);
 	}
-	nova_standard_datastruct_list_Nova_Array_0_Nova_add(l1_Nova_list, exceptionData, (nova_standard_Nova_Object*)(nova_standard_math_logic_Nova_WFF_Nova_generateHypothesis(this, exceptionData, nova_standard_math_logic_Nova_WFF_Nova_wff, l1_Nova_prev, nova_standard_math_logic_Nova_WFF_Nova_wff->nova_standard_Nova_String_Nova_size)));
+	nova_standard_datastruct_list_Nova_Array_0_Nova_add(l1_Nova_list, exceptionData, (nova_standard_Nova_Object*)(nova_standard_math_logic_Nova_WFF_Nova_generateHypothesis(this, exceptionData, nova_standard_math_logic_Nova_WFF_Nova_wff, l1_Nova_prev, nova_standard_math_logic_Nova_WFF_Nova_wff->nova_standard_Nova_String_Nova_count)));
 	return l1_Nova_list;
 }
 
@@ -213,7 +213,7 @@ int nova_standard_math_logic_Nova_WFF_1_Nova_nextWhitespaceIndex(nova_standard_m
 	int l2_Nova_i;
 	
 	l2_Nova_i = nova_standard_math_logic_Nova_WFF_Nova_index;
-	for (; l2_Nova_i < nova_standard_math_logic_Nova_WFF_Nova_wff->nova_standard_Nova_String_Nova_size && l2_Nova_i >= 0; l2_Nova_i = l2_Nova_i + nova_standard_math_logic_Nova_WFF_Nova_direction)
+	for (; l2_Nova_i < nova_standard_math_logic_Nova_WFF_Nova_wff->nova_standard_Nova_String_Nova_count && l2_Nova_i >= 0; l2_Nova_i = l2_Nova_i + nova_standard_math_logic_Nova_WFF_Nova_direction)
 	{
 		char l2_Nova_c;
 		
@@ -256,7 +256,7 @@ int nova_standard_math_logic_Nova_WFF_Nova_findEndingMatch(nova_standard_math_lo
 	}
 	l1_Nova_scope = (int)(0);
 	l3_Nova_i = nova_standard_math_logic_Nova_WFF_Nova_index;
-	for (; l3_Nova_i < nova_standard_math_logic_Nova_WFF_Nova_wff->nova_standard_Nova_String_Nova_size && l3_Nova_i >= 0; l3_Nova_i = l3_Nova_i + nova_standard_math_logic_Nova_WFF_Nova_direction)
+	for (; l3_Nova_i < nova_standard_math_logic_Nova_WFF_Nova_wff->nova_standard_Nova_String_Nova_count && l3_Nova_i >= 0; l3_Nova_i = l3_Nova_i + nova_standard_math_logic_Nova_WFF_Nova_direction)
 	{
 		char l3_Nova_c;
 		

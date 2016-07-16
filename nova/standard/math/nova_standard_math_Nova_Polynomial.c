@@ -122,7 +122,7 @@ void nova_standard_math_Nova_Polynomial_Nova_this(nova_standard_math_Nova_Polyno
 	l2_Nova_degrees = nova_standard_datastruct_list_Nova_Array_0_Nova_Array(0, exceptionData);
 	l2_Nova_signs = nova_standard_datastruct_list_Nova_Array_0_Nova_Array(0, exceptionData);
 	l4_Nova_i = (int)(0);
-	for (; l4_Nova_i < nova_standard_math_Nova_Polynomial_Nova_polynomial->nova_standard_Nova_String_Nova_size; l4_Nova_i++)
+	for (; l4_Nova_i < nova_standard_math_Nova_Polynomial_Nova_polynomial->nova_standard_Nova_String_Nova_count; l4_Nova_i++)
 	{
 		if (!nova_standard_math_Nova_Polynomial_Nova_isLetter(0, exceptionData, nova_standard_math_Nova_Polynomial_Nova_polynomial->nova_standard_Nova_String_Nova_chars[l4_Nova_i]))
 		{

@@ -160,7 +160,7 @@ nova_standard_Nova_String* nova_standard_io_Nova_File_Nova_readAllContents(nova_
 	l1_Nova_line = nova_standard_io_Nova_File_Nova_readLine(this, exceptionData);
 	while (l1_Nova_line != (nova_standard_Nova_String*)nova_null)
 	{
-		if (l1_Nova_data->nova_standard_Nova_String_Nova_size > 0)
+		if (l1_Nova_data->nova_standard_Nova_String_Nova_count > 0)
 		{
 			l1_Nova_data = (nova_standard_Nova_String*)(nova_standard_Nova_String_virtual1_Nova_concat((nova_standard_Nova_String*)(l1_Nova_data), exceptionData, nova_standard_Nova_String_1_Nova_String(0, exceptionData, "\n")));
 		}

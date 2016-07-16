@@ -180,7 +180,7 @@ nova_standard_datastruct_list_Nova_Array* nova_standard_datastruct_Nova_Node_1_N
 	nova_standard_datastruct_list_Nova_ArrayIterator* nova_local_1;
 	nova_standard_datastruct_Nova_Node* l2_Nova_child;
 	
-	l1_Nova_half = (int)(nova_standard_math_Nova_Math_Nova_ceil(0, exceptionData, this->nova_standard_datastruct_Nova_Node_Nova_children->nova_standard_datastruct_list_Nova_Array_Nova_size / 2.0));
+	l1_Nova_half = (int)(nova_standard_math_Nova_Math_Nova_ceil(0, exceptionData, this->nova_standard_datastruct_Nova_Node_Nova_children->nova_standard_datastruct_list_Nova_Array_Nova_count / 2.0));
 	nova_local_0 = (nova_standard_datastruct_list_Nova_ArrayIterator*)(nova_standard_datastruct_list_Nova_Iterable_virtual_Accessor1_Nova_iterator((nova_standard_datastruct_list_Nova_Iterable*)(nova_standard_datastruct_list_Nova_List_virtual0_Nova_filter((nova_standard_datastruct_list_Nova_List*)(nova_standard_datastruct_list_Nova_List_virtual0_Nova_take((nova_standard_datastruct_list_Nova_List*)(this->nova_standard_datastruct_Nova_Node_Nova_children), exceptionData, l1_Nova_half)), exceptionData, (nova_standard_datastruct_list_Nova_List_closure15_Nova_filterFunc)&nova_standard_datastruct_Nova_Node_Nova_notNull, this)), exceptionData));
 	while (nova_standard_datastruct_list_Nova_Iterator_virtual_Accessor_Nova_hasNext((nova_standard_datastruct_list_Nova_Iterator*)(nova_local_0), exceptionData))
 	{

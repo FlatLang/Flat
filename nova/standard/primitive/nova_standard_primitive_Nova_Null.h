@@ -49,7 +49,7 @@ CCLASS_CLASS
 	nova_standard_primitive_Nova_Null, 
 	
 	nova_standard_primitive_Extension_VTable_Null* vtable;
-	int nova_standard_Nova_String_Nova_size;
+	int nova_standard_Nova_String_Nova_count;
 	char* nova_standard_Nova_String_Nova_chars;
 )
 
