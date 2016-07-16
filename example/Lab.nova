@@ -37,11 +37,11 @@ public class Lab
 		Int[] b = [1, 2, 3, 4, 5, 6, 7]
 		
 		Array<String> list = new Array(a, 7)
-		Array<Int> list2 = new IntArray(b, 7)
+		var list2 = new IntArray(b, 7)
 		
 		/*list.filter(x -> x.count > 10).map(x -> getClassByName(x))
 		    .forEach(x -> {
-		        Console.writeLine(x.fields.map(y -> y.name).join(", "))
+		        Console.writeLine(x.fields.map({ _.name }).join(", "))
 		    })*/
 		
 		/*
@@ -55,13 +55,13 @@ public class Lab
         
 		Console.writeLine(list.map(x -> {
 		    var something = 5 * x.count
-
+            
 		    return something + " " + x
 		}).join(", "))
         
-		Console.writeLine("Mapped: " + list.filter(x -> x.count >= 4).map((x, i) -> i + ": " + x + "?").join(", "))
-		Console.writeLine("Mapped backwards: " + list.filter(x -> x.count >= 4).map(x -> x + "?").reverse().join(", "))
-		//Console.writeLine("Mapped2: " + list2.map(x -> x + "!").join(", "))
+		Console.writeLine("Mapped: " + list.filter( { _.count >= 4 }).map({ _2 + ": " + _1 + "?" }).join(", "))
+		Console.writeLine("Mapped backwards: " + list.filter({ _.count >= 4 }).map({ _ + "?" }).reverse().join(", "))
+		//Console.writeLine("Mapped2: " + list2.map({ _ + "!" }).join(", "))
 		
 		//doSomething(list)
 		//doSomething(list2)
