@@ -7,6 +7,8 @@ import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.error.UnimplementedOperationException;
+import net.fathomsoft.nova.tree.generics.GenericTypeArgument;
+import net.fathomsoft.nova.tree.generics.GenericTypeArgumentList;
 import net.fathomsoft.nova.tree.variables.ArrayAccess;
 import net.fathomsoft.nova.tree.variables.FieldDeclaration;
 import net.fathomsoft.nova.tree.variables.Super;
@@ -25,7 +27,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * @since	v0.1 Jan 5, 2014 at 9:19:44 PM
  * @version	v0.2.41 Dec 17, 2014 at 7:48:17 PM
  */
-public class Assignment extends Node
+public class Assignment extends Value
 {
 	/**
 	 * @see net.fathomsoft.nova.tree.Node#Node(Node, Location)
@@ -110,6 +112,54 @@ public class Assignment extends Node
 		}
 		
 		return (Variable)last;
+	}
+	
+	@Override
+	public boolean setType(String type, boolean require, boolean checkType, boolean checkDataType)
+	{
+		return getAssignmentNode().setType(type, require, checkType, checkDataType);
+	}
+	
+	@Override
+	public Value[] getTypes()
+	{
+		return getAssignmentNode().getTypes();
+	}
+	
+	@Override
+	public String getType()
+	{
+		return getAssignmentNode().getType();
+	}
+	
+	@Override
+	public void setTypeValue(String type)
+	{
+		getAssignmentNode().setTypeValue(type);
+	}
+	
+	@Override
+	public int getArrayDimensions()
+	{
+		return getAssignmentNode().getArrayDimensions();
+	}
+	
+	@Override
+	public void setArrayDimensions(int arrayDimensions)
+	{
+		getAssignmentNode().setArrayDimensions(arrayDimensions);
+	}
+	
+	@Override
+	public byte getDataType()
+	{
+		return getAssignmentNode().getDataType();
+	}
+	
+	@Override
+	public void setDataType(byte type)
+	{
+		getAssignmentNode().setDataType(type);
 	}
 	
 	/**
@@ -431,8 +481,20 @@ public class Assignment extends Node
 				{
 					return SyntaxMessage.queryError("Incompatible implicit type '" + declaration.getType() + "' being assigned to type '" + assignment.getType() + "'", this, require);
 				}
-
-				declaration.addDefaultGenericTypeArguments(true);
+				
+				GenericTypeArgumentList args = assignment.getGenericTypeArgumentList();
+				
+				if (args != null && args.getNumVisibleChildren() > 0)
+				{
+					for (GenericTypeArgument arg : assignment.getGenericTypeArgumentList())
+					{
+						declaration.getGenericTypeArgumentList().addChild(arg.clone(null, declaration.getLocationIn()));
+					}
+				}
+				else
+				{
+					declaration.addDefaultGenericTypeArguments(true);
+				}
 			}
 		}
 		
@@ -552,7 +614,16 @@ public class Assignment extends Node
 							
 							MethodCall call = MethodCall.decodeStatement(getParent(), text, getLocationIn(), true, false, mutator);
 							
-							getParent().replace(this, call);
+							if (getAssignedNode().isAccessed())
+							{
+								getAssignedNode().toValue().replaceWith(call);
+								
+								replaceWith(getAssignee().toValue());
+							}
+							else
+							{
+								getParent().replace(this, call);
+							}
 							
 							result.returnedNode = call;
 							
