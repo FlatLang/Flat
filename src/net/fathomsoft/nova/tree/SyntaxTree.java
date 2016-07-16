@@ -1040,7 +1040,7 @@ public class SyntaxTree
 	{
 		VariableDeclaration node = null;
 		
-		if (statement.equals(LambdaExpression.UNNAMED_ARGUMENT) && parent instanceof Identifier == false)
+		if (statement.equals(LambdaExpression.UNNAMED_PARAMETER) && parent instanceof Identifier == false)
 		{
 			if (parent.getParentMethod() instanceof LambdaMethodDeclaration)
 			{
