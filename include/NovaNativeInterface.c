@@ -895,12 +895,21 @@ nova_env novaEnv = {
 },
 
 {
+&stabilitytest_Nova_AssignmentStability_Nova_test,
+&stabilitytest_Nova_AssignmentStability_Nova_AssignmentStability,
+},
+
+{
+&stabilitytest_Nova_ClassWithProperties_Nova_ClassWithProperties,
+},
+
+{
 &stabilitytest_Nova_ClientThread_0_Nova_run,
 &stabilitytest_Nova_ClientThread_Nova_ClientThread,
 },
 
 {
-&stabilitytest_Nova_ClosureStability_Nova_test,
+&stabilitytest_Nova_ClosureStability_0_Nova_test,
 &stabilitytest_Nova_ClosureStability_Nova_ClosureStability,
 },
 

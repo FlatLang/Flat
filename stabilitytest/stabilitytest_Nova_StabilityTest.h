@@ -29,6 +29,7 @@ typedef struct stabilitytest_Nova_StabilityTest stabilitytest_Nova_StabilityTest
 #include <nova/standard/nova_standard_Nova_System.h>
 #include <nova/standard/math/nova_standard_math_Nova_Math.h>
 #include <nova/standard/time/nova_standard_time_Nova_Timer.h>
+#include <stabilitytest/stabilitytest_Nova_AssignmentStability.h>
 #include <stabilitytest/stabilitytest_Nova_ClosureStability.h>
 #include <stabilitytest/stabilitytest_Nova_ExceptionStability.h>
 #include <stabilitytest/stabilitytest_Nova_FileStability.h>

@@ -41,7 +41,7 @@ stabilitytest_Extension_VTable_ClosureStability stabilitytest_Extension_VTable_C
 	nova_standard_Nova_Object_0_Nova_getHashCodeLong,
 	nova_standard_Nova_Object_0_Nova_toString,
 	nova_standard_Nova_Object_0_Nova_equals,
-	stabilitytest_Nova_ClosureStability_Nova_test,
+	stabilitytest_Nova_ClosureStability_0_Nova_test,
 };
 
 
@@ -76,7 +76,7 @@ stabilitytest_Nova_ClosureStability* stabilitytest_Nova_ClosureStability_Nova_Cl
 	stabilitytest_Nova_ClosureStability_0_Nova_super(this, exceptionData);
 	
 	{
-		stabilitytest_Nova_ClosureStability_Nova_this(this, exceptionData, stabilitytest_Nova_ClosureStability_Nova_program);
+		stabilitytest_Nova_ClosureStability_0_Nova_this(this, exceptionData, stabilitytest_Nova_ClosureStability_Nova_program);
 	}
 	
 	return this;
@@ -95,7 +95,7 @@ void stabilitytest_Nova_ClosureStability_Nova_destroy(stabilitytest_Nova_Closure
 	NOVA_FREE(*this);
 }
 
-void stabilitytest_Nova_ClosureStability_Nova_this(stabilitytest_Nova_ClosureStability* this, nova_standard_exception_Nova_ExceptionData* exceptionData, stabilitytest_Nova_StabilityTest* stabilitytest_Nova_ClosureStability_Nova_program)
+void stabilitytest_Nova_ClosureStability_0_Nova_this(stabilitytest_Nova_ClosureStability* this, nova_standard_exception_Nova_ExceptionData* exceptionData, stabilitytest_Nova_StabilityTest* stabilitytest_Nova_ClosureStability_Nova_program)
 {
 	stabilitytest_Nova_StabilityTestCase_0_Nova_this((stabilitytest_Nova_StabilityTestCase*)(this), exceptionData, stabilitytest_Nova_ClosureStability_Nova_program);
 }
@@ -105,7 +105,7 @@ void stabilitytest_Nova_ClosureStability_Nova_incrementNumber(stabilitytest_Nova
 	this->prv->stabilitytest_Nova_ClosureStability_Nova_number++;
 }
 
-void stabilitytest_Nova_ClosureStability_Nova_test(stabilitytest_Nova_ClosureStability* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
+void stabilitytest_Nova_ClosureStability_0_Nova_test(stabilitytest_Nova_ClosureStability* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
 	stabilitytest_Nova_ClosureStability_Nova_TOLERANCE = (double)(0.0000000001);
 	stabilitytest_Nova_ClosureStability_Nova_testClosures(this, exceptionData);
