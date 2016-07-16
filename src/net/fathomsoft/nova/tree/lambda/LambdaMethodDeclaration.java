@@ -26,7 +26,7 @@ public class LambdaMethodDeclaration extends BodyMethodDeclaration
 	
 	public Parameter getNextUnnamedParameter()
 	{
-		if (getParameterList().getNumParameters() < unnamedParameterPosition)
+		if (getParameterList().getNumParameters() <= unnamedParameterPosition)
 		{
 			SyntaxMessage.error("Too many unnamed lambda expression parameters used", this);
 			
