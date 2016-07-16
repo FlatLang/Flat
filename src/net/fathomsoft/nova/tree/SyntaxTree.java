@@ -14,6 +14,8 @@ import net.fathomsoft.nova.tree.exceptionhandling.ExceptionHandler;
 import net.fathomsoft.nova.tree.exceptionhandling.Finally;
 import net.fathomsoft.nova.tree.exceptionhandling.Throw;
 import net.fathomsoft.nova.tree.exceptionhandling.Try;
+import net.fathomsoft.nova.tree.lambda.LambdaExpression;
+import net.fathomsoft.nova.tree.lambda.LambdaMethodDeclaration;
 import net.fathomsoft.nova.tree.switches.Case;
 import net.fathomsoft.nova.tree.switches.Default;
 import net.fathomsoft.nova.tree.switches.Fallthrough;
@@ -1038,6 +1040,15 @@ public class SyntaxTree
 	{
 		VariableDeclaration node = null;
 		
+		if (statement.equals(LambdaExpression.UNNAMED_ARGUMENT) && parent instanceof Identifier == false)
+		{
+			if (parent.getParentMethod() instanceof LambdaMethodDeclaration)
+			{
+				LambdaMethodDeclaration method = (LambdaMethodDeclaration)parent.getParentMethod();
+				
+				return method.getNextUnnamedParameter();
+			}
+		}
 		if (SyntaxUtils.isValidIdentifier(statement))
 		{
 			node = checkForVariableAccess(parent, statement, validateAccess);
