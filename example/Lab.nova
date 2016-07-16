@@ -31,12 +31,19 @@ public class Lab
 		Console.writeLine("Postorder: " + tree.postorder().join(", "))
 		Console.writeLine("Levelorder: " + tree.levelorder().join(", "))
 		
+		Int num1 = 4
+		Int num2
+		
+		num2 = num1 = 7
+		
+		Console.writeLine("My nums: " + num1 + ", " + num2)
+		
 		//"test".count
 		
 		String[] a = ["this", "is", "a", "test", "to", "see", "what shows up"]
 		Int[] b = [1, 2, 3, 4, 5, 6, 7]
 		
-		Array<String> list = new Array(a, 7)
+		var list = new Array<String>(a, 7)
 		var list2 = new IntArray(b, 7)
 		
 		/*list.filter(x -> x.count > 10).map(x -> getClassByName(x))
@@ -59,7 +66,7 @@ public class Lab
 		    return something + " " + x
 		}).join(", "))
         
-		Console.writeLine("Mapped: " + list.filter( { _.count >= 4 }).map({ _2 + ": " + _1 + "?" }).join(", "))
+		Console.writeLine("Mapped: " + list.filter({ _.count >= 4 }).map({ _2 + ": " + _1 + "?" }).join(", "))
 		Console.writeLine("Mapped backwards: " + list.filter({ _.count >= 4 }).map({ _ + "?" }).reverse().join(", "))
 		//Console.writeLine("Mapped2: " + list2.map({ _ + "!" }).join(", "))
 		
@@ -87,7 +94,7 @@ public class Lab
             x.add("its now an array")
         }
 
-        //sx.add("hey")
+        //x.add("hey")
         //x.add("its now an array")
 		
 		Console.writeLine(x)
@@ -96,7 +103,7 @@ public class Lab
 
 		Console.writeLine(getArea(sq))
 
-//		NumericStatement s = new NumericStatement("5a + (3 * 2)")
+//		var s = new NumericStatement("5a + (3 * 2)")
 //
 //		Console.writeLine(s)
 //
@@ -135,7 +142,7 @@ public class Lab
 	
 	static doSomething(List list)
 	{
-	    list.map(x -> x + "!!!").forEach(Console.writeLine)
+	    list.map({ _ + "!!!" }).forEach(Console.writeLine)
 	}
 	
 	static getArea(Polygon p) -> Double

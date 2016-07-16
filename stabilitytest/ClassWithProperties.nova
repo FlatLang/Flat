@@ -1,0 +1,33 @@
+package "stabilitytest"
+
+public class ClassWithProperties
+{
+    Int privateProp1
+    Int privateProp2
+    
+    public Int prop1
+    {
+        get
+        {
+            return privateProp1
+        }
+        
+        set
+        {
+            privateProp1 = value
+        }
+    }
+    
+    public Int prop2
+    {
+        get
+        {
+            return privateProp2
+        }
+        
+        set
+        {
+            privateProp2 = value
+        }
+    }
+}

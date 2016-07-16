@@ -44,6 +44,7 @@ public class StabilityTest extends StabilityTestCase
 			new NetworkStability(this).test()
 			new LambdaStability(this).test()
 			new ToStringStability(this).test()
+			new AssignmentStability(this).test()
 			
 			Console.writeLine("All OK")
 		}
