@@ -16,7 +16,7 @@ public class AssignmentStability extends StabilityTestCase
 	    
 		var props = new ClassWithProperties()
 		
-		Int num = props.prop1 = props.prop2 = 1
+		var num = props.prop1 = props.prop2 = 1
 		
 		if (num != 1 || props.prop1 != 1 || props.prop2 != 1)
 		{
