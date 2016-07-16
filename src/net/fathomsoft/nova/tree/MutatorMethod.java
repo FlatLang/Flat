@@ -1,6 +1,8 @@
 package net.fathomsoft.nova.tree;
 
 import net.fathomsoft.nova.TestContext;
+import net.fathomsoft.nova.ValidationResult;
+import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.util.Location;
 import net.fathomsoft.nova.util.StringUtils;
 import net.fathomsoft.nova.util.SyntaxUtils;
@@ -100,13 +102,38 @@ public class MutatorMethod extends PropertyMethod
 		
 		getParameterList().addChild(p);
 	}
-
+	
+	/**
+	 * @see net.fathomsoft.nova.tree.Node#validate(int)
+	 */
 	@Override
-	public StringBuilder generateCType(StringBuilder builder, boolean checkArray)
+	public ValidationResult validate(int phase)
 	{
-		return builder.append("void");
+		ValidationResult result = super.validate(phase);
+		
+		if (result.skipValidation())
+		{
+			return result;
+		}
+		
+		if (phase == SyntaxTree.PHASE_METHOD_CONTENTS)
+		{
+			if (!isDisabled())
+			{
+				Return returnValue = (Return)SyntaxTree.decodeScopeContents(this, "return " + getParameter(0).getName(), getLocationIn());
+				
+				if (returnValue == null)
+				{
+					SyntaxMessage.error("Could not decode implicit return statement for mutator method", this);
+				}
+				
+				addChild(returnValue);
+			}
+		}
+		
+		return result;
 	}
-
+	
 	/**
 	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location, boolean)
 	 */
