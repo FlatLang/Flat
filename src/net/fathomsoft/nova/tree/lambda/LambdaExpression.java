@@ -183,7 +183,7 @@ public class LambdaExpression extends Value
 							name = "_" + (id + 1);
 						}
 						
-						builder.append((builder.length() > 0 ? ", " : "") + type + " " + name);
+						builder.append(builder.length() > 0 ? ", " : "").append(type).append(" ").append(name);
 					});
 					
 					String parameters = builder.toString();
