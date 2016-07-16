@@ -56,7 +56,7 @@ public class Instantiation extends IIdentifier implements GenericCompatible
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.GenericCompatible#getGenericParameterNames()
+	 * @see net.fathomsoft.nova.tree.GenericCompatible#getGenericTypeArgumentList()
 	 */
 	@Override
 	public GenericTypeArgumentList getGenericTypeArgumentList()
