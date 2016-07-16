@@ -279,7 +279,7 @@ public class Nova
 				"example/Lab",
 //				"stabilitytest/StabilityTest",
 //				"-nogc",
-				"-no-c-output",
+//				"-no-c-output",
 //				"-dry",
 //				"-no-notes",
 //				"-no-warnings",
