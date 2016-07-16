@@ -24,6 +24,7 @@ public class LambdaExpression extends Value
 	public String[] variables; 
 	
 	public static final String OPERATOR = "->";
+	public static final String UNNAMED_ARGUMENT = "_";
 	
 	private static int id = 1;
 	
@@ -165,9 +166,27 @@ public class LambdaExpression extends Value
 					
 					ClosureDeclaration closure = (ClosureDeclaration)((NovaMethodDeclaration)call.getDeclaration()).getParameter(index);
 					
-					String parameters = String.join(", ", Arrays.stream(variables).map(x -> {
-						return closure.getParameterList().getParameter(i[0]++).generateNovaType(call.getReferenceNode().toValue()) + " " + x;
-					}).toArray(String[]::new));
+					final StringBuilder builder = new StringBuilder();
+					
+					closure.getParameterList().forEach(x -> {
+						int id = i[0]++;
+						
+						String type = closure.getParameterList().getParameter(id).generateNovaType(call.getReferenceNode().toValue()).toString();
+						String name = "";
+						
+						if (finalVars.length > id)
+						{
+							name = finalVars[id];
+						}
+						else
+						{
+							name = "_" + (id + 1);
+						}
+						
+						builder.append((builder.length() > 0 ? ", " : "") + type + " " + name);
+					});
+					
+					String parameters = builder.toString();
 					
 					String methodDeclaration = "static testLambda" + id++ + "(" + parameters + ")";
 					
@@ -176,8 +195,11 @@ public class LambdaExpression extends Value
 						methodDeclaration += " -> " + closure.generateNovaType(call);
 					}
 					
-					BodyMethodDeclaration method = BodyMethodDeclaration.decodeStatement(parent.getParentClass(true), methodDeclaration, location.asNew(), require);
-
+					BodyMethodDeclaration bodyMethod = BodyMethodDeclaration.decodeStatement(parent.getParentClass(true), methodDeclaration, location.asNew(), require);
+					LambdaMethodDeclaration method = new LambdaMethodDeclaration(bodyMethod.getParent(), bodyMethod.getLocationIn());
+					
+					bodyMethod.cloneTo(method);
+					
 					if (method != null)
 					{
 						method.getParentClass().addChild(method);
