@@ -58,6 +58,7 @@ public class FileDeclaration extends Node
 			"nova/standard/primitive/number/Char",
 			"nova/standard/primitive/Bool",
 			"nova/standard/datastruct/list/Array",
+			"nova/standard/datastruct/list/IntRange",
 			"nova/standard/gc/GC",
 			"nova/standard/Object",
 			"nova/standard/String",
