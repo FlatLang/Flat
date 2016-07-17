@@ -48,7 +48,7 @@ public class Lab
 		Console.writeLine("Elvis not null: " + (str ?: "wtf"))
 		Console.writeLine("Elvis null: " + (str2 ?: "this is null"))
 		
-		//"test".count
+		"test".substring(0)
 		
 		String[] a = ["this", "is", "a", "test", "to", "see", "what shows up"]
 		Int[] b = [1, 2, 3, 4, 5, 6, 7]
@@ -98,7 +98,7 @@ public class Lab
 
         if (true)
 		{
-            x = new Array()
+            x = new Array<String>()
 
             x.add("hey")
             x.add("its now an array")

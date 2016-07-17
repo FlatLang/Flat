@@ -151,7 +151,7 @@ public class Literal extends IValue implements Accessible
 	@Override
 	public StringBuilder generateCSource(StringBuilder builder)
 	{
-		return generateCSourceFragment(builder);
+		return generateCSourceFragment(builder).append(";\n");
 	}
 	
 	/**
