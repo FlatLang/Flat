@@ -23,6 +23,7 @@ typedef struct nova_standard_math_Nova_Math nova_standard_math_Nova_Math;
 #include <nova/standard/primitive/number/nova_standard_primitive_number_Nova_Char.h>
 #include <nova/standard/primitive/nova_standard_primitive_Nova_Bool.h>
 #include <nova/standard/datastruct/list/nova_standard_datastruct_list_Nova_Array.h>
+#include <nova/standard/datastruct/list/nova_standard_datastruct_list_Nova_IntRange.h>
 #include <nova/standard/gc/nova_standard_gc_Nova_GC.h>
 #include <nova/standard/nova_standard_Nova_Object.h>
 #include <nova/standard/nova_standard_Nova_String.h>
@@ -55,6 +56,7 @@ void nova_standard_math_Nova_MathNova_init_static(nova_standard_exception_Nova_E
 nova_standard_math_Nova_Math* nova_standard_math_Nova_Math_Nova_Math(nova_standard_math_Nova_Math* this, nova_standard_exception_Nova_ExceptionData* exceptionData);
 void nova_standard_math_Nova_Math_Nova_destroy(nova_standard_math_Nova_Math** this, nova_standard_exception_Nova_ExceptionData* exceptionData);
 long_long nova_standard_math_Nova_Math_Nova_max(nova_standard_math_Nova_Math* this, nova_standard_exception_Nova_ExceptionData* exceptionData, long_long nova_standard_math_Nova_Math_Nova_a, long_long nova_standard_math_Nova_Math_Nova_b);
+long_long nova_standard_math_Nova_Math_Nova_min(nova_standard_math_Nova_Math* this, nova_standard_exception_Nova_ExceptionData* exceptionData, long_long nova_standard_math_Nova_Math_Nova_a, long_long nova_standard_math_Nova_Math_Nova_b);
 char nova_standard_math_Nova_Math_Nova_sign(nova_standard_math_Nova_Math* this, nova_standard_exception_Nova_ExceptionData* exceptionData, long_long nova_standard_math_Nova_Math_Nova_num);
 int nova_standard_math_Nova_Math_Nova_random(nova_standard_math_Nova_Math* this, nova_standard_exception_Nova_ExceptionData* exceptionData, long_long nova_standard_math_Nova_Math_Nova_range);
 long_long nova_standard_math_Nova_Math_0_Nova_abs(nova_standard_math_Nova_Math* this, nova_standard_exception_Nova_ExceptionData* exceptionData, long_long nova_standard_math_Nova_Math_Nova_number);

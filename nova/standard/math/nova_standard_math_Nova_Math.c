@@ -68,11 +68,12 @@ void nova_standard_math_Nova_Math_Nova_destroy(nova_standard_math_Nova_Math** th
 
 long_long nova_standard_math_Nova_Math_Nova_max(nova_standard_math_Nova_Math* this, nova_standard_exception_Nova_ExceptionData* exceptionData, long_long nova_standard_math_Nova_Math_Nova_a, long_long nova_standard_math_Nova_Math_Nova_b)
 {
-	if (nova_standard_math_Nova_Math_Nova_a > nova_standard_math_Nova_Math_Nova_b)
-	{
-		return nova_standard_math_Nova_Math_Nova_a;
-	}
-	return nova_standard_math_Nova_Math_Nova_b;
+	return nova_standard_math_Nova_Math_Nova_a > nova_standard_math_Nova_Math_Nova_b ? nova_standard_math_Nova_Math_Nova_a : nova_standard_math_Nova_Math_Nova_b;
+}
+
+long_long nova_standard_math_Nova_Math_Nova_min(nova_standard_math_Nova_Math* this, nova_standard_exception_Nova_ExceptionData* exceptionData, long_long nova_standard_math_Nova_Math_Nova_a, long_long nova_standard_math_Nova_Math_Nova_b)
+{
+	return nova_standard_math_Nova_Math_Nova_a < nova_standard_math_Nova_Math_Nova_b ? nova_standard_math_Nova_Math_Nova_a : nova_standard_math_Nova_Math_Nova_b;
 }
 
 char nova_standard_math_Nova_Math_Nova_sign(nova_standard_math_Nova_Math* this, nova_standard_exception_Nova_ExceptionData* exceptionData, long_long nova_standard_math_Nova_Math_Nova_num)
