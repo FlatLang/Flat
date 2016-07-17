@@ -16,6 +16,8 @@ public class SyntaxStability extends StabilityTestCase
 		checkSwitchStatements()
 		checkMultipleReturnValues()
 		checkIterators()
+		checkTernary()
+		checkElvis()
 	}
 	
 	checkSwitchStatements()
@@ -422,5 +424,60 @@ public class SyntaxStability extends StabilityTestCase
 		}
 		
 		Console.writeLine("OK")
+	}
+	
+	checkTernary()
+	{
+	    Console.write("Checking ternary functionality... ")
+	    
+	    var first = trueValue() ? "hey".equals("hey") : "hey".equals("hey2")
+	    
+	    if (!first)
+	    {
+	        program.fail("Failed first ternary test")
+	    }
+	    
+	    var second = falseValue() ? "one" : "two"
+	    
+	    if (!second.equals("two"))
+	    {
+	        program.fail("Failed second ternary test")
+	    }
+	    
+	    Console.writeLine("OK")
+	}
+	
+	checkElvis()
+	{
+	    Console.write("Checking elvis functionality")
+	    
+	    var str = "this isnt null"
+        var str2 = null
+        
+        var result1 = str ?: "wtf"
+        
+        if (result1.equals("wtf"))
+        {
+            program.fail("Failed first elvis test")
+        }
+        
+        var result2 = str2 ?: "this is null"
+        
+        if (!result2.equals("this is null"))
+        {
+            program.fail("Failed second elvis test")
+        }
+	    
+	    Console.writeLine("OK")
+	}
+	
+	trueValue() -> Bool
+	{
+	    return true
+	}
+	
+	falseValue() -> Bool
+	{
+	    return false
 	}
 }
