@@ -59,8 +59,8 @@ public class SyntaxTree
 	{
 		IfStatement.class, ElseStatement.class, Loop.class, Case.class,
 		Switch.class, Default.class, Fallthrough.class, Priority.class,
-		Return.class, Assignment.class, BinaryOperation.class, Super.class,
-		Annotation.class
+		Return.class, Assignment.class, TernaryOperation.class, BinaryOperation.class,
+		Super.class, Annotation.class
 	};
 	
 	public static final Class<?> SCOPE_CHILD_DECODE[] = new Class<?>[]
@@ -541,6 +541,7 @@ public class SyntaxTree
 				else if (node == null && type == Switch.class) node = Switch.decodeStatement(parent, statement, location, require);
 				else if (node == null && type == Throw.class) node = Throw.decodeStatement(parent, statement, location, require);
 				else if (node == null && type == Try.class) node = Try.decodeStatement(parent, statement, location, require);
+				else if (node == null && type == TernaryOperation.class) node = TernaryOperation.decodeStatement(parent, statement, location, require);
 				else if (node == null && type == Until.class) node = Until.decodeStatement(parent, statement, location, require);
 				else if (node == null && type == Annotation.class) node = Annotation.decodeStatement(parent, statement, location, require);
 				
@@ -636,6 +637,7 @@ public class SyntaxTree
 		else if (type.isAssignableFrom(Switch.class) && (node = Switch.decodeStatement(parent, statement, location, require)) != null);
 		else if (type.isAssignableFrom(Throw.class) && (node = Throw.decodeStatement(parent, statement, location, require)) != null);
 		else if (type.isAssignableFrom(Try.class) && (node = Try.decodeStatement(parent, statement, location, require)) != null);
+		else if (type.isAssignableFrom(TernaryOperation.class) && (node = TernaryOperation.decodeStatement(parent, statement, location, require)) != null);
 		else if (type.isAssignableFrom(Until.class) && (node = Until.decodeStatement(parent, statement, location, require)) != null);
 		
 		return node;
@@ -919,7 +921,12 @@ public class SyntaxTree
 			
 			if (node == null)
 			{
-				node = (Accessible)decodeStatementOfType(parent, statement, location, require, Priority.class);
+				node = Literal.decodeStatement(parent, statement, location, require, true);
+				
+				if (node == null)
+				{
+					node = (Accessible) decodeStatementOfType(parent, statement, location, require, Priority.class);
+				}
 			}
 		}
 		
