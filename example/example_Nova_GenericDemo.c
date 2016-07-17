@@ -66,7 +66,7 @@ void example_Nova_GenericDemo_Nova_destroy(example_Nova_GenericDemo** this, nova
 
 void example_Nova_GenericDemo_Nova_main(example_Nova_GenericDemo* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_Nova_String** example_Nova_GenericDemo_Nova_args)
 {
-	nova_standard_datastruct_list_Nova_Stack* l1_Nova_strs;
+	nova_standard_datastruct_list_Nova_Stack* l1_Nova_strs = (nova_standard_datastruct_list_Nova_Stack*)nova_null;
 	
 	l1_Nova_strs = nova_standard_datastruct_list_Nova_Stack_Nova_Stack(0, exceptionData);
 	nova_standard_io_Nova_Console_1_Nova_writeLine(0, exceptionData, nova_standard_Nova_String_1_Nova_String(0, exceptionData, "Pushing \"test\""));
@@ -81,7 +81,7 @@ void example_Nova_GenericDemo_Nova_main(example_Nova_GenericDemo* this, nova_sta
 	nova_standard_datastruct_list_Nova_Stack_Nova_push(l1_Nova_strs, exceptionData, (nova_standard_Nova_Object*)((nova_standard_Nova_Object*)nova_null));
 	while (!nova_standard_datastruct_list_Nova_Stack_Accessor_Nova_empty(l1_Nova_strs, exceptionData))
 	{
-		nova_standard_Nova_String* l1_Nova_popped;
+		nova_standard_Nova_String* l1_Nova_popped = (nova_standard_Nova_String*)nova_null;
 		
 		l1_Nova_popped = (nova_standard_Nova_String*)(nova_standard_datastruct_list_Nova_Stack_Nova_pop(l1_Nova_strs, exceptionData));
 		if (l1_Nova_popped != (nova_standard_Nova_String*)nova_null)

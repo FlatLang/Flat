@@ -93,13 +93,13 @@ buffer* nova_standard_exception_Nova_ExceptionData_Nova_getBuffer(nova_standard_
 
 nova_standard_exception_Nova_ExceptionData* nova_standard_exception_Nova_ExceptionData_Nova_getCorrectData(nova_standard_exception_Nova_ExceptionData* this, nova_standard_exception_Nova_ExceptionData* exceptionData, int nova_standard_exception_Nova_ExceptionData_Nova_code)
 {
-	nova_standard_exception_Nova_ExceptionData* l1_Nova_data;
+	nova_standard_exception_Nova_ExceptionData* l1_Nova_data = (nova_standard_exception_Nova_ExceptionData*)nova_null;
 	
 	l1_Nova_data = this;
 	while (l1_Nova_data != (nova_standard_exception_Nova_ExceptionData*)nova_null)
 	{
-		nova_standard_datastruct_list_Nova_Array* l1_Nova_list;
-		int l3_Nova_i;
+		nova_standard_datastruct_list_Nova_Array* l1_Nova_list = (nova_standard_datastruct_list_Nova_Array*)nova_null;
+		int l3_Nova_i = 0;
 		
 		l1_Nova_list = l1_Nova_data->nova_standard_exception_Nova_ExceptionData_Nova_codes;
 		l3_Nova_i = (int)(0);
@@ -121,7 +121,7 @@ nova_standard_exception_Nova_ExceptionData* nova_standard_exception_Nova_Excepti
 
 buffer* nova_standard_exception_Nova_ExceptionData_Nova_getCorrectBuffer(nova_standard_exception_Nova_ExceptionData* this, nova_standard_exception_Nova_ExceptionData* exceptionData, int nova_standard_exception_Nova_ExceptionData_Nova_code)
 {
-	nova_standard_exception_Nova_ExceptionData* l1_Nova_data;
+	nova_standard_exception_Nova_ExceptionData* l1_Nova_data = (nova_standard_exception_Nova_ExceptionData*)nova_null;
 	
 	l1_Nova_data = nova_standard_exception_Nova_ExceptionData_Nova_getCorrectData(this, exceptionData, nova_standard_exception_Nova_ExceptionData_Nova_code);
 	if (l1_Nova_data == (nova_standard_exception_Nova_ExceptionData*)nova_null)
@@ -133,8 +133,8 @@ buffer* nova_standard_exception_Nova_ExceptionData_Nova_getCorrectBuffer(nova_st
 
 void nova_standard_exception_Nova_ExceptionData_Nova_jumpToBuffer(nova_standard_exception_Nova_ExceptionData* this, nova_standard_exception_Nova_ExceptionData* exceptionData, int nova_standard_exception_Nova_ExceptionData_Nova_code)
 {
-	nova_standard_exception_Nova_ExceptionData* l1_Nova_data;
-	buffer* l1_Nova_b;
+	nova_standard_exception_Nova_ExceptionData* l1_Nova_data = (nova_standard_exception_Nova_ExceptionData*)nova_null;
+	buffer* l1_Nova_b = (buffer*)nova_null;
 	
 	l1_Nova_data = nova_standard_exception_Nova_ExceptionData_Nova_getCorrectData(this, exceptionData, nova_standard_exception_Nova_ExceptionData_Nova_code);
 	if (nova_standard_exception_Nova_ExceptionData_Nova_getParent(l1_Nova_data, exceptionData) == (nova_standard_exception_Nova_ExceptionData*)nova_null)

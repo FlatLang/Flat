@@ -66,7 +66,7 @@ void nova_standard_security_Nova_MD5_Nova_destroy(nova_standard_security_Nova_MD
 
 nova_standard_Nova_String* nova_standard_security_Nova_MD5_Nova_encrypt(nova_standard_security_Nova_MD5* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_Nova_String* nova_standard_security_Nova_MD5_Nova_str)
 {
-	char* l1_Nova_data;
+	char* l1_Nova_data = (char*)nova_null;
 	
 	l1_Nova_data = (char*)(nova_md5((char*)(nova_standard_security_Nova_MD5_Nova_str->nova_standard_Nova_String_Nova_chars)));
 	if (l1_Nova_data == 0)

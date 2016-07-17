@@ -66,8 +66,8 @@ void example_Nova_QueueDemo_Nova_destroy(example_Nova_QueueDemo** this, nova_sta
 
 void example_Nova_QueueDemo_Nova_main(example_Nova_QueueDemo* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_Nova_String** example_Nova_QueueDemo_Nova_args)
 {
-	nova_standard_datastruct_list_Nova_Queue* l1_Nova_q;
-	int l1_Nova_num;
+	nova_standard_datastruct_list_Nova_Queue* l1_Nova_q = (nova_standard_datastruct_list_Nova_Queue*)nova_null;
+	int l1_Nova_num = 0;
 	
 	l1_Nova_q = nova_standard_datastruct_list_Nova_Queue_Nova_Queue(0, exceptionData);
 	nova_standard_datastruct_list_Nova_Queue_Nova_enqueue(l1_Nova_q, exceptionData, (nova_standard_Nova_Object*)(nova_standard_primitive_number_Nova_Byte_Nova_Byte(0, exceptionData, 5)));

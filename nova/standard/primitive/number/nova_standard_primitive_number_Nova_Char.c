@@ -92,7 +92,7 @@ char nova_standard_primitive_number_Nova_Char_0_Nova_toLowerCase(nova_standard_p
 
 char nova_standard_primitive_number_Nova_Char_1_Nova_toLowerCase(nova_standard_primitive_number_Nova_Char* this, nova_standard_exception_Nova_ExceptionData* exceptionData, char nova_standard_primitive_number_Nova_Char_Nova_c)
 {
-	int l1_Nova_id;
+	int l1_Nova_id = 0;
 	
 	l1_Nova_id = (int)nova_standard_primitive_number_Nova_Char_Nova_c;
 	if (l1_Nova_id >= 65 && l1_Nova_id <= 90)
@@ -104,7 +104,7 @@ char nova_standard_primitive_number_Nova_Char_1_Nova_toLowerCase(nova_standard_p
 
 char nova_standard_primitive_number_Nova_Char_Nova_toUpperCase(nova_standard_primitive_number_Nova_Char* this, nova_standard_exception_Nova_ExceptionData* exceptionData, char nova_standard_primitive_number_Nova_Char_Nova_c)
 {
-	int l1_Nova_id;
+	int l1_Nova_id = 0;
 	
 	l1_Nova_id = (int)nova_standard_primitive_number_Nova_Char_Nova_c;
 	if (l1_Nova_id >= 97 && l1_Nova_id <= 122)

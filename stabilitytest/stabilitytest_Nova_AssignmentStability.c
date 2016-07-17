@@ -73,11 +73,11 @@ void stabilitytest_Nova_AssignmentStability_Nova_this(stabilitytest_Nova_Assignm
 
 void stabilitytest_Nova_AssignmentStability_Nova_test(stabilitytest_Nova_AssignmentStability* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
-	stabilitytest_Nova_ClassWithProperties* l1_Nova_props;
-	char l1_Nova_num;
-	char l1_Nova_a;
-	char l1_Nova_b;
-	char l1_Nova_c;
+	stabilitytest_Nova_ClassWithProperties* l1_Nova_props = (stabilitytest_Nova_ClassWithProperties*)nova_null;
+	char l1_Nova_num = 0;
+	char l1_Nova_a = 0;
+	char l1_Nova_b = 0;
+	char l1_Nova_c = 0;
 	
 	nova_standard_io_Nova_Console_0_Nova_write(0, exceptionData, nova_standard_Nova_String_1_Nova_String(0, exceptionData, "Checking embedded property assignments... "));
 	l1_Nova_props = stabilitytest_Nova_ClassWithProperties_Nova_ClassWithProperties(0, exceptionData);

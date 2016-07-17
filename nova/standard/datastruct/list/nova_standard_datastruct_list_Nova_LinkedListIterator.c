@@ -100,7 +100,7 @@ nova_standard_Nova_Object* nova_standard_datastruct_list_Nova_LinkedListIterator
 {
 	if (nova_standard_datastruct_list_Nova_Iterator_virtual_Accessor_Nova_hasNext((nova_standard_datastruct_list_Nova_Iterator*)(this), exceptionData))
 	{
-		nova_standard_Nova_Object* l2_Nova_data;
+		nova_standard_Nova_Object* l2_Nova_data = (nova_standard_Nova_Object*)nova_null;
 		
 		l2_Nova_data = this->nova_standard_datastruct_list_Nova_LinkedListIterator_Nova_position->nova_standard_datastruct_list_Nova_ListNode_Nova_data;
 		this->nova_standard_datastruct_list_Nova_LinkedListIterator_Nova_position = this->nova_standard_datastruct_list_Nova_LinkedListIterator_Nova_position->nova_standard_datastruct_list_Nova_ListNode_Nova_next;

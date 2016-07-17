@@ -75,10 +75,10 @@ void stabilitytest_Nova_ToStringStability_0_Nova_this(stabilitytest_Nova_ToStrin
 
 void stabilitytest_Nova_ToStringStability_0_Nova_test(stabilitytest_Nova_ToStringStability* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
-	double l1_Nova_d;
-	char l1_Nova_b;
-	int l1_Nova_i;
-	long_long l1_Nova_l;
+	double l1_Nova_d = 0;
+	char l1_Nova_b = 0;
+	int l1_Nova_i = 0;
+	long_long l1_Nova_l = 0;
 	
 	nova_standard_io_Nova_Console_0_Nova_write(0, exceptionData, nova_standard_Nova_String_1_Nova_String(0, exceptionData, "Checking toString implementations... "));
 	l1_Nova_d = (double)(5.232);

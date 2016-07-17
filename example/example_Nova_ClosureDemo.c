@@ -75,7 +75,7 @@ void example_Nova_ClosureDemo_Nova_destroy(example_Nova_ClosureDemo** this, nova
 
 void example_Nova_ClosureDemo_Nova_main(example_Nova_ClosureDemo* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_Nova_String** example_Nova_ClosureDemo_Nova_args)
 {
-	example_Nova_ClosureDemo* l1_Nova_demo;
+	example_Nova_ClosureDemo* l1_Nova_demo = (example_Nova_ClosureDemo*)nova_null;
 	
 	l1_Nova_demo = example_Nova_ClosureDemo_Nova_ClosureDemo(0, exceptionData);
 	example_Nova_ClosureDemo_Nova_callClosure(l1_Nova_demo, exceptionData, (example_Nova_ClosureDemo_closure3_Nova_closure)&example_Nova_ClosureDemo_Nova_multiply, example_Nova_ClosureDemo_Nova_ClosureDemo);
@@ -85,7 +85,7 @@ void example_Nova_ClosureDemo_Nova_main(example_Nova_ClosureDemo* this, nova_sta
 
 void example_Nova_ClosureDemo_Nova_callClosure(example_Nova_ClosureDemo* this, nova_standard_exception_Nova_ExceptionData* exceptionData, example_Nova_ClosureDemo_closure3_Nova_closure example_Nova_ClosureDemo_Nova_closure, void* example_Nova_ClosureDemo_ref_Nova_closure)
 {
-	int l1_Nova_value;
+	int l1_Nova_value = 0;
 	
 	l1_Nova_value = example_Nova_ClosureDemo_Nova_closure(example_Nova_ClosureDemo_ref_Nova_closure, exceptionData, 5, 3);
 	nova_standard_io_Nova_Console_1_Nova_writeLine(0, exceptionData, nova_standard_Nova_String_0_Nova_concat(nova_standard_Nova_String_1_Nova_String(0, exceptionData, "Closure returned "), exceptionData, nova_standard_primitive_number_Nova_Int_2_Nova_toString(0, exceptionData, l1_Nova_value)));
@@ -99,8 +99,8 @@ int example_Nova_ClosureDemo_Nova_multiply(example_Nova_ClosureDemo* this, nova_
 
 int example_Nova_ClosureDemo_Nova_pow(example_Nova_ClosureDemo* this, nova_standard_exception_Nova_ExceptionData* exceptionData, int example_Nova_ClosureDemo_Nova_base, int example_Nova_ClosureDemo_Nova_pow)
 {
-	int l1_Nova_value;
-	int l2_Nova_i;
+	int l1_Nova_value = 0;
+	int l2_Nova_i = 0;
 	
 	nova_standard_io_Nova_Console_1_Nova_writeLine(0, exceptionData, nova_standard_Nova_String_0_Nova_concat(nova_standard_Nova_String_1_Nova_String(0, exceptionData, "pow was called with "), exceptionData, nova_standard_Nova_String_virtual1_Nova_concat((nova_standard_Nova_String*)(nova_standard_primitive_number_Nova_Int_2_Nova_toString(0, exceptionData, example_Nova_ClosureDemo_Nova_base)), exceptionData, nova_standard_Nova_String_0_Nova_concat(nova_standard_Nova_String_1_Nova_String(0, exceptionData, " and "), exceptionData, nova_standard_primitive_number_Nova_Int_2_Nova_toString(0, exceptionData, example_Nova_ClosureDemo_Nova_pow)))));
 	l1_Nova_value = example_Nova_ClosureDemo_Nova_base;

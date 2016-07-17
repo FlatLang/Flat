@@ -66,13 +66,13 @@ void example_Nova_IntegerTest_Nova_destroy(example_Nova_IntegerTest** this, nova
 
 void example_Nova_IntegerTest_Nova_main(example_Nova_IntegerTest* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_Nova_String** example_Nova_IntegerTest_Nova_args)
 {
-	char l1_Nova_c;
+	char l1_Nova_c = 0;
 	
 	l1_Nova_c = 'y';
 	while (l1_Nova_c == 'y' || l1_Nova_c == 'Y')
 	{
-		nova_standard_time_Nova_Timer* l1_Nova_timer;
-		int l3_Nova_i;
+		nova_standard_time_Nova_Timer* l1_Nova_timer = (nova_standard_time_Nova_Timer*)nova_null;
+		int l3_Nova_i = 0;
 		
 		l1_Nova_timer = nova_standard_time_Nova_Timer_Nova_start(nova_standard_time_Nova_Timer_Nova_Timer(0, exceptionData), exceptionData);
 		l3_Nova_i = (int)(0);

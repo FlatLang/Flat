@@ -73,7 +73,7 @@ void stabilitytest_Nova_TimeStability_0_Nova_this(stabilitytest_Nova_TimeStabili
 
 void stabilitytest_Nova_TimeStability_0_Nova_test(stabilitytest_Nova_TimeStability* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
-	nova_standard_time_Nova_Timer* l1_Nova_timer;
+	nova_standard_time_Nova_Timer* l1_Nova_timer = (nova_standard_time_Nova_Timer*)nova_null;
 	
 	nova_standard_io_Nova_Console_0_Nova_write(0, exceptionData, nova_standard_Nova_String_1_Nova_String(0, exceptionData, "Checking Time.nova... "));
 	l1_Nova_timer = nova_standard_time_Nova_Timer_Nova_Timer(0, exceptionData);

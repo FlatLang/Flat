@@ -84,7 +84,7 @@ void example_network_Nova_ConnectionThread_0_Nova_run(example_network_Nova_Conne
 {
 	while (1)
 	{
-		nova_standard_Nova_String* l1_Nova_message;
+		nova_standard_Nova_String* l1_Nova_message = (nova_standard_Nova_String*)nova_null;
 		
 		if (!nova_standard_network_Nova_ConnectionSocket_Nova_validateConnection(this->prv->example_network_Nova_ConnectionThread_Nova_socket, exceptionData))
 		{

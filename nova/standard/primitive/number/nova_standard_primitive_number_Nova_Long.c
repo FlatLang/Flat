@@ -81,7 +81,7 @@ void nova_standard_primitive_number_Nova_Long_Nova_this(nova_standard_primitive_
 
 int nova_standard_primitive_number_Nova_Long_0_Nova_numDigits(nova_standard_primitive_number_Nova_Long* this, nova_standard_exception_Nova_ExceptionData* exceptionData, long_long nova_standard_primitive_number_Nova_Long_Nova_number)
 {
-	int l1_Nova_size;
+	int l1_Nova_size = 0;
 	
 	l1_Nova_size = (int)(1);
 	if (nova_standard_primitive_number_Nova_Long_Nova_number < 0)
@@ -99,12 +99,12 @@ int nova_standard_primitive_number_Nova_Long_0_Nova_numDigits(nova_standard_prim
 
 nova_standard_Nova_String* nova_standard_primitive_number_Nova_Long_2_Nova_toString(nova_standard_primitive_number_Nova_Long* this, nova_standard_exception_Nova_ExceptionData* exceptionData, long_long nova_standard_primitive_number_Nova_Long_Nova_value)
 {
-	int l1_Nova_charOffset;
-	int l1_Nova_digits;
-	char* l1_Nova_data;
-	int l1_Nova_offset;
-	int l1_Nova_nums;
-	int l3_Nova_index;
+	int l1_Nova_charOffset = 0;
+	int l1_Nova_digits = 0;
+	char* l1_Nova_data = (char*)nova_null;
+	int l1_Nova_offset = 0;
+	int l1_Nova_nums = 0;
+	int l3_Nova_index = 0;
 	
 	l1_Nova_charOffset = (int)('0');
 	l1_Nova_digits = (int)(nova_standard_primitive_number_Nova_Long_0_Nova_numDigits(0, exceptionData, nova_standard_primitive_number_Nova_Long_Nova_value));

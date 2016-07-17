@@ -68,10 +68,10 @@ void example_Nova_PolymorphismDemo_Nova_destroy(example_Nova_PolymorphismDemo** 
 
 void example_Nova_PolymorphismDemo_Nova_main(example_Nova_PolymorphismDemo* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_Nova_String** example_Nova_PolymorphismDemo_Nova_args)
 {
-	example_Nova_Animal** l1_Nova_animals;
-	example_Nova_Dog* l1_Nova_dog;
-	example_Nova_Spider* l1_Nova_spider;
-	nova_standard_Nova_String* l1_Nova_description;
+	example_Nova_Animal** l1_Nova_animals = (example_Nova_Animal**)nova_null;
+	example_Nova_Dog* l1_Nova_dog = (example_Nova_Dog*)nova_null;
+	example_Nova_Spider* l1_Nova_spider = (example_Nova_Spider*)nova_null;
+	nova_standard_Nova_String* l1_Nova_description = (nova_standard_Nova_String*)nova_null;
 	
 	l1_Nova_animals = (example_Nova_Animal**)NOVA_MALLOC(sizeof(example_Nova_Animal) * 2);
 	l1_Nova_dog = example_Nova_Dog_Nova_Dog(0, exceptionData);
@@ -86,7 +86,7 @@ void example_Nova_PolymorphismDemo_Nova_main(example_Nova_PolymorphismDemo* this
 
 nova_standard_Nova_String* example_Nova_PolymorphismDemo_Nova_getDescriptionOfAnimalWithNumberOfLegs(example_Nova_PolymorphismDemo* this, nova_standard_exception_Nova_ExceptionData* exceptionData, example_Nova_Animal** example_Nova_PolymorphismDemo_Nova_animals, int example_Nova_PolymorphismDemo_Nova_numLegs)
 {
-	int l2_Nova_i;
+	int l2_Nova_i = 0;
 	
 	l2_Nova_i = (int)(0);
 	for (; l2_Nova_i < 2; l2_Nova_i++)

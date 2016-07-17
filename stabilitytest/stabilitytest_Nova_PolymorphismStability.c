@@ -93,8 +93,8 @@ void stabilitytest_Nova_PolymorphismStability_0_Nova_test(stabilitytest_Nova_Pol
 
 void stabilitytest_Nova_PolymorphismStability_Nova_testCalls(stabilitytest_Nova_PolymorphismStability* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
-	stabilitytest_Nova_PolymorphicSuperClass* l1_Nova_obj1;
-	stabilitytest_Nova_PolymorphicSubClass* l1_Nova_obj2;
+	stabilitytest_Nova_PolymorphicSuperClass* l1_Nova_obj1 = (stabilitytest_Nova_PolymorphicSuperClass*)nova_null;
+	stabilitytest_Nova_PolymorphicSubClass* l1_Nova_obj2 = (stabilitytest_Nova_PolymorphicSubClass*)nova_null;
 	
 	nova_standard_io_Nova_Console_0_Nova_write(0, exceptionData, nova_standard_Nova_String_1_Nova_String(0, exceptionData, "Checking polymorphic method calls... "));
 	l1_Nova_obj1 = stabilitytest_Nova_PolymorphicSuperClass_Nova_PolymorphicSuperClass(0, exceptionData);
@@ -113,8 +113,8 @@ char stabilitytest_Nova_PolymorphismStability_Nova_testSubCall(stabilitytest_Nov
 
 void stabilitytest_Nova_PolymorphismStability_Nova_testClosure(stabilitytest_Nova_PolymorphismStability* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
-	stabilitytest_Nova_PolymorphicSuperClass* l1_Nova_obj;
-	nova_standard_Nova_String* l1_Nova_child;
+	stabilitytest_Nova_PolymorphicSuperClass* l1_Nova_obj = (stabilitytest_Nova_PolymorphicSuperClass*)nova_null;
+	nova_standard_Nova_String* l1_Nova_child = (nova_standard_Nova_String*)nova_null;
 	
 	nova_standard_io_Nova_Console_0_Nova_write(0, exceptionData, nova_standard_Nova_String_1_Nova_String(0, exceptionData, "Checking polymorphic closure method calls... "));
 	l1_Nova_obj = (stabilitytest_Nova_PolymorphicSuperClass*)(stabilitytest_Nova_PolymorphicSubClass_Nova_PolymorphicSubClass(0, exceptionData));
@@ -138,8 +138,8 @@ char stabilitytest_Nova_PolymorphismStability_Nova_callPolymorphicClosure(stabil
 
 void stabilitytest_Nova_PolymorphismStability_Nova_testProperty(stabilitytest_Nova_PolymorphismStability* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
-	stabilitytest_Nova_PolymorphicSuperClass* l1_Nova_obj1;
-	stabilitytest_Nova_PolymorphicSuperClass* l1_Nova_obj2;
+	stabilitytest_Nova_PolymorphicSuperClass* l1_Nova_obj1 = (stabilitytest_Nova_PolymorphicSuperClass*)nova_null;
+	stabilitytest_Nova_PolymorphicSuperClass* l1_Nova_obj2 = (stabilitytest_Nova_PolymorphicSuperClass*)nova_null;
 	
 	nova_standard_io_Nova_Console_0_Nova_write(0, exceptionData, nova_standard_Nova_String_1_Nova_String(0, exceptionData, "Checking polymorphic properties... "));
 	l1_Nova_obj1 = stabilitytest_Nova_PolymorphicSuperClass_Nova_PolymorphicSuperClass(0, exceptionData);

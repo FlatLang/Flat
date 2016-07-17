@@ -95,7 +95,7 @@ nova_standard_Nova_Object* nova_standard_datastruct_Nova_HashMap_Nova_get(nova_s
 
 nova_standard_Nova_Object* nova_standard_datastruct_Nova_HashMap_Nova_remove(nova_standard_datastruct_Nova_HashMap* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_Nova_Object* nova_standard_datastruct_Nova_HashMap_Nova_key)
 {
-	nova_standard_Nova_Object* l1_Nova_val;
+	nova_standard_Nova_Object* l1_Nova_val = (nova_standard_Nova_Object*)nova_null;
 	
 	if (!nova_standard_datastruct_Nova_HashMap_Nova_containsKey(this, exceptionData, nova_standard_datastruct_Nova_HashMap_Nova_key))
 	{

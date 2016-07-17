@@ -73,7 +73,7 @@ void example_Nova_ExceptionHandlingDemo_Nova_main(example_Nova_ExceptionHandling
 		novaEnv.nova_standard_exception_ExceptionData.addCode(exceptionData, exceptionData, 7);
 		
 		{
-			int l1_Nova_result;
+			int l1_Nova_result = 0;
 			
 			l1_Nova_result = example_Nova_ExceptionHandlingDemo_Nova_divide(0, exceptionData, 100, 5);
 			nova_standard_io_Nova_Console_1_Nova_writeLine(0, exceptionData, nova_standard_Nova_String_0_Nova_concat(nova_standard_Nova_String_1_Nova_String(0, exceptionData, "After working example: "), exceptionData, nova_standard_primitive_number_Nova_Int_2_Nova_toString(0, exceptionData, l1_Nova_result)));
@@ -83,7 +83,7 @@ void example_Nova_ExceptionHandlingDemo_Nova_main(example_Nova_ExceptionHandling
 	}
 	CATCH (7)
 	{
-		example_Nova_NonWholeDivisionException* l2_Nova_e;
+		example_Nova_NonWholeDivisionException* l2_Nova_e = (example_Nova_NonWholeDivisionException*)nova_null;
 		
 		l2_Nova_e = (example_Nova_NonWholeDivisionException*)(exceptionData->nova_standard_exception_Nova_ExceptionData_Nova_thrownException);
 		nova_standard_io_Nova_Console_1_Nova_writeLine(0, exceptionData, nova_standard_Nova_String_1_Nova_String(0, exceptionData, "You used the divide() method incorrectly."));
@@ -99,7 +99,7 @@ void example_Nova_ExceptionHandlingDemo_Nova_main(example_Nova_ExceptionHandling
 
 int example_Nova_ExceptionHandlingDemo_Nova_divide(example_Nova_ExceptionHandlingDemo* this, nova_standard_exception_Nova_ExceptionData* exceptionData, int example_Nova_ExceptionHandlingDemo_Nova_num, int example_Nova_ExceptionHandlingDemo_Nova_den)
 {
-	int nova_zero_check4;
+	int nova_zero_check4 = 0;
 	
 	if (example_Nova_ExceptionHandlingDemo_Nova_num % example_Nova_ExceptionHandlingDemo_Nova_den != 0)
 	{

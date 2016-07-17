@@ -69,17 +69,17 @@ void example_database_Nova_DatabaseDemo_Nova_destroy(example_database_Nova_Datab
 
 void example_database_Nova_DatabaseDemo_Nova_main(example_database_Nova_DatabaseDemo* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_Nova_String** example_database_Nova_DatabaseDemo_Nova_args)
 {
-	nova_standard_database_Nova_DBConnector* l1_Nova_connection;
-	nova_standard_database_Nova_ResultSet* l1_Nova_result;
-	int l1_Nova_id;
-	int l2_Nova_row;
+	nova_standard_database_Nova_DBConnector* l1_Nova_connection = (nova_standard_database_Nova_DBConnector*)nova_null;
+	nova_standard_database_Nova_ResultSet* l1_Nova_result = (nova_standard_database_Nova_ResultSet*)nova_null;
+	int l1_Nova_id = 0;
+	int l2_Nova_row = 0;
 	
 	l1_Nova_connection = example_database_Nova_DatabaseDemo_Nova_connect(0, exceptionData);
 	l1_Nova_result = nova_standard_database_Nova_DBConnector_Nova_query(l1_Nova_connection, exceptionData, nova_standard_Nova_String_1_Nova_String(0, exceptionData, "select * from market"));
 	l2_Nova_row = (int)(0);
 	for (; l2_Nova_row < l1_Nova_result->nova_standard_database_Nova_ResultSet_Nova_numRows; l2_Nova_row++)
 	{
-		int l4_Nova_col;
+		int l4_Nova_col = 0;
 		
 		nova_standard_io_Nova_Console_0_Nova_write(0, exceptionData, nova_standard_Nova_String_0_Nova_concat(nova_standard_Nova_String_1_Nova_String(0, exceptionData, "Found ("), exceptionData, nova_standard_Nova_String_virtual1_Nova_concat((nova_standard_Nova_String*)(nova_standard_primitive_number_Nova_Int_2_Nova_toString(0, exceptionData, l2_Nova_row)), exceptionData, nova_standard_Nova_String_0_Nova_concat(nova_standard_Nova_String_1_Nova_String(0, exceptionData, "): "), exceptionData, l1_Nova_result->nova_standard_database_Nova_ResultSet_Nova_rows[l2_Nova_row][0]))));
 		l4_Nova_col = (int)(1);
@@ -97,8 +97,8 @@ void example_database_Nova_DatabaseDemo_Nova_main(example_database_Nova_Database
 
 nova_standard_database_Nova_DBConnector* example_database_Nova_DatabaseDemo_Nova_connect(example_database_Nova_DatabaseDemo* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
-	nova_standard_database_Nova_DBConnector* l1_Nova_connection;
-	nova_standard_Nova_String* l1_Nova_error;
+	nova_standard_database_Nova_DBConnector* l1_Nova_connection = (nova_standard_database_Nova_DBConnector*)nova_null;
+	nova_standard_Nova_String* l1_Nova_error = (nova_standard_Nova_String*)nova_null;
 	
 	nova_standard_io_Nova_Console_1_Nova_writeLine(0, exceptionData, nova_standard_Nova_String_1_Nova_String(0, exceptionData, "Connecting..."));
 	l1_Nova_connection = nova_standard_database_Nova_DBConnector_Nova_DBConnector(0, exceptionData);

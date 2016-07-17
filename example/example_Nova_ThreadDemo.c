@@ -66,14 +66,14 @@ void example_Nova_ThreadDemo_Nova_destroy(example_Nova_ThreadDemo** this, nova_s
 
 void example_Nova_ThreadDemo_Nova_main(example_Nova_ThreadDemo* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_Nova_String** example_Nova_ThreadDemo_Nova_args)
 {
-	char l1_Nova_c;
+	char l1_Nova_c = 0;
 	
 	l1_Nova_c = 'y';
 	while (l1_Nova_c == 'y' || l1_Nova_c == 'Y')
 	{
-		nova_standard_thread_Nova_Thread* l1_Nova_thread;
-		nova_standard_thread_Nova_Thread* l1_Nova_thread2;
-		nova_standard_time_Nova_Timer* l1_Nova_timer;
+		nova_standard_thread_Nova_Thread* l1_Nova_thread = (nova_standard_thread_Nova_Thread*)nova_null;
+		nova_standard_thread_Nova_Thread* l1_Nova_thread2 = (nova_standard_thread_Nova_Thread*)nova_null;
+		nova_standard_time_Nova_Timer* l1_Nova_timer = (nova_standard_time_Nova_Timer*)nova_null;
 		
 		l1_Nova_thread = (nova_standard_thread_Nova_Thread*)(example_Nova_ThreadDemoImplementation_Nova_ThreadDemoImplementation(0, exceptionData, 100, nova_standard_Nova_String_1_Nova_String(0, exceptionData, "Thread1")));
 		l1_Nova_thread2 = (nova_standard_thread_Nova_Thread*)(example_Nova_ThreadDemoImplementation_Nova_ThreadDemoImplementation(0, exceptionData, 100, nova_standard_Nova_String_1_Nova_String(0, exceptionData, "Thread2")));

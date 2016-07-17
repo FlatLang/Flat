@@ -104,12 +104,12 @@ void stabilitytest_Nova_SyntaxStability_0_Nova_test(stabilitytest_Nova_SyntaxSta
 
 void stabilitytest_Nova_SyntaxStability_Nova_checkMatchStatements(stabilitytest_Nova_SyntaxStability* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
-	int l1_Nova_num;
-	char l1_Nova_worked;
-	int l1_Nova_val;
-	char l1_Nova_worked2;
-	char nova_local_0;
-	int nova_local_1;
+	int l1_Nova_num = 0;
+	char l1_Nova_worked = 0;
+	int l1_Nova_val = 0;
+	char l1_Nova_worked2 = 0;
+	char nova_local_0 = 0;
+	int nova_local_1 = 0;
 	
 	nova_standard_io_Nova_Console_0_Nova_write(0, exceptionData, nova_standard_Nova_String_1_Nova_String(0, exceptionData, "Checking simple match statement... "));
 	l1_Nova_num = (int)(3);
@@ -264,9 +264,9 @@ void stabilitytest_Nova_SyntaxStability_Nova_checkLoops(stabilitytest_Nova_Synta
 
 void stabilitytest_Nova_SyntaxStability_Nova_checkWhileLoops(stabilitytest_Nova_SyntaxStability* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
-	int l1_Nova_num;
-	int l1_Nova_num2;
-	int l1_Nova_num3;
+	int l1_Nova_num = 0;
+	int l1_Nova_num2 = 0;
+	int l1_Nova_num3 = 0;
 	
 	nova_standard_io_Nova_Console_0_Nova_write(0, exceptionData, nova_standard_Nova_String_1_Nova_String(0, exceptionData, "Checking inline while loop... "));
 	l1_Nova_num = (int)(0);
@@ -299,12 +299,12 @@ void stabilitytest_Nova_SyntaxStability_Nova_checkWhileLoops(stabilitytest_Nova_
 
 void stabilitytest_Nova_SyntaxStability_Nova_checkForLoops(stabilitytest_Nova_SyntaxStability* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
-	int l1_Nova_num;
-	int l1_Nova_num2;
-	int l1_Nova_num3;
-	int l2_Nova_i;
-	int l4_Nova_i;
-	int l6_Nova_i;
+	int l1_Nova_num = 0;
+	int l1_Nova_num2 = 0;
+	int l1_Nova_num3 = 0;
+	int l2_Nova_i = 0;
+	int l4_Nova_i = 0;
+	int l6_Nova_i = 0;
 	
 	nova_standard_io_Nova_Console_0_Nova_write(0, exceptionData, nova_standard_Nova_String_1_Nova_String(0, exceptionData, "Checking inline for loop... "));
 	l1_Nova_num = (int)(0);
@@ -340,7 +340,7 @@ void stabilitytest_Nova_SyntaxStability_Nova_checkForLoops(stabilitytest_Nova_Sy
 
 void stabilitytest_Nova_SyntaxStability_Nova_checkUntil(stabilitytest_Nova_SyntaxStability* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
-	nova_standard_Nova_Object* l1_Nova_obj;
+	nova_standard_Nova_Object* l1_Nova_obj = (nova_standard_Nova_Object*)nova_null;
 	
 	nova_standard_io_Nova_Console_0_Nova_write(0, exceptionData, nova_standard_Nova_String_1_Nova_String(0, exceptionData, "Checking until statement... "));
 	l1_Nova_obj = (nova_standard_Nova_Object*)nova_null;
@@ -384,10 +384,10 @@ nova_standard_Nova_Object* stabilitytest_Nova_SyntaxStability_Nova_test3(stabili
 
 void stabilitytest_Nova_SyntaxStability_Nova_checkMultipleReturnValues(stabilitytest_Nova_SyntaxStability* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
-	int l1_Nova_ret1;
-	int l1_Nova_ret2;
-	nova_standard_Nova_String* l1_Nova_s1;
-	nova_standard_Nova_String* l1_Nova_s2;
+	int l1_Nova_ret1 = 0;
+	int l1_Nova_ret2 = 0;
+	nova_standard_Nova_String* l1_Nova_s1 = (nova_standard_Nova_String*)nova_null;
+	nova_standard_Nova_String* l1_Nova_s2 = (nova_standard_Nova_String*)nova_null;
 	
 	nova_standard_io_Nova_Console_0_Nova_write(0, exceptionData, nova_standard_Nova_String_1_Nova_String(0, exceptionData, "Checking methods with multiple return values... "));
 	l1_Nova_ret1 = (int)(1);
@@ -421,7 +421,7 @@ int stabilitytest_Nova_SyntaxStability_Nova_ret2(stabilitytest_Nova_SyntaxStabil
 
 int stabilitytest_Nova_SyntaxStability_Nova_swap(stabilitytest_Nova_SyntaxStability* this, nova_standard_exception_Nova_ExceptionData* exceptionData, int stabilitytest_Nova_SyntaxStability_Nova_a, int stabilitytest_Nova_SyntaxStability_Nova_b, int* ret1)
 {
-	int nova_local_0;
+	int nova_local_0 = 0;
 	
 	nova_local_0 = stabilitytest_Nova_SyntaxStability_Nova_b;
 	*ret1 = stabilitytest_Nova_SyntaxStability_Nova_a;
@@ -430,7 +430,7 @@ int stabilitytest_Nova_SyntaxStability_Nova_swap(stabilitytest_Nova_SyntaxStabil
 
 nova_standard_Nova_String* stabilitytest_Nova_SyntaxStability_Nova_swap2(stabilitytest_Nova_SyntaxStability* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_Nova_String* stabilitytest_Nova_SyntaxStability_Nova_a, nova_standard_Nova_String* stabilitytest_Nova_SyntaxStability_Nova_b, nova_standard_Nova_String** ret1)
 {
-	nova_standard_Nova_String* nova_local_0;
+	nova_standard_Nova_String* nova_local_0 = (nova_standard_Nova_String*)nova_null;
 	
 	nova_local_0 = stabilitytest_Nova_SyntaxStability_Nova_b;
 	*ret1 = stabilitytest_Nova_SyntaxStability_Nova_a;
@@ -452,13 +452,13 @@ void stabilitytest_Nova_SyntaxStability_Nova_foreachClosure(stabilitytest_Nova_S
 
 void stabilitytest_Nova_SyntaxStability_Nova_checkIterators(stabilitytest_Nova_SyntaxStability* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
-	nova_standard_Nova_String** l1_Nova_a;
-	nova_standard_datastruct_list_Nova_Array* l1_Nova_list;
-	nova_standard_datastruct_list_Nova_Array* l1_Nova_list2;
-	nova_standard_datastruct_list_Nova_Iterator* l1_Nova_iter;
-	nova_standard_datastruct_list_Nova_ArrayIterator* nova_local_0;
-	nova_standard_Nova_String* l8_Nova_string;
-	int l4_Nova_n;
+	nova_standard_Nova_String** l1_Nova_a = (nova_standard_Nova_String**)nova_null;
+	nova_standard_datastruct_list_Nova_Array* l1_Nova_list = (nova_standard_datastruct_list_Nova_Array*)nova_null;
+	nova_standard_datastruct_list_Nova_Array* l1_Nova_list2 = (nova_standard_datastruct_list_Nova_Array*)nova_null;
+	nova_standard_datastruct_list_Nova_Iterator* l1_Nova_iter = (nova_standard_datastruct_list_Nova_Iterator*)nova_null;
+	nova_standard_datastruct_list_Nova_ArrayIterator* nova_local_0 = (nova_standard_datastruct_list_Nova_ArrayIterator*)nova_null;
+	nova_standard_Nova_String* l8_Nova_string = (nova_standard_Nova_String*)nova_null;
+	int l4_Nova_n = 0;
 	
 	l1_Nova_a = (nova_standard_Nova_String**)NOVA_MALLOC(sizeof(nova_standard_Nova_String) * 7);
 	l1_Nova_a[0] = nova_standard_Nova_String_1_Nova_String(0, exceptionData, "this");
@@ -481,7 +481,7 @@ void stabilitytest_Nova_SyntaxStability_Nova_checkIterators(stabilitytest_Nova_S
 	}
 	CATCH (10)
 	{
-		stabilitytest_Nova_UnstableException* l2_Nova_e;
+		stabilitytest_Nova_UnstableException* l2_Nova_e = (stabilitytest_Nova_UnstableException*)nova_null;
 		
 		l2_Nova_e = (stabilitytest_Nova_UnstableException*)(exceptionData->nova_standard_exception_Nova_ExceptionData_Nova_thrownException);
 		stabilitytest_Nova_StabilityTest_1_Nova_fail(this->stabilitytest_Nova_StabilityTestCase_Nova_program, exceptionData, nova_standard_Nova_String_1_Nova_String(0, exceptionData, "Failed to filter data correctly"));
@@ -524,8 +524,8 @@ void stabilitytest_Nova_SyntaxStability_Nova_checkIterators(stabilitytest_Nova_S
 
 void stabilitytest_Nova_SyntaxStability_Nova_checkTernary(stabilitytest_Nova_SyntaxStability* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
-	char l1_Nova_first;
-	nova_standard_Nova_String* l1_Nova_second;
+	char l1_Nova_first = 0;
+	nova_standard_Nova_String* l1_Nova_second = (nova_standard_Nova_String*)nova_null;
 	
 	nova_standard_io_Nova_Console_0_Nova_write(0, exceptionData, nova_standard_Nova_String_1_Nova_String(0, exceptionData, "Checking ternary functionality... "));
 	l1_Nova_first = stabilitytest_Nova_SyntaxStability_Nova_trueValue(this, exceptionData) ? nova_standard_operators_Nova_Equals_virtual0_Nova_equals((nova_standard_operators_Nova_Equals*)(nova_standard_Nova_String_1_Nova_String(0, exceptionData, "hey")), exceptionData, (nova_standard_Nova_Object*)(nova_standard_Nova_String_1_Nova_String(0, exceptionData, "hey"))) : nova_standard_operators_Nova_Equals_virtual0_Nova_equals((nova_standard_operators_Nova_Equals*)(nova_standard_Nova_String_1_Nova_String(0, exceptionData, "hey")), exceptionData, (nova_standard_Nova_Object*)(nova_standard_Nova_String_1_Nova_String(0, exceptionData, "hey2")));
@@ -543,10 +543,10 @@ void stabilitytest_Nova_SyntaxStability_Nova_checkTernary(stabilitytest_Nova_Syn
 
 void stabilitytest_Nova_SyntaxStability_Nova_checkElvis(stabilitytest_Nova_SyntaxStability* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
-	nova_standard_Nova_String* l1_Nova_str;
-	nova_standard_Nova_Object* l1_Nova_str2;
-	nova_standard_Nova_String* l1_Nova_result1;
-	nova_standard_Nova_Object* l1_Nova_result2;
+	nova_standard_Nova_String* l1_Nova_str = (nova_standard_Nova_String*)nova_null;
+	nova_standard_Nova_Object* l1_Nova_str2 = (nova_standard_Nova_Object*)nova_null;
+	nova_standard_Nova_String* l1_Nova_result1 = (nova_standard_Nova_String*)nova_null;
+	nova_standard_Nova_Object* l1_Nova_result2 = (nova_standard_Nova_Object*)nova_null;
 	
 	nova_standard_io_Nova_Console_0_Nova_write(0, exceptionData, nova_standard_Nova_String_1_Nova_String(0, exceptionData, "Checking elvis functionality"));
 	l1_Nova_str = nova_standard_Nova_String_1_Nova_String(0, exceptionData, "this isnt null");

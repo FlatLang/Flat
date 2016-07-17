@@ -66,8 +66,8 @@ void example_Nova_HashMapDemo_Nova_destroy(example_Nova_HashMapDemo** this, nova
 
 void example_Nova_HashMapDemo_Nova_main(example_Nova_HashMapDemo* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_Nova_String** example_Nova_HashMapDemo_Nova_args)
 {
-	nova_standard_datastruct_Nova_HashMap* l1_Nova_words;
-	int* l1_Nova_nums;
+	nova_standard_datastruct_Nova_HashMap* l1_Nova_words = (nova_standard_datastruct_Nova_HashMap*)nova_null;
+	int* l1_Nova_nums = (int*)nova_null;
 	
 	l1_Nova_words = nova_standard_datastruct_Nova_HashMap_Nova_HashMap(0, exceptionData);
 	l1_Nova_nums = (int*)NOVA_MALLOC(sizeof(nova_standard_primitive_number_Nova_Int) * 6);

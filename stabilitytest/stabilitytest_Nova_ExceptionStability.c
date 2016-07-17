@@ -75,7 +75,7 @@ void stabilitytest_Nova_ExceptionStability_0_Nova_this(stabilitytest_Nova_Except
 
 void stabilitytest_Nova_ExceptionStability_0_Nova_test(stabilitytest_Nova_ExceptionStability* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
-	char l1_Nova_worked;
+	char l1_Nova_worked = 0;
 	
 	nova_standard_io_Nova_Console_1_Nova_writeLine(0, exceptionData, nova_standard_Nova_String_1_Nova_String(0, exceptionData, "Checking Exception handling..."));
 	l1_Nova_worked = 0;
@@ -89,7 +89,7 @@ void stabilitytest_Nova_ExceptionStability_0_Nova_test(stabilitytest_Nova_Except
 	}
 	CATCH (1)
 	{
-		nova_standard_exception_Nova_Exception* l2_Nova_e;
+		nova_standard_exception_Nova_Exception* l2_Nova_e = (nova_standard_exception_Nova_Exception*)nova_null;
 		
 		l2_Nova_e = exceptionData->nova_standard_exception_Nova_ExceptionData_Nova_thrownException;
 		l1_Nova_worked = 1;
@@ -106,7 +106,7 @@ void stabilitytest_Nova_ExceptionStability_0_Nova_test(stabilitytest_Nova_Except
 
 void stabilitytest_Nova_ExceptionStability_Nova_testException(stabilitytest_Nova_ExceptionStability* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
-	volatile char l1_Nova_worked;
+	volatile char l1_Nova_worked = 0;
 	
 	l1_Nova_worked = 0;
 	TRY
@@ -120,9 +120,9 @@ void stabilitytest_Nova_ExceptionStability_Nova_testException(stabilitytest_Nova
 				novaEnv.nova_standard_exception_ExceptionData.addCode(exceptionData, exceptionData, 8);
 				
 				{
-					int l2_Nova_den;
-					int l2_Nova_i;
-					int nova_zero_check6;
+					int l2_Nova_den = 0;
+					int l2_Nova_i = 0;
+					int nova_zero_check6 = 0;
 					
 					l2_Nova_den = (int)(0);
 					nova_zero_check6 = l2_Nova_den;
@@ -135,7 +135,7 @@ void stabilitytest_Nova_ExceptionStability_Nova_testException(stabilitytest_Nova
 			}
 			CATCH (8)
 			{
-				nova_standard_exception_Nova_DivideByZeroException* l5_Nova_e;
+				nova_standard_exception_Nova_DivideByZeroException* l5_Nova_e = (nova_standard_exception_Nova_DivideByZeroException*)nova_null;
 				
 				l5_Nova_e = (nova_standard_exception_Nova_DivideByZeroException*)(exceptionData->nova_standard_exception_Nova_ExceptionData_Nova_thrownException);
 				l1_Nova_worked = 1;
@@ -152,7 +152,7 @@ void stabilitytest_Nova_ExceptionStability_Nova_testException(stabilitytest_Nova
 	}
 	CATCH (9)
 	{
-		stabilitytest_Nova_StabilityTestException* l7_Nova_e;
+		stabilitytest_Nova_StabilityTestException* l7_Nova_e = (stabilitytest_Nova_StabilityTestException*)nova_null;
 		
 		l7_Nova_e = (stabilitytest_Nova_StabilityTestException*)(exceptionData->nova_standard_exception_Nova_ExceptionData_Nova_thrownException);
 		if (!l1_Nova_worked)

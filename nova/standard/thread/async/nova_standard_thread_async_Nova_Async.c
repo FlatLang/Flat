@@ -66,8 +66,8 @@ void nova_standard_thread_async_Nova_Async_Nova_destroy(nova_standard_thread_asy
 
 nova_standard_thread_async_Nova_AsyncResult* nova_standard_thread_async_Nova_Async_Nova_execute(nova_standard_thread_async_Nova_Async* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_thread_async_Nova_Async_closure3_Nova_func nova_standard_thread_async_Nova_Async_Nova_func, void* nova_standard_thread_async_Nova_Async_ref_Nova_func)
 {
-	nova_standard_thread_async_Nova_AsyncResult* l1_Nova_result;
-	nova_standard_thread_Nova_Thread* l1_Nova_thread;
+	nova_standard_thread_async_Nova_AsyncResult* l1_Nova_result = (nova_standard_thread_async_Nova_AsyncResult*)nova_null;
+	nova_standard_thread_Nova_Thread* l1_Nova_thread = (nova_standard_thread_Nova_Thread*)nova_null;
 	
 	l1_Nova_result = nova_standard_thread_async_Nova_AsyncResult_Nova_AsyncResult(0, exceptionData);
 	l1_Nova_thread = nova_standard_thread_Nova_Thread_Nova_Thread(0, exceptionData);

@@ -66,9 +66,9 @@ void example_network_Nova_ServerDemo_Nova_destroy(example_network_Nova_ServerDem
 
 void example_network_Nova_ServerDemo_Nova_main(example_network_Nova_ServerDemo* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_Nova_String** example_network_Nova_ServerDemo_Nova_args)
 {
-	nova_standard_datastruct_list_Nova_Array* l1_Nova_connections;
-	nova_standard_network_Nova_ServerSocket* l1_Nova_socket;
-	int l1_Nova_port;
+	nova_standard_datastruct_list_Nova_Array* l1_Nova_connections = (nova_standard_datastruct_list_Nova_Array*)nova_null;
+	nova_standard_network_Nova_ServerSocket* l1_Nova_socket = (nova_standard_network_Nova_ServerSocket*)nova_null;
+	int l1_Nova_port = 0;
 	
 	l1_Nova_connections = nova_standard_datastruct_list_Nova_Array_0_Nova_Array(0, exceptionData);
 	l1_Nova_socket = nova_standard_network_Nova_ServerSocket_Nova_ServerSocket(0, exceptionData);
@@ -79,7 +79,7 @@ void example_network_Nova_ServerDemo_Nova_main(example_network_Nova_ServerDemo* 
 	}
 	else
 	{
-		nova_standard_network_Nova_ConnectionSocket* l2_Nova_request;
+		nova_standard_network_Nova_ConnectionSocket* l2_Nova_request = (nova_standard_network_Nova_ConnectionSocket*)nova_null;
 		
 		nova_standard_io_Nova_Console_1_Nova_writeLine(0, exceptionData, nova_standard_Nova_String_0_Nova_concat(nova_standard_Nova_String_1_Nova_String(0, exceptionData, "Started server on port "), exceptionData, nova_standard_primitive_number_Nova_Int_2_Nova_toString(0, exceptionData, l1_Nova_port)));
 		nova_standard_io_Nova_Console_1_Nova_writeLine(0, exceptionData, nova_standard_Nova_String_1_Nova_String(0, exceptionData, "Waiting on client..."));
@@ -90,8 +90,8 @@ void example_network_Nova_ServerDemo_Nova_main(example_network_Nova_ServerDemo* 
 		}
 		while (l2_Nova_request != (nova_standard_network_Nova_ConnectionSocket*)nova_null)
 		{
-			example_network_Nova_ConnectionThread* l4_Nova_thread;
-			example_network_Nova_OutputThread* l4_Nova_othread;
+			example_network_Nova_ConnectionThread* l4_Nova_thread = (example_network_Nova_ConnectionThread*)nova_null;
+			example_network_Nova_OutputThread* l4_Nova_othread = (example_network_Nova_OutputThread*)nova_null;
 			
 			nova_standard_datastruct_list_Nova_Array_0_Nova_add(l1_Nova_connections, exceptionData, (nova_standard_Nova_Object*)(l2_Nova_request));
 			l4_Nova_thread = example_network_Nova_ConnectionThread_Nova_ConnectionThread(0, exceptionData, l2_Nova_request);

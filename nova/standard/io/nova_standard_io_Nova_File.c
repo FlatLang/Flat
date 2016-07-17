@@ -46,7 +46,7 @@ void nova_standard_io_Nova_FileNova_init_static(nova_standard_exception_Nova_Exc
 	{
 	}
 	{
-		nova_standard_io_Nova_File* l1_Nova_exitLog;
+		nova_standard_io_Nova_File* l1_Nova_exitLog = (nova_standard_io_Nova_File*)nova_null;
 		
 		l1_Nova_exitLog = nova_standard_io_Nova_File_0_Nova_File(0, exceptionData, nova_standard_Nova_String_0_Nova_concat(nova_standard_Nova_String_1_Nova_String(0, exceptionData, "log"), exceptionData, nova_standard_primitive_number_Nova_Long_2_Nova_toString(0, exceptionData, nova_standard_time_Nova_Time_Accessor_Nova_currentTimeMillis(0, exceptionData))));
 	}
@@ -153,8 +153,8 @@ char nova_standard_io_Nova_File_Nova_create(nova_standard_io_Nova_File* this, no
 
 nova_standard_Nova_String* nova_standard_io_Nova_File_Nova_readAllContents(nova_standard_io_Nova_File* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
-	nova_standard_Nova_String* l1_Nova_data;
-	nova_standard_Nova_String* l1_Nova_line;
+	nova_standard_Nova_String* l1_Nova_data = (nova_standard_Nova_String*)nova_null;
+	nova_standard_Nova_String* l1_Nova_line = (nova_standard_Nova_String*)nova_null;
 	
 	l1_Nova_data = nova_standard_Nova_String_1_Nova_String(0, exceptionData, "");
 	l1_Nova_line = nova_standard_io_Nova_File_Nova_readLine(this, exceptionData);
@@ -172,11 +172,11 @@ nova_standard_Nova_String* nova_standard_io_Nova_File_Nova_readAllContents(nova_
 
 nova_standard_Nova_String* nova_standard_io_Nova_File_Nova_readLine(nova_standard_io_Nova_File* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
-	int l1_Nova_buf;
-	int l1_Nova_size;
-	char* l1_Nova_line;
-	char l1_Nova_c;
-	int l1_Nova_index;
+	int l1_Nova_buf = 0;
+	int l1_Nova_size = 0;
+	char* l1_Nova_line = (char*)nova_null;
+	char l1_Nova_c = 0;
+	int l1_Nova_index = 0;
 	
 	l1_Nova_buf = (int)(5);
 	l1_Nova_size = l1_Nova_buf;
@@ -244,8 +244,8 @@ int nova_standard_io_Nova_File_Accessor_Nova_maxOpenFiles(nova_standard_io_Nova_
 
 int nova_standard_io_Nova_File_Mutator_Nova_maxOpenFiles(nova_standard_io_Nova_File* this, nova_standard_exception_Nova_ExceptionData* exceptionData, int nova_standard_io_Nova_File_Nova_value)
 {
-	short l1_Nova_min;
-	short l1_Nova_max;
+	short l1_Nova_min = 0;
+	short l1_Nova_max = 0;
 	
 	l1_Nova_min = (short)20;
 	l1_Nova_max = (short)2048;

@@ -66,16 +66,16 @@ void example_Nova_ArrayDemo_Nova_destroy(example_Nova_ArrayDemo** this, nova_sta
 
 void example_Nova_ArrayDemo_Nova_main(example_Nova_ArrayDemo* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_Nova_String** example_Nova_ArrayDemo_Nova_args)
 {
-	char l1_Nova_c;
+	char l1_Nova_c = 0;
 	
 	l1_Nova_c = 'y';
 	while (l1_Nova_c == 'y' || l1_Nova_c == 'Y')
 	{
-		nova_standard_datastruct_list_Nova_Array* l1_Nova_list;
-		example_Nova_Animal* l1_Nova_animal;
-		int l3_Nova_i;
-		int l5_Nova_i;
-		int l7_Nova_i;
+		nova_standard_datastruct_list_Nova_Array* l1_Nova_list = (nova_standard_datastruct_list_Nova_Array*)nova_null;
+		example_Nova_Animal* l1_Nova_animal = (example_Nova_Animal*)nova_null;
+		int l3_Nova_i = 0;
+		int l5_Nova_i = 0;
+		int l7_Nova_i = 0;
 		
 		l1_Nova_list = nova_standard_datastruct_list_Nova_Array_0_Nova_Array(0, exceptionData);
 		nova_standard_datastruct_list_Nova_Array_0_Nova_add(l1_Nova_list, exceptionData, (nova_standard_Nova_Object*)(example_Nova_Dog_Nova_Dog(0, exceptionData)));

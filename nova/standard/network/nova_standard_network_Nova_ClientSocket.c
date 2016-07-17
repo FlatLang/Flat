@@ -90,7 +90,7 @@ char nova_standard_network_Nova_ClientSocket_Nova_connect(nova_standard_network_
 
 char nova_standard_network_Nova_ClientSocket_Nova_close(nova_standard_network_Nova_ClientSocket* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
-	int l1_Nova_result;
+	int l1_Nova_result = 0;
 	
 	l1_Nova_result = (int)(nova_socket_close(this->prv->nova_standard_network_Nova_ClientSocket_Nova_socket));
 	if (l1_Nova_result == 0)

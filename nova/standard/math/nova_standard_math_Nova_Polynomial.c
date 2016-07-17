@@ -109,12 +109,12 @@ void nova_standard_math_Nova_Polynomial_Nova_destroy(nova_standard_math_Nova_Pol
 
 void nova_standard_math_Nova_Polynomial_Nova_this(nova_standard_math_Nova_Polynomial* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_Nova_String* nova_standard_math_Nova_Polynomial_Nova_polynomial)
 {
-	int l2_Nova_start;
-	char l2_Nova_reading;
-	nova_standard_datastruct_list_Nova_Array* l2_Nova_coeffs;
-	nova_standard_datastruct_list_Nova_Array* l2_Nova_degrees;
-	nova_standard_datastruct_list_Nova_Array* l2_Nova_signs;
-	int l4_Nova_i;
+	int l2_Nova_start = 0;
+	char l2_Nova_reading = 0;
+	nova_standard_datastruct_list_Nova_Array* l2_Nova_coeffs = (nova_standard_datastruct_list_Nova_Array*)nova_null;
+	nova_standard_datastruct_list_Nova_Array* l2_Nova_degrees = (nova_standard_datastruct_list_Nova_Array*)nova_null;
+	nova_standard_datastruct_list_Nova_Array* l2_Nova_signs = (nova_standard_datastruct_list_Nova_Array*)nova_null;
+	int l4_Nova_i = 0;
 	
 	l2_Nova_start = (int)(0);
 	l2_Nova_reading = 0;
@@ -156,7 +156,7 @@ char nova_standard_math_Nova_Polynomial_Nova_isWhitespace(nova_standard_math_Nov
 
 char nova_standard_math_Nova_Polynomial_Nova_contains(nova_standard_math_Nova_Polynomial* this, nova_standard_exception_Nova_ExceptionData* exceptionData, char* nova_standard_math_Nova_Polynomial_Nova_array, char nova_standard_math_Nova_Polynomial_Nova_c, int nova_standard_math_Nova_Polynomial_Nova_length)
 {
-	int l2_Nova_i;
+	int l2_Nova_i = 0;
 	
 	l2_Nova_i = (int)(0);
 	for (; l2_Nova_i < nova_standard_math_Nova_Polynomial_Nova_length; l2_Nova_i++)

@@ -77,16 +77,16 @@ void stabilitytest_Nova_LambdaStability_0_Nova_this(stabilitytest_Nova_LambdaSta
 
 void stabilitytest_Nova_LambdaStability_0_Nova_test(stabilitytest_Nova_LambdaStability* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
-	nova_standard_Nova_String** l1_Nova_a;
-	int* l1_Nova_b;
-	nova_standard_datastruct_list_Nova_Array* l1_Nova_list;
-	nova_standard_datastruct_list_Nova_Array* l1_Nova_list2;
-	nova_standard_Nova_String* l1_Nova_mappedOutput;
-	nova_standard_Nova_String* l1_Nova_mappedExpected;
-	nova_standard_datastruct_list_Nova_LinkedList* l1_Nova_linked;
-	nova_standard_datastruct_list_Nova_Array* l1_Nova_repeated;
-	nova_standard_datastruct_list_Nova_ArrayIterator* nova_local_0;
-	nova_standard_Nova_String* l4_Nova_item;
+	nova_standard_Nova_String** l1_Nova_a = (nova_standard_Nova_String**)nova_null;
+	int* l1_Nova_b = (int*)nova_null;
+	nova_standard_datastruct_list_Nova_Array* l1_Nova_list = (nova_standard_datastruct_list_Nova_Array*)nova_null;
+	nova_standard_datastruct_list_Nova_Array* l1_Nova_list2 = (nova_standard_datastruct_list_Nova_Array*)nova_null;
+	nova_standard_Nova_String* l1_Nova_mappedOutput = (nova_standard_Nova_String*)nova_null;
+	nova_standard_Nova_String* l1_Nova_mappedExpected = (nova_standard_Nova_String*)nova_null;
+	nova_standard_datastruct_list_Nova_LinkedList* l1_Nova_linked = (nova_standard_datastruct_list_Nova_LinkedList*)nova_null;
+	nova_standard_datastruct_list_Nova_Array* l1_Nova_repeated = (nova_standard_datastruct_list_Nova_Array*)nova_null;
+	nova_standard_datastruct_list_Nova_ArrayIterator* nova_local_0 = (nova_standard_datastruct_list_Nova_ArrayIterator*)nova_null;
+	nova_standard_Nova_String* l4_Nova_item = (nova_standard_Nova_String*)nova_null;
 	
 	nova_standard_io_Nova_Console_0_Nova_write(0, exceptionData, nova_standard_Nova_String_1_Nova_String(0, exceptionData, "Checking lambdas... "));
 	l1_Nova_a = (nova_standard_Nova_String**)NOVA_MALLOC(sizeof(nova_standard_Nova_String) * 7);

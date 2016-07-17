@@ -66,12 +66,12 @@ void example_Nova_FileTest_Nova_destroy(example_Nova_FileTest** this, nova_stand
 
 void example_Nova_FileTest_Nova_main(example_Nova_FileTest* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_Nova_String** example_Nova_FileTest_Nova_args)
 {
-	nova_standard_io_Nova_File* l1_Nova_f;
+	nova_standard_io_Nova_File* l1_Nova_f = (nova_standard_io_Nova_File*)nova_null;
 	
 	l1_Nova_f = nova_standard_io_Nova_File_0_Nova_File(0, exceptionData, nova_standard_Nova_String_1_Nova_String(0, exceptionData, "C:/Users/Braden Steffaniak/test3.txt"));
 	if (nova_standard_io_Nova_File_Accessor_Nova_exists(l1_Nova_f, exceptionData))
 	{
-		nova_standard_Nova_String* l1_Nova_data;
+		nova_standard_Nova_String* l1_Nova_data = (nova_standard_Nova_String*)nova_null;
 		
 		nova_standard_io_Nova_Console_1_Nova_writeLine(0, exceptionData, nova_standard_Nova_String_1_Nova_String(0, exceptionData, "Your file exists!"));
 		nova_standard_io_Nova_File_Nova_writeLine(l1_Nova_f, exceptionData, nova_standard_Nova_String_1_Nova_String(0, exceptionData, "Entering data.."));

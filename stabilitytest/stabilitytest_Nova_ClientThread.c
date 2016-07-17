@@ -85,9 +85,9 @@ void stabilitytest_Nova_ClientThread_Nova_this(stabilitytest_Nova_ClientThread* 
 
 void stabilitytest_Nova_ClientThread_0_Nova_run(stabilitytest_Nova_ClientThread* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
-	nova_standard_network_Nova_ClientSocket* l1_Nova_client;
-	nova_standard_Nova_String* l1_Nova_ip;
-	nova_standard_Nova_String* l1_Nova_s;
+	nova_standard_network_Nova_ClientSocket* l1_Nova_client = (nova_standard_network_Nova_ClientSocket*)nova_null;
+	nova_standard_Nova_String* l1_Nova_ip = (nova_standard_Nova_String*)nova_null;
+	nova_standard_Nova_String* l1_Nova_s = (nova_standard_Nova_String*)nova_null;
 	
 	l1_Nova_client = nova_standard_network_Nova_ClientSocket_Nova_ClientSocket(0, exceptionData);
 	l1_Nova_ip = nova_standard_Nova_String_1_Nova_String(0, exceptionData, "127.0.0.1");

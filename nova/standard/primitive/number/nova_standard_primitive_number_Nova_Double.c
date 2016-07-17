@@ -77,7 +77,7 @@ void nova_standard_primitive_number_Nova_Double_Nova_this(nova_standard_primitiv
 
 int nova_standard_primitive_number_Nova_Double_0_Nova_numDigits(nova_standard_primitive_number_Nova_Double* this, nova_standard_exception_Nova_ExceptionData* exceptionData, double nova_standard_primitive_number_Nova_Double_Nova_number)
 {
-	int l1_Nova_size;
+	int l1_Nova_size = 0;
 	
 	if (nova_standard_primitive_number_Nova_Double_Nova_number < 0)
 	{
@@ -101,8 +101,8 @@ nova_standard_Nova_String* nova_standard_primitive_number_Nova_Double_Nova_genSt
 
 char* nova_standard_primitive_number_Nova_Double_Nova_genBuffer(nova_standard_primitive_number_Nova_Double* this, nova_standard_exception_Nova_ExceptionData* exceptionData, double nova_standard_primitive_number_Nova_Double_Nova_value)
 {
-	int l1_Nova_size;
-	char* l1_Nova_buffer;
+	int l1_Nova_size = 0;
+	char* l1_Nova_buffer = (char*)nova_null;
 	
 	l1_Nova_size = (int)(11 + 1 + 15);
 	l1_Nova_buffer = (char*)NOVA_MALLOC(sizeof(nova_standard_primitive_number_Nova_Char) * l1_Nova_size);
@@ -112,8 +112,8 @@ char* nova_standard_primitive_number_Nova_Double_Nova_genBuffer(nova_standard_pr
 
 int nova_standard_primitive_number_Nova_Double_Nova_repetition(nova_standard_primitive_number_Nova_Double* this, nova_standard_exception_Nova_ExceptionData* exceptionData, char* nova_standard_primitive_number_Nova_Double_Nova_buffer, int nova_standard_primitive_number_Nova_Double_Nova_start)
 {
-	int l1_Nova_index;
-	char l1_Nova_c;
+	int l1_Nova_index = 0;
+	char l1_Nova_c = 0;
 	
 	l1_Nova_index = nova_standard_primitive_number_Nova_Double_Nova_start;
 	l1_Nova_c = nova_standard_primitive_number_Nova_Double_Nova_buffer[l1_Nova_index];
@@ -129,10 +129,10 @@ int nova_standard_primitive_number_Nova_Double_Nova_lastSignificantDigit(nova_st
 
 nova_standard_Nova_String* nova_standard_primitive_number_Nova_Double_2_Nova_toString(nova_standard_primitive_number_Nova_Double* this, nova_standard_exception_Nova_ExceptionData* exceptionData, double nova_standard_primitive_number_Nova_Double_Nova_value)
 {
-	char* l1_Nova_buffer;
-	int l1_Nova_size;
-	int l1_Nova_lastIndex;
-	char l1_Nova_c;
+	char* l1_Nova_buffer = (char*)nova_null;
+	int l1_Nova_size = 0;
+	int l1_Nova_lastIndex = 0;
+	char l1_Nova_c = 0;
 	
 	l1_Nova_buffer = nova_standard_primitive_number_Nova_Double_Nova_genBuffer(0, exceptionData, nova_standard_primitive_number_Nova_Double_Nova_value);
 	l1_Nova_size = (int)(strlen(l1_Nova_buffer));
@@ -161,7 +161,7 @@ nova_standard_Nova_String* nova_standard_primitive_number_Nova_Double_2_Nova_toS
 	}
 	else
 	{
-		int l8_Nova_rep;
+		int l8_Nova_rep = 0;
 		
 		l8_Nova_rep = nova_standard_primitive_number_Nova_Double_Nova_repetition(0, exceptionData, l1_Nova_buffer, l1_Nova_lastIndex);
 		if (l8_Nova_rep > 5)
@@ -186,7 +186,7 @@ nova_standard_Nova_String* nova_standard_primitive_number_Nova_Double_3_Nova_toS
 
 double nova_standard_primitive_number_Nova_Double_Nova_parseDouble(nova_standard_primitive_number_Nova_Double* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_Nova_String* nova_standard_primitive_number_Nova_Double_Nova_str)
 {
-	char* l1_Nova_pEnd;
+	char* l1_Nova_pEnd = (char*)nova_null;
 	
 	return (double)strtod((char*)(nova_standard_primitive_number_Nova_Double_Nova_str->nova_standard_Nova_String_Nova_chars), &l1_Nova_pEnd);
 }

@@ -81,7 +81,7 @@ char* nova_standard_io_Nova_StreamReader_Nova_readBytes(nova_standard_io_Nova_St
 
 nova_standard_Nova_String* nova_standard_io_Nova_StreamReader_Nova_readString(nova_standard_io_Nova_StreamReader* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
-	nova_standard_Nova_String* l1_Nova_output;
+	nova_standard_Nova_String* l1_Nova_output = (nova_standard_Nova_String*)nova_null;
 	
 	l1_Nova_output = nova_standard_io_Nova_File_Nova_readAllContents(this->prv->nova_standard_io_Nova_StreamReader_Nova_file, exceptionData);
 	return l1_Nova_output;

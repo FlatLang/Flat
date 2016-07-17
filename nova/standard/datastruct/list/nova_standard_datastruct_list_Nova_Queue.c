@@ -91,8 +91,8 @@ void nova_standard_datastruct_list_Nova_Queue_Nova_enqueue(nova_standard_datastr
 
 nova_standard_Nova_String* nova_standard_datastruct_list_Nova_Queue_0_Nova_toString(nova_standard_datastruct_list_Nova_Queue* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
-	nova_standard_Nova_String* l1_Nova_s;
-	int l2_Nova_i;
+	nova_standard_Nova_String* l1_Nova_s = (nova_standard_Nova_String*)nova_null;
+	int l2_Nova_i = 0;
 	
 	l1_Nova_s = nova_standard_Nova_String_1_Nova_String(0, exceptionData, "");
 	l2_Nova_i = nova_standard_datastruct_list_Nova_Queue_Accessor_Nova_size(this, exceptionData) - 1;

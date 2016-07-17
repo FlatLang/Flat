@@ -92,7 +92,7 @@ char nova_standard_network_Nova_ServerSocket_Nova_start(nova_standard_network_No
 
 char nova_standard_network_Nova_ServerSocket_Nova_close(nova_standard_network_Nova_ServerSocket* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
-	int l1_Nova_result;
+	int l1_Nova_result = 0;
 	
 	l1_Nova_result = (int)(nova_socket_close(this->prv->nova_standard_network_Nova_ServerSocket_Nova_serverSocket));
 	if (l1_Nova_result == 0)
@@ -105,8 +105,8 @@ char nova_standard_network_Nova_ServerSocket_Nova_close(nova_standard_network_No
 
 nova_standard_network_Nova_ConnectionSocket* nova_standard_network_Nova_ServerSocket_Nova_acceptClient(nova_standard_network_Nova_ServerSocket* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
-	SOCKET_ID_TYPE l1_Nova_clientSocket;
-	nova_standard_network_Nova_ConnectionSocket* l1_Nova_socket;
+	SOCKET_ID_TYPE l1_Nova_clientSocket = (SOCKET_ID_TYPE)nova_null;
+	nova_standard_network_Nova_ConnectionSocket* l1_Nova_socket = (nova_standard_network_Nova_ConnectionSocket*)nova_null;
 	
 	l1_Nova_clientSocket = nova_serversocket_accept(this->prv->nova_standard_network_Nova_ServerSocket_Nova_serverSocket);
 	if (l1_Nova_clientSocket == 0)

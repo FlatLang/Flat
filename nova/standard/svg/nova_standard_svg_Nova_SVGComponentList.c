@@ -67,7 +67,7 @@ void nova_standard_svg_Nova_SVGComponentList_Nova_destroy(nova_standard_svg_Nova
 
 void nova_standard_svg_Nova_SVGComponentList_Nova_generateOutput(nova_standard_svg_Nova_SVGComponentList* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_io_Nova_File* nova_standard_svg_Nova_SVGComponentList_Nova_file)
 {
-	nova_standard_svg_Nova_SVGComponentNode* l1_Nova_current;
+	nova_standard_svg_Nova_SVGComponentNode* l1_Nova_current = (nova_standard_svg_Nova_SVGComponentNode*)nova_null;
 	
 	l1_Nova_current = this->nova_standard_svg_Nova_SVGComponentList_Nova_start;
 	while (l1_Nova_current != (nova_standard_svg_Nova_SVGComponentNode*)nova_null)
@@ -79,7 +79,7 @@ void nova_standard_svg_Nova_SVGComponentList_Nova_generateOutput(nova_standard_s
 
 void nova_standard_svg_Nova_SVGComponentList_Nova_addChild(nova_standard_svg_Nova_SVGComponentList* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_svg_Nova_SVGComponent* nova_standard_svg_Nova_SVGComponentList_Nova_component)
 {
-	nova_standard_svg_Nova_SVGComponentNode* l1_Nova_node;
+	nova_standard_svg_Nova_SVGComponentNode* l1_Nova_node = (nova_standard_svg_Nova_SVGComponentNode*)nova_null;
 	
 	l1_Nova_node = nova_standard_svg_Nova_SVGComponentNode_Nova_SVGComponentNode(0, exceptionData);
 	l1_Nova_node->nova_standard_svg_Nova_SVGComponentNode_Nova_component = nova_standard_svg_Nova_SVGComponentList_Nova_component;
@@ -89,7 +89,7 @@ void nova_standard_svg_Nova_SVGComponentList_Nova_addChild(nova_standard_svg_Nov
 	}
 	else
 	{
-		nova_standard_svg_Nova_SVGComponentNode* l2_Nova_current;
+		nova_standard_svg_Nova_SVGComponentNode* l2_Nova_current = (nova_standard_svg_Nova_SVGComponentNode*)nova_null;
 		
 		l2_Nova_current = this->nova_standard_svg_Nova_SVGComponentList_Nova_start;
 		while (l2_Nova_current->nova_standard_svg_Nova_SVGComponentNode_Nova_next != (nova_standard_svg_Nova_SVGComponentNode*)nova_null)

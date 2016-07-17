@@ -85,7 +85,7 @@ void example_Nova_ThreadDemoImplementation_Nova_this(example_Nova_ThreadDemoImpl
 
 void example_Nova_ThreadDemoImplementation_0_Nova_run(example_Nova_ThreadDemoImplementation* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
-	int l2_Nova_i;
+	int l2_Nova_i = 0;
 	
 	l2_Nova_i = (int)(0);
 	for (; l2_Nova_i < 10; l2_Nova_i++)

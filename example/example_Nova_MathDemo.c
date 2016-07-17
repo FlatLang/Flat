@@ -66,9 +66,9 @@ void example_Nova_MathDemo_Nova_destroy(example_Nova_MathDemo** this, nova_stand
 
 void example_Nova_MathDemo_Nova_main(example_Nova_MathDemo* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_Nova_String** example_Nova_MathDemo_Nova_args)
 {
-	int l1_Nova_iterations;
-	nova_standard_time_Nova_Timer* l1_Nova_timer;
-	int l2_Nova_i;
+	int l1_Nova_iterations = 0;
+	nova_standard_time_Nova_Timer* l1_Nova_timer = (nova_standard_time_Nova_Timer*)nova_null;
+	int l2_Nova_i = 0;
 	
 	nova_standard_io_Nova_Console_1_Nova_writeLine(0, exceptionData, nova_standard_Nova_String_1_Nova_String(0, exceptionData, "Beginning benchmark..."));
 	l1_Nova_iterations = 999999;
@@ -86,7 +86,7 @@ void example_Nova_MathDemo_Nova_main(example_Nova_MathDemo* this, nova_standard_
 		}
 		CATCH (1)
 		{
-			nova_standard_exception_Nova_Exception* l4_Nova_e;
+			nova_standard_exception_Nova_Exception* l4_Nova_e = (nova_standard_exception_Nova_Exception*)nova_null;
 			
 			l4_Nova_e = exceptionData->nova_standard_exception_Nova_ExceptionData_Nova_thrownException;
 		}

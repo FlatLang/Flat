@@ -66,10 +66,10 @@ void example_network_Nova_ClientDemo_Nova_destroy(example_network_Nova_ClientDem
 
 void example_network_Nova_ClientDemo_Nova_main(example_network_Nova_ClientDemo* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_Nova_String** example_network_Nova_ClientDemo_Nova_args)
 {
-	nova_standard_network_Nova_ClientSocket* l1_Nova_socket;
-	nova_standard_Nova_String* l1_Nova_ip;
-	int l1_Nova_port;
-	char l1_Nova_connected;
+	nova_standard_network_Nova_ClientSocket* l1_Nova_socket = (nova_standard_network_Nova_ClientSocket*)nova_null;
+	nova_standard_Nova_String* l1_Nova_ip = (nova_standard_Nova_String*)nova_null;
+	int l1_Nova_port = 0;
+	char l1_Nova_connected = 0;
 	
 	l1_Nova_socket = nova_standard_network_Nova_ClientSocket_Nova_ClientSocket(0, exceptionData);
 	l1_Nova_ip = nova_standard_Nova_String_1_Nova_String(0, exceptionData, "127.0.0.1");
@@ -78,14 +78,14 @@ void example_network_Nova_ClientDemo_Nova_main(example_network_Nova_ClientDemo* 
 	l1_Nova_connected = nova_standard_network_Nova_ClientSocket_Nova_connect(l1_Nova_socket, exceptionData, l1_Nova_ip, l1_Nova_port);
 	if (l1_Nova_connected)
 	{
-		example_network_Nova_ConnectionThread* l1_Nova_thread;
+		example_network_Nova_ConnectionThread* l1_Nova_thread = (example_network_Nova_ConnectionThread*)nova_null;
 		
 		l1_Nova_thread = example_network_Nova_ConnectionThread_Nova_ConnectionThread(0, exceptionData, l1_Nova_socket->nova_standard_network_Nova_ClientSocket_Nova_connection);
 		nova_standard_thread_Nova_Thread_Nova_start((nova_standard_thread_Nova_Thread*)(l1_Nova_thread), exceptionData);
 		nova_standard_io_Nova_Console_1_Nova_writeLine(0, exceptionData, nova_standard_Nova_String_1_Nova_String(0, exceptionData, "Connected!"));
 		while (l1_Nova_socket->nova_standard_network_Nova_ClientSocket_Nova_connection->nova_standard_network_Nova_ConnectionSocket_Nova_connected)
 		{
-			nova_standard_Nova_String* l2_Nova_message;
+			nova_standard_Nova_String* l2_Nova_message = (nova_standard_Nova_String*)nova_null;
 			
 			l2_Nova_message = nova_standard_io_Nova_Console_Nova_readLine(0, exceptionData);
 			if (nova_standard_operators_Nova_Equals_virtual0_Nova_equals((nova_standard_operators_Nova_Equals*)(l2_Nova_message), exceptionData, (nova_standard_Nova_Object*)(nova_standard_Nova_String_1_Nova_String(0, exceptionData, "q"))))

@@ -97,7 +97,7 @@ nova_standard_Nova_String* nova_standard_time_Nova_Date_0_Nova_formatDate(nova_s
 
 nova_standard_Nova_String* nova_standard_time_Nova_Date_1_Nova_formatDate(nova_standard_time_Nova_Date* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_Nova_String* nova_standard_time_Nova_Date_Nova_str, int nova_standard_time_Nova_Date_Nova_first, int nova_standard_time_Nova_Date_Nova_second, int nova_standard_time_Nova_Date_Nova_third, int nova_standard_time_Nova_Date_Nova_fourth, int nova_standard_time_Nova_Date_Nova_fifth, int nova_standard_time_Nova_Date_Nova_sixth)
 {
-	char* l1_Nova_data;
+	char* l1_Nova_data = (char*)nova_null;
 	
 	l1_Nova_data = (char*)(nova_formatDate((char*)(nova_standard_time_Nova_Date_Nova_str->nova_standard_Nova_String_Nova_chars), nova_standard_time_Nova_Date_Nova_first, nova_standard_time_Nova_Date_Nova_second, nova_standard_time_Nova_Date_Nova_third, nova_standard_time_Nova_Date_Nova_fourth, nova_standard_time_Nova_Date_Nova_fifth, nova_standard_time_Nova_Date_Nova_sixth));
 	return nova_standard_Nova_String_1_Nova_String(0, exceptionData, l1_Nova_data);

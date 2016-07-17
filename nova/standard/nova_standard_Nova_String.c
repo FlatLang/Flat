@@ -96,7 +96,7 @@ void nova_standard_Nova_String_Nova_destroy(nova_standard_Nova_String** this, no
 
 void nova_standard_Nova_String_1_Nova_this(nova_standard_Nova_String* this, nova_standard_exception_Nova_ExceptionData* exceptionData, char nova_standard_Nova_String_Nova_c)
 {
-	char* l2_Nova_chars;
+	char* l2_Nova_chars = (char*)nova_null;
 	
 	l2_Nova_chars = (char*)NOVA_MALLOC(sizeof(nova_standard_primitive_number_Nova_Char) * 2);
 	l2_Nova_chars[0] = nova_standard_Nova_String_Nova_c;
@@ -121,9 +121,9 @@ int nova_standard_Nova_String_Nova_calculateSize(nova_standard_Nova_String* this
 
 nova_standard_Nova_String* nova_standard_Nova_String_0_Nova_concat(nova_standard_Nova_String* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_Nova_String* nova_standard_Nova_String_Nova_str)
 {
-	int l1_Nova_sz;
-	char* l1_Nova_newData;
-	nova_standard_Nova_String* l1_Nova_newStr;
+	int l1_Nova_sz = 0;
+	char* l1_Nova_newData = (char*)nova_null;
+	nova_standard_Nova_String* l1_Nova_newStr = (nova_standard_Nova_String*)nova_null;
 	
 	nova_standard_Nova_String_Nova_str = (nova_standard_Nova_String*)(nova_standard_Nova_Object_virtual1_Nova_toString((nova_standard_Nova_Object*)(nova_standard_Nova_String_Nova_str), exceptionData));
 	l1_Nova_sz = nova_standard_Nova_String_Nova_str->nova_standard_Nova_String_Nova_count + this->nova_standard_Nova_String_Nova_count + 1;
@@ -142,13 +142,13 @@ char nova_standard_Nova_String_Nova_equals(nova_standard_Nova_String* this, nova
 
 int nova_standard_Nova_String_0_Nova_indexOf(nova_standard_Nova_String* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_Nova_String* nova_standard_Nova_String_Nova_search, int nova_standard_Nova_String_Nova_start, int nova_standard_Nova_String_Nova_direction)
 {
-	int l2_Nova_i;
+	int l2_Nova_i = 0;
 	
 	l2_Nova_i = nova_standard_Nova_String_Nova_start;
 	for (; l2_Nova_i < this->nova_standard_Nova_String_Nova_count && l2_Nova_i >= 0; l2_Nova_i = l2_Nova_i + nova_standard_Nova_String_Nova_direction)
 	{
-		char l2_Nova_found;
-		int l4_Nova_j;
+		char l2_Nova_found = 0;
+		int l4_Nova_j = 0;
 		
 		l2_Nova_found = 1;
 		l4_Nova_j = (int)(0);
@@ -184,7 +184,7 @@ int nova_standard_Nova_String_Nova_lastIndexOf(nova_standard_Nova_String* this, 
 
 nova_standard_Nova_String* nova_standard_Nova_String_0_Nova_substring(nova_standard_Nova_String* this, nova_standard_exception_Nova_ExceptionData* exceptionData, int nova_standard_Nova_String_Nova_start, int nova_standard_Nova_String_Nova_end)
 {
-	char* l1_Nova_buf;
+	char* l1_Nova_buf = (char*)nova_null;
 	
 	if (nova_standard_Nova_String_Nova_end - nova_standard_Nova_String_Nova_start == 0)
 	{
@@ -217,8 +217,8 @@ char nova_standard_Nova_String_Nova_charAt(nova_standard_Nova_String* this, nova
 
 nova_standard_Nova_String* nova_standard_Nova_String_Nova_trim(nova_standard_Nova_String* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
-	int l1_Nova_start;
-	int l1_Nova_end;
+	int l1_Nova_start = 0;
+	int l1_Nova_end = 0;
 	
 	l1_Nova_start = (int)(0);
 	l1_Nova_end = this->nova_standard_Nova_String_Nova_count - 1;
@@ -243,7 +243,7 @@ nova_standard_Nova_String* nova_standard_Nova_String_Nova_trim(nova_standard_Nov
 
 char nova_standard_Nova_String_Nova_containsChar(nova_standard_Nova_String* this, nova_standard_exception_Nova_ExceptionData* exceptionData, char nova_standard_Nova_String_Nova_needle, char* nova_standard_Nova_String_Nova_Chars, int nova_standard_Nova_String_Nova_count)
 {
-	int l2_Nova_i;
+	int l2_Nova_i = 0;
 	
 	l2_Nova_i = (int)(0);
 	for (; l2_Nova_i < nova_standard_Nova_String_Nova_count; l2_Nova_i++)
@@ -268,8 +268,8 @@ nova_standard_Nova_String* nova_standard_Nova_String_Nova_toUpperCase(nova_stand
 
 nova_standard_Nova_String* nova_standard_Nova_String_Nova_transform(nova_standard_Nova_String* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_Nova_String_closure3_Nova_transform nova_standard_Nova_String_Nova_transform, void* nova_standard_Nova_String_ref_Nova_transform)
 {
-	char* l1_Nova_newData;
-	int l2_Nova_i;
+	char* l1_Nova_newData = (char*)nova_null;
+	int l2_Nova_i = 0;
 	
 	l1_Nova_newData = (char*)NOVA_MALLOC(sizeof(nova_standard_primitive_number_Nova_Char) * this->nova_standard_Nova_String_Nova_count);
 	l2_Nova_i = (int)(0);
@@ -287,8 +287,8 @@ nova_standard_Nova_String* nova_standard_Nova_String_0_Nova_getDataBetween(nova_
 
 nova_standard_Nova_String* nova_standard_Nova_String_1_Nova_getDataBetween(nova_standard_Nova_String* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_Nova_String* nova_standard_Nova_String_Nova_before, nova_standard_Nova_String* nova_standard_Nova_String_Nova_after, int nova_standard_Nova_String_Nova_start)
 {
-	int l1_Nova_s;
-	int l1_Nova_e;
+	int l1_Nova_s = 0;
+	int l1_Nova_e = 0;
 	
 	l1_Nova_s = nova_standard_Nova_String_2_Nova_indexOf(this, exceptionData, nova_standard_Nova_String_Nova_before, nova_standard_Nova_String_Nova_start);
 	l1_Nova_e = nova_standard_Nova_String_2_Nova_indexOf(this, exceptionData, nova_standard_Nova_String_Nova_after, l1_Nova_s + 1);
@@ -301,7 +301,7 @@ nova_standard_Nova_String* nova_standard_Nova_String_1_Nova_getDataBetween(nova_
 
 int nova_standard_Nova_String_Nova_compareTo(nova_standard_Nova_String* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_Nova_String* nova_standard_Nova_String_Nova_other)
 {
-	int l2_Nova_i;
+	int l2_Nova_i = 0;
 	
 	l2_Nova_i = (int)(0);
 	for (; l2_Nova_i < this->nova_standard_Nova_String_Nova_count && l2_Nova_i < nova_standard_Nova_String_Nova_other->nova_standard_Nova_String_Nova_count; l2_Nova_i++)

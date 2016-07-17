@@ -71,7 +71,7 @@ void nova_standard_star_Nova_Window_Nova_destroy(nova_standard_star_Nova_Window*
 
 void nova_standard_star_Nova_Window_Nova_create(nova_standard_star_Nova_Window* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
-	nova_standard_star_Nova_WindowThread* l1_Nova_t;
+	nova_standard_star_Nova_WindowThread* l1_Nova_t = (nova_standard_star_Nova_WindowThread*)nova_null;
 	
 	l1_Nova_t = nova_standard_star_Nova_WindowThread_Nova_WindowThread(0, exceptionData, this);
 	nova_standard_thread_Nova_Thread_Nova_start((nova_standard_thread_Nova_Thread*)(l1_Nova_t), exceptionData);

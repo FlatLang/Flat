@@ -66,8 +66,8 @@ void example_Nova_Test_Nova_destroy(example_Nova_Test** this, nova_standard_exce
 
 void example_Nova_Test_Nova_main(example_Nova_Test* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_Nova_String** example_Nova_Test_Nova_args)
 {
-	nova_standard_datastruct_list_Nova_Stack* l1_Nova_s;
-	int l1_Nova_d;
+	nova_standard_datastruct_list_Nova_Stack* l1_Nova_s = (nova_standard_datastruct_list_Nova_Stack*)nova_null;
+	int l1_Nova_d = 0;
 	
 	l1_Nova_s = nova_standard_datastruct_list_Nova_Stack_Nova_Stack(0, exceptionData);
 	nova_standard_datastruct_list_Nova_Stack_Nova_push(l1_Nova_s, exceptionData, (nova_standard_Nova_Object*)(nova_standard_Nova_String_1_Nova_String(0, exceptionData, "How are you?")));

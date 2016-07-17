@@ -66,21 +66,21 @@ void example_Nova_SVGTest_Nova_destroy(example_Nova_SVGTest** this, nova_standar
 
 void example_Nova_SVGTest_Nova_main(example_Nova_SVGTest* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_Nova_String** example_Nova_SVGTest_Nova_args)
 {
-	nova_standard_svg_Nova_SVG* l1_Nova_s;
-	double l1_Nova_pi2;
-	int l1_Nova_numVerts;
-	double l1_Nova_coefficient;
-	int l1_Nova_numPoints;
-	nova_standard_time_Nova_Timer* l1_Nova_timer;
-	double* l1_Nova_points;
-	double l1_Nova_radius;
-	double l1_Nova_offset;
-	double l1_Nova_cx;
-	double l1_Nova_cy;
-	nova_standard_io_Nova_File* l1_Nova_f;
-	int l2_Nova_i;
-	int l6_Nova_i;
-	int l8_Nova_i;
+	nova_standard_svg_Nova_SVG* l1_Nova_s = (nova_standard_svg_Nova_SVG*)nova_null;
+	double l1_Nova_pi2 = 0;
+	int l1_Nova_numVerts = 0;
+	double l1_Nova_coefficient = 0;
+	int l1_Nova_numPoints = 0;
+	nova_standard_time_Nova_Timer* l1_Nova_timer = (nova_standard_time_Nova_Timer*)nova_null;
+	double* l1_Nova_points = (double*)nova_null;
+	double l1_Nova_radius = 0;
+	double l1_Nova_offset = 0;
+	double l1_Nova_cx = 0;
+	double l1_Nova_cy = 0;
+	nova_standard_io_Nova_File* l1_Nova_f = (nova_standard_io_Nova_File*)nova_null;
+	int l2_Nova_i = 0;
+	int l6_Nova_i = 0;
+	int l8_Nova_i = 0;
 	
 	l1_Nova_s = nova_standard_svg_Nova_SVG_Nova_SVG(0, exceptionData);
 	l1_Nova_pi2 = (double)(nova_standard_math_Nova_Math_Nova_PI * 2);
@@ -97,8 +97,8 @@ void example_Nova_SVGTest_Nova_main(example_Nova_SVGTest* this, nova_standard_ex
 	l2_Nova_i = (int)(0);
 	for (; l2_Nova_i < l1_Nova_numVerts; l2_Nova_i++)
 	{
-		double l2_Nova_rad;
-		float nova_zero_check5;
+		double l2_Nova_rad = 0;
+		float nova_zero_check5 = 0;
 		
 		nova_zero_check5 = (l1_Nova_numVerts * 1.0);
 		if (nova_zero_check5 == 0)
@@ -112,9 +112,9 @@ void example_Nova_SVGTest_Nova_main(example_Nova_SVGTest* this, nova_standard_ex
 	l6_Nova_i = (int)(0);
 	for (; l6_Nova_i < l1_Nova_numVerts; l6_Nova_i++)
 	{
-		double l6_Nova_x;
-		double l6_Nova_y;
-		nova_standard_svg_Nova_SVGCircle* l6_Nova_circle2;
+		double l6_Nova_x = 0;
+		double l6_Nova_y = 0;
+		nova_standard_svg_Nova_SVGCircle* l6_Nova_circle2 = (nova_standard_svg_Nova_SVGCircle*)nova_null;
 		
 		l6_Nova_x = l1_Nova_points[l6_Nova_i * 2 + 0];
 		l6_Nova_y = l1_Nova_points[l6_Nova_i * 2 + 1];
@@ -126,9 +126,9 @@ void example_Nova_SVGTest_Nova_main(example_Nova_SVGTest* this, nova_standard_ex
 	l8_Nova_i = (int)(0);
 	for (; l8_Nova_i < l1_Nova_numPoints; l8_Nova_i++)
 	{
-		int l8_Nova_rand;
-		double l8_Nova_x;
-		double l8_Nova_y;
+		int l8_Nova_rand = 0;
+		double l8_Nova_x = 0;
+		double l8_Nova_y = 0;
 		
 		l8_Nova_rand = nova_standard_math_Nova_Math_Nova_random(0, exceptionData, l1_Nova_numVerts);
 		l8_Nova_x = l1_Nova_points[l8_Nova_rand * 2 + 0];
@@ -137,7 +137,7 @@ void example_Nova_SVGTest_Nova_main(example_Nova_SVGTest* this, nova_standard_ex
 		l1_Nova_cy = l1_Nova_cy - (l1_Nova_cy - l8_Nova_y) * l1_Nova_coefficient;
 		if (l8_Nova_i > 15)
 		{
-			nova_standard_svg_Nova_SVGCircle* l9_Nova_circle;
+			nova_standard_svg_Nova_SVGCircle* l9_Nova_circle = (nova_standard_svg_Nova_SVGCircle*)nova_null;
 			
 			if ((l8_Nova_i + 1) % 1000 == 0)
 			{

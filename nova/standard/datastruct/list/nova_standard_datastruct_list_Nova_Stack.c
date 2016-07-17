@@ -76,7 +76,7 @@ void nova_standard_datastruct_list_Nova_Stack_Nova_destroy(nova_standard_datastr
 
 void nova_standard_datastruct_list_Nova_Stack_Nova_push(nova_standard_datastruct_list_Nova_Stack* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_Nova_Object* nova_standard_datastruct_list_Nova_Stack_Nova_data)
 {
-	nova_standard_datastruct_list_Nova_ListNode* l1_Nova_node;
+	nova_standard_datastruct_list_Nova_ListNode* l1_Nova_node = (nova_standard_datastruct_list_Nova_ListNode*)nova_null;
 	
 	l1_Nova_node = nova_standard_datastruct_list_Nova_ListNode_Nova_ListNode(0, exceptionData, nova_standard_datastruct_list_Nova_Stack_Nova_data);
 	l1_Nova_node->nova_standard_datastruct_list_Nova_ListNode_Nova_next = this->prv->nova_standard_datastruct_list_Nova_Stack_Nova_top;
@@ -86,7 +86,7 @@ void nova_standard_datastruct_list_Nova_Stack_Nova_push(nova_standard_datastruct
 
 nova_standard_Nova_Object* nova_standard_datastruct_list_Nova_Stack_Nova_pop(nova_standard_datastruct_list_Nova_Stack* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
-	nova_standard_Nova_Object* l1_Nova_data;
+	nova_standard_Nova_Object* l1_Nova_data = (nova_standard_Nova_Object*)nova_null;
 	
 	if (nova_standard_datastruct_list_Nova_Stack_Accessor_Nova_empty(this, exceptionData))
 	{
