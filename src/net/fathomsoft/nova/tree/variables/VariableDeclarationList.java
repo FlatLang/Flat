@@ -2,11 +2,7 @@ package net.fathomsoft.nova.tree.variables;
 
 import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.TestContext;
-import net.fathomsoft.nova.tree.List;
-import net.fathomsoft.nova.tree.LocalDeclaration;
-import net.fathomsoft.nova.tree.Node;
-import net.fathomsoft.nova.tree.NovaMethodDeclaration;
-import net.fathomsoft.nova.tree.Scope;
+import net.fathomsoft.nova.tree.*;
 import net.fathomsoft.nova.util.Location;
 
 /**
@@ -120,9 +116,20 @@ public class VariableDeclarationList extends List
 	{
 		for (int i = 0; i < getNumChildren(); i++)
 		{
-			Node child = getChild(i);
+			LocalDeclaration child = (LocalDeclaration)getChild(i);
 			
-			child.generateCSource(builder);
+			child.generateCDeclarationFragment(builder).append(" = ");
+			
+			if (child.isPrimitive())
+			{
+				builder.append(0);
+			}
+			else
+			{
+				builder.append(child.generateCTypeCast()).append(Value.NULL_IDENTIFIER);
+			}
+			
+			builder.append(";\n");
 		}
 		
 		if (getNumChildren() > 0)
