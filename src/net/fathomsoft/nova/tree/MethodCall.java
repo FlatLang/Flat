@@ -952,6 +952,11 @@ public class MethodCall extends Variable
 			SyntaxUtils.isVisible(getParentClass(), ((MethodDeclaration)method));
 			SyntaxMessage.error("Method '" + method.getName() + "' is not visible", this);
 		}
+		if (isAccessedWithinStaticContext() && !method.isStatic())
+		{
+			isAccessedWithinStaticContext();
+			SyntaxMessage.error("Method '" + method.getName() + "' cannot be called from within a static context", this);
+		}
 	}
 	
 	/**
