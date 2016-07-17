@@ -106,7 +106,20 @@ public class Priority extends IValue implements Accessible
 	@Override
 	public StringBuilder generateCSourceFragment(StringBuilder builder)
 	{
-		return builder.append('(').append(getContents().generateCSourceFragment()).append(')').append(generateChildrenCSourceFragment());
+		if (isSpecialFragment())
+		{
+			return generateSpecialFragment(builder);
+		}
+		else
+		{
+			return builder.append('(').append(getContents().generateCSourceFragment()).append(')').append(generateChildrenCSourceFragment());
+		}
+	}
+	
+	@Override
+	public StringBuilder generateCUseOutput(StringBuilder builder)
+	{
+		return builder.append('(').append(getContents().generateCSourceFragment()).append(')');
 	}
 	
 	/**
