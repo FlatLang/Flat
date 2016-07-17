@@ -59,8 +59,8 @@ public class SyntaxTree
 	{
 		IfStatement.class, ElseStatement.class, Loop.class, Case.class,
 		Match.class, Default.class, Fallthrough.class, Priority.class,
-		Return.class, Assignment.class, TernaryOperation.class, BinaryOperation.class,
-		Super.class, Annotation.class
+		Return.class, Assignment.class, IntRange.class, TernaryOperation.class,
+		BinaryOperation.class, Super.class, Annotation.class
 	};
 	
 	public static final Class<?> SCOPE_CHILD_DECODE[] = new Class<?>[]
@@ -523,6 +523,7 @@ public class SyntaxTree
 				else if (node == null && type == Import.class) node = Import.decodeStatement(parent, statement, location, require);
 				else if (node == null && type == Instantiation.class) node = Instantiation.decodeStatement(parent, statement, location, require);
 				else if (node == null && type == Interface.class) node = Interface.decodeStatement(parent, statement, location, require);
+				else if (node == null && type == IntRange.class) node = IntRange.decodeStatement(parent, statement, location, require);
 				else if (node == null && type == Literal.class) node = Literal.decodeStatement(parent, statement, location, require);
 				else if (node == null && type == Loop.class) node = Loop.decodeStatement(parent, statement, location, require);
 				else if (node == null && type == MutatorMethod.class) node = MutatorMethod.decodeStatement(parent, statement, location, require);
@@ -620,6 +621,7 @@ public class SyntaxTree
 		else if (type.isAssignableFrom(Fallthrough.class) && (node = Fallthrough.decodeStatement(parent, statement, location, require)) != null);
 		else if (type.isAssignableFrom(Import.class) && (node = Import.decodeStatement(parent, statement, location, require)) != null);
 		else if (type.isAssignableFrom(Interface.class) && (node = Interface.decodeStatement(parent, statement, location, require)) != null);
+		else if (type.isAssignableFrom(IntRange.class) && (node = IntRange.decodeStatement(parent, statement, location, require)) != null);
 		else if (type.isAssignableFrom(Literal.class) && (node = Literal.decodeStatement(parent, statement, location, require)) != null);
 		else if (type.isAssignableFrom(LocalDeclaration.class) && (node = LocalDeclaration.decodeStatement(parent, statement, location, require)) != null);
 //		else if (type.isAssignableFrom(Null.class) && (node = Null.decodeStatement(parent, statement, location, require)) != null);
