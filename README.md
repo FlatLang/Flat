@@ -68,6 +68,6 @@ __Optional arguments to the Compiler Include__
 
 The default C compiler for Windows is GCC because it is more stable.
 
-
+verbosity is the devil
 
 © 2014-2016 Fathomsoft
