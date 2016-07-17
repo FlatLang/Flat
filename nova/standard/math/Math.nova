@@ -22,9 +22,12 @@ public class Math
 	
 	public static max(Long a, Long b) -> Long
 	{
-	    if (a > b) return a
-	    
-	    return b
+	    return a > b ? a : b
+	}
+	
+	public static min(Long a, Long b) -> Long
+	{
+	    return a < b ? a : b
 	}
 	
 	public static sign(Long num) -> Byte
