@@ -106,58 +106,6 @@ public abstract class Identifier extends Value implements Accessible
 	}
 	
 	/**
-	 * If the Value accesses a method call, generate a specialized
-	 * output.
-	 * 
-	 * @param builder The StringBuilder to append the data to.
-	 * @return A specialized String generation.
-	 */
-	public StringBuilder generateSpecialFragment(StringBuilder builder)
-	{
-		Accessible current = getLastAccessedNode();
-		
-		while (!((Value)current).isSpecial())
-		{
-			current = current.getAccessingNode();
-		}
-
-		return ((Value)current).generateCSourceFragment(builder);
-	}
-	
-	/**
-	 * Get whether or not the Value accesses a method call.
-	 * 
-	 * @return Whether or not the Value accesses a method call.
-	 */
-	public boolean isSpecialFragment()
-	{
-//		Identifier lastAccessed = getLastAccessedNode();
-//		
-//		if (lastAccessed == null)
-//		{
-//			return false;
-//		}
-//		
-//		Identifier next = (Identifier)lastAccessed.getNextAccessingOfType(new Class<?>[] { MethodCall.class, Closure.class });
-//		
-//		return next != null && next.isSpecial();
-		
-		Accessible current = getLastAccessedNode();
-		
-		while (current != this && current != null)
-		{
-			if (current.toValue().isSpecial())
-			{
-				return true;
-			}
-			
-			current = current.getAccessingNode();
-		}
-		
-		return false;
-	}
-	
-	/**
 	 * @see net.fathomsoft.nova.tree.Node#generateNovaInput(StringBuilder, boolean)
 	 */
 	@Override

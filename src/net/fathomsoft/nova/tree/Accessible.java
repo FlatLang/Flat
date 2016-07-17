@@ -426,6 +426,58 @@ public interface Accessible
 	}
 	
 	/**
+	 * Get whether or not the Value accesses a method call.
+	 *
+	 * @return Whether or not the Value accesses a method call.
+	 */
+	public default boolean isSpecialFragment()
+	{
+//		Identifier lastAccessed = getLastAccessedNode();
+//		
+//		if (lastAccessed == null)
+//		{
+//			return false;
+//		}
+//		
+//		Identifier next = (Identifier)lastAccessed.getNextAccessingOfType(new Class<?>[] { MethodCall.class, Closure.class });
+//		
+//		return next != null && next.isSpecial();
+		
+		Accessible current = getLastAccessedNode();
+		
+		while (current != this && current != null)
+		{
+			if (current.toValue().isSpecial())
+			{
+				return true;
+			}
+			
+			current = current.getAccessingNode();
+		}
+		
+		return false;
+	}
+	
+	/**
+	 * If the Value accesses a method call, generate a specialized
+	 * output.
+	 *
+	 * @param builder The StringBuilder to append the data to.
+	 * @return A specialized String generation.
+	 */
+	public default StringBuilder generateSpecialFragment(StringBuilder builder)
+	{
+		Accessible current = getLastAccessedNode();
+		
+		while (!((Value)current).isSpecial())
+		{
+			current = current.getAccessingNode();
+		}
+		
+		return ((Value)current).generateCSourceFragment(builder);
+	}
+	
+	/**
 	 * Get the Value that returns a value if it is used in an
 	 * expression.<br>
 	 * <br>
