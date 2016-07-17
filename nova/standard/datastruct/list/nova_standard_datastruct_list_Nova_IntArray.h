@@ -20,9 +20,9 @@ typedef char (*nova_standard_datastruct_list_Nova_IntArray_closure9_Nova_anyFunc
 typedef char (*nova_standard_datastruct_list_Nova_IntArray_closure10_Nova_allFunc)(void*, nova_standard_exception_Nova_ExceptionData*, int);
 typedef char (*nova_standard_datastruct_list_Nova_IntArray_closure11_Nova_allFunc)(void*, nova_standard_exception_Nova_ExceptionData*, int);
 typedef char (*nova_standard_datastruct_list_Nova_IntArray_closure12_Nova_allFunc)(void*, nova_standard_exception_Nova_ExceptionData*, int);
-typedef char (*nova_standard_datastruct_list_Nova_IntArray_closure13_Nova_filterFunc)(void*, nova_standard_exception_Nova_ExceptionData*, int);
-typedef char (*nova_standard_datastruct_list_Nova_IntArray_closure14_Nova_filterFunc)(void*, nova_standard_exception_Nova_ExceptionData*, int);
-typedef char (*nova_standard_datastruct_list_Nova_IntArray_closure15_Nova_filterFunc)(void*, nova_standard_exception_Nova_ExceptionData*, int);
+typedef char (*nova_standard_datastruct_list_Nova_IntArray_closure13_Nova_filterFunc)(void*, nova_standard_exception_Nova_ExceptionData*, int, int, nova_standard_datastruct_list_Nova_IntArray*);
+typedef char (*nova_standard_datastruct_list_Nova_IntArray_closure14_Nova_filterFunc)(void*, nova_standard_exception_Nova_ExceptionData*, int, int, nova_standard_datastruct_list_Nova_IntArray*);
+typedef char (*nova_standard_datastruct_list_Nova_IntArray_closure15_Nova_filterFunc)(void*, nova_standard_exception_Nova_ExceptionData*, int, int, nova_standard_datastruct_list_Nova_IntArray*);
 typedef char (*nova_standard_datastruct_list_Nova_IntArray_closure16_Nova_func)(void*, nova_standard_exception_Nova_ExceptionData*, int);
 typedef char (*nova_standard_datastruct_list_Nova_IntArray_closure17_Nova_func)(void*, nova_standard_exception_Nova_ExceptionData*, int);
 typedef char (*nova_standard_datastruct_list_Nova_IntArray_closure18_Nova_func)(void*, nova_standard_exception_Nova_ExceptionData*, int);
@@ -45,6 +45,7 @@ typedef char (*nova_standard_datastruct_list_Nova_IntArray_closure18_Nova_func)(
 #include <nova/standard/primitive/number/nova_standard_primitive_number_Nova_Char.h>
 #include <nova/standard/primitive/nova_standard_primitive_Nova_Bool.h>
 #include <nova/standard/datastruct/list/nova_standard_datastruct_list_Nova_Array.h>
+#include <nova/standard/datastruct/list/nova_standard_datastruct_list_Nova_IntRange.h>
 #include <nova/standard/gc/nova_standard_gc_Nova_GC.h>
 #include <nova/standard/nova_standard_Nova_Object.h>
 #include <nova/standard/nova_standard_Nova_String.h>

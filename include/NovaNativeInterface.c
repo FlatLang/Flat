@@ -192,6 +192,27 @@ nova_env novaEnv = {
 },
 
 {
+&nova_standard_datastruct_list_Nova_IntRange_0_Nova_toArray,
+&nova_standard_datastruct_list_Nova_IntRange_0_Nova_forEach,
+&nova_standard_datastruct_list_Nova_IntRange_0_Nova_map,
+&nova_standard_datastruct_list_Nova_IntRange_0_Nova_any,
+&nova_standard_datastruct_list_Nova_IntRange_0_Nova_all,
+&nova_standard_datastruct_list_Nova_IntRange_0_Nova_filter,
+&nova_standard_datastruct_list_Nova_IntRange_0_Nova_take,
+&nova_standard_datastruct_list_Nova_IntRange_0_Nova_skip,
+&nova_standard_datastruct_list_Nova_IntRange_0_Nova_firstWhere,
+&nova_standard_datastruct_list_Nova_IntRange_0_Nova_reverse,
+&nova_standard_datastruct_list_Nova_IntRange_0_Nova_join,
+&nova_standard_datastruct_list_Nova_IntRange_0_Nova_IntRange,
+&nova_standard_datastruct_list_Nova_IntRange_1_Nova_IntRange,
+},
+
+{
+&nova_standard_datastruct_list_Nova_IntRangeIterator_0_Nova_reset,
+&nova_standard_datastruct_list_Nova_IntRangeIterator_Nova_IntRangeIterator,
+},
+
+{
 },
 
 {
@@ -379,6 +400,7 @@ nova_env novaEnv = {
 
 {
 &nova_standard_math_Nova_Math_Nova_max,
+&nova_standard_math_Nova_Math_Nova_min,
 &nova_standard_math_Nova_Math_Nova_sign,
 &nova_standard_math_Nova_Math_Nova_random,
 &nova_standard_math_Nova_Math_0_Nova_abs,
