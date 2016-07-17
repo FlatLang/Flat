@@ -1,8 +1,7 @@
-package net.fathomsoft.nova.tree.switches;
+package net.fathomsoft.nova.tree.match;
 
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.error.SyntaxMessage;
-import net.fathomsoft.nova.tree.Assignment;
 import net.fathomsoft.nova.tree.Node;
 import net.fathomsoft.nova.tree.variables.Variable;
 import net.fathomsoft.nova.util.Location;
@@ -14,7 +13,7 @@ import net.fathomsoft.nova.util.Location;
  * @since	v0.2.37 Oct 17, 2014 at 11:46:55 PM
  * @version	v0.2.38 Dec 6, 2014 at 5:19:17 PM
  */
-public class Fallthrough extends Node implements SwitchChild
+public class Fallthrough extends Node implements MatchChild
 {
 	public static final String IDENTIFIER = "fallthrough";
 	

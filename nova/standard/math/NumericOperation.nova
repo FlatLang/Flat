@@ -178,7 +178,7 @@ public class NumericOperation extends NumericOperand<Object>
 	
 	static getOperatorRank(Char operator) -> Int
 	{
-		switch operator
+		match operator
 			case '-' fallthrough
 			case '+' return ADDITION
 			case '/' fallthrough

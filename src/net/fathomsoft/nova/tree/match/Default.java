@@ -1,22 +1,20 @@
-package net.fathomsoft.nova.tree.switches;
+package net.fathomsoft.nova.tree.match;
 
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.error.SyntaxMessage;
-import net.fathomsoft.nova.tree.Assignment;
 import net.fathomsoft.nova.tree.Node;
-import net.fathomsoft.nova.tree.Scope;
 import net.fathomsoft.nova.util.Bounds;
 import net.fathomsoft.nova.util.Location;
 import net.fathomsoft.nova.util.StringUtils;
 
 /**
- * {@link SwitchCase} extension that represents
+ * {@link MatchCase} extension that represents
  * 
  * @author	Braden Steffaniak
  * @since	v0.2.37 Oct 17, 2014 at 7:25:10 PM
  * @version	v0.2.38 Dec 6, 2014 at 5:19:17 PM
  */
-public class Default extends SwitchCase
+public class Default extends MatchCase
 {
 	public static final String IDENTIFIER = "default";
 	

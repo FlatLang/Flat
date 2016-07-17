@@ -3,7 +3,6 @@ package net.fathomsoft.nova;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -66,7 +65,7 @@ import net.fathomsoft.nova.tree.VTable;
 import net.fathomsoft.nova.tree.Value;
 import net.fathomsoft.nova.tree.WhileLoop;
 import net.fathomsoft.nova.tree.exceptionhandling.Exception;
-import net.fathomsoft.nova.tree.switches.Switch;
+import net.fathomsoft.nova.tree.match.Match;
 import net.fathomsoft.nova.util.*;
 
 import static java.util.Arrays.stream;
@@ -276,8 +275,8 @@ public class Nova
 				"-keepc",
 				"-single-thread",
 				"-main",
-				"example/Lab",
-//				"stabilitytest/StabilityTest",
+//				"example/Lab",
+				"stabilitytest/StabilityTest",
 //				"-nogc",
 //				"-no-c-output",
 //				"-dry",
@@ -2040,7 +2039,7 @@ public class Nova
 																																																				
 																																																				if (error == null)
 																																																				{
-																																																					error = Switch.test(context);
+																																																					error = Match.test(context);
 																																																				}
 																																																			}
 																																																		}

@@ -13,27 +13,27 @@ public class SyntaxStability extends StabilityTestCase
 	{
 		checkLoops()
 		checkUntil()
-		checkSwitchStatements()
+		checkMatchStatements()
 		checkMultipleReturnValues()
 		checkIterators()
 		checkTernary()
 		checkElvis()
 	}
 	
-	checkSwitchStatements()
+	checkMatchStatements()
 	{
-		Console.write("Checking simple switch statement... ")
+		Console.write("Checking simple match statement... ")
 		
 		Int  num    = 3
 		Bool worked = false
 		
-		switch (num)
+		match (num)
 		{
-			case 1 program.fail("Switch accepted incorrect case")
-			case 2 program.fail("Switch accepted incorrect case")
+			case 1 program.fail("Match accepted incorrect case")
+			case 2 program.fail("Match accepted incorrect case")
 			case 3 worked = true
-			case 4 program.fail("Switch accepted incorrect case")
-			default program.fail("Switch failed to accept the correct case")
+			case 4 program.fail("Match accepted incorrect case")
+			default program.fail("Match failed to accept the correct case")
 		}
 		
 		if (!worked)
@@ -43,21 +43,21 @@ public class SyntaxStability extends StabilityTestCase
 		
 		Console.writeLine("OK")
 		
-		Console.write("Checking simple switch statement with indentation... ")
+		Console.write("Checking simple match statement with indentation... ")
 		
 		num    = 3
 		worked = false
 		
-		switch (num)
+		match (num)
 			case 1
-				program.fail("Switch accepted incorrect case")
-			case 2	program.fail("Switch accepted incorrect case")
+				program.fail("Match accepted incorrect case")
+			case 2	program.fail("Match accepted incorrect case")
 			case 3
 				worked = true
 			case 4
-				program.fail("Switch accepted incorrect case")
+				program.fail("Match accepted incorrect case")
 			default
-				program.fail("Switch failed to accept the correct case")
+				program.fail("Match failed to accept the correct case")
 		
 		if (!worked)
 		{
@@ -66,20 +66,20 @@ public class SyntaxStability extends StabilityTestCase
 		
 		Console.writeLine("OK")
 		
-		Console.write("Checking simple switch statement with scopes... ")
+		Console.write("Checking simple match statement with scopes... ")
 		
 		num    = 3
 		worked = false
 		
-		switch (num)
+		match (num)
 		{
 			case 1
 			{
-				program.fail("Switch accepted incorrect case")
+				program.fail("Match accepted incorrect case")
 			}
 			case 2
 			{
-				program.fail("Switch accepted incorrect case")
+				program.fail("Match accepted incorrect case")
 			}
 			case 3
 			{
@@ -87,11 +87,11 @@ public class SyntaxStability extends StabilityTestCase
 			}
 			case 4
 			{
-				program.fail("Switch accepted incorrect case")
+				program.fail("Match accepted incorrect case")
 			}
 			default
 			{
-				program.fail("Switch failed to accept the correct case")
+				program.fail("Match failed to accept the correct case")
 			}
 		}
 		
@@ -102,21 +102,21 @@ public class SyntaxStability extends StabilityTestCase
 		
 		Console.writeLine("OK")
 		
-		Console.write("Checking switch statement with variable case values... ")
+		Console.write("Checking match statement with variable case values... ")
 		
 		Int val = 1
 		num     = 3
 		worked  = false
 		
-		switch (num)
+		match (num)
 		{
 			case (val++)
 			{
-				program.fail("Switch accepted incorrect case")
+				program.fail("Match accepted incorrect case")
 			}
 			case val++
 			{
-				program.fail("Switch accepted incorrect case")
+				program.fail("Match accepted incorrect case")
 			}
 			case (val++)
 			{
@@ -124,11 +124,11 @@ public class SyntaxStability extends StabilityTestCase
 			}
 			case val++
 			{
-				program.fail("Switch accepted incorrect case")
+				program.fail("Match accepted incorrect case")
 			}
 			default
 			{
-				program.fail("Switch failed to accept the correct case")
+				program.fail("Match failed to accept the correct case")
 			}
 		}
 		
@@ -139,7 +139,7 @@ public class SyntaxStability extends StabilityTestCase
 		
 		Console.writeLine("OK")
 		
-		Console.write("Checking switch statement with variable case values and fallthrough... ")
+		Console.write("Checking match statement with variable case values and fallthrough... ")
 		
 		val    = 1
 		num    = 3
@@ -147,15 +147,15 @@ public class SyntaxStability extends StabilityTestCase
 		
 		Bool worked2 = false
 		
-		switch (num++)
+		match (num++)
 		{
 			case val++
 			{
-				program.fail("Switch accepted incorrect case")
+				program.fail("Match accepted incorrect case")
 			}
 			case val++
 			{
-				program.fail("Switch accepted incorrect case")
+				program.fail("Match accepted incorrect case")
 			}
 			case val++
 			{
@@ -168,7 +168,7 @@ public class SyntaxStability extends StabilityTestCase
 			}
 			default
 			{
-				program.fail("Switch failed to accept the correct case")
+				program.fail("Match failed to accept the correct case")
 			}
 		}
 		

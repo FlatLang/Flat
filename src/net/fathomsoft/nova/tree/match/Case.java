@@ -1,12 +1,9 @@
-package net.fathomsoft.nova.tree.switches;
+package net.fathomsoft.nova.tree.match;
 
-import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.error.SyntaxMessage;
-import net.fathomsoft.nova.tree.Assignment;
 import net.fathomsoft.nova.tree.Node;
 import net.fathomsoft.nova.tree.Return;
-import net.fathomsoft.nova.tree.Scope;
 import net.fathomsoft.nova.tree.SyntaxTree;
 import net.fathomsoft.nova.tree.Value;
 import net.fathomsoft.nova.util.Bounds;
@@ -15,13 +12,13 @@ import net.fathomsoft.nova.util.StringUtils;
 import net.fathomsoft.nova.util.SyntaxUtils;
 
 /**
- * {@link SwitchCase} extension that represents
+ * {@link MatchCase} extension that represents
  * 
  * @author	Braden Steffaniak
  * @since	v0.2.37 Oct 17, 2014 at 7:25:10 PM
  * @version	v0.2.38 Dec 6, 2014 at 5:19:17 PM
  */
-public class Case extends SwitchCase
+public class Case extends MatchCase
 {
 	public static final String IDENTIFIER = "case";
 	
@@ -40,7 +37,7 @@ public class Case extends SwitchCase
 	}
 	
 	/**
-	 * Get the {@link net.fathomsoft.nova.tree.switches.Fallthrough Fallthrough}
+	 * Get the {@link net.fathomsoft.nova.tree.match.Fallthrough Fallthrough}
 	 * instance that is paired with this switch case (if a fallthrough exists)
 	 * 
 	 * @return The Fallthrough instance.

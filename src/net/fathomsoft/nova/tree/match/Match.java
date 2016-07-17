@@ -1,19 +1,16 @@
-package net.fathomsoft.nova.tree.switches;
+package net.fathomsoft.nova.tree.match;
 
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.error.SyntaxMessage;
-import net.fathomsoft.nova.tree.AccessorMethod;
 import net.fathomsoft.nova.tree.ControlStatement;
 import net.fathomsoft.nova.tree.Literal;
 import net.fathomsoft.nova.tree.Node;
-import net.fathomsoft.nova.tree.Scope;
 import net.fathomsoft.nova.tree.SyntaxTree;
 import net.fathomsoft.nova.tree.Value;
 import net.fathomsoft.nova.tree.variables.Variable;
 import net.fathomsoft.nova.util.Location;
 import net.fathomsoft.nova.util.StringUtils;
-import net.fathomsoft.nova.util.SyntaxUtils;
 
 /**
  * {@link Node} extension that represents
@@ -22,16 +19,16 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * @since	v0.2.37 Oct 17, 2014 at 7:25:10 PM
  * @version	v0.2.38 Dec 6, 2014 at 5:19:17 PM
  */
-public class Switch extends ControlStatement
+public class Match extends ControlStatement
 {
 	private boolean conventional;
 	
-	public static final String IDENTIFIER = "switch";
+	public static final String IDENTIFIER = "match";
 	
 	/**
 	 * @see net.fathomsoft.nova.tree.Node#Node(Node, Location)
 	 */
-	public Switch(Node temporaryParent, Location locationIn)
+	public Match(Node temporaryParent, Location locationIn)
 	{
 		super(temporaryParent, locationIn);
 		
@@ -48,7 +45,7 @@ public class Switch extends ControlStatement
 		
 		Node ancestor = node.getAncestorWithScope();
 		
-		return ancestor instanceof SwitchCase;
+		return ancestor instanceof MatchCase;
 	}
 	
 	/**
@@ -135,7 +132,7 @@ public class Switch extends ControlStatement
 			}
 			else
 			{
-				SyntaxMessage.error("Switch statements only allow 'case' and 'default' statements as children", node);
+				SyntaxMessage.error("Match statements only allow 'case' and 'default' statements as children", node);
 			}
 		}
 		
@@ -250,7 +247,7 @@ public class Switch extends ControlStatement
 	}
 	
 	/**
-	 * Decode the given statement into a {@link Switch} instance, if
+	 * Decode the given statement into a {@link Match} instance, if
 	 * possible. If it is not possible, this method returns null.<br>
 	 * <br>
 	 * Example inputs include:<br>
@@ -262,19 +259,19 @@ public class Switch extends ControlStatement
 	 * 
 	 * @param parent The parent node of the statement.
 	 * @param statement The statement to try to decode into a
-	 * 		{@link Switch} instance.
+	 * 		{@link Match} instance.
 	 * @param location The location of the statement in the source code.
 	 * @param require Whether or not to throw an error if anything goes wrong.
 	 * @return The generated node, if it was possible to translated it
-	 * 		into a {@link Switch}.
+	 * 		into a {@link Match}.
 	 */
-	public static Switch decodeStatement(Node parent, String statement, Location location, boolean require)
+	public static Match decodeStatement(Node parent, String statement, Location location, boolean require)
 	{
 		if (StringUtils.findNextWord(statement).equals(IDENTIFIER))
 		{
 			int index = StringUtils.findNextNonWhitespaceIndex(statement, IDENTIFIER.length());//statement.indexOf('(', IDENTIFIER.length());
 			
-			Switch n = new Switch(parent, location);
+			Match n = new Match(parent, location);
 			
 			if (index < 0)
 			{
@@ -352,9 +349,9 @@ public class Switch extends ControlStatement
 	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location, boolean)
 	 */
 	@Override
-	public Switch clone(Node temporaryParent, Location locationIn, boolean cloneChildren)
+	public Match clone(Node temporaryParent, Location locationIn, boolean cloneChildren)
 	{
-		Switch node = new Switch(temporaryParent, locationIn);
+		Match node = new Match(temporaryParent, locationIn);
 		
 		return cloneTo(node, cloneChildren);
 	}
@@ -362,19 +359,19 @@ public class Switch extends ControlStatement
 	/**
 	 * @see net.fathomsoft.nova.tree.Node#cloneTo(Node)
 	 */
-	public Switch cloneTo(Switch node)
+	public Match cloneTo(Match node)
 	{
 		return cloneTo(node, true);
 	}
 	
 	/**
-	 * Fill the given {@link Switch} with the data that is in the
+	 * Fill the given {@link Match} with the data that is in the
 	 * specified node.
 	 * 
 	 * @param node The node to copy the data into.
 	 * @return The cloned node.
 	 */
-	public Switch cloneTo(Switch node, boolean cloneChildren)
+	public Match cloneTo(Match node, boolean cloneChildren)
 	{
 		super.cloneTo(node, cloneChildren);
 		
@@ -382,7 +379,7 @@ public class Switch extends ControlStatement
 	}
 	
 	/**
-	 * Test the {@link Switch} class type to make sure everything
+	 * Test the {@link Match} class type to make sure everything
 	 * is working properly.
 	 * 
 	 * @return The error output, if there was an error. If the test was
@@ -392,11 +389,11 @@ public class Switch extends ControlStatement
 	{
 		context.method.addChild(SyntaxTree.decodeScopeContents(context.method, "Int num = 3", Location.INVALID));
 		
-		Switch s = decodeStatement(context.method, "switch (num)", Location.INVALID, false);
+		Match s = decodeStatement(context.method, IDENTIFIER + " (num)", Location.INVALID, false);
 		
 		if (s == null)
 		{
-			return "Could not decode switch statement with an Int";
+			return "Could not decode " + IDENTIFIER + " statement with an Int";
 		}
 		
 		Case c = Case.decodeStatement(s, "case 1", Location.INVALID, false);

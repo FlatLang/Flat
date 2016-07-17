@@ -1,4 +1,4 @@
-package net.fathomsoft.nova.tree.switches;
+package net.fathomsoft.nova.tree.match;
 
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.ValidationResult;
@@ -15,12 +15,12 @@ import net.fathomsoft.nova.util.Location;
  * @since	v0.2.37 Oct 17, 2014 at 11:46:55 PM
  * @version	v0.2.38 Dec 6, 2014 at 5:19:17 PM
  */
-public abstract class SwitchCase extends Node implements SwitchChild
+public abstract class MatchCase extends Node implements MatchChild
 {
 	/**
 	 * @see net.fathomsoft.nova.tree.Node#Node(Node, Location)
 	 */
-	public SwitchCase(Node temporaryParent, Location locationIn)
+	public MatchCase(Node temporaryParent, Location locationIn)
 	{
 		super(temporaryParent, locationIn);
 		
@@ -30,7 +30,7 @@ public abstract class SwitchCase extends Node implements SwitchChild
 	}
 	
 	/**
-	 * Get the String that is used to identify the specified SwitchCase.<br>
+	 * Get the String that is used to identify the specified MatchCase.<br>
 	 * <br>
 	 * Example outputs:
 	 * <ul>
@@ -38,7 +38,7 @@ public abstract class SwitchCase extends Node implements SwitchChild
 	 * 	<li>default</li>
 	 * </ul>
 	 * 
-	 * @return The String used to identify the SwitchCase in the source code.
+	 * @return The String used to identify the MatchCase in the source code.
 	 */
 	public abstract String getIdentifier();
 	
@@ -75,9 +75,9 @@ public abstract class SwitchCase extends Node implements SwitchChild
 		
 		if (phase == SyntaxTree.PHASE_METHOD_CONTENTS)
 		{
-			if (!(getParent().getAncestorWithScope() instanceof Switch))
+			if (!(getParent().getAncestorWithScope() instanceof Match))
 			{
-				SyntaxMessage.error(getIdentifier() + " statements must be inside " + Switch.IDENTIFIER + " scopes", this);
+				SyntaxMessage.error(getIdentifier() + " statements must be inside " + Match.IDENTIFIER + " scopes", this);
 			}
 		}
 		
@@ -85,7 +85,7 @@ public abstract class SwitchCase extends Node implements SwitchChild
 	}
 	
 	/**
-	 * Test the {@link SwitchCase} class type to make sure everything
+	 * Test the {@link MatchCase} class type to make sure everything
 	 * is working properly.
 	 * 
 	 * @return The error output, if there was an error. If the test was

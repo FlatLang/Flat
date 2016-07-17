@@ -16,10 +16,10 @@ import net.fathomsoft.nova.tree.exceptionhandling.Throw;
 import net.fathomsoft.nova.tree.exceptionhandling.Try;
 import net.fathomsoft.nova.tree.lambda.LambdaExpression;
 import net.fathomsoft.nova.tree.lambda.LambdaMethodDeclaration;
-import net.fathomsoft.nova.tree.switches.Case;
-import net.fathomsoft.nova.tree.switches.Default;
-import net.fathomsoft.nova.tree.switches.Fallthrough;
-import net.fathomsoft.nova.tree.switches.Switch;
+import net.fathomsoft.nova.tree.match.Case;
+import net.fathomsoft.nova.tree.match.Default;
+import net.fathomsoft.nova.tree.match.Fallthrough;
+import net.fathomsoft.nova.tree.match.Match;
 import net.fathomsoft.nova.tree.variables.Array;
 import net.fathomsoft.nova.tree.variables.ArrayAccess;
 import net.fathomsoft.nova.tree.variables.FieldDeclaration;
@@ -58,14 +58,14 @@ public class SyntaxTree
 	private static final Class<?> PRE_VALUE_DECODE[] = new Class<?>[]
 	{
 		IfStatement.class, ElseStatement.class, Loop.class, Case.class,
-		Switch.class, Default.class, Fallthrough.class, Priority.class,
+		Match.class, Default.class, Fallthrough.class, Priority.class,
 		Return.class, Assignment.class, TernaryOperation.class, BinaryOperation.class,
 		Super.class, Annotation.class
 	};
 	
 	public static final Class<?> SCOPE_CHILD_DECODE[] = new Class<?>[]
 	{
-		Annotation.class, Break.class, Case.class, Switch.class, Default.class,
+		Annotation.class, Break.class, Case.class, Match.class, Default.class,
 		Fallthrough.class, Continue.class, ExceptionHandler.class, Assignment.class,
 		Instantiation.class, ArrayAccess.class, ElseStatement.class, IfStatement.class,
 		Until.class, Loop.class, Array.class, UnaryOperation.class, Cast.class,
@@ -538,7 +538,7 @@ public class SyntaxTree
 				else if (node == null && type == Finally.class) node = Finally.decodeStatement(parent, statement, location, require);
 				else if (node == null && type == StaticBlock.class) node = StaticBlock.decodeStatement(parent, statement, location, require);
 				else if (node == null && type == Super.class) node = Super.decodeStatement(parent, statement, location, require);
-				else if (node == null && type == Switch.class) node = Switch.decodeStatement(parent, statement, location, require);
+				else if (node == null && type == Match.class) node = Match.decodeStatement(parent, statement, location, require);
 				else if (node == null && type == Throw.class) node = Throw.decodeStatement(parent, statement, location, require);
 				else if (node == null && type == Try.class) node = Try.decodeStatement(parent, statement, location, require);
 				else if (node == null && type == TernaryOperation.class) node = TernaryOperation.decodeStatement(parent, statement, location, require);
@@ -634,7 +634,7 @@ public class SyntaxTree
 		else if (type.isAssignableFrom(Finally.class) && (node = Finally.decodeStatement(parent, statement, location, require)) != null);
 		else if (type.isAssignableFrom(StaticBlock.class) && (node = StaticBlock.decodeStatement(parent, statement, location, require)) != null);
 		else if (type.isAssignableFrom(Super.class) && (node = Super.decodeStatement(parent, statement, location, require)) != null);
-		else if (type.isAssignableFrom(Switch.class) && (node = Switch.decodeStatement(parent, statement, location, require)) != null);
+		else if (type.isAssignableFrom(Match.class) && (node = Match.decodeStatement(parent, statement, location, require)) != null);
 		else if (type.isAssignableFrom(Throw.class) && (node = Throw.decodeStatement(parent, statement, location, require)) != null);
 		else if (type.isAssignableFrom(Try.class) && (node = Try.decodeStatement(parent, statement, location, require)) != null);
 		else if (type.isAssignableFrom(TernaryOperation.class) && (node = TernaryOperation.decodeStatement(parent, statement, location, require)) != null);
