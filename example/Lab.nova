@@ -38,6 +38,16 @@ public class Lab
 		
 		Console.writeLine("My nums: " + num1 + ", " + num2)
 		
+		var thing = num1 < 2 ? num1 + " < 2" : num1 + " >= 2"
+		
+		Console.writeLine("Result from ternary: " + thing)
+		
+		var str = "this isnt null"
+		var str2 = null
+		
+		Console.writeLine("Elvis not null: " + (str ?: "wtf"))
+		Console.writeLine("Elvis null: " + (str2 ?: "this is null"))
+		
 		//"test".count
 		
 		String[] a = ["this", "is", "a", "test", "to", "see", "what shows up"]
