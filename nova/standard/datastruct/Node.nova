@@ -34,7 +34,7 @@ public class Node<E>
 	
 	static notNull(Node<E> value) -> Bool
 	{
-		return value != null && value != 0
+		return value != null
 	}
 	
 	public preorder() -> Array<E>
