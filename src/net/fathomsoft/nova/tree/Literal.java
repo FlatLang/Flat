@@ -14,7 +14,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * @since	v0.1 Jan 5, 2014 at 10:34:30 PM
  * @version	v0.2.41 Dec 17, 2014 at 7:48:17 PM
  */
-public class Literal extends IValue
+public class Literal extends IValue implements Accessible
 {
 	private String	value;
 	
@@ -98,6 +98,12 @@ public class Literal extends IValue
 		return super.getDataType();
 	}
 	
+	@Override
+	public Value getReturnedNode()
+	{
+		return Accessible.super.getReturnedNode();
+	}
+	
 	/**
 	 * Get whether or not the value of the literal is an
 	 * instantiation of a String from a String constructor.
@@ -153,6 +159,17 @@ public class Literal extends IValue
 	 */
 	@Override
 	public StringBuilder generateCSourceFragment(StringBuilder builder)
+	{
+		if (isSpecialFragment())
+		{
+			return generateSpecialFragment(builder);
+		}
+		
+		return generateCUseOutput(builder);
+	}
+	
+	@Override
+	public StringBuilder generateCUseOutput(StringBuilder builder)
 	{
 		if (!isWithinExternalContext() && isStringInstantiation())
 		{
