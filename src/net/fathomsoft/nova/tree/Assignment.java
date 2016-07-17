@@ -484,6 +484,8 @@ public class Assignment extends Value
 				
 				GenericTypeArgumentList args = assignment.getGenericTypeArgumentList();
 				
+				declaration.getGenericTypeArgumentList().slaughterEveryLastChild();
+				
 				if (args != null && args.getNumVisibleChildren() > 0)
 				{
 					for (GenericTypeArgument arg : assignment.getGenericTypeArgumentList())
@@ -493,7 +495,7 @@ public class Assignment extends Value
 				}
 				else
 				{
-					declaration.addDefaultGenericTypeArguments(true);
+					declaration.addDefaultGenericTypeArguments();
 				}
 			}
 		}
