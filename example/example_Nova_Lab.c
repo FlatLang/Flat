@@ -79,6 +79,9 @@ void example_Nova_Lab_Nova_main(example_Nova_Lab* this, nova_standard_exception_
 	nova_standard_datastruct_Nova_BinaryTree* l1_Nova_tree;
 	int l1_Nova_num1;
 	int l1_Nova_num2;
+	nova_standard_Nova_String* l1_Nova_thing;
+	nova_standard_Nova_String* l1_Nova_str;
+	nova_standard_Nova_Object* l1_Nova_str2;
 	nova_standard_Nova_String** l1_Nova_a;
 	int* l1_Nova_b;
 	nova_standard_datastruct_list_Nova_Array* l1_Nova_list;
@@ -95,6 +98,12 @@ void example_Nova_Lab_Nova_main(example_Nova_Lab* this, nova_standard_exception_
 	l1_Nova_num1 = (int)(4);
 	l1_Nova_num2 = (int)(l1_Nova_num1 = (int)(7));
 	nova_standard_io_Nova_Console_1_Nova_writeLine(0, exceptionData, nova_standard_Nova_String_0_Nova_concat(nova_standard_Nova_String_1_Nova_String(0, exceptionData, "My nums: "), exceptionData, nova_standard_Nova_String_virtual1_Nova_concat((nova_standard_Nova_String*)(nova_standard_primitive_number_Nova_Int_2_Nova_toString(0, exceptionData, l1_Nova_num1)), exceptionData, nova_standard_Nova_String_0_Nova_concat(nova_standard_Nova_String_1_Nova_String(0, exceptionData, ", "), exceptionData, nova_standard_primitive_number_Nova_Int_2_Nova_toString(0, exceptionData, l1_Nova_num2)))));
+	l1_Nova_thing = l1_Nova_num1 < 2 ? nova_standard_Nova_String_virtual1_Nova_concat((nova_standard_Nova_String*)(nova_standard_primitive_number_Nova_Int_2_Nova_toString(0, exceptionData, l1_Nova_num1)), exceptionData, nova_standard_Nova_String_1_Nova_String(0, exceptionData, " < 2")) : nova_standard_Nova_String_virtual1_Nova_concat((nova_standard_Nova_String*)(nova_standard_primitive_number_Nova_Int_2_Nova_toString(0, exceptionData, l1_Nova_num1)), exceptionData, nova_standard_Nova_String_1_Nova_String(0, exceptionData, " >= 2"));
+	nova_standard_io_Nova_Console_1_Nova_writeLine(0, exceptionData, nova_standard_Nova_String_0_Nova_concat(nova_standard_Nova_String_1_Nova_String(0, exceptionData, "Result from ternary: "), exceptionData, l1_Nova_thing));
+	l1_Nova_str = nova_standard_Nova_String_1_Nova_String(0, exceptionData, "this isnt null");
+	l1_Nova_str2 = (nova_standard_Nova_Object*)nova_null;
+	nova_standard_io_Nova_Console_1_Nova_writeLine(0, exceptionData, nova_standard_Nova_String_0_Nova_concat(nova_standard_Nova_String_1_Nova_String(0, exceptionData, "Elvis not null: "), exceptionData, (l1_Nova_str != (nova_standard_Nova_String*)nova_null ? l1_Nova_str : nova_standard_Nova_String_1_Nova_String(0, exceptionData, "wtf"))));
+	nova_standard_io_Nova_Console_1_Nova_writeLine(0, exceptionData, nova_standard_Nova_String_0_Nova_concat(nova_standard_Nova_String_1_Nova_String(0, exceptionData, "Elvis null: "), exceptionData, nova_standard_Nova_Object_virtual1_Nova_toString((nova_standard_Nova_Object*)((l1_Nova_str2 != (nova_standard_Nova_Object*)nova_null ? l1_Nova_str2 : (nova_standard_Nova_Object*)nova_standard_Nova_String_1_Nova_String(0, exceptionData, "this is null"))), exceptionData)));
 	l1_Nova_a = (nova_standard_Nova_String**)NOVA_MALLOC(sizeof(nova_standard_Nova_String) * 7);
 	l1_Nova_a[0] = nova_standard_Nova_String_1_Nova_String(0, exceptionData, "this");
 	l1_Nova_a[1] = nova_standard_Nova_String_1_Nova_String(0, exceptionData, "is");
