@@ -106,9 +106,9 @@ public class ForEachLoop extends Loop
 		return (Variable)getArgumentList().getChild(1);
 	}
 	
-	public Variable getIteratorValue()
+	public Identifier getIteratorValue()
 	{
-		return (Variable)getVisibleChild(0);
+		return (Identifier)getVisibleChild(0);
 	}
 	
 	public Value getHasNextCheck()
@@ -325,8 +325,14 @@ public class ForEachLoop extends Loop
 		}
 		
 		ClassDeclaration iterator = getProgram().getClassDeclaration("nova/standard/datastruct/list/Iterator");
-
-		if (!value.getReturnedNode().getTypeClass().isOfType(iterator))
+		ClassDeclaration valueType = value.getReturnedNode().getTypeClass();
+		
+		if (valueType == null)
+		{
+			return false;
+		}
+		
+		if (!valueType.isOfType(iterator))
 		{
 			ClassDeclaration iterable = getProgram().getClassDeclaration("nova/standard/datastruct/list/Iterable");
 			
@@ -335,7 +341,7 @@ public class ForEachLoop extends Loop
 				return SyntaxMessage.queryError("Type of '" + argument + "' must be Iterable or Iterator", this, require);
 			}
 			
-			value = SyntaxTree.decodeValue(this, argument + ".iterator", location, require);
+			value = SyntaxTree.decodeValue(this, value.generateNovaInput() + ".iterator", location, require);
 		}
 		
 		Identifier identifier = (Identifier)value;
@@ -348,9 +354,7 @@ public class ForEachLoop extends Loop
 		
 		String s = identifier.getRootAccessNode().toValue().generateNovaInput().toString();
 		
-		Variable next = (Variable)SyntaxTree.decodeValue(this, s + ".next", location, require);
-		
-		next = (Variable)next.getLastAccessed();
+		Variable next = (Variable)((Accessible)SyntaxTree.decodeValue(this, s + ".next", location, require)).getLastAccessed();
 		
 		String type = next.getNovaType(next);//.getIntelligentGenericTypeArgument(0);
 		
