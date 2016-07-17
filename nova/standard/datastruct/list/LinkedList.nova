@@ -147,13 +147,15 @@ public class LinkedList<E> implements List<E>
 	}
 	
 	[Override]
-	public filter(filterFunc(E) -> Bool) -> LinkedList<E>
+	public filter(filterFunc(E, Int, LinkedList<E>) -> Bool) -> LinkedList<E>
 	{
 		LinkedList<E> filtered = new LinkedList()
 		
+		Int i = 0
+		
 		for (element in this)
 		{
-			if (filterFunc(element))
+			if (filterFunc(element, i++, this))
 			{
 				filtered.add(element)
 			}

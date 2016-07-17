@@ -255,13 +255,15 @@ public class Array<E> implements List<E>
 	}
 	
 	[Override]
-	public filter(filterFunc(E) -> Bool) -> Array<E>
+	public filter(filterFunc(E, Int, Array<E>) -> Bool) -> Array<E>
 	{
 		Array<E> filtered = new Array()
 		
+		Int i = 0
+		
 		for (element in this)
 		{
-			if (filterFunc(element))
+			if (filterFunc(element, i++, this))
 			{
 				filtered.add(element)
 			}

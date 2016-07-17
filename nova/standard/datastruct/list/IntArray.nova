@@ -113,13 +113,15 @@ public class IntArray extends Array<Int>
 	}
 	
 	[Override]
-	public filter(filterFunc(Int) -> Bool) -> IntArray
+	public filter(filterFunc(Int, Int, IntArray) -> Bool) -> IntArray
 	{
 		IntArray filtered = new IntArray()
 		
+		Int i = 0
+		
 		for (element in this)
 		{
-			if (filterFunc(element))
+			if (filterFunc(element, i++, this))
 			{
 				filtered.add(element)
 			}

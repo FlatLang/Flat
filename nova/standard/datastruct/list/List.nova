@@ -35,7 +35,7 @@ public interface List<Type> extends Iterable<Type>
 	any(anyFunc(Type) -> Bool) -> Bool
 	all(allFunc(Type) -> Bool) -> Bool
 	
-	filter(filterFunc(Type) -> Bool) -> List<Type>
+	filter(filterFunc(Type, Int, List<E>) -> Bool) -> List<Type>
 	/*{
 		List<Type> list = clone()
 		
