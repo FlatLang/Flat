@@ -188,7 +188,7 @@ public class ForEachLoop extends Loop
 			{
 				String contents = statement.substring(bounds.getStart(), bounds.getEnd());
 				
-				if (n.decodeArguments(contents, bounds, require) && n.decodeScopeFragment(statement, bounds))
+				if (n.decodeArguments(contents, bounds, require))
 				{
 					if (n.setupVariables())
 					{
@@ -198,9 +198,12 @@ public class ForEachLoop extends Loop
 							{
 								if (n.decodeIteratorAssignment(require))
 								{
-									n.removeChild(n.getIteratorValue());
-									
-									return n;
+									if (n.decodeScopeFragment(statement, bounds))
+									{
+										n.removeChild(n.getIteratorValue());
+										
+										return n;
+									}
 								}
 							}
 						}
