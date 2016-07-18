@@ -831,7 +831,7 @@ public class BinaryOperation extends IValue
 		}
 		else */if (value instanceof Literal && Literal.isNullLiteral(value))
 		{
-			newVal = Literal.decodeStatement(this, "\"null\"", value.getLocationIn(), true);
+			newVal = (Literal)Literal.decodeStatement(this, "\"null\"", value.getLocationIn(), true);
 		}
 		
 		if (newVal != null)

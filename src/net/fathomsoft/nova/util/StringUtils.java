@@ -1,6 +1,11 @@
 package net.fathomsoft.nova.util;
 
+import com.sun.org.apache.xpath.internal.functions.Function2Args;
+
 import java.util.ArrayList;
+import java.util.Objects;
+import java.util.function.BiFunction;
+import java.util.function.Function;
 import java.util.regex.Matcher;
 
 /**
@@ -853,7 +858,16 @@ public class StringUtils
 					return index;
 				}
 			}
-			else if (c == '"' || c == '\'')
+			else if (c == '"')
+			{
+				index = findEndingQuote(str, index, direction);
+				
+				if (index < 0)
+				{
+					break;
+				}
+			}
+			else if (c == '\'')
 			{
 				index = findEndingChar(str, c, index, direction);
 				
@@ -895,7 +909,57 @@ public class StringUtils
 	 */
 	public static int findEndingQuote(CharSequence value, int start, int direction)
 	{
-		return findEndingChar(value, '"', start, direction);
+		QuadFunction<CharSequence, Character, Integer, Integer, Integer> condition = (str, c, i, dir) -> {
+			i += dir;
+			
+			if (dir > 0 && i < str.length() - 3 && str.charAt(i) == '#' && str.charAt(i + 1) == '{')
+			{
+				return (i = findEndingChar(str, '}', i + dir, dir)) >= 0 ? i + dir : i;
+			}
+			
+			return defaultCharacterCheck(str, c, i - dir, dir);
+		};
+		
+		return findEndingChar(value, '"', start, direction, condition);
+	}
+	
+	public static int defaultCharacterCheck(CharSequence value, char c, int start, int direction)
+	{
+		start += direction;
+		
+		if (start > 0 && value.charAt(start - 1) == '\\' && value.charAt(start - 2) != '\\')
+		{
+			return start + direction;
+		}
+		
+		return start;
+	}
+	
+	public static int findEndingChar(CharSequence value, char c, int start, int direction)
+	{
+		return findEndingChar(value, c, start, direction, StringUtils::defaultCharacterCheck);
+	}
+	
+	@FunctionalInterface
+	interface TriFunction<A,B,C,R> {
+		
+		R apply(A a, B b, C c);
+		
+		default <V> TriFunction<A, B, C, V> andThen(Function<? super R, ? extends V> after) {
+			Objects.requireNonNull(after);
+			return (A a, B b, C c) -> after.apply(apply(a, b, c));
+		}
+	}
+	
+	@FunctionalInterface
+	interface QuadFunction<A,B,C,D,R> {
+		
+		R apply(A a, B b, C c, D d);
+		
+		default <V> QuadFunction<A, B, C, D, V> andThen(Function<? super R, ? extends V> after) {
+			Objects.requireNonNull(after);
+			return (A a, B b, C c, D d) -> after.apply(apply(a, b, c, d));
+		}
 	}
 	
 	/**
@@ -909,21 +973,23 @@ public class StringUtils
 	 * @return The index of the matching char. If an end is not found, -1
 	 * 		is returned instead.
 	 */
-	public static int findEndingChar(CharSequence value, char c, int start, int direction)
+	public static int findEndingChar(CharSequence value, char c, int start, int direction, QuadFunction<CharSequence, Character, Integer, Integer, Integer> advance)
 	{
-		start += direction;
+		if (start < 0 || start >= value.length())
+		{
+			return -1;
+		}
+		
+		start = advance.apply(value, value.charAt(start), start, direction);
 		
 		while (start >= 0 && start < value.length())
 		{
 			if (value.charAt(start) == c)
 			{
-				if (start == 0 || (value.charAt(start - 1) != '\\' || start < 2 || value.charAt(start - 2) == '\\'))
-				{
-					return start;
-				}
+				return start;
 			}
 			
-			start += direction;
+			start = advance.apply(value, value.charAt(start), start, direction);
 		}
 		
 		return -1;
@@ -1094,7 +1160,13 @@ public class StringUtils
 			
 			if (checkBaseScope)
 			{
-				if (c == '"' || c == '\'')
+				if (c == '"')
+				{
+					start = findEndingQuote(value, start, direction) + direction;// findEndingQuote(value, start, direction) + direction;
+					
+					continue;
+				}
+				if (c == '\'')
 				{
 					start = findEndingChar(value, c, start, direction) + direction;// findEndingQuote(value, start, direction) + direction;
 					

@@ -24,9 +24,11 @@ public interface List<Type> extends Iterable<Type>
 	
 	forEach(func(Type, Int, List<Type>))
 	/*{
+	    Int i = 0
+	    
 		for (value in this)
 		{
-			func(value, $index, this)
+			func(value, i++, this)
 		}
 	}*/
 	
@@ -39,9 +41,11 @@ public interface List<Type> extends Iterable<Type>
 	/*{
 		List<Type> list = clone()
 		
+		Int i = 0
+		
 		for (value in this)
 		{
-			if (filterFunc(value, $index, this))
+			if (filterFunc(value, i++, this))
 			{
 				list.add(value)
 			}
@@ -54,9 +58,11 @@ public interface List<Type> extends Iterable<Type>
 	/*{
 		List<Type> list = clone()
 		
-		do (Math.min(howMany, size))
+		Int i = 0
+		
+		repeat (Math.min(howMany, size))
 		{
-			list.add(this[$index])
+			list.add(this[i++])
 		}
 		
 		return list
@@ -66,9 +72,11 @@ public interface List<Type> extends Iterable<Type>
 	/*{
 		List<Type> list = clone()
 		
-		do (size - howMany)
+		Int i = 0
+		
+		repeat (size - howMany)
 		{
-			list.add(this[howMany + $index])
+			list.add(this[howMany + i++])
 		}
 		
 		return list

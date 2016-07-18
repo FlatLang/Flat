@@ -26,27 +26,25 @@ public class Lab
 		
 		var tree = new BinaryTree().addNode("F").addNode("B").addNode("A").addNode("D").addNode("C").addNode("E").addNode("G").addNode("I").addNode("H")
 		
-		Console.writeLine("Preorder: " + tree.preorder().join(", "))
-		Console.writeLine("Inorder: " + tree.inorder().join(", "))
-		Console.writeLine("Postorder: " + tree.postorder().join(", "))
-		Console.writeLine("Levelorder: " + tree.levelorder().join(", "))
+		Console.writeLine("Preorder: #{tree.preorder().join(", ")}")
+		Console.writeLine("Inorder: #{tree.inorder().join(", ")}")
+		Console.writeLine("Postorder: #{tree.postorder().join(", ")}")
+		Console.writeLine("Levelorder: #{tree.levelorder().join(", ")}")
 		
 		Int num1 = 4
 		Int num2
 		
 		num2 = num1 = 7
 		
-		Console.writeLine("My nums: " + num1 + ", " + num2)
+		Console.writeLine("My nums: #{num1}, #{num2}")
 		
-		var thing = num1 < 2 ? num1 + " < 2" : num1 + " >= 2"
-		
-		Console.writeLine("Result from ternary: " + thing)
+		Console.writeLine("Result from ternary: #{num1} #{ num1 < 3 ? "<" : ">=" } 3")
 		
 		var str = "this isnt null"
 		var str2 = null
 		
-		Console.writeLine("Elvis not null: " + (str ?: "wtf"))
-		Console.writeLine("Elvis null: " + (str2 ?: "this is null"))
+		Console.writeLine("Elvis not null: #{str ?: "wtf"}")
+		Console.writeLine("Elvis null: #{str2 ?: "this is null"}")
 		
 		"test".substring(0)
 		
@@ -57,6 +55,8 @@ public class Lab
 		
 		var list = new Array<String>(a, 7)
 		var list2 = new IntArray(b, 7)
+		
+		//Console.writeLine("Sum: " + list2.sum())
 		
 		/*list.filter(x -> x.count > 10).map(x -> getClassByName(x))
 		    .forEach(x -> {
@@ -78,7 +78,7 @@ public class Lab
 		    return something + " " + x
 		}).join(", "))
         
-		Console.writeLine("Mapped: " + list.filter({ _.count >= 4 }).map({ _2 + ": " + _1 + "?" }).join(", "))
+		Console.writeLine("Mapped: " + list.filter({ _.count >= 4 }).map({ "#{_2}: #{_1}?" }).join(", "))
 		Console.writeLine("Mapped backwards: " + list.filter({ _.count >= 4 }).map({ _ + "?" }).reverse().join(", "))
 		//Console.writeLine("Mapped2: " + list2.map({ _ + "!" }).join(", "))
 		

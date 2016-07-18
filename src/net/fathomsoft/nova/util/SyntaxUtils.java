@@ -1410,7 +1410,7 @@ public class SyntaxUtils
 	 * Get whether or not the declaration is accessible from the
 	 * given accessor context.
 	 * 
-	 * @param accessor The Identifier that is accessing the type.
+	 * @param accessingClass The Identifier that is accessing the type.
 	 * @param declaration The declaration of the type that is being
 	 * 		accessed.
 	 * @return Whether or not the declaration is accessible from the

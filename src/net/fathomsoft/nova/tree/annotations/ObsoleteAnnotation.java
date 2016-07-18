@@ -3,12 +3,7 @@ package net.fathomsoft.nova.tree.annotations;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.error.SyntaxMessage;
-import net.fathomsoft.nova.tree.Identifier;
-import net.fathomsoft.nova.tree.Literal;
-import net.fathomsoft.nova.tree.MethodDeclaration;
-import net.fathomsoft.nova.tree.Node;
-import net.fathomsoft.nova.tree.NovaMethodDeclaration;
-import net.fathomsoft.nova.tree.SyntaxTree;
+import net.fathomsoft.nova.tree.*;
 import net.fathomsoft.nova.tree.generics.GenericTypeArgument;
 import net.fathomsoft.nova.tree.generics.GenericTypeArgumentList;
 import net.fathomsoft.nova.tree.generics.GenericTypeParameter;
@@ -51,7 +46,7 @@ public class ObsoleteAnnotation extends Annotation
 	 * </ul>
 	 * 
 	 * @param parent The parent node of the statement.
-	 * @param statement The statement to try to decode into a
+	 * @param name The statement to try to decode into a
 	 * 		{@link ObsoleteAnnotation} instance.
 	 * @param location The location of the statement in the source code.
 	 * @param require Whether or not to throw an error if anything goes wrong.
@@ -70,22 +65,27 @@ public class ObsoleteAnnotation extends Annotation
 				
 				if (args.length >= 1 && args.length < 3)
 				{
-					Literal message = Literal.decodeStatement(n, args[0], location, require, true);
+					Value messageNode = Literal.decodeStatement(n, args[0], location, require, true);
 					
-					if (message.getType().equals("String"))
+					if (messageNode instanceof Literal)
 					{
-						n.message = message.getValue();
-					}
-					else if (args.length > 1)
-					{
-						SyntaxMessage.queryError("Obsolete requires that if a message is given, for it to be the first argument", n, require);
+						Literal message = (Literal) messageNode;
 						
-						return null;
+						if (message.getType().equals("String"))
+						{
+							n.message = message.getValue();
+						}
+						else if (args.length > 1)
+						{
+							SyntaxMessage.queryError("Obsolete requires that if a message is given, for it to be the first argument", n, require);
+							
+							return null;
+						}
 					}
 					
 					if (args.length >= 2)
 					{
-						Literal fail = Literal.decodeStatement(n, args[1], location, require, true);
+						Literal fail = (Literal)Literal.decodeStatement(n, args[1], location, require, true);
 						
 						if (fail.getType().equals("Bool"))
 						{

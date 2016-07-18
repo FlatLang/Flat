@@ -923,7 +923,7 @@ public class SyntaxTree
 			
 			if (node == null)
 			{
-				node = Literal.decodeStatement(parent, statement, location, require, true);
+				node = (Accessible)Literal.decodeStatement(parent, statement, location, require, true);
 				
 				if (node == null)
 				{

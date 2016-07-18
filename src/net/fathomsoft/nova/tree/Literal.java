@@ -4,6 +4,7 @@ import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.util.Location;
+import net.fathomsoft.nova.util.StringUtils;
 import net.fathomsoft.nova.util.SyntaxUtils;
 
 /**
@@ -212,7 +213,7 @@ public class Literal extends IValue implements Accessible
 	 * @param mustBeLiteral Whether or not the statement must be a literal
 	 * 		to decode.
 	 */
-	public static Literal decodeStatement(Node parent, String statement, Location location, boolean require, boolean mustBeLiteral)
+	public static Value decodeStatement(Node parent, String statement, Location location, boolean require, boolean mustBeLiteral)
 	{
 		if (mustBeLiteral && !SyntaxUtils.isLiteral(parent, statement))
 		{
@@ -244,7 +245,7 @@ public class Literal extends IValue implements Accessible
 	 * @return The generated node, if it was possible to translated it
 	 * 		into a Literal.
 	 */
-	public static Literal decodeStatement(Node parent, String statement, Location location, boolean require)
+	public static Value decodeStatement(Node parent, String statement, Location location, boolean require)
 	{
 		String literalType = SyntaxUtils.getLiteralTypeName(parent, statement);
 		
@@ -256,6 +257,16 @@ public class Literal extends IValue implements Accessible
 			if (literalType != null)
 			{
 				n.setType(literalType);
+				
+				if (literalType.equals("String"))
+				{
+					String expression = formatStringExpressions(statement);
+					
+					if (!expression.equals(statement))
+					{
+						return SyntaxTree.decodeValue(parent, expression, location, require);
+					}
+				}
 			}
 			
 			return n;
@@ -266,6 +277,54 @@ public class Literal extends IValue implements Accessible
 		}
 		
 		return null;
+	}
+	
+	private static String formatStringExpressions(String str)
+	{
+		int index = str.indexOf("#{");
+		int end = 0;
+		int lastEnd = -1;
+		
+		StringBuilder builder = new StringBuilder();
+		
+		while (index >= 0 && end >= 0)
+		{
+			end = SyntaxUtils.findCharInBaseScope(str, '}', index + 2);
+			
+			if (end > index)
+			{
+				String expression = str.substring(index + 2, end).trim();
+				
+				if (index > 1)
+				{
+					builder.append(str.substring(lastEnd + 1, index)).append("\" + ");
+				}
+				
+				builder.append('(').append(expression).append(')');
+				
+				if (end < str.length() - 2)
+				{
+					builder.append(" + \"");
+				}
+				else
+				{
+					return builder.toString();
+				}
+				
+				index = str.indexOf("#{", end + 1);
+			}
+			
+			lastEnd = end;
+		}
+		
+		if (end > 0)
+		{
+			builder.append(str.substring(end + 1));
+			
+			return builder.toString();
+		}
+		
+		return str;
 	}
 	
 	/**

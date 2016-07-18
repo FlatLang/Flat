@@ -381,7 +381,7 @@ public class Array extends VariableDeclaration implements ArrayCompatible
 			initValues.addChild(val);
 		}
 		
-		Literal size = Literal.decodeStatement(this, "" + values.length, getLocationIn(), true);
+		Literal size = (Literal)Literal.decodeStatement(this, "" + values.length, getLocationIn(), true);
 		
 		getDimensions().addChild(size);
 		

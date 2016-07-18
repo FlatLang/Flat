@@ -327,7 +327,7 @@ public class Match extends ControlStatement
 		{
 			if (getLocalFallthrough() == null && requiresLocalFallthroughVariable())
 			{
-				Literal falseVal = Literal.decodeStatement(getParent().getAncestorWithScope(), Literal.FALSE_IDENTIFIER, Location.INVALID, true);
+				Literal falseVal = (Literal)Literal.decodeStatement(getParent().getAncestorWithScope(), Literal.FALSE_IDENTIFIER, Location.INVALID, true);
 				
 				Variable localFallthrough = getAncestorWithScope().getScope().registerLocalVariable(falseVal, true);
 				
