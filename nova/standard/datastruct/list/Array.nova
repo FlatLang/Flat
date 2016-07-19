@@ -131,9 +131,13 @@ public class Array<E> implements List<E>
 	
 	shiftRight(Int left, Int right)
 	{
-		for (i in right..left)
+	    Int i = right - 1
+	    
+		while (i > left)
 		{
 			data[i] = data[i - 1]
+			
+			i--
 		}
 		
 		data[left] = null
