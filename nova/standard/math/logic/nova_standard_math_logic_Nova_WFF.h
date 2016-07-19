@@ -35,7 +35,6 @@ typedef struct nova_standard_math_logic_Nova_WFF nova_standard_math_logic_Nova_W
 #include <nova/standard/math/logic/nova_standard_math_logic_Nova_InvalidFormulaException.h>
 #include <nova/standard/math/logic/nova_standard_math_logic_Nova_StatementGroup.h>
 #include <nova/standard/math/logic/nova_standard_math_logic_Nova_StatementLetter.h>
-#include <nova/standard/datastruct/list/nova_standard_datastruct_list_Nova_IntRangeIterator.h>
 
 
 typedef struct nova_standard_math_logic_Extension_VTable_WFF nova_standard_math_logic_Extension_VTable_WFF;

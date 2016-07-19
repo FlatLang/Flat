@@ -104,8 +104,7 @@ nova_standard_Nova_String* nova_standard_primitive_number_Nova_Long_2_Nova_toStr
 	char* l1_Nova_data = (char*)nova_null;
 	int l1_Nova_offset = 0;
 	int l1_Nova_nums = 0;
-	nova_standard_datastruct_list_Nova_IntRangeIterator* nova_local_0 = (nova_standard_datastruct_list_Nova_IntRangeIterator*)nova_null;
-	int l2_Nova_index = 0;
+	int l3_Nova_index = 0;
 	
 	l1_Nova_charOffset = (int)('0');
 	l1_Nova_digits = (int)(nova_standard_primitive_number_Nova_Long_0_Nova_numDigits(0, exceptionData, nova_standard_primitive_number_Nova_Long_Nova_value));
@@ -118,11 +117,10 @@ nova_standard_Nova_String* nova_standard_primitive_number_Nova_Long_2_Nova_toStr
 		l1_Nova_offset = (int)(1);
 	}
 	l1_Nova_nums = l1_Nova_digits-- - l1_Nova_offset;
-	nova_local_0 = (nova_standard_datastruct_list_Nova_IntRangeIterator*)(nova_standard_datastruct_list_Nova_IntRange_Accessor_Nova_iterator(nova_standard_datastruct_list_Nova_IntRange_1_Nova_IntRange(0, exceptionData, (int)0, (int)l1_Nova_nums), exceptionData));
-	while (nova_standard_datastruct_list_Nova_Iterator_virtual_Accessor_Nova_hasNext((nova_standard_datastruct_list_Nova_Iterator*)(nova_local_0), exceptionData))
+	l3_Nova_index = (int)0;
+	for (; l3_Nova_index < (int)l1_Nova_nums; l3_Nova_index++)
 	{
-		l2_Nova_index = (int)(nova_standard_datastruct_list_Nova_Iterator_virtual_Accessor_Nova_next((nova_standard_datastruct_list_Nova_Iterator*)(nova_local_0), exceptionData));
-		l1_Nova_data[l1_Nova_digits - l2_Nova_index] = (char)(l1_Nova_charOffset + nova_standard_math_Nova_Math_0_Nova_abs(0, exceptionData, nova_standard_primitive_number_Nova_Long_Nova_value % 10));
+		l1_Nova_data[l1_Nova_digits - l3_Nova_index] = (char)(l1_Nova_charOffset + nova_standard_math_Nova_Math_0_Nova_abs(0, exceptionData, nova_standard_primitive_number_Nova_Long_Nova_value % 10));
 		nova_standard_primitive_number_Nova_Long_Nova_value = nova_standard_primitive_number_Nova_Long_Nova_value / 10;
 	}
 	return nova_standard_Nova_String_1_Nova_String(0, exceptionData, l1_Nova_data);

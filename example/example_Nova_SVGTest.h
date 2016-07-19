@@ -33,7 +33,6 @@ typedef struct example_Nova_SVGTest example_Nova_SVGTest;
 #include <nova/standard/svg/nova_standard_svg_Nova_SVGCircle.h>
 #include <nova/standard/io/nova_standard_io_Nova_File.h>
 #include <nova/standard/time/nova_standard_time_Nova_Timer.h>
-#include <nova/standard/datastruct/list/nova_standard_datastruct_list_Nova_IntRangeIterator.h>
 
 
 typedef struct example_Extension_VTable_SVGTest example_Extension_VTable_SVGTest;

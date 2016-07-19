@@ -85,13 +85,11 @@ void example_Nova_ThreadDemoImplementation_Nova_this(example_Nova_ThreadDemoImpl
 
 void example_Nova_ThreadDemoImplementation_0_Nova_run(example_Nova_ThreadDemoImplementation* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
-	nova_standard_datastruct_list_Nova_IntRangeIterator* nova_local_0 = (nova_standard_datastruct_list_Nova_IntRangeIterator*)nova_null;
-	int l1_Nova_i = 0;
+	int l2_Nova_i = 0;
 	
-	nova_local_0 = (nova_standard_datastruct_list_Nova_IntRangeIterator*)(nova_standard_datastruct_list_Nova_IntRange_Accessor_Nova_iterator(nova_standard_datastruct_list_Nova_IntRange_1_Nova_IntRange(0, exceptionData, (int)0, (int)10), exceptionData));
-	while (nova_standard_datastruct_list_Nova_Iterator_virtual_Accessor_Nova_hasNext((nova_standard_datastruct_list_Nova_Iterator*)(nova_local_0), exceptionData))
+	l2_Nova_i = (int)0;
+	for (; l2_Nova_i < (int)10; l2_Nova_i++)
 	{
-		l1_Nova_i = (int)(nova_standard_datastruct_list_Nova_Iterator_virtual_Accessor_Nova_next((nova_standard_datastruct_list_Nova_Iterator*)(nova_local_0), exceptionData));
 		nova_standard_io_Nova_Console_1_Nova_writeLine(0, exceptionData, this->prv->example_Nova_ThreadDemoImplementation_Nova_word);
 		nova_standard_thread_Nova_Thread_Nova_sleep(0, exceptionData, this->prv->example_Nova_ThreadDemoImplementation_Nova_millis);
 	}

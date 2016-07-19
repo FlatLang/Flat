@@ -29,7 +29,6 @@ typedef struct nova_standard_datastruct_list_Nova_Queue nova_standard_datastruct
 #include <nova/standard/nova_standard_Nova_String.h>
 #include <nova/standard/nova_standard_Nova_System.h>
 #include <nova/standard/math/nova_standard_math_Nova_Math.h>
-#include <nova/standard/datastruct/list/nova_standard_datastruct_list_Nova_IntRangeIterator.h>
 
 
 typedef struct nova_standard_datastruct_list_Extension_VTable_Queue nova_standard_datastruct_list_Extension_VTable_Queue;

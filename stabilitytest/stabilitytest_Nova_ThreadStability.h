@@ -34,7 +34,6 @@ typedef struct stabilitytest_Nova_ThreadStability stabilitytest_Nova_ThreadStabi
 #include <stabilitytest/stabilitytest_Nova_StabilityTest.h>
 #include <stabilitytest/stabilitytest_Nova_StabilityTestCase.h>
 #include <stabilitytest/stabilitytest_Nova_ThreadImplementation.h>
-#include <nova/standard/datastruct/list/nova_standard_datastruct_list_Nova_IntRangeIterator.h>
 
 
 typedef struct stabilitytest_Extension_VTable_ThreadStability stabilitytest_Extension_VTable_ThreadStability;

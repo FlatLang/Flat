@@ -186,14 +186,12 @@ int stabilitytest_Nova_ClosureStability_Nova_multiply(stabilitytest_Nova_Closure
 int stabilitytest_Nova_ClosureStability_Nova_pow(stabilitytest_Nova_ClosureStability* this, nova_standard_exception_Nova_ExceptionData* exceptionData, int stabilitytest_Nova_ClosureStability_Nova_base, int stabilitytest_Nova_ClosureStability_Nova_pow)
 {
 	int l1_Nova_value = 0;
-	nova_standard_datastruct_list_Nova_IntRangeIterator* nova_local_0 = (nova_standard_datastruct_list_Nova_IntRangeIterator*)nova_null;
-	int l1_Nova_i = 0;
+	int l2_Nova_i = 0;
 	
 	l1_Nova_value = stabilitytest_Nova_ClosureStability_Nova_base;
-	nova_local_0 = (nova_standard_datastruct_list_Nova_IntRangeIterator*)(nova_standard_datastruct_list_Nova_IntRange_Accessor_Nova_iterator(nova_standard_datastruct_list_Nova_IntRange_1_Nova_IntRange(0, exceptionData, (int)0, (int)(stabilitytest_Nova_ClosureStability_Nova_pow - 1)), exceptionData));
-	while (nova_standard_datastruct_list_Nova_Iterator_virtual_Accessor_Nova_hasNext((nova_standard_datastruct_list_Nova_Iterator*)(nova_local_0), exceptionData))
+	l2_Nova_i = (int)0;
+	for (; l2_Nova_i < (int)(stabilitytest_Nova_ClosureStability_Nova_pow - 1); l2_Nova_i++)
 	{
-		l1_Nova_i = (int)(nova_standard_datastruct_list_Nova_Iterator_virtual_Accessor_Nova_next((nova_standard_datastruct_list_Nova_Iterator*)(nova_local_0), exceptionData));
 		l1_Nova_value = l1_Nova_value * stabilitytest_Nova_ClosureStability_Nova_base;
 	}
 	return l1_Nova_value;

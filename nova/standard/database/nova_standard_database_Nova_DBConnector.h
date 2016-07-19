@@ -31,7 +31,6 @@ typedef struct nova_standard_database_Nova_DBConnector nova_standard_database_No
 #include <nova/standard/math/nova_standard_math_Nova_Math.h>
 #include <nova/standard/database/NativeDBConnector.h>
 #include <nova/standard/database/nova_standard_database_Nova_ResultSet.h>
-#include <nova/standard/datastruct/list/nova_standard_datastruct_list_Nova_IntRangeIterator.h>
 
 
 typedef struct nova_standard_database_Extension_VTable_DBConnector nova_standard_database_Extension_VTable_DBConnector;
