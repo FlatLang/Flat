@@ -1,6 +1,8 @@
 package net.fathomsoft.nova.tree;
 
 import net.fathomsoft.nova.Nova;
+import net.fathomsoft.nova.tree.generics.GenericTypeArgument;
+import net.fathomsoft.nova.tree.generics.GenericTypeParameterDeclaration;
 import net.fathomsoft.nova.tree.variables.ObjectReference;
 import net.fathomsoft.nova.tree.variables.Variable;
 import net.fathomsoft.nova.tree.variables.VariableDeclaration;
@@ -22,6 +24,84 @@ public interface Accessible
 	public default Value toValue()
 	{
 		return (Value)this;
+	}
+	
+	public default GenericTypeArgument getGenericTypeArgumentFromParameter(String type)
+	{
+		ClassDeclaration typeClass = null;
+		
+		Value value = toValue();
+		
+		if (value.isGenericType())
+		{
+			return getReferenceNode().getGenericTypeArgumentFromParameter(type);
+		}
+		else
+		{
+			typeClass = value.getTypeClass();
+		}
+		
+		if (typeClass == null)
+		{
+			return null;
+		}
+		
+		GenericTypeParameterDeclaration params = typeClass.getGenericTypeParameterDeclaration();
+		
+		if (params == null)
+		{
+			return null;
+		}
+		
+		int index = /*getDeclaration()*//*getReferenceNode().toValue().*/params.getParameterIndex(type);
+		
+		if (index >= 0)
+		{
+			Accessible lastRef = null;
+			Accessible ref = getReferenceNode();
+			
+			while (ref != lastRef && ref instanceof Accessible && index >= 0 && ref.getReferenceNode(true) != null)
+			{
+				lastRef = ref;
+				ref = ref.getReferenceNode(true);
+				
+				Accessible current = ref;
+				
+				if (current instanceof Variable)
+				{
+					current = ((Variable)ref).getDeclaration();
+				}
+				
+				GenericTypeArgument arg = ((Value)current).getGenericTypeArgument(index);
+				
+				if (!arg.isGenericType())
+				{
+					return arg;
+				}
+				
+				if (current instanceof Variable)
+				{
+					index = ((VariableDeclaration)current).getGenericTypeParameterDeclaration().getParameterIndex(arg.getType());
+				}
+			}
+			
+			/*if (index >= 0 && this instanceof MethodCall)
+			{
+				return ((Variable)getReferenceNode()).getDeclaration().getGenericTypeArgument(index);
+			}
+			else */if (index >= 0 && !value.isGenericType())
+			{
+				return value.getGenericTypeArgument(index);
+			}
+			else if (value.getBaseNode() instanceof Assignment)
+			{
+				Assignment assignment = (Assignment)value.getBaseNode();
+				
+				return assignment.getAssignedNode().getDeclaration().getGenericTypeArgument(index);
+			}
+		}
+		
+		return null;
 	}
 	
 	/**
