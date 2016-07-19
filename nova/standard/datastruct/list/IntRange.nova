@@ -62,9 +62,11 @@ public class IntRange implements List<Int>
     {
         Int[] ints = new Int[size]
         
-        for (Int i = start; i < end; i++)
+        Int i = start
+        
+        while (i < end)
         {
-            ints[i - start] = i
+            ints[i - start] = i++
         }
         
         return ints

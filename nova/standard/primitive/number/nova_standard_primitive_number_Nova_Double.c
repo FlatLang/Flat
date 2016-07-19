@@ -85,9 +85,10 @@ int nova_standard_primitive_number_Nova_Double_0_Nova_numDigits(nova_standard_pr
 	}
 	nova_standard_primitive_number_Nova_Double_Nova_number = nova_standard_primitive_number_Nova_Double_Nova_number / 10;
 	l1_Nova_size = (int)(1);
-	for (; nova_standard_primitive_number_Nova_Double_Nova_number > 0; l1_Nova_size++)
+	while (nova_standard_primitive_number_Nova_Double_Nova_number > 0)
 	{
 		nova_standard_primitive_number_Nova_Double_Nova_number = nova_standard_primitive_number_Nova_Double_Nova_number / 10;
+		l1_Nova_size++;
 	}
 	return l1_Nova_size;
 }

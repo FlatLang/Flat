@@ -16,7 +16,7 @@ public class Sequence
 	{
 		Double value = 0
 		
-		for (Int i = 0; i < num; i++)
+		for (i in 0..num)
 		{
 			value = value + values[i]
 		}

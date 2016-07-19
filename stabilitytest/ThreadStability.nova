@@ -26,7 +26,7 @@ public class ThreadStability extends StabilityTestCase
 	{
 		StabilityExceptionHandler handler = new StabilityExceptionHandler(program)
 		
-		for (Int i = 0; i < amount; i++)
+		for (i in 0..amount)
 		{
 			threads[i] = new ThreadImplementation(10, 10)
 			//threads[i].addUncaughtExceptionHandler(handler)
@@ -40,7 +40,7 @@ public class ThreadStability extends StabilityTestCase
 		
 		Console.write("Checking memory access with multi-threading... ")
 		
-		for (Int i = 0; i < 1000; i++)
+		for (i in 0..1000)
 		{
 			String s = Int.toString(i)
 		}
@@ -50,7 +50,7 @@ public class ThreadStability extends StabilityTestCase
 	
 	static joinThreads(ThreadImplementation threads[], Int amount)
 	{
-		for (Int i = 0; i < amount; i++)
+		for (i in 0..amount)
 		{
 			threads[i].join()
 		}

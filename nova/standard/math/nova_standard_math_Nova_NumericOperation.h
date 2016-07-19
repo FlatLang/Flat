@@ -32,6 +32,7 @@ typedef struct nova_standard_math_Nova_NumericOperation nova_standard_math_Nova_
 #include <nova/standard/datastruct/nova_standard_datastruct_Nova_Bounds.h>
 #include <nova/standard/math/nova_standard_math_Nova_InvalidNumericStatementException.h>
 #include <nova/standard/math/nova_standard_math_Nova_NumericOperand.h>
+#include <nova/standard/datastruct/list/nova_standard_datastruct_list_Nova_IntRangeIterator.h>
 
 
 typedef struct nova_standard_math_Extension_VTable_NumericOperation nova_standard_math_Extension_VTable_NumericOperation;

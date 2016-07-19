@@ -72,13 +72,15 @@ void example_Nova_IntegerTest_Nova_main(example_Nova_IntegerTest* this, nova_sta
 	while (l1_Nova_c == 'y' || l1_Nova_c == 'Y')
 	{
 		nova_standard_time_Nova_Timer* l1_Nova_timer = (nova_standard_time_Nova_Timer*)nova_null;
-		int l3_Nova_i = 0;
+		nova_standard_datastruct_list_Nova_IntRangeIterator* nova_local_0 = (nova_standard_datastruct_list_Nova_IntRangeIterator*)nova_null;
+		int l2_Nova_i = 0;
 		
 		l1_Nova_timer = nova_standard_time_Nova_Timer_Nova_start(nova_standard_time_Nova_Timer_Nova_Timer(0, exceptionData), exceptionData);
-		l3_Nova_i = (int)(0);
-		for (; l3_Nova_i < 999999; l3_Nova_i++)
+		nova_local_0 = (nova_standard_datastruct_list_Nova_IntRangeIterator*)(nova_standard_datastruct_list_Nova_IntRange_Accessor_Nova_iterator(nova_standard_datastruct_list_Nova_IntRange_1_Nova_IntRange(0, exceptionData, (int)0, (int)999999), exceptionData));
+		while (nova_standard_datastruct_list_Nova_Iterator_virtual_Accessor_Nova_hasNext((nova_standard_datastruct_list_Nova_Iterator*)(nova_local_0), exceptionData))
 		{
-			nova_standard_primitive_number_Nova_Long_2_Nova_toString(0, exceptionData, l3_Nova_i);
+			l2_Nova_i = (int)(nova_standard_datastruct_list_Nova_Iterator_virtual_Accessor_Nova_next((nova_standard_datastruct_list_Nova_Iterator*)(nova_local_0), exceptionData));
+			nova_standard_primitive_number_Nova_Long_2_Nova_toString(0, exceptionData, l2_Nova_i);
 		}
 		nova_standard_time_Nova_Timer_Nova_stop(l1_Nova_timer, exceptionData);
 		nova_standard_io_Nova_Console_1_Nova_writeLine(0, exceptionData, nova_standard_Nova_String_0_Nova_concat(nova_standard_Nova_String_1_Nova_String(0, exceptionData, "Time taken: "), exceptionData, nova_standard_Nova_String_virtual1_Nova_concat((nova_standard_Nova_String*)(nova_standard_primitive_number_Nova_Long_2_Nova_toString(0, exceptionData, nova_standard_time_Nova_Timer_Accessor_Nova_duration(l1_Nova_timer, exceptionData))), exceptionData, nova_standard_Nova_String_1_Nova_String(0, exceptionData, "ms"))));

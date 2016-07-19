@@ -81,7 +81,7 @@ public class Array<E> implements List<E>
 	{
 		this(count)
 		
-		for (Int i = 0; i < count; i++)
+		for (i in 0..count)
 		{
 			add(data[i])
 		}
@@ -131,7 +131,7 @@ public class Array<E> implements List<E>
 	
 	shiftRight(Int left, Int right)
 	{
-		for (Int i = right - 1; i > left; i--)
+		for (i in right..left)
 		{
 			data[i] = data[i - 1]
 		}
@@ -141,12 +141,15 @@ public class Array<E> implements List<E>
 	
 	shiftLeft(Int left, Int right)
 	{
-		for (Int i = left - 1; i < right - 1; i++)
+	    left--
+	    right--
+	    
+		for (i in left..right)
 		{
 			data[i] = data[i + 1]
 		}
 		
-		data[right - 1] = null
+		data[right] = null
 	}
 	
 	public swap(Int index1, Int index2)
@@ -173,7 +176,7 @@ public class Array<E> implements List<E>
 		
 		data = tmp
 		
-		for (Int i = capacity - offset; i < capacity; i++)
+		for (i in (capacity - offset)..capacity)
 		{
 			data[i] = null
 		}
@@ -194,7 +197,7 @@ public class Array<E> implements List<E>
 	{
 		E[] array = new E[count]
 		
-		for (Int i = 0; i < count; i++)
+		for (i in 0..count)
 		{
 			array[i] = data[i]
 		}
@@ -220,7 +223,7 @@ public class Array<E> implements List<E>
 	[Override]
 	public forEach(func(E, Int, Array<E>))
 	{
-		for (Int i = 0; i < count; i++)
+		for (i in 0..count)
 		{
 			func(data[i], i, this)
 		}
@@ -273,127 +276,124 @@ public class Array<E> implements List<E>
 	}
 	
 	[Override]
-	public take(Int howMany) -> Array<E>
-	{
-		if (howMany > count)
-		{
-			howMany = count
-		}
-		
-		Array<E> list = new Array()
-		
-		for (Int i = 0; i < howMany; i++)
-		{
-			list.add(data[i])
-		}
-		
-		return list
-	}
-	
-	[Override]
-	public skip(Int howMany) -> Array<E>
-	{
-		Array<E> list = new Array()
-		
-		for (Int i = howMany; i < count; i++)
-		{
-			list.add(data[i])
-		}
-		
-		return list
-	}
-	
-	[Override]
-	public firstWhere(func(E) -> Bool) -> E
-	{
-		for (element in this)
-		{
-			if (func(element))
-			{
-				return element
-			}
-		}
-		
-		return null
-	}
-	
-	[RequireGenericType E extends String]
-	public sumSize() -> Long
+    public take(Int howMany) -> Array<E>
     {
-    	Long sum = 0
-    	
-    	for (value in this)
-    	{
-    		sum = sum + ((String)value).count
-    	}
-    	
+        howMany = howMany > count ? count : howMany
+        
+        Array<E> list = new Array()
+        
+        for (i in 0..howMany)
+        {
+            list.add(data[i])
+        }
+        
+        return list
+    }
+    
+    [Override]
+    public skip(Int howMany) -> Array<E>
+    {
+        Array<E> list = new Array()
+        
+        for (i in howMany..count)
+        {
+            list.add(data[i])
+        }
+        
+        return list
+    }
+    
+    [Override]
+    public firstWhere(func(E) -> Bool) -> E
+    {
+        for (element in this)
+        {
+            if (func(element))
+            {
+                return element
+            }
+        }
+        
+        return null
+    }
+    
+    [RequireGenericType E extends String]
+    public sumSize() -> Long
+    {
+        Long sum = 0
+        
+        for (value in this)
+        {
+            sum = sum + ((String)value).count
+        }
+        
         return sum
     }
-	
-	/*[RequireGenericType E extends Integer]
-	public sum() -> Long
+    
+    /*[RequireGenericType E extends Integer]
+    public sum() -> Long
     {
-    	Long sum = 0
-    	
-    	for (value in this)
-    	{
-    		sum = sum + (Long)value
-    	}
-    	
+        Long sum = 0
+        
+        for (value in this)
+        {
+            sum = sum + (Long)value
+        }
+        
         return sum
     }
-	
-	[RequireGenericType E extends RealNumber]
-	public sum() -> Double
+    
+    [RequireGenericType E extends RealNumber]
+    public sum() -> Double
     {
-    	Double sum = 0
-    	
-    	for (value in this)
-    	{
-    		sum += value
-    	}
-    	
+        Double sum = 0
+        
+        for (value in this)
+        {
+            sum += value
+        }
+        
         return sum
     }*/
     
-	[Override]
+    [Override]
     public reverse() -> Array<E>
     {
-    	Array<E> array = new Array(count)
-    	array.count = count
-    	
-    	Int i = 0
-    	
-    	for (element in this)
-    	{
-    		array.data[count - ++i] = element
-    	}
-    	
-    	return array
+        Array<E> array = new Array(count)
+        array.count = count
+        
+        Int i = 0
+        
+        for (element in this)
+        {
+            array.data[count - ++i] = element
+        }
+        
+        return array
     }
     
-	[Override]
+    [Override]
     public join(String delimiter) -> String
     {
-    	String str = ""
-    	
-    	Bool passed = false
-    	
-    	for (element in this)
-    	{
-    		if (passed)
-    		{
-    			str = str + delimiter
-    		}
-    		else
-    		{
-    			passed = true
-    		}
-    		
-    		str = str + element.toString()
-    	}
-    	
-    	return str
+        String str = ""
+        
+        Bool passed = false
+        
+        for (element in this)
+        {
+            if (passed)
+            {
+                str = str + delimiter
+            }
+            else
+            {
+                passed = true
+            }
+            
+            str = str + element.toString()
+        }
+        
+        return str
     }
     
     public toString() -> String

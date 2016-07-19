@@ -38,7 +38,7 @@ public class ExceptionData
 		{
 			Array<Int> list = data.codes
 			
-			for (Int i = 0; i < list.count; i++)
+			for (i in 0..list.count)
 			{
 				if (list.get(i) == code)
 				{

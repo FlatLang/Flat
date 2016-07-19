@@ -35,6 +35,7 @@ typedef char (*nova_standard_Nova_String_closure3_Nova_transform)(void*, nova_st
 #include <nova/standard/nova_standard_Nova_System.h>
 #include <nova/standard/math/nova_standard_math_Nova_Math.h>
 #include <nova/standard/datastruct/nova_standard_datastruct_Nova_Comparable.h>
+#include <nova/standard/datastruct/list/nova_standard_datastruct_list_Nova_IntRangeIterator.h>
 
 
 typedef struct nova_standard_Extension_VTable_String nova_standard_Extension_VTable_String;

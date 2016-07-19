@@ -17,7 +17,7 @@ public class ArrayDemo
 			list.add(new Animal())
 			list.add(new Spider())
 			
-			for (Int i = 0; i < list.count; i++)
+			for (i in 0..list.count)
 			{
 				Console.writeLine("Contains: " + list.get(i))
 			}
@@ -26,18 +26,18 @@ public class ArrayDemo
 			
 			Console.writeLine("--------- Removed: " + animal + " ----------")
 			
-			for (Int i = 0; i < list.count; i++)
+			for (i2 in 0..list.count)
 			{
-				Console.writeLine("Contains: " + list.get(i))
+				Console.writeLine("Contains: " + list.get(i2))
 			}
 			
 			list.add(1, new Spider())
 			
 			Console.writeLine("--------- Added a new spider at index 1 ----------")
 			
-			for (Int i = 0; i < list.count; i++)
+			for (i3 in 0..list.count)
 			{
-				Console.writeLine("Contains: " + list.get(i))
+				Console.writeLine("Contains: " + list.get(i3))
 			}
 			
 			Console.write("Run again? (Y/N)")

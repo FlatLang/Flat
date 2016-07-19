@@ -16,7 +16,7 @@ public class IntegerTest
 		{
 			Timer timer = new Timer().start()
 			
-			for (Int i = 0; i < 999999; i++)
+			for (i in 0..999999)
 			{
 				Long.toString(i)
 			}

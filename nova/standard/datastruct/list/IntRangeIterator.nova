@@ -8,7 +8,7 @@ public class IntRangeIterator implements Iterator<Int>
 	
 	visible Bool hasNext
 	{
-		get { return position < range.end }
+		get { return (range.start < range.end) ? (position < range.end) : (position >= range.end) }
 		no set
 	}
 	
@@ -18,7 +18,7 @@ public class IntRangeIterator implements Iterator<Int>
 		{
 			if (hasNext)
 			{
-				return position++
+				return (range.start < range.end) ? position++ : position--
 			}
 			
 			throw new NoSuchElementException()
@@ -38,7 +38,7 @@ public class IntRangeIterator implements Iterator<Int>
 	
 	public reset() -> Iterator<Int>
 	{
-		position = range.start
+		position = (range.start < range.end) ? range.start : (range.start - 1)
 		
 		return this
 	}

@@ -50,9 +50,9 @@ public class FileStability extends StabilityTestCase
 	
 	writeToFile(File f)
 	{
-		Console.write("Writing " + lines + " lines of data to file... ")
+		Console.write("Writing #{lines} lines of data to file... ")
 		
-		for (Int i = 0; i < lines; i++)
+		for (i in 0..lines)
 		{
 			f.writeLine(inputString)
 		}

@@ -55,7 +55,7 @@ public class Long extends Number implements Comparable<Long>, Integer
 		
 		Int nums = digits-- - offset
 		
-		for (Int index = 0; index < nums; index++)
+		for (index in 0..nums)
 		{
 			data[digits - index] = (Char)(charOffset + Math.abs(value % 10))
 			

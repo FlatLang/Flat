@@ -32,6 +32,7 @@ typedef struct example_Nova_ArrayDemo example_Nova_ArrayDemo;
 #include <example/example_Nova_Animal.h>
 #include <example/example_Nova_Dog.h>
 #include <example/example_Nova_Spider.h>
+#include <nova/standard/datastruct/list/nova_standard_datastruct_list_Nova_IntRangeIterator.h>
 
 
 typedef struct example_Extension_VTable_ArrayDemo example_Extension_VTable_ArrayDemo;

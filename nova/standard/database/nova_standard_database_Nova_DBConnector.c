@@ -124,21 +124,25 @@ nova_standard_database_Nova_ResultSet* nova_standard_database_Nova_DBConnector_N
 		int l2_Nova_numRows = 0;
 		int l2_Nova_numCols = 0;
 		nova_standard_Nova_String*** l2_Nova_rows = (nova_standard_Nova_String***)nova_null;
+		nova_standard_datastruct_list_Nova_IntRangeIterator* nova_local_0 = (nova_standard_datastruct_list_Nova_IntRangeIterator*)nova_null;
+		int l3_Nova_i = 0;
 		nova_standard_database_Nova_ResultSet* l2_Nova_r = (nova_standard_database_Nova_ResultSet*)nova_null;
-		int l4_Nova_i = 0;
 		
 		l2_Nova_numRows = (int)nova_num_rows(this->prv->nova_standard_database_Nova_DBConnector_Nova_mysql);
 		l2_Nova_numCols = (int)nova_num_cols(this->prv->nova_standard_database_Nova_DBConnector_Nova_result);
 		l2_Nova_rows = (nova_standard_Nova_String***)nova_gen_array(NOVA_MALLOC(sizeof(nova_standard_Nova_String) * l2_Nova_numRows * l2_Nova_numCols), (int[]) { l2_Nova_numRows, l2_Nova_numCols }, 0, 1, sizeof(nova_standard_Nova_String));
-		l4_Nova_i = (int)(0);
-		for (; l4_Nova_i < l2_Nova_numRows; l4_Nova_i++)
+		nova_local_0 = (nova_standard_datastruct_list_Nova_IntRangeIterator*)(nova_standard_datastruct_list_Nova_IntRange_Accessor_Nova_iterator(nova_standard_datastruct_list_Nova_IntRange_1_Nova_IntRange(0, exceptionData, (int)0, (int)l2_Nova_numRows), exceptionData));
+		while (nova_standard_datastruct_list_Nova_Iterator_virtual_Accessor_Nova_hasNext((nova_standard_datastruct_list_Nova_Iterator*)(nova_local_0), exceptionData))
 		{
-			int l6_Nova_j = 0;
+			nova_standard_datastruct_list_Nova_IntRangeIterator* nova_local_1 = (nova_standard_datastruct_list_Nova_IntRangeIterator*)nova_null;
+			int l4_Nova_j = 0;
 			
-			l6_Nova_j = (int)(0);
-			for (; l6_Nova_j < l2_Nova_numCols; l6_Nova_j++)
+			l3_Nova_i = (int)(nova_standard_datastruct_list_Nova_Iterator_virtual_Accessor_Nova_next((nova_standard_datastruct_list_Nova_Iterator*)(nova_local_0), exceptionData));
+			nova_local_1 = (nova_standard_datastruct_list_Nova_IntRangeIterator*)(nova_standard_datastruct_list_Nova_IntRange_Accessor_Nova_iterator(nova_standard_datastruct_list_Nova_IntRange_1_Nova_IntRange(0, exceptionData, (int)0, (int)l2_Nova_numCols), exceptionData));
+			while (nova_standard_datastruct_list_Nova_Iterator_virtual_Accessor_Nova_hasNext((nova_standard_datastruct_list_Nova_Iterator*)(nova_local_1), exceptionData))
 			{
-				l2_Nova_rows[l4_Nova_i][l6_Nova_j] = nova_standard_Nova_String_1_Nova_String(0, exceptionData, l1_Nova_arrays[l4_Nova_i][l6_Nova_j]);
+				l4_Nova_j = (int)(nova_standard_datastruct_list_Nova_Iterator_virtual_Accessor_Nova_next((nova_standard_datastruct_list_Nova_Iterator*)(nova_local_1), exceptionData));
+				l2_Nova_rows[l3_Nova_i][l4_Nova_j] = nova_standard_Nova_String_1_Nova_String(0, exceptionData, l1_Nova_arrays[l3_Nova_i][l4_Nova_j]);
 			}
 		}
 		l2_Nova_r = nova_standard_database_Nova_ResultSet_Nova_ResultSet(0, exceptionData, l2_Nova_rows, l2_Nova_numRows, l2_Nova_numCols);

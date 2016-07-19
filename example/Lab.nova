@@ -65,8 +65,9 @@ public class Lab
 		
 		/*
 		Async.execute({
+		    Console.writeLine("Wait a second!")
 		    Thread.sleep(1000)
-		    Console.writeLine("Waited a second")
+		    Console.writeLine("ok, now what")
 		})
 		
 		Console.writeLine("Started async execution")
@@ -127,7 +128,7 @@ public class Lab
 //			w.height = 200
 //			w.x = (i % 5) * w.width
 //			w.y = (i / 5) * w.height
-//			w.title = "Window(" + i + ") at (" + w.x + ", " + w.y + ")"
+//			w.title = "Window(#{i}) at (#{w.x}, #{w.y})"
 //
 //			w.create()
 //		}

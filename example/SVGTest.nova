@@ -29,7 +29,7 @@ public class SVGTest
 		Double radius   = 450
 		Double offset   = pi2 / 12
 		
-		for (Int i = 0; i < numVerts; i++)
+		for (i in 0..numVerts)
 		{
 			Double rad = pi2 * (i / (numVerts * 1.0)) + offset
 			
@@ -37,10 +37,10 @@ public class SVGTest
 			points[i * 2 + 1] = radius * Math.sin(rad) + radius + 10
 		}
 		
-		for (Int i = 0; i < numVerts; i++)
+		for (n in 0..numVerts)
 		{
-			Double x = points[i * 2 + 0]
-			Double y = points[i * 2 + 1]
+			Double x = points[n * 2 + 0]
+			Double y = points[n * 2 + 1]
 			
 			SVGCircle circle2 = new SVGCircle(x, y, 3)
 			
@@ -50,7 +50,7 @@ public class SVGTest
 		Double cx = radius + 10
 		Double cy = radius + 10
 		
-		for (Int i = 0; i < numPoints; i++)
+		for (p in 0..numPoints)
 		{
 			Int rand = Math.random(numVerts)
 			
@@ -60,11 +60,11 @@ public class SVGTest
 			cx = cx - (cx - x) * coefficient
 			cy = cy - (cy - y) * coefficient
 			
-			if (i > 15)
+			if (p > 15)
 			{
-				if ((i + 1) % 1000 == 0)
+				if ((p + 1) % 1000 == 0)
 				{
-					Console.writeLine(i + 1)
+					Console.writeLine(p + 1)
 				}
 				
 				SVGCircle circle = new SVGCircle(cx, cy, 1)

@@ -16,7 +16,7 @@ public class ThreadDemoImplementation extends Thread
 	
 	public run()
 	{
-		for (Int i = 0; i < 10; i++)
+		for (i in 0..10)
 		{
 			Console.writeLine(word)
 			

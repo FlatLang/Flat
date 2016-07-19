@@ -21,7 +21,7 @@ public class Polynomial
 		Array<Double> degrees = new Array()
 		Array<Byte>   signs   = new Array()
 		
-		for (Int i = 0; i < polynomial.count; i++)
+		for (i in 0..polynomial.count)
 		{
 			if (!isLetter(polynomial.chars[i]))
 			{
@@ -62,7 +62,7 @@ public class Polynomial
 	
 	static contains(Char[] array, Char c, Int length) -> Bool
 	{
-		for (Int i = 0; i < length; i++)
+		for (i in 0..length)
 		{
 			if (c == array[i])
 			{

@@ -340,14 +340,16 @@ nova_standard_datastruct_Nova_Bounds* nova_standard_math_Nova_NumericOperation_N
 
 int nova_standard_math_Nova_NumericOperation_Nova_nextOperator(nova_standard_math_Nova_NumericOperation* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_Nova_String* nova_standard_math_Nova_NumericOperation_Nova_str, int nova_standard_math_Nova_NumericOperation_Nova_start)
 {
-	int l2_Nova_i = 0;
+	nova_standard_datastruct_list_Nova_IntRangeIterator* nova_local_0 = (nova_standard_datastruct_list_Nova_IntRangeIterator*)nova_null;
+	int l1_Nova_i = 0;
 	
-	l2_Nova_i = nova_standard_math_Nova_NumericOperation_Nova_start;
-	for (; l2_Nova_i < nova_standard_math_Nova_NumericOperation_Nova_str->nova_standard_Nova_String_Nova_count; l2_Nova_i++)
+	nova_local_0 = (nova_standard_datastruct_list_Nova_IntRangeIterator*)(nova_standard_datastruct_list_Nova_IntRange_Accessor_Nova_iterator(nova_standard_datastruct_list_Nova_IntRange_1_Nova_IntRange(0, exceptionData, (int)nova_standard_math_Nova_NumericOperation_Nova_start, (int)nova_standard_math_Nova_NumericOperation_Nova_str->nova_standard_Nova_String_Nova_count), exceptionData));
+	while (nova_standard_datastruct_list_Nova_Iterator_virtual_Accessor_Nova_hasNext((nova_standard_datastruct_list_Nova_Iterator*)(nova_local_0), exceptionData))
 	{
-		if (nova_standard_math_Nova_NumericOperation_Nova_isOperator(0, exceptionData, nova_standard_math_Nova_NumericOperation_Nova_str->nova_standard_Nova_String_Nova_chars[l2_Nova_i]))
+		l1_Nova_i = (int)(nova_standard_datastruct_list_Nova_Iterator_virtual_Accessor_Nova_next((nova_standard_datastruct_list_Nova_Iterator*)(nova_local_0), exceptionData));
+		if (nova_standard_math_Nova_NumericOperation_Nova_isOperator(0, exceptionData, nova_standard_math_Nova_NumericOperation_Nova_str->nova_standard_Nova_String_Nova_chars[l1_Nova_i]))
 		{
-			return l2_Nova_i;
+			return l1_Nova_i;
 		}
 	}
 	return (int)-1;
@@ -411,12 +413,14 @@ int nova_standard_math_Nova_NumericOperation_Nova_getOperatorRank(nova_standard_
 	
 	char nova_standard_math_Nova_NumericOperation_Nova_contains(nova_standard_math_Nova_NumericOperation* this, nova_standard_exception_Nova_ExceptionData* exceptionData, char* nova_standard_math_Nova_NumericOperation_Nova_array, char nova_standard_math_Nova_NumericOperation_Nova_c, int nova_standard_math_Nova_NumericOperation_Nova_length)
 	{
-		int l2_Nova_i = 0;
+		nova_standard_datastruct_list_Nova_IntRangeIterator* nova_local_0 = (nova_standard_datastruct_list_Nova_IntRangeIterator*)nova_null;
+		int l1_Nova_i = 0;
 		
-		l2_Nova_i = (int)(0);
-		for (; l2_Nova_i < nova_standard_math_Nova_NumericOperation_Nova_length; l2_Nova_i++)
+		nova_local_0 = (nova_standard_datastruct_list_Nova_IntRangeIterator*)(nova_standard_datastruct_list_Nova_IntRange_Accessor_Nova_iterator(nova_standard_datastruct_list_Nova_IntRange_1_Nova_IntRange(0, exceptionData, (int)0, (int)nova_standard_math_Nova_NumericOperation_Nova_length), exceptionData));
+		while (nova_standard_datastruct_list_Nova_Iterator_virtual_Accessor_Nova_hasNext((nova_standard_datastruct_list_Nova_Iterator*)(nova_local_0), exceptionData))
 		{
-			if (nova_standard_math_Nova_NumericOperation_Nova_c == nova_standard_math_Nova_NumericOperation_Nova_array[l2_Nova_i])
+			l1_Nova_i = (int)(nova_standard_datastruct_list_Nova_Iterator_virtual_Accessor_Nova_next((nova_standard_datastruct_list_Nova_Iterator*)(nova_local_0), exceptionData));
+			if (nova_standard_math_Nova_NumericOperation_Nova_c == nova_standard_math_Nova_NumericOperation_Nova_array[l1_Nova_i])
 			{
 				return 1;
 			}

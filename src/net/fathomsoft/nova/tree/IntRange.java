@@ -1,5 +1,6 @@
 package net.fathomsoft.nova.tree;
 
+import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.util.Location;
@@ -70,7 +71,7 @@ public class IntRange extends Instantiation
 				return null;
 			}*/
 			
-			Instantiation inst = Instantiation.decodeStatement(parent, "new IntRange(" + startValueString + ", " + endValueString + ")", location, require);
+			Instantiation inst = Instantiation.decodeStatement(parent, "new IntRange((Int)" + startValueString + ", (Int)" + endValueString + ")", location, require);
 			
 			if (inst == null)
 			{

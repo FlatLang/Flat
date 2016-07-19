@@ -165,7 +165,7 @@ public class NumericOperation extends NumericOperand<Object>
 	
 	static nextOperator(String str, Int start) -> Int
 	{
-		for (Int i = start; i < str.count; i++)
+		for (i in start..str.count)
 		{
 			if (isOperator(str.chars[i]))
 			{
@@ -221,7 +221,7 @@ public class NumericOperation extends NumericOperand<Object>
 	
 	static contains(Char[] array, Char c, Int length) -> Bool
 	{
-		for (Int i = 0; i < length; i++)
+		for (i in 0..length)
 		{
 			if (c == array[i])
 			{

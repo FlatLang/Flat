@@ -114,23 +114,25 @@ void nova_standard_math_Nova_Polynomial_Nova_this(nova_standard_math_Nova_Polyno
 	nova_standard_datastruct_list_Nova_Array* l2_Nova_coeffs = (nova_standard_datastruct_list_Nova_Array*)nova_null;
 	nova_standard_datastruct_list_Nova_Array* l2_Nova_degrees = (nova_standard_datastruct_list_Nova_Array*)nova_null;
 	nova_standard_datastruct_list_Nova_Array* l2_Nova_signs = (nova_standard_datastruct_list_Nova_Array*)nova_null;
-	int l4_Nova_i = 0;
+	nova_standard_datastruct_list_Nova_IntRangeIterator* nova_local_0 = (nova_standard_datastruct_list_Nova_IntRangeIterator*)nova_null;
+	int l3_Nova_i = 0;
 	
 	l2_Nova_start = (int)(0);
 	l2_Nova_reading = 0;
 	l2_Nova_coeffs = nova_standard_datastruct_list_Nova_Array_0_Nova_Array(0, exceptionData);
 	l2_Nova_degrees = nova_standard_datastruct_list_Nova_Array_0_Nova_Array(0, exceptionData);
 	l2_Nova_signs = nova_standard_datastruct_list_Nova_Array_0_Nova_Array(0, exceptionData);
-	l4_Nova_i = (int)(0);
-	for (; l4_Nova_i < nova_standard_math_Nova_Polynomial_Nova_polynomial->nova_standard_Nova_String_Nova_count; l4_Nova_i++)
+	nova_local_0 = (nova_standard_datastruct_list_Nova_IntRangeIterator*)(nova_standard_datastruct_list_Nova_IntRange_Accessor_Nova_iterator(nova_standard_datastruct_list_Nova_IntRange_1_Nova_IntRange(0, exceptionData, (int)0, (int)nova_standard_math_Nova_Polynomial_Nova_polynomial->nova_standard_Nova_String_Nova_count), exceptionData));
+	while (nova_standard_datastruct_list_Nova_Iterator_virtual_Accessor_Nova_hasNext((nova_standard_datastruct_list_Nova_Iterator*)(nova_local_0), exceptionData))
 	{
-		if (!nova_standard_math_Nova_Polynomial_Nova_isLetter(0, exceptionData, nova_standard_math_Nova_Polynomial_Nova_polynomial->nova_standard_Nova_String_Nova_chars[l4_Nova_i]))
+		l3_Nova_i = (int)(nova_standard_datastruct_list_Nova_Iterator_virtual_Accessor_Nova_next((nova_standard_datastruct_list_Nova_Iterator*)(nova_local_0), exceptionData));
+		if (!nova_standard_math_Nova_Polynomial_Nova_isLetter(0, exceptionData, nova_standard_math_Nova_Polynomial_Nova_polynomial->nova_standard_Nova_String_Nova_chars[l3_Nova_i]))
 		{
 			l2_Nova_reading = 0;
 		}
 		else if (!l2_Nova_reading)
 		{
-			l2_Nova_start = l4_Nova_i;
+			l2_Nova_start = l3_Nova_i;
 			l2_Nova_reading = 1;
 		}
 		else
@@ -156,12 +158,14 @@ char nova_standard_math_Nova_Polynomial_Nova_isWhitespace(nova_standard_math_Nov
 
 char nova_standard_math_Nova_Polynomial_Nova_contains(nova_standard_math_Nova_Polynomial* this, nova_standard_exception_Nova_ExceptionData* exceptionData, char* nova_standard_math_Nova_Polynomial_Nova_array, char nova_standard_math_Nova_Polynomial_Nova_c, int nova_standard_math_Nova_Polynomial_Nova_length)
 {
-	int l2_Nova_i = 0;
+	nova_standard_datastruct_list_Nova_IntRangeIterator* nova_local_0 = (nova_standard_datastruct_list_Nova_IntRangeIterator*)nova_null;
+	int l1_Nova_i = 0;
 	
-	l2_Nova_i = (int)(0);
-	for (; l2_Nova_i < nova_standard_math_Nova_Polynomial_Nova_length; l2_Nova_i++)
+	nova_local_0 = (nova_standard_datastruct_list_Nova_IntRangeIterator*)(nova_standard_datastruct_list_Nova_IntRange_Accessor_Nova_iterator(nova_standard_datastruct_list_Nova_IntRange_1_Nova_IntRange(0, exceptionData, (int)0, (int)nova_standard_math_Nova_Polynomial_Nova_length), exceptionData));
+	while (nova_standard_datastruct_list_Nova_Iterator_virtual_Accessor_Nova_hasNext((nova_standard_datastruct_list_Nova_Iterator*)(nova_local_0), exceptionData))
 	{
-		if (nova_standard_math_Nova_Polynomial_Nova_c == nova_standard_math_Nova_Polynomial_Nova_array[l2_Nova_i])
+		l1_Nova_i = (int)(nova_standard_datastruct_list_Nova_Iterator_virtual_Accessor_Nova_next((nova_standard_datastruct_list_Nova_Iterator*)(nova_local_0), exceptionData));
+		if (nova_standard_math_Nova_Polynomial_Nova_c == nova_standard_math_Nova_Polynomial_Nova_array[l1_Nova_i])
 		{
 			return 1;
 		}

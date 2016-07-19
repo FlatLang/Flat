@@ -22,7 +22,7 @@ public class PolymorphismDemo
 	
 	static getDescriptionOfAnimalWithNumberOfLegs(Animal animals[], Int numLegs) -> String
 	{
-		for (Int i = 0; i < 2; i++)
+		for (i in 0..2)
 		{
 			if (animals[i].getNumLegs() == numLegs)
 			{

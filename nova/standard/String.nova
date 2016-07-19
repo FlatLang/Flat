@@ -79,16 +79,22 @@ public class String implements Comparable<String>
 	
 	indexOf(String search, Int start, Int direction) -> Int
 	{
-		for (Int i = start; i < count && i >= 0; i = i + direction)
+	    Int i = start
+	    
+		while (i < count && i >= 0)
 		{
 			Bool found = true
-					
-			for (Int j = 0; j < search.count && i + j < count && found; j++)
+			
+			Int j = 0
+			
+			while (j < search.count && i + j < count && found)
 			{
 				if (search.chars[j] != chars[i + j])
 				{
 					found = false
 				}
+				
+				j++
 			}
 			
 			if (found)
@@ -102,6 +108,8 @@ public class String implements Comparable<String>
 //					return i - search.count + 1
 //				}
 			}
+			
+			i = i + direction
 		}
 		
 		return -1
@@ -187,7 +195,7 @@ public class String implements Comparable<String>
 	
 	static containsChar(Char needle, Char Chars[], Int count) -> Bool
 	{
-		for (Int i = 0; i < count; i++)
+		for (i in 0..count)
 		{
 			if (needle == Chars[i])
 			{
@@ -212,7 +220,7 @@ public class String implements Comparable<String>
 	{
 		Char newData[] = new Char[count]
 		
-		for (Int i = 0; i < count; i++)
+		for (i in 0..count)
 		{
 			newData[i] = transform(chars[i])
 		}
@@ -240,7 +248,7 @@ public class String implements Comparable<String>
 	
 	public compareTo(String other) -> Int
 	{
-		for (Int i = 0; i < count && i < other.count; i++)
+		for (i in 0..Math.min(count, other.count))
 		{
 			if (chars[i] - other.chars[i] != 0)
 			{

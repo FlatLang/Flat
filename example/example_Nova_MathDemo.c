@@ -68,27 +68,29 @@ void example_Nova_MathDemo_Nova_main(example_Nova_MathDemo* this, nova_standard_
 {
 	int l1_Nova_iterations = 0;
 	nova_standard_time_Nova_Timer* l1_Nova_timer = (nova_standard_time_Nova_Timer*)nova_null;
-	int l2_Nova_i = 0;
+	nova_standard_datastruct_list_Nova_IntRangeIterator* nova_local_0 = (nova_standard_datastruct_list_Nova_IntRangeIterator*)nova_null;
+	int l1_Nova_i = 0;
 	
 	nova_standard_io_Nova_Console_1_Nova_writeLine(0, exceptionData, nova_standard_Nova_String_1_Nova_String(0, exceptionData, "Beginning benchmark..."));
 	l1_Nova_iterations = 999999;
 	l1_Nova_timer = nova_standard_time_Nova_Timer_Nova_start(nova_standard_time_Nova_Timer_Nova_Timer(0, exceptionData), exceptionData);
-	l2_Nova_i = (int)(0);
-	for (; l2_Nova_i < l1_Nova_iterations; l2_Nova_i++)
+	nova_local_0 = (nova_standard_datastruct_list_Nova_IntRangeIterator*)(nova_standard_datastruct_list_Nova_IntRange_Accessor_Nova_iterator(nova_standard_datastruct_list_Nova_IntRange_1_Nova_IntRange(0, exceptionData, (int)0, (int)l1_Nova_iterations), exceptionData));
+	while (nova_standard_datastruct_list_Nova_Iterator_virtual_Accessor_Nova_hasNext((nova_standard_datastruct_list_Nova_Iterator*)(nova_local_0), exceptionData))
 	{
+		l1_Nova_i = (int)(nova_standard_datastruct_list_Nova_Iterator_virtual_Accessor_Nova_next((nova_standard_datastruct_list_Nova_Iterator*)(nova_local_0), exceptionData));
 		TRY
 		{
 			novaEnv.nova_standard_exception_ExceptionData.addCode(exceptionData, exceptionData, 1);
 			
 			{
-				nova_standard_math_Nova_Math_Nova_sin(0, exceptionData, l2_Nova_i);
+				nova_standard_math_Nova_Math_Nova_sin(0, exceptionData, l1_Nova_i);
 			}
 		}
 		CATCH (1)
 		{
-			nova_standard_exception_Nova_Exception* l4_Nova_e = (nova_standard_exception_Nova_Exception*)nova_null;
+			nova_standard_exception_Nova_Exception* l3_Nova_e = (nova_standard_exception_Nova_Exception*)nova_null;
 			
-			l4_Nova_e = exceptionData->nova_standard_exception_Nova_ExceptionData_Nova_thrownException;
+			l3_Nova_e = exceptionData->nova_standard_exception_Nova_ExceptionData_Nova_thrownException;
 		}
 		FINALLY
 		{

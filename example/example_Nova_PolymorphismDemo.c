@@ -86,14 +86,16 @@ void example_Nova_PolymorphismDemo_Nova_main(example_Nova_PolymorphismDemo* this
 
 nova_standard_Nova_String* example_Nova_PolymorphismDemo_Nova_getDescriptionOfAnimalWithNumberOfLegs(example_Nova_PolymorphismDemo* this, nova_standard_exception_Nova_ExceptionData* exceptionData, example_Nova_Animal** example_Nova_PolymorphismDemo_Nova_animals, int example_Nova_PolymorphismDemo_Nova_numLegs)
 {
-	int l2_Nova_i = 0;
+	nova_standard_datastruct_list_Nova_IntRangeIterator* nova_local_0 = (nova_standard_datastruct_list_Nova_IntRangeIterator*)nova_null;
+	int l1_Nova_i = 0;
 	
-	l2_Nova_i = (int)(0);
-	for (; l2_Nova_i < 2; l2_Nova_i++)
+	nova_local_0 = (nova_standard_datastruct_list_Nova_IntRangeIterator*)(nova_standard_datastruct_list_Nova_IntRange_Accessor_Nova_iterator(nova_standard_datastruct_list_Nova_IntRange_1_Nova_IntRange(0, exceptionData, (int)0, (int)2), exceptionData));
+	while (nova_standard_datastruct_list_Nova_Iterator_virtual_Accessor_Nova_hasNext((nova_standard_datastruct_list_Nova_Iterator*)(nova_local_0), exceptionData))
 	{
-		if (example_Nova_Animal_virtual1_Nova_getNumLegs((example_Nova_Animal*)(example_Nova_PolymorphismDemo_Nova_animals[l2_Nova_i]), exceptionData) == example_Nova_PolymorphismDemo_Nova_numLegs)
+		l1_Nova_i = (int)(nova_standard_datastruct_list_Nova_Iterator_virtual_Accessor_Nova_next((nova_standard_datastruct_list_Nova_Iterator*)(nova_local_0), exceptionData));
+		if (example_Nova_Animal_virtual1_Nova_getNumLegs((example_Nova_Animal*)(example_Nova_PolymorphismDemo_Nova_animals[l1_Nova_i]), exceptionData) == example_Nova_PolymorphismDemo_Nova_numLegs)
 		{
-			return example_Nova_Animal_virtual1_Nova_getDescription((example_Nova_Animal*)(example_Nova_PolymorphismDemo_Nova_animals[l2_Nova_i]), exceptionData);
+			return example_Nova_Animal_virtual1_Nova_getDescription((example_Nova_Animal*)(example_Nova_PolymorphismDemo_Nova_animals[l1_Nova_i]), exceptionData);
 		}
 	}
 	return (nova_standard_Nova_String*)nova_null;

@@ -113,13 +113,13 @@ void nova_standard_datastruct_list_Nova_IntRange_1_Nova_this(nova_standard_datas
 int* nova_standard_datastruct_list_Nova_IntRange_0_Nova_toArray(nova_standard_datastruct_list_Nova_IntRange* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
 	int* l1_Nova_ints = (int*)nova_null;
-	int l2_Nova_i = 0;
+	int l1_Nova_i = 0;
 	
 	l1_Nova_ints = (int*)NOVA_MALLOC(sizeof(nova_standard_primitive_number_Nova_Int) * nova_standard_datastruct_list_Nova_IntRange_Accessor_Nova_size(this, exceptionData));
-	l2_Nova_i = this->nova_standard_datastruct_list_Nova_IntRange_Nova_start;
-	for (; l2_Nova_i < this->nova_standard_datastruct_list_Nova_IntRange_Nova_end; l2_Nova_i++)
+	l1_Nova_i = this->nova_standard_datastruct_list_Nova_IntRange_Nova_start;
+	while (l1_Nova_i < this->nova_standard_datastruct_list_Nova_IntRange_Nova_end)
 	{
-		l1_Nova_ints[l2_Nova_i - this->nova_standard_datastruct_list_Nova_IntRange_Nova_start] = l2_Nova_i;
+		l1_Nova_ints[l1_Nova_i - this->nova_standard_datastruct_list_Nova_IntRange_Nova_start] = l1_Nova_i++;
 	}
 	return l1_Nova_ints;
 }

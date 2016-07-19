@@ -222,12 +222,12 @@ public class SyntaxStability extends StabilityTestCase
 		Int num2 = 0
 		Int num3 = 0
 		
-		for (Int i = 0; i < 100; i++) num++
+		for (i in 0..100) num++
 		
-		for (Int i = 0; i < 100; i++)
+		for (i2 in 0..100)
 			num2++
 		
-		for (Int i = 0; i < 100; i++)
+		for (i3 in 0..100)
 			if (true)
 				if (true)
 				{
@@ -236,7 +236,7 @@ public class SyntaxStability extends StabilityTestCase
 		
 		if (num != 100 || num2 != 100 || num3 != 100)
 		{
-			program.fail("Inline for loop failed.")
+			program.fail("Inline for loop failed. Expected 100, 100, 100 received #{num}, #{num2}, #{num3}")
 		}
 		
 		Console.writeLine("OK")
@@ -380,7 +380,7 @@ public class SyntaxStability extends StabilityTestCase
 			program.fail("Failed to filter data correctly")
 		}
 		
-		for (Int n = 0; n < list2.count; n++)
+		for (n in 0..list2.count)
 		{
 			if (list2.get(n).count < 4)
 			{

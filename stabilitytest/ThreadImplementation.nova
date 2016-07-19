@@ -15,7 +15,7 @@ public class ThreadImplementation extends Thread
 	
 	public run()
 	{
-		for (Int i = 0; i < times; i++)
+		for (i in 0..times)
 		{
 			Thread.sleep(millis)
 		}

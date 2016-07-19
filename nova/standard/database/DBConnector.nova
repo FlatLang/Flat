@@ -83,9 +83,9 @@ public class DBConnector
 			
 			String rows[][] = new String[numRows][numCols]
 			
-			for (Int i = 0; i < numRows; i++)
+			for (i in 0..numRows)
 			{
-				for (Int j = 0; j < numCols; j++)
+				for (j in 0..numCols)
 				{
 					rows[i][j] = new String(arrays[i][j])
 				}

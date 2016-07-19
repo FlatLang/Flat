@@ -31,6 +31,7 @@ typedef struct example_database_Nova_DatabaseDemo example_database_Nova_Database
 #include <nova/standard/math/nova_standard_math_Nova_Math.h>
 #include <nova/standard/database/nova_standard_database_Nova_DBConnector.h>
 #include <nova/standard/database/nova_standard_database_Nova_ResultSet.h>
+#include <nova/standard/datastruct/list/nova_standard_datastruct_list_Nova_IntRangeIterator.h>
 
 
 typedef struct example_database_Extension_VTable_DatabaseDemo example_database_Extension_VTable_DatabaseDemo;

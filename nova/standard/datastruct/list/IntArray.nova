@@ -78,7 +78,7 @@ public class IntArray extends Array<Int>
 	[Override]
 	public forEach(func(Int, Int, IntArray))
 	{
-		for (Int i = 0; i < count; i++)
+		for (i in 0..count)
 		{
 			func((Int)get(i), i, this)
 		}
@@ -140,7 +140,7 @@ public class IntArray extends Array<Int>
 		
 		IntArray list = new IntArray()
 		
-		for (Int i = 0; i < howMany; i++)
+		for (i in 0..howMany)
 		{
 			list.add(data[i])
 		}
@@ -153,7 +153,7 @@ public class IntArray extends Array<Int>
 	{
 		IntArray list = new IntArray()
 		
-		for (Int i = howMany; i < count; i++)
+		for (i in howMany..count)
 		{
 			list.add(data[i])
 		}

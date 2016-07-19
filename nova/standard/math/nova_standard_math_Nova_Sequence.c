@@ -75,13 +75,15 @@ void nova_standard_math_Nova_Sequence_1_Nova_this(nova_standard_math_Nova_Sequen
 double nova_standard_math_Nova_Sequence_Nova_sum(nova_standard_math_Nova_Sequence* this, nova_standard_exception_Nova_ExceptionData* exceptionData, int nova_standard_math_Nova_Sequence_Nova_num)
 {
 	double l1_Nova_value = 0;
-	int l2_Nova_i = 0;
+	nova_standard_datastruct_list_Nova_IntRangeIterator* nova_local_0 = (nova_standard_datastruct_list_Nova_IntRangeIterator*)nova_null;
+	int l1_Nova_i = 0;
 	
 	l1_Nova_value = (double)(0);
-	l2_Nova_i = (int)(0);
-	for (; l2_Nova_i < nova_standard_math_Nova_Sequence_Nova_num; l2_Nova_i++)
+	nova_local_0 = (nova_standard_datastruct_list_Nova_IntRangeIterator*)(nova_standard_datastruct_list_Nova_IntRange_Accessor_Nova_iterator(nova_standard_datastruct_list_Nova_IntRange_1_Nova_IntRange(0, exceptionData, (int)0, (int)nova_standard_math_Nova_Sequence_Nova_num), exceptionData));
+	while (nova_standard_datastruct_list_Nova_Iterator_virtual_Accessor_Nova_hasNext((nova_standard_datastruct_list_Nova_Iterator*)(nova_local_0), exceptionData))
 	{
-		l1_Nova_value = l1_Nova_value + this->nova_standard_math_Nova_Sequence_Nova_values[l2_Nova_i];
+		l1_Nova_i = (int)(nova_standard_datastruct_list_Nova_Iterator_virtual_Accessor_Nova_next((nova_standard_datastruct_list_Nova_Iterator*)(nova_local_0), exceptionData));
+		l1_Nova_value = l1_Nova_value + this->nova_standard_math_Nova_Sequence_Nova_values[l1_Nova_i];
 	}
 	return l1_Nova_value;
 }

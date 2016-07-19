@@ -12,7 +12,7 @@ public class MathDemo
 		
 		Timer timer = new Timer().start()
 		
-		for (Int i = 0; i < iterations; i++)
+		for (i in 0..iterations)
 		{
 			try
 			{
