@@ -2,6 +2,8 @@ package net.fathomsoft.nova.tree;
 
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.error.SyntaxMessage;
+import net.fathomsoft.nova.tree.generics.GenericTypeArgument;
+import net.fathomsoft.nova.tree.generics.GenericTypeArgumentList;
 import net.fathomsoft.nova.util.Location;
 import net.fathomsoft.nova.util.StringUtils;
 
@@ -12,7 +14,7 @@ import net.fathomsoft.nova.util.StringUtils;
  * @since	v0.2.10 May 29, 2014 at 1:50:25 PM
  * @version	v0.2.38 Dec 6, 2014 at 5:19:17 PM
  */
-public class Priority extends IValue implements Accessible
+public class Priority extends Value implements Accessible
 {
 	/**
 	 * @see net.fathomsoft.nova.tree.Node#Node(Node, Location)
@@ -51,6 +53,17 @@ public class Priority extends IValue implements Accessible
 		return null;
 	}
 	
+	@Override
+	public GenericTypeArgumentList getGenericTypeArgumentList()
+	{
+		return getContents().getReturnedNode().getGenericTypeArgumentList();
+	}
+	
+	public GenericTypeArgument getGenericTypeArgumentFromParameter(String type)
+	{
+		return ((Accessible)getReturnedContents()).getGenericTypeArgumentFromParameter(type);
+	}
+	
 	/**
 	 * Get the Value that represents the contents inside the
 	 * parentheses.<br>
@@ -67,6 +80,47 @@ public class Priority extends IValue implements Accessible
 	public Value getContents()
 	{
 		return (Value)getChild(0);
+	}
+	
+	public Value getReturnedContents()
+	{
+		return getContents().getReturnedNode();
+	}
+	
+	@Override
+	public String getType()
+	{
+		return getReturnedContents().getType();
+	}
+	
+	@Override
+	public void setTypeValue(String type)
+	{
+		getReturnedContents().setTypeValue(type);
+	}
+	
+	@Override
+	public int getArrayDimensions()
+	{
+		return getReturnedContents().getArrayDimensions();
+	}
+	
+	@Override
+	public void setArrayDimensions(int arrayDimensions)
+	{
+		getReturnedContents().setArrayDimensions(arrayDimensions);
+	}
+	
+	@Override
+	public byte getDataType()
+	{
+		return getReturnedContents().getDataType();
+	}
+	
+	@Override
+	public void setDataType(byte type)
+	{
+		getReturnedContents().setDataType(type);
 	}
 
 	@Override
@@ -162,8 +216,6 @@ public class Priority extends IValue implements Accessible
 			
 			if (n.decodeContents(statement, contentsLoc, require))
 			{
-				n.setType(n.getContents().getType());
-				
 				return n;
 			}
 		}
@@ -224,7 +276,7 @@ public class Priority extends IValue implements Accessible
 //		
 //		return true
 		
-		node = SyntaxTree.decodeValue(this, contents, location, require);
+		node = SyntaxTree.decodeValue(getAncestorWithScope(), contents, location, require);
 		
 //		node = Literal.decodeStatement(this, contents, location, true, true);
 //		
