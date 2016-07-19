@@ -112,9 +112,9 @@ public class ForEachLoop extends Loop
 		return (Variable)getArgumentList().getChild(1);
 	}
 	
-	public Identifier getIteratorValue()
+	public Accessible getIteratorValue()
 	{
-		return (Identifier)getVisibleChild(0);
+		return (Accessible)getVisibleChild(0);
 	}
 	
 	public Value getHasNextCheck()
@@ -174,7 +174,7 @@ public class ForEachLoop extends Loop
 	 * @return The generated node, if it was possible to translated it
 	 * 		into a ForLoop.
 	 */
-	public static ForEachLoop decodeStatement(Node parent, String statement, Location location, boolean require)
+	public static Loop decodeStatement(Node parent, String statement, Location location, boolean require)
 	{
 		if (StringUtils.findNextWord(statement).equals(IDENTIFIER))
 		{
@@ -194,7 +194,20 @@ public class ForEachLoop extends Loop
 			{
 				String contents = statement.substring(bounds.getStart(), bounds.getEnd());
 				
-				if (n.decodeArguments(contents, bounds, require))
+				Value iterator = n.decodeArguments(contents, bounds, require);
+				
+				if (iterator instanceof IntRange)
+				{
+					IntRange range = (IntRange)iterator; 
+					
+					String name = n.getIdentifier().getName();
+					String type = range.getStartValue().getType();
+					
+					ForLoop loop = ForLoop.decodeStatement(parent, "for (" + type + " " + name + " = " + range.getStartValue().generateNovaInput() + "; " + name + " < " + range.getEndValue().generateNovaInput() + "; " + name + "++)" + statement.substring(bounds.getEnd() + 1), location, require);
+					
+					return loop;
+				}
+				else if (iterator != null)
 				{
 					if (n.setupVariables())
 					{
@@ -206,7 +219,7 @@ public class ForEachLoop extends Loop
 								{
 									if (n.decodeScopeFragment(statement, bounds))
 									{
-										n.removeChild(n.getIteratorValue());
+										n.removeChild(n.getIteratorValue().toValue());
 										
 										return n;
 									}
@@ -259,7 +272,7 @@ public class ForEachLoop extends Loop
 	private boolean decodeIteratorAssignment(boolean require)
 	{
 		Assignment assignment = Assignment.decodeStatement(getParent().getAncestorWithScope().getScope(),
-				getIterator().generateNovaInput() + " = " + getIteratorValue().generateNovaInput(),
+				getIterator().generateNovaInput() + " = " + getIteratorValue().toValue().generateNovaInput(),
 				getIterator().getLocationIn().asNew(),
 				require);
 		
@@ -293,7 +306,7 @@ public class ForEachLoop extends Loop
 		return true;
 	}
 	
-	private boolean decodeArguments(String contents, Bounds bounds, boolean require)
+	private Value decodeArguments(String contents, Bounds bounds, boolean require)
 	{
 		Location newLoc = new Location(getLocationIn());
 		newLoc.addBounds(bounds.getStart(), bounds.getEnd());
@@ -301,11 +314,32 @@ public class ForEachLoop extends Loop
 		// TODO: This is not strict enough.
 		String arguments[] = contents.split("\\s+in\\s+");
 		
-		if (arguments.length <2)return false;
+		if (arguments.length < 2)
+		{
+			return null;
+		}
 		
-		return arguments.length >= 2 &&
-				decodeVariable(arguments[0], newLoc, require) &&
-				decodeIterator(arguments[1], newLoc, require);
+		Value value = SyntaxTree.decodeValue(this, arguments[1], newLoc, require);
+		
+		if (value == null)
+		{
+			return null;
+		}
+		
+		if (!decodeVariable(arguments[0], newLoc, require))
+		{
+			return null;
+		}
+		if (value instanceof IntRange)
+		{
+			return value;
+		}
+		
+		value = decodeValue(arguments[1], value, newLoc, require);
+		
+		decodeIterator(value, newLoc, require);
+		
+		return value;
 	}
 	
 	private boolean decodeVariable(String argument, Location location, boolean require)
@@ -324,21 +358,14 @@ public class ForEachLoop extends Loop
 		return true;
 	}
 	
-	private boolean decodeIterator(String argument, Location location, boolean require)
+	private Value decodeValue(String argument, Value value, Location location, boolean require)
 	{
-		Value value = SyntaxTree.decodeValue(this, argument, location, require);
-		
-		if (value == null)
-		{
-			return false;
-		}
-		
 		ClassDeclaration iterator = getProgram().getClassDeclaration("nova/standard/datastruct/list/Iterator");
 		ClassDeclaration valueType = value.getReturnedNode().getTypeClass();
 		
 		if (valueType == null)
 		{
-			return false;
+			return null;
 		}
 		
 		if (!valueType.isOfType(iterator))
@@ -347,13 +374,20 @@ public class ForEachLoop extends Loop
 			
 			if (!value.getReturnedNode().getTypeClass().isOfType(iterable))
 			{
-				return SyntaxMessage.queryError("Type of '" + argument + "' must be Iterable or Iterator", this, require);
+				SyntaxMessage.queryError("Type of '" + argument + "' must be Iterable or Iterator", this, require);
+				
+				return null;
 			}
 			
-			value = SyntaxTree.decodeValue(this, value.generateNovaInput() + ".iterator", location, require);
+			value = SyntaxTree.decodeValue(this, "(" + value.generateNovaInput() + ").iterator", location, require);
 		}
 		
-		Identifier identifier = (Identifier)value;
+		return value;
+	}
+	
+	private boolean decodeIterator(Value value, Location location, boolean require)
+	{
+		Accessible identifier = (Accessible)value;
 		
 		Variable iteratorCall = (Variable)identifier.getReturnedNode();
 		
