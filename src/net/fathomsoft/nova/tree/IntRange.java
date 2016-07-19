@@ -71,7 +71,16 @@ public class IntRange extends Instantiation
 				return null;
 			}*/
 			
-			Instantiation inst = Instantiation.decodeStatement(parent, "new IntRange((Int)" + startValueString + ", (Int)" + endValueString + ")", location, require);
+			if (!startValueString.startsWith("(Int)"))
+			{
+				startValueString = "(Int)" + startValueString;
+			}
+			if (!endValueString.startsWith("(Int)"))
+			{
+				endValueString = "(Int)" + endValueString;
+			}
+			
+			Instantiation inst = Instantiation.decodeStatement(parent, "new IntRange(" + startValueString + ", " + endValueString + ")", location, require);
 			
 			if (inst == null)
 			{
@@ -86,6 +95,22 @@ public class IntRange extends Instantiation
 		}
 		
 		return null;
+	}
+	
+	public Value getStartValue()
+	{
+		return (Value)((MethodCall)getIdentifier()).getArgumentList().getVisibleChild(0);
+	}
+	
+	public Value getEndValue()
+	{
+		return (Value)((MethodCall)getIdentifier()).getArgumentList().getVisibleChild(1);
+	}
+	
+	@Override
+	public StringBuilder generateNovaInput(StringBuilder builder, boolean outputChildren)
+	{
+		return getStartValue().generateNovaInput(builder).append(OPERATOR).append(getEndValue());
 	}
 	
 	/**
