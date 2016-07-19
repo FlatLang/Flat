@@ -235,9 +235,9 @@ public class Assignment extends Value
 		
 		boolean sameType = assignmentType.equals(assignedType);
 		
-		if (sameType && assignment instanceof Identifier)
+		if (sameType && assignment instanceof Accessible)
 		{
-			MethodCall call = (MethodCall)((Identifier)assignment).getLastAccessedOfType(MethodCall.class, false);
+			MethodCall call = (MethodCall)((Accessible)assignment).getLastAccessedOfType(MethodCall.class, false);
 			
 			if (call != null)
 			{
