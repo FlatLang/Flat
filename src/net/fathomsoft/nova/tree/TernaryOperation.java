@@ -152,11 +152,11 @@ public class TernaryOperation extends IValue
 			
 			if (trueType != commonClass)
 			{
-				trueValue = getFalseValue().generateCTypeCast() + trueValue;
+				trueValue = getFalseValue().getReturnedNode().generateCTypeCast() + trueValue;
 			}
 			else
 			{
-				falseValue = getTrueValue().generateCTypeCast() + falseValue;
+				falseValue = getTrueValue().getReturnedNode().generateCTypeCast() + falseValue;
 			}
 		}
 		
