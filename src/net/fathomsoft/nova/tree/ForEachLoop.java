@@ -41,6 +41,12 @@ public class ForEachLoop extends Loop
 		addChild(argumentsNode, this);
 	}
 	
+	@Override
+	public boolean pendingScopeFragment(Node node)
+	{
+		return getScope().getNumVisibleChildren() == 1;
+	}
+	
 	/**
 	 * @see net.fathomsoft.nova.tree.Node#getNumDefaultChildren()
 	 */
