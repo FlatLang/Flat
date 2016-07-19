@@ -330,11 +330,9 @@ public class Variable extends Identifier
 	{
 		GenericTypeArgument arg = super.getGenericTypeArgument(index, value, require);
 		
-		if (arg.isGenericType() && getReferenceNode() instanceof Variable)
+		if (arg.isGenericType())
 		{
-			Variable ref = (Variable)getReferenceNode();
-			
-			GenericTypeArgument extracted = ref.getGenericTypeArgumentFromParameter(arg.getType());
+			GenericTypeArgument extracted = getReferenceNode().getGenericTypeArgumentFromParameter(arg.getType());
 			
 			if (extracted != null)
 			{
