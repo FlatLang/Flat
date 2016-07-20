@@ -661,11 +661,6 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 		return firstParenthIndex >= 0 && !StringUtils.findNextWord(statement).equals(ExternalMethodDeclaration.PREFIX);
 	}
 	
-	public boolean isUserMade()
-	{
-		return true;
-	}
-	
 	/**
 	 * Check to see if the return type of the method is an external type.
 	 */

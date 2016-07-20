@@ -39,6 +39,12 @@ public class VirtualLocalDeclaration extends LocalDeclaration
 		
 	}
 	
+	@Override
+	public boolean isUserMade()
+	{
+		return false;
+	}
+	
 	/**
 	 * @see net.fathomsoft.nova.tree.Node#cloneTo(Node)
 	 */

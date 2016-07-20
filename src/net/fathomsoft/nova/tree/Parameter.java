@@ -4,6 +4,7 @@ import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.error.SyntaxMessage;
+import net.fathomsoft.nova.tree.lambda.LambdaMethodDeclaration;
 import net.fathomsoft.nova.tree.variables.Variable;
 import net.fathomsoft.nova.tree.variables.VariableDeclaration;
 import net.fathomsoft.nova.util.Location;
@@ -38,6 +39,58 @@ public class Parameter extends LocalDeclaration
 	public void setImplicit(boolean implicit)
 	{
 		SyntaxMessage.queryError("Implicit types are not supported by parameters", this, implicit);
+	}
+	
+	public boolean isUnnamedParameter()
+	{
+		NovaMethodDeclaration method = getParentMethod();
+		
+		if (method instanceof LambdaMethodDeclaration && getName().startsWith("_"))
+		{
+			Integer parsed = tryParse(getName().substring(1));
+			
+			return parsed != null && method.getParameterList().getParameterIndex(getName()) == parsed;
+		}
+		
+		return false;
+	}
+	
+	private static Integer tryParse(String text)
+	{
+		try
+		{
+			return Integer.parseInt(text);
+		}
+		catch (NumberFormatException e)
+		{
+			return null;
+		}
+	}
+	
+	@Override
+	public boolean isUserMade()
+	{
+		if (!super.isUserMade())
+		{
+			return false;
+		}
+		
+		NovaMethodDeclaration method = getParentMethod();
+		
+		return method != null && !method.isUserMade() && !isUnnamedParameter();
+	}
+	
+	@Override
+	public boolean isUsed()
+	{
+		if (super.isUsed())
+		{
+			return true;
+		}
+		
+		NovaMethodDeclaration method = getParentMethod();
+		
+		return method == null || method.isExternal();
 	}
 	
 	/**

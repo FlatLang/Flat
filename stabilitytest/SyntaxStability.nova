@@ -354,7 +354,7 @@ public class SyntaxStability extends StabilityTestCase
 		return i.count >= 4
 	}
 	
-	static foreachClosure(String s, Int i, Array<String> list)
+	static foreachClosure(String s)
 	{
 		if (s.count < 4)
 		{

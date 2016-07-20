@@ -390,6 +390,15 @@ public class LocalDeclaration extends VariableDeclaration
 				setType(implicitType);
 			}
 		}
+		
+		if (phase == SyntaxTree.PHASE_PRE_GENERATION)
+		{
+			if (!isUsed())
+			{
+				isUsed();
+				//SyntaxMessage.warning("Variable '" + getName() + "' is never used", this, false);
+			}
+		}
 
 		return result;
 	}

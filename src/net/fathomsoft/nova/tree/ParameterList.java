@@ -66,7 +66,7 @@ public class ParameterList<E extends Value> extends TypeList<E>
 	
 	private Parameter generateReferenceParameter()
 	{
-		Parameter reference = new Parameter(this, getLocationIn());
+		Parameter reference = new ReferenceParameter(this, getLocationIn());
 		reference.setType(getParentClass().getName());
 		reference.setName(OBJECT_REFERENCE_IDENTIFIER, true);
 		reference.setDataType(Value.POINTER);
@@ -83,7 +83,7 @@ public class ParameterList<E extends Value> extends TypeList<E>
 	
 	private Parameter generateExceptionDataParameter(Location locationIn)
 	{
-		Parameter exceptionData = new Parameter(this, locationIn);
+		Parameter exceptionData = new ExceptionDataParameter(this, locationIn);
 		exceptionData.setName(Exception.EXCEPTION_DATA_IDENTIFIER, true);
 		exceptionData.setType("ExceptionData", true, false);
 		

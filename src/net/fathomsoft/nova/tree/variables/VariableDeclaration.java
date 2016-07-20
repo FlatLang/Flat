@@ -492,7 +492,17 @@ public class VariableDeclaration extends IIdentifier
 		
 		return result;
 	}
-
+	
+	public boolean isUserMade()
+	{
+		return true;
+	}
+	
+	public boolean isUsed()
+	{
+		return !isUserMade() || references.size() > 0;
+	}
+	
 	public void addDefaultGenericTypeArguments()
 	{
 		addDefaultGenericTypeArguments(false);

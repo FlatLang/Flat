@@ -40,6 +40,12 @@ public class Destructor extends BodyMethodDeclaration
 		return true;
 	}
 	
+	@Override
+	public boolean isUsed()
+	{
+		return true;
+	}
+	
 	/**
 	 * @see net.fathomsoft.nova.tree.Node#generateCSource(StringBuilder)
 	 */
