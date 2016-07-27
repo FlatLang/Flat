@@ -55,6 +55,14 @@ public class Lab
 		
 		var list = new Array<String>(a, 7)
 		var list2 = new IntArray(b, 7)
+
+		Array<Array<String>> test = new Array()
+
+		test.add(new Array<String>())
+
+		//test.get(0).add("hey")
+
+		Console.writeLine("multi-dimensional array: #{test}")
 		
 		//Console.writeLine("Sum: " + list2.sum())
 		
