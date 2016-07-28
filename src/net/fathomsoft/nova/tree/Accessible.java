@@ -21,6 +21,11 @@ public interface Accessible
 	
 	public GenericCompatible getContext();
 	
+	public default GenericCompatible getReferenceContext()
+	{
+		return (GenericCompatible)getReferenceNode();
+	}
+	
 	public default Value toValue()
 	{
 		return (Value)this;
