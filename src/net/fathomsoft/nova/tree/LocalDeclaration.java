@@ -198,6 +198,8 @@ public class LocalDeclaration extends VariableDeclaration
 					
 					if (!type.isGenericType() && !SyntaxUtils.validateImported(n, type.getTypeClassLocation()))
 					{
+						SyntaxMessage.queryError("Invalid type '" + type.getType() + "'", n, require);
+						
 						return null;
 					}
 				}
