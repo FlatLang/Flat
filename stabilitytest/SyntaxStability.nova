@@ -449,7 +449,7 @@ public class SyntaxStability extends StabilityTestCase
 	
 	checkElvis()
 	{
-	    Console.write("Checking elvis functionality")
+	    Console.write("Checking elvis functionality... ")
 	    
 	    var str = "this isnt null"
         var str2 = null
