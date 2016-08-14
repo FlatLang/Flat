@@ -60,11 +60,11 @@ public class Lab
 
 		test.add(new Array<String>())
 
-		//test.get(0).add("hey")
+		test.get(0).add("hey")
 
 		Console.writeLine("multi-dimensional array: #{test}")
 		
-		//Console.writeLine("Sum: " + list2.sum())
+		//Console.writeLine("Sum: #{list2.sum()}")
 		
 		/*list.filter(x -> x.count > 10).map(x -> getClassByName(x))
 		    .forEach(x -> {
