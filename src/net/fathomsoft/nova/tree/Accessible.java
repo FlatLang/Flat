@@ -35,11 +35,19 @@ public interface Accessible
 	{
 		ClassDeclaration typeClass = null;
 		
-		Value value = toValue();
+		Value value = (Value)getReferenceContext();
 		
 		if (value.isGenericType())
 		{
-			return getReferenceNode().getGenericTypeArgumentFromParameter(type);
+			//GenericTypeArgument arg = value.getNovaTypeClass().getGenericTypeParameter(value.getType()).getCorrespondingArgument(value);
+			GenericTypeArgument arg = getReferenceNode().getGenericTypeArgumentFromParameter(type); 
+			
+			if (arg.getGenericTypeArgumentList().getNumVisibleChildren() > 0)
+			{
+				return arg.getGenericTypeArgumentList().getVisibleChild(0);
+			}
+			
+			return arg;
 		}
 		else
 		{
@@ -310,10 +318,10 @@ public interface Accessible
 				return this;
 			}
 			
-			return getReferenceNode();
+			return getReferenceNode(false, true);
 		}
 		
-		Accessible reference = getReferenceNode();
+		Accessible reference = getReferenceNode(false, true);
 		
 		Accessible node = reference.getLastAccessingOfType(new Class<?>[] { Closure.class, MethodCall.class }, true);
 		
@@ -362,9 +370,14 @@ public interface Accessible
 	
 	public default Accessible getReferenceNode(boolean requireAccessingNode)
 	{
+		return getReferenceNode(requireAccessingNode, false);
+	}
+	
+	public default Accessible getReferenceNode(boolean requireAccessingNode, boolean skipPriority)
+	{
 		Value n = (Value)this;
 		
-		Accessible accessing = getAccessingNode();
+		Accessible accessing = getAccessingNode(skipPriority);
 		
 		if (accessing != null || requireAccessingNode)
 		{
@@ -679,6 +692,45 @@ public interface Accessible
 		return node.getParent() == this && !((Node)this).containsChild(node);
 	}
 	
+	default Cast getCast()
+	{
+		if (!toValue().isDecoding() && getReturnedNode() == this)
+		{
+			Accessible root = getRootAccessNode();
+			
+			if (root.getParent() instanceof Cast)
+			{
+				Cast cast = (Cast)root.getParent();
+				
+				if (cast.getParent() instanceof Priority)
+				{
+					Priority p = ((Priority)cast.getParent());
+					
+					if (!p.getContents().isAncestorOf((Node)this))
+					{
+						return p.getCast();
+					}
+				}
+				
+				return cast;
+			}
+		}
+		
+		return null;
+	}
+	
+	default Cast getExplicitCast()
+	{
+		Cast c = getCast();
+		
+		while (c != null && !c.isExplicitCast())
+		{
+			c = ((Accessible)c.getParent()).getCast();
+		}
+		
+		return c;
+	}
+	
 	/**
 	 * Get the Identifier Node that accesses the specified Identifier
 	 * Node. If the Identifier is not accessed through a Node, then
@@ -689,11 +741,26 @@ public interface Accessible
 	 */
 	public default Accessible getAccessingNode()
 	{
+		return getAccessingNode(false);
+	}
+	
+	public default Accessible getAccessingNode(boolean skipPriority)
+	{
 		Node n = (Node)this;
 		
 		if (canAccess() && n.getParent() instanceof Accessible && !n.getParent().containsScope())
 		{
 			Accessible id = (Accessible)n.getParent();
+			
+			if (!skipPriority && id instanceof Priority)
+			{
+				Priority priority = (Priority)id;
+				
+				if (this != priority.getContents())
+				{
+					return (Accessible)priority.getReturnedContents();
+				}
+			}
 			
 			if (id.isDecodingAccessedNode(n) || id.getAccessedNode() == this)
 			{
