@@ -33,6 +33,7 @@ typedef struct stabilitytest_Nova_SyntaxStability stabilitytest_Nova_SyntaxStabi
 #include <stabilitytest/stabilitytest_Nova_StabilityTest.h>
 #include <stabilitytest/stabilitytest_Nova_StabilityTestCase.h>
 #include <stabilitytest/stabilitytest_Nova_UnstableException.h>
+#include <nova/standard/datastruct/list/nova_standard_datastruct_list_Nova_ArrayIterator.h>
 
 
 typedef struct stabilitytest_Extension_VTable_SyntaxStability stabilitytest_Extension_VTable_SyntaxStability;

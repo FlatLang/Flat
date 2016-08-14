@@ -32,6 +32,7 @@ typedef struct stabilitytest_Nova_LambdaStability stabilitytest_Nova_LambdaStabi
 #include <nova/standard/datastruct/list/nova_standard_datastruct_list_Nova_LinkedList.h>
 #include <stabilitytest/stabilitytest_Nova_StabilityTest.h>
 #include <stabilitytest/stabilitytest_Nova_StabilityTestCase.h>
+#include <nova/standard/datastruct/list/nova_standard_datastruct_list_Nova_ArrayIterator.h>
 
 
 typedef struct stabilitytest_Extension_VTable_LambdaStability stabilitytest_Extension_VTable_LambdaStability;

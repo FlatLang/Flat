@@ -548,7 +548,7 @@ void stabilitytest_Nova_SyntaxStability_Nova_checkElvis(stabilitytest_Nova_Synta
 	nova_standard_Nova_String* l1_Nova_result1 = (nova_standard_Nova_String*)nova_null;
 	nova_standard_Nova_Object* l1_Nova_result2 = (nova_standard_Nova_Object*)nova_null;
 	
-	nova_standard_io_Nova_Console_0_Nova_write(0, exceptionData, nova_standard_Nova_String_1_Nova_String(0, exceptionData, "Checking elvis functionality"));
+	nova_standard_io_Nova_Console_0_Nova_write(0, exceptionData, nova_standard_Nova_String_1_Nova_String(0, exceptionData, "Checking elvis functionality... "));
 	l1_Nova_str = nova_standard_Nova_String_1_Nova_String(0, exceptionData, "this isnt null");
 	l1_Nova_str2 = (nova_standard_Nova_Object*)nova_null;
 	l1_Nova_result1 = l1_Nova_str != (nova_standard_Nova_String*)nova_null ? l1_Nova_str : nova_standard_Nova_String_1_Nova_String(0, exceptionData, "wtf");

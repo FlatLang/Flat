@@ -97,7 +97,7 @@ char nova_standard_primitive_number_Nova_Char_1_Nova_toLowerCase(nova_standard_p
 	l1_Nova_id = (int)nova_standard_primitive_number_Nova_Char_Nova_c;
 	if (l1_Nova_id >= 65 && l1_Nova_id <= 90)
 	{
-		return (char)(l1_Nova_id + 32);
+		return (char)(char)(l1_Nova_id + 32);
 	}
 	return nova_standard_primitive_number_Nova_Char_Nova_c;
 }
@@ -109,7 +109,7 @@ char nova_standard_primitive_number_Nova_Char_Nova_toUpperCase(nova_standard_pri
 	l1_Nova_id = (int)nova_standard_primitive_number_Nova_Char_Nova_c;
 	if (l1_Nova_id >= 97 && l1_Nova_id <= 122)
 	{
-		return (char)(l1_Nova_id - 32);
+		return (char)(char)(l1_Nova_id - 32);
 	}
 	return nova_standard_primitive_number_Nova_Char_Nova_c;
 }

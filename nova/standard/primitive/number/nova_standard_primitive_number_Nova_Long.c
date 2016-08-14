@@ -120,7 +120,7 @@ nova_standard_Nova_String* nova_standard_primitive_number_Nova_Long_2_Nova_toStr
 	l3_Nova_index = (int)0;
 	for (; l3_Nova_index < (int)l1_Nova_nums; l3_Nova_index++)
 	{
-		l1_Nova_data[l1_Nova_digits - l3_Nova_index] = (char)(l1_Nova_charOffset + nova_standard_math_Nova_Math_0_Nova_abs(0, exceptionData, nova_standard_primitive_number_Nova_Long_Nova_value % 10));
+		l1_Nova_data[l1_Nova_digits - l3_Nova_index] = (char)((char)(l1_Nova_charOffset + nova_standard_math_Nova_Math_0_Nova_abs(0, exceptionData, nova_standard_primitive_number_Nova_Long_Nova_value % 10)));
 		nova_standard_primitive_number_Nova_Long_Nova_value = nova_standard_primitive_number_Nova_Long_Nova_value / 10;
 	}
 	return nova_standard_Nova_String_1_Nova_String(0, exceptionData, l1_Nova_data);
