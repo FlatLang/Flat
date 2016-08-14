@@ -1,5 +1,6 @@
 package net.fathomsoft.nova.tree;
 
+import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.error.SyntaxMessage;
@@ -44,6 +45,19 @@ public class Literal extends IValue implements Accessible
 		}
 		
 		return getType();
+	}
+	
+	@Override
+	public String getType()
+	{
+		Cast cast = getCast();
+		
+		if (cast != null)
+		{
+			return cast.getType();
+		}
+		
+		return super.getType();
 	}
 	
 	/**
