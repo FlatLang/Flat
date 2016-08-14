@@ -262,7 +262,25 @@ public class Variable extends Identifier
 	@Override
 	public String getType()
 	{
-		return declaration == null ? null : declaration.getType();
+		if (declaration == null)
+		{
+			return null;
+		}
+		
+		Cast cast = getCast();
+		
+		if (cast != null)
+		{
+			return cast.getType();
+		}
+		
+		return declaration.getType();
+	}
+	
+	@Override
+	public String getTypeStringValue()
+	{
+		return declaration.getTypeStringValue();
 	}
 	
 	/**
@@ -289,6 +307,18 @@ public class Variable extends Identifier
 	@Override
 	public byte getDataType()
 	{
+		if (declaration == null)
+		{
+			return 0;
+		}
+		
+		Cast cast = getExplicitCast();
+		
+		if (cast != null)
+		{
+			return cast.getDataType();
+		}
+		
 		return declaration.getDataType();
 	}
 	
@@ -332,7 +362,7 @@ public class Variable extends Identifier
 		
 		if (arg.isGenericType())
 		{
-			GenericTypeArgument extracted = getReferenceNode().getGenericTypeArgumentFromParameter(arg.getType());
+			GenericTypeArgument extracted = getGenericTypeArgumentFromParameter(arg.getType());
 			
 			if (extracted != null)
 			{
@@ -374,7 +404,6 @@ public class Variable extends Identifier
 	{
 		if (getDeclaration() instanceof ClosureDeclaration && getParent() instanceof ArgumentList)
 		{
-			Nova.debuggingBreakpoint(getName().equals("closure"));
 			ClosureDeclaration declaration = (ClosureDeclaration)getDeclaration();
 			
 			builder.append(", ");
@@ -399,9 +428,10 @@ public class Variable extends Identifier
 					s += ", ";
 				}
 				
-				GenericTypeArgument arg = getGenericTypeArgumentFromParameter(args.getVisibleChild(i).getType());
+				//GenericTypeArgument arg = getGenericTypeArgumentFromParameter(args.getVisibleChild(i).getType());
+				GenericTypeArgument arg = args.getVisibleChild(i);
 				
-				s += arg.getType();
+				s += arg.generateNovaInput(new StringBuilder(), true, this);
 			}
 			
 			s += GENERIC_END;
@@ -413,7 +443,7 @@ public class Variable extends Identifier
 	}
 	
 	@Override
-	public String getNovaType(Value context)
+	public Value getNovaTypeValue(Value context)
 	{
 		if (isGenericType())
 		{
@@ -421,11 +451,11 @@ public class Variable extends Identifier
 			
 			if (extractedType != null)
 			{
-				return extractedType.generateNovaInput().toString();
+				return extractedType;
 			}
 		}
 		
-		return super.getNovaType(context);
+		return super.getNovaTypeValue(context);
 	}
 	
 	/**
@@ -564,6 +594,6 @@ public class Variable extends Identifier
 	
 	public String toString()
 	{
-		return generateNovaInput() + " of type " + getDeclaration().generateNovaType();
+		return generateNovaInput() + " of type " + getDeclaration().generateNovaType();// + generateGenericType();
 	}
 }
