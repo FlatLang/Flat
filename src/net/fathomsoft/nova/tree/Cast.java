@@ -5,6 +5,7 @@ import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.error.SyntaxErrorException;
 import net.fathomsoft.nova.error.SyntaxMessage;
+import net.fathomsoft.nova.tree.variables.Super;
 import net.fathomsoft.nova.util.Bounds;
 import net.fathomsoft.nova.util.Location;
 import net.fathomsoft.nova.util.StringUtils;
@@ -41,6 +42,22 @@ public class Cast extends IValue
 	public Value getValueNode()
 	{
 		return (Value)getChild(super.getNumDefaultChildren() + 0);
+	}
+	
+	@Override
+	public Value getReturnedNode()
+	{
+		return getValueNode().getReturnedNode();
+	}
+	
+	public boolean isExplicitCast()
+	{
+		if (getParent() instanceof Super)
+		{
+			return false;
+		}
+		
+		return true;
 	}
 	
 	/**
