@@ -8,6 +8,7 @@ import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.tree.*;
+import net.fathomsoft.nova.tree.generics.GenericTypeArgument;
 import net.fathomsoft.nova.util.Location;
 import net.fathomsoft.nova.util.StringUtils;
 import net.fathomsoft.nova.util.SyntaxUtils;
@@ -171,8 +172,24 @@ public class LambdaExpression extends Value
 					closure.getParameterList().forEach(x -> {
 						int id = i[0]++;
 						
-						String type = closure.getParameterList().getParameter(id).generateNovaType(call.getReferenceNode().toValue()).toString();
+						Value value = closure.getParameterList().getParameter(id).getNovaTypeValue(call);
+						
+						String type = value.getNovaType() + "<";
 						String name = "";
+						
+						for (GenericTypeArgument arg : value.getGenericTypeArgumentList())
+						{
+							type += arg.getNovaTypeValue(call).getNovaType();
+						}
+						
+						if (type.endsWith(GENERIC_START))
+						{
+							type = type.substring(0, type.length() - 1);
+						}
+						else
+						{
+							type += GENERIC_END;
+						}
 						
 						if (finalVars.length > id)
 						{
@@ -192,16 +209,17 @@ public class LambdaExpression extends Value
 					
 					if (closure.getType() != null)
 					{
-						methodDeclaration += " -> " + closure.generateNovaType(call);
+						methodDeclaration += " -> " + closure.getNovaTypeValue(call).getNovaType();
 					}
 					
 					BodyMethodDeclaration bodyMethod = BodyMethodDeclaration.decodeStatement(parent.getParentClass(true), methodDeclaration, location.asNew(), require);
-					LambdaMethodDeclaration method = new LambdaMethodDeclaration(bodyMethod.getParent(), bodyMethod.getLocationIn());
 					
-					bodyMethod.cloneTo(method);
-					
-					if (method != null)
+					if (bodyMethod != null)
 					{
+						LambdaMethodDeclaration method = new LambdaMethodDeclaration(bodyMethod.getParent(), bodyMethod.getLocationIn());
+						
+						bodyMethod.cloneTo(method);
+						
 						method.getParentClass().addChild(method);
 
 						boolean requiresReturn = method.getType() != null && (!block || !operation.contains("\n"));
@@ -315,7 +333,20 @@ public class LambdaExpression extends Value
 		
 		return getReturnedNode().getType();
 	}
-
+	
+	@Override
+	public String getTypeStringValue()
+	{
+		Value returned = getReturnedNode();
+		
+		if (returned == null)
+		{
+			return null;
+		}
+		
+		return getReturnedNode().getTypeStringValue();
+	}
+	
 	@Override
 	public void setTypeValue(String type)
 	{
