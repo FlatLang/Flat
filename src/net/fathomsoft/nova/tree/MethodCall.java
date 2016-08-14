@@ -205,6 +205,19 @@ public class MethodCall extends Variable
 		return method;
 	}
 	
+	@Override
+	public GenericCompatible getReferenceContext()
+	{
+		GenericCompatible context = super.getReferenceContext();
+		
+		if (context instanceof Instantiation)
+		{
+			return this;
+		}
+		
+		return context;
+	}
+	
 	/**
 	 * Get the Method instance that this MethodCall is calling.
 	 * 
@@ -681,7 +694,7 @@ public class MethodCall extends Variable
 	public String getGenericReturnType()
 	{
 		GenericTypeParameter param = getGenericTypeParameter();
-		GenericTypeArgument arg = param.getCorrespondingArgument(this.getReferenceNode().toValue());
+		GenericTypeArgument arg = param.getCorrespondingArgument(this/*.getReferenceNode()*/.toValue());
 		
 		if (arg == null)
 		{
@@ -1057,7 +1070,7 @@ public class MethodCall extends Variable
 			}
 		}
 		
-		return methodDeclaration.areCompatibleParameterTypes(getContext(), arguments.getTypes());
+		return methodDeclaration.areCompatibleParameterTypes(this, arguments.getTypes());
 	}
 	
 	/**
