@@ -271,11 +271,11 @@ public class Closure extends Variable
 			return true;
 		}
 
-		MethodDeclaration declaration = getMethodDeclaration(getMethodCall().getReferenceNode().toValue()/*.getContext()/*getReferenceNode().toValue()*/, declarations[0].getName());
+		MethodDeclaration declaration = getMethodDeclaration(getMethodCall()/*.getContext()/*getReferenceNode().toValue()*/, declarations[0].getName());
 
 		if (declaration == null)
 		{
-			getMethodDeclaration(getMethodCall().getReferenceNode().toValue(), declarations[0].getName());
+			getMethodDeclaration(getMethodCall(), declarations[0].getName());
 			SyntaxMessage.error("Method '" + declarations[0].getName() + "' is not compatible", this);
 			
 			return false;
@@ -399,7 +399,10 @@ public class Closure extends Variable
 			Value value1 = list1.getParameter(i);
 			Value value2 = list2.getParameter(i);
 			
-			if (!value1.getTypeClass().isOfType(value2.getTypeClass()))
+			ClassDeclaration class1 = value1.getNovaTypeValue(getMethodCall()).getTypeClass();
+			ClassDeclaration class2 = value2.getNovaTypeValue(getMethodCall()).getTypeClass();
+			
+			if (!class1.isOfType(class2))
 			{
 				boolean valid = false;
 				
@@ -416,7 +419,7 @@ public class Closure extends Variable
 				
 				if (!valid)
 				{
-					SyntaxMessage.error("Argument " + (i + 1) + " of the method '" + method.getName() + "()' of type '" + value2.getType() + "' is not applicable for required closure type of '" + value1.getType() + "'", this);
+					SyntaxMessage.error("Argument " + (i + 1) + " of the method '" + method.getName() + "()' of type '" + value2.getType() + "' is not compatible for required closure type of '" + value1.getType() + "'", this);
 				}
 			}
 		}
