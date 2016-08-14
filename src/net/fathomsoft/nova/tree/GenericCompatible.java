@@ -46,40 +46,40 @@ public interface GenericCompatible
 	 * 
 	 * @return A String array containing the names of the generic parameters.
 	 */
-	public GenericTypeArgumentList getGenericTypeArgumentList();
+	GenericTypeArgumentList getGenericTypeArgumentList();
 	
-	public default int getNumGenericTypeArguments()
+	default int getNumGenericTypeArguments()
 	{
 		return getGenericTypeArgumentList().getNumVisibleChildren();
 	}
 	
-	public default GenericTypeArgument getGenericTypeArgument(int index)
+	default GenericTypeArgument getGenericTypeArgument(int index)
 	{
 		return getGenericTypeArgument(index, (Node)this);
 	}
 	
-	public static void throwMissingGenericTypeError(Node value)
+	static void throwMissingGenericTypeError(Node value)
 	{
 		throwMissingGenericTypeError(value, true);
 	}
 	
-	public static boolean throwMissingGenericTypeError(Node value, boolean require)
+	static boolean throwMissingGenericTypeError(Node value, boolean require)
 	{
 		Nova.debuggingBreakpoint(require);
 		return SyntaxMessage.queryError("Missing generic type declaration", value, require);
 	}
 	
-	public default GenericTypeArgument getGenericTypeArgument(int index, boolean require)
+	default GenericTypeArgument getGenericTypeArgument(int index, boolean require)
 	{
 		return getGenericTypeArgument(index, (Node)this, require);
 	}
 	
-	public default GenericTypeArgument getGenericTypeArgument(int index, Node value)
+	default GenericTypeArgument getGenericTypeArgument(int index, Node value)
 	{
 		return getGenericTypeArgument(index, value, true);
 	}
 	
-	public default GenericTypeArgument getGenericTypeArgument(int index, Node value, boolean require)
+	default GenericTypeArgument getGenericTypeArgument(int index, Node value, boolean require)
 	{
 		if (index < 0 || index >= getNumGenericTypeArguments())
 		{
@@ -91,12 +91,12 @@ public interface GenericCompatible
 		return getGenericTypeArgumentList().getVisibleChild(index);
 	}
 	
-	public default String getGenericTypeArgumentType(String parameterName)
+	default String getGenericTypeArgumentType(String parameterName)
 	{
 		return getGenericTypeArgumentType(parameterName, (Value)this);
 	}
 	
-	public default String getGenericTypeArgumentType(String parameterName, Value value)
+	default String getGenericTypeArgumentType(String parameterName, Value value)
 	{
 		Nova.debuggingBreakpoint(getGenericTypeArgumentInstance(parameterName, value) == null);
 		GenericTypeArgument type = getGenericTypeArgumentInstance(parameterName, value);
@@ -114,17 +114,17 @@ public interface GenericCompatible
 		return type.getType();
 	}
 	
-	public default GenericTypeArgument getGenericTypeArgumentInstance(String parameterName)
+	default GenericTypeArgument getGenericTypeArgumentInstance(String parameterName)
 	{
 		return getGenericTypeArgumentInstance(parameterName, (Node)this);
 	}
 	
-	public default GenericTypeArgument getGenericTypeArgumentInstance(String parameterName, Node value)
+	default GenericTypeArgument getGenericTypeArgumentInstance(String parameterName, Node value)
 	{
 		return getGenericTypeArgumentInstance(parameterName, value, true);
 	}
 	
-	public default GenericTypeArgument getGenericTypeArgumentInstance(String parameterName, Node value, boolean require)
+	default GenericTypeArgument getGenericTypeArgumentInstance(String parameterName, Node value, boolean require)
 	{
 		VariableDeclaration decl  = (VariableDeclaration)this;
 		ClassDeclaration    clazz = null;
@@ -166,36 +166,29 @@ public interface GenericCompatible
 		}
 	}
 	
-	/**
-	 * Add a generic parameter name to the list of generic parameters
-	 * that the class accepts. See {@link #getGenericParameterNames()}
-	 * for more information on what generic parameters are.
-	 * 
-	 * @param parameterName The name of the generic parameter to add.
-	 */
-	public default void addGenericTypeArgumentName(String parameterName)
+	default void addGenericTypeArgumentName(String parameterName)
 	{
 		addGenericTypeArgumentName(getGenericTypeArgumentList(), parameterName);
 	}
 	
-	public default void addGenericTypeArgumentName(GenericTypeArgumentList list, String parameterName)
+	default void addGenericTypeArgumentName(GenericTypeArgumentList list, String parameterName)
 	{
 		GenericTypeArgument type = getGenericTypeArgumentName(parameterName);
 		
 		list.addChild(type);
 	}
 
-	public default GenericTypeArgument getGenericTypeArgumentName(String parameterName)
+	default GenericTypeArgument getGenericTypeArgumentName(String parameterName)
 	{
 		return SyntaxUtils.getGenericTypeArgumentName((Node)this, parameterName);
 	}
 
-	public default void decodeGenericTypeArguments(String statement, Bounds genericBounds)
+	default void decodeGenericTypeArguments(String statement, Bounds genericBounds)
 	{
 		decodeGenericTypeArguments(statement, genericBounds, true);
 	}
 	
-	public default void decodeGenericTypeArguments(String statement, Bounds genericBounds, boolean endingsIncluded)
+	default void decodeGenericTypeArguments(String statement, Bounds genericBounds, boolean endingsIncluded)
 	{
 		Bounds clone = genericBounds.clone();
 		
@@ -210,7 +203,7 @@ public interface GenericCompatible
 		decodeGenericTypeArguments(params);
 	}
 	
-	public default void decodeGenericTypeArguments(String params)
+	default void decodeGenericTypeArguments(String params)
 	{
 		GenericTypeArgument[] args = getGenericTypeArguments(params);
 		
@@ -220,7 +213,7 @@ public interface GenericCompatible
 		}
 	}
 
-	public default GenericTypeArgument[] getGenericTypeArguments(String params)
+	default GenericTypeArgument[] getGenericTypeArguments(String params)
 	{
 		return SyntaxUtils.getGenericTypeArguments((Node)this, params);
 	}
@@ -232,7 +225,7 @@ public interface GenericCompatible
 	 * @return The error output, if there was an error. If the test was
 	 * 		successful, null is returned.
 	 */
-	public static String test(TestContext context)
+	static String test(TestContext context)
 	{
 		context.importClass("nova/standard/datastruct/list/Stack");
 		
