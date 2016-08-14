@@ -2082,7 +2082,7 @@ public class ClassDeclaration extends InstanceDeclaration
 		return param;
 	}
 	
-	private GenericTypeParameter getGenericTypeParameter(String parameterName)
+	public GenericTypeParameter getGenericTypeParameter(String parameterName)
 	{
 		for (GenericTypeParameter param : getGenericTypeParameterDeclaration())
 		{
