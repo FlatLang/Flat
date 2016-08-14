@@ -2,6 +2,7 @@ package net.fathomsoft.nova.tree;
 
 import net.fathomsoft.nova.tree.generics.GenericTypeParameterDeclaration;
 import net.fathomsoft.nova.tree.variables.VariableDeclaration.DeclarationData;
+import net.fathomsoft.nova.util.Bounds;
 import net.fathomsoft.nova.util.SyntaxUtils;
 
 /**
@@ -44,9 +45,15 @@ public interface AbstractValue extends GenericCompatible
 		
 		GenericTypeParameterDeclaration.searchGenerics(type, data);
 		
-		if (data.getGenericsRemaining() > 0)
+		while (data.getGenericsRemaining() > 0)
 		{
-			//data.
+			Bounds bounds = data.getSkipBounds(data.getGenericsRemaining() - 1);
+			
+			decodeGenericTypeArguments(type, bounds);
+			
+			type = bounds.extractPreString(type) + bounds.extractPostString(type);
+			
+			data.decrementGenericsRemaining();
 		}
 		
 		if (checkType)
@@ -94,6 +101,8 @@ public interface AbstractValue extends GenericCompatible
 	 * @return The type that the statement returns.
 	 */
 	public String getType();
+	
+	public String getTypeStringValue();
 	
 	/**
 	 * Set the value of the type variable without checking any
