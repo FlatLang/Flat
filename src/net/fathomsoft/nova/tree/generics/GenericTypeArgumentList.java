@@ -4,6 +4,7 @@ import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.tree.GenericCompatible;
 import net.fathomsoft.nova.tree.Node;
 import net.fathomsoft.nova.tree.TypeList;
+import net.fathomsoft.nova.tree.Value;
 import net.fathomsoft.nova.util.Location;
 
 /**
@@ -29,6 +30,11 @@ public class GenericTypeArgumentList extends TypeList<GenericTypeArgument>
 	@Override
 	public StringBuilder generateNovaInput(StringBuilder builder, boolean outputChildren)
 	{
+		return generateNovaInput(builder, outputChildren, null);
+	}
+	
+	public StringBuilder generateNovaInput(StringBuilder builder, boolean outputChildren, Value context)
+	{
 		if (getNumVisibleChildren() > 0)
 		{
 			builder.append(GenericCompatible.GENERIC_START);
@@ -41,7 +47,7 @@ public class GenericTypeArgumentList extends TypeList<GenericTypeArgument>
 				builder.append(", ");
 			}
 			
-			getVisibleChild(i).generateNovaInput(builder);
+			getVisibleChild(i).generateNovaInput(builder, true, context);
 		}
 		
 		if (getNumVisibleChildren() > 0)
