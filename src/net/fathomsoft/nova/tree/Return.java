@@ -232,6 +232,7 @@ public class Return extends IValue
 		}
 		else if (!SyntaxUtils.validateCompatibleTypes(method, value.getReturnedNode()))
 		{
+			SyntaxUtils.validateCompatibleTypes(method, value.getReturnedNode());
 			queryReturnError(method, true);
 		}
 		
