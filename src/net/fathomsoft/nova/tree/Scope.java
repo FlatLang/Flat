@@ -171,7 +171,7 @@ public class Scope extends Node
 		
 		Value returned = virtual.getReturnedNode();
 		
-		String type = returned.generateNovaType().toString();
+		String type = returned.generateNovaType(returned).toString();
 		
 		//Nova.debuggingBreakpoint(addBefore.getParentClass().getName().equals("Node") && getParentMethod().getName().equals("inorder"));
 		String     decl   = type + " nova_local_" + getParentMethod().getScope().localVariableID++ + " = null";
@@ -184,6 +184,8 @@ public class Scope extends Node
 		
 		Variable assignee = (Variable)assign.getAssigneeNode();
 		VariableDeclaration assigneeDecl = assignee.getDeclaration();
+		
+		assigneeDecl.addDefaultGenericTypeArguments();
 		
 		VirtualLocalDeclaration localDecl = new VirtualLocalDeclaration(assigneeDecl.getParent(), assigneeDecl.getLocationIn());
 		assigneeDecl.cloneTo(localDecl);
