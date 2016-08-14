@@ -94,6 +94,12 @@ public class Priority extends Value implements Accessible
 	}
 	
 	@Override
+	public String getTypeStringValue()
+	{
+		return getReturnedContents().getTypeStringValue();
+	}
+	
+	@Override
 	public void setTypeValue(String type)
 	{
 		getReturnedContents().setTypeValue(type);

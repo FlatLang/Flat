@@ -113,6 +113,13 @@ public class IIdentifier extends Identifier
 		return type;
 	}
 	
+	@Override
+	// Dont forget about IValue.getTypeStringValue()!!!!
+	public String getTypeStringValue()
+	{
+		return type;
+	}
+	
 	/**
 	 * @see net.fathomsoft.nova.tree.AbstractValue#setTypeValue(java.lang.String)
 	 */

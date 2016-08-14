@@ -1,5 +1,6 @@
 package net.fathomsoft.nova.tree;
 
+import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.util.Location;
 
@@ -58,6 +59,12 @@ public class IValue extends Value
 	@Override
 	// Dont forget about IIdentifier!!!!
 	public String getType()
+	{
+		return type;
+	}
+	
+	@Override
+	public String getTypeStringValue()
 	{
 		return type;
 	}

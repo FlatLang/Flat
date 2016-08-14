@@ -133,6 +133,12 @@ public class Assignment extends Value
 	}
 	
 	@Override
+	public String getTypeStringValue()
+	{
+		return getAssignmentNode().getTypeStringValue();
+	}
+	
+	@Override
 	public void setTypeValue(String type)
 	{
 		getAssignmentNode().setTypeValue(type);
@@ -528,6 +534,8 @@ public class Assignment extends Value
 						(returnedLeft.isPrimitive() && (!left.isOfType(right) && !SyntaxUtils.arePrimitiveTypesCompatible(leftType, rightType)) ||
 						!returnedLeft.isPrimitive() && !right.isOfType(left))))
 				{
+					returnedLeft.getTypeClass();
+					returnedRight.getTypeClass();
 					SyntaxMessage.error("Type '" + returnedRight.getType() + "' is not compatible with type '" + returnedLeft.getType() + "'", this, location);
 				}
 			}
