@@ -11,7 +11,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  *
  * @author	Braden Steffaniak
  */
-public class TernaryOperation extends IValue
+public class TernaryOperation extends IValue implements Accessible
 {
 	/**
 	 * @see net.fathomsoft.nova.tree.Node#Node(Node, Location)
@@ -72,7 +72,7 @@ public class TernaryOperation extends IValue
 			
 			String conditionString = statement.substring(0, questionMarkIndex).trim();
 			
-			Value condition = SyntaxTree.decodeValue(n, conditionString, location, require);
+			Value condition = SyntaxTree.decodeValue(parent, conditionString, location, require);
 			
 			if (condition == null)
 			{
@@ -95,7 +95,7 @@ public class TernaryOperation extends IValue
 				
 				trueValue = condition;
 				
-				condition = SyntaxTree.decodeValue(n, conditionString, location, require);
+				condition = SyntaxTree.decodeValue(parent, conditionString, location, require);
 				
 				if (condition == null)
 				{
@@ -107,7 +107,7 @@ public class TernaryOperation extends IValue
 			
 			String falseValueString = statement.substring(colonIndex + 1).trim();
 			
-			Value falseValue = SyntaxTree.decodeValue(n, falseValueString, location, require);
+			Value falseValue = SyntaxTree.decodeValue(parent, falseValueString, location, require);
 			
 			if (falseValue == null)
 			{
