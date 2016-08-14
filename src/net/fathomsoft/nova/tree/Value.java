@@ -284,11 +284,16 @@ public abstract class Value extends Node implements AbstractValue
 	
 	public String generateGenericType()
 	{
+		return generateGenericType(null);
+	}
+	
+	public String generateGenericType(Value context)
+	{
 		GenericTypeArgumentList args = getGenericTypeArgumentList();
 		
 		if (args != null)
 		{
-			return args.generateNovaInput().toString();
+			return args.generateNovaInput(new StringBuilder(), true, context).toString();
 		}
 		
 		return "";
@@ -391,6 +396,16 @@ public abstract class Value extends Node implements AbstractValue
 	
 	public String getTypeClassLocation()
 	{
+		if (this instanceof Accessible)
+		{
+			Cast c = ((Accessible)this).getExplicitCast();
+			
+			if (c != null)
+			{
+				return SyntaxUtils.getTypeClassLocation(c, c.getType());
+			}
+		}
+		
 		String type = null;
 		
 		if (isGenericType() && getGenericReturnType() != null)//getParentClass(true).containsGenericTypeParameter(getType()))
@@ -820,7 +835,7 @@ public abstract class Value extends Node implements AbstractValue
 	 */
 	public StringBuilder generateNovaType(StringBuilder builder, Value context, boolean checkArray)
 	{
-		builder.append(getNovaType(context));
+		builder.append(getNovaTypeValue(context).getType());
 		
 		if (checkArray && isArray())
 		{
@@ -831,7 +846,7 @@ public abstract class Value extends Node implements AbstractValue
 			builder.append('*');
 		}
 		
-		builder.append(generateGenericType());
+		builder.append(generateGenericType(context));
 		
 		return builder;
 	}
@@ -843,7 +858,12 @@ public abstract class Value extends Node implements AbstractValue
 	
 	public String getNovaType(Value context)
 	{
-		return getType();
+		return getNovaTypeValue(context).generateNovaType().toString();
+	}
+	
+	public Value getNovaTypeValue(Value context)
+	{
+		return this;
 	}
 	
 	public ClassDeclaration getNovaTypeClass()
@@ -1030,7 +1050,7 @@ public abstract class Value extends Node implements AbstractValue
 		super.cloneTo(node, cloneChildren);
 
 		node.setArrayDimensions(getArrayDimensions());
-		node.setType(getType(), true, false, false);
+		node.setType(getTypeStringValue(), true, false, false);
 		node.setDataType(getDataType());
 		
 		return node;
