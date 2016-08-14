@@ -2199,6 +2199,7 @@ public class SyntaxUtils
 					if (!isTypeCompatible(context, value, given, false))
 					{
 						isTypeCompatible(context, value, given, false);
+						param.getCorrespondingArgument(context);
 						SyntaxMessage.error("Incorrect type '" + given.getType() + "' given for required generic type of '" + value.getType() + "' type", given);
 						
 						return false;
@@ -2598,15 +2599,16 @@ public class SyntaxUtils
 		GenericTypeArgument type = new GenericTypeArgument(parent, Location.INVALID);
 		type.setType(parameterName, true, false, false);
 		
-		DeclarationData data = new DeclarationData();
+		/*DeclarationData data = new DeclarationData();
 		
 		GenericTypeParameterDeclaration.searchGenerics(parameterName, data);
 		type.iterateWords(parameterName, data, true);
 		
 		if (data.containsSkipBounds())
 		{
-			type.setType(data.getSkipBounds(0).trimString(parameterName), true, false);
-		}
+			//type.setType(data.getSkipBounds(0).trimString(parameterName), true, false);
+			int j = 4;
+		}*/
 		
 		return type;
 	}
