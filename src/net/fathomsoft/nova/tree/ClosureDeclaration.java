@@ -74,21 +74,21 @@ public class ClosureDeclaration extends Parameter implements CallableMethod
 	}
 	
 	@Override
-	public String getNovaType(Value context)
+	public Value getNovaTypeValue(Value context)
 	{
 		if (isGenericType())
 		{
 			if (getParentMethod() != null && getParentMethod().containsGenericTypeParameter(getType()))
 			{
-				return getParentMethod().getGenericTypeParameter(getType()).generateNovaType().toString();
+				return getParentMethod().getGenericTypeParameter(getType());
 			}
 			if (getParentClass().containsGenericTypeParameter(getType()))
 			{
-				return getParentClass().getGenericTypeParameter(getType(), this).generateNovaType().toString();
+				return getParentClass().getGenericTypeParameter(getType(), this);
 			}
 		}
 		
-		return super.getNovaType(context);
+		return super.getNovaTypeValue(context);
 	}
 	
 	/**
