@@ -26,6 +26,11 @@ public class GenericTypeArgument extends IValue implements GenericCompatible
 	public GenericTypeArgument(Node temporaryParent, Location locationIn)
 	{
 		super(temporaryParent, locationIn);
+		
+		if (getParentGenericTypeArgumentList() == null)
+		{
+			addChild(new GenericTypeArgumentList(this, locationIn), this);
+		}
 	}
 
 	/**
@@ -33,6 +38,11 @@ public class GenericTypeArgument extends IValue implements GenericCompatible
 	 */
 	@Override
 	public GenericTypeArgumentList getGenericTypeArgumentList()
+	{
+		return getNumVisibleChildren() > 0 ? (GenericTypeArgumentList)getChild(super.getNumDefaultChildren() + 0) : null;
+	}
+	
+	public GenericTypeArgumentList getParentGenericTypeArgumentList()
 	{
 		return getParent() instanceof GenericTypeArgumentList ? (GenericTypeArgumentList)getParent() : null;
 	}
@@ -106,7 +116,7 @@ public class GenericTypeArgument extends IValue implements GenericCompatible
 	 */
 	public Value getValue()
 	{
-		return (Value)getGenericTypeArgumentList().getParent();
+		return (Value)getParentGenericTypeArgumentList().getParent();
 	}
 	
 	/**
@@ -195,11 +205,25 @@ public class GenericTypeArgument extends IValue implements GenericCompatible
 	@Override
 	public StringBuilder generateNovaInput(StringBuilder builder, boolean outputChildren)
 	{
-		return builder.append(getType());// + (getDefaultType() != "Object" ? " extends " + getDefaultType() : ""));
+		return generateNovaInput(builder, outputChildren, null);
+	}
+	
+	public StringBuilder generateNovaInput(StringBuilder builder, boolean outputChildren, Value context)
+	{
+		builder.append(getNovaType(context));// + (getDefaultType() != "Object" ? " extends " + getDefaultType() : ""));
+		
+		GenericTypeArgumentList args = getGenericTypeArgumentList();
+		
+		if (args != null && args.getNumVisibleChildren() > 0)
+		{
+			args.generateNovaInput(builder);
+		}
+		
+		return builder;
 	}
 	
 	@Override
-	public String getNovaType(Value context)
+	public Value getNovaTypeValue(Value context)
 	{
 		if (isGenericType())
 		{
@@ -240,13 +264,17 @@ public class GenericTypeArgument extends IValue implements GenericCompatible
 			
 			if (arg != null)
 			{
-				return arg.getNovaType(context);
+				return arg.getNovaTypeValue(context);
 			}
 			
-			return getDefaultType();
+			//return getDefaultType();
+			IValue value = new IValue(this, getLocationIn());
+			value.setTypeValue(getDefaultType());
+			
+			return value;
 		}
 		
-		return super.getNovaType(context);
+		return super.getNovaTypeValue(context);
 	}
 	
 	/**
@@ -300,9 +328,15 @@ public class GenericTypeArgument extends IValue implements GenericCompatible
 	{
 		String str = getType();
 		
-		if (carets)
+		GenericTypeArgumentList args = getGenericTypeArgumentList();
+		
+		if (args != null && args.getNumVisibleChildren() > 0)
 		{
-			str = "<" + str + ">";
+			str += GENERIC_START + args.toString() + GENERIC_END;
+		}
+		else if (carets)
+		{
+			str = GENERIC_START + str + GENERIC_END;
 		}
 		
 		return str;
@@ -310,6 +344,6 @@ public class GenericTypeArgument extends IValue implements GenericCompatible
 	
 	public String toString()
 	{
-		return toString(true);
+		return toString(false);
 	}
 }
