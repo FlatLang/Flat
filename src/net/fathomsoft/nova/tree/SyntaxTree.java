@@ -927,7 +927,7 @@ public class SyntaxTree
 				
 				if (node == null)
 				{
-					node = (Accessible) decodeStatementOfType(parent, statement, location, require, Priority.class);
+					node = (Accessible)decodeStatementOfType(parent, statement, location, require, Priority.class);
 				}
 			}
 		}
