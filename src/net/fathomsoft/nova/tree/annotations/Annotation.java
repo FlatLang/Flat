@@ -9,6 +9,7 @@ import net.fathomsoft.nova.tree.Node;
 import net.fathomsoft.nova.tree.variables.VariableDeclaration;
 import net.fathomsoft.nova.util.Location;
 import net.fathomsoft.nova.util.StringUtils;
+import net.fathomsoft.nova.util.SyntaxUtils;
 
 /**
  * {@link Node} extension that represents
@@ -40,6 +41,18 @@ public class Annotation extends Node
 		}
 	}
 	
+	@Override
+	public StringBuilder generateCHeaderFragment(StringBuilder builder)
+	{
+		return builder;
+	}
+	
+	@Override
+	public StringBuilder generateCSourceFragment(StringBuilder builder)
+	{
+		return builder;
+	}
+	
 	/**
 	 * Decode the given statement into a {@link Annotation} instance, if
 	 * possible. If it is not possible, this method returns null.<br>
@@ -62,31 +75,52 @@ public class Annotation extends Node
 	 */
 	public static Annotation decodeStatement(Node parent, String statement, Location location, boolean require)
 	{
-		if (statement.startsWith("[") && statement.endsWith("]"))
+		if (statement.startsWith("["))
 		{
-			statement = statement.substring(1, statement.length() - 1).trim();
+			int index = StringUtils.findEndingMatch(statement, 0, '[', ']');
 			
-			String name = StringUtils.findNextWord(statement);
-			String arguments = statement.substring(name.length());
-			
-			arguments = StringUtils.removeSurroundingParenthesis(arguments);
-			
-			Annotation n = RequireGenericTypeAnnotation.decodeStatement(parent, name, arguments, location, require);
-			
-			if (n == null)
+			if (index > 0)
 			{
-				n = ObsoleteAnnotation.decodeStatement(parent, name, arguments, location, require);
+				statement = statement.substring(1, index).trim();
 				
-				if (n == null)
+				String name = StringUtils.findNextWord(statement);
+				
+				if (name != null)
 				{
-					n = OverrideAnnotation.decodeStatement(parent, name, arguments, location, require);
+					String arguments = statement.substring(name.length());
+					
+					arguments = StringUtils.removeSurroundingParenthesis(arguments);
+					
+					Annotation n = RequireGenericTypeAnnotation.decodeStatement(parent, name, arguments, location, require);
+					
+					if (n == null)
+					{
+						n = ObsoleteAnnotation.decodeStatement(parent, name, arguments, location, require);
+						
+						if (n == null)
+						{
+							n = OverrideAnnotation.decodeStatement(parent, name, arguments, location, require);
+							
+							if (n == null)
+							{
+								n = PrimitiveArrayAnnotation.decodeStatement(parent, name, arguments, location, require);
+							}
+						}
+					}
+					
+					return n;
 				}
 			}
-			
-			return n;
 		}
 		
 		return null;
+	}
+	
+	public static String getFragment(String statement)
+	{
+		int index = StringUtils.findEndingMatch(statement, 0, '[', ']');
+		
+		return statement.substring(index + 1).trim();
 	}
 	
 	@Override
