@@ -1,6 +1,5 @@
 package net.fathomsoft.nova.tree;
 
-import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.error.SyntaxMessage;
@@ -131,13 +130,13 @@ public class Constructor extends BodyMethodDeclaration
 		{
 			Stack<AssignmentMethod> calls = new Stack<AssignmentMethod>();
 			
-			ClassDeclaration extended = getParentClass().getExtendedClass();
+			ClassDeclaration extended = getParentClass().getExtendedClassDeclaration();
 			
 			while (extended != null)
 			{
 				calls.push(extended.getAssignmentMethodNode());
 				
-				extended = extended.getExtendedClass();
+				extended = extended.getExtendedClassDeclaration();
 			}
 			
 			while (!calls.isEmpty())
@@ -268,7 +267,7 @@ public class Constructor extends BodyMethodDeclaration
 	
 	private void addSuperCallFor(Stack<MethodCall> constructorCalls, Constructor current)
 	{
-		ClassDeclaration clazz = current.getParentClass().getExtendedClass();
+		ClassDeclaration clazz = current.getParentClass().getExtendedClassDeclaration();
 		
 		if (clazz == null)
 		{
