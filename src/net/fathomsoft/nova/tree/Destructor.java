@@ -1,14 +1,11 @@
 package net.fathomsoft.nova.tree;
 
-import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.tree.exceptionhandling.Exception;
 import net.fathomsoft.nova.tree.variables.FieldDeclaration;
 import net.fathomsoft.nova.tree.variables.InstanceFieldList;
-import net.fathomsoft.nova.util.Bounds;
 import net.fathomsoft.nova.util.Location;
-import net.fathomsoft.nova.util.StringUtils;
 
 /**
  * MethodDeclaration extension that represents the declaration of a Destructor
@@ -145,7 +142,7 @@ public class Destructor extends BodyMethodDeclaration
 		}
 		else
 		{
-			if (field.isArray())
+			if (field.isPrimitiveArray())
 			{
 //				void nova_free_array(void** array, int* dimensionSizes, int dimension, int dimensions, del_function function);
 //				builder.append("nova_free_array(" + field.generateCUseOutput(new StringBuilder(), true) + ", );");
