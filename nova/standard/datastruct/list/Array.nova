@@ -11,10 +11,8 @@ public class Array<E> implements List<E>
 	visible Int	count
 	visible Int position
 	
-	E[] data
-	
-	[RequireGenericType E extends String]
-	visible String stringsOnly = "hey"
+	[PrimitiveArray]
+	visible E[] data
 	
 	visible Bool empty
 	{
@@ -77,7 +75,7 @@ public class Array<E> implements List<E>
 		increaseSize(count)
 	}
 	
-	public construct(E data[], Int count)
+	public construct([PrimitiveArray] E[] data, Int count)
 	{
 		this(count)
 		
@@ -87,7 +85,17 @@ public class Array<E> implements List<E>
 		}
 	}
 	
-	public add(E element)
+	public addAll(E[] data) -> Array<E>
+	{
+	    for (d in data)
+	    {
+	        add(d)
+	    }
+	    
+	    return this
+	}
+	
+	public add(E element) -> Array<E>
 	{
 		if (position >= capacity)
 		{
@@ -97,6 +105,8 @@ public class Array<E> implements List<E>
 		data[position++] = element
 		
 		count = Math.max(position, count)
+		
+		return this
 	}
 	
 	public add(Int index, E element)
@@ -174,7 +184,8 @@ public class Array<E> implements List<E>
 		
 		capacity = count
 		
-		E tmp[] = new E[capacity]
+		[PrimitiveArray]
+		E[] tmp = new E[capacity]
 		
 		arrayCopy(tmp, 0, data, 0, this.count, capacity, 4)
 		
@@ -199,20 +210,20 @@ public class Array<E> implements List<E>
 	[Override]
 	public toArray() -> E[]
 	{
-		E[] array = new E[count]
+		E[] array = new Array(count)
 		
 		for (i in 0..count)
 		{
-			array[i] = data[i]
+			array.set(i, data[i])
 		}
 
 		return array
 	}
 	
 	[Override]
-	public map<Out>(mapFunc(E, Int, Array<E>) -> Out) -> Array<Out>
+	public map<Out>(mapFunc(E, Int, Array<E>) -> Out) -> Out[]
 	{
-		Array<Out> array = new Array()
+		Out[] array = new Array()
 
 		Int i = 0
 
