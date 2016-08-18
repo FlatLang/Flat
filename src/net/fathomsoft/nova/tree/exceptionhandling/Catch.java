@@ -2,12 +2,9 @@ package net.fathomsoft.nova.tree.exceptionhandling;
 
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.error.SyntaxMessage;
-import net.fathomsoft.nova.tree.AccessorMethod;
-import net.fathomsoft.nova.tree.Assignment;
-import net.fathomsoft.nova.tree.LocalDeclaration;
-import net.fathomsoft.nova.tree.Node;
-import net.fathomsoft.nova.tree.SyntaxTree;
+import net.fathomsoft.nova.tree.*;
 import net.fathomsoft.nova.tree.variables.Variable;
+import net.fathomsoft.nova.tree.variables.VariableDeclaration;
 import net.fathomsoft.nova.util.Bounds;
 import net.fathomsoft.nova.util.Location;
 import net.fathomsoft.nova.util.Patterns;
@@ -195,7 +192,12 @@ public class Catch extends ExceptionHandler
 		Variable thrownException = SyntaxTree.getUsableExistingNode(exceptionData, "thrownException", Location.INVALID);
 		exceptionData.addChild(thrownException);
 		
-		assign.replace(assign.getAssignmentNode(), exceptionData);
+		Cast c = new Cast(assign, assign.getLocationIn());
+		c.setType(exceptionDeclaration.getTypeStringValue());
+		c.addChild(exceptionData);
+		
+		assign.replace(assign.getAssignmentNode(), c);
+		assign.getAssignedNode().setDataType(c.getDataType());
 		
 		addChild(exceptionDeclaration, this);
 		addChild(assign);
@@ -243,7 +245,16 @@ public class Catch extends ExceptionHandler
 			SyntaxMessage.error("Parent try block not found", this, location);
 		}
 		
-		tryNode.addExceptionCode(getException().getID());
+		ClassDeclaration exception = getExceptionDeclaration().getTypeClass();
+		
+//		ClassDeclaration object = getProgram().getClassDeclaration("nova/standard/Object");
+//		
+//		while (exception != null && exception.doesExtendClass(object))
+//		{
+			tryNode.addExceptionCode(Exception.getExceptionCode(exception.getType()));
+//			
+//			exception = exception.getTypeClass().getExtendedClassDeclaration();
+//		}
 	}
 	
 	/**
