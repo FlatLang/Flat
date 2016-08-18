@@ -50,7 +50,7 @@ public interface CallableMethod
 	 * 
 	 * @return The data type of the method.
 	 */
-	public byte getDataType();
+	public byte getDataType(boolean checkGeneric);
 	
 	/**
 	 * Get the type returned by the method.
