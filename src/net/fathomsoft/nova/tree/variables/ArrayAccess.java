@@ -3,11 +3,7 @@ package net.fathomsoft.nova.tree.variables;
 import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.error.SyntaxMessage;
-import net.fathomsoft.nova.tree.AccessorMethod;
-import net.fathomsoft.nova.tree.Dimensions;
-import net.fathomsoft.nova.tree.Literal;
-import net.fathomsoft.nova.tree.Node;
-import net.fathomsoft.nova.tree.SyntaxTree;
+import net.fathomsoft.nova.tree.*;
 import net.fathomsoft.nova.util.Bounds;
 import net.fathomsoft.nova.util.Location;
 import net.fathomsoft.nova.util.Patterns;
@@ -24,7 +20,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * @since	v0.2 Mar 24, 2014 at 10:45:29 PM
  * @version	v0.2.36 Oct 13, 2014 at 12:16:42 AM
  */
-public class ArrayAccess extends Variable implements ArrayCompatible
+public class ArrayAccess extends Node implements ArrayCompatible
 {
 	/**
 	 * @see net.fathomsoft.nova.tree.Node#Node(Node, Location)
@@ -36,26 +32,6 @@ public class ArrayAccess extends Variable implements ArrayCompatible
 		Dimensions dimensions = new Dimensions(this, locationIn);
 		
 		addChild(dimensions);
-	}
-	
-	@Override
-	public String getType()
-	{
-		if ("Array".equals(getDeclaration().getType()))
-		{
-			return getDeclaration().getGenericTypeArgument(0).getType();
-		}
-		
-		return super.getType();
-	}
-	
-	/**
-	 * @see net.fathomsoft.nova.tree.variables.Variable#getArrayDimensions()
-	 */
-	@Override
-	public int getArrayDimensions()
-	{
-		return getDeclaration().getArrayDimensions() - getNumDimensions();
 	}
 	
 	@Override
@@ -73,24 +49,12 @@ public class ArrayAccess extends Variable implements ArrayCompatible
 		return super.getNumDefaultChildren() + 1;
 	}
 	
-	/**
-	 * @see net.fathomsoft.nova.tree.Value#generateCType(java.lang.StringBuilder, boolean)
-	 */
-	@Override
-	public StringBuilder generateCType(StringBuilder builder, boolean checkArray)
-	{
-		return super.generateCType(builder, false);
-	}
 	
-	/**
-	 * @see net.fathomsoft.nova.tree.variables.Variable#generateCUseOutput(StringBuilder)
-	 */
 	@Override
-	public StringBuilder generateCUseOutput(StringBuilder builder, boolean pointer, boolean checkAccesses)
+	public StringBuilder generateCSourceFragment(StringBuilder builder)
 	{
 		Dimensions dimensions = getDimensions();
 		
-		super.generateCUseOutput(builder, pointer, checkAccesses);
 		dimensions.generateCSourceFragment(builder);
 		
 		return builder;
@@ -102,14 +66,7 @@ public class ArrayAccess extends Variable implements ArrayCompatible
 	@Override
 	public StringBuilder generateNovaInput(StringBuilder builder, boolean outputChildren)
 	{
-		super.generateNovaInput(builder, false).append(getDimensions().generateNovaInput());
-		
-		if (outputChildren && doesAccess())
-		{
-			builder.append('.').append(getAccessedNode().generateNovaInput());
-		}
-		
-		return builder;
+		return getDimensions().generateNovaInput(builder);
 	}
 
 	/**
@@ -135,13 +92,14 @@ public class ArrayAccess extends Variable implements ArrayCompatible
 			
 			Bounds idBounds    = Regex.boundsOf(statement, Patterns.IDENTIFIER);
 			
-			String identifier  = statement.substring(idBounds.getStart(), idBounds.getEnd());
-			String indexData   = statement.substring(idBounds.getEnd());
+			//String identifier  = statement.substring(idBounds.getStart(), idBounds.getEnd());
+			String indexData   = statement;//statement.substring(idBounds.getEnd());
 			
 			Bounds indexBounds = Regex.boundsOf(indexData, Patterns.ARRAY_BRACKETS_DATA);
 			
 			int    current     = indexBounds.getEnd() + 1;
 			
+			/*
 			VariableDeclaration var = SyntaxTree.findDeclaration(parent, identifier);
 			
 			if (var == null)
@@ -151,14 +109,19 @@ public class ArrayAccess extends Variable implements ArrayCompatible
 			
 			var.generateUsableVariable(n);
 			n.setLocationIn(location);
+			*/
 			
+			/*Value value = SyntaxTree.decodeValue(parent, identifier, location, require);
+			
+			n.addChild(value);
+			*/
 			while (current > 0)
 			{
 				String data = indexData.substring(indexBounds.getStart(), indexBounds.getEnd());
 				
 				Location newLoc = location.asNew();
 				newLoc.setOffset(idBounds.getEnd() + location.getOffset());
-				newLoc.setBounds(identifier.length() + indexBounds.getStart(), identifier.length() + indexBounds.getEnd());
+				//newLoc.setBounds(identifier.length() + indexBounds.getStart(), identifier.length() + indexBounds.getEnd());
 				
 				Node created = Literal.decodeStatement(n, data, newLoc, require, true);
 				
