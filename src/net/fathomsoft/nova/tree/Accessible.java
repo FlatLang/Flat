@@ -2,11 +2,15 @@ package net.fathomsoft.nova.tree;
 
 import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.tree.generics.GenericTypeArgument;
+import net.fathomsoft.nova.tree.generics.GenericTypeArgumentList;
+import net.fathomsoft.nova.tree.generics.GenericTypeParameter;
 import net.fathomsoft.nova.tree.generics.GenericTypeParameterDeclaration;
 import net.fathomsoft.nova.tree.variables.ObjectReference;
 import net.fathomsoft.nova.tree.variables.Variable;
 import net.fathomsoft.nova.tree.variables.VariableDeclaration;
 import net.fathomsoft.nova.util.SyntaxUtils;
+
+import java.time.Instant;
 
 /**
  * 
@@ -31,7 +35,7 @@ public interface Accessible
 		return (Value)this;
 	}
 	
-	public default GenericTypeArgument getGenericTypeArgumentFromParameter(String type)
+	public default GenericTypeArgument getGenericTypeArgumentFromParameter(GenericTypeParameter type)
 	{
 		ClassDeclaration typeClass = null;
 		
@@ -54,23 +58,33 @@ public interface Accessible
 			typeClass = value.getTypeClass();
 		}
 		
-		if (typeClass == null)
-		{
-			return null;
-		}
-		
-		GenericTypeParameterDeclaration params = typeClass.getGenericTypeParameterDeclaration();
+		GenericTypeParameterDeclaration params = type.getParentClass().getGenericTypeParameterDeclaration();
 		
 		if (params == null)
 		{
 			return null;
 		}
 		
-		int index = /*getDeclaration()*//*getReferenceNode().toValue().*/params.getParameterIndex(type);
+		int index = /*getDeclaration()*//*getReferenceNode().toValue().*/params.getParameterIndex(type.getType());
+		
+		if (typeClass == null)
+		{
+			return null;
+		}
 		
 		if (index >= 0)
 		{
-			Accessible lastRef = null;
+			if (typeClass != type.getParentClass())
+			{
+				// TODO: perform a walk on all extended classes and interfaces.
+				GenericTypeArgumentList args = typeClass.getExtendedClass().getGenericTypeArgumentList();
+				
+				if (args.getNumVisibleChildren() > index)
+				{
+					return args.getVisibleChild(index);
+				}
+			}
+			/*Accessible lastRef = null;
 			Accessible ref = getReferenceNode();
 			
 			while (ref != lastRef && ref instanceof Accessible && index >= 0 && ref.getReferenceNode(true) != null)
@@ -96,7 +110,7 @@ public interface Accessible
 				{
 					index = ((VariableDeclaration)current).getGenericTypeParameterDeclaration().getParameterIndex(arg.getType());
 				}
-			}
+			}*/
 			
 			/*if (index >= 0 && this instanceof MethodCall)
 			{
@@ -104,7 +118,24 @@ public interface Accessible
 			}
 			else */if (index >= 0 && !value.isGenericType())
 			{
-				return value.getGenericTypeArgument(index);
+				GenericTypeArgumentList args = value.getGenericTypeArgumentList();
+				
+				if (args != null && args.getNumVisibleChildren() > index)
+				{
+					return value.getGenericTypeArgument(index);
+				}
+				
+				Node ref = getParent();
+				
+				if (ref instanceof Instantiation)
+				{
+					ref = ref.getParent();
+				}
+				
+				if (ref instanceof Assignment)
+				{
+					return ((Assignment)ref).getAssignedNode().getGenericTypeArgument(index, false);
+				}
 			}
 			else if (value.getBaseNode() instanceof Assignment)
 			{
@@ -190,7 +221,7 @@ public interface Accessible
 	 * there are three consecutive method calls in a row, the third method
 	 * call node would be returned.
 	 * 
-	 * @param types An array of accepted types.
+	 * @param types An arrayAccess of accepted types.
 	 * @param opposite Whether or not to search for or against the given
 	 * 		data.
 	 * @return The last accessed node of the given types. If there is not
