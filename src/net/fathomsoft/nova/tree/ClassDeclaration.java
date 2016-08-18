@@ -328,7 +328,7 @@ public class ClassDeclaration extends InstanceDeclaration
 	{
 		if (getExtendedClassLocation() != null)
 		{
-			getExtendedClass().addInterfaceVirtualMethods(methods, this);
+			getExtendedClassDeclaration().addInterfaceVirtualMethods(methods, this);
 		}
 		
 		addVirtualMethods(methods, getMethodList(), true);
@@ -346,7 +346,7 @@ public class ClassDeclaration extends InstanceDeclaration
 	{
 		if (getExtendedClassLocation() != null)
 		{
-			getExtendedClass().addExtensionVirtualMethods(methods, this);
+			getExtendedClassDeclaration().addExtensionVirtualMethods(methods, this);
 		}
 		
 		addVirtualMethods(methods, getMethodList(), false);
@@ -467,7 +467,7 @@ public class ClassDeclaration extends InstanceDeclaration
 				return current;
 			}
 			
-			current = current.getExtendedClass();
+			current = current.getExtendedClassDeclaration();
 		}
 		
 		return null;
@@ -557,7 +557,7 @@ public class ClassDeclaration extends InstanceDeclaration
 				return true;
 			}
 			
-			clazz = clazz.getExtendedClass();
+			clazz = clazz.getExtendedClassDeclaration();
 		}
 		
 		if (SyntaxUtils.arePrimitiveTypesCompatible(node.getType(), getType()))
@@ -626,7 +626,7 @@ public class ClassDeclaration extends InstanceDeclaration
 		
 		if (checkAncestor && doesExtendClass())
 		{
-			return getExtendedClass().getOverridingMethod(method, checkAncestor);
+			return getExtendedClassDeclaration().getOverridingMethod(method, checkAncestor);
 		}
 		
 		return null;
@@ -671,7 +671,7 @@ public class ClassDeclaration extends InstanceDeclaration
 		{
 			if (doesExtendClass())
 			{
-				getExtendedClass().addAbstractMethods(methods, checkInterfaces, checkAncestor);
+				getExtendedClassDeclaration().addAbstractMethods(methods, checkInterfaces, checkAncestor);
 			}
 		}
 	}
@@ -715,7 +715,7 @@ public class ClassDeclaration extends InstanceDeclaration
 		{
 			if (doesExtendClass())
 			{
-				getExtendedClass().addBodyMethods(methods, checkInterfaces, checkAncestor);
+				getExtendedClassDeclaration().addBodyMethods(methods, checkInterfaces, checkAncestor);
 			}
 		}
 	}
@@ -759,7 +759,7 @@ public class ClassDeclaration extends InstanceDeclaration
 		{
 			if (doesExtendClass())
 			{
-				getExtendedClass().addMethods(methods, checkInterfaces, checkAncestor);
+				getExtendedClassDeclaration().addMethods(methods, checkInterfaces, checkAncestor);
 			}
 		}
 	}
@@ -780,7 +780,7 @@ public class ClassDeclaration extends InstanceDeclaration
 	 * 
 	 * @return The ClassDeclaration instance of the class that is extended.
 	 */
-	public ClassDeclaration getExtendedClass()
+	public ClassDeclaration getExtendedClassDeclaration()
 	{
 		if (extendedClass == null || getExtendedClassLocation() == null)
 		{
@@ -788,6 +788,11 @@ public class ClassDeclaration extends InstanceDeclaration
 		}
 		
 		return SyntaxUtils.getImportedClass(getFileDeclaration(), getExtendedClassLocation());
+	}
+	
+	public ExtendedClass getExtendedClass()
+	{
+		return extendedClass;
 	}
 	
 	public String getExtendedClassName()
@@ -969,9 +974,9 @@ public class ClassDeclaration extends InstanceDeclaration
 		{
 			field = getExternalFieldsListNode().getField(fieldName);
 		
-			if (field == null && checkAncestor && getExtendedClass() != null)
+			if (field == null && checkAncestor && getExtendedClassDeclaration() != null)
 			{
-				field = getExtendedClass().getField(fieldName);
+				field = getExtendedClassDeclaration().getField(fieldName);
 			}
 		}
 		
@@ -1165,7 +1170,7 @@ public class ClassDeclaration extends InstanceDeclaration
 		{
 			if (filter.checkAncestor && getExtendedClassLocation() != null)
 			{
-				addMethods(output, getExtendedClass().getMethods(InitializationMethod.IDENTIFIER));
+				addMethods(output, getExtendedClassDeclaration().getMethods(InitializationMethod.IDENTIFIER));
 			}
 			
 			return output.toArray(new MethodDeclaration[0]);
@@ -1188,9 +1193,9 @@ public class ClassDeclaration extends InstanceDeclaration
 			addMethods(output, getConstructorList().getMethods(methodName, filter));
 		}
 		
-		if (filter.checkAncestor && getExtendedClass() != null)
+		if (filter.checkAncestor && getExtendedClassDeclaration() != null)
 		{
-			addMethods(output, getExtendedClass().getMethods(methodName, filter));
+			addMethods(output, getExtendedClassDeclaration().getMethods(methodName, filter));
 		}
 		
 		for (Interface inter : getImplementedClasses())
@@ -1454,7 +1459,7 @@ public class ClassDeclaration extends InstanceDeclaration
 		
 		if (checkAncestor && getExtendedClassLocation() != null)
 		{
-			return getExtendedClass().containsStaticPrivateData();
+			return getExtendedClassDeclaration().containsStaticPrivateData();
 		}
 		
 		return false;
@@ -1502,7 +1507,7 @@ public class ClassDeclaration extends InstanceDeclaration
 		
 		if (checkAncestor && getExtendedClassLocation() != null)
 		{
-			return getExtendedClass().containsNonStaticPrivateData();
+			return getExtendedClassDeclaration().containsNonStaticPrivateData();
 		}
 		
 		return false;
@@ -1536,7 +1541,7 @@ public class ClassDeclaration extends InstanceDeclaration
 		
 		if (checkAncestor && getExtendedClassLocation() != null)
 		{
-			return getExtendedClass().containsNonStaticData();
+			return getExtendedClassDeclaration().containsNonStaticData();
 		}
 		
 		return false;
@@ -1606,7 +1611,7 @@ public class ClassDeclaration extends InstanceDeclaration
 		
 		if (checkAncestors && doesExtendClass())
 		{
-			return getExtendedClass().containsSimilarConstructor(c, checkAncestors);
+			return getExtendedClassDeclaration().containsSimilarConstructor(c, checkAncestors);
 		}
 		
 		return false;
@@ -1820,7 +1825,7 @@ public class ClassDeclaration extends InstanceDeclaration
 	{
 		if (getExtendedClassLocation() != null)
 		{
-			getExtendedClass().generateCPrivateFieldsSource(builder);
+			getExtendedClassDeclaration().generateCPrivateFieldsSource(builder);
 		}
 		
 		return getFieldList().getPrivateFieldList().generateCSource(builder);
@@ -1995,7 +2000,7 @@ public class ClassDeclaration extends InstanceDeclaration
 	
 	public boolean doesExtendClass(ClassDeclaration clazz)
 	{
-		ClassDeclaration extension = getExtendedClass();
+		ClassDeclaration extension = getExtendedClassDeclaration();
 		
 		while (extension != null)
 		{
@@ -2004,7 +2009,7 @@ public class ClassDeclaration extends InstanceDeclaration
 				return true;
 			}
 			
-			extension = extension.getExtendedClass();
+			extension = extension.getExtendedClassDeclaration();
 		}
 		
 		return false;
@@ -2012,9 +2017,7 @@ public class ClassDeclaration extends InstanceDeclaration
 	
 	public GenericTypeParameter getGenericTypeParameter(String parameterName, GenericCompatible value)
 	{
-		Node context = (Node)((Value)value).getContext();
-		
-		ClassDeclaration clazz = this;
+		/*Node context = (Node)((Value)value).getContext();
 		
 		if (context != null)
 		{
@@ -2031,9 +2034,11 @@ public class ClassDeclaration extends InstanceDeclaration
 			}
 			
 			//clazz = context.getAncestorOfType(VariableDeclaration.class, true).getParentClass(true);
-		}
+		}*/
 		
 		GenericTypeParameter param = getGenericTypeParameter(parameterName);
+		
+		ClassDeclaration clazz = this;
 		
 		if (param == null)
 		{
@@ -2116,6 +2121,17 @@ public class ClassDeclaration extends InstanceDeclaration
 		}
 		
 		return name;
+	}
+	
+	public AnonymousCompilerMethod generateAnonymousFunction()
+	{
+		AnonymousCompilerMethod func = new AnonymousCompilerMethod(this, getLocationIn());
+		
+		func.setName("generated" + getProgram().getUniqueId(), true);
+		
+		addChild(func);
+		
+		return func;
 	}
 	
 	/**
@@ -2262,9 +2278,9 @@ public class ClassDeclaration extends InstanceDeclaration
 	
 	private void validateConstructors(int phase)
 	{
-		/*if (doesExtendClass() && getExtendedClass().containsComplexConstructors())
+		/*if (doesExtendClass() && getExtendedClassDeclaration().containsComplexConstructors())
 		{
-			Constructor[] cs = getExtendedClass().getComplexConstructors();
+			Constructor[] cs = getExtendedClassDeclaration().getComplexConstructors();
 			
 			for (Constructor c : cs)
 			{
@@ -2352,7 +2368,7 @@ public class ClassDeclaration extends InstanceDeclaration
 		
 		if (doesExtendClass())
 		{
-			for (AbstractMethodDeclaration method : getExtendedClass().getAbstractMethods())
+			for (AbstractMethodDeclaration method : getExtendedClassDeclaration().getAbstractMethods())
 			{
 				if (!doesOverrideMethod(method))
 				{
