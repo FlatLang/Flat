@@ -34,7 +34,7 @@ public interface AbstractValue extends GenericCompatible
 	{
 		if (type == null)
 		{
-			setTypeValue(type);
+			setTypeValue(null);
 			
 			return true;
 		}
@@ -102,6 +102,8 @@ public interface AbstractValue extends GenericCompatible
 	 */
 	public String getType();
 	
+	Value getArrayTypeValue();
+	
 	public String getTypeStringValue();
 	
 	/**
@@ -114,23 +116,23 @@ public interface AbstractValue extends GenericCompatible
 	public void setTypeValue(String type);
 	
 	/**
-	 * Get the amount of dimensions that the array has, if any. For an
-	 * example of what a array declarations and dimensions look like
+	 * Get the amount of dimensions that the arrayAccess has, if any. For an
+	 * example of what a arrayAccess declarations and dimensions look like
 	 * {@link #setArrayDimensions(int)}
 	 * 
-	 * @return The amount of dimensions that the array has, if any.
+	 * @return The amount of dimensions that the arrayAccess has, if any.
 	 */
 	public int getArrayDimensions();
 	
 	/**
-	 * Set the amount of dimensions that the array has, if any.<br>
+	 * Set the amount of dimensions that the arrayAccess has, if any.<br>
 	 * <br>
 	 * For example:
 	 * <blockquote><pre>
-	 * int array[][][];</pre></blockquote>
-	 * In the previous example, the variable "array" has three dimensions.
+	 * int arrayAccess[][][];</pre></blockquote>
+	 * In the previous example, the variable "arrayAccess" has three dimensions.
 	 * 
-	 * @param arrayDimensions The amount of dimensions that the array has,
+	 * @param arrayDimensions The amount of dimensions that the arrayAccess has,
 	 * 		if any.
 	 */
 	public void setArrayDimensions(int arrayDimensions);
@@ -148,7 +150,12 @@ public interface AbstractValue extends GenericCompatible
 	 * 
 	 * @return The data type that the variable is.
 	 */
-	public byte getDataType();
+	default byte getDataType()
+	{
+		return getDataType(true);
+	}
+	
+	public byte getDataType(boolean checkGeneric);
 	
 	/**
 	 * Set whether or not the identifier is a value, pointer, or
