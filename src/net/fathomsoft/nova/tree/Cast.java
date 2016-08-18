@@ -5,6 +5,7 @@ import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.error.SyntaxErrorException;
 import net.fathomsoft.nova.error.SyntaxMessage;
+import net.fathomsoft.nova.tree.annotations.Annotation;
 import net.fathomsoft.nova.tree.variables.Super;
 import net.fathomsoft.nova.util.Bounds;
 import net.fathomsoft.nova.util.Location;
@@ -67,6 +68,7 @@ public class Cast extends IValue
 	public StringBuilder generateCSourceFragment(StringBuilder builder)
 	{
 		builder.append('(').append(generateCType()).append(')');
+		getValueNode().getReturnedNode().generatePointerToValueConversion(builder);
 		getValueNode().generateCSourceFragment(builder);
 		
 		return builder;
@@ -110,6 +112,15 @@ public class Cast extends IValue
 			Cast   n        = new Cast(parent, location);
 			Bounds bounds   = SyntaxUtils.findParenthesesBounds(n, statement);
 			String contents = StringUtils.removeSurroundingParenthesis(statement, bounds).extractString(statement);
+			
+			Annotation a = Annotation.decodeStatement(n, contents, location, false);
+			
+			if (a != null)
+			{
+				n.addAnnotation(a);
+				contents = Annotation.getFragment(contents);
+			}
+			
 			String value    = statement.substring(bounds.getEnd()).trim();
 			
 			if (contents != null && n.decodeType(contents, require) && n.decodeValue(value, bounds, require))
@@ -123,10 +134,10 @@ public class Cast extends IValue
 	
 	private boolean decodeType(String contents, boolean require)
 	{
-		if (StringUtils.containsMultipleWords(contents))
+		/*if (StringUtils.containsMultipleWords(contents))
 		{
 			return invalidTypeError(contents, require);
-		}
+		}*/
 		
 		String type = StringUtils.findNextWord(contents);
 		
