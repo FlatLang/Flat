@@ -127,7 +127,19 @@ public class BinaryOperation extends IValue
 			return getLeftOperand().generateCSourceFragment(builder);
 		}
 		
-		return getLeftOperand().generateCSourceFragment(builder).append(' ').append(getOperator().generateCSourceFragment()).append(' ').append(getRightOperand().generateCSourceFragment());
+		String leftCast = "";
+		String rightCast = "";
+		
+		if (getLeftOperand().getReturnedNode().isOriginallyGenericType())
+		{
+			leftCast = getLeftOperand().getReturnedNode().generateCTypeCast().toString();
+		}
+		if (getRightOperand().getReturnedNode().isOriginallyGenericType())
+		{
+			rightCast = getRightOperand().getReturnedNode().generateCTypeCast().toString();
+		}
+		
+		return builder.append(leftCast).append(getLeftOperand().generateCSourceFragment()).append(' ').append(getOperator().generateCSourceFragment()).append(' ').append(rightCast).append(getRightOperand().generateCSourceFragment());
 	}
 	
 	/**
