@@ -64,6 +64,7 @@ public class ConnectionSocket extends Socket
 	{
 		if (!checkBuffer || inputBuffer.empty)
 		{
+		    [PrimitiveArray]
 			Char[] data = nova_socket_receive(socket)
 			
 			if (data == 0)
@@ -81,7 +82,7 @@ public class ConnectionSocket extends Socket
 	
 	public write(String data) -> Bool
 	{
-		Bool success = nova_socket_send(socket, data.chars) == 1
+		Bool success = nova_socket_send(socket, data.chars.data) == 1
 		
 		return success
 	}

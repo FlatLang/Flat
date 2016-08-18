@@ -8,7 +8,7 @@ public class ArrayDemo
 		
 		while (c == 'y' || c == 'Y')
 		{
-			Array<Animal> list = new Array()
+			Animal[] list = new Array()
 			
 			list.add(new Dog())
 			list.add(new Dog())

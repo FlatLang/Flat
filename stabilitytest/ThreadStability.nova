@@ -13,7 +13,7 @@ public class ThreadStability extends StabilityTestCase
 	{
 		Console.writeLine("Checking Thread.nova with 20 Threads... ")
 		
-		ThreadImplementation threads[] = new ThreadImplementation[20]
+		ThreadImplementation[] threads = new Array(20)
 		
 		createThreads(threads, 20)
 		
@@ -22,15 +22,15 @@ public class ThreadStability extends StabilityTestCase
 		joinThreads(threads, 20)
 	}
 	
-	createThreads(ThreadImplementation threads[], Int amount)
+	createThreads(ThreadImplementation[] threads, Int amount)
 	{
 		StabilityExceptionHandler handler = new StabilityExceptionHandler(program)
 		
 		for (i in 0..amount)
 		{
-			threads[i] = new ThreadImplementation(10, 10)
-			//threads[i].addUncaughtExceptionHandler(handler)
-			threads[i].start()
+			threads.set(i, new ThreadImplementation(10, 10))
+			//threads.get(i).addUncaughtExceptionHandler(handler)
+			threads.get(i).start()
 		}
 	}
 	
@@ -52,7 +52,7 @@ public class ThreadStability extends StabilityTestCase
 	{
 		for (i in 0..amount)
 		{
-			threads[i].join()
+			threads.get(i).join()
 		}
 	}
 }

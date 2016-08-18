@@ -8,7 +8,6 @@ public class String implements Comparable<String>
 	
 	visible Char[] chars
 	
-	static Int     whitespaceSize = 4
 	static Char[]  whitespace       = [ ' ', '\t', '\n', '\r' ]
 	
 	external void strcpy(char dst[], char src[])
@@ -18,7 +17,8 @@ public class String implements Comparable<String>
 	
 	public construct(Char c)
 	{
-		Char chars[] = new Char[2]
+	    [PrimitiveArray]
+		Char[] chars = new Char[2]
 		
 		chars[0] = c
 		chars[1] = '\0'
@@ -26,11 +26,11 @@ public class String implements Comparable<String>
 		this(chars)
 	}
 	
-	public construct(Char[] chars)
+	public construct([PrimitiveArray] Char[] chars)
 	{
-		this.chars = chars
+		count = calculateSize(chars)
 		
-		count = calculateSize()
+		this.chars = new CharArray(chars, count)
 		
 //		if (chars[count] != '\0')
 //		{
@@ -49,7 +49,7 @@ public class String implements Comparable<String>
 		}
 	}
 	
-	calculateSize() -> Int
+	calculateSize([PrimitiveArray] Char[] chars) -> Int
 	{
 		return strlen(chars)
 	}
@@ -60,10 +60,11 @@ public class String implements Comparable<String>
 		
 		Int sz = str.count + count + 1
 		
-		Char newData[] = new Char[sz]
+		[PrimitiveArray]
+		Char[] newData = new Char[sz]
 		
-		strcpy(newData, chars)
-		strcat(newData, str.chars)
+		strcpy(newData, chars.data)
+		strcat(newData, str.chars.data)
 		
 		newData[sz - 1] = '\0'
 		
@@ -89,7 +90,7 @@ public class String implements Comparable<String>
 			
 			while (j < search.count && i + j < count && found)
 			{
-				if (search.chars[j] != chars[i + j])
+				if (search.chars.get(j) != chars.get(i + j))
 				{
 					found = false
 				}
@@ -141,9 +142,13 @@ public class String implements Comparable<String>
 			throw new Exception("Substring bounds of [" + start + ", " + end + "] are invalid")
 		}
 		
+		[PrimitiveArray]
 		Char buf[] = new Char[end - start + 1]
 		
-		memcpy(buf, chars[start], end - start)
+		[PrimitiveArray]
+		Char[] arr = chars.data
+		
+		memcpy(buf, arr[start], end - start)
 		
 		buf[end - start] = '\0'
 		
@@ -162,7 +167,7 @@ public class String implements Comparable<String>
 	
 	public charAt(Int index) -> Char
 	{
-		return chars[index]
+		return chars.data[index]
 	}
 	
 	public trim() -> String
@@ -170,12 +175,12 @@ public class String implements Comparable<String>
 		Int start = 0
 		Int end   = count - 1
 		
-		while (start < count && containsChar(chars[start], whitespace, whitespaceSize))
+		while (start < count && containsChar(chars.get(start), whitespace))
 		{
 			start++
 		}
 		
-		while (end >= 0 && containsChar(chars[end], whitespace, whitespaceSize))
+		while (end >= 0 && containsChar(chars.get(end), whitespace))
 		{
 			end--
 		}
@@ -193,11 +198,11 @@ public class String implements Comparable<String>
 		return substring(start, end + 1)
 	}
 	
-	static containsChar(Char needle, Char Chars[], Int count) -> Bool
+	static containsChar(Char needle, Char[] chars) -> Bool
 	{
-		for (i in 0..count)
+		for (i in 0..chars.count)
 		{
-			if (needle == Chars[i])
+			if (needle == chars.data[i])
 			{
 				return true
 			}
@@ -218,11 +223,12 @@ public class String implements Comparable<String>
 	
 	public transform(transform(Char) -> Char) -> String
 	{
-		Char newData[] = new Char[count]
+	    [PrimitiveArray]
+		Char[] newData = new Char[count]
 		
 		for (i in 0..count)
 		{
-			newData[i] = transform(chars[i])
+			newData[i] = transform(chars.data[i])
 		}
 		
 		return new String(newData)
@@ -248,11 +254,13 @@ public class String implements Comparable<String>
 	
 	public compareTo(String other) -> Int
 	{
-		for (i in 0..Math.min(count, other.count))
+	    var min = Math.min(count, other.count)
+	    
+		for (i in 0..min)
 		{
-			if (chars[i] - other.chars[i] != 0)
+			if (chars.get(i) - other.chars.get(i) != 0)
 			{
-				return chars[i] - other.chars[i]
+				return chars.get(i) - other.chars.get(i)
 			}
 		}
 		

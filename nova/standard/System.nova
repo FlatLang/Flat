@@ -47,7 +47,7 @@ public class System
 	
 	public static execute(String command) -> Process
 	{
-		FILE* pipe = getPipe(command.chars, exit)
+		FILE* pipe = getPipe(command.chars.data, exit)
 		
 		File f = new File(pipe)
 		

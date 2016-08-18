@@ -6,7 +6,7 @@ public class LogicalStatement extends Statement
 {
 	String statement
 	
-	Array<StatementComponent> components
+	StatementComponent[] components
 	
 	public construct(String statement)
 	{

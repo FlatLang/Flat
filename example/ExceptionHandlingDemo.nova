@@ -2,7 +2,7 @@ package "example"
 
 public class ExceptionHandlingDemo
 {
-	public static main(String args[])
+	public static main(String[] args)
 	{
 		try
 		{

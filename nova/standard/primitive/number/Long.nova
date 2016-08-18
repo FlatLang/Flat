@@ -40,7 +40,9 @@ public class Long extends Number implements Comparable<Long>, Integer
 	{
 		Int  charOffset = '0'
 		Int  digits  = numDigits(value)
-		Char data[]  = new Char[digits + 1]
+		
+		[PrimitiveArray]
+		Char[] data = new Char[digits + 1]
 		
 		data[digits] = '\0'
 		

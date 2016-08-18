@@ -51,7 +51,8 @@ public class Date
 	
 	public formatDate(String str, Int first, Int second, Int third, Int fourth, Int fifth, Int sixth) -> String
 	{
-		Char data[] = nova_formatDate(str.chars, first, second, third, fourth, fifth, sixth)
+    	[PrimitiveArray]
+		Char[] data = nova_formatDate(str.chars.data, first, second, third, fourth, fifth, sixth)
 		
 		return new String(data)
 	}

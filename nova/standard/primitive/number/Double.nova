@@ -37,7 +37,7 @@ public class Double extends Number implements Comparable<Double>, RealNumber
 		return size
 	}
 	
-	static genString(Char buffer[], Int lastIndex) -> String
+	static genString([PrimitiveArray] Char buffer[], Int lastIndex) -> String
 	{
 		buffer = realloc(buffer, ++lastIndex + 1)
 		
@@ -46,17 +46,20 @@ public class Double extends Number implements Comparable<Double>, RealNumber
 		return new String(buffer)
 	}
 	
+	[PrimitiveArray]
 	static genBuffer(Double value) -> Char[]
 	{
 		Int  size     = 11 + 1 + 15
-		Char buffer[] = new Char[size]
+		
+		[PrimitiveArray]
+		Char[] buffer = new Char[size]
 		
 		sprintf(buffer, "%.15f", value)
 		
 		return buffer
 	}
 	
-	static repetition(Char buffer[], Int start) -> Int
+	static repetition([PrimitiveArray] Char[] buffer, Int start) -> Int
 	{
 		Int  index = start
 		Char c     = buffer[index]
@@ -66,7 +69,7 @@ public class Double extends Number implements Comparable<Double>, RealNumber
 		return start - index - 1
 	}
 	
-	static lastSignificantDigit(Char buffer[], Int start) -> Int
+	static lastSignificantDigit([PrimitiveArray] Char[] buffer, Int start) -> Int
 	{
 		while (buffer[start--] == '0');
 		
@@ -75,6 +78,7 @@ public class Double extends Number implements Comparable<Double>, RealNumber
 	
 	public static toString(Double value) -> String
 	{
+	    [PrimitiveArray]
 		Char buffer[]  = genBuffer(value)
 		Int  size      = strlen(buffer)
 		Int  lastIndex = size - 1
@@ -136,9 +140,10 @@ public class Double extends Number implements Comparable<Double>, RealNumber
 	
 	public static parseDouble(String str) -> Double
 	{
-		Char pEnd[]
+	    [PrimitiveArray]
+		Char[] pEnd
 		
-		return strtod(str.chars, pEnd)
+		return strtod(str.chars.data, pEnd)
 	}
 	
 	public compareTo(Double other) -> Double

@@ -1,8 +1,8 @@
 package "nova/standard/datastruct/list"
 
-public class ArrayIterator<E> implements Iterator<E>
+public class CharArrayIterator implements Iterator<Char>
 {
-	E[] array
+	CharArray array
 	
 	visible Int position
 	
@@ -12,7 +12,7 @@ public class ArrayIterator<E> implements Iterator<E>
 		no set
 	}
 	
-	visible E next
+	visible Char next
 	{
 		get
 		{
@@ -23,20 +23,20 @@ public class ArrayIterator<E> implements Iterator<E>
 			
 			throw new NoSuchElementException()
 
-			return null
+			return 0
 		}
 		
 		no set
 	}
 	
-	public construct(E[] array)
+	public construct(CharArray array)
 	{
 		this.array = array
 		
 		reset()
 	}
 	
-	public reset() -> Iterator<E>
+	public reset() -> Iterator<Char>
 	{
 		position = 0
 		

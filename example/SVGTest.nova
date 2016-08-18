@@ -8,7 +8,7 @@ import "nova/standard/time/Timer"
 
 public class SVGTest
 {
-	public static main(String args[])
+	public static main(String[] args)
 	{
 		SVG s = new SVG()
 		
@@ -25,7 +25,7 @@ public class SVGTest
 		
 		Timer timer = new Timer().start()
 		
-		Double points[] = new Double[numVerts * 2]
+		Double[] points = new DoubleArray(numVerts * 2)
 		Double radius   = 450
 		Double offset   = pi2 / 12
 		
@@ -33,14 +33,14 @@ public class SVGTest
 		{
 			Double rad = pi2 * (i / (numVerts * 1.0)) + offset
 			
-			points[i * 2 + 0] = radius * Math.cos(rad) + radius + 10
-			points[i * 2 + 1] = radius * Math.sin(rad) + radius + 10
+			points.set(i * 2 + 0, radius * Math.cos(rad) + radius + 10)
+			points.set(i * 2 + 1, radius * Math.sin(rad) + radius + 10)
 		}
 		
 		for (n in 0..numVerts)
 		{
-			Double x = points[n * 2 + 0]
-			Double y = points[n * 2 + 1]
+			Double x = points.get(n * 2 + 0)
+			Double y = points.get(n * 2 + 1)
 			
 			SVGCircle circle2 = new SVGCircle(x, y, 3)
 			
@@ -54,8 +54,8 @@ public class SVGTest
 		{
 			Int rand = Math.random(numVerts)
 			
-			Double x = points[rand * 2 + 0]
-			Double y = points[rand * 2 + 1]
+			Double x = points.get(rand * 2 + 0)
+			Double y = points.get(rand * 2 + 1)
 			
 			cx = cx - (cx - x) * coefficient
 			cy = cy - (cy - y) * coefficient

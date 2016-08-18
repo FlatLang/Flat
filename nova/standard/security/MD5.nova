@@ -8,7 +8,8 @@ public class MD5
 	
 	public static encrypt(String str) -> String
 	{
-		Char[] data = nova_md5(str.chars)
+	    [PrimitiveArray]
+		Char[] data = nova_md5(str.chars.data)
 		
 		if (data == 0)
 		{

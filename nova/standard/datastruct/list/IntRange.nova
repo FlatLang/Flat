@@ -60,13 +60,13 @@ public class IntRange implements List<Int>
     
     public toArray() -> Int[]
     {
-        Int[] ints = new Int[size]
+        Int[] ints = new IntArray(size)
         
         Int i = start
         
         while (i < end)
         {
-            ints[i - start] = i++
+            ints.set(i - start, i++)
         }
         
         return ints
@@ -82,9 +82,9 @@ public class IntRange implements List<Int>
         }
     }
     
-    public map<Out>(mapFunc(Int, Int, IntRange) -> Out) -> Array<Out>
+    public map<Out>(mapFunc(Int, Int, IntRange) -> Out) -> Out[]
     {
-        Array<Out> array = new Array()
+        Out[] array = new Array()
         
         Int i = 0
 
@@ -194,5 +194,10 @@ public class IntRange implements List<Int>
     	}
     	
     	return str
+    }
+    
+    public toString() -> String
+    {
+        return "#{start}..#{end}"
     }
 }

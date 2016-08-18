@@ -18,7 +18,7 @@ public class Sequence
 		
 		for (i in 0..num)
 		{
-			value = value + values[i]
+			value = value + values.get(i)
 		}
 		
 		return value

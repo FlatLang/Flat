@@ -4,15 +4,15 @@ import "nova/standard/datastruct/Bounds"
 
 public class WFF
 {
-	StatementLetter[]     letters
+	StatementLetter[] letters
 	
-	Array<Hypothesis> hypotheses
+	Hypothesis[]      hypotheses
 	
-	Conclusion            conclusion
+	Conclusion        conclusion
 	
-	String                wff
+	String            wff
 	
-	static Char[]         whitespace = [ ' ', '\t', '\n', '\r' ]
+	static Char[]     whitespace = [ ' ', '\t', '\n', '\r' ]
 	
 	public construct(String wellFormedFormula, StatementLetter[] letters)
 	{
@@ -39,7 +39,7 @@ public class WFF
 		
 		wff = conclusionGroup.bounds.extractPreString(wff)
 		
-		Array<StatementGroup<Hypothesis>> statements = decodeHypotheses(wff)
+		StatementGroup<Hypothesis>[] statements = decodeHypotheses(wff)
 		
 		for (i in 0..statements.count)
 		{
@@ -82,9 +82,9 @@ public class WFF
 		return group
 	}
 	
-	decodeHypotheses(String wff) -> Array<StatementGroup<Hypothesis>>
+	decodeHypotheses(String wff) -> StatementGroup<Hypothesis>[]
 	{
-		Array<StatementGroup<Hypothesis>> list = new Array()
+		StatementGroup<Hypothesis>[] list = new Array()
 		
 		Int next = 0
 		Int prev = 0
@@ -141,7 +141,7 @@ public class WFF
 		{
 			Char c = wff.charAt(i)
 			
-			if (containsChar(c, whitespace, 4) != opposite)
+			if (containsChar(c, whitespace) != opposite)
 			{
 				return i
 			}
@@ -152,11 +152,11 @@ public class WFF
 		return -1
 	}
 	
-	static containsChar(Char needle, Char Chars[], Int length) -> Bool
+	static containsChar(Char needle, Char[] chars) -> Bool
 	{
-		for (i in 0..length)
+		for (i in 0..chars.count)
 		{
-			if (needle == Chars[i])
+			if (needle == chars.data[i])
 			{
 				return true
 			}

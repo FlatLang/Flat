@@ -29,6 +29,16 @@ public class LinkedList<E> implements List<E>
 		no set
 	}
 	
+	public addAll(E[] data) -> LinkedList<E>
+	{
+	    for (d in data)
+	    {
+	        add(d)
+	    }
+	    
+	    return this
+	}
+	
 	public add(E data) -> LinkedList<E>
 	{
 		ListNode<E> node = new ListNode(data)
@@ -80,13 +90,13 @@ public class LinkedList<E> implements List<E>
 	[Override]
 	public toArray() -> E[]
 	{
-		E[] array = new E[size]
+		E[] array = new Array(size)
 		
 		Int i = 0
 		
 		for (element in this)
 		{
-			array[i++] = element
+			array.set(i++, element)
 		}
 
 		return array
@@ -187,7 +197,7 @@ public class LinkedList<E> implements List<E>
 	[Override]
 	public skip(Int howMany) -> LinkedList<E>
 	{
-		Array<E> list = new Array()
+		E[] list = new Array()
 		
 		Int i = 0
 		

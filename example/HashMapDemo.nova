@@ -8,23 +8,16 @@ public class HashMapDemo
 	{
 		HashMap<Int, String> words = new HashMap()
 		
-		Int[] nums = new Int[6]
+		/*Int[] nums = [0, 1, 2, 3, 4, 5]
 		
-		nums[0] = 0
-		nums[1] = 1
-		nums[2] = 2
-		nums[3] = 3
-		nums[4] = 4
-		nums[5] = 5
-		
-		words.put(nums[0], "Zero")
-		words.put(nums[1], "One")
-		words.put(nums[2], "Two")
-		words.put(nums[3], "Three")
-		words.put(nums[4], "Four")
-		words.put(nums[5], "Five")
-		words.put(nums[5], null)
-		
+		words.put(nums.data[0], "Zero")
+		words.put(nums.data[1], "One")
+		words.put(nums.data[2], "Two")
+		words.put(nums.data[3], "Three")
+		words.put(nums.data[4], "Four")
+		words.put(nums.data[5], "Five")
+		words.put(nums.data[5], null)
+		*/
 		/*for (Int i = 0; i <= 5; i++)
 		{
 			Int index = nums[Math.random(6)]

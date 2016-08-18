@@ -19,7 +19,7 @@ public class ServerSocket extends Socket
 	
 	visible Bool open
 	
-	visible Array<ConnectionSocket> requests = new Array()
+	visible ConnectionSocket[] requests = new Array()
 	
 	public construct()
 	{

@@ -38,7 +38,7 @@ public class Int extends Number implements Comparable<Int>, Integer
 	
 	public static parseInt(String num) -> Int
 	{
-		return atoi(num.chars)
+		return atoi(num.chars.data)
 	}
 	
 	public compareTo(Int other) -> Int

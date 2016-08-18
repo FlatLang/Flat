@@ -3,15 +3,18 @@ package "nova/standard/database"
 public class ResultSet
 {
 	visible Int numRows
+	{
+	    get { return rows.count }
+	}
+	
 	visible Int numCols
 	
-	visible String rows[][]
+	visible String[][] rows
 	
-	public construct(String rows[][], Int numRows, Int numCols)
+	public construct(String[][] rows, Int numCols)
 	{
-		this.rows = rows;
+		this.rows = rows
 		
-		this.numRows = numRows
 		this.numCols = numCols
 	}
 }

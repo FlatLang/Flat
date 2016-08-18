@@ -6,22 +6,22 @@ public class Tree<E>
 {
 	public Node<E> root
 	
-	public preorder() -> Array<E>
+	public preorder() -> E[]
 	{
 		return root.preorder()
 	}
 	
-	public inorder() -> Array<E>
+	public inorder() -> E[]
 	{
 		return root.inorder()
 	}
 	
-	public postorder() -> Array<E>
+	public postorder() -> E[]
 	{
 		return root.postorder()
 	}
 	
-	public levelorder() -> Array<E>
+	public levelorder() -> E[]
 	{
 		return root.levelorder()
 	}

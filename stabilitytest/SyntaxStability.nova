@@ -364,12 +364,10 @@ public class SyntaxStability extends StabilityTestCase
 	
 	checkIterators()
 	{
-		String[] a = ["this", "is", "a", "test", "to", "see", "what shows up"]
-		
 		Console.write("Checking filter functionality... ")
 		
-		Array<String> list = new Array(a, 7)
-		Array<String> list2 = list.filter(filterFunc)
+		String[] list = ["this", "is", "a", "test", "to", "see", "what shows up"]
+		String[] list2 = list.filter(filterFunc)
 		
 		try
 		{

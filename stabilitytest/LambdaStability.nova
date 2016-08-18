@@ -14,11 +14,8 @@ public class LambdaStability extends StabilityTestCase
 	{
 	    Console.write("Checking lambdas... ")
 	    
-		String[] a = ["this", "is", "a", "test", "to", "see", "what shows up"]
-		Int[] b = [1, 2, 3, 4, 5, 6, 7]
-		
-		Array<String> list = new Array(a, 7)
-		Array<Int> list2 = new Array(b, 7)
+		String[] list = ["this", "is", "a", "test", "to", "see", "what shows up"]
+		Int[] list2 = [1, 2, 3, 4, 5, 6, 7]
 		
 		String mappedOutput = list.filter(x -> x.count >= 4).map((x, i) -> i + ": " + x + "?").join(", ")
 		String mappedExpected = "0: this?, 1: test?, 2: what shows up?"
@@ -35,7 +32,7 @@ public class LambdaStability extends StabilityTestCase
 		if (!linked.reverse().join(", ").equals("test3, test2, test")) program.fail("Failed reverse linked list")
 		if (!linked.join(", ").equals("test, test2, test3")) program.fail("Failed forward linked list")
 		
-		Array<String> repeated = list.map({ "test" })
+		String[] repeated = list.map({ "test" })
 		
 		for (item in repeated)
 		{

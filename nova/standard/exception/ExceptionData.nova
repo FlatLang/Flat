@@ -6,18 +6,18 @@ public class ExceptionData
 	
 	external void jump(buffer buf, int code)
 	
-	buffer*					buf
+	buffer*				buf
 	
-	ExceptionData			parent
+	ExceptionData		parent
 	
-	public Exception		thrownException
+	public Exception	thrownException
 	
-	visible Array<Int>	codes
+	visible Int[]       codes
 	
 	public construct(buffer* buf)
 	{
 		this.buf = buf
-		codes    = new Array()
+		codes    = new IntArray()
 	}
 	
 	public addCode(Int code)
@@ -36,7 +36,11 @@ public class ExceptionData
 		
 		while (data != null)
 		{
-			Array<Int> list = data.codes
+		    /*if (data.codes.any(x -> x == code))
+            {
+                return data
+            }*/
+			Int[] list = data.codes
 			
 			for (i in 0..list.count)
 			{

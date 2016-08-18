@@ -1,22 +1,22 @@
 package "nova/standard/datastruct/list"
 
-import "nova/standard/primitive/number/Integer"
+import "nova/standard/primitive/number/Double"
 
-public class IntArray extends Array<Int>
+public class DoubleArray extends Array<Double>
 {
 	[Override]
-	visible IntArrayIterator iterator
+	visible DoubleArrayIterator iterator
 	{
 		get
 		{
-			return new IntArrayIterator(this)
+			return new DoubleArrayIterator(this)
 		}
 		
 		no set
 	}
 	
 	[Override]
-	public Int first
+	public Double first
 	{
 		get
 		{
@@ -25,14 +25,14 @@ public class IntArray extends Array<Int>
                 return data[0]
             }
             
-            return null
+            return 0
         }
         
         no set
 	}
 	
 	[Override]
-	public Int last
+	public Double last
 	{
 	    get
 	    {
@@ -41,7 +41,7 @@ public class IntArray extends Array<Int>
                 return data[count - 1]
             }
             
-            return null
+            return 0
         }
 	}
 	
@@ -55,19 +55,13 @@ public class IntArray extends Array<Int>
 	    super(count)
 	}
 	
-	public construct([PrimitiveArray] Int[] data, Int count)
+	public construct([PrimitiveArray] Double[] data, Int count)
 	{
 		super(data, count)
 	}
 	
-	/*[Override]
-	public get(Int index) -> Int
-	{
-	    return (Int)data[index]
-	}*/
-	
 	[Override]
-	public map<Out>(mapFunc(Int, Int, IntArray) -> Out) -> Out[]
+	public map<Out>(mapFunc(Double, Int, DoubleArray) -> Out) -> Out[]
 	{
 		Out[] array = new Array()
         
@@ -82,16 +76,16 @@ public class IntArray extends Array<Int>
 	}
 	
 	[Override]
-	public forEach(func(Int, Int, IntArray))
+	public forEach(func(Double, Int, DoubleArray))
 	{
 		for (i in 0..count)
 		{
-			func((Int)get(i), i, this)
+			func((Double)get(i), i, this)
 		}
 	}
 	
 	[Override]
-	public any(anyFunc(Int) -> Bool) -> Bool
+	public any(anyFunc(Double) -> Bool) -> Bool
 	{
 		for (element in this)
 		{
@@ -105,7 +99,7 @@ public class IntArray extends Array<Int>
 	}
 	
 	[Override]
-	public all(allFunc(Int) -> Bool) -> Bool
+	public all(allFunc(Double) -> Bool) -> Bool
 	{
 		for (element in this)
 		{
@@ -119,9 +113,9 @@ public class IntArray extends Array<Int>
 	}
 	
 	[Override]
-	public filter(filterFunc(Int, Int, IntArray) -> Bool) -> IntArray
+	public filter(filterFunc(Double, Int, DoubleArray) -> Bool) -> DoubleArray
 	{
-		IntArray filtered = new IntArray()
+		DoubleArray filtered = new DoubleArray()
 		
 		Int i = 0
 		
@@ -137,14 +131,14 @@ public class IntArray extends Array<Int>
 	}
 	
 	[Override]
-	public take(Int howMany) -> IntArray
+	public take(Int howMany) -> DoubleArray
 	{
 		if (howMany > count)
 		{
 			howMany = count
 		}
 		
-		IntArray list = new IntArray()
+		DoubleArray list = new DoubleArray()
 		
 		for (i in 0..howMany)
 		{
@@ -155,9 +149,9 @@ public class IntArray extends Array<Int>
 	}
 	
 	[Override]
-	public skip(Int howMany) -> IntArray
+	public skip(Int howMany) -> DoubleArray
 	{
-		IntArray list = new IntArray()
+		DoubleArray list = new DoubleArray()
 		
 		for (i in howMany..count)
 		{
@@ -168,7 +162,7 @@ public class IntArray extends Array<Int>
 	}
 	
 	[Override]
-	public firstWhere(func(Int) -> Bool) -> Int
+	public firstWhere(func(Double) -> Bool) -> Double
 	{
 		for (element in this)
 		{
@@ -178,13 +172,13 @@ public class IntArray extends Array<Int>
 			}
 		}
 		
-		return null
+		return 0
 	}
 	
 	[Override]
-    public reverse() -> IntArray
+    public reverse() -> DoubleArray
     {
-    	IntArray array = new IntArray(count)
+    	DoubleArray array = new DoubleArray(count)
     	array.count = count
     	
     	Int i = 0

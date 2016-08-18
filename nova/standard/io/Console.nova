@@ -77,7 +77,7 @@ public class Console
 	{
 		Char cText[] = text.chars
 		
-		fputs(cText, stdout)
+		fputs(cText.data, stdout)
 		flushOutput()
 	}
 	
@@ -160,7 +160,8 @@ public class Console
 	
 	public static readLine() -> String
 	{
-		Char line[] = ufgets(stdin)
+	    [PrimitiveArray]
+		Char[] line = ufgets(stdin)
 		
 		String s = new String(line)
 		
@@ -194,6 +195,7 @@ public class Console
 	{
 		flushInput()
 		
+		[PrimitiveArray]
 		Char c[] = new Char[2]
 		
 		fgets(c, 2, stdin)

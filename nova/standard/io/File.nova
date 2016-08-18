@@ -70,7 +70,7 @@ public class File
 	{
 		this.location = location
 		
-		fp = fopen(location.chars, "r+")
+		fp = fopen(location.chars.data, "r+")
 	}
 	
 	public construct(FILE* fp)
@@ -82,14 +82,14 @@ public class File
 	{
 		close()
 		
-		return remove(location.chars) == 0
+		return remove(location.chars.data) == 0
 	}
 	
 	public reopen()
 	{
 		close()
 		
-		fp = fopen(location.chars, "r+")
+		fp = fopen(location.chars.data, "r+")
 	}
 	
 	public rewind()
@@ -101,7 +101,7 @@ public class File
 	{
 		if (exists)
 		{
-			fp = fopen(location.chars, "w")
+			fp = fopen(location.chars.data, "w")
 		}
 	}
 	
@@ -109,7 +109,7 @@ public class File
 	{
 		if (!exists)
 		{
-			fp = fopen(location.chars, "w")
+			fp = fopen(location.chars.data, "w")
 			
 			if (!exists)
 			{
@@ -159,7 +159,8 @@ public class File
 		Int buf  = 5
 		Int size = buf
 		
-		Char line[] = new Char[size]
+		[PrimitiveArray]
+		Char[] line = new Char[size]
 		
 		Char c = getc(fp)
 		
@@ -205,7 +206,7 @@ public class File
 	
 	public write(String data)
 	{
-		fputs(data.chars, fp)
+		fputs(data.chars.data, fp)
 		flush()
 	}
 	

@@ -18,7 +18,7 @@ public class Queue<E>
 		no set
 	}
 	
-	Array<E> data
+	E[] data
 	
 	public construct()
 	{
