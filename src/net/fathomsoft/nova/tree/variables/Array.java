@@ -5,6 +5,7 @@ import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.tree.*;
+import net.fathomsoft.nova.tree.annotations.PrimitiveArrayAnnotation;
 import net.fathomsoft.nova.util.Location;
 import net.fathomsoft.nova.util.StringUtils;
 import net.fathomsoft.nova.util.SyntaxUtils;
@@ -249,7 +250,7 @@ public class Array extends VariableDeclaration implements ArrayCompatible
 			{
 				VariableDeclaration declaration = n.getArrayDeclaration();
 				
-				if (declaration != n && declaration.getArrayDimensions() > 0)
+				if (declaration != null && declaration != n && declaration.getArrayDimensions() > 0)
 				{
 					n.setName(declaration.getType());
 					n.setType(n.getName());
@@ -278,6 +279,12 @@ public class Array extends VariableDeclaration implements ArrayCompatible
 		}
 		
 		return null;
+	}
+	
+	@Override
+	public void convertArrays()
+	{
+		
 	}
 	
 	/**
@@ -354,7 +361,7 @@ public class Array extends VariableDeclaration implements ArrayCompatible
 		{
 			return false;
 		}
-		else if (!isDecoding() && !getArrayDeclaration().isArray())
+		else if (!isDecoding() && !getArrayDeclaration().isPrimitiveArray())
 		{
 			return SyntaxMessage.queryError("Array initializer can only be assigned to arrays", this, require);
 		}
@@ -362,6 +369,9 @@ public class Array extends VariableDeclaration implements ArrayCompatible
 		TypeList<Value> initValues = new TypeList<Value>(this, getLocationIn().asNew());
 		
 		String values[] = StringUtils.splitCommas(contents);
+		
+		VariableDeclaration arrayDeclaration = getArrayDeclaration();
+		Value arrayType = arrayDeclaration != null ? arrayDeclaration.getArrayTypeValue() : null;
 		
 		for (String value : values)
 		{
@@ -371,12 +381,15 @@ public class Array extends VariableDeclaration implements ArrayCompatible
 			{
 				return SyntaxMessage.queryError("Cannot decode value '" + value + "'", this, require);
 			}
-			else if (!isDecoding() && !SyntaxUtils.isTypeCompatible(null, getArrayDeclaration(), val, true, 1))
+			else if (!isDecoding() && !SyntaxUtils.isTypeCompatible(null, arrayDeclaration, val, true, 1))
 			{
-				return SyntaxMessage.queryError("Type '" + val.getType() + "' is not compatible with array type '" + getArrayDeclaration().getType() + "'", this, require);
+				return SyntaxMessage.queryError("Type '" + val.getType() + "' is not compatible with arrayAccess type '" + getArrayDeclaration().getType() + "'", this, require);
 			}
 			
-			val.setTypeValue(getArrayDeclaration().getType());
+			if (arrayType != null)
+			{
+				val.setType(arrayType);
+			}
 			
 			initValues.addChild(val);
 		}
@@ -390,6 +403,62 @@ public class Array extends VariableDeclaration implements ArrayCompatible
 		return true;
 	}
 	
+	@Override
+	public void onAdded(Node parent)
+	{
+		TypeList<Value> initValues = getInitializerValues();
+		
+		if (initValues != null)
+		{
+			NovaMethodDeclaration func = getParentClass().generateAnonymousFunction();
+			func.setType(this);
+			func.setStatic(true);
+			
+			String type = generateNovaType(new StringBuilder(), null, false).toString();
+			
+			Assignment array = Assignment.decodeStatement(func, type + "[] temp = new " + type + "[" + initValues.getNumVisibleChildren() + "]", func.getLocationIn(), true);
+			
+			VariableDeclaration decl = array.getAssignedNode().getDeclaration();
+			decl.addAnnotation(new PrimitiveArrayAnnotation(decl, decl.getLocationIn()));
+			
+			array.onAfterDecoded();
+			
+			func.addChild(array);
+			
+			String name = array.getAssignedNode().getName();
+			
+			for (int i = 0; i < initValues.getNumVisibleChildren(); i++)
+			{
+				Value value = initValues.getVisibleChild(i);
+				
+				Assignment a = Assignment.decodeStatement(func, name + "[" + i + "] = " + value.generateNovaInput(), getLocationIn(), true);
+				
+				//String s = a.generateCSourceFragment().toString();
+				
+				func.addChild(a);
+			}
+			
+			String constructor = "Array<" + type + ">";
+			
+			func.convertArrays();
+			
+			if (func.isPrimitiveGenericTypeWrapper())
+			{
+				constructor = func.getType();
+			}
+			
+			Return r = Return.decodeStatement(func, "return new " + constructor + "(" + name + ", " + initValues.getNumVisibleChildren() + ")", getLocationIn(), true);
+			
+			func.addChild(r);
+			
+			MethodCall call = MethodCall.decodeStatement(getParent(), func.getName() + "()", getLocationIn(), true, false, func);
+			
+			replaceWith(call);
+		}
+		
+		super.onAdded(parent);
+	}
+	
 	/**
 	 * Get the {@link VariableDeclaration Variable Declaration} Node that was used
 	 * to declare this array.
@@ -398,6 +467,25 @@ public class Array extends VariableDeclaration implements ArrayCompatible
 	 */
 	private VariableDeclaration getArrayDeclaration()
 	{
+		/*if (isDecoding())
+		{
+			return null;
+		}*/
+		
+		MethodCallArgumentList args = (MethodCallArgumentList)getAncestorOfType(MethodCallArgumentList.class);
+		
+		if (args != null)
+		{/*
+			Value ref = getRootAccessNode().toValue();
+			
+			int index = args.getVisibleIndex(ref);
+			
+			Value param = args.getMethodCall().getCallableDeclaration().getParameterList().getParameter(index);
+			
+			return (VariableDeclaration)param;*/
+			return null;
+		}
+		
 		return ((Assignment)getAncestorOfType(Assignment.class)).getAssignedNode().getDeclaration();//(VariableDeclaration)getContext();
 	}
 	
@@ -481,26 +569,7 @@ public class Array extends VariableDeclaration implements ArrayCompatible
 			
 			if (initValues != null)
 			{
-				Node base = getBaseNode();
 				
-				for (int i = initValues.getNumVisibleChildren() - 1; i >= 0; i--)
-				{
-					Value value = initValues.getVisibleChild(i);
-					
-					/*if (value.isPrimitiveType())
-					{
-						Nova.debuggingBreakpoint(getParentClass().getName().equals("Lab"));
-						value = SyntaxUtils.replaceWithAutoboxPrimitive(value);
-						
-						
-					}*/
-					
-					Assignment a = Assignment.decodeStatement(this, getArrayDeclaration().getName() + "[" + i + "] = " + value.generateNovaInput(), getLocationIn(), true);
-					
-					//String s = a.generateCSourceFragment().toString();
-					
-					base.getParent().addChildAfter(base, a);
-				}
 			}
 		}
 		
