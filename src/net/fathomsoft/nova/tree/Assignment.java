@@ -102,16 +102,21 @@ public class Assignment extends Value
 		return (Accessible)getAssigneeNode();
 	}
 	
-	public Variable getAssignedNode()
+	public Value getAssignedNodeValue()
 	{
-		Identifier last = getAssignee().getLastAccessedNode();
+		Accessible last = getAssignee().getLastAccessedNode();
 		
 		if (last == null)
 		{
-			last = (Identifier)getAssigneeNode();
+			last = (Accessible)getAssigneeNode();
 		}
 		
-		return (Variable)last;
+		return (Value)last;
+	}
+	
+	public Variable getAssignedNode()
+	{
+		return (Variable)getAssignedNodeValue();
 	}
 	
 	@Override
@@ -147,7 +152,7 @@ public class Assignment extends Value
 	@Override
 	public int getArrayDimensions()
 	{
-		return getAssignmentNode().getArrayDimensions();
+		return getAssignmentNode().getArrayDimensions() - getArrayAccessDimensions();
 	}
 	
 	@Override
@@ -157,9 +162,9 @@ public class Assignment extends Value
 	}
 	
 	@Override
-	public byte getDataType()
+	public byte getDataType(boolean checkGeneric)
 	{
-		return getAssignmentNode().getDataType();
+		return getAssignmentNode().getDataType(checkGeneric);
 	}
 	
 	@Override
@@ -253,7 +258,7 @@ public class Assignment extends Value
 		
 		if (!sameType)
 		{
-			getAssignedNode().generateCTypeCast(builder).append('(');
+			getAssignedNode().generateCTypeCast(builder).append(getAssignmentNode().getReturnedNode().generatePointerToValueConversion()).append('(');
 		}
 		
 		builder.append(assignment.generateDataTypeOutput(getAssignedNode().getDataType())).append(getAssignmentNode().generateCSourceFragment());
@@ -404,9 +409,25 @@ public class Assignment extends Value
 		
 		n.addChild(assignment);
 		
-		n.validateCompatible(newLoc, require);
-		
 		return n;
+	}
+	
+	@Override
+	public boolean onAfterDecoded()
+	{
+		if (super.onAfterDecoded())
+		{
+			if (getAssignedNodeValue() instanceof Variable)
+			{
+				getAssignedNode().getDeclaration().onAfterDecoded();
+			}
+			
+			validateCompatible();
+			
+			return true;
+		}
+		
+		return false;
 	}
 	
 	private boolean decodeAssignee(String assignee, Location loc, boolean require, boolean addDeclaration, Value[] assignees, boolean checkType)
@@ -436,6 +457,8 @@ public class Assignment extends Value
 			for (Value assign : assignees)
 			{
 				getAssigneeNodes().addChild(assign);
+				
+				assign.onAfterDecoded();
 			}
 		}
 		
@@ -509,7 +532,7 @@ public class Assignment extends Value
 		return true;
 	}
 	
-	private boolean validateCompatible(Location location, boolean require)
+	private boolean validateCompatible()
 	{
 		Value returnedLeft  = getAssigneeNode().getReturnedNode();
 		Value returnedRight = getAssignmentNode().getReturnedNode();
@@ -536,7 +559,7 @@ public class Assignment extends Value
 				{
 					returnedLeft.getTypeClass();
 					returnedRight.getTypeClass();
-					SyntaxMessage.error("Type '" + returnedRight.getType() + "' is not compatible with type '" + returnedLeft.getType() + "'", this, location);
+					SyntaxMessage.error("Type '" + returnedRight.getType() + "' is not compatible with type '" + returnedLeft.getType() + "'", this);
 				}
 			}
 			
@@ -697,7 +720,7 @@ public class Assignment extends Value
 					ClassDeclaration declaringClass = field.getParentClass();
 					ClassDeclaration thisClass      = getParentClass();
 					
-					if (declaringClass != thisClass && !(id instanceof ArrayAccess))
+					if (declaringClass != thisClass)// && !(id instanceof ArrayAccess))
 					{
 						SyntaxMessage.error("The value of the field '" + field.getName() + "' cannot be modified", id);
 					}
