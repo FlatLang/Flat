@@ -248,7 +248,7 @@ public class TreeGenerator implements Runnable
 		{
 			Node node = scopeAncestors.getChild(i);
 			
-			if (node.getLocationIn().getBounds().isValid())
+			if (node.getLocationIn().getBounds().isValid() && node.isUserMade())
 				if ((!requiresScope || node.containsScope()))
 				{
 					int startingIndex = StringUtils.findNextNonWhitespaceIndex(source, node.getLocationIn().getEnd());
