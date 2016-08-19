@@ -4,6 +4,7 @@ import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.tree.generics.GenericTypeArgument;
 import net.fathomsoft.nova.tree.generics.GenericTypeArgumentList;
+import net.fathomsoft.nova.tree.generics.GenericTypeParameter;
 import net.fathomsoft.nova.util.Location;
 import net.fathomsoft.nova.util.StringUtils;
 
@@ -59,10 +60,32 @@ public class Priority extends Value implements Accessible
 		return getContents().getReturnedNode().getGenericTypeArgumentList();
 	}
 	
-	public GenericTypeArgument getGenericTypeArgumentFromParameter(String type)
+	@Override
+	public GenericTypeParameter getGenericTypeParameter()
+	{
+		if (!doesAccess())
+		{
+			return getReturnedContents().getGenericTypeParameter();
+		}
+		
+		return super.getGenericTypeParameter();
+	}
+	
+	@Override
+	public String getGenericReturnType()
+	{
+		if (!doesAccess())
+		{
+			return getReturnedContents().getGenericReturnType();
+		}
+		
+		return super.getGenericReturnType();
+	}
+	
+	/*public GenericTypeArgument getGenericTypeArgumentFromParameter(String type)
 	{
 		return ((Accessible)getReturnedContents()).getGenericTypeArgumentFromParameter(type);
-	}
+	}*/
 	
 	/**
 	 * Get the Value that represents the contents inside the
@@ -108,7 +131,7 @@ public class Priority extends Value implements Accessible
 	@Override
 	public int getArrayDimensions()
 	{
-		return getReturnedContents().getArrayDimensions();
+		return getReturnedContents().getArrayDimensions() - getArrayAccessDimensions();
 	}
 	
 	@Override
@@ -118,9 +141,9 @@ public class Priority extends Value implements Accessible
 	}
 	
 	@Override
-	public byte getDataType()
+	public byte getDataType(boolean checkGeneric)
 	{
-		return getReturnedContents().getDataType();
+		return getReturnedContents().getDataType(checkGeneric);
 	}
 	
 	@Override
@@ -141,7 +164,7 @@ public class Priority extends Value implements Accessible
 	@Override
 	public StringBuilder generateNovaInput(StringBuilder builder, boolean outputChildren)
 	{
-		builder.append('(').append(getContents().generateNovaInput(outputChildren)).append(')');
+		builder.append('(').append(getContents().generateNovaInput(outputChildren)).append(')').append(generateNovaArrayAccess());
 		
 		if (outputChildren && doesAccess())
 		{
@@ -172,14 +195,14 @@ public class Priority extends Value implements Accessible
 		}
 		else
 		{
-			return builder.append('(').append(getContents().generateCSourceFragment()).append(')').append(generateChildrenCSourceFragment());
+			return builder.append('(').append(getContents().generateCSourceFragment()).append(')').append(generateCArrayAccess()).append(generateChildrenCSourceFragment());
 		}
 	}
 	
 	@Override
 	public StringBuilder generateCUseOutput(StringBuilder builder)
 	{
-		return builder.append('(').append(getContents().generateCSourceFragment()).append(')');
+		return builder.append('(').append(getContents().generateCSourceFragment()).append(')').append(generateCArrayAccess());
 	}
 	
 	/**
@@ -339,7 +362,7 @@ public class Priority extends Value implements Accessible
 	 */
 	public Priority cloneTo(Priority node, boolean cloneChildren)
 	{
-		super.cloneTo(node, cloneChildren);
+		super.cloneTo((Node)node, cloneChildren);
 		
 		return node;
 	}
