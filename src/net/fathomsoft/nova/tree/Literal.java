@@ -90,10 +90,19 @@ public class Literal extends IValue implements Accessible
 	{
 		if (!isWithinExternalContext() && isStringInstantiation())
 		{
-			return builder.append("new String(").append(value).append(')');
+			builder.append("new String(").append(value).append(')');
+		}
+		else
+		{
+			builder.append(value);
 		}
 		
-		return builder.append(value);
+		if (outputChildren && doesAccess())
+		{
+			builder.append(".").append(getAccessedNode().generateNovaInput());
+		}
+		
+		return builder;
 	}
 	
 	/**
@@ -103,14 +112,14 @@ public class Literal extends IValue implements Accessible
 	 * 
 	 * @return The data type that the literal represents.
 	 */
-	public byte getDataType()
+	public byte getDataType(boolean checkGeneric)
 	{
 		if (SyntaxUtils.isStringLiteral(value) && (!isStringInstantiation() || isWithinExternalContext()))
 		{
 			return 1;
 		}
 		
-		return super.getDataType();
+		return super.getDataType(checkGeneric);
 	}
 	
 	@Override
@@ -293,47 +302,82 @@ public class Literal extends IValue implements Accessible
 		return null;
 	}
 	
+	private static String insertExpression(String str, int index, int offset, int end, int lastEnd, int endOffset, StringBuilder builder)
+	{
+		String expression = str.substring(index + offset, end).trim();
+		
+		if (index > 1)
+		{
+			builder.append(str.substring(Math.max(lastEnd + endOffset, 0), index)).append("\" + ");
+		}
+		
+		builder.append('(').append(expression).append(')');
+		
+		if (end < str.length() - (endOffset))
+		{
+			builder.append(" + \"");
+		}
+		else
+		{
+			return builder.toString();
+		}
+		
+		return null;
+	}
+	
 	private static String formatStringExpressions(String str)
 	{
-		int index = str.indexOf("#{");
+		int index = str.indexOf("#");
 		int end = 0;
 		int lastEnd = -1;
+		int lastOffset = 0;
 		
 		StringBuilder builder = new StringBuilder();
 		
 		while (index >= 0 && end >= 0)
 		{
-			end = SyntaxUtils.findCharInBaseScope(str, '}', index + 2);
-			
-			if (end > index)
+			if (index + 1 < str.length())
 			{
-				String expression = str.substring(index + 2, end).trim();
+				int offset = 0;
 				
-				if (index > 1)
+				if (str.charAt(index + 1) == '{')
 				{
-					builder.append(str.substring(lastEnd + 1, index)).append("\" + ");
-				}
-				
-				builder.append('(').append(expression).append(')');
-				
-				if (end < str.length() - 2)
-				{
-					builder.append(" + \"");
+					end = SyntaxUtils.findCharInBaseScope(str, '}', index + 2);
+					
+					offset = 2;
 				}
 				else
 				{
-					return builder.toString();
+					end = SyntaxUtils.findStatementEnd(str, index + 1);
+					
+					offset = 1;
 				}
 				
-				index = str.indexOf("#{", end + 1);
+				if (end > index)
+				{
+					String s = insertExpression(str, index, offset, end, lastEnd, lastOffset, builder);
+					
+					if (s != null)
+					{
+						return s;
+					}
+					
+					lastOffset = offset - 1;
+				}
+				
+				index = str.indexOf("#", end + 1);
+				
+				lastEnd = end;
 			}
-			
-			lastEnd = end;
+			else
+			{
+				break;
+			}
 		}
 		
 		if (end > 0)
 		{
-			builder.append(str.substring(end + 1));
+			builder.append(str.substring(end + lastOffset));
 			
 			return builder.toString();
 		}
