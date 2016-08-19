@@ -57,6 +57,12 @@ public class Return extends IValue
 		return getNumReturnValues() > 1;
 	}
 	
+	@Override
+	public Value getReturnedNode()
+	{
+		return getValueNode().getReturnedNode();
+	}
+	
 	public Value[] getTypes()
 	{
 		return getReturnValues().getTypes();
@@ -98,9 +104,9 @@ public class Return extends IValue
 		{
 			builder.append(' ');
 			
-			if (!getParentMethod().getType().equals(getValueNode().getReturnedNode().getType()))
+			if (!SyntaxUtils.isSameType(getParentMethod(), getValueNode().getReturnedNode(), false))
 			{
-				getParentMethod().generateCTypeCast(builder);
+				getParentMethod().generateCTypeCast(builder).append(getValueNode().getReturnedNode().generatePointerToValueConversion());
 			}
 			
 			builder.append(getValueNode().generateCSourceFragment());
