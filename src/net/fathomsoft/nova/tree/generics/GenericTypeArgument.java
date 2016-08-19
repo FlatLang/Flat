@@ -212,12 +212,12 @@ public class GenericTypeArgument extends IValue implements GenericCompatible
 	{
 		builder.append(getNovaType(context));// + (getDefaultType() != "Object" ? " extends " + getDefaultType() : ""));
 		
-		GenericTypeArgumentList args = getGenericTypeArgumentList();
+		/*GenericTypeArgumentList args = getGenericTypeArgumentList();
 		
 		if (args != null && args.getNumVisibleChildren() > 0)
 		{
 			args.generateNovaInput(builder);
-		}
+		}*/
 		
 		return builder;
 	}
@@ -227,39 +227,6 @@ public class GenericTypeArgument extends IValue implements GenericCompatible
 	{
 		if (isGenericType())
 		{
-//			GenericTypeArgument extractedType = getGenericTypeArgumentFromParameter(getType());
-//			
-//			if (extractedType != null)
-//			{
-//				return extractedType.generateNovaInput().toString();
-//			}
-			
-			/*if (context != null)
-			{
-				if (context instanceof Accessible)
-				{
-					
-					
-					MethodCall call = (MethodCall)((Accessible)context).getLastAccessingOfType(MethodCall.class, false, true);
-					
-					if (call != null)//.getAncestorOfType(MethodCall.class, true) != null)
-					{
-						return call.getIntelligentGenericTypeArgument(this).getType();
-					}
-				}
-				
-				if (!context.isGenericType())
-				{
-					ClassDeclaration c = context.getTypeClass();
-					
-					if (c.isOfType(getParentClass()))
-					{
-						// TODO: this is not sufficient at all.
-						return c.getGenericTypeArgument(0).getType();
-					}
-				}
-			}*/
-			
 			GenericTypeArgument arg = getGenericTypeParameter().getCorrespondingArgument(context);
 			
 			if (arg != null)
@@ -267,7 +234,6 @@ public class GenericTypeArgument extends IValue implements GenericCompatible
 				return arg.getNovaTypeValue(context);
 			}
 			
-			//return getDefaultType();
 			IValue value = new IValue(this, getLocationIn());
 			value.setTypeValue(getDefaultType());
 			
