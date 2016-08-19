@@ -23,6 +23,9 @@ typedef struct nova_standard_math_Nova_ArithmeticSequence nova_standard_math_Nov
 #include <nova/standard/primitive/number/nova_standard_primitive_number_Nova_Char.h>
 #include <nova/standard/primitive/nova_standard_primitive_Nova_Bool.h>
 #include <nova/standard/datastruct/list/nova_standard_datastruct_list_Nova_Array.h>
+#include <nova/standard/datastruct/list/nova_standard_datastruct_list_Nova_IntArray.h>
+#include <nova/standard/datastruct/list/nova_standard_datastruct_list_Nova_CharArray.h>
+#include <nova/standard/datastruct/list/nova_standard_datastruct_list_Nova_DoubleArray.h>
 #include <nova/standard/datastruct/list/nova_standard_datastruct_list_Nova_IntRange.h>
 #include <nova/standard/gc/nova_standard_gc_Nova_GC.h>
 #include <nova/standard/nova_standard_Nova_Object.h>
@@ -49,7 +52,7 @@ CCLASS_CLASS
 	nova_standard_math_Nova_ArithmeticSequence, 
 	
 	nova_standard_math_Extension_VTable_ArithmeticSequence* vtable;
-	double* nova_standard_math_Nova_Sequence_Nova_values;
+	nova_standard_datastruct_list_Nova_DoubleArray* nova_standard_math_Nova_Sequence_Nova_values;
 )
 
 void nova_standard_math_Nova_ArithmeticSequenceNova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData);

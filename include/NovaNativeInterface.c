@@ -67,6 +67,7 @@ nova_env novaEnv = {
 
 {
 &nova_standard_datastruct_Nova_BinaryTree_Nova_addNode,
+&nova_standard_datastruct_Nova_BinaryTree_Nova_addNodes,
 &nova_standard_datastruct_Nova_BinaryTree_Nova_BinaryTree,
 },
 
@@ -132,11 +133,12 @@ nova_env novaEnv = {
 },
 
 {
+&nova_standard_datastruct_list_Nova_Array_Nova_addAll,
 &nova_standard_datastruct_list_Nova_Array_0_Nova_add,
 &nova_standard_datastruct_list_Nova_Array_1_Nova_add,
 &nova_standard_datastruct_list_Nova_Array_Nova_remove,
 &nova_standard_datastruct_list_Nova_Array_Nova_swap,
-&nova_standard_datastruct_list_Nova_Array_Nova_get,
+0,
 &nova_standard_datastruct_list_Nova_Array_Nova_set,
 &nova_standard_datastruct_list_Nova_Array_Nova_toArray,
 0,
@@ -162,7 +164,50 @@ nova_env novaEnv = {
 },
 
 {
+&nova_standard_datastruct_list_Nova_CharArray_Nova_get,
+&nova_standard_datastruct_list_Nova_CharArray_Nova_map,
+&nova_standard_datastruct_list_Nova_CharArray_Nova_forEach,
+&nova_standard_datastruct_list_Nova_CharArray_Nova_any,
+&nova_standard_datastruct_list_Nova_CharArray_Nova_all,
+&nova_standard_datastruct_list_Nova_CharArray_Nova_filter,
+&nova_standard_datastruct_list_Nova_CharArray_Nova_take,
+&nova_standard_datastruct_list_Nova_CharArray_Nova_skip,
+&nova_standard_datastruct_list_Nova_CharArray_Nova_firstWhere,
+&nova_standard_datastruct_list_Nova_CharArray_Nova_reverse,
+&nova_standard_datastruct_list_Nova_CharArray_Nova_join,
+&nova_standard_datastruct_list_Nova_CharArray_0_Nova_CharArray,
+&nova_standard_datastruct_list_Nova_CharArray_1_Nova_CharArray,
+&nova_standard_datastruct_list_Nova_CharArray_2_Nova_CharArray,
+},
+
+{
+&nova_standard_datastruct_list_Nova_CharArrayIterator_0_Nova_reset,
+&nova_standard_datastruct_list_Nova_CharArrayIterator_Nova_CharArrayIterator,
+},
+
+{
 &nova_standard_datastruct_list_Nova_CompiledList_Nova_CompiledList,
+},
+
+{
+&nova_standard_datastruct_list_Nova_DoubleArray_0_Nova_map,
+&nova_standard_datastruct_list_Nova_DoubleArray_0_Nova_forEach,
+&nova_standard_datastruct_list_Nova_DoubleArray_0_Nova_any,
+&nova_standard_datastruct_list_Nova_DoubleArray_0_Nova_all,
+&nova_standard_datastruct_list_Nova_DoubleArray_0_Nova_filter,
+&nova_standard_datastruct_list_Nova_DoubleArray_0_Nova_take,
+&nova_standard_datastruct_list_Nova_DoubleArray_0_Nova_skip,
+&nova_standard_datastruct_list_Nova_DoubleArray_0_Nova_firstWhere,
+&nova_standard_datastruct_list_Nova_DoubleArray_0_Nova_reverse,
+&nova_standard_datastruct_list_Nova_DoubleArray_0_Nova_join,
+&nova_standard_datastruct_list_Nova_DoubleArray_0_Nova_DoubleArray,
+&nova_standard_datastruct_list_Nova_DoubleArray_1_Nova_DoubleArray,
+&nova_standard_datastruct_list_Nova_DoubleArray_2_Nova_DoubleArray,
+},
+
+{
+&nova_standard_datastruct_list_Nova_DoubleArrayIterator_0_Nova_reset,
+&nova_standard_datastruct_list_Nova_DoubleArrayIterator_Nova_DoubleArrayIterator,
 },
 
 {
@@ -171,16 +216,16 @@ nova_env novaEnv = {
 },
 
 {
-&nova_standard_datastruct_list_Nova_IntArray_Nova_map,
-&nova_standard_datastruct_list_Nova_IntArray_Nova_forEach,
-&nova_standard_datastruct_list_Nova_IntArray_Nova_any,
-&nova_standard_datastruct_list_Nova_IntArray_Nova_all,
-&nova_standard_datastruct_list_Nova_IntArray_Nova_filter,
-&nova_standard_datastruct_list_Nova_IntArray_Nova_take,
-&nova_standard_datastruct_list_Nova_IntArray_Nova_skip,
-&nova_standard_datastruct_list_Nova_IntArray_Nova_firstWhere,
-&nova_standard_datastruct_list_Nova_IntArray_Nova_reverse,
-&nova_standard_datastruct_list_Nova_IntArray_Nova_join,
+&nova_standard_datastruct_list_Nova_IntArray_0_Nova_map,
+&nova_standard_datastruct_list_Nova_IntArray_0_Nova_forEach,
+&nova_standard_datastruct_list_Nova_IntArray_0_Nova_any,
+&nova_standard_datastruct_list_Nova_IntArray_0_Nova_all,
+&nova_standard_datastruct_list_Nova_IntArray_0_Nova_filter,
+&nova_standard_datastruct_list_Nova_IntArray_0_Nova_take,
+&nova_standard_datastruct_list_Nova_IntArray_0_Nova_skip,
+&nova_standard_datastruct_list_Nova_IntArray_0_Nova_firstWhere,
+&nova_standard_datastruct_list_Nova_IntArray_0_Nova_reverse,
+&nova_standard_datastruct_list_Nova_IntArray_0_Nova_join,
 &nova_standard_datastruct_list_Nova_IntArray_0_Nova_IntArray,
 &nova_standard_datastruct_list_Nova_IntArray_1_Nova_IntArray,
 &nova_standard_datastruct_list_Nova_IntArray_2_Nova_IntArray,
@@ -203,6 +248,7 @@ nova_env novaEnv = {
 &nova_standard_datastruct_list_Nova_IntRange_0_Nova_firstWhere,
 &nova_standard_datastruct_list_Nova_IntRange_0_Nova_reverse,
 &nova_standard_datastruct_list_Nova_IntRange_0_Nova_join,
+&nova_standard_datastruct_list_Nova_IntRange_0_Nova_toString,
 &nova_standard_datastruct_list_Nova_IntRange_0_Nova_IntRange,
 &nova_standard_datastruct_list_Nova_IntRange_1_Nova_IntRange,
 },
@@ -220,6 +266,7 @@ nova_env novaEnv = {
 },
 
 {
+&nova_standard_datastruct_list_Nova_LinkedList_Nova_addAll,
 &nova_standard_datastruct_list_Nova_LinkedList_Nova_add,
 &nova_standard_datastruct_list_Nova_LinkedList_Nova_remove,
 &nova_standard_datastruct_list_Nova_LinkedList_0_Nova_toArray,

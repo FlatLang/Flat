@@ -66,7 +66,7 @@ void stabilitytest_Nova_StabilityTest_Nova_destroy(stabilitytest_Nova_StabilityT
 	NOVA_FREE(*this);
 }
 
-void stabilitytest_Nova_StabilityTest_Nova_main(stabilitytest_Nova_StabilityTest* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_Nova_String** stabilitytest_Nova_StabilityTest_Nova_args)
+void stabilitytest_Nova_StabilityTest_Nova_main(stabilitytest_Nova_StabilityTest* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_datastruct_list_Nova_Array* stabilitytest_Nova_StabilityTest_Nova_args)
 {
 	stabilitytest_Nova_StabilityTest* l1_Nova_n = (stabilitytest_Nova_StabilityTest*)nova_null;
 	stabilitytest_Nova_StabilityTest* l1_Nova_test = (stabilitytest_Nova_StabilityTest*)nova_null;
@@ -111,7 +111,7 @@ void stabilitytest_Nova_StabilityTest_0_Nova_test(stabilitytest_Nova_StabilityTe
 	{
 		stabilitytest_Nova_UnstableException* l2_Nova_e = (stabilitytest_Nova_UnstableException*)nova_null;
 		
-		l2_Nova_e = (stabilitytest_Nova_UnstableException*)(exceptionData->nova_standard_exception_Nova_ExceptionData_Nova_thrownException);
+		l2_Nova_e = (stabilitytest_Nova_UnstableException*)exceptionData->nova_standard_exception_Nova_ExceptionData_Nova_thrownException;
 		nova_standard_io_Nova_Console_1_Nova_writeLine(0, exceptionData, nova_standard_Nova_String_0_Nova_concat(nova_standard_Nova_String_1_Nova_String(0, exceptionData, "Unstable exception thrown: "), exceptionData, l2_Nova_e->nova_standard_exception_Nova_Exception_Nova_message));
 	}
 	FINALLY

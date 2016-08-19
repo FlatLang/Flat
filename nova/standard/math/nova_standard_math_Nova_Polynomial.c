@@ -37,45 +37,16 @@ nova_standard_math_Extension_VTable_Polynomial nova_standard_math_Extension_VTab
 char nova_standard_math_Nova_Polynomial_Nova_isLetter(nova_standard_math_Nova_Polynomial* this, nova_standard_exception_Nova_ExceptionData* exceptionData, char nova_standard_math_Nova_Polynomial_Nova_c);
 char nova_standard_math_Nova_Polynomial_Nova_isSymbol(nova_standard_math_Nova_Polynomial* this, nova_standard_exception_Nova_ExceptionData* exceptionData, char nova_standard_math_Nova_Polynomial_Nova_c);
 char nova_standard_math_Nova_Polynomial_Nova_isWhitespace(nova_standard_math_Nova_Polynomial* this, nova_standard_exception_Nova_ExceptionData* exceptionData, char nova_standard_math_Nova_Polynomial_Nova_c);
-char nova_standard_math_Nova_Polynomial_Nova_contains(nova_standard_math_Nova_Polynomial* this, nova_standard_exception_Nova_ExceptionData* exceptionData, char* nova_standard_math_Nova_Polynomial_Nova_array, char nova_standard_math_Nova_Polynomial_Nova_c, int nova_standard_math_Nova_Polynomial_Nova_length);
-int nova_standard_math_Nova_Polynomial_Nova_symbolsLength;
-char* nova_standard_math_Nova_Polynomial_Nova_SYMBOLS_CHARS;
-int nova_standard_math_Nova_Polynomial_Nova_whitespaceLength;
-char* nova_standard_math_Nova_Polynomial_Nova_WHITESPACE_CHARS;
+char nova_standard_math_Nova_Polynomial_Nova_contains(nova_standard_math_Nova_Polynomial* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_datastruct_list_Nova_CharArray* nova_standard_math_Nova_Polynomial_Nova_array, char nova_standard_math_Nova_Polynomial_Nova_c);
+nova_standard_datastruct_list_Nova_CharArray* generated6(nova_standard_math_Nova_Polynomial* this, nova_standard_exception_Nova_ExceptionData* exceptionData);
+nova_standard_datastruct_list_Nova_CharArray* generated7(nova_standard_math_Nova_Polynomial* this, nova_standard_exception_Nova_ExceptionData* exceptionData);
+nova_standard_datastruct_list_Nova_CharArray* nova_standard_math_Nova_Polynomial_Nova_SYMBOLS_CHARS;
+nova_standard_datastruct_list_Nova_CharArray* nova_standard_math_Nova_Polynomial_Nova_WHITESPACE_CHARS;
 void nova_standard_math_Nova_PolynomialNova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
 	{
-		nova_standard_math_Nova_Polynomial_Nova_symbolsLength = (int)(23);
-		nova_standard_math_Nova_Polynomial_Nova_SYMBOLS_CHARS = (char*)NOVA_MALLOC(sizeof(nova_standard_primitive_number_Nova_Char) * 23);
-		nova_standard_math_Nova_Polynomial_Nova_SYMBOLS_CHARS[0] = '-';
-		nova_standard_math_Nova_Polynomial_Nova_SYMBOLS_CHARS[1] = '+';
-		nova_standard_math_Nova_Polynomial_Nova_SYMBOLS_CHARS[2] = '~';
-		nova_standard_math_Nova_Polynomial_Nova_SYMBOLS_CHARS[3] = '!';
-		nova_standard_math_Nova_Polynomial_Nova_SYMBOLS_CHARS[4] = '=';
-		nova_standard_math_Nova_Polynomial_Nova_SYMBOLS_CHARS[5] = '%';
-		nova_standard_math_Nova_Polynomial_Nova_SYMBOLS_CHARS[6] = '^';
-		nova_standard_math_Nova_Polynomial_Nova_SYMBOLS_CHARS[7] = '&';
-		nova_standard_math_Nova_Polynomial_Nova_SYMBOLS_CHARS[8] = '|';
-		nova_standard_math_Nova_Polynomial_Nova_SYMBOLS_CHARS[9] = '*';
-		nova_standard_math_Nova_Polynomial_Nova_SYMBOLS_CHARS[10] = '/';
-		nova_standard_math_Nova_Polynomial_Nova_SYMBOLS_CHARS[11] = '>';
-		nova_standard_math_Nova_Polynomial_Nova_SYMBOLS_CHARS[12] = '<';
-		nova_standard_math_Nova_Polynomial_Nova_SYMBOLS_CHARS[13] = ',';
-		nova_standard_math_Nova_Polynomial_Nova_SYMBOLS_CHARS[14] = '"';
-		nova_standard_math_Nova_Polynomial_Nova_SYMBOLS_CHARS[15] = '\'';
-		nova_standard_math_Nova_Polynomial_Nova_SYMBOLS_CHARS[16] = '[';
-		nova_standard_math_Nova_Polynomial_Nova_SYMBOLS_CHARS[17] = ']';
-		nova_standard_math_Nova_Polynomial_Nova_SYMBOLS_CHARS[18] = '{';
-		nova_standard_math_Nova_Polynomial_Nova_SYMBOLS_CHARS[19] = '}';
-		nova_standard_math_Nova_Polynomial_Nova_SYMBOLS_CHARS[20] = ';';
-		nova_standard_math_Nova_Polynomial_Nova_SYMBOLS_CHARS[21] = '(';
-		nova_standard_math_Nova_Polynomial_Nova_SYMBOLS_CHARS[22] = ')';
-		nova_standard_math_Nova_Polynomial_Nova_whitespaceLength = (int)(4);
-		nova_standard_math_Nova_Polynomial_Nova_WHITESPACE_CHARS = (char*)NOVA_MALLOC(sizeof(nova_standard_primitive_number_Nova_Char) * 4);
-		nova_standard_math_Nova_Polynomial_Nova_WHITESPACE_CHARS[0] = ' ';
-		nova_standard_math_Nova_Polynomial_Nova_WHITESPACE_CHARS[1] = '\n';
-		nova_standard_math_Nova_Polynomial_Nova_WHITESPACE_CHARS[2] = '\r';
-		nova_standard_math_Nova_Polynomial_Nova_WHITESPACE_CHARS[3] = '\t';
+		nova_standard_math_Nova_Polynomial_Nova_SYMBOLS_CHARS = generated6(0, exceptionData);
+		nova_standard_math_Nova_Polynomial_Nova_WHITESPACE_CHARS = generated7(0, exceptionData);
 	}
 }
 
@@ -100,9 +71,9 @@ void nova_standard_math_Nova_Polynomial_Nova_destroy(nova_standard_math_Nova_Pol
 		return;
 	}
 	
-	
-	
-	
+	nova_standard_datastruct_list_Nova_DoubleArray_Nova_destroy(&(*this)->nova_standard_math_Nova_Polynomial_Nova_coefficients, exceptionData);
+	nova_standard_datastruct_list_Nova_DoubleArray_Nova_destroy(&(*this)->nova_standard_math_Nova_Polynomial_Nova_degrees, exceptionData);
+	nova_standard_datastruct_list_Nova_Array_Nova_destroy(&(*this)->nova_standard_math_Nova_Polynomial_Nova_signs, exceptionData);
 	
 	NOVA_FREE(*this);
 }
@@ -111,20 +82,17 @@ void nova_standard_math_Nova_Polynomial_Nova_this(nova_standard_math_Nova_Polyno
 {
 	int l2_Nova_start = 0;
 	char l2_Nova_reading = 0;
-	nova_standard_datastruct_list_Nova_Array* l2_Nova_coeffs = (nova_standard_datastruct_list_Nova_Array*)nova_null;
-	nova_standard_datastruct_list_Nova_Array* l2_Nova_degrees = (nova_standard_datastruct_list_Nova_Array*)nova_null;
-	nova_standard_datastruct_list_Nova_Array* l2_Nova_signs = (nova_standard_datastruct_list_Nova_Array*)nova_null;
 	int l4_Nova_i = 0;
 	
 	l2_Nova_start = (int)(0);
 	l2_Nova_reading = 0;
-	l2_Nova_coeffs = nova_standard_datastruct_list_Nova_Array_0_Nova_Array(0, exceptionData);
-	l2_Nova_degrees = nova_standard_datastruct_list_Nova_Array_0_Nova_Array(0, exceptionData);
-	l2_Nova_signs = nova_standard_datastruct_list_Nova_Array_0_Nova_Array(0, exceptionData);
+	this->nova_standard_math_Nova_Polynomial_Nova_coefficients = nova_standard_datastruct_list_Nova_DoubleArray_0_Nova_DoubleArray(0, exceptionData);
+	this->nova_standard_math_Nova_Polynomial_Nova_degrees = nova_standard_datastruct_list_Nova_DoubleArray_0_Nova_DoubleArray(0, exceptionData);
+	this->nova_standard_math_Nova_Polynomial_Nova_signs = nova_standard_datastruct_list_Nova_Array_0_Nova_Array(0, exceptionData);
 	l4_Nova_i = (int)0;
 	for (; l4_Nova_i < (int)nova_standard_math_Nova_Polynomial_Nova_polynomial->nova_standard_Nova_String_Nova_count; l4_Nova_i++)
 	{
-		if (!nova_standard_math_Nova_Polynomial_Nova_isLetter(0, exceptionData, nova_standard_math_Nova_Polynomial_Nova_polynomial->nova_standard_Nova_String_Nova_chars[l4_Nova_i]))
+		if (!nova_standard_math_Nova_Polynomial_Nova_isLetter(0, exceptionData, (char)(intptr_t)(nova_standard_datastruct_list_Nova_Array_virtual1_Nova_get((nova_standard_datastruct_list_Nova_Array*)(nova_standard_math_Nova_Polynomial_Nova_polynomial->nova_standard_Nova_String_Nova_chars), exceptionData, l4_Nova_i))))
 		{
 			l2_Nova_reading = 0;
 		}
@@ -146,22 +114,22 @@ char nova_standard_math_Nova_Polynomial_Nova_isLetter(nova_standard_math_Nova_Po
 
 char nova_standard_math_Nova_Polynomial_Nova_isSymbol(nova_standard_math_Nova_Polynomial* this, nova_standard_exception_Nova_ExceptionData* exceptionData, char nova_standard_math_Nova_Polynomial_Nova_c)
 {
-	return nova_standard_math_Nova_Polynomial_Nova_contains(0, exceptionData, nova_standard_math_Nova_Polynomial_Nova_SYMBOLS_CHARS, nova_standard_math_Nova_Polynomial_Nova_c, nova_standard_math_Nova_Polynomial_Nova_symbolsLength);
+	return nova_standard_math_Nova_Polynomial_Nova_contains(0, exceptionData, nova_standard_math_Nova_Polynomial_Nova_SYMBOLS_CHARS, nova_standard_math_Nova_Polynomial_Nova_c);
 }
 
 char nova_standard_math_Nova_Polynomial_Nova_isWhitespace(nova_standard_math_Nova_Polynomial* this, nova_standard_exception_Nova_ExceptionData* exceptionData, char nova_standard_math_Nova_Polynomial_Nova_c)
 {
-	return nova_standard_math_Nova_Polynomial_Nova_contains(0, exceptionData, nova_standard_math_Nova_Polynomial_Nova_WHITESPACE_CHARS, nova_standard_math_Nova_Polynomial_Nova_c, nova_standard_math_Nova_Polynomial_Nova_whitespaceLength);
+	return nova_standard_math_Nova_Polynomial_Nova_contains(0, exceptionData, nova_standard_math_Nova_Polynomial_Nova_WHITESPACE_CHARS, nova_standard_math_Nova_Polynomial_Nova_c);
 }
 
-char nova_standard_math_Nova_Polynomial_Nova_contains(nova_standard_math_Nova_Polynomial* this, nova_standard_exception_Nova_ExceptionData* exceptionData, char* nova_standard_math_Nova_Polynomial_Nova_array, char nova_standard_math_Nova_Polynomial_Nova_c, int nova_standard_math_Nova_Polynomial_Nova_length)
+char nova_standard_math_Nova_Polynomial_Nova_contains(nova_standard_math_Nova_Polynomial* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_datastruct_list_Nova_CharArray* nova_standard_math_Nova_Polynomial_Nova_array, char nova_standard_math_Nova_Polynomial_Nova_c)
 {
 	int l2_Nova_i = 0;
 	
 	l2_Nova_i = (int)0;
-	for (; l2_Nova_i < (int)nova_standard_math_Nova_Polynomial_Nova_length; l2_Nova_i++)
+	for (; l2_Nova_i < (int)nova_standard_math_Nova_Polynomial_Nova_array->nova_standard_datastruct_list_Nova_Array_Nova_count; l2_Nova_i++)
 	{
-		if (nova_standard_math_Nova_Polynomial_Nova_c == nova_standard_math_Nova_Polynomial_Nova_array[l2_Nova_i])
+		if (nova_standard_math_Nova_Polynomial_Nova_c == (char)(intptr_t)nova_standard_math_Nova_Polynomial_Nova_array->nova_standard_datastruct_list_Nova_Array_Nova_data[l2_Nova_i])
 		{
 			return 1;
 		}
@@ -169,10 +137,53 @@ char nova_standard_math_Nova_Polynomial_Nova_contains(nova_standard_math_Nova_Po
 	return 0;
 }
 
+nova_standard_datastruct_list_Nova_CharArray* generated6(nova_standard_math_Nova_Polynomial* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
+{
+	char* l1_Nova_temp = (char*)nova_null;
+	
+	l1_Nova_temp = (char*)NOVA_MALLOC(sizeof(nova_standard_primitive_number_Nova_Char) * 23);
+	l1_Nova_temp[0] = '-';
+	l1_Nova_temp[1] = '+';
+	l1_Nova_temp[2] = '~';
+	l1_Nova_temp[3] = '!';
+	l1_Nova_temp[4] = '=';
+	l1_Nova_temp[5] = '%';
+	l1_Nova_temp[6] = '^';
+	l1_Nova_temp[7] = '&';
+	l1_Nova_temp[8] = '|';
+	l1_Nova_temp[9] = '*';
+	l1_Nova_temp[10] = '/';
+	l1_Nova_temp[11] = '>';
+	l1_Nova_temp[12] = '<';
+	l1_Nova_temp[13] = ',';
+	l1_Nova_temp[14] = '"';
+	l1_Nova_temp[15] = '\'';
+	l1_Nova_temp[16] = '[';
+	l1_Nova_temp[17] = ']';
+	l1_Nova_temp[18] = '{';
+	l1_Nova_temp[19] = '}';
+	l1_Nova_temp[20] = ';';
+	l1_Nova_temp[21] = '(';
+	l1_Nova_temp[22] = ')';
+	return nova_standard_datastruct_list_Nova_CharArray_2_Nova_CharArray(0, exceptionData, l1_Nova_temp, 23);
+}
+
+nova_standard_datastruct_list_Nova_CharArray* generated7(nova_standard_math_Nova_Polynomial* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
+{
+	char* l1_Nova_temp = (char*)nova_null;
+	
+	l1_Nova_temp = (char*)NOVA_MALLOC(sizeof(nova_standard_primitive_number_Nova_Char) * 4);
+	l1_Nova_temp[0] = ' ';
+	l1_Nova_temp[1] = '\n';
+	l1_Nova_temp[2] = '\r';
+	l1_Nova_temp[3] = '\t';
+	return nova_standard_datastruct_list_Nova_CharArray_2_Nova_CharArray(0, exceptionData, l1_Nova_temp, 4);
+}
+
 void nova_standard_math_Nova_Polynomial_Nova_super(nova_standard_math_Nova_Polynomial* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
-	this->nova_standard_math_Nova_Polynomial_Nova_coefficients = 0;
-	this->nova_standard_math_Nova_Polynomial_Nova_degrees = 0;
-	this->nova_standard_math_Nova_Polynomial_Nova_signs = 0;
+	this->nova_standard_math_Nova_Polynomial_Nova_coefficients = (nova_standard_datastruct_list_Nova_DoubleArray*)nova_null;
+	this->nova_standard_math_Nova_Polynomial_Nova_degrees = (nova_standard_datastruct_list_Nova_DoubleArray*)nova_null;
+	this->nova_standard_math_Nova_Polynomial_Nova_signs = (nova_standard_datastruct_list_Nova_Array*)nova_null;
 }
 

@@ -82,7 +82,7 @@ void nova_standard_star_Nova_WindowThread_1_Nova_this(nova_standard_star_Nova_Wi
 
 void nova_standard_star_Nova_WindowThread_Nova_run(nova_standard_star_Nova_WindowThread* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
-	nova_createWindow((int)(this->prv->nova_standard_star_Nova_WindowThread_Nova_window->nova_standard_star_Nova_Window_Nova_x), (int)(this->prv->nova_standard_star_Nova_WindowThread_Nova_window->nova_standard_star_Nova_Window_Nova_y), (int)(this->prv->nova_standard_star_Nova_WindowThread_Nova_window->nova_standard_star_Nova_Window_Nova_width), (int)(this->prv->nova_standard_star_Nova_WindowThread_Nova_window->nova_standard_star_Nova_Window_Nova_height), (char*)(this->prv->nova_standard_star_Nova_WindowThread_Nova_window->nova_standard_star_Nova_Window_Nova_title->nova_standard_Nova_String_Nova_chars));
+	nova_createWindow((int)(this->prv->nova_standard_star_Nova_WindowThread_Nova_window->nova_standard_star_Nova_Window_Nova_x), (int)(this->prv->nova_standard_star_Nova_WindowThread_Nova_window->nova_standard_star_Nova_Window_Nova_y), (int)(this->prv->nova_standard_star_Nova_WindowThread_Nova_window->nova_standard_star_Nova_Window_Nova_width), (int)(this->prv->nova_standard_star_Nova_WindowThread_Nova_window->nova_standard_star_Nova_Window_Nova_height), (char*)(this->prv->nova_standard_star_Nova_WindowThread_Nova_window->nova_standard_star_Nova_Window_Nova_title->nova_standard_Nova_String_Nova_chars->nova_standard_datastruct_list_Nova_Array_Nova_data));
 }
 
 void nova_standard_star_Nova_WindowThread_0_Nova_super(nova_standard_star_Nova_WindowThread* this, nova_standard_exception_Nova_ExceptionData* exceptionData)

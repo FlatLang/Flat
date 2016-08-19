@@ -64,7 +64,7 @@ void example_Nova_IntegerTest_Nova_destroy(example_Nova_IntegerTest** this, nova
 	NOVA_FREE(*this);
 }
 
-void example_Nova_IntegerTest_Nova_main(example_Nova_IntegerTest* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_Nova_String** example_Nova_IntegerTest_Nova_args)
+void example_Nova_IntegerTest_Nova_main(example_Nova_IntegerTest* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_datastruct_list_Nova_Array* example_Nova_IntegerTest_Nova_args)
 {
 	char l1_Nova_c = 0;
 	

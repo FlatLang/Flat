@@ -64,7 +64,7 @@ void example_Nova_Test_Nova_destroy(example_Nova_Test** this, nova_standard_exce
 	NOVA_FREE(*this);
 }
 
-void example_Nova_Test_Nova_main(example_Nova_Test* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_Nova_String** example_Nova_Test_Nova_args)
+void example_Nova_Test_Nova_main(example_Nova_Test* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_datastruct_list_Nova_Array* example_Nova_Test_Nova_args)
 {
 	nova_standard_datastruct_list_Nova_Stack* l1_Nova_s = (nova_standard_datastruct_list_Nova_Stack*)nova_null;
 	int l1_Nova_d = 0;

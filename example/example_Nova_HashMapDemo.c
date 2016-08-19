@@ -64,26 +64,11 @@ void example_Nova_HashMapDemo_Nova_destroy(example_Nova_HashMapDemo** this, nova
 	NOVA_FREE(*this);
 }
 
-void example_Nova_HashMapDemo_Nova_main(example_Nova_HashMapDemo* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_Nova_String** example_Nova_HashMapDemo_Nova_args)
+void example_Nova_HashMapDemo_Nova_main(example_Nova_HashMapDemo* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_datastruct_list_Nova_Array* example_Nova_HashMapDemo_Nova_args)
 {
 	nova_standard_datastruct_Nova_HashMap* l1_Nova_words = (nova_standard_datastruct_Nova_HashMap*)nova_null;
-	int* l1_Nova_nums = (int*)nova_null;
 	
 	l1_Nova_words = nova_standard_datastruct_Nova_HashMap_Nova_HashMap(0, exceptionData);
-	l1_Nova_nums = (int*)NOVA_MALLOC(sizeof(nova_standard_primitive_number_Nova_Int) * 6);
-	l1_Nova_nums[0] = (int)(0);
-	l1_Nova_nums[1] = (int)(1);
-	l1_Nova_nums[2] = (int)(2);
-	l1_Nova_nums[3] = (int)(3);
-	l1_Nova_nums[4] = (int)(4);
-	l1_Nova_nums[5] = (int)(5);
-	nova_standard_datastruct_Nova_HashMap_virtual1_Nova_put((nova_standard_datastruct_Nova_HashMap*)(l1_Nova_words), exceptionData, (nova_standard_Nova_Object*)(nova_standard_primitive_number_Nova_Int_Nova_Int(0, exceptionData, l1_Nova_nums[0])), (nova_standard_Nova_Object*)(nova_standard_Nova_String_1_Nova_String(0, exceptionData, "Zero")));
-	nova_standard_datastruct_Nova_HashMap_virtual1_Nova_put((nova_standard_datastruct_Nova_HashMap*)(l1_Nova_words), exceptionData, (nova_standard_Nova_Object*)(nova_standard_primitive_number_Nova_Int_Nova_Int(0, exceptionData, l1_Nova_nums[1])), (nova_standard_Nova_Object*)(nova_standard_Nova_String_1_Nova_String(0, exceptionData, "One")));
-	nova_standard_datastruct_Nova_HashMap_virtual1_Nova_put((nova_standard_datastruct_Nova_HashMap*)(l1_Nova_words), exceptionData, (nova_standard_Nova_Object*)(nova_standard_primitive_number_Nova_Int_Nova_Int(0, exceptionData, l1_Nova_nums[2])), (nova_standard_Nova_Object*)(nova_standard_Nova_String_1_Nova_String(0, exceptionData, "Two")));
-	nova_standard_datastruct_Nova_HashMap_virtual1_Nova_put((nova_standard_datastruct_Nova_HashMap*)(l1_Nova_words), exceptionData, (nova_standard_Nova_Object*)(nova_standard_primitive_number_Nova_Int_Nova_Int(0, exceptionData, l1_Nova_nums[3])), (nova_standard_Nova_Object*)(nova_standard_Nova_String_1_Nova_String(0, exceptionData, "Three")));
-	nova_standard_datastruct_Nova_HashMap_virtual1_Nova_put((nova_standard_datastruct_Nova_HashMap*)(l1_Nova_words), exceptionData, (nova_standard_Nova_Object*)(nova_standard_primitive_number_Nova_Int_Nova_Int(0, exceptionData, l1_Nova_nums[4])), (nova_standard_Nova_Object*)(nova_standard_Nova_String_1_Nova_String(0, exceptionData, "Four")));
-	nova_standard_datastruct_Nova_HashMap_virtual1_Nova_put((nova_standard_datastruct_Nova_HashMap*)(l1_Nova_words), exceptionData, (nova_standard_Nova_Object*)(nova_standard_primitive_number_Nova_Int_Nova_Int(0, exceptionData, l1_Nova_nums[5])), (nova_standard_Nova_Object*)(nova_standard_Nova_String_1_Nova_String(0, exceptionData, "Five")));
-	nova_standard_datastruct_Nova_HashMap_virtual1_Nova_put((nova_standard_datastruct_Nova_HashMap*)(l1_Nova_words), exceptionData, (nova_standard_Nova_Object*)(nova_standard_primitive_number_Nova_Int_Nova_Int(0, exceptionData, l1_Nova_nums[5])), (nova_standard_Nova_Object*)((nova_standard_Nova_Object*)nova_null));
 	nova_standard_io_Nova_Console_Nova_waitForEnter(0, exceptionData);
 }
 

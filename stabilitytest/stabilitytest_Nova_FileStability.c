@@ -101,7 +101,7 @@ void stabilitytest_Nova_FileStability_0_Nova_test(stabilitytest_Nova_FileStabili
 	{
 		nova_standard_exception_Nova_Exception* l2_Nova_e = (nova_standard_exception_Nova_Exception*)nova_null;
 		
-		l2_Nova_e = exceptionData->nova_standard_exception_Nova_ExceptionData_Nova_thrownException;
+		l2_Nova_e = (nova_standard_exception_Nova_Exception*)exceptionData->nova_standard_exception_Nova_ExceptionData_Nova_thrownException;
 		stabilitytest_Nova_StabilityTest_1_Nova_fail(this->stabilitytest_Nova_StabilityTestCase_Nova_program, exceptionData, nova_standard_Nova_String_1_Nova_String(0, exceptionData, "Failed; Exception thrown"));
 	}
 	FINALLY

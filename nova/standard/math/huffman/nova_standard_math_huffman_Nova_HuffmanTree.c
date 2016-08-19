@@ -48,7 +48,7 @@ nova_standard_math_huffman_Nova_HuffmanTree* nova_standard_math_huffman_Nova_Huf
 	nova_standard_math_huffman_Nova_HuffmanTree_0_Nova_super(this, exceptionData);
 	
 	{
-		nova_standard_math_huffman_Nova_HuffmanTree_0_Nova_this(this, exceptionData);
+		nova_standard_math_huffman_Nova_HuffmanTree_2_Nova_this(this, exceptionData);
 	}
 	
 	return this;
@@ -65,7 +65,7 @@ void nova_standard_math_huffman_Nova_HuffmanTree_Nova_destroy(nova_standard_math
 	NOVA_FREE(*this);
 }
 
-void nova_standard_math_huffman_Nova_HuffmanTree_0_Nova_this(nova_standard_math_huffman_Nova_HuffmanTree* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
+void nova_standard_math_huffman_Nova_HuffmanTree_2_Nova_this(nova_standard_math_huffman_Nova_HuffmanTree* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
 }
 

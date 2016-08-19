@@ -91,7 +91,7 @@ void stabilitytest_Nova_ExceptionStability_0_Nova_test(stabilitytest_Nova_Except
 	{
 		nova_standard_exception_Nova_Exception* l2_Nova_e = (nova_standard_exception_Nova_Exception*)nova_null;
 		
-		l2_Nova_e = exceptionData->nova_standard_exception_Nova_ExceptionData_Nova_thrownException;
+		l2_Nova_e = (nova_standard_exception_Nova_Exception*)exceptionData->nova_standard_exception_Nova_ExceptionData_Nova_thrownException;
 		l1_Nova_worked = 1;
 	}
 	FINALLY
@@ -137,7 +137,7 @@ void stabilitytest_Nova_ExceptionStability_Nova_testException(stabilitytest_Nova
 			{
 				nova_standard_exception_Nova_DivideByZeroException* l5_Nova_e = (nova_standard_exception_Nova_DivideByZeroException*)nova_null;
 				
-				l5_Nova_e = (nova_standard_exception_Nova_DivideByZeroException*)(exceptionData->nova_standard_exception_Nova_ExceptionData_Nova_thrownException);
+				l5_Nova_e = (nova_standard_exception_Nova_DivideByZeroException*)exceptionData->nova_standard_exception_Nova_ExceptionData_Nova_thrownException;
 				l1_Nova_worked = 1;
 				nova_standard_io_Nova_Console_1_Nova_writeLine(0, exceptionData, nova_standard_Nova_String_1_Nova_String(0, exceptionData, "OK"));
 				nova_standard_io_Nova_Console_0_Nova_write(0, exceptionData, nova_standard_Nova_String_1_Nova_String(0, exceptionData, "Checking StabilityTestException... "));
@@ -154,7 +154,7 @@ void stabilitytest_Nova_ExceptionStability_Nova_testException(stabilitytest_Nova
 	{
 		stabilitytest_Nova_StabilityTestException* l7_Nova_e = (stabilitytest_Nova_StabilityTestException*)nova_null;
 		
-		l7_Nova_e = (stabilitytest_Nova_StabilityTestException*)(exceptionData->nova_standard_exception_Nova_ExceptionData_Nova_thrownException);
+		l7_Nova_e = (stabilitytest_Nova_StabilityTestException*)exceptionData->nova_standard_exception_Nova_ExceptionData_Nova_thrownException;
 		if (!l1_Nova_worked)
 		{
 			stabilitytest_Nova_StabilityTest_1_Nova_fail(this->stabilitytest_Nova_StabilityTestCase_Nova_program, exceptionData, nova_standard_Nova_String_1_Nova_String(0, exceptionData, "Failed; uncaught DivideByZeroException"));

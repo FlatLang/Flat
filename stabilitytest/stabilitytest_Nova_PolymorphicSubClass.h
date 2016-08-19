@@ -23,6 +23,9 @@ typedef struct stabilitytest_Nova_PolymorphicSubClass stabilitytest_Nova_Polymor
 #include <nova/standard/primitive/number/nova_standard_primitive_number_Nova_Char.h>
 #include <nova/standard/primitive/nova_standard_primitive_Nova_Bool.h>
 #include <nova/standard/datastruct/list/nova_standard_datastruct_list_Nova_Array.h>
+#include <nova/standard/datastruct/list/nova_standard_datastruct_list_Nova_IntArray.h>
+#include <nova/standard/datastruct/list/nova_standard_datastruct_list_Nova_CharArray.h>
+#include <nova/standard/datastruct/list/nova_standard_datastruct_list_Nova_DoubleArray.h>
 #include <nova/standard/datastruct/list/nova_standard_datastruct_list_Nova_IntRange.h>
 #include <nova/standard/gc/nova_standard_gc_Nova_GC.h>
 #include <nova/standard/nova_standard_Nova_Object.h>

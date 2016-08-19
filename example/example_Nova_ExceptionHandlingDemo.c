@@ -66,7 +66,7 @@ void example_Nova_ExceptionHandlingDemo_Nova_destroy(example_Nova_ExceptionHandl
 	NOVA_FREE(*this);
 }
 
-void example_Nova_ExceptionHandlingDemo_Nova_main(example_Nova_ExceptionHandlingDemo* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_Nova_String** example_Nova_ExceptionHandlingDemo_Nova_args)
+void example_Nova_ExceptionHandlingDemo_Nova_main(example_Nova_ExceptionHandlingDemo* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_datastruct_list_Nova_Array* example_Nova_ExceptionHandlingDemo_Nova_args)
 {
 	TRY
 	{
@@ -85,7 +85,7 @@ void example_Nova_ExceptionHandlingDemo_Nova_main(example_Nova_ExceptionHandling
 	{
 		example_Nova_NonWholeDivisionException* l2_Nova_e = (example_Nova_NonWholeDivisionException*)nova_null;
 		
-		l2_Nova_e = (example_Nova_NonWholeDivisionException*)(exceptionData->nova_standard_exception_Nova_ExceptionData_Nova_thrownException);
+		l2_Nova_e = (example_Nova_NonWholeDivisionException*)exceptionData->nova_standard_exception_Nova_ExceptionData_Nova_thrownException;
 		nova_standard_io_Nova_Console_1_Nova_writeLine(0, exceptionData, nova_standard_Nova_String_1_Nova_String(0, exceptionData, "You used the divide() method incorrectly."));
 	}
 	FINALLY

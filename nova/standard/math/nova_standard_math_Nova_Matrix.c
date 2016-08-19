@@ -35,7 +35,7 @@ nova_standard_math_Extension_VTable_Matrix nova_standard_math_Extension_VTable_M
 
 CCLASS_PRIVATE
 (
-	nova_standard_primitive_number_Nova_Number*** nova_standard_math_Nova_Matrix_Nova_matrix;
+	nova_standard_datastruct_list_Nova_Array* nova_standard_math_Nova_Matrix_Nova_matrix;
 	
 )
 void nova_standard_math_Nova_MatrixNova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData)
@@ -65,7 +65,7 @@ void nova_standard_math_Nova_Matrix_Nova_destroy(nova_standard_math_Nova_Matrix*
 		return;
 	}
 	
-	NOVA_FREE((*this)->prv->nova_standard_math_Nova_Matrix_Nova_matrix);
+	nova_standard_datastruct_list_Nova_Array_Nova_destroy(&(*this)->prv->nova_standard_math_Nova_Matrix_Nova_matrix, exceptionData);
 	NOVA_FREE((*this)->prv);
 	
 	NOVA_FREE(*this);
@@ -73,7 +73,7 @@ void nova_standard_math_Nova_Matrix_Nova_destroy(nova_standard_math_Nova_Matrix*
 
 void nova_standard_math_Nova_Matrix_Nova_this(nova_standard_math_Nova_Matrix* this, nova_standard_exception_Nova_ExceptionData* exceptionData, int nova_standard_math_Nova_Matrix_Nova_rows, int nova_standard_math_Nova_Matrix_Nova_cols)
 {
-	this->prv->nova_standard_math_Nova_Matrix_Nova_matrix = (nova_standard_primitive_number_Nova_Number***)nova_gen_array(NOVA_MALLOC(sizeof(nova_standard_primitive_number_Nova_Number) * nova_standard_math_Nova_Matrix_Nova_rows * nova_standard_math_Nova_Matrix_Nova_cols), (int[]) { nova_standard_math_Nova_Matrix_Nova_rows, nova_standard_math_Nova_Matrix_Nova_cols }, 0, 1, sizeof(nova_standard_primitive_number_Nova_Number));
+	this->prv->nova_standard_math_Nova_Matrix_Nova_matrix = nova_standard_datastruct_list_Nova_Array_1_Nova_Array(0, exceptionData, nova_standard_math_Nova_Matrix_Nova_rows);
 }
 
 nova_standard_primitive_number_Nova_Number* nova_standard_math_Nova_Matrix_Nova_sum(nova_standard_math_Nova_Matrix* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
@@ -83,6 +83,6 @@ nova_standard_primitive_number_Nova_Number* nova_standard_math_Nova_Matrix_Nova_
 
 void nova_standard_math_Nova_Matrix_Nova_super(nova_standard_math_Nova_Matrix* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
-	this->prv->nova_standard_math_Nova_Matrix_Nova_matrix = (nova_standard_primitive_number_Nova_Number***)nova_null;
+	this->prv->nova_standard_math_Nova_Matrix_Nova_matrix = (nova_standard_datastruct_list_Nova_Array*)nova_null;
 }
 

@@ -108,6 +108,7 @@ nova_standard_Nova_String* nova_standard_primitive_number_Nova_Long_2_Nova_toStr
 	
 	l1_Nova_charOffset = (int)('0');
 	l1_Nova_digits = (int)(nova_standard_primitive_number_Nova_Long_0_Nova_numDigits(0, exceptionData, nova_standard_primitive_number_Nova_Long_Nova_value));
+	
 	l1_Nova_data = (char*)NOVA_MALLOC(sizeof(nova_standard_primitive_number_Nova_Char) * l1_Nova_digits + 1);
 	l1_Nova_data[l1_Nova_digits] = '\0';
 	l1_Nova_offset = (int)(0);

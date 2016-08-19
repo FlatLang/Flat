@@ -115,7 +115,7 @@ void nova_standard_thread_Nova_Thread_Nova_startRun(nova_standard_thread_Nova_Th
 	{
 		nova_standard_exception_Nova_Exception* l2_Nova_e = (nova_standard_exception_Nova_Exception*)nova_null;
 		
-		l2_Nova_e = exceptionData->nova_standard_exception_Nova_ExceptionData_Nova_thrownException;
+		l2_Nova_e = (nova_standard_exception_Nova_Exception*)exceptionData->nova_standard_exception_Nova_ExceptionData_Nova_thrownException;
 		nova_standard_io_Nova_Console_1_Nova_writeLine(0, exceptionData, nova_standard_Nova_String_1_Nova_String(0, exceptionData, "An error has occurred..."));
 	}
 	FINALLY

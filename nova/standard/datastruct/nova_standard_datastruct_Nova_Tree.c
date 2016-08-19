@@ -47,7 +47,7 @@ nova_standard_datastruct_Nova_Tree* nova_standard_datastruct_Nova_Tree_Nova_Tree
 	nova_standard_datastruct_Nova_Tree_Nova_super(this, exceptionData);
 	
 	{
-		nova_standard_datastruct_Nova_Tree_0_Nova_this(this, exceptionData);
+		nova_standard_datastruct_Nova_Tree_2_Nova_this(this, exceptionData);
 	}
 	
 	return this;
@@ -85,7 +85,7 @@ nova_standard_datastruct_list_Nova_Array* nova_standard_datastruct_Nova_Tree_Nov
 	return nova_standard_datastruct_Nova_Node_0_Nova_levelorder(this->nova_standard_datastruct_Nova_Tree_Nova_root, exceptionData);
 }
 
-void nova_standard_datastruct_Nova_Tree_0_Nova_this(nova_standard_datastruct_Nova_Tree* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
+void nova_standard_datastruct_Nova_Tree_2_Nova_this(nova_standard_datastruct_Nova_Tree* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
 }
 

@@ -68,7 +68,8 @@ nova_standard_Nova_String* nova_standard_security_Nova_MD5_Nova_encrypt(nova_sta
 {
 	char* l1_Nova_data = (char*)nova_null;
 	
-	l1_Nova_data = (char*)(nova_md5((char*)(nova_standard_security_Nova_MD5_Nova_str->nova_standard_Nova_String_Nova_chars)));
+	
+	l1_Nova_data = (char*)(nova_md5((char*)(nova_standard_security_Nova_MD5_Nova_str->nova_standard_Nova_String_Nova_chars->nova_standard_datastruct_list_Nova_Array_Nova_data)));
 	if (l1_Nova_data == 0)
 	{
 		return (nova_standard_Nova_String*)nova_null;

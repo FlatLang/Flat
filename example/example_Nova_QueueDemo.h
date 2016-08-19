@@ -23,13 +23,15 @@ typedef struct example_Nova_QueueDemo example_Nova_QueueDemo;
 #include <nova/standard/primitive/number/nova_standard_primitive_number_Nova_Char.h>
 #include <nova/standard/primitive/nova_standard_primitive_Nova_Bool.h>
 #include <nova/standard/datastruct/list/nova_standard_datastruct_list_Nova_Array.h>
+#include <nova/standard/datastruct/list/nova_standard_datastruct_list_Nova_IntArray.h>
+#include <nova/standard/datastruct/list/nova_standard_datastruct_list_Nova_CharArray.h>
+#include <nova/standard/datastruct/list/nova_standard_datastruct_list_Nova_DoubleArray.h>
 #include <nova/standard/datastruct/list/nova_standard_datastruct_list_Nova_IntRange.h>
 #include <nova/standard/gc/nova_standard_gc_Nova_GC.h>
 #include <nova/standard/nova_standard_Nova_Object.h>
 #include <nova/standard/nova_standard_Nova_String.h>
 #include <nova/standard/nova_standard_Nova_System.h>
 #include <nova/standard/math/nova_standard_math_Nova_Math.h>
-#include <nova/standard/datastruct/list/nova_standard_datastruct_list_Nova_Queue.h>
 
 
 typedef struct example_Extension_VTable_QueueDemo example_Extension_VTable_QueueDemo;
@@ -54,7 +56,7 @@ CCLASS_CLASS
 void example_Nova_QueueDemoNova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData);
 example_Nova_QueueDemo* example_Nova_QueueDemo_Nova_QueueDemo(example_Nova_QueueDemo* this, nova_standard_exception_Nova_ExceptionData* exceptionData);
 void example_Nova_QueueDemo_Nova_destroy(example_Nova_QueueDemo** this, nova_standard_exception_Nova_ExceptionData* exceptionData);
-void example_Nova_QueueDemo_Nova_main(example_Nova_QueueDemo* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_Nova_String** example_Nova_QueueDemo_Nova_args);
+void example_Nova_QueueDemo_Nova_main(example_Nova_QueueDemo* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_datastruct_list_Nova_Array* example_Nova_QueueDemo_Nova_args);
 void example_Nova_QueueDemo_0_Nova_this(example_Nova_QueueDemo* this, nova_standard_exception_Nova_ExceptionData* exceptionData);
 void example_Nova_QueueDemo_Nova_super(example_Nova_QueueDemo* this, nova_standard_exception_Nova_ExceptionData* exceptionData);
 

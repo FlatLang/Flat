@@ -67,7 +67,7 @@ void example_database_Nova_DatabaseDemo_Nova_destroy(example_database_Nova_Datab
 	NOVA_FREE(*this);
 }
 
-void example_database_Nova_DatabaseDemo_Nova_main(example_database_Nova_DatabaseDemo* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_Nova_String** example_database_Nova_DatabaseDemo_Nova_args)
+void example_database_Nova_DatabaseDemo_Nova_main(example_database_Nova_DatabaseDemo* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_datastruct_list_Nova_Array* example_database_Nova_DatabaseDemo_Nova_args)
 {
 	nova_standard_database_Nova_DBConnector* l1_Nova_connection = (nova_standard_database_Nova_DBConnector*)nova_null;
 	nova_standard_database_Nova_ResultSet* l1_Nova_result = (nova_standard_database_Nova_ResultSet*)nova_null;
@@ -77,19 +77,19 @@ void example_database_Nova_DatabaseDemo_Nova_main(example_database_Nova_Database
 	l1_Nova_connection = example_database_Nova_DatabaseDemo_Nova_connect(0, exceptionData);
 	l1_Nova_result = nova_standard_database_Nova_DBConnector_Nova_query(l1_Nova_connection, exceptionData, nova_standard_Nova_String_1_Nova_String(0, exceptionData, "select * from market"));
 	l2_Nova_row = (int)0;
-	for (; l2_Nova_row < (int)l1_Nova_result->nova_standard_database_Nova_ResultSet_Nova_numRows; l2_Nova_row++)
+	for (; l2_Nova_row < (int)nova_standard_database_Nova_ResultSet_Accessor_Nova_numRows(l1_Nova_result, exceptionData); l2_Nova_row++)
 	{
 		int l4_Nova_col = 0;
 		
-		nova_standard_io_Nova_Console_0_Nova_write(0, exceptionData, nova_standard_Nova_String_0_Nova_concat(nova_standard_Nova_String_1_Nova_String(0, exceptionData, "Found ("), exceptionData, nova_standard_Nova_String_virtual1_Nova_concat((nova_standard_Nova_String*)(nova_standard_primitive_number_Nova_Int_2_Nova_toString(0, exceptionData, (l2_Nova_row))), exceptionData, nova_standard_Nova_String_0_Nova_concat(nova_standard_Nova_String_1_Nova_String(0, exceptionData, "): "), exceptionData, (l1_Nova_result->nova_standard_database_Nova_ResultSet_Nova_rows[l2_Nova_row][0])))));
+		nova_standard_io_Nova_Console_0_Nova_write(0, exceptionData, nova_standard_Nova_String_0_Nova_concat(nova_standard_Nova_String_1_Nova_String(0, exceptionData, "Found ("), exceptionData, nova_standard_Nova_String_virtual1_Nova_concat((nova_standard_Nova_String*)(nova_standard_primitive_number_Nova_Int_2_Nova_toString(0, exceptionData, (l2_Nova_row))), exceptionData, nova_standard_Nova_String_0_Nova_concat(nova_standard_Nova_String_1_Nova_String(0, exceptionData, "): "), exceptionData, nova_standard_Nova_String_virtual1_Nova_concat((nova_standard_Nova_String*)(nova_standard_Nova_Object_virtual1_Nova_toString((nova_standard_Nova_Object*)((nova_standard_datastruct_list_Nova_Array_virtual1_Nova_get((nova_standard_datastruct_list_Nova_Array*)(nova_standard_datastruct_list_Nova_Array_virtual1_Nova_get((nova_standard_datastruct_list_Nova_Array*)(l1_Nova_result->nova_standard_database_Nova_ResultSet_Nova_rows), exceptionData, l2_Nova_row)), exceptionData, 0))), exceptionData)), exceptionData, nova_standard_Nova_String_1_Nova_String(0, exceptionData, ""))))));
 		l4_Nova_col = (int)1;
 		for (; l4_Nova_col < (int)l1_Nova_result->nova_standard_database_Nova_ResultSet_Nova_numCols; l4_Nova_col++)
 		{
-			nova_standard_io_Nova_Console_0_Nova_write(0, exceptionData, nova_standard_Nova_String_0_Nova_concat(nova_standard_Nova_String_1_Nova_String(0, exceptionData, ", "), exceptionData, l1_Nova_result->nova_standard_database_Nova_ResultSet_Nova_rows[l2_Nova_row][l4_Nova_col]));
+			nova_standard_io_Nova_Console_0_Nova_write(0, exceptionData, nova_standard_Nova_String_0_Nova_concat(nova_standard_Nova_String_1_Nova_String(0, exceptionData, ", "), exceptionData, nova_standard_Nova_Object_virtual1_Nova_toString((nova_standard_Nova_Object*)(nova_standard_datastruct_list_Nova_Array_virtual1_Nova_get((nova_standard_datastruct_list_Nova_Array*)(nova_standard_datastruct_list_Nova_Array_virtual1_Nova_get((nova_standard_datastruct_list_Nova_Array*)(l1_Nova_result->nova_standard_database_Nova_ResultSet_Nova_rows), exceptionData, l2_Nova_row)), exceptionData, l4_Nova_col)), exceptionData)));
 		}
 		nova_standard_io_Nova_Console_1_Nova_writeLine(0, exceptionData, nova_standard_Nova_String_1_Nova_String(0, exceptionData, ""));
 	}
-	l1_Nova_id = nova_standard_primitive_number_Nova_Int_Nova_parseInt(0, exceptionData, l1_Nova_result->nova_standard_database_Nova_ResultSet_Nova_rows[l1_Nova_result->nova_standard_database_Nova_ResultSet_Nova_numRows - 1][0]) + 1;
+	l1_Nova_id = nova_standard_primitive_number_Nova_Int_Nova_parseInt(0, exceptionData, (nova_standard_Nova_String*)(nova_standard_datastruct_list_Nova_Array_virtual1_Nova_get((nova_standard_datastruct_list_Nova_Array*)(nova_standard_datastruct_list_Nova_Array_virtual1_Nova_get((nova_standard_datastruct_list_Nova_Array*)(l1_Nova_result->nova_standard_database_Nova_ResultSet_Nova_rows), exceptionData, nova_standard_database_Nova_ResultSet_Accessor_Nova_numRows(l1_Nova_result, exceptionData) - 1)), exceptionData, 0))) + 1;
 	nova_standard_database_Nova_DBConnector_Nova_query(l1_Nova_connection, exceptionData, nova_standard_Nova_String_0_Nova_concat(nova_standard_Nova_String_1_Nova_String(0, exceptionData, "insert into market values("), exceptionData, nova_standard_Nova_String_virtual1_Nova_concat((nova_standard_Nova_String*)(nova_standard_primitive_number_Nova_Int_2_Nova_toString(0, exceptionData, (l1_Nova_id))), exceptionData, nova_standard_Nova_String_1_Nova_String(0, exceptionData, ", 6, 634, 3);"))));
 	example_database_Nova_DatabaseDemo_Nova_close(0, exceptionData, l1_Nova_connection);
 	nova_standard_io_Nova_Console_Nova_waitForEnter(0, exceptionData);

@@ -23,6 +23,9 @@ typedef struct nova_standard_math_Nova_Sequence nova_standard_math_Nova_Sequence
 #include <nova/standard/primitive/number/nova_standard_primitive_number_Nova_Char.h>
 #include <nova/standard/primitive/nova_standard_primitive_Nova_Bool.h>
 #include <nova/standard/datastruct/list/nova_standard_datastruct_list_Nova_Array.h>
+#include <nova/standard/datastruct/list/nova_standard_datastruct_list_Nova_IntArray.h>
+#include <nova/standard/datastruct/list/nova_standard_datastruct_list_Nova_CharArray.h>
+#include <nova/standard/datastruct/list/nova_standard_datastruct_list_Nova_DoubleArray.h>
 #include <nova/standard/datastruct/list/nova_standard_datastruct_list_Nova_IntRange.h>
 #include <nova/standard/gc/nova_standard_gc_Nova_GC.h>
 #include <nova/standard/nova_standard_Nova_Object.h>
@@ -48,14 +51,14 @@ CCLASS_CLASS
 	nova_standard_math_Nova_Sequence, 
 	
 	nova_standard_math_Extension_VTable_Sequence* vtable;
-	double* nova_standard_math_Nova_Sequence_Nova_values;
+	nova_standard_datastruct_list_Nova_DoubleArray* nova_standard_math_Nova_Sequence_Nova_values;
 )
 extern int nova_standard_math_Nova_Sequence_Nova_INFINITE;
 
 void nova_standard_math_Nova_SequenceNova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData);
-nova_standard_math_Nova_Sequence* nova_standard_math_Nova_Sequence_Nova_Sequence(nova_standard_math_Nova_Sequence* this, nova_standard_exception_Nova_ExceptionData* exceptionData, double* nova_standard_math_Nova_Sequence_Nova_values);
+nova_standard_math_Nova_Sequence* nova_standard_math_Nova_Sequence_Nova_Sequence(nova_standard_math_Nova_Sequence* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_datastruct_list_Nova_DoubleArray* nova_standard_math_Nova_Sequence_Nova_values);
 void nova_standard_math_Nova_Sequence_Nova_destroy(nova_standard_math_Nova_Sequence** this, nova_standard_exception_Nova_ExceptionData* exceptionData);
-void nova_standard_math_Nova_Sequence_1_Nova_this(nova_standard_math_Nova_Sequence* this, nova_standard_exception_Nova_ExceptionData* exceptionData, double* nova_standard_math_Nova_Sequence_Nova_values);
+void nova_standard_math_Nova_Sequence_1_Nova_this(nova_standard_math_Nova_Sequence* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_datastruct_list_Nova_DoubleArray* nova_standard_math_Nova_Sequence_Nova_values);
 double nova_standard_math_Nova_Sequence_Nova_sum(nova_standard_math_Nova_Sequence* this, nova_standard_exception_Nova_ExceptionData* exceptionData, int nova_standard_math_Nova_Sequence_Nova_num);
 void nova_standard_math_Nova_Sequence_Nova_super(nova_standard_math_Nova_Sequence* this, nova_standard_exception_Nova_ExceptionData* exceptionData);
 

@@ -119,10 +119,10 @@ void nova_standard_io_Nova_Console_9_Nova_writeLine(nova_standard_io_Nova_Consol
 
 void nova_standard_io_Nova_Console_0_Nova_write(nova_standard_io_Nova_Console* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_Nova_String* nova_standard_io_Nova_Console_Nova_text)
 {
-	char* l1_Nova_cText = (char*)nova_null;
+	nova_standard_datastruct_list_Nova_CharArray* l1_Nova_cText = (nova_standard_datastruct_list_Nova_CharArray*)nova_null;
 	
 	l1_Nova_cText = nova_standard_io_Nova_Console_Nova_text->nova_standard_Nova_String_Nova_chars;
-	fputs(l1_Nova_cText, stdout);
+	fputs((char*)(l1_Nova_cText->nova_standard_datastruct_list_Nova_Array_Nova_data), stdout);
 	nova_standard_io_Nova_Console_Nova_flushOutput(0, exceptionData);
 }
 
@@ -206,6 +206,7 @@ nova_standard_Nova_String* nova_standard_io_Nova_Console_Nova_readLine(nova_stan
 	char* l1_Nova_line = (char*)nova_null;
 	nova_standard_Nova_String* l1_Nova_s = (nova_standard_Nova_String*)nova_null;
 	
+	
 	l1_Nova_line = (char*)(ufgets(stdin));
 	l1_Nova_s = nova_standard_Nova_String_1_Nova_String(0, exceptionData, l1_Nova_line);
 	return l1_Nova_s;
@@ -237,6 +238,7 @@ void nova_standard_io_Nova_Console_Nova_waitForEnter(nova_standard_io_Nova_Conso
 	char* l1_Nova_c = (char*)nova_null;
 	
 	nova_standard_io_Nova_Console_Nova_flushInput(0, exceptionData);
+	
 	l1_Nova_c = (char*)NOVA_MALLOC(sizeof(nova_standard_primitive_number_Nova_Char) * 2);
 	fgets(l1_Nova_c, 2, stdin);
 }

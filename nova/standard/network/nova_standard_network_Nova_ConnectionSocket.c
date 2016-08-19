@@ -120,6 +120,7 @@ nova_standard_Nova_String* nova_standard_network_Nova_ConnectionSocket_1_Nova_re
 	{
 		char* l1_Nova_data = (char*)nova_null;
 		
+		
 		l1_Nova_data = (char*)(nova_socket_receive(this->prv->nova_standard_network_Nova_ConnectionSocket_Nova_socket));
 		if (l1_Nova_data == 0)
 		{
@@ -135,7 +136,7 @@ char nova_standard_network_Nova_ConnectionSocket_Nova_write(nova_standard_networ
 {
 	char l1_Nova_success = 0;
 	
-	l1_Nova_success = nova_socket_send(this->prv->nova_standard_network_Nova_ConnectionSocket_Nova_socket, (char*)(nova_standard_network_Nova_ConnectionSocket_Nova_data->nova_standard_Nova_String_Nova_chars)) == 1;
+	l1_Nova_success = nova_socket_send(this->prv->nova_standard_network_Nova_ConnectionSocket_Nova_socket, (char*)(nova_standard_network_Nova_ConnectionSocket_Nova_data->nova_standard_Nova_String_Nova_chars->nova_standard_datastruct_list_Nova_Array_Nova_data)) == 1;
 	return l1_Nova_success;
 }
 

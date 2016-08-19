@@ -112,6 +112,7 @@ public abstract class Identifier extends Value implements Accessible
 	public StringBuilder generateNovaInput(StringBuilder builder, boolean outputChildren)
 	{
 		builder.append(getName());
+		generateNovaArrayAccess(builder);
 		
 		if (outputChildren && doesAccess())
 		{
@@ -310,13 +311,15 @@ public abstract class Identifier extends Value implements Accessible
 			builder.append(')');
 		}
 		
+		generateCArrayAccess(builder);
+		
 		return builder;
 	}
 	
-	public GenericTypeArgument getGenericTypeArgumentFromParameter(GenericTypeParameter param)
+	/*public GenericTypeArgument getGenericTypeArgumentFromParameter(GenericTypeParameter param)
 	{
 		return getGenericTypeArgumentFromParameter(param.getType());
-	}
+	}*/
 	
 	/**
 	 * Generate a variable name that will be used to keep the variables

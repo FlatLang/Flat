@@ -101,7 +101,7 @@ nova_standard_Nova_String* nova_standard_primitive_number_Nova_Int_3_Nova_toStri
 
 int nova_standard_primitive_number_Nova_Int_Nova_parseInt(nova_standard_primitive_number_Nova_Int* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_Nova_String* nova_standard_primitive_number_Nova_Int_Nova_num)
 {
-	return (int)atoi((char*)(nova_standard_primitive_number_Nova_Int_Nova_num->nova_standard_Nova_String_Nova_chars));
+	return (int)atoi((char*)(nova_standard_primitive_number_Nova_Int_Nova_num->nova_standard_Nova_String_Nova_chars->nova_standard_datastruct_list_Nova_Array_Nova_data));
 }
 
 int nova_standard_primitive_number_Nova_Int_0_Nova_compareTo(nova_standard_primitive_number_Nova_Int* this, nova_standard_exception_Nova_ExceptionData* exceptionData, int nova_standard_primitive_number_Nova_Int_Nova_other)

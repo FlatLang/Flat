@@ -23,6 +23,9 @@ typedef struct nova_standard_math_huffman_Nova_HuffmanTree nova_standard_math_hu
 #include <nova/standard/primitive/number/nova_standard_primitive_number_Nova_Char.h>
 #include <nova/standard/primitive/nova_standard_primitive_Nova_Bool.h>
 #include <nova/standard/datastruct/list/nova_standard_datastruct_list_Nova_Array.h>
+#include <nova/standard/datastruct/list/nova_standard_datastruct_list_Nova_IntArray.h>
+#include <nova/standard/datastruct/list/nova_standard_datastruct_list_Nova_CharArray.h>
+#include <nova/standard/datastruct/list/nova_standard_datastruct_list_Nova_DoubleArray.h>
 #include <nova/standard/datastruct/list/nova_standard_datastruct_list_Nova_IntRange.h>
 #include <nova/standard/gc/nova_standard_gc_Nova_GC.h>
 #include <nova/standard/nova_standard_Nova_Object.h>
@@ -55,7 +58,7 @@ CCLASS_CLASS
 void nova_standard_math_huffman_Nova_HuffmanTreeNova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData);
 nova_standard_math_huffman_Nova_HuffmanTree* nova_standard_math_huffman_Nova_HuffmanTree_Nova_HuffmanTree(nova_standard_math_huffman_Nova_HuffmanTree* this, nova_standard_exception_Nova_ExceptionData* exceptionData);
 void nova_standard_math_huffman_Nova_HuffmanTree_Nova_destroy(nova_standard_math_huffman_Nova_HuffmanTree** this, nova_standard_exception_Nova_ExceptionData* exceptionData);
-void nova_standard_math_huffman_Nova_HuffmanTree_0_Nova_this(nova_standard_math_huffman_Nova_HuffmanTree* this, nova_standard_exception_Nova_ExceptionData* exceptionData);
+void nova_standard_math_huffman_Nova_HuffmanTree_2_Nova_this(nova_standard_math_huffman_Nova_HuffmanTree* this, nova_standard_exception_Nova_ExceptionData* exceptionData);
 void nova_standard_math_huffman_Nova_HuffmanTree_0_Nova_super(nova_standard_math_huffman_Nova_HuffmanTree* this, nova_standard_exception_Nova_ExceptionData* exceptionData);
 
 #endif

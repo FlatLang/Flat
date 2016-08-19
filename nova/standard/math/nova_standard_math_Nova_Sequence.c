@@ -41,7 +41,7 @@ void nova_standard_math_Nova_SequenceNova_init_static(nova_standard_exception_No
 	}
 }
 
-nova_standard_math_Nova_Sequence* nova_standard_math_Nova_Sequence_Nova_Sequence(nova_standard_math_Nova_Sequence* this, nova_standard_exception_Nova_ExceptionData* exceptionData, double* nova_standard_math_Nova_Sequence_Nova_values)
+nova_standard_math_Nova_Sequence* nova_standard_math_Nova_Sequence_Nova_Sequence(nova_standard_math_Nova_Sequence* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_datastruct_list_Nova_DoubleArray* nova_standard_math_Nova_Sequence_Nova_values)
 {
 	CCLASS_NEW(nova_standard_math_Nova_Sequence, this,);
 	this->vtable = &nova_standard_math_Extension_VTable_Sequence_val;
@@ -62,12 +62,12 @@ void nova_standard_math_Nova_Sequence_Nova_destroy(nova_standard_math_Nova_Seque
 		return;
 	}
 	
-	
+	nova_standard_datastruct_list_Nova_DoubleArray_Nova_destroy(&(*this)->nova_standard_math_Nova_Sequence_Nova_values, exceptionData);
 	
 	NOVA_FREE(*this);
 }
 
-void nova_standard_math_Nova_Sequence_1_Nova_this(nova_standard_math_Nova_Sequence* this, nova_standard_exception_Nova_ExceptionData* exceptionData, double* nova_standard_math_Nova_Sequence_Nova_values)
+void nova_standard_math_Nova_Sequence_1_Nova_this(nova_standard_math_Nova_Sequence* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_datastruct_list_Nova_DoubleArray* nova_standard_math_Nova_Sequence_Nova_values)
 {
 	this->nova_standard_math_Nova_Sequence_Nova_values = nova_standard_math_Nova_Sequence_Nova_values;
 }
@@ -81,13 +81,13 @@ double nova_standard_math_Nova_Sequence_Nova_sum(nova_standard_math_Nova_Sequenc
 	l2_Nova_i = (int)0;
 	for (; l2_Nova_i < (int)nova_standard_math_Nova_Sequence_Nova_num; l2_Nova_i++)
 	{
-		l1_Nova_value = l1_Nova_value + this->nova_standard_math_Nova_Sequence_Nova_values[l2_Nova_i];
+		l1_Nova_value = l1_Nova_value + (double)(intptr_t)nova_standard_datastruct_list_Nova_Array_virtual1_Nova_get((nova_standard_datastruct_list_Nova_Array*)(this->nova_standard_math_Nova_Sequence_Nova_values), exceptionData, l2_Nova_i);
 	}
 	return l1_Nova_value;
 }
 
 void nova_standard_math_Nova_Sequence_Nova_super(nova_standard_math_Nova_Sequence* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
-	this->nova_standard_math_Nova_Sequence_Nova_values = 0;
+	this->nova_standard_math_Nova_Sequence_Nova_values = (nova_standard_datastruct_list_Nova_DoubleArray*)nova_null;
 }
 

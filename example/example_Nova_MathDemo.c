@@ -64,7 +64,7 @@ void example_Nova_MathDemo_Nova_destroy(example_Nova_MathDemo** this, nova_stand
 	NOVA_FREE(*this);
 }
 
-void example_Nova_MathDemo_Nova_main(example_Nova_MathDemo* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_Nova_String** example_Nova_MathDemo_Nova_args)
+void example_Nova_MathDemo_Nova_main(example_Nova_MathDemo* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_datastruct_list_Nova_Array* example_Nova_MathDemo_Nova_args)
 {
 	int l1_Nova_iterations = 0;
 	nova_standard_time_Nova_Timer* l1_Nova_timer = (nova_standard_time_Nova_Timer*)nova_null;
@@ -88,7 +88,7 @@ void example_Nova_MathDemo_Nova_main(example_Nova_MathDemo* this, nova_standard_
 		{
 			nova_standard_exception_Nova_Exception* l4_Nova_e = (nova_standard_exception_Nova_Exception*)nova_null;
 			
-			l4_Nova_e = exceptionData->nova_standard_exception_Nova_ExceptionData_Nova_thrownException;
+			l4_Nova_e = (nova_standard_exception_Nova_Exception*)exceptionData->nova_standard_exception_Nova_ExceptionData_Nova_thrownException;
 		}
 		FINALLY
 		{

@@ -64,7 +64,7 @@ void nova_standard_datastruct_list_Nova_ListNova_init_static(nova_standard_excep
 
 
 
-nova_standard_Nova_Object** nova_standard_datastruct_list_Nova_List_virtual0_Nova_toArray(nova_standard_datastruct_list_Nova_List* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
+nova_standard_datastruct_list_Nova_Array* nova_standard_datastruct_list_Nova_List_virtual0_Nova_toArray(nova_standard_datastruct_list_Nova_List* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
 	return this->vtable->itable.nova_standard_datastruct_list_Nova_List_virtual0_Nova_toArray((nova_standard_datastruct_list_Nova_List*)(this), exceptionData);
 }

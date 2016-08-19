@@ -73,7 +73,7 @@ void example_Nova_ClosureDemo_Nova_destroy(example_Nova_ClosureDemo** this, nova
 	NOVA_FREE(*this);
 }
 
-void example_Nova_ClosureDemo_Nova_main(example_Nova_ClosureDemo* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_Nova_String** example_Nova_ClosureDemo_Nova_args)
+void example_Nova_ClosureDemo_Nova_main(example_Nova_ClosureDemo* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_datastruct_list_Nova_Array* example_Nova_ClosureDemo_Nova_args)
 {
 	example_Nova_ClosureDemo* l1_Nova_demo = (example_Nova_ClosureDemo*)nova_null;
 	
