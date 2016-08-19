@@ -4,20 +4,17 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 
-import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.error.SyntaxMessage;
-import net.fathomsoft.nova.error.UnimplementedOperationException;
 import net.fathomsoft.nova.tree.MethodList.SearchFilter;
-import net.fathomsoft.nova.tree.generics.GenericTypeArgumentList;
+import net.fathomsoft.nova.tree.annotations.Annotation;
 import net.fathomsoft.nova.tree.generics.GenericTypeParameter;
 import net.fathomsoft.nova.tree.generics.GenericTypeParameterDeclaration;
 import net.fathomsoft.nova.tree.variables.ObjectReference;
 import net.fathomsoft.nova.util.Bounds;
 import net.fathomsoft.nova.util.Location;
 import net.fathomsoft.nova.util.Patterns;
-import net.fathomsoft.nova.util.Regex;
 import net.fathomsoft.nova.util.StringUtils;
 import net.fathomsoft.nova.util.SyntaxUtils;
 
@@ -246,7 +243,7 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 	
 	public NovaMethodDeclaration getOverriddenMethod(SearchFilter filter)
 	{
-		ClassDeclaration extension = getParentClass().getExtendedClass();
+		ClassDeclaration extension = getParentClass().getExtendedClassDeclaration();
 		
 		if (extension != null)
 		{
@@ -435,7 +432,7 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 				
 				builder.append('_');
 				
-				if (param.isArray())
+				if (param.isPrimitiveArray())
 				{
 					builder.append("Array" + param.getArrayDimensions() + "d_");
 				}
@@ -782,12 +779,25 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 			{
 				if (parameters[i].length() > 0)
 				{
+					Annotation a = Annotation.decodeStatement(this, parameters[i], location, require);
+					
+					if (a != null)
+					{
+						parameters[i] = Annotation.getFragment(parameters[i]);
+					}
+					
 					Parameter param = Parameter.decodeStatement(this, parameters[i], location, require);
 					
 					if (param == null)
 					{
 						return SyntaxMessage.queryError("Incorrect parameter definition", this, require);
 					}
+					else if (a != null)
+					{
+						param.addAnnotation(a);
+					}
+					
+					param.onAfterDecoded();
 					
 					getParameterList().addChild(param);
 				}
