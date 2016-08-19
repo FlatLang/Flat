@@ -395,7 +395,7 @@ public class UnaryOperation extends IValue
 		
 		if (value == null)
 		{
-			value = ArrayAccess.decodeStatement(this, contents, location, false);
+			//value = ArrayAccess.decodeStatement(this, contents, location, false);
 			
 			if (value == null)
 			{
