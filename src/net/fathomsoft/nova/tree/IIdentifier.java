@@ -90,7 +90,7 @@ public class IIdentifier extends Identifier
 	// Dont forget about IValue!!!!
 	public int getArrayDimensions()
 	{
-		return arrayDimensions;
+		return arrayDimensions - getArrayAccessDimensions();
 	}
 
 	/**
@@ -134,7 +134,7 @@ public class IIdentifier extends Identifier
 	 */
 	@Override
 	// Dont forget about IValue!!!!
-	public byte getDataType()
+	public byte getDataType(boolean checkGeneric)
 	{
 		return dataType;
 	}
