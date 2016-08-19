@@ -103,17 +103,20 @@ public class RequireGenericTypeAnnotation extends Annotation
 		
 		for (Variable reference : decl.references)
 		{
-			Variable v = (Variable)reference.getReferenceNode();
-			
-			for (GenericTypeParameter required : getGenericTypeParameterDeclaration())
-			{ 
-				int index = v.getDeclaration().getTypeClass().getGenericTypeParameterDeclaration().getParameterIndex(required.getName());
+			if (reference.getParentMethod() == null || reference.getParentMethod().isUserMade())
+			{
+				Variable v = (Variable) reference.getReferenceNode();
 				
-				GenericTypeArgument given = v.getIntelligentGenericTypeArgument(index);
-				
-				if (!SyntaxUtils.isTypeCompatible(v.getContext(), getFileDeclaration().getImportedClass(this, required.getDefaultType()), given.getTypeClass()))
+				for (GenericTypeParameter required : getGenericTypeParameterDeclaration())
 				{
-					SyntaxMessage.error("Method call on method '" + v.getName() + "' requires a generic type of '" + required.getDefaultType() + "'", v, false);
+					int index = v.getDeclaration().getTypeClass().getGenericTypeParameterDeclaration().getParameterIndex(required.getName());
+					
+					GenericTypeArgument given = v.getIntelligentGenericTypeArgument(index);
+					
+					if (!SyntaxUtils.isTypeCompatible(v.getContext(), getFileDeclaration().getImportedClass(this, required.getDefaultType()), given.getTypeClass()))
+					{
+						SyntaxMessage.error("Method call on method '" + v.getName() + "' requires a generic type of '" + required.getDefaultType() + "'", v, false);
+					}
 				}
 			}
 		}
