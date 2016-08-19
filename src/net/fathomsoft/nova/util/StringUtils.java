@@ -19,7 +19,7 @@ import java.util.regex.Matcher;
 public class StringUtils
 {
 	public static final char	WHITESPACE[]                = new char[] { ' ', '\n', '\t', '\r' };
-	public static final char	SYMBOLS_CHARS[]             = new char[] { '-', '+', '~', '!', '=', '%', '^', '&', '|', '*', '/', '\\', '>', '<', ',', '"', '\'', '[', ']', '{', '}', ';', '(', ')' };
+	public static final char	SYMBOLS_CHARS[]             = new char[] { '-', '+', '~', '!', '=', '%', '^', '&', '|', '*', '/', '\\', '>', '<', ',', '"', '\'', '[', ']', '{', '}', ';', ':', '?', '(', ')' };
 	public static final char	STMT_PRE_CONT_CHARS[]       = new char[] { '-', '+', '~', '!', '=', '%', '^', '&', '|', '*', '/', '\\', '>', '<', ',', '.', '[' };
 	public static final char	STMT_POST_CONT_CHARS[]      = new char[] { '-', '+', '~', '!', '=', '%', '^', '&', '|', '*', '/', '\\', '>', '<', ',', '.', ']' };
 	public static final char	INVALID_DECLARATION_CHARS[] = new char[] { '-', '+', '~', '!', '=', '%', '^', '|', '/', '\\', '"', '\'', '{', '}', ';', '(', ')' };
@@ -1327,6 +1327,16 @@ public class StringUtils
 		}
 		
 		return str.charAt(index);
+	}
+	
+	public static boolean isWhitespace(char c)
+	{
+		return containsChar(WHITESPACE, c);
+	}
+	
+	public static boolean isSymbol(char c)
+	{
+		return containsChar(SYMBOLS_CHARS, c);
 	}
 	
 	public static char findNextWhitespaceChar(CharSequence str, int index)
