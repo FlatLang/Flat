@@ -237,9 +237,12 @@ public abstract class Node implements Listenable, Annotatable
 	 */
 	public void setTemporaryParent(Node parent)
 	{
-		detach();
-		
-		this.parent = parent;
+		if (this.parent != parent)
+		{
+			detach();
+			
+			this.parent = parent;
+		}
 	}
 	
 	/**
@@ -1091,6 +1094,16 @@ public abstract class Node implements Listenable, Annotatable
 			}
 		}
 		
+		if (extra.containsSkipBounds())
+		{
+			Bounds last = extra.getSkipBounds(extra.getNumSkipBounds() - 1);
+			
+			if (lastValidIndex < last.getEnd())
+			{
+				lastValidIndex = last.getEnd();
+			}
+		}
+		
 		// Don't forget the last delimiter.
 		extra.delims.add(statement.substring(lastValidIndex));
 	}
@@ -1137,6 +1150,11 @@ public abstract class Node implements Listenable, Annotatable
 	public void interactWord(String word, Bounds bounds, String leftDelimiter, String rightDelimiter, ExtraData extra)
 	{
 		
+	}
+	
+	public boolean isUserMade()
+	{
+		return true;
 	}
 	
 	/**
@@ -1723,6 +1741,18 @@ public abstract class Node implements Listenable, Annotatable
 		if (cloneChildren)
 		{
 			cloneChildrenTo(node);
+		}
+		
+		if (annotations != null)
+		{
+			ArrayList<Annotation> cloned = new ArrayList<>(annotations.size());
+			
+			for (Annotation a : annotations)
+			{
+				cloned.add(a.clone(node, node.getLocationIn(), true));
+			}
+			
+			node.annotations = cloned;
 		}
 		
 		return node;
