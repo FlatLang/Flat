@@ -7,7 +7,7 @@ public class ServerDemo
 {
 	public static main(String[] args)
 	{
-		Array<ConnectionSocket> connections = new Array()
+		ConnectionSocket[] connections = new Array()
 		
 		ServerSocket socket = new ServerSocket()
 		
