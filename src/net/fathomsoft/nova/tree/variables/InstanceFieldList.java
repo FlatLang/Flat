@@ -30,7 +30,7 @@ public class InstanceFieldList extends List
 	@Override
 	public StringBuilder generateCHeader(StringBuilder builder)
 	{
-		ClassDeclaration extended = getParentClass().getExtendedClass();
+		ClassDeclaration extended = getParentClass().getExtendedClassDeclaration();
 		
 		if (extended != null)
 		{
