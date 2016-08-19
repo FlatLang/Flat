@@ -27,6 +27,12 @@ public class ObjectReference extends Variable
 		addChild(0, args, this);
 	}
 	
+	@Override
+	public ClassDeclaration getTypeClass()
+	{
+		return getParentClass();
+	}
+	
 	public ObjectReference(CallableMethod method)
 	{
 		this((Node)method);
@@ -84,6 +90,8 @@ public class ObjectReference extends Variable
 		else
 		{
 			setDeclaration(method.getParentClass());//.cloneTo(this, false);
+			
+			addChild(0, new GenericTypeArgumentList(this, getLocationIn()), this);
 		}
 	}
 	
