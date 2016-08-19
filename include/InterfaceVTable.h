@@ -13,9 +13,9 @@ typedef struct nova_standard_io_Nova_InputStream nova_standard_io_Nova_InputStre
 typedef struct nova_standard_operators_Nova_Equals nova_standard_operators_Nova_Equals;
 typedef struct nova_standard_operators_Nova_Multiply nova_standard_operators_Nova_Multiply;
 typedef struct example_Nova_Polygon example_Nova_Polygon;
-typedef char (*nova_standard_Nova_String_closure1_Nova_transform)(void*, nova_standard_exception_Nova_ExceptionData*, char);
-typedef char (*nova_standard_Nova_String_closure2_Nova_transform)(void*, nova_standard_exception_Nova_ExceptionData*, char);
-typedef char (*nova_standard_Nova_String_closure3_Nova_transform)(void*, nova_standard_exception_Nova_ExceptionData*, char);
+typedef char (*nova_standard_Nova_String_closure1_Nova_transform)(void*, nova_standard_exception_Nova_ExceptionData*, char, int);
+typedef char (*nova_standard_Nova_String_closure2_Nova_transform)(void*, nova_standard_exception_Nova_ExceptionData*, char, int);
+typedef char (*nova_standard_Nova_String_closure3_Nova_transform)(void*, nova_standard_exception_Nova_ExceptionData*, char, int);
 typedef nova_standard_Nova_Object* (*nova_standard_datastruct_list_Nova_Array_closure1_Nova_mapFunc)(void*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*, int, nova_standard_datastruct_list_Nova_Array*);
 typedef nova_standard_Nova_Object* (*nova_standard_datastruct_list_Nova_Array_closure2_Nova_mapFunc)(void*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*, int, nova_standard_datastruct_list_Nova_Array*);
 typedef nova_standard_Nova_Object* (*nova_standard_datastruct_list_Nova_Array_closure3_Nova_mapFunc)(void*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*, int, nova_standard_datastruct_list_Nova_Array*);

@@ -167,7 +167,7 @@ public class String implements Comparable<String>
 	
 	public charAt(Int index) -> Char
 	{
-		return chars.data[index]
+		return chars.get(index)
 	}
 	
 	public trim() -> String
@@ -202,7 +202,7 @@ public class String implements Comparable<String>
 	{
 		for (i in 0..chars.count)
 		{
-			if (needle == chars.data[i])
+			if (needle == chars.get(i))
 			{
 				return true
 			}
@@ -221,25 +221,25 @@ public class String implements Comparable<String>
 		return transform(Char.toUpperCase)
 	}
 	
-	public transform(transform(Char) -> Char) -> String
+	public transform(transform(Char, Int) -> Char) -> String
 	{
 	    [PrimitiveArray]
 		Char[] newData = new Char[count]
 		
 		for (i in 0..count)
 		{
-			newData[i] = transform(chars.data[i])
+			newData[i] = transform(chars.get(i), i)
 		}
 		
 		return new String(newData)
 	}
 	
-	public getDataBetween(String before, String after) -> String
+	public getStringBetween(String before, String after) -> String
 	{
-		return getDataBetween(before, after, 0)
+		return getStringBetween(before, after, 0)
 	}
 	
-	public getDataBetween(String before, String after, Int start) -> String
+	public getStringBetween(String before, String after, Int start) -> String
 	{
 		Int s = indexOf(before, start)
 		Int e = indexOf(after, s + 1)
