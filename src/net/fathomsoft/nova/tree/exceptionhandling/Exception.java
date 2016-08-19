@@ -4,7 +4,9 @@ import java.util.HashMap;
 
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.tree.Assignment;
+import net.fathomsoft.nova.tree.LocalDeclaration;
 import net.fathomsoft.nova.tree.Node;
+import net.fathomsoft.nova.tree.variables.VariableDeclaration;
 import net.fathomsoft.nova.util.Location;
 
 /**
@@ -53,6 +55,11 @@ public class Exception extends Node
 	public Exception(Node temporaryParent, Location locationIn)
 	{
 		super(temporaryParent, locationIn);
+	}
+	
+	public static int getExceptionCode(String type)
+	{
+		return ids.get(type);
 	}
 	
 	/**
