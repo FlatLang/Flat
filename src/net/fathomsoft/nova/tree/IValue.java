@@ -40,7 +40,7 @@ public class IValue extends Value
 	// Dont forget about IIdentifier!!!!
 	public int getArrayDimensions()
 	{
-		return arrayDimensions;
+		return arrayDimensions - getArrayAccessDimensions();
 	}
 	
 	/**
@@ -83,7 +83,7 @@ public class IValue extends Value
 	 */
 	@Override
 	// Dont forget about IIdentifier!!!!
-	public byte getDataType()
+	public byte getDataType(boolean checkGeneric)
 	{
 		return dataType;
 	}
