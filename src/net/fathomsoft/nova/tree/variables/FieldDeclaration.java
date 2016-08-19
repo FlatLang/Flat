@@ -172,6 +172,12 @@ public class FieldDeclaration extends InstanceDeclaration
 		return true;
 	}
 	
+	@Override
+	public void setDataType(byte type)
+	{
+		super.setDataType(type);
+	}
+	
 	/**
 	 * @see net.fathomsoft.nova.tree.Node#generateCHeader(StringBuilder)
 	 */
