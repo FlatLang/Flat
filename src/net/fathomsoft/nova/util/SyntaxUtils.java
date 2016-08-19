@@ -3,17 +3,14 @@ package net.fathomsoft.nova.util;
 import java.util.ArrayList;
 import java.util.regex.Matcher;
 
-import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.error.UnimplementedOperationException;
 import net.fathomsoft.nova.tree.*;
 import net.fathomsoft.nova.tree.generics.GenericTypeArgument;
 import net.fathomsoft.nova.tree.generics.GenericTypeParameter;
-import net.fathomsoft.nova.tree.generics.GenericTypeParameterDeclaration;
 import net.fathomsoft.nova.tree.variables.FieldDeclaration;
 import net.fathomsoft.nova.tree.variables.Variable;
 import net.fathomsoft.nova.tree.variables.VariableDeclaration;
-import net.fathomsoft.nova.tree.variables.VariableDeclaration.DeclarationData;
 
 /**
  * Class used for getting information about the Syntax of Nova.
@@ -244,6 +241,75 @@ public class SyntaxUtils
 			default:
 				return type;
 		}
+	}
+	
+	public static int findStatementEnd(String str, int index)
+	{
+		int start = index;
+		int lastIndex = start;
+		boolean ending = false;
+		
+		while (index < str.length() && index >= start)
+		{
+			lastIndex = index;
+			
+			char c = str.charAt(index);
+			
+			if (c == '(')
+			{
+				index = StringUtils.findEndingMatch(str, index, '(', ')') + 1;
+				
+				ending = true;
+			}
+			else if (c == '[')
+			{
+				index = StringUtils.findEndingMatch(str, index, '[', ']') + 1;
+				
+				ending = true;
+			}
+			else if (c == '"')
+			{
+				index = StringUtils.findEndingQuote(str, index) + 1;
+				
+				ending = true;
+			}
+			else
+			{
+				if (StringUtils.isSymbol(c) || StringUtils.isWhitespace(c))
+				{
+					ending = true;
+				}
+				
+				if (ending)
+				{
+					if (StringUtils.isWhitespace(c))
+					{
+						int i = StringUtils.findNextWhitespaceIndex(str, index);
+						
+						c = str.charAt(i);
+						
+						if (c == '\0' || c != '.')
+						{
+							return index;
+						}
+						else
+						{
+							index = i + 1;
+						}
+					}
+					else if (c != '.')
+					{
+						return index;
+					}
+					
+					ending = false;
+				}
+				
+				index++;
+			}
+		}
+		
+		return index >= start ? index : lastIndex;
 	}
 	
 	/**
@@ -1142,7 +1208,7 @@ public class SyntaxUtils
 			{
 				Parameter param = (Parameter)params.getVisibleChild(0);
 				
-				if (param.getType().equals("String") && param.isArray())
+				if (param.getNovaType().equals("Array<String>"))
 				{
 					return true;
 				}
@@ -1750,7 +1816,7 @@ public class SyntaxUtils
 				return type2;
 			}
 			
-			type2 = type2.getExtendedClass();
+			type2 = type2.getExtendedClassDeclaration();
 		}
 		
 		type2 = type3;
@@ -1762,7 +1828,7 @@ public class SyntaxUtils
 				return type1;
 			}
 			
-			type1 = type1.getExtendedClass();
+			type1 = type1.getExtendedClassDeclaration();
 		}
 		
 		return null;
@@ -1812,7 +1878,7 @@ public class SyntaxUtils
 				return type2;
 			}
 			
-			clazz2 = clazz2.getExtendedClass();
+			clazz2 = clazz2.getExtendedClassDeclaration();
 		}
 		
 		clazz2 = clazz3;
@@ -1824,7 +1890,7 @@ public class SyntaxUtils
 				return type1;
 			}
 			
-			clazz1 = clazz1.getExtendedClass();
+			clazz1 = clazz1.getExtendedClassDeclaration();
 		}
 		
 		return null;
@@ -1926,7 +1992,7 @@ public class SyntaxUtils
 				
 				if (reference.isGenericType())
 				{
-					arg = reference.getGenericTypeArgumentFromParameter(reference.getType());
+					arg = reference.getGenericTypeArgumentFromParameter(reference.getGenericTypeParameter());
 					
 					return arg.getTypeClass();
 				}
@@ -2198,8 +2264,12 @@ public class SyntaxUtils
 					
 					if (!isTypeCompatible(context, value, given, false))
 					{
-						isTypeCompatible(context, value, given, false);
-						param.getCorrespondingArgument(context);
+						if (!value.getProgram().getController().isTesting)
+						{
+							isTypeCompatible(context, value, given, false);
+							param.getCorrespondingArgument(context);
+						}
+						
 						SyntaxMessage.error("Incorrect type '" + given.getType() + "' given for required generic type of '" + value.getType() + "' type", given);
 						
 						return false;
@@ -2221,7 +2291,7 @@ public class SyntaxUtils
 		{
 			return true;
 		}
-		else if (/*given.isPrimitiveType() ^ required.isPrimitiveType() == false && */given.getTypeClass() != null && given.getTypeClass().isOfType(required.getTypeClass()))
+		else if (given.getTypeClass() != null && given.getTypeClass().isOfType(required.getTypeClass()))
 		{
 			return true;
 		}
@@ -2597,7 +2667,7 @@ public class SyntaxUtils
 	public static GenericTypeArgument getGenericTypeArgumentName(Node parent, String parameterName)
 	{
 		GenericTypeArgument type = new GenericTypeArgument(parent, Location.INVALID);
-		type.setType(parameterName, true, false, false);
+		type.setType(parameterName, true, false, true);
 		
 		/*DeclarationData data = new DeclarationData();
 		
@@ -2611,5 +2681,54 @@ public class SyntaxUtils
 		}*/
 		
 		return type;
+	}
+	
+	/**
+	 * Check to see if the two types are the same type.
+	 *
+	 * @param value1 The first Value to compare.
+	 * @param value2 The second Value to compare.
+	 * @return Whether or not the two types are the same.
+	 */
+	public static boolean isSameType(Value value1, Value value2)
+	{
+		return isSameType(value1, value2, true);
+	}
+	
+	public static boolean isSameType(Value value1, Value value2, boolean checkGeneric)
+	{
+		String type1 = value1.getInstanceType(checkGeneric);
+		String type2 = value2.getInstanceType(checkGeneric);
+		
+		if (type1 != null && type1.equals(type2))
+		{
+			if (value1.isGenericType())
+			{
+				type1 = value1.getGenericReturnType();
+			}
+			if (value2.isGenericType())
+			{
+				type2 = value2.getGenericReturnType();
+			}
+		}
+		
+		if (value1 instanceof Closure || value2 instanceof Closure)
+		{
+			return true;
+		}
+		else if (type1 == null || type2 == null)
+		{
+			return type1 == null && type2 == null;
+		}
+		else if (type1.equals("String") && value2.getArrayDimensions() == 1 && type2.equals("Char"))
+		{
+			return value1 instanceof Literal;
+		}
+		else if (type2.equals("String") && value1.getArrayDimensions() == 1 && type1.equals("Char"))
+		{
+			return value2 instanceof Literal;
+		}
+		
+		return type1.equals(type2);
 	}
 }
