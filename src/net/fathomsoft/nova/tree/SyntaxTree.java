@@ -2,6 +2,7 @@ package net.fathomsoft.nova.tree;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.regex.Matcher;
 
 import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.TestContext;
@@ -27,10 +28,7 @@ import net.fathomsoft.nova.tree.variables.Super;
 import net.fathomsoft.nova.tree.variables.Variable;
 import net.fathomsoft.nova.tree.variables.VariableDeclaration;
 import net.fathomsoft.nova.tree.variables.VariableDeclarationList;
-import net.fathomsoft.nova.util.FileUtils;
-import net.fathomsoft.nova.util.Location;
-import net.fathomsoft.nova.util.StringUtils;
-import net.fathomsoft.nova.util.SyntaxUtils;
+import net.fathomsoft.nova.util.*;
 
 /**
  * Class that deconstructs a source code file and builds a Tree out of
@@ -67,7 +65,7 @@ public class SyntaxTree
 	{
 		Annotation.class, Break.class, Case.class, Match.class, Default.class,
 		Fallthrough.class, Continue.class, ExceptionHandler.class, Assignment.class,
-		Instantiation.class, ArrayAccess.class, ElseStatement.class, IfStatement.class,
+		Instantiation.class, ElseStatement.class, IfStatement.class,
 		Until.class, Loop.class, Array.class, UnaryOperation.class, Cast.class,
 		MethodCall.class, LocalDeclaration.class
 	};
@@ -714,11 +712,110 @@ public class SyntaxTree
 		return decodeScopeContents(parent, statement, location, require, true);
 	}
 	
+	private static int findAccessInBaseScopeIndex(String statement)
+	{
+		int index = SyntaxUtils.findCharInBaseScope(statement, '[');
+		
+		if (index >= 0)
+		{
+			Matcher access = Patterns.ARRAY_ACCESS.matcher(statement);
+			
+			if (access.find())
+			{
+				if (index != access.start())
+				{
+					index = Math.min(access.start(), index) + 1;
+					int index2 = findAccessInBaseScopeIndex(statement.substring(index));
+					
+					if (index2 > 0)
+					{
+						return index2 + index;
+					}
+				}
+				else
+				{
+					return index;
+				}
+			}
+		}
+		
+		return -1;
+	}
+	
+	private static boolean endsWithArrayAccess(String statement, int index)
+	{
+		int start = index;
+		
+		while (index >= start)
+		{
+			index = StringUtils.findEndingMatch(statement, index, '[', ']');
+			
+			if (index == statement.length() - 1)
+			{
+				return true;
+			}
+			
+			index = StringUtils.findNextNonWhitespaceIndex(statement, index + 1);
+		}
+		
+		return false;
+	}
+	
+	private static Object getArrayAccessOrNode(Node parent, String statement, Location location, boolean require)
+	{
+		String accessString = null;
+		
+		int index = findAccessInBaseScopeIndex(statement);
+		
+		if (index > 0 && endsWithArrayAccess(statement, index))
+		{
+			Node n = Instantiation.decodeStatement(parent, statement, location, require);
+			
+			if (n == null)
+			{
+				n = Assignment.decodeStatement(parent, statement, location, require);
+				
+				if (n == null)
+				{
+					n = BinaryOperation.decodeStatement(parent, statement, location, require);
+				}
+			}
+			
+			if (n != null)
+			{
+				return n;
+			}
+			
+			accessString = statement.substring(index).trim();
+			statement = statement.substring(0, index);
+			
+			return new String[] { accessString, statement };
+		}
+		
+		return null;
+	}
+	
 	public static Node decodeScopeContents(Node parent, String statement, Location location, boolean require, boolean checkType)
 	{
 		if (statement.length() <= 0)
 		{
 			return null;
+		}
+		
+		String accessString = null;
+		
+		Object o = getArrayAccessOrNode(parent, statement, location, require);
+		
+		if (o instanceof Node)
+		{
+			return (Node)o;
+		}
+		else if (o != null)
+		{
+			String[] s = (String[])o;
+			
+			accessString = s[0];
+			statement = s[1];
 		}
 		
 		Node node = Literal.decodeStatement(parent, statement, location, require, true);
@@ -746,6 +843,11 @@ public class SyntaxTree
 					}
 				}
 			}
+		}
+		
+		if (accessString != null && node instanceof Value)
+		{
+			((Value)node).getReturnedNode().arrayAccess = ArrayAccess.decodeStatement(node, accessString, location, require);
 		}
 		
 		return node;
@@ -915,6 +1017,22 @@ public class SyntaxTree
 	
 	private static Accessible decodeAccessible(Node parent, String statement, Location location, boolean require, boolean validateAccess)
 	{
+		String accessString = null;
+		
+		Object o = getArrayAccessOrNode(parent, statement, location, require);
+		
+		if (o instanceof Node)
+		{
+			return (Accessible)o;
+		}
+		else if (o != null)
+		{
+			String[] s = (String[])o;
+			
+			accessString = s[0];
+			statement = s[1];
+		}
+		
 		Accessible node = (Accessible)decodeStatementOfType(parent, statement, location, require, Super.class);
 		
 		if (node == null)
@@ -930,6 +1048,11 @@ public class SyntaxTree
 					node = (Accessible)decodeStatementOfType(parent, statement, location, require, Priority.class);
 				}
 			}
+		}
+		
+		if (accessString != null && node instanceof Value)
+		{
+			node.getReturnedNode().arrayAccess = ArrayAccess.decodeStatement((Node)node, accessString, location, require);
 		}
 		
 		return node;
@@ -1049,11 +1172,11 @@ public class SyntaxTree
 	{
 		VariableDeclaration node = null;
 		
-		if (statement.equals(LambdaExpression.UNNAMED_PARAMETER) && parent instanceof Identifier == false)
+		if (statement.equals(LambdaExpression.UNNAMED_PARAMETER))// && parent instanceof Identifier == false)
 		{
-			if (parent.getParentMethod() instanceof LambdaMethodDeclaration)
+			if (parent.getParentMethod(true) instanceof LambdaMethodDeclaration)
 			{
-				LambdaMethodDeclaration method = (LambdaMethodDeclaration)parent.getParentMethod();
+				LambdaMethodDeclaration method = (LambdaMethodDeclaration)parent.getParentMethod(true);
 				
 				return method.getNextUnnamedParameter();
 			}
