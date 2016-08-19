@@ -47,7 +47,10 @@ public class Try extends ExceptionHandler
 	 */
 	public void addExceptionCode(int code)
 	{
-		codes.add(code);
+		if (!codes.contains(code))
+		{
+			codes.add(code);
+		}
 	}
 
 	/**
