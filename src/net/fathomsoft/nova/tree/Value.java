@@ -1,10 +1,8 @@
 package net.fathomsoft.nova.tree;
 
-import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.TestContext;
-import net.fathomsoft.nova.error.SyntaxMessage;
-import net.fathomsoft.nova.error.UnimplementedOperationException;
 import net.fathomsoft.nova.tree.NovaParameterList.ReturnParameterList;
+import net.fathomsoft.nova.tree.annotations.PrimitiveArrayAnnotation;
 import net.fathomsoft.nova.tree.generics.GenericTypeArgument;
 import net.fathomsoft.nova.tree.generics.GenericTypeArgumentList;
 import net.fathomsoft.nova.tree.generics.GenericTypeParameter;
@@ -28,6 +26,8 @@ public abstract class Value extends Node implements AbstractValue
 	
 	public static final String NULL_IDENTIFIER = "nova_null";
 	
+	public ArrayAccess arrayAccess;
+	
 	/**
 	 * @see net.fathomsoft.nova.tree.Node#Node(Node, Location)
 	 */
@@ -36,9 +36,22 @@ public abstract class Value extends Node implements AbstractValue
 		super(temporaryParent, locationIn);
 	}
 	
+	@Override
+	public void addChild(Node node)
+	{
+		if (node instanceof ArrayAccess)
+		{
+			arrayAccess = (ArrayAccess)node;
+		}
+		else
+		{
+			super.addChild(node);
+		}
+	}
+	
 	public GenericCompatible getContext()
 	{
-		if (getParent() instanceof Assignment)
+		if (getParent() instanceof Assignment && !getParent().isDecoding())
 		{
 			return ((Assignment)getParent()).getAssignee().getContext();
 		}
@@ -160,11 +173,86 @@ public abstract class Value extends Node implements AbstractValue
 	{
 		if (!SyntaxUtils.isValidType(this, type))
 		{
-			SyntaxUtils.isValidType(this, type);
+			if (require)
+			{
+				SyntaxUtils.isValidType(this, type);
+			}
+			
 			return SyntaxUtils.invalidType(this, type, require);
 		}
 		
 		return true;
+	}
+	
+	public void convertArrays()
+	{
+		if (!isWithinExternalContext() && getArrayDimensions() > 0 && !containsAnnotationOfType(PrimitiveArrayAnnotation.class))
+		{
+			String type = "";
+			
+			for (int i = 1; i < getArrayDimensions(); i++)
+			{
+				type += "Array<";
+			}
+			
+			if ("nova/standard/primitive/number/Int".equals(getTypeClassLocation()))
+			{
+				type += "IntArray";
+			}
+			else if ("nova/standard/primitive/number/Char".equals(getTypeClassLocation()))
+			{
+				type += "CharArray";
+			}
+			else if ("nova/standard/primitive/number/Double".equals(getTypeClassLocation()))
+			{
+				type += "DoubleArray";
+			}
+			else
+			{
+				type += "Array<" + getType() + ">";
+			}
+			
+			for (int i = 1; i < getArrayDimensions(); i++)
+			{
+				type += ">";
+			}
+			
+			GenericTypeArgument[] args = null;
+			
+			if (getNumGenericTypeArguments() > 0)
+			{
+				args = new GenericTypeArgument[getNumGenericTypeArguments()];
+				
+				for (int i = 0; i < getNumGenericTypeArguments(); i++)
+				{
+					args[i] = getGenericTypeArgument(0);
+				}
+				
+				for (GenericTypeArgument arg : args)
+				{
+					arg.detach();
+				}
+			}
+			
+			setType(type);
+			
+			if (args != null)
+			{
+				GenericTypeArgumentList current = getGenericTypeArgumentList();
+				
+				for (int i = 0; i < getArrayDimensions(); i++)
+				{
+					current = current.getVisibleChild(0).getGenericTypeArgumentList();
+				}
+				
+				for (int i = 0; i < args.length; i++)
+				{
+					current.addChild(args[i]);
+				}
+			}
+			
+			setArrayDimensions(0);
+		}
 	}
 	
 	/**
@@ -226,7 +314,7 @@ public abstract class Value extends Node implements AbstractValue
 	 */
 	public boolean isPrimitive()
 	{
-		return (isPrimitiveType() || isWithinExternalContext() && SyntaxUtils.isExternalPrimitiveType(getType())) && !isArray();
+		return (isPrimitiveType() || isWithinExternalContext() && SyntaxUtils.isExternalPrimitiveType(getType())) && !isPrimitiveArray();
 	}
 	
 	public void setPrimitiveWrapperType()
@@ -243,7 +331,7 @@ public abstract class Value extends Node implements AbstractValue
 	 * 
 	 * @return Whether or not the variable is an array.
 	 */
-	public boolean isArray()
+	public boolean isPrimitiveArray()
 	{
 		return getArrayDimensions() > 0;
 	}
@@ -297,6 +385,39 @@ public abstract class Value extends Node implements AbstractValue
 		}
 		
 		return "";
+	}
+	
+	public boolean isPrimitiveGenericTypeWrapper()
+	{
+		String location = getTypeClassLocation();
+		
+		if (location != null)
+		{
+			return location.equals("nova/standard/datastruct/list/CharArray") || location.equals("nova/standard/datastruct/list/IntArray") || location.equals("nova/standard/datastruct/list/DoubleArray") ||
+				location.equals("nova/standard/datastruct/list/CharArrayIterator") || location.equals("nova/standard/datastruct/list/IntArrayIterator") || location.equals("nova/standard/datastruct/list/DoubleArrayIterator");
+		}
+		
+		return false;
+	}
+	
+	@Override
+	public Value getArrayTypeValue()
+	{
+		if (getArrayDimensions() > 0)
+		{
+			return this;
+		}
+		
+		if ("nova/standard/datastruct/list/Array".equals(getTypeClassLocation()))
+		{
+			return getGenericTypeArgument(0);
+		}
+		else if (isPrimitiveGenericTypeWrapper())
+		{
+			return getTypeClass().getExtendedClass().getGenericTypeArgument(0);
+		}
+		
+		return null;
 	}
 	
 	/**
@@ -467,7 +588,12 @@ public abstract class Value extends Node implements AbstractValue
 	 */
 	public boolean isReference()
 	{
-		return getDataType() == REFERENCE;
+		return isReference(true);
+	}
+	
+	public boolean isReference(boolean checkGeneric)
+	{
+		return getDataType(checkGeneric) == REFERENCE;
 	}
 	
 	/**
@@ -477,7 +603,22 @@ public abstract class Value extends Node implements AbstractValue
 	 */
 	public boolean isPointer()
 	{
-		return getDataType() == POINTER;
+		return isPointer(true);
+	}
+	
+	public boolean isPointer(boolean checkGeneric)
+	{
+		return getDataType(checkGeneric) == POINTER;
+	}
+	
+	public boolean isDoublePointer()
+	{
+		return isDoublePointer(true);
+	}
+	
+	public boolean isDoublePointer(boolean checkGeneric)
+	{
+		return getDataType(checkGeneric) == Value.DOUBLE_POINTER;
 	}
 	
 	/**
@@ -499,7 +640,7 @@ public abstract class Value extends Node implements AbstractValue
 			Value      param = call.getCorrespondingParameter(this);
 			
 			//TODO: make support for multidimensional arrays too....
-			if (!call.isExternal() || !param.isPointer() || type != VALUE || !isArray())
+			if (!call.isExternal() || !param.isPointer() || type != VALUE || !isPrimitiveArray())
 			{
 				type = param.getDataType();
 			}
@@ -741,11 +882,11 @@ public abstract class Value extends Node implements AbstractValue
 		{
 			builder.append('*');
 		}
-		else if (getDataType() == Value.DOUBLE_POINTER)
+		else if (isDoublePointer())
 		{
 			builder.append("**");
 		}
-		if (checkArray && isArray())
+		if (checkArray && isPrimitiveArray())
 		{
 			builder.append(generateArrayText());
 		}
@@ -837,7 +978,7 @@ public abstract class Value extends Node implements AbstractValue
 	{
 		builder.append(getNovaTypeValue(context).getType());
 		
-		if (checkArray && isArray())
+		if (checkArray && isPrimitiveArray())
 		{
 			builder.append(generateNovaArrayText());
 		}
@@ -858,7 +999,14 @@ public abstract class Value extends Node implements AbstractValue
 	
 	public String getNovaType(Value context)
 	{
-		return getNovaTypeValue(context).generateNovaType().toString();
+		return getNovaType(context, true);
+	}
+	
+	public String getNovaType(Value context, boolean checkArray)
+	{
+		Value value = getNovaTypeValue(context);
+		
+		return value.generateNovaType(new StringBuilder(), null, checkArray).toString();
 	}
 	
 	public Value getNovaTypeValue(Value context)
@@ -891,7 +1039,65 @@ public abstract class Value extends Node implements AbstractValue
 	 */
 	public StringBuilder generateCTypeCast(StringBuilder builder)
 	{
-		return builder.append('(').append(generateCType()).append(')');
+		return builder.append('(').append(generateCType()).append(')').append(generatePointerToValueConversion(this));
+	}
+	
+	public boolean isOriginallyGenericType()
+	{
+		return getOriginalGenericType() != null;
+	}
+	
+	public Value getOriginalGenericType()
+	{
+		if (isGenericType())
+		{
+			return this;
+		}
+		
+		return null;
+	}
+	
+	public StringBuilder generatePointerToValueConversion()
+	{
+		return generatePointerToValueConversion(new StringBuilder());
+	}
+	
+	public StringBuilder generatePointerToValueConversion(StringBuilder builder)
+	{
+		return generatePointerToValueConversion(builder, this);
+	}
+	
+	public StringBuilder generatePointerToValueConversion(Value required)
+	{
+		return generatePointerToValueConversion(new StringBuilder(), required);
+	}
+	
+	public StringBuilder generatePointerToValueConversion(StringBuilder builder, Value required)
+	{
+		boolean ptr = false;
+		
+		if (/*isGenericType() && */this instanceof Accessible)
+		{
+			Accessible ref = ((Accessible)this).getReferenceNode();
+			
+			ptr = ref != null && getArrayDimensions() == 0 && (required.isOriginallyGenericType() || isOriginallyGenericType()) && ref.toValue().isPrimitiveGenericTypeWrapper();
+		}
+		else
+		{
+			Node base = getBaseNode();
+			
+			if (base instanceof Value)
+			{
+				ptr = ((Value)base).isPrimitiveGenericTypeWrapper();
+			}
+		}
+		
+		if (ptr)
+		{
+			builder.append("(intptr_t)");
+		}
+		
+		return builder;
 	}
 	
 	/**
@@ -917,6 +1123,41 @@ public abstract class Value extends Node implements AbstractValue
 	public StringBuilder generateCUseOutput(StringBuilder builder)
 	{
 		return generateCType(builder);
+	}
+	
+	public StringBuilder generateCArrayAccess()
+	{
+		return generateCArrayAccess(new StringBuilder());
+	}
+	
+	public StringBuilder generateCArrayAccess(StringBuilder builder)
+	{
+		if (arrayAccess != null)
+		{
+			return arrayAccess.generateCSourceFragment(builder);
+		}
+		
+		return builder;
+	}
+	
+	public StringBuilder generateNovaArrayAccess()
+	{
+		return generateNovaArrayAccess(new StringBuilder());
+	}
+	
+	public StringBuilder generateNovaArrayAccess(StringBuilder builder)
+	{
+		if (arrayAccess != null)
+		{
+			return arrayAccess.generateNovaInput(builder);
+		}
+		
+		return builder;
+	}
+	
+	public int getArrayAccessDimensions()
+	{
+		return arrayAccess != null ? arrayAccess.getNumDimensions() : 0;
 	}
 	
 	/**
@@ -961,6 +1202,13 @@ public abstract class Value extends Node implements AbstractValue
 		if (checkGeneric && isGenericType())
 		{
 			return getGenericReturnType();
+		}
+		
+		Value original = getOriginalGenericType();
+		
+		if (original != null)
+		{
+			return original.getType();
 		}
 		
 		return getType();
@@ -1008,7 +1256,14 @@ public abstract class Value extends Node implements AbstractValue
 	
 	public String getGenericReturnType()
 	{
-		return getParentClass().getGenericTypeParameter(getType(), this).getDefaultType();
+		GenericTypeParameter param = getParentClass().getGenericTypeParameter(getType(), this);
+		
+		if (param != null)
+		{
+			return param.getDefaultType();
+		}
+		
+		return null;
 		//throw new UnimplementedOperationException("The getGenericReturnType() method must be implemented by class " + this.getClass().getName());
 	}
 	
@@ -1051,7 +1306,7 @@ public abstract class Value extends Node implements AbstractValue
 
 		node.setArrayDimensions(getArrayDimensions());
 		node.setType(getTypeStringValue(), true, false, false);
-		node.setDataType(getDataType());
+		node.setDataType(getDataType(false));
 		
 		return node;
 	}
