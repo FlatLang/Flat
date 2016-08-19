@@ -234,7 +234,7 @@ public class Variable extends Identifier
 			return 0;
 		}
 		
-		return declaration.getArrayDimensions();
+		return declaration.getArrayDimensions() - getArrayAccessDimensions();
 	}
 	
 	/**
@@ -301,11 +301,7 @@ public class Variable extends Identifier
 		return declaration.setType(type, require, checkType, checkExternal);
 	}
 	
-	/**
-	 * @see net.fathomsoft.nova.tree.Value#getDataType()
-	 */
-	@Override
-	public byte getDataType()
+	public byte getDataType(boolean checkGeneric)
 	{
 		if (declaration == null)
 		{
@@ -317,6 +313,16 @@ public class Variable extends Identifier
 		if (cast != null)
 		{
 			return cast.getDataType();
+		}
+		
+		if (checkGeneric && isGenericType())
+		{
+			Value value = getNovaTypeValue(this);
+			
+			if (!value.isGenericType())
+			{
+				return value.getDataType();
+			}
 		}
 		
 		return declaration.getDataType();
@@ -360,9 +366,9 @@ public class Variable extends Identifier
 	{
 		GenericTypeArgument arg = super.getGenericTypeArgument(index, value, require);
 		
-		if (arg.isGenericType())
+		if (arg != null && arg.isGenericType())
 		{
-			GenericTypeArgument extracted = getGenericTypeArgumentFromParameter(arg.getType());
+			GenericTypeArgument extracted = getGenericTypeArgumentFromParameter(arg.getGenericTypeParameter());
 			
 			if (extracted != null)
 			{
@@ -380,7 +386,7 @@ public class Variable extends Identifier
 	
 	public GenericTypeArgument getIntelligentGenericTypeArgument(GenericTypeArgument arg)
 	{
-		GenericTypeArgument extractedType = getGenericTypeArgumentFromParameter(arg.getType());
+		GenericTypeArgument extractedType = getGenericTypeArgumentFromParameter(arg.getGenericTypeParameter());
 		
 		if (extractedType != null)
 		{
@@ -447,10 +453,13 @@ public class Variable extends Identifier
 	{
 		if (isGenericType())
 		{
-			GenericTypeArgument extractedType = getGenericTypeArgumentFromParameter(getType());
+			GenericTypeArgument extractedType = getGenericTypeArgumentFromParameter(getGenericTypeParameter());
 			
 			if (extractedType != null)
 			{
+				GenericTypeArgument value = extractedType.clone(extractedType.getParent(), extractedType.getLocationIn(), true);
+				value.setArrayDimensions(getArrayDimensions());
+				
 				return extractedType;
 			}
 		}
@@ -479,7 +488,10 @@ public class Variable extends Identifier
 			{
 				GenericTypeParameter param = type.getGenericTypeParameter(getType(), this);
 				
-				return param;
+				if (param != null)
+				{
+					return param;
+				}
 			}
 		}
 		
@@ -594,6 +606,6 @@ public class Variable extends Identifier
 	
 	public String toString()
 	{
-		return generateNovaInput() + " of type " + getDeclaration().generateNovaType();// + generateGenericType();
+		return generateNovaInput() + " of type " + generateNovaType();// + generateGenericType();
 	}
 }
