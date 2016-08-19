@@ -370,7 +370,7 @@ public class LambdaExpression extends Value
 			return 0;
 		}
 		
-		return getReturnedNode().getArrayDimensions();
+		return getReturnedNode().getArrayDimensions() - getReturnedNode().getArrayAccessDimensions();
 	}
 
 	@Override
@@ -387,7 +387,7 @@ public class LambdaExpression extends Value
 	}
 
 	@Override
-	public byte getDataType()
+	public byte getDataType(boolean checkGeneric)
 	{
 		Value returned = getReturnedNode();
 		
