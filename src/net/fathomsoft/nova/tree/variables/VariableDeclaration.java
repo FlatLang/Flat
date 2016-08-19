@@ -287,6 +287,14 @@ public class VariableDeclaration extends IIdentifier
 		other.setName(temp, force);
 	}
 	
+	@Override
+	public boolean onAfterDecoded()
+	{
+		convertArrays();
+		
+		return super.onAfterDecoded();
+	}
+	
 	/**
 	 * Compare the specified variable with the given one to see if they
 	 * come from the same declaration.
@@ -364,6 +372,8 @@ public class VariableDeclaration extends IIdentifier
 	@Override
 	public StringBuilder generateNovaInput(StringBuilder builder, boolean outputChildren)
 	{
+		generateNovaAnnotations(builder);
+		
 		return generateNovaType(builder).append(' ').append(getName());
 	}
 	
@@ -491,11 +501,6 @@ public class VariableDeclaration extends IIdentifier
 		addDefaultGenericTypeArguments();
 		
 		return result;
-	}
-	
-	public boolean isUserMade()
-	{
-		return true;
 	}
 	
 	public boolean isUsed()
