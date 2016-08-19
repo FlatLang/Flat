@@ -39,13 +39,11 @@
 			{\
 				exceptionData = newData;\
 			}\
-			/*printf("Bef%p\n", oldData);*/\
+			\
 			if (oldData != 0)\
 			{\
 				NOVA_FREE(oldData);\
-				/*del_ExceptionData(oldData, oldData);*/\
 			}\
-			/*printf("Aft%p\n", oldData);*/\
 		}\
 	}\
 	while(0)
