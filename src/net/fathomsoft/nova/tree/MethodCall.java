@@ -42,9 +42,11 @@ public class MethodCall extends Variable
 		
 		MethodCallArgumentList arguments = new MethodCallArgumentList(this, new Location(locationIn));
 		GenericTypeArgumentList genericArguments = new GenericTypeArgumentList(this, locationIn.asNew());
+		//GenericTypeArgumentList implementation = new GenericTypeArgumentList(this, locationIn.asNew());
 		
 		addChild(arguments);
 		addChild(genericArguments);
+		//addChild(implementation);
 	}
 	
 	/**
@@ -77,6 +79,17 @@ public class MethodCall extends Variable
 	public GenericTypeArgumentList getMethodGenericTypeArgumentList()
 	{
 		return (GenericTypeArgumentList)getChild(super.getNumDefaultChildren() + 1);
+	}
+	
+	@Override
+	public GenericTypeArgumentList getGenericTypeArgumentList()
+	{
+		if (getParent() instanceof Instantiation)
+		{
+			return ((Instantiation)getParent()).getGenericTypeArgumentList();
+		}
+		
+		return super.getGenericTypeArgumentList();
 	}
 	
 	/**
@@ -524,18 +537,15 @@ public class MethodCall extends Variable
 		return builder;
 	}
 	
-	/**
-	 * @see net.fathomsoft.nova.tree.Value#generateCTypeName(java.lang.StringBuilder)
-	 */
 	@Override
-	public StringBuilder generateCTypeName(StringBuilder builder)
+	public byte getDataType(boolean checkGeneric)
 	{
-		if (isPrimitiveGenericType())
+		/*if (isPrimitiveGenericType())
 		{
-			return generateCTypeClassName(builder);
-		}
+			return Value.POINTER;
+		}*/
 		
-		return super.generateCTypeName(builder);
+		return super.getDataType(checkGeneric);
 	}
 	
 	/**
@@ -752,6 +762,29 @@ public class MethodCall extends Variable
 		return getReferenceNode().getContext();
 	}
 	
+	@Override
+	public Value getOriginalGenericType()
+	{
+		VariableDeclaration decl = getMethodDeclaration();
+		
+		if (decl instanceof NovaMethodDeclaration)
+		{
+			NovaMethodDeclaration method = (NovaMethodDeclaration)decl;
+			
+			if (method.doesOverride())
+			{
+				VirtualMethodDeclaration virtual = method.getVirtualMethod();
+				
+				if (virtual.isGenericType())
+				{
+					return virtual;
+				}
+			}
+		}
+		
+		return super.getOriginalGenericType();
+	}
+	
 	/**
 	 * Decode the given statement into a MethodCall instance, if
 	 * possible. If it is not possible, this method returns null.<br>
@@ -837,6 +870,18 @@ public class MethodCall extends Variable
 		if (SyntaxUtils.isMethodCall(statement))
 		{
 			MethodCall n  = new MethodCall(parent, location);
+			
+			Bounds genericBounds = StringUtils.findContentBoundsWithin(statement, VariableDeclaration.GENERIC_START, VariableDeclaration.GENERIC_END, 0, false);
+			
+			if (genericBounds.isValid())
+			{
+				String params = genericBounds.extractString(statement);
+				genericBounds = StringUtils.findContentBoundsWithin(statement, VariableDeclaration.GENERIC_START, VariableDeclaration.GENERIC_END, 0);
+				
+				statement = genericBounds.trimString(statement);
+				
+				n.decodeGenericTypeArguments(params);
+			}
 			
 			Bounds bounds = SyntaxUtils.findInnerParenthesesBounds(n, statement);
 
@@ -1223,7 +1268,8 @@ public class MethodCall extends Variable
 		
 		if (phase == SyntaxTree.PHASE_METHOD_CONTENTS)
 		{
-			if (isPrimitiveGenericType())
+			// TODO: Update to never do this
+			if (isPrimitiveGenericType() && !(reference.toValue().getTypeClassLocation().equals("nova/standard/datastruct/list/CharArray") || reference.toValue().getTypeClassLocation().equals("nova/standard/datastruct/list/IntArray") || reference.toValue().getTypeClassLocation().equals("nova/standard/datastruct/list/DoubleArray")))
 			{
 				if (accessed instanceof Variable)
 				{
