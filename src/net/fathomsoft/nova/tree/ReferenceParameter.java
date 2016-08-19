@@ -24,6 +24,12 @@ public class ReferenceParameter extends Parameter
 		return false;
 	}
 	
+	@Override
+	public boolean isInstance()
+	{
+		return true;
+	}
+	
 	/**
 	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location, boolean)
 	 */
