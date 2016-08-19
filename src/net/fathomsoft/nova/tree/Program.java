@@ -31,6 +31,13 @@ public class Program extends Node
 	
 	private final HashMap<String, Integer>	files = new HashMap<String, Integer>();
 	
+	private int uniqueId = 1;
+	
+	public int getUniqueId()
+	{
+		return uniqueId++;
+	}
+	
 	/**
 	 * Instantiate and initialize a Program that contains a reference
 	 * to the compiler's controller.
