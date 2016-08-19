@@ -81,11 +81,11 @@ public class MethodCallArgumentList extends ArgumentList
 				}
 			}
 			
-			boolean sameType = isSameType(child.getReturnedNode(), param, false) || param.isPrimitiveType() && child.isPrimitiveType();
+			boolean sameType = SyntaxUtils.isSameType(child.getReturnedNode(), param, false) || param.isPrimitiveType() && child.isPrimitiveType();
 			
 			if (!sameType)
 			{
-				param.generateCTypeCast(builder);
+				param.generateCTypeCast(builder).append(child.getReturnedNode().generatePointerToValueConversion(param));
 			}
 			
 			generateCArgumentPrefix(builder, child, i);
@@ -153,7 +153,13 @@ public class MethodCallArgumentList extends ArgumentList
 			}
 		}
 		
-		builder.append(parameter.generateDataTypeOutput(child.getReturnedNode().getDataType()));
+		if (parameter.getDataType() != child.getReturnedNode().getDataType())
+		{
+			if (!getMethodCall().getReferenceNode().toValue().isPrimitiveGenericTypeWrapper())//parameter.getArrayDimensions() == 0 || parameter.isWithinExternalContext() || parameter.getArrayDimensions() != child.getReturnedNode().getArrayDimensions())
+			{
+				builder.append(parameter.generateDataTypeOutput(child.getReturnedNode().getDataType()));
+			}
+		}
 		
 		return builder;
 	}
@@ -190,7 +196,7 @@ public class MethodCallArgumentList extends ArgumentList
 			MethodCall call     = getMethodCall();
 			ClassDeclaration castClass = null;
 			
-			boolean sameType = isSameType((Value)call.getReferenceNode(), method.getParentClass(), false);
+			boolean sameType = SyntaxUtils.isSameType((Value)call.getReferenceNode(), method.getParentClass(), false);
 			
 			if (method.isVirtual() && !call.isVirtualTypeKnown())
 			{
@@ -235,55 +241,6 @@ public class MethodCallArgumentList extends ArgumentList
 		builder.append(", ");
 		
 		return builder;
-	}
-	
-	/**
-	 * Check to see if the two types are the same type.
-	 * 
-	 * @param value1 The first Value to compare.
-	 * @param value2 The second Value to compare.
-	 * @return Whether or not the two types are the same.
-	 */
-	private boolean isSameType(Value value1, Value value2)
-	{
-		return isSameType(value1, value2, true);
-	}
-	
-	private boolean isSameType(Value value1, Value value2, boolean checkGeneric)
-	{
-		String type1 = value1.getInstanceType(checkGeneric);
-		String type2 = value2.getInstanceType(checkGeneric);
-		
-		if (type1 != null && type1.equals(type2))
-		{
-			if (value1.isGenericType())
-			{
-				type1 = value1.getGenericReturnType();
-			}
-			if (value2.isGenericType())
-			{
-				type2 = value2.getGenericReturnType();
-			}
-		}
-		
-		if (value1 instanceof Closure || value2 instanceof Closure)
-		{
-			return true;
-		}
-		else if (type1 == null || type2 == null)
-		{
-			return type1 == null && type2 == null;
-		}
-		else if (type1.equals("String") && value2.getArrayDimensions() == 1 && type2.equals("Char"))
-		{
-			return value1 instanceof Literal;
-		}
-		else if (type2.equals("String") && value1.getArrayDimensions() == 1 && type1.equals("Char"))
-		{
-			return value2 instanceof Literal;
-		}
-		
-		return type1.equals(type2);
 	}
 	
 	/**
@@ -374,7 +331,7 @@ public class MethodCallArgumentList extends ArgumentList
 					param = method.getParameterList().getParameter(i);
 				}
 				
-				if (value.getReturnedNode().isPrimitive() && !param.isPrimitiveType())
+				if (value.getReturnedNode().isPrimitive() && !param.isPrimitiveType() && !call.getReferenceNode().toValue().isPrimitiveGenericTypeWrapper())
 				{
 					Instantiation newValue = SyntaxUtils.autoboxPrimitive(value);
 					
