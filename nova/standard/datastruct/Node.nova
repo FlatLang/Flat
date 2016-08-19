@@ -6,7 +6,7 @@ public class Node<E>
 {
 	public E data
 	
-	visible Array<Node<E>>	children
+	visible Node<E>[] children
 	
 	public construct()
 	{
@@ -37,16 +37,16 @@ public class Node<E>
 		return value != null
 	}
 	
-	public preorder() -> Array<E>
+	public preorder() -> E[]
 	{
-		Array<E> array = new Array()
+		E[] array = new Array()
 		
 		preorder(array)
 		
 		return array
 	}
 	
-	preorder(Array<E> array)
+	preorder(E[] array)
 	{
 		array.add(data)
 		
@@ -56,14 +56,14 @@ public class Node<E>
 		}
 	}
 	
-	public inorder() -> Array<E>
+	public inorder() -> E[]
 	{
-		Array<E> array = new Array()
+		E[] array = new Array()
 		
 		return inorder(array)
 	}
 	
-	inorder(Array<E> array) -> Array<E>
+	inorder(E[] array) -> E[]
 	{
 		Int half = Math.ceil(children.count / 2.0)
 		
@@ -84,16 +84,16 @@ public class Node<E>
 		return array
 	}
 	
-	public postorder() -> Array<E>
+	public postorder() -> E[]
 	{
-		Array<E> array = new Array()
+		E[] array = new Array()
 		
 		postorder(array)
 		
 		return array
 	}
 	
-	postorder(Array<E> array)
+	postorder(E[] array)
 	{
 		for (child in children.filter(notNull))
 		{
@@ -103,16 +103,16 @@ public class Node<E>
 		array.add(data)
 	}
 	
-	public levelorder() -> Array<E>
+	public levelorder() -> E[]
 	{
-		Array<E> array = new Array()
+		E[] array = new Array()
 		
 		levelorder(array)
 		
 		return array
 	}
 	
-	levelorder(Array<E> array)
+	levelorder(E[] array)
 	{
 		Queue<Node<E>> queue = new Queue()
 		queue.enqueue(this)
