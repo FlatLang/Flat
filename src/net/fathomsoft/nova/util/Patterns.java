@@ -240,7 +240,7 @@ public class Patterns
 	 * For example:<br>
 	 * "person.getAge()" would return the output of "person.getAge"
 	 */
-	public static final Pattern PRE_METHOD_CALL			= Pattern.compile("\\w+?\\s*\\(");
+	public static final Pattern PRE_METHOD_CALL			= Pattern.compile("\\w+?(<.+>)?\\s*\\(");
 
 //	/**
 //	 * Pattern that searches for 
@@ -261,7 +261,7 @@ public class Patterns
 	 * For example:<br>
 	 * "array[423]"
 	 */
-	public static final Pattern ARRAY_ACCESS			= Pattern.compile("[A-Za-z0-9_]+(\\s*\\[\\s*[^\\]]+?\\s*\\])+");
+	public static final Pattern ARRAY_ACCESS			= Pattern.compile("(\\s*\\[\\s*[^\\]]+?\\s*\\])+");//Pattern.compile("\\(?[A-Za-z0-9_]+\\)?(\\s*\\[\\s*[^\\]]+?\\s*\\])+");
 
 	/**
 	 * Pattern that searches for a #define declaration.
