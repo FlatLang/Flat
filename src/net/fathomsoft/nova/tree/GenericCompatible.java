@@ -207,9 +207,18 @@ public interface GenericCompatible
 	{
 		GenericTypeArgument[] args = getGenericTypeArguments(params);
 		
+		GenericTypeArgumentList list = getGenericTypeArgumentList();
+		
+		if (list == null)
+		{
+			/*Node n = (Node)this;
+			
+			if ()*/
+		}
+		
 		for (GenericTypeArgument arg : args)
 		{
-			getGenericTypeArgumentList().addChild(arg);
+			list.addChild(arg);
 		}
 	}
 
