@@ -52,7 +52,7 @@ public class Instantiation extends IIdentifier implements GenericCompatible
 	@Override
 	public int getArrayDimensions()
 	{
-		return getIdentifier().getArrayDimensions();
+		return getIdentifier().getArrayDimensions() - getArrayAccessDimensions();
 	}
 	
 	/**
@@ -243,7 +243,7 @@ public class Instantiation extends IIdentifier implements GenericCompatible
 			params = bounds.extractString(instantiation);
 			bounds = StringUtils.findContentBoundsWithin(instantiation, VariableDeclaration.GENERIC_START, VariableDeclaration.GENERIC_END, 0);
 			
-			instantiation = bounds.trimString(instantiation);
+			//instantiation = bounds.trimString(instantiation);
 		}
 		
 		if (bounds.isValid())
