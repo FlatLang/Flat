@@ -109,6 +109,8 @@ public class Nova
 	private static final String INTERFACE_VTABLE_FILE_NAME = "InterfaceVTable";
 	private static final String ENVIRONMENT_VAR            = "novaEnv";
 	
+	public boolean				isTesting     = false;
+	
 	public static final boolean	ANDROID_DEBUG = false;
 	public static final boolean	DEBUG         = true;
 	
@@ -783,10 +785,11 @@ public class Nova
 			mainMethodText.append		("copy_string(str, argvs[i]);").append('\n');
 			mainMethodText.append		("args[i] = ").append(strConstructor.generateCSourceName()).append("(0, 0, str);").append('\n');
 			mainMethodText.append	("}").append('\n');
+			mainMethodText.append	("nova_standard_datastruct_list_Nova_Array* argsArray = nova_standard_datastruct_list_Nova_Array_2_Nova_Array(0, exceptionData, (nova_standard_Nova_Object**)args, argc);");
 			mainMethodText.append	('\n');
 			mainMethodText.append	("TRY").append('\n');
 			mainMethodText.append	('{').append('\n');
-			mainMethodText.append		(mainMethod.generateCSourceName()).append("(0, ").append(Exception.EXCEPTION_DATA_IDENTIFIER).append(", args);").append('\n');
+			mainMethodText.append		(mainMethod.generateCSourceName()).append("(0, ").append(Exception.EXCEPTION_DATA_IDENTIFIER).append(", argsArray);").append('\n');
 			mainMethodText.append	('}').append('\n');
 			mainMethodText.append	("CATCH (1)").append('\n');
 			mainMethodText.append	('{').append('\n');
@@ -1819,6 +1822,7 @@ public class Nova
 	public static Nova generateTemporaryController()
 	{
 		Nova controller = new Nova();
+		controller.isTesting = true;
 		controller.setTestClasses(false);
 		controller.compile(new String[0], false);
 		
