@@ -147,11 +147,18 @@ public class Operator extends IValue
 			Value l = getLeftOperand().getReturnedNode();
 			Value r = getRightOperand().getReturnedNode();
 			
+			r = r instanceof BinaryOperation ? ((BinaryOperation)r).getLeftOperand().getReturnedNode() : r;
+			
 			ClassDeclaration common = SyntaxUtils.getTypeInCommon(l, r);
 			
 			if (common == null)
 			{
-				SyntaxMessage.error("Type '" + l.getType() + "' is not compatible with type '" + r.getType() + "'", this);
+				String left = l.getType();
+				String right = r.getType();
+				
+				SyntaxUtils.getTypeInCommon(l, r);
+				
+				SyntaxMessage.error("Type '" + left + "' is not compatible with type '" + right + "'", this);
 			}
 			
 			String type = common.getType();
