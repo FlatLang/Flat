@@ -89,14 +89,7 @@ public class Closure extends Variable
 		
 		builder.append(", ");
 		
-		if (getRootReferenceNode() instanceof ClassDeclaration == false)
-		{
-			getRootReferenceNode().generateCArgumentReference(builder, this);
-		}
-		else
-		{
-			getMethodDeclaration().getParameterList().getObjectReference().generateCNullOutput(builder);
-		}
+		getClosureDeclaration().generateCArguments(builder, this, getMethodDeclaration());
 		
 		return builder;
 	}
@@ -130,6 +123,12 @@ public class Closure extends Variable
 	public MethodCall getMethodCall()
 	{
 		return (MethodCall)getRootNode().getParent().getAncestorOfType(MethodCall.class, true);
+	}
+	
+	@Override
+	public Accessible getCArgumentReferenceContext()
+	{
+		return this;
 	}
 	
 	/**
@@ -454,6 +453,10 @@ public class Closure extends Variable
 	public Closure cloneTo(Closure node, boolean cloneChildren)
 	{
 		super.cloneTo(node, cloneChildren);
+		
+		node.declarations = declarations;
+		node.closureDeclaration = closureDeclaration;
+		node.variable = variable;
 		
 		return node;
 	}
