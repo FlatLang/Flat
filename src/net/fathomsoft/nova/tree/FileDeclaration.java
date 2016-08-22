@@ -25,8 +25,9 @@ public class FileDeclaration extends Node
 	private StringBuilder	header, source;
 	
 	private File			file;
-
+	
 	private ArrayList<ClosureDeclaration> closures;
+	private ArrayList<ClosureContext> contexts;
 	
 	/**
 	 * The default imports that each file uses.
@@ -62,6 +63,8 @@ public class FileDeclaration extends Node
 			"nova/standard/datastruct/list/CharArray",
 			"nova/standard/datastruct/list/DoubleArray",
 			"nova/standard/datastruct/list/IntRange",
+			"nova/standard/thread/Thread",
+			"nova/standard/thread/async/Async",
 			"nova/standard/gc/GC",
 			"nova/standard/Object",
 			"nova/standard/String",
@@ -78,8 +81,9 @@ public class FileDeclaration extends Node
 	public FileDeclaration(Node temporaryParent, Location locationIn, File file)
 	{
 		super(temporaryParent, locationIn);
-
-		closures  = new ArrayList<ClosureDeclaration>();
+		
+		closures  = new ArrayList<>();
+		contexts  = new ArrayList<>();
 		
 		this.file = file;
 		
@@ -157,6 +161,13 @@ public class FileDeclaration extends Node
 		closures.add(closure);
 		
 		return closures.size();
+	}
+	
+	public int registerClosureContext(ClosureContext context)
+	{
+		contexts.add(context);
+		
+		return contexts.size();
 	}
 	
 	/**
@@ -528,8 +539,9 @@ public class FileDeclaration extends Node
 		if (source == null)
 		{
 			builder.append("#include <precompiled.h>\n");
-			getImportList().generateCSource(builder);
+			getImportList().generateCSource(builder).append('\n');
 			
+			generateCSourceClosureContextDefinitions(builder).append('\n');
 			generateClosureDefinitions(builder, false).append('\n');
 			
 			for (int i = 0; i < getNumChildren(); i++)
@@ -642,6 +654,16 @@ public class FileDeclaration extends Node
 //				builder.append("typedef struct ").append(name).append(' ').append(name).append(';').append('\n');
 //			}
 //		}
+		
+		return builder;
+	}
+
+	private StringBuilder generateCSourceClosureContextDefinitions(StringBuilder builder)
+	{
+		for (ClosureContext context : contexts)
+		{
+			context.generateCSource(builder);
+		}
 		
 		return builder;
 	}
