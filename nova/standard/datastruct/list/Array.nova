@@ -208,6 +208,12 @@ public class Array<E> implements List<E>
 	}
 	
 	[Override]
+	public contains(E value) -> Bool
+	{
+	    return any({ _ == value })
+	}
+	
+	[Override]
 	public toArray() -> E[]
 	{
 		E[] array = new Array(count)

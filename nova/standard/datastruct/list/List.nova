@@ -22,6 +22,8 @@ public interface List<Type> extends Iterable<Type>
 	
 	toArray() -> Type[]
 	
+	contains(Type t) -> Bool
+	
 	forEach(func(Type, Int, List<Type>))
 	/*{
 	    Int i = 0

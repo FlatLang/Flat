@@ -88,6 +88,12 @@ public class LinkedList<E> implements List<E>
 	}
 	
 	[Override]
+	public contains(E value) -> Bool
+	{
+	    return any({ _ == value })
+	}
+	
+	[Override]
 	public toArray() -> E[]
 	{
 		E[] array = new Array(size)

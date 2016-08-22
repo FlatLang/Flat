@@ -57,6 +57,12 @@ public class IntRange implements List<Int>
         this.start = start
         this.end = end
     }
+	
+	[Override]
+	public contains(Int value) -> Bool
+	{
+	    return value >= start && value < end
+	}
     
     public toArray() -> Int[]
     {
