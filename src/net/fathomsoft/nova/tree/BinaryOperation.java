@@ -132,11 +132,11 @@ public class BinaryOperation extends IValue
 		
 		if (getLeftOperand().getReturnedNode().isOriginallyGenericType())
 		{
-			leftCast = getLeftOperand().getReturnedNode().generateCTypeCast().toString();
+			leftCast = getLeftOperand().getReturnedNode().generateCTypeCast(new StringBuilder(), true, false).toString();
 		}
 		if (getRightOperand().getReturnedNode().isOriginallyGenericType())
 		{
-			rightCast = getRightOperand().getReturnedNode().generateCTypeCast().toString();
+			rightCast = getRightOperand().getReturnedNode().generateCTypeCast(new StringBuilder(), true, false).toString();
 		}
 		
 		return builder.append(leftCast).append(getLeftOperand().generateCSourceFragment()).append(' ').append(getOperator().generateCSourceFragment()).append(' ').append(rightCast).append(getRightOperand().generateCSourceFragment());
@@ -607,9 +607,6 @@ public class BinaryOperation extends IValue
 	 * @param statement The statement to decode the UnaryOperation
 	 * 		from.
 	 * @param location The location of the statement in the source code.
-	 * @param require Whether or not to throw an error if anything goes wrong.
-	 * @param scope Whether or not the given statement is the beginning of
-	 * 		a scope.
 	 * @return The UnaryOperation instance, if one exists. Null
 	 * 		otherwise.
 	 */
