@@ -412,7 +412,7 @@ public class Array extends VariableDeclaration implements ArrayCompatible
 		{
 			NovaMethodDeclaration func = getParentClass().generateAnonymousFunction();
 			func.setType(this);
-			func.setStatic(true);
+			func.setStatic(getParentMethod() == null || getParentMethod().isStatic());
 			
 			String type = generateNovaType(new StringBuilder(), null, false).toString();
 			
