@@ -23,7 +23,12 @@ public class Char extends Number implements Comparable<Char>, Integer
 	
 	public toLowerCase() -> Char
 	{
-		return 0
+		return toLowerCase(value)
+	}
+	
+	public toUpperCase() -> Char
+	{
+		return toUpperCase(value)
 	}
 	
 	public static toLowerCase(Char c) -> Char
