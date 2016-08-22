@@ -1660,7 +1660,12 @@ public abstract class Node implements Listenable, Annotatable
 	 */
 	public boolean decodeScopeFragment(String statement, Bounds bounds)
 	{
-		int nextChar = StringUtils.findNextNonWhitespaceIndex(statement, bounds.getEnd() + 1);
+		return decodeScopeFragment(statement, bounds.getEnd() + 1);
+	}
+	
+	public boolean decodeScopeFragment(String statement, int start)
+	{
+		int nextChar = StringUtils.findNextNonWhitespaceIndex(statement, start);
 		
 		if (nextChar <= 0)
 		{
