@@ -18,6 +18,7 @@ public class SyntaxStability extends StabilityTestCase
 		checkIterators()
 		checkTernary()
 		checkElvis()
+		checkRepeat()
 	}
 	
 	checkMatchStatements()
@@ -477,5 +478,64 @@ public class SyntaxStability extends StabilityTestCase
 	falseValue() -> Bool
 	{
 	    return false
+	}
+	
+	checkRepeat()
+	{
+	    Console.write("Checking repeat functionality... ")
+	    
+	    Int i = 0
+	    
+	    repeat
+	    {
+	        if (i == 101)
+	        {
+	            break
+	        }
+	        
+	        i++
+	    }
+	    
+	    if (i != 101)
+	    {
+	        program.fail("Vanilla repeat failed")
+	    }
+	    
+	    i = 0
+        
+        repeat (101)
+        {
+            i++
+        }
+        
+        if (i != 101)
+        {
+            program.fail("Repeat 101 times failed")
+        }
+        
+        i = 0
+        
+        Int times = 101
+        
+        repeat (times)
+        {
+            i++
+        }
+        
+        if (i != 101)
+        {
+            program.fail("Repeat times (#times) failed")
+        }
+        
+        i = 0
+        
+        repeat (times) i++
+        
+        if (i != 101)
+        {
+            program.fail("Repeat fragment failed")
+        }
+        
+	    Console.writeLine("OK")
 	}
 }
