@@ -1,9 +1,12 @@
 #include <precompiled.h>
 #include <nova/standard/time/nova_standard_time_Nova_Timer.h>
 
+
+
 nova_standard_time_Extension_VTable_Timer nova_standard_time_Extension_VTable_Timer_val =
 {
 	{
+		0,
 		0,
 		0,
 		0,
@@ -35,7 +38,7 @@ nova_standard_time_Extension_VTable_Timer nova_standard_time_Extension_VTable_Ti
 
 
 
-void nova_standard_time_Nova_TimerNova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData)
+void nova_standard_time_Nova_Timer_Nova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
 	{
 	}

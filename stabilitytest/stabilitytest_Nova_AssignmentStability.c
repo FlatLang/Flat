@@ -1,9 +1,12 @@
 #include <precompiled.h>
 #include <stabilitytest/stabilitytest_Nova_AssignmentStability.h>
 
+
+
 stabilitytest_Extension_VTable_AssignmentStability stabilitytest_Extension_VTable_AssignmentStability_val =
 {
 	{
+		0,
 		0,
 		0,
 		0,
@@ -34,7 +37,7 @@ stabilitytest_Extension_VTable_AssignmentStability stabilitytest_Extension_VTabl
 };
 
 
-void stabilitytest_Nova_AssignmentStabilityNova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData)
+void stabilitytest_Nova_AssignmentStability_Nova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
 	{
 	}

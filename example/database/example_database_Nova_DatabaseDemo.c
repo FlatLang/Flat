@@ -1,9 +1,12 @@
 #include <precompiled.h>
 #include <example/database/example_database_Nova_DatabaseDemo.h>
 
+
+
 example_database_Extension_VTable_DatabaseDemo example_database_Extension_VTable_DatabaseDemo_val =
 {
 	{
+		0,
 		0,
 		0,
 		0,
@@ -36,7 +39,7 @@ example_database_Extension_VTable_DatabaseDemo example_database_Extension_VTable
 
 nova_standard_database_Nova_DBConnector* example_database_Nova_DatabaseDemo_Nova_connect(example_database_Nova_DatabaseDemo* this, nova_standard_exception_Nova_ExceptionData* exceptionData);
 void example_database_Nova_DatabaseDemo_Nova_close(example_database_Nova_DatabaseDemo* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_database_Nova_DBConnector* example_database_Nova_DatabaseDemo_Nova_connection);
-void example_database_Nova_DatabaseDemoNova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData)
+void example_database_Nova_DatabaseDemo_Nova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
 	{
 	}

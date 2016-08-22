@@ -1,9 +1,12 @@
 #include <precompiled.h>
 #include <nova/standard/security/nova_standard_security_Nova_MD5.h>
 
+
+
 nova_standard_security_Extension_VTable_MD5 nova_standard_security_Extension_VTable_MD5_val =
 {
 	{
+		0,
 		0,
 		0,
 		0,
@@ -33,7 +36,7 @@ nova_standard_security_Extension_VTable_MD5 nova_standard_security_Extension_VTa
 };
 
 
-void nova_standard_security_Nova_MD5Nova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData)
+void nova_standard_security_Nova_MD5_Nova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
 	{
 	}

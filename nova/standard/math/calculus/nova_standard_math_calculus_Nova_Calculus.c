@@ -1,9 +1,12 @@
 #include <precompiled.h>
 #include <nova/standard/math/calculus/nova_standard_math_calculus_Nova_Calculus.h>
 
+
+
 nova_standard_math_calculus_Extension_VTable_Calculus nova_standard_math_calculus_Extension_VTable_Calculus_val =
 {
 	{
+		0,
 		0,
 		0,
 		0,
@@ -33,7 +36,7 @@ nova_standard_math_calculus_Extension_VTable_Calculus nova_standard_math_calculu
 };
 
 
-void nova_standard_math_calculus_Nova_CalculusNova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData)
+void nova_standard_math_calculus_Nova_Calculus_Nova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
 	{
 	}

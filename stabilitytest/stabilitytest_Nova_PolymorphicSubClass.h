@@ -27,6 +27,8 @@ typedef struct stabilitytest_Nova_PolymorphicSubClass stabilitytest_Nova_Polymor
 #include <nova/standard/datastruct/list/nova_standard_datastruct_list_Nova_CharArray.h>
 #include <nova/standard/datastruct/list/nova_standard_datastruct_list_Nova_DoubleArray.h>
 #include <nova/standard/datastruct/list/nova_standard_datastruct_list_Nova_IntRange.h>
+#include <nova/standard/thread/nova_standard_thread_Nova_Thread.h>
+#include <nova/standard/thread/async/nova_standard_thread_async_Nova_Async.h>
 #include <nova/standard/gc/nova_standard_gc_Nova_GC.h>
 #include <nova/standard/nova_standard_Nova_Object.h>
 #include <nova/standard/nova_standard_Nova_String.h>
@@ -56,7 +58,7 @@ CCLASS_CLASS
 	stabilitytest_Nova_PolymorphicSubClass* stabilitytest_Nova_PolymorphicSuperClass_Nova_child;
 )
 
-void stabilitytest_Nova_PolymorphicSubClassNova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData);
+void stabilitytest_Nova_PolymorphicSubClass_Nova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData);
 stabilitytest_Nova_PolymorphicSubClass* stabilitytest_Nova_PolymorphicSubClass_Nova_PolymorphicSubClass(stabilitytest_Nova_PolymorphicSubClass* this, nova_standard_exception_Nova_ExceptionData* exceptionData);
 void stabilitytest_Nova_PolymorphicSubClass_Nova_destroy(stabilitytest_Nova_PolymorphicSubClass** this, nova_standard_exception_Nova_ExceptionData* exceptionData);
 nova_standard_Nova_String* stabilitytest_Nova_PolymorphicSubClass_Nova_toString(stabilitytest_Nova_PolymorphicSubClass* this, nova_standard_exception_Nova_ExceptionData* exceptionData);

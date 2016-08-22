@@ -1,9 +1,12 @@
 #include <precompiled.h>
 #include <example/ackermann/example_ackermann_Nova_Ackermann.h>
 
+
+
 example_ackermann_Extension_VTable_Ackermann example_ackermann_Extension_VTable_Ackermann_val =
 {
 	{
+		0,
 		0,
 		0,
 		0,
@@ -33,7 +36,7 @@ example_ackermann_Extension_VTable_Ackermann example_ackermann_Extension_VTable_
 };
 
 
-void example_ackermann_Nova_AckermannNova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData)
+void example_ackermann_Nova_Ackermann_Nova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
 	{
 	}

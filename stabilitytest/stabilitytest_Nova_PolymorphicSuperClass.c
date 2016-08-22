@@ -1,9 +1,12 @@
 #include <precompiled.h>
 #include <stabilitytest/stabilitytest_Nova_PolymorphicSuperClass.h>
 
+
+
 stabilitytest_Extension_VTable_PolymorphicSuperClass stabilitytest_Extension_VTable_PolymorphicSuperClass_val =
 {
 	{
+		0,
 		0,
 		0,
 		0,
@@ -36,7 +39,7 @@ stabilitytest_Extension_VTable_PolymorphicSuperClass stabilitytest_Extension_VTa
 
 
 
-void stabilitytest_Nova_PolymorphicSuperClassNova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData)
+void stabilitytest_Nova_PolymorphicSuperClass_Nova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
 	{
 	}

@@ -27,6 +27,8 @@ typedef struct example_network_Nova_ClientDemo example_network_Nova_ClientDemo;
 #include <nova/standard/datastruct/list/nova_standard_datastruct_list_Nova_CharArray.h>
 #include <nova/standard/datastruct/list/nova_standard_datastruct_list_Nova_DoubleArray.h>
 #include <nova/standard/datastruct/list/nova_standard_datastruct_list_Nova_IntRange.h>
+#include <nova/standard/thread/nova_standard_thread_Nova_Thread.h>
+#include <nova/standard/thread/async/nova_standard_thread_async_Nova_Async.h>
 #include <nova/standard/gc/nova_standard_gc_Nova_GC.h>
 #include <nova/standard/nova_standard_Nova_Object.h>
 #include <nova/standard/nova_standard_Nova_String.h>
@@ -55,7 +57,7 @@ CCLASS_CLASS
 	example_network_Extension_VTable_ClientDemo* vtable;
 )
 
-void example_network_Nova_ClientDemoNova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData);
+void example_network_Nova_ClientDemo_Nova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData);
 example_network_Nova_ClientDemo* example_network_Nova_ClientDemo_Nova_ClientDemo(example_network_Nova_ClientDemo* this, nova_standard_exception_Nova_ExceptionData* exceptionData);
 void example_network_Nova_ClientDemo_Nova_destroy(example_network_Nova_ClientDemo** this, nova_standard_exception_Nova_ExceptionData* exceptionData);
 void example_network_Nova_ClientDemo_Nova_main(example_network_Nova_ClientDemo* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_datastruct_list_Nova_Array* example_network_Nova_ClientDemo_Nova_args);

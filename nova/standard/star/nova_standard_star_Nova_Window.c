@@ -1,9 +1,12 @@
 #include <precompiled.h>
 #include <nova/standard/star/nova_standard_star_Nova_Window.h>
 
+
+
 nova_standard_star_Extension_VTable_Window nova_standard_star_Extension_VTable_Window_val =
 {
 	{
+		0,
 		0,
 		0,
 		0,
@@ -33,7 +36,7 @@ nova_standard_star_Extension_VTable_Window nova_standard_star_Extension_VTable_W
 };
 
 
-void nova_standard_star_Nova_WindowNova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData)
+void nova_standard_star_Nova_Window_Nova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
 	{
 	}

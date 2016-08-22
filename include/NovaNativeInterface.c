@@ -27,6 +27,7 @@ nova_env novaEnv = {
 &nova_standard_Nova_String_Nova_trim,
 &nova_standard_Nova_String_Nova_toLowerCase,
 &nova_standard_Nova_String_Nova_toUpperCase,
+&nova_standard_Nova_String_Nova_capitalize,
 &nova_standard_Nova_String_Nova_transform,
 &nova_standard_Nova_String_0_Nova_getStringBetween,
 &nova_standard_Nova_String_1_Nova_getStringBetween,
@@ -140,6 +141,7 @@ nova_env novaEnv = {
 &nova_standard_datastruct_list_Nova_Array_Nova_swap,
 0,
 &nova_standard_datastruct_list_Nova_Array_Nova_set,
+&nova_standard_datastruct_list_Nova_Array_Nova_contains,
 &nova_standard_datastruct_list_Nova_Array_Nova_toArray,
 0,
 0,
@@ -237,6 +239,7 @@ nova_env novaEnv = {
 },
 
 {
+&nova_standard_datastruct_list_Nova_IntRange_0_Nova_contains,
 &nova_standard_datastruct_list_Nova_IntRange_0_Nova_toArray,
 &nova_standard_datastruct_list_Nova_IntRange_0_Nova_forEach,
 &nova_standard_datastruct_list_Nova_IntRange_0_Nova_map,
@@ -269,6 +272,7 @@ nova_env novaEnv = {
 &nova_standard_datastruct_list_Nova_LinkedList_Nova_addAll,
 &nova_standard_datastruct_list_Nova_LinkedList_Nova_add,
 &nova_standard_datastruct_list_Nova_LinkedList_Nova_remove,
+&nova_standard_datastruct_list_Nova_LinkedList_0_Nova_contains,
 &nova_standard_datastruct_list_Nova_LinkedList_0_Nova_toArray,
 &nova_standard_datastruct_list_Nova_LinkedList_0_Nova_map,
 &nova_standard_datastruct_list_Nova_LinkedList_0_Nova_forEach,
@@ -300,6 +304,7 @@ nova_env novaEnv = {
 0,
 0,
 0,
+0,
 },
 
 {
@@ -316,7 +321,8 @@ nova_env novaEnv = {
 &nova_standard_datastruct_list_Nova_Queue_Nova_dequeue,
 &nova_standard_datastruct_list_Nova_Queue_Nova_enqueue,
 &nova_standard_datastruct_list_Nova_Queue_0_Nova_toString,
-&nova_standard_datastruct_list_Nova_Queue_Nova_Queue,
+&nova_standard_datastruct_list_Nova_Queue_0_Nova_Queue,
+&nova_standard_datastruct_list_Nova_Queue_1_Nova_Queue,
 },
 
 {
@@ -635,8 +641,9 @@ nova_env novaEnv = {
 &nova_standard_primitive_number_Nova_Char_2_Nova_toString,
 &nova_standard_primitive_number_Nova_Char_3_Nova_toString,
 &nova_standard_primitive_number_Nova_Char_0_Nova_toLowerCase,
+&nova_standard_primitive_number_Nova_Char_0_Nova_toUpperCase,
 &nova_standard_primitive_number_Nova_Char_1_Nova_toLowerCase,
-&nova_standard_primitive_number_Nova_Char_Nova_toUpperCase,
+&nova_standard_primitive_number_Nova_Char_1_Nova_toUpperCase,
 &nova_standard_primitive_number_Nova_Char_0_Nova_compareTo,
 &nova_standard_primitive_number_Nova_Char_0_Nova_multiply,
 &nova_standard_primitive_number_Nova_Char_Nova_Char,

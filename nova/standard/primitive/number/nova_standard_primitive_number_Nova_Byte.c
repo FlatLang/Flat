@@ -1,10 +1,13 @@
 #include <precompiled.h>
 #include <nova/standard/primitive/number/nova_standard_primitive_number_Nova_Byte.h>
 
+
+
 nova_standard_primitive_number_Extension_VTable_Byte nova_standard_primitive_number_Extension_VTable_Byte_val =
 {
 	{
 		(int(*)(nova_standard_datastruct_Nova_Comparable*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*))nova_standard_primitive_number_Nova_Byte_0_Nova_compareTo,
+		0,
 		0,
 		0,
 		0,
@@ -36,7 +39,7 @@ nova_standard_primitive_number_Extension_VTable_Byte nova_standard_primitive_num
 };
 
 
-void nova_standard_primitive_number_Nova_ByteNova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData)
+void nova_standard_primitive_number_Nova_Byte_Nova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
 	{
 	}

@@ -1,9 +1,12 @@
 #include <precompiled.h>
 #include <nova/standard/datastruct/list/nova_standard_datastruct_list_Nova_Stack.h>
 
+
+
 nova_standard_datastruct_list_Extension_VTable_Stack nova_standard_datastruct_list_Extension_VTable_Stack_val =
 {
 	{
+		0,
 		0,
 		0,
 		0,
@@ -40,7 +43,7 @@ CCLASS_PRIVATE
 )
 
 
-void nova_standard_datastruct_list_Nova_StackNova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData)
+void nova_standard_datastruct_list_Nova_Stack_Nova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
 	{
 	}

@@ -27,6 +27,8 @@ typedef struct nova_standard_datastruct_Nova_BinaryTree nova_standard_datastruct
 #include <nova/standard/datastruct/list/nova_standard_datastruct_list_Nova_CharArray.h>
 #include <nova/standard/datastruct/list/nova_standard_datastruct_list_Nova_DoubleArray.h>
 #include <nova/standard/datastruct/list/nova_standard_datastruct_list_Nova_IntRange.h>
+#include <nova/standard/thread/nova_standard_thread_Nova_Thread.h>
+#include <nova/standard/thread/async/nova_standard_thread_async_Nova_Async.h>
 #include <nova/standard/gc/nova_standard_gc_Nova_GC.h>
 #include <nova/standard/nova_standard_Nova_Object.h>
 #include <nova/standard/nova_standard_Nova_String.h>
@@ -58,7 +60,7 @@ CCLASS_CLASS
 	nova_standard_datastruct_Nova_Node* nova_standard_datastruct_Nova_Tree_Nova_root;
 )
 
-void nova_standard_datastruct_Nova_BinaryTreeNova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData);
+void nova_standard_datastruct_Nova_BinaryTree_Nova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData);
 nova_standard_datastruct_Nova_BinaryTree* nova_standard_datastruct_Nova_BinaryTree_Nova_BinaryTree(nova_standard_datastruct_Nova_BinaryTree* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_datastruct_list_Nova_Array* nova_standard_datastruct_Nova_BinaryTree_Nova_data);
 void nova_standard_datastruct_Nova_BinaryTree_Nova_destroy(nova_standard_datastruct_Nova_BinaryTree** this, nova_standard_exception_Nova_ExceptionData* exceptionData);
 void nova_standard_datastruct_Nova_BinaryTree_1_Nova_this(nova_standard_datastruct_Nova_BinaryTree* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_datastruct_list_Nova_Array* nova_standard_datastruct_Nova_BinaryTree_Nova_data);

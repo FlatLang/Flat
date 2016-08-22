@@ -1,9 +1,12 @@
 #include <precompiled.h>
 #include <nova/standard/math/logic/nova_standard_math_logic_Nova_Conclusion.h>
 
+
+
 nova_standard_math_logic_Extension_VTable_Conclusion nova_standard_math_logic_Extension_VTable_Conclusion_val =
 {
 	{
+		0,
 		0,
 		0,
 		0,
@@ -39,7 +42,7 @@ CCLASS_PRIVATE
 	nova_standard_datastruct_list_Nova_Array* nova_standard_math_logic_Nova_LogicalStatement_Nova_components;
 	
 )
-void nova_standard_math_logic_Nova_ConclusionNova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData)
+void nova_standard_math_logic_Nova_Conclusion_Nova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
 	{
 	}

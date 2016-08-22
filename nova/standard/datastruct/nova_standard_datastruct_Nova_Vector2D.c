@@ -1,9 +1,12 @@
 #include <precompiled.h>
 #include <nova/standard/datastruct/nova_standard_datastruct_Nova_Vector2D.h>
 
+
+
 nova_standard_datastruct_Extension_VTable_Vector2D nova_standard_datastruct_Extension_VTable_Vector2D_val =
 {
 	{
+		0,
 		0,
 		0,
 		0,
@@ -33,7 +36,7 @@ nova_standard_datastruct_Extension_VTable_Vector2D nova_standard_datastruct_Exte
 };
 
 
-void nova_standard_datastruct_Nova_Vector2DNova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData)
+void nova_standard_datastruct_Nova_Vector2D_Nova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
 	{
 	}

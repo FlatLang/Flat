@@ -27,12 +27,13 @@ typedef struct nova_standard_thread_Nova_UncaughtExceptionHandler nova_standard_
 #include <nova/standard/datastruct/list/nova_standard_datastruct_list_Nova_CharArray.h>
 #include <nova/standard/datastruct/list/nova_standard_datastruct_list_Nova_DoubleArray.h>
 #include <nova/standard/datastruct/list/nova_standard_datastruct_list_Nova_IntRange.h>
+#include <nova/standard/thread/nova_standard_thread_Nova_Thread.h>
+#include <nova/standard/thread/async/nova_standard_thread_async_Nova_Async.h>
 #include <nova/standard/gc/nova_standard_gc_Nova_GC.h>
 #include <nova/standard/nova_standard_Nova_Object.h>
 #include <nova/standard/nova_standard_Nova_String.h>
 #include <nova/standard/nova_standard_Nova_System.h>
 #include <nova/standard/math/nova_standard_math_Nova_Math.h>
-#include <nova/standard/thread/nova_standard_thread_Nova_Thread.h>
 
 
 typedef struct nova_standard_thread_Extension_VTable_UncaughtExceptionHandler nova_standard_thread_Extension_VTable_UncaughtExceptionHandler;
@@ -55,7 +56,7 @@ CCLASS_CLASS
 	nova_standard_thread_Extension_VTable_UncaughtExceptionHandler* vtable;
 )
 
-void nova_standard_thread_Nova_UncaughtExceptionHandlerNova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData);
+void nova_standard_thread_Nova_UncaughtExceptionHandler_Nova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData);
 nova_standard_thread_Nova_UncaughtExceptionHandler* nova_standard_thread_Nova_UncaughtExceptionHandler_Nova_UncaughtExceptionHandler(nova_standard_thread_Nova_UncaughtExceptionHandler* this, nova_standard_exception_Nova_ExceptionData* exceptionData);
 void nova_standard_thread_Nova_UncaughtExceptionHandler_Nova_destroy(nova_standard_thread_Nova_UncaughtExceptionHandler** this, nova_standard_exception_Nova_ExceptionData* exceptionData);
 void nova_standard_thread_Nova_UncaughtExceptionHandler_0_Nova_this(nova_standard_thread_Nova_UncaughtExceptionHandler* this, nova_standard_exception_Nova_ExceptionData* exceptionData);

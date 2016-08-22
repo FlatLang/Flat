@@ -27,6 +27,8 @@ typedef struct nova_standard_primitive_number_Nova_Integer nova_standard_primiti
 #include <nova/standard/datastruct/list/nova_standard_datastruct_list_Nova_CharArray.h>
 #include <nova/standard/datastruct/list/nova_standard_datastruct_list_Nova_DoubleArray.h>
 #include <nova/standard/datastruct/list/nova_standard_datastruct_list_Nova_IntRange.h>
+#include <nova/standard/thread/nova_standard_thread_Nova_Thread.h>
+#include <nova/standard/thread/async/nova_standard_thread_async_Nova_Async.h>
 #include <nova/standard/gc/nova_standard_gc_Nova_GC.h>
 #include <nova/standard/nova_standard_Nova_Object.h>
 #include <nova/standard/nova_standard_Nova_String.h>
@@ -39,6 +41,6 @@ extern nova_standard_primitive_number_Extension_VTable_Integer nova_standard_pri
 
 
 
-void nova_standard_primitive_number_Nova_IntegerNova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData);
+void nova_standard_primitive_number_Nova_Integer_Nova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData);
 
 #endif

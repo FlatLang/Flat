@@ -1,9 +1,12 @@
 #include <precompiled.h>
 #include <nova/standard/math/logic/nova_standard_math_logic_Nova_LogicalConnective.h>
 
+
+
 nova_standard_math_logic_Extension_VTable_LogicalConnective nova_standard_math_logic_Extension_VTable_LogicalConnective_val =
 {
 	{
+		0,
 		0,
 		0,
 		0,
@@ -33,7 +36,7 @@ nova_standard_math_logic_Extension_VTable_LogicalConnective nova_standard_math_l
 };
 
 
-void nova_standard_math_logic_Nova_LogicalConnectiveNova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData)
+void nova_standard_math_logic_Nova_LogicalConnective_Nova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
 	{
 	}

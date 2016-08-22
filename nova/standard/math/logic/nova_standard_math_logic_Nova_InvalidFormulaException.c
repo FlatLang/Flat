@@ -1,9 +1,12 @@
 #include <precompiled.h>
 #include <nova/standard/math/logic/nova_standard_math_logic_Nova_InvalidFormulaException.h>
 
+
+
 nova_standard_math_logic_Extension_VTable_InvalidFormulaException nova_standard_math_logic_Extension_VTable_InvalidFormulaException_val =
 {
 	{
+		0,
 		0,
 		0,
 		0,
@@ -33,7 +36,7 @@ nova_standard_math_logic_Extension_VTable_InvalidFormulaException nova_standard_
 };
 
 
-void nova_standard_math_logic_Nova_InvalidFormulaExceptionNova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData)
+void nova_standard_math_logic_Nova_InvalidFormulaException_Nova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
 	{
 	}

@@ -1,12 +1,15 @@
 #include <precompiled.h>
 #include <nova/standard/thread/nova_standard_thread_Nova_Thread.h>
+
+
 typedef struct nova_standard_exception_Nova_ExceptionData nova_standard_exception_Nova_ExceptionData;
 
-typedef void (*nova_standard_thread_Nova_Thread_closure1_Nova_run)(void*, nova_standard_exception_Nova_ExceptionData*);
+typedef void (*nova_standard_thread_Nova_Thread_closure1_Nova_run)(void*, nova_standard_exception_Nova_ExceptionData*, void*);
 
 nova_standard_thread_Extension_VTable_Thread nova_standard_thread_Extension_VTable_Thread_val =
 {
 	{
+		0,
 		0,
 		0,
 		0,
@@ -44,7 +47,7 @@ CCLASS_PRIVATE
 )
 
 void nova_standard_thread_Nova_Thread_Nova_startRun(nova_standard_thread_Nova_Thread* this, nova_standard_exception_Nova_ExceptionData* exceptionData);
-void nova_standard_thread_Nova_ThreadNova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData)
+void nova_standard_thread_Nova_Thread_Nova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
 	{
 	}
@@ -79,7 +82,7 @@ void nova_standard_thread_Nova_Thread_Nova_destroy(nova_standard_thread_Nova_Thr
 
 void nova_standard_thread_Nova_Thread_Nova_start(nova_standard_thread_Nova_Thread* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
-	this->prv->nova_standard_thread_Nova_Thread_Nova_handle = create_thread(this, (nova_standard_thread_Nova_Thread_closure1_Nova_run)&nova_standard_thread_Nova_Thread_Nova_startRun, this);
+	this->prv->nova_standard_thread_Nova_Thread_Nova_handle = create_thread(this, (nova_standard_thread_Nova_Thread_closure1_Nova_run)&nova_standard_thread_Nova_Thread_Nova_startRun, this, nova_null);
 }
 
 void nova_standard_thread_Nova_Thread_Nova_join(nova_standard_thread_Nova_Thread* this, nova_standard_exception_Nova_ExceptionData* exceptionData)

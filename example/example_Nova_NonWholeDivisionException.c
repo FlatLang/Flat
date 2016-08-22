@@ -1,9 +1,12 @@
 #include <precompiled.h>
 #include <example/example_Nova_NonWholeDivisionException.h>
 
+
+
 example_Extension_VTable_NonWholeDivisionException example_Extension_VTable_NonWholeDivisionException_val =
 {
 	{
+		0,
 		0,
 		0,
 		0,
@@ -33,7 +36,7 @@ example_Extension_VTable_NonWholeDivisionException example_Extension_VTable_NonW
 };
 
 
-void example_Nova_NonWholeDivisionExceptionNova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData)
+void example_Nova_NonWholeDivisionException_Nova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
 	{
 	}

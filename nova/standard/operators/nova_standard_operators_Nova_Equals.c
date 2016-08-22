@@ -1,9 +1,12 @@
 #include <precompiled.h>
 #include <nova/standard/operators/nova_standard_operators_Nova_Equals.h>
 
+
+
 nova_standard_operators_Extension_VTable_Equals nova_standard_operators_Extension_VTable_Equals_val =
 {
 	{
+		0,
 		0,
 		0,
 		0,
@@ -31,7 +34,7 @@ nova_standard_operators_Extension_VTable_Equals nova_standard_operators_Extensio
 };
 
 
-void nova_standard_operators_Nova_EqualsNova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData)
+void nova_standard_operators_Nova_Equals_Nova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
 	{
 	}

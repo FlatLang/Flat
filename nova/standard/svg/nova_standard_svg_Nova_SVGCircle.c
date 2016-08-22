@@ -1,9 +1,12 @@
 #include <precompiled.h>
 #include <nova/standard/svg/nova_standard_svg_Nova_SVGCircle.h>
 
+
+
 nova_standard_svg_Extension_VTable_SVGCircle nova_standard_svg_Extension_VTable_SVGCircle_val =
 {
 	{
+		0,
 		0,
 		0,
 		0,
@@ -34,7 +37,7 @@ nova_standard_svg_Extension_VTable_SVGCircle nova_standard_svg_Extension_VTable_
 };
 
 
-void nova_standard_svg_Nova_SVGCircleNova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData)
+void nova_standard_svg_Nova_SVGCircle_Nova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
 	{
 	}

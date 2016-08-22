@@ -1,9 +1,12 @@
 #include <precompiled.h>
 #include <nova/standard/nova_standard_Nova_Class.h>
 
+
+
 nova_standard_Extension_VTable_Class nova_standard_Extension_VTable_Class_val =
 {
 	{
+		0,
 		0,
 		0,
 		0,
@@ -38,7 +41,7 @@ CCLASS_PRIVATE
 	int nova_standard_Nova_Class_Nova_id;
 	
 )
-void nova_standard_Nova_ClassNova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData)
+void nova_standard_Nova_Class_Nova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
 	{
 	}

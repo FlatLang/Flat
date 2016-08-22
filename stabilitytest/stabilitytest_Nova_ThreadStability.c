@@ -1,9 +1,12 @@
 #include <precompiled.h>
 #include <stabilitytest/stabilitytest_Nova_ThreadStability.h>
 
+
+
 stabilitytest_Extension_VTable_ThreadStability stabilitytest_Extension_VTable_ThreadStability_val =
 {
 	{
+		0,
 		0,
 		0,
 		0,
@@ -38,7 +41,7 @@ stabilitytest_Extension_VTable_ThreadStability stabilitytest_Extension_VTable_Th
 void stabilitytest_Nova_ThreadStability_Nova_createThreads(stabilitytest_Nova_ThreadStability* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_datastruct_list_Nova_Array* stabilitytest_Nova_ThreadStability_Nova_threads, int stabilitytest_Nova_ThreadStability_Nova_amount);
 void stabilitytest_Nova_ThreadStability_Nova_checkMemoryAccess(stabilitytest_Nova_ThreadStability* this, nova_standard_exception_Nova_ExceptionData* exceptionData);
 void stabilitytest_Nova_ThreadStability_Nova_joinThreads(stabilitytest_Nova_ThreadStability* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_datastruct_list_Nova_Array* stabilitytest_Nova_ThreadStability_Nova_threads, int stabilitytest_Nova_ThreadStability_Nova_amount);
-void stabilitytest_Nova_ThreadStabilityNova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData)
+void stabilitytest_Nova_ThreadStability_Nova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
 	{
 	}

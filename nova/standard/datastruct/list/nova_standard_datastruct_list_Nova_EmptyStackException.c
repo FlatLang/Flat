@@ -1,9 +1,12 @@
 #include <precompiled.h>
 #include <nova/standard/datastruct/list/nova_standard_datastruct_list_Nova_EmptyStackException.h>
 
+
+
 nova_standard_datastruct_list_Extension_VTable_EmptyStackException nova_standard_datastruct_list_Extension_VTable_EmptyStackException_val =
 {
 	{
+		0,
 		0,
 		0,
 		0,
@@ -33,7 +36,7 @@ nova_standard_datastruct_list_Extension_VTable_EmptyStackException nova_standard
 };
 
 
-void nova_standard_datastruct_list_Nova_EmptyStackExceptionNova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData)
+void nova_standard_datastruct_list_Nova_EmptyStackException_Nova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
 	{
 	}

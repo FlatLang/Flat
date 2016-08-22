@@ -1,9 +1,12 @@
 #include <precompiled.h>
 #include <example/example_Nova_HashMapDemo.h>
 
+
+
 example_Extension_VTable_HashMapDemo example_Extension_VTable_HashMapDemo_val =
 {
 	{
+		0,
 		0,
 		0,
 		0,
@@ -33,7 +36,7 @@ example_Extension_VTable_HashMapDemo example_Extension_VTable_HashMapDemo_val =
 };
 
 
-void example_Nova_HashMapDemoNova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData)
+void example_Nova_HashMapDemo_Nova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
 	{
 	}

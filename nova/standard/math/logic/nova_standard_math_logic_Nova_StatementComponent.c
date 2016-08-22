@@ -1,9 +1,12 @@
 #include <precompiled.h>
 #include <nova/standard/math/logic/nova_standard_math_logic_Nova_StatementComponent.h>
 
+
+
 nova_standard_math_logic_Extension_VTable_StatementComponent nova_standard_math_logic_Extension_VTable_StatementComponent_val =
 {
 	{
+		0,
 		0,
 		0,
 		0,
@@ -33,7 +36,7 @@ nova_standard_math_logic_Extension_VTable_StatementComponent nova_standard_math_
 };
 
 
-void nova_standard_math_logic_Nova_StatementComponentNova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData)
+void nova_standard_math_logic_Nova_StatementComponent_Nova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
 	{
 	}

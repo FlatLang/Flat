@@ -1,9 +1,12 @@
 #include <precompiled.h>
 #include <stabilitytest/stabilitytest_Nova_TimeStability.h>
 
+
+
 stabilitytest_Extension_VTable_TimeStability stabilitytest_Extension_VTable_TimeStability_val =
 {
 	{
+		0,
 		0,
 		0,
 		0,
@@ -34,7 +37,7 @@ stabilitytest_Extension_VTable_TimeStability stabilitytest_Extension_VTable_Time
 };
 
 
-void stabilitytest_Nova_TimeStabilityNova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData)
+void stabilitytest_Nova_TimeStability_Nova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
 	{
 	}

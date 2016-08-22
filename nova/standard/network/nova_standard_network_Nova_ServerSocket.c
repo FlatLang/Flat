@@ -1,9 +1,12 @@
 #include <precompiled.h>
 #include <nova/standard/network/nova_standard_network_Nova_ServerSocket.h>
 
+
+
 nova_standard_network_Extension_VTable_ServerSocket nova_standard_network_Extension_VTable_ServerSocket_val =
 {
 	{
+		0,
 		0,
 		0,
 		0,
@@ -38,7 +41,7 @@ CCLASS_PRIVATE
 	SOCKET_ID_TYPE nova_standard_network_Nova_ServerSocket_Nova_serverSocket;
 	
 )
-void nova_standard_network_Nova_ServerSocketNova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData)
+void nova_standard_network_Nova_ServerSocket_Nova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
 	{
 	}

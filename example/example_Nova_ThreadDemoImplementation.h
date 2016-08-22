@@ -27,12 +27,13 @@ typedef struct example_Nova_ThreadDemoImplementation example_Nova_ThreadDemoImpl
 #include <nova/standard/datastruct/list/nova_standard_datastruct_list_Nova_CharArray.h>
 #include <nova/standard/datastruct/list/nova_standard_datastruct_list_Nova_DoubleArray.h>
 #include <nova/standard/datastruct/list/nova_standard_datastruct_list_Nova_IntRange.h>
+#include <nova/standard/thread/nova_standard_thread_Nova_Thread.h>
+#include <nova/standard/thread/async/nova_standard_thread_async_Nova_Async.h>
 #include <nova/standard/gc/nova_standard_gc_Nova_GC.h>
 #include <nova/standard/nova_standard_Nova_Object.h>
 #include <nova/standard/nova_standard_Nova_String.h>
 #include <nova/standard/nova_standard_Nova_System.h>
 #include <nova/standard/math/nova_standard_math_Nova_Math.h>
-#include <nova/standard/thread/nova_standard_thread_Nova_Thread.h>
 
 
 typedef struct example_Extension_VTable_ThreadDemoImplementation example_Extension_VTable_ThreadDemoImplementation;
@@ -56,7 +57,7 @@ CCLASS_CLASS
 	struct Private* prv;
 )
 
-void example_Nova_ThreadDemoImplementationNova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData);
+void example_Nova_ThreadDemoImplementation_Nova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData);
 example_Nova_ThreadDemoImplementation* example_Nova_ThreadDemoImplementation_Nova_ThreadDemoImplementation(example_Nova_ThreadDemoImplementation* this, nova_standard_exception_Nova_ExceptionData* exceptionData, long_long example_Nova_ThreadDemoImplementation_Nova_millis, nova_standard_Nova_String* example_Nova_ThreadDemoImplementation_Nova_word);
 void example_Nova_ThreadDemoImplementation_Nova_destroy(example_Nova_ThreadDemoImplementation** this, nova_standard_exception_Nova_ExceptionData* exceptionData);
 void example_Nova_ThreadDemoImplementation_Nova_this(example_Nova_ThreadDemoImplementation* this, nova_standard_exception_Nova_ExceptionData* exceptionData, long_long example_Nova_ThreadDemoImplementation_Nova_millis, nova_standard_Nova_String* example_Nova_ThreadDemoImplementation_Nova_word);

@@ -1,9 +1,12 @@
 #include <precompiled.h>
 #include <nova/standard/math/huffman/nova_standard_math_huffman_Nova_HuffmanTree.h>
 
+
+
 nova_standard_math_huffman_Extension_VTable_HuffmanTree nova_standard_math_huffman_Extension_VTable_HuffmanTree_val =
 {
 	{
+		0,
 		0,
 		0,
 		0,
@@ -33,7 +36,7 @@ nova_standard_math_huffman_Extension_VTable_HuffmanTree nova_standard_math_huffm
 };
 
 
-void nova_standard_math_huffman_Nova_HuffmanTreeNova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData)
+void nova_standard_math_huffman_Nova_HuffmanTree_Nova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
 	{
 	}

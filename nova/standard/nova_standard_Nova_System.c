@@ -1,13 +1,16 @@
 #include <precompiled.h>
 #include <nova/standard/nova_standard_Nova_System.h>
+
+
 typedef struct nova_standard_exception_Nova_ExceptionData nova_standard_exception_Nova_ExceptionData;
 typedef struct nova_standard_Nova_String nova_standard_Nova_String;
 
-typedef void (*nova_standard_Nova_System_closure1_Nova_exit)(void*, nova_standard_exception_Nova_ExceptionData*, int, nova_standard_Nova_String*, char);
+typedef void (*nova_standard_Nova_System_closure1_Nova_exit)(void*, nova_standard_exception_Nova_ExceptionData*, int, nova_standard_Nova_String*, char, void*);
 
 nova_standard_Extension_VTable_System nova_standard_Extension_VTable_System_val =
 {
 	{
+		0,
 		0,
 		0,
 		0,
@@ -37,7 +40,7 @@ nova_standard_Extension_VTable_System nova_standard_Extension_VTable_System_val 
 };
 
 
-void nova_standard_Nova_SystemNova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData)
+void nova_standard_Nova_System_Nova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
 	{
 	}
@@ -101,7 +104,7 @@ nova_standard_process_Nova_Process* nova_standard_Nova_System_Nova_execute(nova_
 	nova_standard_io_Nova_StreamReader* l1_Nova_reader = (nova_standard_io_Nova_StreamReader*)nova_null;
 	nova_standard_process_Nova_Process* l1_Nova_process = (nova_standard_process_Nova_Process*)nova_null;
 	
-	l1_Nova_pipe = getPipe((char*)(nova_standard_Nova_System_Nova_command->nova_standard_Nova_String_Nova_chars->nova_standard_datastruct_list_Nova_Array_Nova_data), (nova_standard_Nova_System_closure1_Nova_exit)&nova_standard_Nova_System_2_Nova_exit, nova_standard_Nova_System_Nova_System);
+	l1_Nova_pipe = getPipe((char*)(nova_standard_Nova_System_Nova_command->nova_standard_Nova_String_Nova_chars->nova_standard_datastruct_list_Nova_Array_Nova_data), (nova_standard_Nova_System_closure1_Nova_exit)&nova_standard_Nova_System_2_Nova_exit, nova_standard_Nova_System_Nova_System, nova_null);
 	l1_Nova_f = nova_standard_io_Nova_File_1_Nova_File(0, exceptionData, l1_Nova_pipe);
 	if (!nova_standard_io_Nova_File_Accessor_Nova_exists(l1_Nova_f, exceptionData))
 	{

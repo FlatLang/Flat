@@ -1,9 +1,12 @@
 #include <precompiled.h>
 #include <stabilitytest/stabilitytest_Nova_NetworkStability.h>
 
+
+
 stabilitytest_Extension_VTable_NetworkStability stabilitytest_Extension_VTable_NetworkStability_val =
 {
 	{
+		0,
 		0,
 		0,
 		0,
@@ -37,7 +40,7 @@ stabilitytest_Extension_VTable_NetworkStability stabilitytest_Extension_VTable_N
 
 nova_standard_network_Nova_ServerSocket* stabilitytest_Nova_NetworkStability_Nova_createServer(stabilitytest_Nova_NetworkStability* this, nova_standard_exception_Nova_ExceptionData* exceptionData, int stabilitytest_Nova_NetworkStability_Nova_port);
 nova_standard_Nova_String* stabilitytest_Nova_NetworkStability_Nova_received;
-void stabilitytest_Nova_NetworkStabilityNova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData)
+void stabilitytest_Nova_NetworkStability_Nova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
 	{
 		stabilitytest_Nova_NetworkStability_Nova_received = nova_standard_Nova_String_1_Nova_String(0, exceptionData, "THIS IS THE STRING THAT SHOULD BE RECEIVEDTHIS IS THE STRING THAT SHOULD BE RECEIVEDTHIS IS THE STRING THAT SHOULD BE RECEIVEDTHIS IS THE STRING THAT SHOULD BE RECEIVEDTHIS IS THE STRING THAT SHOULD BE RECEIVEDTHIS IS THE STRING THAT SHOULD BE RECEIVEDTHIS IS THE STRING THAT SHOULD BE RECEIVED");

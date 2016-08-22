@@ -27,6 +27,8 @@ typedef struct example_copy_Nova_Dog example_copy_Nova_Dog;
 #include <nova/standard/datastruct/list/nova_standard_datastruct_list_Nova_CharArray.h>
 #include <nova/standard/datastruct/list/nova_standard_datastruct_list_Nova_DoubleArray.h>
 #include <nova/standard/datastruct/list/nova_standard_datastruct_list_Nova_IntRange.h>
+#include <nova/standard/thread/nova_standard_thread_Nova_Thread.h>
+#include <nova/standard/thread/async/nova_standard_thread_async_Nova_Async.h>
 #include <nova/standard/gc/nova_standard_gc_Nova_GC.h>
 #include <nova/standard/nova_standard_Nova_Object.h>
 #include <nova/standard/nova_standard_Nova_String.h>
@@ -53,7 +55,7 @@ CCLASS_CLASS
 	example_copy_Extension_VTable_Dog* vtable;
 )
 
-void example_copy_Nova_DogNova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData);
+void example_copy_Nova_Dog_Nova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData);
 example_copy_Nova_Dog* example_copy_Nova_Dog_Nova_Dog(example_copy_Nova_Dog* this, nova_standard_exception_Nova_ExceptionData* exceptionData, int example_copy_Nova_Dog_Nova_a, int example_copy_Nova_Dog_Nova_b);
 void example_copy_Nova_Dog_Nova_destroy(example_copy_Nova_Dog** this, nova_standard_exception_Nova_ExceptionData* exceptionData);
 void example_copy_Nova_Dog_Nova_this(example_copy_Nova_Dog* this, nova_standard_exception_Nova_ExceptionData* exceptionData, int example_copy_Nova_Dog_Nova_a, int example_copy_Nova_Dog_Nova_b);

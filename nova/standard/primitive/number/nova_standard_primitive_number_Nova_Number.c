@@ -1,9 +1,12 @@
 #include <precompiled.h>
 #include <nova/standard/primitive/number/nova_standard_primitive_number_Nova_Number.h>
 
+
+
 nova_standard_primitive_number_Extension_VTable_Number nova_standard_primitive_number_Extension_VTable_Number_val =
 {
 	{
+		0,
 		0,
 		0,
 		0,
@@ -34,7 +37,7 @@ nova_standard_primitive_number_Extension_VTable_Number nova_standard_primitive_n
 };
 
 
-void nova_standard_primitive_number_Nova_NumberNova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData)
+void nova_standard_primitive_number_Nova_Number_Nova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
 	{
 	}

@@ -1,9 +1,12 @@
 #include <precompiled.h>
 #include <nova/standard/math/nova_standard_math_Nova_Matrix.h>
 
+
+
 nova_standard_math_Extension_VTable_Matrix nova_standard_math_Extension_VTable_Matrix_val =
 {
 	{
+		0,
 		0,
 		0,
 		0,
@@ -38,7 +41,7 @@ CCLASS_PRIVATE
 	nova_standard_datastruct_list_Nova_Array* nova_standard_math_Nova_Matrix_Nova_matrix;
 	
 )
-void nova_standard_math_Nova_MatrixNova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData)
+void nova_standard_math_Nova_Matrix_Nova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
 	{
 	}

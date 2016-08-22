@@ -1,9 +1,12 @@
 #include <precompiled.h>
 #include <example/example_Nova_QueueDemo.h>
 
+
+
 example_Extension_VTable_QueueDemo example_Extension_VTable_QueueDemo_val =
 {
 	{
+		0,
 		0,
 		0,
 		0,
@@ -33,7 +36,7 @@ example_Extension_VTable_QueueDemo example_Extension_VTable_QueueDemo_val =
 };
 
 
-void example_Nova_QueueDemoNova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData)
+void example_Nova_QueueDemo_Nova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
 	{
 	}

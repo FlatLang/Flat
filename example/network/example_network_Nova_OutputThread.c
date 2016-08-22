@@ -1,9 +1,12 @@
 #include <precompiled.h>
 #include <example/network/example_network_Nova_OutputThread.h>
 
+
+
 example_network_Extension_VTable_OutputThread example_network_Extension_VTable_OutputThread_val =
 {
 	{
+		0,
 		0,
 		0,
 		0,
@@ -42,7 +45,7 @@ CCLASS_PRIVATE
 	nova_standard_network_Nova_ConnectionSocket* example_network_Nova_OutputThread_Nova_socket;
 	
 )
-void example_network_Nova_OutputThreadNova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData)
+void example_network_Nova_OutputThread_Nova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
 	{
 	}

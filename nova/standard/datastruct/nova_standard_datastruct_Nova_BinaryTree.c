@@ -1,9 +1,12 @@
 #include <precompiled.h>
 #include <nova/standard/datastruct/nova_standard_datastruct_Nova_BinaryTree.h>
 
+
+
 nova_standard_datastruct_Extension_VTable_BinaryTree nova_standard_datastruct_Extension_VTable_BinaryTree_val =
 {
 	{
+		0,
 		0,
 		0,
 		0,
@@ -35,7 +38,7 @@ nova_standard_datastruct_Extension_VTable_BinaryTree nova_standard_datastruct_Ex
 
 
 nova_standard_datastruct_Nova_BinaryNode* nova_standard_datastruct_Nova_BinaryTree_Mutator_Nova_root(nova_standard_datastruct_Nova_BinaryTree* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_datastruct_Nova_BinaryNode* nova_standard_datastruct_Nova_BinaryTree_Nova_node);
-void nova_standard_datastruct_Nova_BinaryTreeNova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData)
+void nova_standard_datastruct_Nova_BinaryTree_Nova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
 	{
 	}

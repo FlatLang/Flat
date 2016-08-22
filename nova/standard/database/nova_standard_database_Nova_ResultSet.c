@@ -1,9 +1,12 @@
 #include <precompiled.h>
 #include <nova/standard/database/nova_standard_database_Nova_ResultSet.h>
 
+
+
 nova_standard_database_Extension_VTable_ResultSet nova_standard_database_Extension_VTable_ResultSet_val =
 {
 	{
+		0,
 		0,
 		0,
 		0,
@@ -33,7 +36,7 @@ nova_standard_database_Extension_VTable_ResultSet nova_standard_database_Extensi
 };
 
 
-void nova_standard_database_Nova_ResultSetNova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData)
+void nova_standard_database_Nova_ResultSet_Nova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
 	{
 	}

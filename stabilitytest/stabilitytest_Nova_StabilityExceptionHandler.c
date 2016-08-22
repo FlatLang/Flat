@@ -1,9 +1,12 @@
 #include <precompiled.h>
 #include <stabilitytest/stabilitytest_Nova_StabilityExceptionHandler.h>
 
+
+
 stabilitytest_Extension_VTable_StabilityExceptionHandler stabilitytest_Extension_VTable_StabilityExceptionHandler_val =
 {
 	{
+		0,
 		0,
 		0,
 		0,
@@ -39,7 +42,7 @@ CCLASS_PRIVATE
 	stabilitytest_Nova_StabilityTest* stabilitytest_Nova_StabilityExceptionHandler_Nova_program;
 	
 )
-void stabilitytest_Nova_StabilityExceptionHandlerNova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData)
+void stabilitytest_Nova_StabilityExceptionHandler_Nova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
 	{
 	}

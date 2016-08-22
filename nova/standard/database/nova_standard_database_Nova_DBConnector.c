@@ -1,9 +1,12 @@
 #include <precompiled.h>
 #include <nova/standard/database/nova_standard_database_Nova_DBConnector.h>
 
+
+
 nova_standard_database_Extension_VTable_DBConnector nova_standard_database_Extension_VTable_DBConnector_val =
 {
 	{
+		0,
 		0,
 		0,
 		0,
@@ -39,7 +42,7 @@ CCLASS_PRIVATE
 	MYSQL_RES* nova_standard_database_Nova_DBConnector_Nova_result;
 	
 )
-void nova_standard_database_Nova_DBConnectorNova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData)
+void nova_standard_database_Nova_DBConnector_Nova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
 	{
 	}

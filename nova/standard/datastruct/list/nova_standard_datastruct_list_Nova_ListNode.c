@@ -1,9 +1,12 @@
 #include <precompiled.h>
 #include <nova/standard/datastruct/list/nova_standard_datastruct_list_Nova_ListNode.h>
 
+
+
 nova_standard_datastruct_list_Extension_VTable_ListNode nova_standard_datastruct_list_Extension_VTable_ListNode_val =
 {
 	{
+		0,
 		0,
 		0,
 		0,
@@ -33,7 +36,7 @@ nova_standard_datastruct_list_Extension_VTable_ListNode nova_standard_datastruct
 };
 
 
-void nova_standard_datastruct_list_Nova_ListNodeNova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData)
+void nova_standard_datastruct_list_Nova_ListNode_Nova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
 	{
 	}

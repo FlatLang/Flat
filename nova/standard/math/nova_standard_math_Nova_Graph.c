@@ -1,9 +1,12 @@
 #include <precompiled.h>
 #include <nova/standard/math/nova_standard_math_Nova_Graph.h>
 
+
+
 nova_standard_math_Extension_VTable_Graph nova_standard_math_Extension_VTable_Graph_val =
 {
 	{
+		0,
 		0,
 		0,
 		0,
@@ -33,7 +36,7 @@ nova_standard_math_Extension_VTable_Graph nova_standard_math_Extension_VTable_Gr
 };
 
 
-void nova_standard_math_Nova_GraphNova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData)
+void nova_standard_math_Nova_Graph_Nova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
 	{
 	}

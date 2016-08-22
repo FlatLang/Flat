@@ -1,9 +1,12 @@
 #include <precompiled.h>
 #include <example/example_Nova_ThreadDemoImplementation.h>
 
+
+
 example_Extension_VTable_ThreadDemoImplementation example_Extension_VTable_ThreadDemoImplementation_val =
 {
 	{
+		0,
 		0,
 		0,
 		0,
@@ -42,7 +45,7 @@ CCLASS_PRIVATE
 	nova_standard_Nova_String* example_Nova_ThreadDemoImplementation_Nova_word;
 	
 )
-void example_Nova_ThreadDemoImplementationNova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData)
+void example_Nova_ThreadDemoImplementation_Nova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
 	{
 	}

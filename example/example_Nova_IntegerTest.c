@@ -1,9 +1,12 @@
 #include <precompiled.h>
 #include <example/example_Nova_IntegerTest.h>
 
+
+
 example_Extension_VTable_IntegerTest example_Extension_VTable_IntegerTest_val =
 {
 	{
+		0,
 		0,
 		0,
 		0,
@@ -33,7 +36,7 @@ example_Extension_VTable_IntegerTest example_Extension_VTable_IntegerTest_val =
 };
 
 
-void example_Nova_IntegerTestNova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData)
+void example_Nova_IntegerTest_Nova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
 	{
 	}

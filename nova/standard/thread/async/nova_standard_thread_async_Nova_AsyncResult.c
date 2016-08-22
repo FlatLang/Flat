@@ -1,9 +1,12 @@
 #include <precompiled.h>
 #include <nova/standard/thread/async/nova_standard_thread_async_Nova_AsyncResult.h>
 
+
+
 nova_standard_thread_async_Extension_VTable_AsyncResult nova_standard_thread_async_Extension_VTable_AsyncResult_val =
 {
 	{
+		0,
 		0,
 		0,
 		0,
@@ -33,7 +36,7 @@ nova_standard_thread_async_Extension_VTable_AsyncResult nova_standard_thread_asy
 };
 
 
-void nova_standard_thread_async_Nova_AsyncResultNova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData)
+void nova_standard_thread_async_Nova_AsyncResult_Nova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
 	{
 	}

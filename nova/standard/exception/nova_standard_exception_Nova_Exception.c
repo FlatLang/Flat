@@ -1,9 +1,12 @@
 #include <precompiled.h>
 #include <nova/standard/exception/nova_standard_exception_Nova_Exception.h>
 
+
+
 nova_standard_exception_Extension_VTable_Exception nova_standard_exception_Extension_VTable_Exception_val =
 {
 	{
+		0,
 		0,
 		0,
 		0,
@@ -33,7 +36,7 @@ nova_standard_exception_Extension_VTable_Exception nova_standard_exception_Exten
 };
 
 
-void nova_standard_exception_Nova_ExceptionNova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData)
+void nova_standard_exception_Nova_Exception_Nova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
 	{
 	}

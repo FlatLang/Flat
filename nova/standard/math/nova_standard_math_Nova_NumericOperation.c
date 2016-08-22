@@ -1,9 +1,12 @@
 #include <precompiled.h>
 #include <nova/standard/math/nova_standard_math_Nova_NumericOperation.h>
 
+
+
 nova_standard_math_Extension_VTable_NumericOperation nova_standard_math_Extension_VTable_NumericOperation_val =
 {
 	{
+		0,
 		0,
 		0,
 		0,
@@ -74,7 +77,7 @@ nova_standard_datastruct_list_Nova_CharArray* nova_standard_math_Nova_NumericOpe
 int nova_standard_math_Nova_NumericOperation_Nova_NUMBER;
 nova_standard_datastruct_list_Nova_CharArray* nova_standard_math_Nova_NumericOperation_Nova_NUMERIC_CHARS;
 int nova_standard_math_Nova_NumericOperation_Nova_VARIABLE;
-void nova_standard_math_Nova_NumericOperationNova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData)
+void nova_standard_math_Nova_NumericOperation_Nova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
 	{
 		nova_standard_math_Nova_NumericOperation_Nova_GROUPING = (int)(1);
@@ -190,7 +193,7 @@ void nova_standard_math_Nova_NumericOperation_Nova_this(nova_standard_math_Nova_
 	}
 	else
 	{
-		l2_Nova_bounds3 = nova_standard_math_Nova_NumericOperation_Nova_searchNextType(0, exceptionData, nova_standard_math_Nova_NumericOperation_Nova_operation, l2_Nova_bounds2->nova_standard_datastruct_Nova_Bounds_Nova_end, (int*)&(nova_garbageData));
+		l2_Nova_bounds3 = nova_standard_math_Nova_NumericOperation_Nova_searchNextType(0, exceptionData, nova_standard_math_Nova_NumericOperation_Nova_operation, l2_Nova_bounds2->nova_standard_datastruct_Nova_Bounds_Nova_end, (int*)(&nova_garbageData));
 		l2_Nova_rh = nova_standard_datastruct_Nova_Bounds_Nova_extractString(l2_Nova_bounds3, exceptionData, nova_standard_math_Nova_NumericOperation_Nova_operation);
 	}
 	if (l2_Nova_bounds3->nova_standard_datastruct_Nova_Bounds_Nova_end != nova_standard_math_Nova_NumericOperation_Nova_operation->nova_standard_Nova_String_Nova_count)
@@ -286,7 +289,7 @@ nova_standard_datastruct_Nova_Bounds* nova_standard_math_Nova_NumericOperation_N
 	}
 	l1_Nova_minIndex = nova_standard_math_Nova_NumericOperation_Nova_nextNonWhitespaceIndex(0, exceptionData, nova_standard_math_Nova_NumericOperation_Nova_str, l1_Nova_minIndex - 1, -1) + 1;
 	nova_local_0 = nova_standard_datastruct_Nova_Bounds_1_Nova_Bounds(0, exceptionData, nova_standard_math_Nova_NumericOperation_Nova_start, l1_Nova_minIndex);
-	*ret1 = l1_Nova_index;
+	(*ret1) = l1_Nova_index;
 	return nova_local_0;
 }
 

@@ -1,9 +1,12 @@
 #include <precompiled.h>
 #include <nova/standard/datastruct/nova_standard_datastruct_Nova_HashMap.h>
 
+
+
 nova_standard_datastruct_Extension_VTable_HashMap nova_standard_datastruct_Extension_VTable_HashMap_val =
 {
 	{
+		0,
 		0,
 		0,
 		0,
@@ -41,7 +44,7 @@ CCLASS_PRIVATE
 )
 
 
-void nova_standard_datastruct_Nova_HashMapNova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData)
+void nova_standard_datastruct_Nova_HashMap_Nova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
 	{
 	}

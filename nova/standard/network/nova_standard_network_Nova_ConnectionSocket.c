@@ -1,9 +1,12 @@
 #include <precompiled.h>
 #include <nova/standard/network/nova_standard_network_Nova_ConnectionSocket.h>
 
+
+
 nova_standard_network_Extension_VTable_ConnectionSocket nova_standard_network_Extension_VTable_ConnectionSocket_val =
 {
 	{
+		0,
 		0,
 		0,
 		0,
@@ -41,7 +44,7 @@ CCLASS_PRIVATE
 )
 
 nova_standard_Nova_String* nova_standard_network_Nova_ConnectionSocket_1_Nova_readString(nova_standard_network_Nova_ConnectionSocket* this, nova_standard_exception_Nova_ExceptionData* exceptionData, char nova_standard_network_Nova_ConnectionSocket_Nova_checkBuffer);
-void nova_standard_network_Nova_ConnectionSocketNova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData)
+void nova_standard_network_Nova_ConnectionSocket_Nova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
 	{
 	}
@@ -147,6 +150,6 @@ void nova_standard_network_Nova_ConnectionSocket_0_Nova_super(nova_standard_netw
 	this->nova_standard_network_Nova_ConnectionSocket_Nova_out = (nova_standard_io_Nova_OutputStream*)nova_null;
 	this->prv->nova_standard_network_Nova_ConnectionSocket_Nova_inputBuffer = (nova_standard_datastruct_list_Nova_Queue*)nova_null;
 	this->prv->nova_standard_network_Nova_ConnectionSocket_Nova_socket = 0;
-	this->prv->nova_standard_network_Nova_ConnectionSocket_Nova_inputBuffer = nova_standard_datastruct_list_Nova_Queue_Nova_Queue(0, exceptionData);
+	this->prv->nova_standard_network_Nova_ConnectionSocket_Nova_inputBuffer = nova_standard_datastruct_list_Nova_Queue_0_Nova_Queue(0, exceptionData);
 }
 

@@ -1,10 +1,13 @@
 #include <precompiled.h>
 #include <nova/standard/primitive/number/nova_standard_primitive_number_Nova_Double.h>
 
+
+
 nova_standard_primitive_number_Extension_VTable_Double nova_standard_primitive_number_Extension_VTable_Double_val =
 {
 	{
 		(int(*)(nova_standard_datastruct_Nova_Comparable*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*))nova_standard_primitive_number_Nova_Double_0_Nova_compareTo,
+		0,
 		0,
 		0,
 		0,
@@ -36,7 +39,7 @@ nova_standard_primitive_number_Extension_VTable_Double nova_standard_primitive_n
 };
 
 
-void nova_standard_primitive_number_Nova_DoubleNova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData)
+void nova_standard_primitive_number_Nova_Double_Nova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
 	{
 	}

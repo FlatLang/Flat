@@ -1,9 +1,12 @@
 #include <precompiled.h>
 #include <nova/standard/io/nova_standard_io_Nova_File.h>
 
+
+
 nova_standard_io_Extension_VTable_File nova_standard_io_Extension_VTable_File_val =
 {
 	{
+		0,
 		0,
 		0,
 		0,
@@ -41,7 +44,7 @@ CCLASS_PRIVATE
 
 
 int nova_standard_io_Nova_File_Mutator_Nova_maxOpenFiles(nova_standard_io_Nova_File* this, nova_standard_exception_Nova_ExceptionData* exceptionData, int nova_standard_io_Nova_File_Nova_value);
-void nova_standard_io_Nova_FileNova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData)
+void nova_standard_io_Nova_File_Nova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
 	{
 	}

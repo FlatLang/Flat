@@ -27,13 +27,14 @@ typedef struct stabilitytest_Nova_StabilityExceptionHandler stabilitytest_Nova_S
 #include <nova/standard/datastruct/list/nova_standard_datastruct_list_Nova_CharArray.h>
 #include <nova/standard/datastruct/list/nova_standard_datastruct_list_Nova_DoubleArray.h>
 #include <nova/standard/datastruct/list/nova_standard_datastruct_list_Nova_IntRange.h>
+#include <nova/standard/thread/nova_standard_thread_Nova_Thread.h>
+#include <nova/standard/thread/async/nova_standard_thread_async_Nova_Async.h>
 #include <nova/standard/gc/nova_standard_gc_Nova_GC.h>
 #include <nova/standard/nova_standard_Nova_Object.h>
 #include <nova/standard/nova_standard_Nova_String.h>
 #include <nova/standard/nova_standard_Nova_System.h>
 #include <nova/standard/math/nova_standard_math_Nova_Math.h>
 #include <nova/standard/thread/nova_standard_thread_Nova_UncaughtExceptionHandler.h>
-#include <nova/standard/thread/nova_standard_thread_Nova_Thread.h>
 #include <stabilitytest/stabilitytest_Nova_StabilityTest.h>
 
 
@@ -58,7 +59,7 @@ CCLASS_CLASS
 	struct Private* prv;
 )
 
-void stabilitytest_Nova_StabilityExceptionHandlerNova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData);
+void stabilitytest_Nova_StabilityExceptionHandler_Nova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData);
 stabilitytest_Nova_StabilityExceptionHandler* stabilitytest_Nova_StabilityExceptionHandler_Nova_StabilityExceptionHandler(stabilitytest_Nova_StabilityExceptionHandler* this, nova_standard_exception_Nova_ExceptionData* exceptionData, stabilitytest_Nova_StabilityTest* stabilitytest_Nova_StabilityExceptionHandler_Nova_program);
 void stabilitytest_Nova_StabilityExceptionHandler_Nova_destroy(stabilitytest_Nova_StabilityExceptionHandler** this, nova_standard_exception_Nova_ExceptionData* exceptionData);
 void stabilitytest_Nova_StabilityExceptionHandler_Nova_this(stabilitytest_Nova_StabilityExceptionHandler* this, nova_standard_exception_Nova_ExceptionData* exceptionData, stabilitytest_Nova_StabilityTest* stabilitytest_Nova_StabilityExceptionHandler_Nova_program);

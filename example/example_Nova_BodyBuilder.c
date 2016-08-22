@@ -1,9 +1,12 @@
 #include <precompiled.h>
 #include <example/example_Nova_BodyBuilder.h>
 
+
+
 example_Extension_VTable_BodyBuilder example_Extension_VTable_BodyBuilder_val =
 {
 	{
+		0,
 		0,
 		0,
 		0,
@@ -34,7 +37,7 @@ example_Extension_VTable_BodyBuilder example_Extension_VTable_BodyBuilder_val =
 };
 
 
-void example_Nova_BodyBuilderNova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData)
+void example_Nova_BodyBuilder_Nova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
 	{
 	}

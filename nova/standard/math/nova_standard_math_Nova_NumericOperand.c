@@ -1,9 +1,12 @@
 #include <precompiled.h>
 #include <nova/standard/math/nova_standard_math_Nova_NumericOperand.h>
 
+
+
 nova_standard_math_Extension_VTable_NumericOperand nova_standard_math_Extension_VTable_NumericOperand_val =
 {
 	{
+		0,
 		0,
 		0,
 		0,
@@ -38,7 +41,7 @@ CCLASS_PRIVATE
 	nova_standard_Nova_Object* nova_standard_math_Nova_NumericOperand_Nova_data;
 	
 )
-void nova_standard_math_Nova_NumericOperandNova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData)
+void nova_standard_math_Nova_NumericOperand_Nova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
 	{
 	}

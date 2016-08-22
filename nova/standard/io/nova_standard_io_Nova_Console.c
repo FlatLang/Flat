@@ -1,9 +1,12 @@
 #include <precompiled.h>
 #include <nova/standard/io/nova_standard_io_Nova_Console.h>
 
+
+
 nova_standard_io_Extension_VTable_Console nova_standard_io_Extension_VTable_Console_val =
 {
 	{
+		0,
 		0,
 		0,
 		0,
@@ -36,7 +39,7 @@ nova_standard_io_Extension_VTable_Console nova_standard_io_Extension_VTable_Cons
 
 void nova_standard_io_Nova_Console_Nova_flushInput(nova_standard_io_Nova_Console* this, nova_standard_exception_Nova_ExceptionData* exceptionData);
 void nova_standard_io_Nova_Console_Nova_flushOutput(nova_standard_io_Nova_Console* this, nova_standard_exception_Nova_ExceptionData* exceptionData);
-void nova_standard_io_Nova_ConsoleNova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData)
+void nova_standard_io_Nova_Console_Nova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
 	{
 	}

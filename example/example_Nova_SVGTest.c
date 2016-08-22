@@ -1,9 +1,12 @@
 #include <precompiled.h>
 #include <example/example_Nova_SVGTest.h>
 
+
+
 example_Extension_VTable_SVGTest example_Extension_VTable_SVGTest_val =
 {
 	{
+		0,
 		0,
 		0,
 		0,
@@ -33,7 +36,7 @@ example_Extension_VTable_SVGTest example_Extension_VTable_SVGTest_val =
 };
 
 
-void example_Nova_SVGTestNova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData)
+void example_Nova_SVGTest_Nova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
 	{
 	}

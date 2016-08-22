@@ -1,9 +1,12 @@
 #include <precompiled.h>
 #include <nova/standard/datastruct/nova_standard_datastruct_Nova_ReversibleHashMap.h>
 
+
+
 nova_standard_datastruct_Extension_VTable_ReversibleHashMap nova_standard_datastruct_Extension_VTable_ReversibleHashMap_val =
 {
 	{
+		0,
 		0,
 		0,
 		0,
@@ -41,7 +44,7 @@ CCLASS_PRIVATE
 	nova_standard_datastruct_Nova_HashMap* nova_standard_datastruct_Nova_ReversibleHashMap_Nova_rev;
 	
 )
-void nova_standard_datastruct_Nova_ReversibleHashMapNova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData)
+void nova_standard_datastruct_Nova_ReversibleHashMap_Nova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
 	{
 	}

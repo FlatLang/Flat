@@ -1,9 +1,12 @@
 #include <precompiled.h>
 #include <nova/standard/math/logic/nova_standard_math_logic_Nova_WFF.h>
 
+
+
 nova_standard_math_logic_Extension_VTable_WFF nova_standard_math_logic_Extension_VTable_WFF_val =
 {
 	{
+		0,
 		0,
 		0,
 		0,
@@ -54,7 +57,7 @@ char nova_standard_math_logic_Nova_WFF_Nova_containsChar(nova_standard_math_logi
 int nova_standard_math_logic_Nova_WFF_Nova_findEndingMatch(nova_standard_math_logic_Nova_WFF* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_Nova_String* nova_standard_math_logic_Nova_WFF_Nova_wff, char nova_standard_math_logic_Nova_WFF_Nova_start, char nova_standard_math_logic_Nova_WFF_Nova_end, int nova_standard_math_logic_Nova_WFF_Nova_index, int nova_standard_math_logic_Nova_WFF_Nova_direction);
 nova_standard_datastruct_list_Nova_CharArray* generated8(nova_standard_math_logic_Nova_WFF* this, nova_standard_exception_Nova_ExceptionData* exceptionData);
 nova_standard_datastruct_list_Nova_CharArray* nova_standard_math_logic_Nova_WFF_Nova_whitespace;
-void nova_standard_math_logic_Nova_WFFNova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData)
+void nova_standard_math_logic_Nova_WFF_Nova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
 	{
 		nova_standard_math_logic_Nova_WFF_Nova_whitespace = generated8(0, exceptionData);

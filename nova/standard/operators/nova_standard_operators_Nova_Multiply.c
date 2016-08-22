@@ -1,9 +1,12 @@
 #include <precompiled.h>
 #include <nova/standard/operators/nova_standard_operators_Nova_Multiply.h>
 
+
+
 nova_standard_operators_Extension_VTable_Multiply nova_standard_operators_Extension_VTable_Multiply_val =
 {
 	{
+		0,
 		0,
 		0,
 		0,
@@ -31,7 +34,7 @@ nova_standard_operators_Extension_VTable_Multiply nova_standard_operators_Extens
 };
 
 
-void nova_standard_operators_Nova_MultiplyNova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData)
+void nova_standard_operators_Nova_Multiply_Nova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
 	{
 	}

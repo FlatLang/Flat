@@ -1,9 +1,12 @@
 #include <precompiled.h>
 #include <nova/standard/svg/nova_standard_svg_Nova_SVGComponent.h>
 
+
+
 nova_standard_svg_Extension_VTable_SVGComponent nova_standard_svg_Extension_VTable_SVGComponent_val =
 {
 	{
+		0,
 		0,
 		0,
 		0,
@@ -34,7 +37,7 @@ nova_standard_svg_Extension_VTable_SVGComponent nova_standard_svg_Extension_VTab
 };
 
 
-void nova_standard_svg_Nova_SVGComponentNova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData)
+void nova_standard_svg_Nova_SVGComponent_Nova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
 	{
 	}

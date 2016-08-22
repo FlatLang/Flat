@@ -1,9 +1,12 @@
 #include <precompiled.h>
 #include <stabilitytest/stabilitytest_Nova_ClientThread.h>
 
+
+
 stabilitytest_Extension_VTable_ClientThread stabilitytest_Extension_VTable_ClientThread_val =
 {
 	{
+		0,
 		0,
 		0,
 		0,
@@ -42,7 +45,7 @@ CCLASS_PRIVATE
 	stabilitytest_Nova_StabilityTest* stabilitytest_Nova_ClientThread_Nova_program;
 	
 )
-void stabilitytest_Nova_ClientThreadNova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData)
+void stabilitytest_Nova_ClientThread_Nova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
 	{
 	}

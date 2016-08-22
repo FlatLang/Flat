@@ -1,9 +1,12 @@
 #include <precompiled.h>
 #include <nova/standard/star/nova_standard_star_Nova_WindowThread.h>
 
+
+
 nova_standard_star_Extension_VTable_WindowThread nova_standard_star_Extension_VTable_WindowThread_val =
 {
 	{
+		0,
 		0,
 		0,
 		0,
@@ -41,7 +44,7 @@ CCLASS_PRIVATE
 	nova_standard_star_Nova_Window* nova_standard_star_Nova_WindowThread_Nova_window;
 	
 )
-void nova_standard_star_Nova_WindowThreadNova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData)
+void nova_standard_star_Nova_WindowThread_Nova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
 	{
 	}

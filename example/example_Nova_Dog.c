@@ -1,9 +1,12 @@
 #include <precompiled.h>
 #include <example/example_Nova_Dog.h>
 
+
+
 example_Extension_VTable_Dog example_Extension_VTable_Dog_val =
 {
 	{
+		0,
 		0,
 		0,
 		0,
@@ -36,7 +39,7 @@ example_Extension_VTable_Dog example_Extension_VTable_Dog_val =
 };
 
 
-void example_Nova_DogNova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData)
+void example_Nova_Dog_Nova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
 	{
 	}

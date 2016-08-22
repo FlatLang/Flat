@@ -1,9 +1,12 @@
 #include <precompiled.h>
 #include <nova/standard/time/nova_standard_time_Nova_Date.h>
 
+
+
 nova_standard_time_Extension_VTable_Date nova_standard_time_Extension_VTable_Date_val =
 {
 	{
+		0,
 		0,
 		0,
 		0,
@@ -33,7 +36,7 @@ nova_standard_time_Extension_VTable_Date nova_standard_time_Extension_VTable_Dat
 };
 
 
-void nova_standard_time_Nova_DateNova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData)
+void nova_standard_time_Nova_Date_Nova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
 	{
 	}

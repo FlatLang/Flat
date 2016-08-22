@@ -1,9 +1,12 @@
 #include <precompiled.h>
 #include <nova/standard/process/nova_standard_process_Nova_Process.h>
 
+
+
 nova_standard_process_Extension_VTable_Process nova_standard_process_Extension_VTable_Process_val =
 {
 	{
+		0,
 		0,
 		0,
 		0,
@@ -33,7 +36,7 @@ nova_standard_process_Extension_VTable_Process nova_standard_process_Extension_V
 };
 
 
-void nova_standard_process_Nova_ProcessNova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData)
+void nova_standard_process_Nova_Process_Nova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
 	{
 	}

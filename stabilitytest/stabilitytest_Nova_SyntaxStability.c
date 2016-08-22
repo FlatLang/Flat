@@ -1,9 +1,12 @@
 #include <precompiled.h>
 #include <stabilitytest/stabilitytest_Nova_SyntaxStability.h>
 
+
+
 stabilitytest_Extension_VTable_SyntaxStability stabilitytest_Extension_VTable_SyntaxStability_val =
 {
 	{
+		0,
 		0,
 		0,
 		0,
@@ -54,8 +57,8 @@ void stabilitytest_Nova_SyntaxStability_Nova_checkTernary(stabilitytest_Nova_Syn
 void stabilitytest_Nova_SyntaxStability_Nova_checkElvis(stabilitytest_Nova_SyntaxStability* this, nova_standard_exception_Nova_ExceptionData* exceptionData);
 char stabilitytest_Nova_SyntaxStability_Nova_trueValue(stabilitytest_Nova_SyntaxStability* this, nova_standard_exception_Nova_ExceptionData* exceptionData);
 char stabilitytest_Nova_SyntaxStability_Nova_falseValue(stabilitytest_Nova_SyntaxStability* this, nova_standard_exception_Nova_ExceptionData* exceptionData);
-nova_standard_datastruct_list_Nova_Array* generated17(stabilitytest_Nova_SyntaxStability* this, nova_standard_exception_Nova_ExceptionData* exceptionData);
-void stabilitytest_Nova_SyntaxStabilityNova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData)
+nova_standard_datastruct_list_Nova_Array* generated18(stabilitytest_Nova_SyntaxStability* this, nova_standard_exception_Nova_ExceptionData* exceptionData);
+void stabilitytest_Nova_SyntaxStability_Nova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
 	{
 	}
@@ -425,7 +428,7 @@ int stabilitytest_Nova_SyntaxStability_Nova_swap(stabilitytest_Nova_SyntaxStabil
 	int nova_local_0 = 0;
 	
 	nova_local_0 = stabilitytest_Nova_SyntaxStability_Nova_b;
-	*ret1 = stabilitytest_Nova_SyntaxStability_Nova_a;
+	(*ret1) = stabilitytest_Nova_SyntaxStability_Nova_a;
 	return nova_local_0;
 }
 
@@ -434,7 +437,7 @@ nova_standard_Nova_String* stabilitytest_Nova_SyntaxStability_Nova_swap2(stabili
 	nova_standard_Nova_String* nova_local_0 = (nova_standard_Nova_String*)nova_null;
 	
 	nova_local_0 = stabilitytest_Nova_SyntaxStability_Nova_b;
-	*ret1 = stabilitytest_Nova_SyntaxStability_Nova_a;
+	(*ret1) = stabilitytest_Nova_SyntaxStability_Nova_a;
 	return nova_local_0;
 }
 
@@ -461,14 +464,14 @@ void stabilitytest_Nova_SyntaxStability_Nova_checkIterators(stabilitytest_Nova_S
 	int l4_Nova_n = 0;
 	
 	nova_standard_io_Nova_Console_0_Nova_write(0, exceptionData, nova_standard_Nova_String_1_Nova_String(0, exceptionData, "Checking filter functionality... "));
-	l1_Nova_list = generated17(0, exceptionData);
-	l1_Nova_list2 = (nova_standard_datastruct_list_Nova_Array*)(nova_standard_datastruct_list_Nova_List_virtual0_Nova_filter((nova_standard_datastruct_list_Nova_List*)(l1_Nova_list), exceptionData, (nova_standard_datastruct_list_Nova_List_closure15_Nova_filterFunc)&stabilitytest_Nova_SyntaxStability_Nova_filterFunc, this));
+	l1_Nova_list = generated18(this, exceptionData);
+	l1_Nova_list2 = (nova_standard_datastruct_list_Nova_Array*)(nova_standard_datastruct_list_Nova_List_virtual0_Nova_filter((nova_standard_datastruct_list_Nova_List*)(l1_Nova_list), exceptionData, (nova_standard_datastruct_list_Nova_List_closure15_Nova_filterFunc)&stabilitytest_Nova_SyntaxStability_Nova_filterFunc, this, nova_null));
 	TRY
 	{
 		novaEnv.nova_standard_exception_ExceptionData.addCode(exceptionData, exceptionData, 10);
 		
 		{
-			nova_standard_datastruct_list_Nova_List_virtual0_Nova_forEach((nova_standard_datastruct_list_Nova_List*)(l1_Nova_list2), exceptionData, (nova_standard_datastruct_list_Nova_List_closure3_Nova_func)&stabilitytest_Nova_SyntaxStability_Nova_foreachClosure, this);
+			nova_standard_datastruct_list_Nova_List_virtual0_Nova_forEach((nova_standard_datastruct_list_Nova_List*)(l1_Nova_list2), exceptionData, (nova_standard_datastruct_list_Nova_List_closure3_Nova_func)&stabilitytest_Nova_SyntaxStability_Nova_foreachClosure, this, nova_null);
 		}
 	}
 	CATCH (10)
@@ -566,7 +569,7 @@ char stabilitytest_Nova_SyntaxStability_Nova_falseValue(stabilitytest_Nova_Synta
 	return 0;
 }
 
-nova_standard_datastruct_list_Nova_Array* generated17(stabilitytest_Nova_SyntaxStability* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
+nova_standard_datastruct_list_Nova_Array* generated18(stabilitytest_Nova_SyntaxStability* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
 	nova_standard_Nova_String** l1_Nova_temp = (nova_standard_Nova_String**)nova_null;
 	

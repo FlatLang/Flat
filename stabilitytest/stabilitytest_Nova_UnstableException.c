@@ -1,9 +1,12 @@
 #include <precompiled.h>
 #include <stabilitytest/stabilitytest_Nova_UnstableException.h>
 
+
+
 stabilitytest_Extension_VTable_UnstableException stabilitytest_Extension_VTable_UnstableException_val =
 {
 	{
+		0,
 		0,
 		0,
 		0,
@@ -33,7 +36,7 @@ stabilitytest_Extension_VTable_UnstableException stabilitytest_Extension_VTable_
 };
 
 
-void stabilitytest_Nova_UnstableExceptionNova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData)
+void stabilitytest_Nova_UnstableException_Nova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
 	{
 	}

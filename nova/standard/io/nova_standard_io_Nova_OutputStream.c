@@ -1,9 +1,12 @@
 #include <precompiled.h>
 #include <nova/standard/io/nova_standard_io_Nova_OutputStream.h>
 
+
+
 nova_standard_io_Extension_VTable_OutputStream nova_standard_io_Extension_VTable_OutputStream_val =
 {
 	{
+		0,
 		0,
 		0,
 		0,
@@ -40,7 +43,7 @@ CCLASS_PRIVATE
 	nova_standard_io_Nova_File* nova_standard_io_Nova_OutputStream_Nova_stream;
 	
 )
-void nova_standard_io_Nova_OutputStreamNova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData)
+void nova_standard_io_Nova_OutputStream_Nova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
 	{
 	}

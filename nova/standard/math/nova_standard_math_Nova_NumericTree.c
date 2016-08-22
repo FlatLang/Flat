@@ -1,9 +1,12 @@
 #include <precompiled.h>
 #include <nova/standard/math/nova_standard_math_Nova_NumericTree.h>
 
+
+
 nova_standard_math_Extension_VTable_NumericTree nova_standard_math_Extension_VTable_NumericTree_val =
 {
 	{
+		0,
 		0,
 		0,
 		0,
@@ -38,7 +41,7 @@ CCLASS_PRIVATE
 	nova_standard_math_Nova_NumericOperation* nova_standard_math_Nova_NumericTree_Nova_root;
 	
 )
-void nova_standard_math_Nova_NumericTreeNova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData)
+void nova_standard_math_Nova_NumericTree_Nova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
 	{
 	}

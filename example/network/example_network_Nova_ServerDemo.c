@@ -1,9 +1,12 @@
 #include <precompiled.h>
 #include <example/network/example_network_Nova_ServerDemo.h>
 
+
+
 example_network_Extension_VTable_ServerDemo example_network_Extension_VTable_ServerDemo_val =
 {
 	{
+		0,
 		0,
 		0,
 		0,
@@ -33,7 +36,7 @@ example_network_Extension_VTable_ServerDemo example_network_Extension_VTable_Ser
 };
 
 
-void example_network_Nova_ServerDemoNova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData)
+void example_network_Nova_ServerDemo_Nova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
 	{
 	}

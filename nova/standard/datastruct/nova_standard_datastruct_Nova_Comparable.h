@@ -27,6 +27,8 @@ typedef struct nova_standard_datastruct_Nova_Comparable nova_standard_datastruct
 #include <nova/standard/datastruct/list/nova_standard_datastruct_list_Nova_CharArray.h>
 #include <nova/standard/datastruct/list/nova_standard_datastruct_list_Nova_DoubleArray.h>
 #include <nova/standard/datastruct/list/nova_standard_datastruct_list_Nova_IntRange.h>
+#include <nova/standard/thread/nova_standard_thread_Nova_Thread.h>
+#include <nova/standard/thread/async/nova_standard_thread_async_Nova_Async.h>
 #include <nova/standard/gc/nova_standard_gc_Nova_GC.h>
 #include <nova/standard/nova_standard_Nova_Object.h>
 #include <nova/standard/nova_standard_Nova_String.h>
@@ -51,7 +53,7 @@ CCLASS_CLASS
 	nova_standard_datastruct_Extension_VTable_Comparable* vtable;
 )
 
-void nova_standard_datastruct_Nova_ComparableNova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData);
+void nova_standard_datastruct_Nova_Comparable_Nova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData);
 int nova_standard_datastruct_Nova_Comparable_0_Nova_compareTo(nova_standard_datastruct_Nova_Comparable* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_Nova_Object* nova_standard_datastruct_Nova_Comparable_Nova_other);int nova_standard_datastruct_Nova_Comparable_virtual0_Nova_compareTo(nova_standard_datastruct_Nova_Comparable* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_Nova_Object* nova_standard_datastruct_Nova_Comparable_Nova_other);
 
 #endif

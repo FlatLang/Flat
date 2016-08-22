@@ -1,9 +1,12 @@
 #include <precompiled.h>
 #include <nova/standard/io/nova_standard_io_Nova_StreamReader.h>
 
+
+
 nova_standard_io_Extension_VTable_StreamReader nova_standard_io_Extension_VTable_StreamReader_val =
 {
 	{
+		0,
 		0,
 		0,
 		0,
@@ -37,7 +40,7 @@ CCLASS_PRIVATE
 	nova_standard_io_Nova_File* nova_standard_io_Nova_StreamReader_Nova_file;
 	
 )
-void nova_standard_io_Nova_StreamReaderNova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData)
+void nova_standard_io_Nova_StreamReader_Nova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
 	{
 	}

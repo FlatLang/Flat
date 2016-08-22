@@ -1,9 +1,12 @@
 #include <precompiled.h>
 #include <nova/standard/datastruct/list/nova_standard_datastruct_list_Nova_NoSuchElementException.h>
 
+
+
 nova_standard_datastruct_list_Extension_VTable_NoSuchElementException nova_standard_datastruct_list_Extension_VTable_NoSuchElementException_val =
 {
 	{
+		0,
 		0,
 		0,
 		0,
@@ -33,7 +36,7 @@ nova_standard_datastruct_list_Extension_VTable_NoSuchElementException nova_stand
 };
 
 
-void nova_standard_datastruct_list_Nova_NoSuchElementExceptionNova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData)
+void nova_standard_datastruct_list_Nova_NoSuchElementException_Nova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
 	{
 	}

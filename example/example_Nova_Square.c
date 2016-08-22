@@ -1,9 +1,12 @@
 #include <precompiled.h>
 #include <example/example_Nova_Square.h>
 
+
+
 example_Extension_VTable_Square example_Extension_VTable_Square_val =
 {
 	{
+		0,
 		0,
 		0,
 		0,
@@ -35,7 +38,7 @@ example_Extension_VTable_Square example_Extension_VTable_Square_val =
 };
 
 
-void example_Nova_SquareNova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData)
+void example_Nova_Square_Nova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
 	{
 	}

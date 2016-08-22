@@ -1,9 +1,12 @@
 #include <precompiled.h>
 #include <example/example_Nova_PolymorphismDemo.h>
 
+
+
 example_Extension_VTable_PolymorphismDemo example_Extension_VTable_PolymorphismDemo_val =
 {
 	{
+		0,
 		0,
 		0,
 		0,
@@ -35,7 +38,7 @@ example_Extension_VTable_PolymorphismDemo example_Extension_VTable_PolymorphismD
 
 
 nova_standard_Nova_String* example_Nova_PolymorphismDemo_Nova_getDescriptionOfAnimalWithNumberOfLegs(example_Nova_PolymorphismDemo* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_datastruct_list_Nova_Array* example_Nova_PolymorphismDemo_Nova_animals, int example_Nova_PolymorphismDemo_Nova_numLegs);
-void example_Nova_PolymorphismDemoNova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData)
+void example_Nova_PolymorphismDemo_Nova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
 	{
 	}

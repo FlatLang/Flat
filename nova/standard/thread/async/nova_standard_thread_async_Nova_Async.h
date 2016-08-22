@@ -6,9 +6,9 @@ typedef struct nova_standard_thread_async_Nova_Async nova_standard_thread_async_
 
 typedef struct nova_standard_exception_Nova_ExceptionData nova_standard_exception_Nova_ExceptionData;
 
-typedef void (*nova_standard_thread_async_Nova_Async_closure1_Nova_func)(void*, nova_standard_exception_Nova_ExceptionData*);
-typedef void (*nova_standard_thread_async_Nova_Async_closure2_Nova_func)(void*, nova_standard_exception_Nova_ExceptionData*);
-typedef void (*nova_standard_thread_async_Nova_Async_closure3_Nova_func)(void*, nova_standard_exception_Nova_ExceptionData*);
+typedef void (*nova_standard_thread_async_Nova_Async_closure1_Nova_func)(void*, nova_standard_exception_Nova_ExceptionData*, void*);
+typedef void (*nova_standard_thread_async_Nova_Async_closure2_Nova_func)(void*, nova_standard_exception_Nova_ExceptionData*, void*);
+typedef void (*nova_standard_thread_async_Nova_Async_closure3_Nova_func)(void*, nova_standard_exception_Nova_ExceptionData*, void*);
 
 #include <Nova.h>
 #include <ExceptionHandler.h>
@@ -32,12 +32,13 @@ typedef void (*nova_standard_thread_async_Nova_Async_closure3_Nova_func)(void*, 
 #include <nova/standard/datastruct/list/nova_standard_datastruct_list_Nova_CharArray.h>
 #include <nova/standard/datastruct/list/nova_standard_datastruct_list_Nova_DoubleArray.h>
 #include <nova/standard/datastruct/list/nova_standard_datastruct_list_Nova_IntRange.h>
+#include <nova/standard/thread/nova_standard_thread_Nova_Thread.h>
+#include <nova/standard/thread/async/nova_standard_thread_async_Nova_Async.h>
 #include <nova/standard/gc/nova_standard_gc_Nova_GC.h>
 #include <nova/standard/nova_standard_Nova_Object.h>
 #include <nova/standard/nova_standard_Nova_String.h>
 #include <nova/standard/nova_standard_Nova_System.h>
 #include <nova/standard/math/nova_standard_math_Nova_Math.h>
-#include <nova/standard/thread/nova_standard_thread_Nova_Thread.h>
 #include <nova/standard/thread/async/nova_standard_thread_async_Nova_AsyncResult.h>
 
 
@@ -60,10 +61,10 @@ CCLASS_CLASS
 	nova_standard_thread_async_Extension_VTable_Async* vtable;
 )
 
-void nova_standard_thread_async_Nova_AsyncNova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData);
+void nova_standard_thread_async_Nova_Async_Nova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData);
 nova_standard_thread_async_Nova_Async* nova_standard_thread_async_Nova_Async_Nova_Async(nova_standard_thread_async_Nova_Async* this, nova_standard_exception_Nova_ExceptionData* exceptionData);
 void nova_standard_thread_async_Nova_Async_Nova_destroy(nova_standard_thread_async_Nova_Async** this, nova_standard_exception_Nova_ExceptionData* exceptionData);
-nova_standard_thread_async_Nova_AsyncResult* nova_standard_thread_async_Nova_Async_Nova_execute(nova_standard_thread_async_Nova_Async* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_thread_async_Nova_Async_closure3_Nova_func nova_standard_thread_async_Nova_Async_Nova_func, void* nova_standard_thread_async_Nova_Async_ref_Nova_func);
+nova_standard_thread_async_Nova_AsyncResult* nova_standard_thread_async_Nova_Async_Nova_execute(nova_standard_thread_async_Nova_Async* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_thread_async_Nova_Async_closure3_Nova_func nova_standard_thread_async_Nova_Async_Nova_func, void* nova_standard_thread_async_Nova_Async_ref_Nova_func, void* func_context);
 void nova_standard_thread_async_Nova_Async_0_Nova_this(nova_standard_thread_async_Nova_Async* this, nova_standard_exception_Nova_ExceptionData* exceptionData);
 void nova_standard_thread_async_Nova_Async_Nova_super(nova_standard_thread_async_Nova_Async* this, nova_standard_exception_Nova_ExceptionData* exceptionData);
 

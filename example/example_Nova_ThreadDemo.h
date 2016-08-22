@@ -27,12 +27,13 @@ typedef struct example_Nova_ThreadDemo example_Nova_ThreadDemo;
 #include <nova/standard/datastruct/list/nova_standard_datastruct_list_Nova_CharArray.h>
 #include <nova/standard/datastruct/list/nova_standard_datastruct_list_Nova_DoubleArray.h>
 #include <nova/standard/datastruct/list/nova_standard_datastruct_list_Nova_IntRange.h>
+#include <nova/standard/thread/nova_standard_thread_Nova_Thread.h>
+#include <nova/standard/thread/async/nova_standard_thread_async_Nova_Async.h>
 #include <nova/standard/gc/nova_standard_gc_Nova_GC.h>
 #include <nova/standard/nova_standard_Nova_Object.h>
 #include <nova/standard/nova_standard_Nova_String.h>
 #include <nova/standard/nova_standard_Nova_System.h>
 #include <nova/standard/math/nova_standard_math_Nova_Math.h>
-#include <nova/standard/thread/nova_standard_thread_Nova_Thread.h>
 #include <nova/standard/time/nova_standard_time_Nova_Timer.h>
 #include <example/example_Nova_ThreadDemoImplementation.h>
 
@@ -56,7 +57,7 @@ CCLASS_CLASS
 	example_Extension_VTable_ThreadDemo* vtable;
 )
 
-void example_Nova_ThreadDemoNova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData);
+void example_Nova_ThreadDemo_Nova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData);
 example_Nova_ThreadDemo* example_Nova_ThreadDemo_Nova_ThreadDemo(example_Nova_ThreadDemo* this, nova_standard_exception_Nova_ExceptionData* exceptionData);
 void example_Nova_ThreadDemo_Nova_destroy(example_Nova_ThreadDemo** this, nova_standard_exception_Nova_ExceptionData* exceptionData);
 void example_Nova_ThreadDemo_Nova_main(example_Nova_ThreadDemo* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_datastruct_list_Nova_Array* example_Nova_ThreadDemo_Nova_args);

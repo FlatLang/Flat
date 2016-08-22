@@ -1,10 +1,13 @@
 #include <precompiled.h>
 #include <nova/standard/primitive/number/nova_standard_primitive_number_Nova_Char.h>
 
+
+
 nova_standard_primitive_number_Extension_VTable_Char nova_standard_primitive_number_Extension_VTable_Char_val =
 {
 	{
 		(int(*)(nova_standard_datastruct_Nova_Comparable*, nova_standard_exception_Nova_ExceptionData*, nova_standard_Nova_Object*))nova_standard_primitive_number_Nova_Char_0_Nova_compareTo,
+		0,
 		0,
 		0,
 		0,
@@ -36,7 +39,7 @@ nova_standard_primitive_number_Extension_VTable_Char nova_standard_primitive_num
 };
 
 
-void nova_standard_primitive_number_Nova_CharNova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData)
+void nova_standard_primitive_number_Nova_Char_Nova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
 	{
 	}
@@ -87,7 +90,12 @@ nova_standard_Nova_String* nova_standard_primitive_number_Nova_Char_3_Nova_toStr
 
 char nova_standard_primitive_number_Nova_Char_0_Nova_toLowerCase(nova_standard_primitive_number_Nova_Char* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
-	return (char)0;
+	return nova_standard_primitive_number_Nova_Char_1_Nova_toLowerCase(0, exceptionData, this->nova_standard_primitive_number_Nova_Char_Nova_value);
+}
+
+char nova_standard_primitive_number_Nova_Char_0_Nova_toUpperCase(nova_standard_primitive_number_Nova_Char* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
+{
+	return nova_standard_primitive_number_Nova_Char_1_Nova_toUpperCase(0, exceptionData, this->nova_standard_primitive_number_Nova_Char_Nova_value);
 }
 
 char nova_standard_primitive_number_Nova_Char_1_Nova_toLowerCase(nova_standard_primitive_number_Nova_Char* this, nova_standard_exception_Nova_ExceptionData* exceptionData, char nova_standard_primitive_number_Nova_Char_Nova_c)
@@ -102,7 +110,7 @@ char nova_standard_primitive_number_Nova_Char_1_Nova_toLowerCase(nova_standard_p
 	return nova_standard_primitive_number_Nova_Char_Nova_c;
 }
 
-char nova_standard_primitive_number_Nova_Char_Nova_toUpperCase(nova_standard_primitive_number_Nova_Char* this, nova_standard_exception_Nova_ExceptionData* exceptionData, char nova_standard_primitive_number_Nova_Char_Nova_c)
+char nova_standard_primitive_number_Nova_Char_1_Nova_toUpperCase(nova_standard_primitive_number_Nova_Char* this, nova_standard_exception_Nova_ExceptionData* exceptionData, char nova_standard_primitive_number_Nova_Char_Nova_c)
 {
 	int l1_Nova_id = 0;
 	

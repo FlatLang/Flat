@@ -1,9 +1,12 @@
 #include <precompiled.h>
 #include <nova/standard/math/nova_standard_math_Nova_Polynomial.h>
 
+
+
 nova_standard_math_Extension_VTable_Polynomial nova_standard_math_Extension_VTable_Polynomial_val =
 {
 	{
+		0,
 		0,
 		0,
 		0,
@@ -42,7 +45,7 @@ nova_standard_datastruct_list_Nova_CharArray* generated6(nova_standard_math_Nova
 nova_standard_datastruct_list_Nova_CharArray* generated7(nova_standard_math_Nova_Polynomial* this, nova_standard_exception_Nova_ExceptionData* exceptionData);
 nova_standard_datastruct_list_Nova_CharArray* nova_standard_math_Nova_Polynomial_Nova_SYMBOLS_CHARS;
 nova_standard_datastruct_list_Nova_CharArray* nova_standard_math_Nova_Polynomial_Nova_WHITESPACE_CHARS;
-void nova_standard_math_Nova_PolynomialNova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData)
+void nova_standard_math_Nova_Polynomial_Nova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
 	{
 		nova_standard_math_Nova_Polynomial_Nova_SYMBOLS_CHARS = generated6(0, exceptionData);

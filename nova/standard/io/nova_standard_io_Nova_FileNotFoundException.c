@@ -1,9 +1,12 @@
 #include <precompiled.h>
 #include <nova/standard/io/nova_standard_io_Nova_FileNotFoundException.h>
 
+
+
 nova_standard_io_Extension_VTable_FileNotFoundException nova_standard_io_Extension_VTable_FileNotFoundException_val =
 {
 	{
+		0,
 		0,
 		0,
 		0,
@@ -33,7 +36,7 @@ nova_standard_io_Extension_VTable_FileNotFoundException nova_standard_io_Extensi
 };
 
 
-void nova_standard_io_Nova_FileNotFoundExceptionNova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData)
+void nova_standard_io_Nova_FileNotFoundException_Nova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
 	{
 	}

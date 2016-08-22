@@ -1,9 +1,12 @@
 #include <precompiled.h>
 #include <nova/standard/math/nova_standard_math_Nova_Math.h>
 
+
+
 nova_standard_math_Extension_VTable_Math nova_standard_math_Extension_VTable_Math_val =
 {
 	{
+		0,
 		0,
 		0,
 		0,
@@ -34,7 +37,7 @@ nova_standard_math_Extension_VTable_Math nova_standard_math_Extension_VTable_Mat
 
 
 double nova_standard_math_Nova_Math_Nova_PI;
-void nova_standard_math_Nova_MathNova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData)
+void nova_standard_math_Nova_Math_Nova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
 	{
 		nova_standard_math_Nova_Math_Nova_PI = (double)(3.141592653);

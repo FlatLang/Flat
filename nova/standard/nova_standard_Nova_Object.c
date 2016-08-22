@@ -1,9 +1,12 @@
 #include <precompiled.h>
 #include <nova/standard/nova_standard_Nova_Object.h>
 
+
+
 nova_standard_Extension_VTable_Object nova_standard_Extension_VTable_Object_val =
 {
 	{
+		0,
 		0,
 		0,
 		0,
@@ -33,7 +36,7 @@ nova_standard_Extension_VTable_Object nova_standard_Extension_VTable_Object_val 
 };
 
 
-void nova_standard_Nova_ObjectNova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData)
+void nova_standard_Nova_Object_Nova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
 	{
 	}

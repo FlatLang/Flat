@@ -1,9 +1,16 @@
 #include <precompiled.h>
 #include <nova/standard/exception/nova_standard_exception_Nova_ExceptionData.h>
 
+typedef struct
+{
+	/* Int code */ int* nova_standard_exception_Nova_ExceptionData_Nova_code;
+} Context1;
+
+
 nova_standard_exception_Extension_VTable_ExceptionData nova_standard_exception_Extension_VTable_ExceptionData_val =
 {
 	{
+		0,
 		0,
 		0,
 		0,
@@ -39,7 +46,9 @@ CCLASS_PRIVATE
 	nova_standard_exception_Nova_ExceptionData* nova_standard_exception_Nova_ExceptionData_Nova_parent;
 	
 )
-void nova_standard_exception_Nova_ExceptionDataNova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData)
+
+char nova_standard_exception_Nova_ExceptionData_Nova_testLambda27(nova_standard_exception_Nova_ExceptionData* this, nova_standard_exception_Nova_ExceptionData* exceptionData, int nova_standard_exception_Nova_ExceptionData_Nova__1, Context1* context);
+void nova_standard_exception_Nova_ExceptionData_Nova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
 	{
 	}
@@ -98,17 +107,14 @@ nova_standard_exception_Nova_ExceptionData* nova_standard_exception_Nova_Excepti
 	l1_Nova_data = this;
 	while (l1_Nova_data != (nova_standard_exception_Nova_ExceptionData*)nova_null)
 	{
-		nova_standard_datastruct_list_Nova_IntArray* l1_Nova_list = (nova_standard_datastruct_list_Nova_IntArray*)nova_null;
-		int l3_Nova_i = 0;
-		
-		l1_Nova_list = l1_Nova_data->nova_standard_exception_Nova_ExceptionData_Nova_codes;
-		l3_Nova_i = (int)0;
-		for (; l3_Nova_i < (int)l1_Nova_list->nova_standard_datastruct_list_Nova_Array_Nova_count; l3_Nova_i++)
+		Context1 contextArg30 = 
 		{
-			if ((int)(intptr_t)nova_standard_datastruct_list_Nova_Array_virtual1_Nova_get((nova_standard_datastruct_list_Nova_Array*)(l1_Nova_list), exceptionData, l3_Nova_i) == nova_standard_exception_Nova_ExceptionData_Nova_code)
-			{
-				return l1_Nova_data;
-			}
+			&nova_standard_exception_Nova_ExceptionData_Nova_code,
+		};
+		
+		if (nova_standard_datastruct_list_Nova_List_virtual0_Nova_any((nova_standard_datastruct_list_Nova_List*)(l1_Nova_data->nova_standard_exception_Nova_ExceptionData_Nova_codes), exceptionData, (nova_standard_datastruct_list_Nova_List_closure9_Nova_anyFunc)&nova_standard_exception_Nova_ExceptionData_Nova_testLambda27, this, &contextArg30))
+		{
+			return l1_Nova_data;
 		}
 		if (nova_standard_exception_Nova_ExceptionData_Nova_getParent(l1_Nova_data, exceptionData) == (nova_standard_exception_Nova_ExceptionData*)nova_null)
 		{
@@ -153,6 +159,11 @@ nova_standard_exception_Nova_ExceptionData* nova_standard_exception_Nova_Excepti
 void nova_standard_exception_Nova_ExceptionData_Nova_setParent(nova_standard_exception_Nova_ExceptionData* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_exception_Nova_ExceptionData* nova_standard_exception_Nova_ExceptionData_Nova_p)
 {
 	this->prv->nova_standard_exception_Nova_ExceptionData_Nova_parent = nova_standard_exception_Nova_ExceptionData_Nova_p;
+}
+
+char nova_standard_exception_Nova_ExceptionData_Nova_testLambda27(nova_standard_exception_Nova_ExceptionData* this, nova_standard_exception_Nova_ExceptionData* exceptionData, int nova_standard_exception_Nova_ExceptionData_Nova__1, Context1* context)
+{
+	return nova_standard_exception_Nova_ExceptionData_Nova__1 == (*context->nova_standard_exception_Nova_ExceptionData_Nova_code);
 }
 
 void nova_standard_exception_Nova_ExceptionData_Nova_super(nova_standard_exception_Nova_ExceptionData* this, nova_standard_exception_Nova_ExceptionData* exceptionData)

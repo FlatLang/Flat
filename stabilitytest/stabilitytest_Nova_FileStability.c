@@ -1,9 +1,12 @@
 #include <precompiled.h>
 #include <stabilitytest/stabilitytest_Nova_FileStability.h>
 
+
+
 stabilitytest_Extension_VTable_FileStability stabilitytest_Extension_VTable_FileStability_val =
 {
 	{
+		0,
 		0,
 		0,
 		0,
@@ -41,7 +44,7 @@ void stabilitytest_Nova_FileStability_Nova_readFromFile(stabilitytest_Nova_FileS
 void stabilitytest_Nova_FileStability_Nova_deleteFile(stabilitytest_Nova_FileStability* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_io_Nova_File* stabilitytest_Nova_FileStability_Nova_f);
 nova_standard_Nova_String* stabilitytest_Nova_FileStability_Nova_inputString;
 int stabilitytest_Nova_FileStability_Nova_lines;
-void stabilitytest_Nova_FileStabilityNova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData)
+void stabilitytest_Nova_FileStability_Nova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
 	{
 	}

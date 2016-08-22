@@ -1,9 +1,12 @@
 #include <precompiled.h>
 #include <nova/standard/math/nova_standard_math_Nova_Sequence.h>
 
+
+
 nova_standard_math_Extension_VTable_Sequence nova_standard_math_Extension_VTable_Sequence_val =
 {
 	{
+		0,
 		0,
 		0,
 		0,
@@ -34,7 +37,7 @@ nova_standard_math_Extension_VTable_Sequence nova_standard_math_Extension_VTable
 
 
 int nova_standard_math_Nova_Sequence_Nova_INFINITE;
-void nova_standard_math_Nova_SequenceNova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData)
+void nova_standard_math_Nova_Sequence_Nova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
 	{
 		nova_standard_math_Nova_Sequence_Nova_INFINITE = (int)(-1);

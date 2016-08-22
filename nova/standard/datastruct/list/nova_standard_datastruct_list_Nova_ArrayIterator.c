@@ -1,6 +1,8 @@
 #include <precompiled.h>
 #include <nova/standard/datastruct/list/nova_standard_datastruct_list_Nova_ArrayIterator.h>
 
+
+
 nova_standard_datastruct_list_Extension_VTable_ArrayIterator nova_standard_datastruct_list_Extension_VTable_ArrayIterator_val =
 {
 	{
@@ -9,6 +11,7 @@ nova_standard_datastruct_list_Extension_VTable_ArrayIterator nova_standard_datas
 		(nova_standard_datastruct_list_Nova_Iterator*(*)(nova_standard_datastruct_list_Nova_Iterator*, nova_standard_exception_Nova_ExceptionData*))nova_standard_datastruct_list_Nova_ArrayIterator_Nova_reset,
 		(char(*)(nova_standard_datastruct_list_Nova_Iterator*, nova_standard_exception_Nova_ExceptionData*))nova_standard_datastruct_list_Nova_ArrayIterator_Accessor_Nova_hasNext,
 		(nova_standard_Nova_Object*(*)(nova_standard_datastruct_list_Nova_Iterator*, nova_standard_exception_Nova_ExceptionData*))nova_standard_datastruct_list_Nova_ArrayIterator_Accessor_Nova_next,
+		0,
 		0,
 		0,
 		0,
@@ -44,7 +47,7 @@ CCLASS_PRIVATE
 
 
 
-void nova_standard_datastruct_list_Nova_ArrayIteratorNova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData)
+void nova_standard_datastruct_list_Nova_ArrayIterator_Nova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
 	{
 	}

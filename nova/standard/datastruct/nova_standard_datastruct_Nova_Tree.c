@@ -1,9 +1,12 @@
 #include <precompiled.h>
 #include <nova/standard/datastruct/nova_standard_datastruct_Nova_Tree.h>
 
+
+
 nova_standard_datastruct_Extension_VTable_Tree nova_standard_datastruct_Extension_VTable_Tree_val =
 {
 	{
+		0,
 		0,
 		0,
 		0,
@@ -33,7 +36,7 @@ nova_standard_datastruct_Extension_VTable_Tree nova_standard_datastruct_Extensio
 };
 
 
-void nova_standard_datastruct_Nova_TreeNova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData)
+void nova_standard_datastruct_Nova_Tree_Nova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
 	{
 	}

@@ -1,9 +1,12 @@
 #include <precompiled.h>
 #include <nova/standard/network/nova_standard_network_Nova_NetworkInputStream.h>
 
+
+
 nova_standard_network_Extension_VTable_NetworkInputStream nova_standard_network_Extension_VTable_NetworkInputStream_val =
 {
 	{
+		0,
 		0,
 		0,
 		0,
@@ -37,7 +40,7 @@ CCLASS_PRIVATE
 	nova_standard_network_Nova_ConnectionSocket* nova_standard_network_Nova_NetworkInputStream_Nova_socket;
 	
 )
-void nova_standard_network_Nova_NetworkInputStreamNova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData)
+void nova_standard_network_Nova_NetworkInputStream_Nova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
 	{
 	}

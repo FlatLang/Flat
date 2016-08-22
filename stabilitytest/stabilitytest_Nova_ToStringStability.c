@@ -1,9 +1,12 @@
 #include <precompiled.h>
 #include <stabilitytest/stabilitytest_Nova_ToStringStability.h>
 
+
+
 stabilitytest_Extension_VTable_ToStringStability stabilitytest_Extension_VTable_ToStringStability_val =
 {
 	{
+		0,
 		0,
 		0,
 		0,
@@ -36,7 +39,7 @@ stabilitytest_Extension_VTable_ToStringStability stabilitytest_Extension_VTable_
 
 
 void stabilitytest_Nova_ToStringStability_Nova_checkToString(stabilitytest_Nova_ToStringStability* this, nova_standard_exception_Nova_ExceptionData* exceptionData, nova_standard_Nova_String* stabilitytest_Nova_ToStringStability_Nova_type, nova_standard_primitive_number_Nova_Number* stabilitytest_Nova_ToStringStability_Nova_number, nova_standard_Nova_String* stabilitytest_Nova_ToStringStability_Nova_expected);
-void stabilitytest_Nova_ToStringStabilityNova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData)
+void stabilitytest_Nova_ToStringStability_Nova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
 	{
 	}

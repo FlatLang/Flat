@@ -1,9 +1,12 @@
 #include <precompiled.h>
 #include <nova/standard/datastruct/nova_standard_datastruct_Nova_Bounds.h>
 
+
+
 nova_standard_datastruct_Extension_VTable_Bounds nova_standard_datastruct_Extension_VTable_Bounds_val =
 {
 	{
+		0,
 		0,
 		0,
 		0,
@@ -38,7 +41,7 @@ nova_standard_datastruct_Extension_VTable_Bounds nova_standard_datastruct_Extens
 
 
 
-void nova_standard_datastruct_Nova_BoundsNova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData)
+void nova_standard_datastruct_Nova_Bounds_Nova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
 	{
 	}
