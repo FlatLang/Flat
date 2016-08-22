@@ -342,12 +342,7 @@ nova_env novaEnv = {
 
 {
 &nova_standard_exception_Nova_ExceptionData_Nova_addCode,
-&nova_standard_exception_Nova_ExceptionData_Nova_getBuffer,
-&nova_standard_exception_Nova_ExceptionData_Nova_getCorrectData,
-&nova_standard_exception_Nova_ExceptionData_Nova_getCorrectBuffer,
 &nova_standard_exception_Nova_ExceptionData_Nova_jumpToBuffer,
-&nova_standard_exception_Nova_ExceptionData_Nova_getParent,
-&nova_standard_exception_Nova_ExceptionData_Nova_setParent,
 &nova_standard_exception_Nova_ExceptionData_Nova_ExceptionData,
 },
 

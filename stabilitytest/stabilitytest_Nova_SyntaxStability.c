@@ -57,6 +57,7 @@ void stabilitytest_Nova_SyntaxStability_Nova_checkTernary(stabilitytest_Nova_Syn
 void stabilitytest_Nova_SyntaxStability_Nova_checkElvis(stabilitytest_Nova_SyntaxStability* this, nova_standard_exception_Nova_ExceptionData* exceptionData);
 char stabilitytest_Nova_SyntaxStability_Nova_trueValue(stabilitytest_Nova_SyntaxStability* this, nova_standard_exception_Nova_ExceptionData* exceptionData);
 char stabilitytest_Nova_SyntaxStability_Nova_falseValue(stabilitytest_Nova_SyntaxStability* this, nova_standard_exception_Nova_ExceptionData* exceptionData);
+void stabilitytest_Nova_SyntaxStability_Nova_checkRepeat(stabilitytest_Nova_SyntaxStability* this, nova_standard_exception_Nova_ExceptionData* exceptionData);
 nova_standard_datastruct_list_Nova_Array* generated18(stabilitytest_Nova_SyntaxStability* this, nova_standard_exception_Nova_ExceptionData* exceptionData);
 void stabilitytest_Nova_SyntaxStability_Nova_init_static(nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
@@ -104,6 +105,7 @@ void stabilitytest_Nova_SyntaxStability_0_Nova_test(stabilitytest_Nova_SyntaxSta
 	stabilitytest_Nova_SyntaxStability_Nova_checkIterators(this, exceptionData);
 	stabilitytest_Nova_SyntaxStability_Nova_checkTernary(this, exceptionData);
 	stabilitytest_Nova_SyntaxStability_Nova_checkElvis(this, exceptionData);
+	stabilitytest_Nova_SyntaxStability_Nova_checkRepeat(this, exceptionData);
 }
 
 void stabilitytest_Nova_SyntaxStability_Nova_checkMatchStatements(stabilitytest_Nova_SyntaxStability* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
@@ -567,6 +569,59 @@ char stabilitytest_Nova_SyntaxStability_Nova_trueValue(stabilitytest_Nova_Syntax
 char stabilitytest_Nova_SyntaxStability_Nova_falseValue(stabilitytest_Nova_SyntaxStability* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
 {
 	return 0;
+}
+
+void stabilitytest_Nova_SyntaxStability_Nova_checkRepeat(stabilitytest_Nova_SyntaxStability* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
+{
+	int l1_Nova_i = 0;
+	int repeatCounter8 = 0;
+	int l1_Nova_times = 0;
+	int repeatCounter9 = 0;
+	int repeatCounter10 = 0;
+	
+	nova_standard_io_Nova_Console_0_Nova_write(0, exceptionData, nova_standard_Nova_String_1_Nova_String(0, exceptionData, "Checking repeat functionality... "));
+	l1_Nova_i = (int)(0);
+	for (;;)
+	{
+		if (l1_Nova_i == 101)
+		{
+			break;
+		}
+		l1_Nova_i++;
+	}
+	if (l1_Nova_i != 101)
+	{
+		stabilitytest_Nova_StabilityTest_1_Nova_fail(this->stabilitytest_Nova_StabilityTestCase_Nova_program, exceptionData, nova_standard_Nova_String_1_Nova_String(0, exceptionData, "Vanilla repeat failed"));
+	}
+	l1_Nova_i = (int)(0);
+	for (repeatCounter8 = 0; repeatCounter8 < 101; repeatCounter8++)
+	{
+		l1_Nova_i++;
+	}
+	if (l1_Nova_i != 101)
+	{
+		stabilitytest_Nova_StabilityTest_1_Nova_fail(this->stabilitytest_Nova_StabilityTestCase_Nova_program, exceptionData, nova_standard_Nova_String_1_Nova_String(0, exceptionData, "Repeat 101 times failed"));
+	}
+	l1_Nova_i = (int)(0);
+	l1_Nova_times = (int)(101);
+	for (repeatCounter9 = 0; repeatCounter9 < l1_Nova_times; repeatCounter9++)
+	{
+		l1_Nova_i++;
+	}
+	if (l1_Nova_i != 101)
+	{
+		stabilitytest_Nova_StabilityTest_1_Nova_fail(this->stabilitytest_Nova_StabilityTestCase_Nova_program, exceptionData, nova_standard_Nova_String_0_Nova_concat(nova_standard_Nova_String_1_Nova_String(0, exceptionData, "Repeat times ("), exceptionData, nova_standard_Nova_String_virtual1_Nova_concat((nova_standard_Nova_String*)(nova_standard_primitive_number_Nova_Int_2_Nova_toString(0, exceptionData, (l1_Nova_times))), exceptionData, nova_standard_Nova_String_1_Nova_String(0, exceptionData, ") failed"))));
+	}
+	l1_Nova_i = (int)(0);
+	for (repeatCounter10 = 0; repeatCounter10 < l1_Nova_times; repeatCounter10++)
+	{
+		l1_Nova_i++;
+	}
+	if (l1_Nova_i != 101)
+	{
+		stabilitytest_Nova_StabilityTest_1_Nova_fail(this->stabilitytest_Nova_StabilityTestCase_Nova_program, exceptionData, nova_standard_Nova_String_1_Nova_String(0, exceptionData, "Repeat fragment failed"));
+	}
+	nova_standard_io_Nova_Console_1_Nova_writeLine(0, exceptionData, nova_standard_Nova_String_1_Nova_String(0, exceptionData, "OK"));
 }
 
 nova_standard_datastruct_list_Nova_Array* generated18(stabilitytest_Nova_SyntaxStability* this, nova_standard_exception_Nova_ExceptionData* exceptionData)
