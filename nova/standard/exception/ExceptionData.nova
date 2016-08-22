@@ -3,16 +3,17 @@ package "nova/standard/exception"
 public class ExceptionData
 {
 	external type buffer
+	external buffer* NULL
 	
 	external void jump(buffer buf, int code)
 	
-	buffer*				buf
+	visible buffer* buf
 	
-	ExceptionData		parent
+	visible ExceptionData parent
 	
-	public Exception	thrownException
+	visible Int[] codes
 	
-	visible Int[]       codes
+	public Exception thrownException
 	
 	public construct(buffer* buf)
 	{
@@ -25,66 +26,39 @@ public class ExceptionData
 		codes.add(code)
 	}
 	
-	public getBuffer() -> buffer*
-	{
-		return buf
-	}
-	
-	public getCorrectData(Int code) -> ExceptionData
+	getDataByCode(Int code) -> ExceptionData
 	{
 		ExceptionData data = this
 		
-		while (data != null)
+		repeat
 		{
-		    if (data.codes.any({ _ == code }))
+		    if (data.codes.any({ _ == code }) || data.parent == null)
             {
                 return data
             }
 			
-			if (data.getParent() == null)
-			{
-				return data
-			}
-			
-			data = data.getParent()
+			data = data.parent
 		}
 		
-		return 0
-	}
-	
-	public getCorrectBuffer(Int code) -> buffer*
-	{
-		ExceptionData data = getCorrectData(code)
-		
-		if (data == null)
-		{
-			return 0
-		}
-		
-		return data.getBuffer()
+		return null
 	}
 	
 	public jumpToBuffer(Int code)
 	{
-		ExceptionData data = getCorrectData(code)
+		ExceptionData data = getDataByCode(code)
 		
-		if (data.getParent() == null)
+		if (data == NULL)
+		{
+        	Console.writeLine("Could not get exception buffer!")
+        	
+        	return
+		}
+		
+		if (data.parent == null)
 		{
 			code = 1
 		}
 		
-		buffer* b = data.getBuffer()
-		
-		jump(b, code)
-	}
-	
-	public getParent() -> ExceptionData
-	{
-		return parent
-	}
-	
-	public setParent(ExceptionData p)
-	{
-		parent = p
+		jump(data.buf, code)
 	}
 }
