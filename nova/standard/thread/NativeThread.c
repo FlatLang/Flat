@@ -63,24 +63,23 @@ NOVA_THREAD_FUNC lib_nova_thread_run(NOVA_THREAD_FUNC_ARG arg)
 	nova_standard_thread_Nova_Thread* this = data->instance;
 	nova_standard_exception_Nova_ExceptionData* exceptionData = 0;
 	
-	data->run_method(this, exceptionData, data->context);
+	data->run_method(this, exceptionData);
 
 	NOVA_FREE(data);
 
 	return 0;
 }
 
-NOVA_THREAD_HANDLE* create_thread(nova_standard_thread_Nova_Thread* this, run_method method, void* ref, void* context)
+NOVA_THREAD_HANDLE* create_thread(nova_standard_thread_Nova_Thread* this, run_method method, void* ref)
 {
 	NOVA_THREAD_HANDLE* handle;
 
-	DataStruct* data = (DataStruct*)NOVA_MALLOC(sizeof(DataStruct));
+	DataStruct* data = (DataStruct*)malloc(sizeof(DataStruct));
 
 	data->instance   = ref;
-	data->context   = context;
 	data->run_method = method;
-	
-	handle = (NOVA_THREAD_HANDLE*)NOVA_MALLOC(sizeof(NOVA_THREAD_HANDLE));
+
+	handle = (NOVA_THREAD_HANDLE*)malloc(sizeof(NOVA_THREAD_HANDLE));
 	
 	lib_nova_thread_create(handle, lib_nova_thread_run, (NOVA_THREAD_FUNC_ARG)data);
 
