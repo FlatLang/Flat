@@ -3,14 +3,7 @@ package net.fathomsoft.nova.tree.variables;
 import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.ValidationResult;
-import net.fathomsoft.nova.tree.AccessorMethod;
-import net.fathomsoft.nova.tree.Assignment;
-import net.fathomsoft.nova.tree.InstanceDeclaration;
-import net.fathomsoft.nova.tree.LocalDeclaration;
-import net.fathomsoft.nova.tree.MethodDeclaration;
-import net.fathomsoft.nova.tree.MutatorMethod;
-import net.fathomsoft.nova.tree.Node;
-import net.fathomsoft.nova.tree.SyntaxTree;
+import net.fathomsoft.nova.tree.*;
 import net.fathomsoft.nova.tree.MethodList.SearchFilter;
 import net.fathomsoft.nova.util.Bounds;
 import net.fathomsoft.nova.util.Location;
@@ -402,7 +395,18 @@ public class FieldDeclaration extends InstanceDeclaration
 		{
 			if (initializationValue != null)
 			{
-				Assignment assignment = Assignment.decodeStatement(getParentClass().getAssignmentMethodNode(), getName() + " = " + initializationValue, getLocationIn(), true);
+				Node parent = null;
+				
+				if (isStatic())
+				{
+					parent = getParentClass().getStaticAssignmentBlock();
+				}
+				else
+				{
+					parent = getParentClass().getAssignmentMethodNode();
+				}
+				
+				Assignment assignment = Assignment.decodeStatement(parent, getName() + " = " + initializationValue, getLocationIn(), true);
 				
 				getParentClass().addFieldInitialization(assignment);
 			}
