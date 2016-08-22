@@ -1,15 +1,15 @@
 #include <precompiled.h>
 #include "NativeSystem.h"
 
-void error(int code, char message[], error_func func, void* ref, void* context)
+void error(int code, char message[], error_func func, void* ref)
 {
 	nova_standard_Nova_String* s = novaEnv.nova_standard_String.String__Array1d_nova_standard_primitive_number_Char(0, 0, message);
 
-	func(ref, 0, code, s, 1, context);
+	func(ref, 0, code, s, 1);
 }
 
 #ifdef _WIN32
-FILE* getPipe(char command[], error_func func, void* ref, void* context)
+FILE* getPipe(char command[], error_func func, void* ref)
 {
 	FILE* pPipe;
 	
@@ -26,7 +26,7 @@ FILE* getPipe(char command[], error_func func, void* ref, void* context)
 
 	if (pPipe == 0)
 	{
-		error(1, "_popen error...", func, ref, context);
+		error(1, "_popen error...", func, ref);
 	}
 
 	/*while (fgets(buf, 256, pPipe))
@@ -37,7 +37,7 @@ FILE* getPipe(char command[], error_func func, void* ref, void* context)
 	return pPipe;
 }
 #else
-FILE* getPipe(char command[], error_func func, void* ref, void* context)
+FILE* getPipe(char command[], error_func func, void* ref)
 {
 	pid_t pid = 0;
 	int pipefd[2];
@@ -63,19 +63,19 @@ FILE* getPipe(char command[], error_func func, void* ref, void* context)
 		
 		if (execv(command, argv) < 0)
 		{
-			error(1, "execv error.", func, ref, context);
+			error(1, "execv error.", func, ref);
 		}
 		
 		exit(0);
 	}
 	else if (pid < 0)
 	{
-		error(1, "Could not create process.", func, ref, context);
+		error(1, "Could not create process.", func, ref);
 	}
 	
 	if (waitpid(pid, &status, 0) != pid)
 	{
-		error(1, "Could not wait for process.", func, ref, context);
+		error(1, "Could not wait for process.", func, ref);
 	}
 	
 	close(pipefd[1]);
