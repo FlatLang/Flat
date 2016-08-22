@@ -18,7 +18,7 @@
 		\
 		if (exceptionData != 0)\
 		{\
-			novaEnv.nova_standard_exception_ExceptionData.setParent(newData, exceptionData, exceptionData);\
+			newData->nova_standard_exception_Nova_ExceptionData_Nova_parent = exceptionData;\
 		}\
 		\
 		exceptionData  = newData;\
@@ -34,7 +34,7 @@
 #define END_TRY \
 		{\
 			nova_standard_exception_Nova_ExceptionData* oldData = exceptionData;\
-			nova_standard_exception_Nova_ExceptionData* newData = novaEnv.nova_standard_exception_ExceptionData.getParent(exceptionData, 0);\
+			nova_standard_exception_Nova_ExceptionData* newData = exceptionData->nova_standard_exception_Nova_ExceptionData_Nova_parent;\
 			if (newData != 0)\
 			{\
 				exceptionData = newData;\
