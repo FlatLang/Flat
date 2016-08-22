@@ -25,17 +25,17 @@ public interface Accessible
 	
 	public GenericCompatible getContext();
 	
-	public default GenericCompatible getReferenceContext()
+	default GenericCompatible getReferenceContext()
 	{
 		return (GenericCompatible)getReferenceNode();
 	}
 	
-	public default Value toValue()
+	default Value toValue()
 	{
 		return (Value)this;
 	}
 	
-	public default GenericTypeArgument getGenericTypeArgumentFromParameter(GenericTypeParameter type)
+	default GenericTypeArgument getGenericTypeArgumentFromParameter(GenericTypeParameter type)
 	{
 		ClassDeclaration typeClass = null;
 		
@@ -155,7 +155,7 @@ public interface Accessible
 	 * @return The next accessed node of the given type. If there are
 	 * 		no matches, null is returned.
 	 */
-	public default Accessible getNextAccessingOfType(Class<?> type)
+	default Accessible getNextAccessingOfType(Class<?> type)
 	{
 		return getNextAccessingOfType(new Class<?>[] { type });
 	}
@@ -167,7 +167,7 @@ public interface Accessible
 	 * @return The next accessed node of the given types. If there are
 	 * 		no matches, null is returned.
 	 */
-	public default Accessible getNextAccessingOfType(Class<?> types[])
+	default Accessible getNextAccessingOfType(Class<?> types[])
 	{
 		return getNextAccessingOfType(types, false);
 	}
@@ -181,7 +181,7 @@ public interface Accessible
 	 * @return The next accessed node of the given types. If there are
 	 * 		no matches, null is returned.
 	 */
-	public default Accessible getNextAccessingOfType(Class<?> types[], boolean opposite)
+	default Accessible getNextAccessingOfType(Class<?> types[], boolean opposite)
 	{
 		Accessible current = getAccessingNode();
 		
@@ -205,12 +205,12 @@ public interface Accessible
 	 * @return The last accessed node of the given type. If there is not a
 	 * 		match, null is returned.
 	 */
-	public default Accessible getLastAccessingOfType(Class<?> type, boolean opposite)
+	default Accessible getLastAccessingOfType(Class<?> type, boolean opposite)
 	{
 		return getLastAccessingOfType(type, opposite);
 	}
 	
-	public default Accessible getLastAccessingOfType(Class<?> type, boolean opposite, boolean inclusive)
+	default Accessible getLastAccessingOfType(Class<?> type, boolean opposite, boolean inclusive)
 	{
 		return getLastAccessingOfType(new Class<?>[] { type }, opposite, inclusive);
 	}
@@ -227,12 +227,12 @@ public interface Accessible
 	 * @return The last accessed node of the given types. If there is not
 	 * 		a match, null is returned.
 	 */
-	public default Accessible getLastAccessingOfType(Class<?> types[], boolean opposite)
+	default Accessible getLastAccessingOfType(Class<?> types[], boolean opposite)
 	{
 		return getLastAccessingOfType(types, opposite, false);
 	}
 	
-	public default Accessible getLastAccessingOfType(Class<?> types[], boolean opposite, boolean inclusive)
+	default Accessible getLastAccessingOfType(Class<?> types[], boolean opposite, boolean inclusive)
 	{
 		Accessible previous = null;
 		Accessible current  = this;
@@ -251,12 +251,12 @@ public interface Accessible
 		return previous;
 	}
 	
-	public default Accessible getLastAccessedOfType(Class<?> type, boolean opposite)
+	default Accessible getLastAccessedOfType(Class<?> type, boolean opposite)
 	{
 		return getLastAccessedOfType(new Class<?>[] { type }, opposite);
 	}
 	
-	public default Accessible getLastAccessedOfType(Class<?> types[], boolean opposite)
+	default Accessible getLastAccessedOfType(Class<?> types[], boolean opposite)
 	{
 		Accessible previous = null;
 		Accessible current  = this;
@@ -274,7 +274,7 @@ public interface Accessible
 		return previous;
 	}
 	
-	public default Accessible getLastAccessed()
+	default Accessible getLastAccessed()
 	{
 		Accessible previous = this;
 		Accessible current  = this;
@@ -296,7 +296,7 @@ public interface Accessible
 	 * @return The next accessed of the given type. If there is not a
 	 * 		match, null is returned.
 	 */
-	public default Identifier getNextAccessedOfType(Class<?> type)
+	default Identifier getNextAccessedOfType(Class<?> type)
 	{
 		return getNextAccessedOfType(new Class<?>[] { type });
 	}
@@ -309,7 +309,7 @@ public interface Accessible
 	 * @return The next accessed of the given types. If there is not a
 	 * 		match, null is returned.
 	 */
-	public default Identifier getNextAccessedOfType(Class<?> types[])
+	default Identifier getNextAccessedOfType(Class<?> types[])
 	{
 		Identifier current = getAccessedNode();
 		
@@ -327,7 +327,7 @@ public interface Accessible
 	 * @return The root variable that is accessing the specified
 	 * 		Identifier.
 	 */
-	public default Accessible getRootReferenceNode()
+	default Accessible getRootReferenceNode()
 	{
 		return getRootReferenceNode(false);
 	}
@@ -340,7 +340,7 @@ public interface Accessible
 	 * @return The root variable that is accessing the specified
 	 * 		Identifier.
 	 */
-	public default Accessible getRootReferenceNode(boolean inclusive)
+	default Accessible getRootReferenceNode(boolean inclusive)
 	{
 		if (!isAccessed())
 		{
@@ -394,17 +394,17 @@ public interface Accessible
 	 * 
 	 * @return The Node that represents the calling Identifier.
 	 */
-	public default Accessible getReferenceNode()
+	default Accessible getReferenceNode()
 	{
 		return getReferenceNode(false);
 	}
 	
-	public default Accessible getReferenceNode(boolean requireAccessingNode)
+	default Accessible getReferenceNode(boolean requireAccessingNode)
 	{
 		return getReferenceNode(requireAccessingNode, false);
 	}
 	
-	public default Accessible getReferenceNode(boolean requireAccessingNode, boolean skipPriority)
+	default Accessible getReferenceNode(boolean requireAccessingNode, boolean skipPriority)
 	{
 		Value n = (Value)this;
 		
@@ -446,7 +446,7 @@ public interface Accessible
 	 * 
 	 * @return The furthest node that accesses the specified identifier.
 	 */
-	public default Accessible getContextNode()
+	default Accessible getContextNode()
 	{
 		return getContextNode(getReferenceNode());
 	}
@@ -469,7 +469,7 @@ public interface Accessible
 	 * 		is not accessed through any Identifiers.
 	 * @return The furthest node that accesses the specified identifier.
 	 */
-	public default Accessible getContextNode(Accessible escape)
+	default Accessible getContextNode(Accessible escape)
 	{
 		Accessible node = this;
 		
@@ -503,7 +503,7 @@ public interface Accessible
 	 * 
 	 * @return The furthest node that accesses the specified identifier.
 	 */
-	public default Accessible getRootAccessNode()
+	default Accessible getRootAccessNode()
 	{
 		return getContextNode(this);
 	}
@@ -516,7 +516,7 @@ public interface Accessible
 	 * 
 	 * @return The root Node that accesses the specified Identifier.
 	 */
-	public default Accessible getRootNode()
+	default Accessible getRootNode()
 	{
 		Accessible node = getRootAccessNode();
 		Node       n    = (Node)node;
@@ -540,7 +540,7 @@ public interface Accessible
 	 * 
 	 * @return The last node that is accessed by the specified node.
 	 */
-	public default Identifier getLastAccessedNode()
+	default Identifier getLastAccessedNode()
 	{
 		Identifier prev = null;
 		Identifier node = getAccessedNode();
@@ -559,7 +559,7 @@ public interface Accessible
 	 *
 	 * @return Whether or not the Value accesses a method call.
 	 */
-	public default boolean isSpecialFragment()
+	default boolean isSpecialFragment()
 	{
 //		Identifier lastAccessed = getLastAccessedNode();
 //		
@@ -594,7 +594,7 @@ public interface Accessible
 	 * @param builder The StringBuilder to append the data to.
 	 * @return A specialized String generation.
 	 */
-	public default StringBuilder generateSpecialFragment(StringBuilder builder)
+	default StringBuilder generateSpecialFragment(StringBuilder builder)
 	{
 		Accessible current = getLastAccessedNode();
 		
@@ -625,7 +625,7 @@ public interface Accessible
 	 * @return The last accessed node, or if the node does not access any
 	 * 		nodes, it returns itself.
 	 */
-	public default Value getReturnedNode()
+	default Value getReturnedNode()
 	{
 		Identifier lastAccessed = getLastAccessedNode();
 		
@@ -643,7 +643,7 @@ public interface Accessible
 	 * 
 	 * @return The next node that is accessed by the specified node.
 	 */
-	public default boolean doesAccess()
+	default boolean doesAccess()
 	{
 		return getAccessedNode() != null;
 	}
@@ -661,7 +661,7 @@ public interface Accessible
 	 * 
 	 * @return The next node that is accessed by the specified node.
 	 */
-	public default Identifier getAccessedNode()
+	default Identifier getAccessedNode()
 	{
 		Node n = (Node)this;
 		
@@ -678,7 +678,7 @@ public interface Accessible
 	 * 
 	 * @param node The Identifier for this Identifier to access.
 	 */
-	public default void setAccessedNode(Identifier node)
+	default void setAccessedNode(Identifier node)
 	{
 		Node n = (Node)this;
 		
@@ -698,12 +698,12 @@ public interface Accessible
 	 * 
 	 * @return Whether or not the identifier was accessed.
 	 */
-	public default boolean isAccessed()
+	default boolean isAccessed()
 	{
 		return getAccessingNode() != null;
 	}
 	
-	public default boolean canAccess()
+	default boolean canAccess()
 	{
 		Value n = (Value)this;
 		
@@ -718,7 +718,7 @@ public interface Accessible
 	 * @return Whether or not the specified identifier is still in the
 	 * 		process of being decoded.
 	 */
-	public default boolean isDecodingAccessedNode(Node node)
+	default boolean isDecodingAccessedNode(Node node)
 	{
 		return node.getParent() == this && !((Node)this).containsChild(node);
 	}
@@ -770,12 +770,12 @@ public interface Accessible
 	 * @return The Identifier Node that accesses the specified Identifier
 	 * 		Node.
 	 */
-	public default Accessible getAccessingNode()
+	default Accessible getAccessingNode()
 	{
 		return getAccessingNode(false);
 	}
 	
-	public default Accessible getAccessingNode(boolean skipPriority)
+	default Accessible getAccessingNode(boolean skipPriority)
 	{
 		Node n = (Node)this;
 		
@@ -802,6 +802,11 @@ public interface Accessible
 		return null;
 	}
 	
+	default Accessible getCArgumentReferenceContext()
+	{
+		return this;
+	}
+	
 	/**
 	 * Generate the C output for when this value node is being used
 	 * as an argument for a method call.
@@ -812,13 +817,13 @@ public interface Accessible
 	 * @return The C output for when this value node is being used
 	 * 		as an argument for a method call.
 	 */
-	public default StringBuilder generateCArgumentReference(StringBuilder builder, Identifier callingMethod)
+	default StringBuilder generateCArgumentReference(StringBuilder builder, Identifier callingMethod)
 	{
 		Value n = (Value)this;
 
 		if (n instanceof Identifier)
 		{
-			((Identifier)n).generateCUseOutput(builder, false, false);
+			((Identifier)n).generateCUseOutput(builder, false, true);
 		}
 		else
 		{
@@ -835,7 +840,7 @@ public interface Accessible
 	 * 
 	 * @return The generated String.
 	 */
-	public default StringBuilder generateChildrenCSourceFragment()
+	default StringBuilder generateChildrenCSourceFragment()
 	{
 		return generateChildrenCSourceFragment(new StringBuilder(), true);
 	}
@@ -846,7 +851,7 @@ public interface Accessible
 	 * @param builder The StringBuilder to append the data to.
 	 * @return The StringBuilder with the appended generation output.
 	 */
-	public default StringBuilder generateChildrenCSourceFragment(StringBuilder builder)
+	default StringBuilder generateChildrenCSourceFragment(StringBuilder builder)
 	{
 		return generateChildrenCSourceFragment(builder, true);
 	}
@@ -858,7 +863,7 @@ public interface Accessible
 	 * 		a "-&gt;" reference operator.
 	 * @return The generated String.
 	 */
-	public default StringBuilder generateChildrenCSourceFragment(boolean reference)
+	default StringBuilder generateChildrenCSourceFragment(boolean reference)
 	{
 		return generateChildrenCSourceFragment(new StringBuilder(), reference, null);
 	}
@@ -871,7 +876,7 @@ public interface Accessible
 	 * 		a "-&gt;" reference operator.
 	 * @return The StringBuilder with the appended generation output.
 	 */
-	public default StringBuilder generateChildrenCSourceFragment(StringBuilder builder, boolean reference)
+	default StringBuilder generateChildrenCSourceFragment(StringBuilder builder, boolean reference)
 	{
 		return generateChildrenCSourceFragment(builder, reference, null);
 	}
@@ -884,7 +889,7 @@ public interface Accessible
 	 * @param stopBefore The Identifier to stop the generation before.
 	 * @return The generated String.
 	 */
-	public default StringBuilder generateChildrenCSourceFragment(boolean reference, Identifier stopBefore)
+	default StringBuilder generateChildrenCSourceFragment(boolean reference, Identifier stopBefore)
 	{
 		return generateChildrenCSourceFragment(new StringBuilder(), reference, stopBefore);
 	}
@@ -900,12 +905,12 @@ public interface Accessible
 	 * @param stopBefore The Identifier to stop the generation before.
 	 * @return The StringBuilder with the appended generation output.
 	 */
-	public default StringBuilder generateChildrenCSourceFragment(StringBuilder builder, boolean reference, Identifier stopBefore)
+	default StringBuilder generateChildrenCSourceFragment(StringBuilder builder, boolean reference, Identifier stopBefore)
 	{
 		return generateChildrenCSourceFragment(builder, reference, stopBefore, true);
 	}
 	
-	public default StringBuilder generateChildrenCSourceFragment(StringBuilder builder, boolean reference, Identifier stopBefore, boolean checkAccesses)
+	default StringBuilder generateChildrenCSourceFragment(StringBuilder builder, boolean reference, Identifier stopBefore, boolean checkAccesses)
 	{
 		Identifier child = getAccessedNode();
 
@@ -932,12 +937,12 @@ public interface Accessible
 	 * @param stopBefore The Identifier to stop the generation before.
 	 * @return The StringBuilder with the appended generation output.
 	 */
-	public default StringBuilder generateChildCSourceFragment(boolean reference, Identifier stopBefore)
+	default StringBuilder generateChildCSourceFragment(boolean reference, Identifier stopBefore)
 	{
 		return generateChildCSourceFragment(reference, stopBefore, true);
 	}
 	
-	public default StringBuilder generateChildCSourceFragment(boolean reference, Identifier stopBefore, boolean checkAccesses)
+	default StringBuilder generateChildCSourceFragment(boolean reference, Identifier stopBefore, boolean checkAccesses)
 	{
 		Value n = (Value)this;
 		
@@ -985,7 +990,7 @@ public interface Accessible
 	 * @param stopAt The Node to stop at.
 	 * @return The generated Nova input.
 	 */
-	public default StringBuilder generateNovaInputUntil(Accessible stopAt)
+	default StringBuilder generateNovaInputUntil(Accessible stopAt)
 	{
 		return generateNovaInputUntil(new StringBuilder(), stopAt);
 	}
@@ -998,7 +1003,7 @@ public interface Accessible
 	 * @param stopAt The Node to stop at. (This Node will output)
 	 * @return The generated Nova input.
 	 */
-	public default StringBuilder generateNovaInputUntil(StringBuilder builder, Accessible stopAt)
+	default StringBuilder generateNovaInputUntil(StringBuilder builder, Accessible stopAt)
 	{
 		Node n = (Node)this;
 		
@@ -1030,7 +1035,7 @@ public interface Accessible
 	 * @param stopAt The Identifier to stop the generation before.
 	 * @return The StrignBuilder with the appended data.
 	 */
-	public default StringBuilder generateCSourceUntil(String delimiter, Identifier stopAt)
+	default StringBuilder generateCSourceUntil(String delimiter, Identifier stopAt)
 	{
 		return generateCSourceUntil(new StringBuilder(), delimiter, stopAt);
 	}
@@ -1045,7 +1050,7 @@ public interface Accessible
 	 * @param stopAt The Identifier to stop the generation before.
 	 * @return The StrignBuilder with the appended data.
 	 */
-	public default StringBuilder generateCSourceUntil(StringBuilder builder, String delimiter, Identifier stopAt)
+	default StringBuilder generateCSourceUntil(StringBuilder builder, String delimiter, Identifier stopAt)
 	{
 		Accessible current = this;
 		
@@ -1059,7 +1064,7 @@ public interface Accessible
 		return builder;
 	}
 	
-	public default ClassDeclaration getDeclaringClass()
+	default ClassDeclaration getDeclaringClass()
 	{
 		if (isAccessed())
 		{
