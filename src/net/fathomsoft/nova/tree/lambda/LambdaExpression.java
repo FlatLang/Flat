@@ -216,14 +216,14 @@ public class LambdaExpression extends Value
 					
 					if (bodyMethod != null)
 					{
-						LambdaMethodDeclaration method = new LambdaMethodDeclaration(bodyMethod.getParent(), bodyMethod.getLocationIn());
+						LambdaMethodDeclaration method = new LambdaMethodDeclaration(bodyMethod.getParent(), bodyMethod.getLocationIn(), parent.getAncestorWithScopeOrClass().getScope());
 						
 						bodyMethod.cloneTo(method);
 						
 						method.getParentClass().addChild(method);
 
 						boolean requiresReturn = method.getType() != null && (!block || !operation.contains("\n"));
-
+						
 						if (requiresReturn)
 						{
 							operation = "return " + operation;
@@ -232,7 +232,7 @@ public class LambdaExpression extends Value
 						if (block)
 						{
 							TreeGenerator generator = new TreeGenerator(null, operation, parent.getProgram().getTree());
-
+							
 							generator.traverseCode(method, 0, null, false);
 						}
 						else
@@ -241,8 +241,16 @@ public class LambdaExpression extends Value
 							method.addChild(node);
 						}
 						
+						ClosureContextDeclaration declaration = new ClosureContextDeclaration(parent, location, method.context);
+						
 						Closure methodReference = Closure.decodeStatement(parent, method.generateNovaClosureReference(method.getParentClass()), location.asNew(), require);
 						methodReference.onAfterDecoded();
+						
+						method.contextDeclaration = declaration;
+						
+						Node ancestor = parent.getStatementRootNode().getAncestorWithScope();
+						
+						ancestor.addChild(declaration);
 						
 						return methodReference;
 					}
