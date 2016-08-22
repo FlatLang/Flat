@@ -340,7 +340,12 @@ public class ParameterList<E extends Value> extends TypeList<E>
 	{
 		CallableMethod methodDeclaration = getMethodDeclaration();
 		
-		if (methodDeclaration.isExternal())
+		// If static block
+		if (methodDeclaration == null)
+		{
+			return 1;
+		}
+		else if (methodDeclaration.isExternal())
 		{
 			return 0;
 		}
@@ -354,7 +359,7 @@ public class ParameterList<E extends Value> extends TypeList<E>
 	@Override
 	public StringBuilder generateCHeader(StringBuilder builder)
 	{
-		return generateParameters(builder, true);
+		return generateCHeaderParameters(builder);
 	}
 	
 	/**
@@ -363,29 +368,68 @@ public class ParameterList<E extends Value> extends TypeList<E>
 	@Override
 	public StringBuilder generateCSource(StringBuilder builder)
 	{
-		return generateParameters(builder, false);
+		return generateCSourceParameters(builder);
 	}
 	
-	/**
-	 * @see net.fathomsoft.nova.tree.Node#generateCSourceFragment(StringBuilder)
-	 */
-	public StringBuilder generateParameters(StringBuilder builder, boolean header)
+	public StringBuilder generateCHeaderParameters(StringBuilder builder)
 	{
-		for (int i = 0; i < getNumChildren(); i++)
+		generateCHeaderDefaultParameters(builder);
+		
+		for (int i = 0; i < getNumVisibleChildren(); i++)
+		{
+			if (i > 0 || getParameterOffset() > 0)
+			{
+				builder.append(", ");
+			}
+			
+			getVisibleChild(i).generateCHeader(builder);
+		}
+		
+		return builder;
+	}
+	
+	public StringBuilder generateCSourceParameters(StringBuilder builder)
+	{
+		generateCSourceDefaultParameters(builder);
+		
+		for (int i = 0; i < getNumVisibleChildren(); i++)
+		{
+			if (i > 0 || getParameterOffset() > 0)
+			{
+				builder.append(", ");
+			}
+			
+			getVisibleChild(i).generateCSource(builder);
+		}
+		
+		return builder;
+	}
+	
+	public StringBuilder generateCHeaderDefaultParameters(StringBuilder builder)
+	{
+		for (int i = 0; i < getParameterOffset(); i++)
 		{
 			if (i > 0)
 			{
 				builder.append(", ");
 			}
 			
-			if (header)
+			getChild(i).generateCHeader(builder);
+		}
+		
+		return builder;
+	}
+	
+	public StringBuilder generateCSourceDefaultParameters(StringBuilder builder)
+	{
+		for (int i = 0; i < getParameterOffset(); i++)
+		{
+			if (i > 0)
 			{
-				getChild(i).generateCHeader(builder);
+				builder.append(", ");
 			}
-			else
-			{
-				getChild(i).generateCSource(builder);
-			}
+			
+			getChild(i).generateCSource(builder);
 		}
 		
 		return builder;

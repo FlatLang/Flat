@@ -397,6 +397,61 @@ public class Variable extends Identifier
 	}
 	
 	@Override
+	public StringBuilder generateCSourcePrefix(StringBuilder builder)
+	{
+		super.generateCSourcePrefix(builder);
+		
+		if (declaration instanceof ClosureVariableDeclaration)
+		{
+			builder.append(ClosureVariableDeclaration.CONTEXT_VARIABLE_NAME).append("->");
+		}
+		
+		return builder;
+	}
+	
+	@Override
+	public StringBuilder generateCArgumentOutput(StringBuilder builder)
+	{
+		super.generateCArgumentOutput(builder);
+		
+		generateExtraArguments(builder);
+		
+		return builder;
+	}
+	
+	public StringBuilder generateExtraArguments(StringBuilder builder)
+	{
+		if (getDeclaration() instanceof ClosureDeclaration)
+		{
+			builder.append(", ");
+			
+			ClosureDeclaration declaration = (ClosureDeclaration)getDeclaration();
+			
+			if (declaration.getParent() instanceof NovaParameterList)
+			{
+				builder.append(declaration.getContextName());
+			}
+			else
+			{
+				declaration.generateCArguments(builder, this, getParentMethod());
+			}
+		}
+		
+		return builder;
+	}
+	
+	@Override
+	public Accessible getCArgumentReferenceContext()
+	{
+		if (isAccessed() && getAccessingNode() instanceof MethodCall || getAccessedNode() instanceof Closure)
+		{
+			return getAccessingNode();
+		}
+		
+		return super.getCArgumentReferenceContext();
+	}
+	
+	@Override
 	public StringBuilder generateCSourceFragment(StringBuilder builder)
 	{
 		super.generateCSourceFragment(builder);
@@ -501,6 +556,12 @@ public class Variable extends Identifier
 	public boolean doesUseGenericTypes()
 	{
 		return getDeclaration().getGenericTypeParameterDeclaration().getNumParameters() > 0;
+	}
+	
+	@Override
+	public boolean isValueReference()
+	{
+		return getDeclaration().isValueReference();
 	}
 	
 	@Override

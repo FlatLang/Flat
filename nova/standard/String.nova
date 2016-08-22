@@ -221,6 +221,13 @@ public class String implements Comparable<String>
 		return transform(Char.toUpperCase)
 	}
 	
+	public capitalize() -> String
+	{
+	    if (count == 0) return this
+	    
+	    return chars.get(0).toUpperCase() + substring(1)
+	}
+	
 	public transform(transform(Char, Int) -> Char) -> String
 	{
 	    [PrimitiveArray]

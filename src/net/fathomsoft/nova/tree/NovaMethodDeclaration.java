@@ -12,6 +12,7 @@ import net.fathomsoft.nova.tree.annotations.Annotation;
 import net.fathomsoft.nova.tree.generics.GenericTypeParameter;
 import net.fathomsoft.nova.tree.generics.GenericTypeParameterDeclaration;
 import net.fathomsoft.nova.tree.variables.ObjectReference;
+import net.fathomsoft.nova.tree.variables.VariableDeclaration;
 import net.fathomsoft.nova.util.Bounds;
 import net.fathomsoft.nova.util.Location;
 import net.fathomsoft.nova.util.Patterns;
@@ -59,6 +60,11 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 		
 		GenericTypeParameterDeclaration methodParams = new GenericTypeParameterDeclaration(this, locationIn.asNew());
 		addChild(methodParams, this);
+	}
+	
+	public StringBuilder generateCClosureContext(StringBuilder builder)
+	{
+		return builder.append(NULL_IDENTIFIER);
 	}
 	
 	@Override
@@ -201,6 +207,28 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 	public boolean isVirtual()
 	{
 		return isOverridden() || doesOverride();
+	}
+	
+	@Override
+	public VariableDeclaration searchVariable(Node parent, Scope scope, String name, boolean checkAncestors)
+	{
+		VariableDeclaration var = super.searchVariable(parent, scope, name, checkAncestors);
+		
+		if (var != null)
+		{
+			return var;
+		}
+		
+		Parameter parameter = getParameter(name);
+		
+		if (parameter != null)
+		{
+			getParameterList().validateAccess(parameter, parent);
+			
+			return parameter;
+		}
+		
+		return null;
 	}
 	
 	public NovaMethodDeclaration getRootDeclaration()

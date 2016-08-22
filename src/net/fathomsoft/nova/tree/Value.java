@@ -581,6 +581,11 @@ public abstract class Value extends Node implements AbstractValue
 		return getFileDeclaration();
 	}
 	
+	public boolean isValueReference()
+	{
+		return false;
+	}
+	
 	/**
 	 * Get whether or not the identifier is a reference.
 	 * 
@@ -779,6 +784,11 @@ public abstract class Value extends Node implements AbstractValue
 		return generateCType(builder);
 	}
 	
+	public StringBuilder generateCSourcePrefix(StringBuilder builder)
+	{
+		return builder;
+	}
+	
 	/**
 	 * Generate the C null representation for the given value type.
 	 * 
@@ -798,6 +808,11 @@ public abstract class Value extends Node implements AbstractValue
 	public StringBuilder generateCNullOutput(StringBuilder builder)
 	{
 		return generateCTypeCast(builder).append(NULL_IDENTIFIER);
+	}
+	
+	public StringBuilder generateCArgumentOutput(StringBuilder builder)
+	{
+		return generateCSourceFragment(builder);
 	}
 	
 	public final StringBuilder generateCTypeClassName()
@@ -870,7 +885,12 @@ public abstract class Value extends Node implements AbstractValue
 	 * @param checkArray Whether or not to check if the type is an array.
 	 * @return The C syntax for the type of the Value.
 	 */
-	public StringBuilder generateCType(StringBuilder builder, boolean checkArray)
+	public final StringBuilder generateCType(StringBuilder builder, boolean checkArray)
+	{
+		return generateCType(builder, checkArray, true);
+	}
+	
+	public StringBuilder generateCType(StringBuilder builder, boolean checkArray, boolean checkValueReference)
 	{
 		generateCTypeName(builder);
 		
@@ -885,6 +905,10 @@ public abstract class Value extends Node implements AbstractValue
 		else if (isDoublePointer())
 		{
 			builder.append("**");
+		}
+		if (checkValueReference && isValueReference())
+		{
+			builder.append('*');
 		}
 		if (checkArray && isPrimitiveArray())
 		{
@@ -1025,7 +1049,7 @@ public abstract class Value extends Node implements AbstractValue
 	 * 
 	 * @return The StringBuilder with the appended data.
 	 */
-	public StringBuilder generateCTypeCast()
+	public final StringBuilder generateCTypeCast()
 	{
 		return generateCTypeCast(new StringBuilder());
 	}
@@ -1037,9 +1061,14 @@ public abstract class Value extends Node implements AbstractValue
 	 * @param builder The StringBuilder to append the data to.
 	 * @return The StringBuilder with the appended data.
 	 */
-	public StringBuilder generateCTypeCast(StringBuilder builder)
+	public final StringBuilder generateCTypeCast(StringBuilder builder)
 	{
-		return builder.append('(').append(generateCType()).append(')').append(generatePointerToValueConversion(this));
+		return generateCTypeCast(builder, true, true);
+	}
+	
+	public final StringBuilder generateCTypeCast(StringBuilder builder, boolean checkArray, boolean checkValueReference)
+	{
+		return builder.append('(').append(generateCType(new StringBuilder(), checkArray, checkValueReference)).append(')').append(generatePointerToValueConversion(this));
 	}
 	
 	public boolean isOriginallyGenericType()

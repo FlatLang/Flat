@@ -20,7 +20,7 @@ public class StaticBlock extends Node implements ScopeAncestor
 	
 	private static HashMap<Integer, Scope> scopes = new HashMap<>();
 	
-	private static final String	C_PREFIX   = Nova.LANGUAGE_NAME + "_init_";
+	private static final String	C_PREFIX   = "_" + Nova.LANGUAGE_NAME + "_init_";
 	
 	public static final String	IDENTIFIER = "static";
 	

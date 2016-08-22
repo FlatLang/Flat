@@ -6,12 +6,7 @@ import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.error.SyntaxMessage;
-import net.fathomsoft.nova.tree.Assignment;
-import net.fathomsoft.nova.tree.ClassDeclaration;
-import net.fathomsoft.nova.tree.GenericCompatible;
-import net.fathomsoft.nova.tree.IIdentifier;
-import net.fathomsoft.nova.tree.Node;
-import net.fathomsoft.nova.tree.SyntaxTree;
+import net.fathomsoft.nova.tree.*;
 import net.fathomsoft.nova.tree.exceptionhandling.Exception;
 import net.fathomsoft.nova.tree.generics.GenericTypeArgumentList;
 import net.fathomsoft.nova.tree.generics.GenericTypeParameterDeclaration;
@@ -31,11 +26,21 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  */
 public class VariableDeclaration extends IIdentifier
 {
-	private boolean            volatileVal, external;
+	private boolean            volatileVal, external, reference;
 	
 	public  String[]           extraDeclarations;
 	
 	public ArrayList<Variable> references = new ArrayList<>();
+	
+	public boolean isValueReference()
+	{
+		return reference;
+	}
+	
+	public void setIsValueReference(boolean reference)
+	{
+		this.reference = reference;
+	}
 	
 	/**
 	 * @see net.fathomsoft.nova.tree.Node#Node(Node, Location)
@@ -366,6 +371,20 @@ public class VariableDeclaration extends IIdentifier
 		return builder;
 	}
 	
+	public StringBuilder generateCDefaultValue(StringBuilder builder)
+	{
+		if (isPrimitive())
+		{
+			builder.append(0);
+		}
+		else
+		{
+			builder.append(generateCTypeCast()).append(Value.NULL_IDENTIFIER);
+		}
+		
+		return builder;
+	}
+	
 	/**
 	 * @see net.fathomsoft.nova.tree.Node#generateNovaInput(StringBuilder, boolean)
 	 */
@@ -579,6 +598,7 @@ public class VariableDeclaration extends IIdentifier
 		
 		node.external     = external;
 		node.volatileVal  = volatileVal;
+		node.reference    = reference;
 		
 		node.extraDeclarations = new String[extraDeclarations.length];
 		

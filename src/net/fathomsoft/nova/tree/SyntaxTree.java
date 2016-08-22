@@ -1301,32 +1301,11 @@ public class SyntaxTree
 	 */
 	private static VariableDeclaration checkForLocalVariable(Node parent, String statement, Scope scope)
 	{
-		Node scopeNode = parent.getAncestorWithScope();
+		VariableDeclaration variable = parent.searchVariable(parent, scope, statement);
 		
-		while (scopeNode != null)
+		if (variable != null)
 		{
-			VariableDeclarationList variables = scopeNode.getScope().getVariableList();
-			VariableDeclaration     variable  = variables.getVariable(statement, scope);
-			
-			if (variable != null)
-			{
-				return variable;
-			}
-			
-			if (scopeNode instanceof NovaMethodDeclaration)
-			{
-				NovaMethodDeclaration method   = (NovaMethodDeclaration)scopeNode;
-				Parameter            parameter = method.getParameter(statement);
-				
-				if (parameter != null)
-				{
-					method.getParameterList().validateAccess(parameter, parent);
-					
-					return parameter;
-				}
-			}
-			
-			scopeNode = scopeNode.getParent().getAncestorWithScope();
+			return variable;
 		}
 		
 		return null;

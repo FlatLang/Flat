@@ -1,5 +1,6 @@
 package net.fathomsoft.nova.tree;
 
+import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.util.Location;
 import net.fathomsoft.nova.util.SyntaxUtils;
@@ -41,6 +42,11 @@ public class StaticClassReference extends IIdentifier
 		if (!doesAccess())
 		{
 			return generateCUseOutput(builder);
+		}
+		
+		if (isSpecialFragment())
+		{
+			return generateSpecialFragment(builder);
 		}
 		
 		return getAccessedNode().generateCSourceFragment(builder);

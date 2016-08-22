@@ -25,6 +25,11 @@ public class Queue<E>
 		data = new Array()
 	}
 	
+	public construct(E[] data)
+	{
+		this.data = data
+	}
+	
 	public dequeue() -> E
 	{
 		return data.remove(0)

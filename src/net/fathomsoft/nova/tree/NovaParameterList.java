@@ -3,6 +3,7 @@ package net.fathomsoft.nova.tree;
 import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.ValidationResult;
+import net.fathomsoft.nova.tree.lambda.LambdaMethodDeclaration;
 import net.fathomsoft.nova.util.Location;
 
 /**
@@ -34,15 +35,7 @@ public class NovaParameterList extends ParameterList<Parameter>
 		Parameter p = Parameter.decodeStatement(this, type + " ret" + (returnParameters.getNumVisibleChildren() + 1), getLocationIn().asNew(), true, false, true);
 		p.setForceOriginalName(true);
 		p.validateType();
-		
-		if (p.getDataType() == Value.VALUE)
-		{
-			p.setDataType(Value.POINTER);
-		}
-		else if (p.getDataType() == Value.POINTER)
-		{
-			p.setDataType(Value.DOUBLE_POINTER);
-		}
+		p.setIsValueReference(true);
 		
 		returnParameters.addChild(p);
 	}
@@ -60,15 +53,40 @@ public class NovaParameterList extends ParameterList<Parameter>
 	}
 	
 	@Override
-	public StringBuilder generateParameters(StringBuilder builder, boolean header)
+	public StringBuilder generateCSourceParameters(StringBuilder builder)
 	{
-		super.generateParameters(builder, header);
+		super.generateCSourceParameters(builder);
 		
 		if (returnParameters.getNumVisibleChildren() > 0)
 		{
 			builder.append(", ");
 			
-			returnParameters.generateParameters(builder, header);
+			returnParameters.generateCSourceParameters(builder);
+		}
+		
+		if (getMethodDeclaration() instanceof LambdaMethodDeclaration)
+		{
+			builder.append(", ").append(((LambdaMethodDeclaration)getMethodDeclaration()).context.getName()).append("* ").append(ClosureVariableDeclaration.CONTEXT_VARIABLE_NAME);
+		}
+		
+		return builder;
+	}
+	
+	@Override
+	public StringBuilder generateCHeaderParameters(StringBuilder builder)
+	{
+		super.generateCHeaderParameters(builder);
+		
+		if (returnParameters.getNumVisibleChildren() > 0)
+		{
+			builder.append(", ");
+			
+			returnParameters.generateCHeaderParameters(builder);
+		}
+		
+		if (getMethodDeclaration() instanceof LambdaMethodDeclaration)
+		{
+			builder.append(", ").append(((LambdaMethodDeclaration)getMethodDeclaration()).context.getName()).append('*');
 		}
 		
 		return builder;

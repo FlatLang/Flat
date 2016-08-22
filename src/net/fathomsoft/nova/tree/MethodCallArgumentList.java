@@ -53,6 +53,10 @@ public class MethodCallArgumentList extends ArgumentList
 	@Override
 	public StringBuilder generateCSourceFragment(StringBuilder builder)
 	{
+		MethodCall call = getMethodCall();
+		
+		CallableMethod method = call.getInferredDeclaration();
+		
 		builder.append('(');
 		
 		generateDefaultArguments(builder);
@@ -64,12 +68,8 @@ public class MethodCallArgumentList extends ArgumentList
 				builder.append(", ");
 			}
 			
-			MethodCall call = getMethodCall();
-			
 			Value child = (Value)getChild(i);
 			Value param = call.getCorrespondingParameter(child);
-			
-			CallableMethod method = call.getInferredDeclaration();
 			
 			if (method.isVirtual() && !call.isVirtualTypeKnown())
 			{
@@ -95,12 +95,22 @@ public class MethodCallArgumentList extends ArgumentList
 				builder.append('(');
 			}
 			
-			child.generateCSourceFragment(builder);
+			if (param.isValueReference())
+			{
+				builder.append('&');
+			}
+			
+			child.generateCArgumentOutput(builder);
 			
 			if (!sameType)
 			{
 				builder.append(')');
 			}
+		}
+		
+		if (getMethodCall().getCallableDeclaration() instanceof ClosureDeclaration)
+		{
+			builder.append(", ").append(((ClosureDeclaration)getMethodCall().getCallableDeclaration()).getContextName());
 		}
 		
 		return builder.append(')');
@@ -230,7 +240,7 @@ public class MethodCallArgumentList extends ArgumentList
 				accessible.setAccessedNode(call);
 			}
 			
-			context.generateCArgumentReference(builder, call);
+			context.getCArgumentReferenceContext().generateCArgumentReference(builder, call);
 			
 			if (castClass != null)
 			{

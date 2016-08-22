@@ -50,10 +50,7 @@ public class Node<E>
 	{
 		array.add(data)
 		
-		for (child in children.filter(notNull))
-		{
-			child.preorder(array)
-		}
+		children.filter(notNull).forEach({ _.preorder(array) })
 	}
 	
 	public inorder() -> E[]
@@ -67,19 +64,11 @@ public class Node<E>
 	{
 		Int half = Math.ceil(children.count / 2.0)
 		
-		//children.take(half).filter(notNull).forEach(x -> x.inorder(array))
-		for (child1 in children.take(half).filter(notNull))
-		{
-			child1.inorder(array)
-		}
+		children.take(half).filter(notNull).forEach({ _.inorder(array) })
 		
 		array.add(data)
 		
-		//children.skip(half).filter(notNull).forEach(x -> x.inorder(array))
-		for (child in children.skip(half).filter(notNull))
-		{
-			child.inorder(array)
-		}
+		children.skip(half).filter(notNull).forEach({ _.inorder(array) })
 		
 		return array
 	}
@@ -88,34 +77,28 @@ public class Node<E>
 	{
 		E[] array = new Array()
 		
-		postorder(array)
-		
-		return array
+		return postorder(array)
 	}
 	
-	postorder(E[] array)
+	postorder(E[] array) -> E[]
 	{
-		for (child in children.filter(notNull))
-		{
-			child.postorder(array)
-		}
+		children.filter(notNull).forEach({ _.postorder(array) })
 		
 		array.add(data)
+		
+		return array
 	}
 	
 	public levelorder() -> E[]
 	{
 		E[] array = new Array()
 		
-		levelorder(array)
-		
-		return array
+		return levelorder(array)
 	}
 	
-	levelorder(E[] array)
+	levelorder(E[] array) -> E[]
 	{
-		Queue<Node<E>> queue = new Queue()
-		queue.enqueue(this)
+		var queue = new Queue<Node<E>>([this])
 		
 		while (!queue.empty)
 		{
@@ -123,11 +106,10 @@ public class Node<E>
 			
 			array.add(current.data)
 			
-			for (child in current.children.filter(notNull))
-			{
-				queue.enqueue(child)
-			}
+			current.children.filter(notNull).forEach({ queue.enqueue(_) })
 		}
+		
+		return array
 	}
 	
 	public toString() -> String

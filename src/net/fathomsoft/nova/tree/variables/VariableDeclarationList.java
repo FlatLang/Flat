@@ -119,15 +119,7 @@ public class VariableDeclarationList extends List
 			LocalDeclaration child = (LocalDeclaration)getChild(i);
 			
 			child.generateCDeclarationFragment(builder).append(" = ");
-			
-			if (child.isPrimitive())
-			{
-				builder.append(0);
-			}
-			else
-			{
-				builder.append(child.generateCTypeCast()).append(Value.NULL_IDENTIFIER);
-			}
+			child.generateCDefaultValue(builder);
 			
 			builder.append(";\n");
 		}

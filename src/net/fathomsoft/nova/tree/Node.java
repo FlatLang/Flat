@@ -11,6 +11,8 @@ import net.fathomsoft.nova.error.UnimplementedOperationException;
 import net.fathomsoft.nova.tree.annotations.Annotatable;
 import net.fathomsoft.nova.tree.annotations.Annotation;
 import net.fathomsoft.nova.tree.exceptionhandling.Try;
+import net.fathomsoft.nova.tree.variables.VariableDeclaration;
+import net.fathomsoft.nova.tree.variables.VariableDeclarationList;
 import net.fathomsoft.nova.util.Bounds;
 import net.fathomsoft.nova.util.Location;
 import net.fathomsoft.nova.util.Patterns;
@@ -221,6 +223,39 @@ public abstract class Node implements Listenable, Annotatable
 	public Node getParent()
 	{
 		return parent;
+	}
+	
+	public final VariableDeclaration searchVariable(Node parent, Scope scope, String name)
+	{
+		return searchVariable(parent, scope, name, true);
+	}
+	
+	public VariableDeclaration searchVariable(Node parent, Scope scope, String name, boolean checkAncestors)
+	{
+		Scope childScope = getScope();
+		
+		if (childScope != null)
+		{
+			VariableDeclarationList variables = childScope.getVariableList();
+			VariableDeclaration variable = variables.getVariable(name, scope);
+			
+			if (variable != null)
+			{
+				return variable;
+			}
+		}
+		
+		if (checkAncestors)
+		{
+			Node scopeNode = getParent().getAncestorWithScope();
+			
+			if (scopeNode != null)
+			{
+				return scopeNode.searchVariable(parent, scope, name, checkAncestors);
+			}
+		}
+		
+		return null;
 	}
 	
 	public ScopeAncestor getParentScopeAncestor()
@@ -1648,6 +1683,18 @@ public abstract class Node implements Listenable, Annotatable
 		return true;
 	}
 	
+	public Node getStatementRootNode()
+	{
+		Node current = this;
+		
+		while (current != null && (!current.containsScope() || current.isDecoding()))
+		{
+			current = current.getParent();
+		}
+		
+		return current;
+	}
+	
 	/**
 	 * Get the Node that is highest on the tree, up until a scope is hit.
 	 * (The Node that is returned will have a scope as a parent)
@@ -1656,6 +1703,11 @@ public abstract class Node implements Listenable, Annotatable
 	 * 		is found.
 	 */
 	public Node getBaseNode()
+	{
+		return getBaseNode(false);
+	}
+	
+	public Node getBaseNode(boolean inclusive)
 	{
 		Node prev    = this;
 		Node current = getParent();
@@ -1667,6 +1719,11 @@ public abstract class Node implements Listenable, Annotatable
 		}
 		
 		if (current != null && current.containsChild(this) && !(current instanceof Scope))
+		{
+			return current;
+		}
+		
+		if (inclusive)
 		{
 			return current;
 		}

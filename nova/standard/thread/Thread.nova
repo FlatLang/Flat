@@ -13,6 +13,13 @@ public class Thread
 	
 	NOVA_THREAD_HANDLE*	handle
 	
+	/*public run()
+	
+	public construct()
+	{
+	    run = {}
+	}*/
+	
 	public start()
 	{
 		handle = create_thread(this, startRun)

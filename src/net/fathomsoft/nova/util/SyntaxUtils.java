@@ -1516,6 +1516,11 @@ public class SyntaxUtils
 		
 		input += ")";
 		
+		if (call.doesAccess())
+		{
+			input += "." + call.getAccessedNode().generateNovaInput();
+		}
+		
 		Identifier output = (Identifier)SyntaxTree.decodeScopeContents(id.getParent(), input, call.getLocationIn(), true);
 		
 		return output;
