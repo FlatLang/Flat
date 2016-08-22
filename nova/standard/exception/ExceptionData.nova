@@ -36,19 +36,10 @@ public class ExceptionData
 		
 		while (data != null)
 		{
-		    /*if (data.codes.any(x -> x == code))
+		    if (data.codes.any({ _ == code }))
             {
                 return data
-            }*/
-			Int[] list = data.codes
-			
-			for (i in 0..list.count)
-			{
-				if (list.get(i) == code)
-				{
-					return data
-				}
-			}
+            }
 			
 			if (data.getParent() == null)
 			{
