@@ -1,10 +1,10 @@
 package net.fathomsoft.nova.tree.lambda;
 
+import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.error.SyntaxMessage;
-import net.fathomsoft.nova.tree.BodyMethodDeclaration;
-import net.fathomsoft.nova.tree.Node;
-import net.fathomsoft.nova.tree.Parameter;
+import net.fathomsoft.nova.tree.*;
+import net.fathomsoft.nova.tree.variables.VariableDeclaration;
 import net.fathomsoft.nova.util.Location;
 
 /**
@@ -16,12 +16,29 @@ public class LambdaMethodDeclaration extends BodyMethodDeclaration
 {
 	private int unnamedParameterPosition = 0;
 	
+	public ClosureContext context;
+	
+	public ClosureContextDeclaration contextDeclaration;
+	
+	private Scope scope;
+	
 	/**
 	 * @see net.fathomsoft.nova.tree.Node#Node(Node, Location)
 	 */
-	public LambdaMethodDeclaration(Node temporaryParent, Location locationIn)
+	public LambdaMethodDeclaration(Node temporaryParent, Location locationIn, Scope scope)
 	{
 		super(temporaryParent, locationIn);
+		
+		this.scope = scope;
+		context = new ClosureContext(this, locationIn);
+		
+		context.id = getFileDeclaration().registerClosureContext(context);
+	}
+	
+	@Override
+	public StringBuilder generateCClosureContext(StringBuilder builder)
+	{
+		return builder.append('&').append(contextDeclaration.getName());
 	}
 	
 	public Parameter getNextUnnamedParameter()
@@ -36,28 +53,22 @@ public class LambdaMethodDeclaration extends BodyMethodDeclaration
 		return getParameterList().getParameter(unnamedParameterPosition++);
 	}
 	
-	/**
-	 * Decode the given statement into a {@link LambdaMethodDeclaration} instance, if
-	 * possible. If it is not possible, this method returns null.<br>
-	 * <br>
-	 * Example inputs include:<br>
-	 * <ul>
-	 * 	<li></li>
-	 * 	<li></li>
-	 * 	<li></li>
-	 * </ul>
-	 *
-	 * @param parent The parent node of the statement.
-	 * @param statement The statement to try to decode into a
-	 * 		{@link LambdaMethodDeclaration} instance.
-	 * @param location The location of the statement in the source code.
-	 * @param require Whether or not to throw an error if anything goes wrong.
-	 * @return The generated node, if it was possible to translated it
-	 * 		into a {@link LambdaMethodDeclaration}.
-	 */
-	public static LambdaMethodDeclaration decodeStatement(Node parent, String statement, Location location, boolean require)
+	@Override
+	public VariableDeclaration searchVariable(Node parent, Scope scope, String name, boolean checkAncestors)
 	{
+		VariableDeclaration var = super.searchVariable(parent, scope, name, checkAncestors);
 		
+		if (var != null)
+		{
+			return var;
+		}
+		
+		var = this.scope.searchVariable(parent, scope, name, checkAncestors);
+		
+		if (var != null)
+		{
+			return context.addDeclaration(var);
+		}
 		
 		return null;
 	}
@@ -68,7 +79,7 @@ public class LambdaMethodDeclaration extends BodyMethodDeclaration
 	@Override
 	public LambdaMethodDeclaration clone(Node temporaryParent, Location locationIn, boolean cloneChildren)
 	{
-		LambdaMethodDeclaration node = new LambdaMethodDeclaration(temporaryParent, locationIn);
+		LambdaMethodDeclaration node = new LambdaMethodDeclaration(temporaryParent, locationIn, scope);
 		
 		return cloneTo(node, cloneChildren);
 	}
