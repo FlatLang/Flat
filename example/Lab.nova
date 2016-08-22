@@ -60,7 +60,6 @@ public class Lab
 		        Console.writeLine(x.fields.map({ _.name }).join(", "))
 		    })*/
 		
-		/*
 		Async.execute({
 		    Console.writeLine("Wait a second!")
 		    Thread.sleep(1000)
@@ -68,7 +67,6 @@ public class Lab
 		})
 		
 		Console.writeLine("Started async execution")
-		*/
 		
 		String[][] multi = new Array()
 		
@@ -76,6 +74,7 @@ public class Lab
 		multi.add(["Second dimension yo", "waddup"])
 		
 		Console.writeLine("Multi dimensional array: #multi")
+        Console.writeLine(multi.get(0).get(0).chars.contains('z').toString().capitalize())
         
 		Console.writeLine(list.map(x -> {
 		    var something = 5 * x.count
