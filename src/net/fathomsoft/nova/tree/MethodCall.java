@@ -176,20 +176,6 @@ public class MethodCall extends Variable
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.Identifier#isSpecialFragment()
-	 */
-	@Override
-	public boolean isSpecialFragment()
-	{
-		/*if (getInferredDeclaration().isVirtual() && !isVirtualTypeKnown())
-		{
-			return false;
-		}*/
-		
-		return /*doesAccess() && getAccessedNode() instanceof MethodCall;*/super.isSpecialFragment();
-	}
-	
-	/**
 	 * Get the Method instance that this MethodCall is calling in the
 	 * form of a CallableMethod.
 	 * 
@@ -476,25 +462,6 @@ public class MethodCall extends Variable
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.Identifier#generateCArgumentReference(StringBuilder, Identifier)
-	 */
-	@Override
-	public StringBuilder generateCArgumentReference(StringBuilder builder, Identifier callingMethod)
-	{
-		// TODO: there is a better way. <-- i'll get to it in the re-write
-		/*if (getInferredDeclaration().isVirtual() && isAccessed() && !isVirtualTypeKnown())
-		{
-			Accessible node = getAccessingNode().getLastAccessingOfType(new Class<?>[] { MethodCall.class, Closure.class }, true);
-			
-			if (node != null)
-			{
-				node.generateCSourceUntil(builder, "->", this);
-			}
-		}*/
-		
-		return super.generateCArgumentReference(builder, callingMethod);
-	}
-	/**
 	 * @see net.fathomsoft.nova.tree.Node#generateCSource(StringBuilder)
 	 */
 	@Override
@@ -563,7 +530,9 @@ public class MethodCall extends Variable
 		VariableDeclaration method   = getMethodDeclaration();
 		CallableMethod      callable = (CallableMethod)method;
 		
-		if (checkAccesses && isGenericType() && doesAccess())
+		boolean requiresCast = checkAccesses && doesAccess() && getAccessedNode() instanceof MethodCall == false && isGenericType();
+		
+		if (requiresCast)
 		{
 			builder.append('(');
 			generateCTypeCast(builder);
@@ -599,11 +568,23 @@ public class MethodCall extends Variable
 		
 		builder.append(getArgumentList().generateCSource());
 		
-		if (checkAccesses && isGenericType() && doesAccess())
+		if (requiresCast)
 		{
 			builder.append(')');
 		}
 		
+		return builder;
+	}
+	
+	@Override
+	public Accessible getCArgumentReferenceContext()
+	{
+		return this;
+	}
+	
+	@Override
+	public StringBuilder generateExtraArguments(StringBuilder builder)
+	{
 		return builder;
 	}
 	
