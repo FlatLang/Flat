@@ -137,27 +137,7 @@ public abstract class Identifier extends Value implements Accessible
 	@Override
 	public StringBuilder generateCSourceFragment(StringBuilder builder)
 	{
-		//Node base = getBaseNode();
-//		boolean leftHandVariable = base instanceof Assignment && ((Assignment)base).getAssigneeNode() == this;
-		
-//		if (!isAccessed())
-//		{
-//			Identifier accessed = this;
-//			
-//			while (accessed != null && accessed.doesAccess())
-//			{
-//				/*if (accessed.isGenericType())
-//				{
-//					builder.append("(").append(accessed.generateCTypeCast());
-//				}*/
-//
-//				accessed = accessed.getAccessedNode();
-//			}
-//		}
-		
-//		boolean requireCast = !isAccessed() && !leftHandVariable && getReturnedNode().isGenericType();
-		
-		if (isGenericType() && doesAccess())//isGenericType())//requireCast)
+		if (isGenericType() && doesAccess())
 		{
 			getReturnedNode().generateCTypeCast(builder);
 
@@ -173,15 +153,10 @@ public abstract class Identifier extends Value implements Accessible
 			generateCUseOutput(builder).append(generateChildrenCSourceFragment());
 		}
 
-		if (isGenericType() && doesAccess())//isGenericType())//requireCast)
+		if (isGenericType() && doesAccess())
 		{
 			builder.append(')');
 		}
-		
-//		if (requireCast)
-//		{
-//			builder.append(')');
-//		}
 		
 		return builder;
 	}
@@ -304,9 +279,16 @@ public abstract class Identifier extends Value implements Accessible
 			}
 		}
 		
+		if (isValueReference())
+		{
+			builder.append("(*");
+			
+			generateCSourcePrefix(builder);
+		}
+		
 		generateCSourceName(builder);
 		
-		if (checkAccesses && isGenericType() && doesAccess())
+		if (isValueReference())
 		{
 			builder.append(')');
 		}
