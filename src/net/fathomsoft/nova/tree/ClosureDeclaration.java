@@ -5,6 +5,7 @@ import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.tree.generics.GenericTypeArgument;
 import net.fathomsoft.nova.tree.variables.ObjectReference;
+import net.fathomsoft.nova.tree.variables.Variable;
 import net.fathomsoft.nova.util.Bounds;
 import net.fathomsoft.nova.util.Location;
 import net.fathomsoft.nova.util.Patterns;
@@ -44,7 +45,7 @@ public class ClosureDeclaration extends Parameter implements CallableMethod
 	{
 		super(temporaryParent, locationIn);
 		
-		ParameterList<Value> parameterList = new ParameterList<Value>(this, Location.INVALID);
+		ParameterList<Value> parameterList = new ClosureParameterList(this, Location.INVALID);
 		
 		addChild(parameterList);
 		
@@ -153,7 +154,25 @@ public class ClosureDeclaration extends Parameter implements CallableMethod
 	{
 		builder.append(generateCType()).append(' ').append(generateCSourceName()).append(", ");
 		getParameterList().getObjectReference().generateCType(builder).append(' ');
-		generateCObjectReferenceIdentifier(builder);
+		generateCObjectReferenceIdentifier(builder).append(", ");
+		generateCContextParameter(builder);
+		
+		return builder;
+	}
+	
+	public StringBuilder generateCArguments(StringBuilder builder, Variable context, NovaMethodDeclaration method)
+	{
+		if (context.getRootReferenceNode() instanceof ClassDeclaration == false)
+		{
+			context.getRootReferenceNode().generateCArgumentReference(builder, context);
+		}
+		else
+		{
+			builder.append(NULL_IDENTIFIER);//method.getParameterList().getObjectReference().generateCNullOutput(builder);
+		}
+		
+		builder.append(", ");
+		method.generateCClosureContext(builder);
 		
 		return builder;
 	}
@@ -163,11 +182,26 @@ public class ClosureDeclaration extends Parameter implements CallableMethod
 		return builder.append(generateCSourceName("ref"));
 	}
 	
+	public StringBuilder generateCContextParameter()
+	{
+		return generateCContextParameter(new StringBuilder());
+	}
+	
+	public StringBuilder generateCContextParameter(StringBuilder builder)
+	{
+		return builder.append("void* ").append(getContextName());
+	}
+	
+	public String getContextName()
+	{
+		return getName() + "_" + ClosureVariableDeclaration.CONTEXT_VARIABLE_NAME;
+	}
+	
 	/**
 	 * @see net.fathomsoft.nova.tree.Value#generateCType(java.lang.StringBuilder, boolean)
 	 */
 	@Override
-	public StringBuilder generateCType(StringBuilder builder, boolean checkArray)
+	public StringBuilder generateCType(StringBuilder builder, boolean checkArray, boolean checkValueReference)
 	{
 		return builder.append(generateCSourceName("closure" + id));
 	}
@@ -191,7 +225,7 @@ public class ClosureDeclaration extends Parameter implements CallableMethod
 	{
 		builder.append("typedef ");
 		
-		super.generateCType(builder, true).append(" (*").append(generateCSourceName("closure" + id)).append(')');
+		super.generateCType(builder, true, true).append(" (*").append(generateCSourceName("closure" + id)).append(')');
 		builder.append('(').append(getParameterList().generateCHeader()).append(')').append(";\n");
 		
 		return builder;
