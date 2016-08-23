@@ -84,7 +84,7 @@ public class Scope extends Node
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.Node#getNumDefaultChildren(p
+	 * @see net.fathomsoft.nova.tree.Node#getNumDefaultChildren()
 	 */
 	@Override
 	public int getNumDefaultChildren()
