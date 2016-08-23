@@ -1,6 +1,6 @@
 package "example"
 
-import "nova/standard/datastruct/HashMap"
+import "nova/datastruct/HashMap"
 
 public class HashMapDemo
 {

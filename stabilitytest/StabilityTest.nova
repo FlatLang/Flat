@@ -1,8 +1,8 @@
 package "stabilitytest"
 
-import "nova/standard/time/Timer"
-import "nova/standard/thread/Thread"
-import "nova/standard/io/File"
+import "nova/time/Timer"
+import "nova/thread/Thread"
+import "nova/io/File"
 
 public class StabilityTest extends StabilityTestCase
 {

@@ -1,10 +1,10 @@
 package "example"
 
-import "nova/standard/time/Timer"
-import "nova/standard/thread/Thread"
-import "nova/standard/datastruct/list/LinkedList"
-import "nova/standard/datastruct/list/ListNode"
-import "nova/standard/gc/GC"
+import "nova/time/Timer"
+import "nova/thread/Thread"
+import "nova/datastruct/list/LinkedList"
+import "nova/datastruct/list/ListNode"
+import "nova/gc/GC"
 
 public class IntegerTest
 {

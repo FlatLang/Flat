@@ -1,6 +1,0 @@
-package "nova/standard/operators"
-
-public interface Equals
-{
-	equals(Object another) -> Bool
-}

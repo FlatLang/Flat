@@ -1,6 +1,6 @@
 package "stabilitytest"
 
-import "nova/standard/thread/Thread"
+import "nova/thread/Thread"
 
 public class ThreadImplementation extends Thread
 {

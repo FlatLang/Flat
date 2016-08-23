@@ -1,0 +1,142 @@
+package "nova/math"
+
+import "math.h"
+
+public class Math
+{
+	external double llabs(long number) as extAbs
+	external double fabs(double number) as extFabs
+	external double sqrt(double number) as extSqrt
+	external double pow(double base, double power) as extPow
+	external double sin(double number) as extSin
+	external double cos(double number) as extCos
+	external double tan(double number) as extTan
+	external double asin(double number) as extAsin
+	external double acos(double number) as extAcos
+	external double atan(double number) as extAtan
+	external long floor(double number) as extFloor
+	external long ceil(double number) as extCeil
+	external long rand() as extRand
+	
+	visible static Double PI = 3.141592653
+	
+	public static max(Long a, Long b) -> Long
+	{
+	    return a > b ? a : b
+	}
+	
+	public static min(Long a, Long b) -> Long
+	{
+	    return a < b ? a : b
+	}
+	
+	public static sign(Long num) -> Byte
+	{
+		if (num > 0)
+		{
+			return 1
+		}
+		else if (num < 0)
+		{
+			return -1
+		}
+		
+		return 0
+	}
+	
+	public static random(Long range) -> Int
+	{
+		return extRand() % range
+	}
+
+	public static abs(Long number) -> Long
+	{
+	    return extAbs(number)
+	}
+	
+	public static abs(Double number) -> Double
+	{
+		return extFabs(number)
+	}
+	
+	public static sqrt(Double number) -> Double
+	{
+		return extSqrt(number)
+	}
+	
+	public static pow(Double base, Double power) -> Double
+	{
+		return extPow(base, power)
+	}
+	
+	public static sin(Double number) -> Double
+	{
+		return extSin(number)
+	}
+	
+	public static cos(Double number) -> Double
+	{
+		return extCos(number)
+	}
+	
+	public static tan(Double number) -> Double
+	{
+		return extTan(number)
+	}
+	
+	public static asin(Double number) -> Double
+	{
+		return extAsin(number)
+	}
+	
+	public static acos(Double number) -> Double
+	{
+		return extAcos(number)
+	}
+	
+	public static atan(Double number) -> Double
+	{
+		return extAtan(number)
+	}
+	
+	public static round(Double number) -> Long
+	{
+		return floor(number + 0.5)
+	}
+	
+	public static floor(Double number) -> Long
+	{
+		return extFloor(number)
+	}
+	
+	public static ceil(Double number) -> Long
+	{
+		return extCeil(number)
+	}
+	
+	/*static pow(Int a, Int b) -> Int
+	{
+		if (b == 0)
+		{
+			return 1
+		}
+		else if (b > 0)
+		{
+			return positivePow(a, b)
+		}
+		else
+		{
+			return 0
+		}
+	}
+	
+	static positivePow(Int a, Int b) -> Int
+	{
+		for (Int i = b - 2; i >= 0; i--)
+		{
+			a = a * a
+		}
+		
+		return a
+	}*/
+}

@@ -1,7 +1,7 @@
 package "example"
 
-import "nova/standard/datastruct/list/Stack"
-import "nova/standard/datastruct/HashMap"
+import "nova/datastruct/list/Stack"
+import "nova/datastruct/HashMap"
 
 public class GenericDemo
 {

@@ -1,0 +1,70 @@
+package "nova/network"
+
+import "nova/network/NativeServerSocket.h"
+import "nova/network/NativeSocket.h"
+import "nova/io/InputStream"
+import "nova/io/OutputStream"
+
+public class ServerSocket extends Socket
+{
+	external type SOCKET_ID_TYPE
+	
+	external SOCKET_ID_TYPE nova_serversocket_start(int port)
+	external SOCKET_ID_TYPE nova_serversocket_accept(SOCKET_ID_TYPE serverSocket)
+	external int nova_socket_close(SOCKET_ID_TYPE serverSocket)
+	external char[] nova_socket_receive(SOCKET_ID_TYPE socket)
+	external int nova_socket_send(SOCKET_ID_TYPE socket, char message[])
+	
+	SOCKET_ID_TYPE serverSocket
+	
+	visible Bool open
+	
+	visible ConnectionSocket[] requests = new Array()
+	
+	public construct()
+	{
+		open = false
+	}
+	
+	public start(Int port) -> Bool
+	{
+		serverSocket = nova_serversocket_start(port)
+		
+		if (serverSocket == 0)
+		{
+			return false
+		}
+		
+		open = true
+		
+		return true
+	}
+	
+	public close() -> Bool
+	{
+		Int result = nova_socket_close(serverSocket)
+		
+		if (result == 0)
+		{
+			return false
+		}
+		
+		open = false
+		
+		return true
+	}
+	
+	public acceptClient() -> ConnectionSocket
+	{
+		SOCKET_ID_TYPE clientSocket = nova_serversocket_accept(serverSocket)
+		
+		if (clientSocket == 0)
+		{
+			return null
+		}
+		
+		ConnectionSocket socket = new ConnectionSocket(clientSocket)
+		
+		return socket
+	}
+}

@@ -1,0 +1,13 @@
+package "nova/math/logic"
+
+public class StatementLetter extends StatementComponent
+{
+	String letter
+	String representation
+	
+	public construct(String letter, String representation)
+	{
+		this.letter         = letter
+		this.representation = representation
+	}
+}

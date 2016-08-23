@@ -236,7 +236,7 @@ public interface GenericCompatible
 	 */
 	static String test(TestContext context)
 	{
-		context.importClass("nova/standard/datastruct/list/Stack");
+		context.importClass("nova/datastruct/list/Stack");
 		
 		Node declaration = SyntaxTree.decodeScopeContents(context.method, "Stack<String> s = new Stack()", Location.INVALID, false);
 		

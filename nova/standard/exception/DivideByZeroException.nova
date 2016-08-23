@@ -1,6 +1,0 @@
-package "nova/standard/exception"
-
-public class DivideByZeroException extends Exception
-{
-	
-}

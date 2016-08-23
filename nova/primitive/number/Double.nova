@@ -1,0 +1,158 @@
+package "nova/primitive/number"
+
+import "nova/datastruct/Comparable"
+
+public class Double extends Number implements Comparable<Double>, RealNumber
+{
+	external void sprintf(char buffer[], char format[], double value)
+	external char[] realloc(char buffer[], int size)
+	external int strlen(char buffer[])
+	external double strtod(char str[], char* pEnd[])
+	
+	Double value
+	
+	construct(Double value)
+	{
+		this.value = value
+	}
+	
+	public static numDigits(Double number) -> Int
+	{
+		if (number < 0)
+		{
+			return numDigits(-number) + 1
+		}
+		
+		number = number / 10
+		
+		Int size = 1
+		
+		while (number > 0)
+		{
+			number = number / 10
+			
+			size++
+		}
+		
+		return size
+	}
+	
+	static genString([PrimitiveArray] Char buffer[], Int lastIndex) -> String
+	{
+		buffer = realloc(buffer, ++lastIndex + 1)
+		
+		buffer[lastIndex] = '\0'
+		
+		return new String(buffer)
+	}
+	
+	[PrimitiveArray]
+	static genBuffer(Double value) -> Char[]
+	{
+		Int  size     = 11 + 1 + 15
+		
+		[PrimitiveArray]
+		Char[] buffer = new Char[size]
+		
+		sprintf(buffer, "%.15f", value)
+		
+		return buffer
+	}
+	
+	static repetition([PrimitiveArray] Char[] buffer, Int start) -> Int
+	{
+		Int  index = start
+		Char c     = buffer[index]
+		
+		while (buffer[--index] == c);
+		
+		return start - index - 1
+	}
+	
+	static lastSignificantDigit([PrimitiveArray] Char[] buffer, Int start) -> Int
+	{
+		while (buffer[start--] == '0');
+		
+		return start + 1
+	}
+	
+	public static toString(Double value) -> String
+	{
+	    [PrimitiveArray]
+		Char buffer[]  = genBuffer(value)
+		Int  size      = strlen(buffer)
+		Int  lastIndex = size - 1
+		
+		Char c = buffer[--lastIndex]
+		
+		if (c == '0' || c == '9')
+		{
+			while (buffer[lastIndex--] == c);
+			
+			if (buffer[++lastIndex] == '.')
+			{
+				lastIndex++
+				
+				return genString(buffer, lastIndex)
+			}
+			else
+			{
+				if (lastIndex >= size - 3 - 4)
+				{
+					lastIndex = size - 1
+				}
+				else if (c == '9')
+				{
+					buffer[lastIndex]++
+					
+					return genString(buffer, lastIndex)
+				}
+			}
+		}
+		else
+		{
+			Int rep = repetition(buffer, lastIndex)
+			
+			if (rep > 5)
+			{
+				buffer[lastIndex] = c
+				
+				if (c >= '5')
+				{
+					c++;
+				}
+				
+				buffer[++lastIndex] = c
+				
+				return genString(buffer, lastIndex)
+			}
+		}
+		
+		lastIndex = lastSignificantDigit(buffer, size - 1)
+		
+		return genString(buffer, lastIndex)
+	}
+	
+	public toString() -> String
+	{
+		return toString(value)
+	}
+	
+	public static parseDouble(String str) -> Double
+	{
+	    [PrimitiveArray]
+		Char[] pEnd
+		
+		return strtod(str.chars.data, pEnd)
+	}
+	
+	public compareTo(Double other) -> Double
+	{
+		return value - other
+	}
+	
+	public multiply(Double value) -> Double
+	{
+		return this.value * value
+	}
+}

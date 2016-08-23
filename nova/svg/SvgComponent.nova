@@ -1,0 +1,18 @@
+package "nova/svg"
+
+import "nova/io/File"
+
+public class SvgComponent
+{
+	public SvgComponentList children
+	
+	public construct()
+	{
+		children = new SvgComponentList()
+	}
+	
+	public generateOutput(File file)
+	{
+		Console.writeLine("This is wrong")
+	}
+}

@@ -1,0 +1,9 @@
+package "nova/math/logic"
+
+public class Hypothesis extends LogicalStatement
+{
+	public construct(String statement)
+	{
+		super(statement)
+	}
+}

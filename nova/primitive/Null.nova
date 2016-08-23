@@ -1,0 +1,19 @@
+package "nova/primitive"
+
+public class Null extends String
+{
+	public construct()
+	{
+		
+	}
+	
+	public toString() -> String
+	{
+		return "null"
+	}
+	
+	public concat(String other) -> String
+	{
+		return "null" + other
+	}
+}

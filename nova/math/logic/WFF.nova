@@ -1,0 +1,204 @@
+package "nova/math/logic"
+
+import "nova/datastruct/Bounds"
+
+public class WFF
+{
+	StatementLetter[] letters
+	
+	Hypothesis[]      hypotheses
+	
+	Conclusion        conclusion
+	
+	String            wff
+	
+	static Char[]     whitespace = [ ' ', '\t', '\n', '\r' ]
+	
+	public construct(String wellFormedFormula, StatementLetter[] letters)
+	{
+		this.wff     = wellFormedFormula.trim()
+		this.letters = letters
+		
+		hypotheses = new Array()
+		
+		decodeFormula()
+	}
+	
+	decodeFormula()
+	{
+		StatementGroup<Conclusion> conclusionGroup = searchForConclusion(wff)
+		
+		if (conclusionGroup == null)
+		{
+			throw new InvalidFormulaException("No valid conclusion found")
+		}
+		
+		Conclusion conclusion = conclusionGroup.statement
+		
+		Console.writeLine("Conclusion: " + conclusion)
+		
+		wff = conclusionGroup.bounds.extractPreString(wff)
+		
+		StatementGroup<Hypothesis>[] statements = decodeHypotheses(wff)
+		
+		for (i in 0..statements.count)
+		{
+			StatementGroup<Hypothesis> group = statements.get(i)
+			
+			hypotheses.add(group.statement)
+		}
+		for (n in 0..hypotheses.count)
+		{
+			Console.writeLine(hypotheses.get(n))
+		}
+	}
+	
+	searchForConclusion(String wff) -> StatementGroup<Conclusion>
+	{
+		Int index = wff.lastIndexOf("->")
+		
+		if (index < 0)
+		{
+			return null
+		}
+		
+		if (wff.lastChar() == ')')
+		{
+			Int first = findEndingMatch(wff, '(', ')', wff.count - 1, -1)
+			
+			
+		}
+		
+		Int conclusionStart = nextNonWhitespaceIndex(wff, index + 2, 1)
+		
+		Bounds bounds = new Bounds(conclusionStart, wff.count)
+		
+		Conclusion conclusion = new Conclusion(bounds.extractString(wff))
+		
+		bounds.start = nextNonWhitespaceIndex(wff, index - 1, -1) + 1
+		
+		StatementGroup<Conclusion> group = new StatementGroup(conclusion, bounds)
+		
+		return group
+	}
+	
+	decodeHypotheses(String wff) -> StatementGroup<Hypothesis>[]
+	{
+		StatementGroup<Hypothesis>[] list = new Array()
+		
+		Int next = 0
+		Int prev = 0
+		
+		Int index = wff.indexOf("&")
+		
+		while (index >= 0)
+		{
+			next = nextNonWhitespaceIndex(wff, index - 1, -1)
+			//next = nextWhitespaceIndex(wff, next + 1, 1)
+			
+			list.add(generateHypothesis(wff, prev, next + 1))
+			
+			prev = nextNonWhitespaceIndex(wff, index + 1, 1)
+			
+			index = wff.indexOf("&", prev + 1)
+		}
+		
+		list.add(generateHypothesis(wff, prev, wff.count))
+		
+		return list
+	}
+	
+	generateHypothesis(String wff, Int start, Int end) -> StatementGroup<Hypothesis>
+	{
+		Bounds bounds = new Bounds(start, end)
+		Hypothesis h  = new Hypothesis(bounds.extractString(wff))
+		
+		StatementGroup<Hypothesis> group = new StatementGroup(h, bounds)
+		
+		return group
+	}
+	
+	searchForStatement(String wff) -> StatementGroup<Statement>
+	{
+		return null
+	}
+	
+	static nextNonWhitespaceIndex(String wff, Int index, Int direction) -> Int
+	{
+		return nextWhitespaceIndex(wff, index, direction, true)
+	}
+	
+	static nextWhitespaceIndex(String wff, Int index, Int direction) -> Int
+	{
+		return nextWhitespaceIndex(wff, index, direction, false)
+	}
+	
+	static nextWhitespaceIndex(String wff, Int index, Int direction, Bool opposite) -> Int
+	{
+	    Int i = index
+	    
+		while (i < wff.count && i >= 0)
+		{
+			Char c = wff.charAt(i)
+			
+			if (containsChar(c, whitespace) != opposite)
+			{
+				return i
+			}
+			
+			i = i + direction
+		}
+		
+		return -1
+	}
+	
+	static containsChar(Char needle, Char[] chars) -> Bool
+	{
+		for (i in 0..chars.count)
+		{
+			if (needle == chars.data[i])
+			{
+				return true
+			}
+		}
+		
+		return false
+	}
+	
+	static findEndingMatch(String wff, Char start, Char end, Int index, Int direction) -> Int
+	{
+		if (direction < 0)
+		{
+			Char temp = start
+			start     = end
+			end       = temp
+		}
+		
+		Int scope = 0
+		
+		Int i = index
+		
+		while (i < wff.count && i >= 0)
+		{
+			Char c = wff.charAt(i)
+			
+			if (c == start)
+			{
+				scope++
+			}
+			else if (c == end)
+			{
+				scope--
+			}
+			
+			if (scope == 0)
+			{
+				return i
+			}
+			
+			i = i + direction
+		}
+		
+		return -1
+	}
+}

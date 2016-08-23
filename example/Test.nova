@@ -1,6 +1,6 @@
 package "example"
 
-import "nova/standard/datastruct/list/Stack"
+import "nova/datastruct/list/Stack"
 
 public class Test
 {

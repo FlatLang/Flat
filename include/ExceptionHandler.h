@@ -14,11 +14,11 @@
 		buffer buf;\
 		int exception_code;\
 		\
-		nova_standard_exception_Nova_ExceptionData* newData = novaEnv.nova_standard_exception_ExceptionData.ExceptionData(0, exceptionData, &buf);\
+		nova_exception_Nova_ExceptionData* newData = novaEnv.nova_exception_ExceptionData.ExceptionData(0, exceptionData, &buf);\
 		\
 		if (exceptionData != 0)\
 		{\
-			newData->nova_standard_exception_Nova_ExceptionData_Nova_parent = exceptionData;\
+			newData->nova_exception_Nova_ExceptionData_Nova_parent = exceptionData;\
 		}\
 		\
 		exceptionData  = newData;\
@@ -33,8 +33,8 @@
 
 #define END_TRY \
 		{\
-			nova_standard_exception_Nova_ExceptionData* oldData = exceptionData;\
-			nova_standard_exception_Nova_ExceptionData* newData = exceptionData->nova_standard_exception_Nova_ExceptionData_Nova_parent;\
+			nova_exception_Nova_ExceptionData* oldData = exceptionData;\
+			nova_exception_Nova_ExceptionData* newData = exceptionData->nova_exception_Nova_ExceptionData_Nova_parent;\
 			if (newData != 0)\
 			{\
 				exceptionData = newData;\
@@ -49,7 +49,7 @@
 	while(0)
 
 #define THROW(x, exception) \
-	exceptionData->nova_standard_exception_Nova_ExceptionData_Nova_thrownException = (nova_standard_exception_Nova_Exception*)exception;\
-	novaEnv.nova_standard_exception_ExceptionData.jumpToBuffer(exceptionData, 0, x);
+	exceptionData->nova_exception_Nova_ExceptionData_Nova_thrownException = (nova_exception_Nova_Exception*)exception;\
+	novaEnv.nova_exception_ExceptionData.jumpToBuffer(exceptionData, 0, x);
 
 #endif

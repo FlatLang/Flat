@@ -1,6 +1,0 @@
-package "nova/standard/math/logic"
-
-public class StatementComponent
-{
-	
-}

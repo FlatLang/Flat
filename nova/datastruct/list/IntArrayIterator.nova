@@ -1,0 +1,45 @@
+package "nova/datastruct/list"
+
+public class IntArrayIterator implements Iterator<Int>
+{
+	IntArray array
+	
+	visible Int position
+	
+	visible Bool hasNext
+	{
+		get { return array.count > position }
+		no set
+	}
+	
+	visible Int next
+	{
+		get
+		{
+			if (hasNext)
+			{
+				return array.get(position++)
+			}
+			
+			throw new NoSuchElementException()
+
+			return null
+		}
+		
+		no set
+	}
+	
+	public construct(IntArray array)
+	{
+		this.array = array
+		
+		reset()
+	}
+	
+	public reset() -> Iterator<Int>
+	{
+		position = 0
+		
+		return this
+	}
+}

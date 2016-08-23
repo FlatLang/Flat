@@ -1,0 +1,16 @@
+package "nova/math/logic"
+
+import "nova/datastruct/Bounds"
+
+public class StatementGroup<Type>
+{
+	visible Type   statement
+	
+	visible Bounds bounds
+	
+	public construct(Type statement, Bounds bounds)
+	{
+		this.statement = statement
+		this.bounds    = bounds
+	}
+}

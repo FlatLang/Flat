@@ -1,0 +1,6 @@
+package "nova/operators"
+
+public interface Equals
+{
+	equals(Object another) -> Bool
+}

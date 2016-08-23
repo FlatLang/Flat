@@ -1,0 +1,24 @@
+package "nova/network"
+
+import "nova/network/NativeSocket.h"
+import "nova/io/OutputStream"
+
+public class NetworkOutputStream extends OutputStream
+{
+	ConnectionSocket socket
+	
+	public construct(ConnectionSocket socket)
+	{
+		this.socket = socket
+	}
+	
+	public write(String data) -> Bool
+	{
+		return socket.write(data)
+	}
+	
+	public write(Object data) -> Bool
+	{
+		return false
+	}
+}

@@ -360,7 +360,7 @@ public class ForEachLoop extends Loop
 	
 	private Value decodeValue(String argument, Value value, Location location, boolean require)
 	{
-		ClassDeclaration iterator = getProgram().getClassDeclaration("nova/standard/datastruct/list/Iterator");
+		ClassDeclaration iterator = getProgram().getClassDeclaration("nova/datastruct/list/Iterator");
 		ClassDeclaration valueType = value.getReturnedNode().getTypeClass();
 		
 		if (valueType == null)
@@ -370,7 +370,7 @@ public class ForEachLoop extends Loop
 		
 		if (!valueType.isOfType(iterator))
 		{
-			ClassDeclaration iterable = getProgram().getClassDeclaration("nova/standard/datastruct/list/Iterable");
+			ClassDeclaration iterable = getProgram().getClassDeclaration("nova/datastruct/list/Iterable");
 			
 			if (!value.getReturnedNode().getTypeClass().isOfType(iterable))
 			{

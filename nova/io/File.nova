@@ -1,0 +1,225 @@
+package "nova/io"
+
+import "nova/io/NativeFile.h"
+import "nova/time/Time"
+
+public class File
+{
+	external type FILE
+	
+	FILE* fp
+	
+	external FILE* fopen(char location[], char operation[])
+	external void perror(char name[])
+	external FILE* freopen(char location[], char operation[], FILE* fp)
+	external void fprintf(FILE* fp, char data[])
+	external void fputs(char str[], FILE* stream)
+	external void fflush(FILE* fp)
+	external int fclose(FILE* fp)
+	external void fgets(char buffer[], int size, FILE* fp)
+	external char[] realloc(char buffer[], int size)
+	external char getc(FILE* fp)
+	external void rewind(FILE* fp) as extRewind
+	external int remove(char name[])
+	external int getMaxOpenFiles() as extGetMaxOpenFiles
+	external void setMaxOpenFiles(int max) as extSetMaxOpenFiles
+	
+	external char EOF
+	
+	visible String location
+	
+	static
+	{
+		File exitLog = new File("log" + Time.currentTimeMillis)
+	}
+	
+	visible Bool exists
+	{
+		get
+		{
+			return fp != 0
+		}
+		
+		no set
+	}
+	
+	public Int maxOpenFiles
+	{
+		get
+		{
+			return extGetMaxOpenFiles()
+		}
+		
+		set
+		{
+			Short min = (Short)20
+			Short max = (Short)2048
+			
+			if (value > max || value < min)
+			{
+				Console.writeLine("Invalid max number of open files: " + value + "\nValid values include " + min + "-" + max)
+			}
+			else
+			{
+				extSetMaxOpenFiles(value)
+			}
+		}
+	}
+	
+	public construct(String location)
+	{
+		this.location = location
+		
+		fp = fopen(location.chars.data, "r+")
+	}
+	
+	public construct(FILE* fp)
+	{
+		this.fp = fp
+	}
+	
+	public delete() -> Bool
+	{
+		close()
+		
+		return remove(location.chars.data) == 0
+	}
+	
+	public reopen()
+	{
+		close()
+		
+		fp = fopen(location.chars.data, "r+")
+	}
+	
+	public rewind()
+	{
+		extRewind(fp)
+	}
+	
+	public clearContents()
+	{
+		if (exists)
+		{
+			fp = fopen(location.chars.data, "w")
+		}
+	}
+	
+	public create() -> Bool
+	{
+		if (!exists)
+		{
+			fp = fopen(location.chars.data, "w")
+			
+			if (!exists)
+			{
+				throw new FileNotFoundException(this)
+				
+				return false
+			}
+			
+			reopen()
+			
+			if (!exists)
+			{
+				throw new FileNotFoundException(this)
+				
+				return false
+			}
+			
+			return true
+		}
+		
+		return false
+	}
+	
+	public readAllContents() -> String
+	{
+		String data = ""
+		
+		String line = readLine()
+		
+		while (line != null)
+		{
+			if (data.count > 0)
+			{
+				data = data + "\n"
+			}
+			
+			data = data + line
+			
+			line = readLine()
+		}
+		
+		return data
+	}
+	
+	public readLine() -> String
+	{
+		Int buf  = 5
+		Int size = buf
+		
+		[PrimitiveArray]
+		Char[] line = new Char[size]
+		
+		Char c = getc(fp)
+		
+		if (c == EOF)
+		{
+			return null
+		}
+		
+		Int index = 0
+		
+		while (c != '\n' && c != EOF)
+		{
+			if (index >= size)
+			{
+				size = size + buf
+				
+				line = realloc(line, size)
+			}
+			
+			line[index++] = c
+			
+			c = getc(fp)
+		}
+		
+		if (index >= size)
+		{
+			size++
+			
+			line = realloc(line, size)
+		}
+		
+		line[index++] = '\0'
+		
+		line = realloc(line, index)
+		
+		return new String(line)
+	}
+	
+	public writeLine(String line)
+	{
+		write(line + "\n")
+	}
+	
+	public write(String data)
+	{
+		fputs(data.chars.data, fp)
+		flush()
+	}
+	
+	public flush()
+	{
+		fflush(fp)
+	}
+	
+	public close()
+	{
+		if (exists)
+		{
+			fclose(fp)
+		}
+	}
+}

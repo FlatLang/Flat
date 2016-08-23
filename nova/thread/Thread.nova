@@ -1,0 +1,61 @@
+package "nova/thread"
+
+import "nova/thread/NativeThread.h"
+
+public class Thread
+{
+	external type NOVA_THREAD_HANDLE
+	
+	external void lib_nova_thread_sleep(long millis)
+	external void lib_nova_thread_join(NOVA_THREAD_HANDLE handle)
+	external void lib_nova_thread_cancel(NOVA_THREAD_HANDLE handle)
+	external NOVA_THREAD_HANDLE* create_thread(Thread thread, run())
+	
+	NOVA_THREAD_HANDLE*	handle
+	
+	/*public run()
+	
+	public construct()
+	{
+	    run = {}
+	}*/
+	
+	public start()
+	{
+		handle = create_thread(this, startRun)
+	}
+	
+	public join()
+	{
+		lib_nova_thread_join(handle)
+	}
+	
+	public kill()
+	{
+		lib_nova_thread_cancel(handle)
+	}
+	
+	public static sleep(Long millis)
+	{
+		lib_nova_thread_sleep(millis)
+	}
+	
+	public run()
+	{
+		
+	}
+	
+	startRun()
+	{
+		try
+		{
+			//GC.init()
+			
+			run()
+		}
+		catch (Exception e)
+		{
+			Console.writeLine("An error has occurred...")
+		}
+	}
+}

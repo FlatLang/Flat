@@ -169,7 +169,7 @@ public class Try extends ExceptionHandler
 		{
 			int code = codes.get(i);
 			
-			builder.append("novaEnv.nova_standard_exception_ExceptionData.addCode(").append(variableName).append(", ").append(variableName).append(", ").append(code).append(");").append('\n');
+			builder.append("novaEnv.nova_exception_ExceptionData.addCode(").append(variableName).append(", ").append(variableName).append(", ").append(code).append(");").append('\n');
 		}
 		
 		return builder;

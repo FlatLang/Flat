@@ -1,7 +1,7 @@
 package "example"
 
-import "nova/standard/io/File"
-import "nova/standard/thread/Thread"
+import "nova/io/File"
+import "nova/thread/Thread"
 
 public class FileTest
 {

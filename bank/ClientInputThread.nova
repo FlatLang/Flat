@@ -1,8 +1,8 @@
 package "bank"
 
-import "nova/standard/thread/Thread"
-import "nova/standard/network/ConnectionSocket"
-import "nova/standard/security/MD5"
+import "nova/thread/Thread"
+import "nova/network/ConnectionSocket"
+import "nova/security/MD5"
 
 public class ClientInputThread extends Thread
 {

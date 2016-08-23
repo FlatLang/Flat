@@ -1,6 +1,6 @@
 package "bank"
 
-import "nova/standard/database/ResultSet"
+import "nova/database/ResultSet"
 
 public class Estimator
 {

@@ -1,12 +1,12 @@
 package "bank"
 
-import "nova/standard/database/DBConnector"
-import "nova/standard/database/ResultSet"
-import "nova/standard/time/Date"
-import "nova/standard/security/MD5"
-import "nova/standard/network/ServerSocket"
-import "nova/standard/network/ClientSocket"
-import "nova/standard/network/ConnectionSocket"
+import "nova/database/DBConnector"
+import "nova/database/ResultSet"
+import "nova/time/Date"
+import "nova/security/MD5"
+import "nova/network/ServerSocket"
+import "nova/network/ClientSocket"
+import "nova/network/ConnectionSocket"
 
 public class Bank
 {

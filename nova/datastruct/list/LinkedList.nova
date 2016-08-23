@@ -1,0 +1,286 @@
+package "nova/datastruct/list"
+
+public class LinkedList<E> implements List<E>
+{
+	ListNode<E>	start
+	ListNode<E>	current
+	
+	visible Int size
+	
+	visible LinkedListIterator<E> iterator
+	{
+		get
+		{
+			return new LinkedListIterator(this)
+		}
+		
+		no set
+	}
+	
+	visible ListNode<E> first
+	{
+		get { return start }
+		no set
+	}
+	
+	visible ListNode<E> last
+	{
+		get { return current }
+		no set
+	}
+	
+	public addAll(E[] data) -> LinkedList<E>
+	{
+	    for (d in data)
+	    {
+	        add(d)
+	    }
+	    
+	    return this
+	}
+	
+	public add(E data) -> LinkedList<E>
+	{
+		ListNode<E> node = new ListNode(data)
+		
+		if (start == null)
+		{
+			start   = node
+			current = node
+		}
+		else
+		{
+			current.next = node
+		}
+		
+		current = node
+		
+		size++
+		
+		return this
+	}
+	
+	public remove(E data) -> LinkedList<E>
+	{
+		if (start.data == data)
+		{
+			start = start.next;
+		}
+		
+		ListNode<E> prev = start
+		ListNode<E> cur  = start.next
+		
+		while (cur != null)
+		{
+			E d = cur.data
+			
+			if (d == data)
+			{
+				prev.next = cur.next
+				
+				size--
+			}
+			
+			cur = cur.next
+		}
+		
+		return this
+	}
+	
+	[Override]
+	public contains(E value) -> Bool
+	{
+	    return any({ _ == value })
+	}
+	
+	[Override]
+	public toArray() -> E[]
+	{
+		E[] array = new Array(size)
+		
+		Int i = 0
+		
+		for (element in this)
+		{
+			array.set(i++, element)
+		}
+
+		return array
+	}
+	
+	[Override]
+	public map<Out>(mapFunc(E, Int, LinkedList<E>) -> Out) -> LinkedList<Out>
+	{
+		LinkedList<Out> array = new LinkedList()
+
+		Int i = 0
+
+		for (element in this)
+		{
+			array.add(mapFunc(element, i++, this))
+		}
+		
+		return array
+	}
+	
+	[Override]
+	public forEach(func(E, Int, LinkedList<E>))
+	{
+		Int i = 0
+		
+		for (element in this)
+		{
+			func(element, i++, this)
+		}
+	}
+	
+	[Override]
+	public any(anyFunc(E) -> Bool) -> Bool
+	{
+		for (element in this)
+		{
+			if (anyFunc(element))
+			{
+				return true
+			}
+		}
+		
+		return false
+	}
+	
+	[Override]
+	public all(allFunc(E) -> Bool) -> Bool
+	{
+		for (element in this)
+		{
+			if (!allFunc(element))
+			{
+				return false
+			}
+		}
+		
+		return true
+	}
+	
+	[Override]
+	public filter(filterFunc(E, Int, LinkedList<E>) -> Bool) -> LinkedList<E>
+	{
+		LinkedList<E> filtered = new LinkedList()
+		
+		Int i = 0
+		
+		for (element in this)
+		{
+			if (filterFunc(element, i++, this))
+			{
+				filtered.add(element)
+			}
+		}
+		
+		return filtered
+	}
+	
+	[Override]
+	public take(Int howMany) -> LinkedList<E>
+	{
+		if (howMany > size)
+		{
+			howMany = size
+		}
+		
+		LinkedList<E> list = new LinkedList()
+		
+		for (element in this)
+		{
+			if (list.size == howMany) break
+			
+			list.add(element)
+		}
+		
+		return list
+	}
+	
+	[Override]
+	public skip(Int howMany) -> LinkedList<E>
+	{
+		E[] list = new Array()
+		
+		Int i = 0
+		
+		for (element in this)
+		{
+			if (i++ > howMany) list.add(element)
+		}
+		
+		return list
+	}
+	
+	[Override]
+	public firstWhere(func(E) -> Bool) -> E
+	{
+		for (element in this)
+		{
+			if (func(element))
+			{
+				return element
+			}
+		}
+		
+		return null
+	}
+	
+	[Override]
+	public reverse() -> LinkedList<E>
+	{
+		LinkedList<E> list = new LinkedList()
+		
+		ListNode<E> prev = null
+		ListNode<E> current = null
+		ListNode<E> next = null
+		
+		if (start != null)
+		{
+			current = start.clone()
+		}
+		
+		while (current != null)
+		{
+			next = current.next
+			current.next = null
+			
+			if (next != null) next = next.clone()
+			if (prev != null) current.next = prev.clone()
+			
+			prev = current
+			current = next
+		}
+		
+		list.start = prev
+		
+		return list
+	}
+    
+	[Override]
+    public join(String delimiter) -> String
+    {
+    	String str = ""
+    	
+    	Bool passed = false
+    	
+    	for (element in this)
+    	{
+    		if (passed)
+    		{
+    			str = str + delimiter
+    		}
+    		else
+    		{
+    			passed = true
+    		}
+    		
+    		str = str + element.toString()
+    	}
+    	
+    	return str
+    }
+}

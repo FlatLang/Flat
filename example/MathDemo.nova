@@ -1,6 +1,6 @@
 package "example"
 
-import "nova/standard/time/Timer"
+import "nova/time/Timer"
 
 public class MathDemo
 {

@@ -348,7 +348,7 @@ public class BinaryOperation extends IValue
 			
 			if (common == null)
 			{
-				ClassDeclaration integerClass = parent.getProgram().getClassDeclaration("nova/standard/primitive/number/Int");
+				ClassDeclaration integerClass = parent.getProgram().getClassDeclaration("nova/primitive/number/Int");
 
 				Value returnedLeft  = lhn.getReturnedNode();
 				Value returnedRight = rhn.getReturnedNode();

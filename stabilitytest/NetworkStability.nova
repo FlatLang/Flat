@@ -1,8 +1,8 @@
 package "stabilitytest"
 
-import "nova/standard/network/ServerSocket"
-import "nova/standard/network/ClientSocket"
-import "nova/standard/network/ConnectionSocket"
+import "nova/network/ServerSocket"
+import "nova/network/ClientSocket"
+import "nova/network/ConnectionSocket"
 
 public class NetworkStability extends StabilityTestCase
 {

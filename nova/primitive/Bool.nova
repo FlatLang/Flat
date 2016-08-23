@@ -1,0 +1,33 @@
+package "nova/primitive"
+
+import "nova/datastruct/Comparable"
+
+public class Bool extends Primitive implements Comparable<Bool>
+{
+	Bool value
+	
+	construct(Bool value)
+	{
+		this.value = value
+	}
+	
+	public static toString(Bool value) -> String
+	{
+		if (value)
+		{
+			return "true"
+		}
+		
+		return "false"
+	}
+	
+	public toString() -> String
+	{
+		return toString(value)
+	}
+	
+	public compareTo(Bool other) -> Bool
+	{
+		return value == other
+	}
+}

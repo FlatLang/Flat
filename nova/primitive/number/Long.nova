@@ -1,0 +1,84 @@
+package "nova/primitive/number"
+
+import "nova/datastruct/Comparable"
+
+public class Long extends Number implements Comparable<Long>, Integer
+{
+	Long value
+	
+	visible static Long MAX_VALUE =  9223372036854775807
+	visible static Long MIN_VALUE = -9223372036854775808
+	
+	construct(Long value)
+	{
+		this.value = value
+	}
+	
+	public static numDigits(Long number) -> Int
+	{
+		Int size = 1 
+		
+		if (number < 0)
+		{
+			//return numDigits(-number) + 1
+			
+			size++
+		}
+		
+		number = number / 10
+		
+		while (number != 0)
+		{
+			number = number / 10
+			size++
+		}
+		
+		return size
+	}
+	
+	public static toString(Long value) -> String
+	{
+		Int  charOffset = '0'
+		Int  digits  = numDigits(value)
+		
+		[PrimitiveArray]
+		Char[] data = new Char[digits + 1]
+		
+		data[digits] = '\0'
+		
+		Int  offset  = 0
+		
+		if (value < 0)
+		{
+			data[0] = '-'
+			
+			offset = 1
+		}
+		
+		Int nums = digits-- - offset
+		
+		for (index in 0..nums)
+		{
+			data[digits - index] = (Char)(charOffset + Math.abs(value % 10))
+			
+			value = value / 10
+		}
+		
+		return new String(data)
+	}
+	
+	public toString() -> String
+	{
+		return toString(value)
+	}
+	
+	public compareTo(Long other) -> Long
+	{
+		return value - other
+	}
+	
+	public multiply(Long value) -> Long
+	{
+		return this.value * value
+	}
+}

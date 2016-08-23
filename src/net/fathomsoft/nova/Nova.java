@@ -277,8 +277,9 @@ public class Nova
 				"-keepc",
 				"-single-thread",
 				"-main",
-				"example/Lab",
+//				"example/Lab",
 //				"stabilitytest/StabilityTest",
+				"example/SvgChart",
 //				"-nogc",
 //				"-no-c-output",
 //				"-dry",
@@ -760,14 +761,14 @@ public class Nova
 			StringBuilder mainMethodText = new StringBuilder();
 			
 			mainMethodText.append('\n').append('\n');
-			mainMethodText.append("nova_standard_primitive_Nova_Null* nova_null;").append('\n');
+			mainMethodText.append("nova_primitive_Nova_Null* nova_null;").append('\n');
 			mainMethodText.append("void* ").append(Literal.GARBAGE_IDENTIFIER).append(';').append('\n');
 			mainMethodText.append('\n');
 			mainMethodText.append("int main(int argc, char** argvs)").append('\n');
 			mainMethodText.append("{").append('\n');
-			mainMethodText.append	("nova_standard_Nova_String** args;").append('\n');
+			mainMethodText.append	("nova_Nova_String** args;").append('\n');
 			mainMethodText.append	("int      i;").append('\n').append('\n');
-			mainMethodText.append	("nova_standard_exception_Nova_ExceptionData* ").append(Exception.EXCEPTION_DATA_IDENTIFIER).append(" = 0;").append('\n');
+			mainMethodText.append	("nova_exception_Nova_ExceptionData* ").append(Exception.EXCEPTION_DATA_IDENTIFIER).append(" = 0;").append('\n');
 //			mainMethodText.append	("ShowWindow(FindWindowA(\"ConsoleWindowClass\", NULL), 0);").append('\n');
 //			mainMethodText.append	("FreeConsole();").append('\n');
 //			mainMethodText.append	("AllocConsole();").append('\n');
@@ -777,7 +778,7 @@ public class Nova
 			mainMethodText.append	("nova_null = ").append(nullConstructor.generateCSourceFragment()).append(';').append('\n');
 			mainMethodText.append	(nativeAssignments).append('\n');
 			mainMethodText.append	(staticBlockCalls).append('\n');
-			mainMethodText.append	("args = (nova_standard_Nova_String**)NOVA_MALLOC(argc * sizeof(nova_standard_Nova_String));").append('\n');
+			mainMethodText.append	("args = (nova_Nova_String**)NOVA_MALLOC(argc * sizeof(nova_Nova_String));").append('\n');
 			mainMethodText.append	('\n');
 			mainMethodText.append	("for (i = 0; i < argc; i++)").append('\n');
 			mainMethodText.append	("{").append('\n');
@@ -785,7 +786,7 @@ public class Nova
 			mainMethodText.append		("copy_string(str, argvs[i]);").append('\n');
 			mainMethodText.append		("args[i] = ").append(strConstructor.generateCSourceName()).append("(0, 0, str);").append('\n');
 			mainMethodText.append	("}").append('\n');
-			mainMethodText.append	("nova_standard_datastruct_list_Nova_Array* argsArray = nova_standard_datastruct_list_Nova_Array_2_Nova_Array(0, exceptionData, (nova_standard_Nova_Object**)args, argc);");
+			mainMethodText.append	("nova_datastruct_list_Nova_Array* argsArray = nova_datastruct_list_Nova_Array_2_Nova_Array(0, exceptionData, (nova_Nova_Object**)args, argc);");
 			mainMethodText.append	('\n');
 			mainMethodText.append	("TRY").append('\n');
 			mainMethodText.append	('{').append('\n');
@@ -793,8 +794,8 @@ public class Nova
 			mainMethodText.append	('}').append('\n');
 			mainMethodText.append	("CATCH (1)").append('\n');
 			mainMethodText.append	('{').append('\n');
-			mainMethodText.append		("nova_standard_exception_Nova_Exception* base = (nova_standard_exception_Nova_Exception*)").append(Exception.EXCEPTION_DATA_IDENTIFIER).append("->nova_standard_exception_Nova_ExceptionData_Nova_thrownException;").append('\n');
-			mainMethodText.append		("printf(\"Exception in Thread 'main': %s\", base->nova_standard_exception_Nova_Exception_Nova_message->nova_standard_Nova_String_Nova_chars);").append('\n');
+			mainMethodText.append		("nova_exception_Nova_Exception* base = (nova_exception_Nova_Exception*)").append(Exception.EXCEPTION_DATA_IDENTIFIER).append("->nova_exception_Nova_ExceptionData_Nova_thrownException;").append('\n');
+			mainMethodText.append		("printf(\"Exception in Thread 'main': %s\", base->nova_exception_Nova_Exception_Nova_message->nova_Nova_String_Nova_chars);").append('\n');
 			mainMethodText.append		(enter.generateCSource()).append('\n');
 			mainMethodText.append	('}').append('\n');
 			mainMethodText.append	("FINALLY").append('\n');

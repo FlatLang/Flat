@@ -1,8 +1,8 @@
 package "bank"
 
-import "nova/standard/network/ClientSocket"
-import "nova/standard/security/MD5"
-import "nova/standard/thread/Thread"
+import "nova/network/ClientSocket"
+import "nova/security/MD5"
+import "nova/thread/Thread"
 
 public class BankClient
 {

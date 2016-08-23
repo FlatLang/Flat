@@ -543,7 +543,7 @@ public class ClassDeclaration extends InstanceDeclaration
 		{
 			return false;
 		}
-		else if (node.getClassLocation().equals("nova/standard/Object"))
+		else if (node.getClassLocation().equals("nova/Object"))
 		{
 			return true;
 		}
@@ -1877,7 +1877,7 @@ public class ClassDeclaration extends InstanceDeclaration
 			}
 			
 			// TODO: Check for the standard library version of Object.
-			if (n.extendedClass == null && !n.getClassLocation().equals("nova/standard/Object"))
+			if (n.extendedClass == null && !n.getClassLocation().equals("nova/Object"))
 			{
 				ExtendedClass extended = ExtendedClass.decodeStatement(n, "Object", n.getLocationIn().asNew(), require);
 				

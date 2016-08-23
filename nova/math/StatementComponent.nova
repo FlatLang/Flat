@@ -1,0 +1,18 @@
+package "nova/math"
+
+public class StatementComponent<E>
+{
+	visible E data
+	
+	public StatementComponent<E> next
+	
+	public construct(E data)
+	{
+		this.data = data
+	}
+	
+	public toString() -> String
+	{
+		return data.toString()
+	}
+}

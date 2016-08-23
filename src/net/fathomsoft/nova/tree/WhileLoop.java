@@ -152,7 +152,7 @@ public class WhileLoop extends Loop
 	{
 		MethodCall call = MethodCall.decodeStatement(this, contents, location, false);
 		
-		if (call != null && call.getTypeClassLocation().equals("nova/standard/primitive/Bool"))
+		if (call != null && call.getTypeClassLocation().equals("nova/primitive/Bool"))
 		{
 			return call;
 		}

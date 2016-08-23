@@ -1,8 +1,0 @@
-package "nova/standard/math/huffman"
-
-import "nova/standard/datastruct/Tree"
-
-public class HuffmanTree extends Tree
-{
-	
-}

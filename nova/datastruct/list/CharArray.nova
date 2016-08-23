@@ -1,0 +1,223 @@
+package "nova/datastruct/list"
+
+import "nova/primitive/number/Char"
+
+public class CharArray extends Array<Char>
+{
+	[Override]
+	visible CharArrayIterator iterator
+	{
+		get
+		{
+			return new CharArrayIterator(this)
+		}
+		
+		no set
+	}
+	
+	[Override]
+	public Char first
+	{
+		get
+		{
+		    if (count > 0)
+            {
+                return data[0]
+            }
+            
+            return 0
+        }
+        
+        no set
+	}
+	
+	[Override]
+	public Char last
+	{
+	    get
+	    {
+            if (count > 0)
+            {
+                return data[count - 1]
+            }
+            
+            return 0
+        }
+	}
+	
+	public construct()
+	{
+		super()
+	}
+	
+	public construct(Int count)
+	{
+	    super(count)
+	}
+	
+	[Override]
+	public get(Int index) -> Char
+	{
+	    return (([PrimitiveArray] Char[])data)[index]
+	}
+	
+	public construct([PrimitiveArray] Char[] data, Int count)
+	{
+		super(data, count)
+	}
+	
+	[Override]
+	public map<Out>(mapFunc(Char, Int, CharArray) -> Out) -> Out[]
+	{
+		Out[] array = new Array()
+        
+		Int i = 0
+
+		for (element in this)
+		{
+			array.add(mapFunc(element, i++, this))
+		}
+		
+		return array
+	}
+	
+	[Override]
+	public forEach(func(Char, Int, CharArray))
+	{
+		for (i in 0..count)
+		{
+			func((Char)get(i), i, this)
+		}
+	}
+	
+	[Override]
+	public any(anyFunc(Char) -> Bool) -> Bool
+	{
+		for (element in this)
+		{
+			if (anyFunc(element))
+			{
+				return true
+			}
+		}
+		
+		return false
+	}
+	
+	[Override]
+	public all(allFunc(Char) -> Bool) -> Bool
+	{
+		for (element in this)
+		{
+			if (!allFunc(element))
+			{
+				return false
+			}
+		}
+		
+		return true
+	}
+	
+	[Override]
+	public filter(filterFunc(Char, Int, CharArray) -> Bool) -> CharArray
+	{
+		CharArray filtered = new CharArray()
+		
+		Int i = 0
+		
+		for (element in this)
+		{
+			if (filterFunc(element, i++, this))
+			{
+				filtered.add(element)
+			}
+		}
+		
+		return filtered
+	}
+	
+	[Override]
+	public take(Int howMany) -> CharArray
+	{
+		if (howMany > count)
+		{
+			howMany = count
+		}
+		
+		CharArray list = new CharArray()
+		
+		for (i in 0..howMany)
+		{
+			list.add(data[i])
+		}
+		
+		return list
+	}
+	
+	[Override]
+	public skip(Int howMany) -> CharArray
+	{
+		CharArray list = new CharArray()
+		
+		for (i in howMany..count)
+		{
+			list.add(data[i])
+		}
+		
+		return list
+	}
+	
+	[Override]
+	public firstWhere(func(Char) -> Bool) -> Char
+	{
+		for (element in this)
+		{
+			if (func(element))
+			{
+				return element
+			}
+		}
+		
+		return 0
+	}
+	
+	[Override]
+    public reverse() -> CharArray
+    {
+    	CharArray array = new CharArray(count)
+    	array.count = count
+    	
+    	Int i = 0
+    	
+    	for (element in this)
+    	{
+    		array.set(count - ++i, element)
+    	}
+    	
+    	return array
+    }
+    
+	[Override]
+    public join(String delimiter) -> String
+    {
+    	String str = ""
+    	
+    	Bool passed = false
+    	
+    	for (element in this)
+    	{
+    		if (passed)
+    		{
+    			str = str + delimiter
+    		}
+    		else
+    		{
+    			passed = true
+    		}
+    		
+    		str = str + element.toString()
+    	}
+    	
+    	return str
+    }
+}

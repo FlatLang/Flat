@@ -1,6 +1,6 @@
 package "stabilitytest"
 
-import "nova/standard/datastruct/list/Iterator"
+import "nova/datastruct/list/Iterator"
 
 public class SyntaxStability extends StabilityTestCase
 {

@@ -1,0 +1,6 @@
+package "nova/math"
+
+public class GeometricSequence
+{
+	
+}

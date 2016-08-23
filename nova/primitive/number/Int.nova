@@ -1,0 +1,53 @@
+package "nova/primitive/number"
+
+import "nova/datastruct/Comparable"
+
+public class Int extends Number implements Comparable<Int>, Integer
+{
+	external int atoi(char str[])
+	
+	Int value
+	
+	visible static Int MAX_VALUE =  2147483647
+	visible static Int MIN_VALUE = -2147483648
+	
+	construct(Int value)
+	{
+		this.value = value
+	}
+	
+	public getHashCodeLong() -> Long
+	{
+		return value
+	}
+	
+	public static numDigits(Int number) -> Int
+	{
+		return Long.numDigits(number)
+	}
+	
+	public static toString(Int value) -> String
+	{
+		return Long.toString(value)
+	}
+	
+	public toString() -> String
+	{
+		return toString(value)
+	}
+	
+	public static parseInt(String num) -> Int
+	{
+		return atoi(num.chars.data)
+	}
+	
+	public compareTo(Int other) -> Int
+	{
+		return value - other
+	}
+	
+	public multiply(Int value) -> Int
+	{
+		return this.value * value
+	}
+}

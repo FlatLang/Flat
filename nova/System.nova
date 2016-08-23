@@ -1,0 +1,61 @@
+package "nova"
+
+import "nova/io/StreamReader"
+import "nova/io/File"
+import "nova/time/Time"
+import "nova/process/Process"
+import "nova/NativeSystem.h"
+
+public class System
+{
+	external type FILE
+	
+	external int NULL
+	
+	external void exit(int code) as externalExit
+	external int system(char command[])
+	external FILE* getPipe(char command[], exit(Int, String, Bool))
+	external bool fgets(char buffer[], int length, FILE* pipe)
+	external bool feof(FILE* pipe)
+	
+	public static exit(Int code)
+	{
+		externalExit(code)
+	}
+	
+	public static exit(Int code, String message)
+	{
+		exit(code, message, false)
+	}
+	
+	public static exit(Int code, String message, Bool log)
+	{
+		if (log)
+		{
+			File f = new File("Log" + Time.currentTimeMillis + ".txt")
+			
+			if (f.create())
+			{
+				f.writeLine(message)
+			}
+		}
+		
+		Console.writeLine(message)
+		
+		exit(code)
+	}
+	
+	public static execute(String command) -> Process
+	{
+		FILE* pipe = getPipe(command.chars.data, exit)
+		
+		File f = new File(pipe)
+		
+		if (!f.exists)
+		{
+			exit(1, "Unable to open pipe")
+		}
+		
+		return new Process(new StreamReader(f))
+	}
+}

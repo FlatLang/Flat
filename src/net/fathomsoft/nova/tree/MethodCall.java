@@ -1250,7 +1250,7 @@ public class MethodCall extends Variable
 		if (phase == SyntaxTree.PHASE_METHOD_CONTENTS)
 		{
 			// TODO: Update to never do this
-			if (isPrimitiveGenericType() && !(reference.toValue().getTypeClassLocation().equals("nova/standard/datastruct/list/CharArray") || reference.toValue().getTypeClassLocation().equals("nova/standard/datastruct/list/IntArray") || reference.toValue().getTypeClassLocation().equals("nova/standard/datastruct/list/DoubleArray")))
+			if (isPrimitiveGenericType() && !(reference.toValue().getTypeClassLocation().equals("nova/datastruct/list/CharArray") || reference.toValue().getTypeClassLocation().equals("nova/datastruct/list/IntArray") || reference.toValue().getTypeClassLocation().equals("nova/datastruct/list/DoubleArray")))
 			{
 				if (accessed instanceof Variable)
 				{

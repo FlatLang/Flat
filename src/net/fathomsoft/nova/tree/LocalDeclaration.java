@@ -78,7 +78,7 @@ public class LocalDeclaration extends VariableDeclaration
 		{
 			setImplicit(true);
 			
-			return true;//setType("nova/standard/Object", require, checkType, checkDataType);
+			return true;//setType("nova/Object", require, checkType, checkDataType);
 		}
 		
 		return super.setType(type, require, checkType, checkDataType);
@@ -350,7 +350,25 @@ public class LocalDeclaration extends VariableDeclaration
 			}
 		}
 	}
-
+	
+	/*@Override
+	public StringBuilder generateCType(StringBuilder builder, boolean checkArray, boolean checkValueReference)
+	{
+		if (isImplicit())
+		{
+			builder.append("void*");
+			
+			if (checkValueReference && isValueReference())
+			{
+				builder.append('*');
+			}
+			
+			return builder;
+		}
+		
+		return super.generateCType(builder, checkArray, checkValueReference);
+	}*/
+	
 	public Value getTypeValue()
 	{
 		Value value = new IValue(this, getLocationIn());

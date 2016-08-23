@@ -247,7 +247,7 @@ public class Catch extends ExceptionHandler
 		
 		ClassDeclaration exception = getExceptionDeclaration().getTypeClass();
 		
-//		ClassDeclaration object = getProgram().getClassDeclaration("nova/standard/Object");
+//		ClassDeclaration object = getProgram().getClassDeclaration("nova/Object");
 //		
 //		while (exception != null && exception.doesExtendClass(object))
 //		{

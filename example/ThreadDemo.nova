@@ -1,7 +1,7 @@
 package "example"
 
-import "nova/standard/thread/Thread"
-import "nova/standard/time/Timer"
+import "nova/thread/Thread"
+import "nova/time/Timer"
 
 public class ThreadDemo
 {

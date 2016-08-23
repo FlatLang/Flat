@@ -16,16 +16,16 @@
 
 #include <stdio.h>
 
-//#include <nova/standard/primitive/nova_standard_primitive_Nova_Null.h>
-//#include <nova/standard/exception/nova_standard_exception_Nova_ExceptionData.h>
+//#include <nova/primitive/nova_primitive_Nova_Null.h>
+//#include <nova/exception/nova_exception_Nova_ExceptionData.h>
 
-typedef struct nova_standard_exception_Nova_ExceptionData nova_standard_exception_Nova_ExceptionData;
-typedef struct nova_standard_primitive_Nova_Null nova_standard_primitive_Nova_Null;
+typedef struct nova_exception_Nova_ExceptionData nova_exception_Nova_ExceptionData;
+typedef struct nova_primitive_Nova_Null nova_primitive_Nova_Null;
 
-extern nova_standard_primitive_Nova_Null* nova_null;
+extern nova_primitive_Nova_Null* nova_null;
 extern void* nova_garbageData;
 
-typedef void (*del_function)(void* reference, nova_standard_exception_Nova_ExceptionData* exceptionData);
+typedef void (*del_function)(void* reference, nova_exception_Nova_ExceptionData* exceptionData);
 
 /**
  * @dest Destination array
@@ -43,6 +43,6 @@ char* ufgets(FILE* stream);
 void copy_string(char* target, char* source);
 
 void** nova_gen_array(void** array, int* dimensionSizes, int dimension, int dimensions, int size);
-void nova_free_array(void** array, int* dimensionSizes, int dimension, int dimensions, del_function function, nova_standard_exception_Nova_ExceptionData* exceptionData);
+void nova_free_array(void** array, int* dimensionSizes, int dimension, int dimensions, del_function function, nova_exception_Nova_ExceptionData* exceptionData);
 
 #endif

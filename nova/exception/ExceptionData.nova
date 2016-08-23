@@ -1,0 +1,64 @@
+package "nova/exception"
+
+public class ExceptionData
+{
+	external type buffer
+	external buffer* NULL
+	
+	external void jump(buffer buf, int code)
+	
+	visible buffer* buf
+	
+	visible ExceptionData parent
+	
+	visible Int[] codes
+	
+	public Exception thrownException
+	
+	public construct(buffer* buf)
+	{
+		this.buf = buf
+		codes    = new IntArray()
+	}
+	
+	public addCode(Int code)
+	{
+		codes.add(code)
+	}
+	
+	getDataByCode(Int code) -> ExceptionData
+	{
+		ExceptionData data = this
+		
+		repeat
+		{
+		    if (data.codes.any({ _ == code }) || data.parent == null)
+            {
+                return data
+            }
+			
+			data = data.parent
+		}
+		
+		return null
+	}
+	
+	public jumpToBuffer(Int code)
+	{
+		ExceptionData data = getDataByCode(code)
+		
+		if (data == NULL)
+		{
+        	Console.writeLine("Could not get exception buffer!")
+        	
+        	return
+		}
+		
+		if (data.parent == null)
+		{
+			code = 1
+		}
+		
+		jump(data.buf, code)
+	}
+}

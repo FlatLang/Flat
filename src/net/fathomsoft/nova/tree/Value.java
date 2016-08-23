@@ -195,15 +195,15 @@ public abstract class Value extends Node implements AbstractValue
 				type += "Array<";
 			}
 			
-			if ("nova/standard/primitive/number/Int".equals(getTypeClassLocation()))
+			if ("nova/primitive/number/Int".equals(getTypeClassLocation()))
 			{
 				type += "IntArray";
 			}
-			else if ("nova/standard/primitive/number/Char".equals(getTypeClassLocation()))
+			else if ("nova/primitive/number/Char".equals(getTypeClassLocation()))
 			{
 				type += "CharArray";
 			}
-			else if ("nova/standard/primitive/number/Double".equals(getTypeClassLocation()))
+			else if ("nova/primitive/number/Double".equals(getTypeClassLocation()))
 			{
 				type += "DoubleArray";
 			}
@@ -393,8 +393,8 @@ public abstract class Value extends Node implements AbstractValue
 		
 		if (location != null)
 		{
-			return location.equals("nova/standard/datastruct/list/CharArray") || location.equals("nova/standard/datastruct/list/IntArray") || location.equals("nova/standard/datastruct/list/DoubleArray") ||
-				location.equals("nova/standard/datastruct/list/CharArrayIterator") || location.equals("nova/standard/datastruct/list/IntArrayIterator") || location.equals("nova/standard/datastruct/list/DoubleArrayIterator");
+			return location.equals("nova/datastruct/list/CharArray") || location.equals("nova/datastruct/list/IntArray") || location.equals("nova/datastruct/list/DoubleArray") ||
+				location.equals("nova/datastruct/list/CharArrayIterator") || location.equals("nova/datastruct/list/IntArrayIterator") || location.equals("nova/datastruct/list/DoubleArrayIterator");
 		}
 		
 		return false;
@@ -408,7 +408,7 @@ public abstract class Value extends Node implements AbstractValue
 			return this;
 		}
 		
-		if ("nova/standard/datastruct/list/Array".equals(getTypeClassLocation()))
+		if ("nova/datastruct/list/Array".equals(getTypeClassLocation()))
 		{
 			return getGenericTypeArgument(0);
 		}
@@ -569,9 +569,23 @@ public abstract class Value extends Node implements AbstractValue
 				}
 			}
 		}
-		if (this instanceof Variable && ((Variable)this).getDeclaration() instanceof VirtualLocalDeclaration)
+		if (this instanceof Variable)
 		{
-			return ((VirtualLocalDeclaration)((Variable)this).getDeclaration()).getReference().getReturnedNode().getTypeClass().getFileDeclaration();
+			Variable var = (Variable)this;
+			
+			if (var.getDeclaration() instanceof LocalDeclaration)
+			{
+				LocalDeclaration decl = (LocalDeclaration)var.getDeclaration();
+				
+				if (decl.isImplicit())
+				{
+					return decl.getImplicitType().getReferenceFile();
+				}
+			}
+			if (var.getDeclaration() instanceof VirtualLocalDeclaration)
+			{
+				return ((VirtualLocalDeclaration)var.getDeclaration()).getReference().getReturnedNode().getTypeClass().getFileDeclaration();
+			}
 		}
 		else if (this instanceof VirtualLocalDeclaration)
 		{

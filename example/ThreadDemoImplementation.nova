@@ -1,6 +1,6 @@
 package "example"
 
-import "nova/standard/thread/Thread"
+import "nova/thread/Thread"
 
 public class ThreadDemoImplementation extends Thread
 {

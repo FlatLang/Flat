@@ -1,7 +1,7 @@
 package "example/database"
 
-import "nova/standard/database/DBConnector"
-import "nova/standard/database/ResultSet"
+import "nova/database/DBConnector"
+import "nova/database/ResultSet"
 
 public class DatabaseDemo
 {
