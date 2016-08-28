@@ -1027,7 +1027,7 @@ public abstract class Value extends Node implements AbstractValue
 		{
 			builder.append('*');
 		}
-		
+
 		builder.append(type.generateGenericType(context));
 		
 		return builder;
@@ -1257,7 +1257,7 @@ public abstract class Value extends Node implements AbstractValue
 			return original.getType();
 		}
 		
-		return getType();
+		return getNovaType();
 	}
 	
 	public GenericTypeParameter getGenericTypeParameter()
