@@ -19,6 +19,8 @@ import net.fathomsoft.nova.util.Patterns;
 import net.fathomsoft.nova.util.StringUtils;
 import net.fathomsoft.nova.util.SyntaxUtils;
 
+import static java.util.Arrays.stream;
+
 /**
  * Class that is the parent of all Nodes on the Tree. Keeps the basic
  * information of where the statement was in the source, and where it was
@@ -310,6 +312,23 @@ public abstract class Node implements Listenable, Annotatable
 		}
 		
 		return node;
+	}
+
+	public Node getAncestorOfType(Class<?>[] types)
+	{
+		return getAncestorOfType(types, false);
+	}
+
+	public Node getAncestorOfType(Class<?>[] types, boolean inclusive)
+	{
+		final Node[] node = new Node[] { getAncestor(inclusive) };
+
+		while (node != null && !stream(types).anyMatch(x -> x.isAssignableFrom(node.getClass()) && !node.getClass().equals(x)))
+		{
+			node[0] = node[0].getParent();
+		}
+
+		return node[0];
 	}
 	
 	/**
