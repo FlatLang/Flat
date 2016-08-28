@@ -296,7 +296,7 @@ nova_Nova_String* nova_datastruct_list_Nova_CharArray_0_Nova_join(nova_datastruc
 	nova_datastruct_list_Nova_CharArrayIterator* nova_local_0 = (nova_datastruct_list_Nova_CharArrayIterator*)nova_null;
 	char l1_Nova_element = 0;
 	
-	l1_Nova_str = nova_Nova_String_1_Nova_String(0, exceptionData, "");
+	l1_Nova_str = nova_Nova_String_1_Nova_String(0, exceptionData, (char*)(""));
 	l1_Nova_passed = 0;
 	nova_local_0 = (nova_datastruct_list_Nova_CharArrayIterator*)(nova_datastruct_list_Nova_Iterable_virtual_Accessor1_Nova_iterator((nova_datastruct_list_Nova_Iterable*)((this)), exceptionData));
 	while (nova_datastruct_list_Nova_Iterator_virtual_Accessor_Nova_hasNext((nova_datastruct_list_Nova_Iterator*)(nova_local_0), exceptionData))

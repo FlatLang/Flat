@@ -80,7 +80,7 @@ void stabilitytest_Nova_StabilityTest_Nova_main(stabilitytest_Nova_StabilityTest
 	l1_Nova_timer = nova_time_Nova_Timer_Nova_start(nova_time_Nova_Timer_Nova_Timer(0, exceptionData), exceptionData);
 	stabilitytest_Nova_StabilityTestCase_virtual0_Nova_test((stabilitytest_Nova_StabilityTestCase*)(l1_Nova_test), exceptionData);
 	nova_time_Nova_Timer_Nova_stop(l1_Nova_timer, exceptionData);
-	nova_io_Nova_Console_1_Nova_writeLine(0, exceptionData, nova_Nova_String_0_Nova_concat(nova_Nova_String_1_Nova_String(0, exceptionData, "Took "), exceptionData, nova_Nova_String_virtual1_Nova_concat((nova_Nova_String*)(nova_primitive_number_Nova_Long_2_Nova_toString(0, exceptionData, nova_time_Nova_Timer_Accessor_Nova_duration(l1_Nova_timer, exceptionData))), exceptionData, nova_Nova_String_1_Nova_String(0, exceptionData, "ms"))));
+	nova_io_Nova_Console_1_Nova_writeLine(0, exceptionData, nova_Nova_String_0_Nova_concat(nova_Nova_String_1_Nova_String(0, exceptionData, (char*)("Took ")), exceptionData, nova_Nova_String_virtual1_Nova_concat((nova_Nova_String*)(nova_primitive_number_Nova_Long_2_Nova_toString(0, exceptionData, nova_time_Nova_Timer_Accessor_Nova_duration(l1_Nova_timer, exceptionData))), exceptionData, nova_Nova_String_1_Nova_String(0, exceptionData, (char*)("ms")))));
 	nova_io_Nova_Console_Nova_waitForEnter(0, exceptionData);
 }
 
@@ -107,7 +107,7 @@ void stabilitytest_Nova_StabilityTest_0_Nova_test(stabilitytest_Nova_StabilityTe
 			stabilitytest_Nova_LambdaStability_0_Nova_test(stabilitytest_Nova_LambdaStability_Nova_LambdaStability(0, exceptionData, this), exceptionData);
 			stabilitytest_Nova_ToStringStability_0_Nova_test(stabilitytest_Nova_ToStringStability_Nova_ToStringStability(0, exceptionData, this), exceptionData);
 			stabilitytest_Nova_AssignmentStability_Nova_test(stabilitytest_Nova_AssignmentStability_Nova_AssignmentStability(0, exceptionData, this), exceptionData);
-			nova_io_Nova_Console_1_Nova_writeLine(0, exceptionData, nova_Nova_String_1_Nova_String(0, exceptionData, "All OK"));
+			nova_io_Nova_Console_1_Nova_writeLine(0, exceptionData, nova_Nova_String_1_Nova_String(0, exceptionData, (char*)("All OK")));
 		}
 	}
 	CATCH (10)
@@ -115,7 +115,7 @@ void stabilitytest_Nova_StabilityTest_0_Nova_test(stabilitytest_Nova_StabilityTe
 		stabilitytest_Nova_UnstableException* l2_Nova_e = (stabilitytest_Nova_UnstableException*)nova_null;
 		
 		l2_Nova_e = (stabilitytest_Nova_UnstableException*)exceptionData->nova_exception_Nova_ExceptionData_Nova_thrownException;
-		nova_io_Nova_Console_1_Nova_writeLine(0, exceptionData, nova_Nova_String_0_Nova_concat(nova_Nova_String_1_Nova_String(0, exceptionData, "Unstable exception thrown: "), exceptionData, l2_Nova_e->nova_exception_Nova_Exception_Nova_message));
+		nova_io_Nova_Console_1_Nova_writeLine(0, exceptionData, nova_Nova_String_0_Nova_concat(nova_Nova_String_1_Nova_String(0, exceptionData, (char*)("Unstable exception thrown: ")), exceptionData, l2_Nova_e->nova_exception_Nova_Exception_Nova_message));
 	}
 	FINALLY
 	{
@@ -125,7 +125,7 @@ void stabilitytest_Nova_StabilityTest_0_Nova_test(stabilitytest_Nova_StabilityTe
 
 void stabilitytest_Nova_StabilityTest_0_Nova_fail(stabilitytest_Nova_StabilityTest* this, nova_exception_Nova_ExceptionData* exceptionData)
 {
-	stabilitytest_Nova_StabilityTest_1_Nova_fail(this, exceptionData, nova_Nova_String_1_Nova_String(0, exceptionData, "Failed"));
+	stabilitytest_Nova_StabilityTest_1_Nova_fail(this, exceptionData, nova_Nova_String_1_Nova_String(0, exceptionData, (char*)("Failed")));
 }
 
 void stabilitytest_Nova_StabilityTest_1_Nova_fail(stabilitytest_Nova_StabilityTest* this, nova_exception_Nova_ExceptionData* exceptionData, nova_Nova_String* stabilitytest_Nova_StabilityTest_Nova_message)

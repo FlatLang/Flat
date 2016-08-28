@@ -107,7 +107,7 @@ char nova_network_Nova_ConnectionSocket_Nova_validateConnection(nova_network_Nov
 	l1_Nova_message = nova_network_Nova_ConnectionSocket_1_Nova_readString(this, exceptionData, 0);
 	if (this->nova_network_Nova_ConnectionSocket_Nova_connected)
 	{
-		nova_datastruct_list_Nova_Queue_Nova_enqueue(this->prv->nova_network_Nova_ConnectionSocket_Nova_inputBuffer, exceptionData, (nova_Nova_Object*)(l1_Nova_message));
+		nova_datastruct_list_Nova_Queue_Nova_enqueue((nova_datastruct_list_Nova_Queue*)(this->prv->nova_network_Nova_ConnectionSocket_Nova_inputBuffer), exceptionData, (nova_Nova_Object*)(l1_Nova_message));
 	}
 	return this->nova_network_Nova_ConnectionSocket_Nova_connected;
 }
@@ -119,7 +119,7 @@ nova_Nova_String* nova_network_Nova_ConnectionSocket_0_Nova_readString(nova_netw
 
 nova_Nova_String* nova_network_Nova_ConnectionSocket_1_Nova_readString(nova_network_Nova_ConnectionSocket* this, nova_exception_Nova_ExceptionData* exceptionData, char nova_network_Nova_ConnectionSocket_Nova_checkBuffer)
 {
-	if (!nova_network_Nova_ConnectionSocket_Nova_checkBuffer || nova_datastruct_list_Nova_Queue_Accessor_Nova_empty(this->prv->nova_network_Nova_ConnectionSocket_Nova_inputBuffer, exceptionData))
+	if (!nova_network_Nova_ConnectionSocket_Nova_checkBuffer || nova_datastruct_list_Nova_Queue_Accessor_Nova_empty((nova_datastruct_list_Nova_Queue*)(this->prv->nova_network_Nova_ConnectionSocket_Nova_inputBuffer), exceptionData))
 	{
 		char* l1_Nova_data = (char*)nova_null;
 		
@@ -132,7 +132,7 @@ nova_Nova_String* nova_network_Nova_ConnectionSocket_1_Nova_readString(nova_netw
 		}
 		return nova_Nova_String_1_Nova_String(0, exceptionData, l1_Nova_data);
 	}
-	return (nova_Nova_String*)nova_datastruct_list_Nova_Queue_Nova_dequeue(this->prv->nova_network_Nova_ConnectionSocket_Nova_inputBuffer, exceptionData);
+	return (nova_Nova_String*)nova_datastruct_list_Nova_Queue_Nova_dequeue((nova_datastruct_list_Nova_Queue*)(this->prv->nova_network_Nova_ConnectionSocket_Nova_inputBuffer), exceptionData);
 }
 
 char nova_network_Nova_ConnectionSocket_Nova_write(nova_network_Nova_ConnectionSocket* this, nova_exception_Nova_ExceptionData* exceptionData, nova_Nova_String* nova_network_Nova_ConnectionSocket_Nova_data)

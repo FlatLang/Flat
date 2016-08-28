@@ -79,9 +79,9 @@ nova_Nova_String* nova_primitive_Nova_Bool_2_Nova_toString(nova_primitive_Nova_B
 {
 	if (nova_primitive_Nova_Bool_Nova_value)
 	{
-		return nova_Nova_String_1_Nova_String(0, exceptionData, "true");
+		return nova_Nova_String_1_Nova_String(0, exceptionData, (char*)("true"));
 	}
-	return nova_Nova_String_1_Nova_String(0, exceptionData, "false");
+	return nova_Nova_String_1_Nova_String(0, exceptionData, (char*)("false"));
 }
 
 nova_Nova_String* nova_primitive_Nova_Bool_3_Nova_toString(nova_primitive_Nova_Bool* this, nova_exception_Nova_ExceptionData* exceptionData)

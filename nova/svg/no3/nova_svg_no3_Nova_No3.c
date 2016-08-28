@@ -30,9 +30,9 @@ nova_svg_no3_Extension_VTable_No3 nova_svg_no3_Extension_VTable_No3_val =
 		0,
 		0,
 	},
-	nova_Nova_Object_0_Nova_getHashCodeLong,
 	nova_Nova_Object_0_Nova_toString,
 	nova_Nova_Object_0_Nova_equals,
+	nova_Nova_Object_Accessor_Nova_hashCodeLong,
 };
 
 

@@ -76,7 +76,7 @@ void nova_web_svg_Nova_SvgComponent_2_Nova_this(nova_web_svg_Nova_SvgComponent* 
 
 void nova_web_svg_Nova_SvgComponent_0_Nova_generateOutput(nova_web_svg_Nova_SvgComponent* this, nova_exception_Nova_ExceptionData* exceptionData, nova_io_Nova_File* nova_web_svg_Nova_SvgComponent_Nova_file)
 {
-	nova_io_Nova_Console_1_Nova_writeLine(0, exceptionData, nova_Nova_String_1_Nova_String(0, exceptionData, "This is wrong"));
+	nova_io_Nova_Console_1_Nova_writeLine(0, exceptionData, nova_Nova_String_1_Nova_String(0, exceptionData, (char*)("This is wrong")));
 }
 
 void nova_web_svg_Nova_SvgComponent_Nova_super(nova_web_svg_Nova_SvgComponent* this, nova_exception_Nova_ExceptionData* exceptionData)

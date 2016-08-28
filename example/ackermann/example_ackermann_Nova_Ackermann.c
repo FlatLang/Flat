@@ -69,7 +69,7 @@ void example_ackermann_Nova_Ackermann_Nova_destroy(example_ackermann_Nova_Ackerm
 
 void example_ackermann_Nova_Ackermann_Nova_main(example_ackermann_Nova_Ackermann* this, nova_exception_Nova_ExceptionData* exceptionData, nova_datastruct_list_Nova_Array* example_ackermann_Nova_Ackermann_Nova_args)
 {
-	nova_io_Nova_Console_1_Nova_writeLine(0, exceptionData, nova_Nova_String_0_Nova_concat(nova_Nova_String_1_Nova_String(0, exceptionData, "Ackermann: "), exceptionData, nova_primitive_number_Nova_Int_2_Nova_toString(0, exceptionData, example_ackermann_Nova_Ackermann_Nova_run(0, exceptionData, 4, 1))));
+	nova_io_Nova_Console_1_Nova_writeLine(0, exceptionData, nova_Nova_String_0_Nova_concat(nova_Nova_String_1_Nova_String(0, exceptionData, (char*)("Ackermann: ")), exceptionData, nova_primitive_number_Nova_Int_2_Nova_toString(0, exceptionData, example_ackermann_Nova_Ackermann_Nova_run(0, exceptionData, 4, 1))));
 	nova_io_Nova_Console_Nova_waitForEnter(0, exceptionData);
 }
 

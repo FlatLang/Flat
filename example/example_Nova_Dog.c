@@ -87,7 +87,7 @@ int example_Nova_Dog_Nova_getNumEyes(example_Nova_Dog* this, nova_exception_Nova
 
 nova_Nova_String* example_Nova_Dog_Nova_getDescription(example_Nova_Dog* this, nova_exception_Nova_ExceptionData* exceptionData)
 {
-	return nova_Nova_String_1_Nova_String(0, exceptionData, "A fuzzy dog");
+	return nova_Nova_String_1_Nova_String(0, exceptionData, (char*)("A fuzzy dog"));
 }
 
 void example_Nova_Dog_0_Nova_super(example_Nova_Dog* this, nova_exception_Nova_ExceptionData* exceptionData)

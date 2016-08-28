@@ -102,6 +102,15 @@
 #include <nova/security/nova_security_Nova_MD5.h>
 #include <nova/star/nova_star_Nova_Window.h>
 #include <nova/star/nova_star_Nova_WindowThread.h>
+#include <nova/svg/nova_svg_Nova_Svg.h>
+#include <nova/svg/nova_svg_Nova_SvgCircle.h>
+#include <nova/svg/nova_svg_Nova_SvgComponent.h>
+#include <nova/svg/nova_svg_Nova_SvgComponentList.h>
+#include <nova/svg/nova_svg_Nova_SvgComponentNode.h>
+#include <nova/svg/nova_svg_Nova_SvgMainComponent.h>
+#include <nova/svg/no3/nova_svg_no3_Nova_No3.h>
+#include <nova/svg/no3/nova_svg_no3_Nova_No3Node.h>
+#include <nova/svg/no3/nova_svg_no3_Nova_No3Selection.h>
 #include <nova/thread/nova_thread_Nova_Thread.h>
 #include <nova/thread/nova_thread_Nova_UncaughtExceptionHandler.h>
 #include <nova/thread/async/nova_thread_async_Nova_Async.h>
@@ -1558,6 +1567,91 @@ nova_star_Nova_WindowThread_native_Nova_run run;
 nova_star_Nova_WindowThread_native_Nova_WindowThread WindowThread;
 } nova_star_native_WindowThread;
 
+typedef void (*nova_svg_Nova_Svg_native_Nova_generateOutput)(nova_svg_Nova_Svg*, nova_exception_Nova_ExceptionData*, nova_io_Nova_File*);
+typedef void (*nova_svg_Nova_Svg_native_Nova_generateHTMLOutput)(nova_svg_Nova_Svg*, nova_exception_Nova_ExceptionData*, nova_io_Nova_File*);
+typedef nova_svg_Nova_Svg* (*nova_svg_Nova_Svg_native_Nova_Svg)(nova_svg_Nova_Svg*, nova_exception_Nova_ExceptionData*);
+
+typedef struct nova_svg_native_Svg
+{
+nova_svg_Nova_Svg_native_Nova_generateOutput generateOutput;
+nova_svg_Nova_Svg_native_Nova_generateHTMLOutput generateHTMLOutput;
+nova_svg_Nova_Svg_native_Nova_Svg Svg;
+} nova_svg_native_Svg;
+
+typedef void (*nova_svg_Nova_SvgCircle_native_Nova_generateOutput)(nova_svg_Nova_SvgCircle*, nova_exception_Nova_ExceptionData*, nova_io_Nova_File*);
+typedef nova_Nova_String* (*nova_svg_Nova_SvgCircle_native0_Nova_toString)(nova_svg_Nova_SvgCircle*, nova_exception_Nova_ExceptionData*);
+typedef nova_svg_Nova_SvgCircle* (*nova_svg_Nova_SvgCircle_native_Nova_SvgCircle)(nova_svg_Nova_SvgCircle*, nova_exception_Nova_ExceptionData*, double, double, int);
+
+typedef struct nova_svg_native_SvgCircle
+{
+nova_svg_Nova_SvgCircle_native_Nova_generateOutput generateOutput;
+nova_svg_Nova_SvgCircle_native0_Nova_toString toString;
+nova_svg_Nova_SvgCircle_native_Nova_SvgCircle SvgCircle;
+} nova_svg_native_SvgCircle;
+
+typedef void (*nova_svg_Nova_SvgComponent_native0_Nova_generateOutput)(nova_svg_Nova_SvgComponent*, nova_exception_Nova_ExceptionData*, nova_io_Nova_File*);
+typedef nova_svg_Nova_SvgComponent* (*nova_svg_Nova_SvgComponent_native_Nova_SvgComponent)(nova_svg_Nova_SvgComponent*, nova_exception_Nova_ExceptionData*);
+
+typedef struct nova_svg_native_SvgComponent
+{
+nova_svg_Nova_SvgComponent_native0_Nova_generateOutput generateOutput__nova_io_File;
+nova_svg_Nova_SvgComponent_native_Nova_SvgComponent SvgComponent;
+} nova_svg_native_SvgComponent;
+
+typedef void (*nova_svg_Nova_SvgComponentList_native_Nova_generateOutput)(nova_svg_Nova_SvgComponentList*, nova_exception_Nova_ExceptionData*, nova_io_Nova_File*);
+typedef void (*nova_svg_Nova_SvgComponentList_native_Nova_addChild)(nova_svg_Nova_SvgComponentList*, nova_exception_Nova_ExceptionData*, nova_svg_Nova_SvgComponent*);
+typedef nova_svg_Nova_SvgComponentList* (*nova_svg_Nova_SvgComponentList_native_Nova_SvgComponentList)(nova_svg_Nova_SvgComponentList*, nova_exception_Nova_ExceptionData*);
+
+typedef struct nova_svg_native_SvgComponentList
+{
+nova_svg_Nova_SvgComponentList_native_Nova_generateOutput generateOutput;
+nova_svg_Nova_SvgComponentList_native_Nova_addChild addChild;
+nova_svg_Nova_SvgComponentList_native_Nova_SvgComponentList SvgComponentList;
+} nova_svg_native_SvgComponentList;
+
+typedef nova_svg_Nova_SvgComponentNode* (*nova_svg_Nova_SvgComponentNode_native_Nova_SvgComponentNode)(nova_svg_Nova_SvgComponentNode*, nova_exception_Nova_ExceptionData*);
+
+typedef struct nova_svg_native_SvgComponentNode
+{
+nova_svg_Nova_SvgComponentNode_native_Nova_SvgComponentNode SvgComponentNode;
+} nova_svg_native_SvgComponentNode;
+
+typedef void (*nova_svg_Nova_SvgMainComponent_native0_Nova_generateOutput)(nova_svg_Nova_SvgMainComponent*, nova_exception_Nova_ExceptionData*, nova_io_Nova_File*);
+typedef nova_svg_Nova_SvgMainComponent* (*nova_svg_Nova_SvgMainComponent_native_Nova_SvgMainComponent)(nova_svg_Nova_SvgMainComponent*, nova_exception_Nova_ExceptionData*);
+
+typedef struct nova_svg_native_SvgMainComponent
+{
+nova_svg_Nova_SvgMainComponent_native0_Nova_generateOutput generateOutput__nova_io_File;
+nova_svg_Nova_SvgMainComponent_native_Nova_SvgMainComponent SvgMainComponent;
+} nova_svg_native_SvgMainComponent;
+
+typedef nova_svg_no3_Nova_No3Selection* (*nova_svg_no3_Nova_No3_native_Nova_select)(nova_svg_no3_Nova_No3*, nova_exception_Nova_ExceptionData*, nova_Nova_String*);
+typedef nova_svg_no3_Nova_No3* (*nova_svg_no3_Nova_No3_native_Nova_No3)(nova_svg_no3_Nova_No3*, nova_exception_Nova_ExceptionData*);
+
+typedef struct nova_svg_no3_native_No3
+{
+nova_svg_no3_Nova_No3_native_Nova_select select;
+nova_svg_no3_Nova_No3_native_Nova_No3 No3;
+} nova_svg_no3_native_No3;
+
+typedef nova_Nova_String* (*nova_svg_no3_Nova_No3Node_native0_Nova_toJs)(nova_svg_no3_Nova_No3Node*, nova_exception_Nova_ExceptionData*);
+typedef nova_svg_no3_Nova_No3Node* (*nova_svg_no3_Nova_No3Node_native_Nova_No3Node)(nova_svg_no3_Nova_No3Node*, nova_exception_Nova_ExceptionData*);
+
+typedef struct nova_svg_no3_native_No3Node
+{
+nova_svg_no3_Nova_No3Node_native0_Nova_toJs toJs;
+nova_svg_no3_Nova_No3Node_native_Nova_No3Node No3Node;
+} nova_svg_no3_native_No3Node;
+
+typedef nova_Nova_String* (*nova_svg_no3_Nova_No3Selection_native_Nova_toJs)(nova_svg_no3_Nova_No3Selection*, nova_exception_Nova_ExceptionData*);
+typedef nova_svg_no3_Nova_No3Selection* (*nova_svg_no3_Nova_No3Selection_native_Nova_No3Selection)(nova_svg_no3_Nova_No3Selection*, nova_exception_Nova_ExceptionData*, nova_Nova_String*);
+
+typedef struct nova_svg_no3_native_No3Selection
+{
+nova_svg_no3_Nova_No3Selection_native_Nova_toJs toJs;
+nova_svg_no3_Nova_No3Selection_native_Nova_No3Selection No3Selection;
+} nova_svg_no3_native_No3Selection;
+
 typedef void (*nova_thread_Nova_Thread_native_Nova_start)(nova_thread_Nova_Thread*, nova_exception_Nova_ExceptionData*);
 typedef void (*nova_thread_Nova_Thread_native_Nova_join)(nova_thread_Nova_Thread*, nova_exception_Nova_ExceptionData*);
 typedef void (*nova_thread_Nova_Thread_native_Nova_kill)(nova_thread_Nova_Thread*, nova_exception_Nova_ExceptionData*);
@@ -2342,6 +2436,15 @@ nova_process_native_Process nova_process_Process;
 nova_security_native_MD5 nova_security_MD5;
 nova_star_native_Window nova_star_Window;
 nova_star_native_WindowThread nova_star_WindowThread;
+nova_svg_native_Svg nova_svg_Svg;
+nova_svg_native_SvgCircle nova_svg_SvgCircle;
+nova_svg_native_SvgComponent nova_svg_SvgComponent;
+nova_svg_native_SvgComponentList nova_svg_SvgComponentList;
+nova_svg_native_SvgComponentNode nova_svg_SvgComponentNode;
+nova_svg_native_SvgMainComponent nova_svg_SvgMainComponent;
+nova_svg_no3_native_No3 nova_svg_no3_No3;
+nova_svg_no3_native_No3Node nova_svg_no3_No3Node;
+nova_svg_no3_native_No3Selection nova_svg_no3_No3Selection;
 nova_thread_native_Thread nova_thread_Thread;
 nova_thread_native_UncaughtExceptionHandler nova_thread_UncaughtExceptionHandler;
 nova_thread_async_native_Async nova_thread_async_Async;

@@ -77,7 +77,7 @@ void nova_datastruct_Nova_Pair_Nova_this(nova_datastruct_Nova_Pair* this, nova_e
 
 nova_Nova_String* nova_datastruct_Nova_Pair_0_Nova_toString(nova_datastruct_Nova_Pair* this, nova_exception_Nova_ExceptionData* exceptionData)
 {
-	return nova_Nova_String_0_Nova_concat(nova_Nova_String_1_Nova_String(0, exceptionData, "Pair ("), exceptionData, nova_Nova_String_virtual1_Nova_concat((nova_Nova_String*)(nova_Nova_Object_virtual1_Nova_toString((nova_Nova_Object*)((this->nova_datastruct_Nova_Pair_Nova_key)), exceptionData)), exceptionData, nova_Nova_String_0_Nova_concat(nova_Nova_String_1_Nova_String(0, exceptionData, ", "), exceptionData, nova_Nova_String_virtual1_Nova_concat((nova_Nova_String*)(nova_Nova_Object_virtual1_Nova_toString((nova_Nova_Object*)((this->nova_datastruct_Nova_Pair_Nova_value)), exceptionData)), exceptionData, nova_Nova_String_1_Nova_String(0, exceptionData, ")")))));
+	return nova_Nova_String_0_Nova_concat(nova_Nova_String_1_Nova_String(0, exceptionData, (char*)("Pair (")), exceptionData, nova_Nova_String_virtual1_Nova_concat((nova_Nova_String*)(nova_Nova_Object_virtual1_Nova_toString((nova_Nova_Object*)((this->nova_datastruct_Nova_Pair_Nova_key)), exceptionData)), exceptionData, nova_Nova_String_0_Nova_concat(nova_Nova_String_1_Nova_String(0, exceptionData, (char*)(", ")), exceptionData, nova_Nova_String_virtual1_Nova_concat((nova_Nova_String*)(nova_Nova_Object_virtual1_Nova_toString((nova_Nova_Object*)((this->nova_datastruct_Nova_Pair_Nova_value)), exceptionData)), exceptionData, nova_Nova_String_1_Nova_String(0, exceptionData, (char*)(")"))))));
 }
 
 void nova_datastruct_Nova_Pair_Nova_super(nova_datastruct_Nova_Pair* this, nova_exception_Nova_ExceptionData* exceptionData)

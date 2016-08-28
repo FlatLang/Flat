@@ -30,9 +30,9 @@ nova_svg_Extension_VTable_Svg nova_svg_Extension_VTable_Svg_val =
 		0,
 		0,
 	},
-	nova_Nova_Object_0_Nova_getHashCodeLong,
 	nova_Nova_Object_0_Nova_toString,
 	nova_Nova_Object_0_Nova_equals,
+	nova_Nova_Object_Accessor_Nova_hashCodeLong,
 };
 
 
@@ -80,9 +80,9 @@ void nova_svg_Nova_Svg_Nova_generateOutput(nova_svg_Nova_Svg* this, nova_excepti
 
 void nova_svg_Nova_Svg_Nova_generateHTMLOutput(nova_svg_Nova_Svg* this, nova_exception_Nova_ExceptionData* exceptionData, nova_io_Nova_File* nova_svg_Nova_Svg_Nova_file)
 {
-	nova_io_Nova_File_Nova_write(nova_svg_Nova_Svg_Nova_file, exceptionData, nova_Nova_String_1_Nova_String(0, exceptionData, "<html>\n"));
+	nova_io_Nova_File_Nova_write(nova_svg_Nova_Svg_Nova_file, exceptionData, nova_Nova_String_1_Nova_String(0, exceptionData, (char*)("<html>\n")));
 	nova_svg_Nova_Svg_Nova_generateOutput(this, exceptionData, nova_svg_Nova_Svg_Nova_file);
-	nova_io_Nova_File_Nova_write(nova_svg_Nova_Svg_Nova_file, exceptionData, nova_Nova_String_1_Nova_String(0, exceptionData, "</html>"));
+	nova_io_Nova_File_Nova_write(nova_svg_Nova_Svg_Nova_file, exceptionData, nova_Nova_String_1_Nova_String(0, exceptionData, (char*)("</html>")));
 }
 
 void nova_svg_Nova_Svg_Nova_super(nova_svg_Nova_Svg* this, nova_exception_Nova_ExceptionData* exceptionData)

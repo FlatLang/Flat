@@ -85,7 +85,7 @@ void nova_datastruct_list_Nova_NoSuchElementException_Nova_destroy(nova_datastru
 
 void nova_datastruct_list_Nova_NoSuchElementException_1_Nova_this(nova_datastruct_list_Nova_NoSuchElementException* this, nova_exception_Nova_ExceptionData* exceptionData)
 {
-	nova_datastruct_list_Nova_NoSuchElementException_2_Nova_this(this, exceptionData, nova_Nova_String_1_Nova_String(0, exceptionData, "No such element"));
+	nova_datastruct_list_Nova_NoSuchElementException_2_Nova_this(this, exceptionData, nova_Nova_String_1_Nova_String(0, exceptionData, (char*)("No such element")));
 }
 
 void nova_datastruct_list_Nova_NoSuchElementException_2_Nova_this(nova_datastruct_list_Nova_NoSuchElementException* this, nova_exception_Nova_ExceptionData* exceptionData, nova_Nova_String* nova_datastruct_list_Nova_NoSuchElementException_Nova_message)

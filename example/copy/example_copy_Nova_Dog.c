@@ -69,7 +69,7 @@ void example_copy_Nova_Dog_Nova_destroy(example_copy_Nova_Dog** this, nova_excep
 
 void example_copy_Nova_Dog_Nova_this(example_copy_Nova_Dog* this, nova_exception_Nova_ExceptionData* exceptionData, int example_copy_Nova_Dog_Nova_a, int example_copy_Nova_Dog_Nova_b)
 {
-	nova_io_Nova_Console_1_Nova_writeLine(0, exceptionData, nova_Nova_String_virtual1_Nova_concat((nova_Nova_String*)(nova_primitive_number_Nova_Int_2_Nova_toString(0, exceptionData, example_copy_Nova_Dog_Nova_a)), exceptionData, nova_Nova_String_0_Nova_concat(nova_Nova_String_1_Nova_String(0, exceptionData, ", "), exceptionData, nova_primitive_number_Nova_Int_2_Nova_toString(0, exceptionData, example_copy_Nova_Dog_Nova_b))));
+	nova_io_Nova_Console_1_Nova_writeLine(0, exceptionData, nova_Nova_String_virtual1_Nova_concat((nova_Nova_String*)(nova_primitive_number_Nova_Int_2_Nova_toString(0, exceptionData, example_copy_Nova_Dog_Nova_a)), exceptionData, nova_Nova_String_0_Nova_concat(nova_Nova_String_1_Nova_String(0, exceptionData, (char*)(", ")), exceptionData, nova_primitive_number_Nova_Int_2_Nova_toString(0, exceptionData, example_copy_Nova_Dog_Nova_b))));
 }
 
 void example_copy_Nova_Dog_Nova_super(example_copy_Nova_Dog* this, nova_exception_Nova_ExceptionData* exceptionData)

@@ -71,7 +71,7 @@ void nova_Nova_Object_Nova_destroy(nova_Nova_Object** this, nova_exception_Nova_
 
 nova_Nova_String* nova_Nova_Object_0_Nova_toString(nova_Nova_Object* this, nova_exception_Nova_ExceptionData* exceptionData)
 {
-	return nova_Nova_String_0_Nova_concat(nova_Nova_String_1_Nova_String(0, exceptionData, "[Object @"), exceptionData, nova_Nova_String_virtual1_Nova_concat((nova_Nova_String*)((nova_Nova_Object_Accessor_Nova_hashCode(this, exceptionData))), exceptionData, nova_Nova_String_1_Nova_String(0, exceptionData, "]")));
+	return nova_Nova_String_0_Nova_concat(nova_Nova_String_1_Nova_String(0, exceptionData, (char*)("[Object @")), exceptionData, nova_Nova_String_virtual1_Nova_concat((nova_Nova_String*)((nova_Nova_Object_Accessor_Nova_hashCode(this, exceptionData))), exceptionData, nova_Nova_String_1_Nova_String(0, exceptionData, (char*)("]"))));
 }
 
 char nova_Nova_Object_0_Nova_equals(nova_Nova_Object* this, nova_exception_Nova_ExceptionData* exceptionData, nova_Nova_Object* nova_Nova_Object_Nova_another)

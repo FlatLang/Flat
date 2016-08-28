@@ -90,7 +90,7 @@ void nova_web_js_json_Nova_Json_Nova_destroy(nova_web_js_json_Nova_Json** this, 
 
 nova_Nova_String* nova_web_js_json_Nova_Json_0_Nova_toString(nova_web_js_json_Nova_Json* this, nova_exception_Nova_ExceptionData* exceptionData)
 {
-	return nova_Nova_String_1_Nova_String(0, exceptionData, "{}");
+	return nova_Nova_String_1_Nova_String(0, exceptionData, (char*)("{}"));
 }
 
 void nova_web_js_json_Nova_Json_0_Nova_this(nova_web_js_json_Nova_Json* this, nova_exception_Nova_ExceptionData* exceptionData)

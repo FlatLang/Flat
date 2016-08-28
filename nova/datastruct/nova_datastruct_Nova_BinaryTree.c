@@ -36,8 +36,6 @@ nova_datastruct_Extension_VTable_BinaryTree nova_datastruct_Extension_VTable_Bin
 };
 
 
-
-nova_datastruct_Nova_BinaryNode* nova_datastruct_Nova_BinaryTree_Mutator_Nova_root(nova_datastruct_Nova_BinaryTree* this, nova_exception_Nova_ExceptionData* exceptionData, nova_datastruct_Nova_BinaryNode* nova_datastruct_Nova_BinaryTree_Nova_node);
 void nova_datastruct_Nova_BinaryTree_Nova_init_static(nova_exception_Nova_ExceptionData* exceptionData)
 {
 	{
@@ -79,7 +77,7 @@ nova_datastruct_Nova_BinaryTree* nova_datastruct_Nova_BinaryTree_Nova_addNode(no
 {
 	if (nova_datastruct_Nova_BinaryTree_Accessor_Nova_root(this, exceptionData) == (nova_datastruct_Nova_BinaryNode*)nova_null)
 	{
-		nova_datastruct_Nova_BinaryTree_Mutator_Nova_root(this, exceptionData, nova_datastruct_Nova_BinaryNode_1_Nova_BinaryNode(0, exceptionData, (nova_datastruct_Nova_Comparable*)(nova_datastruct_Nova_BinaryTree_Nova_data)));
+		nova_datastruct_Nova_BinaryTree_Mutator_Nova_root(this, exceptionData, (nova_datastruct_Nova_BinaryNode*)(nova_datastruct_Nova_BinaryNode_1_Nova_BinaryNode(0, exceptionData, (nova_datastruct_Nova_Comparable*)(nova_datastruct_Nova_BinaryTree_Nova_data))));
 	}
 	else
 	{

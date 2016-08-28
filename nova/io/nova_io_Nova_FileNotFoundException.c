@@ -70,7 +70,7 @@ void nova_io_Nova_FileNotFoundException_Nova_destroy(nova_io_Nova_FileNotFoundEx
 
 void nova_io_Nova_FileNotFoundException_Nova_this(nova_io_Nova_FileNotFoundException* this, nova_exception_Nova_ExceptionData* exceptionData, nova_io_Nova_File* nova_io_Nova_FileNotFoundException_Nova_file)
 {
-	nova_exception_Nova_Exception_4_Nova_this((nova_exception_Nova_Exception*)(this), exceptionData, nova_Nova_String_0_Nova_concat(nova_Nova_String_1_Nova_String(0, exceptionData, "File at location '"), exceptionData, nova_Nova_String_virtual1_Nova_concat((nova_Nova_String*)(nova_io_Nova_FileNotFoundException_Nova_file->nova_io_Nova_File_Nova_location), exceptionData, nova_Nova_String_1_Nova_String(0, exceptionData, "' does not exist"))));
+	nova_exception_Nova_Exception_4_Nova_this((nova_exception_Nova_Exception*)(this), exceptionData, nova_Nova_String_0_Nova_concat(nova_Nova_String_1_Nova_String(0, exceptionData, (char*)("File at location '")), exceptionData, nova_Nova_String_virtual1_Nova_concat((nova_Nova_String*)(nova_io_Nova_FileNotFoundException_Nova_file->nova_io_Nova_File_Nova_location), exceptionData, nova_Nova_String_1_Nova_String(0, exceptionData, (char*)("' does not exist")))));
 }
 
 void nova_io_Nova_FileNotFoundException_0_Nova_super(nova_io_Nova_FileNotFoundException* this, nova_exception_Nova_ExceptionData* exceptionData)

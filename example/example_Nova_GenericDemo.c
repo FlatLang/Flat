@@ -72,26 +72,26 @@ void example_Nova_GenericDemo_Nova_main(example_Nova_GenericDemo* this, nova_exc
 	nova_datastruct_list_Nova_Stack* l1_Nova_strs = (nova_datastruct_list_Nova_Stack*)nova_null;
 	
 	l1_Nova_strs = nova_datastruct_list_Nova_Stack_Nova_Stack(0, exceptionData);
-	nova_io_Nova_Console_1_Nova_writeLine(0, exceptionData, nova_Nova_String_1_Nova_String(0, exceptionData, "Pushing \"test\""));
-	nova_datastruct_list_Nova_Stack_Nova_push(l1_Nova_strs, exceptionData, (nova_Nova_Object*)(nova_Nova_String_1_Nova_String(0, exceptionData, "test")));
-	nova_io_Nova_Console_1_Nova_writeLine(0, exceptionData, nova_Nova_String_1_Nova_String(0, exceptionData, "Pushing \"ASDFASDF\""));
-	nova_datastruct_list_Nova_Stack_Nova_push(l1_Nova_strs, exceptionData, (nova_Nova_Object*)(nova_Nova_String_1_Nova_String(0, exceptionData, "ASDFASDF")));
-	nova_io_Nova_Console_1_Nova_writeLine(0, exceptionData, nova_Nova_String_1_Nova_String(0, exceptionData, "Pushing \"3!\""));
-	nova_datastruct_list_Nova_Stack_Nova_push(l1_Nova_strs, exceptionData, (nova_Nova_Object*)(nova_Nova_String_1_Nova_String(0, exceptionData, "3!")));
-	nova_io_Nova_Console_1_Nova_writeLine(0, exceptionData, nova_Nova_String_1_Nova_String(0, exceptionData, "Pushing \"34!!4334\""));
-	nova_datastruct_list_Nova_Stack_Nova_push(l1_Nova_strs, exceptionData, (nova_Nova_Object*)(nova_Nova_String_1_Nova_String(0, exceptionData, "34!!4334")));
-	nova_io_Nova_Console_1_Nova_writeLine(0, exceptionData, nova_Nova_String_1_Nova_String(0, exceptionData, "Pushing null"));
-	nova_datastruct_list_Nova_Stack_Nova_push(l1_Nova_strs, exceptionData, (nova_Nova_Object*)((nova_Nova_Object*)nova_null));
-	while (!nova_datastruct_list_Nova_Stack_Accessor_Nova_empty(l1_Nova_strs, exceptionData))
+	nova_io_Nova_Console_1_Nova_writeLine(0, exceptionData, nova_Nova_String_1_Nova_String(0, exceptionData, (char*)("Pushing \"test\"")));
+	nova_datastruct_list_Nova_Stack_Nova_push((nova_datastruct_list_Nova_Stack*)(l1_Nova_strs), exceptionData, (nova_Nova_Object*)(nova_Nova_String_1_Nova_String(0, exceptionData, (char*)("test"))));
+	nova_io_Nova_Console_1_Nova_writeLine(0, exceptionData, nova_Nova_String_1_Nova_String(0, exceptionData, (char*)("Pushing \"ASDFASDF\"")));
+	nova_datastruct_list_Nova_Stack_Nova_push((nova_datastruct_list_Nova_Stack*)(l1_Nova_strs), exceptionData, (nova_Nova_Object*)(nova_Nova_String_1_Nova_String(0, exceptionData, (char*)("ASDFASDF"))));
+	nova_io_Nova_Console_1_Nova_writeLine(0, exceptionData, nova_Nova_String_1_Nova_String(0, exceptionData, (char*)("Pushing \"3!\"")));
+	nova_datastruct_list_Nova_Stack_Nova_push((nova_datastruct_list_Nova_Stack*)(l1_Nova_strs), exceptionData, (nova_Nova_Object*)(nova_Nova_String_1_Nova_String(0, exceptionData, (char*)("3!"))));
+	nova_io_Nova_Console_1_Nova_writeLine(0, exceptionData, nova_Nova_String_1_Nova_String(0, exceptionData, (char*)("Pushing \"34!!4334\"")));
+	nova_datastruct_list_Nova_Stack_Nova_push((nova_datastruct_list_Nova_Stack*)(l1_Nova_strs), exceptionData, (nova_Nova_Object*)(nova_Nova_String_1_Nova_String(0, exceptionData, (char*)("34!!4334"))));
+	nova_io_Nova_Console_1_Nova_writeLine(0, exceptionData, nova_Nova_String_1_Nova_String(0, exceptionData, (char*)("Pushing null")));
+	nova_datastruct_list_Nova_Stack_Nova_push((nova_datastruct_list_Nova_Stack*)(l1_Nova_strs), exceptionData, (nova_Nova_Object*)((nova_Nova_Object*)nova_null));
+	while (!nova_datastruct_list_Nova_Stack_Accessor_Nova_empty((nova_datastruct_list_Nova_Stack*)(l1_Nova_strs), exceptionData))
 	{
 		nova_Nova_String* l1_Nova_popped = (nova_Nova_String*)nova_null;
 		
-		l1_Nova_popped = (nova_Nova_String*)(nova_datastruct_list_Nova_Stack_Nova_pop(l1_Nova_strs, exceptionData));
+		l1_Nova_popped = (nova_Nova_String*)(nova_datastruct_list_Nova_Stack_Nova_pop((nova_datastruct_list_Nova_Stack*)(l1_Nova_strs), exceptionData));
 		if (l1_Nova_popped != (nova_Nova_String*)nova_null)
 		{
-			l1_Nova_popped = (nova_Nova_String*)(nova_Nova_String_0_Nova_concat(nova_Nova_String_1_Nova_String(0, exceptionData, "\""), exceptionData, nova_Nova_String_virtual1_Nova_concat((nova_Nova_String*)(l1_Nova_popped), exceptionData, nova_Nova_String_1_Nova_String(0, exceptionData, "\""))));
+			l1_Nova_popped = (nova_Nova_String*)(nova_Nova_String_0_Nova_concat(nova_Nova_String_1_Nova_String(0, exceptionData, (char*)("\"")), exceptionData, nova_Nova_String_virtual1_Nova_concat((nova_Nova_String*)(l1_Nova_popped), exceptionData, nova_Nova_String_1_Nova_String(0, exceptionData, (char*)("\"")))));
 		}
-		nova_io_Nova_Console_1_Nova_writeLine(0, exceptionData, nova_Nova_String_0_Nova_concat(nova_Nova_String_1_Nova_String(0, exceptionData, "Popping: "), exceptionData, l1_Nova_popped));
+		nova_io_Nova_Console_1_Nova_writeLine(0, exceptionData, nova_Nova_String_0_Nova_concat(nova_Nova_String_1_Nova_String(0, exceptionData, (char*)("Popping: ")), exceptionData, l1_Nova_popped));
 	}
 	nova_io_Nova_Console_Nova_waitForEnter(0, exceptionData);
 }

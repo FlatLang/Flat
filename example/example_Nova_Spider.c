@@ -83,7 +83,7 @@ int example_Nova_Spider_0_Nova_getNumEyes(example_Nova_Spider* this, nova_except
 
 nova_Nova_String* example_Nova_Spider_0_Nova_getDescription(example_Nova_Spider* this, nova_exception_Nova_ExceptionData* exceptionData)
 {
-	return nova_Nova_String_1_Nova_String(0, exceptionData, "A disgusting thing (Spider)");
+	return nova_Nova_String_1_Nova_String(0, exceptionData, (char*)("A disgusting thing (Spider)"));
 }
 
 void example_Nova_Spider_0_Nova_this(example_Nova_Spider* this, nova_exception_Nova_ExceptionData* exceptionData)

@@ -76,12 +76,12 @@ void nova_primitive_Nova_Null_0_Nova_this(nova_primitive_Nova_Null* this, nova_e
 
 nova_Nova_String* nova_primitive_Nova_Null_Nova_toString(nova_primitive_Nova_Null* this, nova_exception_Nova_ExceptionData* exceptionData)
 {
-	return nova_Nova_String_1_Nova_String(0, exceptionData, "null");
+	return nova_Nova_String_1_Nova_String(0, exceptionData, (char*)("null"));
 }
 
 nova_Nova_String* nova_primitive_Nova_Null_Nova_concat(nova_primitive_Nova_Null* this, nova_exception_Nova_ExceptionData* exceptionData, nova_Nova_String* nova_primitive_Nova_Null_Nova_other)
 {
-	return nova_Nova_String_0_Nova_concat(nova_Nova_String_1_Nova_String(0, exceptionData, "null"), exceptionData, nova_primitive_Nova_Null_Nova_other);
+	return nova_Nova_String_0_Nova_concat(nova_Nova_String_1_Nova_String(0, exceptionData, (char*)("null")), exceptionData, nova_primitive_Nova_Null_Nova_other);
 }
 
 void nova_primitive_Nova_Null_0_Nova_super(nova_primitive_Nova_Null* this, nova_exception_Nova_ExceptionData* exceptionData)

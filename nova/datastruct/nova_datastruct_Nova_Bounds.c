@@ -148,7 +148,7 @@ char nova_datastruct_Nova_Bounds_0_Nova_equals(nova_datastruct_Nova_Bounds* this
 
 nova_Nova_String* nova_datastruct_Nova_Bounds_0_Nova_toString(nova_datastruct_Nova_Bounds* this, nova_exception_Nova_ExceptionData* exceptionData)
 {
-	return nova_Nova_String_0_Nova_concat(nova_Nova_String_1_Nova_String(0, exceptionData, "["), exceptionData, nova_Nova_String_virtual1_Nova_concat((nova_Nova_String*)(nova_primitive_number_Nova_Int_2_Nova_toString(0, exceptionData, this->nova_datastruct_Nova_Bounds_Nova_start)), exceptionData, nova_Nova_String_0_Nova_concat(nova_Nova_String_1_Nova_String(0, exceptionData, ", "), exceptionData, nova_Nova_String_virtual1_Nova_concat((nova_Nova_String*)(nova_primitive_number_Nova_Int_2_Nova_toString(0, exceptionData, this->nova_datastruct_Nova_Bounds_Nova_end)), exceptionData, nova_Nova_String_1_Nova_String(0, exceptionData, "]")))));
+	return nova_Nova_String_0_Nova_concat(nova_Nova_String_1_Nova_String(0, exceptionData, (char*)("[")), exceptionData, nova_Nova_String_virtual1_Nova_concat((nova_Nova_String*)(nova_primitive_number_Nova_Int_2_Nova_toString(0, exceptionData, this->nova_datastruct_Nova_Bounds_Nova_start)), exceptionData, nova_Nova_String_0_Nova_concat(nova_Nova_String_1_Nova_String(0, exceptionData, (char*)(", ")), exceptionData, nova_Nova_String_virtual1_Nova_concat((nova_Nova_String*)(nova_primitive_number_Nova_Int_2_Nova_toString(0, exceptionData, this->nova_datastruct_Nova_Bounds_Nova_end)), exceptionData, nova_Nova_String_1_Nova_String(0, exceptionData, (char*)("]"))))));
 }
 
 void nova_datastruct_Nova_Bounds_Nova_cloneTo(nova_datastruct_Nova_Bounds* this, nova_exception_Nova_ExceptionData* exceptionData, nova_datastruct_Nova_Bounds* nova_datastruct_Nova_Bounds_Nova_bounds)

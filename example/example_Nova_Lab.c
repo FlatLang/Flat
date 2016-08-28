@@ -144,46 +144,46 @@ void example_Nova_Lab_Nova_main(example_Nova_Lab* this, nova_exception_Nova_Exce
 	nova_Nova_String* l1_Nova_x = (nova_Nova_String*)nova_null;
 	example_Nova_Square* l1_Nova_sq = (example_Nova_Square*)nova_null;
 	
-	l1_Nova_tree = nova_datastruct_Nova_BinaryTree_Nova_BinaryTree(0, exceptionData, generated10(0, exceptionData));
-	nova_io_Nova_Console_1_Nova_writeLine(0, exceptionData, nova_Nova_String_0_Nova_concat(nova_Nova_String_1_Nova_String(0, exceptionData, "Preorder: "), exceptionData, nova_Nova_String_virtual1_Nova_concat((nova_Nova_String*)((nova_datastruct_list_Nova_List_virtual0_Nova_join((nova_datastruct_list_Nova_List*)(nova_datastruct_Nova_Tree_Nova_preorder((nova_datastruct_Nova_Tree*)(l1_Nova_tree), exceptionData)), exceptionData, nova_Nova_String_1_Nova_String(0, exceptionData, ", ")))), exceptionData, nova_Nova_String_1_Nova_String(0, exceptionData, ""))));
-	nova_io_Nova_Console_1_Nova_writeLine(0, exceptionData, nova_Nova_String_0_Nova_concat(nova_Nova_String_1_Nova_String(0, exceptionData, "Inorder: "), exceptionData, nova_Nova_String_virtual1_Nova_concat((nova_Nova_String*)((nova_datastruct_list_Nova_List_virtual0_Nova_join((nova_datastruct_list_Nova_List*)(nova_datastruct_Nova_Tree_Nova_inorder((nova_datastruct_Nova_Tree*)(l1_Nova_tree), exceptionData)), exceptionData, nova_Nova_String_1_Nova_String(0, exceptionData, ", ")))), exceptionData, nova_Nova_String_1_Nova_String(0, exceptionData, ""))));
-	nova_io_Nova_Console_1_Nova_writeLine(0, exceptionData, nova_Nova_String_0_Nova_concat(nova_Nova_String_1_Nova_String(0, exceptionData, "Postorder: "), exceptionData, nova_Nova_String_virtual1_Nova_concat((nova_Nova_String*)((nova_datastruct_list_Nova_List_virtual0_Nova_join((nova_datastruct_list_Nova_List*)(nova_datastruct_Nova_Tree_Nova_postorder((nova_datastruct_Nova_Tree*)(l1_Nova_tree), exceptionData)), exceptionData, nova_Nova_String_1_Nova_String(0, exceptionData, ", ")))), exceptionData, nova_Nova_String_1_Nova_String(0, exceptionData, ""))));
-	nova_io_Nova_Console_1_Nova_writeLine(0, exceptionData, nova_Nova_String_0_Nova_concat(nova_Nova_String_1_Nova_String(0, exceptionData, "Levelorder: "), exceptionData, nova_Nova_String_virtual1_Nova_concat((nova_Nova_String*)((nova_datastruct_list_Nova_List_virtual0_Nova_join((nova_datastruct_list_Nova_List*)(nova_datastruct_Nova_Tree_Nova_levelorder((nova_datastruct_Nova_Tree*)(l1_Nova_tree), exceptionData)), exceptionData, nova_Nova_String_1_Nova_String(0, exceptionData, ", ")))), exceptionData, nova_Nova_String_1_Nova_String(0, exceptionData, ""))));
+	l1_Nova_tree = nova_datastruct_Nova_BinaryTree_Nova_BinaryTree(0, exceptionData, (nova_datastruct_list_Nova_Array*)(generated10(0, exceptionData)));
+	nova_io_Nova_Console_1_Nova_writeLine(0, exceptionData, nova_Nova_String_0_Nova_concat(nova_Nova_String_1_Nova_String(0, exceptionData, (char*)("Preorder: ")), exceptionData, nova_Nova_String_virtual1_Nova_concat((nova_Nova_String*)((nova_datastruct_list_Nova_List_virtual0_Nova_join((nova_datastruct_list_Nova_List*)(nova_datastruct_Nova_Tree_Nova_preorder((nova_datastruct_Nova_Tree*)(l1_Nova_tree), exceptionData)), exceptionData, nova_Nova_String_1_Nova_String(0, exceptionData, (char*)(", "))))), exceptionData, nova_Nova_String_1_Nova_String(0, exceptionData, (char*)("")))));
+	nova_io_Nova_Console_1_Nova_writeLine(0, exceptionData, nova_Nova_String_0_Nova_concat(nova_Nova_String_1_Nova_String(0, exceptionData, (char*)("Inorder: ")), exceptionData, nova_Nova_String_virtual1_Nova_concat((nova_Nova_String*)((nova_datastruct_list_Nova_List_virtual0_Nova_join((nova_datastruct_list_Nova_List*)(nova_datastruct_Nova_Tree_Nova_inorder((nova_datastruct_Nova_Tree*)(l1_Nova_tree), exceptionData)), exceptionData, nova_Nova_String_1_Nova_String(0, exceptionData, (char*)(", "))))), exceptionData, nova_Nova_String_1_Nova_String(0, exceptionData, (char*)("")))));
+	nova_io_Nova_Console_1_Nova_writeLine(0, exceptionData, nova_Nova_String_0_Nova_concat(nova_Nova_String_1_Nova_String(0, exceptionData, (char*)("Postorder: ")), exceptionData, nova_Nova_String_virtual1_Nova_concat((nova_Nova_String*)((nova_datastruct_list_Nova_List_virtual0_Nova_join((nova_datastruct_list_Nova_List*)(nova_datastruct_Nova_Tree_Nova_postorder((nova_datastruct_Nova_Tree*)(l1_Nova_tree), exceptionData)), exceptionData, nova_Nova_String_1_Nova_String(0, exceptionData, (char*)(", "))))), exceptionData, nova_Nova_String_1_Nova_String(0, exceptionData, (char*)("")))));
+	nova_io_Nova_Console_1_Nova_writeLine(0, exceptionData, nova_Nova_String_0_Nova_concat(nova_Nova_String_1_Nova_String(0, exceptionData, (char*)("Levelorder: ")), exceptionData, nova_Nova_String_virtual1_Nova_concat((nova_Nova_String*)((nova_datastruct_list_Nova_List_virtual0_Nova_join((nova_datastruct_list_Nova_List*)(nova_datastruct_Nova_Tree_Nova_levelorder((nova_datastruct_Nova_Tree*)(l1_Nova_tree), exceptionData)), exceptionData, nova_Nova_String_1_Nova_String(0, exceptionData, (char*)(", "))))), exceptionData, nova_Nova_String_1_Nova_String(0, exceptionData, (char*)("")))));
 	l1_Nova_num1 = (int)(4);
 	l1_Nova_num2 = (int)(l1_Nova_num1 = (int)(7));
-	nova_io_Nova_Console_1_Nova_writeLine(0, exceptionData, nova_Nova_String_0_Nova_concat(nova_Nova_String_1_Nova_String(0, exceptionData, "My nums: "), exceptionData, nova_Nova_String_virtual1_Nova_concat((nova_Nova_String*)(nova_primitive_number_Nova_Int_2_Nova_toString(0, exceptionData, (l1_Nova_num1))), exceptionData, nova_Nova_String_0_Nova_concat(nova_Nova_String_1_Nova_String(0, exceptionData, ", "), exceptionData, nova_Nova_String_virtual1_Nova_concat((nova_Nova_String*)(nova_primitive_number_Nova_Int_2_Nova_toString(0, exceptionData, (l1_Nova_num2))), exceptionData, nova_Nova_String_0_Nova_concat(nova_Nova_String_1_Nova_String(0, exceptionData, " hey: "), exceptionData, nova_Nova_String_virtual1_Nova_concat((nova_Nova_String*)(nova_Nova_Object_virtual1_Nova_toString((nova_Nova_Object*)((nova_datastruct_Nova_Tree_Nova_inorder((nova_datastruct_Nova_Tree*)(l1_Nova_tree), exceptionData))), exceptionData)), exceptionData, nova_Nova_String_1_Nova_String(0, exceptionData, "!"))))))));
-	nova_io_Nova_Console_1_Nova_writeLine(0, exceptionData, nova_Nova_String_0_Nova_concat(nova_Nova_String_1_Nova_String(0, exceptionData, "Result from ternary: "), exceptionData, nova_Nova_String_virtual1_Nova_concat((nova_Nova_String*)(nova_primitive_number_Nova_Int_2_Nova_toString(0, exceptionData, (l1_Nova_num1))), exceptionData, nova_Nova_String_0_Nova_concat(nova_Nova_String_1_Nova_String(0, exceptionData, " "), exceptionData, nova_Nova_String_virtual1_Nova_concat((nova_Nova_String*)((l1_Nova_num1 < 3 ? nova_Nova_String_1_Nova_String(0, exceptionData, "<") : nova_Nova_String_1_Nova_String(0, exceptionData, ">="))), exceptionData, nova_Nova_String_1_Nova_String(0, exceptionData, " 3"))))));
-	l1_Nova_str = nova_Nova_String_1_Nova_String(0, exceptionData, "this isnt null");
+	nova_io_Nova_Console_1_Nova_writeLine(0, exceptionData, nova_Nova_String_0_Nova_concat(nova_Nova_String_1_Nova_String(0, exceptionData, (char*)("My nums: ")), exceptionData, nova_Nova_String_virtual1_Nova_concat((nova_Nova_String*)(nova_primitive_number_Nova_Int_2_Nova_toString(0, exceptionData, (l1_Nova_num1))), exceptionData, nova_Nova_String_0_Nova_concat(nova_Nova_String_1_Nova_String(0, exceptionData, (char*)(", ")), exceptionData, nova_Nova_String_virtual1_Nova_concat((nova_Nova_String*)(nova_primitive_number_Nova_Int_2_Nova_toString(0, exceptionData, (l1_Nova_num2))), exceptionData, nova_Nova_String_0_Nova_concat(nova_Nova_String_1_Nova_String(0, exceptionData, (char*)(" hey: ")), exceptionData, nova_Nova_String_virtual1_Nova_concat((nova_Nova_String*)(nova_Nova_Object_virtual1_Nova_toString((nova_Nova_Object*)((nova_datastruct_Nova_Tree_Nova_inorder((nova_datastruct_Nova_Tree*)(l1_Nova_tree), exceptionData))), exceptionData)), exceptionData, nova_Nova_String_1_Nova_String(0, exceptionData, (char*)("!")))))))));
+	nova_io_Nova_Console_1_Nova_writeLine(0, exceptionData, nova_Nova_String_0_Nova_concat(nova_Nova_String_1_Nova_String(0, exceptionData, (char*)("Result from ternary: ")), exceptionData, nova_Nova_String_virtual1_Nova_concat((nova_Nova_String*)(nova_primitive_number_Nova_Int_2_Nova_toString(0, exceptionData, (l1_Nova_num1))), exceptionData, nova_Nova_String_0_Nova_concat(nova_Nova_String_1_Nova_String(0, exceptionData, (char*)(" ")), exceptionData, nova_Nova_String_virtual1_Nova_concat((nova_Nova_String*)((l1_Nova_num1 < 3 ? nova_Nova_String_1_Nova_String(0, exceptionData, (char*)("<")) : nova_Nova_String_1_Nova_String(0, exceptionData, (char*)(">=")))), exceptionData, nova_Nova_String_1_Nova_String(0, exceptionData, (char*)(" 3")))))));
+	l1_Nova_str = nova_Nova_String_1_Nova_String(0, exceptionData, (char*)("this isnt null"));
 	l1_Nova_str2 = (nova_Nova_Object*)nova_null;
-	nova_io_Nova_Console_1_Nova_writeLine(0, exceptionData, nova_Nova_String_0_Nova_concat(nova_Nova_String_1_Nova_String(0, exceptionData, "Elvis not null: "), exceptionData, nova_Nova_String_virtual1_Nova_concat((nova_Nova_String*)((l1_Nova_str != (nova_Nova_String*)nova_null ? l1_Nova_str : nova_Nova_String_1_Nova_String(0, exceptionData, "wtf"))), exceptionData, nova_Nova_String_1_Nova_String(0, exceptionData, ""))));
-	nova_io_Nova_Console_1_Nova_writeLine(0, exceptionData, nova_Nova_String_0_Nova_concat(nova_Nova_String_1_Nova_String(0, exceptionData, "Elvis null: "), exceptionData, nova_Nova_String_virtual1_Nova_concat((nova_Nova_String*)(nova_Nova_Object_virtual1_Nova_toString((nova_Nova_Object*)((l1_Nova_str2 != (nova_Nova_Object*)nova_null ? l1_Nova_str2 : (nova_Nova_Object*)nova_Nova_String_1_Nova_String(0, exceptionData, "this is null"))), exceptionData)), exceptionData, nova_Nova_String_1_Nova_String(0, exceptionData, ""))));
-	nova_Nova_String_1_Nova_substring(nova_Nova_String_1_Nova_String(0, exceptionData, "test"), exceptionData, 0);
-	nova_io_Nova_Console_1_Nova_writeLine(0, exceptionData, nova_Nova_String_virtual1_Nova_concat((nova_Nova_String*)(nova_datastruct_list_Nova_IntRange_0_Nova_toString((nova_datastruct_list_Nova_IntRange_1_Nova_IntRange(0, exceptionData, (int)2, (int)8)), exceptionData)), exceptionData, nova_Nova_String_0_Nova_concat(nova_Nova_String_1_Nova_String(0, exceptionData, ": "), exceptionData, nova_Nova_String_virtual1_Nova_concat((nova_Nova_String*)((nova_datastruct_list_Nova_IntRange_0_Nova_join((nova_datastruct_list_Nova_IntRange_1_Nova_IntRange(0, exceptionData, (int)2, (int)8)), exceptionData, nova_Nova_String_1_Nova_String(0, exceptionData, ", ")))), exceptionData, nova_Nova_String_1_Nova_String(0, exceptionData, "")))));
+	nova_io_Nova_Console_1_Nova_writeLine(0, exceptionData, nova_Nova_String_0_Nova_concat(nova_Nova_String_1_Nova_String(0, exceptionData, (char*)("Elvis not null: ")), exceptionData, nova_Nova_String_virtual1_Nova_concat((nova_Nova_String*)((l1_Nova_str != (nova_Nova_String*)nova_null ? l1_Nova_str : nova_Nova_String_1_Nova_String(0, exceptionData, (char*)("wtf")))), exceptionData, nova_Nova_String_1_Nova_String(0, exceptionData, (char*)("")))));
+	nova_io_Nova_Console_1_Nova_writeLine(0, exceptionData, nova_Nova_String_0_Nova_concat(nova_Nova_String_1_Nova_String(0, exceptionData, (char*)("Elvis null: ")), exceptionData, nova_Nova_String_virtual1_Nova_concat((nova_Nova_String*)(nova_Nova_Object_virtual1_Nova_toString((nova_Nova_Object*)((l1_Nova_str2 != (nova_Nova_Object*)nova_null ? l1_Nova_str2 : (nova_Nova_Object*)nova_Nova_String_1_Nova_String(0, exceptionData, (char*)("this is null")))), exceptionData)), exceptionData, nova_Nova_String_1_Nova_String(0, exceptionData, (char*)("")))));
+	nova_Nova_String_1_Nova_substring(nova_Nova_String_1_Nova_String(0, exceptionData, (char*)("test")), exceptionData, 0);
+	nova_io_Nova_Console_1_Nova_writeLine(0, exceptionData, nova_Nova_String_virtual1_Nova_concat((nova_Nova_String*)(nova_datastruct_list_Nova_IntRange_0_Nova_toString((nova_datastruct_list_Nova_IntRange_1_Nova_IntRange(0, exceptionData, (int)2, (int)8)), exceptionData)), exceptionData, nova_Nova_String_0_Nova_concat(nova_Nova_String_1_Nova_String(0, exceptionData, (char*)(": ")), exceptionData, nova_Nova_String_virtual1_Nova_concat((nova_Nova_String*)((nova_datastruct_list_Nova_IntRange_0_Nova_join((nova_datastruct_list_Nova_IntRange_1_Nova_IntRange(0, exceptionData, (int)2, (int)8)), exceptionData, nova_Nova_String_1_Nova_String(0, exceptionData, (char*)(", "))))), exceptionData, nova_Nova_String_1_Nova_String(0, exceptionData, (char*)(""))))));
 	l1_Nova_list = generated11(0, exceptionData);
 	l1_Nova_list2 = generated12(0, exceptionData);
 	nova_thread_async_Nova_Async_Nova_execute(0, exceptionData, (nova_thread_async_Nova_Async_closure3_Nova_func)&example_Nova_Lab_Nova_testLambda52, example_Nova_Lab_Nova_Lab, &contextArg56);
-	nova_io_Nova_Console_1_Nova_writeLine(0, exceptionData, nova_Nova_String_1_Nova_String(0, exceptionData, "Started async execution"));
+	nova_io_Nova_Console_1_Nova_writeLine(0, exceptionData, nova_Nova_String_1_Nova_String(0, exceptionData, (char*)("Started async execution")));
 	l1_Nova_multi = nova_datastruct_list_Nova_Array_0_Nova_Array(0, exceptionData);
-	nova_datastruct_list_Nova_Array_0_Nova_add(l1_Nova_multi, exceptionData, (nova_Nova_Object*)(generated13(0, exceptionData)));
-	nova_datastruct_list_Nova_Array_0_Nova_add(l1_Nova_multi, exceptionData, (nova_Nova_Object*)(generated14(0, exceptionData)));
-	nova_io_Nova_Console_1_Nova_writeLine(0, exceptionData, nova_Nova_String_0_Nova_concat(nova_Nova_String_1_Nova_String(0, exceptionData, "Multi dimensional array: "), exceptionData, nova_Nova_String_virtual1_Nova_concat((nova_Nova_String*)(nova_Nova_Object_virtual1_Nova_toString((nova_Nova_Object*)((l1_Nova_multi)), exceptionData)), exceptionData, nova_Nova_String_1_Nova_String(0, exceptionData, ""))));
+	nova_datastruct_list_Nova_Array_0_Nova_add((nova_datastruct_list_Nova_Array*)(l1_Nova_multi), exceptionData, (nova_Nova_Object*)(generated13(0, exceptionData)));
+	nova_datastruct_list_Nova_Array_0_Nova_add((nova_datastruct_list_Nova_Array*)(l1_Nova_multi), exceptionData, (nova_Nova_Object*)(generated14(0, exceptionData)));
+	nova_io_Nova_Console_1_Nova_writeLine(0, exceptionData, nova_Nova_String_0_Nova_concat(nova_Nova_String_1_Nova_String(0, exceptionData, (char*)("Multi dimensional array: ")), exceptionData, nova_Nova_String_virtual1_Nova_concat((nova_Nova_String*)(nova_Nova_Object_virtual1_Nova_toString((nova_Nova_Object*)((l1_Nova_multi)), exceptionData)), exceptionData, nova_Nova_String_1_Nova_String(0, exceptionData, (char*)("")))));
 	nova_io_Nova_Console_1_Nova_writeLine(0, exceptionData, nova_Nova_String_Nova_capitalize(nova_primitive_Nova_Bool_2_Nova_toString(0, exceptionData, nova_datastruct_list_Nova_List_virtual0_Nova_contains((nova_datastruct_list_Nova_List*)(((nova_Nova_String*)nova_datastruct_list_Nova_Array_virtual1_Nova_get((nova_datastruct_list_Nova_Array*)(nova_datastruct_list_Nova_Array_virtual1_Nova_get((nova_datastruct_list_Nova_Array*)(l1_Nova_multi), exceptionData, 0)), exceptionData, 0))->nova_Nova_String_Nova_chars), exceptionData, (nova_Nova_Object*)('z'))), exceptionData));
-	nova_io_Nova_Console_1_Nova_writeLine(0, exceptionData, nova_datastruct_list_Nova_List_virtual0_Nova_join((nova_datastruct_list_Nova_List*)(nova_datastruct_list_Nova_List_virtual0_Nova_map((nova_datastruct_list_Nova_List*)(l1_Nova_list), exceptionData, (nova_datastruct_list_Nova_List_closure6_Nova_mapFunc)&example_Nova_Lab_Nova_testLambda53, example_Nova_Lab_Nova_Lab, &contextArg57)), exceptionData, nova_Nova_String_1_Nova_String(0, exceptionData, ", ")));
-	nova_io_Nova_Console_1_Nova_writeLine(0, exceptionData, nova_Nova_String_0_Nova_concat(nova_Nova_String_1_Nova_String(0, exceptionData, "Mapped: "), exceptionData, nova_datastruct_list_Nova_List_virtual0_Nova_join((nova_datastruct_list_Nova_List*)(nova_datastruct_list_Nova_List_virtual0_Nova_map((nova_datastruct_list_Nova_List*)(nova_datastruct_list_Nova_List_virtual0_Nova_filter((nova_datastruct_list_Nova_List*)(l1_Nova_list), exceptionData, (nova_datastruct_list_Nova_List_closure15_Nova_filterFunc)&example_Nova_Lab_Nova_testLambda54, example_Nova_Lab_Nova_Lab, &contextArg58)), exceptionData, (nova_datastruct_list_Nova_List_closure6_Nova_mapFunc)&example_Nova_Lab_Nova_testLambda55, example_Nova_Lab_Nova_Lab, &contextArg59)), exceptionData, nova_Nova_String_1_Nova_String(0, exceptionData, ", "))));
-	nova_io_Nova_Console_1_Nova_writeLine(0, exceptionData, nova_Nova_String_0_Nova_concat(nova_Nova_String_1_Nova_String(0, exceptionData, "Mapped backwards: "), exceptionData, nova_datastruct_list_Nova_List_virtual0_Nova_join((nova_datastruct_list_Nova_List*)(nova_datastruct_list_Nova_List_virtual0_Nova_reverse((nova_datastruct_list_Nova_List*)(nova_datastruct_list_Nova_List_virtual0_Nova_map((nova_datastruct_list_Nova_List*)(nova_datastruct_list_Nova_List_virtual0_Nova_filter((nova_datastruct_list_Nova_List*)(l1_Nova_list), exceptionData, (nova_datastruct_list_Nova_List_closure15_Nova_filterFunc)&example_Nova_Lab_Nova_testLambda56, example_Nova_Lab_Nova_Lab, &contextArg60)), exceptionData, (nova_datastruct_list_Nova_List_closure6_Nova_mapFunc)&example_Nova_Lab_Nova_testLambda57, example_Nova_Lab_Nova_Lab, &contextArg61)), exceptionData)), exceptionData, nova_Nova_String_1_Nova_String(0, exceptionData, ", "))));
-	nova_io_Nova_Console_1_Nova_writeLine(0, exceptionData, nova_Nova_String_0_Nova_concat(nova_Nova_String_1_Nova_String(0, exceptionData, "Mapped2: "), exceptionData, nova_datastruct_list_Nova_List_virtual0_Nova_join((nova_datastruct_list_Nova_List*)(nova_datastruct_list_Nova_List_virtual0_Nova_map((nova_datastruct_list_Nova_List*)(l1_Nova_list2), exceptionData, (nova_datastruct_list_Nova_List_closure6_Nova_mapFunc)&example_Nova_Lab_Nova_testLambda58, example_Nova_Lab_Nova_Lab, &contextArg62)), exceptionData, nova_Nova_String_1_Nova_String(0, exceptionData, ", "))));
+	nova_io_Nova_Console_1_Nova_writeLine(0, exceptionData, nova_datastruct_list_Nova_List_virtual0_Nova_join((nova_datastruct_list_Nova_List*)(nova_datastruct_list_Nova_List_virtual0_Nova_map((nova_datastruct_list_Nova_List*)(l1_Nova_list), exceptionData, (nova_datastruct_list_Nova_List_closure6_Nova_mapFunc)&example_Nova_Lab_Nova_testLambda53, example_Nova_Lab_Nova_Lab, &contextArg57)), exceptionData, nova_Nova_String_1_Nova_String(0, exceptionData, (char*)(", "))));
+	nova_io_Nova_Console_1_Nova_writeLine(0, exceptionData, nova_Nova_String_0_Nova_concat(nova_Nova_String_1_Nova_String(0, exceptionData, (char*)("Mapped: ")), exceptionData, nova_datastruct_list_Nova_List_virtual0_Nova_join((nova_datastruct_list_Nova_List*)(nova_datastruct_list_Nova_List_virtual0_Nova_map((nova_datastruct_list_Nova_List*)(nova_datastruct_list_Nova_List_virtual0_Nova_filter((nova_datastruct_list_Nova_List*)(l1_Nova_list), exceptionData, (nova_datastruct_list_Nova_List_closure15_Nova_filterFunc)&example_Nova_Lab_Nova_testLambda54, example_Nova_Lab_Nova_Lab, &contextArg58)), exceptionData, (nova_datastruct_list_Nova_List_closure6_Nova_mapFunc)&example_Nova_Lab_Nova_testLambda55, example_Nova_Lab_Nova_Lab, &contextArg59)), exceptionData, nova_Nova_String_1_Nova_String(0, exceptionData, (char*)(", ")))));
+	nova_io_Nova_Console_1_Nova_writeLine(0, exceptionData, nova_Nova_String_0_Nova_concat(nova_Nova_String_1_Nova_String(0, exceptionData, (char*)("Mapped backwards: ")), exceptionData, nova_datastruct_list_Nova_List_virtual0_Nova_join((nova_datastruct_list_Nova_List*)(nova_datastruct_list_Nova_List_virtual0_Nova_reverse((nova_datastruct_list_Nova_List*)(nova_datastruct_list_Nova_List_virtual0_Nova_map((nova_datastruct_list_Nova_List*)(nova_datastruct_list_Nova_List_virtual0_Nova_filter((nova_datastruct_list_Nova_List*)(l1_Nova_list), exceptionData, (nova_datastruct_list_Nova_List_closure15_Nova_filterFunc)&example_Nova_Lab_Nova_testLambda56, example_Nova_Lab_Nova_Lab, &contextArg60)), exceptionData, (nova_datastruct_list_Nova_List_closure6_Nova_mapFunc)&example_Nova_Lab_Nova_testLambda57, example_Nova_Lab_Nova_Lab, &contextArg61)), exceptionData)), exceptionData, nova_Nova_String_1_Nova_String(0, exceptionData, (char*)(", ")))));
+	nova_io_Nova_Console_1_Nova_writeLine(0, exceptionData, nova_Nova_String_0_Nova_concat(nova_Nova_String_1_Nova_String(0, exceptionData, (char*)("Mapped2: ")), exceptionData, nova_datastruct_list_Nova_List_virtual0_Nova_join((nova_datastruct_list_Nova_List*)(nova_datastruct_list_Nova_List_virtual0_Nova_map((nova_datastruct_list_Nova_List*)(l1_Nova_list2), exceptionData, (nova_datastruct_list_Nova_List_closure6_Nova_mapFunc)&example_Nova_Lab_Nova_testLambda58, example_Nova_Lab_Nova_Lab, &contextArg62)), exceptionData, nova_Nova_String_1_Nova_String(0, exceptionData, (char*)(", ")))));
 	l1_Nova_linked = nova_datastruct_list_Nova_LinkedList_Nova_LinkedList(0, exceptionData);
-	nova_datastruct_list_Nova_LinkedList_Nova_addAll(l1_Nova_linked, exceptionData, generated15(0, exceptionData));
-	nova_io_Nova_Console_1_Nova_writeLine(0, exceptionData, nova_Nova_String_0_Nova_concat(nova_Nova_String_1_Nova_String(0, exceptionData, "Linked list backwards: "), exceptionData, nova_datastruct_list_Nova_List_virtual0_Nova_join((nova_datastruct_list_Nova_List*)(nova_datastruct_list_Nova_List_virtual0_Nova_reverse((nova_datastruct_list_Nova_List*)(l1_Nova_linked), exceptionData)), exceptionData, nova_Nova_String_1_Nova_String(0, exceptionData, ", "))));
-	nova_io_Nova_Console_1_Nova_writeLine(0, exceptionData, nova_Nova_String_0_Nova_concat(nova_Nova_String_1_Nova_String(0, exceptionData, "Linked list forwards: "), exceptionData, nova_datastruct_list_Nova_List_virtual0_Nova_join((nova_datastruct_list_Nova_List*)(l1_Nova_linked), exceptionData, nova_Nova_String_1_Nova_String(0, exceptionData, ", "))));
-	l1_Nova_x = nova_Nova_String_1_Nova_String(0, exceptionData, "Hey its a string");
-	nova_io_Nova_Console_1_Nova_writeLine(0, exceptionData, l1_Nova_x);
-	example_Nova_Lab_Nova_takesString(0, exceptionData, l1_Nova_x);
+	nova_datastruct_list_Nova_LinkedList_Nova_addAll((nova_datastruct_list_Nova_LinkedList*)(l1_Nova_linked), exceptionData, (nova_datastruct_list_Nova_Array*)(generated15(0, exceptionData)));
+	nova_io_Nova_Console_1_Nova_writeLine(0, exceptionData, nova_Nova_String_0_Nova_concat(nova_Nova_String_1_Nova_String(0, exceptionData, (char*)("Linked list backwards: ")), exceptionData, nova_datastruct_list_Nova_List_virtual0_Nova_join((nova_datastruct_list_Nova_List*)(nova_datastruct_list_Nova_List_virtual0_Nova_reverse((nova_datastruct_list_Nova_List*)(l1_Nova_linked), exceptionData)), exceptionData, nova_Nova_String_1_Nova_String(0, exceptionData, (char*)(", ")))));
+	nova_io_Nova_Console_1_Nova_writeLine(0, exceptionData, nova_Nova_String_0_Nova_concat(nova_Nova_String_1_Nova_String(0, exceptionData, (char*)("Linked list forwards: ")), exceptionData, nova_datastruct_list_Nova_List_virtual0_Nova_join((nova_datastruct_list_Nova_List*)(l1_Nova_linked), exceptionData, nova_Nova_String_1_Nova_String(0, exceptionData, (char*)(", ")))));
+	l1_Nova_x = nova_Nova_String_1_Nova_String(0, exceptionData, (char*)("Hey its a string"));
+	nova_io_Nova_Console_1_Nova_writeLine(0, exceptionData, (nova_Nova_String*)(l1_Nova_x));
+	example_Nova_Lab_Nova_takesString(0, exceptionData, (nova_Nova_String*)(l1_Nova_x));
 	if (1)
 	{
 		l1_Nova_x = (nova_Nova_String*)(nova_datastruct_list_Nova_Array_0_Nova_Array(0, exceptionData));
-		nova_datastruct_list_Nova_Array_0_Nova_add((nova_datastruct_list_Nova_Array*)(l1_Nova_x), exceptionData, (nova_Nova_Object*)(nova_Nova_String_1_Nova_String(0, exceptionData, "hey")));
-		nova_datastruct_list_Nova_Array_0_Nova_add((nova_datastruct_list_Nova_Array*)(l1_Nova_x), exceptionData, (nova_Nova_Object*)(nova_Nova_String_1_Nova_String(0, exceptionData, "its now an array")));
+		nova_datastruct_list_Nova_Array_0_Nova_add((nova_datastruct_list_Nova_Array*)(l1_Nova_x), exceptionData, (nova_Nova_Object*)(nova_Nova_String_1_Nova_String(0, exceptionData, (char*)("hey"))));
+		nova_datastruct_list_Nova_Array_0_Nova_add((nova_datastruct_list_Nova_Array*)(l1_Nova_x), exceptionData, (nova_Nova_Object*)(nova_Nova_String_1_Nova_String(0, exceptionData, (char*)("its now an array"))));
 	}
 	nova_io_Nova_Console_2_Nova_writeLine(0, exceptionData, (nova_Nova_Object*)(l1_Nova_x));
 	l1_Nova_sq = example_Nova_Square_Nova_Square(0, exceptionData, 4);
@@ -193,7 +193,7 @@ void example_Nova_Lab_Nova_main(example_Nova_Lab* this, nova_exception_Nova_Exce
 
 void example_Nova_Lab_Nova_takesString(example_Nova_Lab* this, nova_exception_Nova_ExceptionData* exceptionData, nova_Nova_String* example_Nova_Lab_Nova_s)
 {
-	nova_io_Nova_Console_1_Nova_writeLine(0, exceptionData, nova_Nova_String_0_Nova_concat(nova_Nova_String_1_Nova_String(0, exceptionData, "Received "), exceptionData, example_Nova_Lab_Nova_s));
+	nova_io_Nova_Console_1_Nova_writeLine(0, exceptionData, nova_Nova_String_0_Nova_concat(nova_Nova_String_1_Nova_String(0, exceptionData, (char*)("Received ")), exceptionData, example_Nova_Lab_Nova_s));
 }
 
 void example_Nova_Lab_Nova_doSomething(example_Nova_Lab* this, nova_exception_Nova_ExceptionData* exceptionData, nova_datastruct_list_Nova_List* example_Nova_Lab_Nova_list)
@@ -219,15 +219,15 @@ nova_datastruct_list_Nova_Array* generated10(example_Nova_Lab* this, nova_except
 	nova_Nova_String** l1_Nova_temp = (nova_Nova_String**)nova_null;
 	
 	l1_Nova_temp = (nova_Nova_String**)NOVA_MALLOC(sizeof(nova_Nova_String) * 9);
-	l1_Nova_temp[0] = nova_Nova_String_1_Nova_String(0, exceptionData, "F");
-	l1_Nova_temp[1] = nova_Nova_String_1_Nova_String(0, exceptionData, "B");
-	l1_Nova_temp[2] = nova_Nova_String_1_Nova_String(0, exceptionData, "A");
-	l1_Nova_temp[3] = nova_Nova_String_1_Nova_String(0, exceptionData, "D");
-	l1_Nova_temp[4] = nova_Nova_String_1_Nova_String(0, exceptionData, "C");
-	l1_Nova_temp[5] = nova_Nova_String_1_Nova_String(0, exceptionData, "E");
-	l1_Nova_temp[6] = nova_Nova_String_1_Nova_String(0, exceptionData, "G");
-	l1_Nova_temp[7] = nova_Nova_String_1_Nova_String(0, exceptionData, "I");
-	l1_Nova_temp[8] = nova_Nova_String_1_Nova_String(0, exceptionData, "H");
+	l1_Nova_temp[0] = nova_Nova_String_1_Nova_String(0, exceptionData, (char*)("F"));
+	l1_Nova_temp[1] = nova_Nova_String_1_Nova_String(0, exceptionData, (char*)("B"));
+	l1_Nova_temp[2] = nova_Nova_String_1_Nova_String(0, exceptionData, (char*)("A"));
+	l1_Nova_temp[3] = nova_Nova_String_1_Nova_String(0, exceptionData, (char*)("D"));
+	l1_Nova_temp[4] = nova_Nova_String_1_Nova_String(0, exceptionData, (char*)("C"));
+	l1_Nova_temp[5] = nova_Nova_String_1_Nova_String(0, exceptionData, (char*)("E"));
+	l1_Nova_temp[6] = nova_Nova_String_1_Nova_String(0, exceptionData, (char*)("G"));
+	l1_Nova_temp[7] = nova_Nova_String_1_Nova_String(0, exceptionData, (char*)("I"));
+	l1_Nova_temp[8] = nova_Nova_String_1_Nova_String(0, exceptionData, (char*)("H"));
 	return nova_datastruct_list_Nova_Array_2_Nova_Array(0, exceptionData, (nova_Nova_Object**)(l1_Nova_temp), 9);
 }
 
@@ -236,13 +236,13 @@ nova_datastruct_list_Nova_Array* generated11(example_Nova_Lab* this, nova_except
 	nova_Nova_String** l1_Nova_temp = (nova_Nova_String**)nova_null;
 	
 	l1_Nova_temp = (nova_Nova_String**)NOVA_MALLOC(sizeof(nova_Nova_String) * 7);
-	l1_Nova_temp[0] = nova_Nova_String_1_Nova_String(0, exceptionData, "this");
-	l1_Nova_temp[1] = nova_Nova_String_1_Nova_String(0, exceptionData, "is");
-	l1_Nova_temp[2] = nova_Nova_String_1_Nova_String(0, exceptionData, "a");
-	l1_Nova_temp[3] = nova_Nova_String_1_Nova_String(0, exceptionData, "test");
-	l1_Nova_temp[4] = nova_Nova_String_1_Nova_String(0, exceptionData, "to");
-	l1_Nova_temp[5] = nova_Nova_String_1_Nova_String(0, exceptionData, "see");
-	l1_Nova_temp[6] = nova_Nova_String_1_Nova_String(0, exceptionData, "what shows up");
+	l1_Nova_temp[0] = nova_Nova_String_1_Nova_String(0, exceptionData, (char*)("this"));
+	l1_Nova_temp[1] = nova_Nova_String_1_Nova_String(0, exceptionData, (char*)("is"));
+	l1_Nova_temp[2] = nova_Nova_String_1_Nova_String(0, exceptionData, (char*)("a"));
+	l1_Nova_temp[3] = nova_Nova_String_1_Nova_String(0, exceptionData, (char*)("test"));
+	l1_Nova_temp[4] = nova_Nova_String_1_Nova_String(0, exceptionData, (char*)("to"));
+	l1_Nova_temp[5] = nova_Nova_String_1_Nova_String(0, exceptionData, (char*)("see"));
+	l1_Nova_temp[6] = nova_Nova_String_1_Nova_String(0, exceptionData, (char*)("what shows up"));
 	return nova_datastruct_list_Nova_Array_2_Nova_Array(0, exceptionData, (nova_Nova_Object**)(l1_Nova_temp), 7);
 }
 
@@ -263,9 +263,9 @@ nova_datastruct_list_Nova_IntArray* generated12(example_Nova_Lab* this, nova_exc
 
 void example_Nova_Lab_Nova_testLambda52(example_Nova_Lab* this, nova_exception_Nova_ExceptionData* exceptionData, Context1* context)
 {
-	nova_io_Nova_Console_1_Nova_writeLine(0, exceptionData, nova_Nova_String_1_Nova_String(0, exceptionData, "Wait a second!"));
+	nova_io_Nova_Console_1_Nova_writeLine(0, exceptionData, nova_Nova_String_1_Nova_String(0, exceptionData, (char*)("Wait a second!")));
 	nova_thread_Nova_Thread_Nova_sleep(0, exceptionData, 1000);
-	nova_io_Nova_Console_1_Nova_writeLine(0, exceptionData, nova_Nova_String_1_Nova_String(0, exceptionData, "ok, now what"));
+	nova_io_Nova_Console_1_Nova_writeLine(0, exceptionData, nova_Nova_String_1_Nova_String(0, exceptionData, (char*)("ok, now what")));
 }
 
 nova_datastruct_list_Nova_Array* generated13(example_Nova_Lab* this, nova_exception_Nova_ExceptionData* exceptionData)
@@ -273,8 +273,8 @@ nova_datastruct_list_Nova_Array* generated13(example_Nova_Lab* this, nova_except
 	nova_Nova_String** l1_Nova_temp = (nova_Nova_String**)nova_null;
 	
 	l1_Nova_temp = (nova_Nova_String**)NOVA_MALLOC(sizeof(nova_Nova_String) * 2);
-	l1_Nova_temp[0] = nova_Nova_String_1_Nova_String(0, exceptionData, "This is a test");
-	l1_Nova_temp[1] = nova_Nova_String_1_Nova_String(0, exceptionData, "index 2");
+	l1_Nova_temp[0] = nova_Nova_String_1_Nova_String(0, exceptionData, (char*)("This is a test"));
+	l1_Nova_temp[1] = nova_Nova_String_1_Nova_String(0, exceptionData, (char*)("index 2"));
 	return nova_datastruct_list_Nova_Array_2_Nova_Array(0, exceptionData, (nova_Nova_Object**)(l1_Nova_temp), 2);
 }
 
@@ -283,8 +283,8 @@ nova_datastruct_list_Nova_Array* generated14(example_Nova_Lab* this, nova_except
 	nova_Nova_String** l1_Nova_temp = (nova_Nova_String**)nova_null;
 	
 	l1_Nova_temp = (nova_Nova_String**)NOVA_MALLOC(sizeof(nova_Nova_String) * 2);
-	l1_Nova_temp[0] = nova_Nova_String_1_Nova_String(0, exceptionData, "Second dimension yo");
-	l1_Nova_temp[1] = nova_Nova_String_1_Nova_String(0, exceptionData, "waddup");
+	l1_Nova_temp[0] = nova_Nova_String_1_Nova_String(0, exceptionData, (char*)("Second dimension yo"));
+	l1_Nova_temp[1] = nova_Nova_String_1_Nova_String(0, exceptionData, (char*)("waddup"));
 	return nova_datastruct_list_Nova_Array_2_Nova_Array(0, exceptionData, (nova_Nova_Object**)(l1_Nova_temp), 2);
 }
 
@@ -293,7 +293,7 @@ nova_Nova_Object* example_Nova_Lab_Nova_testLambda53(example_Nova_Lab* this, nov
 	int l2_Nova_something = 0;
 	
 	l2_Nova_something = 5 * example_Nova_Lab_Nova_x->nova_Nova_String_Nova_count;
-	return (nova_Nova_Object*)nova_Nova_String_virtual1_Nova_concat((nova_Nova_String*)(nova_primitive_number_Nova_Int_2_Nova_toString(0, exceptionData, (l2_Nova_something))), exceptionData, nova_Nova_String_0_Nova_concat(nova_Nova_String_1_Nova_String(0, exceptionData, " "), exceptionData, nova_Nova_String_virtual1_Nova_concat((nova_Nova_String*)((example_Nova_Lab_Nova_x)), exceptionData, nova_Nova_String_1_Nova_String(0, exceptionData, ""))));
+	return (nova_Nova_Object*)nova_Nova_String_virtual1_Nova_concat((nova_Nova_String*)(nova_primitive_number_Nova_Int_2_Nova_toString(0, exceptionData, (l2_Nova_something))), exceptionData, nova_Nova_String_0_Nova_concat(nova_Nova_String_1_Nova_String(0, exceptionData, (char*)(" ")), exceptionData, nova_Nova_String_virtual1_Nova_concat((nova_Nova_String*)((example_Nova_Lab_Nova_x)), exceptionData, nova_Nova_String_1_Nova_String(0, exceptionData, (char*)("")))));
 }
 
 char example_Nova_Lab_Nova_testLambda54(example_Nova_Lab* this, nova_exception_Nova_ExceptionData* exceptionData, nova_Nova_String* example_Nova_Lab_Nova__1, int example_Nova_Lab_Nova__2, nova_datastruct_list_Nova_Array* example_Nova_Lab_Nova__3, Context3* context)
@@ -303,7 +303,7 @@ char example_Nova_Lab_Nova_testLambda54(example_Nova_Lab* this, nova_exception_N
 
 nova_Nova_Object* example_Nova_Lab_Nova_testLambda55(example_Nova_Lab* this, nova_exception_Nova_ExceptionData* exceptionData, nova_Nova_String* example_Nova_Lab_Nova__1, int example_Nova_Lab_Nova__2, nova_datastruct_list_Nova_Array* example_Nova_Lab_Nova__3, Context4* context)
 {
-	return (nova_Nova_Object*)nova_Nova_String_virtual1_Nova_concat((nova_Nova_String*)(nova_primitive_number_Nova_Int_2_Nova_toString(0, exceptionData, (example_Nova_Lab_Nova__2))), exceptionData, nova_Nova_String_0_Nova_concat(nova_Nova_String_1_Nova_String(0, exceptionData, ": "), exceptionData, nova_Nova_String_virtual1_Nova_concat((nova_Nova_String*)((example_Nova_Lab_Nova__1)), exceptionData, nova_Nova_String_1_Nova_String(0, exceptionData, "?"))));
+	return (nova_Nova_Object*)nova_Nova_String_virtual1_Nova_concat((nova_Nova_String*)(nova_primitive_number_Nova_Int_2_Nova_toString(0, exceptionData, (example_Nova_Lab_Nova__2))), exceptionData, nova_Nova_String_0_Nova_concat(nova_Nova_String_1_Nova_String(0, exceptionData, (char*)(": ")), exceptionData, nova_Nova_String_virtual1_Nova_concat((nova_Nova_String*)((example_Nova_Lab_Nova__1)), exceptionData, nova_Nova_String_1_Nova_String(0, exceptionData, (char*)("?")))));
 }
 
 char example_Nova_Lab_Nova_testLambda56(example_Nova_Lab* this, nova_exception_Nova_ExceptionData* exceptionData, nova_Nova_String* example_Nova_Lab_Nova__1, int example_Nova_Lab_Nova__2, nova_datastruct_list_Nova_Array* example_Nova_Lab_Nova__3, Context5* context)
@@ -313,12 +313,12 @@ char example_Nova_Lab_Nova_testLambda56(example_Nova_Lab* this, nova_exception_N
 
 nova_Nova_Object* example_Nova_Lab_Nova_testLambda57(example_Nova_Lab* this, nova_exception_Nova_ExceptionData* exceptionData, nova_Nova_String* example_Nova_Lab_Nova__1, int example_Nova_Lab_Nova__2, nova_datastruct_list_Nova_Array* example_Nova_Lab_Nova__3, Context6* context)
 {
-	return (nova_Nova_Object*)nova_Nova_String_virtual1_Nova_concat((nova_Nova_String*)((example_Nova_Lab_Nova__1)), exceptionData, nova_Nova_String_1_Nova_String(0, exceptionData, "?"));
+	return (nova_Nova_Object*)nova_Nova_String_virtual1_Nova_concat((nova_Nova_String*)((example_Nova_Lab_Nova__1)), exceptionData, nova_Nova_String_1_Nova_String(0, exceptionData, (char*)("?")));
 }
 
 nova_Nova_Object* example_Nova_Lab_Nova_testLambda58(example_Nova_Lab* this, nova_exception_Nova_ExceptionData* exceptionData, int example_Nova_Lab_Nova__1, int example_Nova_Lab_Nova__2, nova_datastruct_list_Nova_IntArray* example_Nova_Lab_Nova__3, Context7* context)
 {
-	return (nova_Nova_Object*)nova_Nova_String_virtual1_Nova_concat((nova_Nova_String*)(nova_primitive_number_Nova_Int_2_Nova_toString(0, exceptionData, (example_Nova_Lab_Nova__1))), exceptionData, nova_Nova_String_1_Nova_String(0, exceptionData, "!"));
+	return (nova_Nova_Object*)nova_Nova_String_virtual1_Nova_concat((nova_Nova_String*)(nova_primitive_number_Nova_Int_2_Nova_toString(0, exceptionData, (example_Nova_Lab_Nova__1))), exceptionData, nova_Nova_String_1_Nova_String(0, exceptionData, (char*)("!")));
 }
 
 nova_datastruct_list_Nova_Array* generated15(example_Nova_Lab* this, nova_exception_Nova_ExceptionData* exceptionData)
@@ -326,15 +326,15 @@ nova_datastruct_list_Nova_Array* generated15(example_Nova_Lab* this, nova_except
 	nova_Nova_String** l1_Nova_temp = (nova_Nova_String**)nova_null;
 	
 	l1_Nova_temp = (nova_Nova_String**)NOVA_MALLOC(sizeof(nova_Nova_String) * 3);
-	l1_Nova_temp[0] = nova_Nova_String_1_Nova_String(0, exceptionData, "test");
-	l1_Nova_temp[1] = nova_Nova_String_1_Nova_String(0, exceptionData, "test2");
-	l1_Nova_temp[2] = nova_Nova_String_1_Nova_String(0, exceptionData, "test3");
+	l1_Nova_temp[0] = nova_Nova_String_1_Nova_String(0, exceptionData, (char*)("test"));
+	l1_Nova_temp[1] = nova_Nova_String_1_Nova_String(0, exceptionData, (char*)("test2"));
+	l1_Nova_temp[2] = nova_Nova_String_1_Nova_String(0, exceptionData, (char*)("test3"));
 	return nova_datastruct_list_Nova_Array_2_Nova_Array(0, exceptionData, (nova_Nova_Object**)(l1_Nova_temp), 3);
 }
 
 nova_Nova_Object* example_Nova_Lab_Nova_testLambda59(example_Nova_Lab* this, nova_exception_Nova_ExceptionData* exceptionData, nova_Nova_Object* example_Nova_Lab_Nova__1, int example_Nova_Lab_Nova__2, nova_datastruct_list_Nova_List* example_Nova_Lab_Nova__3, Context8* context)
 {
-	return (nova_Nova_Object*)nova_Nova_String_virtual1_Nova_concat((nova_Nova_String*)(nova_Nova_Object_virtual1_Nova_toString((nova_Nova_Object*)((example_Nova_Lab_Nova__1)), exceptionData)), exceptionData, nova_Nova_String_1_Nova_String(0, exceptionData, "!!!"));
+	return (nova_Nova_Object*)nova_Nova_String_virtual1_Nova_concat((nova_Nova_String*)(nova_Nova_Object_virtual1_Nova_toString((nova_Nova_Object*)((example_Nova_Lab_Nova__1)), exceptionData)), exceptionData, nova_Nova_String_1_Nova_String(0, exceptionData, (char*)("!!!")));
 }
 
 void example_Nova_Lab_Nova_super(example_Nova_Lab* this, nova_exception_Nova_ExceptionData* exceptionData)

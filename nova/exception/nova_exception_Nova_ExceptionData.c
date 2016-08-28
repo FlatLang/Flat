@@ -117,7 +117,7 @@ void nova_exception_Nova_ExceptionData_Nova_jumpToBuffer(nova_exception_Nova_Exc
 	l1_Nova_data = nova_exception_Nova_ExceptionData_Nova_getDataByCode(this, exceptionData, nova_exception_Nova_ExceptionData_Nova_code);
 	if (l1_Nova_data == NULL)
 	{
-		nova_io_Nova_Console_1_Nova_writeLine(0, exceptionData, nova_Nova_String_1_Nova_String(0, exceptionData, "Could not get exception buffer!"));
+		nova_io_Nova_Console_1_Nova_writeLine(0, exceptionData, nova_Nova_String_1_Nova_String(0, exceptionData, (char*)("Could not get exception buffer!")));
 		return;
 	}
 	if (l1_Nova_data->nova_exception_Nova_ExceptionData_Nova_parent == (nova_exception_Nova_ExceptionData*)nova_null)

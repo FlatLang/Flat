@@ -84,7 +84,7 @@ void nova_exception_Nova_Exception_Nova_destroy(nova_exception_Nova_Exception** 
 
 void nova_exception_Nova_Exception_3_Nova_this(nova_exception_Nova_Exception* this, nova_exception_Nova_ExceptionData* exceptionData)
 {
-	nova_exception_Nova_Exception_4_Nova_this(this, exceptionData, nova_Nova_String_1_Nova_String(0, exceptionData, ""));
+	nova_exception_Nova_Exception_4_Nova_this(this, exceptionData, nova_Nova_String_1_Nova_String(0, exceptionData, (char*)("")));
 }
 
 void nova_exception_Nova_Exception_4_Nova_this(nova_exception_Nova_Exception* this, nova_exception_Nova_ExceptionData* exceptionData, nova_Nova_String* nova_exception_Nova_Exception_Nova_message)

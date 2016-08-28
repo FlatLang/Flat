@@ -79,9 +79,9 @@ void example_Nova_ExceptionHandlingDemo_Nova_main(example_Nova_ExceptionHandling
 			int l1_Nova_result = 0;
 			
 			l1_Nova_result = example_Nova_ExceptionHandlingDemo_Nova_divide(0, exceptionData, 100, 5);
-			nova_io_Nova_Console_1_Nova_writeLine(0, exceptionData, nova_Nova_String_0_Nova_concat(nova_Nova_String_1_Nova_String(0, exceptionData, "After working example: "), exceptionData, nova_primitive_number_Nova_Int_2_Nova_toString(0, exceptionData, l1_Nova_result)));
+			nova_io_Nova_Console_1_Nova_writeLine(0, exceptionData, nova_Nova_String_0_Nova_concat(nova_Nova_String_1_Nova_String(0, exceptionData, (char*)("After working example: ")), exceptionData, nova_primitive_number_Nova_Int_2_Nova_toString(0, exceptionData, l1_Nova_result)));
 			l1_Nova_result = example_Nova_ExceptionHandlingDemo_Nova_divide(0, exceptionData, 100, 3);
-			nova_io_Nova_Console_1_Nova_writeLine(0, exceptionData, nova_Nova_String_1_Nova_String(0, exceptionData, "this output will not show."));
+			nova_io_Nova_Console_1_Nova_writeLine(0, exceptionData, nova_Nova_String_1_Nova_String(0, exceptionData, (char*)("this output will not show.")));
 		}
 	}
 	CATCH (7)
@@ -89,14 +89,14 @@ void example_Nova_ExceptionHandlingDemo_Nova_main(example_Nova_ExceptionHandling
 		example_Nova_NonWholeDivisionException* l2_Nova_e = (example_Nova_NonWholeDivisionException*)nova_null;
 		
 		l2_Nova_e = (example_Nova_NonWholeDivisionException*)exceptionData->nova_exception_Nova_ExceptionData_Nova_thrownException;
-		nova_io_Nova_Console_1_Nova_writeLine(0, exceptionData, nova_Nova_String_1_Nova_String(0, exceptionData, "You used the divide() method incorrectly."));
+		nova_io_Nova_Console_1_Nova_writeLine(0, exceptionData, nova_Nova_String_1_Nova_String(0, exceptionData, (char*)("You used the divide() method incorrectly.")));
 	}
 	FINALLY
 	{
-		nova_io_Nova_Console_1_Nova_writeLine(0, exceptionData, nova_Nova_String_1_Nova_String(0, exceptionData, "Exiting the try block."));
+		nova_io_Nova_Console_1_Nova_writeLine(0, exceptionData, nova_Nova_String_1_Nova_String(0, exceptionData, (char*)("Exiting the try block.")));
 	}
 	END_TRY;
-	nova_io_Nova_Console_1_Nova_writeLine(0, exceptionData, nova_Nova_String_1_Nova_String(0, exceptionData, "After the try block."));
+	nova_io_Nova_Console_1_Nova_writeLine(0, exceptionData, nova_Nova_String_1_Nova_String(0, exceptionData, (char*)("After the try block.")));
 	nova_io_Nova_Console_Nova_waitForEnter(0, exceptionData);
 }
 

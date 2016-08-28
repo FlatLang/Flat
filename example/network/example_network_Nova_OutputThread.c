@@ -93,7 +93,7 @@ void example_network_Nova_OutputThread_0_Nova_run(example_network_Nova_OutputThr
 		nova_Nova_String* l1_Nova_message = (nova_Nova_String*)nova_null;
 		
 		l1_Nova_message = nova_io_Nova_Console_Nova_readLine(0, exceptionData);
-		if (nova_operators_Nova_Equals_virtual0_Nova_equals((nova_operators_Nova_Equals*)(l1_Nova_message), exceptionData, (nova_Nova_Object*)(nova_Nova_String_1_Nova_String(0, exceptionData, "q"))))
+		if (nova_operators_Nova_Equals_virtual0_Nova_equals((nova_operators_Nova_Equals*)(l1_Nova_message), exceptionData, (nova_Nova_Object*)(nova_Nova_String_1_Nova_String(0, exceptionData, (char*)("q")))))
 		{
 			nova_network_Nova_ServerSocket_Nova_close(this->prv->example_network_Nova_OutputThread_Nova_serverSocket, exceptionData);
 			break;

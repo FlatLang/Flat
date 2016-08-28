@@ -42,9 +42,6 @@ CCLASS_PRIVATE
 	int stabilitytest_Nova_ClassWithProperties_Nova_privateProp2;
 	
 )
-
-int stabilitytest_Nova_ClassWithProperties_Mutator_Nova_prop1(stabilitytest_Nova_ClassWithProperties* this, nova_exception_Nova_ExceptionData* exceptionData, int stabilitytest_Nova_ClassWithProperties_Nova_value);
-int stabilitytest_Nova_ClassWithProperties_Mutator_Nova_prop2(stabilitytest_Nova_ClassWithProperties* this, nova_exception_Nova_ExceptionData* exceptionData, int stabilitytest_Nova_ClassWithProperties_Nova_value);
 void stabilitytest_Nova_ClassWithProperties_Nova_init_static(nova_exception_Nova_ExceptionData* exceptionData)
 {
 	{

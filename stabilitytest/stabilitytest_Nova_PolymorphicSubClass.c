@@ -73,7 +73,7 @@ void stabilitytest_Nova_PolymorphicSubClass_Nova_destroy(stabilitytest_Nova_Poly
 
 nova_Nova_String* stabilitytest_Nova_PolymorphicSubClass_Nova_toString(stabilitytest_Nova_PolymorphicSubClass* this, nova_exception_Nova_ExceptionData* exceptionData)
 {
-	return nova_Nova_String_1_Nova_String(0, exceptionData, "sub class");
+	return nova_Nova_String_1_Nova_String(0, exceptionData, (char*)("sub class"));
 }
 
 void stabilitytest_Nova_PolymorphicSubClass_Nova_this(stabilitytest_Nova_PolymorphicSubClass* this, nova_exception_Nova_ExceptionData* exceptionData)

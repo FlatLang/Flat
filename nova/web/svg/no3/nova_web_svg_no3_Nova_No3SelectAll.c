@@ -77,7 +77,7 @@ void nova_web_svg_no3_Nova_No3SelectAll_Nova_this(nova_web_svg_no3_Nova_No3Selec
 
 nova_Nova_String* nova_web_svg_no3_Nova_No3SelectAll_0_Nova_toJs(nova_web_svg_no3_Nova_No3SelectAll* this, nova_exception_Nova_ExceptionData* exceptionData)
 {
-	return nova_Nova_String_0_Nova_concat(nova_Nova_String_1_Nova_String(0, exceptionData, "d3.selectAll('"), exceptionData, nova_Nova_String_virtual1_Nova_concat((nova_Nova_String*)((this->nova_web_svg_no3_Nova_No3SelectAll_Nova_selection)), exceptionData, nova_Nova_String_1_Nova_String(0, exceptionData, "')")));
+	return nova_Nova_String_0_Nova_concat(nova_Nova_String_1_Nova_String(0, exceptionData, (char*)("d3.selectAll('")), exceptionData, nova_Nova_String_virtual1_Nova_concat((nova_Nova_String*)((this->nova_web_svg_no3_Nova_No3SelectAll_Nova_selection)), exceptionData, nova_Nova_String_1_Nova_String(0, exceptionData, (char*)("')"))));
 }
 
 void nova_web_svg_no3_Nova_No3SelectAll_0_Nova_super(nova_web_svg_no3_Nova_No3SelectAll* this, nova_exception_Nova_ExceptionData* exceptionData)

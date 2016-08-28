@@ -87,11 +87,11 @@ void example_Nova_SvgFractal_Nova_main(example_Nova_SvgFractal* this, nova_excep
 	
 	l1_Nova_s = nova_web_svg_Nova_Svg_Nova_Svg(0, exceptionData);
 	l1_Nova_pi2 = nova_math_Nova_Math_Nova_PI * 2;
-	nova_io_Nova_Console_0_Nova_write(0, exceptionData, nova_Nova_String_1_Nova_String(0, exceptionData, "Enter the number of vertices: "));
+	nova_io_Nova_Console_0_Nova_write(0, exceptionData, nova_Nova_String_1_Nova_String(0, exceptionData, (char*)("Enter the number of vertices: ")));
 	l1_Nova_numVerts = nova_io_Nova_Console_Nova_readInt(0, exceptionData);
-	nova_io_Nova_Console_0_Nova_write(0, exceptionData, nova_Nova_String_1_Nova_String(0, exceptionData, "Enter the coefficient: "));
+	nova_io_Nova_Console_0_Nova_write(0, exceptionData, nova_Nova_String_1_Nova_String(0, exceptionData, (char*)("Enter the coefficient: ")));
 	l1_Nova_coefficient = nova_io_Nova_Console_Nova_readDouble(0, exceptionData);
-	nova_io_Nova_Console_0_Nova_write(0, exceptionData, nova_Nova_String_1_Nova_String(0, exceptionData, "Enter the number of points: "));
+	nova_io_Nova_Console_0_Nova_write(0, exceptionData, nova_Nova_String_1_Nova_String(0, exceptionData, (char*)("Enter the number of points: ")));
 	l1_Nova_numPoints = nova_io_Nova_Console_Nova_readInt(0, exceptionData);
 	l1_Nova_timer = nova_time_Nova_Timer_Nova_start(nova_time_Nova_Timer_Nova_Timer(0, exceptionData), exceptionData);
 	l1_Nova_points = nova_datastruct_list_Nova_DoubleArray_1_Nova_DoubleArray(0, exceptionData, l1_Nova_numVerts * 2);
@@ -150,12 +150,12 @@ void example_Nova_SvgFractal_Nova_main(example_Nova_SvgFractal* this, nova_excep
 			nova_web_svg_Nova_SvgComponentList_Nova_addChild(l1_Nova_s->nova_web_svg_Nova_Svg_Nova_root->nova_web_svg_Nova_SvgComponent_Nova_children, exceptionData, (nova_web_svg_Nova_SvgComponent*)(l9_Nova_circle));
 		}
 	}
-	l1_Nova_f = nova_io_Nova_File_0_Nova_File(0, exceptionData, nova_Nova_String_1_Nova_String(0, exceptionData, "C:/Users/Braden Steffaniak/svgoutput.html"));
+	l1_Nova_f = nova_io_Nova_File_0_Nova_File(0, exceptionData, nova_Nova_String_1_Nova_String(0, exceptionData, (char*)("C:/Users/Braden Steffaniak/svgoutput.html")));
 	nova_io_Nova_File_Nova_create(l1_Nova_f, exceptionData);
 	nova_io_Nova_File_Nova_clearContents(l1_Nova_f, exceptionData);
 	nova_web_svg_Nova_Svg_Nova_generateHTMLOutput(l1_Nova_s, exceptionData, l1_Nova_f);
 	nova_time_Nova_Timer_Nova_stop(l1_Nova_timer, exceptionData);
-	nova_io_Nova_Console_0_Nova_write(0, exceptionData, nova_Nova_String_0_Nova_concat(nova_Nova_String_1_Nova_String(0, exceptionData, "Done generating "), exceptionData, nova_primitive_number_Nova_Long_2_Nova_toString(0, exceptionData, nova_time_Nova_Timer_Accessor_Nova_duration(l1_Nova_timer, exceptionData))));
+	nova_io_Nova_Console_0_Nova_write(0, exceptionData, nova_Nova_String_0_Nova_concat(nova_Nova_String_1_Nova_String(0, exceptionData, (char*)("Done generating ")), exceptionData, nova_primitive_number_Nova_Long_2_Nova_toString(0, exceptionData, nova_time_Nova_Timer_Accessor_Nova_duration(l1_Nova_timer, exceptionData))));
 	nova_io_Nova_Console_Nova_waitForEnter(0, exceptionData);
 }
 
