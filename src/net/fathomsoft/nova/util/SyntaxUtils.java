@@ -2710,7 +2710,10 @@ public class SyntaxUtils
 	{
 		String type1 = value1.getInstanceType(checkGeneric);
 		String type2 = value2.getInstanceType(checkGeneric);
-		
+
+		type1 = type1 != null ? type1.replace("*", "").replace("&", "") : null;
+		type2 = type2 != null ? type2.replace("*", "").replace("&", "") : null;
+
 		if (type1 != null && type1.equals(type2))
 		{
 			if (value1.isGenericType())
