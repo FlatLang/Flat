@@ -1,0 +1,27 @@
+package "nova/svg"
+
+import "nova/io/File"
+
+public class Svg
+{
+	public SvgMainComponent root
+	
+	public construct()
+	{
+		root = new SvgMainComponent()
+	}
+	
+	public generateOutput(File file)
+	{
+		root.generateOutput(file)
+	}
+	
+	public generateHTMLOutput(File file)
+	{
+		file.write("<html>\n")
+		
+		generateOutput(file)
+		
+		file.write("</html>")
+	}
+}

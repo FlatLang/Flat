@@ -1,0 +1,17 @@
+package "nova/svg/no3"
+
+/**
+ * Nitrogen trioxide: A blue liquid with a sharp, unpleasant chemical odor.
+ * Density 1.447 g / cm3. Low-boiling (boiling point 3.5°C) and held as a
+ * liquid by compression. Partially dissociates into NO and NO2. Strong
+ * irritant to skin, eyes and mucous membranes. Vapors very toxic by inhalation.
+ * Used in special purpose fuels. Under prolonged exposure to intense heat the
+ * container may rupture violently and rocket.
+ */
+public class No3
+{
+    public static select(String selection) -> No3Selection
+    {
+        return new No3Selection(selection)
+    }
+}
