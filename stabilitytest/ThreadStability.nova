@@ -1,0 +1,58 @@
+package "stabilitytest"
+
+import "nova/thread/Thread"
+
+public class ThreadStability extends StabilityTestCase
+{
+	public construct(StabilityTest program)
+	{
+		super(program)
+	}
+	
+	public test()
+	{
+		Console.writeLine("Checking Thread.nova with 20 Threads... ")
+		
+		ThreadImplementation[] threads = new Array(20)
+		
+		createThreads(threads, 20)
+		
+		checkMemoryAccess()
+		
+		joinThreads(threads, 20)
+	}
+	
+	createThreads(ThreadImplementation[] threads, Int amount)
+	{
+		StabilityExceptionHandler handler = new StabilityExceptionHandler(program)
+		
+		for (i in 0..amount)
+		{
+			threads.set(i, new ThreadImplementation(10, 10))
+			//threads.get(i).addUncaughtExceptionHandler(handler)
+			threads.get(i).start()
+		}
+	}
+	
+	static checkMemoryAccess()
+	{
+		Thread.sleep(30)
+		
+		Console.write("Checking memory access with multi-threading... ")
+		
+		for (i in 0..1000)
+		{
+			String s = Int.toString(i)
+		}
+		
+		Console.writeLine("OK")
+	}
+	
+	static joinThreads(ThreadImplementation threads[], Int amount)
+	{
+		for (i in 0..amount)
+		{
+			threads.get(i).join()
+		}
+	}
+}

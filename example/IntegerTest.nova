@@ -1,0 +1,36 @@
+package "example"
+
+import "nova/time/Timer"
+import "nova/thread/Thread"
+import "nova/datastruct/list/LinkedList"
+import "nova/datastruct/list/ListNode"
+import "nova/gc/GC"
+
+public class IntegerTest
+{
+	public static main(String args[])
+	{
+		Char c = 'y'
+		
+		while (c == 'y' || c == 'Y')
+		{
+			Timer timer = new Timer().start()
+			
+			for (i in 0..999999)
+			{
+				Long.toString(i)
+			}
+			
+			timer.stop()
+			
+			Console.writeLine("Time taken: " + timer.duration + "ms")
+			
+			Console.write("Run again? (Y/N) ")
+			
+			c = Console.readChar()
+		}
+		
+		Console.writeLine("\nFinished")
+		Console.waitForEnter()
+	}
+}

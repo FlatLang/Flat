@@ -1,0 +1,22 @@
+package "stabilitytest"
+
+public class PolymorphicSuperClass
+{
+	visible PolymorphicSubClass child
+	
+	visible Int myProperty
+	{
+		get { return 1 }
+		no set
+	}
+	
+	public giveBirth()
+	{
+		child = new PolymorphicSubClass()
+	}
+	
+	public toString() -> String
+	{
+		return "super class"
+	}
+}

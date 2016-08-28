@@ -1,0 +1,16 @@
+package "nova/math"
+
+public class NumericStatement extends Statement
+{
+	NumericTree tree
+	
+	public construct(String statement)
+	{
+		tree = new NumericTree(statement.trim())
+	}
+	
+	public toString() -> String
+	{
+		return tree.toString()
+	}
+}

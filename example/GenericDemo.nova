@@ -1,0 +1,46 @@
+package "example"
+
+import "nova/datastruct/list/Stack"
+import "nova/datastruct/HashMap"
+
+public class GenericDemo
+{
+	public static main(String args[])
+	{
+		Stack<String> strs = new Stack()
+		
+		Console.writeLine("Pushing \"test\"")
+		strs.push("test")
+		
+		Console.writeLine("Pushing \"ASDFASDF\"")
+		strs.push("ASDFASDF")
+		
+		Console.writeLine("Pushing \"3!\"")
+		strs.push("3!")
+		
+		Console.writeLine("Pushing \"34!!4334\"")
+		strs.push("34!!4334")
+		
+		Console.writeLine("Pushing null")
+		strs.push(null)
+		
+		// Uncomment the next two lines to demonstrate the type
+		// checking of generic methods.
+//		Object o = new Object()
+//		strs.push(o)
+		
+		while (!strs.empty)
+		{
+			String popped = strs.pop()
+			
+			if (popped != null)
+			{
+				popped = "\"" + popped + "\""
+			}
+			
+			Console.writeLine("Popping: " + popped)
+		}
+		
+		Console.waitForEnter()
+	}
+}

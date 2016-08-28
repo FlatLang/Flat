@@ -1,0 +1,15 @@
+package "stabilitytest"
+
+public class PolymorphicSubClass extends PolymorphicSuperClass
+{
+	visible Int myProperty
+	{
+		get { return 2 }
+		no set
+	}
+	
+	public toString() -> String
+	{
+		return "sub class"
+	}
+}

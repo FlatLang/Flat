@@ -1,0 +1,63 @@
+package "example/database"
+
+import "nova/database/DBConnector"
+import "nova/database/ResultSet"
+
+public class DatabaseDemo
+{
+	public static main(String args[])
+	{
+		DBConnector connection = connect()
+		
+		ResultSet result = connection.query("select * from market")
+		
+		for (row in 0..result.numRows)
+		{
+			Console.write("Found (#{row}): #{result.rows.get(row).get(0)}")
+			
+			for (col in 1..result.numCols)
+			{
+				Console.write(", " + result.rows.get(row).get(col))
+			}
+			
+			Console.writeLine("")
+		}
+		
+		Int id = Int.parseInt(result.rows.get(result.numRows - 1).get(0)) + 1
+		
+		connection.query("insert into market values(#{id}, 6, 634, 3);")
+		
+		close(connection)
+		
+		Console.waitForEnter()
+	}
+	
+	static connect() -> DBConnector
+	{
+		Console.writeLine("Connecting...")
+		
+		DBConnector connection = new DBConnector()
+		
+		connection.connect("localhost", "root", "server", "test")
+		
+		String error = connection.error
+		
+		if (error.count > 0)
+		{
+			Console.writeLine("Error: " + error)
+		}
+		else
+		{
+			Console.writeLine("Connected.")
+		}
+		
+		return connection
+	}
+	
+	static close(DBConnector connection)
+	{
+		Console.writeLine("Closing...")
+		connection.close()
+		Console.writeLine("Closed")
+	}
+}

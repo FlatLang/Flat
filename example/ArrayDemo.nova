@@ -1,0 +1,51 @@
+package "example"
+
+public class ArrayDemo
+{
+	public static main(String[] args)
+	{
+		Char c = 'y'
+		
+		while (c == 'y' || c == 'Y')
+		{
+			Animal[] list = new Array()
+			
+			list.add(new Dog())
+			list.add(new Dog())
+			list.add(new Spider())
+			list.add(new Dog())
+			list.add(new Animal())
+			list.add(new Spider())
+			
+			for (i in 0..list.count)
+			{
+				Console.writeLine("Contains: " + list.get(i))
+			}
+			
+			Animal animal = list.remove(2)
+			
+			Console.writeLine("--------- Removed: " + animal + " ----------")
+			
+			for (i2 in 0..list.count)
+			{
+				Console.writeLine("Contains: " + list.get(i2))
+			}
+			
+			list.add(1, new Spider())
+			
+			Console.writeLine("--------- Added a new spider at index 1 ----------")
+			
+			for (i3 in 0..list.count)
+			{
+				Console.writeLine("Contains: " + list.get(i3))
+			}
+			
+			Console.write("Run again? (Y/N)")
+			
+			c = Console.readChar()
+		}
+		
+		Console.writeLine("\nFinished")
+		Console.waitForEnter()
+	}
+}

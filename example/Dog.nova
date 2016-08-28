@@ -1,0 +1,24 @@
+package "example"
+
+public class Dog extends Animal
+{
+	public construct()
+	{
+		
+	}
+	
+	public getNumLegs() -> Int
+	{
+		return 4
+	}
+	
+	public getNumEyes() -> Int
+	{
+		return 2
+	}
+	
+	public getDescription() -> String
+	{
+		return "A fuzzy dog"
+	}
+}

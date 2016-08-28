@@ -1,0 +1,119 @@
+package "nova/datastruct"
+
+import "nova/datastruct/list/Queue"
+
+public class Node<E>
+{
+	public E data
+	
+	visible Node<E>[] children
+	
+	public construct()
+	{
+		this(null)
+	}
+	
+	public construct(E data)
+	{
+		children = new Array()
+		
+		this.data = data
+	}
+	
+	public construct(Int numChildren)
+	{
+		this(null, numChildren)
+	}
+	
+	public construct(E data, Int numChildren)
+	{
+		children = new Array(numChildren)
+		
+		this.data = data
+	}
+	
+	static notNull(Node<E> value) -> Bool
+	{
+		return value != null
+	}
+	
+	public preorder() -> E[]
+	{
+		E[] array = new Array()
+		
+		preorder(array)
+		
+		return array
+	}
+	
+	preorder(E[] array)
+	{
+		array.add(data)
+		
+		children.filter(notNull).forEach({ _.preorder(array) })
+	}
+	
+	public inorder() -> E[]
+	{
+		E[] array = new Array()
+		
+		return inorder(array)
+	}
+	
+	inorder(E[] array) -> E[]
+	{
+		Int half = Math.ceil(children.count / 2.0)
+		
+		children.take(half).filter(notNull).forEach({ _.inorder(array) })
+		
+		array.add(data)
+		
+		children.skip(half).filter(notNull).forEach({ _.inorder(array) })
+		
+		return array
+	}
+	
+	public postorder() -> E[]
+	{
+		E[] array = new Array()
+		
+		return postorder(array)
+	}
+	
+	postorder(E[] array) -> E[]
+	{
+		children.filter(notNull).forEach({ _.postorder(array) })
+		
+		array.add(data)
+		
+		return array
+	}
+	
+	public levelorder() -> E[]
+	{
+		E[] array = new Array()
+		
+		return levelorder(array)
+	}
+	
+	levelorder(E[] array) -> E[]
+	{
+		var queue = new Queue<Node<E>>([this])
+		
+		while (!queue.empty)
+		{
+			Node<E> current = queue.dequeue()
+			
+			array.add(current.data)
+			
+			current.children.filter(notNull).forEach({ queue.enqueue(_) })
+		}
+		
+		return array
+	}
+	
+	public toString() -> String
+	{
+		return data.toString()
+	}
+}

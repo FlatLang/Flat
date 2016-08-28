@@ -1,0 +1,57 @@
+package "stabilitytest"
+
+import "nova/network/ClientSocket"
+import "nova/thread/Thread"
+
+public class ClientThread extends Thread
+{
+	Int port
+	
+	StabilityTest program
+	
+	public construct(StabilityTest program, Int port)
+	{
+		this.program = program
+		this.port    = port
+	}
+	
+	public run()
+	{
+		ClientSocket client = new ClientSocket()
+		
+		String ip = "127.0.0.1"
+		
+		Console.write("ClientSocket attempting to connect to " + ip + ":" + port + "... ")
+		
+		if (!client.connect(ip, port))
+		{
+			program.fail("Failed to connect to localhost server")
+		}
+		
+		Console.writeLine("OK")
+		
+		Console.writeLine("Waiting for String from ServerSocket... ")
+		
+		String s = client.connection.in.readString()
+		
+		if (s.count != NetworkStability.received.count || !s.equals(NetworkStability.received))
+		{
+			program.fail("Client unable to receive the correct message from server")
+		}
+		
+		Console.write("Attempting to send String to ServerSocket... ")
+		
+		client.connection.out.write(NetworkStability.received)
+		
+		Console.writeLine("OK")
+		
+		Console.write("Attempting to close ClientSocket... ")
+		
+		if (!client.close())
+		{
+			program.fail("Unable to close Client connection")
+		}
+		
+		Console.writeLine("OK")
+	}
+}

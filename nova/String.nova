@@ -1,0 +1,270 @@
+package "nova"
+
+import "nova/datastruct/Comparable"
+
+public class String implements Comparable<String>
+{
+	visible Int    count
+	
+	visible Char[] chars
+	
+	static Char[]  whitespace = [ ' ', '\t', '\n', '\r' ]
+	
+	external void strcpy(char dst[], char src[])
+	external void strcat(char dst[], char src[])
+	external int strlen(char chars[])
+	external void memcpy(char dst[], char* src[], int count)
+	
+	public Long hashCodeLong
+	{
+	    get
+	    {
+            Long hash = 0
+            
+            //chars.forEach((c, i) -> hash = hash + (Int)c * Math.pow(31, count - i - 1))
+            chars.forEach((c, i) -> hash = 31 * hash + (Int)c)
+            
+            return hash
+	    }
+	    
+	    no set
+	}
+	
+	public construct(Char c)
+	{
+	    [PrimitiveArray]
+		Char[] chars = new Char[2]
+		
+		chars[0] = c
+		chars[1] = '\0'
+		
+		this(chars)
+	}
+	
+	public construct([PrimitiveArray] Char[] chars)
+	{
+		count = calculateSize(chars)
+		
+		this.chars = new CharArray(chars, count)
+		
+		if (chars[count] != '\0')
+		{
+			chars[count] = '\0'
+		}
+	}
+	
+	calculateSize([PrimitiveArray] Char[] chars) -> Int
+	{
+		return strlen(chars)
+	}
+	
+	public concat(String str) -> String
+	{
+		Int sz = str.count + count + 1
+		
+		[PrimitiveArray]
+		Char[] newData = new Char[sz]
+		
+		strcpy(newData, chars.data)
+		strcat(newData, str.chars.data)
+		
+		newData[sz - 1] = '\0'
+		
+		return new String(newData)
+	}
+	
+	public equals(String other) -> Bool
+	{
+		return compareTo(other) == 0
+	}
+	
+	public contains(String search) -> Bool
+	{
+	    return indexOf(search) >= 0
+	}
+	
+	indexOf(String search, Int start, Int direction) -> Int
+	{
+	    Int i = start
+	    
+		while (i < count && i >= 0)
+		{
+			Bool found = true
+			
+			Int j = 0
+			
+			while (j < search.count && i + j < count && found)
+			{
+				if (search.chars.get(j) != chars.get(i + j))
+				{
+					found = false
+				}
+				
+				j++
+			}
+			
+			if (found)
+			{
+//				if (direction > 0)
+					return i
+//				else
+//					return i - search.count + 1
+			}
+			
+			i = i + direction
+		}
+		
+		return -1
+	}
+	
+	public indexOf(String search) -> Int
+	{
+		return indexOf(search, 0, 1)
+	}
+	
+	public indexOf(String search, Int start) -> Int
+	{
+		return indexOf(search, start, 1)
+	}
+	
+	public lastIndexOf(String search) -> Int
+	{
+		return indexOf(search, count - 1, -1)
+	}
+	
+	public substring(Int start, Int end) -> String
+	{
+		if (end - start <= 0)
+		{
+			if (end - start < 0)
+            {
+                throw new Exception("Substring bounds of [" + start + ", " + end + "] are invalid")
+            }
+            
+            return ""
+        }
+		
+		[PrimitiveArray]
+		Char buf[] = new Char[end - start + 1]
+		
+		[PrimitiveArray]
+		Char[] arr = chars.data
+		
+		memcpy(buf, arr[start], end - start)
+		
+		buf[end - start] = '\0'
+		
+		return new String(buf)
+	}
+	
+	public substring(Int start) -> String
+	{
+		return substring(start, count)
+	}
+	
+	public lastChar() -> Char
+	{
+		return charAt(count - 1)
+	}
+	
+	public charAt(Int index) -> Char
+	{
+		return chars.get(index)
+	}
+	
+	public trim() -> String
+	{
+		Int start = 0
+		Int end   = count - 1
+		
+		while (start < count && whitespace.contains(chars.get(start)))
+		{
+			start++
+		}
+		
+		while (end >= 0 && whitespace.contains(chars.get(end)))
+		{
+			end--
+		}
+		
+		if (end == 0)
+		{
+			return ""
+		}
+		
+		if (start == 0 && end == count - 1)
+		{
+			return this
+		}
+		
+		return substring(start, end + 1)
+	}
+	
+	public toLowerCase() -> String
+	{
+		return transform(Char.toLowerCase)
+	}
+	
+	public toUpperCase() -> String
+	{
+		return transform(Char.toUpperCase)
+	}
+	
+	public capitalize() -> String
+	{
+	    if (count == 0) return this
+	    
+	    return chars.get(0).toUpperCase() + substring(1)
+	}
+	
+	public transform(transform(Char, Int) -> Char) -> String
+	{
+	    [PrimitiveArray]
+		Char[] newData = new Char[count]
+		
+		for (i in 0..count)
+		{
+			newData[i] = transform(chars.get(i), i)
+		}
+		
+		return new String(newData)
+	}
+	
+	public getStringBetween(String before, String after) -> String
+	{
+		return getStringBetween(before, after, 0)
+	}
+	
+	public getStringBetween(String before, String after, Int start) -> String
+	{
+		Int s = indexOf(before, start)
+		Int e = indexOf(after, s + 1)
+		
+		if (s >= 0 && e > 0)
+		{
+			return substring(s + before.count, e)
+		}
+		
+		return ""
+	}
+	
+	public compareTo(String other) -> Int
+	{
+	    var min = Math.min(count, other.count)
+	    
+		for (i in 0..min)
+		{
+			if (chars.get(i) - other.chars.get(i) != 0)
+			{
+				return chars.get(i) - other.chars.get(i)
+			}
+		}
+		
+		return count - other.count
+	}
+	
+	public toString() -> String
+	{
+		return this
+	}
+}

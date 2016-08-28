@@ -1,0 +1,26 @@
+package "example"
+
+import "nova/datastruct/list/Stack"
+
+public class Test
+{
+	public static main(String[] args)
+	{
+		Stack<String> s = new Stack()
+		
+		s.push("How are you?")
+		s.push("Larry")
+		s.push("Hello")
+		
+		while (!s.empty)
+		{
+			Console.writeLine(s.pop())
+		}
+		
+		Int d = 5
+		
+		Console.writeLine("Comparison: " + d.compareTo(3))
+		
+		Console.waitForEnter()
+	}
+}

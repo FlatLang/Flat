@@ -1,0 +1,38 @@
+package "nova/primitive/number"
+
+import "nova/datastruct/Comparable"
+
+public class Float extends Number implements Comparable<Float>, RealNumber
+{
+	Float value
+	
+	construct(Int value)
+	{
+		this.value = value
+	}
+	
+	public static numDigits(Float number) -> Int
+	{
+		return Double.numDigits(number)
+	}
+	
+	public static toString(Float value) -> String
+	{
+		return Double.toString(value)
+	}
+	
+	public toString() -> String
+	{
+		return toString(value)
+	}
+	
+	public compareTo(Float other) -> Float
+	{
+		return value - other
+	}
+	
+	public multiply(Float value) -> Float
+	{
+		return this.value * value
+	}
+}

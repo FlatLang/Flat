@@ -1,0 +1,16 @@
+package "nova/math"
+
+public class NumericOperand<Type>
+{
+	Type data
+	
+	public construct(Type data)
+	{
+		this.data = data
+	}
+	
+	public toString() -> String
+	{
+		return data.toString()
+	}
+}

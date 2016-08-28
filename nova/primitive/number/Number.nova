@@ -1,0 +1,17 @@
+package "nova/primitive/number"
+
+import "nova/primitive/Primitive"
+import "nova/operators/Multiply"
+
+public abstract class Number extends Primitive implements Multiply<Number>
+{
+	public static numDigits(Number number) -> Int
+	{
+		return -1
+	}
+	
+//	public static toString(Number value) -> String
+//	{
+//		return "[Unimplemented]"
+//	}
+}

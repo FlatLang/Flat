@@ -1,0 +1,49 @@
+package "nova/network"
+
+import "nova/network/NativeClientSocket.h"
+import "nova/network/NativeSocket.h"
+import "nova/io/OutputStream"
+import "nova/io/InputStream"
+
+public class ClientSocket extends Socket
+{
+	external type SOCKET_ID_TYPE
+	
+	external SOCKET_ID_TYPE nova_clientsocket_connect(char ipAddress[], int port)
+	external int nova_socket_close(SOCKET_ID_TYPE serverSocket)
+	
+	SOCKET_ID_TYPE socket
+	
+	visible ConnectionSocket connection
+	
+	public construct()
+	{
+		
+	}
+	
+	public connect(String ipAddress, Int port) -> Bool
+	{
+		socket = nova_clientsocket_connect(ipAddress.chars.data, port)
+		
+		if (socket == 0)
+		{
+			return false
+		}
+		
+		connection = new ConnectionSocket(socket)
+		
+		return true
+	}
+	
+	public close() -> Bool
+	{
+		Int result = nova_socket_close(socket)
+		
+		if (result == 0)
+		{
+			return false
+		}
+		
+		return true
+	}
+}

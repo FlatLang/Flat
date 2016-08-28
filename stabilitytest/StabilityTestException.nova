@@ -1,0 +1,6 @@
+package "stabilitytest"
+
+public class StabilityTestException extends Exception
+{
+	
+}

@@ -1,0 +1,40 @@
+package "nova/datastruct/list"
+
+public class Stack<E>
+{
+	visible Int size
+	
+	ListNode<E> top
+	
+	visible Bool empty //=> size <= 0
+	{
+		get { return size <= 0 }
+		no set
+	}
+	
+	public push(E data)
+	{
+		ListNode<E> node = new ListNode(data)
+		
+		node.next = top
+		top       = node
+		
+		size++
+	}
+	
+	public pop() -> E
+	{
+		if (empty)
+		{
+			throw new EmptyStackException()
+		}
+		
+		E data = top.data
+		
+		top = top.next
+		
+		size--
+		
+		return data
+	}
+}

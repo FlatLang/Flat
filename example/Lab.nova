@@ -1,0 +1,168 @@
+// Testing single line comment on first line.
+package "example"
+
+import "nova/math/logic/WFF"
+import "nova/math/logic/InvalidFormulaException"
+import "nova/math/logic/StatementLetter"
+import "nova/datastruct/HashMap"
+import "nova/datastruct/Vector2D"
+import "nova/network/ServerSocket"
+import "nova/star/Window"
+import "nova/math/NumericStatement"
+import "nova/datastruct/BinaryTree"
+import "nova/datastruct/list/Array"
+import "nova/datastruct/list/IntArray"
+import "nova/datastruct/list/Iterator"
+import "nova/datastruct/list/LinkedList"
+import "nova/datastruct/list/List"
+
+public class Lab
+{
+	public static main(String[] args)
+	{
+		//var v = new Vector2D(2, 3)
+		
+		//Console.writeLine(v.x + ", " + v.y)
+		
+		var tree = new BinaryTree(["F", "B", "A", "D", "C", "E", "G", "I", "H"])
+		
+		Console.writeLine("Preorder: #{tree.preorder().join(", ")}")
+		Console.writeLine("Inorder: #{tree.inorder().join(", ")}")
+		Console.writeLine("Postorder: #{tree.postorder().join(", ")}")
+		Console.writeLine("Levelorder: #{tree.levelorder().join(", ")}")
+		
+		Int num1 = 4
+		Int num2
+		
+		num2 = num1 = 7
+		
+		Console.writeLine("My nums: #num1, #num2 hey: #tree.inorder()!")
+		
+		Console.writeLine("Result from ternary: #num1 #{ num1 < 3 ? "<" : ">=" } 3")
+		
+		var str = "this isnt null"
+		var str2 = null
+		
+		Console.writeLine("Elvis not null: #{str ?: "wtf"}")
+		Console.writeLine("Elvis null: #{str2 ?: "this is null"}")
+		
+		"test".substring(0)
+		
+		Console.writeLine("#2..8: #{(2..8).join(", ")}")
+		
+		String[] list = ["this", "is", "a", "test", "to", "see", "what shows up"]
+		Int[] list2 = [1, 2, 3, 4, 5, 6, 7]
+		
+		//Console.writeLine("Sum: #list2.sum()")
+		
+		/*list.filter({ _.count > 10 }).map({ getClassByName(_) })
+		    .forEach(x -> {
+		        Console.writeLine(x.fields.map({ _.name }).join(", "))
+		    })*/
+		
+		Async.execute({
+		    Console.writeLine("Wait a second!")
+		    Thread.sleep(1000)
+		    Console.writeLine("ok, now what")
+		})
+		
+		Console.writeLine("Started async execution")
+		
+		String[][] multi = new Array()
+		
+		multi.add(["This is a test", "index 2"])
+		multi.add(["Second dimension yo", "waddup"])
+		
+		Console.writeLine("Multi dimensional array: #multi")
+        Console.writeLine(multi.get(0).get(0).chars.contains('z').toString().capitalize())
+        
+		Console.writeLine(list.map(x -> {
+		    var something = 5 * x.count
+            
+		    return "#something #x"
+		}).join(", "))
+        
+		Console.writeLine("Mapped: " + list.filter({ _.count >= 4 }).map({ "#_2: #_1?" }).join(", "))
+		Console.writeLine("Mapped backwards: " + list.filter({ _.count >= 4 }).map({ "#_?" }).reverse().join(", "))
+		Console.writeLine("Mapped2: " + list2.map({ "#_!" }).join(", "))
+		
+		//doSomething(list)
+		//doSomething(list2)
+		
+		var linked = new LinkedList()
+		
+		linked.addAll(["test", "test2", "test3"])
+		
+		Console.writeLine("Linked list backwards: " + linked.reverse().join(", "))
+		Console.writeLine("Linked list forwards: " + linked.join(", "))
+		
+		var x = "Hey its a string"
+		
+		Console.writeLine(x)
+		
+		takesString(x)
+
+        if (true)
+		{
+            x = new Array<String>()
+
+            x.add("hey")
+            x.add("its now an array")
+        }
+
+        //x.add("hey")
+        //x.add("its now an array")
+		
+		Console.writeLine(x)
+		
+		var sq = new Square(4)
+
+		Console.writeLine(getArea(sq))
+
+//		var s = new NumericStatement("5a + (3 * 2)")
+//
+//		Console.writeLine(s)
+//
+//		for (Int i = 0; i < 20; i++)
+//		{
+//			Window w = new Window()
+//
+//			w.width = 300
+//			w.height = 200
+//			w.x = (i % 5) * w.width
+//			w.y = (i / 5) * w.height
+//			w.title = "Window(#i) at (#w.x, #w.y)"
+//
+//			w.create()
+//		}
+//		
+//		Console.writeLine("")
+//		
+//		StatementLetter[] letters =
+//		[
+//			new StatementLetter("A", "McDonald's is open"),
+//			new StatementLetter("B", "Sally is awake"),
+//			new StatementLetter("C", "McDonald's has food"),
+//			new StatementLetter("D", "Sally is fat")
+//		]
+//		
+//		var f = new WFF("A & B & C -> D", letters)
+		
+		Console.waitForEnter()
+	}
+	
+	static takesString(String s)
+	{
+	    Console.writeLine("Received " + s)
+	}
+	
+	static doSomething(List list)
+	{
+	    list.map({ "#_!!!" }).forEach(Console.writeLine)
+	}
+	
+	static getArea(Polygon p) -> Double
+	{
+		return p.calculateArea()
+	}
+}

@@ -1,0 +1,44 @@
+package "stabilitytest"
+
+import "nova/datastruct/list/LinkedList"
+import "nova/time/Time"
+
+public class LambdaStability extends StabilityTestCase
+{
+	public construct(StabilityTest program)
+	{
+		super(program)
+	}
+	
+	public test()
+	{
+	    Console.write("Checking lambdas... ")
+	    
+		String[] list = ["this", "is", "a", "test", "to", "see", "what shows up"]
+		Int[] list2 = [1, 2, 3, 4, 5, 6, 7]
+		
+		String mappedOutput = list.filter(x -> x.count >= 4).map((x, i) -> i + ": " + x + "?").join(", ")
+		String mappedExpected = "0: this?, 1: test?, 2: what shows up?"
+		
+		if (!mappedOutput.equals(mappedExpected))
+		    program.fail("Failed first list map with 2 args. Expected '" + mappedExpected + "' but received '" + mappedOutput + "'")
+		//Console.writeLine("Mapped backwards: " + list.filter(x -> x.count >= 4).map(x -> x + "?").reverse().join(", "))
+		//if (!list2.map(x -> x + "!").join(", ").equals(""))
+		
+		LinkedList<String> linked = new LinkedList()
+		
+		linked.add("test").add("test2").add("test3")
+		
+		if (!linked.reverse().join(", ").equals("test3, test2, test")) program.fail("Failed reverse linked list")
+		if (!linked.join(", ").equals("test, test2, test3")) program.fail("Failed forward linked list")
+		
+		String[] repeated = list.map({ "test" })
+		
+		for (item in repeated)
+		{
+		    if (!item.equals("test")) program.fail("Map with no arguments failed")
+		}
+		
+		Console.writeLine("OK")
+	}
+}

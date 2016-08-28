@@ -1,0 +1,40 @@
+package "example"
+
+public class ExceptionHandlingDemo
+{
+	public static main(String[] args)
+	{
+		try
+		{
+			Int result = divide(100, 5)
+			
+			Console.writeLine("After working example: " + result)
+			
+			result = divide(100, 3)
+			
+			Console.writeLine("this output will not show.")
+		}
+		catch (NonWholeDivisionException e)
+		{
+			Console.writeLine("You used the divide() method incorrectly.")
+		}
+		finally
+		{
+			Console.writeLine("Exiting the try block.")
+		}
+		
+		Console.writeLine("After the try block.")
+		
+		Console.waitForEnter()
+	}
+	
+	static divide(Int num, Int den) -> Int
+	{
+		if (num % den != 0)
+		{
+			throw new NonWholeDivisionException()//"There cannot be any remainders from the division.")
+		}
+		
+		return num / den
+	}
+}

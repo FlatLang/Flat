@@ -1,0 +1,23 @@
+package "stabilitytest"
+
+import "nova/thread/Thread"
+
+public class ThreadImplementation extends Thread
+{
+	Int times
+	Int millis
+	
+	public construct(Int times, Int millis)
+	{
+		this.times  = times
+		this.millis = millis
+	}
+	
+	public run()
+	{
+		for (i in 0..times)
+		{
+			Thread.sleep(millis)
+		}
+	}
+}

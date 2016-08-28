@@ -1,0 +1,27 @@
+package "nova/datastruct"
+
+public class ReversibleHashMap<K, V> extends HashMap<K, V>
+{
+	HashMap<V, K> rev
+	
+	public construct()
+	{
+		rev = new HashMap()
+	}
+	
+	public put(K key, V value)
+	{
+		/*super.put(key, value)
+		rev.put(value, key)*/
+	}
+	
+	public getKey(V value) -> K
+	{
+		return rev.get(value)
+	}
+	
+	public getValue(K key) -> V
+	{
+		return get(key)
+	}
+}

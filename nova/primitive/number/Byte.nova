@@ -1,0 +1,58 @@
+package "nova/primitive/number"
+
+import "nova/datastruct/Comparable"
+
+public class Byte extends Number implements Comparable<Byte>, Integer
+{
+	Byte value
+	
+	construct(Byte value)
+	{
+		this.value = value
+	}
+	
+	public static numDigits(Byte number) -> Int
+	{
+		return Long.numDigits(number)
+	}
+	
+	public static toString(Byte value) -> String
+	{
+		return Long.toString(value)
+	}
+	
+	public toString() -> String
+	{
+		return toString(value)
+	}
+	
+//	public static getHashCode(Byte value) -> String
+//	{
+//		return new String(hashCode(this))
+//	}
+//	
+//	public static getHashCodeLong(Byte value) -> Long
+//	{
+//		return strtol(hashCode(value), 0, 16)
+//	}
+//	
+//	public static toString(Byte value) -> String
+//	{
+//		return "[Object @" + getHashCode(value) + "]"
+//	}
+//	
+//	public static equals(Byte value, Byte another) -> Bool
+//	{
+//		return this == another
+//	}
+	
+	public compareTo(Byte other) -> Byte
+	{
+		return value - other
+	}
+	
+	public multiply(Byte value) -> Byte
+	{
+		return this.value * value
+	}
+}

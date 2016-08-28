@@ -1,0 +1,37 @@
+package "example"
+
+import "nova/thread/Thread"
+import "nova/time/Timer"
+
+public class ThreadDemo
+{
+	public static main(String args[])
+	{
+		Char c = 'y'
+		
+		while (c == 'y' || c == 'Y')
+		{
+			Thread thread  = new ThreadDemoImplementation(100, "Thread1")
+			Thread thread2 = new ThreadDemoImplementation(100, "Thread2")
+			
+			Timer timer = new Timer().start()
+			
+			thread.start()
+			thread2.start()
+			
+			thread.join()
+			thread2.join()
+			
+			timer.stop()
+			
+			Console.writeLine("Time taken: " + timer.duration + "ms")
+			
+			Console.write("Run again? (Y/N) ")
+			
+			c = Console.readChar()
+		}
+		
+		Console.writeLine("\nFinished")
+		Console.waitForEnter()
+	}
+}

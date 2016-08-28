@@ -1,0 +1,19 @@
+package "stabilitytest"
+
+import "nova/thread/UncaughtExceptionHandler"
+import "nova/thread/Thread"
+
+public class StabilityExceptionHandler extends UncaughtExceptionHandler
+{
+	StabilityTest program
+	
+	public construct(StabilityTest program)
+	{
+		this.program = program
+	}
+	
+	public uncaughtException(Thread thread, Exception exception)
+	{
+		program.fail()
+	}
+}

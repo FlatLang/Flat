@@ -1,0 +1,37 @@
+package "bank"
+
+import "nova/thread/Thread"
+import "nova/network/ConnectionSocket"
+import "nova/security/MD5"
+
+public class ClientInputThread extends Thread
+{
+	ConnectionSocket socket
+	
+	public construct(ConnectionSocket socket)
+	{
+		this.socket = socket
+	}
+	
+	public run()
+	{
+		//Console.write(socket.in.readString())
+		
+		String username = Console.readLine()
+		socket.out.write(username)
+		
+		//Console.write(socket.in.readString())
+		
+		String password = MD5.encrypt(Console.readPassword())
+		socket.out.write(password)
+		
+		while (socket.connected)
+		{
+//			Console.write(socket.in.readString())
+			
+			String input = Console.readLine()
+			
+			socket.out.write(input)
+		}
+	}
+}

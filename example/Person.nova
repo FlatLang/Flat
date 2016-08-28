@@ -1,0 +1,19 @@
+package "example"
+
+public class Person
+{
+	public Int		age
+	
+	public String	name
+	
+	public construct(String name, Int age)
+	{
+		this.name = name
+		this.age  = age
+	}
+	
+	public sayHello()
+	{
+		Console.writeLine("Hello from " + name + " the Person")
+	}
+}

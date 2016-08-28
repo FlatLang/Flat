@@ -1,0 +1,25 @@
+package "bank"
+
+import "nova/thread/Thread"
+import "nova/network/ConnectionSocket"
+import "nova/network/ServerSocket"
+
+public class ConnectionThread extends Thread
+{
+	ConnectionSocket socket
+	
+	Bank             bank
+	
+	public construct(Bank bank, ConnectionSocket socket)
+	{
+		this.socket = socket
+		this.bank   = bank
+	}
+	
+	public run()
+	{
+		bank.runRemote(socket)
+		
+		socket.close()
+	}
+}

@@ -1,0 +1,6 @@
+package "nova/datastruct"
+
+public interface Comparable<E>
+{
+	compareTo(E other) -> Int
+}

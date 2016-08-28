@@ -1,0 +1,103 @@
+package "stabilitytest"
+
+import "nova/io/File"
+import "nova/time/Time"
+
+public class FileStability extends StabilityTestCase
+{
+	static String inputString
+	
+	static Int lines
+	
+	public construct(StabilityTest program)
+	{
+		super(program)
+	}
+	
+	public test()
+	{
+		Console.writeLine("Checking File IO...")
+		
+		inputString = "This is test input..."
+		lines       = 100
+		
+		try
+		{
+			File f = new File("temp" + Time.currentTimeMillis)
+			
+			createFile(f)
+			writeToFile(f)
+			readFromFile( f)
+			deleteFile(f)
+		}
+		catch (Exception e)
+		{
+			program.fail("Failed; Exception thrown")
+		}
+	}
+	
+	createFile(File f)
+	{
+		Console.write("Creating file... ")
+		
+		if (!f.create())
+		{
+			program.fail()
+		}
+		
+		Console.writeLine("OK")
+	}
+	
+	writeToFile(File f)
+	{
+		Console.write("Writing #{lines} lines of data to file... ")
+		
+		for (i in 0..lines)
+		{
+			f.writeLine(inputString)
+		}
+		
+		Console.writeLine("OK")
+	}
+	
+	readFromFile(File f)
+	{
+		Console.write("Reading lines from file... ")
+		
+		f.reopen()
+		
+		Int    times = 0
+		String line  = f.readLine()
+		
+		while (line != null)
+		{
+			if (!line.equals(inputString))
+			{
+				program.fail()
+			}
+			
+			line = f.readLine()
+			
+			times++
+		}
+		
+		if (times != lines)
+		{
+			program.fail("Failed; only read " + times + "/" + 100 + " lines")
+		}
+		
+		Console.writeLine("OK")
+	}
+	
+	deleteFile(File f)
+	{
+		Console.write("Deleting file... ")
+		
+		if (!f.delete())
+		{
+			program.fail("Failed to delete file")
+		}
+		
+		Console.writeLine("OK")
+	}
+}

@@ -1,0 +1,33 @@
+package "example"
+
+import "nova/time/Timer"
+
+public class MathDemo
+{
+	public static main(String args[])
+	{
+		Console.writeLine("Beginning benchmark...")
+		
+		Int iterations = 999999
+		
+		Timer timer = new Timer().start()
+		
+		for (i in 0..iterations)
+		{
+			try
+			{
+				Math.sin(i)
+			}
+			catch (Exception e)
+			{
+				
+			}
+		}
+		
+		Timer.stop()
+		
+		Console.writeLine(iterations + " iterations of Math.sin() in " + timer.duration + "ms")
+		
+		Console.waitForEnter()
+	}
+}

@@ -1,0 +1,10 @@
+package "nova/datastruct/list"
+
+public interface Iterable<E>
+{
+	visible Iterator<E> iterator
+	{
+	    get { return null }
+	    no set
+	}
+}

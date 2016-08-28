@@ -1,0 +1,45 @@
+package "nova/datastruct/list"
+
+public class DoubleArrayIterator implements Iterator<Double>
+{
+	DoubleArray array
+	
+	visible Int position
+	
+	visible Bool hasNext
+	{
+		get { return array.count > position }
+		no set
+	}
+	
+	visible Double next
+	{
+		get
+		{
+			if (hasNext)
+			{
+				return array.get(position++)
+			}
+			
+			throw new NoSuchElementException()
+
+			return 0
+		}
+		
+		no set
+	}
+	
+	public construct(DoubleArray array)
+	{
+		this.array = array
+		
+		reset()
+	}
+	
+	public reset() -> Iterator<Double>
+	{
+		position = 0
+		
+		return this
+	}
+}

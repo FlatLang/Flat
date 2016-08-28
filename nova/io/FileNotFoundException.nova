@@ -1,0 +1,9 @@
+package "nova/io"
+
+public class FileNotFoundException extends Exception
+{
+	public construct(File file)
+	{
+		super("File at location '" + file.location + "' does not exist")
+	}
+}

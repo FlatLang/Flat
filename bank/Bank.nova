@@ -1,0 +1,302 @@
+package "bank"
+
+import "nova/database/DBConnector"
+import "nova/database/ResultSet"
+import "nova/time/Date"
+import "nova/security/MD5"
+import "nova/network/ServerSocket"
+import "nova/network/ClientSocket"
+import "nova/network/ConnectionSocket"
+
+public class Bank
+{
+	DBConnector connection
+	
+	ConnectionSocket socket
+	
+	public static main(String args[])
+	{
+		listenClients()
+	}
+	
+	public construct()
+	{
+		init()
+		
+		//run(Console.readLine, Console.write, Console.clearScreen)
+		
+//		if (!connect(connection))
+//		{
+//			return
+//		}
+	}
+	
+	public construct(ConnectionSocket socket)
+	{
+		init()
+		
+		this.socket = socket
+	}
+	
+	init()
+	{
+		connection = new DBConnector()
+	}
+	
+	static listenClients()
+	{
+		ServerSocket socket = new ServerSocket()
+		
+		Int port = 5675
+		
+		if (!socket.start(port))
+		{
+			Console.writeLine("Failed to start server")
+		}
+		else
+		{
+			Console.writeLine("Started bank server on port " + port)
+			Console.writeLine("Waiting for clients...")
+			
+			ServerOutputThread thread = new ServerOutputThread(socket)
+			thread.start()
+			
+			while (true)
+			{
+				String input = Console.readLine()
+				
+				if (input.equals("q"))
+				{
+					socket.close()
+					
+					thread.kill()
+					
+					break
+				}
+			}
+		}
+	}
+	
+	static voidData(String s)
+	{
+		
+	}
+	
+	static voidScreen()
+	{
+		
+	}
+	
+	public runRemote(ConnectionSocket socket)
+	{
+		Bool connected = false
+		
+		while (!connected)
+		{
+			connected = connect(socket.out.write, voidScreen, socket.in.readString, socket.in.readString)
+			
+			if (connected)
+			{
+				run(socket.in.readString, socket.out.write, voidScreen)
+			}
+		}
+	}
+	
+	run(getInput() -> String, outputData(String), clearScreen())
+	{
+		try
+		{
+			Char answer = 'y'
+			
+			while (answer == 'y' || answer == 'Y')
+			{
+				answer = '4'
+				
+				outputData("What would you like to do?\n")
+				outputData("  (1) View your current balance.\n")
+				outputData("  (2) View past transactions.\n")
+				outputData("  (3) Record a withdrawal.\n")
+				outputData("  (4) Record a deposit.\n")
+				
+				Date d = new Date()
+				String date = d.formatDate("%d/%02d/%02d %02d:%02d:%02d", d.year, d.month, d.day, d.hour, d.minute, d.second)
+				
+				String input = getInput()
+				
+				if (input == null) break
+				
+				Int choice = Int.parseInt(input)
+				
+				if (choice == 1)
+				{
+					Double balance = getBalance()
+					
+					outputData("Your current balance is: $" + balance + "\n")
+				}
+				else if (choice == 2)
+				{
+					outputData("How many past transactions would you like to see?\n")
+					
+					input = getInput()
+					
+					if (input == null) break
+					
+					Int num = Int.parseInt(input)
+				}
+				else if (choice == 3)
+				{
+					outputData("Enter item name: ")
+					String item = getInput()
+					
+					outputData("Enter transaction description: ")
+					String desc = getInput()
+					
+					outputData("Enter the withdrawal amount: ")
+					
+					input = getInput()
+					
+					if (input == null) break
+					
+					Double amount = Double.parseDouble(input)
+					
+					insertQuery(date, item, desc, false, amount)
+				}
+				else if (choice == 4)
+				{
+					outputData("Enter what the deposit was from: ")
+					String from = getInput()
+					
+					outputData("Enter deposit description: ")
+					String desc = getInput()
+					
+					outputData("Enter the deposit amount: ")
+					
+					input = getInput()
+					
+					if (input == null) break
+					
+					Double amount = Double.parseDouble(input)
+					
+					insertQuery(date, from, desc, true, amount)
+				}
+				else
+				{
+					answer = 'y'
+				}
+				
+				while (answer != 'y' && answer != 'Y' && answer != 'n' && answer != 'N')
+				{
+					outputData("Would you like to do more? (Y/N): ")
+					
+					String str = getInput()
+					
+					if (str == null) break
+					
+					if (str.size <= 0)
+					{
+						continue
+					}
+					
+					answer = str.charAt(0)
+				}
+				
+				clearScreen()
+			}
+		}
+		catch (BankQueryException e)
+		{
+			outputData("Failed to query bank\n")
+		}
+		
+		outputData("Bye!\n")
+		
+		connection.close()
+	}
+	
+	connect(write(String), clearScreen(), readString() -> String, readPassword() -> String) -> Bool
+	{
+		write("Enter username: ")
+		String username = readString()
+		
+		write("Enter password: ")
+		String password = readString()
+		
+		clearScreen()
+		write("Connecting...\n")
+		
+		Bool connected = connect(username, password)
+		
+		clearScreen()
+		
+		if (connected)
+		{
+			write("Welcome, Braden!\n")
+			
+			return true
+		}
+		else
+		{
+			write("YOU IMPOSTER!\n")
+		}
+		
+		return false
+	}
+	
+	connect(String username, String password) -> Bool
+	{
+		connection.connect("localhost", username, password, "bank")
+		
+		password = null
+		
+		if (connection.error.size > 0)
+		{
+			return false
+		}
+		
+		return true
+	}
+	
+	getBalance() -> Double
+	{
+		ResultSet result = connection.query("SELECT balance FROM register ORDER BY date DESC LIMIT 1;")
+		
+		if (connection.error.size > 0)
+		{
+			throw new BankQueryException(connection.error)
+		}
+		
+		Double balance = 0
+		
+		if (result.numRows > 0)
+		{
+			balance = Double.parseDouble(result.rows[0][0])
+		}
+		
+		return balance
+	}
+	
+	insertQuery(String date, String item, String desc, Bool deposit, Double amount)
+	{
+		String deposited
+		
+		Double balance = getBalance()
+		
+		if (deposit)
+		{
+			balance = balance + amount
+			deposited = "true"
+		}
+		else
+		{
+			balance = balance - amount
+			deposited = "false"
+		}
+		
+		connection.query("INSERT INTO register VALUES('" + date + "', '" + item + "', '" + desc + "', '" + deposited + "', " + amount + ", " + balance + ");")
+		
+		if (connection.error.size > 0)
+		{
+			throw new BankQueryException(connection.error)
+		}
+	}
+}

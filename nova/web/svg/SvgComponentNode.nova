@@ -1,0 +1,8 @@
+package "nova/web/svg"
+
+public class SvgComponentNode
+{
+	public SvgComponentNode next
+	
+	public SvgComponent component
+}

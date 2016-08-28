@@ -1,0 +1,13 @@
+package "nova/process"
+
+import "nova/io/StreamReader"
+
+public class Process
+{
+	visible StreamReader	reader
+	
+	public construct(StreamReader reader)
+	{
+		this.reader = reader
+	}
+}

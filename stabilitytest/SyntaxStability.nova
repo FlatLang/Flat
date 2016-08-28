@@ -1,0 +1,541 @@
+package "stabilitytest"
+
+import "nova/datastruct/list/Iterator"
+
+public class SyntaxStability extends StabilityTestCase
+{
+	public construct(StabilityTest program)
+	{
+		super(program)
+	}
+	
+	public test()
+	{
+		checkLoops()
+		checkUntil()
+		checkMatchStatements()
+		checkMultipleReturnValues()
+		checkIterators()
+		checkTernary()
+		checkElvis()
+		checkRepeat()
+	}
+	
+	checkMatchStatements()
+	{
+		Console.write("Checking simple match statement... ")
+		
+		Int  num    = 3
+		Bool worked = false
+		
+		match (num)
+		{
+			case 1 program.fail("Match accepted incorrect case")
+			case 2 program.fail("Match accepted incorrect case")
+			case 3 worked = true
+			case 4 program.fail("Match accepted incorrect case")
+			default program.fail("Match failed to accept the correct case")
+		}
+		
+		if (!worked)
+		{
+			program.fail("FAIL")
+		}
+		
+		Console.writeLine("OK")
+		
+		Console.write("Checking simple match statement with indentation... ")
+		
+		num    = 3
+		worked = false
+		
+		match (num)
+			case 1
+				program.fail("Match accepted incorrect case")
+			case 2	program.fail("Match accepted incorrect case")
+			case 3
+				worked = true
+			case 4
+				program.fail("Match accepted incorrect case")
+			default
+				program.fail("Match failed to accept the correct case")
+		
+		if (!worked)
+		{
+			program.fail("FAIL")
+		}
+		
+		Console.writeLine("OK")
+		
+		Console.write("Checking simple match statement with scopes... ")
+		
+		num    = 3
+		worked = false
+		
+		match (num)
+		{
+			case 1
+			{
+				program.fail("Match accepted incorrect case")
+			}
+			case 2
+			{
+				program.fail("Match accepted incorrect case")
+			}
+			case 3
+			{
+				worked = true
+			}
+			case 4
+			{
+				program.fail("Match accepted incorrect case")
+			}
+			default
+			{
+				program.fail("Match failed to accept the correct case")
+			}
+		}
+		
+		if (!worked)
+		{
+			program.fail("FAIL")
+		}
+		
+		Console.writeLine("OK")
+		
+		Console.write("Checking match statement with variable case values... ")
+		
+		Int val = 1
+		num     = 3
+		worked  = false
+		
+		match (num)
+		{
+			case (val++)
+			{
+				program.fail("Match accepted incorrect case")
+			}
+			case val++
+			{
+				program.fail("Match accepted incorrect case")
+			}
+			case (val++)
+			{
+				worked = true
+			}
+			case val++
+			{
+				program.fail("Match accepted incorrect case")
+			}
+			default
+			{
+				program.fail("Match failed to accept the correct case")
+			}
+		}
+		
+		if (!worked)
+		{
+			program.fail("FAIL")
+		}
+		
+		Console.writeLine("OK")
+		
+		Console.write("Checking match statement with variable case values and fallthrough... ")
+		
+		val    = 1
+		num    = 3
+		worked = false
+		
+		Bool worked2 = false
+		
+		match (num++)
+		{
+			case val++
+			{
+				program.fail("Match accepted incorrect case")
+			}
+			case val++
+			{
+				program.fail("Match accepted incorrect case")
+			}
+			case val++
+			{
+				worked = true
+				fallthrough
+			}
+			case val++
+			{
+				worked2 = true
+			}
+			default
+			{
+				program.fail("Match failed to accept the correct case")
+			}
+		}
+		
+		if (!worked || !worked2)
+		{
+			program.fail("FAIL")
+		}
+		
+		Console.writeLine("OK")
+	}
+	
+	checkLoops()
+	{
+		checkWhileLoops()
+		checkForLoops()
+	}
+	
+	checkWhileLoops()
+	{
+		Console.write("Checking inline while loop... ")
+		
+		Int num  = 0
+		Int num2 = 0
+		Int num3 = 0
+		
+		while (num < 100) num++
+		
+		while (num2 < 100)
+			num2++
+		
+		while (num3 < 100)
+			if (true)
+				if (true)
+				{
+					num3++
+				}
+		
+		if (num != 100 || num2 != 100 || num3 != 100)
+		{
+			program.fail("Inline while loop failed.")
+		}
+		
+		Console.writeLine("OK")
+	}
+	
+	checkForLoops()
+	{
+		Console.write("Checking inline for loop... ")
+		
+		Int num  = 0
+		Int num2 = 0
+		Int num3 = 0
+		
+		for (i in 0..100) num++
+		
+		for (i2 in 0..100)
+			num2++
+		
+		for (i3 in 0..100)
+			if (true)
+				if (true)
+				{
+					num3++
+				}
+		
+		if (num != 100 || num2 != 100 || num3 != 100)
+		{
+			program.fail("Inline for loop failed. Expected 100, 100, 100 received #{num}, #{num2}, #{num3}")
+		}
+		
+		Console.writeLine("OK")
+	}
+	
+	checkUntil()
+	{
+		Console.write("Checking until statement... ")
+		
+		Object obj = null
+		
+		until (obj != null)
+		{
+			obj = test1()
+			obj = test2()
+			obj = test3()
+			
+			program.fail("Failed to stop after correct condition")
+		}
+		
+//		if (obj == null)
+//		{
+//			obj = test1();
+//			if (obj == null)
+//			{
+//				obj = test2();
+//				if (obj == null)
+//				{
+//					obj = test3();
+//					if (obj == null)
+//					{
+//						program.fail("Until statement failed");
+//					}
+//				}
+//			}
+//		}
+		
+		if (obj == null)
+		{
+			program.fail("Failed to reach correct condition");
+		}
+		
+		Console.writeLine("OK");
+	}
+	
+	static test1() -> Object
+	{
+		return null
+	}
+	
+	static test2() -> Object
+	{
+		return null
+	}
+	
+	static test3() -> Object
+	{
+		return new Object()
+	}
+	
+	checkMultipleReturnValues()
+	{
+		Console.write("Checking methods with multiple return values... ")
+		
+		Int ret1 = 1
+		Int ret2 = 2
+		
+		ret1, ret2 = ret2()
+		
+		if (ret1 != 5 || ret2 != 2)
+		{
+			program.fail("Failed to pass over second return value")
+		}
+		
+		ret1 = 1
+		ret2 = 2
+		
+		ret1, ret2 = swap(ret1, ret2)
+		
+		if (ret1 != 2 || ret2 != 1)
+		{
+			program.fail("Failed to swap primitive values with multiple return values")
+		}
+		
+		String s1 = "hello"
+		String s2 = "world"
+		
+		s1, s2 = swap2(s1, s2)
+		
+		if (!s1.equals("world") || !s2.equals("hello"))
+		{
+			program.fail("Failed to swap String values with multiple return values")
+		}
+		
+		Console.writeLine("OK")
+	}
+	
+	static ret2() -> Int, Int
+	{
+		return 5
+	}
+	
+	static swap(Int a, Int b) -> Int, Int
+	{
+		return b, a
+	}
+	
+	static swap2(String a, String b) -> String, String
+	{
+		return b, a
+	}
+	
+	static filterFunc(String i) -> Bool
+	{
+		return i.count >= 4
+	}
+	
+	static foreachClosure(String s)
+	{
+		if (s.count < 4)
+		{
+			throw new UnstableException("filtering failed")
+		}
+	}
+	
+	checkIterators()
+	{
+		Console.write("Checking filter functionality... ")
+		
+		String[] list = ["this", "is", "a", "test", "to", "see", "what shows up"]
+		String[] list2 = list.filter(filterFunc)
+		
+		try
+		{
+			list2.forEach(foreachClosure)
+		}
+		catch (UnstableException e)
+		{
+			program.fail("Failed to filter data correctly")
+		}
+		
+		for (n in 0..list2.count)
+		{
+			if (list2.get(n).count < 4)
+			{
+				program.fail("Failed to filter data correctly")
+			}
+		}
+		
+		/*if (list2.any(x -> x.count < 4))
+		{
+			program.fail("Failed to filter data correctly")
+		}
+		if (!list2.all(x -> x.count >= 4))
+		{
+			program.fail("Failed to filter data correctly")
+		}*/
+		
+		Console.writeLine("OK")
+		
+		Console.write("Checking iterator functionality... ")
+		
+		Iterator<String, Int> iter = list2.iterator
+		
+		while (iter.hasNext)
+		{
+			if (iter.next.count < 4)
+			{
+				program.fail("Failed to run iterator")
+			}
+		}
+		
+		Console.writeLine("OK")
+		
+		Console.write("Checking foreach loop functionality... ")
+		
+		for (string in list2)
+		{
+			if (string.count < 4)
+			{
+				program.fail("Failed to run foreach loop")
+			}
+		}
+		
+		Console.writeLine("OK")
+	}
+	
+	checkTernary()
+	{
+	    Console.write("Checking ternary functionality... ")
+	    
+	    var first = trueValue() ? "hey".equals("hey") : "hey".equals("hey2")
+	    
+	    if (!first)
+	    {
+	        program.fail("Failed first ternary test")
+	    }
+	    
+	    var second = falseValue() ? "one" : "two"
+	    
+	    if (!second.equals("two"))
+	    {
+	        program.fail("Failed second ternary test")
+	    }
+	    
+	    Console.writeLine("OK")
+	}
+	
+	checkElvis()
+	{
+	    Console.write("Checking elvis functionality... ")
+	    
+	    var str = "this isnt null"
+        var str2 = null
+        
+        var result1 = str ?: "wtf"
+        
+        if (result1.equals("wtf"))
+        {
+            program.fail("Failed first elvis test")
+        }
+        
+        var result2 = str2 ?: "this is null"
+        
+        if (!result2.equals("this is null"))
+        {
+            program.fail("Failed second elvis test")
+        }
+	    
+	    Console.writeLine("OK")
+	}
+	
+	trueValue() -> Bool
+	{
+	    return true
+	}
+	
+	falseValue() -> Bool
+	{
+	    return false
+	}
+	
+	checkRepeat()
+	{
+	    Console.write("Checking repeat functionality... ")
+	    
+	    Int i = 0
+	    
+	    repeat
+	    {
+	        if (i == 101)
+	        {
+	            break
+	        }
+	        
+	        i++
+	    }
+	    
+	    if (i != 101)
+	    {
+	        program.fail("Vanilla repeat failed")
+	    }
+	    
+	    i = 0
+        
+        repeat (101)
+        {
+            i++
+        }
+        
+        if (i != 101)
+        {
+            program.fail("Repeat 101 times failed")
+        }
+        
+        i = 0
+        
+        Int times = 101
+        
+        repeat (times)
+        {
+            i++
+        }
+        
+        if (i != 101)
+        {
+            program.fail("Repeat times (#times) failed")
+        }
+        
+        i = 0
+        
+        repeat (times) i++
+        
+        if (i != 101)
+        {
+            program.fail("Repeat fragment failed")
+        }
+        
+	    Console.writeLine("OK")
+	}
+}

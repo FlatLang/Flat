@@ -1,0 +1,12 @@
+package "example"
+
+public class T2 extends T1
+{
+	visible static Int ind
+	{
+		get
+		{
+			return 2
+		}
+	}
+}

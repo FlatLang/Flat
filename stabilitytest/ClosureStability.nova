@@ -1,0 +1,108 @@
+package "stabilitytest"
+
+public class ClosureStability extends StabilityTestCase
+{
+	static Double TOLERANCE
+	
+	Int	number
+	
+	public construct(StabilityTest program)
+	{
+		super(program)
+	}
+	
+	incrementNumber()
+	{
+		number++
+	}
+	
+	public test()
+	{
+		TOLERANCE = 0.0000000001
+		
+		testClosures()
+	}
+	
+	testClosures()
+	{
+		Console.writeLine("Checking closures...")
+		
+		testMathClosures()
+		testInstanceClosure()
+	}
+	
+	testMathClosures()
+	{
+		Console.write("Checking static math closures... ")
+		
+		Int a = 5
+		Int b = 3
+		
+		Double value = 0.5
+		
+		if (callClosure(multiply, a, b) != multiply(a, b))
+			program.fail("Failed to call multiply(Int, Int) closure")
+			
+		if (callClosure(pow, a, b) != pow(a, b))
+			program.fail("Failed to call pow(Int, Int) closure")
+			
+		if (mathClosure(Math.sin, value) - Math.sin(value) >= TOLERANCE)
+			program.fail("Failed to call Math.sin(Double) closure")
+			
+		if (mathClosure(Math.tan, value) - Math.tan(value) >= TOLERANCE)
+			program.fail("Failed to call Math.tan(Double) closure")
+		
+		Console.writeLine("OK")
+	}
+	
+	testInstanceClosure()
+	{
+		Console.write("Checking instance closures... ")
+		
+		ClosureStability c = new ClosureStability(program)
+		
+		instanceClosure(c.incrementNumber)
+		
+		if (c.number == 0)
+		{
+			program.fail("Failed to call incrementNumber() instance closure")
+		}
+		
+		instanceClosure(new ClosureStability(program).incrementNumber)
+		instanceClosure(c.incrementNumber)
+		
+		Console.writeLine("OK")
+	}
+	
+	static callClosure(closure(Int, Int) -> Int, Int a, Int b) -> Int
+	{
+		return closure(a, b)
+	}
+	
+	static mathClosure(closure(Double) -> Double, Double value) -> Double
+	{
+		return closure(value)
+	}
+	
+	static instanceClosure(closure())
+	{
+		closure()
+	}
+	
+	static multiply(Int value1, Int value2) -> Int
+	{
+		return value1 * value2
+	}
+	
+	static pow(Int base, Int pow) -> Int
+	{
+		Int value = base
+		
+		for (i in 0..(pow - 1))
+		{
+			value = value * base
+		}
+		
+		return value
+	}
+}

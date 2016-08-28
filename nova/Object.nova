@@ -1,0 +1,36 @@
+package "nova"
+
+import "nova/NativeObject.h"
+import "nova/operators/Equals"
+
+public class Object implements Equals
+{
+	external char[] hashCode(Object obj)
+	/*char** endptr*/
+
+	external char* NULL
+
+	external long strtol(char str[], char* a, int base)
+	
+	public String hashCode
+	{
+		get { return new String(hashCode(this)) }
+		no set
+	}
+	
+	public Long hashCodeLong
+	{
+		get { return strtol(hashCode(this), NULL, 16) }
+		no set
+	}
+	
+	public toString() -> String
+	{
+		return "[Object @#hashCode]"
+	}
+	
+	public equals(Object another) -> Bool
+	{
+		return this == another
+	}
+}

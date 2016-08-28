@@ -1,0 +1,217 @@
+package "nova/datastruct/list"
+
+import "nova/primitive/number/Double"
+
+public class DoubleArray extends Array<Double>
+{
+	[Override]
+	visible DoubleArrayIterator iterator
+	{
+		get
+		{
+			return new DoubleArrayIterator(this)
+		}
+		
+		no set
+	}
+	
+	[Override]
+	public Double first
+	{
+		get
+		{
+		    if (count > 0)
+            {
+                return data[0]
+            }
+            
+            return 0
+        }
+        
+        no set
+	}
+	
+	[Override]
+	public Double last
+	{
+	    get
+	    {
+            if (count > 0)
+            {
+                return data[count - 1]
+            }
+            
+            return 0
+        }
+	}
+	
+	public construct()
+	{
+		super()
+	}
+	
+	public construct(Int count)
+	{
+	    super(count)
+	}
+	
+	public construct([PrimitiveArray] Double[] data, Int count)
+	{
+		super(data, count)
+	}
+	
+	[Override]
+	public map<Out>(mapFunc(Double, Int, DoubleArray) -> Out) -> Out[]
+	{
+		Out[] array = new Array()
+        
+		Int i = 0
+
+		for (element in this)
+		{
+			array.add(mapFunc(element, i++, this))
+		}
+		
+		return array
+	}
+	
+	[Override]
+	public forEach(func(Double, Int, DoubleArray))
+	{
+		for (i in 0..count)
+		{
+			func((Double)get(i), i, this)
+		}
+	}
+	
+	[Override]
+	public any(anyFunc(Double) -> Bool) -> Bool
+	{
+		for (element in this)
+		{
+			if (anyFunc(element))
+			{
+				return true
+			}
+		}
+		
+		return false
+	}
+	
+	[Override]
+	public all(allFunc(Double) -> Bool) -> Bool
+	{
+		for (element in this)
+		{
+			if (!allFunc(element))
+			{
+				return false
+			}
+		}
+		
+		return true
+	}
+	
+	[Override]
+	public filter(filterFunc(Double, Int, DoubleArray) -> Bool) -> DoubleArray
+	{
+		DoubleArray filtered = new DoubleArray()
+		
+		Int i = 0
+		
+		for (element in this)
+		{
+			if (filterFunc(element, i++, this))
+			{
+				filtered.add(element)
+			}
+		}
+		
+		return filtered
+	}
+	
+	[Override]
+	public take(Int howMany) -> DoubleArray
+	{
+		if (howMany > count)
+		{
+			howMany = count
+		}
+		
+		DoubleArray list = new DoubleArray()
+		
+		for (i in 0..howMany)
+		{
+			list.add(data[i])
+		}
+		
+		return list
+	}
+	
+	[Override]
+	public skip(Int howMany) -> DoubleArray
+	{
+		DoubleArray list = new DoubleArray()
+		
+		for (i in howMany..count)
+		{
+			list.add(data[i])
+		}
+		
+		return list
+	}
+	
+	[Override]
+	public firstWhere(func(Double) -> Bool) -> Double
+	{
+		for (element in this)
+		{
+			if (func(element))
+			{
+				return element
+			}
+		}
+		
+		return 0
+	}
+	
+	[Override]
+    public reverse() -> DoubleArray
+    {
+    	DoubleArray array = new DoubleArray(count)
+    	array.count = count
+    	
+    	Int i = 0
+    	
+    	for (element in this)
+    	{
+    		array.set(count - ++i, element)
+    	}
+    	
+    	return array
+    }
+    
+	[Override]
+    public join(String delimiter) -> String
+    {
+    	String str = ""
+    	
+    	Bool passed = false
+    	
+    	for (element in this)
+    	{
+    		if (passed)
+    		{
+    			str = str + delimiter
+    		}
+    		else
+    		{
+    			passed = true
+    		}
+    		
+    		str = str + element.toString()
+    	}
+    	
+    	return str
+    }
+}

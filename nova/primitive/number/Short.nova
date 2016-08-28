@@ -1,0 +1,38 @@
+package "nova/primitive/number"
+
+import "nova/datastruct/Comparable"
+
+public class Short extends Number implements Comparable<Short>, Integer
+{
+	Short value
+	
+	construct(Short value)
+	{
+		this.value = value
+	}
+	
+	public static numDigits(Short number) -> Int
+	{
+		return Long.numDigits(number)
+	}
+	
+	public static toString(Short value) -> String
+	{
+		return Long.toString(value)
+	}
+	
+	public toString() -> String
+	{
+		return toString(value)
+	}
+	
+	public compareTo(Short other) -> Short
+	{
+		return value - other
+	}
+	
+	public multiply(Short value) -> Short
+	{
+		return this.value * value
+	}
+}

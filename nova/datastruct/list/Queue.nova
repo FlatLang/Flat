@@ -1,0 +1,61 @@
+package "nova/datastruct/list"
+
+public class Queue<E>
+{
+	visible Int size
+	{
+		get
+		{
+			return data.position
+		}
+		
+		no set
+	}
+	
+	visible Bool empty //=> size <= 0
+	{
+		get { return size <= 0 }
+		no set
+	}
+	
+	E[] data
+	
+	public construct()
+	{
+		data = new Array()
+	}
+	
+	public construct(E[] data)
+	{
+		this.data = data
+	}
+	
+	public dequeue() -> E
+	{
+		return data.remove(0)
+	}
+	
+	public enqueue(E element)
+	{
+		data.add(element)
+	}
+	
+	public toString() -> String
+	{
+		String s = ""
+		
+		Int i = size - 1
+		
+		while (i >= 0)
+		{
+			if (i < size - 1)
+			{
+				s = s + ", "
+			}
+			
+			s = s + data.get(i--)
+		}
+		
+		return s
+	}
+}

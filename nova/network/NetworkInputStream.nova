@@ -1,0 +1,24 @@
+package "nova/network"
+
+import "nova/network/NativeSocket.h"
+import "nova/io/InputStream"
+
+public class NetworkInputStream extends InputStream
+{
+	ConnectionSocket socket
+	
+	public construct(ConnectionSocket socket)
+	{
+		this.socket = socket
+	}
+	
+	public readString() -> String
+	{
+		return socket.readString()
+	}
+	
+	public readBytes() -> Byte[]
+	{
+		return null
+	}
+}

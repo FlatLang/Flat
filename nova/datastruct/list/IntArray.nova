@@ -1,0 +1,223 @@
+package "nova/datastruct/list"
+
+import "nova/primitive/number/Integer"
+
+public class IntArray extends Array<Int>
+{
+	[Override]
+	visible IntArrayIterator iterator
+	{
+		get
+		{
+			return new IntArrayIterator(this)
+		}
+		
+		no set
+	}
+	
+	[Override]
+	public Int first
+	{
+		get
+		{
+		    if (count > 0)
+            {
+                return data[0]
+            }
+            
+            return null
+        }
+        
+        no set
+	}
+	
+	[Override]
+	public Int last
+	{
+	    get
+	    {
+            if (count > 0)
+            {
+                return data[count - 1]
+            }
+            
+            return null
+        }
+	}
+	
+	public construct()
+	{
+		super()
+	}
+	
+	public construct(Int count)
+	{
+	    super(count)
+	}
+	
+	public construct([PrimitiveArray] Int[] data, Int count)
+	{
+		super(data, count)
+	}
+	
+	/*[Override]
+	public get(Int index) -> Int
+	{
+	    return (Int)data[index]
+	}*/
+	
+	[Override]
+	public map<Out>(mapFunc(Int, Int, IntArray) -> Out) -> Out[]
+	{
+		Out[] array = new Array()
+        
+		Int i = 0
+
+		for (element in this)
+		{
+			array.add(mapFunc(element, i++, this))
+		}
+		
+		return array
+	}
+	
+	[Override]
+	public forEach(func(Int, Int, IntArray))
+	{
+		for (i in 0..count)
+		{
+			func((Int)get(i), i, this)
+		}
+	}
+	
+	[Override]
+	public any(anyFunc(Int) -> Bool) -> Bool
+	{
+		for (element in this)
+		{
+			if (anyFunc(element))
+			{
+				return true
+			}
+		}
+		
+		return false
+	}
+	
+	[Override]
+	public all(allFunc(Int) -> Bool) -> Bool
+	{
+		for (element in this)
+		{
+			if (!allFunc(element))
+			{
+				return false
+			}
+		}
+		
+		return true
+	}
+	
+	[Override]
+	public filter(filterFunc(Int, Int, IntArray) -> Bool) -> IntArray
+	{
+		IntArray filtered = new IntArray()
+		
+		Int i = 0
+		
+		for (element in this)
+		{
+			if (filterFunc(element, i++, this))
+			{
+				filtered.add(element)
+			}
+		}
+		
+		return filtered
+	}
+	
+	[Override]
+	public take(Int howMany) -> IntArray
+	{
+		if (howMany > count)
+		{
+			howMany = count
+		}
+		
+		IntArray list = new IntArray()
+		
+		for (i in 0..howMany)
+		{
+			list.add(data[i])
+		}
+		
+		return list
+	}
+	
+	[Override]
+	public skip(Int howMany) -> IntArray
+	{
+		IntArray list = new IntArray()
+		
+		for (i in howMany..count)
+		{
+			list.add(data[i])
+		}
+		
+		return list
+	}
+	
+	[Override]
+	public firstWhere(func(Int) -> Bool) -> Int
+	{
+		for (element in this)
+		{
+			if (func(element))
+			{
+				return element
+			}
+		}
+		
+		return null
+	}
+	
+	[Override]
+    public reverse() -> IntArray
+    {
+    	IntArray array = new IntArray(count)
+    	array.count = count
+    	
+    	Int i = 0
+    	
+    	for (element in this)
+    	{
+    		array.set(count - ++i, element)
+    	}
+    	
+    	return array
+    }
+    
+	[Override]
+    public join(String delimiter) -> String
+    {
+    	String str = ""
+    	
+    	Bool passed = false
+    	
+    	for (element in this)
+    	{
+    		if (passed)
+    		{
+    			str = str + delimiter
+    		}
+    		else
+    		{
+    			passed = true
+    		}
+    		
+    		str = str + element.toString()
+    	}
+    	
+    	return str
+    }
+}

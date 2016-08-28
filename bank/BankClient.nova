@@ -1,0 +1,69 @@
+package "bank"
+
+import "nova/network/ClientSocket"
+import "nova/security/MD5"
+import "nova/thread/Thread"
+
+public class BankClient
+{
+	public static main(String[] args)
+	{
+		ClientSocket socket = new ClientSocket()
+		
+		String[] ips  = [ "192.168.1.139", "192.168.1.101", "10.0.53.54", "127.0.0.1" ]
+		Int      port = 5675
+		
+		for (Int i = 0; i < 4; i++)
+		{
+			String ip = ips[i]
+			
+			Console.writeLine("Attempting connection on IP: " + ip)
+			
+			if (socket.connect(ip, port))
+			{
+				Console.writeLine("Connected!")
+				
+				ClientConnectionThread thread = new ClientConnectionThread(socket.connection)
+				
+				String input = null
+				
+				while (input == null || input.equals("YOU IMPOSTER!\n"))
+				{
+					Console.write(socket.connection.in.readString())
+					
+					String username = Console.readLine()
+					socket.connection.out.write(username)
+					
+					Console.write(socket.connection.in.readString())
+					
+					String password = MD5.encrypt(Console.readPassword())
+					socket.connection.out.write(password)
+					
+					Console.write(socket.connection.in.readString())
+					
+					input = socket.connection.in.readString()
+					
+					Console.write(input)
+				}
+				
+				thread.start()
+				
+				while (true)
+				{
+					input = Console.readLine()
+					
+					if (!socket.connection.connected)
+					{
+						break
+					}
+					
+					socket.connection.out.write(input)
+				}
+				
+				thread.join()
+				
+				break
+			}
+		}
+	}
+}

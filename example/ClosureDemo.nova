@@ -1,0 +1,42 @@
+package "example"
+
+public class ClosureDemo
+{
+	public static main(String args[])
+	{
+		ClosureDemo demo = new ClosureDemo()
+		
+		demo.callClosure(multiply)
+		demo.callClosure(pow)
+		
+		Console.waitForEnter()
+	}
+	
+	callClosure(closure(Int, Int) -> Int)
+	{
+		Int value = closure(5, 3)
+		
+		Console.writeLine("Closure returned " + value)
+	}
+	
+	static multiply(Int value1, Int value2) -> Int
+	{
+		Console.writeLine("multiply was called with " + value1 + " and " + value2)
+		
+		return value1 * value2
+	}
+	
+	static pow(Int base, Int pow) -> Int
+	{
+		Console.writeLine("pow was called with " + base + " and " + pow)
+		
+		Int value = base
+		
+		for (i in 0..(pow - 1))
+		{
+			value = value * base
+		}
+		
+		return value
+	}
+}

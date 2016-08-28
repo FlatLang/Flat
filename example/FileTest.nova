@@ -1,0 +1,36 @@
+package "example"
+
+import "nova/io/File"
+import "nova/thread/Thread"
+
+public class FileTest
+{
+	public static main(String args[])
+	{
+		File f = new File("C:/Users/Braden Steffaniak/test3.txt")
+		
+		if (f.exists)
+		{
+			Console.writeLine("Your file exists!")
+			
+			f.writeLine("Entering data..")
+			f.writeLine("asdfasdf thing.")
+			
+			f.reopen()
+			
+			String data = f.readAllContents()
+			
+			Console.writeLine(data)
+		}
+		else
+		{
+			Console.writeLine("Your file does not exist..")
+		}
+		
+		f.close()
+		
+		Console.writeLine("Press enter to exit...")
+		
+		Console.waitForEnter()
+	}
+}

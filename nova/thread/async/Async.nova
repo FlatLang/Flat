@@ -1,0 +1,21 @@
+package "nova/thread/async"
+
+import "nova/thread/Thread"
+
+public class Async
+{
+    public static execute(func()) -> AsyncResult
+    {
+        AsyncResult result = new AsyncResult()
+        
+        /*
+        Thread thread = new Thread()
+        
+        thread.start()
+        */
+        
+        func()
+        
+        return result
+    }
+}

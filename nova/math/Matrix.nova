@@ -1,0 +1,16 @@
+package "nova/math"
+
+public class Matrix
+{
+	Number[][] matrix
+	
+	public construct(Int rows, Int cols)
+	{
+		matrix = new Array(rows)
+	}
+	
+	public sum() -> Number
+	{
+		return 0
+	}
+}

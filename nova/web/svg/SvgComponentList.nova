@@ -1,0 +1,43 @@
+package "nova/web/svg"
+
+import "nova/io/File"
+
+public class SvgComponentList
+{
+	public SvgComponentNode start
+	
+	public generateOutput(File file)
+	{
+		SvgComponentNode current = start
+		
+		while (current != null)
+		{
+			current.component.generateOutput(file)
+			
+			current = current.next
+		}
+	}
+	
+	public addChild(SvgComponent component)
+	{
+		SvgComponentNode node = new SvgComponentNode()
+		
+		node.component = component
+		
+		if (start == null)
+		{
+			start = node
+		}
+		else
+		{
+			SvgComponentNode current = start
+			
+			while (current.next != null)
+			{
+				current = current.next
+			}
+			
+			current.next = node
+		}
+	}
+}

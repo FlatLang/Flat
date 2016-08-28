@@ -1,0 +1,85 @@
+package "stabilitytest"
+
+public class PolymorphismStability extends StabilityTestCase
+{
+	public construct(StabilityTest program)
+	{
+		super(program)
+	}
+	
+	public test()
+	{
+		Console.writeLine("Checking Polymorphism stability...")
+		
+		testCalls()
+		testClosure()
+		testProperty()
+	}
+	
+	testCalls()
+	{
+		Console.write("Checking polymorphic method calls... ")
+		
+		PolymorphicSuperClass obj1 = new PolymorphicSuperClass()
+		PolymorphicSubClass   obj2 = new PolymorphicSubClass()
+		
+		if (!testSubCall(obj2))
+		{
+			program.fail("Did not call sub class method")
+		}
+		
+		Console.writeLine("OK")
+	}
+	
+	static testSubCall(PolymorphicSuperClass obj) -> Bool
+	{
+		return obj.toString().equals("sub class")
+	}
+	
+	testClosure()
+	{
+		Console.write("Checking polymorphic closure method calls... ")
+		
+		PolymorphicSuperClass obj = new PolymorphicSubClass()
+		
+		if (!callPolymorphicClosure(obj.toString))
+		{
+			program.fail("Did not call sub class method as closure")
+		}
+		
+		obj.giveBirth()
+		
+		String child = obj.child + "!"
+		
+		if (!callPolymorphicClosure(obj.child.toString))
+		{
+			program.fail("Did not call sub class method as closure")
+		}
+		
+		Console.writeLine("OK")
+	}
+	
+	static callPolymorphicClosure(closure() -> String) -> Bool
+	{
+		return closure().equals("sub class")
+	}
+	
+	testProperty()
+	{
+		Console.write("Checking polymorphic properties... ")
+		
+		PolymorphicSuperClass obj1 = new PolymorphicSuperClass()
+		PolymorphicSuperClass obj2 = new PolymorphicSubClass()
+		
+		if (obj1.myProperty != 1)
+		{
+			program.fail("Did not call super polymorphic property accessor correctly")
+		}
+		if (obj2.myProperty != 2)
+		{
+			program.fail("Did not call sub polymorphic property accessor correctly")
+		}
+		
+		Console.writeLine("OK")
+	}
+}

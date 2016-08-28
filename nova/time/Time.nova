@@ -1,0 +1,14 @@
+package "nova/time"
+
+import "nova/time/NativeTime.h"
+
+public class Time
+{
+	external long currentTimeMillis() as extCurrentTimeMillis
+	
+	public static Long currentTimeMillis
+	{
+		get { return extCurrentTimeMillis() }
+		no set
+	}
+}

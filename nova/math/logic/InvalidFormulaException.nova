@@ -1,0 +1,11 @@
+package "nova/math/logic"
+
+import "nova/exception/Exception"
+
+public class InvalidFormulaException extends Exception
+{
+	public construct(String message)
+	{
+		super(message)
+	}
+}

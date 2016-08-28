@@ -1,0 +1,8 @@
+package "nova/io"
+
+public interface InputStream
+{
+	readString() -> String
+	
+	readBytes() -> Byte[]
+}

@@ -1,0 +1,52 @@
+package "example/network"
+
+import "nova/network/ServerSocket"
+import "nova/network/ConnectionSocket"
+
+public class ServerDemo
+{
+	public static main(String[] args)
+	{
+		ConnectionSocket[] connections = new Array()
+		
+		ServerSocket socket = new ServerSocket()
+		
+		Int port = 25560
+		
+		if (!socket.start(port))
+		{
+			Console.writeLine("Failed to start server")
+		}
+		else
+		{
+			Console.writeLine("Started server on port " + port)
+			Console.writeLine("Waiting on client...")
+			
+			ConnectionSocket request = socket.acceptClient()
+			
+			if (request == null)
+			{
+				Console.writeLine("Failed to accept client")
+			}
+			
+			while (request != null)
+			{
+				connections.add(request)
+				
+				ConnectionThread thread = new ConnectionThread(request)
+				
+				thread.start()
+				
+				OutputThread othread = new OutputThread(socket, request)
+				
+				othread.start()
+				Console.writeLine("Waiting on anoter")
+				request = socket.acceptClient()
+			}
+			
+			Console.writeLine("Exiting")
+		}
+		
+		Console.waitForEnter()
+	}
+}

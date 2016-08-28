@@ -1,0 +1,72 @@
+package "nova/math"
+
+import "nova/datastruct/ReversibleHashMap"
+import "nova/datastruct/Node"
+
+public class Graph
+{
+	/*Matrix matrix
+	
+	ReversibleHashMap<Node, Int> map
+	
+	Int id
+	
+	public construct()
+	{
+		this(0)
+	}
+	
+	public construct(Int numNodes)
+	{
+		this.id = 1
+		
+		matrix = new Matrix(numNodes, numNodes)
+	}
+	*/
+	/**
+	 * 
+	 * 
+	 * @return The ID of the added node.
+	 */
+	/*public addNode(Number val) -> Node
+	{
+		Node node = new Node(val)
+		
+		map.put(node, id++)
+		
+		return node
+	}
+	
+	public removeNode(Int id) -> Bool
+	{
+		if (!map.containsValue(id))
+		{
+			return false
+		}
+		
+		map.removeByValue(id)
+		
+		updateMatrix()
+		
+		return true
+	}
+	
+	public removeNode(Node node) -> Bool
+	{
+		if (!map.containsKey(node))
+		{
+			return false
+		}
+		
+		map.remove(node)
+		
+		updateMatrix()
+		
+		return true
+	}
+	
+	updateMatrix()
+	{
+		map.size
+	}*/
+}

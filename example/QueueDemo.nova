@@ -1,0 +1,25 @@
+package "example"
+
+import "nova/datastruct/list/Queue"
+
+public class QueueDemo
+{
+	public static main(String[] args)
+	{
+		/*Queue<Int> q = new Queue()
+		
+		q.enqueue(5)
+		q.enqueue(7)
+		q.enqueue(3)
+		q.enqueue(10)
+		
+		Console.writeLine("Queue: " + q)
+		
+		Int num = q.dequeue()
+		
+		Console.writeLine("Dequeued: " + num)
+		Console.writeLine("Queue: " + q)*/
+		
+		Console.waitForEnter()
+	}
+}

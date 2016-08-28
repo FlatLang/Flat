@@ -1,0 +1,33 @@
+package "stabilitytest"
+
+import "nova/time/Timer"
+import "nova/thread/Thread"
+
+public class TimeStability extends StabilityTestCase
+{
+	public construct(StabilityTest program)
+	{
+		super(program)
+	}
+	
+	public test()
+	{
+		Console.write("Checking Time.nova... ")
+		
+		Timer timer = new Timer()
+		timer.start()
+		
+		Thread.sleep(100)
+		
+		timer.stop()
+		
+		if (timer.duration >= 100 && timer.duration < 130)
+		{
+			Console.writeLine("OK")
+		}
+		else
+		{
+			program.fail("Failed; expected 100ms, found " + timer.duration + "ms")
+		}
+	}
+}

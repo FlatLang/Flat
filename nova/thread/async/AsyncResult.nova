@@ -1,0 +1,6 @@
+package "nova/thread/async"
+
+public class AsyncResult
+{
+    
+}

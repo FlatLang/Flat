@@ -1,0 +1,89 @@
+package "example"
+
+import "nova/web/svg/Svg";
+import "nova/web/svg/SvgCircle";
+import "nova/web/svg/SvgComponentList"
+import "nova/io/File"
+import "nova/time/Timer"
+
+public class SvgFractal
+{
+	public static main(String[] args)
+	{
+		Svg s = new Svg()
+		
+		Double pi2 = Math.PI * 2
+		
+		Console.write("Enter the number of vertices: ")
+		Int numVerts = Console.readInt()
+		
+		Console.write("Enter the coefficient: ")
+		Double coefficient = Console.readDouble()
+		
+		Console.write("Enter the number of points: ")
+		Int numPoints = Console.readInt()
+		
+		Timer timer = new Timer().start()
+		
+		Double[] points = new DoubleArray(numVerts * 2)
+		Double   radius = 450
+		Double   offset = pi2 / 12
+		
+		for (i in 0..numVerts)
+		{
+			Double rad = pi2 * (i / (numVerts * 1.0)) + offset
+			
+			points.set(i * 2 + 0, radius * Math.cos(rad) + radius + 10)
+			points.set(i * 2 + 1, radius * Math.sin(rad) + radius + 10)
+		}
+		
+		for (n in 0..numVerts)
+		{
+			Double x = points.get(n * 2 + 0)
+			Double y = points.get(n * 2 + 1)
+			
+			SvgCircle circle2 = new SvgCircle(x, y, 3)
+			
+			s.root.children.addChild(circle2)
+		}
+		
+		Double cx = radius + 10
+		Double cy = radius + 10
+		
+		for (p in 0..numPoints)
+		{
+			Int rand = Math.random(numVerts)
+			
+			Double x = points.get(rand * 2 + 0)
+			Double y = points.get(rand * 2 + 1)
+			
+			cx = cx - (cx - x) * coefficient
+			cy = cy - (cy - y) * coefficient
+			
+			if (p > 15)
+			{
+				if ((p + 1) % 1000 == 0)
+				{
+					Console.writeLine(p + 1)
+				}
+				
+				SvgCircle circle = new SvgCircle(cx, cy, 1)
+				
+				s.root.children.addChild(circle)
+			}
+		}
+		
+		File f = new File("C:/Users/Braden Steffaniak/svgoutput.html")
+
+		f.create()
+		f.clearContents()
+		
+		s.generateHTMLOutput(f)
+		
+		timer.stop()
+		
+		Console.write("Done generating " + timer.duration)
+		
+		Console.waitForEnter()
+	}
+}

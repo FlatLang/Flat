@@ -1,0 +1,21 @@
+package "nova/star"
+
+import "nova/star/NativeWindow.h"
+
+public class Window
+{
+	//external WINDOW_ID_TYPE* nova_createWindow(int x, int y, int width, int height, char title[])
+	
+	public Int    x, y, width, height
+	
+	public String title
+	
+	public create()
+	{
+		//nova_createWindow(x, y, width, height, "TEST!")
+		
+		WindowThread t = new WindowThread(this)
+		
+		t.start()
+	}
+}

@@ -1,0 +1,68 @@
+package "nova/math"
+
+public class Polynomial
+{
+	visible Double[] coefficients
+	visible Double[] degrees
+	visible Byte[]   signs
+	
+	static Char[] SYMBOLS_CHARS = [ '-', '+', '~', '!', '=', '%', '^', '&', '|', '*', '/', '>', '<', ',', '"', '\'', '[', ']', '{', '}', ';', '(', ')' ]
+	static Char[] WHITESPACE_CHARS = [ ' ', '\n', '\r', '\t' ]
+	
+	public construct(String polynomial)
+	{
+		Int start = 0
+		Bool reading = false
+		
+		coefficients = new DoubleArray()
+		degrees = new DoubleArray()
+		signs = new Array()
+		
+		for (i in 0..polynomial.count)
+		{
+			if (!isLetter(polynomial.chars.get(i)))
+			{
+				reading = false
+				
+				
+			}
+			else if (!reading)
+			{
+				start   = i
+				reading = true
+			}
+			else
+			{
+				
+			}
+		}
+	}
+	
+	static isLetter(Char c) -> Bool
+	{
+		return !isSymbol(c) && !isWhitespace(c)
+	}
+	
+	static isSymbol(Char c) -> Bool
+	{
+		return contains(SYMBOLS_CHARS, c)
+	}
+	
+	static isWhitespace(Char c) -> Bool
+	{
+		return contains(WHITESPACE_CHARS, c)
+	}
+	
+	static contains(Char[] array, Char c) -> Bool
+	{
+		for (i in 0..array.count)
+		{
+			if (c == array.data[i])
+			{
+				return true
+			}
+		}
+		
+		return false
+	}
+}

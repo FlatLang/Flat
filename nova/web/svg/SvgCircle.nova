@@ -1,0 +1,27 @@
+package "nova/web/svg"
+
+import "nova/io/File"
+
+public class SvgCircle extends SvgComponent
+{
+	visible Double x
+	visible Double y
+	visible Int r
+	
+	public construct(Double x, Double y, Int r)
+	{
+		this.x = x
+		this.y = y
+		this.r = r
+	}
+	
+	public generateOutput(File file)
+	{
+		file.write("<circle cx=\"" + x + "\" cy=\"" + y + "\" r=\"" + r + "\" stroke=\"false\" fill=\"black\"/>\n")
+	}
+	
+	public toString() -> String
+	{
+		return "[Circle at (" + x + ", " + y + ") with a radius of " + r + "]"
+	}
+}

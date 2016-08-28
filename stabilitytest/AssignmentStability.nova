@@ -1,0 +1,43 @@
+package "stabilitytest"
+
+import "nova/datastruct/list/LinkedList"
+import "nova/time/Time"
+
+public class AssignmentStability extends StabilityTestCase
+{
+	public construct(StabilityTest program)
+	{
+		super(program)
+	}
+	
+	public test()
+	{
+	    Console.write("Checking embedded property assignments... ")
+	    
+		var props = new ClassWithProperties()
+		
+		var num = props.prop1 = props.prop2 = 1
+		
+		if (num != 1 || props.prop1 != 1 || props.prop2 != 1)
+		{
+		    program.fail("Did not return mutated property value correctly. Expected 1, 1, 1 but received " + num + ", " + props.prop1 + ", " + props.prop2)
+		}
+		
+		Console.writeLine("OK")
+		
+		Console.write("Checking embedded primitive assignments... ")
+        
+        var a
+        var b
+        var c
+        
+        a = b = c = 1
+        
+        if (a != 1 || b != 1 || c != 1)
+        {
+            program.fail("Did not set assigned primitive values correctly. Expected 1, 1, 1 but received " + a + ", " + b + ", " + c)
+        }
+        
+        Console.writeLine("OK")
+	}
+}

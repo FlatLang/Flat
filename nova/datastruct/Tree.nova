@@ -1,0 +1,28 @@
+package "nova/datastruct"
+
+import "nova/exception/UnimplementedOperationException"
+
+public class Tree<E>
+{
+	public Node<E> root
+	
+	public preorder() -> E[]
+	{
+		return root.preorder()
+	}
+	
+	public inorder() -> E[]
+	{
+		return root.inorder()
+	}
+	
+	public postorder() -> E[]
+	{
+		return root.postorder()
+	}
+	
+	public levelorder() -> E[]
+	{
+		return root.levelorder()
+	}
+}

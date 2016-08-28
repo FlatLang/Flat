@@ -1,0 +1,14 @@
+package "nova/datastruct/list"
+
+public class NoSuchElementException extends Exception
+{
+	public construct()
+	{
+		this("No such element")
+	}
+	
+	public construct(String message)
+	{
+		super(message)
+	}
+}

@@ -1,0 +1,26 @@
+package "example"
+
+import "nova/thread/Thread"
+
+public class ThreadDemoImplementation extends Thread
+{
+	Long	millis
+	
+	String	word
+	
+	public construct(Long millis, String word)
+	{
+		this.millis = millis
+		this.word   = word
+	}
+	
+	public run()
+	{
+		for (i in 0..10)
+		{
+			Console.writeLine(word)
+			
+			sleep(millis)
+		}
+	}
+}

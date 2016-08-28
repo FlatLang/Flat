@@ -1,0 +1,31 @@
+package "example/network"
+
+import "nova/thread/Thread"
+import "nova/network/ConnectionSocket"
+
+public class ConnectionThread extends Thread
+{
+	ConnectionSocket socket
+	
+	public construct(ConnectionSocket socket)
+	{
+		this.socket = socket
+	}
+	
+	public run()
+	{
+		while (true)
+		{
+			if (!socket.validateConnection())
+			{
+				Console.writeLine("Disconnected.")
+				
+				break
+			}
+			
+			String message = socket.in.readString()
+			
+			Console.writeLine("HE SAYS: " + message)
+		}
+	}
+}

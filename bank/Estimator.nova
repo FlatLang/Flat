@@ -1,0 +1,19 @@
+package "bank"
+
+import "nova/database/ResultSet"
+
+public class Estimator
+{
+	public static getMonthlyProfit(ResultSet set) -> Double
+	{
+		ArrayList<>
+		
+		for (Int i = 0; i < set.numRows; i++)
+		{
+			String date  = set.rows[0][0]
+			Int    month = Int.parseInt(date.getDataBetween("/", "/"))
+			
+			
+		}
+	}
+}

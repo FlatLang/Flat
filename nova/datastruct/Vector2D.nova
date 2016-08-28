@@ -1,0 +1,54 @@
+package "nova/datastruct"
+
+import "nova/primitive/number/Number"
+
+public class Vector2D//<E extends Number>// extends Vector<E>
+{
+	/*public E x
+	public E y
+	
+	visible E magnitude
+	{
+		get
+		{
+			return Math.sqrt(x * x + y * y)
+		}
+		
+		no set
+	}
+	
+	public construct(E x, E y)
+	{
+		this.x = x
+		this.y = y
+	}
+	
+	public scale(E scalar)
+	{
+		x = x * scalar
+		y = y * scalar
+	}
+	
+	public normalize()
+	{
+		E mag = magnitude
+		
+		x = x / mag
+		y = y / mag
+	}
+	
+	public static crossProduct(Vector2D<Number> v1, Vector2D<Number> v2) -> Vector2D
+	{
+		return v1.crossProduct(v2)
+	}
+	
+	public crossProduct(Vector2D<Number> vector) -> Vector2D
+	{
+		Vector2D<E> cross = new Vector2D(0, 0)
+		
+		cross.x = x * vector.y
+		cross.y = y * vector.x
+		
+		return cross
+	}*/
+}

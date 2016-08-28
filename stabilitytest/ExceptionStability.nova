@@ -1,0 +1,73 @@
+package "stabilitytest"
+
+public class ExceptionStability extends StabilityTestCase
+{
+	public construct(StabilityTest program)
+	{
+		super(program)
+	}
+	
+	public test()
+	{
+		Console.writeLine("Checking Exception handling...")
+		
+		Bool worked = false
+		
+		try
+		{
+			testException()
+		}
+		catch (Exception e)
+		{
+			worked = true
+		}
+		
+		if (!worked)
+		{
+			program.fail("Failed; uncaught Exception")
+		}
+	}
+	
+	testException()
+	{
+		Bool worked = false
+		
+		try
+		{
+			Console.write("Checking DivideByZeroException... ")
+			
+			try
+			{
+				Int den = 0
+				Int i   = 43 / den
+			}
+			catch (DivideByZeroException e)
+			{
+				worked = true
+				
+				Console.writeLine("OK")
+				Console.write("Checking StabilityTestException... ")
+				
+				throw new StabilityTestException()
+			}
+			
+			program.fail("Failed to catch DivideByZeroException")
+		}
+		catch (StabilityTestException e)
+		{
+			if (!worked)
+			{
+				program.fail("Failed; uncaught DivideByZeroException")
+			}
+			
+			Console.writeLine("OK")
+			
+			throw new Exception()
+		}
+		
+		if (!worked)
+		{
+			program.fail("Failed; uncaught StabilityTestException")
+		}
+	}
+}

@@ -1,0 +1,41 @@
+package "example/network"
+
+import "nova/thread/Thread"
+import "nova/network/ConnectionSocket"
+import "nova/network/ServerSocket"
+
+public class OutputThread extends Thread
+{
+	ServerSocket     serverSocket
+	
+	ConnectionSocket socket
+	
+	public construct(ServerSocket serverSocket, ConnectionSocket socket)
+	{
+		this.serverSocket = serverSocket
+		
+		this.socket = socket
+	}
+	
+	public run()
+	{
+		while (socket.connected)
+		{
+			String message = Console.readLine()
+			
+			if (message.equals("q"))
+			{
+				serverSocket.close()
+				
+				break
+			}
+			
+			if (!socket.connected)
+			{
+				break
+			}
+			
+			socket.out.write(message)
+		}
+	}
+}

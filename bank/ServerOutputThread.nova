@@ -1,0 +1,39 @@
+package "bank"
+
+import "nova/thread/Thread"
+import "nova/network/ServerSocket"
+import "nova/network/ConnectionSocket"
+
+public class ServerOutputThread extends Thread
+{
+	ServerSocket socket
+	
+	public construct(ServerSocket socket)
+	{
+		this.socket = socket
+	}
+	
+	public run()
+	{
+		ConnectionSocket request = socket.acceptClient()
+		
+		if (request == null)
+		{
+			Console.writeLine("Failed to accept client")
+		}
+		
+		while (request != null && socket.open)
+		{
+			Console.writeLine("Accepted new client")
+			
+			Bank bank = new Bank(request)
+			
+			ConnectionThread thread = new ConnectionThread(bank, request)
+			
+			thread.start()
+			
+			request = socket.acceptClient()
+		}
+		Console.writeLine("Done")
+	}
+}

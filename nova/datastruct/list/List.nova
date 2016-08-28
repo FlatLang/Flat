@@ -1,0 +1,108 @@
+package "nova/datastruct/list"
+
+public interface List<Type> extends Iterable<Type>
+{
+	visible Int size
+	/*[Int index]
+	{
+		get
+		{
+			return this.get(index)
+		}
+		
+		set
+		{
+			this.set(index, value)
+		}
+	}
+	*/
+	
+	Type first
+	Type last
+	
+	toArray() -> Type[]
+	
+	contains(Type t) -> Bool
+	
+	forEach(func(Type, Int, List<Type>))
+	/*{
+	    Int i = 0
+	    
+		for (value in this)
+		{
+			func(value, i++, this)
+		}
+	}*/
+	
+	map<Out>(mapFunc(Type, Int, List<Type>) -> Out) -> List<Out>
+	
+	any(anyFunc(Type) -> Bool) -> Bool
+	all(allFunc(Type) -> Bool) -> Bool
+	
+	filter(filterFunc(Type, Int, List<E>) -> Bool) -> List<Type>
+	/*{
+		List<Type> list = clone()
+		
+		Int i = 0
+		
+		for (value in this)
+		{
+			if (filterFunc(value, i++, this))
+			{
+				list.add(value)
+			}
+		}
+		
+		return list
+	}*/
+	
+	take(Int howMany) -> List<Type>
+	/*{
+		List<Type> list = clone()
+		
+		Int i = 0
+		
+		repeat (Math.min(howMany, size))
+		{
+			list.add(this[i++])
+		}
+		
+		return list
+	}*/
+	
+	skip(Int howMany) -> List<Type>
+	/*{
+		List<Type> list = clone()
+		
+		Int i = 0
+		
+		repeat (size - howMany)
+		{
+			list.add(this[howMany + i++])
+		}
+		
+		return list
+	}*/
+	
+	firstWhere(func(Type) -> Bool) -> Type
+	/*{
+		for (element in this)
+		{
+			if (func(element))
+			{
+				return element
+			}
+		}
+		
+		return null
+	}*/
+	
+	//get(Int index) -> Type
+	//set(Int index, Type value) -> List<Type>
+	//add(Type value) -> List<Type>
+	//remove(Type value) -> List<Type>
+	//clone() -> List<Type>
+	reverse() -> List<Type>
+	
+    join(String delimiter) -> String
+}

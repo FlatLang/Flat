@@ -1,0 +1,11 @@
+*- Key Features ---------------------------------*
+
+- *Possible* Literal interface
+- Optional arguments/Default parameter values
+- List of return values.
+- Objective functions.
+- Semi-manageable memory.
+- Optional abstract method bodies.
+- Optional inheritence! E.g. extends 'AbstractValue or Value'
+
+*------------------------------------------------*

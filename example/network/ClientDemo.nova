@@ -1,0 +1,49 @@
+package "example/network"
+
+import "nova/network/ClientSocket"
+import "nova/network/ConnectionSocket"
+
+public class ClientDemo
+{
+	public static main(String[] args)
+	{
+		ClientSocket socket = new ClientSocket()
+		
+		String ip = "127.0.0.1"
+		Int port = 5675
+		
+		Console.writeLine("Attempting to connect to " + ip + ":" + port)
+		Bool connected = socket.connect(ip, port)
+		
+		if (connected)
+		{
+			ConnectionThread thread = new ConnectionThread(socket.connection)
+			
+			thread.start()
+			
+			Console.writeLine("Connected!")
+			
+			while (socket.connection.connected)
+			{
+				String message = Console.readLine()
+				
+				if (message.equals("q"))
+				{
+					socket.close()
+					
+					break
+				}
+				
+				socket.connection.out.write(message)
+			}
+			
+			socket.close()
+		}
+		else
+		{
+			Console.writeLine("Failed to connect")
+			
+			Console.waitForEnter()
+		}
+	}
+}

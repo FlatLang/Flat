@@ -1,0 +1,115 @@
+package "nova/database"
+
+import "nova/database/NativeDBConnector.h"
+
+public class DBConnector
+{
+	external type MYSQL
+	external type MYSQL_RES
+	
+	// Add a space after void and watch it BREAK!!!
+	external MYSQL* nova_db_connect1(char host[], char user[], char password[])
+	external MYSQL* nova_db_connect2(char host[], char user[], char password[], char database[])
+	external MYSQL* nova_db_connect3(char host[], char user[], char password[], char database[], int port, char unix_socket[], int client_flag)
+	external void nova_db_close(MYSQL* m)
+	external void nova_db_select_db(MYSQL* m, char database[])
+	external void nova_user_select(MYSQL* m, char username[], char password[], char database[])
+	external char[] nova_db_error(MYSQL* m)
+	external MYSQL_RES* nova_exec_query(MYSQL* m, char command[])
+	external char[][][] nova_get_results(MYSQL* m, MYSQL_RES* res)
+	external long nova_num_rows(MYSQL* m)
+	external long nova_num_cols(MYSQL_RES* res)
+	
+	visible String error
+	
+	MYSQL*     mysql
+	MYSQL_RES* result
+	
+	public construct()
+	{
+		error = ""
+	}
+	
+	public connect(String host, String user, String password)
+	{
+		mysql = nova_db_connect1(host.chars.data, user.chars.data, password.chars.data)
+		
+		updateError()
+	}
+	
+	public connect(String host, String user, String password, String database)
+	{
+		mysql = nova_db_connect2(host.chars.data, user.chars.data, password.chars.data, database.chars.data)
+		
+		updateError()
+	}
+	
+	public connect(String host, String user, String password, String database, Int port, String unixSocket, Int clientFlag)
+	{
+		mysql = nova_db_connect3(host.chars.data, user.chars.data, password.chars.data, database.chars.data, port, unixSocket.chars.data, clientFlag)
+		
+		updateError()
+	}
+	
+	public updateError()
+	{
+		error = new String(nova_db_error(mysql))
+	}
+	
+	public changeUser(String username, String password, String database)
+	{
+		nova_user_select(mysql, username.chars.data, password.chars.data, database.chars.data)
+		
+		updateError()
+	}
+	
+	public query(String query) -> ResultSet
+	{
+		result = nova_exec_query(mysql, query.chars.data)
+		
+		if (result == 0)
+		{
+			updateError()
+			
+			return null
+		}
+		
+		[PrimitiveArray]
+		Char arrays[][][] = nova_get_results(mysql, result)
+		
+		if (arrays != 0)
+		{
+			Int numRows = (Int)nova_num_rows(mysql)
+			Int numCols = (Int)nova_num_cols(result)
+			
+			String[][] rows = new Array(numRows)
+			
+			for (i in 0..numRows)
+			{
+			    rows.set(i, new Array<String>(numCols))
+			    
+				for (j in 0..numCols)
+				{
+					rows.get(i).set(j, new String(arrays[i][j]))
+				}
+			}
+			
+			ResultSet r = new ResultSet(rows, numCols)
+			
+			updateError()
+			
+			return r
+		}
+		
+		updateError()
+		
+		return null
+	}
+	
+	public close()
+	{
+		nova_db_close(mysql)
+		
+		updateError()
+	}
+}

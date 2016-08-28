@@ -1,0 +1,18 @@
+package "nova/datastruct"
+
+public class Pair<Key, Value>
+{
+    public Key key
+    public Value value
+    
+    public construct(Key key, Value value)
+    {
+        this.key = key
+        this.value = value
+    }
+    
+    public toString() -> String
+    {
+        return "Pair (#key, #value)"
+    }
+}
