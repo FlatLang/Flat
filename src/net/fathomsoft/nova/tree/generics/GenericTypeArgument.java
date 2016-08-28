@@ -135,25 +135,15 @@ public class GenericTypeArgument extends IValue implements GenericCompatible
 	
 	public GenericCompatible getContext()
 	{
-//		VariableDeclaration ancestor = (VariableDeclaration)getAncestorOfType(VariableDeclaration.class);
-//		
-//		/*while (ancestor instanceof ClosureDeclaration)
-//		{
-//			ancestor = (VariableDeclaration)ancestor.getAncestorOfType(VariableDeclaration.class);
-//		}*/
-//		
-//		if (ancestor != null)
-//		{
-//			if (ancestor instanceof ClosureDeclaration)
-//			{
-//				return ancestor.getParentMethod();
-//			}
-//			
-//			return ancestor.getTypeClass();
-//		}
-		
 		if (getAncestorOfType(MethodCall.class) != null)
 		{
+			if (getParent().getParent() instanceof Instantiation)
+			{
+				Instantiation i = (Instantiation)getParent().getParent();
+
+				return i;
+			}
+
 			MethodCall call = (MethodCall)getAncestorOfType(MethodCall.class);
 			
 			return call.getReferenceNode().toValue().getTypeClass();
