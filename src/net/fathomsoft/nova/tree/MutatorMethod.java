@@ -1,5 +1,6 @@
 package net.fathomsoft.nova.tree;
 
+import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.error.SyntaxMessage;
@@ -73,6 +74,7 @@ public class MutatorMethod extends PropertyMethod
 
 			n.setName(n.getParentField().getName());
 			n.setType(n.getParentField().getType());
+			n.setVisibility(n.getParentField().getVisibility());
 			
 			if (StringUtils.findNextNonWhitespaceChar(statement, IDENTIFIER.length()) == '(')
 			{
@@ -87,7 +89,7 @@ public class MutatorMethod extends PropertyMethod
 			{
 				n.addDefaultParameter();
 			}
-			
+
 			return n;
 		}
 		
