@@ -152,6 +152,37 @@ public class Array<E> implements List<E>
 		return element
 	}
 	
+	public remove(E element) -> E
+	{
+	    Int index = indexOf(element)
+	    
+	    if (index >= 0)
+	    {
+            shiftLeft(index + 1, position--)
+            
+            return element
+        }
+        
+        return null
+	}
+	
+	public indexOf(E element) -> Int
+	{
+	    Int i = 0
+	    
+	    for (e in this)
+	    {
+	        if (element == e)
+	        {
+	            return i
+	        }
+	        
+	        i++
+	    }
+	    
+	    return -1
+	}
+	
 	shiftRight(Int left, Int right)
 	{
 	    Int i = right - 1
