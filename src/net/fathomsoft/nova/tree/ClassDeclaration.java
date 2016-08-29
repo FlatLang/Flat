@@ -326,7 +326,7 @@ public class ClassDeclaration extends InstanceDeclaration
 	 */
 	private void addInterfaceVirtualMethods(ArrayList<NovaMethodDeclaration> methods, ClassDeclaration context)
 	{
-		if (getExtendedClassLocation() != null)
+		if (getExtendedClassDeclaration() != null)
 		{
 			getExtendedClassDeclaration().addInterfaceVirtualMethods(methods, this);
 		}
@@ -344,7 +344,7 @@ public class ClassDeclaration extends InstanceDeclaration
 	 */
 	private void addExtensionVirtualMethods(ArrayList<NovaMethodDeclaration> methods, ClassDeclaration context)
 	{
-		if (getExtendedClassLocation() != null)
+		if (getExtendedClassDeclaration() != null)
 		{
 			getExtendedClassDeclaration().addExtensionVirtualMethods(methods, this);
 		}
@@ -1168,7 +1168,7 @@ public class ClassDeclaration extends InstanceDeclaration
 		
 		if (methodName.equals(InitializationMethod.SUPER_IDENTIFIER))
 		{
-			if (filter.checkAncestor && getExtendedClassLocation() != null)
+			if (filter.checkAncestor && getExtendedClassDeclaration() != null)
 			{
 				addMethods(output, getExtendedClassDeclaration().getMethods(InitializationMethod.IDENTIFIER));
 			}
@@ -1823,7 +1823,7 @@ public class ClassDeclaration extends InstanceDeclaration
 	 */
 	private StringBuilder generateCPrivateFieldsSource(StringBuilder builder)
 	{
-		if (getExtendedClassLocation() != null)
+		if (getExtendedClassDeclaration() != null)
 		{
 			getExtendedClassDeclaration().generateCPrivateFieldsSource(builder);
 		}
@@ -2366,12 +2366,13 @@ public class ClassDeclaration extends InstanceDeclaration
 		
 		ArrayList<NovaMethodDeclaration> errors = new ArrayList<NovaMethodDeclaration>();
 		
-		if (doesExtendClass())
+		if (doesExtendClass() && getExtendedClassDeclaration() != null)
 		{
 			for (AbstractMethodDeclaration method : getExtendedClassDeclaration().getAbstractMethods())
 			{
 				if (!doesOverrideMethod(method))
 				{
+					doesOverrideMethod(method);
 					errors.add(method);
 				}
 			}
