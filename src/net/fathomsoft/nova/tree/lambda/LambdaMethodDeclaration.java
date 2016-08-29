@@ -15,6 +15,8 @@ import net.fathomsoft.nova.util.Location;
 public class LambdaMethodDeclaration extends BodyMethodDeclaration
 {
 	private int unnamedParameterPosition = 0;
+
+	public boolean isInstance = false;
 	
 	public ClosureContext context;
 	
@@ -34,7 +36,13 @@ public class LambdaMethodDeclaration extends BodyMethodDeclaration
 		
 		context.id = getFileDeclaration().registerClosureContext(context);
 	}
-	
+
+	@Override
+	public boolean isInstance()
+	{
+		return isInstance;
+	}
+
 	@Override
 	public StringBuilder generateCClosureContext(StringBuilder builder)
 	{
