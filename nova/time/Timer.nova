@@ -29,4 +29,17 @@ public class Timer
 		
 		return this
 	}
+	
+	public reset() -> Timer
+	{
+	    startTime = 0
+	    endTime = 0
+	    
+	    return this
+	}
+	
+	public toString() -> String
+	{
+	    return "Timer { duration: #duration }"
+	}
 }
