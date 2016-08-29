@@ -990,7 +990,7 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 			return result;
 		}
 		
-		if (objectReference == null)
+		if (objectReference == null && isInstance())
 		{
 			objectReference = new ObjectReference(this);
 		}
