@@ -168,7 +168,7 @@ public class LambdaExpression extends Value
 					ClosureDeclaration closure = (ClosureDeclaration)((NovaMethodDeclaration)call.getDeclaration()).getParameter(index);
 					
 					final StringBuilder builder = new StringBuilder();
-					final String op = operation;
+					
 					closure.getParameterList().forEach(x -> {
 						int id = i[0]++;
 						
@@ -204,7 +204,11 @@ public class LambdaExpression extends Value
 					{
 						LambdaMethodDeclaration method = new LambdaMethodDeclaration(bodyMethod.getParent(), bodyMethod.getLocationIn(), parent.getAncestorWithScopeOrClass().getScope());
 						
+						NovaMethodDeclaration parentMethod = (NovaMethodDeclaration)call.getDeclaration();
+						
 						bodyMethod.cloneTo(method);
+						method.isInstance = parentMethod.isStatic();
+						method.objectReference = parentMethod.objectReference; 
 						
 						method.getParentClass().addChild(method);
 
