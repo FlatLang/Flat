@@ -1,0 +1,68 @@
+package "example"
+
+import "nova/datastruct/HashSet"
+import "nova/time/Timer"
+
+public class HashSetDemo
+{
+    public static main(String[] args)
+    {
+        var set = new HashSet<String>()
+        
+        set.add("TEseting")
+        
+        Console.writeLine(set)
+        Console.writeLine("Contains TEset? #{set.contains("TEset")}")
+        Console.writeLine("Contains TEseting? #{set.contains("TEseting")}")
+        Console.writeLine(set)
+        
+        //set = new HashSet()
+        
+        Console.writeLine("Benchmarking")
+        
+        var count = 50000
+        var timer = new Timer().start()
+        
+        for (i in 0..count)
+        {
+            "my string#i"
+        }
+        
+        var stringTime = timer.stop().duration
+        
+        Console.writeLine("Took #{stringTime}ms to create #count strings")
+        
+        for (i in 0..50000)
+        {
+            set.add("my string#i")
+        }
+        
+        var addTime = timer.stop().duration
+        
+        Console.writeLine("Took #{addTime}ms to call add #count times #{(addTime - stringTime) * 100 / stringTime}% overhead")
+        
+        timer.start()
+        
+        for (i in 0..count)
+        {
+            set.get("my string#i")
+        }
+        
+        var getTime = timer.stop().duration
+        
+        Console.writeLine("Took #{getTime}ms to call get #count times #{(getTime - stringTime) * 100 / stringTime}% overhead")
+        
+        timer.start()
+        
+        for (i in 0..count)
+        {
+            "my string#i"
+        }
+        
+        var newStringTime = timer.stop().duration
+        
+        Console.writeLine("Took #{newStringTime}ms to create #count strings #{(newStringTime - stringTime) * 100 / stringTime}% overhead")
+        
+        Console.waitForEnter()
+    }
+}
