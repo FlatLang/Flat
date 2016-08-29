@@ -113,7 +113,14 @@ public class BinaryOperation extends IValue
 	@Override
 	public StringBuilder generateCSource(StringBuilder builder)
 	{
-		return generateCSourceFragment(builder);
+		generateCSourceFragment(builder);
+		
+		if (getOperator().isShorthand())
+		{
+			builder.append(";\n");
+		}
+		
+		return builder;
 	}
 	
 	/**
@@ -418,13 +425,13 @@ public class BinaryOperation extends IValue
 	 * exception being thrown.
 	 * 
 	 * @param parent The parent of the node to create.
-	 * @param denominator The denominator that is being divided.
+	 * @param value The denominator that is being divided.
 	 * @param location The location of the division in the source code.
 	 * @return The node to check the exception.
 	 */
-	private static Variable generateDivideByZeroCheck(Node parent, Value abstractValue, Location location)
+	private static Variable generateDivideByZeroCheck(Node parent, Value value, Location location)
 	{
-		String denominator = abstractValue.generateNovaInput().toString();
+		String denominator = value.generateNovaInput().toString();
 		
 		if (SyntaxUtils.isNumber(denominator))
 		{
@@ -440,7 +447,7 @@ public class BinaryOperation extends IValue
 		
 		String denominatorVar = Nova.LANGUAGE_NAME.toLowerCase() + "_zero_check" + checkId++;
 		
-		Assignment assignment = Assignment.decodeStatement(parent, abstractValue.getType() + " " + denominatorVar + " = " + denominator, location, true);
+		Assignment assignment = Assignment.decodeStatement(parent, value.getType() + " " + denominatorVar + " = " + denominator, location, true);
 		
 		Variable assignee = (Variable)assignment.getAssigneeNode();
 //		assignee.setForceOriginalName(true);
@@ -742,48 +749,67 @@ public class BinaryOperation extends IValue
 	 */
 	private Value optimizeStringConcatenation()
 	{
-		if (!getOperator().getOperator().equals("+"))
+		if (getOperator().getOperator().equals("+"))
 		{
-			return this;
-		}
-		
-		Value left  = getLeftOperand();
-		Value right = getRightOperand();
-		
-		boolean leftString  = SyntaxUtils.isString(left);
-		boolean rightString = SyntaxUtils.isString(right);
-		
-		if (leftString || rightString)
-		{
-			Value nonString = null;
-			
-			if (!leftString)
+			Value left = getLeftOperand();
+			Value right = getRightOperand();
+
+			boolean leftString = SyntaxUtils.isString(left);
+			boolean rightString = SyntaxUtils.isString(right);
+
+			if (leftString || rightString)
 			{
-				nonString = left;
-			}
-			else if (!rightString)
-			{
-				nonString = right;
-			}
-			
-			if (nonString != null)
-			{
-				Value stringOutput = generateStringOutput(nonString);
-				
+				Value nonString = null;
+
 				if (!leftString)
 				{
-					left = stringOutput;
+					nonString = left;
 				}
 				else if (!rightString)
 				{
-					right = stringOutput;
+					nonString = right;
 				}
+
+				if (nonString != null)
+				{
+					Value stringOutput = generateStringOutput(nonString);
+
+					if (!leftString)
+					{
+						left = stringOutput;
+					}
+					else if (!rightString)
+					{
+						right = stringOutput;
+					}
+				}
+
+				String statement = left.generateNovaInput() + ".concat(" + right.generateNovaInput() + ")";
+				Value strConcat = (Value)SyntaxTree.decodeScopeContents(getParent(), statement, left.getLocationIn(), false);
+
+				return strConcat;
 			}
-			
-			String statement = left.generateNovaInput() + ".concat(" + right.generateNovaInput() + ")";
-			Value  strConcat = (Value)SyntaxTree.decodeScopeContents(getParent(), statement, left.getLocationIn(), false);
-			
-			return strConcat;
+		}
+		else if (getOperator().getOperator().equals("+="))
+		{
+			Value left = getLeftOperand();
+			Value right = getRightOperand();
+
+			boolean leftString = SyntaxUtils.isString(left);
+			boolean rightString = SyntaxUtils.isString(right);
+
+			if (leftString)
+			{
+				if (!rightString)
+				{
+					right = generateStringOutput(right);
+				}
+
+				String statement = left.generateNovaInput() + " = " + left.generateNovaInput() + ".concat(" + right.generateNovaInput() + ")";
+				Assignment strConcat = Assignment.decodeStatement(getParent(), statement, left.getLocationIn(), false);
+
+				return strConcat;
+			}
 		}
 		
 		return this;
