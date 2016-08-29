@@ -432,6 +432,6 @@ public class Array<E> implements List<E>
     
     public toString() -> String
     {
-        return "Array [" + join(", ") + "]"
+        return "Array [#{join(", ")}]"
     }
 }
