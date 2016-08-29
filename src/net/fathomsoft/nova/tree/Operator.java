@@ -6,6 +6,8 @@ import net.fathomsoft.nova.util.Location;
 import net.fathomsoft.nova.util.StringUtils;
 import net.fathomsoft.nova.util.SyntaxUtils;
 
+import static java.util.Arrays.stream;
+
 /**
  * Node extension that represents an operator in an operation.
  * 
@@ -42,23 +44,45 @@ public class Operator extends IValue
 	public static final String	L_SHIFT     = "<<", L_SHIFT_C     = "<<";
 	public static final String	R_SHIFT     = ">>", R_SHIFT_C     = ">>";
 	
-	public static final String	OPERATORS[] = new String[] { AND, OR, DIVIDE, MULTIPLY, MODULO, INCREMENT, DECREMENT,
+	public static final String	SHORTHAND_DIVIDE      = "/=",  SHORTHAND_DIVIDE_C      = "/=";
+	public static final String	SHORTHAND_MULTIPLY    = "*=",  SHORTHAND_MULTIPLY_C    = "*=";
+	public static final String	SHORTHAND_MODULO      = "%=",  SHORTHAND_MODULO_C      = "%=";
+	public static final String	SHORTHAND_ADD         = "+=",  SHORTHAND_ADD_C         = "+=";
+	public static final String	SHORTHAND_SUBTRACT    = "-=",  SHORTHAND_SUBTRACT_C    = "-=";
+	public static final String	SHORTHAND_BITWISE_AND = "&=",  SHORTHAND_BITWISE_AND_C = "&=";
+	public static final String	SHORTHAND_BITWISE_OR  = "|=",  SHORTHAND_BITWISE_OR_C  = "|=";
+	public static final String	SHORTHAND_L_SHIFT     = "<<=", SHORTHAND_L_SHIFT_C     = "<<=";
+	public static final String	SHORTHAND_R_SHIFT     = ">>=", SHORTHAND_R_SHIFT_C     = ">>=";
+	
+	public static final String	OPERATORS[] = new String[] { SHORTHAND_ADD, SHORTHAND_SUBTRACT, SHORTHAND_MULTIPLY,
+																SHORTHAND_DIVIDE, SHORTHAND_MODULO, SHORTHAND_L_SHIFT,
+																SHORTHAND_R_SHIFT, SHORTHAND_BITWISE_AND, SHORTHAND_BITWISE_OR,
+																AND, OR, DIVIDE, MULTIPLY, MODULO, INCREMENT, DECREMENT,
 																EQUALS, BANG, ASSIGN, NOT_EQUAL, ADD, SUBTRACT,
 																L_SHIFT, R_SHIFT, GREATER_EQ, LESS_EQ, GREATER, LESS,
-																BITWISE_AND, BITWISE_OR };
+																BITWISE_AND, BITWISE_OR  };
 	
 	public static final String	UNARY_OPERATORS[]          = new String[] { BANG, INCREMENT, DECREMENT, SUBTRACT };
 	public static final String	UNARY_OPERATORS_NO_MINUS[] = new String[] { BANG, INCREMENT, DECREMENT };
 	public static final String	MINUS[]                    = new String[] { SUBTRACT };
 	
-	public static final String	BINARY_OPERATORS[] = new String[] { AND, OR, DIVIDE, MULTIPLY, MODULO, ADD, SUBTRACT,
+	public static final String	BINARY_OPERATORS[] = new String[] { SHORTHAND_ADD, SHORTHAND_SUBTRACT, SHORTHAND_MULTIPLY,
+																SHORTHAND_DIVIDE, SHORTHAND_MODULO, SHORTHAND_L_SHIFT,
+																SHORTHAND_R_SHIFT, SHORTHAND_BITWISE_AND, SHORTHAND_BITWISE_OR,
+																AND, OR, DIVIDE, MULTIPLY, MODULO, ADD, SUBTRACT,
 																EQUALS, NOT_EQUAL, ASSIGN, GREATER_EQ, LESS_EQ, L_SHIFT,
 																R_SHIFT, GREATER, LESS, BITWISE_AND, BITWISE_OR };
 	
-	public static final String	LOGICAL_OPERATORS[] = new String[] { AND, OR, DIVIDE, MULTIPLY, MODULO, ADD, SUBTRACT,
+	public static final String	LOGICAL_OPERATORS[] = new String[] { SHORTHAND_ADD, SHORTHAND_SUBTRACT, SHORTHAND_MULTIPLY,
+																SHORTHAND_DIVIDE, SHORTHAND_MODULO, SHORTHAND_L_SHIFT,
+																SHORTHAND_R_SHIFT, SHORTHAND_BITWISE_AND, SHORTHAND_BITWISE_OR,
+																AND, OR, DIVIDE, MULTIPLY, MODULO, ADD, SUBTRACT,
 																EQUALS, NOT_EQUAL, GREATER_EQ, LESS_EQ, L_SHIFT,
 																R_SHIFT, GREATER, LESS, BITWISE_AND, BITWISE_OR };
-	
+																
+    public static final String SHORTHAND_OPERATORS[] = new String[] { SHORTHAND_ADD, SHORTHAND_SUBTRACT, SHORTHAND_MULTIPLY,
+                                                                    SHORTHAND_DIVIDE, SHORTHAND_MODULO, SHORTHAND_L_SHIFT,
+                                                                    SHORTHAND_R_SHIFT, SHORTHAND_BITWISE_AND, SHORTHAND_BITWISE_OR };
 	/**
 	 * @see net.fathomsoft.nova.tree.Node#Node(Node, Location)
 	 */
@@ -88,6 +112,11 @@ public class Operator extends IValue
 		
 		updateType();
 	}
+	
+	public boolean isShorthand()
+    {
+        return stream(SHORTHAND_OPERATORS).anyMatch(x -> x.equals(operator));
+    }
 	
 	/**
 	 * Get the left Value that the operator is being used with.
