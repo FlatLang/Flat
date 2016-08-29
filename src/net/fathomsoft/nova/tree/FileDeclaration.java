@@ -66,10 +66,11 @@ public class FileDeclaration extends Node
 			"nova/thread/Thread",
 			"nova/thread/async/Async",
 			"nova/gc/GC",
+			"nova/math/Math",
 			"nova/Object",
 			"nova/String",
 			"nova/System",
-			"nova/math/Math",
+			"nova/Class",
 		};
 	}
 	
