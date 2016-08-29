@@ -104,7 +104,7 @@ public class Return extends IValue
 		{
 			builder.append(' ');
 			
-			if (!SyntaxUtils.isSameType(getParentMethod(), getValueNode().getReturnedNode(), false))
+			if (getValueNode().getReturnedNode().isGenericType(true) || !SyntaxUtils.isSameType(getParentMethod(), getValueNode().getReturnedNode(), false))
 			{
 				getParentMethod().generateCTypeCast(builder).append(getValueNode().getReturnedNode().generatePointerToValueConversion());
 			}
