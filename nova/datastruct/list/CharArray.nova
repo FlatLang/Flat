@@ -45,6 +45,26 @@ public class CharArray extends Array<Char>
         }
 	}
 	
+	public Long hashCodeLong
+	{
+	    get
+	    {
+            Long hash = 0
+            
+            //forEach((c, i) -> hash = hash + (Int)c * Math.pow(31, count - i - 1))
+            //forEach((c, i) -> hash = 31 * hash + (Int)c)
+            
+            for (i in 0..count)
+            {
+                hash = 31 * hash + (Int)get(i)
+            }
+            
+            return hash
+	    }
+	    
+	    no set
+	}
+	
 	public construct()
 	{
 		super()
