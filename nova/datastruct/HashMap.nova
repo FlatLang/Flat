@@ -84,7 +84,6 @@ public class HashMap<K, V> implements List<Pair<K, V>>
 	[Override]
 	public map<Out>(func(Pair<K, V>, Int, HashMap<K, V>) -> Out) -> Out[]
 	{
-	    Console.writeLine("in map")
 	    Out[] array = new Array()
 	    
 	    Int i = 0
@@ -95,7 +94,6 @@ public class HashMap<K, V> implements List<Pair<K, V>>
             {
                 if (pair != null && pair != 0)
                 {
-                    Console.writeLine("here... with #pair")
                     array.add(func(pair, i++, this))
                 }
             }
