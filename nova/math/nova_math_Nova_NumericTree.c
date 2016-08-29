@@ -29,6 +29,8 @@ nova_math_Extension_VTable_NumericTree nova_math_Extension_VTable_NumericTree_va
 		0,
 		0,
 		0,
+		0,
+		0,
 	},
 	nova_math_Nova_NumericTree_0_Nova_toString,
 	nova_Nova_Object_0_Nova_equals,

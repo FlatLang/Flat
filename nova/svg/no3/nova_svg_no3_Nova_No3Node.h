@@ -30,10 +30,11 @@ typedef struct nova_svg_no3_Nova_No3Node nova_svg_no3_Nova_No3Node;
 #include <nova/thread/nova_thread_Nova_Thread.h>
 #include <nova/thread/async/nova_thread_async_Nova_Async.h>
 #include <nova/gc/nova_gc_Nova_GC.h>
+#include <nova/math/nova_math_Nova_Math.h>
 #include <nova/nova_Nova_Object.h>
 #include <nova/nova_Nova_String.h>
 #include <nova/nova_Nova_System.h>
-#include <nova/math/nova_math_Nova_Math.h>
+#include <nova/nova_Nova_Class.h>
 
 
 typedef struct nova_svg_no3_Extension_VTable_No3Node nova_svg_no3_Extension_VTable_No3Node;

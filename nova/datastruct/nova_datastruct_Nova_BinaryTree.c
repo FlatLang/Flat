@@ -29,6 +29,8 @@ nova_datastruct_Extension_VTable_BinaryTree nova_datastruct_Extension_VTable_Bin
 		0,
 		0,
 		0,
+		0,
+		0,
 	},
 	nova_Nova_Object_0_Nova_toString,
 	nova_Nova_Object_0_Nova_equals,

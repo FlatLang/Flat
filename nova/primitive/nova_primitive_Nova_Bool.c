@@ -29,6 +29,8 @@ nova_primitive_Extension_VTable_Bool nova_primitive_Extension_VTable_Bool_val =
 		0,
 		0,
 		0,
+		0,
+		0,
 	},
 	nova_primitive_Nova_Bool_3_Nova_toString,
 	nova_Nova_Object_0_Nova_equals,

@@ -29,6 +29,8 @@ stabilitytest_Extension_VTable_PolymorphicSubClass stabilitytest_Extension_VTabl
 		0,
 		0,
 		0,
+		0,
+		0,
 	},
 	stabilitytest_Nova_PolymorphicSubClass_Nova_toString,
 	nova_Nova_Object_0_Nova_equals,

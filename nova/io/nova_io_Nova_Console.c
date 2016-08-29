@@ -29,6 +29,8 @@ nova_io_Extension_VTable_Console nova_io_Extension_VTable_Console_val =
 		0,
 		0,
 		0,
+		0,
+		0,
 	},
 	nova_Nova_Object_0_Nova_toString,
 	nova_Nova_Object_0_Nova_equals,

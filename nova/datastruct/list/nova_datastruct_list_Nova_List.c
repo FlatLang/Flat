@@ -29,6 +29,8 @@ nova_datastruct_list_Extension_VTable_List nova_datastruct_list_Extension_VTable
 		0,
 		0,
 		0,
+		0,
+		0,
 	},
 	nova_datastruct_list_Nova_List_virtual0_Nova_toArray,
 	nova_datastruct_list_Nova_List_virtual0_Nova_contains,

@@ -29,6 +29,8 @@ nova_network_Extension_VTable_NetworkInputStream nova_network_Extension_VTable_N
 		0,
 		0,
 		0,
+		0,
+		0,
 	},
 	nova_network_Nova_NetworkInputStream_0_Nova_readString,
 	nova_network_Nova_NetworkInputStream_0_Nova_readBytes,

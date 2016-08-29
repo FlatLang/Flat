@@ -29,6 +29,8 @@ nova_datastruct_list_Extension_VTable_Queue nova_datastruct_list_Extension_VTabl
 		0,
 		0,
 		0,
+		0,
+		0,
 	},
 	nova_datastruct_list_Nova_Queue_0_Nova_toString,
 	nova_Nova_Object_0_Nova_equals,
@@ -103,7 +105,7 @@ void nova_datastruct_list_Nova_Queue_1_Nova_this(nova_datastruct_list_Nova_Queue
 
 nova_Nova_Object* nova_datastruct_list_Nova_Queue_Nova_dequeue(nova_datastruct_list_Nova_Queue* this, nova_exception_Nova_ExceptionData* exceptionData)
 {
-	return (nova_Nova_Object*)nova_datastruct_list_Nova_Array_Nova_remove(this->prv->nova_datastruct_list_Nova_Queue_Nova_data, exceptionData, 0);
+	return (nova_Nova_Object*)nova_datastruct_list_Nova_Array_0_Nova_remove(this->prv->nova_datastruct_list_Nova_Queue_Nova_data, exceptionData, 0);
 }
 
 void nova_datastruct_list_Nova_Queue_Nova_enqueue(nova_datastruct_list_Nova_Queue* this, nova_exception_Nova_ExceptionData* exceptionData, nova_Nova_Object* nova_datastruct_list_Nova_Queue_Nova_element)

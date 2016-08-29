@@ -29,6 +29,8 @@ example_Extension_VTable_Spider example_Extension_VTable_Spider_val =
 		0,
 		0,
 		0,
+		0,
+		0,
 	},
 	example_Nova_Animal_0_Nova_toString,
 	nova_Nova_Object_0_Nova_equals,

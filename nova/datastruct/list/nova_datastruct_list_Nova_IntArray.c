@@ -29,6 +29,8 @@ nova_datastruct_list_Extension_VTable_IntArray nova_datastruct_list_Extension_VT
 		0,
 		0,
 		0,
+		0,
+		0,
 	},
 	nova_datastruct_list_Nova_Array_0_Nova_toString,
 	nova_Nova_Object_0_Nova_equals,

@@ -29,6 +29,8 @@ stabilitytest_Extension_VTable_ClassWithProperties stabilitytest_Extension_VTabl
 		0,
 		0,
 		0,
+		0,
+		0,
 	},
 	nova_Nova_Object_0_Nova_toString,
 	nova_Nova_Object_0_Nova_equals,

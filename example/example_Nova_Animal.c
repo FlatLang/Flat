@@ -29,6 +29,8 @@ example_Extension_VTable_Animal example_Extension_VTable_Animal_val =
 		0,
 		0,
 		0,
+		0,
+		0,
 	},
 	example_Nova_Animal_0_Nova_toString,
 	nova_Nova_Object_0_Nova_equals,

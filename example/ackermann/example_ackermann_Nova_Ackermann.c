@@ -29,6 +29,8 @@ example_ackermann_Extension_VTable_Ackermann example_ackermann_Extension_VTable_
 		0,
 		0,
 		0,
+		0,
+		0,
 	},
 	nova_Nova_Object_0_Nova_toString,
 	nova_Nova_Object_0_Nova_equals,

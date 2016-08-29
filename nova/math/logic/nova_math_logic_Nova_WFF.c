@@ -29,6 +29,8 @@ nova_math_logic_Extension_VTable_WFF nova_math_logic_Extension_VTable_WFF_val =
 		0,
 		0,
 		0,
+		0,
+		0,
 	},
 	nova_Nova_Object_0_Nova_toString,
 	nova_Nova_Object_0_Nova_equals,

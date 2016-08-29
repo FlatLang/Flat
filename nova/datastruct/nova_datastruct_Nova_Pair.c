@@ -29,6 +29,8 @@ nova_datastruct_Extension_VTable_Pair nova_datastruct_Extension_VTable_Pair_val 
 		0,
 		0,
 		0,
+		0,
+		0,
 	},
 	nova_datastruct_Nova_Pair_0_Nova_toString,
 	nova_Nova_Object_0_Nova_equals,

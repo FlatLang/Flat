@@ -30,10 +30,11 @@ typedef struct stabilitytest_Nova_FileStability stabilitytest_Nova_FileStability
 #include <nova/thread/nova_thread_Nova_Thread.h>
 #include <nova/thread/async/nova_thread_async_Nova_Async.h>
 #include <nova/gc/nova_gc_Nova_GC.h>
+#include <nova/math/nova_math_Nova_Math.h>
 #include <nova/nova_Nova_Object.h>
 #include <nova/nova_Nova_String.h>
 #include <nova/nova_Nova_System.h>
-#include <nova/math/nova_math_Nova_Math.h>
+#include <nova/nova_Nova_Class.h>
 #include <nova/io/nova_io_Nova_File.h>
 #include <nova/time/nova_time_Nova_Time.h>
 #include <stabilitytest/stabilitytest_Nova_StabilityTest.h>

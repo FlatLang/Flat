@@ -38,6 +38,8 @@ stabilitytest_Extension_VTable_LambdaStability stabilitytest_Extension_VTable_La
 		0,
 		0,
 		0,
+		0,
+		0,
 	},
 	nova_Nova_Object_0_Nova_toString,
 	nova_Nova_Object_0_Nova_equals,

@@ -29,6 +29,8 @@ example_Extension_VTable_NonWholeDivisionException example_Extension_VTable_NonW
 		0,
 		0,
 		0,
+		0,
+		0,
 	},
 	nova_Nova_Object_0_Nova_toString,
 	nova_Nova_Object_0_Nova_equals,

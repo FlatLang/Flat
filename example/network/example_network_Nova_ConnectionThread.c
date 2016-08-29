@@ -29,6 +29,8 @@ example_network_Extension_VTable_ConnectionThread example_network_Extension_VTab
 		0,
 		0,
 		0,
+		0,
+		0,
 	},
 	nova_Nova_Object_0_Nova_toString,
 	nova_Nova_Object_0_Nova_equals,

@@ -49,6 +49,8 @@ nova_datastruct_Extension_VTable_Node nova_datastruct_Extension_VTable_Node_val 
 		0,
 		0,
 		0,
+		0,
+		0,
 	},
 	nova_datastruct_Nova_Node_0_Nova_toString,
 	nova_Nova_Object_0_Nova_equals,

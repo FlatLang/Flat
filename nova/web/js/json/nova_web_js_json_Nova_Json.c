@@ -29,6 +29,8 @@ nova_web_js_json_Extension_VTable_Json nova_web_js_json_Extension_VTable_Json_va
 		0,
 		0,
 		0,
+		0,
+		0,
 	},
 	nova_web_js_json_Nova_Json_0_Nova_toString,
 	nova_Nova_Object_0_Nova_equals,

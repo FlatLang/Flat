@@ -29,6 +29,8 @@ example_Extension_VTable_ExceptionHandlingDemo example_Extension_VTable_Exceptio
 		0,
 		0,
 		0,
+		0,
+		0,
 	},
 	nova_Nova_Object_0_Nova_toString,
 	nova_Nova_Object_0_Nova_equals,

@@ -29,6 +29,8 @@ nova_thread_async_Extension_VTable_Async nova_thread_async_Extension_VTable_Asyn
 		0,
 		0,
 		0,
+		0,
+		0,
 	},
 	nova_Nova_Object_0_Nova_toString,
 	nova_Nova_Object_0_Nova_equals,

@@ -29,6 +29,8 @@ nova_math_calculus_Extension_VTable_Calculus nova_math_calculus_Extension_VTable
 		0,
 		0,
 		0,
+		0,
+		0,
 	},
 	nova_Nova_Object_0_Nova_toString,
 	nova_Nova_Object_0_Nova_equals,

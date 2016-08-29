@@ -29,6 +29,8 @@ nova_database_Extension_VTable_ResultSet nova_database_Extension_VTable_ResultSe
 		0,
 		0,
 		0,
+		0,
+		0,
 	},
 	nova_Nova_Object_0_Nova_toString,
 	nova_Nova_Object_0_Nova_equals,

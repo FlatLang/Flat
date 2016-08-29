@@ -29,6 +29,8 @@ nova_process_Extension_VTable_Process nova_process_Extension_VTable_Process_val 
 		0,
 		0,
 		0,
+		0,
+		0,
 	},
 	nova_Nova_Object_0_Nova_toString,
 	nova_Nova_Object_0_Nova_equals,

@@ -29,6 +29,8 @@ nova_primitive_Extension_VTable_Primitive nova_primitive_Extension_VTable_Primit
 		0,
 		0,
 		0,
+		0,
+		0,
 	},
 	nova_Nova_Object_0_Nova_toString,
 	nova_Nova_Object_0_Nova_equals,

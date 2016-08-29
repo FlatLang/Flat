@@ -29,6 +29,8 @@ nova_math_logic_Extension_VTable_Conclusion nova_math_logic_Extension_VTable_Con
 		0,
 		0,
 		0,
+		0,
+		0,
 	},
 	nova_math_logic_Nova_LogicalStatement_0_Nova_toString,
 	nova_Nova_Object_0_Nova_equals,

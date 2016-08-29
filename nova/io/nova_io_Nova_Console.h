@@ -30,10 +30,11 @@ typedef struct nova_io_Nova_Console nova_io_Nova_Console;
 #include <nova/thread/nova_thread_Nova_Thread.h>
 #include <nova/thread/async/nova_thread_async_Nova_Async.h>
 #include <nova/gc/nova_gc_Nova_GC.h>
+#include <nova/math/nova_math_Nova_Math.h>
 #include <nova/nova_Nova_Object.h>
 #include <nova/nova_Nova_String.h>
 #include <nova/nova_Nova_System.h>
-#include <nova/math/nova_math_Nova_Math.h>
+#include <nova/nova_Nova_Class.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <nova/io/NativeConsole.h>

@@ -29,6 +29,8 @@ nova_time_Extension_VTable_Timer nova_time_Extension_VTable_Timer_val =
 		0,
 		0,
 		0,
+		0,
+		0,
 	},
 	nova_time_Nova_Timer_0_Nova_toString,
 	nova_Nova_Object_0_Nova_equals,

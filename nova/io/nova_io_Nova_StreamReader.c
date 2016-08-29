@@ -29,6 +29,8 @@ nova_io_Extension_VTable_StreamReader nova_io_Extension_VTable_StreamReader_val 
 		0,
 		0,
 		0,
+		0,
+		0,
 	},
 	nova_io_Nova_StreamReader_Nova_readString,
 	nova_io_Nova_StreamReader_Nova_readBytes,

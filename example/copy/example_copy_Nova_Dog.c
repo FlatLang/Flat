@@ -29,6 +29,8 @@ example_copy_Extension_VTable_Dog example_copy_Extension_VTable_Dog_val =
 		0,
 		0,
 		0,
+		0,
+		0,
 	},
 	nova_Nova_Object_0_Nova_toString,
 	nova_Nova_Object_0_Nova_equals,

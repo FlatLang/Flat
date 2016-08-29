@@ -29,6 +29,8 @@ nova_datastruct_list_Extension_VTable_IntRange nova_datastruct_list_Extension_VT
 		0,
 		0,
 		0,
+		0,
+		0,
 	},
 	nova_datastruct_list_Nova_IntRange_0_Nova_toString,
 	nova_Nova_Object_0_Nova_equals,

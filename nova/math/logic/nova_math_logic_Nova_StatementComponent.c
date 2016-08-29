@@ -29,6 +29,8 @@ nova_math_logic_Extension_VTable_StatementComponent nova_math_logic_Extension_VT
 		0,
 		0,
 		0,
+		0,
+		0,
 	},
 	nova_Nova_Object_0_Nova_toString,
 	nova_Nova_Object_0_Nova_equals,

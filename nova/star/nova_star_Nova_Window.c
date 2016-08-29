@@ -29,6 +29,8 @@ nova_star_Extension_VTable_Window nova_star_Extension_VTable_Window_val =
 		0,
 		0,
 		0,
+		0,
+		0,
 	},
 	nova_Nova_Object_0_Nova_toString,
 	nova_Nova_Object_0_Nova_equals,

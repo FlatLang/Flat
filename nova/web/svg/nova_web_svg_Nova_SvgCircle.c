@@ -29,6 +29,8 @@ nova_web_svg_Extension_VTable_SvgCircle nova_web_svg_Extension_VTable_SvgCircle_
 		0,
 		0,
 		0,
+		0,
+		0,
 	},
 	nova_web_svg_Nova_SvgCircle_0_Nova_toString,
 	nova_Nova_Object_0_Nova_equals,

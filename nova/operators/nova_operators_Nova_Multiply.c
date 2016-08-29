@@ -29,6 +29,8 @@ nova_operators_Extension_VTable_Multiply nova_operators_Extension_VTable_Multipl
 		0,
 		0,
 		0,
+		0,
+		0,
 	},
 	nova_operators_Nova_Multiply_virtual1_Nova_multiply,
 };

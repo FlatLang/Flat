@@ -30,10 +30,11 @@ typedef struct example_Nova_NonWholeDivisionException example_Nova_NonWholeDivis
 #include <nova/thread/nova_thread_Nova_Thread.h>
 #include <nova/thread/async/nova_thread_async_Nova_Async.h>
 #include <nova/gc/nova_gc_Nova_GC.h>
+#include <nova/math/nova_math_Nova_Math.h>
 #include <nova/nova_Nova_Object.h>
 #include <nova/nova_Nova_String.h>
 #include <nova/nova_Nova_System.h>
-#include <nova/math/nova_math_Nova_Math.h>
+#include <nova/nova_Nova_Class.h>
 
 
 typedef struct example_Extension_VTable_NonWholeDivisionException example_Extension_VTable_NonWholeDivisionException;

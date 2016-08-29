@@ -29,6 +29,8 @@ nova_Extension_VTable_String nova_Extension_VTable_String_val =
 		0,
 		0,
 		0,
+		0,
+		0,
 	},
 	nova_Nova_String_0_Nova_toString,
 	nova_Nova_String_Nova_equals,
@@ -113,13 +115,6 @@ void nova_Nova_String_2_Nova_this(nova_Nova_String* this, nova_exception_Nova_Ex
 	if (nova_Nova_String_Nova_chars[this->nova_Nova_String_Nova_count] != '\0')
 	{
 		nova_Nova_String_Nova_chars[this->nova_Nova_String_Nova_count] = '\0';
-	}
-	if (nova_datastruct_list_Nova_List_virtual0_Nova_contains((nova_datastruct_list_Nova_List*)(nova_Nova_String_Nova_pool), exceptionData, (nova_Nova_Object*)(this)))
-	{
-		nova_io_Nova_Console_1_Nova_writeLine(0, exceptionData, nova_Nova_String_0_Nova_concat(nova_Nova_String_1_Nova_construct(0, exceptionData, (char*)("Duplicate string ")), exceptionData, nova_Nova_String_virtual1_Nova_concat((nova_Nova_String*)((this)), exceptionData, nova_Nova_String_1_Nova_construct(0, exceptionData, (char*)(" created")))));
-	}
-	else
-	{
 	}
 }
 

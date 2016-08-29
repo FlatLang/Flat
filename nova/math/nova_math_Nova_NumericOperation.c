@@ -29,6 +29,8 @@ nova_math_Extension_VTable_NumericOperation nova_math_Extension_VTable_NumericOp
 		0,
 		0,
 		0,
+		0,
+		0,
 	},
 	nova_math_Nova_NumericOperation_0_Nova_toString,
 	nova_Nova_Object_0_Nova_equals,

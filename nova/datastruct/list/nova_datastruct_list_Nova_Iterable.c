@@ -29,6 +29,8 @@ nova_datastruct_list_Extension_VTable_Iterable nova_datastruct_list_Extension_VT
 		0,
 		0,
 		0,
+		0,
+		0,
 	},
 	nova_datastruct_list_Nova_Iterable_Accessor_Nova_iterator,
 };

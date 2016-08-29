@@ -29,6 +29,8 @@ nova_network_Extension_VTable_ServerSocket nova_network_Extension_VTable_ServerS
 		0,
 		0,
 		0,
+		0,
+		0,
 	},
 	nova_Nova_Object_0_Nova_toString,
 	nova_Nova_Object_0_Nova_equals,
