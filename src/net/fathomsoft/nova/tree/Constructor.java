@@ -176,7 +176,13 @@ public class Constructor extends BodyMethodDeclaration
 		
 		return builder;
 	}
-	
+
+	@Override
+	public String getCName()
+	{
+		return IDENTIFIER;
+	}
+
 	/**
 	 * Decode the given statement into a Constructor instance, if
 	 * possible. If it is not possible, this method returns null. A
