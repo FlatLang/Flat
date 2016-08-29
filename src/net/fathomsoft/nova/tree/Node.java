@@ -846,7 +846,7 @@ public abstract class Node implements Listenable, Annotatable
 	 */
 	public boolean isDecoding()
 	{
-		return !getParent().containsChild(this);
+		return getParent() == null || !getParent().containsChild(this);
 	}
 	
 	/**
