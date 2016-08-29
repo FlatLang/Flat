@@ -1,6 +1,7 @@
 package "nova"
 
 import "nova/datastruct/Comparable"
+import "nova/datastruct/HashSet"
 
 public class String implements Comparable<String>
 {
@@ -15,16 +16,13 @@ public class String implements Comparable<String>
 	external int strlen(char chars[])
 	external void memcpy(char dst[], char* src[], int count)
 	
+	private static HashSet<String> pool = new HashSet(121, 1)
+	
 	public Long hashCodeLong
 	{
 	    get
 	    {
-            Long hash = 0
-            
-            //chars.forEach((c, i) -> hash = hash + (Int)c * Math.pow(31, count - i - 1))
-            chars.forEach((c, i) -> hash = 31 * hash + (Int)c)
-            
-            return hash
+            return chars.hashCodeLong
 	    }
 	    
 	    no set
@@ -51,6 +49,15 @@ public class String implements Comparable<String>
 		{
 			chars[count] = '\0'
 		}
+		
+		/*if (pool.contains(this))
+		{
+		    Console.writeLine("Duplicate string #this created")
+		}
+		else
+		{
+		    //pool.add(this)
+		}*/
 	}
 	
 	calculateSize([PrimitiveArray] Char[] chars) -> Int
@@ -76,6 +83,30 @@ public class String implements Comparable<String>
 	public equals(String other) -> Bool
 	{
 		return compareTo(other) == 0
+	}
+	
+	public replace(String search, String replace) -> String
+	{
+	    String output = this
+	    
+	    Int index = 0
+	    
+	    while ((index = output.indexOf(search)) >= 0)
+	    {
+	        output = output.substring(0, index) + replace + output.substring(index + search.count)
+	    }
+	    
+	    return output
+	}
+	
+	public startsWith(String search) -> Bool
+	{
+	    return indexOf(search) == 0
+	}
+	
+	public endsWith(String search) -> Bool
+	{
+	    return count > 0 && indexOf(search) == count - search.count - 1
 	}
 	
 	public contains(String search) -> Bool
