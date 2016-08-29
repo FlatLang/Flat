@@ -1289,10 +1289,34 @@ public abstract class Value extends Node implements AbstractValue
 		
 		return getParentClass().getGenericTypeParameter(getType(), this);
 	}
-	
+    
 	public final boolean isGenericType()
 	{
-		return getGenericTypeParameter() != null;
+		return isGenericType(false);
+	}
+	
+	public final boolean isGenericType(boolean checkArray)
+	{
+		if (getGenericTypeParameter() != null)
+		{
+			return true;
+		}
+		if (checkArray)
+		{
+			if (getTypeClass() == getProgram().getClassDeclaration("nova/datastruct/list/Array"))
+			{
+				GenericTypeArgumentList list = getGenericTypeArgumentList();
+				
+				// TODO: do a deep search
+				
+				if (list != null)
+				{
+					return list.getNumVisibleChildren() > 0 && list.getVisibleChild(0).isGenericType();
+				}
+			}
+		}
+		
+		return false;
 	}
 	
 	public boolean isPrimitiveGenericType()
