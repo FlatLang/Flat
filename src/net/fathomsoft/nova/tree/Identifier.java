@@ -309,6 +309,11 @@ public abstract class Identifier extends Value implements Accessible
 		return getGenericTypeArgumentFromParameter(param.getType());
 	}*/
 	
+	public String getCName()
+	{
+		return getName();
+	}
+	
 	/**
 	 * Generate a variable name that will be used to keep the variables
 	 * in their own "namespace" per-say.
@@ -360,7 +365,7 @@ public abstract class Identifier extends Value implements Accessible
 	 */
 	public StringBuilder generateCSourceName(StringBuilder builder, String uniquePrefix)
 	{
-		String name = getName();
+		String name = getCName();
 		
 		if (doesForceOriginalName())
 		{
