@@ -42,7 +42,7 @@ void nova_time_Nova_Date_Nova_init_static(nova_exception_Nova_ExceptionData* exc
 	}
 }
 
-nova_time_Nova_Date* nova_time_Nova_Date_Nova_Date(nova_time_Nova_Date* this, nova_exception_Nova_ExceptionData* exceptionData)
+nova_time_Nova_Date* nova_time_Nova_Date_Nova_construct(nova_time_Nova_Date* this, nova_exception_Nova_ExceptionData* exceptionData)
 {
 	CCLASS_NEW(nova_time_Nova_Date, this,);
 	this->vtable = &nova_time_Extension_VTable_Date_val;
@@ -104,7 +104,7 @@ nova_Nova_String* nova_time_Nova_Date_1_Nova_formatDate(nova_time_Nova_Date* thi
 	
 	
 	l1_Nova_data = (char*)(nova_formatDate((char*)(nova_time_Nova_Date_Nova_str->nova_Nova_String_Nova_chars->nova_datastruct_list_Nova_Array_Nova_data), nova_time_Nova_Date_Nova_first, nova_time_Nova_Date_Nova_second, nova_time_Nova_Date_Nova_third, nova_time_Nova_Date_Nova_fourth, nova_time_Nova_Date_Nova_fifth, nova_time_Nova_Date_Nova_sixth));
-	return nova_Nova_String_1_Nova_String(0, exceptionData, l1_Nova_data);
+	return nova_Nova_String_1_Nova_construct(0, exceptionData, l1_Nova_data);
 }
 
 void nova_time_Nova_Date_Nova_super(nova_time_Nova_Date* this, nova_exception_Nova_ExceptionData* exceptionData)

@@ -58,7 +58,7 @@ CCLASS_CLASS
 )
 
 void nova_datastruct_Nova_Tree_Nova_init_static(nova_exception_Nova_ExceptionData* exceptionData);
-nova_datastruct_Nova_Tree* nova_datastruct_Nova_Tree_Nova_Tree(nova_datastruct_Nova_Tree* this, nova_exception_Nova_ExceptionData* exceptionData);
+nova_datastruct_Nova_Tree* nova_datastruct_Nova_Tree_Nova_construct(nova_datastruct_Nova_Tree* this, nova_exception_Nova_ExceptionData* exceptionData);
 void nova_datastruct_Nova_Tree_Nova_destroy(nova_datastruct_Nova_Tree** this, nova_exception_Nova_ExceptionData* exceptionData);
 nova_datastruct_list_Nova_Array* nova_datastruct_Nova_Tree_Nova_preorder(nova_datastruct_Nova_Tree* this, nova_exception_Nova_ExceptionData* exceptionData);
 nova_datastruct_list_Nova_Array* nova_datastruct_Nova_Tree_Nova_inorder(nova_datastruct_Nova_Tree* this, nova_exception_Nova_ExceptionData* exceptionData);

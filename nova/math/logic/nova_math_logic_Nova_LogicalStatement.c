@@ -48,7 +48,7 @@ void nova_math_logic_Nova_LogicalStatement_Nova_init_static(nova_exception_Nova_
 	}
 }
 
-nova_math_logic_Nova_LogicalStatement* nova_math_logic_Nova_LogicalStatement_Nova_LogicalStatement(nova_math_logic_Nova_LogicalStatement* this, nova_exception_Nova_ExceptionData* exceptionData, nova_Nova_String* nova_math_logic_Nova_LogicalStatement_Nova_statement)
+nova_math_logic_Nova_LogicalStatement* nova_math_logic_Nova_LogicalStatement_Nova_construct(nova_math_logic_Nova_LogicalStatement* this, nova_exception_Nova_ExceptionData* exceptionData, nova_Nova_String* nova_math_logic_Nova_LogicalStatement_Nova_statement)
 {
 	CCLASS_NEW(nova_math_logic_Nova_LogicalStatement, this);
 	this->vtable = &nova_math_logic_Extension_VTable_LogicalStatement_val;
@@ -80,7 +80,7 @@ void nova_math_logic_Nova_LogicalStatement_Nova_destroy(nova_math_logic_Nova_Log
 void nova_math_logic_Nova_LogicalStatement_0_Nova_this(nova_math_logic_Nova_LogicalStatement* this, nova_exception_Nova_ExceptionData* exceptionData, nova_Nova_String* nova_math_logic_Nova_LogicalStatement_Nova_statement)
 {
 	this->prv->nova_math_logic_Nova_LogicalStatement_Nova_statement = nova_math_logic_Nova_LogicalStatement_Nova_statement;
-	this->prv->nova_math_logic_Nova_LogicalStatement_Nova_components = nova_datastruct_list_Nova_Array_0_Nova_Array(0, exceptionData);
+	this->prv->nova_math_logic_Nova_LogicalStatement_Nova_components = nova_datastruct_list_Nova_Array_0_Nova_construct(0, exceptionData);
 }
 
 nova_Nova_String* nova_math_logic_Nova_LogicalStatement_0_Nova_toString(nova_math_logic_Nova_LogicalStatement* this, nova_exception_Nova_ExceptionData* exceptionData)

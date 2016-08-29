@@ -42,7 +42,7 @@ void nova_datastruct_Nova_BinaryTree_Nova_init_static(nova_exception_Nova_Except
 	}
 }
 
-nova_datastruct_Nova_BinaryTree* nova_datastruct_Nova_BinaryTree_Nova_BinaryTree(nova_datastruct_Nova_BinaryTree* this, nova_exception_Nova_ExceptionData* exceptionData, nova_datastruct_list_Nova_Array* nova_datastruct_Nova_BinaryTree_Nova_data)
+nova_datastruct_Nova_BinaryTree* nova_datastruct_Nova_BinaryTree_Nova_construct(nova_datastruct_Nova_BinaryTree* this, nova_exception_Nova_ExceptionData* exceptionData, nova_datastruct_list_Nova_Array* nova_datastruct_Nova_BinaryTree_Nova_data)
 {
 	CCLASS_NEW(nova_datastruct_Nova_BinaryTree, this,);
 	this->vtable = &nova_datastruct_Extension_VTable_BinaryTree_val;
@@ -77,7 +77,7 @@ nova_datastruct_Nova_BinaryTree* nova_datastruct_Nova_BinaryTree_Nova_addNode(no
 {
 	if (nova_datastruct_Nova_BinaryTree_Accessor_Nova_root(this, exceptionData) == (nova_datastruct_Nova_BinaryNode*)nova_null)
 	{
-		nova_datastruct_Nova_BinaryTree_Mutator_Nova_root(this, exceptionData, (nova_datastruct_Nova_BinaryNode*)(nova_datastruct_Nova_BinaryNode_1_Nova_BinaryNode(0, exceptionData, (nova_datastruct_Nova_Comparable*)(nova_datastruct_Nova_BinaryTree_Nova_data))));
+		nova_datastruct_Nova_BinaryTree_Mutator_Nova_root(this, exceptionData, (nova_datastruct_Nova_BinaryNode*)(nova_datastruct_Nova_BinaryNode_1_Nova_construct(0, exceptionData, (nova_datastruct_Nova_Comparable*)(nova_datastruct_Nova_BinaryTree_Nova_data))));
 	}
 	else
 	{

@@ -42,7 +42,7 @@ void example_Nova_QueueDemo_Nova_init_static(nova_exception_Nova_ExceptionData* 
 	}
 }
 
-example_Nova_QueueDemo* example_Nova_QueueDemo_Nova_QueueDemo(example_Nova_QueueDemo* this, nova_exception_Nova_ExceptionData* exceptionData)
+example_Nova_QueueDemo* example_Nova_QueueDemo_Nova_construct(example_Nova_QueueDemo* this, nova_exception_Nova_ExceptionData* exceptionData)
 {
 	CCLASS_NEW(example_Nova_QueueDemo, this,);
 	this->vtable = &example_Extension_VTable_QueueDemo_val;

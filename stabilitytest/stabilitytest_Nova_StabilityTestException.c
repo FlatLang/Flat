@@ -42,7 +42,7 @@ void stabilitytest_Nova_StabilityTestException_Nova_init_static(nova_exception_N
 	}
 }
 
-stabilitytest_Nova_StabilityTestException* stabilitytest_Nova_StabilityTestException_Nova_StabilityTestException(stabilitytest_Nova_StabilityTestException* this, nova_exception_Nova_ExceptionData* exceptionData)
+stabilitytest_Nova_StabilityTestException* stabilitytest_Nova_StabilityTestException_Nova_construct(stabilitytest_Nova_StabilityTestException* this, nova_exception_Nova_ExceptionData* exceptionData)
 {
 	CCLASS_NEW(stabilitytest_Nova_StabilityTestException, this,);
 	this->vtable = &stabilitytest_Extension_VTable_StabilityTestException_val;

@@ -42,7 +42,7 @@ void nova_exception_Nova_DivideByZeroException_Nova_init_static(nova_exception_N
 	}
 }
 
-nova_exception_Nova_DivideByZeroException* nova_exception_Nova_DivideByZeroException_Nova_DivideByZeroException(nova_exception_Nova_DivideByZeroException* this, nova_exception_Nova_ExceptionData* exceptionData)
+nova_exception_Nova_DivideByZeroException* nova_exception_Nova_DivideByZeroException_Nova_construct(nova_exception_Nova_DivideByZeroException* this, nova_exception_Nova_ExceptionData* exceptionData)
 {
 	CCLASS_NEW(nova_exception_Nova_DivideByZeroException, this,);
 	this->vtable = &nova_exception_Extension_VTable_DivideByZeroException_val;

@@ -45,7 +45,7 @@ void example_Nova_Animal_Nova_init_static(nova_exception_Nova_ExceptionData* exc
 	}
 }
 
-example_Nova_Animal* example_Nova_Animal_Nova_Animal(example_Nova_Animal* this, nova_exception_Nova_ExceptionData* exceptionData)
+example_Nova_Animal* example_Nova_Animal_Nova_construct(example_Nova_Animal* this, nova_exception_Nova_ExceptionData* exceptionData)
 {
 	CCLASS_NEW(example_Nova_Animal, this,);
 	this->vtable = &example_Extension_VTable_Animal_val;
@@ -82,7 +82,7 @@ int example_Nova_Animal_0_Nova_getNumEyes(example_Nova_Animal* this, nova_except
 
 nova_Nova_String* example_Nova_Animal_0_Nova_getDescription(example_Nova_Animal* this, nova_exception_Nova_ExceptionData* exceptionData)
 {
-	return nova_Nova_String_1_Nova_String(0, exceptionData, (char*)("Its just a stupid animal..."));
+	return nova_Nova_String_1_Nova_construct(0, exceptionData, (char*)("Its just a stupid animal..."));
 }
 
 nova_Nova_String* example_Nova_Animal_0_Nova_toString(example_Nova_Animal* this, nova_exception_Nova_ExceptionData* exceptionData)

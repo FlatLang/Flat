@@ -42,7 +42,7 @@ void nova_primitive_Nova_Primitive_Nova_init_static(nova_exception_Nova_Exceptio
 	}
 }
 
-nova_primitive_Nova_Primitive* nova_primitive_Nova_Primitive_Nova_Primitive(nova_primitive_Nova_Primitive* this, nova_exception_Nova_ExceptionData* exceptionData)
+nova_primitive_Nova_Primitive* nova_primitive_Nova_Primitive_Nova_construct(nova_primitive_Nova_Primitive* this, nova_exception_Nova_ExceptionData* exceptionData)
 {
 	CCLASS_NEW(nova_primitive_Nova_Primitive, this,);
 	this->vtable = &nova_primitive_Extension_VTable_Primitive_val;

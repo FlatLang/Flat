@@ -53,7 +53,7 @@ void nova_math_Nova_Polynomial_Nova_init_static(nova_exception_Nova_ExceptionDat
 	}
 }
 
-nova_math_Nova_Polynomial* nova_math_Nova_Polynomial_Nova_Polynomial(nova_math_Nova_Polynomial* this, nova_exception_Nova_ExceptionData* exceptionData, nova_Nova_String* nova_math_Nova_Polynomial_Nova_polynomial)
+nova_math_Nova_Polynomial* nova_math_Nova_Polynomial_Nova_construct(nova_math_Nova_Polynomial* this, nova_exception_Nova_ExceptionData* exceptionData, nova_Nova_String* nova_math_Nova_Polynomial_Nova_polynomial)
 {
 	CCLASS_NEW(nova_math_Nova_Polynomial, this,);
 	this->vtable = &nova_math_Extension_VTable_Polynomial_val;
@@ -89,9 +89,9 @@ void nova_math_Nova_Polynomial_Nova_this(nova_math_Nova_Polynomial* this, nova_e
 	
 	l2_Nova_start = (int)(0);
 	l2_Nova_reading = 0;
-	this->nova_math_Nova_Polynomial_Nova_coefficients = nova_datastruct_list_Nova_DoubleArray_0_Nova_DoubleArray(0, exceptionData);
-	this->nova_math_Nova_Polynomial_Nova_degrees = nova_datastruct_list_Nova_DoubleArray_0_Nova_DoubleArray(0, exceptionData);
-	this->nova_math_Nova_Polynomial_Nova_signs = nova_datastruct_list_Nova_Array_0_Nova_Array(0, exceptionData);
+	this->nova_math_Nova_Polynomial_Nova_coefficients = nova_datastruct_list_Nova_DoubleArray_0_Nova_construct(0, exceptionData);
+	this->nova_math_Nova_Polynomial_Nova_degrees = nova_datastruct_list_Nova_DoubleArray_0_Nova_construct(0, exceptionData);
+	this->nova_math_Nova_Polynomial_Nova_signs = nova_datastruct_list_Nova_Array_0_Nova_construct(0, exceptionData);
 	l4_Nova_i = (int)0;
 	for (; l4_Nova_i < (int)nova_math_Nova_Polynomial_Nova_polynomial->nova_Nova_String_Nova_count; l4_Nova_i++)
 	{
@@ -168,7 +168,7 @@ nova_datastruct_list_Nova_CharArray* generated6(nova_math_Nova_Polynomial* this,
 	l1_Nova_temp[20] = ';';
 	l1_Nova_temp[21] = '(';
 	l1_Nova_temp[22] = ')';
-	return nova_datastruct_list_Nova_CharArray_2_Nova_CharArray(0, exceptionData, l1_Nova_temp, 23);
+	return nova_datastruct_list_Nova_CharArray_2_Nova_construct(0, exceptionData, l1_Nova_temp, 23);
 }
 
 nova_datastruct_list_Nova_CharArray* generated7(nova_math_Nova_Polynomial* this, nova_exception_Nova_ExceptionData* exceptionData)
@@ -180,7 +180,7 @@ nova_datastruct_list_Nova_CharArray* generated7(nova_math_Nova_Polynomial* this,
 	l1_Nova_temp[1] = '\n';
 	l1_Nova_temp[2] = '\r';
 	l1_Nova_temp[3] = '\t';
-	return nova_datastruct_list_Nova_CharArray_2_Nova_CharArray(0, exceptionData, l1_Nova_temp, 4);
+	return nova_datastruct_list_Nova_CharArray_2_Nova_construct(0, exceptionData, l1_Nova_temp, 4);
 }
 
 void nova_math_Nova_Polynomial_Nova_super(nova_math_Nova_Polynomial* this, nova_exception_Nova_ExceptionData* exceptionData)

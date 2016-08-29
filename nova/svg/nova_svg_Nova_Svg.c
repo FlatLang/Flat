@@ -42,7 +42,7 @@ void nova_svg_Nova_Svg_Nova_init_static(nova_exception_Nova_ExceptionData* excep
 	}
 }
 
-nova_svg_Nova_Svg* nova_svg_Nova_Svg_Nova_Svg(nova_svg_Nova_Svg* this, nova_exception_Nova_ExceptionData* exceptionData)
+nova_svg_Nova_Svg* nova_svg_Nova_Svg_Nova_construct(nova_svg_Nova_Svg* this, nova_exception_Nova_ExceptionData* exceptionData)
 {
 	CCLASS_NEW(nova_svg_Nova_Svg, this,);
 	this->vtable = &nova_svg_Extension_VTable_Svg_val;
@@ -70,7 +70,7 @@ void nova_svg_Nova_Svg_Nova_destroy(nova_svg_Nova_Svg** this, nova_exception_Nov
 
 void nova_svg_Nova_Svg_0_Nova_this(nova_svg_Nova_Svg* this, nova_exception_Nova_ExceptionData* exceptionData)
 {
-	this->nova_svg_Nova_Svg_Nova_root = nova_svg_Nova_SvgMainComponent_Nova_SvgMainComponent(0, exceptionData);
+	this->nova_svg_Nova_Svg_Nova_root = nova_svg_Nova_SvgMainComponent_Nova_construct(0, exceptionData);
 }
 
 void nova_svg_Nova_Svg_Nova_generateOutput(nova_svg_Nova_Svg* this, nova_exception_Nova_ExceptionData* exceptionData, nova_io_Nova_File* nova_svg_Nova_Svg_Nova_file)
@@ -80,9 +80,9 @@ void nova_svg_Nova_Svg_Nova_generateOutput(nova_svg_Nova_Svg* this, nova_excepti
 
 void nova_svg_Nova_Svg_Nova_generateHTMLOutput(nova_svg_Nova_Svg* this, nova_exception_Nova_ExceptionData* exceptionData, nova_io_Nova_File* nova_svg_Nova_Svg_Nova_file)
 {
-	nova_io_Nova_File_Nova_write(nova_svg_Nova_Svg_Nova_file, exceptionData, nova_Nova_String_1_Nova_String(0, exceptionData, (char*)("<html>\n")));
+	nova_io_Nova_File_Nova_write(nova_svg_Nova_Svg_Nova_file, exceptionData, nova_Nova_String_1_Nova_construct(0, exceptionData, (char*)("<html>\n")));
 	nova_svg_Nova_Svg_Nova_generateOutput(this, exceptionData, nova_svg_Nova_Svg_Nova_file);
-	nova_io_Nova_File_Nova_write(nova_svg_Nova_Svg_Nova_file, exceptionData, nova_Nova_String_1_Nova_String(0, exceptionData, (char*)("</html>")));
+	nova_io_Nova_File_Nova_write(nova_svg_Nova_Svg_Nova_file, exceptionData, nova_Nova_String_1_Nova_construct(0, exceptionData, (char*)("</html>")));
 }
 
 void nova_svg_Nova_Svg_Nova_super(nova_svg_Nova_Svg* this, nova_exception_Nova_ExceptionData* exceptionData)

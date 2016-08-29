@@ -44,7 +44,7 @@ void nova_math_Nova_Sequence_Nova_init_static(nova_exception_Nova_ExceptionData*
 	}
 }
 
-nova_math_Nova_Sequence* nova_math_Nova_Sequence_Nova_Sequence(nova_math_Nova_Sequence* this, nova_exception_Nova_ExceptionData* exceptionData, nova_datastruct_list_Nova_DoubleArray* nova_math_Nova_Sequence_Nova_values)
+nova_math_Nova_Sequence* nova_math_Nova_Sequence_Nova_construct(nova_math_Nova_Sequence* this, nova_exception_Nova_ExceptionData* exceptionData, nova_datastruct_list_Nova_DoubleArray* nova_math_Nova_Sequence_Nova_values)
 {
 	CCLASS_NEW(nova_math_Nova_Sequence, this,);
 	this->vtable = &nova_math_Extension_VTable_Sequence_val;

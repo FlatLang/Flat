@@ -42,7 +42,7 @@ void nova_process_Nova_Process_Nova_init_static(nova_exception_Nova_ExceptionDat
 	}
 }
 
-nova_process_Nova_Process* nova_process_Nova_Process_Nova_Process(nova_process_Nova_Process* this, nova_exception_Nova_ExceptionData* exceptionData, nova_io_Nova_StreamReader* nova_process_Nova_Process_Nova_reader)
+nova_process_Nova_Process* nova_process_Nova_Process_Nova_construct(nova_process_Nova_Process* this, nova_exception_Nova_ExceptionData* exceptionData, nova_io_Nova_StreamReader* nova_process_Nova_Process_Nova_reader)
 {
 	CCLASS_NEW(nova_process_Nova_Process, this,);
 	this->vtable = &nova_process_Extension_VTable_Process_val;

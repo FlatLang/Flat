@@ -42,7 +42,7 @@ void nova_math_Nova_VariableOperand_Nova_init_static(nova_exception_Nova_Excepti
 	}
 }
 
-nova_math_Nova_VariableOperand* nova_math_Nova_VariableOperand_Nova_VariableOperand(nova_math_Nova_VariableOperand* this, nova_exception_Nova_ExceptionData* exceptionData)
+nova_math_Nova_VariableOperand* nova_math_Nova_VariableOperand_Nova_construct(nova_math_Nova_VariableOperand* this, nova_exception_Nova_ExceptionData* exceptionData)
 {
 	CCLASS_NEW(nova_math_Nova_VariableOperand, this,);
 	this->vtable = &nova_math_Extension_VTable_VariableOperand_val;

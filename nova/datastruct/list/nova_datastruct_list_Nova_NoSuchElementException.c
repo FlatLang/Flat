@@ -42,7 +42,7 @@ void nova_datastruct_list_Nova_NoSuchElementException_Nova_init_static(nova_exce
 	}
 }
 
-nova_datastruct_list_Nova_NoSuchElementException* nova_datastruct_list_Nova_NoSuchElementException_0_Nova_NoSuchElementException(nova_datastruct_list_Nova_NoSuchElementException* this, nova_exception_Nova_ExceptionData* exceptionData)
+nova_datastruct_list_Nova_NoSuchElementException* nova_datastruct_list_Nova_NoSuchElementException_0_Nova_construct(nova_datastruct_list_Nova_NoSuchElementException* this, nova_exception_Nova_ExceptionData* exceptionData)
 {
 	CCLASS_NEW(nova_datastruct_list_Nova_NoSuchElementException, this,);
 	this->vtable = &nova_datastruct_list_Extension_VTable_NoSuchElementException_val;
@@ -57,7 +57,7 @@ nova_datastruct_list_Nova_NoSuchElementException* nova_datastruct_list_Nova_NoSu
 	return this;
 }
 
-nova_datastruct_list_Nova_NoSuchElementException* nova_datastruct_list_Nova_NoSuchElementException_1_Nova_NoSuchElementException(nova_datastruct_list_Nova_NoSuchElementException* this, nova_exception_Nova_ExceptionData* exceptionData, nova_Nova_String* nova_datastruct_list_Nova_NoSuchElementException_Nova_message)
+nova_datastruct_list_Nova_NoSuchElementException* nova_datastruct_list_Nova_NoSuchElementException_1_Nova_construct(nova_datastruct_list_Nova_NoSuchElementException* this, nova_exception_Nova_ExceptionData* exceptionData, nova_Nova_String* nova_datastruct_list_Nova_NoSuchElementException_Nova_message)
 {
 	CCLASS_NEW(nova_datastruct_list_Nova_NoSuchElementException, this,);
 	this->vtable = &nova_datastruct_list_Extension_VTable_NoSuchElementException_val;
@@ -85,7 +85,7 @@ void nova_datastruct_list_Nova_NoSuchElementException_Nova_destroy(nova_datastru
 
 void nova_datastruct_list_Nova_NoSuchElementException_1_Nova_this(nova_datastruct_list_Nova_NoSuchElementException* this, nova_exception_Nova_ExceptionData* exceptionData)
 {
-	nova_datastruct_list_Nova_NoSuchElementException_2_Nova_this(this, exceptionData, nova_Nova_String_1_Nova_String(0, exceptionData, (char*)("No such element")));
+	nova_datastruct_list_Nova_NoSuchElementException_2_Nova_this(this, exceptionData, nova_Nova_String_1_Nova_construct(0, exceptionData, (char*)("No such element")));
 }
 
 void nova_datastruct_list_Nova_NoSuchElementException_2_Nova_this(nova_datastruct_list_Nova_NoSuchElementException* this, nova_exception_Nova_ExceptionData* exceptionData, nova_Nova_String* nova_datastruct_list_Nova_NoSuchElementException_Nova_message)

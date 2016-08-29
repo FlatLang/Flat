@@ -44,7 +44,7 @@ void example_Nova_Square_Nova_init_static(nova_exception_Nova_ExceptionData* exc
 	}
 }
 
-example_Nova_Square* example_Nova_Square_Nova_Square(example_Nova_Square* this, nova_exception_Nova_ExceptionData* exceptionData, int example_Nova_Square_Nova_sideLength)
+example_Nova_Square* example_Nova_Square_Nova_construct(example_Nova_Square* this, nova_exception_Nova_ExceptionData* exceptionData, int example_Nova_Square_Nova_sideLength)
 {
 	CCLASS_NEW(example_Nova_Square, this,);
 	this->vtable = &example_Extension_VTable_Square_val;

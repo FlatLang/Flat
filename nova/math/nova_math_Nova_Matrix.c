@@ -47,7 +47,7 @@ void nova_math_Nova_Matrix_Nova_init_static(nova_exception_Nova_ExceptionData* e
 	}
 }
 
-nova_math_Nova_Matrix* nova_math_Nova_Matrix_Nova_Matrix(nova_math_Nova_Matrix* this, nova_exception_Nova_ExceptionData* exceptionData, int nova_math_Nova_Matrix_Nova_rows, int nova_math_Nova_Matrix_Nova_cols)
+nova_math_Nova_Matrix* nova_math_Nova_Matrix_Nova_construct(nova_math_Nova_Matrix* this, nova_exception_Nova_ExceptionData* exceptionData, int nova_math_Nova_Matrix_Nova_rows, int nova_math_Nova_Matrix_Nova_cols)
 {
 	CCLASS_NEW(nova_math_Nova_Matrix, this);
 	this->vtable = &nova_math_Extension_VTable_Matrix_val;
@@ -76,7 +76,7 @@ void nova_math_Nova_Matrix_Nova_destroy(nova_math_Nova_Matrix** this, nova_excep
 
 void nova_math_Nova_Matrix_Nova_this(nova_math_Nova_Matrix* this, nova_exception_Nova_ExceptionData* exceptionData, int nova_math_Nova_Matrix_Nova_rows, int nova_math_Nova_Matrix_Nova_cols)
 {
-	this->prv->nova_math_Nova_Matrix_Nova_matrix = nova_datastruct_list_Nova_Array_1_Nova_Array(0, exceptionData, nova_math_Nova_Matrix_Nova_rows);
+	this->prv->nova_math_Nova_Matrix_Nova_matrix = nova_datastruct_list_Nova_Array_1_Nova_construct(0, exceptionData, nova_math_Nova_Matrix_Nova_rows);
 }
 
 nova_primitive_number_Nova_Number* nova_math_Nova_Matrix_Nova_sum(nova_math_Nova_Matrix* this, nova_exception_Nova_ExceptionData* exceptionData)

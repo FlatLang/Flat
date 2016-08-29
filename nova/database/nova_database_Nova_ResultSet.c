@@ -42,7 +42,7 @@ void nova_database_Nova_ResultSet_Nova_init_static(nova_exception_Nova_Exception
 	}
 }
 
-nova_database_Nova_ResultSet* nova_database_Nova_ResultSet_Nova_ResultSet(nova_database_Nova_ResultSet* this, nova_exception_Nova_ExceptionData* exceptionData, nova_datastruct_list_Nova_Array* nova_database_Nova_ResultSet_Nova_rows, int nova_database_Nova_ResultSet_Nova_numCols)
+nova_database_Nova_ResultSet* nova_database_Nova_ResultSet_Nova_construct(nova_database_Nova_ResultSet* this, nova_exception_Nova_ExceptionData* exceptionData, nova_datastruct_list_Nova_Array* nova_database_Nova_ResultSet_Nova_rows, int nova_database_Nova_ResultSet_Nova_numCols)
 {
 	CCLASS_NEW(nova_database_Nova_ResultSet, this,);
 	this->vtable = &nova_database_Extension_VTable_ResultSet_val;

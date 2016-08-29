@@ -50,7 +50,7 @@ void nova_star_Nova_WindowThread_Nova_init_static(nova_exception_Nova_ExceptionD
 	}
 }
 
-nova_star_Nova_WindowThread* nova_star_Nova_WindowThread_Nova_WindowThread(nova_star_Nova_WindowThread* this, nova_exception_Nova_ExceptionData* exceptionData, nova_star_Nova_Window* nova_star_Nova_WindowThread_Nova_window)
+nova_star_Nova_WindowThread* nova_star_Nova_WindowThread_Nova_construct(nova_star_Nova_WindowThread* this, nova_exception_Nova_ExceptionData* exceptionData, nova_star_Nova_Window* nova_star_Nova_WindowThread_Nova_window)
 {
 	CCLASS_NEW(nova_star_Nova_WindowThread, this);
 	this->vtable = &nova_star_Extension_VTable_WindowThread_val;

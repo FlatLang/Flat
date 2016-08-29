@@ -49,7 +49,7 @@ void nova_io_Nova_OutputStream_Nova_init_static(nova_exception_Nova_ExceptionDat
 	}
 }
 
-nova_io_Nova_OutputStream* nova_io_Nova_OutputStream_Nova_OutputStream(nova_io_Nova_OutputStream* this, nova_exception_Nova_ExceptionData* exceptionData)
+nova_io_Nova_OutputStream* nova_io_Nova_OutputStream_Nova_construct(nova_io_Nova_OutputStream* this, nova_exception_Nova_ExceptionData* exceptionData)
 {
 	CCLASS_NEW(nova_io_Nova_OutputStream, this);
 	this->vtable = &nova_io_Extension_VTable_OutputStream_val;

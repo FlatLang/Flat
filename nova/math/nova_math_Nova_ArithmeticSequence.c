@@ -42,7 +42,7 @@ void nova_math_Nova_ArithmeticSequence_Nova_init_static(nova_exception_Nova_Exce
 	}
 }
 
-nova_math_Nova_ArithmeticSequence* nova_math_Nova_ArithmeticSequence_Nova_ArithmeticSequence(nova_math_Nova_ArithmeticSequence* this, nova_exception_Nova_ExceptionData* exceptionData)
+nova_math_Nova_ArithmeticSequence* nova_math_Nova_ArithmeticSequence_Nova_construct(nova_math_Nova_ArithmeticSequence* this, nova_exception_Nova_ExceptionData* exceptionData)
 {
 	CCLASS_NEW(nova_math_Nova_ArithmeticSequence, this,);
 	this->vtable = &nova_math_Extension_VTable_ArithmeticSequence_val;

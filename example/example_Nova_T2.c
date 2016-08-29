@@ -43,7 +43,7 @@ void example_Nova_T2_Nova_init_static(nova_exception_Nova_ExceptionData* excepti
 	}
 }
 
-example_Nova_T2* example_Nova_T2_Nova_T2(example_Nova_T2* this, nova_exception_Nova_ExceptionData* exceptionData)
+example_Nova_T2* example_Nova_T2_Nova_construct(example_Nova_T2* this, nova_exception_Nova_ExceptionData* exceptionData)
 {
 	CCLASS_NEW(example_Nova_T2, this,);
 	this->vtable = &example_Extension_VTable_T2_val;

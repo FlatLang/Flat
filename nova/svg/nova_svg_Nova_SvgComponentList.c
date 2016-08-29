@@ -42,7 +42,7 @@ void nova_svg_Nova_SvgComponentList_Nova_init_static(nova_exception_Nova_Excepti
 	}
 }
 
-nova_svg_Nova_SvgComponentList* nova_svg_Nova_SvgComponentList_Nova_SvgComponentList(nova_svg_Nova_SvgComponentList* this, nova_exception_Nova_ExceptionData* exceptionData)
+nova_svg_Nova_SvgComponentList* nova_svg_Nova_SvgComponentList_Nova_construct(nova_svg_Nova_SvgComponentList* this, nova_exception_Nova_ExceptionData* exceptionData)
 {
 	CCLASS_NEW(nova_svg_Nova_SvgComponentList, this,);
 	this->vtable = &nova_svg_Extension_VTable_SvgComponentList_val;
@@ -84,7 +84,7 @@ void nova_svg_Nova_SvgComponentList_Nova_addChild(nova_svg_Nova_SvgComponentList
 {
 	nova_svg_Nova_SvgComponentNode* l1_Nova_node = (nova_svg_Nova_SvgComponentNode*)nova_null;
 	
-	l1_Nova_node = nova_svg_Nova_SvgComponentNode_Nova_SvgComponentNode(0, exceptionData);
+	l1_Nova_node = nova_svg_Nova_SvgComponentNode_Nova_construct(0, exceptionData);
 	l1_Nova_node->nova_svg_Nova_SvgComponentNode_Nova_component = nova_svg_Nova_SvgComponentList_Nova_component;
 	if (this->nova_svg_Nova_SvgComponentList_Nova_start == (nova_svg_Nova_SvgComponentNode*)nova_null)
 	{

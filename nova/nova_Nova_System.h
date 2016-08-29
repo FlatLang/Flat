@@ -61,7 +61,7 @@ CCLASS_CLASS
 )
 
 void nova_Nova_System_Nova_init_static(nova_exception_Nova_ExceptionData* exceptionData);
-nova_Nova_System* nova_Nova_System_Nova_System(nova_Nova_System* this, nova_exception_Nova_ExceptionData* exceptionData);
+nova_Nova_System* nova_Nova_System_Nova_construct(nova_Nova_System* this, nova_exception_Nova_ExceptionData* exceptionData);
 void nova_Nova_System_Nova_destroy(nova_Nova_System** this, nova_exception_Nova_ExceptionData* exceptionData);
 void nova_Nova_System_0_Nova_exit(nova_Nova_System* this, nova_exception_Nova_ExceptionData* exceptionData, int nova_Nova_System_Nova_code);
 void nova_Nova_System_1_Nova_exit(nova_Nova_System* this, nova_exception_Nova_ExceptionData* exceptionData, int nova_Nova_System_Nova_code, nova_Nova_String* nova_Nova_System_Nova_message);

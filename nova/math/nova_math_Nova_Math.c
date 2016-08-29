@@ -44,7 +44,7 @@ void nova_math_Nova_Math_Nova_init_static(nova_exception_Nova_ExceptionData* exc
 	}
 }
 
-nova_math_Nova_Math* nova_math_Nova_Math_Nova_Math(nova_math_Nova_Math* this, nova_exception_Nova_ExceptionData* exceptionData)
+nova_math_Nova_Math* nova_math_Nova_Math_Nova_construct(nova_math_Nova_Math* this, nova_exception_Nova_ExceptionData* exceptionData)
 {
 	CCLASS_NEW(nova_math_Nova_Math, this,);
 	this->vtable = &nova_math_Extension_VTable_Math_val;

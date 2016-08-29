@@ -42,7 +42,7 @@ void example_Nova_NonWholeDivisionException_Nova_init_static(nova_exception_Nova
 	}
 }
 
-example_Nova_NonWholeDivisionException* example_Nova_NonWholeDivisionException_Nova_NonWholeDivisionException(example_Nova_NonWholeDivisionException* this, nova_exception_Nova_ExceptionData* exceptionData)
+example_Nova_NonWholeDivisionException* example_Nova_NonWholeDivisionException_Nova_construct(example_Nova_NonWholeDivisionException* this, nova_exception_Nova_ExceptionData* exceptionData)
 {
 	CCLASS_NEW(example_Nova_NonWholeDivisionException, this,);
 	this->vtable = &example_Extension_VTable_NonWholeDivisionException_val;

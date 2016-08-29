@@ -60,7 +60,7 @@ CCLASS_CLASS
 )
 
 void nova_svg_Nova_SvgComponent_Nova_init_static(nova_exception_Nova_ExceptionData* exceptionData);
-nova_svg_Nova_SvgComponent* nova_svg_Nova_SvgComponent_Nova_SvgComponent(nova_svg_Nova_SvgComponent* this, nova_exception_Nova_ExceptionData* exceptionData);
+nova_svg_Nova_SvgComponent* nova_svg_Nova_SvgComponent_Nova_construct(nova_svg_Nova_SvgComponent* this, nova_exception_Nova_ExceptionData* exceptionData);
 void nova_svg_Nova_SvgComponent_Nova_destroy(nova_svg_Nova_SvgComponent** this, nova_exception_Nova_ExceptionData* exceptionData);
 void nova_svg_Nova_SvgComponent_2_Nova_this(nova_svg_Nova_SvgComponent* this, nova_exception_Nova_ExceptionData* exceptionData);
 void nova_svg_Nova_SvgComponent_0_Nova_generateOutput(nova_svg_Nova_SvgComponent* this, nova_exception_Nova_ExceptionData* exceptionData, nova_io_Nova_File* nova_svg_Nova_SvgComponent_Nova_file);

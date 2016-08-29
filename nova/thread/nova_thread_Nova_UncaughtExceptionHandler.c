@@ -43,7 +43,7 @@ void nova_thread_Nova_UncaughtExceptionHandler_Nova_init_static(nova_exception_N
 	}
 }
 
-nova_thread_Nova_UncaughtExceptionHandler* nova_thread_Nova_UncaughtExceptionHandler_Nova_UncaughtExceptionHandler(nova_thread_Nova_UncaughtExceptionHandler* this, nova_exception_Nova_ExceptionData* exceptionData)
+nova_thread_Nova_UncaughtExceptionHandler* nova_thread_Nova_UncaughtExceptionHandler_Nova_construct(nova_thread_Nova_UncaughtExceptionHandler* this, nova_exception_Nova_ExceptionData* exceptionData)
 {
 	CCLASS_NEW(nova_thread_Nova_UncaughtExceptionHandler, this,);
 	this->vtable = &nova_thread_Extension_VTable_UncaughtExceptionHandler_val;

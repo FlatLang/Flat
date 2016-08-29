@@ -59,7 +59,7 @@ CCLASS_CLASS
 )
 
 void nova_io_Nova_Console_Nova_init_static(nova_exception_Nova_ExceptionData* exceptionData);
-nova_io_Nova_Console* nova_io_Nova_Console_Nova_Console(nova_io_Nova_Console* this, nova_exception_Nova_ExceptionData* exceptionData);
+nova_io_Nova_Console* nova_io_Nova_Console_Nova_construct(nova_io_Nova_Console* this, nova_exception_Nova_ExceptionData* exceptionData);
 void nova_io_Nova_Console_Nova_destroy(nova_io_Nova_Console** this, nova_exception_Nova_ExceptionData* exceptionData);
 void nova_io_Nova_Console_0_Nova_writeLine(nova_io_Nova_Console* this, nova_exception_Nova_ExceptionData* exceptionData);
 void nova_io_Nova_Console_1_Nova_writeLine(nova_io_Nova_Console* this, nova_exception_Nova_ExceptionData* exceptionData, nova_Nova_String* nova_io_Nova_Console_Nova_text);

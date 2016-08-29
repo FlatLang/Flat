@@ -45,7 +45,7 @@ void nova_Nova_Object_Nova_init_static(nova_exception_Nova_ExceptionData* except
 	}
 }
 
-nova_Nova_Object* nova_Nova_Object_Nova_Object(nova_Nova_Object* this, nova_exception_Nova_ExceptionData* exceptionData)
+nova_Nova_Object* nova_Nova_Object_Nova_construct(nova_Nova_Object* this, nova_exception_Nova_ExceptionData* exceptionData)
 {
 	CCLASS_NEW(nova_Nova_Object, this,);
 	this->vtable = &nova_Extension_VTable_Object_val;
@@ -71,7 +71,7 @@ void nova_Nova_Object_Nova_destroy(nova_Nova_Object** this, nova_exception_Nova_
 
 nova_Nova_String* nova_Nova_Object_0_Nova_toString(nova_Nova_Object* this, nova_exception_Nova_ExceptionData* exceptionData)
 {
-	return nova_Nova_String_0_Nova_concat(nova_Nova_String_1_Nova_String(0, exceptionData, (char*)("[Object @")), exceptionData, nova_Nova_String_virtual1_Nova_concat((nova_Nova_String*)((nova_Nova_Object_Accessor_Nova_hashCode(this, exceptionData))), exceptionData, nova_Nova_String_1_Nova_String(0, exceptionData, (char*)("]"))));
+	return nova_Nova_String_0_Nova_concat(nova_Nova_String_1_Nova_construct(0, exceptionData, (char*)("[Object @")), exceptionData, nova_Nova_String_virtual1_Nova_concat((nova_Nova_String*)((nova_Nova_Object_Accessor_Nova_hashCode(this, exceptionData))), exceptionData, nova_Nova_String_1_Nova_construct(0, exceptionData, (char*)("]"))));
 }
 
 char nova_Nova_Object_0_Nova_equals(nova_Nova_Object* this, nova_exception_Nova_ExceptionData* exceptionData, nova_Nova_Object* nova_Nova_Object_Nova_another)
@@ -85,7 +85,7 @@ void nova_Nova_Object_0_Nova_this(nova_Nova_Object* this, nova_exception_Nova_Ex
 
 nova_Nova_String* nova_Nova_Object_Accessor_Nova_hashCode(nova_Nova_Object* this, nova_exception_Nova_ExceptionData* exceptionData)
 {
-	return nova_Nova_String_1_Nova_String(0, exceptionData, hashCode(this));
+	return nova_Nova_String_1_Nova_construct(0, exceptionData, hashCode(this));
 }
 
 

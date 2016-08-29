@@ -61,8 +61,8 @@ CCLASS_CLASS
 )
 
 void nova_io_Nova_File_Nova_init_static(nova_exception_Nova_ExceptionData* exceptionData);
-nova_io_Nova_File* nova_io_Nova_File_0_Nova_File(nova_io_Nova_File* this, nova_exception_Nova_ExceptionData* exceptionData, nova_Nova_String* nova_io_Nova_File_Nova_location);
-nova_io_Nova_File* nova_io_Nova_File_1_Nova_File(nova_io_Nova_File* this, nova_exception_Nova_ExceptionData* exceptionData, FILE* nova_io_Nova_File_Nova_fp);
+nova_io_Nova_File* nova_io_Nova_File_0_Nova_construct(nova_io_Nova_File* this, nova_exception_Nova_ExceptionData* exceptionData, nova_Nova_String* nova_io_Nova_File_Nova_location);
+nova_io_Nova_File* nova_io_Nova_File_1_Nova_construct(nova_io_Nova_File* this, nova_exception_Nova_ExceptionData* exceptionData, FILE* nova_io_Nova_File_Nova_fp);
 void nova_io_Nova_File_Nova_destroy(nova_io_Nova_File** this, nova_exception_Nova_ExceptionData* exceptionData);
 void nova_io_Nova_File_1_Nova_this(nova_io_Nova_File* this, nova_exception_Nova_ExceptionData* exceptionData, nova_Nova_String* nova_io_Nova_File_Nova_location);
 void nova_io_Nova_File_2_Nova_this(nova_io_Nova_File* this, nova_exception_Nova_ExceptionData* exceptionData, FILE* nova_io_Nova_File_Nova_fp);

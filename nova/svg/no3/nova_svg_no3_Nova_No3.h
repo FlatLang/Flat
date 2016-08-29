@@ -57,7 +57,7 @@ CCLASS_CLASS
 )
 
 void nova_svg_no3_Nova_No3_Nova_init_static(nova_exception_Nova_ExceptionData* exceptionData);
-nova_svg_no3_Nova_No3* nova_svg_no3_Nova_No3_Nova_No3(nova_svg_no3_Nova_No3* this, nova_exception_Nova_ExceptionData* exceptionData);
+nova_svg_no3_Nova_No3* nova_svg_no3_Nova_No3_Nova_construct(nova_svg_no3_Nova_No3* this, nova_exception_Nova_ExceptionData* exceptionData);
 void nova_svg_no3_Nova_No3_Nova_destroy(nova_svg_no3_Nova_No3** this, nova_exception_Nova_ExceptionData* exceptionData);
 nova_svg_no3_Nova_No3Selection* nova_svg_no3_Nova_No3_Nova_select(nova_svg_no3_Nova_No3* this, nova_exception_Nova_ExceptionData* exceptionData, nova_Nova_String* nova_svg_no3_Nova_No3_Nova_selection);
 void nova_svg_no3_Nova_No3_0_Nova_this(nova_svg_no3_Nova_No3* this, nova_exception_Nova_ExceptionData* exceptionData);

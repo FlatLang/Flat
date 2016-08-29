@@ -57,7 +57,7 @@ CCLASS_CLASS
 )
 
 void nova_time_Nova_Time_Nova_init_static(nova_exception_Nova_ExceptionData* exceptionData);
-nova_time_Nova_Time* nova_time_Nova_Time_Nova_Time(nova_time_Nova_Time* this, nova_exception_Nova_ExceptionData* exceptionData);
+nova_time_Nova_Time* nova_time_Nova_Time_Nova_construct(nova_time_Nova_Time* this, nova_exception_Nova_ExceptionData* exceptionData);
 void nova_time_Nova_Time_Nova_destroy(nova_time_Nova_Time** this, nova_exception_Nova_ExceptionData* exceptionData);
 void nova_time_Nova_Time_0_Nova_this(nova_time_Nova_Time* this, nova_exception_Nova_ExceptionData* exceptionData);
 long_long nova_time_Nova_Time_Accessor_Nova_currentTimeMillis(nova_time_Nova_Time* this, nova_exception_Nova_ExceptionData* exceptionData);

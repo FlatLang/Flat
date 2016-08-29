@@ -42,7 +42,7 @@ void stabilitytest_Nova_UnstableException_Nova_init_static(nova_exception_Nova_E
 	}
 }
 
-stabilitytest_Nova_UnstableException* stabilitytest_Nova_UnstableException_Nova_UnstableException(stabilitytest_Nova_UnstableException* this, nova_exception_Nova_ExceptionData* exceptionData, nova_Nova_String* stabilitytest_Nova_UnstableException_Nova_message)
+stabilitytest_Nova_UnstableException* stabilitytest_Nova_UnstableException_Nova_construct(stabilitytest_Nova_UnstableException* this, nova_exception_Nova_ExceptionData* exceptionData, nova_Nova_String* stabilitytest_Nova_UnstableException_Nova_message)
 {
 	CCLASS_NEW(stabilitytest_Nova_UnstableException, this,);
 	this->vtable = &stabilitytest_Extension_VTable_UnstableException_val;

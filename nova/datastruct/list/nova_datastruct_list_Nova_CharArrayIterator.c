@@ -53,7 +53,7 @@ void nova_datastruct_list_Nova_CharArrayIterator_Nova_init_static(nova_exception
 	}
 }
 
-nova_datastruct_list_Nova_CharArrayIterator* nova_datastruct_list_Nova_CharArrayIterator_Nova_CharArrayIterator(nova_datastruct_list_Nova_CharArrayIterator* this, nova_exception_Nova_ExceptionData* exceptionData, nova_datastruct_list_Nova_CharArray* nova_datastruct_list_Nova_CharArrayIterator_Nova_array)
+nova_datastruct_list_Nova_CharArrayIterator* nova_datastruct_list_Nova_CharArrayIterator_Nova_construct(nova_datastruct_list_Nova_CharArrayIterator* this, nova_exception_Nova_ExceptionData* exceptionData, nova_datastruct_list_Nova_CharArray* nova_datastruct_list_Nova_CharArrayIterator_Nova_array)
 {
 	CCLASS_NEW(nova_datastruct_list_Nova_CharArrayIterator, this);
 	this->vtable = &nova_datastruct_list_Extension_VTable_CharArrayIterator_val;
@@ -105,7 +105,7 @@ char nova_datastruct_list_Nova_CharArrayIterator_Accessor_Nova_next(nova_datastr
 	{
 		return (char)(intptr_t)nova_datastruct_list_Nova_Array_virtual1_Nova_get((nova_datastruct_list_Nova_Array*)(this->prv->nova_datastruct_list_Nova_CharArrayIterator_Nova_array), exceptionData, this->nova_datastruct_list_Nova_CharArrayIterator_Nova_position++);
 	}
-	THROW(2, nova_datastruct_list_Nova_NoSuchElementException_0_Nova_NoSuchElementException(0, exceptionData));
+	THROW(2, nova_datastruct_list_Nova_NoSuchElementException_0_Nova_construct(0, exceptionData));
 	return (char)0;
 }
 

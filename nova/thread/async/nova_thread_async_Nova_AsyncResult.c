@@ -42,7 +42,7 @@ void nova_thread_async_Nova_AsyncResult_Nova_init_static(nova_exception_Nova_Exc
 	}
 }
 
-nova_thread_async_Nova_AsyncResult* nova_thread_async_Nova_AsyncResult_Nova_AsyncResult(nova_thread_async_Nova_AsyncResult* this, nova_exception_Nova_ExceptionData* exceptionData)
+nova_thread_async_Nova_AsyncResult* nova_thread_async_Nova_AsyncResult_Nova_construct(nova_thread_async_Nova_AsyncResult* this, nova_exception_Nova_ExceptionData* exceptionData)
 {
 	CCLASS_NEW(nova_thread_async_Nova_AsyncResult, this,);
 	this->vtable = &nova_thread_async_Extension_VTable_AsyncResult_val;

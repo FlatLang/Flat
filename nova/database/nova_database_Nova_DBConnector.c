@@ -48,7 +48,7 @@ void nova_database_Nova_DBConnector_Nova_init_static(nova_exception_Nova_Excepti
 	}
 }
 
-nova_database_Nova_DBConnector* nova_database_Nova_DBConnector_Nova_DBConnector(nova_database_Nova_DBConnector* this, nova_exception_Nova_ExceptionData* exceptionData)
+nova_database_Nova_DBConnector* nova_database_Nova_DBConnector_Nova_construct(nova_database_Nova_DBConnector* this, nova_exception_Nova_ExceptionData* exceptionData)
 {
 	CCLASS_NEW(nova_database_Nova_DBConnector, this);
 	this->vtable = &nova_database_Extension_VTable_DBConnector_val;
@@ -79,7 +79,7 @@ void nova_database_Nova_DBConnector_Nova_destroy(nova_database_Nova_DBConnector*
 
 void nova_database_Nova_DBConnector_0_Nova_this(nova_database_Nova_DBConnector* this, nova_exception_Nova_ExceptionData* exceptionData)
 {
-	this->nova_database_Nova_DBConnector_Nova_error = nova_Nova_String_1_Nova_String(0, exceptionData, (char*)(""));
+	this->nova_database_Nova_DBConnector_Nova_error = nova_Nova_String_1_Nova_construct(0, exceptionData, (char*)(""));
 }
 
 void nova_database_Nova_DBConnector_0_Nova_connect(nova_database_Nova_DBConnector* this, nova_exception_Nova_ExceptionData* exceptionData, nova_Nova_String* nova_database_Nova_DBConnector_Nova_host, nova_Nova_String* nova_database_Nova_DBConnector_Nova_user, nova_Nova_String* nova_database_Nova_DBConnector_Nova_password)
@@ -102,7 +102,7 @@ void nova_database_Nova_DBConnector_2_Nova_connect(nova_database_Nova_DBConnecto
 
 void nova_database_Nova_DBConnector_Nova_updateError(nova_database_Nova_DBConnector* this, nova_exception_Nova_ExceptionData* exceptionData)
 {
-	this->nova_database_Nova_DBConnector_Nova_error = nova_Nova_String_1_Nova_String(0, exceptionData, nova_db_error(this->prv->nova_database_Nova_DBConnector_Nova_mysql));
+	this->nova_database_Nova_DBConnector_Nova_error = nova_Nova_String_1_Nova_construct(0, exceptionData, nova_db_error(this->prv->nova_database_Nova_DBConnector_Nova_mysql));
 }
 
 void nova_database_Nova_DBConnector_Nova_changeUser(nova_database_Nova_DBConnector* this, nova_exception_Nova_ExceptionData* exceptionData, nova_Nova_String* nova_database_Nova_DBConnector_Nova_username, nova_Nova_String* nova_database_Nova_DBConnector_Nova_password, nova_Nova_String* nova_database_Nova_DBConnector_Nova_database)
@@ -133,20 +133,20 @@ nova_database_Nova_ResultSet* nova_database_Nova_DBConnector_Nova_query(nova_dat
 		
 		l2_Nova_numRows = (int)nova_num_rows(this->prv->nova_database_Nova_DBConnector_Nova_mysql);
 		l2_Nova_numCols = (int)nova_num_cols(this->prv->nova_database_Nova_DBConnector_Nova_result);
-		l2_Nova_rows = nova_datastruct_list_Nova_Array_1_Nova_Array(0, exceptionData, l2_Nova_numRows);
+		l2_Nova_rows = nova_datastruct_list_Nova_Array_1_Nova_construct(0, exceptionData, l2_Nova_numRows);
 		l4_Nova_i = (int)0;
 		for (; l4_Nova_i < (int)l2_Nova_numRows; l4_Nova_i++)
 		{
 			int l6_Nova_j = 0;
 			
-			nova_datastruct_list_Nova_Array_Nova_set((nova_datastruct_list_Nova_Array*)(l2_Nova_rows), exceptionData, l4_Nova_i, (nova_Nova_Object*)(nova_datastruct_list_Nova_Array_1_Nova_Array(0, exceptionData, l2_Nova_numCols)));
+			nova_datastruct_list_Nova_Array_Nova_set((nova_datastruct_list_Nova_Array*)(l2_Nova_rows), exceptionData, l4_Nova_i, (nova_Nova_Object*)(nova_datastruct_list_Nova_Array_1_Nova_construct(0, exceptionData, l2_Nova_numCols)));
 			l6_Nova_j = (int)0;
 			for (; l6_Nova_j < (int)l2_Nova_numCols; l6_Nova_j++)
 			{
-				nova_datastruct_list_Nova_Array_Nova_set((nova_datastruct_list_Nova_Array*)(nova_datastruct_list_Nova_Array_virtual1_Nova_get((nova_datastruct_list_Nova_Array*)(l2_Nova_rows), exceptionData, l4_Nova_i)), exceptionData, l6_Nova_j, (nova_Nova_Object*)(nova_Nova_String_1_Nova_String(0, exceptionData, l1_Nova_arrays[l4_Nova_i][l6_Nova_j])));
+				nova_datastruct_list_Nova_Array_Nova_set((nova_datastruct_list_Nova_Array*)(nova_datastruct_list_Nova_Array_virtual1_Nova_get((nova_datastruct_list_Nova_Array*)(l2_Nova_rows), exceptionData, l4_Nova_i)), exceptionData, l6_Nova_j, (nova_Nova_Object*)(nova_Nova_String_1_Nova_construct(0, exceptionData, l1_Nova_arrays[l4_Nova_i][l6_Nova_j])));
 			}
 		}
-		l2_Nova_r = nova_database_Nova_ResultSet_Nova_ResultSet(0, exceptionData, l2_Nova_rows, l2_Nova_numCols);
+		l2_Nova_r = nova_database_Nova_ResultSet_Nova_construct(0, exceptionData, l2_Nova_rows, l2_Nova_numCols);
 		nova_database_Nova_DBConnector_Nova_updateError(this, exceptionData);
 		return l2_Nova_r;
 	}

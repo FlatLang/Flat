@@ -44,7 +44,7 @@ void example_Nova_ExceptionHandlingDemo_Nova_init_static(nova_exception_Nova_Exc
 	}
 }
 
-example_Nova_ExceptionHandlingDemo* example_Nova_ExceptionHandlingDemo_Nova_ExceptionHandlingDemo(example_Nova_ExceptionHandlingDemo* this, nova_exception_Nova_ExceptionData* exceptionData)
+example_Nova_ExceptionHandlingDemo* example_Nova_ExceptionHandlingDemo_Nova_construct(example_Nova_ExceptionHandlingDemo* this, nova_exception_Nova_ExceptionData* exceptionData)
 {
 	CCLASS_NEW(example_Nova_ExceptionHandlingDemo, this,);
 	this->vtable = &example_Extension_VTable_ExceptionHandlingDemo_val;
@@ -79,9 +79,9 @@ void example_Nova_ExceptionHandlingDemo_Nova_main(example_Nova_ExceptionHandling
 			int l1_Nova_result = 0;
 			
 			l1_Nova_result = example_Nova_ExceptionHandlingDemo_Nova_divide(0, exceptionData, 100, 5);
-			nova_io_Nova_Console_1_Nova_writeLine(0, exceptionData, nova_Nova_String_0_Nova_concat(nova_Nova_String_1_Nova_String(0, exceptionData, (char*)("After working example: ")), exceptionData, nova_primitive_number_Nova_Int_2_Nova_toString(0, exceptionData, l1_Nova_result)));
+			nova_io_Nova_Console_1_Nova_writeLine(0, exceptionData, nova_Nova_String_0_Nova_concat(nova_Nova_String_1_Nova_construct(0, exceptionData, (char*)("After working example: ")), exceptionData, nova_primitive_number_Nova_Int_2_Nova_toString(0, exceptionData, l1_Nova_result)));
 			l1_Nova_result = example_Nova_ExceptionHandlingDemo_Nova_divide(0, exceptionData, 100, 3);
-			nova_io_Nova_Console_1_Nova_writeLine(0, exceptionData, nova_Nova_String_1_Nova_String(0, exceptionData, (char*)("this output will not show.")));
+			nova_io_Nova_Console_1_Nova_writeLine(0, exceptionData, nova_Nova_String_1_Nova_construct(0, exceptionData, (char*)("this output will not show.")));
 		}
 	}
 	CATCH (7)
@@ -89,31 +89,31 @@ void example_Nova_ExceptionHandlingDemo_Nova_main(example_Nova_ExceptionHandling
 		example_Nova_NonWholeDivisionException* l2_Nova_e = (example_Nova_NonWholeDivisionException*)nova_null;
 		
 		l2_Nova_e = (example_Nova_NonWholeDivisionException*)exceptionData->nova_exception_Nova_ExceptionData_Nova_thrownException;
-		nova_io_Nova_Console_1_Nova_writeLine(0, exceptionData, nova_Nova_String_1_Nova_String(0, exceptionData, (char*)("You used the divide() method incorrectly.")));
+		nova_io_Nova_Console_1_Nova_writeLine(0, exceptionData, nova_Nova_String_1_Nova_construct(0, exceptionData, (char*)("You used the divide() method incorrectly.")));
 	}
 	FINALLY
 	{
-		nova_io_Nova_Console_1_Nova_writeLine(0, exceptionData, nova_Nova_String_1_Nova_String(0, exceptionData, (char*)("Exiting the try block.")));
+		nova_io_Nova_Console_1_Nova_writeLine(0, exceptionData, nova_Nova_String_1_Nova_construct(0, exceptionData, (char*)("Exiting the try block.")));
 	}
 	END_TRY;
-	nova_io_Nova_Console_1_Nova_writeLine(0, exceptionData, nova_Nova_String_1_Nova_String(0, exceptionData, (char*)("After the try block.")));
+	nova_io_Nova_Console_1_Nova_writeLine(0, exceptionData, nova_Nova_String_1_Nova_construct(0, exceptionData, (char*)("After the try block.")));
 	nova_io_Nova_Console_Nova_waitForEnter(0, exceptionData);
 }
 
 int example_Nova_ExceptionHandlingDemo_Nova_divide(example_Nova_ExceptionHandlingDemo* this, nova_exception_Nova_ExceptionData* exceptionData, int example_Nova_ExceptionHandlingDemo_Nova_num, int example_Nova_ExceptionHandlingDemo_Nova_den)
 {
-	int nova_zero_check4 = 0;
+	int nova_zero_check28 = 0;
 	
 	if (example_Nova_ExceptionHandlingDemo_Nova_num % example_Nova_ExceptionHandlingDemo_Nova_den != 0)
 	{
-		THROW(7, example_Nova_NonWholeDivisionException_Nova_NonWholeDivisionException(0, exceptionData));
+		THROW(7, example_Nova_NonWholeDivisionException_Nova_construct(0, exceptionData));
 	}
-	nova_zero_check4 = example_Nova_ExceptionHandlingDemo_Nova_den;
-	if (nova_zero_check4 == 0)
+	nova_zero_check28 = example_Nova_ExceptionHandlingDemo_Nova_den;
+	if (nova_zero_check28 == 0)
 	{
-		THROW(8, nova_exception_Nova_DivideByZeroException_Nova_DivideByZeroException(0, exceptionData));
+		THROW(8, nova_exception_Nova_DivideByZeroException_Nova_construct(0, exceptionData));
 	}
-	return example_Nova_ExceptionHandlingDemo_Nova_num / nova_zero_check4;
+	return example_Nova_ExceptionHandlingDemo_Nova_num / nova_zero_check28;
 }
 
 void example_Nova_ExceptionHandlingDemo_0_Nova_this(example_Nova_ExceptionHandlingDemo* this, nova_exception_Nova_ExceptionData* exceptionData)

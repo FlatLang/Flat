@@ -48,7 +48,7 @@ void nova_math_logic_Nova_Hypothesis_Nova_init_static(nova_exception_Nova_Except
 	}
 }
 
-nova_math_logic_Nova_Hypothesis* nova_math_logic_Nova_Hypothesis_Nova_Hypothesis(nova_math_logic_Nova_Hypothesis* this, nova_exception_Nova_ExceptionData* exceptionData, nova_Nova_String* nova_math_logic_Nova_Hypothesis_Nova_statement)
+nova_math_logic_Nova_Hypothesis* nova_math_logic_Nova_Hypothesis_Nova_construct(nova_math_logic_Nova_Hypothesis* this, nova_exception_Nova_ExceptionData* exceptionData, nova_Nova_String* nova_math_logic_Nova_Hypothesis_Nova_statement)
 {
 	CCLASS_NEW(nova_math_logic_Nova_Hypothesis, this);
 	this->vtable = &nova_math_logic_Extension_VTable_Hypothesis_val;

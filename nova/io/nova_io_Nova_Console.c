@@ -45,7 +45,7 @@ void nova_io_Nova_Console_Nova_init_static(nova_exception_Nova_ExceptionData* ex
 	}
 }
 
-nova_io_Nova_Console* nova_io_Nova_Console_Nova_Console(nova_io_Nova_Console* this, nova_exception_Nova_ExceptionData* exceptionData)
+nova_io_Nova_Console* nova_io_Nova_Console_Nova_construct(nova_io_Nova_Console* this, nova_exception_Nova_ExceptionData* exceptionData)
 {
 	CCLASS_NEW(nova_io_Nova_Console, this,);
 	this->vtable = &nova_io_Extension_VTable_Console_val;
@@ -72,12 +72,12 @@ void nova_io_Nova_Console_Nova_destroy(nova_io_Nova_Console** this, nova_excepti
 
 void nova_io_Nova_Console_0_Nova_writeLine(nova_io_Nova_Console* this, nova_exception_Nova_ExceptionData* exceptionData)
 {
-	nova_io_Nova_Console_1_Nova_writeLine(0, exceptionData, nova_Nova_String_1_Nova_String(0, exceptionData, (char*)("")));
+	nova_io_Nova_Console_1_Nova_writeLine(0, exceptionData, nova_Nova_String_1_Nova_construct(0, exceptionData, (char*)("")));
 }
 
 void nova_io_Nova_Console_1_Nova_writeLine(nova_io_Nova_Console* this, nova_exception_Nova_ExceptionData* exceptionData, nova_Nova_String* nova_io_Nova_Console_Nova_text)
 {
-	nova_io_Nova_Console_0_Nova_write(0, exceptionData, nova_Nova_String_virtual1_Nova_concat((nova_Nova_String*)(nova_io_Nova_Console_Nova_text), exceptionData, nova_Nova_String_1_Nova_String(0, exceptionData, (char*)("\n"))));
+	nova_io_Nova_Console_0_Nova_write(0, exceptionData, nova_Nova_String_virtual1_Nova_concat((nova_Nova_String*)(nova_io_Nova_Console_Nova_text), exceptionData, nova_Nova_String_1_Nova_construct(0, exceptionData, (char*)("\n"))));
 }
 
 void nova_io_Nova_Console_2_Nova_writeLine(nova_io_Nova_Console* this, nova_exception_Nova_ExceptionData* exceptionData, nova_Nova_Object* nova_io_Nova_Console_Nova_obj)
@@ -211,7 +211,7 @@ nova_Nova_String* nova_io_Nova_Console_Nova_readLine(nova_io_Nova_Console* this,
 	
 	
 	l1_Nova_line = (char*)(ufgets(stdin));
-	l1_Nova_s = nova_Nova_String_1_Nova_String(0, exceptionData, l1_Nova_line);
+	l1_Nova_s = nova_Nova_String_1_Nova_construct(0, exceptionData, l1_Nova_line);
 	return l1_Nova_s;
 }
 
@@ -222,7 +222,7 @@ nova_Nova_String* nova_io_Nova_Console_Nova_readPassword(nova_io_Nova_Console* t
 	nova_io_Nova_Console_Nova_setEcho(0, exceptionData, 0);
 	l1_Nova_pass = nova_io_Nova_Console_Nova_readLine(0, exceptionData);
 	nova_io_Nova_Console_Nova_setEcho(0, exceptionData, 1);
-	nova_io_Nova_Console_0_Nova_write(0, exceptionData, nova_Nova_String_1_Nova_String(0, exceptionData, (char*)("\n")));
+	nova_io_Nova_Console_0_Nova_write(0, exceptionData, nova_Nova_String_1_Nova_construct(0, exceptionData, (char*)("\n")));
 	return l1_Nova_pass;
 }
 

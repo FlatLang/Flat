@@ -42,7 +42,7 @@ void nova_datastruct_list_Nova_CompiledList_Nova_init_static(nova_exception_Nova
 	}
 }
 
-nova_datastruct_list_Nova_CompiledList* nova_datastruct_list_Nova_CompiledList_Nova_CompiledList(nova_datastruct_list_Nova_CompiledList* this, nova_exception_Nova_ExceptionData* exceptionData)
+nova_datastruct_list_Nova_CompiledList* nova_datastruct_list_Nova_CompiledList_Nova_construct(nova_datastruct_list_Nova_CompiledList* this, nova_exception_Nova_ExceptionData* exceptionData)
 {
 	CCLASS_NEW(nova_datastruct_list_Nova_CompiledList, this,);
 	this->vtable = &nova_datastruct_list_Extension_VTable_CompiledList_val;

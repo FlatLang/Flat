@@ -57,7 +57,7 @@ CCLASS_CLASS
 )
 
 void nova_security_Nova_MD5_Nova_init_static(nova_exception_Nova_ExceptionData* exceptionData);
-nova_security_Nova_MD5* nova_security_Nova_MD5_Nova_MD5(nova_security_Nova_MD5* this, nova_exception_Nova_ExceptionData* exceptionData);
+nova_security_Nova_MD5* nova_security_Nova_MD5_Nova_construct(nova_security_Nova_MD5* this, nova_exception_Nova_ExceptionData* exceptionData);
 void nova_security_Nova_MD5_Nova_destroy(nova_security_Nova_MD5** this, nova_exception_Nova_ExceptionData* exceptionData);
 nova_Nova_String* nova_security_Nova_MD5_Nova_encrypt(nova_security_Nova_MD5* this, nova_exception_Nova_ExceptionData* exceptionData, nova_Nova_String* nova_security_Nova_MD5_Nova_str);
 void nova_security_Nova_MD5_0_Nova_this(nova_security_Nova_MD5* this, nova_exception_Nova_ExceptionData* exceptionData);

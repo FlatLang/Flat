@@ -58,7 +58,7 @@ CCLASS_CLASS
 extern double nova_math_Nova_Math_Nova_PI;
 
 void nova_math_Nova_Math_Nova_init_static(nova_exception_Nova_ExceptionData* exceptionData);
-nova_math_Nova_Math* nova_math_Nova_Math_Nova_Math(nova_math_Nova_Math* this, nova_exception_Nova_ExceptionData* exceptionData);
+nova_math_Nova_Math* nova_math_Nova_Math_Nova_construct(nova_math_Nova_Math* this, nova_exception_Nova_ExceptionData* exceptionData);
 void nova_math_Nova_Math_Nova_destroy(nova_math_Nova_Math** this, nova_exception_Nova_ExceptionData* exceptionData);
 long_long nova_math_Nova_Math_Nova_max(nova_math_Nova_Math* this, nova_exception_Nova_ExceptionData* exceptionData, long_long nova_math_Nova_Math_Nova_a, long_long nova_math_Nova_Math_Nova_b);
 long_long nova_math_Nova_Math_Nova_min(nova_math_Nova_Math* this, nova_exception_Nova_ExceptionData* exceptionData, long_long nova_math_Nova_Math_Nova_a, long_long nova_math_Nova_Math_Nova_b);

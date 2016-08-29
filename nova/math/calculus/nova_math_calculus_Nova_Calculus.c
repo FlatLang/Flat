@@ -42,7 +42,7 @@ void nova_math_calculus_Nova_Calculus_Nova_init_static(nova_exception_Nova_Excep
 	}
 }
 
-nova_math_calculus_Nova_Calculus* nova_math_calculus_Nova_Calculus_Nova_Calculus(nova_math_calculus_Nova_Calculus* this, nova_exception_Nova_ExceptionData* exceptionData)
+nova_math_calculus_Nova_Calculus* nova_math_calculus_Nova_Calculus_Nova_construct(nova_math_calculus_Nova_Calculus* this, nova_exception_Nova_ExceptionData* exceptionData)
 {
 	CCLASS_NEW(nova_math_calculus_Nova_Calculus, this,);
 	this->vtable = &nova_math_calculus_Extension_VTable_Calculus_val;

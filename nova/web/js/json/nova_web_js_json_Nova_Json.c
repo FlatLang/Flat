@@ -61,7 +61,7 @@ void nova_web_js_json_Nova_Json_Nova_init_static(nova_exception_Nova_ExceptionDa
 	}
 }
 
-nova_web_js_json_Nova_Json* nova_web_js_json_Nova_Json_Nova_Json(nova_web_js_json_Nova_Json* this, nova_exception_Nova_ExceptionData* exceptionData)
+nova_web_js_json_Nova_Json* nova_web_js_json_Nova_Json_Nova_construct(nova_web_js_json_Nova_Json* this, nova_exception_Nova_ExceptionData* exceptionData)
 {
 	CCLASS_NEW(nova_web_js_json_Nova_Json, this);
 	this->vtable = &nova_web_js_json_Extension_VTable_Json_val;
@@ -90,7 +90,7 @@ void nova_web_js_json_Nova_Json_Nova_destroy(nova_web_js_json_Nova_Json** this, 
 
 nova_Nova_String* nova_web_js_json_Nova_Json_0_Nova_toString(nova_web_js_json_Nova_Json* this, nova_exception_Nova_ExceptionData* exceptionData)
 {
-	return nova_Nova_String_1_Nova_String(0, exceptionData, (char*)("{}"));
+	return nova_Nova_String_1_Nova_construct(0, exceptionData, (char*)("{}"));
 }
 
 void nova_web_js_json_Nova_Json_0_Nova_this(nova_web_js_json_Nova_Json* this, nova_exception_Nova_ExceptionData* exceptionData)

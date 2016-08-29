@@ -43,7 +43,7 @@ void example_Nova_BodyBuilder_Nova_init_static(nova_exception_Nova_ExceptionData
 	}
 }
 
-example_Nova_BodyBuilder* example_Nova_BodyBuilder_Nova_BodyBuilder(example_Nova_BodyBuilder* this, nova_exception_Nova_ExceptionData* exceptionData, int example_Nova_BodyBuilder_Nova_weightClass, nova_Nova_String* example_Nova_BodyBuilder_Nova_name)
+example_Nova_BodyBuilder* example_Nova_BodyBuilder_Nova_construct(example_Nova_BodyBuilder* this, nova_exception_Nova_ExceptionData* exceptionData, int example_Nova_BodyBuilder_Nova_weightClass, nova_Nova_String* example_Nova_BodyBuilder_Nova_name)
 {
 	CCLASS_NEW(example_Nova_BodyBuilder, this,);
 	this->vtable = &example_Extension_VTable_BodyBuilder_val;
@@ -79,7 +79,7 @@ void example_Nova_BodyBuilder_1_Nova_this(example_Nova_BodyBuilder* this, nova_e
 
 void example_Nova_BodyBuilder_Nova_sayHello(example_Nova_BodyBuilder* this, nova_exception_Nova_ExceptionData* exceptionData)
 {
-	nova_io_Nova_Console_1_Nova_writeLine(0, exceptionData, nova_Nova_String_0_Nova_concat(nova_Nova_String_1_Nova_String(0, exceptionData, (char*)("Hello from ")), exceptionData, nova_Nova_String_virtual1_Nova_concat((nova_Nova_String*)(this->example_Nova_Person_Nova_name), exceptionData, nova_Nova_String_1_Nova_String(0, exceptionData, (char*)(" the BodyBuilder")))));
+	nova_io_Nova_Console_1_Nova_writeLine(0, exceptionData, nova_Nova_String_0_Nova_concat(nova_Nova_String_1_Nova_construct(0, exceptionData, (char*)("Hello from ")), exceptionData, nova_Nova_String_virtual1_Nova_concat((nova_Nova_String*)(this->example_Nova_Person_Nova_name), exceptionData, nova_Nova_String_1_Nova_construct(0, exceptionData, (char*)(" the BodyBuilder")))));
 }
 
 void example_Nova_BodyBuilder_0_Nova_super(example_Nova_BodyBuilder* this, nova_exception_Nova_ExceptionData* exceptionData)

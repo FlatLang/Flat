@@ -72,7 +72,7 @@ CCLASS_CLASS
 )
 
 void nova_web_js_json_Nova_Json_Nova_init_static(nova_exception_Nova_ExceptionData* exceptionData);
-nova_web_js_json_Nova_Json* nova_web_js_json_Nova_Json_Nova_Json(nova_web_js_json_Nova_Json* this, nova_exception_Nova_ExceptionData* exceptionData);
+nova_web_js_json_Nova_Json* nova_web_js_json_Nova_Json_Nova_construct(nova_web_js_json_Nova_Json* this, nova_exception_Nova_ExceptionData* exceptionData);
 void nova_web_js_json_Nova_Json_Nova_destroy(nova_web_js_json_Nova_Json** this, nova_exception_Nova_ExceptionData* exceptionData);
 nova_Nova_String* nova_web_js_json_Nova_Json_0_Nova_toString(nova_web_js_json_Nova_Json* this, nova_exception_Nova_ExceptionData* exceptionData);
 void nova_web_js_json_Nova_Json_0_Nova_this(nova_web_js_json_Nova_Json* this, nova_exception_Nova_ExceptionData* exceptionData);

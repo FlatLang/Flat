@@ -45,7 +45,7 @@ void example_Nova_Spider_Nova_init_static(nova_exception_Nova_ExceptionData* exc
 	}
 }
 
-example_Nova_Spider* example_Nova_Spider_Nova_Spider(example_Nova_Spider* this, nova_exception_Nova_ExceptionData* exceptionData)
+example_Nova_Spider* example_Nova_Spider_Nova_construct(example_Nova_Spider* this, nova_exception_Nova_ExceptionData* exceptionData)
 {
 	CCLASS_NEW(example_Nova_Spider, this,);
 	this->vtable = &example_Extension_VTable_Spider_val;
@@ -83,7 +83,7 @@ int example_Nova_Spider_0_Nova_getNumEyes(example_Nova_Spider* this, nova_except
 
 nova_Nova_String* example_Nova_Spider_0_Nova_getDescription(example_Nova_Spider* this, nova_exception_Nova_ExceptionData* exceptionData)
 {
-	return nova_Nova_String_1_Nova_String(0, exceptionData, (char*)("A disgusting thing (Spider)"));
+	return nova_Nova_String_1_Nova_construct(0, exceptionData, (char*)("A disgusting thing (Spider)"));
 }
 
 void example_Nova_Spider_0_Nova_this(example_Nova_Spider* this, nova_exception_Nova_ExceptionData* exceptionData)

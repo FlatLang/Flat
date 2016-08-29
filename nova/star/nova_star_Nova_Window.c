@@ -42,7 +42,7 @@ void nova_star_Nova_Window_Nova_init_static(nova_exception_Nova_ExceptionData* e
 	}
 }
 
-nova_star_Nova_Window* nova_star_Nova_Window_Nova_Window(nova_star_Nova_Window* this, nova_exception_Nova_ExceptionData* exceptionData)
+nova_star_Nova_Window* nova_star_Nova_Window_Nova_construct(nova_star_Nova_Window* this, nova_exception_Nova_ExceptionData* exceptionData)
 {
 	CCLASS_NEW(nova_star_Nova_Window, this,);
 	this->vtable = &nova_star_Extension_VTable_Window_val;
@@ -76,7 +76,7 @@ void nova_star_Nova_Window_Nova_create(nova_star_Nova_Window* this, nova_excepti
 {
 	nova_star_Nova_WindowThread* l1_Nova_t = (nova_star_Nova_WindowThread*)nova_null;
 	
-	l1_Nova_t = nova_star_Nova_WindowThread_Nova_WindowThread(0, exceptionData, this);
+	l1_Nova_t = nova_star_Nova_WindowThread_Nova_construct(0, exceptionData, this);
 	nova_thread_Nova_Thread_Nova_start((nova_thread_Nova_Thread*)(l1_Nova_t), exceptionData);
 }
 

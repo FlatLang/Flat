@@ -56,7 +56,7 @@ CCLASS_CLASS
 )
 
 void nova_math_Nova_Statement_Nova_init_static(nova_exception_Nova_ExceptionData* exceptionData);
-nova_math_Nova_Statement* nova_math_Nova_Statement_Nova_Statement(nova_math_Nova_Statement* this, nova_exception_Nova_ExceptionData* exceptionData);
+nova_math_Nova_Statement* nova_math_Nova_Statement_Nova_construct(nova_math_Nova_Statement* this, nova_exception_Nova_ExceptionData* exceptionData);
 void nova_math_Nova_Statement_Nova_destroy(nova_math_Nova_Statement** this, nova_exception_Nova_ExceptionData* exceptionData);
 void nova_math_Nova_Statement_2_Nova_this(nova_math_Nova_Statement* this, nova_exception_Nova_ExceptionData* exceptionData);
 void nova_math_Nova_Statement_Nova_super(nova_math_Nova_Statement* this, nova_exception_Nova_ExceptionData* exceptionData);

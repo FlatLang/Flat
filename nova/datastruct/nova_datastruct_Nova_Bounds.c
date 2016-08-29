@@ -47,7 +47,7 @@ void nova_datastruct_Nova_Bounds_Nova_init_static(nova_exception_Nova_ExceptionD
 	}
 }
 
-nova_datastruct_Nova_Bounds* nova_datastruct_Nova_Bounds_0_Nova_Bounds(nova_datastruct_Nova_Bounds* this, nova_exception_Nova_ExceptionData* exceptionData)
+nova_datastruct_Nova_Bounds* nova_datastruct_Nova_Bounds_0_Nova_construct(nova_datastruct_Nova_Bounds* this, nova_exception_Nova_ExceptionData* exceptionData)
 {
 	CCLASS_NEW(nova_datastruct_Nova_Bounds, this,);
 	this->vtable = &nova_datastruct_Extension_VTable_Bounds_val;
@@ -61,7 +61,7 @@ nova_datastruct_Nova_Bounds* nova_datastruct_Nova_Bounds_0_Nova_Bounds(nova_data
 	return this;
 }
 
-nova_datastruct_Nova_Bounds* nova_datastruct_Nova_Bounds_1_Nova_Bounds(nova_datastruct_Nova_Bounds* this, nova_exception_Nova_ExceptionData* exceptionData, int nova_datastruct_Nova_Bounds_Nova_start, int nova_datastruct_Nova_Bounds_Nova_end)
+nova_datastruct_Nova_Bounds* nova_datastruct_Nova_Bounds_1_Nova_construct(nova_datastruct_Nova_Bounds* this, nova_exception_Nova_ExceptionData* exceptionData, int nova_datastruct_Nova_Bounds_Nova_start, int nova_datastruct_Nova_Bounds_Nova_end)
 {
 	CCLASS_NEW(nova_datastruct_Nova_Bounds, this,);
 	this->vtable = &nova_datastruct_Extension_VTable_Bounds_val;
@@ -148,7 +148,7 @@ char nova_datastruct_Nova_Bounds_0_Nova_equals(nova_datastruct_Nova_Bounds* this
 
 nova_Nova_String* nova_datastruct_Nova_Bounds_0_Nova_toString(nova_datastruct_Nova_Bounds* this, nova_exception_Nova_ExceptionData* exceptionData)
 {
-	return nova_Nova_String_0_Nova_concat(nova_Nova_String_1_Nova_String(0, exceptionData, (char*)("[")), exceptionData, nova_Nova_String_virtual1_Nova_concat((nova_Nova_String*)(nova_primitive_number_Nova_Int_2_Nova_toString(0, exceptionData, this->nova_datastruct_Nova_Bounds_Nova_start)), exceptionData, nova_Nova_String_0_Nova_concat(nova_Nova_String_1_Nova_String(0, exceptionData, (char*)(", ")), exceptionData, nova_Nova_String_virtual1_Nova_concat((nova_Nova_String*)(nova_primitive_number_Nova_Int_2_Nova_toString(0, exceptionData, this->nova_datastruct_Nova_Bounds_Nova_end)), exceptionData, nova_Nova_String_1_Nova_String(0, exceptionData, (char*)("]"))))));
+	return nova_Nova_String_0_Nova_concat(nova_Nova_String_1_Nova_construct(0, exceptionData, (char*)("[")), exceptionData, nova_Nova_String_virtual1_Nova_concat((nova_Nova_String*)(nova_primitive_number_Nova_Int_2_Nova_toString(0, exceptionData, this->nova_datastruct_Nova_Bounds_Nova_start)), exceptionData, nova_Nova_String_0_Nova_concat(nova_Nova_String_1_Nova_construct(0, exceptionData, (char*)(", ")), exceptionData, nova_Nova_String_virtual1_Nova_concat((nova_Nova_String*)(nova_primitive_number_Nova_Int_2_Nova_toString(0, exceptionData, this->nova_datastruct_Nova_Bounds_Nova_end)), exceptionData, nova_Nova_String_1_Nova_construct(0, exceptionData, (char*)("]"))))));
 }
 
 void nova_datastruct_Nova_Bounds_Nova_cloneTo(nova_datastruct_Nova_Bounds* this, nova_exception_Nova_ExceptionData* exceptionData, nova_datastruct_Nova_Bounds* nova_datastruct_Nova_Bounds_Nova_bounds)
@@ -159,7 +159,7 @@ void nova_datastruct_Nova_Bounds_Nova_cloneTo(nova_datastruct_Nova_Bounds* this,
 
 nova_datastruct_Nova_Bounds* nova_datastruct_Nova_Bounds_Nova_clone(nova_datastruct_Nova_Bounds* this, nova_exception_Nova_ExceptionData* exceptionData)
 {
-	return nova_datastruct_Nova_Bounds_1_Nova_Bounds(0, exceptionData, this->nova_datastruct_Nova_Bounds_Nova_start, this->nova_datastruct_Nova_Bounds_Nova_end);
+	return nova_datastruct_Nova_Bounds_1_Nova_construct(0, exceptionData, this->nova_datastruct_Nova_Bounds_Nova_start, this->nova_datastruct_Nova_Bounds_Nova_end);
 }
 
 int nova_datastruct_Nova_Bounds_Accessor_Nova_size(nova_datastruct_Nova_Bounds* this, nova_exception_Nova_ExceptionData* exceptionData)

@@ -56,7 +56,7 @@ CCLASS_CLASS
 )
 
 void nova_datastruct_Nova_Vector2D_Nova_init_static(nova_exception_Nova_ExceptionData* exceptionData);
-nova_datastruct_Nova_Vector2D* nova_datastruct_Nova_Vector2D_Nova_Vector2D(nova_datastruct_Nova_Vector2D* this, nova_exception_Nova_ExceptionData* exceptionData);
+nova_datastruct_Nova_Vector2D* nova_datastruct_Nova_Vector2D_Nova_construct(nova_datastruct_Nova_Vector2D* this, nova_exception_Nova_ExceptionData* exceptionData);
 void nova_datastruct_Nova_Vector2D_Nova_destroy(nova_datastruct_Nova_Vector2D** this, nova_exception_Nova_ExceptionData* exceptionData);
 void nova_datastruct_Nova_Vector2D_0_Nova_this(nova_datastruct_Nova_Vector2D* this, nova_exception_Nova_ExceptionData* exceptionData);
 void nova_datastruct_Nova_Vector2D_Nova_super(nova_datastruct_Nova_Vector2D* this, nova_exception_Nova_ExceptionData* exceptionData);

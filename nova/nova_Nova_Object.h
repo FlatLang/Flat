@@ -58,7 +58,7 @@ CCLASS_CLASS
 )
 
 void nova_Nova_Object_Nova_init_static(nova_exception_Nova_ExceptionData* exceptionData);
-nova_Nova_Object* nova_Nova_Object_Nova_Object(nova_Nova_Object* this, nova_exception_Nova_ExceptionData* exceptionData);
+nova_Nova_Object* nova_Nova_Object_Nova_construct(nova_Nova_Object* this, nova_exception_Nova_ExceptionData* exceptionData);
 void nova_Nova_Object_Nova_destroy(nova_Nova_Object** this, nova_exception_Nova_ExceptionData* exceptionData);
 nova_Nova_String* nova_Nova_Object_0_Nova_toString(nova_Nova_Object* this, nova_exception_Nova_ExceptionData* exceptionData);
 char nova_Nova_Object_0_Nova_equals(nova_Nova_Object* this, nova_exception_Nova_ExceptionData* exceptionData, nova_Nova_Object* nova_Nova_Object_Nova_another);

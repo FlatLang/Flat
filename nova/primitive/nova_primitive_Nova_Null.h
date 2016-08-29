@@ -60,7 +60,7 @@ CCLASS_CLASS
 )
 
 void nova_primitive_Nova_Null_Nova_init_static(nova_exception_Nova_ExceptionData* exceptionData);
-nova_primitive_Nova_Null* nova_primitive_Nova_Null_Nova_Null(nova_primitive_Nova_Null* this, nova_exception_Nova_ExceptionData* exceptionData);
+nova_primitive_Nova_Null* nova_primitive_Nova_Null_Nova_construct(nova_primitive_Nova_Null* this, nova_exception_Nova_ExceptionData* exceptionData);
 void nova_primitive_Nova_Null_Nova_destroy(nova_primitive_Nova_Null** this, nova_exception_Nova_ExceptionData* exceptionData);
 void nova_primitive_Nova_Null_0_Nova_this(nova_primitive_Nova_Null* this, nova_exception_Nova_ExceptionData* exceptionData);
 nova_Nova_String* nova_primitive_Nova_Null_Nova_toString(nova_primitive_Nova_Null* this, nova_exception_Nova_ExceptionData* exceptionData);

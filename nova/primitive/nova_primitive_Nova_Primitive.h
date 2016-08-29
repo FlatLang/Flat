@@ -56,7 +56,7 @@ CCLASS_CLASS
 )
 
 void nova_primitive_Nova_Primitive_Nova_init_static(nova_exception_Nova_ExceptionData* exceptionData);
-nova_primitive_Nova_Primitive* nova_primitive_Nova_Primitive_Nova_Primitive(nova_primitive_Nova_Primitive* this, nova_exception_Nova_ExceptionData* exceptionData);
+nova_primitive_Nova_Primitive* nova_primitive_Nova_Primitive_Nova_construct(nova_primitive_Nova_Primitive* this, nova_exception_Nova_ExceptionData* exceptionData);
 void nova_primitive_Nova_Primitive_Nova_destroy(nova_primitive_Nova_Primitive** this, nova_exception_Nova_ExceptionData* exceptionData);
 void nova_primitive_Nova_Primitive_2_Nova_this(nova_primitive_Nova_Primitive* this, nova_exception_Nova_ExceptionData* exceptionData);
 void nova_primitive_Nova_Primitive_Nova_super(nova_primitive_Nova_Primitive* this, nova_exception_Nova_ExceptionData* exceptionData);

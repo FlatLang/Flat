@@ -42,7 +42,7 @@ void nova_exception_Nova_Exception_Nova_init_static(nova_exception_Nova_Exceptio
 	}
 }
 
-nova_exception_Nova_Exception* nova_exception_Nova_Exception_0_Nova_Exception(nova_exception_Nova_Exception* this, nova_exception_Nova_ExceptionData* exceptionData)
+nova_exception_Nova_Exception* nova_exception_Nova_Exception_0_Nova_construct(nova_exception_Nova_Exception* this, nova_exception_Nova_ExceptionData* exceptionData)
 {
 	CCLASS_NEW(nova_exception_Nova_Exception, this,);
 	this->vtable = &nova_exception_Extension_VTable_Exception_val;
@@ -56,7 +56,7 @@ nova_exception_Nova_Exception* nova_exception_Nova_Exception_0_Nova_Exception(no
 	return this;
 }
 
-nova_exception_Nova_Exception* nova_exception_Nova_Exception_1_Nova_Exception(nova_exception_Nova_Exception* this, nova_exception_Nova_ExceptionData* exceptionData, nova_Nova_String* nova_exception_Nova_Exception_Nova_message)
+nova_exception_Nova_Exception* nova_exception_Nova_Exception_1_Nova_construct(nova_exception_Nova_Exception* this, nova_exception_Nova_ExceptionData* exceptionData, nova_Nova_String* nova_exception_Nova_Exception_Nova_message)
 {
 	CCLASS_NEW(nova_exception_Nova_Exception, this,);
 	this->vtable = &nova_exception_Extension_VTable_Exception_val;
@@ -84,7 +84,7 @@ void nova_exception_Nova_Exception_Nova_destroy(nova_exception_Nova_Exception** 
 
 void nova_exception_Nova_Exception_3_Nova_this(nova_exception_Nova_Exception* this, nova_exception_Nova_ExceptionData* exceptionData)
 {
-	nova_exception_Nova_Exception_4_Nova_this(this, exceptionData, nova_Nova_String_1_Nova_String(0, exceptionData, (char*)("")));
+	nova_exception_Nova_Exception_4_Nova_this(this, exceptionData, nova_Nova_String_1_Nova_construct(0, exceptionData, (char*)("")));
 }
 
 void nova_exception_Nova_Exception_4_Nova_this(nova_exception_Nova_Exception* this, nova_exception_Nova_ExceptionData* exceptionData, nova_Nova_String* nova_exception_Nova_Exception_Nova_message)

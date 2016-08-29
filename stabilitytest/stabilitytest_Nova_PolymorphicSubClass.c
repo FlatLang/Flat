@@ -45,7 +45,7 @@ void stabilitytest_Nova_PolymorphicSubClass_Nova_init_static(nova_exception_Nova
 	}
 }
 
-stabilitytest_Nova_PolymorphicSubClass* stabilitytest_Nova_PolymorphicSubClass_Nova_PolymorphicSubClass(stabilitytest_Nova_PolymorphicSubClass* this, nova_exception_Nova_ExceptionData* exceptionData)
+stabilitytest_Nova_PolymorphicSubClass* stabilitytest_Nova_PolymorphicSubClass_Nova_construct(stabilitytest_Nova_PolymorphicSubClass* this, nova_exception_Nova_ExceptionData* exceptionData)
 {
 	CCLASS_NEW(stabilitytest_Nova_PolymorphicSubClass, this,);
 	this->vtable = &stabilitytest_Extension_VTable_PolymorphicSubClass_val;
@@ -73,7 +73,7 @@ void stabilitytest_Nova_PolymorphicSubClass_Nova_destroy(stabilitytest_Nova_Poly
 
 nova_Nova_String* stabilitytest_Nova_PolymorphicSubClass_Nova_toString(stabilitytest_Nova_PolymorphicSubClass* this, nova_exception_Nova_ExceptionData* exceptionData)
 {
-	return nova_Nova_String_1_Nova_String(0, exceptionData, (char*)("sub class"));
+	return nova_Nova_String_1_Nova_construct(0, exceptionData, (char*)("sub class"));
 }
 
 void stabilitytest_Nova_PolymorphicSubClass_Nova_this(stabilitytest_Nova_PolymorphicSubClass* this, nova_exception_Nova_ExceptionData* exceptionData)

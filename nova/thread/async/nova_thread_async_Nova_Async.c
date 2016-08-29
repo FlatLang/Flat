@@ -42,7 +42,7 @@ void nova_thread_async_Nova_Async_Nova_init_static(nova_exception_Nova_Exception
 	}
 }
 
-nova_thread_async_Nova_Async* nova_thread_async_Nova_Async_Nova_Async(nova_thread_async_Nova_Async* this, nova_exception_Nova_ExceptionData* exceptionData)
+nova_thread_async_Nova_Async* nova_thread_async_Nova_Async_Nova_construct(nova_thread_async_Nova_Async* this, nova_exception_Nova_ExceptionData* exceptionData)
 {
 	CCLASS_NEW(nova_thread_async_Nova_Async, this,);
 	this->vtable = &nova_thread_async_Extension_VTable_Async_val;
@@ -71,7 +71,7 @@ nova_thread_async_Nova_AsyncResult* nova_thread_async_Nova_Async_Nova_execute(no
 {
 	nova_thread_async_Nova_AsyncResult* l1_Nova_result = (nova_thread_async_Nova_AsyncResult*)nova_null;
 	
-	l1_Nova_result = nova_thread_async_Nova_AsyncResult_Nova_AsyncResult(0, exceptionData);
+	l1_Nova_result = nova_thread_async_Nova_AsyncResult_Nova_construct(0, exceptionData);
 	nova_thread_async_Nova_Async_Nova_func(nova_thread_async_Nova_Async_ref_Nova_func, exceptionData, func_context);
 	return l1_Nova_result;
 }

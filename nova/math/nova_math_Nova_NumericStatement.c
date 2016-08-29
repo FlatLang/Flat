@@ -47,7 +47,7 @@ void nova_math_Nova_NumericStatement_Nova_init_static(nova_exception_Nova_Except
 	}
 }
 
-nova_math_Nova_NumericStatement* nova_math_Nova_NumericStatement_Nova_NumericStatement(nova_math_Nova_NumericStatement* this, nova_exception_Nova_ExceptionData* exceptionData, nova_Nova_String* nova_math_Nova_NumericStatement_Nova_statement)
+nova_math_Nova_NumericStatement* nova_math_Nova_NumericStatement_Nova_construct(nova_math_Nova_NumericStatement* this, nova_exception_Nova_ExceptionData* exceptionData, nova_Nova_String* nova_math_Nova_NumericStatement_Nova_statement)
 {
 	CCLASS_NEW(nova_math_Nova_NumericStatement, this);
 	this->vtable = &nova_math_Extension_VTable_NumericStatement_val;
@@ -77,7 +77,7 @@ void nova_math_Nova_NumericStatement_Nova_destroy(nova_math_Nova_NumericStatemen
 
 void nova_math_Nova_NumericStatement_1_Nova_this(nova_math_Nova_NumericStatement* this, nova_exception_Nova_ExceptionData* exceptionData, nova_Nova_String* nova_math_Nova_NumericStatement_Nova_statement)
 {
-	this->prv->nova_math_Nova_NumericStatement_Nova_tree = nova_math_Nova_NumericTree_Nova_NumericTree(0, exceptionData, nova_Nova_String_Nova_trim(nova_math_Nova_NumericStatement_Nova_statement, exceptionData));
+	this->prv->nova_math_Nova_NumericStatement_Nova_tree = nova_math_Nova_NumericTree_Nova_construct(0, exceptionData, nova_Nova_String_Nova_trim(nova_math_Nova_NumericStatement_Nova_statement, exceptionData));
 }
 
 nova_Nova_String* nova_math_Nova_NumericStatement_0_Nova_toString(nova_math_Nova_NumericStatement* this, nova_exception_Nova_ExceptionData* exceptionData)

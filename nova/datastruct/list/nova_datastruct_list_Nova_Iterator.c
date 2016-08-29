@@ -54,7 +54,7 @@ char nova_datastruct_list_Nova_Iterator_Accessor_Nova_hasNext(nova_datastruct_li
 
 nova_Nova_Object* nova_datastruct_list_Nova_Iterator_Accessor_Nova_next(nova_datastruct_list_Nova_Iterator* this, nova_exception_Nova_ExceptionData* exceptionData)
 {
-	return (nova_Nova_Object*)nova_null;
+	return (nova_Nova_Object*)(nova_Nova_Object*)nova_null;
 }
 
 

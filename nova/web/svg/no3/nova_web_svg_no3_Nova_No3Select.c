@@ -43,7 +43,7 @@ void nova_web_svg_no3_Nova_No3Select_Nova_init_static(nova_exception_Nova_Except
 	}
 }
 
-nova_web_svg_no3_Nova_No3Select* nova_web_svg_no3_Nova_No3Select_Nova_No3Select(nova_web_svg_no3_Nova_No3Select* this, nova_exception_Nova_ExceptionData* exceptionData, nova_Nova_String* nova_web_svg_no3_Nova_No3Select_Nova_selection)
+nova_web_svg_no3_Nova_No3Select* nova_web_svg_no3_Nova_No3Select_Nova_construct(nova_web_svg_no3_Nova_No3Select* this, nova_exception_Nova_ExceptionData* exceptionData, nova_Nova_String* nova_web_svg_no3_Nova_No3Select_Nova_selection)
 {
 	CCLASS_NEW(nova_web_svg_no3_Nova_No3Select, this,);
 	this->vtable = &nova_web_svg_no3_Extension_VTable_No3Select_val;
@@ -77,7 +77,7 @@ void nova_web_svg_no3_Nova_No3Select_Nova_this(nova_web_svg_no3_Nova_No3Select* 
 
 nova_Nova_String* nova_web_svg_no3_Nova_No3Select_Nova_toJs(nova_web_svg_no3_Nova_No3Select* this, nova_exception_Nova_ExceptionData* exceptionData)
 {
-	return nova_Nova_String_0_Nova_concat(nova_Nova_String_1_Nova_String(0, exceptionData, (char*)("d3.select('")), exceptionData, nova_Nova_String_virtual1_Nova_concat((nova_Nova_String*)((this->nova_web_svg_no3_Nova_No3Select_Nova_selection)), exceptionData, nova_Nova_String_1_Nova_String(0, exceptionData, (char*)("')"))));
+	return nova_Nova_String_0_Nova_concat(nova_Nova_String_1_Nova_construct(0, exceptionData, (char*)("d3.select('")), exceptionData, nova_Nova_String_virtual1_Nova_concat((nova_Nova_String*)((this->nova_web_svg_no3_Nova_No3Select_Nova_selection)), exceptionData, nova_Nova_String_1_Nova_construct(0, exceptionData, (char*)("')"))));
 }
 
 void nova_web_svg_no3_Nova_No3Select_0_Nova_super(nova_web_svg_no3_Nova_No3Select* this, nova_exception_Nova_ExceptionData* exceptionData)

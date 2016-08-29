@@ -42,7 +42,7 @@ void nova_network_Nova_Socket_Nova_init_static(nova_exception_Nova_ExceptionData
 	}
 }
 
-nova_network_Nova_Socket* nova_network_Nova_Socket_Nova_Socket(nova_network_Nova_Socket* this, nova_exception_Nova_ExceptionData* exceptionData)
+nova_network_Nova_Socket* nova_network_Nova_Socket_Nova_construct(nova_network_Nova_Socket* this, nova_exception_Nova_ExceptionData* exceptionData)
 {
 	CCLASS_NEW(nova_network_Nova_Socket, this,);
 	this->vtable = &nova_network_Extension_VTable_Socket_val;

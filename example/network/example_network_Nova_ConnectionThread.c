@@ -50,7 +50,7 @@ void example_network_Nova_ConnectionThread_Nova_init_static(nova_exception_Nova_
 	}
 }
 
-example_network_Nova_ConnectionThread* example_network_Nova_ConnectionThread_Nova_ConnectionThread(example_network_Nova_ConnectionThread* this, nova_exception_Nova_ExceptionData* exceptionData, nova_network_Nova_ConnectionSocket* example_network_Nova_ConnectionThread_Nova_socket)
+example_network_Nova_ConnectionThread* example_network_Nova_ConnectionThread_Nova_construct(example_network_Nova_ConnectionThread* this, nova_exception_Nova_ExceptionData* exceptionData, nova_network_Nova_ConnectionSocket* example_network_Nova_ConnectionThread_Nova_socket)
 {
 	CCLASS_NEW(example_network_Nova_ConnectionThread, this);
 	this->vtable = &example_network_Extension_VTable_ConnectionThread_val;
@@ -91,11 +91,11 @@ void example_network_Nova_ConnectionThread_0_Nova_run(example_network_Nova_Conne
 		
 		if (!nova_network_Nova_ConnectionSocket_Nova_validateConnection(this->prv->example_network_Nova_ConnectionThread_Nova_socket, exceptionData))
 		{
-			nova_io_Nova_Console_1_Nova_writeLine(0, exceptionData, nova_Nova_String_1_Nova_String(0, exceptionData, (char*)("Disconnected.")));
+			nova_io_Nova_Console_1_Nova_writeLine(0, exceptionData, nova_Nova_String_1_Nova_construct(0, exceptionData, (char*)("Disconnected.")));
 			break;
 		}
 		l1_Nova_message = (nova_Nova_String*)(nova_io_Nova_InputStream_virtual1_Nova_readString((nova_io_Nova_InputStream*)(this->prv->example_network_Nova_ConnectionThread_Nova_socket->nova_network_Nova_ConnectionSocket_Nova_in), exceptionData));
-		nova_io_Nova_Console_1_Nova_writeLine(0, exceptionData, nova_Nova_String_0_Nova_concat(nova_Nova_String_1_Nova_String(0, exceptionData, (char*)("HE SAYS: ")), exceptionData, l1_Nova_message));
+		nova_io_Nova_Console_1_Nova_writeLine(0, exceptionData, nova_Nova_String_0_Nova_concat(nova_Nova_String_1_Nova_construct(0, exceptionData, (char*)("HE SAYS: ")), exceptionData, l1_Nova_message));
 	}
 }
 

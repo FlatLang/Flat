@@ -47,7 +47,7 @@ void nova_network_Nova_ClientSocket_Nova_init_static(nova_exception_Nova_Excepti
 	}
 }
 
-nova_network_Nova_ClientSocket* nova_network_Nova_ClientSocket_Nova_ClientSocket(nova_network_Nova_ClientSocket* this, nova_exception_Nova_ExceptionData* exceptionData)
+nova_network_Nova_ClientSocket* nova_network_Nova_ClientSocket_Nova_construct(nova_network_Nova_ClientSocket* this, nova_exception_Nova_ExceptionData* exceptionData)
 {
 	CCLASS_NEW(nova_network_Nova_ClientSocket, this);
 	this->vtable = &nova_network_Extension_VTable_ClientSocket_val;
@@ -87,7 +87,7 @@ char nova_network_Nova_ClientSocket_Nova_connect(nova_network_Nova_ClientSocket*
 	{
 		return 0;
 	}
-	this->nova_network_Nova_ClientSocket_Nova_connection = nova_network_Nova_ConnectionSocket_Nova_ConnectionSocket(0, exceptionData, this->prv->nova_network_Nova_ClientSocket_Nova_socket);
+	this->nova_network_Nova_ClientSocket_Nova_connection = nova_network_Nova_ConnectionSocket_Nova_construct(0, exceptionData, this->prv->nova_network_Nova_ClientSocket_Nova_socket);
 	return 1;
 }
 

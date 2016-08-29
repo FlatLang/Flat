@@ -43,7 +43,7 @@ void nova_svg_Nova_SvgMainComponent_Nova_init_static(nova_exception_Nova_Excepti
 	}
 }
 
-nova_svg_Nova_SvgMainComponent* nova_svg_Nova_SvgMainComponent_Nova_SvgMainComponent(nova_svg_Nova_SvgMainComponent* this, nova_exception_Nova_ExceptionData* exceptionData)
+nova_svg_Nova_SvgMainComponent* nova_svg_Nova_SvgMainComponent_Nova_construct(nova_svg_Nova_SvgMainComponent* this, nova_exception_Nova_ExceptionData* exceptionData)
 {
 	CCLASS_NEW(nova_svg_Nova_SvgMainComponent, this,);
 	this->vtable = &nova_svg_Extension_VTable_SvgMainComponent_val;
@@ -71,14 +71,14 @@ void nova_svg_Nova_SvgMainComponent_Nova_destroy(nova_svg_Nova_SvgMainComponent*
 
 void nova_svg_Nova_SvgMainComponent_2_Nova_this(nova_svg_Nova_SvgMainComponent* this, nova_exception_Nova_ExceptionData* exceptionData)
 {
-	this->nova_svg_Nova_SvgComponent_Nova_children = nova_svg_Nova_SvgComponentList_Nova_SvgComponentList(0, exceptionData);
+	this->nova_svg_Nova_SvgComponent_Nova_children = nova_svg_Nova_SvgComponentList_Nova_construct(0, exceptionData);
 }
 
 void nova_svg_Nova_SvgMainComponent_0_Nova_generateOutput(nova_svg_Nova_SvgMainComponent* this, nova_exception_Nova_ExceptionData* exceptionData, nova_io_Nova_File* nova_svg_Nova_SvgMainComponent_Nova_file)
 {
-	nova_io_Nova_File_Nova_write(nova_svg_Nova_SvgMainComponent_Nova_file, exceptionData, nova_Nova_String_0_Nova_concat(nova_Nova_String_1_Nova_String(0, exceptionData, (char*)("<?xml version = '1.0' standalone = 'no'?>\n")), exceptionData, nova_Nova_String_0_Nova_concat(nova_Nova_String_1_Nova_String(0, exceptionData, (char*)("<!DOCTYPE svg PUBLIC\"-//W3C//DTD Svg1.1//EN\" \"http://www.w3.org/Graphics/Svg/1.1/DTD/svg11.dtd\">")), exceptionData, nova_Nova_String_1_Nova_String(0, exceptionData, (char*)("<svg width=\"1400px\" height=\"950px\" version=\"1.1\" preserveAspectRatio=\"none\">\n")))));
+	nova_io_Nova_File_Nova_write(nova_svg_Nova_SvgMainComponent_Nova_file, exceptionData, nova_Nova_String_0_Nova_concat(nova_Nova_String_1_Nova_construct(0, exceptionData, (char*)("<?xml version = '1.0' standalone = 'no'?>\n")), exceptionData, nova_Nova_String_0_Nova_concat(nova_Nova_String_1_Nova_construct(0, exceptionData, (char*)("<!DOCTYPE svg PUBLIC\"-//W3C//DTD Svg1.1//EN\" \"http://www.w3.org/Graphics/Svg/1.1/DTD/svg11.dtd\">")), exceptionData, nova_Nova_String_1_Nova_construct(0, exceptionData, (char*)("<svg width=\"1400px\" height=\"950px\" version=\"1.1\" preserveAspectRatio=\"none\">\n")))));
 	nova_svg_Nova_SvgComponentList_Nova_generateOutput(this->nova_svg_Nova_SvgComponent_Nova_children, exceptionData, nova_svg_Nova_SvgMainComponent_Nova_file);
-	nova_io_Nova_File_Nova_write(nova_svg_Nova_SvgMainComponent_Nova_file, exceptionData, nova_Nova_String_1_Nova_String(0, exceptionData, (char*)("</svg>\n")));
+	nova_io_Nova_File_Nova_write(nova_svg_Nova_SvgMainComponent_Nova_file, exceptionData, nova_Nova_String_1_Nova_construct(0, exceptionData, (char*)("</svg>\n")));
 }
 
 void nova_svg_Nova_SvgMainComponent_0_Nova_super(nova_svg_Nova_SvgMainComponent* this, nova_exception_Nova_ExceptionData* exceptionData)

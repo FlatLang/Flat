@@ -45,7 +45,7 @@ void nova_primitive_number_Nova_Float_Nova_init_static(nova_exception_Nova_Excep
 	}
 }
 
-nova_primitive_number_Nova_Float* nova_primitive_number_Nova_Float_Nova_Float(nova_primitive_number_Nova_Float* this, nova_exception_Nova_ExceptionData* exceptionData, int nova_primitive_number_Nova_Float_Nova_value)
+nova_primitive_number_Nova_Float* nova_primitive_number_Nova_Float_Nova_construct(nova_primitive_number_Nova_Float* this, nova_exception_Nova_ExceptionData* exceptionData, int nova_primitive_number_Nova_Float_Nova_value)
 {
 	CCLASS_NEW(nova_primitive_number_Nova_Float, this,);
 	this->vtable = &nova_primitive_number_Extension_VTable_Float_val;

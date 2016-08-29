@@ -63,7 +63,7 @@ CCLASS_CLASS
 )
 
 void nova_time_Nova_Date_Nova_init_static(nova_exception_Nova_ExceptionData* exceptionData);
-nova_time_Nova_Date* nova_time_Nova_Date_Nova_Date(nova_time_Nova_Date* this, nova_exception_Nova_ExceptionData* exceptionData);
+nova_time_Nova_Date* nova_time_Nova_Date_Nova_construct(nova_time_Nova_Date* this, nova_exception_Nova_ExceptionData* exceptionData);
 void nova_time_Nova_Date_Nova_destroy(nova_time_Nova_Date** this, nova_exception_Nova_ExceptionData* exceptionData);
 void nova_time_Nova_Date_0_Nova_this(nova_time_Nova_Date* this, nova_exception_Nova_ExceptionData* exceptionData);
 void nova_time_Nova_Date_Nova_decodeDate(nova_time_Nova_Date* this, nova_exception_Nova_ExceptionData* exceptionData, nova_Nova_String* nova_time_Nova_Date_Nova_prototype, nova_Nova_String* nova_time_Nova_Date_Nova_date);

@@ -42,7 +42,7 @@ void nova_math_logic_Nova_StatementComponent_Nova_init_static(nova_exception_Nov
 	}
 }
 
-nova_math_logic_Nova_StatementComponent* nova_math_logic_Nova_StatementComponent_Nova_StatementComponent(nova_math_logic_Nova_StatementComponent* this, nova_exception_Nova_ExceptionData* exceptionData)
+nova_math_logic_Nova_StatementComponent* nova_math_logic_Nova_StatementComponent_Nova_construct(nova_math_logic_Nova_StatementComponent* this, nova_exception_Nova_ExceptionData* exceptionData)
 {
 	CCLASS_NEW(nova_math_logic_Nova_StatementComponent, this,);
 	this->vtable = &nova_math_logic_Extension_VTable_StatementComponent_val;

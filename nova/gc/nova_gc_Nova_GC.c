@@ -47,7 +47,7 @@ void nova_gc_Nova_GC_Nova_init_static(nova_exception_Nova_ExceptionData* excepti
 	}
 }
 
-nova_gc_Nova_GC* nova_gc_Nova_GC_Nova_GC(nova_gc_Nova_GC* this, nova_exception_Nova_ExceptionData* exceptionData)
+nova_gc_Nova_GC* nova_gc_Nova_GC_Nova_construct(nova_gc_Nova_GC* this, nova_exception_Nova_ExceptionData* exceptionData)
 {
 	CCLASS_NEW(nova_gc_Nova_GC, this,);
 	this->vtable = &nova_gc_Extension_VTable_GC_val;

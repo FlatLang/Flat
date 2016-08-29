@@ -49,7 +49,7 @@ void nova_datastruct_list_Nova_Stack_Nova_init_static(nova_exception_Nova_Except
 	}
 }
 
-nova_datastruct_list_Nova_Stack* nova_datastruct_list_Nova_Stack_Nova_Stack(nova_datastruct_list_Nova_Stack* this, nova_exception_Nova_ExceptionData* exceptionData)
+nova_datastruct_list_Nova_Stack* nova_datastruct_list_Nova_Stack_Nova_construct(nova_datastruct_list_Nova_Stack* this, nova_exception_Nova_ExceptionData* exceptionData)
 {
 	CCLASS_NEW(nova_datastruct_list_Nova_Stack, this);
 	this->vtable = &nova_datastruct_list_Extension_VTable_Stack_val;
@@ -81,7 +81,7 @@ void nova_datastruct_list_Nova_Stack_Nova_push(nova_datastruct_list_Nova_Stack* 
 {
 	nova_datastruct_list_Nova_ListNode* l1_Nova_node = (nova_datastruct_list_Nova_ListNode*)nova_null;
 	
-	l1_Nova_node = nova_datastruct_list_Nova_ListNode_Nova_ListNode(0, exceptionData, nova_datastruct_list_Nova_Stack_Nova_data);
+	l1_Nova_node = nova_datastruct_list_Nova_ListNode_Nova_construct(0, exceptionData, nova_datastruct_list_Nova_Stack_Nova_data);
 	l1_Nova_node->nova_datastruct_list_Nova_ListNode_Nova_next = this->prv->nova_datastruct_list_Nova_Stack_Nova_top;
 	this->prv->nova_datastruct_list_Nova_Stack_Nova_top = l1_Nova_node;
 	this->nova_datastruct_list_Nova_Stack_Nova_size++;
@@ -93,12 +93,12 @@ nova_Nova_Object* nova_datastruct_list_Nova_Stack_Nova_pop(nova_datastruct_list_
 	
 	if (nova_datastruct_list_Nova_Stack_Accessor_Nova_empty(this, exceptionData))
 	{
-		THROW(3, nova_datastruct_list_Nova_EmptyStackException_0_Nova_EmptyStackException(0, exceptionData));
+		THROW(3, nova_datastruct_list_Nova_EmptyStackException_0_Nova_construct(0, exceptionData));
 	}
 	l1_Nova_data = this->prv->nova_datastruct_list_Nova_Stack_Nova_top->nova_datastruct_list_Nova_ListNode_Nova_data;
 	this->prv->nova_datastruct_list_Nova_Stack_Nova_top = this->prv->nova_datastruct_list_Nova_Stack_Nova_top->nova_datastruct_list_Nova_ListNode_Nova_next;
 	this->nova_datastruct_list_Nova_Stack_Nova_size--;
-	return l1_Nova_data;
+	return (nova_Nova_Object*)l1_Nova_data;
 }
 
 void nova_datastruct_list_Nova_Stack_0_Nova_this(nova_datastruct_list_Nova_Stack* this, nova_exception_Nova_ExceptionData* exceptionData)

@@ -42,7 +42,7 @@ void nova_math_logic_Nova_LogicalConnective_Nova_init_static(nova_exception_Nova
 	}
 }
 
-nova_math_logic_Nova_LogicalConnective* nova_math_logic_Nova_LogicalConnective_Nova_LogicalConnective(nova_math_logic_Nova_LogicalConnective* this, nova_exception_Nova_ExceptionData* exceptionData)
+nova_math_logic_Nova_LogicalConnective* nova_math_logic_Nova_LogicalConnective_Nova_construct(nova_math_logic_Nova_LogicalConnective* this, nova_exception_Nova_ExceptionData* exceptionData)
 {
 	CCLASS_NEW(nova_math_logic_Nova_LogicalConnective, this,);
 	this->vtable = &nova_math_logic_Extension_VTable_LogicalConnective_val;

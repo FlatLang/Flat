@@ -43,7 +43,7 @@ void nova_svg_no3_Nova_No3Node_Nova_init_static(nova_exception_Nova_ExceptionDat
 	}
 }
 
-nova_svg_no3_Nova_No3Node* nova_svg_no3_Nova_No3Node_Nova_No3Node(nova_svg_no3_Nova_No3Node* this, nova_exception_Nova_ExceptionData* exceptionData)
+nova_svg_no3_Nova_No3Node* nova_svg_no3_Nova_No3Node_Nova_construct(nova_svg_no3_Nova_No3Node* this, nova_exception_Nova_ExceptionData* exceptionData)
 {
 	CCLASS_NEW(nova_svg_no3_Nova_No3Node, this,);
 	this->vtable = &nova_svg_no3_Extension_VTable_No3Node_val;

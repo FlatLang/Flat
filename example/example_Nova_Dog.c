@@ -45,7 +45,7 @@ void example_Nova_Dog_Nova_init_static(nova_exception_Nova_ExceptionData* except
 	}
 }
 
-example_Nova_Dog* example_Nova_Dog_Nova_Dog(example_Nova_Dog* this, nova_exception_Nova_ExceptionData* exceptionData)
+example_Nova_Dog* example_Nova_Dog_Nova_construct(example_Nova_Dog* this, nova_exception_Nova_ExceptionData* exceptionData)
 {
 	CCLASS_NEW(example_Nova_Dog, this,);
 	this->vtable = &example_Extension_VTable_Dog_val;
@@ -87,7 +87,7 @@ int example_Nova_Dog_Nova_getNumEyes(example_Nova_Dog* this, nova_exception_Nova
 
 nova_Nova_String* example_Nova_Dog_Nova_getDescription(example_Nova_Dog* this, nova_exception_Nova_ExceptionData* exceptionData)
 {
-	return nova_Nova_String_1_Nova_String(0, exceptionData, (char*)("A fuzzy dog"));
+	return nova_Nova_String_1_Nova_construct(0, exceptionData, (char*)("A fuzzy dog"));
 }
 
 void example_Nova_Dog_0_Nova_super(example_Nova_Dog* this, nova_exception_Nova_ExceptionData* exceptionData)

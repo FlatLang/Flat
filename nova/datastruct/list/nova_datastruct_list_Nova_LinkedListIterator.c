@@ -53,7 +53,7 @@ void nova_datastruct_list_Nova_LinkedListIterator_Nova_init_static(nova_exceptio
 	}
 }
 
-nova_datastruct_list_Nova_LinkedListIterator* nova_datastruct_list_Nova_LinkedListIterator_Nova_LinkedListIterator(nova_datastruct_list_Nova_LinkedListIterator* this, nova_exception_Nova_ExceptionData* exceptionData, nova_datastruct_list_Nova_LinkedList* nova_datastruct_list_Nova_LinkedListIterator_Nova_list)
+nova_datastruct_list_Nova_LinkedListIterator* nova_datastruct_list_Nova_LinkedListIterator_Nova_construct(nova_datastruct_list_Nova_LinkedListIterator* this, nova_exception_Nova_ExceptionData* exceptionData, nova_datastruct_list_Nova_LinkedList* nova_datastruct_list_Nova_LinkedListIterator_Nova_list)
 {
 	CCLASS_NEW(nova_datastruct_list_Nova_LinkedListIterator, this);
 	this->vtable = &nova_datastruct_list_Extension_VTable_LinkedListIterator_val;
@@ -107,10 +107,10 @@ nova_Nova_Object* nova_datastruct_list_Nova_LinkedListIterator_Accessor_Nova_nex
 		
 		l2_Nova_data = this->nova_datastruct_list_Nova_LinkedListIterator_Nova_position->nova_datastruct_list_Nova_ListNode_Nova_data;
 		this->nova_datastruct_list_Nova_LinkedListIterator_Nova_position = this->nova_datastruct_list_Nova_LinkedListIterator_Nova_position->nova_datastruct_list_Nova_ListNode_Nova_next;
-		return l2_Nova_data;
+		return (nova_Nova_Object*)l2_Nova_data;
 	}
-	THROW(2, nova_datastruct_list_Nova_NoSuchElementException_0_Nova_NoSuchElementException(0, exceptionData));
-	return (nova_Nova_Object*)nova_null;
+	THROW(2, nova_datastruct_list_Nova_NoSuchElementException_0_Nova_construct(0, exceptionData));
+	return (nova_Nova_Object*)(nova_Nova_Object*)nova_null;
 }
 
 

@@ -53,7 +53,7 @@ void nova_datastruct_list_Nova_IntRangeIterator_Nova_init_static(nova_exception_
 	}
 }
 
-nova_datastruct_list_Nova_IntRangeIterator* nova_datastruct_list_Nova_IntRangeIterator_Nova_IntRangeIterator(nova_datastruct_list_Nova_IntRangeIterator* this, nova_exception_Nova_ExceptionData* exceptionData, nova_datastruct_list_Nova_IntRange* nova_datastruct_list_Nova_IntRangeIterator_Nova_range)
+nova_datastruct_list_Nova_IntRangeIterator* nova_datastruct_list_Nova_IntRangeIterator_Nova_construct(nova_datastruct_list_Nova_IntRangeIterator* this, nova_exception_Nova_ExceptionData* exceptionData, nova_datastruct_list_Nova_IntRange* nova_datastruct_list_Nova_IntRangeIterator_Nova_range)
 {
 	CCLASS_NEW(nova_datastruct_list_Nova_IntRangeIterator, this);
 	this->vtable = &nova_datastruct_list_Extension_VTable_IntRangeIterator_val;
@@ -105,7 +105,7 @@ int nova_datastruct_list_Nova_IntRangeIterator_Accessor_Nova_next(nova_datastruc
 	{
 		return this->nova_datastruct_list_Nova_IntRangeIterator_Nova_position++;
 	}
-	THROW(2, nova_datastruct_list_Nova_NoSuchElementException_0_Nova_NoSuchElementException(0, exceptionData));
+	THROW(2, nova_datastruct_list_Nova_NoSuchElementException_0_Nova_construct(0, exceptionData));
 	return (int)nova_null;
 }
 

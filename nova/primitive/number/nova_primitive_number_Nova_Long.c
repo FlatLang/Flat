@@ -49,7 +49,7 @@ void nova_primitive_number_Nova_Long_Nova_init_static(nova_exception_Nova_Except
 	}
 }
 
-nova_primitive_number_Nova_Long* nova_primitive_number_Nova_Long_Nova_Long(nova_primitive_number_Nova_Long* this, nova_exception_Nova_ExceptionData* exceptionData, long_long nova_primitive_number_Nova_Long_Nova_value)
+nova_primitive_number_Nova_Long* nova_primitive_number_Nova_Long_Nova_construct(nova_primitive_number_Nova_Long* this, nova_exception_Nova_ExceptionData* exceptionData, long_long nova_primitive_number_Nova_Long_Nova_value)
 {
 	CCLASS_NEW(nova_primitive_number_Nova_Long, this,);
 	this->vtable = &nova_primitive_number_Extension_VTable_Long_val;
@@ -127,7 +127,7 @@ nova_Nova_String* nova_primitive_number_Nova_Long_2_Nova_toString(nova_primitive
 		l1_Nova_data[l1_Nova_digits - l3_Nova_index] = (char)((char)(l1_Nova_charOffset + nova_math_Nova_Math_0_Nova_abs(0, exceptionData, nova_primitive_number_Nova_Long_Nova_value % 10)));
 		nova_primitive_number_Nova_Long_Nova_value = nova_primitive_number_Nova_Long_Nova_value / 10;
 	}
-	return nova_Nova_String_1_Nova_String(0, exceptionData, l1_Nova_data);
+	return nova_Nova_String_1_Nova_construct(0, exceptionData, l1_Nova_data);
 }
 
 nova_Nova_String* nova_primitive_number_Nova_Long_3_Nova_toString(nova_primitive_number_Nova_Long* this, nova_exception_Nova_ExceptionData* exceptionData)

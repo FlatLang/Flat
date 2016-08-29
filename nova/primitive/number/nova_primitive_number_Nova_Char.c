@@ -45,7 +45,7 @@ void nova_primitive_number_Nova_Char_Nova_init_static(nova_exception_Nova_Except
 	}
 }
 
-nova_primitive_number_Nova_Char* nova_primitive_number_Nova_Char_Nova_Char(nova_primitive_number_Nova_Char* this, nova_exception_Nova_ExceptionData* exceptionData, char nova_primitive_number_Nova_Char_Nova_value)
+nova_primitive_number_Nova_Char* nova_primitive_number_Nova_Char_Nova_construct(nova_primitive_number_Nova_Char* this, nova_exception_Nova_ExceptionData* exceptionData, char nova_primitive_number_Nova_Char_Nova_value)
 {
 	CCLASS_NEW(nova_primitive_number_Nova_Char, this,);
 	this->vtable = &nova_primitive_number_Extension_VTable_Char_val;
@@ -80,7 +80,7 @@ void nova_primitive_number_Nova_Char_Nova_this(nova_primitive_number_Nova_Char* 
 
 nova_Nova_String* nova_primitive_number_Nova_Char_2_Nova_toString(nova_primitive_number_Nova_Char* this, nova_exception_Nova_ExceptionData* exceptionData, char nova_primitive_number_Nova_Char_Nova_c)
 {
-	return nova_Nova_String_0_Nova_String(0, exceptionData, nova_primitive_number_Nova_Char_Nova_c);
+	return nova_Nova_String_0_Nova_construct(0, exceptionData, nova_primitive_number_Nova_Char_Nova_c);
 }
 
 nova_Nova_String* nova_primitive_number_Nova_Char_3_Nova_toString(nova_primitive_number_Nova_Char* this, nova_exception_Nova_ExceptionData* exceptionData)

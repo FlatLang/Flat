@@ -42,7 +42,7 @@ void nova_datastruct_Nova_Vector2D_Nova_init_static(nova_exception_Nova_Exceptio
 	}
 }
 
-nova_datastruct_Nova_Vector2D* nova_datastruct_Nova_Vector2D_Nova_Vector2D(nova_datastruct_Nova_Vector2D* this, nova_exception_Nova_ExceptionData* exceptionData)
+nova_datastruct_Nova_Vector2D* nova_datastruct_Nova_Vector2D_Nova_construct(nova_datastruct_Nova_Vector2D* this, nova_exception_Nova_ExceptionData* exceptionData)
 {
 	CCLASS_NEW(nova_datastruct_Nova_Vector2D, this,);
 	this->vtable = &nova_datastruct_Extension_VTable_Vector2D_val;

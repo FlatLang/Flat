@@ -56,7 +56,7 @@ CCLASS_CLASS
 )
 
 void nova_math_Nova_Graph_Nova_init_static(nova_exception_Nova_ExceptionData* exceptionData);
-nova_math_Nova_Graph* nova_math_Nova_Graph_Nova_Graph(nova_math_Nova_Graph* this, nova_exception_Nova_ExceptionData* exceptionData);
+nova_math_Nova_Graph* nova_math_Nova_Graph_Nova_construct(nova_math_Nova_Graph* this, nova_exception_Nova_ExceptionData* exceptionData);
 void nova_math_Nova_Graph_Nova_destroy(nova_math_Nova_Graph** this, nova_exception_Nova_ExceptionData* exceptionData);
 void nova_math_Nova_Graph_0_Nova_this(nova_math_Nova_Graph* this, nova_exception_Nova_ExceptionData* exceptionData);
 void nova_math_Nova_Graph_Nova_super(nova_math_Nova_Graph* this, nova_exception_Nova_ExceptionData* exceptionData);

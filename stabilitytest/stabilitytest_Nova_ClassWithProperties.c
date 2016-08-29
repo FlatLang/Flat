@@ -48,7 +48,7 @@ void stabilitytest_Nova_ClassWithProperties_Nova_init_static(nova_exception_Nova
 	}
 }
 
-stabilitytest_Nova_ClassWithProperties* stabilitytest_Nova_ClassWithProperties_Nova_ClassWithProperties(stabilitytest_Nova_ClassWithProperties* this, nova_exception_Nova_ExceptionData* exceptionData)
+stabilitytest_Nova_ClassWithProperties* stabilitytest_Nova_ClassWithProperties_Nova_construct(stabilitytest_Nova_ClassWithProperties* this, nova_exception_Nova_ExceptionData* exceptionData)
 {
 	CCLASS_NEW(stabilitytest_Nova_ClassWithProperties, this);
 	this->vtable = &stabilitytest_Extension_VTable_ClassWithProperties_val;
