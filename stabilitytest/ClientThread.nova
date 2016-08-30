@@ -21,7 +21,7 @@ public class ClientThread extends Thread
 		
 		String ip = "127.0.0.1"
 		
-		Console.write("ClientSocket attempting to connect to " + ip + ":" + port + "... ")
+		Console.write("ClientSocket attempting to connect to #ip:#{port}... ")
 		
 		if (!client.connect(ip, port))
 		{
