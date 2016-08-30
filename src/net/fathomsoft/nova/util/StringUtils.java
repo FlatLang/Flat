@@ -1036,6 +1036,10 @@ public class StringUtils
 	{
 		for (int i = 0; i < needle.length(); i++)
 		{
+			if (i + index >= haystack.length())
+			{
+				return false;
+			}
 			if (haystack.charAt(i + index) != needle.charAt(i))
 			{
 				return false;
