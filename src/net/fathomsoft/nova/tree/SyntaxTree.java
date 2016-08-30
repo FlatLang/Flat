@@ -910,6 +910,11 @@ public class SyntaxTree
 		
 		while (current != null)
 		{
+			if (current.length() == 0)
+			{
+				return null;
+			}
+
 			node = decodeAccessible(parent, current, location, require, validateAccess);
 			
 			if (node == null)
