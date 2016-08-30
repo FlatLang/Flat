@@ -80,11 +80,11 @@ public class IntRange extends Instantiation
 				endValueString = "(Int)" + endValueString;
 			}
 			
-			Instantiation inst = Instantiation.decodeStatement(parent, "new IntRange(" + startValueString + ", " + endValueString + ")", location, require);
+			Instantiation inst = Instantiation.decodeStatement(parent, "new IntRange(" + startValueString + ", " + endValueString + ")", location, false);
 			
 			if (inst == null)
 			{
-				SyntaxMessage.queryError("Unable to decode integer range '" + statement + "'", n, require);
+				//SyntaxMessage.queryError("Unable to decode integer range '" + statement + "'", n, require);
 				
 				return null;
 			}

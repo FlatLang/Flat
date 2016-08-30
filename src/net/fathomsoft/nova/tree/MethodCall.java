@@ -908,8 +908,13 @@ public class MethodCall extends Variable
 			
 			if (method == null)
 			{
-				n.searchMethodDeclaration(data.name);
-				SyntaxMessage.error("Undeclared method '" + temp.getName() + "'", n);
+				if (require)
+				{
+					n.searchMethodDeclaration(data.name);
+					SyntaxMessage.error("Undeclared method '" + temp.getName() + "'", n);
+				}
+
+				return null;
 			}
 			
 			n.addDefaultGenericTypeArguments();
@@ -1025,7 +1030,7 @@ public class MethodCall extends Variable
 		Location argsLocation = new Location(getLocationIn());
 		argsLocation.addBounds(bounds.getStart(), bounds.getEnd());
 		
-		addArguments(arguments, argsLocation);
+		addArguments(arguments, argsLocation, require);
 		
 		return true;
 	}
@@ -1110,7 +1115,7 @@ public class MethodCall extends Variable
 	 * @param arguments The arguments to decode and then add.
 	 * @param location The location of the method call in the source code.
 	 */
-	private void addArguments(String arguments[], Location location)
+	private void addArguments(String arguments[], Location location, boolean require)
 	{
 		Node parent = getArgumentList();
 		
@@ -1147,9 +1152,14 @@ public class MethodCall extends Variable
 									
 									if (arg == null)
 									{
-										validateCharacters(parent, argument, location);
-										
-										SyntaxMessage.error("Could not decode argument '" + argument + "'", parent, location);
+										if (require)
+										{
+											validateCharacters(parent, argument, location);
+
+											SyntaxMessage.error("Could not decode argument '" + argument + "'", parent, location);
+										}
+
+										return;
 									}
 								}
 							}
