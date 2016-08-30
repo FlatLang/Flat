@@ -98,8 +98,6 @@ public class Nova
 	private ArrayList<String>	includeDirectories, externalImports, errors, warnings, messages;
 	
 	private ArrayList<File>		inputFiles, cSourceFiles, cHeaderFiles;
-	
-	private List<File>			lingeringFiles;
 
 	private String[]            visibleCompilerMessages;
 	
@@ -124,7 +122,7 @@ public class Nova
 	public static final long	LIBRARY       = 0x0001000000000000l;
 	public static final long	RUNTIME       = 0x0000100000000000l;
 	public static final long	C_ARGS        = 0x0000010000000000l;
-	public static final long	KEEP_C        = 0x0000001000000000l;
+	//////////////////////////////////////////////
 	public static final long	DRY_RUN       = 0x0000000100000000l;
 	public static final long	VERBOSE       = 0x0000000010000000l;
 	public static final long	FORMATC       = 0x0000000001000000l;
@@ -224,7 +222,6 @@ public class Nova
 			enableFlag(DRY_RUN);
 		}
 		
-		lingeringFiles     = new LinkedList<>();
 		inputFiles         = new ArrayList<>();
 		cSourceFiles       = new ArrayList<>();
 		cHeaderFiles       = new ArrayList<>();
@@ -277,7 +274,7 @@ public class Nova
 //				"-tcc",
 //				"-small",
 //				"-cargs",
-				"-keepc",
+//				"-keepc",
 				"-single-thread",
 				"-main",
 				"example/Lab",
@@ -462,8 +459,6 @@ public class Nova
 		{
 			e.printStackTrace();
 		}
-		
-//		lingeringFiles.add(nativeInterfaceHeader);
 	}
 	
 	private void generateNativeInterfaceSource()
@@ -492,8 +487,6 @@ public class Nova
 		{
 			e.printStackTrace();
 		}
-		
-//		lingeringFiles.add(nativeInterfaceSource);
 	}
 	
 	private String[] prependArguments(String args[], String ... newData)
@@ -668,12 +661,6 @@ public class Nova
 				
 					cHeaderFiles.add(headerFile);
 					cSourceFiles.add(sourceFile);
-					
-					if (!isFlagEnabled(KEEP_C))
-					{
-						lingeringFiles.add(headerFile);
-						lingeringFiles.add(sourceFile);
-					}
 				}
 			}
 			catch (IOException e)
@@ -1453,11 +1440,6 @@ public class Nova
 			{
 				enableFlag(DRY_RUN);
 			}
-			// If the user wants to keep the files that hold the c output.
-			else if (arg.equals("-keepc"))
-			{
-				enableFlag(KEEP_C);
-			}
 			// If the user wants to obtain the c compiler arguments.
 			else if (arg.equals("-cargs"))
 			{
@@ -1702,24 +1684,6 @@ public class Nova
 	}
 	
 	/**
-	 * Delete the files that are left over from the compilation process.
-	 */
-	private void deleteLingeringFiles()
-	{
-		Iterator<File> files = lingeringFiles.iterator();
-		
-		while (files.hasNext())
-		{
-			File file = files.next();
-			
-			if (!file.delete())
-			{
-				System.err.println("Error: Was not able to delete file: " + file.getAbsolutePath());
-			}
-		}
-	}
-	
-	/**
 	 * Output all of the stored errors, warnings, and other messages.
 	 */
 	private void outputMessages()
@@ -1789,8 +1753,6 @@ public class Nova
 		stopTimer();
 		
 		log("Compile time: " + getCompileTime() + "ms");
-		
-		deleteLingeringFiles();
 		
 		outputMessages(success, warningCount, errorCount);
 		
