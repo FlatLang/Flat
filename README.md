@@ -60,7 +60,7 @@ __Optional arguments to the Compiler Include__
   * `-dry` Perform a dry-run of the compilation. Do not compile into an executable.
   * `-gcc` Compile the program with the GCC (GNU Compiler Collection) compiler.
   * `-tcc` Compile the program with the TCC (Tiny C Compiler) compiler.
-  * `-keepc` Keep the C output files that were generated during the compilation process.
+  * `-output-directory` Specify a directory to output the generated c files in.
   * `-cargs` Display the arguments that were passed to the C compiler.
   * `-nogc` Compile the program without garbage collection. (Not recommended)
   * `-small` Generate the smallest possible executable output.
