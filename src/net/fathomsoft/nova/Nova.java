@@ -2,6 +2,7 @@ package net.fathomsoft.nova;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -79,7 +80,7 @@ import static java.util.Arrays.stream;
  */
 public class Nova
 {
-	private boolean				testClasses;
+	private boolean				testClasses, deleteOutputDirectory;
 	
 	private int					compiler;
 	
@@ -88,7 +89,7 @@ public class Nova
 	
 	private String				mainClass;
 	
-	private File				outputFile, workingDir;
+	private File				outputFile, workingDir, outputDirectory;
 	private File				nativeInterfaceSource, nativeInterfaceHeader;
 	private File				interfaceVTableHeader;
 	
@@ -261,8 +262,10 @@ public class Nova
 			
 			args = new String[]
 			{
+				"../Compiler",
 				"example",
-				"stabilitytest",
+				"stabilitytest", 
+				"-output-directory", "coutput",
 				"-o",   formatPath(directory + "bin/Executable" + OUTPUT_EXTENSION),
 //				"-dir", formatPath(directory + "../example"),
 //				"-dir", formatPath(directory + "../stabilitytest"),
@@ -273,14 +276,16 @@ public class Nova
 //				"-gcc",
 //				"-tcc",
 //				"-small",
-				"-cargs",
+//				"-cargs",
 				"-keepc",
 				"-single-thread",
 				"-main",
-//				"example/Lab",
+				"example/Lab",
 //				"stabilitytest/StabilityTest",
 //				"example/SvgChart",
-				"example/HashMapDemo",
+//				"example/HashMapDemo",
+//				"example/HashSetDemo",
+//				"compiler/Compiler",
 //				"-nogc",
 //				"-no-c-output",
 //				"-dry",
@@ -629,12 +634,27 @@ public class Nova
 		allHeaders.append("#include <ExceptionHandler.h>\n");
 		allHeaders.append("#include <setjmp.h>\n").append('\n');
 		
+		if (outputDirectory == null)
+		{
+			try
+			{
+				outputDirectory = Files.createTempDirectory("tempNovaOutput").toFile();
+				
+				deleteOutputDirectory = true;
+			}
+			catch (IOException e)
+			{
+				throw new RuntimeException(e);
+			}
+		}
+		
 		for (int i = 0; i < files.length; i++)
 		{
 			FileDeclaration file   = files[i];
 			String          header = headers[i];
 			String          source = sources[i];
-			File            parent = files[i].getPackage().getParentFile();
+			
+			new File(outputDirectory, file.getPackage().getLocation()).mkdirs();
 			
 			types.append("typedef struct ").append(file.getName()).append(' ').append(file.getName()).append(';').append('\n');
 			includes.append("#include <").append(file.generateCHeaderName()).append('>').append('\n');
@@ -643,8 +663,8 @@ public class Nova
 			{
 				if (!isFlagEnabled(NO_C_OUTPUT))
 				{
-					File headerFile = FileUtils.writeFile(file.generateCHeaderName(), parent, header);
-					File sourceFile = FileUtils.writeFile(file.generateCSourceName(), parent, source);
+					File headerFile = FileUtils.writeFile(file.generateCHeaderName(), outputDirectory, header);
+					File sourceFile = FileUtils.writeFile(file.generateCSourceName(), outputDirectory, source);
 				
 					cHeaderFiles.add(headerFile);
 					cSourceFiles.add(sourceFile);
@@ -787,7 +807,7 @@ public class Nova
 			mainMethodText.append		("copy_string(str, argvs[i]);").append('\n');
 			mainMethodText.append		("args[i] = ").append(strConstructor.generateCSourceName()).append("(0, 0, str);").append('\n');
 			mainMethodText.append	("}").append('\n');
-			mainMethodText.append	("nova_datastruct_list_Nova_Array* argsArray = nova_datastruct_list_Nova_Array_2_Nova_Array(0, exceptionData, (nova_Nova_Object**)args, argc);");
+			mainMethodText.append	("nova_datastruct_list_Nova_Array* argsArray = nova_datastruct_list_Nova_Array_2_Nova_construct(0, exceptionData, (nova_Nova_Object**)args, argc);");
 			mainMethodText.append	('\n');
 			mainMethodText.append	("TRY").append('\n');
 			mainMethodText.append	('{').append('\n');
@@ -911,6 +931,8 @@ public class Nova
 			
 			cmd.append("-I").append(formatPath(dir)).append(' ');
 		}
+		
+		cmd.append("-I").append(formatPath(outputDirectory.getAbsolutePath())).append(' ');
 
 		String libDir    = workingDir + "/bin";
 		String incDir    = workingDir + "../include/";
@@ -931,7 +953,7 @@ public class Nova
 		
 		for (FileDeclaration sourceFile : files)
 		{
-			cmd.append(formatPath(sourceFile.getPackage().getParentFile() + "/" + sourceFile.generateCSourceName())).append(' ');
+			cmd.append(formatPath(outputDirectory.getAbsolutePath() + "/" + sourceFile.generateCSourceName())).append(' ');
 		}
 		
 		for (String external : externalImports)
@@ -1074,6 +1096,14 @@ public class Nova
 			@Override
 			public void commandExecuted()
 			{
+				if (deleteOutputDirectory)
+				{
+					if (!FileUtils.deleteDirectory(outputDirectory))
+					{
+						log("Failed to delete temporary output directory at " + outputDirectory.getAbsolutePath());
+					}
+				}
+				
 				try
 				{
 					command.terminate();
@@ -1294,6 +1324,7 @@ public class Nova
 		boolean expectingOutputFile       = false;
 		boolean expectingIncludeDirectory = false;
 		boolean expectingMainClass        = false;
+		boolean expectingOutputDirectory  = false;
 		
 		// Iterate through all of the arguments.
 		for (int i = 0; i < args.length; i++)
@@ -1443,6 +1474,12 @@ public class Nova
 			{
 				enableFlag(LIBRARY);
 			}
+			// If the user wants to output a library instead of an
+			// executable.
+			else if (arg.equals("-output-directory"))
+			{
+				expectingOutputDirectory = true;
+			}
 			// If none of the arguments were matched, check these:
 			else
 			{
@@ -1475,6 +1512,10 @@ public class Nova
 				{
 					includeDirectories.add(formatPath(args[i]));
 				}
+				else if (expectingOutputDirectory)
+				{
+					outputDirectory = new File(args[i]);
+				}
 				else if (expectingMainClass)
 				{
 					mainClass = args[i];
@@ -1484,6 +1525,8 @@ public class Nova
 					error("Unknown argument '" + args[i] + "'");
 					completed(false);
 				}
+				
+				expectingOutputDirectory  = false;
 			}
 		}
 		
