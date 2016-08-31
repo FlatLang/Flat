@@ -108,7 +108,7 @@ void example_Nova_SvgFractal_Nova_main(example_Nova_SvgFractal* this, nova_excep
 		nova_zero_check53 = (l1_Nova_numVerts * 1.0);
 		if (nova_zero_check53 == 0)
 		{
-			THROW(8, nova_exception_Nova_DivideByZeroException_Nova_construct(0, exceptionData));
+			THROW(9, nova_exception_Nova_DivideByZeroException_Nova_construct(0, exceptionData));
 		}
 		l2_Nova_rad = l1_Nova_pi2 * (l2_Nova_i / nova_zero_check53) + l1_Nova_offset;
 		nova_datastruct_list_Nova_Array_Nova_set((nova_datastruct_list_Nova_Array*)(l1_Nova_points), exceptionData, l2_Nova_i * 2 + 0, (nova_Nova_Object*)(intptr_t)(l1_Nova_radius * nova_math_Nova_Math_Nova_cos(0, exceptionData, l2_Nova_rad) + l1_Nova_radius + 10));

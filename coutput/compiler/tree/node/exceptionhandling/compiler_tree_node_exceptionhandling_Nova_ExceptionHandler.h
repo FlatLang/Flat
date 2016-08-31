@@ -59,7 +59,10 @@ CCLASS_CLASS
 	compiler_tree_node_exceptionhandling_Nova_ExceptionHandler, 
 	
 	compiler_tree_node_exceptionhandling_Extension_VTable_ExceptionHandler* vtable;
-	struct Private* prv;
+	compiler_util_Nova_Location* compiler_tree_node_Nova_Node_Nova_location;
+	compiler_tree_node_Nova_Node* compiler_tree_node_Nova_Node_Nova_parent;
+	nova_datastruct_list_Nova_Array* compiler_tree_node_Nova_Node_Nova_children;
+	nova_datastruct_list_Nova_Array* compiler_tree_node_Nova_Node_Nova_annotations;
 )
 
 void compiler_tree_node_exceptionhandling_Nova_ExceptionHandler_Nova_init_static(nova_exception_Nova_ExceptionData* exceptionData);

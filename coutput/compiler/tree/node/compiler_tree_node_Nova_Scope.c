@@ -43,11 +43,6 @@ compiler_tree_node_Extension_VTable_Scope compiler_tree_node_Extension_VTable_Sc
 
 CCLASS_PRIVATE
 (
-	compiler_util_Nova_Location* compiler_tree_node_Nova_Node_Nova_locationIn;
-	compiler_tree_node_Nova_Node* compiler_tree_node_Nova_Node_Nova_parent;
-	nova_datastruct_list_Nova_Array* compiler_tree_node_Nova_Node_Nova_children;
-	nova_datastruct_list_Nova_Array* compiler_tree_node_Nova_Node_Nova_annotations;
-	
 	int compiler_tree_node_Nova_Scope_Nova_id;
 	int compiler_tree_node_Nova_Scope_Nova_localVariableID;
 	nova_datastruct_list_Nova_Array* compiler_tree_node_Nova_Scope_Nova_listeners;

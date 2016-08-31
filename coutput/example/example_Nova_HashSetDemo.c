@@ -132,42 +132,42 @@ void example_Nova_HashSetDemo_Nova_main(example_Nova_HashSetDemo* this, nova_exc
 	nova_zero_check29 = l1_Nova_stringTime;
 	if (nova_zero_check29 == 0)
 	{
-		THROW(8, nova_exception_Nova_DivideByZeroException_Nova_construct(0, exceptionData));
+		THROW(9, nova_exception_Nova_DivideByZeroException_Nova_construct(0, exceptionData));
 	}
 	nova_zero_check30 = nova_zero_check29;
 	if (nova_zero_check30 == 0)
 	{
-		THROW(8, nova_exception_Nova_DivideByZeroException_Nova_construct(0, exceptionData));
+		THROW(9, nova_exception_Nova_DivideByZeroException_Nova_construct(0, exceptionData));
 	}
 	nova_zero_check31 = nova_zero_check30;
 	if (nova_zero_check31 == 0)
 	{
-		THROW(8, nova_exception_Nova_DivideByZeroException_Nova_construct(0, exceptionData));
+		THROW(9, nova_exception_Nova_DivideByZeroException_Nova_construct(0, exceptionData));
 	}
 	nova_zero_check32 = nova_zero_check31;
 	if (nova_zero_check32 == 0)
 	{
-		THROW(8, nova_exception_Nova_DivideByZeroException_Nova_construct(0, exceptionData));
+		THROW(9, nova_exception_Nova_DivideByZeroException_Nova_construct(0, exceptionData));
 	}
 	nova_zero_check33 = nova_zero_check32;
 	if (nova_zero_check33 == 0)
 	{
-		THROW(8, nova_exception_Nova_DivideByZeroException_Nova_construct(0, exceptionData));
+		THROW(9, nova_exception_Nova_DivideByZeroException_Nova_construct(0, exceptionData));
 	}
 	nova_zero_check34 = nova_zero_check33;
 	if (nova_zero_check34 == 0)
 	{
-		THROW(8, nova_exception_Nova_DivideByZeroException_Nova_construct(0, exceptionData));
+		THROW(9, nova_exception_Nova_DivideByZeroException_Nova_construct(0, exceptionData));
 	}
 	nova_zero_check35 = nova_zero_check34;
 	if (nova_zero_check35 == 0)
 	{
-		THROW(8, nova_exception_Nova_DivideByZeroException_Nova_construct(0, exceptionData));
+		THROW(9, nova_exception_Nova_DivideByZeroException_Nova_construct(0, exceptionData));
 	}
 	nova_zero_check36 = nova_zero_check35;
 	if (nova_zero_check36 == 0)
 	{
-		THROW(8, nova_exception_Nova_DivideByZeroException_Nova_construct(0, exceptionData));
+		THROW(9, nova_exception_Nova_DivideByZeroException_Nova_construct(0, exceptionData));
 	}
 	nova_io_Nova_Console_1_Nova_writeLine(0, exceptionData, nova_Nova_String_0_Nova_concat(nova_Nova_String_1_Nova_construct(0, exceptionData, (char*)("Took ")), exceptionData, nova_Nova_String_virtual1_Nova_concat((nova_Nova_String*)(nova_primitive_number_Nova_Long_2_Nova_toString(0, exceptionData, (l1_Nova_addTime))), exceptionData, nova_Nova_String_0_Nova_concat(nova_Nova_String_1_Nova_construct(0, exceptionData, (char*)("ms to call add ")), exceptionData, nova_Nova_String_virtual1_Nova_concat((nova_Nova_String*)(nova_primitive_number_Nova_Int_2_Nova_toString(0, exceptionData, (l1_Nova_count))), exceptionData, nova_Nova_String_0_Nova_concat(nova_Nova_String_1_Nova_construct(0, exceptionData, (char*)(" times ")), exceptionData, nova_Nova_String_virtual1_Nova_concat((nova_Nova_String*)(nova_primitive_number_Nova_Long_2_Nova_toString(0, exceptionData, ((l1_Nova_addTime - l1_Nova_stringTime) * 100 / nova_zero_check36))), exceptionData, nova_Nova_String_1_Nova_construct(0, exceptionData, (char*)("% overhead")))))))));
 	nova_time_Nova_Timer_Nova_start(l1_Nova_timer, exceptionData);
@@ -180,42 +180,42 @@ void example_Nova_HashSetDemo_Nova_main(example_Nova_HashSetDemo* this, nova_exc
 	nova_zero_check37 = l1_Nova_stringTime;
 	if (nova_zero_check37 == 0)
 	{
-		THROW(8, nova_exception_Nova_DivideByZeroException_Nova_construct(0, exceptionData));
+		THROW(9, nova_exception_Nova_DivideByZeroException_Nova_construct(0, exceptionData));
 	}
 	nova_zero_check38 = nova_zero_check37;
 	if (nova_zero_check38 == 0)
 	{
-		THROW(8, nova_exception_Nova_DivideByZeroException_Nova_construct(0, exceptionData));
+		THROW(9, nova_exception_Nova_DivideByZeroException_Nova_construct(0, exceptionData));
 	}
 	nova_zero_check39 = nova_zero_check38;
 	if (nova_zero_check39 == 0)
 	{
-		THROW(8, nova_exception_Nova_DivideByZeroException_Nova_construct(0, exceptionData));
+		THROW(9, nova_exception_Nova_DivideByZeroException_Nova_construct(0, exceptionData));
 	}
 	nova_zero_check40 = nova_zero_check39;
 	if (nova_zero_check40 == 0)
 	{
-		THROW(8, nova_exception_Nova_DivideByZeroException_Nova_construct(0, exceptionData));
+		THROW(9, nova_exception_Nova_DivideByZeroException_Nova_construct(0, exceptionData));
 	}
 	nova_zero_check41 = nova_zero_check40;
 	if (nova_zero_check41 == 0)
 	{
-		THROW(8, nova_exception_Nova_DivideByZeroException_Nova_construct(0, exceptionData));
+		THROW(9, nova_exception_Nova_DivideByZeroException_Nova_construct(0, exceptionData));
 	}
 	nova_zero_check42 = nova_zero_check41;
 	if (nova_zero_check42 == 0)
 	{
-		THROW(8, nova_exception_Nova_DivideByZeroException_Nova_construct(0, exceptionData));
+		THROW(9, nova_exception_Nova_DivideByZeroException_Nova_construct(0, exceptionData));
 	}
 	nova_zero_check43 = nova_zero_check42;
 	if (nova_zero_check43 == 0)
 	{
-		THROW(8, nova_exception_Nova_DivideByZeroException_Nova_construct(0, exceptionData));
+		THROW(9, nova_exception_Nova_DivideByZeroException_Nova_construct(0, exceptionData));
 	}
 	nova_zero_check44 = nova_zero_check43;
 	if (nova_zero_check44 == 0)
 	{
-		THROW(8, nova_exception_Nova_DivideByZeroException_Nova_construct(0, exceptionData));
+		THROW(9, nova_exception_Nova_DivideByZeroException_Nova_construct(0, exceptionData));
 	}
 	nova_io_Nova_Console_1_Nova_writeLine(0, exceptionData, nova_Nova_String_0_Nova_concat(nova_Nova_String_1_Nova_construct(0, exceptionData, (char*)("Took ")), exceptionData, nova_Nova_String_virtual1_Nova_concat((nova_Nova_String*)(nova_primitive_number_Nova_Long_2_Nova_toString(0, exceptionData, (l1_Nova_getTime))), exceptionData, nova_Nova_String_0_Nova_concat(nova_Nova_String_1_Nova_construct(0, exceptionData, (char*)("ms to call get ")), exceptionData, nova_Nova_String_virtual1_Nova_concat((nova_Nova_String*)(nova_primitive_number_Nova_Int_2_Nova_toString(0, exceptionData, (l1_Nova_count))), exceptionData, nova_Nova_String_0_Nova_concat(nova_Nova_String_1_Nova_construct(0, exceptionData, (char*)(" times ")), exceptionData, nova_Nova_String_virtual1_Nova_concat((nova_Nova_String*)(nova_primitive_number_Nova_Long_2_Nova_toString(0, exceptionData, ((l1_Nova_getTime - l1_Nova_stringTime) * 100 / nova_zero_check44))), exceptionData, nova_Nova_String_1_Nova_construct(0, exceptionData, (char*)("% overhead")))))))));
 	nova_time_Nova_Timer_Nova_start(l1_Nova_timer, exceptionData);
@@ -228,42 +228,42 @@ void example_Nova_HashSetDemo_Nova_main(example_Nova_HashSetDemo* this, nova_exc
 	nova_zero_check45 = l1_Nova_stringTime;
 	if (nova_zero_check45 == 0)
 	{
-		THROW(8, nova_exception_Nova_DivideByZeroException_Nova_construct(0, exceptionData));
+		THROW(9, nova_exception_Nova_DivideByZeroException_Nova_construct(0, exceptionData));
 	}
 	nova_zero_check46 = nova_zero_check45;
 	if (nova_zero_check46 == 0)
 	{
-		THROW(8, nova_exception_Nova_DivideByZeroException_Nova_construct(0, exceptionData));
+		THROW(9, nova_exception_Nova_DivideByZeroException_Nova_construct(0, exceptionData));
 	}
 	nova_zero_check47 = nova_zero_check46;
 	if (nova_zero_check47 == 0)
 	{
-		THROW(8, nova_exception_Nova_DivideByZeroException_Nova_construct(0, exceptionData));
+		THROW(9, nova_exception_Nova_DivideByZeroException_Nova_construct(0, exceptionData));
 	}
 	nova_zero_check48 = nova_zero_check47;
 	if (nova_zero_check48 == 0)
 	{
-		THROW(8, nova_exception_Nova_DivideByZeroException_Nova_construct(0, exceptionData));
+		THROW(9, nova_exception_Nova_DivideByZeroException_Nova_construct(0, exceptionData));
 	}
 	nova_zero_check49 = nova_zero_check48;
 	if (nova_zero_check49 == 0)
 	{
-		THROW(8, nova_exception_Nova_DivideByZeroException_Nova_construct(0, exceptionData));
+		THROW(9, nova_exception_Nova_DivideByZeroException_Nova_construct(0, exceptionData));
 	}
 	nova_zero_check50 = nova_zero_check49;
 	if (nova_zero_check50 == 0)
 	{
-		THROW(8, nova_exception_Nova_DivideByZeroException_Nova_construct(0, exceptionData));
+		THROW(9, nova_exception_Nova_DivideByZeroException_Nova_construct(0, exceptionData));
 	}
 	nova_zero_check51 = nova_zero_check50;
 	if (nova_zero_check51 == 0)
 	{
-		THROW(8, nova_exception_Nova_DivideByZeroException_Nova_construct(0, exceptionData));
+		THROW(9, nova_exception_Nova_DivideByZeroException_Nova_construct(0, exceptionData));
 	}
 	nova_zero_check52 = nova_zero_check51;
 	if (nova_zero_check52 == 0)
 	{
-		THROW(8, nova_exception_Nova_DivideByZeroException_Nova_construct(0, exceptionData));
+		THROW(9, nova_exception_Nova_DivideByZeroException_Nova_construct(0, exceptionData));
 	}
 	nova_io_Nova_Console_1_Nova_writeLine(0, exceptionData, nova_Nova_String_0_Nova_concat(nova_Nova_String_1_Nova_construct(0, exceptionData, (char*)("Took ")), exceptionData, nova_Nova_String_virtual1_Nova_concat((nova_Nova_String*)(nova_primitive_number_Nova_Long_2_Nova_toString(0, exceptionData, (l1_Nova_newStringTime))), exceptionData, nova_Nova_String_0_Nova_concat(nova_Nova_String_1_Nova_construct(0, exceptionData, (char*)("ms to create ")), exceptionData, nova_Nova_String_virtual1_Nova_concat((nova_Nova_String*)(nova_primitive_number_Nova_Int_2_Nova_toString(0, exceptionData, (l1_Nova_count))), exceptionData, nova_Nova_String_0_Nova_concat(nova_Nova_String_1_Nova_construct(0, exceptionData, (char*)(" strings ")), exceptionData, nova_Nova_String_virtual1_Nova_concat((nova_Nova_String*)(nova_primitive_number_Nova_Long_2_Nova_toString(0, exceptionData, ((l1_Nova_newStringTime - l1_Nova_stringTime) * 100 / nova_zero_check52))), exceptionData, nova_Nova_String_1_Nova_construct(0, exceptionData, (char*)("% overhead")))))))));
 	nova_io_Nova_Console_Nova_waitForEnter(0, exceptionData);

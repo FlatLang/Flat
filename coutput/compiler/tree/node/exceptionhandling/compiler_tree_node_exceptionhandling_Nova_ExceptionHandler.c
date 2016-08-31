@@ -41,14 +41,6 @@ compiler_tree_node_exceptionhandling_Extension_VTable_ExceptionHandler compiler_
 };
 
 
-CCLASS_PRIVATE
-(
-	compiler_util_Nova_Location* compiler_tree_node_Nova_Node_Nova_locationIn;
-	compiler_tree_node_Nova_Node* compiler_tree_node_Nova_Node_Nova_parent;
-	nova_datastruct_list_Nova_Array* compiler_tree_node_Nova_Node_Nova_children;
-	nova_datastruct_list_Nova_Array* compiler_tree_node_Nova_Node_Nova_annotations;
-	
-)
 void compiler_tree_node_exceptionhandling_Nova_ExceptionHandler_Nova_init_static(nova_exception_Nova_ExceptionData* exceptionData)
 {
 	{
@@ -57,7 +49,7 @@ void compiler_tree_node_exceptionhandling_Nova_ExceptionHandler_Nova_init_static
 
 compiler_tree_node_exceptionhandling_Nova_ExceptionHandler* compiler_tree_node_exceptionhandling_Nova_ExceptionHandler_Nova_construct(compiler_tree_node_exceptionhandling_Nova_ExceptionHandler* this, nova_exception_Nova_ExceptionData* exceptionData)
 {
-	CCLASS_NEW(compiler_tree_node_exceptionhandling_Nova_ExceptionHandler, this);
+	CCLASS_NEW(compiler_tree_node_exceptionhandling_Nova_ExceptionHandler, this,);
 	this->vtable = &compiler_tree_node_exceptionhandling_Extension_VTable_ExceptionHandler_val;
 	nova_Nova_Object_Nova_super((nova_Nova_Object*)this, exceptionData);
 	compiler_tree_node_Nova_Node_Nova_super((compiler_tree_node_Nova_Node*)this, exceptionData);
@@ -77,7 +69,6 @@ void compiler_tree_node_exceptionhandling_Nova_ExceptionHandler_Nova_destroy(com
 		return;
 	}
 	
-	NOVA_FREE((*this)->prv);
 	
 	NOVA_FREE(*this);
 }

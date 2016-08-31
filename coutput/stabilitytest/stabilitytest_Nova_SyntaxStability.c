@@ -60,7 +60,7 @@ void stabilitytest_Nova_SyntaxStability_Nova_checkElvis(stabilitytest_Nova_Synta
 char stabilitytest_Nova_SyntaxStability_Nova_trueValue(stabilitytest_Nova_SyntaxStability* this, nova_exception_Nova_ExceptionData* exceptionData);
 char stabilitytest_Nova_SyntaxStability_Nova_falseValue(stabilitytest_Nova_SyntaxStability* this, nova_exception_Nova_ExceptionData* exceptionData);
 void stabilitytest_Nova_SyntaxStability_Nova_checkRepeat(stabilitytest_Nova_SyntaxStability* this, nova_exception_Nova_ExceptionData* exceptionData);
-nova_datastruct_list_Nova_Array* generated18(stabilitytest_Nova_SyntaxStability* this, nova_exception_Nova_ExceptionData* exceptionData);
+nova_datastruct_list_Nova_Array* generated19(stabilitytest_Nova_SyntaxStability* this, nova_exception_Nova_ExceptionData* exceptionData);
 void stabilitytest_Nova_SyntaxStability_Nova_init_static(nova_exception_Nova_ExceptionData* exceptionData)
 {
 	{
@@ -454,7 +454,7 @@ void stabilitytest_Nova_SyntaxStability_Nova_foreachClosure(stabilitytest_Nova_S
 {
 	if (stabilitytest_Nova_SyntaxStability_Nova_s->nova_Nova_String_Nova_count < 4)
 	{
-		THROW(10, stabilitytest_Nova_UnstableException_Nova_construct(0, exceptionData, nova_Nova_String_1_Nova_construct(0, exceptionData, (char*)("filtering failed"))));
+		THROW(11, stabilitytest_Nova_UnstableException_Nova_construct(0, exceptionData, nova_Nova_String_1_Nova_construct(0, exceptionData, (char*)("filtering failed"))));
 	}
 }
 
@@ -468,17 +468,17 @@ void stabilitytest_Nova_SyntaxStability_Nova_checkIterators(stabilitytest_Nova_S
 	int l4_Nova_n = 0;
 	
 	nova_io_Nova_Console_0_Nova_write(0, exceptionData, nova_Nova_String_1_Nova_construct(0, exceptionData, (char*)("Checking filter functionality... ")));
-	l1_Nova_list = generated18(this, exceptionData);
+	l1_Nova_list = generated19(this, exceptionData);
 	l1_Nova_list2 = (nova_datastruct_list_Nova_Array*)(nova_datastruct_list_Nova_List_virtual0_Nova_filter((nova_datastruct_list_Nova_List*)(l1_Nova_list), exceptionData, (nova_datastruct_list_Nova_List_closure15_Nova_filterFunc)&stabilitytest_Nova_SyntaxStability_Nova_filterFunc, this, nova_null));
 	TRY
 	{
-		novaEnv.nova_exception_ExceptionData.addCode(exceptionData, exceptionData, 10);
+		novaEnv.nova_exception_ExceptionData.addCode(exceptionData, exceptionData, 11);
 		
 		{
 			nova_datastruct_list_Nova_List_virtual0_Nova_forEach((nova_datastruct_list_Nova_List*)(l1_Nova_list2), exceptionData, (nova_datastruct_list_Nova_List_closure3_Nova_func)&stabilitytest_Nova_SyntaxStability_Nova_foreachClosure, this, nova_null);
 		}
 	}
-	CATCH (10)
+	CATCH (11)
 	{
 		stabilitytest_Nova_UnstableException* l2_Nova_e = (stabilitytest_Nova_UnstableException*)nova_null;
 		
@@ -626,7 +626,7 @@ void stabilitytest_Nova_SyntaxStability_Nova_checkRepeat(stabilitytest_Nova_Synt
 	nova_io_Nova_Console_1_Nova_writeLine(0, exceptionData, nova_Nova_String_1_Nova_construct(0, exceptionData, (char*)("OK")));
 }
 
-nova_datastruct_list_Nova_Array* generated18(stabilitytest_Nova_SyntaxStability* this, nova_exception_Nova_ExceptionData* exceptionData)
+nova_datastruct_list_Nova_Array* generated19(stabilitytest_Nova_SyntaxStability* this, nova_exception_Nova_ExceptionData* exceptionData)
 {
 	nova_Nova_String** l1_Nova_temp = (nova_Nova_String**)nova_null;
 	

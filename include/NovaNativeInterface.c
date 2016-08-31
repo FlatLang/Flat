@@ -940,11 +940,7 @@ nova_env novaEnv = {
 },
 
 {
-&compiler_tree_node_Nova_Node_Nova_getScope,
-&compiler_tree_node_Nova_Node_Nova_containsScope,
 &compiler_tree_node_Nova_Node_Nova_addAnnotation,
-&compiler_tree_node_Nova_Node_Nova_setTemporaryParent,
-&compiler_tree_node_Nova_Node_Nova_isDecoding,
 &compiler_tree_node_Nova_Node_0_Nova_detach,
 &compiler_tree_node_Nova_Node_Nova_onRemoved,
 &compiler_tree_node_Nova_Node_0_Nova_containsChild,

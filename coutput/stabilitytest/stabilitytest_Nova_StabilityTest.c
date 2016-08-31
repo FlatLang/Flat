@@ -95,7 +95,7 @@ void stabilitytest_Nova_StabilityTest_0_Nova_test(stabilitytest_Nova_StabilityTe
 {
 	TRY
 	{
-		novaEnv.nova_exception_ExceptionData.addCode(exceptionData, exceptionData, 10);
+		novaEnv.nova_exception_ExceptionData.addCode(exceptionData, exceptionData, 11);
 		
 		{
 			stabilitytest_Nova_ExceptionStability_0_Nova_test(stabilitytest_Nova_ExceptionStability_Nova_construct(0, exceptionData, this), exceptionData);
@@ -112,7 +112,7 @@ void stabilitytest_Nova_StabilityTest_0_Nova_test(stabilitytest_Nova_StabilityTe
 			nova_io_Nova_Console_1_Nova_writeLine(0, exceptionData, nova_Nova_String_1_Nova_construct(0, exceptionData, (char*)("All OK")));
 		}
 	}
-	CATCH (10)
+	CATCH (11)
 	{
 		stabilitytest_Nova_UnstableException* l2_Nova_e = (stabilitytest_Nova_UnstableException*)nova_null;
 		
@@ -132,7 +132,7 @@ void stabilitytest_Nova_StabilityTest_0_Nova_fail(stabilitytest_Nova_StabilityTe
 
 void stabilitytest_Nova_StabilityTest_1_Nova_fail(stabilitytest_Nova_StabilityTest* this, nova_exception_Nova_ExceptionData* exceptionData, nova_Nova_String* stabilitytest_Nova_StabilityTest_Nova_message)
 {
-	THROW(10, stabilitytest_Nova_UnstableException_Nova_construct(0, exceptionData, stabilitytest_Nova_StabilityTest_Nova_message));
+	THROW(11, stabilitytest_Nova_UnstableException_Nova_construct(0, exceptionData, stabilitytest_Nova_StabilityTest_Nova_message));
 }
 
 void stabilitytest_Nova_StabilityTest_0_Nova_super(stabilitytest_Nova_StabilityTest* this, nova_exception_Nova_ExceptionData* exceptionData)
