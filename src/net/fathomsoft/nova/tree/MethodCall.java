@@ -1141,26 +1141,23 @@ public class MethodCall extends Variable
 							
 							if (arg == null)
 							{
+								arg = Array.decodeStatement(parent, argument, location, false);
+								
+								if (parent.isWithinExternalContext())
+								{
+									arg = Literal.decodeStatement(parent, argument, location, true);
+								}
+								
 								if (arg == null)
 								{
-									arg = Array.decodeStatement(parent, argument, location, false);
-									
-									if (parent.isWithinExternalContext())
+									if (require)
 									{
-										arg = Literal.decodeStatement(parent, argument, location, true);
+										validateCharacters(parent, argument, location);
+                                        
+										SyntaxMessage.error("Could not decode argument '" + argument + "'", parent, location);
 									}
-									
-									if (arg == null)
-									{
-										if (require)
-										{
-											validateCharacters(parent, argument, location);
-
-											SyntaxMessage.error("Could not decode argument '" + argument + "'", parent, location);
-										}
-
-										return;
-									}
+                                    
+									return;
 								}
 							}
 						}
