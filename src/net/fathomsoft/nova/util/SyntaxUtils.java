@@ -2310,15 +2310,17 @@ public class SyntaxUtils
 		{
 			return true;
 		}
-		
-		if (required.isGenericType() && given.isGenericType() && required.getGenericTypeParameter() == given.getGenericTypeParameter())
+		else if (required.isGenericType() && given.isGenericType() && required.getGenericTypeParameter() == given.getGenericTypeParameter())
 		{
 			return true;
 		}
-		
-		if (required.getTypeClassLocation() == null || given.getTypeClassLocation() == null)
+		else if (required.getTypeClassLocation() == null || given.getTypeClassLocation() == null)
 		{
 			return false;
+		}
+		else if (Literal.isNullLiteral(given) && !required.isPrimitive())
+		{
+			return true;
 		}
 		
 		return false;
