@@ -3,6 +3,7 @@ package net.fathomsoft.nova.tree;
 import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.error.SyntaxMessage;
+import net.fathomsoft.nova.tree.generics.GenericTypeArgumentList;
 import net.fathomsoft.nova.util.Location;
 import net.fathomsoft.nova.util.SyntaxUtils;
 
@@ -41,7 +42,13 @@ public class TernaryOperation extends IValue implements Accessible
 	{
 		return (Value)getChild(super.getNumDefaultChildren() + 2);
 	}
-	
+
+	@Override
+	public GenericTypeArgumentList getGenericTypeArgumentList()
+	{
+		return getFalseValue().getGenericTypeArgumentList();
+	}
+
 	/**
 	 * Decode the given statement into a {@link TernaryOperation} instance, if
 	 * possible. If it is not possible, this method returns null.<br>
