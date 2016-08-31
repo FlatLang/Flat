@@ -394,8 +394,9 @@ public class SyntaxTree
 		String starts[] = new String[] { "/*" };
 		String ends[]   = new String[] { "*/" };
 		
+		char[] quotes = new char[] { '"', '\'' };
 		int offset = 0;
-		int start  = StringUtils.findStrings(source, starts).getStart();
+		int start  = StringUtils.findStrings(source, starts, 0, 1, quotes).getStart();
 		
 		while (start >= 0)
 		{
@@ -418,12 +419,12 @@ public class SyntaxTree
 			}
 			
 			offset += end - start - numLines;
-			start   = StringUtils.findStrings(source, starts, end).getStart();
+			start   = StringUtils.findStrings(source, starts, end, 1, quotes).getStart();
 		}
 
 		offset = 0;
 		starts = new String[] { "//" };
-		start  = StringUtils.findStrings(builder, starts).getStart();
+		start  = StringUtils.findStrings(builder, starts, 0, 1, quotes).getStart();
 		
 		while (start >= 0)
 		{
@@ -439,7 +440,7 @@ public class SyntaxTree
 			builder.delete(start, end);
 			
 			offset += end - start + 1;
-			start   = StringUtils.findStrings(builder, starts, start).getStart();
+			start   = StringUtils.findStrings(builder, starts, start, 1, quotes).getStart();
 		}
 		
 		return builder.toString().trim();
