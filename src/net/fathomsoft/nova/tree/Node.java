@@ -907,6 +907,19 @@ public abstract class Node implements Listenable, Annotatable
 		{
 			addChild(index, replacement, this, detach);
 		}
+		
+		onChildReplaced(old, replacement);
+		old.onReplaced(this, replacement);
+	}
+	
+	public void onChildReplaced(Node old, Node replacement)
+	{
+		
+	}
+	
+	public void onReplaced(Node parent, Node replacement)
+	{
+		
 	}
 	
 	/**
