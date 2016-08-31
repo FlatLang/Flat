@@ -68,7 +68,30 @@ public class Variable extends Identifier
 		
 		throw new RuntimeException("Generic return type requested from non-generic type.");
 	}
-	
+
+	@Override
+	public void onReplaced(Node parent, Node replacement)
+	{
+		if (parent.getAncestorOfType(Assignment.class, true) != null)
+		{
+			Assignment a = (Assignment)parent.getAncestorOfType(Assignment.class, true);
+			
+			VariableDeclaration decl = a.getAssignedNode().getDeclaration();
+			
+			if (decl instanceof LocalDeclaration)
+			{
+				LocalDeclaration local = (LocalDeclaration)decl;
+				
+				if (local.isImplicit() && local.getImplicitType() == this)
+				{
+					local.setImplicitType((Value)replacement);
+				}
+			}
+		}
+		
+		super.onReplaced(parent, replacement);
+	}
+
 	/**
 	 * Compare the specified variable with the given one to see if they
 	 * come from the same declaration.
