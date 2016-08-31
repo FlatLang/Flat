@@ -235,8 +235,6 @@ public class MethodCallArgumentList extends ArgumentList
 					accessed   = accessible.getAccessedNode();
 				}
 				
-				accessible.setAccessedNode(null);
-				
 				accessible.setAccessedNode(call);
 			}
 			
