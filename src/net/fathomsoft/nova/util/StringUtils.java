@@ -24,6 +24,8 @@ public class StringUtils
 	public static final char	STMT_POST_CONT_CHARS[]      = new char[] { '-', '+', '~', '!', '=', '%', '^', '&', '|', '*', '/', '\\', '>', '<', ',', '.', ']' };
 	public static final char	INVALID_DECLARATION_CHARS[] = new char[] { '-', '+', '~', '!', '=', '%', '^', '|', '/', '\\', '"', '\'', '{', '}', ';', '(', ')' };
 	
+	public static final char[]	SCOPE_CHECKS_ALL			= new char[] { '"', '\'', '(', '[' };
+	
 	public static final String	SYMBOLS[];
 	
 	static
@@ -1158,27 +1160,44 @@ public class StringUtils
 	 */
 	public static Bounds findStrings(CharSequence value, String strings[], int start, int direction, boolean checkBaseScope)
 	{
+		return findStrings(value, strings, start, direction, checkBaseScope ? SCOPE_CHECKS_ALL : null);
+	}
+	
+	public static Bounds findStrings(CharSequence value, String strings[], int start, int direction, char[] scopeChecks)
+	{
 		while (start >= 0 && start < value.length())
 		{
 			char c = value.charAt(start);
 			
-			if (checkBaseScope)
+			if (scopeChecks != null)
 			{
-				if (c == '"')
+				if (containsChar(scopeChecks, '"') && c == '"')
 				{
-					start = findEndingQuote(value, start, direction) + direction;// findEndingQuote(value, start, direction) + direction;
+					start = findEndingQuote(value, start, direction);// findEndingQuote(value, start, direction) + direction;
+					
+					if (start < 0) return Bounds.EMPTY;
+					
+					start += direction;
 					
 					continue;
 				}
-				if (c == '\'')
+				else if (containsChar(scopeChecks, '\'') && c == '\'')
 				{
-					start = findEndingChar(value, c, start, direction) + direction;// findEndingQuote(value, start, direction) + direction;
+					start = findEndingChar(value, c, start, direction);// findEndingQuote(value, start, direction) + direction;
+
+					if (start < 0) return Bounds.EMPTY;
+					
+					start += direction;
 					
 					continue;
 				}
-				else if (c == '(' && direction > 0 || c == ')' && direction < 0)
+				else if (containsChar(scopeChecks, '(') && (c == '(' && direction > 0 || c == ')' && direction < 0))
 				{
-					start = findEndingMatch(value, start, '(', ')', direction) + direction;
+					start = findEndingMatch(value, start, '(', ')', direction);
+
+					if (start < 0) return Bounds.EMPTY;
+					
+					start += direction;
 					
 					if (start <= 0 || start >= value.length())
 					{
@@ -1187,9 +1206,13 @@ public class StringUtils
 					
 					continue;
 				}
-				else if (c == '[' && direction > 0 || c == ']' && direction < 0)
+				else if (containsChar(scopeChecks, '[') && (c == '[' && direction > 0 || c == ']' && direction < 0))
 				{
-					start = findEndingMatch(value, start, '[', ']', direction) + direction;
+					start = findEndingMatch(value, start, '[', ']', direction);
+
+					if (start < 0) return Bounds.EMPTY;
+					
+					start += direction;
 					
 					if (start == 0)
 					{
