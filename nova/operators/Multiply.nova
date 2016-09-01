@@ -1,6 +1,0 @@
-package "nova/operators"
-
-public interface Multiply<E>
-{
-	multiply(E value) -> E
-}

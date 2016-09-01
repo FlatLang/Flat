@@ -1,6 +1,0 @@
-package "nova/primitive"
-
-public class Primitive
-{
-	
-}

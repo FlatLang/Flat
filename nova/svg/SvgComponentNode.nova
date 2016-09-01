@@ -1,8 +1,0 @@
-package "nova/svg"
-
-public class SvgComponentNode
-{
-	public SvgComponentNode next
-	
-	public SvgComponent component
-}

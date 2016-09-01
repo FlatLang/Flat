@@ -1,6 +1,0 @@
-package "nova/datastruct/list"
-
-public class CompiledList<Type>
-{
-	
-}

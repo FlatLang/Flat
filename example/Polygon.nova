@@ -1,7 +1,0 @@
-package "example"
-
-public interface Polygon
-{
-	numberSides() -> Int
-	calculateArea() -> Double
-}
