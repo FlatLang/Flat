@@ -242,7 +242,8 @@ public class Nova
 	 */
 	public void compile(String args[], boolean generateCode)
 	{
-		String directory = getWorkingDirectoryPath() + "example/";
+		String workingPath = getWorkingDirectoryPath();
+		String directory = workingPath + "../Misc/example/";
 		
 		if (OS == WINDOWS)
 		{
@@ -259,10 +260,10 @@ public class Nova
 			
 			args = new String[]
 			{
-				"../Compiler",
-				"example",
-				"stabilitytest", 
-				"-output-directory", "coutput",
+//				"../Compiler",
+				"../Misc/example",
+				"../Misc/stabilitytest", 
+				"-output-directory", "../NovaCompilerOutput",
 				"-o",   formatPath(directory + "bin/Executable" + OUTPUT_EXTENSION),
 //				"-dir", formatPath(directory + "../example"),
 //				"-dir", formatPath(directory + "../stabilitytest"),
@@ -277,8 +278,8 @@ public class Nova
 //				"-keepc",
 				"-single-thread",
 				"-main",
-				"example/Lab",
-//				"stabilitytest/StabilityTest",
+//				"example/Lab",
+				"stabilitytest/StabilityTest",
 //				"example/SvgChart",
 //				"example/HashMapDemo",
 //				"example/HashSetDemo",
@@ -300,11 +301,11 @@ public class Nova
 		
 		String postArgs[] = new String[]
 		{
-			"-dir", formatPath(directory + "../include"),
-			"-dir", formatPath(directory + "../include/gc"),
-			"-dir", formatPath(directory + "../include/nova_mysql"),
-			"-dir", formatPath(directory + "../include/nova_openssl"),
-			"-dir", formatPath(directory + ".."),
+			"-dir", formatPath(workingPath + "include"),
+			"-dir", formatPath(workingPath + "include/gc"),
+			"-dir", formatPath(workingPath + "include/nova_mysql"),
+			"-dir", formatPath(workingPath + "include/nova_openssl"),
+			"-dir", formatPath(workingPath),
 		};
 		
 //		for (String location : standardFiles)
@@ -314,7 +315,7 @@ public class Nova
 //			inputFiles.add(new File(location));
 //		}
 		
-		args = prependArguments(args, new String[] { "nova" });
+		args = prependArguments(args, new String[] { "../StandardLibrary" });
 		args = appendArguments(args, postArgs);
 		
 		parseArguments(args);
@@ -342,7 +343,7 @@ public class Nova
 //				"This is free software, and you are welcome to redistribute it\n" +
 //				"under certain conditions");//; type show c for details.");
 		
-		workingDir = new File(directory);
+		workingDir = new File(getWorkingDirectoryPath());
 		
 		startTimer();
 		
@@ -889,7 +890,7 @@ public class Nova
 		}
 		else if (compiler == TCC)
 		{
-			compilerDir = new File(StringUtils.removeSurroundingQuotes(formatPath(workingDir + "/../compiler/tcc")));
+			compilerDir = new File(StringUtils.removeSurroundingQuotes(formatPath(workingDir + "/compiler/tcc")));
 			
 			cmd.append("compiler/tcc/tcc.exe ");
 		}
@@ -921,8 +922,8 @@ public class Nova
 		
 		cmd.append("-I").append(formatPath(outputDirectory.getAbsolutePath())).append(' ');
 
-		String libDir    = workingDir + "/bin";
-		String incDir    = workingDir + "../include/";
+		String libDir    = outputFile.getParentFile().getAbsolutePath();
+		String incDir    = workingDir + "/include/";
 		
 //		String libNova   = formatPath(libDir + "libNova" + DYNAMIC_LIB_EXT);
 //		String libThread = formatPath(libDir + "libThread" + DYNAMIC_LIB_EXT);
@@ -1172,7 +1173,7 @@ public class Nova
 	 */
 	private String getLibraryDir()
 	{
-		return formatPath(workingDir + "/../lib");
+		return formatPath(workingDir + "/lib");
 	}
 	
 	/**
@@ -1182,7 +1183,7 @@ public class Nova
 	 */
 	private String getIncludeDir()
 	{
-		return formatPath(workingDir + "/../include");
+		return formatPath(workingDir + "/include");
 	}
 	
 	/**
