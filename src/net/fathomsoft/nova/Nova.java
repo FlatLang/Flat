@@ -96,7 +96,8 @@ public class Nova
 	
 	private ArrayList<File>		inputFiles, cSourceFiles, cHeaderFiles;
 
-	private HashSet<String>		includeDirectories;
+	private HashSet<String>			includeDirectories;
+	private HashMap<String, String>	outputDirectories;
 	
 	private String[]            visibleCompilerMessages;
 	
@@ -225,6 +226,7 @@ public class Nova
 		cSourceFiles       = new ArrayList<>();
 		cHeaderFiles       = new ArrayList<>();
 		includeDirectories = new HashSet<>();
+		outputDirectories  = new HashMap<>();
 		externalImports    = new ArrayList<>();
 		errors             = new ArrayList<>();
 		warnings           = new ArrayList<>();
@@ -263,6 +265,7 @@ public class Nova
 				"../Misc/example",
 				"../Misc/stabilitytest", 
 				"-output-directory", "../NovaCompilerOutput",
+				"-package-output-directory", "nova", "../StandardLibrary/c",
 				"-o",   formatPath(directory + "bin/Executable" + OUTPUT_EXTENSION),
 //				"-dir", formatPath(directory + "../example"),
 //				"-dir", formatPath(directory + "../stabilitytest"),
@@ -643,11 +646,20 @@ public class Nova
 		
 		for (int i = 0; i < files.length; i++)
 		{
+			File outputDir = outputDirectory;
+			
 			FileDeclaration file   = files[i];
 			String          header = headers[i];
 			String          source = sources[i];
 			
-			new File(outputDirectory, file.getPackage().getLocation()).mkdirs();
+			String basePackage = file.getPackage().getLocation().split("/")[0];
+			
+			if (outputDirectories.containsKey(basePackage))
+			{
+				outputDir = new File(outputDirectories.get(basePackage));
+			}
+			
+			new File(outputDir, file.getPackage().getLocation()).mkdirs();
 			
 			types.append("typedef struct ").append(file.getName()).append(' ').append(file.getName()).append(';').append('\n');
 			includes.append("#include <").append(file.generateCHeaderName()).append('>').append('\n');
@@ -656,8 +668,8 @@ public class Nova
 			{
 				if (!isFlagEnabled(NO_C_OUTPUT))
 				{
-					File headerFile = FileUtils.writeFile(file.generateCHeaderName(), outputDirectory, header);
-					File sourceFile = FileUtils.writeFile(file.generateCSourceName(), outputDirectory, source);
+					File headerFile = FileUtils.writeFile(file.generateCHeaderName(), outputDir, header);
+					File sourceFile = FileUtils.writeFile(file.generateCSourceName(), outputDir, source);
 				
 					cHeaderFiles.add(headerFile);
 					cSourceFiles.add(sourceFile);
@@ -1299,18 +1311,26 @@ public class Nova
 		// checking for (index - 1).
 		// (index starts at 0, therefore 0 - 1 = -1)
 		int lastInput = -1;
+		int skip = 0;
 		
-		// Declare and initialize two booleans used to keep track of
-		// whether or not the argument parser is expecting a certain
-		// type of input at the current argument.
-		boolean expectingOutputFile       = false;
-		boolean expectingIncludeDirectory = false;
-		boolean expectingMainClass        = false;
-		boolean expectingOutputDirectory  = false;
+		for (int i = 0; i < args.length; i++)
+		{
+			if (args[i].startsWith("\""))
+			{
+				args[i] = StringUtils.removeSurroundingQuotes(args[i]);
+			}
+		}
 		
 		// Iterate through all of the arguments.
 		for (int i = 0; i < args.length; i++)
 		{
+			if (skip > 0)
+			{
+				skip--;
+				
+				continue;
+			}
+			
 			// Lowercase the argument for easier non-case-sensitive String
 			// matching.
 			String arg = args[i].toLowerCase();
@@ -1325,24 +1345,23 @@ public class Nova
 				continue;
 			}
 			
-			// Create temporary variables holding the current values.
-			boolean expectingIncludeDirectoryTemp = expectingIncludeDirectory;
-			
-			// Set the variables to false in the expectation of a
-			// different type of argument.
-			expectingIncludeDirectory = false;
-			
-			// Check all other types of arguments.
-			
 			// If the user is trying to set the output location.
 			if (arg.equals("-o"))
 			{
-				expectingOutputFile = true;
+				validateArgumentSize(args, i + 1);
+				
+				outputFile = new File(args[i + 1]);
+				
+				skip = 1;
 			}
 			// If the user is trying to set the source include directory.
 			else if (arg.equals("-dir"))
 			{
-				expectingIncludeDirectory = true;
+				validateArgumentSize(args, i + 1);
+				
+				includeDirectories.add(formatPath(args[i + 1]));
+				
+				skip = 1;
 			}
 			// If the user wants to run the application after compilation.
 			else if (arg.equals("-run"))
@@ -1388,7 +1407,11 @@ public class Nova
 			}
 			else if (arg.equals("-main"))
 			{
-				expectingMainClass = true;
+				validateArgumentSize(args, i + 1);
+				
+				mainClass = args[i + 1];
+				
+				skip = 1;
 			}
 			// If the user wants to view the c source output.
 			else if (arg.equals("-csource"))
@@ -1451,22 +1474,27 @@ public class Nova
 			{
 				enableFlag(LIBRARY);
 			}
-			// If the user wants to output a library instead of an
-			// executable.
+			// Specify a custom output directory.
 			else if (arg.equals("-output-directory"))
 			{
-				expectingOutputDirectory = true;
+				validateArgumentSize(args, i + 1);
+				
+				outputDirectory = new File(args[i + 1]);
+				
+				skip = 1;
+			}
+			// Specify a custom output directory for a specified package.
+			else if (arg.equals("-package-output-directory"))
+			{
+				validateArgumentSize(args, i + 2);
+				
+				outputDirectories.put(args[i + 1], args[i + 2]);
+
+				skip = 2;
 			}
 			// If none of the arguments were matched, check these:
 			else
 			{
-				expectingIncludeDirectory = expectingIncludeDirectoryTemp;
-				
-				if (args[i].startsWith("\""))
-				{
-					args[i] = StringUtils.removeSurroundingQuotes(args[i]);
-				}
-				
 				// If the argument is one of the first arguments passed
 				// (If it is one of the sources to compile)
 				if (lastInput == i - 1)
@@ -1477,33 +1505,11 @@ public class Nova
 					
 					lastInput = i;
 				}
-				// Check if we are still dealing with any  ongoing arguments
-				// still.
-				else if (expectingOutputFile)
-				{
-					outputFile = new File(args[i]);
-					
-					expectingOutputFile = false;
-				}
-				else if (expectingIncludeDirectory)
-				{
-					includeDirectories.add(formatPath(args[i]));
-				}
-				else if (expectingOutputDirectory)
-				{
-					outputDirectory = new File(args[i]);
-				}
-				else if (expectingMainClass)
-				{
-					mainClass = args[i];
-				}
 				else
 				{
 					error("Unknown argument '" + args[i] + "'");
 					completed(false);
 				}
-				
-				expectingOutputDirectory  = false;
 			}
 		}
 		
@@ -1515,6 +1521,15 @@ public class Nova
 //			
 //			outputFile = new File(workingDir, "bin/Executa.exe");
 //		}
+	}
+	
+	private void validateArgumentSize(String[] args, int size)
+	{
+		if (args.length <= size)
+		{
+			error("Invalid arguments passed");
+			completed(false);
+		}
 	}
 	
 	private void addFilesFromDirectory(File directory)
