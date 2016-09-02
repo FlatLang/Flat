@@ -3,10 +3,7 @@ package net.fathomsoft.nova;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 
 import net.fathomsoft.nova.error.SyntaxErrorException;
 import net.fathomsoft.nova.error.SyntaxMessage;
@@ -95,10 +92,12 @@ public class Nova
 	
 	private SyntaxTree			tree;
 	
-	private ArrayList<String>	includeDirectories, externalImports, errors, warnings, messages;
+	private ArrayList<String>	externalImports, errors, warnings, messages;
 	
 	private ArrayList<File>		inputFiles, cSourceFiles, cHeaderFiles;
 
+	private HashSet<String>		includeDirectories;
+	
 	private String[]            visibleCompilerMessages;
 	
 	private static final int	OS;
@@ -225,7 +224,7 @@ public class Nova
 		inputFiles         = new ArrayList<>();
 		cSourceFiles       = new ArrayList<>();
 		cHeaderFiles       = new ArrayList<>();
-		includeDirectories = new ArrayList<>();
+		includeDirectories = new HashSet<>();
 		externalImports    = new ArrayList<>();
 		errors             = new ArrayList<>();
 		warnings           = new ArrayList<>();
@@ -315,7 +314,7 @@ public class Nova
 //			inputFiles.add(new File(location));
 //		}
 		
-		args = prependArguments(args, new String[] { "../StandardLibrary" });
+		args = prependArguments(args, new String[] { "../StandardLibrary/nova" });
 		args = appendArguments(args, postArgs);
 		
 		parseArguments(args);
@@ -861,7 +860,7 @@ public class Nova
 	 */
 	private void compileC()
 	{
-		StringBuilder cmd = new StringBuilder();
+		final StringBuilder cmd = new StringBuilder();
 		
 		File compilerDir  = null;
 		
@@ -913,12 +912,7 @@ public class Nova
 			cmd.append("-O2 ");
 		}
 		
-		for (int i = 0; i < includeDirectories.size(); i++)
-		{
-			String dir = includeDirectories.get(i);
-			
-			cmd.append("-I").append(formatPath(dir)).append(' ');
-		}
+		includeDirectories.forEach(dir -> cmd.append("-I").append(formatPath(dir)).append(' '));
 		
 		cmd.append("-I").append(formatPath(outputDirectory.getAbsolutePath())).append(' ');
 
@@ -1548,7 +1542,7 @@ public class Nova
 				{
 					addFilesFromDirectory(f);
 					
-					includeDirectories.add(f.getAbsolutePath());
+					includeDirectories.add(f.getParentFile().getAbsolutePath());
 				}
 				else
 				{
