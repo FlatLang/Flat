@@ -266,7 +266,6 @@ public class Nova
 				"../Misc/stabilitytest", 
 				"-output-directory", "../NovaCompilerOutput",
 				"-package-output-directory", "nova", "../StandardLibrary/c",
-				"-o",   formatPath(directory + "bin/Executable" + OUTPUT_EXTENSION),
 //				"-dir", formatPath(directory + "../example"),
 //				"-dir", formatPath(directory + "../stabilitytest"),
 //				"-run",
@@ -308,6 +307,7 @@ public class Nova
 			"-dir", formatPath(workingPath + "include/nova_mysql"),
 			"-dir", formatPath(workingPath + "include/nova_openssl"),
 			"-dir", formatPath(workingPath),
+			formatPath(directory + "bin/Executable" + OUTPUT_EXTENSION),
 		};
 		
 //		for (String location : standardFiles)
@@ -1505,6 +1505,10 @@ public class Nova
 					
 					lastInput = i;
 				}
+				else if (i == args.length - 1)
+				{
+					outputFile = new File(args[i]);
+				}
 				else
 				{
 					error("Unknown argument '" + args[i] + "'");
@@ -1514,13 +1518,6 @@ public class Nova
 		}
 		
 		validateInputFiles();
-		
-//		if (outputFile == null)
-//		{
-//			enableFlag(RUNTIME);
-//			
-//			outputFile = new File(workingDir, "bin/Executa.exe");
-//		}
 	}
 	
 	private void validateArgumentSize(String[] args, int size)
