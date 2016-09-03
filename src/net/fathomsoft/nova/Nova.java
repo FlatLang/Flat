@@ -279,8 +279,8 @@ public class Nova
 //				"-keepc",
 				"-single-thread",
 				"-main",
-//				"example/Lab",
-				"stabilitytest/StabilityTest",
+				"example/Lab",
+//				"stabilitytest/StabilityTest",
 //				"example/SvgChart",
 //				"example/HashMapDemo",
 //				"example/HashSetDemo",
@@ -652,7 +652,7 @@ public class Nova
 			String          header = headers[i];
 			String          source = sources[i];
 			
-			String basePackage = file.getPackage().getLocation().split("/")[0];
+			String basePackage = file.getPackage().getRootFolder();
 			
 			if (outputDirectories.containsKey(basePackage))
 			{
@@ -927,6 +927,8 @@ public class Nova
 		includeDirectories.forEach(dir -> cmd.append("-I").append(formatPath(dir)).append(' '));
 		
 		cmd.append("-I").append(formatPath(outputDirectory.getAbsolutePath())).append(' ');
+		
+		outputDirectories.forEach((key, value) -> cmd.append("-I").append(formatPath(new File(value).getAbsolutePath())).append(' '));
 
 		String libDir    = outputFile.getParentFile().getAbsolutePath();
 		String incDir    = workingDir + "/include/";
@@ -947,7 +949,14 @@ public class Nova
 		
 		for (FileDeclaration sourceFile : files)
 		{
-			cmd.append(formatPath(outputDirectory.getAbsolutePath() + "/" + sourceFile.generateCSourceName())).append(' ');
+			File dir = outputDirectory;
+			
+			if (outputDirectories.containsKey(sourceFile.getPackage().getRootFolder()))
+			{
+				dir = new File(outputDirectories.get(sourceFile.getPackage().getRootFolder()));
+			}
+			
+			cmd.append(formatPath(dir.getAbsolutePath() + "/" + sourceFile.generateCSourceName())).append(' ');
 		}
 		
 		for (String external : externalImports)
