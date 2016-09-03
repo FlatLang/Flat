@@ -668,9 +668,9 @@ public abstract class Value extends Node implements AbstractValue
 		else if (parent instanceof Assignment)
 		{
 			Assignment assignment = (Assignment)parent;
-			Variable   assignee   = assignment.getAssignedNode();
+			Value      assignee   = assignment.getAssignedNodeValue();
 			
-			if (this instanceof Variable == false || !((Variable)this).isSameVariable(assignee))
+			if (this instanceof Variable == false || (assignee instanceof Variable && !((Variable)this).isSameVariable((Variable)assignee)))
 			{
 				type = assignee.getDataType();
 			}

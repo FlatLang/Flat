@@ -202,9 +202,9 @@ public class Assignment extends Value
 	@Override
 	public StringBuilder generateCSourceFragment(StringBuilder builder)
 	{
-		if (getAssignedNode().getDataType() == Value.POINTER &&
+		if (getAssignedNodeValue().getDataType() == Value.POINTER &&
 				getAssignmentNode().getReturnedNode().getDataType() == Value.VALUE ||
-				getAssignedNode().getDataType() == Value.DOUBLE_POINTER &&
+				getAssignedNodeValue().getDataType() == Value.DOUBLE_POINTER &&
 				getAssignmentNode().getReturnedNode().getDataType() == Value.POINTER)
 		{
 			builder.append('*');
@@ -242,7 +242,7 @@ public class Assignment extends Value
 		Value assignment = getAssignmentNode();
 		
 		String assignmentType = assignment.getReturnedNode().getType();
-		String assignedType = getAssignedNode().getType();
+		String assignedType = getAssignedNodeValue().getType();
 		
 		boolean sameType = assignmentType.equals(assignedType);
 		
@@ -258,10 +258,10 @@ public class Assignment extends Value
 		
 		if (!sameType)
 		{
-			getAssignedNode().generateCTypeCast(builder, true, false).append(getAssignmentNode().getReturnedNode().generatePointerToValueConversion()).append('(');
+			getAssignedNodeValue().generateCTypeCast(builder, true, false).append(getAssignmentNode().getReturnedNode().generatePointerToValueConversion()).append('(');
 		}
 		
-		builder.append(assignment.generateDataTypeOutput(getAssignedNode().getDataType())).append(getAssignmentNode().generateCSourceFragment());
+		builder.append(assignment.generateDataTypeOutput(getAssignedNodeValue().getDataType())).append(getAssignmentNode().generateCSourceFragment());
 		
 		if (!sameType)
 		{
