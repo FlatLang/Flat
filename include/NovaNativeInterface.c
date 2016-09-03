@@ -33,10 +33,13 @@ nova_env novaEnv = {
 &nova_Nova_String_Nova_transform,
 &nova_Nova_String_0_Nova_getStringBetween,
 &nova_Nova_String_1_Nova_getStringBetween,
+&nova_Nova_String_0_Nova_surroundWith,
+&nova_Nova_String_1_Nova_surroundWith,
 &nova_Nova_String_Nova_compareTo,
 0,
 &nova_Nova_String_0_Nova_construct,
 &nova_Nova_String_1_Nova_construct,
+&nova_Nova_String_2_Nova_construct,
 },
 
 {
@@ -184,7 +187,7 @@ nova_env novaEnv = {
 &nova_datastruct_list_Nova_Array_Nova_indexOf,
 &nova_datastruct_list_Nova_Array_Nova_swap,
 0,
-&nova_datastruct_list_Nova_Array_Nova_set,
+0,
 &nova_datastruct_list_Nova_Array_0_Nova_contains,
 &nova_datastruct_list_Nova_Array_0_Nova_toArray,
 0,
@@ -211,6 +214,7 @@ nova_env novaEnv = {
 
 {
 &nova_datastruct_list_Nova_CharArray_Nova_get,
+&nova_datastruct_list_Nova_CharArray_Nova_set,
 &nova_datastruct_list_Nova_CharArray_0_Nova_map,
 &nova_datastruct_list_Nova_CharArray_0_Nova_forEach,
 &nova_datastruct_list_Nova_CharArray_0_Nova_any,
@@ -220,7 +224,6 @@ nova_env novaEnv = {
 &nova_datastruct_list_Nova_CharArray_0_Nova_skip,
 &nova_datastruct_list_Nova_CharArray_0_Nova_firstWhere,
 &nova_datastruct_list_Nova_CharArray_0_Nova_reverse,
-&nova_datastruct_list_Nova_CharArray_0_Nova_join,
 &nova_datastruct_list_Nova_CharArray_0_Nova_construct,
 &nova_datastruct_list_Nova_CharArray_1_Nova_construct,
 &nova_datastruct_list_Nova_CharArray_2_Nova_construct,
