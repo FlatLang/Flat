@@ -32,6 +32,16 @@ public class Package extends Node
 		super(temporaryParent, locationIn);
 	}
 	
+	public String[] getFolders()
+	{
+		return location.split("/");
+	}
+	
+	public String getRootFolder()
+	{
+		return getFolders()[0];
+	}
+	
 	/**
 	 * @see net.fathomsoft.nova.tree.Node#generateCHeader(StringBuilder)
 	 */
