@@ -120,6 +120,13 @@ public class BodyMethodDeclaration extends NovaMethodDeclaration
 			method.cloneTo(n);
 			n.setLocationIn(location);
 			
+			for (Parameter p : n.getParameterList().getOptionalParameters())
+			{
+				DefaultParameterInitialization init = new DefaultParameterInitialization(n, location, p);
+				
+				n.addChild(init);
+			}
+			
 			return n;
 		}
 		
