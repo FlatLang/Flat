@@ -133,7 +133,7 @@ public interface CallableMethod
 	{
 		if (getParameterList().getNumVisibleChildren() != types.length)
 		{
-			if (filter == null || !filter.allowMoreParameters || getParameterList().getNumVisibleChildren() >= types.length)
+			if (filter != null && !filter.allowMoreParameters && (types.length < getParameterList().getNumRequiredParameters() || types.length > getParameterList().getNumVisibleChildren()))
 			{
 				return false;
 			}

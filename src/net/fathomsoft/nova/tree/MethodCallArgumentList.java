@@ -8,6 +8,8 @@ import net.fathomsoft.nova.tree.variables.Variable;
 import net.fathomsoft.nova.util.Location;
 import net.fathomsoft.nova.util.SyntaxUtils;
 
+import java.util.ArrayList;
+
 /**
  * Node extension that keeps track of all of the arguments that
  * are passed during a method call. The children of this node are
@@ -61,7 +63,9 @@ public class MethodCallArgumentList extends ArgumentList
 		
 		generateDefaultArguments(builder);
 
-		for (int i = 0; i < getNumVisibleChildren(); i++)
+		int i = 0;
+		
+		while (i < getNumVisibleChildren())
 		{
 			if (i > 0)
 			{
@@ -106,6 +110,29 @@ public class MethodCallArgumentList extends ArgumentList
 			{
 				builder.append(')');
 			}
+			
+			i++;
+		}
+		
+		ParameterList params = getMethodDeclaration().getParameterList();
+		
+		while (i < params.getNumVisibleChildren())
+		{
+			if (i > 0)
+			{
+				builder.append(", ");
+			}
+			
+			if (params.getVisibleChild(i).isPrimitive())
+			{
+				builder.append("(intptr_t)nova_null");
+			}
+			else
+			{
+				builder.append(0);
+			}
+			
+			i++;
 		}
 		
 		if (getMethodCall().getCallableDeclaration() instanceof ClosureDeclaration)
@@ -114,6 +141,27 @@ public class MethodCallArgumentList extends ArgumentList
 		}
 		
 		return builder.append(')');
+	}
+	
+	/**
+	 * Get the types that the Argument list is providing for the
+	 * parameters.
+	 *
+	 * @return An array of Values that represent that types in the
+	 * 		argument list.
+	 */
+	public Value[] getTypes()
+	{
+		ArrayList<Value> types = new ArrayList<>();
+
+		for (int i = 0; i < getNumVisibleChildren(); i++)
+		{
+			Value child = ((Value)getVisibleChild(i)).getReturnedNode();//((MethodCallArgument)getVisibleChild(i)).value.getReturnedNode();
+
+			types.add(child);
+		}
+
+		return types.toArray(new Value[0]);
 	}
 	
 	/**

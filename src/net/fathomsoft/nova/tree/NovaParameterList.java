@@ -6,6 +6,8 @@ import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.tree.lambda.LambdaMethodDeclaration;
 import net.fathomsoft.nova.util.Location;
 
+import java.util.ArrayList;
+
 /**
  * Node extension that represents a list of parameters for a nova
  * method.
@@ -23,6 +25,38 @@ public class NovaParameterList extends ParameterList<Parameter>
 		super(temporaryParent, locationIn);
 		
 		returnParameters = new ReturnParameterList(this, locationIn.asNew());
+	}
+
+	public int getNumRequiredParameters()
+	{
+		int required = 0;
+
+		for (Parameter p : this)
+		{
+			if (p.isOptional())
+			{
+				return required;
+			}
+
+			required++;
+		}
+
+		return required;
+	}
+
+	public Parameter[] getOptionalParameters()
+	{
+		ArrayList<Parameter> list = new ArrayList<>();
+		
+		for (Parameter p : this)
+		{
+			if (p.isOptional())
+			{
+				list.add(p);
+			}
+		}
+
+		return list.toArray(new Parameter[0]);
 	}
 	
 	public int getNumReturnParameters()

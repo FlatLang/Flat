@@ -1082,8 +1082,8 @@ public class ClassDeclaration extends InstanceDeclaration
 	public MethodDeclaration[] getMethods(String methodName, int numParams, SearchFilter filter)
 	{
 		return Arrays.stream(getMethods(methodName, filter))
-				.filter(method -> method.getParameterList().getNumVisibleChildren() == numParams ||
-				(filter.allowMoreParameters && numParams > method.getParameterList().getNumVisibleChildren())).toArray(MethodDeclaration[]::new);
+				.filter(method -> (numParams >= method.getParameterList().getNumRequiredParameters() && numParams <= method.getParameterList().getNumVisibleChildren()) ||
+				(filter.allowMoreParameters && numParams > method.getParameterList().getNumRequiredParameters())).toArray(MethodDeclaration[]::new);
 	}
 	
 	/**

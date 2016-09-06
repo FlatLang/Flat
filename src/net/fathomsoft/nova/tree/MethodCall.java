@@ -1093,16 +1093,15 @@ public class MethodCall extends Variable
 		ParameterList<Value> parameters = methodDeclaration.getParameterList();
 		ArgumentList         arguments  = getArgumentList();
 		
-		if (parameters.getNumVisibleChildren() != arguments.getNumVisibleChildren())
+		int argCount = arguments.getNumVisibleChildren();
+		
+		if (argCount < parameters.getNumRequiredParameters())
 		{
-			if (parameters.getNumVisibleChildren() > arguments.getNumVisibleChildren())
-			{
-				SyntaxMessage.error("Too few arguments to method call '" + getName() + "'", this);
-			}
-			else
-			{
-				SyntaxMessage.error("Too many arguments to method call '" + getName() + "'", this);
-			}
+			SyntaxMessage.error("Too few arguments to method call '" + getName() + "'", this);
+		}
+		else if (argCount > parameters.getNumVisibleChildren())
+		{
+			SyntaxMessage.error("Too many arguments to method call '" + getName() + "'", this);
 		}
 		
 		return methodDeclaration.areCompatibleParameterTypes(this, arguments.getTypes());
@@ -1163,6 +1162,8 @@ public class MethodCall extends Variable
 						}
 					}
 				}
+				
+				//MethodCallArgument a = new MethodCallArgument(parent, location, (Value)arg);
 				
 				parent.addChild(arg);
 			}
