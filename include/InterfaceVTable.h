@@ -12,7 +12,8 @@ typedef struct nova_Nova_String nova_Nova_String;
 typedef struct nova_io_Nova_InputStream nova_io_Nova_InputStream;
 typedef struct nova_operators_Nova_Equals nova_operators_Nova_Equals;
 typedef struct nova_operators_Nova_Multiply nova_operators_Nova_Multiply;
-typedef struct example_Nova_Polygon example_Nova_Polygon;
+typedef struct compiler_tree_node_annotation_Nova_Annotatable compiler_tree_node_annotation_Nova_Annotatable;
+typedef struct compiler_tree_node_annotation_Nova_Annotation compiler_tree_node_annotation_Nova_Annotation;
 typedef char (*nova_Nova_String_closure1_Nova_transform)(void*, nova_exception_Nova_ExceptionData*, char, int, void*);
 typedef char (*nova_Nova_String_closure2_Nova_transform)(void*, nova_exception_Nova_ExceptionData*, char, int, void*);
 typedef char (*nova_Nova_String_closure3_Nova_transform)(void*, nova_exception_Nova_ExceptionData*, char, int, void*);
@@ -213,8 +214,7 @@ nova_Nova_String* (*nova_io_Nova_InputStream_virtual1_Nova_readString)(nova_io_N
 nova_datastruct_list_Nova_Array* (*nova_io_Nova_InputStream_virtual1_Nova_readBytes)(nova_io_Nova_InputStream*, nova_exception_Nova_ExceptionData*);
 char (*nova_operators_Nova_Equals_virtual0_Nova_equals)(nova_operators_Nova_Equals*, nova_exception_Nova_ExceptionData*, nova_Nova_Object*);
 nova_Nova_Object* (*nova_operators_Nova_Multiply_virtual1_Nova_multiply)(nova_operators_Nova_Multiply*, nova_exception_Nova_ExceptionData*, nova_Nova_Object*);
-int (*example_Nova_Polygon_virtual1_Nova_numberSides)(example_Nova_Polygon*, nova_exception_Nova_ExceptionData*);
-double (*example_Nova_Polygon_virtual1_Nova_calculateArea)(example_Nova_Polygon*, nova_exception_Nova_ExceptionData*);
+void (*compiler_tree_node_annotation_Nova_Annotatable_virtual0_Nova_addAnnotation)(compiler_tree_node_annotation_Nova_Annotatable*, nova_exception_Nova_ExceptionData*, compiler_tree_node_annotation_Nova_Annotation*);
 } nova_Interface_VTable;
 
 #endif
