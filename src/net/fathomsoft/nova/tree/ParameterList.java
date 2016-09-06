@@ -63,6 +63,11 @@ public class ParameterList<E extends Value> extends TypeList<E>
 			addChild(exceptionData);
 		}
 	}
+
+	public int getNumRequiredParameters()
+	{
+		return getNumVisibleChildren();
+	}
 	
 	private Parameter generateReferenceParameter()
 	{

@@ -30,6 +30,16 @@ public class Parameter extends LocalDeclaration
 		super(temporaryParent, locationIn);
 	}
 	
+	public boolean isOptional()
+	{
+		return defaultValue != null;
+	}
+	
+	public boolean isRequired()
+	{
+		return !isOptional();
+	}
+	
 	public boolean isObjectReference()
 	{
 		return getName().equals(ParameterList.OBJECT_REFERENCE_IDENTIFIER);
@@ -98,7 +108,22 @@ public class Parameter extends LocalDeclaration
 		
 		return method == null || method.isExternal();
 	}
-	
+
+	@Override
+	public StringBuilder generateNovaInput(StringBuilder builder, boolean outputChildren)
+	{
+		generateNovaAnnotations(builder);
+		
+		builder.append(generateNovaType()).append(' ').append(getName());
+		
+		if (isOptional())
+		{
+			builder.append(" = ").append(defaultValue.generateNovaInput());
+		}
+		
+		return builder;
+	}
+
 	/**
 	 * Get the default value of the parameter, if no value is passed to
 	 * the method.
@@ -209,6 +234,14 @@ public class Parameter extends LocalDeclaration
 	 */
 	public static Parameter decodeStatement(Node parent, String statement, Location location, boolean require, boolean checkName, boolean checkType)
 	{
+		String defaultValue = null;
+		
+		if (statement.contains("="))
+		{
+			defaultValue = statement.substring(statement.indexOf('=') + 1).trim();
+			statement = statement.substring(0, statement.indexOf('=')).trim();
+		}
+		
 		VariableDeclaration node = LocalDeclaration.decodeStatement(parent, statement, location, require, checkName, checkType);
 		
 		if (node == null)
@@ -223,13 +256,22 @@ public class Parameter extends LocalDeclaration
 			}
 		}
 		
+		Parameter n = null;
+		
 		if (node instanceof Parameter)
 		{
-			return (Parameter)node;
+			n = (Parameter)node;
+		}
+		else
+		{
+			n = new Parameter(parent, location);
+			node.cloneTo(n);
 		}
 		
-		Parameter n = new Parameter(parent, location);
-		node.cloneTo(n);
+		if (defaultValue != null)
+		{
+			n.defaultValue = SyntaxTree.decodeValue(n, defaultValue, location, require);
+		}
 		
 		return n;
 	}
