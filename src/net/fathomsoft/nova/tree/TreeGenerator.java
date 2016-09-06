@@ -329,7 +329,6 @@ public class TreeGenerator implements Runnable
 	 * Search for the next statement. If a statement is found, return
 	 * it in a Node format, if not return null.
 	 * 
-	 * @param source The source String to search in.
 	 * @param previous The previously decoded node.
 	 * @param offset The offset in the source file that the statement is.
 	 * @param searchTypes The type of Nodes to try to decode.
