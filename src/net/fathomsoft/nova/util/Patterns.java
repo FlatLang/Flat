@@ -36,6 +36,13 @@ public class Patterns
 	 */
 	public static final Pattern IDENTIFIER				= Pattern.compile("[A-Za-z0-9_]+");
 
+
+	/**
+	 * Pattern that searches for an identifier. An identifier consists of
+	 * letters, numbers, and underscores.
+	 */
+	public static final Pattern NAMED_ARGUMENT			= Pattern.compile("[A-Za-z0-9_]+\\s*:");
+
 	/**
 	 * Pattern that searches for non-identifier character.
 	 */
