@@ -3,6 +3,7 @@ package net.fathomsoft.nova.tree;
 import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.ValidationResult;
+import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.tree.exceptionhandling.Exception;
 import net.fathomsoft.nova.tree.variables.Variable;
 import net.fathomsoft.nova.util.Location;
@@ -22,12 +23,77 @@ import java.util.ArrayList;
  */
 public class MethodCallArgumentList extends ArgumentList
 {
+	private ArrayList<String> argumentNames;
+	
 	/**
 	 * @see net.fathomsoft.nova.tree.Node#Node(Node, Location)
 	 */
 	public MethodCallArgumentList(Node temporaryParent, Location locationIn)
 	{
 		super(temporaryParent, locationIn);
+	}
+	
+	public boolean containsNamedArguments()
+	{
+		return argumentNames != null;
+	}
+	
+	public boolean containsNamedArgument(String name)
+	{
+		return getNamedArgumentIndex(name) >= 0;
+	}
+	
+	public int getNamedArgumentIndex(String name)
+	{
+		if (argumentNames != null)
+		{
+			for (int i = 0; i < argumentNames.size(); i++)
+			{
+				String arg = argumentNames.get(i);
+				
+				if (name.equals(arg))
+				{
+					return i;
+				}
+			}
+		}
+		
+		return -1;
+	}
+	
+	public int getFirstArgumentNameIndex()
+	{
+		for (int i = 0; i < getNumVisibleChildren(); i++)
+		{
+			if (getArgumentName(i) != null)
+			{
+				return i;
+			}
+		}
+		
+		return -1;
+	}
+	
+	public String getArgumentName(int index)
+	{
+		return argumentNames == null || argumentNames.size() <= index ? null : argumentNames.get(index);
+	}
+	
+	public void setArgumentName(int index, String name)
+	{
+		argumentNames = argumentNames == null ? new ArrayList<>(getNumVisibleChildren()) : argumentNames;
+		
+		while (argumentNames.size() <= index)
+		{
+			argumentNames.add(null);
+		}
+		
+		if (getFirstArgumentNameIndex() >= 0 && argumentNames.get(index - 1) == null)
+		{
+			SyntaxMessage.error("Once a named argument is used, all of the following arguments must be named as well.", this);
+		}
+		
+		argumentNames.set(index, name);
 	}
 	
 	/**
@@ -65,50 +131,59 @@ public class MethodCallArgumentList extends ArgumentList
 
 		int i = 0;
 		
-		while (i < getNumVisibleChildren())
+		Value[] values = method instanceof NovaMethodDeclaration ? getArgumentsInOrder((NovaMethodDeclaration)method) : getArgumentsInOrder();
+		
+		while (i < values.length)
 		{
 			if (i > 0)
 			{
 				builder.append(", ");
 			}
 			
-			Value child = (Value)getChild(i);
-			Value param = call.getCorrespondingParameter(child);
+			Value arg = values[i];
+			Value param = method.getParameterList().getParameter(i);
 			
-			if (method.isVirtual() && !call.isVirtualTypeKnown())
+			if (arg instanceof DefaultArgument)
 			{
-				VirtualMethodDeclaration virtual = ((NovaMethodDeclaration)method).getVirtualMethod();
-				
-				if (virtual != null)
+				DefaultArgument.generateDefaultArgumentOutput(builder, param);
+			}
+			else
+			{
+				if (method.isVirtual() && !call.isVirtualTypeKnown())
 				{
-					param = virtual.getParameter(i);
+					VirtualMethodDeclaration virtual = ((NovaMethodDeclaration)method).getVirtualMethod();
+					
+					if (virtual != null)
+					{
+						param = virtual.getParameter(i);
+					}
 				}
-			}
-			
-			boolean sameType = SyntaxUtils.isSameType(child.getReturnedNode(), param, false) || param.isPrimitiveType() && child.isPrimitiveType();
-			
-			if (!sameType)
-			{
-				param.generateCTypeCast(builder).append(child.getReturnedNode().generatePointerToValueConversion(param));
-			}
-			
-			generateCArgumentPrefix(builder, child, i);
-			
-			if (!sameType)
-			{
-				builder.append('(');
-			}
-			
-			if (param.isValueReference())
-			{
-				builder.append('&');
-			}
-			
-			child.generateCArgumentOutput(builder);
-			
-			if (!sameType)
-			{
-				builder.append(')');
+				
+				boolean sameType = SyntaxUtils.isSameType(arg.getReturnedNode(), param, false) || param.isPrimitiveType() && arg.isPrimitiveType();
+				
+				if (!sameType)
+				{
+					param.generateCTypeCast(builder).append(arg.getReturnedNode().generatePointerToValueConversion(param));
+				}
+				
+				generateCArgumentPrefix(builder, arg, i);
+				
+				if (!sameType)
+				{
+					builder.append('(');
+				}
+				
+				if (param.isValueReference())
+				{
+					builder.append('&');
+				}
+				
+				arg.generateCArgumentOutput(builder);
+				
+				if (!sameType)
+				{
+					builder.append(')');
+				}
 			}
 			
 			i++;
@@ -118,19 +193,9 @@ public class MethodCallArgumentList extends ArgumentList
 		
 		while (i < params.getNumVisibleChildren())
 		{
-			if (i > 0)
-			{
-				builder.append(", ");
-			}
+			builder.append(", ");
 			
-			if (params.getVisibleChild(i).isPrimitive())
-			{
-				builder.append("(intptr_t)nova_null");
-			}
-			else
-			{
-				builder.append(0);
-			}
+			DefaultArgument.generateDefaultArgumentOutput(builder, params.getVisibleChild(i));
 			
 			i++;
 		}
@@ -156,12 +221,86 @@ public class MethodCallArgumentList extends ArgumentList
 
 		for (int i = 0; i < getNumVisibleChildren(); i++)
 		{
-			Value child = ((Value)getVisibleChild(i)).getReturnedNode();//((MethodCallArgument)getVisibleChild(i)).value.getReturnedNode();
-
-			types.add(child);
+			types.add(getType(i));
 		}
 
 		return types.toArray(new Value[0]);
+	}
+	
+	public Value[] getTypes(NovaMethodDeclaration method)
+	{
+		Value[] values = getArgumentsInOrder(method);
+		
+		for (int i = 0; i < values.length; i++)
+		{
+			values[i] = values[i].getReturnedNode();
+		}
+		
+		return values;
+	}
+
+	public Value[] getArgumentsInOrder()
+	{
+		if (getFirstArgumentNameIndex() >= 0)
+		{
+			CallableMethod callable = getMethodCall().getInferredDeclaration();
+			
+			if (callable instanceof NovaMethodDeclaration)
+			{
+				return getArgumentsInOrder((NovaMethodDeclaration)callable);
+			}
+		}
+		
+		ArrayList<Value> types = new ArrayList<>();
+
+		for (int i = 0; i < getNumVisibleChildren(); i++)
+		{
+			types.add((Value)getVisibleChild(i));
+		}
+
+		return types.toArray(new Value[0]);
+	}
+	
+	public Value[] getArgumentsInOrder(NovaMethodDeclaration method)
+	{
+		if (getFirstArgumentNameIndex() < 0)
+		{
+			return getArgumentsInOrder();
+		}
+		
+		ArrayList<Value> types = new ArrayList<>();
+		
+		for (int i = 0; i < getFirstArgumentNameIndex(); i++)
+		{
+			Value child = ((Value)getVisibleChild(i));
+
+			types.add(child);
+		}
+		
+		for (int i = getFirstArgumentNameIndex(); i < getNumVisibleChildren(); i++)
+		{
+			Parameter param = method.getParameterList().getParameter(i);
+			
+			if (containsNamedArgument(param.getName()))
+			{
+				Value value = ((Value)getVisibleChild(getNamedArgumentIndex(param.getName())));
+				
+				types.add(value);
+			}
+			else
+			{
+				types.add(new DefaultArgument(this, Location.INVALID));
+				
+				i--;
+			}
+		}
+
+		return types.toArray(new Value[0]);
+	}
+	
+	public Value getType(int index)
+	{
+		return ((Value)getVisibleChild(index)).getRealValue().getReturnedNode();
 	}
 	
 	/**
@@ -369,13 +508,14 @@ public class MethodCallArgumentList extends ArgumentList
 				}
 			}
 			
-			for (int i = 0; i < getNumVisibleChildren() - numRet; i++)
+			Value[] values = getArgumentsInOrder();
+
+			MethodCall call = getMethodCall();
+			CallableMethod method = call.getInferredDeclaration();
+
+			for (int i = 0; i < values.length - numRet; i++)
 			{
-				MethodCall call = getMethodCall();
-				CallableMethod method = call.getInferredDeclaration();
-				
-				
-				Value value = (Value)getVisibleChild(i);
+				Value value = values[i];
 				Value param = null;
 				
 				if (method.isVirtual() && !call.isVirtualTypeKnown())
