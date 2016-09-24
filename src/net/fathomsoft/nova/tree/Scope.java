@@ -37,7 +37,7 @@ public class Scope extends Node
 	private ArrayList<Listener> listeners;
 
 	private ArrayList<Pair<LocalDeclaration, Value>> assignedImplicitVariables;
-
+	
 	/**
 	 * Instantiate and initialize the default values.
 	 * 
