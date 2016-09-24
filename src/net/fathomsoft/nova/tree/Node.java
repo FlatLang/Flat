@@ -1,6 +1,7 @@
 package net.fathomsoft.nova.tree;
 
 import java.util.ArrayList;
+import java.util.function.Consumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -932,6 +933,14 @@ public abstract class Node implements Listenable, Annotatable
 		getParent().replace(this, replacement);
 	}
 	
+	public void slaughterEveryLastVisibleChild()
+	{
+		while (getNumVisibleChildren() > 0)
+		{
+			getVisibleChild(0).detach(this);
+		}
+	}
+	
 	/**
 	 * @see Node#slaughterEveryLastChild(int)
 	 */
@@ -957,6 +966,22 @@ public abstract class Node implements Listenable, Annotatable
 		for (int i = 0; i < amount; i++)
 		{
 			getChild(0).detach(this);
+		}
+	}
+
+	public void forEachChild(Consumer<Node> action)
+	{
+		for (int i = 0; i < getNumChildren(); i++)
+		{
+			action.accept(getChild(i));
+		}
+	}
+
+	public void forEachVisibleChild(Consumer<Node> action)
+	{
+		for (int i = 0; i < getNumVisibleChildren(); i++)
+		{
+			action.accept(getVisibleChild(i));
 		}
 	}
 	
@@ -1852,7 +1877,7 @@ public abstract class Node implements Listenable, Annotatable
 		return node;
 	}
 	
-	public void cloneChildrenTo(Node node)
+	public void cloneChildrenTo(final Node node)
 	{
 		for (int i = getNumChildren() - 1; i >= 0; i--)
 		{
@@ -1860,6 +1885,8 @@ public abstract class Node implements Listenable, Annotatable
 			
 			node.children.add(0, child.clone(node, child.getLocationIn()));
 		}
+		
+		//forEachChild(x -> node.addChild(x.clone(node, x.getLocationIn())));
 	}
 	
 	/**
