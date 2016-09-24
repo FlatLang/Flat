@@ -312,13 +312,23 @@ public class SyntaxTree
 		
 		return main;
 	}
-	
+    
 	/**
 	 * Traverse through the tree and validate each node.
 	 * 
 	 * @param root The Node to validate, then validate the children.
 	 */
 	public ValidationResult validateNodes(Node root)
+	{
+		return validateNodes(root, phase);
+	}
+	
+	/**
+	 * Traverse through the tree and validate each node.
+	 *
+	 * @param root The Node to validate, then validate the children.
+	 */
+	public static ValidationResult validateNodes(Node root, int phase)
 	{
 		ValidationResult result = null;
 		
@@ -341,7 +351,7 @@ public class SyntaxTree
 			{
 				Node child = root.getChild(i);
 				
-				result = validateNodes(child);
+				result = validateNodes(child, phase);
 				
 				if (!result.continueValidation)
 				{
@@ -915,7 +925,7 @@ public class SyntaxTree
 			{
 				return null;
 			}
-
+			
 			node = decodeAccessible(parent, current, location, require, validateAccess);
 			
 			if (node == null)
