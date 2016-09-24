@@ -20,7 +20,8 @@ import net.fathomsoft.nova.util.Location;
  */
 public class Parameter extends LocalDeclaration
 {
-	private Node	defaultValue;
+	private String  defaultValueString;
+	private Value	defaultValue;
 	
 	/**
 	 * @see net.fathomsoft.nova.tree.Node#Node(Node, Location)
@@ -30,9 +31,24 @@ public class Parameter extends LocalDeclaration
 		super(temporaryParent, locationIn);
 	}
 	
+	public int getIndex()
+	{
+		ParameterList params = (ParameterList)getParent();
+		
+		for (int i = 0; i < params.getNumParameters(); i++)
+		{
+			if (this == params.getParameter(i))
+			{
+				return i;
+			}
+		}
+		
+		return -1;
+	}
+	
 	public boolean isOptional()
 	{
-		return defaultValue != null;
+		return defaultValueString != null || defaultValue != null;
 	}
 	
 	public boolean isRequired()
@@ -118,7 +134,7 @@ public class Parameter extends LocalDeclaration
 		
 		if (isOptional())
 		{
-			builder.append(" = ").append(defaultValue.generateNovaInput());
+			builder.append(" = ").append(defaultValueString != null ? defaultValueString : defaultValue.generateNovaInput());
 		}
 		
 		return builder;
@@ -131,7 +147,7 @@ public class Parameter extends LocalDeclaration
 	 * @return The value that the parameter will be set to, if no value is
 	 * 		passed to a method.
 	 */
-	public Node getDefaultValue()
+	public Value getDefaultValue()
 	{
 		return defaultValue;
 	}
@@ -143,7 +159,7 @@ public class Parameter extends LocalDeclaration
 	 * @param defaultValue The value that the parameter will be set to,
 	 * 		if no value is passed to a method.
 	 */
-	public void setDefaultValue(Node defaultValue)
+	public void setDefaultValue(Value defaultValue)
 	{
 		this.defaultValue = defaultValue;
 	}
@@ -270,7 +286,7 @@ public class Parameter extends LocalDeclaration
 		
 		if (defaultValue != null)
 		{
-			n.defaultValue = SyntaxTree.decodeValue(n, defaultValue, location, require);
+			n.defaultValueString = defaultValue;
 		}
 		
 		return n;
@@ -283,6 +299,13 @@ public class Parameter extends LocalDeclaration
 	public ValidationResult validate(int phase)
 	{
 		ValidationResult result = super.validate(phase);
+		
+		if (phase == SyntaxTree.PHASE_METHOD_CONTENTS && defaultValueString != null)
+		{
+			defaultValue = SyntaxTree.decodeValue(this, defaultValueString, getLocationIn(), true);
+			
+			defaultValueString = null;
+		}
 		
 		if (result.skipValidation())
 		{
@@ -367,7 +390,8 @@ public class Parameter extends LocalDeclaration
 	public Parameter cloneTo(Parameter node, boolean cloneChildren)
 	{
 		super.cloneTo(node, cloneChildren);
-		
+        
+		node.defaultValueString = defaultValueString;
 		node.defaultValue = defaultValue;
 		
 		return node;
