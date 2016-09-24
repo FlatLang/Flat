@@ -104,14 +104,18 @@ public class Closure extends Variable
 	{
 //		return (ClosureDeclaration)getParentMethod().getParameterList().getParameter(name);
 		
-		if (isDecoding())
+		if (closureDeclaration != null)
+		{
+			return closureDeclaration;
+		}
+		else if (isDecoding())
 		{
 			int argNum = getMethodCall().getArgumentList().getNumChildren();
 			
 			return (ClosureDeclaration)getMethodCall().getInferredDeclaration().getParameterList().getParameter(argNum);
 		}
 		
-		return closureDeclaration;//(ClosureDeclaration)getMethodCall().getCorrespondingParameter((Value)getRootNode());
+		return null;//(ClosureDeclaration)getMethodCall().getCorrespondingParameter((Value)getRootNode());
 	}
 	
 	/**
