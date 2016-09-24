@@ -578,7 +578,7 @@ public abstract class Value extends Node implements AbstractValue
 			{
 				LocalDeclaration decl = (LocalDeclaration)var.getDeclaration();
 				
-				if (decl.isImplicit() && !decl.getImplicitType().isGenericType())
+				if (decl.isImplicit() && decl.getImplicitType() != null && !decl.getImplicitType().isGenericType())
 				{
 					return decl.getImplicitType().getReferenceFile();
 				}
@@ -1363,6 +1363,11 @@ public abstract class Value extends Node implements AbstractValue
 		}
 	}
 	
+	public Value getRealValue()
+	{
+		return this;
+	}
+	
 	/**
 	 * Fill the given {@link Value} with the data that is in the
 	 * specified node.
@@ -1373,10 +1378,10 @@ public abstract class Value extends Node implements AbstractValue
 	public Value cloneTo(Value node, boolean cloneChildren)
 	{
 		super.cloneTo(node, cloneChildren);
-
-		node.setArrayDimensions(getArrayDimensions());
-		node.setType(getTypeStringValue(), true, false, false);
-		node.setDataType(getDataType(false));
+		
+		//node.setArrayDimensions(getArrayDimensions());
+		//node.setType(getTypeStringValue(), true, false, false);
+		//node.setDataType(getDataType(false));
 		
 		return node;
 	}
