@@ -998,6 +998,62 @@ public class ClassDeclaration extends InstanceDeclaration
 		return getMethod(new GenericCompatible[] { context }, methodName, parameterTypes);
 	}
 	
+	public MethodDeclaration getMethod(GenericCompatible context, String methodName, MethodCallArgumentList arguments)
+	{
+		if (!arguments.containsNamedArguments())
+		{
+			return getMethod(context, methodName, arguments.getTypes());
+		}
+		
+		MethodDeclaration methods[] = getMethods(methodName, SearchFilter.getDefault());
+		
+		ArrayList<MethodDeclaration> compatible = checkCompatible(methods, arguments);
+		
+		if (compatible.size() > 1)
+		{
+			SyntaxMessage.error("Ambiguous method call to '" + methodName + "'", (Node)context);
+			
+			return null;
+		}
+		else if (compatible.size() == 1)
+		{
+			return compatible.get(0);
+		}
+		else
+		{
+			return null;
+		}
+	}
+	
+	private ArrayList<MethodDeclaration> checkCompatible(MethodDeclaration[] methods, MethodCallArgumentList arguments)
+	{
+		ArrayList<MethodDeclaration> compatible = new ArrayList<>();
+		
+		for (MethodDeclaration method : methods)
+		{
+			NovaMethodDeclaration novaMethod = (NovaMethodDeclaration)method;
+
+			boolean valid = true;
+
+			for (int i = 0; i < arguments.getNumVisibleChildren(); i++)
+			{
+				if (arguments.getArgumentName(i) != null && novaMethod.getParameter(arguments.getArgumentName(i)) == null)
+				{
+					valid = false;
+					
+					break;
+				}
+			}
+			
+			if (valid)
+			{
+				compatible.add(novaMethod);
+			}
+		}
+		
+		return compatible;
+	}
+	
 	public MethodDeclaration getMethod(GenericCompatible[] contexts, String methodName, Value ... parameterTypes)
 	{
 		return getMethod(contexts, methodName, SearchFilter.getDefault(), parameterTypes);
@@ -1039,9 +1095,9 @@ public class ClassDeclaration extends InstanceDeclaration
 		{
 			MethodDeclaration method = compatible.get(i);
 
-			if (method.getParameterList().getNumParameters() > max)
+			if (method.getParameterList().getNumRequiredParameters() > max)
 			{
-				max = method.getParameterList().getNumParameters();
+				max = method.getParameterList().getNumRequiredParameters();
 				maxI = i;
 			}
 		}
