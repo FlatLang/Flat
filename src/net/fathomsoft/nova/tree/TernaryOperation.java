@@ -129,8 +129,8 @@ public class TernaryOperation extends IValue implements Accessible
 			
 			ClassDeclaration commonClass = trueValue.getReturnedNode().getTypeClass().getCommonAncestor(falseValue.getReturnedNode().getTypeClass());
 			
-			n.setType(trueValue.getReturnedNode());
-			n.setTypeValue(commonClass.getType());
+			n.setType(trueValue.getReturnedNode()); // Set the array type data and stuff like that
+			n.setTypeValue(commonClass.getType()); // Set the actual class type to the common class
 			
 			return n;
 		}
