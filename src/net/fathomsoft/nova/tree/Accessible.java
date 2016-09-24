@@ -717,7 +717,7 @@ public interface Accessible
 	{
 		Value n = (Value)this;
 		
-		return n.getAncestorWithScope() != null;
+		return n.getParent() instanceof Parameter || n.getAncestorWithScope() != null;
 	}
 	
 	/**
@@ -789,17 +789,24 @@ public interface Accessible
 	{
 		Node n = (Node)this;
 		
-		if (canAccess() && n.getParent() instanceof Accessible && !n.getParent().containsScope())
+		if (canAccess() && n.getParent() instanceof Accessible && n.getParent() instanceof VariableDeclaration == false && !n.getParent().containsScope())
 		{
 			Accessible id = (Accessible)n.getParent();
 			
 			if (!skipPriority && id instanceof Priority)
 			{
 				Priority priority = (Priority)id;
+				Node last = priority.getLastAncestorOfType(new Class[] { Priority.class }, false);
+				
+				last = last == null ? priority : last;
 				
 				if (this != priority.getContents())
 				{
 					return (Accessible)priority.getReturnedContents();
+				}
+				else if (last.getParent() instanceof Accessible && ((Accessible)last.getParent()).doesAccess())
+				{
+					return (Accessible)id.getParent();
 				}
 			}
 			
