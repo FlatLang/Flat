@@ -1,6 +1,7 @@
 package net.fathomsoft.nova.tree;
 
 import net.fathomsoft.nova.TestContext;
+import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.util.Location;
 
 /**
@@ -85,6 +86,36 @@ public class MethodCallArgument extends Value
         value.onAdded(parent);
     }
 
+    @Override
+    public boolean onNextStatementDecoded(Node next)
+    {
+        return value.onNextStatementDecoded(next);
+    }
+
+    @Override
+    public boolean onAfterDecoded()
+    {
+        return value.onAfterDecoded();
+    }
+
+    @Override
+    public Value getReturnedNode()
+    {
+        return value.getReturnedNode();
+    }
+
+    @Override
+    public Value getRealValue()
+    {
+        return value;
+    }
+
+    @Override
+    public ValidationResult validate(int phase)
+    {
+        return value.validate(phase);
+    }
+
     /**
      * @see net.fathomsoft.nova.tree.Node#clone(Node, Location, boolean)
      */
@@ -114,6 +145,9 @@ public class MethodCallArgument extends Value
     public MethodCallArgument cloneTo(MethodCallArgument node, boolean cloneChildren)
     {
         super.cloneTo(node, cloneChildren);
+        
+        node.name = name;
+        node.value = value;
 
         return node;
     }
