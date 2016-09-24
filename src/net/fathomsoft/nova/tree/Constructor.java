@@ -206,7 +206,7 @@ public class Constructor extends BodyMethodDeclaration
 	 */
 	public static Constructor decodeStatement(Node parent, String statement, Location location, boolean require)
 	{
-		MethodDeclaration method = BodyMethodDeclaration.decodeStatement(parent, statement, location, false);
+		BodyMethodDeclaration method = BodyMethodDeclaration.decodeStatement(parent, statement, location, false);
 		
 		if (method != null && method.getName().equals(IDENTIFIER))
 		{
@@ -255,6 +255,7 @@ public class Constructor extends BodyMethodDeclaration
 		
 		if (phase == SyntaxTree.PHASE_METHOD_CONTENTS)
 		{
+			initMethod.getScope().slaughterEveryLastVisibleChild();
 			initMethod.getScope().inheritChildren(getScope());
 			initMethod.setLocationIn(getLocationIn());
 			
