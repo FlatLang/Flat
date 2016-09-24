@@ -53,7 +53,13 @@ public class Priority extends Value implements Accessible
 	{
 		return null;
 	}
-	
+
+	@Override
+	public Identifier getAccessedNode()
+	{
+		return getNumChildren() > 1 ? (Identifier)super.getChild(1) : null;
+	}
+
 	@Override
 	public GenericTypeArgumentList getGenericTypeArgumentList()
 	{
