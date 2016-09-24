@@ -1,6 +1,7 @@
 package net.fathomsoft.nova.tree;
 
 import net.fathomsoft.nova.TestContext;
+import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.util.Location;
 
 /**
@@ -22,23 +23,15 @@ public class DefaultParameterInitialization extends Node
         this.parameter = parameter;
     }
 
-    /**
-     * @see net.fathomsoft.nova.tree.Node#clone(Node, Location, boolean)
-     */
-    @Override
-    public DefaultParameterInitialization clone(Node temporaryParent, Location locationIn, boolean cloneChildren)
-    {
-        DefaultParameterInitialization node = new DefaultParameterInitialization(temporaryParent, locationIn, parameter);
-
-        return cloneTo(node, cloneChildren);
-    }
-
     @Override
     public StringBuilder generateCSourceFragment(StringBuilder builder)
     {
         String use = parameter.generateCUseOutput().toString();
         
-        builder.append(use).append(" = ").append(use).append(" == ");
+        builder.append(use).append(" = ");
+        parameter.generateCTypeCast(builder).append('(');
+        
+        builder.append(use).append(" == ");
         
         if (parameter.isPrimitive())
         {
@@ -49,9 +42,44 @@ public class DefaultParameterInitialization extends Node
             builder.append(0);
         }
         
-        builder.append(" ? ").append(parameter.getDefaultValue().generateCSourceFragment()).append(" : ").append(use);
+        String cast = !parameter.getDefaultValue().isPrimitive() ? getProgram().getClassDeclaration("nova/Object").generateCTypeCast().toString() : "";
         
-        return builder.append(';');
+        builder.append(" ? ").append(cast).append(parameter.getDefaultValue().generateCSourceFragment()).append(" : ").append(cast).append(use);
+        
+        return builder.append(");");
+    }
+
+    /**
+     * @see net.fathomsoft.nova.tree.Node#validate(int)
+     */
+    @Override
+    public ValidationResult validate(int phase)
+    {
+        ValidationResult result = super.validate(phase);
+
+        if (result.skipValidation())
+        {
+            return result;
+        }
+        
+        // If methods arent same
+        if (getParent().getParent() != parameter.getParent().getParent())
+        {
+            parameter = ((NovaMethodDeclaration)getParent().getParent()).getParameterList().getParameter(parameter.getIndex());
+        }
+        
+        return result;
+    }
+
+    /**
+     * @see net.fathomsoft.nova.tree.Node#clone(Node, Location, boolean)
+     */
+    @Override
+    public DefaultParameterInitialization clone(Node temporaryParent, Location locationIn, boolean cloneChildren)
+    {
+        DefaultParameterInitialization node = new DefaultParameterInitialization(temporaryParent, locationIn, parameter);
+
+        return cloneTo(node, cloneChildren);
     }
 
     /**
