@@ -969,6 +969,7 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 			virtualMethod.base = this;
 			
 			this.cloneTo(virtualMethod, false);
+			virtualMethod.objectReference = new ObjectReference(virtualMethod);
 			
 			getParentClass().addChild(virtualMethod);
 		}
@@ -989,7 +990,7 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 		{
 			return result;
 		}
-		
+        
 		if (objectReference == null && isInstance())
 		{
 			objectReference = new ObjectReference(this);
@@ -1060,6 +1061,7 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 	{
 		super.cloneTo(node, cloneChildren);
 		
+		node.objectReference = objectReference;
 		node.overloadID = overloadID;
 		node.uniqueID   = uniqueID;
 		
