@@ -2146,6 +2146,11 @@ public class SyntaxUtils
 	 */
 	public static boolean isTypeCompatible(GenericCompatible context, Value required, Value given, boolean searchGeneric, int arrayDifference)
 	{
+		if (given instanceof DefaultArgument)
+		{
+			return true;
+		}
+		
 		if (context != null && given.isGenericType() && context instanceof Constructor == false)
 		{
 			GenericTypeParameter param = given.getGenericTypeParameter();//((Value)context).getTypeClass().getGenericTypeParameter(given.getType(), given);
