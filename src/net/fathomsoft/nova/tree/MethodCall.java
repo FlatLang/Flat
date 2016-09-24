@@ -20,6 +20,8 @@ import net.fathomsoft.nova.util.Patterns;
 import net.fathomsoft.nova.util.StringUtils;
 import net.fathomsoft.nova.util.SyntaxUtils;
 
+import java.util.regex.Matcher;
+
 /**
  * Value extension that represents the declaration of a method
  * call node type. See {@link #decodeStatement(Node, String, Location, boolean)}
@@ -250,9 +252,9 @@ public class MethodCall extends Variable
 			setName(getFileDeclaration().getImportedClass(declaring, name).getName());
 		}
 		
-		return declaring.getMethod(getContext(), name, getArgumentList().getTypes());
+		return declaring.getMethod(getContext(), name, getArgumentList());
 	}
-		
+	
 	/**
 	 * Get the Method instance that this MethodCall is calling.
 	 * 
@@ -394,13 +396,13 @@ public class MethodCall extends Variable
 	 */
 	public Value getCorrespondingParameter(Value argument)
 	{
-		ArgumentList args = getArgumentList();
+		MethodCallArgumentList args = getArgumentList();
 		
 		for (int i = 0; i < args.getNumChildren(); i++)
 		{
-			Value abstractValue = (Value)args.getChild(i);
+			Value abstractValue = ((Value)args.getChild(i)).getRealValue();
 			
-			if (abstractValue == argument)
+			if (abstractValue == argument.getRealValue())
 			{
 				return getCorrespondingParameter(i);
 			}
@@ -430,7 +432,6 @@ public class MethodCall extends Variable
 	 */
 	public Value getCorrespondingParameter(int argIndex)
 	{
-		Nova.debuggingBreakpoint(getCallableDeclaration() == null);
 		return getCallableDeclaration().getParameterList().getParameter(argIndex);
 	}
 	
@@ -760,7 +761,7 @@ public class MethodCall extends Variable
 			{
 				VirtualMethodDeclaration virtual = method.getVirtualMethod();
 				
-				if (virtual.isGenericType())
+				if (virtual.isGenericType() || virtual.getGenericTypeArgumentList().getNumVisibleChildren() > 0)
 				{
 					return virtual;
 				}
@@ -1091,7 +1092,7 @@ public class MethodCall extends Variable
 		}
 		
 		ParameterList<Value> parameters = methodDeclaration.getParameterList();
-		ArgumentList         arguments  = getArgumentList();
+		MethodCallArgumentList arguments = getArgumentList();
 		
 		int argCount = arguments.getNumVisibleChildren();
 		
@@ -1104,7 +1105,7 @@ public class MethodCall extends Variable
 			SyntaxMessage.error("Too many arguments to method call '" + getName() + "'", this);
 		}
 		
-		return methodDeclaration.areCompatibleParameterTypes(this, arguments.getTypes());
+		return methodDeclaration.areCompatibleParameterTypes(this, methodDeclaration instanceof NovaMethodDeclaration ? arguments.getTypes((NovaMethodDeclaration)methodDeclaration) : arguments.getTypes());
 	}
 	
 	/**
@@ -1116,11 +1117,23 @@ public class MethodCall extends Variable
 	 */
 	private void addArguments(String arguments[], Location location, boolean require)
 	{
-		Node parent = getArgumentList();
+		MethodCallArgumentList parent = getArgumentList();
 		
 		for (int i = 0; i < arguments.length; i++)
 		{
 			String argument = arguments[i];
+			
+			Matcher named = Patterns.NAMED_ARGUMENT.matcher(argument);
+			
+			if (named.find() && named.start() == 0)
+			{
+				String name = named.group();
+				name = name.substring(0, name.length() - 1).trim();
+				
+				parent.setArgumentName(i, name);
+				
+				argument = argument.substring(named.group().length()).trim();
+			}
 			
 			if (argument.length() > 0)
 			{
@@ -1163,7 +1176,7 @@ public class MethodCall extends Variable
 					}
 				}
 				
-				//MethodCallArgument a = new MethodCallArgument(parent, location, (Value)arg);
+				//arg = new MethodCallArgument(parent, location, (Value)arg);
 				
 				parent.addChild(arg);
 			}
@@ -1252,7 +1265,7 @@ public class MethodCall extends Variable
 		{
 			return result;
 		}
-
+		
 		Identifier returned  = this;
 		
 		Accessible reference = returned.getReferenceNode();
