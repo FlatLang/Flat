@@ -75,8 +75,7 @@ public class Interface extends ClassDeclaration
 	{
 		if (StringUtils.containsWord(statement, IDENTIFIER))
 		{
-			// TODO: Would replace all "interface" instances. e.g. "public interface interfaceThing" would be "public class classThing" 
-			statement = statement.replace(IDENTIFIER, ClassDeclaration.IDENTIFIER);
+			statement = statement.replaceFirst(IDENTIFIER, ClassDeclaration.IDENTIFIER);
 			
 			ClassData data = new ClassData(false, false, true);
 			
