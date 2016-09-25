@@ -600,12 +600,12 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 				
 				if (parent.getParentClass(true) instanceof Interface)
 				{
-					if (n.getVisibility() != PRIVATE)
+					/*if (n.getVisibility() != PRIVATE)
 					{
 						SyntaxMessage.error("Interface functions cannot have visibility modifiers", n);
 					}
 					
-					n.setVisibility(PUBLIC);
+					n.setVisibility(PUBLIC);*/
 				}
 				
 				return n;
