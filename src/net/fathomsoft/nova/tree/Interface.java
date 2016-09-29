@@ -123,23 +123,6 @@ public class Interface extends ClassDeclaration
 			return result;
 		}
 		
-		if (phase == SyntaxTree.PHASE_INSTANCE_DECLARATIONS)
-		{
-			for (NovaMethodDeclaration method : getMethods(false, false))
-			{
-				if (method.isUserMade())
-				{
-					if (!(method instanceof AbstractMethodDeclaration))
-					{
-						AbstractMethodDeclaration abst = new AbstractMethodDeclaration(this, method.getLocationIn());
-						abst.createFrom(method);
-						
-						getMethodList().replace(method, abst);
-					}
-				}
-			}
-		}
-		
 		return result;
 	}
 	

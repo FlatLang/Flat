@@ -275,7 +275,7 @@ public class ClassDeclaration extends InstanceDeclaration
 	 */
 	public NovaMethodDeclaration[] getVirtualMethods()
 	{
-		ArrayList<NovaMethodDeclaration> methods = new ArrayList<NovaMethodDeclaration>();
+		ArrayList<NovaMethodDeclaration> methods = new ArrayList<>();
 		
 		addInterfaceVirtualMethods(methods, this);
 		addExtensionVirtualMethods(methods, this);
@@ -293,7 +293,7 @@ public class ClassDeclaration extends InstanceDeclaration
 	 */
 	public NovaMethodDeclaration[] getInterfaceVirtualMethods()
 	{
-		ArrayList<NovaMethodDeclaration> methods = new ArrayList<NovaMethodDeclaration>();
+		ArrayList<NovaMethodDeclaration> methods = new ArrayList<>();
 		
 		addInterfaceVirtualMethods(methods, this);
 		
@@ -310,7 +310,7 @@ public class ClassDeclaration extends InstanceDeclaration
 	 */
 	public NovaMethodDeclaration[] getExtensionVirtualMethods()
 	{
-		ArrayList<NovaMethodDeclaration> methods = new ArrayList<NovaMethodDeclaration>();
+		ArrayList<NovaMethodDeclaration> methods = new ArrayList<>();
 		
 		addExtensionVirtualMethods(methods, this);
 		
@@ -331,8 +331,12 @@ public class ClassDeclaration extends InstanceDeclaration
 			getExtendedClassDeclaration().addInterfaceVirtualMethods(methods, this);
 		}
 		
-		addVirtualMethods(methods, getMethodList(), true);
-		addVirtualMethods(methods, getPropertyMethodList(), true);
+		getInterfacesImplementationList().forEachVisibleChild(x -> {
+			((Value)x).getTypeClass().addInterfaceVirtualMethods(methods, context);
+		});
+		
+		addVirtualMethods(methods, getMethodList(), true, true);
+		addVirtualMethods(methods, getPropertyMethodList(), true, true);
 	}
 	
 	/**
@@ -349,11 +353,11 @@ public class ClassDeclaration extends InstanceDeclaration
 			getExtendedClassDeclaration().addExtensionVirtualMethods(methods, this);
 		}
 		
-		addVirtualMethods(methods, getMethodList(), false);
-		addVirtualMethods(methods, getPropertyMethodList(), false);
+		addVirtualMethods(methods, getMethodList(), false, false);
+		addVirtualMethods(methods, getPropertyMethodList(), false, false);
 	}
 	
-	private void addVirtualMethods(ArrayList<NovaMethodDeclaration> methods, MethodList list, boolean interfaceOnly)
+	private void addVirtualMethods(ArrayList<NovaMethodDeclaration> methods, MethodList list, boolean interfaceOnly, boolean implementation)
 	{
 		for (int i = 0; i < list.getNumVisibleChildren(); i++)
 		{
@@ -363,7 +367,7 @@ public class ClassDeclaration extends InstanceDeclaration
 			{
 				NovaMethodDeclaration method = (NovaMethodDeclaration)m;
 				
-				if (method.getParentClass() == this && method.isVirtual())
+				if (method.getParentClass() == this && method.isVirtual() && (!implementation || method instanceof BodyMethodDeclaration))
 				{
 					/*if (interfaceOnly)
 					{
@@ -1917,6 +1921,7 @@ public class ClassDeclaration extends InstanceDeclaration
 		if (StringUtils.containsWord(statement, IDENTIFIER))
 		{
 			ClassDeclaration n = new ClassDeclaration(parent, location);
+			n.setVisibility(PUBLIC);
 			
 			GenericTypeParameterDeclaration.searchGenerics(statement, data);
 			
@@ -2448,7 +2453,7 @@ public class ClassDeclaration extends InstanceDeclaration
 					{
 						for (NovaMethodDeclaration method : inter.getTypeClass().getMethods())
 						{
-							if (method.isUserMade() && !doesOverrideMethod(method))
+							if (method instanceof BodyMethodDeclaration == false && method.isUserMade() && !doesOverrideMethod(method))
 							{
 								doesOverrideMethod(method);
 								errors.add(method);

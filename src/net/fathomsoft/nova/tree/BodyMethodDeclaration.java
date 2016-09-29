@@ -127,6 +127,11 @@ public class BodyMethodDeclaration extends NovaMethodDeclaration
 				n.addChild(init);
 			}
 			
+			if (n.getParentClass() instanceof Interface)
+			{
+				return new InterfaceMethodDeclaration(parent, location, n);
+			}
+			
 			return n;
 		}
 		
