@@ -30,7 +30,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  */
 public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAncestor
 {
-	private int	uniqueID, overloadID;
+	public int	uniqueID, overloadID;
 	
 	private String[] types;
 	
