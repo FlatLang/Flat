@@ -150,7 +150,6 @@ public class TreeGenerator implements Runnable
 	 * import nodes.
 	 * 
 	 * @param file The file that is generating the syntax tree.
-	 * @param source The source text within the file.
 	 */
 	private void phase1(File file)
 	{
@@ -170,7 +169,6 @@ public class TreeGenerator implements Runnable
 	 * method nodes.
 	 * 
 	 * @param file The file that is generating the syntax tree.
-	 * @param source The source text within the file.
 	 */
 	private void phase2(File file)
 	{
@@ -206,7 +204,6 @@ public class TreeGenerator implements Runnable
 	 * Generate the syntax tree nodes for all of the scope contents.
 	 * 
 	 * @param file The file that is generating the syntax tree.
-	 * @param source The source text within the file.
 	 */
 	private void phase3(File file)
 	{
@@ -227,9 +224,6 @@ public class TreeGenerator implements Runnable
 	
 	/**
 	 * Decode all of the Scope's contents.
-	 * 
-	 * @param methods The list of methods to decode.
-	 * @param source The source text to decode.
 	 */
 	private void decodeScopeContents(List scopeAncestors, boolean requiresScope)
 	{
@@ -238,9 +232,6 @@ public class TreeGenerator implements Runnable
 	
 	/**
 	 * Decode all of the Scope's contents.
-	 * 
-	 * @param methods The list of methods to decode.
-	 * @param source The source text to decode.
 	 */
 	private void decodeScopeContents(List scopeAncestors, boolean requiresScope, Class<?>[] searchTypes, boolean skipScopes)
 	{
@@ -287,7 +278,6 @@ public class TreeGenerator implements Runnable
 	 * 
 	 * @param parent The Node to stem all of the following decoded
 	 * 		data from.
-	 * @param source The text to decode.
 	 * @param offset The character offset within the file's source text
 	 * 		overall.
 	 * @param searchTypes The type of Nodes to try to decode.
@@ -375,6 +365,8 @@ public class TreeGenerator implements Runnable
 			
 			if (node != null)
 			{
+				node.followedByScope(scope);
+				
 				return node;
 			}
 			else if (skipScopes)
@@ -392,7 +384,6 @@ public class TreeGenerator implements Runnable
 	 * Calculate the index in which the next statement end is located at,
 	 * after the given currentEnd.
 	 * 
-	 * @param source The source code to search through.
 	 * @param currentEnd The index to search after.
 	 * @return The new statement end index.
 	 */

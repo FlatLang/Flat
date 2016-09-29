@@ -1468,6 +1468,11 @@ public abstract class Node implements Listenable, Annotatable
 		throw new UnimplementedOperationException("The Nova input implementation for this feature has not been implemented yet.");
 	}
 	
+	public void followedByScope(boolean scope)
+	{
+		
+	}
+	
 	public boolean onAfterDecoded()
 	{
 		for (Node n : children)
