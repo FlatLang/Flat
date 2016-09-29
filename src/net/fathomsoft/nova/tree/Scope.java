@@ -47,7 +47,7 @@ public class Scope extends Node
 	{
 		super(temporaryParent, locationIn);
 		
-		listeners = new ArrayList<Listener>();
+		listeners = new ArrayList<>();
 		
 		VariableDeclarationList variablesNode = new VariableDeclarationList(this, locationIn);
 		
