@@ -5,6 +5,8 @@
 #include <nova/nova_Nova_Object.h>
 #include <nova/nova_Nova_String.h>
 #include <nova/nova_Nova_System.h>
+#include <nova/ar/nova_ar_Nova_ImageTracker.h>
+#include <nova/ar/nova_ar_Nova_TrackPoint.h>
 #include <nova/database/nova_database_Nova_DBConnector.h>
 #include <nova/database/nova_database_Nova_ResultSet.h>
 #include <nova/datastruct/nova_datastruct_Nova_BinaryNode.h>
@@ -101,6 +103,7 @@
 #include <nova/primitive/number/nova_primitive_number_Nova_Short.h>
 #include <nova/process/nova_process_Nova_Process.h>
 #include <nova/security/nova_security_Nova_MD5.h>
+#include <nova/star/nova_star_Nova_Frame.h>
 #include <nova/star/nova_star_Nova_Window.h>
 #include <nova/star/nova_star_Nova_WindowThread.h>
 #include <nova/svg/nova_svg_Nova_Svg.h>
@@ -284,6 +287,20 @@ nova_Nova_System_native2_Nova_exit exit__nova_primitive_number_Int__nova_String_
 nova_Nova_System_native_Nova_execute execute;
 nova_Nova_System_native_Nova_construct System;
 } nova_native_System;
+
+typedef nova_ar_Nova_ImageTracker* (*nova_ar_Nova_ImageTracker_native_Nova_construct)(nova_ar_Nova_ImageTracker*, nova_exception_Nova_ExceptionData*);
+
+typedef struct nova_ar_native_ImageTracker
+{
+nova_ar_Nova_ImageTracker_native_Nova_construct ImageTracker;
+} nova_ar_native_ImageTracker;
+
+typedef nova_ar_Nova_TrackPoint* (*nova_ar_Nova_TrackPoint_native_Nova_construct)(nova_ar_Nova_TrackPoint*, nova_exception_Nova_ExceptionData*);
+
+typedef struct nova_ar_native_TrackPoint
+{
+nova_ar_Nova_TrackPoint_native_Nova_construct TrackPoint;
+} nova_ar_native_TrackPoint;
 
 typedef void (*nova_database_Nova_DBConnector_native0_Nova_connect)(nova_database_Nova_DBConnector*, nova_exception_Nova_ExceptionData*, nova_Nova_String*, nova_Nova_String*, nova_Nova_String*);
 typedef void (*nova_database_Nova_DBConnector_native1_Nova_connect)(nova_database_Nova_DBConnector*, nova_exception_Nova_ExceptionData*, nova_Nova_String*, nova_Nova_String*, nova_Nova_String*, nova_Nova_String*);
@@ -527,19 +544,14 @@ typedef int (*nova_datastruct_list_Nova_Array_native_Nova_indexOf)(nova_datastru
 typedef void (*nova_datastruct_list_Nova_Array_native_Nova_swap)(nova_datastruct_list_Nova_Array*, nova_exception_Nova_ExceptionData*, int, int);
 typedef nova_Nova_Object* (*nova_datastruct_list_Nova_Array_native0_Nova_get)(nova_datastruct_list_Nova_Array*, nova_exception_Nova_ExceptionData*, int);
 typedef void (*nova_datastruct_list_Nova_Array_native0_Nova_set)(nova_datastruct_list_Nova_Array*, nova_exception_Nova_ExceptionData*, int, nova_Nova_Object*);
-typedef char (*nova_datastruct_list_Nova_Array_native0_Nova_contains)(nova_datastruct_list_Nova_Array*, nova_exception_Nova_ExceptionData*, nova_Nova_Object*);
 typedef nova_datastruct_list_Nova_Array* (*nova_datastruct_list_Nova_Array_native0_Nova_toArray)(nova_datastruct_list_Nova_Array*, nova_exception_Nova_ExceptionData*);
 typedef nova_datastruct_list_Nova_Array* (*nova_datastruct_list_Nova_Array_native0_Nova_map)(nova_datastruct_list_Nova_Array*, nova_exception_Nova_ExceptionData*, nova_datastruct_list_Nova_Array_closure3_Nova_mapFunc nova_datastruct_list_Nova_Array_Nova_mapFunc, void* nova_datastruct_list_Nova_Array_ref_Nova_mapFunc, void* mapFunc_context);
 typedef void (*nova_datastruct_list_Nova_Array_native0_Nova_forEach)(nova_datastruct_list_Nova_Array*, nova_exception_Nova_ExceptionData*, nova_datastruct_list_Nova_Array_closure6_Nova_func nova_datastruct_list_Nova_Array_Nova_func, void* nova_datastruct_list_Nova_Array_ref_Nova_func, void* func_context);
-typedef char (*nova_datastruct_list_Nova_Array_native0_Nova_any)(nova_datastruct_list_Nova_Array*, nova_exception_Nova_ExceptionData*, nova_datastruct_list_Nova_Array_closure9_Nova_anyFunc nova_datastruct_list_Nova_Array_Nova_anyFunc, void* nova_datastruct_list_Nova_Array_ref_Nova_anyFunc, void* anyFunc_context);
-typedef char (*nova_datastruct_list_Nova_Array_native0_Nova_all)(nova_datastruct_list_Nova_Array*, nova_exception_Nova_ExceptionData*, nova_datastruct_list_Nova_Array_closure12_Nova_allFunc nova_datastruct_list_Nova_Array_Nova_allFunc, void* nova_datastruct_list_Nova_Array_ref_Nova_allFunc, void* allFunc_context);
-typedef nova_datastruct_list_Nova_Array* (*nova_datastruct_list_Nova_Array_native0_Nova_filter)(nova_datastruct_list_Nova_Array*, nova_exception_Nova_ExceptionData*, nova_datastruct_list_Nova_Array_closure15_Nova_filterFunc nova_datastruct_list_Nova_Array_Nova_filterFunc, void* nova_datastruct_list_Nova_Array_ref_Nova_filterFunc, void* filterFunc_context);
+typedef nova_datastruct_list_Nova_Array* (*nova_datastruct_list_Nova_Array_native0_Nova_filter)(nova_datastruct_list_Nova_Array*, nova_exception_Nova_ExceptionData*, nova_datastruct_list_Nova_Array_closure9_Nova_filterFunc nova_datastruct_list_Nova_Array_Nova_filterFunc, void* nova_datastruct_list_Nova_Array_ref_Nova_filterFunc, void* filterFunc_context);
 typedef nova_datastruct_list_Nova_Array* (*nova_datastruct_list_Nova_Array_native0_Nova_take)(nova_datastruct_list_Nova_Array*, nova_exception_Nova_ExceptionData*, int);
 typedef nova_datastruct_list_Nova_Array* (*nova_datastruct_list_Nova_Array_native0_Nova_skip)(nova_datastruct_list_Nova_Array*, nova_exception_Nova_ExceptionData*, int);
-typedef nova_Nova_Object* (*nova_datastruct_list_Nova_Array_native0_Nova_firstWhere)(nova_datastruct_list_Nova_Array*, nova_exception_Nova_ExceptionData*, nova_datastruct_list_Nova_Array_closure18_Nova_func nova_datastruct_list_Nova_Array_Nova_func, void* nova_datastruct_list_Nova_Array_ref_Nova_func, void* func_context);
 typedef long_long (*nova_datastruct_list_Nova_Array_native_Nova_sumSize)(nova_datastruct_list_Nova_Array*, nova_exception_Nova_ExceptionData*);
 typedef nova_datastruct_list_Nova_Array* (*nova_datastruct_list_Nova_Array_native0_Nova_reverse)(nova_datastruct_list_Nova_Array*, nova_exception_Nova_ExceptionData*);
-typedef nova_Nova_String* (*nova_datastruct_list_Nova_Array_native0_Nova_join)(nova_datastruct_list_Nova_Array*, nova_exception_Nova_ExceptionData*, nova_Nova_String*);
 typedef nova_Nova_String* (*nova_datastruct_list_Nova_Array_native0_Nova_toString)(nova_datastruct_list_Nova_Array*, nova_exception_Nova_ExceptionData*);
 typedef nova_datastruct_list_Nova_Array* (*nova_datastruct_list_Nova_Array_native0_Nova_construct)(nova_datastruct_list_Nova_Array*, nova_exception_Nova_ExceptionData*);
 typedef nova_datastruct_list_Nova_Array* (*nova_datastruct_list_Nova_Array_native1_Nova_construct)(nova_datastruct_list_Nova_Array*, nova_exception_Nova_ExceptionData*, int);
@@ -557,19 +569,14 @@ nova_datastruct_list_Nova_Array_native_Nova_indexOf indexOf;
 nova_datastruct_list_Nova_Array_native_Nova_swap swap;
 nova_datastruct_list_Nova_Array_native0_Nova_get get__nova_primitive_number_Int;
 nova_datastruct_list_Nova_Array_native0_Nova_set set__nova_primitive_number_Int__nova_Object;
-nova_datastruct_list_Nova_Array_native0_Nova_contains contains__nova_Object;
 nova_datastruct_list_Nova_Array_native0_Nova_toArray toArray;
 nova_datastruct_list_Nova_Array_native0_Nova_map map__nova_Object;
 nova_datastruct_list_Nova_Array_native0_Nova_forEach forEach__void;
-nova_datastruct_list_Nova_Array_native0_Nova_any any__nova_primitive_Bool;
-nova_datastruct_list_Nova_Array_native0_Nova_all all__nova_primitive_Bool;
 nova_datastruct_list_Nova_Array_native0_Nova_filter filter__nova_primitive_Bool;
 nova_datastruct_list_Nova_Array_native0_Nova_take take__nova_primitive_number_Int;
 nova_datastruct_list_Nova_Array_native0_Nova_skip skip__nova_primitive_number_Int;
-nova_datastruct_list_Nova_Array_native0_Nova_firstWhere firstWhere__nova_primitive_Bool;
 nova_datastruct_list_Nova_Array_native_Nova_sumSize sumSize;
 nova_datastruct_list_Nova_Array_native0_Nova_reverse reverse;
-nova_datastruct_list_Nova_Array_native0_Nova_join join__nova_String;
 nova_datastruct_list_Nova_Array_native0_Nova_toString toString;
 nova_datastruct_list_Nova_Array_native0_Nova_construct Array;
 nova_datastruct_list_Nova_Array_native1_Nova_construct Array__nova_primitive_number_Int;
@@ -1607,6 +1614,13 @@ nova_security_Nova_MD5_native_Nova_encrypt encrypt;
 nova_security_Nova_MD5_native_Nova_construct MD5;
 } nova_security_native_MD5;
 
+typedef nova_star_Nova_Frame* (*nova_star_Nova_Frame_native_Nova_construct)(nova_star_Nova_Frame*, nova_exception_Nova_ExceptionData*, int, int, int, int);
+
+typedef struct nova_star_native_Frame
+{
+nova_star_Nova_Frame_native_Nova_construct Frame;
+} nova_star_native_Frame;
+
 typedef void (*nova_star_Nova_Window_native_Nova_create)(nova_star_Nova_Window*, nova_exception_Nova_ExceptionData*);
 typedef nova_star_Nova_Window* (*nova_star_Nova_Window_native_Nova_construct)(nova_star_Nova_Window*, nova_exception_Nova_ExceptionData*);
 
@@ -2583,6 +2597,8 @@ nova_native_Class nova_Class;
 nova_native_Object nova_Object;
 nova_native_String nova_String;
 nova_native_System nova_System;
+nova_ar_native_ImageTracker nova_ar_ImageTracker;
+nova_ar_native_TrackPoint nova_ar_TrackPoint;
 nova_database_native_DBConnector nova_database_DBConnector;
 nova_database_native_ResultSet nova_database_ResultSet;
 nova_datastruct_native_BinaryNode nova_datastruct_BinaryNode;
@@ -2679,6 +2695,7 @@ nova_primitive_number_native_RealNumber nova_primitive_number_RealNumber;
 nova_primitive_number_native_Short nova_primitive_number_Short;
 nova_process_native_Process nova_process_Process;
 nova_security_native_MD5 nova_security_MD5;
+nova_star_native_Frame nova_star_Frame;
 nova_star_native_Window nova_star_Window;
 nova_star_native_WindowThread nova_star_WindowThread;
 nova_svg_native_Svg nova_svg_Svg;

@@ -47,6 +47,14 @@ nova_env novaEnv = {
 },
 
 {
+&nova_ar_Nova_ImageTracker_Nova_construct,
+},
+
+{
+&nova_ar_Nova_TrackPoint_Nova_construct,
+},
+
+{
 &nova_database_Nova_DBConnector_0_Nova_connect,
 &nova_database_Nova_DBConnector_1_Nova_connect,
 &nova_database_Nova_DBConnector_2_Nova_connect,
@@ -180,18 +188,13 @@ nova_env novaEnv = {
 &nova_datastruct_list_Nova_Array_Nova_swap,
 0,
 0,
-&nova_datastruct_list_Nova_Array_0_Nova_contains,
 &nova_datastruct_list_Nova_Array_0_Nova_toArray,
 0,
 0,
 0,
 0,
 0,
-0,
-0,
-0,
 &nova_datastruct_list_Nova_Array_Nova_sumSize,
-0,
 0,
 &nova_datastruct_list_Nova_Array_0_Nova_toString,
 &nova_datastruct_list_Nova_Array_0_Nova_construct,
@@ -753,6 +756,10 @@ nova_env novaEnv = {
 {
 &nova_security_Nova_MD5_Nova_encrypt,
 &nova_security_Nova_MD5_Nova_construct,
+},
+
+{
+&nova_star_Nova_Frame_Nova_construct,
 },
 
 {
