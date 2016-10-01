@@ -60,36 +60,6 @@ public class BodyMethodDeclaration extends NovaMethodDeclaration
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.Node#generateCHeader(StringBuilder)
-	 */
-	@Override
-	public StringBuilder generateCHeader(StringBuilder builder)
-	{
-		if (isVisibilityValid())
-		{
-			if (getVisibility() == InstanceDeclaration.PRIVATE)
-			{
-				return builder;
-			}
-		}
-		
-		generateCSourcePrototype(builder).append('\n');
-		
-		return builder;
-	}
-
-	/**
-	 * @see net.fathomsoft.nova.tree.Node#generateCSource(StringBuilder)
-	 */
-	@Override
-	public StringBuilder generateCSource(StringBuilder builder)
-	{
-		generateCSourceSignature(builder).append('\n');
-		
-		return getScope().generateCSource(builder);
-	}
-	
-	/**
 	 * Decode the given statement into a Method instance, if
 	 * possible. If it is not possible, this method returns null.
 	 * <br>

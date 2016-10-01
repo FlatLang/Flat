@@ -34,97 +34,9 @@ public class VirtualMethodDeclaration extends BodyMethodDeclaration
 	}
 	
 	@Override
-	public StringBuilder generateCSourceName(StringBuilder builder, String uniquePrefix)
-	{
-		return generateCVirtualMethodName(builder);
-	}
-	
-	/**
-	 * Get the identifier for the virtual abstract method in the vtable.
-	 *
-	 * @return The identifier for the virtual method in the vtable.
-	 */
-	public StringBuilder generateCVirtualMethodName()
-	{
-		return generateCVirtualMethodName(new StringBuilder());
-	}
-	
-	/**
-	 * Get the identifier for the virtual abstract method in the vtable.
-	 *
-	 * @param builder The StringBuilder to append the data to.
-	 * @return The identifier for the virtual method in the vtable.
-	 */
-	public StringBuilder generateCVirtualMethodName(StringBuilder builder)
-	{
-		String prefix = "virtual";
-		
-		if (base instanceof PropertyMethod)
-		{
-			prefix += "_" + ((PropertyMethod)base).getMethodPrefix();
-		}
-		
-		return generateCSourceName(builder, prefix, true);
-	}
-	
-	@Override
 	public NovaParameterList getParameterList()
 	{
 		return base.getParameterList();
-	}
-	
-	@Override
-	public StringBuilder generateCSource(StringBuilder builder)
-	{
-		generateCSourceSignature(builder);
-		
-		/*
-		if (getType() == null)
-		{
-			builder.append("{}");
-		}
-		else
-		{
-			builder.append("{return 0;}");
-		}
-		*/
-		
-		builder.append("\n{\n");
-		
-		if (getType() != null)
-		{
-			builder.append("return ");
-		}
-		
-		super.getParameterList().getObjectReference().generateCSourceFragment(builder).append("->");
-		
-		builder.append(VTable.IDENTIFIER).append("->");
-		
-		if (getParentClass() instanceof Interface)
-		{
-			builder.append(InterfaceVTable.IDENTIFIER).append(".");
-		}
-		
-		String call = getName() + "(";
-		
-		for (int i = 0; i < getParameterList().getNumVisibleChildren(); i++)
-		{
-			if (i > 0)
-			{
-				call += ", ";
-			}
-			
-			call += getParameterList().getVisibleChild(i).getName();
-		}
-		
-		call += ")";
-		
-		MethodCall output = MethodCall.decodeStatement(getScope(), call, getLocationIn().asNew(), true, true, this);
-		
-		generateCVirtualMethodName(builder);
-		output.getArgumentList().generateCSourceFragment(builder);
-		
-		return builder.append(";\n}\n");
 	}
 	
 	@Override

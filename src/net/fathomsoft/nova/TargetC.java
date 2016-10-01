@@ -13,6 +13,8 @@ import net.fathomsoft.nova.util.SyntaxUtils;
 public class TargetC
 {
     public static final TargetAbstractMethodDeclaration TARGET_ABSTRACT_METHOD_DECLARATION = new TargetAbstractMethodDeclaration();
+    public static final TargetVirtualMethodDeclaration TARGET_VIRTUAL_METHOD_DECLARATION = new TargetVirtualMethodDeclaration();
+    public static final TargetBodyMethodDeclaration TARGET_BODY_METHOD_DECLARATION = new TargetBodyMethodDeclaration();
     public static final TargetNovaMethodDeclaration TARGET_NOVA_METHOD_DECLARATION = new TargetNovaMethodDeclaration();
     public static final TargetMethodDeclaration TARGET_METHOD_DECLARATION = new TargetMethodDeclaration();
     public static final TargetInstanceDeclaration TARGET_INSTANCE_DECLARATION = new TargetInstanceDeclaration();
@@ -24,44 +26,164 @@ public class TargetC
     
     public static class TargetAbstractMethodDeclaration extends TargetNovaMethodDeclaration
     {
-        public StringBuilder generateHeaderFragment(StringBuilder builder, AbstractMethodDeclaration node)
+        public StringBuilder generateHeaderFragment(AbstractMethodDeclaration node, StringBuilder builder)
         {
-            return super.generateSourcePrototype(builder, node);
+            return super.generateSourcePrototype(node, builder);
         }
         
-        public StringBuilder generateSource(StringBuilder builder, AbstractMethodDeclaration node)
+        public StringBuilder generateSource(AbstractMethodDeclaration node, StringBuilder builder)
         {
             return builder;
         }
         
-        public StringBuilder generateInterfaceVTableSource(StringBuilder builder, AbstractMethodDeclaration node)
+        public StringBuilder generateInterfaceVTableSource(AbstractMethodDeclaration node, StringBuilder builder)
         {
             return builder.append(0);
         }
-    }  
+    }
+    
+    public static class TargetVirtualMethodDeclaration extends TargetBodyMethodDeclaration
+    {
+        public StringBuilder generateSource(VirtualMethodDeclaration node, StringBuilder builder)
+        {
+            generateSourceSignature(builder);
+		
+		/*
+		if (getType() == null)
+		{
+			builder.append("{}");
+		}
+		else
+		{
+			builder.append("{return 0;}");
+		}
+		*/
+        
+            builder.append("\n{\n");
+        
+            if (node.getType() != null)
+            {
+                builder.append("return ");
+            }
+        
+            super.getParameterList().getObjectReference().generateSourceFragment(builder).append("->");
+        
+            builder.append(VTable.IDENTIFIER).append("->");
+        
+            if (node.getParentClass() instanceof Interface)
+            {
+                builder.append(InterfaceVTable.IDENTIFIER).append(".");
+            }
+        
+            String call = node.getName() + "(";
+        
+            for (int i = 0; i < node.getParameterList().getNumVisibleChildren(); i++)
+            {
+                if (i > 0)
+                {
+                    call += ", ";
+                }
+            
+                call += node.getParameterList().getVisibleChild(i).getName();
+            }
+        
+            call += ")";
+        
+            MethodCall output = MethodCall.decodeStatement(node.getScope(), call, node.getLocationIn().asNew(), true, true, node);
+        
+            generateVirtualMethodName(node, builder);
+            output.getArgumentList().generateSourceFragment(builder);
+        
+            return builder.append(";\n}\n");
+        }
+        
+        public StringBuilder generateSourceName(VirtualMethodDeclaration node, StringBuilder builder, String uniquePrefix)
+        {
+            return generateVirtualMethodName(node, builder);
+        }
+    
+        /**
+         * Get the identifier for the virtual abstract method in the vtable.
+         *
+         * @return The identifier for the virtual method in the vtable.
+         */
+        public StringBuilder generateVirtualMethodName(VirtualMethodDeclaration node)
+        {
+            return generateVirtualMethodName(node, new StringBuilder());
+        }
+    
+        /**
+         * Get the identifier for the virtual abstract method in the vtable.
+         *
+         * @param builder The StringBuilder to append the data to.
+         * @return The identifier for the virtual method in the vtable.
+         */
+        public StringBuilder generateVirtualMethodName(VirtualMethodDeclaration node, StringBuilder builder)
+        {
+            String prefix = "virtual";
+        
+            if (node.base instanceof PropertyMethod)
+            {
+                prefix += "_" + ((PropertyMethod)node.base).getMethodPrefix();
+            }
+        
+            return generateSourceName(node, builder, prefix, true);
+        }
+    }
+    
+    public static class TargetBodyMethodDeclaration extends TargetNovaMethodDeclaration
+    {
+        /**
+         * @see net.fathomsoft.nova.tree.Node#generateHeader(StringBuilder)
+         */
+        public StringBuilder generateHeader(BodyMethodDeclaration node, StringBuilder builder)
+        {
+            if (node.isVisibilityValid())
+            {
+                if (node.getVisibility() == InstanceDeclaration.PRIVATE)
+                {
+                    return builder;
+                }
+            }
+        
+            generateSourcePrototype(node, builder).append('\n');
+        
+            return builder;
+        }
+    
+        /**
+         * @see net.fathomsoft.nova.tree.Node#generateSource(StringBuilder)
+         */
+        public StringBuilder generateSource(BodyMethodDeclaration node, StringBuilder builder)
+        {
+            generateSourceSignature(node, builder).append('\n');
+        
+            return node.getScope().generateSource(node, builder);
+        }
+    }
     
     public static class TargetNovaMethodDeclaration extends TargetMethodDeclaration
     {
-        public StringBuilder generateInterfaceVTableSource(StringBuilder builder, NovaMethodDeclaration node)
+        public StringBuilder generateInterfaceVTableSource(NovaMethodDeclaration node, StringBuilder builder)
         {
             NovaMethodDeclaration root = node.getVirtualMethod();//.getRootDeclaration();
     
             builder.append("(").append(generateType(root)).append("(*)(").append(root.getParameterList().generateHeader()).append("))");
-            return generateSourceName(builder, node);
+            return generateSourceName(node, builder, node);
         }
     
-        public StringBuilder generatelosureContext(StringBuilder builder, NovaMethodDeclaration node)
+        public StringBuilder generatelosureContext(NovaMethodDeclaration node, StringBuilder builder)
         {
             return builder.append(NovaMethodDeclaration.NULL_IDENTIFIER);
         }
     
-        public StringBuilder generateSourceNativeName(StringBuilder builder, NovaMethodDeclaration node, boolean declaration)
+        public StringBuilder generateSourceNativeName(NovaMethodDeclaration node, StringBuilder builder, boolean declaration)
         {
-            super.generateSourceNativeName(builder, declaration);
+            super.generateSourceNativeName(node, builder, declaration);
     
-            if (!declaration && isOverloaded())
+            if (!declaration && node.isOverloaded())
             {
-                for (Parameter param : getParameterList())
+                for (Parameter param : node.getParameterList())
                 {
                     builder.append('_');
     
@@ -106,9 +228,9 @@ public class TargetC
             return builder;
         }
 
-        public StringBuilder generateInterfaceVTableHeader(StringBuilder builder, NovaMethodDeclaration node)
+        public StringBuilder generateInterfaceVTableHeader(NovaMethodDeclaration node, StringBuilder builder)
         {
-            return generateType(builder).append(" (*").append(getVirtualMethod().generateVirtualMethodName()).append(")(").append(getParameterList().generateHeader()).append(");\n");
+            return generateType(node, builder).append(" (*").append(node.getVirtualMethod().generateVirtualMethodName()).append(")(").append(node.getParameterList().generateHeader()).append(");\n");
         }
 
         /**
@@ -117,33 +239,32 @@ public class TargetC
          * @param builder The StringBuilder to append the data to.
          * @return The updated StringBuilder.
          */
-        public StringBuilder generateMethodCall(StringBuilder builder, NovaMethodDeclaration node)
+        public StringBuilder generateMethodCall(NovaMethodDeclaration node, StringBuilder builder)
         {
-            if (isVirtual())
+            if (node.isVirtual())
             {
-                return getVirtualMethod().generateVirtualMethodName(builder);
+                return node.getVirtualMethod().generateVirtualMethodName(node, builder);
             }
 
-            return super.generateMethodCall(builder);
+            return super.generateMethodCall(node, builder);
         }
 
         /**
          * @see net.fathomsoft.nova.tree.Identifier#generateSourceName(java.lang.StringBuilder, String)
          */
-        @Override
-        public StringBuilder generateSourceName(StringBuilder builder, NovaMethodDeclaration node, String uniquePrefix)
+        public StringBuilder generateSourceName(NovaMethodDeclaration node, StringBuilder builder, String uniquePrefix)
         {
-            return generateSourceName(builder, uniquePrefix, true);
+            return generateSourceName(node, builder, uniquePrefix, true);
         }
 
         /**
          * @see net.fathomsoft.nova.tree.Identifier#generateSourceName(java.lang.StringBuilder, String)
          */
-        public StringBuilder generateSourceName(StringBuilder builder, NovaMethodDeclaration node, String uniquePrefix, boolean outputOverload)
+        public StringBuilder generateSourceName(NovaMethodDeclaration node, StringBuilder builder, String uniquePrefix, boolean outputOverload)
         {
-            if (overloadID == -1)
+            if (node.overloadID == -1)
             {
-                return super.generateSourceName(builder, uniquePrefix);
+                return super.generateSourceName(node, builder, uniquePrefix);
             }
 
             if (uniquePrefix == null)
@@ -152,10 +273,10 @@ public class TargetC
             }
             if (outputOverload)
             {
-                uniquePrefix += overloadID;
+                uniquePrefix += node.overloadID;
             }
 
-            return super.generateSourceName(builder, uniquePrefix);
+            return super.generateSourceName(node, builder, uniquePrefix);
         }
     }
     
@@ -164,17 +285,15 @@ public class TargetC
         /**
          * @see net.fathomsoft.nova.tree.Node#generateHeader(StringBuilder)
          */
-        @Override
-        public StringBuilder generateHeader(StringBuilder builder, MethodDeclaration node)
+        public StringBuilder generateHeader(MethodDeclaration node, StringBuilder builder)
         {
-            return generateHeaderFragment(builder);
+            return generateHeaderFragment(node, builder);
         }
 
         /**
          * @see net.fathomsoft.nova.tree.Node#generateHeaderFragment(StringBuilder)
          */
-        @Override
-        public StringBuilder generateHeaderFragment(StringBuilder builder, MethodDeclaration node)
+        public StringBuilder generateHeaderFragment(MethodDeclaration node, StringBuilder builder)
         {
             return builder;
         }
@@ -182,29 +301,27 @@ public class TargetC
         /**
          * @see net.fathomsoft.nova.tree.Node#generateSource(StringBuilder)
          */
-        @Override
-        public StringBuilder generateSource(StringBuilder builder, MethodDeclaration node)
+        public StringBuilder generateSource(MethodDeclaration node, StringBuilder builder)
         {
-            return generateSourceFragment(builder);
+            return generateSourceFragment(node, builder);
         }
 
         /**
          * @see net.fathomsoft.nova.tree.Node#generateSourceFragment(StringBuilder)
          */
-        @Override
-        public StringBuilder generateSourceFragment(StringBuilder builder, MethodDeclaration node)
+        public StringBuilder generateSourceFragment(MethodDeclaration node, StringBuilder builder)
         {
             return builder;
         }
 
-        public StringBuilder generateSourceNativeName(StringBuilder builder, MethodDeclaration node, boolean declaration)
+        public StringBuilder generateSourceNativeName(MethodDeclaration node, StringBuilder builder, boolean declaration)
         {
             if (declaration)
             {
-                return generateSourceName(builder, "native");
+                return generateSourceName(node, builder, "native");
             }
 
-            return builder.append(getName());
+            return builder.append(node.getName());
 ////		String location = getFileDeclaration().getPackage().getLocation().replace('/', '_');
 //		String prefix   = "";
 //		
@@ -245,9 +362,9 @@ public class TargetC
          * @param builder The StringBuilder to append the data to.
          * @return The C prototype for the method header.
          */
-        public StringBuilder generateSourcePrototype(StringBuilder builder, MethodDeclaration node)
+        public StringBuilder generateSourcePrototype(MethodDeclaration node, StringBuilder builder)
         {
-            return generateSourceSignature(builder).append(";");
+            return generateSourceSignature(node, builder).append(";");
         }
 
         /**
@@ -265,20 +382,20 @@ public class TargetC
          * @param builder The StringBuilder to append the data to.
          * @return The method signature in the C language.
          */
-        public StringBuilder generateSourceSignature(StringBuilder builder, MethodDeclaration node)
+        public StringBuilder generateSourceSignature(MethodDeclaration node, StringBuilder builder)
         {
-            generateModifiersSource(builder).append(' ');
-            generateSourceName(builder);
-            generateParameterOutput(builder);
+            generateModifiersSource(node, builder).append(' ');
+            generateSourceName(node, builder);
+            generateParameterOutput(node, builder);
 
             return builder;
         }
 
-        public StringBuilder generateParameterOutput(StringBuilder builder, MethodDeclaration node)
+        public StringBuilder generateParameterOutput(MethodDeclaration node, StringBuilder builder)
         {
             builder.append('(');
-
-            getParameterList().generateSource(builder);
+    
+            node.getParameterList().generateSource(node, builder);
 
             return builder.append(')');
         }
@@ -289,9 +406,9 @@ public class TargetC
          * @param builder The StringBuilder to append the data to.
          * @return The updated StringBuilder.
          */
-        public StringBuilder generateMethodCall(StringBuilder builder, MethodDeclaration node)
+        public StringBuilder generateMethodCall(MethodDeclaration node, StringBuilder builder)
         {
-            return generateSourceName(builder);
+            return generateSourceName(node, builder);
         }
     }
     
@@ -300,19 +417,17 @@ public class TargetC
         /**
          * @see net.fathomsoft.nova.tree.Node#generateHeader(StringBuilder)
          */
-        @Override
-        public StringBuilder generateHeader(StringBuilder builder, VariableDeclaration node)
+        public StringBuilder generateHeader(InstanceDeclaration node, StringBuilder builder)
         {
-            return generateHeaderFragment(builder).append(";\n");
+            return generateHeaderFragment(node, builder).append(";\n");
         }
 
         /**
          * @see net.fathomsoft.nova.tree.Node#generateHeaderFragment(StringBuilder)
          */
-        @Override
-        public StringBuilder generateHeaderFragment(StringBuilder builder, VariableDeclaration node)
+        public StringBuilder generateHeaderFragment(InstanceDeclaration node, StringBuilder builder)
         {
-            return generateModifiersSource(builder).append(' ').append(getName());
+            return generateModifiersSource(node, builder).append(' ').append(node.getName());
         }
     }
     
@@ -321,19 +436,17 @@ public class TargetC
         /**
          * @see net.fathomsoft.nova.tree.Node#generateHeader(StringBuilder)
          */
-        @Override
-        public StringBuilder generateHeader(StringBuilder builder, IIdentifier node)
+        public StringBuilder generateHeader(VariableDeclaration node, StringBuilder builder)
         {
-            return generateSource(builder);
+            return generateSource(node, builder);
         }
 
         /**
          * @see net.fathomsoft.nova.tree.Node#generateSource(StringBuilder)
          */
-        @Override
-        public StringBuilder generateSource(StringBuilder builder, IIdentifier node)
+        public StringBuilder generateSource(VariableDeclaration node, StringBuilder builder)
         {
-            return generateDeclarationFragment(builder).append(";\n");
+            return generateDeclarationFragment(node, builder).append(";\n");
         }
 
         /**
@@ -343,9 +456,9 @@ public class TargetC
          * @param builder The StringBuilder to append the data to.
          * @return The appended StringBuilder.
          */
-        public StringBuilder generateDeclarationFragment(StringBuilder builder, IIdentifier node)
+        public StringBuilder generateDeclarationFragment(VariableDeclaration node, StringBuilder builder)
         {
-            return generateModifiersSource(builder).append(' ').append(generateSourceName());
+            return generateModifiersSource(node, builder).append(' ').append(generateSourceName(node));
         }
 
         /**
@@ -362,27 +475,27 @@ public class TargetC
          * @param builder The StringBuilder to append to.
          * @return The appended StringBuilder.
          */
-        public StringBuilder generateModifiersSource(StringBuilder builder, IIdentifier node)
+        public StringBuilder generateModifiersSource(VariableDeclaration node, StringBuilder builder)
         {
-            if (isVolatile())//!(this instanceof Parameter || this instanceof FieldDeclaration))
+            if (node.isVolatile())//!(this instanceof Parameter || this instanceof FieldDeclaration))
             {
-                builder.append(getVolatileText()).append(' ');
+                builder.append(node.getVolatileText()).append(' ');
             }
 
-            generateType(builder);
+            generateType(node, builder);
 
             return builder;
         }
 
-        public StringBuilder generateDefaultValue(StringBuilder builder, IIdentifier node)
+        public StringBuilder generateDefaultValue(VariableDeclaration node, StringBuilder builder)
         {
-            if (isPrimitive())
+            if (node.isPrimitive())
             {
                 builder.append(0);
             }
             else
             {
-                builder.append(generateTypeCast()).append(Value.NULL_IDENTIFIER);
+                builder.append(generateTypeCast(node)).append(Value.NULL_IDENTIFIER);
             }
 
             return builder;
@@ -395,27 +508,27 @@ public class TargetC
          * @param builder The StringBuilder to append the data to.
          * @return The generated String for the code.
          */
-        public StringBuilder generateFreeOutput(StringBuilder builder, IIdentifier node)
+        public StringBuilder generateFreeOutput(VariableDeclaration node, StringBuilder builder)
         {
-            if (isConstant())
+            if (node.isConstant())
             {
                 return builder;
             }
 
-            if (isPrimitiveType() || isExternalType())
+            if (node.isPrimitiveType() || node.isExternalType())
             {
-                if (!isPrimitive())
+                if (!node.isPrimitive())
                 {
                     builder.append("NOVA_FREE(");
 
-                    generateUseOutput(builder, true).append(");\n");
+                    generateUseOutput(node, builder, true).append(");\n");
                 }
             }
             else
             {
-                getTypeClass().getDestructor().generateSourceName(builder).append('(').append('&');
+                node.getTypeClass().getDestructor().generateSourceName(node, builder).append('(').append('&');
 
-                generateUseOutput(builder, true).append(", ").append(Exception.EXCEPTION_DATA_IDENTIFIER).append(");\n");
+                generateUseOutput(node, builder, true).append(", ").append(Exception.EXCEPTION_DATA_IDENTIFIER).append(");\n");
             }
 
             return builder;
@@ -427,35 +540,33 @@ public class TargetC
         /**
          * @see net.fathomsoft.nova.tree.Node#generateSource(StringBuilder)
          */
-        @Override
-        public StringBuilder generateSource(StringBuilder builder, Identifier node)
+        public StringBuilder generateSource(IIdentifier node, StringBuilder builder)
         {
-            return generateSourceFragment(builder).append(";\n");
+            return generateSourceFragment(node, builder).append(";\n");
         }
 
         /**
          * @see net.fathomsoft.nova.tree.Node#generateSourceFragment(StringBuilder)
          */
-        @Override
-        public StringBuilder generateSourceFragment(StringBuilder builder, Identifier node)
+        public StringBuilder generateSourceFragment(IIdentifier node, StringBuilder builder)
         {
-            if (isGenericType() && doesAccess())
+            if (node.isGenericType() && node.doesAccess())
             {
-                getReturnedNode().generateTypeCast(builder);
+                node.getReturnedNode().generateTypeCast(node, builder);
 
                 builder.append('(');
             }
 
-            if (isSpecialFragment())
+            if (node.isSpecialFragment())
             {
-                generateSpecialFragment(builder);
+                node.generateSpecialFragment(node, builder);
             }
             else
             {
-                generateUseOutput(builder).append(generatehildrenCSourceFragment());
+                generateUseOutput(node, builder).append(node.generatehildrenCSourceFragment());
             }
 
-            if (isGenericType() && doesAccess())
+            if (node.isGenericType() && node.doesAccess())
             {
                 builder.append(')');
             }
@@ -479,9 +590,9 @@ public class TargetC
          * @return What the variable looks like when it is being used to do
          * 		something.
          */
-        public StringBuilder generateUseOutput(StringBuilder builder, Identifier node)
+        public StringBuilder generateUseOutput(IIdentifier node, StringBuilder builder)
         {
-            return generateUseOutput(builder, false);
+            return generateUseOutput(node, builder, false);
         }
 
         /**
@@ -503,12 +614,12 @@ public class TargetC
          * @return What the variable looks like when it is being used to do
          * 		something.
          */
-        public StringBuilder generateUseOutput(StringBuilder builder, Identifier node, boolean pointer)
+        public StringBuilder generateUseOutput(IIdentifier node, StringBuilder builder, boolean pointer)
         {
-            return generateUseOutput(builder, pointer, true);
+            return generateUseOutput(node, builder, pointer, true);
         }
 
-        public StringBuilder generateUseOutput(StringBuilder builder, Identifier node, boolean pointer, boolean checkAccesses)
+        public StringBuilder generateUseOutput(IIdentifier node, StringBuilder builder, boolean pointer, boolean checkAccesses)
         {
 //		if (!isSpecialFragment())
 //		{
@@ -517,40 +628,40 @@ public class TargetC
 
             FieldDeclaration field = null;
 
-            Node parent = getParent();
+            Node parent = node.getParent();
 
             if (parent instanceof Array)
             {
-                VariableDeclaration node = SyntaxTree.findDeclaration(parent.getParent(), getName());
+                VariableDeclaration n = SyntaxTree.findDeclaration(parent.getParent(), node.getName());
 
-                if (node instanceof FieldDeclaration)
+                if (n instanceof FieldDeclaration)
                 {
-                    field = (FieldDeclaration)node;
+                    field = (FieldDeclaration)n;
                 }
             }
-            else if (this instanceof Variable)
+            else if (node instanceof Variable)
             {
-                VariableDeclaration decl = ((Variable)this).getDeclaration();
+                VariableDeclaration decl = ((Variable)node).getDeclaration();
 
                 if (decl instanceof FieldDeclaration)
                 {
                     field = (FieldDeclaration)decl;
                 }
             }
-            else if (this instanceof FieldDeclaration)
+            else if (node instanceof FieldDeclaration)
             {
-                field = (FieldDeclaration)this;
+                field = (FieldDeclaration)node;
             }
 
             if (field != null && !field.isExternal())
             {
                 if (!field.isStatic())
                 {
-                    Value ref = (Value)getReferenceNode();
+                    Value ref = (Value)node.getReferenceNode();
 
-                    if (ref.getTypeClass().isContainingClass(this))
+                    if (ref.getTypeClass().isContainingClass(node))
                     {
-                        if (!isAccessed())
+                        if (!node.isAccessed())
                         {
                             if (pointer)
                             {
@@ -565,7 +676,7 @@ public class TargetC
                             }
                         }
 
-                        if (!isAccessed())//ref.isContainingClass(this))
+                        if (!node.isAccessed())//ref.isContainingClass(this))
                         {
                             builder.append("->");
                         }
@@ -581,21 +692,21 @@ public class TargetC
                 }
             }
 
-            if (isValueReference())
+            if (node.isValueReference())
             {
                 builder.append("(*");
 
-                generateSourcePrefix(builder);
+                generateSourcePrefix(node, builder);
             }
 
-            generateSourceName(builder);
+            generateSourceName(node, builder);
 
-            if (isValueReference())
+            if (node.isValueReference())
             {
                 builder.append(')');
             }
 
-            generateArrayAccess(builder);
+            generateArrayAccess(node, builder);
 
             return builder;
         }
@@ -605,9 +716,9 @@ public class TargetC
 		return getGenericTypeArgumentFromParameter(param.getType());
 	}*/
 
-        public String getCName(Identifier node)
+        public String getCName(IIdentifier node)
         {
-            return getName();
+            return node.getName();
         }
 
         /**
@@ -617,9 +728,9 @@ public class TargetC
          * @return The name of the variable that will be output to the C
          * 		source output.
          */
-        public final StringBuilder generateSourceName(Identifier node)
+        public final StringBuilder generateSourceName(IIdentifier node)
         {
-            return generateSourceName(new StringBuilder());
+            return generateSourceName(node, new StringBuilder());
         }
 
         /**
@@ -630,9 +741,9 @@ public class TargetC
          * @return The name of the variable that will be output to the C
          * 		source output.
          */
-        public final StringBuilder generateSourceName(StringBuilder builder, Identifier node)
+        public final StringBuilder generateSourceName(IIdentifier node, StringBuilder builder)
         {
-            return generateSourceName(builder, null);
+            return generateSourceName(node, builder, null);
         }
 
         /**
@@ -644,9 +755,9 @@ public class TargetC
          * @return The name of the variable that will be output to the C
          * 		source output.
          */
-        public final StringBuilder generateSourceName(Identifier node, String uniquePrefix)
+        public final StringBuilder generateSourceName(IIdentifier node, String uniquePrefix)
         {
-            return generateSourceName(new StringBuilder(), uniquePrefix);
+            return generateSourceName(node, new StringBuilder(), uniquePrefix);
         }
 
         /**
@@ -659,38 +770,38 @@ public class TargetC
          * @return The name of the variable that will be output to the C
          * 		source output.
          */
-        public StringBuilder generateSourceName(StringBuilder builder, Identifier node, String uniquePrefix)
+        public StringBuilder generateSourceName(IIdentifier node, StringBuilder builder, String uniquePrefix)
         {
-            String name = getCName();
+            String name = getCName(node);
 
-            if (doesForceOriginalName())
+            if (node.doesForceOriginalName())
             {
                 return builder.append(name);
             }
 
             VariableDeclaration existing = null;
 
-            if (isDeclaration())
+            if (node.isDeclaration())
             {
-                existing = (VariableDeclaration)this;
+                existing = (VariableDeclaration)node;
             }
-            else if (this instanceof Variable)
+            else if (node instanceof Variable)
             {
-                existing = ((Variable)this).getDeclaration();
+                existing = ((Variable)node).getDeclaration();
             }
             else
             {
-                existing = SyntaxTree.findDeclaration(getParent(), name, false);
+                existing = SyntaxTree.findDeclaration(node.getParent(), name, false);
 
                 if (existing == null)
                 {
-                    SyntaxMessage.error("Unable to find declaration for variable '" + name + "'", this);
+                    SyntaxMessage.error("Unable to find declaration for variable '" + name + "'", node);
                 }
             }
 
             if (!(existing instanceof LocalDeclaration && existing instanceof Parameter == false))
             {
-                existing.getParentClass(true).generateSourceName(builder).append('_');
+                existing.getParentClass(true).generateSourceName(node, builder).append('_');
             }
 
 //		if (existing instanceof InstanceDeclaration)
@@ -734,40 +845,36 @@ public class TargetC
         /**
          * @see net.fathomsoft.nova.tree.Node#generateHeader(StringBuilder)
          */
-        @Override
-        public StringBuilder generateHeader(StringBuilder builder, Value node)
+        public StringBuilder generateHeader(Value node, StringBuilder builder)
         {
-            return generateHeaderFragment(builder);
+            return generateHeaderFragment(node, builder);
         }
 
         /**
          * @see net.fathomsoft.nova.tree.Node#generateHeaderFragment(StringBuilder)
          */
-        @Override
-        public StringBuilder generateHeaderFragment(StringBuilder builder, Value node)
+        public StringBuilder generateHeaderFragment(Value node, StringBuilder builder)
         {
-            return generateSourceFragment(builder);
+            return generateSourceFragment(node, builder);
         }
 
         /**
          * @see net.fathomsoft.nova.tree.Node#generateSource(StringBuilder)
          */
-        @Override
-        public StringBuilder generateSource(StringBuilder builder, Value node)
+        public StringBuilder generateSource(Value node, StringBuilder builder)
         {
-            return generateSourceFragment(builder);
+            return generateSourceFragment(node, builder);
         }
 
         /**
          * @see net.fathomsoft.nova.tree.Node#generateSource(StringBuilder)
          */
-        @Override
-        public StringBuilder generateSourceFragment(StringBuilder builder, Value node)
+        public StringBuilder generateSourceFragment(Value node, StringBuilder builder)
         {
-            return generateType(builder);
+            return generateType(node, builder);
         }
 
-        public StringBuilder generateSourcePrefix(StringBuilder builder, Value node)
+        public StringBuilder generateSourcePrefix(Value node, StringBuilder builder)
         {
             return builder;
         }
@@ -779,7 +886,7 @@ public class TargetC
          */
         public final StringBuilder generateNullOutput(Value node)
         {
-            return generateNullOutput(new StringBuilder());
+            return generateNullOutput(node, new StringBuilder());
         }
 
         /**
@@ -788,37 +895,37 @@ public class TargetC
          * @param builder The StringBuilder to append the data to.
          * @return The generated null output.
          */
-        public StringBuilder generateNullOutput(StringBuilder builder, Value node)
+        public StringBuilder generateNullOutput(Value node, StringBuilder builder)
         {
-            return generateTypeCast(builder).append(NULL_IDENTIFIER);
+            return generateTypeCast(node, builder).append(Value.NULL_IDENTIFIER);
         }
 
-        public StringBuilder generateArgumentOutput(StringBuilder builder, Value node)
+        public StringBuilder generateArgumentOutput(Value node, StringBuilder builder)
         {
-            return generateSourceFragment(builder);
+            return generateSourceFragment(node, builder);
         }
 
         public final StringBuilder generateTypeClassName(Value node)
         {
-            return generateTypeClassName(new StringBuilder());
+            return generateTypeClassName(node, new StringBuilder());
         }
 
-        public StringBuilder generateTypeClassName(StringBuilder builder, Value node)
+        public StringBuilder generateTypeClassName(Value node, StringBuilder builder)
         {
-            String type = getType();
+            String type = node.getType();
 
-            if (isGenericType())
+            if (node.isGenericType())
             {
-                type = getGenericReturnType();
+                type = node.getGenericReturnType();
             }
 
-            if (isExternalType() || SyntaxUtils.isExternalPrimitiveType(type))
+            if (node.isExternalType() || SyntaxUtils.isExternalPrimitiveType(type))
             {
                 builder.append(type);
             }
             else
             {
-                FileDeclaration file = getReferenceFile();//getFileDeclaration();
+                FileDeclaration file = node.getReferenceFile();//getFileDeclaration();
 			
 			/*if (this instanceof Identifier && !isGenericType())
 			{
@@ -829,7 +936,7 @@ public class TargetC
 
                 if (clazz != null)
                 {
-                    clazz.generateSourceName(builder);
+                    clazz.generateSourceName(node, builder);
                 }
                 else
                 {
@@ -847,7 +954,7 @@ public class TargetC
          */
         public final StringBuilder generateType(Value node)
         {
-            return generateType(new StringBuilder());
+            return generateType(node, new StringBuilder());
         }
 
         /**
@@ -856,9 +963,9 @@ public class TargetC
          * @param builder The StringBuider to append the data to.
          * @return The C syntax for the type of the Value.
          */
-        public final StringBuilder generateType(StringBuilder builder, Value node)
+        public final StringBuilder generateType(Value node, StringBuilder builder)
         {
-            return generateType(builder, true);
+            return generateType(node, builder, true);
         }
 
         /**
@@ -868,34 +975,34 @@ public class TargetC
          * @param checkArray Whether or not to check if the type is an array.
          * @return The C syntax for the type of the Value.
          */
-        public final StringBuilder generateType(StringBuilder builder, Value node, boolean checkArray)
+        public final StringBuilder generateType(Value node, StringBuilder builder, boolean checkArray)
         {
-            return generateType(builder, checkArray, true);
+            return generateType(node, builder, checkArray, true);
         }
 
-        public StringBuilder generateType(StringBuilder builder, Value node, boolean checkArray, boolean checkValueReference)
+        public StringBuilder generateType(Value node, StringBuilder builder, boolean checkArray, boolean checkValueReference)
         {
-            generateTypeName(builder);
+            generateTypeName(node, builder);
 
-            if (isReference())
+            if (node.isReference())
             {
                 builder.append('&');
             }
-            else if (isPointer())
+            else if (node.isPointer())
             {
                 builder.append('*');
             }
-            else if (isDoublePointer())
+            else if (node.isDoublePointer())
             {
                 builder.append("**");
             }
-            if (checkValueReference && isValueReference())
+            if (checkValueReference && node.isValueReference())
             {
                 builder.append('*');
             }
-            if (checkArray && isPrimitiveArray())
+            if (checkArray && node.isPrimitiveArray())
             {
-                builder.append(generateArrayText());
+                builder.append(node.generateArrayText());
             }
 
             return builder;
@@ -903,16 +1010,16 @@ public class TargetC
 
         public StringBuilder generateTypeName(Value node)
         {
-            return generateTypeName(new StringBuilder());
+            return generateTypeName(node, new StringBuilder());
         }
 
-        public StringBuilder generateTypeName(StringBuilder builder, Value node)
+        public StringBuilder generateTypeName(Value node, StringBuilder builder)
         {
-            String type = getType();
+            String type = node.getType();
 
-            if (isGenericType())
+            if (node.isGenericType())
             {
-                type = getGenericReturnType();
+                type = node.getGenericReturnType();
             }
 
             if (type == null)
@@ -931,13 +1038,13 @@ public class TargetC
             {
                 builder.append("char");
             }
-            else if (SyntaxUtils.isPrimitiveType(type) && (getDataType() == VALUE || (isReturnParameter() && getDataType() == POINTER)))
+            else if (SyntaxUtils.isPrimitiveType(type) && (node.getDataType() == Value.VALUE || (node.isReturnParameter() && node.getDataType() == Value.POINTER)))
             {
                 builder.append(SyntaxUtils.getPrimitiveExternalType(type));
             }
             else
             {
-                generateTypeClassName(builder);
+                generateTypeClassName(node, builder);
             }
 
             return builder;
@@ -951,7 +1058,7 @@ public class TargetC
          */
         public final StringBuilder generateTypeCast(Value node)
         {
-            return generateTypeCast(new StringBuilder());
+            return generateTypeCast(node, new StringBuilder());
         }
 
         /**
@@ -961,32 +1068,32 @@ public class TargetC
          * @param builder The StringBuilder to append the data to.
          * @return The StringBuilder with the appended data.
          */
-        public final StringBuilder generateTypeCast(StringBuilder builder, Value node)
+        public final StringBuilder generateTypeCast(Value node, StringBuilder builder)
         {
-            return generateTypeCast(builder, true, true);
+            return generateTypeCast(node, builder, true, true);
         }
 
-        public final StringBuilder generateTypeCast(StringBuilder builder, Value node, boolean checkArray, boolean checkValueReference)
+        public final StringBuilder generateTypeCast(Value node, StringBuilder builder, boolean checkArray, boolean checkValueReference)
         {
-            return builder.append('(').append(generateType(new StringBuilder(), checkArray, checkValueReference)).append(')').append(generatePointerToValueConversion(this));
+            return builder.append('(').append(generateType(node, new StringBuilder(), checkArray, checkValueReference)).append(')').append(generatePointerToValueConversion(this));
         }
 
         public StringBuilder generatePointerToValueConversion(Value node)
         {
-            return generatePointerToValueConversion(new StringBuilder());
+            return generatePointerToValueConversion(node, new StringBuilder());
         }
 
-        public StringBuilder generatePointerToValueConversion(StringBuilder builder, Value node)
+        public StringBuilder generatePointerToValueConversion(Value node, StringBuilder builder)
         {
-            return generatePointerToValueConversion(builder, this);
+            return generatePointerToValueConversion(node, builder, node);
         }
 
         public StringBuilder generatePointerToValueConversion(Value node, Value required)
         {
-            return generatePointerToValueConversion(new StringBuilder(), required);
+            return generatePointerToValueConversion(node, new StringBuilder(), required);
         }
 
-        public StringBuilder generatePointerToValueConversion(StringBuilder builder, Value node, Value required)
+        public StringBuilder generatePointerToValueConversion(Value node, StringBuilder builder, Value required)
         {
             boolean ptr = false;
 
@@ -994,11 +1101,11 @@ public class TargetC
             {
                 Accessible ref = ((Accessible)this).getReferenceNode();
 
-                ptr = ref != null && getArrayDimensions() == 0 && (required.isOriginallyGenericType() || isOriginallyGenericType()) && ref.toValue().isPrimitiveGenericTypeWrapper();
+                ptr = ref != null && node.getArrayDimensions() == 0 && (required.isOriginallyGenericType() || node.isOriginallyGenericType()) && ref.toValue().isPrimitiveGenericTypeWrapper();
             }
             else
             {
-                Node base = getBaseNode();
+                Node base = node.getBaseNode();
 
                 if (base instanceof Value)
                 {
@@ -1023,7 +1130,7 @@ public class TargetC
          */
         public final StringBuilder generateUseOutput(Value node)
         {
-            return generateUseOutput(new StringBuilder());
+            return generateUseOutput(node, new StringBuilder());
         }
 
         /**
@@ -1034,21 +1141,21 @@ public class TargetC
          * @return What the method call looks like when it is being used in
          * 		action
          */
-        public StringBuilder generateUseOutput(StringBuilder builder, Value node)
+        public StringBuilder generateUseOutput(Value node, StringBuilder builder)
         {
-            return generateType(builder);
+            return generateType(node, builder);
         }
 
         public StringBuilder generateArrayAccess(Value node)
         {
-            return generateArrayAccess(new StringBuilder());
+            return generateArrayAccess(node, new StringBuilder());
         }
 
-        public StringBuilder generateArrayAccess(StringBuilder builder, Value node)
+        public StringBuilder generateArrayAccess(Value node, StringBuilder builder)
         {
-            if (arrayAccess != null)
+            if (node.arrayAccess != null)
             {
-                return arrayAccess.generateSourceFragment(builder);
+                return node.arrayAccess.generateSourceFragment(node, builder);
             }
 
             return builder;
@@ -1066,7 +1173,7 @@ public class TargetC
          */
         public final StringBuilder generateHeader(Node node)
         {
-            return generateHeader(new StringBuilder());
+            return generateHeader(node, new StringBuilder());
         }
 
         /**
@@ -1078,7 +1185,7 @@ public class TargetC
          */
         public final StringBuilder generateHeaderFragment(Node node)
         {
-            return generateHeaderFragment(new StringBuilder());
+            return generateHeaderFragment(node, new StringBuilder());
         }
 
         /**
@@ -1090,7 +1197,7 @@ public class TargetC
          */
         public final StringBuilder generateSource(Node node)
         {
-            return generateSource(new StringBuilder());
+            return generateSource(node, new StringBuilder());
         }
 
         /**
@@ -1102,7 +1209,7 @@ public class TargetC
          */
         public final StringBuilder generateSourceFragment(Node node)
         {
-            return generateSourceFragment(new StringBuilder());
+            return generateSourceFragment(node, new StringBuilder());
         }
 
         /**
@@ -1113,9 +1220,9 @@ public class TargetC
          * @param builder The StringBuilder to append the data to.
          * @return The C header file syntax representation of the Node.
          */
-        public StringBuilder generateHeader(StringBuilder builder, Node node)
+        public StringBuilder generateHeader(Node node, StringBuilder builder)
         {
-            return generateHeaderFragment(builder).append('\n');
+            return generateHeaderFragment(node, builder).append('\n');
             //throw new UnimplementedOperationException("The C Header implementation for " + this.getClass().getName() + " has not been implemented yet.");
         }
 
@@ -1127,7 +1234,7 @@ public class TargetC
          * @param builder The StringBuilder to append the data to.
          * @return The C header syntax representation of the Node.
          */
-        public StringBuilder generateHeaderFragment(StringBuilder builder, Node node)
+        public StringBuilder generateHeaderFragment(Node node, StringBuilder builder)
         {
             throw new UnimplementedOperationException("The C Header fragment implementation for " + this.getClass().getName() + " has not been implemented yet.");
         }
@@ -1140,9 +1247,9 @@ public class TargetC
          * @param builder The StringBuilder to append the data to.
          * @return The C source syntax representation of the Node.
          */
-        public StringBuilder generateSource(StringBuilder builder, Node node)
+        public StringBuilder generateSource(Node node, StringBuilder builder)
         {
-            return generateSourceFragment(builder).append('\n');
+            return generateSourceFragment(node, builder).append('\n');
             //throw new UnimplementedOperationException("The C Source implementation for " + this.getClass().getName() + " has not been implemented yet.");
         }
 
@@ -1154,7 +1261,7 @@ public class TargetC
          * @param builder The StringBuilder to append the data to.
          * @return The C source syntax representation of the Node.
          */
-        public StringBuilder generateSourceFragment(StringBuilder builder, Node node)
+        public StringBuilder generateSourceFragment(Node node, StringBuilder builder)
         {
             throw new UnimplementedOperationException("The C Source fragment implementation for " + this.getClass().getName() + " has not been implemented yet.");
         }
