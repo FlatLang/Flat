@@ -261,7 +261,7 @@ public class Nova
 			
 			args = new String[]
 			{
-//				"../Compiler",
+				"../Compiler",
 				"../Misc/example",
 				"../Misc/stabilitytest", 
 				"-output-directory", "../NovaCompilerOutput",
@@ -279,8 +279,8 @@ public class Nova
 //				"-keepc",
 				"-single-thread",
 				"-main",
-				"example/Lab",
-//				"stabilitytest/StabilityTest",
+//				"example/Lab",
+				"stabilitytest/StabilityTest",
 //				"example/SvgChart",
 //				"example/HashMapDemo",
 //				"example/HashSetDemo",
