@@ -2155,9 +2155,9 @@ public class SyntaxUtils
 		{
 			GenericTypeParameter param = given.getGenericTypeParameter();//((Value)context).getTypeClass().getGenericTypeParameter(given.getType(), given);
 			
-			GenericTypeArgument arg = param.getCorrespondingArgument(context);
+			Value value = param.getTypeValue(context);
 			
-			if (arg != null)
+			if (value != null)
 			{
 				Value newContext = (Value)((Accessible)context).getReferenceNode();
 				
@@ -2168,7 +2168,7 @@ public class SyntaxUtils
 				
 				//SyntaxUtils.getImportedClass(given.getFileDeclaration(), arg.getType());
 				
-				if (isTypeCompatible((GenericCompatible)newContext, required, arg, false))
+				if (isTypeCompatible((GenericCompatible)newContext, required, value, false))
 				{
 					return true;
 				}
@@ -2219,7 +2219,15 @@ public class SyntaxUtils
 			
 			return false;
 		}
-
+		
+		String genType1 = given.isGenericType() ? given.getGenericReturnType() : given.getType();
+		String genType2 = required.isGenericType() ? required.getGenericReturnType() : required.getType();
+		
+		if (genType1 != null && genType1.equals(genType2))
+		{
+			return true;
+		}
+		
 		VariableDeclaration givenDeclaration = given instanceof VariableDeclaration ? (VariableDeclaration)given : (given instanceof  Variable ? ((Variable)given).getDeclaration() : null);
 		VariableDeclaration requiredDeclaration = required instanceof VariableDeclaration ? (VariableDeclaration)required : (required instanceof  Variable ? ((Variable)required).getDeclaration() : null);
 
