@@ -778,7 +778,7 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 			}
 			else
 			{
-				getMethodGenericTypeParameterDeclaration().decodeGenericTypeParameters(arg);
+				getMethodGenericTypeParameterDeclaration().decodeMethodGenericTypeParameters(arg);
 			}
 			
 			data.decrementGenericsRemaining();
