@@ -1,6 +1,7 @@
 package net.fathomsoft.nova.tree;
 
 import net.fathomsoft.nova.Nova;
+import net.fathomsoft.nova.TargetC;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.tree.NovaParameterList.ReturnParameterList;
 import net.fathomsoft.nova.tree.annotations.PrimitiveArrayAnnotation;
@@ -764,218 +765,6 @@ public abstract class Value extends Node implements AbstractValue
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.Node#generateCHeader(StringBuilder)
-	 */
-	@Override
-	public StringBuilder generateCHeader(StringBuilder builder)
-	{
-		return generateCHeaderFragment(builder);
-	}
-	
-	/**
-	 * @see net.fathomsoft.nova.tree.Node#generateCHeaderFragment(StringBuilder)
-	 */
-	@Override
-	public StringBuilder generateCHeaderFragment(StringBuilder builder)
-	{
-		return generateCSourceFragment(builder);
-	}
-	
-	/**
-	 * @see net.fathomsoft.nova.tree.Node#generateCSource(StringBuilder)
-	 */
-	@Override
-	public StringBuilder generateCSource(StringBuilder builder)
-	{
-		return generateCSourceFragment(builder);
-	}
-	
-	/**
-	 * @see net.fathomsoft.nova.tree.Node#generateCSource(StringBuilder)
-	 */
-	@Override
-	public StringBuilder generateCSourceFragment(StringBuilder builder)
-	{
-		return generateCType(builder);
-	}
-	
-	public StringBuilder generateCSourcePrefix(StringBuilder builder)
-	{
-		return builder;
-	}
-	
-	/**
-	 * Generate the C null representation for the given value type.
-	 * 
-	 * @return The generated null output.
-	 */
-	public final StringBuilder generateCNullOutput()
-	{
-		return generateCNullOutput(new StringBuilder());
-	}
-	
-	/**
-	 * Generate the C null representation for the given value type.
-	 * 
-	 * @param builder The StringBuilder to append the data to.
-	 * @return The generated null output.
-	 */
-	public StringBuilder generateCNullOutput(StringBuilder builder)
-	{
-		return generateCTypeCast(builder).append(NULL_IDENTIFIER);
-	}
-	
-	public StringBuilder generateCArgumentOutput(StringBuilder builder)
-	{
-		return generateCSourceFragment(builder);
-	}
-	
-	public final StringBuilder generateCTypeClassName()
-	{
-		return generateCTypeClassName(new StringBuilder());
-	}
-	
-	public StringBuilder generateCTypeClassName(StringBuilder builder)
-	{
-		String type = getType();
-		
-		if (isGenericType())
-		{
-			type = getGenericReturnType();
-		}
-		
-		if (isExternalType() || SyntaxUtils.isExternalPrimitiveType(type))
-		{
-			builder.append(type);
-		}
-		else
-		{
-			FileDeclaration file = getReferenceFile();//getFileDeclaration();
-			
-			/*if (this instanceof Identifier && !isGenericType())
-			{
-				file = ((Identifier)this).getDeclaringClass().getFileDeclaration();
-			}*/
-			
-			ClassDeclaration clazz = SyntaxUtils.getImportedClass(file, type);
-			
-			if (clazz != null)
-			{
-				clazz.generateCSourceName(builder);
-			}
-			else
-			{
-				builder.append(type);
-			}
-		}
-		
-		return builder;
-	}
-	
-	/**
-	 * Generate the C syntax for the type of the specified Value.
-	 * 
-	 * @return The C syntax for the type of the Value.
-	 */
-	public final StringBuilder generateCType()
-	{
-		return generateCType(new StringBuilder());
-	}
-	
-	/**
-	 * Generate the C syntax for the type of the specified Value.
-	 * 
-	 * @param builder The StringBuider to append the data to.
-	 * @return The C syntax for the type of the Value.
-	 */
-	public final StringBuilder generateCType(StringBuilder builder)
-	{
-		return generateCType(builder, true);
-	}
-	
-	/**
-	 * Generate the C syntax for the type of the specified Value.
-	 * 
-	 * @param builder The StringBuider to append the data to.
-	 * @param checkArray Whether or not to check if the type is an array.
-	 * @return The C syntax for the type of the Value.
-	 */
-	public final StringBuilder generateCType(StringBuilder builder, boolean checkArray)
-	{
-		return generateCType(builder, checkArray, true);
-	}
-	
-	public StringBuilder generateCType(StringBuilder builder, boolean checkArray, boolean checkValueReference)
-	{
-		generateCTypeName(builder);
-		
-		if (isReference())
-		{
-			builder.append('&');
-		}
-		else if (isPointer())
-		{
-			builder.append('*');
-		}
-		else if (isDoublePointer())
-		{
-			builder.append("**");
-		}
-		if (checkValueReference && isValueReference())
-		{
-			builder.append('*');
-		}
-		if (checkArray && isPrimitiveArray())
-		{
-			builder.append(generateArrayText());
-		}
-		
-		return builder;
-	}
-	
-	public StringBuilder generateCTypeName()
-	{
-		return generateCTypeName(new StringBuilder());
-	}
-	
-	public StringBuilder generateCTypeName(StringBuilder builder)
-	{
-		String type = getType();
-		
-		if (isGenericType())
-		{
-			type = getGenericReturnType();
-		}
-		
-		if (type == null)
-		{
-			builder.append("void");
-		}
-		else if (type.equals("long"))
-		{
-			builder.append("long_long");
-		}
-		else if (type.equals("bool"))
-		{
-			builder.append("char");
-		}
-		else if (type.equals("byte"))
-		{
-			builder.append("char");
-		}
-		else if (SyntaxUtils.isPrimitiveType(type) && (getDataType() == VALUE || (isReturnParameter() && getDataType() == POINTER)))
-		{
-			builder.append(SyntaxUtils.getPrimitiveExternalType(type));
-		}
-		else
-		{
-			generateCTypeClassName(builder);
-		}
-		
-		return builder;
-	}
-	
-	/**
 	 * Generate the Nova syntax for the type of the specified Value's type.
 	 * 
 	 * @return The Nova syntax for the type of the Value.
@@ -1060,34 +849,6 @@ public abstract class Value extends Node implements AbstractValue
 		return getProgram().getClassDeclaration(SyntaxUtils.getTypeClassLocation(this, getNovaType()));
 	}
 	
-	/**
-	 * Generate a String representing a type cast for the specified Value
-	 * in C syntax.
-	 * 
-	 * @return The StringBuilder with the appended data.
-	 */
-	public final StringBuilder generateCTypeCast()
-	{
-		return generateCTypeCast(new StringBuilder());
-	}
-	
-	/**
-	 * Generate a String representing a type cast for the specified Value
-	 * in C syntax.
-	 * 
-	 * @param builder The StringBuilder to append the data to.
-	 * @return The StringBuilder with the appended data.
-	 */
-	public final StringBuilder generateCTypeCast(StringBuilder builder)
-	{
-		return generateCTypeCast(builder, true, true);
-	}
-	
-	public final StringBuilder generateCTypeCast(StringBuilder builder, boolean checkArray, boolean checkValueReference)
-	{
-		return builder.append('(').append(generateCType(new StringBuilder(), checkArray, checkValueReference)).append(')').append(generatePointerToValueConversion(this));
-	}
-	
 	public boolean isOriginallyGenericType()
 	{
 		return getOriginalGenericType() != null;
@@ -1101,89 +862,6 @@ public abstract class Value extends Node implements AbstractValue
 		}
 		
 		return null;
-	}
-	
-	public StringBuilder generatePointerToValueConversion()
-	{
-		return generatePointerToValueConversion(new StringBuilder());
-	}
-	
-	public StringBuilder generatePointerToValueConversion(StringBuilder builder)
-	{
-		return generatePointerToValueConversion(builder, this);
-	}
-	
-	public StringBuilder generatePointerToValueConversion(Value required)
-	{
-		return generatePointerToValueConversion(new StringBuilder(), required);
-	}
-	
-	public StringBuilder generatePointerToValueConversion(StringBuilder builder, Value required)
-	{
-		boolean ptr = false;
-		
-		if (/*isGenericType() && */this instanceof Accessible)
-		{
-			Accessible ref = ((Accessible)this).getReferenceNode();
-			
-			ptr = ref != null && getArrayDimensions() == 0 && (required.isOriginallyGenericType() || isOriginallyGenericType()) && ref.toValue().isPrimitiveGenericTypeWrapper();
-		}
-		else
-		{
-			Node base = getBaseNode();
-			
-			if (base instanceof Value)
-			{
-				ptr = ((Value)base).isPrimitiveGenericTypeWrapper();
-			}
-		}
-		
-		if (ptr)
-		{
-			builder.append("(intptr_t)");
-		}
-		
-		return builder;
-	}
-	
-	/**
-	 * Generate the representation of when the value node is being used
-	 * in action.
-	 * 
-	 * @return What the method call looks like when it is being used in
-	 * 		action
-	 */
-	public final StringBuilder generateCUseOutput()
-	{
-		return generateCUseOutput(new StringBuilder());
-	}
-	
-	/**
-	 * Generate the representation of when the value node is being used
-	 * in action.
-	 * 
-	 * @param builder The StringBuilder to append the data to.
-	 * @return What the method call looks like when it is being used in
-	 * 		action
-	 */
-	public StringBuilder generateCUseOutput(StringBuilder builder)
-	{
-		return generateCType(builder);
-	}
-	
-	public StringBuilder generateCArrayAccess()
-	{
-		return generateCArrayAccess(new StringBuilder());
-	}
-	
-	public StringBuilder generateCArrayAccess(StringBuilder builder)
-	{
-		if (arrayAccess != null)
-		{
-			return arrayAccess.generateCSourceFragment(builder);
-		}
-		
-		return builder;
 	}
 	
 	public StringBuilder generateNovaArrayAccess()
@@ -1212,7 +890,7 @@ public abstract class Value extends Node implements AbstractValue
 	@Override
 	public StringBuilder generateNovaInput(StringBuilder builder, boolean outputChildren)
 	{
-		return generateCUseOutput(builder);
+		return TargetC.TARGET_VALUE.generateUseOutput(builder, this);
 	}
 	
 	public boolean isConstant()

@@ -44,24 +44,6 @@ public class AbstractMethodDeclaration extends NovaMethodDeclaration
 		return true;
 	}
 	
-	@Override
-	public StringBuilder generateCHeaderFragment(StringBuilder builder)
-	{
-		return generateCSourcePrototype(builder);
-	}
-	
-	@Override
-	public StringBuilder generateCSource(StringBuilder builder)
-	{
-		return builder;
-	}
-	
-	@Override
-	public StringBuilder generateCInterfaceVTableSource(StringBuilder builder)
-	{
-		return builder.append(0);
-	}
-	
 	/**
 	 * Decode the given statement into a {@link AbstractMethodDeclaration} instance, if
 	 * possible. If it is not possible, this method returns null.
