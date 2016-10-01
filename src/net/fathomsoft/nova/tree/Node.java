@@ -2,6 +2,7 @@ package net.fathomsoft.nova.tree;
 
 import java.util.ArrayList;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -968,7 +969,7 @@ public abstract class Node implements Listenable, Annotatable
 			getChild(0).detach(this);
 		}
 	}
-
+	
 	public void forEachChild(Consumer<Node> action)
 	{
 		for (int i = 0; i < getNumChildren(); i++)
@@ -976,13 +977,43 @@ public abstract class Node implements Listenable, Annotatable
 			action.accept(getChild(i));
 		}
 	}
-
+	
 	public void forEachVisibleChild(Consumer<Node> action)
 	{
 		for (int i = 0; i < getNumVisibleChildren(); i++)
 		{
 			action.accept(getVisibleChild(i));
 		}
+	}
+	
+	public ArrayList<Node> filterChildren(Function<Node, Boolean> filter)
+	{
+		ArrayList<Node> result = new ArrayList<>();
+		
+		for (int i = 0; i < getNumChildren(); i++)
+		{
+			if (filter.apply(getChild(i)))
+			{
+				result.add(getChild(i));
+			}
+		}
+		
+		return result;
+	}
+	
+	public ArrayList<Node> filterVisibleChildren(Function<Node, Boolean> filter)
+	{
+		ArrayList<Node> result = new ArrayList<>();
+		
+		for (int i = 0; i < getNumVisibleChildren(); i++)
+		{
+			if (filter.apply(getVisibleChild(i)))
+			{
+				result.add(getVisibleChild(i));
+			}
+		}
+		
+		return result;
 	}
 	
 	/**
