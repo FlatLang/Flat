@@ -115,8 +115,16 @@ public class GenericTypeParameterDeclaration extends TypeList<GenericTypeParamet
 	
 	private void addGenericParameterName(String parameterName)
 	{
-		GenericTypeParameter type = new GenericTypeParameter((Node)this, Location.INVALID);
-		
+		addGenericParameterName(new GenericTypeParameter((Node)this, Location.INVALID), parameterName);
+	}
+	
+	private void addMethodGenericParameterName(String parameterName)
+	{
+		addGenericParameterName(new MethodGenericTypeParameter((Node)this, Location.INVALID), parameterName);
+	}
+	
+	private void addGenericParameterName(GenericTypeParameter type, String parameterName)
+	{
 		int numWords = StringUtils.findNumWords(parameterName);
 		
 		if (numWords > 1)
@@ -168,6 +176,16 @@ public class GenericTypeParameterDeclaration extends TypeList<GenericTypeParamet
 		for (String param : paramsList)
 		{
 			addGenericParameterName(param);
+		}
+	}
+	
+	public void decodeMethodGenericTypeParameters(String params)
+	{
+		String paramsList[] = StringUtils.splitCommas(params);
+		
+		for (String param : paramsList)
+		{
+			addMethodGenericParameterName(param);
 		}
 	}
 	
