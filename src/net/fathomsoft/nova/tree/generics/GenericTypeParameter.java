@@ -88,6 +88,11 @@ public class GenericTypeParameter extends IValue
 		return result;
 	}
 	
+	public Value getTypeValue(GenericCompatible context)
+	{
+		return getCorrespondingArgument(context);
+	}
+	
 	public GenericTypeArgument getCorrespondingArgument(GenericCompatible context)
 	{
 		if (context instanceof Accessible)
