@@ -87,11 +87,16 @@ public interface Accessible
 			if (typeClass != type.getParentClass())
 			{
 				// TODO: perform a walk on all extended classes and interfaces.
-				GenericTypeArgumentList args = typeClass.getExtendedClass().getGenericTypeArgumentList();
+				ExtendedClass extended = typeClass.getExtendedClass();
 				
-				if (args.getNumVisibleChildren() > index)
+				if (extended != null)
 				{
-					return args.getVisibleChild(index);
+					GenericTypeArgumentList args = extended.getGenericTypeArgumentList();
+					
+					if (args.getNumVisibleChildren() > index)
+					{
+						return args.getVisibleChild(index);
+					}
 				}
 			}
 			/*Accessible lastRef = null;
