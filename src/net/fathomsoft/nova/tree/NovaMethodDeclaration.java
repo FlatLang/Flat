@@ -62,11 +62,6 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 		addChild(methodParams, this);
 	}
 	
-	public StringBuilder generateCClosureContext(StringBuilder builder)
-	{
-		return builder.append(NULL_IDENTIFIER);
-	}
-	
 	@Override
 	public ObjectReference getObjectReference()
 	{
@@ -76,14 +71,6 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 	public VirtualMethodDeclaration getVirtualMethod()
 	{
 		return virtualMethod == null && doesOverride() ? getOverriddenMethod().getVirtualMethod() : virtualMethod;
-	}
-	
-	public StringBuilder generateCInterfaceVTableSource(StringBuilder builder)
-	{
-		NovaMethodDeclaration root = getVirtualMethod();//.getRootDeclaration();
-		
-		builder.append("(").append(root.generateCType()).append("(*)(").append(root.getParameterList().generateCHeader()).append("))");
-		return generateCSourceName(builder);
 	}
 	
 	@Override
@@ -421,115 +408,11 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 	}
 	
 	@Override
-	public StringBuilder generateCSourceNativeName(StringBuilder builder, boolean declaration)
-	{
-		super.generateCSourceNativeName(builder, declaration);
-		
-		if (!declaration && isOverloaded())
-		{
-			for (Parameter param : getParameterList())
-			{
-				builder.append('_');
-				
-				String location = null;
-				
-				if (param.isExternalType())
-				{
-					location = param.getType();
-				}
-				else
-				{
-					ClassDeclaration clazz = param.getTypeClass();
-					
-					if (clazz != null)
-					{
-						location = clazz.getFileDeclaration().getPackage().getLocation().replace('/', '_');
-						
-						if (location.length() > 0)
-						{
-							location += '_';
-						}
-						
-						location += clazz.getName();
-					}
-					else
-					{
-						location = "void";
-					}
-				}
-				
-				builder.append('_');
-				
-				if (param.isPrimitiveArray())
-				{
-					builder.append("Array" + param.getArrayDimensions() + "d_");
-				}
-				
-				builder.append(location);
-			}
-		}
-		
-		return builder;
-	}
-	
-	@Override
 	public NovaParameterList getParameterList()
 	{
 		return (NovaParameterList)super.getParameterList();
 	}
 	
-	public StringBuilder generateCInterfaceVTableHeader(StringBuilder builder)
-	{
-		return generateCType(builder).append(" (*").append(getVirtualMethod().generateCVirtualMethodName()).append(")(").append(getParameterList().generateCHeader()).append(");\n");
-	}
-	
-	/**
-	 * Generate the identifier that will be used to call the method.
-	 * 
-	 * @param builder The StringBuilder to append the data to.
-	 * @return The updated StringBuilder.
-	 */
-	public StringBuilder generateCMethodCall(StringBuilder builder)
-	{
-		if (isVirtual())
-		{
-			return getVirtualMethod().generateCVirtualMethodName(builder);
-		}
-		
-		return super.generateCMethodCall(builder);
-	}
-	
-	/**
-	 * @see net.fathomsoft.nova.tree.Identifier#generateCSourceName(java.lang.StringBuilder, String)
-	 */
-	@Override
-	public StringBuilder generateCSourceName(StringBuilder builder, String uniquePrefix)
-	{
-		return generateCSourceName(builder, uniquePrefix, true);
-	}
-	
-	/**
-	 * @see net.fathomsoft.nova.tree.Identifier#generateCSourceName(java.lang.StringBuilder, String)
-	 */
-	public StringBuilder generateCSourceName(StringBuilder builder, String uniquePrefix, boolean outputOverload)
-	{
-		if (overloadID == -1)
-		{
-			return super.generateCSourceName(builder, uniquePrefix);
-		}
-		
-		if (uniquePrefix == null)
-		{
-			uniquePrefix = "";
-		}
-		if (outputOverload)
-		{
-			uniquePrefix += overloadID;
-		}
-		
-		return super.generateCSourceName(builder, uniquePrefix);
-	}
-
 	public StringBuilder generateNovaInput(StringBuilder builder, boolean outputChildren)
 	{
 		return generateNovaInput(builder, outputChildren, true);

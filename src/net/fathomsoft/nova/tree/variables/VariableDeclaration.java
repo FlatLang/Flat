@@ -321,76 +321,6 @@ public class VariableDeclaration extends IIdentifier
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.Node#generateCHeader(StringBuilder)
-	 */
-	@Override
-	public StringBuilder generateCHeader(StringBuilder builder)
-	{
-		return generateCSource(builder);
-	}
-
-	/**
-	 * @see net.fathomsoft.nova.tree.Node#generateCSource(StringBuilder)
-	 */
-	@Override
-	public StringBuilder generateCSource(StringBuilder builder)
-	{
-		return generateCDeclarationFragment(builder).append(";\n");
-	}
-	
-	/**
-	 * Generate a String with the declaration modifiers and the name of
-	 * the variable declared.
-	 * 
-	 * @param builder The StringBuilder to append the data to.
-	 * @return The appended StringBuilder.
-	 */
-	public StringBuilder generateCDeclarationFragment(StringBuilder builder)
-	{
-		return generateCModifiersSource(builder).append(' ').append(generateCSourceName());
-	}
-	
-	/**
-	 * Generate the modifiers for the specified Variable.<br>
-	 * <br>
-	 * For example:
-	 * <blockquote><pre>
-	 * Person people[] = new Person[42];</pre></blockquote>
-	 * In the above Variable declaration, the modifiers are the type of
-	 * the variable ("<u><code>Person</code></u>") and the type of
-	 * declaration is an array.<br>
-	 * This also checks if the type requires a pointer.
-	 * 
-	 * @param builder The StringBuilder to append to.
-	 * @return The appended StringBuilder.
-	 */
-	public StringBuilder generateCModifiersSource(StringBuilder builder)
-	{
-		if (isVolatile())//!(this instanceof Parameter || this instanceof FieldDeclaration))
-		{
-			builder.append(getVolatileText()).append(' ');
-		}
-		
-		generateCType(builder);
-		
-		return builder;
-	}
-	
-	public StringBuilder generateCDefaultValue(StringBuilder builder)
-	{
-		if (isPrimitive())
-		{
-			builder.append(0);
-		}
-		else
-		{
-			builder.append(generateCTypeCast()).append(Value.NULL_IDENTIFIER);
-		}
-		
-		return builder;
-	}
-	
-	/**
 	 * @see net.fathomsoft.nova.tree.Node#generateNovaInput(StringBuilder, boolean)
 	 */
 	@Override
@@ -399,39 +329,6 @@ public class VariableDeclaration extends IIdentifier
 		generateNovaAnnotations(builder);
 		
 		return generateNovaType(builder).append(' ').append(getName());
-	}
-	
-	/**
-	 * Generate a String for the code used to free memory of the
-	 * specified variable.
-	 * 
-	 * @param builder The StringBuilder to append the data to.
-	 * @return The generated String for the code.
-	 */
-	public StringBuilder generateFreeOutput(StringBuilder builder)
-	{
-		if (isConstant())
-		{
-			return builder;
-		}
-		
-		if (isPrimitiveType() || isExternalType())
-		{
-			if (!isPrimitive())
-			{
-				builder.append("NOVA_FREE(");
-				
-				generateCUseOutput(builder, true).append(");\n");
-			}
-		}
-		else
-		{
-			getTypeClass().getDestructor().generateCSourceName(builder).append('(').append('&');
-			
-			generateCUseOutput(builder, true).append(", ").append(Exception.EXCEPTION_DATA_IDENTIFIER).append(");\n");
-		}
-		
-		return builder;
 	}
 	
 	/**

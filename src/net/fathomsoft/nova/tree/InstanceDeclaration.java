@@ -228,24 +228,6 @@ public class InstanceDeclaration extends VariableDeclaration
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.Node#generateCHeader(StringBuilder)
-	 */
-	@Override
-	public StringBuilder generateCHeader(StringBuilder builder)
-	{
-		return generateCHeaderFragment(builder).append(";\n");
-	}
-	
-	/**
-	 * @see net.fathomsoft.nova.tree.Node#generateCHeaderFragment(StringBuilder)
-	 */
-	@Override
-	public StringBuilder generateCHeaderFragment(StringBuilder builder)
-	{
-		return generateCModifiersSource(builder).append(' ').append(getName());
-	}
-	
-	/**
 	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location, boolean)
 	 */
 	@Override
