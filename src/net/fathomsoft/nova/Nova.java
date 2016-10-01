@@ -401,7 +401,7 @@ public class Nova
 		
 		for (NovaMethodDeclaration method : methods)
 		{
-			method.getVirtualMethod().generateCInterfaceVTableHeader(builder);
+			TargetC.TARGET_VIRTUAL_METHOD_DECLARATION.generateInterfaceVTableHeader(method.getVirtualMethod(), builder);
 		}
 		
 		builder.append("} ").append(InterfaceVTable.TYPE).append(";\n");
