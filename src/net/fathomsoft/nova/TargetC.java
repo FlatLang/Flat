@@ -48,16 +48,16 @@ public class TargetC
         {
             generateSourceSignature(builder);
 		
-		/*
-		if (getType() == null)
-		{
-			builder.append("{}");
-		}
-		else
-		{
-			builder.append("{return 0;}");
-		}
-		*/
+            /*
+            if (getType() == null)
+            {
+                builder.append("{}");
+            }
+            else
+            {
+                builder.append("{return 0;}");
+            }
+            */
         
             builder.append("\n{\n");
         
@@ -322,27 +322,27 @@ public class TargetC
             }
 
             return builder.append(node.getName());
-////		String location = getFileDeclaration().getPackage().getLocation().replace('/', '_');
-//		String prefix   = "";
-//		
-//		if (declaration)
-//		{
-//			prefix = "native";
-//			
-////			if (location.length() > 0)
-////			{
-////				prefix += '_';
-////			}
-//		}
-//		
-////		if (location.length() > 0)
-////		{
-////			location = location + '_';
-////		}
-//		
-//		builder.append(prefix).append(getName());
-//		
-//		return builder;
+    //		String location = getFileDeclaration().getPackage().getLocation().replace('/', '_');
+    //		String prefix   = "";
+    //		
+    //		if (declaration)
+    //		{
+    //			prefix = "native";
+    //			
+    ////			if (location.length() > 0)
+    ////			{
+    ////				prefix += '_';
+    ////			}
+    //		}
+    //		
+    ////		if (location.length() > 0)
+    ////		{
+    ////			location = location + '_';
+    ////		}
+    //		
+    //		builder.append(prefix).append(getName());
+    //		
+    //		return builder;
         }
 
         /**
@@ -621,10 +621,10 @@ public class TargetC
 
         public StringBuilder generateUseOutput(IIdentifier node, StringBuilder builder, boolean pointer, boolean checkAccesses)
         {
-//		if (!isSpecialFragment())
-//		{
-//			builder.append(generateDataTypeOutput());
-//		}
+    //		if (!isSpecialFragment())
+    //		{
+    //			builder.append(generateDataTypeOutput());
+    //		}
 
             FieldDeclaration field = null;
 
@@ -684,10 +684,10 @@ public class TargetC
                         {
                             builder.append("prv").append("->");
                         }
-//					else
-//					{
-//						builder.append("->");
-//					}
+    //					else
+    //					{
+    //						builder.append("->");
+    //					}
                     }
                 }
             }
@@ -711,10 +711,10 @@ public class TargetC
             return builder;
         }
 	
-	/*public GenericTypeArgument getGenericTypeArgumentFromParameter(GenericTypeParameter param)
-	{
-		return getGenericTypeArgumentFromParameter(param.getType());
-	}*/
+        /*public GenericTypeArgument getGenericTypeArgumentFromParameter(GenericTypeParameter param)
+        {
+            return getGenericTypeArgumentFromParameter(param.getType());
+        }*/
 
         public String getCName(IIdentifier node)
         {
@@ -804,18 +804,18 @@ public class TargetC
                 existing.getParentClass(true).generateSourceName(node, builder).append('_');
             }
 
-//		if (existing instanceof InstanceDeclaration)
-//		{
-//			InstanceDeclaration node = (InstanceDeclaration)existing;
-//			
-//			if (node.isStatic())
-//			{
-//				if (!(node instanceof MethodDeclaration && ((MethodDeclaration)node).isInstance()))
-//				{
-//					builder.append("static_");
-//				}
-//			}
-//		}
+    //		if (existing instanceof InstanceDeclaration)
+    //		{
+    //			InstanceDeclaration node = (InstanceDeclaration)existing;
+    //			
+    //			if (node.isStatic())
+    //			{
+    //				if (!(node instanceof MethodDeclaration && ((MethodDeclaration)node).isInstance()))
+    //				{
+    //					builder.append("static_");
+    //				}
+    //			}
+    //		}
 
             if (existing instanceof LocalDeclaration && existing instanceof Parameter == false)
             {
@@ -927,10 +927,10 @@ public class TargetC
             {
                 FileDeclaration file = node.getReferenceFile();//getFileDeclaration();
 			
-			/*if (this instanceof Identifier && !isGenericType())
-			{
-				file = ((Identifier)this).getDeclaringClass().getFileDeclaration();
-			}*/
+                /*if (this instanceof Identifier && !isGenericType())
+                {
+                    file = ((Identifier)this).getDeclaringClass().getFileDeclaration();
+                }*/
 
                 ClassDeclaration clazz = SyntaxUtils.getImportedClass(file, type);
 
