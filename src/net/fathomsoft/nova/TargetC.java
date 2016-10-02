@@ -3867,7 +3867,7 @@ public class TargetC
             NovaMethodDeclaration root = node().getVirtualMethod();//.getRootDeclaration();
             NovaParameterList params = root.getParameterList();
             
-            builder.append("(").append(generateType()).append("(*)(").append(params.getTarget().generateHeader()).append("))");
+            builder.append("(").append(root.getTarget().generateType()).append("(*)(").append(params.getTarget().generateHeader()).append("))");
             
             return generateSourceName(builder);
         }
