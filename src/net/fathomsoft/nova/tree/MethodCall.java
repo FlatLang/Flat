@@ -1,6 +1,7 @@
 package net.fathomsoft.nova.tree;
 
 import net.fathomsoft.nova.Nova;
+import net.fathomsoft.nova.TargetC;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.error.SyntaxErrorException;
@@ -466,49 +467,6 @@ public class MethodCall extends Variable
 		return builder.toString();
 	}
 	
-	/**
-	 * @see net.fathomsoft.nova.tree.Node#generateCSource(StringBuilder)
-	 */
-	@Override
-	public StringBuilder generateCSource(StringBuilder builder)
-	{
-		return generateCSourceFragment(builder).append(';').append('\n');
-	}
-	
-	/**
-	 * @see net.fathomsoft.nova.tree.Node#generateCSourceFragment(StringBuilder)
-	 */
-	public StringBuilder generatedCSourceFragment(StringBuilder builder, boolean checkSpecial)
-	{
-		if (checkSpecial && isSpecialFragment())
-		{
-			return generateSpecialFragment(builder);
-		}
-		
-		return generateCUseOutput(builder);
-	}
-	
-	/**
-	 * Generate a String representing the output of the children of the
-	 * MethodCall.
-	 * 
-	 * @return A String representing the output of the children of the
-	 * 		MethodCall.
-	 */
-	public StringBuilder generateChildrenCSourceFragment(StringBuilder builder)
-	{
-		for (int i = 1; i < getNumChildren(); i++)
-		{
-			Node child = getChild(i);
-			
-			builder.append("->");
-			
-			child.generateCSourceFragment(builder);
-		}
-		
-		return builder;
-	}
-	
 	@Override
 	public byte getDataType(boolean checkGeneric)
 	{
@@ -520,83 +478,10 @@ public class MethodCall extends Variable
 		return super.getDataType(checkGeneric);
 	}
 	
-	/**
-	 * Generate the representation of when the method call is being used
-	 * in action.
-	 * 
-	 * @see net.fathomsoft.nova.tree.Identifier#generateCUseOutput(java.lang.StringBuilder, boolean)
-	 * 
-	 * @return What the method call looks like when it is being used in
-	 * 		action.
-	 */
-	@Override
-	public StringBuilder generateCUseOutput(StringBuilder builder, boolean pointer, boolean checkAccesses)
-	{
-		VariableDeclaration method   = getMethodDeclaration();
-		CallableMethod      callable = (CallableMethod)method;
-		
-		boolean requiresCast = checkAccesses && doesAccess() && getAccessedNode() instanceof MethodCall == false && isGenericType();
-		
-		if (requiresCast)
-		{
-			builder.append('(');
-			generateCTypeCast(builder);
-		}
-		
-		if (callable.isVirtual() && ((NovaMethodDeclaration)method).getVirtualMethod() != null && !isVirtualTypeKnown())
-		{
-			NovaMethodDeclaration novaMethod = (NovaMethodDeclaration)method;
-			
-			/*if (!isAccessed())
-			{
-				builder.append(ParameterList.OBJECT_REFERENCE_IDENTIFIER).append("->");
-			}
-			
-			if (getParent() instanceof Variable)
-			{
-				//((Variable)getParent()).generateCUseOutput(builder).append("->");
-			}
-			
-			builder.append(VTable.IDENTIFIER).append("->");
-			
-			if (method.getParentClass() instanceof Interface)
-			{
-				builder.append(InterfaceVTable.IDENTIFIER).append(".");
-			}*/
-			
-			novaMethod.getVirtualMethod().generateCSourceName(builder);
-		}
-		else
-		{
-			method.generateCSourceName(builder);
-		}
-		
-		builder.append(getArgumentList().generateCSource());
-		
-		if (requiresCast)
-		{
-			builder.append(')');
-		}
-		
-		return builder;
-	}
-	
 	@Override
 	public Accessible getCArgumentReferenceContext()
 	{
 		return this;
-	}
-	
-	@Override
-	public StringBuilder generateExtraArguments(StringBuilder builder)
-	{
-		return builder;
-	}
-	
-	@Override
-	public StringBuilder generateCObjectReferenceIdentifier(StringBuilder builder)
-	{
-		return builder;
 	}
 	
 	@Override
@@ -1468,5 +1353,11 @@ public class MethodCall extends Variable
 	public static class MethodData extends ExtraData
 	{
 		private String name;
+	}
+	
+	@Override
+	public TargetC.TargetMethodCall getTarget()
+	{
+		return TargetC.TARGET_METHOD_CALL;
 	}
 }

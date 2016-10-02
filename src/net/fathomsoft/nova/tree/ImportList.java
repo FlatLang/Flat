@@ -1,5 +1,6 @@
 package net.fathomsoft.nova.tree;
 
+import net.fathomsoft.nova.TargetC;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.util.Location;
 import net.fathomsoft.nova.util.SyntaxUtils;
@@ -143,33 +144,6 @@ public class ImportList extends List
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.Node#generateCHeader(StringBuilder)
-	 */
-	@Override
-	public StringBuilder generateCHeader(StringBuilder builder)
-	{
-		for (int i = 0; i < getNumChildren(); i++)
-		{
-			getChild(i).generateCSource(builder);
-		}
-		
-		return builder;
-	}
-	
-	/**
-	 * @see net.fathomsoft.nova.tree.Node#generateCSource(StringBuilder)
-	 */
-	@Override
-	public StringBuilder generateCSource(StringBuilder builder)
-	{
-		FileDeclaration file = getFileDeclaration();
-
-		Import importNode = Import.decodeStatement(this, "import \"" + file.getClassDeclaration().getClassLocation() + "\"", getLocationIn(), true);
-		
-		return importNode.generateCSource(builder);
-	}
-	
-	/**
 	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location, boolean)
 	 */
 	@Override
@@ -214,5 +188,11 @@ public class ImportList extends List
 		
 		
 		return null;
+	}
+	
+	@Override
+	public TargetC.TargetNode getTarget()
+	{
+		return TargetC.TARGET_IMPORT_LIST;
 	}
 }

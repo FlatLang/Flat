@@ -1,5 +1,6 @@
 package net.fathomsoft.nova.tree.variables;
 
+import net.fathomsoft.nova.TargetC;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.tree.InstanceDeclaration;
@@ -218,50 +219,6 @@ public class FieldList extends List
 	}
 	
 	/**
-	 * Generate the C Header output for the all of the non-static
-	 * variables.
-	 * 
-	 * @return The C Header file output.
-	 */
-	public StringBuilder generateNonStaticCHeader(StringBuilder builder)
-	{
-		return getPublicFieldList().generateCHeader(builder);
-	}
-	
-	/**
-	 * Generate the C Header output for the all of the public static
-	 * variables.
-	 * 
-	 * @return The C Header file output.
-	 */
-	public StringBuilder generateStaticCHeader(StringBuilder builder)
-	{
-		return getPublicStaticFieldList().generateCHeader(builder);
-	}
-	
-	/**
-	 * Generate the C Source output for the all of the public static
-	 * variables.
-	 * 
-	 * @return The C Source file output.
-	 */
-	public StringBuilder generateStaticCSource(StringBuilder builder)
-	{
-		return getPublicStaticFieldList().generateCSource(builder);
-	}
-
-	/**
-	 * Generate the C Source output for the all of the non-static
-	 * variables.
-	 * 
-	 * @return The C Source file output.
-	 */
-	public StringBuilder generateNonStaticCSource(StringBuilder builder)
-	{
-		return getPrivateStaticFieldList().generateCHeader(builder);
-	}
-	
-	/**
 	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location, boolean)
 	 */
 	@Override
@@ -330,5 +287,11 @@ public class FieldList extends List
 		}
 		
 		return str;
+	}
+	
+	@Override
+	public TargetC.TargetFieldList getTarget()
+	{
+		return TargetC.TARGET_FIELD_LIST;
 	}
 }

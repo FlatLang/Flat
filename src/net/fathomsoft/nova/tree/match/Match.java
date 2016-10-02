@@ -1,5 +1,6 @@
 package net.fathomsoft.nova.tree.match;
 
+import net.fathomsoft.nova.TargetC;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.error.SyntaxMessage;
@@ -137,35 +138,6 @@ public class Match extends ControlStatement
 		}
 		
 		super.addChild(node);
-	}
-	
-	@Override
-	public StringBuilder generateCSource(StringBuilder builder)
-	{
-		if (isConventionalSwitch())
-		{
-			builder.append("switch (" + getControlValue().generateCSourceFragment() + ")\n");
-			
-			getScope().generateCSource(builder);
-		}
-		else
-		{
-			boolean requiresFacade = requiresLoopFacade();
-			
-			if (requiresFacade)
-			{
-				builder.append("do\n{\n");
-			}
-			
-			getScope().generateCSource(builder, false);
-			
-			if (requiresFacade)
-			{
-				builder.append("}\nwhile (0);\n");
-			}
-		}
-		
-		return builder;
 	}
 	
 	/**
@@ -415,5 +387,11 @@ public class Match extends ControlStatement
 		context.reset();
 		
 		return null;
+	}
+	
+	@Override
+	public TargetC.TargetNode getTarget()
+	{
+		return TargetC.TARGET_MATCH;
 	}
 }

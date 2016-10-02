@@ -1,5 +1,6 @@
 package net.fathomsoft.nova.tree;
 
+import net.fathomsoft.nova.TargetC;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.error.SyntaxMessage;
@@ -41,15 +42,6 @@ public class Interface extends ClassDeclaration
 	public String getExtendedClassLocation()
 	{
 		return null;
-	}
-	
-	/**
-	 * @see net.fathomsoft.nova.tree.ClassDeclaration#generateCSource(java.lang.StringBuilder)
-	 */
-	@Override
-	public StringBuilder generateCSource(StringBuilder builder)
-	{
-		return super.generateCSource(builder);
 	}
 	
 	/**
@@ -171,5 +163,11 @@ public class Interface extends ClassDeclaration
 		
 		
 		return null;
+	}
+	
+	@Override
+	public TargetC.TargetInterface getTarget()
+	{
+		return TargetC.TARGET_INTERFACE;
 	}
 }

@@ -1,6 +1,7 @@
 package net.fathomsoft.nova.tree;
 
 import net.fathomsoft.nova.Nova;
+import net.fathomsoft.nova.TargetC;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.util.Bounds;
@@ -49,21 +50,6 @@ public class WhileLoop extends Loop
 	public Node getCondition()
 	{
 		return getChild(1);
-	}
-	
-	/**
-	 * @see net.fathomsoft.nova.tree.Node#generateCSource(StringBuilder)
-	 */
-	@Override
-	public StringBuilder generateCSource(StringBuilder builder)
-	{
-		Node condition = getCondition();
-		
-		builder.append("while (").append(condition.generateCSourceFragment()).append(')').append('\n');
-		
-		getScope().generateCSource(builder);
-		
-		return builder;
 	}
 	
 	/**
@@ -205,5 +191,11 @@ public class WhileLoop extends Loop
 		
 		
 		return null;
+	}
+	
+	@Override
+	public TargetC.TargetNode getTarget()
+	{
+		return TargetC.TARGET_WHILE_LOOP;
 	}
 }

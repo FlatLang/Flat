@@ -3,6 +3,7 @@ package net.fathomsoft.nova.tree;
 import java.util.regex.Matcher;
 
 import net.fathomsoft.nova.Nova;
+import net.fathomsoft.nova.TargetC;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.error.Message;
 import net.fathomsoft.nova.error.SyntaxErrorException;
@@ -105,48 +106,6 @@ public class BinaryOperation extends IValue
 	public Value getRightOperand()
 	{
 		return (Value)getChild(2);
-	}
-	
-	/**
-	 * @see net.fathomsoft.nova.tree.Node#generateCSource(StringBuilder)
-	 */
-	@Override
-	public StringBuilder generateCSource(StringBuilder builder)
-	{
-		generateCSourceFragment(builder);
-		
-		if (getOperator().isShorthand())
-		{
-			builder.append(";\n");
-		}
-		
-		return builder;
-	}
-	
-	/**
-	 * @see net.fathomsoft.nova.tree.Node#generateCSourceFragment(StringBuilder)
-	 */
-	@Override
-	public StringBuilder generateCSourceFragment(StringBuilder builder)
-	{
-		if (getNumChildren() == 1)
-		{
-			return getLeftOperand().generateCSourceFragment(builder);
-		}
-		
-		String leftCast = "";
-		String rightCast = "";
-		
-		if (getLeftOperand().getReturnedNode().isOriginallyGenericType())
-		{
-			leftCast = getLeftOperand().getReturnedNode().generateCTypeCast(new StringBuilder(), true, false).toString();
-		}
-		if (getRightOperand().getReturnedNode().isOriginallyGenericType())
-		{
-			rightCast = getRightOperand().getReturnedNode().generateCTypeCast(new StringBuilder(), true, false).toString();
-		}
-		
-		return builder.append(leftCast).append(getLeftOperand().generateCSourceFragment()).append(' ').append(getOperator().generateCSourceFragment()).append(' ').append(rightCast).append(getRightOperand().generateCSourceFragment());
 	}
 	
 	/**
@@ -957,5 +916,11 @@ public class BinaryOperation extends IValue
 		
 		
 		return null;
+	}
+	
+	@Override
+	public TargetC.TargetBinaryOperation getTarget()
+	{
+		return TargetC.TARGET_BINARY_OPERATION;
 	}
 }

@@ -1,5 +1,6 @@
 package net.fathomsoft.nova.tree;
 
+import net.fathomsoft.nova.TargetC;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.error.SyntaxMessage;
@@ -21,7 +22,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  */
 public class ExternalMethodDeclaration extends MethodDeclaration
 {
-	private String	alias;
+	public String	alias;
 	
 	public static final String PREFIX = "external";
 	
@@ -79,15 +80,6 @@ public class ExternalMethodDeclaration extends MethodDeclaration
 	public boolean containsBody()
 	{
 		return false;
-	}
-	
-	/**
-	 * @see net.fathomsoft.nova.tree.MethodDeclaration#generateCSourceName(java.lang.StringBuilder, String)
-	 */
-	@Override
-	public StringBuilder generateCSourceName(StringBuilder builder, String uniquePrefix)
-	{
-		return builder.append(alias);
 	}
 	
 	/**
@@ -355,5 +347,11 @@ public class ExternalMethodDeclaration extends MethodDeclaration
 		
 		
 		return null;
+	}
+	
+	@Override
+	public TargetC.TargetExternalMethodDeclaration getTarget()
+	{
+		return TargetC.TARGET_EXTERNAL_METHOD_DECLARATION;
 	}
 }

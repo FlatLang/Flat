@@ -1,5 +1,6 @@
 package net.fathomsoft.nova.tree.match;
 
+import net.fathomsoft.nova.TargetC;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.tree.Node;
@@ -120,60 +121,6 @@ public class Case extends MatchCase
 		return builder;
 	}
 	
-	@Override
-	public StringBuilder generateCSource(StringBuilder builder)
-	{
-		if (getParentSwitch().isConventionalSwitch())
-		{
-			builder.append("case " + getValue().generateCSourceFragment() + ":\n");
-			
-			getScope().generateCSource(builder, false);
-			
-			if (requiresBreak())
-			{
-				builder.append("break;\n");
-			}
-		}
-		else
-		{
-			String control = getParentSwitch().getControlValue().generateCSourceFragment().toString();
-			
-			Case   before = null;
-			String fall   = "";
-			
-			if (getParent().getChildBefore(this) instanceof Case)
-			{
-				before = (Case)getParent().getChildBefore(this);
-			}
-			
-			if (before != null)
-			{
-				if (before.containsFallthrough())
-				{
-					fall = getParentSwitch().getLocalFallthrough().generateCSourceFragment() + " || ";
-				}
-				else
-				{
-					builder.append("else ");
-				}
-			}
-			
-			builder.append("if (" + fall + control + " == " + getValue().generateCSourceFragment() + ")").append('\n');
-			builder.append("{\n");
-			
-			getScope().generateCSource(builder, false);
-			
-			if (getParentSwitch().requiresLoopFacade() && requiresBreak())
-			{
-				builder.append("break;\n");
-			}
-			
-			builder.append("}\n");
-		}
-		
-		return builder;
-	}
-	
 	/**
 	 * Decode the given statement into a {@link Case} instance, if
 	 * possible. If it is not possible, this method returns null.<br>
@@ -289,5 +236,11 @@ public class Case extends MatchCase
 		
 		
 		return null;
+	}
+	
+	@Override
+	public TargetC.TargetNode getTarget()
+	{
+		return TargetC.TARGET_CASE;
 	}
 }

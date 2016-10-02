@@ -3,6 +3,7 @@ package net.fathomsoft.nova.tree;
 import java.util.ArrayList;
 
 import net.fathomsoft.nova.Nova;
+import net.fathomsoft.nova.TargetC;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.tree.exceptionhandling.Exception;
@@ -359,88 +360,6 @@ public class ParameterList<E extends Value> extends TypeList<E>
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.Node#generateCHeader(StringBuilder)
-	 */
-	@Override
-	public StringBuilder generateCHeader(StringBuilder builder)
-	{
-		return generateCHeaderParameters(builder);
-	}
-	
-	/**
-	 * @see net.fathomsoft.nova.tree.Node#generateCSource(StringBuilder)
-	 */
-	@Override
-	public StringBuilder generateCSource(StringBuilder builder)
-	{
-		return generateCSourceParameters(builder);
-	}
-	
-	public StringBuilder generateCHeaderParameters(StringBuilder builder)
-	{
-		generateCHeaderDefaultParameters(builder);
-		
-		for (int i = 0; i < getNumVisibleChildren(); i++)
-		{
-			if (i > 0 || getParameterOffset() > 0)
-			{
-				builder.append(", ");
-			}
-			
-			getVisibleChild(i).generateCHeader(builder);
-		}
-		
-		return builder;
-	}
-	
-	public StringBuilder generateCSourceParameters(StringBuilder builder)
-	{
-		generateCSourceDefaultParameters(builder);
-		
-		for (int i = 0; i < getNumVisibleChildren(); i++)
-		{
-			if (i > 0 || getParameterOffset() > 0)
-			{
-				builder.append(", ");
-			}
-			
-			getVisibleChild(i).generateCSource(builder);
-		}
-		
-		return builder;
-	}
-	
-	public StringBuilder generateCHeaderDefaultParameters(StringBuilder builder)
-	{
-		for (int i = 0; i < getParameterOffset(); i++)
-		{
-			if (i > 0)
-			{
-				builder.append(", ");
-			}
-			
-			getChild(i).generateCHeader(builder);
-		}
-		
-		return builder;
-	}
-	
-	public StringBuilder generateCSourceDefaultParameters(StringBuilder builder)
-	{
-		for (int i = 0; i < getParameterOffset(); i++)
-		{
-			if (i > 0)
-			{
-				builder.append(", ");
-			}
-			
-			getChild(i).generateCSource(builder);
-		}
-		
-		return builder;
-	}
-	
-	/**
 	 * @see net.fathomsoft.nova.tree.Node#generateNovaInput(StringBuilder, boolean)
 	 */
 	@Override
@@ -504,5 +423,11 @@ public class ParameterList<E extends Value> extends TypeList<E>
 		
 		
 		return null;
+	}
+	
+	@Override
+	public TargetC.TargetParameterList getTarget()
+	{
+		return TargetC.TARGET_PARAMETER_LIST;
 	}
 }

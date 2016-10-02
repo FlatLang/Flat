@@ -1,5 +1,6 @@
 package net.fathomsoft.nova.tree.variables;
 
+import net.fathomsoft.nova.TargetC;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.tree.ClassDeclaration;
 import net.fathomsoft.nova.tree.List;
@@ -22,71 +23,6 @@ public class InstanceFieldList extends List
 	public InstanceFieldList(Node temporaryParent, Location locationIn)
 	{
 		super(temporaryParent, locationIn);
-	}
-	
-	/**
-	 * @see net.fathomsoft.nova.tree.Node#generateCHeader(StringBuilder)
-	 */
-	@Override
-	public StringBuilder generateCHeader(StringBuilder builder)
-	{
-		ClassDeclaration extended = getParentClass().getExtendedClassDeclaration();
-		
-		if (extended != null)
-		{
-			boolean publicList = this == getParentClass().getFieldList().getPublicFieldList();
-			
-			InstanceFieldList fields = null;
-			
-			if (publicList)
-			{
-				fields = extended.getFieldList().getPublicFieldList();
-			}
-			else
-			{
-				fields = extended.getFieldList().getPrivateFieldList();
-			}
-			
-			fields.generateCHeader(builder);
-		}
-		
-		for (int i = 0; i < getNumChildren(); i++)
-		{
-			getChild(i).generateCHeader(builder);
-		}
-		
-		return builder;
-	}
-	
-	/**
-	 * @see net.fathomsoft.nova.tree.Node#generateCSource(StringBuilder)
-	 */
-	@Override
-	public StringBuilder generateCSource(StringBuilder builder)
-	{
-		boolean hasMethods    = false;
-		
-		if (getNumChildren() > 0)
-		{
-			ClassDeclaration parent = getParentClass();
-			
-			if (parent.getMethodList().getNumChildren() > 0)
-			{
-				hasMethods = true;
-			}
-		}
-		
-		for (int i = 0; i < getNumChildren(); i++)
-		{
-			getChild(i).generateCSource(builder);
-		}
-		
-		if (hasMethods)
-		{
-			builder.append('\n');
-		}
-		
-		return builder;
 	}
 	
 	/**
@@ -134,5 +70,11 @@ public class InstanceFieldList extends List
 		
 		
 		return null;
+	}
+	
+	@Override
+	public TargetC.TargetNode getTarget()
+	{
+		return TargetC.TARGET_INSTANCE_FIELD_LIST;
 	}
 }

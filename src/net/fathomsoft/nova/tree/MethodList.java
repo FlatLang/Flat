@@ -2,6 +2,7 @@ package net.fathomsoft.nova.tree;
 
 import java.util.ArrayList;
 
+import net.fathomsoft.nova.TargetC;
 import sun.security.util.Length;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.util.Location;
@@ -85,78 +86,6 @@ public class MethodList extends TypeList<MethodDeclaration>
 		}
 		
 		return methods.toArray(new MethodDeclaration[0]);
-	}
-	
-	/**
-	 * @see net.fathomsoft.nova.tree.Node#generateCHeader(StringBuilder)
-	 */
-	@Override
-	public StringBuilder generateCHeader(StringBuilder builder)
-	{
-		for (int i = 0; i < getNumChildren(); i++)
-		{
-			MethodDeclaration methodDeclaration = (MethodDeclaration)getChild(i);
-			
-			if (!methodDeclaration.isExternal())
-			{
-				methodDeclaration.generateCHeader(builder);
-			}
-		}
-		
-		return builder;
-	}
-
-	/**
-	 * @see net.fathomsoft.nova.tree.Node#generateCSource(StringBuilder)
-	 */
-	@Override
-	public StringBuilder generateCSource(StringBuilder builder)
-	{
-		if (getNumChildren() > 0)
-		{
-			builder.append('\n');
-		}
-		
-		boolean printed = false;
-		
-		for (int i = 0; i < getNumChildren(); i++)
-		{
-			MethodDeclaration methodDeclaration = (MethodDeclaration)getChild(i);
-			
-			if (!methodDeclaration.isExternal())
-			{
-				if (printed)
-				{
-					builder.append('\n');
-				}
-				
-				methodDeclaration.generateCSource(builder);
-				
-				printed = true;
-			}
-		}
-		
-		return builder;
-	}
-	
-	/**
-	 * Generate a String containing all of the prototypes for each method
-	 * contained within this node. A method prototype follows the
-	 * following syntax: "static returnType methodName(arguments);"
-	 * 
-	 * @return A String containing all of the prototypes for the methods
-	 * 		contained within this node.
-	 */
-	public StringBuilder generateCSourcePrototypes(StringBuilder builder)
-	{
-		for (int i = 0; i < getNumChildren(); i++)
-		{
-			MethodDeclaration child = (MethodDeclaration)getChild(i);
-			
-			child.generateCSourcePrototype(builder).append('\n');
-		}
-		
-		return builder;
 	}
 	
 	public NovaMethodDeclaration[] getMethods()
@@ -282,5 +211,11 @@ public class MethodList extends TypeList<MethodDeclaration>
 		}
 		
 		return str;
+	}
+	
+	@Override
+	public TargetC.TargetNode getTarget()
+	{
+		return TargetC.TARGET_METHOD_LIST;
 	}
 }

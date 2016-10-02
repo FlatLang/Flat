@@ -1,6 +1,7 @@
 package net.fathomsoft.nova.tree;
 
 import net.fathomsoft.nova.Nova;
+import net.fathomsoft.nova.TargetC;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.error.SyntaxMessage;
@@ -162,42 +163,6 @@ public class Parameter extends LocalDeclaration
 	public void setDefaultValue(Value defaultValue)
 	{
 		this.defaultValue = defaultValue;
-	}
-	
-	/**
-	 * @see net.fathomsoft.nova.tree.Value#generateCTypeName(java.lang.StringBuilder)
-	 */
-	@Override
-	public StringBuilder generateCTypeName(StringBuilder builder)
-	{
-		if (isObjectReference() && getType() != null)
-		{
-			return generateCTypeClassName(builder);
-		}
-		/*else if (getTypeClass() != null && getTypeClass().equals(getProgram().getClassDeclaration(Nova.getClassLocation("Number"))))
-		{
-			return builder.append("long_long");
-		}*/
-		
-		return super.generateCTypeName(builder);
-	}
-	
-	/**
-	 * @see net.fathomsoft.nova.tree.Node#generateCHeader(StringBuilder)
-	 */
-	@Override
-	public StringBuilder generateCHeader(StringBuilder builder)
-	{
-		return generateCModifiersSource(builder);
-	}
-
-	/**
-	 * @see net.fathomsoft.nova.tree.Node#generateCSource(StringBuilder)
-	 */
-	@Override
-	public StringBuilder generateCSource(StringBuilder builder)
-	{
-		return generateCHeader(builder).append(' ').append(generateCSourceName());
 	}
 	
 	/**
@@ -409,5 +374,11 @@ public class Parameter extends LocalDeclaration
 		
 		
 		return null;
+	}
+	
+	@Override
+	public TargetC.TargetParameter getTarget()
+	{
+		return TargetC.TARGET_PARAMETER;
 	}
 }

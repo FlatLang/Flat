@@ -1,6 +1,7 @@
 package net.fathomsoft.nova.tree;
 
 import net.fathomsoft.nova.Nova;
+import net.fathomsoft.nova.TargetC;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.util.Location;
 
@@ -147,5 +148,11 @@ public class IValue extends Value
 		
 		
 		return null;
+	}
+	
+	@Override
+	public TargetC.TargetIValue getTarget()
+	{
+		return TargetC.TARGET_IVALUE;
 	}
 }

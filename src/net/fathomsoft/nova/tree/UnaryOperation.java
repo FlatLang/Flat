@@ -3,6 +3,7 @@ package net.fathomsoft.nova.tree;
 import java.util.HashMap;
 
 import net.fathomsoft.nova.Nova;
+import net.fathomsoft.nova.TargetC;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.error.SyntaxMessage;
@@ -209,29 +210,6 @@ public class UnaryOperation extends IValue
 		}
 		
 		return null;
-	}
-	
-	/**
-	 * @see net.fathomsoft.nova.tree.Node#generateCSource(StringBuilder)
-	 */
-	@Override
-	public StringBuilder generateCSource(StringBuilder builder)
-	{
-		return generateCSourceFragment(builder).append(";\n");
-	}
-	
-	/**
-	 * @see net.fathomsoft.nova.tree.Node#generateCSourceFragment(StringBuilder)
-	 */
-	@Override
-	public StringBuilder generateCSourceFragment(StringBuilder builder)
-	{
-		for (int i = 0; i < getNumChildren(); i++)
-		{
-			getChild(i).generateCSourceFragment(builder);
-		}
-		
-		return builder;
 	}
 	
 	/**
@@ -485,5 +463,11 @@ public class UnaryOperation extends IValue
 		
 		
 		return null;
+	}
+	
+	@Override
+	public TargetC.TargetUnaryOperation getTarget()
+	{
+		return TargetC.TARGET_UNARY_OPERATION;
 	}
 }

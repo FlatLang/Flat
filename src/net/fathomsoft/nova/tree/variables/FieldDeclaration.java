@@ -1,6 +1,7 @@
 package net.fathomsoft.nova.tree.variables;
 
 import net.fathomsoft.nova.Nova;
+import net.fathomsoft.nova.TargetC;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.tree.*;
@@ -169,20 +170,6 @@ public class FieldDeclaration extends InstanceDeclaration
 	public void setDataType(byte type)
 	{
 		super.setDataType(type);
-	}
-	
-	/**
-	 * @see net.fathomsoft.nova.tree.Node#generateCHeader(StringBuilder)
-	 */
-	@Override
-	public StringBuilder generateCHeader(StringBuilder builder)
-	{
-		if (isStatic() && (getVisibility() == PUBLIC || getVisibility() == VISIBLE))
-		{
-			builder.append("extern ");
-		}
-		
-		return generateCSource(builder);
 	}
 	
 	/**
@@ -502,5 +489,11 @@ public class FieldDeclaration extends InstanceDeclaration
 		
 		
 		return null;
+	}
+	
+	@Override
+	public TargetC.TargetFieldDeclaration getTarget()
+	{
+		return TargetC.TARGET_FIELD_DECLARATION;
 	}
 }

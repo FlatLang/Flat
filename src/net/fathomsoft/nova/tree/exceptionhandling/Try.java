@@ -2,6 +2,7 @@ package net.fathomsoft.nova.tree.exceptionhandling;
 
 import java.util.ArrayList;
 
+import net.fathomsoft.nova.TargetC;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.tree.AccessorMethod;
@@ -23,7 +24,7 @@ import net.fathomsoft.nova.util.StringUtils;
  */
 public class Try extends ExceptionHandler
 {
-	private ArrayList<Integer>	codes;
+	public ArrayList<Integer>	codes;
 	
 	public static final String IDENTIFIER = "try";
 	
@@ -51,23 +52,6 @@ public class Try extends ExceptionHandler
 		{
 			codes.add(code);
 		}
-	}
-
-	/**
-	 * @see net.fathomsoft.nova.tree.Node#generateCSource(StringBuilder)
-	 */
-	@Override
-	public StringBuilder generateCSource(StringBuilder builder)
-	{
-		builder.append("TRY").append('\n');
-		builder.append('{').append('\n');
-		generateExceptionCodes(builder).append('\n');
-		
-		getScope().generateCSource(builder);
-		
-		builder.append('}').append('\n');
-		
-		return builder;
 	}
 	
 	/**
@@ -156,26 +140,6 @@ public class Try extends ExceptionHandler
 	}
 	
 	/**
-	 * Generate a String that adds all of the exception codes that this
-	 * try node catches to the exception data instance.
-	 * 
-	 * @return The generated C language String.
-	 */
-	private StringBuilder generateExceptionCodes(StringBuilder builder)
-	{
-		String variableName = Exception.EXCEPTION_DATA_IDENTIFIER;
-		
-		for (int i = 0; i < codes.size(); i++)
-		{
-			int code = codes.get(i);
-			
-			builder.append("novaEnv.nova_exception_ExceptionData.addCode(").append(variableName).append(", ").append(variableName).append(", ").append(code).append(");").append('\n');
-		}
-		
-		return builder;
-	}
-	
-	/**
 	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location, boolean)
 	 */
 	@Override
@@ -227,5 +191,11 @@ public class Try extends ExceptionHandler
 		
 		
 		return null;
+	}
+	
+	@Override
+	public TargetC.TargetNode getTarget()
+	{
+		return TargetC.TARGET_TRY;
 	}
 }

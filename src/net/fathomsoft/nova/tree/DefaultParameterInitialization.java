@@ -1,5 +1,6 @@
 package net.fathomsoft.nova.tree;
 
+import net.fathomsoft.nova.TargetC;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.util.Location;
@@ -22,33 +23,7 @@ public class DefaultParameterInitialization extends Node
         
         this.parameter = parameter;
     }
-
-    @Override
-    public StringBuilder generateCSourceFragment(StringBuilder builder)
-    {
-        String use = parameter.generateCUseOutput().toString();
-        
-        builder.append(use).append(" = ");
-        parameter.generateCTypeCast(builder).append('(');
-        
-        builder.append(use).append(" == ");
-        
-        if (parameter.isPrimitive())
-        {
-            builder.append("(intptr_t)nova_null");
-        }
-        else
-        {
-            builder.append(0);
-        }
-        
-        String cast = !parameter.getDefaultValue().isPrimitive() ? getProgram().getClassDeclaration("nova/Object").generateCTypeCast().toString() : "";
-        
-        builder.append(" ? ").append(cast).append(parameter.getDefaultValue().generateCSourceFragment()).append(" : ").append(cast).append(use);
-        
-        return builder.append(");");
-    }
-
+    
     /**
      * @see net.fathomsoft.nova.tree.Node#validate(int)
      */
@@ -116,5 +91,11 @@ public class DefaultParameterInitialization extends Node
 
 
         return null;
+    }
+    
+    @Override
+    public TargetC.TargetNode getTarget()
+    {
+        return TargetC.TARGET_DEFAULT_PARAMETER_INITIALIZATION;
     }
 }

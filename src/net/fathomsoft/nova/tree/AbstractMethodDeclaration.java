@@ -1,6 +1,7 @@
 package net.fathomsoft.nova.tree;
 
 import net.fathomsoft.nova.Nova;
+import net.fathomsoft.nova.TargetC;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.error.SyntaxMessage;
@@ -154,5 +155,11 @@ public class AbstractMethodDeclaration extends NovaMethodDeclaration
 		
 		
 		return null;
+	}
+	
+	@Override
+	public TargetC.TargetAbstractMethodDeclaration getTarget()
+	{
+		return TargetC.TARGET_ABSTRACT_METHOD_DECLARATION;
 	}
 }

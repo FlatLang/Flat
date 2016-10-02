@@ -1,5 +1,6 @@
 package net.fathomsoft.nova.tree;
 
+import net.fathomsoft.nova.TargetC;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.util.Bounds;
@@ -49,28 +50,6 @@ public class IfStatement extends ControlStatement
 	public Value getCondition()
 	{
 		return (Value)getChild(super.getNumDefaultChildren() + 0);
-	}
-	
-	/**
-	 * @see net.fathomsoft.nova.tree.Node#generateCSource(StringBuilder)
-	 */
-	@Override
-	public StringBuilder generateCSource(StringBuilder builder)
-	{
-		generateCSourceFragment(builder).append('\n');
-		
-		getScope().generateCSource(builder);
-		
-		return builder;
-	}
-	
-	/**
-	 * @see net.fathomsoft.nova.tree.Node#generateCSourceFragment(java.lang.StringBuilder)
-	 */
-	@Override
-	public StringBuilder generateCSourceFragment(StringBuilder builder)
-	{
-		return builder.append("if (").append(getCondition().generateCSourceFragment()).append(')');
 	}
 	
 	/**
@@ -207,5 +186,11 @@ public class IfStatement extends ControlStatement
 		
 		
 		return null;
+	}
+	
+	@Override
+	public TargetC.TargetNode getTarget()
+	{
+		return TargetC.TARGET_IF_STATEMENT;
 	}
 }

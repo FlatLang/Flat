@@ -1,6 +1,7 @@
 package net.fathomsoft.nova.tree;
 
 import net.fathomsoft.nova.Nova;
+import net.fathomsoft.nova.TargetC;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.error.SyntaxMessage;
@@ -18,7 +19,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  */
 public class Literal extends IValue implements Accessible
 {
-	private String	value;
+	public String	value;
 	
 	public static final String	NULL_IDENTIFIER     = "null";
 	public static final String	TRUE_IDENTIFIER     = "true";
@@ -135,7 +136,7 @@ public class Literal extends IValue implements Accessible
 	 * @return Whether or not the value of the literal is an
 	 * 		instantiation of a String from a String constructor.
 	 */
-	private boolean isStringInstantiation()
+	public boolean isStringInstantiation()
 	{
 		if (SyntaxUtils.isStringLiteral(value))
 		{
@@ -158,76 +159,6 @@ public class Literal extends IValue implements Accessible
 	public static boolean isNullLiteral(Node node)
 	{
 		return node instanceof Literal && ((Literal)node).value.equals(NULL_IDENTIFIER);
-	}
-	
-	/**
-	 * @see net.fathomsoft.nova.tree.Node#generateCHeader(StringBuilder)
-	 */
-	@Override
-	public StringBuilder generateCHeader(StringBuilder builder)
-	{
-		return generateCSource(builder);
-	}
-
-	/**
-	 * @see net.fathomsoft.nova.tree.Node#generateCSource(StringBuilder)
-	 */
-	@Override
-	public StringBuilder generateCSource(StringBuilder builder)
-	{
-		return generateCSourceFragment(builder).append(";\n");
-	}
-	
-	/**
-	 * @see net.fathomsoft.nova.tree.Node#generateCSourceFragment(StringBuilder)
-	 */
-	@Override
-	public StringBuilder generateCSourceFragment(StringBuilder builder)
-	{
-		if (isSpecialFragment())
-		{
-			return generateSpecialFragment(builder);
-		}
-		
-		return generateCUseOutput(builder);
-	}
-	
-	@Override
-	public StringBuilder generateCUseOutput(StringBuilder builder)
-	{
-		if (!isWithinExternalContext() && isStringInstantiation())
-		{
-			Instantiation str = Instantiation.decodeStatement(getParent(), "new String(" + value + ")", getLocationIn(), true);
-			
-			return str.generateCSourceFragment(builder);
-		}
-		else if (isNullLiteral(this))
-		{
-			return generateCNullOutput(builder);
-		}
-		else if (value.equals(TRUE_IDENTIFIER))
-		{
-			return builder.append(1);
-		}
-		else if (value.equals(FALSE_IDENTIFIER))
-		{
-			return builder.append(0);
-		}
-		else if (SyntaxUtils.isInteger(value))
-		{
-			long l = Long.parseLong(value);
-			
-			if (l == Long.MIN_VALUE)
-			{
-				return builder.append("(").append(l + 1).append("LL").append(" - 1)");
-			}
-			else if (l > Integer.MAX_VALUE || l <= Integer.MIN_VALUE)
-			{
-				return builder.append(value).append("LL");
-			}
-		}
-		
-		return builder.append(value);
 	}
 	
 	/**
@@ -478,5 +409,11 @@ public class Literal extends IValue implements Accessible
 		
 		
 		return null;
+	}
+	
+	@Override
+	public TargetC.TargetLiteral getTarget()
+	{
+		return TargetC.TARGET_LITERAL;
 	}
 }

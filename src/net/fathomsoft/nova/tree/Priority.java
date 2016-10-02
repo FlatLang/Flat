@@ -1,5 +1,6 @@
 package net.fathomsoft.nova.tree;
 
+import net.fathomsoft.nova.TargetC;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.tree.generics.GenericTypeArgument;
@@ -181,37 +182,6 @@ public class Priority extends Value implements Accessible
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.Node#generateCSource(StringBuilder)
-	 */
-	@Override
-	public StringBuilder generateCSource(StringBuilder builder)
-	{
-		return generateCSourceFragment(builder);
-	}
-	
-	/**
-	 * @see net.fathomsoft.nova.tree.Node#generateCSourceFragment(StringBuilder)
-	 */
-	@Override
-	public StringBuilder generateCSourceFragment(StringBuilder builder)
-	{
-		if (isSpecialFragment())
-		{
-			return generateSpecialFragment(builder);
-		}
-		else
-		{
-			return builder.append('(').append(getContents().generateCSourceFragment()).append(')').append(generateCArrayAccess()).append(generateChildrenCSourceFragment());
-		}
-	}
-	
-	@Override
-	public StringBuilder generateCUseOutput(StringBuilder builder)
-	{
-		return builder.append('(').append(getContents().generateCSourceFragment()).append(')').append(generateCArrayAccess());
-	}
-	
-	/**
 	 * Decode the given statement into a Priority instance, if
 	 * possible. If it is not possible, this method returns null.<br>
 	 * <br>
@@ -385,5 +355,11 @@ public class Priority extends Value implements Accessible
 		
 		
 		return null;
+	}
+	
+	@Override
+	public TargetC.TargetPriority getTarget()
+	{
+		return TargetC.TARGET_PRIORITY;
 	}
 }

@@ -1,5 +1,6 @@
 package net.fathomsoft.nova.tree;
 
+import net.fathomsoft.nova.TargetC;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.error.SyntaxMessage;
@@ -34,17 +35,6 @@ public class Until extends IfStatement
 	public boolean pendingScopeFragment(Node node)
 	{
 		return false;
-	}
-	
-	/**
-	 * @see net.fathomsoft.nova.tree.Node#generateCSource(StringBuilder)
-	 */
-	@Override
-	public StringBuilder generateCSource(StringBuilder builder)
-	{
-		super.generateCSourceFragment(builder).append('\n');
-		
-		return getScope().generateCSource(builder);
 	}
 	
 	/**
@@ -223,5 +213,11 @@ public class Until extends IfStatement
 		
 		
 		return null;
+	}
+	
+	@Override
+	public TargetC.TargetNode getTarget()
+	{
+		return TargetC.TARGET_UNTIL;
 	}
 }

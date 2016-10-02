@@ -1,6 +1,7 @@
 package net.fathomsoft.nova.tree;
 
 import net.fathomsoft.nova.Nova;
+import net.fathomsoft.nova.TargetC;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.tree.exceptionhandling.Exception;
@@ -36,121 +37,6 @@ public class AssignmentMethod extends BodyMethodDeclaration
 	public boolean isUserMade()
 	{
 		return false;
-	}
-	
-	/**
-	 * @see net.fathomsoft.nova.tree.MethodDeclaration#generateCHeader(java.lang.StringBuilder)
-	 */
-	@Override
-	public StringBuilder generateCHeader(StringBuilder builder)
-	{
-		return generateCSourcePrototype(builder).append('\n');
-	}
-	
-	/**
-	 * @see net.fathomsoft.nova.tree.NovaMethodDeclaration#generateCSource(java.lang.StringBuilder)
-	 */
-	@Override
-	public StringBuilder generateCSource(StringBuilder builder)
-	{
-		generateCSourceSignature(builder).append('\n');
-		
-		builder.append('{').append('\n');
-		
-		generateFieldDefaultAssignments(builder);
-		
-		for (int i = 0; i < getNumVisibleChildren(); i++)
-		{
-			getVisibleChild(i).generateCSource(builder);
-		}
-		
-		getScope().generateCSource(builder, false);
-		
-		builder.append('}').append('\n');
-		
-		return builder;
-	}
-	
-	/**
-	 * @see #generateCMethodCall(java.lang.StringBuilder, boolean)
-	 */
-	@Override
-	public StringBuilder generateCMethodCall(StringBuilder builder)
-	{
-		return generateCMethodCall(builder, false);
-	}
-	
-	/**
-	 * @see net.fathomsoft.nova.tree.NovaMethodDeclaration#generateCMethodCall(java.lang.StringBuilder)
-	 * 
-	 * @param cast Whether or not to add an explicit type cast for the
-	 * 		object reference identifier.
-	 */
-	public StringBuilder generateCMethodCall(StringBuilder builder, boolean cast)
-	{
-		super.generateCMethodCall(builder).append("(");
-		
-		if (cast)
-		{
-			builder.append('(').append(getParentClass().generateCType()).append(')');
-		}
-		
-		builder.append(ParameterList.OBJECT_REFERENCE_IDENTIFIER);
-		
-		return builder.append(", ").append(Exception.EXCEPTION_DATA_IDENTIFIER).append(");\n");
-	}
-	
-	/**
-	 * This method returns a String that contains the code needed to
-	 * assign the default null value to each uninitialized/uninstantiated
-	 * field variables.
-	 * 
-	 * @param builder The StringBuilder to append the assignments to.
-	 * @return The appended buffer.
-	 */
-	private StringBuilder generateFieldDefaultAssignments(StringBuilder builder)
-	{
-		FieldList fields = getParentClass().getFieldList();
-		
-		generateFieldDefaultAssignments(builder, fields.getPublicFieldList());
-		generateFieldDefaultAssignments(builder, fields.getPrivateFieldList());
-		
-		return builder;
-	}
-	
-	/**
-	 * This method returns a String that contains the code needed to
-	 * assign the default null value to each uninitialized/uninstantiated
-	 * field variables.
-	 * 
-	 * @param builder The StringBuilder to append the assignments to.
-	 * @param fields The list of fields to assign default values to.
-	 * @return The appended buffer.
-	 */
-	private StringBuilder generateFieldDefaultAssignments(StringBuilder builder, InstanceFieldList fields)
-	{
-		for (int i = 0; i < fields.getNumChildren(); i++)
-		{
-			FieldDeclaration field = (FieldDeclaration)fields.getChild(i);
-			
-			if (!field.isExternal())
-			{
-				field.generateCUseOutput(builder).append(" = ");
-				
-				if (!field.isPrimitiveType() && !field.isExternalType())
-				{
-					field.generateCNullOutput(builder);
-				}
-				else
-				{
-					builder.append(0);
-				}
-				
-				builder.append(';').append('\n');
-			}
-		}
-		
-		return builder;
 	}
 	
 	/**
@@ -219,5 +105,11 @@ public class AssignmentMethod extends BodyMethodDeclaration
 		
 		
 		return null;
+	}
+	
+	@Override
+	public TargetC.TargetAssignmentMethod getTarget()
+	{
+		return TargetC.TARGET_ASSIGNMENT_METHOD;
 	}
 }

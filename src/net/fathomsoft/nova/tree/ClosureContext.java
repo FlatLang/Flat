@@ -1,5 +1,6 @@
 package net.fathomsoft.nova.tree;
 
+import net.fathomsoft.nova.TargetC;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.tree.variables.Variable;
 import net.fathomsoft.nova.tree.variables.VariableDeclaration;
@@ -40,34 +41,6 @@ public class ClosureContext extends TypeList<ClosureVariableDeclaration>
 		addChild(var);
 		
 		return var;
-	}
-	
-	@Override
-	public StringBuilder generateCSource(StringBuilder builder)
-	{
-		return generateCSourceFragment(builder).append(";\n");
-	}
-	
-	@Override
-	public StringBuilder generateCSourceFragment(StringBuilder builder)
-	{
-		builder.append("typedef struct\n");
-		builder.append("{\n");
-		
-		for (ClosureVariableDeclaration var : this)
-		{
-			builder.append("/* ").append(var.originalDeclaration).append(" */ ");
-			var.generateCSource(builder);
-			
-			/*boolean original = var.originalDeclaration.isValueReference();
-			var.originalDeclaration.setIsValueReference(true);
-			var.originalDeclaration.generateCSource(builder);
-			var.originalDeclaration.setIsValueReference(original);*/
-		}
-		
-		builder.append("} ").append(getName());
-		
-		return builder;
 	}
 	
 	public String getName()
@@ -120,5 +93,11 @@ public class ClosureContext extends TypeList<ClosureVariableDeclaration>
 		
 		
 		return null;
+	}
+	
+	@Override
+	public TargetC.TargetNode getTarget()
+	{
+		return TargetC.TARGET_CLOSURE_CONTEXT;
 	}
 }

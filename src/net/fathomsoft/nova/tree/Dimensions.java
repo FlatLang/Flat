@@ -1,5 +1,6 @@
 package net.fathomsoft.nova.tree;
 
+import net.fathomsoft.nova.TargetC;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.util.Location;
 
@@ -19,25 +20,6 @@ public class Dimensions extends Node
 	public Dimensions(Node temporaryParent, Location locationIn)
 	{
 		super(temporaryParent, locationIn);
-	}
-
-	/**
-	 * @see net.fathomsoft.nova.tree.Node#generateCSourceFragment(StringBuilder)
-	 */
-	@Override
-	public StringBuilder generateCSourceFragment(StringBuilder builder)
-	{
-		return generateCSourceFragment(builder, "[", "]");
-	}
-	
-	public StringBuilder generateCSourceFragment(StringBuilder builder, String prefix, String postfix)
-	{
-		for (int i = 0; i < getNumChildren(); i++)
-		{
-			builder.append(prefix).append(getChild(i).generateCSourceFragment()).append(postfix);
-		}
-		
-		return builder;
 	}
 	
 	/**
@@ -99,5 +81,11 @@ public class Dimensions extends Node
 		
 		
 		return null;
+	}
+	
+	@Override
+	public TargetC.TargetDimensions getTarget()
+	{
+		return TargetC.TARGET_DIMENSIONS;
 	}
 }

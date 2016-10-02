@@ -3,6 +3,7 @@ package net.fathomsoft.nova.tree;
 import java.util.HashMap;
 
 import net.fathomsoft.nova.Nova;
+import net.fathomsoft.nova.TargetC;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.util.Location;
 import net.fathomsoft.nova.tree.exceptionhandling.Exception;
@@ -20,7 +21,7 @@ public class StaticBlock extends Node implements ScopeAncestor
 	
 	private static HashMap<Integer, Scope> scopes = new HashMap<>();
 	
-	private static final String	C_PREFIX   = "_" + Nova.LANGUAGE_NAME + "_init_";
+	public static final String	C_PREFIX   = "_" + Nova.LANGUAGE_NAME + "_init_";
 	
 	public static final String	IDENTIFIER = "static";
 	
@@ -70,44 +71,6 @@ public class StaticBlock extends Node implements ScopeAncestor
 	public ParameterList getParameterList()
 	{
 		return (ParameterList)getChild(super.getNumDefaultChildren() + 1);
-	}
-	
-	/**
-	 * @see net.fathomsoft.nova.tree.Node#generateCHeader(java.lang.StringBuilder)
-	 */
-	public StringBuilder generateCHeader(StringBuilder builder, ClassDeclaration clazz)
-	{
-		return generateCMethodHeader(builder, clazz).append(';').append('\n');
-	}
-	
-	/**
-	 * @see net.fathomsoft.nova.tree.Node#generateCSource(java.lang.StringBuilder)
-	 */
-	@Override
-	public StringBuilder generateCSource(StringBuilder builder)
-	{
-		return getScope().generateCSource(builder);
-	}
-	
-	public StringBuilder generateCMethodHeader(StringBuilder builder, ClassDeclaration clazz)
-	{
-		builder.append("void ");
-		
-		generateCMethodName(builder, clazz);
-		
-		builder.append('(').append(getParameterList().generateCSource()).append(')');
-		
-		return builder;
-	}
-	
-	public static StringBuilder generateCMethodName(StringBuilder builder, ClassDeclaration clazz)
-	{
-		return builder.append(clazz.generateCSourceName()).append(C_PREFIX).append(IDENTIFIER);
-	}
-	
-	public static StringBuilder generateCMethodCall(StringBuilder builder, ClassDeclaration clazz)
-	{
-		return generateCMethodName(builder, clazz).append("(" + Exception.EXCEPTION_DATA_IDENTIFIER + ")");
 	}
 	
 	/**
@@ -189,5 +152,11 @@ public class StaticBlock extends Node implements ScopeAncestor
 		
 		
 		return null;
+	}
+	
+	@Override
+	public TargetC.TargetStaticBlock getTarget()
+	{
+		return TargetC.TARGET_STATIC_BLOCK;
 	}
 }

@@ -1,6 +1,7 @@
 package net.fathomsoft.nova.tree.variables;
 
 import net.fathomsoft.nova.Nova;
+import net.fathomsoft.nova.TargetC;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.error.SyntaxMessage;
@@ -111,69 +112,6 @@ public class Array extends VariableDeclaration implements ArrayCompatible
 		}
 		
 		return (TypeList<Value>)getChild(super.getNumDefaultChildren() + 1);
-	}
-	
-	/**
-	 * @see net.fathomsoft.nova.tree.Node#generateCSource(StringBuilder)
-	 */
-	@Override
-	public StringBuilder generateCSource(StringBuilder builder)
-	{
-		return generateCSourceFragment(builder);
-	}
-	
-	/**
-	 * @see net.fathomsoft.nova.tree.Node#generateCSourceFragment(StringBuilder)
-	 */
-	@Override
-	public StringBuilder generateCSourceFragment(StringBuilder builder)
-	{
-		generateCTypeCast(builder);
-//		builder.insert(builder.length() - 1, '*');
-		
-		if (getNumDimensions() > 1)
-		{
-			builder.append("nova_gen_array(");
-		}
-		
-		builder.append("NOVA_MALLOC(sizeof(").append(generateCTypeClassName()).append(")");
-		
-		Dimensions dim = getDimensions();
-		
-//		dim.getVisibleChild(0).generateCSourceFragment(builder);
-//		for (int i = 0; i < dim.getNumVisibleChildren(); i++)
-//		{
-//			if (i > 0)
-//			{
-//				builder.append(" * ");
-//			}
-//			
-//			dim.getVisibleChild(i).generateCSourceFragment(builder);
-//		}
-		dim.generateCSourceFragment(builder, " * ", "");
-		
-//		builder.append(')');
-		
-		if (getNumDimensions() > 1)
-		{
-			builder.append("), (int[]) { ");
-			
-			for (int i = 0; i < dim.getNumVisibleChildren(); i++)
-			{
-				if (i > 0)
-				{
-					builder.append(", ");
-				}
-				
-				dim.getVisibleChild(i).generateCSourceFragment(builder);
-			}
-			
-			builder.append(" }, 0, ").append(dim.getNumVisibleChildren() - 1).append(", ");
-			
-			builder.append("sizeof(").append(generateCTypeClassName()).append(')');
-		}
-		
-		return builder.append(')');
 	}
 	
 	/**
@@ -623,5 +561,11 @@ public class Array extends VariableDeclaration implements ArrayCompatible
 		
 		
 		return null;
+	}
+	
+	@Override
+	public TargetC.TargetArray getTarget()
+	{
+		return TargetC.TARGET_ARRAY;
 	}
 }

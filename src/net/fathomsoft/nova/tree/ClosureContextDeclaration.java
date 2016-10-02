@@ -1,5 +1,6 @@
 package net.fathomsoft.nova.tree;
 
+import net.fathomsoft.nova.TargetC;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.tree.variables.Variable;
 import net.fathomsoft.nova.tree.variables.VariableDeclaration;
@@ -27,43 +28,6 @@ public class ClosureContextDeclaration extends LocalDeclaration
 		
 		this.context = context;
 		id = idCounter++;
-	}
-	
-	@Override
-	public StringBuilder generateCDeclarationFragment(StringBuilder builder)
-	{
-		return builder.append(context.getName()).append(' ').append(getName());
-	}
-	
-	@Override
-	public StringBuilder generateCDefaultValue(StringBuilder builder)
-	{
-		builder.append("\n{\n");
-		
-		for (ClosureVariableDeclaration var : context)
-		{
-			generateCDeclarationValue(builder, var);
-		}
-		
-		return builder.append("}");
-	}
-	
-	public StringBuilder generateCDeclarationValue(StringBuilder builder, ClosureVariableDeclaration var)
-	{
-		//Variable v = var.generateUsableVariable(this, Location.INVALID);
-		
-		if (var.originalDeclaration instanceof ClosureVariableDeclaration)
-		{
-			builder.append("context->");
-		}
-		else
-		{
-			builder.append('&');
-		}
-		
-		var.originalDeclaration.generateCSourceName(builder);
-		
-		return builder.append(",\n");
 	}
 	
 	public String getName()
@@ -116,5 +80,11 @@ public class ClosureContextDeclaration extends LocalDeclaration
 		
 		
 		return null;
+	}
+	
+	@Override
+	public TargetC.TargetClosureContextDeclaration getTarget()
+	{
+		return TargetC.TARGET_CLOSURE_CONTEXT_DECLARATION;
 	}
 }

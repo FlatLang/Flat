@@ -2,6 +2,7 @@ package net.fathomsoft.nova.tree;
 
 import java.util.ArrayList;
 
+import net.fathomsoft.nova.TargetC;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.util.Location;
 
@@ -37,31 +38,6 @@ public class ArgumentList extends List
 			}
 			
 			getChild(i).generateNovaInput(builder);
-		}
-		
-		return builder;
-	}
-	
-	/**
-	 * @see net.fathomsoft.nova.tree.Node#generateCSource(StringBuilder)
-	 */
-	@Override
-	public StringBuilder generateCSource(StringBuilder builder)
-	{
-		return generateCSourceFragment(builder);
-	}
-	
-	/**
-	 * @see net.fathomsoft.nova.tree.Node#generateCSourceFragment(StringBuilder)
-	 */
-	@Override
-	public StringBuilder generateCSourceFragment(StringBuilder builder)
-	{
-		for (int i = 0; i < getNumChildren(); i++)
-		{
-			Node child = getChild(i);
-			
-			child.generateCSourceFragment(builder);
 		}
 		
 		return builder;
@@ -133,5 +109,11 @@ public class ArgumentList extends List
 		
 		
 		return null;
+	}
+	
+	@Override
+	public TargetC.TargetNode getTarget()
+	{
+		return TargetC.TARGET_ARGUMENT_LIST;
 	}
 }

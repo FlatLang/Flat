@@ -3,6 +3,7 @@ package net.fathomsoft.nova.tree;
 import java.util.ArrayList;
 
 import net.fathomsoft.nova.Nova;
+import net.fathomsoft.nova.TargetC;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.error.SyntaxMessage;
@@ -188,87 +189,11 @@ public class Assignment extends Value
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.Node#generateCSource(StringBuilder)
-	 */
-	@Override
-	public StringBuilder generateCSource(StringBuilder builder)
-	{
-		return generateCSourceFragment(builder).append(";\n");
-	}
-	
-	/**
-	 * @see net.fathomsoft.nova.tree.Node#generateCSourceFragment(StringBuilder)
-	 */
-	@Override
-	public StringBuilder generateCSourceFragment(StringBuilder builder)
-	{
-		if (getAssignedNodeValue().getDataType() == Value.POINTER &&
-				getAssignmentNode().getReturnedNode().getDataType() == Value.VALUE ||
-				getAssignedNodeValue().getDataType() == Value.DOUBLE_POINTER &&
-				getAssignmentNode().getReturnedNode().getDataType() == Value.POINTER)
-		{
-			builder.append('*');
-		}
-		
-		return getAssigneeNode().generateCSourceFragment(builder).append(" = ").append(generateCAssignmentSource());
-	}
-	
-	/**
 	 * @see net.fathomsoft.nova.tree.Node#generateNovaInput(StringBuilder, boolean)
 	 */
 	public StringBuilder generateNovaInput(StringBuilder builder, boolean outputChildren)
 	{
 		return getAssigneeNode().generateNovaInput(builder, outputChildren).append(" = ").append(getAssignmentNode().generateNovaInput(outputChildren));
-	}
-	
-	/**
-	 * Generate the assignment's right hand value C output.
-	 * 
-	 * @return The assignment's right hand value C output.
-	 */
-	private StringBuilder generateCAssignmentSource()
-	{
-		return generateCAssignmentSource(new StringBuilder());
-	}
-	
-	/**
-	 * Generate the assignment's right hand value C output.
-	 * 
-	 * @param builder The StringBuilder to append the data to.
-	 * @return The assignment's right hand value C output.
-	 */
-	private StringBuilder generateCAssignmentSource(StringBuilder builder)
-	{
-		Value assignment = getAssignmentNode();
-		
-		String assignmentType = assignment.getReturnedNode().getType();
-		String assignedType = getAssignedNodeValue().getType();
-		
-		boolean sameType = assignmentType.equals(assignedType);
-		
-		if (sameType && assignment instanceof Accessible)
-		{
-			MethodCall call = (MethodCall)((Accessible)assignment).getLastAccessedOfType(MethodCall.class, false);
-			
-			if (call != null)
-			{
-				sameType = !call.isVirtual();
-			}
-		}
-		
-		if (!sameType)
-		{
-			getAssignedNodeValue().generateCTypeCast(builder, true, false).append(getAssignmentNode().getReturnedNode().generatePointerToValueConversion()).append('(');
-		}
-		
-		builder.append(assignment.generateDataTypeOutput(getAssignedNodeValue().getDataType())).append(getAssignmentNode().generateCSourceFragment());
-		
-		if (!sameType)
-		{
-			builder.append(')');
-		}
-		
-		return builder;
 	}
 	
 	/**
@@ -867,5 +792,11 @@ public class Assignment extends Value
 		
 		
 		return null;
+	}
+	
+	@Override
+	public TargetC.TargetAssignment getTarget()
+	{
+		return TargetC.TARGET_ASSIGNMENT;
 	}
 }

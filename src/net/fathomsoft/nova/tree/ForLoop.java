@@ -1,6 +1,7 @@
 package net.fathomsoft.nova.tree;
 
 import net.fathomsoft.nova.Nova;
+import net.fathomsoft.nova.TargetC;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.error.SyntaxMessage;
@@ -95,50 +96,6 @@ public class ForLoop extends Loop
 	public Node getLoopUpdate()
 	{
 		return getArgumentList().getChild(2);
-	}
-
-	/**
-	 * @see net.fathomsoft.nova.tree.Node#generateCSource(StringBuilder)
-	 */
-	@Override
-	public StringBuilder generateCSource(StringBuilder builder)
-	{
-		Assignment initialization = getLoopInitialization();
-		Node       condition      = getCondition();
-		Node       update         = getLoopUpdate();
-		
-		if (initialization != null)
-		{
-			initialization.generateCSource(builder);//.append('\n');
-		}
-		
-		builder.append("for (; ");
-		
-		if (condition != null)
-		{
-			condition.generateCSourceFragment(builder);
-		}
-		
-		builder.append("; ");
-		
-		if (update != null)
-		{
-			update.generateCSourceFragment(builder);
-		}
-		
-		builder.append(')').append('\n');
-		
-		for (int i = 0; i < getNumChildren(); i++)
-		{
-			Node child = getChild(i);
-			
-			if (child != getArgumentList())
-			{
-				child.generateCSource(builder);
-			}
-		}
-		
-		return builder;
 	}
 	
 	/**
@@ -406,5 +363,11 @@ public class ForLoop extends Loop
 		
 		
 		return null;
+	}
+	
+	@Override
+	public TargetC.TargetNode getTarget()
+	{
+		return TargetC.TARGET_FOR_LOOP;
 	}
 }

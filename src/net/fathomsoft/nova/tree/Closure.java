@@ -1,6 +1,7 @@
 package net.fathomsoft.nova.tree;
 
 import net.fathomsoft.nova.Nova;
+import net.fathomsoft.nova.TargetC;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.error.SyntaxMessage;
@@ -57,41 +58,6 @@ public class Closure extends Variable
 	public boolean isSpecial()
 	{
 		return true;
-	}
-	
-	/**
-	 * @see net.fathomsoft.nova.tree.Node#generateCSource(StringBuilder)
-	 */
-	@Override
-	public StringBuilder generateCSource(StringBuilder builder)
-	{
-		return generateCSourceFragment(builder);
-	}
-	
-	/**
-	 * @see net.fathomsoft.nova.tree.Node#generateCSourceFragment(StringBuilder)
-	 */
-	@Override
-	public StringBuilder generateCSourceFragment(StringBuilder builder)
-	{
-		getClosureDeclaration().generateCTypeCast(builder);
-		
-		if (getMethodDeclaration().isVirtual() && !isVirtualTypeKnown())
-		{
-			getRootReferenceNode().generateCArgumentReference(builder, this).append("->").append(VTable.IDENTIFIER).append("->");
-			
-			builder.append(getMethodDeclaration().getVirtualMethod().generateCVirtualMethodName());
-		}
-		else
-		{
-			builder.append('&').append(getDeclaration().generateCSourceName());
-		}
-		
-		builder.append(", ");
-		
-		getClosureDeclaration().generateCArguments(builder, this, getMethodDeclaration());
-		
-		return builder;
 	}
 	
 	/**
@@ -477,5 +443,11 @@ public class Closure extends Variable
 		
 		
 		return null;
+	}
+	
+	@Override
+	public TargetC.TargetClosure getTarget()
+	{
+		return TargetC.TARGET_CLOSURE;
 	}
 }

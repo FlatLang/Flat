@@ -3,6 +3,7 @@ package net.fathomsoft.nova.tree;
 import java.util.regex.Pattern;
 
 import net.fathomsoft.nova.Nova;
+import net.fathomsoft.nova.TargetC;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.util.Bounds;
@@ -235,5 +236,11 @@ public abstract class MethodDeclaration extends InstanceDeclaration implements C
 		
 		
 		return null;
+	}
+	
+	@Override
+	public TargetC.TargetMethodDeclaration getTarget()
+	{
+		return TargetC.TARGET_METHOD_DECLARATION;
 	}
 }

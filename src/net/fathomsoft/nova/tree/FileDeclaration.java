@@ -4,6 +4,7 @@ import java.io.File;
 import java.util.ArrayList;
 
 import net.fathomsoft.nova.Nova;
+import net.fathomsoft.nova.TargetC;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.error.SyntaxMessage;
@@ -22,12 +23,12 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  */
 public class FileDeclaration extends Node
 {
-	private StringBuilder	header, source;
+	public StringBuilder	header, source;
 	
-	private File			file;
+	public File			file;
 	
-	private ArrayList<ClosureDeclaration> closures;
-	private ArrayList<ClosureContext> contexts;
+	public ArrayList<ClosureDeclaration> closures;
+	public ArrayList<ClosureContext> contexts;
 	
 	/**
 	 * The default imports that each file uses.
@@ -390,32 +391,6 @@ public class FileDeclaration extends Node
 	}
 	
 	/**
-	 * Get the name of the file that will be output as a C header file.<br>
-	 * <br>
-	 * For example: A generateCHeaderName() call for a FileDeclaration of Test.nova
-	 * would return "nova_Test.h"
-	 * 
-	 * @return The name of the file output as a C header file.
-	 */
-	public String generateCHeaderName()
-	{
-		return getPackage().generateCHeaderLocation() + "/" + getClassDeclaration().generateCSourceName() + ".h";
-	}
-	
-	/**
-	 * Get the name of the file that will be output as a C source file.<br>
-	 * <br>
-	 * For example: A generateCSourceName() call for a FileDeclaration of Test.nova
-	 * would return "nova_Test.c"
-	 * 
-	 * @return The name of the file output as a C source file.
-	 */
-	public String generateCSourceName()
-	{
-		return getPackage().generateCHeaderLocation() + "/" + getClassDeclaration().generateCSourceName() + ".c";
-	}
-	
-	/**
 	 * @see net.fathomsoft.nova.tree.Node#validate(int)
 	 */
 	@Override
@@ -488,78 +463,6 @@ public class FileDeclaration extends Node
 			SyntaxMessage.error("Unexpected statement", child);
 		}
 	}
-
-	/**
-	 * @see net.fathomsoft.nova.tree.Identifier#generateCHeader(StringBuilder)
-	 */
-	@Override
-	public StringBuilder generateCHeader(StringBuilder builder)
-	{
-		if (header == null)
-		{
-			String definitionName = "FILE_" + getClassDeclaration().generateCSourceName() + "_" + Nova.LANGUAGE_NAME.toUpperCase();
-			
-			builder.append("#pragma once").append('\n');
-			builder.append("#ifndef ").append(definitionName).append('\n');
-			builder.append("#define ").append(definitionName).append("\n\n");
-			
-			generateDummyTypes(builder).append('\n');
-
-			generateClosureDefinitions(builder, true).append('\n');
-			
-			ImportList imports = getImportList();
-			
-			imports.generateCHeader(builder);
-			
-			builder.append('\n');
-			
-			for (int i = 0; i < getNumChildren(); i++)
-			{
-				Node child = getChild(i);
-				
-				if (child != imports)
-				{
-					child.generateCHeader(builder);
-				}
-			}
-			
-			builder.append('\n').append("#endif").append('\n');
-			
-			header = builder;
-		}
-		
-		return header;
-	}
-	
-	/**
-	 * @see net.fathomsoft.nova.tree.Identifier#generateCSource(StringBuilder)
-	 */
-	@Override
-	public StringBuilder generateCSource(StringBuilder builder)
-	{
-		if (source == null)
-		{
-			builder.append("#include <precompiled.h>\n");
-			getImportList().generateCSource(builder).append('\n');
-			
-			generateCSourceClosureContextDefinitions(builder).append('\n');
-			generateClosureDefinitions(builder, false).append('\n');
-			
-			for (int i = 0; i < getNumChildren(); i++)
-			{
-				Node child = getChild(i);
-				
-				if (child != getImportList())
-				{
-					child.generateCSource(builder);
-				}
-			}
-			
-			source = builder.append('\n');
-		}
-		
-		return source;
-	}
 	
 	/**
 	 * Set the header output String for the File.
@@ -595,115 +498,6 @@ public class FileDeclaration extends Node
 				addImport(importLoc).markUsed();
 			}
 		}
-	}
-	
-	public StringBuilder generateCHeaderNativeInterface(StringBuilder builder)
-	{
-		for (ClassDeclaration clazz : getClassDeclarations())
-		{
-			clazz.generateCHeaderNativeInterface(builder);
-		}
-		
-		return builder;
-	}
-	
-	public StringBuilder generateCSourceNativeInterface(StringBuilder builder)
-	{
-		for (ClassDeclaration clazz : getClassDeclarations())
-		{
-			clazz.generateCSourceNativeInterface(builder);
-		}
-		
-		return builder;
-	}
-	
-	/**
-	 * Generate dummy class declarations for each of the imported files.
-	 * This is needed in a situation when a class imports a class that
-	 * in returns needs to import the respective one. In other words,
-	 * the chicken vs egg scenario.
-	 * 
-	 * @return The generated code used for generating the dummy class
-	 * 		types.
-	 */
-	private StringBuilder generateDummyTypes(StringBuilder builder)
-	{
-//		builder.append("typedef struct ExceptionData ExceptionData;\n");
-		
-		for (int i = 0; i < getNumChildren(); i++)
-		{
-			Node child = getChild(i);
-			
-			if (child instanceof ClassDeclaration)
-			{
-				ClassDeclaration clazz = (ClassDeclaration)child;
-				
-				builder.append("typedef struct ").append(clazz.generateCSourceName()).append(' ').append(clazz.generateCSourceName()).append(';').append('\n');
-			}
-		}
-		
-//		ImportList imports = getImportList();
-//		
-//		for (int i = 0; i < imports.getNumChildren(); i++)
-//		{
-//			Import node = (Import)imports.getChild(i);
-//			
-//			if (!node.isExternal())
-//			{
-//				String name = node.getLocationNode().getName();
-//				
-//				builder.append("typedef struct ").append(name).append(' ').append(name).append(';').append('\n');
-//			}
-//		}
-		
-		return builder;
-	}
-
-	private StringBuilder generateCSourceClosureContextDefinitions(StringBuilder builder)
-	{
-		for (ClosureContext context : contexts)
-		{
-			context.generateCSource(builder);
-		}
-		
-		return builder;
-	}
-	
-	/**
-	 * Generate the type definitions for the closures used within the
-	 * file.
-	 * 
-	 * @param builder The StringBuilder to append the data to.
-	 * @param publicClosures Whether to generate the definitions for the
-	 * 		public closures, or the private ones.
-	 * @return The StringBuilder with the appended data.
-	 */
-	private StringBuilder generateClosureDefinitions(StringBuilder builder, boolean publicClosures)
-	{
-		ArrayList<String> types = new ArrayList<>();
-		
-		for (ClosureDeclaration closure : closures)
-		{
-			if (closure.isPublic() == publicClosures)
-			{
-				SyntaxUtils.addTypesToTypeList(builder, closure, types);
-			}
-		}
-		
-		if (types.size() > 0)
-		{
-			builder.append('\n');
-		}
-		
-		for (ClosureDeclaration closure : closures)
-		{
-			if (closure.isPublic() == publicClosures)
-			{
-				closure.generateCClosureDefinition(builder);
-			}
-		}
-		
-		return builder;
 	}
 	
 	/**
@@ -812,5 +606,11 @@ public class FileDeclaration extends Node
 		
 		
 		return null;
+	}
+	
+	@Override
+	public TargetC.TargetFileDeclaration getTarget()
+	{
+		return TargetC.TARGET_FILE_DECLARATION;
 	}
 }

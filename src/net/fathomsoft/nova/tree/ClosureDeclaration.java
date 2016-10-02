@@ -1,6 +1,7 @@
 package net.fathomsoft.nova.tree;
 
 import net.fathomsoft.nova.Nova;
+import net.fathomsoft.nova.TargetC;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.tree.generics.GenericTypeArgument;
@@ -24,7 +25,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  */
 public class ClosureDeclaration extends Parameter implements CallableMethod
 {
-	private int id;
+	public int id;
 	
 	@Override
 	public NovaMethodDeclaration getRootDeclaration()
@@ -51,6 +52,11 @@ public class ClosureDeclaration extends Parameter implements CallableMethod
 		
 		parameterList.getObjectReference().setType(null, true, false, false);
 		parameterList.getObjectReference().setDataType(POINTER);
+	}
+	
+	public String getContextName()
+	{
+		return getName() + "_" + ClosureVariableDeclaration.CONTEXT_VARIABLE_NAME;
 	}
 	
 	public void register()
@@ -126,109 +132,6 @@ public class ClosureDeclaration extends Parameter implements CallableMethod
 	public boolean isInstance()
 	{
 		return true;
-	}
-	
-	/**
-	 * @see net.fathomsoft.nova.tree.Node#generateCHeader(StringBuilder)
-	 */
-	@Override
-	public StringBuilder generateCHeader(StringBuilder builder)
-	{
-		return generateCSource(builder);
-	}
-	
-	/**
-	 * @see net.fathomsoft.nova.tree.Node#generateCSource(StringBuilder)
-	 */
-	@Override
-	public StringBuilder generateCSource(StringBuilder builder)
-	{
-		return generateCSourceFragment(builder);
-	}
-	
-	/**
-	 * @see net.fathomsoft.nova.tree.Node#generateCSourceFragment(StringBuilder)
-	 */
-	@Override
-	public StringBuilder generateCSourceFragment(StringBuilder builder)
-	{
-		builder.append(generateCType()).append(' ').append(generateCSourceName()).append(", ");
-		getParameterList().getObjectReference().generateCType(builder).append(' ');
-		generateCObjectReferenceIdentifier(builder).append(", ");
-		generateCContextParameter(builder);
-		
-		return builder;
-	}
-	
-	public StringBuilder generateCArguments(StringBuilder builder, Variable context, NovaMethodDeclaration method)
-	{
-		if (context.getRootReferenceNode() instanceof ClassDeclaration == false)
-		{
-			context.getRootReferenceNode().generateCArgumentReference(builder, context);
-		}
-		else
-		{
-			builder.append(NULL_IDENTIFIER);//method.getParameterList().getObjectReference().generateCNullOutput(builder);
-		}
-		
-		builder.append(", ");
-		method.generateCClosureContext(builder);
-		
-		return builder;
-	}
-	
-	public StringBuilder generateCObjectReferenceIdentifier(StringBuilder builder)
-	{
-		return builder.append(generateCSourceName("ref"));
-	}
-	
-	public StringBuilder generateCContextParameter()
-	{
-		return generateCContextParameter(new StringBuilder());
-	}
-	
-	public StringBuilder generateCContextParameter(StringBuilder builder)
-	{
-		return builder.append("void* ").append(getContextName());
-	}
-	
-	public String getContextName()
-	{
-		return getName() + "_" + ClosureVariableDeclaration.CONTEXT_VARIABLE_NAME;
-	}
-	
-	/**
-	 * @see net.fathomsoft.nova.tree.Value#generateCType(java.lang.StringBuilder, boolean)
-	 */
-	@Override
-	public StringBuilder generateCType(StringBuilder builder, boolean checkArray, boolean checkValueReference)
-	{
-		return builder.append(generateCSourceName("closure" + id));
-	}
-	
-	/**
-	 * Generate the C type definition for the closure of the specified
-	 * method declaration.<br>
-	 * <br>
-	 * For example:
-	 * <blockquote><pre>
-	 * public void test()
-	 * {
-	 * 	...
-	 * }</pre></blockquote>
-	 * will output will have the effect of
-	 * "<code>typedef void (*closure_test)();</code>"
-	 * 
-	 * @return The C closure type definition for the method.
-	 */
-	public StringBuilder generateCClosureDefinition(StringBuilder builder)
-	{
-		builder.append("typedef ");
-		
-		super.generateCType(builder, true, true).append(" (*").append(generateCSourceName("closure" + id)).append(')');
-		builder.append('(').append(getParameterList().generateCHeader()).append(')').append(";\n");
-		
-		return builder;
 	}
 	
 	/**
@@ -475,5 +378,11 @@ public class ClosureDeclaration extends Parameter implements CallableMethod
 		}
 		
 		return s;
+	}
+	
+	@Override
+	public TargetC.TargetClosureDeclaration getTarget()
+	{
+		return TargetC.TARGET_CLOSURE_DECLARATION;
 	}
 }

@@ -1,5 +1,6 @@
 package net.fathomsoft.nova.tree.exceptionhandling;
 
+import net.fathomsoft.nova.TargetC;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.tree.*;
@@ -60,19 +61,6 @@ public class Catch extends ExceptionHandler
 	public Exception getException()
 	{
 		return (Exception)getChild(2);
-	}
-	
-	/**
-	 * @see net.fathomsoft.nova.tree.Node#generateCSource(StringBuilder)
-	 */
-	@Override
-	public StringBuilder generateCSource(StringBuilder builder)
-	{
-		builder.append("CATCH ").append('(').append(getException().getID()).append(')').append('\n');
-		
-		getScope().generateCSource(builder);
-		
-		return builder;
 	}
 	
 	/**
@@ -302,5 +290,11 @@ public class Catch extends ExceptionHandler
 		
 		
 		return null;
+	}
+	
+	@Override
+	public TargetC.TargetNode getTarget()
+	{
+		return TargetC.TARGET_CATCH;
 	}
 }

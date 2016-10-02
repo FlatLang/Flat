@@ -1,6 +1,7 @@
 package net.fathomsoft.nova.tree;
 
 import net.fathomsoft.nova.Nova;
+import net.fathomsoft.nova.TargetC;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.error.SyntaxMessage;
@@ -28,7 +29,7 @@ public class LocalDeclaration extends VariableDeclaration
 	
 	private int scopeID;
 
-	private Value implicitType;
+	public Value implicitType;
 	
 	public static final String IMPLICIT_IDENTIFIER = "var";
 	
@@ -353,25 +354,6 @@ public class LocalDeclaration extends VariableDeclaration
 		}
 	}
 	
-	@Override
-	public StringBuilder generateCType(StringBuilder builder, boolean checkArray, boolean checkValueReference)
-	{
-		if (isImplicit())
-		{
-			/*builder.append("void*");
-			
-			if (checkValueReference && isValueReference())
-			{
-				builder.append('*');
-			}
-			
-			return builder;*/
-			return implicitType.generateCType(builder, checkArray, checkValueReference);
-		}
-		
-		return super.generateCType(builder, checkArray, checkValueReference);
-	}
-	
 	public Value getTypeValue()
 	{
 		Value value = new IValue(this, getLocationIn());
@@ -476,5 +458,11 @@ public class LocalDeclaration extends VariableDeclaration
 	public String toString()
 	{
 		return generateNovaInput().toString();
+	}
+	
+	@Override
+	public TargetC.TargetLocalDeclaration getTarget()
+	{
+		return TargetC.TARGET_LOCAL_DECLARATION;
 	}
 }

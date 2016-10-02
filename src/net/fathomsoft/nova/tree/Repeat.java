@@ -1,5 +1,6 @@
 package net.fathomsoft.nova.tree;
 
+import net.fathomsoft.nova.TargetC;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.tree.variables.Variable;
 import net.fathomsoft.nova.util.Bounds;
@@ -44,26 +45,6 @@ public class Repeat extends Loop
 		}
 		
 		return null;
-	}
-	
-	/**
-	 * @see net.fathomsoft.nova.tree.Node#generateCSource(StringBuilder)
-	 */
-	@Override
-	public StringBuilder generateCSource(StringBuilder builder)
-	{
-		if (getValueNode() != null)
-		{
-			builder.append("for (").append(getName()).append(" = 0; ").append(getName()).append(" < ").append(getValueNode().generateCSourceFragment()).append("; ").append(getName()).append("++)\n");
-		}
-		else
-		{
-			builder.append("for (;;)\n");
-		}
-		
-		getScope().generateCSource(builder);
-		
-		return builder;
 	}
 	
 	/**
@@ -178,5 +159,11 @@ public class Repeat extends Loop
 		
 		
 		return null;
+	}
+	
+	@Override
+	public TargetC.TargetNode getTarget()
+	{
+		return TargetC.TARGET_REPEAT;
 	}
 }

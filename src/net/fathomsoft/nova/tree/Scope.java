@@ -5,6 +5,7 @@ import java.util.HashMap;
 
 import javafx.util.Pair;
 import net.fathomsoft.nova.Nova;
+import net.fathomsoft.nova.TargetC;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.tree.variables.Variable;
 import net.fathomsoft.nova.tree.variables.VariableDeclaration;
@@ -251,49 +252,6 @@ public class Scope extends Node
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.Node#generateCSource(StringBuilder)
-	 */
-	@Override
-	public StringBuilder generateCSource(StringBuilder builder)
-	{
-		return generateCSource(builder, true);
-	}
-	
-	/**
-	 * @see net.fathomsoft.nova.tree.Node#generateCSource(StringBuilder)
-	 * 
-	 * @param braces Whether or not to output the braces as well.
-	 */
-	public StringBuilder generateCSource(StringBuilder builder, boolean braces)
-	{
-		if (getNumChildren() <= 1)
-		{
-			if (getParent() instanceof Loop)
-			{
-				// Insert the semicolon before the new line.
-				return builder.insert(builder.length() - 1, ";");
-			}
-		}
-		
-		if (braces)
-		{
-			builder.append('{').append('\n');
-		}
-		
-		for (int i = 0; i < getNumChildren(); i++)
-		{
-			getChild(i).generateCSource(builder);
-		}
-		
-		if (braces)
-		{
-			builder.append('}').append('\n');
-		}
-		
-		return builder;
-	}
-	
-	/**
 	 * @see net.fathomsoft.nova.tree.Node#generateNovaInput(StringBuilder, boolean)
 	 */
 	@Override
@@ -366,5 +324,11 @@ public class Scope extends Node
 		}
 		
 		return null;
+	}
+	
+	@Override
+	public TargetC.TargetScope getTarget()
+	{
+		return TargetC.TARGET_SCOPE;
 	}
 }

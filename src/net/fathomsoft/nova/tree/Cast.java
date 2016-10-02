@@ -1,6 +1,7 @@
 package net.fathomsoft.nova.tree;
 
 import net.fathomsoft.nova.Nova;
+import net.fathomsoft.nova.TargetC;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.error.SyntaxErrorException;
@@ -61,23 +62,6 @@ public class Cast extends IValue
 		return true;
 	}
 	
-	/**
-	 * @see net.fathomsoft.nova.tree.Value#generateCSourceFragment(java.lang.StringBuilder)
-	 */
-	@Override
-	public StringBuilder generateCSourceFragment(StringBuilder builder)
-	{
-		builder.append('(').append(generateCType()).append(')');
-		getValueNode().getReturnedNode().generatePointerToValueConversion(builder);
-		getValueNode().generateCSourceFragment(builder);
-		
-		return builder;
-	}
-	
-	/**
-	 * @see net.fathomsoft.nova.tree.Value#generateNovaInput(java.lang.StringBuilder, boolean)
-	 */
-	@Override
 	public StringBuilder generateNovaInput(StringBuilder builder, boolean outputChildren)
 	{
 		builder.append('(').append(generateNovaType()).append(')');
@@ -303,5 +287,11 @@ public class Cast extends IValue
 		}
 		
 		return null;
+	}
+	
+	@Override
+	public TargetC.TargetCast getTarget()
+	{
+		return TargetC.TARGET_CAST;
 	}
 }

@@ -1,5 +1,6 @@
 package net.fathomsoft.nova.tree;
 
+import net.fathomsoft.nova.TargetC;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.error.SyntaxMessage;
@@ -62,127 +63,6 @@ public class Constructor extends BodyMethodDeclaration
 		return super.generateNovaInput(builder, outputChildren, false);
 	}
 	
-	/**
-	 * @see net.fathomsoft.nova.tree.Value#generateCTypeName(java.lang.StringBuilder)
-	 */
-	@Override
-	public StringBuilder generateCTypeName(StringBuilder builder)
-	{
-		return generateCTypeClassName(builder);
-	}
-	
-	/**
-	 * @see net.fathomsoft.nova.tree.Node#generateCHeader(StringBuilder)
-	 */
-	@Override
-	public StringBuilder generateCHeader(StringBuilder builder)
-	{
-		if (isVisibilityValid())
-		{
-			if (getVisibility() == InstanceDeclaration.PRIVATE)
-			{
-				return builder;
-			}
-		}
-		
-		if (isReference())
-		{
-			SyntaxMessage.error("Constructor cannot return a reference", this);
-		}
-		
-		return generateCSourcePrototype(builder).append('\n');
-	}
-
-	/**
-	 * @see net.fathomsoft.nova.tree.Node#generateCSource(StringBuilder)
-	 */
-	@Override
-	public StringBuilder generateCSource(StringBuilder builder)
-	{
-		generateCSourceSignature(builder).append('\n');
-		
-		builder.append('{').append('\n');
-		
-		ClassDeclaration classDeclaration = getParentClass();
-		
-		if (classDeclaration.containsNonStaticData() || classDeclaration.containsVirtualMethods())
-		{
-			builder.append("CCLASS_NEW(").append(getTypeClass().generateCSourceName()).append(", ").append(ParameterList.OBJECT_REFERENCE_IDENTIFIER);
-			
-			if (!classDeclaration.containsNonStaticPrivateData())
-			{
-				builder.append(",");
-			}
-			
-			builder.append(");");
-		}
-		else
-		{
-			builder.append(ParameterList.OBJECT_REFERENCE_IDENTIFIER).append(" = ").append(generateCTypeCast()).append("1").append(';');
-		}
-		
-		builder.append('\n');
-		
-		VTable extension = getParentClass().getVTableNodes().getExtensionVTable();
-		
-		builder.append(ParameterList.OBJECT_REFERENCE_IDENTIFIER).append("->").append(VTable.IDENTIFIER).append(" = &").append(extension.generateCSourceName()).append(";\n");
-		
-		{
-			Stack<AssignmentMethod> calls = new Stack<AssignmentMethod>();
-			
-			ClassDeclaration extended = getParentClass().getExtendedClassDeclaration();
-			
-			while (extended != null)
-			{
-				calls.push(extended.getAssignmentMethodNode());
-				
-				extended = extended.getExtendedClassDeclaration();
-			}
-			
-			while (!calls.isEmpty())
-			{
-				AssignmentMethod method = calls.pop();
-				
-				if (method != null)
-				{
-					method.generateCMethodCall(builder, true);
-				}
-			}
-		}
-		
-		// Generate super calls.
-		{
-			Stack<MethodCall> calls = new Stack<MethodCall>();
-			
-			addSuperCallFor(calls, this);
-			
-			while (!calls.isEmpty())
-			{
-				calls.pop().generateCSource(builder);
-			}
-		}
-		
-		getParentClass().getAssignmentMethodNode().generateCMethodCall(builder);
-		
-		builder.append('\n');
-		
-		getScope().generateCSource(builder);
-		
-		builder.append('\n');
-		
-		builder.append("return ").append(ParameterList.OBJECT_REFERENCE_IDENTIFIER).append(';').append('\n');
-		
-		builder.append('}').append('\n');
-		
-		return builder;
-	}
-
-	@Override
-	public String getCName()
-	{
-		return IDENTIFIER;
-	}
-
 	/**
 	 * Decode the given statement into a Constructor instance, if
 	 * possible. If it is not possible, this method returns null. A
@@ -272,7 +152,7 @@ public class Constructor extends BodyMethodDeclaration
 		return result;
 	}
 	
-	private void addSuperCallFor(Stack<MethodCall> constructorCalls, Constructor current)
+	public void addSuperCallFor(Stack<MethodCall> constructorCalls, Constructor current)
 	{
 		ClassDeclaration clazz = current.getParentClass().getExtendedClassDeclaration();
 		
@@ -397,5 +277,11 @@ public class Constructor extends BodyMethodDeclaration
 		
 		
 		return null;
+	}
+	
+	@Override
+	public TargetC.TargetConstructor getTarget()
+	{
+		return TargetC.TARGET_CONSTRUCTOR;
 	}
 }

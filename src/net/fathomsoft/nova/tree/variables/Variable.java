@@ -1,6 +1,7 @@
 package net.fathomsoft.nova.tree.variables;
 
 import net.fathomsoft.nova.Nova;
+import net.fathomsoft.nova.TargetC;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.error.SyntaxMessage;
@@ -21,7 +22,7 @@ import net.fathomsoft.nova.util.Location;
  */
 public class Variable extends Identifier
 {
-	private VariableDeclaration	declaration;
+	public VariableDeclaration	declaration;
 	
 	/**
 	 * @see net.fathomsoft.nova.tree.Node#Node(Node, Location)
@@ -53,6 +54,16 @@ public class Variable extends Identifier
 	public GenericTypeArgumentList getGenericTypeArgumentList()
 	{
 		return getDeclaration() != null ? getDeclaration().getGenericTypeArgumentList() : null;
+	}
+	
+	public Accessible getCArgumentReferenceContext()
+	{
+		if (isAccessed() && getAccessingNode() instanceof MethodCall || getAccessedNode() instanceof Closure)
+		{
+			return getAccessingNode();
+		}
+		
+		return super.getCArgumentReferenceContext();
 	}
 	
 	@Override
@@ -420,113 +431,6 @@ public class Variable extends Identifier
 	}
 	
 	@Override
-	public StringBuilder generateCSourcePrefix(StringBuilder builder)
-	{
-		super.generateCSourcePrefix(builder);
-		
-		if (declaration instanceof ClosureVariableDeclaration)
-		{
-			builder.append(ClosureVariableDeclaration.CONTEXT_VARIABLE_NAME).append("->");
-		}
-		
-		return builder;
-	}
-	
-	@Override
-	public StringBuilder generateCArgumentOutput(StringBuilder builder)
-	{
-		super.generateCArgumentOutput(builder);
-		
-		generateExtraArguments(builder);
-		
-		return builder;
-	}
-	
-	public StringBuilder generateExtraArguments(StringBuilder builder)
-	{
-		if (getDeclaration() instanceof ClosureDeclaration)
-		{
-			builder.append(", ");
-			
-			ClosureDeclaration declaration = (ClosureDeclaration)getDeclaration();
-			
-			if (declaration.getParent() instanceof NovaParameterList)
-			{
-				builder.append(declaration.getContextName());
-			}
-			else
-			{
-				declaration.generateCArguments(builder, this, getParentMethod());
-			}
-		}
-		
-		return builder;
-	}
-	
-	@Override
-	public Accessible getCArgumentReferenceContext()
-	{
-		if (isAccessed() && getAccessingNode() instanceof MethodCall || getAccessedNode() instanceof Closure)
-		{
-			return getAccessingNode();
-		}
-		
-		return super.getCArgumentReferenceContext();
-	}
-	
-	@Override
-	public StringBuilder generateCSourceFragment(StringBuilder builder)
-	{
-		super.generateCSourceFragment(builder);
-		
-		generateCObjectReferenceIdentifier(builder);
-		
-		return builder;
-	}
-	
-	public StringBuilder generateCObjectReferenceIdentifier(StringBuilder builder)
-	{
-		if (getDeclaration() instanceof ClosureDeclaration && getParent() instanceof ArgumentList)
-		{
-			ClosureDeclaration declaration = (ClosureDeclaration)getDeclaration();
-			
-			builder.append(", ");
-			declaration.generateCObjectReferenceIdentifier(builder);
-		}
-		
-		return builder;
-	}
-	
-	public String generateGenericType()
-	{
-		GenericTypeArgumentList args = getGenericTypeArgumentList();
-		
-		if (args != null && args.getNumVisibleChildren() > 0)
-		{
-			String s = GENERIC_START;
-			
-			for (int i = 0; i < args.getNumVisibleChildren(); i++)
-			{
-				if (i > 0)
-				{
-					s += ", ";
-				}
-				
-				//GenericTypeArgument arg = getGenericTypeArgumentFromParameter(args.getVisibleChild(i).getType());
-				GenericTypeArgument arg = args.getVisibleChild(i);
-				
-				s += arg.generateNovaInput(new StringBuilder(), true, this);
-			}
-			
-			s += GENERIC_END;
-			
-			return s;
-		}
-		
-		return "";
-	}
-	
-	@Override
 	public Value getNovaTypeValue(Value context)
 	{
 		if (isGenericType())
@@ -691,5 +595,11 @@ public class Variable extends Identifier
 	public String toString()
 	{
 		return generateNovaInput() + " of type " + generateNovaType();// + generateGenericType();
+	}
+	
+	@Override
+	public TargetC.TargetVariable getTarget()
+	{
+		return TargetC.TARGET_VARIABLE;
 	}
 }

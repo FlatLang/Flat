@@ -1,6 +1,7 @@
 package net.fathomsoft.nova.tree;
 
 import net.fathomsoft.nova.Nova;
+import net.fathomsoft.nova.TargetC;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.util.Location;
 import net.fathomsoft.nova.util.SyntaxUtils;
@@ -22,43 +23,6 @@ public class StaticClassReference extends IIdentifier
 	public StaticClassReference(Node temporaryParent, Location locationIn)
 	{
 		super(temporaryParent, locationIn);
-	}
-	
-	/**
-	 * @see net.fathomsoft.nova.tree.Identifier#generateCUseOutput(java.lang.StringBuilder, boolean, boolean)
-	 */
-	@Override
-	public StringBuilder generateCUseOutput(StringBuilder builder, boolean pointer, boolean checkAccesses)
-	{
-		return builder.append(0);
-	}
-	
-	/**
-	 * @see net.fathomsoft.nova.tree.Identifier#generateCSourceFragment(java.lang.StringBuilder)
-	 */
-	@Override
-	public StringBuilder generateCSourceFragment(StringBuilder builder)
-	{
-		if (!doesAccess())
-		{
-			return generateCUseOutput(builder);
-		}
-		
-		if (isSpecialFragment())
-		{
-			return generateSpecialFragment(builder);
-		}
-		
-		return getAccessedNode().generateCSourceFragment(builder);
-	}
-	
-	/**
-	 * @see net.fathomsoft.nova.tree.Identifier#generateCArgumentReference(java.lang.StringBuilder, net.fathomsoft.nova.tree.Identifier)
-	 */
-	@Override
-	public StringBuilder generateCArgumentReference(StringBuilder builder, Identifier callingMethod)
-	{
-		return builder.append(0);//getAccessedNode().generateCArgumentReference(builder, callingMethod);
 	}
 	
 	/**
@@ -146,5 +110,11 @@ public class StaticClassReference extends IIdentifier
 		
 		
 		return null;
+	}
+	
+	@Override
+	public TargetC.TargetStaticClassReference getTarget()
+	{
+		return TargetC.TARGET_STATIC_CLASS_REFERENCE;
 	}
 }

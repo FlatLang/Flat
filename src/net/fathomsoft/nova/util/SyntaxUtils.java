@@ -2643,7 +2643,7 @@ public class SyntaxUtils
 			return;
 		}
 		
-		String type = value.generateCTypeName(new StringBuilder()).toString();
+		String type = value.getTarget().generateTypeName(value, new StringBuilder()).toString();
 		
 		if (!value.isPrimitiveType() && !types.contains(type))
 		{

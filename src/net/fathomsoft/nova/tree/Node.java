@@ -7,6 +7,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import net.fathomsoft.nova.Nova;
+import net.fathomsoft.nova.TargetC;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.error.UnimplementedOperationException;
@@ -2016,5 +2017,10 @@ public abstract class Node implements Listenable, Annotatable
 		
 		
 		return null;
+	}
+	
+	public TargetC.TargetNode getTarget()
+	{
+		return TargetC.TARGET_NODE;
 	}
 }

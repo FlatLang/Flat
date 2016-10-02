@@ -1,6 +1,7 @@
 package net.fathomsoft.nova.tree.annotations;
 
 import jdk.nashorn.internal.runtime.FindProperty;
+import net.fathomsoft.nova.TargetC;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.error.SyntaxErrorException;
@@ -39,18 +40,6 @@ public class Annotation extends Node
 		{
 			getParent().removeAnnotation(this);
 		}
-	}
-	
-	@Override
-	public StringBuilder generateCHeaderFragment(StringBuilder builder)
-	{
-		return builder;
-	}
-	
-	@Override
-	public StringBuilder generateCSourceFragment(StringBuilder builder)
-	{
-		return builder;
 	}
 	
 	/**
@@ -226,5 +215,11 @@ public class Annotation extends Node
 		
 		
 		return null;
+	}
+	
+	@Override
+	public TargetC.TargetNode getTarget()
+	{
+		return TargetC.TARGET_ANNOTATION;
 	}
 }

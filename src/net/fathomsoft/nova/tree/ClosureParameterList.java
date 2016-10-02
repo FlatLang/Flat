@@ -1,5 +1,6 @@
 package net.fathomsoft.nova.tree;
 
+import net.fathomsoft.nova.TargetC;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.util.Location;
 
@@ -16,23 +17,6 @@ public class ClosureParameterList extends ParameterList<Value>
 	public ClosureParameterList(Node temporaryParent, Location locationIn)
 	{
 		super(temporaryParent, locationIn);
-	}
-	
-	@Override
-	public StringBuilder generateCHeader(StringBuilder builder)
-	{
-		generateCHeaderDefaultParameters(builder);
-		
-		for (Value param : this)
-		{
-			builder.append(", ");
-			
-			param.generateCHeader(builder);
-		}
-		
-		builder.append(", void*");
-		
-		return builder;
 	}
 	
 	/**
@@ -80,5 +64,11 @@ public class ClosureParameterList extends ParameterList<Value>
 		
 		
 		return null;
+	}
+	
+	@Override
+	public TargetC.TargetClosureParameterList getTarget()
+	{
+		return TargetC.TARGET_CLOSURE_PARAMETER_LIST;
 	}
 }

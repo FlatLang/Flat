@@ -1,6 +1,7 @@
 package net.fathomsoft.nova.tree;
 
 import net.fathomsoft.nova.Nova;
+import net.fathomsoft.nova.TargetC;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.error.SyntaxMessage;
@@ -24,8 +25,8 @@ public class Import extends Node
 	private boolean used;
 	private boolean	external;
 	
-	private String  alias;
-	private String  location;
+	public String  alias;
+	public String  location;
 	
 	public static final String IDENTIFIER    = "import";
 	public static final String AS_IDENTIFIER = "as";
@@ -116,7 +117,9 @@ public class Import extends Node
 		
 		ClassDeclaration node = getProgram().getClassDeclaration(location);
 		
-		return node.getFileDeclaration().generateCHeaderName();
+		FileDeclaration f = node.getFileDeclaration();
+		
+		return f.getTarget().generateHeaderName(f);
 	}
 	
 	/**
@@ -126,33 +129,6 @@ public class Import extends Node
 	public StringBuilder generateNovaInput(StringBuilder builder, boolean outputChildren)
 	{
 		return builder.append(location);
-	}
-	
-	/**
-	 * @see net.fathomsoft.nova.tree.Node#generateCHeader(StringBuilder)
-	 */
-	@Override
-	public StringBuilder generateCHeader(StringBuilder builder)
-	{
-		return generateCSource(builder);
-	}
-	
-	/**
-	 * @see net.fathomsoft.nova.tree.Node#generateCSource(StringBuilder)
-	 */
-	@Override
-	public StringBuilder generateCSource(StringBuilder builder)
-	{
-		builder.append("#include ");
-		
-		if (isExternal() || !getFileDeclaration().getName().equals(location))
-		{
-			return builder.append('<').append(getLocation()).append('>').append('\n');
-		}
-		else
-		{
-			return builder.append('"').append(getLocation()).append('"').append('\n');
-		}
 	}
 	
 	/**
@@ -348,5 +324,11 @@ public class Import extends Node
 		
 		
 		return null;
+	}
+	
+	@Override
+	public TargetC.TargetNode getTarget()
+	{
+		return TargetC.TARGET_IMPORT;
 	}
 }

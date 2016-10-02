@@ -1,5 +1,6 @@
 package net.fathomsoft.nova.tree;
 
+import net.fathomsoft.nova.TargetC;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.util.Location;
@@ -17,7 +18,7 @@ import static java.util.Arrays.stream;
  */
 public class Operator extends IValue
 {
-	private String	operator;
+	public String	operator;
 	
 	// Logical operators
 	public static final String	AND = "&&", AND_C = "&&";
@@ -205,33 +206,6 @@ public class Operator extends IValue
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.Node#generateCSource(StringBuilder)
-	 */
-	@Override
-	public StringBuilder generateCSource(StringBuilder builder)
-	{
-		return generateCSourceFragment(builder);
-	}
-	
-	/**
-	 * @see net.fathomsoft.nova.tree.Node#generateCSourceFragment(StringBuilder)
-	 */
-	@Override
-	public StringBuilder generateCSourceFragment(StringBuilder builder)
-	{
-		if (operator.equals(AND))
-		{
-			return builder.append(AND_C);
-		}
-		else if (operator.equals(OR))
-		{
-			return builder.append(OR_C);
-		}
-		
-		return builder.append(operator);
-	}
-	
-	/**
 	 * @see net.fathomsoft.nova.tree.Node#generateNovaInput(StringBuilder, boolean)
 	 */
 	public StringBuilder generateNovaInput(StringBuilder builder, boolean outputChildren)
@@ -286,5 +260,11 @@ public class Operator extends IValue
 		
 		
 		return null;
+	}
+	
+	@Override
+	public TargetC.TargetOperator getTarget()
+	{
+		return TargetC.TARGET_OPERATOR;
 	}
 }

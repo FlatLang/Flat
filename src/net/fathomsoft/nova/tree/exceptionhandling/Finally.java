@@ -1,5 +1,6 @@
 package net.fathomsoft.nova.tree.exceptionhandling;
 
+import net.fathomsoft.nova.TargetC;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.tree.AccessorMethod;
 import net.fathomsoft.nova.tree.Node;
@@ -22,21 +23,6 @@ public class Finally extends ExceptionHandler
 	public Finally(Node temporaryParent, Location locationIn)
 	{
 		super(temporaryParent, locationIn);
-	}
-	
-	/**
-	 * @see net.fathomsoft.nova.tree.Node#generateCSource(StringBuilder)
-	 */
-	@Override
-	public StringBuilder generateCSource(StringBuilder builder)
-	{
-		builder.append("FINALLY").append('\n');
-		
-		getScope().generateCSource(builder);
-		
-		builder.append("END_TRY;").append('\n');
-		
-		return builder;
 	}
 	
 	/**
@@ -110,5 +96,11 @@ public class Finally extends ExceptionHandler
 		
 		
 		return null;
+	}
+	
+	@Override
+	public TargetC.TargetNode getTarget()
+	{
+		return TargetC.TARGET_FINALLY;
 	}
 }

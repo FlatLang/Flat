@@ -1,6 +1,7 @@
 package net.fathomsoft.nova.tree;
 
 import net.fathomsoft.nova.Nova;
+import net.fathomsoft.nova.TargetC;
 import net.fathomsoft.nova.tree.generics.GenericTypeArgument;
 import net.fathomsoft.nova.tree.generics.GenericTypeArgumentList;
 import net.fathomsoft.nova.tree.generics.GenericTypeParameter;
@@ -603,25 +604,6 @@ public interface Accessible
 	}
 	
 	/**
-	 * If the Value accesses a method call, generate a specialized
-	 * output.
-	 *
-	 * @param builder The StringBuilder to append the data to.
-	 * @return A specialized String generation.
-	 */
-	default StringBuilder generateSpecialFragment(StringBuilder builder)
-	{
-		Accessible current = getLastAccessedNode();
-		
-		while (!((Value)current).isSpecial())
-		{
-			current = current.getAccessingNode();
-		}
-		
-		return ((Value)current).generateCSourceFragment(builder);
-	}
-	
-	/**
 	 * Get the Value that returns a value if it is used in an
 	 * expression.<br>
 	 * <br>
@@ -830,182 +812,6 @@ public interface Accessible
 	}
 	
 	/**
-	 * Generate the C output for when this value node is being used
-	 * as an argument for a method call.
-	 * 
-	 * @param builder The StringBuilder to append the data to.
-	 * @param callingMethod The method that is being called by the
-	 * 		specified Identifier.
-	 * @return The C output for when this value node is being used
-	 * 		as an argument for a method call.
-	 */
-	default StringBuilder generateCArgumentReference(StringBuilder builder, Identifier callingMethod)
-	{
-		Value n = (Value)this;
-
-		if (n instanceof Identifier)
-		{
-			((Identifier)n).generateCUseOutput(builder, false, true);
-		}
-		else
-		{
-			n.generateCUseOutput(builder);
-		}
-
-		generateChildrenCSourceFragment(builder, true, callingMethod, false);
-		
-		return builder;
-	}
-	
-	/**
-	 * Generate a String representing the accessed nodes.
-	 * 
-	 * @return The generated String.
-	 */
-	default StringBuilder generateChildrenCSourceFragment()
-	{
-		return generateChildrenCSourceFragment(new StringBuilder(), true);
-	}
-	
-	/**
-	 * Generate a String representing the accessed nodes.
-	 * 
-	 * @param builder The StringBuilder to append the data to.
-	 * @return The StringBuilder with the appended generation output.
-	 */
-	default StringBuilder generateChildrenCSourceFragment(StringBuilder builder)
-	{
-		return generateChildrenCSourceFragment(builder, true);
-	}
-	
-	/**
-	 * Generate a String representing the accessed nodes.
-	 * 
-	 * @param reference Whether or not to start the string off with
-	 * 		a "-&gt;" reference operator.
-	 * @return The generated String.
-	 */
-	default StringBuilder generateChildrenCSourceFragment(boolean reference)
-	{
-		return generateChildrenCSourceFragment(new StringBuilder(), reference, null);
-	}
-	
-	/**
-	 * Generate a String representing the accessed nodes.
-	 * 
-	 * @param builder The StringBuilder to append the data to.
-	 * @param reference Whether or not to start the string off with
-	 * 		a "-&gt;" reference operator.
-	 * @return The StringBuilder with the appended generation output.
-	 */
-	default StringBuilder generateChildrenCSourceFragment(StringBuilder builder, boolean reference)
-	{
-		return generateChildrenCSourceFragment(builder, reference, null);
-	}
-	
-	/**
-	 * Generate a String representing the accessed nodes.
-	 * 
-	 * @param reference Whether or not to start the string off with
-	 * 		a "-&gt;" reference operator.
-	 * @param stopBefore The Identifier to stop the generation before.
-	 * @return The generated String.
-	 */
-	default StringBuilder generateChildrenCSourceFragment(boolean reference, Identifier stopBefore)
-	{
-		return generateChildrenCSourceFragment(new StringBuilder(), reference, stopBefore);
-	}
-	
-	// TODO: use stopAt instead of stopBefore.
-	
-	/**
-	 * Generate a String representing the accessed nodes.
-	 * 
-	 * @param builder The StringBuilder to append the data to.
-	 * @param reference Whether or not to start the string off with
-	 * 		a "-&gt;" reference operator.
-	 * @param stopBefore The Identifier to stop the generation before.
-	 * @return The StringBuilder with the appended generation output.
-	 */
-	default StringBuilder generateChildrenCSourceFragment(StringBuilder builder, boolean reference, Identifier stopBefore)
-	{
-		return generateChildrenCSourceFragment(builder, reference, stopBefore, true);
-	}
-	
-	default StringBuilder generateChildrenCSourceFragment(StringBuilder builder, boolean reference, Identifier stopBefore, boolean checkAccesses)
-	{
-		Identifier child = getAccessedNode();
-
-		if (child == null)
-		{
-			return builder;
-		}
-		
-		StringBuilder output = child.generateChildCSourceFragment(reference, stopBefore, checkAccesses);
-		
-		if (output.length() > 0 && reference)
-		{
-			builder.append("->");
-		}
-		
-		return builder.append(output);
-	}
-	
-	/**
-	 * Generate the source fragment for the specified node.
-	 * 
-	 * @param reference Whether or not to prepend the "->" operator at
-	 * 		the beginning of the generated output.
-	 * @param stopBefore The Identifier to stop the generation before.
-	 * @return The StringBuilder with the appended generation output.
-	 */
-	default StringBuilder generateChildCSourceFragment(boolean reference, Identifier stopBefore)
-	{
-		return generateChildCSourceFragment(reference, stopBefore, true);
-	}
-	
-	default StringBuilder generateChildCSourceFragment(boolean reference, Identifier stopBefore, boolean checkAccesses)
-	{
-		Value n = (Value)this;
-		
-		StringBuilder builder = new StringBuilder();
-		
-		// If generating the output for the use of an argument.
-		if (stopBefore != null)
-		{
-			if (this == stopBefore)//instanceof MethodCall || this instanceof Instantiation)
-			{
-				return builder;
-			}
-			
-			StringBuilder use = null;
-			
-			if (n instanceof Identifier)
-			{
-				use = ((Identifier)n).generateCUseOutput(builder, false, checkAccesses);
-			}
-			else
-			{
-				use = n.generateCUseOutput(builder);
-			}
-			
-			return use.append(generateChildrenCSourceFragment(true, stopBefore));
-		}
-		
-		if (n instanceof Identifier)
-		{
-			Identifier id = (Identifier)n;
-			
-			if (id.isSpecialFragment())
-			{
-				id.generateSpecialFragment(builder);
-			}
-		}
-		
-		return n.generateCSourceFragment(builder);
-	}
-	
-	/**
 	 * Generate the Nova input String until the given stopAt Identifier
 	 * is found.
 	 * 
@@ -1048,44 +854,6 @@ public interface Accessible
 		return builder.deleteCharAt(builder.length() - 1);
 	}
 	
-	/**
-	 * Generate the C Source for the Identifier and the Identifiers that
-	 * it accesses until the given 'stopAt' Identifier is reached.
-	 * 
-	 * @param delimiter The String to append in between each Identifier
-	 * 		that is accessed.
-	 * @param stopAt The Identifier to stop the generation before.
-	 * @return The StrignBuilder with the appended data.
-	 */
-	default StringBuilder generateCSourceUntil(String delimiter, Identifier stopAt)
-	{
-		return generateCSourceUntil(new StringBuilder(), delimiter, stopAt);
-	}
-	
-	/**
-	 * Generate the C Source for the Identifier and the Identifiers that
-	 * it accesses until the given 'stopAt' Identifier is reached.
-	 * 
-	 * @param builder The StringBuilder to append the data to.
-	 * @param delimiter The String to append in between each Identifier
-	 * 		that is accessed.
-	 * @param stopAt The Identifier to stop the generation before.
-	 * @return The StrignBuilder with the appended data.
-	 */
-	default StringBuilder generateCSourceUntil(StringBuilder builder, String delimiter, Identifier stopAt)
-	{
-		Accessible current = this;
-		
-		while (current != null && current != stopAt)
-		{
-			((Value)current).generateCUseOutput(builder).append(delimiter);
-			
-			current = current.getAccessedNode();
-		}
-		
-		return builder;
-	}
-	
 	default ClassDeclaration getDeclaringClass()
 	{
 		if (isAccessed())
@@ -1097,4 +865,6 @@ public interface Accessible
 		
 //		throw new UnimplementedOperationException("Class " + getClass().getName() + " has not implemented the getDeclaringClass() method.");
 	}
+	
+	TargetC.TargetAccessible getTarget();
 }

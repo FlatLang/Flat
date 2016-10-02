@@ -1,5 +1,6 @@
 package net.fathomsoft.nova.tree.match;
 
+import net.fathomsoft.nova.TargetC;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.tree.Node;
@@ -30,25 +31,6 @@ public class Default extends MatchCase
 	public String getIdentifier()
 	{
 		return IDENTIFIER;
-	}
-	
-	@Override
-	public StringBuilder generateCSource(StringBuilder builder)
-	{
-		if (getParentSwitch().isConventionalSwitch())
-		{
-			builder.append("default:").append('\n');
-			
-			getScope().generateCSource(builder, false);
-		}
-		else
-		{
-			builder.append("else").append('\n');
-			
-			getScope().generateCSource(builder);
-		}
-		
-		return builder;
 	}
 	
 	/**
@@ -138,5 +120,11 @@ public class Default extends MatchCase
 		
 		
 		return null;
+	}
+	
+	@Override
+	public TargetC.TargetNode getTarget()
+	{
+		return TargetC.TARGET_DEFAULT;
 	}
 }

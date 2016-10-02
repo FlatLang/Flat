@@ -3,6 +3,7 @@ package net.fathomsoft.nova.tree;
 import java.util.ArrayList;
 import java.util.Iterator;
 
+import net.fathomsoft.nova.TargetC;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.util.Location;
 
@@ -112,34 +113,6 @@ public class TypeList<E extends Node> extends List implements Iterable<E>
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.Node#generateCHeaderFragment(java.lang.StringBuilder)
-	 */
-	@Override
-	public StringBuilder generateCHeaderFragment(StringBuilder builder)
-	{
-		for (E child : this)
-		{
-			child.generateCHeader(builder);
-		}
-		
-		return builder;
-	}
-	
-	/**
-	 * @see net.fathomsoft.nova.tree.Node#generateCSourceFragment(java.lang.StringBuilder)
-	 */
-	@Override
-	public StringBuilder generateCSourceFragment(StringBuilder builder)
-	{
-		for (E child : this)
-		{
-			child.generateCSource(builder);
-		}
-		
-		return builder;
-	}
-	
-	/**
 	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location, boolean)
 	 */
 	@Override
@@ -184,5 +157,11 @@ public class TypeList<E extends Node> extends List implements Iterable<E>
 		
 		
 		return null;
+	}
+	
+	@Override
+	public TargetC.TargetNode getTarget()
+	{
+		return TargetC.TARGET_TYPE_LIST;
 	}
 }

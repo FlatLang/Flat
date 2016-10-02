@@ -1,5 +1,6 @@
 package net.fathomsoft.nova.tree;
 
+import net.fathomsoft.nova.TargetC;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.util.Location;
 
@@ -55,21 +56,6 @@ public class ExtensionVTable extends VTable
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.VTable#generateCHeader(java.lang.StringBuilder)
-	 */
-	@Override
-	public StringBuilder generateCHeader(StringBuilder builder)
-	{
-		getInterfaceVTable().generateCHeader(builder).append('\n');
-		
-		super.generateCHeader(builder);
-		
-		builder.append("extern ").append(generateCType()).append(' ').append(generateCSourceName()).append(";\n");
-		
-		return builder;
-	}
-	
-	/**
 	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location, boolean)
 	 */
 	@Override
@@ -114,5 +100,11 @@ public class ExtensionVTable extends VTable
 		
 		
 		return null;
+	}
+	
+	@Override
+	public TargetC.TargetExtensionVTable getTarget()
+	{
+		return TargetC.TARGET_EXTENSION_VTABLE;
 	}
 }

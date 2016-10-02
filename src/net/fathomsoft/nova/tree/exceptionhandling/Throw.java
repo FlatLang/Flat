@@ -1,5 +1,6 @@
 package net.fathomsoft.nova.tree.exceptionhandling;
 
+import net.fathomsoft.nova.TargetC;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.tree.Identifier;
@@ -67,18 +68,6 @@ public class Throw extends ExceptionHandler
 	public Identifier getExceptionInstance()
 	{
 		return (Identifier)getChild(super.getNumDefaultChildren() + 1);
-	}
-	
-	/**
-	 * @see net.fathomsoft.nova.tree.Node#generateCSource(StringBuilder)
-	 */
-	@Override
-	public StringBuilder generateCSource(StringBuilder builder)
-	{
-		builder.append("THROW").append('(').append(getException().getID()).append(", ");
-		getExceptionInstance().generateCSourceFragment(builder).append(')').append(';').append('\n');
-		
-		return builder;
 	}
 	
 	/**
@@ -224,5 +213,11 @@ public class Throw extends ExceptionHandler
 		
 		
 		return null;
+	}
+	
+	@Override
+	public TargetC.TargetNode getTarget()
+	{
+		return TargetC.TARGET_THROW;
 	}
 }

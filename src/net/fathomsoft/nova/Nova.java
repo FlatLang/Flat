@@ -7,61 +7,7 @@ import java.util.*;
 
 import net.fathomsoft.nova.error.SyntaxErrorException;
 import net.fathomsoft.nova.error.SyntaxMessage;
-import net.fathomsoft.nova.tree.ArgumentList;
-import net.fathomsoft.nova.tree.Assignment;
-import net.fathomsoft.nova.tree.BinaryOperation;
-import net.fathomsoft.nova.tree.Cast;
-import net.fathomsoft.nova.tree.ClassDeclaration;
-import net.fathomsoft.nova.tree.Closure;
-import net.fathomsoft.nova.tree.ClosureDeclaration;
-import net.fathomsoft.nova.tree.Condition;
-import net.fathomsoft.nova.tree.Constructor;
-import net.fathomsoft.nova.tree.Destructor;
-import net.fathomsoft.nova.tree.Dimensions;
-import net.fathomsoft.nova.tree.ElseStatement;
-import net.fathomsoft.nova.tree.ExternalMethodDeclaration;
-import net.fathomsoft.nova.tree.ExternalType;
-import net.fathomsoft.nova.tree.ExternalTypeList;
-import net.fathomsoft.nova.tree.FileDeclaration;
-import net.fathomsoft.nova.tree.ForLoop;
-import net.fathomsoft.nova.tree.GenericCompatible;
-import net.fathomsoft.nova.tree.IIdentifier;
-import net.fathomsoft.nova.tree.IValue;
-import net.fathomsoft.nova.tree.Identifier;
-import net.fathomsoft.nova.tree.IfStatement;
-import net.fathomsoft.nova.tree.Import;
-import net.fathomsoft.nova.tree.ImportList;
-import net.fathomsoft.nova.tree.InstanceDeclaration;
-import net.fathomsoft.nova.tree.Instantiation;
-import net.fathomsoft.nova.tree.Interface;
-import net.fathomsoft.nova.tree.InterfaceVTable;
-import net.fathomsoft.nova.tree.Literal;
-import net.fathomsoft.nova.tree.LocalDeclaration;
-import net.fathomsoft.nova.tree.Loop;
-import net.fathomsoft.nova.tree.LoopInitialization;
-import net.fathomsoft.nova.tree.LoopUpdate;
-import net.fathomsoft.nova.tree.MethodCall;
-import net.fathomsoft.nova.tree.MethodCallArgumentList;
-import net.fathomsoft.nova.tree.MethodDeclaration;
-import net.fathomsoft.nova.tree.MethodList;
-import net.fathomsoft.nova.tree.Node;
-import net.fathomsoft.nova.tree.NovaMethodDeclaration;
-import net.fathomsoft.nova.tree.Operator;
-import net.fathomsoft.nova.tree.Parameter;
-import net.fathomsoft.nova.tree.ParameterList;
-import net.fathomsoft.nova.tree.Priority;
-import net.fathomsoft.nova.tree.Program;
-import net.fathomsoft.nova.tree.Return;
-import net.fathomsoft.nova.tree.Scope;
-import net.fathomsoft.nova.tree.StaticBlock;
-import net.fathomsoft.nova.tree.SyntaxTree;
-import net.fathomsoft.nova.tree.TreeGenerator;
-import net.fathomsoft.nova.tree.TypeList;
-import net.fathomsoft.nova.tree.UnaryOperation;
-import net.fathomsoft.nova.tree.Until;
-import net.fathomsoft.nova.tree.VTable;
-import net.fathomsoft.nova.tree.Value;
-import net.fathomsoft.nova.tree.WhileLoop;
+import net.fathomsoft.nova.tree.*;
 import net.fathomsoft.nova.tree.exceptionhandling.Exception;
 import net.fathomsoft.nova.tree.match.Match;
 import net.fathomsoft.nova.util.*;
@@ -392,7 +338,7 @@ public class Nova
 		{
 			SyntaxUtils.addTypesToTypeList(builder, c, types);
 			
-			c.generateCClosureDefinition(builder);
+			c.getTarget().generateClosureDefinition(c, builder);
 		}
 		
 		builder.append("\n");
@@ -427,14 +373,14 @@ public class Nova
 		
 		for (FileDeclaration file : tree.getFiles())
 		{
-			nativeInterface.append("#include <" + file.generateCHeaderName() + ">\n");
+			nativeInterface.append("#include <" + file.getTarget().generateHeaderName(file) + ">\n");
 		}
 		
 		nativeInterface.append('\n');
 
 		for (FileDeclaration file : tree.getFiles())
 		{
-			file.generateCHeaderNativeInterface(nativeInterface).append("\n");
+			file.getTarget().generateHeaderNativeInterface(file, nativeInterface).append("\n");
 		}
 		
 		nativeInterface.append("\ntypedef struct nova_env\n");
@@ -444,7 +390,7 @@ public class Nova
 		{
 			for (ClassDeclaration clazz : file.getClassDeclarations())
 			{
-				clazz.generateCSourceName(nativeInterface, "native").append(" ").append(clazz.getNativeLocation()).append(";\n");
+				clazz.getTarget().generateSourceName(clazz, nativeInterface, "native").append(" ").append(clazz.getNativeLocation()).append(";\n");
 			}
 		}
 		
@@ -475,7 +421,7 @@ public class Nova
 		
 		for (FileDeclaration file : tree.getFiles())
 		{
-			file.generateCSourceNativeInterface(nativeInterface).append('\n');
+			file.getTarget().generateSourceNativeInterface(file, nativeInterface).append('\n');
 		}
 		
 		nativeInterface.append("};\n");
@@ -662,14 +608,14 @@ public class Nova
 			new File(outputDir, file.getPackage().getLocation()).mkdirs();
 			
 			types.append("typedef struct ").append(file.getName()).append(' ').append(file.getName()).append(';').append('\n');
-			includes.append("#include <").append(file.generateCHeaderName()).append('>').append('\n');
+			includes.append("#include <").append(file.getTarget().generateHeaderName(file)).append('>').append('\n');
 			
 			try
 			{
 				if (!isFlagEnabled(NO_C_OUTPUT))
 				{
-					File headerFile = FileUtils.writeFile(file.generateCHeaderName(), outputDir, header);
-					File sourceFile = FileUtils.writeFile(file.generateCSourceName(), outputDir, source);
+					File headerFile = FileUtils.writeFile(file.getTarget().generateHeaderName(file), outputDir, header);
+					File sourceFile = FileUtils.writeFile(file.getTarget().generateSourceName(file), outputDir, source);
 				
 					cHeaderFiles.add(headerFile);
 					cSourceFiles.add(sourceFile);
@@ -725,7 +671,9 @@ public class Nova
 								itable = InterfaceVTable.IDENTIFIER + ".";
 							}
 							
-							builder.append(ENVIRONMENT_VAR + "." + clazz.getNativeLocation() + "." + n.generateCSourceNativeName(new StringBuilder(), false) + " = " + clazz.getVTableNodes().getExtensionVTable().getName() + "." + itable + n.getVirtualMethod().generateCVirtualMethodName() + ";\n");
+							VirtualMethodDeclaration virtual = n.getVirtualMethod();
+							
+							builder.append(ENVIRONMENT_VAR + "." + clazz.getNativeLocation() + "." + n.getTarget().generateSourceNativeName(n, new StringBuilder(), false) + " = " + clazz.getVTableNodes().getExtensionVTable().getName() + "." + itable + virtual.getTarget().generateVirtualMethodName(virtual) + ";\n");
 						}
 					}
 				}
@@ -794,8 +742,8 @@ public class Nova
 //			mainMethodText.append	("AllocConsole();").append('\n');
 			mainMethodText.append	("srand(currentTimeMillis());").append('\n');
 			mainMethodText.append	(Literal.GARBAGE_IDENTIFIER).append(" = malloc(sizeof(void*));").append('\n');
-			mainMethodText.append	(gcInit.generateCSource()).append('\n');
-			mainMethodText.append	("nova_null = ").append(nullConstructor.generateCSourceFragment()).append(';').append('\n');
+			mainMethodText.append	(gcInit.getTarget().generateSource(gcInit)).append('\n');
+			mainMethodText.append	("nova_null = ").append(nullConstructor.getTarget().generateSourceFragment(nullConstructor)).append(';').append('\n');
 			mainMethodText.append	(nativeAssignments).append('\n');
 			mainMethodText.append	(staticBlockCalls).append('\n');
 			mainMethodText.append	("args = (nova_Nova_String**)NOVA_MALLOC(argc * sizeof(nova_Nova_String));").append('\n');
@@ -804,19 +752,19 @@ public class Nova
 			mainMethodText.append	("{").append('\n');
 			mainMethodText.append		("char* str = (char*)NOVA_MALLOC(sizeof(char) * strlen(argvs[i]) + 1);").append('\n');
 			mainMethodText.append		("copy_string(str, argvs[i]);").append('\n');
-			mainMethodText.append		("args[i] = ").append(strConstructor.generateCSourceName()).append("(0, 0, str);").append('\n');
+			mainMethodText.append		("args[i] = ").append(strConstructor.getTarget().generateSourceName(strConstructor)).append("(0, 0, str);").append('\n');
 			mainMethodText.append	("}").append('\n');
 			mainMethodText.append	("nova_datastruct_list_Nova_Array* argsArray = nova_datastruct_list_Nova_Array_2_Nova_construct(0, exceptionData, (nova_Nova_Object**)args, argc);");
 			mainMethodText.append	('\n');
 			mainMethodText.append	("TRY").append('\n');
 			mainMethodText.append	('{').append('\n');
-			mainMethodText.append		(mainMethod.generateCSourceName()).append("(0, ").append(Exception.EXCEPTION_DATA_IDENTIFIER).append(", argsArray);").append('\n');
+			mainMethodText.append		(mainMethod.getTarget().generateSourceName(mainMethod)).append("(0, ").append(Exception.EXCEPTION_DATA_IDENTIFIER).append(", argsArray);").append('\n');
 			mainMethodText.append	('}').append('\n');
 			mainMethodText.append	("CATCH (1)").append('\n');
 			mainMethodText.append	('{').append('\n');
 			mainMethodText.append		("nova_exception_Nova_Exception* base = (nova_exception_Nova_Exception*)").append(Exception.EXCEPTION_DATA_IDENTIFIER).append("->nova_exception_Nova_ExceptionData_Nova_thrownException;").append('\n');
 			mainMethodText.append		("printf(\"Exception in Thread 'main': %s\", base->nova_exception_Nova_Exception_Nova_message->nova_Nova_String_Nova_chars);").append('\n');
-			mainMethodText.append		(enter.generateCSource()).append('\n');
+			mainMethodText.append		(enter.getTarget().generateSource(enter)).append('\n');
 			mainMethodText.append	('}').append('\n');
 			mainMethodText.append	("FINALLY").append('\n');
 			mainMethodText.append	('{').append('\n');
@@ -830,12 +778,12 @@ public class Nova
 			}
 
 			mainMethodText.append   ("NOVA_FREE(args);").append('\n');
-			mainMethodText.append	(gcColl.generateCSource()).append('\n');
+			mainMethodText.append	(gcColl.getTarget().generateSource(gcColl)).append('\n');
 			mainMethodText.append	('\n');
 			mainMethodText.append	("return 0;").append('\n');
 			mainMethodText.append("}\n");
 			
-			String newSource = fileDeclaration.generateCSource() + mainMethodText.toString();
+			String newSource = fileDeclaration.getTarget().generateSource(fileDeclaration) + mainMethodText.toString();
 			
 			newSource = SyntaxUtils.formatText(newSource);
 			
@@ -859,7 +807,7 @@ public class Nova
 				
 				for (int j = 0; j < blocks.getNumVisibleChildren(); j++)
 				{
-					StaticBlock.generateCMethodCall(builder, clazz).append(';').append('\n');
+					TargetC.TARGET_STATIC_BLOCK.generateMethodCall(builder, clazz).append(';').append('\n');
 				}
 			}
 		}
@@ -956,7 +904,7 @@ public class Nova
 				dir = new File(outputDirectories.get(sourceFile.getPackage().getRootFolder()));
 			}
 			
-			cmd.append(formatPath(dir.getAbsolutePath() + "/" + sourceFile.generateCSourceName())).append(' ');
+			cmd.append(formatPath(dir.getAbsolutePath() + "/" + sourceFile.getTarget().generateSourceName(sourceFile))).append(' ');
 		}
 		
 		for (String external : externalImports)

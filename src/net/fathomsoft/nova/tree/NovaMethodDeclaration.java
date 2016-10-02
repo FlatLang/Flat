@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 
+import net.fathomsoft.nova.TargetC;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.error.SyntaxMessage;
@@ -999,5 +1000,11 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 	public String toString()
 	{
 		return generateNovaSignature();
+	}
+	
+	@Override
+	public TargetC.TargetNovaMethodDeclaration getTarget()
+	{
+		return TargetC.TARGET_NOVA_METHOD_DECLARATION;
 	}
 }

@@ -1,5 +1,6 @@
 package net.fathomsoft.nova.tree.match;
 
+import net.fathomsoft.nova.TargetC;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.tree.Node;
@@ -23,19 +24,6 @@ public class Fallthrough extends Node implements MatchChild
 	public Fallthrough(Node temporaryParent, Location locationIn)
 	{
 		super(temporaryParent, locationIn);
-	}
-	
-	@Override
-	public StringBuilder generateCSource(StringBuilder builder)
-	{
-		Variable fall = getParentSwitch().getLocalFallthrough();
-		
-		if (fall != null)
-		{
-			fall.generateCSourceFragment(builder).append(" = 1;\n");
-		}
-		
-		return builder;
 	}
 	
 	/**
@@ -126,5 +114,11 @@ public class Fallthrough extends Node implements MatchChild
 	public String toString()
 	{
 		return IDENTIFIER;
+	}
+	
+	@Override
+	public TargetC.TargetNode getTarget()
+	{
+		return TargetC.TARGET_FALLTHROUGH;
 	}
 }

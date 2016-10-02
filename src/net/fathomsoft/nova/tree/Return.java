@@ -1,6 +1,7 @@
 package net.fathomsoft.nova.tree;
 
 import net.fathomsoft.nova.Nova;
+import net.fathomsoft.nova.TargetC;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.error.SyntaxMessage;
@@ -81,38 +82,6 @@ public class Return extends IValue
 		}
 		
 		return (Value)getReturnValues().getVisibleChild(0);
-	}
-
-	/**
-	 * @see net.fathomsoft.nova.tree.Node#generateCSource(StringBuilder)
-	 */
-	@Override
-	public StringBuilder generateCSource(StringBuilder builder)
-	{
-		return generateCSourceFragment(builder).append(";\n");
-	}
-	
-	/**
-	 * @see net.fathomsoft.nova.tree.Node#generateCSourceFragment(StringBuilder)
-	 */
-	@Override
-	public StringBuilder generateCSourceFragment(StringBuilder builder)
-	{
-		builder.append("return");
-		
-		if (getValueNode() != null)
-		{
-			builder.append(' ');
-			
-			if (getValueNode().getReturnedNode().isGenericType(true) || !SyntaxUtils.isSameType(getParentMethod(), getValueNode().getReturnedNode(), false))
-			{
-				getParentMethod().generateCTypeCast(builder).append(getValueNode().getReturnedNode().generatePointerToValueConversion());
-			}
-			
-			builder.append(getValueNode().generateCSourceFragment());
-		}
-		
-		return builder;
 	}
 	
 	/**
@@ -383,5 +352,11 @@ public class Return extends IValue
 		
 		
 		return null;
+	}
+	
+	@Override
+	public TargetC.TargetReturn getTarget()
+	{
+		return TargetC.TARGET_RETURN;
 	}
 }

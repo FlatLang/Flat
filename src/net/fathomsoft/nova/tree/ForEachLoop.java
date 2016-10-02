@@ -1,6 +1,7 @@
 package net.fathomsoft.nova.tree;
 
 import net.fathomsoft.nova.Nova;
+import net.fathomsoft.nova.TargetC;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.error.SyntaxMessage;
@@ -130,29 +131,6 @@ public class ForEachLoop extends Loop
 	public Assignment getNextAssignment()
 	{
 		return (Assignment)getScope().getVisibleChild(0);
-	}
-
-	/**
-	 * @see net.fathomsoft.nova.tree.Node#generateCSource(StringBuilder)
-	 */
-	@Override
-	public StringBuilder generateCSource(StringBuilder builde)
-	{
-		StringBuilder builder = new StringBuilder();
-		
-		builder.append("while (").append(getHasNextCheck().generateCSourceFragment()).append(')').append('\n');
-		
-		for (int i = 0; i < getNumChildren(); i++)
-		{
-			Node child = getChild(i);
-			
-			if (child != getArgumentList())
-			{
-				child.generateCSource(builder);
-			}
-		}
-		
-		return builde.append(builder);
 	}
 	
 	/**
@@ -486,5 +464,11 @@ public class ForEachLoop extends Loop
 		
 		
 		return s;
+	}
+	
+	@Override
+	public TargetC.TargetNode getTarget()
+	{
+		return TargetC.TARGET_FOR_EACH_LOOP;
 	}
 }

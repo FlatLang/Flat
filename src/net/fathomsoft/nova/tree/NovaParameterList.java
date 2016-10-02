@@ -1,6 +1,7 @@
 package net.fathomsoft.nova.tree;
 
 import net.fathomsoft.nova.Nova;
+import net.fathomsoft.nova.TargetC;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.tree.lambda.LambdaMethodDeclaration;
@@ -18,7 +19,7 @@ import java.util.ArrayList;
  */
 public class NovaParameterList extends ParameterList<Parameter>
 {
-	private ReturnParameterList returnParameters;
+	public ReturnParameterList returnParameters;
 	
 	public NovaParameterList(Node temporaryParent, Location locationIn)
 	{
@@ -84,46 +85,6 @@ public class NovaParameterList extends ParameterList<Parameter>
 		}
 		
 		return types;
-	}
-	
-	@Override
-	public StringBuilder generateCSourceParameters(StringBuilder builder)
-	{
-		super.generateCSourceParameters(builder);
-		
-		if (returnParameters.getNumVisibleChildren() > 0)
-		{
-			builder.append(", ");
-			
-			returnParameters.generateCSourceParameters(builder);
-		}
-		
-		if (getMethodDeclaration() instanceof LambdaMethodDeclaration)
-		{
-			builder.append(", ").append(((LambdaMethodDeclaration)getMethodDeclaration()).context.getName()).append("* ").append(ClosureVariableDeclaration.CONTEXT_VARIABLE_NAME);
-		}
-		
-		return builder;
-	}
-	
-	@Override
-	public StringBuilder generateCHeaderParameters(StringBuilder builder)
-	{
-		super.generateCHeaderParameters(builder);
-		
-		if (returnParameters.getNumVisibleChildren() > 0)
-		{
-			builder.append(", ");
-			
-			returnParameters.generateCHeaderParameters(builder);
-		}
-		
-		if (getMethodDeclaration() instanceof LambdaMethodDeclaration)
-		{
-			builder.append(", ").append(((LambdaMethodDeclaration)getMethodDeclaration()).context.getName()).append('*');
-		}
-		
-		return builder;
 	}
 	
 	@Override
@@ -256,5 +217,11 @@ public class NovaParameterList extends ParameterList<Parameter>
 			
 			return node;
 		}
+	}
+	
+	@Override
+	public TargetC.TargetNovaParameterList getTarget()
+	{
+		return TargetC.TARGET_NOVA_PARAMETER_LIST;
 	}
 }

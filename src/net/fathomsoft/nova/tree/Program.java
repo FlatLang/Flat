@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 import net.fathomsoft.nova.Nova;
+import net.fathomsoft.nova.TargetC;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.error.SyntaxMessage;
@@ -233,34 +234,6 @@ public class Program extends Node
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.Node#generateCHeader(StringBuilder)
-	 */
-	@Override
-	public StringBuilder generateCHeader(StringBuilder builder)
-	{
-		for (int i = 0; i < getNumChildren(); i++)
-		{
-			getChild(i).generateCHeader();
-		}
-		
-		return builder;
-	}
-	
-	/**
-	 * @see net.fathomsoft.nova.tree.Node#generateCSource(StringBuilder)
-	 */
-	@Override
-	public StringBuilder generateCSource(StringBuilder builder)
-	{
-		for (int i = 0; i < getNumChildren(); i++)
-		{
-			getChild(i).generateCSource();
-		}
-		
-		return builder;
-	}
-	
-	/**
 	 * Format the C Header output to follow syntactical rules.
 	 */
 	public void formatCHeaderOutput()
@@ -387,5 +360,11 @@ public class Program extends Node
 		
 		
 		return null;
+	}
+	
+	@Override
+	public TargetC.TargetNode getTarget()
+	{
+		return TargetC.TARGET_PROGRAM;
 	}
 }

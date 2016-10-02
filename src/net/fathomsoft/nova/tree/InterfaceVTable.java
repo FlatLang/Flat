@@ -3,6 +3,7 @@ package net.fathomsoft.nova.tree;
 import java.util.ArrayList;
 
 import net.fathomsoft.nova.Nova;
+import net.fathomsoft.nova.TargetC;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.util.Location;
 
@@ -66,63 +67,6 @@ public class InterfaceVTable extends VTable
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.VTable#generateCHeader(java.lang.StringBuilder)
-	 */
-	@Override
-	public StringBuilder generateCHeader(StringBuilder builder)
-	{
-		return builder;
-	}
-	
-	/**
-	 * @see net.fathomsoft.nova.tree.Value#generateCHeaderFragment(java.lang.StringBuilder)
-	 */
-	@Override
-	public StringBuilder generateCHeaderFragment(StringBuilder builder)
-	{
-		return generateCType(builder).append(" ").append(IDENTIFIER);
-	}
-	
-	/**
-	 * @see net.fathomsoft.nova.tree.VTable#generateCSource(java.lang.StringBuilder)
-	 */
-	@Override
-	public StringBuilder generateCSource(StringBuilder builder)
-	{
-		return builder;
-	}
-	
-	/**
-	 * @see net.fathomsoft.nova.tree.Identifier#generateCSourceFragment(java.lang.StringBuilder)
-	 */
-	@Override
-	public StringBuilder generateCSourceFragment(StringBuilder builder)
-	{
-		NovaMethodDeclaration[] methods = getVirtualMethods();
-		
-		builder.append("{\n");
-		
-		for (NovaMethodDeclaration method : methods)
-		{
-			if (method != null)
-			{
-				method.generateCInterfaceVTableSource(builder);
-			}
-			else
-			{
-				builder.append(0);
-			}
-			
-			builder.append(",\n");
-		}
-		
-		builder.append("}");
-		
-		return builder;
-		//return super.generateCSourceFragment(builder);
-	}
-	
-	/**
 	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location, boolean)
 	 */
 	@Override
@@ -167,5 +111,11 @@ public class InterfaceVTable extends VTable
 		
 		
 		return null;
+	}
+	
+	@Override
+	public TargetC.TargetInterfaceVTable getTarget()
+	{
+		return TargetC.TARGET_INTERFACE_VTABLE;
 	}
 }

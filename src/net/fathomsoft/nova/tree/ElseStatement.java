@@ -1,5 +1,6 @@
 package net.fathomsoft.nova.tree;
 
+import net.fathomsoft.nova.TargetC;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.util.Bounds;
@@ -30,31 +31,6 @@ public class ElseStatement extends ControlStatement
 	public ElseStatement(Node temporaryParent, Location locationIn)
 	{
 		super(temporaryParent, locationIn);
-	}
-	
-	/**
-	 * @see net.fathomsoft.nova.tree.Node#generateCSource(StringBuilder)
-	 */
-	@Override
-	public StringBuilder generateCSource(StringBuilder builder)
-	{
-		builder.append("else");
-		
-		if (getNumChildren() == 2)
-		{
-			Node child = getChild(1);
-			
-			if (child instanceof IfStatement)
-			{
-				builder.append(' ');
-				
-				child.generateCSourceFragment(builder);
-			}
-		}
-		
-		builder.append('\n');
-		
-		return getScope().generateCSource(builder);
 	}
 	
 	/**
@@ -162,5 +138,11 @@ public class ElseStatement extends ControlStatement
 		
 		
 		return null;
+	}
+	
+	@Override
+	public TargetC.TargetNode getTarget()
+	{
+		return TargetC.TARGET_ELSE_STATEMENT;
 	}
 }

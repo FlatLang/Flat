@@ -1,6 +1,7 @@
 package net.fathomsoft.nova.tree;
 
 import net.fathomsoft.nova.Nova;
+import net.fathomsoft.nova.TargetC;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.tree.generics.GenericTypeArgumentList;
@@ -144,32 +145,6 @@ public class TernaryOperation extends IValue implements Accessible
 		return getCondition().generateNovaInput(builder).append(" ? ").append(getTrueValue().generateNovaInput()).append(" : ").append(getFalseValue().generateNovaInput());
 	}
 	
-	@Override
-	public StringBuilder generateCSourceFragment(StringBuilder builder)
-	{
-		String trueValue = getTrueValue().generateCSourceFragment().toString();
-		String falseValue = getFalseValue().generateCSourceFragment().toString();
-		
-		ClassDeclaration trueType = getTrueValue().getReturnedNode().getTypeClass();
-		ClassDeclaration falseType = getFalseValue().getReturnedNode().getTypeClass();
-		
-		if (trueType != falseType)
-		{
-			ClassDeclaration commonClass = trueType.getCommonAncestor(getFalseValue().getReturnedNode().getTypeClass());
-			
-			if (trueType != commonClass)
-			{
-				trueValue = getFalseValue().getReturnedNode().generateCTypeCast() + trueValue;
-			}
-			else
-			{
-				falseValue = getTrueValue().getReturnedNode().generateCTypeCast() + falseValue;
-			}
-		}
-		
-		return getCondition().generateCSourceFragment(builder).append(" ? ").append(trueValue).append(" : ").append(falseValue);
-	}
-	
 	/**
 	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location, boolean)
 	 */
@@ -215,5 +190,11 @@ public class TernaryOperation extends IValue implements Accessible
 		
 		
 		return null;
+	}
+	
+	@Override
+	public TargetC.TargetTernaryOperation getTarget()
+	{
+		return TargetC.TARGET_TERNARY_OPERATION;
 	}
 }

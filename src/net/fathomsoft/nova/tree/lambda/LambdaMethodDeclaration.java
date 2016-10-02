@@ -1,6 +1,7 @@
 package net.fathomsoft.nova.tree.lambda;
 
 import net.fathomsoft.nova.Nova;
+import net.fathomsoft.nova.TargetC;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.tree.*;
@@ -41,12 +42,6 @@ public class LambdaMethodDeclaration extends BodyMethodDeclaration
 	public boolean isInstance()
 	{
 		return isInstance;
-	}
-
-	@Override
-	public StringBuilder generateCClosureContext(StringBuilder builder)
-	{
-		return builder.append('&').append(contextDeclaration.getName());
 	}
 	
 	public Parameter getNextUnnamedParameter()
@@ -126,5 +121,11 @@ public class LambdaMethodDeclaration extends BodyMethodDeclaration
 		
 		
 		return null;
+	}
+	
+	@Override
+	public TargetC.TargetLambdaMethodDeclaration getTarget()
+	{
+		return TargetC.TARGET_LAMBDA_METHOD_DECLARATION;
 	}
 }

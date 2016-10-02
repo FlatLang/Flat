@@ -1,6 +1,7 @@
 package net.fathomsoft.nova.tree;
 
 import net.fathomsoft.nova.Nova;
+import net.fathomsoft.nova.TargetC;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.error.SyntaxMessage;
@@ -107,108 +108,6 @@ public class MethodCallArgumentList extends ArgumentList
 	}
 	
 	/**
-	 * @see net.fathomsoft.nova.tree.Node#generateCSource(StringBuilder)
-	 */
-	@Override
-	public StringBuilder generateCSource(StringBuilder builder)
-	{
-		return generateCSourceFragment(builder);
-	}
-	
-	/**
-	 * @see net.fathomsoft.nova.tree.Node#generateCSourceFragment(StringBuilder)
-	 */
-	@Override
-	public StringBuilder generateCSourceFragment(StringBuilder builder)
-	{
-		MethodCall call = getMethodCall();
-		
-		CallableMethod method = call.getInferredDeclaration();
-		
-		builder.append('(');
-		
-		generateDefaultArguments(builder);
-
-		int i = 0;
-		
-		Value[] values = method instanceof NovaMethodDeclaration ? getArgumentsInOrder((NovaMethodDeclaration)method) : getArgumentsInOrder();
-		
-		while (i < values.length)
-		{
-			if (i > 0)
-			{
-				builder.append(", ");
-			}
-			
-			Value arg = values[i];
-			Value param = method.getParameterList().getParameter(i);
-			
-			if (arg instanceof DefaultArgument)
-			{
-				DefaultArgument.generateDefaultArgumentOutput(builder, param);
-			}
-			else
-			{
-				if (method.isVirtual() && !call.isVirtualTypeKnown())
-				{
-					VirtualMethodDeclaration virtual = ((NovaMethodDeclaration)method).getVirtualMethod();
-					
-					if (virtual != null)
-					{
-						param = virtual.getParameter(i);
-					}
-				}
-				
-				boolean sameType = SyntaxUtils.isSameType(arg.getReturnedNode(), param, false) || param.isPrimitiveType() && arg.isPrimitiveType();
-				
-				if (!sameType)
-				{
-					param.generateCTypeCast(builder).append(arg.getReturnedNode().generatePointerToValueConversion(param));
-				}
-				
-				generateCArgumentPrefix(builder, arg, i);
-				
-				if (!sameType)
-				{
-					builder.append('(');
-				}
-				
-				if (param.isValueReference())
-				{
-					builder.append('&');
-				}
-				
-				arg.generateCArgumentOutput(builder);
-				
-				if (!sameType)
-				{
-					builder.append(')');
-				}
-			}
-			
-			i++;
-		}
-		
-		ParameterList params = getMethodDeclaration().getParameterList();
-		
-		while (i < params.getNumVisibleChildren())
-		{
-			builder.append(", ");
-			
-			DefaultArgument.generateDefaultArgumentOutput(builder, params.getVisibleChild(i));
-			
-			i++;
-		}
-		
-		if (getMethodCall().getCallableDeclaration() instanceof ClosureDeclaration)
-		{
-			builder.append(", ").append(((ClosureDeclaration)getMethodCall().getCallableDeclaration()).getContextName());
-		}
-		
-		return builder.append(')');
-	}
-	
-	/**
 	 * Get the types that the Argument list is providing for the
 	 * parameters.
 	 *
@@ -304,147 +203,12 @@ public class MethodCallArgumentList extends ArgumentList
 	}
 	
 	/**
-	 * Generate the output of the default arguments. The default arguments
-	 * may include the ExceptionData instance as well as the class
-	 * instance, if it is non-static.
-	 * 
-	 * @param builder The StringBuilder to append to.
-	 * @return The appended StringBuilder instance.
-	 */
-	private StringBuilder generateDefaultArguments(StringBuilder builder)
-	{
-		if (!getMethodCall().isExternal())
-		{
-			checkReference(builder).append(Exception.EXCEPTION_DATA_IDENTIFIER);
-			
-			if (getNumChildren() > 0)
-			{
-				builder.append(", ");
-			}
-		}
-		
-		return builder;
-	}
-	
-	/**
-	 * Generate any data that needs to be output before the argument
-	 * is generated, such as a type cast for a volatile local variable
-	 * or a data type change.
-	 * 
-	 * @param builder The StringBuilder to append the data to.
-	 * @param child The Value that is being output as an argument.
-	 * @param argNum The number of argument that the list is outputting.
-	 * @return The StringBuilder with the appended data.
-	 */
-	private StringBuilder generateCArgumentPrefix(StringBuilder builder, Value child, int argNum)
-	{
-		Value parameter = getMethodCall().getInferredDeclaration().getParameterList().getParameter(argNum);
-		
-		if (child instanceof Variable)
-		{
-			Variable var = (Variable)child;
-			
-			if (var.isVolatile())
-			{
-				parameter.generateCTypeCast(builder);
-			}
-		}
-		
-		if (parameter.getDataType() != child.getReturnedNode().getDataType())
-		{
-			if (!getMethodCall().getReferenceNode().toValue().isPrimitiveGenericTypeWrapper())//parameter.getArrayDimensions() == 0 || parameter.isWithinExternalContext() || parameter.getArrayDimensions() != child.getReturnedNode().getArrayDimensions())
-			{
-				builder.append(parameter.generateDataTypeOutput(child.getReturnedNode().getDataType()));
-			}
-		}
-		
-		return builder;
-	}
-	
-	/**
-	 * If the method call needs to pass a reference of the class instance,
-	 * then generate the required argument.
-	 * 
-	 * @param builder The StringBuilder to append to.
-	 * @return The appended StringBuilder instance.
-	 */
-	private StringBuilder checkReference(StringBuilder builder)
-	{
-		CallableMethod method = getMethodCall().getInferredDeclaration();
-		
-		if (method instanceof Constructor || !getMethodCall().getDeclaration().isInstance())
-		{
-			builder.append(0);
-		}
-		else if (method instanceof ClosureDeclaration)
-		{
-			ClosureDeclaration closure = (ClosureDeclaration)method;
-			
-			closure.generateCObjectReferenceIdentifier(builder);
-		}
-		else
-		{
-			if (method instanceof Destructor)
-			{
-				builder.append('&');
-			}
-			
-			Accessible context  = getMethodCallContext();
-			MethodCall call     = getMethodCall();
-			ClassDeclaration castClass = null;
-			
-			boolean sameType = SyntaxUtils.isSameType((Value)call.getReferenceNode(), method.getParentClass(), false);
-			
-			if (method.isVirtual() && !call.isVirtualTypeKnown())
-			{
-				castClass = ((NovaMethodDeclaration)method).getVirtualMethod().getParentClass();
-			}
-			else if (!sameType)
-			{
-				castClass = method.getParentClass();
-			}
-			
-			if (castClass != null)
-			{
-				castClass.generateCTypeCast(builder, true, false).append('(');
-			}
-			
-			// Chop off the method call so it does not get cloned over.
-			Accessible accessible = context;
-			
-			if (accessible.doesAccess())
-			{
-				Accessible accessed = context.getAccessedNode();
-				
-				while (accessed != null && accessed != call)
-				{
-					accessible = accessible.getAccessedNode();
-					accessed   = accessible.getAccessedNode();
-				}
-				
-				accessible.setAccessedNode(call);
-			}
-			
-			context.getCArgumentReferenceContext().generateCArgumentReference(builder, call);
-			
-			if (castClass != null)
-			{
-				builder.append(')');
-			}
-		}
-		
-		builder.append(", ");
-		
-		return builder;
-	}
-	
-	/**
 	 * Get the reference variable/value that is being used to call
 	 * the method.
 	 * 
 	 * @return The Identifier that is calling the method.
 	 */
-	private Accessible getMethodCallContext()
+	public Accessible getMethodCallContext()
 	{
 		return getMethodCall().getRootReferenceNode();
 	}
@@ -589,5 +353,11 @@ public class MethodCallArgumentList extends ArgumentList
 		
 		
 		return null;
+	}
+	
+	@Override
+	public TargetC.TargetNode getTarget()
+	{
+		return TargetC.TARGET_METHOD_CALL_ARGUMENT_LIST;
 	}
 }

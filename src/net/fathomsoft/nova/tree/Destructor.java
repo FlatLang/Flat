@@ -1,5 +1,6 @@
 package net.fathomsoft.nova.tree;
 
+import net.fathomsoft.nova.TargetC;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.tree.exceptionhandling.Exception;
@@ -42,157 +43,6 @@ public class Destructor extends BodyMethodDeclaration
 	{
 		return true;
 	}
-	
-	/**
-	 * @see net.fathomsoft.nova.tree.Node#generateCSource(StringBuilder)
-	 */
-	@Override
-	public StringBuilder generateCSource(StringBuilder builder)
-	{
-		generateCSourceSignature(builder).append('\n').append('{').append('\n');
-
-		nullChecker(builder).append('\n');
-		
-		deleteData(builder).append('\n');
-		
-		for (int i = 0; i < getNumVisibleChildren(); i++)
-		{
-			Node child = getVisibleChild(i);
-			
-			if (child != getParameterList())
-			{
-				child.generateCSource(builder);
-			}
-		}
-		
-		builder.append("NOVA_FREE(").append('*').append(ParameterList.OBJECT_REFERENCE_IDENTIFIER).append(");").append('\n');
-		
-		builder.append('}').append('\n');
-		
-		return builder;
-	}
-	
-	/**
-	 * Generate the code needed to check if a variable is null before
-	 * trying to free its members.
-	 * 
-	 * @return The code needed to check whether a variable is null or not.
-	 */
-	private StringBuilder nullChecker(StringBuilder builder)
-	{
-		builder.append("if (!*").append(ParameterList.OBJECT_REFERENCE_IDENTIFIER).append(')').append('\n');
-		builder.append('{').append('\n');
-		builder.append("return;").append('\n');
-		builder.append('}').append('\n');
-		
-		return builder;
-	}
-	
-	/**
-	 * Generate the code needed to delete each member of the class.
-	 * 
-	 * @return The code needed to delete each member of the class.
-	 */
-	private StringBuilder deleteData(StringBuilder builder)
-	{
-		ClassDeclaration  classDeclaration = getParentClass();
-		
-		InstanceFieldList privateFields    = classDeclaration.getFieldList().getPrivateFieldList();
-		
-		for (int i = 0; i < privateFields.getNumChildren(); i++)
-		{
-			FieldDeclaration field = (FieldDeclaration)privateFields.getChild(i);
-
-			generateFreeFieldSource(builder, field).append('\n');
-		}
-		
-		if (classDeclaration.containsNonStaticPrivateData())
-		{
-			generateFreeMemberSource(builder, "prv").append('\n');
-		}
-		
-		InstanceFieldList publicFields = classDeclaration.getFieldList().getPublicFieldList();
-		
-		for (int i = 0; i < publicFields.getNumChildren(); i++)
-		{
-			FieldDeclaration field = (FieldDeclaration)publicFields.getChild(i);
-			
-//			field.generateFreeOutput(builder);
-			generateFreeFieldSource(builder, field).append('\n');
-		}
-		
-		return builder;
-	}
-	
-	/**
-	 * Generate a String for the code used to free memory of an allocated
-	 * field variable located within the current class.
-	 * 
-	 * @param field The node that contains the information of the field.
-	 * @return The generated String for the code.
-	 */
-	private StringBuilder generateFreeFieldSource(StringBuilder builder, FieldDeclaration field)
-	{
-		if (field.isPrimitiveType() || field.isExternalType() || field.isGenericType())
-		{
-			if (!field.isPrimitive())
-			{
-				//builder.append("NOVA_FREE(").append(field.generateVariableUseOutput(true)).append(");");builder.append("printf(\"Aft2.\");");
-			}
-		}
-		else
-		{
-			if (field.isPrimitiveArray())
-			{
-//				void nova_free_array(void** array, int* dimensionSizes, int dimension, int dimensions, del_function function);
-//				builder.append("nova_free_array(" + field.generateCUseOutput(new StringBuilder(), true) + ", );");
-				builder.append("NOVA_FREE(" + field.generateCUseOutput(new StringBuilder(), true) + ");");
-			}
-			else if (field.getTypeClass().getDestructor() != null)
-			{
-				field.getTypeClass().getDestructor().generateCSourceName(builder).append('(').append('&');
-				
-				field.generateCUseOutput(builder, true).append(", ").append(Exception.EXCEPTION_DATA_IDENTIFIER).append(");");
-			}
-		}
-		
-		return builder;
-	}
-	
-	/**
-	 * Generate a String for the code used to free memory of an allocated
-	 * member variable with the given name.
-	 * 
-	 * @param name The name of the variable to delete.
-	 * @return The generated String for the code.
-	 */
-	private StringBuilder generateFreeMemberSource(StringBuilder builder, String name)
-	{
-		return builder.append("NOVA_FREE((*").append(ParameterList.OBJECT_REFERENCE_IDENTIFIER).append(")->").append(name).append(");");
-	}
-	
-//	/**
-//	 * @see net.fathomsoft.nova.tree.MethodDeclaration#generateCSourcePrototype(StringBuilder)
-//	 */
-//	@Override
-//	public StringBuilder generateCSourcePrototype(StringBuilder builder)
-//	{
-//		return generateCSourceSignature(builder).append(";");
-//	}
-//	
-//	/**
-//	 * @see net.fathomsoft.nova.tree.MethodDeclaration#generateCSourceSignature(StringBuilder)
-//	 */
-//	@Override
-//	public StringBuilder generateCSourceSignature(StringBuilder builder)
-//	{
-//		ClassDeclaration classDeclaration = getParentClass();
-//		
-//		generateCType(builder).append(' ');
-//		generateCSourceName(builder).append('(').append(getParameterList().generateCSource()).append(')');
-//		
-//		return builder;
-//	}
 	
 	/**
 	 * Decode the given statement into a Destructor instance, if
@@ -300,5 +150,11 @@ public class Destructor extends BodyMethodDeclaration
 		
 		
 		return null;
+	}
+	
+	@Override
+	public TargetC.TargetDestructor getTarget()
+	{
+		return TargetC.TARGET_DESTRUCTOR;
 	}
 }

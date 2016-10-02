@@ -5,6 +5,7 @@ import java.io.File;
 import javax.swing.JOptionPane;
 
 import net.fathomsoft.nova.Nova;
+import net.fathomsoft.nova.TargetC;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.error.SyntaxMessage;
@@ -20,7 +21,7 @@ import net.fathomsoft.nova.util.StringUtils;
  */
 public class Package extends Node
 {
-	private String	location;
+	public String	location;
 	
 	public static final String	PACKAGE_KEYWORD = "package";
 	
@@ -42,54 +43,9 @@ public class Package extends Node
 		return getFolders()[0];
 	}
 	
-	/**
-	 * @see net.fathomsoft.nova.tree.Node#generateCHeader(StringBuilder)
-	 */
-	@Override
-	public StringBuilder generateCHeader(StringBuilder builder)
-	{
-		return builder;
-	}
-	
-	/**
-	 * @see net.fathomsoft.nova.tree.Node#generateCSource(StringBuilder)
-	 */
-	@Override
-	public StringBuilder generateCSource(StringBuilder builder)
-	{
-		return builder;
-	}
-	
-	public StringBuilder generateCHeaderLocation()
-	{
-		return generateCHeaderLocation(new StringBuilder());
-	}
-	
-	public StringBuilder generateCHeaderLocation(StringBuilder builder)
-	{
-		return builder.append(getLocation());
-	}
-	
 	public String getLocation()
 	{
 		return location;
-	}
-	
-	public StringBuilder generateCLocation()
-	{
-		return generateCLocation(new StringBuilder());
-	}
-	
-	public StringBuilder generateCLocation(StringBuilder builder)
-	{
-		if (!validLocation())
-		{
-			return builder;
-		}
-		
-		String output = location.replace('/', '_');
-		
-		return builder.append(output);
 	}
 	
 	public boolean isDefaultPackage()
@@ -277,5 +233,11 @@ public class Package extends Node
 		
 		
 		return null;
+	}
+	
+	@Override
+	public TargetC.TargetPackage getTarget()
+	{
+		return TargetC.TARGET_PACKAGE;
 	}
 }

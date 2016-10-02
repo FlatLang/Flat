@@ -3,6 +3,7 @@ package net.fathomsoft.nova.tree.variables;
 import java.util.ArrayList;
 
 import net.fathomsoft.nova.Nova;
+import net.fathomsoft.nova.TargetC;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.error.SyntaxMessage;
@@ -551,5 +552,11 @@ public class VariableDeclaration extends IIdentifier
 		{
 			genericsRemaining--;
 		}
+	}
+	
+	@Override
+	public TargetC.TargetVariableDeclaration getTarget()
+	{
+		return TargetC.TARGET_VARIABLE_DECLARATION;
 	}
 }

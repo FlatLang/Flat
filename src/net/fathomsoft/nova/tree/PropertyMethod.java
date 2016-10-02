@@ -1,5 +1,6 @@
 package net.fathomsoft.nova.tree;
 
+import net.fathomsoft.nova.TargetC;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.tree.variables.FieldDeclaration;
@@ -97,45 +98,6 @@ public abstract class PropertyMethod extends BodyMethodDeclaration
 		return super.getOverriddenMethod();
 	}
 	
-	@Override
-	public StringBuilder generateCSourceName(StringBuilder builder, String uniquePrefix)
-	{
-		return super.generateCSourceName(builder, getMethodPrefix());
-	}
-	
-	@Override
-	public StringBuilder generateCHeader(StringBuilder builder)
-	{
-		if (isDisabled())
-		{
-			return builder;
-		}
-		
-		return super.generateCHeader(builder);
-	}
-	
-	@Override
-	public StringBuilder generateCSource(StringBuilder builder)
-	{
-		if (isDisabled())
-		{
-			return builder;
-		}
-		
-		return super.generateCSource(builder);
-	}
-	
-	@Override
-	public StringBuilder generateCSourcePrototype(StringBuilder builder)
-	{
-		if (isDisabled())
-		{
-			return builder;
-		}
-		
-		return super.generateCSourcePrototype(builder);
-	}
-	
 	/**
 	 * Validate the parameters of the method header.
 	 * 
@@ -194,4 +156,10 @@ public abstract class PropertyMethod extends BodyMethodDeclaration
 	}
 	
 	public abstract String getMethodPrefix();
+	
+	@Override
+	public TargetC.TargetPropertyMethod getTarget()
+	{
+		return TargetC.TARGET_PROPERTY_METHOD;
+	}
 }

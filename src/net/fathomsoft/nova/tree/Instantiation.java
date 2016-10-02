@@ -1,6 +1,7 @@
 package net.fathomsoft.nova.tree;
 
 import net.fathomsoft.nova.Nova;
+import net.fathomsoft.nova.TargetC;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.tree.generics.GenericTypeArgumentList;
@@ -124,33 +125,6 @@ public class Instantiation extends IIdentifier implements GenericCompatible
 		}
 		
 		return getIdentifier().getType();
-	}
-	
-	/**
-	 * @see net.fathomsoft.nova.tree.Node#generateCSource(StringBuilder)
-	 */
-	@Override
-	public StringBuilder generateCSource(StringBuilder builder)
-	{
-		return generateCSourceFragment(builder).append(";\n");
-	}
-	
-	/**
-	 * @see net.fathomsoft.nova.tree.Node#generateCSourceFragment(StringBuilder)
-	 */
-	@Override
-	public StringBuilder generateCSourceFragment(StringBuilder builder)
-	{
-		return getIdentifier().generateCSourceFragment(builder);
-	}
-	
-	/**
-	 * @see net.fathomsoft.nova.tree.Identifier#generateCUseOutput(java.lang.StringBuilder, boolean, boolean)
-	 */
-	@Override
-	public StringBuilder generateCUseOutput(StringBuilder builder, boolean pointer, boolean checkAccesses)
-	{
-		return getIdentifier().generateCUseOutput(builder, pointer, checkAccesses);
 	}
 	
 	/**
@@ -369,5 +343,11 @@ public class Instantiation extends IIdentifier implements GenericCompatible
 		
 		
 		return null;
+	}
+	
+	@Override
+	public TargetC.TargetInstantiation getTarget()
+	{
+		return TargetC.TARGET_INSTANTIATION;
 	}
 }

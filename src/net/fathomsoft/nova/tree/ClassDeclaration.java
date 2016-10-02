@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 import net.fathomsoft.nova.Nova;
+import net.fathomsoft.nova.TargetC;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.error.SyntaxMessage;
@@ -570,37 +571,6 @@ public class ClassDeclaration extends InstanceDeclaration
 		}
 		
 		return false;
-	}
-	
-	/**
-	 * Generate the C output for when this value node is being used
-	 * as an argument for a method call.
-	 * 
-	 * @param builder The StringBuilder to append the data to.
-	 * @param callingMethod The method that is being called by the
-	 * 		specified Identifier.
-	 * @return The C output for when this value node is being used
-	 * 		as an argument for a method call.
-	 */
-	public StringBuilder generateCArgumentReference(StringBuilder builder, Identifier callingMethod)
-	{
-		if (callingMethod instanceof MethodCall)
-		{
-			CallableMethod declaration = ((MethodCall)callingMethod).getInferredDeclaration();
-			
-			if (declaration.isStatic() || declaration instanceof Constructor)
-			{
-				return declaration.getParameterList().getObjectReference().generateCNullOutput(builder);
-			}
-			else if (declaration instanceof ClosureDeclaration)
-			{
-				ClosureDeclaration closure = (ClosureDeclaration)declaration;
-				
-				return closure.generateCSourceName(builder, "ref");
-			}
-		}
-		
-		return super.generateCArgumentReference(builder, callingMethod);
 	}
 	
 	public boolean doesOverrideMethod(NovaMethodDeclaration method)
@@ -1320,37 +1290,6 @@ public class ClassDeclaration extends InstanceDeclaration
 		return p.getLocation() + "/" + getName();
 	}
 	
-	/**
-	 * @see #generateUniquePrefix(StringBuilder)
-	 */
-	public StringBuilder generateUniquePrefix()
-	{
-		return generateUniquePrefix(new StringBuilder());
-	}
-	
-	/**
-	 * Get the prefix that is used for the data that is contained
-	 * within the specified class.<br>
-	 * <br>
-	 * For example:
-	 * <blockquote><pre>
-	 * package "this/is/my/package"
-	 * 
-	 * public class Test
-	 * {
-	 * 	...
-	 * }</pre></blockquote>
-	 * The method prefix would look like:
-	 * "<code>this_is_my_package_NovaTest</code>"
-	 * 
-	 * @return The prefix that is used for the data contained within
-	 * 		the class.
-	 */
-	public StringBuilder generateUniquePrefix(StringBuilder builder)
-	{
-		return getFileDeclaration().getPackage().generateCLocation(builder).append('_');
-	}
-	
 	public Package getPackage()
 	{
 		return getFileDeclaration().getPackage();
@@ -1691,206 +1630,6 @@ public class ClassDeclaration extends InstanceDeclaration
 		return location;
 	}
 	
-	public StringBuilder generateCHeaderNativeInterface(StringBuilder builder)
-	{
-		MethodDeclaration[] methods = getVisibleNativeMethods();
-		
-		/*if (methods.length <= 0)
-		{
-			return builder;
-		}*/
-
-		String name = generateCSourceName("native").toString();
-		
-		for (MethodDeclaration method : methods)
-		{
-			builder.append("typedef " + method.generateCType() + " (*");
-			
-			method.generateCSourceNativeName(builder, true).append(")(");
-			
-			method.getParameterList().generateCHeader(builder).append(");\n");
-		}
-		
-		builder.append("\ntypedef struct " + name + "\n");
-		builder.append("{\n");
-		
-		for (MethodDeclaration method : methods)
-		{
-			method.generateCSourceNativeName(builder, true).append(" ");
-			method.generateCSourceNativeName(builder, false).append(";\n");
-		}
-		
-		builder.append("} " + name + ";\n");
-		
-		return builder;
-	}
-	
-	public StringBuilder generateCSourceNativeInterface(StringBuilder builder)
-	{
-//		String name = generateCSourceName("native").toString();
-		
-		MethodDeclaration[] methods = getVisibleNativeMethods();
-		
-//		builder.append('\n');
-		
-//		builder.append("struct " + name + "\n");
-		builder.append("{\n");
-		
-		for (MethodDeclaration method : methods)
-		{
-			String value = "&" + method.generateCSourceName();
-			
-			if (method instanceof NovaMethodDeclaration)
-			{
-				NovaMethodDeclaration n = (NovaMethodDeclaration)method;
-				
-				if (n.isOverridden() && !(n instanceof Constructor))
-				{
-					value = "0";//getVTableNode().getName() + "." + n.generateCVirtualMethodName();
-				}
-			}
-			
-			builder.append(value + ",\n");
-		}
-		
-		builder.append("},\n");
-		
-		return builder;
-	}
-
-	/**
-	 * @see net.fathomsoft.nova.tree.Node#generateCHeader(StringBuilder)
-	 */
-	@Override
-	public StringBuilder generateCHeader(StringBuilder builder)
-	{
-		getVTableNodes().generateCHeader(builder).append('\n');
-		
-		if (containsNonStaticData() || containsVirtualMethods())
-		{
-			builder.append("CCLASS_CLASS").append('\n').append('(').append('\n');
-			
-			generateCSourceName(builder).append(", ").append('\n').append('\n');
-			
-			VTable extension = getVTableNodes().getExtensionVTable();
-			
-			builder.append(extension.generateCType()).append("* ").append(VTable.IDENTIFIER).append(";\n");
-			
-			getFieldList().generateNonStaticCHeader(builder);
-			
-			if (containsNonStaticPrivateData())
-			{
-				builder.append("struct Private* prv;").append('\n');
-			}
-			
-			builder.append(')').append('\n');
-		}
-		
-		getFieldList().generateStaticCHeader(builder).append('\n');
-		
-		if (getStaticBlockList().getNumVisibleChildren() > 0)
-		{
-			getStaticBlockList().getChild(0).generateCHeader(builder, this);
-		}
-		
-		MethodList constructors = getConstructorList();
-		constructors.generateCHeader(builder);
-		
-		getDestructorList().generateCHeader(builder);
-		getMethodList().generateCHeader(builder);
-		getPropertyMethodList().generateCHeader(builder);
-		getHiddenMethodList().generateCHeader(builder);
-		getVirtualMethodList().generateCHeader(builder);
-		
-		return builder;
-	}
-	
-	/**
-	 * @see net.fathomsoft.nova.tree.Node#generateCSource(StringBuilder)
-	 */
-	@Override
-	public StringBuilder generateCSource(StringBuilder builder)
-	{
-		getVTableNodes().generateCSource(builder).append('\n');
-		
-		if (containsNonStaticPrivateData())
-		{
-			builder.append("CCLASS_PRIVATE").append('\n').append('(').append('\n').append(generateCPrivateFieldsSource()).append(')').append('\n');
-		}
-		
-		builder.append(generatePrivateMethodPrototypes());
-		
-		getFieldList().generateStaticCSource(builder);
-		
-		for (int i = getNumDefaultChildren(); i < getNumChildren(); i++)
-		{
-			Node child = getChild(i);
-			
-			builder.append('\n').append(child.generateCSource());
-		}
-
-		getFieldList().generateNonStaticCSource(builder);
-		
-		generateStaticBlocksSource(builder);
-		getConstructorList().generateCSource(builder);
-		getDestructorList().generateCSource(builder);
-		getMethodList().generateCSource(builder);
-		getPropertyMethodList().generateCSource(builder);
-		getHiddenMethodList().generateCSource(builder);
-		getVirtualMethodList().generateCSource(builder);
-		
-		return builder;
-	}
-	
-	private StringBuilder generateStaticBlocksSource(StringBuilder builder)
-	{
-		if (getStaticBlockList().getNumVisibleChildren() > 0)
-		{
-			getStaticBlockList().getChild(0).generateCMethodHeader(builder, this).append('\n');
-			
-			builder.append('{').append('\n');
-			
-			for (int i = 0; i < getStaticBlockList().getNumVisibleChildren(); i++)
-			{
-				StaticBlock block = getStaticBlockList().getChild(i);
-				
-				block.generateCSource(builder);
-			}
-			
-			builder.append('}').append('\n');
-		}
-		
-		return builder;
-	}
-	
-	/**
-	 * Generate the C source representation of the private field
-	 * declarations.
-	 * 
-	 * @return The StringBuilder with the appended data.
-	 */
-	private StringBuilder generateCPrivateFieldsSource()
-	{
-		return generateCPrivateFieldsSource(new StringBuilder());
-	}
-	
-	/**
-	 * Generate the C source representation of the private field
-	 * declarations.
-	 * 
-	 * @param builder The StringBuilder to append that data to.
-	 * @return The StringBuilder with the appended data.
-	 */
-	private StringBuilder generateCPrivateFieldsSource(StringBuilder builder)
-	{
-		if (getExtendedClassDeclaration() != null)
-		{
-			getExtendedClassDeclaration().generateCPrivateFieldsSource(builder);
-		}
-		
-		return getFieldList().getPrivateFieldList().generateCSource(builder);
-	}
-	
 	/**
 	 * Decode the given statement into a ClassDeclaration, if possible. If it is
 	 * not possible, this method returns null.<br>
@@ -2193,53 +1932,6 @@ public class ClassDeclaration extends InstanceDeclaration
 		addChild(func);
 		
 		return func;
-	}
-	
-	/**
-	 * @see net.fathomsoft.nova.tree.variables.Variable#generateCSourceName(StringBuilder, String)
-	 */
-	@Override
-	public StringBuilder generateCSourceName(StringBuilder builder, String uniquePrefix)
-	{
-		if (uniquePrefix == null)
-		{
-			uniquePrefix = Nova.LANGUAGE_NAME;
-		}
-		
-		return generateUniquePrefix(builder).append(uniquePrefix).append("_").append(getName());
-	}
-	
-	/**
-	 * Generate the prototypes for specifically the private methods.
-	 * 
-	 * @return A String containing the prototype definitions.
-	 */
-	private String generatePrivateMethodPrototypes()
-	{
-		StringBuilder  builder = new StringBuilder();
-		
-		generatePrototypes(builder, getMethodList());
-		generatePrototypes(builder, getPropertyMethodList());
-		
-		if (builder.length() > 0)
-		{
-			builder.insert(0, '\n');
-		}
-		
-		return builder.toString();
-	}
-	
-	private void generatePrototypes(StringBuilder builder, MethodList methods)
-	{
-		for (int i = 0; i < methods.getNumChildren(); i++)
-		{
-			MethodDeclaration methodDeclaration = (MethodDeclaration)methods.getChild(i);
-			
-			if (methodDeclaration.getVisibility() == InstanceDeclaration.PRIVATE)
-			{
-				methodDeclaration.generateCSourcePrototype(builder).append('\n');
-			}
-		}
 	}
 	
 	/**
@@ -2712,5 +2404,11 @@ public class ClassDeclaration extends InstanceDeclaration
 		s += getGenericTypeParameterDeclaration().toString();
 		
 		return s;
+	}
+	
+	@Override
+	public TargetC.TargetClassDeclaration getTarget()
+	{
+		return TargetC.TARGET_CLASS_DECLARATION;
 	}
 }

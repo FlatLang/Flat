@@ -1,5 +1,6 @@
 package net.fathomsoft.nova.tree;
 
+import net.fathomsoft.nova.TargetC;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.util.Location;
@@ -32,12 +33,6 @@ public class Continue extends Node
 		}
 		
 		super.onAdded(parent);
-	}
-	
-	@Override
-	public StringBuilder generateCSourceFragment(StringBuilder builder)
-	{
-		return builder.append("continue;");
 	}
 	
 	/**
@@ -114,5 +109,11 @@ public class Continue extends Node
 		
 		
 		return null;
+	}
+	
+	@Override
+	public TargetC.TargetNode getTarget()
+	{
+		return TargetC.TARGET_CONTINUE;
 	}
 }

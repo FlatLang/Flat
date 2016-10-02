@@ -1,6 +1,7 @@
 package net.fathomsoft.nova.tree.variables;
 
 import net.fathomsoft.nova.Nova;
+import net.fathomsoft.nova.TargetC;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.tree.*;
 import net.fathomsoft.nova.util.Location;
@@ -82,57 +83,6 @@ public class VariableDeclarationList extends List
 	}
 	
 	/**
-	 * Generate the output needed to free the variables after they are
-	 * finished with.
-	 * 
-	 * @return The String output of the variables being freed.
-	 */
-	public StringBuilder generateFreeVariablesOutput(StringBuilder builder)
-	{
-		for (int i = 0; i < getNumChildren(); i++)
-		{
-			VariableDeclaration variable = (VariableDeclaration)getChild(i);
-			
-			variable.generateFreeOutput(builder);
-		}
-		
-		return builder;
-	}
-	
-	/**
-	 * @see net.fathomsoft.nova.tree.Node#generateCHeader(StringBuilder)
-	 */
-	@Override
-	public StringBuilder generateCHeader(StringBuilder builder)
-	{
-		return builder;
-	}
-
-	/**
-	 * @see net.fathomsoft.nova.tree.Node#generateCSource(StringBuilder)
-	 */
-	@Override
-	public StringBuilder generateCSource(StringBuilder builder)
-	{
-		for (int i = 0; i < getNumChildren(); i++)
-		{
-			LocalDeclaration child = (LocalDeclaration)getChild(i);
-			
-			child.generateCDeclarationFragment(builder).append(" = ");
-			child.generateCDefaultValue(builder);
-			
-			builder.append(";\n");
-		}
-		
-		if (getNumChildren() > 0)
-		{
-			builder.append('\n');
-		}
-		
-		return builder;
-	}
-	
-	/**
 	 * @see net.fathomsoft.nova.tree.Node#generateNovaInput(StringBuilder, boolean)
 	 */
 	@Override
@@ -196,5 +146,11 @@ public class VariableDeclarationList extends List
 		
 		
 		return null;
+	}
+	
+	@Override
+	public TargetC.TargetVariableDeclarationList getTarget()
+	{
+		return TargetC.TARGET_VARIABLE_DECLARATION_LIST;
 	}
 }
