@@ -168,6 +168,14 @@ public class Interface extends ClassDeclaration
 	@Override
 	public TargetC.TargetInterface getTarget()
 	{
-		return TargetC.TARGET_INTERFACE;
+		final Interface self = this;
+		
+		return new TargetC.TargetInterface()
+		{
+			public Interface node()
+			{
+				return self;
+			}
+		};
 	}
 }

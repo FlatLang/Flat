@@ -1358,6 +1358,14 @@ public class MethodCall extends Variable
 	@Override
 	public TargetC.TargetMethodCall getTarget()
 	{
-		return TargetC.TARGET_METHOD_CALL;
+		final MethodCall self = this;
+		
+		return new TargetC.TargetMethodCall()
+		{
+			public MethodCall node()
+			{
+				return self;
+			}
+		};
 	}
 }

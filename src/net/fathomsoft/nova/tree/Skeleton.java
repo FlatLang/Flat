@@ -93,8 +93,16 @@ public class Skeleton extends Node
 	}
 	
 	@Override
-	public TargetC.TargetNode getTarget()
+	public TargetC.TargetSkeleton getTarget()
 	{
-		return TargetC.TARGET_SKELETON;
+		final Skeleton self = this;
+		
+		return new TargetC.TargetSkeleton()
+		{
+			public Skeleton node()
+			{
+				return self;
+			}
+		};
 	}
 }

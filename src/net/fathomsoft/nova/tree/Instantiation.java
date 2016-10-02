@@ -348,6 +348,14 @@ public class Instantiation extends IIdentifier implements GenericCompatible
 	@Override
 	public TargetC.TargetInstantiation getTarget()
 	{
-		return TargetC.TARGET_INSTANTIATION;
+		final Instantiation self = this;
+		
+		return new TargetC.TargetInstantiation()
+		{
+			public Instantiation node()
+			{
+				return self;
+			}
+		};
 	}
 }

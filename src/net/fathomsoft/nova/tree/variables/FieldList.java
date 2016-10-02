@@ -292,6 +292,14 @@ public class FieldList extends List
 	@Override
 	public TargetC.TargetFieldList getTarget()
 	{
-		return TargetC.TARGET_FIELD_LIST;
+		final FieldList self = this;
+		
+		return new TargetC.TargetFieldList()
+		{
+			public FieldList node()
+			{
+				return self;
+			}
+		};
 	}
 }

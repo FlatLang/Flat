@@ -238,6 +238,14 @@ public class Package extends Node
 	@Override
 	public TargetC.TargetPackage getTarget()
 	{
-		return TargetC.TARGET_PACKAGE;
+		final Package self = this;
+		
+		return new TargetC.TargetPackage()
+		{
+			public Package node()
+			{
+				return self;
+			}
+		};
 	}
 }

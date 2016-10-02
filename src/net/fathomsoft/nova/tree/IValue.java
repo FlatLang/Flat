@@ -153,6 +153,14 @@ public class IValue extends Value
 	@Override
 	public TargetC.TargetIValue getTarget()
 	{
-		return TargetC.TARGET_IVALUE;
+		final IValue self = this;
+		
+		return new TargetC.TargetIValue()
+		{
+			public IValue node()
+			{
+				return self;
+			}
+		};
 	}
 }

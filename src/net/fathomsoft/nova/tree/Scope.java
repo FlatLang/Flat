@@ -329,6 +329,14 @@ public class Scope extends Node
 	@Override
 	public TargetC.TargetScope getTarget()
 	{
-		return TargetC.TARGET_SCOPE;
+		final Scope self = this;
+		
+		return new TargetC.TargetScope()
+		{
+			public Scope node()
+			{
+				return self;
+			}
+		};
 	}
 }

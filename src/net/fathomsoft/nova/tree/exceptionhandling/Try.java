@@ -194,8 +194,16 @@ public class Try extends ExceptionHandler
 	}
 	
 	@Override
-	public TargetC.TargetNode getTarget()
+	public TargetC.TargetTry getTarget()
 	{
-		return TargetC.TARGET_TRY;
+		final Try self = this;
+		
+		return new TargetC.TargetTry()
+		{
+			public Try node()
+			{
+				return self;
+			}
+		};
 	}
 }

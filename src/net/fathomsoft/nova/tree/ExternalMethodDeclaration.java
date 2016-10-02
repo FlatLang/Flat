@@ -352,6 +352,14 @@ public class ExternalMethodDeclaration extends MethodDeclaration
 	@Override
 	public TargetC.TargetExternalMethodDeclaration getTarget()
 	{
-		return TargetC.TARGET_EXTERNAL_METHOD_DECLARATION;
+		final ExternalMethodDeclaration self = this;
+		
+		return new TargetC.TargetExternalMethodDeclaration()
+		{
+			public ExternalMethodDeclaration node()
+			{
+				return self;
+			}
+		};
 	}
 }

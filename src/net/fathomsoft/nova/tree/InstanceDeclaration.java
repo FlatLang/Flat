@@ -281,6 +281,14 @@ public class InstanceDeclaration extends VariableDeclaration
 	@Override
 	public TargetC.TargetInstanceDeclaration getTarget()
 	{
-		return TargetC.TARGET_INSTANCE_DECLARATION;
+		final InstanceDeclaration self = this;
+		
+		return new TargetC.TargetInstanceDeclaration()
+		{
+			public InstanceDeclaration node()
+			{
+				return self;
+			}
+		};
 	}
 }

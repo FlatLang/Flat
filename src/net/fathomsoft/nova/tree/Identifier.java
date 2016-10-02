@@ -241,6 +241,14 @@ public abstract class Identifier extends Value implements Accessible
 	@Override
 	public TargetC.TargetIdentifier getTarget()
 	{
-		return TargetC.TARGET_IDENTIFIER;
+		final Identifier self = this;
+		
+		return new TargetC.TargetIdentifier()
+		{
+			public Identifier node()
+			{
+				return self;
+			}
+		};
 	}
 }

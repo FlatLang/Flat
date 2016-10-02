@@ -890,7 +890,7 @@ public abstract class Value extends Node implements AbstractValue
 	@Override
 	public StringBuilder generateNovaInput(StringBuilder builder, boolean outputChildren)
 	{
-		return getTarget().generateUseOutput(this, builder);
+		return getTarget().generateUseOutput(builder);
 	}
 	
 	public boolean isConstant()
@@ -1081,6 +1081,14 @@ public abstract class Value extends Node implements AbstractValue
 	@Override
 	public TargetC.TargetValue getTarget()
 	{
-		return TargetC.TARGET_VALUE;
+		final Value self = this;
+		
+		return new TargetC.TargetValue()
+		{
+			public Value node()
+			{
+				return self;
+			}
+		};
 	}
 }

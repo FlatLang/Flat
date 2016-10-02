@@ -216,8 +216,16 @@ public class Throw extends ExceptionHandler
 	}
 	
 	@Override
-	public TargetC.TargetNode getTarget()
+	public TargetC.TargetThrow getTarget()
 	{
-		return TargetC.TARGET_THROW;
+		final Throw self = this;
+		
+		return new TargetC.TargetThrow()
+		{
+			public Throw node()
+			{
+				return self;
+			}
+		};
 	}
 }

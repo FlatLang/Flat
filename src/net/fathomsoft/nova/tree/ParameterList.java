@@ -428,6 +428,14 @@ public class ParameterList<E extends Value> extends TypeList<E>
 	@Override
 	public TargetC.TargetParameterList getTarget()
 	{
-		return TargetC.TARGET_PARAMETER_LIST;
+		final ParameterList self = this;
+		
+		return new TargetC.TargetParameterList()
+		{
+			public ParameterList node()
+			{
+				return self;
+			}
+		};
 	}
 }

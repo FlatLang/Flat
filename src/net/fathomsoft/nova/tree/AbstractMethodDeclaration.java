@@ -160,6 +160,14 @@ public class AbstractMethodDeclaration extends NovaMethodDeclaration
 	@Override
 	public TargetC.TargetAbstractMethodDeclaration getTarget()
 	{
-		return TargetC.TARGET_ABSTRACT_METHOD_DECLARATION;
+		final AbstractMethodDeclaration self = this;
+		
+		return new TargetC.TargetAbstractMethodDeclaration()
+		{
+			public AbstractMethodDeclaration node()
+			{
+				return self;
+			}
+		};
 	}
 }

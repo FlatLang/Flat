@@ -105,6 +105,14 @@ public class ExtensionVTable extends VTable
 	@Override
 	public TargetC.TargetExtensionVTable getTarget()
 	{
-		return TargetC.TARGET_EXTENSION_VTABLE;
+		final ExtensionVTable self = this;
+		
+		return new TargetC.TargetExtensionVTable()
+		{
+			public ExtensionVTable node()
+			{
+				return self;
+			}
+		};
 	}
 }

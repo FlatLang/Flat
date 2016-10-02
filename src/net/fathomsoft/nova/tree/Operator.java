@@ -265,6 +265,14 @@ public class Operator extends IValue
 	@Override
 	public TargetC.TargetOperator getTarget()
 	{
-		return TargetC.TARGET_OPERATOR;
+		final Operator self = this;
+		
+		return new TargetC.TargetOperator()
+		{
+			public Operator node()
+			{
+				return self;
+			}
+		};
 	}
 }

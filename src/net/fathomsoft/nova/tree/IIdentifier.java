@@ -206,6 +206,14 @@ public class IIdentifier extends Identifier
 	@Override
 	public TargetC.TargetIIdentifier getTarget()
 	{
-		return TargetC.TARGET_IIDENTIFIER;
+		final IIdentifier self = this;
+		
+		return new TargetC.TargetIIdentifier()
+		{
+			public IIdentifier node()
+			{
+				return self;
+			}
+		};
 	}
 }

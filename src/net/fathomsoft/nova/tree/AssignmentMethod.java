@@ -110,6 +110,14 @@ public class AssignmentMethod extends BodyMethodDeclaration
 	@Override
 	public TargetC.TargetAssignmentMethod getTarget()
 	{
-		return TargetC.TARGET_ASSIGNMENT_METHOD;
+		final AssignmentMethod self = this;
+		
+		return new TargetC.TargetAssignmentMethod()
+		{
+			public AssignmentMethod node()
+			{
+				return self;
+			}
+		};
 	}
 }

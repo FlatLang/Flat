@@ -123,8 +123,16 @@ public class Default extends MatchCase
 	}
 	
 	@Override
-	public TargetC.TargetNode getTarget()
+	public TargetC.TargetDefault getTarget()
 	{
-		return TargetC.TARGET_DEFAULT;
+		final Default self = this;
+		
+		return new TargetC.TargetDefault()
+		{
+			public Default node()
+			{
+				return self;
+			}
+		};
 	}
 }

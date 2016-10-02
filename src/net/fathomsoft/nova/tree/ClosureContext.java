@@ -96,8 +96,16 @@ public class ClosureContext extends TypeList<ClosureVariableDeclaration>
 	}
 	
 	@Override
-	public TargetC.TargetNode getTarget()
+	public TargetC.TargetClosureContext getTarget()
 	{
-		return TargetC.TARGET_CLOSURE_CONTEXT;
+		final ClosureContext self = this;
+		
+		return new TargetC.TargetClosureContext()
+		{
+			public ClosureContext node()
+			{
+				return self;
+			}
+		};
 	}
 }

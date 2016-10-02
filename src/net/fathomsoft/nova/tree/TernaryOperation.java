@@ -195,6 +195,14 @@ public class TernaryOperation extends IValue implements Accessible
 	@Override
 	public TargetC.TargetTernaryOperation getTarget()
 	{
-		return TargetC.TARGET_TERNARY_OPERATION;
+		final TernaryOperation self = this;
+		
+		return new TargetC.TargetTernaryOperation()
+		{
+			public TernaryOperation node()
+			{
+				return self;
+			}
+		};
 	}
 }

@@ -1428,7 +1428,7 @@ public class SyntaxTree
 	 */
 	public void generateCHeaderOutput()
 	{
-		root.getTarget().generateHeader(root, new StringBuilder());
+		root.getTarget().generateHeader(new StringBuilder());
 	}
 	
 	/**
@@ -1437,7 +1437,7 @@ public class SyntaxTree
 	 */
 	public void generateCSourceOutput()
 	{
-		root.getTarget().generateSource(root, new StringBuilder());
+		root.getTarget().generateSource(new StringBuilder());
 	}
 	
 	/**
@@ -1489,7 +1489,7 @@ public class SyntaxTree
 		{
 			Node child = root.getChild(i);
 			
-			headers[i] = child.getTarget().generateHeader(child).toString();
+			headers[i] = child.getTarget().generateHeader().toString();
 		}
 		
 		return headers;
@@ -1509,7 +1509,7 @@ public class SyntaxTree
 		{
 			Node child = root.getChild(i);
 			
-			sources[i] = child.getTarget().generateSource(child).toString();
+			sources[i] = child.getTarget().generateSource().toString();
 		}
 		
 		return sources;

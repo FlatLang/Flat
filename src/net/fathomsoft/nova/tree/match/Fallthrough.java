@@ -117,8 +117,16 @@ public class Fallthrough extends Node implements MatchChild
 	}
 	
 	@Override
-	public TargetC.TargetNode getTarget()
+	public TargetC.TargetFallthrough getTarget()
 	{
-		return TargetC.TARGET_FALLTHROUGH;
+		final Fallthrough self = this;
+		
+		return new TargetC.TargetFallthrough()
+		{
+			public Fallthrough node()
+			{
+				return self;
+			}
+		};
 	}
 }

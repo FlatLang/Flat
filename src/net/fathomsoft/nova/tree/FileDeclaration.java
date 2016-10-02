@@ -611,6 +611,14 @@ public class FileDeclaration extends Node
 	@Override
 	public TargetC.TargetFileDeclaration getTarget()
 	{
-		return TargetC.TARGET_FILE_DECLARATION;
+		final FileDeclaration self = this;
+		
+		return new TargetC.TargetFileDeclaration()
+		{
+			public FileDeclaration node()
+			{
+				return self;
+			}
+		};
 	}
 }

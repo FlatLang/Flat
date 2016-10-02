@@ -1005,6 +1005,14 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 	@Override
 	public TargetC.TargetNovaMethodDeclaration getTarget()
 	{
-		return TargetC.TARGET_NOVA_METHOD_DECLARATION;
+		final NovaMethodDeclaration self = this;
+		
+		return new TargetC.TargetNovaMethodDeclaration()
+		{
+			public NovaMethodDeclaration node()
+			{
+				return self;
+			}
+		};
 	}
 }

@@ -363,8 +363,16 @@ public class Program extends Node
 	}
 	
 	@Override
-	public TargetC.TargetNode getTarget()
+	public TargetC.TargetProgram getTarget()
 	{
-		return TargetC.TARGET_PROGRAM;
+		final Program self = this;
+		
+		return new TargetC.TargetProgram()
+		{
+			public Program node()
+			{
+				return self;
+			}
+		};
 	}
 }

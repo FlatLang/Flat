@@ -338,7 +338,7 @@ public class Nova
 		{
 			SyntaxUtils.addTypesToTypeList(builder, c, types);
 			
-			c.getTarget().generateClosureDefinition(c, builder);
+			c.getTarget().generateClosureDefinition(builder);
 		}
 		
 		builder.append("\n");
@@ -347,7 +347,7 @@ public class Nova
 		
 		for (NovaMethodDeclaration method : methods)
 		{
-			TargetC.TARGET_VIRTUAL_METHOD_DECLARATION.generateInterfaceVTableHeader(method.getVirtualMethod(), builder);
+			method.getVirtualMethod().getTarget().generateInterfaceVTableHeader(builder);
 		}
 		
 		builder.append("} ").append(InterfaceVTable.TYPE).append(";\n");
@@ -373,14 +373,14 @@ public class Nova
 		
 		for (FileDeclaration file : tree.getFiles())
 		{
-			nativeInterface.append("#include <" + file.getTarget().generateHeaderName(file) + ">\n");
+			nativeInterface.append("#include <" + file.getTarget().generateHeaderName() + ">\n");
 		}
 		
 		nativeInterface.append('\n');
 
 		for (FileDeclaration file : tree.getFiles())
 		{
-			file.getTarget().generateHeaderNativeInterface(file, nativeInterface).append("\n");
+			file.getTarget().generateHeaderNativeInterface(nativeInterface).append("\n");
 		}
 		
 		nativeInterface.append("\ntypedef struct nova_env\n");
@@ -390,7 +390,7 @@ public class Nova
 		{
 			for (ClassDeclaration clazz : file.getClassDeclarations())
 			{
-				clazz.getTarget().generateSourceName(clazz, nativeInterface, "native").append(" ").append(clazz.getNativeLocation()).append(";\n");
+				clazz.getTarget().generateSourceName(nativeInterface, "native").append(" ").append(clazz.getNativeLocation()).append(";\n");
 			}
 		}
 		
@@ -421,7 +421,7 @@ public class Nova
 		
 		for (FileDeclaration file : tree.getFiles())
 		{
-			file.getTarget().generateSourceNativeInterface(file, nativeInterface).append('\n');
+			file.getTarget().generateSourceNativeInterface(nativeInterface).append('\n');
 		}
 		
 		nativeInterface.append("};\n");
@@ -608,14 +608,14 @@ public class Nova
 			new File(outputDir, file.getPackage().getLocation()).mkdirs();
 			
 			types.append("typedef struct ").append(file.getName()).append(' ').append(file.getName()).append(';').append('\n');
-			includes.append("#include <").append(file.getTarget().generateHeaderName(file)).append('>').append('\n');
+			includes.append("#include <").append(file.getTarget().generateHeaderName()).append('>').append('\n');
 			
 			try
 			{
 				if (!isFlagEnabled(NO_C_OUTPUT))
 				{
-					File headerFile = FileUtils.writeFile(file.getTarget().generateHeaderName(file), outputDir, header);
-					File sourceFile = FileUtils.writeFile(file.getTarget().generateSourceName(file), outputDir, source);
+					File headerFile = FileUtils.writeFile(file.getTarget().generateHeaderName(), outputDir, header);
+					File sourceFile = FileUtils.writeFile(file.getTarget().generateSourceName(), outputDir, source);
 				
 					cHeaderFiles.add(headerFile);
 					cSourceFiles.add(sourceFile);
@@ -673,7 +673,7 @@ public class Nova
 							
 							VirtualMethodDeclaration virtual = n.getVirtualMethod();
 							
-							builder.append(ENVIRONMENT_VAR + "." + clazz.getNativeLocation() + "." + n.getTarget().generateSourceNativeName(n, new StringBuilder(), false) + " = " + clazz.getVTableNodes().getExtensionVTable().getName() + "." + itable + virtual.getTarget().generateVirtualMethodName(virtual) + ";\n");
+							builder.append(ENVIRONMENT_VAR + "." + clazz.getNativeLocation() + "." + n.getTarget().generateSourceNativeName(new StringBuilder(), false) + " = " + clazz.getVTableNodes().getExtensionVTable().getName() + "." + itable + virtual.getTarget().generateVirtualMethodName() + ";\n");
 						}
 					}
 				}
@@ -742,8 +742,8 @@ public class Nova
 //			mainMethodText.append	("AllocConsole();").append('\n');
 			mainMethodText.append	("srand(currentTimeMillis());").append('\n');
 			mainMethodText.append	(Literal.GARBAGE_IDENTIFIER).append(" = malloc(sizeof(void*));").append('\n');
-			mainMethodText.append	(gcInit.getTarget().generateSource(gcInit)).append('\n');
-			mainMethodText.append	("nova_null = ").append(nullConstructor.getTarget().generateSourceFragment(nullConstructor)).append(';').append('\n');
+			mainMethodText.append	(gcInit.getTarget().generateSource()).append('\n');
+			mainMethodText.append	("nova_null = ").append(nullConstructor.getTarget().generateSourceFragment()).append(';').append('\n');
 			mainMethodText.append	(nativeAssignments).append('\n');
 			mainMethodText.append	(staticBlockCalls).append('\n');
 			mainMethodText.append	("args = (nova_Nova_String**)NOVA_MALLOC(argc * sizeof(nova_Nova_String));").append('\n');
@@ -752,19 +752,19 @@ public class Nova
 			mainMethodText.append	("{").append('\n');
 			mainMethodText.append		("char* str = (char*)NOVA_MALLOC(sizeof(char) * strlen(argvs[i]) + 1);").append('\n');
 			mainMethodText.append		("copy_string(str, argvs[i]);").append('\n');
-			mainMethodText.append		("args[i] = ").append(strConstructor.getTarget().generateSourceName(strConstructor)).append("(0, 0, str);").append('\n');
+			mainMethodText.append		("args[i] = ").append(strConstructor.getTarget().generateSourceName()).append("(0, 0, str);").append('\n');
 			mainMethodText.append	("}").append('\n');
 			mainMethodText.append	("nova_datastruct_list_Nova_Array* argsArray = nova_datastruct_list_Nova_Array_2_Nova_construct(0, exceptionData, (nova_Nova_Object**)args, argc);");
 			mainMethodText.append	('\n');
 			mainMethodText.append	("TRY").append('\n');
 			mainMethodText.append	('{').append('\n');
-			mainMethodText.append		(mainMethod.getTarget().generateSourceName(mainMethod)).append("(0, ").append(Exception.EXCEPTION_DATA_IDENTIFIER).append(", argsArray);").append('\n');
+			mainMethodText.append		(mainMethod.getTarget().generateSourceName()).append("(0, ").append(Exception.EXCEPTION_DATA_IDENTIFIER).append(", argsArray);").append('\n');
 			mainMethodText.append	('}').append('\n');
 			mainMethodText.append	("CATCH (1)").append('\n');
 			mainMethodText.append	('{').append('\n');
 			mainMethodText.append		("nova_exception_Nova_Exception* base = (nova_exception_Nova_Exception*)").append(Exception.EXCEPTION_DATA_IDENTIFIER).append("->nova_exception_Nova_ExceptionData_Nova_thrownException;").append('\n');
 			mainMethodText.append		("printf(\"Exception in Thread 'main': %s\", base->nova_exception_Nova_Exception_Nova_message->nova_Nova_String_Nova_chars);").append('\n');
-			mainMethodText.append		(enter.getTarget().generateSource(enter)).append('\n');
+			mainMethodText.append		(enter.getTarget().generateSource()).append('\n');
 			mainMethodText.append	('}').append('\n');
 			mainMethodText.append	("FINALLY").append('\n');
 			mainMethodText.append	('{').append('\n');
@@ -778,12 +778,12 @@ public class Nova
 			}
 
 			mainMethodText.append   ("NOVA_FREE(args);").append('\n');
-			mainMethodText.append	(gcColl.getTarget().generateSource(gcColl)).append('\n');
+			mainMethodText.append	(gcColl.getTarget().generateSource()).append('\n');
 			mainMethodText.append	('\n');
 			mainMethodText.append	("return 0;").append('\n');
 			mainMethodText.append("}\n");
 			
-			String newSource = fileDeclaration.getTarget().generateSource(fileDeclaration) + mainMethodText.toString();
+			String newSource = fileDeclaration.getTarget().generateSource() + mainMethodText.toString();
 			
 			newSource = SyntaxUtils.formatText(newSource);
 			
@@ -807,7 +807,7 @@ public class Nova
 				
 				for (int j = 0; j < blocks.getNumVisibleChildren(); j++)
 				{
-					TargetC.TARGET_STATIC_BLOCK.generateMethodCall(builder, clazz).append(';').append('\n');
+					TargetC.TargetStaticBlock.generateMethodCall(builder, clazz).append(';').append('\n');
 				}
 			}
 		}
@@ -904,7 +904,7 @@ public class Nova
 				dir = new File(outputDirectories.get(sourceFile.getPackage().getRootFolder()));
 			}
 			
-			cmd.append(formatPath(dir.getAbsolutePath() + "/" + sourceFile.getTarget().generateSourceName(sourceFile))).append(' ');
+			cmd.append(formatPath(dir.getAbsolutePath() + "/" + sourceFile.getTarget().generateSourceName())).append(' ');
 		}
 		
 		for (String external : externalImports)

@@ -115,6 +115,14 @@ public class StaticClassReference extends IIdentifier
 	@Override
 	public TargetC.TargetStaticClassReference getTarget()
 	{
-		return TargetC.TARGET_STATIC_CLASS_REFERENCE;
+		final StaticClassReference self = this;
+		
+		return new TargetC.TargetStaticClassReference()
+		{
+			public StaticClassReference node()
+			{
+				return self;
+			}
+		};
 	}
 }

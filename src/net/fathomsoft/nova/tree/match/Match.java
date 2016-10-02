@@ -392,6 +392,14 @@ public class Match extends ControlStatement
 	@Override
 	public TargetC.TargetNode getTarget()
 	{
-		return TargetC.TARGET_MATCH;
+		final Match self = this;
+		
+		return new TargetC.TargetMatch()
+		{
+			public Match node()
+			{
+				return self;
+			}
+		};
 	}
 }

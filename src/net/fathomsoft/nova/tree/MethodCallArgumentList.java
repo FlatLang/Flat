@@ -356,8 +356,16 @@ public class MethodCallArgumentList extends ArgumentList
 	}
 	
 	@Override
-	public TargetC.TargetNode getTarget()
+	public TargetC.TargetMethodCallArgumentList getTarget()
 	{
-		return TargetC.TARGET_METHOD_CALL_ARGUMENT_LIST;
+		final MethodCallArgumentList self = this;
+		
+		return new TargetC.TargetMethodCallArgumentList()
+		{
+			public MethodCallArgumentList node()
+			{
+				return self;
+			}
+		};
 	}
 }

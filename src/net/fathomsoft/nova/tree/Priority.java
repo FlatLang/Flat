@@ -360,6 +360,14 @@ public class Priority extends Value implements Accessible
 	@Override
 	public TargetC.TargetPriority getTarget()
 	{
-		return TargetC.TARGET_PRIORITY;
+		final Priority self = this;
+		
+		return new TargetC.TargetPriority()
+		{
+			public Priority node()
+			{
+				return self;
+			}
+		};
 	}
 }

@@ -566,6 +566,14 @@ public class Array extends VariableDeclaration implements ArrayCompatible
 	@Override
 	public TargetC.TargetArray getTarget()
 	{
-		return TargetC.TARGET_ARRAY;
+		final Array self = this;
+		
+		return new TargetC.TargetArray()
+		{
+			public Array node()
+			{
+				return self;
+			}
+		};
 	}
 }

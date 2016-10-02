@@ -126,6 +126,14 @@ public class LambdaMethodDeclaration extends BodyMethodDeclaration
 	@Override
 	public TargetC.TargetLambdaMethodDeclaration getTarget()
 	{
-		return TargetC.TARGET_LAMBDA_METHOD_DECLARATION;
+		final LambdaMethodDeclaration self = this;
+		
+		return new TargetC.TargetLambdaMethodDeclaration()
+		{
+			public LambdaMethodDeclaration node()
+			{
+				return self;
+			}
+		};
 	}
 }

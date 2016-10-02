@@ -292,6 +292,14 @@ public class Cast extends IValue
 	@Override
 	public TargetC.TargetCast getTarget()
 	{
-		return TargetC.TARGET_CAST;
+		final Cast self = this;
+		
+		return new TargetC.TargetCast()
+		{
+			public Cast node()
+			{
+				return self;
+			}
+		};
 	}
 }

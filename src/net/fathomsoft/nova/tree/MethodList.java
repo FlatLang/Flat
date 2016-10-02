@@ -214,8 +214,16 @@ public class MethodList extends TypeList<MethodDeclaration>
 	}
 	
 	@Override
-	public TargetC.TargetNode getTarget()
+	public TargetC.TargetMethodList getTarget()
 	{
-		return TargetC.TARGET_METHOD_LIST;
+		final MethodList self = this;
+		
+		return new TargetC.TargetMethodList()
+		{
+			public MethodList node()
+			{
+				return self;
+			}
+		};
 	}
 }

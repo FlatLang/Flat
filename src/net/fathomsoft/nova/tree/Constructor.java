@@ -282,6 +282,14 @@ public class Constructor extends BodyMethodDeclaration
 	@Override
 	public TargetC.TargetConstructor getTarget()
 	{
-		return TargetC.TARGET_CONSTRUCTOR;
+		final Constructor self = this;
+		
+		return new TargetC.TargetConstructor()
+		{
+			public Constructor node()
+			{
+				return self;
+			}
+		};
 	}
 }

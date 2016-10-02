@@ -162,8 +162,16 @@ public class Repeat extends Loop
 	}
 	
 	@Override
-	public TargetC.TargetNode getTarget()
+	public TargetC.TargetRepeat getTarget()
 	{
-		return TargetC.TARGET_REPEAT;
+		final Repeat self = this;
+		
+		return new TargetC.TargetRepeat()
+		{
+			public Repeat node()
+			{
+				return self;
+			}
+		};
 	}
 }

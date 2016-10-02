@@ -141,8 +141,16 @@ public class ElseStatement extends ControlStatement
 	}
 	
 	@Override
-	public TargetC.TargetNode getTarget()
+	public TargetC.TargetElseStatement getTarget()
 	{
-		return TargetC.TARGET_ELSE_STATEMENT;
+		final ElseStatement self = this;
+		
+		return new TargetC.TargetElseStatement()
+		{
+			public ElseStatement node()
+			{
+				return self;
+			}
+		};
 	}
 }

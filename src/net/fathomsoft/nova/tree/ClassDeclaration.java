@@ -2409,6 +2409,14 @@ public class ClassDeclaration extends InstanceDeclaration
 	@Override
 	public TargetC.TargetClassDeclaration getTarget()
 	{
-		return TargetC.TARGET_CLASS_DECLARATION;
+		final ClassDeclaration self = this;
+		
+		return new TargetC.TargetClassDeclaration()
+		{
+			public ClassDeclaration node()
+			{
+				return self;
+			}
+		};
 	}
 }

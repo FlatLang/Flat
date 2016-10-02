@@ -196,6 +196,14 @@ public class WhileLoop extends Loop
 	@Override
 	public TargetC.TargetNode getTarget()
 	{
-		return TargetC.TARGET_WHILE_LOOP;
+		final WhileLoop self = this;
+		
+		return new TargetC.TargetWhileLoop()
+		{
+			public WhileLoop node()
+			{
+				return self;
+			}
+		};
 	}
 }

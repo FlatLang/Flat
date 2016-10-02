@@ -112,8 +112,16 @@ public class ArgumentList extends List
 	}
 	
 	@Override
-	public TargetC.TargetNode getTarget()
+	public TargetC.TargetArgumentList getTarget()
 	{
-		return TargetC.TARGET_ARGUMENT_LIST;
+		final ArgumentList self = this;
+		
+		return new TargetC.TargetArgumentList()
+		{
+			public ArgumentList node()
+			{
+				return self;
+			}
+		};
 	}
 }

@@ -189,6 +189,14 @@ public class ArrayAccess extends Node implements ArrayCompatible
 	@Override
 	public TargetC.TargetArrayAccess getTarget()
 	{
-		return TargetC.TARGET_ARRAY_ACCESS;
+		final ArrayAccess self = this;
+		
+		return new TargetC.TargetArrayAccess()
+		{
+			public ArrayAccess node()
+			{
+				return self;
+			}
+		};
 	}
 }

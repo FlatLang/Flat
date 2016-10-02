@@ -239,8 +239,16 @@ public class Case extends MatchCase
 	}
 	
 	@Override
-	public TargetC.TargetNode getTarget()
+	public TargetC.TargetCase getTarget()
 	{
-		return TargetC.TARGET_CASE;
+		final Case self = this;
+		
+		return new TargetC.TargetCase()
+		{
+			public Case node()
+			{
+				return self;
+			}
+		};
 	}
 }

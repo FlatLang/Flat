@@ -379,6 +379,14 @@ public class Parameter extends LocalDeclaration
 	@Override
 	public TargetC.TargetParameter getTarget()
 	{
-		return TargetC.TARGET_PARAMETER;
+		final Parameter self = this;
+		
+		return new TargetC.TargetParameter()
+		{
+			public Parameter node()
+			{
+				return self;
+			}
+		};
 	}
 }

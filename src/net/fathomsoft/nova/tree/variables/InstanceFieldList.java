@@ -73,8 +73,16 @@ public class InstanceFieldList extends List
 	}
 	
 	@Override
-	public TargetC.TargetNode getTarget()
+	public TargetC.TargetInstanceFieldList getTarget()
 	{
-		return TargetC.TARGET_INSTANCE_FIELD_LIST;
+		final InstanceFieldList self = this;
+		
+		return new TargetC.TargetInstanceFieldList()
+		{
+			public InstanceFieldList node()
+			{
+				return self;
+			}
+		};
 	}
 }

@@ -222,6 +222,14 @@ public class NovaParameterList extends ParameterList<Parameter>
 	@Override
 	public TargetC.TargetNovaParameterList getTarget()
 	{
-		return TargetC.TARGET_NOVA_PARAMETER_LIST;
+		final NovaParameterList self = this;
+		
+		return new TargetC.TargetNovaParameterList()
+		{
+			public NovaParameterList node()
+			{
+				return self;
+			}
+		};
 	}
 }

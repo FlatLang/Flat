@@ -112,8 +112,16 @@ public class Break extends Node
 	}
 	
 	@Override
-	public TargetC.TargetNode getTarget()
+	public TargetC.TargetBreak getTarget()
 	{
-		return TargetC.TARGET_BREAK;
+		final Break self = this;
+		
+		return new TargetC.TargetBreak()
+		{
+			public Break node()
+			{
+				return self;
+			}
+		};
 	}
 }

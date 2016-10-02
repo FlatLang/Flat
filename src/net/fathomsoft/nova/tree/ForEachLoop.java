@@ -467,8 +467,16 @@ public class ForEachLoop extends Loop
 	}
 	
 	@Override
-	public TargetC.TargetNode getTarget()
+	public TargetC.TargetForEachLoop getTarget()
 	{
-		return TargetC.TARGET_FOR_EACH_LOOP;
+		final ForEachLoop self = this;
+		
+		return new TargetC.TargetForEachLoop()
+		{
+			public ForEachLoop node()
+			{
+				return self;
+			}
+		};
 	}
 }

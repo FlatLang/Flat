@@ -151,6 +151,14 @@ public class VariableDeclarationList extends List
 	@Override
 	public TargetC.TargetVariableDeclarationList getTarget()
 	{
-		return TargetC.TARGET_VARIABLE_DECLARATION_LIST;
+		final VariableDeclarationList self = this;
+		
+		return new TargetC.TargetVariableDeclarationList()
+		{
+			public VariableDeclarationList node()
+			{
+				return self;
+			}
+		};
 	}
 }

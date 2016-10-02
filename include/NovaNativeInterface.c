@@ -345,7 +345,6 @@ nova_env novaEnv = {
 0,
 0,
 0,
-&nova_datastruct_list_Nova_List_Nova_zip,
 0,
 0,
 },

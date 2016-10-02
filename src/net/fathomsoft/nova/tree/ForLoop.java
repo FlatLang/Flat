@@ -366,8 +366,16 @@ public class ForLoop extends Loop
 	}
 	
 	@Override
-	public TargetC.TargetNode getTarget()
+	public TargetC.TargetForLoop getTarget()
 	{
-		return TargetC.TARGET_FOR_LOOP;
+		final ForLoop self = this;
+		
+		return new TargetC.TargetForLoop()
+		{
+			public ForLoop node()
+			{
+				return self;
+			}
+		};
 	}
 }

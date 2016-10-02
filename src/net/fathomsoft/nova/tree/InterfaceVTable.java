@@ -116,6 +116,14 @@ public class InterfaceVTable extends VTable
 	@Override
 	public TargetC.TargetInterfaceVTable getTarget()
 	{
-		return TargetC.TARGET_INTERFACE_VTABLE;
+		final InterfaceVTable self = this;
+		
+		return new TargetC.TargetInterfaceVTable()
+		{
+			public InterfaceVTable node()
+			{
+				return self;
+			}
+		};
 	}
 }

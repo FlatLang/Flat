@@ -293,8 +293,16 @@ public class Catch extends ExceptionHandler
 	}
 	
 	@Override
-	public TargetC.TargetNode getTarget()
+	public TargetC.TargetCatch getTarget()
 	{
-		return TargetC.TARGET_CATCH;
+		final Catch self = this;
+		
+		return new TargetC.TargetCatch()
+		{
+			public Catch node()
+			{
+				return self;
+			}
+		};
 	}
 }

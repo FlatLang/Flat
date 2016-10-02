@@ -138,8 +138,16 @@ public class ExceptionHandler extends Node
 	}
 	
 	@Override
-	public TargetC.TargetNode getTarget()
+	public TargetC.TargetExceptionHandler getTarget()
 	{
-		return TargetC.TARGET_EXCEPTION_HANDLER;
+		final ExceptionHandler self = this;
+		
+		return new TargetC.TargetExceptionHandler()
+		{
+			public ExceptionHandler node()
+			{
+				return self;
+			}
+		};
 	}
 }

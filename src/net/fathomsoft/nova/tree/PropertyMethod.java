@@ -160,6 +160,14 @@ public abstract class PropertyMethod extends BodyMethodDeclaration
 	@Override
 	public TargetC.TargetPropertyMethod getTarget()
 	{
-		return TargetC.TARGET_PROPERTY_METHOD;
+		final PropertyMethod self = this;
+		
+		return new TargetC.TargetPropertyMethod()
+		{
+			public PropertyMethod node()
+			{
+				return self;
+			}
+		};
 	}
 }

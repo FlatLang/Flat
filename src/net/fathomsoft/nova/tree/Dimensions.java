@@ -86,6 +86,14 @@ public class Dimensions extends Node
 	@Override
 	public TargetC.TargetDimensions getTarget()
 	{
-		return TargetC.TARGET_DIMENSIONS;
+		final Dimensions self = this;
+		
+		return new TargetC.TargetDimensions()
+		{
+			public Dimensions node()
+			{
+				return self;
+			}
+		};
 	}
 }

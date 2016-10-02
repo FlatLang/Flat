@@ -153,6 +153,14 @@ public class BodyMethodDeclaration extends NovaMethodDeclaration
 	@Override
 	public TargetC.TargetBodyMethodDeclaration getTarget()
 	{
-		return TargetC.TARGET_BODY_METHOD_DECLARATION;
+		final BodyMethodDeclaration self = this;
+		
+		return new TargetC.TargetBodyMethodDeclaration()
+		{
+			public BodyMethodDeclaration node()
+			{
+				return self;
+			}
+		};
 	}
 }

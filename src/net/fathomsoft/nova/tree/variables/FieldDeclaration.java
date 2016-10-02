@@ -494,6 +494,14 @@ public class FieldDeclaration extends InstanceDeclaration
 	@Override
 	public TargetC.TargetFieldDeclaration getTarget()
 	{
-		return TargetC.TARGET_FIELD_DECLARATION;
+		final FieldDeclaration self = this;
+		
+		return new TargetC.TargetFieldDeclaration()
+		{
+			public FieldDeclaration node()
+			{
+				return self;
+			}
+		};
 	}
 }

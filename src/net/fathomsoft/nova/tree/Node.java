@@ -2021,6 +2021,14 @@ public abstract class Node implements Listenable, Annotatable
 	
 	public TargetC.TargetNode getTarget()
 	{
-		return TargetC.TARGET_NODE;
+		final Node self = this;
+		
+		return new TargetC.TargetNode()
+		{
+			public Node node()
+			{
+				return self;
+			}
+		};
 	}
 }

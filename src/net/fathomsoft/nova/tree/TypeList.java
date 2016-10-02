@@ -160,8 +160,16 @@ public class TypeList<E extends Node> extends List implements Iterable<E>
 	}
 	
 	@Override
-	public TargetC.TargetNode getTarget()
+	public TargetC.TargetTypeList getTarget()
 	{
-		return TargetC.TARGET_TYPE_LIST;
+		final TypeList self = this;
+		
+		return new TargetC.TargetTypeList()
+		{
+			public TypeList<Node> node()
+			{
+				return self;
+			}
+		};
 	}
 }

@@ -69,6 +69,14 @@ public class ClosureParameterList extends ParameterList<Value>
 	@Override
 	public TargetC.TargetClosureParameterList getTarget()
 	{
-		return TargetC.TARGET_CLOSURE_PARAMETER_LIST;
+		final ClosureParameterList self = this;
+		
+		return new TargetC.TargetClosureParameterList()
+		{
+			public ClosureParameterList node()
+			{
+				return self;
+			}
+		};
 	}
 }

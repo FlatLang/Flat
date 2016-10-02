@@ -189,8 +189,16 @@ public class IfStatement extends ControlStatement
 	}
 	
 	@Override
-	public TargetC.TargetNode getTarget()
+	public TargetC.TargetIfStatement getTarget()
 	{
-		return TargetC.TARGET_IF_STATEMENT;
+		final IfStatement self = this;
+		
+		return new TargetC.TargetIfStatement()
+		{
+			public IfStatement node()
+			{
+				return self;
+			}
+		};
 	}
 }

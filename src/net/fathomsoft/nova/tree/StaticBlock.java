@@ -157,6 +157,14 @@ public class StaticBlock extends Node implements ScopeAncestor
 	@Override
 	public TargetC.TargetStaticBlock getTarget()
 	{
-		return TargetC.TARGET_STATIC_BLOCK;
+		final StaticBlock self = this;
+		
+		return new TargetC.TargetStaticBlock()
+		{
+			public StaticBlock node()
+			{
+				return self;
+			}
+		};
 	}
 }

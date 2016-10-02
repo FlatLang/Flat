@@ -921,6 +921,14 @@ public class BinaryOperation extends IValue
 	@Override
 	public TargetC.TargetBinaryOperation getTarget()
 	{
-		return TargetC.TARGET_BINARY_OPERATION;
+		final BinaryOperation self = this;
+		
+		return new TargetC.TargetBinaryOperation()
+		{
+			public BinaryOperation node()
+			{
+				return self;
+			}
+		};
 	}
 }

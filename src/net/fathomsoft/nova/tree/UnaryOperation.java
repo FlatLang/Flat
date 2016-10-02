@@ -468,6 +468,14 @@ public class UnaryOperation extends IValue
 	@Override
 	public TargetC.TargetUnaryOperation getTarget()
 	{
-		return TargetC.TARGET_UNARY_OPERATION;
+		final UnaryOperation self = this;
+		
+		return new TargetC.TargetUnaryOperation()
+		{
+			public UnaryOperation node()
+			{
+				return self;
+			}
+		};
 	}
 }

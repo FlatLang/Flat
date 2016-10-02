@@ -155,6 +155,14 @@ public class Destructor extends BodyMethodDeclaration
 	@Override
 	public TargetC.TargetDestructor getTarget()
 	{
-		return TargetC.TARGET_DESTRUCTOR;
+		final Destructor self = this;
+		
+		return new TargetC.TargetDestructor()
+		{
+			public Destructor node()
+			{
+				return self;
+			}
+		};
 	}
 }

@@ -101,6 +101,14 @@ public class VirtualMethodDeclaration extends BodyMethodDeclaration
 	@Override
 	public TargetC.TargetVirtualMethodDeclaration getTarget()
 	{
-		return TargetC.TARGET_VIRTUAL_METHOD_DECLARATION;
+		final VirtualMethodDeclaration self = this;
+		
+		return new TargetC.TargetVirtualMethodDeclaration()
+		{
+			public VirtualMethodDeclaration node()
+			{
+				return self;
+			}
+		};
 	}
 }

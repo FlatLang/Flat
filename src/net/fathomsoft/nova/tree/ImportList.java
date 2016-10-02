@@ -193,6 +193,14 @@ public class ImportList extends List
 	@Override
 	public TargetC.TargetNode getTarget()
 	{
-		return TargetC.TARGET_IMPORT_LIST;
+		final ImportList self = this;
+		
+		return new TargetC.TargetImportList()
+		{
+			public ImportList node()
+			{
+				return self;
+			}
+		};
 	}
 }

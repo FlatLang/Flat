@@ -600,6 +600,14 @@ public class Variable extends Identifier
 	@Override
 	public TargetC.TargetVariable getTarget()
 	{
-		return TargetC.TARGET_VARIABLE;
+		final Variable self = this;
+		
+		return new TargetC.TargetVariable()
+		{
+			public Variable node()
+			{
+				return self;
+			}
+		};
 	}
 }

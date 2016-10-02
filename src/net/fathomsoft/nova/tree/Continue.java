@@ -112,8 +112,16 @@ public class Continue extends Node
 	}
 	
 	@Override
-	public TargetC.TargetNode getTarget()
+	public TargetC.TargetContinue getTarget()
 	{
-		return TargetC.TARGET_CONTINUE;
+		final Continue self = this;
+		
+		return new TargetC.TargetContinue()
+		{
+			public Continue node()
+			{
+				return self;
+			}
+		};
 	}
 }

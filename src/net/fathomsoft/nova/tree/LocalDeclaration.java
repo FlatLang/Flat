@@ -463,6 +463,14 @@ public class LocalDeclaration extends VariableDeclaration
 	@Override
 	public TargetC.TargetLocalDeclaration getTarget()
 	{
-		return TargetC.TARGET_LOCAL_DECLARATION;
+		final LocalDeclaration self = this;
+		
+		return new TargetC.TargetLocalDeclaration()
+		{
+			public LocalDeclaration node()
+			{
+				return self;
+			}
+		};
 	}
 }

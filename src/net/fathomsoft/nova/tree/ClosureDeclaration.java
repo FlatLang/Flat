@@ -383,6 +383,14 @@ public class ClosureDeclaration extends Parameter implements CallableMethod
 	@Override
 	public TargetC.TargetClosureDeclaration getTarget()
 	{
-		return TargetC.TARGET_CLOSURE_DECLARATION;
+		final ClosureDeclaration self = this;
+		
+		return new TargetC.TargetClosureDeclaration()
+		{
+			public ClosureDeclaration node()
+			{
+				return self;
+			}
+		};
 	}
 }

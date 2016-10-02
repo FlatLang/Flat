@@ -797,6 +797,14 @@ public class Assignment extends Value
 	@Override
 	public TargetC.TargetAssignment getTarget()
 	{
-		return TargetC.TARGET_ASSIGNMENT;
+		final Assignment self = this;
+		
+		return new TargetC.TargetAssignment()
+		{
+			public Assignment node()
+			{
+				return self;
+			}
+		};
 	}
 }

@@ -241,6 +241,14 @@ public abstract class MethodDeclaration extends InstanceDeclaration implements C
 	@Override
 	public TargetC.TargetMethodDeclaration getTarget()
 	{
-		return TargetC.TARGET_METHOD_DECLARATION;
+		final MethodDeclaration self = this;
+		
+		return new TargetC.TargetMethodDeclaration()
+		{
+			public MethodDeclaration node()
+			{
+				return self;
+			}
+		};
 	}
 }

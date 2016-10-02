@@ -448,6 +448,14 @@ public class Closure extends Variable
 	@Override
 	public TargetC.TargetClosure getTarget()
 	{
-		return TargetC.TARGET_CLOSURE;
+		final Closure self = this;
+		
+		return new TargetC.TargetClosure()
+		{
+			public Closure node()
+			{
+				return self;
+			}
+		};
 	}
 }

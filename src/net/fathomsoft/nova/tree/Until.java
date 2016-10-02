@@ -216,8 +216,16 @@ public class Until extends IfStatement
 	}
 	
 	@Override
-	public TargetC.TargetNode getTarget()
+	public TargetC.TargetUntil getTarget()
 	{
-		return TargetC.TARGET_UNTIL;
+		final Until self = this;
+		
+		return new TargetC.TargetUntil()
+		{
+			public Until node()
+			{
+				return self;
+			}
+		};
 	}
 }

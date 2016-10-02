@@ -557,6 +557,14 @@ public class VariableDeclaration extends IIdentifier
 	@Override
 	public TargetC.TargetVariableDeclaration getTarget()
 	{
-		return TargetC.TARGET_VARIABLE_DECLARATION;
+		final VariableDeclaration self = this;
+		
+		return new TargetC.TargetVariableDeclaration()
+		{
+			public VariableDeclaration node()
+			{
+				return self;
+			}
+		};
 	}
 }

@@ -218,8 +218,16 @@ public class Annotation extends Node
 	}
 	
 	@Override
-	public TargetC.TargetNode getTarget()
+	public TargetC.TargetAnnotation getTarget()
 	{
-		return TargetC.TARGET_ANNOTATION;
+		final Annotation self = this;
+		
+		return new TargetC.TargetAnnotation()
+		{
+			public Annotation node()
+			{
+				return self;
+			}
+		};
 	}
 }

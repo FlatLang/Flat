@@ -119,7 +119,7 @@ public class Import extends Node
 		
 		FileDeclaration f = node.getFileDeclaration();
 		
-		return f.getTarget().generateHeaderName(f);
+		return f.getTarget().generateHeaderName();
 	}
 	
 	/**
@@ -327,8 +327,16 @@ public class Import extends Node
 	}
 	
 	@Override
-	public TargetC.TargetNode getTarget()
+	public TargetC.TargetImport getTarget()
 	{
-		return TargetC.TARGET_IMPORT;
+		final Import self = this;
+		
+		return new TargetC.TargetImport()
+		{
+			public Import node()
+			{
+				return self;
+			}
+		};
 	}
 }

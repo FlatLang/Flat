@@ -85,6 +85,14 @@ public class ClosureContextDeclaration extends LocalDeclaration
 	@Override
 	public TargetC.TargetClosureContextDeclaration getTarget()
 	{
-		return TargetC.TARGET_CLOSURE_CONTEXT_DECLARATION;
+		final ClosureContextDeclaration self = this;
+		
+		return new TargetC.TargetClosureContextDeclaration()
+		{
+			public ClosureContextDeclaration node()
+			{
+				return self;
+			}
+		};
 	}
 }

@@ -23,7 +23,7 @@ public abstract class VTable extends IIdentifier
 		
 		ClassDeclaration c = getParentClass();
 		
-		String type = "" + c.getTarget().generateSourceName(c, getVTableType() + "_VTable");
+		String type = "" + c.getTarget().generateSourceName(getVTableType() + "_VTable");
 		setType(type, true, false, false);
 		
 		setName(type + "_val", true);
@@ -93,6 +93,14 @@ public abstract class VTable extends IIdentifier
 	@Override
 	public TargetC.TargetVTable getTarget()
 	{
-		return TargetC.TARGET_VTABLE;
+		final VTable self = this;
+		
+		return new TargetC.TargetVTable()
+		{
+			public VTable node()
+			{
+				return self;
+			}
+		};
 	}
 }

@@ -357,6 +357,14 @@ public class Return extends IValue
 	@Override
 	public TargetC.TargetReturn getTarget()
 	{
-		return TargetC.TARGET_RETURN;
+		final Return self = this;
+		
+		return new TargetC.TargetReturn()
+		{
+			public Return node()
+			{
+				return self;
+			}
+		};
 	}
 }

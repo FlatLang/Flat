@@ -99,8 +99,16 @@ public class Finally extends ExceptionHandler
 	}
 	
 	@Override
-	public TargetC.TargetNode getTarget()
+	public TargetC.TargetFinally getTarget()
 	{
-		return TargetC.TARGET_FINALLY;
+		final Finally self = this;
+		
+		return new TargetC.TargetFinally()
+		{
+			public Finally node()
+			{
+				return self;
+			}
+		};
 	}
 }

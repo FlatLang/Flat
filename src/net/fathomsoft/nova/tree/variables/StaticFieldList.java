@@ -74,6 +74,14 @@ public class StaticFieldList extends List
 	@Override
 	public TargetC.TargetStaticFieldList getTarget()
 	{
-		return TargetC.TARGET_STATIC_FIELD_LIST;
+		final StaticFieldList self = this;
+		
+		return new TargetC.TargetStaticFieldList()
+		{
+			public StaticFieldList node()
+			{
+				return self;
+			}
+		};
 	}
 }

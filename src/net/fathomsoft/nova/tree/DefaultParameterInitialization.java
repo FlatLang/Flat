@@ -94,8 +94,16 @@ public class DefaultParameterInitialization extends Node
     }
     
     @Override
-    public TargetC.TargetNode getTarget()
+    public TargetC.TargetDefaultParameterInitialization getTarget()
     {
-        return TargetC.TARGET_DEFAULT_PARAMETER_INITIALIZATION;
+        final DefaultParameterInitialization self = this;
+    
+        return new TargetC.TargetDefaultParameterInitialization()
+        {
+            public DefaultParameterInitialization node()
+            {
+                return self;
+            }
+        };
     }
 }
