@@ -1423,59 +1423,6 @@ public class SyntaxTree
 	}
 	
 	/**
-	 * Generate the C Header output from the data contained within the
-	 * syntax tree.
-	 */
-	public void generateCHeaderOutput()
-	{
-		root.getTarget().generateHeader(new StringBuilder());
-	}
-	
-	/**
-	 * Generate the C Source output from the data contained within the
-	 * syntax tree.
-	 */
-	public void generateCSourceOutput()
-	{
-		root.getTarget().generateSource(new StringBuilder());
-	}
-	
-	/**
-	 * Generate the C Source and Header output from the data contained
-	 * within the syntax tree.
-	 */
-	public void generateCOutput()
-	{
-		generateCHeaderOutput();
-		generateCSourceOutput();
-	}
-
-	/**
-	 * Format the C Header output to follow syntactical rules.
-	 */
-	public void formatCHeaderOutput()
-	{
-		root.formatCHeaderOutput();
-	}
-	
-	/**
-	 * Format the C Source output to follow syntactical rules.
-	 */
-	public void formatCSourceOutput()
-	{
-		root.formatCSourceOutput();
-	}
-	
-	/**
-	 * Format the C Header and Source output to follow syntactical rules.
-	 */
-	public void formatCOutput()
-	{
-		formatCHeaderOutput();
-		formatCSourceOutput();
-	}
-	
-	/**
 	 * Get the C Header output text (destination text) from the Syntax
 	 * tree.
 	 * 

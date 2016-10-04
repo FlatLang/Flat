@@ -500,32 +500,6 @@ public class FileDeclaration extends Node
 		}
 	}
 	
-	/**
-	 * Format the C Header output, if the output has been generated.
-	 */
-	public void formatCHeaderOutput()
-	{
-		if (header == null)
-		{
-			return;
-		}
-		
-		setHeader(SyntaxUtils.formatText(header.toString()));
-	}
-	
-	/**
-	 * Format the C Source output, if the output has been generated.
-	 */
-	public void formatCSourceOutput()
-	{
-		if (source == null)
-		{
-			return;
-		}
-		
-		setSource(SyntaxUtils.formatText(source.toString()));
-	}
-	
 	public static FileDeclaration generateTemporaryFile(Node parent, Location locationIn)
 	{
 		FileDeclaration node = new FileDeclaration(parent, locationIn, new File("Temp"));

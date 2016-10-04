@@ -234,41 +234,6 @@ public class Program extends Node
 	}
 	
 	/**
-	 * Format the C Header output to follow syntactical rules.
-	 */
-	public void formatCHeaderOutput()
-	{
-		for (int i = 0; i < getNumChildren(); i++)
-		{
-			FileDeclaration fileDeclaration = (FileDeclaration)getChild(i);
-			
-			fileDeclaration.formatCHeaderOutput();
-		}
-	}
-	
-	/**
-	 * Format the C Source output to follow syntactical rules.
-	 */
-	public void formatCSourceOutput()
-	{
-		for (int i = 0; i < getNumChildren(); i++)
-		{
-			FileDeclaration fileDeclaration = (FileDeclaration)getChild(i);
-			
-			fileDeclaration.formatCSourceOutput();
-		}
-	}
-	
-	/**
-	 * Format the C Header and Source output to follow syntactical rules.
-	 */
-	public void formatCOutput()
-	{
-		formatCHeaderOutput();
-		formatCSourceOutput();
-	}
-	
-	/**
 	 * Get the phase that the SyntaxTree is currently decoding in.
 	 * 
 	 * @return The phase that the SyntaxTree is currently decoding in.

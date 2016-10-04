@@ -12,100 +12,22 @@ import net.fathomsoft.nova.tree.generics.GenericTypeArgumentList;
 import net.fathomsoft.nova.tree.lambda.LambdaMethodDeclaration;
 import net.fathomsoft.nova.tree.match.*;
 import net.fathomsoft.nova.tree.variables.*;
+import net.fathomsoft.nova.util.FileUtils;
 import net.fathomsoft.nova.util.Stack;
+import net.fathomsoft.nova.util.StringUtils;
 import net.fathomsoft.nova.util.SyntaxUtils;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.time.Instant;
 import java.util.ArrayList;
 
+import static net.fathomsoft.nova.Nova.CSOURCE;
+import static net.fathomsoft.nova.Nova.NO_C_OUTPUT;
+
 public class TargetC
 {
-    /*public static final TargetAbstractMethodDeclaration TARGET_ABSTRACT_METHOD_DECLARATION = new TargetAbstractMethodDeclaration();
-    public static final TargetVirtualMethodDeclaration TARGET_VIRTUAL_METHOD_DECLARATION = new TargetVirtualMethodDeclaration();
-    public static final TargetBodyMethodDeclaration TARGET_BODY_METHOD_DECLARATION = new TargetBodyMethodDeclaration();
-    public static final TargetNovaMethodDeclaration TARGET_NOVA_METHOD_DECLARATION = new TargetNovaMethodDeclaration();
-    public static final TargetMethodDeclaration TARGET_METHOD_DECLARATION = new TargetMethodDeclaration();
-    public static final TargetInstanceDeclaration TARGET_INSTANCE_DECLARATION = new TargetInstanceDeclaration();
-    public static final TargetVariableDeclaration TARGET_VARIABLE_DECLARATION = new TargetVariableDeclaration();
-    public static final TargetIIdentifier TARGET_IIDENTIFIER = new TargetIIdentifier();
-    public static final TargetIdentifier TARGET_IDENTIFIER = new TargetIdentifier();
-    public static final TargetValue TARGET_VALUE = new TargetValue();
-    public static final TargetAnnotation TARGET_ANNOTATION = new TargetAnnotation();
-    public static final TargetCatch TARGET_CATCH = new TargetCatch();
-    public static final TargetExceptionHandler TARGET_EXCEPTION_HANDLER = new TargetExceptionHandler();
-    public static final TargetFinally TARGET_FINALLY = new TargetFinally();
-    public static final TargetThrow TARGET_THROW = new TargetThrow();
-    public static final TargetTry TARGET_TRY = new TargetTry();
-    public static final TargetLambdaMethodDeclaration TARGET_LAMBDA_METHOD_DECLARATION = new TargetLambdaMethodDeclaration();
-    public static final TargetCase TARGET_CASE = new TargetCase();
-    public static final TargetDefault TARGET_DEFAULT = new TargetDefault();
-    public static final TargetFallthrough TARGET_FALLTHROUGH = new TargetFallthrough();
-    public static final TargetMatch TARGET_MATCH = new TargetMatch();
-    public static final TargetArgumentList TARGET_ARGUMENT_LIST = new TargetArgumentList();
-    public static final TargetAssignment TARGET_ASSIGNMENT = new TargetAssignment();
-    public static final TargetAssignmentMethod TARGET_ASSIGNMENT_METHOD = new TargetAssignmentMethod();
-    public static final TargetBinaryOperation TARGET_BINARY_OPERATION = new TargetBinaryOperation();
-    public static final TargetBreak TARGET_BREAK = new TargetBreak();
-    public static final TargetCast TARGET_CAST = new TargetCast();
-    public static final TargetClassDeclaration TARGET_CLASS_DECLARATION = new TargetClassDeclaration();
-    public static final TargetClosure TARGET_CLOSURE = new TargetClosure();
-    public static final TargetClosureContext TARGET_CLOSURE_CONTEXT = new TargetClosureContext();
-    public static final TargetClosureContextDeclaration TARGET_CLOSURE_CONTEXT_DECLARATION = new TargetClosureContextDeclaration();
-    public static final TargetClosureDeclaration TARGET_CLOSURE_DECLARATION = new TargetClosureDeclaration();
-    public static final TargetClosureParameterList TARGET_CLOSURE_PARAMETER_LIST = new TargetClosureParameterList();
-    public static final TargetConstructor TARGET_CONSTRUCTOR = new TargetConstructor();
-    public static final TargetContinue TARGET_CONTINUE = new TargetContinue();
-    public static final TargetDefaultParameterInitialization TARGET_DEFAULT_PARAMETER_INITIALIZATION = new TargetDefaultParameterInitialization();
-    public static final TargetDestructor TARGET_DESTRUCTOR = new TargetDestructor();
-    public static final TargetDimensions TARGET_DIMENSIONS = new TargetDimensions();
-    public static final TargetElseStatement TARGET_ELSE_STATEMENT = new TargetElseStatement();
-    public static final TargetExtensionVTable TARGET_EXTENSION_VTABLE = new TargetExtensionVTable();
-    public static final TargetExternalMethodDeclaration TARGET_EXTERNAL_METHOD_DECLARATION = new TargetExternalMethodDeclaration();
-    public static final TargetFileDeclaration TARGET_FILE_DECLARATION = new TargetFileDeclaration();
-    public static final TargetForEachLoop TARGET_FOR_EACH_LOOP = new TargetForEachLoop();
-    public static final TargetForLoop TARGET_FOR_LOOP = new TargetForLoop();
-    public static final TargetIfStatement TARGET_IF_STATEMENT = new TargetIfStatement();
-    public static final TargetImport TARGET_IMPORT = new TargetImport();
-    public static final TargetImportList TARGET_IMPORT_LIST = new TargetImportList();
-    public static final TargetInstantiation TARGET_INSTANTIATION = new TargetInstantiation();
-    public static final TargetInterface TARGET_INTERFACE = new TargetInterface();
-    public static final TargetInterfaceVTable TARGET_INTERFACE_VTABLE = new TargetInterfaceVTable();
-    public static final TargetIValue TARGET_IVALUE = new TargetIValue();
-    public static final TargetLiteral TARGET_LITERAL = new TargetLiteral();
-    public static final TargetLocalDeclaration TARGET_LOCAL_DECLARATION = new TargetLocalDeclaration();
-    public static final TargetMethodCall TARGET_METHOD_CALL = new TargetMethodCall();
-    public static final TargetMethodCallArgumentList TARGET_METHOD_CALL_ARGUMENT_LIST = new TargetMethodCallArgumentList();
-    public static final TargetMethodList TARGET_METHOD_LIST = new TargetMethodList();
-    public static final TargetNovaParameterList TARGET_NOVA_PARAMETER_LIST = new TargetNovaParameterList();
-    public static final TargetOperator TARGET_OPERATOR = new TargetOperator();
-    public static final TargetPackage TARGET_PACKAGE = new TargetPackage();
-    public static final TargetParameter TARGET_PARAMETER = new TargetParameter();
-    public static final TargetParameterList TARGET_PARAMETER_LIST = new TargetParameterList();
-    public static final TargetPriority TARGET_PRIORITY = new TargetPriority();
-    public static final TargetProgram TARGET_PROGRAM = new TargetProgram();
-    public static final TargetPropertyMethod TARGET_PROPERTY_METHOD = new TargetPropertyMethod();
-    public static final TargetRepeat TARGET_REPEAT = new TargetRepeat();
-    public static final TargetReturn TARGET_RETURN = new TargetReturn();
-    public static final TargetScope TARGET_SCOPE = new TargetScope();
-    public static final TargetSkeleton TARGET_SKELETON = new TargetSkeleton();
-    public static final TargetStaticBlock TARGET_STATIC_BLOCK = new TargetStaticBlock();
-    public static final TargetStaticClassReference TARGET_STATIC_CLASS_REFERENCE = new TargetStaticClassReference();
-    public static final TargetTernaryOperation TARGET_TERNARY_OPERATION = new TargetTernaryOperation();
-    public static final TargetTypeList TARGET_TYPE_LIST = new TargetTypeList();
-    public static final TargetUnaryOperation TARGET_UNARY_OPERATION = new TargetUnaryOperation();
-    public static final TargetUntil TARGET_UNTIL = new TargetUntil();
-    public static final TargetVTable TARGET_VTABLE = new TargetVTable();
-    public static final TargetWhileLoop TARGET_WHILE_LOOP = new TargetWhileLoop();
-    public static final TargetFieldList TARGET_FIELD_LIST = new TargetFieldList();
-    public static final TargetInstanceFieldList TARGET_INSTANCE_FIELD_LIST = new TargetInstanceFieldList();
-    public static final TargetStaticFieldList TARGET_STATIC_FIELD_LIST = new TargetStaticFieldList();
-    public static final TargetVariable TARGET_VARIABLE = new TargetVariable();
-    public static final TargetFieldDeclaration TARGET_FIELD_DECLARATION = new TargetFieldDeclaration();
-    public static final TargetVariableDeclarationList TARGET_VARIABLE_DECLARATION_LIST = new TargetVariableDeclarationList();
-    public static final TargetArray TARGET_ARRAY = new TargetArray();
-    public static final TargetArrayAccess TARGET_ARRAY_ACCESS = new TargetArrayAccess();
-    public static final TargetNode TARGET_NODE = new TargetNode();*/
-    
     public static abstract class TargetSkeleton extends TargetNode
     {
         
@@ -662,6 +584,41 @@ public class TargetC
             }
         
             return builder;
+        }
+    
+        /**
+         * Format the C Header output to follow syntactical rules.
+         */
+        public void formatHeaderOutput()
+        {
+            for (int i = 0; i < node().getNumChildren(); i++)
+            {
+                FileDeclaration fileDeclaration = (FileDeclaration)node().getChild(i);
+            
+                fileDeclaration.getTarget().formatHeaderOutput();
+            }
+        }
+    
+        /**
+         * Format the C Source output to follow syntactical rules.
+         */
+        public void formatSourceOutput()
+        {
+            for (int i = 0; i < node().getNumChildren(); i++)
+            {
+                FileDeclaration fileDeclaration = (FileDeclaration)node().getChild(i);
+            
+                fileDeclaration.getTarget().formatSourceOutput();
+            }
+        }
+    
+        /**
+         * Format the C Header and Source output to follow syntactical rules.
+         */
+        public void formatOutput()
+        {
+            formatHeaderOutput();
+            formatSourceOutput();
         }
     }
     
@@ -1659,6 +1616,32 @@ public class TargetC
             }
         
             return builder;
+        }
+        
+        /**
+         * Format the C Header output, if the output has been generated.
+         */
+        public void formatHeaderOutput()
+        {
+            if (node().header == null)
+            {
+                return;
+            }
+    
+            node().setHeader(SyntaxUtils.formatText(node().header.toString()));
+        }
+    
+        /**
+         * Format the C Source output, if the output has been generated.
+         */
+        public void formatSourceOutput()
+        {
+            if (node().source == null)
+            {
+                return;
+            }
+    
+            node().setSource(SyntaxUtils.formatText(node().source.toString()));
         }
     }
     

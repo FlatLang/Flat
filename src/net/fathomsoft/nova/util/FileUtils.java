@@ -1,5 +1,7 @@
 package net.fathomsoft.nova.util;
 
+import net.fathomsoft.nova.Nova;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -127,5 +129,81 @@ public class FileUtils
 		}
 		
 		return directory.delete();
+	}
+	
+	/**
+	 * Format a path according to how the specified OS needs it.
+	 *
+	 * @param path The path to format for the OS standards.
+	 * @return The formatted path.
+	 */
+	public static String formatPath(String path)
+	{
+		path = path.replace("\\", "/");
+		
+		path = formAbsolutePath(path);
+		
+		if (Nova.OS == Nova.WINDOWS)
+		{
+			path = StringUtils.removeSurroundingQuotes(path);
+			
+			return '"' + path + '"';
+		}
+		else
+		{
+			return StringUtils.escapeSpaces(path);
+		}
+	}
+	
+	/**
+	 * Remove all of the relative syntax from the given path.<br>
+	 * <br>
+	 * For example: Passing a path of "C:/folder/../dir1/dir2" would
+	 * return a path of "C:/dir1/dir2"
+	 *
+	 * @param path The path to remove the relative syntax from.
+	 * @return The newly formatted path.
+	 */
+	public static String formAbsolutePath(String path)
+	{
+		StringBuilder absolute = new StringBuilder(path);
+		
+		int index = absolute.indexOf("..");
+		
+		while (index >= 0)
+		{
+			int index2 = absolute.lastIndexOf("/", index - 2);
+			
+			absolute.delete(index2, index + 2);
+			
+			index = absolute.indexOf("..");
+		}
+		
+		return absolute.toString();
+	}
+	
+	/**
+	 * Find the location that the given filename is located within the
+	 * compilation's library directories.
+	 *
+	 * @param filename The name of the file to search for.
+	 * @return The location of the file with the given filename. If the
+	 * 		location was not found, null is returned.
+	 */
+	public static String findFileLocation(String filename, String[] directories)
+	{
+		for (String dir : directories)
+		{
+			String location = StringUtils.removeSurroundingQuotes(dir) + "/" + filename;
+			
+			File f = new File(location);
+			
+			if (f.isFile())
+			{
+				return location;
+			}
+		}
+		
+		return null;
 	}
 }
