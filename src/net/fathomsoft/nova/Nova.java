@@ -142,7 +142,7 @@ public class Nova
 	 */
 	public Nova()
 	{
-		/*try
+		try
 		{
 			URL url = new File("../Nova C/out/production/Nova C").toURL();
 			
@@ -181,10 +181,10 @@ public class Nova
 		catch (MalformedURLException e)
 		{
 			System.exit(6);
-		}*/
+		}
 		
-		codeGeneratorEngine = new CCodeGeneratorEngine(this);
-		compileEngine = new CCompileEngine(this);
+		//codeGeneratorEngine = new CCodeGeneratorEngine(this);
+		//compileEngine = new CCompileEngine(this);
 		
 		if (BENCHMARK > 0)
 		{
