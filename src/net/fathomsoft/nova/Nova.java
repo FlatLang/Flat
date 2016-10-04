@@ -2,6 +2,10 @@ package net.fathomsoft.nova;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.util.*;
 
 import net.fathomsoft.nova.error.SyntaxErrorException;
@@ -34,7 +38,8 @@ public class Nova
 	
 	private SyntaxTree			tree;
 	
-	private ArrayList<String>	externalImports, errors, warnings, messages;
+	public ArrayList<String>	externalImports;
+	private ArrayList<String> errors, warnings, messages;
 	
 	public File outputDirectory;
 	
@@ -135,8 +140,46 @@ public class Nova
 	 */
 	public Nova()
 	{
-		codeGeneratorEngine = new CCodeGeneratorEngine(this);
-		compileEngine = new CCompileEngine(this);
+		try
+		{
+			URL url = new File("../Nova C/out/production/Nova C").toURL();
+			
+			// Create a new class loader with the directory
+			ClassLoader cl = new URLClassLoader(new URL[] { url });
+
+			Class codeGeneratorEngineClass = cl.loadClass("nova.c.engines.CCodeGeneratorEngine");
+			Class compileEngineClass = cl.loadClass("nova.c.engines.CCompileEngine");
+
+			java.lang.reflect.Constructor codeGeneratorEngineConstructor = codeGeneratorEngineClass.getConstructor(Nova.class);
+			java.lang.reflect.Constructor compileEngineConstructor = compileEngineClass.getConstructor(Nova.class);
+			
+			codeGeneratorEngine = (CodeGeneratorEngine)codeGeneratorEngineConstructor.newInstance(this);
+			compileEngine = (CompileEngine)compileEngineConstructor.newInstance(this);
+		}
+		catch (InvocationTargetException e)
+		{
+			System.exit(1);
+		}
+		catch (InstantiationException e)
+		{
+			System.exit(2);
+		}
+		catch (IllegalAccessException e)
+		{
+			System.exit(3);
+		}
+		catch (NoSuchMethodException e)
+		{
+			System.exit(4);
+		}
+		catch (ClassNotFoundException e)
+		{
+			System.exit(5);
+		}
+		catch (MalformedURLException e)
+		{
+			System.exit(6);
+		}
 		
 		if (BENCHMARK > 0)
 		{
@@ -189,7 +232,7 @@ public class Nova
 			{
 				"../Compiler",
 				"../Misc/example",
-				"../Misc/stabilitytest", 
+//				"../Misc/stabilitytest", 
 				"-output-directory", "../NovaCompilerOutput",
 				"-package-output-directory", "nova", "../StandardLibrary/c",
 //				"-dir", formatPath(directory + "../example"),
@@ -197,16 +240,17 @@ public class Nova
 //				"-run",
 //				"-csource",
 				"-formatc",
-				testClasses ? "-v" : "",
+				//testClasses ? "-v" : "",
+				"-v",
 //				"-gcc",
 //				"-tcc",
 //				"-small",
-//				"-cargs",
+				"-cargs",
 //				"-keepc",
 				"-single-thread",
 				"-main",
-//				"example/Lab",
-				"stabilitytest/StabilityTest",
+				"example/Lab",
+//				"stabilitytest/StabilityTest",
 //				"example/SvgChart",
 //				"example/HashMapDemo",
 //				"example/HashSetDemo",
@@ -311,9 +355,9 @@ public class Nova
 					if (generateCode)
 					{
 						codeGeneratorEngine.generateOutput();
+						codeGeneratorEngine.insertMainMethod();
 						codeGeneratorEngine.formatOutput();
 						codeGeneratorEngine.writeFiles();
-						codeGeneratorEngine.insertMainMethod();
 					}
 					
 					long time = System.currentTimeMillis() - before;

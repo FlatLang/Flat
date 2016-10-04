@@ -2,6 +2,7 @@ package net.fathomsoft.nova;
 
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.error.UnimplementedOperationException;
+import net.fathomsoft.nova.target.NodeWriter;
 import net.fathomsoft.nova.tree.*;
 import net.fathomsoft.nova.tree.Package;
 import net.fathomsoft.nova.tree.annotations.Annotation;
@@ -2986,7 +2987,7 @@ public class TargetC
             return builder;
         }
     
-        private StringBuilder generateStaticBlocksSource(StringBuilder builder)
+        public StringBuilder generateStaticBlocksSource(StringBuilder builder)
         {
             if (node().getStaticBlockList().getNumVisibleChildren() > 0)
             {
@@ -3027,7 +3028,7 @@ public class TargetC
          * @param builder The StringBuilder to append that data to.
          * @return The StringBuilder with the appended data.
          */
-        private StringBuilder generatePrivateFieldsSource(StringBuilder builder)
+        public StringBuilder generatePrivateFieldsSource(StringBuilder builder)
         {
             if (node().getExtendedClassDeclaration() != null)
             {
@@ -5058,7 +5059,7 @@ public class TargetC
         }
     }
     
-    public static abstract class TargetNode
+    public static abstract class TargetNode extends NodeWriter
     {
         public abstract Node node();
     
