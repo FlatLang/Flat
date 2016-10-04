@@ -1,16 +1,12 @@
 package net.fathomsoft.nova.tree.annotations;
 
-import jdk.nashorn.internal.runtime.FindProperty;
-import net.fathomsoft.nova.TargetC;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.error.SyntaxErrorException;
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.tree.Node;
-import net.fathomsoft.nova.tree.variables.VariableDeclaration;
 import net.fathomsoft.nova.util.Location;
 import net.fathomsoft.nova.util.StringUtils;
-import net.fathomsoft.nova.util.SyntaxUtils;
 
 /**
  * {@link Node} extension that represents
@@ -215,19 +211,5 @@ public class Annotation extends Node
 		
 		
 		return null;
-	}
-	
-	@Override
-	public TargetC.TargetAnnotation getTarget()
-	{
-		final Annotation self = this;
-		
-		return new TargetC.TargetAnnotation()
-		{
-			public Annotation node()
-			{
-				return self;
-			}
-		};
 	}
 }

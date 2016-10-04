@@ -1,11 +1,8 @@
 package net.fathomsoft.nova.tree;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 
 import javafx.util.Pair;
-import net.fathomsoft.nova.Nova;
-import net.fathomsoft.nova.TargetC;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.tree.variables.Variable;
 import net.fathomsoft.nova.tree.variables.VariableDeclaration;
@@ -324,19 +321,5 @@ public class Scope extends Node
 		}
 		
 		return null;
-	}
-	
-	@Override
-	public TargetC.TargetScope getTarget()
-	{
-		final Scope self = this;
-		
-		return new TargetC.TargetScope()
-		{
-			public Scope node()
-			{
-				return self;
-			}
-		};
 	}
 }

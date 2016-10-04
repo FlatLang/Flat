@@ -1423,46 +1423,6 @@ public class SyntaxTree
 	}
 	
 	/**
-	 * Get the C Header output text (destination text) from the Syntax
-	 * tree.
-	 * 
-	 * @return The C Header output text after compilation.
-	 */
-	public String[] getCHeaderOutput()
-	{
-		String headers[] = new String[root.getNumChildren()];
-		
-		for (int i = 0; i < headers.length; i++)
-		{
-			Node child = root.getChild(i);
-			
-			headers[i] = child.getTarget().generateHeader().toString();
-		}
-		
-		return headers;
-	}
-	
-	/**
-	 * Get the C Source output text (destination text) from the Syntax
-	 * tree.
-	 * 
-	 * @return The C Source output text after compilation.
-	 */
-	public String[] getCSourceOutput()
-	{
-		String sources[] = new String[root.getNumChildren()];
-		
-		for (int i = 0; i < sources.length; i++)
-		{
-			Node child = root.getChild(i);
-			
-			sources[i] = child.getTarget().generateSource().toString();
-		}
-		
-		return sources;
-	}
-	
-	/**
 	 * Get the filenames of all the files, in order of the way they
 	 * are in the tree structure
 	 * 

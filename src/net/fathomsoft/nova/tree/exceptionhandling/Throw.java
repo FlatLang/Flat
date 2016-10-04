@@ -1,6 +1,5 @@
 package net.fathomsoft.nova.tree.exceptionhandling;
 
-import net.fathomsoft.nova.TargetC;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.tree.Identifier;
@@ -213,19 +212,5 @@ public class Throw extends ExceptionHandler
 		
 		
 		return null;
-	}
-	
-	@Override
-	public TargetC.TargetThrow getTarget()
-	{
-		final Throw self = this;
-		
-		return new TargetC.TargetThrow()
-		{
-			public Throw node()
-			{
-				return self;
-			}
-		};
 	}
 }

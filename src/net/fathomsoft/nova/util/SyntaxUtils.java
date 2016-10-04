@@ -2636,46 +2636,6 @@ public class SyntaxUtils
 		return new Bounds(start, end);
 	}
 	
-	public static void generateTypeDefinition(StringBuilder builder, Value value, ArrayList<String> types)
-	{
-		if (value == null || value.getType() == null)
-		{
-			return;
-		}
-		
-		String type = value.getTarget().generateTypeName(new StringBuilder()).toString();
-		
-		if (!value.isPrimitiveType() && !types.contains(type))
-		{
-			builder.append("typedef struct ").append(type).append(" ").append(type).append(";\n");
-			
-			types.add(type.toString());
-		}
-	}
-	
-	public static void addTypesToTypeList(StringBuilder builder, CallableMethod closure, ArrayList<String> types)
-	{
-		ParameterList list = closure.getParameterList();
-		
-		int numParameters = list.getNumParameters();
-		
-		generateTypeDefinition(builder, list.getExceptionData(), types);
-		
-		for (int i = 0; i < numParameters; i++)
-		{
-			generateTypeDefinition(builder, list.getParameter(i), types);
-			
-			if (list.getParameter(i) instanceof ClosureDeclaration)
-			{
-				ClosureDeclaration c = (ClosureDeclaration)list.getParameter(i);
-				
-				addTypesToTypeList(builder, c, types);
-			}
-		}
-		
-		generateTypeDefinition(builder, closure.getTypeClass(), types);
-	}
-	
 	public static GenericTypeArgument[] getGenericTypeArguments(Node parent, String params)
 	{
 		String paramsList[] = StringUtils.splitCommas(params, true);

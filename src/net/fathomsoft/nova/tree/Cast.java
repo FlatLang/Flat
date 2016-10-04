@@ -1,9 +1,6 @@
 package net.fathomsoft.nova.tree;
 
-import net.fathomsoft.nova.Nova;
-import net.fathomsoft.nova.TargetC;
 import net.fathomsoft.nova.TestContext;
-import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.error.SyntaxErrorException;
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.tree.annotations.Annotation;
@@ -287,19 +284,5 @@ public class Cast extends IValue
 		}
 		
 		return null;
-	}
-	
-	@Override
-	public TargetC.TargetCast getTarget()
-	{
-		final Cast self = this;
-		
-		return new TargetC.TargetCast()
-		{
-			public Cast node()
-			{
-				return self;
-			}
-		};
 	}
 }

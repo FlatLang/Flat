@@ -1,6 +1,5 @@
 package net.fathomsoft.nova.tree;
 
-import net.fathomsoft.nova.TargetC;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.util.Location;
 
@@ -100,19 +99,5 @@ public class ExtensionVTable extends VTable
 		
 		
 		return null;
-	}
-	
-	@Override
-	public TargetC.TargetExtensionVTable getTarget()
-	{
-		final ExtensionVTable self = this;
-		
-		return new TargetC.TargetExtensionVTable()
-		{
-			public ExtensionVTable node()
-			{
-				return self;
-			}
-		};
 	}
 }

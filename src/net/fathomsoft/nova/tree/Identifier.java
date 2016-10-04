@@ -1,16 +1,6 @@
 package net.fathomsoft.nova.tree;
 
-import net.fathomsoft.nova.Nova;
-import net.fathomsoft.nova.TargetC;
 import net.fathomsoft.nova.TestContext;
-import net.fathomsoft.nova.error.SyntaxMessage;
-import net.fathomsoft.nova.tree.generics.GenericTypeArgument;
-import net.fathomsoft.nova.tree.generics.GenericTypeParameter;
-import net.fathomsoft.nova.tree.generics.GenericTypeParameterDeclaration;
-import net.fathomsoft.nova.tree.variables.Array;
-import net.fathomsoft.nova.tree.variables.FieldDeclaration;
-import net.fathomsoft.nova.tree.variables.Variable;
-import net.fathomsoft.nova.tree.variables.VariableDeclaration;
 import net.fathomsoft.nova.util.Location;
 import net.fathomsoft.nova.util.SyntaxUtils;
 
@@ -236,19 +226,5 @@ public abstract class Identifier extends Value implements Accessible
 		
 		
 		return null;
-	}
-	
-	@Override
-	public TargetC.TargetIdentifier getTarget()
-	{
-		final Identifier self = this;
-		
-		return new TargetC.TargetIdentifier()
-		{
-			public Identifier node()
-			{
-				return self;
-			}
-		};
 	}
 }

@@ -1,12 +1,9 @@
 package net.fathomsoft.nova.tree;
 
-import net.fathomsoft.nova.Nova;
-import net.fathomsoft.nova.TargetC;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.util.Location;
-import net.fathomsoft.nova.util.Patterns;
 import net.fathomsoft.nova.util.StringUtils;
 
 /**
@@ -155,19 +152,5 @@ public class AbstractMethodDeclaration extends NovaMethodDeclaration
 		
 		
 		return null;
-	}
-	
-	@Override
-	public TargetC.TargetAbstractMethodDeclaration getTarget()
-	{
-		final AbstractMethodDeclaration self = this;
-		
-		return new TargetC.TargetAbstractMethodDeclaration()
-		{
-			public AbstractMethodDeclaration node()
-			{
-				return self;
-			}
-		};
 	}
 }

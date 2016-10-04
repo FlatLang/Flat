@@ -2,8 +2,6 @@ package net.fathomsoft.nova.tree;
 
 import java.util.ArrayList;
 
-import net.fathomsoft.nova.Nova;
-import net.fathomsoft.nova.TargetC;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.util.Location;
 
@@ -111,19 +109,5 @@ public class InterfaceVTable extends VTable
 		
 		
 		return null;
-	}
-	
-	@Override
-	public TargetC.TargetInterfaceVTable getTarget()
-	{
-		final InterfaceVTable self = this;
-		
-		return new TargetC.TargetInterfaceVTable()
-		{
-			public InterfaceVTable node()
-			{
-				return self;
-			}
-		};
 	}
 }

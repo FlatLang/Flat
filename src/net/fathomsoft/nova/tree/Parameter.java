@@ -1,12 +1,9 @@
 package net.fathomsoft.nova.tree;
 
-import net.fathomsoft.nova.Nova;
-import net.fathomsoft.nova.TargetC;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.tree.lambda.LambdaMethodDeclaration;
-import net.fathomsoft.nova.tree.variables.Variable;
 import net.fathomsoft.nova.tree.variables.VariableDeclaration;
 import net.fathomsoft.nova.util.Location;
 
@@ -374,19 +371,5 @@ public class Parameter extends LocalDeclaration
 		
 		
 		return null;
-	}
-	
-	@Override
-	public TargetC.TargetParameter getTarget()
-	{
-		final Parameter self = this;
-		
-		return new TargetC.TargetParameter()
-		{
-			public Parameter node()
-			{
-				return self;
-			}
-		};
 	}
 }

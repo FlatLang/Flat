@@ -1,6 +1,5 @@
 package net.fathomsoft.nova.tree;
 
-import net.fathomsoft.nova.TargetC;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.error.SyntaxMessage;
@@ -213,19 +212,5 @@ public class Until extends IfStatement
 		
 		
 		return null;
-	}
-	
-	@Override
-	public TargetC.TargetUntil getTarget()
-	{
-		final Until self = this;
-		
-		return new TargetC.TargetUntil()
-		{
-			public Until node()
-			{
-				return self;
-			}
-		};
 	}
 }

@@ -4,7 +4,6 @@ import java.io.File;
 import java.util.ArrayList;
 
 import net.fathomsoft.nova.Nova;
-import net.fathomsoft.nova.TargetC;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.error.SyntaxMessage;
@@ -417,7 +416,7 @@ public class FileDeclaration extends Node
 		{
 			Import node = (Import)getImportList().getChild(i);
 			
-			if (!node.isUsed() || node.getLocation().equals(getName()))
+			if (!node.isUsed())
 			{
 				getImportList().removeChild(i);
 			}
@@ -580,19 +579,5 @@ public class FileDeclaration extends Node
 		
 		
 		return null;
-	}
-	
-	@Override
-	public TargetC.TargetFileDeclaration getTarget()
-	{
-		final FileDeclaration self = this;
-		
-		return new TargetC.TargetFileDeclaration()
-		{
-			public FileDeclaration node()
-			{
-				return self;
-			}
-		};
 	}
 }

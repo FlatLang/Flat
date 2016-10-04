@@ -1,7 +1,5 @@
 package net.fathomsoft.nova.tree;
 
-import net.fathomsoft.nova.Nova;
-import net.fathomsoft.nova.TargetC;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.tree.generics.GenericTypeArgumentList;
@@ -190,19 +188,5 @@ public class TernaryOperation extends IValue implements Accessible
 		
 		
 		return null;
-	}
-	
-	@Override
-	public TargetC.TargetTernaryOperation getTarget()
-	{
-		final TernaryOperation self = this;
-		
-		return new TargetC.TargetTernaryOperation()
-		{
-			public TernaryOperation node()
-			{
-				return self;
-			}
-		};
 	}
 }

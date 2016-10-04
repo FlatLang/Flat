@@ -1,7 +1,5 @@
 package net.fathomsoft.nova.tree;
 
-import net.fathomsoft.nova.Nova;
-import net.fathomsoft.nova.TargetC;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.tree.generics.GenericTypeArgumentList;
@@ -9,8 +7,6 @@ import net.fathomsoft.nova.tree.variables.Array;
 import net.fathomsoft.nova.tree.variables.VariableDeclaration;
 import net.fathomsoft.nova.util.Bounds;
 import net.fathomsoft.nova.util.Location;
-import net.fathomsoft.nova.util.Patterns;
-import net.fathomsoft.nova.util.Regex;
 import net.fathomsoft.nova.util.StringUtils;
 import net.fathomsoft.nova.util.SyntaxUtils;
 
@@ -343,19 +339,5 @@ public class Instantiation extends IIdentifier implements GenericCompatible
 		
 		
 		return null;
-	}
-	
-	@Override
-	public TargetC.TargetInstantiation getTarget()
-	{
-		final Instantiation self = this;
-		
-		return new TargetC.TargetInstantiation()
-		{
-			public Instantiation node()
-			{
-				return self;
-			}
-		};
 	}
 }

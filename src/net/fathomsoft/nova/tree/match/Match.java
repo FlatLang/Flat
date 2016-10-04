@@ -1,6 +1,5 @@
 package net.fathomsoft.nova.tree.match;
 
-import net.fathomsoft.nova.TargetC;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.error.SyntaxMessage;
@@ -387,19 +386,5 @@ public class Match extends ControlStatement
 		context.reset();
 		
 		return null;
-	}
-	
-	@Override
-	public TargetC.TargetNode getTarget()
-	{
-		final Match self = this;
-		
-		return new TargetC.TargetMatch()
-		{
-			public Match node()
-			{
-				return self;
-			}
-		};
 	}
 }

@@ -2,12 +2,9 @@ package net.fathomsoft.nova.tree;
 
 import java.util.ArrayList;
 
-import net.fathomsoft.nova.Nova;
-import net.fathomsoft.nova.TargetC;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.tree.exceptionhandling.Exception;
-import net.fathomsoft.nova.tree.generics.GenericTypeArgument;
 import net.fathomsoft.nova.tree.generics.GenericTypeArgumentList;
 import net.fathomsoft.nova.tree.generics.GenericTypeParameter;
 import net.fathomsoft.nova.util.Location;
@@ -423,19 +420,5 @@ public class ParameterList<E extends Value> extends TypeList<E>
 		
 		
 		return null;
-	}
-	
-	@Override
-	public TargetC.TargetParameterList getTarget()
-	{
-		final ParameterList self = this;
-		
-		return new TargetC.TargetParameterList()
-		{
-			public ParameterList node()
-			{
-				return self;
-			}
-		};
 	}
 }

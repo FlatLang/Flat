@@ -1,9 +1,7 @@
 package net.fathomsoft.nova.tree;
 
 import net.fathomsoft.nova.Nova;
-import net.fathomsoft.nova.TargetC;
 import net.fathomsoft.nova.TestContext;
-import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.util.Location;
 
 /**
@@ -148,19 +146,5 @@ public class BodyMethodDeclaration extends NovaMethodDeclaration
 		
 		
 		return null;
-	}
-	
-	@Override
-	public TargetC.TargetBodyMethodDeclaration getTarget()
-	{
-		final BodyMethodDeclaration self = this;
-		
-		return new TargetC.TargetBodyMethodDeclaration()
-		{
-			public BodyMethodDeclaration node()
-			{
-				return self;
-			}
-		};
 	}
 }

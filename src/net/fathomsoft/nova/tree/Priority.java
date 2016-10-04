@@ -1,9 +1,7 @@
 package net.fathomsoft.nova.tree;
 
-import net.fathomsoft.nova.TargetC;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.error.SyntaxMessage;
-import net.fathomsoft.nova.tree.generics.GenericTypeArgument;
 import net.fathomsoft.nova.tree.generics.GenericTypeArgumentList;
 import net.fathomsoft.nova.tree.generics.GenericTypeParameter;
 import net.fathomsoft.nova.util.Location;
@@ -355,19 +353,5 @@ public class Priority extends Value implements Accessible
 		
 		
 		return null;
-	}
-	
-	@Override
-	public TargetC.TargetPriority getTarget()
-	{
-		final Priority self = this;
-		
-		return new TargetC.TargetPriority()
-		{
-			public Priority node()
-			{
-				return self;
-			}
-		};
 	}
 }

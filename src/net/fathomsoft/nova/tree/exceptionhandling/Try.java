@@ -2,16 +2,11 @@ package net.fathomsoft.nova.tree.exceptionhandling;
 
 import java.util.ArrayList;
 
-import net.fathomsoft.nova.TargetC;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.ValidationResult;
-import net.fathomsoft.nova.tree.AccessorMethod;
 import net.fathomsoft.nova.tree.Node;
 import net.fathomsoft.nova.tree.SyntaxTree;
 import net.fathomsoft.nova.util.Location;
-import net.fathomsoft.nova.util.Patterns;
-import net.fathomsoft.nova.util.Regex;
-import net.fathomsoft.nova.util.StringUtils;
 
 /**
  * ExceptionHandler extension that represents the declaration of a
@@ -191,19 +186,5 @@ public class Try extends ExceptionHandler
 		
 		
 		return null;
-	}
-	
-	@Override
-	public TargetC.TargetTry getTarget()
-	{
-		final Try self = this;
-		
-		return new TargetC.TargetTry()
-		{
-			public Try node()
-			{
-				return self;
-			}
-		};
 	}
 }

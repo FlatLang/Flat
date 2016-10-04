@@ -12,6 +12,8 @@ import net.fathomsoft.nova.error.SyntaxErrorException;
 import net.fathomsoft.nova.tree.*;
 import net.fathomsoft.nova.tree.match.Match;
 import net.fathomsoft.nova.util.*;
+import nova.c.engines.CCodeGeneratorEngine;
+import nova.c.engines.CCompileEngine;
 
 import static java.util.Arrays.stream;
 import static net.fathomsoft.nova.util.FileUtils.formatPath;
@@ -140,7 +142,7 @@ public class Nova
 	 */
 	public Nova()
 	{
-		try
+		/*try
 		{
 			URL url = new File("../Nova C/out/production/Nova C").toURL();
 			
@@ -179,7 +181,10 @@ public class Nova
 		catch (MalformedURLException e)
 		{
 			System.exit(6);
-		}
+		}*/
+		
+		codeGeneratorEngine = new CCodeGeneratorEngine(this);
+		compileEngine = new CCompileEngine(this);
 		
 		if (BENCHMARK > 0)
 		{
@@ -232,7 +237,7 @@ public class Nova
 			{
 				"../Compiler",
 				"../Misc/example",
-//				"../Misc/stabilitytest", 
+				"../Misc/stabilitytest", 
 				"-output-directory", "../NovaCompilerOutput",
 				"-package-output-directory", "nova", "../StandardLibrary/c",
 //				"-dir", formatPath(directory + "../example"),
@@ -245,12 +250,12 @@ public class Nova
 //				"-gcc",
 //				"-tcc",
 //				"-small",
-				"-cargs",
+//				"-cargs",
 //				"-keepc",
 				"-single-thread",
 				"-main",
-				"example/Lab",
-//				"stabilitytest/StabilityTest",
+//				"example/Lab",
+				"stabilitytest/StabilityTest",
 //				"example/SvgChart",
 //				"example/HashMapDemo",
 //				"example/HashSetDemo",

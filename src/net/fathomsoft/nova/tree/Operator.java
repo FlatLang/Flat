@@ -1,6 +1,5 @@
 package net.fathomsoft.nova.tree;
 
-import net.fathomsoft.nova.TargetC;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.util.Location;
@@ -260,19 +259,5 @@ public class Operator extends IValue
 		
 		
 		return null;
-	}
-	
-	@Override
-	public TargetC.TargetOperator getTarget()
-	{
-		final Operator self = this;
-		
-		return new TargetC.TargetOperator()
-		{
-			public Operator node()
-			{
-				return self;
-			}
-		};
 	}
 }

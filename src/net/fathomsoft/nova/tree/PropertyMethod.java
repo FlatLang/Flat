@@ -1,6 +1,5 @@
 package net.fathomsoft.nova.tree;
 
-import net.fathomsoft.nova.TargetC;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.tree.variables.FieldDeclaration;
@@ -156,18 +155,4 @@ public abstract class PropertyMethod extends BodyMethodDeclaration
 	}
 	
 	public abstract String getMethodPrefix();
-	
-	@Override
-	public TargetC.TargetPropertyMethod getTarget()
-	{
-		final PropertyMethod self = this;
-		
-		return new TargetC.TargetPropertyMethod()
-		{
-			public PropertyMethod node()
-			{
-				return self;
-			}
-		};
-	}
 }

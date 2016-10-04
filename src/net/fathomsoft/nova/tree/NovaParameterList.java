@@ -1,10 +1,7 @@
 package net.fathomsoft.nova.tree;
 
-import net.fathomsoft.nova.Nova;
-import net.fathomsoft.nova.TargetC;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.ValidationResult;
-import net.fathomsoft.nova.tree.lambda.LambdaMethodDeclaration;
 import net.fathomsoft.nova.util.Location;
 
 import java.util.ArrayList;
@@ -217,19 +214,5 @@ public class NovaParameterList extends ParameterList<Parameter>
 			
 			return node;
 		}
-	}
-	
-	@Override
-	public TargetC.TargetNovaParameterList getTarget()
-	{
-		final NovaParameterList self = this;
-		
-		return new TargetC.TargetNovaParameterList()
-		{
-			public NovaParameterList node()
-			{
-				return self;
-			}
-		};
 	}
 }

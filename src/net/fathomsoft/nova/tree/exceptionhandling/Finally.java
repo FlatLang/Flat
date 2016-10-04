@@ -1,8 +1,6 @@
 package net.fathomsoft.nova.tree.exceptionhandling;
 
-import net.fathomsoft.nova.TargetC;
 import net.fathomsoft.nova.TestContext;
-import net.fathomsoft.nova.tree.AccessorMethod;
 import net.fathomsoft.nova.tree.Node;
 import net.fathomsoft.nova.util.Location;
 
@@ -96,19 +94,5 @@ public class Finally extends ExceptionHandler
 		
 		
 		return null;
-	}
-	
-	@Override
-	public TargetC.TargetFinally getTarget()
-	{
-		final Finally self = this;
-		
-		return new TargetC.TargetFinally()
-		{
-			public Finally node()
-			{
-				return self;
-			}
-		};
 	}
 }

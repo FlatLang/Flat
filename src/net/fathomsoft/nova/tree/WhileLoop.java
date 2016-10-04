@@ -1,7 +1,5 @@
 package net.fathomsoft.nova.tree;
 
-import net.fathomsoft.nova.Nova;
-import net.fathomsoft.nova.TargetC;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.util.Bounds;
@@ -191,19 +189,5 @@ public class WhileLoop extends Loop
 		
 		
 		return null;
-	}
-	
-	@Override
-	public TargetC.TargetNode getTarget()
-	{
-		final WhileLoop self = this;
-		
-		return new TargetC.TargetWhileLoop()
-		{
-			public WhileLoop node()
-			{
-				return self;
-			}
-		};
 	}
 }

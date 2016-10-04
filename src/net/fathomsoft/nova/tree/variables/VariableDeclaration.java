@@ -2,13 +2,10 @@ package net.fathomsoft.nova.tree.variables;
 
 import java.util.ArrayList;
 
-import net.fathomsoft.nova.Nova;
-import net.fathomsoft.nova.TargetC;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.tree.*;
-import net.fathomsoft.nova.tree.exceptionhandling.Exception;
 import net.fathomsoft.nova.tree.generics.GenericTypeArgumentList;
 import net.fathomsoft.nova.tree.generics.GenericTypeParameterDeclaration;
 import net.fathomsoft.nova.util.Bounds;
@@ -552,19 +549,5 @@ public class VariableDeclaration extends IIdentifier
 		{
 			genericsRemaining--;
 		}
-	}
-	
-	@Override
-	public TargetC.TargetVariableDeclaration getTarget()
-	{
-		final VariableDeclaration self = this;
-		
-		return new TargetC.TargetVariableDeclaration()
-		{
-			public VariableDeclaration node()
-			{
-				return self;
-			}
-		};
 	}
 }

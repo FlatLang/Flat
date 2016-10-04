@@ -1,7 +1,5 @@
 package net.fathomsoft.nova.tree;
 
-import net.fathomsoft.nova.Nova;
-import net.fathomsoft.nova.TargetC;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.tree.variables.VariableDeclaration;
 import net.fathomsoft.nova.util.Location;
@@ -276,19 +274,5 @@ public class InstanceDeclaration extends VariableDeclaration
 		
 		
 		return null;
-	}
-	
-	@Override
-	public TargetC.TargetInstanceDeclaration getTarget()
-	{
-		final InstanceDeclaration self = this;
-		
-		return new TargetC.TargetInstanceDeclaration()
-		{
-			public InstanceDeclaration node()
-			{
-				return self;
-			}
-		};
 	}
 }

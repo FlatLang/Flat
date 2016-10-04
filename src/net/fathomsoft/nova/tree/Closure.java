@@ -1,7 +1,5 @@
 package net.fathomsoft.nova.tree;
 
-import net.fathomsoft.nova.Nova;
-import net.fathomsoft.nova.TargetC;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.error.SyntaxMessage;
@@ -443,19 +441,5 @@ public class Closure extends Variable
 		
 		
 		return null;
-	}
-	
-	@Override
-	public TargetC.TargetClosure getTarget()
-	{
-		final Closure self = this;
-		
-		return new TargetC.TargetClosure()
-		{
-			public Closure node()
-			{
-				return self;
-			}
-		};
 	}
 }

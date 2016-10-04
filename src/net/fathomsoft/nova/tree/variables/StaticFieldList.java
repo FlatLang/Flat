@@ -1,6 +1,5 @@
 package net.fathomsoft.nova.tree.variables;
 
-import net.fathomsoft.nova.TargetC;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.tree.List;
 import net.fathomsoft.nova.tree.Node;
@@ -69,19 +68,5 @@ public class StaticFieldList extends List
 		
 		
 		return null;
-	}
-	
-	@Override
-	public TargetC.TargetStaticFieldList getTarget()
-	{
-		final StaticFieldList self = this;
-		
-		return new TargetC.TargetStaticFieldList()
-		{
-			public StaticFieldList node()
-			{
-				return self;
-			}
-		};
 	}
 }

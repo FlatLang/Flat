@@ -1,13 +1,9 @@
 package net.fathomsoft.nova.tree;
 
-import net.fathomsoft.nova.Nova;
-import net.fathomsoft.nova.TargetC;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.util.Location;
-import net.fathomsoft.nova.util.Patterns;
-import net.fathomsoft.nova.util.Regex;
 import net.fathomsoft.nova.util.StringUtils;
 import net.fathomsoft.nova.util.SyntaxUtils;
 
@@ -98,28 +94,6 @@ public class Import extends Node
 	public ClassDeclaration getClassDeclaration()
 	{
 		return getProgram().getClassDeclaration(getClassLocation());
-	}
-	
-	/**
-	 * Get the location of the import. For example, in the statement:
-	 * 'import "net/fathomsoft/String";' the location is the
-	 * net/fathomsoft/NovaString.h section. In other words, the location is the
-	 * content that is within the double quotes in an import statement.
-	 * 
-	 * @return The location of the import.
-	 */
-	public String getLocation()
-	{
-		if (isExternal())
-		{
-			return location + ".h";
-		}
-		
-		ClassDeclaration node = getProgram().getClassDeclaration(location);
-		
-		FileDeclaration f = node.getFileDeclaration();
-		
-		return f.getTarget().generateHeaderName();
 	}
 	
 	/**
@@ -324,19 +298,5 @@ public class Import extends Node
 		
 		
 		return null;
-	}
-	
-	@Override
-	public TargetC.TargetImport getTarget()
-	{
-		final Import self = this;
-		
-		return new TargetC.TargetImport()
-		{
-			public Import node()
-			{
-				return self;
-			}
-		};
 	}
 }

@@ -1,12 +1,9 @@
 package net.fathomsoft.nova.tree;
 
-import net.fathomsoft.nova.TargetC;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.util.Bounds;
 import net.fathomsoft.nova.util.Location;
-import net.fathomsoft.nova.util.Patterns;
-import net.fathomsoft.nova.util.Regex;
 import net.fathomsoft.nova.util.StringUtils;
 import net.fathomsoft.nova.util.SyntaxUtils;
 
@@ -186,19 +183,5 @@ public class IfStatement extends ControlStatement
 		
 		
 		return null;
-	}
-	
-	@Override
-	public TargetC.TargetIfStatement getTarget()
-	{
-		final IfStatement self = this;
-		
-		return new TargetC.TargetIfStatement()
-		{
-			public IfStatement node()
-			{
-				return self;
-			}
-		};
 	}
 }

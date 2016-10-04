@@ -1,7 +1,5 @@
 package net.fathomsoft.nova.tree.variables;
 
-import net.fathomsoft.nova.Nova;
-import net.fathomsoft.nova.TargetC;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.error.SyntaxMessage;
@@ -561,19 +559,5 @@ public class Array extends VariableDeclaration implements ArrayCompatible
 		
 		
 		return null;
-	}
-	
-	@Override
-	public TargetC.TargetArray getTarget()
-	{
-		final Array self = this;
-		
-		return new TargetC.TargetArray()
-		{
-			public Array node()
-			{
-				return self;
-			}
-		};
 	}
 }

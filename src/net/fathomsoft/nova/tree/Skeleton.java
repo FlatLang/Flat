@@ -1,6 +1,5 @@
 package net.fathomsoft.nova.tree;
 
-import net.fathomsoft.nova.TargetC;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.util.Location;
 
@@ -90,19 +89,5 @@ public class Skeleton extends Node
 		
 		
 		return null;
-	}
-	
-	@Override
-	public TargetC.TargetSkeleton getTarget()
-	{
-		final Skeleton self = this;
-		
-		return new TargetC.TargetSkeleton()
-		{
-			public Skeleton node()
-			{
-				return self;
-			}
-		};
 	}
 }

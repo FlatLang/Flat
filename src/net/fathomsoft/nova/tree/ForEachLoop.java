@@ -1,13 +1,9 @@
 package net.fathomsoft.nova.tree;
 
-import net.fathomsoft.nova.Nova;
-import net.fathomsoft.nova.TargetC;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.error.SyntaxMessage;
-import net.fathomsoft.nova.tree.generics.GenericTypeArgument;
 import net.fathomsoft.nova.tree.variables.Variable;
-import net.fathomsoft.nova.tree.variables.VariableDeclaration;
 import net.fathomsoft.nova.tree.variables.VariableDeclarationList;
 import net.fathomsoft.nova.util.Bounds;
 import net.fathomsoft.nova.util.Location;
@@ -464,19 +460,5 @@ public class ForEachLoop extends Loop
 		
 		
 		return s;
-	}
-	
-	@Override
-	public TargetC.TargetForEachLoop getTarget()
-	{
-		final ForEachLoop self = this;
-		
-		return new TargetC.TargetForEachLoop()
-		{
-			public ForEachLoop node()
-			{
-				return self;
-			}
-		};
 	}
 }

@@ -3,7 +3,6 @@ package net.fathomsoft.nova.tree;
 import java.util.regex.Matcher;
 
 import net.fathomsoft.nova.Nova;
-import net.fathomsoft.nova.TargetC;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.error.Message;
 import net.fathomsoft.nova.error.SyntaxErrorException;
@@ -916,19 +915,5 @@ public class BinaryOperation extends IValue
 		
 		
 		return null;
-	}
-	
-	@Override
-	public TargetC.TargetBinaryOperation getTarget()
-	{
-		final BinaryOperation self = this;
-		
-		return new TargetC.TargetBinaryOperation()
-		{
-			public BinaryOperation node()
-			{
-				return self;
-			}
-		};
 	}
 }

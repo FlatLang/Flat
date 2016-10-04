@@ -2,17 +2,13 @@ package net.fathomsoft.nova.tree;
 
 import java.util.ArrayList;
 
-import net.fathomsoft.nova.Nova;
-import net.fathomsoft.nova.TargetC;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.error.UnimplementedOperationException;
 import net.fathomsoft.nova.tree.generics.GenericTypeArgument;
 import net.fathomsoft.nova.tree.generics.GenericTypeArgumentList;
-import net.fathomsoft.nova.tree.variables.ArrayAccess;
 import net.fathomsoft.nova.tree.variables.FieldDeclaration;
-import net.fathomsoft.nova.tree.variables.Super;
 import net.fathomsoft.nova.tree.variables.Variable;
 import net.fathomsoft.nova.tree.variables.VariableDeclaration;
 import net.fathomsoft.nova.tree.variables.VariableDeclarationList;
@@ -792,19 +788,5 @@ public class Assignment extends Value
 		
 		
 		return null;
-	}
-	
-	@Override
-	public TargetC.TargetAssignment getTarget()
-	{
-		final Assignment self = this;
-		
-		return new TargetC.TargetAssignment()
-		{
-			public Assignment node()
-			{
-				return self;
-			}
-		};
 	}
 }

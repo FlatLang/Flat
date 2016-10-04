@@ -1,8 +1,6 @@
 package net.fathomsoft.nova.tree;
 
-import net.fathomsoft.nova.TargetC;
 import net.fathomsoft.nova.TestContext;
-import net.fathomsoft.nova.tree.variables.Variable;
 import net.fathomsoft.nova.util.Bounds;
 import net.fathomsoft.nova.util.Location;
 import net.fathomsoft.nova.util.StringUtils;
@@ -159,19 +157,5 @@ public class Repeat extends Loop
 		
 		
 		return null;
-	}
-	
-	@Override
-	public TargetC.TargetRepeat getTarget()
-	{
-		final Repeat self = this;
-		
-		return new TargetC.TargetRepeat()
-		{
-			public Repeat node()
-			{
-				return self;
-			}
-		};
 	}
 }

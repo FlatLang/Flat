@@ -4,10 +4,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 import net.fathomsoft.nova.Nova;
-import net.fathomsoft.nova.TargetC;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.ValidationResult;
-import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.util.Location;
 import net.fathomsoft.nova.util.SyntaxUtils;
 
@@ -325,19 +323,5 @@ public class Program extends Node
 		
 		
 		return null;
-	}
-	
-	@Override
-	public TargetC.TargetProgram getTarget()
-	{
-		final Program self = this;
-		
-		return new TargetC.TargetProgram()
-		{
-			public Program node()
-			{
-				return self;
-			}
-		};
 	}
 }

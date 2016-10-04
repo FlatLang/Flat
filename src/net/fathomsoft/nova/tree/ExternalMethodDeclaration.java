@@ -1,13 +1,11 @@
 package net.fathomsoft.nova.tree;
 
-import net.fathomsoft.nova.TargetC;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.tree.variables.ObjectReference;
 import net.fathomsoft.nova.util.Bounds;
 import net.fathomsoft.nova.util.Location;
-import net.fathomsoft.nova.util.Patterns;
 import net.fathomsoft.nova.util.StringUtils;
 import net.fathomsoft.nova.util.SyntaxUtils;
 
@@ -347,19 +345,5 @@ public class ExternalMethodDeclaration extends MethodDeclaration
 		
 		
 		return null;
-	}
-	
-	@Override
-	public TargetC.TargetExternalMethodDeclaration getTarget()
-	{
-		final ExternalMethodDeclaration self = this;
-		
-		return new TargetC.TargetExternalMethodDeclaration()
-		{
-			public ExternalMethodDeclaration node()
-			{
-				return self;
-			}
-		};
 	}
 }

@@ -1,7 +1,5 @@
 package net.fathomsoft.nova.tree;
 
-import net.fathomsoft.nova.Nova;
-import net.fathomsoft.nova.TargetC;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.tree.NovaParameterList.ReturnParameterList;
 import net.fathomsoft.nova.tree.annotations.PrimitiveArrayAnnotation;
@@ -884,14 +882,14 @@ public abstract class Value extends Node implements AbstractValue
 		return arrayAccess != null ? arrayAccess.getNumDimensions() : 0;
 	}
 	
-	/**
+	/*/**
 	 * @see net.fathomsoft.nova.tree.Node#generateNovaInput(StringBuilder, boolean)
-	 */
+	 *
 	@Override
 	public StringBuilder generateNovaInput(StringBuilder builder, boolean outputChildren)
 	{
 		return getTarget().generateUseOutput(builder);
-	}
+	}*/
 	
 	public boolean isConstant()
 	{
@@ -1076,19 +1074,5 @@ public abstract class Value extends Node implements AbstractValue
 		
 		
 		return null;
-	}
-	
-	@Override
-	public TargetC.TargetValue getTarget()
-	{
-		final Value self = this;
-		
-		return new TargetC.TargetValue()
-		{
-			public Value node()
-			{
-				return self;
-			}
-		};
 	}
 }

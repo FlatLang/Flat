@@ -1,6 +1,5 @@
 package net.fathomsoft.nova.tree;
 
-import net.fathomsoft.nova.TargetC;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.util.Location;
 import net.fathomsoft.nova.util.SyntaxUtils;
@@ -188,19 +187,5 @@ public class ImportList extends List
 		
 		
 		return null;
-	}
-	
-	@Override
-	public TargetC.TargetNode getTarget()
-	{
-		final ImportList self = this;
-		
-		return new TargetC.TargetImportList()
-		{
-			public ImportList node()
-			{
-				return self;
-			}
-		};
 	}
 }

@@ -1,11 +1,7 @@
 package net.fathomsoft.nova.tree;
 
-import net.fathomsoft.nova.TargetC;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.error.SyntaxMessage;
-import net.fathomsoft.nova.tree.exceptionhandling.Exception;
-import net.fathomsoft.nova.tree.variables.FieldDeclaration;
-import net.fathomsoft.nova.tree.variables.InstanceFieldList;
 import net.fathomsoft.nova.util.Location;
 
 /**
@@ -150,19 +146,5 @@ public class Destructor extends BodyMethodDeclaration
 		
 		
 		return null;
-	}
-	
-	@Override
-	public TargetC.TargetDestructor getTarget()
-	{
-		final Destructor self = this;
-		
-		return new TargetC.TargetDestructor()
-		{
-			public Destructor node()
-			{
-				return self;
-			}
-		};
 	}
 }

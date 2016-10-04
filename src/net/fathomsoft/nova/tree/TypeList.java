@@ -3,7 +3,6 @@ package net.fathomsoft.nova.tree;
 import java.util.ArrayList;
 import java.util.Iterator;
 
-import net.fathomsoft.nova.TargetC;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.util.Location;
 
@@ -157,19 +156,5 @@ public class TypeList<E extends Node> extends List implements Iterable<E>
 		
 		
 		return null;
-	}
-	
-	@Override
-	public TargetC.TargetTypeList getTarget()
-	{
-		final TypeList self = this;
-		
-		return new TargetC.TargetTypeList()
-		{
-			public TypeList<Node> node()
-			{
-				return self;
-			}
-		};
 	}
 }

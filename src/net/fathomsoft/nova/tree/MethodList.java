@@ -2,8 +2,6 @@ package net.fathomsoft.nova.tree;
 
 import java.util.ArrayList;
 
-import net.fathomsoft.nova.TargetC;
-import sun.security.util.Length;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.util.Location;
 
@@ -211,19 +209,5 @@ public class MethodList extends TypeList<MethodDeclaration>
 		}
 		
 		return str;
-	}
-	
-	@Override
-	public TargetC.TargetMethodList getTarget()
-	{
-		final MethodList self = this;
-		
-		return new TargetC.TargetMethodList()
-		{
-			public MethodList node()
-			{
-				return self;
-			}
-		};
 	}
 }

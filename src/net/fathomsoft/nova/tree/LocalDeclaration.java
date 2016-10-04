@@ -1,7 +1,5 @@
 package net.fathomsoft.nova.tree;
 
-import net.fathomsoft.nova.Nova;
-import net.fathomsoft.nova.TargetC;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.error.SyntaxMessage;
@@ -458,19 +456,5 @@ public class LocalDeclaration extends VariableDeclaration
 	public String toString()
 	{
 		return generateNovaInput().toString();
-	}
-	
-	@Override
-	public TargetC.TargetLocalDeclaration getTarget()
-	{
-		final LocalDeclaration self = this;
-		
-		return new TargetC.TargetLocalDeclaration()
-		{
-			public LocalDeclaration node()
-			{
-				return self;
-			}
-		};
 	}
 }

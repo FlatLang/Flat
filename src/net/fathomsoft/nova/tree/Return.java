@@ -1,14 +1,10 @@
 package net.fathomsoft.nova.tree;
 
-import net.fathomsoft.nova.Nova;
-import net.fathomsoft.nova.TargetC;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.tree.variables.Variable;
 import net.fathomsoft.nova.util.Location;
-import net.fathomsoft.nova.util.Patterns;
-import net.fathomsoft.nova.util.Regex;
 import net.fathomsoft.nova.util.StringUtils;
 import net.fathomsoft.nova.util.SyntaxUtils;
 
@@ -352,19 +348,5 @@ public class Return extends IValue
 		
 		
 		return null;
-	}
-	
-	@Override
-	public TargetC.TargetReturn getTarget()
-	{
-		final Return self = this;
-		
-		return new TargetC.TargetReturn()
-		{
-			public Return node()
-			{
-				return self;
-			}
-		};
 	}
 }

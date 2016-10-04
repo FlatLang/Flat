@@ -1,16 +1,12 @@
 package net.fathomsoft.nova.tree;
 
-import net.fathomsoft.nova.Nova;
-import net.fathomsoft.nova.TargetC;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.tree.generics.GenericTypeArgument;
 import net.fathomsoft.nova.tree.variables.ObjectReference;
-import net.fathomsoft.nova.tree.variables.Variable;
 import net.fathomsoft.nova.util.Bounds;
 import net.fathomsoft.nova.util.Location;
 import net.fathomsoft.nova.util.Patterns;
-import net.fathomsoft.nova.util.Regex;
 import net.fathomsoft.nova.util.StringUtils;
 import net.fathomsoft.nova.util.SyntaxUtils;
 
@@ -378,19 +374,5 @@ public class ClosureDeclaration extends Parameter implements CallableMethod
 		}
 		
 		return s;
-	}
-	
-	@Override
-	public TargetC.TargetClosureDeclaration getTarget()
-	{
-		final ClosureDeclaration self = this;
-		
-		return new TargetC.TargetClosureDeclaration()
-		{
-			public ClosureDeclaration node()
-			{
-				return self;
-			}
-		};
 	}
 }

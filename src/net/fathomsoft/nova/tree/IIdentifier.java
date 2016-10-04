@@ -1,9 +1,6 @@
 package net.fathomsoft.nova.tree;
 
-import net.fathomsoft.nova.TargetC;
 import net.fathomsoft.nova.TestContext;
-import net.fathomsoft.nova.tree.generics.GenericTypeArgumentList;
-import net.fathomsoft.nova.tree.variables.VariableDeclaration;
 import net.fathomsoft.nova.util.Location;
 
 /**
@@ -201,19 +198,5 @@ public class IIdentifier extends Identifier
 		
 		
 		return null;
-	}
-	
-	@Override
-	public TargetC.TargetIIdentifier getTarget()
-	{
-		final IIdentifier self = this;
-		
-		return new TargetC.TargetIIdentifier()
-		{
-			public IIdentifier node()
-			{
-				return self;
-			}
-		};
 	}
 }

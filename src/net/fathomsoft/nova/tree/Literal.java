@@ -1,13 +1,9 @@
 package net.fathomsoft.nova.tree;
 
-import net.fathomsoft.nova.Nova;
-import net.fathomsoft.nova.TargetC;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.error.SyntaxMessage;
-import net.fathomsoft.nova.tree.match.Match;
 import net.fathomsoft.nova.util.Location;
-import net.fathomsoft.nova.util.StringUtils;
 import net.fathomsoft.nova.util.SyntaxUtils;
 
 /**
@@ -410,19 +406,5 @@ public class Literal extends IValue implements Accessible
 		
 		
 		return null;
-	}
-	
-	@Override
-	public TargetC.TargetLiteral getTarget()
-	{
-		final Literal self = this;
-		
-		return new TargetC.TargetLiteral()
-		{
-			public Literal node()
-			{
-				return self;
-			}
-		};
 	}
 }

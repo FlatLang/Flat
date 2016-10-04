@@ -1,7 +1,5 @@
 package net.fathomsoft.nova.tree;
 
-import net.fathomsoft.nova.Nova;
-import net.fathomsoft.nova.TargetC;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.error.SyntaxErrorException;
@@ -1353,19 +1351,5 @@ public class MethodCall extends Variable
 	public static class MethodData extends ExtraData
 	{
 		private String name;
-	}
-	
-	@Override
-	public TargetC.TargetMethodCall getTarget()
-	{
-		final MethodCall self = this;
-		
-		return new TargetC.TargetMethodCall()
-		{
-			public MethodCall node()
-			{
-				return self;
-			}
-		};
 	}
 }

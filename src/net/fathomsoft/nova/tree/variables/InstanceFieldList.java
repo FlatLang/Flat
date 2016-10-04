@@ -1,8 +1,6 @@
 package net.fathomsoft.nova.tree.variables;
 
-import net.fathomsoft.nova.TargetC;
 import net.fathomsoft.nova.TestContext;
-import net.fathomsoft.nova.tree.ClassDeclaration;
 import net.fathomsoft.nova.tree.List;
 import net.fathomsoft.nova.tree.Node;
 import net.fathomsoft.nova.util.Location;
@@ -70,19 +68,5 @@ public class InstanceFieldList extends List
 		
 		
 		return null;
-	}
-	
-	@Override
-	public TargetC.TargetInstanceFieldList getTarget()
-	{
-		final InstanceFieldList self = this;
-		
-		return new TargetC.TargetInstanceFieldList()
-		{
-			public InstanceFieldList node()
-			{
-				return self;
-			}
-		};
 	}
 }

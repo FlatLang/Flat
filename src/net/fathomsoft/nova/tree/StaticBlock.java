@@ -3,10 +3,8 @@ package net.fathomsoft.nova.tree;
 import java.util.HashMap;
 
 import net.fathomsoft.nova.Nova;
-import net.fathomsoft.nova.TargetC;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.util.Location;
-import net.fathomsoft.nova.tree.exceptionhandling.Exception;
 
 /**
  * {@link Node} extension that represents
@@ -152,19 +150,5 @@ public class StaticBlock extends Node implements ScopeAncestor
 		
 		
 		return null;
-	}
-	
-	@Override
-	public TargetC.TargetStaticBlock getTarget()
-	{
-		final StaticBlock self = this;
-		
-		return new TargetC.TargetStaticBlock()
-		{
-			public StaticBlock node()
-			{
-				return self;
-			}
-		};
 	}
 }

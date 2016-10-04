@@ -1,8 +1,6 @@
 package net.fathomsoft.nova.tree;
 
-import net.fathomsoft.nova.TargetC;
 import net.fathomsoft.nova.TestContext;
-import net.fathomsoft.nova.tree.variables.Variable;
 import net.fathomsoft.nova.tree.variables.VariableDeclaration;
 import net.fathomsoft.nova.util.Location;
 
@@ -93,19 +91,5 @@ public class ClosureContext extends TypeList<ClosureVariableDeclaration>
 		
 		
 		return null;
-	}
-	
-	@Override
-	public TargetC.TargetClosureContext getTarget()
-	{
-		final ClosureContext self = this;
-		
-		return new TargetC.TargetClosureContext()
-		{
-			public ClosureContext node()
-			{
-				return self;
-			}
-		};
 	}
 }

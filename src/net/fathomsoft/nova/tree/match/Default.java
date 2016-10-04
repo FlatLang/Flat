@@ -1,6 +1,5 @@
 package net.fathomsoft.nova.tree.match;
 
-import net.fathomsoft.nova.TargetC;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.tree.Node;
@@ -120,19 +119,5 @@ public class Default extends MatchCase
 		
 		
 		return null;
-	}
-	
-	@Override
-	public TargetC.TargetDefault getTarget()
-	{
-		final Default self = this;
-		
-		return new TargetC.TargetDefault()
-		{
-			public Default node()
-			{
-				return self;
-			}
-		};
 	}
 }

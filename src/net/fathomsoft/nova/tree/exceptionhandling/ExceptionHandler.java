@@ -1,8 +1,6 @@
 package net.fathomsoft.nova.tree.exceptionhandling;
 
-import net.fathomsoft.nova.TargetC;
 import net.fathomsoft.nova.TestContext;
-import net.fathomsoft.nova.tree.Assignment;
 import net.fathomsoft.nova.tree.Node;
 import net.fathomsoft.nova.tree.Scope;
 import net.fathomsoft.nova.util.Location;
@@ -135,19 +133,5 @@ public class ExceptionHandler extends Node
 		
 		
 		return null;
-	}
-	
-	@Override
-	public TargetC.TargetExceptionHandler getTarget()
-	{
-		final ExceptionHandler self = this;
-		
-		return new TargetC.TargetExceptionHandler()
-		{
-			public ExceptionHandler node()
-			{
-				return self;
-			}
-		};
 	}
 }

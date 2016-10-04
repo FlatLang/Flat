@@ -1,10 +1,8 @@
 package net.fathomsoft.nova.tree.match;
 
-import net.fathomsoft.nova.TargetC;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.tree.Node;
-import net.fathomsoft.nova.tree.variables.Variable;
 import net.fathomsoft.nova.util.Location;
 
 /**
@@ -114,19 +112,5 @@ public class Fallthrough extends Node implements MatchChild
 	public String toString()
 	{
 		return IDENTIFIER;
-	}
-	
-	@Override
-	public TargetC.TargetFallthrough getTarget()
-	{
-		final Fallthrough self = this;
-		
-		return new TargetC.TargetFallthrough()
-		{
-			public Fallthrough node()
-			{
-				return self;
-			}
-		};
 	}
 }

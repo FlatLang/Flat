@@ -1,7 +1,5 @@
 package net.fathomsoft.nova.tree;
 
-import net.fathomsoft.nova.Nova;
-import net.fathomsoft.nova.TargetC;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.error.SyntaxMessage;
@@ -363,19 +361,5 @@ public class ForLoop extends Loop
 		
 		
 		return null;
-	}
-	
-	@Override
-	public TargetC.TargetForLoop getTarget()
-	{
-		final ForLoop self = this;
-		
-		return new TargetC.TargetForLoop()
-		{
-			public ForLoop node()
-			{
-				return self;
-			}
-		};
 	}
 }

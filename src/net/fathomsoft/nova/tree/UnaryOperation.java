@@ -2,12 +2,9 @@ package net.fathomsoft.nova.tree;
 
 import java.util.HashMap;
 
-import net.fathomsoft.nova.Nova;
-import net.fathomsoft.nova.TargetC;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.error.SyntaxMessage;
-import net.fathomsoft.nova.tree.variables.ArrayAccess;
 import net.fathomsoft.nova.tree.variables.Variable;
 import net.fathomsoft.nova.util.Bounds;
 import net.fathomsoft.nova.util.Location;
@@ -463,19 +460,5 @@ public class UnaryOperation extends IValue
 		
 		
 		return null;
-	}
-	
-	@Override
-	public TargetC.TargetUnaryOperation getTarget()
-	{
-		final UnaryOperation self = this;
-		
-		return new TargetC.TargetUnaryOperation()
-		{
-			public UnaryOperation node()
-			{
-				return self;
-			}
-		};
 	}
 }

@@ -1,7 +1,5 @@
 package net.fathomsoft.nova.tree;
 
-import net.fathomsoft.nova.Nova;
-import net.fathomsoft.nova.TargetC;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.util.Location;
@@ -23,7 +21,7 @@ public abstract class VTable extends IIdentifier
 		
 		ClassDeclaration c = getParentClass();
 		
-		String type = "" + c.getTarget().generateSourceName(getVTableType() + "_VTable");
+		String type = c.getClassLocation().replace('/', '_') + '_' + getVTableType() + "_VTable";
 		setType(type, true, false, false);
 		
 		setName(type + "_val", true);
@@ -89,18 +87,4 @@ public abstract class VTable extends IIdentifier
 	public abstract String getVTableType();
 	
 	public abstract NovaMethodDeclaration[] getVirtualMethods();
-	
-	@Override
-	public TargetC.TargetVTable getTarget()
-	{
-		final VTable self = this;
-		
-		return new TargetC.TargetVTable()
-		{
-			public VTable node()
-			{
-				return self;
-			}
-		};
-	}
 }

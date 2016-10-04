@@ -1,13 +1,6 @@
 package net.fathomsoft.nova.tree;
 
-import net.fathomsoft.nova.Nova;
-import net.fathomsoft.nova.TargetC;
 import net.fathomsoft.nova.TestContext;
-import net.fathomsoft.nova.ValidationResult;
-import net.fathomsoft.nova.tree.exceptionhandling.Exception;
-import net.fathomsoft.nova.tree.variables.FieldDeclaration;
-import net.fathomsoft.nova.tree.variables.FieldList;
-import net.fathomsoft.nova.tree.variables.InstanceFieldList;
 import net.fathomsoft.nova.util.Location;
 
 /**
@@ -105,19 +98,5 @@ public class AssignmentMethod extends BodyMethodDeclaration
 		
 		
 		return null;
-	}
-	
-	@Override
-	public TargetC.TargetAssignmentMethod getTarget()
-	{
-		final AssignmentMethod self = this;
-		
-		return new TargetC.TargetAssignmentMethod()
-		{
-			public AssignmentMethod node()
-			{
-				return self;
-			}
-		};
 	}
 }

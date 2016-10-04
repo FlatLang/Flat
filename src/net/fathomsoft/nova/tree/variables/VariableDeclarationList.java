@@ -1,7 +1,5 @@
 package net.fathomsoft.nova.tree.variables;
 
-import net.fathomsoft.nova.Nova;
-import net.fathomsoft.nova.TargetC;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.tree.*;
 import net.fathomsoft.nova.util.Location;
@@ -146,19 +144,5 @@ public class VariableDeclarationList extends List
 		
 		
 		return null;
-	}
-	
-	@Override
-	public TargetC.TargetVariableDeclarationList getTarget()
-	{
-		final VariableDeclarationList self = this;
-		
-		return new TargetC.TargetVariableDeclarationList()
-		{
-			public VariableDeclarationList node()
-			{
-				return self;
-			}
-		};
 	}
 }

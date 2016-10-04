@@ -1,6 +1,5 @@
 package net.fathomsoft.nova.tree;
 
-import net.fathomsoft.nova.TargetC;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.util.Location;
@@ -91,19 +90,5 @@ public class DefaultParameterInitialization extends Node
 
 
         return null;
-    }
-    
-    @Override
-    public TargetC.TargetDefaultParameterInitialization getTarget()
-    {
-        final DefaultParameterInitialization self = this;
-    
-        return new TargetC.TargetDefaultParameterInitialization()
-        {
-            public DefaultParameterInitialization node()
-            {
-                return self;
-            }
-        };
     }
 }

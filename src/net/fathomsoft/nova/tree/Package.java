@@ -2,10 +2,6 @@ package net.fathomsoft.nova.tree;
 
 import java.io.File;
 
-import javax.swing.JOptionPane;
-
-import net.fathomsoft.nova.Nova;
-import net.fathomsoft.nova.TargetC;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.error.SyntaxMessage;
@@ -233,19 +229,5 @@ public class Package extends Node
 		
 		
 		return null;
-	}
-	
-	@Override
-	public TargetC.TargetPackage getTarget()
-	{
-		final Package self = this;
-		
-		return new TargetC.TargetPackage()
-		{
-			public Package node()
-			{
-				return self;
-			}
-		};
 	}
 }

@@ -1,17 +1,12 @@
 package net.fathomsoft.nova.tree;
 
-import net.fathomsoft.nova.Nova;
-import net.fathomsoft.nova.TargetC;
 import net.fathomsoft.nova.tree.generics.GenericTypeArgument;
 import net.fathomsoft.nova.tree.generics.GenericTypeArgumentList;
 import net.fathomsoft.nova.tree.generics.GenericTypeParameter;
 import net.fathomsoft.nova.tree.generics.GenericTypeParameterDeclaration;
 import net.fathomsoft.nova.tree.variables.ObjectReference;
-import net.fathomsoft.nova.tree.variables.Variable;
 import net.fathomsoft.nova.tree.variables.VariableDeclaration;
 import net.fathomsoft.nova.util.SyntaxUtils;
-
-import java.time.Instant;
 
 /**
  * 
@@ -865,6 +860,4 @@ public interface Accessible
 		
 //		throw new UnimplementedOperationException("Class " + getClass().getName() + " has not implemented the getDeclaringClass() method.");
 	}
-	
-	TargetC.TargetAccessible getTarget();
 }

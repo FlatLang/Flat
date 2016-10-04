@@ -1,7 +1,5 @@
 package net.fathomsoft.nova.tree;
 
-import net.fathomsoft.nova.Nova;
-import net.fathomsoft.nova.TargetC;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.util.Location;
 import net.fathomsoft.nova.util.SyntaxUtils;
@@ -110,19 +108,5 @@ public class StaticClassReference extends IIdentifier
 		
 		
 		return null;
-	}
-	
-	@Override
-	public TargetC.TargetStaticClassReference getTarget()
-	{
-		final StaticClassReference self = this;
-		
-		return new TargetC.TargetStaticClassReference()
-		{
-			public StaticClassReference node()
-			{
-				return self;
-			}
-		};
 	}
 }

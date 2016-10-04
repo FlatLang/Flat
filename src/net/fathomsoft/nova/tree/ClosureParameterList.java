@@ -1,6 +1,5 @@
 package net.fathomsoft.nova.tree;
 
-import net.fathomsoft.nova.TargetC;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.util.Location;
 
@@ -64,19 +63,5 @@ public class ClosureParameterList extends ParameterList<Value>
 		
 		
 		return null;
-	}
-	
-	@Override
-	public TargetC.TargetClosureParameterList getTarget()
-	{
-		final ClosureParameterList self = this;
-		
-		return new TargetC.TargetClosureParameterList()
-		{
-			public ClosureParameterList node()
-			{
-				return self;
-			}
-		};
 	}
 }

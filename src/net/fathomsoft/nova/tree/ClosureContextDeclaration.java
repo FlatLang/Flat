@@ -1,9 +1,6 @@
 package net.fathomsoft.nova.tree;
 
-import net.fathomsoft.nova.TargetC;
 import net.fathomsoft.nova.TestContext;
-import net.fathomsoft.nova.tree.variables.Variable;
-import net.fathomsoft.nova.tree.variables.VariableDeclaration;
 import net.fathomsoft.nova.util.Location;
 
 /**
@@ -80,19 +77,5 @@ public class ClosureContextDeclaration extends LocalDeclaration
 		
 		
 		return null;
-	}
-	
-	@Override
-	public TargetC.TargetClosureContextDeclaration getTarget()
-	{
-		final ClosureContextDeclaration self = this;
-		
-		return new TargetC.TargetClosureContextDeclaration()
-		{
-			public ClosureContextDeclaration node()
-			{
-				return self;
-			}
-		};
 	}
 }

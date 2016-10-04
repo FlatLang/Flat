@@ -148,7 +148,61 @@
 #include <compiler/util/compiler_util_Nova_OS.h>
 #include <compiler/util/compiler_util_Nova_StringUtils.h>
 #include <compiler/util/compiler_util_Nova_SyntaxUtils.h>
+#include <example/example_Nova_Animal.h>
+#include <example/example_Nova_ArrayDemo.h>
+#include <example/example_Nova_BodyBuilder.h>
+#include <example/example_Nova_ClosureDemo.h>
+#include <example/example_Nova_Dog.h>
+#include <example/example_Nova_ExceptionHandlingDemo.h>
+#include <example/example_Nova_FileTest.h>
+#include <example/example_Nova_GenericDemo.h>
+#include <example/example_Nova_HashMapDemo.h>
+#include <example/example_Nova_HashSetDemo.h>
+#include <example/example_Nova_IntegerTest.h>
 #include <example/example_Nova_Lab.h>
+#include <example/example_Nova_MathDemo.h>
+#include <example/example_Nova_NonWholeDivisionException.h>
+#include <example/example_Nova_Person.h>
+#include <example/example_Nova_Polygon.h>
+#include <example/example_Nova_PolymorphismDemo.h>
+#include <example/example_Nova_QueueDemo.h>
+#include <example/example_Nova_Spider.h>
+#include <example/example_Nova_Square.h>
+#include <example/example_Nova_SvgChart.h>
+#include <example/example_Nova_SvgFractal.h>
+#include <example/example_Nova_T1.h>
+#include <example/example_Nova_T2.h>
+#include <example/example_Nova_Test.h>
+#include <example/example_Nova_ThreadDemo.h>
+#include <example/example_Nova_ThreadDemoImplementation.h>
+#include <example/ackermann/example_ackermann_Nova_Ackermann.h>
+#include <example/copy/example_copy_Nova_Dog.h>
+#include <example/database/example_database_Nova_DatabaseDemo.h>
+#include <example/network/example_network_Nova_ClientDemo.h>
+#include <example/network/example_network_Nova_ConnectionThread.h>
+#include <example/network/example_network_Nova_OutputThread.h>
+#include <example/network/example_network_Nova_ServerDemo.h>
+#include <stabilitytest/stabilitytest_Nova_AssignmentStability.h>
+#include <stabilitytest/stabilitytest_Nova_ClassWithProperties.h>
+#include <stabilitytest/stabilitytest_Nova_ClientThread.h>
+#include <stabilitytest/stabilitytest_Nova_ClosureStability.h>
+#include <stabilitytest/stabilitytest_Nova_ExceptionStability.h>
+#include <stabilitytest/stabilitytest_Nova_FileStability.h>
+#include <stabilitytest/stabilitytest_Nova_LambdaStability.h>
+#include <stabilitytest/stabilitytest_Nova_NetworkStability.h>
+#include <stabilitytest/stabilitytest_Nova_PolymorphicSubClass.h>
+#include <stabilitytest/stabilitytest_Nova_PolymorphicSuperClass.h>
+#include <stabilitytest/stabilitytest_Nova_PolymorphismStability.h>
+#include <stabilitytest/stabilitytest_Nova_StabilityExceptionHandler.h>
+#include <stabilitytest/stabilitytest_Nova_StabilityTest.h>
+#include <stabilitytest/stabilitytest_Nova_StabilityTestCase.h>
+#include <stabilitytest/stabilitytest_Nova_StabilityTestException.h>
+#include <stabilitytest/stabilitytest_Nova_SyntaxStability.h>
+#include <stabilitytest/stabilitytest_Nova_ThreadImplementation.h>
+#include <stabilitytest/stabilitytest_Nova_ThreadStability.h>
+#include <stabilitytest/stabilitytest_Nova_TimeStability.h>
+#include <stabilitytest/stabilitytest_Nova_ToStringStability.h>
+#include <stabilitytest/stabilitytest_Nova_UnstableException.h>
 
 typedef nova_Nova_Class* (*nova_Nova_Class_native_Nova_construct)(nova_Nova_Class*, nova_exception_Nova_ExceptionData*);
 
@@ -788,7 +842,6 @@ typedef nova_datastruct_list_Nova_List* (*nova_datastruct_list_Nova_List_native0
 typedef nova_datastruct_list_Nova_List* (*nova_datastruct_list_Nova_List_native0_Nova_take)(nova_datastruct_list_Nova_List*, nova_exception_Nova_ExceptionData*, int);
 typedef nova_datastruct_list_Nova_List* (*nova_datastruct_list_Nova_List_native0_Nova_skip)(nova_datastruct_list_Nova_List*, nova_exception_Nova_ExceptionData*, int);
 typedef nova_Nova_Object* (*nova_datastruct_list_Nova_List_native0_Nova_firstWhere)(nova_datastruct_list_Nova_List*, nova_exception_Nova_ExceptionData*, nova_datastruct_list_Nova_List_closure18_Nova_func nova_datastruct_list_Nova_List_Nova_func, void* nova_datastruct_list_Nova_List_ref_Nova_func, void* func_context);
-typedef nova_datastruct_list_Nova_Array* (*nova_datastruct_list_Nova_List_native_Nova_zip)(nova_datastruct_list_Nova_List*, nova_exception_Nova_ExceptionData*, nova_datastruct_list_Nova_List*, nova_datastruct_list_Nova_List_closure21_Nova_zipper nova_datastruct_list_Nova_List_Nova_zipper, void* nova_datastruct_list_Nova_List_ref_Nova_zipper, void* zipper_context);
 typedef nova_datastruct_list_Nova_List* (*nova_datastruct_list_Nova_List_native0_Nova_reverse)(nova_datastruct_list_Nova_List*, nova_exception_Nova_ExceptionData*);
 typedef nova_Nova_String* (*nova_datastruct_list_Nova_List_native0_Nova_join)(nova_datastruct_list_Nova_List*, nova_exception_Nova_ExceptionData*, nova_Nova_String*);
 
@@ -804,7 +857,6 @@ nova_datastruct_list_Nova_List_native0_Nova_filter filter__nova_primitive_Bool;
 nova_datastruct_list_Nova_List_native0_Nova_take take__nova_primitive_number_Int;
 nova_datastruct_list_Nova_List_native0_Nova_skip skip__nova_primitive_number_Int;
 nova_datastruct_list_Nova_List_native0_Nova_firstWhere firstWhere__nova_primitive_Bool;
-nova_datastruct_list_Nova_List_native_Nova_zip zip;
 nova_datastruct_list_Nova_List_native0_Nova_reverse reverse;
 nova_datastruct_list_Nova_List_native0_Nova_join join__nova_String;
 } nova_datastruct_list_native_List;
@@ -1689,12 +1741,12 @@ nova_thread_Nova_Thread_native0_Nova_run run;
 nova_thread_Nova_Thread_native_Nova_construct Thread;
 } nova_thread_native_Thread;
 
-typedef void (*nova_thread_Nova_UncaughtExceptionHandler_native_Nova_uncaughtException)(nova_thread_Nova_UncaughtExceptionHandler*, nova_exception_Nova_ExceptionData*, nova_thread_Nova_Thread*, nova_exception_Nova_Exception*);
+typedef void (*nova_thread_Nova_UncaughtExceptionHandler_native0_Nova_uncaughtException)(nova_thread_Nova_UncaughtExceptionHandler*, nova_exception_Nova_ExceptionData*, nova_thread_Nova_Thread*, nova_exception_Nova_Exception*);
 typedef nova_thread_Nova_UncaughtExceptionHandler* (*nova_thread_Nova_UncaughtExceptionHandler_native_Nova_construct)(nova_thread_Nova_UncaughtExceptionHandler*, nova_exception_Nova_ExceptionData*);
 
 typedef struct nova_thread_native_UncaughtExceptionHandler
 {
-nova_thread_Nova_UncaughtExceptionHandler_native_Nova_uncaughtException uncaughtException;
+nova_thread_Nova_UncaughtExceptionHandler_native0_Nova_uncaughtException uncaughtException__nova_thread_Thread__nova_exception_Exception;
 nova_thread_Nova_UncaughtExceptionHandler_native_Nova_construct UncaughtExceptionHandler;
 } nova_thread_native_UncaughtExceptionHandler;
 
@@ -2029,6 +2081,115 @@ typedef struct compiler_util_native_SyntaxUtils
 compiler_util_Nova_SyntaxUtils_native_Nova_construct SyntaxUtils;
 } compiler_util_native_SyntaxUtils;
 
+typedef int (*example_Nova_Animal_native0_Nova_getNumLegs)(example_Nova_Animal*, nova_exception_Nova_ExceptionData*);
+typedef int (*example_Nova_Animal_native0_Nova_getNumEyes)(example_Nova_Animal*, nova_exception_Nova_ExceptionData*);
+typedef nova_Nova_String* (*example_Nova_Animal_native0_Nova_getDescription)(example_Nova_Animal*, nova_exception_Nova_ExceptionData*);
+typedef nova_Nova_String* (*example_Nova_Animal_native0_Nova_toString)(example_Nova_Animal*, nova_exception_Nova_ExceptionData*);
+typedef example_Nova_Animal* (*example_Nova_Animal_native_Nova_construct)(example_Nova_Animal*, nova_exception_Nova_ExceptionData*);
+
+typedef struct example_native_Animal
+{
+example_Nova_Animal_native0_Nova_getNumLegs getNumLegs;
+example_Nova_Animal_native0_Nova_getNumEyes getNumEyes;
+example_Nova_Animal_native0_Nova_getDescription getDescription;
+example_Nova_Animal_native0_Nova_toString toString;
+example_Nova_Animal_native_Nova_construct Animal;
+} example_native_Animal;
+
+typedef void (*example_Nova_ArrayDemo_native_Nova_main)(example_Nova_ArrayDemo*, nova_exception_Nova_ExceptionData*, nova_datastruct_list_Nova_Array*);
+typedef example_Nova_ArrayDemo* (*example_Nova_ArrayDemo_native_Nova_construct)(example_Nova_ArrayDemo*, nova_exception_Nova_ExceptionData*);
+
+typedef struct example_native_ArrayDemo
+{
+example_Nova_ArrayDemo_native_Nova_main main;
+example_Nova_ArrayDemo_native_Nova_construct ArrayDemo;
+} example_native_ArrayDemo;
+
+typedef void (*example_Nova_BodyBuilder_native_Nova_sayHello)(example_Nova_BodyBuilder*, nova_exception_Nova_ExceptionData*);
+typedef example_Nova_BodyBuilder* (*example_Nova_BodyBuilder_native_Nova_construct)(example_Nova_BodyBuilder*, nova_exception_Nova_ExceptionData*, int, nova_Nova_String*);
+
+typedef struct example_native_BodyBuilder
+{
+example_Nova_BodyBuilder_native_Nova_sayHello sayHello;
+example_Nova_BodyBuilder_native_Nova_construct BodyBuilder;
+} example_native_BodyBuilder;
+
+typedef void (*example_Nova_ClosureDemo_native_Nova_main)(example_Nova_ClosureDemo*, nova_exception_Nova_ExceptionData*, nova_datastruct_list_Nova_Array*);
+typedef example_Nova_ClosureDemo* (*example_Nova_ClosureDemo_native_Nova_construct)(example_Nova_ClosureDemo*, nova_exception_Nova_ExceptionData*);
+
+typedef struct example_native_ClosureDemo
+{
+example_Nova_ClosureDemo_native_Nova_main main;
+example_Nova_ClosureDemo_native_Nova_construct ClosureDemo;
+} example_native_ClosureDemo;
+
+typedef int (*example_Nova_Dog_native_Nova_getNumLegs)(example_Nova_Dog*, nova_exception_Nova_ExceptionData*);
+typedef int (*example_Nova_Dog_native_Nova_getNumEyes)(example_Nova_Dog*, nova_exception_Nova_ExceptionData*);
+typedef nova_Nova_String* (*example_Nova_Dog_native_Nova_getDescription)(example_Nova_Dog*, nova_exception_Nova_ExceptionData*);
+typedef example_Nova_Dog* (*example_Nova_Dog_native_Nova_construct)(example_Nova_Dog*, nova_exception_Nova_ExceptionData*);
+
+typedef struct example_native_Dog
+{
+example_Nova_Dog_native_Nova_getNumLegs getNumLegs;
+example_Nova_Dog_native_Nova_getNumEyes getNumEyes;
+example_Nova_Dog_native_Nova_getDescription getDescription;
+example_Nova_Dog_native_Nova_construct Dog;
+} example_native_Dog;
+
+typedef void (*example_Nova_ExceptionHandlingDemo_native_Nova_main)(example_Nova_ExceptionHandlingDemo*, nova_exception_Nova_ExceptionData*, nova_datastruct_list_Nova_Array*);
+typedef example_Nova_ExceptionHandlingDemo* (*example_Nova_ExceptionHandlingDemo_native_Nova_construct)(example_Nova_ExceptionHandlingDemo*, nova_exception_Nova_ExceptionData*);
+
+typedef struct example_native_ExceptionHandlingDemo
+{
+example_Nova_ExceptionHandlingDemo_native_Nova_main main;
+example_Nova_ExceptionHandlingDemo_native_Nova_construct ExceptionHandlingDemo;
+} example_native_ExceptionHandlingDemo;
+
+typedef void (*example_Nova_FileTest_native_Nova_main)(example_Nova_FileTest*, nova_exception_Nova_ExceptionData*, nova_datastruct_list_Nova_Array*);
+typedef example_Nova_FileTest* (*example_Nova_FileTest_native_Nova_construct)(example_Nova_FileTest*, nova_exception_Nova_ExceptionData*);
+
+typedef struct example_native_FileTest
+{
+example_Nova_FileTest_native_Nova_main main;
+example_Nova_FileTest_native_Nova_construct FileTest;
+} example_native_FileTest;
+
+typedef void (*example_Nova_GenericDemo_native_Nova_main)(example_Nova_GenericDemo*, nova_exception_Nova_ExceptionData*, nova_datastruct_list_Nova_Array*);
+typedef example_Nova_GenericDemo* (*example_Nova_GenericDemo_native_Nova_construct)(example_Nova_GenericDemo*, nova_exception_Nova_ExceptionData*);
+
+typedef struct example_native_GenericDemo
+{
+example_Nova_GenericDemo_native_Nova_main main;
+example_Nova_GenericDemo_native_Nova_construct GenericDemo;
+} example_native_GenericDemo;
+
+typedef void (*example_Nova_HashMapDemo_native_Nova_main)(example_Nova_HashMapDemo*, nova_exception_Nova_ExceptionData*, nova_datastruct_list_Nova_Array*);
+typedef example_Nova_HashMapDemo* (*example_Nova_HashMapDemo_native_Nova_construct)(example_Nova_HashMapDemo*, nova_exception_Nova_ExceptionData*);
+
+typedef struct example_native_HashMapDemo
+{
+example_Nova_HashMapDemo_native_Nova_main main;
+example_Nova_HashMapDemo_native_Nova_construct HashMapDemo;
+} example_native_HashMapDemo;
+
+typedef void (*example_Nova_HashSetDemo_native_Nova_main)(example_Nova_HashSetDemo*, nova_exception_Nova_ExceptionData*, nova_datastruct_list_Nova_Array*);
+typedef example_Nova_HashSetDemo* (*example_Nova_HashSetDemo_native_Nova_construct)(example_Nova_HashSetDemo*, nova_exception_Nova_ExceptionData*);
+
+typedef struct example_native_HashSetDemo
+{
+example_Nova_HashSetDemo_native_Nova_main main;
+example_Nova_HashSetDemo_native_Nova_construct HashSetDemo;
+} example_native_HashSetDemo;
+
+typedef void (*example_Nova_IntegerTest_native_Nova_main)(example_Nova_IntegerTest*, nova_exception_Nova_ExceptionData*, nova_datastruct_list_Nova_Array*);
+typedef example_Nova_IntegerTest* (*example_Nova_IntegerTest_native_Nova_construct)(example_Nova_IntegerTest*, nova_exception_Nova_ExceptionData*);
+
+typedef struct example_native_IntegerTest
+{
+example_Nova_IntegerTest_native_Nova_main main;
+example_Nova_IntegerTest_native_Nova_construct IntegerTest;
+} example_native_IntegerTest;
+
 typedef void (*example_Nova_Lab_native_Nova_main)(example_Nova_Lab*, nova_exception_Nova_ExceptionData*, nova_datastruct_list_Nova_Array*);
 typedef example_Nova_Lab* (*example_Nova_Lab_native_Nova_construct)(example_Nova_Lab*, nova_exception_Nova_ExceptionData*);
 
@@ -2037,6 +2198,397 @@ typedef struct example_native_Lab
 example_Nova_Lab_native_Nova_main main;
 example_Nova_Lab_native_Nova_construct Lab;
 } example_native_Lab;
+
+typedef void (*example_Nova_MathDemo_native_Nova_main)(example_Nova_MathDemo*, nova_exception_Nova_ExceptionData*, nova_datastruct_list_Nova_Array*);
+typedef example_Nova_MathDemo* (*example_Nova_MathDemo_native_Nova_construct)(example_Nova_MathDemo*, nova_exception_Nova_ExceptionData*);
+
+typedef struct example_native_MathDemo
+{
+example_Nova_MathDemo_native_Nova_main main;
+example_Nova_MathDemo_native_Nova_construct MathDemo;
+} example_native_MathDemo;
+
+typedef example_Nova_NonWholeDivisionException* (*example_Nova_NonWholeDivisionException_native_Nova_construct)(example_Nova_NonWholeDivisionException*, nova_exception_Nova_ExceptionData*);
+
+typedef struct example_native_NonWholeDivisionException
+{
+example_Nova_NonWholeDivisionException_native_Nova_construct NonWholeDivisionException;
+} example_native_NonWholeDivisionException;
+
+typedef void (*example_Nova_Person_native0_Nova_sayHello)(example_Nova_Person*, nova_exception_Nova_ExceptionData*);
+typedef example_Nova_Person* (*example_Nova_Person_native_Nova_construct)(example_Nova_Person*, nova_exception_Nova_ExceptionData*, nova_Nova_String*, int);
+
+typedef struct example_native_Person
+{
+example_Nova_Person_native0_Nova_sayHello sayHello;
+example_Nova_Person_native_Nova_construct Person;
+} example_native_Person;
+
+typedef int (*example_Nova_Polygon_native0_Nova_numberSides)(example_Nova_Polygon*, nova_exception_Nova_ExceptionData*);
+typedef double (*example_Nova_Polygon_native0_Nova_calculateArea)(example_Nova_Polygon*, nova_exception_Nova_ExceptionData*);
+
+typedef struct example_native_Polygon
+{
+example_Nova_Polygon_native0_Nova_numberSides numberSides;
+example_Nova_Polygon_native0_Nova_calculateArea calculateArea;
+} example_native_Polygon;
+
+typedef void (*example_Nova_PolymorphismDemo_native_Nova_main)(example_Nova_PolymorphismDemo*, nova_exception_Nova_ExceptionData*, nova_datastruct_list_Nova_Array*);
+typedef example_Nova_PolymorphismDemo* (*example_Nova_PolymorphismDemo_native_Nova_construct)(example_Nova_PolymorphismDemo*, nova_exception_Nova_ExceptionData*);
+
+typedef struct example_native_PolymorphismDemo
+{
+example_Nova_PolymorphismDemo_native_Nova_main main;
+example_Nova_PolymorphismDemo_native_Nova_construct PolymorphismDemo;
+} example_native_PolymorphismDemo;
+
+typedef void (*example_Nova_QueueDemo_native_Nova_main)(example_Nova_QueueDemo*, nova_exception_Nova_ExceptionData*, nova_datastruct_list_Nova_Array*);
+typedef example_Nova_QueueDemo* (*example_Nova_QueueDemo_native_Nova_construct)(example_Nova_QueueDemo*, nova_exception_Nova_ExceptionData*);
+
+typedef struct example_native_QueueDemo
+{
+example_Nova_QueueDemo_native_Nova_main main;
+example_Nova_QueueDemo_native_Nova_construct QueueDemo;
+} example_native_QueueDemo;
+
+typedef int (*example_Nova_Spider_native0_Nova_getNumLegs)(example_Nova_Spider*, nova_exception_Nova_ExceptionData*);
+typedef int (*example_Nova_Spider_native0_Nova_getNumEyes)(example_Nova_Spider*, nova_exception_Nova_ExceptionData*);
+typedef nova_Nova_String* (*example_Nova_Spider_native0_Nova_getDescription)(example_Nova_Spider*, nova_exception_Nova_ExceptionData*);
+typedef example_Nova_Spider* (*example_Nova_Spider_native_Nova_construct)(example_Nova_Spider*, nova_exception_Nova_ExceptionData*);
+
+typedef struct example_native_Spider
+{
+example_Nova_Spider_native0_Nova_getNumLegs getNumLegs;
+example_Nova_Spider_native0_Nova_getNumEyes getNumEyes;
+example_Nova_Spider_native0_Nova_getDescription getDescription;
+example_Nova_Spider_native_Nova_construct Spider;
+} example_native_Spider;
+
+typedef int (*example_Nova_Square_native_Nova_numberSides)(example_Nova_Square*, nova_exception_Nova_ExceptionData*);
+typedef double (*example_Nova_Square_native_Nova_calculateArea)(example_Nova_Square*, nova_exception_Nova_ExceptionData*);
+typedef example_Nova_Square* (*example_Nova_Square_native_Nova_construct)(example_Nova_Square*, nova_exception_Nova_ExceptionData*, int);
+
+typedef struct example_native_Square
+{
+example_Nova_Square_native_Nova_numberSides numberSides;
+example_Nova_Square_native_Nova_calculateArea calculateArea;
+example_Nova_Square_native_Nova_construct Square;
+} example_native_Square;
+
+typedef void (*example_Nova_SvgChart_native_Nova_main)(example_Nova_SvgChart*, nova_exception_Nova_ExceptionData*, nova_datastruct_list_Nova_Array*);
+typedef example_Nova_SvgChart* (*example_Nova_SvgChart_native_Nova_construct)(example_Nova_SvgChart*, nova_exception_Nova_ExceptionData*);
+
+typedef struct example_native_SvgChart
+{
+example_Nova_SvgChart_native_Nova_main main;
+example_Nova_SvgChart_native_Nova_construct SvgChart;
+} example_native_SvgChart;
+
+typedef void (*example_Nova_SvgFractal_native_Nova_main)(example_Nova_SvgFractal*, nova_exception_Nova_ExceptionData*, nova_datastruct_list_Nova_Array*);
+typedef example_Nova_SvgFractal* (*example_Nova_SvgFractal_native_Nova_construct)(example_Nova_SvgFractal*, nova_exception_Nova_ExceptionData*);
+
+typedef struct example_native_SvgFractal
+{
+example_Nova_SvgFractal_native_Nova_main main;
+example_Nova_SvgFractal_native_Nova_construct SvgFractal;
+} example_native_SvgFractal;
+
+typedef example_Nova_T1* (*example_Nova_T1_native_Nova_construct)(example_Nova_T1*, nova_exception_Nova_ExceptionData*);
+
+typedef struct example_native_T1
+{
+example_Nova_T1_native_Nova_construct T1;
+} example_native_T1;
+
+typedef example_Nova_T2* (*example_Nova_T2_native_Nova_construct)(example_Nova_T2*, nova_exception_Nova_ExceptionData*);
+
+typedef struct example_native_T2
+{
+example_Nova_T2_native_Nova_construct T2;
+} example_native_T2;
+
+typedef void (*example_Nova_Test_native_Nova_main)(example_Nova_Test*, nova_exception_Nova_ExceptionData*, nova_datastruct_list_Nova_Array*);
+typedef example_Nova_Test* (*example_Nova_Test_native_Nova_construct)(example_Nova_Test*, nova_exception_Nova_ExceptionData*);
+
+typedef struct example_native_Test
+{
+example_Nova_Test_native_Nova_main main;
+example_Nova_Test_native_Nova_construct Test;
+} example_native_Test;
+
+typedef void (*example_Nova_ThreadDemo_native_Nova_main)(example_Nova_ThreadDemo*, nova_exception_Nova_ExceptionData*, nova_datastruct_list_Nova_Array*);
+typedef example_Nova_ThreadDemo* (*example_Nova_ThreadDemo_native_Nova_construct)(example_Nova_ThreadDemo*, nova_exception_Nova_ExceptionData*);
+
+typedef struct example_native_ThreadDemo
+{
+example_Nova_ThreadDemo_native_Nova_main main;
+example_Nova_ThreadDemo_native_Nova_construct ThreadDemo;
+} example_native_ThreadDemo;
+
+typedef void (*example_Nova_ThreadDemoImplementation_native0_Nova_run)(example_Nova_ThreadDemoImplementation*, nova_exception_Nova_ExceptionData*);
+typedef example_Nova_ThreadDemoImplementation* (*example_Nova_ThreadDemoImplementation_native_Nova_construct)(example_Nova_ThreadDemoImplementation*, nova_exception_Nova_ExceptionData*, long_long, nova_Nova_String*);
+
+typedef struct example_native_ThreadDemoImplementation
+{
+example_Nova_ThreadDemoImplementation_native0_Nova_run run;
+example_Nova_ThreadDemoImplementation_native_Nova_construct ThreadDemoImplementation;
+} example_native_ThreadDemoImplementation;
+
+typedef void (*example_ackermann_Nova_Ackermann_native_Nova_main)(example_ackermann_Nova_Ackermann*, nova_exception_Nova_ExceptionData*, nova_datastruct_list_Nova_Array*);
+typedef int (*example_ackermann_Nova_Ackermann_native_Nova_run)(example_ackermann_Nova_Ackermann*, nova_exception_Nova_ExceptionData*, int, int);
+typedef int (*example_ackermann_Nova_Ackermann_native_Nova_run2)(example_ackermann_Nova_Ackermann*, nova_exception_Nova_ExceptionData*, int, int);
+typedef example_ackermann_Nova_Ackermann* (*example_ackermann_Nova_Ackermann_native_Nova_construct)(example_ackermann_Nova_Ackermann*, nova_exception_Nova_ExceptionData*);
+
+typedef struct example_ackermann_native_Ackermann
+{
+example_ackermann_Nova_Ackermann_native_Nova_main main;
+example_ackermann_Nova_Ackermann_native_Nova_run run;
+example_ackermann_Nova_Ackermann_native_Nova_run2 run2;
+example_ackermann_Nova_Ackermann_native_Nova_construct Ackermann;
+} example_ackermann_native_Ackermann;
+
+typedef example_copy_Nova_Dog* (*example_copy_Nova_Dog_native_Nova_construct)(example_copy_Nova_Dog*, nova_exception_Nova_ExceptionData*, int, int);
+
+typedef struct example_copy_native_Dog
+{
+example_copy_Nova_Dog_native_Nova_construct Dog;
+} example_copy_native_Dog;
+
+typedef void (*example_database_Nova_DatabaseDemo_native_Nova_main)(example_database_Nova_DatabaseDemo*, nova_exception_Nova_ExceptionData*, nova_datastruct_list_Nova_Array*);
+typedef example_database_Nova_DatabaseDemo* (*example_database_Nova_DatabaseDemo_native_Nova_construct)(example_database_Nova_DatabaseDemo*, nova_exception_Nova_ExceptionData*);
+
+typedef struct example_database_native_DatabaseDemo
+{
+example_database_Nova_DatabaseDemo_native_Nova_main main;
+example_database_Nova_DatabaseDemo_native_Nova_construct DatabaseDemo;
+} example_database_native_DatabaseDemo;
+
+typedef void (*example_network_Nova_ClientDemo_native_Nova_main)(example_network_Nova_ClientDemo*, nova_exception_Nova_ExceptionData*, nova_datastruct_list_Nova_Array*);
+typedef example_network_Nova_ClientDemo* (*example_network_Nova_ClientDemo_native_Nova_construct)(example_network_Nova_ClientDemo*, nova_exception_Nova_ExceptionData*);
+
+typedef struct example_network_native_ClientDemo
+{
+example_network_Nova_ClientDemo_native_Nova_main main;
+example_network_Nova_ClientDemo_native_Nova_construct ClientDemo;
+} example_network_native_ClientDemo;
+
+typedef void (*example_network_Nova_ConnectionThread_native0_Nova_run)(example_network_Nova_ConnectionThread*, nova_exception_Nova_ExceptionData*);
+typedef example_network_Nova_ConnectionThread* (*example_network_Nova_ConnectionThread_native_Nova_construct)(example_network_Nova_ConnectionThread*, nova_exception_Nova_ExceptionData*, nova_network_Nova_ConnectionSocket*);
+
+typedef struct example_network_native_ConnectionThread
+{
+example_network_Nova_ConnectionThread_native0_Nova_run run;
+example_network_Nova_ConnectionThread_native_Nova_construct ConnectionThread;
+} example_network_native_ConnectionThread;
+
+typedef void (*example_network_Nova_OutputThread_native0_Nova_run)(example_network_Nova_OutputThread*, nova_exception_Nova_ExceptionData*);
+typedef example_network_Nova_OutputThread* (*example_network_Nova_OutputThread_native_Nova_construct)(example_network_Nova_OutputThread*, nova_exception_Nova_ExceptionData*, nova_network_Nova_ServerSocket*, nova_network_Nova_ConnectionSocket*);
+
+typedef struct example_network_native_OutputThread
+{
+example_network_Nova_OutputThread_native0_Nova_run run;
+example_network_Nova_OutputThread_native_Nova_construct OutputThread;
+} example_network_native_OutputThread;
+
+typedef void (*example_network_Nova_ServerDemo_native_Nova_main)(example_network_Nova_ServerDemo*, nova_exception_Nova_ExceptionData*, nova_datastruct_list_Nova_Array*);
+typedef example_network_Nova_ServerDemo* (*example_network_Nova_ServerDemo_native_Nova_construct)(example_network_Nova_ServerDemo*, nova_exception_Nova_ExceptionData*);
+
+typedef struct example_network_native_ServerDemo
+{
+example_network_Nova_ServerDemo_native_Nova_main main;
+example_network_Nova_ServerDemo_native_Nova_construct ServerDemo;
+} example_network_native_ServerDemo;
+
+typedef void (*stabilitytest_Nova_AssignmentStability_native_Nova_test)(stabilitytest_Nova_AssignmentStability*, nova_exception_Nova_ExceptionData*);
+typedef stabilitytest_Nova_AssignmentStability* (*stabilitytest_Nova_AssignmentStability_native_Nova_construct)(stabilitytest_Nova_AssignmentStability*, nova_exception_Nova_ExceptionData*, stabilitytest_Nova_StabilityTest*);
+
+typedef struct stabilitytest_native_AssignmentStability
+{
+stabilitytest_Nova_AssignmentStability_native_Nova_test test;
+stabilitytest_Nova_AssignmentStability_native_Nova_construct AssignmentStability;
+} stabilitytest_native_AssignmentStability;
+
+typedef stabilitytest_Nova_ClassWithProperties* (*stabilitytest_Nova_ClassWithProperties_native_Nova_construct)(stabilitytest_Nova_ClassWithProperties*, nova_exception_Nova_ExceptionData*);
+
+typedef struct stabilitytest_native_ClassWithProperties
+{
+stabilitytest_Nova_ClassWithProperties_native_Nova_construct ClassWithProperties;
+} stabilitytest_native_ClassWithProperties;
+
+typedef void (*stabilitytest_Nova_ClientThread_native0_Nova_run)(stabilitytest_Nova_ClientThread*, nova_exception_Nova_ExceptionData*);
+typedef stabilitytest_Nova_ClientThread* (*stabilitytest_Nova_ClientThread_native_Nova_construct)(stabilitytest_Nova_ClientThread*, nova_exception_Nova_ExceptionData*, stabilitytest_Nova_StabilityTest*, int);
+
+typedef struct stabilitytest_native_ClientThread
+{
+stabilitytest_Nova_ClientThread_native0_Nova_run run;
+stabilitytest_Nova_ClientThread_native_Nova_construct ClientThread;
+} stabilitytest_native_ClientThread;
+
+typedef void (*stabilitytest_Nova_ClosureStability_native0_Nova_test)(stabilitytest_Nova_ClosureStability*, nova_exception_Nova_ExceptionData*);
+typedef stabilitytest_Nova_ClosureStability* (*stabilitytest_Nova_ClosureStability_native_Nova_construct)(stabilitytest_Nova_ClosureStability*, nova_exception_Nova_ExceptionData*, stabilitytest_Nova_StabilityTest*);
+
+typedef struct stabilitytest_native_ClosureStability
+{
+stabilitytest_Nova_ClosureStability_native0_Nova_test test;
+stabilitytest_Nova_ClosureStability_native_Nova_construct ClosureStability;
+} stabilitytest_native_ClosureStability;
+
+typedef void (*stabilitytest_Nova_ExceptionStability_native0_Nova_test)(stabilitytest_Nova_ExceptionStability*, nova_exception_Nova_ExceptionData*);
+typedef stabilitytest_Nova_ExceptionStability* (*stabilitytest_Nova_ExceptionStability_native_Nova_construct)(stabilitytest_Nova_ExceptionStability*, nova_exception_Nova_ExceptionData*, stabilitytest_Nova_StabilityTest*);
+
+typedef struct stabilitytest_native_ExceptionStability
+{
+stabilitytest_Nova_ExceptionStability_native0_Nova_test test;
+stabilitytest_Nova_ExceptionStability_native_Nova_construct ExceptionStability;
+} stabilitytest_native_ExceptionStability;
+
+typedef void (*stabilitytest_Nova_FileStability_native0_Nova_test)(stabilitytest_Nova_FileStability*, nova_exception_Nova_ExceptionData*);
+typedef stabilitytest_Nova_FileStability* (*stabilitytest_Nova_FileStability_native_Nova_construct)(stabilitytest_Nova_FileStability*, nova_exception_Nova_ExceptionData*, stabilitytest_Nova_StabilityTest*);
+
+typedef struct stabilitytest_native_FileStability
+{
+stabilitytest_Nova_FileStability_native0_Nova_test test;
+stabilitytest_Nova_FileStability_native_Nova_construct FileStability;
+} stabilitytest_native_FileStability;
+
+typedef void (*stabilitytest_Nova_LambdaStability_native0_Nova_test)(stabilitytest_Nova_LambdaStability*, nova_exception_Nova_ExceptionData*);
+typedef stabilitytest_Nova_LambdaStability* (*stabilitytest_Nova_LambdaStability_native_Nova_construct)(stabilitytest_Nova_LambdaStability*, nova_exception_Nova_ExceptionData*, stabilitytest_Nova_StabilityTest*);
+
+typedef struct stabilitytest_native_LambdaStability
+{
+stabilitytest_Nova_LambdaStability_native0_Nova_test test;
+stabilitytest_Nova_LambdaStability_native_Nova_construct LambdaStability;
+} stabilitytest_native_LambdaStability;
+
+typedef void (*stabilitytest_Nova_NetworkStability_native0_Nova_test)(stabilitytest_Nova_NetworkStability*, nova_exception_Nova_ExceptionData*);
+typedef stabilitytest_Nova_NetworkStability* (*stabilitytest_Nova_NetworkStability_native_Nova_construct)(stabilitytest_Nova_NetworkStability*, nova_exception_Nova_ExceptionData*, stabilitytest_Nova_StabilityTest*);
+
+typedef struct stabilitytest_native_NetworkStability
+{
+stabilitytest_Nova_NetworkStability_native0_Nova_test test;
+stabilitytest_Nova_NetworkStability_native_Nova_construct NetworkStability;
+} stabilitytest_native_NetworkStability;
+
+typedef nova_Nova_String* (*stabilitytest_Nova_PolymorphicSubClass_native_Nova_toString)(stabilitytest_Nova_PolymorphicSubClass*, nova_exception_Nova_ExceptionData*);
+typedef stabilitytest_Nova_PolymorphicSubClass* (*stabilitytest_Nova_PolymorphicSubClass_native_Nova_construct)(stabilitytest_Nova_PolymorphicSubClass*, nova_exception_Nova_ExceptionData*);
+
+typedef struct stabilitytest_native_PolymorphicSubClass
+{
+stabilitytest_Nova_PolymorphicSubClass_native_Nova_toString toString;
+stabilitytest_Nova_PolymorphicSubClass_native_Nova_construct PolymorphicSubClass;
+} stabilitytest_native_PolymorphicSubClass;
+
+typedef void (*stabilitytest_Nova_PolymorphicSuperClass_native_Nova_giveBirth)(stabilitytest_Nova_PolymorphicSuperClass*, nova_exception_Nova_ExceptionData*);
+typedef nova_Nova_String* (*stabilitytest_Nova_PolymorphicSuperClass_native0_Nova_toString)(stabilitytest_Nova_PolymorphicSuperClass*, nova_exception_Nova_ExceptionData*);
+typedef stabilitytest_Nova_PolymorphicSuperClass* (*stabilitytest_Nova_PolymorphicSuperClass_native_Nova_construct)(stabilitytest_Nova_PolymorphicSuperClass*, nova_exception_Nova_ExceptionData*);
+
+typedef struct stabilitytest_native_PolymorphicSuperClass
+{
+stabilitytest_Nova_PolymorphicSuperClass_native_Nova_giveBirth giveBirth;
+stabilitytest_Nova_PolymorphicSuperClass_native0_Nova_toString toString;
+stabilitytest_Nova_PolymorphicSuperClass_native_Nova_construct PolymorphicSuperClass;
+} stabilitytest_native_PolymorphicSuperClass;
+
+typedef void (*stabilitytest_Nova_PolymorphismStability_native0_Nova_test)(stabilitytest_Nova_PolymorphismStability*, nova_exception_Nova_ExceptionData*);
+typedef stabilitytest_Nova_PolymorphismStability* (*stabilitytest_Nova_PolymorphismStability_native_Nova_construct)(stabilitytest_Nova_PolymorphismStability*, nova_exception_Nova_ExceptionData*, stabilitytest_Nova_StabilityTest*);
+
+typedef struct stabilitytest_native_PolymorphismStability
+{
+stabilitytest_Nova_PolymorphismStability_native0_Nova_test test;
+stabilitytest_Nova_PolymorphismStability_native_Nova_construct PolymorphismStability;
+} stabilitytest_native_PolymorphismStability;
+
+typedef void (*stabilitytest_Nova_StabilityExceptionHandler_native_Nova_uncaughtException)(stabilitytest_Nova_StabilityExceptionHandler*, nova_exception_Nova_ExceptionData*, nova_thread_Nova_Thread*, nova_exception_Nova_Exception*);
+typedef stabilitytest_Nova_StabilityExceptionHandler* (*stabilitytest_Nova_StabilityExceptionHandler_native_Nova_construct)(stabilitytest_Nova_StabilityExceptionHandler*, nova_exception_Nova_ExceptionData*, stabilitytest_Nova_StabilityTest*);
+
+typedef struct stabilitytest_native_StabilityExceptionHandler
+{
+stabilitytest_Nova_StabilityExceptionHandler_native_Nova_uncaughtException uncaughtException;
+stabilitytest_Nova_StabilityExceptionHandler_native_Nova_construct StabilityExceptionHandler;
+} stabilitytest_native_StabilityExceptionHandler;
+
+typedef void (*stabilitytest_Nova_StabilityTest_native_Nova_main)(stabilitytest_Nova_StabilityTest*, nova_exception_Nova_ExceptionData*, nova_datastruct_list_Nova_Array*);
+typedef void (*stabilitytest_Nova_StabilityTest_native0_Nova_test)(stabilitytest_Nova_StabilityTest*, nova_exception_Nova_ExceptionData*);
+typedef void (*stabilitytest_Nova_StabilityTest_native0_Nova_fail)(stabilitytest_Nova_StabilityTest*, nova_exception_Nova_ExceptionData*);
+typedef void (*stabilitytest_Nova_StabilityTest_native1_Nova_fail)(stabilitytest_Nova_StabilityTest*, nova_exception_Nova_ExceptionData*, nova_Nova_String*);
+typedef stabilitytest_Nova_StabilityTest* (*stabilitytest_Nova_StabilityTest_native_Nova_construct)(stabilitytest_Nova_StabilityTest*, nova_exception_Nova_ExceptionData*, stabilitytest_Nova_StabilityTest*);
+
+typedef struct stabilitytest_native_StabilityTest
+{
+stabilitytest_Nova_StabilityTest_native_Nova_main main;
+stabilitytest_Nova_StabilityTest_native0_Nova_test test;
+stabilitytest_Nova_StabilityTest_native0_Nova_fail fail;
+stabilitytest_Nova_StabilityTest_native1_Nova_fail fail__nova_String;
+stabilitytest_Nova_StabilityTest_native_Nova_construct StabilityTest;
+} stabilitytest_native_StabilityTest;
+
+typedef void (*stabilitytest_Nova_StabilityTestCase_native0_Nova_test)(stabilitytest_Nova_StabilityTestCase*, nova_exception_Nova_ExceptionData*);
+typedef stabilitytest_Nova_StabilityTestCase* (*stabilitytest_Nova_StabilityTestCase_native_Nova_construct)(stabilitytest_Nova_StabilityTestCase*, nova_exception_Nova_ExceptionData*, stabilitytest_Nova_StabilityTest*);
+
+typedef struct stabilitytest_native_StabilityTestCase
+{
+stabilitytest_Nova_StabilityTestCase_native0_Nova_test test;
+stabilitytest_Nova_StabilityTestCase_native_Nova_construct StabilityTestCase;
+} stabilitytest_native_StabilityTestCase;
+
+typedef stabilitytest_Nova_StabilityTestException* (*stabilitytest_Nova_StabilityTestException_native_Nova_construct)(stabilitytest_Nova_StabilityTestException*, nova_exception_Nova_ExceptionData*);
+
+typedef struct stabilitytest_native_StabilityTestException
+{
+stabilitytest_Nova_StabilityTestException_native_Nova_construct StabilityTestException;
+} stabilitytest_native_StabilityTestException;
+
+typedef void (*stabilitytest_Nova_SyntaxStability_native0_Nova_test)(stabilitytest_Nova_SyntaxStability*, nova_exception_Nova_ExceptionData*);
+typedef stabilitytest_Nova_SyntaxStability* (*stabilitytest_Nova_SyntaxStability_native_Nova_construct)(stabilitytest_Nova_SyntaxStability*, nova_exception_Nova_ExceptionData*, stabilitytest_Nova_StabilityTest*);
+
+typedef struct stabilitytest_native_SyntaxStability
+{
+stabilitytest_Nova_SyntaxStability_native0_Nova_test test;
+stabilitytest_Nova_SyntaxStability_native_Nova_construct SyntaxStability;
+} stabilitytest_native_SyntaxStability;
+
+typedef void (*stabilitytest_Nova_ThreadImplementation_native0_Nova_run)(stabilitytest_Nova_ThreadImplementation*, nova_exception_Nova_ExceptionData*);
+typedef stabilitytest_Nova_ThreadImplementation* (*stabilitytest_Nova_ThreadImplementation_native_Nova_construct)(stabilitytest_Nova_ThreadImplementation*, nova_exception_Nova_ExceptionData*, int, int);
+
+typedef struct stabilitytest_native_ThreadImplementation
+{
+stabilitytest_Nova_ThreadImplementation_native0_Nova_run run;
+stabilitytest_Nova_ThreadImplementation_native_Nova_construct ThreadImplementation;
+} stabilitytest_native_ThreadImplementation;
+
+typedef void (*stabilitytest_Nova_ThreadStability_native0_Nova_test)(stabilitytest_Nova_ThreadStability*, nova_exception_Nova_ExceptionData*);
+typedef stabilitytest_Nova_ThreadStability* (*stabilitytest_Nova_ThreadStability_native_Nova_construct)(stabilitytest_Nova_ThreadStability*, nova_exception_Nova_ExceptionData*, stabilitytest_Nova_StabilityTest*);
+
+typedef struct stabilitytest_native_ThreadStability
+{
+stabilitytest_Nova_ThreadStability_native0_Nova_test test;
+stabilitytest_Nova_ThreadStability_native_Nova_construct ThreadStability;
+} stabilitytest_native_ThreadStability;
+
+typedef void (*stabilitytest_Nova_TimeStability_native0_Nova_test)(stabilitytest_Nova_TimeStability*, nova_exception_Nova_ExceptionData*);
+typedef stabilitytest_Nova_TimeStability* (*stabilitytest_Nova_TimeStability_native_Nova_construct)(stabilitytest_Nova_TimeStability*, nova_exception_Nova_ExceptionData*, stabilitytest_Nova_StabilityTest*);
+
+typedef struct stabilitytest_native_TimeStability
+{
+stabilitytest_Nova_TimeStability_native0_Nova_test test;
+stabilitytest_Nova_TimeStability_native_Nova_construct TimeStability;
+} stabilitytest_native_TimeStability;
+
+typedef void (*stabilitytest_Nova_ToStringStability_native0_Nova_test)(stabilitytest_Nova_ToStringStability*, nova_exception_Nova_ExceptionData*);
+typedef stabilitytest_Nova_ToStringStability* (*stabilitytest_Nova_ToStringStability_native_Nova_construct)(stabilitytest_Nova_ToStringStability*, nova_exception_Nova_ExceptionData*, stabilitytest_Nova_StabilityTest*);
+
+typedef struct stabilitytest_native_ToStringStability
+{
+stabilitytest_Nova_ToStringStability_native0_Nova_test test;
+stabilitytest_Nova_ToStringStability_native_Nova_construct ToStringStability;
+} stabilitytest_native_ToStringStability;
+
+typedef stabilitytest_Nova_UnstableException* (*stabilitytest_Nova_UnstableException_native_Nova_construct)(stabilitytest_Nova_UnstableException*, nova_exception_Nova_ExceptionData*, nova_Nova_String*);
+
+typedef struct stabilitytest_native_UnstableException
+{
+stabilitytest_Nova_UnstableException_native_Nova_construct UnstableException;
+} stabilitytest_native_UnstableException;
 
 
 typedef struct nova_env
@@ -2188,7 +2740,61 @@ compiler_util_native_Location compiler_util_Location;
 compiler_util_native_OS compiler_util_OS;
 compiler_util_native_StringUtils compiler_util_StringUtils;
 compiler_util_native_SyntaxUtils compiler_util_SyntaxUtils;
+example_native_Animal example_Animal;
+example_native_ArrayDemo example_ArrayDemo;
+example_native_BodyBuilder example_BodyBuilder;
+example_native_ClosureDemo example_ClosureDemo;
+example_native_Dog example_Dog;
+example_native_ExceptionHandlingDemo example_ExceptionHandlingDemo;
+example_native_FileTest example_FileTest;
+example_native_GenericDemo example_GenericDemo;
+example_native_HashMapDemo example_HashMapDemo;
+example_native_HashSetDemo example_HashSetDemo;
+example_native_IntegerTest example_IntegerTest;
 example_native_Lab example_Lab;
+example_native_MathDemo example_MathDemo;
+example_native_NonWholeDivisionException example_NonWholeDivisionException;
+example_native_Person example_Person;
+example_native_Polygon example_Polygon;
+example_native_PolymorphismDemo example_PolymorphismDemo;
+example_native_QueueDemo example_QueueDemo;
+example_native_Spider example_Spider;
+example_native_Square example_Square;
+example_native_SvgChart example_SvgChart;
+example_native_SvgFractal example_SvgFractal;
+example_native_T1 example_T1;
+example_native_T2 example_T2;
+example_native_Test example_Test;
+example_native_ThreadDemo example_ThreadDemo;
+example_native_ThreadDemoImplementation example_ThreadDemoImplementation;
+example_ackermann_native_Ackermann example_ackermann_Ackermann;
+example_copy_native_Dog example_copy_Dog;
+example_database_native_DatabaseDemo example_database_DatabaseDemo;
+example_network_native_ClientDemo example_network_ClientDemo;
+example_network_native_ConnectionThread example_network_ConnectionThread;
+example_network_native_OutputThread example_network_OutputThread;
+example_network_native_ServerDemo example_network_ServerDemo;
+stabilitytest_native_AssignmentStability stabilitytest_AssignmentStability;
+stabilitytest_native_ClassWithProperties stabilitytest_ClassWithProperties;
+stabilitytest_native_ClientThread stabilitytest_ClientThread;
+stabilitytest_native_ClosureStability stabilitytest_ClosureStability;
+stabilitytest_native_ExceptionStability stabilitytest_ExceptionStability;
+stabilitytest_native_FileStability stabilitytest_FileStability;
+stabilitytest_native_LambdaStability stabilitytest_LambdaStability;
+stabilitytest_native_NetworkStability stabilitytest_NetworkStability;
+stabilitytest_native_PolymorphicSubClass stabilitytest_PolymorphicSubClass;
+stabilitytest_native_PolymorphicSuperClass stabilitytest_PolymorphicSuperClass;
+stabilitytest_native_PolymorphismStability stabilitytest_PolymorphismStability;
+stabilitytest_native_StabilityExceptionHandler stabilitytest_StabilityExceptionHandler;
+stabilitytest_native_StabilityTest stabilitytest_StabilityTest;
+stabilitytest_native_StabilityTestCase stabilitytest_StabilityTestCase;
+stabilitytest_native_StabilityTestException stabilitytest_StabilityTestException;
+stabilitytest_native_SyntaxStability stabilitytest_SyntaxStability;
+stabilitytest_native_ThreadImplementation stabilitytest_ThreadImplementation;
+stabilitytest_native_ThreadStability stabilitytest_ThreadStability;
+stabilitytest_native_TimeStability stabilitytest_TimeStability;
+stabilitytest_native_ToStringStability stabilitytest_ToStringStability;
+stabilitytest_native_UnstableException stabilitytest_UnstableException;
 } nova_env;
 
 extern nova_env novaEnv;

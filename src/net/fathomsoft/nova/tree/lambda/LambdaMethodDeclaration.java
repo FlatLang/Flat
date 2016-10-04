@@ -1,7 +1,5 @@
 package net.fathomsoft.nova.tree.lambda;
 
-import net.fathomsoft.nova.Nova;
-import net.fathomsoft.nova.TargetC;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.tree.*;
@@ -121,19 +119,5 @@ public class LambdaMethodDeclaration extends BodyMethodDeclaration
 		
 		
 		return null;
-	}
-	
-	@Override
-	public TargetC.TargetLambdaMethodDeclaration getTarget()
-	{
-		final LambdaMethodDeclaration self = this;
-		
-		return new TargetC.TargetLambdaMethodDeclaration()
-		{
-			public LambdaMethodDeclaration node()
-			{
-				return self;
-			}
-		};
 	}
 }

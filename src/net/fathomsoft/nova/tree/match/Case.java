@@ -1,6 +1,5 @@
 package net.fathomsoft.nova.tree.match;
 
-import net.fathomsoft.nova.TargetC;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.tree.Node;
@@ -236,19 +235,5 @@ public class Case extends MatchCase
 		
 		
 		return null;
-	}
-	
-	@Override
-	public TargetC.TargetCase getTarget()
-	{
-		final Case self = this;
-		
-		return new TargetC.TargetCase()
-		{
-			public Case node()
-			{
-				return self;
-			}
-		};
 	}
 }

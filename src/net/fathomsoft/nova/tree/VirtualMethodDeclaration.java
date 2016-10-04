@@ -1,7 +1,5 @@
 package net.fathomsoft.nova.tree;
 
-import net.fathomsoft.nova.Nova;
-import net.fathomsoft.nova.TargetC;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.util.Location;
 
@@ -96,19 +94,5 @@ public class VirtualMethodDeclaration extends BodyMethodDeclaration
 		
 		
 		return null;
-	}
-	
-	@Override
-	public TargetC.TargetVirtualMethodDeclaration getTarget()
-	{
-		final VirtualMethodDeclaration self = this;
-		
-		return new TargetC.TargetVirtualMethodDeclaration()
-		{
-			public VirtualMethodDeclaration node()
-			{
-				return self;
-			}
-		};
 	}
 }
