@@ -86,6 +86,18 @@ public class FileUtils
 		return file;
 	}
 	
+	public static String getFileExtension(String filename)
+	{
+		int lastIndex = 0;
+		
+		if ((lastIndex = filename.lastIndexOf('.')) >= 0)
+		{
+			return filename.substring(lastIndex + 1);
+		}
+		
+		return null;
+	}
+	
 	/**
 	 * Remove the extension from a file name.<br>
 	 * <br>
