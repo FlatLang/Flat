@@ -19,7 +19,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * @since	v0.2 Apr 14, 2014 at 11:52:33 PM
  * @version	v0.2.35 Oct 5, 2014 at 11:22:42 PM
  */
-public class Program extends Node
+public class Program extends TypeList<FileDeclaration>
 {
 	private SyntaxTree tree;
 	
@@ -139,12 +139,7 @@ public class Program extends Node
 	 */
 	public void addAutoImports()
 	{
-		for (int i = 0; i < getNumVisibleChildren(); i++)
-		{
-			FileDeclaration child = (FileDeclaration)getVisibleChild(i);
-			
-			child.addAutoImports();
-		}
+		forEachVisibleListChild(file -> file.addAutoImports());
 	}
 	
 	/**
