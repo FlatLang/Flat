@@ -539,7 +539,7 @@ public class Nova
 				continue;
 			}
 			
-			if (compileEngine.checkArgument(arg))
+			if (compileEngine.checkArgument(arg, args, i))
 			{
 				
 			}
