@@ -71,6 +71,7 @@ public class Nova
 	public static final long	RUNTIME       = 0x0000100000000000l;
 	public static final long	C_ARGS        = 0x0000010000000000l;
 	//////////////////////////////////////////////
+	public static final long	SINGLE_FILE   = 0x0000001000000000l;
 	public static final long	DRY_RUN       = 0x0000000100000000l;
 	public static final long	VERBOSE       = 0x0000000010000000l;
 	public static final long	FORMATC       = 0x0000000001000000l;
@@ -253,6 +254,7 @@ public class Nova
 //				"-cargs",
 //				"-keepc",
 				"-single-thread",
+				"-single-file",
 				"-main",
 //				"example/Lab",
 				"stabilitytest/StabilityTest",
@@ -282,7 +284,7 @@ public class Nova
 			"-dir", formatPath(workingPath + "include/nova_mysql"),
 			"-dir", formatPath(workingPath + "include/nova_openssl"),
 			"-dir", formatPath(workingPath),
-			formatPath(directory + "bin/Executable" + OUTPUT_EXTENSION),
+			formatPath(directory + "bin/Executable"),// + OUTPUT_EXTENSION),
 		};
 		
 //		for (String location : standardFiles)
@@ -603,6 +605,11 @@ public class Nova
 				{
 					enableFlag(VERBOSE);
 				}
+			}
+			// If the user wants to generate the output to a single file
+			else if (arg.equals("-single-file"))
+			{
+				enableFlag(SINGLE_FILE);
 			}
 			// If the user wants to run a single threaded compilation
 			else if (arg.equals("-single-thread"))
