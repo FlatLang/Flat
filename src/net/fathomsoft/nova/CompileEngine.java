@@ -33,4 +33,9 @@ public abstract class CompileEngine
 	{
 		return false;
 	}
+	
+	public boolean checkArgument(String arg, String[] args, int index)
+	{
+		return checkArgument(arg);
+	}
 }
