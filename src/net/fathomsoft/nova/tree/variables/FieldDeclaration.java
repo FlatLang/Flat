@@ -42,6 +42,12 @@ public class FieldDeclaration extends InstanceDeclaration
 	}
 	
 	@Override
+	public boolean isLocal()
+	{
+		return false;
+	}
+	
+	@Override
 	public void addChild(Node node)
 	{
 		if (node instanceof AccessorMethod || node instanceof MutatorMethod)

@@ -53,6 +53,11 @@ public class VariableDeclaration extends IIdentifier
 		extraDeclarations = new String[0];
 	}
 	
+	public boolean isLocal()
+	{
+		return true;
+	}
+	
 	public VariableDeclaration getOriginalDeclaration()
 	{
 		return this;

@@ -19,6 +19,12 @@ public class ReferenceParameter extends Parameter
 	}
 	
 	@Override
+	public boolean isLocal()
+	{
+		return false;
+	}
+	
+	@Override
 	public boolean isUserMade()
 	{
 		return false;

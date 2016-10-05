@@ -44,6 +44,12 @@ public class Parameter extends LocalDeclaration
 		return -1;
 	}
 	
+	@Override
+	public boolean isLocal()
+	{
+		return true;
+	}
+	
 	public boolean isOptional()
 	{
 		return defaultValueString != null || defaultValue != null;

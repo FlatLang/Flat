@@ -39,6 +39,12 @@ public class LocalDeclaration extends VariableDeclaration
 		super(temporaryParent, locationIn);
 	}
 	
+	@Override
+	public boolean isLocal()
+	{
+		return true;
+	}
+	
 	/**
 	 * Get the ID of the scope that the variable was declared in.
 	 * 

@@ -50,6 +50,12 @@ public class InstanceDeclaration extends VariableDeclaration
 		setVisibility(PRIVATE);
 	}
 	
+	@Override
+	public boolean isLocal()
+	{
+		return false;
+	}
+	
 	/**
 	 * Get whether or not the specified InstanceDeclaration is static. Static
 	 * variables/methods are shared among each of its containing class's
