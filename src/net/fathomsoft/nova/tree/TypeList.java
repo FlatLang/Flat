@@ -2,6 +2,7 @@ package net.fathomsoft.nova.tree;
 
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.function.Consumer;
 
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.util.Location;
@@ -34,6 +35,22 @@ public class TypeList<E extends Node> extends List implements Iterable<E>
 		}
 		
 		return nodes;
+	}
+	
+	public void forEachListChild(Consumer<E> action)
+	{
+		for (int i = 0; i < getNumChildren(); i++)
+		{
+			action.accept(getChild(i));
+		}
+	}
+	
+	public void forEachVisibleListChild(Consumer<E> action)
+	{
+		for (int i = 0; i < getNumVisibleChildren(); i++)
+		{
+			action.accept(getChild(i));
+		}
 	}
 	
 	/**
