@@ -12,8 +12,6 @@ import net.fathomsoft.nova.error.SyntaxErrorException;
 import net.fathomsoft.nova.tree.*;
 import net.fathomsoft.nova.tree.match.Match;
 import net.fathomsoft.nova.util.*;
-import nova.c.engines.CCodeGeneratorEngine;
-import nova.c.engines.CCompileEngine;
 
 import static java.util.Arrays.stream;
 import static net.fathomsoft.nova.util.FileUtils.formatPath;
@@ -144,13 +142,13 @@ public class Nova
 	{
 		try
 		{
-			URL url = new File("../Nova C/out/production/Nova C").toURL();
+			URL url = new File("../Nova-JS/out/production/Nova-JS").toURL();
 			
 			// Create a new class loader with the directory
 			ClassLoader cl = new URLClassLoader(new URL[] { url });
 
-			Class codeGeneratorEngineClass = cl.loadClass("nova.c.engines.CCodeGeneratorEngine");
-			Class compileEngineClass = cl.loadClass("nova.c.engines.CCompileEngine");
+			Class codeGeneratorEngineClass = cl.loadClass("nova.js.engines.JSCodeGeneratorEngine");
+			Class compileEngineClass = cl.loadClass("nova.js.engines.JSCompileEngine");
 
 			java.lang.reflect.Constructor codeGeneratorEngineConstructor = codeGeneratorEngineClass.getConstructor(Nova.class);
 			java.lang.reflect.Constructor compileEngineConstructor = compileEngineClass.getConstructor(Nova.class);
@@ -185,6 +183,8 @@ public class Nova
 		
 		//codeGeneratorEngine = new CCodeGeneratorEngine(this);
 		//compileEngine = new CCompileEngine(this);
+		
+		codeGeneratorEngine.initializeOutputDirectory();
 		
 		if (BENCHMARK > 0)
 		{
@@ -239,7 +239,7 @@ public class Nova
 				"../Misc/example",
 				"../Misc/stabilitytest", 
 				"-output-directory", "../NovaCompilerOutput",
-				"-package-output-directory", "nova", "../StandardLibrary/c",
+				"-package-output-directory", "nova", "../StandardLibrary/js",
 //				"-dir", formatPath(directory + "../example"),
 //				"-dir", formatPath(directory + "../stabilitytest"),
 //				"-run",
