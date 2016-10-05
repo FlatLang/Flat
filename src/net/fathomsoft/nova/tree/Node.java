@@ -1016,6 +1016,31 @@ public abstract class Node implements Listenable, Annotatable
 		return result;
 	}
 	
+	public Node getNextNode()
+	{
+		return getAdjacentNode(1);
+	}
+	
+	public Node getPreviousNode()
+	{
+		return getAdjacentNode(-1);
+	}
+	
+	public Node getAdjacentNode(int offset)
+	{
+		if (getParent() != null)
+		{
+			int index = getParent().children.indexOf(this) + offset;
+			
+			if (index >= 0 && index < getParent().children.size())
+			{
+				return getParent().children.get(index);
+			}
+		}
+		
+		return null;
+	}
+	
 	/**
 	 * Give the specified node the given nodes children. This removes the
 	 * children from the given oldParent node.
