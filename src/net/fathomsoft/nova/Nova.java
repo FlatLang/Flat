@@ -36,6 +36,8 @@ public class Nova
 	
 	public File					workingDir;
 	
+	public String target = "c";
+	
 	private SyntaxTree			tree;
 	
 	public ArrayList<String>	externalImports;
@@ -269,6 +271,7 @@ public class Nova
 //				"-no-warnings",
 //				"-no-errors",
 				"-no-optimize",
+				"-target", "js",
 //				"-library",
 			};
 		}
@@ -631,6 +634,15 @@ public class Nova
 			else if (arg.equals("-small"))
 			{
 				enableFlag(SMALL_BIN);
+			}
+			// If the user wants to generate a smaller executable output.
+			else if (arg.equals("-target"))
+			{
+				validateArgumentSize(args, i + 1);
+				
+				target = args[i + 1].toLowerCase();
+				
+				skip = 1;
 			}
 			// If the user wants to output a library instead of an
 			// executable.
