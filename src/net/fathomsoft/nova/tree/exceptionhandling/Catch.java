@@ -161,30 +161,38 @@ public class Catch extends ExceptionHandler
 	 */
 	private boolean decodeExceptionDeclaration(String contents, Location location, boolean require)
 	{
-		LocalDeclaration exceptionDeclaration = LocalDeclaration.decodeStatement(this, contents, location, require);
+		boolean targetC = getProgram().getController().target.equals("c");
 		
-		if (exceptionDeclaration == null)
+		LocalDeclaration declaration = LocalDeclaration.decodeStatement(this, contents, location, require);
+		
+		if (declaration == null)
 		{
 			SyntaxMessage.error("Incorrect Exception declaration", this, location);
 		}
 		
+		ExceptionDeclaration exceptionDeclaration = (ExceptionDeclaration)declaration.cloneTo(new ExceptionDeclaration(declaration.getParent(), declaration.getLocationIn()));
+		
 		getScope().addChild(exceptionDeclaration.clone(this, exceptionDeclaration.getLocationIn()));
 		
-		Assignment assign = Assignment.decodeStatement(this, exceptionDeclaration.getName() + " = null", Location.INVALID, true);
-		
-		Variable exceptionData   = getParentMethod().getParameterList().getExceptionData().generateUsableVariable(this, Location.INVALID);
-		Variable thrownException = SyntaxTree.getUsableExistingNode(exceptionData, "thrownException", Location.INVALID);
-		exceptionData.addChild(thrownException);
-		
-		Cast c = new Cast(assign, assign.getLocationIn());
-		c.setType(exceptionDeclaration.getTypeStringValue());
-		c.addChild(exceptionData);
-		
-		assign.replace(assign.getAssignmentNode(), c);
-		assign.getAssignedNode().setDataType(c.getDataType());
+		if (targetC)
+		{
+			Assignment assign = Assignment.decodeStatement(this, exceptionDeclaration.getName() + " = null", Location.INVALID, true);
+			
+			Variable exceptionData = getParentMethod().getParameterList().getExceptionData().generateUsableVariable(this, Location.INVALID);
+			Variable thrownException = SyntaxTree.getUsableExistingNode(exceptionData, "thrownException", Location.INVALID);
+			exceptionData.addChild(thrownException);
+			
+			Cast c = new Cast(assign, assign.getLocationIn());
+			c.setType(exceptionDeclaration.getTypeStringValue());
+			c.addChild(exceptionData);
+			
+			assign.replace(assign.getAssignmentNode(), c);
+			assign.getAssignedNode().setDataType(c.getDataType());
+			
+			addChild(assign);
+		}
 		
 		addChild(exceptionDeclaration, this);
-		addChild(assign);
 		
 		return true;
 	}
