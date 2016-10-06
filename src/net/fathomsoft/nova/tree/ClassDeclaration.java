@@ -800,6 +800,42 @@ public class ClassDeclaration extends InstanceDeclaration
 		this.extendedClass = extendedClass;
 	}
 	
+	public ClassDeclaration[] getClassHierarchy()
+	{
+		return getClassHierarchy(true);
+	}
+	
+	public ClassDeclaration[] getClassHierarchy(boolean inclusive)
+	{
+		return getClassHierarchy(true, false);
+	}
+	
+	public ClassDeclaration[] getClassHierarchy(boolean inclusive, boolean interfaces)
+	{
+		ArrayList<ClassDeclaration> list = new ArrayList<>();
+		
+		ClassDeclaration current = inclusive ? this : getExtendedClassDeclaration();
+		
+		if (!inclusive && interfaces)
+		{
+			getInterfacesImplementationList().forEachVisibleListChild(i -> list.add(i.getTypeClass()));
+		}
+		
+		while (current != null)
+		{
+			list.add(current);
+			
+			if (interfaces)
+			{
+				current.getInterfacesImplementationList().forEachVisibleListChild(i -> list.add(i.getTypeClass()));
+			}
+			
+			current = current.getExtendedClassDeclaration();
+		}
+		
+		return list.toArray(new ClassDeclaration[0]);
+	}
+	
 	/**
 	 * Get an ArrayList instance that contains all of the interfaces
 	 * that are implemented by this class node.
