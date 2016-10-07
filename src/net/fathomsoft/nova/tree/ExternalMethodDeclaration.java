@@ -1,5 +1,6 @@
 package net.fathomsoft.nova.tree;
 
+import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.error.SyntaxMessage;
@@ -108,6 +109,13 @@ public class ExternalMethodDeclaration extends MethodDeclaration
 		{
 			ExternalMethodDeclaration n = new ExternalMethodDeclaration(parent, location);
 			
+			int end = StringUtils.findNextNonWhitespaceIndex(methodSignature, methodSignature.indexOf('(') - 1, -1) + 1;
+			int start = StringUtils.findNextWhitespaceIndex(methodSignature, end - 2, -1) + 1;
+			String name = methodSignature.substring(start, end);
+			
+			// TODO: 10/7/2016 make this name foolproof 
+			methodSignature = methodSignature.substring(0, start) + "__extMethod" + methodSignature.substring(end);
+			
 			String withAlias = methodSignature;
 			methodSignature  = trimAlias(methodSignature);
 			
@@ -121,6 +129,7 @@ public class ExternalMethodDeclaration extends MethodDeclaration
 				method.cloneTo(n);
 				
 				n.setExternal(true);
+				n.setName(name);
 				n.alias = n.getName();
 				n.setLocationIn(location);
 				
