@@ -7,6 +7,8 @@ import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.error.SyntaxErrorException;
 import net.fathomsoft.nova.error.SyntaxMessage;
+import net.fathomsoft.nova.tree.annotations.Annotation;
+import net.fathomsoft.nova.tree.annotations.TargetAnnotation;
 import net.fathomsoft.nova.tree.generics.GenericTypeArgument;
 import net.fathomsoft.nova.tree.variables.FieldDeclaration;
 import net.fathomsoft.nova.util.Bounds;
@@ -27,6 +29,8 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  */
 public class TreeGenerator implements Runnable
 {
+	private boolean			skipNextStatement;
+	
 	private int				statementStartIndex, statementEndIndex, oldStatementStartIndex;
 	private int				lineNumber;
 	
@@ -355,6 +359,27 @@ public class TreeGenerator implements Runnable
 			
 			Node node = decodeStatementAndCheck(statement, location, scope, searchTypes, skipScopes);
 			
+			if (node instanceof Annotation)
+			{
+				Annotation a = (Annotation)node;
+				
+				skipNextStatement = skipNextStatement || (a instanceof TargetAnnotation&& !((TargetAnnotation)a).target.equals(controller.target));
+				
+				String frag = Annotation.getFragment(statement);
+				
+				if (frag.length() > 0)
+				{
+					boolean skipped = skipNextStatement;
+					
+					node = decodeStatementAndCheck(frag, location, scope, searchTypes, skipScopes);
+					
+					if (!skipped && node != null)
+					{
+						node.addAnnotation(a);
+					}
+				}
+			}
+			
 			checkPendingScopeFragment(node);
 			checkScopeFragment(node, endChar, scope);
 			
@@ -511,6 +536,13 @@ public class TreeGenerator implements Runnable
 	 */
 	private Node decodeStatementAndCheck(String statement, Location location, boolean scope, Class<?> searchTypes[], boolean skipScopes)
 	{
+		if (skipNextStatement)
+		{
+			skipNextStatement = false;
+			
+			return null;
+		}
+		
 		try
 		{
 			return decodeStatement(statement, location, searchTypes);
