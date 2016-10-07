@@ -50,7 +50,7 @@ public class TargetAnnotation extends Annotation
         {
             TargetAnnotation n = new TargetAnnotation(parent, location);
             
-            n.target = parameters.toLowerCase();
+            n.target = parameters.trim().toLowerCase();
             
             return n;
         }
