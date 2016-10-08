@@ -109,9 +109,26 @@ public class ExternalMethodDeclaration extends MethodDeclaration
 		{
 			ExternalMethodDeclaration n = new ExternalMethodDeclaration(parent, location);
 			
-			int end = StringUtils.findNextNonWhitespaceIndex(methodSignature, methodSignature.indexOf('(') - 1, -1) + 1;
-			int start = StringUtils.findNextWhitespaceIndex(methodSignature, end - 2, -1) + 1;
+			int start = 0;
+			int end = StringUtils.findNextNonWhitespaceIndex(methodSignature, SyntaxUtils.findCharInBaseScope(methodSignature, '(') - 1, -1) + 1;
+			
+			boolean quotes = methodSignature.charAt(end - 1) == '"';
+			
+			if (quotes)
+			{
+				start = StringUtils.findEndingQuote(methodSignature, end - 1, -1);
+			}
+			else
+			{
+				start = StringUtils.findNextWhitespaceIndex(methodSignature, end - 2, -1) + 1;
+			}
+			
 			String name = methodSignature.substring(start, end);
+			
+			if (quotes)
+			{
+				name = StringUtils.removeSurroundingQuotes(name);
+			}
 			
 			// TODO: 10/7/2016 make this name foolproof 
 			methodSignature = methodSignature.substring(0, start) + "__extMethod" + methodSignature.substring(end);
