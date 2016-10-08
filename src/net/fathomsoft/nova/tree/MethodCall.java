@@ -320,6 +320,16 @@ public class MethodCall extends Variable
 		return ((Value)getReferenceNode()).getTypeClass();
 	}
 	
+	public NovaMethodDeclaration getNovaMethod()
+	{
+		return getCallableDeclaration() instanceof NovaMethodDeclaration ? (NovaMethodDeclaration)getCallableDeclaration() : null;
+	}
+	
+	public boolean isSuperCall()
+	{
+		return (getParent() instanceof Accessible == false || !((Accessible)getParent()).doesAccess()) && getNovaMethod() != null && getNovaMethod().isSuperCallFrom(getParentClass());
+	}
+	
 	/**
 	 * Get the name of the object reference identifier for the given
 	 * MethodCall's method node. Static methods return
