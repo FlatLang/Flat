@@ -55,10 +55,10 @@ public class SyntaxTree
 	
 	private static final Class<?> PRE_VALUE_DECODE[] = new Class<?>[]
 	{
-		IfStatement.class, ElseStatement.class, Loop.class, Case.class,
-		Match.class, Default.class, Fallthrough.class, Priority.class,
+		Annotation.class, IfStatement.class, ElseStatement.class, Loop.class,
+		Case.class, Match.class, Default.class, Fallthrough.class, Priority.class,
 		Return.class, Assignment.class, IntRange.class, TernaryOperation.class,
-		BinaryOperation.class, Super.class, Annotation.class
+		BinaryOperation.class, Super.class
 	};
 	
 	public static final Class<?> SCOPE_CHILD_DECODE[] = new Class<?>[]
@@ -268,7 +268,7 @@ public class SyntaxTree
 	 * 
 	 * @return The Method representation of the main method.
 	 */
-	public MethodDeclaration getMainMethod(String mainClass)
+	public NovaMethodDeclaration getMainMethod(String mainClass)
 	{
 		MethodDeclaration main = null;
 		
@@ -310,7 +310,7 @@ public class SyntaxTree
 			}
 		}
 		
-		return main;
+		return (NovaMethodDeclaration)main;
 	}
     
 	/**
