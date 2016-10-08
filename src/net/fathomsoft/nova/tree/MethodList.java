@@ -1,6 +1,7 @@
 package net.fathomsoft.nova.tree;
 
 import java.util.ArrayList;
+import java.util.function.Consumer;
 
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.util.Location;
@@ -48,6 +49,19 @@ public class MethodList extends TypeList<MethodDeclaration>
 	public boolean containsMethod(String methodName)
 	{
 		return getMethods(methodName, SearchFilter.DEFAULT).length > 0;
+	}
+	
+	public void forEachNovaMethod(Consumer<NovaMethodDeclaration> action)
+	{
+		for (int i = 0; i < getNumVisibleChildren(); i++)
+		{
+			MethodDeclaration method = getVisibleChild(i);
+			
+			if (method instanceof NovaMethodDeclaration)
+			{
+				action.accept((NovaMethodDeclaration)method);
+			}
+		}
 	}
 	
 	/**
