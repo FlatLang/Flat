@@ -62,6 +62,19 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 		addChild(methodParams, this);
 	}
 	
+	public boolean isSuperCallFrom(ClassDeclaration clazz)
+	{
+		if (clazz.getExtendedClassDeclaration() == getDeclaringClass())
+		{
+			SearchFilter filter = new SearchFilter();
+			filter.checkAncestor = false;
+			
+			return clazz.getMethod((GenericCompatible)null, getName(), filter, getParameterList().getTypes(), true) != null;
+		}
+		
+		return false;
+	}
+	
 	@Override
 	public ObjectReference getObjectReference()
 	{
