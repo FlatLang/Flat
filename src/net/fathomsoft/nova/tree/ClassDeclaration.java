@@ -1078,12 +1078,22 @@ public class ClassDeclaration extends InstanceDeclaration
 	 * 		searching method must be compatible with.
 	 * @return The compatible method with the given method name.
 	 */
-	public MethodDeclaration getMethod(GenericCompatible context, String methodName, SearchFilter filter, Value ... parameterTypes)
+	public MethodDeclaration getMethod(GenericCompatible[] contexts, String methodName, SearchFilter filter, Value[] parameterTypes)
 	{
-		return getMethod(new GenericCompatible[] { context }, methodName, filter, parameterTypes);
+		return getMethod(contexts, methodName, filter, parameterTypes, false);
 	}
 	
-	public MethodDeclaration getMethod(GenericCompatible[] contexts, String methodName, SearchFilter filter, Value ... parameterTypes)
+	public MethodDeclaration getMethod(GenericCompatible context, String methodName, SearchFilter filter, Value[] parameterTypes, boolean reverse)
+	{
+		return getMethod(new GenericCompatible[] { context }, methodName, filter, parameterTypes, reverse);
+	}
+	
+	public MethodDeclaration getMethod(GenericCompatible context, String methodName, SearchFilter filter, Value[] parameterTypes)
+	{
+		return getMethod(new GenericCompatible[] { context }, methodName, filter, parameterTypes, false);
+	}
+	
+	public MethodDeclaration getMethod(GenericCompatible[] contexts, String methodName, SearchFilter filter, Value[] parameterTypes, boolean reverse)
 	{
 		MethodDeclaration methods[] = getMethods(methodName, parameterTypes.length, filter);
 
@@ -1091,7 +1101,7 @@ public class ClassDeclaration extends InstanceDeclaration
 
 		for (MethodDeclaration method : methods)
 		{
-			if (method.areCompatibleParameterTypes(contexts, false, filter, parameterTypes))// && SyntaxUtils.isTypeCompatible(getProgram(), method.getType(), returnType))
+			if (method.areCompatibleParameterTypes(contexts, false, filter, parameterTypes, reverse))// && SyntaxUtils.isTypeCompatible(getProgram(), method.getType(), returnType))
 			{
 				compatible.add(method);
 			}
