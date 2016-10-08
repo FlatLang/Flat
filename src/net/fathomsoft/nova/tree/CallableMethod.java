@@ -104,14 +104,24 @@ public interface CallableMethod
 	 * @return Whether or not the types are compatible with the
 	 * 		parameters.
 	 */
-	public default boolean areCompatibleParameterTypes(GenericCompatible context, Value ... types)
+	public default boolean areCompatibleParameterTypes(GenericCompatible context, Value[] types)
 	{
-		return areCompatibleParameterTypes(new GenericCompatible[] { context }, types);
+		return areCompatibleParameterTypes(context, types, false);
 	}
 	
-	public default boolean areCompatibleParameterTypes(GenericCompatible[] contexts, Value ... types)
+	public default boolean areCompatibleParameterTypes(GenericCompatible context, Value[] types, boolean reverse)
 	{
-		return areCompatibleParameterTypes(contexts, true, types);
+		return areCompatibleParameterTypes(new GenericCompatible[] { context }, types, reverse);
+	}
+	
+	public default boolean areCompatibleParameterTypes(GenericCompatible[] contexts, Value[] types)
+	{
+		return areCompatibleParameterTypes(contexts, types, false);
+	}
+	
+	public default boolean areCompatibleParameterTypes(GenericCompatible[] contexts, Value[] types, boolean reverse)
+	{
+		return areCompatibleParameterTypes(contexts, true, types, reverse);
 	}
 	
 	/**
@@ -124,12 +134,22 @@ public interface CallableMethod
 	 * @return Whether or not the types are compatible with the
 	 * 		parameters.
 	 */
-	public default boolean areCompatibleParameterTypes(GenericCompatible[] contexts, boolean searchGeneric, Value ... types)
+	public default boolean areCompatibleParameterTypes(GenericCompatible[] contexts, boolean searchGeneric, Value[] types)
 	{
-		return areCompatibleParameterTypes(contexts, searchGeneric, null, types);
+		return areCompatibleParameterTypes(contexts, searchGeneric, types, false);
 	}
 	
-	public default boolean areCompatibleParameterTypes(GenericCompatible[] contexts, boolean searchGeneric, SearchFilter filter, Value ... types)
+	public default boolean areCompatibleParameterTypes(GenericCompatible[] contexts, boolean searchGeneric, Value[] types, boolean reverse)
+	{
+		return areCompatibleParameterTypes(contexts, searchGeneric, null, types, reverse);
+	}
+	
+	public default boolean areCompatibleParameterTypes(GenericCompatible[] contexts, boolean searchGeneric, SearchFilter filter, Value[] types)
+	{
+		return areCompatibleParameterTypes(contexts, searchGeneric, filter, types, false);
+	}
+	
+	public default boolean areCompatibleParameterTypes(GenericCompatible[] contexts, boolean searchGeneric, SearchFilter filter, Value[] types, boolean reverse)
 	{
 		if (getParameterList().getNumVisibleChildren() != types.length)
 		{
@@ -139,7 +159,10 @@ public interface CallableMethod
 			}
 		}
 		
-		return SyntaxUtils.areTypesCompatible(contexts, getParameterList().getTypes(), types, searchGeneric);
+		Value[] required = reverse ? types : getParameterList().getTypes();
+		Value[] given = !reverse ? types : getParameterList().getTypes();
+		
+		return SyntaxUtils.areTypesCompatible(contexts, required, given, searchGeneric);
 	}
 	
 	public boolean isGenericType();
