@@ -231,8 +231,6 @@ public class Nova
 		
 		//codeGeneratorEngine = new CCodeGeneratorEngine(this);
 		//compileEngine = new CCompileEngine(this);
-		
-		codeGeneratorEngine.initializeOutputDirectory();
 	}
 	
 	/**
@@ -317,6 +315,8 @@ public class Nova
 		args = appendArguments(args, postArgs);
 		
 		parseArguments(args);
+		
+		codeGeneratorEngine.initializeOutputDirectory();
 		
 //		log("Nova " + VERSION + " Copyright (C) 2014  Braden Steffaniak <BradenSteffaniak@gmail.com>\n" +
 //				"This program comes with ABSOLUTELY NO WARRANTY\n" + //; for details type show w." +
