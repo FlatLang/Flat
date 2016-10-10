@@ -105,7 +105,15 @@ public abstract class Node implements Listenable, Annotatable
 	{
 		if (annotations == null)
 		{
-			annotations = new ArrayList<Annotation>();
+			annotations = new ArrayList<>();
+		}
+		
+		if (annotation.getAnnotations() != null)
+		{
+			for (Annotation a : annotation.getAnnotations())
+			{
+				addAnnotation(a);
+			}
 		}
 		
 		annotations.add(annotation);
