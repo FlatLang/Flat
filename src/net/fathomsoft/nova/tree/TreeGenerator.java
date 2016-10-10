@@ -163,9 +163,12 @@ public class TreeGenerator implements Runnable
 		
 		controller.log("Phase one for '" + fileDeclaration.getName() + "'...");
 		
-		tree.addFile(fileDeclaration);
-		
-		traverseCode(fileDeclaration, 0, SyntaxTree.FIRST_PASS_CLASSES, true);
+		if (source.trim().length() > 0)
+		{
+			tree.addFile(fileDeclaration);
+			
+			traverseCode(fileDeclaration, 0, SyntaxTree.FIRST_PASS_CLASSES, true);
+		}
 	}
 	
 	/**
@@ -181,6 +184,11 @@ public class TreeGenerator implements Runnable
 		controller.log("Phase two for '" + filename + "'...");
 		
 		ClassDeclaration node = fileDeclaration.getClassDeclaration();
+		
+		if (node == null)
+		{
+			return;
+		}
 		
 		// Finds the starting scope '{'
 		int startingIndex = StringUtils.findNextNonWhitespaceIndex(source, node.getLocationIn().getEnd());
@@ -216,6 +224,11 @@ public class TreeGenerator implements Runnable
 		controller.log("Phase three for '" + filename + "'...");
 		
 		ClassDeclaration classDeclaration = fileDeclaration.getClassDeclaration();
+		
+		if (classDeclaration == null)
+		{
+			return;
+		}
 		
 		boolean requireScope = !(classDeclaration instanceof Interface);
 		
@@ -333,6 +346,25 @@ public class TreeGenerator implements Runnable
 	 */
 	private Node getNextStatement(Node previous, int offset, Class<?> searchTypes[], boolean skipScopes)
 	{
+		if (parentStack.peek() instanceof ExternalCodeBlock)
+		{
+			ExternalCodeBlock block = (ExternalCodeBlock)parentStack.peek();
+			
+			int start = statementStartIndex;
+			int brace = SyntaxUtils.findEndingBrace(source, statementStartIndex);
+			
+			statementStartIndex = StringUtils.findNextNonWhitespaceIndex(source, brace + 1);
+			
+			parentStack.pop();
+			
+			block.setContents(String.join("\n", source.substring(start, brace).trim().split("\\s*\\n\\s*")));
+			
+			if (updateParents(statementStartIndex, statementStartIndex + 1, previous))
+			{
+				statementStartIndex = StringUtils.findNextNonWhitespaceIndex(source, statementStartIndex + 1);
+			}
+		}
+		
 		while ((statementEndIndex = calculateStatementEnd(statementStartIndex)) >= 0 && !statementStartMatcher.hitEnd() && !parentStack.isEmpty())
 		{
 			char endChar = '\0';
@@ -386,7 +418,7 @@ public class TreeGenerator implements Runnable
 			updateLineNumber(statementStartIndex, newStatementStartIndex);
 			
 			oldStatementStartIndex = statementStartIndex;
-			statementStartIndex    = newStatementStartIndex;
+			statementStartIndex    = newStatementStartIndex > statementStartIndex ? newStatementStartIndex : statementStartIndex;
 			
 			if (node != null)
 			{
@@ -540,6 +572,11 @@ public class TreeGenerator implements Runnable
 		{
 			skipNextStatement = false;
 			
+			if (skipScopes)
+			{
+				skipScope();
+			}
+			
 			return null;
 		}
 		
@@ -671,12 +708,14 @@ public class TreeGenerator implements Runnable
 	 * @param start The index to start the search at.
 	 * @param statementStart The index to end the search at.
 	 */
-	private void updateParents(int start, int statementStart, Node current)
+	private boolean updateParents(int start, int statementStart, Node current)
 	{
 		if (parentStack.isEmpty())
 		{
-			return;
+			return false;
 		}
+		
+		boolean popped = false;
 		
 		checkPendingScopeFragment(current);
 		
@@ -709,11 +748,15 @@ public class TreeGenerator implements Runnable
 					}
 
 					parent.onStackPopped();
+					
+					popped = true;
 				}
 				
 				checkPendingScopeFragment(current);
 			}
 		}
+		
+		return popped;
 	}
 	
 	/**
