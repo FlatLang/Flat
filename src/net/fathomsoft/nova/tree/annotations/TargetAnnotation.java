@@ -14,9 +14,13 @@ import net.fathomsoft.nova.tree.variables.VariableDeclaration;
 import net.fathomsoft.nova.util.Location;
 import net.fathomsoft.nova.util.StringUtils;
 
+import java.util.Arrays;
+
 public class TargetAnnotation extends Annotation
 {
-    public String target;
+    public boolean opposite;
+    
+    public String[] targets;
     
     /**
      * @see net.fathomsoft.nova.tree.Node#Node(Node, Location)
@@ -25,7 +29,25 @@ public class TargetAnnotation extends Annotation
     {
         super(temporaryParent, locationIn);
     }
-
+    
+    public boolean containsTarget()
+    {
+        return containsTarget(getProgram().getController().target);
+    }
+    
+    public boolean containsTarget(String target)
+    {
+        for (String t : targets)
+        {
+            if (t.equals(target))
+            {
+                return !opposite;
+            }
+        }
+        
+        return opposite;
+    }
+    
     /**
      * Decode the given statement into a {@link TargetAnnotation} instance, if
      * possible. If it is not possible, this method returns null.<br>
@@ -51,7 +73,13 @@ public class TargetAnnotation extends Annotation
         {
             TargetAnnotation n = new TargetAnnotation(parent, location);
             
-            n.target = parameters.trim().toLowerCase();
+            n.targets = parameters.trim().toLowerCase().split("\\s+");
+            n.opposite = n.targets[0].equals("not");
+            
+            if (n.opposite)
+            {
+                n.targets = Arrays.copyOfRange(n.targets, 1, n.targets.length);
+            }
             
             return n;
         }
