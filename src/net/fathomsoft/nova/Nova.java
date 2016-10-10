@@ -187,6 +187,10 @@ public class Nova
 		{
 			formattedTarget = "JS";
 		}
+		else if (target.equals("java"))
+		{
+			formattedTarget = "Java";
+		}
 		
 		try
 		{
@@ -248,7 +252,7 @@ public class Nova
 		{
 			testClasses();
 			
-			String target = "js";
+			String target = "java";
 			
 			args = new String[]
 			{
