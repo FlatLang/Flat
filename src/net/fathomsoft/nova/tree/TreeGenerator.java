@@ -395,7 +395,7 @@ public class TreeGenerator implements Runnable
 			{
 				Annotation a = (Annotation)node;
 				
-				skipNextStatement = skipNextStatement || (a instanceof TargetAnnotation&& !((TargetAnnotation)a).target.equals(controller.target));
+				skipNextStatement = skipNextStatement || (a instanceof TargetAnnotation&& !((TargetAnnotation)a).containsTarget());
 				
 				String frag = Annotation.getFragment(statement);
 				
