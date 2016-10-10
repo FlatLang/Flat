@@ -12,7 +12,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  * @since	v0.1 Apr 2, 2014 at 8:49:52 PM
  * @version	v0.2.38 Dec 6, 2014 at 5:19:17 PM
  */
-public class ImportList extends List
+public class ImportList extends TypeList<Import>
 {
 	/**
 	 * @see net.fathomsoft.nova.tree.Node#Node(Node, Location)
