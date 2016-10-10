@@ -160,6 +160,42 @@ public class Operator extends IValue
 		}
 	}
 	
+	public boolean isArithmetic()
+	{
+		switch (operator)
+		{
+			case MULTIPLY:
+			case DIVIDE:
+			case ADD:
+			case SUBTRACT:
+			case MODULO: return true;
+			default:
+				return false;
+		}
+	}
+	
+	public boolean isNumerical()
+	{
+		if (isArithmetic())
+		{
+			return true;
+		}
+		
+		switch (operator)
+		{
+			case BITWISE_AND:
+			case BITWISE_OR:
+			case GREATER:
+			case LESS:
+			case GREATER_EQ:
+			case LESS_EQ:
+			case L_SHIFT:
+			case R_SHIFT: return true;
+			default:
+				return false;
+		}
+	}
+	
 	/**
 	 * Update the type that the operation returns.
 	 */
