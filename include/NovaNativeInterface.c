@@ -39,10 +39,6 @@ nova_env novaEnv = {
 },
 
 {
-&nova_Nova_System_0_Nova_exit,
-&nova_Nova_System_1_Nova_exit,
-&nova_Nova_System_2_Nova_exit,
-&nova_Nova_System_Nova_execute,
 &nova_Nova_System_Nova_construct,
 },
 
@@ -374,6 +370,11 @@ nova_env novaEnv = {
 },
 
 {
+&nova_datastruct_list_Nova_StringCharArray_0_Nova_construct,
+&nova_datastruct_list_Nova_StringCharArray_1_Nova_construct,
+},
+
+{
 &nova_exception_Nova_DivideByZeroException_Nova_construct,
 },
 
@@ -393,41 +394,10 @@ nova_env novaEnv = {
 },
 
 {
-&nova_gc_Nova_GC_Nova_init,
-&nova_gc_Nova_GC_Nova_collect,
-&nova_gc_Nova_GC_Nova_enableIncremental,
-&nova_gc_Nova_GC_Nova_dump,
 &nova_gc_Nova_GC_Nova_construct,
 },
 
 {
-&nova_io_Nova_Console_0_Nova_writeLine,
-&nova_io_Nova_Console_1_Nova_writeLine,
-&nova_io_Nova_Console_2_Nova_writeLine,
-&nova_io_Nova_Console_3_Nova_writeLine,
-&nova_io_Nova_Console_4_Nova_writeLine,
-&nova_io_Nova_Console_5_Nova_writeLine,
-&nova_io_Nova_Console_6_Nova_writeLine,
-&nova_io_Nova_Console_7_Nova_writeLine,
-&nova_io_Nova_Console_8_Nova_writeLine,
-&nova_io_Nova_Console_9_Nova_writeLine,
-&nova_io_Nova_Console_0_Nova_write,
-&nova_io_Nova_Console_1_Nova_write,
-&nova_io_Nova_Console_2_Nova_write,
-&nova_io_Nova_Console_3_Nova_write,
-&nova_io_Nova_Console_4_Nova_write,
-&nova_io_Nova_Console_5_Nova_write,
-&nova_io_Nova_Console_6_Nova_write,
-&nova_io_Nova_Console_7_Nova_write,
-&nova_io_Nova_Console_8_Nova_write,
-&nova_io_Nova_Console_Nova_readInt,
-&nova_io_Nova_Console_Nova_readDouble,
-&nova_io_Nova_Console_Nova_readChar,
-&nova_io_Nova_Console_Nova_readLine,
-&nova_io_Nova_Console_Nova_readPassword,
-&nova_io_Nova_Console_Nova_setEcho,
-&nova_io_Nova_Console_Nova_clearScreen,
-&nova_io_Nova_Console_Nova_waitForEnter,
 &nova_io_Nova_Console_Nova_construct,
 },
 
@@ -489,23 +459,6 @@ nova_env novaEnv = {
 },
 
 {
-&nova_math_Nova_Math_Nova_max,
-&nova_math_Nova_Math_Nova_min,
-&nova_math_Nova_Math_Nova_sign,
-&nova_math_Nova_Math_Nova_random,
-&nova_math_Nova_Math_0_Nova_abs,
-&nova_math_Nova_Math_1_Nova_abs,
-&nova_math_Nova_Math_Nova_sqrt,
-&nova_math_Nova_Math_Nova_pow,
-&nova_math_Nova_Math_Nova_sin,
-&nova_math_Nova_Math_Nova_cos,
-&nova_math_Nova_Math_Nova_tan,
-&nova_math_Nova_Math_Nova_asin,
-&nova_math_Nova_Math_Nova_acos,
-&nova_math_Nova_Math_Nova_atan,
-&nova_math_Nova_Math_Nova_round,
-&nova_math_Nova_Math_Nova_floor,
-&nova_math_Nova_Math_Nova_ceil,
 &nova_math_Nova_Math_Nova_construct,
 },
 
@@ -540,7 +493,6 @@ nova_env novaEnv = {
 },
 
 {
-&nova_math_Nova_Sequence_Nova_sum,
 &nova_math_Nova_Sequence_Nova_construct,
 },
 
@@ -558,7 +510,6 @@ nova_env novaEnv = {
 },
 
 {
-&nova_math_calculus_Nova_Calculus_Nova_derivative,
 &nova_math_calculus_Nova_Calculus_Nova_construct,
 },
 
@@ -649,8 +600,7 @@ nova_env novaEnv = {
 },
 
 {
-&nova_primitive_Nova_Bool_0_Nova_toString,
-&nova_primitive_Nova_Bool_1_Nova_toString,
+&nova_primitive_Nova_Bool_Nova_toString,
 &nova_primitive_Nova_Bool_0_Nova_compareTo,
 &nova_primitive_Nova_Bool_Nova_construct,
 },
@@ -666,44 +616,30 @@ nova_env novaEnv = {
 },
 
 {
-&nova_primitive_number_Nova_Byte_Nova_numDigits,
-&nova_primitive_number_Nova_Byte_0_Nova_toString,
-&nova_primitive_number_Nova_Byte_1_Nova_toString,
+&nova_primitive_number_Nova_Byte_Nova_toString,
 &nova_primitive_number_Nova_Byte_0_Nova_compareTo,
 &nova_primitive_number_Nova_Byte_Nova_multiply,
 &nova_primitive_number_Nova_Byte_Nova_construct,
 },
 
 {
-&nova_primitive_number_Nova_Char_0_Nova_toString,
-&nova_primitive_number_Nova_Char_1_Nova_toString,
-&nova_primitive_number_Nova_Char_0_Nova_toLowerCase,
-&nova_primitive_number_Nova_Char_0_Nova_toUpperCase,
-&nova_primitive_number_Nova_Char_1_Nova_toLowerCase,
-&nova_primitive_number_Nova_Char_1_Nova_toUpperCase,
+&nova_primitive_number_Nova_Char_Nova_toString,
+&nova_primitive_number_Nova_Char_Nova_toLowerCase,
+&nova_primitive_number_Nova_Char_Nova_toUpperCase,
 &nova_primitive_number_Nova_Char_0_Nova_compareTo,
 &nova_primitive_number_Nova_Char_Nova_multiply,
 &nova_primitive_number_Nova_Char_Nova_construct,
 },
 
 {
-&nova_primitive_number_Nova_Double_Nova_numDigits,
-&nova_primitive_number_Nova_Double_Nova_genString,
-&nova_primitive_number_Nova_Double_Nova_genBuffer,
-&nova_primitive_number_Nova_Double_Nova_repetition,
-&nova_primitive_number_Nova_Double_Nova_lastSignificantDigit,
-&nova_primitive_number_Nova_Double_0_Nova_toString,
-&nova_primitive_number_Nova_Double_1_Nova_toString,
-&nova_primitive_number_Nova_Double_Nova_parseDouble,
+&nova_primitive_number_Nova_Double_Nova_toString,
 &nova_primitive_number_Nova_Double_0_Nova_compareTo,
 &nova_primitive_number_Nova_Double_Nova_multiply,
 &nova_primitive_number_Nova_Double_Nova_construct,
 },
 
 {
-&nova_primitive_number_Nova_Float_Nova_numDigits,
-&nova_primitive_number_Nova_Float_0_Nova_toString,
-&nova_primitive_number_Nova_Float_1_Nova_toString,
+&nova_primitive_number_Nova_Float_Nova_toString,
 &nova_primitive_number_Nova_Float_0_Nova_compareTo,
 &nova_primitive_number_Nova_Float_Nova_multiply,
 &nova_primitive_number_Nova_Float_Nova_construct,
@@ -711,10 +647,7 @@ nova_env novaEnv = {
 
 {
 &nova_primitive_number_Nova_Int_Nova_getHashCodeLong,
-&nova_primitive_number_Nova_Int_Nova_numDigits,
-&nova_primitive_number_Nova_Int_0_Nova_toString,
-&nova_primitive_number_Nova_Int_1_Nova_toString,
-&nova_primitive_number_Nova_Int_Nova_parseInt,
+&nova_primitive_number_Nova_Int_Nova_toString,
 &nova_primitive_number_Nova_Int_0_Nova_compareTo,
 &nova_primitive_number_Nova_Int_Nova_multiply,
 &nova_primitive_number_Nova_Int_Nova_construct,
@@ -724,16 +657,13 @@ nova_env novaEnv = {
 },
 
 {
-&nova_primitive_number_Nova_Long_Nova_numDigits,
-&nova_primitive_number_Nova_Long_0_Nova_toString,
-&nova_primitive_number_Nova_Long_1_Nova_toString,
+&nova_primitive_number_Nova_Long_Nova_toString,
 &nova_primitive_number_Nova_Long_0_Nova_compareTo,
 &nova_primitive_number_Nova_Long_Nova_multiply,
 &nova_primitive_number_Nova_Long_Nova_construct,
 },
 
 {
-0,
 &nova_primitive_number_Nova_Number_Nova_construct,
 },
 
@@ -741,9 +671,7 @@ nova_env novaEnv = {
 },
 
 {
-&nova_primitive_number_Nova_Short_Nova_numDigits,
-&nova_primitive_number_Nova_Short_0_Nova_toString,
-&nova_primitive_number_Nova_Short_1_Nova_toString,
+&nova_primitive_number_Nova_Short_Nova_toString,
 &nova_primitive_number_Nova_Short_0_Nova_compareTo,
 &nova_primitive_number_Nova_Short_Nova_multiply,
 &nova_primitive_number_Nova_Short_Nova_construct,
@@ -754,7 +682,6 @@ nova_env novaEnv = {
 },
 
 {
-&nova_security_Nova_MD5_Nova_encrypt,
 &nova_security_Nova_MD5_Nova_construct,
 },
 
@@ -805,7 +732,6 @@ nova_env novaEnv = {
 },
 
 {
-&nova_svg_no3_Nova_No3_Nova_select,
 &nova_svg_no3_Nova_No3_Nova_construct,
 },
 
@@ -823,7 +749,6 @@ nova_env novaEnv = {
 &nova_thread_Nova_Thread_Nova_start,
 &nova_thread_Nova_Thread_Nova_join,
 &nova_thread_Nova_Thread_Nova_kill,
-&nova_thread_Nova_Thread_Nova_sleep,
 0,
 &nova_thread_Nova_Thread_Nova_construct,
 },
@@ -834,7 +759,6 @@ nova_env novaEnv = {
 },
 
 {
-&nova_thread_async_Nova_Async_Nova_execute,
 &nova_thread_async_Nova_Async_Nova_construct,
 },
 
@@ -900,8 +824,6 @@ nova_env novaEnv = {
 },
 
 {
-&nova_web_svg_no3_Nova_No3_Nova_select,
-&nova_web_svg_no3_Nova_No3_Nova_selectAll,
 &nova_web_svg_no3_Nova_No3_Nova_construct,
 },
 
@@ -921,7 +843,6 @@ nova_env novaEnv = {
 },
 
 {
-&compiler_Nova_Compiler_Nova_main,
 &compiler_Nova_Compiler_Nova_compile,
 &compiler_Nova_Compiler_Nova_construct,
 },
@@ -971,10 +892,6 @@ nova_env novaEnv = {
 },
 
 {
-&compiler_util_Nova_FileUtils_Nova_formatPath,
-&compiler_util_Nova_FileUtils_Nova_formAbsolutePath,
-&compiler_util_Nova_FileUtils_Nova_escapeSpaces,
-&compiler_util_Nova_FileUtils_Nova_getWorkingDirectoryPath,
 &compiler_util_Nova_FileUtils_Nova_construct,
 },
 
@@ -1005,8 +922,6 @@ nova_env novaEnv = {
 },
 
 {
-&compiler_util_Nova_StringUtils_Nova_isSurroundedByQuotes,
-&compiler_util_Nova_StringUtils_Nova_removeSurroundingQuotes,
 &compiler_util_Nova_StringUtils_Nova_construct,
 },
 
@@ -1023,7 +938,6 @@ nova_env novaEnv = {
 },
 
 {
-&example_Nova_ArrayDemo_Nova_main,
 &example_Nova_ArrayDemo_Nova_construct,
 },
 
@@ -1033,7 +947,6 @@ nova_env novaEnv = {
 },
 
 {
-&example_Nova_ClosureDemo_Nova_main,
 &example_Nova_ClosureDemo_Nova_construct,
 },
 
@@ -1045,42 +958,34 @@ nova_env novaEnv = {
 },
 
 {
-&example_Nova_ExceptionHandlingDemo_Nova_main,
 &example_Nova_ExceptionHandlingDemo_Nova_construct,
 },
 
 {
-&example_Nova_FileTest_Nova_main,
 &example_Nova_FileTest_Nova_construct,
 },
 
 {
-&example_Nova_GenericDemo_Nova_main,
 &example_Nova_GenericDemo_Nova_construct,
 },
 
 {
-&example_Nova_HashMapDemo_Nova_main,
 &example_Nova_HashMapDemo_Nova_construct,
 },
 
 {
-&example_Nova_HashSetDemo_Nova_main,
 &example_Nova_HashSetDemo_Nova_construct,
 },
 
 {
-&example_Nova_IntegerTest_Nova_main,
 &example_Nova_IntegerTest_Nova_construct,
 },
 
 {
-&example_Nova_Lab_Nova_main,
 &example_Nova_Lab_Nova_construct,
 },
 
 {
-&example_Nova_MathDemo_Nova_main,
 &example_Nova_MathDemo_Nova_construct,
 },
 
@@ -1099,12 +1004,10 @@ nova_env novaEnv = {
 },
 
 {
-&example_Nova_PolymorphismDemo_Nova_main,
 &example_Nova_PolymorphismDemo_Nova_construct,
 },
 
 {
-&example_Nova_QueueDemo_Nova_main,
 &example_Nova_QueueDemo_Nova_construct,
 },
 
@@ -1122,12 +1025,10 @@ nova_env novaEnv = {
 },
 
 {
-&example_Nova_SvgChart_Nova_main,
 &example_Nova_SvgChart_Nova_construct,
 },
 
 {
-&example_Nova_SvgFractal_Nova_main,
 &example_Nova_SvgFractal_Nova_construct,
 },
 
@@ -1140,12 +1041,10 @@ nova_env novaEnv = {
 },
 
 {
-&example_Nova_Test_Nova_main,
 &example_Nova_Test_Nova_construct,
 },
 
 {
-&example_Nova_ThreadDemo_Nova_main,
 &example_Nova_ThreadDemo_Nova_construct,
 },
 
@@ -1155,9 +1054,6 @@ nova_env novaEnv = {
 },
 
 {
-&example_ackermann_Nova_Ackermann_Nova_main,
-&example_ackermann_Nova_Ackermann_Nova_run,
-&example_ackermann_Nova_Ackermann_Nova_run2,
 &example_ackermann_Nova_Ackermann_Nova_construct,
 },
 
@@ -1166,12 +1062,10 @@ nova_env novaEnv = {
 },
 
 {
-&example_database_Nova_DatabaseDemo_Nova_main,
 &example_database_Nova_DatabaseDemo_Nova_construct,
 },
 
 {
-&example_network_Nova_ClientDemo_Nova_main,
 &example_network_Nova_ClientDemo_Nova_construct,
 },
 
@@ -1186,7 +1080,6 @@ nova_env novaEnv = {
 },
 
 {
-&example_network_Nova_ServerDemo_Nova_main,
 &example_network_Nova_ServerDemo_Nova_construct,
 },
 
@@ -1251,7 +1144,6 @@ nova_env novaEnv = {
 },
 
 {
-&stabilitytest_Nova_StabilityTest_Nova_main,
 &stabilitytest_Nova_StabilityTest_Nova_test,
 &stabilitytest_Nova_StabilityTest_0_Nova_fail,
 &stabilitytest_Nova_StabilityTest_1_Nova_fail,
