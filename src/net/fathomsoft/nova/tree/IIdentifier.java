@@ -106,7 +106,7 @@ public class IIdentifier extends Identifier
 	 */
 	@Override
 	// Dont forget about IValue.getType()!!!!
-	public String getType()
+	public String getType(boolean checkCast)
 	{
 		return type;
 	}

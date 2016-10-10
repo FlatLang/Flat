@@ -389,12 +389,12 @@ public abstract class Value extends Node implements AbstractValue
 	
 	public boolean isPrimitiveGenericTypeWrapper()
 	{
-		String location = getTypeClassLocation();
+		ClassDeclaration c = getTypeClass();
 		
-		if (location != null)
+		if (c != null)
 		{
-			return location.equals("nova/datastruct/list/CharArray") || location.equals("nova/datastruct/list/IntArray") || location.equals("nova/datastruct/list/DoubleArray") ||
-				location.equals("nova/datastruct/list/CharArrayIterator") || location.equals("nova/datastruct/list/IntArrayIterator") || location.equals("nova/datastruct/list/DoubleArrayIterator");
+			return c.isOfType("nova/datastruct/list/CharArray") || c.isOfType("nova/datastruct/list/IntArray") || c.isOfType("nova/datastruct/list/DoubleArray") ||
+				c.isOfType("nova/datastruct/list/CharArrayIterator") || c.isOfType("nova/datastruct/list/IntArrayIterator") || c.isOfType("nova/datastruct/list/DoubleArrayIterator");
 		}
 		
 		return false;
@@ -500,7 +500,12 @@ public abstract class Value extends Node implements AbstractValue
 	 */
 	public ClassDeclaration getTypeClass()
 	{
-		return getProgram().getClassDeclaration(getTypeClassLocation());
+		return getTypeClass(true);
+	}
+	
+	public ClassDeclaration getTypeClass(boolean checkCast)
+	{
+		return getProgram().getClassDeclaration(getTypeClassLocation(checkCast));
 	}
 	
 	/**
@@ -517,7 +522,12 @@ public abstract class Value extends Node implements AbstractValue
 	
 	public String getTypeClassLocation()
 	{
-		if (this instanceof Accessible)
+		return getTypeClassLocation(true);
+	}
+	
+	public String getTypeClassLocation(boolean checkCast)
+	{
+		if (checkCast && this instanceof Accessible)
 		{
 			Cast c = ((Accessible)this).getExplicitCast();
 			
@@ -535,7 +545,7 @@ public abstract class Value extends Node implements AbstractValue
 		}
 		else
 		{
-			type = SyntaxUtils.getPrimitiveNovaType(getType());
+			type = SyntaxUtils.getPrimitiveNovaType(getType(checkCast));
 		}
 		
 		return SyntaxUtils.getTypeClassLocation(this, type);
@@ -577,7 +587,7 @@ public abstract class Value extends Node implements AbstractValue
 			{
 				LocalDeclaration decl = (LocalDeclaration)var.getDeclaration();
 				
-				if (decl.isImplicit() && decl.getImplicitType() != null && !decl.getImplicitType().isGenericType())
+				if (decl.isImplicit() && decl.getImplicitType() != null && !decl.getImplicitType().isDecoding() && !decl.getImplicitType().isGenericType())
 				{
 					return decl.getImplicitType().getReferenceFile();
 				}

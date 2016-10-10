@@ -116,9 +116,9 @@ public class Priority extends Value implements Accessible
 	}
 	
 	@Override
-	public String getType()
+	public String getType(boolean checkCast)
 	{
-		return getReturnedContents().getType();
+		return getReturnedContents().getType(checkCast);
 	}
 	
 	@Override

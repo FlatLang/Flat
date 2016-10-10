@@ -129,9 +129,9 @@ public class Assignment extends Value
 	}
 	
 	@Override
-	public String getType()
+	public String getType(boolean checkCast)
 	{
-		return getAssignmentNode().getType();
+		return getAssignmentNode().getType(checkCast);
 	}
 	
 	@Override

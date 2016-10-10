@@ -100,7 +100,12 @@ public interface AbstractValue extends GenericCompatible
 	 * 
 	 * @return The type that the statement returns.
 	 */
-	public String getType();
+	default String getType()
+	{
+		return getType(true);
+	}
+	
+	public String getType(boolean checkCast);
 	
 	Value getArrayTypeValue();
 	

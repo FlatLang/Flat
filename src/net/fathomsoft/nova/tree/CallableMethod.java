@@ -53,13 +53,6 @@ public interface CallableMethod
 	public byte getDataType(boolean checkGeneric);
 	
 	/**
-	 * Get the type returned by the method.
-	 * 
-	 * @return The type returned by the method.
-	 */
-	public String getType();
-	
-	/**
 	 * @see net.fathomsoft.nova.tree.variables.VariableDeclaration#getArrayDimensions()
 	 * 
 	 * @return The amount of dimensions that the array has, if any.

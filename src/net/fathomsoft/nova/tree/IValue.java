@@ -57,7 +57,7 @@ public class IValue extends Value
 	 */
 	@Override
 	// Dont forget about IIdentifier!!!!
-	public String getType()
+	public String getType(boolean checkCast)
 	{
 		return type;
 	}
