@@ -157,22 +157,16 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 		return getParameterList().getParameter(parameterName);
 	}
 	
-	/**
-	 * @see net.fathomsoft.nova.tree.ScopeAncestor#generateUniqueID(Scope scope)
-	 */
 	@Override
-	public int generateUniqueID(Scope scope)
+	public int getUniqueID()
 	{
-		int id = ++uniqueID;
-		
-		scopes.put(id, scope);
-		
-		return id;
+		return ++uniqueID;
 	}
 	
-	public Scope getScope(int id)
+	@Override
+	public HashMap<Integer, Scope> getScopes()
 	{
-		return scopes.get(id);
+		return scopes;
 	}
 	
 	/**
@@ -183,7 +177,7 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 	 */
 	public int getOverloadID()
 	{
-		return overloadID;
+		return overloadID < 0 && doesOverride() ? getOverriddenMethod().getOverloadID() : overloadID;
 	}
 	
 	/**
@@ -359,7 +353,7 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 	 */
 	public void setOverloadIDs(MethodDeclaration methods[])
 	{
-		ArrayList<NovaMethodDeclaration> list = new ArrayList<NovaMethodDeclaration>();
+		ArrayList<NovaMethodDeclaration> list = new ArrayList<>();
 		
 		int max = -1;
 		
@@ -374,21 +368,19 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 			{
 				NovaMethodDeclaration method = (NovaMethodDeclaration)m;
 				
-				if (method.overloadID < 0)
+				if (SyntaxUtils.areSameTypes(getParameterList().getTypes(), method.getParameterList().getTypes()))
 				{
 					if (method.getParentClass() == getParentClass())
 					{
-						if (SyntaxUtils.areSameTypes(getParameterList().getTypes(), method.getParameterList().getTypes()))
-						{
-							SyntaxMessage.error("Duplicate method '" + getName() + "'", this);
-						}
-						
-//						list.add(method);
+						SyntaxMessage.error("Duplicate method '" + getName() + "'", this);
 					}
-//					else if (method.isVirtual())
-//					{
-						list.add(method);
-//					}
+					
+					continue;
+				}
+				
+				if (method.overloadID < 0)
+				{
+					list.add(method);
 				}
 				else if (max < method.overloadID)
 				{
@@ -905,6 +897,7 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 			{
 				SearchFilter filter = new SearchFilter();
 				filter.checkConstructors = false;
+				filter.checkAncestor = false;
 				
 				MethodDeclaration methods[] = getParentClass().getMethods(getName(), filter);
 				

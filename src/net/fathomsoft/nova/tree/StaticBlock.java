@@ -48,22 +48,16 @@ public class StaticBlock extends Node implements ScopeAncestor
 		return (Scope)getChild(super.getNumDefaultChildren() + 0);
 	}
 	
-	/**
-	 * @see net.fathomsoft.nova.tree.ScopeAncestor#generateUniqueID()
-	 */
 	@Override
-	public int generateUniqueID(Scope scope)
+	public int getUniqueID()
 	{
-		int id = ++uniqueID;
-		
-		scopes.put(id, scope);
-		
-		return id;
+		return ++uniqueID;
 	}
 	
-	public Scope getScope(int id)
+	@Override
+	public HashMap<Integer, Scope> getScopes()
 	{
-		return scopes.get(id);
+		return scopes;
 	}
 	
 	public ParameterList getParameterList()

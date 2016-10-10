@@ -1,5 +1,7 @@
 package net.fathomsoft.nova.tree;
 
+import java.util.HashMap;
+
 /**
  * 
  * 
@@ -15,9 +17,23 @@ public interface ScopeAncestor
 	 * 
 	 * @return A unique identifier for local variables.
 	 */
-	public int generateUniqueID(Scope scope);
+	default int generateUniqueID(Scope scope)
+	{
+		int id = getUniqueID();
+		
+		getScopes().put(id, scope);
+		
+		return id;
+	}
 	
-	public Scope getScope(int id);
+	public int getUniqueID();
+	
+	public HashMap<Integer, Scope> getScopes();
+	
+	default Scope getScope(int id)
+	{
+		return getScopes().get(id);
+	}
 	
 	public Scope getScope();
 	
