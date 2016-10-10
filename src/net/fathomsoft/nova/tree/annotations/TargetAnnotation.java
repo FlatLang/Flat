@@ -1,5 +1,6 @@
 package net.fathomsoft.nova.tree.annotations;
 
+import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.error.SyntaxMessage;
@@ -76,11 +77,6 @@ public class TargetAnnotation extends Annotation
     @Override
     public boolean onNextStatementDecoded(Node next)
     {
-        if (next instanceof NovaMethodDeclaration)
-        {
-            next.addAnnotation(this);
-        }
-
         return super.onNextStatementDecoded(next);
     }
 
