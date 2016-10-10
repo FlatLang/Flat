@@ -85,7 +85,7 @@ public interface Accessible
 				// TODO: perform a walk on all extended classes and interfaces.
 				ExtendedClass extended = typeClass.getExtendedClass();
 				
-				if (extended != null)
+				while (extended != null)
 				{
 					GenericTypeArgumentList args = extended.getGenericTypeArgumentList();
 					
@@ -93,6 +93,8 @@ public interface Accessible
 					{
 						return args.getVisibleChild(index);
 					}
+					
+					extended = extended.getTypeClass().getExtendedClass();
 				}
 			}
 			/*Accessible lastRef = null;
