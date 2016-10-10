@@ -61,6 +61,7 @@ public class ClassDeclaration extends InstanceDeclaration
 		VTableList                        vtables         = new VTableList(this, Location.INVALID);
 		GenericTypeParameterDeclaration   declaration     = new GenericTypeParameterDeclaration(this, Location.INVALID);
 		TypeList<InterfaceImplementation> interfaces      = new TypeList<InterfaceImplementation>(this, locationIn);
+		TypeList<ExternalCodeBlock>       blocks          = new TypeList<>(this, locationIn);
 		
 		addChild(fields, this);
 		addChild(constructors, this);
@@ -75,6 +76,7 @@ public class ClassDeclaration extends InstanceDeclaration
 		addChild(vtables, this);
 		addChild(declaration, this);
 		addChild(interfaces, this);
+		addChild(blocks, this);
 	}
 	
 	/**
@@ -83,7 +85,7 @@ public class ClassDeclaration extends InstanceDeclaration
 	@Override
 	public int getNumDefaultChildren()
 	{
-		return super.getNumDefaultChildren() + 13;
+		return super.getNumDefaultChildren() + 14;
 	}
 	
 	/**
@@ -250,6 +252,11 @@ public class ClassDeclaration extends InstanceDeclaration
 	public TypeList<InterfaceImplementation> getInterfacesImplementationList()
 	{
 		return (TypeList<InterfaceImplementation>)getChild(super.getNumDefaultChildren() + 12);
+	}
+	
+	public TypeList<ExternalCodeBlock> getExternalCodeBlocks()
+	{
+		return (TypeList<ExternalCodeBlock>)getChild(super.getNumDefaultChildren() + 13);
 	}
 	
 	/**
@@ -530,6 +537,11 @@ public class ClassDeclaration extends InstanceDeclaration
 		}
 		
 		return false;
+	}
+	
+	public boolean isOfType(String classLocation)
+	{
+		return isOfType(getProgram().getClassDeclaration(classLocation));
 	}
 	
 	/**
@@ -1239,7 +1251,7 @@ public class ClassDeclaration extends InstanceDeclaration
 		
 		if (filter.className == null) filter.className = getName();
 		
-		ArrayList<MethodDeclaration> output = new ArrayList<MethodDeclaration>();
+		ArrayList<MethodDeclaration> output = new ArrayList<>();
 		
 		if (methodName.equals(InitializationMethod.SUPER_IDENTIFIER))
 		{
@@ -1414,6 +1426,10 @@ public class ClassDeclaration extends InstanceDeclaration
 		else if (child instanceof ExternalType)
 		{
 			getExternalTypeListNode().addChild(child);
+		}
+		else if (child instanceof ExternalCodeBlock)
+		{
+			getExternalCodeBlocks().addChild(child);
 		}
 		else if (child instanceof FieldDeclaration)
 		{
@@ -1841,6 +1857,11 @@ public class ClassDeclaration extends InstanceDeclaration
 	public boolean containsGenericTypeParameter(String parameterName)
 	{
 		return getGenericTypeParameterDeclaration().containsParameter(parameterName);
+	}
+	
+	public boolean doesExtendClass(String classLocation)
+	{
+		return doesExtendClass(getProgram().getClassDeclaration(classLocation));
 	}
 	
 	public boolean doesExtendClass(ClassDeclaration clazz)
