@@ -230,6 +230,11 @@ public class Literal extends IValue implements Accessible
 		return null;
 	}
 	
+	public Instantiation getStringInstantiation()
+	{
+		return Instantiation.decodeStatement(this.getParent(), "new String(" + this.value + ")", this.getLocationIn(), true);
+	}
+	
 	private static String insertExpression(String str, int index, int offset, int end, int lastEnd, int endOffset, StringBuilder builder)
 	{
 		String expression = str.substring(index + offset, end).trim();
