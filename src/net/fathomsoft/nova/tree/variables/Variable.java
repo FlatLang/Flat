@@ -237,7 +237,7 @@ public class Variable extends Identifier
 	
 	/**
 	 * Get whether or not the variable is external. For more information
-	 * on external variables, see {@link #setExternal(boolean)}.
+	 * on external variables.
 	 * 
 	 * @return Whether or not the variable is external.
 	 */
@@ -294,6 +294,11 @@ public class Variable extends Identifier
 	@Override
 	public String getType()
 	{
+		return getType(true);
+	}
+	
+	public String getType(boolean checkCast)
+	{
 		if (declaration == null)
 		{
 			return null;
@@ -301,7 +306,7 @@ public class Variable extends Identifier
 		
 		Cast cast = getCast();
 		
-		if (cast != null)
+		if (checkCast && cast != null)
 		{
 			return cast.getType();
 		}
