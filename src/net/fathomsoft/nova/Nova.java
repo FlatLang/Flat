@@ -56,7 +56,7 @@ public class Nova
 	
 	public static final int	OS;
 	
-	private static final String	OUTPUT_EXTENSION, DYNAMIC_LIB_EXT;
+	public static final String EXECUTABLE_EXTENSION, DYNAMIC_LIB_EXT;
 	
 	public boolean				isTesting     = false;
 	
@@ -98,25 +98,25 @@ public class Nova
 		if (osName.startsWith("win"))
 		{
 			OS = WINDOWS;
-			OUTPUT_EXTENSION = ".exe";
+			EXECUTABLE_EXTENSION = ".exe";
 			DYNAMIC_LIB_EXT  = ".dll";
 		}
 		else if (osName.startsWith("mac"))
 		{
 			OS = MACOSX;
-			OUTPUT_EXTENSION = "";
+			EXECUTABLE_EXTENSION = "";
 			DYNAMIC_LIB_EXT  = ".dylib";
 		}
 		else if (osName.startsWith("lin"))
 		{
 			OS = LINUX;
-			OUTPUT_EXTENSION = "";
+			EXECUTABLE_EXTENSION = "";
 			DYNAMIC_LIB_EXT  = ".so";
 		}
 		else
 		{
 			OS = 0;
-			OUTPUT_EXTENSION = "";
+			EXECUTABLE_EXTENSION = "";
 			DYNAMIC_LIB_EXT  = "";
 		}
 	}
@@ -143,16 +143,61 @@ public class Nova
 	 */
 	public Nova()
 	{
+		if (BENCHMARK > 0)
+		{
+			try
+			{
+				System.out.println("Preparing Benchmark...");
+				
+				Thread.sleep(100);
+				
+				System.out.println("Starting...");
+			}
+			catch (InterruptedException e)
+			{
+				e.printStackTrace();
+			}
+			
+			enableFlag(DRY_RUN);
+		}
+		
+		inputFiles         = new ArrayList<>();
+		externalImports    = new ArrayList<>();
+		errors             = new ArrayList<>();
+		warnings           = new ArrayList<>();
+		messages           = new ArrayList<>();
+		
+//		cSourceFiles       = new ArrayList<>();
+//		cHeaderFiles       = new ArrayList<>();
+		includeDirectories = new HashSet<>();
+		outputDirectories  = new HashMap<>();
+		
+		testClasses = false;//BENCHMARK <= 0;
+	}
+	
+	private void startEngines()
+	{
+		String formattedTarget = null;
+		
+		if (target.equals("c"))
+		{
+			formattedTarget = "C";
+		}
+		else if (target.equals("js"))
+		{
+			formattedTarget = "JS";
+		}
+		
 		try
 		{
-			URL url = new File("../Nova-JS/out/production/Nova-JS").toURL();
+			URL url = new File("../Nova-" + formattedTarget + "/out/production/Nova-" + formattedTarget).toURL();
 			
 			// Create a new class loader with the directory
 			ClassLoader cl = new URLClassLoader(new URL[] { url });
-
-			Class codeGeneratorEngineClass = cl.loadClass("nova.js.engines.JSCodeGeneratorEngine");
-			Class compileEngineClass = cl.loadClass("nova.js.engines.JSCompileEngine");
-
+			
+			Class codeGeneratorEngineClass = cl.loadClass("nova." + target + ".engines." + formattedTarget + "CodeGeneratorEngine");
+			Class compileEngineClass = cl.loadClass("nova." + target + ".engines." + formattedTarget + "CompileEngine");
+			
 			java.lang.reflect.Constructor codeGeneratorEngineConstructor = codeGeneratorEngineClass.getConstructor(Nova.class);
 			java.lang.reflect.Constructor compileEngineConstructor = compileEngineClass.getConstructor(Nova.class);
 			
@@ -188,37 +233,6 @@ public class Nova
 		//compileEngine = new CCompileEngine(this);
 		
 		codeGeneratorEngine.initializeOutputDirectory();
-		
-		if (BENCHMARK > 0)
-		{
-			try
-			{
-				System.out.println("Preparing Benchmark...");
-				
-				Thread.sleep(100);
-				
-				System.out.println("Starting...");
-			}
-			catch (InterruptedException e)
-			{
-				e.printStackTrace();
-			}
-			
-			enableFlag(DRY_RUN);
-		}
-		
-		inputFiles         = new ArrayList<>();
-		externalImports    = new ArrayList<>();
-		errors             = new ArrayList<>();
-		warnings           = new ArrayList<>();
-		messages           = new ArrayList<>();
-		
-//		cSourceFiles       = new ArrayList<>();
-//		cHeaderFiles       = new ArrayList<>();
-		includeDirectories = new HashSet<>();
-		outputDirectories  = new HashMap<>();
-		
-		testClasses = false;//BENCHMARK <= 0;
 	}
 	
 	/**
@@ -236,13 +250,15 @@ public class Nova
 		{
 			testClasses();
 			
+			String target = "js";
+			
 			args = new String[]
 			{
 				"../Compiler",
 				"../Misc/example",
 				"../Misc/stabilitytest", 
 				"-output-directory", "../NovaCompilerOutput",
-				"-package-output-directory", "nova", "../StandardLibrary/js",
+				"-package-output-directory", "nova", "../StandardLibrary/" + target,
 //				"-dir", formatPath(directory + "../example"),
 //				"-dir", formatPath(directory + "../stabilitytest"),
 //				"-run",
@@ -271,7 +287,7 @@ public class Nova
 //				"-no-warnings",
 //				"-no-errors",
 				"-no-optimize",
-				"-target", "js",
+				"-target", target,
 //				"-library",
 			};
 		}
@@ -287,7 +303,7 @@ public class Nova
 			"-dir", formatPath(workingPath + "include/nova_mysql"),
 			"-dir", formatPath(workingPath + "include/nova_openssl"),
 			"-dir", formatPath(workingPath),
-			formatPath(directory + "bin/Executable"),// + OUTPUT_EXTENSION),
+			formatPath(directory + "bin/Executable"),// + EXECUTABLE_EXTENSION),
 		};
 		
 //		for (String location : standardFiles)
@@ -516,7 +532,16 @@ public class Nova
 			{
 				args[i] = StringUtils.removeSurroundingQuotes(args[i]);
 			}
+			
+			if (args[i].toLowerCase().equals("-target"))
+			{
+				validateArgumentSize(args, i + 1);
+				
+				target = args[i + 1].toLowerCase();
+			}
 		}
+		
+		startEngines();
 		
 		// Iterate through all of the arguments.
 		for (int i = 0; i < args.length; i++)
@@ -582,6 +607,10 @@ public class Nova
 			{
 				enableFlag(NO_OPTIMIZE);
 			}
+			else if (arg.equals("-target"))
+			{
+				skip = 1;
+			}
 			else if (arg.equals("-main"))
 			{
 				validateArgumentSize(args, i + 1);
@@ -634,15 +663,6 @@ public class Nova
 			else if (arg.equals("-small"))
 			{
 				enableFlag(SMALL_BIN);
-			}
-			// If the user wants to generate a smaller executable output.
-			else if (arg.equals("-target"))
-			{
-				validateArgumentSize(args, i + 1);
-				
-				target = args[i + 1].toLowerCase();
-				
-				skip = 1;
 			}
 			// If the user wants to output a library instead of an
 			// executable.
