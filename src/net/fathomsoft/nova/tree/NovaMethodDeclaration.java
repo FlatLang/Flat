@@ -898,6 +898,7 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 				SearchFilter filter = new SearchFilter();
 				filter.checkConstructors = false;
 				filter.checkAncestor = false;
+				filter.checkStatic(isStatic());
 				
 				MethodDeclaration methods[] = getParentClass().getMethods(getName(), filter);
 				
