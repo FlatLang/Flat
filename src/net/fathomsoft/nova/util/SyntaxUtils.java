@@ -514,6 +514,67 @@ public class SyntaxUtils
 		return -1;
 	}
 	
+	public static int findStringOutsideOfQuotes(String source, String search, int index)
+	{
+		while (index < source.length())
+		{
+			char c = source.charAt(index);
+			
+			for (int i = 0; i < search.length(); i++)
+			{
+				if (source.charAt(i + index) != search.charAt(i))
+				{
+					break;
+				}
+				if (i == search.length() - 1)
+				{
+					return index;
+				}
+			}
+			
+			if (c == '"' || c == '\'')
+			{
+				index = StringUtils.findEndingChar(source, c, index, 1);
+			}
+			
+			index++;
+		}
+		
+		return -1;
+	}
+	
+	public static int findEndingBrace(String source, int index)
+	{
+		int scope = 1;
+		
+		while (index < source.length())
+		{
+			char c = source.charAt(index);
+			
+			if (c == '{')
+			{
+				scope++;
+			}
+			else if (c == '}')
+			{
+				scope--;
+			}
+			else if (c == '"' || c == '\'')
+			{
+				index = StringUtils.findEndingChar(source, c, index, 1);
+			}
+			
+			if (scope == 0)
+			{
+				return index;
+			}
+			
+			index++;
+		}
+		
+		return -1;
+	}
+	
 	/**
 	 * Get whether or not the given node is a String literal,
 	 * or variable.
@@ -2469,15 +2530,31 @@ public class SyntaxUtils
 		
 		for (int i = 0; i < types1.length; i++)
 		{
-			Value  value1 = types1[i];
-			Value  value2 = types2[i];
+			Value value1 = types1[i];
+			Value value2 = types2[i];
 			
-			String type1  = types1[i].getType();
-			String type2  = types2[i].getType();
-			
-			if (!type1.equals(type2) || value1.getArrayDimensions() != value2.getArrayDimensions())
+			if (value1 instanceof ClosureDeclaration || value2 instanceof ClosureDeclaration)
 			{
-				return false;
+				if (value1 instanceof ClosureDeclaration ^ value2 instanceof ClosureDeclaration)
+				{
+					return false;
+				}
+				if (value1.getType() == null ^ value2.getType() == null || value1.getType() != null && !value1.getType().equals(value2.getType()))
+				{
+					return false;
+				}
+				
+				return areSameTypes(((ClosureDeclaration)value1).getParameterList().getTypes(), ((ClosureDeclaration)value2).getParameterList().getTypes());
+			}
+			else
+			{
+				String type1 = types1[i].getType();
+				String type2 = types2[i].getType();
+				
+				if ((type1 == null ^ type2 == null) || !type1.equals(type2) || value1.getArrayDimensions() != value2.getArrayDimensions())
+				{
+					return false;
+				}
 			}
 		}
 		
