@@ -320,7 +320,7 @@ public class LambdaExpression extends Value
 	}
 	
 	@Override
-	public String getType()
+	public String getType(boolean checkCast)
 	{
 		Value returned = getReturnedNode();
 		
@@ -329,7 +329,7 @@ public class LambdaExpression extends Value
 			return null;
 		}
 		
-		return getReturnedNode().getType();
+		return getReturnedNode().getType(checkCast);
 	}
 	
 	@Override
