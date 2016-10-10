@@ -113,7 +113,14 @@ public class LambdaExpression extends Value
 				
 				MethodCall call = (MethodCall)parent.getAncestorOfType(MethodCall.class);
 				
-				MethodDeclaration[] methods = ((Value)call.getReferenceNode()).getTypeClass().getMethods(call.getName());
+				ClassDeclaration clazz = call.getReferenceNode().toValue().getTypeClass();
+				
+				if (clazz == null)
+				{
+					return null;
+				}
+				
+				MethodDeclaration[] methods = clazz.getMethods(call.getName());
 				
 				final String[] finalVars = variables;
 				final int index = call.getArgumentList().getNumVisibleChildren();
