@@ -731,7 +731,12 @@ public class BinaryOperation extends IValue
 				if (nonString != null)
 				{
 					Value stringOutput = generateStringOutput(nonString);
-
+					
+					if (stringOutput == null)
+					{
+						return null;
+					}
+					
 					if (!leftString)
 					{
 						left = stringOutput;
