@@ -182,8 +182,6 @@ nova_env novaEnv = {
 &nova_datastruct_list_Nova_Array_1_Nova_remove,
 &nova_datastruct_list_Nova_Array_Nova_indexOf,
 &nova_datastruct_list_Nova_Array_Nova_swap,
-0,
-0,
 &nova_datastruct_list_Nova_Array_Nova_toArray,
 0,
 0,
@@ -193,6 +191,8 @@ nova_env novaEnv = {
 &nova_datastruct_list_Nova_Array_Nova_sumSize,
 0,
 &nova_datastruct_list_Nova_Array_Nova_toString,
+0,
+0,
 &nova_datastruct_list_Nova_Array_0_Nova_construct,
 &nova_datastruct_list_Nova_Array_1_Nova_construct,
 &nova_datastruct_list_Nova_Array_2_Nova_construct,
@@ -204,8 +204,6 @@ nova_env novaEnv = {
 },
 
 {
-&nova_datastruct_list_Nova_CharArray_Nova_get,
-&nova_datastruct_list_Nova_CharArray_Nova_set,
 &nova_datastruct_list_Nova_CharArray_Nova_map,
 &nova_datastruct_list_Nova_CharArray_Nova_forEach,
 &nova_datastruct_list_Nova_CharArray_Nova_any,
@@ -215,6 +213,8 @@ nova_env novaEnv = {
 &nova_datastruct_list_Nova_CharArray_Nova_skip,
 &nova_datastruct_list_Nova_CharArray_Nova_firstWhere,
 &nova_datastruct_list_Nova_CharArray_Nova_reverse,
+&nova_datastruct_list_Nova_CharArray_Nova_get,
+&nova_datastruct_list_Nova_CharArray_Nova_set,
 &nova_datastruct_list_Nova_CharArray_0_Nova_construct,
 &nova_datastruct_list_Nova_CharArray_1_Nova_construct,
 &nova_datastruct_list_Nova_CharArray_2_Nova_construct,
@@ -240,6 +240,8 @@ nova_env novaEnv = {
 &nova_datastruct_list_Nova_DoubleArray_Nova_firstWhere,
 &nova_datastruct_list_Nova_DoubleArray_Nova_reverse,
 &nova_datastruct_list_Nova_DoubleArray_Nova_join,
+&nova_datastruct_list_Nova_DoubleArray_Nova_get,
+&nova_datastruct_list_Nova_DoubleArray_Nova_set,
 &nova_datastruct_list_Nova_DoubleArray_0_Nova_construct,
 &nova_datastruct_list_Nova_DoubleArray_1_Nova_construct,
 &nova_datastruct_list_Nova_DoubleArray_2_Nova_construct,
@@ -390,6 +392,10 @@ nova_env novaEnv = {
 },
 
 {
+&nova_exception_Nova_InvalidArgumentException_Nova_construct,
+},
+
+{
 &nova_exception_Nova_UnimplementedOperationException_Nova_construct,
 },
 
@@ -463,8 +469,14 @@ nova_env novaEnv = {
 },
 
 {
-&nova_math_Nova_Matrix_Nova_sum,
-&nova_math_Nova_Matrix_Nova_construct,
+&nova_math_Nova_Matrix_Nova_add,
+&nova_math_Nova_Matrix_Nova_subtract,
+&nova_math_Nova_Matrix_Nova_multiply,
+&nova_math_Nova_Matrix_Nova_transpose,
+&nova_math_Nova_Matrix_Nova_determinant,
+&nova_math_Nova_Matrix_Nova_toString,
+&nova_math_Nova_Matrix_0_Nova_construct,
+&nova_math_Nova_Matrix_1_Nova_construct,
 },
 
 {
@@ -507,6 +519,17 @@ nova_env novaEnv = {
 
 {
 &nova_math_Nova_VariableOperand_Nova_construct,
+},
+
+{
+&nova_math_Nova_Vector2D_Nova_construct,
+},
+
+{
+&nova_math_Nova_Vector3D_Nova_crossProduct,
+&nova_math_Nova_Vector3D_Nova_toString,
+&nova_math_Nova_Vector3D_0_Nova_construct,
+&nova_math_Nova_Vector3D_1_Nova_construct,
 },
 
 {
