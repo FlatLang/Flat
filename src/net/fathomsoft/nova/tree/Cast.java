@@ -182,7 +182,7 @@ public class Cast extends IValue
 			return false;
 		}
 		
-		if (!getTypeClass().isRelatedTo(node.getReturnedNode().getTypeClass()))
+		if (!getTypeClass().isRelatedTo(node.getReturnedNode().getTypeClass()) && !node.getReturnedNode().getTypeClass().containsArrayBracketOverload())
 		{
 			if (!getProgram().getController().isTesting)
 			{
