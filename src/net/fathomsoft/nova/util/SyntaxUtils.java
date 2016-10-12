@@ -660,11 +660,11 @@ public class SyntaxUtils
 			{
 				double l = Double.parseDouble(literal);
 				
-				if (l <= Float.MAX_VALUE && l >= Float.MIN_VALUE)
+				if (l <= Float.MAX_VALUE && l >= -Float.MAX_VALUE)
 				{
 					return "Float";
 				}
-				else if (l <= Double.MAX_VALUE && l >= Double.MIN_VALUE)
+				else if (l <= Double.MAX_VALUE && l >= -Double.MAX_VALUE)
 				{
 					return "Double";
 				}
