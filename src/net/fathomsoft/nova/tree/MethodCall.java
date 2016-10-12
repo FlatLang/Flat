@@ -317,7 +317,7 @@ public class MethodCall extends Variable
 			return SyntaxUtils.getImportedClass(getFileDeclaration(), getName());
 		}
 		
-		return ((Value)getReferenceNode()).getTypeClass();
+		return ((Value)getReferenceNode()).getTypeClass(false);
 	}
 	
 	public NovaMethodDeclaration getNovaMethod()
