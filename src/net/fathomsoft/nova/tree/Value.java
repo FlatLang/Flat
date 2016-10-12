@@ -536,6 +536,15 @@ public abstract class Value extends Node implements AbstractValue
 				return SyntaxUtils.getTypeClassLocation(c, c.getType());
 			}
 		}
+		else if (this instanceof Accessible && ((Accessible)this).getParentPriority() != null)
+		{
+			Priority p = ((Accessible)this).getParentPriority();
+			
+			if (p.getContents() instanceof Cast)
+			{
+				return p.getContents().getTypeClassLocation();
+			}
+		}
 		
 		String type = null;
 		
@@ -957,9 +966,9 @@ public abstract class Value extends Node implements AbstractValue
 	
 	public GenericTypeParameter getGenericTypeParameter()
 	{
-		if (getParentMethod() != null)
+		if (getParentMethod(true) != null)
 		{
-			GenericTypeParameter param = getParentMethod().getGenericTypeParameter(getType());
+			GenericTypeParameter param = getParentMethod(true).getGenericTypeParameter(getType());
 			
 			if (param != null)
 			{
