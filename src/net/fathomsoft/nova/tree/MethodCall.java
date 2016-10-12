@@ -99,7 +99,7 @@ public class MethodCall extends Variable
 	@Override
 	public boolean isVirtualTypeKnown()
 	{
-		return getParent() instanceof Instantiation || super.isVirtualTypeKnown();
+		return getParent() instanceof Instantiation || (getMethodDeclaration() instanceof NovaMethodDeclaration && !((NovaMethodDeclaration)getMethodDeclaration()).isOverridden()) || super.isVirtualTypeKnown();
 	}
 	
 	public boolean isVirtual()
