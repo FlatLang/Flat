@@ -241,15 +241,19 @@ public class LambdaExpression extends Value
 						ClosureContextDeclaration declaration = new ClosureContextDeclaration(parent, location, method.context);
 						
 						Closure methodReference = Closure.decodeStatement(parent, method.generateNovaClosureReference(method.getParentClass()), location.asNew(), require);
-						methodReference.onAfterDecoded();
 						
-						method.contextDeclaration = declaration;
-						
-						Node ancestor = parent.getStatementRootNode().getAncestorWithScope();
-						
-						ancestor.addChild(declaration);
-						
-						return methodReference;
+						if (methodReference != null)
+						{
+							methodReference.onAfterDecoded();
+							
+							method.contextDeclaration = declaration;
+							
+							Node ancestor = parent.getStatementRootNode().getAncestorWithScope();
+							
+							ancestor.addChild(declaration);
+							
+							return methodReference;
+						}
 					}
 				}
 			}
