@@ -587,19 +587,28 @@ public abstract class Value extends Node implements AbstractValue
 			{
 				LocalDeclaration decl = (LocalDeclaration)var.getDeclaration();
 				
-				if (decl.isImplicit() && decl.getImplicitType() != null && !decl.getImplicitType().isDecoding() && !decl.getImplicitType().isGenericType())
-				{
-					return decl.getImplicitType().getReferenceFile();
-				}
+				return decl.getReferenceFile();
 			}
 			if (var.getDeclaration() instanceof VirtualLocalDeclaration)
 			{
 				return ((VirtualLocalDeclaration)var.getDeclaration()).getReference().getReturnedNode().getTypeClass().getFileDeclaration();
 			}
 		}
-		else if (this instanceof VirtualLocalDeclaration)
+		else if (this instanceof LocalDeclaration)
 		{
-			return ((VirtualLocalDeclaration)this).getReference().getReturnedNode().getTypeClass().getFileDeclaration();
+			if (this instanceof VirtualLocalDeclaration)
+			{
+				return ((VirtualLocalDeclaration)this).getReference().getReturnedNode().getTypeClass().getFileDeclaration();
+			}
+			else
+			{
+				LocalDeclaration decl = (LocalDeclaration)this;
+				
+				if (decl.isImplicit() && decl.getImplicitType() != null && !decl.getImplicitType().isDecoding() && !decl.getImplicitType().isGenericType())
+				{
+					return decl.getImplicitType().getReferenceFile();
+				}
+			}
 		}
 		
 		return getFileDeclaration();
