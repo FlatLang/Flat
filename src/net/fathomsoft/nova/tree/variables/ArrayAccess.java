@@ -72,7 +72,7 @@ public class ArrayAccess extends Node implements ArrayCompatible
 	 * @return The generated node, if it was possible to translated it
 	 * 		into a ArrayAccess.
 	 */
-	public static ArrayAccess decodeStatement(Node parent, String statement, Location location, boolean require)
+	public static Node decodeStatement(Node parent, String statement, Location location, boolean require)
 	{
 		if (SyntaxUtils.isValidArrayAccess(statement))
 		{
@@ -80,55 +80,64 @@ public class ArrayAccess extends Node implements ArrayCompatible
 			
 			Bounds idBounds    = Regex.boundsOf(statement, Patterns.IDENTIFIER);
 			
-			//String identifier  = statement.substring(idBounds.getStart(), idBounds.getEnd());
-			String indexData   = statement;//statement.substring(idBounds.getEnd());
+			String indexData   = statement;
 			
 			Bounds indexBounds = Regex.boundsOf(indexData, Patterns.ARRAY_BRACKETS_DATA);
 			
 			int    current     = indexBounds.getEnd() + 1;
 			
-			/*
-			VariableDeclaration var = SyntaxTree.findDeclaration(parent, identifier);
+			MethodCall overloadCall = null;
+			MethodCall previousCall = null;
 			
-			if (var == null)
-			{
-				SyntaxMessage.error("Undeclared variable '" + identifier + "'", n);
-			}
-			
-			var.generateUsableVariable(n);
-			n.setLocationIn(location);
-			*/
-			
-			/*Value value = SyntaxTree.decodeValue(parent, identifier, location, require);
-			
-			n.addChild(value);
-			*/
 			while (current > 0)
 			{
 				String data = indexData.substring(indexBounds.getStart(), indexBounds.getEnd());
 				
-				Location newLoc = location.asNew();
-				newLoc.setOffset(idBounds.getEnd() + location.getOffset());
-				//newLoc.setBounds(identifier.length() + indexBounds.getStart(), identifier.length() + indexBounds.getEnd());
-				
-				Node created = Literal.decodeStatement(n, data, newLoc, require, true);
-				
-				if (created == null)
+				if (!((Value)parent).getReturnedNode().isPrimitiveArray())
 				{
-					created = SyntaxTree.decodeScopeContents(n.getAncestorWithScope(), data, newLoc, require);
+					MethodCall call = MethodCall.decodeStatement(((Value)parent).getReturnedNode(), "get(" + data + ")", location, require, false, ((Value)parent).getReturnedNode().getTypeClass(false).getArrayAccessorMethod());
+					
+					if (overloadCall == null)
+					{
+						overloadCall = call;
+					}
+					if (previousCall != null)
+					{
+						previousCall.setAccessedNode(call);
+					}
+					
+					parent = call;
+					previousCall = call;
+				}
+				else
+				{
+					Location newLoc = location.asNew();
+					newLoc.setOffset(idBounds.getEnd() + location.getOffset());
+					
+					Node created = Literal.decodeStatement(n, data, newLoc, require, true);
 					
 					if (created == null)
 					{
-						SyntaxMessage.queryError("Unknown array access index '" + data + "'", n, newLoc, require);
+						created = SyntaxTree.decodeScopeContents(n.getAncestorWithScope(), data, newLoc, require);
 						
-						return null;
+						if (created == null)
+						{
+							SyntaxMessage.queryError("Unknown array access index '" + data + "'", n, newLoc, require);
+							
+							return null;
+						}
 					}
+					
+					n.addDimension(created);
 				}
-				
-				n.addDimension(created);
 				
 				indexBounds = Regex.boundsOf(indexData, current, Patterns.ARRAY_BRACKETS_DATA);
 				current     = indexBounds.getEnd() + 1;
+			}
+			
+			if (overloadCall != null)
+			{
+				return overloadCall;
 			}
 			
 			return n;
