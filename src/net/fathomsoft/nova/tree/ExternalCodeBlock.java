@@ -19,7 +19,7 @@ import java.util.function.Function;
  */
 public class ExternalCodeBlock extends Node implements ScopeAncestor
 {
-	private String ending;
+	private String ending = "";
 	private String[] bounds;
 	
 	public String target;
@@ -30,7 +30,7 @@ public class ExternalCodeBlock extends Node implements ScopeAncestor
 	
 	public static final String IDENTIFIER =  "external";
 	
-	/**cNode
+	/**
 	 * @see net.fathomsoft.nova.tree.Node#Node(Node, Location)
 	 */
 	public ExternalCodeBlock(Node temporaryParent, Location locationIn)
