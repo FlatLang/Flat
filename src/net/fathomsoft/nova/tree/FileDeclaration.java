@@ -41,9 +41,6 @@ public class FileDeclaration extends Node
 	{
 		DEFAULT_IMPORTS = new String[]
 		{
-			"Nova.h",
-			"ExceptionHandler.h",
-			"InterfaceVTable.h",
 			"nova/exception/ExceptionData",
 			"nova/exception/Exception",
 			"nova/exception/DivideByZeroException",

@@ -936,7 +936,7 @@ nova_env novaEnv = {
 },
 
 {
-&compiler_tree_node_exceptionhandling_Nova_ExceptionHandler_Nova_clone,
+&compiler_tree_node_exceptionhandling_Nova_ExceptionHandler_Nova_doa,
 &compiler_tree_node_exceptionhandling_Nova_ExceptionHandler_Nova_construct,
 },
 
@@ -945,7 +945,6 @@ nova_env novaEnv = {
 },
 
 {
-&compiler_tree_node_functions_Nova_NovaFunction_Nova_clone,
 &compiler_tree_node_functions_Nova_NovaFunction_Nova_construct,
 },
 

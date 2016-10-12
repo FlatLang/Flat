@@ -154,7 +154,7 @@ public class Program extends TypeList<FileDeclaration>
 		
 		for (int i = 0; i < getNumVisibleChildren(); i++)
 		{
-			FileDeclaration child = (FileDeclaration)getVisibleChild(i);
+			FileDeclaration child = getVisibleChild(i);
 			
 			if (file != child && dir.equals(child.getFile().getParent()))
 			{
