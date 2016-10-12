@@ -34,6 +34,8 @@ public class ClassDeclaration extends InstanceDeclaration
 	
 	private ExtendedClass	extendedClass;
 	
+	public ArrayBracketOverload arrayBracketOverload;
+	
 	public static final String IDENTIFIER          = "class";
 	public static final String ABSTRACT_IDENTIFIER = "abstract";
 	
@@ -1075,6 +1077,35 @@ public class ClassDeclaration extends InstanceDeclaration
 		return compatible;
 	}
 	
+	public ArrayAccessorMethod getArrayAccessorMethod()
+	{
+		ArrayList<MethodDeclaration> methods = getArrayBracketOverload().getParentClass().getMethodList().filterVisibleListChildren(x -> x instanceof ArrayAccessorMethod);
+		
+		return methods.size() > 0 ? (ArrayAccessorMethod)methods.get(0) : null;
+	}
+	
+	public ArrayMutatorMethod getArrayMutatorMethod()
+	{
+		ArrayList<MethodDeclaration> methods = getArrayBracketOverload().getParentClass().getMethodList().filterVisibleListChildren(x -> x instanceof ArrayMutatorMethod);
+		
+		return methods.size() > 0 ? (ArrayMutatorMethod)methods.get(0) : null;
+	}
+	
+	public boolean containsArrayBracketOverload()
+	{
+		return getArrayBracketOverload() != null;
+	}
+	
+	public ArrayBracketOverload getArrayBracketOverload()
+	{
+		if (arrayBracketOverload != null)
+		{
+			return arrayBracketOverload;
+		}
+		
+		return doesExtendClass() ? getExtendedClassDeclaration().getArrayBracketOverload() : null;
+	}
+	
 	public MethodDeclaration getMethod(GenericCompatible[] contexts, String methodName, Value ... parameterTypes)
 	{
 		return getMethod(contexts, methodName, SearchFilter.getDefault(), parameterTypes);
@@ -1455,6 +1486,11 @@ public class ClassDeclaration extends InstanceDeclaration
 		else if (child instanceof Annotation)
 		{
 			
+		}
+		else if (child instanceof ArrayBracketOverload)
+		{
+			arrayBracketOverload = (ArrayBracketOverload)child;
+			arrayBracketOverload.setTemporaryParent(this);
 		}
 		else
 		{
