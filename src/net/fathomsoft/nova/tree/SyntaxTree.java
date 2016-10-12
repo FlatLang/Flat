@@ -75,6 +75,11 @@ public class SyntaxTree
 		AccessorMethod.class, MutatorMethod.class
 	};
 	
+	public static final Class<?> ARRAY_BRACKET_OVERLOAD_DECODE[] = new Class<?>[]
+	{
+		ArrayAccessorMethod.class, ArrayMutatorMethod.class
+	};
+	
 	public static final Class<?> FIRST_PASS_CLASSES[] = new Class<?>[]
 	{
 		Annotation.class, Import.class, ClassDeclaration.class, Interface.class, Package.class,
@@ -83,10 +88,10 @@ public class SyntaxTree
 	
 	public static final Class<?> SECOND_PASS_CLASSES[] = new Class<?>[]
 	{
-		Annotation.class, StaticBlock.class, AbstractMethodDeclaration.class,
-		ExternalMethodDeclaration.class, Destructor.class, Constructor.class,
-		BodyMethodDeclaration.class, ExternalType.class, FieldDeclaration.class,
-		ExternalCodeBlock.class
+		ArrayBracketOverload.class, Annotation.class, StaticBlock.class,
+		AbstractMethodDeclaration.class, ExternalMethodDeclaration.class, Destructor.class,
+		Constructor.class, BodyMethodDeclaration.class, ExternalType.class,
+		FieldDeclaration.class, ExternalCodeBlock.class
 	};
 	
 	/**
@@ -516,6 +521,9 @@ public class SyntaxTree
 				else if (node == null && type == AbstractMethodDeclaration.class) node = AbstractMethodDeclaration.decodeStatement(parent, statement, location, require);
 				else if (node == null && type == AccessorMethod.class) node = AccessorMethod.decodeStatement(parent, statement, location, require);
 				else if (node == null && type == ArrayAccess.class) node = ArrayAccess.decodeStatement(parent, statement, location, require);
+				else if (node == null && type == ArrayBracketOverload.class) node = ArrayBracketOverload.decodeStatement(parent, statement, location, require);
+				else if (node == null && type == ArrayAccessorMethod.class) node = ArrayAccessorMethod.decodeStatement(parent, statement, location, require);
+				else if (node == null && type == ArrayMutatorMethod.class) node = ArrayMutatorMethod.decodeStatement(parent, statement, location, require);
 				else if (node == null && type == Assignment.class) node = Assignment.decodeStatement(parent, statement, location, require);
 				else if (node == null && type == Array.class) node = Array.decodeStatement(parent, statement, location, require);
 				else if (node == null && type == Case.class) node = Case.decodeStatement(parent, statement, location, require);
@@ -616,6 +624,9 @@ public class SyntaxTree
 		else if (type.isAssignableFrom(AbstractMethodDeclaration.class) && (node = AbstractMethodDeclaration.decodeStatement(parent, statement, location, require)) != null);
 		else if (type.isAssignableFrom(Cast.class) && (node = Cast.decodeStatement(parent, statement, location, require)) != null);
 		else if (type.isAssignableFrom(ArrayAccess.class) && (node = ArrayAccess.decodeStatement(parent, statement, location, require)) != null);
+		else if (type.isAssignableFrom(ArrayBracketOverload.class) && (node = ArrayBracketOverload.decodeStatement(parent, statement, location, require)) != null);
+		else if (type.isAssignableFrom(ArrayAccessorMethod.class) && (node = ArrayAccessorMethod.decodeStatement(parent, statement, location, require)) != null);
+		else if (type.isAssignableFrom(ArrayMutatorMethod.class) && (node = ArrayMutatorMethod.decodeStatement(parent, statement, location, require)) != null);
 		else if (type.isAssignableFrom(Assignment.class) && (node = Assignment.decodeStatement(parent, statement, location, require)) != null);
 		else if (type.isAssignableFrom(Array.class) && (node = Array.decodeStatement(parent, statement, location, require)) != null);
 //		else if (type.isAssignableFrom(Bool.class) && (node = Bool.decodeStatement(parent, statement, location, require)) != null);
@@ -778,6 +789,11 @@ public class SyntaxTree
 	
 	private static Object getArrayAccessOrNode(Node parent, String statement, Location location, boolean require)
 	{
+		if (statement.startsWith("return"))
+		{
+			return null;
+		}
+		
 		String accessString = null;
 		
 		int index = findAccessInBaseScopeIndex(statement);
@@ -862,7 +878,16 @@ public class SyntaxTree
 		
 		if (accessString != null && node instanceof Value)
 		{
-			((Value)node).getReturnedNode().arrayAccess = ArrayAccess.decodeStatement(node, accessString, location, require);
+			Node access = ArrayAccess.decodeStatement(node, accessString, location, require);
+			
+			if (access instanceof ArrayAccess)
+			{
+				((Value)node).getReturnedNode().arrayAccess = (ArrayAccess)access;
+			}
+			else
+			{
+				((Accessible)((Value)node).getReturnedNode()).setAccessedNode((MethodCall)access);
+			}
 		}
 		
 		return node;
@@ -963,7 +988,7 @@ public class SyntaxTree
 			}
 			
 			location = location.asNew();
-			parent   = ((Node)node);
+			parent   = node.getReturnedNode();
 			offset   = index + 1;
 			index    = SyntaxUtils.findDotOperator(statement, offset);
 			
@@ -1072,7 +1097,16 @@ public class SyntaxTree
 		
 		if (accessString != null && node instanceof Value)
 		{
-			node.getReturnedNode().arrayAccess = ArrayAccess.decodeStatement((Node)node, accessString, location, require);
+			Node access = ArrayAccess.decodeStatement((Node)node, accessString, location, require);
+			
+			if (access instanceof ArrayAccess)
+			{
+				node.getReturnedNode().arrayAccess = (ArrayAccess)access;
+			}
+			else
+			{
+				((Accessible)node.getReturnedNode()).setAccessedNode((MethodCall)access);
+			}
 		}
 		
 		return node;
