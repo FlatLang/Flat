@@ -342,6 +342,7 @@ nova_env novaEnv = {
 0,
 0,
 0,
+&nova_datastruct_list_Nova_List_Nova_firstNonNull,
 &nova_datastruct_list_Nova_List_Nova_zip,
 0,
 0,
@@ -882,18 +883,43 @@ nova_env novaEnv = {
 },
 
 {
+&compiler_tree_node_Nova_Node_Nova_getAdjacentNode,
 &compiler_tree_node_Nova_Node_Nova_addAnnotation,
 &compiler_tree_node_Nova_Node_0_Nova_detach,
-&compiler_tree_node_Nova_Node_Nova_onRemoved,
 &compiler_tree_node_Nova_Node_Nova_containsChild,
 &compiler_tree_node_Nova_Node_Nova_onAdded,
+&compiler_tree_node_Nova_Node_Nova_onRemoved,
+&compiler_tree_node_Nova_Node_Nova_addChild,
+&compiler_tree_node_Nova_Node_Nova_inheritChildren,
+&compiler_tree_node_Nova_Node_0_Nova_removeChild,
+&compiler_tree_node_Nova_Node_1_Nova_removeChild,
+&compiler_tree_node_Nova_Node_Nova_replace,
+&compiler_tree_node_Nova_Node_Nova_onChildReplaced,
+&compiler_tree_node_Nova_Node_Nova_onReplaced,
+&compiler_tree_node_Nova_Node_Nova_replaceWith,
+&compiler_tree_node_Nova_Node_Nova_slaughterChildren,
+&compiler_tree_node_Nova_Node_Nova_followedByScope,
+&compiler_tree_node_Nova_Node_Nova_onAfterDecoded,
+&compiler_tree_node_Nova_Node_Nova_onStackPopped,
+&compiler_tree_node_Nova_Node_Nova_onNextStatementDecoded,
+&compiler_tree_node_Nova_Node_Nova_validate,
+&compiler_tree_node_Nova_Node_Nova_rollback,
 0,
 &compiler_tree_node_Nova_Node_Nova_construct,
 },
 
 {
+&compiler_tree_node_Nova_NovaFile_Nova_clone,
+&compiler_tree_node_Nova_NovaFile_Nova_construct,
+},
+
+{
 &compiler_tree_node_Nova_Scope_Nova_clone,
 &compiler_tree_node_Nova_Scope_Nova_construct,
+},
+
+{
+&compiler_tree_node_Nova_ValidationResult_Nova_construct,
 },
 
 {
@@ -912,6 +938,11 @@ nova_env novaEnv = {
 
 {
 &compiler_tree_node_exceptionhandling_Nova_Try_Nova_construct,
+},
+
+{
+&compiler_tree_node_functions_Nova_NovaFunction_Nova_clone,
+&compiler_tree_node_functions_Nova_NovaFunction_Nova_construct,
 },
 
 {
