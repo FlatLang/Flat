@@ -23,7 +23,7 @@ public class FieldDeclaration extends InstanceDeclaration
 {
 	private boolean  tangible;
 	
-	private String   initializationValue;
+	private String   initializationValue, accessorValue;
 	
 	/**
 	 * Declares that a variable can be viewed from anywhere, but not
@@ -206,11 +206,28 @@ public class FieldDeclaration extends InstanceDeclaration
 			statement = extraDeclarations.extractPreString(statement);
 		}
 		
-		Bounds localDeclaration = n.findPreAssignment(statement);
+		Bounds localDeclaration = new Bounds(0, statement.length());
+		String declaration = statement;
+		
+		int accessorIndex = n.findAccessorAssignment(statement);
+		
+		if (accessorIndex > 0)
+		{
+			n.accessorValue = declaration.substring(accessorIndex + 2).trim();
+			
+			declaration = declaration.substring(0, accessorIndex).trim();
+			
+			localDeclaration.setEnd(declaration.length());
+		}
+		else
+		{
+			localDeclaration = n.findPreAssignment(statement);
+			
+			declaration = localDeclaration.extractString(statement);
+		}
 		
 		FieldData data = new FieldData(localDeclaration);
 		
-		String declaration = localDeclaration.extractString(statement);
 		localDeclaration.setStart(-1);
 		
 		// Find the localDeclaration bounds.
@@ -255,6 +272,11 @@ public class FieldDeclaration extends InstanceDeclaration
 				data.localDeclaration.setStart(bounds.getStart());
 			}
 		}
+	}
+	
+	private int findAccessorAssignment(String statement)
+	{
+		return SyntaxUtils.findStringInBaseScope(statement, "=>");
 	}
 	
 	private Bounds findPreAssignment(String statement)
@@ -400,6 +422,16 @@ public class FieldDeclaration extends InstanceDeclaration
 				Assignment assignment = Assignment.decodeStatement(parent, getName() + " = " + initializationValue, getLocationIn(), true);
 				
 				getParentClass().addFieldInitialization(assignment);
+			}
+			if (accessorValue != null)
+			{
+				AccessorMethod m = AccessorMethod.decodeStatement(this, "get", getLocationIn(), true);//new AccessorMethod(this, getLocationIn());
+				
+				m = m.cloneTo(new ShorthandAccessor(this, getLocationIn()));
+				
+				m.addChild(Return.decodeStatement(m, "return " + accessorValue, getLocationIn(), true));
+				
+				addChild(m);
 			}
 		}
 		else if (phase == SyntaxTree.PHASE_METHOD_CONTENTS)
