@@ -210,6 +210,11 @@ public class TreeGenerator implements Runnable
 		decodeScopeContents(node.getFieldList().getPrivateStaticFieldList(), false, SyntaxTree.FIELD_SCOPE_CHILD_DECODE, true);
 		decodeScopeContents(node.getFieldList().getPublicFieldList(), false, SyntaxTree.FIELD_SCOPE_CHILD_DECODE, true);
 		decodeScopeContents(node.getFieldList().getPublicStaticFieldList(), false, SyntaxTree.FIELD_SCOPE_CHILD_DECODE, true);
+		
+		if (node.arrayBracketOverload != null)
+		{
+			decodeScopeContentsNode(node.arrayBracketOverload, false, SyntaxTree.ARRAY_BRACKET_OVERLOAD_DECODE, true);
+		}
 	}
 	
 	/**
@@ -254,38 +259,43 @@ public class TreeGenerator implements Runnable
 	{
 		for (int i = 0; i < scopeAncestors.getNumChildren(); i++)
 		{
-			Node node = scopeAncestors.getChild(i);
-			
-			if (node.getLocationIn().getBounds().isValid() && node.isUserMade())
-				if ((!requiresScope || node.containsScope()))
+			decodeScopeContentsNode(scopeAncestors.getChild(i), requiresScope, searchTypes, skipScopes);
+		}
+	}
+	
+	private void decodeScopeContentsNode(Node node, boolean requiresScope, Class<?>[] searchTypes, boolean skipScopes)
+	{
+		if (node.getLocationIn().getBounds().isValid() && node.isUserMade())
+		{
+			if ((!requiresScope || node.containsScope()))
+			{
+				int startingIndex = StringUtils.findNextNonWhitespaceIndex(source, node.getLocationIn().getEnd());
+				int endingIndex = StringUtils.findEndingMatch(source, startingIndex, '{', '}');
+				
+				int contentStart = StringUtils.findNextNonWhitespaceIndex(source, startingIndex + 1);
+				int contentEnd = StringUtils.findNextNonWhitespaceIndex(source, endingIndex - 1, -1) + 1;
+				
+				if (startingIndex >= 0 && source.charAt(startingIndex) != '{')
 				{
-					int startingIndex = StringUtils.findNextNonWhitespaceIndex(source, node.getLocationIn().getEnd());
-					int endingIndex = StringUtils.findEndingMatch(source, startingIndex, '{', '}');
-					
-					int contentStart = StringUtils.findNextNonWhitespaceIndex(source, startingIndex + 1);
-					int contentEnd = StringUtils.findNextNonWhitespaceIndex(source, endingIndex - 1, -1) + 1;
-					
-					if (startingIndex >= 0 && source.charAt(startingIndex) != '{')
+					if (requiresScope && node instanceof AbstractMethodDeclaration == false)
 					{
-						if (requiresScope && node instanceof AbstractMethodDeclaration == false)
+						if (!(node instanceof PropertyMethod) || !((PropertyMethod) node).isDisabled())
 						{
-							if (!(node instanceof PropertyMethod) || !((PropertyMethod) node).isDisabled())
+							if (node.getScope() == null || node.getScope().getNumVisibleChildren() <= 0)
 							{
-								if (node.getScope() == null || node.getScope().getNumVisibleChildren() <= 0)
-								{
-									SyntaxMessage.error("Scope expected after this statement", node, false);
-								}
+								SyntaxMessage.error("Scope expected after this statement", node, false);
 							}
 						}
-						
-						continue;
 					}
 					
-					if (contentStart < contentEnd)
-					{
-						traverseCode(node, contentStart, searchTypes, skipScopes);
-					}
+					return;
 				}
+				
+				if (contentStart < contentEnd)
+				{
+					traverseCode(node, contentStart, searchTypes, skipScopes);
+				}
+			}
 		}
 	}
 	
@@ -629,7 +639,7 @@ public class TreeGenerator implements Runnable
 			return;
 		}
 		
-		if (skipScopes && (node.containsScope() || node instanceof FieldDeclaration || node instanceof ClassDeclaration))
+		if (skipScopes && (node.containsScope() || node instanceof ArrayBracketOverload || node instanceof FieldDeclaration || node instanceof ClassDeclaration))
 		{
 			skipScope();
 		}
