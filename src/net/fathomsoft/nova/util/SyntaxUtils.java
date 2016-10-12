@@ -1707,7 +1707,7 @@ public class SyntaxUtils
 	
 	private static boolean checkGenericType(Value value, String type)
 	{
-		if (value.getParentMethod() != null && value.getParentMethod().containsGenericTypeParameter(type))
+		if (value.getParentMethod(true) != null && value.getParentMethod(true).containsGenericTypeParameter(type))
 		{
 			return true;
 		}
