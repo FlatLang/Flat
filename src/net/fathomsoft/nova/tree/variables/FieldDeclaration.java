@@ -10,6 +10,8 @@ import net.fathomsoft.nova.util.Patterns;
 import net.fathomsoft.nova.util.StringUtils;
 import net.fathomsoft.nova.util.SyntaxUtils;
 
+import java.util.ArrayList;
+
 /**
  * Declaration extension that represents the declaration of a field
  * node type. See {@link #decodeStatement(Node, String, Location, boolean)}
@@ -432,6 +434,13 @@ public class FieldDeclaration extends InstanceDeclaration
 				m.addChild(Return.decodeStatement(m, "return " + accessorValue, getLocationIn(), true));
 				
 				addChild(m);
+				
+				ArrayList<MethodDeclaration> methods = getParentClass().getPropertyMethodList().filterVisibleListChildren(x -> x.getName().equals(getName()) && x instanceof MutatorMethod);
+				
+				if (methods.size() == 0)
+				{
+					addChild(MutatorMethod.decodeStatement(this, "no set", getLocationIn(), true));
+				}
 			}
 		}
 		else if (phase == SyntaxTree.PHASE_METHOD_CONTENTS)
