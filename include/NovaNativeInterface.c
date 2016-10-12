@@ -909,6 +909,10 @@ nova_env novaEnv = {
 },
 
 {
+&compiler_tree_node_Nova_NovaClass_Nova_construct,
+},
+
+{
 &compiler_tree_node_Nova_NovaFile_Nova_clone,
 &compiler_tree_node_Nova_NovaFile_Nova_construct,
 },

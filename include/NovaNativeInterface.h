@@ -142,6 +142,7 @@
 #include <compiler/tree/compiler_tree_Nova_SyntaxTree.h>
 #include <compiler/tree/node/compiler_tree_node_Nova_Listener.h>
 #include <compiler/tree/node/compiler_tree_node_Nova_Node.h>
+#include <compiler/tree/node/compiler_tree_node_Nova_NovaClass.h>
 #include <compiler/tree/node/compiler_tree_node_Nova_NovaFile.h>
 #include <compiler/tree/node/compiler_tree_node_Nova_Scope.h>
 #include <compiler/tree/node/compiler_tree_node_Nova_ValidationResult.h>
@@ -1969,6 +1970,13 @@ compiler_tree_node_Nova_Node_native_Nova_clone clone;
 compiler_tree_node_Nova_Node_native_Nova_construct Node;
 } compiler_tree_node_native_Node;
 
+typedef compiler_tree_node_Nova_NovaClass* (*compiler_tree_node_Nova_NovaClass_native_Nova_construct)(compiler_tree_node_Nova_NovaClass*, nova_exception_Nova_ExceptionData*);
+
+typedef struct compiler_tree_node_native_NovaClass
+{
+compiler_tree_node_Nova_NovaClass_native_Nova_construct NovaClass;
+} compiler_tree_node_native_NovaClass;
+
 typedef compiler_tree_node_Nova_Node* (*compiler_tree_node_Nova_NovaFile_native_Nova_clone)(compiler_tree_node_Nova_NovaFile*, nova_exception_Nova_ExceptionData*, compiler_tree_node_Nova_Node*, compiler_util_Nova_Location*, char);
 typedef compiler_tree_node_Nova_NovaFile* (*compiler_tree_node_Nova_NovaFile_native_Nova_construct)(compiler_tree_node_Nova_NovaFile*, nova_exception_Nova_ExceptionData*);
 
@@ -2742,6 +2750,7 @@ compiler_error_native_UnimplementedOperationException compiler_error_Unimplement
 compiler_tree_native_SyntaxTree compiler_tree_SyntaxTree;
 compiler_tree_node_native_Listener compiler_tree_node_Listener;
 compiler_tree_node_native_Node compiler_tree_node_Node;
+compiler_tree_node_native_NovaClass compiler_tree_node_NovaClass;
 compiler_tree_node_native_NovaFile compiler_tree_node_NovaFile;
 compiler_tree_node_native_Scope compiler_tree_node_Scope;
 compiler_tree_node_native_ValidationResult compiler_tree_node_ValidationResult;
