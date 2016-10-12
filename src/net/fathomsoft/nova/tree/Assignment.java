@@ -338,6 +338,11 @@ public class Assignment extends Value
 	{
 		if (super.onAfterDecoded())
 		{
+			if (getAssignedNodeValue() instanceof Variable && getAssignedNode().getDeclaration() instanceof ArrayAccessorMethod)
+			{
+				return true;
+			}
+			
 			if (getAssignedNodeValue() instanceof Variable)
 			{
 				getAssignedNode().getDeclaration().onAfterDecoded();
@@ -349,6 +354,27 @@ public class Assignment extends Value
 		}
 		
 		return false;
+	}
+	
+	@Override
+	public void onAdded(Node parent)
+	{
+		if (getAssignedNodeValue() instanceof Variable && getAssignedNode().getDeclaration() instanceof ArrayAccessorMethod)
+		{
+			Variable assigned = getAssignedNode();
+			
+			String call = "set(" + ((MethodCall)assigned).getArgumentList().getVisibleChild(0).generateNovaInput() + ", " + getAssignmentNode().generateNovaInput() + ")";
+			
+			MethodCall setter = MethodCall.decodeStatement(assigned.getParent(), call, assigned.getLocationIn(), true, false, ((Variable)assigned.getParent()).getTypeClass().getArrayMutatorMethod());
+			
+			assigned.replaceWith(setter);
+			
+			replaceWith(getAssigneeNode());
+		}
+		else
+		{
+			super.onAdded(parent);
+		}
 	}
 	
 	private boolean decodeAssignee(String assignee, Location loc, boolean require, boolean addDeclaration, Value[] assignees, boolean checkType)
