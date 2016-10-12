@@ -252,14 +252,14 @@ public class Nova
 		{
 			testClasses();
 			
-			String target = "java";
+			String target = "c";
 			
 			args = new String[]
 			{
 				"../Compiler",
 				"../Misc/example",
 				"../Misc/stabilitytest", 
-				"-output-directory", "../NovaCompilerOutput",
+				"-output-directory", "../NovaCompilerOutput/" + target,
 				"-package-output-directory", "nova", "../StandardLibrary/" + target,
 //				"-dir", formatPath(directory + "../example"),
 //				"-dir", formatPath(directory + "../stabilitytest"),
@@ -276,8 +276,8 @@ public class Nova
 				"-single-thread",
 				"-single-file",
 				"-main",
-//				"example/Lab",
-				"stabilitytest/StabilityTest",
+				"example/Lab",
+//				"stabilitytest/StabilityTest",
 //				"example/SvgChart",
 //				"example/HashMapDemo",
 //				"example/HashSetDemo",
@@ -384,10 +384,29 @@ public class Nova
 					}
 					if (generateCode)
 					{
+						long time = System.currentTimeMillis();
+						long newTime = time;
+						
+						log("Generating output... ", false);
 						codeGeneratorEngine.generateOutput();
+						log("took " + ((newTime = System.currentTimeMillis()) - time) + "ms");
+						time = newTime;
+						
+						log("Inserting main method... ", false);
 						codeGeneratorEngine.insertMainMethod();
+						log("took " + ((newTime = System.currentTimeMillis()) - time) + "ms");
+						time = newTime;
+						
+						log("Formatting output... ", false);
 						codeGeneratorEngine.formatOutput();
+						log("took " + ((newTime = System.currentTimeMillis()) - time) + "ms");
+						time = newTime;
+						
+						log("Writing files... ", false);
 						codeGeneratorEngine.writeFiles();
+						log("took " + ((newTime = System.currentTimeMillis()) - time) + "ms");
+						time = newTime;
+						
 					}
 					
 					long time = System.currentTimeMillis() - before;
@@ -441,7 +460,12 @@ public class Nova
 	 */
 	public void log(String message)
 	{
-		log(flags, message);
+		log(message, true);
+	}
+	
+	public void log(String message, boolean newLine)
+	{
+		log(flags, message, newLine);
 	}
 	
 	/**
@@ -452,9 +476,14 @@ public class Nova
 	 */
 	public static void log(long flags, String message)
 	{
+		log(flags, message, true);
+	}
+	
+	public static void log(long flags, String message, boolean newLine)
+	{
 		if (isFlagEnabled(flags, VERBOSE))
 		{
-			System.out.println(message);
+			System.out.print(message + (newLine ? '\n' : ""));
 		}
 	}
 	
