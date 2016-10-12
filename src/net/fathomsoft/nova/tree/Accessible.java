@@ -377,6 +377,27 @@ public interface Accessible
 		return node;
 	}
 	
+	default Priority getParentPriority()
+	{
+		Accessible current = this;
+		
+		while (current != null)
+		{
+			if (current.getParent() instanceof Cast && current.getParent().getParent() instanceof Priority)
+			{
+				return (Priority)current.getParent().getParent();
+			}
+			if (current.getParent() instanceof Priority)
+			{
+				return (Priority)current.getParent();
+			}
+			
+			current = current.getAccessingNode();
+		}
+		
+		return null;
+	}
+	
 	/**
 	 * Get the Node that represents the value that contains the value.<br>
 	 * For example:<br>
