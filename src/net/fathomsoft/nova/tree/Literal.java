@@ -1,5 +1,6 @@
 package net.fathomsoft.nova.tree;
 
+import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.error.SyntaxMessage;
@@ -211,6 +212,8 @@ public class Literal extends IValue implements Accessible
 				
 				if (literalType.equals("String"))
 				{
+					statement = formatMultilineString(statement);
+					
 					String expression = formatStringExpressions(statement);
 					
 					if (!expression.equals(statement))
@@ -228,6 +231,11 @@ public class Literal extends IValue implements Accessible
 		}
 		
 		return null;
+	}
+	
+	public static String formatMultilineString(String statement)
+	{
+		return statement.replaceAll("\\n\\s*", "");
 	}
 	
 	public Instantiation getStringInstantiation()
