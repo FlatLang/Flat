@@ -439,9 +439,9 @@ public class FieldDeclaration extends InstanceDeclaration
 				AccessorMethod a = AccessorMethod.decodeStatement(this, "get", getLocationIn(), true)
 					.cloneTo(new ShorthandAccessor(this, getLocationIn()));
 				
-				a.addChild(Return.decodeStatement(a, "return " + accessorValue, getLocationIn(), true));
-				
 				addChild(a);
+				
+				a.addChild(Return.decodeStatement(a, "return " + accessorValue, getLocationIn(), true));
 				
 				if (twoWayBinding)
 				{
@@ -453,9 +453,9 @@ public class FieldDeclaration extends InstanceDeclaration
 					MutatorMethod m = MutatorMethod.decodeStatement(this, "set", getLocationIn(), true)
 						.cloneTo(new ShorthandMutator(this, getLocationIn()));
 					
-					m.addChild(Assignment.decodeStatement(m, accessorValue + " = value", getLocationIn(), true));
-					
 					addChild(m);
+					
+					m.addChild(Assignment.decodeStatement(m, accessorValue + " = value", getLocationIn(), true));
 				}
 				else
 				{
