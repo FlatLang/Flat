@@ -118,6 +118,33 @@ public class Operator extends IValue
         return stream(SHORTHAND_OPERATORS).anyMatch(x -> x.equals(operator));
     }
 	
+    public String getNonShorthand()
+	{
+		switch (operator)
+		{
+			case SHORTHAND_ADD:
+				return ADD;
+			case SHORTHAND_BITWISE_AND:
+				return BITWISE_AND;
+			case SHORTHAND_BITWISE_OR:
+				return BITWISE_OR;
+			case SHORTHAND_DIVIDE:
+				return DIVIDE;
+			case SHORTHAND_L_SHIFT:
+				return L_SHIFT;
+			case SHORTHAND_MODULO:
+				return MODULO;
+			case SHORTHAND_MULTIPLY:
+				return MULTIPLY;
+			case SHORTHAND_R_SHIFT:
+				return R_SHIFT;
+			case SHORTHAND_SUBTRACT:
+				return SUBTRACT;
+		}
+		
+		return null;
+	}
+    
 	/**
 	 * Get the left Value that the operator is being used with.
 	 * 
