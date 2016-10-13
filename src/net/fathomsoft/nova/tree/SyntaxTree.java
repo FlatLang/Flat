@@ -1311,7 +1311,11 @@ public class SyntaxTree
 	{
 		if (field != null)
 		{
-			if (SyntaxUtils.isVisible(accessingClass, field))
+			if (field.getDeclaringClass().isPrimitiveType())
+			{
+				return field;
+			}
+			else if (SyntaxUtils.isVisible(parent.getParentClass(true), field))
 			{
 				return field;
 			}
