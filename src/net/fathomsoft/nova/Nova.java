@@ -34,7 +34,7 @@ public class Nova
 	
 	public File				outputFile;
 	
-	public File					workingDir;
+	public File					workingDir, targetEngineWorkingDir;
 	
 	public String target = "c";
 	
@@ -192,6 +192,8 @@ public class Nova
 			formattedTarget = "Java";
 		}
 		
+		targetEngineWorkingDir = new File("../Nova-" + formattedTarget);
+		
 		try
 		{
 			URL url = new File("../Nova-" + formattedTarget + "/out/production/Nova-" + formattedTarget).toURL();
@@ -298,15 +300,11 @@ public class Nova
 			enableFlag(DRY_RUN);
 		}
 		
-		String postArgs[] = new String[]
-		{
-			"-dir", formatPath(workingPath + "include"),
-			"-dir", formatPath(workingPath + "include/gc"),
-			"-dir", formatPath(workingPath + "include/nova_mysql"),
-			"-dir", formatPath(workingPath + "include/nova_openssl"),
-			"-dir", formatPath(workingPath),
-			formatPath(directory + "bin/Executable"),// + EXECUTABLE_EXTENSION),
-		};
+		ArrayList<String> postArgsList = new ArrayList<>();
+		
+		postArgsList.add(formatPath(directory + "bin/Executable"));
+		
+		String postArgs[] = postArgsList.toArray(new String[0]);
 		
 //		for (String location : standardFiles)
 //		{
