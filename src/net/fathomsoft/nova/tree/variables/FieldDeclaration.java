@@ -2,6 +2,7 @@ package net.fathomsoft.nova.tree.variables;
 
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.ValidationResult;
+import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.tree.*;
 import net.fathomsoft.nova.tree.MethodList.SearchFilter;
 import net.fathomsoft.nova.util.Bounds;
@@ -24,6 +25,8 @@ import java.util.ArrayList;
 public class FieldDeclaration extends InstanceDeclaration
 {
 	private boolean  tangible;
+	
+	private boolean twoWayBinding;
 	
 	private String   initializationValue, accessorValue;
 	
@@ -216,6 +219,7 @@ public class FieldDeclaration extends InstanceDeclaration
 		if (accessorIndex > 0)
 		{
 			n.accessorValue = declaration.substring(accessorIndex + 2).trim();
+			n.twoWayBinding = declaration.substring(accessorIndex - 1, accessorIndex + 2).trim().equals("<=>");
 			
 			declaration = declaration.substring(0, accessorIndex).trim();
 			
@@ -427,19 +431,38 @@ public class FieldDeclaration extends InstanceDeclaration
 			}
 			if (accessorValue != null)
 			{
-				AccessorMethod m = AccessorMethod.decodeStatement(this, "get", getLocationIn(), true);//new AccessorMethod(this, getLocationIn());
-				
-				m = m.cloneTo(new ShorthandAccessor(this, getLocationIn()));
-				
-				m.addChild(Return.decodeStatement(m, "return " + accessorValue, getLocationIn(), true));
-				
-				addChild(m);
-				
-				ArrayList<MethodDeclaration> methods = getParentClass().getPropertyMethodList().filterVisibleListChildren(x -> x.getName().equals(getName()) && x instanceof MutatorMethod);
-				
-				if (methods.size() == 0)
+				if (containsAccessorMethod())
 				{
-					addChild(MutatorMethod.decodeStatement(this, "no set", getLocationIn(), true));
+					SyntaxMessage.error("Cannot have both an accessor method and shorthand value assignment to a field declaration", this);
+				}
+				
+				AccessorMethod a = AccessorMethod.decodeStatement(this, "get", getLocationIn(), true)
+					.cloneTo(new ShorthandAccessor(this, getLocationIn()));
+				
+				a.addChild(Return.decodeStatement(a, "return " + accessorValue, getLocationIn(), true));
+				
+				addChild(a);
+				
+				if (twoWayBinding)
+				{
+					if (containsMutatorMethod())
+					{
+						SyntaxMessage.error("Cannot have both a mutator method and two-way shorthand value assignment to a field declaration", this);
+					}
+					
+					MutatorMethod m = MutatorMethod.decodeStatement(this, "set", getLocationIn(), true)
+						.cloneTo(new ShorthandMutator(this, getLocationIn()));
+					
+					m.addChild(Assignment.decodeStatement(m, accessorValue + " = value", getLocationIn(), true));
+					
+					addChild(m);
+				}
+				else
+				{
+					if (!containsMutatorMethod())
+					{
+						addChild(MutatorMethod.decodeStatement(this, "no set", getLocationIn(), true));
+					}
 				}
 			}
 		}
