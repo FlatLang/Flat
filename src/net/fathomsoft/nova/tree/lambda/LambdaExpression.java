@@ -211,12 +211,12 @@ public class LambdaExpression extends Value
 					{
 						LambdaMethodDeclaration method = new LambdaMethodDeclaration(bodyMethod.getParent(), bodyMethod.getLocationIn(), parent.getAncestorWithScopeOrClass().getScope());
 						
-						NovaMethodDeclaration parentMethod = (NovaMethodDeclaration)call.getDeclaration();
+						NovaMethodDeclaration parentMethod = parent.getParentMethod();
 						
 						int scopeId = bodyMethod.getScope().getID();
 						bodyMethod.cloneTo(method);
 						method.getScope().id = scopeId;
-						method.isInstance = parentMethod.isStatic();
+						method.isInstance = parentMethod.isInstance();//parentMethod.isStatic();
 						method.objectReference = parentMethod.objectReference; 
 						
 						method.getParentClass().addChild(method);
