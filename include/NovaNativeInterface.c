@@ -230,6 +230,7 @@ nova_env novaEnv = {
 },
 
 {
+&nova_datastruct_list_Nova_DoubleArray_Nova_sum,
 &nova_datastruct_list_Nova_DoubleArray_Nova_map,
 &nova_datastruct_list_Nova_DoubleArray_Nova_forEach,
 &nova_datastruct_list_Nova_DoubleArray_Nova_any,
@@ -523,14 +524,30 @@ nova_env novaEnv = {
 },
 
 {
-&nova_math_Nova_Vector2D_Nova_construct,
+0,
+&nova_math_Nova_Vector_Nova_innerProduct,
+&nova_math_Nova_Vector_Nova_scale,
+&nova_math_Nova_Vector_Nova_normalize,
+&nova_math_Nova_Vector_Nova_toString,
+&nova_math_Nova_Vector_0_Nova_construct,
+&nova_math_Nova_Vector_1_Nova_construct,
+},
+
+{
+&nova_math_Nova_Vector2D_Nova_dotProduct,
+&nova_math_Nova_Vector2D_0_Nova_construct,
+&nova_math_Nova_Vector2D_1_Nova_construct,
 },
 
 {
 &nova_math_Nova_Vector3D_Nova_crossProduct,
-&nova_math_Nova_Vector3D_Nova_toString,
 &nova_math_Nova_Vector3D_0_Nova_construct,
 &nova_math_Nova_Vector3D_1_Nova_construct,
+},
+
+{
+&nova_math_Nova_Vector4D_0_Nova_construct,
+&nova_math_Nova_Vector4D_1_Nova_construct,
 },
 
 {
@@ -872,11 +889,25 @@ nova_env novaEnv = {
 },
 
 {
+&compiler_Nova_SyntaxErrorException_Nova_construct,
+},
+
+{
 &compiler_error_Nova_UnimplementedOperationException_Nova_construct,
 },
 
 {
 &compiler_tree_Nova_SyntaxTree_Nova_construct,
+},
+
+{
+&compiler_tree_node_Nova_Import_Nova_getClassLocation,
+&compiler_tree_node_Nova_Import_Nova_tryParse,
+&compiler_tree_node_Nova_Import_Nova_construct,
+},
+
+{
+&compiler_tree_node_Nova_ImportList_Nova_construct,
 },
 
 {
@@ -909,12 +940,26 @@ nova_env novaEnv = {
 },
 
 {
+&compiler_tree_node_Nova_NodeList_Nova_construct,
+},
+
+{
 &compiler_tree_node_Nova_NovaClass_Nova_construct,
 },
 
 {
-&compiler_tree_node_Nova_NovaFile_Nova_clone,
+&compiler_tree_node_Nova_NovaFile_Nova_addImport,
+&compiler_tree_node_Nova_NovaFile_Nova_containsImport,
 &compiler_tree_node_Nova_NovaFile_Nova_construct,
+},
+
+{
+&compiler_tree_node_Nova_Package_Nova_construct,
+},
+
+{
+&compiler_tree_node_Nova_Program_Nova_getClassDeclaration,
+&compiler_tree_node_Nova_Program_Nova_construct,
 },
 
 {
@@ -936,7 +981,14 @@ nova_env novaEnv = {
 },
 
 {
-&compiler_tree_node_exceptionhandling_Nova_ExceptionHandler_Nova_doa,
+&compiler_tree_node_closures_Nova_ClosureContext_Nova_construct,
+},
+
+{
+&compiler_tree_node_closures_Nova_ClosureDeclaration_Nova_construct,
+},
+
+{
 &compiler_tree_node_exceptionhandling_Nova_ExceptionHandler_Nova_construct,
 },
 
