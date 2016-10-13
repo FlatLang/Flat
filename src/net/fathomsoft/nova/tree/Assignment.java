@@ -363,11 +363,7 @@ public class Assignment extends Value
 		{
 			Variable assigned = getAssignedNode();
 			
-			String call = "set(" + ((MethodCall)assigned).getArgumentList().getVisibleChild(0).generateNovaInput() + ", " + getAssignmentNode().generateNovaInput() + ")";
-			
-			MethodCall setter = MethodCall.decodeStatement(assigned.getParent(), call, assigned.getLocationIn(), true, false, ((Variable)assigned.getParent()).getTypeClass().getArrayMutatorMethod());
-			
-			assigned.replaceWith(setter);
+			SyntaxUtils.replaceArrayAccessWithSetter(assigned, getAssignmentNode());
 			
 			replaceWith(getAssigneeNode());
 		}

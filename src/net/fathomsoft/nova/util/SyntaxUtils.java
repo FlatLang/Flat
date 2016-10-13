@@ -2400,6 +2400,18 @@ public class SyntaxUtils
 		return false;
 	}
 	
+	public static void replaceArrayAccessWithSetter(Variable assigned, Value assignment)
+	{
+		assigned.replaceWith(generateArraySetterCallFromAccess(assigned, assignment));
+	}
+	
+	public static MethodCall generateArraySetterCallFromAccess(Variable assigned, Value assignment)
+	{
+		String call = "set(" + ((MethodCall)assigned).getArgumentList().getVisibleChild(0).generateNovaInput() + ", " + assignment.generateNovaInput() + ")";
+		
+		return MethodCall.decodeStatement(assigned.getParent(), call, assigned.getLocationIn(), true, false, ((Variable)assigned.getParent()).getTypeClass().getArrayMutatorMethod());
+	}
+	
 	/**
 	 * Check to see if the FileDeclaration already has the given class
 	 * imported or not.
