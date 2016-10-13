@@ -832,7 +832,7 @@ public abstract class Value extends Node implements AbstractValue
 	{
 		Value type = getNovaTypeValue(context);
 		
-		builder.append(type.getType());
+		builder.append(SyntaxUtils.getPrimitiveNovaType(type.getType()));
 		
 		if (checkArray && isPrimitiveArray())
 		{
