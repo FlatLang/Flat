@@ -213,7 +213,9 @@ public class LambdaExpression extends Value
 						
 						NovaMethodDeclaration parentMethod = (NovaMethodDeclaration)call.getDeclaration();
 						
+						int scopeId = bodyMethod.getScope().getID();
 						bodyMethod.cloneTo(method);
+						method.getScope().id = scopeId;
 						method.isInstance = parentMethod.isStatic();
 						method.objectReference = parentMethod.objectReference; 
 						
@@ -248,11 +250,18 @@ public class LambdaExpression extends Value
 							
 							method.contextDeclaration = declaration;
 							
-							Node ancestor = parent.getStatementRootNode().getAncestorWithScope();
+							Node root = parent.getStatementRootNode();
 							
-							ancestor.addChild(declaration);
-							
-							return methodReference;
+							Nova.debuggingBreakpoint(root == null);
+							parent.getStatementRootNode();
+							if (root != null)
+							{
+								Node ancestor = root.getAncestorWithScope();
+								
+								ancestor.addChild(declaration);
+								
+								return methodReference;
+							}
 						}
 					}
 				}
