@@ -201,10 +201,22 @@ public class Return extends IValue
 		{
 			SyntaxMessage.error("Could not decode return statement '" + statement + "'", this, location);
 		}
-		else if (!SyntaxUtils.validateCompatibleTypes(method, value.getReturnedNode()))
+		else
 		{
-			SyntaxUtils.validateCompatibleTypes(method, value.getReturnedNode());
-			queryReturnError(method, true);
+			if (value.getReturnedNode() instanceof MethodCall)
+			{
+				NovaMethodDeclaration m = ((MethodCall)value.getReturnedNode()).getNovaMethod();
+				
+				if (m != null && m.shorthandAction != null)
+				{
+					return value;
+				}
+			}
+			if (!SyntaxUtils.validateCompatibleTypes(method, value.getReturnedNode()))
+			{
+				SyntaxUtils.validateCompatibleTypes(method, value.getReturnedNode());
+				queryReturnError(method, true);
+			}
 		}
 		
 		return value;

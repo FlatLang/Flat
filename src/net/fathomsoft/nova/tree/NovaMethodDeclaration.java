@@ -32,7 +32,7 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 {
 	public int	uniqueID, overloadID;
 	
-	private String shorthandAction;
+	public String shorthandAction;
 	
 	private String[] types;
 	
@@ -915,22 +915,32 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 				{
 					if (getType() == null)
 					{
-						String type = ((Value)contents).getType() == null ? null : ((Value)contents).getNovaType();
+						Value returned = ((Value)contents).getReturnedNode();
+						
+						String type = returned.getType() == null ? null : returned.getNovaType();
 						
 						if (type == null)
 						{
-							SyntaxMessage.error("Possible catch 22 in shorthand action '" + shorthandAction + "'. Please add an explicit return type to any functions that the shorthand action returns.", this);
+							if (returned instanceof MethodCall)
+							{
+								NovaMethodDeclaration method = ((MethodCall)returned).getNovaMethod();
+								
+								if (method != null && method.shorthandAction != null)
+								{
+									SyntaxMessage.error("Unable to infer return value of shorthand action '" + shorthandAction + "'. Please add an explicit return type to any functions that the shorthand action returns.", this);
+								}
+							}
 						}
-						
-						setType(type);
+						else
+						{
+							setType(type);
+							
+							contents = Return.decodeStatement(this, "return " + shorthandAction, getLocationIn(), true);
+						}
 					}
-					
-					contents = Return.decodeStatement(this, "return " + shorthandAction, getLocationIn(), true);
 				}
 				
 				addChild(contents);
-				
-				shorthandAction = null;
 			}
 		}
 		else if (phase == SyntaxTree.PHASE_METHOD_CONTENTS)
