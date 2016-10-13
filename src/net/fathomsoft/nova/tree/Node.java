@@ -675,6 +675,32 @@ public abstract class Node implements Listenable, Annotatable
 		return false;
 	}
 	
+	public boolean containsChildOfType(Class<?> type)
+	{
+		for (Node n : children)
+		{
+			if (type.isAssignableFrom(n.getClass()) || n.containsChildOfType(type))
+			{
+				return true;
+			}
+		}
+		
+		return false;
+	}
+	
+	public boolean whereChildOfType(Class<?> type, Function<Node, Boolean> test)
+	{
+		for (Node n : children)
+		{
+			if (type.isAssignableFrom(n.getClass()) && test.apply(n) || n.whereChildOfType(type, test))
+			{
+				return true;
+			}
+		}
+		
+		return false;
+	}
+	
 	public void addReference(Node node)
 	{
 		addChild(getNumChildren(), node, this, false);
