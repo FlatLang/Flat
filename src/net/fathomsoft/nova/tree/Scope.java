@@ -3,6 +3,7 @@ package net.fathomsoft.nova.tree;
 import java.util.ArrayList;
 
 import javafx.util.Pair;
+import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.tree.variables.Variable;
 import net.fathomsoft.nova.tree.variables.VariableDeclaration;
@@ -30,7 +31,9 @@ import net.fathomsoft.nova.util.Location;
  */
 public class Scope extends Node
 {
-	private int	id, localVariableID;
+	private int localVariableID;
+	
+	public int	id;
 	
 	private ArrayList<Listener> listeners;
 
