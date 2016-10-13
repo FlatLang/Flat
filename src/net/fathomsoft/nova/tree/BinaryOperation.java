@@ -246,7 +246,7 @@ public class BinaryOperation extends IValue
 				n.getOperator().updateType();
 				n.setType(n.getOperator().getType());
 				
-				return n.optimizeStringConcatenation();
+				return n.optimizeConcatenation();
 			}
 			else
 			{
@@ -705,8 +705,29 @@ public class BinaryOperation extends IValue
 	 * @return The generated concatenation operation if generated. If not,
 	 * 		then the calling Node, BinaryOperation, is returned.
 	 */
-	private Value optimizeStringConcatenation()
+	private Value optimizeConcatenation()
 	{
+		if (getOperator().isShorthand())
+		{
+			if (getLeftOperand().getReturnedNode() instanceof Accessible)
+			{
+				Accessible a = (Accessible)getLeftOperand().getReturnedNode();
+				
+				if (a.isAccessed() && a.getReferenceNode().toValue().getTypeClass().containsArrayBracketOverload())
+				{
+					Value value = (Value)getLeftOperand().clone(getLeftOperand().getParent(), getLeftOperand().getLocationIn());
+					
+					BinaryOperation operation = (BinaryOperation)BinaryOperation.decodeStatement(getParent(), value.generateNovaInput() + " " + getOperator().getNonShorthand() + " " + getRightOperand().generateNovaInput(), getLocationIn(), true);
+					
+					MethodCall call = SyntaxUtils.generateArraySetterCallFromAccess((Variable)a, operation);
+					
+					((Variable)a).replaceWith(call);
+					
+					return getLeftOperand();
+				}
+			}
+		}
+		
 		if (getOperator().getOperator().equals("+"))
 		{
 			Value left = getLeftOperand();
