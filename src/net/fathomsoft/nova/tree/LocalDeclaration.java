@@ -358,30 +358,6 @@ public class LocalDeclaration extends VariableDeclaration
 		}
 	}
 	
-	public Value getTypeValue()
-	{
-		Value value = new IValue(this, getLocationIn());
-
-		value.setArrayDimensions(getArrayDimensions());
-		value.setTypeValue(getType());
-		value.setDataType(getDataType());
-
-		GenericTypeArgumentList args = getGenericTypeArgumentList();
-		GenericTypeArgumentList thisArgs = value.getGenericTypeArgumentList();
-
-		if (thisArgs != null)
-		{
-			for (int i = 0; i < args.getNumVisibleChildren(); i++)
-			{
-				GenericTypeArgument arg = args.getVisibleChild(i);
-
-				thisArgs.addChild(arg.clone(thisArgs, arg.getLocationIn().asNew()));
-			}
-		}
-
-		return value;
-	}
-
 	@Override
 	public ValidationResult validate(int phase)
 	{
