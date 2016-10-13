@@ -32,6 +32,8 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 {
 	public int	uniqueID, overloadID;
 	
+	private String shorthandAction;
+	
 	private String[] types;
 	
 	private ArrayList<NovaMethodDeclaration>	overridingMethods;
@@ -626,6 +628,11 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 		return decodeParameters(parameterList, require);
 	}
 	
+	private int findShorthandActionOperator(String statement)
+	{
+		return SyntaxUtils.findStringInBaseScope(statement, "=>");
+	}
+	
 	/**
 	 * Decode the method signature.<br>
 	 * <br>
@@ -638,6 +645,15 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 	 */
 	public boolean decodeSignature(String statement, boolean require)
 	{
+		int shorthand = findShorthandActionOperator(statement);
+		
+		if (shorthand > 0)
+		{
+			shorthandAction = statement.substring(shorthand + 2).trim();
+			
+			statement = statement.substring(0, shorthand).trim();
+		}
+		
 		String signature = findMethodSignature(statement);
 		MethodData data  = new MethodData(signature);
 		
@@ -890,6 +906,32 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 			getParameterList().validate(phase);
 			
 			checkOverrides();
+			
+			if (shorthandAction != null)
+			{
+				Node contents = SyntaxTree.decodeScopeContents(this, shorthandAction, getLocationIn(), true);
+				
+				if (contents instanceof Value)
+				{
+					if (getType() == null)
+					{
+						String type = ((Value)contents).getType() == null ? null : ((Value)contents).getNovaType();
+						
+						if (type == null)
+						{
+							SyntaxMessage.error("Possible catch 22 in shorthand action '" + shorthandAction + "'. Please add an explicit return type to any functions that the shorthand action returns.", this);
+						}
+						
+						setType(type);
+					}
+					
+					contents = Return.decodeStatement(this, "return " + shorthandAction, getLocationIn(), true);
+				}
+				
+				addChild(contents);
+				
+				shorthandAction = null;
+			}
 		}
 		else if (phase == SyntaxTree.PHASE_METHOD_CONTENTS)
 		{
@@ -954,6 +996,7 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 		node.objectReference = objectReference;
 		node.overloadID = overloadID;
 		node.uniqueID   = uniqueID;
+		node.shorthandAction = shorthandAction;
 		
 		for (NovaMethodDeclaration child : overridingMethods)
 		{
