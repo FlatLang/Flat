@@ -972,7 +972,6 @@ nova_env novaEnv = {
 },
 
 {
-0,
 },
 
 {

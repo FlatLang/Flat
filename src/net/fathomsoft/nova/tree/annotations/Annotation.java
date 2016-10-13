@@ -147,6 +147,10 @@ public class Annotation extends Node
 		{
 			getLocationIn().setLineNumber(getLocationIn().getLineNumber() - getParent().getLineNumber());
 		}
+		if (next instanceof Annotation)
+		{
+			next.addAnnotation(this);
+		}
 		
 		return super.onNextStatementDecoded(next);
 	}

@@ -12,6 +12,7 @@ import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.error.UnimplementedOperationException;
 import net.fathomsoft.nova.tree.annotations.Annotatable;
 import net.fathomsoft.nova.tree.annotations.Annotation;
+import net.fathomsoft.nova.tree.annotations.TargetAnnotation;
 import net.fathomsoft.nova.tree.exceptionhandling.Try;
 import net.fathomsoft.nova.tree.variables.VariableDeclaration;
 import net.fathomsoft.nova.tree.variables.VariableDeclarationList;
@@ -103,6 +104,11 @@ public abstract class Node implements Listenable, Annotatable
 	@Override
 	public void addAnnotation(Annotation annotation)
 	{
+		if (annotation instanceof TargetAnnotation)
+		{
+			return;
+		}
+		
 		if (annotations == null)
 		{
 			annotations = new ArrayList<>();
@@ -110,9 +116,11 @@ public abstract class Node implements Listenable, Annotatable
 		
 		if (annotation.getAnnotations() != null)
 		{
-			for (Annotation a : annotation.getAnnotations())
+			for (Annotation a : annotation.getAnnotations().toArray(new Annotation[0]))
 			{
 				addAnnotation(a);
+				
+				//a.validate(getProgram().getPhase());
 			}
 		}
 		

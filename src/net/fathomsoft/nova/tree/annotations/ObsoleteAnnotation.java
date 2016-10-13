@@ -130,7 +130,7 @@ public class ObsoleteAnnotation extends Annotation
 			
 			for (Variable reference : decl.references)
 			{
-				Variable v = (Variable)reference.getReferenceNode();
+				Variable v = reference;//(Variable)reference.getReferenceNode();
 				
 				if (fail)
 				{

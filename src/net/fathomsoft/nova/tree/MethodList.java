@@ -85,11 +85,11 @@ public class MethodList extends TypeList<MethodDeclaration>
 	 */
 	public MethodDeclaration[] getMethods(String methodName, SearchFilter filter)
 	{
-		ArrayList<MethodDeclaration> methods = new ArrayList<MethodDeclaration>();
+		ArrayList<MethodDeclaration> methods = new ArrayList<>();
 		
 		for (int i = 0; i < getNumChildren(); i++)
 		{
-			MethodDeclaration method = (MethodDeclaration)getChild(i);
+			MethodDeclaration method = getChild(i);
 			
 			if (method.getName() != null && method.getName().equals(methodName) && (!filter.checkStatic || filter.staticValue == method.isStatic()))
 			{
