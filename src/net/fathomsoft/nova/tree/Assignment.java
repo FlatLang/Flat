@@ -586,7 +586,7 @@ public class Assignment extends Value
 					FieldDeclaration field   = (FieldDeclaration)var.getDeclaration();
 					MutatorMethod    mutator = field.getMutatorMethod();
 					
-					if (mutator != null)
+					if (mutator != null && getParentMethod() != mutator)
 					{
 						if (!mutator.isDisabled())
 						{

@@ -1,5 +1,6 @@
 package net.fathomsoft.nova.tree.variables;
 
+import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.error.SyntaxMessage;
@@ -24,8 +25,6 @@ import java.util.ArrayList;
  */
 public class FieldDeclaration extends InstanceDeclaration
 {
-	private boolean  tangible;
-	
 	private boolean twoWayBinding;
 	
 	private String   initializationValue, accessorValue;
@@ -42,8 +41,6 @@ public class FieldDeclaration extends InstanceDeclaration
 	public FieldDeclaration(Node temporaryParent, Location locationIn)
 	{
 		super(temporaryParent, locationIn);
-		
-		tangible = true;
 	}
 	
 	@Override
@@ -68,7 +65,7 @@ public class FieldDeclaration extends InstanceDeclaration
 	@Override
 	public boolean isTangible()
 	{
-		return tangible && super.isTangible();
+		return (!containsAccessorMethod() || containsInstance(getAccessorMethod())) && super.isTangible();
 	}
 	
 	private boolean containsInstance(Node parent)
@@ -468,13 +465,7 @@ public class FieldDeclaration extends InstanceDeclaration
 		}
 		else if (phase == SyntaxTree.PHASE_METHOD_CONTENTS)
 		{
-			if (containsAccessorMethod())
-			{
-				if (!containsInstance(getAccessorMethod()))
-				{
-					tangible = false;
-				}
-			}
+			
 		}
 		else if (phase == SyntaxTree.PHASE_PRE_GENERATION)
 		{
@@ -517,7 +508,6 @@ public class FieldDeclaration extends InstanceDeclaration
 	{
 		super.cloneTo(node, cloneChildren);
 		
-		node.tangible = tangible;
 		node.initializationValue = initializationValue;
 		
 		return node;

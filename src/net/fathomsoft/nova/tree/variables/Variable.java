@@ -1,5 +1,6 @@
 package net.fathomsoft.nova.tree.variables;
 
+import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.error.SyntaxMessage;
@@ -525,15 +526,18 @@ public class Variable extends Identifier
 				
 				if (accessor != null && !accessor.isDisabled() && getParentMethod() != accessor)
 				{
-					MethodCall access = MethodCall.decodeStatement(getParent(), getName() + "()", getLocationIn(), true, false, accessor);
-					
-					getParent().replace(this, access);
-					
-					access.inheritChildren(this);
-					
-					result.returnedNode = access;
-					
-					return result;
+					if (!field.isTangible() || getParentMethod() != field.getMutatorMethod())
+					{
+						MethodCall access = MethodCall.decodeStatement(getParent(), getName() + "()", getLocationIn(), true, false, accessor);
+						
+						getParent().replace(this, access);
+						
+						access.inheritChildren(this);
+						
+						result.returnedNode = access;
+						
+						return result;
+					}
 				}
 			}
 		}
