@@ -5,6 +5,7 @@ import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.tree.MethodList.SearchFilter;
 import net.fathomsoft.nova.tree.generics.GenericTypeArgument;
+import net.fathomsoft.nova.tree.lambda.LambdaMethodDeclaration;
 import net.fathomsoft.nova.tree.variables.Variable;
 import net.fathomsoft.nova.util.Location;
 import net.fathomsoft.nova.util.StringUtils;
@@ -48,6 +49,11 @@ public class Closure extends Variable
 		
 		this.variable = variable;
 	}*/
+	
+	public boolean isLambda()
+	{
+		return getMethodDeclaration() instanceof LambdaMethodDeclaration;
+	}
 	
 	/**
 	 * @see net.fathomsoft.nova.tree.Node#isSpecial()
