@@ -879,6 +879,52 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 		}
 	}
 	
+	public void decodeShorthandAction()
+	{
+		if (shorthandAction != null)
+		{
+			Node contents = SyntaxTree.decodeScopeContents(this, shorthandAction, getLocationIn(), true);
+			
+			if (contents instanceof Value)
+			{
+				contents = inferShorthandActionType((Value)contents);
+			}
+			
+			addChild(contents);
+		}
+	}
+	
+	public Value inferShorthandActionType(Value contents)
+	{
+		if (getType() == null)
+		{
+			Value returned = contents.getReturnedNode();
+			
+			String type = returned.getType() == null ? null : returned.getNovaType();
+			
+			if (type == null)
+			{
+				if (returned instanceof MethodCall)
+				{
+					NovaMethodDeclaration method = ((MethodCall)returned).getNovaMethod();
+					
+					if (method != null && method.shorthandAction != null)
+					{
+						SyntaxMessage.error("Unable to infer return value of shorthand action '" + shorthandAction + "'. Please add an explicit return type to any functions that the shorthand action returns.", this);
+					}
+				}
+			}
+			else
+			{
+				setType(type);
+				
+				contents = Return.decodeStatement(this, "return " + shorthandAction, getLocationIn(), true);
+			}
+		}
+		
+		return contents;
+	}
+	
 	/**
 	 * Validate the parameters of the method header.
 	 * 
@@ -907,41 +953,7 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 			
 			checkOverrides();
 			
-			if (shorthandAction != null)
-			{
-				Node contents = SyntaxTree.decodeScopeContents(this, shorthandAction, getLocationIn(), true);
-				
-				if (contents instanceof Value)
-				{
-					if (getType() == null)
-					{
-						Value returned = ((Value)contents).getReturnedNode();
-						
-						String type = returned.getType() == null ? null : returned.getNovaType();
-						
-						if (type == null)
-						{
-							if (returned instanceof MethodCall)
-							{
-								NovaMethodDeclaration method = ((MethodCall)returned).getNovaMethod();
-								
-								if (method != null && method.shorthandAction != null)
-								{
-									SyntaxMessage.error("Unable to infer return value of shorthand action '" + shorthandAction + "'. Please add an explicit return type to any functions that the shorthand action returns.", this);
-								}
-							}
-						}
-						else
-						{
-							setType(type);
-							
-							contents = Return.decodeStatement(this, "return " + shorthandAction, getLocationIn(), true);
-						}
-					}
-				}
-				
-				addChild(contents);
-			}
+			decodeShorthandAction();
 		}
 		else if (phase == SyntaxTree.PHASE_METHOD_CONTENTS)
 		{
