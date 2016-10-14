@@ -38,6 +38,12 @@ public class Constructor extends BodyMethodDeclaration
 		
 	}
 	
+	@Override
+	public Value inferShorthandActionType(Value contents)
+	{
+		return contents;
+	}
+	
 	/**
 	 * @see net.fathomsoft.nova.tree.MethodDeclaration#isInstance()
 	 */
