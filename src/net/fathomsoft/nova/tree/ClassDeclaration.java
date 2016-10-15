@@ -495,7 +495,7 @@ public class ClassDeclaration extends InstanceDeclaration
 	 * 
 	 * @return The Interfaces instances that the class implements.
 	 */
-	public Interface[] getImplementedClasses()
+	public Interface[] getImplementedInterfaces()
 	{
 		TypeList<InterfaceImplementation> list = getInterfacesImplementationList();
 		
@@ -519,7 +519,7 @@ public class ClassDeclaration extends InstanceDeclaration
 		
 		for (int i = array.size() - 1; i >= 0; i--)
 		{
-			for (Interface inter : array.get(i).getImplementedClasses())
+			for (Interface inter : array.get(i).getImplementedInterfaces())
 			{
 				array.add(inter);
 			}
@@ -530,7 +530,7 @@ public class ClassDeclaration extends InstanceDeclaration
 	
 	public boolean implementsInterface(ClassDeclaration clazz)
 	{
-		for (Interface i : getImplementedClasses())
+		for (Interface i : getImplementedInterfaces())
 		{
 			if (clazz == i)
 			{
@@ -649,7 +649,7 @@ public class ClassDeclaration extends InstanceDeclaration
 		
 		if (checkInterfaces)
 		{
-			for (ClassDeclaration i : getImplementedClasses())
+			for (ClassDeclaration i : getImplementedInterfaces())
 			{
 				i.addAbstractMethods(methods, checkInterfaces, checkAncestor);
 			}
@@ -693,7 +693,7 @@ public class ClassDeclaration extends InstanceDeclaration
 		
 		if (checkInterfaces)
 		{
-			for (ClassDeclaration i : getImplementedClasses())
+			for (ClassDeclaration i : getImplementedInterfaces())
 			{
 				i.addBodyMethods(methods, checkInterfaces, checkAncestor);
 			}
@@ -737,7 +737,7 @@ public class ClassDeclaration extends InstanceDeclaration
 		
 		if (checkInterfaces)
 		{
-			for (ClassDeclaration i : getImplementedClasses())
+			for (ClassDeclaration i : getImplementedInterfaces())
 			{
 				i.addMethods(methods, checkInterfaces, checkAncestor);
 			}
@@ -1321,7 +1321,7 @@ public class ClassDeclaration extends InstanceDeclaration
 			addMethods(output, getExtendedClassDeclaration().getMethods(methodName, filter));
 		}
 		
-		for (Interface inter : getImplementedClasses())
+		for (Interface inter : getImplementedInterfaces())
 		{
 			addMethods(output, inter.getMethods(methodName, filter));
 		}

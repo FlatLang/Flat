@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 
+import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.error.SyntaxMessage;
@@ -276,17 +277,17 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 		{
 			NovaMethodDeclaration method = (NovaMethodDeclaration)extension.getMethod(getContext(), getName(), filter, getParameterList().getTypes());
 			
-			if (method != null)// && SyntaxUtils.isTypeCompatible(this, method, this))
+			if (method != null && SyntaxUtils.isTypeCompatible(this, method, this))
 			{
 				return method;
 			}
 		}
 		
-		for (Interface inter : getParentClass().getImplementedClasses())
+		for (Interface inter : getParentClass().getImplementedInterfaces())
 		{
 			NovaMethodDeclaration method = (NovaMethodDeclaration)inter.getMethod(getContext(), getName(), filter, getParameterList().getTypes());
 			
-			if (method != null)// && SyntaxUtils.isTypeCompatible(this, method, this))
+			if (method != null && SyntaxUtils.isTypeCompatible(this, method, this))
 			{
 				return method;
 			}

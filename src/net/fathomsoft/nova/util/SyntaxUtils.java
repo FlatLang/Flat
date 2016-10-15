@@ -2207,6 +2207,11 @@ public class SyntaxUtils
 	 */
 	public static boolean isTypeCompatible(GenericCompatible context, Value required, Value given, boolean searchGeneric, int arrayDifference)
 	{
+		if (given instanceof NovaMethodDeclaration && ((NovaMethodDeclaration)given).shorthandAction != null || required instanceof NovaMethodDeclaration && ((NovaMethodDeclaration)required).shorthandAction != null)
+		{
+			return true;
+		}
+		
 		if (given instanceof DefaultArgument)
 		{
 			return true;
@@ -2284,7 +2289,7 @@ public class SyntaxUtils
 		String genType1 = given.isGenericType() ? given.getGenericReturnType() : given.getType();
 		String genType2 = required.isGenericType() ? required.getGenericReturnType() : required.getType();
 		
-		if (genType1 != null && genType1.equals(genType2))
+		if (genType1 != null && genType1.equals(genType2) || genType1 == genType2)
 		{
 			return true;
 		}
