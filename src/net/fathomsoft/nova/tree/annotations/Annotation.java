@@ -30,12 +30,14 @@ public class Annotation extends Node
 	}
 	
 	@Override
-	public void detach()
+	public Node detach()
 	{
 		if (getParent() != null)
 		{
 			getParent().removeAnnotation(this);
 		}
+		
+		return this;
 	}
 	
 	/**
@@ -143,13 +145,16 @@ public class Annotation extends Node
 	@Override
 	public boolean onNextStatementDecoded(Node next)
 	{
-		if (getParent() != null)
+		if (next != null)
 		{
-			getLocationIn().setLineNumber(getLocationIn().getLineNumber() - getParent().getLineNumber());
-		}
-		if (next instanceof Annotation)
-		{
-			next.addAnnotation(this);
+			if (getParent() != null)
+			{
+				getLocationIn().setLineNumber(getLocationIn().getLineNumber() - getParent().getLineNumber());
+			}
+			//if (next instanceof Annotation)
+			{
+				next.addAnnotation(this);
+			}
 		}
 		
 		return super.onNextStatementDecoded(next);
