@@ -172,7 +172,9 @@ public class MethodCallArgumentList extends ArgumentList
 			types.add(child);
 		}
 		
-		for (int i = getFirstArgumentNameIndex(); i < getNumVisibleChildren(); i++)
+		int offset = 0;
+		
+		for (int i = getFirstArgumentNameIndex(); i < getNumVisibleChildren() + offset; i++)
 		{
 			Parameter param = method.getParameterList().getParameter(i);
 			
@@ -186,7 +188,7 @@ public class MethodCallArgumentList extends ArgumentList
 			{
 				types.add(new DefaultArgument(this, Location.INVALID));
 				
-				i--;
+				offset++;
 			}
 		}
 
