@@ -13,6 +13,8 @@ import net.fathomsoft.nova.tree.variables.VariableDeclaration;
 import net.fathomsoft.nova.util.Location;
 import net.fathomsoft.nova.util.StringUtils;
 
+import java.util.Arrays;
+
 public class OverrideAnnotation extends Annotation
 {
 	/**
@@ -68,16 +70,33 @@ public class OverrideAnnotation extends Annotation
 		{
 			Node node = getParent();
 			
-			if (node instanceof NovaMethodDeclaration == false)
+			NovaMethodDeclaration[] methods = new NovaMethodDeclaration[0];
+			
+			if (node instanceof FieldDeclaration)
+			{
+				methods = new NovaMethodDeclaration[] { ((FieldDeclaration)node).getAccessorMethod(), ((FieldDeclaration)node).getMutatorMethod() };
+			}
+			else if (node instanceof NovaMethodDeclaration)
+			{
+				methods = new NovaMethodDeclaration[] { (NovaMethodDeclaration)node };
+			}
+			else
 			{
 				invalidExpression(this, true);
 			}
 			
-			NovaMethodDeclaration method = (NovaMethodDeclaration)node;
-			
-			if (!method.doesOverride())
+			if (Arrays.stream(methods).anyMatch(x -> x != null && !x.doesOverride()))
 			{
-				SyntaxMessage.error("Method " + method + " does not override any other methods", method);
+				methods[0].doesOverride();
+				
+				if (node instanceof FieldDeclaration)
+				{
+					SyntaxMessage.error("Field '" + node + "' does not override any other fields", node);
+				}
+				else
+				{
+					SyntaxMessage.error("Method '" + methods[0] + "' does not override any other methods", methods[0]);
+				}
 			}
 		}
 		
