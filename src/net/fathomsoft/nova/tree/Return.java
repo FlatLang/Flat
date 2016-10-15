@@ -207,7 +207,7 @@ public class Return extends IValue
 			{
 				NovaMethodDeclaration m = ((MethodCall)value.getReturnedNode()).getNovaMethod();
 				
-				if (m != null && m.shorthandAction != null)
+				if (m != null && m.usedShorthandAction)
 				{
 					return value;
 				}
