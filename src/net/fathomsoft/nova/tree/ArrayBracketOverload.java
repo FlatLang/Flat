@@ -1,6 +1,7 @@
 package net.fathomsoft.nova.tree;
 
 import net.fathomsoft.nova.TestContext;
+import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.util.Location;
 import net.fathomsoft.nova.util.StringUtils;
@@ -10,14 +11,42 @@ import net.fathomsoft.nova.util.StringUtils;
  *
  * @author	Braden Steffaniak
  */
-public class ArrayBracketOverload extends IValue
+public class ArrayBracketOverload extends IValue implements ShorthandAccessible
 {
+	private boolean twoWayBinding;
+	
+	private String accessorValue;
+	
 	/**
 	 * @see net.fathomsoft.nova.tree.Node#Node(Node, Location)
 	 */
 	public ArrayBracketOverload(Node temporaryParent, Location locationIn)
 	{
 		super(temporaryParent, locationIn);
+	}
+	
+	@Override
+	public boolean isTwoWayBinding()
+	{
+		return twoWayBinding;
+	}
+	
+	@Override
+	public void setTwoWayBinding(boolean twoWayBinding)
+	{
+		this.twoWayBinding = twoWayBinding;
+	}
+	
+	@Override
+	public String getShorthandAccessor()
+	{
+		return accessorValue;
+	}
+	
+	@Override
+	public void setShorthandAccessor(String shorthand)
+	{
+		this.accessorValue = shorthand;
 	}
 	
 	public LocalDeclaration getIndexValue()
@@ -73,28 +102,107 @@ public class ArrayBracketOverload extends IValue
 			{
 				ArrayBracketOverload n = new ArrayBracketOverload(parent, location);
 				
+				String original = statement;
 				String contents = statement.substring("this[".length(), end).trim();
 				
 				LocalDeclaration indexValue = LocalDeclaration.decodeStatement(n, contents, location.asNew(), require);
 				
 				n.addChild(indexValue);
 				
-				String rest  = statement.substring(end + 1).trim();
+				int index = n.getShorthandAccessorIndex(statement);
 				
-				if (rest.length() > 0 && !rest.startsWith("->"))
+				if (index > 0)
 				{
-					SyntaxMessage.error("Invalid array bracket overload", n);
+					statement = statement.substring(0, index - (n.twoWayBinding ? 1 : 0)).trim();
 				}
 				
-				String type = rest.substring(2).trim();
+				String rest = statement.substring(end + 1).trim();
 				
-				n.setType(type);
+				if (rest.length() > 0)
+				{
+					if (!rest.startsWith("->"))
+					{
+						SyntaxMessage.error("Invalid array bracket overload '" + original + "'", n);
+					}
+					
+					String type = rest.substring(2).trim();
+					
+					n.setType(type);
+				}
 				
 				return n;
 			}
 		}
 		
 		return null;
+	}
+	
+	@Override
+	public boolean containsAccessorMethod()
+	{
+		return getArrayAccessorMethod() != null;
+	}
+	
+	public ArrayAccessorMethod getArrayAccessorMethod()
+	{
+		return getParentClass().getArrayAccessorMethod();
+	}
+	
+	@Override
+	public boolean containsMutatorMethod()
+	{
+		return getArrayMutatorMethod() != null;
+	}
+	
+	public ArrayMutatorMethod getArrayMutatorMethod()
+	{
+		return getParentClass().getArrayMutatorMethod();
+	}
+	
+	@Override
+	public BodyMethodDeclaration decodeAccessor()
+	{
+		ArrayAccessorMethod method = ArrayAccessorMethod.decodeStatement(this, "get", getLocationIn(), true);
+		
+		Value type = SyntaxTree.decodeValue(method, accessorValue, getLocationIn(), true).getReturnedNode();
+		
+		method.setType(type);
+		
+		return method;
+	}
+	
+	@Override
+	public BodyMethodDeclaration decodeMutator()
+	{
+		ArrayMutatorMethod method = ArrayMutatorMethod.decodeStatement(this, "set", getLocationIn(), true);
+		
+		Value type = getArrayAccessorMethod();
+		
+		method.setType(type);
+		method.getParameter(1).setType(type);
+		
+		return method;
+	}
+	
+	/**
+	 * @see net.fathomsoft.nova.tree.variables.VariableDeclaration#validate(int)
+	 */
+	@Override
+	public ValidationResult validate(int phase)
+	{
+		ValidationResult result = super.validate(phase);
+		
+		if (result.skipValidation())
+		{
+			return result;
+		}
+		
+		if (phase == SyntaxTree.PHASE_INSTANCE_DECLARATIONS)
+		{
+			decodeShorthandAccessor();
+		}
+		
+		return result;
 	}
 	
 	/**
