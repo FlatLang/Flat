@@ -23,7 +23,7 @@ import java.util.ArrayList;
  * @since	v0.1 Jan 5, 2014 at 9:12:04 PM
  * @version	v0.2.38 Dec 6, 2014 at 5:19:17 PM
  */
-public class FieldDeclaration extends InstanceDeclaration
+public class FieldDeclaration extends InstanceDeclaration implements ShorthandAccessible
 {
 	private boolean twoWayBinding;
 	
@@ -47,6 +47,29 @@ public class FieldDeclaration extends InstanceDeclaration
 	public boolean isLocal()
 	{
 		return false;
+	}
+	
+	@Override
+	public boolean isTwoWayBinding()
+	{
+		return twoWayBinding;
+	}
+	
+	@Override
+	public void setTwoWayBinding(boolean twoWayBinding)
+	{
+		this.twoWayBinding = twoWayBinding;
+	}
+	
+	public String getShorthandAccessor()
+	{
+		return accessorValue;
+	}
+	
+	@Override
+	public void setShorthandAccessor(String shorthand)
+	{
+		this.accessorValue = shorthand;
 	}
 	
 	@Override
@@ -211,13 +234,10 @@ public class FieldDeclaration extends InstanceDeclaration
 		Bounds localDeclaration = new Bounds(0, statement.length());
 		String declaration = statement;
 		
-		int accessorIndex = n.findAccessorAssignment(statement);
+		int accessorIndex = n.getShorthandAccessorIndex(statement);
 		
 		if (accessorIndex > 0)
 		{
-			n.accessorValue = declaration.substring(accessorIndex + 2).trim();
-			n.twoWayBinding = declaration.substring(accessorIndex - 1, accessorIndex + 2).trim().equals("<=>");
-			
 			declaration = declaration.substring(0, accessorIndex).trim();
 			
 			localDeclaration.setEnd(declaration.length());
@@ -275,11 +295,6 @@ public class FieldDeclaration extends InstanceDeclaration
 				data.localDeclaration.setStart(bounds.getStart());
 			}
 		}
-	}
-	
-	private int findAccessorAssignment(String statement)
-	{
-		return SyntaxUtils.findStringInBaseScope(statement, "=>");
 	}
 	
 	private Bounds findPreAssignment(String statement)
@@ -426,42 +441,8 @@ public class FieldDeclaration extends InstanceDeclaration
 				
 				getParentClass().addFieldInitialization(assignment);
 			}
-			if (accessorValue != null)
-			{
-				if (containsAccessorMethod())
-				{
-					SyntaxMessage.error("Cannot have both an accessor method and shorthand value assignment to a field declaration", this);
-				}
-				
-				AccessorMethod a = AccessorMethod.decodeStatement(this, "get", getLocationIn(), true)
-					.cloneTo(new ShorthandAccessor(this, getLocationIn()));
-				
-				addChild(a);
-				
-				a.addChild(Return.decodeStatement(a, "return " + accessorValue, getLocationIn(), true));
-				
-				if (twoWayBinding)
-				{
-					if (containsMutatorMethod())
-					{
-						SyntaxMessage.error("Cannot have both a mutator method and two-way shorthand value assignment to a field declaration", this);
-					}
-					
-					MutatorMethod m = MutatorMethod.decodeStatement(this, "set", getLocationIn(), true)
-						.cloneTo(new ShorthandMutator(this, getLocationIn()));
-					
-					addChild(m);
-					
-					m.addChild(Assignment.decodeStatement(m, accessorValue + " = value", getLocationIn(), true));
-				}
-				else
-				{
-					if (!containsMutatorMethod())
-					{
-						addChild(MutatorMethod.decodeStatement(this, "no set", getLocationIn(), true));
-					}
-				}
-			}
+			
+			//decodeShorthandAccessor();
 		}
 		else if (phase == SyntaxTree.PHASE_METHOD_CONTENTS)
 		{
