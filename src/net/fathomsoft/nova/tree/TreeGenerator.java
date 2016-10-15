@@ -405,7 +405,7 @@ public class TreeGenerator implements Runnable
 			{
 				Annotation a = (Annotation)node;
 				
-				skipNextStatement = skipNextStatement || (a instanceof TargetAnnotation&& !((TargetAnnotation)a).containsTarget());
+				skipNextStatement = skipNextStatement || (a instanceof TargetAnnotation && !((TargetAnnotation)a).containsTarget());
 				
 				String frag = Annotation.getFragment(statement);
 				
@@ -525,7 +525,11 @@ public class TreeGenerator implements Runnable
 		
 		if (pendingCompletion && (source.charAt(prevCharIndex) + "").equals(GenericTypeArgument.GENERIC_END))
 		{
-			if (GenericTypeArgument.searchGenericType(source, prevCharIndex, true) != null)
+			if (source.substring(prevCharIndex - 1, prevCharIndex + 1).equals("=>"))
+			{
+				
+			}
+			else if (GenericTypeArgument.searchGenericType(source, prevCharIndex, true) != null)
 			{
 				pendingCompletion = false;
 			}
