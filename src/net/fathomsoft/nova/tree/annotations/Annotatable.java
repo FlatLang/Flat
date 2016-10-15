@@ -43,11 +43,6 @@ public interface Annotatable
 			{
 				a.generateNovaInput(builder).append(newLine ? '\n' : " ");
 			}
-			
-			if (newLine)
-			{
-				builder.append('\n');
-			}
 		}
 		
 		return builder;
