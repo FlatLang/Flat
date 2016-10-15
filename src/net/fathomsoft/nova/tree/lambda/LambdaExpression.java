@@ -218,6 +218,7 @@ public class LambdaExpression extends Value
 						method.getScope().id = scopeId;
 						method.isInstance = parentMethod.isInstance();//parentMethod.isStatic();
 						method.objectReference = parentMethod.objectReference; 
+						method.methodCall = call;
 						
 						method.getParentClass().addChild(method);
 
@@ -249,14 +250,20 @@ public class LambdaExpression extends Value
 							methodReference.onAfterDecoded();
 							
 							method.contextDeclaration = declaration;
+							method.closure = methodReference;
 							
 							Node root = parent.getStatementRootNode();
 							
-							Nova.debuggingBreakpoint(root == null);
 							parent.getStatementRootNode();
+							
 							if (root != null)
 							{
 								Node ancestor = root.getAncestorWithScope();
+								
+								while (ancestor.isDecoding())
+								{
+									ancestor = ancestor.getParent().getAncestorWithScope();
+								}
 								
 								ancestor.addChild(declaration);
 								
