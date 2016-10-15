@@ -104,11 +104,6 @@ public abstract class Node implements Listenable, Annotatable
 	@Override
 	public void addAnnotation(Annotation annotation)
 	{
-		if (annotation instanceof TargetAnnotation)
-		{
-			return;
-		}
-		
 		if (annotations == null)
 		{
 			annotations = new ArrayList<>();
@@ -123,10 +118,20 @@ public abstract class Node implements Listenable, Annotatable
 				//a.validate(getProgram().getPhase());
 			}
 		}
+		if (annotation instanceof TargetAnnotation)
+		{
+			return;
+		}
+		
+		if (annotation.getParent() != null && annotation.getParent().annotations != null)
+		{
+			annotation.getParent().annotations.remove(annotation);
+		}
 		
 		annotations.add(annotation);
 		
 		annotation.setTemporaryParent(this);
+		annotation.onAdded(this);
 	}
 	
 	public void removeAnnotation(Annotation annotation)
@@ -896,11 +901,11 @@ public abstract class Node implements Listenable, Annotatable
 	/**
 	 * Detach the specified node from its parent.
 	 */
-	public void detach()
+	public Node detach()
 	{
 		if (parent == null || isDecoding())
 		{
-			return;
+			return this;
 		}
 		
 		Node from = parent;
@@ -910,7 +915,7 @@ public abstract class Node implements Listenable, Annotatable
 			from = parent.getScope();
 		}
 		
-		detach(from);
+		return detach(from);
 	}
 	
 	/**
@@ -918,13 +923,15 @@ public abstract class Node implements Listenable, Annotatable
 	 * 
 	 * @param fromNode The Node to detach the specified Node from.
 	 */
-	private void detach(Node fromNode)
+	private Node detach(Node fromNode)
 	{
 		fromNode.children.remove(this);
 		
 		parent = null;
 		
 		onRemoved(fromNode);
+		
+		return this;
 	}
 	
 	/**
@@ -1750,7 +1757,7 @@ public abstract class Node implements Listenable, Annotatable
 	{
 		Node current = this;
 		
-		while (current != null && (!current.containsScope() || current.isDecoding()))
+		while (current != null && (!current.containsScope()))// || current.isDecoding()))
 		{
 			current = current.getParent();
 		}
