@@ -1,5 +1,6 @@
 package net.fathomsoft.nova.tree.lambda;
 
+import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.tree.*;
@@ -17,9 +18,11 @@ public class LambdaMethodDeclaration extends BodyMethodDeclaration
 
 	public boolean isInstance = false;
 	
+	public Closure closure;
 	public ClosureContext context;
-	
 	public ClosureContextDeclaration contextDeclaration;
+	
+	public MethodCall methodCall;
 	
 	private Scope scope;
 	
@@ -35,7 +38,22 @@ public class LambdaMethodDeclaration extends BodyMethodDeclaration
 		
 		context.id = getFileDeclaration().registerClosureContext(context);
 	}
-
+	
+	public ClosureDeclaration getCorrespondingClosureDeclaration()
+	{
+		if (isDecodingContents())
+		{
+			return (ClosureDeclaration)methodCall.getNovaMethod().getParameter(methodCall.getArgumentList().getNumVisibleChildren());
+		}
+		
+		return (ClosureDeclaration)methodCall.getNovaMethod().getParameter(methodCall.getArgumentList().getVisibleIndex(closure));
+	}
+	
+	public boolean isDecodingContents()
+	{
+		return closure == null;
+	}
+	
 	@Override
 	public boolean isInstance()
 	{
@@ -103,6 +121,14 @@ public class LambdaMethodDeclaration extends BodyMethodDeclaration
 	public LambdaMethodDeclaration cloneTo(LambdaMethodDeclaration node, boolean cloneChildren)
 	{
 		super.cloneTo(node, cloneChildren);
+		
+		node.methodCall = methodCall;
+		node.isInstance = isInstance;
+		node.context = context;
+		node.contextDeclaration = contextDeclaration;
+		node.scope = scope;
+		node.unnamedParameterPosition = unnamedParameterPosition;
+		node.closure = closure;
 		
 		return node;
 	}
