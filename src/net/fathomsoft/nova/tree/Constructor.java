@@ -39,7 +39,7 @@ public class Constructor extends BodyMethodDeclaration
 	}
 	
 	@Override
-	public Value inferShorthandActionType(Value contents)
+	public Value inferShorthandActionType(String action, Value contents)
 	{
 		return contents;
 	}
