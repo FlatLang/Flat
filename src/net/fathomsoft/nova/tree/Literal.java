@@ -203,6 +203,8 @@ public class Literal extends IValue implements Accessible
 		
 		if (literalType != null || parent.isWithinExternalContext())
 		{
+			statement = formatMultilineString(statement);
+			
 			Literal n = new Literal(parent, location);
 			n.setValue(statement);
 			
@@ -212,8 +214,6 @@ public class Literal extends IValue implements Accessible
 				
 				if (literalType.equals("String"))
 				{
-					statement = formatMultilineString(statement);
-					
 					String expression = formatStringExpressions(statement);
 					
 					if (!expression.equals(statement))
