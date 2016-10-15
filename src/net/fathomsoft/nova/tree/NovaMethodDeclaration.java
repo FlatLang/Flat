@@ -13,11 +13,7 @@ import net.fathomsoft.nova.tree.generics.GenericTypeParameter;
 import net.fathomsoft.nova.tree.generics.GenericTypeParameterDeclaration;
 import net.fathomsoft.nova.tree.variables.ObjectReference;
 import net.fathomsoft.nova.tree.variables.VariableDeclaration;
-import net.fathomsoft.nova.util.Bounds;
-import net.fathomsoft.nova.util.Location;
-import net.fathomsoft.nova.util.Patterns;
-import net.fathomsoft.nova.util.StringUtils;
-import net.fathomsoft.nova.util.SyntaxUtils;
+import net.fathomsoft.nova.util.*;
 
 /**
  * Declaration extension that represents the declaration of a method
@@ -30,6 +26,8 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  */
 public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAncestor
 {
+	public boolean usedShorthandAction;
+	
 	public int	uniqueID, overloadID;
 	
 	public String shorthandAction;
@@ -80,6 +78,11 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 	@Override
 	public ObjectReference getObjectReference()
 	{
+		if (objectReference == null && isInstance())
+		{
+			objectReference = new ObjectReference(this);
+		}
+		
 		return objectReference;
 	}
 	
@@ -273,7 +276,7 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 		{
 			NovaMethodDeclaration method = (NovaMethodDeclaration)extension.getMethod(getContext(), getName(), filter, getParameterList().getTypes());
 			
-			if (method != null)
+			if (method != null)// && SyntaxUtils.isTypeCompatible(this, method, this))
 			{
 				return method;
 			}
@@ -283,7 +286,7 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 		{
 			NovaMethodDeclaration method = (NovaMethodDeclaration)inter.getMethod(getContext(), getName(), filter, getParameterList().getTypes());
 			
-			if (method != null)
+			if (method != null)// && SyntaxUtils.isTypeCompatible(this, method, this))
 			{
 				return method;
 			}
@@ -505,7 +508,7 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 		return null;
 	}
 	
-	private void checkOverrides()
+	public void checkOverrides()
 	{
 		NovaMethodDeclaration methodDeclaration = getOverriddenMethod();
 		
@@ -652,6 +655,8 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 			shorthandAction = statement.substring(shorthand + 2).trim();
 			
 			statement = statement.substring(0, shorthand).trim();
+			
+			usedShorthandAction = true;
 		}
 		
 		String signature = findMethodSignature(statement);
@@ -881,28 +886,30 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 	
 	public void decodeShorthandAction()
 	{
-		if (shorthandAction != null)
+		if (shorthandAction != null && getProgram().decodeShorthandActions)
 		{
-			Node contents = SyntaxTree.decodeScopeContents(this, shorthandAction, getLocationIn(), true);
+			String action = shorthandAction;
+			
+			shorthandAction = null;
+			
+			Node contents = SyntaxTree.decodeScopeContents(this, action, getLocationIn(), true);
 			
 			if (contents instanceof Value)
 			{
-				contents = inferShorthandActionType((Value)contents);
+				contents = inferShorthandActionType(action, (Value)contents);
 			}
 			
 			addChild(contents);
 		}
 	}
 	
-	public Value inferShorthandActionType(Value contents)
+	public Value inferShorthandActionType(String action, Value contents)
 	{
-		if (getType() == null)
+		if (getType(false) == null)
 		{
 			Value returned = contents.getReturnedNode();
 			
-			String type = returned.getType() == null ? null : returned.getNovaType();
-			
-			if (type == null)
+			if (returned.getType() == null)
 			{
 				if (returned instanceof MethodCall)
 				{
@@ -916,9 +923,9 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 			}
 			else
 			{
-				setType(type);
+				setType(returned);
 				
-				contents = Return.decodeStatement(this, "return " + shorthandAction, getLocationIn(), true);
+				contents = Return.decodeStatement(this, "return " + action, getLocationIn(), true);
 			}
 		}
 		
@@ -952,8 +959,6 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 			getParameterList().validate(phase);
 			
 			checkOverrides();
-			
-			decodeShorthandAction();
 		}
 		else if (phase == SyntaxTree.PHASE_METHOD_CONTENTS)
 		{
@@ -1019,6 +1024,7 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 		node.overloadID = overloadID;
 		node.uniqueID   = uniqueID;
 		node.shorthandAction = shorthandAction;
+		node.usedShorthandAction = usedShorthandAction;
 		
 		for (NovaMethodDeclaration child : overridingMethods)
 		{
