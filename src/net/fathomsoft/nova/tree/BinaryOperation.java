@@ -323,8 +323,8 @@ public class BinaryOperation extends IValue
 				
 				if (operatorType == null || !operatorType.equals("Bool") || rightClass != null && !rightClass.isOfType(integerClass) && !rightClass.isOfType(integerClass))
 				{
-					lhn.getReturnedNode();
-					rhn.getReturnedNode();
+					lhn.getReturnedNode().getTypeClass();
+					rhn.getReturnedNode().getTypeClass();
 					SyntaxMessage.error("Type '" + lhn.getType() + "' and '" + rhn.getType() + "' are not compatible", this);
 				}
 			}
