@@ -91,11 +91,11 @@ public class OverrideAnnotation extends Annotation
 				
 				if (node instanceof FieldDeclaration)
 				{
-					SyntaxMessage.error("Field '" + node + "' does not override any other fields", node);
+					SyntaxMessage.error("Field '" + node + "' does not override any fields", node);
 				}
 				else
 				{
-					SyntaxMessage.error("Method '" + methods[0] + "' does not override any other methods", methods[0]);
+					SyntaxMessage.error("Method '" + methods[0] + "' does not override any methods", methods[0]);
 				}
 			}
 		}
