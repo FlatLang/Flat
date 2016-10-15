@@ -121,7 +121,7 @@ public class ArrayMutatorMethod extends ArrayOverloadMethod
 		{
 			if (!isDisabled())
 			{
-				Return returnValue = (Return)SyntaxTree.decodeScopeContents(this, "return " + getParameter(0).getName(), getLocationIn());
+				Return returnValue = (Return)SyntaxTree.decodeScopeContents(this, "return " + getParameter(1).getName(), getLocationIn());
 				
 				if (returnValue == null)
 				{
