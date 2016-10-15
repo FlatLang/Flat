@@ -71,13 +71,22 @@ public class PrimitiveArrayAnnotation extends Annotation
 	}
 	
 	@Override
+	public void onAdded(Node parent)
+	{
+		if (parent instanceof Assignment)
+		{
+			((Assignment)parent).getAssignedNode().getDeclaration().addAnnotation(this);
+		}
+		
+		super.onAdded(parent);
+	}
+	
+	@Override
 	public boolean onNextStatementDecoded(Node next)
 	{
-		if (next instanceof Assignment)
-		{
-			((Assignment)next).getAssignedNode().getDeclaration().addAnnotation(this);
-		}
-		else
+		onAdded(next);
+		
+		if (next instanceof Assignment == false)
 		{
 			next.addAnnotation(this);
 		}
