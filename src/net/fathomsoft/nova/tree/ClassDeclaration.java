@@ -1313,6 +1313,11 @@ public class ClassDeclaration extends InstanceDeclaration
 		
 		if (filter.checkAncestor && getExtendedClassDeclaration() != null)
 		{
+			/*if (methodName.equals(getName()) && getConstructorList().getNumVisibleChildren() == 0)
+			{
+				methodName = getExtendedClassName();
+			}*/
+			
 			addMethods(output, getExtendedClassDeclaration().getMethods(methodName, filter));
 		}
 		
@@ -2048,6 +2053,11 @@ public class ClassDeclaration extends InstanceDeclaration
 			return result;
 		}
 		
+		if (arrayBracketOverload != null)
+		{
+			arrayBracketOverload.validate(phase);
+		}
+		
 		if (phase == SyntaxTree.PHASE_CLASS_DECLARATION)
 		{
 			getStaticBlockList().addChild(StaticBlock.generateEmptyBlock(getStaticBlockList(), Location.INVALID));
@@ -2178,6 +2188,29 @@ public class ClassDeclaration extends InstanceDeclaration
 		{
 			addDefaultConstructor();
 		}
+	}
+	
+	public void decodeShorthandActions()
+	{
+		getMethodList().forEachNovaMethod(x -> x.decodeShorthandAction());
+		getConstructorList().forEachNovaMethod(x -> x.decodeShorthandAction());
+		getHiddenMethodList().forEachNovaMethod(x -> x.decodeShorthandAction());
+		getVirtualMethodList().forEachNovaMethod(x -> x.decodeShorthandAction());
+		getPropertyMethodList().forEachNovaMethod(x -> x.decodeShorthandAction());
+		getDestructorList().forEachNovaMethod(x -> x.decodeShorthandAction());
+		
+		getFieldList().forEachChild(fields -> {
+			fields.forEachChild(field -> {
+				((FieldDeclaration)field).decodeShorthandAccessor();
+			});
+		});
+		
+		getMethodList().forEachNovaMethod(x -> x.checkOverrides());
+		getConstructorList().forEachNovaMethod(x -> x.checkOverrides());
+		getHiddenMethodList().forEachNovaMethod(x -> x.checkOverrides());
+		getVirtualMethodList().forEachNovaMethod(x -> x.checkOverrides());
+		getPropertyMethodList().forEachNovaMethod(x -> x.checkOverrides());
+		getDestructorList().forEachNovaMethod(x -> x.checkOverrides());
 	}
 	
 	public void addDefaultConstructor()
