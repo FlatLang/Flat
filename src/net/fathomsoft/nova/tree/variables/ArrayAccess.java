@@ -1,5 +1,6 @@
 package net.fathomsoft.nova.tree.variables;
 
+import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.tree.*;
@@ -95,7 +96,14 @@ public class ArrayAccess extends Node implements ArrayCompatible
 				
 				if (!((Value)parent).getReturnedNode().isPrimitiveArray())
 				{
-					MethodCall call = MethodCall.decodeStatement(((Value)parent).getReturnedNode(), "get(" + data + ")", location, require, false, ((Value)parent).getReturnedNode().getTypeClass(false).getArrayAccessorMethod());
+					ClassDeclaration clazz = ((Value)parent).getReturnedNode().getTypeClass(false);
+					
+					if (!clazz.containsArrayBracketOverload())
+					{
+						SyntaxMessage.error("Type '" + clazz.getName() + "' does not implement array brackets", n);
+					}
+					
+					MethodCall call = MethodCall.decodeStatement(((Value)parent).getReturnedNode(), "get(" + data + ")", location, require, false, clazz.getArrayAccessorMethod());
 					
 					if (overloadCall == null)
 					{
