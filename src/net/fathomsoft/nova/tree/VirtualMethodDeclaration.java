@@ -27,6 +27,12 @@ public class VirtualMethodDeclaration extends BodyMethodDeclaration
 	}
 	
 	@Override
+	public void moveShorthandActionToEnd()
+	{
+		
+	}
+	
+	@Override
 	public VirtualMethodDeclaration getVirtualMethod()
 	{
 		return this;
