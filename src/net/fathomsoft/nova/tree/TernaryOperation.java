@@ -115,7 +115,7 @@ public class TernaryOperation extends IValue implements Accessible
 			
 			Value falseValue = SyntaxTree.decodeValue(parent, falseValueString, location, require);
 			
-			if (falseValue == null)
+			if (trueValue == null || falseValue == null)
 			{
 				SyntaxMessage.queryError("Unable to decode ternary operation false value '" + conditionString + "'", n, require);
 				
