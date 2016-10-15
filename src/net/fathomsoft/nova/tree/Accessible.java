@@ -815,7 +815,11 @@ public interface Accessible
 				}
 			}
 			
-			if (id.isDecodingAccessedNode(n) || id.getAccessedNode() == this)
+			if (id instanceof TernaryOperation && ((TernaryOperation) id).isDecoding())
+			{
+				
+			}
+			else if (id.isDecodingAccessedNode(n) || id.getAccessedNode() == this)
 			{
 				return id;
 			}
