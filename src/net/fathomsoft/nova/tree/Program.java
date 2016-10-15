@@ -21,6 +21,8 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  */
 public class Program extends TypeList<FileDeclaration>
 {
+	public boolean decodeShorthandActions;
+	
 	private SyntaxTree tree;
 	
 	private Nova       controller;
