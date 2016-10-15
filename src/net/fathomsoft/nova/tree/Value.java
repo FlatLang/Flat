@@ -7,6 +7,7 @@ import net.fathomsoft.nova.tree.generics.GenericTypeArgument;
 import net.fathomsoft.nova.tree.generics.GenericTypeArgumentList;
 import net.fathomsoft.nova.tree.generics.GenericTypeParameter;
 import net.fathomsoft.nova.tree.generics.GenericTypeParameterDeclaration;
+import net.fathomsoft.nova.tree.lambda.LambdaMethodDeclaration;
 import net.fathomsoft.nova.tree.variables.*;
 import net.fathomsoft.nova.util.Location;
 import net.fathomsoft.nova.util.SyntaxUtils;
@@ -629,6 +630,22 @@ public abstract class Value extends Node implements AbstractValue
 		}
 		else if (this instanceof LocalDeclaration)
 		{
+			if (this instanceof Parameter && getParentMethod() instanceof LambdaMethodDeclaration)
+			{
+				LambdaMethodDeclaration lambda = (LambdaMethodDeclaration)getParentMethod();
+				
+				if (lambda.getParameterList().getVisibleIndex(this) >= 0)
+				{
+					Value corresponding = lambda.getCorrespondingClosureDeclaration().getParameterList().getParameter(lambda.getParameterList().getVisibleIndex(this));
+					
+					if (corresponding.isGenericType())
+					{
+						return getFileDeclaration();
+					}
+					
+					return lambda.methodCall.getDeclaringClass().getFileDeclaration();
+				}
+			}
 			if (this instanceof VirtualLocalDeclaration)
 			{
 				return ((VirtualLocalDeclaration)this).getReference().getReturnedNode().getTypeClass().getFileDeclaration();
@@ -1074,7 +1091,7 @@ public abstract class Value extends Node implements AbstractValue
 	public void setType(Value value)
 	{
 		setArrayDimensions(value.getArrayDimensions());
-		setTypeValue(value.getType());
+		setTypeValue(SyntaxUtils.getPrimitiveNovaType(value.getType()));
 		setDataType(value.getDataType());
 		
 		GenericTypeArgumentList args = value.getGenericTypeArgumentList();
