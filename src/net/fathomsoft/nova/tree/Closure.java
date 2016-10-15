@@ -5,6 +5,7 @@ import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.tree.MethodList.SearchFilter;
 import net.fathomsoft.nova.tree.generics.GenericTypeArgument;
+import net.fathomsoft.nova.tree.generics.GenericTypeParameter;
 import net.fathomsoft.nova.tree.lambda.LambdaMethodDeclaration;
 import net.fathomsoft.nova.tree.variables.Variable;
 import net.fathomsoft.nova.util.Location;
@@ -383,16 +384,21 @@ public class Closure extends Variable
 				{
 					GenericCompatible context = getMethodCall().getReferenceNode().getContext();
 					
-					GenericTypeArgument arg = ((Value)context).getTypeClass().getGenericTypeParameter(value1.getType(), context).getCorrespondingArgument(context);
+					GenericTypeParameter param = ((Value)context).getTypeClass().getGenericTypeParameter(value1.getType(), context);
 					
-					SyntaxMessage.queryError("Unable to find generic argument", this, arg == null);
-					
-					valid = arg.getTypeClass().isOfType(value2.getTypeClass());
+					if (param != null)
+					{
+						GenericTypeArgument arg = param.getCorrespondingArgument(context);
+						
+						SyntaxMessage.queryError("Unable to find generic argument", this, arg == null);
+						
+						valid = arg.getTypeClass().isOfType(value2.getTypeClass());
+					}
 				}
 				
 				if (!valid)
 				{
-					SyntaxMessage.error("Argument " + (i + 1) + " of the method '" + method.getName() + "()' of type '" + value2.getType() + "' is not compatible for required closure type of '" + value1.getType() + "'", this);
+					SyntaxMessage.error("Argument " + (i + 1) + " of the method '" + method.getName() + "()' of type '" + value2.getType() + "' is not compatible for required closure type of '" + value1.getType() + "'", this, false);
 				}
 			}
 		}
