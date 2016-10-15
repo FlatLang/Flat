@@ -2,6 +2,7 @@ package net.fathomsoft.nova.tree;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.regex.Matcher;
 
 import net.fathomsoft.nova.Nova;
@@ -266,6 +267,13 @@ public class SyntaxTree
 		}
 		
 		validateNodes(root);
+		
+		if (phase == PHASE_INSTANCE_DECLARATIONS)
+		{
+			root.decodeShorthandActions = true;
+			
+			root.forEachVisibleListChild(file -> Arrays.stream(file.getClassDeclarations()).forEach(c -> c.decodeShorthandActions()));
+		}
 	}
 	
 	/**
