@@ -2,6 +2,7 @@ package net.fathomsoft.nova.tree;
 
 import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.TestContext;
+import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.util.Location;
 
 /**
@@ -27,6 +28,17 @@ public class BodyMethodDeclaration extends NovaMethodDeclaration
 		Scope scope = new Scope(this, locationIn.asNew());
 		
 		setScope(scope);
+	}
+	
+	@Override
+	public String getType(boolean checkCast)
+	{
+		if (super.getType(checkCast) == null && shorthandAction != null)
+		{
+			decodeShorthandAction();
+		}
+		
+		return super.getType(checkCast);
 	}
 	
 	/**
@@ -132,6 +144,32 @@ public class BodyMethodDeclaration extends NovaMethodDeclaration
 		c.addChild(method);
 		
 		return method;
+	}
+	
+	public void moveShorthandActionToEnd()
+	{
+		if (usedShorthandAction)
+		{
+			getScope().addChild(getScope().getVisibleChild(0).detach());
+		}
+	}
+	
+	@Override
+	public ValidationResult validate(int phase)
+	{
+		ValidationResult result = super.validate(phase);
+		
+		if (result.skipValidation())
+		{
+			return result;
+		}
+		
+		if (phase == SyntaxTree.PHASE_METHOD_CONTENTS)
+		{
+			moveShorthandActionToEnd();
+		}
+		
+		return result;
 	}
 	
 	/**
