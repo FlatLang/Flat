@@ -141,6 +141,18 @@ public class GenericTypeParameter extends IValue
 	{
 		if (isGenericType())
 		{
+			if (context instanceof MethodCall)
+			{
+				GenericTypeArgumentList args = ((MethodCall)context).getMethodGenericTypeArgumentList();
+				
+				if (args.getNumVisibleChildren() > getIndex())
+				{
+					GenericTypeArgument arg = args.getVisibleChild(getIndex());
+					
+					return arg.getNovaType();
+				}
+			}
+			
 			return getDefaultType();
 		}
 		
