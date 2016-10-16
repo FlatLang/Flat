@@ -1,9 +1,9 @@
 package net.fathomsoft.nova.tree;
 
-import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.tree.generics.GenericTypeArgumentList;
+import net.fathomsoft.nova.tree.variables.Variable;
 import net.fathomsoft.nova.util.Location;
 import net.fathomsoft.nova.util.SyntaxUtils;
 
@@ -112,18 +112,21 @@ public class TernaryOperation extends IValue implements Accessible
 			}
 			else // elvis operator
 			{
-				conditionString = condition.generateNovaInput() + " != null";
+				Variable local = parent.getNearsetScopeAncestor().getScope().createLocalVariable(condition);
 				
-				trueValue = condition;
+				BinaryOperation nullCheck = BinaryOperation.generateDefault(condition.getParent(), condition.getLocationIn());
 				
-				condition = SyntaxTree.decodeValue(parent, conditionString, location, require);
+				Assignment assignment = Assignment.generateDefault(condition.getParent(), condition.getLocationIn());
+				assignment.getAssigneeNodes().addChild(local);
+				assignment.addChild(condition);
 				
-				if (condition == null)
-				{
-					SyntaxMessage.queryError("Unable to decode elvis operation condition '" + conditionString + "'", n, require);
-					
-					return null;
-				}
+				nullCheck.getLeftOperand().replaceWith(Priority.generateFrom(assignment));
+				nullCheck.getOperator().setOperator("!=");
+				nullCheck.getRightOperand().replaceWith(Literal.decodeStatement(parent, "null", condition.getLocationIn(), true));
+				
+				trueValue = local.getDeclaration().generateUsableVariable(n, condition.getLocationIn());
+				
+				condition = nullCheck;
 			}
 			
 			String falseValueString = statement.substring(colonIndex + 1).trim();
