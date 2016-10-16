@@ -1,5 +1,6 @@
 package net.fathomsoft.nova.tree;
 
+import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.tree.generics.GenericTypeArgumentList;
@@ -126,7 +127,20 @@ public class TernaryOperation extends IValue implements Accessible
 			n.addChild(trueValue);
 			n.addChild(falseValue);
 			
-			ClassDeclaration commonClass = trueValue.getReturnedNode().getTypeClass().getCommonAncestor(falseValue.getReturnedNode().getTypeClass());
+			ClassDeclaration commonClass = null;
+			
+			if (Literal.isNullLiteral(trueValue))
+			{
+				commonClass = falseValue.getReturnedNode().getTypeClass();
+			}
+			else if (Literal.isNullLiteral(falseValue))
+			{
+				commonClass = trueValue.getReturnedNode().getTypeClass();
+			}
+			else
+			{
+				commonClass = trueValue.getReturnedNode().getTypeClass().getCommonAncestor(falseValue.getReturnedNode().getTypeClass());
+			}
 			
 			n.setType(trueValue.getReturnedNode()); // Set the array type data and stuff like that
 			n.setTypeValue(commonClass.getType()); // Set the actual class type to the common class
