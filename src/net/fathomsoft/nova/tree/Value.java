@@ -1097,7 +1097,7 @@ public abstract class Value extends Node implements AbstractValue
 		GenericTypeArgumentList args = value.getGenericTypeArgumentList();
 		GenericTypeArgumentList thisArgs = getGenericTypeArgumentList();
 		
-		if (args != null)
+		if (args != null && thisArgs != null)
 		{
 			for (int i = 0; i < args.getNumVisibleChildren(); i++)
 			{
