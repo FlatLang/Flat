@@ -218,6 +218,18 @@ public class ParameterList<E extends Value> extends TypeList<E>
 		return -1;
 	}
 	
+	public int[] getDistancesFrom(ParameterList other)
+	{
+		int[] distances = new int[Math.min(getNumParameters(), other.getNumParameters())];
+		
+		for (int i = 0; i < distances.length; i++)
+		{
+			distances[i] = getParameter(i).getTypeClass().getDistanceFrom(other.getParameter(i).getTypeClass());
+		}
+		
+		return distances;
+	}
+	
 	/**
 	 * Get the types that the parameter list contains.
 	 * 
