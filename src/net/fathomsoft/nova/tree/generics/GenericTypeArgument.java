@@ -3,10 +3,7 @@ package net.fathomsoft.nova.tree.generics;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.error.UnimplementedOperationException;
 import net.fathomsoft.nova.tree.*;
-import net.fathomsoft.nova.tree.variables.VariableDeclaration;
 import net.fathomsoft.nova.util.Location;
-
-import java.lang.reflect.Method;
 
 /**
  * {@link IValue} extension that represents a generic type implementation.
@@ -57,7 +54,20 @@ public class GenericTypeArgument extends IValue implements GenericCompatible
 	{
 		List implementation = null;
 		
-		//if (getParent() instanceof List)
+		if (getParent() instanceof ClosureParameterList)
+		{
+			String type = getType(false);
+			
+			int index = getParentMethod().getMethodGenericTypeParameterDeclaration().getParameterIndex(type);
+			
+			if (index < 0) 
+			{
+				index = getParentClass().getGenericTypeParameterDeclaration().getParameterIndex(type);
+			}
+			
+			return index;
+		}
+		else
 		{
 			implementation = (List)getParent();//getGenericTypeArgumentList();
 		}
@@ -93,7 +103,7 @@ public class GenericTypeArgument extends IValue implements GenericCompatible
 	
 	/**
 	 * Get the default type that this generic type extends.
-	 * @see net.fathomsoft.nova.tree.generics.GenericParameter#getDefaultType()
+	 * @see net.fathomsoft.nova.tree.generics.GenericTypeParameter#getDefaultType()
 	 * 
 	 * @return The type that the generic type extends by default.
 	 */
