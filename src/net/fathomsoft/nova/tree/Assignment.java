@@ -131,7 +131,13 @@ public class Assignment extends Value
 	@Override
 	public String getType(boolean checkCast)
 	{
-		return getAssignmentNode().getType(checkCast);
+		return getAssignmentNode().getReturnedNode().getType(checkCast);
+	}
+	
+	@Override
+	public Value getNovaTypeValue(Value context)
+	{
+		return getAssignmentNode().getReturnedNode().getNovaTypeValue(getAssignmentNode().getReturnedNode());
 	}
 	
 	@Override
@@ -190,6 +196,15 @@ public class Assignment extends Value
 	public StringBuilder generateNovaInput(StringBuilder builder, boolean outputChildren)
 	{
 		return getAssigneeNode().generateNovaInput(builder, outputChildren).append(" = ").append(getAssignmentNode().generateNovaInput(outputChildren));
+	}
+	
+	public static Assignment generateDefault(Node parent, Location location)
+	{
+		Assignment n = new Assignment(parent, location);
+		
+		
+		
+		return n;
 	}
 	
 	/**
@@ -597,6 +612,8 @@ public class Assignment extends Value
 							String text = field.getName() + "(" + getAssignmentNode().generateNovaInput() + ")";
 							
 							MethodCall call = MethodCall.decodeStatement(getParent(), text, getLocationIn(), true, false, mutator);
+							
+							call.getArgumentList().getVisibleChild(0).replaceWith(getAssignmentNode());
 							
 							if (getAssignedNode().isAccessed())
 							{
