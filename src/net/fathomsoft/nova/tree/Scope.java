@@ -145,6 +145,7 @@ public class Scope extends Node
 	
 	public Variable registerLocalVariable(Value virtual, Node addBefore, boolean require)
 	{
+		// make non circular references
 		if (virtual instanceof Accessible)
 		{
 			Accessible accessible = (Accessible)virtual;
@@ -205,6 +206,18 @@ public class Scope extends Node
 		addBefore.getParent().addChildBefore(addBefore, assign);
 		
 		return (Variable)var.clone(this, getLocationIn());
+	}
+	
+	public Variable createLocalVariable(Value type)
+	{
+		LocalDeclaration decl = new LocalDeclaration(type.getParent(), type.getLocationIn());
+		
+		decl.setName("nova_local_" + getParentMethod().getScope().localVariableID++);
+		decl.setType(type.getReturnedNode().getNovaTypeValue(type.getReturnedNode()));
+		
+		addChild(decl);
+		
+		return decl.generateUsableVariable(type.getParent(), type.getLocationIn());
 	}
 	
 	/**
