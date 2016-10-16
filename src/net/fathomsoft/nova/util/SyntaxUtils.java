@@ -107,9 +107,14 @@ public class SyntaxUtils
 	 */
 	public static boolean arePrimitiveTypesCompatible(String required, String given)
 	{
+		return getPrimitiveDistance(required, given) >= 0;
+	}
+	
+	public static int getPrimitiveDistance(String required, String given)
+	{
 		if (required == null || given == null)
 		{
-			return false;
+			return -1;
 		}
 		
 		int rank1 = getPrimitiveRank(required);
@@ -117,10 +122,10 @@ public class SyntaxUtils
 		
 		if (rank1 <= 0 || rank2 <= 0)
 		{
-			return false;
+			return -1;
 		}
 		
-		return rank1 >= rank2;
+		return rank1 - rank2;
 	}
 	
 	/**
