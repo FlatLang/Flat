@@ -5,6 +5,7 @@ import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.tree.generics.GenericTypeArgumentList;
 import net.fathomsoft.nova.tree.variables.Variable;
 import net.fathomsoft.nova.util.Location;
+import net.fathomsoft.nova.util.StringUtils;
 import net.fathomsoft.nova.util.SyntaxUtils;
 
 /**
@@ -84,6 +85,14 @@ public class TernaryOperation extends IValue implements Accessible
 	public static TernaryOperation decodeStatement(Node parent, String statement, Location location, boolean require)
 	{
 		int questionMarkIndex = SyntaxUtils.findCharInBaseScope(statement, '?');
+		
+		int next = StringUtils.findNextNonWhitespaceIndex(statement, questionMarkIndex + 1);
+		
+		while (next > 0 && statement.charAt(next) == '.')
+		{
+			questionMarkIndex = SyntaxUtils.findCharInBaseScope(statement, '?', next + 1);
+			next = StringUtils.findNextNonWhitespaceIndex(statement, questionMarkIndex + 1);
+		}
 		
 		if (questionMarkIndex > 0)
 		{
