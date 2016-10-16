@@ -541,6 +541,41 @@ public class ClassDeclaration extends InstanceDeclaration
 		return false;
 	}
 	
+	public int getDistanceFrom(ClassDeclaration node)
+	{
+		if (node == null)
+		{
+			return -1;
+		}
+		
+		int distance = 0;
+		
+		ClassDeclaration clazz = this;
+		
+		if (SyntaxUtils.arePrimitiveTypesCompatible(node.getType(), getType()))
+		{
+			return SyntaxUtils.getPrimitiveDistance(node.getType(), getType());
+		}
+		
+		while (clazz != null)
+		{
+			if (clazz == node || clazz.implementsInterface(node))
+			{
+				return distance;
+			}
+			
+			clazz = clazz.getExtendedClassDeclaration();
+			distance++;
+		}
+		
+		if (node.getClassLocation().equals("nova/Object"))
+		{
+			return distance;
+		}
+		
+		return -1;
+	}
+	
 	public boolean isOfType(String classLocation)
 	{
 		return isOfType(getProgram().getClassDeclaration(classLocation));
@@ -557,33 +592,7 @@ public class ClassDeclaration extends InstanceDeclaration
 	 */
 	public boolean isOfType(ClassDeclaration node)
 	{
-		if (node == null)
-		{
-			return false;
-		}
-		else if (node.getClassLocation().equals("nova/Object"))
-		{
-			return true;
-		}
-		
-		ClassDeclaration clazz = this;
-		
-		while (clazz != null)
-		{
-			if (clazz == node || clazz.implementsInterface(node))
-			{
-				return true;
-			}
-			
-			clazz = clazz.getExtendedClassDeclaration();
-		}
-		
-		if (SyntaxUtils.arePrimitiveTypesCompatible(node.getType(), getType()))
-		{
-			return true;
-		}
-		
-		return false;
+		return getDistanceFrom(node) >= 0;
 	}
 	
 	public boolean doesOverrideMethod(NovaMethodDeclaration method)
