@@ -87,7 +87,7 @@ public class OverrideAnnotation extends Annotation
 			
 			if (Arrays.stream(methods).anyMatch(x -> x != null && !x.doesOverride()))
 			{
-				methods[0].doesOverride();
+				Arrays.stream(methods).anyMatch(x -> x != null && !x.doesOverride());
 				
 				if (node instanceof FieldDeclaration)
 				{
