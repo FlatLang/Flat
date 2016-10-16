@@ -768,10 +768,12 @@ public class BinaryOperation extends IValue
 					}
 				}
 
-				String statement = left.generateNovaInput() + ".concat(" + right.generateNovaInput() + ")";
-				Value strConcat = (Value)SyntaxTree.decodeScopeContents(getParent(), statement, left.getLocationIn(), false);
-
-				return strConcat;
+				MethodCall concat = MethodCall.decodeStatement(left.getReturnedNode(), "concat(null)", Location.INVALID, true);
+				
+				((Accessible)left.getReturnedNode()).setAccessedNode(concat);
+				concat.getArgumentList().getVisibleChild(0).replaceWith(right);
+				
+				return left;
 			}
 		}
 		else if (getOperator().getOperator().equals("+="))
@@ -810,28 +812,27 @@ public class BinaryOperation extends IValue
 	 */
 	private Value generateStringOutput(Value nonString)
 	{
-		Value old = nonString;
 		Value ret = nonString.getReturnedNode();
-		
-		String methodCall = null;
 		
 		if (ret.isPrimitiveType())
 		{
-			methodCall = ret.getTypeClassName() + ".toString(" + nonString.generateNovaInput() + ")";
+			StaticClassReference ref = StaticClassReference.decodeStatement(nonString.getParent(), ret.getTypeClassName(), nonString.getLocationIn(), true);
+			
+			MethodCall toString = MethodCall.decodeStatement(ref, "toString(" + nonString.generateNovaInput() + ")", nonString.getLocationIn(), true);
+			ref.setAccessedNode(toString);
+			
+			toString.getArgumentList().getVisibleChild(0).replaceWith(nonString);
+			
+			return ref;
 		}
 		else
 		{
-			// TODO: Can optimize to simply add a .toString() MethodCall child.
-			methodCall = nonString.generateNovaInput() + ".toString()";
+			MethodCall toString = MethodCall.decodeStatement(nonString, "toString()", nonString.getLocationIn(), true);
+			
+			((Accessible)nonString).setAccessedNode(toString);
+			
+			return nonString;
 		}
-		
-		Location location = new Location(nonString.getLocationIn());
-		
-		nonString = (Value)SyntaxTree.decodeScopeContents(getParent(), methodCall, location, false);
-		
-		replace(old, nonString);
-		
-		return nonString;
 	}
 	
 	/**
