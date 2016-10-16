@@ -499,7 +499,7 @@ public abstract class Node implements Listenable, Annotatable
 		return node;
 	}
 	
-	public Node getNearsetScopeAncestor()
+	public Node getNearestScopeAncestor()
 	{
 		Node ancestor = getAncestorWithScope();
 		

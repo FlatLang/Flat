@@ -112,7 +112,7 @@ public class TernaryOperation extends IValue implements Accessible
 			}
 			else // elvis operator
 			{
-				Variable local = parent.getNearsetScopeAncestor().getScope().createLocalVariable(condition);
+				Variable local = parent.getNearestScopeAncestor().getScope().createLocalVariable(condition);
 				
 				BinaryOperation nullCheck = BinaryOperation.generateDefault(condition.getParent(), condition.getLocationIn());
 				

@@ -2,16 +2,12 @@ package net.fathomsoft.nova.tree.lambda;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.stream.Collectors;
 
-import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.tree.*;
-import net.fathomsoft.nova.tree.generics.GenericTypeArgument;
 import net.fathomsoft.nova.util.Location;
 import net.fathomsoft.nova.util.StringUtils;
-import net.fathomsoft.nova.util.SyntaxUtils;
 
 /**
  * {@link Node} extension that represents a lambda expression.
@@ -283,7 +279,7 @@ public class LambdaExpression extends Value
 							
 							if (root != null)
 							{
-								root.getNearsetScopeAncestor().addChild(declaration);
+								root.getNearestScopeAncestor().addChild(declaration);
 								
 								return methodReference;
 							}
