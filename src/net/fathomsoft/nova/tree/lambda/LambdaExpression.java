@@ -161,12 +161,29 @@ public class LambdaExpression extends Value
 				
 				NovaMethodDeclaration[] validMethods = tempMethods.toArray(new NovaMethodDeclaration[0]);
 				
-				for (NovaMethodDeclaration method : validMethods)
+				int maxD = 0;
+				int maxI = 0;
+				
+				for (int i = 0; i < validMethods.length; i++)
 				{
-					call.setDeclaration(method);
-					
-					
+					for (int j = 0; j < validMethods.length; j++)
+					{
+						if (i != j)
+						{
+							int[] distances = validMethods[i].getDistancesFrom(validMethods[j].getParameterList());
+							
+							int distance = Arrays.stream(distances).sum();
+							
+							if (distance > maxD)
+							{
+								maxI = i;
+								maxD = distance;
+							}
+						}
+					}
 				}
+				
+				call.setDeclaration(validMethods[maxI]);
 				
 				if (validMethods.length > 0)
 				{
@@ -202,7 +219,7 @@ public class LambdaExpression extends Value
 					
 					if (closure.getType() != null)
 					{
-						methodDeclaration += " -> " + closure.getNovaTypeValue(call).getNovaType();
+						methodDeclaration += " -> " + closure.getNovaTypeValue(call).getNovaType(call);
 					}
 					
 					BodyMethodDeclaration bodyMethod = BodyMethodDeclaration.decodeStatement(parent.getParentClass(true), methodDeclaration, location.asNew(), require);
@@ -242,6 +259,14 @@ public class LambdaExpression extends Value
 						}
 						
 						ClosureContextDeclaration declaration = new ClosureContextDeclaration(parent, location, method.context);
+						
+						if (method.getScope().getLastChild() instanceof Return)
+						{
+							if (call.isGenericType())
+							{
+								method.setType(((Return)method.getScope().getLastChild()).getReturnedNode());
+							}
+						}
 						
 						Closure methodReference = Closure.decodeStatement(parent, method.generateNovaClosureReference(method.getParentClass()), location.asNew(), require);
 						
