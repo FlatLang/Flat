@@ -283,14 +283,7 @@ public class LambdaExpression extends Value
 							
 							if (root != null)
 							{
-								Node ancestor = root.getAncestorWithScope();
-								
-								while (ancestor.isDecoding())
-								{
-									ancestor = ancestor.getParent().getAncestorWithScope();
-								}
-								
-								ancestor.addChild(declaration);
+								root.getNearsetScopeAncestor().addChild(declaration);
 								
 								return methodReference;
 							}
