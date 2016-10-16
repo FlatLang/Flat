@@ -943,7 +943,6 @@ public class SyntaxTree
 	
 	public static Accessible decodeIdentifierAccess(Node parent, String statement, Location location, boolean require, boolean validateAccess, boolean requireDot)
 	{
-		Nova.debuggingBreakpoint(statement.contains("annotations?.reverse()"));
 		Accessible root = null;
 		Accessible node = null;
 		
