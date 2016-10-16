@@ -16,12 +16,26 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  */
 public abstract class Identifier extends Value implements Accessible
 {
+	public boolean safeNavigation;
+	
 	/**
 	 * @see net.fathomsoft.nova.tree.Node#Node(Node, Location)
 	 */
 	public Identifier(Node temporaryParent, Location locationIn)
 	{
 		super(temporaryParent, locationIn);
+	}
+	
+	@Override
+	public boolean isSafeNavigation()
+	{
+		return safeNavigation;
+	}
+	
+	@Override
+	public void setSafeNavigation(boolean safeNavigation)
+	{
+		this.safeNavigation = safeNavigation;
 	}
 	
 	/**

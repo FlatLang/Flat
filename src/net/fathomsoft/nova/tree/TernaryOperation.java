@@ -14,6 +14,8 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  */
 public class TernaryOperation extends IValue implements Accessible
 {
+	public boolean safeNavigation;
+	
 	/**
 	 * @see net.fathomsoft.nova.tree.Node#Node(Node, Location)
 	 */
@@ -48,7 +50,19 @@ public class TernaryOperation extends IValue implements Accessible
 	{
 		return getFalseValue().getGenericTypeArgumentList();
 	}
-
+	
+	@Override
+	public boolean isSafeNavigation()
+	{
+		return safeNavigation;
+	}
+	
+	@Override
+	public void setSafeNavigation(boolean safeNavigation)
+	{
+		this.safeNavigation = safeNavigation;
+	}
+	
 	/**
 	 * Decode the given statement into a {@link TernaryOperation} instance, if
 	 * possible. If it is not possible, this method returns null.<br>

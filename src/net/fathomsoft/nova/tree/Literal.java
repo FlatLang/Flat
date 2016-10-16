@@ -17,6 +17,8 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  */
 public class Literal extends IValue implements Accessible
 {
+	public boolean safeNavigation;
+	
 	public String	value;
 	
 	public static final String	NULL_IDENTIFIER     = "null";
@@ -33,6 +35,18 @@ public class Literal extends IValue implements Accessible
 	public Literal(Node temporaryParent, Location locationIn)
 	{
 		super(temporaryParent, locationIn);
+	}
+	
+	@Override
+	public boolean isSafeNavigation()
+	{
+		return safeNavigation;
+	}
+	
+	@Override
+	public void setSafeNavigation(boolean safeNavigation)
+	{
+		this.safeNavigation = safeNavigation;
 	}
 	
 	@Override

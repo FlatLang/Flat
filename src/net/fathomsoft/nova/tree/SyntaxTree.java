@@ -943,11 +943,15 @@ public class SyntaxTree
 	
 	public static Accessible decodeIdentifierAccess(Node parent, String statement, Location location, boolean require, boolean validateAccess, boolean requireDot)
 	{
+		Nova.debuggingBreakpoint(statement.contains("annotations?.reverse()"));
 		Accessible root = null;
 		Accessible node = null;
 		
+		boolean safeNavigation = false;
 		int offset = 0;
 		int index  = SyntaxUtils.findDotOperator(statement);
+		
+		safeNavigation = index > 0 && statement.charAt(index - 1) == '?';
 		
 		if (requireDot && index < 0)
 		{
@@ -961,6 +965,11 @@ public class SyntaxTree
 			if (current.length() == 0)
 			{
 				return null;
+			}
+			
+			if (safeNavigation)
+			{
+				current = current.substring(0, current.length() - 1);
 			}
 			
 			node = decodeAccessible(parent, current, location, require, validateAccess);
@@ -977,6 +986,11 @@ public class SyntaxTree
 				currentLoc.setLineNumber(location.getLineNumber());
 				
 				syntaxError(current, parent, currentLoc);
+			}
+			
+			if (safeNavigation)
+			{
+				node.setSafeNavigation(true);
 			}
 			
 			if (root == null)
@@ -1008,6 +1022,8 @@ public class SyntaxTree
 			{
 				current = statement.substring(offset, statement.length());
 			}
+			
+			safeNavigation = index > 0 && statement.charAt(index - 1) == '?';
 		}
 		
 		// Should never reach here...

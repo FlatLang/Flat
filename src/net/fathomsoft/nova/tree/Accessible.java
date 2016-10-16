@@ -21,6 +21,9 @@ public interface Accessible
 	
 	public GenericCompatible getContext();
 	
+	public boolean isSafeNavigation();
+	public void setSafeNavigation(boolean safeNavigation);
+	
 	default GenericCompatible getReferenceContext()
 	{
 		return (GenericCompatible)getReferenceNode();
