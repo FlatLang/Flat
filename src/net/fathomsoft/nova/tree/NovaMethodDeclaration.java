@@ -63,6 +63,11 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 		addChild(methodParams, this);
 	}
 	
+	public int[] getDistancesFrom(ParameterList other)
+	{
+		return getParameterList().getDistancesFrom(other);
+	}
+	
 	public boolean isSuperCallFrom(ClassDeclaration clazz)
 	{
 		if (clazz.getExtendedClassDeclaration() == getDeclaringClass())
@@ -924,9 +929,12 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 			}
 			else
 			{
-				setType(returned);
+				setType(returned.getNovaTypeValue(returned));
 				
-				contents = Return.decodeStatement(this, "return " + action, getLocationIn(), true);
+				Return r = new Return(this, getLocationIn());
+				r.getReturnValues().addChild(contents);
+				
+				contents = r;
 			}
 		}
 		
