@@ -499,6 +499,18 @@ public abstract class Node implements Listenable, Annotatable
 		return node;
 	}
 	
+	public Node getNearsetScopeAncestor()
+	{
+		Node ancestor = getAncestorWithScope();
+		
+		while (ancestor.isDecoding())
+		{
+			ancestor = ancestor.getParent().getAncestorWithScope();
+		}
+		
+		return ancestor;
+	}
+	
 	/**
 	 * Get whether or not the specified node is an ancestor of the given
 	 * node.
