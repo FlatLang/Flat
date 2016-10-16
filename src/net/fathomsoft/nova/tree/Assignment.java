@@ -504,6 +504,10 @@ public class Assignment extends Value
 						(returnedLeft.isPrimitive() && (!left.isOfType(right) && !SyntaxUtils.arePrimitiveTypesCompatible(leftType, rightType)) ||
 						!returnedLeft.isPrimitive() && !right.isOfType(left))))
 				{
+					right.isOfType(left);
+					SyntaxUtils.arePrimitiveTypesCompatible(leftType, rightType);
+					returnedLeft.getNovaType();
+					returnedRight.getNovaType();
 					returnedLeft.getTypeClass();
 					returnedRight.getTypeClass();
 					SyntaxMessage.error("Type '" + returnedRight.getType() + "' is not compatible with type '" + returnedLeft.getType() + "'", this);
