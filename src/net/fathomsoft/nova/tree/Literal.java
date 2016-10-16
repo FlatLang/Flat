@@ -1,6 +1,5 @@
 package net.fathomsoft.nova.tree;
 
-import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.error.SyntaxMessage;
@@ -171,6 +170,15 @@ public class Literal extends IValue implements Accessible
 	public static boolean isNullLiteral(Node node)
 	{
 		return node instanceof Literal && ((Literal)node).value.equals(NULL_IDENTIFIER);
+	}
+	
+	public static Literal generateDefault(Node parent, Location location)
+	{
+		Literal n = new Literal(parent, location);
+		n.setType(SyntaxUtils.getLiteralTypeName(parent, NULL_IDENTIFIER));
+		n.value = NULL_IDENTIFIER;
+		
+		return n;
 	}
 	
 	/**
@@ -375,7 +383,7 @@ public class Literal extends IValue implements Accessible
 					}
 				}
 				
-				setType(side.getReturnedNode().getType());
+				setType(side.getReturnedNode().getNovaTypeValue(side.getReturnedNode()));
 			}
 			else if (getAncestorOfType(Return.class) != null)
 			{

@@ -121,6 +121,11 @@ public class BinaryOperation extends IValue
 		return getLeftOperand().generateNovaInput(builder, outputChildren).append(' ').append(getOperator().generateNovaInput(outputChildren)).append(' ').append(getRightOperand().generateNovaInput(outputChildren));
 	}
 	
+	public static BinaryOperation generateDefault(Node parent, Location location)
+	{
+		return (BinaryOperation)decodeStatement(parent, "null == null", location, true);
+	}
+	
 	/**
 	 * Decode the given statement into a BinaryOperation if possible.
 	 * If it is not possible, the method will return null. The requirements
@@ -325,7 +330,7 @@ public class BinaryOperation extends IValue
 				{
 					lhn.getReturnedNode().getTypeClass();
 					rhn.getReturnedNode().getTypeClass();
-					SyntaxMessage.error("Type '" + lhn.getType() + "' and '" + rhn.getType() + "' are not compatible", this);
+					SyntaxMessage.error("Type '" + returnedLeft.getType() + "' and '" + returnedRight.getType() + "' are not compatible", this);
 				}
 			}
 			
