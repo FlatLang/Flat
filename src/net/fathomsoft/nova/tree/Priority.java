@@ -136,6 +136,12 @@ public class Priority extends Value implements Accessible
 	}
 	
 	@Override
+	public Value getNovaTypeValue(Value context)
+	{
+		return getContents().getReturnedNode().getNovaTypeValue(getContents().getReturnedNode());
+	}
+	
+	@Override
 	public String getTypeStringValue()
 	{
 		return getReturnedContents().getTypeStringValue();
@@ -191,6 +197,15 @@ public class Priority extends Value implements Accessible
 		}
 		
 		return builder;
+	}
+	
+	public static Priority generateFrom(Value contents)
+	{
+		Priority n = new Priority(contents.getParent(), contents.getLocationIn());
+		
+		n.addChild(contents);
+		
+		return n;
 	}
 	
 	/**
