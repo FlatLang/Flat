@@ -759,7 +759,7 @@ public class MethodCall extends Variable
 				
 				statement = genericBounds.trimString(statement);
 				
-				n.decodeGenericTypeArguments(params);
+				n.decodeGenericTypeArguments(params, n.getMethodGenericTypeArgumentList());
 			}
 			
 			Bounds bounds = SyntaxUtils.findInnerParenthesesBounds(n, statement);
@@ -832,6 +832,40 @@ public class MethodCall extends Variable
 		}
 		
 		return null;
+	}
+	
+	@Override
+	public GenericTypeArgument getGenericTypeArgumentFromParameter(GenericTypeParameter type)
+	{
+		if (getNovaMethod() != null)
+		{
+			GenericTypeParameterDeclaration params = getNovaMethod().getMethodGenericTypeParameterDeclaration();
+			
+			int index = params.getParameterIndex(type.getName());
+			
+			if (index >= 0 && index < getMethodGenericTypeArgumentList().getNumVisibleChildren())
+			{
+				return getMethodGenericTypeArgumentList().getVisibleChild(index);
+			}
+		}
+		
+		return super.getGenericTypeArgumentFromParameter(type);
+	}
+	
+	@Override
+	public GenericTypeParameter getGenericTypeParameter()
+	{
+		if (getNovaMethod() != null)
+		{
+			GenericTypeParameterDeclaration params = getNovaMethod().getMethodGenericTypeParameterDeclaration();
+			
+			if (params.containsParameter(getType()))
+			{
+				return params.getParameter(getType());
+			}
+		}
+		
+		return super.getGenericTypeParameter();
 	}
 	
 	/**
@@ -1127,9 +1161,9 @@ public class MethodCall extends Variable
 	
 	public void addDefaultGenericTypeArguments()
 	{
-		if (getMethodDeclaration() instanceof NovaMethodDeclaration)
+		if (getNovaMethod() != null)
 		{
-			NovaMethodDeclaration decl = (NovaMethodDeclaration)getMethodDeclaration();
+			NovaMethodDeclaration decl = getNovaMethod();
 			
 			GenericTypeParameterDeclaration params = decl.getMethodGenericTypeParameterDeclaration();
 			GenericTypeArgumentList args = getMethodGenericTypeArgumentList();
@@ -1137,7 +1171,31 @@ public class MethodCall extends Variable
 			for (int i = args.getNumVisibleChildren(); i < params.getNumVisibleChildren(); i++)
 			{
 				GenericTypeArgument arg = new GenericTypeArgument(args, getLocationIn().asNew());
-				arg.setTypeValue(params.getVisibleChild(i).getNovaType(this));
+				
+				GenericTypeParameter param = params.getParameter(i);
+				
+				Value common = null;
+				
+				for (int n = 0; n < decl.getParameterList().getNumParameters(); n++)
+				{
+					Parameter p = decl.getParameterList().getParameter(n);
+					
+					if (p instanceof ClosureDeclaration)
+					{
+						Value v = (Value)getArgumentList().getVisibleChild(n);
+						
+						common = common == null ? v : SyntaxUtils.getTypeInCommon(common, v);
+					}
+				}
+				
+				if (common == null)
+				{
+					arg.setTypeValue(params.getVisibleChild(i).getNovaType(this));
+				}
+				else
+				{
+					arg.setType(common);
+				}
 				
 				args.addChild(arg, args);
 			}
