@@ -205,18 +205,12 @@ public interface GenericCompatible
 	
 	default void decodeGenericTypeArguments(String params)
 	{
-		GenericTypeArgument[] args = getGenericTypeArguments(params);
-		
-		GenericTypeArgumentList list = getGenericTypeArgumentList();
-		
-		if (list == null)
-		{
-			/*Node n = (Node)this;
-			
-			if ()*/
-		}
-		
-		for (GenericTypeArgument arg : args)
+		decodeGenericTypeArguments(params, getGenericTypeArgumentList());
+	}
+	
+	default void decodeGenericTypeArguments(String params, GenericTypeArgumentList list)
+	{
+		for (GenericTypeArgument arg : getGenericTypeArguments(params))
 		{
 			list.addChild(arg);
 		}
