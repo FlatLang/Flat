@@ -77,7 +77,13 @@ public class Scope extends Node
 
 		super.onStackPopped();
 	}
-
+	
+	@Override
+	public Node getNearestScopeAncestor()
+	{
+		return getParent();
+	}
+	
 	@Override
 	public ArrayList<Listener> getListeners()
 	{
