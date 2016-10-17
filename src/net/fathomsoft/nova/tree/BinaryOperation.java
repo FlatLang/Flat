@@ -121,6 +121,29 @@ public class BinaryOperation extends IValue
 		return getLeftOperand().generateNovaInput(builder, outputChildren).append(' ').append(getOperator().generateNovaInput(outputChildren)).append(' ').append(getRightOperand().generateNovaInput(outputChildren));
 	}
 	
+	public static BinaryOperation generateNullCheck(Node parent, Value value)
+	{
+		return generateNullCheck(parent, value, value);
+	}
+	
+	public static BinaryOperation generateNullCheck(Node parent, Value value, Value root)
+	{
+		Variable local = parent.getNearestScopeAncestor().getScope().createLocalVariable(root);
+		local.detach();
+		
+		BinaryOperation nullCheck = BinaryOperation.generateDefault(parent, value.getLocationIn());
+		
+		Assignment assignment = Assignment.generateDefault(parent, value.getLocationIn());
+		assignment.getAssigneeNodes().addChild(local);
+		assignment.addChild(root);
+		
+		nullCheck.getLeftOperand().replaceWith(Priority.generateFrom(assignment));
+		nullCheck.getOperator().setOperator("!=");
+		nullCheck.getRightOperand().replaceWith(Literal.decodeStatement(parent, "null", value.getLocationIn(), true));
+		
+		return nullCheck;
+	}
+	
 	public static BinaryOperation generateDefault(Node parent, Location location)
 	{
 		return (BinaryOperation)decodeStatement(parent, "null == null", location, true);
