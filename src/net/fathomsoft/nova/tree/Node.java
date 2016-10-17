@@ -503,6 +503,11 @@ public abstract class Node implements Listenable, Annotatable
 	{
 		Node ancestor = getAncestorWithScope();
 		
+		if (ancestor.containsChild(this, true) && !ancestor.getScope().containsChild(this, true))
+		{
+			ancestor = ancestor.getParent().getAncestorWithScope();
+		}
+		
 		while (ancestor.isDecoding())
 		{
 			ancestor = ancestor.getParent().getAncestorWithScope();
@@ -814,6 +819,28 @@ public abstract class Node implements Listenable, Annotatable
 		}
 		
 		node.onAdded(toNode);
+		
+		checkCircular();
+	}
+	
+	private void checkCircular()
+	{
+		if (parent != null)
+		{
+			Node current = parent.getParent();
+			
+			while (current != null)
+			{
+				if (current == parent)
+				{
+					parent = null;
+					
+					throw new RuntimeException("Circular reference created.........!");
+				}
+				
+				current = current.getParent();
+			}
+		}
 	}
 	
 	/**
@@ -920,14 +947,14 @@ public abstract class Node implements Listenable, Annotatable
 	 */
 	public Node detach()
 	{
-		if (parent == null || isDecoding())
+		if (parent == null)// || isDecoding())
 		{
 			return this;
 		}
 		
 		Node from = parent;
 		
-		if (parent.getNumChildren() > 0 && !parent.containsChild(this) && parent.containsScope())
+		if (!parent.isDecoding() && parent.getNumChildren() > 0 && !parent.containsChild(this) && parent.containsScope())
 		{
 			from = parent.getScope();
 		}
@@ -940,7 +967,7 @@ public abstract class Node implements Listenable, Annotatable
 	 * 
 	 * @param fromNode The Node to detach the specified Node from.
 	 */
-	private Node detach(Node fromNode)
+	public Node detach(Node fromNode)
 	{
 		fromNode.children.remove(this);
 		
