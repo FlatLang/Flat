@@ -5,6 +5,7 @@ import net.fathomsoft.nova.tree.generics.GenericTypeArgumentList;
 import net.fathomsoft.nova.tree.generics.GenericTypeParameter;
 import net.fathomsoft.nova.tree.generics.GenericTypeParameterDeclaration;
 import net.fathomsoft.nova.tree.variables.ObjectReference;
+import net.fathomsoft.nova.tree.variables.Variable;
 import net.fathomsoft.nova.tree.variables.VariableDeclaration;
 import net.fathomsoft.nova.util.SyntaxUtils;
 
@@ -521,6 +522,98 @@ public interface Accessible
 		}
 		
 		return node;
+	}
+	
+	default Node checkSafeNavigation()
+	{
+		if (isSafeNavigation())
+		{
+			setSafeNavigation(false);
+			
+			Node parent = getParent();
+			Node newParent = null;
+			
+			Accessible root = getRootNode();
+			Node base = toValue().getBaseNode();
+			Node old = base.getParent();
+			
+			int rootIndex = root.toValue().getIndex();
+			int baseIndex = base.getIndex();
+			int index = 0;
+			
+			boolean assignment = root != base && base instanceof Assignment && ((Assignment)base).getAssigneeNode() == root;
+			boolean ternary = !assignment && root != base;
+			
+			if (ternary)
+			{
+				if (isAccessed())
+				{
+					newParent = root.getParent();
+				}
+				else
+				{
+					newParent = parent;
+				}
+				
+				index = rootIndex;
+			}
+			else
+			{
+				newParent = old;
+				index = baseIndex;
+			}
+			
+			Identifier accessed = getAccessedNode();
+			
+			setAccessedNode(null);
+			
+			BinaryOperation nullCheck = BinaryOperation.generateNullCheck(root.getParent(), toValue(), root.toValue());
+			
+			Node n = null;
+			
+			Variable local = TernaryOperation.getLocalVariableFromNullCheck(nullCheck).getDeclaration().generateUsableVariable(nullCheck, toValue().getLocationIn());
+			local.setAccessedNode(accessed);
+			
+			if (ternary)
+			{
+				TernaryOperation t = TernaryOperation.generateDefault(old, toValue().getLocationIn());
+				
+				Priority p = Priority.generateFrom(local);
+				
+				t.getCondition().replaceWith(nullCheck);
+				t.getTrueValue().replaceWith(p);
+				t.getFalseValue().replaceWith(Literal.generateDefaultValue(t, t.getLocationIn(), local.getReturnedNode()));
+				
+				t.setType(local.getReturnedNode().getNovaTypeValue(local.getReturnedNode()));
+				
+				n = t;
+			}
+			else
+			{
+				IfStatement s = IfStatement.generateDefault(old, toValue().getLocationIn());
+				
+				s.getCondition().replaceWith(nullCheck);
+				
+				if (assignment)
+				{
+					((Assignment)base).getAssigneeNodes().addChild(local);
+					
+					s.addChild(base);
+				}
+				else
+				{
+					s.addChild(local);
+				}
+				
+				n = s;
+			}
+			
+			newParent.addChild(index, n);
+			
+			return n;
+		}
+		
+		return (Node)this;
 	}
 	
 	/**

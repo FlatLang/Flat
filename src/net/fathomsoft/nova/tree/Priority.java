@@ -1,6 +1,7 @@
 package net.fathomsoft.nova.tree;
 
 import net.fathomsoft.nova.TestContext;
+import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.tree.generics.GenericTypeArgumentList;
 import net.fathomsoft.nova.tree.generics.GenericTypeParameter;
@@ -193,6 +194,11 @@ public class Priority extends Value implements Accessible
 		
 		if (outputChildren && doesAccess())
 		{
+			if (safeNavigation)
+			{
+				builder.append('?');
+			}
+			
 			builder.append('.').append(getAccessedNode().generateNovaInput());
 		}
 		
@@ -337,6 +343,21 @@ public class Priority extends Value implements Accessible
 		return true;
 	}
 	
+	@Override
+	public ValidationResult validate(int phase)
+	{
+		ValidationResult result = super.validate(phase);
+		
+		if (result.skipValidation())
+		{
+			return result;
+		}
+		
+		result.returnedNode = (Node)checkSafeNavigation();
+		
+		return result;
+	}
+	
 	/**
 	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location, boolean)
 	 */
@@ -366,6 +387,8 @@ public class Priority extends Value implements Accessible
 	public Priority cloneTo(Priority node, boolean cloneChildren)
 	{
 		super.cloneTo((Node)node, cloneChildren);
+		
+		node.safeNavigation = safeNavigation;
 		
 		return node;
 	}

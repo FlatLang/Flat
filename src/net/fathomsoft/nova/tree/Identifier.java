@@ -1,6 +1,7 @@
 package net.fathomsoft.nova.tree;
 
 import net.fathomsoft.nova.TestContext;
+import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.util.Location;
 import net.fathomsoft.nova.util.SyntaxUtils;
 
@@ -127,6 +128,11 @@ public abstract class Identifier extends Value implements Accessible
 		
 		if (outputChildren && doesAccess())
 		{
+			if (safeNavigation)
+			{
+				builder.append('?');
+			}
+			
 			builder.append('.').append(getAccessedNode().generateNovaInput());
 		}
 		
@@ -196,6 +202,21 @@ public abstract class Identifier extends Value implements Accessible
 	 */
 	public abstract void setForceOriginalName(boolean forceOriginal);
 	
+	@Override
+	public ValidationResult validate(int phase)
+	{
+		ValidationResult result = super.validate(phase);
+		
+		if (result.skipValidation())
+		{
+			return result;
+		}
+		
+		result.returnedNode = (Node)checkSafeNavigation();
+		
+		return result;
+	}
+	
 	/**
 	 * Fill the given {@link Identifier} with the data that is in the
 	 * specified node.
@@ -224,6 +245,7 @@ public abstract class Identifier extends Value implements Accessible
 		node.setArrayDimensions(getArrayDimensions());
 		node.setTypeValue(getType());
 		node.setDataType(getDataType());
+		node.safeNavigation = safeNavigation;
 		
 		return node;
 	}
