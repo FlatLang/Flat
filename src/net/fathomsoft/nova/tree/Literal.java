@@ -172,11 +172,38 @@ public class Literal extends IValue implements Accessible
 		return node instanceof Literal && ((Literal)node).value.equals(NULL_IDENTIFIER);
 	}
 	
+	public static Literal generateDefaultValue(Node parent, Location location, Value value)
+	{
+		Literal n = new Literal(parent, location);
+		
+		if (value.isPrimitive())
+		{
+			switch (value.getTypeClass().getName())
+			{
+				case "Bool":
+					n.value = "false";
+					break;
+				default:
+					n.value = "0";
+					break;
+			}
+			
+			n.setType(value.getType());
+		}
+		else
+		{
+			n.value = NULL_IDENTIFIER;
+			n.setType("Object");
+		}
+		
+		return n;
+	}
+	
 	public static Literal generateDefault(Node parent, Location location)
 	{
 		Literal n = new Literal(parent, location);
-		n.setType(SyntaxUtils.getLiteralTypeName(parent, NULL_IDENTIFIER));
 		n.value = NULL_IDENTIFIER;
+		n.setType(SyntaxUtils.getLiteralTypeName(parent, NULL_IDENTIFIER));
 		
 		return n;
 	}
@@ -348,12 +375,16 @@ public class Literal extends IValue implements Accessible
 		return str;
 	}
 	
-	/**
-	 * @see net.fathomsoft.nova.tree.Node#validate(int)
-	 */
 	@Override
 	public ValidationResult validate(int phase)
 	{
+		ValidationResult result = super.validate(phase);
+		
+		if (result.skipValidation())
+		{
+			return result;
+		}
+		
 		if (value.equals(NULL_IDENTIFIER))
 		{
 			if (getParent() instanceof BinaryOperation)
@@ -391,7 +422,9 @@ public class Literal extends IValue implements Accessible
 			}
 		}
 		
-		return super.validate(phase);
+		result.returnedNode = (Node)checkSafeNavigation();
+		
+		return result;
 	}
 	
 	/**
