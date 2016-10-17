@@ -65,6 +65,11 @@ public class IfStatement extends ControlStatement
 		return builder;
 	}
 	
+	public static IfStatement generateDefault(Node parent, Location location)
+	{
+		return decodeStatement(parent, "if (false)", location, true);
+	}
+	
 	/**
 	 * Decode the given statement into a IfStatement instance, if
 	 * possible. If it is not possible, this method returns null.<br>
