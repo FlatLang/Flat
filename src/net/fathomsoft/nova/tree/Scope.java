@@ -78,6 +78,19 @@ public class Scope extends Node
 		super.onStackPopped();
 	}
 	
+	public Node getFirstStatement()
+	{
+		for (int i = 0; i < getNumVisibleChildren(); i++)
+		{
+			if (getVisibleChild(i) instanceof DefaultParameterInitialization == false)
+			{
+				return getVisibleChild(i);
+			}
+		}
+		
+		return null;
+	}
+	
 	@Override
 	public Node getNearestScopeAncestor()
 	{

@@ -150,7 +150,7 @@ public class BodyMethodDeclaration extends NovaMethodDeclaration
 	{
 		if (usedShorthandAction)
 		{
-			getScope().addChild(getScope().getVisibleChild(0).detach());
+			getScope().addChild(getScope().getFirstStatement().detach());
 		}
 	}
 	
