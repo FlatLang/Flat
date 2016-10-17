@@ -1,6 +1,7 @@
 package net.fathomsoft.nova.tree;
 
 import net.fathomsoft.nova.TestContext;
+import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.tree.generics.GenericTypeArgumentList;
 import net.fathomsoft.nova.tree.variables.Variable;
@@ -64,6 +65,17 @@ public class TernaryOperation extends IValue implements Accessible
 		this.safeNavigation = safeNavigation;
 	}
 	
+	public static TernaryOperation generateDefault(Node parent, Location location)
+	{
+		TernaryOperation n = new TernaryOperation(parent, location);
+		
+		n.addChild(Literal.generateDefault(n, location));
+		n.addChild(Literal.generateDefault(n, location));
+		n.addChild(Literal.generateDefault(n, location));
+		
+		return n;
+	}
+	
 	/**
 	 * Decode the given statement into a {@link TernaryOperation} instance, if
 	 * possible. If it is not possible, this method returns null.<br>
@@ -121,17 +133,9 @@ public class TernaryOperation extends IValue implements Accessible
 			}
 			else // elvis operator
 			{
-				Variable local = parent.getNearestScopeAncestor().getScope().createLocalVariable(condition);
+				BinaryOperation nullCheck = BinaryOperation.generateNullCheck(n, condition);
 				
-				BinaryOperation nullCheck = BinaryOperation.generateDefault(condition.getParent(), condition.getLocationIn());
-				
-				Assignment assignment = Assignment.generateDefault(condition.getParent(), condition.getLocationIn());
-				assignment.getAssigneeNodes().addChild(local);
-				assignment.addChild(condition);
-				
-				nullCheck.getLeftOperand().replaceWith(Priority.generateFrom(assignment));
-				nullCheck.getOperator().setOperator("!=");
-				nullCheck.getRightOperand().replaceWith(Literal.decodeStatement(parent, "null", condition.getLocationIn(), true));
+				Variable local = getLocalVariableFromNullCheck(nullCheck);
 				
 				trueValue = local.getDeclaration().generateUsableVariable(n, condition.getLocationIn());
 				
@@ -177,6 +181,26 @@ public class TernaryOperation extends IValue implements Accessible
 		return null;
 	}
 	
+	public static Variable getLocalVariableFromNullCheck(BinaryOperation nullCheck)
+	{
+		return (Variable)((Assignment)((Priority)nullCheck.getLeftOperand()).getContents()).getAssigneeNode();
+	}
+	
+	@Override
+	public ValidationResult validate(int phase)
+	{
+		ValidationResult result = super.validate(phase);
+		
+		if (result.skipValidation())
+		{
+			return result;
+		}
+		
+		result.returnedNode = (Node)checkSafeNavigation();
+		
+		return result;
+	}
+	
 	@Override
 	public StringBuilder generateNovaInput(StringBuilder builder, boolean outputChildren)
 	{
@@ -212,6 +236,8 @@ public class TernaryOperation extends IValue implements Accessible
 	public TernaryOperation cloneTo(TernaryOperation node, boolean cloneChildren)
 	{
 		super.cloneTo(node, cloneChildren);
+		
+		node.safeNavigation = safeNavigation;
 		
 		return node;
 	}
