@@ -1,6 +1,5 @@
 package net.fathomsoft.nova.tree.variables;
 
-import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.error.SyntaxMessage;
@@ -439,14 +438,19 @@ public class Variable extends Identifier
 	{
 		if (isGenericType())
 		{
-			GenericTypeArgument extractedType = getGenericTypeArgumentFromParameter(getGenericTypeParameter());
+			GenericTypeParameter param = getGenericTypeParameter();
 			
-			if (extractedType != null)
+			if (param != null)// && context != null)
 			{
-				GenericTypeArgument value = extractedType.clone(extractedType.getParent(), extractedType.getLocationIn(), true);
-				value.setArrayDimensions(getArrayDimensions());
+				GenericTypeArgument extractedType = getGenericTypeArgumentFromParameter(param);
 				
-				return extractedType;
+				if (extractedType != null)
+				{
+					GenericTypeArgument value = extractedType.clone(extractedType.getParent(), extractedType.getLocationIn(), true);
+					value.setArrayDimensions(getArrayDimensions());
+					
+					return extractedType;
+				}
 			}
 		}
 		
