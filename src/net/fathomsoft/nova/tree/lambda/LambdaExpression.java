@@ -5,6 +5,7 @@ import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.tree.*;
 import net.fathomsoft.nova.util.Location;
 import net.fathomsoft.nova.util.StringUtils;
+import net.fathomsoft.nova.util.SyntaxUtils;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -238,7 +239,7 @@ public class LambdaExpression extends Value
 							
 							method.getParentClass().addChild(method);
 							
-							boolean requiresReturn = method.getType() != null && (!block || !operation.contains("\n"));
+							boolean requiresReturn = method.getType() != null && (!block || !operation.contains("\n")) && SyntaxUtils.findCharInBaseScope(operation, ';') < 0;
 							
 							if (requiresReturn)
 							{
