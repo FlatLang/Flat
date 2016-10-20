@@ -119,11 +119,16 @@ public class Return extends IValue
 	 */
 	public static Return decodeStatement(Node parent, String statement, Location location, boolean require)
 	{
+		return decodeStatement(parent, statement, location, require, true);
+	}
+	
+	public static Return decodeStatement(Node parent, String statement, Location location, boolean require, boolean validateType)
+	{
 		if (StringUtils.startsWithWord(statement, IDENTIFIER))
 		{
 			Return n = new Return(parent, location);
 			
-			if (n.decodeReturnValue(statement, location, require))
+			if (n.decodeReturnValue(statement, location, require, validateType))
 			{
 				return n;
 			}
@@ -151,6 +156,11 @@ public class Return extends IValue
 	 */
 	private boolean decodeReturnValue(String statement, Location location, boolean require)
 	{
+		return decodeReturnValue(statement, location, require, true);
+	}
+	
+	private boolean decodeReturnValue(String statement, Location location, boolean require, boolean validateType)
+	{
 		String postReturn = generatePostReturn(statement);
 		
 		if (postReturn != null)
@@ -162,7 +172,7 @@ public class Return extends IValue
 			
 			for (String v : values)
 			{
-				Value value = decodeReturnValue(v, getParentMethod(), newLoc);
+				Value value = decodeReturnValue(v, getParentMethod(), newLoc, validateType);
 				
 				getReturnValues().addChild(value);
 			}
@@ -172,7 +182,7 @@ public class Return extends IValue
 			return queryReturnError(getParentMethod(), require);
 		}
 		
-		setType(getParentMethod().getType());
+		//setType(getParentMethod().getType());
 		
 		return true;
 	}
@@ -195,6 +205,11 @@ public class Return extends IValue
 	 */
 	private Value decodeReturnValue(String statement, MethodDeclaration method, Location location)
 	{
+		return decodeReturnValue(statement, method, location, true);
+	}
+	
+	private Value decodeReturnValue(String statement, MethodDeclaration method, Location location, boolean validateType)
+	{
 		Value value = SyntaxTree.decodeValue(this, statement, location, false);
 		
 		if (value == null)
@@ -212,7 +227,7 @@ public class Return extends IValue
 					return value;
 				}
 			}
-			if (!SyntaxUtils.validateCompatibleTypes(method, value.getReturnedNode()))
+			if (validateType && !SyntaxUtils.validateCompatibleTypes(method, value.getReturnedNode()))
 			{
 				SyntaxUtils.validateCompatibleTypes(method, value.getReturnedNode());
 				queryReturnError(method, true);
