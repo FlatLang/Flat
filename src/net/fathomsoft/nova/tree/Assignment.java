@@ -316,6 +316,8 @@ public class Assignment extends Value
 		{
 			if (!n.decodeAssignee(assigneesStr[i], varLoc, require, addDeclaration, assignees, checkType))
 			{
+				SyntaxMessage.queryError("Could not parse assigned value", n, require);
+				
 				return null;
 			}
 		}
@@ -406,6 +408,11 @@ public class Assignment extends Value
 			else if (varNode.getReturnedNode() instanceof Variable)
 			{
 				validateAuthorization((Variable)varNode.getReturnedNode());
+			}
+			
+			if (varNode instanceof Cast)
+			{
+				return false;
 			}
 			
 			getAssigneeNodes().addChild(varNode);
@@ -517,7 +524,8 @@ public class Assignment extends Value
 				if (!returnedLeft.isExternalType() && !returnedRight.isExternalType() &&
 						(left == null || right == null ||
 						(returnedLeft.isPrimitive() && (!left.isOfType(right) && !SyntaxUtils.arePrimitiveTypesCompatible(leftType, rightType)) ||
-						!returnedLeft.isPrimitive() && !right.isOfType(left))))
+						!returnedLeft.isPrimitive() && !right.isOfType(left))) &&
+						!(left instanceof Interface && right.getClassLocation().equals("nova/Object")))
 				{
 					right.isOfType(left);
 					SyntaxUtils.arePrimitiveTypesCompatible(leftType, rightType);
