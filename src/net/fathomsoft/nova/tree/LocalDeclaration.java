@@ -7,11 +7,7 @@ import net.fathomsoft.nova.tree.generics.GenericTypeArgument;
 import net.fathomsoft.nova.tree.generics.GenericTypeArgumentList;
 import net.fathomsoft.nova.tree.generics.GenericTypeParameterDeclaration;
 import net.fathomsoft.nova.tree.variables.VariableDeclaration;
-import net.fathomsoft.nova.util.Bounds;
-import net.fathomsoft.nova.util.Location;
-import net.fathomsoft.nova.util.Patterns;
-import net.fathomsoft.nova.util.StringUtils;
-import net.fathomsoft.nova.util.SyntaxUtils;
+import net.fathomsoft.nova.util.*;
 
 /**
  * LocalVariable extension that represents the declaration of local
@@ -336,7 +332,7 @@ public class LocalDeclaration extends VariableDeclaration
 		this.implicitType = implicitType;
 	}
 
-	public void setType(Value value)
+	public void setType(Value value, boolean extractType)
 	{
 		setArrayDimensions(value.getArrayDimensions());
 		setTypeValue(value.getType());
