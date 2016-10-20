@@ -1091,7 +1091,16 @@ public abstract class Value extends Node implements AbstractValue
 	public void setType(Value value)
 	{
 		setArrayDimensions(value.getArrayDimensions());
-		setTypeValue(SyntaxUtils.getPrimitiveNovaType(value.getType()));
+
+		if (value.isGenericType() && !getParentClass().isOfType(value.getGenericTypeParameter().getParentClass()))
+		{
+			setTypeValue(value.getGenericTypeParameter().getDefaultType());
+		}
+		else
+		{
+			setTypeValue(SyntaxUtils.getPrimitiveNovaType(value.getType()));
+		}
+		
 		setDataType(value.getDataType());
 		
 		GenericTypeArgumentList args = value.getGenericTypeArgumentList();
@@ -1099,6 +1108,8 @@ public abstract class Value extends Node implements AbstractValue
 		
 		if (args != null && thisArgs != null)
 		{
+			thisArgs.slaughterEveryLastVisibleChild();
+			
 			for (int i = 0; i < args.getNumVisibleChildren(); i++)
 			{
 				GenericTypeArgument arg = args.getVisibleChild(i);
@@ -1122,11 +1133,19 @@ public abstract class Value extends Node implements AbstractValue
 	 */
 	public Value cloneTo(Value node, boolean cloneChildren)
 	{
+		return cloneTo(node, cloneChildren, false);
+	}
+	
+	public Value cloneTo(Value node, boolean cloneChildren, boolean copyFacadeValues)
+	{
 		super.cloneTo(node, cloneChildren);
 		
-		//node.setArrayDimensions(getArrayDimensions());
-		//node.setType(getTypeStringValue(), true, false, false);
-		//node.setDataType(getDataType(false));
+		if (copyFacadeValues)
+		{
+			node.setArrayDimensions(getArrayDimensions());
+			node.setType(getTypeStringValue(), true, false, false);
+			node.setDataType(getDataType(false));
+		}
 		
 		return node;
 	}
