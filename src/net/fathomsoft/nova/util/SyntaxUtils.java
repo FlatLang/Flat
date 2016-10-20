@@ -1876,32 +1876,10 @@ public class SyntaxUtils
 	 */
 	public static boolean validateCompatibleTypes(Value value1, Value value2)
 	{
-		if (value1.isExternalType() || value2.isExternalType())
+		if (value1.isExternalType() && value2.isExternalType())
 		{
-			if (value1 instanceof Literal || value2 instanceof Literal)
-			{
-				Literal value = value1 instanceof Literal ? (Literal)value1 : (Literal)value2;
-				
-				if (value.getValue().equals("0"))
-				{
-					return true;
-				}
-			}
-			
-			if (value1.isExternalType() && value2.isExternalType())
-			{
-				return value1.getType().equals(value2.getType());
-			}
+			return value1.getType().equals(value2.getType());
 		}
-//		else if (value1 instanceof Literal || value2 instanceof Literal)
-//		{
-//			Literal value = value1 instanceof Literal ? (Literal)value1 : (Literal)value2;
-//			
-//			if (value.getValue().equals("0"))
-//			{
-//				return true;
-//			}
-//		}
 		
 		return getTypeInCommon(value1, value2) != null;
 	}
