@@ -530,6 +530,16 @@ public abstract class Value extends Node implements AbstractValue
 	
 	public ClassDeclaration getTypeClass(boolean checkCast)
 	{
+		return getTypeClass(checkCast, false);
+	}
+	
+	public ClassDeclaration getTypeClass(boolean checkCast, boolean defaultGenericType)
+	{
+		if (defaultGenericType && isGenericType())
+		{
+			return getFileDeclaration().getImport(getGenericReturnType(), false).getClassDeclaration();
+		}
+		
 		return getProgram().getClassDeclaration(getTypeClassLocation(checkCast));
 	}
 	
@@ -1088,22 +1098,30 @@ public abstract class Value extends Node implements AbstractValue
 //		throw new UnimplementedOperationException("The getGenericDeclaration() method must be implemented by class " + this.getClass().getName());
 	}
 	
-	public void setType(Value value)
+	public final void setType(Value value)
+	{
+		setType(value, true);
+	}
+	
+	public void setType(Value value, boolean extractType)
 	{
 		setArrayDimensions(value.getArrayDimensions());
 
-		if (value.isGenericType() && !getParentClass().isOfType(value.getGenericTypeParameter().getParentClass()))
+		Value original = value;
+		Value novaType = value.getNovaTypeValue(null);
+		
+		if (original.isGenericType() && !getParentClass().isOfType(original.getGenericTypeParameter().getParentClass()))
 		{
-			setTypeValue(value.getGenericTypeParameter().getDefaultType());
+			setTypeValue(original.getGenericTypeParameter().getDefaultType());
 		}
 		else
 		{
-			setTypeValue(SyntaxUtils.getPrimitiveNovaType(value.getType()));
+			setType(SyntaxUtils.getPrimitiveNovaType((extractType ? novaType : original).getType()));
 		}
 		
-		setDataType(value.getDataType());
+		setDataType(novaType.getDataType());
 		
-		GenericTypeArgumentList args = value.getGenericTypeArgumentList();
+		GenericTypeArgumentList args = novaType.getGenericTypeArgumentList();
 		GenericTypeArgumentList thisArgs = getGenericTypeArgumentList();
 		
 		if (args != null && thisArgs != null)
