@@ -47,6 +47,8 @@ public interface ShorthandAccessible
 			.cloneTo(new ShorthandMutator((Node)this, getLocationIn()));
 	}
 	
+	void setType(Value value);
+	
 	default void decodeShorthandAccessor()
 	{
 		String accessorValue = getShorthandAccessor();
@@ -63,7 +65,21 @@ public interface ShorthandAccessible
 			
 			addChild(a);
 			
-			a.addChild(Return.decodeStatement(a, "return " + accessorValue, getLocationIn(), true));
+			Return returnValue = Return.decodeStatement(a, "return " + accessorValue, getLocationIn(), true, false);
+			
+			a.addChild(returnValue);
+			
+//			Value type = returnValue.getReturnedNode().getNovaTypeValue(returnValue.getReturnedNode());
+//			
+//			if (returnValue.getValueNode() instanceof Cast)
+//			{
+//				setType(returnValue.getValueNode());
+//			}
+//			else
+//			{
+//				setType(type);
+//			}
+			//a.setType(type);
 			
 			if (twoWayBinding)
 			{
@@ -76,7 +92,16 @@ public interface ShorthandAccessible
 				
 				addChild(m);
 				
-				m.addChild(Assignment.decodeStatement(m, accessorValue + " = value", getLocationIn(), true));
+				Value value = returnValue.getValueNode();
+				
+				if (value instanceof Cast)
+				{
+					value = ((Cast)value).getValueNode();
+				}
+				
+				Assignment assignment = Assignment.decodeStatement(m, value.generateNovaInput() + " = value", getLocationIn(), true);
+				
+				m.addChild(assignment);
 			}
 			else
 			{
