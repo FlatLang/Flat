@@ -1,17 +1,20 @@
 package net.fathomsoft.nova;
 
+import net.fathomsoft.nova.error.SyntaxErrorException;
+import net.fathomsoft.nova.tree.*;
+import net.fathomsoft.nova.tree.match.Match;
+import net.fathomsoft.nova.util.FileUtils;
+import net.fathomsoft.nova.util.StringUtils;
+
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.util.*;
-
-import net.fathomsoft.nova.error.SyntaxErrorException;
-import net.fathomsoft.nova.tree.*;
-import net.fathomsoft.nova.tree.match.Match;
-import net.fathomsoft.nova.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 
 import static java.util.Arrays.stream;
 import static net.fathomsoft.nova.util.FileUtils.formatPath;
@@ -36,7 +39,7 @@ public class Nova
 	
 	public File					workingDir, targetEngineWorkingDir;
 	
-	public String target = "c";
+	public String target = "c", formattedTarget, targetFileExtension;
 	
 	private SyntaxTree			tree;
 	
@@ -177,62 +180,58 @@ public class Nova
 	
 	private void startEngines()
 	{
-		String formattedTarget = null;
-		
-		if (target.equals("c"))
-		{
-			formattedTarget = "C";
-		}
-		else if (target.equals("js"))
-		{
-			formattedTarget = "JS";
-		}
-		else if (target.equals("java"))
-		{
-			formattedTarget = "Java";
-		}
-		
-		targetEngineWorkingDir = new File("../Nova-" + formattedTarget);
-		
 		try
 		{
-			URL url = new File("../Nova-" + formattedTarget + "/out/production/Nova-" + formattedTarget).toURL();
+			targetEngineWorkingDir = new File("../Nova-" + target).getCanonicalFile();
 			
-			// Create a new class loader with the directory
-			ClassLoader cl = new URLClassLoader(new URL[] { url });
+			formattedTarget = targetEngineWorkingDir.getName().substring(targetEngineWorkingDir.getName().lastIndexOf('-') + 1);
 			
-			Class codeGeneratorEngineClass = cl.loadClass("nova." + target + ".engines." + formattedTarget + "CodeGeneratorEngine");
-			Class compileEngineClass = cl.loadClass("nova." + target + ".engines." + formattedTarget + "CompileEngine");
+			targetFileExtension = new File(targetEngineWorkingDir, "out/production/Nova-" + formattedTarget + "/nova").list()[0];
 			
-			java.lang.reflect.Constructor codeGeneratorEngineConstructor = codeGeneratorEngineClass.getConstructor(Nova.class);
-			java.lang.reflect.Constructor compileEngineConstructor = compileEngineClass.getConstructor(Nova.class);
+			try
+			{
+				URL url = new File("../Nova-" + formattedTarget + "/out/production/Nova-" + formattedTarget).toURL();
+				
+				// Create a new class loader with the directory
+				ClassLoader cl = new URLClassLoader(new URL[] { url });
+				
+				Class codeGeneratorEngineClass = cl.loadClass("nova." + targetFileExtension + ".engines." + formattedTarget + "CodeGeneratorEngine");
+				Class compileEngineClass = cl.loadClass("nova." + targetFileExtension + ".engines." + formattedTarget + "CompileEngine");
+				
+				java.lang.reflect.Constructor codeGeneratorEngineConstructor = codeGeneratorEngineClass.getConstructor(Nova.class);
+				java.lang.reflect.Constructor compileEngineConstructor = compileEngineClass.getConstructor(Nova.class);
+				
+				codeGeneratorEngine = (CodeGeneratorEngine)codeGeneratorEngineConstructor.newInstance(this);
+				compileEngine = (CompileEngine)compileEngineConstructor.newInstance(this);
+			}
+			catch (InvocationTargetException e)
+			{
+				System.exit(1);
+			}
+			catch (InstantiationException e)
+			{
+				System.exit(2);
+			}
+			catch (IllegalAccessException e)
+			{
+				System.exit(3);
+			}
+			catch (NoSuchMethodException e)
+			{
+				System.exit(4);
+			}
+			catch (ClassNotFoundException e)
+			{
+				System.exit(5);
+			}
+			catch (MalformedURLException e)
+			{
+				System.exit(6);
+			}
+		}
+		catch (IOException io)
+		{
 			
-			codeGeneratorEngine = (CodeGeneratorEngine)codeGeneratorEngineConstructor.newInstance(this);
-			compileEngine = (CompileEngine)compileEngineConstructor.newInstance(this);
-		}
-		catch (InvocationTargetException e)
-		{
-			System.exit(1);
-		}
-		catch (InstantiationException e)
-		{
-			System.exit(2);
-		}
-		catch (IllegalAccessException e)
-		{
-			System.exit(3);
-		}
-		catch (NoSuchMethodException e)
-		{
-			System.exit(4);
-		}
-		catch (ClassNotFoundException e)
-		{
-			System.exit(5);
-		}
-		catch (MalformedURLException e)
-		{
-			System.exit(6);
 		}
 		
 		//codeGeneratorEngine = new CCodeGeneratorEngine(this);
@@ -278,8 +277,8 @@ public class Nova
 				"-single-thread",
 				"-single-file",
 				"-main",
-				"example/Lab",
-//				"stabilitytest/StabilityTest",
+//				"example/Lab",
+				"stabilitytest/StabilityTest",
 //				"example/SvgChart",
 //				"example/HashMapDemo",
 //				"example/HashSetDemo",
@@ -1052,12 +1051,14 @@ public class Nova
 	 * 
 	 * @param condition Whether or not to break.
 	 */
-	public static void debuggingBreakpoint(boolean condition)
+	public static boolean debuggingBreakpoint(boolean condition)
 	{
 		if (condition)
 		{
 			System.out.println("Breakpoint");
 		}
+		
+		return condition;
 	}
 	
 	public static Nova generateTemporaryController()
