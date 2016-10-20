@@ -110,72 +110,75 @@ public class TernaryOperation extends IValue implements Accessible
 		{
 			int colonIndex = SyntaxUtils.findCharInBaseScope(statement, ':', questionMarkIndex + 1);
 			
-			TernaryOperation n = new TernaryOperation(parent, location);
-			
-			String conditionString = statement.substring(0, questionMarkIndex).trim();
-			
-			Value condition = SyntaxTree.decodeValue(parent, conditionString, location, require);
-			
-			if (condition == null)
+			if (colonIndex > questionMarkIndex)
 			{
-				SyntaxMessage.queryError("Unable to decode ternary operation condition '" + conditionString + "'", n, require);
+				TernaryOperation n = new TernaryOperation(parent, location);
 				
-				return null;
-			}
-			
-			String trueValueString = statement.substring(questionMarkIndex + 1, colonIndex).trim();
-			
-			Value trueValue = null;
-			
-			if (trueValueString.length() > 0)
-			{
-				trueValue = SyntaxTree.decodeValue(n, trueValueString, location, require);
-			}
-			else // elvis operator
-			{
-				BinaryOperation nullCheck = BinaryOperation.generateNullCheck(n, condition);
+				String conditionString = statement.substring(0, questionMarkIndex).trim();
 				
-				Variable local = getLocalVariableFromNullCheck(nullCheck);
+				Value condition = SyntaxTree.decodeValue(parent, conditionString, location, require);
 				
-				trueValue = local.getDeclaration().generateUsableVariable(n, condition.getLocationIn());
+				if (condition == null)
+				{
+					SyntaxMessage.queryError("Unable to decode ternary operation condition '" + conditionString + "'", n, require);
+					
+					return null;
+				}
 				
-				condition = nullCheck;
-			}
-			
-			String falseValueString = statement.substring(colonIndex + 1).trim();
-			
-			Value falseValue = SyntaxTree.decodeValue(parent, falseValueString, location, require);
-			
-			if (trueValue == null || falseValue == null)
-			{
-				SyntaxMessage.queryError("Unable to decode ternary operation false value '" + conditionString + "'", n, require);
+				String trueValueString = statement.substring(questionMarkIndex + 1, colonIndex).trim();
 				
-				return null;
+				Value trueValue = null;
+				
+				if (trueValueString.length() > 0)
+				{
+					trueValue = SyntaxTree.decodeValue(n, trueValueString, location, require);
+				}
+				else // elvis operator
+				{
+					BinaryOperation nullCheck = BinaryOperation.generateNullCheck(n, condition);
+					
+					Variable local = getLocalVariableFromNullCheck(nullCheck);
+					
+					trueValue = local.getDeclaration().generateUsableVariable(n, condition.getLocationIn());
+					
+					condition = nullCheck;
+				}
+				
+				String falseValueString = statement.substring(colonIndex + 1).trim();
+				
+				Value falseValue = SyntaxTree.decodeValue(parent, falseValueString, location, require);
+				
+				if (trueValue == null || falseValue == null)
+				{
+					SyntaxMessage.queryError("Unable to decode ternary operation false value '" + conditionString + "'", n, require);
+					
+					return null;
+				}
+				
+				n.addChild(condition);
+				n.addChild(trueValue);
+				n.addChild(falseValue);
+				
+				ClassDeclaration commonClass = null;
+				
+				if (Literal.isNullLiteral(trueValue))
+				{
+					commonClass = falseValue.getReturnedNode().getTypeClass();
+				}
+				else if (Literal.isNullLiteral(falseValue))
+				{
+					commonClass = trueValue.getReturnedNode().getTypeClass();
+				}
+				else
+				{
+					commonClass = trueValue.getReturnedNode().getTypeClass().getCommonAncestor(falseValue.getReturnedNode().getTypeClass());
+				}
+				
+				n.setType(trueValue.getReturnedNode()); // Set the array type data and stuff like that
+				n.setTypeValue(commonClass.getType()); // Set the actual class type to the common class
+				
+				return n;
 			}
-			
-			n.addChild(condition);
-			n.addChild(trueValue);
-			n.addChild(falseValue);
-			
-			ClassDeclaration commonClass = null;
-			
-			if (Literal.isNullLiteral(trueValue))
-			{
-				commonClass = falseValue.getReturnedNode().getTypeClass();
-			}
-			else if (Literal.isNullLiteral(falseValue))
-			{
-				commonClass = trueValue.getReturnedNode().getTypeClass();
-			}
-			else
-			{
-				commonClass = trueValue.getReturnedNode().getTypeClass().getCommonAncestor(falseValue.getReturnedNode().getTypeClass());
-			}
-			
-			n.setType(trueValue.getReturnedNode()); // Set the array type data and stuff like that
-			n.setTypeValue(commonClass.getType()); // Set the actual class type to the common class
-			
-			return n;
 		}
 		
 		return null;
