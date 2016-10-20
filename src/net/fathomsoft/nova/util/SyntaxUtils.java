@@ -1,9 +1,5 @@
 package net.fathomsoft.nova.util;
 
-import java.util.ArrayList;
-import java.util.regex.Matcher;
-
-import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.error.UnimplementedOperationException;
 import net.fathomsoft.nova.tree.*;
@@ -12,6 +8,9 @@ import net.fathomsoft.nova.tree.generics.GenericTypeParameter;
 import net.fathomsoft.nova.tree.variables.FieldDeclaration;
 import net.fathomsoft.nova.tree.variables.Variable;
 import net.fathomsoft.nova.tree.variables.VariableDeclaration;
+
+import java.util.ArrayList;
+import java.util.regex.Matcher;
 
 /**
  * Class used for getting information about the Syntax of Nova.
@@ -1100,12 +1099,16 @@ public class SyntaxUtils
 
 			statement = bounds.trimString(statement);
 			bounds = StringUtils.findNextWordBounds(statement);
-			statement = bounds.trimString(statement);
-			bounds = StringUtils.findContentBoundsWithin(statement, VariableDeclaration.GENERIC_START, VariableDeclaration.GENERIC_END, 0, true);
-			statement = bounds.trimString(statement);
-			statement = statement.trim();
-
-			return SyntaxUtils.isValidIdentifier(statement);
+			
+			if (bounds.extractString(statement).equals("new"))
+			{
+				statement = bounds.trimString(statement);
+				bounds = StringUtils.findContentBoundsWithin(statement, VariableDeclaration.GENERIC_START, VariableDeclaration.GENERIC_END, 0, true);
+				statement = bounds.trimString(statement);
+				statement = statement.trim();
+				
+				return SyntaxUtils.isValidIdentifier(statement);
+			}
 		}
 
 		return false;
