@@ -252,7 +252,14 @@ public class Literal extends IValue implements Accessible
 		
 		if (literalType != null || parent.isWithinExternalContext())
 		{
-			statement = formatMultilineString(statement);
+			if (literalType.equals("String"))
+			{
+				statement = formatMultilineString(statement);
+			}
+			else if (SyntaxUtils.isNumber(statement))
+			{
+				statement = SyntaxUtils.removeUnderscores(statement);
+			}
 			
 			Literal n = new Literal(parent, location);
 			n.setValue(statement);

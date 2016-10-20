@@ -635,6 +635,8 @@ public class SyntaxUtils
 		}
 		else if (isNumber(literal))
 		{
+			literal = removeUnderscores(literal);
+			
 			if (isInteger(literal))
 			{
 				long l = Long.parseLong(literal);
@@ -844,6 +846,38 @@ public class SyntaxUtils
 		return value.length() > 0 && (isInteger(value) || isDouble(value));
 	}
 	
+	public static String removeUnderscores(String value)
+	{
+		if (value.length() < 3)
+		{
+			return value;
+		}
+		
+		boolean negative = value.charAt(0) == '-';
+		
+		if (negative && value.charAt(1) == '_' || !negative && value.charAt(0) == '_')
+		{
+			return value;
+		}
+		
+		int decimalIndex = value.indexOf('.');
+		String decimal = decimalIndex >= 0 ? value.substring(decimalIndex) : "";
+		
+		StringBuilder output = new StringBuilder(value.substring(negative ? 1 : 0, decimalIndex >= 0 ? decimalIndex : value.length()));
+		
+		for (int i = 4; i < output.length(); i += 3)
+		{
+			if (output.charAt(output.length() - i) != '_')
+			{
+				return value;
+			}
+			
+			output.deleteCharAt(output.length() - i);
+		}
+		
+		return (negative ? "-" : "") + output.toString() + decimal;
+	}
+	
 	/**
 	 * Get whether or not the given String value represents a number.<br>
 	 * <br>
@@ -860,6 +894,8 @@ public class SyntaxUtils
 	 */
 	public static boolean isInteger(String value)
 	{
+		value = removeUnderscores(value);
+		
 		if (value.length() <= 0)
 		{
 			return false;
@@ -896,6 +932,8 @@ public class SyntaxUtils
 	 */
 	public static boolean isDouble(String value)
 	{
+		value = removeUnderscores(value);
+		
 		boolean seenDot     = false;
 		boolean seenExp     = false;
 		boolean justSeenExp = false;
