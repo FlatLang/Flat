@@ -7,6 +7,7 @@ import net.fathomsoft.nova.tree.*;
 import net.fathomsoft.nova.tree.generics.GenericTypeArgument;
 import net.fathomsoft.nova.tree.generics.GenericTypeArgumentList;
 import net.fathomsoft.nova.tree.generics.GenericTypeParameter;
+import net.fathomsoft.nova.tree.lambda.LambdaMethodDeclaration;
 import net.fathomsoft.nova.util.Location;
 
 /**
@@ -455,6 +456,22 @@ public class Variable extends Identifier
 		}
 		
 		return super.getNovaTypeValue(context);
+	}
+	
+	@Override
+	public void onAdded(Node parent)
+	{
+		if (getDeclaration() instanceof Parameter)
+		{
+			Parameter p = (Parameter)getDeclaration();
+			
+			if (p.isUnnamedParameter())
+			{
+				((LambdaMethodDeclaration)p.getParentMethod()).updateUnnamedParameterPosition();
+			}
+		}
+		
+		super.onAdded(parent);
 	}
 	
 	/**
