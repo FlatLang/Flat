@@ -233,7 +233,8 @@ public class Operator extends IValue
 			SyntaxMessage.error("Unknown operator '" + operator + "'", this);
 		}
 		
-		if (operator.equals(EQUALS) || operator.equals(NOT_EQUAL) || operator.equals(BANG) || operator.equals(AND) || operator.equals(OR))
+		if (operator.equals(EQUALS) || operator.equals(NOT_EQUAL) || operator.equals(BANG) || operator.equals(AND) ||
+			operator.equals(OR) || operator.equals(LESS) || operator.equals(GREATER) || operator.equals(LESS_EQ) || operator.equals(GREATER_EQ))
 		{
 			setType("Bool");
 		}

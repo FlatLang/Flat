@@ -13,11 +13,7 @@ import net.fathomsoft.nova.tree.lambda.LambdaExpression;
 import net.fathomsoft.nova.tree.variables.Array;
 import net.fathomsoft.nova.tree.variables.Variable;
 import net.fathomsoft.nova.tree.variables.VariableDeclaration;
-import net.fathomsoft.nova.util.Bounds;
-import net.fathomsoft.nova.util.Location;
-import net.fathomsoft.nova.util.Patterns;
-import net.fathomsoft.nova.util.StringUtils;
-import net.fathomsoft.nova.util.SyntaxUtils;
+import net.fathomsoft.nova.util.*;
 
 import java.util.regex.Matcher;
 
@@ -262,7 +258,7 @@ public class MethodCall extends Variable
 	 */
 	public VariableDeclaration getMethodDeclaration()
 	{
-		return (VariableDeclaration)getDeclaration();
+		return getDeclaration();
 	}
 	
 	private ClosureDeclaration searchClosureDeclaration(String name)
@@ -807,7 +803,7 @@ public class MethodCall extends Variable
 					n.searchMethodDeclaration(data.name);
 					SyntaxMessage.error("Undeclared method '" + temp.getName() + "'", n);
 				}
-
+				
 				return null;
 			}
 			
