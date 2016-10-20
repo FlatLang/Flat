@@ -172,7 +172,7 @@ public class ArrayBracketOverload extends IValue implements ShorthandAccessible
 		}
 		else
 		{
-			method.setType(type);
+			method.setType(type, false);
 		}
 		
 		return method;
