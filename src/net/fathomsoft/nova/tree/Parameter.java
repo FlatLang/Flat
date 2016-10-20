@@ -85,7 +85,7 @@ public class Parameter extends LocalDeclaration
 		{
 			Integer parsed = tryParse(getName().substring(1));
 			
-			return parsed != null && method.getParameterList().getParameterIndex(getName()) == parsed;
+			return parsed != null && method.getParameterList().getVisibleParameterIndex(getName()) + 1 == parsed;
 		}
 		
 		return false;
