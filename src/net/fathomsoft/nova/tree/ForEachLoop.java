@@ -313,7 +313,10 @@ public class ForEachLoop extends Loop
 		
 		if (value != null)
 		{
-			decodeIterator(value, newLoc, require);
+			if (!decodeIterator(value, newLoc, require))
+			{
+				return null;
+			}
 		}
 		
 		return value;
