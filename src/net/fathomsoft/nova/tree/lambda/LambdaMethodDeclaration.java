@@ -1,6 +1,5 @@
 package net.fathomsoft.nova.tree.lambda;
 
-import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.tree.*;
@@ -49,6 +48,12 @@ public class LambdaMethodDeclaration extends BodyMethodDeclaration
 		return (ClosureDeclaration)methodCall.getNovaMethod().getParameter(methodCall.getArgumentList().getVisibleIndex(closure));
 	}
 	
+	@Override
+	public boolean isUserMade()
+	{
+		return false;
+	}
+	
 	public boolean isDecodingContents()
 	{
 		return closure == null;
@@ -69,7 +74,12 @@ public class LambdaMethodDeclaration extends BodyMethodDeclaration
 			return null;
 		}
 		
-		return getParameterList().getParameter(unnamedParameterPosition++);
+		return getParameterList().getParameter(unnamedParameterPosition);
+	}
+	
+	public void updateUnnamedParameterPosition()
+	{
+		unnamedParameterPosition++;
 	}
 	
 	@Override
