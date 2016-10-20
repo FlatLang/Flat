@@ -9,6 +9,8 @@ import net.fathomsoft.nova.util.Location;
 import net.fathomsoft.nova.util.StringUtils;
 import net.fathomsoft.nova.util.SyntaxUtils;
 
+import java.util.ArrayList;
+
 /**
  * Identifier extension that contains the information describing
  * an array instantiation. The getName() method contains the data type
@@ -363,9 +365,26 @@ public class Array extends VariableDeclaration implements ArrayCompatible
 			
 			String name = array.getAssignedNode().getName();
 			
+			ArrayList<Value> passedValues = new ArrayList<>();
+			
 			for (int i = 0; i < initValues.getNumVisibleChildren(); i++)
 			{
 				Value value = initValues.getVisibleChild(i);
+				
+				if (value instanceof Literal == false && (value instanceof Variable == false || ((Variable)value).getDeclaration() instanceof ReferenceParameter == false))
+				{
+					passedValues.add(value);
+					
+					Parameter param = new Parameter(func.getParameterList(), Location.INVALID);
+					param.setType(value);
+					param.setName("value" + i);
+					func.getParameterList().addChild(param);
+					
+					Variable var = new Variable(func, Location.INVALID);
+					var.setDeclaration(param);
+					
+					value = var;
+				}
 				
 				Assignment a = Assignment.decodeStatement(func, name + "[" + i + "] = " + value.generateNovaInput(), getLocationIn(), true);
 				
@@ -387,7 +406,14 @@ public class Array extends VariableDeclaration implements ArrayCompatible
 			
 			func.addChild(r);
 			
-			MethodCall call = MethodCall.decodeStatement(getParent(), func.getName() + "()", getLocationIn(), true, false, func);
+			String[] args = new String[passedValues.size()];
+			
+			for (int i = 0; i < passedValues.size(); i++)
+			{
+				args[i] = passedValues.get(i).generateNovaInput().toString();
+			}
+			
+			MethodCall call = MethodCall.decodeStatement(getParent(), func.getName() + "(" + String.join(", ", args) + ")", getLocationIn(), true, false, func);
 			
 			replaceWith(call);
 		}
