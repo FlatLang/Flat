@@ -950,7 +950,7 @@ public class MethodCall extends Variable
 		}
 		
 		String arguments[] = StringUtils.splitCommas(argumentList, true);
-
+		
 		Location argsLocation = new Location(getLocationIn());
 		argsLocation.addBounds(bounds.getStart(), bounds.getEnd());
 		

@@ -371,7 +371,7 @@ public class Array extends VariableDeclaration implements ArrayCompatible
 			{
 				Value value = initValues.getVisibleChild(i);
 				
-				if (value instanceof Literal == false && (value instanceof Variable == false || ((Variable)value).getDeclaration() instanceof ReferenceParameter == false))
+				if ((value instanceof Literal == false || ((Literal)value).doesAccess()) && (value instanceof Variable == false || ((Variable)value).getDeclaration() instanceof ReferenceParameter == false))
 				{
 					passedValues.add(value);
 					
