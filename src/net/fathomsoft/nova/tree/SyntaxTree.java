@@ -1,35 +1,25 @@
 package net.fathomsoft.nova.tree;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.regex.Matcher;
-
 import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.error.SyntaxErrorException;
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.tree.annotations.Annotation;
-import net.fathomsoft.nova.tree.exceptionhandling.Catch;
-import net.fathomsoft.nova.tree.exceptionhandling.ExceptionHandler;
-import net.fathomsoft.nova.tree.exceptionhandling.Finally;
-import net.fathomsoft.nova.tree.exceptionhandling.Throw;
-import net.fathomsoft.nova.tree.exceptionhandling.Try;
+import net.fathomsoft.nova.tree.exceptionhandling.*;
 import net.fathomsoft.nova.tree.lambda.LambdaExpression;
 import net.fathomsoft.nova.tree.lambda.LambdaMethodDeclaration;
 import net.fathomsoft.nova.tree.match.Case;
 import net.fathomsoft.nova.tree.match.Default;
 import net.fathomsoft.nova.tree.match.Fallthrough;
 import net.fathomsoft.nova.tree.match.Match;
-import net.fathomsoft.nova.tree.variables.Array;
-import net.fathomsoft.nova.tree.variables.ArrayAccess;
-import net.fathomsoft.nova.tree.variables.FieldDeclaration;
-import net.fathomsoft.nova.tree.variables.Super;
-import net.fathomsoft.nova.tree.variables.Variable;
-import net.fathomsoft.nova.tree.variables.VariableDeclaration;
-import net.fathomsoft.nova.tree.variables.VariableDeclarationList;
+import net.fathomsoft.nova.tree.variables.*;
 import net.fathomsoft.nova.util.*;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.regex.Matcher;
 
 /**
  * Class that deconstructs a source code file and builds a Tree out of
@@ -1500,7 +1490,7 @@ public class SyntaxTree
 		
 		for (int i = 0; i < sources.length; i++)
 		{
-			FileDeclaration child = (FileDeclaration)root.getChild(i);
+			FileDeclaration child = root.getChild(i);
 			
 			sources[i] = child;
 		}
