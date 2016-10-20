@@ -73,7 +73,7 @@ public class ImportList extends TypeList<Import>
 		
 		for (int i = 0; i < getNumVisibleChildren(); i++)
 		{
-			Import child = (Import)getVisibleChild(i);
+			Import child = getVisibleChild(i);
 			
 			String location = child.getClassLocation(aliased);
 			
