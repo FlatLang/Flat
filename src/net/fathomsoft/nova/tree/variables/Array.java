@@ -304,9 +304,9 @@ public class Array extends VariableDeclaration implements ArrayCompatible
 			return SyntaxMessage.queryError("Array initializer can only be assigned to arrays", this, require);
 		}
 		
-		TypeList<Value> initValues = new TypeList<Value>(this, getLocationIn().asNew());
+		TypeList<Value> initValues = new TypeList<>(this, getLocationIn().asNew());
 		
-		String values[] = StringUtils.splitCommas(contents);
+		String values[] = StringUtils.splitCommas(contents, false, true);
 		
 		VariableDeclaration arrayDeclaration = getArrayDeclaration();
 		Value arrayType = arrayDeclaration != null ? arrayDeclaration.getArrayTypeValue() : null;

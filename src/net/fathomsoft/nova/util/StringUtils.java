@@ -1,10 +1,7 @@
 package net.fathomsoft.nova.util;
 
-import com.sun.org.apache.xpath.internal.functions.Function2Args;
-
 import java.util.ArrayList;
 import java.util.Objects;
-import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.regex.Matcher;
 
@@ -1546,6 +1543,11 @@ public class StringUtils
 	
 	public static String[] splitCommas(String src, boolean searchGenerics)
 	{
+		return splitCommas(src, searchGenerics, false);
+	}
+	
+	public static String[] splitCommas(String src, boolean searchGenerics, boolean allowTrailing)
+	{
 		ArrayList<String> strs = new ArrayList<String>();
 		
 		int oldIndex =  0;
@@ -1568,7 +1570,10 @@ public class StringUtils
 		
 		trimSurroundingWhitespace(builder);
 		
-		strs.add(builder.toString());
+		if (!allowTrailing || builder.toString().trim().length() > 0)
+		{
+			strs.add(builder.toString());
+		}
 		
 		return strs.toArray(new String[0]);
 	}
