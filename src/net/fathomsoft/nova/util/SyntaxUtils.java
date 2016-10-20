@@ -1895,6 +1895,13 @@ public class SyntaxUtils
 	 */
 	public static ClassDeclaration getTypeInCommon(Value value1, Value value2)
 	{
+		if (value1.isPrimitive() && value2.isPrimitive())
+		{
+			String type = getHighestPrimitiveType(value1.getType(), value2.getType());
+			
+			return value1.getType().equals(type) ? value1.getTypeClass() : value2.getTypeClass();
+		}
+		
 		ClassDeclaration type1 = value1.getTypeClass();
 		ClassDeclaration type2 = value2.getTypeClass();
 		
