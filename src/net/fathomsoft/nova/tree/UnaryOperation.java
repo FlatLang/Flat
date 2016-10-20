@@ -1,7 +1,5 @@
 package net.fathomsoft.nova.tree;
 
-import java.util.HashMap;
-
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.error.SyntaxMessage;
@@ -10,6 +8,8 @@ import net.fathomsoft.nova.util.Bounds;
 import net.fathomsoft.nova.util.Location;
 import net.fathomsoft.nova.util.StringUtils;
 import net.fathomsoft.nova.util.SyntaxUtils;
+
+import java.util.HashMap;
 
 /**
  * Node extension that represents a unary operator node type.
@@ -185,6 +185,18 @@ public class UnaryOperation extends IValue
 		return null;
 	}
 	
+	@Override
+	public String getType(boolean checkCast)
+	{
+		return getOperator().getType(checkCast);
+	}
+	
+	@Override
+	public byte getDataType(boolean checkGeneric)
+	{
+		return getOperator().getDataType();
+	}
+	
 	/**
 	 * The the Node that represents the operator in the operation.<br>
 	 * For example:<br>
@@ -277,6 +289,8 @@ public class UnaryOperation extends IValue
 			
 			if (n.decodeIdentifierValue(contents, newLoc, bounds, require))
 			{
+				n.getOperator().setType(n.getValue().getReturnedNode());
+				
 				return n;
 			}
 		}

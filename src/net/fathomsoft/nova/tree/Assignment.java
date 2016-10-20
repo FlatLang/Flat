@@ -1,7 +1,5 @@
 package net.fathomsoft.nova.tree;
 
-import java.util.ArrayList;
-
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.error.SyntaxMessage;
@@ -15,6 +13,8 @@ import net.fathomsoft.nova.tree.variables.VariableDeclarationList;
 import net.fathomsoft.nova.util.Location;
 import net.fathomsoft.nova.util.StringUtils;
 import net.fathomsoft.nova.util.SyntaxUtils;
+
+import java.util.ArrayList;
 
 /**
  * Node extension that contains information describing a variable
