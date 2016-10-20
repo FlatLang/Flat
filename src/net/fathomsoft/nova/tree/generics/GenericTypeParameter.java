@@ -2,9 +2,7 @@ package net.fathomsoft.nova.tree.generics;
 
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.ValidationResult;
-import net.fathomsoft.nova.error.SyntaxErrorException;
 import net.fathomsoft.nova.tree.*;
-import net.fathomsoft.nova.tree.variables.Variable;
 import net.fathomsoft.nova.util.Location;
 import net.fathomsoft.nova.util.SyntaxUtils;
 
@@ -95,42 +93,9 @@ public class GenericTypeParameter extends IValue
 	
 	public GenericTypeArgument getCorrespondingArgument(GenericCompatible context)
 	{
-		if (context instanceof Accessible)
+		if (context instanceof Identifier)
 		{
-			//Value reference = ((Accessible)context).getReferenceNode().toValue();
-			
-			/*ClassDeclaration clazz = null;
-			
-			if (reference.isGenericType())
-			{
-				clazz = reference.getGenericTypeParameter().getCorrespondingArgument(reference).getTypeClass();
-			}
-			else
-			{
-				clazz = reference.getTypeClass();
-			}*/
-			
-			if (context instanceof Identifier)
-			{
-				//Identifier var = (Identifier)reference;
-				
-				//return var.getGenericTypeArgumentFromParameter(this);
-				
-				/*if (reference.isGenericType() && reference.getGenericTypeParameter() == this)
-				{
-					return ((Identifier)reference).getGenericTypeArgumentFromParameter(this);
-				}*/
-				
-				return ((Identifier)context).getGenericTypeArgumentFromParameter(this);
-			}
-			/*else if (isMethodGenericTypeParameter())
-			{
-				return null;
-			}*/
-			
-			return null;//reference.getGenericTypeArgument(getType());
-			
-			//clazz.getgenerictypepara
+			return ((Identifier)context).getGenericTypeArgumentFromParameter(this);
 		}
 		
 		return null;
