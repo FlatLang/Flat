@@ -1,11 +1,5 @@
 package net.fathomsoft.nova.tree;
 
-import java.util.ArrayList;
-import java.util.function.Consumer;
-import java.util.function.Function;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.ValidationResult;
@@ -16,11 +10,13 @@ import net.fathomsoft.nova.tree.annotations.TargetAnnotation;
 import net.fathomsoft.nova.tree.exceptionhandling.Try;
 import net.fathomsoft.nova.tree.variables.VariableDeclaration;
 import net.fathomsoft.nova.tree.variables.VariableDeclarationList;
-import net.fathomsoft.nova.util.Bounds;
-import net.fathomsoft.nova.util.Location;
-import net.fathomsoft.nova.util.Patterns;
-import net.fathomsoft.nova.util.StringUtils;
-import net.fathomsoft.nova.util.SyntaxUtils;
+import net.fathomsoft.nova.util.*;
+
+import java.util.ArrayList;
+import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static java.util.Arrays.stream;
 
@@ -974,8 +970,14 @@ public abstract class Node implements Listenable, Annotatable
 		parent = null;
 		
 		onRemoved(fromNode);
+		fromNode.onChildRemoved(this);
 		
 		return this;
+	}
+	
+	public void onChildRemoved(Node child)
+	{
+		
 	}
 	
 	/**
