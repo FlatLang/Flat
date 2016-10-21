@@ -1,8 +1,5 @@
 package net.fathomsoft.nova.tree;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-
 import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.ValidationResult;
@@ -11,13 +8,16 @@ import net.fathomsoft.nova.tree.MethodList.SearchFilter;
 import net.fathomsoft.nova.tree.annotations.Annotation;
 import net.fathomsoft.nova.tree.generics.GenericTypeArgument;
 import net.fathomsoft.nova.tree.generics.GenericTypeArgumentList;
-import net.fathomsoft.nova.tree.generics.GenericTypeParameterDeclaration;
 import net.fathomsoft.nova.tree.generics.GenericTypeParameter;
+import net.fathomsoft.nova.tree.generics.GenericTypeParameterDeclaration;
 import net.fathomsoft.nova.tree.variables.*;
 import net.fathomsoft.nova.util.Bounds;
 import net.fathomsoft.nova.util.Location;
 import net.fathomsoft.nova.util.StringUtils;
 import net.fathomsoft.nova.util.SyntaxUtils;
+
+import java.util.ArrayList;
+import java.util.Arrays;
 
 /**
  * Declaration extension that represents the declaration of a class
@@ -2079,7 +2079,7 @@ public class ClassDeclaration extends InstanceDeclaration
 			{
 				FileDeclaration file = getFileDeclaration();
 				
-				if (!file.getName().equals(getName()))
+				if (!file.getName().substring(0, file.getName().indexOf('.') > 0 ? file.getName().indexOf('.') : file.getName().length()).equals(getName()))
 				{
 					SyntaxMessage.error("The name of the class '" + getName() + "' must be the same as the file that it is contained within", this, false);
 					
