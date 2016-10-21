@@ -1,8 +1,5 @@
 package net.fathomsoft.nova.tree;
 
-import java.io.File;
-import java.util.regex.Matcher;
-
 import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.error.SyntaxErrorException;
@@ -11,13 +8,10 @@ import net.fathomsoft.nova.tree.annotations.Annotation;
 import net.fathomsoft.nova.tree.annotations.TargetAnnotation;
 import net.fathomsoft.nova.tree.generics.GenericTypeArgument;
 import net.fathomsoft.nova.tree.variables.FieldDeclaration;
-import net.fathomsoft.nova.util.Bounds;
-import net.fathomsoft.nova.util.FileUtils;
-import net.fathomsoft.nova.util.Location;
-import net.fathomsoft.nova.util.Patterns;
-import net.fathomsoft.nova.util.Stack;
-import net.fathomsoft.nova.util.StringUtils;
-import net.fathomsoft.nova.util.SyntaxUtils;
+import net.fathomsoft.nova.util.*;
+
+import java.io.File;
+import java.util.regex.Matcher;
 
 /**
  * Class that is used to generate syntax tree data for a given file
@@ -372,6 +366,16 @@ public class TreeGenerator implements Runnable
 			if (updateParents(statementStartIndex, statementStartIndex + 1, previous))
 			{
 				statementStartIndex = StringUtils.findNextNonWhitespaceIndex(source, statementStartIndex + 1);
+				
+				if (statementStartIndex > 0 && source.charAt(statementStartIndex) == '}')
+				{
+					if (!parentStack.isEmpty())
+					{
+						parentStack.pop();
+					}
+					
+					statementStartIndex = StringUtils.findNextNonWhitespaceIndex(source, statementStartIndex + 1);
+				}
 			}
 		}
 		
