@@ -1,14 +1,9 @@
 package net.fathomsoft.nova.tree.variables;
 
-import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.tree.*;
-import net.fathomsoft.nova.util.Bounds;
-import net.fathomsoft.nova.util.Location;
-import net.fathomsoft.nova.util.Patterns;
-import net.fathomsoft.nova.util.Regex;
-import net.fathomsoft.nova.util.SyntaxUtils;
+import net.fathomsoft.nova.util.*;
 
 /**
  * Value extension that keeps track of any time an array is being
@@ -96,14 +91,21 @@ public class ArrayAccess extends Node implements ArrayCompatible
 				
 				if (!((Value)parent).getReturnedNode().isPrimitiveArray())
 				{
-					ClassDeclaration clazz = ((Value)parent).getReturnedNode().getTypeClass(false);
+					Value reference = ((Value)parent).getReturnedNode();
+					
+					ClassDeclaration clazz = reference.getTypeClass(false);
 					
 					if (!clazz.containsArrayBracketOverload())
 					{
 						SyntaxMessage.error("Type '" + clazz.getName() + "' does not implement array brackets", n);
 					}
 					
-					MethodCall call = MethodCall.decodeStatement(((Value)parent).getReturnedNode(), "get(" + data + ")", location, require, false, clazz.getArrayAccessorMethod());
+					if (!clazz.getArrayBracketOverload().alreadyDecoded())
+					{
+						reference.getTypeClass().getArrayBracketOverload().decodeShorthandAccessor();
+					}
+					
+					MethodCall call = MethodCall.decodeStatement(reference, "get(" + data + ")", location, require, false, clazz.getArrayAccessorMethod());
 					
 					if (overloadCall == null)
 					{

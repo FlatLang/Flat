@@ -9,6 +9,8 @@ public interface ShorthandAccessible
 	boolean isTwoWayBinding();
 	void setTwoWayBinding(boolean twoWay);
 	
+	boolean alreadyDecoded();
+	
 	String getShorthandAccessor();
 	void setShorthandAccessor(String shorthand);
 	
@@ -54,7 +56,7 @@ public interface ShorthandAccessible
 		String accessorValue = getShorthandAccessor();
 		boolean twoWayBinding = isTwoWayBinding();
 		
-		if (accessorValue != null)
+		if (accessorValue != null && !alreadyDecoded())
 		{
 			if (containsAccessorMethod())
 			{

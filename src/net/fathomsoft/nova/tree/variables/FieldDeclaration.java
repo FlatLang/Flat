@@ -1,18 +1,10 @@
 package net.fathomsoft.nova.tree.variables;
 
-import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.ValidationResult;
-import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.tree.*;
 import net.fathomsoft.nova.tree.MethodList.SearchFilter;
-import net.fathomsoft.nova.util.Bounds;
-import net.fathomsoft.nova.util.Location;
-import net.fathomsoft.nova.util.Patterns;
-import net.fathomsoft.nova.util.StringUtils;
-import net.fathomsoft.nova.util.SyntaxUtils;
-
-import java.util.ArrayList;
+import net.fathomsoft.nova.util.*;
 
 /**
  * Declaration extension that represents the declaration of a field
@@ -41,6 +33,12 @@ public class FieldDeclaration extends InstanceDeclaration implements ShorthandAc
 	public FieldDeclaration(Node temporaryParent, Location locationIn)
 	{
 		super(temporaryParent, locationIn);
+	}
+	
+	@Override
+	public boolean alreadyDecoded()
+	{
+		return accessorValue == null;
 	}
 	
 	@Override

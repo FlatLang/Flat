@@ -13,7 +13,7 @@ import net.fathomsoft.nova.util.StringUtils;
  */
 public class ArrayBracketOverload extends IValue implements ShorthandAccessible
 {
-	private boolean twoWayBinding;
+	private boolean twoWayBinding, decoded;
 	
 	private String accessorValue;
 	
@@ -23,6 +23,12 @@ public class ArrayBracketOverload extends IValue implements ShorthandAccessible
 	public ArrayBracketOverload(Node temporaryParent, Location locationIn)
 	{
 		super(temporaryParent, locationIn);
+	}
+	
+	@Override
+	public boolean alreadyDecoded()
+	{
+		return decoded;
 	}
 	
 	@Override
@@ -174,6 +180,8 @@ public class ArrayBracketOverload extends IValue implements ShorthandAccessible
 		{
 			method.setType(type, false);
 		}
+		
+		decoded = true;
 		
 		return method;
 	}
