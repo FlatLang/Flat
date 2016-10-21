@@ -40,11 +40,11 @@ public class StaticClassReference extends IIdentifier
 	 * @param location The location of the statement in the source code.
 	 * @param require Whether or not to throw an error if anything goes wrong.
 	 * @return The generated node, if it was possible to translated it
-	 * 		into a {@link StaticClassReference}.
+	 * 		into a {@link StaticClassReference}.`
 	 */
 	public static StaticClassReference decodeStatement(Node parent, String statement, Location location, boolean require)
 	{
-		if (parent.getFileDeclaration().containsImport(statement, false))
+		if (parent.getParentClass().getName().equals(statement) || parent.getFileDeclaration().containsImport(statement, false))
 		{
 			StaticClassReference n = new StaticClassReference(parent, location);
 			
