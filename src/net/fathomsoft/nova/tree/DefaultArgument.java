@@ -43,20 +43,6 @@ public class DefaultArgument extends IValue
 
         return null;
     }
-    
-    public static StringBuilder generateDefaultArgumentOutput(StringBuilder builder, Value parameter)
-    {
-        if (parameter.isPrimitive())
-        {
-            builder.append("(intptr_t)nova_null");
-        }
-        else
-        {
-            builder.append(0);
-        }
-        
-        return builder;
-    }
 
     /**
      * @see net.fathomsoft.nova.tree.Node#clone(Node, Location, boolean)
