@@ -509,7 +509,7 @@ public class ClassDeclaration extends InstanceDeclaration
 			
 			if (clazz instanceof Interface)
 			{
-				array.add((Interface) clazz);
+				array.add((Interface)clazz);
 			}
 			else
 			{
