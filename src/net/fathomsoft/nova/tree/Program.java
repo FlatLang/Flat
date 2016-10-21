@@ -1,13 +1,14 @@
 package net.fathomsoft.nova.tree;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-
 import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.util.Location;
 import net.fathomsoft.nova.util.SyntaxUtils;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Node extension that represents a whole Nova program. The
@@ -30,7 +31,7 @@ public class Program extends TypeList<FileDeclaration>
 	private NovaMethodDeclaration[] interfaceMethods;
 	private ClosureDeclaration[]	closures;
 	
-	private final HashMap<String, Integer>	files = new HashMap<String, Integer>();
+	private final HashMap<String, Integer>	files = new HashMap<>();
 	
 	private int uniqueId = 1;
 	
@@ -80,7 +81,7 @@ public class Program extends TypeList<FileDeclaration>
 			return interfaceMethods;
 		}
 		
-		ArrayList<NovaMethodDeclaration> methods = new ArrayList<NovaMethodDeclaration>();
+		ArrayList<NovaMethodDeclaration> methods = new ArrayList<>();
 		
 		for (FileDeclaration file : tree.getFiles())
 		{
@@ -118,7 +119,7 @@ public class Program extends TypeList<FileDeclaration>
 			return closures;
 		}
 		
-		ArrayList<ClosureDeclaration> list = new ArrayList<ClosureDeclaration>();
+		ArrayList<ClosureDeclaration> list = new ArrayList<>();
 		
 		for (FileDeclaration file : tree.getFiles())
 		{
@@ -208,7 +209,7 @@ public class Program extends TypeList<FileDeclaration>
 		
 		int index = files.get(classLocation);
 		
-		FileDeclaration node = (FileDeclaration)getVisibleChild(index);
+		FileDeclaration node = getVisibleChild(index);
 		
 		String className = SyntaxUtils.getClassName(classLocation);
 		
@@ -225,7 +226,38 @@ public class Program extends TypeList<FileDeclaration>
 	{
 		int index = files.get(filename);
 		
-		return (FileDeclaration)getChild(index);
+		return getChild(index);
+	}
+	
+	@Override
+	public void onChildRemoved(Node child)
+	{
+		if (child instanceof FileDeclaration)
+		{
+			FileDeclaration file = (FileDeclaration)child;
+			
+			if (file.getClassDeclaration() != null)
+			{
+				int index = 0;
+				
+				if (!file.isExternalFile())
+				{
+					index = files.remove(file.getClassDeclaration().getClassLocation());
+				}
+				else
+				{
+					index = files.get(file.getClassDeclaration().getClassLocation());
+				}
+				
+				for (Map.Entry<String, Integer> p : files.entrySet())
+				{
+					if (p.getValue() >= index)
+					{
+						files.put(p.getKey(), p.getValue() - 1);
+					}
+				}
+			}
+		}
 	}
 	
 	/**
@@ -255,17 +287,18 @@ public class Program extends TypeList<FileDeclaration>
 		{
 			for (int i = 0; i < getNumVisibleChildren(); i++)
 			{
-				Node child = getVisibleChild(i);
+				FileDeclaration file = getVisibleChild(i);
 				
-				FileDeclaration file = (FileDeclaration)child;
-				
-				ClassDeclaration clazz = file.getClassDeclaration();
-				
-				if (clazz != null)
+				if (!file.isExternalFile())
 				{
-					String location = clazz.getClassLocation();
+					ClassDeclaration clazz = file.getClassDeclaration();
 					
-					files.put(location, i);
+					if (clazz != null)
+					{
+						String location = clazz.getClassLocation();
+						
+						files.put(location, i);
+					}
 				}
 			}
 		}
