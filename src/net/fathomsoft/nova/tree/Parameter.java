@@ -271,6 +271,8 @@ public class Parameter extends LocalDeclaration
 		if (phase == SyntaxTree.PHASE_METHOD_CONTENTS && defaultValueString != null)
 		{
 			defaultValue = SyntaxTree.decodeValue(this, defaultValueString, getLocationIn(), true);
+			defaultValue.onAfterDecoded();
+			defaultValue.onAdded(this);
 			
 			defaultValueString = null;
 		}
