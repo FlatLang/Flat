@@ -1,10 +1,5 @@
 package net.fathomsoft.nova.tree;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-
-import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.error.SyntaxMessage;
@@ -15,6 +10,10 @@ import net.fathomsoft.nova.tree.generics.GenericTypeParameterDeclaration;
 import net.fathomsoft.nova.tree.variables.ObjectReference;
 import net.fathomsoft.nova.tree.variables.VariableDeclaration;
 import net.fathomsoft.nova.util.*;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
 
 /**
  * Declaration extension that represents the declaration of a method
@@ -911,31 +910,33 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 	
 	public Value inferShorthandActionType(String action, Value contents)
 	{
-		if (getType(false) == null)
+		boolean setType = getType(false) == null;
+		
+		Value returned = contents.getReturnedNode();
+		
+		if (returned.getType() == null)
 		{
-			Value returned = contents.getReturnedNode();
-			
-			if (returned.getType() == null)
+			if (returned instanceof MethodCall)
 			{
-				if (returned instanceof MethodCall)
+				NovaMethodDeclaration method = ((MethodCall)returned).getNovaMethod();
+				
+				if (method != null && method.shorthandAction != null)
 				{
-					NovaMethodDeclaration method = ((MethodCall)returned).getNovaMethod();
-					
-					if (method != null && method.shorthandAction != null)
-					{
-						SyntaxMessage.error("Unable to infer return value of shorthand action '" + shorthandAction + "'. Please add an explicit return type to any functions that the shorthand action returns.", this);
-					}
+					SyntaxMessage.error("Unable to infer return value of shorthand action '" + shorthandAction + "'. Please add an explicit return type to any functions that the shorthand action returns.", this);
 				}
 			}
-			else
+		}
+		else
+		{
+			if (setType)
 			{
 				setType(returned.getNovaTypeValue(returned));
-				
-				Return r = new Return(this, getLocationIn());
-				r.getReturnValues().addChild(contents);
-				
-				contents = r;
 			}
+			
+			Return r = new Return(this, getLocationIn());
+			r.getReturnValues().addChild(contents);
+			
+			contents = r;
 		}
 		
 		return contents;
