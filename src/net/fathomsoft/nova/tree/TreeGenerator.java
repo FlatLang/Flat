@@ -377,6 +377,11 @@ public class TreeGenerator implements Runnable
 					statementStartIndex = StringUtils.findNextNonWhitespaceIndex(source, statementStartIndex + 1);
 				}
 			}
+			
+			if (statementStartIndex < 0)
+			{
+				return null;
+			}
 		}
 		
 		while ((statementEndIndex = calculateStatementEnd(statementStartIndex)) >= 0 && !statementStartMatcher.hitEnd() && !parentStack.isEmpty())
