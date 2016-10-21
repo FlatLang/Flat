@@ -1030,11 +1030,16 @@ public abstract class Value extends Node implements AbstractValue
 		{
 			MethodCall call = (MethodCall)getAncestorOfType(MethodCall.class);
 			
-			GenericTypeParameter param = call.getReferenceNode().toValue().getTypeClass().getGenericTypeParameter(getType(), this);
+			ClassDeclaration clazz = call.getReferenceNode().toValue().getTypeClass();
 			
-			if (param != null)
+			if (clazz != null)
 			{
-				return param;
+				GenericTypeParameter param = clazz.getGenericTypeParameter(getType(), this);
+				
+				if (param != null)
+				{
+					return param;
+				}
 			}
 		}
 		if (getParentClass() == null)
