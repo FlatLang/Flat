@@ -1,8 +1,5 @@
 package net.fathomsoft.nova.tree;
 
-import java.io.File;
-import java.util.ArrayList;
-
 import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.ValidationResult;
@@ -10,6 +7,9 @@ import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.util.FileUtils;
 import net.fathomsoft.nova.util.Location;
 import net.fathomsoft.nova.util.SyntaxUtils;
+
+import java.io.File;
+import java.util.ArrayList;
 
 /**
  * Class used to organize the Files that are fed to the compiler.
@@ -403,8 +403,22 @@ public class FileDeclaration extends Node
 		{
 			validateImports();
 		}
+		else if (phase == SyntaxTree.PHASE_PRE_GENERATION)
+		{
+			if (isExternalFile())
+			{
+				detach();
+				
+				result.skipCycle = true;
+			}
+		}
 		
 		return result;
+	}
+	
+	public boolean isExternalFile()
+	{
+		return getFile().getName().indexOf('.') != getFile().getName().lastIndexOf('.');
 	}
 	
 	private void validateImports()
