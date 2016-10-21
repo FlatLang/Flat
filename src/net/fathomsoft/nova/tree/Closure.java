@@ -224,6 +224,16 @@ public class Closure extends Variable
 	
 	public ClosureDeclaration searchClosureDeclaration()
 	{
+		if (getParent() instanceof Parameter)
+		{
+			Parameter param = (Parameter)getParent();
+			
+			if (param.getDefaultValue() == this)
+			{
+				return (ClosureDeclaration)param;
+			}
+		}
+		
 		return (ClosureDeclaration)getMethodCall().getCorrespondingParameter((Value)getRootNode());
 	}
 	
