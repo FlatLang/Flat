@@ -237,13 +237,8 @@ public class Array extends VariableDeclaration implements ArrayCompatible
 	{
 		if (isInitializer(statement))
 		{
-			if (!(parent instanceof Assignment) && !(parent instanceof MethodCallArgumentList))
+			if (!(parent instanceof Assignment) && !(parent instanceof MethodCallArgumentList) && !(parent instanceof Return))
 			{
-				if (require)
-				{
-					int j = 5;
-				}
-
 				return SyntaxMessage.queryError("Array initializer is only valid during an assignment", this, require);
 			}
 
@@ -433,6 +428,11 @@ public class Array extends VariableDeclaration implements ArrayCompatible
 		{
 			return null;
 		}*/
+		
+		if (getParent() instanceof Return)
+		{
+			return getParentMethod();
+		}
 		
 		MethodCallArgumentList args = (MethodCallArgumentList)getAncestorOfType(MethodCallArgumentList.class);
 		
