@@ -6,6 +6,8 @@ import net.fathomsoft.nova.tree.*;
 import net.fathomsoft.nova.tree.MethodList.SearchFilter;
 import net.fathomsoft.nova.util.*;
 
+import java.util.ArrayList;
+
 /**
  * Declaration extension that represents the declaration of a field
  * node type. See {@link #decodeStatement(Node, String, Location, boolean)}
@@ -424,20 +426,55 @@ public class FieldDeclaration extends InstanceDeclaration implements ShorthandAc
 		{
 			if (initializationValue != null)
 			{
-				Node parent = null;
+				Node[] parents = new Node[] { null };
+				
+				ClassDeclaration[] classes = new ClassDeclaration[] { getParentClass() };
 				
 				if (isStatic())
 				{
-					parent = getParentClass().getStaticAssignmentBlock();
+					parents[0] = getParentClass().getStaticAssignmentBlock();
 				}
 				else
 				{
-					parent = getParentClass().getAssignmentMethodNode();
+					if (getParentClass() instanceof Interface)
+					{
+						Interface i = (Interface)getParentClass();
+						
+						ArrayList<Node> tempParents = new ArrayList<>();
+						ArrayList<ClassDeclaration> temp = new ArrayList<>();
+						
+						for (ClassDeclaration c : i.implementingClasses)
+						{
+							if (!c.containsField(getName(), false))
+							{
+								temp.add(c);
+								tempParents.add(c.getAssignmentMethodNode());
+							}
+						}
+						
+						classes = temp.toArray(new ClassDeclaration[0]);
+						parents = tempParents.toArray(new Node[0]);
+					}
+					else
+					{
+						parents[0] = getParentClass().getAssignmentMethodNode();
+					}
 				}
 				
-				Assignment assignment = Assignment.decodeStatement(parent, getName() + " = " + initializationValue, getLocationIn(), true);
-				
-				getParentClass().addFieldInitialization(assignment);
+				if (parents.length > 0)
+				{
+					Assignment assignment = Assignment.decodeStatement(parents[0], getName() + " = " + initializationValue, getLocationIn(), true);
+					
+					for (int i = 0; i < classes.length; i++)
+					{
+						if (i > 0)
+						{
+							assignment = assignment.clone(parents[i], getLocationIn(), true);
+						}
+						
+						classes[i].addFieldInitialization(assignment);
+					}
+				}
 			}
 			
 			//decodeShorthandAccessor();
