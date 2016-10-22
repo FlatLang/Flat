@@ -58,7 +58,7 @@ public class SyntaxTree
 		Fallthrough.class, Continue.class, ExceptionHandler.class, Assignment.class,
 		Instantiation.class, ElseStatement.class, IfStatement.class,
 		Until.class, Loop.class, Array.class, UnaryOperation.class, Cast.class,
-		MethodCall.class, LocalDeclaration.class, ExternalCodeBlock.class
+		MethodCall.class, LocalDeclaration.class, ExternalCodeBlock.class, Array.class
 	};
 	
 	public static final Class<?> FIELD_SCOPE_CHILD_DECODE[] = new Class<?>[]
@@ -1258,7 +1258,12 @@ public class SyntaxTree
 				
 				if (node == null)
 				{
-					node = parent.getParentClass(true).getField(statement);
+					ClassDeclaration clazz = parent.getParentClass(true);
+					
+					if (clazz != null)
+					{
+						node = clazz.getField(statement);
+					}
 				}
 			}
 		}
