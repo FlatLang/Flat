@@ -951,6 +951,11 @@ public class ClassDeclaration extends InstanceDeclaration
 		return getField(fieldName) != null;
 	}
 	
+	public boolean containsField(String fieldName, boolean checkAncestor)
+	{
+		return getField(fieldName, checkAncestor) != null;
+	}
+	
 	public void addFieldInitialization(Assignment assignment)
 	{
 		FieldDeclaration field = (FieldDeclaration)assignment.getAssignedNode().getDeclaration();
@@ -2103,6 +2108,8 @@ public class ClassDeclaration extends InstanceDeclaration
 					
 				}
 			}
+			
+			addAssignmentMethods();
 		}
 		else if (phase == SyntaxTree.PHASE_INSTANCE_DECLARATIONS)
 		{
@@ -2138,6 +2145,7 @@ public class ClassDeclaration extends InstanceDeclaration
 	private void validateDeclaration(int phase)
 	{
 		validateImplementations(phase);
+		validateExtension(phase);
 	}
 	
 	/**
@@ -2259,9 +2267,7 @@ public class ClassDeclaration extends InstanceDeclaration
 		getConstructorList().validate(phase);
 		getDestructorList().validate(phase);
 		
-		addAssignmentMethods();
-		
-		ArrayList<NovaMethodDeclaration> errors = new ArrayList<NovaMethodDeclaration>();
+		ArrayList<NovaMethodDeclaration> errors = new ArrayList<>();
 		
 		if (doesExtendClass() && getExtendedClassDeclaration() != null)
 		{
@@ -2324,6 +2330,23 @@ public class ClassDeclaration extends InstanceDeclaration
 		}
 	}
 	
+	private void validateExtension(int phase)
+	{
+		ExtendedClass extended = getExtendedClass();
+		
+		if (extended != null)
+		{
+			ClassDeclaration clazz = SyntaxUtils.getImportedClass(getFileDeclaration(), extended.getType());
+			
+			if (clazz == null)
+			{
+				SyntaxMessage.error("Class '" + extended.getType() + "' is not imported", this);
+			}
+			
+			// TODO: Add extension reference here
+		}
+	}
+	
 	/**
 	 * Validate that all of the implemented classes have been declared
 	 * and that they are valid interfaces.
@@ -2340,6 +2363,14 @@ public class ClassDeclaration extends InstanceDeclaration
 			{
 				SyntaxMessage.error("Class '" + implementedClass + "' not declared", this);
 			}
+			else if (clazz instanceof Interface == false)
+			{
+				SyntaxMessage.error("Class '" + implementedClass + "' is not an interface and therefore cannot be implemented", this);
+			}
+			
+			Interface i = (Interface)clazz;
+			
+			i.addImplementingClass(this);
 		}
 	}
 	
