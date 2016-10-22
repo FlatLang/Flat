@@ -5,6 +5,8 @@ import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.util.Location;
 import net.fathomsoft.nova.util.StringUtils;
 
+import java.util.ArrayList;
+
 /**
  * {@link ClassDeclaration} extension that represents
  * 
@@ -16,12 +18,19 @@ public class Interface extends ClassDeclaration
 {
 	public static final String IDENTIFIER = "interface";
 	
+	public final ArrayList<ClassDeclaration> implementingClasses = new ArrayList<>();
+	
 	/**
 	 * @see net.fathomsoft.nova.tree.Node#Node(Node, Location)
 	 */
 	public Interface(Node temporaryParent, Location locationIn)
 	{
 		super(temporaryParent, locationIn);
+	}
+	
+	public void addImplementingClass(ClassDeclaration clazz)
+	{
+		implementingClasses.add(clazz);
 	}
 	
 	/**
