@@ -24,46 +24,51 @@ public class Operator extends IValue
 	public static final String	OR  = "||",  OR_C  = "||";
 	
 	// Math operators
-	public static final String	DIVIDE      = "/",  DIVIDE_C      = "/";
-	public static final String	MULTIPLY    = "*",  MULTIPLY_C    = "*";
-	public static final String	MODULO      = "%",  MODULO_C      = "%";
-	public static final String	ADD         = "+",  ADD_C         = "+";
-	public static final String	SUBTRACT    = "-",  SUBTRACT_C    = "-";
-	public static final String	ASSIGN      = "=",  ASSIGN_C      = "=";
-	public static final String	BANG        = "!",  BANG_C        = "!";
-	public static final String	EQUALS      = "==", EQUALS_C      = "==";
-	public static final String	NOT_EQUAL   = "!=", NOT_EQUAL_C   = "!=";
-	public static final String	INCREMENT   = "++", INCREMENT_C   = "++";
-	public static final String	DECREMENT   = "--", DECREMENT_C   = "--";
-	public static final String	BITWISE_AND = "&",  BITWISE_AND_C = "&";
-	public static final String	BITWISE_OR  = "|",  BITWISE_OR_C  = "|";
-	public static final String	GREATER     = ">",  GREATER_C     = ">";
-	public static final String	LESS        = "<",  LESS_C        = "<";
-	public static final String	GREATER_EQ  = ">=", GREATER_EQ_C  = ">=";
-	public static final String	LESS_EQ     = "<=", LESS_EQ_C     = "<=";
-	public static final String	L_SHIFT     = "<<", L_SHIFT_C     = "<<";
-	public static final String	R_SHIFT     = ">>", R_SHIFT_C     = ">>";
+	public static final String	DIVIDE             = "/",   DIVIDE_C             = "/";
+	public static final String	MULTIPLY           = "*",   MULTIPLY_C           = "*";
+	public static final String	MODULO             = "%",   MODULO_C             = "%";
+	public static final String	ADD                = "+",   ADD_C                = "+";
+	public static final String	SUBTRACT           = "-",   SUBTRACT_C           = "-";
+	public static final String	ASSIGN             = "=",   ASSIGN_C             = "=";
+	public static final String	BANG               = "!",   BANG_C               = "!";
+	public static final String	EQUALS             = "==",  EQUALS_C             = "==";
+	public static final String	NOT_EQUAL          = "!=",  NOT_EQUAL_C          = "!=";
+	public static final String	INCREMENT          = "++",  INCREMENT_C          = "++";
+	public static final String	DECREMENT          = "--",  DECREMENT_C          = "--";
+	public static final String	BITWISE_AND        = "&",   BITWISE_AND_C        = "&";
+	public static final String	BITWISE_OR         = "|",   BITWISE_OR_C         = "|";
+	public static final String	BITWISE_XOR        = "^",   BITWISE_XOR_C        = "^";
+	public static final String	BITWISE_COMPLEMENT = "~",   BITWISE_COMPLEMENT_C = "~";
+	public static final String	GREATER            = ">",   GREATER_C            = ">";
+	public static final String	LESS               = "<",   LESS_C               = "<";
+	public static final String	GREATER_EQ         = ">=",  GREATER_EQ_C         = ">=";
+	public static final String	LESS_EQ            = "<=",  LESS_EQ_C            = "<=";
+	public static final String	L_SHIFT            = "<<",  L_SHIFT_C            = "<<";
+	public static final String	R_SHIFT            = ">>",  R_SHIFT_C            = ">>";
+	public static final String	UR_SHIFT           = ">>>", UR_SHIFT_C           = ">>>";
 	
-	public static final String	SHORTHAND_DIVIDE      = "/=",  SHORTHAND_DIVIDE_C      = "/=";
-	public static final String	SHORTHAND_MULTIPLY    = "*=",  SHORTHAND_MULTIPLY_C    = "*=";
-	public static final String	SHORTHAND_MODULO      = "%=",  SHORTHAND_MODULO_C      = "%=";
-	public static final String	SHORTHAND_ADD         = "+=",  SHORTHAND_ADD_C         = "+=";
-	public static final String	SHORTHAND_SUBTRACT    = "-=",  SHORTHAND_SUBTRACT_C    = "-=";
-	public static final String	SHORTHAND_BITWISE_AND = "&=",  SHORTHAND_BITWISE_AND_C = "&=";
-	public static final String	SHORTHAND_BITWISE_OR  = "|=",  SHORTHAND_BITWISE_OR_C  = "|=";
-	public static final String	SHORTHAND_L_SHIFT     = "<<=", SHORTHAND_L_SHIFT_C     = "<<=";
-	public static final String	SHORTHAND_R_SHIFT     = ">>=", SHORTHAND_R_SHIFT_C     = ">>=";
+	public static final String	SHORTHAND_DIVIDE             = "/=",   SHORTHAND_DIVIDE_C             = "/=";
+	public static final String	SHORTHAND_MULTIPLY           = "*=",   SHORTHAND_MULTIPLY_C           = "*=";
+	public static final String	SHORTHAND_MODULO             = "%=",   SHORTHAND_MODULO_C             = "%=";
+	public static final String	SHORTHAND_ADD                = "+=",   SHORTHAND_ADD_C                = "+=";
+	public static final String	SHORTHAND_SUBTRACT           = "-=",   SHORTHAND_SUBTRACT_C           = "-=";
+	public static final String	SHORTHAND_BITWISE_AND        = "&=",   SHORTHAND_BITWISE_AND_C        = "&=";
+	public static final String	SHORTHAND_BITWISE_OR         = "|=",   SHORTHAND_BITWISE_OR_C         = "|=";
+	public static final String	SHORTHAND_BITWISE_XOR        = "^=",   SHORTHAND_BITWISE_XOR_C        = "^=";
+	public static final String	SHORTHAND_L_SHIFT            = "<<=",  SHORTHAND_L_SHIFT_C            = "<<=";
+	public static final String	SHORTHAND_R_SHIFT            = ">>=",  SHORTHAND_R_SHIFT_C            = ">>=";
+	public static final String	SHORTHAND_UR_SHIFT           = ">>>=", SHORTHAND_UR_SHIFT_C           = ">>>=";
 	
 	public static final String	OPERATORS[] = new String[] { SHORTHAND_ADD, SHORTHAND_SUBTRACT, SHORTHAND_MULTIPLY,
 																SHORTHAND_DIVIDE, SHORTHAND_MODULO, SHORTHAND_L_SHIFT,
 																SHORTHAND_R_SHIFT, SHORTHAND_BITWISE_AND, SHORTHAND_BITWISE_OR,
 																AND, OR, DIVIDE, MULTIPLY, MODULO, INCREMENT, DECREMENT,
 																EQUALS, BANG, ASSIGN, NOT_EQUAL, ADD, SUBTRACT,
-																L_SHIFT, R_SHIFT, GREATER_EQ, LESS_EQ, GREATER, LESS,
-																BITWISE_AND, BITWISE_OR  };
+																L_SHIFT, UR_SHIFT, R_SHIFT, GREATER_EQ, LESS_EQ, GREATER, LESS,
+																BITWISE_AND, BITWISE_OR, BITWISE_XOR, BITWISE_COMPLEMENT  };
 	
-	public static final String	UNARY_OPERATORS[]          = new String[] { BANG, INCREMENT, DECREMENT, SUBTRACT };
-	public static final String	UNARY_OPERATORS_NO_MINUS[] = new String[] { BANG, INCREMENT, DECREMENT };
+	public static final String	UNARY_OPERATORS[]          = new String[] { BANG, INCREMENT, DECREMENT, SUBTRACT, BITWISE_COMPLEMENT };
+	public static final String	UNARY_OPERATORS_NO_MINUS[] = new String[] { BANG, INCREMENT, DECREMENT, BITWISE_COMPLEMENT };
 	public static final String	MINUS[]                    = new String[] { SUBTRACT };
 	
 	public static final String	BINARY_OPERATORS[] = new String[] { SHORTHAND_ADD, SHORTHAND_SUBTRACT, SHORTHAND_MULTIPLY,
@@ -71,18 +76,21 @@ public class Operator extends IValue
 																SHORTHAND_R_SHIFT, SHORTHAND_BITWISE_AND, SHORTHAND_BITWISE_OR,
 																AND, OR, DIVIDE, MULTIPLY, MODULO, ADD, SUBTRACT,
 																EQUALS, NOT_EQUAL, ASSIGN, GREATER_EQ, LESS_EQ, L_SHIFT,
-																R_SHIFT, GREATER, LESS, BITWISE_AND, BITWISE_OR };
+																UR_SHIFT, R_SHIFT, GREATER, LESS, BITWISE_AND, BITWISE_OR,
+																BITWISE_XOR };
 	
 	public static final String	LOGICAL_OPERATORS[] = new String[] { SHORTHAND_ADD, SHORTHAND_SUBTRACT, SHORTHAND_MULTIPLY,
 																SHORTHAND_DIVIDE, SHORTHAND_MODULO, SHORTHAND_L_SHIFT,
 																SHORTHAND_R_SHIFT, SHORTHAND_BITWISE_AND, SHORTHAND_BITWISE_OR,
 																AND, OR, DIVIDE, MULTIPLY, MODULO, ADD, SUBTRACT,
 																EQUALS, NOT_EQUAL, GREATER_EQ, LESS_EQ, L_SHIFT,
-																R_SHIFT, GREATER, LESS, BITWISE_AND, BITWISE_OR };
+																UR_SHIFT, R_SHIFT, GREATER, LESS, BITWISE_AND, BITWISE_OR, 
+																BITWISE_XOR, BITWISE_COMPLEMENT };
 																
     public static final String SHORTHAND_OPERATORS[] = new String[] { SHORTHAND_ADD, SHORTHAND_SUBTRACT, SHORTHAND_MULTIPLY,
                                                                     SHORTHAND_DIVIDE, SHORTHAND_MODULO, SHORTHAND_L_SHIFT,
-                                                                    SHORTHAND_R_SHIFT, SHORTHAND_BITWISE_AND, SHORTHAND_BITWISE_OR };
+                                                                    SHORTHAND_R_SHIFT, SHORTHAND_BITWISE_AND, SHORTHAND_BITWISE_OR,
+																	SHORTHAND_UR_SHIFT, SHORTHAND_BITWISE_XOR };
 	/**
 	 * @see net.fathomsoft.nova.tree.Node#Node(Node, Location)
 	 */
@@ -128,6 +136,8 @@ public class Operator extends IValue
 				return BITWISE_AND;
 			case SHORTHAND_BITWISE_OR:
 				return BITWISE_OR;
+			case SHORTHAND_BITWISE_XOR:
+				return BITWISE_XOR;
 			case SHORTHAND_DIVIDE:
 				return DIVIDE;
 			case SHORTHAND_L_SHIFT:
@@ -136,6 +146,8 @@ public class Operator extends IValue
 				return MODULO;
 			case SHORTHAND_MULTIPLY:
 				return MULTIPLY;
+			case SHORTHAND_UR_SHIFT:
+				return UR_SHIFT;
 			case SHORTHAND_R_SHIFT:
 				return R_SHIFT;
 			case SHORTHAND_SUBTRACT:
@@ -212,11 +224,14 @@ public class Operator extends IValue
 		{
 			case BITWISE_AND:
 			case BITWISE_OR:
+			case BITWISE_XOR:
+			case BITWISE_COMPLEMENT:
 			case GREATER:
 			case LESS:
 			case GREATER_EQ:
 			case LESS_EQ:
 			case L_SHIFT:
+			case UR_SHIFT:
 			case R_SHIFT: return true;
 			default:
 				return false;
@@ -233,7 +248,7 @@ public class Operator extends IValue
 			SyntaxMessage.error("Unknown operator '" + operator + "'", this);
 		}
 		
-		if (operator.equals(EQUALS) || operator.equals(NOT_EQUAL) || operator.equals(BANG) || operator.equals(AND) ||
+		if (operator.equals(EQUALS) || operator.equals(NOT_EQUAL) || operator.equals(BANG) || operator.equals(AND) || operator.equals(BITWISE_XOR) ||
 			operator.equals(OR) || operator.equals(LESS) || operator.equals(GREATER) || operator.equals(LESS_EQ) || operator.equals(GREATER_EQ))
 		{
 			setType("Bool");

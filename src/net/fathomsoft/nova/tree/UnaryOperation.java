@@ -39,11 +39,13 @@ public class UnaryOperation extends IValue
 		SIDES.put("--", EITHER);
 		SIDES.put("++", EITHER);
 		SIDES.put("!",  LEFT);
+		SIDES.put("~",  LEFT);
 		
 		REQUIRE_VARIABLE.put("-",  false);
 		REQUIRE_VARIABLE.put("--", true);
 		REQUIRE_VARIABLE.put("++", true);
 		REQUIRE_VARIABLE.put("!",  false);
+		REQUIRE_VARIABLE.put("~",  false);
 	}
 	
 	public static boolean isCompatibleOnLeft(String operator)
