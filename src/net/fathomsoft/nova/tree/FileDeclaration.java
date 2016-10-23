@@ -407,6 +407,8 @@ public class FileDeclaration extends Node
 		{
 			if (isExternalFile())
 			{
+				mergeFiles(getProgram().getFile(getClassDeclaration().getClassLocation(false)), phase);
+				
 				detach();
 				
 				result.skipCycle = true;
@@ -416,16 +418,75 @@ public class FileDeclaration extends Node
 		return result;
 	}
 	
+	public void mergeFiles(FileDeclaration other, int phase)
+	{
+		for (int i = getImportList().getNumVisibleChildren() - 1; i >= 0; i--)
+		{
+			Import im = getImportList().getVisibleChild(i);
+			
+			if (!other.getImportList().containsImport(im.location))
+			{
+				other.getImportList().addChild(im);
+				
+				SyntaxTree.validateNodes(im, phase);
+			}
+		}
+		
+		ClassDeclaration thisClass = getClassDeclaration();
+		ClassDeclaration otherClass = other.getClassDeclaration();
+		
+		MethodList[] methodLists = new MethodList[] { thisClass.getMethodList() };//, thisClass.getPropertyMethodList() };
+		MethodList[] otherMethodLists = new MethodList[] { otherClass.getMethodList(), otherClass.getPropertyMethodList() };
+		
+		for (int i = 0; i < methodLists.length; i++)
+		{
+			MethodList thisList = methodLists[i];
+			MethodList otherList = otherMethodLists[i];
+			
+			for (NovaMethodDeclaration method : thisList.getMethods())
+			{
+				if (method.isUserMade())
+				{
+					MethodDeclaration otherMethod = otherClass.getMethod((GenericCompatible)null, method.getName(), method.getParameterList().getTypes());
+					
+					if (otherMethod != null)
+					{
+						otherMethod.replaceWith(method);
+					}
+					else
+					{
+						otherClass.addChild(method);
+					}
+					
+					SyntaxTree.validateNodes(method, phase);
+				}
+			}
+		}
+	}
+	
 	public boolean isExternalFile()
 	{
-		return getFile().getName().indexOf('.') != getFile().getName().lastIndexOf('.');
+		return getExternalExtension() != null;
+	}
+	
+	public String getExternalExtension()
+	{
+		int first = getFile().getName().indexOf('.');
+		int last = getFile().getName().lastIndexOf('.');
+		
+		if (first != last)
+		{
+			return getFile().getName().substring(first + 1, last).toLowerCase();
+		}
+		
+		return null;
 	}
 	
 	private void validateImports()
 	{
 		for (int i = getImportList().getNumChildren() - 1; i >= 0; i--)
 		{
-			Import node = (Import)getImportList().getChild(i);
+			Import node = getImportList().getChild(i);
 			
 			if (!node.isUsed())
 			{
