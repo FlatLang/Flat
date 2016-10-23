@@ -95,7 +95,7 @@ public class MethodCall extends Variable
 	@Override
 	public boolean isVirtualTypeKnown()
 	{
-		return getParent() instanceof Instantiation || (getMethodDeclaration() instanceof NovaMethodDeclaration && !((NovaMethodDeclaration)getMethodDeclaration()).isOverridden()) || super.isVirtualTypeKnown();
+		return !getName().equals("toString") && (getParent() instanceof Instantiation || (getMethodDeclaration() instanceof NovaMethodDeclaration && !((NovaMethodDeclaration)getMethodDeclaration()).isOverridden()) || super.isVirtualTypeKnown());
 	}
 	
 	public boolean isVirtual()
@@ -954,9 +954,7 @@ public class MethodCall extends Variable
 		Location argsLocation = new Location(getLocationIn());
 		argsLocation.addBounds(bounds.getStart(), bounds.getEnd());
 		
-		addArguments(arguments, argsLocation, require);
-		
-		return true;
+		return addArguments(arguments, argsLocation, require);
 	}
 	
 	/**
@@ -1038,7 +1036,7 @@ public class MethodCall extends Variable
 	 * @param arguments The arguments to decode and then add.
 	 * @param location The location of the method call in the source code.
 	 */
-	private void addArguments(String arguments[], Location location, boolean require)
+	private boolean addArguments(String arguments[], Location location, boolean require)
 	{
 		MethodCallArgumentList parent = getArgumentList();
 		
@@ -1092,7 +1090,7 @@ public class MethodCall extends Variable
 										SyntaxMessage.error("Could not decode argument '" + argument + "'", parent, location);
 									}
                                     
-									return;
+									return false;
 								}
 							}
 						}
@@ -1108,6 +1106,8 @@ public class MethodCall extends Variable
 				SyntaxMessage.error("Expected an argument definition", this);
 			}
 		}
+		
+		return true;
 	}
 	
 	/**
