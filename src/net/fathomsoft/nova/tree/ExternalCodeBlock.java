@@ -2,7 +2,6 @@ package net.fathomsoft.nova.tree;
 
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.ValidationResult;
-import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.util.Location;
 import net.fathomsoft.nova.util.StringUtils;
 import net.fathomsoft.nova.util.SyntaxUtils;
@@ -10,7 +9,6 @@ import net.fathomsoft.nova.util.SyntaxUtils;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.function.BiFunction;
-import java.util.function.Function;
 
 /**
  * {@link Node} extension that represents
@@ -21,6 +19,8 @@ public class ExternalCodeBlock extends Node implements ScopeAncestor
 {
 	private String ending = "";
 	private String[] bounds;
+	
+	public ArrayList<Boolean> expressions;
 	
 	public String target;
 	
@@ -81,6 +81,7 @@ public class ExternalCodeBlock extends Node implements ScopeAncestor
 		}
 		
 		ArrayList<String> bounds = new ArrayList<>();
+		expressions = new ArrayList<>();
 		
 		int index = SyntaxUtils.findStringOutsideOfQuotes(contents, "#{", 0);
 		int end = 0;
@@ -91,10 +92,12 @@ public class ExternalCodeBlock extends Node implements ScopeAncestor
 			
 			end = SyntaxUtils.findEndingBrace(contents, index + 2) + 1;
 			
-			String value = contents.substring(index + 2, end - 1).trim();
+			String value = contents.substring(index + 2, end - 1);
+			
+			expressions.add(!value.contains("\n"));
 			
 			//value = replaceExternalInterpolations(value);
-			addChild(SyntaxTree.decodeScopeContents(getParent(), value, getLocationIn()), this);
+			addChild(SyntaxTree.decodeScopeContents(getParent(), value.trim(), getLocationIn()), this);
 			
 			index = SyntaxUtils.findStringOutsideOfQuotes(contents, "#{", end);
 		}
@@ -104,13 +107,13 @@ public class ExternalCodeBlock extends Node implements ScopeAncestor
 		this.bounds = bounds.toArray(new String[0]);
 	}
 	
-	public String joinContents(Function<Node, String> func)
+	public String joinContents(BiFunction<Node, Boolean, String> func)
 	{
 		String output = "";
 		
 		for (int i = 0; i < getNumVisibleChildren(); i++)
 		{
-			output += bounds[i] + func.apply(getVisibleChild(i));
+			output += bounds[i] + func.apply(getVisibleChild(i), expressions.get(i));
 		}
 		
 		return output + ending;
