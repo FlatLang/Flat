@@ -394,8 +394,6 @@ public class Variable extends Identifier
 	@Override
 	public boolean onAfterDecoded()
 	{
-		declaration.references.add(this);
-		
 		return super.onAfterDecoded();
 	}
 	
@@ -461,14 +459,19 @@ public class Variable extends Identifier
 	@Override
 	public void onAdded(Node parent)
 	{
-		if (getDeclaration() instanceof Parameter)
+		if (declaration != null)
 		{
-			Parameter p = (Parameter)getDeclaration();
-			
-			if (p.isUnnamedParameter())
+			if (getDeclaration() instanceof Parameter)
 			{
-				((LambdaMethodDeclaration)p.getParentMethod()).updateUnnamedParameterPosition();
+				Parameter p = (Parameter)getDeclaration();
+				
+				if (p.isUnnamedParameter())
+				{
+					((LambdaMethodDeclaration)p.getParentMethod()).updateUnnamedParameterPosition();
+				}
 			}
+			
+			declaration.references.add(this);
 		}
 		
 		super.onAdded(parent);
@@ -545,7 +548,7 @@ public class Variable extends Identifier
 				FieldDeclaration field    = (FieldDeclaration)getDeclaration();
 				AccessorMethod   accessor = field.getAccessorMethod();
 				
-				if (accessor != null && !accessor.isDisabled() && getParentMethod() != accessor)
+				if (accessor != null && !accessor.isDisabled() && (isAccessed() || getParentMethod() != accessor))
 				{
 					if (!field.isTangible() || getParentMethod() != field.getMutatorMethod())
 					{
