@@ -1392,9 +1392,21 @@ public class ClassDeclaration extends InstanceDeclaration
 	
 	public String getClassLocation()
 	{
+		return getClassLocation(true);
+	}
+	
+	public String getClassLocation(boolean checkExternal)
+	{
 		Package p = getFileDeclaration().getPackage();
 		
-		return p.getLocation() + "/" + getName();
+		String extension = "";
+		
+		if (checkExternal && getFileDeclaration().isExternalFile())
+		{
+			extension = "." + getFileDeclaration().getExternalExtension();
+		}
+		
+		return p.getLocation() + "/" + getName() + extension;
 	}
 	
 	public Package getPackage()
