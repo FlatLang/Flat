@@ -1,17 +1,20 @@
 package net.fathomsoft.nova.tree.variables;
 
-import java.util.ArrayList;
-
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.error.SyntaxMessage;
-import net.fathomsoft.nova.tree.*;
+import net.fathomsoft.nova.tree.ClassDeclaration;
+import net.fathomsoft.nova.tree.IIdentifier;
+import net.fathomsoft.nova.tree.Node;
+import net.fathomsoft.nova.tree.SyntaxTree;
 import net.fathomsoft.nova.tree.generics.GenericTypeArgumentList;
 import net.fathomsoft.nova.tree.generics.GenericTypeParameterDeclaration;
 import net.fathomsoft.nova.util.Bounds;
 import net.fathomsoft.nova.util.Location;
 import net.fathomsoft.nova.util.StringUtils;
 import net.fathomsoft.nova.util.SyntaxUtils;
+
+import java.util.ArrayList;
 
 /**
  * Identifier extension that represents something that returns a value.
@@ -51,6 +54,19 @@ public class VariableDeclaration extends IIdentifier
 		addChild(implementation, this);
 		
 		extraDeclarations = new String[0];
+	}
+	
+	@Override
+	public void onReplaced(Node parent, Node replacement)
+	{
+		if (replacement instanceof VariableDeclaration)
+		{
+			references.forEach(x -> {
+				x.declaration = (VariableDeclaration)replacement;
+			});
+		}
+		
+		super.onReplaced(parent, replacement);
 	}
 	
 	public boolean isLocal()
