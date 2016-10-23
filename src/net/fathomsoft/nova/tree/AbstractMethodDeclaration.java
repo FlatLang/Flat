@@ -5,6 +5,7 @@ import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.util.Location;
 import net.fathomsoft.nova.util.StringUtils;
+import net.fathomsoft.nova.util.SyntaxUtils;
 
 /**
  * {@link NovaMethodDeclaration} extension that represents the declaration of an
@@ -64,16 +65,19 @@ public class AbstractMethodDeclaration extends NovaMethodDeclaration
 	 */
 	public static AbstractMethodDeclaration decodeStatement(Node parent, String statement, Location location, boolean require)
 	{
-		String methodSignature = findMethodSignature(statement, StringUtils.findWordBounds(statement, IDENTIFIER));
-		
-		if (methodSignature != null && methodSignature.length() > 0)
+		if (SyntaxUtils.findStringInBaseScope(statement, IDENTIFIER) >= 0)
 		{
-			AbstractMethodDeclaration n      = new AbstractMethodDeclaration(parent, location);
-			NovaMethodDeclaration     method = NovaMethodDeclaration.decodeStatement(n, methodSignature, location.asNew(), require);
+			String methodSignature = findMethodSignature(statement, StringUtils.findWordBounds(statement, IDENTIFIER));
 			
-			if (method != null)
+			if (methodSignature != null && methodSignature.length() > 0)
 			{
-				return n.createFrom(method);
+				AbstractMethodDeclaration n = new AbstractMethodDeclaration(parent, location);
+				NovaMethodDeclaration method = NovaMethodDeclaration.decodeStatement(n, methodSignature, location.asNew(), require);
+				
+				if (method != null)
+				{
+					return n.createFrom(method);
+				}
 			}
 		}
 		
