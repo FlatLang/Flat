@@ -71,6 +71,18 @@ public class Program extends TypeList<FileDeclaration>
 	 */
 	public synchronized void addChild(Node child)
 	{
+		FileDeclaration file = (FileDeclaration)child;
+		
+		if (file.isExternalFile())
+		{
+			String extension = file.getExternalExtension();
+			
+			if (!extension.equals(controller.targetFileExtension))
+			{
+				return;
+			}
+		}
+		
 		super.addChild(child);
 	}
 	
@@ -159,7 +171,7 @@ public class Program extends TypeList<FileDeclaration>
 		{
 			FileDeclaration child = getVisibleChild(i);
 			
-			if (file != child && dir.equals(child.getFile().getParent()))
+			if (!child.isExternalFile() && file != child && dir.equals(child.getFile().getParent()))
 			{
 				ClassDeclaration clazz = child.getClassDeclaration();
 				
@@ -289,16 +301,13 @@ public class Program extends TypeList<FileDeclaration>
 			{
 				FileDeclaration file = getVisibleChild(i);
 				
-				if (!file.isExternalFile())
+				ClassDeclaration clazz = file.getClassDeclaration();
+				
+				if (clazz != null)
 				{
-					ClassDeclaration clazz = file.getClassDeclaration();
+					String location = clazz.getClassLocation();
 					
-					if (clazz != null)
-					{
-						String location = clazz.getClassLocation();
-						
-						files.put(location, i);
-					}
+					files.put(location, i);
 				}
 			}
 		}
