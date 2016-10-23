@@ -2,10 +2,7 @@ package net.fathomsoft.nova.tree.match;
 
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.error.SyntaxMessage;
-import net.fathomsoft.nova.tree.Node;
-import net.fathomsoft.nova.tree.Return;
-import net.fathomsoft.nova.tree.SyntaxTree;
-import net.fathomsoft.nova.tree.Value;
+import net.fathomsoft.nova.tree.*;
 import net.fathomsoft.nova.util.Bounds;
 import net.fathomsoft.nova.util.Location;
 import net.fathomsoft.nova.util.StringUtils;
@@ -34,6 +31,12 @@ public class Case extends MatchCase
 	public String getIdentifier()
 	{
 		return IDENTIFIER;
+	}
+	
+	@Override
+	public int getNumDefaultChildren()
+	{
+		return super.getNumDefaultChildren() + 2;
 	}
 	
 	/**
@@ -107,6 +110,11 @@ public class Case extends MatchCase
 		return (Value)getChild(super.getNumDefaultChildren() + 0);
 	}
 	
+	public Value getCondition()
+	{
+		return (Value)getChild(super.getNumDefaultChildren() + 1);
+	}
+	
 	@Override
 	public StringBuilder generateNovaInput(StringBuilder builder, boolean outputChildren)
 	{
@@ -159,7 +167,7 @@ public class Case extends MatchCase
 			
 			String contents = bounds.extractString(statement);
 			
-			if (n.decodeContents(contents, require) && n.decodeScopeFragment(statement, bounds))
+			if (n.decodeContents(contents, require) && n.decodeCondition(require) && n.decodeScopeFragment(statement, bounds))
 			{
 				return n;
 			}
@@ -186,6 +194,39 @@ public class Case extends MatchCase
 		}
 		
 		addChild(value, this);
+		
+		return true;
+	}
+	
+	public boolean decodeCondition(boolean require)
+	{
+		Value control = getParentMatch().getControlValue();
+		
+		Value value = (Value)getParentMatch().getControlValue().clone(control.getParent(), control.getLocationIn(), true);
+		Value clone = (Value)getValue().clone(getValue().getParent(), getValue().getLocationIn(), true);
+		
+		if (value.getReturnedNode().getTypeClass().isOfType("nova/String"))
+		{
+			CallableMethod stringEquals = getProgram().getClassDeclaration("nova/String").getMethodList().getMethods("equals", MethodList.SearchFilter.getDefault())[0];
+			
+			MethodCall call = MethodCall.decodeStatement(value.getReturnedNode(), "equals(null)", value.getLocationIn(), require, false, stringEquals);
+			
+			call.getArgumentList().getVisibleChild(0).replaceWith(clone);
+			
+			((Accessible)value.getReturnedNode()).setAccessedNode(call);
+			
+			addChild(value, this);
+		}
+		else
+		{
+			BinaryOperation operation = BinaryOperation.generateDefault(getValue().getParent(), getValue().getLocationIn());
+			
+			operation.getLeftOperand().replaceWith(value);
+			operation.getOperator().setOperator("==");
+			operation.getRightOperand().replaceWith(clone);
+			
+			addChild(operation, this);
+		}
 		
 		return true;
 	}
