@@ -16,7 +16,7 @@ public interface MatchChild
 	 * 
 	 * @return The Match statement that contains the specified MatchChild.
 	 */
-	public default Match getParentSwitch()
+	public default Match getParentMatch()
 	{
 		return (Match)((Node)this).getAncestorOfType(Match.class);
 	}
