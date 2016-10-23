@@ -1,6 +1,7 @@
 package net.fathomsoft.nova.tree.match;
 
 import net.fathomsoft.nova.TestContext;
+import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.tree.*;
 import net.fathomsoft.nova.util.Bounds;
@@ -167,7 +168,7 @@ public class Case extends MatchCase
 			
 			String contents = bounds.extractString(statement);
 			
-			if (n.decodeContents(contents, require) && n.decodeCondition(require) && n.decodeScopeFragment(statement, bounds))
+			if (n.decodeContents(contents, require) && n.decodeScopeFragment(statement, bounds))
 			{
 				return n;
 			}
@@ -229,6 +230,27 @@ public class Case extends MatchCase
 		}
 		
 		return true;
+	}
+	
+	@Override
+	public ValidationResult validate(int phase)
+	{
+		ValidationResult result = super.validate(phase);
+		
+		if (result.skipValidation())
+		{
+			return result;
+		}
+		
+		if (phase == SyntaxTree.PHASE_METHOD_CONTENTS)
+		{
+			if (!decodeCondition(true))
+			{
+				SyntaxMessage.error("Unable to decode case condition", this);
+			}
+		}
+		
+		return result;
 	}
 	
 	/**
