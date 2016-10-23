@@ -49,7 +49,7 @@ public class SyntaxTree
 		Annotation.class, IfStatement.class, ElseStatement.class, Loop.class,
 		Case.class, Match.class, Default.class, Fallthrough.class, Priority.class,
 		Return.class, Assignment.class, IntRange.class, TernaryOperation.class,
-		BinaryOperation.class, Super.class
+		BinaryOperation.class, Super.class, RegexLiteral.class
 	};
 	
 	public static final Class<?> SCOPE_CHILD_DECODE[] = new Class<?>[]
@@ -548,6 +548,7 @@ public class SyntaxTree
 				else if (node == null && type == BodyMethodDeclaration.class) node = BodyMethodDeclaration.decodeStatement(parent, statement, location, require);
 				else if (node == null && type == Package.class) node = Package.decodeStatement(parent, statement, location, require);
 				else if (node == null && type == Priority.class) node = Priority.decodeStatement(parent, statement, location, require);
+				else if (node == null && type == RegexLiteral.class) node = RegexLiteral.decodeStatement(parent, statement, location, require);
 				else if (node == null && type == Return.class) node = Return.decodeStatement(parent, statement, location, require);
 				else if (node == null && type == UnaryOperation.class) node = UnaryOperation.decodeStatement(parent, statement, location, require);
 				else if (node == null && type == Fallthrough.class) node = Fallthrough.decodeStatement(parent, statement, location, require);
@@ -650,6 +651,7 @@ public class SyntaxTree
 		else if (type.isAssignableFrom(MethodCall.class) && (node = MethodCall.decodeStatement(parent, statement, location, require)) != null);
 		else if (type.isAssignableFrom(BodyMethodDeclaration.class) && (node = BodyMethodDeclaration.decodeStatement(parent, statement, location, require)) != null);
 		else if (type.isAssignableFrom(Priority.class) && (node = Priority.decodeStatement(parent, statement, location, require)) != null);
+		else if (type.isAssignableFrom(RegexLiteral.class) && (node = RegexLiteral.decodeStatement(parent, statement, location, require)) != null);
 		else if (type.isAssignableFrom(Return.class) && (node = Return.decodeStatement(parent, statement, location, require)) != null);
 		else if (type.isAssignableFrom(UnaryOperation.class) && (node = UnaryOperation.decodeStatement(parent, statement, location, require)) != null);
 		else if (type.isAssignableFrom(FieldDeclaration.class) && (node = FieldDeclaration.decodeStatement(parent, statement, location, require)) != null);
