@@ -219,9 +219,9 @@ public class Match extends ControlStatement
 	 * <br>
 	 * Example inputs include:<br>
 	 * <ul>
-	 * 	<li>switch (value)</li>
-	 * 	<li>switch (name)</li>
-	 * 	<li>switch (person.calculateAge())</li>
+	 * 	<li>match (value)</li>
+	 * 	<li>match (name)</li>
+	 * 	<li>match (person.calculateAge())</li>
 	 * </ul>
 	 * 
 	 * @param parent The parent node of the statement.
@@ -242,10 +242,9 @@ public class Match extends ControlStatement
 			
 			if (index < 0)
 			{
-				if (SyntaxMessage.queryError("Unable to decode " + IDENTIFIER + " statement", n, require))
-				{
-					return null;
-				}
+				SyntaxMessage.queryError("Unable to decode " + IDENTIFIER + " statement", n, require);
+				
+				return null;
 			}
 			
 			String contents = statement.substring(index);//SyntaxUtils.findInnerParenthesesBounds(n, statement).extractString(statement);
