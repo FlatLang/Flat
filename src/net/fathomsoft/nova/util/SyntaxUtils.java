@@ -679,6 +679,10 @@ public class SyntaxUtils
 				
 				return null;
 			}
+			else if (isHexadecimal(literal))
+			{
+				return "Long";
+			}
 		}
 		
 		return null;
@@ -843,7 +847,7 @@ public class SyntaxUtils
 	 */
 	public static boolean isNumber(String value)
 	{
-		return value.length() > 0 && (isInteger(value) || isDouble(value));
+		return value.length() > 0 && (isInteger(value) || isDouble(value) || isHexadecimal(value));
 	}
 	
 	public static String removeUnderscores(String value)
@@ -914,6 +918,33 @@ public class SyntaxUtils
 	    }
 	    
 	    return true;
+	}
+	
+	public static boolean isHexadecimal(String value)
+	{
+		if (value.startsWith("-"))
+		{
+			value = value.substring(1);
+		}
+		
+		value = value.toLowerCase();
+		
+		if (value.length() <= 2 || !value.startsWith("0x"))
+		{
+			return false;
+		}
+		
+		for (int i = 2; i < value.length(); i++)
+		{
+			char c = value.charAt(i);
+			
+			if (!(c >= '0' && c <= '9' || c >= 'a' && c <= 'f'))
+			{
+				return false;
+			}
+		}
+		
+		return true;
 	}
 	
 	/**
