@@ -154,6 +154,18 @@ public class BodyMethodDeclaration extends NovaMethodDeclaration
 		}
 	}
 	
+	public BodyMethodDeclaration cloneTo(BodyMethodDeclaration node, boolean cloneChildren)
+	{
+		super.cloneTo(node, cloneChildren);
+		
+		for (DefaultParameterInitialization param : node.getScope().getDefaultParameterInitializations())
+		{
+			param.parameter = node.getParameter(param.parameter.getIndex());
+		}
+		
+		return node;
+	}
+	
 	@Override
 	public ValidationResult validate(int phase)
 	{
