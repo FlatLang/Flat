@@ -94,7 +94,12 @@ public class Annotation extends Node
 
 								if (n == null)
 								{
-									n = PrimitiveArrayAnnotation.decodeStatement(parent, name, arguments, location, require);
+									n = KeepWhitespaceAnnotation.decodeStatement(parent, name, arguments, location, require);
+									
+									if (n == null)
+									{
+										n = PrimitiveArrayAnnotation.decodeStatement(parent, name, arguments, location, require);
+									}
 								}
 							}
 						}
