@@ -110,14 +110,26 @@ public class LambdaExpression extends Value
 				
 				MethodCall call = (MethodCall)parent.getAncestorOfType(MethodCall.class);
 				
-				ClassDeclaration clazz = call.getReferenceNode().toValue().getTypeClass(false);
+				ClassDeclaration[] classes = call.getDeclaringClasses();//.getReferenceNode().toValue().getTypeClass(false);
 				
-				if (clazz == null)
+				if (classes == null || classes.length == 0)
 				{
 					return null;
 				}
 				
-				MethodDeclaration[] methods = clazz.getMethods(call.getName());
+				ArrayList<MethodDeclaration> temp = new ArrayList<>();
+				
+				for (ClassDeclaration c : classes)
+				{
+					MethodDeclaration[] methods = c.getMethods(call.getName());
+					
+					for (MethodDeclaration m : methods)
+					{
+						temp.add(m);
+					}
+				}
+				
+				MethodDeclaration[] methods = temp.toArray(new MethodDeclaration[0]);
 				
 				if (methods.length > 0)
 				{
@@ -182,7 +194,9 @@ public class LambdaExpression extends Value
 						}
 					}
 					
-					call.setDeclaration(validMethods[maxI]);
+					NovaMethodDeclaration validMethod = validMethods[maxI];
+					
+					call.setDeclaration(validMethod);
 					
 					if (validMethods.length > 0)
 					{
@@ -268,11 +282,11 @@ public class LambdaExpression extends Value
 								}
 							}
 							
-							Closure methodReference = Closure.decodeStatement(parent, method.generateNovaClosureReference(method.getParentClass()), location.asNew(), require);
+							Closure methodReference = Closure.decodeStatement(parent, method.generateNovaClosureReference(method.getParentClass()), location.asNew(), require, method.getParentClass());
 							
 							if (methodReference != null)
 							{
-								methodReference.onAfterDecoded();
+								methodReference.findDeclaration(method.getParentClass());
 								
 								method.contextDeclaration = declaration;
 								method.closure = methodReference;

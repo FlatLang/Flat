@@ -6,6 +6,7 @@ import net.fathomsoft.nova.tree.*;
 import net.fathomsoft.nova.tree.generics.GenericTypeArgument;
 import net.fathomsoft.nova.tree.generics.GenericTypeParameter;
 import net.fathomsoft.nova.tree.variables.FieldDeclaration;
+import net.fathomsoft.nova.tree.variables.ObjectReference;
 import net.fathomsoft.nova.tree.variables.Variable;
 import net.fathomsoft.nova.tree.variables.VariableDeclaration;
 
@@ -1434,8 +1435,20 @@ public class SyntaxUtils
 				SyntaxMessage.error("Cannot call a non-static method from a static context", parent);
 			}
 		}
-		else if (!isAccessibleFrom(((Value)accessor).getTypeClass(), accessed))
+		
+		ClassDeclaration refClass = ((Value)accessor).getTypeClass();
+		
+		if (accessor instanceof ObjectReference)
 		{
+			if (accessor.toValue().getParentMethod() instanceof ExtensionMethodDeclaration)
+			{
+				refClass = accessor.toValue().getParentClass();
+			}
+		}
+		
+		if (!isAccessibleFrom(refClass, accessed))
+		{
+			isAccessibleFrom(refClass, accessed);
 			SyntaxMessage.error("Method '" + accessed.getName() + "' is not visible", parent);
 		}
 	}

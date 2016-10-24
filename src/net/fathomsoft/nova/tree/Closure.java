@@ -137,16 +137,38 @@ public class Closure extends Variable
 	
 	private NovaMethodDeclaration getMethodDeclaration(GenericCompatible context, String name)
 	{
-		return getMethodDeclaration(context == null ? null : new GenericCompatible[] { context }, name);
+		return getMethodDeclaration(context, name, null);
+	}
+	
+	private NovaMethodDeclaration getMethodDeclaration(GenericCompatible context, String name, ClassDeclaration declaringClass)
+	{
+		return getMethodDeclaration(context == null ? null : new GenericCompatible[] { context }, name, declaringClass);
 	}
 	
 	private NovaMethodDeclaration getMethodDeclaration(GenericCompatible[] contexts, String name)
+	{
+		return getMethodDeclaration(contexts, name, null);
+	}
+	
+	private NovaMethodDeclaration getMethodDeclaration(GenericCompatible[] contexts, String name, ClassDeclaration declaringClass)
 	{
 		SearchFilter filter = new SearchFilter();
 		filter.staticValue = true;
 		filter.allowMoreParameters = true;
 		
-		return (NovaMethodDeclaration)((Value)getReferenceNode()).getTypeClass().getMethod(contexts, name, filter, getClosureDeclaration().getParameterList().getTypes());
+		if (declaringClass == null)
+		{
+			if (getParentMethod() instanceof ExtensionMethodDeclaration)
+			{
+				declaringClass = getParentClass();
+			}
+			else
+			{
+				declaringClass = ((Value)getReferenceNode()).getTypeClass();
+			}
+		}
+		
+		return (NovaMethodDeclaration)declaringClass.getMethod(contexts, name, filter, getClosureDeclaration().getParameterList().getTypes());
 	}
 	
 	/**
@@ -171,9 +193,14 @@ public class Closure extends Variable
 	 */
 	public static Closure decodeStatement(Node parent, String statement, Location location, boolean require)
 	{
+		return decodeStatement(parent, statement, location, require, null);
+	}
+	
+	public static Closure decodeStatement(Node parent, String statement, Location location, boolean require, ClassDeclaration declaringClass)
+	{
 		Closure n = new Closure(parent, location);
 		
-		if (n.decodeName(statement, require))
+		if (n.decodeName(statement, require, declaringClass))
 		{
 			return n;
 		}
@@ -191,28 +218,38 @@ public class Closure extends Variable
 	 * 		wrong.
 	 * @return Whether or not the name decoded successfully.
 	 */
-	private boolean decodeName(String name, boolean require)
+	private boolean decodeName(String name, boolean require, ClassDeclaration declaringClass)
 	{
 		if (StringUtils.containsChar(name, StringUtils.SYMBOLS_CHARS))
 		{
 			return false;
 		}
 		
-		Value reference = (Value)getReferenceNode();
+		if (declaringClass == null)
+		{
+			if (getParentMethod() instanceof ExtensionMethodDeclaration)
+			{
+				declaringClass = getParentClass();
+			}
+			else
+			{
+				Value reference = (Value)getReferenceNode();
+				
+				if (reference == null)
+				{
+					return false;
+				}
+				
+				declaringClass = reference.getTypeClass();
+			}
+		}
 		
-		if (reference == null)
+		if (declaringClass == null)
 		{
 			return false;
 		}
 		
-		ClassDeclaration type = reference.getTypeClass();
-		
-		if (type == null)
-		{
-			return false;
-		}
-		
-		declarations = type.getMethods(name);
+		declarations = declaringClass.getMethods(name);
 		
 		if (declarations.length <= 0)
 		{
@@ -243,7 +280,12 @@ public class Closure extends Variable
 		return findDeclaration();
 	}
 	
-	private boolean findDeclaration()
+	public boolean findDeclaration()
+	{
+		return findDeclaration(null);
+	}
+	
+	public boolean findDeclaration(ClassDeclaration declaringClass)
 	{
 		if (closureDeclaration == null)
 		{
@@ -255,11 +297,11 @@ public class Closure extends Variable
 			return true;
 		}
 
-		MethodDeclaration declaration = getMethodDeclaration(getMethodCall()/*.getContext()/*getReferenceNode().toValue()*/, declarations[0].getName());
+		MethodDeclaration declaration = getMethodDeclaration(getMethodCall(), declarations[0].getName(), declaringClass);
 
 		if (declaration == null)
 		{
-			getMethodDeclaration(getMethodCall(), declarations[0].getName());
+			getMethodDeclaration(getMethodCall(), declarations[0].getName(), declaringClass);
 			SyntaxMessage.error("Method '" + declarations[0].getName() + "' is not compatible", this);
 			
 			return false;

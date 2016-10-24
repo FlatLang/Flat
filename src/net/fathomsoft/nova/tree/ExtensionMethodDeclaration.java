@@ -58,7 +58,7 @@ public class ExtensionMethodDeclaration extends BodyMethodDeclaration
 		{
 			BodyMethodDeclaration method = BodyMethodDeclaration.decodeStatement(parent, statement, location, require);
 			
-			if (method != null)
+			if (method != null && method.getParameterList().getNumParameters() > 0 && method.getParameter(0).getName().equals("this"))
 			{
 				ExtensionMethodDeclaration n = new ExtensionMethodDeclaration(parent, location);
 				
