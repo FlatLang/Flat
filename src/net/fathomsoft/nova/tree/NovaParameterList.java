@@ -94,7 +94,7 @@ public class NovaParameterList extends ParameterList<Parameter>
 	{
 		Parameter param = super.getParameter(parameterIndex);
 		
-		if (param == null)
+		if (param == null && returnParameters.getNumVisibleChildren() > parameterIndex - getNumVisibleChildren())
 		{
 			param = returnParameters.getVisibleChild(parameterIndex - getNumVisibleChildren());
 		}
