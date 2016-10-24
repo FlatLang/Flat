@@ -45,7 +45,7 @@ public class Operator extends IValue
 	public static final String	LESS_EQ            = "<=",  LESS_EQ_C            = "<=";
 	public static final String	L_SHIFT            = "<<",  L_SHIFT_C            = "<<";
 	public static final String	R_SHIFT            = ">>",  R_SHIFT_C            = ">>";
-	public static final String	UR_SHIFT           = ">>>", UR_SHIFT_C           = ">>>";
+	public static final String	UR_SHIFT           = ">>>", UR_SHIFT_C           = ">>";
 	
 	public static final String	SHORTHAND_DIVIDE             = "/=",   SHORTHAND_DIVIDE_C             = "/=";
 	public static final String	SHORTHAND_MULTIPLY           = "*=",   SHORTHAND_MULTIPLY_C           = "*=";
@@ -57,7 +57,7 @@ public class Operator extends IValue
 	public static final String	SHORTHAND_BITWISE_XOR        = "^=",   SHORTHAND_BITWISE_XOR_C        = "^=";
 	public static final String	SHORTHAND_L_SHIFT            = "<<=",  SHORTHAND_L_SHIFT_C            = "<<=";
 	public static final String	SHORTHAND_R_SHIFT            = ">>=",  SHORTHAND_R_SHIFT_C            = ">>=";
-	public static final String	SHORTHAND_UR_SHIFT           = ">>>=", SHORTHAND_UR_SHIFT_C           = ">>>=";
+	public static final String	SHORTHAND_UR_SHIFT           = ">>>=", SHORTHAND_UR_SHIFT_C           = ">>=";
 	
 	public static final String	OPERATORS[] = new String[] { SHORTHAND_ADD, SHORTHAND_SUBTRACT, SHORTHAND_MULTIPLY,
 																SHORTHAND_DIVIDE, SHORTHAND_MODULO, SHORTHAND_L_SHIFT,
@@ -248,7 +248,7 @@ public class Operator extends IValue
 			SyntaxMessage.error("Unknown operator '" + operator + "'", this);
 		}
 		
-		if (operator.equals(EQUALS) || operator.equals(NOT_EQUAL) || operator.equals(BANG) || operator.equals(AND) || operator.equals(BITWISE_XOR) ||
+		if (operator.equals(EQUALS) || operator.equals(NOT_EQUAL) || operator.equals(BANG) || operator.equals(AND) ||
 			operator.equals(OR) || operator.equals(LESS) || operator.equals(GREATER) || operator.equals(LESS_EQ) || operator.equals(GREATER_EQ))
 		{
 			setType("Bool");
