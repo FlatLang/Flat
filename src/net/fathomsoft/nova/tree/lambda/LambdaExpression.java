@@ -250,6 +250,7 @@ public class LambdaExpression extends Value
 							method.isInstance = parentMethod.isInstance();//parentMethod.isStatic();
 							method.objectReference = parentMethod.objectReference;
 							method.methodCall = call;
+							method.getParameterList().getReferenceParameter().setType(parent.getParentMethod(true).getParameterList().getReferenceParameter());
 							
 							method.getParentClass().addChild(method);
 							
