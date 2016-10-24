@@ -3,7 +3,7 @@ package net.fathomsoft.nova.tree;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.util.Location;
-import net.fathomsoft.nova.util.StringUtils;
+import net.fathomsoft.nova.util.SyntaxUtils;
 
 import java.util.ArrayList;
 
@@ -72,9 +72,11 @@ public class Interface extends ClassDeclaration
 	 */
 	public static Interface decodeStatement(Node parent, String statement, Location location, boolean require)
 	{
-		if (StringUtils.containsWord(statement, IDENTIFIER))
+		int index = SyntaxUtils.findStringInBaseScope(statement, IDENTIFIER);
+		
+		if (index >= 0)
 		{
-			statement = statement.replaceFirst(IDENTIFIER, ClassDeclaration.IDENTIFIER);
+			statement = statement.substring(0, index) + ClassDeclaration.IDENTIFIER + statement.substring(index + IDENTIFIER.length());
 			
 			ClassData data = new ClassData(false, false, true);
 			
