@@ -1,15 +1,14 @@
 package net.fathomsoft.nova.tree;
 
-import java.util.ArrayList;
-
 import javafx.util.Pair;
-import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.tree.variables.Variable;
 import net.fathomsoft.nova.tree.variables.VariableDeclaration;
 import net.fathomsoft.nova.tree.variables.VariableDeclarationList;
 import net.fathomsoft.nova.tree.variables.VirtualLocalDeclaration;
 import net.fathomsoft.nova.util.Location;
+
+import java.util.ArrayList;
 
 /**
  * Node extension that represents a scope of code. In essence, a
@@ -56,7 +55,32 @@ public class Scope extends Node
 		
 		id = getNextScopeAncestor(false).generateUniqueID(this);
 	}
-
+	
+	public DefaultParameterInitialization[] getDefaultParameterInitializations()
+	{
+		ArrayList<DefaultParameterInitialization> list = new ArrayList<>();
+		
+		boolean started = false;
+		
+		for (int i = 0; i < getNumChildren(); i++)
+		{
+			Node n = getChild(i);
+			
+			if (n instanceof DefaultParameterInitialization)
+			{
+				started = true;
+				
+				list.add((DefaultParameterInitialization)n);
+			}
+			else if (started)
+			{
+				break;
+			}
+		}
+		
+		return list.toArray(new DefaultParameterInitialization[0]);
+	}
+	
 	public void addImplicitVariableAssignment(LocalDeclaration var, Value type)
 	{
 		if (assignedImplicitVariables == null)
@@ -335,6 +359,8 @@ public class Scope extends Node
 	public Scope cloneTo(Scope node, boolean cloneChildren)
 	{
 		super.cloneTo(node, cloneChildren);
+		
+		node.id = id;
 		
 		return node;
 	}
