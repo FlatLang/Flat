@@ -1062,7 +1062,7 @@ public class ClassDeclaration extends InstanceDeclaration
 		}
 	}
 	
-	private ArrayList<MethodDeclaration> checkCompatible(MethodDeclaration[] methods, MethodCallArgumentList arguments)
+	public ArrayList<MethodDeclaration> checkCompatible(MethodDeclaration[] methods, MethodCallArgumentList arguments)
 	{
 		ArrayList<MethodDeclaration> compatible = new ArrayList<>();
 		
