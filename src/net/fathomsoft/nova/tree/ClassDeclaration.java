@@ -1048,6 +1048,7 @@ public class ClassDeclaration extends InstanceDeclaration
 		
 		if (compatible.size() > 1)
 		{
+			checkCompatible(methods, arguments);
 			SyntaxMessage.error("Ambiguous method call to '" + methodName + "'", (Node)context);
 			
 			return null;
@@ -1079,6 +1080,21 @@ public class ClassDeclaration extends InstanceDeclaration
 					valid = false;
 					
 					break;
+				}
+			}
+			
+			if (valid)
+			{
+				Value[] values = arguments.getArgumentsInOrder(novaMethod);
+				
+				for (int i = 0; i < values.length; i++)
+				{
+					if (!SyntaxUtils.isTypeCompatible(null, novaMethod.getParameter(i), values[i].getReturnedNode()))
+					{
+						valid = false;
+						
+						break;
+					}
 				}
 			}
 			
