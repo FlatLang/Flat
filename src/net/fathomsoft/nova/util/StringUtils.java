@@ -1529,6 +1529,24 @@ public class StringUtils
 		return out;
 	}
 	
+	public static String[] parseNamedArgument(String input)
+	{
+		String[] values = input.split(":");
+		
+		if (values.length == 2)
+		{
+			values[0] = values[0].trim();
+			values[1] = values[1].trim();
+			
+			if (Regex.matches(values[0], 0, Patterns.IDENTIFIER))
+			{
+				return values;
+			}
+		}
+		
+		return null;
+	}
+	
 	/**
 	 * Split the src by the commas. Makes sure not to split commas that
 	 * are within parentheses and quotes.
