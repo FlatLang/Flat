@@ -272,6 +272,10 @@ public abstract class Value extends Node implements AbstractValue
 		{
 			return true;
 		}
+		else if (node.getParentMethod() instanceof ExtensionMethodDeclaration)
+		{
+			return node.getParentMethod().getParameterList().getReferenceParameter().getTypeClass() == this;
+		}
 		else if (this instanceof Variable)
 		{
 			Variable param = (Variable)this;
@@ -523,12 +527,12 @@ public abstract class Value extends Node implements AbstractValue
 	 * 
 	 * @return The ClassDeclaration instance of the type.
 	 */
-	public ClassDeclaration getTypeClass()
+	public final ClassDeclaration getTypeClass()
 	{
 		return getTypeClass(true);
 	}
 	
-	public ClassDeclaration getTypeClass(boolean checkCast)
+	public final ClassDeclaration getTypeClass(boolean checkCast)
 	{
 		return getTypeClass(checkCast, false);
 	}
@@ -668,6 +672,16 @@ public abstract class Value extends Node implements AbstractValue
 				{
 					return decl.getImplicitType().getReferenceFile();
 				}
+			}
+		}
+		
+		if (this instanceof Accessible && getParentMethod() instanceof ExtensionMethodDeclaration)
+		{
+			Accessible ref = ((Accessible)this).getReferenceNode();
+			
+			if (ref != this)
+			{
+				return ref.toValue().getTypeClass().getFileDeclaration();
 			}
 		}
 		

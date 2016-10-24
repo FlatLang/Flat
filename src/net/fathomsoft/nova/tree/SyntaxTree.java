@@ -73,16 +73,16 @@ public class SyntaxTree
 	
 	public static final Class<?> FIRST_PASS_CLASSES[] = new Class<?>[]
 	{
-		Annotation.class, Import.class, ClassDeclaration.class, Interface.class, Package.class,
-		ExternalCodeBlock.class
+		Annotation.class, Import.class, ClassDeclaration.class, Interface.class, ExtensionDeclaration.class,
+		Package.class, ExternalCodeBlock.class
 	};
 	
 	public static final Class<?> SECOND_PASS_CLASSES[] = new Class<?>[]
 	{
 		ArrayBracketOverload.class, Annotation.class, StaticBlock.class,
-		AbstractMethodDeclaration.class, ExternalMethodDeclaration.class, Destructor.class,
-		Constructor.class, BodyMethodDeclaration.class, ExternalType.class,
-		FieldDeclaration.class, ExternalCodeBlock.class
+		AbstractMethodDeclaration.class, ExternalMethodDeclaration.class, ExtensionMethodDeclaration.class,
+		Destructor.class, Constructor.class, BodyMethodDeclaration.class,
+		ExternalType.class, FieldDeclaration.class, ExternalCodeBlock.class
 	};
 	
 	/**
@@ -534,6 +534,7 @@ public class SyntaxTree
 				else if (node == null && type == Constructor.class) node = Constructor.decodeStatement(parent, statement, location, require);
 				else if (node == null && type == Default.class) node = Default.decodeStatement(parent, statement, location, require);
 				else if (node == null && type == Destructor.class) node = Destructor.decodeStatement(parent, statement, location, require);
+				else if (node == null && type == ExtensionDeclaration.class) node = ExtensionDeclaration.decodeStatement(parent, statement, location, require);
 				else if (node == null && type == ExternalCodeBlock.class) node = ExternalCodeBlock.decodeStatement(parent, statement, location, require);
 				else if (node == null && type == ExternalMethodDeclaration.class) node = ExternalMethodDeclaration.decodeStatement(parent, statement, location, require);
 				else if (node == null && type == ExternalType.class) node = ExternalType.decodeStatement(parent, statement, location, require);
@@ -546,6 +547,7 @@ public class SyntaxTree
 				else if (node == null && type == Loop.class) node = Loop.decodeStatement(parent, statement, location, require);
 				else if (node == null && type == MutatorMethod.class) node = MutatorMethod.decodeStatement(parent, statement, location, require);
 				else if (node == null && type == BodyMethodDeclaration.class) node = BodyMethodDeclaration.decodeStatement(parent, statement, location, require);
+				else if (node == null && type == ExtensionMethodDeclaration.class) node = ExtensionMethodDeclaration.decodeStatement(parent, statement, location, require);
 				else if (node == null && type == Package.class) node = Package.decodeStatement(parent, statement, location, require);
 				else if (node == null && type == Priority.class) node = Priority.decodeStatement(parent, statement, location, require);
 				else if (node == null && type == RegexLiteral.class) node = RegexLiteral.decodeStatement(parent, statement, location, require);
@@ -638,6 +640,7 @@ public class SyntaxTree
 		else if (type.isAssignableFrom(Default.class) && (node = Default.decodeStatement(parent, statement, location, require)) != null);
 		else if (type.isAssignableFrom(Destructor.class) && (node = Destructor.decodeStatement(parent, statement, location, require)) != null);
 		else if (type.isAssignableFrom(ElseStatement.class) && (node = ElseStatement.decodeStatement(parent, statement, location, require)) != null);
+		else if (type.isAssignableFrom(ExtensionDeclaration.class) && (node = ExtensionDeclaration.decodeStatement(parent, statement, location, require)) != null);
 		else if (type.isAssignableFrom(ExternalCodeBlock.class) && (node = ExternalCodeBlock.decodeStatement(parent, statement, location, require)) != null);
 		else if (type.isAssignableFrom(ExternalMethodDeclaration.class) && (node = ExternalMethodDeclaration.decodeStatement(parent, statement, location, require)) != null);
 		else if (type.isAssignableFrom(ExternalType.class) && (node = ExternalType.decodeStatement(parent, statement, location, require)) != null);
@@ -650,6 +653,7 @@ public class SyntaxTree
 //		else if (type.isAssignableFrom(Null.class) && (node = Null.decodeStatement(parent, statement, location, require)) != null);
 		else if (type.isAssignableFrom(MethodCall.class) && (node = MethodCall.decodeStatement(parent, statement, location, require)) != null);
 		else if (type.isAssignableFrom(BodyMethodDeclaration.class) && (node = BodyMethodDeclaration.decodeStatement(parent, statement, location, require)) != null);
+		else if (type.isAssignableFrom(ExtensionMethodDeclaration.class) && (node = ExtensionMethodDeclaration.decodeStatement(parent, statement, location, require)) != null);
 		else if (type.isAssignableFrom(Priority.class) && (node = Priority.decodeStatement(parent, statement, location, require)) != null);
 		else if (type.isAssignableFrom(RegexLiteral.class) && (node = RegexLiteral.decodeStatement(parent, statement, location, require)) != null);
 		else if (type.isAssignableFrom(Return.class) && (node = Return.decodeStatement(parent, statement, location, require)) != null);
@@ -702,6 +706,7 @@ public class SyntaxTree
 		else if (type2.isAssignableFrom(LocalDeclaration.class) == declaration && type.isAssignableFrom(LocalDeclaration.class) && (node = LocalDeclaration.decodeStatement(parent, statement, location, require)) != null);
 		else if (type2.isAssignableFrom(MethodCall.class) == declaration && type.isAssignableFrom(MethodCall.class) && (node = MethodCall.decodeStatement(parent, statement, location, require)) != null);
 		else if (type2.isAssignableFrom(BodyMethodDeclaration.class) == declaration && type.isAssignableFrom(BodyMethodDeclaration.class) && (node = BodyMethodDeclaration.decodeStatement(parent, statement, location, require)) != null);
+		else if (type2.isAssignableFrom(ExtensionMethodDeclaration.class) == declaration && type.isAssignableFrom(ExtensionMethodDeclaration.class) && (node = ExtensionMethodDeclaration.decodeStatement(parent, statement, location, require)) != null);
 		else if (type2.isAssignableFrom(FieldDeclaration.class) == declaration && type.isAssignableFrom(FieldDeclaration.class) && (node = FieldDeclaration.decodeStatement(parent, statement, location, require)) != null);
 		
 		return node;
@@ -789,7 +794,7 @@ public class SyntaxTree
 	
 	private static Object getArrayAccessOrNode(Node parent, String statement, Location location, boolean require)
 	{
-		if (statement.startsWith("return"))
+		if (Regex.matches(statement, 0, Patterns.CONTROL_STRUCTURES))
 		{
 			return null;
 		}
@@ -820,7 +825,14 @@ public class SyntaxTree
 			accessString = statement.substring(index).trim();
 			statement = statement.substring(0, index);
 			
-			return new String[] { accessString, statement };
+			boolean safeNavigation = statement.endsWith("?");
+			
+			if (safeNavigation)
+			{
+				statement = statement.substring(0, statement.length() - 1);
+			}
+			
+			return new Object[] { accessString, statement, safeNavigation };
 		}
 		
 		return null;
@@ -833,6 +845,7 @@ public class SyntaxTree
 			return null;
 		}
 		
+		boolean safeNavigation = false;
 		String accessString = null;
 		
 		Object o = getArrayAccessOrNode(parent, statement, location, require);
@@ -843,10 +856,11 @@ public class SyntaxTree
 		}
 		else if (o != null)
 		{
-			String[] s = (String[])o;
+			Object[] s = (Object[])o;
 			
-			accessString = s[0];
-			statement = s[1];
+			accessString = (String)s[0];
+			statement = (String)s[1];
+			safeNavigation = (Boolean)s[2];
 		}
 		
 		Node node = Literal.decodeStatement(parent, statement, location, require, true);
@@ -1087,10 +1101,10 @@ public class SyntaxTree
 		}
 		else if (o != null)
 		{
-			String[] s = (String[])o;
+			Object[] s = (Object[])o;
 			
-			accessString = s[0];
-			statement = s[1];
+			accessString = (String)s[0];
+			statement = (String)s[1];
 		}
 		
 		Accessible node = (Accessible)decodeStatementOfType(parent, statement, location, require, Super.class);
@@ -1265,6 +1279,16 @@ public class SyntaxTree
 					if (clazz != null)
 					{
 						node = clazz.getField(statement);
+						
+						if (node == null && clazz instanceof ExtensionDeclaration)
+						{
+							NovaMethodDeclaration method = parent.getParentMethod(true);
+							
+							if (method != null)
+							{
+								node = method.getParameterList().getReferenceParameter().getTypeClass().getField(statement);
+							}
+						}
 					}
 				}
 			}
@@ -1404,6 +1428,11 @@ public class SyntaxTree
 	 */
 	public static Value decodeValue(Node parent, String statement, Location location, boolean require)
 	{
+		return decodeValue(parent, statement, location, require, true);
+	}
+	
+	public static Value decodeValue(Node parent, String statement, Location location, boolean require, boolean checkType)
+	{
 //		Value value = Literal.decodeStatement(parent, statement, location, require, true);
 //		
 //		if (value == null)
@@ -1421,7 +1450,7 @@ public class SyntaxTree
 //			}
 //		}
 		
-		Node node = decodeScopeContents(parent, statement, location, require);
+		Node node = decodeScopeContents(parent, statement, location, require, checkType);
 		
 		/*if (node instanceof Variable)
 		{

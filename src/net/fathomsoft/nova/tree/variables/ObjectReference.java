@@ -28,8 +28,13 @@ public class ObjectReference extends Variable
 	}
 	
 	@Override
-	public ClassDeclaration getTypeClass()
+	public ClassDeclaration getTypeClass(boolean checkCast, boolean defaultGenericType)
 	{
+		if (getParentMethod() instanceof ExtensionMethodDeclaration)
+		{
+			return getFileDeclaration().getImportedClass(this, getType());
+		}
+		
 		return getParentClass();
 	}
 	

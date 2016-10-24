@@ -15,6 +15,7 @@ import net.fathomsoft.nova.tree.variables.Variable;
 import net.fathomsoft.nova.tree.variables.VariableDeclaration;
 import net.fathomsoft.nova.util.*;
 
+import java.util.ArrayList;
 import java.util.regex.Matcher;
 
 /**
@@ -234,20 +235,32 @@ public class MethodCall extends Variable
 			return closure;
 		}
 		
-		ClassDeclaration declaring = getDeclaringClass();
+		// If constructor
+		if (getFileDeclaration().getImportList().getAbsoluteClassLocation(name) != null)
+		{
+			setName(getFileDeclaration().getImportedClass(getDeclaringClass(), name).getName());
+			
+			return getDeclaringClass().getMethod(getContext(), name, getArgumentList());
+		}
 		
-		if (declaring == null)
+		ClassDeclaration[] classes = getDeclaringClasses();
+		
+		if (classes == null || classes.length == 0)
 		{
 			return null;
 		}
 		
-		// If constructor
-		if (getFileDeclaration().getImportList().getAbsoluteClassLocation(name) != null)
+		for (ClassDeclaration clazz : classes)
 		{
-			setName(getFileDeclaration().getImportedClass(declaring, name).getName());
+			MethodDeclaration method = clazz.getMethod(getContext(), name, getArgumentList());
+			
+			if (method != null)
+			{
+				return method;
+			}
 		}
 		
-		return declaring.getMethod(getContext(), name, getArgumentList());
+		return null;
 	}
 	
 	/**
@@ -314,6 +327,33 @@ public class MethodCall extends Variable
 		}
 		
 		return ((Value)getReferenceNode()).getTypeClass(false);
+	}
+	
+	public ClassDeclaration[] getDeclaringClasses()
+	{
+		ArrayList<ClassDeclaration> list = new ArrayList<>();
+		
+		if (getParentClass() instanceof ExtensionDeclaration)
+		{
+			ExtensionDeclaration extension = (ExtensionDeclaration)getParentClass();
+			
+			list.add(extension);
+		}
+		
+		getFileDeclaration().getImportList().forEachVisibleListChild(i -> {
+			ClassDeclaration c = i.getClassDeclaration();
+			
+			if (c instanceof ExtensionDeclaration)
+			{
+				ExtensionDeclaration extension = (ExtensionDeclaration)c;
+				
+				list.add(extension);
+			}
+		});
+		
+		list.add(getDeclaringClass());
+		
+		return list.toArray(new ClassDeclaration[0]);
 	}
 	
 	public NovaMethodDeclaration getNovaMethod()
