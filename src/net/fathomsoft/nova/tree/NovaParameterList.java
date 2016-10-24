@@ -57,6 +57,11 @@ public class NovaParameterList extends ParameterList<Parameter>
 		return list.toArray(new Parameter[0]);
 	}
 	
+	public ReferenceParameter getReferenceParameter()
+	{
+		return (ReferenceParameter)getChild(0);
+	}
+	
 	public int getNumReturnParameters()
 	{
 		return returnParameters.getNumVisibleChildren();
