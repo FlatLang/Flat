@@ -175,7 +175,7 @@ public class Program extends TypeList<FileDeclaration>
 			{
 				ClassDeclaration clazz = child.getClassDeclaration();
 				
-				if (clazz != null)
+				if (clazz != null && clazz instanceof ExtensionDeclaration == false)
 				{
 					file.addImport(clazz.getClassLocation());
 				}
