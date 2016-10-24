@@ -394,7 +394,7 @@ public class Assignment extends Value
 	{
 		if (assignees == null || assignees.length <= 0)
 		{
-			Value varNode = (Value)SyntaxTree.decodeScopeContents(this, assignee, loc, require, checkType);
+			Value varNode = SyntaxTree.decodeValue(this, assignee, loc, require, checkType);
 			
 			if (varNode == null)
 			{
