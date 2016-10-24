@@ -198,6 +198,10 @@ public class Patterns
 	 * "for   	(" and "for("
 	 */
 	public static final Pattern PRE_FOR					= Pattern.compile("for(?=\\s*\\()");
+	
+	public static final Pattern CONTROL_STRUCTURES		= Pattern.compile("(for|while|if|return)(\\s+|[(]|$)");
+	
+	public static final Pattern TABS					= Pattern.compile("\n(\t|[ ]{4})+");
 
 	/**
 	 * Pattern that searches for the contents of a for statement.<br>
