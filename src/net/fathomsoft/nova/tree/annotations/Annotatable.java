@@ -1,5 +1,7 @@
 package net.fathomsoft.nova.tree.annotations;
 
+import net.fathomsoft.nova.tree.Node;
+
 import java.util.ArrayList;
 
 /**
@@ -12,6 +14,21 @@ public interface Annotatable
 	
 	default boolean containsAnnotationOfType(Class c)
 	{
+		return containsAnnotationOfType(c, false);
+	}
+	
+	default boolean containsAnnotationOfType(Class c, boolean checkAncestors)
+	{
+		return getAnnotationOfType(c, checkAncestors) != null;
+	}
+	
+	default Annotation getAnnotationOfType(Class c)
+	{
+		return getAnnotationOfType(c, false);
+	}
+	
+	default Annotation getAnnotationOfType(Class c, boolean checkAncestors)
+	{
 		ArrayList<Annotation> annotations = getAnnotations();
 		
 		if (annotations != null)
@@ -20,12 +37,17 @@ public interface Annotatable
 			{
 				if (c.isAssignableFrom(a.getClass()))
 				{
-					return true;
+					return a;
 				}
 			}
 		}
 		
-		return false;
+		if (checkAncestors && ((Node)this).getParent() != null)
+		{
+			return ((Node)this).getParent().getAnnotationOfType(c, true);
+		}
+		
+		return null;
 	}
 	
 	default StringBuilder generateNovaAnnotations(StringBuilder builder)
