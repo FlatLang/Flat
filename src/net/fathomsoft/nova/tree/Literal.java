@@ -3,8 +3,12 @@ package net.fathomsoft.nova.tree;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.error.SyntaxMessage;
+import net.fathomsoft.nova.tree.annotations.KeepWhitespaceAnnotation;
 import net.fathomsoft.nova.util.Location;
+import net.fathomsoft.nova.util.Patterns;
 import net.fathomsoft.nova.util.SyntaxUtils;
+
+import java.util.regex.Matcher;
 
 /**
  * Value extension that represents a literal within the code. For
@@ -252,11 +256,7 @@ public class Literal extends IValue implements Accessible
 		
 		if (literalType != null || parent.isWithinExternalContext())
 		{
-			if (literalType.equals("String"))
-			{
-				statement = formatMultilineString(statement);
-			}
-			else if (SyntaxUtils.isNumber(statement))
+			if (SyntaxUtils.isNumber(statement))
 			{
 				statement = SyntaxUtils.removeUnderscores(statement);
 			}
@@ -390,6 +390,49 @@ public class Literal extends IValue implements Accessible
 		if (result.skipValidation())
 		{
 			return result;
+		}
+		
+		
+		if (getType().equals("String"))
+		{
+			KeepWhitespaceAnnotation annotation = (KeepWhitespaceAnnotation)getAnnotationOfType(KeepWhitespaceAnnotation.class, true);
+			
+			if (annotation == null)
+			{
+				value = formatMultilineString(value);
+			}
+			else
+			{
+				if (annotation.indent != null)
+				{
+					if (annotation.indent.equals("baseline"))
+					{
+						Matcher matcher = Patterns.TABS.matcher(value);
+						
+						int min = Integer.MAX_VALUE;
+						char c = 0;
+						
+						while (matcher.find())
+						{
+							int tabCount = matcher.end() - matcher.start() - 1;
+							
+							if (tabCount < min)
+							{
+								min = tabCount;
+							}
+							
+							c = value.charAt(matcher.start() + 1);
+						}
+						
+						if (c != 0)
+						{
+							value = value.replaceAll("\n[" + c + "]{0," + min + "}", "\n");
+						}
+					}
+				}
+				
+				value = value.replaceAll("[\n]", "\\\\n");
+			}
 		}
 		
 		if (value.equals(NULL_IDENTIFIER))
