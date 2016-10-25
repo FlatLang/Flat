@@ -212,7 +212,7 @@ public abstract class Identifier extends Value implements Accessible
 			return result;
 		}
 		
-		result.returnedNode = (Node)checkSafeNavigation();
+		result.returnedNode = checkSafeNavigation();
 		
 		return result;
 	}
