@@ -9,6 +9,8 @@ import net.fathomsoft.nova.tree.variables.Variable;
 import net.fathomsoft.nova.tree.variables.VariableDeclaration;
 import net.fathomsoft.nova.util.SyntaxUtils;
 
+import java.util.ArrayList;
+
 /**
  * 
  * 
@@ -33,6 +35,32 @@ public interface Accessible
 	default Value toValue()
 	{
 		return (Value)this;
+	}
+	
+	/**
+	 * Get the ClassDeclaration instance that declares the method that
+	 * this MethodCall is calling.
+	 *
+	 * @return The Class that this MethodCall's declaration is declared
+	 * 		in.
+	 */
+	default ClassDeclaration getDeclaringClass()
+	{
+		return ((Value)getReferenceNode()).getTypeClass(false);
+	}
+	
+	default ClassDeclaration[] getDeclaringClasses()
+	{
+		ArrayList<ClassDeclaration> list = new ArrayList<>();
+		
+		for (ClassDeclaration c : toValue().getExtensionClasses())
+		{
+			list.add(c);
+		}
+		
+		list.add(getDeclaringClass());
+		
+		return list.toArray(new ClassDeclaration[0]);
 	}
 	
 	default GenericTypeArgument getGenericTypeArgumentFromParameter(GenericTypeParameter type)
@@ -970,17 +998,5 @@ public interface Accessible
 		}
 		
 		return builder.deleteCharAt(builder.length() - 1);
-	}
-	
-	default ClassDeclaration getDeclaringClass()
-	{
-		if (isAccessed())
-		{
-			return ((Value)getAccessingNode()).getTypeClass();
-		}
-		
-		return ((Node)this).getParentClass();
-		
-//		throw new UnimplementedOperationException("Class " + getClass().getName() + " has not implemented the getDeclaringClass() method.");
 	}
 }
