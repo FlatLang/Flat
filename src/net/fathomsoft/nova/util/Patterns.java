@@ -22,6 +22,11 @@ public class Patterns
 	 * Pattern that searches for the boundaries of an identifier.
 	 */
 	public static final Pattern IDENTIFIER_BOUNDARIES	= Pattern.compile("\\b");
+	
+	/**
+	 * Pattern that searches for the boundaries of an identifier.
+	 */
+	public static final Pattern EXTENSION_IDENTIFIER	= Pattern.compile("[A-Za-z0-9_]+\\s*+\\.\\s*[A-Za-z0-9_]+");
 
 	/**
 	 * Pattern that searches for an identifier declaration. An identifier
