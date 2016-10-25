@@ -321,7 +321,7 @@ public class Operator extends IValue
 	{
 		super.cloneTo(node, cloneChildren);
 		
-		node.setOperator(getOperator());
+		node.operator = operator;
 		
 		return node;
 	}
