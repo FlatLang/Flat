@@ -1694,6 +1694,31 @@ public abstract class Node implements Listenable, Annotatable
 		return (FileDeclaration)current;
 	}
 	
+	public ClassDeclaration[] getExtensionClasses()
+	{
+		ArrayList<ClassDeclaration> list = new ArrayList<>();
+		
+		if (getParentClass() instanceof ExtensionDeclaration)
+		{
+			ExtensionDeclaration extension = (ExtensionDeclaration)getParentClass();
+			
+			list.add(extension);
+		}
+		
+		getFileDeclaration().getImportList().forEachVisibleListChild(i -> {
+			ClassDeclaration c = i.getClassDeclaration();
+			
+			if (c instanceof ExtensionDeclaration)
+			{
+				ExtensionDeclaration extension = (ExtensionDeclaration)c;
+				
+				list.add(extension);
+			}
+		});
+		
+		return list.toArray(new ClassDeclaration[0]);
+	}
+	
 	/**
 	 * Get the ClassDeclaration parent instance of the Node, if one exists.
 	 * 
