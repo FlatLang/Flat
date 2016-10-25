@@ -30,7 +30,7 @@ public class ObjectReference extends Variable
 	@Override
 	public ClassDeclaration getTypeClass(boolean checkCast, boolean defaultGenericType)
 	{
-		if (getParentMethod() instanceof ExtensionMethodDeclaration)
+		if (getParentMethod() instanceof ExtensionMethodDeclaration || getParentMethod() instanceof PropertyMethod && ((PropertyMethod)getParentMethod()).getDeclaration() instanceof ExtensionFieldDeclaration)
 		{
 			return getFileDeclaration().getImportedClass(this, getType());
 		}
