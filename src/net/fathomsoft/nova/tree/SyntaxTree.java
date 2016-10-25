@@ -19,6 +19,7 @@ import net.fathomsoft.nova.util.*;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.function.Function;
 import java.util.regex.Matcher;
 
 /**
@@ -81,7 +82,7 @@ public class SyntaxTree
 	{
 		ArrayBracketOverload.class, Annotation.class, StaticBlock.class,
 		AbstractMethodDeclaration.class, ExternalMethodDeclaration.class, ExtensionMethodDeclaration.class,
-		Destructor.class, Constructor.class, BodyMethodDeclaration.class,
+		ExtensionFieldDeclaration.class, Destructor.class, Constructor.class, BodyMethodDeclaration.class,
 		ExternalType.class, FieldDeclaration.class, ExternalCodeBlock.class
 	};
 	
@@ -547,6 +548,7 @@ public class SyntaxTree
 				else if (node == null && type == Loop.class) node = Loop.decodeStatement(parent, statement, location, require);
 				else if (node == null && type == MutatorMethod.class) node = MutatorMethod.decodeStatement(parent, statement, location, require);
 				else if (node == null && type == BodyMethodDeclaration.class) node = BodyMethodDeclaration.decodeStatement(parent, statement, location, require);
+				else if (node == null && type == ExtensionFieldDeclaration.class) node = ExtensionFieldDeclaration.decodeStatement(parent, statement, location, require);
 				else if (node == null && type == ExtensionMethodDeclaration.class) node = ExtensionMethodDeclaration.decodeStatement(parent, statement, location, require);
 				else if (node == null && type == Package.class) node = Package.decodeStatement(parent, statement, location, require);
 				else if (node == null && type == Priority.class) node = Priority.decodeStatement(parent, statement, location, require);
@@ -653,6 +655,7 @@ public class SyntaxTree
 //		else if (type.isAssignableFrom(Null.class) && (node = Null.decodeStatement(parent, statement, location, require)) != null);
 		else if (type.isAssignableFrom(MethodCall.class) && (node = MethodCall.decodeStatement(parent, statement, location, require)) != null);
 		else if (type.isAssignableFrom(BodyMethodDeclaration.class) && (node = BodyMethodDeclaration.decodeStatement(parent, statement, location, require)) != null);
+		else if (type.isAssignableFrom(ExtensionFieldDeclaration.class) && (node = ExtensionFieldDeclaration.decodeStatement(parent, statement, location, require)) != null);
 		else if (type.isAssignableFrom(ExtensionMethodDeclaration.class) && (node = ExtensionMethodDeclaration.decodeStatement(parent, statement, location, require)) != null);
 		else if (type.isAssignableFrom(Priority.class) && (node = Priority.decodeStatement(parent, statement, location, require)) != null);
 		else if (type.isAssignableFrom(RegexLiteral.class) && (node = RegexLiteral.decodeStatement(parent, statement, location, require)) != null);
@@ -707,6 +710,7 @@ public class SyntaxTree
 		else if (type2.isAssignableFrom(MethodCall.class) == declaration && type.isAssignableFrom(MethodCall.class) && (node = MethodCall.decodeStatement(parent, statement, location, require)) != null);
 		else if (type2.isAssignableFrom(BodyMethodDeclaration.class) == declaration && type.isAssignableFrom(BodyMethodDeclaration.class) && (node = BodyMethodDeclaration.decodeStatement(parent, statement, location, require)) != null);
 		else if (type2.isAssignableFrom(ExtensionMethodDeclaration.class) == declaration && type.isAssignableFrom(ExtensionMethodDeclaration.class) && (node = ExtensionMethodDeclaration.decodeStatement(parent, statement, location, require)) != null);
+		else if (type2.isAssignableFrom(ExtensionFieldDeclaration.class) == declaration && type.isAssignableFrom(ExtensionFieldDeclaration.class) && (node = ExtensionFieldDeclaration.decodeStatement(parent, statement, location, require)) != null);
 		else if (type2.isAssignableFrom(FieldDeclaration.class) == declaration && type.isAssignableFrom(FieldDeclaration.class) && (node = FieldDeclaration.decodeStatement(parent, statement, location, require)) != null);
 		
 		return node;
@@ -1284,7 +1288,7 @@ public class SyntaxTree
 						{
 							NovaMethodDeclaration method = parent.getParentMethod(true);
 							
-							if (method != null)
+							if (method != null && node == null)
 							{
 								node = method.getParameterList().getReferenceParameter().getTypeClass().getField(statement);
 							}
@@ -1331,21 +1335,33 @@ public class SyntaxTree
 		
 		if (id != null)
 		{
-			ClassDeclaration clazz = ((Value)id).getTypeClass();
+			Function<ClassDeclaration, FieldDeclaration> getField = (clazz) -> {
+				if (clazz == null)
+				{
+					return null;
+				}
+				
+				FieldDeclaration field = clazz.getField(statement);
+				
+				if (validateAccess)
+				{
+					return validateFieldAccess(parent, clazz, field);
+				}
+				
+				return field;
+			};
 			
-			if (clazz == null)
+			for (ClassDeclaration c : id.toValue().getExtensionClasses())
 			{
-				return null;
+				FieldDeclaration field = getField.apply(c);
+				
+				if (field != null)
+				{
+					return field;
+				}
 			}
 			
-			FieldDeclaration field = clazz.getField(statement);
-			
-			if (validateAccess)
-			{
-				return validateFieldAccess(parent, clazz, field);
-			}
-			
-			return field;
+			return getField.apply(((Value)id).getTypeClass());
 		}
 		
 		return null;
