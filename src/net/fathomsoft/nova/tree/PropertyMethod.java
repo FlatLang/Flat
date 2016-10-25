@@ -54,7 +54,7 @@ public abstract class PropertyMethod extends BodyMethodDeclaration
 				}
 			}
 			
-			n = getParent().getAncestorWithScopeOrClass();
+			n = n.getParent().getAncestorWithScopeOrClass();
 		}
 		
 		return null;
