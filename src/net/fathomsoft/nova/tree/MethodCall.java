@@ -15,7 +15,6 @@ import net.fathomsoft.nova.tree.variables.Variable;
 import net.fathomsoft.nova.tree.variables.VariableDeclaration;
 import net.fathomsoft.nova.util.*;
 
-import java.util.ArrayList;
 import java.util.regex.Matcher;
 
 /**
@@ -45,6 +44,17 @@ public class MethodCall extends Variable
 		addChild(arguments);
 		addChild(genericArguments);
 		//addChild(implementation);
+	}
+	
+	@Override
+	public ClassDeclaration getDeclaringClass()
+	{
+		if (getFileDeclaration().getImportList().getAbsoluteClassLocation(getName()) != null)
+		{
+			return SyntaxUtils.getImportedClass(getFileDeclaration(), getName());
+		}
+		
+		return ((Value)getReferenceNode()).getTypeClass(false);
 	}
 	
 	/**
@@ -310,50 +320,6 @@ public class MethodCall extends Variable
 	public boolean isClosureCall()
 	{
 		return getClosureDeclaration() != null;
-	}
-	
-	/**
-	 * Get the ClassDeclaration instance that declares the method that
-	 * this MethodCall is calling.
-	 * 
-	 * @return The Class that this MethodCall's declaration is declared
-	 * 		in.
-	 */
-	public ClassDeclaration getDeclaringClass()
-	{
-		if (getFileDeclaration().getImportList().getAbsoluteClassLocation(getName()) != null)
-		{
-			return SyntaxUtils.getImportedClass(getFileDeclaration(), getName());
-		}
-		
-		return ((Value)getReferenceNode()).getTypeClass(false);
-	}
-	
-	public ClassDeclaration[] getDeclaringClasses()
-	{
-		ArrayList<ClassDeclaration> list = new ArrayList<>();
-		
-		if (getParentClass() instanceof ExtensionDeclaration)
-		{
-			ExtensionDeclaration extension = (ExtensionDeclaration)getParentClass();
-			
-			list.add(extension);
-		}
-		
-		getFileDeclaration().getImportList().forEachVisibleListChild(i -> {
-			ClassDeclaration c = i.getClassDeclaration();
-			
-			if (c instanceof ExtensionDeclaration)
-			{
-				ExtensionDeclaration extension = (ExtensionDeclaration)c;
-				
-				list.add(extension);
-			}
-		});
-		
-		list.add(getDeclaringClass());
-		
-		return list.toArray(new ClassDeclaration[0]);
 	}
 	
 	public NovaMethodDeclaration getNovaMethod()
