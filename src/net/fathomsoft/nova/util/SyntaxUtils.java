@@ -1887,7 +1887,17 @@ public class SyntaxUtils
 			return type;//value.getParentClass().getGenericTypeParameter(type).getDefaultType();
 		}
 		
-		String location = value.getReferenceFile().getImportList().getAbsoluteClassLocation(type);
+		String location = null;
+		
+		if (value.getParentClass() instanceof ExtensionDeclaration)
+		{
+			location = value.getFileDeclaration().getImportList().getAbsoluteClassLocation(type);
+		}
+		
+		if (location == null)
+		{
+			location = value.getReferenceFile().getImportList().getAbsoluteClassLocation(type);
+		}
 		
 		clazz = value.getProgram().getClassDeclaration(location);
 		
