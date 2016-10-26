@@ -408,6 +408,11 @@ public class TreeGenerator implements Runnable
 			
 			adjustLocation(previous, location);
 			
+			if (statement.length() == 0)
+			{
+				return null;
+			}
+			
 			Node node = decodeStatementAndCheck(statement, location, scope, searchTypes, skipScopes);
 			
 			if (node instanceof Annotation)
@@ -675,6 +680,11 @@ public class TreeGenerator implements Runnable
 	 */
 	private void skipScope()
 	{
+		if (statementEndIndex >= source.length())
+		{
+			return;
+		}
+		
 		int contentIndex = StringUtils.findNextNonWhitespaceIndex(source, statementEndIndex + 1);
 		
 		if (source.charAt(statementEndIndex) != '{')
