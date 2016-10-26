@@ -69,7 +69,7 @@ public class Instantiation extends IIdentifier implements GenericCompatible
 	@Override
 	public ClassDeclaration getDeclaringClass()
 	{
-		return getIdentifier().getDeclaringClass();
+		return getFileDeclaration().getImportedClass(this, getType());
 	}
 	
 	/**
@@ -244,12 +244,18 @@ public class Instantiation extends IIdentifier implements GenericCompatible
 			{
 				return null;
 			}
-			else if (!methodCall.getTypeClass().isOfType(getTypeClass()) && getTypeClass().getConstructorList().getNumVisibleChildren() > 0)
+			else
 			{
-				MethodCall.decodeStatement(this, instantiation, location, require, validateAccess);
-				SyntaxMessage.queryError("Incompatible arguments given to " + getName() + " constructor", this, require);
+				ClassDeclaration callType = methodCall.getTypeClass();
+				ClassDeclaration type = getTypeClass();
 				
-				return null;
+				if (callType != null && !callType.isOfType(getTypeClass()) && type != null && type.getConstructorList().getNumVisibleChildren() > 0)
+				{
+					MethodCall.decodeStatement(this, instantiation, location, require, validateAccess);
+					SyntaxMessage.queryError("Incompatible arguments given to " + getName() + " constructor", this, require);
+					
+					return null;
+				}
 			}
 			
 			child = methodCall;
