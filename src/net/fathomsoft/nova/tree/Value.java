@@ -611,11 +611,16 @@ public abstract class Value extends Node implements AbstractValue
 				if (isGenericType())
 				{
 					id = id.getRootAccessNode();
+					
+					Value reference = (Value)id.getReferenceNode();
+					
+					ClassDeclaration type = reference.getTypeClass();
+					
+					return type.getFileDeclaration();
 				}
 				
-				Value reference = (Value)id.getReferenceNode();
-				
-				ClassDeclaration type = reference.getTypeClass();
+				//Nova.debuggingBreakpoint(id instanceof Variable && ((Variable)id).getName().equals("hypotheses"));
+				ClassDeclaration type = ((Accessible)this).getDeclaringClass();
 				
 				if (type == null)
 				{
@@ -675,13 +680,20 @@ public abstract class Value extends Node implements AbstractValue
 			}
 		}
 		
-		if (this instanceof Accessible && getParentMethod() instanceof ExtensionMethodDeclaration)
+		if (this instanceof Accessible && this instanceof VariableDeclaration == false &&
+			this instanceof Instantiation == false && this instanceof StaticClassReference == false && 
+			getParentMethod() instanceof ExtensionMethodDeclaration)
 		{
 			Accessible ref = ((Accessible)this).getReferenceNode();
 			
-			if (ref != this)
+			if (ref != this && ref instanceof ObjectReference)
 			{
-				return ref.toValue().getTypeClass().getFileDeclaration();
+				ClassDeclaration clazz = ref.toValue().getTypeClass();
+				
+				if (clazz != null)
+				{
+					return clazz.getFileDeclaration();
+				}
 			}
 		}
 		
