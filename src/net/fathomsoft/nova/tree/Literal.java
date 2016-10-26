@@ -222,6 +222,13 @@ public class Literal extends IValue implements Accessible
 	{
 		if (mustBeLiteral && !SyntaxUtils.isLiteral(parent, statement))
 		{
+			RegexLiteral regex = RegexLiteral.decodeStatement(parent, statement, location, require);
+			
+			if (regex != null)
+			{
+				return regex;
+			}
+			
 			return null;
 		}
 		
