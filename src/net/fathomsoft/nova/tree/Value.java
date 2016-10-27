@@ -392,6 +392,36 @@ public abstract class Value extends Node implements AbstractValue
 		return "";
 	}
 	
+	public String getArrayType()
+	{
+		return getArrayType(0);
+	}
+	
+	public String getArrayType(int arrayOffset)
+	{
+		String type = "";
+		
+		for (int i = 1 + arrayOffset; i < getArrayDimensions(); i++)
+		{
+			type += "Array<";
+		}
+		
+		switch (getType())
+		{
+			case "Char": type += "CharArray"; break;
+			case "Int": type += "IntArray"; break;
+			case "Double": type += "DoubleArray"; break;
+			default: type += "Array<" + generateNovaInput(new StringBuilder(), false, false) + ">";
+		}
+		
+		for (int i = 1 + arrayOffset; i < getArrayDimensions(); i++)
+		{
+			type += ">";
+		}
+		
+		return type;
+	}
+	
 	public boolean isPrimitiveGenericTypeWrapper()
 	{
 		ClassDeclaration c = getTypeClass();
