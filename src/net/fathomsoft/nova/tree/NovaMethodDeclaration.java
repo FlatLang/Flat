@@ -513,6 +513,12 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 		return null;
 	}
 	
+	@Override
+	public boolean canAccess()
+	{
+		return false;
+	}
+	
 	public void checkOverrides()
 	{
 		NovaMethodDeclaration methodDeclaration = getOverriddenMethod();
