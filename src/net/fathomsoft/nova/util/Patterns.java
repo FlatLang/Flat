@@ -269,7 +269,7 @@ public class Patterns
 	 * For example:<br>
 	 * "array = new int[423]" would return "int[423]"
 	 */
-	public static final Pattern ARRAY_INIT				= Pattern.compile("[A-Za-z0-9_]+(\\s*\\[\\s*[^\\]]+?\\s*\\])+");
+	public static final Pattern ARRAY_INIT				= Pattern.compile("[A-Za-z0-9_]+(\\s*\\[\\s*([^\\]]+?\\s*\\]|\\]))+");
 
 	/**
 	 * Pattern that searches for an array access.<br>
