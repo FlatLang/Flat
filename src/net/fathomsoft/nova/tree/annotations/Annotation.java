@@ -148,6 +148,20 @@ public class Annotation extends Node
 	}
 	
 	@Override
+	public boolean onAfterDecoded()
+	{
+		getProgram().addPendingAnnotation(this);
+		
+		return super.onAfterDecoded();
+	}
+	
+	@Override
+	public void onAdded(Node parent)
+	{
+		super.onAdded(parent);
+	}
+	
+	@Override
 	public boolean onNextStatementDecoded(Node next)
 	{
 		if (next != null)

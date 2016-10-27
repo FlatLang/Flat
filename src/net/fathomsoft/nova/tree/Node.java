@@ -124,6 +124,8 @@ public abstract class Node implements Listenable, Annotatable
 			annotation.getParent().annotations.remove(annotation);
 		}
 		
+		getProgram().removePendingAnnotation(annotation);
+		
 		annotations.add(annotation);
 		
 		annotation.setTemporaryParent(this);
@@ -1513,6 +1515,11 @@ public abstract class Node implements Listenable, Annotatable
 	 * 		in Nova syntax.
 	 */
 	public StringBuilder generateNovaInput(StringBuilder builder, boolean outputChildren)
+	{
+		throw new UnimplementedOperationException("The Nova input implementation for this feature has not been implemented yet.");
+	}
+	
+	public StringBuilder generateNovaInput(StringBuilder builder, boolean outputChildren, boolean generateArray)
 	{
 		throw new UnimplementedOperationException("The Nova input implementation for this feature has not been implemented yet.");
 	}

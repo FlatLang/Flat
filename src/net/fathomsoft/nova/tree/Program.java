@@ -3,6 +3,7 @@ package net.fathomsoft.nova.tree;
 import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.ValidationResult;
+import net.fathomsoft.nova.tree.annotations.Annotation;
 import net.fathomsoft.nova.util.Location;
 import net.fathomsoft.nova.util.SyntaxUtils;
 
@@ -34,6 +35,31 @@ public class Program extends TypeList<FileDeclaration>
 	private final HashMap<String, Integer>	files = new HashMap<>();
 	
 	private int uniqueId = 1;
+	
+	private ArrayList<Annotation> pendingAnnotations = new ArrayList<>();
+	
+	public void addPendingAnnotation(Annotation annotation)
+	{
+		pendingAnnotations.add(annotation);
+	}
+	
+	public void removePendingAnnotation(Annotation annotation)
+	{
+		pendingAnnotations.remove(annotation);
+	}
+	
+	public Annotation getPendingAnnotationOfType(Class type)
+	{
+		for (Annotation a : pendingAnnotations)
+		{
+			if (type.isAssignableFrom(a.getClass()))
+			{
+				return a;
+			}
+		}
+		
+		return null;
+	}
 	
 	public int getUniqueId()
 	{

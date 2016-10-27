@@ -19,7 +19,12 @@ public interface Annotatable
 	
 	default boolean containsAnnotationOfType(Class c, boolean checkAncestors)
 	{
-		return getAnnotationOfType(c, checkAncestors) != null;
+		return containsAnnotationOfType(c, checkAncestors, false);
+	}
+	
+	default boolean containsAnnotationOfType(Class c, boolean checkAncestors, boolean checkPending)
+	{
+		return getAnnotationOfType(c, checkAncestors, checkPending) != null;
 	}
 	
 	default Annotation getAnnotationOfType(Class c)
@@ -28,6 +33,11 @@ public interface Annotatable
 	}
 	
 	default Annotation getAnnotationOfType(Class c, boolean checkAncestors)
+	{
+		return getAnnotationOfType(c, checkAncestors, false);
+	}
+	
+	default Annotation getAnnotationOfType(Class c, boolean checkAncestors, boolean checkPending)
 	{
 		ArrayList<Annotation> annotations = getAnnotations();
 		
@@ -42,9 +52,17 @@ public interface Annotatable
 			}
 		}
 		
-		if (checkAncestors && ((Node)this).getParent() != null)
+		if (checkAncestors)
 		{
-			return ((Node)this).getParent().getAnnotationOfType(c, true);
+			if (((Node)this).getParent() != null)
+			{
+				return ((Node)this).getParent().getAnnotationOfType(c, true, checkPending);
+			}
+			
+			if (checkPending)
+			{
+				return ((Node)this).getProgram().getPendingAnnotationOfType(c);
+			}
 		}
 		
 		return null;
