@@ -264,6 +264,7 @@ public class SyntaxTree
 			root.decodeShorthandActions = true;
 			
 			root.forEachVisibleListChild(file -> Arrays.stream(file.getClassDeclarations()).forEach(c -> c.decodeShorthandActions()));
+			root.forEachVisibleListChild(file -> Arrays.stream(file.getClassDeclarations()).forEach(c -> c.checkShorthandActionOverrides()));
 		}
 	}
 	

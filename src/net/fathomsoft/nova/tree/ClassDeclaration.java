@@ -2245,8 +2245,24 @@ public class ClassDeclaration extends InstanceDeclaration
 		getDestructorList().forEachNovaMethod(x -> x.decodeShorthandAction());
 		
 		getFieldList().forEachChild(fields -> {
-			fields.forEachChild(field -> {
-				((FieldDeclaration)field).decodeShorthandAccessor();
+			fields.forEachChild(f -> {
+				FieldDeclaration field = (FieldDeclaration)f;
+				
+				field.decodeShorthandAccessor();
+			});
+		});
+	}
+	
+	public void checkShorthandActionOverrides()
+	{
+		getFieldList().forEachChild(fields -> {
+			fields.forEachChild(f -> {
+				FieldDeclaration field = (FieldDeclaration)f;
+				
+				if (field.getAccessorMethod() != null)
+					field.getAccessorMethod().checkOverrides();
+				if (field.getMutatorMethod() != null)
+					field.getMutatorMethod().checkOverrides();
 			});
 		});
 		
