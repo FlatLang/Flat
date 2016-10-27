@@ -120,9 +120,17 @@ public class Array extends VariableDeclaration implements ArrayCompatible
 	@Override
 	public StringBuilder generateNovaInput(StringBuilder builder, boolean outputChildren)
 	{
+		return generateNovaInput(builder, outputChildren, true);
+	}
+	
+	public StringBuilder generateNovaInput(StringBuilder builder, boolean outputChildren, boolean generateArray)
+	{
 		builder.append(getName());
 		
-		getDimensions().generateNovaInput(builder);
+		if (generateArray)
+		{
+			getDimensions().generateNovaInput(builder);
+		}
 		
 		return builder;
 	}
@@ -153,7 +161,7 @@ public class Array extends VariableDeclaration implements ArrayCompatible
 	 * @return The new Array instance if it was able to decode the
 	 * 		statement. If not, it will return null.
 	 */
-	public static Array decodeStatement(Node parent, String statement, Location location, boolean require)
+	public static Value decodeStatement(Node parent, String statement, Location location, boolean require)
 	{
 		Array n = new Array(parent, location);
 		
@@ -179,6 +187,16 @@ public class Array extends VariableDeclaration implements ArrayCompatible
 			
 			if (n.decodeDimensions(statement, index, newLoc, require))
 			{
+				if (!parent.containsAnnotationOfType(PrimitiveArrayAnnotation.class, true, true))
+				{
+					Value value = SyntaxTree.decodeValue(parent, n.mapDimension(0), location, require);
+					
+					if (value instanceof Instantiation)
+					{
+						return value;
+					}
+				}
+				
 				return n;
 			}
 		}
@@ -217,6 +235,27 @@ public class Array extends VariableDeclaration implements ArrayCompatible
 		}
 		
 		return null;
+	}
+	
+	public String mapDimension(int dimension)
+	{
+		String args = "";
+		
+		if (dimension < getDimensions().getNumVisibleChildren())
+		{
+			args = getDimensions().getVisibleChild(dimension).generateNovaInput().toString();
+		}
+		else if (dimension > 0)
+		{
+			return "";
+		}
+		
+		String call = "new " + getArrayType(dimension) + "(" + args + ")";
+		
+		String prefix = dimension > 0 ? ".map({ " : "";
+		String postfix = dimension > 0 ? " })" : "";
+		
+		return prefix + call + mapDimension(dimension + 1) + postfix;
 	}
 	
 	@Override
@@ -349,10 +388,13 @@ public class Array extends VariableDeclaration implements ArrayCompatible
 			
 			String type = generateNovaType(new StringBuilder(), null, false).toString();
 			
+			PrimitiveArrayAnnotation annotation = new PrimitiveArrayAnnotation(getParent(), getParent().getLocationIn());
+			annotation.onAfterDecoded();
+			
 			Assignment array = Assignment.decodeStatement(func, type + "[] temp = new " + type + "[" + initValues.getNumVisibleChildren() + "]", func.getLocationIn(), true);
 			
 			VariableDeclaration decl = array.getAssignedNode().getDeclaration();
-			decl.addAnnotation(new PrimitiveArrayAnnotation(decl, decl.getLocationIn()));
+			decl.addAnnotation(annotation);
 			
 			array.onAfterDecoded();
 			
@@ -467,13 +509,22 @@ public class Array extends VariableDeclaration implements ArrayCompatible
 		while (index++ > 0)
 		{
 			int    endIndex = statement.indexOf(']', index);
+			
+			if (endIndex < 0)
+			{
+				return statement.endsWith("]");
+			}
+			
 			String length   = StringUtils.trimSurroundingWhitespace(statement.substring(index, endIndex));
 			
-			decodeLength(length, location, require);
-			
-			index = statement.indexOf('[', endIndex + 1);
-			
-			setArrayDimensions(getArrayDimensions() + 1);
+			if (length.length() > 0)
+			{
+				decodeLength(length, location, require);
+				
+				index = statement.indexOf('[', endIndex + 1);
+				
+				setArrayDimensions(getArrayDimensions() + 1);
+			}
 		}
 		
 		return true;

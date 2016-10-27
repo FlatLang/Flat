@@ -262,12 +262,27 @@ public class Instantiation extends IIdentifier implements GenericCompatible
 		}
 		else if (SyntaxUtils.isArrayInitialization(instantiation))
 		{
-			child = Array.decodeStatement(getParent(), instantiation, location, require);
+			Value value = Array.decodeStatement(getParent(), instantiation, location, require);
+			
+			if (value instanceof Instantiation)
+			{
+				return (Instantiation)value;
+			}
+			else if (value instanceof Array)
+			{
+				child = (Array)value;
+			}
+			else
+			{
+				return null;
+			}
 		}
 		
 		if (child == null)
 		{
-			SyntaxMessage.error("Unable to parse instantiation of '" + instantiation + "'", this);
+			SyntaxMessage.queryError("Unable to parse instantiation of '" + instantiation + "'", this, require);
+			
+			return null;
 		}
 		
 		addChild(child);

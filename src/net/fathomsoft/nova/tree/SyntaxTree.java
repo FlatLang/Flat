@@ -50,7 +50,7 @@ public class SyntaxTree
 		Annotation.class, IfStatement.class, ElseStatement.class, Loop.class,
 		Case.class, Match.class, Default.class, Fallthrough.class, Priority.class,
 		Return.class, Assignment.class, IntRange.class, TernaryOperation.class,
-		BinaryOperation.class, Super.class
+		Instantiation.class, BinaryOperation.class, Super.class
 	};
 	
 	public static final Class<?> SCOPE_CHILD_DECODE[] = new Class<?>[]
