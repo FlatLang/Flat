@@ -1198,7 +1198,21 @@ public class SyntaxUtils
 	 */
 	public static boolean isArrayInitialization(String statement)
 	{
-		return Regex.matches(statement, Patterns.ARRAY_INIT);
+		String withoutGenerics = statement;
+		
+		int start = statement.indexOf('<');
+		
+		if (start > 0)
+		{
+			int end = StringUtils.findEndingMatch(statement, start, '<', '>');
+			
+			if (end > start)
+			{
+				withoutGenerics = statement.substring(0, start) + statement.substring(end + 1);
+			}
+		}
+		
+		return Regex.matches(withoutGenerics, Patterns.ARRAY_INIT);
 	}
 	
 	/**
