@@ -192,14 +192,14 @@ public class MethodCall extends Variable
 	 */
 	public CallableMethod getInferredDeclaration()
 	{
-		return (CallableMethod)getMethodDeclaration();
+		return getMethodDeclaration() instanceof CallableMethod ? (CallableMethod)getMethodDeclaration() : null;
 	}
 	
 	public CallableMethod getCallableDeclaration()
 	{
 		CallableMethod method = getInferredDeclaration();
 		
-		if (method.isVirtual() && !isVirtualTypeKnown())
+		if (method != null && method.isVirtual() && !isVirtualTypeKnown())
 		{
 			VirtualMethodDeclaration virtual = ((NovaMethodDeclaration)method).getVirtualMethod();
 			
@@ -365,6 +365,18 @@ public class MethodCall extends Variable
 	@Override
 	public Accessible getReferenceNode()
 	{
+		/*if (getNovaMethod() instanceof ArrayAccessorMethod)
+		{
+			Accessible a = super.getReferenceNode();//.getReferenceNode()
+			
+			while (a instanceof MethodCall && ((MethodCall)a).getNovaMethod() instanceof ArrayAccessorMethod)
+			{
+				a = a.getReferenceNode();
+			}
+			
+			return a.getReferenceNode();
+		}*/
+		
 		Accessible ref = super.getReferenceNode();
 		
 		if (ref.getParent() instanceof Instantiation)
