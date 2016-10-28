@@ -37,6 +37,40 @@ public interface Accessible
 		return (Value)this;
 	}
 	
+	default boolean isAccessedBy(Accessible other)
+	{
+		Accessible current = getAccessingNode();
+		
+		while (current != null)
+		{
+			if (current == other)
+			{
+				return true;
+			}
+			
+			current = current.getAccessingNode();
+		}
+		
+		return false;
+	}
+	
+	default boolean doesAccess(Accessible other)
+	{
+		Accessible current = getAccessedNode();
+		
+		while (current != null)
+		{
+			if (current == other)
+			{
+				return true;
+			}
+			
+			current = current.getAccessedNode();
+		}
+		
+		return false;
+	}
+	
 	/**
 	 * Get the ClassDeclaration instance that declares the method that
 	 * this MethodCall is calling.
