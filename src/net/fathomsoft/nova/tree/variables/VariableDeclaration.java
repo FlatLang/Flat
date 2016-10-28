@@ -347,7 +347,7 @@ public class VariableDeclaration extends IIdentifier
 	{
 		generateNovaAnnotations(builder);
 		
-		return generateNovaType(builder).append(' ').append(getName());
+		return generateNovaType(builder, this).append(' ').append(getName());
 	}
 	
 	/**
