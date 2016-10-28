@@ -4,8 +4,6 @@ import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.error.UnimplementedOperationException;
-import net.fathomsoft.nova.tree.generics.GenericTypeArgument;
-import net.fathomsoft.nova.tree.generics.GenericTypeArgumentList;
 import net.fathomsoft.nova.tree.variables.FieldDeclaration;
 import net.fathomsoft.nova.tree.variables.Variable;
 import net.fathomsoft.nova.tree.variables.VariableDeclaration;
@@ -452,14 +450,12 @@ public class Assignment extends Value
 			{
 				Value previousType = declaration.getTypeValue();
 				
-				Value assignmentType = assignment.getNovaTypeValue(assignment);
-				
-				declaration.setType(assignmentType);
-				//declaration.setType(assignmentType.getType(), true, false, false);
-				
 				if (declaration.getImplicitType() == null)
 				{
-					declaration.setImplicitType(assignmentType);
+					/*IValue value = new IValue(getParent(), getLocationIn());
+					value.setType(assignment.getNovaType());*/
+					
+					declaration.setImplicitType(assignment);
 				}
 				else if (previousType.getArrayDimensions() != assignment.getArrayDimensions())
 				{
@@ -468,33 +464,38 @@ public class Assignment extends Value
 				else if (previousType.getTypeClass().hasCommonAncestor(assignment.getTypeClass()))
 				{
 					ClassDeclaration base = previousType.getTypeClass().getCommonAncestor(assignment.getTypeClass());
-
-					Value value = declaration.getTypeValue();
-					value.setType(base.getNovaType());
+					
+//					Value value = declaration.getTypeValue();
+//					value.setType(base.generateNovaType().toString());
 					
 					// Add the common ancestor type to the scope
-					getAncestorWithScope().getScope().addImplicitVariableAssignment(declaration, value);
+					getAncestorWithScope().getScope().addImplicitVariableAssignment(declaration, base);
 				}
 				else
 				{
 					return SyntaxMessage.queryError("Incompatible implicit type '" + declaration.getType() + "' being assigned to type '" + assignment.getType() + "'", this, require);
 				}
 				
-				GenericTypeArgumentList args = assignment.getGenericTypeArgumentList();
+				//Value assignmentType = assignment.getNovaTypeValue(assignment);
+				declaration.setType(assignment);//assignment.getNovaType());
+				//declaration.setType(assignmentType.getType(), true, false, false);
+				declaration.correspondingImplicit = assignment;
 				
-				declaration.getGenericTypeArgumentList().slaughterEveryLastChild();
-				
-				if (args != null && args.getNumVisibleChildren() > 0)
-				{
-					for (GenericTypeArgument arg : assignment.getGenericTypeArgumentList())
-					{
-						declaration.getGenericTypeArgumentList().addChild(arg.clone(null, declaration.getLocationIn()));
-					}
-				}
-				else
-				{
-					declaration.addDefaultGenericTypeArguments();
-				}
+//				GenericTypeArgumentList args = assignment.getGenericTypeArgumentList();
+//				
+//				declaration.getGenericTypeArgumentList().slaughterEveryLastChild();
+//				
+//				if (args != null && args.getNumVisibleChildren() > 0)
+//				{
+//					for (GenericTypeArgument arg : assignment.getGenericTypeArgumentList())
+//					{
+//						declaration.getGenericTypeArgumentList().addChild(arg.clone(null, declaration.getLocationIn()));
+//					}
+//				}
+//				else
+//				{
+//					declaration.addDefaultGenericTypeArguments();
+//				}
 			}
 		}
 		
@@ -623,16 +624,16 @@ public class Assignment extends Value
 							
 							call.getArgumentList().getVisibleChild(0).replaceWith(getAssignmentNode());
 							
+							Value replace = call;
+							
 							if (getAssignedNode().isAccessed())
 							{
 								getAssignedNode().toValue().replaceWith(call);
 								
-								replaceWith(getAssignee().toValue());
+								replace = getAssignee().toValue();
 							}
-							else
-							{
-								getParent().replace(this, call);
-							}
+							
+							replaceWith(replace);
 							
 							result.returnedNode = call;
 							
@@ -659,6 +660,28 @@ public class Assignment extends Value
 		}
 		
 		return result;
+	}
+	
+	@Override
+	public void onChildReplaced(Node old, Node replacement)
+	{
+		if (getAssigneeNode() instanceof Variable)
+		{
+			Variable v = getAssignedNode();
+			
+			if (v.declaration instanceof LocalDeclaration)
+			{
+				LocalDeclaration local = (LocalDeclaration)v.declaration;
+				
+				if (local.isImplicit())
+				{
+					local.implicitType = ((Value)replacement).getReturnedNode();
+					local.setType(local.implicitType);
+				}
+			}
+		}
+		
+		super.onChildReplaced(old, replacement);
 	}
 	
 	@Override
