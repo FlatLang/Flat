@@ -522,9 +522,13 @@ public class Array extends VariableDeclaration implements ArrayCompatible
 				decodeLength(length, location, require);
 				
 				index = statement.indexOf('[', endIndex + 1);
-				
-				setArrayDimensions(getArrayDimensions() + 1);
 			}
+			else
+			{
+				index = statement.indexOf(']', index) + 1;
+			}
+			
+			setArrayDimensions(getArrayDimensions() + 1);
 		}
 		
 		return true;
