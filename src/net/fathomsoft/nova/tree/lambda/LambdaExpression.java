@@ -277,7 +277,7 @@ public class LambdaExpression extends Value
 							
 							if (method.getScope().getLastChild() instanceof Return)
 							{
-								if (call.isGenericType())
+								//if (call.isGenericType())
 								{
 									method.setType(((Return)method.getScope().getLastChild()).getReturnedNode());
 								}
