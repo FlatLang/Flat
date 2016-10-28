@@ -936,7 +936,7 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 		{
 			if (setType)
 			{
-				setType(returned.getNovaTypeValue(returned));
+				setType(returned);//returned.getNovaTypeValue(returned));
 			}
 			
 			Return r = new Return(this, getLocationIn());
