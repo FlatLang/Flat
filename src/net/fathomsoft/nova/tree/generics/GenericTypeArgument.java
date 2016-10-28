@@ -3,6 +3,7 @@ package net.fathomsoft.nova.tree.generics;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.error.UnimplementedOperationException;
 import net.fathomsoft.nova.tree.*;
+import net.fathomsoft.nova.tree.variables.VariableDeclaration;
 import net.fathomsoft.nova.util.Location;
 
 /**
@@ -224,14 +225,54 @@ public class GenericTypeArgument extends IValue implements GenericCompatible
 		return builder;
 	}
 	
+	public Value getTangibleNode()
+	{
+		GenericTypeArgumentList list = getParentGenericTypeArgumentList();
+		Node n = list != null ? list.getParent() : null;
+		
+		while (n instanceof GenericTypeArgument)
+		{
+			list = ((GenericTypeArgument)n).getParentGenericTypeArgumentList();
+			n = list != null ? list.getParent() : null;
+		}
+		
+		if (n instanceof Value)
+		{
+			return (Value)n;
+		}
+		
+		return null;
+	}
+	
+	public boolean isAccessibleFrom(Value context)
+	{
+		GenericTypeParameter param = getGenericTypeParameter();
+		
+		if (param instanceof MethodGenericTypeParameter)
+		{
+			return context.getParentMethod() == param.getParentMethod();
+		}
+		
+		return param != null && context.getParentClass() == param.getParentClass();
+	}
+	
 	@Override
 	public Value getNovaTypeValue(Value context)
 	{
+		if (context instanceof GenericTypeArgument)
+		{
+			context = ((GenericTypeArgument)context).getTangibleNode();
+		}
+		if (context instanceof VariableDeclaration && isAccessibleFrom(context))
+		{
+			return this;
+		}
+		
 		if (isGenericType())
 		{
 			GenericTypeArgument arg = getGenericTypeParameter().getCorrespondingArgument(context);
 			
-			if (arg != null)
+			if (arg != null && arg != this)
 			{
 				return arg.getNovaTypeValue(context);
 			}
