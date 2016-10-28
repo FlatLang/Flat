@@ -263,6 +263,8 @@ public class SyntaxTree
 		{
 			root.decodeShorthandActions = true;
 			
+			controller.log("Compiling shorthand actions...");
+			
 			root.forEachVisibleListChild(file -> Arrays.stream(file.getClassDeclarations()).forEach(c -> c.decodeShorthandActions()));
 			root.forEachVisibleListChild(file -> Arrays.stream(file.getClassDeclarations()).forEach(c -> c.checkShorthandActionOverrides()));
 		}
