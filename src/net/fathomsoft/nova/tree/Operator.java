@@ -248,8 +248,7 @@ public class Operator extends IValue
 			SyntaxMessage.error("Unknown operator '" + operator + "'", this);
 		}
 		
-		if (operator.equals(EQUALS) || operator.equals(NOT_EQUAL) || operator.equals(BANG) || operator.equals(AND) ||
-			operator.equals(OR) || operator.equals(LESS) || operator.equals(GREATER) || operator.equals(LESS_EQ) || operator.equals(GREATER_EQ))
+		if (isBooleanOperator())
 		{
 			setType("Bool");
 		}
@@ -258,7 +257,17 @@ public class Operator extends IValue
 			Value l = getLeftOperand().getReturnedNode();
 			Value r = getRightOperand().getReturnedNode();
 			
-			r = r instanceof BinaryOperation ? ((BinaryOperation)r).getLeftOperand().getReturnedNode() : r;
+			if (r instanceof BinaryOperation)
+			{
+				if (((BinaryOperation)r).getOperator().isBooleanOperator())
+				{
+					setType("Bool");
+					
+					return;
+				}
+				
+				r = ((BinaryOperation)r).getLeftOperand().getReturnedNode();
+			}
 			
 			ClassDeclaration common = SyntaxUtils.getTypeInCommon(l, r);
 			
@@ -281,6 +290,12 @@ public class Operator extends IValue
 			
 			setType(type);
 		}
+	}
+	
+	public boolean isBooleanOperator()
+	{
+		return operator.equals(EQUALS) || operator.equals(NOT_EQUAL) || operator.equals(BANG) || operator.equals(AND) ||
+			operator.equals(OR) || operator.equals(LESS) || operator.equals(GREATER) || operator.equals(LESS_EQ) || operator.equals(GREATER_EQ);
 	}
 	
 	/**
