@@ -488,13 +488,13 @@ public class Variable extends Identifier
 			return null;
 		}
 		
-		Accessible ref = this.getReferenceNode();
+		Accessible ref = getReferenceNode();
 		
 		if (ref != null)
 		{
 			ClassDeclaration type = ref.toValue().getTypeClass();
 			
-			if (type != null && type.isOfType(declaration.getParentClass()))
+			if (type != null && type.isOfType(getReferenceDeclaration().getParentClass()))
 			{
 				GenericTypeParameter param = type.getGenericTypeParameter(getType(), this);
 				
@@ -506,6 +506,80 @@ public class Variable extends Identifier
 		}
 		
 		return declaration.getGenericTypeParameter();
+	}
+	
+	public VariableDeclaration getReferenceDeclaration()
+	{
+		Accessible c = getCorrespondingImplicitValue();
+		
+		if (c != null && c instanceof Variable)
+		{
+			return ((Variable)c).getDeclaration();
+		}
+		
+		return declaration;
+	}
+	
+	public Accessible getImplicitReference()
+	{
+		Accessible c = getCorrespondingImplicitValue();
+		
+		if (c != null)
+		{
+			return c.getAccessingNode();
+		}
+		
+		return null;
+	}
+	
+	public Accessible getCorrespondingImplicitValue()
+	{
+		/*if (declaration instanceof LocalDeclaration && ((LocalDeclaration)declaration).isImplicit())
+		{
+			Accessible root = getRootAccessNode();
+			
+			if (root.getParent().getParent() instanceof Assignment)
+			{
+				Assignment a = (Assignment)root.getParent().getParent();
+				
+				if (a.getAssigneeNode() == root)
+				{
+					return (Accessible)a.getAssignmentNode().getReturnedNode();
+				}
+			}
+		}*/
+		
+		if (declaration instanceof LocalDeclaration)
+		{
+			Value v = ((LocalDeclaration)declaration).correspondingImplicit;
+			
+			if (v instanceof Accessible)
+			{
+				if (!doesAccess((Accessible)v))
+				{
+					return (Accessible)v;
+				}
+				else
+				{
+					int j = 4;
+				}
+			}
+		}
+		
+		return null;
+	}
+	
+	@Override
+	public Accessible getReferenceNode()
+	{
+		Accessible a = getImplicitReference();
+		
+		if (a != null)
+		{
+			return a;
+		}
+		
+		return super.getReferenceNode();
 	}
 	
 	public boolean doesUseGenericTypes()
@@ -625,6 +699,6 @@ public class Variable extends Identifier
 	
 	public String toString()
 	{
-		return generateNovaInput() + " of type " + generateNovaType();// + generateGenericType();
+		return generateNovaInput() + " of type " + generateNovaType(this);// + generateGenericType();
 	}
 }
