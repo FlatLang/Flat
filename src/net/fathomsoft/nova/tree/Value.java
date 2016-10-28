@@ -9,6 +9,7 @@ import net.fathomsoft.nova.tree.generics.GenericTypeParameter;
 import net.fathomsoft.nova.tree.generics.GenericTypeParameterDeclaration;
 import net.fathomsoft.nova.tree.lambda.LambdaMethodDeclaration;
 import net.fathomsoft.nova.tree.variables.*;
+import net.fathomsoft.nova.util.Bounds;
 import net.fathomsoft.nova.util.Location;
 import net.fathomsoft.nova.util.SyntaxUtils;
 
@@ -941,6 +942,8 @@ public abstract class Value extends Node implements AbstractValue
 		
 		builder.append(SyntaxUtils.getPrimitiveNovaType(type.getType()));
 		
+		builder.append(type.generateGenericType(context));
+		
 		if (checkArray && isPrimitiveArray())
 		{
 			builder.append(generateNovaArrayText());
@@ -949,8 +952,6 @@ public abstract class Value extends Node implements AbstractValue
 		{
 			builder.append('*');
 		}
-
-		builder.append(type.generateGenericType(context));
 		
 		return builder;
 	}
@@ -969,7 +970,7 @@ public abstract class Value extends Node implements AbstractValue
 	{
 		Value value = getNovaTypeValue(context);
 		
-		return value.generateNovaType(new StringBuilder(), null, checkArray).toString();
+		return value.generateNovaType(new StringBuilder(), context, checkArray).toString();
 	}
 	
 	public Value getNovaTypeValue(Value context)
@@ -1169,36 +1170,28 @@ public abstract class Value extends Node implements AbstractValue
 		setArrayDimensions(value.getArrayDimensions());
 
 		Value original = value;
-		Value novaType = value.getNovaTypeValue(null);
+		Value novaType = value.getNovaTypeValue(value);
 		
-		if (original.isGenericType() && !getParentClass().isOfType(original.getGenericTypeParameter().getParentClass()))
+		if (novaType.isGenericType() && !getParentClass().isOfType(original.getGenericTypeParameter().getParentClass()))
 		{
 			setTypeValue(original.getGenericTypeParameter().getDefaultType());
 		}
-		else
+		else if (value.getType() != null)
 		{
 			setType(SyntaxUtils.getPrimitiveNovaType((extractType ? novaType : original).getType()));
+			
+			if (extractType)
+			{
+				String type = value.getNovaTypeValue(value).generateGenericType(value);
+				
+				if (type.length() > 0 && getGenericTypeArgumentList() != null)
+				{
+					decodeGenericTypeArguments(type, new Bounds(0, type.length()), true);
+				}
+			}
 		}
 		
 		setDataType(novaType.getDataType());
-		
-		GenericTypeArgumentList args = novaType.getGenericTypeArgumentList();
-		GenericTypeArgumentList thisArgs = getGenericTypeArgumentList();
-		
-		if (args != null && thisArgs != null)
-		{
-			thisArgs.slaughterEveryLastVisibleChild();
-			
-			for (int i = 0; i < args.getNumVisibleChildren(); i++)
-			{
-				GenericTypeArgument arg = args.getVisibleChild(i);
-				
-				GenericTypeArgument newArg = arg.clone(thisArgs, arg.getLocationIn().asNew(), true);
-				newArg.setType(arg);
-				
-				thisArgs.addChild(newArg);
-			}
-		}
 	}
 	
 	public Value getRealValue()
