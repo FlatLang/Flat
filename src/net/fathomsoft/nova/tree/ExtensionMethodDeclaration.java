@@ -64,10 +64,11 @@ public class ExtensionMethodDeclaration extends BodyMethodDeclaration
 				
 				method.cloneTo(n, true);
 				
-				Parameter type = (Parameter)n.getParameterList().getParameter(0).detach();
+				Parameter type = n.getParameterList().getParameter(0);
 				
 				n.getParameterList().getReferenceParameter().setType(type);
 				
+				type.detach();
 				
 				return n;
 			}
