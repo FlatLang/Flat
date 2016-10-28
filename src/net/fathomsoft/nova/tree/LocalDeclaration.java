@@ -4,7 +4,6 @@ import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.tree.generics.GenericTypeArgument;
-import net.fathomsoft.nova.tree.generics.GenericTypeArgumentList;
 import net.fathomsoft.nova.tree.generics.GenericTypeParameterDeclaration;
 import net.fathomsoft.nova.tree.variables.VariableDeclaration;
 import net.fathomsoft.nova.util.*;
@@ -24,6 +23,7 @@ public class LocalDeclaration extends VariableDeclaration
 	private int scopeID;
 
 	public Value implicitType;
+	public Value correspondingImplicit;
 	
 	public static final String IMPLICIT_IDENTIFIER = "var";
 	
@@ -330,28 +330,6 @@ public class LocalDeclaration extends VariableDeclaration
 	public void setImplicitType(Value implicitType)
 	{
 		this.implicitType = implicitType;
-	}
-
-	public void setType(Value value, boolean extractType)
-	{
-		setArrayDimensions(value.getArrayDimensions());
-		setTypeValue(value.getType());
-		setDataType(value.getDataType());
-
-		GenericTypeArgumentList args = value.getGenericTypeArgumentList();
-		GenericTypeArgumentList thisArgs = getGenericTypeArgumentList();
-
-		if (args != null)
-		{
-			thisArgs.slaughterEveryLastChild();
-			
-			for (int i = 0; i < args.getNumVisibleChildren(); i++)
-			{
-				GenericTypeArgument arg = args.getVisibleChild(i);
-
-				thisArgs.addChild(arg.clone(thisArgs, arg.getLocationIn().asNew()));
-			}
-		}
 	}
 	
 	@Override
